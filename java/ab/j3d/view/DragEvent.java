@@ -185,7 +185,7 @@ public class DragEvent
 	/**
 	 * Get event type.
 	 *
-	 * @return  Event type (<code>DRAG_START , DRAG_TO, or DRAG_STOP).
+	 * @return  Event type (<code>DRAG_START , DRAG_TO, or DRAG_STOP</code>).
 	 */
 	public int getID()
 	{

@@ -125,7 +125,7 @@ public class DragSupport
 	final double _toDegrees;
 
 	/**
-	 * Mouse sensivity to translate pixels to decimal degrees.
+	 * Mouse sensivity to translate pixels to world units.
 	 */
 	final double _toUnits;
 

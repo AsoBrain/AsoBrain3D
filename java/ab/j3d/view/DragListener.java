@@ -55,7 +55,7 @@ public interface DragListener
 
 	/**
 	 * This event is fired when the drag operation is stopped. When using a
-	 * mouse to drag, this when the mouse button is released.
+	 * mouse to drag, this is when the mouse button is released.
 	 *
 	 * @param   event   Drag event.
 	 *
