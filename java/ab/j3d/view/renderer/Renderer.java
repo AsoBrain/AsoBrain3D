@@ -398,7 +398,7 @@ public final class Renderer
 
 		/*
 		 * Determine minimum and maximum Y value, and set the first vertex
-		 * to an element with the minimal Y value.
+		 * to an element with the minimum Y value.
 		 */
 		int minH  = ph[ vertexIndices[ 0 ] ] >> 8;
 		int maxH  = minH;
