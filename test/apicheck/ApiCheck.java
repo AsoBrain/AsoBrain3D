@@ -48,9 +48,10 @@ public final class ApiCheck
 	public static void main( final String[] args )
 	{
 		boolean ok = true;
-		ok = test( ok , "JUnit test framework"  , "junit.framework.TestCase" );
-		ok = test( ok , "Java 3D API (core)"    , "javax.media.j3d.Shape3D" );
-		ok = test( ok , "Java 3D API (vecmath)" , "javax.vecmath.Vector3f" );
+		ok = test( ok , "JUnit test framework"                 , "junit.framework.TestCase" );
+		ok = test( ok , "Java 3D API (core)"                   , "javax.media.j3d.Shape3D" );
+		ok = test( ok , "Java 3D API (vecmath)"                , "javax.vecmath.Vector3f" );
+		ok = test( ok , "Numdata Open Source Software Library" , "com.numdata.oss.TextTools" );
 
 		if ( !ok )
 		{
