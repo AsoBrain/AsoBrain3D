@@ -1,9 +1,7 @@
-package ab.a3ds;
-
 /*
  * $Id$
  *
- * (C) Copyright 1999-2002 Sjoerd Bouwman (aso@asobrain.com)
+ * (C) Copyright 1999-2004 Sjoerd Bouwman (aso@asobrain.com)
  * 
  * This program is free software; you can redistribute it and/or
  * modify it as you see fit.
@@ -12,11 +10,13 @@ package ab.a3ds;
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+package ab.j3d.a3ds;
+
 import java.io.*;
 
 /**
  * This chunk specifies an object (like Mesh, Light, Camera)
- *
+ * <pre>
  * Chunk ID : 
  * - EDIT_OBJECT	= 0x4000
  *
@@ -27,10 +27,10 @@ import java.io.*;
  * - OBJ_TRIMESH	= 0x4100
  * - OBJ_LIGHT		= 0x4600
  * - OBJ_CAMERA		= 0x4700
+ * </pre>
  *
  * @author	Sjoerd Bouwman
- *
- * @version	$Revision$ ($Date$, $Author$)
+ * @version	$Revision$ $Date$
  */
 public class ObjectChunk extends HierarchyChunk 
 {

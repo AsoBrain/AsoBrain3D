@@ -1,9 +1,7 @@
-package ab.a3ds;
-
 /*
  * $Id$
  *
- * (C) Copyright 1999-2002 Sjoerd Bouwman (aso@asobrain.com)
+ * (C) Copyright 1999-2004 Sjoerd Bouwman (aso@asobrain.com)
  * 
  * This program is free software; you can redistribute it and/or
  * modify it as you see fit.
@@ -12,6 +10,8 @@ package ab.a3ds;
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+package ab.j3d.a3ds;
+
 import java.util.Vector;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,8 +22,7 @@ import java.io.OutputStream;
  * The class itself can be used for chunks that only holds subchunks (no data).
  * 
  * @author	Sjoerd Bouwman
- *
- * @version	$Revision$ ($Date$, $Author$)
+ * @version	$Revision$ $Date$
  */
 public class HierarchyChunk extends Chunk 
 {

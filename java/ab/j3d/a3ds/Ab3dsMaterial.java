@@ -1,9 +1,7 @@
-package ab.a3ds;
-
 /*
  * $Id$
  *
- * (C) Copyright 1999-2002 Sjoerd Bouwman (aso@asobrain.com)
+ * (C) Copyright 1999-2004 Sjoerd Bouwman (aso@asobrain.com)
  * 
  * This program is free software; you can redistribute it and/or
  * modify it as you see fit.
@@ -12,11 +10,13 @@ package ab.a3ds;
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+package ab.j3d.a3ds;
+
 import java.io.*;
 
 /**
  * This chunk specifies a material definition
- *
+ * <pre>
  * Chunk ID :
  * - EDIT_MATERIAL	= 0xAFFF
  *
@@ -36,10 +36,10 @@ import java.io.*;
  * - MAT_TYPE		= 0xA100
  * - MAT_ILLUMINATION = 0xA084
  * - MAT_WIRETHICKNESS= 0xA087
+ * </pre>
  *
  * @author	Sjoerd Bouwman
- *
- * @version	$Revision$ ($Date$, $Author$)
+ * @version	$Revision$ $Date$
  */
 public class Ab3dsMaterial extends DataChunk 
 {
