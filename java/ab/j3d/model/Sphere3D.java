@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2005 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -166,7 +166,7 @@ public final class Sphere3D
 		}
 	}
 
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
 	{
 		final double dx = this.dx;
 		if ( Matrix3D.almostEqual( dx , dy )
@@ -189,35 +189,35 @@ public final class Sphere3D
 
 			final Ellipse2D shape = Matrix3D.almostEqual( (double)r , 0.0 ) ? null : new Ellipse2D.Float( x - r , y - r , r + r , r + r );
 
-			if ( fillColor != null )
+			if ( fillPaint != null )
 			{
-				final Paint fillPaint;
-				if ( ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) )
+				final Paint paint;
+				if ( ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ))
 				{
 					final float goldenRatio = 0.6180339f;
 					final float highlight   = ( goldenRatio - 0.5f ) * r;
 
-					fillPaint = new GradientPaint( x + highlight , y - highlight , fillColor , x -r , y + r , outlineColor , true );
+					paint = new GradientPaint( x + highlight , y - highlight , (Color)fillPaint , x -r , y + r , (Color)outlinePaint , true );
 				}
 				else
 				{
-					fillPaint = fillColor;
+					paint = fillPaint;
 				}
 
-				g.setPaint( fillPaint );
+				g.setPaint( paint );
 				g.fill( shape );
 			}
 
-			if ( outlineColor != null )
+			if ( outlinePaint != null )
 			{
-				g.setPaint( outlineColor );
+				g.setPaint( outlinePaint );
 				g.draw( shape );
 			}
 		}
 		else
 		{
 			// Not painted, paint fully.
-			super.paint( g , gTransform , viewTransform , outlineColor , fillColor , shadeFactor );
+			super.paint( g , gTransform , viewTransform , outlinePaint , fillPaint , shadeFactor );
 		}
 	}
 

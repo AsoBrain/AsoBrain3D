@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2005 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -214,7 +214,7 @@ public final class Cylinder3D
 		}
 	}
 
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
 	{
 		final Matrix3D viewBase = xform.multiply( viewTransform );
 		final double   h        = height;
@@ -269,24 +269,24 @@ public final class Cylinder3D
 			path.lineTo( x4 , y4 );
 			path.closePath();
 
-			if ( fillColor != null )
+			if ( fillPaint != null )
 			{
-				if ( ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) )
+				if ( ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ) )
 				{
 					final float highlightX = ( 1.0f - goldenRatio ) * x1 + goldenRatio * x4;
 					final float highlightY = ( 1.0f - goldenRatio ) * y1 + goldenRatio * y4;
-					g.setPaint( new GradientPaint( highlightX , highlightY , fillColor , x1 , y1 , outlineColor , true ) );
+					g.setPaint( new GradientPaint( highlightX , highlightY , (Color)fillPaint , x1 , y1 , (Color)outlinePaint , true ) );
 				}
 				else
 				{
-					g.setPaint( fillColor );
+					g.setPaint( fillPaint );
 				}
 				g.fill( path );
 			}
 
-			if ( outlineColor != null )
+			if ( outlinePaint != null )
 			{
-				g.setColor( outlineColor );
+				g.setPaint( outlinePaint );
 				g.draw( path );
 			}
 		}
@@ -346,44 +346,44 @@ public final class Cylinder3D
 					shape2 = bot;
 				}
 
-				final Paint fillPaint;
-				if ( fillColor != null )
+				final Paint paint;
+				if ( fillPaint != null )
 				{
-					if ( ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) )
+					if ( ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ))
 					{
 						final float r = Math.max( topRadius , botRadius );
 						final float highlight = ( goldenRatio - 0.5f ) * r;
-						fillPaint = new GradientPaint( x + highlight , y - highlight , fillColor , x -r , y + r , outlineColor , true );
+						paint = new GradientPaint( x + highlight , y - highlight , (Color)fillPaint , x -r , y + r , (Color)outlinePaint , true );
 					}
 					else
 					{
-						fillPaint = fillColor;
+						paint = fillPaint;
 					}
-					g.setPaint( fillPaint );
+					g.setPaint( paint );
 					g.fill( shape1 );
 				}
 				else
 				{
-					fillPaint = null;
+					paint = null;
 				}
 
-				if ( outlineColor != null )
+				if ( outlinePaint != null )
 				{
-					g.setPaint( outlineColor );
+					g.setPaint( outlinePaint );
 					g.draw( shape1 );
 				}
 
 				if ( shape2 != null )
 				{
-					if ( fillPaint != null )
+					if ( paint != null )
 					{
-						g.setPaint( fillPaint );
+						g.setPaint( paint );
 						g.fill( shape2 );
 					}
 
-					if ( outlineColor != null )
+					if ( outlinePaint != null )
 					{
-						g.setPaint( outlineColor );
+						g.setPaint( outlinePaint );
 						g.draw( shape2 );
 					}
 				}
@@ -408,7 +408,7 @@ public final class Cylinder3D
 		else
 		{
 			// Not painted, paint fully.
-			super.paint( g , gTransform , viewTransform , outlineColor , fillColor , shadeFactor );
+			super.paint( g , gTransform , viewTransform , outlinePaint , fillPaint , shadeFactor );
 		}
 	}
 }

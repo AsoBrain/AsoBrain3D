@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2005 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,8 @@
  */
 package ab.j3d.model;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
@@ -186,7 +186,8 @@ public final class Transform3D
 	{
 		if ( _inverseMatrixDirty )
 		{
-			_inverseMatrix = getMatrix().inverse();
+			final Matrix3D matrix = getMatrix();
+			_inverseMatrix = matrix.inverse();
 			_inverseMatrixDirty = false;
 		}
 
@@ -200,12 +201,22 @@ public final class Transform3D
 	 */
 	public Matrix3D getMatrix()
 	{
+		final Matrix3D result;
+
 		if ( _matrixDirty )
 		{
-			_matrix = Matrix3D.getTransform( _rotationX , _rotationY , _rotationZ , _translation.x , _translation.y , _translation.z );
+			final Vector3D translation = _translation;
+
+			result = Matrix3D.getTransform( _rotationX , _rotationY , _rotationZ , translation.x , translation.y , translation.z );
+			_matrix = result;
 			_matrixDirty = false;
 		}
-		return _matrix;
+		else
+		{
+			result = _matrix;
+		}
+
+		return result;
 	}
 
 	/**
@@ -261,9 +272,16 @@ public final class Transform3D
 		return _translation;
 	}
 
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final boolean alternateAppearance )
 	{
-		super.paint( g , gTransform , getMatrix().multiply( viewTransform ) , outlineColor , fillColor , shadeFactor );
+		final Matrix3D matrix = getMatrix();
+		super.paint( g , gTransform , matrix.multiply( viewTransform ) , alternateAppearance );
+	}
+
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
+	{
+		final Matrix3D matrix = getMatrix();
+		super.paint( g , gTransform , matrix.multiply( viewTransform ) , outlinePaint , fillPaint , shadeFactor );
 	}
 
 	/**

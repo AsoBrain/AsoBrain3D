@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2005 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,7 @@ package ab.j3d.model;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,20 +88,20 @@ public class Object3D
 	 * is set to <code>null</code>, the object outline will not be painted.
 	 *
 	 * @see     #paint
-	 * @see     #fillColor
-	 * @see     #alternateOutlineColor
+	 * @see     #fillPaint
+	 * @see     #alternateOutlinePaint
 	 */
-	public Color outlineColor;
+	public Paint outlinePaint;
 
 	/**
 	 * Fill color to use when this object is painted using Java 2D. If this is
 	 * set to <code>null</code>, the object faces will not be filled.
 	 *
 	 * @see     #paint
-	 * @see     #outlineColor
-	 * @see     #alternateFillColor
+	 * @see     #outlinePaint
+	 * @see     #alternateFillPaint
 	 */
-	public Color fillColor;
+	public Paint fillPaint;
 
 	/**
 	 * Amount of shading that may be applied (0=none, 1=extreme) when this
@@ -118,10 +119,10 @@ public class Object3D
 	 * <code>alternateAppearance</code> argument is set.
 	 *
 	 * @see     #paint
-	 * @see     #alternateFillColor
-	 * @see     #outlineColor
+	 * @see     #alternateFillPaint
+	 * @see     #outlinePaint
 	 */
-	public Color alternateOutlineColor;
+	public Paint alternateOutlinePaint;
 
 	/**
 	 * Alternate fill color to use when this object is painted using Java 2D.
@@ -131,10 +132,10 @@ public class Object3D
 	 * <code>alternateAppearance</code> argument is set.
 	 *
 	 * @see     #paint
-	 * @see     #alternateOutlineColor
-	 * @see     #fillColor
+	 * @see     #alternateOutlinePaint
+	 * @see     #fillPaint
 	 */
-	public Color alternateFillColor;
+	public Paint alternateFillPaint;
 
 	/**
 	 * This is used as cache storage for paint(Graphics2D,Matrix3D,Matrix3D).
@@ -154,11 +155,11 @@ public class Object3D
 		_vertexNormals = null;
 		_faceNormals   = null;
 
-		outlineColor          = Color.black;
-		fillColor             = Color.white;
+		outlinePaint          = Color.black;
+		fillPaint             = Color.white;
 		shadeFactor           = 0.5f;
-		alternateOutlineColor = Color.blue;
-		alternateFillColor    = Color.white;
+		alternateOutlinePaint = Color.blue;
+		alternateFillPaint    = Color.white;
 
 		_paintPointCoordsCache = null;
 	}
@@ -748,10 +749,10 @@ public class Object3D
 	}
 
 	/**
-	 * This implementation will use the <code>outlineColor</code>,
-	 * <code>fillColor</code>, and <code>shadeFactor</code> to render the object,
+	 * This implementation will use the <code>outlinePaint</code>,
+	 * <code>fillPaint</code>, and <code>shadeFactor</code> to render the object,
 	 * unless the <code>alternateAppearance</code> flag is set, in which case the
-	 * <code>alternateOutlineColor</code> and <code>alternateFillColor</code>
+	 * <code>alternateOutlinePaint</code> and <code>alternateFillPaint</code>
 	 * will be used.
 	 *
 	 * @param   g                       Graphics2D context.
@@ -759,25 +760,25 @@ public class Object3D
 	 * @param   viewTransform           Transformation from object's to view coordinate system.
 	 * @param   alternateAppearance     Use alternate appearance.
 	 *
-	 * @see     #outlineColor
-	 * @see     #fillColor
+	 * @see     #outlinePaint
+	 * @see     #fillPaint
 	 * @see     #shadeFactor
-	 * @see     #alternateOutlineColor
-	 * @see     #alternateFillColor
+	 * @see     #alternateOutlinePaint
+	 * @see     #alternateFillPaint
 	 */
 	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final boolean alternateAppearance )
 	{
-		paint( g , gTransform , viewTransform , alternateAppearance ? alternateOutlineColor : outlineColor , alternateAppearance ? alternateFillColor : fillColor , shadeFactor );
+		paint( g , gTransform , viewTransform , alternateAppearance ? alternateOutlinePaint : outlinePaint , alternateAppearance ? alternateFillPaint : fillPaint , shadeFactor );
 	}
 
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
 	{
 		final int faceCount = getFaceCount();
 
 		if ( ( g != null )
 		  && ( gTransform != null )
 		  && ( viewTransform != null )
-		  && ( ( outlineColor != null ) || ( fillColor != null ) )
+		  && ( ( outlinePaint != null ) || ( fillPaint != null ) )
 		  && ( faceCount > 0 ) )
 		{
 			final int pointCount = getPointCount();
@@ -801,10 +802,10 @@ public class Object3D
 			final double[] faceNormals;
 			final float[]  rgb;
 
-			if ( ( fillColor != null ) && ( maxVertexCount > 2 ) && ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) )
+			if ( ( fillPaint instanceof Color ) && ( maxVertexCount > 2 ) && ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) )
 			{
 				faceNormals = getFaceNormals();
-				rgb     = fillColor.getRGBComponents( null );
+				rgb         = ((Color)fillPaint).getRGBComponents( null );
 			}
 			else
 			{
@@ -816,7 +817,7 @@ public class Object3D
 			{
 				final Face3D face = getFace( faceIndex );
 
-				final Color faceFillColor;
+				final Paint faceFillPaint;
 				if ( ( faceNormals != null ) && ( face.getVertexCount() > 2 ) )
 				{
 					/*
@@ -835,14 +836,14 @@ public class Object3D
 					final float transformedNormalZ = (float)( faceNormalX * viewTransform.zx + faceNormalY * viewTransform.zy + faceNormalZ * viewTransform.zz );
 					final float factor = Math.min( 1.0f , ( 1.0f - shadeFactor ) + shadeFactor * Math.abs( transformedNormalZ ) );
 
-					faceFillColor = ( factor < 1.0f ) ? new Color( factor * rgb[ 0 ] , factor * rgb[ 1 ] , factor * rgb[ 2 ] , rgb[ 3 ] ) : fillColor;
+					faceFillPaint = ( factor < 1.0f ) ? new Color( factor * rgb[ 0 ] , factor * rgb[ 1 ] , factor * rgb[ 2 ] , rgb[ 3 ] ) : fillPaint;
 				}
 				else
 				{
-					faceFillColor = fillColor;
+					faceFillPaint = fillPaint;
 				}
 
-				face.paint( g , gTransform , outlineColor , faceFillColor , pointCoords , xs , ys );
+				face.paint( g , gTransform , outlinePaint , faceFillPaint , pointCoords , xs , ys );
 			}
 		}
 	}

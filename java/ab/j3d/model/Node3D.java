@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2005 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,8 @@
  */
 package ab.j3d.model;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -250,8 +250,8 @@ public class Node3D
 	 * by drawing the outlines of its 'visible' faces. Derivatives of this class
 	 * may implement are more realistic approach (sphere, cylinder).
 	 * <p />
-	 * The rendering settings are determined by the <code>outlineColor</code>,
-	 * <code>fillColor</code>, and <code>shadeFactor</code> arguments. The
+	 * The rendering settings are determined by the <code>outlinePaint</code>,
+	 * <code>fillPaint</code>, and <code>shadeFactor</code> arguments. The
 	 * colors may be set to <code>null</code> to disable drawing of the
 	 * outline or inside of faces respectively. The <code>shadeFactor</code> is
 	 * used to modify the fill color based on the Z component of the face normal.
@@ -268,17 +268,17 @@ public class Node3D
 	 * @param   g               Graphics2D context.
 	 * @param   gTransform      Projection transform for Graphics2D context (3D->2D, pan, sale).
 	 * @param   viewTransform   Transformation from object's to view coordinate system.
-	 * @param   outlineColor    Color to use for face outlines (<code>null</code> to disable drawing).
-	 * @param   fillColor       Color to use for filling faces (<code>null</code> to disable drawing).
+	 * @param   outlinePaint    Paint to use for face outlines (<code>null</code> to disable drawing).
+	 * @param   fillPaint       Paint to use for filling faces (<code>null</code> to disable drawing).
 	 * @param   shadeFactor     Amount of shading that may be applied (0=none, 1=extreme).
 	 */
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
 	{
 		final Node3D[] children = getChildren();
 		for ( int i = 0 ; i < children.length ; i++ )
 		{
 			final Node3D node = children[ i ];
-			node.paint( g , gTransform , viewTransform , outlineColor , fillColor , shadeFactor );
+			node.paint( g , gTransform , viewTransform , outlinePaint , fillPaint , shadeFactor );
 		}
 	}
 
