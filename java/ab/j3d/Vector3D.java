@@ -17,7 +17,7 @@ import java.util.StringTokenizer;
  *
  * @author	Peter S. Heijnen
  *
- * @version	$Revision$ ($Date$, $Author$)
+ * @version	$Revision$ ($Date$, $Auhor$)
  */
 public final class Vector3D
 {

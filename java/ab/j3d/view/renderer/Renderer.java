@@ -27,7 +27,7 @@ import java.util.Stack;
  *
  * @author	Peter S. Heijnen
  *
- * @version	$Revision$ ($Date$, $Author$)
+ * @version	$Revision$ ($Date$, $Auhor$)
  */
 public class Renderer
 	implements ComponentListener, Runnable, MouseListener, MouseMotionListener, ImageProducer
