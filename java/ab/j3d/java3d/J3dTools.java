@@ -50,6 +50,7 @@ package ab.j3d.java3d;
 
 import java.awt.Canvas;
 import java.awt.GraphicsConfiguration;
+import java.awt.Image;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -237,7 +238,7 @@ public class J3dTools
 			if ( nrTriangles < 1 )
 				continue;
 
-			final Texture texture = ( faceTU == null || faceTV == null || faceTexture.rgb > 0 ) ? null : getTexture( faceTexture.code );
+			final Texture texture = ( ( faceTU == null ) || ( faceTV == null ) || !faceTexture.isTexture() ) ? null : getTexture( faceTexture );
 
 			final List j3dVertices;
 			final List j3dTextureCoords;
@@ -335,7 +336,7 @@ public class J3dTools
 	 */
 	public static Appearance abToJ3D( final TextureSpec spec , final float opacity )
 	{
-		final int   rgb = ( spec.rgb > 0 ) ? spec.rgb : 0xFFFFFF;
+		final int   rgb = spec.getARGB();
 		final float r   = ( ( rgb >> 16 ) & 255 ) / 255.0f;
 		final float g   = ( ( rgb >>  8 ) & 255 ) / 255.0f;
 		final float b   = (   rgb         & 255 ) / 255.0f;
@@ -355,9 +356,9 @@ public class J3dTools
 		appearance.setCapability( Appearance.ALLOW_TEXTURE_READ );
 		appearance.setMaterial( material );
 
-		if ( spec.rgb < 0 )
+		if ( spec.isTexture() )
 		{
-			final Texture texture = getTexture( spec.code );
+			final Texture texture = getTexture( spec );
 
 //			texture.setMinFilter( Texture.NICEST );
 //			texture.setMagFilter( Texture.NICEST );
@@ -385,23 +386,26 @@ public class J3dTools
 	private static final Canvas TEXTURE_OBSERVER = new Canvas();
 	private static final Map _textureCache = new HashMap();
 
-	public static Texture getTexture( final String code )
+	private static Texture getTexture( final TextureSpec code )
 	{
-		Texture texture = null;
+		Texture result = null;
 
-		if ( code != null )
+		if ( ( code != null ) && ( code.isTexture() ) )
 		{
-			texture = (Texture)_textureCache.get( code );
-			if ( texture == null )
+			result = (Texture)_textureCache.get( code.code );
+			if ( result == null )
 			{
-				final String filename = TextureSpec.textureFilenamePrefix + code + TextureSpec.textureFilenameSuffix;
-				texture = new TextureLoader( filename , TEXTURE_OBSERVER ).getTexture();
-				texture.setCapability( Texture.ALLOW_SIZE_READ );
-				_textureCache.put( code , texture );
+				final Image image = code.getTextureImage();
+				if ( image != null )
+				{
+					result = new TextureLoader( image , TEXTURE_OBSERVER ).getTexture();
+					result.setCapability( Texture.ALLOW_SIZE_READ );
+					_textureCache.put( code , result );
+				}
 			}
 		}
 
-		return texture;
+		return result;
 	}
 
 	/**
