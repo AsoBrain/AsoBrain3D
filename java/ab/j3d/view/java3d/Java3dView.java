@@ -25,13 +25,13 @@ import javax.media.j3d.Canvas3D;
 import javax.media.j3d.Group;
 import javax.media.j3d.TransformGroup;
 import javax.media.j3d.View;
+import javax.media.j3d.Locale;
 
+import com.sun.j3d.utils.universe.MultiTransformGroup;
 import com.sun.j3d.utils.universe.Viewer;
 import com.sun.j3d.utils.universe.ViewingPlatform;
 
 import ab.j3d.Matrix3D;
-import ab.j3d.view.DragEvent;
-import ab.j3d.view.DragListener;
 import ab.j3d.view.DragSupport;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModelView;
@@ -80,6 +80,8 @@ public final class Java3dView
 	{
 		super( id , viewControl );
 
+		final Locale locale = universe.getLocale();
+
 		final Canvas3D canvas3d = Java3dTools.createCanvas3D();
 
 		final ViewingPlatform viewingPlatform = new ViewingPlatform( 1 );
@@ -102,27 +104,14 @@ public final class Java3dView
 		// place view in universe
 		_universe = universe;
 		_universe.addViewer( viewer );
-		_universe.getLocale().addBranchGraph( viewingPlatform );
+		locale.addBranchGraph( viewingPlatform );
+
+		// update view to initial transform
+		update();
 
 		// Add DragSupport to handle drag events.
 		final DragSupport ds = new DragSupport( canvas3d , universe.getUnit() );
 		ds.addDragListener( viewControl );
-
-		// @FIXME TEMP UPDATE, how to be triggered???
-		ds.addDragListener( new DragListener(){
-			public void dragStart( final DragEvent event )
-			{
-			}
-
-			public void dragTo( final DragEvent event )
-			{
-				update();
-			}
-
-			public void dragStop( final DragEvent event )
-			{
-			}
-		});
 	}
 
 	/**
@@ -142,7 +131,10 @@ public final class Java3dView
 	 */
 	private TransformGroup getTransformGroup()
 	{
-		return _viewer.getViewingPlatform().getMultiTransformGroup().getTransformGroup( 0 );
+		final ViewingPlatform     vp  = _viewer.getViewingPlatform();
+		final MultiTransformGroup mtg = vp.getMultiTransformGroup();
+
+		return mtg.getTransformGroup( 0 );
 	}
 
 	/**
@@ -162,13 +154,16 @@ public final class Java3dView
 
 	public void update()
 	{
-		Matrix3D xform = getViewControl().getTransform();
+		final ViewControl    viewControl = getViewControl();
+		final TransformGroup tg          = getTransformGroup();
 
-		final float unit = _universe.getUnit();
+		Matrix3D xform = viewControl.getTransform();
+
+		final double unit = _universe.getUnit();
 		if ( ( unit > 0 ) && ( unit != 1 ) )
 			xform = xform.setTranslation( xform.xo * unit , xform.yo * unit , xform.zo * unit );
 
-		getTransformGroup().setTransform( Java3dTools.convertMatrix3DToTransform3D( xform.inverse() ) );
+		tg.setTransform( Java3dTools.convertMatrix3DToTransform3D( xform.inverse() ) );
 	}
 
 	/**
@@ -183,16 +178,21 @@ public final class Java3dView
 		switch ( policy )
 		{
 			case PERSPECTIVE :
-				_viewer.getView().setProjectionPolicy( View.PERSPECTIVE_PROJECTION );
+			{
+				final View view = _viewer.getView();
+				view.setProjectionPolicy( View.PERSPECTIVE_PROJECTION );
 				break;
+			}
 
 			case PARALLEL :
-				_viewer.getView().setProjectionPolicy( View.PARALLEL_PROJECTION );
+			{
+				final View view = _viewer.getView();
+				view.setProjectionPolicy( View.PARALLEL_PROJECTION );
 				break;
+			}
 
 			default :
 				throw new IllegalArgumentException( "Invalid projection policy: " + policy );
 		}
-
 	}
 }
