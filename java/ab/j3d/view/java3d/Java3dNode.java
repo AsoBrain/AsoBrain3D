@@ -20,11 +20,15 @@ import javax.media.j3d.Appearance;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.Group;
+import javax.media.j3d.Material;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Texture;
+import javax.media.j3d.TextureAttributes;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
+import javax.media.j3d.TransparencyAttributes;
 import javax.media.j3d.TriangleArray;
+import javax.vecmath.Color3f;
 import javax.vecmath.Point3f;
 import javax.vecmath.TexCoord2f;
 import javax.vecmath.Vector3f;
@@ -53,9 +57,9 @@ public class ABtoJ3DConvertor
 	private TreeNode _abRootNode;
 
 	/**
-	 * The j3d parent node to convert the Ab root node to.
+	 * The j3d root node to convert the Ab root node to.
 	 */
-	private TransformGroup _j3dParentNode;
+	private TransformGroup _j3dRootNode;
 
 	/**
 	 * Database access provider.
@@ -86,46 +90,59 @@ public class ABtoJ3DConvertor
 		_j3dModel    = J3DModel;
 
 		/*
-		 * Create the j3d-parent node and set the scaling transform.
+		 * Create the j3d-root node and set the scaling transform.
 		 * The scaling transfrom is needed, because j3d uses meters and
 		 * AB uses milimeters. A scalar of 0.001 transforms this correctly.
 		 */
-		_j3dParentNode = new TransformGroup();
+		_j3dRootNode = new TransformGroup();
 		final Transform3D scaleTransform = new Transform3D();
+		scaleTransform.rotX( Math.toRadians( -90 ) );
 		scaleTransform.setScale( 0.001 );
-		_j3dParentNode.setTransform( scaleTransform );
+		_j3dRootNode.setTransform( scaleTransform );
 
 		/*
 		 * Set capabilities.
 		 */
-		_j3dParentNode.setCapability( TransformGroup.ALLOW_TRANSFORM_WRITE );
-		_j3dParentNode.setCapability( TransformGroup.ALLOW_CHILDREN_WRITE  );
-		_j3dParentNode.setCapability( TransformGroup.ALLOW_CHILDREN_EXTEND );
+		_j3dRootNode.setCapability( TransformGroup.ALLOW_TRANSFORM_WRITE );
+		_j3dRootNode.setCapability( TransformGroup.ALLOW_CHILDREN_WRITE  );
+		_j3dRootNode.setCapability( TransformGroup.ALLOW_CHILDREN_READ   );
 
 		/*
-		 * Finally add the node to the j3d model and do an update.
+		 * Finally do an update to convert the ab root node to the j3d root node.
 		 */
-		_j3dModel.addNode( _j3dParentNode );
 		update();
 	}
 
 	/**
-	 * Convert the ab root node to the j3d parent node.
+	 * Convert the ab root node to the j3d root node.
 	 */
 	public void update()
 	{
-		_j3dParentNode.removeAllChildren();
-
 		final LeafCollection leafs = new LeafCollection();
 		_abRootNode.gatherLeafs( leafs , Object3D.class , Matrix3D.INIT , false );
 
+		/*
+		 * Nodes are not directly added to the j3d root node too avoid flickering.
+		 */
+		final BranchGroup group = new BranchGroup();
+		group.setCapability( BranchGroup.ALLOW_DETACH );
+
 		for ( int i = 0 ; i < leafs.size() ; i++ )
 		{
-			_j3dParentNode.addChild( convertObject3D( 1 , leafs.getMatrix( i ) , (Object3D)leafs.getNode( i ) ) );
+			group.addChild( convertObject3D( leafs.getMatrix( i ) , (Object3D)leafs.getNode( i ) ) );
+		}
+
+		if ( _j3dRootNode.numChildren() == 0 )
+		{
+			_j3dRootNode.addChild( group );
+		}
+		else
+		{
+			_j3dRootNode.setChild( group , 0 );
 		}
 	}
 
-	private Group convertObject3D( final float opacity , final Matrix3D xform , final Object3D obj )
+	private Group convertObject3D( final Matrix3D xform , final Object3D obj )
 	{
 		final int     faceCount     = obj.getFaceCount();
 		final float[] vertices      = obj.getVertices();
@@ -198,23 +215,35 @@ public class ABtoJ3DConvertor
 			}
 		}
 
-		final BranchGroup group = new BranchGroup();
-		group.setCapability( BranchGroup.ALLOW_DETACH );
+		return createShapes( appearances );
+	}
+
+	/**
+	 *
+	 *
+	 * @param   appearances
+	 *
+	 * @return
+	 */
+	private Group createShapes( final Map appearances )
+	{
+		final BranchGroup result = new BranchGroup();
+		result.setCapability( BranchGroup.ALLOW_DETACH );
 
 		for ( Iterator appearanceEnum = appearances.keySet().iterator() ; appearanceEnum.hasNext() ; )
 		{
 			final String     code       = (String)appearanceEnum.next();
-			final Appearance appearance = J3dTools.abToJ3D( _db.getTextureSpec( code ) , opacity );
+			final Appearance appearance = abToJ3D( _db.getTextureSpec( code ) , 1 );
 			final boolean    hasTexture = ( appearance.getTexture() != null );
 
 			final List j3dVertices;
 			final List j3dTextureCoords;
 			final List j3dFaceNormals;
 			{
-				final List[]   data = (List[])appearances.get( code );
-				j3dVertices      = data[ 0 ];
-				j3dTextureCoords = data[ 1 ];
-				j3dFaceNormals   = data[ 2 ];
+				final List[] data = (List[])appearances.get( code );
+				j3dVertices       = data[ 0 ];
+				j3dTextureCoords  = data[ 1 ];
+				j3dFaceNormals    = data[ 2 ];
 			}
 
 			final int what = GeometryArray.COORDINATES | GeometryArray.NORMALS | ( hasTexture ? GeometryArray.TEXTURE_COORDINATE_2 : 0 );
@@ -233,10 +262,62 @@ public class ABtoJ3DConvertor
 			geom.setNormals( 0 , normA );
 
 			final Shape3D shape = new Shape3D( geom , appearance );
-			group.addChild( shape );
+			result.addChild( shape );
 		}
 
-		return group;
+		return result;
+	}
+
+	/**
+	 * Translate <code>TextureSpec<code/> to Java3D <code>Appearance</code>
+	 * object.
+	 *
+	 * @param   spec    TextureSpec to translate.
+	 */
+	public Appearance abToJ3D( final TextureSpec spec , final float opacity )
+	{
+		final int   rgb = spec.getARGB();
+		final float r   = ( ( rgb >> 16 ) & 255 ) / 255.0f;
+		final float g   = ( ( rgb >>  8 ) & 255 ) / 255.0f;
+		final float b   = (   rgb         & 255 ) / 255.0f;
+		final float ar  = 1.5f * spec.ambientReflectivity;
+		final float dr  = 1.2f * spec.diffuseReflectivity;
+		final float sr  = 0.5f * spec.specularReflectivity;
+
+		final Material material = new Material();
+		material.setLightingEnable( true );
+		material.setAmbientColor  ( ar * r , ar * g , ar * b );
+		material.setEmissiveColor ( new Color3f( 0.0f , 0.0f , 0.0f ) );
+		material.setDiffuseColor  ( dr * r , dr * g , dr * b );
+		material.setSpecularColor ( new Color3f( sr , sr , sr ) );
+		material.setShininess     ( spec.specularReflectivity * spec.specularExponent );
+
+		final Appearance appearance = new Appearance();
+		appearance.setCapability( Appearance.ALLOW_TEXTURE_READ );
+		appearance.setMaterial( material );
+
+		if ( spec.isTexture() )
+		{
+			final Texture texture = getTexture( spec );
+			appearance.setTexture( texture );
+
+			final TextureAttributes textureAttributes = new TextureAttributes();
+			textureAttributes.setTextureMode( TextureAttributes.MODULATE );
+			final Transform3D t = new Transform3D();
+			t.setScale( spec.textureScale );
+			textureAttributes.setTextureTransform( t  );
+			appearance.setTextureAttributes( textureAttributes );
+		}
+
+		// Setup Transparency
+		final float combinedOpacity = opacity * spec.opacity;
+		if ( combinedOpacity >= 0.0f && combinedOpacity < 0.999f )
+		{
+			final TransparencyAttributes transparency = new TransparencyAttributes( TransparencyAttributes.NICEST , 1.0f - combinedOpacity );
+			appearance.setTransparencyAttributes( transparency );
+		}
+
+		return appearance;
 	}
 
 	private Texture getTexture( final TextureSpec code )
@@ -262,7 +343,7 @@ public class ABtoJ3DConvertor
 	}
 
 	/**
-	 * Set the transform for the j3d parent node.
+	 * Set the transform for the j3d root node.
 	 *
 	 * @param   transform   Transform to set.
 	 *                      Note: Because j3d uses meters and AB uses milimeters
@@ -270,7 +351,12 @@ public class ABtoJ3DConvertor
 	 */
 	public void setTransform( final Matrix3D transform )
 	{
-		_j3dParentNode.setTransform( J3dTools.abToJ3D( transform ) );
+		_j3dRootNode.setTransform( J3dTools.abToJ3D( transform ) );
+	}
+
+	public Group getJ3dRootNode()
+	{
+		return _j3dRootNode;
 	}
 
 	/**
