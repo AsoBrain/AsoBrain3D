@@ -19,12 +19,14 @@
  */
 package ab.j3d.view.java3d;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.util.HashMap;
 import java.util.Map;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.TransformGroup;
 
+import ab.j3d.TextureSpec;
 import ab.j3d.model.Node3D;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModel;
@@ -59,17 +61,18 @@ public final class Java3dModel
 	 */
 	public Java3dModel()
 	{
-		this( Java3dUniverse.MM );
+		this( Java3dUniverse.MM , new Color( 51 , 77 , 102 ) );
 	}
 
 	/**
 	 * Construct new Java 3D model.
 	 *
-	 * @param   unit    Unit scale factor (e.g. <code>Java3dUniverse.MM</code>).
+	 * @param   unit            Unit scale factor (e.g. <code>Java3dUniverse.MM</code>).
+	 * @param   background      Background color to use for 3D views.
 	 */
-	public Java3dModel( final double unit )
+	public Java3dModel( final double unit , final Color background )
 	{
-		this( new Java3dUniverse( unit ) );
+		this( new Java3dUniverse( unit , background ) );
 	}
 
 	/**
@@ -83,7 +86,7 @@ public final class Java3dModel
 		_contentGraph = Java3dTools.createDynamicScene( _universe.getContent() );
 	}
 
-	public void createNode( final Object id , final Node3D node3D )
+	public void createNode( final Object id , final Node3D node3D , final TextureSpec textureOverride , final float opacity )
 	{
 		if ( id == null )
 			throw new NullPointerException( "id" );
@@ -104,7 +107,7 @@ public final class Java3dModel
 			nodeTransform.setCapability( TransformGroup.ALLOW_TRANSFORM_WRITE );
 			nodeRoot.addChild( nodeTransform );
 
-			addNode( new Java3dNode( nodeTransform , id , node3D ) );
+			addNode( new Java3dNode( nodeTransform , id , node3D , textureOverride , opacity ) );
 
 			_contentGraph.addChild( nodeRoot );
 		}
