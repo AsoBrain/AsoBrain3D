@@ -33,7 +33,6 @@ import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3f;
 
-import com.sun.j3d.utils.geometry.ColorCube;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 import com.sun.j3d.utils.universe.Viewer;
 import com.sun.j3d.utils.universe.ViewingPlatform;
@@ -256,7 +255,7 @@ public final class Java3dUniverse
 
 //		transformGroup.addChild( new ColorCube( 1 ) );
 //		scene.addChild( transformGroup );
-		scene.addChild( new ColorCube( 1 ) );
+//		scene.addChild( new ColorCube( 1 ) );
 
 		// add scene to scene graph
 
