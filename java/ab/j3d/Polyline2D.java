@@ -3,15 +3,16 @@ package backoffice;
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2000,2002 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2003 - All Rights Reserved
  *
  * This software may not be used, copyied, modified, or distributed in any
  * form without express permission from Numdata BV. Please contact Numdata BV
  * for license information.
  */
-import java.util.Vector;
-import common.model.Matrix3D;
 import java.awt.geom.Rectangle2D;
+import java.util.Vector;
+
+import common.model.Matrix3D;
 import common.renderer.Object3D;
 
 /**
@@ -21,17 +22,79 @@ import common.renderer.Object3D;
  * @author	Sjoerd Bouwman
  * @version $Revision$ ($Date$, $Author$)
  */
-public class Polyline2D
+public final class Polyline2D
 	implements Cloneable
 {
+	/**
+	 * Type of poyline: unknown.
+	 *
+	 * This special value is used to indicate that the polyline type was not
+	 * yet determined.
+	 *
+	 * @see	#getType
+	 */
 	public final static int UNKNOWN = -1;
-	public final static int VOID    = 0;
-	public final static int POINT   = 1;
-	public final static int LINE    = 2;
-	public final static int PATH    = 3;
+
+	/**
+	 * Type of poyline: void.
+	 *
+	 * Polyline without any points.
+	 *
+	 * @see	#getType
+	 */
+	public final static int VOID = 0;
+
+	/**
+	 * Type of poyline: point.
+	 *
+	 * Polyline with single point.
+	 *
+	 * @see	#getType
+	 */
+	public final static int POINT = 1;
+
+	/**
+	 * Type of poyline: line.
+	 *
+	 * Polyline with one linear segment between two points.
+	 *
+	 * @see	#PATH
+	 * @see	#getType
+	 */
+	public final static int LINE = 2;
+
+	/**
+	 * Type of poyline: path.
+	 *
+	 * Open polyline with at least two points not constituting a line.
+	 *
+	 * @see	#LINE
+	 * @see	#getType
+	 */
+	public final static int PATH = 3;
+
+	/**
+	 * Type of poyline: convex.
+	 *
+	 * Closed polyline with only convex angles (any straight line of infinite
+	 * length that intersects the polyline will intersect it twice and twice
+	 * only).
+	 *
+	 * @see	#CONCAVE
+	 * @see	#getType
+	 */
 	public final static int CONVEX  = 4;
+
+	/**
+	 * Type of poyline: concave.
+	 *
+	 * Any closed polyline that is not convex.
+	 *
+	 * @see	#CONVEX
+	 * @see	#getType
+	 */
 	public final static int CONCAVE = 5;
-	
+
 	/**
 	 * Collection of control points that describe the polyline.
 	 */
@@ -48,6 +111,12 @@ public class Polyline2D
 	 * are added/removed.
 	 */
 	private Rectangle2D.Float _boundsCache = null;
+
+	/**
+	 * Cache for enclosed rectangel of a convex shape.
+	 *
+	 * @see	#getEnclosedRectangle
+	 */
 	private Rectangle2D.Float _encloseCache = null;
 
 	/**
@@ -61,50 +130,69 @@ public class Polyline2D
 	/**
 	 * Clone constructor.
 	 *
-	 * @return	A clone of this instance.
+	 * @param	original	Polyline to clone.
 	 */
-	public Polyline2D( Polyline2D original )
+	public Polyline2D( final Polyline2D original )
 	{
 		_points = new Vector( original._points );
 	}
 
 	/**
 	 * Constructor for polyline for rectangular shape based at origin.
+	 * <P>
+	 * If <CODE>dx != 0</CODE> and <CODE>dy != 0</CODE>, then the result will be the rectanle:
+	 * <PRE>
+	 *   (0,0) -> (dx,0) -> (dx,dy) -> (0,dy) -> (0,0)
+	 * </PRE>
+	 * <P>
+	 * If <CODE>dx != 0</CODE> and <CODE>dy = 0</CODE>; or
+	 * if <CODE>dx = 0</CODE> and <CODE>dy != 0</CODE>, then the result will be the line:
+	 * <PRE>
+	 *   (0,0) -> (dx,dy)
+	 * </PRE>
+	 * <P>
+	 * If <CODE>dy = 0</CODE> and <CODE>dy = 0</CODE>, then the result will be the point:
+	 * <PRE>
+	 *   (0,0)
+	 * </PRE>
 	 *
 	 * @param	dx	Delta-X (may be 0).
 	 * @param	dy	Delta-Y (may be 0).
 	 */
-	public Polyline2D( float dx , float dy )
+	public Polyline2D( final float dx , final float dy )
 	{
-		this( 0 , 0 , dx , dy );
+		_points = new Vector();
+
+		append( 0 , 0 );
+		if ( dx != 0 )
+		{
+			append( dy , 0 );
+			if ( dy != 0 )
+			{
+				append( dx , dy );
+				append( 0 , dy );
+				close();
+			}
+		}
+		else if ( dy != 0 )
+		{
+			append( 0 , dy );
+		}
+
 	}
 
 	/**
-	 * Constructor for polyline for rectangular shape.
+	 * Adjust the position of a segment perdendular to the segment direction.
+	 * This is used to reduce/enlartge the polyline at one of its segements.
 	 *
-	 * @param	x1	Lower-left X-coordinate.
-	 * @param	y1	Lower-left Y-coordinate.
-	 * @param	x2	Upper-right X-coordinate.
-	 * @param	y2	Upper-right X-coordinate.
+	 * @param	startIndex		Start index of segment in polyline.
+	 * @param	adjustment		Position adjustment of segment.
+	 *
+	 * @return	<CODE>true</CODE> if the adjustment was succesful;
+	 *			<CODE>false</CODE> if the adjustment failed (it may fail when
+	 * 			the adjustment changes the structure of the polyline, e.g.
+	 *			number of segments).
 	 */
-	public Polyline2D( final float x1 , final float y1 , final float x2 , final float y2 )
-	{
-		this();
-		append( x1 , y1 );
-		if ( x1 != x2 ) append( x2 , y1 );
-		if ( x1 != x2 && y1 != y2 ) append( x2 , y2 );
-		if ( y1 != y2 ) append( x1 , y2 );
-		close();
-	}
-
-	public void adjustAllSegments( final float adjustment )
-	{
-		final int maxSegment = getPointCount() - 1;
-		
-		for ( int i = 0 ; i < maxSegment ; i++ )
-			adjustSegment( i , adjustment );
-	}
-
 	public boolean adjustSegment( final int startIndex , final float adjustment)
 	{
 		/*
@@ -114,14 +202,14 @@ public class Polyline2D
 			return true;
 
 		final boolean isClosed = isClosed();
-		
+
 		/*
 		 * Determin prev/start/end/next index (ignore bad indices);
 		 */
 		final int maxIndex = getPointCount() - 1;
 		if ( startIndex < 0 || startIndex >= maxIndex )
 			return false;
-		
+
 		final int endIndex = startIndex + 1;
 
 		final PolyPoint2D prev  = ( startIndex > 0 ) ? getPoint( startIndex - 1 ) : isClosed ? getPoint( maxIndex - 1 ) : null;
@@ -138,9 +226,9 @@ public class Polyline2D
 		if ( l < 0.001f )
 			return false;
 
-		float baseDirX = x / l;
-		float baseDirY = y / l;
-		
+		final float baseDirX = x / l;
+		final float baseDirY = y / l;
+
 		/*
 		 * Adjust start point using the previous control point. Assume 90 degree angle if no such point exists.
 		 */
@@ -153,19 +241,19 @@ public class Polyline2D
 			if ( l < 0.001f )
 				return false;
 
-			float prevDirX = x / l;
-			float prevDirY = y / l;
+			final float prevDirX = x / l;
+			final float prevDirY = y / l;
 
-			float cos = prevDirX * baseDirX + prevDirY * baseDirY;
+			final float cos = prevDirX * baseDirX + prevDirY * baseDirY;
 			if ( cos < -0.999f || cos > 0.999f )
 				return false;
-				
-			float sin = 1 - ( cos * cos );
+
+			final float sin = 1 - ( cos * cos );
 			float hyp = (float)Math.sqrt( ( adjustment * adjustment ) / sin  );
 			if ( hyp > l )
 				return false;
-			
-			float f = prevDirX * ( baseDirY + prevDirY ) - prevDirY * ( baseDirX + prevDirX );
+
+			final float f = prevDirX * ( baseDirY + prevDirY ) - prevDirY * ( baseDirX + prevDirX );
 			if ( ( f < -0.001 ) ^ ( adjustment > 0 ) )
 				hyp = -hyp;
 
@@ -180,7 +268,7 @@ public class Polyline2D
 		 * Adjust end point using the next control point. Assume 90 degree angle if no such point exists.
 		 */
 		final PolyPoint2D newEnd;
-		
+
 		if ( next != null )
 		{
 			x = next.x - end.x;
@@ -189,19 +277,19 @@ public class Polyline2D
 			if ( l < 0.001f )
 				return false;
 
-			float nextDirX = x / l;
-			float nextDirY = y / l;
-			
-			float cos = nextDirX * baseDirX + nextDirY * baseDirY;
+			final float nextDirX = x / l;
+			final float nextDirY = y / l;
+
+			final float cos = nextDirX * baseDirX + nextDirY * baseDirY;
 			if ( cos < -0.999f || cos > 0.999f )
 				return false;
-			
-			float sin = 1 - ( cos * cos );
+
+			final float sin = 1 - ( cos * cos );
 			float hyp = (float)Math.sqrt( ( adjustment * adjustment ) / sin  );
 			if ( hyp > l )
 				return false;
 
-			float f = nextDirX * ( baseDirY + nextDirY ) - nextDirY * ( baseDirX + nextDirX );
+			final float f = nextDirX * ( baseDirY + nextDirY ) - nextDirY * ( baseDirX + nextDirX );
 			if ( ( f < -0.001 ) ^ ( adjustment > 0 ) )
 				hyp = -hyp;
 
@@ -224,16 +312,16 @@ public class Polyline2D
 
 		/*
 		 * If the polyline was closed, make sure the first and last control point are synchronized.
-		 */	
+		 */
 		if ( isClosed )
 		{
 			if ( startIndex == 0 )
 				_points.setElementAt( newStart , maxIndex );
-				
+
 			if ( endIndex == maxIndex )
 				_points.setElementAt( newEnd , 0 );
 		}
-		
+
 		return true;
 	}
 
@@ -242,7 +330,7 @@ public class Polyline2D
 	 *
 	 * @param	point	Control point to append to polyline.
 	 */
-	public Polyline2D append( PolyPoint2D point )
+	public void append( final PolyPoint2D point )
 	{
 		if ( point == null )
 			throw new NullPointerException( "Cannot add a null point to a polyline" );
@@ -250,7 +338,6 @@ public class Polyline2D
 		_typeCache = UNKNOWN;
 		_boundsCache = null;
 		_encloseCache = null;
-		return this;
 	}
 
 	/**
@@ -259,13 +346,13 @@ public class Polyline2D
 	 * @param	x	X coordinate of segment end point.
 	 * @param	y	Y coordinate of segment end point.
 	 */
-	public Polyline2D append( float x , float y )
+	public void append( final float x , final float y )
 	{
-		return append( new PolyPoint2D( x , y ) );
+		append( new PolyPoint2D( x , y ) );
 	}
 
 	/**
-	 * Creates and returns a copy of this object.  The precise meaning 
+	 * Creates and returns a copy of this object.  The precise meaning
 	 * of "copy" may depend on the class of the object.
 	 *
 	 * @return	A clone of this instance.
@@ -283,8 +370,8 @@ public class Polyline2D
 		if ( getPointCount() < 2 )
 			return;
 
-		PolyPoint2D first = getPoint( 0 );
-		PolyPoint2D last  = getPoint( getPointCount() - 1 );
+		final PolyPoint2D first = getPoint( 0 );
+		final PolyPoint2D last  = getPoint( getPointCount() - 1 );
 
 		if ( first == last || ( first.x == last.x && first.y == last.y ) )
 			return;
@@ -294,20 +381,6 @@ public class Polyline2D
 		_typeCache = UNKNOWN;
 		_boundsCache = null;
 		_encloseCache = null;
-	}
-
-	/**
-	 * Test if the specified point is located within the area defined by this
-	 * polyline.
-	 *
-	 * @param	x	x-position of point.
-	 * @param	y	y-position of point.
-	 *
-	 * @return	false.
-	 */
-	public boolean contains( final float x , float y )
-	{
-		return false;
 	}
 
 	/**
@@ -331,7 +404,7 @@ public class Polyline2D
 		 */
 		if ( index < 0 || index >= getPointCount() - 1 )
 			return null;
-		
+
 		final PolyPoint2D p1 = getPoint( index );
 		final PolyPoint2D p2 = getPoint( index + 1 );
 
@@ -344,7 +417,7 @@ public class Polyline2D
 		 */
 		float dirX = p2.x - p1.x;
 		float dirY = p2.y - p1.y;
-		float l = (float)Math.sqrt( dirX * dirX + dirY * dirY );
+		final float l = (float)Math.sqrt( dirX * dirX + dirY * dirY );
 		if ( l <= 0d ) return null;
 		dirX /= l;
 		dirY /= l;
@@ -376,8 +449,6 @@ public class Polyline2D
 			float      x2 = Float.MIN_VALUE;
 			float      y2 = Float.MIN_VALUE;
 			PolyPoint2D p;
-			float      x;
-			float      y;
 			int         i  = getPointCount();
 
 			if ( i == 0 )
@@ -386,17 +457,17 @@ public class Polyline2D
 			while ( --i >= 0 )
 			{
 				p = getPoint( i );
-				
+
 				if ( p.x < x1 ) x1 = p.x;
 				if ( p.x > x2 ) x2 = p.x;
 				if ( p.y < y1 ) y1 = p.y;
 				if ( p.y > y2 ) y2 = p.y;
 			}
 
-		
+
 			_boundsCache = new Rectangle2D.Float( x1 , y1 , x2 - x1 , y2 - y1 );
 		}
-		
+
 		return _boundsCache;
 	}
 
@@ -425,23 +496,23 @@ public class Polyline2D
 			/*
 			 * Get bounds.
 			 */
-			Rectangle2D.Float bounds = getBounds();
+			final Rectangle2D.Float bounds = getBounds();
 			if ( bounds == null )
 				return null;
 
 			/*
 			 * Define starting points.
 			 */
-			float      x1 = bounds.x;
-			float      y1 = bounds.y;
-			float      x2 = x1 + bounds.width;
-			float      y2 = y1 + bounds.height;
+			float x1 = bounds.x;
+			float y1 = bounds.y;
+			float x2 = x1 + bounds.width;
+			float y2 = y1 + bounds.height;
 
 			/*
 			 * Amount to move when line is not in shape.
 			 */
-			float		horizontalStep = (x2 - x1) / 30;
-			float		verticalStep = (y2 - y1) / 30;
+			final float	horizontalStep = (x2 - x1) / 30;
+			final float	verticalStep = (y2 - y1) / 30;
 
 			/*
 			 * The four outer points and wether they are intersecting with convex.
@@ -449,9 +520,9 @@ public class Polyline2D
 			PolyPoint2D p1 = null,p2 = null,p3 = null,p4 = null;
 			boolean p1i = false, p2i = false, p3i = false, p4i = false;
 
-			/* 
+			/*
 			 * Enclosed shape is found when all points lay within convex.
-			 */	
+			 */
 			while ( !( p1i && p2i && p3i && p4i) )
 			{
 				/*
@@ -469,8 +540,8 @@ public class Polyline2D
 					p1 = new PolyPoint2D( x1 , y1 );
 					p1i = isIntersectingConvex_Point( this , p1 );
 				}
-				
-				if ( p2 == null ) 
+
+				if ( p2 == null )
 				{
 					p2 = new PolyPoint2D( x1 , y2 );
 					p2i = isIntersectingConvex_Point( this , p2 );
@@ -481,8 +552,8 @@ public class Polyline2D
 					p3 = new PolyPoint2D( x2 , y1 );
 					p3i = isIntersectingConvex_Point( this , p3 );
 				}
-					
-				if ( p4 == null ) 
+
+				if ( p4 == null )
 				{
 					p4 = new PolyPoint2D( x2 , y2 );
 					p4i = isIntersectingConvex_Point( this , p4 );
@@ -492,7 +563,7 @@ public class Polyline2D
 				 * If one of the points on a side line does not intersect,
 				 * the line does not intersect. If the line does not intersect,
 				 * move it inwards.
-				 */	
+				 */
 				if ( !(p1i && p2i) )
 				{	x1 += horizontalStep; p1 = null; p2 = null; }
 				if ( !(p1i && p3i) )
@@ -511,7 +582,7 @@ public class Polyline2D
 
 	//DIT HIER IS FOUT, MOET NOG EEN BETERE OPLOSSING VINDEN
 	//\/   \/   \/   \/   \/   \/   \/   \/   \/   \/   \/
-	
+
 	/**
 	 * Find rectangular shape enclosed by the convex shape defined by this polyline.
 	 *
@@ -524,10 +595,10 @@ public class Polyline2D
 	 */
 	public Rectangle2D getEnclosedRectangleOLD()
 	{
-		Rectangle2D.Float bounds = getBounds();
+		final Rectangle2D.Float bounds = getBounds();
 		if ( bounds == null )
 			return null;
-		
+
 		final float boundsX1 = bounds.x;
 		final float boundsY1 = bounds.y;
 		final float boundsX2 = boundsX1 + bounds.width;
@@ -566,7 +637,7 @@ public class Polyline2D
 				if ( y < y2 ) y2 = y;
 			}
 		}
-		
+
 
 		return new Rectangle2D.Float( x1 , y1 , x2 - x1 , y2 - y1 );
 	}
@@ -596,11 +667,11 @@ public class Polyline2D
 		if ( other == null ) return null;
 		if ( other == this ) return this;
 
-		int myType = getType();
+		final int myType = getType();
 		if ( myType == VOID )
 			return null;
 
-		int otherType = other.getType();
+		final int otherType = other.getType();
 		if ( otherType == VOID )
 			return null;
 
@@ -627,7 +698,7 @@ public class Polyline2D
 			case LINE   <<5| CONVEX : return getIntersectionConvex_Line( other , this );
 			case PATH   <<5| LINE   : return getIntersectionPath_Line( this , other.getPoint( 0 ) , other.getPoint( 1 ) );
 			case CONVEX <<5| LINE   : return getIntersectionConvex_Line( this , other );
-			
+
 			/* convex vs. ??? & ??? vs. convex */
 			case CONVEX <<5| CONVEX : return getIntersectionConvex_Convex( this , other );
 			case CONVEX <<5| PATH   : return getIntersectionConvex_Path( this , other );
@@ -644,9 +715,9 @@ public class Polyline2D
 	 * Gets the intersecting area of two convex Polyline2D's.
 	 *
 	 * Figure out intersection between two convex 2d shapes... ah well..
-	 * It seems like a lot of code, but if the shapes have no 
+	 * It seems like a lot of code, but if the shapes have no
 	 * intersection, it is almost as fast as isIntersectingConvex_Convex().
-	 * 
+	 *
 	 * This consists of two stages:
 	 *
 	 * 1) Find all intersecting line segments
@@ -656,19 +727,19 @@ public class Polyline2D
 	 *
 	 *		Walk thrue both polys to find the segments that intersect with the other.
 	 * 		First we have to know if we start inside or outside the other poly.
-	 * 		Now find all intersecting points of one segment of the current poly with 
+	 * 		Now find all intersecting points of one segment of the current poly with
 	 * 		all segments of the other poly (for two convex polys, this can be 0, 1 or 2 points):
-	 * 
+	 *
 	 *		- no intersections ? inside  ? stay inside, add segment.
 	 *							 outside ? stay outside, do nothing.
 	 *      - one intersection ? inside  ? go outside, add segment( head , intersection ).
-	 *							 outside ? go inside, add segment( tail , intersection ). 
+	 *							 outside ? go inside, add segment( tail , intersection ).
 	 *		- two intersections? inside  ? error, from the inside you can never have two intersections.
 	 *							 outside ? stay outside, add segment( intersection1 , intersection2 ).
 	 *
 	 *		Optimisations after walking thrue the first poly:
 	 *
-	 *		1) If we started inside and we stayed inside the whole time, 
+	 *		1) If we started inside and we stayed inside the whole time,
 	 *		   intersection must be convex1 itself.
 	 *		2) If we stayed outside the whole time and a point of convex2
 	 *		   is inside of convex1, intersection is convex2 itself.
@@ -684,7 +755,7 @@ public class Polyline2D
 	 *		The head of the next segment must be equal to the tail
 	 *		of the last one. If so, add the tail of the segment to
 	 *		the polyline.
-	 * 
+	 *
 	 * @param	convex1		a polyline that is guaranteed convex.
 	 * @param	convex2		an other polyline that is convex.
 	 *
@@ -692,44 +763,42 @@ public class Polyline2D
 	 */
 	protected static Polyline2D getIntersectionConvex_Convex( final Polyline2D convex1 , final Polyline2D convex2 )
 	{
-		int INSIDE  = -1;
-		int UNKNOWN = 0;
-		int OUTSIDE = 1;
-		
+		final int INSIDE  = -1;
+		final int UNKNOWN = 0;
+		final int OUTSIDE = 1;
+
 		/*
 		 * This is where we gather the intersecting segments.
 		 * After this is done we only have to sort them and
 		 * create a new polyline.
 		 */
-		PolyPoint2D[] collect1 = new PolyPoint2D[ 2 * convex1.getPointCount() ];
-		PolyPoint2D[] collect2 = new PolyPoint2D[ 2 * convex2.getPointCount() ];
+		final PolyPoint2D[] collect1 = new PolyPoint2D[ 2 * convex1.getPointCount() ];
+		final PolyPoint2D[] collect2 = new PolyPoint2D[ 2 * convex2.getPointCount() ];
 		int collect1Pos = 0;
 		int collect2Pos = 0;
 
 		/*
 		 * Helpers
 		 */
-		boolean corner = false; // intersection is other polys cornerpoint.
+		boolean corner; // intersection is other polys cornerpoint.
 		boolean stayedInside = false;
 		PolyPoint2D this1, this2, other1, other2, sect1, sect2;
 		PolyPoint2D[] is = null; // possible intersections.
-		PolyPoint2D[] lineSect = null; // possible line-intersection
 		int i,j,pos1,pos2;
 
-		/* 
+		/*
 		 * First walk thrue convex1, then thrue convex2 to get all intersection segments.
 		 */
 		for ( int x = 0 ; x < 2 ; x++ )	// loop twice
 		{
 			//System.out.println( "------- X = " + x );
-			Polyline2D poly1 = x == 0 ? convex1 : convex2;
-			Polyline2D poly2 = x == 1 ? convex1 : convex2;
+			final Polyline2D poly1 = ( x == 0 ) ? convex1 : convex2;
+			final Polyline2D poly2 = ( x == 1 ) ? convex1 : convex2;
 
 			/*
 			 * Gather all line peaces of convex1 that intersect with convex2.
 			 */
 			i = poly1.getPointCount();
-			j = 0;
 
 			/*
 			 * l1/l2 = last point on convex1/2
@@ -742,11 +811,10 @@ public class Polyline2D
 			 * First we want to know if the startpoint is on the other convex.
 			 */
 			pos1 = isIntersectingConvex_Point( poly2 , this1 ) ? INSIDE : OUTSIDE;
-			pos2 = UNKNOWN;
 
 			/*
 			 * In the second pass, if the first pass did not find a segment,
-			 * and a point of convex2 lies outside convex1 (inside == false), 
+			 * and a point of convex2 lies outside convex1 (inside == false),
 			 * they don't intersect. If it lies inside convex1 (inside = true),
 			 * then the intersection is convex1.
 			 */
@@ -755,12 +823,12 @@ public class Polyline2D
 			if ( x == 1 && stayedInside )
 				return poly2;
 			stayedInside = pos1 == INSIDE;
-				
+
 			while( --i >= 0 )	// loop convex1.polycount (2 * 2 * polycount max)
 			{
 				this2 = poly1.getPoint( i );
 				pos2 = UNKNOWN;
-				
+
 				// intersection is other polys cornerpoint.
 				corner = false;
 
@@ -779,7 +847,7 @@ public class Polyline2D
 
 					//System.out.println( "Shape 2 : " + other1 + " , " + other2 );
 
-					is = getIntersectionLine_Line( this1.x , this1.y , this2.x , this2.y , other1.x , other1.y , other2.x , other2.y , is );				
+					is = getIntersectionLine_Line( this1.x , this1.y , this2.x , this2.y , other1.x , other1.y , other2.x , other2.y , is );
 
 					if ( is != null ) // found an intersection
 					{
@@ -794,14 +862,14 @@ public class Polyline2D
 						{
 							//if ( is[1] != null )
 								//throw new ProductionModelException( ProductionModelException.INTERNAL_ERROR , "Don't know how to handle" );
-							if ( is[1] == null )								
-	
+							if ( is[1] == null )
+
 							sect2 = is[0];
 						}
 
 						if ( other1.almostEquals( is[0] ) )
 							corner = true;
-							
+
 						if ( sect1 != null && sect2 != null )
 							break;
 					}
@@ -819,13 +887,13 @@ public class Polyline2D
 				{
 					if ( this1.getLength( sect2 ) < this1.getLength( sect1 ) )
 					{
-						PolyPoint2D temp = sect1;
+						final PolyPoint2D temp = sect1;
 						sect1 = sect2; sect2 = temp;
 					}
 				}
 
 				//System.out.println( "Intersections : " + sect1 + " , " + sect2 );
-					
+
 				/*
 				 * Calculate if 'current point' (c1) is inside or outside.
 				 */
@@ -887,7 +955,7 @@ public class Polyline2D
 					}
 					else // 2 intersections
 					{
-						// second intersectionpoint is not c1 
+						// second intersectionpoint is not c1
 						if ( pos2 == INSIDE && !this2.almostEquals( sect2 ) )
 							throw new RuntimeException( "Linesegment cannot have two intersections and end in convex shape" );
 
@@ -916,58 +984,64 @@ public class Polyline2D
 
 				if ( pos2 == OUTSIDE || sect2 != null )
 					stayedInside = false;
-				
+
 				/*
 				 * Shift
-				 */	
+				 */
 				this1 = this2;
 				pos1 = pos2;
 			}
-		}		
+		}
 
-		int collect1Count = collect1Pos / 2;
-		int collect2Count = collect2Pos / 2;
+		final int collect1Count = collect1Pos / 2;
+		final int collect2Count = collect2Pos / 2;
 
 		//System.out.println( "Collect1 : " );
 		//for ( i = 0 ; i < collect1Count ; i++ )
 			//System.out.println( "Segment : [" + collect1[ i * 2 ] + " , " + collect1[ i * 2 + 1 ] + "]" );
-			
+
 		//System.out.println( "Collect2 : " );
 		//for ( i = 0 ; i < collect2Count ; i++ )
 			//System.out.println( "Segment : [" + collect2[ i * 2 ] + " , " + collect2[ i * 2 + 1 ] + "]" );
-			
+
 		/*
 		 * Now we have all the segments.
 		 * place the segments in order, then we have the intersection.
 		 * Walk true all segments to position them head to tail.
 		 */
-		Polyline2D result = new Polyline2D();
+		final Polyline2D result = new Polyline2D();
 
 		if ( collect1Count < 2 && collect2Count < 2 )
 		{
 			result.append( collect1[ 0 ] );
 			if ( collect1[1] != null )
 				result.append( collect1[1] );
-				
-			return result;	
+
+			return result;
 		}
 
 		if ( true )
 		{
-			Vector segments = new Vector( collect1Count + collect2Count );
+			final Vector segments = new Vector( collect1Count + collect2Count );
 			for ( i = 0 ; i < collect1Count ; i++ )
 			{
-				Polyline2D add = new Polyline2D().append( collect1[i*2] );
-				if ( collect1[i*2+1] != null )
-					add.append( collect1[i*2+1] );
+				final Polyline2D add = new Polyline2D();
+				add.append( collect1[ i * 2 ] );
+
+				if ( collect1[ i * 2 + 1 ] != null )
+					add.append( collect1[ i * 2 + 1 ] );
+
 				segments.addElement( add );
 			}
-				
+
 			for ( i = 0 ; i < collect2Count ; i++ )
 			{
-				Polyline2D add = new Polyline2D().append( collect2[i*2] );
-				if ( collect2[i*2+1] != null )
-					add.append( collect2[i*2+1] );
+				final Polyline2D add = new Polyline2D();
+				add.append( collect2[ i * 2 ] );
+
+				if ( collect2[ i * 2 + 1 ] != null )
+					add.append( collect2[ i * 2 + 1 ] );
+
 				segments.addElement( add );
 			}
 
@@ -979,7 +1053,7 @@ public class Polyline2D
 		 //* The following method works fine for collects that only
 		 //* jump to the other collect once....(otherwise it forgets segments)
 		 //*/
-		
+
 		///*
 		 //* 1) Start walking thrue collect1's segments until we cannot match
 		 //* 	  next segment with last.
@@ -1023,10 +1097,10 @@ public class Polyline2D
 
 			////System.out.println( "Jump 2)" );
 			////System.out.println( "Last = " + lastTail );
-			///* 
+			///*
 			 //* Otherwise jump to collect2 and back.
 			 //*/
-			 
+
 			///*
 			 //* If we dont match and we already visited col2 -> error
 			 //*/
@@ -1034,7 +1108,7 @@ public class Polyline2D
 				//throw new ProductionModelException( ProductionModelException.INTERNAL_ERROR ,
 					//"Segments found on convex1 are not in order" );
 			//visitedCollect2 = true;
-					
+
 			///*
 			 //* Find entrypoint in collect2
 			 //*/
@@ -1082,7 +1156,7 @@ public class Polyline2D
 
 				//head = collect2[ col2pos*2 + (col2direction==1?0:1) ];
 				//tail = collect2[ col2pos*2 + (col2direction==1?1:0) ];
-				
+
 				//if ( head != null && tail != null && head.almostEquals( lastTail ) && !tail.almostEquals( lastHead ) )
 				//{
 					////System.out.println( "2) Match : " + tail );
@@ -1100,8 +1174,8 @@ public class Polyline2D
 
 			////System.out.println( "Jump 1)" );
 		//}
-		 
-		//return result; 
+
+		//return result;
 	}
 
 	/**
@@ -1114,10 +1188,10 @@ public class Polyline2D
 	 */
 	protected static Polyline2D getIntersectionConvex_Line( final Polyline2D convex , final Polyline2D line )
 	{
-		PolyPoint2D p1 = line.getPoint( 0 );
-		PolyPoint2D p2 = line.getPoint( 1 );
-		boolean p1Inside = isIntersectingConvex_Point( convex , p1 );
-		boolean p2Inside = isIntersectingConvex_Point( convex , p2 );
+		final PolyPoint2D p1 = line.getPoint( 0 );
+		final PolyPoint2D p2 = line.getPoint( 1 );
+		final boolean p1Inside = isIntersectingConvex_Point( convex , p1 );
+		final boolean p2Inside = isIntersectingConvex_Point( convex , p2 );
 
 		/*
 		 * If both points are inside, intersection is line.
@@ -1128,9 +1202,9 @@ public class Polyline2D
 		/*
 		 * All found intersection points.
 		 */
-		PolyPoint2D[] iPoints = new PolyPoint2D[ convex.getPointCount() ];
+		final PolyPoint2D[] iPoints = new PolyPoint2D[ convex.getPointCount() ];
 		int iPointCount = 0;
-		
+
 		PolyPoint2D[] sect = new PolyPoint2D[2];
 
 		int i = convex.getPointCount();
@@ -1155,7 +1229,7 @@ public class Polyline2D
 				if ( sect[1] != null )
 					iPoints[ iPointCount++ ] = sect[1];
 			}
-			
+
 			p3 = p4;
 		}
 
@@ -1165,20 +1239,27 @@ public class Polyline2D
 		if ( iPointCount == 0 )
 			return null;
 
-		Polyline2D result = new Polyline2D();
-		
+		final Polyline2D result = new Polyline2D();
+
 		/*
 		 * Point intersection.
 		 */
 		if ( iPointCount == 1 || ( iPointCount == 2 && iPoints[0].almostEquals( iPoints[1] ) ) )
-			return result.append( iPoints[0] );
+		{
+			result.append( iPoints[0] );
+			return result;
+		}
 
 		/*
 		 * 2 intersections, defenately line between two points.
 		 */
 		if ( iPointCount == 2 )
-			return result.append( iPoints[0] ).append( iPoints[1] );		
-			
+		{
+			result.append( iPoints[0] );
+			result.append( iPoints[1] );
+			return result;
+		}
+
 		/*
 		 * Usually we don't get this far in this method, but there are
 		 * cases where multiple points of the convex shape lay on the
@@ -1188,16 +1269,17 @@ public class Polyline2D
 		 * to p1 and the point closest to p2.
 		 * (There is also a case, where all points are equal. Return one point only).
 		 */
-		PolyPoint2D p1Close = iPoints[0];
-		float      p1CloseLength = p1.getLength( p1Close );
-		PolyPoint2D p2Close = iPoints[0];
+		PolyPoint2D p1Close       = iPoints[0];
+		float       p1CloseLength = p1.getLength( p1Close );
+		PolyPoint2D p2Close       = iPoints[0];
 		float		p2CloseLength = p2.getLength( p1Close );
 		PolyPoint2D p;
+
 		for ( i = 1 ; i < iPointCount ; i++ )
 		{
-			p = iPoints[i];			
-			float p1Length = p.getLength( p1 );
-			float p2Length = p.getLength( p2 );
+			p = iPoints[i];
+			final float p1Length = p.getLength( p1 );
+			final float p2Length = p.getLength( p2 );
 			if ( p1Length < p1CloseLength )
 			{
 				p1Close = p;
@@ -1211,9 +1293,14 @@ public class Polyline2D
 		}
 
 		if ( p1Close.almostEquals( p2Close ) )
-			return result.append( p1Close );
+		{
+			result.append( p1Close );
+			return result;
+		}
 
-		return result.append( p1Close ).append( p2Close );	
+		result.append( p1Close );
+		result.append( p2Close );
+		return result;
 	}
 
 	/**
@@ -1222,7 +1309,7 @@ public class Polyline2D
 	 * Figure out intersection of a convex poly and a path.
 	 * This is a simplified method of getIntersectionConvex_Convex.
 	 *
-	 * There is only one stage (of which only one cycle): 
+	 * There is only one stage (of which only one cycle):
 	 * Walk thrue all segments of the path. Find all intersection points
 	 * of that segment with the convex poly. Now apply the same algorithm
 	 * as with two convex polys (inside/outside algorithm), only now
@@ -1238,27 +1325,27 @@ public class Polyline2D
 	 *
 	 * @return	the intersecting area of the two convex polylines.
 	 *
-	 * @see		getIntersectionConvex_Convex()
+	 * @see		#getIntersectionConvex_Convex
 	 */
 	protected static Polyline2D getIntersectionConvex_Path( final Polyline2D convex , final Polyline2D path )
 	{
-		int INSIDE  = -1;
-		int UNKNOWN = 0;
-		int OUTSIDE = 1;
+		final int INSIDE  = -1;
+		final int UNKNOWN = 0;
+		final int OUTSIDE = 1;
 
-		Polyline2D result = new Polyline2D();
+		final Polyline2D result = new Polyline2D();
 
 		/*
 		 * Helpers
 		 */
 		boolean corner = false; // intersection is other polys cornerpoint.
 		int l1pos,c1pos;
-		
+
 		/*
 		 * Gather all line peaces of the path that intersect with the convex.
 		 */
 		int i = path.getPointCount();
-		int j = 0;
+		int j;
 
 		/*
 		 * l1/l2 = last point on path/convex
@@ -1273,7 +1360,7 @@ public class Polyline2D
 		 * First we want to know if the startpoint of the path is on the convex.
 		 */
 		l1pos = isIntersectingConvex_Point( convex , l1 ) ? INSIDE : OUTSIDE;
-		
+
 		/*
 		 * Optimalisation to check if the path is entirely inside/outside the convex.
 		 * Also to check if result consists of multiple loose parts.
@@ -1285,7 +1372,7 @@ public class Polyline2D
 		 */
 		if ( l1pos == INSIDE )
 			result.append( l1.x , l1.y );
-		
+
 		while( --i >= 0 )
 		{
 			c1 = path.getPoint( i );
@@ -1296,7 +1383,7 @@ public class Polyline2D
 			i1 = i2 = null;	// clear intersections.
 
 			//System.out.println( "Segment : " + l1 + " , " + c1 );
-			
+
 			while( --j >= 0 )
 			{
 				c2 = convex.getPoint( j );
@@ -1325,7 +1412,7 @@ public class Polyline2D
 
 					if ( c2.almostEquals( is[0] ) )
 						corner = true;
-						
+
 					if ( i1 != null && i2 != null )
 						break;
 				}
@@ -1337,7 +1424,7 @@ public class Polyline2D
 			}
 
 			//System.out.println( "intersections : " + i1 + " , " + i2 );
-			
+
 			/*
 			 * Calculate if 'current point' (c1) is inside or outside.
 			 */
@@ -1349,15 +1436,15 @@ public class Polyline2D
 				if ( c1.almostEquals( i1 ) || c1.almostEquals( i2 ) )
 					c1pos = INSIDE;
 			}
-				
+
 			if ( c1pos == UNKNOWN )
 				c1pos = isIntersectingConvex_Point( convex , c1 ) ? INSIDE : OUTSIDE;
 
 			//System.out.println( "l1 pos = " + l1pos + " , c1pos = " + c1pos );
-				
+
 			/*
 			 * Sub segments, generate intersecting segments.
-			 */	
+			 */
 			if ( i1 != null )
 			{
 				/*
@@ -1383,7 +1470,7 @@ public class Polyline2D
 						result.append( i1.x , i1.y );
 				}
 			}
-			
+
 			/*
 			 * If second intersection is not ending point, add point
 			 * (in this case, we are always exiting again).
@@ -1400,13 +1487,13 @@ public class Polyline2D
 			/*
 			 * If one of the points are inside or we have 2 intersections
 			 * we must have been inside.
-			 */	
+			 */
 			if ( c1pos == INSIDE || l1pos == INSIDE || i2 != null )
 				entered = true;
 
 			/*
 			 * Shift
-			 */	
+			 */
 			l1 = c1;
 			l1pos = c1pos;
 		}
@@ -1416,7 +1503,7 @@ public class Polyline2D
 		 */
 		if ( !entered )
 			return null;
-		
+
 		return result;
 	}
 
@@ -1434,17 +1521,17 @@ public class Polyline2D
 	 */
 	protected static Polyline2D getIntersectionLine_Line( final PolyPoint2D p1 , final PolyPoint2D p2 , final PolyPoint2D p3 , final PolyPoint2D p4 )
 	{
-		PolyPoint2D[] sect = getIntersectionLine_Line( p1.x , p1.y , p2.x , p2.y , p3.x , p3.y , p4.x , p4.y , null );
+		final PolyPoint2D[] sect = getIntersectionLine_Line( p1.x , p1.y , p2.x , p2.y , p3.x , p3.y , p4.x , p4.y , null );
 		if ( sect == null || sect[0] == null )
 			return null;	// no intersection
 
-		Polyline2D result = new Polyline2D();
-		
+		final Polyline2D result = new Polyline2D();
+
 		result.append( sect[0].x , sect[0].y ); // intersection point
-		
+
 		if ( sect[1] != null )
 			result.append( sect[1].x , sect[1].y );	// intersecting line
-		
+
 		return result;
 	}
 
@@ -1474,9 +1561,9 @@ public class Polyline2D
 	{
 		if ( cache == null || cache.length < 2 )
 			cache = new PolyPoint2D[2];
-		
-		float n1 = ( x4 - x3 ) * ( y1 - y3 ) - ( y4 - y3 ) * ( x1 - x3 );
-		float d  = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 );
+
+		final float n1 = ( x4 - x3 ) * ( y1 - y3 ) - ( y4 - y3 ) * ( x1 - x3 );
+		final float d  = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 );
 
 		if ( d == 0 ) /* lines are parallel */
 		{
@@ -1487,7 +1574,7 @@ public class Polyline2D
 
 				if ( x1 <= x2 ) { sx1 = x1; sx2 = x2; isPositive = true; }
 				           else { sx1 = x2; sx2 = x1; isPositive = false; }
-				
+
 				if ( x3 <= x4 )
 				{
 					if ( x3 > sx1 ) sx1 = x3;
@@ -1498,10 +1585,10 @@ public class Polyline2D
 					if ( x4 > sx1 ) sx1 = x4;
 					if ( x3 < sx2 ) sx2 = x3;
 				}
-				
+
 				if ( sx1 > sx2 )
 					return null;
-				
+
 				float sy1,sy2;
 
 				if ( y1 <= y2 ) { sy1 = y1; sy2 = y2; }
@@ -1552,24 +1639,24 @@ public class Polyline2D
 			/*
 			 * Test if intersection point is within both line segments
 			 */
-			float ua = n1 / d;
+			final float ua = n1 / d;
 			if ( ua < -0.00001f || ua > 1.00001f ) return null; // float round error fix
 
-			float n2 = ( x2 - x1 ) * ( y1 - y3 ) - ( y2 - y1 ) * ( x1 - x3 );
-			float ub = n2 / d; 
+			final float n2 = ( x2 - x1 ) * ( y1 - y3 ) - ( y2 - y1 ) * ( x1 - x3 );
+			final float ub = n2 / d;
 			if ( ub < -0.00001f || ub > 1.00001f ) return null;
 
-			float x = x1 + ua * (x2-x1);
-			float y = y1 + ua * (y2-y1);
+			final float x = x1 + ua * (x2-x1);
+			final float y = y1 + ua * (y2-y1);
 
 			cache[0] = new PolyPoint2D( x , y );
-			cache[1] = null;	
+			cache[1] = null;
 			/*
 			 * We have an intersection point!
 			 */
 			return cache;
 		}
-		
+
 	}
 
 	/**
@@ -1588,21 +1675,21 @@ public class Polyline2D
 		/*
 		 * First gather all intersecting points and lines.
 		 */
-		Polyline2D[] iPoints = new Polyline2D[ path.getPointCount() ];
+		final Polyline2D[] iPoints = new Polyline2D[ path.getPointCount() ];
 		int iPointCount = 0;
-		Polyline2D[]  iLines = new Polyline2D[ path.getPointCount() ];
+		final Polyline2D[]  iLines = new Polyline2D[ path.getPointCount() ];
 		int iLineCount = 0;
-		Polyline2D sect = null;
-		
+		Polyline2D sect;
+
 		int i = path.getPointCount();
-		
+
 		PolyPoint2D p3 = path.getPoint( --i );
 		PolyPoint2D p4;
-		
+
 		while ( i > 0 )
 		{
 			p4 = path.getPoint( --i );
-		
+
 			sect = getIntersectionLine_Line( p1 , p2 , p3 , p4 );
 
 			if ( sect != null && sect.getPointCount() > 0 )
@@ -1612,7 +1699,7 @@ public class Polyline2D
 				else if ( sect.getPointCount() == 2 )
 					iLines[ iLineCount++ ] = sect;
 			}
-				
+
 			p3 = p4;
 		}
 
@@ -1629,14 +1716,14 @@ public class Polyline2D
 			return iLines[ 0 ];
 		if ( iPointCount == 1 && iLineCount == 0 )
 			return iPoints[ 0 ];
-			
+
 		/*
 		 * Now we have to figure out if the result is actually one
 		 * peace. What we have is a number of Points and Lines. What
 		 * we want is one Line or on Point (or exception/null).
 		 */
 		Polyline2D result = null;
-		
+
 		for ( i = 0 ; i < iLineCount ; i++ )
 		{
 			if ( result == null )
@@ -1669,9 +1756,9 @@ public class Polyline2D
 				 */
 				if ( !result.isIntersecting( iPoints[i] ) )
 					throw new RuntimeException( Polyline2D.class.getName() + ".getIntersectionPath_Path() : Multiple paths" );
-			}			
+			}
 		}
-			
+
 		return result;
 	}
 
@@ -1691,23 +1778,23 @@ public class Polyline2D
 		/*
 		 * First gather all intersecting points and lines.
 		 */
-		Vector segments = new Vector( path1.getPointCount() + path2.getPointCount() );
-		Polyline2D sect = null;
-		
+		final Vector segments = new Vector( path1.getPointCount() + path2.getPointCount() );
+		Polyline2D sect;
+
 		int i = path1.getPointCount();
-		
+
 		PolyPoint2D p3 = path1.getPoint( --i );
 		PolyPoint2D p4;
-		
+
 		while ( i > 0 )
 		{
 			p4 = path1.getPoint( --i );
-		
+
 			sect = getIntersectionPath_Line( path2 , p3 , p4 );
 
 			if ( sect != null && sect.getPointCount() > 0 )
 				segments.addElement( sect );
-				
+
 			p3 = p4;
 		}
 
@@ -1726,7 +1813,7 @@ public class Polyline2D
 		/*
 		 * Multiple intersections
 		 */
-		return placeHeadToTail( segments );		
+		return placeHeadToTail( segments );
 	}
 
 	/**
@@ -1741,7 +1828,7 @@ public class Polyline2D
 	{
 		if ( index < 0 || index >= getPointCount() - 1 )
 			return -1;
-		
+
 		return getPoint( index + 1 ).getLength( getPoint( index ) );
 	}
 
@@ -1752,7 +1839,7 @@ public class Polyline2D
 	 */
 	public float getMaxX()
 	{
-		Rectangle2D.Float b = getBounds();
+		final Rectangle2D.Float b = getBounds();
 		return b.x + b.width;
 	}
 
@@ -1763,7 +1850,7 @@ public class Polyline2D
 	 */
 	public float getMaxY()
 	{
-		Rectangle2D.Float b = getBounds();
+		final Rectangle2D.Float b = getBounds();
 		return b.y + b.height;
 	}
 
@@ -1796,16 +1883,17 @@ public class Polyline2D
 	public Object3D getObject3D()
 	{
 		Object3D o = null;
-		
+
 		if ( getType() == CONVEX )
 		{
-			float[] verts = new float[ (getPointCount()-1) * 3 ];
-			int[][] faces = new int[ 2 ][ getPointCount()-1 ];
+			final float[] verts = new float[ (getPointCount()-1) * 3 ];
+			final int[][] faces = new int[ 2 ][ getPointCount()-1 ];
 
-			int i = 0;
+			int i;
+
 			for ( i = 0 ; i < getPointCount() - 1 ; i++ )
 			{
-				PolyPoint2D p = getPoint( i );
+				final PolyPoint2D p = getPoint( i );
 				verts[ i*3 + 0 ] = p.x;
 				verts[ i*3 + 1 ] = p.y;
 				verts[ i*3 + 2 ] = 0;
@@ -1820,8 +1908,8 @@ public class Polyline2D
 			o = new Object3D();
 			o.set( verts , faces , new common.db.TextureSpec() , false );
 		}
-		
-		
+
+
 		return o;
 	}
 
@@ -1875,25 +1963,24 @@ public class Polyline2D
 				_typeCache = LINE;
 
 			else
-			{	
+			{
 				/*
 				 * All points at same coordinates => point
 				 */
-				PolyPoint2D first = getPoint( 0 );
-				PolyPoint2D last  = getPoint( getPointCount() - 1 );
+				final PolyPoint2D first    = getPoint( 0 );
+				final float       x        = first.x;
+				final float       y        = first.y;
+				final boolean     isClosed = isClosed();
 
-				float  x              = first.x;
-				float  y              = first.y;
 				boolean isPoint        = true;
-				boolean isClosed       = isClosed();
 				boolean hasOrientation = false;
 				boolean isLeftOriented = false;
-				
+
 				for ( int i = 1 ; i < getPointCount() ; i++ )
 				{
-					PolyPoint2D previous = getPoint( i - 1 );
-					PolyPoint2D current  = getPoint( i );
-					PolyPoint2D next     = getPoint( ( i + 1 ) % getPointCount() );
+					final PolyPoint2D previous = getPoint( i - 1 );
+					final PolyPoint2D current  = getPoint( i );
+					final PolyPoint2D next     = getPoint( ( i + 1 ) % getPointCount() );
 
 					/*
 					 * Point detection
@@ -1907,7 +1994,7 @@ public class Polyline2D
 					 */
 					if ( isClosed )
 					{
-						float f = ( current.x - previous.x ) * ( next.y - previous.y ) - ( current.y - previous.y ) * ( next.x - previous.x );
+						final float f = ( current.x - previous.x ) * ( next.y - previous.y ) - ( current.y - previous.y ) * ( next.x - previous.x );
 
 						if ( f > 0 ) /* left orientation */
 						{
@@ -1947,10 +2034,10 @@ public class Polyline2D
 					 * If we found an orientation (only possible if the polyline is closed),
 					 * it must be a convex area. Note that concave areas are returned by the
 					 * loop above immediately.
-					 */	
+					 */
 					else if ( hasOrientation )
 						_typeCache = CONVEX;
-					
+
 					/*
 					 * We have no better clue, so it should be a path.
 					 */
@@ -1981,7 +2068,7 @@ public class Polyline2D
 	 * @return	<code>true</code> if the transformation has effect on 2D polylines;
 	 *			<code>false</code> otherwise.
 	 */
-	protected static boolean hasEffect( Matrix3D xform )
+	protected static boolean hasEffect( final Matrix3D xform )
 	{
 		return xform == null ||
 		       xform.xx != 1 || xform.xy != 0 || xform.xo != 0 ||
@@ -1994,15 +2081,15 @@ public class Polyline2D
 	 * the exact same point to be classified as closed.
 	 *
 	 * @return	<code>true</code> if the polyline defines a closed path;
-	 *			<code>false</code> otherwise. 
+	 *			<code>false</code> otherwise.
 	 */
 	public boolean isClosed()
 	{
 		if ( getPointCount() < 2 )
 			return false;
 
-		PolyPoint2D first = getPoint( 0 );
-		PolyPoint2D last  = getPoint( getPointCount() - 1 );
+		final PolyPoint2D first = getPoint( 0 );
+		final PolyPoint2D last  = getPoint( getPointCount() - 1 );
 
 		return ( first == last ) || first.equals( last );
 	}
@@ -2010,18 +2097,21 @@ public class Polyline2D
 	/**
 	 * Checks if this shape is intersecting with an other one.
 	 *
-	 * @return	true if shapes are intersecting, otherwise false.
+	 * @param	other	Polyline to check for intersection.
+	 *
+	 * @return	<CODE>true</CODE> if shapes are intersecting;
+	 *			<CODE>false</CODE> otherwise.
 	 */
 	public boolean isIntersecting( final Polyline2D other )
 	{
 		if ( other == null ) return false;
 		if ( other == this ) return true;
 
-		int myType = getType();
+		final int myType = getType();
 		if ( myType == VOID )
 			return false;
 
-		int otherType = other.getType();
+		final int otherType = other.getType();
 		if ( otherType == VOID )
 			return false;
 
@@ -2030,7 +2120,7 @@ public class Polyline2D
 		 */
 		if ( !isIntersectingRectangle_Rectangle( getBounds() , other.getBounds() ) )
 			return false;
-			 
+
 		switch ( myType <<5| otherType )
 		{
 			case POINT  <<5| POINT  : return getPoint( 0 ).equals( other.getPoint( 0 ) );
@@ -2060,7 +2150,7 @@ public class Polyline2D
 	 * - polys do not intersect.
 	 * - convex1 is completely within convex2
 	 * - convex2 is completely within convex1
-	 * So we have to check intersection between one point on convex1 and convex2 
+	 * So we have to check intersection between one point on convex1 and convex2
 	 * to check if convex1 is completely on convex2 (and the otherway around).
 	 *
 	 * @param	convex1		First convex
@@ -2096,7 +2186,7 @@ public class Polyline2D
 	 * @param	line	The line.
 	 *
 	 * @return	true if shapes are intersecting, otherwise false.
-	 */	 
+	 */
 	protected static boolean isIntersectingConvex_Line( final Polyline2D convex , final Polyline2D line )
 	{
 		if ( isIntersectingConvex_Point( convex , line.getPoint( 0 ) ) )
@@ -2150,27 +2240,27 @@ public class Polyline2D
 	protected static boolean isIntersectingConvex_Point( final Polyline2D convex , final PolyPoint2D point )
 	{
 		PolyPoint2D p;
-		float x1,y1,x2,y2,px,py;
-		
+		float x1,y1,x2,y2;
+
 		int i = convex.getPointCount();
-		
-		px = point.x;
-		py = point.y;
+
+		final float px = point.x;
+		final float py = point.y;
 		p  = convex.getPoint( --i );
 		x2 = p.x;
 		y2 = p.y;
 
 		boolean hasSide = false;
 		boolean isLeft = false;
-		
+
 		while ( --i >= 0 )
 		{
 			p = convex.getPoint( i );
 			x1 = x2; x2 = p.x;
 			y1 = y2; y2 = p.y;
 
-			float f = ( x2 - x1 ) * ( py - y1 ) - ( y2 - y1 ) * ( px - x1 );
-			
+			final float f = ( x2 - x1 ) * ( py - y1 ) - ( y2 - y1 ) * ( px - x1 );
+
 			if ( f > 0 ) /* point is on left side */
 			{
 				if ( hasSide && !isLeft ) return false;
@@ -2198,10 +2288,10 @@ public class Polyline2D
 	 */
 	protected static boolean isIntersectingLine_Line( final Polyline2D line1 , final Polyline2D line2 )
 	{
-		PolyPoint2D p1 = line1.getPoint( 0 );
-		PolyPoint2D p2 = line1.getPoint( 1 );
-		PolyPoint2D p3 = line2.getPoint( 0 );
-		PolyPoint2D p4 = line2.getPoint( 1 );
+		final PolyPoint2D p1 = line1.getPoint( 0 );
+		final PolyPoint2D p2 = line1.getPoint( 1 );
+		final PolyPoint2D p3 = line2.getPoint( 0 );
+		final PolyPoint2D p4 = line2.getPoint( 1 );
 		return isIntersectingLine_Line( p1.x , p1.y , p2.x , p2.y , p3.x , p3.y , p4.x , p4.y );
 	}
 
@@ -2227,8 +2317,8 @@ public class Polyline2D
 	 */
 	protected static boolean isIntersectingLine_Line( final float x1 , final float y1 , final float x2 , final float y2 , final float x3 , final float y3 , final float x4 , final float y4 )
 	{
-		float n1 = ( x4 - x3 ) * ( y1 - y3 ) - ( y4 - y3 ) * ( x1 - x3 );
-		float d  = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 );
+		final float n1 = ( x4 - x3 ) * ( y1 - y3 ) - ( y4 - y3 ) * ( x1 - x3 );
+		final float d  = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 );
 
 		if ( d == 0 ) /* lines are parallel */
 		{
@@ -2238,7 +2328,7 @@ public class Polyline2D
 
 				if ( x1 <= x2 ) { sx1 = x1; sx2 = x2; }
 				           else { sx1 = x2; sx2 = x1; }
-				
+
 				if ( x3 <= x4 )
 				{
 					if ( x3 > sx1 ) sx1 = x3;
@@ -2249,10 +2339,10 @@ public class Polyline2D
 					if ( x4 > sx1 ) sx1 = x4;
 					if ( x3 < sx2 ) sx2 = x3;
 				}
-				
+
 				if ( sx1 > sx2 )
 					return false;
-				
+
 				float sy1,sy2;
 
 				if ( y1 <= y2 ) { sy1 = y1; sy2 = y2; }
@@ -2284,11 +2374,11 @@ public class Polyline2D
 			/*
 			 * Test if intersection point is within both line segments
 			 */
-			float ua = n1 / d; 
+			final float ua = n1 / d;
 			if ( ua < 0d || ua > 1d ) return false;
-			
-			float n2 = ( x2 - x1 ) * ( y1 - y3 ) - ( y2 - y1 ) * ( x1 - x3 );
-			float ub = n2 / d; 
+
+			final float n2 = ( x2 - x1 ) * ( y1 - y3 ) - ( y2 - y1 ) * ( x1 - x3 );
+			final float ub = n2 / d;
 			if ( ub < 0d || ub > 1d ) return false;
 
 			/*
@@ -2296,7 +2386,7 @@ public class Polyline2D
 			 */
 			return true;
 		}
-		
+
 	}
 
 	/**
@@ -2306,22 +2396,21 @@ public class Polyline2D
 	 * @param	point	The point.
 	 *
 	 * @return	true if shapes are intersecting, otherwise false.
-	 */	 
+	 */
 	protected static boolean isIntersectingLine_Point( final Polyline2D line , final Polyline2D point )
 	{
-		PolyPoint2D p;
-		float x1,y1,x2,y2,px,py;
-		
-		p  = point.getPoint( 0 );
-		px = p.x;
-		py = p.y;
-		p  = line.getPoint( 0 );
-		x1 = p.x;
-		y1 = p.y;
-		p  = line.getPoint( 1 );
-		x2 = p.x;
-		y2 = p.y;
-		
+		final PolyPoint2D p = point.getPoint( 0 );
+		final float px = p.x;
+		final float py = p.y;
+
+		final PolyPoint2D p1  = line.getPoint( 0 );
+		final float x1 = p1.x;
+		final float y1 = p1.y;
+
+		final PolyPoint2D p2  = line.getPoint( 1 );
+		final float x2 = p2.x;
+		final float y2 = p2.y;
+
 		if ( ( ( x1 < x2 ) ? ( px >= x1 && px <= x2 ) : ( px >= x2 && px <= x1 ) )
 		  && ( ( y1 < y2 ) ? ( py >= y1 && py <= y2 ) : ( py >= y2 && py <= y1 ) ) )
 		{
@@ -2343,20 +2432,21 @@ public class Polyline2D
 	 * @param	line	The line.
 	 *
 	 * @return	true if shapes are intersecting, otherwise false.
-	 */	 
+	 */
 	protected static boolean isIntersectingPath_Line( final Polyline2D path , final Polyline2D line )
 	{
-		PolyPoint2D p1,p2,p3,p4;
-		p1 = line.getPoint( 0 );
-		p2 = line.getPoint( 1 );
+		final PolyPoint2D p1 = line.getPoint( 0 );
+		final PolyPoint2D p2 = line.getPoint( 1 );
 
 		int i = path.getPointCount();
-		p3 = path.getPoint( --i );
-		
+
+		PolyPoint2D p3 = path.getPoint( --i );
+		PolyPoint2D p4;
+
 		while ( i > 0 )
-		{	
+		{
 			p4 = path.getPoint( --i );
-		
+
 			if ( isIntersectingLine_Line( p1.x , p1.y , p2.x , p2.y , p3.x , p3.y , p4.x , p4.y ) )
 				return true;
 
@@ -2373,29 +2463,29 @@ public class Polyline2D
 	 * @param	path2	The second path.
 	 *
 	 * @return	true if shapes are intersecting, otherwise false.
-	 */	 
+	 */
 	protected static boolean isIntersectingPath_Path( final Polyline2D path1 , final Polyline2D path2 )
 	{
 		PolyPoint2D p;
 		float x1,y1,x2,y2,x3,y3,x4,y4;
-		
+
 		int i = path1.getPointCount();
 		p  = path1.getPoint( --i );
 		x2 = p.x;
 		y2 = p.y;
-		
+
 		while ( --i >= 0 )
 		{
 			p = path1.getPoint( i );
 			x1 = x2; x2 = p.x;
 			y1 = y2; y2 = p.y;
 
-		
+
 			int j = path2.getPointCount();
 			p  = path2.getPoint( --j );
 			x4 = p.x;
 			y4 = p.y;
-			
+
 			while ( --j >= 0 )
 			{
 				p = path2.getPoint( j );
@@ -2417,26 +2507,30 @@ public class Polyline2D
 	 * @param	point	The point.
 	 *
 	 * @return	true if shapes are intersecting, otherwise false.
-	 */	 
+	 */
 	protected static boolean isIntersectingPath_Point( final Polyline2D path , final Polyline2D point )
 	{
 		PolyPoint2D p;
-		float x1,y1,x2,y2,px,py;
-		
+
 		int i = path.getPointCount();
-		
+
 		p  = point.getPoint( 0 );
-		px = p.x;
-		py = p.y;
+		final float px = p.x;
+		final float py = p.y;
+
 		p  = path.getPoint( --i );
-		x2 = p.x;
-		y2 = p.y;
-		
+		float x1;
+		float y1;
+		float x2 = p.x;
+		float y2 = p.y;
+
 		while ( --i >= 0 )
 		{
 			p = path.getPoint( i );
-			x1 = x2; x2 = p.x;
-			y1 = y2; y2 = p.y;
+			x1 = x2;
+			y1 = y2;
+			x2 = p.x;
+			y2 = p.y;
 
 			if ( ( ( x1 < x2 ) ? ( px >= x1 && px <= x2 ) : ( px >= x2 && px <= x1 ) )
 			  && ( ( y1 < y2 ) ? ( py >= y1 && py <= y2 ) : ( py >= y2 && py <= y1 ) ) )
@@ -2448,7 +2542,7 @@ public class Polyline2D
 				     ( ( px - x1 ) / ( x2 - x1 ) == ( py - y1 ) / ( y2 - y1 ) ) )
 					return true;
 			}
-					
+
 		}
 
 		return false;
@@ -2461,8 +2555,8 @@ public class Polyline2D
 	 * @param	r2	Second rectangle
 	 *
 	 * @return	true if shapes are intersecting, otherwise false.
-	 */	 
-	protected static boolean isIntersectingRectangle_Rectangle( Rectangle2D r1 , Rectangle2D r2 )
+	 */
+	protected static boolean isIntersectingRectangle_Rectangle( final Rectangle2D r1 , final Rectangle2D r2 )
 	{
 		return !( r1.getX() > r2.getX() + r2.getWidth() || r1.getX() + r1.getWidth() < r2.getX() ||
 				  r1.getY() > r2.getY() + r2.getHeight() || r1.getY() + r1.getHeight() < r2.getY() );
@@ -2483,18 +2577,18 @@ public class Polyline2D
 		if ( getPointCount() != 5 || !isClosed() )
 			return false;
 
-		float squareCos = (float)Math.cos( Math.PI / 2 );	
+		final float squareCos = (float)Math.cos( Math.PI / 2 );
 
 		/*
 		 * Check if all 4 angles are 90 degrees.
 		 */
 		for ( int i = 0 ; i < 4 ; i++ )
 		{
-			PolyPoint2D p1 = getPoint( i );
-			PolyPoint2D p2 = getPoint( i + 1 );
-			PolyPoint2D p3 = getPoint( ( i + 2 ) % 5 );
+			final PolyPoint2D p1 = getPoint( i );
+			final PolyPoint2D p2 = getPoint( i + 1 );
+			final PolyPoint2D p3 = getPoint( ( i + 2 ) % 5 );
 
-			float angleCos = (p2.x - p1.x) * (p2.x - p3.x) + (p2.y - p1.y) * (p2.y - p3.y);
+			final float angleCos = (p2.x - p1.x) * (p2.x - p3.x) + (p2.y - p1.y) * (p2.y - p3.y);
 
 			/*
 			 * Not quite precise measurement, but that is not really
@@ -2504,7 +2598,7 @@ public class Polyline2D
 			if ( angleCos < squareCos - 0.1 || angleCos > squareCos + 0.1 )
 				return false;
 		}
-			
+
 		return true;
 	}
 
@@ -2516,7 +2610,7 @@ public class Polyline2D
 	 *
 	 * @return	The segments put together.
 	 */
-	protected static Polyline2D placeHeadToTail( Vector segments )
+	protected static Polyline2D placeHeadToTail( final Vector segments )
 	{
 		if ( segments.size() == 0 )
 			return null;
@@ -2533,8 +2627,8 @@ public class Polyline2D
 			//else
 				//System.out.println( "" );
 		//}
-			
-		Polyline2D result = new Polyline2D();
+
+		final Polyline2D result = new Polyline2D();
 
 		Polyline2D segment = (Polyline2D)segments.elementAt( 0 );
 		PolyPoint2D firstHead = segment.getPointCount() > 1 ? segment.getPoint( 0 ) : null;
@@ -2542,23 +2636,23 @@ public class Polyline2D
 		PolyPoint2D lastTail = segment.getPoint( segment.getPointCount() - 1 );
 		PolyPoint2D head = null,tail = null, temp;
 		segments.removeElementAt( 0 );
-		
+
 		if ( firstHead != null )
 			result.append( firstHead );
 		else
 			firstHead = lastTail;
 		result.append( lastTail );
-			
+
 		while ( segments.size() > 0 )
 		{
 			boolean foundNext = false;
-			
+
 			for ( int i = 0 ; i < segments.size() ; i++ )
 			{
 				segment = (Polyline2D)segments.elementAt( i );
 				head = segment.getPoint( 0 );
 				tail = segment.getPoint( segment.getPointCount() - 1 );
-				
+
 
 				if ( lastTail.almostEquals( head , 0.01f ) )
 				{
@@ -2566,7 +2660,7 @@ public class Polyline2D
 						tail = null;
 					else if ( lastHead.almostEquals( tail , 0.01f ) )
 						continue;
-						
+
 					segments.removeElementAt( i );
 					foundNext = true;
 					break;
@@ -2575,12 +2669,12 @@ public class Polyline2D
 				/*
 				 * Reversed segment.
 				 */
-				else if( lastTail.almostEquals( tail , 0.01f ) && segment.getPointCount() > 1 ) 
+				else if( lastTail.almostEquals( tail , 0.01f ) && segment.getPointCount() > 1 )
 				{
 					temp = head;
 					head = tail;
 					tail = temp;
-					
+
 					if ( lastHead.almostEquals( tail , 0.01f ) )
 						continue;
 
@@ -2609,8 +2703,8 @@ public class Polyline2D
 					//System.out.println( "Closing result (" + segments.size() + " left) : \n" + result );
 					return result;
 				}
-					
-				result.append( tail );		
+
+				result.append( tail );
 				lastTail = tail;
 				lastHead = head;
 				//if ( head == null )
@@ -2618,7 +2712,7 @@ public class Polyline2D
 			}
 		}
 
-		//System.out.println( "End call result : \n" + result );	
+		//System.out.println( "End call result : \n" + result );
 		return result;
 	}
 
@@ -2629,8 +2723,8 @@ public class Polyline2D
 	 */
 	public synchronized String toString()
 	{
-		StringBuffer sb = new StringBuffer( 40 );
-		String cn = getClass().getName();
+		final StringBuffer sb = new StringBuffer( 40 );
+		final String cn = getClass().getName();
 		sb.append( cn.substring( cn.lastIndexOf( '.' ) + 1 ) );
 		sb.append( "[{" );
 		for ( int i = 0 ; i < getPointCount() ; i++ )
@@ -2665,17 +2759,17 @@ public class Polyline2D
 	 * @return	Polyline2D that is the result of the transformation (may return
 	 *			this instance if the transformation has no effect).
 	 */
-	public synchronized Polyline2D transform( Matrix3D xform )
+	public synchronized Polyline2D transform( final Matrix3D xform )
 	{
 		if ( !hasEffect( xform ) )
 			return this;
 
-		Polyline2D result = new Polyline2D();
+		final Polyline2D result = new Polyline2D();
 
 		nextPoint: for ( int i = 0 ; i < getPointCount() ; i++ )
 		{
-			PolyPoint2D p = getPoint( i );
-			
+			final PolyPoint2D p = getPoint( i );
+
 			for ( int j = 0 ; j < i ; j++ )
 			{
 				if ( p == getPoint( j ) )
