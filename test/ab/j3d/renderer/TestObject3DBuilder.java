@@ -46,7 +46,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  * ====================================================================
  */
-package ab.light3d.renderer;
+package ab.j3d.renderer;
 
 import junit.framework.TestCase;
 

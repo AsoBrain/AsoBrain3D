@@ -1,4 +1,4 @@
-package ab.light3d.renderer;
+package ab.j3d.renderer;
 
 /*
  * $Id$
@@ -10,7 +10,7 @@ package ab.light3d.renderer;
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-import ab.light3d.TextureSpec;
+import ab.j3d.TextureSpec;
 
 /**
  * This class is a light node in the graphics tree. It contains a

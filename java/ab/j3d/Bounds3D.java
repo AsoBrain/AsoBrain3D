@@ -8,7 +8,7 @@
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-package ab.light3d;
+package ab.j3d;
 
 /**
  * This class represents rectangular 3D bounds (specified by two vectors).

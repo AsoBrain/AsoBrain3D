@@ -8,15 +8,15 @@
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-package ab.light3d.renderer;
+package ab.j3d.renderer;
 
 import java.awt.Container;
 import java.awt.Insets;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 
-import ab.light3d.Matrix3D;
-import ab.light3d.TextureSpec;
+import ab.j3d.Matrix3D;
+import ab.j3d.TextureSpec;
 
 /**
  * This class implements a background rendering thread.

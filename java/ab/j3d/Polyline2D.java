@@ -46,7 +46,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  * ====================================================================
  */
-package ab.light3d;
+package ab.j3d;
 
 import java.util.ArrayList;
 import java.util.List;

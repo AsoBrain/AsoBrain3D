@@ -1,4 +1,4 @@
-package ab.light3d.renderer;
+package ab.j3d.renderer;
 
 /*
  * $Id$
@@ -12,8 +12,8 @@ package ab.light3d.renderer;
  */
 import java.awt.Graphics;
 
-import ab.light3d.Matrix3D;
-import ab.light3d.TextureSpec;
+import ab.j3d.Matrix3D;
+import ab.j3d.TextureSpec;
 
 /**
  * This class defines a 3D sphere.

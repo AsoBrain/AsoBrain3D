@@ -1,4 +1,4 @@
-package ab.light3d.renderer;
+package ab.j3d.renderer;
 
 /*
  * $Id$
@@ -10,7 +10,7 @@ package ab.light3d.renderer;
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-import ab.light3d.Matrix3D;
+import ab.j3d.Matrix3D;
 
 /**
  * This collection class is used to store combinations of Matrix3D

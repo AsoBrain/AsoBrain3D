@@ -1,4 +1,4 @@
-package ab.light3d.renderer;
+package ab.j3d.renderer;
 
 /*
  * $Id$
@@ -12,8 +12,8 @@ package ab.light3d.renderer;
  */
 import java.awt.Graphics;
 
-import ab.light3d.Matrix3D;
-import ab.light3d.Vector3D;
+import ab.j3d.Matrix3D;
+import ab.j3d.Vector3D;
 
 /**
  * This class is a transformation node in the graphics tree. It

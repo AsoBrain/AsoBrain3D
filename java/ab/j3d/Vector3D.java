@@ -8,7 +8,7 @@
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-package ab.light3d;
+package ab.j3d;
 
 /**
  * This class represents a 3D vector. It is used by ROM, but can also

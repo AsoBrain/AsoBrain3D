@@ -8,13 +8,13 @@
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-package ab.light3d.renderer;
+package ab.j3d.renderer;
 
 import java.awt.Graphics;
 import java.util.HashSet;
 import java.util.Set;
 
-import ab.light3d.Matrix3D;
+import ab.j3d.Matrix3D;
 
 /**
  * This class forms a default implementation of a node of the

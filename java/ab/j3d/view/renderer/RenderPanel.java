@@ -8,7 +8,7 @@
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-package ab.light3d.renderer;
+package ab.j3d.renderer;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -19,9 +19,9 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import javax.swing.JComponent;
 
-import ab.light3d.Bounds3D;
-import ab.light3d.Matrix3D;
-import ab.light3d.Vector3D;
+import ab.j3d.Bounds3D;
+import ab.j3d.Matrix3D;
+import ab.j3d.Vector3D;
 
 /**
  * This panel is used as view and control of a <code>Renderer</code>. It starts

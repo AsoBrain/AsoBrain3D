@@ -1,4 +1,4 @@
-package ab.light3d.renderer;
+package ab.j3d.renderer;
 
 /*
  * $Id$
@@ -12,9 +12,9 @@ package ab.light3d.renderer;
  */
 import java.awt.Graphics;
 
-import ab.light3d.Bounds3D;
-import ab.light3d.Matrix3D;
-import ab.light3d.TextureSpec;
+import ab.j3d.Bounds3D;
+import ab.j3d.Matrix3D;
+import ab.j3d.TextureSpec;
 
 /**
  * This class defined a 3D object node in a 3D tree. The 3D object consists of
