@@ -95,14 +95,15 @@ public abstract class ViewModel
 	 */
 	protected final ViewModelNode getNode( final Object id )
 	{
+		ViewModelNode result = null;
+
 		if ( id == null )
 			throw new NullPointerException( "id" );
 
-		ViewModelNode result = null;
-
-		for ( int i = 0 ; i < _nodes.size() ; i++ )
+		final List nodes = _nodes;
+		for ( int i = 0 ; i < nodes.size() ; i++ )
 		{
-			final ViewModelNode node = (ViewModelNode) _nodes.get( i );
+			final ViewModelNode node = (ViewModelNode)nodes.get( i );
 			if ( id == node.getID() )
 			{
 				result = node;
@@ -116,13 +117,17 @@ public abstract class ViewModel
 	/**
 	 * Get ID's of all nodes in the model.
 	 *
-	 * @return  List containing ID's of all nodes in the model.
+	 * @return  Array containing ID's of all nodes in the model.
 	 */
-	public final List getNodeIDs()
+	public final Object[] getNodeIDs()
 	{
-		final List result = new ArrayList( _nodes.size() );
-		for ( int i = 0 ; i < _nodes.size() ; i++ )
-			result.add( ((ViewModelNode)_nodes.get( i ) ).getID() );
+		final Object[] result;
+
+		final List nodes = _nodes;
+
+		result = new Object[ nodes.size() ];
+		for ( int i = 0 ; i < result.length ; i++ )
+			result[ i ] = ((ViewModelNode)nodes.get( i ) ).getID();
 
 		return result;
 	}
@@ -185,6 +190,19 @@ public abstract class ViewModel
 			throw new NullPointerException( "id" );
 
 		_nodes.remove( id );
+	}
+
+	/**
+	 * Remove all view model nodes from this model.
+	 *
+	 * @see     #removeNode
+	 * @see     #getNodeIDs
+	 */
+	public void removeAllNodes()
+	{
+		final Object[] ids = getNodeIDs();
+		for ( int i = 0 ; i < ids.length ; i++ )
+			removeNode( ids[ i ] );
 	}
 
 	/**
@@ -285,13 +303,17 @@ public abstract class ViewModel
 	/**
 	 * Get ID's of all views for the model.
 	 *
-	 * @return  List containing ID's of all views for the model.
+	 * @return  Array containing ID's of all views for the model.
 	 */
-	public final List getViewIDs()
+	public final Object[] getViewIDs()
 	{
-		final List result = new ArrayList( _views.size() );
-		for ( int i = 0 ; i < _views.size() ; i++ )
-			result.add( ((ViewModelView)_views.get( i ) ).getID() );
+		final Object[] result;
+
+		final List views = _views;
+
+		result = new Object[ views.size() ];
+		for ( int i = 0 ; i < result.length ; i++ )
+			result[ i ] = ((ViewModelView)views.get( i )).getID();
 
 		return result;
 	}
@@ -376,6 +398,19 @@ public abstract class ViewModel
 			throw new NullPointerException( "id" );
 
 		_views.remove( id );
+	}
+
+	/**
+	 * Remove all view model views from this model.
+	 *
+	 * @see     #removeView
+	 * @see     #getViewIDs
+	 */
+	public void removeAllViews()
+	{
+		final Object[] ids = getViewIDs();
+		for ( int i = 0 ; i < ids.length ; i++ )
+			removeView( ids[ i ] );
 	}
 
 	/**
