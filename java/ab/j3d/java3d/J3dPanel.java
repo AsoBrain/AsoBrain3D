@@ -48,6 +48,7 @@
  */
 package ab.j3d.java3d;
 
+import java.awt.Image;
 import javax.media.j3d.Alpha;
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;
@@ -196,7 +197,7 @@ public class J3dPanel
 	/**
 	 * Set content of panel to a spinning image box.
 	 */
-	public void setSpinningImageBoxContent( final String imagePath )
+	public void setSpinningImageBoxContent( final Image image )
 	{
 		final BranchGroup bg = new BranchGroup();
 
@@ -214,7 +215,7 @@ public class J3dPanel
 		boxTransform.addChild( spinner );
 
 		final Appearance appearance = new Appearance();
-		appearance.setTexture( new TextureLoader( imagePath , this ).getTexture() );
+		appearance.setTexture( new TextureLoader( image , this ).getTexture() );
 		boxTransform.addChild( new Box( 0.15f , 0.15f , 0.15f , Box.GENERATE_TEXTURE_COORDS , appearance ) );
 
 		setContent( bg );
