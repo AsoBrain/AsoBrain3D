@@ -29,7 +29,7 @@
 
   <target name="compile-java" depends="api-check" description="Compile Java source files">
     <mkdir dir="classes"/>
-    <javac srcdir="java" destdir="classes" classpathref="java.classpath" target="1.1"/>
+    <javac srcdir="java" destdir="classes" classpathref="java.classpath"/>
     <copy todir="classes">
       <fileset dir="java" includes="**/*.properties"/>
     </copy>
@@ -47,7 +47,7 @@
 
   <target name="compile-tests" depends="compile-java" description="Compile unit tests">
     <mkdir dir="classes/test"/>
-    <javac srcdir="test" destdir="classes/test" classpathref="test.classpath" target="1.1"/>
+    <javac srcdir="test" destdir="classes/test" classpathref="test.classpath" />
   </target>
 
   <target name="test" depends="compile-tests" description="Execute unit tests">
