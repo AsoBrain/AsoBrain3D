@@ -92,10 +92,10 @@ public final class Java2dModel
 	private void updatePaintQueue()
 	{
 		_paintQueue.clear();
-		final List nodeIDs = getNodeIDs();
-		for ( int i = 0 ; i < nodeIDs.size() ; i++ )
+		final Object[] nodeIDs = getNodeIDs();
+		for ( int i = 0 ; i < nodeIDs.length ; i++ )
 		{
-			final Object     nodeID = nodeIDs.get( i );
+			final Object     nodeID = nodeIDs[ i ];
 			final Java2dNode node   = (Java2dNode)getNode( nodeID );
 
 			for ( Iterator paintQueue = node.getPaintQueue() ; paintQueue.hasNext() ; )
