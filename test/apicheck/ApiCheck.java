@@ -2,27 +2,49 @@ package apicheck;
 
 /**
  * Checks availability of Java API's.
+ *
+ * @author  unascribed
+ * @version $Revision$
  */
-public class ApiCheck
+public final class ApiCheck
 {
+	/**
+	 * Application class is not supposed to be instantiated.
+	 */
+	private ApiCheck()
+	{
+	}
+
+	/**
+	 * Test presence of API.
+	 *
+	 * @param   ok          Previous test result.
+	 * @param   component   Name of component to display to user.
+	 * @param   className   Name of class belonging to API to detect presence.
+	 *
+	 * @return  Test result.
+	 */
 	public static boolean test( final boolean ok , final String component , final String className )
 	{
+		boolean result = ok;
 		try
 		{
 			Class.forName( className );
-			return ok;
 		}
-		catch ( Throwable t )
+		catch ( ClassNotFoundException e )
 		{
 			System.out.print  ( "MISSING REQUIRED JAVA API: " );
-			System.out.print  ( component );
-			System.out.print  ( " (" );
-			System.out.print  ( className );
-			System.out.println( ")" );
-			return false;
+			System.out.println( component );
+			result = false;
 		}
+		return result;
 	}
 
+	/**
+	 * Run application.
+	 *
+	 * @param   args    Command-line arguments.
+	 */
 	public static void main( final String[] args )
 	{
 		boolean ok = true;
