@@ -1,0 +1,377 @@
+package common.renderer;
+
+import java.awt.Graphics;
+import java.util.Hashtable;
+import common.model.Matrix3D;
+
+/**
+ * This class is a transformation node in the graphics tree. It
+ * contains a TransformModel that manages a transformation matrix
+ * to be associated with this node.
+ *
+ * @version 1.0 (20011128, PSH) 
+ * @author	Peter S. Heijnen
+ */
+public class Transform
+	extends TreeNode
+{
+	private	float		_rotationX		= 0.0f;
+	private	float		_rotationY		= 0.0f;
+	private	float		_rotationZ		= 0.0f;
+	private	float		_translationX	= 0.0f;
+	private	float		_translationY	= 0.0f;
+	private	float		_translationZ	= 0.0f;
+	
+	/**
+	 * Matrix with transformation.
+	 */	
+	private	Matrix3D _matrix = Matrix3D.INIT;
+
+	/**
+	 * This flag indicates that the transformation matrix is not
+	 * up-to-date and must be re-calculated when it is requested.
+	 * This is set when one of the properties affecting the
+	 * transformation is changed.
+	 */
+	private	boolean _matrixDirty = true;
+	
+	/**
+	 * Matrix with inverse transformation.
+	 */	
+	private	Matrix3D _inverseMatrix = Matrix3D.INIT;
+	
+	/**
+	 * This flag indicates that the inverse transformation matrix
+	 * is not up-to-date and must be re-calculated when it is
+	 * requested. This is set when one of the properties affecting
+	 * the transformation is changed.
+	 */
+	private	boolean _inverseMatrixDirty = true;
+	/**
+	 * Default constructor. Creates an identity transform model.
+	 */
+	public Transform()
+	{
+	}
+
+	/**
+	 * Constructor based for transformation based on a matrix.
+	 *
+	 * @param	m	Explicit matrix to use for transformation.
+	 */
+	public Transform( Matrix3D m )
+	{
+		_matrix = m;
+		_matrixDirty = false;
+	}
+
+	/**
+	 * Constructor based for transformation based on a translation.
+	 *
+	 * @param	translationX	Translation along X-axis.
+	 * @param	translationY	Translation along Y-axis.
+	 * @param	translationZ	Translation along Z-axis.
+	 */
+	public Transform( float translationX , float translationY , float translationZ )
+	{
+		setTranslation( translationX , translationY , translationZ );
+	}
+
+	/**
+	 * Constructor based for transformation based on translation and
+	 * rotation.
+	 *
+	 * @param	translationX	Translation along X-axis.
+	 * @param	translationY	Translation along Y-axis.
+	 * @param	translationZ	Translation along Z-axis.
+	 * @param	rotationX		Rotation around X-axis in decimal degrees.
+	 * @param	rotationY		Rotation around Y-axis in decimal degrees.
+	 * @param	rotationZ		Rotation around Z-axis in decimal degrees.
+	 */
+	public Transform(
+		float translationX , float translationY , float translationZ ,
+		float rotationX , float rotationY , float rotationZ )
+	{
+		setTranslation( translationX , translationY , translationZ );
+		setRotation( rotationX , rotationY , rotationZ );
+	}
+
+	/**
+	 * This method creates a collection of leafs of the graphics tree of a
+	 * specific class. This is typically used during the rendering process to
+	 * collect objects that need to be rendered.
+	 * <p>
+	 * This proces consists of two phases: first going up the tree to find the
+	 * root; then going down the tree to gather the leafs and storing them in
+	 * a collection.
+	 * <p>
+	 * During both phases, a matrix is maintained that transforms coordinates
+	 * from the current node to coordinates of the node where the proces
+	 * started. If a node of the requested class is found, it will be stored
+	 * in combination with its matrix in the returned collection.
+	 *
+	 * @param	leafs		Collection that contains all gathered leafs.
+	 * @param	leafClass	Class of requested leafs.
+	 * @param	xform		Transformation matrix upto this node.
+	 * @param	upwards		Direction in which the tree is being traversed
+	 *						(should be <code>true</code> for the first call).
+	 *
+	 */
+	public void gatherLeafs( LeafCollection leafs , Class leafClass ,
+		Matrix3D xform , boolean upwards )
+	{
+		/*
+		 * Determine modified transform based on combination of the
+		 * supplied transformation and the transformation defined
+		 * by this object.
+		 */
+		 xform = (upwards ? getInverseMatrix() : getMatrix()).multiply( xform );
+
+		/*
+		 * Let super-class do its job with the modified transformation.
+		 */
+		super.gatherLeafs( leafs , leafClass , xform , upwards );
+	}
+
+	/**
+	 * Get matrix with inverse transformation.
+	 *
+	 * @return	Matrix3D with inverse transformation matrix.
+	 */
+	public Matrix3D getInverseMatrix()
+	{
+		if ( _inverseMatrixDirty )
+		{
+			_inverseMatrix = getMatrix().inverse();
+			_inverseMatrixDirty = false;
+		}
+		
+		return( _inverseMatrix );
+	}
+
+	/**
+	 * Get matrix with transformation.
+	 *
+	 * @return	Matrix3D with transformation matrix.
+	 */
+	public Matrix3D getMatrix()
+	{
+		if ( _matrixDirty )
+		{
+			_matrix = Matrix3D.getTransform( _rotationX , _rotationY , _rotationZ ,
+				_translationX , _translationY , _translationZ );
+			
+			_matrixDirty = false;
+		}
+		return( _matrix );
+	}
+
+	/**
+	 * Get rotation value around X-axis.
+	 *
+	 * @return	Rotation around X-axis in decimal degrees.
+	 */
+	public float getRotationX()
+	{
+		return( _rotationX );
+	}
+
+	/**
+	 * Get rotation value around Y-axis.
+	 *
+	 * @return	Rotation around Y-axis in decimal degrees.
+	 */
+	public float getRotationY()
+	{
+		return( _rotationY );
+	}
+
+	/**
+	 * Get rotation value around Z-axis.
+	 *
+	 * @return	Rotation around Z-axis in decimal degrees.
+	 */
+	public float getRotationZ()
+	{
+		return( _rotationZ );
+	}
+
+	/**
+	 * Get translation value along X-axis.
+	 *
+	 * @return	Translation around X-axis.
+	 */
+	public float getTranslationX()
+	{
+		return( _translationX );
+	}
+
+	/**
+	 * Get translation value along Y-axis.
+	 *
+	 * @return	Translation around Y-axis.
+	 */
+	public float getTranslationY()
+	{
+		return( _translationY );
+	}
+
+	/**
+	 * Get translation value along Z-axis.
+	 *
+	 * @return	Translation around Z-axis.
+	 */
+	public float getTranslationZ()
+	{
+		return( _translationZ );
+	}
+
+	/**
+	 * Paint 2D representation of this node and all its leaf nodes.
+	 *
+	 * @param	g			Graphics context.
+	 * @param	gXform		Transformation to pan/scale the graphics context.
+	 * @param	objXform	Transformation from object's to view coordinate system.
+	 */
+	public void paint( Graphics g , Matrix3D gXform , Matrix3D objXform )
+	{
+		super.paint( g , gXform , getMatrix().multiply( objXform ) );
+	}
+
+	/**
+	 * Set dirty field(s) to indicate that the transformation has
+	 * changed in some way.
+	 */
+ 	protected void setDirty()
+ 	{
+	 	_matrixDirty = true;
+	 	_inverseMatrixDirty = true;
+ 	}  
+
+	/**
+	 * Set new rotation values for all axises.
+	 *
+	 * @param	rotationX	Rotation around X-axis in decimal degrees.
+	 * @param	rotationY	Rotation around Y-axis in decimal degrees.
+	 * @param	rotationZ	Rotation around Z-axis in decimal degrees.
+	 */
+	public void setRotation( float rotationX , float rotationY , float rotationZ )
+	{
+		if ( rotationX != _rotationX ||
+			 rotationY != _rotationY ||
+			 rotationZ != _rotationZ )
+		{
+			_rotationX	= rotationX;
+			_rotationY	= rotationY;
+			_rotationZ	= rotationZ;
+			
+			setDirty();
+		}
+	}
+
+	/**
+	 * Set new rotation value around X-axis.
+	 *
+	 * @param	rotation	Rotation around X-axis in decimal degrees.
+	 */
+	public void setRotationX( float rotation )
+	{
+		if ( _rotationX != rotation )
+		{
+			_rotationX	= rotation;
+			setDirty();
+		}
+	}
+
+	/**
+	 * Set new rotation value around Y-axis.
+	 *
+	 * @param	rotation	Rotation around Y-axis in decimal degrees.
+	 */
+	public void setRotationY( float rotation )
+	{
+		if ( _rotationY != rotation )
+		{
+			_rotationY	= rotation;
+			setDirty();
+		}
+	}
+
+	/**
+	 * Set new rotation value around Z-axis.
+	 *
+	 * @param	rotation	Rotation around Z-axis in decimal degrees.
+	 */
+	public void setRotationZ( float rotation )
+	{
+		if ( _rotationZ != rotation )
+		{
+			_rotationZ	= rotation;
+			setDirty();
+		}
+	}
+
+	/**
+	 * Set new translation for all axises.
+	 *
+	 * @param	translationX	Translation along X-axis.
+	 * @param	translationY	Translation along Y-axis.
+	 * @param	translationZ	Translation along Z-axis.
+	 */
+	public void setTranslation( float translationX , float translationY , float translationZ )
+	{
+		if ( translationX != _translationX ||
+			 translationY != _translationY ||
+			 translationZ != _translationZ )
+		{
+			_translationX	= translationX;
+			_translationY	= translationY;
+			_translationZ	= translationZ;
+			
+			setDirty();
+		}
+	}
+
+	/**
+	 * Set new translation value along X-axis.
+	 *
+	 * @param	translation	Translation along X-axis.
+	 */
+	public void setTranslationX( float translation )
+	{
+		if ( translation != _translationX )
+		{
+			_translationX = translation;
+			setDirty();
+		}
+	}
+
+	/**
+	 * Set new translation value along Y-axis.
+	 *
+	 * @param	translation	Translation along Y-axis.
+	 */
+	public void setTranslationY( float translation )
+	{
+		if ( _translationY != translation )
+		{
+			_translationY = translation;
+			setDirty();
+		}
+	}
+
+	/**
+	 * Set new translation value along Z-axis.
+	 *
+	 * @param	translation	Translation along Z-axis.
+	 */
+	public void setTranslationZ( float translation )
+	{
+		if ( _translationZ != translation )
+		{
+			_translationZ = translation;
+			setDirty();
+		}
+	}
+
+}
