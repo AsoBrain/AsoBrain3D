@@ -53,7 +53,9 @@ public final class Java2dModel
 
 	public void createNode( final Object id , final Node3D node3D )
 	{
-		addNode( new Java2dNode( id , node3D ) );
+		removeNode( id );
+		if ( node3D != null )
+			addNode( new Java2dNode( id , node3D ) );
 	}
 
 	protected void addNode( final ViewModelNode node )
