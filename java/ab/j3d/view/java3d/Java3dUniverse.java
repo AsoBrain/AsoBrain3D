@@ -245,7 +245,7 @@ public final class Java3dUniverse
 		scene.addChild( light3 );
 
 //		scene.addChild( Java3dTools.createGrid( new Point3f( 0.0f , 0.0f , 0.0f ) , new Point3i( 30 , 4 , 30 ) , 0.5f , 5 , new Color3f( 1 , 1 , 0 ) ) );
-		scene.addChild( Java3dTools.createGrid( new Point3f( 0.0f , 2.0f , 0.0f ) , new Point3i( 20 , 8 , 20 ) , 0.25f , 4 , new Color3f( 0 , 0 ,0 ) ) );
+//		scene.addChild( Java3dTools.createGrid( new Point3f( 0.0f , 2.0f , 0.0f ) , new Point3i( 20 , 8 , 20 ) , 0.25f , 4 , new Color3f( 0 , 0 ,0 ) ) );
 
 		// add scene to scene graph
 
