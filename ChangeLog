@@ -1,4 +1,8 @@
-Current version: 1.0.2
+Current version: 1.0.3
+
+Changes since 1.0.2:
+ - Added Vector3D.normalize() method returning a normalized vector. 
+ - Added TextureSpec.getHtmlRGB() to get its RGB value as HTML text in '#rrggbb' format.
 
 Changes since 1.0.1:
  - Added Object3D.getFaceTextureU/V() methods to allow public access to texture coordinates.
