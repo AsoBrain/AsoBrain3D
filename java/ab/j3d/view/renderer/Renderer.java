@@ -236,7 +236,8 @@ public final class Renderer
 			}
 			catch ( Exception e )
 			{
-				System.out.println( "Exception (" + e + ") during rendering!" );
+				System.out.println( "Render exception: " + e );
+				e.printStackTrace();
 			}
 
 			/*
