@@ -124,18 +124,22 @@ public final class Matrix3D
 	}
 
 	/**
-	 * Compare this matrix to another matrix.
+	 * Compare this object to another object.
 	 *
-	 * @param	other	Matrix to compare with.
+	 * @param	other	Object to compare with.
 	 *
-	 * @return	<code>true</code> if the matrices are equal,
-	 *		<code>false</code> if not.
+	 * @return	<code>true</code> if the objects are equal;
+	 *			<code>false</code> if not.
 	 */
-	public boolean equals( Matrix3D other )
+	public boolean equals( Object other )
 	{
-		return( xx == other.xx && xy == other.xy && xz == other.xz && xo == other.xo &&
-				yx == other.yx && yy == other.yy && yz == other.yz && yo == other.yo &&
-				zx == other.zx && zy == other.zy && zz == other.zz && zo == other.zo );
+		if ( other == this ) return true;
+		if ( other == null ) return false;
+		if ( !( other instanceof Matrix3D ) ) return false;
+		Matrix3D m = (Matrix3D)other;
+		return ( xx == m.xx && xy == m.xy && xz == m.xz && xo == m.xo &&
+		         yx == m.yx && yy == m.yy && yz == m.yz && yo == m.yo &&
+		         zx == m.zx && zy == m.zy && zz == m.zz && zo == m.zo );
 	}
 
 	/**

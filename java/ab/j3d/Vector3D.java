@@ -117,21 +117,6 @@ public final class Vector3D
 	/**
 	 * Compare this vector to another vector.
 	 *
-	 * @param	other	Vector to compare with.
-	 *
-	 * @return	<code>true</code> if vectors are equal,
-	 *		<code>false</code> if not.
-	 */
-	public boolean equals( Vector3D other )
-	{
-		if ( other == this ) return( true );
-		if ( other == null ) return( false );
-		return( x == other.x && y == other.y && z == other.z );
-	}
-
-	/**
-	 * Compare this vector to another vector.
-	 *
 	 * @param	x	X-coordinate of vector.
 	 * @param	y	Y-coordinate of vector.
 	 * @param	z	Z-coordinate of vector.
@@ -144,6 +129,23 @@ public final class Vector3D
 		return( ( x != x /* => NaN*/ || x == this.x ) &&
 				( y != y /* => NaN*/ || y == this.y ) &&
 				( z != z /* => NaN*/ || z == this.z ) );
+	}
+
+	/**
+	 * Compare this vector to another vector.
+	 *
+	 * @param	other	Vector to compare with.
+	 *
+	 * @return	<code>true</code> if vectors are equal,
+	 *		<code>false</code> if not.
+	 */
+	public boolean equals( Object other )
+	{
+		if ( other == this ) return true;
+		if ( other == null ) return false;
+		if ( !( other instanceof Vector3D ) ) return false;
+		Vector3D v = (Vector3D)other;
+		return( x == v.x && y == v.y && z == v.z );
 	}
 
 	/**
