@@ -16,11 +16,7 @@
 
     <target name="compile" depends="init" description="Compiles Java sources">
       <mkdir dir="build/classes" />
-      <javac srcdir="src/java" destdir="build/classes" debuglevel="none" target="1.1" compiler="modern">
-        <bootclasspath>
-          <pathelement location="${env.JAVA1_HOME}/lib/classes.zip" />
-        </bootclasspath>
-      </javac>
+      <javac srcdir="src/java" destdir="build/classes" debuglevel="none" target="1.1" compiler="modern"/>
       <copy todir="build/classes">
         <fileset dir="src/java" includes="*.properties" />
       </copy>
@@ -53,4 +49,3 @@
       </junit>
     </target>
 </project>
-
