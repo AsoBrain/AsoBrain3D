@@ -1,7 +1,6 @@
 /* $Id$
  * ====================================================================
- * AsoBrain 3D Toolkit
- * Copyright (C) 2001-2005 Numdata BV
+ * (C) Copyright Numdata BV 2001-2005
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
