@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="AsoBrain Lightweight 3D Toolkit" default="all">
-  <property environment="env" />
+<project name="AsoBrain 3D Toolkit" default="all">
+  <property name="build.sysclasspath" value="last"/>
 
   <target name="all" depends="dist,test" description="Generate distribution files and run unit tests"/>
 
@@ -17,11 +17,17 @@
     <tstamp/>
   </target>
 
+  <target name="api-check" depends="init" description="Pre-compilation initialization">
+    <mkdir dir="classes/test"/>
+    <javac srcdir="." destdir="classes/test" includes="apicheck/ApiCheck.java"/>
+    <java classname="apicheck.ApiCheck" classpath="classes/test" failonerror="yes"/>
+  </target>
+
   <path id="java.classpath">
     <path path="classes"/>
   </path>
 
-  <target name="compile-java" depends="init" description="Compile Java source files">
+  <target name="compile-java" depends="api-check" description="Compile Java source files">
     <mkdir dir="classes"/>
     <javac srcdir="java" destdir="classes" classpathref="java.classpath" target="1.1"/>
     <copy todir="classes">
