@@ -19,7 +19,7 @@ import ab.j3d.TextureSpec;
 /**
  * This class extends <code>Object3D</code>. The vertices and faces
  * are generated out of a simple awt shape. A extrusion factor can
- * be added. 
+ * be added.
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
@@ -73,12 +73,12 @@ public class ExtrudedObject2D
 		_texture   = texture;
 		_flatness  = flatness;
 
-		generate();
+		generate( this , shape , extrusion , xform , texture , flatness );
 	}
 
-	private void generate()
+	public static void generate( final Object3D target , final Shape shape , final double extrusion , final Matrix3D xform , final TextureSpec texture , final double flatness )
 	{
-		final FlatteningPathIterator pathIterator = new FlatteningPathIterator( _shape.getPathIterator( null ) , _flatness );
+		final FlatteningPathIterator pathIterator = new FlatteningPathIterator( shape.getPathIterator( null ) , flatness );
 
 		final double[] coords = new double[ 6 ];
 		int lastIndex          = -1;
@@ -95,18 +95,18 @@ public class ExtrudedObject2D
 					final double x = coords[ 0 ];
 					final double y = coords[ 1 ];
 
-					final double x1 = _xform.transformX( x , y , 0.0 );
-					final double y1 = _xform.transformY( x , y , 0.0 );
-					final double z1 = _xform.transformZ( x , y , 0.0 );
-					lastIndex  = getOrAddPointIndex( x1 , y1 , z1 );
+					final double x1 = xform.transformX( x , y , 0.0 );
+					final double y1 = xform.transformY( x , y , 0.0 );
+					final double z1 = xform.transformZ( x , y , 0.0 );
+					lastIndex  = target.getOrAddPointIndex( x1 , y1 , z1 );
 					lastMoveTo = lastIndex;
 
-					if ( _extrusion > 0.0 )
+					if ( extrusion > 0.0 )
 					{
-						final double x2 = _xform.transformX( x , y , _extrusion );
-						final double y2 = _xform.transformY( x , y , _extrusion );
-						final double z2 = _xform.transformZ( x , y , _extrusion );
-						lastExtrudedIndex  = getOrAddPointIndex( x2 , y2 , z2 );
+						final double x2 = xform.transformX( x , y , extrusion );
+						final double y2 = xform.transformY( x , y , extrusion );
+						final double z2 = xform.transformZ( x , y , extrusion );
+						lastExtrudedIndex  = target.getOrAddPointIndex( x2 , y2 , z2 );
 						lastExtrudedMoveTo = lastExtrudedIndex;
 					}
 					break;
@@ -117,30 +117,30 @@ public class ExtrudedObject2D
 					final double x = coords[ 0 ];
 					final double y = coords[ 1 ];
 
-					final double x1 = _xform.transformX( x , y , 0.0 );
-					final double y1 = _xform.transformY( x , y , 0.0 );
-					final double z1 = _xform.transformZ( x , y , 0.0 );
-					final int pointIndex = getOrAddPointIndex( x1 , y1 , z1 );
+					final double x1 = xform.transformX( x , y , 0.0 );
+					final double y1 = xform.transformY( x , y , 0.0 );
+					final double z1 = xform.transformZ( x , y , 0.0 );
+					final int pointIndex = target.getOrAddPointIndex( x1 , y1 , z1 );
 
 					int extrudedPointIndex = -1;
-					if ( _extrusion > 0.0 )
+					if ( extrusion > 0.0 )
 					{
-						final double x2 = _xform.transformX( x , y , _extrusion );
-						final double y2 = _xform.transformY( x , y , _extrusion );
-						final double z2 = _xform.transformZ( x , y , _extrusion );
-						extrudedPointIndex = getOrAddPointIndex( x2 , y2 , z2 );
+						final double x2 = xform.transformX( x , y , extrusion );
+						final double y2 = xform.transformY( x , y , extrusion );
+						final double z2 = xform.transformZ( x , y , extrusion );
+						extrudedPointIndex = target.getOrAddPointIndex( x2 , y2 , z2 );
 					}
 
 					if ( lastIndex != pointIndex )
 					{
-						if ( _extrusion > 0.0 )
+						if ( extrusion > 0.0 )
 						{
-							addFace( new int[]{ lastIndex , lastExtrudedIndex , extrudedPointIndex , pointIndex } , _texture  , false );
+							target.addFace( new int[]{ lastIndex , lastExtrudedIndex , extrudedPointIndex , pointIndex } , texture  , false , true );
 							lastExtrudedIndex = extrudedPointIndex;
 						}
 						else
 						{
-							addFace( new int[]{ lastIndex , pointIndex } , _texture  , false );
+							target.addFace( new int[]{ lastIndex , pointIndex } , texture  , false );
 						}
 					}
 
@@ -152,14 +152,14 @@ public class ExtrudedObject2D
 				{
 					if ( lastIndex != lastMoveTo )
 					{
-						if ( _extrusion > 0.0)
+						if ( extrusion > 0.0)
 						{
-							addFace( new int[]{ lastIndex , lastExtrudedIndex , lastExtrudedMoveTo , lastMoveTo } , _texture  , false );
+							target.addFace( new int[]{ lastIndex , lastExtrudedIndex , lastExtrudedMoveTo , lastMoveTo } , texture  , false , true );
 							lastExtrudedIndex = lastExtrudedMoveTo;
 						}
 						else
 						{
-							addFace( new int[]{ lastIndex , lastMoveTo } , _texture  , false );
+							target.addFace( new int[]{ lastIndex , lastMoveTo } , texture  , false );
 						}
 					}
 
