@@ -9,10 +9,10 @@ package common.renderer;
  * form without express permission from Numdata BV. Please contact Numdata BV
  * for license information.
  */
-import java.awt.Graphics;
+import java.awt.*;
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Vector;
+
 import common.model.Matrix3D;
 
 /**
@@ -44,7 +44,7 @@ public class TreeNode
 	/**
 	 * Collection of children of this node.
 	 */
-	private Vector _children = new Vector();
+	private final Vector _children = new Vector();
 
 	/**
 	 * Parent of this node (<code>null</code> if this a root node).
@@ -58,7 +58,7 @@ public class TreeNode
 	 *
 	 * @return	Node that was added (same as node argument).
 	 *
-	 * @see	removeChild()
+	 * @see	#removeChild
 	 */
 	public TreeNode addChild( TreeNode node )
 	{
@@ -144,7 +144,7 @@ public class TreeNode
 	 *
 	 * @return	Child node, or <code>null</code> if the child does not exist.
 	 *
-	 * @see getChildCount()
+	 * @see #getChildCount
 	 */
 	public TreeNode getChild( int index )
 	{
@@ -156,7 +156,7 @@ public class TreeNode
 	 *
 	 * @return	Number of child nodes.
 	 *
-	 * @see	getChild()
+	 * @see	#getChild
 	 */ 
 	public int getChildCount()
 	{
@@ -168,7 +168,7 @@ public class TreeNode
 	 *
 	 * @return	Parent node, or <code>null</code> if none exists.
 	 *
-	 * @see isRoot()
+	 * @see #isRoot
 	 */
 	public TreeNode getParent()
 	{
@@ -180,7 +180,7 @@ public class TreeNode
 	 *
 	 * @return	Root node of graphics tree.
 	 *
-	 * @see isRoot()
+	 * @see #isRoot
 	 */
 	public TreeNode getRoot()
 	{
@@ -206,8 +206,8 @@ public class TreeNode
 	 * @return	<code>true</code> if this node is a leaf node,
 	 *			<code>false</code> otherwise.
 	 *
-	 * @see	getChildCount()
-	 * @see	getChild()
+	 * @see	#getChildCount
+	 * @see	#getChild
 	 */
 	public boolean isLeaf()
 	{
@@ -221,8 +221,7 @@ public class TreeNode
 	 * @return	<code>true</code> if this node is a root node,
 	 *			<code>false</code> otherwise.
 	 *
-	 * @see	getParentCount()
-	 * @see	getParent()
+	 * @see	#getParent
 	 */
 	public boolean isRoot()
 	{
@@ -246,7 +245,7 @@ public class TreeNode
 	/**
 	 * Remove all child nodes from this node.
 	 *
-	 * @see	#removeChild()
+	 * @see	#removeChild
 	 */
 	public void removeAllChildren()
 	{
@@ -263,7 +262,7 @@ public class TreeNode
 	 *
 	 * @param	node	Child node to remove.
 	 *
-	 * @see	addChild()
+	 * @see	#addChild
 	 */
 	public void removeChild( TreeNode node )
 	{
@@ -279,8 +278,8 @@ public class TreeNode
 	 *
 	 * @param	parent	Parent node (existing parent is removed).
 	 *
-	 * @see getRoot()
-	 * @see isRoot()
+	 * @see #getRoot
+	 * @see #isRoot
 	 */
 	public void setParent( TreeNode parent )
 	{
