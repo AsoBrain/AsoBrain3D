@@ -1072,7 +1072,7 @@ public class Object3D
 		/**
 		 * Get the point indices of this face.
 		 *
-		 * @retur   The point indices of this face.
+		 * @return  The point indices of this face.
 		 */
 		public int[] getPointIndices()
 		{
