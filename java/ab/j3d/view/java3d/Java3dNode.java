@@ -9,6 +9,7 @@
  */
 package com.numdata.soda.Gerwin.AbtoJ3D;
 
+import java.awt.Canvas;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,16 +45,18 @@ import ab.j3d.renderer.TreeNode;
 import com.numdata.soda.mountings.db.MountingDb;
 
 /**
- * @author G.B.M. Rupert
- * @version $Revision$ $Date$
  * @FIXME Need comment
+ *
+ * @author  G.B.M. Rupert
+ * @version $Revision$ $Date$
  */
 public class ABtoJ3DConvertor
+	extends ViewNode
 {
 	/**
-	 * The Ab root node to convert from.
+	 * Texture observer needed by <code>TextureLoader</code> to load textures.
 	 */
-	private TreeNode _abRootNode;
+	private static final Canvas TEXTURE_OBSERVER = new Canvas();
 
 	/**
 	 * The j3d root node to convert the Ab root node to.
@@ -75,13 +78,14 @@ public class ABtoJ3DConvertor
 	 *
 	 * @param   db          Database access provider.
 	 * @param   abRootNode  The Ab root node to convert from.
-	 * @param   J3DModel    The j3d model.
+	 * @param   j3dModel    The j3d model.
 	 */
-	public ABtoJ3DConvertor( final MountingDb db , final TreeNode abRootNode , final J3DModel J3DModel )
+	public ABtoJ3DConvertor( final MountingDb db , final TreeNode abRootNode , final J3DModel j3dModel )
 	{
-		_db          = db;
-		_abRootNode  = abRootNode;
-		_j3dModel    = J3DModel;
+		super( abRootNode );
+
+		_db       = db;
+		_j3dModel = j3dModel;
 
 		/*
 		 * Create the j3d-root node and set the scaling transform.
@@ -104,16 +108,13 @@ public class ABtoJ3DConvertor
 		/*
 		 * Finally do an update to convert the ab root node to the j3d root node.
 		 */
-		convert();
+		update();
 	}
 
-	/**
-	 * Convert the ab root node to the j3d root node.
-	 */
-	public void convert()
+	public void update()
 	{
 		final LeafCollection leafs = new LeafCollection();
-		_abRootNode.gatherLeafs( leafs , Object3D.class , Matrix3D.INIT , false );
+		getAbRootNode().gatherLeafs( leafs , Object3D.class , Matrix3D.INIT , false );
 
 		/*
 		 * Nodes are not directly added to the j3d root node too avoid flickering.
@@ -136,13 +137,9 @@ public class ABtoJ3DConvertor
 		}
 	}
 
-	/**
-	 * Set the transform for the j3d root node.
-	 *
-	 * @param   transform   Transform to set.
-	 */
 	public void setTransform( final Matrix3D transform )
 	{
+		super.setTransform( transform );
 		_j3dRootNode.setTransform( convertMatrix3D( transform ) );
 	}
 
@@ -154,16 +151,6 @@ public class ABtoJ3DConvertor
 	public Group getJ3dRootNode()
 	{
 		return _j3dRootNode;
-	}
-
-	/**
-	 * Get the ab root node.
-	 *
-	 * @return  The ab root node.
-	 */
-	public TreeNode getAbRootNode()
-	{
-		return _abRootNode;
 	}
 
 	/**
@@ -322,15 +309,17 @@ public class ABtoJ3DConvertor
 
 		if ( ( spec != null ) && ( spec.isTexture() ) )
 		{
-			result = (Texture)_j3dModel._textureCache.get( spec.code );
+			final J3DModel j3dModel = _j3dModel;
+
+			result = j3dModel.getTextureFromCache( spec.code );
 			if ( result == null )
 			{
 				final Image image = spec.getTextureImage();
 				if ( image != null )
 				{
-					result = new TextureLoader( image , _j3dModel.TEXTURE_OBSERVER ).getTexture();
+					result = new TextureLoader( image , TEXTURE_OBSERVER ).getTexture();
 					result.setCapability( Texture.ALLOW_SIZE_READ );
-					_j3dModel._textureCache.put( spec.code , result );
+					j3dModel.addTextureToCache( spec.code , result );
 				}
 			}
 		}
