@@ -47,12 +47,12 @@ public class J3dModel
 	/**
 	 * Content branch graph of the j3d tree.
 	 */
-	private BranchGroup _contentBranchGraph;
+	private BranchGroup _contentGraph;
 
 	/**
 	 *View branch graph of the j3d tree.
 	 */
-	private BranchGroup _viewBranchGraph;
+	private BranchGroup _viewGraph;
 
 	/**
 	 * Map used to cache textures. Maps texture code (<code>String</code>) to
@@ -70,14 +70,14 @@ public class J3dModel
 		_db                 = db;
 		_universe           = new J3dUniverse();
 		_sceneGraph         = new BranchGroup();
-		_contentBranchGraph = new BranchGroup();
-		_viewBranchGraph    = new BranchGroup();
+		_contentGraph = new BranchGroup();
+		_viewGraph    = new BranchGroup();
 
-		_contentBranchGraph.setCapability( BranchGroup.ALLOW_CHILDREN_EXTEND );
-		_viewBranchGraph.setCapability   ( BranchGroup.ALLOW_CHILDREN_EXTEND );
+		_contentGraph.setCapability( BranchGroup.ALLOW_CHILDREN_EXTEND );
+		_viewGraph.setCapability   ( BranchGroup.ALLOW_CHILDREN_EXTEND );
 
-		_sceneGraph.addChild( _contentBranchGraph );
-		_sceneGraph.addChild( _viewBranchGraph    );
+		_sceneGraph.addChild( _contentGraph );
+		_sceneGraph.addChild( _viewGraph    );
 		_universe.addBranchGraph( _sceneGraph );
 	}
 
@@ -88,7 +88,7 @@ public class J3dModel
 
 		final BranchGroup node = new BranchGroup();
 		node.addChild( convertor.getJ3dRootNode() );
-		_contentBranchGraph.addChild( node );
+		_contentGraph.addChild( node );
 	}
 
 	/**
@@ -125,7 +125,7 @@ public class J3dModel
 
 		final BranchGroup node = new BranchGroup();
 		node.addChild( view.getJ3dRootNode() );
-		_viewBranchGraph.addChild( node );
+		_viewGraph.addChild( node );
 
 		return view.getCanvas();
 	}

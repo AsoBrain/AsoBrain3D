@@ -27,16 +27,16 @@ import ab.j3d.Vector3D;
 public class J3dView
 	extends ViewView
 {
-	private static final int _PERSPECTIVE = 0;
-	private static final int _PARALLEL    = 1;
+	private static final int PERSPECTIVE = 0;
+	private static final int PARALLEL    = 1;
 
-	private J3dUniverse _universe;
+	private final J3dUniverse _universe;
 
-	private ViewingPlatform _j3dRootNode;
+	private final ViewingPlatform _j3dRootNode;
 
-	private J3dPanel _canvas;
+	private final J3dPanel _canvas;
 
-	private Viewer _viewer;
+	private final Viewer _viewer;
 
 	/**
 	 * Construct new J3dView.
@@ -44,25 +44,28 @@ public class J3dView
 	public J3dView( final J3dUniverse universe , final Vector3D from , final Vector3D to )
 	{
 		_universe = universe;
-		_canvas   = null;
-		_viewer   = null;
+
+		_canvas = new J3dPanel( _universe );
+
+		_viewer = new Viewer( _canvas );
+		_universe.addViewer( _viewer );
 
 		final Transform3D viewTransform = _universe.getTransform( from , to );
 
-		final ViewingPlatform viewingPlatform = new ViewingPlatform( 1 );
-        viewingPlatform.setUniverse( _universe );
-		_j3dRootNode = viewingPlatform;
+		_j3dRootNode = new ViewingPlatform( 1 );
+		_j3dRootNode.setUniverse( _universe );
+		_j3dRootNode.getMultiTransformGroup().getTransformGroup( 0 ).setTransform( viewTransform );
+		_j3dRootNode.setViewPlatformBehavior( _universe.getOrbitBehavior( _canvas ) );
+		_viewer.setViewingPlatform( _j3dRootNode );
 
-		if ( viewTransform != null )
-		{
-			_j3dRootNode.getMultiTransformGroup().getTransformGroup( 0 ).setTransform( viewTransform );
-		}
+		// set transparency stuff
+		final View view = _viewer.getView();
+		view.setDepthBufferFreezeTransparent( true );
+		view.setTransparencySortingPolicy( View.TRANSPARENCY_SORT_GEOMETRY );
+		
+		//view.setBackClipDistance( 100 );
 
-		setProjectionPolicy( _PERSPECTIVE );
-		createCanvas();
-
-		// @FIXME Method??? How in abstract baseclass??
-		_j3dRootNode.setViewPlatformBehavior( _universe.getOrbitBehavior( _universe.getViewerCount() -1) );
+		setProjectionPolicy( PERSPECTIVE );
 	}
 
 	/**
@@ -73,21 +76,6 @@ public class J3dView
 	public Group getJ3dRootNode()
 	{
 		return _j3dRootNode;
-	}
-
-	private void createCanvas()
-	{
-		_canvas = new J3dPanel( _universe );
-		_viewer = new Viewer( _canvas );
-		_viewer.setViewingPlatform( _j3dRootNode );
-
-		// set transparency stuff
-		final View view = _viewer.getView();
-		view.setDepthBufferFreezeTransparent( true );
-		view.setTransparencySortingPolicy( View.TRANSPARENCY_SORT_GEOMETRY );
-		//view.setBackClipDistance( 100 );
-
-		_universe.addViewer( _viewer );
 	}
 
 	public J3dPanel getCanvas()
@@ -104,10 +92,10 @@ public class J3dView
 
 	public void setProjectionPolicy( final int policy )
 	{
-		if ( !(policy == _PERSPECTIVE || policy == _PARALLEL) )
+		if ( !(policy == PERSPECTIVE || policy == PARALLEL) )
 			throw new IllegalArgumentException( "Projection policy " + policy + " is not a valid policy." );
 
 		final View view = _viewer.getView();
-		view.setProjectionPolicy( policy == _PERSPECTIVE ? View.PERSPECTIVE_PROJECTION : View.PARALLEL_PROJECTION );
+		view.setProjectionPolicy( policy == PERSPECTIVE ? View.PERSPECTIVE_PROJECTION : View.PARALLEL_PROJECTION );
 	}
 }

@@ -143,7 +143,7 @@ public class J3dUniverse extends SimpleUniverse
 	{
 		if ( from.equals( to ) )
 		{
-			throw new RuntimeException( "getTransfrom( from , to ); 'from' and 'to' can not be the same!" );
+			throw new IllegalArgumentException( "getTransfrom( from , to ); 'from' and 'to' can not be the same!" );
 		}
 
 		final Point3d  point1   = new Point3d  ( from.x , from.y , from.z );
@@ -165,9 +165,14 @@ public class J3dUniverse extends SimpleUniverse
 
 	public OrbitBehavior getOrbitBehavior( final int viewNr )
 	{
+		return getOrbitBehavior( getCanvas( viewNr , 0 ) );
+	}
+
+	public OrbitBehavior getOrbitBehavior( final Canvas3D canvas )
+	{
 		final BoundingSphere bounds = new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 100.0 );
 
-		final OrbitBehavior orbit = new OrbitBehavior( getCanvas( viewNr , 0 ) , OrbitBehavior.REVERSE_ALL | OrbitBehavior.STOP_ZOOM );
+		final OrbitBehavior orbit = new OrbitBehavior( canvas , OrbitBehavior.REVERSE_ALL | OrbitBehavior.STOP_ZOOM );
 		orbit.setSchedulingBounds( bounds );
 
 		return orbit;
