@@ -396,6 +396,14 @@ public class Renderer
 	 */
 	public synchronized void componentShown( ComponentEvent e )
 	{
+		if ( e.getSource() == _owner )
+		{
+			_depthBuffer = null;
+			Dimension d = e.getComponent().getSize();
+			initialize( d.width , d.height );
+			requestUpdate();
+		}
+
 		if ( _isRunning )
 			return;
 
