@@ -106,6 +106,16 @@ public class J3dModel
 	}
 
 	/**
+	 * Create a new view.
+	 *
+	 * @param ID ID of the view that is created.
+	 */
+	public void createView( Object ID )
+	{
+		// @FIXME implement.
+	}
+
+	/**
 	 * Get texture from cache.
 	 *
 	 * @param   code    Code identifying the texture to get.
