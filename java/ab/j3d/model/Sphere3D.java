@@ -165,7 +165,7 @@ public final class Sphere3D
 		}
 	}
 
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final double shadeFactor )
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
 	{
 		final double dx = this.dx;
 		if ( Matrix3D.almostEqual( dx , this.dy )

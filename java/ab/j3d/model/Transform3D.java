@@ -261,7 +261,7 @@ public final class Transform3D
 		return _translation;
 	}
 
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final double shadeFactor )
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
 	{
 		super.paint( g , gTransform , getMatrix().multiply( viewTransform ) , outlineColor , fillColor , shadeFactor );
 	}

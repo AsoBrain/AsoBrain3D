@@ -214,7 +214,7 @@ public final class Cylinder3D
 		}
 	}
 
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final double shadeFactor )
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
 	{
 		final Matrix3D viewBase = xform.multiply( viewTransform );
 		final double   h        = height;
