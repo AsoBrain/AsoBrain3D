@@ -49,14 +49,21 @@ public final class SimpleOrbitBehavior
 	 * Creates a new <code>SimpleOrbitBehavior</code>.
 	 *
 	 * @param   c       The Canvas3D to add the behavior to.
-	 * @param   flags   The option flags.
 	 * @param   unit    Unit scale factor (e.g. <code>MM</code>).
 	 */
-	public SimpleOrbitBehavior( final Canvas3D c , final int flags , final float unit )
+	public SimpleOrbitBehavior( final Canvas3D c , final float unit )
 	{
-		super( c , flags );
+		super( c , 0 );
+
 		_mouseViewControl = new MouseViewControl( c , unit );
 		_mouseViewControl.addMouseViewListener( this );
+		_mouseViewControl._controlX[ 0 ] = MouseViewControl.ROTATION_Y;
+		_mouseViewControl._controlX[ 1 ] = -MouseViewControl.TRANSLATION_X;
+		_mouseViewControl._controlX[ 2 ] = MouseViewControl.DISABLED;
+
+		_mouseViewControl._controlY[ 0 ] = MouseViewControl.ROTATION_X;
+		_mouseViewControl._controlY[ 1 ] = MouseViewControl.TRANSLATION_Y;
+		_mouseViewControl._controlY[ 2 ] = MouseViewControl.TRANSLATION_Z;
 	}
 
 	protected synchronized void integrateTransforms()

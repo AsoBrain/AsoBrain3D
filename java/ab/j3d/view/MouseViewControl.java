@@ -102,12 +102,12 @@ public class MouseViewControl
 	/**
 	 * Indices of variables controlled by dragging aking X for each control mode.
 	 */
-	final int[] _controlX =  { ROTATION_Z , TRANSLATION_X , DISABLED };
+	public final int[] _controlX =  { ROTATION_Z , TRANSLATION_X , DISABLED };
 
 	/**
 	 * Indices of variables controlled by dragging aking Y for each control mode.
 	 */
-	final int[] _controlY =  { ROTATION_X , TRANSLATION_Z , TRANSLATION_Y };
+	public final int[] _controlY =  { ROTATION_X , TRANSLATION_Z , TRANSLATION_Y };
 
 	/**
 	 * Mouse sensivity for each control mode.

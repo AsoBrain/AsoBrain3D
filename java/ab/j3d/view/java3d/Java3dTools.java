@@ -423,7 +423,7 @@ public final class Java3dTools
 	{
 		final BoundingSphere bounds = new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 100.0 );
 
-		final OrbitBehavior orbit = new SimpleOrbitBehavior( canvas , OrbitBehavior.REVERSE_ALL | OrbitBehavior.STOP_ZOOM , unit );
+		final OrbitBehavior orbit = new SimpleOrbitBehavior( canvas , unit );
 		orbit.setSchedulingBounds( bounds );
 
 		return orbit;
