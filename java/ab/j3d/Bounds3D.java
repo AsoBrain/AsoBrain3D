@@ -109,6 +109,8 @@ public final class Bounds3D
 	 */
 	public final static boolean intersects( Bounds3D box1 , Bounds3D box2 )
 	{
+		if ( box1 == null || box2 == null )
+			return false;
 		return
 		( Math.min( box1.v1.x , box1.v2.x ) < Math.max( box2.v1.x , box2.v2.x ) ) &&
 		( Math.min( box2.v1.x , box2.v2.x ) < Math.max( box1.v1.x , box1.v2.x ) ) &&
