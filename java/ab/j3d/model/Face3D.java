@@ -64,7 +64,7 @@ public final class Face3D
 	/**
 	 * Opacity value for this face.
 	 */
-	private double _opacity;
+	private float _opacity;
 
 	/**
 	* Smoothing flag this face. Smooth faces are used to approximate
@@ -92,7 +92,7 @@ public final class Face3D
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   hasBackface     Face has an backface (render both sides).
 	 */
-	Face3D( final Object3D object , final int[] points , final TextureSpec texture , final int[] textureU , final int[] textureV , final double opacity , final boolean smooth , final boolean hasBackface )
+	Face3D( final Object3D object , final int[] points , final TextureSpec texture , final int[] textureU , final int[] textureV , final float opacity , final boolean smooth , final boolean hasBackface )
 	{
 		_object       = object;
 		_pointIndices = points;
@@ -295,7 +295,7 @@ public final class Face3D
 	 *
 	 * @return  Opacity (0.0 - 1.0).
 	 */
-	public double getOpacity()
+	public float getOpacity()
 	{
 		return _opacity;
 	}
@@ -306,7 +306,7 @@ public final class Face3D
 	 *
 	 * @param   opacity     Opacity (0.0 - 1.0).
 	 */
-	public void setOpacity( final double opacity )
+	public void setOpacity( final float opacity )
 	{
 		_opacity = opacity;
 	}

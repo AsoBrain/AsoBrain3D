@@ -550,7 +550,7 @@ public class Object3D
 	 *
 	 * @return  Face that was added.
 	 */
-	public final Face3D addFace( final TextureSpec texture , final double opacity , final boolean smooth )
+	public final Face3D addFace( final TextureSpec texture , final float opacity , final boolean smooth )
 	{
 		final Face3D result = new Face3D( this , null , texture , null , null , opacity , smooth , false );
 		addFace( result );
@@ -568,7 +568,7 @@ public class Object3D
 	 */
 	public final void addFace( final int[] pointIndices , final TextureSpec texture , final boolean smooth , final boolean hasBackface )
 	{
-		addFace( pointIndices , texture , null , null , 1.0 , smooth , hasBackface );
+		addFace( pointIndices , texture , null , null , 1.0f , smooth , hasBackface );
 	}
 
 	/**
@@ -581,7 +581,7 @@ public class Object3D
 	 */
 	public final void addFace( final int[] pointIndices , final TextureSpec texture , final boolean smooth )
 	{
-		addFace( pointIndices , texture , null , null , 1.0 , smooth , false );
+		addFace( pointIndices , texture , null , null , 1.0f , smooth , false );
 	}
 
 	/**
@@ -595,7 +595,7 @@ public class Object3D
 	 * @param   opacity         Opacity of face (0=transparent, 1=opaque).
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 */
-	public final void addFace( final int[] pointIndices , final TextureSpec texture , final int[] textureU , final int[] textureV , final double opacity , final boolean smooth )
+	public final void addFace( final int[] pointIndices , final TextureSpec texture , final int[] textureU , final int[] textureV , final float opacity , final boolean smooth )
 	{
 		addFace( pointIndices , texture , textureU , textureV , opacity , smooth , false );
 	}
@@ -612,7 +612,7 @@ public class Object3D
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public final void addFace( final int[] pointIndices , final TextureSpec texture , final int[] textureU , final int[] textureV , final double opacity , final boolean smooth , final boolean hasBackface )
+	public final void addFace( final int[] pointIndices , final TextureSpec texture , final int[] textureU , final int[] textureV , final float opacity , final boolean smooth , final boolean hasBackface )
 	{
 		addFace( new Face3D( this , pointIndices , texture , textureU , textureV , opacity , smooth , hasBackface ) );
 	}
@@ -626,7 +626,7 @@ public class Object3D
 	 */
 	public final void addFace( final Vector3D[] points , final TextureSpec texture , final boolean smooth )
 	{
-		addFace( points , texture , null , null , 1.0 , smooth );
+		addFace( points , texture , null , null , 1.0f , smooth );
 	}
 
 	/**
@@ -639,7 +639,7 @@ public class Object3D
 	 * @param   opacity     Opacity of face (0=transparent, 1=opaque).
 	 * @param   smooth      Face is smooth/curved vs. flat.
 	 */
-	public final void addFace( final Vector3D[] points , final TextureSpec texture , final int[] textureU , final int[] textureV , final double opacity , final boolean smooth )
+	public final void addFace( final Vector3D[] points , final TextureSpec texture , final int[] textureU , final int[] textureV , final float opacity , final boolean smooth )
 	{
 		final Face3D face = addFace( texture , opacity , smooth );
 		face.ensureCapacity( points.length );
@@ -659,7 +659,7 @@ public class Object3D
 	 * @param   opacity     Opacity of face (0=transparent, 1=opaque).
 	 * @param   smooth      Face is smooth/curved vs. flat.
 	 */
-	public final void addFace( final Matrix3D base , final Polyline2D shape , final boolean reversePath , final boolean flipTexture , final TextureSpec texture , final double opacity , final boolean smooth )
+	public final void addFace( final Matrix3D base , final Polyline2D shape , final boolean reversePath , final boolean flipTexture , final TextureSpec texture , final float opacity , final boolean smooth )
 	{
 		final int nrVertices = shape.getPointCount() + ( shape.isClosed() ? -1 : 0 );
 
