@@ -271,9 +271,16 @@ public final class Cylinder3D
 
 			if ( fillColor != null )
 			{
-				final float highlightX = ( 1 - goldenRatio ) * x1 + goldenRatio * x4;
-				final float highlightY = ( 1 - goldenRatio ) * y1 + goldenRatio * y4;
-				g.setPaint( new GradientPaint( highlightX , highlightY , fillColor , x1 , y1 , outlineColor , true ) );
+				if ( ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) )
+				{
+					final float highlightX = ( 1.0f - goldenRatio ) * x1 + goldenRatio * x4;
+					final float highlightY = ( 1.0f - goldenRatio ) * y1 + goldenRatio * y4;
+					g.setPaint( new GradientPaint( highlightX , highlightY , fillColor , x1 , y1 , outlineColor , true ) );
+				}
+				else
+				{
+					g.setPaint( fillColor );
+				}
 				g.fill( path );
 			}
 
@@ -287,32 +294,32 @@ public final class Cylinder3D
 		 * Viewing along Z-axis. We can see, the bottom and/or top cap and the
 		 * area between the two.
 		 */
-		else if ( Matrix3D.almostEqual( xz , 0 )
-		       && Matrix3D.almostEqual( yz , 0 ) )
+		else if ( Matrix3D.almostEqual( xz , 0.0 )
+		       && Matrix3D.almostEqual( yz , 0.0 ) )
 		{
 			final Matrix3D combinedTransform = viewBase.multiply( gTransform );
 
-			final float x = (float)combinedTransform.transformX( 0 , 0 , 0 );
-			final float y = (float)combinedTransform.transformY( 0 , 0 , 0 );
-			final float botZ = (float)combinedTransform.transformZ( 0 , 0 , 0 );
+			final float x         = (float)combinedTransform.xo;
+			final float y         = (float)combinedTransform.yo;
+			final float botZ      = (float)combinedTransform.zo;
 			final float botRadius;
 			{
-				final double dx = combinedTransform.transformX( rBottom , 0 , 0 ) - x;
-				final double dy = combinedTransform.transformY( rBottom , 0 , 0 ) - y;
+				final double dx = combinedTransform.xx * rBottom;
+				final double dy = combinedTransform.yx * rBottom;
 				botRadius = (float)Math.sqrt( dx * dx + dy * dy );
 			}
 
-			final Ellipse2D bot = Matrix3D.almostEqual( botRadius , 0 ) ? null : new Ellipse2D.Double( x - botRadius , y - botRadius , 2 * botRadius , 2 * botRadius );
+			final Ellipse2D bot = Matrix3D.almostEqual( (double)botRadius , 0.0 ) ? null : new Ellipse2D.Float( x - botRadius , y - botRadius , 2.0f * botRadius , 2.0f * botRadius );
 
-			final float topZ = (float)combinedTransform.transformZ( 0 , 0 , h );
+			final float topZ = (float)combinedTransform.transformZ( 0.0 , 0.0 , h );
 			final float topRadius;
 			{
-				final double dx = combinedTransform.transformX( rTop , 0 , h ) - x;
-				final double dy = combinedTransform.transformY( rTop , 0 , h ) - y;
+				final double dx = rTop * combinedTransform.xx + h * combinedTransform.xz;
+				final double dy = rTop * combinedTransform.yx + h * combinedTransform.yz;
 				topRadius = (float)Math.sqrt( dx * dx + dy * dy );
 			}
 
-			final Ellipse2D top = Matrix3D.almostEqual( topRadius , 0 ) ? null : new Ellipse2D.Double( x - topRadius , y - topRadius , 2 * topRadius , 2 * topRadius );
+			final Ellipse2D top = Matrix3D.almostEqual( (double)topRadius , 0.0 ) ? null : new Ellipse2D.Float( x - topRadius , y - topRadius , 2.0f * topRadius , 2.0f * topRadius );
 
 			if ( ( bot != null ) || ( top != null ) )
 			{
@@ -342,9 +349,16 @@ public final class Cylinder3D
 				final Paint fillPaint;
 				if ( fillColor != null )
 				{
-					final float r = Math.max( topRadius , botRadius );
-					final float highlight = ( goldenRatio - 0.5f ) * r;
-					fillPaint = new GradientPaint( x + highlight , y - highlight , fillColor , x -r , y + r , outlineColor , true );
+					if ( ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) )
+					{
+						final float r = Math.max( topRadius , botRadius );
+						final float highlight = ( goldenRatio - 0.5f ) * r;
+						fillPaint = new GradientPaint( x + highlight , y - highlight , fillColor , x -r , y + r , outlineColor , true );
+					}
+					else
+					{
+						fillPaint = fillColor;
+					}
 					g.setPaint( fillPaint );
 					g.fill( shape1 );
 				}

@@ -23,6 +23,7 @@ package ab.j3d.model;
 import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.geom.Ellipse2D;
 
 import ab.j3d.Matrix3D;
@@ -89,7 +90,7 @@ public final class Sphere3D
 	 */
 	public Sphere3D( final Matrix3D xform , final double radius , final int p , final int q )
 	{
-		this( xform , radius * 2 , radius * 2 , radius * 2 , p , q , null , false );
+		this( xform , radius * 2.0 , radius * 2.0 , radius * 2.0 , p , q , null , false );
 	}
 
 	/**
@@ -112,13 +113,13 @@ public final class Sphere3D
 		 */
 		int v = 0;
 
-		pointCoords[ v++ ] = 0;
-		pointCoords[ v++ ] = 0;
+		pointCoords[ v++ ] = 0.0;
+		pointCoords[ v++ ] = 0.0;
 		pointCoords[ v++ ] = dz / -2.0;
 
 		for ( int qc = 1 ; qc < q ; qc++ )
 		{
-			final double qa = qc * Math.PI / q;
+			final double qa = (double)qc * Math.PI / (double)q;
 
 			final double radiusX =  0.5 * dx * Math.sin( qa );
 			final double radiusY =  0.5 * dy * Math.sin( qa );
@@ -126,7 +127,7 @@ public final class Sphere3D
 
 			for ( int pc = 0 ; pc < p ; pc++ )
 			{
-				final double pa = pc * 2 * Math.PI / p;
+				final double pa = (double)pc * 2.0 * Math.PI / (double)p;
 
 				pointCoords[ v++ ] =  radiusX * Math.sin( pa );
 				pointCoords[ v++ ] = -radiusY * Math.cos( pa );
@@ -134,8 +135,8 @@ public final class Sphere3D
 			}
 		}
 
-		pointCoords[ v++ ] = 0;
-		pointCoords[ v++ ] = 0;
+		pointCoords[ v++ ] = 0.0;
+		pointCoords[ v++ ] = 0.0;
 		pointCoords[ v   ] = dz / 2.0;
 
 		clear();
@@ -168,14 +169,14 @@ public final class Sphere3D
 	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
 	{
 		final double dx = this.dx;
-		if ( Matrix3D.almostEqual( dx , this.dy )
-		  && Matrix3D.almostEqual( dx , this.dz ) )
+		if ( Matrix3D.almostEqual( dx , dy )
+		  && Matrix3D.almostEqual( dx , dz ) )
 		{
 			final Matrix3D viewBase          = xform.multiply( viewTransform );
 			final Matrix3D combinedTransform = viewBase.multiply( gTransform );
 
-			final float x = (float)combinedTransform.transformX( 0 , 0 , 0 );
-			final float y = (float)combinedTransform.transformY( 0 , 0 , 0 );
+			final float x = (float)combinedTransform.xo;
+			final float y = (float)combinedTransform.yo;
 
 			final float r;
 			{
@@ -186,14 +187,24 @@ public final class Sphere3D
 				r = (float)( 0.5 * dx * Math.sqrt( xx * xx + xy * xy + xz * xz ) );
 			}
 
-			final Ellipse2D shape = Matrix3D.almostEqual( r , 0.0f ) ? null : new Ellipse2D.Float( x - r , y - r , r + r , r + r );
+			final Ellipse2D shape = Matrix3D.almostEqual( (double)r , 0.0 ) ? null : new Ellipse2D.Float( x - r , y - r , r + r , r + r );
 
 			if ( fillColor != null )
 			{
-				final float goldenRatio = 0.6180339f;
-				final float highlight   = ( goldenRatio - 0.5f ) * r;
+				final Paint fillPaint;
+				if ( ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) )
+				{
+					final float goldenRatio = 0.6180339f;
+					final float highlight   = ( goldenRatio - 0.5f ) * r;
 
-				g.setPaint( new GradientPaint( x + highlight , y - highlight , fillColor , x -r , y + r , outlineColor , true ) );
+					fillPaint = new GradientPaint( x + highlight , y - highlight , fillColor , x -r , y + r , outlineColor , true );
+				}
+				else
+				{
+					fillPaint = fillColor;
+				}
+
+				g.setPaint( fillPaint );
 				g.fill( shape );
 			}
 
