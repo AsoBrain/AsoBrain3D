@@ -18,7 +18,7 @@ import java.util.StringTokenizer;
  *
  * @author	Peter S. Heijnen
  *
- * @version	$Revision$ ($Date$, $Auhor$)
+ * @version	$Revision$ ($Date$, $Author$)
  */
 public final class Bounds3D
 {
