@@ -181,12 +181,12 @@ public final class PolyPoint2D
 	 */
 	public synchronized String toString()
 	{
-		final StringBuffer sb = new StringBuffer();
-		sb.append( "L," );
-		sb.append( x );
-		sb.append( "," );
-		sb.append( y );
-		return sb.toString();
+		return new StringBuffer()
+						.append( "L," )
+						.append( x )
+						.append( "," )
+						.append( y )
+						.toString();
 	}
 
 	/**
