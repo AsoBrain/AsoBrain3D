@@ -1,5 +1,3 @@
-package com.numdata.soda.backoffice;
-
 /*
  * $Id$
  *
@@ -9,6 +7,8 @@ package com.numdata.soda.backoffice;
  * form without express permission from Numdata BV. Please contact Numdata BV
  * for license information.
  */
+package com.numdata.soda;
+
 import java.awt.geom.Rectangle2D;
 import java.util.Vector;
 
@@ -16,7 +16,7 @@ import ab.light3d.Matrix3D;
 import ab.light3d.TextureSpec;
 import ab.light3d.renderer.Object3D;
 
-import com.numdata.soda.common.CommonTools;
+import com.numdata.oss.TextTools;
 
 /**
  * This class describes a polyline in 2D.
@@ -2731,7 +2731,7 @@ public final class Polyline2D
 		if ( str == null || str.length() == 0 )
 			throw new IllegalArgumentException( "invalid line specification: " + str );
 
-		final String[] points = CommonTools.tokenize( str , '|' );
+		final String[] points = TextTools.tokenize( str , '|' );
 		final Polyline2D result = new Polyline2D();
 		for ( int i = 0 ; i < points.length ; i++ )
 			result.append( PolyPoint2D.createInstance( points[ i ] ) );
