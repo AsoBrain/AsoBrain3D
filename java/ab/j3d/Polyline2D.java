@@ -448,22 +448,29 @@ public class Polyline2D
 
 		switch ( myType <<5| otherType )
 		{
-			case POINT  <<5| POINT  : return getIntersectionPoint_Point( this , other );
-			case POINT  <<5| LINE   : return getIntersectionLine_Point( other , this );
-			case POINT  <<5| PATH   : return getIntersectionPath_Point( other , this );
-			case POINT  <<5| CONVEX : return getIntersectionConvex_Point( other , this );
-			case LINE   <<5| POINT  : return getIntersectionLine_Point( this , other );
-			case LINE   <<5| LINE   : return getIntersectionLine_Line( this , other );
-			case LINE   <<5| PATH   : return getIntersectionPath_Line( other , this );
+			/* point vs. ??? & ??? vs. point */
+			case POINT  <<5| POINT  : return getPoint( 0 ).equals( other.getPoint( 0 ) ) ? this : null;
+			case POINT  <<5| LINE   : return isIntersectingLine_Point( other , this ) ? this : null;
+			case POINT  <<5| PATH   : return isIntersectingPath_Point( other , this ) ? this : null;
+			case POINT  <<5| CONVEX : return isIntersectingConvex_Point( other , getPoint( 0 ) ) ? this : null;
+			case LINE   <<5| POINT  : return isIntersectingLine_Point( this , other ) ? other : null;
+			case PATH   <<5| POINT  : return isIntersectingPath_Point( this , other ) ? other : null;
+			case CONVEX <<5| POINT  : return isIntersectingConvex_Point( this , other.getPoint( 0 ) ) ? other : null;
+
+			/* line vs. ??? & ??? vs. line */
+			case LINE   <<5| LINE   : return getIntersectionLine_Line( getPoint( 0 ) , getPoint( 1 ) , other.getPoint( 0 ) , other.getPoint( 1 ) );
+			case LINE   <<5| PATH   : return getIntersectionPath_Line( other , getPoint( 0 ) , getPoint( 1 ) );
 			case LINE   <<5| CONVEX : return getIntersectionConvex_Line( other , this );
-			case PATH   <<5| POINT  : return getIntersectionPath_Point( this , other );
-			case PATH   <<5| LINE   : return getIntersectionPath_Line( this , other );
-			case PATH   <<5| PATH   : return getIntersectionPath_Path( this , other );
-			case PATH   <<5| CONVEX : return getIntersectionConvex_Path( other , this );
-			case CONVEX <<5| POINT  : return getIntersectionConvex_Point( this , other );
+			case PATH   <<5| LINE   : return getIntersectionPath_Line( this , other.getPoint( 0 ) , other.getPoint( 1 ) );
 			case CONVEX <<5| LINE   : return getIntersectionConvex_Line( this , other );
-			case CONVEX <<5| PATH   : return getIntersectionConvex_Path( this , other );
+			
+			/* convex vs. ??? & ??? vs. convex */
 			case CONVEX <<5| CONVEX : return getIntersectionConvex_Convex( this , other );
+			case CONVEX <<5| PATH   : return getIntersectionConvex_Path( this , other );
+			case PATH   <<5| CONVEX : return getIntersectionConvex_Path( other , this );
+
+			/* path vs. path */
+			case PATH   <<5| PATH   : return getIntersectionPath_Path( this , other );
 		}
 
 		throw new RuntimeException( "Can't get intersection between type #" + myType + " and type #" + otherType );
@@ -934,343 +941,6 @@ public class Polyline2D
 	}
 
 	/**
-	 * Gets the intersecting area of two convex Polyline2D's.
-	 *
-	 * Figure out intersection between two convex 2d shapes... ah well..
-	 * It seems like a lot of code, but if the shapes have no 
-	 * intersection, it is almost as fast as isIntersectingConvex_Convex().
-	 * 
-	 * This consists of two stages:
-	 *
-	 * 1) Find all intersecting line segments
-	 * 2) Position the found segments head-to-tail.
-	 *
-	 * Stage 1, find intersecting segments.
-	 *
-	 *		Walk thrue both polys to find the segments that intersect with the other.
-	 * 		First we have to know if we start inside or outside the other poly.
-	 * 		Now find all intersecting points of one segment of the current poly with 
-	 * 		all segments of the other poly (for two convex polys, this can be 0, 1 or 2 points):
-	 * 
-	 *		- no intersections ? inside  ? stay inside, add segment.
-	 *							 outside ? stay outside, do nothing.
-	 *      - one intersection ? inside  ? go outside, add segment( head , intersection ).
-	 *							 outside ? go inside, add segment( tail , intersection ). 
-	 *		- two intersections? inside  ? error, from the inside you can never have two intersections.
-	 *							 outside ? stay outside, add segment( intersection1 , intersection2 ).
-	 *
-	 *		Optimisations after walking thrue the first poly:
-	 *
-	 *		1) If we started inside and we stayed inside the whole time, 
-	 *		   intersection must be convex1 itself.
-	 *		2) If we stayed outside the whole time and a point of convex2
-	 *		   is inside of convex1, intersection is convex2 itself.
-	 *		3) If we stayed outside the whole time and a point of convex2
-	 *		   is outside of convex1, there is no intersection.
-	 *
-	 * Stage 2, head-to-tail.
-	 *
-	 *		Start with a random segment (we use the first segment).
-	 *		We add the head and the tail of this first segment to the result poly.
-	 *		Now walk thrue all the rest of the segments, removing them
-	 *		if you add one to the result poly.
-	 *		The head of the next segment must be equal to the tail
-	 *		of the last one. If so, add the tail of the segment to
-	 *		the polyline.
-	 * 
-	 * @param	convex1		a polyline that is guaranteed convex.
-	 * @param	convex2		an other polyline that is convex.
-	 *
-	 * @return	the intersecting area of the two convex polylines.
-	 */
-	protected static Polyline2D getIntersectionConvex_ConvexOLD( final Polyline2D convex1 , final Polyline2D convex2 )
-	{
-		int INSIDE  = -1;
-		int UNKNOWN = 0;
-		int OUTSIDE = 1;
-		
-		/*
-		 * This is where we gather the intersecting segments.
-		 * After this is done we only have to sort them and
-		 * create a new polyline.
-		 */
-		Vector segments = new Vector();
-
-		/*
-		 * Helpers
-		 */
-		boolean corner = false; // intersection is other polys cornerpoint.
-		boolean stayedInside = false;
-		PolyPoint2D l1,c1,l2,c2,is1,is2;
-		PolyPoint2D[] is = null; // possible intersections.
-		int i,j,l1pos,c1pos;
-			
-		/* 
-		 * First walk thrue convex1, then thrue convex2 to get all intersection segments.
-		 */
-		for ( int x = 0 ; x < 2 ; x++ )	// loop twice
-		{
-			Polyline2D poly1 = x == 0 ? convex1 : convex2;
-			Polyline2D poly2 = x == 1 ? convex1 : convex2;
-
-			/*
-			 * Gather all line peaces of convex1 that intersect with convex2.
-			 */
-			i = poly1.getPointCount();
-			j = 0;
-
-			/*
-			 * l1/l2 = last point on convex1/2
-			 * c1/c2 = current point on convex1/2
-			 * is[0]/is[1] = first/second intersection on segment
-			 */
-			c1pos = UNKNOWN;
-			l1 = poly1.getPoint( --i );
-
-			/*
-			 * First we want to know if the startpoint is on the other convex.
-			 */
-			l1pos = isIntersectingConvex_Point( poly2 , l1 ) ? INSIDE : OUTSIDE;
-
-			/*
-			 * In the second pass, if the first pass did not find a segment,
-			 * and a point of convex2 lies outside convex1 (inside == false), 
-			 * they don't intersect. If it lies inside convex1 (inside = true),
-			 * then the intersection is convex1.
-			 */
-			if ( x == 1 && segments.size() == 0 )
-				return l1pos == INSIDE ? poly1 : null;
-			if ( x == 1 && stayedInside )
-				return poly2;
-			stayedInside = l1pos == INSIDE;
-				
-			while( --i >= 0 )	// loop convex1.polycount (2 * 2 * polycount max)
-			{
-				c1 = poly1.getPoint( i );
-				c1pos = UNKNOWN;
-				
-				// intersection is other polys cornerpoint.
-				corner = false;
-
-				j = poly2.getPointCount();
-				l2 = poly2.getPoint( --j );
-
-				System.out.println( "Shape 1 : " + l1 + " , " + c1 );
-				/*
-				 * Get all intersections of this segment.
-				 */
-				is1 = null;
-				is2 = null;	// clear intersections.
-				while( --j >= 0 ) // loop convex2.polycount (2 * 2 * polycount * polycount max)
-				{
-					c2 = poly2.getPoint( j );
-
-					is = getIntersectionLine_Line( l1.x , l1.y , c1.x , c1.y , l2.x , l2.y , c2.x , c2.y , is );				
-
-					System.out.println( "Shape 2 : " + l2 + " , " + c2 );
-					if ( is != null ) // found an intersection
-					{
-						if ( is[1] != null )
-							System.out.println( "Line intersection : " + is[0] + " , " + is[1] );
-						else
-							System.out.println( "Point intersection: " + is[0] );
-
-						/*
-						 * This is to prevent, line intersections to be added twice.
-						 */
-						if ( is[1] != null && x == 1 )
-						{
-							l2 = c2;
-							continue;
-						}
-
-						if ( is1 == null || is1.almostEquals( is[0] ) ) // found first intersection (or duplicate).
-						{
-							is1 = is[0];
-							is2 = is[1];
-						}
-						else			   // found second intersection (may not be a line).
-						{
-							if ( is[1] != null )
-								throw new RuntimeException( "Don't know how to handle" );
-							is2 = is[0];
-						}
-
-						if ( l2.almostEquals( is[0] ) )
-							corner = true;
-							
-						if ( is1 != null && is2 != null )
-							break;
-					}
-
-					/*
-					 * Shift.
-					 */
-					l2 = c2;
-				}
-
-				System.out.println( "Intersections : " + is1 + " , " + is2 );
-				
-				/*
-				 * Sort the intersection points.
-				 */
-				if ( is1 != null && is2 != null )
-				{
-					if ( l1.getLength( is2 ) < l1.getLength( is1 ) )
-					{
-						PolyPoint2D temp = is1;
-						is1 = is2; is2 = temp;
-					}
-				}
-				
-				/*
-				 * Calculate if 'current point' (c1) is inside or outside.
-				 */
-/*				if ( is[0] == null ) // no intersections
-				{
-					c1pos = l1pos;
-				}
-				else*/ if ( is1 != null ) // 1 or 2 intersections
-				{
-					if ( is2 == null && !corner ) // 1 intersection
-						c1pos = -l1pos;
-
-					if ( c1.almostEquals( is1 ) || c1.almostEquals( is2 ) ) // intersection is on current point
-						c1pos = INSIDE;
-
-					else if ( c1pos == UNKNOWN )
-						c1pos = isIntersectingConvex_Point( poly2 , c1 ) ? INSIDE : OUTSIDE;
-				}
-
-				/*
-				 * Sub segments, generate intersecting segments.
-				 */
-				PolyPoint2D[] toAdd = null;
-				if ( is1 == null )
-				{
-					// no intersections
-					if ( l1pos == INSIDE /*&& c1pos == INSIDE*/ )
-						toAdd = new PolyPoint2D[]{ l1 , c1 };
-					c1pos = l1pos;
-				}
-				else // 1 or 2 intersections
-				{
-					// first intersectionpoint is not l1.
-					if ( l1pos == INSIDE && !l1.almostEquals( is1 ) )
-						toAdd = new PolyPoint2D[]{ l1 , is1 };
-
-					if ( is2 == null ) // 1 intersection
-					{
-						// 1 intersection and intersectionpoint is not c1
-						if ( c1pos == INSIDE && !c1.almostEquals( is1 ) )
-							toAdd = new PolyPoint2D[]{ is1 , c1 };
-					}
-					else // 2 intersections
-					{
-						// second intersectionpoint is not c1 
-						if ( c1pos == INSIDE && !c1.almostEquals( is2 ) )
-//							segments.addElement( new PolyPoint2D[]{ is2 , c1 } );
-							throw new RuntimeException( "Linesegment cannot have two intersections and end in convex shape" );
-
-						if ( !is1.almostEquals( is2 ) )
-							toAdd = new PolyPoint2D[]{ is1 , is2 };
-					}
-				}
-				if ( toAdd != null )
-				{
-					System.out.println( "Add [ " + toAdd[0] + " , " + toAdd[1] + "]" );
-					segments.addElement( toAdd );
-				}
-
-				if ( c1pos == OUTSIDE || is2 != null )
-					stayedInside = false;
-				
-				/*
-				 * Shift
-				 */	
-				l1 = c1;
-				l1pos = c1pos;
-			}
-		}		
-
-		/*
-		 * Now we have all the segments.
-		 * place the segments in order, then we have the intersection.
-		 * Walk true all segments to position them head to tail.
-		 */
-		Polyline2D result = new Polyline2D();
-
-		if ( segments.size() == 1 || segments.size() == 2 )
-		{
-			PolyPoint2D[] segment = (PolyPoint2D[])segments.elementAt( 0 );
-			result.append( segment[0] );
-			if ( segment[1] != null )
-				result.append( segment[1] );
-				
-			return result;	
-		}
-		
-		if ( segments.size() < 3 )
-			throw new RuntimeException( "Algorithm or optimalizations did not work properly! check the code." );
-
-		/*
-		 * Start with a random segment,
-		 * this will be our starting point.
-		 */
-		PolyPoint2D head = ((PolyPoint2D[])segments.elementAt( 0 ))[0];
-		result.append( head.x , head.y );
-
-		head = ((PolyPoint2D[])segments.elementAt( 0 ))[1];
-		result.append( head.x , head.y );
-
-		segments.removeElementAt( 0 );
-		
-		/*
-		 * Keep adding segments until 1 is left.
-		 * (this must be the last segment that closes
-		 * the polyline, since the result of this method is
-		 * always a convex poly again. we close is ourselves).
-		 */
-		while ( segments.size() > 1 )
-		{
-			/*
-			 * Find a segment that matches the starting point.
-			 */
-outer:		for ( i = 0 ; i < segments.size() ; i++ )
-			{
-				PolyPoint2D[] segment = (PolyPoint2D[])segments.elementAt( i );
-
-				/*
-				 * Try to tie each end to the head.
-				 */
-				for ( int end = 0 ; end < 2 ; end++ )
-				{
-					/*
-					 * Point is almost equal to head?
-					 */
-					if ( segment[end].almostEquals( head ) )
-					{
-						head = segment[ 1 - end ]; // new head = other end
-						result.append( head.x , head.y );
-						segments.removeElementAt( i );
-						break outer;
-					}
-				}
-				if ( i == segments.size() - 1 )
-					throw new RuntimeException( "Result is not a single polyline. Only unary results are supported." );
-			}
-
-		}
-
-		/*
-		 * Close the poly.
-		 */
-		result.close();
-			
-		return result; 
-	}
-
-	/**
 	 * Gets the intersection between a convex PolyLine2D and a line PolyLine2D.
 	 *
 	 * @param	convex	The convex Polyline to get intersection from.
@@ -1587,23 +1257,6 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 	}
 
 	/**
-	 * Gets the intersection between a convex shape and a point.
-	 *
-	 * This is very easy, if they intersect (for which we have another
-	 * method), the intersection is the point.If they don't the shape is
-	 * empty.
-	 *
-	 * @param	convex	the convex shape to get intersection from.
-	 * @param	points	the point to get intersection from.
-	 *
-	 * @return	Polyline2D describing intersection between the two.
-	 */
-	protected static Polyline2D getIntersectionConvex_Point( final Polyline2D convex , final Polyline2D point )
-	{
-		return isIntersectingConvex_Point( convex , point ) ? point : null;
-	}
-
-	/**
 	 * Gets the intersection between two lines.
 	 *
 	 * Calls getIntersectionLine_Line with 8 floats to do the work.
@@ -1629,20 +1282,6 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 			result.append( sect[1].x , sect[1].y );	// intersecting line
 		
 		return result;
-	}
-
-	/**
-	 * Gets the intersection between two lines.
-	 * Simply calls getIntersectionLine_Line with four points.
-	 *
-	 * @param	line1	The first line.
-	 * @param	line2	The second line.
-	 *
-	 * @return	Polyline describing the intersection.
-	 */
-	protected static Polyline2D getIntersectionLine_Line( final Polyline2D line1 , final Polyline2D line2 )
-	{
-		return getIntersectionLine_Line( line1.getPoint( 0 ) , line1.getPoint( 1 ) , line2.getPoint( 0 ) , line2.getPoint( 1 ) );
 	}
 
 	/**
@@ -1770,21 +1409,6 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 	}
 
 	/**
-	 * Gets the intersection between a line and a point.
-	 * If the point is on the line, intersection is the point,
-	 * otherwise no intersection.
-	 *
-	 * @param	line	The line.
-	 * @param	point	The point.
-	 *
-	 * @return	Polyline describing the intersection.
-	 */
-	protected static Polyline2D getIntersectionLine_Point( final Polyline2D line , final Polyline2D point )
-	{
-		return isIntersectingLine_Point( line , point )?point:null;
-	}
-
-	/**
 	 * Gets the intersection between a path and a line.
 	 *
 	 * Works only when result is one peace of one segment of path (or one point).
@@ -1888,21 +1512,6 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 	}
 
 	/**
-	 * Gets the intersection between a path and a line.
-	 *
-	 * Works only when result is one peace of one segment of path (or one point).
-	 *
-	 * @param	path	the path
-	 * @param	line	the line
-	 * 
-	 * @return	Polyline describing the intersection.
-	 */
-	protected static Polyline2D getIntersectionPath_Line( final Polyline2D path , final Polyline2D line )
-	{
-		return getIntersectionPath_Line( path , line.getPoint( 0 ) , line.getPoint( 1 ) );
-	}
-
-	/**
 	 * Gets intersection between two paths.
 	 *
 	 * Works only when seperate intersecting segments can be layed
@@ -1954,35 +1563,6 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 		 * Multiple intersections
 		 */
 		return placeHeadToTail( segments );		
-	}
-
-	/**
-	 * Gets the intersection between a path and a point.
-	 *
-	 * If the point is on the path, intersection is point, otherwise
-	 * no intersection.
-	 *
-	 * @param	path	The path.
-	 * @param	point	The point.
-	 *
-	 * @return	Polyline describing the intersection.
-	 */
-	protected static Polyline2D getIntersectionPath_Point( final Polyline2D path , final Polyline2D point )
-	{
-		return isIntersectingPath_Point( path , point ) ? point : null;
-	}
-
-	/**
-	 * Gets the intersection between two points.
-	 *
-	 * If the points are the same, intersection is a point, otherwise
-	 * no intersection.
-	 *
-	 * @return	Polyline describing the intersection.
-	 */
-	protected static Polyline2D getIntersectionPoint_Point( final Polyline2D point1 , final Polyline2D point2 )
-	{
-		return isIntersectingPoint_Point( point1 , point2 ) ? point1 : null;
 	}
 
 	/**
@@ -2240,8 +1820,8 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 	protected static boolean hasEffect( Matrix3D xform )
 	{
 		return xform == null ||
-		       xform.xx != 1d || xform.xy != 0d || xform.xo != 0d ||
-		       xform.yx != 0d || xform.yy != 1d || xform.yo != 0d;
+		       xform.xx != 1 || xform.xy != 0 || xform.xo != 0 ||
+		       xform.yx != 0 || xform.yy != 1 || xform.yo != 0;
 	}
 
 	/**
@@ -2289,10 +1869,10 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 			 
 		switch ( myType <<5| otherType )
 		{
-			case POINT  <<5| POINT  : return isIntersectingPoint_Point( this , other );
+			case POINT  <<5| POINT  : return getPoint( 0 ).equals( other.getPoint( 0 ) );
 			case POINT  <<5| LINE   : return isIntersectingLine_Point( other , this );
 			case POINT  <<5| PATH   : return isIntersectingPath_Point( other , this );
-			case POINT  <<5| CONVEX : return isIntersectingConvex_Point( other , this );
+			case POINT  <<5| CONVEX : return isIntersectingConvex_Point( other , getPoint( 0 ) );
 			case LINE   <<5| POINT  : return isIntersectingLine_Point( this , other );
 			case LINE   <<5| LINE   : return isIntersectingLine_Line( this , other );
 			case LINE   <<5| PATH   : return isIntersectingPath_Line( other , this );
@@ -2301,7 +1881,7 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 			case PATH   <<5| LINE   : return isIntersectingPath_Line( this , other );
 			case PATH   <<5| PATH   : return isIntersectingPath_Path( this , other );
 			case PATH   <<5| CONVEX : return isIntersectingConvex_Path( other , this );
-			case CONVEX <<5| POINT  : return isIntersectingConvex_Point( this , other );
+			case CONVEX <<5| POINT  : return isIntersectingConvex_Point( this , other.getPoint( 0 ) );
 			case CONVEX <<5| LINE   : return isIntersectingConvex_Line( this , other );
 			case CONVEX <<5| PATH   : return isIntersectingConvex_Path( this , other );
 			case CONVEX <<5| CONVEX : return isIntersectingConvex_Convex( this , other );
@@ -2442,26 +2022,6 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 		}
 
 		return hasSide;
-	}
-
-	/**
-	 * Test is a point is inside a convex area. The algorithm works as follows:
-	 * <I>
-	 * Traverse all segments of the path that define the area. For each segment,
-	 * determine if the specified point is on the left side or right side (or right
-	 * in the center). If the point is always at the left side or center, or if
-	 * the point is always on the right side or center, the point is inside the
-	 * area. Otherwise, the point is outside the area.
-	 * </I>
-	 *
-	 * @param	convex	The convex.
-	 * @param	point	The point.
-	 *	 
-	 * @return	true if shapes are intersecting, otherwise false.
-	 */
-	protected static boolean isIntersectingConvex_Point( final Polyline2D convex , final Polyline2D point )
-	{
-		return isIntersectingConvex_Point( convex , point.getPoint( 0 ) );
 	}
 
 	/**
@@ -2731,19 +2291,6 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 	}
 
 	/**
-	 * Checks for intersection between two points.
-	 *
-	 * @param	point1	First point.
-	 * @param	point2	Second point.
-	 *
- 	 * @return	true if shapes are intersecting, otherwise false.
-	 */
-	protected static boolean isIntersectingPoint_Point( final Polyline2D point1 , final Polyline2D point2 )
-	{
-		return point1.getPoint( 0 ).equals( point2.getPoint( 0 ) );
-	}
-
-	/**
 	 * Checks for intersection between two rectangles.
 	 *
 	 * @param	r1	First rectangle
@@ -2787,7 +2334,7 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 
 			/*
 			 * Not quite precise measurement, but that is not really
-			 * nessesairy, the point is, that the shape is 'almost' a
+			 * nessesary, the point is, that the shape is 'almost' a
 			 * rectangle.
 			 */
 			if ( angleCos < squareCos - 0.1 || angleCos > squareCos + 0.1 )
