@@ -22,15 +22,26 @@ package ab.j3d.model;
 
 import ab.j3d.Matrix3D;
 
+import com.numdata.oss.ArrayTools;
+
 /**
- * This collection class is used to store combinations of Matrix3D
- * and Node3D objects.
+ * This collection is used to store combinations of <code>Matrix3D</code> and
+ * <code>Node3D</code> objects.
+ *
+ * @see     Node3D#gatherLeafs
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
 public final class Node3DCollection
 {
+	/**
+	 * Increment size for arrays.
+	 *
+	 * @see     ArrayTools#ensureLength
+	 */
+	public static final int INCREMENT_SIZE = 10;
+
 	/**
 	 * Number of stored elements.
 	 */
@@ -54,8 +65,8 @@ public final class Node3DCollection
 	public Node3DCollection()
 	{
 		_elementCount = 0;
-		_matrixData = new Matrix3D[ 10 ];
-		_nodeData = new Node3D[ 10 ];
+		_matrixData   = null;
+		_nodeData     = null;
 	}
 
 	/**
@@ -66,10 +77,8 @@ public final class Node3DCollection
 	 */
 	public synchronized void add( final Matrix3D matrix , final Node3D node )
 	{
-		ensureCapacity( _elementCount + 1 );
-
-		_matrixData[ _elementCount   ] = matrix;
-		_nodeData  [ _elementCount++ ] = node;
+		ArrayTools.append( _matrixData , Matrix3D.class , _elementCount   , INCREMENT_SIZE , matrix );
+		ArrayTools.append( _matrixData , Node3D  .class , _elementCount++ , INCREMENT_SIZE , node );
 	}
 
 	/**
@@ -77,32 +86,12 @@ public final class Node3DCollection
 	 */
 	public void clear()
 	{
-		removeAllElements();
-	}
-
-	/**
-	 * Increases the capacity of this collection, if necessary, to ensure
-	 * that it can hold at least the number of components specified by
-	 * the minimum capacity argument.
-	 *
-	 * @param   minCapacity   The desired minimum capacity.
-	 */
-	public synchronized void ensureCapacity( final int minCapacity )
-	{
-		final int oldCapacity = _nodeData.length;
-
-		if ( minCapacity > oldCapacity )
+		final int elementCount = _elementCount;
+		if ( elementCount > 0 )
 		{
-			final Node3D[] oldNodes    = _nodeData;
-			final Matrix3D[] oldMatrices = _matrixData;
-
-			final int newCapacity = oldCapacity * 2;
-
-		    _nodeData   = new Node3D[ newCapacity ];
-		    _matrixData = new Matrix3D[ newCapacity ];
-
-			System.arraycopy( oldNodes    , 0 , _nodeData   , 0 , _elementCount );
-			System.arraycopy( oldMatrices , 0 , _matrixData , 0 , _elementCount );
+			ArrayTools.clear( _nodeData   , 0 , elementCount );
+			ArrayTools.clear( _matrixData , 0 , elementCount );
+			_elementCount = 0;
 		}
 	}
 
@@ -115,10 +104,7 @@ public final class Node3DCollection
 	 */
 	public synchronized Matrix3D getMatrix( final int index )
 	{
-		if ( index >= _elementCount )
-		    throw new ArrayIndexOutOfBoundsException( index );
-
-		return( _matrixData[ index ] );
+		return (Matrix3D)ArrayTools.get( _matrixData , _elementCount , index );
 	}
 
 	/**
@@ -130,23 +116,7 @@ public final class Node3DCollection
 	 */
 	public synchronized Node3D getNode( final int index )
 	{
-		if ( index >= _elementCount )
-		    throw new ArrayIndexOutOfBoundsException( index );
-
-		return( _nodeData[ index ] );
-	}
-
-	/**
-	 * Removes all elements and sets the size to zero.
-	 */
-	public synchronized void removeAllElements()
-	{
-		for ( int i = 0 ; i < _elementCount ; i++ )
-		{
-			_nodeData  [ i ] = null;
-			_matrixData[ i ] = null;
-		}
-		_elementCount = 0;
+		return (Node3D)ArrayTools.get( _nodeData , _elementCount , index );
 	}
 
 	/**
