@@ -1,23 +1,58 @@
-/*
+/* ====================================================================
  * $Id$
+ * ====================================================================
+ * Numdata Open Source Software License, Version 1.0
  *
- * (C) Copyright Numdata BV 2000-2003 - All Rights Reserved
+ * Copyright (c) 2001-2004 Numdata BV.  All rights reserved.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       "This product includes software developed by
+ *        Numdata BV (http://www.numdata.com/)."
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names "Numdata" must not be used to endorse or promote
+ *    products derived from this software without prior written
+ *    permission of Numdata BV. For written permission, please contact
+ *    info@numdata.com.
+ *
+ * 5. Products derived from this software may not be called "Numdata",
+ *    nor may "Numdata" appear in their name, without prior written
+ *    permission of Numdata BV.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE NUMDATA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * ====================================================================
  */
-package com.numdata.soda.mountings;
-
-import ab.light3d.Matrix3D;
-
-import com.numdata.oss.TextTools;
+package ab.light3d;
 
 /**
  * This class describes a polyline control point in 2D.
  *
- * @author  Peter S. Heijnen
  * @author  Sjoerd Bouwman
+ * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
 public final class PolyPoint2D
@@ -157,18 +192,22 @@ public final class PolyPoint2D
 		if ( str == null || str.length() == 0 )
 			throw new IllegalArgumentException( "invalid point specification: " + str );
 
-		final String[] tokens = TextTools.tokenize( str , ',' );
-		if ( tokens.length < 2 )
+		final int firstComma = str.indexOf( ',' );
+		if ( firstComma < 0 )
 			throw new IllegalArgumentException( "insufficient tokens in specification: " + str );
 
-		final String type = tokens[ 0 ];
+		final String type = str.substring( 0 , firstComma ).trim();
 
 		if ( "L".equals( type ) )
 		{
-			if ( tokens.length != 3 )
+			final int secondComma = str.indexOf( ',' , firstComma + 1 );
+			if ( ( secondComma < 0 ) || ( str.indexOf( ',' , secondComma + 1 ) >= 0 ) )
 				throw new IllegalArgumentException( "invalid token count in line specification: " + str );
 
-			return new PolyPoint2D( new Float( tokens[ 1 ] ).floatValue() , new Float( tokens[ 2 ] ).floatValue() );
+			final float x = new Float( str.substring( firstComma + 1 , secondComma ).trim() ).floatValue();
+			final float y = new Float( str.substring( secondComma + 1 ).trim() ).floatValue();
+
+			return new PolyPoint2D( x , y );
 		}
 		else
 		{

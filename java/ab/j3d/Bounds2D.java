@@ -1,13 +1,52 @@
-/*
+/* ====================================================================
  * $Id$
+ * ====================================================================
+ * Numdata Open Source Software License, Version 1.0
  *
- * (C) Copyright Numdata BV 2000-2003 - All Rights Reserved
+ * Copyright (c) 2001-2004 Numdata BV.  All rights reserved.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       "This product includes software developed by
+ *        Numdata BV (http://www.numdata.com/)."
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names "Numdata" must not be used to endorse or promote
+ *    products derived from this software without prior written
+ *    permission of Numdata BV. For written permission, please contact
+ *    info@numdata.com.
+ *
+ * 5. Products derived from this software may not be called "Numdata",
+ *    nor may "Numdata" appear in their name, without prior written
+ *    permission of Numdata BV.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE NUMDATA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * ====================================================================
  */
-package com.numdata.soda.mountings;
+package ab.light3d;
 
 /**
  * This class describes 2D boundaries.
@@ -20,36 +59,50 @@ public final class Bounds2D
 	/**
 	 * Lower bound X coordinate.
 	 */
-	public float x1;
+	public final float minX;
 
 	/**
 	 * Lower bound Y coordinate.
 	 */
-	public float y1;
+	public final float minY;
 
 	/**
 	 * Upper bound X coordinate.
 	 */
-	public float x2;
+	public final float maxX;
 
 	/**
 	 * Upper bound Y coordinate.
 	 */
-	public float y2;
+	public final float maxY;
 
 	/**
 	 * Construct boundaries.
 	 *
-	 * @param   x1      Lower bound X coordinate.
-	 * @param   y1      Lower bound Y coordinate.
-	 * @param   x2      Upper bound X coordinate.
-	 * @param   y2      Upper bound Y coordinate.
+	 * @param   minX      Lower bound X coordinate.
+	 * @param   minY      Lower bound Y coordinate.
+	 * @param   maxX      Upper bound X coordinate.
+	 * @param   maxY      Upper bound Y coordinate.
 	 */
-	public Bounds2D( final float x1 , final float y1 , final float x2 , final float y2 )
+	public Bounds2D( final float minX , final float minY , final float maxX , final float maxY )
 	{
-		this.x1 = x1;
-		this.y1 = y1;
-		this.x2 = x2;
-		this.y2 = y2;
+		this.minX = minX;
+		this.minY = minY;
+		this.maxX = maxX;
+		this.maxY = maxY;
+	}
+
+	/**
+	 * Checks for intersection between this and other bounds.
+	 *
+	 * @param   other   Bounds to compare against.
+	 *
+	 * @return  <code>true</code> if bounds intersect;
+	 *          <code>false</code> if bounds are disjunct.
+	 */
+	public boolean intersects( final Bounds2D other )
+	{
+		return ( minX <= other.maxX ) && ( maxX >= other.minX )
+		    && ( minY <= other.maxY ) && ( maxY >= other.minY );
 	}
 }

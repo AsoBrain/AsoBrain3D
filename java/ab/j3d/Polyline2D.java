@@ -1,27 +1,60 @@
-/*
+/* ====================================================================
  * $Id$
+ * ====================================================================
+ * Numdata Open Source Software License, Version 1.0
  *
- * (C) Copyright Numdata BV 2000-2003 - All Rights Reserved
+ * Copyright (c) 2001-2004 Numdata BV.  All rights reserved.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       "This product includes software developed by
+ *        Numdata BV (http://www.numdata.com/)."
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names "Numdata" must not be used to endorse or promote
+ *    products derived from this software without prior written
+ *    permission of Numdata BV. For written permission, please contact
+ *    info@numdata.com.
+ *
+ * 5. Products derived from this software may not be called "Numdata",
+ *    nor may "Numdata" appear in their name, without prior written
+ *    permission of Numdata BV.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE NUMDATA BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * ====================================================================
  */
-package com.numdata.soda.mountings;
+package ab.light3d;
 
 import java.util.Vector;
-
-import ab.light3d.Matrix3D;
-import ab.light3d.TextureSpec;
-import ab.light3d.renderer.Object3D;
-
-import com.numdata.oss.TextTools;
 
 /**
  * This class describes a polyline in 2D.
  *
- * @author  Peter S. Heijnen
  * @author  Sjoerd Bouwman
+ * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
 public final class Polyline2D
@@ -506,16 +539,16 @@ public final class Polyline2D
 			/*
 			 * Define starting points.
 			 */
-			float x1 = bounds.x1;
-			float y1 = bounds.y1;
-			float x2 = bounds.x2;
-			float y2 = bounds.y2;
+			float minX = bounds.minX;
+			float minY = bounds.minY;
+			float maxX = bounds.maxX;
+			float maxY = bounds.maxY;
 
 			/*
 			 * Amount to move when line is not in shape.
 			 */
-			final float	horizontalStep = (x2 - x1) / 30;
-			final float	verticalStep = (y2 - y1) / 30;
+			final float	horizontalStep = ( maxX - minX ) / 30;
+			final float	verticalStep = ( maxY - minY ) / 30;
 
 			/*
 			 * The four outer points and wether they are intersecting with convex.
@@ -531,8 +564,8 @@ public final class Polyline2D
 				/*
 				 * Check if we missed it.
 				 */
-				if ( x1 > bounds.x2 || x2 < bounds.x1 ||
-				     y1 > bounds.y2 || y2 < bounds.y1 )
+				if ( minX > bounds.maxX || maxX < bounds.minX ||
+				     minY > bounds.maxY || maxY < bounds.minY )
 					throw new RuntimeException( "No enclosed rectangle can be found" );
 
 				/*
@@ -540,25 +573,25 @@ public final class Polyline2D
 				 */
 				if ( p1 == null )
 				{
-					p1 = new PolyPoint2D( x1 , y1 );
+					p1 = new PolyPoint2D( minX , minY );
 					p1i = isIntersectingConvex_Point( this , p1 );
 				}
 
 				if ( p2 == null )
 				{
-					p2 = new PolyPoint2D( x1 , y2 );
+					p2 = new PolyPoint2D( minX , maxY );
 					p2i = isIntersectingConvex_Point( this , p2 );
 				}
 
 				if ( p3 == null )
 				{
-					p3 = new PolyPoint2D( x2 , y1 );
+					p3 = new PolyPoint2D( maxX , minY );
 					p3i = isIntersectingConvex_Point( this , p3 );
 				}
 
 				if ( p4 == null )
 				{
-					p4 = new PolyPoint2D( x2 , y2 );
+					p4 = new PolyPoint2D( maxX , maxY );
 					p4i = isIntersectingConvex_Point( this , p4 );
 				}
 
@@ -568,81 +601,19 @@ public final class Polyline2D
 				 * move it inwards.
 				 */
 				if ( !(p1i && p2i) )
-				{	x1 += horizontalStep; p1 = null; p2 = null; }
+				{	minX += horizontalStep; p1 = null; p2 = null; }
 				if ( !(p1i && p3i) )
-				{	y1 += verticalStep; p1 = null; p3 = null; }
+				{	minY += verticalStep; p1 = null; p3 = null; }
 				if ( !(p3i && p4i) )
-				{	x2 -= horizontalStep; p3 = null; p4 = null; }
+				{	maxX -= horizontalStep; p3 = null; p4 = null; }
 				if ( !(p2i && p4i) )
-				{	y2 -= verticalStep; p2 = null; p4 = null; }
+				{	maxY -= verticalStep; p2 = null; p4 = null; }
 			}
 
-			_encloseCache = new Bounds2D( x1 , y1 , x2 - x1 , y2 - y1 );
+			_encloseCache = new Bounds2D( minX , minY , maxX - minX , maxY - minY );
 		}
 
 		return _encloseCache;
-	}
-
-	//DIT HIER IS FOUT, MOET NOG EEN BETERE OPLOSSING VINDEN
-	//\/   \/   \/   \/   \/   \/   \/   \/   \/   \/   \/
-
-	/**
-	 * Find rectangular shape enclosed by the convex shape defined by this polyline.
-	 *
-	 * This method does not guarantee that returned rectangle is the most optimal
-	 * solution.
-	 *
-	 * THIS IS ONLY VALID FOR POLYLINES DEFINING A 'CONVEX' SHAPE.
-	 *
-	 * @return  Bounds2D that is enclosed by this polyline.
-	 */
-	public Bounds2D getEnclosedRectangleOLD()
-	{
-		final Bounds2D bounds = getBounds();
-		if ( bounds == null )
-			return null;
-
-		final float boundsX1 = bounds.x1;
-		final float boundsY1 = bounds.y1;
-		final float boundsX2 = bounds.x2;
-		final float boundsY2 = bounds.y2;
-
-		PolyPoint2D p;
-		float      x1 = boundsX1;
-		float      y1 = boundsY1;
-		float      x2 = boundsX2;
-		float      y2 = boundsY2;
-		float      x;
-		float      y;
-		int         i  = getPointCount();
-
-		while ( --i >= 0 )
-		{
-			p = getPoint( i );
-			x = p.x;
-			y = p.y;
-
-			if ( ( x - boundsX1 ) < ( boundsX2 - x ) )
-			{
-				if ( x > x1 ) x1 = x;
-			}
-			else
-			{
-				if ( x < x2 ) x2 = x;
-			}
-
-			if ( ( y - boundsY1 ) < ( boundsY2 - y ) )
-			{
-				if ( y > y1 ) y1 = y;
-			}
-			else
-			{
-				if ( y < y2 ) y2 = y;
-			}
-		}
-
-
-		return new Bounds2D( x1 , y1 , x2 - x1 , y2 - y1 );
 	}
 
 	/**
@@ -671,7 +642,7 @@ public final class Polyline2D
 		/*
 		 * Check bounding box.
 		 */
-		if ( !isIntersectingRectangle_Rectangle( getBounds() , other.getBounds() ) )
+		if ( !getBounds().intersects( other.getBounds() ) )
 			return null;
 
 		switch ( myType <<5| otherType )
@@ -1826,45 +1797,6 @@ public final class Polyline2D
 	}
 
 	/**
-	 * Gets an object3d based on this polyline, the result will
-	 * be a face.
-	 *
-	 * @return  Object3D of this polyline.
-	 */
-	public Object3D getObject3D()
-	{
-		Object3D o = null;
-
-		if ( getType() == CONVEX )
-		{
-			final float[] verts = new float[ (getPointCount()-1) * 3 ];
-			final int[][] faces = new int[ 2 ][ getPointCount()-1 ];
-
-			int i;
-
-			for ( i = 0 ; i < getPointCount() - 1 ; i++ )
-			{
-				final PolyPoint2D p = getPoint( i );
-				verts[ i*3 + 0 ] = p.x;
-				verts[ i*3 + 1 ] = p.y;
-				verts[ i*3 + 2 ] = 0;
-			}
-
-			for ( i = 0 ; i < getPointCount() - 1 ; i++ )
-			{
-				faces[0][i] = i;
-				faces[1][i] = (getPointCount() - 2) - i;
-			}
-
-			o = new Object3D();
-			o.set( verts , faces , new TextureSpec() , false );
-		}
-
-
-		return o;
-	}
-
-	/**
 	 * Get control point at specified index from this polyline.
 	 *
 	 * @param   index	Index of control point to get.
@@ -2059,7 +1991,7 @@ public final class Polyline2D
 		/*
 		 * Check bounding box.
 		 */
-		if ( !isIntersectingRectangle_Rectangle( getBounds() , other.getBounds() ) )
+		if ( !getBounds().intersects( other.getBounds() ) )
 			return false;
 
 		switch ( myType <<5| otherType )
@@ -2490,19 +2422,6 @@ public final class Polyline2D
 	}
 
 	/**
-	 * Checks for intersection between two rectangles.
-	 *
-	 * @param   r1	First rectangle
-	 * @param   r2	Second rectangle
-	 *
-	 * @return  true if shapes are intersecting, otherwise false.
-	 */
-	protected static boolean isIntersectingRectangle_Rectangle( final Bounds2D r1 , final Bounds2D r2 )
-	{
-		return !( r1.x1 > r2.x2 || r1.x2 < r2.x1 || r1.y1 > r2.y2 || r1.y2 < r2.y1 );
-	}
-
-	/**
 	 * Checks if this polyline describes a rectangle.
 	 * (4 sides and 4 corners of 90 degrees).
 	 *
@@ -2669,10 +2588,16 @@ public final class Polyline2D
 		if ( str == null || str.length() == 0 )
 			throw new IllegalArgumentException( "invalid line specification: " + str );
 
-		final String[] points = TextTools.tokenize( str , '|' );
 		final Polyline2D result = new Polyline2D();
-		for ( int i = 0 ; i < points.length ; i++ )
-			result.append( PolyPoint2D.createInstance( points[ i ] ) );
+
+		for ( int start = 0 , end ; start < str.length() ; start = end + 1 )
+		{
+			end = str.indexOf( '|' , start );
+			if ( end < 0 )
+				end = str.length();
+
+			result.append( PolyPoint2D.createInstance( str.substring( start , end ).trim() ) );
+		}
 
 		return result;
 	}
