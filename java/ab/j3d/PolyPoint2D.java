@@ -77,13 +77,13 @@ public final class PolyPoint2D
 	/**
 	 * Construct new control point.
 	 *
-	 * @param   x	X coordinate of control point.
-	 * @param   y	Y coordinate of control point.
+	 * @param   newX    X coordinate of control point.
+	 * @param   newY	Y coordinate of control point.
 	 */
-	public PolyPoint2D( final float x , final float y )
+	public PolyPoint2D( final float newX , final float newY )
 	{
-		this.x = x;
-		this.y = y;
+		x = newX;
+		y = newY;
 	}
 
 	/**
@@ -93,8 +93,8 @@ public final class PolyPoint2D
 	 *
 	 * @param   other	Point to compare with.
 	 *
-	 * @return  <CODE>true</CODE> if the specified point is 'almost' equal;
-	 * 			<CODE>false</CODE> if the specified point is different.
+	 * @return  <code>true</code> if the specified point is 'almost' equal;
+	 * 			<code>false</code> if the specified point is different.
 	 */
 	public boolean almostEquals( final PolyPoint2D other )
 	{
@@ -109,8 +109,8 @@ public final class PolyPoint2D
 	 * @param   other		Point to compare with.
 	 * @param   tolerance	Acceptable tolerance.
 	 *
-	 * @return  <CODE>true</CODE> if the specified point is 'almost' equal;
-	 * 			<CODE>false</CODE> if the specified point is different.
+	 * @return  <code>true</code> if the specified point is 'almost' equal;
+	 * 			<code>false</code> if the specified point is different.
 	 */
 	public boolean almostEquals( final PolyPoint2D other , final float tolerance )
 	{
@@ -123,31 +123,20 @@ public final class PolyPoint2D
 	}
 
 	/**
-	 * Test for equality between this control point and the specified one.
-	 *
-	 * @param   other	Control point to compare with.
-	 *
-	 * @return  <CODE>true</CODE> if the control points are equals;
-	 *			<CODE>false</CODE> otherwise.
-	 */
-	public boolean equals( final PolyPoint2D other )
-	{
-		return x == other.x && y == other.y;
-	}
-
-	/**
 	 * Test for equality between this control point and the specified object.
 	 * If the other object is a PolyPoint2D, this call is forwarded to
 	 * #equals(PolyPoint2D).
 	 *
 	 * @param   other	Object to compare with.
 	 *
-	 * @return  <CODE>true</CODE> if the specified object is equal to this;
-	 *			<CODE>false</CODE> otherwise.
+	 * @return  <code>true</code> if the specified object is equal to this;
+	 *			<code>false</code> otherwise.
 	 */
 	public boolean equals( final Object other )
 	{
-		return ( other instanceof PolyPoint2D ) && equals( (PolyPoint2D)other );
+		return ( other instanceof PolyPoint2D )
+		    && ( x == ((PolyPoint2D)other).x )
+		    && ( y == ((PolyPoint2D)other).y );
 	}
 
     /**
@@ -185,7 +174,7 @@ public final class PolyPoint2D
 	 *
 	 * @param   str		String representation of point.
 	 *
-	 * @return  Point that was created (may be <CODE>null</CODE>).
+	 * @return  Point that was created (may be <code>null</code>).
 	 */
 	public static PolyPoint2D createInstance( final String str )
 	{
@@ -204,10 +193,10 @@ public final class PolyPoint2D
 			if ( ( secondComma < 0 ) || ( str.indexOf( ',' , secondComma + 1 ) >= 0 ) )
 				throw new IllegalArgumentException( "invalid token count in line specification: " + str );
 
-			final float x = new Float( str.substring( firstComma + 1 , secondComma ).trim() ).floatValue();
-			final float y = new Float( str.substring( secondComma + 1 ).trim() ).floatValue();
+			final float lx = new Float( str.substring( firstComma + 1 , secondComma ).trim() ).floatValue();
+			final float ly = new Float( str.substring( secondComma + 1 ).trim() ).floatValue();
 
-			return new PolyPoint2D( x , y );
+			return new PolyPoint2D( lx , ly );
 		}
 		else
 		{
@@ -220,37 +209,8 @@ public final class PolyPoint2D
 	 *
 	 * @return  String representing this object.
 	 */
-	public synchronized String toString()
+	public String toString()
 	{
-		return new StringBuffer()
-						.append( "L," )
-						.append( x )
-						.append( "," )
-						.append( y )
-						.toString();
+		return "L," + x + "," + y;
 	}
-
-	/**
-	 * This method transforms this control point using the specified transformation
-	 * matrix.
-	 *
-	 * @param   xform	Transformation matrix to apply.
-	 *
-	 * @return  PolyPoint2D resulting from transformation (may return this instance
-	 *			if the transformation has no effect).
-	 */
-	protected PolyPoint2D transform( final Matrix3D xform )
-	{
-		if ( xform == null )
-			return this;
-
-		final float tx = x * xform.xx + y * xform.xy + xform.xo;
-		final float ty = x * xform.yx + y * xform.yy + xform.yo;
-
-		if ( tx == x && ty == y )
-			return this;
-
-		return new PolyPoint2D( tx , ty );
-	}
-
 }

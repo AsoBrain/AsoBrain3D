@@ -1,15 +1,15 @@
-package ab.light3d;
-
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2000-2003 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2003 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2004 - All Rights Reserved
+ * (C) Copyright Peter S. Heijnen 1999-2004 - All Rights Reserved
  *
  * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
+package ab.light3d;
+
 import java.util.StringTokenizer;
 
 /**
@@ -50,7 +50,7 @@ public final class Matrix3D
 	/**
 	 * Initial value of a matrix (=identity matrix).
 	 */
-	public final static Matrix3D INIT = new Matrix3D( 1,0,0,0, 0,1,0,0, 0,0,1,0 );
+	public static final Matrix3D INIT = new Matrix3D( 1,0,0,0, 0,1,0,0, 0,0,1,0 );
 
 	/**
 	 * Construct a new matrix.
@@ -93,10 +93,10 @@ public final class Matrix3D
 	 *
 	 * @param	value	Value to test.
 	 *
-	 * @return	<CODE>true</CODE> is the specified value is within a
-	 *			+/- 0.01 tolerance of 0; <CODE>false</CODE> otherwise.
+	 * @return	<code>true</code> is the specified value is within a
+	 *			+/- 0.01 tolerance of 0; <code>false</code> otherwise.
 	 */
-	public final static boolean almost0( final double value )
+	public static final boolean almost0( final double value )
 	{
 		return value > -0.01d && value < 0.01d;
 	}
@@ -106,10 +106,10 @@ public final class Matrix3D
 	 *
 	 * @param	value	Value to test.
 	 *
-	 * @return	<CODE>true</CODE> is the specified value is within a
-	 *			+/- 0.01 tolerance of 0; <CODE>false</CODE> otherwise.
+	 * @return	<code>true</code> is the specified value is within a
+	 *			+/- 0.01 tolerance of 0; <code>false</code> otherwise.
 	 */
-	public final static boolean almost0( final float value )
+	public static final boolean almost0( final float value )
 	{
 		return value > -0.01f && value < 0.01f;
 	}
@@ -119,10 +119,10 @@ public final class Matrix3D
 	 *
 	 * @param	value	Value to test.
 	 *
-	 * @return	<CODE>true</CODE> is the specified value is within a
-	 *			+/- 0.01 tolerance of 1; <CODE>false</CODE> otherwise.
+	 * @return	<code>true</code> is the specified value is within a
+	 *			+/- 0.01 tolerance of 1; <code>false</code> otherwise.
 	 */
-	public final static boolean almost1( final double value )
+	public static final boolean almost1( final double value )
 	{
 		return value > 0.99d && value < 1.01d;
 	}
@@ -132,10 +132,10 @@ public final class Matrix3D
 	 *
 	 * @param	value	Value to test.
 	 *
-	 * @return	<CODE>true</CODE> is the specified value is within a
-	 *			+/- 0.01 tolerance of 1; <CODE>false</CODE> otherwise.
+	 * @return	<code>true</code> is the specified value is within a
+	 *			+/- 0.01 tolerance of 1; <code>false</code> otherwise.
 	 */
-	public final static boolean almost1( final float value )
+	public static final boolean almost1( final float value )
 	{
 		return value > 0.99f && value < 1.01f;
 	}
@@ -145,8 +145,8 @@ public final class Matrix3D
 	 *
 	 * @param	other	Object to compare with.
 	 *
-	 * @return	<CODE>true</CODE> if the objects are equal;
-	 *			<CODE>false</CODE> if not.
+	 * @return	<code>true</code> if the objects are equal;
+	 *			<code>false</code> if not.
 	 */
 	public boolean equals( final Object other )
 	{
@@ -168,7 +168,7 @@ public final class Matrix3D
 	 *
 	 * @return	Object instance.
 	 */
-	public final static Matrix3D fromString( final String value )
+	public static final Matrix3D fromString( final String value )
 	{
 		final StringTokenizer st = new StringTokenizer( value , "," );
 
@@ -228,7 +228,7 @@ public final class Matrix3D
 
 	/**
 	 * Construct inverse matrix.
-	 * <PRE>
+	 * <pre>
 	 *       | xx xy xz xo |
 	 *       | yx yy yz yo |
 	 *  T  = | zx zy zz zo |
@@ -238,7 +238,7 @@ public final class Matrix3D
 	 *   -1  | xy yy zy -xo*xy-yo*yy-zo*zy |
 	 *  T  = | xz yz zz -xo*xz-yo*yz-zo*zz |
 	 *       | 0  0  0  1                  |
-	 * </PRE>
+	 * </pre>
 	 *
 	 * @return  Inverse matrix.
 	 */
@@ -252,8 +252,8 @@ public final class Matrix3D
 	/**
 	 * Test is this matrix causes mirroring in the XY plane.
 	 *
-	 * @return  <CODE>true</CODE> if this matrix causes mirroring in the XY plane.
-	 *          <CODE>false</CODE> if no mirroring occurs (normal transformation).
+	 * @return  <code>true</code> if this matrix causes mirroring in the XY plane.
+	 *          <code>false</code> if no mirroring occurs (normal transformation).
 	 */
 	public boolean isMirrorXY()
 	{

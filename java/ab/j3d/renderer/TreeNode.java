@@ -1,18 +1,19 @@
-package ab.light3d.renderer;
-
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2004 - All Rights Reserved
+ * (C) Copyright Peter S. Heijnen 1999-2004 - All Rights Reserved
  *
  * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
+package ab.light3d.renderer;
+
 import java.awt.Graphics;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import ab.light3d.Matrix3D;
 
@@ -34,17 +35,26 @@ public class TreeNode
 	/**
 	 * Tag of this node.
 	 */
-	private Object _tag = null;
+	private Object _tag;
 
 	/**
 	 * Collection of children of this node.
 	 */
-	private final Vector _children = new Vector();
+	private final Set _children = new HashSet();
 
 	/**
 	 * Parent of this node (<code>null</code> if this a root node).
 	 */
-	private TreeNode _parent = null;
+	private TreeNode _parent;
+
+	/**
+	 * Construct empty tree node.
+	 */
+	public TreeNode()
+	{
+		_tag = null;
+		_parent = null;
+	}
 
 	/**
 	 * Add a child node to this node.
@@ -57,13 +67,10 @@ public class TreeNode
 	 */
 	public final TreeNode addChild( final TreeNode node )
 	{
-		if ( node == null || _children.contains( node ) )
-			return( node );
+		if ( ( node != null ) && _children.add( node ) )
+			node.setParent( this );
 
-		_children.addElement( node );
-		node.setParent( this );
-
-		return( node );
+		return node;
 	}
 
 	/**
@@ -125,37 +132,25 @@ public class TreeNode
 			 */
 			else
 			{
-				final Enumeration e = _children.elements();
-				while ( e.hasMoreElements() ) ((TreeNode)e.nextElement()).
-						gatherLeafs( leafs , leafClass , xform , upwards );
+				for ( final Iterator iterator = getChildren() ; iterator.hasNext() ; )
+				{
+					final TreeNode node = ((TreeNode)iterator.next() );
+					node.gatherLeafs( leafs , leafClass , xform , upwards );
+				}
 			}
 		}
 	}
 
 	/**
-	 * Get child with the specified index.
+	 * Get iterator that iterates over all children of this node.
 	 *
-	 * @param	index	Index of child to retrieve.
+	 * @return	Iterator for child nodes.
 	 *
-	 * @return	Child node, or <code>null</code> if the child does not exist.
-	 *
-	 * @see #getChildCount
+	 * @see     #isLeaf()
 	 */
-	public final TreeNode getChild( final int index )
+	public final Iterator getChildren()
 	{
-		return( (TreeNode)_children.elementAt( index ) );
-	}
-
-	/**
-	 * This function returns the number of child nodes (if any).
-	 *
-	 * @return	Number of child nodes.
-	 *
-	 * @see	#getChild
-	 */
-	public final int getChildCount()
-	{
-		return( _children.size() );
+		return _children.iterator();
 	}
 
 	/**
@@ -201,12 +196,11 @@ public class TreeNode
 	 * @return	<code>true</code> if this node is a leaf node,
 	 *			<code>false</code> otherwise.
 	 *
-	 * @see	#getChildCount
-	 * @see	#getChild
+	 * @see	#getChildren
 	 */
 	public final boolean isLeaf()
 	{
-		return( _children.size() == 0 );
+		return _children.isEmpty();
 	}
 
 	/**
@@ -232,9 +226,11 @@ public class TreeNode
 	 */
 	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D objXform )
 	{
-		final Enumeration e = _children.elements();
-		while ( e.hasMoreElements() ) ((TreeNode)e.nextElement()).
-				paint( g , gXform , objXform );
+		for ( final Iterator iterator = getChildren() ; iterator.hasNext() ; )
+		{
+			final TreeNode node = (TreeNode)iterator.next();
+			node.paint( g , gXform , objXform );
+		}
 	}
 
 	/**
@@ -244,10 +240,11 @@ public class TreeNode
 	 */
 	public final void removeAllChildren()
 	{
-		while ( _children.size() > 0 )
+		for ( final Iterator iterator = getChildren() ; iterator.hasNext() ; )
 		{
-			final TreeNode node = (TreeNode)_children.elementAt( 0 );
-			_children.removeElement( node );
+			final TreeNode node = ((TreeNode)iterator.next() );
+
+			iterator.remove();
 			node.setParent( null );
 		}
 	}
@@ -261,11 +258,11 @@ public class TreeNode
 	 */
 	public final void removeChild( final TreeNode node )
 	{
-		if ( node == null || !_children.contains( node ) )
+		if ( node == null )
 			return;
 
-		_children.removeElement( node );
-		node.setParent( null );
+		if ( _children.remove( node ) )
+			node.setParent( null );
 	}
 
 	/**

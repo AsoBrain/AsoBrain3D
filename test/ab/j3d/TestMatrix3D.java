@@ -32,24 +32,24 @@ public class TestMatrix3D
 	 * Test <code>Matrix3D.equals()</code> method.
 	 *
 	 * RELATED BUGS (SOLVED):
-	 * <UL>
-	 *  <LI>
-	 *    <B>BUG:</B><BR>
+	 * <ul>
+	 *  <li>
+	 *    <b>BUG:</b><br />
 	 *    OBJ files contain bad geometric data.
-	 *    <BR>
-	 *    <B>Symptom:</B><BR>
+	 *    <br />
+	 *    <b>Symptom:</b><br />
 	 *    The geometry for a 2nd scenario contains negative Y coordinates.
 	 *    This seems to occur with almost every panel.
-	 *    <BR>
-	 *    <B>Analysis:</B><BR>
+	 *    <br />
+	 *    <b>Analysis:</b><br />
 	 *    Matrix3D.equals() method did not compare the translation correctly
 	 *    (comparing this.xo to other.xo/yo/zo instead of this.xo/yo/zo).
 	 *    Incredible how this bug has never been spotted before.
-	 *    <BR>
-	 *    <B>Fix:</B><BR>
+	 *    <br />
+	 *    <b>Fix:</b><br />
 	 *    Fixed xo/yo/zo test in Matrix3D.equals() method.
-	 *  </LI>
-	 * </UL>
+	 *  </li>
+	 * </ul>
 	 */
 	public static void testEquals()
 	{

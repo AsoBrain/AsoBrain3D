@@ -1,15 +1,14 @@
-package ab.light3d;
-
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2000-2003 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2003 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2004 - All Rights Reserved
+ * (C) Copyright Peter S. Heijnen 1999-2004 - All Rights Reserved
  *
  * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
+package ab.light3d;
 
 /**
  * This class represents rectangular 3D bounds (specified by two vectors).
@@ -38,7 +37,7 @@ public final class Bounds3D
 	/**
 	 * Initial value of a box (0-box).
 	 */
-	public final static Bounds3D INIT = new Bounds3D( Vector3D.INIT , Vector3D.INIT );
+	public static final Bounds3D INIT = new Bounds3D( Vector3D.INIT , Vector3D.INIT );
 
 	/**
 	 * Create a new box.
@@ -58,8 +57,8 @@ public final class Bounds3D
 	 * @param	v1		First vector of bounds to compare with.
 	 * @param	v2		Second vector of bounds to compare with.
 	 *
-	 * @return	<CODE>true</CODE> if the bounds are equal,
-	 *			<CODE>false</CODE> if not.
+	 * @return	<code>true</code> if the bounds are equal,
+	 *			<code>false</code> if not.
 	 */
 	public boolean equals( final Vector3D v1 , final Vector3D v2 )
 	{
@@ -72,8 +71,8 @@ public final class Bounds3D
 	 *
 	 * @param	other	Object to compare with.
 	 *
-	 * @return	<CODE>true</CODE> if the objects are equal;
-	 *			<CODE>false</CODE> if not.
+	 * @return	<code>true</code> if the objects are equal;
+	 *			<code>false</code> if not.
 	 */
 	public boolean equals( final Object other )
 	{
@@ -126,8 +125,8 @@ public final class Bounds3D
 	 * @param	bounds1		First object for intersection test.
 	 * @param	bounds2		Seconds object for intersection test.
 	 *
-	 * @return	<CODE>true</CODE> if the bounds intersect;
-	 *			<CODE>false</CODE> if the bounds are disjunct.
+	 * @return	<code>true</code> if the bounds intersect;
+	 *			<code>false</code> if the bounds are disjunct.
 	 */
 	public static boolean intersects( final Bounds3D bounds1 , final Bounds3D bounds2 )
 	{
@@ -350,8 +349,8 @@ public final class Bounds3D
 
 	/**
 	 * Determine sorted bounds. If bounds are sorted, than the x/y/z
-	 * components of <CODE>v1</CODE> are always less or equal to the
-	 * matching components of <CODE>v2</CODE>.
+	 * components of <code>v1</code> are always less or equal to the
+	 * matching components of <code>v2</code>.
 	 *
 	 * @return	Resulting bounds.
 	 */

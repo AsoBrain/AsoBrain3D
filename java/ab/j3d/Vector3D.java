@@ -1,15 +1,14 @@
-package ab.light3d;
-
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2000-2003 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2003 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2004 - All Rights Reserved
+ * (C) Copyright Peter S. Heijnen 1999-2004 - All Rights Reserved
  *
  * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
+package ab.light3d;
 
 /**
  * This class represents a 3D vector. It is used by ROM, but can also
@@ -27,7 +26,7 @@ public final class Vector3D
 	/**
 	 * Initial value of a vector (0-vector).
 	 */
-	public final static Vector3D INIT = new Vector3D( 0f , 0f , 0f );
+	public static final Vector3D INIT = new Vector3D( 0f , 0f , 0f );
 	/**
 	 * Construct new vector.
 	 *
@@ -122,8 +121,8 @@ public final class Vector3D
 	 * @param	y	Y-coordinate of vector.
 	 * @param	z	Z-coordinate of vector.
 	 *
-	 * @return	<CODE>true</CODE> if vectors are equal,
-	 *	    	<CODE>false</CODE> if not.
+	 * @return	<code>true</code> if vectors are equal,
+	 *	    	<code>false</code> if not.
 	 */
 	public boolean equals( final float x , final float y , final float z )
 	{
@@ -137,8 +136,8 @@ public final class Vector3D
 	 *
 	 * @param	other	Vector to compare with.
 	 *
-	 * @return	<CODE>true</CODE> if vectors are equal,
-	 *  		<CODE>false</CODE> if not.
+	 * @return	<code>true</code> if vectors are equal,
+	 *  		<code>false</code> if not.
 	 */
 	public boolean equals( final Object other )
 	{

@@ -48,7 +48,8 @@
  */
 package ab.light3d;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class describes a polyline in 2D.
@@ -68,7 +69,7 @@ public final class Polyline2D
 	 *
 	 * @see	#getType
 	 */
-	public final static int UNKNOWN = -1;
+	public static final int UNKNOWN = -1;
 
 	/**
 	 * Type of poyline: void.
@@ -77,7 +78,7 @@ public final class Polyline2D
 	 *
 	 * @see	#getType
 	 */
-	public final static int VOID = 0;
+	public static final int VOID = 0;
 
 	/**
 	 * Type of poyline: point.
@@ -86,7 +87,7 @@ public final class Polyline2D
 	 *
 	 * @see	#getType
 	 */
-	public final static int POINT = 1;
+	public static final int POINT = 1;
 
 	/**
 	 * Type of poyline: line.
@@ -96,7 +97,7 @@ public final class Polyline2D
 	 * @see	#PATH
 	 * @see	#getType
 	 */
-	public final static int LINE = 2;
+	public static final int LINE = 2;
 
 	/**
 	 * Type of poyline: path.
@@ -106,7 +107,7 @@ public final class Polyline2D
 	 * @see	#LINE
 	 * @see	#getType
 	 */
-	public final static int PATH = 3;
+	public static final int PATH = 3;
 
 	/**
 	 * Type of poyline: convex.
@@ -118,7 +119,7 @@ public final class Polyline2D
 	 * @see	#CONCAVE
 	 * @see	#getType
 	 */
-	public final static int CONVEX  = 4;
+	public static final int CONVEX  = 4;
 
 	/**
 	 * Type of poyline: concave.
@@ -128,12 +129,12 @@ public final class Polyline2D
 	 * @see	#CONVEX
 	 * @see	#getType
 	 */
-	public final static int CONCAVE = 5;
+	public static final int CONCAVE = 5;
 
 	/**
 	 * Collection of control points that describe the polyline.
 	 */
-	private final Vector _points;
+	private final List _points;
 
 	/**
 	 * Cache for line's type. This value will reset when points
@@ -159,7 +160,7 @@ public final class Polyline2D
 	 */
 	public Polyline2D()
 	{
-		_points = new Vector();
+		_points = new ArrayList();
 	}
 
 	/**
@@ -171,36 +172,36 @@ public final class Polyline2D
 	{
 		final int l = original._points.size();
 
-		_points = new Vector( l );
+		_points = new ArrayList( l );
 		for ( int i = 0 ; i < l ; i++ )
-			_points.addElement( original._points.elementAt( i ) );
+			_points.add( original._points.get( i ) );
 	}
 
 	/**
 	 * Constructor for polyline for rectangular shape based at origin.
 	 * <P>
-	 * If <CODE>dx != 0</CODE> and <CODE>dy != 0</CODE>, then the result will be the rectanle:
-	 * <PRE>
+	 * If <code>dx != 0</code> and <code>dy != 0</code>, then the result will be the rectanle:
+	 * <pre>
 	 *   (0,0) -> (dx,0) -> (dx,dy) -> (0,dy) -> (0,0)
-	 * </PRE>
+	 * </pre>
 	 * <P>
-	 * If <CODE>dx != 0</CODE> and <CODE>dy = 0</CODE>; or
-	 * if <CODE>dx = 0</CODE> and <CODE>dy != 0</CODE>, then the result will be the line:
-	 * <PRE>
+	 * If <code>dx != 0</code> and <code>dy = 0</code>; or
+	 * if <code>dx = 0</code> and <code>dy != 0</code>, then the result will be the line:
+	 * <pre>
 	 *   (0,0) -> (dx,dy)
-	 * </PRE>
+	 * </pre>
 	 * <P>
-	 * If <CODE>dy = 0</CODE> and <CODE>dy = 0</CODE>, then the result will be the point:
-	 * <PRE>
+	 * If <code>dy = 0</code> and <code>dy = 0</code>, then the result will be the point:
+	 * <pre>
 	 *   (0,0)
-	 * </PRE>
+	 * </pre>
 	 *
 	 * @param   dx	Delta-X (may be 0).
 	 * @param   dy	Delta-Y (may be 0).
 	 */
 	public Polyline2D( final float dx , final float dy )
 	{
-		_points = new Vector();
+		_points = new ArrayList();
 
 		append( 0 , 0 );
 		if ( dx != 0 )
@@ -226,8 +227,8 @@ public final class Polyline2D
 	 * @param   startIndex		Start index of segment in polyline.
 	 * @param   adjustment		Position adjustment of segment.
 	 *
-	 * @return  <CODE>true</CODE> if the adjustment was succesful;
-	 *			<CODE>false</CODE> if the adjustment failed (it may fail when
+	 * @return  <code>true</code> if the adjustment was succesful;
+	 *			<code>false</code> if the adjustment failed (it may fail when
 	 * 			the adjustment changes the structure of the polyline, e.g.
 	 *			number of segments).
 	 */
@@ -341,8 +342,8 @@ public final class Polyline2D
 		/*
 		 * Set new start and end of polyline segement (clear cached properties).
 		 */
-		_points.setElementAt( newStart , startIndex );
-		_points.setElementAt( newEnd , endIndex );
+		_points.set(  startIndex , newStart );
+		_points.set( endIndex , newEnd );
 
 		_typeCache = UNKNOWN;
 		_boundsCache = null;
@@ -354,10 +355,10 @@ public final class Polyline2D
 		if ( isClosed )
 		{
 			if ( startIndex == 0 )
-				_points.setElementAt( newStart , maxIndex );
+				_points.set( maxIndex , newStart );
 
 			if ( endIndex == maxIndex )
-				_points.setElementAt( newEnd , 0 );
+				_points.set( 0 , newEnd );
 		}
 
 		return true;
@@ -372,7 +373,7 @@ public final class Polyline2D
 	{
 		if ( point == null )
 			throw new NullPointerException( "Cannot add a null point to a polyline" );
-		_points.addElement( point );
+		_points.add( point );
 		_typeCache = UNKNOWN;
 		_boundsCache = null;
 		_encloseCache = null;
@@ -986,7 +987,7 @@ public final class Polyline2D
 
 		if ( true )
 		{
-			final Vector segments = new Vector( collect1Count + collect2Count );
+			final List segments = new ArrayList( collect1Count + collect2Count );
 			for ( i = 0 ; i < collect1Count ; i++ )
 			{
 				final Polyline2D add = new Polyline2D();
@@ -995,7 +996,7 @@ public final class Polyline2D
 				if ( collect1[ i * 2 + 1 ] != null )
 					add.append( collect1[ i * 2 + 1 ] );
 
-				segments.addElement( add );
+				segments.add( add );
 			}
 
 			for ( i = 0 ; i < collect2Count ; i++ )
@@ -1006,7 +1007,7 @@ public final class Polyline2D
 				if ( collect2[ i * 2 + 1 ] != null )
 					add.append( collect2[ i * 2 + 1 ] );
 
-				segments.addElement( add );
+				segments.add( add );
 			}
 
 			return placeHeadToTail( segments );
@@ -1742,7 +1743,7 @@ public final class Polyline2D
 		/*
 		 * First gather all intersecting points and lines.
 		 */
-		final Vector segments = new Vector( path1.getPointCount() + path2.getPointCount() );
+		final List segments = new ArrayList( path1.getPointCount() + path2.getPointCount() );
 		Polyline2D sect;
 
 		int i = path1.getPointCount();
@@ -1757,7 +1758,7 @@ public final class Polyline2D
 			sect = getIntersectionPath_Line( path2 , p3 , p4 );
 
 			if ( sect != null && sect.getPointCount() > 0 )
-				segments.addElement( sect );
+				segments.add( sect );
 
 			p3 = p4;
 		}
@@ -1772,7 +1773,7 @@ public final class Polyline2D
 		 //* 1 intersection.
 		 //*/
 		//if ( segments.size() == 1 )
-			//return (Polyline2D)segments.elementAt( 0 );
+			//return (Polyline2D)segments.get( 0 );
 
 		/*
 		 * Multiple intersections
@@ -1805,7 +1806,7 @@ public final class Polyline2D
 	 */
 	public PolyPoint2D getPoint( final int index )
 	{
-		return (PolyPoint2D)_points.elementAt( index );
+		return (PolyPoint2D)_points.get( index );
 	}
 
 	/**
@@ -1972,8 +1973,8 @@ public final class Polyline2D
 	 *
 	 * @param   other	Polyline to check for intersection.
 	 *
-	 * @return  <CODE>true</CODE> if shapes are intersecting;
-	 *			<CODE>false</CODE> otherwise.
+	 * @return  <code>true</code> if shapes are intersecting;
+	 *			<code>false</code> otherwise.
 	 */
 	public boolean isIntersecting( final Polyline2D other )
 	{
@@ -2469,17 +2470,17 @@ public final class Polyline2D
 	 *
 	 * @return  The segments put together.
 	 */
-	protected static Polyline2D placeHeadToTail( final Vector segments )
+	protected static Polyline2D placeHeadToTail( final List segments )
 	{
 		if ( segments.size() == 0 )
 			return null;
 
 		if ( segments.size() == 1 )
-			return (Polyline2D)segments.elementAt( 0 );
+			return (Polyline2D)segments.get( 0 );
 
 		//for ( int i = 0 ; i < segments.size() ; i++ )
 		//{
-			//Polyline2D segment = (Polyline2D)segments.elementAt( i );
+			//Polyline2D segment = (Polyline2D)segments.get( i );
 			//System.out.print( " " + i + ") " + segment.getPoint( 0 ) );
 			//if ( segment.getPointCount() > 1 )
 				//System.out.println( segment.getPoint( 1 ) );
@@ -2489,12 +2490,12 @@ public final class Polyline2D
 
 		final Polyline2D result = new Polyline2D();
 
-		Polyline2D segment = (Polyline2D)segments.elementAt( 0 );
+		Polyline2D segment = (Polyline2D)segments.get( 0 );
 		PolyPoint2D firstHead = segment.getPointCount() > 1 ? segment.getPoint( 0 ) : null;
 		PolyPoint2D lastHead = segment.getPoint( 0 );
 		PolyPoint2D lastTail = segment.getPoint( segment.getPointCount() - 1 );
 		PolyPoint2D head = null,tail = null, temp;
-		segments.removeElementAt( 0 );
+		segments.remove( 0 );
 
 		if ( firstHead != null )
 			result.append( firstHead );
@@ -2508,7 +2509,7 @@ public final class Polyline2D
 
 			for ( int i = 0 ; i < segments.size() ; i++ )
 			{
-				segment = (Polyline2D)segments.elementAt( i );
+				segment = (Polyline2D)segments.get( i );
 				head = segment.getPoint( 0 );
 				tail = segment.getPoint( segment.getPointCount() - 1 );
 
@@ -2520,7 +2521,7 @@ public final class Polyline2D
 					else if ( lastHead.almostEquals( tail , 0.01f ) )
 						continue;
 
-					segments.removeElementAt( i );
+					segments.remove( i );
 					foundNext = true;
 					break;
 				}
@@ -2537,7 +2538,7 @@ public final class Polyline2D
 					if ( lastHead.almostEquals( tail , 0.01f ) )
 						continue;
 
-					segments.removeElementAt( i );
+					segments.remove( i );
 					foundNext = true;
 					break;
 				}
@@ -2581,7 +2582,7 @@ public final class Polyline2D
 	 *
 	 * @param   str		String representation of polyline.
 	 *
-	 * @return  Polyline that was created (never <CODE>null</CODE>).
+	 * @return  Polyline that was created (never <code>null</code>).
 	 */
 	public static Polyline2D createInstance( final String str )
 	{
@@ -2635,23 +2636,16 @@ public final class Polyline2D
 
 		final Polyline2D result = new Polyline2D();
 
-		nextPoint: for ( int i = 0 ; i < getPointCount() ; i++ )
+		for ( int i = 0 ; i < getPointCount() ; i++ )
 		{
 			final PolyPoint2D p = getPoint( i );
 
-			for ( int j = 0 ; j < i ; j++ )
-			{
-				if ( p == getPoint( j ) )
-				{
-					result.append( result.getPoint( j ) );
-					continue nextPoint;
-				}
-			}
+			final float tx = p.x * xform.xx + p.y * xform.xy + xform.xo;
+			final float ty = p.x * xform.yx + p.y * xform.yy + xform.yo;
 
-			result.append( p.transform( xform ) );
+			result.append( new PolyPoint2D( tx , ty ) );
 		}
 
 		return result;
 	}
-
 }

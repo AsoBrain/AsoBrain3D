@@ -1,20 +1,21 @@
-package ab.light3d;
-
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2000-2003 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2003 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2004 - All Rights Reserved
+ * (C) Copyright Peter S. Heijnen 1999-2004 - All Rights Reserved
  *
  * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
+package ab.light3d;
+
 import java.awt.*;
 import java.awt.image.PixelGrabber;
 import java.io.Serializable;
 import java.net.URL;
-import java.util.Hashtable;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * This is the class represents a texture specification in the database.
@@ -33,18 +34,18 @@ public final class TextureSpec
 	/**
 	 *  Database table name.
 	 */
-	public final static String TABLE_NAME = "TextureSpecs";
+	public static final String TABLE_NAME = "TextureSpecs";
 
 	/**
 	 * Unique record ID.
 	 */
-	public long    ID           = -1;
+	public long ID = -1;
 
 	/**
 	 * Code that uniquely identifies the texture (it should be used instead
 	 * of ID to make it independent from the database ID).
 	 */
-	public String code = null;
+	public String code;
 
 	/**
 	 * RGB value for textures without texture image (-1 -> has texture image).
@@ -106,7 +107,7 @@ public final class TextureSpec
 	 * Flag to indicate that this material's texture has a 'grain'. If so,
 	 * it is important how the material is oriented.
 	 */
-	public boolean grain = false;
+	public boolean grain;
 
 
 /////////////////////////////////////////////////////////////////
@@ -116,7 +117,7 @@ public final class TextureSpec
 	/**
 	 * Value returned by parseRGBString is an invalid string is detected.
 	 */
-	public final static int BADRGB = 0x00FFFFFF;
+	public static final int BADRGB = 0x00FFFFFF;
 
 	/**
 	 * Texture path prefix from where material texture images are loaded.
@@ -137,7 +138,7 @@ public final class TextureSpec
 	 * Last used 'texture' value. If this is unequal to the 'texture'
 	 * field, the values below should be re-assigned.
 	 */
-	private transient boolean _initDone = false;
+	private transient boolean _initDone;
 
 	/**
 	 * This hashtable is used to share textures between materials. The
@@ -148,19 +149,19 @@ public final class TextureSpec
 	 *  [ 1 ] = int[][] : _pixels
 	 *  [ 2 ] = Boolean : _transparent
 	 */
-	private static final Hashtable _textureCache = new Hashtable();
+	private static final Map _textureCache = new HashMap();
 
 	/**
 	 * This buffer contains all pixels of a texture in ARGB format. This
 	 * is set to <code>null</code> if no texture is available for this
 	 * material.
 	 */
-	private transient int[][] _pixels = null;
+	private transient int[][] _pixels;
 
 	/**
 	 * Flag to indicate that this material is (partially) transparent.
 	 */
-	private transient boolean _transparent = false;
+	private transient boolean _transparent;
 
 	/**
 	 * Exponent that was used to create the phong approximation table.
@@ -171,14 +172,14 @@ public final class TextureSpec
 	 * Phong approximation table. This is a 256x256 bitmap with values
 	 * from 0 to 256 for the selected phong exponent.
 	 */
-	private transient short[][] _phongTable = null;
+	private transient short[][] _phongTable;
 
 	/**
 	 * This hashtable is used to share phong tables between materials.
 	 * The key is the specular exponent that was used to calculate the
 	 * phong table.
 	 */
-	private static final Hashtable _phongTableCache = new Hashtable();
+	private static final Map _phongTableCache = new HashMap();
 
 	/**
 	 * This method returns the texture color as ARGB.
@@ -366,7 +367,7 @@ public final class TextureSpec
 		 * Retrieve image
 		 */
 		final String filename = textureFilenamePrefix + code + textureFilenameSuffix;
-		Image image; 
+		Image image;
 		try
 		{
 			image = Toolkit.getDefaultToolkit().getImage( new URL( filename ) );

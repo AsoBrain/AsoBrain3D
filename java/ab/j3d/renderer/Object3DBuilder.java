@@ -48,7 +48,8 @@
  */
 package ab.light3d.renderer;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import ab.light3d.Matrix3D;
 import ab.light3d.PolyPoint2D;
@@ -57,7 +58,7 @@ import ab.light3d.TextureSpec;
 import ab.light3d.Vector3D;
 
 /**
- * This class implements a builder for an <CODE>Object3D</CODE>. It allows
+ * This class implements a builder for an <code>Object3D</code>. It allows
  * faces and vertices to be created incrementally.
  * incremental
  *
@@ -71,14 +72,14 @@ public final class Object3DBuilder
 	 *
 	 * @see Face
 	 */
-	private final Vector _faces = new Vector();
+	private final List _faces = new ArrayList();
 
 	/**
 	 * This class represents a vertex of a face. A vertex contains the coordinates
 	 * of the vertex in the object space and texture coordinates (if applicable).
 	 * <P>
 	 * Instances of this class should be created using the
-	 * <CODE>Face.addVertex()</CODE> method.
+	 * <code>Face.addVertex()</code> method.
 	 *
 	 * @see Face#addVertex
 	 */
@@ -122,13 +123,13 @@ public final class Object3DBuilder
 		 * @param   tu          Result array for horizontal texture coordinates.
 		 * @param   tv          Result array for vertical texture coordinates.
 		 */
-		public void build( final Vector points , final int vertexIndex , final int[] vert , final int[] tu , final int[] tv )
+		public void build( final List points , final int vertexIndex , final int[] vert , final int[] tu , final int[] tv )
 		{
 			int index = points.indexOf( _point );
 			if ( index < 0 )
 			{
 				index = points.size();
-				points.addElement( _point );
+				points.add( _point );
 			}
 
 			vert[ vertexIndex ] = index;
@@ -148,7 +149,7 @@ public final class Object3DBuilder
 	 * of the face.
 	 * <P>
 	 * Instances of this class should be created using the
-	 * <CODE>Object3DBuilder.addFace()</CODE> methods.
+	 * <code>Object3DBuilder.addFace()</code> methods.
 	 *
 	 * @see Object3DBuilder#addFace
 	 */
@@ -167,7 +168,7 @@ public final class Object3DBuilder
 		/**
 		 * List of vertices in this face.
 		 */
-		private final Vector _vertices = new Vector();
+		private final List _vertices = new ArrayList();
 
 		/**
 		 * Construct 3D object face.
@@ -217,7 +218,7 @@ public final class Object3DBuilder
 		 */
 		public void addVertex( final Vector3D point , final int tu , final int tv )
 		{
-			_vertices.addElement( new Vertex( point , tu , tv ) );
+			_vertices.add( new Vertex( point , tu , tv ) );
 		}
 
 		/**
@@ -231,7 +232,7 @@ public final class Object3DBuilder
 		 * @param   tv          Result array for vertical texture coordinates.
 		 * @param   smooth      Result array for face smoothing.
 		 */
-		public void build( final Vector points , final int faceIndex , final int[][] vert , final TextureSpec[] mat , final int[][] tu , final int[][] tv , final boolean[] smooth )
+		public void build( final List points , final int faceIndex , final int[][] vert , final TextureSpec[] mat , final int[][] tu , final int[][] tv , final boolean[] smooth )
 		{
 			final int     nrVertices = _vertices.size();
 			final boolean hasTexture = hasTextureImage();
@@ -266,7 +267,7 @@ public final class Object3DBuilder
 	public Face addFace( final TextureSpec texture , final boolean smooth )
 	{
 		final Face face = new Face( texture , smooth );
-		_faces.addElement( face );
+		_faces.add( face );
 		return face;
 	}
 
@@ -378,7 +379,7 @@ public final class Object3DBuilder
 		/*
 		 * Build face data and point list to generate vertex data.
 		 */
-		final Vector        points     = new Vector();
+		final List          points     = new ArrayList();
 		final int[][]       faceVert   = new int[ nrFaces ][];
 		final TextureSpec[] faceMat    = new TextureSpec[ nrFaces ];
 		final int[][]       faceTU     = hasTexture ? new int[ nrFaces ][] : null;

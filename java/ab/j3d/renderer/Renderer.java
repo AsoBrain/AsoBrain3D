@@ -1,15 +1,15 @@
-package ab.light3d.renderer;
-
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2004 - All Rights Reserved
+ * (C) Copyright Peter S. Heijnen 1999-2004 - All Rights Reserved
  *
  * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
+package ab.light3d.renderer;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -50,8 +50,8 @@ public class Renderer
 	/** Control mode: pan.    */ public static final int PAN    = 2;
 	/** Control mode: rotate. */ public static final int ROTATE = 3;
 
-	/** Render mode: quick (wireframe). */ public final static int QUICK = 1;
-	/** Render mode: full (solid).      */ public final static int FULL  = 2;
+	/** Render mode: quick (wireframe). */ public static final int QUICK = 1;
+	/** Render mode: full (solid).      */ public static final int FULL  = 2;
 
 	/**
 	 * Component that uses this renderer.
