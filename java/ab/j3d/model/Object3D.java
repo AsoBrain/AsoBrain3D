@@ -358,12 +358,12 @@ public class Object3D
 		}
 		else
 		{
-			x1 = Double.MAX_VALUE;
-			y1 = Double.MAX_VALUE;
-			z1 = Double.MAX_VALUE;
-			x2 = Double.MIN_VALUE;
-			y2 = Double.MIN_VALUE;
-			z2 = Double.MIN_VALUE;
+			x1 = Double.POSITIVE_INFINITY;
+			y1 = Double.POSITIVE_INFINITY;
+			z1 = Double.POSITIVE_INFINITY;
+			x2 = Double.NEGATIVE_INFINITY;
+			y2 = Double.NEGATIVE_INFINITY;
+			z2 = Double.NEGATIVE_INFINITY;
 			result = Bounds3D.INIT;
 		}
 
