@@ -28,30 +28,34 @@ public class ExtrudedObject2D
 	extends Object3D
 {
 	/**
-	 * Base shape.
-	 */
-	private Shape _shape;
-
-	/**
-	 * Extrusion value.
-	 */
-	private double _extrusion;
-
-	/**
 	 * Transform to apply.
 	 */
-	private Matrix3D _xform;
+	public final Matrix3D xform;
 
 	/**
-	 * Texture to apply.
+	 * Base shape.
 	 */
-	private TextureSpec _texture;
+	public final Shape shape;
 
 	/**
-	 * Tte maximum allowable distance between the
-	 * control points and the flattened curve.
+	 * Extrusion value. This is a positive or negative displacement in the
+	 * Z-axis direction to create an extruded shape (the rest of the shape is
+	 *  placed on the <code>Z=0</code> plane).
 	 */
-	private double _flatness;
+	public final double extrusion;
+
+	/**
+	 * Texture to apply to all faces of the extruded shape.
+	 */
+	public final TextureSpec texture;
+
+	/**
+	 * Tte maximum allowable distance between the control points and the flattened curve.
+	 *
+	 * @see     FlatteningPathIterator
+	 * @see     Shape#getPathIterator(AffineTransform, double)
+	 */
+	public final double flatness;
 
 	/**
 	 * Construct new ExtrudedObject2D.
@@ -67,17 +71,21 @@ public class ExtrudedObject2D
 	 */
 	public ExtrudedObject2D( final Shape shape , final double extrusion , final Matrix3D xform , final TextureSpec texture , final double flatness )
 	{
-		_shape     = shape;
-		_extrusion = extrusion;
-		_xform     = xform;
-		_texture   = texture;
-		_flatness  = flatness;
+		this.shape     = shape;
+		this.extrusion = extrusion;
+		this.xform     = xform;
+		this.texture   = texture;
+		this.flatness  = flatness;
 
 		generate( this , shape , extrusion , xform , texture , flatness );
 	}
 
 	public static void generate( final Object3D target , final Shape shape , final double extrusion , final Matrix3D xform , final TextureSpec texture , final double flatness )
 	{
+		final boolean hasExtrusion = !Matrix3D.almostEqual( extrusion , 0.0 );
+		final double  shapeZ1      = hasExtrusion ? ( extrusion < 0.0 ) ? extrusion : 0.0 : 0.0;
+		final double  shapeZ2      = hasExtrusion ? ( extrusion < 0.0 ) ? 0.0 : extrusion : 0.0;
+
 		final FlatteningPathIterator pathIterator = new FlatteningPathIterator( shape.getPathIterator( null ) , flatness );
 
 		final double[] coords = new double[ 6 ];
@@ -88,24 +96,27 @@ public class ExtrudedObject2D
 
 		while ( !pathIterator.isDone() )
 		{
+
 			switch( pathIterator.currentSegment( coords ) )
 			{
 				case FlatteningPathIterator.SEG_MOVETO:
 				{
-					final double x = coords[ 0 ];
-					final double y = coords[ 1 ];
+					final double shapeX = coords[ 0 ];
+					final double shapeY = coords[ 1 ];
 
-					final double x1 = xform.transformX( x , y , 0.0 );
-					final double y1 = xform.transformY( x , y , 0.0 );
-					final double z1 = xform.transformZ( x , y , 0.0 );
+					final double x1 = xform.transformX( shapeX , shapeY , shapeZ1 );
+					final double y1 = xform.transformY( shapeX , shapeY , shapeZ1 );
+					final double z1 = xform.transformZ( shapeX , shapeY , shapeZ1 );
+
 					lastIndex  = target.getOrAddPointIndex( x1 , y1 , z1 );
 					lastMoveTo = lastIndex;
 
-					if ( extrusion > 0.0 )
+					if ( hasExtrusion )
 					{
-						final double x2 = xform.transformX( x , y , extrusion );
-						final double y2 = xform.transformY( x , y , extrusion );
-						final double z2 = xform.transformZ( x , y , extrusion );
+						final double x2 = xform.transformX( shapeX , shapeY , shapeZ2 );
+						final double y2 = xform.transformY( shapeX , shapeY , shapeZ2 );
+						final double z2 = xform.transformZ( shapeX , shapeY , shapeZ2 );
+
 						lastExtrudedIndex  = target.getOrAddPointIndex( x2 , y2 , z2 );
 						lastExtrudedMoveTo = lastExtrudedIndex;
 					}
@@ -114,26 +125,26 @@ public class ExtrudedObject2D
 
 				case FlatteningPathIterator.SEG_LINETO:
 				{
-					final double x = coords[ 0 ];
-					final double y = coords[ 1 ];
+					final double shapeX = coords[ 0 ];
+					final double shapeY = coords[ 1 ];
 
-					final double x1 = xform.transformX( x , y , 0.0 );
-					final double y1 = xform.transformY( x , y , 0.0 );
-					final double z1 = xform.transformZ( x , y , 0.0 );
+					final double x1 = xform.transformX( shapeX , shapeY , shapeZ1 );
+					final double y1 = xform.transformY( shapeX , shapeY , shapeZ1 );
+					final double z1 = xform.transformZ( shapeX , shapeY , shapeZ1 );
 					final int pointIndex = target.getOrAddPointIndex( x1 , y1 , z1 );
 
 					int extrudedPointIndex = -1;
-					if ( extrusion > 0.0 )
+					if ( hasExtrusion )
 					{
-						final double x2 = xform.transformX( x , y , extrusion );
-						final double y2 = xform.transformY( x , y , extrusion );
-						final double z2 = xform.transformZ( x , y , extrusion );
+						final double x2 = xform.transformX( shapeX , shapeY , shapeZ2 );
+						final double y2 = xform.transformY( shapeX , shapeY , shapeZ2 );
+						final double z2 = xform.transformZ( shapeX , shapeY , shapeZ2 );
 						extrudedPointIndex = target.getOrAddPointIndex( x2 , y2 , z2 );
 					}
 
 					if ( lastIndex != pointIndex )
 					{
-						if ( extrusion > 0.0 )
+						if ( hasExtrusion )
 						{
 							target.addFace( new int[]{ lastIndex , lastExtrudedIndex , extrudedPointIndex , pointIndex } , texture  , false , true );
 							lastExtrudedIndex = extrudedPointIndex;
@@ -152,7 +163,7 @@ public class ExtrudedObject2D
 				{
 					if ( lastIndex != lastMoveTo )
 					{
-						if ( extrusion > 0.0)
+						if ( hasExtrusion )
 						{
 							target.addFace( new int[]{ lastIndex , lastExtrudedIndex , lastExtrudedMoveTo , lastMoveTo } , texture  , false , true );
 							lastExtrudedIndex = lastExtrudedMoveTo;
