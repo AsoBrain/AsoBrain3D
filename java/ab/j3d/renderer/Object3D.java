@@ -66,6 +66,11 @@ public class Object3D
 	TextureSpec[] _faceMat = null;
 
 	/**
+	 * Opacity value for faces of model.
+	 */
+	private float[] _faceOpacity = {};
+
+	/**
 	 * This internal flag is set to indicate that the vertices, edges, or
 	 * faces changed and the normals need to be re-calculated.
 	 */
@@ -124,10 +129,11 @@ public class Object3D
 	 */
 	public Object3D( final Matrix3D xform , final float[] xs , final float[] zs , final int detail , final TextureSpec texture , final boolean smoothCircumference , final boolean closeEnds )
 	{
-		float[]       vertices   = new float[ xs.length * detail * 3 ];
-		int[][]       faceVert   = new int[ xs.length * detail ][];
-		TextureSpec[] faceMat    = new TextureSpec[ faceVert.length ];
-		boolean[]     faceSmooth = new boolean[ faceVert.length ];
+		float[]       vertices    = new float[ xs.length * detail * 3 ];
+		int[][]       faceVert    = new int[ xs.length * detail ][];
+		TextureSpec[] faceMat     = new TextureSpec[ faceVert.length ];
+		float[]       faceOpacity = new float[ faceVert.length ];
+		boolean[]     faceSmooth  = new boolean[ faceVert.length ];
 		int v = 0;
 		int f = 0;
 
@@ -167,33 +173,37 @@ public class Object3D
 			 */
 			if ( i == 0 )
 			{
-				if ( xCur != 0f && closeEnds )
+				if ( xCur != 0.0f && closeEnds )
 				{
-					faceVert[ f ] = new int[ detail ];
+					final int[] fv = new int[ detail ];
 					for ( int j = 0 ; j < detail ; j++ )
-						faceVert[ f ][ j ] = iCur + j;
-					faceMat[ f ] = texture;
-					faceSmooth[ f++ ] = false;
+						fv[ j ] = iCur + j;
+
+					faceVert   [ f   ] = fv;
+					faceMat    [ f   ] = texture;
+					faceOpacity[ f   ] = 1.0f;
+					faceSmooth [ f++ ] = false;
 				}
 			}
 			/*
 			 * 2nd + later control points.
 			 */
-			else if ( xCur != 0f || xPrev != 0f )
+			else if ( xCur != 0.0f || xPrev != 0.0f )
 			{
 				for ( int j = 0 ; j < detail ; j++ )
 				{
-					final int k = ( j + 1 ) % detail;
+					final int nextJ = ( j + 1 ) % detail;
 
-					if ( xCur != 0f && xPrev != 0 )
-						faceVert[ f ] = new int[] { iPrev + j , iCur + j , iCur + k , iPrev + k };
-					else if ( xCur != 0f )
-						faceVert[ f ] = new int[] { iPrev , iCur + j , iCur + k };
+					if ( xCur != 0.0f && xPrev != 0 )
+						faceVert[ f ] = new int[] { iPrev + j , iCur + j , iCur + nextJ , iPrev + nextJ };
+					else if ( xCur != 0.0f )
+						faceVert[ f ] = new int[] { iPrev , iCur + j , iCur + nextJ };
 					else /*if ( xPrev != 0f )*/
-						faceVert[ f ] = new int[] { iPrev + j , iCur , iPrev + k };
+						faceVert[ f ] = new int[] { iPrev + j , iCur , iPrev + nextJ };
 
-					faceMat[ f ] = texture;
-					faceSmooth[ f++ ] = smoothCircumference;
+					faceMat    [ f   ] = texture;
+					faceOpacity[ f   ] = 1.0f;
+					faceSmooth [ f++ ] = smoothCircumference;
 				}
 			}
 		}
@@ -201,13 +211,16 @@ public class Object3D
 		/*
 		 * Add closing face is requested.
 		 */
-		if ( xCur != 0f && closeEnds )
+		if ( xCur != 0.0f && closeEnds )
 		{
-			faceVert[ f ] = new int[ detail ];
+			final int[] fv = new int[ detail ];
 			for ( int j = 0 ; j < detail ; j++ )
-				faceVert[ f ][ j ] = iCur + detail - ( 1 + j );
-			faceMat[ f ] = texture;
-			faceSmooth[ f++ ] = false;
+				fv[ j ] = iCur + detail - ( 1 + j );
+
+			faceVert   [ f   ] = fv;
+			faceMat    [ f   ] = texture;
+			faceOpacity[ f   ] = 1.0f;
+			faceSmooth [ f++ ] = false;
 		}
 
 
@@ -231,6 +244,10 @@ public class Object3D
 			System.arraycopy( faceMat , 0 , newMat , 0 , f );
 			faceMat = newMat;
 
+			final float[] newOpacity = new float[ f ];
+			System.arraycopy( faceOpacity , 0 , newOpacity , 0 , f );
+			faceOpacity = newOpacity;
+
 			final boolean[] newSmooth = new boolean[ f ];
 			System.arraycopy( faceSmooth , 0 , newSmooth , 0 , f );
 			faceSmooth = newSmooth;
@@ -242,7 +259,7 @@ public class Object3D
 		if ( xform != null )
 			xform.transform( vertices , vertices , vertices.length / 3 );
 
-		set( vertices , faceVert , faceMat , null , null , faceSmooth );
+		set( vertices , faceVert , faceMat , null , null , faceOpacity , faceSmooth );
 	}
 
 	/**
@@ -617,6 +634,18 @@ public class Object3D
 	}
 
 	/**
+	 * Get opacity of the specified face (0=transparent, 1=opaque).
+	 *
+	 * @param	face	Index of face.
+	 *
+	 * @return	Opacity of the specified face (0=transparent, 1=opaque).
+	 */
+	public final float getFaceOpacity( final int face )
+	{
+		return ( _faceOpacity != null ) ? _faceOpacity[ face ] : 1.0f;
+	}
+
+	/**
 	 * Check wether the surface defined by the specified face is smooth (curved).
 	 *
 	 * @param	face	Index of face.
@@ -707,16 +736,17 @@ public class Object3D
 	 * @param	faceTV		Face texture V coordinates for each face.
 	 * @param	faceSmooth	Face smoothing flag for each face.
 	 */
-	public final void set( final float[] vertices , final int[][] faceVert , final TextureSpec[] faceMat , final int[][] faceTU , final int[][] faceTV , final boolean[] faceSmooth )
+	public final void set( final float[] vertices , final int[][] faceVert , final TextureSpec[] faceMat , final int[][] faceTU , final int[][] faceTV , final float[] faceOpacity , final boolean[] faceSmooth )
 	{
 		final boolean hasTexture = ( faceMat != null && faceMat.length >= faceVert.length );
 
-		_vertices   = vertices;
-		_faceVert   = faceVert;
-		_faceMat    = hasTexture ? faceMat : null;
-		_faceTU     = hasTexture ? faceTU  : null;
-		_faceTV     = hasTexture ? faceTV  : null;
-		_faceSmooth = faceSmooth;
+		_vertices    = vertices;
+		_faceVert    = faceVert;
+		_faceMat     = hasTexture ? faceMat : null;
+		_faceTU      = hasTexture ? faceTU  : null;
+		_faceTV      = hasTexture ? faceTV  : null;
+		_faceOpacity = faceOpacity;
+		_faceSmooth  = faceSmooth;
 
 		_normalsDirty = true;
 	}
@@ -739,6 +769,6 @@ public class Object3D
 		for ( int i = 0 ; i < faceSmooth.length ; i++ )
 			faceSmooth[ i ] = smooth;
 
-		set( vertices , faceVert ,  faceMat , null , null , faceSmooth );
+		set( vertices , faceVert ,  faceMat , null , null , null , faceSmooth );
 	}
 }
