@@ -52,89 +52,56 @@ public class TestMatrix3D
 	 *    Fixed xo/yo/zo test in Matrix3D.equals() method.
 	 *  </LI>
 	 * </UL>
-	 *
-	 * @return	<code>true</code> if test was succesful;
-	 *			<code>false</code> if one or more errors occured.
 	 */
 	public void testEquals()
 	{
 		//System.out.println( "    - equals()" );
 		final Matrix3D i = Matrix3D.INIT;
+		Matrix3D m;
 
 		/*
-		 * INIT must match identify matrix
+		 * INIT must match identity matrix
 		 */
 		assertEquals( "Matrix3D.equals() returned 'false' where it should have returned 'true'"
 		            , i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) , i );
 
 		/*
-		 * test x?
+		 * Test if each component is correctly tested by equals()
 		 */
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'xx'"
-		               , i , i.set( 9 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) );
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'xx'"
-		               ,     i.set( 9 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) , i );
+		m = i.set( 9 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'xx'" , !i.equals( m ) && !m.equals( i ) );
 
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'xy'"
-		               , i , i.set( 1 , 9 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) );
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'xy'"
-		               ,     i.set( 1 , 9 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) , i );
-			
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'xz'"
-		               , i , i.set( 1 , 0 , 9 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) );
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'xz'"
-		               ,     i.set( 1 , 0 , 9 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) , i );
+		m = i.set( 1 , 9 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'xy'" , !i.equals( m ) && !m.equals( i ) );
 
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'xo'"
-		               , i , i.set( 1 , 0 , 0 , 9 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) );
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'xo'"
-		               ,     i.set( 1 , 0 , 0 , 9 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) , i );
+		m = i.set( 1 , 0 , 9 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'xz'" , !i.equals( m ) && !m.equals( i ) );
 
-		/*
-		 * test y?
-		 */
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'yx'"
-		               , i , i.set( 1 , 0 , 0 , 0 , 9 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) );
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'yx'"
-		               ,     i.set( 1 , 0 , 0 , 0 , 9 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) , i );
+		m = i.set( 1 , 0 , 0 , 9 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'xo'" , !i.equals( m ) && !m.equals( i ) );
+
+		m = i.set( 1 , 0 , 0 , 0 , 9 , 1 , 0 , 0 , 0 , 0 , 1 , 0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'yx'" , !i.equals( m ) && !m.equals( i ) );
 			
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'yy'"
-		               , i , i.set( 1 , 0 , 0 , 0 , 0 , 9 , 0 , 0 , 0 , 0 , 1 , 0 ) );
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'yy'"
-		               ,     i.set( 1 , 0 , 0 , 0 , 0 , 9 , 0 , 0 , 0 , 0 , 1 , 0 ) , i );
-			
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'yz'"
-		               , i , i.set( 1 , 0 , 0 , 0 , 0 , 1 , 9 , 0 , 0 , 0 , 1 , 0 ) );
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'yz'"
-		               ,     i.set( 1 , 0 , 0 , 0 , 0 , 1 , 9 , 0 , 0 , 0 , 1 , 0 ) , i );
-			
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'yo'"
-		               , i , i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 9 , 0 , 0 , 1 , 0 ) );
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'yo'"
-		               ,     i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 9 , 0 , 0 , 1 , 0 ) , i );
-			
-		/*
-		 * test z?
-		 */
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'zx'"
-		               , i , i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 9 , 0 , 1 , 0 ) );
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'zx'"
-		               ,     i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 9 , 0 , 1 , 0 ) , i );
-			
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'zy'"
-		               , i , i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 9 , 1 , 0 ) );
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'zy'"
-		               ,     i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 9 , 1 , 0 ) , i );
-			
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'zz'"
-		               , i , i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 9 , 0 ) );
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'zz'"
-		               ,     i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 9 , 0 ) , i );
-			
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'zo'"
-		               , i , i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 9 ) );
-		assertNotEquals( "Matrix3D.equals() did not correctly test 'zo'"
-		               ,     i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 9 ) , i );
+		m = i.set( 1 , 0 , 0 , 0 , 0 , 9 , 0 , 0 , 0 , 0 , 1 , 0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'yy'" , !i.equals( m ) && !m.equals( i ) );
+
+		m = i.set( 1 , 0 , 0 , 0 , 0 , 1 , 9 , 0 , 0 , 0 , 1 , 0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'yz'" , !i.equals( m ) && !m.equals( i ) );
+
+		m = i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 9 , 0 , 0 , 1 , 0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'yo'" , !i.equals( m ) && !m.equals( i ) );
+
+		m = i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 9 , 0 , 1 , 0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'zx'" , !i.equals( m ) && !m.equals( i ) );
+
+		m = i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 9 , 1 , 0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'zy'" , !i.equals( m ) && !m.equals( i ) );
+
+		m = i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 9 , 0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'zz'" , !i.equals( m ) && !m.equals( i ) );
+
+		m = i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 9 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'zo'" , !i.equals( m ) && !m.equals( i ) );
 	}
-
 }
