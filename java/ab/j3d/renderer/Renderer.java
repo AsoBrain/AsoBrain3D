@@ -1692,7 +1692,7 @@ public class Renderer
 	 * @param	g		Graphics to paint on
 	 * @param	face	Face to render
 	 */
-	protected static void renderWireframeFace( final Graphics g , final RenderObject.Face face )
+	protected void renderWireframeFace( final Graphics g , final RenderObject.Face face )
 	{
 		int i,k,h1,v1,h2,v2;
 
