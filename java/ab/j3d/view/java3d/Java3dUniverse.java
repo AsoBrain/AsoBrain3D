@@ -27,30 +27,29 @@ import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.DirectionalLight;
 import javax.media.j3d.Group;
+import javax.media.j3d.Locale;
+import javax.media.j3d.PhysicalBody;
+import javax.media.j3d.PhysicalEnvironment;
+import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
+import javax.media.j3d.View;
+import javax.media.j3d.ViewPlatform;
+import javax.media.j3d.VirtualUniverse;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3f;
 
-import com.sun.j3d.utils.universe.SimpleUniverse;
-import com.sun.j3d.utils.universe.Viewer;
-import com.sun.j3d.utils.universe.ViewingPlatform;
-
-import ab.j3d.Vector3D;
-
-import com.numdata.oss.ArrayTools;
-
 /**
- * This class extends the <code>SimpleUniverse</code> class and adds extra
- * functionality to add multiple views.
+ * This class extends the <code>VirtualUniverse</code> class and adds extra
+ * functionality to add multiple views and dynamic content.
  *
- * @see     SimpleUniverse
+ * @see     VirtualUniverse
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
 public class Java3dUniverse
-	extends SimpleUniverse
+	extends VirtualUniverse
 {
 	/**
 	 * Scale factor for meters (metric system).
@@ -98,16 +97,41 @@ public class Java3dUniverse
 	public static final double NAUTIC_MILE = 2025.4 * YARD;
 
 	/**
-	 * Unit scale factor in this universe. This scale factor, when multiplied,
-	 * converts design units to Java 3D units (meters).
-	 */
-	private final double _unit;
-
-	/**
 	 * The scene content is either a user-defined group node, or create using the
 	 * internal <code>createStaticScene()</code> method.
 	 */
 	private final Group _content;
+
+	/**
+	 * Reference position within the universe. It defines the Virtual World
+	 * coordinate system. This is where branch graphs are added.
+	 */
+	private final Locale _locale;
+
+	/**
+	 * Characteristics of a (physical) head in the universe.
+	 * <p />
+	 * <b>IMPORTANT: Created on-demand. Never access field, always use getter.</b>
+	 *
+	 * @see     #getPhysicalBody
+	 */
+	private PhysicalBody _physicalBody;
+
+	/**
+	 * Characteristics of the (physical) environment in which this universe is
+	 * defined.
+	 * <p />
+	 * <b>IMPORTANT: Created on-demand. Never access field, always use getter.</b>
+	 *
+	 * @see     #getPhysicalEnvironment
+	 */
+	private PhysicalEnvironment _physicalEnvironment;
+
+	/**
+	 * Unit scale factor in this universe. This scale factor, when multiplied,
+	 * converts design units to Java 3D units (meters).
+	 */
+	private final double _unit;
 
 	/**
 	 * Construct universe with the specified unit scale and no views.
@@ -120,55 +144,23 @@ public class Java3dUniverse
 	 * units (meters). A <code>TransformGroup</code> is created within the
 	 * scene graph to perform the scaling.
 	 *
-	 * @param   unit    Unit scale factor (e.g. <code>MM</code>).
+	 * @param   unit            Unit scale factor (e.g. <code>MM</code>).
+	 * @param   background      Background color to use for 3D views.
 	 *
-	 * @see     #addViewer
+	 * @see     #createView
 	 * @see     #getContent
 	 */
-	public Java3dUniverse( final double unit )
+	public Java3dUniverse( final double unit , final Color background )
 	{
-		//@FIXME The Viewer that is created standard by SimpleUniverse is shown, even though the viewer[] is emptied!?!?
-		final Viewer notUsed = viewer[ 0 ];
-		notUsed.setVisible( false );
-		// Empty the viewer[], standard there are no viewers!
-		viewer = new Viewer[ 0 ];
-
-		_unit = unit;
-		_content = createContent( new Color( 0.2f , 0.3f , 0.4f ) );
+		_locale              = new Locale( this );
+		_physicalBody        = null;
+		_physicalEnvironment = null;
+		_unit                = unit;
+		_content             = createContent( background );
 	}
 
 	/**
-	 * Construct universe with the specified canvas and unit scale.
-	 * <p />
-	 * The canvas is registered as canvas for the first (and only) initial view
-	 * of the universe.
-	 * <p />
-	 * A default scene graph is created with default lighting, background, etc.
-	 * Applications can access (a part of) this scene graph using the
-	 * <code>getContent()</code> method to add or remove content from the scene.
-	 * <p />
-	 * The unit scale factor, when multiplied, converts design units to Java 3D
-	 * units (meters). A <code>TransformGroup</code> is created within the
-	 * scene graph to perform the scaling.
-	 *
-	 * @param   canvas3d    Canvas for initial view.
-	 * @param   unit        Unit scale factor.
-	 *
-	 * @see     #getContent
-	 */
-	public Java3dUniverse( final Canvas3D canvas3d , final double unit )
-	{
-		super( canvas3d );
-
-		_unit = unit;
-		_content = createContent( new Color( 0.2f , 0.3f , 0.4f ) );
-	}
-
-	/**
-	 * Construct universe with the specified canvas, content, and unit scale.
-	 * <p />
-	 * The canvas is registered as canvas for the first (and only) initial view
-	 * of the universe.
+	 * Construct universe with the specified content and unit scale, and no views.
 	 * <p />
 	 * The <code>BranchGroup</code> in the content graph must be added to the
 	 * universe using <code>addBranchGroup<()/code> by the caller, since it is
@@ -178,18 +170,29 @@ public class Java3dUniverse
 	 * The unit scale factor is stored as-is and is not used in any way by this
 	 * constructor.
 	 *
-	 * @param   canvas3d    Canvas for initial view.
 	 * @param   content     Content graph.
 	 * @param   unit        Unit scale factor.
 	 *
-	 * @see     #addBranchGraph
+	 * @see     #addBranchGroup
 	 */
-	public Java3dUniverse( final Canvas3D canvas3d , final Group content , final double unit )
+	public Java3dUniverse( final Group content , final double unit )
 	{
-		super( canvas3d );
+		_locale              = new Locale( this );
+		_physicalBody        = null;
+		_physicalEnvironment = null;
+		_unit                = unit;
+		_content             = content;
+	}
 
-		_unit = unit;
-		_content = content;
+	/**
+	 * Add branch group to the universe. This is a convenience method that
+	 * simply adds the specified group to this universe's locale.
+	 *
+	 * @param   bg      BranchGroup to attach to this Universe's Locale.
+	 */
+	public void addBranchGroup( final BranchGroup bg )
+	{
+		_locale.addBranchGraph( bg );
 	}
 
 	/**
@@ -212,7 +215,10 @@ public class Java3dUniverse
 		final double unit = getUnit();
 		if ( ( unit > 0 ) && ( unit != 1 ) )
 		{
-			result = new TransformGroup( Java3dTools.createTransform3D( Vector3D.INIT , 0.0 , unit ) );
+			final Transform3D xform = new Transform3D();
+			xform.setScale( unit );
+
+			result = new TransformGroup( xform );
 			result.setCapability( TransformGroup.ALLOW_CHILDREN_READ );
 			scene.addChild( result );
 		}
@@ -224,9 +230,72 @@ public class Java3dUniverse
 		result.setCapability( BranchGroup.ALLOW_CHILDREN_EXTEND );
 
 		scene.compile();
-		addBranchGraph( scene );
+		addBranchGroup( scene );
 
 		return result;
+	}
+
+	/**
+	 * Create view in this universe.
+	 * <p />
+	 * This adds the following view branch to the scene.
+	 * <pre>
+	 *     (Locale)
+	 *         :
+	 *   (BranchGroup)
+	 *         |
+	 * (TransformGroup)
+	 *         |
+	 *  (ViewPlatform) ---[View]--- [Canvas3D]
+	 *                     |  |
+	 *    [PhysicalBody] --'  `-- [PhysicalEnvironment]
+	 * </pre>
+	 * <table>
+	 *   <tr><td><code>Locale</code>             </td><td>As returned by <code>getLocale()</code>.</td></tr>
+	 *   <tr><td><code>BranchGroup</code>        </td><td>Created by this method.</td></tr>
+	 *   <tr><td><code>TransformGroup</code>     </td><td>Supplied <code>transformGroup</code> argument.</td></tr>
+	 *   <tr><td><code>ViewPlatform</code>       </td><td>Created by this method.</td></tr>
+	 *   <tr><td><code>View</code>               </td><td>Created by this method; returned as method result.</td></tr>
+	 *   <tr><td><code>Canvas3D</code>           </td><td>Supplied <code>canvas</code> argument.</td></tr>
+	 *   <tr><td><code>PhysicalBody</code>       </td><td>As returned by <code>getPhysicalBody()</code>.</td></tr>
+	 *   <tr><td><code>PhysicalEnvironment</code></td><td>As returned by <code>getPhysicalEnvironment()</code>.</td></tr>
+	 * </table>
+	 *
+	 * @param   transformGroup  Defines the view's transform.
+	 * @param   canvas          Canvas to render on.
+	 *
+	 * @return  View that was created.
+	 *
+	 * @see     Java3dTools#createCanvas3D
+	 * @see     #getLocale
+	 * @see     #getPhysicalBody
+	 * @see     #getPhysicalEnvironment
+	 */
+	public View createView( final TransformGroup transformGroup , final Canvas3D canvas )
+	{
+		transformGroup.setCapability( TransformGroup.ALLOW_TRANSFORM_READ );
+		transformGroup.setCapability( TransformGroup.ALLOW_TRANSFORM_WRITE );
+
+		final ViewPlatform viewPlatform = new ViewPlatform();
+		transformGroup.addChild( viewPlatform );
+
+		final View view = new View();
+		view.setPhysicalBody( getPhysicalBody() );
+		view.setPhysicalEnvironment( getPhysicalEnvironment() );
+		view.attachViewPlatform( viewPlatform );
+		view.addCanvas3D( canvas );
+		view.setDepthBufferFreezeTransparent( true );
+		view.setTransparencySortingPolicy( View.TRANSPARENCY_SORT_GEOMETRY );
+		view.setBackClipDistance( 100.0 );
+		view.setFrontClipDistance( 0.01 );
+
+		final BranchGroup branchGroup = new BranchGroup();
+		branchGroup.setCapability( BranchGroup.ALLOW_DETACH );
+		branchGroup.addChild( transformGroup );
+
+		addBranchGroup( branchGroup );
+
+		return view;
 	}
 
 	/**
@@ -300,83 +369,6 @@ public class Java3dUniverse
 		return scene;
 	}
 
-	public Viewer getViewer()
-	{
-		throw new RuntimeException( "this method is not multi-view capable" );
-	}
-
-	/**
-	 * Get the specified viewer in this Java 3D Universe.
-	 *
-	 * @param   viewerNum   Index of the viewer in this universe.
-	 *
-	 * @return  The requested viewer.
-	 */
-	public Viewer getViewer( final int viewerNum )
-	{
-		return viewer[ viewerNum ];
-	}
-
-	public ViewingPlatform getViewingPlatform()
-	{
-		throw new RuntimeException( "this method is not multi-view capable" );
-	}
-
-	/**
-	 * Returns the <code>ViewingPlatform</code> object in the scene graph
-	 * associated with the specified viewer in this Java 3D Universe.
-	 *
-	 * @param   viewerNum   Index of the viewer in this universe.
-	 *
-	 * @return  ViewingPlatform object associated with the specified viewer.
-	 */
-	public ViewingPlatform getViewingPlatform( final int viewerNum )
-	{
-		final Viewer viewer = getViewer( viewerNum );
-		return viewer.getViewingPlatform();
-	}
-
-	public Canvas3D getCanvas( final int canvasNum )
-	{
-		throw new RuntimeException( "this method is not multi-view capable" );
-	}
-
-	/**
-	 * Returns the <code>Canvas3D</code> object at the specified index
-	 * associated with the specified viewer in this Java 3D Universe.
-	 *
-	 * @param   viewerNum   Index of the viewer in this universe.
-	 * @param   canvasNum   Index of the canvas in the viewer.
-	 *
-	 * @return  Canvas3D object associated with the specified viewer;
-	 *          <code>null</code> if there is no canvas the given indices.
-	 */
-	public Canvas3D getCanvas( final int viewerNum , final int canvasNum )
-	{
-		final Viewer viewer = getViewer( viewerNum );
-		return viewer.getCanvas3D( canvasNum );
-	}
-
-	/**
-	 * Add viewer to universe.
-	 *
-	 * @param   theViewer   Viewer to add.
-	 */
-	public void addViewer( final Viewer theViewer )
-	{
-		viewer = (Viewer[])ArrayTools.append( viewer , theViewer );
-	}
-
-	/**
-	 * Get number of viewers in universe.
-	 *
-	 * @return  Number of viewers in universe.
-	 */
-	public int getViewerCount()
-	{
-		return viewer.length;
-	}
-
 	/**
 	 * Content scene graph object. Applications, may use the returned node to
 	 * add content to the universe.
@@ -386,6 +378,56 @@ public class Java3dUniverse
 	public Group getContent()
 	{
 		return _content;
+	}
+
+	/**
+	 * Get reference position within the universe. It defines the Virtual World
+	 * coordinate system. This is where branch graphs are added.
+	 *
+	 * @return  Locale object, which defined the position of this universe.
+	 */
+	public Locale getLocale()
+	{
+		return _locale;
+	}
+
+	/**
+	 * Get characteristics of the (physical) environment in which this universe
+	 * is defined.
+	 *
+	 * @return  PhysicalBody instance representing head properties.
+	 *
+	 * @see     #getPhysicalEnvironment
+	 */
+	public PhysicalBody getPhysicalBody()
+	{
+		PhysicalBody result = _physicalBody;
+		if ( result == null )
+		{
+			result = new PhysicalBody();
+			_physicalBody = result;
+		}
+
+		return result;
+	}
+
+	/**
+	 * Get characteristics of a (physical) head in the universe.
+	 *
+	 * @return  PhysicalEnvironment instance representing environment properties.
+	 *
+	 * @see     #getPhysicalBody
+	 */
+	public PhysicalEnvironment getPhysicalEnvironment()
+	{
+		PhysicalEnvironment result = _physicalEnvironment;
+		if ( result == null )
+		{
+			result = new PhysicalEnvironment();
+			_physicalEnvironment = result;
+		}
+
+		return result;
 	}
 
 	/**
