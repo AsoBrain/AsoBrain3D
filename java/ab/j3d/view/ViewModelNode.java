@@ -1,16 +1,27 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 2004-2004 Numdata BV
  *
- * (C) Copyright Numdata BV 2004-2004 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
-package com.numdata.soda.Gerwin.AbtoJ3D;
+package ab.j3d.view;
 
 import ab.j3d.Matrix3D;
-import ab.j3d.renderer.TreeNode;
+import ab.j3d.model.Node3D;
 
 /**
  * Node in view model.
@@ -20,46 +31,58 @@ import ab.j3d.renderer.TreeNode;
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public abstract class ViewNode
+public abstract class ViewModelNode
 {
 	/**
-	 * The Ab root node associated with this view node.
+	 * Application-assigned ID of this node.
 	 */
-	private final TreeNode _abRootNode;
+	private final Object _id;
 
 	/**
-	 * Transform for this view node.
+	 * Root in the 3D scene associated with this node.
+	 */
+	private final Node3D _node3D;
+
+	/**
+	 * Transform for this node.
 	 */
 	private Matrix3D _transform;
 
 	/**
-	 * Construct new ViewNode.
+	 * Construct new view model node.
 	 *
-	 * @param   abRootNode  Ab root node to associate with this view node.
+	 * @param   id      Application-assigned ID of this node.
+	 * @param   node3D  Root in the 3D scene.
 	 */
-	protected ViewNode( final TreeNode abRootNode )
+	protected ViewModelNode( final Object id , final Node3D node3D )
 	{
-		_abRootNode = abRootNode;
+		_id = id;
+		_node3D = node3D;
 		_transform = Matrix3D.INIT;
 	}
 
 	/**
-	 * Update view node.
+	 * Get application-assigned ID of this node.
+	 *
+	 * @return  Application-assigned ID of this node.
 	 */
-	public abstract void update();
+	public final Object getID()
+	{
+		return _id;
+	}
 
 	/**
-	 * Get the transform for this view node.
+	 * Get the transform for this node.
 	 *
-	 * @return  Transform for this view node.
+	 * @return  Transform for this node.
 	 */
-	public Matrix3D getTransform()
+	public final Matrix3D getTransform()
 	{
 		return _transform;
 	}
 
 	/**
-	 * Set the transform for this view node.
+	 * Set the transform for this node.
 	 *
 	 * @param   transform   Transform to set.
 	 */
@@ -72,12 +95,17 @@ public abstract class ViewNode
 	}
 
 	/**
-	 * Get the Ab root node associated with this view node.
+	 * Get root in the 3D scene associated with this node.
 	 *
-	 * @return  Ab root node associated with this view node.
+	 * @return  Root in the 3D scene associated with this node.
 	 */
-	public TreeNode getAbRootNode()
+	public final Node3D getNode3D()
 	{
-		return _abRootNode;
+		return _node3D;
 	}
+
+	/**
+	 * Update view node.
+	 */
+	public abstract void update();
 }

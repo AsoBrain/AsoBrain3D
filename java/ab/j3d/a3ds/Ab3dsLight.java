@@ -1,148 +1,210 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Sjoerd Bouwman
  *
- * (C) Copyright 1999-2004 Sjoerd Bouwman (aso@asobrain.com)
- * 
- * This program is free software; you can redistribute it and/or
- * modify it as you see fit.
- * 
- * This program is distributed in the hope that it will be useful,
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d.a3ds;
 
-import java.io.*;
+import java.io.IOException;
 
 /**
  * This chunk specifies a light.
  * <pre>
  * Chunk ID :
- * - OBJ_LIGHT		= 0x4600
+ * - OBJ_LIGHT      = 0x4600
  *
  * Parent chunk :
- * - EDIT_OBJECT	= 0x4000
+ * - EDIT_OBJECT    = 0x4000
  *
  * Possible sub chunks :
- * - LIT_SPOT		= 0x4610;
- * - LIT_OFF		= 0x4620;
- * - LIT_RAY		= 0x4627;
+ * - LIT_SPOT       = 0x4610;
+ * - LIT_OFF        = 0x4620;
+ * - LIT_RAY        = 0x4627;
  * - LIT_CAST       = 0x4630;
- * - LIT_OUT_RANGE	= 0x465A;
- * - LIT_IN_RANGE	= 0x4659;
+ * - LIT_OUT_RANGE  = 0x465A;
+ * - LIT_IN_RANGE   = 0x4659;
  * - LIT_MULTIPLIER = 0x465B;
  * - LIT_ROLL       = 0x4656;
- * - LIT_RAY_BIAS	= 0x4658;
+ * - LIT_RAY_BIAS   = 0x4658;
  * </pre>
  *
- * @author	Sjoerd Bouwman
- * @version	$Revision$ $Date$
+ * @author  Sjoerd Bouwman
+ * @version $Revision$ $Date$
  */
-public class Ab3dsLight extends HierarchyChunk 
+public final class Ab3dsLight
+	extends HierarchyChunk
 {
-	public static class State extends DataChunk
+	public static final class State
+		extends DataChunk
 	{
 		public boolean on;
+
 		/**
 		 * Constructor of Chunk with ChunkID to be used
 		 * when the Chunk is read from inputstream.
 		 *
-		 * @param	id	the ID of the chunk.
+		 * @param   id      ID of the chunk.
 		 */
-		public State( int id )		{ super( id ); }
-		/**
-		 * Returns the size in bytes of the chunk.
-		 *
-		 * @return	the size of the chunk in bytes.
-		 */
-		public long getSize()		{ return HEADER_SIZE + BOOLEAN_SIZE; }
-		/**
-		 * Reads the chunk from the input stream.
-		 * 
-		 * @param	is	the stream to read from.
-		 *
-		 * @throws IOException when an io error occurred.
-		 */
-		public void read( Ab3dsInputStream is ) throws IOException
-		{	readHeader( is ); on = is.readBoolean(); }
-		/**
-		 * Writes the chunk the output stream.
-		 * 
-		 * @param	os	the stream to write to.
-		 *
-		 * @throws IOException when an io error occurred.
-		 */
-		public void write( Ab3dsOutputStream os ) throws IOException
-		{	writeHeader( os ); os.writeBoolean( on ); }
-	}
-
-	public static class SpotLight extends DataChunk
-	{
-		public float x,y,z,hotspot,falloff;
-		/**
-		 * Constructor of Chunk with ChunkID to be used
-		 * when the Chunk is read from inputstream.
-		 *
-		 * @param	id	the ID of the chunk.
-		 */
-		public SpotLight( int id )	{ super( id ); if ( Ab3dsFile.DEBUG ) System.out.println( "  - Spotlight" ); }
-		/**
-		 * No-op constructor for generation purposes.
-		 */
-		public SpotLight()          { this( LIT_SPOT ); }
-		/**
-		 * Returns the size in bytes of the chunk.
-		 *
-		 * @return	the size of the chunk in bytes.
-		 */
-		public long getSize()		{ return HEADER_SIZE + 5 * FLOAT_SIZE; }
-
-		/**
-		 * Reads the chunk from the input stream.
-		 * 
-		 * @param	is	the stream to read from.
-		 *
-		 * @throws IOException when an io error occurred.
-		 */
-		public void read( Ab3dsInputStream is ) throws IOException
+		public State( final int id )
 		{
-			readHeader( is );
-			x = is.readFloat();			y = is.readFloat();			z = is.readFloat();
-			hotspot = is.readFloat();	falloff = is.readFloat();
+			super( id );
+			on = false;
 		}
 
-		/**
-		 * Writes the chunk the output stream.
-		 * 
-		 * @param	os	the stream to write to.
-		 *
-		 * @throws IOException when an io error occurred.
-		 */
-		public void write( Ab3dsOutputStream os )
+		public long getSize()
+		{
+			return HEADER_SIZE + BOOLEAN_SIZE;
+		}
+
+		public void read( final Ab3dsInputStream is )
+			throws IOException
+		{
+			readHeader( is );
+			on = is.readBoolean();
+		}
+
+		public void write( final Ab3dsOutputStream os )
 			throws IOException
 		{
 			writeHeader( os );
-			os.writeFloat( x );			os.writeFloat( y );			os.writeFloat( z );
-			os.writeFloat( hotspot );	os.writeFloat( falloff );
-		}
-		public void set( float x , float y , float z , float hotspot , float falloff )
-		{
-			this.x = x;
-			this.y = y;
-			this.z = z;
-			this.hotspot = hotspot;
-			this.falloff = falloff;
+			os.writeBoolean( on );
 		}
 	}
 
 	/**
-	 * Position of light.
+	 * This class defines a spot light.
 	 */
-	private float _x;
-	private float _y;
-	private float _z;
+	public static final class SpotLight
+		extends DataChunk
+	{
+		/**
+		 * X-position of spot light target.
+		 */
+		public float _targetX;
+
+		/**
+		 * Y-position of spot light target.
+		 */
+		public float _targetY;
+
+		/**
+		 * Z-position of spot light target.
+		 */
+		public float _targetZ;
+
+		/**
+		 * Hot spot. Defines the light beam frustrum.
+		 *
+		 * @FIXME need description here, don't know the values that go here.
+		 */
+		public float _hotspot;
+
+		/**
+		 * Fall-off. Defines the light strength relative to the distance
+		 * between the source and the target.
+		 *
+		 * @FIXME need description here, don't know the values that go here.
+		 */
+		public float _falloff;
+
+		/**
+		 * Constructor with chunk ID to use reading from an input stream.
+		 *
+		 * @param   id      ID of the chunk.
+		 */
+		public SpotLight( final int id )
+		{
+			super( id );
+
+			_targetX = 0;
+			_targetY = 0;
+			_targetZ = 0;
+			_hotspot = 0;
+			_falloff = 0;
+
+			if ( Ab3dsFile.DEBUG )
+				System.out.println( "  - Spotlight" );
+		}
+
+		/**
+		 * Default constructor for generation purposes.
+		 */
+		public SpotLight()
+		{
+			this( LIT_SPOT );
+		}
+
+		public long getSize()
+		{
+			return HEADER_SIZE + 5 * FLOAT_SIZE;
+		}
+
+		public void read( final Ab3dsInputStream is )
+			throws IOException
+		{
+			readHeader( is );
+
+			_targetX = is.readFloat();
+			_targetY = is.readFloat();
+			_targetZ = is.readFloat();
+			_hotspot = is.readFloat();
+			_falloff = is.readFloat();
+		}
+
+		public void write( final Ab3dsOutputStream os )
+			throws IOException
+		{
+			writeHeader( os );
+
+			os.writeFloat( _targetX );
+			os.writeFloat( _targetY );
+			os.writeFloat( _targetZ );
+			os.writeFloat( _hotspot );
+			os.writeFloat( _falloff );
+		}
+
+		public void set( final float x , final float y , final float z , final float hotspot , final float falloff )
+		{
+			_targetX = x;
+			_targetY = y;
+			_targetZ = z;
+			_hotspot = hotspot;
+			_falloff = falloff;
+		}
+	}
+
 	/**
-	 * No-op constructor for generation purposes.
+	 * X-position of light.
+	 */
+	private float _sourceX;
+
+	/**
+	 * Y-position of light.
+	 */
+	private float _sourceY;
+
+	/**
+	 * Z-position of light.
+	 */
+	private float _sourceZ;
+
+	/**
+	 * Default constructor.
 	 */
 	public Ab3dsLight()
 	{
@@ -153,72 +215,57 @@ public class Ab3dsLight extends HierarchyChunk
 	 * Constructor of Chunk with ChunkID to be used
 	 * when the Chunk is read from inputstream.
 	 *
-	 * @param	id	the ID of the chunk.
+	 * @param   id      ID of the chunk.
 	 */
-	public Ab3dsLight( int id )
+	public Ab3dsLight( final int id )
 	{
 		super(id);
-	}
 
-	/**
-	 * Returns the size in bytes of the chunk.
-	 *
-	 * @return	the size of the chunk in bytes.
-	 */
-	public long getSize() 
-	{
-		return super.getSize() + 3 * FLOAT_SIZE;
-	}
-
-	/**
-	 * Reads the chunk from the input stream.
-	 * 
-	 * @param	is	the stream to read from.
-	 *
-	 * @throws IOException when an io error occurred.
-	 */
-	public void read( Ab3dsInputStream is ) throws IOException 
-	{
-		readHeader( is );
-
-		_x = is.readFloat();
-		_y = is.readFloat();
-		_z = is.readFloat();
-				
-		readSubChunks( is );
+		_sourceX = 0;
+		_sourceY = 0;
+		_sourceZ = 0;
 	}
 
 	/**
 	 * Set parameters for light.
 	 *
-	 * @param	x	x-position of light.
-	 * @param	y	y-position of light.
-	 * @param	z	z-position of light.
+	 * @param   x   X-position of light source.
+	 * @param   y   Y-position of light source.
+	 * @param   z   Z-position of light source.
 	 */
-	public void set( float x , float y , float z )
+	public void set( final float x , final float y , final float z )
 	{
-		_x = x;
-		_y = y;
-		_z = z;
+		_sourceX = x;
+		_sourceY = y;
+		_sourceZ = z;
 	}
 
-	/**
-	 * Writes the chunk the output stream.
-	 * 
-	 * @param	os	the stream to write to.
-	 *
-	 * @throws IOException when an io error occurred.
-	 */
-	public void write( Ab3dsOutputStream os ) 
-		throws java.io.IOException 
+	public long getSize()
+	{
+		return super.getSize() + 3 * FLOAT_SIZE;
+	}
+
+	public void read( final Ab3dsInputStream is )
+		throws IOException
+	{
+		readHeader( is );
+
+		_sourceX = is.readFloat();
+		_sourceY = is.readFloat();
+		_sourceZ = is.readFloat();
+
+		readSubChunks( is );
+	}
+
+	public void write( final Ab3dsOutputStream os )
+		throws IOException
 	{
 		writeHeader( os );
 
-		os.writeFloat( _x );
-		os.writeFloat( _y );
-		os.writeFloat( _z );
+		os.writeFloat( _sourceX );
+		os.writeFloat( _sourceY );
+		os.writeFloat( _sourceZ );
 
 		writeSubChunks( os );
 	}
-
 }

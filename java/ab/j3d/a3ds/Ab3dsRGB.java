@@ -1,51 +1,78 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Sjoerd Bouwman
  *
- * (C) Copyright 1999-2004 Sjoerd Bouwman (aso@asobrain.com)
- * 
- * This program is free software; you can redistribute it and/or
- * modify it as you see fit.
- * 
- * This program is distributed in the hope that it will be useful,
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d.a3ds;
+
+import java.io.IOException;
 
 /**
  * This chunk specifies a RGB color value.
  *
- * @author	Sjoerd Bouwman
- * @version	$Revision$ $Date$
+ * @author  Sjoerd Bouwman
+ * @version $Revision$ $Date$
  */
-public class Ab3dsRGB extends DataChunk 
+public final class Ab3dsRGB extends DataChunk
 {
 	/**
 	 * If true, the color is specified by floats, otherwise by ints.
 	 */
-	private boolean _floats = false;
+	private final boolean _floats;
 
 	/**
-	 * Float value of color (0..1) for each value.
+	 * Float value (0..1) of color's red segment.
 	 */
 	private float _fr;
+
+	/**
+	 * Float value (0..1) of color's green segment.
+	 */
 	private float _fg;
+
+	/**
+	 * Float value (0..1) of color's blue segment.
+	 */
 	private float _fb;
 
 	/**
-	 * Int value of color (0..255) for each value.
+	 * Integer value (0..255) of color's red segment.
 	 */
 	private byte  _r;
+
+	/**
+	 * Integer value (0..255) of color's green segment.
+	 */
 	private byte  _g;
+
+	/**
+	 * Integer value (0..255) of color's blue segment.
+	 */
 	private byte  _b;
+
 	/**
 	 * Constructs a rgb color with specified float values.
 	 *
-	 * @param	r	red segement (0..1).
-	 * @param	g	green segement (0..1).
-	 * @param	b	blue segement (0..1).
+	 * @param   r   Red segment (0..1).
+	 * @param   g   Green segment (0..1).
+	 * @param   b   Blue segment (0..1).
 	 */
-	public Ab3dsRGB( float r , float g , float b )
+	public Ab3dsRGB( final float r , final float g , final float b )
 	{
 		this( RGB_FLOAT , true );
 		_fr = r;
@@ -57,49 +84,48 @@ public class Ab3dsRGB extends DataChunk
 	 * Constructor of Chunk with ChunkID to be used
 	 * when the Chunk is read from inputstream.
 	 *
-	 * @param	id		the ID of the chunk.
-	 * @param	floats	if true, the rgb is specified as floats, otherwise with bytes.
+	 * @param   id      ID of the chunk.
+	 * @param   floats  If true, the rgb is specified as floats, otherwise with bytes.
 	 */
-	public Ab3dsRGB( int id, boolean floats ) 
+	public Ab3dsRGB( final int id, final boolean floats )
 	{
 		super( id );
+
 		_floats = floats;
-//		if ( Ab3dsFile.DEBUG ) System.out.println( "  - RGB " + (floats?"floats":"bytes") );
+		_fr     = 0;
+		_fg     = 0;
+		_fb     = 0;
+		_r      = 0;
+		_g      = 0;
+		_b      = 0;
+
+//		if ( Ab3dsFile.DEBUG )
+//			System.out.println( "  - RGB " + (floats?"floats":"bytes") );
 	}
 
 	/**
 	 * Constructs a rgb color with specified int values.
 	 *
-	 * @param	r	red segement (0..255).
-	 * @param	g	green segement (0..255).
-	 * @param	b	blue segement (0..255).
+	 * @param   r   Red segment (0..255).
+	 * @param   g   Green segment (0..255).
+	 * @param   b   Blue segment (0..255).
 	 */
-	public Ab3dsRGB( int r , int g , int b )
+	public Ab3dsRGB( final int r , final int g , final int b )
 	{
 		this( RGB_BYTE , false );
-		_r = (byte)r;
-		_g = (byte)g;
-		_b = (byte)b;
+
+		_r      = (byte)r;
+		_g      = (byte)g;
+		_b      = (byte)b;
 	}
 
-	/**
-	 * Returns the size in bytes of the chunk.
-	 *
-	 * @return	the size of the chunk in bytes.
-	 */
-	public long getSize() 
+	public long getSize()
 	{
 		return HEADER_SIZE + (_floats ? 3*FLOAT_SIZE : 3*BYTE_SIZE);
 	}
 
-	/**
-	 * Reads the chunk from the input stream.
-	 * 
-	 * @param	is	the stream to read from.
-	 *
-	 * @throws IOException when an io error occurred.
-	 */
-	public void read( Ab3dsInputStream is) throws java.io.IOException 
+	public void read( final Ab3dsInputStream is )
+		throws IOException
 	{
 		readHeader( is );
 
@@ -117,27 +143,8 @@ public class Ab3dsRGB extends DataChunk
 		}
 	}
 
-	/**
-	 * Returns a String representation of this chunk.
-	 *
-	 * @return	this chunk as a string.
-	 */
-	public String toString()
-	{
-		if ( _floats )
-			return "R:" + _fr + " G:" + _fg + " B:" + _fb;
-		return "R:" + _r + " G:" + _g + " B:" + _b;
-	}
-
-	/**
-	 * Writes the chunk the output stream.
-	 * 
-	 * @param	os	the stream to write to.
-	 *
-	 * @throws IOException when an io error occurred.
-	 */
-	public void write( Ab3dsOutputStream os) 
-		throws java.io.IOException 
+	public void write( final Ab3dsOutputStream os )
+		throws IOException
 	{
 		writeHeader( os );
 
@@ -155,4 +162,20 @@ public class Ab3dsRGB extends DataChunk
 		}
 	}
 
+	/**
+	 * Returns a String representation of this chunk.
+	 *
+	 * @return  this chunk as a string.
+	 */
+	public String toString()
+	{
+		final String result;
+
+		if ( _floats )
+			result = "R:" + _fr + " G:" + _fg + " B:" + _fb;
+		else
+			result = "R:" + _r + " G:" + _g + " B:" + _b;
+
+		return result;
+	}
 }

@@ -1,0 +1,652 @@
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Peter S. Heijnen
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
+ */
+package ab.j3d.view.java3d;
+
+import java.awt.Canvas;
+import java.awt.Image;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import javax.media.j3d.Alpha;
+import javax.media.j3d.Appearance;
+import javax.media.j3d.BoundingSphere;
+import javax.media.j3d.BranchGroup;
+import javax.media.j3d.Canvas3D;
+import javax.media.j3d.ColoringAttributes;
+import javax.media.j3d.GeometryArray;
+import javax.media.j3d.Group;
+import javax.media.j3d.LineAttributes;
+import javax.media.j3d.LineStripArray;
+import javax.media.j3d.Material;
+import javax.media.j3d.Node;
+import javax.media.j3d.PolygonAttributes;
+import javax.media.j3d.QuadArray;
+import javax.media.j3d.RotationInterpolator;
+import javax.media.j3d.Shape3D;
+import javax.media.j3d.Texture;
+import javax.media.j3d.TextureAttributes;
+import javax.media.j3d.Transform3D;
+import javax.media.j3d.TransformGroup;
+import javax.media.j3d.TransparencyAttributes;
+import javax.media.j3d.TriangleArray;
+import javax.vecmath.Color3f;
+import javax.vecmath.Matrix4f;
+import javax.vecmath.Point3d;
+import javax.vecmath.Point3f;
+import javax.vecmath.TexCoord2f;
+import javax.vecmath.Tuple3f;
+import javax.vecmath.Tuple3i;
+import javax.vecmath.Vector3d;
+import javax.vecmath.Vector3f;
+
+import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
+import com.sun.j3d.utils.geometry.Box;
+import com.sun.j3d.utils.image.TextureLoader;
+
+import ab.j3d.Matrix3D;
+import ab.j3d.TextureLibrary;
+import ab.j3d.TextureSpec;
+import ab.j3d.Vector3D;
+import ab.j3d.model.Object3D;
+
+/**
+ * Utility methods for Java 3D support.
+ *
+ * @author  Peter S. Heijnen
+ * @version $Revision$ $Date$
+ */
+public final class Java3dTools
+{
+	/**
+	 * Texture observer needed by <code>TextureLoader</code> to load textures.
+	 */
+	private static final Canvas TEXTURE_OBSERVER = new Canvas();
+
+	/**
+	 * Texture library.
+	 */
+	private final TextureLibrary _textureLibrary;
+
+	/**
+	 * Map used to cache textures. Maps texture code (<code>String</code>) to
+	 * texture (<code>Texture</code>).
+	 */
+	private final Map _textureCache = new HashMap();
+
+	/**
+	 * Construct <code>Java3dTools</code> for centralized texture caching, etc.
+	 *
+	 * @param   textureLibrary  Texture library.
+	 */
+	public Java3dTools( final TextureLibrary textureLibrary )
+	{
+		_textureLibrary = textureLibrary;
+	}
+
+	/**
+	 * Convert <code>Object3D<code/> to Java3D <code>Node</code> object.
+	 *
+	 * @param   xform               Transform to apply to vertices.
+	 * @param   object3d            Object3D to convert.
+	 * @param   textureOverride     Texture to use instead of actual object texture.
+	 * @param   opacity             Extra object opacity (0.0=translucent, 1.0=opaque).
+	 *
+	 * @return  If only one Java 3D <code>Appearance</code> is created
+	 *          a <code>Shape3D</code> is returned. Otherwise, a
+	 *          <code>BranchGroup</code> is returned containing
+	 *          <code>Shape3D</code>s for each separate <code>Appearance</code>.
+	 */
+	public Node convertObject3DToNode( final Matrix3D xform , final Object3D object3d , final TextureSpec textureOverride , final float opacity )
+	{
+		final Map appearances = new HashMap();
+
+		final int     faceCount     = object3d.getFaceCount();
+		final float[] vertices      = object3d.getVertices();
+		final float[] vertexNormals = object3d.getVertexNormals();
+
+		for ( int i = 0 ; i < faceCount ; i++ )
+		{
+			final Object3D.Face face        = object3d.getFace( i );
+			final int[]         faceVert    = face.getPointIndices();
+			final int[]         faceTU      = ( textureOverride != null ) ? null : face.getTextureU();
+			final int[]         faceTV      = ( textureOverride != null ) ? null : face.getTextureV();
+			final TextureSpec   faceTexture = ( textureOverride != null ) ? textureOverride : face.getTexture();
+
+			if ( ( faceTexture == null ) || ( faceTexture.code == null ) )
+				continue;
+
+			final int nrTriangles = faceVert.length - 2;
+			if ( nrTriangles < 1 )
+				continue;
+
+			final Texture texture = ( ( faceTU == null ) || ( faceTV == null ) ) ? null : getTexture( faceTexture );
+
+			final List[] data;
+			if ( appearances.containsKey( faceTexture.code ) )
+			{
+				data = (List[])appearances.get( faceTexture.code );
+			}
+			else
+			{
+				appearances.put( faceTexture.code , data = new List[] { new ArrayList() , new ArrayList() , new ArrayList() } );
+			}
+
+			final List    j3dVertices      = data[ 0 ];
+			final List    j3dTextureCoords = data[ 1 ];
+			final List    j3dFaceNormals   = data[ 2 ];
+			final float[] vertex           = new float[ 3 ];
+			final float[] faceNormal       = new float[ 3 ];
+
+			for ( int triangleIndex = 0 ; triangleIndex < nrTriangles ; triangleIndex++ )
+			{
+				for ( int subIndex = 3 ; --subIndex >= 0 ; )
+				{
+					final int vertexIndex = ( subIndex == 0 ) ? 0 : ( triangleIndex + subIndex );
+					final int vi = faceVert[ vertexIndex ] * 3;
+
+					vertex[ 0 ] = vertices[ vi     ];
+					vertex[ 1 ] = vertices[ vi + 1 ];
+					vertex[ 2 ] = vertices[ vi + 2 ];
+					xform.transform( vertex , vertex , 1 );
+
+					float tu = 0;
+					float tv = 0;
+					if ( texture != null )
+					{
+						tu = (float)faceTU[ vertexIndex ] / texture.getWidth();
+						tv = (float)faceTV[ vertexIndex ] / texture.getHeight();
+					}
+
+					faceNormal[ 0 ] = vertexNormals[ vi     ];
+					faceNormal[ 1 ] = vertexNormals[ vi + 1 ];
+					faceNormal[ 2 ] = vertexNormals[ vi + 2 ];
+					xform.rotate( faceNormal , faceNormal , 1 );
+
+					j3dVertices.add( new Point3f( vertex ) );
+					j3dTextureCoords.add( new TexCoord2f( tu , tv ) );
+					j3dFaceNormals.add( new Vector3f( faceNormal ) );
+				}
+			}
+		}
+
+		final Node result;
+		if ( appearances.size() == 1 )
+		{
+			final String     code       = (String)appearances.keySet().iterator().next();
+			final Appearance appearance = getAppearance( code , opacity );
+			final List[]     data       = (List[])appearances.get( code );
+
+			result = createShape3D( appearance , data[ 0 ] , data[ 1 ] , data[ 2 ] );
+		}
+		else
+		{
+			result = new BranchGroup();
+			result.setCapability( BranchGroup.ALLOW_DETACH );
+
+			for ( Iterator appearanceEnum = appearances.keySet().iterator() ; appearanceEnum.hasNext() ; )
+			{
+				final String     code       = (String)appearanceEnum.next();
+				final Appearance appearance = getAppearance( code , opacity );
+				final List[]     data       = (List[])appearances.get( code );
+
+				((BranchGroup)result).addChild( createShape3D( appearance , data[ 0 ] , data[ 1 ] , data[ 2 ] ) );
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Convert AB <code>Matrix3D<code/> to Java3D <code>Matrix4f</code> object.
+	 *
+	 * @param   matrix  Matrix3D to convert.
+	 *
+	 * @return  <code>Matrix4f</code> instance.
+	 */
+	public static Matrix4f convertMatrix3DToMatrix4f( final Matrix3D matrix )
+	{
+		return new Matrix4f(
+			matrix.xx , matrix.xy , matrix.xz , matrix.xo ,
+			matrix.yx , matrix.yy , matrix.yz , matrix.yo ,
+			matrix.zx , matrix.zy , matrix.zz , matrix.zo ,
+			0.0f , 0.0f , 0.0f , 1.0f );
+	}
+
+	/**
+	 * Convert AB <code>Matrix3D<code/> to Java3D <code>Matrix4f</code> object.
+	 *
+	 * @param   matrix  Matrix3D to convert.
+	 *
+	 * @return  <code>Matrix4f</code> instance.
+	 */
+	public static Transform3D convertMatrix3DToTransform3D( final Matrix3D matrix )
+	{
+		return new Transform3D( convertMatrix3DToMatrix4f( matrix ) );
+	}
+
+	/**
+	 * Convert Java3D <code>Tranform3D<code/> object to AB <code>Matrix3D</code>.
+	 *
+	 * @param   transform   Transform3D to convert.
+	 *
+	 * @return  <code>Matrix3D</code> instance.
+	 */
+	public static Matrix3D convertTransform3DToMatrix3D( final Transform3D transform )
+	{
+		final Matrix4f m4d = new Matrix4f();
+		transform.get( m4d );
+
+		return Matrix3D.INIT.set(
+			m4d.m00 , m4d.m01 , m4d.m02 , m4d.m03 ,
+			m4d.m10 , m4d.m11 , m4d.m12 , m4d.m13 ,
+			m4d.m20 , m4d.m21 , m4d.m22 , m4d.m23 );
+	}
+
+	/**
+	 * Get the transform to look from a specified point to a specified point.
+	 *
+	 * @param   from    Point to look from.
+	 * @param   to      Point to look at.
+	 *
+	 * @return  The transform to look from 'from' to 'to'.
+	 */
+	public static Transform3D createFromToTransform3D( final Vector3D from , final Vector3D to )
+	{
+		if ( from.equals( to ) )
+			throw new IllegalArgumentException( "getTransfrom( from , to ); 'from' and 'to' can not be the same!" );
+
+		final Vector3d upVector;
+		if ( ( from.x == 0 ) && ( from.y == 0 ) && ( from.z != 0 ) )
+			upVector = new Vector3d( 0 , 1 , 0 );
+		else
+			upVector = new Vector3d( 0 , 0 , 1 );
+
+		final Transform3D transform = new Transform3D();
+		transform.setTranslation( new Vector3f( from.x , from.y , from.z ) );
+		transform.lookAt( new Point3d( from.x , from.y , from.z ) , new Point3d( to.x , to.y , to.z ) , upVector );
+		transform.invert();
+		return transform;
+	}
+
+	/**
+	 * Create StarTrek&tm; Holodeck style unit.
+	 *
+	 * @param   origin      Grid origin.
+	 * @param   size        Grid size in unit unit.
+	 * @param   unit        Grid unit size.
+	 * @param   interval    Thick line interval (use thick appearance for each n'th line).
+	 * @param   color       Grid color.
+	 *
+	 * @return  Group containing unit shape.
+	 */
+	public static Group createGrid( final Tuple3f origin , final Tuple3i size , final float unit , final int interval , final Color3f color )
+	{
+		final Vector3f min     = new Vector3f( origin.x - size.x * unit , origin.y - size.y * unit , origin.z - size.z * unit );
+		final Vector3f max     = new Vector3f( origin.x + size.x * unit , origin.y + size.y * unit , origin.z + size.z * unit );
+		final int      maxSize = Math.max( Math.max( size.x , size.y ) , size.z );
+
+		final PolygonAttributes polygonAttributes = new PolygonAttributes();
+		polygonAttributes.setPolygonMode( PolygonAttributes.POLYGON_LINE );
+		polygonAttributes.setCullFace( PolygonAttributes.CULL_NONE );
+
+		final ColoringAttributes coloringAttributes = new ColoringAttributes();
+		coloringAttributes.setColor( color );
+		coloringAttributes.setShadeModel( ColoringAttributes.FASTEST );
+
+		final List thickCoords = new ArrayList();
+		final List thinCoords  = new ArrayList();
+
+		for ( int gridIndex = maxSize ; gridIndex >= 0 ; gridIndex-- )
+		{
+			final List coords = ( ( interval > 0 ) && ( ( gridIndex % interval ) == 0 ) ) ? thickCoords : thinCoords;
+
+			for ( int mult = ( gridIndex == 0 ) ? 1 : -1 ; mult <= 1 ; mult += 2 )
+			{
+				if ( gridIndex <= size.x )
+				{
+					final float x = origin.x + mult * gridIndex * unit;
+					coords.add( new Point3f( x , min.y , min.z ) );
+					coords.add( new Point3f( x , max.y , min.z ) );
+					coords.add( new Point3f( x , max.y , max.z ) );
+					coords.add( new Point3f( x , min.y , max.z ) );
+				}
+
+				if ( gridIndex <= size.y )
+				{
+					final float y = origin.y + mult * gridIndex * unit;
+					coords.add( new Point3f( min.x , y , min.z ) );
+					coords.add( new Point3f( max.x , y , min.z ) );
+					coords.add( new Point3f( max.x , y , max.z ) );
+					coords.add( new Point3f( min.x , y , max.z ) );
+				}
+
+				if ( gridIndex <= size.z )
+				{
+					final float z = origin.z + mult * gridIndex * unit;
+					coords.add( new Point3f( min.x , min.y , z ) );
+					coords.add( new Point3f( max.x , min.y , z ) );
+					coords.add( new Point3f( max.x , max.y , z ) );
+					coords.add( new Point3f( min.x , max.y , z ) );
+				}
+			}
+		}
+
+		final Group group = new Group();
+		for ( int i = 0 ; i < 2 ; i++ )
+		{
+			final List vCoords = ( i == 0 ) ? thinCoords : thickCoords;
+			if ( vCoords.isEmpty() )
+				continue;
+
+			final LineAttributes lineAttributes = new LineAttributes();
+			lineAttributes.setLineWidth( ( i == 0 ) ? 1 : 3 );
+
+			final Appearance appearance = new Appearance();
+			appearance.setLineAttributes( lineAttributes );
+			appearance.setPolygonAttributes( polygonAttributes );
+			appearance.setColoringAttributes( coloringAttributes );
+
+			final QuadArray quadArray = new QuadArray( vCoords.size() , LineStripArray.COORDINATES );
+			final Point3f[] pCoords = (Point3f[])vCoords.toArray( new Point3f[ vCoords.size() ] );
+			quadArray.setCoordinates( 0 , pCoords );
+
+			group.addChild( new Shape3D( quadArray , appearance ) );
+		}
+		return group;
+	}
+
+	/**
+	 * Set content of panel to a spinning image box.
+	 *
+	 * @param   image   Image to place on box.
+	 *
+	 * @return  Java 3D content graph with spinning image box.
+	 */
+	public static BranchGroup createImageSpinnerContent( final Image image )
+	{
+		final BranchGroup result = new BranchGroup();
+
+		final TransformGroup boxTransform = new TransformGroup();
+		boxTransform.setCapability( TransformGroup.ALLOW_TRANSFORM_WRITE );
+		result.addChild( boxTransform );
+
+		final RotationInterpolator spinner = new RotationInterpolator(
+		        /* alpha          */ new Alpha( -1 , Alpha.INCREASING_ENABLE , 0 , 0 , 8000 , 0 , 0 , 0 , 0 , 0 ) ,
+		        /* transformgroup */ boxTransform ,
+		        /* axis           */ new Transform3D() ,
+		        /* startValue     */ (float) Math.PI * 2.0f ,
+		        /* endValue       */ 0.0f );
+		spinner.setSchedulingBounds( new BoundingSphere( new Point3d( 0 , 0 , 0 ) , 100 ) );
+		boxTransform.addChild( spinner );
+
+		final Appearance appearance = new Appearance();
+		appearance.setTexture( new TextureLoader( image , TEXTURE_OBSERVER ).getTexture() );
+		boxTransform.addChild( new Box( 0.15f , 0.15f , 0.15f , Box.GENERATE_TEXTURE_COORDS , appearance ) );
+
+		return result;
+	}
+
+	/**
+	 * Create orbit control with default scheduling bounds for the specified
+	 * canvas. The behavior must be assigned to a <code>TransformGroup</code> to
+	 * be effective.
+	 *
+	 * @param   canvas  Canvas to create orbit control for.
+	 *
+	 * @return  Orbit behavior.
+	 */
+	public static OrbitBehavior createOrbitBehavior( final Canvas3D canvas )
+	{
+		final BoundingSphere bounds = new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 100.0 );
+
+		final OrbitBehavior orbit = new SimpleOrbitBehavior( canvas , OrbitBehavior.REVERSE_ALL | OrbitBehavior.STOP_ZOOM );
+		orbit.setSchedulingBounds( bounds );
+
+		return orbit;
+	}
+
+	/**
+	 * Create a <code>Shape3D</code> by using the specified parameters.
+	 *
+	 * @param   appearance          Appearance of the Shape3D to create.
+	 * @param   j3dVertices         Vertices of the Shape3D to create.
+	 * @param   j3dTextureCoords    Texture U- and V-coordinates of the Shape3D.
+	 * @param   j3dFaceNormals      Face normals of the Shape3D to create.
+	 *
+	 * @return  Shape3d created out of the specified parameters.
+	 */
+	private static Shape3D createShape3D( final Appearance appearance , final List j3dVertices , final List j3dTextureCoords , final List j3dFaceNormals )
+	{
+		final boolean hasTexture = ( appearance.getTexture() != null );
+
+		final int what = GeometryArray.COORDINATES | GeometryArray.NORMALS | ( hasTexture ? GeometryArray.TEXTURE_COORDINATE_2 : 0 );
+		final GeometryArray geom = new TriangleArray( j3dVertices.size() , what );
+
+		final Point3f[] coordA = (Point3f[])j3dVertices.toArray( new Point3f[ j3dVertices.size() ] );
+		geom.setCoordinates( 0 , coordA );
+
+		if ( hasTexture )
+		{
+			final TexCoord2f[] textCoordsA = (TexCoord2f[])j3dTextureCoords.toArray( new TexCoord2f[ j3dTextureCoords.size() ] );
+			geom.setTextureCoordinates( 0 , 0 , textCoordsA );
+		}
+
+		final Vector3f[] normA = (Vector3f[])j3dFaceNormals.toArray( new Vector3f[ j3dFaceNormals.size() ] );
+		geom.setNormals( 0 , normA );
+
+		return new Shape3D( geom , appearance );
+	}
+
+	/**
+	 * Create Transform3D to translate, rotate, and scale geometry in Java 3D.
+	 *
+	 * @param   position    Target location.
+	 * @param   rotation    Rotation around the Z-axis.
+	 * @param   scale       Scale factor (0.001 => shrink 1000*).
+	 *
+	 * @return  Transform3D to perform the specified transformation.
+	 */
+	public static Transform3D createTransform3D( final Vector3D position , final float rotation , final float scale )
+	{
+		final Transform3D xform   = new Transform3D();
+		final Transform3D operand = new Transform3D();
+
+		operand.rotY( rotation );
+		operand.setTranslation( new Vector3f( position.x , position.y , position.z ) );
+		xform.mul( operand );
+
+		operand.rotX( -Math.PI / 2 );
+		operand.setScale( scale );
+		xform.mul( operand );
+
+		return new Transform3D( xform );
+	}
+
+	/**
+	 * Get Java3D <code>Appearance</code> for the specified texture code.
+	 *
+	 * @param   code        Texture code to get the Appearance for.
+	 * @param   opacity     Opacity to apply to the returned appearance.
+	 *
+	 * @return  Appearance for the specified texture;
+	 *          <code>null</code> if the specified texture does not exist.
+	 */
+	public Appearance getAppearance( final String code , final float opacity )
+	{
+		final TextureSpec textureSpec = ( _textureLibrary == null ) ? null : _textureLibrary.getTextureSpec( code );
+		return ( textureSpec == null ) ? null : getAppearance( textureSpec , opacity );
+	}
+
+	/**
+	 * Conveniene method to create a <code>Canvas3D</code> with default
+	 * configuration settings.
+	 *
+	 * @return  Canvas that wascreated.
+	 */
+	public static Canvas3D createCanvas3D()
+	{
+		return new Canvas3D( Java3dUniverse.getPreferredConfiguration() );
+	}
+
+	/**
+	 * Create a dynamic branch group in the scene graph and add it to the
+	 * specified parent node. The dynamic branch group allows child nodes to be
+	 * added/removed, etc. While the scene graph is displayed.
+	 *
+	 * @param   parent      Parent node to add dynamic branch group to.
+	 *
+	 * @return  Branch group with create dynamic scene (added to static scene).
+	 *
+	 * @see     #addDynamicContent
+	 * @see     #clearDynamicContent
+	 */
+	public static BranchGroup createDynamicScene( final Group parent )
+	{
+		final BranchGroup dynamicScene = new BranchGroup();
+		dynamicScene.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
+		dynamicScene.setCapability( BranchGroup.ALLOW_CHILDREN_WRITE );
+		dynamicScene.setCapability( BranchGroup.ALLOW_CHILDREN_EXTEND );
+		parent.addChild( dynamicScene );
+		return dynamicScene;
+	}
+
+	/**
+	 * Add content defined by a <code>BranchGroup</code> to the specified dynamic
+	 * scene graph. The <code>ALLOW_DETACH</code> capability of the added content
+	 * is set, to allow it to be removed later.
+	 *
+	 * @param   dynamicScene    Dynamic scene graph root node.
+	 * @param   content         Content to set in the dynamic scene.
+	 *
+	 * @see     #createDynamicScene
+	 * @see     #clearDynamicContent
+	 */
+	public static void addDynamicContent( final Group dynamicScene , final BranchGroup content )
+	{
+		content.setCapability( BranchGroup.ALLOW_DETACH );
+		content.compile();
+		dynamicScene.addChild( content );
+	}
+
+	/**
+	 * Clear content of dynamic scene graph.
+	 *
+	 * @param   dynamicScene    Dynamic scene graph root node.
+	 *
+	 * @see     #createDynamicScene
+	 * @see     #addDynamicContent
+	 */
+	public static void clearDynamicContent( final BranchGroup dynamicScene )
+	{
+		dynamicScene.removeAllChildren();
+	}
+
+	/**
+	 * Get Java3D <code>Appearance</code> for the specified <code>TextureSpec</code>.
+	 *
+	 * @param   textureSpec     TextureSpec to get the Appearance for.
+	 * @param   opacity         Opacity to apply to the returned appearance.
+	 *
+	 * @return  Appearance for the specified texture spec.
+	 */
+	public Appearance getAppearance( final TextureSpec textureSpec , final float opacity )
+	{
+		final int   rgb = textureSpec.getARGB();
+		final float r   = ( ( rgb >> 16 ) & 255 ) / 255.0f;
+		final float g   = ( ( rgb >>  8 ) & 255 ) / 255.0f;
+		final float b   = (   rgb         & 255 ) / 255.0f;
+		final float ar  = 1.9f * textureSpec.ambientReflectivity;
+		final float dr  = 0.9f * textureSpec.diffuseReflectivity;
+		final float sr  = 0.5f * textureSpec.specularReflectivity;
+
+		final Material material = new Material();
+		material.setLightingEnable( true );
+		material.setAmbientColor  ( ar * r , ar * g , ar * b );
+		material.setEmissiveColor ( new Color3f( 0.0f , 0.0f , 0.0f ) );
+		material.setDiffuseColor  ( dr * r , dr * g , dr * b );
+		material.setSpecularColor ( new Color3f( sr , sr , sr ) );
+		material.setShininess     ( textureSpec.specularReflectivity * textureSpec.specularExponent );
+
+		final Appearance appearance = new Appearance();
+		appearance.setCapability( Appearance.ALLOW_TEXTURE_READ );
+		appearance.setMaterial( material );
+
+		if ( textureSpec.isTexture() )
+		{
+			final Texture texture = getTexture( textureSpec );
+			appearance.setTexture( texture );
+
+			final TextureAttributes textureAttributes = new TextureAttributes();
+			textureAttributes.setTextureMode( TextureAttributes.MODULATE );
+//			final Transform3D t = new Transform3D();
+//			t.setScale( spec.textureScale );
+//			textureAttributes.setTextureTransform( t  );
+			appearance.setTextureAttributes( textureAttributes );
+		}
+
+		// Setup Transparency
+		final float combinedOpacity = opacity * textureSpec.opacity;
+		if ( combinedOpacity >= 0.0f && combinedOpacity < 0.999f )
+		{
+			final TransparencyAttributes transparency = new TransparencyAttributes( TransparencyAttributes.NICEST , 1.0f - combinedOpacity );
+			appearance.setTransparencyAttributes( transparency );
+		}
+
+		return appearance;
+	}
+
+	/**
+	 * Convert <code>TextureSpec<code/> to Java3D <code>Texture</code>
+	 * object.
+	 *
+	 * @param   spec    TextureSpec to convert.
+	 *
+	 * @return  Texture for the specified texture spec.
+	 */
+	public Texture getTexture( final TextureSpec spec )
+	{
+		Texture result = null;
+
+		if ( ( spec != null ) && ( spec.isTexture() ) )
+		{
+			final String code = spec.code;
+			if ( _textureCache.containsKey( code ) )
+			{
+				result = (Texture)_textureCache.get( code );
+			}
+			else
+			{
+				final Image image = spec.getTextureImage();
+				if ( image != null )
+				{
+					result = new TextureLoader( image , TEXTURE_OBSERVER ).getTexture();
+					result.setCapability( Texture.ALLOW_SIZE_READ );
+				}
+
+				_textureCache.put( code , result );
+			}
+		}
+
+		return result;
+	}
+}

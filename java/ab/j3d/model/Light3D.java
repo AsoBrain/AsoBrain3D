@@ -1,26 +1,36 @@
-package ab.j3d.renderer;
-
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Peter S. Heijnen
  *
- * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV or Peter S. Heijnen. Please
- * contact Numdata BV or Peter S. Heijnen for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
+package ab.j3d.model;
+
 import ab.j3d.TextureSpec;
 
 /**
  * This class is a light node in the graphics tree. It contains a
  * LightModel that defines the light associated with this node.
  *
- * @author	Peter S. Heijnen
- * @version	$Revision$ ($Date$, $Author$)
+ * @author  Peter S. Heijnen
+ * @version $Revision$ ($Date$, $Author$)
  */
-public final class Light
-	extends TreeNode
+public final class Light3D
+	extends Node3D
 {
 	/**
 	 * Intensity of light (0-255).
@@ -45,10 +55,10 @@ public final class Light
 	/**
 	 * Constructor.
 	 *
-	 * @param	intensity	Intensity of white light (0-255).
-	 * @param	fallOff		Light fall-off characteristic (negavtive => ambient).
+	 * @param   intensity   Intensity of white light (0-255).
+	 * @param   fallOff     Light fall-off characteristic (negavtive => ambient).
 	 */
-	public Light( final int intensity , final float fallOff )
+	public Light3D( final int intensity , final float fallOff )
 	{
 		_intensity = intensity;
 		_fallOff   = fallOff;
@@ -78,17 +88,17 @@ public final class Light
 	 * light source can fill this in (this is currently priority based, with the
 	 * brightest light source overruling fainter light sources).
 	 *
-	 * @param	texture				Texture of surface.
-	 * @param	lightNormalAndDist	Float array with light normals and distance.
-	 * @param	lightIndex			Index in light array.
-	 * @param	nx					X-coordinate of normal
-	 * @param	ny					Y-coordinate of normal
-	 * @param	nz					Z-coordinate of normal
-	 * @param	ds					Diffuse reflection result array.
-	 * @param	sxs					Specular reflection X-component result array.
-	 * @param	sys					Specular reflection Y-component result array.
-	 * @param	sfs					Specular reflection fraction result array.
-	 * @param	targetIndex			Index in result arrays.
+	 * @param   texture             Texture of surface.
+	 * @param   lightNormalAndDist  Float array with light normals and distance.
+	 * @param   lightIndex          Index in light array.
+	 * @param   nx                  X-coordinate of normal
+	 * @param   ny                  Y-coordinate of normal
+	 * @param   nz                  Z-coordinate of normal
+	 * @param   ds                  Diffuse reflection result array.
+	 * @param   sxs                 Specular reflection X-component result array.
+	 * @param   sys                 Specular reflection Y-component result array.
+	 * @param   sfs                 Specular reflection fraction result array.
+	 * @param   targetIndex         Index in result arrays.
 	 */
 	public void calculateShadingProperties(
 		final TextureSpec texture ,
@@ -99,7 +109,7 @@ public final class Light
 		/*
 		 * Handle ambient light.
 		 */
-		if ( _fallOff < 0f )
+		if ( _fallOff < 0.0f )
 		{
 			/*
 			 * Calculate diffuse reflection of the ambient light
@@ -124,17 +134,17 @@ public final class Light
 			/*
 			 * Get direction of light.
 			 */
-			final float	lx = lightNormalAndDist[ lightIndex + 0 ];
-			final float	ly = lightNormalAndDist[ lightIndex + 1 ];
-			final float	lz = lightNormalAndDist[ lightIndex + 2 ];
-			final float	ld = lightNormalAndDist[ lightIndex + 3 ];
+			final float lx = lightNormalAndDist[ lightIndex + 0 ];
+			final float ly = lightNormalAndDist[ lightIndex + 1 ];
+			final float lz = lightNormalAndDist[ lightIndex + 2 ];
+			final float ld = lightNormalAndDist[ lightIndex + 3 ];
 
 			/*
 			 * Get cos( angle ) between light and normal (this is
 			 * simply the inner product of the light direction and
 			 * normal vectors.
 			 */
-			final float	lightAngle = nx * lx + ny * ly + nz * lz;
+			final float lightAngle = nx * lx + ny * ly + nz * lz;
 
 			/*
 			 * Abort if light shines from back side.
@@ -186,8 +196,8 @@ public final class Light
 			final int Is = (int)(_intensity * Il * texture.specularReflectivity * 2048.0f );
 			if ( Is > sfs[ targetIndex ] )
 			{
-				sxs[ targetIndex ] = (int)(32767.5f * lx + 32768f );
-				sys[ targetIndex ] = (int)(32767.5f * ly + 32768f );
+				sxs[ targetIndex ] = (int)(32767.5f * lx + 32768.0f );
+				sys[ targetIndex ] = (int)(32767.5f * ly + 32768.0f );
 				sfs[ targetIndex ] = ( Is > 131072 ) ? 131072 : Is;
 			}
 		}
@@ -200,8 +210,8 @@ public final class Light
 	 * may be more). If this function returns <code>false</code> time can be saved
 	 * by not calculating the normals.
 	 *
-	 * @return	<code>true</code> if surface normals are required by
-	 *			calculateColor(), <code>false</code> otherwise.
+	 * @return  <code>true</code> if surface normals are required by
+	 *          calculateColor(), <code>false</code> otherwise.
 	 */
 	public boolean requiresNormalsOrDistance()
 	{

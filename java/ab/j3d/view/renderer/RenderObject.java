@@ -1,178 +1,219 @@
-package ab.j3d.renderer;
-
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Peter S. Heijnen
  *
- * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV or Peter S. Heijnen. Please
- * contact Numdata BV or Peter S. Heijnen for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
+package ab.j3d.view.renderer;
+
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
+import ab.j3d.model.Light3D;
+import ab.j3d.model.Node3DCollection;
+import ab.j3d.model.Object3D;
 
 /**
  * This class contains specifications to render a 3D object on a 2D surface. It is
  * constructed for each Object3D instance by the Renderer class as preparation for
  * the actual rendering process.
  *
- * @author	Peter S. Heijnen
- * @version	$Revision$ ($Date$, $Author$)
+ * @author  Peter S. Heijnen
+ * @version $Revision$ ($Date$, $Author$)
  */
 public final class RenderObject
 {
-	Object3D	obj;
-	Matrix3D	xform;
+	Object3D    _obj;
+	Matrix3D    _xform;
 
-	int			nrVerts;
-	float[]		verts;
-	int[]		ph;
-	int[]		pv;
-	long[]		pd;
+	int         _nrVerts;
+	float[]     _verts;
+	int[]       _ph;
+	int[]       _pv;
+	long[]      _pd;
 
-	boolean		vertNormDirty;
-	float[]		vertNorm;
+	boolean     _vertNormDirty;
+	float[]     _vertNorm;
 
-	int			nrLights;
-	Light[]		lights;
-	float[][]	lightNormalDist;
+	int         _nrLights;
+	Light3D[]   _lights;
+	float[][]   _lightNormalDist;
 
-	Face		faces;
-	Face		facesFree;
+	Face        _faces;
+	Face        _facesFree;
 
+	/**
+	 * Sindle face of rendered object.
+	 */ 
 	public final class Face
 	{
-		Face		next;
-		//Face		isBehind;
-		//Face		isBefore;
-		int			index;
-		int[]		vi;
-		int			minH;
-		int			minV;
-		int			minD;
-		int			maxH;
-		int			maxV;
-		int			maxD;
-		float		nx;
-		float		ny;
-		float		nz;
-		float		dist;
+		Object3D.Face _face3d;
+		Face        _next;
+		//Face      isBehind;
+		//Face      isBefore;
+		int         _index;
+		int[]       _vi;
+		int         _minH;
+		int         _minV;
+		int         _minD;
+		int         _maxH;
+		int         _maxV;
+		int         _maxD;
+		float       _nx;
+		float       _ny;
+		float       _nz;
+		float       _dist;
 
 		/*
 		 * All following variables are only valid after calling applyLighting()
 		 */
-		int[]		ds;
-		int[]		sxs;
-		int[]		sys;
-		int[]		sfs;
+		int[]       _ds;
+		int[]       _sxs;
+		int[]       _sys;
+		int[]       _sfs;
 
-		private void set( final int index , final int minH , final int minV , final int minD , final int maxH , final int maxV , final int maxD , final float nx , final float ny , final float nz )
+		public Face()
 		{
-			this.index	= index;
-			this.minH	= minH;
-			this.minV	= minV;
-			this.minD	= minD;
-			this.maxH	= maxH;
-			this.maxV	= maxV;
-			this.maxD	= maxD;
-			this.nx		= nx;
-			this.ny		= ny;
-			this.nz		= nz;
+			_face3d = null;
+			_next   = null;
+			_index  = 0;
+			_vi     = null;
+			_minH   = 0;
+			_minV   = 0;
+			_minD   = 0;
+			_maxH   = 0;
+			_maxV   = 0;
+			_maxD   = 0;
+			_nx     = 0;
+			_ny     = 0;
+			_nz     = 0;
+			_dist   = 0;
+			_ds     = null;
+			_sxs    = null;
+			_sys    = null;
+			_sfs    = null;
+		}
+		private void set( final Object3D.Face face3d , final int index , final int minH , final int minV , final int minD , final int maxH , final int maxV , final int maxD , final float nx , final float ny , final float nz )
+		{
+			_face3d = face3d;
+			_index  = index;
+			_minH   = minH;
+			_minV   = minV;
+			_minD   = minD;
+			_maxH   = maxH;
+			_maxV   = maxV;
+			_maxD   = maxD;
+			_nx     = nx;
+			_ny     = ny;
+			_nz     = nz;
 
-			vi = obj.getFaceVertexIndices( index );
-			final int i = vi[ 0 ] * 3;
-			dist = nx * verts[ i ] + ny * verts[ i + 1 ] + nz * verts[ i + 2 ];
+			_vi = face3d.getPointIndices();
+			final int i = _vi[ 0 ] * 3;
+			_dist = nx * _verts[ i ] + ny * _verts[ i + 1 ] + nz * _verts[ i + 2 ];
 		}
 
 		public boolean isBehind( final Face other )
 		{
-			if ( minH > other.maxH ) return false;
-			if ( maxH < other.minH ) return false;
-			if ( minV > other.maxV ) return false;
-			if ( maxV < other.minV ) return false;
-			if ( minD > other.maxD ) return true;
-			if ( maxD < other.minD ) return false;
+			if ( _minH > other._maxH ) return false;
+			if ( _maxH < other._minH ) return false;
+			if ( _minV > other._maxV ) return false;
+			if ( _maxV < other._minV ) return false;
+			if ( _minD > other._maxD ) return true;
+			if ( _maxD < other._minD ) return false;
 
 
-			final int i = other.vi[ 0 ] * 3;
-			final float[] v = other.getRenderObject().verts;
+			final int i = other._vi[ 0 ] * 3;
+			final float[] v = other.getRenderObject()._verts;
 			final float x = v[ i     ];
 			final float y = v[ i + 1 ];
 			final float z = v[ i + 2 ];
 
-			return y > ( dist - nx * x - nz * z ) / ny;
+			return y > ( _dist - _nx * x - _nz * z ) / _ny;
 		}
 
 		public void applyLighting()
 		{
-			int i,j,k;
+			int i;
+			int j;
+			int k;
 
 			/*
 			 * Initialize shading property buffers
 			 */
-			i = vi.length;
+			i = _vi.length;
 			if ( i < 3 )
 				return;
 
-			if ( ds == null || i > ds.length )
+			if ( _ds == null || i > _ds.length )
 			{
-				ds  = new int[ i ];
-				sxs = new int[ i ];
-				sys = new int[ i ];
-				sfs = new int[ i ];
+				_ds  = new int[ i ];
+				_sxs = new int[ i ];
+				_sys = new int[ i ];
+				_sfs = new int[ i ];
 			}
 
 			while ( --i >= 0 )
 			{
-				ds [ i ] = 0;
-				sxs[ i ] = 32768;
-				sys[ i ] = 32768;
-				sfs[ i ] = 0;
+				_ds [ i ] = 0;
+				_sxs[ i ] = 32768;
+				_sys[ i ] = 32768;
+				_sfs[ i ] = 0;
 			}
 
 			/*
 			 * Calculate shading properties for all light sources.
 			 */
-			if ( nrLights < 1 )
+			if ( _nrLights < 1 )
 				return;
 
 			final TextureSpec texture = getTexture();
 
-			if ( obj.isFaceSmooth( index ) )
+			if ( _face3d.isSmooth() )
 			{
 				final float[] vertNorm = getVertexNormals();
 
-				for ( i = nrLights ; --i >= 0 ; )
+				for ( i = _nrLights ; --i >= 0 ; )
 				{
-					final Light   light      = lights[ i ];
-					final float[] normalDist = lightNormalDist[ i ];
+					final Light3D light      = _lights[ i ];
+					final float[] normalDist = _lightNormalDist[ i ];
 
-					for ( j = vi.length ; --j >= 0 ; )
+					for ( j = _vi.length ; --j >= 0 ; )
 					{
-						k = vi[ j ] * 3;
+						k = _vi[ j ] * 3;
 
 						light.calculateShadingProperties( texture ,
-							normalDist , vi[ j ] * 4 ,
+							normalDist , _vi[ j ] * 4 ,
 							vertNorm[ k ] , vertNorm[ k + 1 ] , vertNorm[ k + 2 ] ,
-							ds , sxs , sys , sfs , j );
+							_ds , _sxs , _sys , _sfs , j );
 					}
 				}
 			}
 			else
 			{
-				for ( i = nrLights ; --i >= 0 ; )
+				for ( i = _nrLights ; --i >= 0 ; )
 				{
-					final Light   light      = lights[ i ];
-					final float[] normalDist = lightNormalDist[ i ];
+					final Light3D light      = _lights[ i ];
+					final float[] normalDist = _lightNormalDist[ i ];
 
-					for ( j = vi.length ; --j >= 0 ; )
+					for ( j = _vi.length ; --j >= 0 ; )
 					{
 						light.calculateShadingProperties( texture ,
-							normalDist , vi[ j ] * 4 ,
-							nx , ny , nz ,
-							ds , sxs , sys , sfs , j );
+							normalDist , _vi[ j ] * 4 ,
+							_nx , _ny , _nz ,
+							_ds , _sxs , _sys , _sfs , j );
 					}
 				}
 			}
@@ -180,17 +221,17 @@ public final class RenderObject
 
 		public TextureSpec getTexture()
 		{
-			return obj.getFace( index ).getTexture();
+			return _face3d.getTexture();
 		}
 
 		public int[] getTextureU()
 		{
-			return obj.getFace( index ).getTextureU();
+			return _face3d.getTextureU();
 		}
 
 		public int[] getTextureV()
 		{
-			return obj.getFace( index ).getTextureV();
+			return _face3d.getTextureV();
 		}
 
 		public RenderObject getRenderObject()
@@ -199,85 +240,124 @@ public final class RenderObject
 		}
 	}
 
+	public RenderObject()
+	{
+		_obj             = null;
+		_xform           = null;
 
+		_nrVerts         = 0;
+		_verts           = null;
+		_ph              = null;
+		_pv              = null;
+		_pd              = null;
+
+		_vertNormDirty   = false;
+		_vertNorm        = null;
+
+		_nrLights        = 0;
+		_lights          = null;
+		_lightNormalDist = null;
+
+		_faces           = null;
+		_facesFree       = null;
+	}
 	/**
 	 * Get Object3D that was used to construct the render object.
 	 *
-	 * @return	Object3D use to construct the render object.
+	 * @return  Object3D use to construct the render object.
 	 */
 	public Object3D getObject()
 	{
-		return obj;
+		return _obj;
 	}
 
 	/**
 	 * Get vertex normals relative to the render view. The result is returned as
 	 * a float array with 3 entries per vertex.
 	 *
-	 * @return	Float array with vertex normals in render view.
+	 * @return  Float array with vertex normals in render view.
 	 */
 	public float[] getVertexNormals()
 	{
-		if ( vertNormDirty )
+		if ( _vertNormDirty )
 		{
-			vertNormDirty = false;
+			_vertNormDirty = false;
 
-			final int nrVerts3 = nrVerts * 3;
+			final int nrVerts3 = _nrVerts * 3;
 
-			if ( vertNorm == null || nrVerts3 > vertNorm.length )
-				vertNorm = new float[ nrVerts3 ];
+			if ( _vertNorm == null || nrVerts3 > _vertNorm.length )
+				_vertNorm = new float[ nrVerts3 ];
 
-			xform.rotate( obj.getVertexNormals() , vertNorm , nrVerts );
+			_xform.rotate( _obj.getVertexNormals() , _vertNorm , _nrVerts );
 		}
 
-		return vertNorm;
+		return _vertNorm;
 	}
 
 	/**
 	 * Set properties of the render object.
 	 *
-	 * @param	obj					Object3D used to define the object.
-	 * @param	xform				View transform (rotation, translation).
-	 * @param	aperture			Camera aperture.
-	 * @param	zoom				Linear zoom factor.
-	 * @param	width				Width of render area in pixels.
-	 * @param	height				Height of render area in pixels.
-	 * @param	backfaceCullling	Discard backfaces if set to <code>true</code>.
+	 * @param   obj                 Object3D used to define the object.
+	 * @param   xform               View transform (rotation, translation).
+	 * @param   aperture            Camera aperture.
+	 * @param   zoom                Linear zoom factor.
+	 * @param   width               Width of render area in pixels.
+	 * @param   height              Height of render area in pixels.
+	 * @param   backfaceCullling    Discard backfaces if set to <code>true</code>.
 	 */
 	public void set( final Object3D obj , final Matrix3D xform , final float aperture , final float zoom , final int width , final int height , final boolean backfaceCullling )
 	{
-		int i,j,k,l,ih,iv,id;
-		float x,y,z;
+		int i;
+		int j;
+		int k;
+		int l;
+		int ih;
+		int iv;
+		int id;
+		float x;
+		float y;
+		float z;
 
-		this.obj           = obj;
-		this.xform         = xform;
-		this.nrLights      = 0;
-		this.vertNormDirty = true;
+		_obj           = obj;
+		_xform         = xform;
+		_nrLights      = 0;
+		_vertNormDirty = true;
 
-						nrVerts		= obj.getTotalVertexCount();
-		final int		nrVerts3	= nrVerts * 3;
-		final float[]	oVerts		= obj.getVertices();
-		final int		centerH		= width << 7;
-		final int		centerV		= height << 7;
-		final float[]			faceNormals	= obj.getFaceNormals();
+		_nrVerts = obj.getTotalVertexCount();
+		final int     nrVerts3    = _nrVerts * 3;
+		final float[] oVerts      = obj.getVertices();
+		final float[] faceNormals = obj.getFaceNormals();
+		final int     centerH     = width <<  7;
+		final int     centerV     = height << 7;
 
-		final float xx = xform.xx , xy = xform.xy , xz = xform.xz , xo = xform.xo;
-		final float yx = xform.yx , yy = xform.yy , yz = xform.yz , yo = xform.yo;
-		final float zx = xform.zx , zy = xform.zy , zz = xform.zz , zo = xform.zo;
+		obj.getFaceNormals();
+
+		final float xx = xform.xx;
+		final float xy = xform.xy;
+		final float xz = xform.xz;
+		final float xo = xform.xo;
+		final float yx = xform.yx;
+		final float yy = xform.yy;
+		final float yz = xform.yz;
+		final float yo = xform.yo;
+		final float zx = xform.zx;
+		final float zy = xform.zy;
+		final float zz = xform.zz;
+		final float zo = xform.zo;
 
 		/*
 		 * Prepare vertex buffers, transform vertices, project vertices.
 		 */
-		if ( verts == null || nrVerts3 > verts.length )
+		if ( _verts == null || nrVerts3 > _verts.length )
 		{
-			verts = new float[ nrVerts3 ];
-			ph    = new int  [ nrVerts  ];
-			pv    = new int  [ nrVerts  ];
-			pd    = new long [ nrVerts  ];
+			_verts = new float[ nrVerts3 ];
+			_ph    = new int  [ _nrVerts  ];
+			_pv    = new int  [ _nrVerts  ];
+			_pd    = new long [ _nrVerts  ];
 		}
 
 
-		final float perspectiveFactor = 256f * zoom / aperture;
+		final float perspectiveFactor = 256.0f * zoom / aperture;
 
 		for ( i = 0 , j = 0 ; i < nrVerts3 ; i += 3 , j++ )
 		{
@@ -285,23 +365,23 @@ public final class RenderObject
 			final float oy = oVerts[ i + 1 ];
 			final float oz = oVerts[ i + 2 ];
 
-			x = verts[ i     ] = ox * xx + oy * xy + oz * xz + xo;
-			y = verts[ i + 1 ] = ox * yx + oy * yy + oz * yz + yo;
-			z = verts[ i + 2 ] = ox * zx + oy * zy + oz * zz + zo;
+			x = _verts[ i     ] = ox * xx + oy * xy + oz * xz + xo;
+			y = _verts[ i + 1 ] = ox * yx + oy * yy + oz * yz + yo;
+			z = _verts[ i + 2 ] = ox * zx + oy * zy + oz * zz + zo;
 
 			id = (int)y;
 
 			if ( id < 10 )
 			{
-				pd[ j ] = 0;
-				ph[ j ] = centerH;
-				pv[ j ] = centerV;
+				_pd[ j ] = 0;
+				_ph[ j ] = centerH;
+				_pv[ j ] = centerV;
 			}
 			else
 			{
-				pd[ j ] = (long)( 549755813887d / y ); /*0x7FFFFFFFFF / id;*/
-				ph[ j ] = centerH + (int)( x * ( y = perspectiveFactor / y ) );
-				pv[ j ] = centerV - (int)( z *   y                           );
+				_pd[ j ] = (long)( 549755813887.0 / y ); /*0x7FFFFFFFFF / id;*/
+				_ph[ j ] = centerH + (int)( x * ( y = perspectiveFactor / y ) );
+				_pv[ j ] = centerV - (int)( z *   y                           );
 			}
 		}
 
@@ -310,23 +390,25 @@ public final class RenderObject
 		 * of faces may be reduced during this as a result of early hidden
 		 * surface removal (e.g. back culling)).
 		 */
-		Face previous,current/*,next,free*/;
+		Face previous;
+		Face current/*,next,free*/;
 
-		if ( faces != null )
+		if ( _faces != null )
 		{
-			if ( facesFree != null )
+			if ( _facesFree != null )
 			{
-				previous = faces;
-				while ( previous.next != null ) previous = previous.next;
-				previous.next = facesFree;
+				previous = _faces;
+				while ( previous._next != null ) previous = previous._next;
+				previous._next = _facesFree;
 			}
-			facesFree = faces;
-			faces = null;
+			_facesFree = _faces;
+			_faces = null;
 		}
 
 		nextFace: for ( i = obj.getFaceCount() ; --i >= 0 ; )
 		{
-			final int[] vi = obj.getFaceVertexIndices( i );
+			final Object3D.Face face3d = obj.getFace( i );
+			final int[] vi = face3d.getPointIndices();
 			if ( vi.length < 3 )
 				continue nextFace;
 
@@ -341,12 +423,12 @@ public final class RenderObject
 			 */
 			if ( backfaceCullling )
 			{
-				final int h1 = ph[ l = vi[ 0 ] ] >> 8;
-				final int v1 = pv[ l           ] >> 8;
-				final int h2 = ph[ l = vi[ 1 ] ] >> 8;
-				final int v2 = pv[ l           ] >> 8;
-				final int h3 = ph[ l = vi[ 2 ] ] >> 8;
-				final int v3 = pv[ l           ] >> 8;
+				final int h1 = _ph[ l = vi[ 0 ] ] >> 8;
+				final int v1 = _pv[ l           ] >> 8;
+				final int h2 = _ph[ l = vi[ 1 ] ] >> 8;
+				final int v2 = _pv[ l           ] >> 8;
+				final int h3 = _ph[ l = vi[ 2 ] ] >> 8;
+				final int v3 = _pv[ l           ] >> 8;
 
 				if ( (h1 - h2) * (v3 - v2) >= (v1 - v2) * (h3 - h2) )
 					continue nextFace;
@@ -356,24 +438,26 @@ public final class RenderObject
 			 * Determine bounding box of face. Don't draw if outside screen range.
 			 */
 			l = vi[ 0 ];
-			if ( pd[ l ] == 0 )
+			if ( _pd[ l ] == 0 )
 				continue nextFace;
 
-			int		minH = ph[ l ] >> 8;
-			int		maxH = minH;
-			int		minV = pv[ l ] >> 8;
-			int		maxV = minV;
-			int		minD = (int)verts[ l * 3 + 1 ];
-			int		maxD = minD;
+			int minH = _ph[ l ] >> 8;
+			int maxH = minH;
+			int minV = _pv[ l ] >> 8;
+			int maxV = minV;
+			int minD = (int)_verts[ l * 3 + 1 ];
+			int maxD = minD;
 
 			for ( k = vi.length ; --k >= 1 ; )
 			{
 				l = vi[ k ];
 
-				if ( pd[ l ] == 0 ) 	continue nextFace;
-				ih = ph[ l ] >> 8;
-				iv = pv[ l ] >> 8;
-				id = (int)verts[ l * 3 + 1 ];
+				if ( _pd[ l ] == 0 )
+					continue nextFace;
+
+				ih = _ph[ l ] >> 8;
+				iv = _pv[ l ] >> 8;
+				id = (int)_verts[ l * 3 + 1 ];
 
 				if ( ih < minH ) minH = ih;
 				if ( ih > maxH ) maxH = ih;
@@ -389,9 +473,10 @@ public final class RenderObject
 			/*
 			 * Calculate face normal
 			 */
-			x = faceNormals[ k = i * 3 ];
-			y = faceNormals[ k + 1 ];
-			z = faceNormals[ k + 2 ];
+			final int ni = i * 3;
+			x = faceNormals[ ni     ];
+			y = faceNormals[ ni + 1 ];
+			z = faceNormals[ ni + 2 ];
 
 			/*
 			 * Insert face
@@ -400,18 +485,18 @@ public final class RenderObject
 			 *  3) Find insertion point in face chain
 			 *  4) Insert face in face chain
 			 */
-			if ( facesFree != null )
-				facesFree = ( current = facesFree ).next;
+			if ( _facesFree != null )
+				_facesFree = ( current = _facesFree )._next;
 			else
 				current = new Face();
 
-			current.set( i , minH , minV , minD , maxH , maxV , maxD ,
+			current.set( face3d , i , minH , minV , minD , maxH , maxV , maxD ,
 				x * xx + y * xy + z * xz ,
 				x * yx + y * yy + z * yz ,
 				x * zx + y * zy + z * zz );
 
-			current.next = faces;
-			faces = current;
+			current._next = _faces;
+			_faces = current;
 
 			//for ( previous = null , next = faces ; next != null && next.isBehind( current ) ; )
 				//next = ( previous = next ).next;
@@ -429,41 +514,44 @@ public final class RenderObject
 	 * Set light sources to use for lighting effects of the object. This will be used
 	 * by the <code>applyLighting()</code> method of the <code>Face</code> class.
 	 *
-	 * @param	lightSources	Collection of light sources.
+	 * @param   lightSources    Collection of light sources.
 	 */
-	public void setLights( final LeafCollection lightSources )
+	public void setLights( final Node3DCollection lightSources )
 	{
-		int i,j,k;
+		int i;
+		int j;
+		int k;
 
 		/*
 		 * Set number of light sources.
 		 */
-		nrLights = ( lightSources != null ) ? lightSources.size() : 0;
+		_nrLights = ( lightSources != null ) ? lightSources.size() : 0;
 
 		/*
 		 * Prepare light source buffer.
 		 */
-		Light[]   lights          = this.lights;
-		float[][] lightNormalDist = this.lightNormalDist;
+		Light3D[] lights          = _lights;
+		float[][] lightNormalDist = _lightNormalDist;
 
-		if ( nrLights > 0 && ( lights == null || nrLights > lights.length ) )
+		if ( _nrLights > 0 && ( lights == null || _nrLights > lights.length ) )
 		{
-			lights = new Light[ nrLights ];
-			if ( this.lights != null ) System.arraycopy( this.lightNormalDist , 0 , lightNormalDist , 0 , this.lights.length );
-			this.lights = lights;
+			lights = new Light3D[ _nrLights ];
+			if ( _lights != null )
+				System.arraycopy( _lightNormalDist , 0 , lightNormalDist , 0 , this._lights.length );
+			_lights = lights;
 
-			lightNormalDist = new float[ nrLights ][];
-			this.lightNormalDist = lightNormalDist;
+			lightNormalDist = new float[ _nrLights ][];
+			_lightNormalDist = lightNormalDist;
 		}
 
 		/*
 		 * Prepare light directions and distance for light sources that need them.
 		 */
-		final int nrVerts4 = nrVerts * 4;
+		final int nrVerts4 = _nrVerts * 4;
 
-		for ( i = 0 ; i < nrLights ; i++ )
+		if ( lightSources != null ) for ( i = 0 ; i < _nrLights ; i++ )
 		{
-			lights[ i ] = (Light)lightSources.getNode( i );
+			lights[ i ] = (Light3D)lightSources.getNode( i );
 
 			if ( lights[ i ].requiresNormalsOrDistance() )
 			{
@@ -478,9 +566,9 @@ public final class RenderObject
 
 				for ( j = 0 , k = 0 ; k < nrVerts4 ; )
 				{
-					final float dx = x - verts[ j++ ];
-					final float dy = y - verts[ j++ ];
-					final float dz = z - verts[ j++ ];
+					final float dx = x - _verts[ j++ ];
+					final float dy = y - _verts[ j++ ];
+					final float dz = z - _verts[ j++ ];
 
 					final float d = (float)Math.sqrt( dx * dx + dy * dy + dz * dz );
 					if ( d < 1.0f )

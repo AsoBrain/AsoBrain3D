@@ -1,52 +1,70 @@
-package ab.j3d.renderer;
-
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Peter S. Heijnen
  *
- * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV or Peter S. Heijnen. Please
- * contact Numdata BV or Peter S. Heijnen for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
+package ab.j3d.model;
+
 import ab.j3d.Matrix3D;
 
 /**
  * This collection class is used to store combinations of Matrix3D
- * and TreeNode objects.
+ * and Node3D objects.
  *
- * @author	Peter S. Heijnen
- * @version	$Revision$ ($Date$, $Author$)
+ * @author  Peter S. Heijnen
+ * @version $Revision$ ($Date$, $Author$)
  */
-public final class LeafCollection
+public final class Node3DCollection
 {
 	/**
 	 * Number of stored elements.
 	 */
-	int _elementCount = 0;
+	private int _elementCount;
 
 	/**
 	 * Array with Matrix3D objects in collection. This size of this
 	 * array may exceed the element count, but is never smaller.
 	 */
-	Matrix3D[] _matrixData = new Matrix3D[ 10 ];
+	private Matrix3D[] _matrixData;
 
 	/**
-	 * Array with TreeNode objects in collection. This size of this
+	 * Array with Node3D objects in collection. This size of this
 	 * array may exceed the element count, but is never smaller.
 	 */
-	TreeNode[] _nodeData = new TreeNode[ 10 ];
+	private Node3D[] _nodeData;
+
+	/**
+	 * Default constructor.
+	 */
+	public Node3DCollection()
+	{
+		_elementCount = 0;
+		_matrixData = new Matrix3D[ 10 ];
+		_nodeData = new Node3D[ 10 ];
+	}
 
 	/**
 	 * Appends the specified node to the end of this collection.
 	 *
-	 * @param	matrix	Matrix3D associated with node.
-	 * @param	node	Node to add.
-	 *
-	 * @since JDK1.2
+	 * @param   matrix  Matrix3D associated with node.
+	 * @param   node    Node to add.
 	 */
-	public synchronized void add( final Matrix3D matrix , final TreeNode node )
+	public synchronized void add( final Matrix3D matrix , final Node3D node )
 	{
 		ensureCapacity( _elementCount + 1 );
 
@@ -75,12 +93,12 @@ public final class LeafCollection
 
 		if ( minCapacity > oldCapacity )
 		{
-			final TreeNode[] oldNodes    = _nodeData;
+			final Node3D[] oldNodes    = _nodeData;
 			final Matrix3D[] oldMatrices = _matrixData;
 
 			final int newCapacity = oldCapacity * 2;
 
-		    _nodeData   = new TreeNode[ newCapacity ];
+		    _nodeData   = new Node3D[ newCapacity ];
 		    _matrixData = new Matrix3D[ newCapacity ];
 
 			System.arraycopy( oldNodes    , 0 , _nodeData   , 0 , _elementCount );
@@ -91,11 +109,11 @@ public final class LeafCollection
 	/**
 	 * Get matrix at specified index.
 	 *
-	 * @param	index	Index of element.
+	 * @param   index   Index of element.
 	 *
-	 * @return	Matrix3D object at specified index.
+	 * @return  Matrix3D object at specified index.
 	 */
-	public Matrix3D getMatrix( final int index )
+	public synchronized Matrix3D getMatrix( final int index )
 	{
 		if ( index >= _elementCount )
 		    throw new ArrayIndexOutOfBoundsException( index );
@@ -106,11 +124,11 @@ public final class LeafCollection
 	/**
 	 * Get node at specified index.
 	 *
-	 * @param	index	Index of element.
+	 * @param   index   Index of element.
 	 *
-	 * @return	TreeNode object at specified index.
+	 * @return  Node3D object at specified index.
 	 */
-	public TreeNode getNode( final int index )
+	public synchronized Node3D getNode( final int index )
 	{
 		if ( index >= _elementCount )
 		    throw new ArrayIndexOutOfBoundsException( index );
@@ -121,7 +139,7 @@ public final class LeafCollection
 	/**
 	 * Removes all elements and sets the size to zero.
 	 */
-	public void removeAllElements()
+	public synchronized void removeAllElements()
 	{
 		for ( int i = 0 ; i < _elementCount ; i++ )
 		{
@@ -136,9 +154,8 @@ public final class LeafCollection
 	 *
 	 * @return  The number of elements.
 	 */
-	public int size()
+	public synchronized int size()
 	{
-		return( _elementCount );
+		return _elementCount;
 	}
-
 }

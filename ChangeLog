@@ -1,4 +1,16 @@
-Current version: pre-1.1
+Current version: 2.0
+
+Changes between 1.1 and 2.0:
+ - LICENSE CHANGE: The 'AsoBrain 3D Toolkit' is now licensed under LGPL, see 'LICENSE' file for info.
+ - Improved 'Object3D' class' interface to provide easier manipulation and construction of 3D models.
+ - Package-restructuring in 'AsoBrain 3D Toolkit':
+   > Moved 3D modelling classes from 'ab.j3d.renderer' to 'ab.j3d.model'.
+   > Renamed various 3D modelling classes  to create a consistent naming scheme.
+ - Introduction of 'view model':
+   > Generic (abstract) model and utility classes are in the 'ab.j3d.view' package.
+   > Java 2D implementation of view model in in the 'ab.j3d.view.java2d' package.
+   > Java 3D implementation of view model in in the 'ab.j3d.view.java3d' package.
+   > Software renderer implementation of view model in in the 'ab.j3d.view.renderer' package.
 
 Changes between 1.0.6 and 1.1:
  - Changed project name to 'AsoBrain Lightweight 3D Toolkit' (because of heavyweight Java 3D support). Renamed packages from 'ab.light3d' to 'ab.j3d'.

@@ -1,18 +1,27 @@
-package ab.j3d.renderer;
-
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Peter S. Heijnen
  *
- * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV or Peter S. Heijnen. Please
- * contact Numdata BV or Peter S. Heijnen for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
+package ab.j3d.model;
+
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
@@ -21,8 +30,8 @@ import ab.j3d.TextureSpec;
  * This class defines a 3D cylinder with optionally different radi for the caps. Using
  * these radi, this class may also be used to construct cones.
  *
- * @author	Peter S. Heijnen
- * @version	$Revision$ ($Date$, $Author$)
+ * @author  Peter S. Heijnen
+ * @version $Revision$ ($Date$, $Author$)
  */
 public final class Cylinder3D
 	extends Object3D
@@ -51,14 +60,14 @@ public final class Cylinder3D
 	 * Constructor for cylinder object. Radius of top or bottom may be set to 0 to create
 	 * a cone.
 	 *
-	 * @param	xform				Transform to apply to the cylinder's vertices.
-	 * @param	radiusBottom		Radius at bottom (z=0).
-	 * @param	radiusTop			Radius at top (z=height).
-	 * @param	height				Height of cylinder (z-axis).
-	 * @param	numEdges			Number of edges to approximate circle (minimum: 3).
-	 * @param	texture				Texture of cylinder.
-	 * @param	smoothCircumference	Apply smoothing to circumference of cylinder.
-	 * @param	smoothCaps			Apply smoothing to caps of cylinder.
+	 * @param   xform               Transform to apply to the cylinder's vertices.
+	 * @param   radiusBottom        Radius at bottom (z=0).
+	 * @param   radiusTop           Radius at top (z=height).
+	 * @param   height              Height of cylinder (z-axis).
+	 * @param   numEdges            Number of edges to approximate circle (minimum: 3).
+	 * @param   texture             Texture of cylinder.
+	 * @param   smoothCircumference Apply smoothing to circumference of cylinder.
+	 * @param   smoothCaps          Apply smoothing to caps of cylinder.
 	 */
 	public Cylinder3D( final Matrix3D xform , final float radiusBottom , final float radiusTop , final float height , final int numEdges , final TextureSpec texture , final boolean smoothCircumference , final boolean smoothCaps )
 	{
@@ -79,10 +88,10 @@ public final class Cylinder3D
 	/**
 	 * Generate Object3D properties for cylinder.
 	 *
-	 * @param	numEdges			Number of edges to approximate circle (minimum: 3).
-	 * @param	texture				Texture of cylinder.
-	 * @param	smoothCircumference	Apply smoothing to circumference of cylinder.
-	 * @param	smoothCaps			Apply smoothing to caps of cylinder.
+	 * @param   numEdges            Number of edges to approximate circle (minimum: 3).
+	 * @param   texture             Texture of cylinder.
+	 * @param   smoothCircumference Apply smoothing to circumference of cylinder.
+	 * @param   smoothCaps          Apply smoothing to caps of cylinder.
 	 */
 	public void generate( final int numEdges , TextureSpec texture , final boolean smoothCircumference , final boolean smoothCaps )
 	{
@@ -218,29 +227,10 @@ public final class Cylinder3D
 		set( vertices ,  faceVert , faceMat , null , null , null , faceSmooth );
 	}
 
-	/**
-	 * Paint 2D representation of this 3D object. The object coordinates are
-	 * transformed using the objXform argument. By default, the object is painted
-	 * by drawing the outlines of its 'visible' faces. Derivatives of this class
-	 * may implement are more realistic approach (sphere, cylinder).
-	 * <p/>
-	 * Objects are painted on the specified graphics context after being
-	 * transformed again by gXform. This may be used to pan/scale the object on the
-	 * graphics context (NOTE: IT MAY NOT ROTATE THE OBJECT!).
-	 *
-	 * @param g        Graphics context.
-	 * @param gXform   Transformation to pan/scale the graphics context.
-	 * @param objXform Transformation from object's to view coordinate system.
-	 */
-	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D objXform )
+	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
 	{
-		paint( g , gXform , objXform , Color.black , Color.lightGray );
-	}
-
-	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D objXform , final Color outlineColor , final Color fillColor )
-	{
-		final Matrix3D mat  = xform.multiply( objXform );
-		final Matrix3D mat2 = xform.multiply( objXform ).multiply( gXform );
+		final Matrix3D mat  = xform.multiply( viewTransform );
+		final Matrix3D mat2 = xform.multiply( viewTransform ).multiply( gXform );
 
 		final boolean topViewDrawCircle   = Matrix3D.almostEqual( mat.xz , 0 ) && Matrix3D.almostEqual( mat.yz , 0 ) && ( Matrix3D.almostEqual(  mat.zz , 1 ) || Matrix3D.almostEqual( -mat.zz , 1 ) );
 		final boolean frontViewDrawCircle = Matrix3D.almostEqual( mat.xz , 0 ) && Matrix3D.almostEqual( mat.zz , 0 ) &&   Matrix3D.almostEqual( -mat.yz , 1 );
@@ -279,25 +269,25 @@ public final class Cylinder3D
 		if ( mat2.xx < 0 && mat2.yz < 0 )
 		{
 			pts = new float[] { -radiusBottom , 0      , radiusBottom , 0      ,
-							    -radiusTop    , height , radiusTop    , height };
+			                    -radiusTop    , height , radiusTop    , height };
 		}
 
 		if ( mat2.xx > 0 && mat2.yz > 0 )
 		{
 			pts = new float[] { -radiusBottom , 0       , radiusBottom , 0       ,
-							    -radiusTop    , -height , radiusTop    , -height };
+			                    -radiusTop    , -height , radiusTop    , -height };
 		}
 
 		if ( mat2.xz > 0 && mat2.yx < 0 )
 		{
 			pts = new float[] { 0      , -radiusBottom , 0      , radiusBottom ,
-							    height , -radiusTop    , height , radiusTop    };
+			                    height , -radiusTop    , height , radiusTop    };
 		}
 
 		if ( mat2.xz < 0 && mat2.yx > 0 )
 		{
 			pts = new float[] { 0       , -radiusBottom , 0       , radiusBottom ,
-							    -height , -radiusTop    , -height , radiusTop    };
+			                    -height , -radiusTop    , -height , radiusTop    };
 		}
 
 		final boolean topView = ( pts != null && pts.length == 8 );
@@ -306,25 +296,25 @@ public final class Cylinder3D
 		if ( mat2.xx > 0 && mat2.yz < 0 )
 		{
 			pts = new float[] { -radiusBottom , 0      , radiusBottom , 0      ,
-							    -radiusTop    , height , radiusTop    , height };
+			                    -radiusTop    , height , radiusTop    , height };
 		}
 
 		if ( mat2.xx < 0 && mat2.yz > 0 )
 		{
 			pts = new float[] { -radiusBottom , 0       , radiusBottom , 0       ,
-							    -radiusTop    , -height , radiusTop    , -height };
+			                    -radiusTop    , -height , radiusTop    , -height };
 		}
 
 		if ( mat2.xz > 0 && mat2.yy < 0 )
 		{
 			pts = new float[] { 0      , -radiusBottom , 0      , radiusBottom ,
-							    height , -radiusTop    , height , radiusTop    };
+			                    height , -radiusTop    , height , radiusTop    };
 		}
 
 		if ( mat2.xz < 0 && mat2.yy < 0 )
 		{
 			pts = new float[] { 0       , -radiusBottom , 0       , radiusBottom ,
-							    -height , -radiusTop    , -height , radiusTop    };
+			                    -height , -radiusTop    , -height , radiusTop    };
 		}
 
 		final boolean frontView = ( !topView && pts != null && pts.length == 8 );
@@ -334,9 +324,9 @@ public final class Cylinder3D
 		 */
 		if ( topView || frontView )
 		{
-			final float x = objXform.transformX( xform.xo , xform.yo , xform.zo );
-			final float y = topView ? objXform.transformY( xform.xo , xform.yo , xform.zo ) :
-									  objXform.transformZ( xform.xo , xform.yo , xform.zo ) ;
+			final float x = viewTransform.transformX( xform.xo , xform.yo , xform.zo );
+			final float y = topView ? viewTransform.transformY( xform.xo , xform.yo , xform.zo ) :
+			                          viewTransform.transformZ( xform.xo , xform.yo , xform.zo ) ;
 
 			final float x1 = x + pts[ 0 ];
 			final float x2 = x + pts[ 2 ];
@@ -379,21 +369,26 @@ public final class Cylinder3D
 				p4y = (int)gXform.transformY( x4 , 0 ,y4 );
 			}
 
-			final Graphics2D g2 = (Graphics2D)g;
-			g2.setPaint( fillColor );
-			g2.fillPolygon( new int[]{ p1x , p2x , p3x , p4x , p1x , p3x , p2x , p4x } ,
-							new int[]{ p1y , p2y , p3y , p4y , p1y , p3y , p2y , p4y } , 8 );
+			if ( fillColor != null )
+			{
+				g.setColor( fillColor );
+				g.fillPolygon( new int[]{ p1x , p2x , p3x , p4x , p1x , p3x , p2x , p4x } ,
+				               new int[]{ p1y , p2y , p3y , p4y , p1y , p3y , p2y , p4y } , 8 );
+			}
 
-			g2.setPaint( outlineColor );
-			g2.drawLine( p1x , p1y , p2x , p2y );
-			g2.drawLine( p3x , p3y , p4x , p4y );
-			g2.drawLine( p1x , p1y , p3x , p3y );
-			g2.drawLine( p2x , p2y , p4x , p4y );
+			if ( outlineColor != null )
+			{
+				g.setColor( outlineColor );
+				g.drawLine( p1x , p1y , p2x , p2y );
+				g.drawLine( p3x , p3y , p4x , p4y );
+				g.drawLine( p1x , p1y , p3x , p3y );
+				g.drawLine( p2x , p2y , p4x , p4y );
+			}
 		}
 		else
 		{
 			// Not painted, paint fully.
-			super.paint( g , gXform , objXform );
+			super.paint( g , gXform , viewTransform , outlineColor , fillColor , shadeFactor );
 		}
 	}
 }

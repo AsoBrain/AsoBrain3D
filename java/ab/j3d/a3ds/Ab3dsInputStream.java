@@ -1,79 +1,92 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Sjoerd Bouwman
  *
- * (C) Copyright 1999-2004 Sjoerd Bouwman (aso@asobrain.com)
- * 
- * This program is free software; you can redistribute it and/or
- * modify it as you see fit.
- * 
- * This program is distributed in the hope that it will be useful,
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d.a3ds;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Inputstream specially to read 3ds types.
  *
- * @author	Sjoerd Bouwman
- * @version	$Revision$ $Date$
+ * @author  Sjoerd Bouwman
+ * @version $Revision$ $Date$
  */
-public class Ab3dsInputStream 
+public final class Ab3dsInputStream
 {
 	/**
 	 * Current file pointer.
 	 */
-	private long pointer = 0;
+	private long _pointer;
 
 	/**
 	 * Stream to read from.
 	 */
-	private InputStream is = null;
+	private final InputStream _is;
 
 	/**
 	 * If true, end of file is received.
 	 */
-	private boolean eof = false;
+	private boolean _eof;
+
 	/**
 	 * Constructor.
 	 *
-	 * @param	is	Inputstream to get input from.
+	 * @param   is      Inputstream to read from.
 	 */
-	public Ab3dsInputStream( InputStream is ) 
+	public Ab3dsInputStream( final InputStream is )
 	{
-		this.is = is;
+		_is      = is;
+		_pointer = 0;
+		_eof     = false;
 	}
 
 	/**
 	 * Gets the current filepointer of the stream.
 	 *
-	 * @return	the current position in the file.
+	 * @return the current position in the file.
 	 */
 	public long getPointer()
 	{
-		return pointer;
+		return _pointer;
 	}
 
 	/**
 	 * Checks if the stream has ended.
 	 *
-	 * @return	true if the stream has ended.
+	 * @return true if the stream has ended.
 	 */
 	public boolean isEOF()
 	{
-		return eof;
+		return _eof;
 	}
 
 	/**
 	 * Read boolean from stream.
 	 *
-	 * @return	 the read boolean.
+	 * @return  Read boolean.
 	 *
-	 * @throws IOException when reading failed.
+	 * @throws  IOException when reading failed.
 	 */
-	public boolean readBoolean() throws IOException
+	public boolean readBoolean()
+		throws IOException
 	{
 		return readByte() == 0;
 	}
@@ -81,30 +94,39 @@ public class Ab3dsInputStream
 	/**
 	 * Read byte from stream.
 	 *
-	 * @return	 the read byte.
+	 * @return  Read byte.
 	 *
-	 * @throws IOException when reading failed.
+	 * @throws  IOException when reading failed.
 	 */
-	public byte readByte() throws IOException
+	public byte readByte()
+		throws IOException
 	{
-		int r = is.read();
+		final byte result;
+
+		final int r = _is.read();
 		if ( r < 0 )
 		{
-			eof = true;
-			return 0;
+			_eof = true;
+			result = 0;
 		}
-		pointer+=1;
-		return (byte)r;
+		else
+		{
+			_pointer += 1;
+			result = (byte)r;
+		}
+
+		return result;
 	}
 
 	/**
 	 * Read float from stream.
 	 *
-	 * @return	 the read float.
+	 * @return  Read float.
 	 *
-	 * @throws IOException when reading failed.
+	 * @throws  IOException when reading failed.
 	 */
-	public float readFloat() throws IOException
+	public float readFloat()
+		throws IOException
 	{
 		return Float.intBitsToFloat( (int)readLong() );
 	}
@@ -112,67 +134,75 @@ public class Ab3dsInputStream
 	/**
 	 * Read int from stream.
 	 *
-	 * @return	 the read int.
+	 * @return  Read int.
 	 *
-	 * @throws IOException when reading failed.
+	 * @throws  IOException when reading failed.
 	 */
-	public int readInt() throws IOException
+	public int readInt()
+		throws IOException
 	{
-		int high = is.read();
-		int low = is.read();
-		if ( high < 0 || low < 0 )
+		final int result;
+
+		final int high = _is.read();
+		final int low  = _is.read();
+
+		if ( ( high < 0 ) || ( low < 0 ) )
 		{
-			eof = true;
-			return 0;
+			_eof = true;
+			result = 0;
 		}
-		pointer+=2;
-	
-		return high + (low<<8);
+		else
+		{
+			_pointer += 2;
+			result = high + ( low << 8 );
+		}
+
+		return result;
 	}
 
 	/**
 	 * Read long from stream.
 	 *
-	 * @return	 the read long.
-	 *
+	 * @return the read long.
 	 * @throws IOException when reading failed.
 	 */
-	public long readLong() throws IOException
+	public long readLong()
+		throws IOException
 	{
-		long low = readInt();
-		long high = readInt();
-		return low + (high<<16);
+		final long low = readInt();
+		final long high = readInt();
+		return low + ( high << 16 );
 	}
 
 	/**
 	 * Read string from stream.
 	 *
-	 * @return	 the read string.
-	 *
+	 * @return the read string.
 	 * @throws IOException when reading failed.
 	 */
-	public String readString() throws IOException
+	public String readString()
+		throws IOException
 	{
 		String str = "";
 
-		byte b = 0;
-		while ( (b=readByte()) != 0 )
-			str+=(char)b;
-		
+		byte b;
+		while ( ( b = readByte() ) != 0 )
+			str += (char)b;
+
 		return str;
 	}
 
 	/**
 	 * Skip specified number of bytes in stream.
 	 *
-	 * @param	count	number of bytes to skip.
+	 * @param count number of bytes to skip.
 	 *
 	 * @throws IOException when skipping failed.
 	 */
-	public void skip( long count ) throws IOException
+	public void skip( final long count )
+		throws IOException
 	{
-		is.skip( count );
-		pointer+=count;
+		_is.skip( count );
+		_pointer += count;
 	}
-
 }

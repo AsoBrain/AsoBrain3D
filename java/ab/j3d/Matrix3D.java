@@ -1,12 +1,22 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Peter S. Heijnen
  *
- * (C) Copyright Numdata BV 2000-2004 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2004 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV or Peter S. Heijnen. Please
- * contact Numdata BV or Peter S. Heijnen for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d;
 
@@ -45,7 +55,7 @@ public final class Matrix3D
 	/**
 	 * Multiplication factor to transform decimal degrees to radians.
 	 */
-	public static final float DEG_TO_RAD = (float)( Math.PI / 180.0d );
+	public static final float DEG_TO_RAD = (float)( Math.PI / 180.0 );
 
 	/**
 	 * Initial value of a matrix (=identity matrix).
@@ -121,52 +131,53 @@ public final class Matrix3D
 	}
 
 	/**
-	 * Compare this object to another object.
+	 * Compare this matrix to another matrix.
 	 *
-	 * @param   other   Object to compare with.
+	 * @param   other   Matrix to compare with.
 	 *
-	 * @return  <code>true</code> if the objects are equal;
+	 * @return  <code>true</code> if the objects are almost equal;
 	 *          <code>false</code> if not.
+	 *
+	 * @see     #almostEqual
 	 */
-	public boolean almostEquals( final Object other )
+	public boolean almostEquals( final Matrix3D other )
 	{
-		if ( other == this ) return true;
-		if ( other == null ) return false;
-		if ( !( other instanceof Matrix3D ) ) return false;
-
-		final Matrix3D m = (Matrix3D)other;
-		return almostEqual( xx , m.xx )
-		    && almostEqual( xy , m.xy )
-		    && almostEqual( xz , m.xz )
-		    && almostEqual( xo , m.xo )
-		    && almostEqual( yx , m.yx )
-		    && almostEqual( yy , m.yy )
-		    && almostEqual( yz , m.yz )
-		    && almostEqual( yo , m.yo )
-		    && almostEqual( zx , m.zx )
-		    && almostEqual( zy , m.zy )
-		    && almostEqual( zz , m.zz )
-		    && almostEqual( zo , m.zo );
+		return ( other != null )
+		    && ( ( other == this )
+		      || ( almostEqual( xx , other.xx ) && almostEqual( xy , other.xy ) && almostEqual( xz , other.xz ) && almostEqual( xo , other.xo )
+		        && almostEqual( yx , other.yx ) && almostEqual( yy , other.yy ) && almostEqual( yz , other.yz ) && almostEqual( yo , other.yo )
+		        && almostEqual( zx , other.zx ) && almostEqual( zy , other.zy ) && almostEqual( zz , other.zz ) && almostEqual( zo , other.zo ) ) );
 	}
 
-	/**
-	 * Compare this object to another object.
-	 *
-	 * @param   other   Object to compare with.
-	 *
-	 * @return  <code>true</code> if the objects are equal;
-	 *          <code>false</code> if not.
-	 */
 	public boolean equals( final Object other )
 	{
-		if ( other == this ) return true;
-		if ( other == null ) return false;
-		if ( !( other instanceof Matrix3D ) ) return false;
+		final boolean result;
 
-		final Matrix3D m = (Matrix3D)other;
-		return ( xx == m.xx && xy == m.xy && xz == m.xz && xo == m.xo &&
-		         yx == m.yx && yy == m.yy && yz == m.yz && yo == m.yo &&
-		         zx == m.zx && zy == m.zy && zz == m.zz && zo == m.zo );
+		if ( other == this )
+		{
+			result = true;
+		}
+		else if ( !( other instanceof Matrix3D ) )
+		{
+			result = false;
+		}
+		else
+		{
+			final Matrix3D m = (Matrix3D)other;
+
+			result = ( xx == m.xx ) && ( xy == m.xy ) && ( xz == m.xz ) && ( xo == m.xo )
+			      && ( yx == m.yx ) && ( yy == m.yy ) && ( yz == m.yz ) && ( yo == m.yo )
+			      && ( zx == m.zx ) && ( zy == m.zy ) && ( zz == m.zz ) && ( zo == m.zo );
+		}
+
+		return result;
+	}
+
+	public int hashCode()
+	{
+		return Float.floatToIntBits( xx ) ^ Float.floatToIntBits( xy ) ^ Float.floatToIntBits( xz ) ^ Float.floatToIntBits( xo )
+		     ^ Float.floatToIntBits( yx ) ^ Float.floatToIntBits( yy ) ^ Float.floatToIntBits( yz ) ^ Float.floatToIntBits( yo )
+		     ^ Float.floatToIntBits( zx ) ^ Float.floatToIntBits( zy ) ^ Float.floatToIntBits( zz ) ^ Float.floatToIntBits( zo );
 	}
 
 	/**
@@ -181,18 +192,18 @@ public final class Matrix3D
 	{
 		final StringTokenizer st = new StringTokenizer( value , "," );
 
-		return Matrix3D.INIT.set( new Float( st.nextToken() ).floatValue() ,
-		                          new Float( st.nextToken() ).floatValue() ,
-		                          new Float( st.nextToken() ).floatValue() ,
-		                          new Float( st.nextToken() ).floatValue() ,
-		                          new Float( st.nextToken() ).floatValue() ,
-		                          new Float( st.nextToken() ).floatValue() ,
-		                          new Float( st.nextToken() ).floatValue() ,
-		                          new Float( st.nextToken() ).floatValue() ,
-		                          new Float( st.nextToken() ).floatValue() ,
-		                          new Float( st.nextToken() ).floatValue() ,
-		                          new Float( st.nextToken() ).floatValue() ,
-		                          new Float( st.nextToken() ).floatValue() );
+		return Matrix3D.INIT.set( Float.parseFloat( st.nextToken() ) ,
+		                          Float.parseFloat( st.nextToken() ) ,
+		                          Float.parseFloat( st.nextToken() ) ,
+		                          Float.parseFloat( st.nextToken() ) ,
+		                          Float.parseFloat( st.nextToken() ) ,
+		                          Float.parseFloat( st.nextToken() ) ,
+		                          Float.parseFloat( st.nextToken() ) ,
+		                          Float.parseFloat( st.nextToken() ) ,
+		                          Float.parseFloat( st.nextToken() ) ,
+		                          Float.parseFloat( st.nextToken() ) ,
+		                          Float.parseFloat( st.nextToken() ) ,
+		                          Float.parseFloat( st.nextToken() ) );
 	}
 
 	/**
@@ -296,7 +307,9 @@ public final class Matrix3D
 	 */
 	public Matrix3D minus( final float x , final float y , final float z )
 	{
-		return ( x == 0 && y == 0 && z == 0 ) ? this : setTranslation( xo - x , yo - y , zo - z );
+		return ( ( x == 0 ) && ( y == 0 ) && ( z == 0 ) )
+		     ? this
+		     : setTranslation( xo - x , yo - y , zo - z );
 	}
 
 	/**
@@ -321,21 +334,18 @@ public final class Matrix3D
 	 */
 	public Matrix3D multiply( final Matrix3D other )
 	{
-		return set(
-		 /* xx */ this.xx * other.xx + this.yx * other.xy + this.zx * other.xz ,
-		 /* xy */ this.xy * other.xx + this.yy * other.xy + this.zy * other.xz ,
-		 /* xz */ this.xz * other.xx + this.yz * other.xy + this.zz * other.xz ,
-		 /* xo */ this.xo * other.xx + this.yo * other.xy + this.zo * other.xz + other.xo ,
-
-		 /* yx */ this.xx * other.yx + this.yx * other.yy + this.zx * other.yz ,
-		 /* yy */ this.xy * other.yx + this.yy * other.yy + this.zy * other.yz ,
-		 /* yz */ this.xz * other.yx + this.yz * other.yy + this.zz * other.yz ,
-		 /* yo */ this.xo * other.yx + this.yo * other.yy + this.zo * other.yz + other.yo ,
-
-		 /* zx */ this.xx * other.zx + this.yx * other.zy + this.zx * other.zz ,
-		 /* zy */ this.xy * other.zx + this.yy * other.zy + this.zy * other.zz ,
-		 /* zz */ this.xz * other.zx + this.yz * other.zy + this.zz * other.zz ,
-		 /* zo */ this.xo * other.zx + this.yo * other.zy + this.zo * other.zz + other.zo );
+		return set( /* xx */ xx * other.xx + yx * other.xy + zx * other.xz ,
+		            /* xy */ xy * other.xx + yy * other.xy + zy * other.xz ,
+		            /* xz */ xz * other.xx + yz * other.xy + zz * other.xz ,
+		            /* xo */ xo * other.xx + yo * other.xy + zo * other.xz + other.xo ,
+		            /* yx */ xx * other.yx + yx * other.yy + zx * other.yz ,
+		            /* yy */ xy * other.yx + yy * other.yy + zy * other.yz ,
+		            /* yz */ xz * other.yx + yz * other.yy + zz * other.yz ,
+		            /* yo */ xo * other.yx + yo * other.yy + zo * other.yz + other.yo ,
+		            /* zx */ xx * other.zx + yx * other.zy + zx * other.zz ,
+		            /* zy */ xy * other.zx + yy * other.zy + zy * other.zz ,
+		            /* zz */ xz * other.zx + yz * other.zy + zz * other.zz ,
+		            /* zo */ xo * other.zx + yo * other.zy + zo * other.zz + other.zo );
 	}
 
 	/**
@@ -347,10 +357,9 @@ public final class Matrix3D
 	 */
 	public Vector3D multiply( final Vector3D vector )
 	{
-		return vector.set(
-			vector.x * xx + vector.y * xy + vector.z * xz + xo ,
-			vector.x * yx + vector.y * yy + vector.z * yz + yo ,
-			vector.x * zx + vector.y * zy + vector.z * zz + zo );
+		return vector.set( vector.x * xx + vector.y * xy + vector.z * xz + xo ,
+		                   vector.x * yx + vector.y * yy + vector.z * yz + yo ,
+		                   vector.x * zx + vector.y * zy + vector.z * zz + zo );
 	}
 
 	/**
@@ -364,52 +373,50 @@ public final class Matrix3D
 	 */
 	public Vector3D multiply( final float x , final float y , final float z )
 	{
-		return Vector3D.INIT.set(
-			x * xx + y * xy + z * xz + xo ,
-			x * yx + y * yy + z * yz + yo ,
-			x * zx + y * zy + z * zz + zo
-		);
+		return Vector3D.INIT.set( x * xx + y * xy + z * xz + xo ,
+		                          x * yx + y * yy + z * yz + yo ,
+		                          x * zx + y * zy + z * zz + zo );
 	}
 
 	/**
 	 * Multiply this matrix with another matrix and return the result
 	 * of this multiplication.
 	 *
-	 * @param   xx      Matrix row 0, column 0 (x-factor for x).
-	 * @param   xy      Matrix row 0, column 1 (y-factor for x).
-	 * @param   xz      Matrix row 0, column 2 (z-factor for x).
-	 * @param   xo      Matrix row 0, column 3 (offset   for x).
-	 * @param   yx      Matrix row 1, column 0 (x-factor for y).
-	 * @param   yy      Matrix row 1, column 1 (y-factor for y).
-	 * @param   yz      Matrix row 1, column 2 (z-factor for y).
-	 * @param   yo      Matrix row 1, column 3 (offset   for y).
-	 * @param   zx      Matrix row 2, column 0 (x-factor for z).
-	 * @param   zy      Matrix row 2, column 1 (y-factor for z).
-	 * @param   zz      Matrix row 2, column 2 (z-factor for z).
-	 * @param   zo      Matrix row 2, column 3 (offset   for z).
+	 * @param   otherXX     Matrix row 0, column 0 (x-factor for x).
+	 * @param   otherXY     Matrix row 0, column 1 (y-factor for x).
+	 * @param   otherXZ     Matrix row 0, column 2 (z-factor for x).
+	 * @param   otherXO     Matrix row 0, column 3 (offset   for x).
+	 * @param   otherYX     Matrix row 1, column 0 (x-factor for y).
+	 * @param   otherYY     Matrix row 1, column 1 (y-factor for y).
+	 * @param   otherYZ     Matrix row 1, column 2 (z-factor for y).
+	 * @param   otherYO     Matrix row 1, column 3 (offset   for y).
+	 * @param   otherZX     Matrix row 2, column 0 (x-factor for z).
+	 * @param   otherZY     Matrix row 2, column 1 (y-factor for z).
+	 * @param   otherZZ     Matrix row 2, column 2 (z-factor for z).
+	 * @param   otherZO     Matrix row 2, column 3 (offset   for z).
 	 *
 	 * @return  Resulting matrix.
 	 */
 	public Matrix3D multiply(
-		final float xx , final float xy , final float xz , final float xo ,
-		final float yx , final float yy , final float yz , final float yo ,
-		final float zx , final float zy , final float zz , final float zo )
+		final float otherXX , final float otherXY , final float otherXZ , final float otherXO ,
+		final float otherYX , final float otherYY , final float otherYZ , final float otherYO ,
+		final float otherZX , final float otherZY , final float otherZZ , final float otherZO )
 	{
 		return set(
-		 /* xx */ this.xx * xx + this.yx * xy + this.zx * xz ,
-		 /* xy */ this.xy * xx + this.yy * xy + this.zy * xz ,
-		 /* xz */ this.xz * xx + this.yz * xy + this.zz * xz ,
-		 /* xo */ this.xo * xx + this.yo * xy + this.zo * xz + xo ,
+		 /* xx */ xx * otherXX + yx * otherXY + zx * otherXZ ,
+		 /* xy */ xy * otherXX + yy * otherXY + zy * otherXZ ,
+		 /* xz */ xz * otherXX + yz * otherXY + zz * otherXZ ,
+		 /* xo */ xo * otherXX + yo * otherXY + zo * otherXZ + otherXO ,
 
-		 /* yx */ this.xx * yx + this.yx * yy + this.zx * yz ,
-		 /* yy */ this.xy * yx + this.yy * yy + this.zy * yz ,
-		 /* yz */ this.xz * yx + this.yz * yy + this.zz * yz ,
-		 /* yo */ this.xo * yx + this.yo * yy + this.zo * yz + yo ,
+		 /* yx */ xx * otherYX + yx * otherYY + zx * otherYZ ,
+		 /* yy */ xy * otherYX + yy * otherYY + zy * otherYZ ,
+		 /* yz */ xz * otherYX + yz * otherYY + zz * otherYZ ,
+		 /* yo */ xo * otherYX + yo * otherYY + zo * otherYZ + otherYO ,
 
-		 /* zx */ this.xx * zx + this.yx * zy + this.zx * zz ,
-		 /* zy */ this.xy * zx + this.yy * zy + this.zy * zz ,
-		 /* zz */ this.xz * zx + this.yz * zy + this.zz * zz ,
-		 /* zo */ this.xo * zx + this.yo * zy + this.zo * zz + zo );
+		 /* zx */ xx * otherZX + yx * otherZY + zx * otherZZ ,
+		 /* zy */ xy * otherZX + yy * otherZY + zy * otherZZ ,
+		 /* zz */ xz * otherZX + yz * otherZY + zz * otherZZ ,
+		 /* zo */ xo * otherZX + yo * otherZY + zo * otherZZ + otherZO );
 	}
 
 	/**
@@ -435,8 +442,9 @@ public final class Matrix3D
 	 */
 	public Matrix3D plus( final float x , final float y , final float z )
 	{
-		if ( x == 0f && y == 0f && z == 0f ) return this;
-		return setTranslation( xo + x , yo + y , zo + z );
+		return ( x == 0.0f && y == 0.0f && z == 0.0f )
+		     ? this
+		     : setTranslation( xo + x , yo + y , zo + z );
 	}
 
 	/**
@@ -449,7 +457,7 @@ public final class Matrix3D
 	 * @param   dest            Destination array.
 	 * @param   vertexCount     Number of vertices.
 	 */
-	public void rotate( final float[] source , final float[] dest , int vertexCount )
+	public void rotate( final float[] source , final float[] dest , final int vertexCount )
 	{
 		final float lxx = xx;
 		final float lxy = xy;
@@ -461,19 +469,21 @@ public final class Matrix3D
 		final float lzy = zy;
 		final float lzz = zz;
 
-		if ( (lxx == 1f) && (lxy == 0f) && (lxz == 0f) &&
-		     (lyx == 0f) && (lyy == 1f) && (lyz == 0f) &&
-		     (lzx == 0f) && (lzy == 0f) && (lzz == 1f) )
+		final int vertexArrayLength = vertexCount * 3;
+
+		if ( ( lxx == 1.0f ) && ( lxy == 0.0f ) && ( lxz == 0.0f ) &&
+		     ( lyx == 0.0f ) && ( lyy == 1.0f ) && ( lyz == 0.0f ) &&
+		     ( lzx == 0.0f ) && ( lzy == 0.0f ) && ( lzz == 1.0f ) )
 		{
-			System.arraycopy( source , 0 , dest , 0 , vertexCount * 3 );
+			System.arraycopy( source , 0 , dest , 0 , vertexArrayLength );
 		}
 		else
 		{
-			float x,y,z;
+			float x;
+			float y;
+			float z;
 
-			vertexCount *= 3;
-
-			for ( int i = 0 ; i < vertexCount ; i += 3 )
+			for ( int i = 0 ; i < vertexArrayLength ; i += 3 )
 			{
 				x = source[ i     ];
 				y = source[ i + 1 ];
@@ -489,112 +499,129 @@ public final class Matrix3D
 	/**
 	 * Rotate along the X-axis.
 	 *
-	 * @param   theta   Rotate theta radians about the X-axis
+	 * @param   thetaRad    Rotate theta radians about the X-axis
 	 *
 	 * @return  Rotated matrix.
 	 */
-	public Matrix3D rotateX( final double theta )
+	public Matrix3D rotateX( final double thetaRad )
 	{
-		if ( almostEqual( theta , 0 ) )
-			return this;
+		final Matrix3D result;
 
-		final float ct = (float)Math.cos( theta );
-		final float st = (float)Math.sin( theta );
+		if ( almostEqual( thetaRad , 0 ) )
+		{
+			result = this;
+		}
+		else
+		{
+			final float cos = (float)Math.cos( thetaRad );
+			final float sin = (float)Math.sin( thetaRad );
 
-		return set(
-			xx                , xy                , xz                , xo                ,
-			yx * ct + zx * st , yy * ct + zy * st , yz * ct + zz * st , yo * ct + zo * st ,
-			zx * ct - yx * st , zy * ct - yy * st , zz * ct - yz * st , zo * ct - yo * st );
+			result = set( xx                  , xy                  , xz                  , xo                  ,
+			              yx * cos + zx * sin , yy * cos + zy * sin , yz * cos + zz * sin , yo * cos + zo * sin ,
+			              zx * cos - yx * sin , zy * cos - yy * sin , zz * cos - yz * sin , zo * cos - yo * sin );
+		}
+
+		return result;
 	}
 
 	/**
 	 * Rotate along the Y-axis.
 	 *
-	 * @param   theta   Rotate theta radians about the Y-axis
+	 * @param   thetaRad    Rotate theta radians about the Y-axis
 	 *
 	 * @return  Rotated matrix.
 	 */
-	public Matrix3D rotateY( final double theta )
+	public Matrix3D rotateY( final double thetaRad )
 	{
-		if ( almostEqual( theta , 0 ) )
-			return this;
+		final Matrix3D result;
 
-		final float ct = (float)Math.cos( theta );
-		final float st = (float)Math.sin( theta );
+		if ( almostEqual( thetaRad , 0 ) )
+		{
+			result = this;
+		}
+		else
+		{
+			final float cos = (float)Math.cos( thetaRad );
+			final float sin = (float)Math.sin( thetaRad );
 
-		return set(
-		xx * ct + zx * st , xy * ct + zy * st , xz * ct + zz * st , xo * ct + zo * st ,
-		yx                , yy                , yz                , yo                ,
-		zx * ct - xx * st , zy * ct - xy * st , zz * ct - xz * st , zo * ct - xo * st );
+			result = set( xx * cos + zx * sin , xy * cos + zy * sin , xz * cos + zz * sin , xo * cos + zo * sin ,
+			              yx                  , yy                  , yz                  , yo                  ,
+			              zx * cos - xx * sin , zy * cos - xy * sin , zz * cos - xz * sin , zo * cos - xo * sin );
+		}
+
+		return result;
 	}
 
 	/**
 	 * Rotate along the Z-axis.
 	 *
-	 * @param   theta   Rotate theta radians about the Z-axis
+	 * @param   thetaRad    Rotate theta radians about the Z-axis
 	 *
 	 * @return  Rotated matrix.
 	 */
-	public Matrix3D rotateZ( final double theta )
+	public Matrix3D rotateZ( final double thetaRad )
 	{
-		if ( almostEqual( theta , 0 ) )
-			return this;
+		final Matrix3D result;
 
-		final float ct = (float)Math.cos( theta );
-		final float st = (float)Math.sin( theta );
+		if ( almostEqual( thetaRad , 0 ) )
+		{
+			result = this;
+		}
+		else
+		{
+			final float cos = (float)Math.cos( thetaRad );
+			final float sin = (float)Math.sin( thetaRad );
 
-		return set(
-			xx * ct - yx * st , xy * ct - yy * st , xz * ct - yz * st , xo * ct - yo * st ,
-			yx * ct + xx * st , yy * ct + xy * st , yz * ct + xz * st , yo * ct + xo * st ,
-			zx                , zy                , zz                , zo );
+			result = set( xx * cos - yx * sin , xy * cos - yy * sin , xz * cos - yz * sin , xo * cos - yo * sin ,
+			              yx * cos + xx * sin , yy * cos + xy * sin , yz * cos + xz * sin , yo * cos + xo * sin ,
+			              zx                  , zy                  , zz                  , zo );
+		}
+
+		return result;
 	}
 
 	/**
 	 * Set all values in the matrix and return the resulting matrix.
 	 *
-	 * @param   xx     Matrix row 0, column 0 (x-factor for x).
-	 * @param   xy     Matrix row 0, column 1 (y-factor for x).
-	 * @param   xz     Matrix row 0, column 2 (z-factor for x).
-	 * @param   xo     Matrix row 0, column 3 (offset   for x).
-	 * @param   yx     Matrix row 1, column 0 (x-factor for y).
-	 * @param   yy     Matrix row 1, column 1 (y-factor for y).
-	 * @param   yz     Matrix row 1, column 2 (z-factor for y).
-	 * @param   yo     Matrix row 1, column 3 (offset   for y).
-	 * @param   zx     Matrix row 2, column 0 (x-factor for z).
-	 * @param   zy     Matrix row 2, column 1 (y-factor for z).
-	 * @param   zz     Matrix row 2, column 2 (z-factor for z).
-	 * @param   zo     Matrix row 2, column 3 (offset   for z).
+	 * @param   nxx     X quotient for X component.
+	 * @param   nxy     Y quotient for X component.
+	 * @param   nxz     Z quotient for X component.
+	 * @param   nxo     Translation of X component.
+	 * @param   nyx     X quotient for Y component.
+	 * @param   nyy     Y quotient for Y component.
+	 * @param   nyz     Z quotient for Y component.
+	 * @param   nyo     Translation of Y component.
+	 * @param   nzx     X quotient for Z component.
+	 * @param   nzy     Y quotient for Z component.
+	 * @param   nzz     Z quotient for Z component.
+	 * @param   nzo     Translation of Z component.
 	 *
 	 * @return  Resulting vector.
 	 */
-	public Matrix3D set(
-		float xx , float xy , float xz , float xo ,
-		float yx , float yy , float yz , float yo ,
-		float zx , float zy , float zz , float zo )
+	public Matrix3D set( final float nxx , final float nxy , final float nxz , final float nxo ,
+	                     final float nyx , final float nyy , final float nyz , final float nyo ,
+	                     final float nzx , final float nzy , final float nzz , final float nzo )
 	{
-		if ( xx != xx /* => NaN*/ ) xx = this.xx;
-		if ( xy != xy /* => NaN*/ ) xy = this.xy;
-		if ( xz != xz /* => NaN*/ ) xz = this.xz;
-		if ( xo != xo /* => NaN*/ ) xo = this.xo;
+		final float lxx = Float.isNaN( nxx ) ? xx : nxx;
+		final float lxy = Float.isNaN( nxy ) ? xy : nxy;
+		final float lxz = Float.isNaN( nxz ) ? xz : nxz;
+		final float lxo = Float.isNaN( nxo ) ? xo : nxo;
+		final float lyx = Float.isNaN( nyx ) ? yx : nyx;
+		final float lyy = Float.isNaN( nyy ) ? yy : nyy;
+		final float lyz = Float.isNaN( nyz ) ? yz : nyz;
+		final float lyo = Float.isNaN( nyo ) ? yo : nyo;
+		final float lzx = Float.isNaN( nzx ) ? zx : nzx;
+		final float lzy = Float.isNaN( nzy ) ? zy : nzy;
+		final float lzz = Float.isNaN( nzz ) ? zz : nzz;
+		final float lzo = Float.isNaN( nzo ) ? zo : nzo;
 
-		if ( yx != yx /* => NaN*/ ) yx = this.yx;
-		if ( yy != yy /* => NaN*/ ) yy = this.yy;
-		if ( yz != yz /* => NaN*/ ) yz = this.yz;
-		if ( yo != yo /* => NaN*/ ) yo = this.yo;
-
-		if ( zx != zx /* => NaN*/ ) zx = this.zx;
-		if ( zy != zy /* => NaN*/ ) zy = this.zy;
-		if ( zz != zz /* => NaN*/ ) zz = this.zz;
-		if ( zo != zo /* => NaN*/ ) zo = this.zo;
-
-		if ( xx == this.xx && xy == this.xy && xz == this.xz && xo == this.xo &&
-			 yx == this.yx && yy == this.yy && yz == this.yz && yo == this.yo &&
-			 zx == this.zx && zy == this.zy && zz == this.zz && zo == this.zo )
-		return( this );
-
-		return new Matrix3D( xx , xy , xz , xo ,
-							 yx , yy , yz , yo ,
-							 zx , zy , zz , zo );
+		return ( lxx == xx && lxy == xy && lxz == xz && lxo == xo &&
+		         lyx == yx && lyy == yy && lyz == yz && lyo == yo &&
+		         lzx == zx && lzy == zy && lzz == zz && lzo == zo )
+		       ? this
+		       : new Matrix3D( lxx , lxy , lxz , lxo ,
+		                       lyx , lyy , lyz , lyo ,
+		                       lzx , lzy , lzz , lzo );
 	}
 
 	/**
@@ -618,18 +645,17 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting matrix.
 	 */
-	public Matrix3D setTranslation( float x , float y , float z )
+	public Matrix3D setTranslation( final float x , final float y , final float z )
 	{
-		if ( x != x /* => NaN*/ ) x = xo;
-		if ( y != y /* => NaN*/ ) y = yo;
-		if ( z != z /* => NaN*/ ) z = zo;
+		final float lx = Float.isNaN( x ) ? xo : x;
+		final float ly = Float.isNaN( y ) ? yo : y;
+		final float lz = Float.isNaN( z ) ? zo : z;
 
-		if ( x == xo && y == yo && z == zo )
-			return this;
-
-		return set( xx , xy , xz , x ,
-					yx , yy , yz , y ,
-					zx , zy , zz , z );
+		return ( ( lx == xo ) && ( ly == yo ) && ( lz == zo ) )
+		     ? this
+		     : set( xx , xy , xz , lx ,
+		            yx , yy , yz , ly ,
+		            zx , zy , zz , lz );
 	}
 
 	/**
@@ -639,9 +665,9 @@ public final class Matrix3D
 	 */
 	public String toString()
 	{
-		return( xx + "," + xy + "," + xz + "," + xo + "," +
-				yx + "," + yy + "," + yz + "," + yo + "," +
-				zx + "," + zy + "," + zz + "," + zo );
+		return xx + "," + xy + ',' + xz + ',' + xo + ',' +
+		       yx + ',' + yy + ',' + yz + ',' + yo + ',' +
+		       zx + ',' + zy + ',' + zz + ',' + zo;
 	}
 
 	/**
@@ -653,7 +679,7 @@ public final class Matrix3D
 	 * @param   dest            Destination array.
 	 * @param   vertexCount     Number of vertices.
 	 */
-	public void transform( final float[] source , final float[] dest , int vertexCount )
+	public void transform( final float[] source , final float[] dest , final int vertexCount )
 	{
 		final float lxx = xx;
 		final float lxy = xy;
@@ -668,21 +694,22 @@ public final class Matrix3D
 		final float lyo = yo;
 		final float lzo = zo;
 
+		final int vertexArrayLength = vertexCount * 3;
+
 		/*
 		 * Perform rotate, translate, or copy only if possible.
 		 */
-		if ( (lxx == 1f) && (lxy == 0f) && (lxz == 0f) &&
-		     (lyx == 0f) && (lyy == 1f) && (lyz == 0f) &&
-		     (lzx == 0f) && (lzy == 0f) && (lzz == 1f) )
+		if ( ( lxx == 1.0f ) && ( lxy == 0.0f ) && ( lxz == 0.0f ) &&
+		     ( lyx == 0.0f ) && ( lyy == 1.0f ) && ( lyz == 0.0f ) &&
+		     ( lzx == 0.0f ) && ( lzy == 0.0f ) && ( lzz == 1.0f ) )
 		{
-			if ( (lxo == 0f) && (lyo == 0f) && (lzo == 0f) )
+			if ( ( lxo == 0.0f ) && ( lyo == 0.0f ) && ( lzo == 0.0f ) )
 			{
-				System.arraycopy( source , 0 , dest , 0 , vertexCount * 3 );
+				System.arraycopy( source , 0 , dest , 0 , vertexArrayLength );
 			}
 			else
 			{
-				vertexCount *= 3;
-				for ( int i = 0 ; i < vertexCount ; i += 3 )
+				for ( int i = 0 ; i < vertexArrayLength ; i += 3 )
 				{
 					dest[ i     ] = source[ i     ] + lxo;
 					dest[ i + 1 ] = source[ i + 1 ] + lyo;
@@ -690,16 +717,17 @@ public final class Matrix3D
 				}
 			}
 		}
-		else if ( (lxo == 0f) && (lyo == 0f) && (lzo == 0f) )
+		else if ( ( lxo == 0.0f ) && ( lyo == 0.0f ) && ( lzo == 0.0f ) )
 		{
 			rotate( source , dest , vertexCount );
 		}
 		else
 		{
-			float x,y,z;
+			float x;
+			float y;
+			float z;
 
-			vertexCount *= 3;
-			for ( int i = 0 ; i < vertexCount ; i += 3 )
+			for ( int i = 0 ; i < vertexArrayLength ; i += 3 )
 			{
 				x = source[ i     ];
 				y = source[ i + 1 ];

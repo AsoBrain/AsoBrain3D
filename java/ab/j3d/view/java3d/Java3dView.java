@@ -1,122 +1,175 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 2004-2004 Numdata BV
  *
- * (C) Copyright Numdata BV 2004-2004 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
-package com.numdata.soda.Gerwin.AbtoJ3D;
+package ab.j3d.view.java3d;
 
+import java.awt.Component;
+import javax.media.j3d.Canvas3D;
 import javax.media.j3d.Group;
+import javax.media.j3d.TransformGroup;
 import javax.media.j3d.View;
 
 import com.sun.j3d.utils.universe.Viewer;
 import com.sun.j3d.utils.universe.ViewingPlatform;
 
 import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
+import ab.j3d.view.ViewControl;
+import ab.j3d.view.ViewModelView;
 
 /**
+ * Java 3D implementation of view model view.
+ *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
- * @FIXME Need comment
  */
-public class J3dView
-	extends ViewView
+public final class Java3dView
+	extends ViewModelView
 {
+	/**
+	 * Perspective projection policy constant.
+	 *
+	 * @see     #setProjectionPolicy
+	 */
 	private static final int PERSPECTIVE = 0;
-	private static final int PARALLEL    = 1;
-
-	private final J3dUniverse _universe;
-
-	private final ViewingPlatform _j3dRootNode;
-
-	private final J3dPanel _canvas;
-
-	private final Viewer _viewer;
-
-	private Vector3D _from;
-
-	private Vector3D _to;
 
 	/**
-	 * Construct new J3dView.
+	 * Parallel projection policy constant.
+	 *
+	 * @see     #setProjectionPolicy
 	 */
-	public J3dView( final J3dUniverse universe , final Vector3D from , final Vector3D to )
+	private static final int PARALLEL    = 1;
+
+	/**
+	 * Viewer with all Java 3D related information about this view.
+	 */
+	private final Viewer _viewer;
+
+	/**
+	 * Universe for which this view is defined.
+	 */
+	private final Java3dUniverse _universe;
+
+	/**
+	 * Construct Java3D view.
+	 *
+	 * @param   universe        Java3D universe for which the view is created.
+	 * @param   id              Application-assigned ID of this view.
+	 * @param   viewControl     Control to use for this view.
+	 */
+	Java3dView( final Java3dUniverse universe , final Object id , final ViewControl viewControl )
 	{
-		_universe = universe;
-		_from     = from;
-		_to       = to;
+		super( id , viewControl );
 
-		_canvas = new J3dPanel( _universe );
+		final Canvas3D canvas3d = Java3dTools.createCanvas3D();
 
-		_viewer = new Viewer( _canvas );
-		_universe.addViewer( _viewer );
+		final ViewingPlatform viewingPlatform = new ViewingPlatform( 1 );
+		viewingPlatform.setUniverse( universe );
+		viewingPlatform.setViewPlatformBehavior( Java3dTools.createOrbitBehavior( canvas3d ) );
 
-		_j3dRootNode = new ViewingPlatform( 1 );
-		_j3dRootNode.setUniverse( _universe );
-		_j3dRootNode.setViewPlatformBehavior( _universe.getOrbitBehavior( _canvas ) );
-		_viewer.setViewingPlatform( _j3dRootNode );
+		final Viewer viewer = new Viewer( canvas3d );
+		viewer.setViewingPlatform( viewingPlatform );
+
+		_viewer = viewer;
 
 		// set transparency stuff
-		final View view = _viewer.getView();
+		final View view = viewer.getView();
 		view.setDepthBufferFreezeTransparent( true );
 		view.setTransparencySortingPolicy( View.TRANSPARENCY_SORT_GEOMETRY );
 
-		//view.setBackClipDistance( 100 );
-
-		setTransform( _from , _to );
+		// view.setBackClipDistance( 100 );
 		setProjectionPolicy( PERSPECTIVE );
+
+		// place view in universe
+		_universe = universe;
+		_universe.addViewer( viewer );
+		_universe.getLocale().addBranchGraph( viewingPlatform );
 	}
 
 	/**
-	 * Get the j3d root node.
+	 * Get canvas with on-screen representation of this view.
 	 *
-	 * @return  The j3d root node.
+	 * @return  Canvas with on-screen representation of this view.
 	 */
-	public Group getJ3dRootNode()
+	private Canvas3D getCanvas3D()
 	{
-		return _j3dRootNode;
+		return _viewer.getCanvas3D();
 	}
 
-	public J3dPanel getCanvas()
+	/**
+	 * Get transform group for this view.
+	 *
+	 * @return  <code>TransformGroup</code> for this view.
+	 */
+	private TransformGroup getTransformGroup()
 	{
-		return _canvas;
+		return _viewer.getViewingPlatform().getMultiTransformGroup().getTransformGroup( 0 );
 	}
 
-	public void setTransform( final Matrix3D transform )
+	/**
+	 * Get Java3D scene graph object.
+	 *
+	 * @return  Java3D scene graph object.
+	 */
+	public Group getSceneGraphObject()
 	{
-		super.setTransform( transform );
-		if ( _j3dRootNode != null )
-			_j3dRootNode.getMultiTransformGroup().getTransformGroup( 0 ).setTransform( ABtoJ3DConvertor.convertMatrix3D( transform ) );
+		return _viewer.getViewingPlatform();
 	}
 
-	public void setTransform ( final Vector3D from , final Vector3D to )
+	public Component getComponent()
 	{
-		final Matrix3D viewTransform = ABtoJ3DConvertor.convertTransform3D( _universe.getTransform( _from , _to ) );
-		setTransform( viewTransform );
+		return getCanvas3D();
 	}
 
+	public void update()
+	{
+		Matrix3D xform = getViewControl().getTransform();
+
+		final float unit = _universe.getUnit();
+		if ( ( unit > 0 ) && ( unit != 1 ) )
+			xform = xform.setTranslation( xform.xo * unit , xform.yo * unit , xform.zo * unit );
+
+		getTransformGroup().setTransform( Java3dTools.convertMatrix3DToTransform3D( xform ) );
+	}
+
+	/**
+	 * Set projection policy of this view. The policy can be either
+	 * <code>PERSPECTIVE</code> or <code>PARALLEL</code>.
+	 *
+	 * @param   policy      Projection policy of this view
+	 *                      (<code>PERSPECTIVE</code> or <code>PARALLEL</code>).
+	 */
 	public void setProjectionPolicy( final int policy )
 	{
-		if ( !(policy == PERSPECTIVE || policy == PARALLEL) )
-			throw new IllegalArgumentException( "Projection policy " + policy + " is not a valid policy." );
+		switch ( policy )
+		{
+			case PERSPECTIVE :
+				_viewer.getView().setProjectionPolicy( View.PERSPECTIVE_PROJECTION );
+				break;
 
-		final View view = _viewer.getView();
-		view.setProjectionPolicy( policy == PERSPECTIVE ? View.PERSPECTIVE_PROJECTION : View.PARALLEL_PROJECTION );
-	}
+			case PARALLEL :
+				_viewer.getView().setProjectionPolicy( View.PARALLEL_PROJECTION );
+				break;
 
-	public void lookFrom( final Vector3D from )
-	{
-		_from = from;
-		setTransform( _from , _to );
-	}
+			default :
+				throw new IllegalArgumentException( "Invalid projection policy: " + policy );
+		}
 
-	public void lookAt( final Vector3D to )
-	{
-		_to = to;
-		setTransform( _from , _to );
 	}
 }

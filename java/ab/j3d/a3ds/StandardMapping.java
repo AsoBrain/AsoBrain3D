@@ -1,30 +1,38 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Sjoerd Bouwman
  *
- * (C) Copyright 1999-2004 Sjoerd Bouwman (aso@asobrain.com)
- * 
- * This program is free software; you can redistribute it and/or
- * modify it as you see fit.
- * 
- * This program is distributed in the hope that it will be useful,
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d.a3ds;
 
-import java.io.*;
+import java.io.IOException;
 
 /**
  *
- * @author	Sjoerd Bouwman
- * @version	$Revision$ $Date$
+ * @author  Sjoerd Bouwman
+ * @version $Revision$ $Date$
  */
-public class StandardMapping extends DataChunk 
+public final class StandardMapping extends DataChunk
 {
 	public static final int PLANNAR = 0;
 	public static final int CYLINDRICAL = 1;
 	public static final int SPHERICAL = 2;
-	
+
 	private int 	_type;
 	private float	_tilingX;
 	private float	_tilingY;
@@ -40,9 +48,9 @@ public class StandardMapping extends DataChunk
 	 * Constructor of Chunk with ChunkID to be used
 	 * when the Chunk is read from inputstream.
 	 *
-	 * @param	id	the ID of the chunk.
+	 * @param   id      ID of the chunk.
 	 */
-	public StandardMapping( int id ) 
+	public StandardMapping( final int id )
 	{
 		super( id );
 	}
@@ -50,26 +58,26 @@ public class StandardMapping extends DataChunk
 	/**
 	 * Returns the size in bytes of the chunk.
 	 *
-	 * @return	the size of the chunk in bytes.
+	 * @return  the size of the chunk in bytes.
 	 */
-	public long getSize() 
+	public long getSize()
 	{
 		return HEADER_SIZE + INT_SIZE + 9 * FLOAT_SIZE + 12 * FLOAT_SIZE;
 	}
 
 	/**
 	 * Reads the chunk from the input stream.
-	 * 
-	 * @param	is	the stream to read from.
+	 *
+	 * @param   is	the stream to read from.
 	 *
 	 * @throws IOException when an io error occurred.
 	 */
-	public void read( Ab3dsInputStream is )
-		throws IOException 
+	public void read( final Ab3dsInputStream is )
+		throws IOException
 	{
 		readHeader( is );
 
-		if ( Ab3dsFile.DEBUG ) 
+		if ( Ab3dsFile.DEBUG )
 			System.out.println( "Default mapping, size = " + _chunkSize );
 		_type = is.readInt();
 		_tilingX = is.readFloat();
@@ -93,13 +101,13 @@ public class StandardMapping extends DataChunk
 
 	/**
 	 * Writes the chunk the output stream.
-	 * 
-	 * @param	os	the stream to write to.
+	 *
+	 * @param   os	the stream to write to.
 	 *
 	 * @throws IOException when an io error occurred.
 	 */
-	public void write( Ab3dsOutputStream os )
-		throws java.io.IOException 
+	public void write( final Ab3dsOutputStream os )
+		throws java.io.IOException
 	{
 		writeHeader( os );
 

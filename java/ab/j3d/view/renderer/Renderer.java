@@ -1,14 +1,24 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Peter S. Heijnen
  *
- * (C) Copyright Numdata BV 2000-2004 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2004 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV or Peter S. Heijnen. Please
- * contact Numdata BV or Peter S. Heijnen for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
-package ab.j3d.renderer;
+package ab.j3d.view.renderer;
 
 import java.awt.Container;
 import java.awt.Image;
@@ -21,6 +31,10 @@ import java.util.Map;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
+import ab.j3d.model.Camera3D;
+import ab.j3d.model.Light3D;
+import ab.j3d.model.Node3DCollection;
+import ab.j3d.model.Object3D;
 
 /**
  * This class implements a background rendering thread.
@@ -49,7 +63,7 @@ public final class Renderer
 	/**
 	 * Camera from where a scene is observed.
 	 */
-	private final Camera _camera;
+	private final Camera3D _camera;
 
 	/**
 	 * This thread control flag is set when <code>requestTermination()</code>
@@ -90,14 +104,14 @@ public final class Renderer
 	 *
 	 * @see     Object3D
 	 */
-	private final LeafCollection objects = new LeafCollection();
+	private final Node3DCollection objects = new Node3DCollection();
 
 	/**
 	 * Temporary collection with light sources (Light).
 	 *
-	 * @see     Light
+	 * @see     Light3D
 	 */
-	private final LeafCollection lights = new LeafCollection();
+	private final Node3DCollection lights = new Node3DCollection();
 
 	/**
 	 * Temporary object with information about a rendered object.
@@ -126,8 +140,11 @@ public final class Renderer
 
 	/**
 	 * Construct (and start) render thread.
+	 *
+	 * @param   targetComponent     On-screen component to render for.
+	 * @param   camera              Camera that defines the view.
 	 */
-	public Renderer( final Container targetComponent , final Camera camera )
+	public Renderer( final Container targetComponent , final Camera3D camera )
 	{
 		_targetComponent      = targetComponent;
 		_camera               = camera;
@@ -311,7 +328,7 @@ public final class Renderer
 			if ( !_updateRequested  )
 			{
 				lights.clear();
-				_camera.gatherLeafs( lights , Light.class , Matrix3D.INIT , true );
+				_camera.gatherLeafs( lights , Light3D.class , Matrix3D.INIT , true );
 
 				for ( int i = 0 ; !_updateRequested   && ( i < objects.size() ) ; i++ )
 					renderObject( depthBuffer , frameBuffer , width , height , objects.getMatrix( i ) , (Object3D)objects.getNode( i ) );
@@ -342,7 +359,7 @@ public final class Renderer
 				 *   - determine if it's invisible (outside view volume & backface culling)
 				 *   - calculate weight point (average of vertices)
 				 */
-				for ( RenderObject.Face face = renderObject.faces ; !_updateRequested && ( face != null ) ; face = face.next )
+				for ( RenderObject.Face face = renderObject._faces ; !_updateRequested && ( face != null ) ; face = face._next )
 				{
 					face.applyLighting();
 					renderFace( depthBuffer , frameBuffer , width , height , face );
@@ -360,25 +377,30 @@ public final class Renderer
 	 */
 	private static void renderFace( final int[] depthBuffer , final int[] frameBuffer , final int width , final int height , final RenderObject.Face face )
 	{
-		int i,j,k,m,n;
-		long d1,d2;
+		int i;
+		int j;
+		int k;
+		int m;
+		int n;
+		long d1;
+		long d2;
 
 		final RenderObject ro = face.getRenderObject();
 
-		final int[]			ph = ro.ph;
-		final int[]			pv = ro.pv;
-		final long[]		pd = ro.pd;
-		final int[]			vertexIndices	= face.vi;
+		final int[]			ph = ro._ph;
+		final int[]			pv = ro._pv;
+		final long[]		pd = ro._pd;
+		final int[]			vertexIndices	= face._vi;
 		final TextureSpec	textureSpec		= face.getTexture();
 		final int[][]		texturePixels	= getTextureImage( textureSpec );
 		final boolean		hasTexture		= texturePixels != null;
 		final int[]			tus				= hasTexture ? face.getTextureU() : null;
 		final int[]			tvs				= hasTexture ? face.getTextureV() : null;
 		final int			colorRGB		= textureSpec.getARGB();
-		final int[]			ds				= face.ds;
-		final int[]			sxs				= face.sxs;
-		final int[]			sys				= face.sys;
-		final int[]			sfs				= face.sfs;
+		final int[]			ds				= face._ds;
+		final int[]			sxs				= face._sxs;
+		final int[]			sys				= face._sys;
+		final int[]			sfs				= face._sfs;
 
 		/*
 		 * Determine minimum and maximum Y value, and set the first vertex
@@ -677,43 +699,43 @@ public final class Renderer
 	/**
 	 * This is the core render loop to render a set of scanlines for a face.
 	 *
-	 * @param	v			Scanline parameter.
-	 * @param	nextV		Scanline parameter.
-	 * @param	lh			Scanline parameter.
-	 * @param	lhc			Scanline parameter.
-	 * @param	rh			Scanline parameter.
-	 * @param	rhc			Scanline parameter.
-	 * @param	ld			Scanline parameter.
-	 * @param	ldc			Scanline parameter.
-	 * @param	rd			Scanline parameter.
-	 * @param	rdc			Scanline parameter.
-	 * @param	colorRGB	Scanline parameter.
-	 * @param	texture		Scanline parameter.
-	 * @param	ltu			Scanline parameter.
-	 * @param	ltuc		Scanline parameter.
-	 * @param	rtu			Scanline parameter.
-	 * @param	rtuc		Scanline parameter.
-	 * @param	ltv			Scanline parameter.
-	 * @param	ltvc		Scanline parameter.
-	 * @param	rtv			Scanline parameter.
-	 * @param	rtvc		Scanline parameter.
-	 * @param	ldr			Scanline parameter.
-	 * @param	ldrc		Scanline parameter.
-	 * @param	rdr			Scanline parameter.
-	 * @param	rdrc		Scanline parameter.
-	 * @param	phongTable	Scanline parameter.
-	 * @param	lsx			Scanline parameter.
-	 * @param	lsxc		Scanline parameter.
-	 * @param	rsx			Scanline parameter.
-	 * @param	rsxc		Scanline parameter.
-	 * @param	lsy			Scanline parameter.
-	 * @param	lsyc		Scanline parameter.
-	 * @param	rsy			Scanline parameter.
-	 * @param	rsyc		Scanline parameter.
-	 * @param	lsf			Scanline parameter.
-	 * @param	lsfc		Scanline parameter.
-	 * @param	rsf			Scanline parameter.
-	 * @param	rsfc		Scanline parameter.
+	 * @param   v			Scanline parameter.
+	 * @param   nextV		Scanline parameter.
+	 * @param   lh			Scanline parameter.
+	 * @param   lhc			Scanline parameter.
+	 * @param   rh			Scanline parameter.
+	 * @param   rhc			Scanline parameter.
+	 * @param   ld			Scanline parameter.
+	 * @param   ldc			Scanline parameter.
+	 * @param   rd			Scanline parameter.
+	 * @param   rdc			Scanline parameter.
+	 * @param   colorRGB	Scanline parameter.
+	 * @param   texture		Scanline parameter.
+	 * @param   ltu			Scanline parameter.
+	 * @param   ltuc		Scanline parameter.
+	 * @param   rtu			Scanline parameter.
+	 * @param   rtuc		Scanline parameter.
+	 * @param   ltv			Scanline parameter.
+	 * @param   ltvc		Scanline parameter.
+	 * @param   rtv			Scanline parameter.
+	 * @param   rtvc		Scanline parameter.
+	 * @param   ldr			Scanline parameter.
+	 * @param   ldrc		Scanline parameter.
+	 * @param   rdr			Scanline parameter.
+	 * @param   rdrc		Scanline parameter.
+	 * @param   phongTable	Scanline parameter.
+	 * @param   lsx			Scanline parameter.
+	 * @param   lsxc		Scanline parameter.
+	 * @param   rsx			Scanline parameter.
+	 * @param   rsxc		Scanline parameter.
+	 * @param   lsy			Scanline parameter.
+	 * @param   lsyc		Scanline parameter.
+	 * @param   rsy			Scanline parameter.
+	 * @param   rsyc		Scanline parameter.
+	 * @param   lsf			Scanline parameter.
+	 * @param   lsfc		Scanline parameter.
+	 * @param   rsf			Scanline parameter.
+	 * @param   rsfc		Scanline parameter.
 	 */
 	private static void renderScanlines(
 	    final int[] depthBuffer , final int[] frameBuffer , final int width , final int height ,
@@ -737,7 +759,13 @@ public final class Renderer
 		final int        mg            = (colorRGB >>  8) & 0xFF;
 		final int        mb            =  colorRGB        & 0xFF;
 
-		int i,j,c,r,g,b,s;
+		int i;
+		int j;
+		int c;
+		int r;
+		int g;
+		int b;
+		int s;
 
 		int     h1;		// 'pixel' Horizontal coordinate counter     * 2^8
 		int     h2;		// 'pixel' Horizontal coordinate coefficient * 2^8
@@ -986,7 +1014,12 @@ public final class Renderer
 	}
 
 	/**
-	 * Get phong table for the specified texture.
+	 * Get phong table for the specified texture. The returned phong table
+	 * contains intensity values ranging from 0 to 256.
+	 *
+	 * @param   texture     Texture to get phong table for.
+	 *
+	 * @return  2-dimensional array representing phong table.
 	 */
 	private static short[][] getPhongTable( final TextureSpec texture )
 	{
@@ -1002,8 +1035,11 @@ public final class Renderer
 			/*
 			 * Build a new phong table.
 			 */
-			int x,y;
-			double xc,yc,c;
+			int x;
+			int y;
+			double xc;
+			double yc;
+			double c;
 			short s;
 			short[] t;
 

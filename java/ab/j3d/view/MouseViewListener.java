@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Sjoerd Bouwman
+ * Copyright (C) 2004-2004 Numdata BV
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,43 +18,23 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.a3ds;
-
-import java.io.IOException;
+package ab.j3d.view;
 
 /**
- * This chunk class can be used to handle unknown/unsupported chunk types.
+ * Listener for events from the <code>MouseViewControl</code> class.
  *
- * @author  Sjoerd Bouwman
+ * @see     MouseViewControl
+ * @see     MouseViewEvent
+ *
+ * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public final class EmptyChunk
-	extends DataChunk
+public interface MouseViewListener
 {
 	/**
-	 * Constructor with chunk ID.
+	 * This event is fired when the mouse view was changed.
 	 *
-	 * @param   id      ID of the chunk.
+	 * @param   event   Event from mouse view control.
 	 */
-	public EmptyChunk( final int id )
-	{
-		super( id );
-	}
-
-	public long getSize()
-	{
-		return HEADER_SIZE;
-	}
-
-	public void read( final Ab3dsInputStream is )
-		throws IOException
-	{
-		readHeader( is );
-	}
-
-	public void write( final Ab3dsOutputStream os )
-		throws IOException
-	{
-		writeHeader( os );
-	}
+	void mouseViewChanged( MouseViewEvent event );
 }

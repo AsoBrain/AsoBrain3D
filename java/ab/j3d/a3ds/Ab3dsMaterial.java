@@ -1,91 +1,112 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Sjoerd Bouwman
  *
- * (C) Copyright 1999-2004 Sjoerd Bouwman (aso@asobrain.com)
- * 
- * This program is free software; you can redistribute it and/or
- * modify it as you see fit.
- * 
- * This program is distributed in the hope that it will be useful,
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d.a3ds;
 
-import java.io.*;
+import java.io.IOException;
 
 /**
- * This chunk specifies a material definition
+ * This chunk specifies a material definition.
  * <pre>
  * Chunk ID :
- * - EDIT_MATERIAL	= 0xAFFF
+ * - EDIT_MATERIAL      = 0xAFFF
  *
  * Parent chunk :
- * - EDIT3DS 		= 0x3D3D
+ * - EDIT3DS            = 0x3D3D
  *
  * Possible sub chunks :
- * - MAT_NAME		= 0xA000
- * - MAT_AMBIEN		= 0xA010
- * - MAT_DIFFUSE	= 0xA020
- * - MAT_SPECULAR	= 0xA030
- * - MAT_SHININESS	= 0xA040
- * - MAT_SHINSTRENGTH = 0xA041
- * - MAT_TRANSPARENCY = 0xA050
- * - MAT_TRANSFALLOFF = 0xA052
- * - MAT_REFLECTBLUR  = 0xA053
- * - MAT_TYPE		= 0xA100
- * - MAT_ILLUMINATION = 0xA084
- * - MAT_WIRETHICKNESS= 0xA087
+ * - MAT_NAME           = 0xA000
+ * - MAT_AMBIEN         = 0xA010
+ * - MAT_DIFFUSE        = 0xA020
+ * - MAT_SPECULAR       = 0xA030
+ * - MAT_SHININESS      = 0xA040
+ * - MAT_SHINSTRENGTH   = 0xA041
+ * - MAT_TRANSPARENCY   = 0xA050
+ * - MAT_TRANSFALLOFF   = 0xA052
+ * - MAT_REFLECTBLUR    = 0xA053
+ * - MAT_TYPE           = 0xA100
+ * - MAT_ILLUMINATION   = 0xA084
+ * - MAT_WIRETHICKNESS  = 0xA087
  * </pre>
  *
- * @author	Sjoerd Bouwman
- * @version	$Revision$ $Date$
+ * @author  Sjoerd Bouwman
+ * @version $Revision$ $Date$
  */
-public class Ab3dsMaterial extends DataChunk 
+public final class Ab3dsMaterial
+	extends DataChunk
 {
-	/*
-	 * Material types    (Max: shader basic)
+	/**
+	 * Material type (Max: shader basic): flat.
 	 */
 	public static final int TYPE_FLAT  = 1;
+
+	/**
+	 * Material type (Max: shader basic): gouraud.
+	 */
 	public static final int TYPE_GOUR  = 2;
+
+	/**
+	 * Material type (Max: shader basic): phong.
+	 */
 	public static final int TYPE_PHONG = 3;
+
+	/**
+	 * Material type (Max: shader basic): metalic.
+	 */
 	public static final int TYPE_METAL = 4;
-	
+
 	/*
 	 * Material properties.
 	 */
-	private String 		_name;
-	private Ab3dsRGB	_ambient;
-	private Ab3dsRGB	_diffuse;
-	private Ab3dsRGB	_specular;
-	private int			_shininess;				// Max: Glossiness
-	private int			_shinstrength;			// Max: Specular level
-	private int			_transparency = 0;		// Max: 0 = opacity 100%
-	private int			_transfalloff = 0;
-	private int			_reflectblur  = 0;
-	private int			_type;
-	private int			_selfilum;
-	private float		_wireThickness;
+	private String _name;
+	private Ab3dsRGB _ambient;
+	private Ab3dsRGB _diffuse;
+	private Ab3dsRGB _specular;
+	private int _shininess; // Max: Glossiness
+	private int _shinstrength; // Max: Specular level
+	private int _transparency = 0; // Max: 0 = opacity 100%
+	private int _transfalloff = 0;
+	private int _reflectblur = 0;
+	private int _type;
+	private int _selfilum;
+	private float _wireThickness;
 
 	/*
 	 * Texture maps.
 	 */
-	private TextureMap	_texture1Map;
-	private TextureMap	_texture2Map;
-	private TextureMap	_opacityMap;
-	private TextureMap	_bumpMap;
-	private TextureMap	_specularMap;
-	private TextureMap	_shininessMap;	
-	private TextureMap	_illuminationMap;
-	private TextureMap	_reflectionMap;
+	private TextureMap _texture1Map;
+	private TextureMap _texture2Map;
+	private TextureMap _opacityMap;
+	private TextureMap _bumpMap;
+	private TextureMap _specularMap;
+	private TextureMap _shininessMap;
+	private TextureMap _illuminationMap;
+	private TextureMap _reflectionMap;
 
 	/**
 	 * Constructor of Chunk with ChunkID to be used
 	 * when the Chunk is read from inputstream.
 	 *
-	 * @param	id	the ID of the chunk.
+	 * @param   id      ID of the chunk.
 	 */
-	public Ab3dsMaterial( int id ) 
+	public Ab3dsMaterial( final int id )
 	{
 		super( id );
 	}
@@ -93,9 +114,9 @@ public class Ab3dsMaterial extends DataChunk
 	/**
 	 * Constructor for material with name.
 	 *
-	 * @param	name	the name of the new material.
+	 * @param   name    Name of the new material.
 	 */
-	public Ab3dsMaterial( String name )
+	public Ab3dsMaterial( final String name )
 	{
 		this( EDIT_MATERIAL );
 		_name = name;
@@ -104,7 +125,7 @@ public class Ab3dsMaterial extends DataChunk
 	/**
 	 * Returns the size in bytes of the chunk.
 	 *
-	 * @return	the size of the chunk in bytes.
+	 * @return  Size of the chunk in bytes.
 	 */
 	public long getSize()
 	{
@@ -126,18 +147,18 @@ public class Ab3dsMaterial extends DataChunk
 		if ( _shininessMap != null ) 	size+= _shininessMap.getSize();
 		if ( _illuminationMap != null ) size+= _illuminationMap.getSize();
 		if ( _reflectionMap != null ) 	size+= _reflectionMap.getSize();
-		
+
 		return size;
 	}
 
 	/**
 	 * Reads the chunk from the input stream.
-	 * 
-	 * @param	is	the stream to read from.
+	 *
+	 * @param   is      Stream to read from.
 	 *
 	 * @throws IOException when an io error occurred.
 	 */
-	public void read( Ab3dsInputStream is )
+	public void read( final Ab3dsInputStream is )
 		throws IOException
 	{
 		readHeader( is );
@@ -172,18 +193,18 @@ public class Ab3dsMaterial extends DataChunk
 				case MAT_SHINI_MAP		: _shininessMap = readMap( is , id ); 	break;
 				case MAT_ILLUM_MAP		: _illuminationMap = readMap( is , id );break;
 				case MAT_REFLECT_MAP	: _reflectionMap = readMap( is , id );	break;
-				
+
 				default 				: is.skip( size - HEADER_SIZE );		// skip unknown chunks.
-			}	
-			
+			}
+
 			if ( is.getPointer() < _chunkEnd )
 			{
 				id = is.readInt();
 				size = is.readLong();
 			}
 		}
-		
-		if ( Ab3dsFile.DEBUG ) 
+
+		if ( Ab3dsFile.DEBUG )
 		{
 			System.out.println( "Material : " + _name );
 			//System.out.println( "Ambient  : " + _ambient );
@@ -202,21 +223,23 @@ public class Ab3dsMaterial extends DataChunk
 	}
 
 	/**
-	 * Read texture map from stream
+	 * Read texture map from stream.
 	 *
-	 * @param	is	stream to read from.
-	 * @param	id	chunkID / map type.
+	 * @param   is      Stream to read from.
+	 * @param   id      Chunk ID / map type.
 	 *
-	 * @throws IOException when an io error occurred.
+	 * @return  Texture map that was read.
+	 *
+	 * @throws  IOException when an io error occurred.
 	 */
-	protected TextureMap readMap( Ab3dsInputStream is , int id )
+	private static TextureMap readMap( final Ab3dsInputStream is , final int id )
 		throws IOException
 	{
 		/*
 		 * Go back 4 bytes, cause we've already read the size.
 		 */
 		is.skip( -4 );
-		TextureMap map = new TextureMap( id );
+		final TextureMap map = new TextureMap( id );
 		map.read( is );
 		return map;
 	}
@@ -224,11 +247,11 @@ public class Ab3dsMaterial extends DataChunk
 	/**
 	 * Set ambient color as floats.
 	 *
-	 * @param	r	the red segment (0..1)
-	 * @param	g	the green segment (0..1)
-	 * @param	b	the blue segment (0..1)
+	 * @param   r   Red segment (0..1).
+	 * @param   g   Green segment (0..1).
+	 * @param   b   Blue segment (0..1).
 	 */
-	public void setAmbient( float r , float g , float b )
+	public void setAmbient( final float r , final float g , final float b )
 	{
 		_ambient = new Ab3dsRGB( r , g , b );
 	}
@@ -236,11 +259,11 @@ public class Ab3dsMaterial extends DataChunk
 	/**
 	 * Set ambient color as ints.
 	 *
-	 * @param	r	the red segment (0..255)
-	 * @param	g	the green segment (0..255)
-	 * @param	b	the blue segment (0..255)
+	 * @param   r   Red segment (0..255).
+	 * @param   g   Green segment (0..255).
+	 * @param   b   Blue segment (0..255).
 	 */
-	public void setAmbient( int r , int g , int b )
+	public void setAmbient( final int r , final int g , final int b )
 	{
 		_ambient = new Ab3dsRGB( r , g , b );
 	}
@@ -248,31 +271,31 @@ public class Ab3dsMaterial extends DataChunk
 	/**
 	 * Set parameters for material.
 	 *
-	 * @param	type			material type (FLAT,PHONG,METAL).
-	 * @param	shininess		the shininess of the materiall.
-	 * @param	shinstrength	the amount of shininess
-	 * @param	transparency	see thrue percentage
-	 * @param	selfilum		selfilum percentage.
-	 * @param	wireThickness	thickness of wires in wireframe view.
+	 * @param   type            Material type (FLAT,PHONG,METAL).
+	 * @param   shininess       Shininess of the material.
+	 * @param   shinstrength    Amount of shininess.
+	 * @param   transparency    Thrue percentage.
+	 * @param   selfilum        Selfilum percentage.
+	 * @param   wireThickness   Thickness of wires in wireframe view.
 	 */
-	public void setBasic( int type , int shininess , int shinstrength , int transparency , int selfilum , int wirethickness )
+	public void setBasic( final int type , final int shininess , final int shinstrength , final int transparency , final int selfilum , final int wireThickness )
 	{
 		_type = type;
 		_shininess = shininess;
 		_shinstrength = shinstrength;
 		_transparency = transparency;
 		_selfilum = selfilum;
-		_wireThickness = wirethickness;
+		_wireThickness = wireThickness;
 	}
 
 	/**
 	 * Set diffuse color as floats.
 	 *
-	 * @param	r	the red segment (0..1)
-	 * @param	g	the green segment (0..1)
-	 * @param	b	the blue segment (0..1)
+	 * @param   r   Red segment (0..1).
+	 * @param   g   Green segment (0..1).
+	 * @param   b   Blue segment (0..1).
 	 */
-	public void setDiffuse( float r , float g , float b )
+	public void setDiffuse( final float r , final float g , final float b )
 	{
 		_diffuse = new Ab3dsRGB( r , g , b );
 	}
@@ -280,11 +303,11 @@ public class Ab3dsMaterial extends DataChunk
 	/**
 	 * Set diffuse color as ints.
 	 *
-	 * @param	r	the red segment (0..255)
-	 * @param	g	the green segment (0..255)
-	 * @param	b	the blue segment (0..255)
+	 * @param   r   Red segment (0..255).
+	 * @param   g   Green segment (0..255).
+	 * @param   b   Blue segment (0..255).
 	 */
-	public void setDiffuse( int r , int g , int b )
+	public void setDiffuse( final int r , final int g , final int b )
 	{
 		_diffuse = new Ab3dsRGB( r , g , b );
 	}
@@ -292,11 +315,11 @@ public class Ab3dsMaterial extends DataChunk
 	/**
 	 * Set specular color as floats.
 	 *
-	 * @param	r	the red segment (0..1)
-	 * @param	g	the green segment (0..1)
-	 * @param	b	the blue segment (0..1)
+	 * @param   r   Red segment (0..1).
+	 * @param   g   Green segment (0..1).
+	 * @param   b   Blue segment (0..1).
 	 */
-	public void setSpecular( float r , float g , float b )
+	public void setSpecular( final float r , final float g , final float b )
 	{
 		_specular = new Ab3dsRGB( r , g , b );
 	}
@@ -304,11 +327,11 @@ public class Ab3dsMaterial extends DataChunk
 	/**
 	 * Set specular color as ints.
 	 *
-	 * @param	r	the red segment (0..255)
-	 * @param	g	the green segment (0..255)
-	 * @param	b	the blue segment (0..255)
+	 * @param   r   Red segment (0..255).
+	 * @param   g   Green segment (0..255).
+	 * @param   b   Blue segment (0..255).
 	 */
-	public void setSpecular( int r , int g , int b )
+	public void setSpecular( final int r , final int g , final int b )
 	{
 		_specular = new Ab3dsRGB( r , g , b );
 	}
@@ -316,21 +339,21 @@ public class Ab3dsMaterial extends DataChunk
 	/**
 	 * Set primary texture map.
 	 *
-	 * @param	map		the new primary texture map.
+	 * @param   map     New primary texture map.
 	 */
-	public void setTexture1Map( TextureMap map )
+	public void setTexture1Map( final TextureMap map )
 	{
 		_texture1Map = map;
 	}
 
 	/**
 	 * Writes the chunk the output stream.
-	 * 
-	 * @param	os	the stream to write to.
+	 *
+	 * @param   os      Stream to write to.
 	 *
 	 * @throws IOException when an io error occurred.
 	 */
-	public void write( Ab3dsOutputStream os )
+	public void write( final Ab3dsOutputStream os )
 		throws IOException
 	{
 		writeHeader( os );
@@ -342,31 +365,30 @@ public class Ab3dsMaterial extends DataChunk
 		writeColor( os , MAT_AMBIENT , _ambient );
 		writeColor( os , MAT_DIFFUSE , _diffuse );
 		writeColor( os , MAT_SPECULAR , _specular );
-		
-		writeDoubleByte( os , MAT_SHININESS , _shininess );	
-		writeDoubleByte( os , MAT_SHINSTRENGTH , _shinstrength );	
-		writeDoubleByte( os , MAT_TRANSPARENCY , _transparency );	
-		writeDoubleByte( os , MAT_TRANSFALLOFF , _transfalloff );	
+
+		writeDoubleByte( os , MAT_SHININESS , _shininess );
+		writeDoubleByte( os , MAT_SHINSTRENGTH , _shinstrength );
+		writeDoubleByte( os , MAT_TRANSPARENCY , _transparency );
+		writeDoubleByte( os , MAT_TRANSFALLOFF , _transfalloff );
 		writeDoubleByte( os , MAT_REFLECTBLUR , _reflectblur );
 
 		os.writeInt( MAT_TYPE );
 		os.writeLong( HEADER_SIZE + INT_SIZE );
 		os.writeInt( _type );
-		
-		writeDoubleByte( os , MAT_ILLUMINATION , _selfilum );	
+
+		writeDoubleByte( os , MAT_ILLUMINATION , _selfilum );
 
 		os.writeInt( MAT_WIRETHICKNESS );
 		os.writeLong( HEADER_SIZE + FLOAT_SIZE );
 		os.writeFloat( _wireThickness );
 
-		if ( _texture1Map != null ) 	_texture1Map.write( os );
-		if ( _texture2Map != null ) 	_texture2Map.write( os );
-		if ( _opacityMap != null ) 		_opacityMap.write( os );
-		if ( _bumpMap != null ) 		_bumpMap.write( os );
-		if ( _specularMap != null ) 	_specularMap.write( os );
-		if ( _shininessMap != null ) 	_shininessMap.write( os );
+		if ( _texture1Map     != null ) _texture1Map    .write( os );
+		if ( _texture2Map     != null ) _texture2Map    .write( os );
+		if ( _opacityMap      != null ) _opacityMap     .write( os );
+		if ( _bumpMap         != null ) _bumpMap        .write( os );
+		if ( _specularMap     != null ) _specularMap    .write( os );
+		if ( _shininessMap    != null ) _shininessMap   .write( os );
 		if ( _illuminationMap != null ) _illuminationMap.write( os );
-		if ( _reflectionMap != null ) 	_reflectionMap.write( os );
+		if ( _reflectionMap   != null ) _reflectionMap  .write( os );
 	}
-
 }

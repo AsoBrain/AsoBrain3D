@@ -1,43 +1,51 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Sjoerd Bouwman
  *
- * (C) Copyright 1999-2004 Sjoerd Bouwman (aso@asobrain.com)
- * 
- * This program is free software; you can redistribute it and/or
- * modify it as you see fit.
- * 
- * This program is distributed in the hope that it will be useful,
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d.a3ds;
 
-import java.util.Vector;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This chunk is the base class for any chunk that has subchunks.
  * The class itself can be used for chunks that only holds subchunks (no data).
- * 
- * @author	Sjoerd Bouwman
- * @version	$Revision$ $Date$
+ *
+ * @author  Sjoerd Bouwman
+ * @version $Revision$ $Date$
  */
-public class HierarchyChunk extends Chunk 
+public class HierarchyChunk
+	extends Chunk
 {
 	/**
 	 * Collection of subchunks.
 	 */
-	private Vector _chunks = new Vector();
+	private final List _chunks = new ArrayList();
 
 	/**
 	 * Constructor of Chunk with ChunkID to be used
 	 * when the Chunk is read from inputstream.
 	 *
-	 * @param	id	the ID of the chunk.
+	 * @param   id      ID of the chunk.
 	 */
-	public HierarchyChunk( int id )
+	public HierarchyChunk( final int id )
 	{
 		super( id );
 		//System.out.println( "New Hierarchy Chunk ID = " + getHex( id ) );
@@ -46,31 +54,31 @@ public class HierarchyChunk extends Chunk
 	/**
 	 * Adds a new chunk to the hierarchy.
 	 *
-	 * @param	chunk	the new chunk.
+	 * @param   chunk   The new chunk.
 	 */
-	public void add( Chunk chunk )
+	public final void add( final Chunk chunk )
 	{
-		_chunks.addElement( chunk );
+		_chunks.add( chunk );
 	}
 
 	/**
 	 * Get the chunk at the specified index.
 	 *
-	 * @param	index	the index of the chunk to get.
+	 * @param   index   Index of the chunk to get.
 	 *
-	 * @return	the chunk at specified index.
+	 * @return  the chunk at specified index.
 	 */
-	public Chunk getChunk( int index )
+	public final Chunk getChunk( final int index )
 	{
-		return (Chunk)getChunks().elementAt( index );
+		return (Chunk)getChunks().get( index );
 	}
 
 	/**
 	 * Gets the number of chunks in this hierarchy chunk.
 	 *
-	 * @return	the number of subchunks.
+	 * @return  the number of subchunks.
 	 */
-	public int getChunkCount()
+	public final int getChunkCount()
 	{
 		return getChunks().size();
 	}
@@ -78,141 +86,121 @@ public class HierarchyChunk extends Chunk
 	/**
 	 * Gets all subchunks.
 	 *
-	 * @return	Vector containing all subchunks of this chunk.
+	 * @return  List containing all subchunks of this chunk.
 	 */
-	public Vector getChunks()
+	public final List getChunks()
 	{
-		if ( _chunks == null )
-			_chunks = new Vector();
-			
 		return _chunks;
 	}
 
 	/**
 	 * Get all subchunks of this chunks with the specified ID.
 	 *
-	 * @param	id	the id of chunks to get.
+	 * @param   id      ID of chunks to get.
 	 *
-	 * @return	Vector with all chunks matching the ID.
+	 * @return  List with all chunks matching the ID.
 	 */
-	public Vector getChunksByID( int id )
+	public final List getChunksByID( final int id )
 	{
-		Vector collect = new Vector();
+		final List collect = new ArrayList();
 
 		for ( int i = 0 ; i < getChunkCount() ; i++ )
 		{
-			if ( getChunk( i ).getID() == id )
-				collect.addElement( getChunk( i ) );
-		}	
-			
+			final Chunk chunk = getChunk( i );
+			if ( chunk.getID() == id )
+				collect.add( chunk );
+		}
+
 		return collect;
 	}
 
 	/**
 	 * Gets the first occurence of a chunk with specified ID.
 	 *
-	 * @param	id	ID of the Chunk to get.
+	 * @param   id  ID of the Chunk to get.
 	 *
-	 * @return	Chunk with specified ID or null if not found.
+	 * @return  Chunk with specified ID or null if not found.
 	 */
-	public Chunk getFirstChunkByID( int id )
+	public final Chunk getFirstChunkByID( final int id )
 	{
+		Chunk result = null;
+
 		for ( int i = 0 ; i < getChunkCount() ; i++ )
 		{
-			if ( getChunk( i ).getID() == id )
-				return getChunk( i );
-		}	
-			
-		return null;
+			final Chunk chunk = getChunk( i );
+			if ( chunk.getID() == id )
+			{
+				result = chunk;
+				break;
+			}
+		}
+
+		return result;
 	}
 
-	/**
-	 * Returns the size in bytes of the chunk.
-	 *
-	 * @return	the size of the chunk in bytes.
-	 */
-	public long getSize() 
+	public long getSize()
 	{
-		Vector sub = getChunks();
+		final List sub = getChunks();
 
 		int size = 0;
 		for ( int i = 0 ; i < sub.size() ; i++ )
-		{
-			size += ((Chunk)sub.elementAt( i )).getSize();
-		}
-		
+			size += ((Chunk)sub.get( i )).getSize();
+
 		return HEADER_SIZE + size;
 	}
 
-	/**
-	 * Reads the chunk from the input stream.
-	 * 
-	 * @param	is	the stream to read from.
-	 *
-	 * @throws IOException when an io error occurred.
-	 */
-	public void read( Ab3dsInputStream is )
+	public void read( final Ab3dsInputStream is )
 		throws IOException
 	{
 		readHeader( is );
-
 		//System.out.println( "size = " + _chunkSize );
-		
-		readSubChunks( is );	
+		readSubChunks( is );
 	}
 
 	/**
 	 * Reads all subchunks of the hierarchchunk from inputstream.
 	 *
-	 * @param	is	the stream to read from.
+	 * @param   is      Stream to read from.
 	 *
 	 * @throws IOException when an io error occurred.
 	 */
-	public void readSubChunks( Ab3dsInputStream is )
+	public final void readSubChunks( final Ab3dsInputStream is )
 		throws IOException
 	{
 		int id = is.readInt();
 		while ( !is.isEOF() && is.getPointer() < _chunkEnd )
 		{
 			System.out.println( this + " found id : " + getHex(id) + " at " + is.getPointer() );
-			Chunk sub = createChunk( id );
+			final Chunk sub = createChunk( id );
 			sub.read( is );
-			getChunks().addElement( sub );
-			
+			getChunks().add( sub );
+
 			if ( is.getPointer() < _chunkEnd )
 				id = is.readInt();
 		}
 	}
 
-	/**
-	 * Writes the chunk the output stream.
-	 * 
-	 * @param	os	the stream to write to.
-	 *
-	 * @throws IOException when an io error occurred.
-	 */
-	public void write( Ab3dsOutputStream os ) 
-		throws IOException 
+	public void write( final Ab3dsOutputStream os )
+		throws IOException
 	{
 		writeHeader( os );
-
 		writeSubChunks( os );
 	}
 
 	/**
 	 * Writes all subchunks to the outputstream.
-	 * 
-	 * @param	os	the stream to write to.
+	 *
+	 * @param   os      Stream to write to.
 	 *
 	 * @throws IOException when an io error occurred.
 	 */
-	public void writeSubChunks( Ab3dsOutputStream os )
+	public final void writeSubChunks( final Ab3dsOutputStream os )
 		throws IOException
 	{
-		Vector sub = getChunks();
+		final List sub = getChunks();
 		for ( int i = 0 ; i < sub.size() ; i++ )
 		{
-			((Chunk)sub.elementAt( i )).write( os );	
+			((Chunk)sub.get( i )).write( os );
 		}
 	}
 

@@ -1,32 +1,43 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Sjoerd Bouwman
  *
- * (C) Copyright 1999-2004 Sjoerd Bouwman (aso@asobrain.com)
- * 
- * This program is free software; you can redistribute it and/or
- * modify it as you see fit.
- * 
- * This program is distributed in the hope that it will be useful,
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d.a3ds;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * This is a representation of a .3ds file it contains the main entrance to
  * all chunks inside (the main3DS chunk).
  *
- * @author	Sjoerd Bouwman
- * @version	$Revision$ $Date$
+ * @author  Sjoerd Bouwman
+ * @version $Revision$ $Date$
  */
-public class Ab3dsFile 
+public final class Ab3dsFile
 {
 	/**
 	 * Set to true to receive debugging to console.
 	 */
-	public static final boolean DEBUG = false;
+	public static boolean DEBUG = false;
 
 	/**
 	 * Name of scene.
@@ -41,9 +52,9 @@ public class Ab3dsFile
 	/**
 	 * Creates a new Ab3dsFile with specified name.
 	 *
-	 * @param	name	the name of the 3ds model.
+	 * @param   name    Name of the 3ds model.
 	 */
-	public Ab3dsFile( String name )
+	public Ab3dsFile( final String name )
 	{
 		clear( name );
 	}
@@ -51,9 +62,9 @@ public class Ab3dsFile
 	/**
 	 * Clears the all content and specifies a new name.
 	 *
-	 * @param	newName	the new name for the model.
+	 * @param   newName New name for the model.
 	 */
-	public void clear( String newName )
+	public void clear( final String newName )
 	{
 		_name = newName;
 		_main = new HierarchyChunk( Chunk.MAIN3DS );
@@ -63,41 +74,28 @@ public class Ab3dsFile
 	/**
 	 * Gets the edit chunk from the model.
 	 *
-	 * @return	the edit chunk.
+	 * @return  Edit chunk.
 	 */
 	public HierarchyChunk getEditChunk()
 	{
-		if ( getMainChunk() == null )
-			return null;
-		return (HierarchyChunk)getMainChunk().getFirstChunkByID( Chunk.EDIT3DS );
+		return ( getMainChunk() == null ) ? null
+		     : ((HierarchyChunk)getMainChunk().getFirstChunkByID( Chunk.EDIT3DS ));
 	}
 
 	/**
 	 * Gets the main3DS chunk from the model.
 	 *
-	 * @return	the main chunk.
+	 * @return  the main chunk.
 	 */
 	public HierarchyChunk getMainChunk()
 	{
-		if ( _main.getID() != Chunk.MAIN3DS )
-			return null;
-		return (HierarchyChunk)_main;
-	}
-
-	/**
-	 * Build any given model from 3ds hierarchy.
-	 *
-	 * @return	hierarchy	the model to build from.
-	 */
-	public Object getModelFrom3DS()
-	{
-		throw new RuntimeException( "Not implemented 'Object Ab3dsFile.getModelFrom3DS()'" );
+		return ( _main.getID() != Chunk.MAIN3DS ) ? null : _main;
 	}
 
 	/**
 	 * Gets the name of the model.
 	 *
-	 * @return	the name of the 3dsfile.
+	 * @return  the name of the 3dsfile.
 	 */
 	public String getName()
 	{
@@ -115,29 +113,39 @@ public class Ab3dsFile
 	/**
 	 * Loads a 3ds file into the hierarchy.
 	 *
-	 * @param	file	the file to load from.
+	 * @param   file    File to load from.
 	 */
-	public void load(File file)
+	public void load( final File file )
 	{
 		try
 		{
-			FileInputStream fis = new FileInputStream(file);
-			Ab3dsInputStream is = new Ab3dsInputStream( fis );
-			/*
-			 * Main chunk.
-			 */
-			if ( DEBUG ) System.out.println( "READING 3DS FILE" );
-			 
-			_main = new HierarchyChunk( is.readInt() );
+			final FileInputStream fis = new FileInputStream(file);
+			try
+			{
+				final Ab3dsInputStream is = new Ab3dsInputStream( fis );
 
-			if ( _main.getID() != Chunk.MAIN3DS )
-				throw new RuntimeException( "File is not a valid .3DS file! (does not start with 0x4D4D)" );
-			
-			_main.read( is );
+				/*
+				 * Main chunk.
+				 */
+				if ( DEBUG )
+					System.out.println( "READING 3DS FILE" );
 
-			if ( DEBUG ) System.out.println( "FINISHED 3DS FILE" );
+				_main = new HierarchyChunk( is.readInt() );
+
+				if ( _main.getID() != Chunk.MAIN3DS )
+					throw new RuntimeException( "File is not a valid .3DS file! (does not start with 0x4D4D)" );
+
+				_main.read( is );
+
+				if ( DEBUG )
+					System.out.println( "FINISHED 3DS FILE" );
+			}
+			finally
+			{
+				fis.close();
+			}
 		}
-		catch (IOException e)
+		catch ( IOException e )
 		{
 			e.printStackTrace();
 		}
@@ -146,32 +154,47 @@ public class Ab3dsFile
 	/**
 	 * Loads a 3ds file into the hierarchy.
 	 *
-	 * @param	filename	the name of the file to load from.
+	 * @param   filename    Name of the file to load from.
 	 */
-	public void load( String filename )
+	public void load( final String filename )
 	{
 		load( new File( filename ) );
 	}
 
 	/**
-	 * Test main
+	 * Run application.
 	 *
-	 * @param	argv	Command line arguments.
+	 * @param   args    Command-line arguments.
 	 */
-	public static void main( String argv[] )
+	public static void main( final String[] args )
 	{
-		Ab3dsFile f = new Ab3dsFile( "test" );
+		boolean ok = true;
 
-		f.load( new File( "C:\\progra~1\\Graphics\\3dsmax\\meshes\\Tv.3ds" ) );
+		for ( int i = 0 ; ok && i < args.length ; i++ )
+		{
+			final String arg = args[ i ];
 
-		System.out.println( "---------------------------" );
-		
-		//f.saveAs( new File( "C:\\progra~1\\Graphics\\3dsmax\\meshes\\Tv2.3ds" ) );
+			if ( "-d".equals( arg )
+			  || "--debug".equals( arg ) )
+			{
+				DEBUG = true;
+			}
+			else
+			{
+				System.err.println( "error: invalid command-line argument: " + arg );
+				ok = false;
+			}
+		}
 
+		if ( ok )
+		{
+			final Ab3dsFile f = new Ab3dsFile( "test" );
+			f.load( new File( "C:\\progra~1\\Graphics\\3dsmax\\meshes\\Tv.3ds" ) );
+			System.out.println( "---------------------------" );
 
-
-		//f.load( new File( "C:\\temp\\3ds\\write.3ds" ) );
-
+			//f.saveAs( new File( "C:\\progra~1\\Graphics\\3dsmax\\meshes\\Tv2.3ds" ) );
+			//f.load( new File( "C:\\temp\\3ds\\write.3ds" ) );
+		}
 	}
 
 	/**
@@ -185,24 +208,32 @@ public class Ab3dsFile
 	/**
 	 * Saves the current hierarchy as a 3ds file.
 	 *
-	 * @param	file	the file to save to.
+	 * @param   file    File to save to.
 	 */
-	public void saveAs( File file )
+	public void saveAs( final File file )
 	{
 		try
 		{
-			FileOutputStream fos = new FileOutputStream( file );
-			Ab3dsOutputStream os = new Ab3dsOutputStream( fos );
-			/*
-			 * Main chunk.
-			 */
-			System.out.println( "WRITING 3DS FILE" );
-			 
-			_main.write( os );
-	
-			System.out.println( "WRITING 3DS FILE" );
+			final FileOutputStream fos = new FileOutputStream( file );
+			try
+			{
+				final Ab3dsOutputStream os = new Ab3dsOutputStream( fos );
+
+				/*
+				 * Main chunk.
+				 */
+				System.out.println( "WRITING 3DS FILE" );
+
+				_main.write( os );
+
+				System.out.println( "WRITING 3DS FILE" );
+			}
+			finally
+			{
+				fos.close();
+			}
 		}
-		catch (IOException e)
+		catch ( IOException e )
 		{
 			e.printStackTrace();
 		}
@@ -211,21 +242,10 @@ public class Ab3dsFile
 	/**
 	 * Saves the current hierarchy as a 3ds file.
 	 *
-	 * @param	filename	the name of the file to save to.
+	 * @param   filename    Name of the file to save to.
 	 */
-	public void saveAs( String filename )
+	public void saveAs( final String filename )
 	{
 		saveAs( new File( filename ) );
 	}
-
-	/**
-	 * Build 3ds hierarchy from from given model.
-	 *
-	 * @param	hierarchy	the model to build from.
-	 */
-	public void set3DSFromModel( Object hierarchy )
-	{
-		throw new RuntimeException( "Not implemented 'Ab3dsFile.set3DSFromModel( Object )'" );
-	}
-
 }

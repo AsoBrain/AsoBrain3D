@@ -1,16 +1,24 @@
-package ab.j3d.renderer;
-
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Peter S. Heijnen
  *
- * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV or Peter S. Heijnen. Please
- * contact Numdata BV or Peter S. Heijnen for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
-import java.awt.Graphics;
+package ab.j3d.model;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
@@ -18,7 +26,7 @@ import ab.j3d.TextureSpec;
 /**
  * This class defines a 3D sphere.
  *
- * @author	Peter S. Heijnen
+ * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
 public final class Sphere3D
@@ -47,14 +55,14 @@ public final class Sphere3D
 	/**
 	 * Constructor for sphere.
 	 *
-	 * @param	xform		Transformation to apply to the object's vertices.
-	 * @param	dx			Width of sphere (x-axis).
-	 * @param	dy			Height of sphere (y-axis).
-	 * @param	dz			Depth of sphere (z-axis).
-	 * @param	p			Number of faces around Y-axis to approximate the sphere.
-	 * @param	q			Number of faces around X/Z-axis to approximate the sphere.
-	 * @param	texture		Texture of sphere.
-	 * @param	smooth		Smooth surface.
+	 * @param   xform       Transformation to apply to the object's vertices.
+	 * @param   dx          Width of sphere (x-axis).
+	 * @param   dy          Height of sphere (y-axis).
+	 * @param   dz          Depth of sphere (z-axis).
+	 * @param   p           Number of faces around Y-axis to approximate the sphere.
+	 * @param   q           Number of faces around X/Z-axis to approximate the sphere.
+	 * @param   texture     Texture of sphere.
+	 * @param   smooth      Smooth surface.
 	 */
 	public Sphere3D( final Matrix3D xform , final float dx , final float dy , final float dz , final int p , final int q , final TextureSpec texture , final boolean smooth )
 	{
@@ -69,10 +77,10 @@ public final class Sphere3D
 	/**
 	 * Constructor for sphere.
 	 *
-	 * @param	xform		Transformation to apply to the object's vertices.
-	 * @param	radius		Radius of sphere.
-	 * @param	p			Number of faces around Y-axis to approximate the sphere.
-	 * @param	q			Number of faces around X/Z-axis to approximate the sphere.
+	 * @param   xform       Transformation to apply to the object's vertices.
+	 * @param   radius      Radius of sphere.
+	 * @param   p           Number of faces around Y-axis to approximate the sphere.
+	 * @param   q           Number of faces around X/Z-axis to approximate the sphere.
 	 */
 	public Sphere3D( final Matrix3D xform , final float radius , final int p , final int q )
 	{
@@ -82,15 +90,14 @@ public final class Sphere3D
 	/**
 	 * Generate Object3D properties.
 	 *
-	 * @param	p			Number of faces around Y-axis to approximate the sphere.
-	 * @param	q			Number of faces around X/Z-axis to approximate the sphere.
-	 * @param	texture		Texture of sphere.
-	 * @param	smooth		Smooth surface.
+	 * @param   p           Number of faces around Y-axis to approximate the sphere.
+	 * @param   q           Number of faces around X/Z-axis to approximate the sphere.
+	 * @param   texture     Texture of sphere.
+	 * @param   smooth      Smooth surface.
 	 */
-	public void generate( final int p , final int q , TextureSpec texture , final boolean smooth )
+	public void generate( final int p , final int q , final TextureSpec texture , final boolean smooth )
 	{
-		if ( texture == null )
-			texture = new TextureSpec();
+		final TextureSpec actualTexture = ( texture == null ) ? new TextureSpec() : texture;
 
 		final int vertexCount = p * ( q - 1 ) + 2;
 		final int faceCount = p * q;
@@ -105,7 +112,7 @@ public final class Sphere3D
 
 		vertices[ v++ ] = 0;
 		vertices[ v++ ] = 0;
-		vertices[ v++ ] = dz / -2f;
+		vertices[ v++ ] = dz / -2.0f;
 
 		for ( int qc = 1 ; qc < q ; qc++ )
 		{
@@ -127,7 +134,7 @@ public final class Sphere3D
 
 		vertices[ v++ ] = 0;
 		vertices[ v++ ] = 0;
-		vertices[ v++ ] = dz / 2f;
+		vertices[ v++ ] = dz / 2.0f;
 
 		xform.transform( vertices , vertices , v / 3 );
 
@@ -137,16 +144,17 @@ public final class Sphere3D
 		final int lastQ = q - 1;
 		final int lastV = vertexCount - 1;
 
-		for ( int f = 0 , qc = 0 ; qc < q ; qc++ )
+		int f = 0;
+		for ( int qc = 0 ; qc < q ; qc++ )
 		{
-			for ( int pc = 0 ; pc < p ; pc++ , f++ )
+			for ( int pc = 0 ; pc < p ; pc++ )
 			{
 				final int p1 = ( qc - 1 ) * p +     pc             + 1;
 				final int p2 = ( qc - 1 ) * p + ( ( pc + 1 ) % p ) + 1;
 				final int p3 =   qc       * p +     pc             + 1;
 				final int p4 =   qc       * p + ( ( pc + 1 ) % p ) + 1;
 
-				faceVert  [ f ] = ( qc == 0     ) ? new int[] { 0 , p3 , p4 } :
+				faceVert[ f++ ] = ( qc == 0     ) ? new int[] { 0 , p3 , p4 } :
 				                  ( qc == lastQ ) ? new int[] { p2 , p1 , lastV } :
 				                                    new int[] { p2 , p1 , p3 , p4 };
 			}
@@ -155,6 +163,6 @@ public final class Sphere3D
 		/*
 		 * Set Object3D properties.
 		 */
-		set( vertices ,  faceVert , texture , smooth );
+		set( vertices ,  faceVert , actualTexture , smooth );
 	}
 }

@@ -1,27 +1,45 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Peter S. Heijnen
  *
- * (C) Copyright Numdata BV 2000-2004 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2004 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV or Peter S. Heijnen. Please
- * contact Numdata BV or Peter S. Heijnen for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
-package ab.j3d.renderer;
+package ab.j3d.view.renderer;
 
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import javax.swing.JComponent;
 
 import ab.j3d.Bounds3D;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
+import ab.j3d.model.Camera3D;
+import ab.j3d.model.Light3D;
+import ab.j3d.model.Node3D;
+import ab.j3d.model.Node3DCollection;
+import ab.j3d.model.Object3D;
+import ab.j3d.model.Transform3D;
+import ab.j3d.view.MouseViewControl;
+import ab.j3d.view.MouseViewEvent;
+import ab.j3d.view.MouseViewListener;
 
 /**
  * This panel is used as view and control of a <code>Renderer</code>. It starts
@@ -34,35 +52,36 @@ import ab.j3d.Vector3D;
  */
 public class RenderPanel
     extends JComponent
-	implements ComponentListener
+	implements ComponentListener, MouseViewListener
 {
-	/** Control mode: zoom.   */ public static final int ZOOM   = 1;
-	/** Control mode: pan.    */ public static final int PAN    = 2;
-	/** Control mode: rotate. */ public static final int ROTATE = 3;
-
 	/** Render mode: quick (wireframe). */ public static final int QUICK = 1;
 	/** Render mode: full (solid).      */ public static final int FULL  = 2;
 
 	/**
+	 * Mouse view control for render panel.
+	 */
+	private final MouseViewControl _mouseViewControl;
+
+	/**
 	 * Transform of model.
 	 */
-	private final Transform _modelTransform;
+	private final Transform3D _modelTransform;
 
 	/**
 	 * Base node of rendered model.
 	 */
-	private final Transform _model;
+	private final Transform3D _model;
 
 	/**
 	 * The camera node with which this ViewPanel is associated. The node can
 	 * be considered the model of ViewPanel.
 	 */
-	private final Camera _camera;
+	private final Camera3D _camera;
 
 	/**
 	 * Transform of camera.
 	 */
-	private final Transform _cameraTransform;
+	private final Transform3D _cameraTransform;
 
 	/**
 	 * Model bounds. Used to center the output.
@@ -71,47 +90,6 @@ public class RenderPanel
 	 * @see     #center
 	 */
 	private Bounds3D _bounds = Bounds3D.INIT;
-
-	/**
-	 * This is the current "control mode" of the view. This
-	 * may be ZOOM, PAN, or ROTATE.
-	 */
-	private int _controlMode = ROTATE;
-
-	/**
-	 * Mouse drag rotation sensitivity.
-	 */
-	private static final float MOUSE_ROTATION_SENSITIVITY = 1.4f;
-
-	/**
-	 * Mouse drag movement speed.
-	 */
-	private static final float MOUSE_PANNING_SENSITIVITY = 20.0f;
-
-	/**
-	 * Mouse X coordinate when dragging started.
-	 */
-	private int _dragMouseStartX;
-
-	/**
-	 * Mouse Y coordinate when dragging started.
-	 */
-	private int _dragMouseStartY;
-
-	/**
-	 * Rotation of model around X axis when dragging started.
-	 */
-	private float _dragStartRotationX;
-
-	/**
-	 * Rotation of model around Z axis when dragging started.
-	 */
-	private float _dragStartRotationZ;
-
-	/**
-	 * Position of dragged object when dragging started.
-	 */
-	private Vector3D _dragStartPosition;
 
 	/**
 	 * This is the current rendering mode (either QUICK or FULL),
@@ -136,7 +114,7 @@ public class RenderPanel
 	/**
 	 * Temporary wireframe object nodes.
 	 */
-	private final LeafCollection _wireframeObjects = new LeafCollection();
+	private final Node3DCollection _wireframeObjects = new Node3DCollection();
 
 	/**
 	 * Temporary wireframe render objects.
@@ -155,38 +133,33 @@ public class RenderPanel
 		/*
 		 * Construct 3D world.
 		 */
-		_model = new Transform();
-		_modelTransform = new Transform();
+		_model = new Transform3D();
+		_modelTransform = new Transform3D();
 		_modelTransform.addChild( _model );
 
-		_camera = new Camera( 300.0f , 60.0f );
-		_cameraTransform = new Transform( Vector3D.INIT.set( 0 , -3000 , 0 ) );
+		_camera = new Camera3D( 300.0f , 60.0f );
+		_cameraTransform = new Transform3D( Vector3D.INIT.set( 0 , -3000 , 0 ) );
 		_cameraTransform.addChild( _camera );
 
-		final TreeNode world = new TreeNode();
+		final Node3D world = new Node3D();
 		world.addChild( _modelTransform );
 		world.addChild( _cameraTransform );
-		world.addChild( new Light( 500 , -1.0f ) ); // 384
-		world.addChild( new Transform( Vector3D.INIT.set( -750.0f , -2500.0f , 1700.0f ) ) ).addChild( new Light( 10000 , 30.0f ) );
+		world.addChild( new Light3D( 500 , -1.0f ) ); // 384
+		world.addChild( new Transform3D( Vector3D.INIT.set( -750.0f , -2500.0f , 1700.0f ) ) ).addChild( new Light3D( 10000 , 30.0f ) );
 
 		/*
 		 * Initialize render/control variables.
 		 */
 		_wireframeRenderObjects = null;
 		_renderer = null;
-		_dragStartPosition = null;
-		_dragStartRotationX = 0;
-		_dragStartRotationZ = 0;
-		_dragMouseStartX = 0;
-		_dragMouseStartY = 0;
-
 		reset();
 
 		/*
 		 * Enable control events.
 		 */
 		addComponentListener( this );
-		enableEvents( MouseEvent.MOUSE_MOTION_EVENT_MASK | MouseEvent.MOUSE_EVENT_MASK );
+		_mouseViewControl = new MouseViewControl( this );
+		_mouseViewControl.addMouseViewListener( this );
 	}
 
 	/**
@@ -258,7 +231,7 @@ public class RenderPanel
 	 *
 	 * @return  Base transform of rendered model.
 	 */
-	public final Transform getBase()
+	public final Transform3D getBase()
 	{
 		return _model;
 	}
@@ -266,9 +239,9 @@ public class RenderPanel
 	/**
 	 * Get transform for model.
 	 *
-	 * @return	Transform for model.
+	 * @return  Transform3D for model.
 	 */
-	public final Transform getModelTransform()
+	public final Transform3D getModelTransform()
 	{
 		return _modelTransform;
 	}
@@ -276,7 +249,7 @@ public class RenderPanel
 	/**
 	 * Get string with view settings of renderer.
 	 *
-	 * @return	String with view settings of renderer.
+	 * @return  String with view settings of renderer.
 	 */
 	public final String getViewSettings()
 	{
@@ -302,98 +275,13 @@ public class RenderPanel
 	}
 
 	/**
-	 * Process mouse events.
-	 *
-	 * @param   event   Mouse event.
+	 * Handle event from mouse control.
 	 */
-	protected void processMouseEvent( final MouseEvent event )
+	public void mouseViewChanged( final MouseViewEvent event )
 	{
-		super.processMouseEvent( event );
-
-		switch ( event.getID() )
-		{
-			/*
-			 * Handle mouse button 'pressed' event. When this event occurs, request focus,
-			 * and save view settings (so that we can manipulate it later).
-			 */
-			case MouseEvent.MOUSE_PRESSED :
-				requestFocus();
-				final Transform x = /*_controlLight ? _lightTransform :*/ _cameraTransform;
-
-				_dragMouseStartX    = event.getX();
-				_dragMouseStartY    = event.getY();
-				_dragStartRotationX = _modelTransform.getRotationX();
-				_dragStartRotationZ = _modelTransform.getRotationZ();
-				_dragStartPosition  = x.getTranslation();
-				break;
-
-			/**
-			 * Handle mouse button 'released' event. When this event occurs, change the
-			 * renderer back to FULL mode, so that the manipulated view will be rendered
-			 * fully.
-			 */
-			case MouseEvent.MOUSE_RELEASED :
-				setRenderingMode( RenderPanel.FULL );
-				//requestUpdate();
-		}
-	}
-
-	/**
-	 * Process mouse motion events.
-	 *
-	 * @param   event   Mouse event.
-	 */
-	protected void processMouseMotionEvent( final MouseEvent event )
-	{
-		super.processMouseMotionEvent( event );
-
-		/*
-		 * Handle mouse 'dragged' event. When this event occurs, manipulate
-		 * the view settings and repaint the view. The renderer is set to QUICK mode,
-		 * to allow fast manipulation until the mouse button is released.
-		 */
-		if ( event.getID() == MouseEvent.MOUSE_DRAGGED )
-		{
-			final int dx = event.getX() - _dragMouseStartX;
-			final int dy = event.getY() - _dragMouseStartY;
-
-
-			final int modifiers = event.getModifiers();
-			int mode      = _controlMode;
-
-			if ( ( modifiers & MouseEvent.BUTTON2_MASK ) != 0 )
-			{
-				mode = PAN;
-			}
-			else if ( ( modifiers & MouseEvent.BUTTON3_MASK ) != 0 )
-			{
-				mode = ZOOM;
-			}
-
-			final Transform x = /*_controlLight ? _lightTransform :*/ _cameraTransform;
-
-			switch ( mode )
-			{
-				case ROTATE :
-					setRenderingMode( RenderPanel.QUICK );
-					_modelTransform.setRotationZ( _dragStartRotationZ + MOUSE_ROTATION_SENSITIVITY * dx );
-					_modelTransform.setRotationX( _dragStartRotationX - MOUSE_ROTATION_SENSITIVITY * dy );
-					requestUpdate();
-					break;
-
-				case PAN :
-					setRenderingMode( RenderPanel.QUICK );
-					x.setTranslation( _dragStartPosition.plus( -dx * MOUSE_PANNING_SENSITIVITY , 0 , dy * MOUSE_PANNING_SENSITIVITY ) );
-					requestUpdate();
-					break;
-
-				case ZOOM :
-					setRenderingMode( RenderPanel.QUICK );
-					x.setTranslation( _dragStartPosition.set( _dragStartPosition.x , Math.max( -10000 , _dragStartPosition.y - dy * MOUSE_PANNING_SENSITIVITY ) , _dragStartPosition.z ) );
-					requestUpdate();
-					break;
-			}
-		}
+		setRenderingMode( _mouseViewControl.isButtonDown() ? QUICK : FULL );
+		_modelTransform.setMatrix( _mouseViewControl.getTransform() );
+		requestUpdate();
 	}
 
 	/**
@@ -438,7 +326,7 @@ public class RenderPanel
 	 * @param   width   Width of painted image.
 	 * @param   height  Height of painted image.
 	 */
-	public final void paintWireframe( final Graphics g , final Camera camera , final int x , final int y , final int width , final int height )
+	public final void paintWireframe( final Graphics g , final Camera3D camera , final int x , final int y , final int width , final int height )
 	{
 		_wireframeObjects.clear();
 		_camera.gatherLeafs( _wireframeObjects , Object3D.class , Matrix3D.INIT , true );
@@ -470,7 +358,7 @@ public class RenderPanel
 			{
 				final RenderObject ro = _wireframeRenderObjects[ i ];
 
-				for ( RenderObject.Face face = ro.faces ; face != null ; face = face.next )
+				for ( RenderObject.Face face = ro._faces ; face != null ; face = face._next )
 					paintWireframeFace( g , x , y , face );
 			}
 		}
@@ -480,16 +368,18 @@ public class RenderPanel
 	 * Render scene from camera.
 	 *
 	 * @param   g       Graphics context to paint on.
+	 * @param   x       Origin X coordinate.
+	 * @param   y       Origin Y coordinate.
 	 * @param   face    Face to render.
 	 */
 	protected void paintWireframeFace( final Graphics g , final int x , final int y , final RenderObject.Face face )
 	{
-		final int[] vertexIndices = face.vi;
+		final int[] vertexIndices = face._vi;
 		if ( vertexIndices.length >= 3 )
 		{
 			final RenderObject ro = face.getRenderObject();
-			final int[] vertexX = ro.ph;
-			final int[] vertexY = ro.pv;
+			final int[] vertexX = ro._ph;
+			final int[] vertexY = ro._pv;
 
 			int vertexIndex = vertexIndices[ vertexIndices.length - 1 ];
 			int x1 = x + ( vertexX[ vertexIndex ] >> 8 );
@@ -546,7 +436,7 @@ public class RenderPanel
 	 */
 	public final void setControlMode( final int mode )
 	{
-		_controlMode = mode;
+		_mouseViewControl.setControlMode( mode );
 	}
 
 	/**

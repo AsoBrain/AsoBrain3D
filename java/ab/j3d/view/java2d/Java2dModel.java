@@ -1,96 +1,88 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 2004-2004 Numdata BV
  *
- * (C) Copyright Numdata BV 2004-2004 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
-package com.numdata.soda.Gerwin.AbtoJ3D;
+package ab.j3d.view.java2d;
 
 import java.awt.Component;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import ab.j3d.Vector3D;
-import ab.j3d.renderer.TreeNode;
+import ab.j3d.model.Node3D;
+import ab.j3d.view.ViewControl;
+import ab.j3d.view.ViewModel;
+import ab.j3d.view.ViewModelNode;
 
 /**
+ * Java 2D implementation of view model.
+ *
  * @author G.B.M. Rupert
  * @version $Revision$ $Date$
- * @FIXME Need comment
  */
-public class J2dModel
+public final class Java2dModel
 	extends ViewModel
 {
 	/**
 	 * Paint queue.
 	 */
-	private final List _paintQueue;
+	private final List _paintQueue = new LinkedList();
 
 	/**
-	 * Construct new J2dModel.
+	 * Construct new Java 2D view model.
 	 */
-	public J2dModel()
+	public Java2dModel()
 	{
-		_paintQueue = new LinkedList();
 	}
 
-	/**
-	 * Create a new node (sub tree) in the view tree. The specified abNode is
-	 * converted into view and then added to the view tree.
-	 *
-	 * @param ID     ID of the view (sub)tree that is created. This ID can be used
-	 *               to update this specific part of the view tree.
-	 * @param abNode AbNode to create a view node for.
-	 */
-	public void createNode( final Object ID , final TreeNode abNode )
+	public void createNode( final Object id , final Node3D node3D )
 	{
-		final ABtoJ2DConvertor convertor = new ABtoJ2DConvertor( abNode );
-		addNode( ID , convertor );
-		updateNode( ID );
+		addNode( new Java2dNode( id , node3D ) );
 	}
 
-	/**
-	 * Create a new view.
-	 *
-	 * @param ID   ID of the view that is created.
-	 * @param from Point to look from.
-	 * @param to   Point to look at.
-	 */
-	public Component createView( final Object ID , final Vector3D from , final Vector3D to )
+	protected void addNode( final ViewModelNode node )
 	{
-		final J2dView view = new J2dView( from , to );
-		addView( ID , view );
-
-		return view.getCanvas();
+		super.addNode( node );
+		updatePaintQueue();
+		updateViews();
 	}
 
-	/**
-	 * Update a specified part (sub tree) of the view tree.
-	 *
-	 * @param ID ID of the (sub) tree to be updated.
-	 */
-	public void updateNode( final Object ID )
+	public void removeNode( final Object id )
 	{
-		super.updateNode( ID );
+		super.removeNode( id );
+		updatePaintQueue();
+		updateViews();
+	}
+
+	public void updateNode( final Object id )
+	{
+		super.updateNode( id );
 
 		updatePaintQueue();
 		updateViews();
 	}
 
-	/**
-	 * Update (repaint) all views.
-	 */
-	private void updateViews()
+	public Component createView( final Object id , final ViewControl viewControl )
 	{
-		final Iterator iter = getAllViewIDs();
-		while ( iter.hasNext() )
-		{
-			( (J2dView)iter.next() ).paint( _paintQueue );
-		}
+		final Java2dView view = new Java2dView( this , id , viewControl );
+		addView( view );
+		return view.getComponent();
 	}
 
 	/**
@@ -98,12 +90,15 @@ public class J2dModel
 	 */
 	private void updatePaintQueue()
 	{
-		// In which order should the different nodes be painted....
-		final Iterator iter = getAllNodeIDs();
-		while( iter.hasNext() )
+		_paintQueue.clear();
+		final List nodeIDs = getNodeIDs();
+		for ( int i = 0 ; i < nodeIDs.size() ; i++ )
 		{
-			final ABtoJ2DConvertor convertor = (ABtoJ2DConvertor)iter.next();
-			_paintQueue.addAll( convertor.getPaintQueue() );
+			final Object     nodeID = nodeIDs.get( i );
+			final Java2dNode node   = (Java2dNode)getNode( nodeID );
+
+			for ( Iterator paintQueue = node.getPaintQueue() ; paintQueue.hasNext() ; )
+				_paintQueue.add( paintQueue.next() );
 		}
 	}
 

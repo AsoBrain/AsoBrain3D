@@ -1,52 +1,67 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 2004-2004 Numdata BV
  *
- * (C) Copyright Numdata BV 2004-2004 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
-package com.numdata.soda.Gerwin.AbtoJ3D;
+package ab.j3d.view.java2d;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import ab.j3d.Matrix3D;
-import ab.j3d.renderer.LeafCollection;
-import ab.j3d.renderer.Object3D;
-import ab.j3d.renderer.TreeNode;
+import ab.j3d.model.Node3D;
+import ab.j3d.model.Node3DCollection;
+import ab.j3d.model.Object3D;
+import ab.j3d.view.ViewModelNode;
 
 /**
- * @author G.B.M. Rupert
+ * Java 2D implementation of view model node.
+ *
+ * @see     Java2dModel
+ * @see     ViewModelNode
+ *
+ * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
- * @FIXME Need comment
  */
-public class ABtoJ2DConvertor
-	extends ViewNode
+public final class Java2dNode
+	extends ViewModelNode
 {
 	/**
 	 * Paint queue.
 	 */
-	private final List _paintQueue;
+	private final List _paintQueue = new LinkedList();
 
 	/**
-	 * Construct new ABtoJ2DConvertor.
+	 * Construct new view model node.
+	 *
+	 * @param   id      Application-assigned ID of this node.
+	 * @param   node3D  Root in the 3D scene.
 	 */
-	public ABtoJ2DConvertor( final TreeNode abRootNode )
+	Java2dNode( final Object id , final Node3D node3D )
 	{
-		super( abRootNode );
-
-		_paintQueue = new LinkedList();
+		super( id , node3D );
 	}
 
-	/**
-	 * Update view node.
-	 */
 	public void update()
 	{
-		final LeafCollection leafs = new LeafCollection();
-		getAbRootNode().gatherLeafs( leafs , Object3D.class , Matrix3D.INIT , false );
+		final Node3DCollection leafs = new Node3DCollection();
+		getNode3D().gatherLeafs( leafs , Object3D.class , Matrix3D.INIT , false );
 
 		// update paint queue....
 		// @FIXME How to determine 'smart' paint order....
@@ -58,12 +73,12 @@ public class ABtoJ2DConvertor
 	}
 
 	/**
-	 * Get the paint queue.
+	 * Get paint queue iterator.
 	 *
-	 * @return  The paint queue.
+	 * @return  Paint queue iterator.
 	 */
-	public List getPaintQueue()
+	public Iterator getPaintQueue()
 	{
-		return _paintQueue;
+		return _paintQueue.iterator();
 	}
 }

@@ -1,153 +1,115 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 2004-2004 Numdata BV
  *
- * (C) Copyright Numdata BV 2004-2004 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
-package com.numdata.soda.Gerwin.AbtoJ3D;
+package ab.j3d.view.java3d;
 
 import java.awt.Component;
-import java.util.HashMap;
-import java.util.Map;
 import javax.media.j3d.BranchGroup;
-import javax.media.j3d.Group;
-import javax.media.j3d.Texture;
 
-import ab.j3d.Vector3D;
-import ab.j3d.renderer.TreeNode;
-
-import com.numdata.soda.mountings.db.MountingDb;
+import ab.j3d.model.Node3D;
+import ab.j3d.view.ViewControl;
+import ab.j3d.view.ViewModel;
+import ab.j3d.view.ViewModelNode;
 
 /**
- * @author G.B.M. Rupert
+ * View model implementation for Java 3D.
+ *
+ * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
- * @FIXME Need comment
  */
-public class J3dModel
+public final class Java3dModel
 	extends ViewModel
 {
 	/**
-	 * Database access provider.
+	 * Shared Java 3D toolbox.
 	 */
-	private MountingDb _db;
+	private final Java3dTools _j3dTools;
 
 	/**
 	 * J3d universe.
 	 */
-	private J3dUniverse _universe;
-
-	/**
-	 * The scene graph. Contains a content graph and a view graph.
-	 */
-	private BranchGroup _sceneGraph;
+	private final Java3dUniverse _j3dUniverse;
 
 	/**
 	 * Content branch graph of the j3d tree.
 	 */
-	private BranchGroup _contentGraph;
+	private final BranchGroup _contentGraph;
 
 	/**
-	 *View branch graph of the j3d tree.
-	 */
-	private BranchGroup _viewGraph;
-
-	/**
-	 * Map used to cache textures. Maps texture code (<code>String</code>) to
-	 * texture (<code>Texture</code>).
-	 */
-	private static final Map _textureCache = new HashMap();
-
-	/**
-	 * Construct new J3DModel.
+	 * Construct new Java 3D model.
 	 *
-	 * @param   db  Database access provider.
+	 * @param   j3dTools    Java 3D utility toolbox.
 	 */
-	public J3dModel( final MountingDb db )
+	public Java3dModel( final Java3dTools j3dTools )
 	{
-		_db                 = db;
-		_universe           = new J3dUniverse();
-		_sceneGraph         = new BranchGroup();
-		_contentGraph = new BranchGroup();
-		_viewGraph    = new BranchGroup();
-
-		_contentGraph.setCapability( BranchGroup.ALLOW_CHILDREN_EXTEND );
-		_viewGraph.setCapability   ( BranchGroup.ALLOW_CHILDREN_EXTEND );
-
-		_sceneGraph.addChild( _contentGraph );
-		_sceneGraph.addChild( _viewGraph    );
-		_universe.addBranchGraph( _sceneGraph );
-	}
-
-	public void createNode( final Object ID , final TreeNode abNode )
-	{
-		final ABtoJ3DConvertor convertor = new ABtoJ3DConvertor( _db , abNode , this );
-		addNode( ID , convertor );
-
-		final BranchGroup node = new BranchGroup();
-		node.addChild( convertor.getJ3dRootNode() );
-		_contentGraph.addChild( node );
+		this( j3dTools , Java3dUniverse.MM );
 	}
 
 	/**
-	 * Get a part (sub tree) of the j3d tree.
+	 * Construct new Java 3D model.
 	 *
-	 * @param   ID  ID of the j3d sub tree.
-	 *
-	 * @return  A part (sub tree) of the j3d tree.
+	 * @param   j3dTools    Java 3D utility toolbox.
+	 * @param   unit        Unit scale factor (e.g. <code>Java3dUniverse.MM</code>).
 	 */
-	public Group getJ3dRootNode( final Object ID )
+	public Java3dModel( final Java3dTools j3dTools , final float unit )
 	{
-		Group result = null;
-
-		final ABtoJ3DConvertor convertor = (ABtoJ3DConvertor)getNode( ID );
-		if ( convertor != null )
-		{
-			result = convertor.getJ3dRootNode();
-		}
-
-		return result;
+		this( j3dTools , new Java3dUniverse( unit ) );
 	}
 
 	/**
-	 * Create a view from a specified point to a specified point.
+	 * Construct new Java 3D model.
 	 *
-	 * @param   ID      ID of the view that is created.
-	 * @param   from    Point to look from.
-	 * @param   to      Point to look at.
+	 * @param   j3dUniverse Java 3D universe.
+	 * @param   j3dTools    Java 3D utility toolbox.
 	 */
-	public Component createView( final Object ID , final Vector3D from , final Vector3D to )
+	public Java3dModel( final Java3dTools j3dTools , final Java3dUniverse j3dUniverse )
 	{
-		final J3dView view = new J3dView( _universe , from , to );
-		addView( ID , view );
-
-		final BranchGroup node = new BranchGroup();
-		node.addChild( view.getJ3dRootNode() );
-		_viewGraph.addChild( node );
-
-		return view.getCanvas();
+		_j3dTools = j3dTools;
+		_j3dUniverse = j3dUniverse;
+		_contentGraph = Java3dTools.createDynamicScene( _j3dUniverse.getContent() );
 	}
 
-	/**
-	 * Get texture from cache.
-	 *
-	 * @param   code    Code identifying the texture to get.
-	 */
-	Texture getTextureFromCache( final String code )
+	public void createNode( final Object id , final Node3D node3D )
 	{
-		return (Texture)_textureCache.get( code );
+		addNode( new Java3dNode( _j3dTools , id , node3D ) );
 	}
 
-	/**
-	 * Add texture to cache.
-	 *
-	 * @param   code    Code identifying the texture to get.
-	 * @param   texture Texture to add to cache.
-	 */
-	void addTextureToCache( final String code , final Texture texture )
+	protected void addNode( final ViewModelNode node )
 	{
-		_textureCache.put( code , texture );
+		super.addNode( node );
+		_contentGraph.addChild( ((Java3dNode)node).getSceneGraphObject() );
+	}
+
+	public void removeNode( final Object id )
+	{
+		final Java3dNode node = (Java3dNode)getNode( id );
+		if ( node != null )
+			_contentGraph.removeChild( node.getSceneGraphObject() );
+
+		super.removeNode( id );
+	}
+
+	public Component createView( final Object id , final ViewControl viewControl )
+	{
+		final Java3dView view = new Java3dView( _j3dUniverse , id , viewControl );
+		addView( view );
+		return view.getComponent();
 	}
 }

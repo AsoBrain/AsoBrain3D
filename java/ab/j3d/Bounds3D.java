@@ -1,22 +1,30 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Peter S. Heijnen
  *
- * (C) Copyright Numdata BV 2000-2004 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2004 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV or Peter S. Heijnen. Please
- * contact Numdata BV or Peter S. Heijnen for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d;
 
 /**
  * This class represents rectangular 3D bounds (specified by two vectors).
- * It is used by ROM, but can also be used for other purposes (it does not
- * depend on ROM classes).
  *
- * @author	Peter S. Heijnen
- * @version	$Revision$ ($Date$, $Author$)
+ * @author  Peter S. Heijnen
+ * @version $Revision$ ($Date$, $Author$)
  */
 public final class Bounds3D
 {
@@ -42,8 +50,8 @@ public final class Bounds3D
 	/**
 	 * Create a new box.
 	 *
-	 * @param	v1	First vector of box.
-	 * @param	v2	Second vector of box.
+	 * @param   v1  First vector of box.
+	 * @param   v2  Second vector of box.
 	 */
 	private Bounds3D( final Vector3D v1 , final Vector3D v2 )
 	{
@@ -54,11 +62,11 @@ public final class Bounds3D
 	/**
 	 * Compare these bounds to the specified bounds.
 	 *
-	 * @param	v1		First vector of bounds to compare with.
-	 * @param	v2		Second vector of bounds to compare with.
+	 * @param   v1  First vector of bounds to compare with.
+	 * @param   v2  Second vector of bounds to compare with.
 	 *
-	 * @return	<code>true</code> if the bounds are equal,
-	 *			<code>false</code> if not.
+	 * @return  <code>true</code> if the bounds are equal,
+	 *          <code>false</code> if not.
 	 */
 	public boolean equals( final Vector3D v1 , final Vector3D v2 )
 	{
@@ -66,31 +74,38 @@ public final class Bounds3D
 				( ( v2 == null ) || this.v2.equals( v2 ) ) );
 	}
 
-	/**
-	 * Compare this object to another object.
-	 *
-	 * @param	other	Object to compare with.
-	 *
-	 * @return	<code>true</code> if the objects are equal;
-	 *			<code>false</code> if not.
-	 */
 	public boolean equals( final Object other )
 	{
-		if ( other == this ) return true;
-		if ( other == null ) return false;
-		if ( !( other instanceof Bounds3D ) ) return false;
+		final boolean result;
+		
+		if ( other == this )
+		{
+			result = true;
+		}
+		else if ( !( other instanceof Bounds3D ) )
+		{
+			result = false;
+		}
+		else
+		{
+			final Bounds3D b = (Bounds3D)other;
+			result = ( v1.equals( b.v1 ) && v2.equals( b.v2 ) );
+		}
+		return result;
+	}
 
-		final Bounds3D b = (Bounds3D)other;
-		return( v1.equals( b.v1 ) && v2.equals( b.v2 ) );
+	public int hashCode()
+	{
+		return v1.hashCode() ^ v2.hashCode();
 	}
 
 	/**
 	 * Convert string representation of object (see toString()) back to
 	 * object instance.
 	 *
-	 * @param	value	String representation of object.
+	 * @param   value   String representation of object.
 	 *
-	 * @return	Object instance.
+	 * @return  Object instance.
 	 */
 	public static Bounds3D fromString( final String value )
 	{
@@ -103,10 +118,10 @@ public final class Bounds3D
 	 * will have one or more negative factors for v2 - v1 when the bounding
 	 * boxes are disjunct.
 	 *
-	 * @param	bounds1		First object for intersection.
-	 * @param	bounds2		Seconds object for intersection.
+	 * @param   bounds1     First object for intersection.
+	 * @param   bounds2     Seconds object for intersection.
 	 *
-	 * @return	Bounds of intersection.
+	 * @return  Bounds of intersection.
 	 */
 	public static Bounds3D intersect( final Bounds3D bounds1 , final Bounds3D bounds2 )
 	{
@@ -122,11 +137,11 @@ public final class Bounds3D
 	/**
 	 * Determine whether the two specified bounding boxes intersect.
 	 *
-	 * @param	bounds1		First object for intersection test.
-	 * @param	bounds2		Seconds object for intersection test.
+	 * @param   bounds1     First object for intersection test.
+	 * @param   bounds2     Seconds object for intersection test.
 	 *
-	 * @return	<code>true</code> if the bounds intersect;
-	 *			<code>false</code> if the bounds are disjunct.
+	 * @return  <code>true</code> if the bounds intersect;
+	 *          <code>false</code> if the bounds are disjunct.
 	 */
 	public static boolean intersects( final Bounds3D bounds1 , final Bounds3D bounds2 )
 	{
@@ -144,10 +159,10 @@ public final class Bounds3D
 	/**
 	 * Calculate joined bounds of the two specified bounding objects.
 	 *
-	 * @param	bounds1		First object for join.
-	 * @param	bounds2		Seconds object for join.
+	 * @param   bounds1     First object for join.
+	 * @param   bounds2     Seconds object for join.
 	 *
-	 * @return	Joined bounds.
+	 * @return  Joined bounds.
 	 */
 	public static Bounds3D join( final Bounds3D bounds1 , final Bounds3D bounds2 )
 	{
@@ -163,9 +178,9 @@ public final class Bounds3D
 	/**
 	 * Determine maximum vector of box.
 	 *
-	 * @param	box     Box to get the vector for.
+	 * @param   box     Box to get the vector for.
 	 *
-	 * @return	Resulting vector.
+	 * @return  Resulting vector.
 	 */
 	public static Vector3D max( final Bounds3D box )
 	{
@@ -181,9 +196,9 @@ public final class Bounds3D
 	/**
 	 * Determine minimum vector of bounds.
 	 *
-	 * @param	bounds	Bounds to get the vector for.
+	 * @param   bounds  Bounds to get the vector for.
 	 *
-	 * @return	Resulting vector.
+	 * @return  Resulting vector.
 	 */
 	public static Vector3D min( final Bounds3D bounds )
 	{
@@ -199,9 +214,9 @@ public final class Bounds3D
 	/**
 	 * Subtract vector from bounds.
 	 *
-	 * @param	vector	Vector to subtract from bounds.
+	 * @param   vector  Vector to subtract from bounds.
 	 *
-	 * @return	Resulting bounds.
+	 * @return  Resulting bounds.
 	 */
 	public Bounds3D minus( final Vector3D vector )
 	{
@@ -211,11 +226,11 @@ public final class Bounds3D
 	/**
 	 * Subtract vector from bounds.
 	 *
-	 * @param	x	X-coordinate of vector to subtract.
-	 * @param	y	Y-coordinate of vector to subtract.
-	 * @param	z	Z-coordinate of vector to subtract.
+	 * @param   x   X-coordinate of vector to subtract.
+	 * @param   y   Y-coordinate of vector to subtract.
+	 * @param   z   Z-coordinate of vector to subtract.
 	 *
-	 * @return	Resulting bounds.
+	 * @return  Resulting bounds.
 	 */
 	public Bounds3D minus( final float x , final float y , final float z )
 	{
@@ -228,9 +243,9 @@ public final class Bounds3D
 	/**
 	 * Determine box after scalar multiplication.
 	 *
-	 * @param	factor	Scale multiplication factor.
+	 * @param   factor      Scale multiplication factor.
 	 *
-	 * @return	Resulting box.
+	 * @return  Resulting box.
 	 */
 	public Bounds3D multiply( final float factor )
 	{
@@ -240,9 +255,9 @@ public final class Bounds3D
 	/**
 	 * Add a vector to bounds.
 	 *
-	 * @param	vector	Vector to add to bounds.
+	 * @param   vector      Vector to add to bounds.
 	 *
-	 * @return	Resulting bounds.
+	 * @return  Resulting bounds.
 	 */
 	public Bounds3D plus( final Vector3D vector )
 	{
@@ -252,11 +267,11 @@ public final class Bounds3D
 	/**
 	 * Add a vector to bounds.
 	 *
-	 * @param	x	X-coordinate of vector to add.
-	 * @param	y	Y-coordinate of vector to add.
-	 * @param	z	Z-coordinate of vector to add.
+	 * @param   x   X-coordinate of vector to add.
+	 * @param   y   Y-coordinate of vector to add.
+	 * @param   z   Z-coordinate of vector to add.
 	 *
-	 * @return	Resulting bounds.
+	 * @return  Resulting bounds.
 	 */
 	public Bounds3D plus( final float x , final float y , final float z )
 	{
@@ -319,10 +334,10 @@ public final class Bounds3D
 	/**
 	 * Set bounds to the specified vectors.
 	 *
-	 * @param	v1	First vector of bounds.
-	 * @param	v2	Second vector of bounds.
+	 * @param   v1      First vector of bounds.
+	 * @param   v2      Second vector of bounds.
 	 *
-	 * @return	Resulting bounds.
+	 * @return  Resulting bounds.
 	 */
 	public Bounds3D set( final Vector3D v1 , final Vector3D v2 )
 	{
@@ -340,7 +355,7 @@ public final class Bounds3D
 	/**
 	 * Get size of these bounds.
 	 *
-	 * @return	Vector describing bound size (v2-v1).
+	 * @return  Vector describing bound size (v2-v1).
 	 */
 	public Vector3D size()
 	{
@@ -352,7 +367,7 @@ public final class Bounds3D
 	 * components of <code>v1</code> are always less or equal to the
 	 * matching components of <code>v2</code>.
 	 *
-	 * @return	Resulting bounds.
+	 * @return  Resulting bounds.
 	 */
 	public Bounds3D sort()
 	{
@@ -362,9 +377,9 @@ public final class Bounds3D
 	/**
 	 * Get sorted bounds.
 	 *
-	 * @param	bounds	Bounds to sort.
+	 * @param   bounds  Bounds to sort.
 	 *
-	 * @return	Sorted bounds.
+	 * @return  Sorted bounds.
 	 */
 	public static Bounds3D sort( final Bounds3D bounds )
 	{
@@ -374,7 +389,7 @@ public final class Bounds3D
 	/**
 	 * Get string representation of object.
 	 *
-	 * @return	String representation of object.
+	 * @return  String representation of object.
 	 */
 	public String toString()
 	{

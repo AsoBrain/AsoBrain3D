@@ -1,15 +1,26 @@
-package ab.j3d.renderer;
-
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Peter S. Heijnen
  *
- * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV or Peter S. Heijnen. Please
- * contact Numdata BV or Peter S. Heijnen for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
+package ab.j3d.model;
+
+import java.awt.Color;
 import java.awt.Graphics;
 
 import ab.j3d.Matrix3D;
@@ -20,21 +31,36 @@ import ab.j3d.Vector3D;
  * contains a TransformModel that manages a transformation matrix
  * to be associated with this node.
  *
- * @author	Peter S. Heijnen
- * @version	$Revision$ ($Date$, $Author$)
+ * @author  Peter S. Heijnen
+ * @version $Revision$ ($Date$, $Author$)
  */
-public final class Transform
-	extends TreeNode
+public final class Transform3D
+	extends Node3D
 {
-	private	float		_rotationX		= 0.0f;
-	private	float		_rotationY		= 0.0f;
-	private	float		_rotationZ		= 0.0f;
-	private	Vector3D _translation = Vector3D.INIT;
+	/**
+	 * Rotation around X-axis in decimal degrees.
+	 */
+	private float _rotationX;
+
+	/**
+	 * Rotation around Y-axis in decimal degrees.
+	 */
+	private float _rotationY;
+
+	/**
+	 * Rotation around Z-axis in decimal degrees.
+	 */
+	private float _rotationZ;
+
+	/**
+	 * Transform translation.
+	 */
+	private Vector3D _translation;
 
 	/**
 	 * Matrix with transformation.
 	 */
-	private	Matrix3D _matrix = Matrix3D.INIT;
+	private Matrix3D _matrix;
 
 	/**
 	 * This flag indicates that the transformation matrix is not
@@ -42,12 +68,12 @@ public final class Transform
 	 * This is set when one of the properties affecting the
 	 * transformation is changed.
 	 */
-	private	boolean _matrixDirty = true;
+	private boolean _matrixDirty;
 
 	/**
 	 * Matrix with inverse transformation.
 	 */
-	private	Matrix3D _inverseMatrix = Matrix3D.INIT;
+	private Matrix3D _inverseMatrix;
 
 	/**
 	 * This flag indicates that the inverse transformation matrix
@@ -55,32 +81,48 @@ public final class Transform
 	 * requested. This is set when one of the properties affecting
 	 * the transformation is changed.
 	 */
-	private	boolean _inverseMatrixDirty = true;
+	private boolean _inverseMatrixDirty;
+
 	/**
 	 * Default constructor. Creates an identity transform model.
 	 */
-	public Transform()
+	public Transform3D()
 	{
+		_rotationX          = 0.0f;
+		_rotationY          = 0.0f;
+		_rotationZ          = 0.0f;
+		_translation        = Vector3D.INIT;
+		_matrix             = Matrix3D.INIT;
+		_matrixDirty        = true;
+		_inverseMatrix      = Matrix3D.INIT;
+		_inverseMatrixDirty = true;
 	}
 
 	/**
 	 * Constructor based for transformation based on a matrix.
 	 *
-	 * @param	m	Explicit matrix to use for transformation.
+	 * @param   m   Explicit matrix to use for transformation.
 	 */
-	public Transform( final Matrix3D m )
+	public Transform3D( final Matrix3D m )
 	{
-		_matrix = m;
-		_matrixDirty = false;
+		_rotationX          = 0.0f;
+		_rotationY          = 0.0f;
+		_rotationZ          = 0.0f;
+		_translation        = Vector3D.INIT;
+		_matrix             = m;
+		_matrixDirty        = false;
+		_inverseMatrix      = Matrix3D.INIT;
+		_inverseMatrixDirty = true;
 	}
 
 	/**
 	 * Constructor based for transformation based on a translation.
 	 *
-	 * @param	translation	Transform translation.
+	 * @param   translation     Transform translation.
 	 */
-	public Transform( final Vector3D translation )
+	public Transform3D( final Vector3D translation )
 	{
+		this();
 		setTranslation( translation );
 	}
 
@@ -88,15 +130,14 @@ public final class Transform
 	 * Constructor based for transformation based on translation and
 	 * rotation.
 	 *
-	 * @param	translation	Transform translation.
-	 * @param	rotationX		Rotation around X-axis in decimal degrees.
-	 * @param	rotationY		Rotation around Y-axis in decimal degrees.
-	 * @param	rotationZ		Rotation around Z-axis in decimal degrees.
+	 * @param   translation     Transform translation.
+	 * @param   rotationX       Rotation around X-axis in decimal degrees.
+	 * @param   rotationY       Rotation around Y-axis in decimal degrees.
+	 * @param   rotationZ       Rotation around Z-axis in decimal degrees.
 	 */
-	public Transform( final Vector3D translation ,
-		final float rotationX , final float rotationY , final float rotationZ )
+	public Transform3D( final Vector3D translation , final float rotationX , final float rotationY , final float rotationZ )
 	{
-		setTranslation( translation );
+		this( translation );
 		setRotation( rotationX , rotationY , rotationZ );
 	}
 
@@ -114,32 +155,32 @@ public final class Transform
 	 * started. If a node of the requested class is found, it will be stored
 	 * in combination with its matrix in the returned collection.
 	 *
-	 * @param	leafs		Collection that contains all gathered leafs.
-	 * @param	leafClass	Class of requested leafs.
-	 * @param	xform		Transformation matrix upto this node.
-	 * @param	upwards		Direction in which the tree is being traversed
-	 *						(should be <code>true</code> for the first call).
+	 * @param   leafs       Collection that contains all gathered leafs.
+	 * @param   leafClass   Class of requested leafs.
+	 * @param   xform       Transformation matrix upto this node.
+	 * @param   upwards     Direction in which the tree is being traversed
+	 *                      (should be <code>true</code> for the first call).
 	 *
 	 */
-	public void gatherLeafs( final LeafCollection leafs , final Class leafClass , Matrix3D xform , final boolean upwards )
+	public void gatherLeafs( final Node3DCollection leafs , final Class leafClass , final Matrix3D xform , final boolean upwards )
 	{
 		/*
 		 * Determine modified transform based on combination of the
 		 * supplied transformation and the transformation defined
 		 * by this object.
 		 */
-		 xform = (upwards ? getInverseMatrix() : getMatrix()).multiply( xform );
+		 final Matrix3D combinedTransform = ( upwards ? getInverseMatrix() : getMatrix() ).multiply( xform );
 
 		/*
 		 * Let super-class do its job with the modified transformation.
 		 */
-		super.gatherLeafs( leafs , leafClass , xform , upwards );
+		super.gatherLeafs( leafs , leafClass , combinedTransform , upwards );
 	}
 
 	/**
 	 * Get matrix with inverse transformation.
 	 *
-	 * @return	Matrix3D with inverse transformation matrix.
+	 * @return  Matrix3D with inverse transformation matrix.
 	 */
 	public Matrix3D getInverseMatrix()
 	{
@@ -149,13 +190,13 @@ public final class Transform
 			_inverseMatrixDirty = false;
 		}
 
-		return( _inverseMatrix );
+		return _inverseMatrix;
 	}
 
 	/**
 	 * Get matrix with transformation.
 	 *
-	 * @return	Matrix3D with transformation matrix.
+	 * @return  Matrix3D with transformation matrix.
 	 */
 	public Matrix3D getMatrix()
 	{
@@ -164,66 +205,72 @@ public final class Transform
 			_matrix = Matrix3D.getTransform( _rotationX , _rotationY , _rotationZ , _translation.x , _translation.y , _translation.z );
 			_matrixDirty = false;
 		}
-		return( _matrix );
+		return _matrix;
+	}
+
+	/**
+	 * Set transformation using an explicit matrix for the transformation
+	 * (transformation variables are ignored).
+	 *
+	 * @param   matrix      Explicit matrix to use for transformation.
+	 */
+	public void setMatrix( final Matrix3D matrix )
+	{
+		_matrix             = matrix;
+		_matrixDirty        = false;
+		_inverseMatrixDirty = true;
 	}
 
 	/**
 	 * Get rotation value around X-axis.
 	 *
-	 * @return	Rotation around X-axis in decimal degrees.
+	 * @return  Rotation around X-axis in decimal degrees.
 	 */
 	public float getRotationX()
 	{
-		return( _rotationX );
+		return _rotationX;
 	}
 
 	/**
 	 * Get rotation value around Y-axis.
 	 *
-	 * @return	Rotation around Y-axis in decimal degrees.
+	 * @return  Rotation around Y-axis in decimal degrees.
 	 */
 	public float getRotationY()
 	{
-		return( _rotationY );
+		return _rotationY;
 	}
 
 	/**
 	 * Get rotation value around Z-axis.
 	 *
-	 * @return	Rotation around Z-axis in decimal degrees.
+	 * @return  Rotation around Z-axis in decimal degrees.
 	 */
 	public float getRotationZ()
 	{
-		return( _rotationZ );
+		return _rotationZ;
 	}
 
 	/**
 	 * Get transform translation.
 	 *
-	 * @return	Transform translation.
+	 * @return  Transform translation.
 	 */
 	public Vector3D getTranslation()
 	{
 		return _translation;
 	}
 
-	/**
-	 * Paint 2D representation of this node and all its leaf nodes.
-	 *
-	 * @param	g			Graphics context.
-	 * @param	gXform		Transformation to pan/scale the graphics context.
-	 * @param	objXform	Transformation from object's to view coordinate system.
-	 */
-	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D objXform )
+	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
 	{
-		super.paint( g , gXform , getMatrix().multiply( objXform ) );
+		super.paint( g , gXform , getMatrix().multiply( viewTransform ) , outlineColor , fillColor , shadeFactor );
 	}
 
 	/**
 	 * Set dirty field(s) to indicate that the transformation has
 	 * changed in some way.
 	 */
- 	protected void setDirty()
+ 	private void setDirty()
  	{
 	 	_matrixDirty = true;
 	 	_inverseMatrixDirty = true;
@@ -232,9 +279,9 @@ public final class Transform
 	/**
 	 * Set new rotation values for all axises.
 	 *
-	 * @param	rotationX	Rotation around X-axis in decimal degrees.
-	 * @param	rotationY	Rotation around Y-axis in decimal degrees.
-	 * @param	rotationZ	Rotation around Z-axis in decimal degrees.
+	 * @param   rotationX   Rotation around X-axis in decimal degrees.
+	 * @param   rotationY   Rotation around Y-axis in decimal degrees.
+	 * @param   rotationZ   Rotation around Z-axis in decimal degrees.
 	 */
 	public void setRotation( final float rotationX , final float rotationY , final float rotationZ )
 	{
@@ -242,9 +289,9 @@ public final class Transform
 			 rotationY != _rotationY ||
 			 rotationZ != _rotationZ )
 		{
-			_rotationX	= rotationX;
-			_rotationY	= rotationY;
-			_rotationZ	= rotationZ;
+			_rotationX = rotationX;
+			_rotationY = rotationY;
+			_rotationZ = rotationZ;
 
 			setDirty();
 		}
@@ -253,7 +300,7 @@ public final class Transform
 	/**
 	 * Set new rotation value around X-axis.
 	 *
-	 * @param	rotation	Rotation around X-axis in decimal degrees.
+	 * @param   rotation    Rotation around X-axis in decimal degrees.
 	 */
 	public void setRotationX( final float rotation )
 	{
@@ -267,7 +314,7 @@ public final class Transform
 	/**
 	 * Set new rotation value around Y-axis.
 	 *
-	 * @param	rotation	Rotation around Y-axis in decimal degrees.
+	 * @param   rotation    Rotation around Y-axis in decimal degrees.
 	 */
 	public void setRotationY( final float rotation )
 	{
@@ -281,7 +328,7 @@ public final class Transform
 	/**
 	 * Set new rotation value around Z-axis.
 	 *
-	 * @param	rotation	Rotation around Z-axis in decimal degrees.
+	 * @param   rotation    Rotation around Z-axis in decimal degrees.
 	 */
 	public void setRotationZ( final float rotation )
 	{
@@ -295,7 +342,7 @@ public final class Transform
 	/**
 	 * Set new transform translation.
 	 *
-	 * @param	translation	Transform translation.
+	 * @param   translation Transform translation.
 	 */
 	public void setTranslation( final Vector3D translation )
 	{

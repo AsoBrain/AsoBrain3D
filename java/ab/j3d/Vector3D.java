@@ -1,21 +1,30 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Peter S. Heijnen
  *
- * (C) Copyright Numdata BV 2000-2004 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2004 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV or Peter S. Heijnen. Please
- * contact Numdata BV or Peter S. Heijnen for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d;
 
 /**
- * This class represents a 3D vector. It is used by ROM, but can also
- * be used for other purposes (it does not depend on ROM classes).
+ * This class represents a 3D vector.
  *
- * @author	Peter S. Heijnen
- * @version	$Revision$ ($Date$, $Author$)
+ * @author  Peter S. Heijnen
+ * @version $Revision$ ($Date$, $Author$)
  */
 public final class Vector3D
 {
@@ -26,13 +35,13 @@ public final class Vector3D
 	/**
 	 * Initial value of a vector (0-vector).
 	 */
-	public static final Vector3D INIT = new Vector3D( 0f , 0f , 0f );
+	public static final Vector3D INIT = new Vector3D( 0 , 0 , 0 );
 	/**
 	 * Construct new vector.
 	 *
-	 * @param	nx	X-coordinate of vector.
-	 * @param	ny	Y-coordinate of vector.
-	 * @param	nz	Z-coordinate of vector.
+	 * @param   nx  X-coordinate of vector.
+	 * @param   ny  Y-coordinate of vector.
+	 * @param   nz  Z-coordinate of vector.
 	 */
 	private Vector3D( final float nx , final float ny , final float nz )
 	{
@@ -44,10 +53,10 @@ public final class Vector3D
 	/**
 	 * Get angle between this vector and another one specified as argument.
 	 *
-	 * @param	v1		First vector.
-	 * @param	v2		Second vector.
+	 * @param   v1      First vector.
+	 * @param   v2      Second vector.
 	 *
-	 * @return	angle between vectors in radians.
+	 * @return  angle between vectors in radians.
 	 */
 	public static float angle( final Vector3D v1 , final Vector3D v2 )
 	{
@@ -57,31 +66,30 @@ public final class Vector3D
 	/**
 	 * Get cos(angle) between this vector and another one specified as argument.
 	 *
-	 * @param	v1		First vector.
-	 * @param	v2		Second vector.
+	 * @param   v1      First vector.
+	 * @param   v2      Second vector.
 	 *
-	 * @return	cos(angle) between vectors.
+	 * @return  cos(angle) between vectors.
 	 */
 	public static float cosAngle( final Vector3D v1 , final Vector3D v2 )
 	{
 		final float l = v1.length() * v2.length();
-		if ( l == 0f ) return( 0f );
-		return( dot( v1 , v2 ) / l );
+		return ( l == 0.0f ) ? 0.0f : ( dot( v1 , v2 ) / l );
 	}
 
 	/**
 	 * Determine cross product of this vector with another vector.
 	 *
-	 * @param	v1		First vector.
-	 * @param	v2		Second vector.
+	 * @param   v1      First vector.
+	 * @param   v2      Second vector.
 	 *
-	 * @return	Resulting vector.
+	 * @return  Resulting vector.
 	 */
 	public static Vector3D cross( final Vector3D v1 , final Vector3D v2 )
 	{
 		return v1.set( v1.y * v2.z - v1.z * v2.y ,
-					   v1.z * v2.x - v1.x * v2.z ,
-					   v1.x * v2.y - v1.y * v2.x );
+		               v1.z * v2.x - v1.x * v2.z ,
+		               v1.x * v2.y - v1.y * v2.x );
 	}
 
 	/**
@@ -111,86 +119,93 @@ public final class Vector3D
 	 */
 	public static float dot( final Vector3D v1 , final Vector3D v2 )
 	{
-		return( v1.x * v2.x + v1.y * v2.y + v1.z * v2.z );
-	}
-
-	/**
-	 * Compare this object to another object.
-	 *
-	 * @param   other   Object to compare with.
-	 *
-	 * @return  <code>true</code> if the objects are equal;
-	 *          <code>false</code> if not.
-	 */
-	public boolean almostEquals( final Object other )
-	{
-		if ( other == this ) return true;
-		if ( other == null ) return false;
-		if ( !( other instanceof Vector3D ) ) return false;
-
-		final Vector3D v = (Vector3D)other;
-		return Matrix3D.almostEqual( x , v.x )
-		    && Matrix3D.almostEqual( y , v.y )
-		    && Matrix3D.almostEqual( z , v.z );
+		return ( v1.x * v2.x + v1.y * v2.y + v1.z * v2.z );
 	}
 
 	/**
 	 * Compare this vector to another vector.
 	 *
-	 * @param   x   X-coordinate of vector.
-	 * @param   y   Y-coordinate of vector.
-	 * @param   z   Z-coordinate of vector.
+	 * @param   other   Vector to compare with.
+	 *
+	 * @return  <code>true</code> if the objects are almost equal;
+	 *          <code>false</code> if not.
+	 *
+	 * @see     Matrix3D#almostEqual
+	 */
+	public boolean almostEquals( final Vector3D other )
+	{
+		return ( other != null )
+		    && ( ( other == this )
+		      || ( Matrix3D.almostEqual( x , other.x )
+		        && Matrix3D.almostEqual( y , other.y )
+		        && Matrix3D.almostEqual( z , other.z ) ) );
+	}
+
+	/**
+	 * Compare this vector to another vector.
+	 *
+	 * @param   otherX  X-coordinate of vector to compare with.
+	 * @param   otherY  Y-coordinate of vector to compare with.
+	 * @param   otherZ  Z-coordinate of vector to compare with.
 	 *
 	 * @return  <code>true</code> if vectors are equal;
 	 *          <code>false</code> if not.
 	 */
-	public boolean equals( final float x , final float y , final float z )
+	public boolean equals( final float otherX , final float otherY , final float otherZ )
 	{
-		return( ( x != x /* => NaN*/ || x == this.x ) &&
-				( y != y /* => NaN*/ || y == this.y ) &&
-				( z != z /* => NaN*/ || z == this.z ) );
+		return ( Float.isNaN( otherX ) || ( otherX == x ) )
+		    && ( Float.isNaN( otherY ) || ( otherY == y ) )
+		    && ( Float.isNaN( otherZ ) || ( otherZ == z ) );
 	}
 
-	/**
-	 * Compare this vector to another vector.
-	 *
-	 * @param	other	Vector to compare with.
-	 *
-	 * @return	<code>true</code> if vectors are equal,
-	 *  		<code>false</code> if not.
-	 */
 	public boolean equals( final Object other )
 	{
-		if ( other == this ) return true;
-		if ( other == null ) return false;
-		if ( !( other instanceof Vector3D ) ) return false;
+		final boolean result;
 
-		final Vector3D v = (Vector3D)other;
-		return( x == v.x && y == v.y && z == v.z );
+		if ( other == this )
+		{
+			result = true;
+		}
+		else if ( !( other instanceof Vector3D ) )
+		{
+			result = false;
+		}
+		else
+		{
+			final Vector3D v = (Vector3D)other;
+			result = ( ( x == v.x ) && ( y == v.y ) && ( z == v.z ) );
+		}
+
+		return result;
+	}
+
+	public int hashCode()
+	{
+		return Float.floatToIntBits( x ) ^ Float.floatToIntBits( y ) ^ Float.floatToIntBits( z );
 	}
 
 	/**
 	 * Convert string representation of object (see toString()) back to
 	 * object instance.
 	 *
-	 * @param	value	String representation of object.
+	 * @param   value   String representation of object.
 	 *
-	 * @return	Object instance.
+	 * @return  Object instance.
 	 */
 	public static Vector3D fromString( final String value )
 	{
 		final int comma1 = value.indexOf( ',' );
 		final int comma2 = value.indexOf( ',' , comma1 + 1 );
 
-		return Vector3D.INIT.set( new Float( value.substring( 0 , comma1 ) ).floatValue() ,
-		                          new Float( value.substring( comma1 + 1 , comma2 ) ).floatValue() ,
-		                          new Float( value.substring( comma2 + 1 ) ).floatValue() );
+		return Vector3D.INIT.set( Float.parseFloat( value.substring( 0 , comma1 ) ) ,
+		                          Float.parseFloat( value.substring( comma1 + 1 , comma2 ) ) ,
+		                          Float.parseFloat( value.substring( comma2 + 1 ) ) );
 	}
 
 	/**
 	 * Calculate length of vector.
 	 *
-	 * @return	Length of vector.
+	 * @return  Length of vector.
 	 */
 	public float length()
 	{
@@ -200,9 +215,9 @@ public final class Vector3D
 	/**
 	 * Subtract another vector from this vector.
 	 *
-	 * @param	other	Vector to subtract from this vector.
+	 * @param   other   Vector to subtract from this vector.
 	 *
-	 * @return	Resulting vector.
+	 * @return  Resulting vector.
 	 */
 	public Vector3D minus( final Vector3D other )
 	{
@@ -212,23 +227,23 @@ public final class Vector3D
 	/**
 	 * Subtract another vector from this vector.
 	 *
-	 * @param	x	X-coordinate of vector.
-	 * @param	y	Y-coordinate of vector.
-	 * @param	z	Z-coordinate of vector.
+	 * @param   otherX  X-coordinate of vector.
+	 * @param   otherY  Y-coordinate of vector.
+	 * @param   otherZ  Z-coordinate of vector.
 	 *
-	 * @return	Resulting vector.
+	 * @return  Resulting vector.
 	 */
-	public Vector3D minus( final float x , final float y , final float z )
+	public Vector3D minus( final float otherX , final float otherY , final float otherZ )
 	{
-		return set( this.x - x , this.y - y , this.z - z );
+		return set( x - otherX , y - otherY , z - otherZ );
 	}
 
 	/**
 	 * Determine vector after scalar multiplication.
 	 *
-	 * @param	factor	Scale multiplication factor.
+	 * @param   factor  Scale multiplication factor.
 	 *
-	 * @return	Resulting vector.
+	 * @return  Resulting vector.
 	 */
 	public Vector3D multiply( final float factor )
 	{
@@ -243,16 +258,16 @@ public final class Vector3D
 	 */
 	public Vector3D normalize()
 	{
-		float l = length();
+		final float l = length();
 		return ( l == 0 || l == 1 ) ? this : set( x / l , y / l , z / l );
 	}
 
 	/**
 	 * Add another vector to this vector.
 	 *
-	 * @param	other	Vector to add to this vector.
+	 * @param   other   Vector to add to this vector.
 	 *
-	 * @return	Resulting vector.
+	 * @return  Resulting vector.
 	 */
 	public Vector3D plus( final Vector3D other )
 	{
@@ -262,49 +277,55 @@ public final class Vector3D
 	/**
 	 * Add another vector to this vector.
 	 *
-	 * @param	x	X-coordinate of vector.
-	 * @param	y	Y-coordinate of vector.
-	 * @param	z	Z-coordinate of vector.
+	 * @param   otherX  X-coordinate of vector.
+	 * @param   otherY  Y-coordinate of vector.
+	 * @param   otherZ  Z-coordinate of vector.
 	 *
-	 * @return	Resulting vector.
+	 * @return  Resulting vector.
 	 */
-	public Vector3D plus( final float x , final float y , final float z )
+	public Vector3D plus( final float otherX , final float otherY , final float otherZ )
 	{
-		return set( this.x + x , this.y + y , this.z + z );
+		return set( x + otherX , y + otherY , z + otherZ );
 	}
 
 	/**
 	 * Set vector to the specified coordinates.
 	 *
-	 * @param	x	X-coordinate of vector.
-	 * @param	y	Y-coordinate of vector.
-	 * @param	z	Z-coordinate of vector.
+	 * @param   nx      X-coordinate of vector.
+	 * @param   ny      Y-coordinate of vector.
+	 * @param   nz      Z-coordinate of vector.
 	 *
-	 * @return	Resulting vector.
+	 * @return  Resulting vector.
 	 */
-	public Vector3D set( float x , float y , float z )
+	public Vector3D set( final float nx , final float ny , final float nz )
 	{
-		if ( x != x /* => NaN*/ ) x = this.x;
-		if ( y != y /* => NaN*/ ) y = this.y;
-		if ( z != z /* => NaN*/ ) z = this.z;
+		final Vector3D result;
 
-		if ( x == 0f && y == 0f && z == 0f )
-			return( INIT );
+		if ( INIT.equals( nx , ny , nz ) )
+		{
+			result = INIT;
+		}
+		else if ( ( this != INIT ) && equals( nx , ny , nz ) )
+		{
+			result = this;
+		}
+		else
+		{
+			result = new Vector3D( Float.isNaN( nx ) ? x : nx ,
+			                       Float.isNaN( ny ) ? y : ny ,
+			                       Float.isNaN( nz ) ? z : nz );
+		}
 
-		if ( x == this.x && y == this.y && z == this.z )
-			return( this );
-
-		return new Vector3D( x , y , z );
+		return result;
 	}
 
 	/**
 	 * Get string representation of object.
 	 *
-	 * @return	String representation of object.
+	 * @return  String representation of object.
 	 */
 	public String toString()
 	{
-		return( x + "," + y + "," + z );
+		return x + "," + y + ',' + z;
 	}
-
 }

@@ -1,15 +1,26 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Peter S. Heijnen
  *
- * (C) Copyright Numdata BV 2000-2004 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2004 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV or Peter S. Heijnen. Please
- * contact Numdata BV or Peter S. Heijnen for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
-package ab.j3d.renderer;
+package ab.j3d.model;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.util.HashSet;
 import java.util.Set;
@@ -25,11 +36,11 @@ import ab.j3d.Matrix3D;
  * of the graphics tree, so sub-classes should normally implement
  * only their specific properties.
  *
- * @author	Peter S. Heijnen
- * @author	Sjoerd Bouwman
- * @version	$Revision$ ($Date$, $Author$)
+ * @author  Sjoerd Bouwman
+ * @author  Peter S. Heijnen
+ * @version $Revision$ ($Date$, $Author$)
  */
-public class TreeNode
+public class Node3D
 {
 	/**
 	 * Tag of this node.
@@ -44,12 +55,12 @@ public class TreeNode
 	/**
 	 * Parent of this node (<code>null</code> if this a root node).
 	 */
-	private TreeNode _parent;
+	private Node3D _parent;
 
 	/**
 	 * Construct empty tree node.
 	 */
-	public TreeNode()
+	public Node3D()
 	{
 		_tag = null;
 		_parent = null;
@@ -58,13 +69,13 @@ public class TreeNode
 	/**
 	 * Add a child node to this node.
 	 *
-	 * @param	node	Node to add as a child.
+	 * @param   node    Node to add as a child.
 	 *
-	 * @return	Node that was added (same as node argument).
+	 * @return  Node that was added (same as node argument).
 	 *
-	 * @see	#removeChild
+	 * @see     #removeChild
 	 */
-	public final TreeNode addChild( final TreeNode node )
+	public final Node3D addChild( final Node3D node )
 	{
 		if ( ( node != null ) && _children.add( node ) )
 			node.setParent( this );
@@ -86,14 +97,13 @@ public class TreeNode
 	 * started. If a node of the requested class is found, it will be stored
 	 * in combination with its matrix in the returned collection.
 	 *
-	 * @param	leafs		Collection that contains all gathered leafs.
-	 * @param	leafClass	Class of requested leafs.
-	 * @param	xform		Transformation matrix upto this node.
-	 * @param	upwards		Direction in which the tree is being traversed
-	 *						(should be <code>true</code> for the first call).
-	 *
+	 * @param   leafs       Collection that contains all gathered leafs.
+	 * @param   leafClass   Class of requested leafs.
+	 * @param   xform       Transformation matrix upto this node.
+	 * @param   upwards     Direction in which the tree is being traversed
+	 *                      (should be <code>true</code> for the first call).
 	 */
-	public void gatherLeafs( final LeafCollection leafs , final Class leafClass , final Matrix3D xform , final boolean upwards )
+	public void gatherLeafs( final Node3DCollection leafs , final Class leafClass , final Matrix3D xform , final boolean upwards )
 	{
 		if ( upwards && !isRoot() )
 		{
@@ -114,10 +124,10 @@ public class TreeNode
 				/*
 				 * If this is not a leaf, traverse the tree recursively to find them.
 				 */
-				final TreeNode[] children = getChildren();
+				final Node3D[] children = getChildren();
 				for ( int i = 0 ; i < children.length ; i++ )
 				{
-					final TreeNode node = children[ i ];
+					final Node3D node = children[ i ];
 					node.gatherLeafs( leafs , leafClass , xform , false );
 				}
 			}
@@ -127,23 +137,23 @@ public class TreeNode
 	/**
 	 * Get array with all currently registered child nodes.
 	 *
-	 * @return	Array with child nodes.
+	 * @return  Array with child nodes.
 	 *
 	 * @see     #isLeaf()
 	 */
-	public final TreeNode[] getChildren()
+	public final Node3D[] getChildren()
 	{
-		return (TreeNode[])_children.toArray( new TreeNode[ _children.size() ] );
+		return (Node3D[])_children.toArray( new Node3D[ _children.size() ] );
 	}
 
 	/**
 	 * Get parent of this node.
 	 *
-	 * @return	Parent node, or <code>null</code> if none exists.
+	 * @return  Parent node, or <code>null</code> if none exists.
 	 *
 	 * @see #isRoot
 	 */
-	public final TreeNode getParent()
+	public final Node3D getParent()
 	{
 		return( _parent );
 	}
@@ -151,13 +161,13 @@ public class TreeNode
 	/**
 	 * Get root of the graphics tree.
 	 *
-	 * @return	Root node of graphics tree.
+	 * @return  Root node of graphics tree.
 	 *
 	 * @see #isRoot
 	 */
-	public final TreeNode getRoot()
+	public final Node3D getRoot()
 	{
-		TreeNode node = this;
+		Node3D node = this;
 		while( !node.isRoot() ) node = node.getParent();
 		return( node );
 	}
@@ -165,7 +175,7 @@ public class TreeNode
 	/**
 	 * Get tag that was set by setTag().
 	 *
-	 * @return	Tag that was set by setTag().
+	 * @return  Tag that was set by setTag().
 	 */
 	public final Object getTag()
 	{
@@ -176,10 +186,10 @@ public class TreeNode
 	 * This method returns <code>true</code> if this node is a leaf node
 	 * (it has no children).
 	 *
-	 * @return	<code>true</code> if this node is a leaf node,
-	 *			<code>false</code> otherwise.
+	 * @return  <code>true</code> if this node is a leaf node,
+	 *          <code>false</code> otherwise.
 	 *
-	 * @see	#getChildren
+	 * @see     #getChildren
 	 */
 	public final boolean isLeaf()
 	{
@@ -190,10 +200,10 @@ public class TreeNode
 	 * This method returns <code>true</code> if this node is a root node
 	 * (it has no parents).
 	 *
-	 * @return	<code>true</code> if this node is a root node,
-	 *			<code>false</code> otherwise.
+	 * @return  <code>true</code> if this node is a root node,
+	 *          <code>false</code> otherwise.
 	 *
-	 * @see	#getParent
+	 * @see     #getParent
 	 */
 	public final boolean isRoot()
 	{
@@ -201,30 +211,51 @@ public class TreeNode
 	}
 
 	/**
-	 * Paint 2D representation of this node and all its leaf nodes.
+	 * Paint 2D representation of this 3D object. The object coordinates are
+	 * transformed using the objXform argument. By default, the object is painted
+	 * by drawing the outlines of its 'visible' faces. Derivatives of this class
+	 * may implement are more realistic approach (sphere, cylinder).
+	 * <p />
+	 * The rendering settings are determined by the <code>outlineColor</code>,
+	 * <code>fillColor</code>, and <code>shadeFactor</code> arguments. The
+	 * colors may be set to <code>null</code> to disable drawing of the
+	 * outline or inside of faces respectively. The <code>shadeFactor</code> is
+	 * used to modify the fill color based on the Z component of the face normal.
+	 * A typical value of <code>0.5</code> would render faces pointing towards
+	 * the Z-axis at 100%, and faces perpendicular to the Z-axis at 50%;
+	 * specifying <code>0.0</code> completely disables the effect (always 100%);
+	 * whilst <code>1.0</code> makes faces perpendicular to the Z-axis black
+	 * (0%). The outline color is not influenced by the <code>shadeFactor</code>.
+	 * <p />
+	 * Objects are painted on the specified graphics context after being
+	 * transformed again by gXform. This may be used to pan/scale the object on the
+	 * graphics context (NOTE: IT MAY NOT ROTATE THE OBJECT!).
 	 *
-	 * @param	g			Graphics context.
-	 * @param	gXform		Transformation to pan/scale the graphics context.
-	 * @param	objXform	Transformation from object's to view coordinate system.
+	 * @param   g               Graphics context.
+	 * @param   gXform          Transformation to pan/scale the graphics context.
+	 * @param   viewTransform   Transformation from object's to view coordinate system.
+	 * @param   outlineColor    Color to use for face outlines (<code>null</code> to disable drawing).
+	 * @param   fillColor       Color to use for filling faces (<code>null</code> to disable drawing).
+	 * @param   shadeFactor     Amount of shading that may be applied (0=none, 1=extreme).
 	 */
-	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D objXform )
+	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
 	{
-		final TreeNode[] children = getChildren();
+		final Node3D[] children = getChildren();
 		for ( int i = 0 ; i < children.length ; i++ )
 		{
-			final TreeNode node = children[ i ];
-			node.paint( g , gXform , objXform );
+			final Node3D node = children[ i ];
+			node.paint( g , gXform , viewTransform , outlineColor , fillColor , shadeFactor );
 		}
 	}
 
 	/**
 	 * Remove all child nodes from this node.
 	 *
-	 * @see	#removeChild
+	 * @see     #removeChild
 	 */
 	public final void removeAllChildren()
 	{
-		final TreeNode[] children = getChildren();
+		final Node3D[] children = getChildren();
 
 		_children.clear();
 		for ( int i = 0 ; i < children.length ; i++ )
@@ -234,11 +265,11 @@ public class TreeNode
 	/**
 	 * Remove a child node from this node.
 	 *
-	 * @param	node	Child node to remove.
+	 * @param   node    Child node to remove.
 	 *
-	 * @see	#addChild
+	 * @see     #addChild
 	 */
-	public final void removeChild( final TreeNode node )
+	public final void removeChild( final Node3D node )
 	{
 		if ( ( node != null ) && _children.remove( node ) )
 			node.setParent( null );
@@ -247,12 +278,12 @@ public class TreeNode
 	/**
 	 * Set parent of this node.
 	 *
-	 * @param	parent	Parent node (existing parent is removed).
+	 * @param   parent  Parent node (existing parent is removed).
 	 *
-	 * @see #getRoot
-	 * @see #isRoot
+	 * @see     #getRoot
+	 * @see     #isRoot
 	 */
-	public final void setParent( final TreeNode parent )
+	public final void setParent( final Node3D parent )
 	{
 		if ( parent != _parent )
 		{
@@ -269,11 +300,10 @@ public class TreeNode
 	/**
 	 * Set tag of this node.
 	 *
-	 * @param	tag	Tag of node.
+	 * @param   tag     Tag of node.
 	 */
 	public final void setTag( final Object tag )
 	{
 		_tag = tag;
 	}
-
 }

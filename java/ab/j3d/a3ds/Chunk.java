@@ -1,34 +1,39 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Sjoerd Bouwman
  *
- * (C) Copyright 1999-2004 Sjoerd Bouwman (aso@asobrain.com)
- * 
- * This program is free software; you can redistribute it and/or
- * modify it as you see fit.
- * 
- * This program is distributed in the hope that it will be useful,
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d.a3ds;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Vector;
 
 /**
  * This is the base class for all 3ds file chunks.
  *
- * @author	Sjoerd Bouwman
- * @version	$Revision$ $Date$
+ * @author  Sjoerd Bouwman
+ * @version $Revision$ $Date$
  */
-public abstract class Chunk 
+public abstract class Chunk
 {
 	/**
 	 * ID of Chunk.
 	 */
-	private int _id;
+	private final int _id;
 
 	/**
 	 * Position and size in the 3ds file.
@@ -47,7 +52,7 @@ public abstract class Chunk
 	public static final int BOOLEAN_SIZE= 1;
 
 	public static final long HEADER_SIZE = INT_SIZE + LONG_SIZE;
-	
+
 	/*
 	 * Main chunk
 	 */
@@ -65,7 +70,7 @@ public abstract class Chunk
 	public static final int EDIT_VIEW_P2	= 0x7011;
 	public static final int EDIT_VIEW_P1	= 0x7012;
 	public static final int EDIT_VIEW_P3	= 0x7020;
-	
+
 	public static final int TOP				= 0x0001;
 	public static final int BOTTOM			= 0x0002;
 	public static final int LEFT			= 0x0003;
@@ -85,7 +90,7 @@ public abstract class Chunk
 	 * Material library chunks
 	 */
 	public static final int EDIT_MATERIAL	= 0xAFFF;
-		
+
 		public static final int MAT_NAME		 = 0xA000;
 		public static final int MAT_AMBIENT		 = 0xA010;
 		public static final int MAT_DIFFUSE		 = 0xA020;
@@ -165,7 +170,7 @@ public abstract class Chunk
 	 * Object chunks
 	 */
 	public static final int EDIT_OBJECT		= 0x4000;
-	
+
 		public static final int OBJ_TRIMESH		= 0x4100;
 			public static final int TRI_VERTEXLIST	= 0x4110;
 			public static final int TRI_VERT_OPTIONS= 0x4111;
@@ -187,7 +192,7 @@ public abstract class Chunk
 			public static final int LIT_MULTIPLIER  = 0x465B;
 			public static final int LIT_ROLL        = 0x4656;
 			public static final int LIT_RAY_BIAS	= 0x4658;
-			
+
 
 		public static final int OBJ_CAMERA		= 0x4700;
 			public static final int CAM_UNKNWN01	= 0x4710;
@@ -200,9 +205,9 @@ public abstract class Chunk
 	/**
 	 * Constructor of Chunk with ChunkID.
 	 *
-	 * @param	id	the ID of the chunk.
+	 * @param   id      ID of the chunk.
 	 */
-	public Chunk( int id )
+	public Chunk( final int id )
 	{
 		_id = id;
 	}
@@ -210,11 +215,11 @@ public abstract class Chunk
 	/**
 	 * Returns the size in bytes of a string.
 	 *
-	 * @param	str		the string to get size for.
+	 * @param   str		the string to get size for.
 	 *
-	 * @return	the size in bytes of the String.
+	 * @return  the size in bytes of the String.
 	 */
-	public static final int STRING_SIZE( String str )
+	public static final int STRING_SIZE( final String str )
 	{
 		return str.length() + 1;
 	}
@@ -224,11 +229,11 @@ public abstract class Chunk
 	 * this is used when reading from input stream.
 	 * This method figures out what the chunk is.
 	 *
-	 * @param	id	the ID of the Chunk
+	 * @param   id      ID of the Chunk
 	 *
-	 * @return	the new Chunk with specified ID.
+	 * @return  the new Chunk with specified ID.
 	 */
-	public static Chunk createChunk( int id )
+	public static Chunk createChunk( final int id )
 	{
 		switch ( id )
 		{
@@ -248,7 +253,7 @@ public abstract class Chunk
 			case LIT_MULTIPLIER :
 			case LIT_RAY_BIAS 	:
 			case LIT_ROLL 		: return new FloatChunk( id );
-			case OBJ_CAMERA		: return new Ab3dsCamera( id );
+			case OBJ_CAMERA		: return new Ab3dsCamera();
 			case RGB_FLOAT		: return new Ab3dsRGB( id , true );
 			case RGB_BYTE		: return new Ab3dsRGB( id , false );
 
@@ -260,27 +265,27 @@ public abstract class Chunk
 			case MAT_SPECULAR_MAP :
 			case MAT_SHINI_MAP 	:
 			case MAT_ILLUM_MAP 	:
-			case MAT_REFLECT_MAP : return new TextureMap( id );	
-			
+			case MAT_REFLECT_MAP : return new TextureMap( id );
+
 			case OBJ_TRIMESH  	:
 			case MAIN3DS		:
 //			case KEYF3DS		:
-			//case EDIT_CONFIG1 : 
+			//case EDIT_CONFIG1 :
 			//case EDIT_CONFIG2 :
 			case EDIT3DS		: return new HierarchyChunk( id );
 		}
-		
+
 		return new UnknownChunk( id );
 	}
 
 	/**
 	 * Get the byte as Hex string.
 	 *
-	 * @param	dec	decimal to get hex for.
+	 * @param   dec	decimal to get hex for.
 	 *
-	 * @return	dec as Hex String.
+	 * @return  dec as Hex String.
 	 */
-	public static String getHex( byte dec )
+	public static String getHex( final byte dec )
 	{
 		String hex = Integer.toHexString( (int)dec );
 		while ( hex.length() < 2 ) hex = "0" + hex;
@@ -290,11 +295,11 @@ public abstract class Chunk
 	/**
 	 * Get the int as Hex string.
 	 *
-	 * @param	dec	decimal to get hex for.
+	 * @param   dec	decimal to get hex for.
 	 *
-	 * @return	dec as Hex String.
+	 * @return  dec as Hex String.
 	 */
-	public static String getHex( int dec )
+	public static String getHex( final int dec )
 	{
 		String hex = Integer.toHexString( dec );
 		while ( hex.length() < 4 ) hex = "0" + hex;
@@ -304,11 +309,11 @@ public abstract class Chunk
 	/**
 	 * Get the long as Hex string.
 	 *
-	 * @param	dec	decimal to get hex for.
+	 * @param   dec	decimal to get hex for.
 	 *
-	 * @return	dec as Hex String.
+	 * @return  dec as Hex String.
 	 */
-	public static String getHex( long dec )
+	public static String getHex( final long dec )
 	{
 		String hex = Long.toHexString( dec );
 		while( hex.length() < 8 ) hex = "0" + hex;
@@ -318,9 +323,9 @@ public abstract class Chunk
 	/**
 	 * Gets the ID of the Chunk.
 	 *
-	 * @return	the ID of this chunk.
+	 * @return  the ID of this chunk.
 	 */
-	public int getID() 
+	public final int getID()
 	{
 		return _id;
 	}
@@ -328,27 +333,27 @@ public abstract class Chunk
 	/**
 	 * Returns the size in bytes of the chunk.
 	 *
-	 * @return	the size of the chunk in bytes.
+	 * @return  the size of the chunk in bytes.
 	 */
 	public abstract long getSize();
 
 	/**
 	 * Reads the chunk from the input stream.
-	 * 
-	 * @param	is	the stream to read from.
+	 *
+	 * @param   is	the stream to read from.
 	 *
 	 * @throws IOException when an io error occurred.
 	 */
 	public abstract void read( Ab3dsInputStream is ) throws IOException;
 
 	/**
-	 * @param	is	the stream to read from.
-	 * @param	fp	filepointer to the current position in stream.
+	 * @param   is	the stream to read from.
+	 * @param   fp	filepointer to the current position in stream.
 	 *
-	 * @return	filepointer at point of return.
+	 * @return  filepointer at point of return.
 	 */
-	public void readHeader( Ab3dsInputStream is ) 
-		throws IOException 
+	public final void readHeader( final Ab3dsInputStream is )
+		throws IOException
 	{
 		_chunkStart = is.getPointer() - 2;
 		_chunkSize  = is.readLong();
@@ -358,7 +363,7 @@ public abstract class Chunk
 	/**
 	 * Returns a String representation of this chunk.
 	 *
-	 * @return	this chunk as a string.
+	 * @return  this chunk as a string.
 	 */
 	public String toString()
 	{
@@ -367,21 +372,21 @@ public abstract class Chunk
 
 	/**
 	 * Writes the chunk the output stream.
-	 * 
-	 * @param	os	the stream to write to.
+	 *
+	 * @param   os	the stream to write to.
 	 *
 	 * @throws IOException when an io error occurred.
 	 */
 	public abstract void write( Ab3dsOutputStream os ) throws IOException;
 
 	/**
-	 * @param	is	the stream to read from.
-	 * @param	fp	filepointer to the current position in stream.
+	 * @param   is	the stream to read from.
+	 * @param   fp	filepointer to the current position in stream.
 	 *
-	 * @return	filepointer at point of return.
+	 * @return  filepointer at point of return.
 	 */
-	public void writeHeader( Ab3dsOutputStream os ) 
-		throws IOException 
+	public final void writeHeader( final Ab3dsOutputStream os )
+		throws IOException
 	{
 		//System.out.println( "Write chunk : " + getHex( getID() ) + "   size = " + getSize() );
 		os.writeInt( getID() );

@@ -1,150 +1,154 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Sjoerd Bouwman
  *
- * (C) Copyright 1999-2004 Sjoerd Bouwman (aso@asobrain.com)
- * 
- * This program is free software; you can redistribute it and/or
- * modify it as you see fit.
- * 
- * This program is distributed in the hope that it will be useful,
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d.a3ds;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Outputstream specially to write 3ds types.
  *
- * @author	Sjoerd Bouwman
- * @version	$Revision$ $Date$
+ * @author  Sjoerd Bouwman
+ * @version $Revision$ $Date$
  */
-public class Ab3dsOutputStream 
+public final class Ab3dsOutputStream
 {
-	/**
-	 * Current file pointer.
-	 */
-	private long pointer = 0;
-
 	/**
 	 * Stream to write to.
 	 */
-	private OutputStream os = null; 
+	private final OutputStream _os;
+
+	/**
+	 * Current file pointer.
+	 */
+	private long _pointer;
+
 	/**
 	 * Constructor.
 	 *
-	 * @param	os	Outputstream to write to.
+	 * @param   os      Stream to write to.
 	 */
-	public Ab3dsOutputStream( OutputStream os ) 
+	public Ab3dsOutputStream( final OutputStream os )
 	{
-		this.os = os;
+		_os = os;
+		_pointer = 0;
 	}
 
 	/**
 	 * Gets the current filepointer of the stream.
 	 *
-	 * @return	the current position in the file.
+	 * @return  Current position in the file.
 	 */
 	public long getPointer()
 	{
-		return pointer;
+		return _pointer;
 	}
 
 	/**
 	 * Writes a boolean to stream.
 	 *
-	 * @param	b	boolean to write.
+	 * @param   b   Boolean to write.
 	 *
 	 * @throws IOException when writing failed.
 	 */
-	public int writeBoolean( boolean b ) throws IOException
+	public void writeBoolean( final boolean b )
+		throws IOException
 	{
-		os.write( b ? 1 : 0 );
-		pointer+=1;
-		return 1;
+		_os.write( b ? 1 : 0 );
+		_pointer += 1;
 	}
 
 	/**
 	 * Writes a byte to stream.
 	 *
-	 * @param	b	byte to write.
+	 * @param   b   Byte to write.
 	 *
 	 * @throws IOException when writing failed.
 	 */
-	public int writeByte( byte b ) throws IOException
+	public void writeByte( final byte b )
+		throws IOException
 	{
-		os.write( b );
-		pointer+=1;
-		return 1;
+		_os.write( b );
+		_pointer += 1;
 	}
 
 	/**
 	 * Writes a float to stream.
 	 *
-	 * @param	f	float to write.
+	 * @param   f   Float to write.
 	 *
 	 * @throws IOException when writing failed.
 	 */
-	public float writeFloat( float f ) throws IOException
+	public void writeFloat( final float f )
+		throws IOException
 	{
-		return writeLong( Float.floatToIntBits( f ) );
+		writeLong( Float.floatToIntBits( f ) );
 	}
 
 	/**
 	 * Writes an int to stream.
 	 *
-	 * @param	i	int to write.
+	 * @param   i   Int to write.
 	 *
 	 * @throws IOException when writing failed.
 	 */
-	public int writeInt( int i ) throws IOException
+	public void writeInt( final int i )
+		throws IOException
 	{
-		int high = i >> 8;
-		int low = i & 255;
+		final int high = i >> 8;
+		final int low = i & 255;
 
-		os.write( low );
-		os.write( high );
-		pointer+=2;
-	
-		return 2;
+		_os.write( low );
+		_os.write( high );
+		_pointer += 2;
 	}
 
 	/**
 	 * Writes a long to stream.
 	 *
-	 * @param	l	long to write.
+	 * @param   l   Long to write.
 	 *
 	 * @throws IOException when writing failed.
 	 */
-	public int writeLong( long l ) throws IOException
+	public void writeLong( final long l )
+		throws IOException
 	{
-		int low = (int)(l & 0xFFFF);
-		int high = (int)(l >> 16);
-
-		writeInt( low );
-		writeInt( high );
-
-		return 4;
+		writeInt( (int)( l &  0xFFFF ) );
+		writeInt( (int)( l >> 16 ) );
 	}
 
 	/**
 	 * Writes a string to stream.
 	 *
-	 * @param	s	string to write.
+	 * @param   str     String to write.
 	 *
 	 * @throws IOException when writing failed.
 	 */
-	public int writeString( String str )
+	public void writeString( final String str )
 		throws IOException
 	{
 		for ( int i = 0 ; i < str.length() ; i++ )
-		{
-			os.write( (int)str.charAt( i ) );
-		}
-		os.write( 0 );
-		pointer += str.length() + 1;
-		return str.length() + 1;
-	}
+			_os.write( (int)str.charAt( i ) );
+		_os.write( 0 );
 
+		_pointer += str.length() + 1;
+	}
 }

@@ -1,25 +1,60 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 2004-2004 Numdata BV
  *
- * (C) Copyright Numdata BV 2004-2004 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
-package com.numdata.soda.Gerwin.AbtoJ3D;
+package ab.j3d.view;
 
 import java.awt.Component;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
-import ab.j3d.renderer.TreeNode;
+import ab.j3d.model.Node3D;
 
 /**
- * @FIXME Need comment
+ * The view model provides a high level interface between an application and a
+ * 3D environment. The user able to interact with the view(s) of this model.
+ * <p />
+ * The following entities are defined by this model:
+ * <dl>
+ *   <dt>View model (<code>ViewModel</code>, this class)</dt>
+ *   <dd>
+ *     This is the main application interface. The main application functions
+ *     are adding, updating, and nodes or views, and handling user interaction.
+ *   </dd>
+ *   <dt>Node (<code>ViewModelNode</code>)</dt>
+ *   <dd>
+ *     A node links an application-assigned object (<code>ID : Object</code>) to
+ *     a part of the 3D scene (<code>abRootNode : Node3D</code>). The application
+ *     defines how the specified object is represented in 3D, and allows it to be
+ *     placed in the 3D environment. A transform can be applied to define the
+ *     location, orientation, and scale of the object.
+ *   </dd>
+ *   <dt>View (<code>ViewModelView</code>)</dt>
+ *   <dd>
+ *     A view provides a graphical representation of the 3D scene
+ *     (<code>component : Component</code>). Multiple views may be
+ *     defined for a single view model; each identified by an
+ *     application-assigned object (<code>ID : Object</code>).
+ *   </dd>
+ * </dl>
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
@@ -27,213 +62,285 @@ import ab.j3d.renderer.TreeNode;
 public abstract class ViewModel
 {
 	/**
-	 * Map containg the nodes.
-	 *
-	 * key   : ID (<code>Object</code>).
-	 * value : node (<code>ViewNode</code>).
+	 * List of nodes (element type: <code>ViewModelNode</code>).
 	 */
-	private Map _nodes;
+	private final List _nodes = new ArrayList();
 
 	/**
-	 * Map containg the views.
-	 *
-	 * key   : ID (<code>Object</code>).
-	 * value : view (<code>ViewView</code>).
+	 * List of views (element type: <code>ViewModelView</code>).
 	 */
-	private Map _views;
+	private final List _views = new ArrayList();
 
 	/**
 	 * Construct new ViewModel.
 	 */
 	protected ViewModel()
 	{
-		_nodes = new HashMap();
-		_views = new HashMap();
 	}
 
 	/**
-	 * Add view node. This method is only supposed to be used internally.
+	 * Get node by ID. This method is only supposed to be used internally.
 	 *
-	 * @param   ID      Application-assigned ID for a view node.
+	 * @param   id      Application-assigned ID of view model node.
+	 *
+	 * @return  Node with the specified ID;
+	 *          <code>null</code> if no node with the specified ID was found.
+	 *
+	 * @throws  NullPointerException if ID is null.
+	 */
+	protected final ViewModelNode getNode( final Object id )
+	{
+		if ( id == null )
+			throw new NullPointerException( "id" );
+
+		ViewModelNode result = null;
+
+		for ( int i = 0 ; i < _nodes.size() ; i++ )
+		{
+			final ViewModelNode node = (ViewModelNode) _nodes.get( i );
+			if ( id == node.getID() )
+			{
+				result = node;
+				break;
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Get ID's of all nodes in the model.
+	 *
+	 * @return  List containing ID's of all nodes in the model.
+	 */
+	public final List getNodeIDs()
+	{
+		final List result = new ArrayList( _nodes.size() );
+		for ( int i = 0 ; i < _nodes.size() ; i++ )
+			result.add( ((ViewModelNode)_nodes.get( i ) ).getID() );
+
+		return result;
+	}
+
+	/**
+	 * Get root 3D scene node for the specified node.
+	 *
+	 * @param   id      Application-assigned ID of node.
+	 *
+	 * @return  Root in the 3D scene associated with the specified node;
+	 *          <code>null</code> if the requested node was not found.
+	 */
+	public final Node3D getNode3D( final Object id )
+	{
+		final ViewModelNode node = getNode( id );
+		return ( node != null ) ? node.getNode3D() : null;
+	}
+
+	/**
+	 * Add view model node. This method is only supposed to be used internally.
+	 *
 	 * @param   node    Node to add.
 	 *
-	 * @throws  NullPointerException if ID or node is null.
+	 * @throws  NullPointerException if node is null.
 	 */
-	protected void addNode( final Object ID , final ViewNode node )
+	protected void addNode( final ViewModelNode node )
 	{
-		if ( ID == null )
-			throw new NullPointerException( "ID" );
-
 		if ( node == null )
 			throw new NullPointerException( "node" );
 
-		_nodes.put( ID , node );
-	}
-
-	/**
-	 * Add view view. This method is only supposed to be used internally.
-	 *
-	 * @param   ID      Application-assigned ID for a view view.
-	 * @param   view    View to add.
-	 *
-	 * @throws  NullPointerException if ID or node is null.
-	 */
-	protected void addView( final Object ID , final ViewView view )
-	{
-		if ( ID == null )
-			throw new NullPointerException( "ID" );
-
-		if ( view == null )
-			throw new NullPointerException( "view" );
-
-		_views.put( ID , view );
-	}
-
-	/**
-	 * Get view node by ID. This method is only supposed to be used internally.
-	 *
-	 * @param   ID      Application-assigned ID of view node to get.
-	 *
-	 * @throws  NullPointerException if ID is null.
-	 */
-	protected ViewNode getNode( final Object ID )
-	{
-		if ( ID == null )
-			throw new NullPointerException( "ID" );
-
-		return (ViewNode)_nodes.get( ID );
-	}
-
-	/**
-	 * Get view view by ID. This method is only supposed to be used internally.
-	 *
-	 * @param   ID      Application-assigned ID of view view to get.
-	 *
-	 * @throws  NullPointerException if ID is null.
-	 */
-	protected ViewView getView( final Object ID )
-	{
-		if ( ID == null )
-			throw new NullPointerException( "ID" );
-
-		return (ViewView)_views.get( ID );
-	}
-
-	/**
-	 * Get iterator for the IDs of all view sub trees that were added to the model.
-	 *
-	 * @return  Iterator for the IDs of all view sub trees that were added to the model.
-	 */
-	public Iterator getAllNodeIDs()
-	{
-		return _nodes.keySet().iterator();
-	}
-
-	/**
-	 * Get iterator for the IDs of all views of the model.
-	 *
-	 * @return  Iterator for the IDs of all views of the model.
-	 */
-	public Iterator getAllViewIDs()
-	{
-		return _views.keySet().iterator();
+		if ( !_nodes.contains( node ) )
+			_nodes.add( node );
 	}
 
 	/**
 	 * Create a new node (sub tree) in the view tree. The specified abNode is
 	 * converted into view and then added to the view tree.
 	 *
-	 * @param   ID      ID of the view (sub)tree that is created. This ID can be
-	 *                  used to update this specific part of the view tree.
-	 * @param   abNode  AbNode to create a view node for.
+	 * @param   id      Application-assigned ID of view model node.
+	 * @param   node3D  Root in the 3D scene to create a view model node for.
 	 */
-	public abstract void createNode( Object ID , TreeNode abNode );
+	public abstract void createNode( Object id , Node3D node3D );
 
 	/**
-	 * Create a new view.
+	 * Remove view model node.
 	 *
-	 * @param   ID      ID of the view that is created.
-	 * @param   from    Point to look from.
-	 * @param   to      Point to look at.
-	 */
-	public abstract Component createView( Object ID , final Vector3D from , final Vector3D to );
-
-	/**
-	 * Update a specified part (sub tree) of the view tree.
+	 * @param   id      Application-assigned ID of view model node.
 	 *
-	 * @param   ID  ID of the (sub) tree to be updated.
+	 * @throws  NullPointerException if ID is null.
 	 */
-	public void updateNode( final Object ID )
+	public void removeNode( final Object id )
 	{
-		final ViewNode node = getNode( ID );
-		if ( node == null )
-			throw new IllegalArgumentException( "ID '" + ID + "' does not refer to a known view node" );
+		if ( id == null )
+			throw new NullPointerException( "id" );
 
-		node.update();
-	}
-
-	/**
-	 * Update a specified part (sub tree) of the view tree. If this sub tree
-	 * is not created yet, it will be created (and then updated).
-	 *
-	 * @param   ID      ID of the view (sub)tree that is created. This ID can be
-	 *                  used to update this specific part of the view tree.
-	 * @param   abNode  AbNode to create a view node for.
-	 */
-	public void updateOrCreateNode( final Object ID , final TreeNode abNode )
-	{
-		final ViewNode node = getNode( ID );
-		if ( node == null )
-		{
-			createNode( ID , abNode );
-		}
-		else
-		{
-			node.update();
-		}
+		_nodes.remove( id );
 	}
 
 	/**
 	 * Set the transform for a specified part (sub tree) of the view tree.
 	 *
+	 * @param   id          Application-assigned ID of view model node.
 	 * @param   transform   Transform to set.
 	 */
-	public void setNodeTransform( final Object ID , final Matrix3D transform )
+	public final void setNodeTransform( final Object id , final Matrix3D transform )
 	{
-		final ViewNode node = getNode( ID );
+		final ViewModelNode node = getNode( id );
 		if ( node == null )
-			throw new IllegalArgumentException( "ID '" + ID + "' does not refer to a known view node" );
+			throw new IllegalArgumentException( "ID '" + id + "' does not refer to a known view model node" );
 
 		node.setTransform( transform );
 	}
 
 	/**
-	 * Set the transform for a specified view.
+	 * Update a specified part (sub tree) of the view tree.
 	 *
-	 * @param   transform   Transform to set.
+	 * @param   id          Application-assigned ID of view model node.
 	 */
-	public void setViewTransform( final Object ID , final Matrix3D transform )
+	public void updateNode( final Object id )
 	{
-		final ViewView view = getView( ID );
-		if ( view == null )
-			throw new IllegalArgumentException( "ID '" + ID + "' does not refer to a known view node" );
+		final ViewModelNode node = getNode( id );
+		if ( node == null )
+			throw new IllegalArgumentException( "ID '" + id + "' does not refer to a known view model node" );
 
-		view.setTransform( transform );
+		node.update();
 	}
 
 	/**
-	 * From a specified part (sub tree) of the view tree get the AbNode it was
-	 * created/converted from.
+	 * Get view view by ID. This method is only supposed to be used internally.
 	 *
-	 * @param   ID  Id of the view sub tree.
+	 * @param   id      Application-assigned ID of view model view.
 	 *
-	 * @return  AbNode that was used to create/convert the specified view
-	 *          sub tree from;
-	 *          <code>null</code> if the requested node was not found.
+	 * @return  View with the specified ID;
+	 *          <code>null</code> if no view with the specified ID was found.
+	 *
+	 * @throws  NullPointerException if ID is null.
 	 */
-	public TreeNode getAbRootNode( final Object ID )
+	public final ViewModelView getView( final Object id )
 	{
-		final ViewNode node = getNode( ID );
-		return ( node != null ) ? node.getAbRootNode() : null;
+		if ( id == null )
+			throw new NullPointerException( "id" );
+
+		ViewModelView result = null;
+
+		for ( int i = 0 ; i < _views.size() ; i++ )
+		{
+			final ViewModelView view = (ViewModelView) _views.get( i );
+			if ( id == view.getID() )
+			{
+				result = view;
+				break;
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Get view component for the specified view node.
+	 *
+	 * @param   id      Application-assigned ID of view.
+	 *
+	 * @return  Component with graphical representation of view;
+	 *          <code>null</code> if the requested view was not found.
+	 */
+	public final Component getViewComponent( final Object id )
+	{
+		final ViewModelView view = getView( id );
+		return ( view != null ) ? view.getComponent() : null;
+	}
+
+	/**
+	 * Get view control for the specified view node.
+	 *
+	 * @param   id      Application-assigned ID of view.
+	 *
+	 * @return  ViewControl that controls the specified view;
+	 *          <code>null</code> if the requested view was not found.
+	 */
+	public final ViewControl getViewControl( final Object id )
+	{
+		final ViewModelView view = getView( id );
+		return ( view != null ) ? view.getViewControl() : null;
+	}
+
+	/**
+	 * Get ID's of all views for the model.
+	 *
+	 * @return  List containing ID's of all views for the model.
+	 */
+	public final List getViewIDs()
+	{
+		final List result = new ArrayList( _views.size() );
+		for ( int i = 0 ; i < _views.size() ; i++ )
+			result.add( ((ViewModelView)_views.get( i ) ).getID() );
+
+		return result;
+	}
+
+	/**
+	 * Add view model view. This method is only supposed to be used internally.
+	 *
+	 * @param   view    View to add.
+	 *
+	 * @throws  NullPointerException if view is null.
+	 */
+	protected final void addView( final ViewModelView view )
+	{
+		if ( view == null )
+			throw new NullPointerException( "view" );
+
+		if ( !_views.contains( view ) )
+			_views.add( view );
+	}
+
+	/**
+	 * Create a new view for this model.
+	 *
+	 * @param   id              Application-assigned ID for the new view.
+	 * @param   viewControl     Control to use for this view.
+	 *
+	 * @return  View component for create view.
+	 */
+	public abstract Component createView( final Object id , final ViewControl viewControl );
+
+	/**
+	 * Convenience method to create a new from-to view.
+	 *
+	 * @param   id      ID of the view that is created.
+	 * @param   from    Point to look from.
+	 * @param   to      Point to look at.
+	 *
+	 * @return  View component for create view.
+	 */
+	public final Component createView( final Object id , final Vector3D from , final Vector3D to )
+	{
+		return createView( id , new FromToViewControl( from , to ) );
+	}
+
+	/**
+	 * Remove view model view.
+	 *
+	 * @param   id      Application-assigned ID for a view model view.
+	 *
+	 * @throws  NullPointerException if ID is null.
+	 */
+	public final void removeView( final Object id )
+	{
+		if ( id == null )
+			throw new NullPointerException( "id" );
+
+		_views.remove( id );
+	}
+
+	/**
+	 * Update all views.
+	 */
+	public final void updateViews()
+	{
+		for ( int i = 0 ; i < _views.size() ; i++ )
+		{
+			final ViewModelView view = (ViewModelView) _views.get( i );
+			view.update();
+		}
 	}
 }

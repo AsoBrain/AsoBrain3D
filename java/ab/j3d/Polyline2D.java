@@ -1,49 +1,21 @@
-/* ====================================================================
- * $Id$
+/* $Id$
  * ====================================================================
- * Numdata Open Source Software License, Version 1.0
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 2001-2004 Numdata BV
  *
- * Copyright (c) 2001-2004 Numdata BV.  All rights reserved.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
  *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- *
- * 3. The end-user documentation included with the redistribution,
- *    if any, must include the following acknowledgment:
- *       "This product includes software developed by
- *        Numdata BV (http://www.numdata.com/)."
- *    Alternately, this acknowledgment may appear in the software itself,
- *    if and wherever such third-party acknowledgments normally appear.
- *
- * 4. The names "Numdata" must not be used to endorse or promote
- *    products derived from this software without prior written
- *    permission of Numdata BV. For written permission, please contact
- *    info@numdata.com.
- *
- * 5. Products derived from this software may not be called "Numdata",
- *    nor may "Numdata" appear in their name, without prior written
- *    permission of Numdata BV.
- *
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED.  IN NO EVENT SHALL THE NUMDATA BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
 package ab.j3d;
@@ -67,7 +39,7 @@ public final class Polyline2D
 	 * This special value is used to indicate that the polyline type was not
 	 * yet determined.
 	 *
-	 * @see	#getType
+	 * @see     #getType
 	 */
 	public static final int UNKNOWN = -1;
 
@@ -76,7 +48,7 @@ public final class Polyline2D
 	 *
 	 * Polyline without any points.
 	 *
-	 * @see	#getType
+	 * @see     #getType
 	 */
 	public static final int VOID = 0;
 
@@ -85,7 +57,7 @@ public final class Polyline2D
 	 *
 	 * Polyline with single point.
 	 *
-	 * @see	#getType
+	 * @see     #getType
 	 */
 	public static final int POINT = 1;
 
@@ -94,8 +66,8 @@ public final class Polyline2D
 	 *
 	 * Polyline with one linear segment between two points.
 	 *
-	 * @see	#PATH
-	 * @see	#getType
+	 * @see     #PATH
+	 * @see     #getType
 	 */
 	public static final int LINE = 2;
 
@@ -104,8 +76,8 @@ public final class Polyline2D
 	 *
 	 * Open polyline with at least two points not constituting a line.
 	 *
-	 * @see	#LINE
-	 * @see	#getType
+	 * @see     #LINE
+	 * @see     #getType
 	 */
 	public static final int PATH = 3;
 
@@ -116,8 +88,8 @@ public final class Polyline2D
 	 * length that intersects the polyline will intersect it twice and twice
 	 * only).
 	 *
-	 * @see	#CONCAVE
-	 * @see	#getType
+	 * @see     #CONCAVE
+	 * @see     #getType
 	 */
 	public static final int CONVEX  = 4;
 
@@ -126,8 +98,8 @@ public final class Polyline2D
 	 *
 	 * Any closed polyline that is not convex.
 	 *
-	 * @see	#CONVEX
-	 * @see	#getType
+	 * @see     #CONVEX
+	 * @see     #getType
 	 */
 	public static final int CONCAVE = 5;
 
@@ -151,7 +123,7 @@ public final class Polyline2D
 	/**
 	 * Cache for enclosed rectangel of a convex shape.
 	 *
-	 * @see	#getEnclosedRectangle
+	 * @see     #getEnclosedRectangle
 	 */
 	private Bounds2D _encloseCache = null;
 
@@ -166,7 +138,7 @@ public final class Polyline2D
 	/**
 	 * Clone constructor.
 	 *
-	 * @param   original	Polyline to clone.
+	 * @param   original    Polyline to clone.
 	 */
 	public Polyline2D( final Polyline2D original )
 	{
@@ -196,8 +168,8 @@ public final class Polyline2D
 	 *   (0,0)
 	 * </pre>
 	 *
-	 * @param   dx	Delta-X (may be 0).
-	 * @param   dy	Delta-Y (may be 0).
+	 * @param   dx      Delta-X (may be 0).
+	 * @param   dy      Delta-Y (may be 0).
 	 */
 	public Polyline2D( final float dx , final float dy )
 	{
@@ -224,13 +196,13 @@ public final class Polyline2D
 	 * Adjust the position of a segment perdendular to the segment direction.
 	 * This is used to reduce/enlartge the polyline at one of its segements.
 	 *
-	 * @param   startIndex		Start index of segment in polyline.
-	 * @param   adjustment		Position adjustment of segment.
+	 * @param   startIndex      Start index of segment in polyline.
+	 * @param   adjustment      Position adjustment of segment.
 	 *
 	 * @return  <code>true</code> if the adjustment was succesful;
-	 *			<code>false</code> if the adjustment failed (it may fail when
-	 * 			the adjustment changes the structure of the polyline, e.g.
-	 *			number of segments).
+	 *          <code>false</code> if the adjustment failed (it may fail when
+	 *          the adjustment changes the structure of the polyline, e.g.
+	 *          number of segments).
 	 */
 	public boolean adjustSegment( final int startIndex , final float adjustment)
 	{
@@ -370,10 +342,11 @@ public final class Polyline2D
 	 * @param index     Index of the new point
 	 * @param point     The point
 	 */
-		public void addPoint( int index , PolyPoint2D point )
+	public void addPoint( final int index , final PolyPoint2D point )
 	{
 		if ( point == null )
 			throw new NullPointerException( "Cannot add a null point to a polyline" );
+
 		_points.add( index , point );
 		_typeCache = UNKNOWN;
 		_boundsCache = null;
@@ -383,7 +356,7 @@ public final class Polyline2D
 	/**
 	 * Add control point to polyline.
 	 *
-	 * @param   point	Control point to append to polyline.
+	 * @param   point   Control point to append to polyline.
 	 */
 	public void append( final PolyPoint2D point )
 	{
@@ -398,8 +371,8 @@ public final class Polyline2D
 	/**
 	 * Add control point to polyline.
 	 *
-	 * @param   x	X coordinate of segment end point.
-	 * @param   y	Y coordinate of segment end point.
+	 * @param   x   X coordinate of segment end point.
+	 * @param   y   Y coordinate of segment end point.
 	 */
 	public void append( final float x , final float y )
 	{
@@ -446,11 +419,11 @@ public final class Polyline2D
 	 * coordinate system of the polyline, so it may need to be transformed to a common coordinate
 	 * system.
 	 *
-	 * @param   index	Index of start point of segment.
+	 * @param   index   Index of start point of segment.
 	 *
 	 * @return  Matrix representing base of extruded surface, or <code>null</code> if no
-	 *			extruded surface can be constructed (invalid segment, segment is not
-	 *			straight, ....).
+	 *          extruded surface can be constructed (invalid segment, segment is not
+	 *          straight, ....).
 	 */
 	public Matrix3D extrudeSurface( final int index )
 	{
@@ -493,7 +466,7 @@ public final class Polyline2D
 	 * Get bounding box of polyline.
 	 *
 	 * @return  Bounds2D with bounding box for polyline;
-	 *			<code>null</code> if the poyline has no bounds (it's void).
+	 *          <code>null</code> if the poyline has no bounds (it's void).
 	 */
 	public synchronized Bounds2D getBounds()
 	{
@@ -639,7 +612,7 @@ public final class Polyline2D
 	 * This method only delagates all the different types of shapes, it
 	 * does no testing itself.
 	 *
-	 * @param   other	the other shape to get intersection with.
+	 * @param   other   Other shape to get intersection with.
 	 *
 	 * @return  Shape describing the intersecting shape.
 	 */
@@ -706,39 +679,39 @@ public final class Polyline2D
 	 *
 	 * Stage 1, find intersecting segments.
 	 *
-	 *		Walk thrue both polys to find the segments that intersect with the other.
-	 * 		First we have to know if we start inside or outside the other poly.
-	 * 		Now find all intersecting points of one segment of the current poly with
-	 * 		all segments of the other poly (for two convex polys, this can be 0, 1 or 2 points):
+	 *      Walk thrue both polys to find the segments that intersect with the other.
+	 *      First we have to know if we start inside or outside the other poly.
+	 *      Now find all intersecting points of one segment of the current poly with
+	 *      all segments of the other poly (for two convex polys, this can be 0, 1 or 2 points):
 	 *
-	 *		- no intersections ? inside  ? stay inside, add segment.
-	 *							 outside ? stay outside, do nothing.
+	 *      - no intersections ? inside  ? stay inside, add segment.
+	 *                           outside ? stay outside, do nothing.
 	 *      - one intersection ? inside  ? go outside, add segment( head , intersection ).
-	 *							 outside ? go inside, add segment( tail , intersection ).
-	 *		- two intersections? inside  ? error, from the inside you can never have two intersections.
-	 *							 outside ? stay outside, add segment( intersection1 , intersection2 ).
+	 *                           outside ? go inside, add segment( tail , intersection ).
+	 *      - two intersections? inside  ? error, from the inside you can never have two intersections.
+	 *                           outside ? stay outside, add segment( intersection1 , intersection2 ).
 	 *
-	 *		Optimisations after walking thrue the first poly:
+	 *      Optimisations after walking thrue the first poly:
 	 *
-	 *		1) If we started inside and we stayed inside the whole time,
-	 *		   intersection must be convex1 itself.
-	 *		2) If we stayed outside the whole time and a point of convex2
-	 *		   is inside of convex1, intersection is convex2 itself.
-	 *		3) If we stayed outside the whole time and a point of convex2
-	 *		   is outside of convex1, there is no intersection.
+	 *      1) If we started inside and we stayed inside the whole time,
+	 *         intersection must be convex1 itself.
+	 *      2) If we stayed outside the whole time and a point of convex2
+	 *         is inside of convex1, intersection is convex2 itself.
+	 *      3) If we stayed outside the whole time and a point of convex2
+	 *         is outside of convex1, there is no intersection.
 	 *
 	 * Stage 2, head-to-tail.
 	 *
-	 *		Start with a random segment (we use the first segment).
-	 *		We add the head and the tail of this first segment to the result poly.
-	 *		Now walk thrue all the rest of the segments, removing them
-	 *		if you add one to the result poly.
-	 *		The head of the next segment must be equal to the tail
-	 *		of the last one. If so, add the tail of the segment to
-	 *		the polyline.
+	 *      Start with a random segment (we use the first segment).
+	 *      We add the head and the tail of this first segment to the result poly.
+	 *      Now walk thrue all the rest of the segments, removing them
+	 *      if you add one to the result poly.
+	 *      The head of the next segment must be equal to the tail
+	 *      of the last one. If so, add the tail of the segment to
+	 *      the polyline.
 	 *
-	 * @param   convex1		a polyline that is guaranteed convex.
-	 * @param   convex2		an other polyline that is convex.
+	 * @param   convex1     A polyline that is guaranteed convex.
+	 * @param   convex2     Another polyline that is convex.
 	 *
 	 * @return  the intersecting area of the two convex polylines.
 	 */
@@ -1162,8 +1135,8 @@ public final class Polyline2D
 	/**
 	 * Gets the intersection between a convex PolyLine2D and a line PolyLine2D.
 	 *
-	 * @param   convex	The convex Polyline to get intersection from.
-	 * @param   line	The line to get intersection from.
+	 * @param   convex  Convex Polyline to get intersection from.
+	 * @param   line    Line to get intersection from.
 	 *
 	 * @return  PolyLine2D describing the intersection between the two.
 	 */
@@ -1301,12 +1274,12 @@ public final class Polyline2D
 	 * the convex more than one time. So the path may only enter/exit the
 	 * convex once.
 	 *
-	 * @param   convex		a polyline that is guaranteed convex.
-	 * @param   path		a polyline that is a path.
+	 * @param   convex      Polyline that is guaranteed convex.
+	 * @param   path        Polyline that is a path.
 	 *
-	 * @return  the intersecting area of the two convex polylines.
+	 * @return  Intersecting area of the two convex polylines.
 	 *
-	 * @see		#getIntersectionConvex_Convex
+	 * @see     #getIntersectionConvex_Convex
 	 */
 	protected static Polyline2D getIntersectionConvex_Path( final Polyline2D convex , final Polyline2D path )
 	{
@@ -1493,10 +1466,10 @@ public final class Polyline2D
 	 *
 	 * Calls getIntersectionLine_Line with 8 floats to do the work.
 	 *
-	 * @param   p1	First point of line 1
-	 * @param   p2	Second point of line 1
-	 * @param   p3	First point of line 2
-	 * @param   p4	Second point of line 2
+	 * @param   p1      First point of line 1
+	 * @param   p2      Second point of line 1
+	 * @param   p3      First point of line 2
+	 * @param   p4      Second point of line 2
 	 *
 	 * @return  Polyline describing the intersection.
 	 */
@@ -1525,18 +1498,18 @@ public final class Polyline2D
 	 *    Author: Paul Bourke (april 1989)
 	 *    http://astronomy.swin.edu.au/pbourke/geometry/lineline2d/
 	 *
-	 * @param   x1		start point of line 1.
-	 * @param   y1		start point of line 1
-	 * @param   x2		end point of line 1
-	 * @param   y2		end point of line 1
-	 * @param   x3		start point of line 2.
-	 * @param   y3		start point of line 2
-	 * @param   x4		end point of line 2
-	 * @param   y4		end point of line 2
-	 * @param   cache	cached array of polyline so we don't have to create one.
+	 * @param   x1      Start point of line 1.
+	 * @param   y1      Start point of line 1
+	 * @param   x2      End point of line 1
+	 * @param   y2      End point of line 1
+	 * @param   x3      Start point of line 2.
+	 * @param   y3      Start point of line 2
+	 * @param   x4      End point of line 2
+	 * @param   y4      End point of line 2
+	 * @param   cache   Cached array of polyline so we don't have to create one.
 	 *
 	 * @return  Array of points describing the intersection between the two
-	 *			(can be 0..2 points).
+	 *          (can be 0..2 points).
 	 */
 	protected static PolyPoint2D[] getIntersectionLine_Line( final float x1 , final float y1 , final float x2 , final float y2 , final float x3 , final float y3 , final float x4 , final float y4 , PolyPoint2D[] cache )
 	{
@@ -1645,9 +1618,9 @@ public final class Polyline2D
 	 *
 	 * Works only when result is one peace of one segment of path (or one point).
 	 *
-	 * @param   path	the path.
-	 * @param   p1		First point of line
-	 * @param   p2		Second point of line.
+	 * @param   path    Path.
+	 * @param   p1      First point of line
+	 * @param   p2      Second point of line.
 	 *
 	 * @return  Polyline describing the intersection.
 	 */
@@ -1749,8 +1722,8 @@ public final class Polyline2D
 	 * Works only when seperate intersecting segments can be layed
 	 * head to tail.
 	 *
-	 * @param   path1	First path.
-	 * @param   path2	Second path.
+	 * @param   path1   First path.
+	 * @param   path2   Second path.
 	 *
 	 * @return  Polyline describing the intersection.
 	 */
@@ -1800,10 +1773,10 @@ public final class Polyline2D
 	/**
 	 * Get length of segment.
 	 *
-	 * @param   index	Index of start point of segment.
+	 * @param   index   Index of start point of segment.
 	 *
 	 * @return  Length of segment, or -1 if the length of the specified segment can not
-	 *			be determined (invalid index).
+	 *          be determined (invalid index).
 	 */
 	public float getLength( final int index )
 	{
@@ -1816,7 +1789,7 @@ public final class Polyline2D
 	/**
 	 * Get control point at specified index from this polyline.
 	 *
-	 * @param   index	Index of control point to get.
+	 * @param   index   Index of control point to get.
 	 *
 	 * @return  PolyPoint2D instance at specified index.
 	 */
@@ -1953,10 +1926,10 @@ public final class Polyline2D
 	/**
 	 * Test if the specified transformation has any effect on 2D polylines.
 	 *
-	 * @param   xform	Transformation matrix.
+	 * @param   xform   Transformation matrix.
 	 *
 	 * @return  <code>true</code> if the transformation has effect on 2D polylines;
-	 *			<code>false</code> otherwise.
+	 *          <code>false</code> otherwise.
 	 */
 	protected static boolean hasEffect( final Matrix3D xform )
 	{
@@ -1971,7 +1944,7 @@ public final class Polyline2D
 	 * the exact same point to be classified as closed.
 	 *
 	 * @return  <code>true</code> if the polyline defines a closed path;
-	 *			<code>false</code> otherwise.
+	 *          <code>false</code> otherwise.
 	 */
 	public boolean isClosed()
 	{
@@ -1987,10 +1960,10 @@ public final class Polyline2D
 	/**
 	 * Checks if this shape is intersecting with an other one.
 	 *
-	 * @param   other	Polyline to check for intersection.
+	 * @param   other   Polyline to check for intersection.
 	 *
 	 * @return  <code>true</code> if shapes are intersecting;
-	 *			<code>false</code> otherwise.
+	 *          <code>false</code> otherwise.
 	 */
 	public boolean isIntersecting( final Polyline2D other )
 	{
@@ -2043,8 +2016,8 @@ public final class Polyline2D
 	 * So we have to check intersection between one point on convex1 and convex2
 	 * to check if convex1 is completely on convex2 (and the otherway around).
 	 *
-	 * @param   convex1		First convex
-	 * @param   convex2		Second convex
+	 * @param   convex1     First convex.
+	 * @param   convex2     Second convex.
 	 *
 	 * @return  true if shapes are intersecting, otherwise false.
 	 */
@@ -2072,8 +2045,8 @@ public final class Polyline2D
 	/**
 	 * Checks for intersection between a convex and a line.
 	 *
-	 * @param   convex	The convex
-	 * @param   line	The line.
+	 * @param   convex  Convex.
+	 * @param   line    Line.
 	 *
 	 * @return  true if shapes are intersecting, otherwise false.
 	 */
@@ -2092,8 +2065,8 @@ public final class Polyline2D
 	 * - line is completely within convex
 	 * So we have to check intersection between one point on the line and the convex poly.
 	 *
-	 * @param   convex	The convex
-	 * @param   path	The path.
+	 * @param   convex  Convex.
+	 * @param   path    Path.
 	 *
 	 * @return  true if shapes are intersecting, otherwise false.
 	 */
@@ -2122,8 +2095,8 @@ public final class Polyline2D
 	 * area. Otherwise, the point is outside the area.
 	 * </i>
 	 *
-	 * @param   convex	The convex
-	 * @param   point	The point
+	 * @param   convex  Convex.
+	 * @param   point   Point.
 	 *
 	 * @return  true if shapes are intersecting, otherwise false.
 	 */
@@ -2171,8 +2144,8 @@ public final class Polyline2D
 	/**
 	 * Checks for intersection between two lines.
 	 *
-	 * @param   line1	First line
-	 * @param   line2	Second line
+	 * @param   line1   First line.
+	 * @param   line2   Second line.
 	 *
 	 * @return  true if shapes are intersecting, otherwise false.
 	 */
@@ -2194,14 +2167,14 @@ public final class Polyline2D
 	 *    Author: Paul Bourke (april 1989)
 	 *    http://astronomy.swin.edu.au/pbourke/geometry/lineline2d/
 	 *
-	 * @param   x1		start point of line 1.
-	 * @param   y1		start point of line 1
-	 * @param   x2		end point of line 1
-	 * @param   y2		end point of line 1
-	 * @param   x3		start point of line 2.
-	 * @param   y3		start point of line 2
-	 * @param   x4		end point of line 2
-	 * @param   y4		end point of line 2
+	 * @param   x1      Start point of line 1.
+	 * @param   y1      Start point of line 1.
+	 * @param   x2      End point of line 1.
+	 * @param   y2      End point of line 1.
+	 * @param   x3      Start point of line 2.
+	 * @param   y3      Start point of line 2.
+	 * @param   x4      End point of line 2.
+	 * @param   y4      End point of line 2.
 	 *
 	 * @return  true if shapes are intersecting, otherwise false.
 	 */
@@ -2282,8 +2255,8 @@ public final class Polyline2D
 	/**
 	 * Checks for intersection between a line and a point.
 	 *
-	 * @param   line	The line
-	 * @param   point	The point.
+	 * @param   line    Line.
+	 * @param   point   Point.
 	 *
 	 * @return  true if shapes are intersecting, otherwise false.
 	 */
@@ -2318,8 +2291,8 @@ public final class Polyline2D
 	/**
 	 * Checks for intersection between a path and a line.
 	 *
-	 * @param   path	The path.
-	 * @param   line	The line.
+	 * @param   path    Path.
+	 * @param   line    Line.
 	 *
 	 * @return  true if shapes are intersecting, otherwise false.
 	 */
@@ -2349,8 +2322,8 @@ public final class Polyline2D
 	/**
 	 * Checks for intersection between two paths.
 	 *
-	 * @param   path1	The first path.
-	 * @param   path2	The second path.
+	 * @param   path1   First path.
+	 * @param   path2   Second path.
 	 *
 	 * @return  true if shapes are intersecting, otherwise false.
 	 */
@@ -2393,8 +2366,8 @@ public final class Polyline2D
 	/**
 	 * Checks for intersection between a path and a point.
 	 *
-	 * @param   path	The path.
-	 * @param   point	The point.
+	 * @param   path    Path.
+	 * @param   point   Point.
 	 *
 	 * @return  true if shapes are intersecting, otherwise false.
 	 */
@@ -2482,7 +2455,7 @@ public final class Polyline2D
 	 * Places the specified polyline2d's (segments) head to tail to make one
 	 * big polyline. The segments must make up a valid shape!.
 	 *
-	 * @param   segments	Vector containing segments of Polyline2D to place head to tail.
+	 * @param   segments    List with segments of Polyline2D to place head to tail.
 	 *
 	 * @return  The segments put together.
 	 */
@@ -2596,7 +2569,7 @@ public final class Polyline2D
 	 * Construct polyline from string representation that was previously
 	 * generated by the toString() method.
 	 *
-	 * @param   str		String representation of polyline.
+	 * @param   str     String representation of polyline.
 	 *
 	 * @return  Polyline that was created (never <code>null</code>).
 	 */

@@ -1,27 +1,35 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2004 Sjoerd Bouwman
  *
- * (C) Copyright 1999-2004 Sjoerd Bouwman (aso@asobrain.com)
- * 
- * This program is free software; you can redistribute it and/or
- * modify it as you see fit.
- * 
- * This program is distributed in the hope that it will be useful,
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d.a3ds;
 
-import java.io.*;
+import java.io.IOException;
 
 /**
  * Material texture map chunk.
  * Also applies to material masks.
  *
- * @author	Sjoerd Bouwman
- * @version	$Revision$ $Date$
+ * @author  Sjoerd Bouwman
+ * @version $Revision$ $Date$
  */
-public class TextureMap extends DataChunk 
+public final class TextureMap extends DataChunk
 {
 	private int _amount;
 	private String _path;
@@ -31,9 +39,9 @@ public class TextureMap extends DataChunk
 	 * Constructor of Chunk with ChunkID to be used
 	 * when the Chunk is read from inputstream.
 	 *
-	 * @param	id	the ID of the chunk.
+	 * @param   id      ID of the chunk.
 	 */
-	public TextureMap( int id ) 
+	public TextureMap( final int id )
 	{
 		super( id );
 	}
@@ -41,9 +49,9 @@ public class TextureMap extends DataChunk
 	/**
 	 * Returns the size in bytes of the chunk.
 	 *
-	 * @return	the size of the chunk in bytes.
+	 * @return  the size of the chunk in bytes.
 	 */
-	public long getSize() 
+	public long getSize()
 	{
 		long size = HEADER_SIZE;	// the chunk itself
 
@@ -51,19 +59,19 @@ public class TextureMap extends DataChunk
 		size+= HEADER_SIZE + STRING_SIZE( _path ); 	// path
 		size+= HEADER_SIZE + INT_SIZE;	// map options
 		size+= HEADER_SIZE + FLOAT_SIZE;	// map filtering blur
-		
-		return size;		
+
+		return size;
 	}
 
 	/**
 	 * Reads the chunk from the input stream.
-	 * 
-	 * @param	is	the stream to read from.
+	 *
+	 * @param   is	the stream to read from.
 	 *
 	 * @throws IOException when an io error occurred.
 	 */
-	public void read( Ab3dsInputStream is ) 
-		throws IOException 
+	public void read( final Ab3dsInputStream is )
+		throws IOException
 	{
 		readHeader( is );
 
@@ -72,7 +80,7 @@ public class TextureMap extends DataChunk
 		 */
 		int id = is.readInt();
 		long size = is.readLong();
-		
+
 		while ( !is.isEOF() && is.getPointer() < _chunkEnd )
 		{
 			switch ( id )
@@ -81,10 +89,10 @@ public class TextureMap extends DataChunk
 				case MAP_PATH			: _path = is.readString();		break;
 				case MAP_OPTIONS		: _options = is.readInt();		break;
 				case MAP_BLUR			: _blur = is.readFloat();		break;
-		
+
 				default 				: is.skip( size - HEADER_SIZE );		// skip unknown chunks.
-			}	
-			
+			}
+
 			if ( is.getPointer() < _chunkEnd )
 			{
 				id = is.readInt();
@@ -98,12 +106,12 @@ public class TextureMap extends DataChunk
 	/**
 	 * Set parameters for TextureMap
 	 *
-	 * @param	amount	opacity percentage
-	 * @param	path	location of map.
-	 * @param	options	options (don't know).
-	 * @param	blur	blur amount.
+	 * @param   amount	opacity percentage
+	 * @param   path	location of map.
+	 * @param   options	options (don't know).
+	 * @param   blur	blur amount.
 	 */
-	public void set( int amount , String path , int options , float blur )
+	public void set( final int amount , final String path , final int options , final float blur )
 	{
 		_amount = amount;
 		_path = path;
@@ -113,12 +121,12 @@ public class TextureMap extends DataChunk
 
 	/**
 	 * Writes the chunk the output stream.
-	 * 
-	 * @param	os	the stream to write to.
+	 *
+	 * @param   os	the stream to write to.
 	 *
 	 * @throws IOException when an io error occurred.
 	 */
-	public void write( Ab3dsOutputStream os )
+	public void write( final Ab3dsOutputStream os )
 		throws IOException
 	{
 		writeHeader( os );
