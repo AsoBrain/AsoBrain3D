@@ -7,7 +7,7 @@
  * form without express permission from Numdata BV. Please contact Numdata BV
  * for license information.
  */
-package com.numdata.soda;
+package com.numdata.soda.mountings;
 
 import junit.framework.TestCase;
 
