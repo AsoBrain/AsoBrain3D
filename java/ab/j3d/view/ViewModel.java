@@ -20,13 +20,19 @@
  */
 package ab.j3d.view;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import javax.swing.JPanel;
+import javax.swing.JToolBar;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Node3D;
+
+import com.numdata.oss.ui.ActionTools;
 
 /**
  * The view model provides a high level interface between an application and a
@@ -291,6 +297,27 @@ public abstract class ViewModel
 
 		if ( !_views.contains( view ) )
 			_views.add( view );
+	}
+
+	/**
+	 * Create view panel with associated controls (if any).
+	 *
+	 * @param   id              Application-assigned ID for the new view.
+	 * @param   viewControl     Control to use for this view.
+	 *
+	 * @return  Panel containing view.
+	 */
+	public final JPanel createViewPanel( final Locale locale , final Object id , final ViewControl viewControl )
+	{
+		final JPanel result = new JPanel( new BorderLayout() );
+
+		result.add( createView( id , viewControl ) , BorderLayout.CENTER );
+
+		final JToolBar toolbar = ActionTools.createToolbar( null , viewControl.getActions( locale ) );
+		if ( toolbar != null )
+			result.add( toolbar , BorderLayout.NORTH );
+
+		return result;
 	}
 
 	/**
