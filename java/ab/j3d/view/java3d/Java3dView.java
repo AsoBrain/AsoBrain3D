@@ -98,7 +98,8 @@ public final class Java3dView
 		view.setDepthBufferFreezeTransparent( true );
 		view.setTransparencySortingPolicy( View.TRANSPARENCY_SORT_GEOMETRY );
 
-		// view.setBackClipDistance( 100 );
+		view.setBackClipDistance( 100.0 );
+		view.setFrontClipDistance( 0.01 );
 		setProjectionPolicy( PERSPECTIVE );
 
 		// place view in universe
