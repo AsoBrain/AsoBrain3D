@@ -530,6 +530,10 @@ public class Object3D
 				System.arraycopy( _vertices , 0 , temp , 0 , vertexCount * 3 );
 				_vertices = temp;
 			}
+			else
+			{
+				_vertices = new float[ length ];
+			}
 
 			if ( _vertexNormals != null )
 			{
@@ -537,6 +541,10 @@ public class Object3D
 
 				System.arraycopy( _vertexNormals, 0 , temp , 0 , vertexCount * 3 );
 				_vertexNormals = temp;
+			}
+			else
+			{
+				_vertexNormals = new float[ length ];
 			}
 		}
 	}
@@ -916,7 +924,11 @@ public class Object3D
 	public class Face
 	{
 		/**
-		 * Points of this face.
+		 * Point indices of this face. These indices indicate the index of the
+		 * point in the <code>_vertices</code> array of the <code>Object3D</code>.
+		 * Because points in the <code>_vertices</code> array are stored with a
+		 * triplet for each vertex (x,y,z), these indices should be multiplied
+		 * by 3 to get the 'real' index.
 		 */
 		private int[] _pointIndices;
 
@@ -967,12 +979,12 @@ public class Object3D
 		 */
 		public Face( final int[] points , final TextureSpec texture , final int[] tU , final int[] tV , final float opacity , final boolean smooth )
 		{
-			_pointIndices = points == null ? new int[ 0 ] : points;
+			_pointIndices = points;
 			_pointCount   = points != null ? points.length : 0;
 			_normal       = new float[ 3 ];
 			_texture      = texture;
-			_textureU     = tU == null ? new int[ 0 ] : tU;
-			_textureV     = tV == null ? new int[ 0 ] : tV;
+			_textureU     = tU;
+			_textureV     = tV;
 			_opacity      = opacity;
 			_smooth       = smooth;
 		}
@@ -1070,7 +1082,11 @@ public class Object3D
 		}
 
 		/**
-		 * Get the point indices of this face.
+		 * Get the point indices of this face. These indices indicate the index of
+		 * the point in the <code>_vertices</code> array of the <code>Object3D</code>.
+		 * Because points in the <code>_vertices</code> array are stored with a
+		 * triplet for each vertex (x,y,z), these indices should be multiplied
+		 * by 3 to get the 'real' index.
 		 *
 		 * @return  The point indices of this face.
 		 */
@@ -1090,9 +1106,9 @@ public class Object3D
 		}
 
 		/**
-		 * Get the horizontal texture coordinate of this face.
+		 * Get the horizontal texture coordinates of this face.
 		 *
-		 * @return  The horizontal texture coordinate of this face.
+		 * @return  The horizontal texture coordinates of this face.
 		 */
 		public int[] getTextureU()
 		{
@@ -1100,9 +1116,9 @@ public class Object3D
 		}
 
 		/**
-		 * Get the vertical texture coordinate of this face.
+		 * Get the vertical texture coordinates of this face.
 		 *
-		 * @return  The vertical texture coordinate of this face.
+		 * @return  The vertical texture coordinates of this face.
 		 */
 		public int[] getTextureV()
 		{
@@ -1155,7 +1171,7 @@ public class Object3D
 
 		private void ensureCapacity( final int length )
 		{
-			if ( _pointIndices == null || _pointCount < length )
+			if ( _pointIndices == null || _pointIndices.length < length )
 			{
 				int[] temp;
 
@@ -1166,6 +1182,10 @@ public class Object3D
 					System.arraycopy( _pointIndices , 0 , temp , 0 , _pointCount );
 					_pointIndices = temp;
 				}
+				else
+				{
+					_pointIndices = new int[ length ];
+				}
 
 				if ( _textureU != null )
 				{
@@ -1174,6 +1194,10 @@ public class Object3D
 					System.arraycopy( _textureU , 0 , temp , 0 , _pointCount );
 					_textureU = temp;
 				}
+				else
+				{
+					_textureU = new int[ length ];
+				}
 
 				if ( _textureV != null )
 				{
@@ -1181,6 +1205,10 @@ public class Object3D
 
 					System.arraycopy( _textureV , 0 , temp , 0 , _pointCount );
 					_textureV = temp;
+				}
+				else
+				{
+					_textureV = new int[ length ];
 				}
 			}
 		}
