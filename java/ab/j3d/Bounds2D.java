@@ -20,6 +20,14 @@
  */
 package ab.j3d;
 
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.NoSuchElementException;
+
 /**
  * This class describes 2D boundaries.
  *
@@ -27,6 +35,7 @@ package ab.j3d;
  * @version $Revision$ $Date$
  */
 public final class Bounds2D
+	implements Shape
 {
 	/**
 	 * Lower bound X coordinate.
@@ -76,5 +85,183 @@ public final class Bounds2D
 	{
 		return ( minX <= other.maxX ) && ( maxX >= other.minX )
 		    && ( minY <= other.maxY ) && ( maxY >= other.minY );
+	}
+
+	public double getX()
+	{
+		return minX;
+	}
+
+	public double getY()
+	{
+		return minY;
+	}
+
+	public double getWidth()
+	{
+		return maxX - minX;
+	}
+
+	public double getHeight()
+	{
+		return maxY - minY;
+	}
+
+	public boolean isEmpty()
+	{
+		return ( minX >= maxX ) || ( minY >= maxY );
+	}
+
+	public Rectangle getBounds()
+	{
+		final Rectangle result;
+
+		if ( ( minX > maxY ) || ( minY > maxY ) )
+		{
+			result = new Rectangle();
+		}
+		else
+		{
+			final double x1 = Math.floor( minX );
+			final double x2 = Math.ceil ( maxX );
+			final double y1 = Math.floor( minY );
+			final double y2 = Math.ceil ( maxY );
+
+			result = new Rectangle( (int)x1 , (int)y1 , (int)( x2 - x1 ) , (int)( y2 - y1 ) );
+		}
+
+		return result;
+	}
+
+	public Rectangle2D getBounds2D()
+	{
+		return new Rectangle2D.Double( minX , minY , maxX - minX , maxY - minY );
+	}
+
+	public boolean contains( final double x , final double y )
+	{
+		return ( x >= minX ) && ( x <= maxX )
+		    && ( y >= minY ) && ( y <= maxY );
+	}
+
+	public boolean intersects( final double x , final double y , final double w , final double h )
+	{
+		return ( maxX >= x     ) && ( maxY >= y     )
+		    && ( minX <= x + w ) && ( minY <= y + h );
+	}
+
+	public boolean intersects( final Rectangle2D r )
+	{
+		return ( minX <= r.getMaxX() ) && ( maxX >= r.getMinX() )
+		    && ( minY <= r.getMaxY() ) && ( maxY >= r.getMinY() );
+	}
+
+	public boolean contains( final double x , final double y , final double w , final double h )
+	{
+		return (   x       >= minX ) && (   y       >= minY )
+		    && ( ( x + w ) <= maxX ) && ( ( y + h ) <= maxY );
+	}
+
+	public boolean contains( final Rectangle2D r )
+	{
+		return intersects(r.getX(), r.getY(), r.getWidth(), r.getHeight());
+	}
+
+	public boolean contains( final Point2D p )
+	{
+		return contains( p.getX() , p.getY() );
+	}
+
+	public PathIterator getPathIterator( final AffineTransform at )
+	{
+		return new Iterator( at );
+	}
+
+	public PathIterator getPathIterator( final AffineTransform at , final double flatness )
+	{
+		return getPathIterator( at );
+	}
+
+	private class Iterator
+		implements PathIterator
+	{
+		private final AffineTransform _at;
+
+		private int _index;
+
+		private Iterator( final AffineTransform at )
+		{
+			_at = at;
+			_index = ( minX > maxY ) || ( minY > maxY ) ? 6 : 0;
+		}
+
+		public int getWindingRule()
+		{
+			return WIND_NON_ZERO;
+		}
+
+		public boolean isDone()
+		{
+			return ( _index > 5 );
+		}
+
+		public void next()
+		{
+			_index++;
+		}
+
+		public int currentSegment( final float[] coords )
+		{
+			final int result;
+
+			final int index = _index;
+			if ( index < 5 )
+			{
+				coords[ 0 ] = (float)( ( ( index == 1 ) || ( index == 2 ) ) ? maxX : minX );
+				coords[ 1 ] = (float)( ( ( index == 2 ) || ( index == 3 ) ) ? maxY : minY );
+
+				if ( _at != null )
+					_at.transform( coords , 0 , coords , 0 , 1 );
+
+				result = ( index == 0 ) ? SEG_MOVETO : SEG_LINETO;
+			}
+			else if ( index == 5 )
+			{
+				result = SEG_CLOSE;
+			}
+			else
+			{
+				throw new NoSuchElementException( "index=" + index );
+			}
+
+			return result;
+		}
+
+		public int currentSegment( final double[] coords )
+		{
+			final int result;
+
+			final int index = _index;
+			if ( index < 5 )
+			{
+				coords[ 0 ] = ( ( index == 1 ) || ( index == 2 ) ) ? maxX : minX;
+				coords[ 1 ] = ( ( index == 2 ) || ( index == 3 ) ) ? maxY : minY;
+
+				if ( _at != null )
+					_at.transform( coords , 0 , coords , 0 , 1 );
+
+				result = ( index == 0 ) ? SEG_MOVETO : SEG_LINETO;
+			}
+			else if ( index == 5 )
+			{
+				result = SEG_CLOSE;
+			}
+			else
+			{
+				throw new NoSuchElementException( "index=" + index );
+			}
+
+			return result;
+		}
 	}
 }
