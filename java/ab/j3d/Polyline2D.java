@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2001-2004 Numdata BV
+ * Copyright (C) 2001-2005 Numdata BV
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -183,20 +183,20 @@ public final class Polyline2D
 	{
 		_points = new ArrayList();
 
-		append( 0.0 , 0.0 );
+		addStartPoint( 0.0 , 0.0 );
 		if ( dx != 0.0 )
 		{
-			append( dx , 0.0 );
+			addLineSegment( dx , 0.0 );
 			if ( dy != 0.0 )
 			{
-				append( dx , dy );
-				append( 0.0 , dy );
+				addLineSegment( dx , dy );
+				addLineSegment( 0.0 , dy );
 				close();
 			}
 		}
 		else if ( dy != 0.0 )
 		{
-			append( 0.0 , dy );
+			addLineSegment( 0.0 , dy );
 		}
 	}
 
@@ -276,11 +276,11 @@ public final class Polyline2D
 			if ( ( f < -0.001 ) ^ ( adjustment > 0 ) )
 				hyp = -hyp;
 
-			newStart = new PolyPoint2D( start.x + hyp * prevDirX , start.y + hyp * prevDirY );
+			newStart = new PolyPoint2D( start.x + hyp * prevDirX , start.y + hyp * prevDirY , start.buldge );
 		}
 		else
 		{
-			newStart = new PolyPoint2D( start.x - adjustment * baseDirY , start.y + adjustment * baseDirX );
+			newStart = new PolyPoint2D( start.x - adjustment * baseDirY , start.y + adjustment * baseDirX , start.buldge );
 		}
 
 		/*
@@ -312,11 +312,11 @@ public final class Polyline2D
 			if ( ( f < -0.001 ) ^ ( adjustment > 0 ) )
 				hyp = -hyp;
 
-			newEnd = new PolyPoint2D( end.x + hyp * nextDirX , end.y + hyp * nextDirY );
+			newEnd = new PolyPoint2D( end.x + hyp * nextDirX , end.y + hyp * nextDirY , end.buldge );
 		}
 		else
 		{
-			newEnd = new PolyPoint2D( end.x - adjustment * baseDirY , end.y + adjustment * baseDirX );
+			newEnd = new PolyPoint2D( end.x - adjustment * baseDirY , end.y + adjustment * baseDirX , end.buldge );
 		}
 
 		/*
@@ -364,27 +364,116 @@ public final class Polyline2D
 	/**
 	 * Add control point to polyline.
 	 *
-	 * @param   point   Control point to append to polyline.
+	 * @param   x       X coordinate of control point.
+	 * @param   y       Y coordinate of control point.
+	 * @param   buldge  Buldge factor (only meaningful for arc segments).
 	 */
-	public void append( final PolyPoint2D point )
+	private void addImpl( final double x , final double y , final double buldge )
 	{
-		if ( point == null )
-			throw new NullPointerException( "Cannot add a null point to a polyline" );
-		_points.add( point );
-		_typeCache = UNKNOWN;
-		_boundsCache = null;
-		_encloseCache = null;
+		addImpl( new PolyPoint2D( x , y , buldge ) );
 	}
 
 	/**
 	 * Add control point to polyline.
 	 *
+	 * @param   point   Control point.
+	 */
+	private void addImpl( final PolyPoint2D point )
+	{
+		_points.add( point );
+
+		_typeCache    = UNKNOWN;
+		_boundsCache  = null;
+		_encloseCache = null;
+	}
+
+	/**
+	 * Add start point to polyline.
+	 *
 	 * @param   x   X coordinate of segment end point.
 	 * @param   y   Y coordinate of segment end point.
+	 *
+	 * @see     #addLineSegment
+	 * @see     #addArcSegmentWithAngle
+	 * @see     #addArcSegmentWithBuldge
 	 */
-	public void append( final double x , final double y )
+	public void addStartPoint( final double x , final double y )
 	{
-		append( new PolyPoint2D( x , y ) );
+		if ( getPointCount() != 0 )
+			throw new IllegalStateException( "can't add second point" );
+
+		addImpl( x , y , 0.0 );
+	}
+
+	/**
+	 * Add line segment to polyline.
+	 *
+	 * @param   endX   X coordinate of segment end point.
+	 * @param   endY   Y coordinate of segment end point.
+	 *
+	 * @see     #addStartPoint
+	 * @see     #addArcSegmentWithAngle
+	 * @see     #addArcSegmentWithBuldge
+	 */
+	public void addLineSegment( final double endX , final double endY )
+	{
+		if ( getPointCount() == 0 )
+			throw new IllegalStateException( "can't add segment without start point" );
+
+		addImpl( endX , endY , 0.0 );
+	}
+
+	/**
+	 * Add arc segment to polyline.
+	 *
+	 * @param   endX    X coordinate of segment end point.
+	 * @param   endY    Y coordinate of segment end point.
+	 * @param   angle   Enclosed angle of arc segment (radians).
+	 *
+	 * @see     #addStartPoint
+	 * @see     #addLineSegment
+	 * @see     #addArcSegmentWithBuldge
+	 */
+	public void addArcSegmentWithAngle( final double endX , final double endY , final double angle )
+	{
+		if ( angle == 0.0 )
+			throw new IllegalArgumentException( "angle can't be 0.0" );
+
+		addArcSegmentWithBuldge( endX , endY , Math.tan( angle / 4.0 ) );
+	}
+
+	/**
+	 * Add arc segment to polyline.
+	 *
+	 * @param   endX    X coordinate of segment end point.
+	 * @param   endY    Y coordinate of segment end point.
+	 * @param   buldge  Buldge factor for arc segment.
+	 *
+	 * @see     #addStartPoint
+	 * @see     #addLineSegment
+	 * @see     #addArcSegmentWithAngle
+	 */
+	public void addArcSegmentWithBuldge( final double endX , final double endY , final double buldge )
+	{
+		if ( buldge == 0.0 )
+			throw new IllegalArgumentException( "buldge can't be 0.0" );
+
+		if ( getPointCount() == 0 )
+			throw new IllegalStateException( "can't add segment without start point" );
+
+		addImpl( endX , endY , buldge );
+	}
+
+	/**
+	 * Clear all points in the polyline.
+	 */
+	public void clear()
+	{
+		_points.clear();
+
+		_typeCache    = UNKNOWN;
+		_boundsCache  = null;
+		_encloseCache = null;
 	}
 
 	/**
@@ -393,17 +482,17 @@ public final class Polyline2D
 	public void close()
 	{
 		final int pointCount = getPointCount();
-		if ( pointCount > 1 )
+		if ( pointCount > 2 )
 		{
 			final PolyPoint2D first = getPoint( 0 );
 			final PolyPoint2D last  = getPoint( pointCount - 1 );
 
-			if ( !first.equals( last ) )
+			if ( ( first.x != last.x ) || ( first.y != last.y ) );
 			{
-				append( first );
+				addImpl( first.x , first.y , 0.0 );
 
-				_typeCache = UNKNOWN;
-				_boundsCache = null;
+				_typeCache    = UNKNOWN;
+				_boundsCache  = null;
 				_encloseCache = null;
 			}
 		}
@@ -599,25 +688,25 @@ public final class Polyline2D
 				 */
 				if ( p1 == null )
 				{
-					p1 = new PolyPoint2D( minX , minY );
+					p1 = new PolyPoint2D( minX , minY , 0.0 );
 					p1i = isIntersectingConvex_Point( this , p1 );
 				}
 
 				if ( p2 == null )
 				{
-					p2 = new PolyPoint2D( minX , maxY );
+					p2 = new PolyPoint2D( minX , maxY , 0.0 );
 					p2i = isIntersectingConvex_Point( this , p2 );
 				}
 
 				if ( p3 == null )
 				{
-					p3 = new PolyPoint2D( maxX , minY );
+					p3 = new PolyPoint2D( maxX , minY , 0.0 );
 					p3i = isIntersectingConvex_Point( this , p3 );
 				}
 
 				if ( p4 == null )
 				{
-					p4 = new PolyPoint2D( maxX , maxY );
+					p4 = new PolyPoint2D( maxX , maxY , 0.0 );
 					p4i = isIntersectingConvex_Point( this , p4 );
 				}
 
@@ -626,14 +715,10 @@ public final class Polyline2D
 				 * the line does not intersect. If the line does not intersect,
 				 * move it inwards.
 				 */
-				if ( !(p1i && p2i) )
-				{	minX += horizontalStep; p1 = null; p2 = null; }
-				if ( !(p1i && p3i) )
-				{	minY += verticalStep; p1 = null; p3 = null; }
-				if ( !(p3i && p4i) )
-				{	maxX -= horizontalStep; p3 = null; p4 = null; }
-				if ( !(p2i && p4i) )
-				{	maxY -= verticalStep; p2 = null; p4 = null; }
+				if ( !(p1i && p2i) ) { minX += horizontalStep; p1 = null; p2 = null; }
+				if ( !(p1i && p3i) ) { minY += verticalStep; p1 = null; p3 = null; }
+				if ( !(p3i && p4i) ) { maxX -= horizontalStep; p3 = null; p4 = null; }
+				if ( !(p2i && p4i) ) { maxY -= verticalStep; p2 = null; p4 = null; }
 			}
 
 			_encloseCache = new Bounds2D( minX , minY , maxX - minX , maxY - minY );
@@ -791,15 +876,15 @@ public final class Polyline2D
 				break;
 
 			case LINE   :
-				result = isIntersectingLine_Point( this , new PolyPoint2D( x , y ) );
+				result = isIntersectingLine_Point( this , new PolyPoint2D( x , y , 0.0 ) );
 				break;
 
 			case PATH   :
-				result = isIntersectingPath_Point( this , new PolyPoint2D( x , y ) );
+				result = isIntersectingPath_Point( this , new PolyPoint2D( x , y , 0.0 ) );
 				break;
 
 			case CONVEX :
-				result = isIntersectingConvex_Point( this , new PolyPoint2D( x , y ) );
+				result = isIntersectingConvex_Point( this , new PolyPoint2D( x , y , 0.0 ) );
 				break;
 
 			default :
@@ -1120,9 +1205,9 @@ public final class Polyline2D
 
 		if ( collect1Count < 2 && collect2Count < 2 )
 		{
-			result.append( collect1[ 0 ] );
+			result.addImpl( collect1[ 0 ] );
 			if ( collect1[1] != null )
-				result.append( collect1[1] );
+				result.addImpl( collect1[1] );
 
 			return result;
 		}
@@ -1133,10 +1218,10 @@ public final class Polyline2D
 			for ( i = 0 ; i < collect1Count ; i++ )
 			{
 				final Polyline2D add = new Polyline2D();
-				add.append( collect1[ i * 2 ] );
+				add.addImpl( collect1[ i * 2 ] );
 
 				if ( collect1[ i * 2 + 1 ] != null )
-					add.append( collect1[ i * 2 + 1 ] );
+					add.addImpl( collect1[ i * 2 + 1 ] );
 
 				segments.add( add );
 			}
@@ -1144,10 +1229,10 @@ public final class Polyline2D
 			for ( i = 0 ; i < collect2Count ; i++ )
 			{
 				final Polyline2D add = new Polyline2D();
-				add.append( collect2[ i * 2 ] );
+				add.addImpl( collect2[ i * 2 ] );
 
 				if ( collect2[ i * 2 + 1 ] != null )
-					add.append( collect2[ i * 2 + 1 ] );
+					add.addImpl( collect2[ i * 2 + 1 ] );
 
 				segments.add( add );
 			}
@@ -1353,7 +1438,7 @@ public final class Polyline2D
 		 */
 		if ( iPointCount == 1 || ( iPointCount == 2 && iPoints[0].almostEquals( iPoints[1] ) ) )
 		{
-			result.append( iPoints[0] );
+			result.addImpl( iPoints[0] );
 			return result;
 		}
 
@@ -1362,8 +1447,8 @@ public final class Polyline2D
 		 */
 		if ( iPointCount == 2 )
 		{
-			result.append( iPoints[0] );
-			result.append( iPoints[1] );
+			result.addImpl( iPoints[0] );
+			result.addImpl( iPoints[1] );
 			return result;
 		}
 
@@ -1401,12 +1486,12 @@ public final class Polyline2D
 
 		if ( p1Close.almostEquals( p2Close ) )
 		{
-			result.append( p1Close );
+			result.addImpl( p1Close );
 			return result;
 		}
 
-		result.append( p1Close );
-		result.append( p2Close );
+		result.addImpl( p1Close );
+		result.addImpl( p2Close );
 		return result;
 	}
 
@@ -1437,8 +1522,8 @@ public final class Polyline2D
 	private static Polyline2D getIntersectionConvex_Path( final Polyline2D convex , final Polyline2D path )
 	{
 		final int INSIDE  = -1;
-		final int UNKNOWN = 0;
-		final int OUTSIDE = 1;
+		final int UNKNOWN =  0;
+		final int OUTSIDE =  1;
 
 		final Polyline2D result = new Polyline2D();
 
@@ -1484,7 +1569,7 @@ public final class Polyline2D
 		 * If we start inside, add the fist point.
 		 */
 		if ( l1pos == INSIDE )
-			result.append( l1.x , l1.y );
+			result.addStartPoint( l1.x , l1.y );
 
 		while( --i >= 0 )
 		{
@@ -1579,8 +1664,8 @@ public final class Polyline2D
 				 */
 				if ( !i1.almostEquals( l1 ) && ( i2 != null || c1pos == INSIDE ) || l1pos == INSIDE )
 				{
-					if ( result.getPointCount() == 0 || !i1.almostEquals( result.getPoint( result.getPointCount() - 1 ) ) )
-						result.append( i1.x , i1.y );
+					if ( ( result.getPointCount() == 0 ) || !i1.almostEquals( result.getPoint( result.getPointCount() - 1 ) ) )
+						result.addImpl( i1.x , i1.y , 0.0 );
 				}
 			}
 
@@ -1589,13 +1674,13 @@ public final class Polyline2D
 			 * (in this case, we are always exiting again).
 			 */
 			if ( i2 != null && !i2.almostEquals( c1 ) )
-				result.append( i2.x , i2.y );
+				result.addImpl( i2.x , i2.y , 0.0 );
 
 			/*
 			 * If endpoint is inside, add the point.
 			 */
 			if ( c1pos == INSIDE && !c1.almostEquals( i1 ) )
-				result.append( c1.x , c1.y );
+				result.addImpl( c1.x , c1.y , 0.0 );
 
 			/*
 			 * If one of the points are inside or we have 2 intersections
@@ -1635,15 +1720,17 @@ public final class Polyline2D
 	private static Polyline2D getIntersectionLine_Line( final PolyPoint2D p1 , final PolyPoint2D p2 , final PolyPoint2D p3 , final PolyPoint2D p4 )
 	{
 		final PolyPoint2D[] sect = getIntersectionLine_Line( p1.x , p1.y , p2.x , p2.y , p3.x , p3.y , p4.x , p4.y , null );
-		if ( sect == null || sect[0] == null )
+		final PolyPoint2D start = sect[ 0 ];
+		if ( sect == null || start == null )
 			return null; // no intersection
 
 		final Polyline2D result = new Polyline2D();
 
-		result.append( sect[0].x , sect[0].y ); // intersection point
+		result.addImpl( start.x , start.y , 0.0 ); // intersection point
 
-		if ( sect[1] != null )
-			result.append( sect[1].x , sect[1].y );	// intersecting line
+		final PolyPoint2D end = sect[ 1 ];
+		if ( end != null )
+			result.addImpl( end.x , end.y , 0.0 ); // intersecting line
 
 		return result;
 	}
@@ -1728,18 +1815,18 @@ public final class Polyline2D
 				 */
 				if ( sx1 == sx2 && sy1 == sy2 )
 				{
-					cache[0] = new PolyPoint2D( sx1 , sy1 );
+					cache[0] = new PolyPoint2D( sx1 , sy1 , 0.0 );
 					cache[1] = null;
 				}
 				else if ( isPositive )
 				{
-					cache[0] = new PolyPoint2D( sx1 , sy1 );
-					cache[1] = new PolyPoint2D( sx2 , sy2 );
+					cache[0] = new PolyPoint2D( sx1 , sy1 , 0.0 );
+					cache[1] = new PolyPoint2D( sx2 , sy2 , 0.0 );
 				}
 				else
 				{
-					cache[0] = new PolyPoint2D( sx1 , sy2 );
-					cache[1] = new PolyPoint2D( sx2 , sy1 );
+					cache[0] = new PolyPoint2D( sx1 , sy2 , 0.0 );
+					cache[1] = new PolyPoint2D( sx2 , sy1 , 0.0 );
 				}
 
 				return cache;
@@ -1764,7 +1851,7 @@ public final class Polyline2D
 			final double x = x1 + ua * (x2-x1);
 			final double y = y1 + ua * (y2-y1);
 
-			cache[0] = new PolyPoint2D( x , y );
+			cache[0] = new PolyPoint2D( x , y , 0.0 );
 			cache[1] = null;
 			/*
 			 * We have an intersection point!
@@ -2682,10 +2769,10 @@ public final class Polyline2D
 		segments.remove( 0 );
 
 		if ( firstHead != null )
-			result.append( firstHead );
+			result.addImpl( firstHead );
 		else
 			firstHead = lastTail;
-		result.append( lastTail );
+		result.addImpl( lastTail );
 
 		while ( segments.size() > 0 )
 		{
@@ -2748,7 +2835,7 @@ public final class Polyline2D
 					return result;
 				}
 
-				result.append( tail );
+				result.addImpl( tail );
 				lastTail = tail;
 				lastHead = head;
 				//if ( head == null )
@@ -2783,7 +2870,7 @@ public final class Polyline2D
 				end = str.length();
 
 			final String pointStr = str.substring( start , end );
-			result.append( PolyPoint2D.createInstance( pointStr.trim() ) );
+			result.addImpl( PolyPoint2D.createInstance( pointStr.trim() ) );
 
 			start = end + 1;
 		}
@@ -2863,7 +2950,7 @@ public final class Polyline2D
 				final double tx = p.x * xform.xx + p.y * xform.xy + xform.xo;
 				final double ty = p.x * xform.yx + p.y * xform.yy + xform.yo;
 
-				result.append( new PolyPoint2D( tx , ty ) );
+				result.addImpl( new PolyPoint2D( tx , ty , p.buldge ) );
 			}
 		}
 

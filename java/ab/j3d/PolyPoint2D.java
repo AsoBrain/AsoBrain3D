@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2001-2004 Numdata BV
+ * Copyright (C) 2001-2005 Numdata BV
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -47,15 +47,21 @@ public final class PolyPoint2D
 	public final double y;
 
 	/**
+	 * Buldge factor of arc segment that ends at this point.
+	 */
+	public final double buldge;
+
+	/**
 	 * Construct new control point.
 	 *
 	 * @param   newX    X coordinate of control point.
 	 * @param   newY    Y coordinate of control point.
 	 */
-	public PolyPoint2D( final double newX , final double newY )
+	public PolyPoint2D( final double newX , final double newY , final double newBuldge )
 	{
-		x = newX;
-		y = newY;
+		x      = newX;
+		y      = newY;
+		buldge = newBuldge;
 	}
 
 	/**
@@ -99,8 +105,9 @@ public final class PolyPoint2D
 		else
 		{
 			double d;
-			result = ( ( d = x - other.x ) > -tolerance ) && ( d < tolerance )
-		          && ( ( d = y - other.y ) > -tolerance ) && ( d < tolerance );
+			result = ( ( d = x      - other.x      ) > -tolerance ) && ( d < tolerance )
+		          && ( ( d = y      - other.y      ) > -tolerance ) && ( d < tolerance )
+		          && ( ( d = buldge - other.buldge ) > -tolerance ) && ( d < tolerance );
 		}
 
 		return result;
@@ -111,16 +118,34 @@ public final class PolyPoint2D
 	 * If the other object is a PolyPoint2D, this call is forwarded to
 	 * #equals(PolyPoint2D).
 	 *
-	 * @param   other   Object to compare with.
+	 * @param   obj   Object to compare with.
 	 *
 	 * @return  <code>true</code> if the specified object is equal to this;
 	 *          <code>false</code> otherwise.
 	 */
-	public boolean equals( final Object other )
+	public boolean equals( final Object obj )
 	{
-		return ( other instanceof PolyPoint2D )
-		    && ( x == ((PolyPoint2D)other).x )
-		    && ( y == ((PolyPoint2D)other).y );
+		final boolean result;
+
+		if ( obj == null )
+		{
+			result = false;
+		}
+		else if ( obj == this )
+		{
+			result = true;
+		}
+		else if ( obj instanceof PolyPoint2D )
+		{
+			final PolyPoint2D other = (PolyPoint2D)obj;
+			result = ( x == other.x ) && ( y == other.y ) && ( buldge == other.buldge );
+		}
+		else
+		{
+			result = false;
+		}
+
+		return result;
 	}
 
 	/**
@@ -131,8 +156,9 @@ public final class PolyPoint2D
 	public int hashCode()
 	{
 		long l;
-		return (int)( ( l = Double.doubleToLongBits( x ) ) ^ ( l >>> 32 )
-		            ^ ( l = Double.doubleToLongBits( y ) ) ^ ( l >>> 32 ) );
+		return (int)( ( l = Double.doubleToLongBits( x      ) ) ^ ( l >>> 32 )
+		            ^ ( l = Double.doubleToLongBits( y      ) ) ^ ( l >>> 32 )
+		            ^ ( l = Double.doubleToLongBits( buldge ) ) ^ ( l >>> 32 ) );
 	}
 
 	/**
@@ -159,7 +185,7 @@ public final class PolyPoint2D
 
 			final double length = Math.sqrt( dx * dx + dy * dy );
 
-			result = new PolyPoint2D( dx / length , dy / length );
+			result = new PolyPoint2D( dx / length , dy / length , 0.0 );
 		}
 
 		return result;
@@ -202,6 +228,8 @@ public final class PolyPoint2D
 	 */
 	public static PolyPoint2D createInstance( final String str )
 	{
+		final PolyPoint2D result;
+
 		if ( str == null || str.length() == 0 )
 			throw new IllegalArgumentException( "invalid point specification: " + str );
 
@@ -209,7 +237,7 @@ public final class PolyPoint2D
 		if ( firstComma < 0 )
 			throw new IllegalArgumentException( "insufficient tokens in specification: " + str );
 
-		final String type = str.substring( 0 , firstComma ).trim();
+		final String type = str.substring( 0 , firstComma );
 
 		if ( "L".equals( type ) )
 		{
@@ -217,15 +245,33 @@ public final class PolyPoint2D
 			if ( ( secondComma < 0 ) || ( str.indexOf( (int)',' , secondComma + 1 ) >= 0 ) )
 				throw new IllegalArgumentException( "invalid token count in line specification: " + str );
 
-			final double lx = Double.parseDouble( str.substring( firstComma + 1 , secondComma ).trim() );
-			final double ly = Double.parseDouble( str.substring( secondComma + 1 ).trim() );
+			final double lineEndX = Double.parseDouble( str.substring( firstComma + 1 , secondComma ) );
+			final double lineEndY = Double.parseDouble( str.substring( secondComma + 1 ) );
 
-			return new PolyPoint2D( lx , ly );
+			result = new PolyPoint2D( lineEndX , lineEndY , 0.0 );
+		}
+		else if ( "A".equals( type ) )
+		{
+			final int secondComma = str.indexOf( (int)',' , firstComma + 1 );
+			if ( secondComma < 0 )
+				throw new IllegalArgumentException( "invalid token count in line specification: " + str );
+
+			final int thirdComma = str.indexOf( (int)',' , secondComma + 1 );
+			if ( ( thirdComma < 0 ) || ( str.indexOf( (int)',' , thirdComma + 1 ) >= 0 ) )
+				throw new IllegalArgumentException( "invalid token count in line specification: " + str );
+
+			final double arcEndX   = Double.parseDouble( str.substring( firstComma  + 1 , secondComma ) );
+			final double arcEndY   = Double.parseDouble( str.substring( secondComma + 1 , thirdComma ) );
+			final double arcBuldge = Double.parseDouble( str.substring( thirdComma  + 1 ) );
+
+			result = new PolyPoint2D( arcEndX , arcEndY , arcBuldge );
 		}
 		else
 		{
 			throw new IllegalArgumentException( "unrecognized point type: " + type );
 		}
+
+		return result;
 	}
 
 	/**
@@ -235,6 +281,10 @@ public final class PolyPoint2D
 	 */
 	public String toString()
 	{
-		return "L," + x + ',' + y;
+		final double x      = this.x;
+		final double y      = this.y;
+		final double buldge = this.buldge;
+
+		return ( buldge == 0.0 ) ? ( "L," + x + ',' + y ) : ( "A," + x + ',' + y + ',' + buldge );
 	}
 }

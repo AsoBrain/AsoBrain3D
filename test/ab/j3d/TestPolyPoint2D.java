@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2001-2004 Numdata BV
+ * Copyright (C) 2001-2005 Numdata BV
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -47,8 +47,8 @@ public final class TestPolyPoint2D
 	{
 		System.out.println( CLASS_NAME + ".testAlmostEqual1()" );
 
-		final PolyPoint2D pp1 = new PolyPoint2D( 10f , 10f );
-		final PolyPoint2D pp2 = new PolyPoint2D( 10f , 10f );
+		final PolyPoint2D pp1 = new PolyPoint2D( 10.0 , 10.0 , 0.0 );
+		final PolyPoint2D pp2 = new PolyPoint2D( 10.0 , 10.0 , 0.0 );
 		assertTrue( "Points are equal, but almost equal test fails." , pp1.almostEquals( pp2 ) );
 	}
 
@@ -61,8 +61,8 @@ public final class TestPolyPoint2D
 	{
 		System.out.println( CLASS_NAME + ".testAlmostEqual2()" );
 
-		final PolyPoint2D pp1 = new PolyPoint2D( 10f , 10f );
-		final PolyPoint2D pp2 = new PolyPoint2D( 11f , 11f );
+		final PolyPoint2D pp1 = new PolyPoint2D( 10.0 , 10.0 , 0.0 );
+		final PolyPoint2D pp2 = new PolyPoint2D( 11.0 , 11.0 , 0.0 );
 		assertFalse( "Points are not equal, but almost equal test returns true." , pp1.almostEquals( pp2 ) );
 	}
 
@@ -104,7 +104,7 @@ public final class TestPolyPoint2D
 	 *    <br />
 	 *    <b>Solution:</b><br />
 	 *    Instead of adding/subtracting the tolerance to one of the value, the
-	 *    text is performed against the difference between X and Y, which should
+	 *    test is performed against the difference between X and Y, which should
 	 *    be between -tolerance and +tolerance.
 	 *  </li>
 	 * </ul>
@@ -113,8 +113,8 @@ public final class TestPolyPoint2D
 	{
 		System.out.println( CLASS_NAME + ".testAlmostEqual3()" );
 
-		final PolyPoint2D pp1 = new PolyPoint2D( 4000f , 10f );
-		final PolyPoint2D pp2 = new PolyPoint2D( 4000f , 10f );
+		final PolyPoint2D pp1 = new PolyPoint2D( 4000.0 , 10.0 , 0.0 );
+		final PolyPoint2D pp2 = new PolyPoint2D( 4000.0 , 10.0 , 0.0 );
 		assertTrue( "Points are equal, but almost equal test fails." , pp1.almostEquals( pp2 ) );
 	}
 }

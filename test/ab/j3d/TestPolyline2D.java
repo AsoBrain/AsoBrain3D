@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2001-2004 Numdata BV
+ * Copyright (C) 2001-2005 Numdata BV
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -45,14 +45,14 @@ public final class TestPolyline2D
 	{
 		System.out.println( CLASS_NAME + ".testRectangleConstructor()" );
 
-		final Polyline2D pl = new Polyline2D( 123 , 456 );
+		final Polyline2D pl = new Polyline2D( 123.0 , 456.0 );
 		assertEquals( "rectangle should have 5 points!" , 5 , pl.getPointCount() );
 
-		assertEquals( "rectangle[ 0 ] is off" , new PolyPoint2D(   0 ,   0 ) , pl.getPoint( 0 ) );
-		assertEquals( "rectangle[ 1 ] is off" , new PolyPoint2D( 123 ,   0 ) , pl.getPoint( 1 ) );
-		assertEquals( "rectangle[ 2 ] is off" , new PolyPoint2D( 123 , 456 ) , pl.getPoint( 2 ) );
-		assertEquals( "rectangle[ 3 ] is off" , new PolyPoint2D(   0 , 456 ) , pl.getPoint( 3 ) );
-		assertEquals( "rectangle[ 4 ] is off" , new PolyPoint2D(   0 ,   0 ) , pl.getPoint( 4 ) );
+		assertEquals( "rectangle[ 0 ] is off" , new PolyPoint2D(   0.0 ,   0.0 , 0.0 ) , pl.getPoint( 0 ) );
+		assertEquals( "rectangle[ 1 ] is off" , new PolyPoint2D( 123.0 ,   0.0 , 0.0 ) , pl.getPoint( 1 ) );
+		assertEquals( "rectangle[ 2 ] is off" , new PolyPoint2D( 123.0 , 456.0 , 0.0 ) , pl.getPoint( 2 ) );
+		assertEquals( "rectangle[ 3 ] is off" , new PolyPoint2D(   0.0 , 456.0 , 0.0 ) , pl.getPoint( 3 ) );
+		assertEquals( "rectangle[ 4 ] is off" , new PolyPoint2D(   0.0 ,   0.0 , 0.0 ) , pl.getPoint( 4 ) );
 	}
 
 	/**
@@ -62,11 +62,11 @@ public final class TestPolyline2D
 	{
 		System.out.println( CLASS_NAME + ".testHorizontalLineConstructor()" );
 
-		final Polyline2D pl = new Polyline2D( 123 , 0 );
+		final Polyline2D pl = new Polyline2D( 123.0 , 0.0 );
 		assertEquals( "horizontal line should have 2 points" , 2 , pl.getPointCount() );
 
-		assertEquals( "horizontal line[ 0 ] is off" , new PolyPoint2D(   0 , 0 ) , pl.getPoint( 0 ) );
-		assertEquals( "horizontal line[ 1 ] is off" , new PolyPoint2D( 123 , 0 ) , pl.getPoint( 1 ) );
+		assertEquals( "horizontal line[ 0 ] is off" , new PolyPoint2D(   0.0 , 0.0 , 0.0 ) , pl.getPoint( 0 ) );
+		assertEquals( "horizontal line[ 1 ] is off" , new PolyPoint2D( 123.0 , 0.0 , 0.0 ) , pl.getPoint( 1 ) );
 	}
 
 	/**
@@ -76,11 +76,11 @@ public final class TestPolyline2D
 	{
 		System.out.println( CLASS_NAME + ".testVerticalLineConstructor()" );
 
-		final Polyline2D pl = new Polyline2D( 0 , 456 );
+		final Polyline2D pl = new Polyline2D( 0.0 , 456.0 );
 		assertEquals( "vertical line should have 2 points" , 2 , pl.getPointCount() );
 
-		assertEquals( "vertical line[ 0 ] is off" , new PolyPoint2D( 0 ,   0 ) , pl.getPoint( 0 ) );
-		assertEquals( "vertical line[ 1 ] is off" , new PolyPoint2D( 0 , 456 ) , pl.getPoint( 1 ) );
+		assertEquals( "vertical line[ 0 ] is off" , new PolyPoint2D( 0.0 ,   0.0 , 0.0 ) , pl.getPoint( 0 ) );
+		assertEquals( "vertical line[ 1 ] is off" , new PolyPoint2D( 0.0 , 456.0 , 0.0 ) , pl.getPoint( 1 ) );
 	}
 
 	/**
@@ -92,18 +92,18 @@ public final class TestPolyline2D
 		System.out.println( CLASS_NAME + ".testGetIntersection1()" );
 
 		final Polyline2D pl1 = new Polyline2D();
-		pl1.append(     0 ,     0 );
-		pl1.append(  1000 ,     0 );
-		pl1.append(  1000 ,    18 );
-		pl1.append(     0 ,    18 );
-		pl1.append(     0 ,     0 );
+		pl1.addStartPoint (     0.0 ,  0.0 );
+		pl1.addLineSegment(  1000.0 ,  0.0 );
+		pl1.addLineSegment(  1000.0 , 18.0 );
+		pl1.addLineSegment(     0.0 , 18.0 );
+		pl1.close();
 
 		final Polyline2D pl2 = new Polyline2D();
-		pl2.append(     0 ,    19 );
-		pl2.append(  2000 ,    19 );
-		pl2.append(  2000 ,    39 );
-		pl2.append(     0 ,    39 );
-		pl2.append(     0 ,    19 );
+		pl2.addStartPoint (     0.0 , 19.0 );
+		pl2.addLineSegment(  2000.0 , 19.0 );
+		pl2.addLineSegment(  2000.0 , 39.0 );
+		pl2.addLineSegment(     0.0 , 39.0 );
+		pl2.close();
 
 		final Polyline2D interSection = pl1.getIntersection(  pl2 );
 		assertTrue( "Intersection found! (but no intersection is possible)" , interSection == null );
@@ -118,18 +118,18 @@ public final class TestPolyline2D
 		System.out.println( CLASS_NAME + ".testGetIntersection2()" );
 
 		final Polyline2D pl1 = new Polyline2D();
-		pl1.append(     0 ,     0 );
-		pl1.append(  2047 ,     0 );
-		pl1.append(  2047 ,    18 );
-		pl1.append(     0 ,    18 );
-		pl1.append(     0 ,     0 );
+		pl1.addStartPoint (     0.0 ,     0.0 );
+		pl1.addLineSegment(  2047.0 ,     0.0 );
+		pl1.addLineSegment(  2047.0 ,    18.0 );
+		pl1.addLineSegment(     0.0 ,    18.0 );
+		pl1.close();
 
 		final Polyline2D pl2 = new Polyline2D();
-		pl2.append(     0 ,  -363 );
-		pl2.append(  2047 ,  -363 );
-		pl2.append(  2047 ,    35 );
-		pl2.append(     0 ,    35 );
-		pl2.append(     0 ,  -363 );
+		pl2.addStartPoint (     0.0 ,  -363.0 );
+		pl2.addLineSegment(  2047.0 ,  -363.0 );
+		pl2.addLineSegment(  2047.0 ,    35.0 );
+		pl2.addLineSegment(     0.0 ,    35.0 );
+		pl2.close();
 
 		final Polyline2D interSection = pl1.getIntersection(  pl2 );
 		assertTrue( "No intersection found! (normal x, y values)" , interSection != null );
@@ -182,18 +182,18 @@ public final class TestPolyline2D
 		System.out.println( CLASS_NAME + ".testGetIntersection3()" );
 
 		final Polyline2D pl1 = new Polyline2D();
-		pl1.append(     0 ,     0 );
-		pl1.append(  4000 ,     0 );
-		pl1.append(  4000 ,    18 );
-		pl1.append(     0 ,    18 );
-		pl1.append(     0 ,     0 );
+		pl1.addStartPoint (     0.0 ,     0.0 );
+		pl1.addLineSegment(  4000.0 ,     0.0 );
+		pl1.addLineSegment(  4000.0 ,    18.0 );
+		pl1.addLineSegment(     0.0 ,    18.0 );
+		pl1.close();
 
 		final Polyline2D pl2 = new Polyline2D();
-		pl2.append(     0 ,  -363 );
-		pl2.append(  4000 ,  -363 );
-		pl2.append(  4000 ,    35 );
-		pl2.append(     0 ,    35 );
-		pl2.append(     0 ,  -363 );
+		pl2.addStartPoint (     0.0 ,  -363.0 );
+		pl2.addLineSegment(  4000.0 ,  -363.0 );
+		pl2.addLineSegment(  4000.0 ,    35.0 );
+		pl2.addLineSegment(     0.0 ,    35.0 );
+		pl2.close();
 
 		final Polyline2D interSection = pl1.getIntersection(  pl2 );
 		assertTrue( "No intersection found! (large x value)" , interSection != null );
