@@ -79,7 +79,7 @@ public abstract class ViewModel
 	 *
 	 * @return  Iterator for the IDs of all view sub trees that were added to the model.
 	 */
-	public Iterator getAllIDs()
+	public Iterator getAllNodeIDs()
 	{
 		return _nodes.keySet().iterator();
 	}
@@ -99,7 +99,7 @@ public abstract class ViewModel
 	 *
 	 * @param   ID  ID of the (sub) tree to be updated.
 	 */
-	public void update( final Object ID )
+	public void updateNode( final Object ID )
 	{
 		final ViewNode node = getNode( ID );
 		if ( node == null )
@@ -116,7 +116,7 @@ public abstract class ViewModel
 	 *                  used to update this specific part of the view tree.
 	 * @param   abNode  AbNode to create a view node for.
 	 */
-	public void updateOrCreate( final Object ID , final TreeNode abNode )
+	public void updateOrCreateNode( final Object ID , final TreeNode abNode )
 	{
 		final ViewNode node = getNode( ID );
 		if ( node == null )
@@ -134,7 +134,7 @@ public abstract class ViewModel
 	 *
 	 * @param   transform   Transform to set.
 	 */
-	public void setTransform( final Object ID , final Matrix3D transform )
+	public void setNodeTransform( final Object ID , final Matrix3D transform )
 	{
 		final ViewNode node = getNode( ID );
 		if ( node == null )
