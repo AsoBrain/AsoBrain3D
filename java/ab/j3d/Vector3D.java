@@ -112,17 +112,35 @@ public final class Vector3D
 	}
 
 	/**
-	 * Calculate dot product (a.k.a. inner product) of this vector
-	 * and another one specified as argument.
+	 * Calculate dot product (a.k.a. inner product) of this vector and another
+	 * one specified as argument.
 	 *
-	 * @param   v1      First vector.
-	 * @param   v2      Second vector.
+	 * @param   x1      X-coordinate of first vector operand.
+	 * @param   y1      Y-coordinate of first vector operand.
+	 * @param   z1      Z-coordinate of first vector operand.
+	 * @param   x2      X-coordinate of second vector operand.
+	 * @param   y2      Y-coordinate of second vector operand.
+	 * @param   z2      Z-coordinate of second vector operand.
+	 *
+	 * @return  Dot product.
+	 */
+	public static double dot( final double x1 , final double y1 , final double z1 , final double x2 , final double y2 , final double z2 )
+	{
+		return x1 * x2 + y1 * y2 + z1 * z2;
+	}
+
+	/**
+	 * Calculate dot product (a.k.a. inner product) of this vector and another
+	 * one specified as argument.
+	 *
+	 * @param   v1      First vector operand.
+	 * @param   v2      Second vector operand.
 	 *
 	 * @return  Dot product.
 	 */
 	public static double dot( final Vector3D v1 , final Vector3D v2 )
 	{
-		return ( v1.x * v2.x + v1.y * v2.y + v1.z * v2.z );
+		return dot( v1.x , v1.y , v1.z , v2.x , v2.y , v2.z );
 	}
 
 	/**
