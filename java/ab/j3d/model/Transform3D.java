@@ -21,7 +21,7 @@
 package ab.j3d.model;
 
 import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
@@ -261,9 +261,9 @@ public final class Transform3D
 		return _translation;
 	}
 
-	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
 	{
-		super.paint( g , gXform , getMatrix().multiply( viewTransform ) , outlineColor , fillColor , shadeFactor );
+		super.paint( g , gTransform , getMatrix().multiply( viewTransform ) , outlineColor , fillColor , shadeFactor );
 	}
 
 	/**

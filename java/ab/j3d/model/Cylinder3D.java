@@ -21,7 +21,12 @@
 package ab.j3d.model;
 
 import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.GradientPaint;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
@@ -44,17 +49,17 @@ public final class Cylinder3D
 	/**
 	 * Height of cylinder (z-axis).
 	 */
-	public final float   height;
+	public final float height;
 
 	/**
 	 * Radius at top (z=height).
 	 */
-	public final float   radiusTop;
+	public final float radiusTop;
 
 	/**
 	 * Radius at bottom (z=0).
 	 */
-	public final float   radiusBottom;
+	public final float radiusBottom;
 
 	/**
 	 * Constructor for cylinder object. Radius of top or bottom may be set to 0 to create
@@ -227,168 +232,187 @@ public final class Cylinder3D
 		set( vertices ,  faceVert , faceMat , null , null , null , faceSmooth );
 	}
 
-	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
 	{
-		final Matrix3D mat  = xform.multiply( viewTransform );
-		final Matrix3D mat2 = xform.multiply( viewTransform ).multiply( gXform );
+		final Matrix3D viewBase = xform.multiply( viewTransform );
+		final float    h        = height;
+		final float    rBottom  = radiusBottom;
+		final float    rTop     = radiusTop;
 
-		final boolean topViewDrawCircle   = Matrix3D.almostEqual( mat.xz , 0 ) && Matrix3D.almostEqual( mat.yz , 0 ) && ( Matrix3D.almostEqual(  mat.zz , 1 ) || Matrix3D.almostEqual( -mat.zz , 1 ) );
-		final boolean frontViewDrawCircle = Matrix3D.almostEqual( mat.xz , 0 ) && Matrix3D.almostEqual( mat.zz , 0 ) &&   Matrix3D.almostEqual( -mat.yz , 1 );
+		final float zz = viewBase.zz;
+		final float xz = viewBase.xz;
+		final float yz = viewBase.yz;
+		final float xo = viewBase.xo;
+		final float yo = viewBase.yo;
+		final float zo = viewBase.zo;
 
-		/*
-		 * In top- or in front-view a circle must be drawn.
-		 */
-		if ( topViewDrawCircle || frontViewDrawCircle )
-		{
-			final int x = (int)( mat2.xo );
-			final int y = (int)( mat2.yo );
-
-			int rtx = (int)( radiusTop    * 2 * gXform.xx );
-			int rbx = (int)( radiusBottom * 2 * gXform.xx );
-			int rty = (int)( radiusTop    * 2 * ( topViewDrawCircle ? gXform.yy : gXform.yz ) );
-			int rby = (int)( radiusBottom * 2 * ( topViewDrawCircle ? gXform.yy : gXform.yz ) );
-
-			rtx = rtx < 0 ? -rtx : rtx;
-			rbx = rbx < 0 ? -rbx : rbx;
-			rty = rty < 0 ? -rty : rty;
-			rby = rby < 0 ? -rby : rby;
-
-			if ( rtx != 0 && rty != 0 )
-				g.drawOval( (x - (rtx / 2) ) , (y - (rty / 2) ) , rtx , rty );
-
-			if ( rbx != 0 && rby != 0 )
-				g.drawOval( (x - (rbx / 2) ) , (y - (rby / 2) ) , rbx , rby );
-		}
+		final float goldenRatio = 0.6180339f;
 
 		/*
-		 * If no circle could be drawn, draw the outlines of the cylinder.
+		 * The cylinder's center axis (Z-axis) is is parallel on the view plane
+		 * (on the XY / Z=0 plane).
+		 *
+		 * We can can only see the outline of the cylinder (trapezoid).
 		 */
-		float[] pts = null;
-
-		// Top views (look in direction of z-axis).
-		if ( mat2.xx < 0 && mat2.yz < 0 )
+		if ( Matrix3D.almostEqual( zz , 0 ) )
 		{
-			pts = new float[] { -radiusBottom , 0      , radiusBottom , 0      ,
-			                    -radiusTop    , height , radiusTop    , height };
-		}
+			// (xz,yz) = direction of cylinder Z-axis in XY plane
+			// (xo,yo,zo) = view coordinate of cylinder bottom centeroid
 
-		if ( mat2.xx > 0 && mat2.yz > 0 )
-		{
-			pts = new float[] { -radiusBottom , 0       , radiusBottom , 0       ,
-			                    -radiusTop    , -height , radiusTop    , -height };
-		}
+			final float p1x = xo  + yz * rBottom;       // p1 = bottom left,
+			final float p1y = yo  - xz * rBottom;
+			final float p2x = xo  + yz * rTop + xz * h; // p2 = top left
+			final float p2y = yo  - xz * rTop + yz * h;
+			final float p3x = xo  - yz * rTop + xz * h; // p3 = top right
+			final float p3y = yo  + xz * rTop + yz * h;
+			final float p4x = xo  - yz * rBottom;       // p4 = bottom right
+			final float p4y = yo  + xz * rBottom;
 
-		if ( mat2.xz > 0 && mat2.yx < 0 )
-		{
-			pts = new float[] { 0      , -radiusBottom , 0      , radiusBottom ,
-			                    height , -radiusTop    , height , radiusTop    };
-		}
+			/*
+			 * Project and draw trapezoid.
+			 */
+			final float x1 = gTransform.transformX( p1x , p1y , zo );
+			final float y1 = gTransform.transformY( p1x , p1y , zo );
+			final float x2 = gTransform.transformX( p2x , p2y , zo );
+			final float y2 = gTransform.transformY( p2x , p2y , zo );
+			final float x3 = gTransform.transformX( p3x , p3y , zo );
+			final float y3 = gTransform.transformY( p3x , p3y , zo );
+			final float x4 = gTransform.transformX( p4x , p4y , zo );
+			final float y4 = gTransform.transformY( p4x , p4y , zo );
 
-		if ( mat2.xz < 0 && mat2.yx > 0 )
-		{
-			pts = new float[] { 0       , -radiusBottom , 0       , radiusBottom ,
-			                    -height , -radiusTop    , -height , radiusTop    };
-		}
-
-		final boolean topView = ( pts != null && pts.length == 8 );
-
-		// Front views.
-		if ( mat2.xx > 0 && mat2.yz < 0 )
-		{
-			pts = new float[] { -radiusBottom , 0      , radiusBottom , 0      ,
-			                    -radiusTop    , height , radiusTop    , height };
-		}
-
-		if ( mat2.xx < 0 && mat2.yz > 0 )
-		{
-			pts = new float[] { -radiusBottom , 0       , radiusBottom , 0       ,
-			                    -radiusTop    , -height , radiusTop    , -height };
-		}
-
-		if ( mat2.xz > 0 && mat2.yy < 0 )
-		{
-			pts = new float[] { 0      , -radiusBottom , 0      , radiusBottom ,
-			                    height , -radiusTop    , height , radiusTop    };
-		}
-
-		if ( mat2.xz < 0 && mat2.yy < 0 )
-		{
-			pts = new float[] { 0       , -radiusBottom , 0       , radiusBottom ,
-			                    -height , -radiusTop    , -height , radiusTop    };
-		}
-
-		final boolean frontView = ( !topView && pts != null && pts.length == 8 );
-
-		/*
-		 * If the points are filled, draw them.
-		 */
-		if ( topView || frontView )
-		{
-			final float x = viewTransform.transformX( xform.xo , xform.yo , xform.zo );
-			final float y = topView ? viewTransform.transformY( xform.xo , xform.yo , xform.zo ) :
-			                          viewTransform.transformZ( xform.xo , xform.yo , xform.zo ) ;
-
-			final float x1 = x + pts[ 0 ];
-			final float x2 = x + pts[ 2 ];
-			final float x3 = x + pts[ 4 ];
-			final float x4 = x + pts[ 6 ];
-			final float y1 = y + pts[ 1 ];
-			final float y2 = y + pts[ 3 ];
-			final float y3 = y + pts[ 5 ];
-			final float y4 = y + pts[ 7 ];
-
-			int p1x = 0;
-			int p2x = 0;
-			int p3x = 0;
-			int p4x = 0;
-			int p1y = 0;
-			int p2y = 0;
-			int p3y = 0;
-			int p4y = 0;
-
-			if ( topView )
-			{
-				p1x = (int)gXform.transformX( x1 , y1 , 0 );
-				p2x = (int)gXform.transformX( x2 , y2 , 0 );
-				p3x = (int)gXform.transformX( x3 , y3 , 0 );
-				p4x = (int)gXform.transformX( x4 , y4 , 0 );
-				p1y = (int)gXform.transformY( x1 , y1 , 0 );
-				p2y = (int)gXform.transformY( x2 , y2 , 0 );
-				p3y = (int)gXform.transformY( x3 , y3 , 0 );
-				p4y = (int)gXform.transformY( x4 , y4 , 0 );
-			}
-			else if ( frontView )
-			{
-				p1x = (int)gXform.transformX( x1 , 0 ,y1 );
-				p2x = (int)gXform.transformX( x2 , 0 ,y2 );
-				p3x = (int)gXform.transformX( x3 , 0 ,y3 );
-				p4x = (int)gXform.transformX( x4 , 0 ,y4 );
-				p1y = (int)gXform.transformY( x1 , 0 ,y1 );
-				p2y = (int)gXform.transformY( x2 , 0 ,y2 );
-				p3y = (int)gXform.transformY( x3 , 0 ,y3 );
-				p4y = (int)gXform.transformY( x4 , 0 ,y4 );
-			}
+			final GeneralPath path = new GeneralPath( GeneralPath.WIND_EVEN_ODD , 5 );
+			path.moveTo( x1 , y1 );
+			path.lineTo( x2 , y2 );
+			path.lineTo( x3 , y3 );
+			path.lineTo( x4 , y4 );
+			path.closePath();
 
 			if ( fillColor != null )
 			{
-				g.setColor( fillColor );
-				g.fillPolygon( new int[]{ p1x , p2x , p3x , p4x , p1x , p3x , p2x , p4x } ,
-				               new int[]{ p1y , p2y , p3y , p4y , p1y , p3y , p2y , p4y } , 8 );
+				final float highlightX = ( 1 - goldenRatio ) * x1 + goldenRatio * x4;
+				final float highlightY = ( 1 - goldenRatio ) * y1 + goldenRatio * y4;
+				g.setPaint( new GradientPaint( highlightX , highlightY , fillColor , x1 , y1 , outlineColor , true ) );
+				g.fill( path );
 			}
 
 			if ( outlineColor != null )
 			{
 				g.setColor( outlineColor );
-				g.drawLine( p1x , p1y , p2x , p2y );
-				g.drawLine( p3x , p3y , p4x , p4y );
-				g.drawLine( p1x , p1y , p3x , p3y );
-				g.drawLine( p2x , p2y , p4x , p4y );
+				g.draw( path );
 			}
 		}
+		/*
+		 * Viewing along Z-axis. We can see, the bottom and/or top cap and the
+		 * area between the two.
+		 */
+		else if ( Matrix3D.almostEqual( xz , 0 )
+		       && Matrix3D.almostEqual( yz , 0 ) )
+		{
+			final Matrix3D combinedTransform = viewBase.multiply( gTransform );
+
+			final float x = combinedTransform.transformX( 0 , 0 , 0 );
+			final float y = combinedTransform.transformY( 0 , 0 , 0 );
+			final float botZ = combinedTransform.transformZ( 0 , 0 , 0 );
+			final float botRadius;
+			{
+				final float dx = combinedTransform.transformX( rBottom , 0 , 0 ) - x;
+				final float dy = combinedTransform.transformY( rBottom , 0 , 0 ) - y;
+				botRadius = (float)Math.sqrt( dx * dx + dy * dy );
+			}
+
+			final Ellipse2D bot = Matrix3D.almostEqual( botRadius , 0 ) ? null : new Ellipse2D.Float( x - botRadius , y - botRadius , 2 * botRadius , 2 * botRadius );
+
+			final float topZ = combinedTransform.transformZ( 0 , 0 , h );
+			final float topRadius;
+			{
+				final float dx = combinedTransform.transformX( rTop , 0 , h ) - x;
+				final float dy = combinedTransform.transformY( rTop , 0 , h ) - y;
+				topRadius = (float)Math.sqrt( dx * dx + dy * dy );
+			}
+
+			final Ellipse2D top = Matrix3D.almostEqual( topRadius , 0 ) ? null : new Ellipse2D.Float( x - topRadius , y - topRadius , 2 * topRadius , 2 * topRadius );
+
+			if ( ( bot != null ) || ( top != null ) )
+			{
+				final Shape shape1;
+				final Shape shape2;
+				if ( top == null )
+				{
+					shape1 = bot;
+					shape2 = null;
+				}
+				else if ( bot == null )
+				{
+					shape1 = top;
+					shape2 = null;
+				}
+				else if ( topZ >= botZ )
+				{
+					shape1 = bot;
+					shape2 = top;
+				}
+				else
+				{
+					shape1 = top;
+					shape2 = bot;
+				}
+
+				final Paint fillPaint;
+				if ( fillColor != null )
+				{
+					final float r = Math.max( topRadius , botRadius );
+					final float highlight = ( goldenRatio - 0.5f ) * r;
+					fillPaint = new GradientPaint( x + highlight , y - highlight , fillColor , x -r , y + r , outlineColor , true );
+					g.setPaint( fillPaint );
+					g.fill( shape1 );
+				}
+				else
+				{
+					fillPaint = null;
+				}
+
+				if ( outlineColor != null )
+				{
+					g.setPaint( outlineColor );
+					g.draw( shape1 );
+				}
+
+				if ( shape2 != null )
+				{
+					if ( fillPaint != null )
+					{
+						g.setPaint( fillPaint );
+						g.fill( shape2 );
+					}
+
+					if ( outlineColor != null )
+					{
+						g.setPaint( outlineColor );
+						g.draw( shape2 );
+					}
+				}
+			}
+
+//			rby = rby < 0 ? -rby : rby;
+//
+//			if ( rtx != 0 && rty != 0 )
+//				g.drawOval( (x - (rtx / 2) ) , (y - (rty / 2) ) , rtx , rty );
+//
+//			if ( rbx != 0 && rby != 0 )
+//				g.drawOval( (x - (rbx / 2) ) , (y - (rby / 2) ) , rbx , rby );
+		}
+		/*
+		 * @FIXME implement optimized painting with two lines and two ellipses.
+		 *
+		 * Overige situaties:
+		 * 1) Z-as loop parallel aan XZ of YZ vlak (YZ resp. XZ is 0) => teken combinatie van ellips + 2 lijnen + halve ellips.
+		 * 2) Overig => Zelfde als 1), alleen moet je wel een Java2D shape maken en deze transformeren om hem te kunnen tekenen...
+		 * Strikt genomen is natuurlijk alles terug te voeren op 1)
+		 */
 		else
 		{
 			// Not painted, paint fully.
-			super.paint( g , gXform , viewTransform , outlineColor , fillColor , shadeFactor );
+			super.paint( g , gTransform , viewBase , outlineColor , fillColor , shadeFactor );
 		}
 	}
 }

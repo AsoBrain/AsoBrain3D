@@ -21,7 +21,7 @@
 package ab.j3d.model;
 
 import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,7 +81,7 @@ public class Object3D
 	private boolean _normalsDirty = true;
 
 	/**
-	 * This is used as cache storage for paint(Graphics,Matrix3D,Matrix3D).
+	 * This is used as cache storage for paint(Graphics2D,Matrix3D,Matrix3D).
 	 */
 	private static final float[] _paintVertexCache = {};
 
@@ -552,7 +552,7 @@ public class Object3D
 		return index / 3;
 	}
 
-	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
 	{
 		if ( ( getFaceCount() > 0 ) && ( ( outlineColor != null ) || ( fillColor != null ) ) )
 		{
@@ -596,8 +596,8 @@ public class Object3D
 							final float y  = ver[ vi + 1 ];
 							final float z  = ver[ vi + 2 ];
 
-							final int ix = (int)gXform.transformX( x , y , z );
-							final int iy = (int)gXform.transformY( x , y , z );
+							final int ix = (int)gTransform.transformX( x , y , z );
+							final int iy = (int)gTransform.transformY( x , y , z );
 
 							if ( p == 2 )
 							{

@@ -21,7 +21,7 @@
 package ab.j3d.model;
 
 import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -228,23 +228,23 @@ public class Node3D
 	 * (0%). The outline color is not influenced by the <code>shadeFactor</code>.
 	 * <p />
 	 * Objects are painted on the specified graphics context after being
-	 * transformed again by gXform. This may be used to pan/scale the object on the
+	 * transformed again by gTransform. This may be used to pan/scale the object on the
 	 * graphics context (NOTE: IT MAY NOT ROTATE THE OBJECT!).
 	 *
-	 * @param   g               Graphics context.
-	 * @param   gXform          Transformation to pan/scale the graphics context.
+	 * @param   g               Graphics2D context.
+	 * @param   gTransform      Projection transform for Graphics2D context (3D->2D, pan, sale).
 	 * @param   viewTransform   Transformation from object's to view coordinate system.
 	 * @param   outlineColor    Color to use for face outlines (<code>null</code> to disable drawing).
 	 * @param   fillColor       Color to use for filling faces (<code>null</code> to disable drawing).
 	 * @param   shadeFactor     Amount of shading that may be applied (0=none, 1=extreme).
 	 */
-	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
 	{
 		final Node3D[] children = getChildren();
 		for ( int i = 0 ; i < children.length ; i++ )
 		{
 			final Node3D node = children[ i ];
-			node.paint( g , gXform , viewTransform , outlineColor , fillColor , shadeFactor );
+			node.paint( g , gTransform , viewTransform , outlineColor , fillColor , shadeFactor );
 		}
 	}
 

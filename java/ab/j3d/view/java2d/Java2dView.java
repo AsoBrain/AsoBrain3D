@@ -24,6 +24,7 @@ import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.Iterator;
 
 import ab.j3d.Matrix3D;
@@ -75,7 +76,9 @@ public final class Java2dView
 			{
 				super.paint( g );
 
-				final Matrix3D gXform        = getViewTransform();
+				final Graphics2D g2d = (Graphics2D)g;
+
+				final Matrix3D gTransform    = getViewTransform();
 				final Matrix3D viewTransform = Matrix3D.INIT; //@FIXME How to get this info??
 				final Color    outlineColor  = Color.black;
 				final Color    fillColor     = Color.white;
@@ -86,7 +89,7 @@ public final class Java2dView
 					final Object o = i.next();
 					if ( o instanceof Object3D )
 					{
-						((Object3D)o).paint( g , gXform , viewTransform , outlineColor , fillColor , shadeFactor );
+						((Object3D)o).paint( g2d , gTransform , viewTransform , outlineColor , fillColor , shadeFactor );
 					}
 				}
 			}
