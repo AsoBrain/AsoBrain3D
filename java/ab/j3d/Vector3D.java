@@ -20,6 +20,10 @@
  */
 package ab.j3d;
 
+import java.text.DecimalFormat;
+
+import com.numdata.oss.TextTools;
+
 /**
  * This class represents a 3D vector.
  *
@@ -36,6 +40,7 @@ public final class Vector3D
 	 * Initial value of a vector (0-vector).
 	 */
 	public static final Vector3D INIT = new Vector3D( 0.0 , 0.0 , 0.0 );
+
 	/**
 	 * Construct new vector.
 	 *
@@ -330,5 +335,33 @@ public final class Vector3D
 	public String toString()
 	{
 		return x + "," + y + ',' + z;
+	}
+
+	/**
+	 * Create human-readable representation of this <code>Vector3D</code> object.
+	 * This is aspecially useful for debugging purposes.
+	 *
+	 * @return  Human-readable representation of this <code>Vector3D</code> object.
+	 */
+	public String toFriendlyString()
+	{
+		return toFriendlyString( this );
+	}
+
+	/**
+	 * Create human-readable representation of Vector3D object. This is
+	 * aspecially useful for debugging purposes.
+	 *
+	 * @param   vector   Vector3D instance.
+	 *
+	 * @return  Human-readable representation of Vector3D object.
+	 */
+	public static String toFriendlyString( final Vector3D vector )
+	{
+		final DecimalFormat df = new DecimalFormat( "0.0" );
+
+		return "[ " + df.format( vector.x ) + " , "
+		            + df.format( vector.y ) + " , "
+		            + df.format( vector.z ) + " ]";
 	}
 }
