@@ -1,20 +1,52 @@
 package test.backoffice;
 
+/*
+ * $Id$
+ *
+ * (C) Copyright Numdata BV 2002 - All Rights Reserved
+ *
+ * This software may not be used, copyied, modified, or distributed in any
+ * form without express permission from Numdata BV. Please contact Numdata BV
+ * for license information.
+ */
 import backoffice.Polyline2D;
 import backoffice.PolyPoint2D;
 import ab.components.*;
 import java.awt.*;
 import java.awt.event.*;
 
-
-public class TestPolyline2D
+/**
+ * This is a small test-app to manually test the Polyline2D class.
+ *
+ * @see	Polyline2D
+ *
+ * @author	Peter S. Heijnen
+ * @version	$Revision$ ($Date$, $Author$)
+ */
+public final class TestPolyline2D
 	extends AbPanel
 	implements MouseListener , MouseMotionListener
 {
+	/**
+	 * Base polyline to manipulate.
+	 */
 	private Polyline2D _baseLine;
+
+	/**
+	 * Extruded polyline.
+	 */
 	private Polyline2D _adjusted;
+
+	/**
+	 * Point being dragged.
+	 */
 	private int _dragPoint = -1;
 
+	/**
+	 * Construct test-app.
+	 *
+	 * @param	base	Base polyline to manipulate.
+	 */
 	private TestPolyline2D( final Polyline2D base )
 	{
 		setBackground( Color.white );
@@ -32,19 +64,22 @@ public class TestPolyline2D
 	/**
 	 * Run test application.
 	 *
-	 * @param	args	Command line arguments.
+	 * @param	args	Command line arguments (ignored).
 	 */
 	public static void main( final String args[] )
 	{
-		System.exit( test( args ) ? 0 : 1 );
+		test();
+		System.exit( 0 );
 	}
 
-/**
- * Invoked when the mouse has been clicked on a component.
- */
-public void mouseClicked(java.awt.event.MouseEvent e)
-{
-}
+	/**
+	 * Invoked when the mouse has been clicked on a component.
+	 *
+	 * @param	e	Mouse event.
+	 */
+	public void mouseClicked( final MouseEvent e )
+	{
+	}
 
 	/**
 	 * Invoked when a mouse button is pressed on a component and then 
@@ -52,21 +87,23 @@ public void mouseClicked(java.awt.event.MouseEvent e)
 	 * the component where the first originated until the mouse button is
 	 * released (regardless of whether the mouse position is within the
 	 * bounds of the component).
+	 *
+	 * @param	e	Mouse event.
 	 */
-	public void mouseDragged( MouseEvent e )
+	public void mouseDragged( final MouseEvent e )
 	{
 		if ( _dragPoint < 0 )
 			return;
 			
 		
-		Dimension size = getSize();
-		int x = e.getX();
-		int y = size.height - 1 - e.getY();
+		final Dimension size = getSize();
+		final int       x    = e.getX();
+		final int       y    = size.height - 1 - e.getY();
 		
 		if ( x < 0 || y < 0 || x >= size.width || y >= size.height )
 			return;
 		
-		Polyline2D newPoly = new Polyline2D();
+		final Polyline2D newPoly = new Polyline2D();
 		for ( int i = 0 ; i < _baseLine.getPointCount() ; i++ )
 		{
 			if ( i == _dragPoint )
@@ -83,48 +120,56 @@ public void mouseClicked(java.awt.event.MouseEvent e)
 		repaint();
 	}
 
-/**
- * Invoked when the mouse enters a component.
- */
-public void mouseEntered(java.awt.event.MouseEvent e)
-{
-}
+	/**
+	 * Invoked when the mouse enters a component.
+	 *
+	 * @param	e	Mouse event.
+	 */
+	public void mouseEntered( final MouseEvent e )
+	{
+	}
 
-/**
- * Invoked when the mouse exits a component.
- */
-public void mouseExited(java.awt.event.MouseEvent e)
-{
-}
+	/**
+	 * Invoked when the mouse exits a component.
+	 *
+	 * @param	e	Mouse event.
+	 */
+	public void mouseExited( final MouseEvent e )
+	{
+	}
 
-/**
- * Invoked when the mouse button has been moved on a component
- * (with no buttons no down).
- */
-public void mouseMoved(java.awt.event.MouseEvent e)
-{
-}
+	/**
+	 * Invoked when the mouse button has been moved on a component
+	 * (with no buttons no down).
+	 *
+	 * @param	e	Mouse event.
+	 */
+	public void mouseMoved( final MouseEvent e )
+	{
+	}
 
 	/**
 	 * Invoked when a mouse button has been pressed on a component.
+	 *
+	 * @param	e	Mouse event.
 	 */
 	public void mousePressed( final MouseEvent e )
 	{
-		Dimension size = getSize();
-		int x = e.getX();
-		int y = size.height - 1 - e.getY();
+		final Dimension size = getSize();
+		final int       x    = e.getX();
+		final int       y    = size.height - 1 - e.getY();
 		
 		if ( x < 0 || y < 0 || x >= size.width || y >= size.height )
 			return;
 
-		float distanceSquared = 3f * 3f;
+		final float distanceSquared = 3f * 3f;
 		
 		_dragPoint = -1;
 		for ( int i = 0 ; i < _baseLine.getPointCount() ; i++ )
 		{
-			PolyPoint2D p = _baseLine.getPoint( i );
-			float dx = p.x - x;
-			float dy = p.y - y;
+			final PolyPoint2D p  = _baseLine.getPoint( i );
+			final float       dx = p.x - x;
+			final float       dy = p.y - y;
 
 			if ( ( dx * dx + dy * dy ) < distanceSquared )
 			{
@@ -138,8 +183,10 @@ public void mouseMoved(java.awt.event.MouseEvent e)
 
 	/**
 	 * Invoked when a mouse button has been released on a component.
+	 *
+	 * @param	e	Mouse event.
 	 */
-	public void mouseReleased( MouseEvent e )
+	public void mouseReleased( final MouseEvent e )
 	{
 		_dragPoint = -1;
 		repaint();
@@ -150,7 +197,7 @@ public void mouseMoved(java.awt.event.MouseEvent e)
 	 *
 	 * @param	g	Graphics context.
 	 */
-	protected void paintComponent( Graphics g )
+	protected void paintComponent( final Graphics g )
 	{
 		super.paintComponent( g );
 
@@ -170,10 +217,15 @@ public void mouseMoved(java.awt.event.MouseEvent e)
 	/**
 	 * Paint polyline using dots and lines.
 	 *
-	 * @param	g		Graphics context.
-	 * @param	pl		Polyline to draw.
+	 * @param	g			Graphics context.
+	 * @param	pl			Polyline to draw.
+	 * @param	selected	Selected point index.
+	 * @param	dotColor	Color for dots.
+	 * @param	lineColor	Color for lines.
+	 * @param	selectColor	Color for selected point.
+	 * @param	radius		Size of points.
 	 */
-	private void paintPoly( Graphics g , Polyline2D pl , int selected , Color dotColor , Color lineColor , Color selectColor , int radius )
+	private void paintPoly( final Graphics g , final Polyline2D pl , final int selected , final Color dotColor , final Color lineColor , final Color selectColor , final int radius )
 	{
 		final int height = getHeight();
 		final int maxIndex = pl.getPointCount() - 1;
@@ -183,8 +235,8 @@ public void mouseMoved(java.awt.event.MouseEvent e)
 		
 		for ( int i = 0 ; i < maxIndex ; i++ )
 		{
-			PolyPoint2D p1 = pl.getPoint( i );
-			PolyPoint2D p2 = pl.getPoint( i + 1 );
+			final PolyPoint2D p1 = pl.getPoint( i );
+			final PolyPoint2D p2 = pl.getPoint( i + 1 );
 			
 			g.drawLine( Math.round( p1.x ) , maxY - Math.round( p1.y ) ,
 			            Math.round( p2.x ) , maxY - Math.round( p2.y ) );
@@ -196,7 +248,7 @@ public void mouseMoved(java.awt.event.MouseEvent e)
 		
 		for ( int i = 0 ; i <= maxIndex ; i++ )
 		{
-			PolyPoint2D p = pl.getPoint( i );
+			final PolyPoint2D p = pl.getPoint( i );
 			g.setColor( ( i == selected ) ? selectColor : dotColor );
 			g.fillOval( ovalX + Math.round( p.x ) , ovalY - Math.round( p.y ) , ovalSize , ovalSize );
 		}
@@ -205,13 +257,8 @@ public void mouseMoved(java.awt.event.MouseEvent e)
 
 	/**
 	 * Run test application.
-	 *
-	 * @param	args	Command line arguments.
-	 *
-	 * @return	<code>true</code> if test was succesful;
-	 *			<code>false</code> if one or more errors occured.
 	 */
-	public static boolean test( final String[] args )
+	public static void test()
 	{
 		final Polyline2D base = new Polyline2D();
 		base.append( 50 , 50 );
@@ -222,13 +269,12 @@ public void mouseMoved(java.awt.event.MouseEvent e)
 		base.append( 50 , 140 );
 		base.close();
 		
-		AbDialog f = new AbDialog( TestPolyline2D.class.getName() , true );
-		TestPolyline2D p = new TestPolyline2D( base );
+		final AbDialog f = new AbDialog( TestPolyline2D.class.getName() , true );
+		final TestPolyline2D p = new TestPolyline2D( base );
 		f.getContent().add( p , BorderLayout.CENTER );
 		f.setSize( 600 , 400 );
 		f.setAlignment( 50 , 50 );
 		f.show();
-		return true;
 	}
 
 }
