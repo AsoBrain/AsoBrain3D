@@ -365,6 +365,22 @@ public final class Polyline2D
 	}
 
 	/**
+	 * Adds a new point to the polyLine. Points with the same or a greater index then the new one, will be shift to the right.
+	 *
+	 * @param index     Index of the new point
+	 * @param point     The point
+	 */
+		public void addPoint( int index , PolyPoint2D point )
+	{
+		if ( point == null )
+			throw new NullPointerException( "Cannot add a null point to a polyline" );
+		_points.add( index , point );
+		_typeCache = UNKNOWN;
+		_boundsCache = null;
+		_encloseCache = null;
+	}
+
+	/**
 	 * Add control point to polyline.
 	 *
 	 * @param   point	Control point to append to polyline.
