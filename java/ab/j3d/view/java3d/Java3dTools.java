@@ -22,56 +22,42 @@ package ab.j3d.view.java3d;
 
 import java.awt.Canvas;
 import java.awt.Dimension;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import javax.media.j3d.Alpha;
 import javax.media.j3d.Appearance;
-import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.ColoringAttributes;
-import javax.media.j3d.GeometryArray;
+import javax.media.j3d.GraphicsConfigTemplate3D;
 import javax.media.j3d.Group;
-import javax.media.j3d.LineArray;
 import javax.media.j3d.LineAttributes;
 import javax.media.j3d.LineStripArray;
 import javax.media.j3d.Material;
 import javax.media.j3d.Node;
 import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.QuadArray;
-import javax.media.j3d.RotationInterpolator;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Texture;
 import javax.media.j3d.TextureAttributes;
 import javax.media.j3d.Transform3D;
-import javax.media.j3d.TransformGroup;
 import javax.media.j3d.TransparencyAttributes;
-import javax.media.j3d.TriangleArray;
 import javax.vecmath.Color3f;
 import javax.vecmath.Matrix4d;
-import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
-import javax.vecmath.TexCoord2f;
 import javax.vecmath.Tuple3f;
 import javax.vecmath.Tuple3i;
-import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
-import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
-import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.image.TextureLoader;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
-import ab.j3d.Vector3D;
-import ab.j3d.model.Face3D;
-import ab.j3d.model.Object3D;
 
 /**
  * Utility methods for Java 3D support.
@@ -121,217 +107,19 @@ public final class Java3dTools
 	}
 
 	/**
-	 * Convert <code>Object3D<code/> to Java3D <code>Node</code> object.
-	 *
-	 * @param   xform               Transform to apply to vertices.
-	 * @param   object3d            Object3D to convert.
-	 * @param   textureOverride     Texture to use instead of actual object texture.
-	 * @param   opacity             Extra object opacity (0.0=translucent, 1.0=opaque).
-	 *
-	 * @return  A <code>BranchGroup</code> is returned containing
-	 *          <code>Shape3D</code>s for each separate <code>Appearance</code>.
-	 */
-	public Node convertObject3DToNode( final Matrix3D xform , final Object3D object3d , final TextureSpec textureOverride , final float opacity )
-	{
-		final BranchGroup result = new BranchGroup();
-		result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
-		result.setCapability( BranchGroup.ALLOW_DETACH );
-
-		final Map appearances = new HashMap();
-		final Shape3D lines   = new Shape3D();
-
-		final int      faceCount    = object3d.getFaceCount();
-		final double[] pointCoords  = object3d.getPointCoords();
-		final double[] pointNormals = object3d.getVertexNormals();
-
-		for ( int i = 0 ; i < faceCount ; i++ )
-		{
-			final Face3D      face        = object3d.getFace( i );
-			final int         vertexCount = face.getVertexCount();
-			final TextureSpec texture     = ( textureOverride != null ) ? textureOverride : face.getTexture();
-
-			if ( ( texture != null ) && ( texture.code != null ) && ( vertexCount >= 2 ) )
-			{
-				final int[] pointIndices = face.getPointIndices();
-				final int[] textureU     = ( textureOverride != null ) ? null : face.getTextureU();
-				final int[] textureV     = ( textureOverride != null ) ? null : face.getTextureV();
-
-				final List[] data;
-				if ( appearances.containsKey( texture) )
-					data = (List[])appearances.get( texture );
-				else
-					appearances.put( texture , data = new List[] { new ArrayList() , new ArrayList() , new ArrayList() } );
-
-				if ( vertexCount == 2 )
-				{
-					int pointIndex  = pointIndices[ 0 ] * 3;
-					final double p1X = pointCoords[ pointIndex     ];
-					final double p1Y = pointCoords[ pointIndex + 1 ];
-					final double p1Z = pointCoords[ pointIndex + 2 ];
-
-					pointIndex = pointIndices[ 1 ] * 3;
-					final double p2X = pointCoords[ pointIndex     ];
-					final double p2Y = pointCoords[ pointIndex + 1 ];
-					final double p2Z = pointCoords[ pointIndex + 2 ];
-
-					final Point3d point1 = new Point3d(
-						xform.transformX( p1X , p1Y , p1Z ) ,
-						xform.transformY( p1X , p1Y , p1Z ) ,
-						xform.transformZ( p1X , p1Y , p1Z ) );
-
-					final Point3d point2 = new Point3d(
-						xform.transformX( p2X , p2Y , p2Z ) ,
-						xform.transformY( p2X , p2Y , p2Z ) ,
-						xform.transformZ( p2X , p2Y , p2Z ) );
-
-					final GeometryArray geom = new LineArray( 2 , LineArray.COORDINATES );
-					geom.setCoordinate( 0 , new double[]{ point1.x , point1.y , point1.z } );
-					geom.setCoordinate( 1 , new double[]{ point2.x , point2.y , point2.z } );
-
-					lines.addGeometry( geom );
-				}
-				else
-				{
-					final Texture j3dTexture       = ( ( textureU == null ) || ( textureV == null ) ) ? null : getTexture( texture );
-					final List    j3dVertices      = data[ 0 ];
-					final List    j3dTextureCoords = data[ 1 ];
-					final List    j3dFaceNormals   = data[ 2 ];
-
-					final int nrTriangles = vertexCount - 2;
-					for ( int triangleIndex = 0 ; triangleIndex < nrTriangles ; triangleIndex++ )
-					{
-						for ( int subIndex = 3 ; --subIndex >= 0 ; )
-						{
-							final int   vertexIndex = ( subIndex == 0 ) ? 0 : ( triangleIndex + subIndex );
-							final int   pointIndex  = pointIndices[ vertexIndex ] * 3;
-
-							final double pointX = pointCoords[ pointIndex     ];
-							final double pointY = pointCoords[ pointIndex + 1 ];
-							final double pointZ = pointCoords[ pointIndex + 2 ];
-
-							final double normalX = pointNormals[ pointIndex     ];
-							final double normalY = pointNormals[ pointIndex + 1 ];
-							final double normalZ = pointNormals[ pointIndex + 2 ];
-
-							j3dVertices.add( new Point3d(
-								xform.transformX( pointX , pointY , pointZ ) ,
-								xform.transformY( pointX , pointY , pointZ ) ,
-								xform.transformZ( pointX , pointY , pointZ ) ) );
-
-							j3dFaceNormals.add( new Vector3f(
-								(float)xform.rotateX( normalX , normalY , normalZ ) ,
-								(float)xform.rotateY( normalX , normalY , normalZ ) ,
-								(float)xform.rotateZ( normalX , normalY , normalZ ) ) );
-
-							j3dTextureCoords.add( ( j3dTexture == null ) ? new TexCoord2f() : new TexCoord2f(
-								(float)textureU[ vertexIndex ] / (float)j3dTexture.getWidth()  ,
-								(float)textureV[ vertexIndex ] / (float)j3dTexture.getHeight() ) );
-						}
-					}
-				}
-			}
-		}
-
-		final Set      appearanceTextures = appearances.keySet();
-		final Iterator appearanceIterator = appearanceTextures.iterator();
-
-		if ( appearanceTextures.size() == 1 )
-		{
-			final TextureSpec texture    = (TextureSpec)appearanceIterator.next();
-			final Appearance  appearance = getAppearance( texture , opacity );
-			final List[]      data       = (List[])appearances.get( texture );
-
-			if ( ( (List)data[ 0 ] ).size() > 2 )
-				result.addChild( createShape3D( appearance , data[ 0 ] , data[ 1 ] , data[ 2 ] ) );
-		}
-		else
-		{
-			while ( appearanceIterator.hasNext() )
-			{
-				final TextureSpec texture    = (TextureSpec)appearanceIterator.next();
-				final Appearance  appearance = getAppearance( texture , opacity );
-				final List[]      data       = (List[])appearances.get( texture );
-
-				if ( ( (List)data[ 0 ] ).size() > 2 )
-					result.addChild( createShape3D( appearance , data[ 0 ] , data[ 1 ] , data[ 2 ] ) );
-			}
-		}
-
-		result.addChild( lines );
-
-		return result;
-	}
-
-	/**
-	 * Convert AB <code>Matrix3D<code/> to Java3D <code>Matrix4f</code> object.
+	 * Convert <code>Matrix3D<code/> to Java3D <code>Transform3D</code> object.
 	 *
 	 * @param   matrix  Matrix3D to convert.
 	 *
-	 * @return  <code>Matrix4f</code> instance.
-	 */
-	public static Matrix4d convertMatrix3DToMatrix4d( final Matrix3D matrix )
-	{
-		return new Matrix4d(
-			matrix.xx , matrix.xy , matrix.xz , matrix.xo ,
-			matrix.yx , matrix.yy , matrix.yz , matrix.yo ,
-			matrix.zx , matrix.zy , matrix.zz , matrix.zo ,
-			0.0 , 0.0 , 0.0 , 1.0 );
-	}
-
-	/**
-	 * Convert AB <code>Matrix3D<code/> to Java3D <code>Matrix4f</code> object.
-	 *
-	 * @param   matrix  Matrix3D to convert.
-	 *
-	 * @return  <code>Matrix4f</code> instance.
+	 * @return  <code>Transform3D</code> instance.
 	 */
 	public static Transform3D convertMatrix3DToTransform3D( final Matrix3D matrix )
 	{
-		return new Transform3D( convertMatrix3DToMatrix4d( matrix ) );
-	}
-
-	/**
-	 * Convert Java3D <code>Tranform3D<code/> object to AB <code>Matrix3D</code>.
-	 *
-	 * @param   transform   Transform3D to convert.
-	 *
-	 * @return  <code>Matrix3D</code> instance.
-	 */
-	public static Matrix3D convertTransform3DToMatrix3D( final Transform3D transform )
-	{
-		final Matrix4d m4d = new Matrix4d();
-		transform.get( m4d );
-
-		return Matrix3D.INIT.set(
-			m4d.m00 , m4d.m01 , m4d.m02 , m4d.m03 ,
-			m4d.m10 , m4d.m11 , m4d.m12 , m4d.m13 ,
-			m4d.m20 , m4d.m21 , m4d.m22 , m4d.m23 );
-	}
-
-	/**
-	 * Get the transform to look from a specified point to a specified point.
-	 *
-	 * @param   from    Point to look from.
-	 * @param   to      Point to look at.
-	 *
-	 * @return  The transform to look from 'from' to 'to'.
-	 */
-	public static Transform3D createFromToTransform3D( final Vector3D from , final Vector3D to )
-	{
-		if ( from.equals( to ) )
-			throw new IllegalArgumentException( "getTransfrom( from , to ); 'from' and 'to' can not be the same!" );
-
-		final Vector3d upVector;
-		if ( ( from.x == 0 ) && ( from.y == 0 ) && ( from.z != 0 ) )
-			upVector = new Vector3d( 0.0 , 1.0 , 0.0 );
-		else
-			upVector = new Vector3d( 0.0 , 0.0 , 1.0 );
-
-		final Transform3D transform = new Transform3D();
-		transform.setTranslation( new Vector3d( from.x , from.y , from.z ) );
-		transform.lookAt( new Point3d( from.x , from.y , from.z ) , new Point3d( to.x , to.y , to.z ) , upVector );
-		transform.invert();
-		return transform;
+		return new Transform3D( new Matrix4d(
+			matrix.xx , matrix.xy , matrix.xz , matrix.xo ,
+			matrix.yx , matrix.yy , matrix.yz , matrix.yo ,
+			matrix.zx , matrix.zy , matrix.zz , matrix.zo ,
+			0.0       , 0.0       , 0.0       , 1.0 ) );
 	}
 
 	/**
@@ -422,115 +210,6 @@ public final class Java3dTools
 	}
 
 	/**
-	 * Set content of panel to a spinning image box.
-	 *
-	 * @param   image   Image to place on box.
-	 *
-	 * @return  Java 3D content graph with spinning image box.
-	 */
-	public static BranchGroup createImageSpinnerContent( final Image image )
-	{
-		final BranchGroup result = new BranchGroup();
-		result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
-
-		final TransformGroup boxTransform = new TransformGroup();
-		boxTransform.setCapability( TransformGroup.ALLOW_TRANSFORM_WRITE );
-		result.addChild( boxTransform );
-
-		final RotationInterpolator spinner = new RotationInterpolator(
-		        /* alpha          */ new Alpha( -1 , Alpha.INCREASING_ENABLE , 0L , 0L , 8000L , 0L , 0L , 0L , 0L , 0L ) ,
-		        /* transformgroup */ boxTransform ,
-		        /* axis           */ new Transform3D() ,
-		        /* startValue     */ (float) Math.PI * 2.0f ,
-		        /* endValue       */ 0.0f );
-		spinner.setSchedulingBounds( new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 100.0 ) );
-		boxTransform.addChild( spinner );
-
-		final Appearance appearance = new Appearance();
-		final TextureLoader loader = new TextureLoader( image , TEXTURE_OBSERVER );
-		appearance.setTexture( loader.getTexture() );
-		boxTransform.addChild( new Box( 0.15f , 0.15f , 0.15f , Box.GENERATE_TEXTURE_COORDS , appearance ) );
-
-		return result;
-	}
-
-	/**
-	 * Create orbit control with default scheduling bounds for the specified
-	 * canvas. The behavior must be assigned to a <code>TransformGroup</code> to
-	 * be effective.
-	 *
-	 * @param   canvas  Canvas to create orbit control for.
-	 * @param   unit    Unit scale factor (e.g. <code>MM</code>).
-	 *
-	 * @return  Orbit behavior.
-	 */
-	public static OrbitBehavior createOrbitBehavior( final Canvas3D canvas , final double unit )
-	{
-		final BoundingSphere bounds = new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 100.0 );
-
-		final OrbitBehavior orbit = new SimpleOrbitBehavior( canvas , unit );
-		orbit.setSchedulingBounds( bounds );
-
-		return orbit;
-	}
-
-	/**
-	 * Create a <code>Shape3D</code> by using the specified parameters.
-	 *
-	 * @param   appearance          Appearance of the Shape3D to create.
-	 * @param   j3dVertices         Vertices of the Shape3D to create.
-	 * @param   j3dTextureCoords    Texture U- and V-coordinates of the Shape3D.
-	 * @param   j3dFaceNormals      Face normals of the Shape3D to create.
-	 *
-	 * @return  Shape3d created out of the specified parameters.
-	 */
-	private static Shape3D createShape3D( final Appearance appearance , final List j3dVertices , final List j3dTextureCoords , final List j3dFaceNormals )
-	{
-		final boolean hasTexture = ( appearance.getTexture() != null );
-
-		final int           what = GeometryArray.COORDINATES | GeometryArray.NORMALS | ( hasTexture ? GeometryArray.TEXTURE_COORDINATE_2 : 0 );
-		final GeometryArray geom = new TriangleArray( j3dVertices.size() , what );
-
-		final Point3d[] coordA = (Point3d[])j3dVertices.toArray( new Point3d[ j3dVertices.size() ] );
-		geom.setCoordinates( 0 , coordA );
-
-		if ( hasTexture )
-		{
-			final TexCoord2f[] textCoordsA = (TexCoord2f[])j3dTextureCoords.toArray( new TexCoord2f[ j3dTextureCoords.size() ] );
-			geom.setTextureCoordinates( 0 , 0 , textCoordsA );
-		}
-
-		geom.setNormals( 0 , (Vector3f[])j3dFaceNormals.toArray( new Vector3f[ j3dFaceNormals.size() ] ) );
-
-		return new Shape3D( geom , appearance );
-	}
-
-	/**
-	 * Create Transform3D to translate, rotate, and scale geometry in Java 3D.
-	 *
-	 * @param   position    Target location.
-	 * @param   rotation    Rotation around the Z-axis.
-	 * @param   scale       Scale factor (0.001 => shrink 1000*).
-	 *
-	 * @return  Transform3D to perform the specified transformation.
-	 */
-	public static Transform3D createTransform3D( final Vector3D position , final double rotation , final double scale )
-	{
-		final Transform3D xform   = new Transform3D();
-		final Transform3D operand = new Transform3D();
-
-		operand.rotY( rotation );
-		operand.setTranslation( new Vector3d( position.x , position.y , position.z ) );
-		xform.mul( operand );
-
-		operand.rotX( -Math.PI / 2.0 );
-		operand.setScale( scale );
-		xform.mul( operand );
-
-		return new Transform3D( xform );
-	}
-
-	/**
 	 * Conveniene method to create a <code>Canvas3D</code> with default
 	 * configuration settings.
 	 *
@@ -538,7 +217,10 @@ public final class Java3dTools
 	 */
 	public static Canvas3D createCanvas3D()
 	{
-		return new Canvas3D( Java3dUniverse.getPreferredConfiguration() )
+		final GraphicsEnvironment environment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		final GraphicsDevice device = environment.getDefaultScreenDevice();
+
+		return new Canvas3D( device.getBestConfiguration( new GraphicsConfigTemplate3D() ) )
 			{
 				/*
 				 * Override <code>getMinimumSize()</code> to allow layout manager to
