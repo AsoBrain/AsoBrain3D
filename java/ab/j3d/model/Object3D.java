@@ -266,7 +266,7 @@ public class Object3D
 		{
 			final Face face = getFace( fi++ );
 
-			if ( face.getFacePointCount() < 3 )
+			if ( face.getPointCount() < 3 )
 				continue;
 
 			final int[] pointIndices = face.getPointIndices();
@@ -304,7 +304,7 @@ public class Object3D
 		 	for ( int fi = 0 ; fi < faceCount ; fi++ )
 		 	{
 				final Face face    = (Face)_faces.get( fi );
-				final int nrPoints = face.getFacePointCount();
+				final int nrPoints = face.getPointCount();
 
 				for ( int fvi = nrPoints ; --fvi >= 0 ; )
 				{
@@ -471,6 +471,25 @@ public class Object3D
 	}
 
 	/**
+	 * Add point to this <code>Object3D</code>.
+	 *
+	 * @param   x   X-coordinate of the point.
+	 * @param   y   Y-coordinate of the point.
+	 * @param   z   Z-coordinate of the point.
+	 */
+	public void addPoint( final float x , final float y , final float z )
+	{
+		final int objectPointCount = getTotalVertexCount() * 3;
+		ensureCapacity( objectPointCount + 3 );
+
+		_vertices[ objectPointCount     ] = x;
+		_vertices[ objectPointCount + 1 ] = y;
+		_vertices[ objectPointCount + 2 ] = z;
+
+		_normalsDirty = true;
+	}
+
+	/**
 	 * Get the index of the specified point in the <code>_vertices</code> list.
 	 *
 	 * @param x x-coordinate of the point.
@@ -496,7 +515,7 @@ public class Object3D
 		return found ? index - 1 : -1;
 	}
 
-	private void ensureObjectCapacity( final int lenght )
+	private void ensureCapacity( final int lenght )
 	{
 		final int vertexCount = getTotalVertexCount();
 
@@ -728,7 +747,7 @@ public class Object3D
 			for ( int i = 0 ; i < nrVertices ; i++ )
 			{
 				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
-				face.addPoint( base.multiply( point.x , point.y , 0 ) , vertU[ i ] + adjustU , vertV[ i ] + adjustV );
+				face.addVertex( base.multiply( point.x , point.y , 0 ) , vertU[ i ] + adjustU , vertV[ i ] + adjustV );
 			}
 		}
 		else
@@ -737,7 +756,7 @@ public class Object3D
 			for ( int i = 0 ; i < nrVertices ; i++ )
 			{
 				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
-				face.addPoint( base.multiply( point.x , point.y , 0 ) , 0 , 0 );
+				face.addVertex( base.multiply( point.x , point.y , 0 ) , 0 , 0 );
 			}
 		}
 
@@ -848,7 +867,7 @@ public class Object3D
 	 */
 	public final int getFaceVertexCount( final int face )
 	{
-		return getFace( face ).getFacePointCount();
+		return getFace( face ).getPointCount();
 	}
 
 	/**
@@ -899,12 +918,12 @@ public class Object3D
 		/**
 		 * Points of this face.
 		 */
-		private int[] _facePoints;
+		private int[] _pointIndices;
 
 		/**
 		 * Number of points of this face.
 		 */
-		private int _facePointCount;
+		private int _pointCount;
 
 		/**
 		 * Normal of this face.
@@ -948,87 +967,79 @@ public class Object3D
 		 */
 		public Face( final int[] points , final TextureSpec texture , final int[] tU , final int[] tV , final float opacity , final boolean smooth )
 		{
-			_facePoints     = points == null ? new int[ 0 ] : points;
-			_facePointCount = points != null ? points.length : 0;
-			_normal         = new float[ 3 ];
-			_texture        = texture;
-			_textureU       = tU == null ? new int[ 0 ] : tU;
-			_textureV       = tV == null ? new int[ 0 ] : tV;
-			_opacity        = opacity;
-			_smooth         = smooth;
+			_pointIndices = points == null ? new int[ 0 ] : points;
+			_pointCount   = points != null ? points.length : 0;
+			_normal       = new float[ 3 ];
+			_texture      = texture;
+			_textureU     = tU == null ? new int[ 0 ] : tU;
+			_textureV     = tV == null ? new int[ 0 ] : tV;
+			_opacity      = opacity;
+			_smooth       = smooth;
 		}
 
 		/**
 		 * Add vertex to face. Note that the last vertex is automatically connected
-		 * to the first vertex.
+		 * to the first vertex. The vertex texture U and V coordinates are set to -1.
 		 *
-		 * @param   x   x-coordinate of point to add.
-		 * @param   y   y-coordinate of point to add.
-		 * @param   z   z-coordinate of point to add.
+		 * @param   x   X-coordinate of vertex to add.
+		 * @param   y   Y-coordinate of vertex to add.
+		 * @param   z   Z-coordinate of vertex to add.
 		 */
-		public void addPoint( final float x , final float y , final float z )
+		public void addVertex( final float x , final float y , final float z )
 		{
-			addPoint( x , y , z , -1 , -1 );
+			addVertex( x , y , z , -1 , -1 );
 		}
 
 		/**
 		 * Add vertex to face. Note that the last vertex is automatically connected
-		 * to the first vertex.
+		 * to the first vertex. The vertex texture U and V coordinates are set to -1.
 		 *
-		 * @param point Point to add.
+		 * @param   point   Point that specifies the vertex x-, y- and z-coordinates.
 		 */
-		public void addPoint( final Vector3D point )
+		public void addVertex( final Vector3D point )
 		{
-			addPoint( point.x , point.y , point.z , -1 , -1 );
+			addVertex( point.x , point.y , point.z , -1 , -1 );
 		}
 
 		/**
 		 * Add vertex to face. Note that the last vertex is automatically connected
 		 * to the first vertex.
 		 *
-		 * @param x     x-coordinate of point to add.
-		 * @param y     y-coordinate of point to add.
-		 * @param z     z-coordinate of point to add.
-		 * @param tU    Horizontal texture coordinate.
-		 * @param tV    Vertical texture coordinate.
+		 * @param   x   X-coordinate of vertex to add.
+		 * @param   y   Y-coordinate of vertex to add.
+		 * @param   z   Z-coordinate of vertex to add.
+		 * @param   tU  Horizontal texture coordinate.
+		 * @param   tV  Vertical texture coordinate.
 		 */
-		public void addPoint( final float x , final float y , final float z , final int tU , final int tV )
+		public void addVertex( final float x , final float y , final float z , final int tU , final int tV )
 		{
 			int pointIndex = getPointIndex( x ,y ,z );
 
 			if ( pointIndex == -1 )
 			{
-				final int objectPointCount = getTotalVertexCount() * 3;
-				ensureObjectCapacity( objectPointCount + 3 );
-
-				_vertices[ objectPointCount     ] = x;
-				_vertices[ objectPointCount + 1 ] = y;
-				_vertices[ objectPointCount + 2 ] = z;
-
-				_normalsDirty = true;
-
-				pointIndex = objectPointCount / 3;
+				addPoint( x , y , z );
+				pointIndex = getTotalVertexCount() - 1;
 			}
 
-			ensureFaceCapacity( _facePointCount + 1 );
-			_facePoints[ _facePointCount ] = pointIndex;
-			_textureU  [ _facePointCount ] = tU;
-			_textureV  [ _facePointCount ] = tV;
+			ensureCapacity( _pointCount + 1 );
+			_pointIndices[ _pointCount ] = pointIndex;
+			_textureU    [ _pointCount ] = tU;
+			_textureV    [ _pointCount ] = tV;
 
-			_facePointCount++;
+			_pointCount++;
 		}
 
 		/**
 		 * Add vertex to face. Note that the last vertex is automatically connected
 		 * to the first vertex.
 		 *
-		 * @param point Point to add.
-		 * @param tU    Horizontal texture coordinate.
-		 * @param tV    Vertical texture coordinate.
+		 * @param   point   Point that specifies the vertex x-, y- and z-coordinates.
+		 * @param   tU      Horizontal texture coordinate.
+		 * @param   tV      Vertical texture coordinate.
 		 */
-		public void addPoint( final Vector3D point , final int tU , final int tV )
+		public void addVertex( final Vector3D point , final int tU , final int tV )
 		{
-			addPoint( point.x , point.y , point.z , tU , tV );
+			addVertex( point.x , point.y , point.z , tU , tV );
 		}
 
 		/**
@@ -1036,9 +1047,9 @@ public class Object3D
 		 *
 		 * @return  Number of vertices.
 		 */
-		public int getFacePointCount()
+		public int getPointCount()
 		{
-			return _facePointCount;
+			return _pointCount;
 		}
 
 		/**
@@ -1050,7 +1061,7 @@ public class Object3D
 		 */
 		public Vector3D getPoint( final int index )
 		{
-			final int pointIndex = _facePoints[ index ] * 3;
+			final int pointIndex = _pointIndices[ index ] * 3;
 			final float x = _vertices[ pointIndex     ];
 			final float y = _vertices[ pointIndex + 1 ];
 			final float z = _vertices[ pointIndex + 2 ];
@@ -1065,7 +1076,7 @@ public class Object3D
 		 */
 		public int[] getPointIndices()
 		{
-			return _facePoints;
+			return _pointIndices;
 		}
 
 		/**
@@ -1142,25 +1153,25 @@ public class Object3D
 			return _normal;
 		}
 
-		private void ensureFaceCapacity( final int lenght )
+		private void ensureCapacity( final int lenght )
 		{
-			if ( _facePoints == null || _facePointCount < lenght )
+			if ( _pointIndices == null || _pointCount < lenght )
 			{
 				int[] temp;
 
-				if ( _facePoints != null )
+				if ( _pointIndices != null )
 				{
 					temp = new int[ lenght ];
 
-					System.arraycopy( _facePoints , 0 , temp , 0 , _facePointCount );
-					_facePoints = temp;
+					System.arraycopy( _pointIndices , 0 , temp , 0 , _pointCount );
+					_pointIndices = temp;
 				}
 
 				if ( _textureU != null )
 				{
 					temp  = new int[ lenght ];
 
-					System.arraycopy( _textureU , 0 , temp , 0 , _facePointCount );
+					System.arraycopy( _textureU , 0 , temp , 0 , _pointCount );
 					_textureU = temp;
 				}
 
@@ -1168,7 +1179,7 @@ public class Object3D
 				{
 					temp  = new int[ lenght ];
 
-					System.arraycopy( _textureV , 0 , temp , 0 , _facePointCount );
+					System.arraycopy( _textureV , 0 , temp , 0 , _pointCount );
 					_textureV = temp;
 				}
 			}
