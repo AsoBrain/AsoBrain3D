@@ -89,7 +89,7 @@ public final class Vector3D
 	 *
 	 * @param   other   Vector to calculate the distance to.
 	 *
-	 * @return	Distance between this and the specified other vector.
+	 * @return  Distance between this and the specified other vector.
 	 */
 	public float distanceTo( final Vector3D other )
 	{
@@ -104,10 +104,10 @@ public final class Vector3D
 	 * Calculate dot product (a.k.a. inner product) of this vector
 	 * and another one specified as argument.
 	 *
-	 * @param	v1		First vector.
-	 * @param	v2		Second vector.
+	 * @param   v1      First vector.
+	 * @param   v2      Second vector.
 	 *
-	 * @return	Dot product.
+	 * @return  Dot product.
 	 */
 	public static float dot( final Vector3D v1 , final Vector3D v2 )
 	{
@@ -115,14 +115,34 @@ public final class Vector3D
 	}
 
 	/**
+	 * Compare this object to another object.
+	 *
+	 * @param   other   Object to compare with.
+	 *
+	 * @return  <code>true</code> if the objects are equal;
+	 *          <code>false</code> if not.
+	 */
+	public boolean almostEquals( final Object other )
+	{
+		if ( other == this ) return true;
+		if ( other == null ) return false;
+		if ( !( other instanceof Vector3D ) ) return false;
+
+		final Vector3D v = (Vector3D)other;
+		return Matrix3D.almostEqual( x , v.x )
+		    && Matrix3D.almostEqual( y , v.y )
+		    && Matrix3D.almostEqual( z , v.z );
+	}
+
+	/**
 	 * Compare this vector to another vector.
 	 *
-	 * @param	x	X-coordinate of vector.
-	 * @param	y	Y-coordinate of vector.
-	 * @param	z	Z-coordinate of vector.
+	 * @param   x   X-coordinate of vector.
+	 * @param   y   Y-coordinate of vector.
+	 * @param   z   Z-coordinate of vector.
 	 *
-	 * @return	<code>true</code> if vectors are equal,
-	 *	    	<code>false</code> if not.
+	 * @return  <code>true</code> if vectors are equal;
+	 *          <code>false</code> if not.
 	 */
 	public boolean equals( final float x , final float y , final float z )
 	{
@@ -161,7 +181,7 @@ public final class Vector3D
 	{
 		final int comma1 = value.indexOf( ',' );
 		final int comma2 = value.indexOf( ',' , comma1 + 1 );
-		
+
 		return Vector3D.INIT.set( new Float( value.substring( 0 , comma1 ) ).floatValue() ,
 		                          new Float( value.substring( comma1 + 1 , comma2 ) ).floatValue() ,
 		                          new Float( value.substring( comma2 + 1 ) ).floatValue() );
