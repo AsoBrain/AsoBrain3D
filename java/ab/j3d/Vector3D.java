@@ -22,8 +22,6 @@ package ab.j3d;
 
 import java.text.DecimalFormat;
 
-import com.numdata.oss.TextTools;
-
 /**
  * This class represents a 3D vector.
  *
@@ -193,21 +191,38 @@ public final class Vector3D
 	}
 
 	/**
-	 * Convert string representation of object (see toString()) back to
-	 * object instance.
+	 * Convert string representation of vector back to <code>Vector3D</code>
+	 * instance (see <code>toString()</code>).
 	 *
 	 * @param   value   String representation of object.
 	 *
 	 * @return  Object instance.
+	 *
+	 * @throws  NullPointerException if <code>value</code> is <code>null</code>.
+	 * @throws  IllegalArgumentException if the string format is unrecognized.
+	 * @throws  NumberFormatException if any of the numeric components are badly formatted.
+	 *
+	 * @see     #toString()
 	 */
 	public static Vector3D fromString( final String value )
 	{
-		final int comma1 = value.indexOf( ',' );
-		final int comma2 = value.indexOf( ',' , comma1 + 1 );
+		if ( value == null )
+			throw new NullPointerException( "value" );
 
-		return Vector3D.INIT.set( Double.parseDouble( value.substring( 0 , comma1 ) ) ,
-		                          Double.parseDouble( value.substring( comma1 + 1 , comma2 ) ) ,
-		                          Double.parseDouble( value.substring( comma2 + 1 ) ) );
+		final int comma1 = value.indexOf( (int)',' );
+		if ( comma1 < 1 )
+			throw new IllegalArgumentException( "comma1" );
+
+		final double x = Double.parseDouble( value.substring( 0 , comma1 ) );
+
+		final int comma2 = value.indexOf( (int)',' , comma1 + 1 );
+		if ( comma2 < 1 )
+			throw new IllegalArgumentException( "comma2" );
+
+		final double y = Double.parseDouble( value.substring( comma1 + 1 , comma2 ) );
+		final double z = Double.parseDouble( value.substring( comma2 + 1 ) );
+
+		return INIT.set( x , y , z );
 	}
 
 	/**

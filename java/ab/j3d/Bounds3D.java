@@ -100,17 +100,32 @@ public final class Bounds3D
 	}
 
 	/**
-	 * Convert string representation of object (see toString()) back to
-	 * object instance.
+	 * Convert string representation of bounds back to <code>Bounds3D</code>
+	 * instance (see <code>toString()</code>).
 	 *
 	 * @param   value   String representation of object.
 	 *
-	 * @return  Object instance.
+	 * @return  Bounds3D instance.
+	 *
+	 * @throws  NullPointerException if <code>value</code> is <code>null</code>.
+	 * @throws  IllegalArgumentException if the string format is unrecognized.
+	 * @throws  NumberFormatException if any of the numeric components are badly formatted.
+	 *
+	 * @see     #toString()
 	 */
 	public static Bounds3D fromString( final String value )
 	{
-		final int semi = value.indexOf( ';' );
-		return Bounds3D.INIT.set( Vector3D.fromString( value.substring( 0 , semi ) ) , Vector3D.fromString( value.substring( semi + 1 ) ) );
+		if ( value == null )
+			throw new NullPointerException( "value" );
+
+		final int semi = value.indexOf( (int)';' );
+		if ( semi < 1 )
+			throw new IllegalArgumentException( "semi" );
+
+		final Vector3D v1 = Vector3D.fromString( value.substring( 0 , semi ) );
+		final Vector3D v2 = Vector3D.fromString( value.substring( semi + 1 ) );
+
+		return INIT.set( v1 , v2 );
 	}
 
 	/**
