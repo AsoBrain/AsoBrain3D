@@ -11,16 +11,20 @@
 package ab.j3d.renderer;
 
 import java.awt.Container;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.awt.image.PixelGrabber;
+import java.util.HashMap;
+import java.util.Map;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 
 /**
  * This class implements a background rendering thread.
- * 
+ *
  * @author Peter S. Heijnen
  * @version $Revision$ $Date$
  */
@@ -101,6 +105,24 @@ public final class Renderer
 	 * @see     #renderObject
 	 */
 	private final RenderObject renderObject = new RenderObject();
+
+	/**
+	 * This hashtable is used to share phong tables between materials.
+	 * The key is the specular exponent that was used to calculate the
+	 * phong table.
+	 */
+	private static final Map _phongTableCache = new HashMap();
+
+	/**
+	 * This hashtable is used to share textures between materials. The
+	 * key is the 'texture' field value, the elements are Object arrays
+	 * with the following layout:
+	 *
+	 *  [ 0 ] = Integer : _argb
+	 *  [ 1 ] = int[][] : _pixels
+	 *  [ 2 ] = Boolean : _transparent
+	 */
+	private static final Map _textureCache = new HashMap();
 
 	/**
 	 * Construct (and start) render thread.
@@ -348,7 +370,7 @@ public final class Renderer
 		final long[]		pd = ro.pd;
 		final int[]			vertexIndices	= face.vi;
 		final TextureSpec	textureSpec		= face.getTexture();
-		final int[][]		texturePixels	= face.getTexturePixels();
+		final int[][]		texturePixels	= getTextureImage( textureSpec );
 		final boolean		hasTexture		= texturePixels != null;
 		final int[]			tus				= hasTexture ? face.getTextureU() : null;
 		final int[]			tvs				= hasTexture ? face.getTextureV() : null;
@@ -384,7 +406,7 @@ public final class Renderer
 			if ( sfs != null && sfs[ i ] > m ) m = sfs[ i ];
 		}
 
-		final short[][] phongTable = ( m > 0xFF ) && ( sxs != null ) && ( sys != null ) && ( sfs != null ) ? textureSpec.getPhongTable() : null;
+		final short[][] phongTable = ( m > 0xFF ) && ( sxs != null ) && ( sys != null ) && ( sfs != null ) ? getPhongTable( textureSpec ) : null;
 
 		/*
 		 * Ignore face if it completely outside the screen area.
@@ -961,5 +983,120 @@ public final class Renderer
 			v++;
 		}
 		while ( v < nextV );
+	}
+
+	/**
+	 * Get phong table for the specified texture.
+	 */
+	private static short[][] getPhongTable( final TextureSpec texture )
+	{
+		final int exponent = texture.specularExponent;
+
+		/*
+		 * Get phong table from cache.
+		 */
+		final Integer cacheKey = new Integer( exponent );
+		short[][] result = (short[][])_phongTableCache.get( cacheKey );
+		if ( result == null )
+		{
+			/*
+			 * Build a new phong table.
+			 */
+			int x,y;
+			double xc,yc,c;
+			short s;
+			short[] t;
+
+			result = new short[ 256 ][];
+			for ( y = 0 ; y <= 128 ; y++ )
+			{
+				result[ 128 - y ] = t = new short[ 256 ];
+				if ( y < 128 ) result[ y + 128 ] = t;
+
+				for ( x = 0 ; x <= 128 ; x++ )
+				{
+					xc = x / 128.0;
+					yc = y / 128.0;
+					c  = 1.0 - Math.sqrt( xc * xc + yc * yc );
+					if ( c < 0.0 ) c = 0.0;
+
+					t[ 128 - x ] = s = (short)( 256 * Math.pow( c , exponent ) );
+					if ( x < 128 ) t[ x + 128 ] = s;
+				}
+			}
+
+			_phongTableCache.put( cacheKey , result );
+		}
+
+		return result;
+	}
+
+	/**
+	 * Get image for the specified texture. The image is returned as a
+	 * 2-dimensional array of integers in ARGB format. The primary index is the
+	 * Y-coordinate, the secondary index is the X-coordinate (or U and V
+	 * coordinates respectively when applied in rendering).
+	 *
+	 * @param   texture     Texture to get image for.
+	 *
+	 * @return  2-dimensional array representing texture image;
+	 *          <code>null</code> if no image could be created.
+	 */
+	private static int[][] getTextureImage( final TextureSpec texture )
+	{
+		int[][] result;
+
+		if ( ( texture == null ) || !texture.isTexture() )
+		{
+			result = null;
+		}
+		else
+		{
+			result = (int[][])_textureCache.get( texture.code );
+			if ( result == null )
+			{
+				/*
+				 * Grab image pixels.
+				 */
+				int   tw     = 0;
+				int   th     = 0;
+				int[] pixels = null;
+
+				final Image image = texture.getTextureImage();
+				if ( image != null )
+				{
+					try
+					{
+						final PixelGrabber pg = new PixelGrabber( image , 0 , 0 , -1 , -1 , true );
+						if ( pg.grabPixels() )
+						{
+							tw = pg.getWidth();
+							th = pg.getHeight();
+							if ( tw > 0 && th > 0 )
+								pixels = (int[])pg.getPixels();
+						}
+					}
+					catch ( InterruptedException ie ) {}
+				}
+
+				/*
+				 * 1) Convert pixels to 2-dimensional array.
+				 * 2) Flip texture vertically to get the origin at the lower-left corner.
+				 */
+				if ( pixels != null )
+				{
+					result = new int[ th ][];
+					for ( int y = 0 ; y < th ; y++ )
+						System.arraycopy( pixels , ( th - y - 1 ) * tw , result[ y ] = new int[ tw ] , 0 , tw );
+				}
+			}
+
+			/*
+			 * Put texture info in cache.
+			 */
+			_textureCache.put( texture.code , result );
+		}
+
+		return result;
 	}
 }

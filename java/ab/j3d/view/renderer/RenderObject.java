@@ -183,12 +183,6 @@ public final class RenderObject
 			return obj._faceMat != null ? obj._faceMat[ index ] : null;
 		}
 
-		public int[][] getTexturePixels()
-		{
-			final TextureSpec texture = getTexture();
-			return ( texture != null && texture.isTexture() ) ? texture.getTexture() : null;
-		}
-
 		public int[] getTextureU()
 		{
 			return ( obj._faceTU != null ) ? obj._faceTU[ index ] : null;
@@ -507,5 +501,4 @@ public final class RenderObject
 			}
 		}
 	}
-
 }

@@ -309,7 +309,7 @@ public final class Object3DBuilder
 		if ( nrVertices < 3 )
 			return;
 
-		if ( texture.isTexture() )
+		if ( ( texture != null ) && texture.isTexture() )
 		{
 			final float txBase = -base.xo * base.xx - base.yo * base.yx - base.zo * base.zx;
 			final float tyBase = -base.xo * base.xy - base.yo * base.yy - base.zo * base.zy;
@@ -338,8 +338,8 @@ public final class Object3DBuilder
 				vertV[ i ] = v;
 			}
 
-			final int adjustU = getRangeAdjustment( minU , texture.getTextureWidth() );
-			final int adjustV = getRangeAdjustment( minV , texture.getTextureHeight() );
+			final int adjustU = getRangeAdjustment( minU , texture.getTextureWidth( null ) );
+			final int adjustV = getRangeAdjustment( minV , texture.getTextureHeight( null ) );
 
 			final Face face = addFace( texture , opacity , smooth );
 			for ( int i = 0 ; i < nrVertices ; i++ )
