@@ -17,7 +17,7 @@ import java.util.StringTokenizer;
  *
  * @author	Peter S. Heijnen
  *
- * @version	$Revision$ ($Date$, $Auhor$)
+ * @version	$Revision$ ($Date$, $Author$)
  */
 public final class Vector3D
 {
@@ -32,9 +32,9 @@ public final class Vector3D
 	/**
 	 * Construct new vector.
 	 *
-	 * @param	x	X-coordinate of vector.
-	 * @param	y	Y-coordinate of vector.
-	 * @param	z	Z-coordinate of vector.
+	 * @param	nx	X-coordinate of vector.
+	 * @param	ny	Y-coordinate of vector.
+	 * @param	nz	Z-coordinate of vector.
 	 */
 	private Vector3D( float nx , float ny , float nz )
 	{
@@ -117,7 +117,7 @@ public final class Vector3D
 	/**
 	 * Compare this vector to another vector.
 	 *
-	 * @param	vector	Vector to compare with.
+	 * @param	other	Vector to compare with.
 	 *
 	 * @return	<code>true</code> if vectors are equal,
 	 *		<code>false</code> if not.
@@ -177,7 +177,7 @@ public final class Vector3D
 	/**
 	 * Subtract another vector from this vector.
 	 *
-	 * @param	vector	Vector to subtract from this vector.
+	 * @param	other	Vector to subtract from this vector.
 	 *
 	 * @return	Resulting vector.
 	 */
@@ -215,7 +215,7 @@ public final class Vector3D
 	/**
 	 * Add another vector to this vector.
 	 *
-	 * @param	vector	Vector to add to this vector.
+	 * @param	other	Vector to add to this vector.
 	 *
 	 * @return	Resulting vector.
 	 */

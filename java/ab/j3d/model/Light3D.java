@@ -1,6 +1,14 @@
 package common.renderer;
 
-//import java.util.Hashtable;
+/*
+ * $Id$
+ *
+ * (C) Copyright Numdata BV 2000,2002 - All Rights Reserved
+ *
+ * This software may not be used, copyied, modified, or distributed in any
+ * form without express permission from Numdata BV. Please contact Numdata BV
+ * for license information.
+ */
 import common.db.TextureSpec;
 
 /**
@@ -72,8 +80,9 @@ public class Light
 	 * @param	texture				Texture of surface.
 	 * @param	lightNormalAndDist	Float array with light normals and distance.
 	 * @param	lightIndex			Index in light array.
-	 * @param	viewNormals			Float array with surface normals relative to view.
-	 * @param	viewNormalIndex		Index of normal in view arrays.
+	 * @param	nx					X-coordinate of normal
+	 * @param	ny					Y-coordinate of normal
+	 * @param	nz					Z-coordinate of normal
 	 * @param	ds					Diffuse reflection result array.
 	 * @param	sxs					Specular reflection X-component result array.
 	 * @param	sys					Specular reflection Y-component result array.

@@ -9,7 +9,6 @@ package common.renderer;
  * form without express permission from Numdata BV. Please contact Numdata BV
  * for license information.
  */
-
 import java.awt.*;
 import java.awt.image.ImageConsumer;
 import java.awt.image.ImageProducer;
@@ -268,10 +267,6 @@ public class Renderer
 	/**
 	 * This method constructs the graphics tree and therefore
 	 * defined what is to be seen by the user.
-	 *
-	 * @param	trasnforms	Vector to which transforms must be
-	 *						added that can be manipulated by the
-	 *						user.
 	 *
 	 * @return	Graphics tree (the world).
 	 */
@@ -1159,8 +1154,11 @@ public class Renderer
 	/**
 	 * Render scene from camera.
 	 *
+	 * @param	object			The object to render.
+	 * @param	cameraXform		The transformation of the camera.
 	 * @param	camera			Node with camera that defines the view.
-	 * @param	renderingMode	Rendering mode to use (QUICK or FULL).
+	 * @param	width			Width of rendering image.
+	 * @param	height			Height of rendering image.
 	 */
 	protected void renderSolidObject( 
 		final Object3D object , final Matrix3D cameraXform , final Camera camera , int width , int height )
@@ -1542,8 +1540,10 @@ public class Renderer
 	/**
 	 * Render scene from camera.
 	 *
-	 * @param	target	Target component.
+	 * @param	g		Graphics to paint on.
 	 * @param	camera	Node with camera that defines the view.
+	 * @param	width	Width of rendering image.
+	 * @param	height	Height of rendering image.
 	 */
 	public synchronized final void renderWireframe( Graphics g , final Camera camera , final int width , final int height )
 	{
@@ -1652,8 +1652,8 @@ public class Renderer
 	/**
 	 * Render scene from camera.
 	 *
-	 * @param	target	Target component.
-	 * @param	camera	Node with camera that defines the view.
+	 * @param	g		Graphics to paint on
+	 * @param	face	Face to render
 	 */
 	protected void renderWireframeFace( Graphics g , RenderObject.Face face )
 	{

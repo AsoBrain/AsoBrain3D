@@ -25,7 +25,7 @@ import java.util.StringTokenizer;
  *
  * @author	Peter S. Heijnen
  *
- * @version	$Revision$ ($Date$, $Auhor$)
+ * @version	$Revision$ ($Date$, $Author$)
  */
 public final class Matrix3D
 {
@@ -231,6 +231,8 @@ public final class Matrix3D
 	 * Translate the transform by the specified vector.
 	 *
 	 * @param	vector	Vector specifying the translation.
+	 *
+	 * @return	new Matrix3D with translation
 	 */
 	public Matrix3D minus( Vector3D vector )
 	{
@@ -240,7 +242,11 @@ public final class Matrix3D
 	/**
 	 * Translate the transform by the specified vector.
 	 *
-	 * @param	vector	Vector specifying the translation.
+	 * @param	x	x-coordinate of vector specifying the translation.
+	 * @param	y	y-coordinate of vector specifying the translation.
+	 * @param	z	z-coordinate of vector specifying the translation.
+	 *
+	 * @return	new Matrix3D with translation
 	 */
 	public Matrix3D minus( float x , float y , float z )
 	{
@@ -365,6 +371,8 @@ public final class Matrix3D
 	 * Translate the transform by the specified vector.
 	 *
 	 * @param	vector	Vector specifying the translation.
+	 *
+	 * @return	new Matrix3D with translation
 	 */
 	public Matrix3D plus( Vector3D vector )
 	{
@@ -374,7 +382,11 @@ public final class Matrix3D
 	/**
 	 * Translate the transform by the specified vector.
 	 *
-	 * @param	vector	Vector specifying the translation.
+	 * @param	x	x-coordintate of vector specifying the translation.
+	 * @param	y	y-coordintate of vector specifying the translation.
+	 * @param	z	z-coordintate of vector specifying the translation.
+	 *
+	 * @return	new Matrix3D with translation
 	 */
 	public Matrix3D plus( float x , float y , float z )
 	{
@@ -389,9 +401,7 @@ public final class Matrix3D
 	 * 3 floats for each vertex.
 	 *
 	 * @param	source			Source array.
-	 * @param	sourceIndex		Index in source array.
 	 * @param	dest			Destination array.
-	 * @param	destIndex		Index in destination array.
 	 * @param	vertexCount		Number of vertices.
 	 */
 	public final void rotate( final float[] source , final float[] dest , int vertexCount )
@@ -583,9 +593,7 @@ public final class Matrix3D
 	 * 3 floats for each vertex.
 	 *
 	 * @param	source			Source array.
-	 * @param	sourceIndex		Index in source array.
 	 * @param	dest			Destination array.
-	 * @param	destIndex		Index in destination array.
 	 * @param	vertexCount		Number of vertices.
 	 */
 	public final void transform( float[] source , float[] dest , int vertexCount )

@@ -1,5 +1,14 @@
 package common.renderer;
 
+/*
+ * $Id$
+ *
+ * (C) Copyright Numdata BV 2000,2002 - All Rights Reserved
+ *
+ * This software may not be used, copyied, modified, or distributed in any
+ * form without express permission from Numdata BV. Please contact Numdata BV
+ * for license information.
+ */
 import java.awt.Graphics;
 import java.util.Hashtable;
 import common.db.TextureSpec;
@@ -23,9 +32,9 @@ public class Sphere3D
 	 * Constructor for sphere.
 	 *
 	 * @param	xform		Transformation to apply to the object's vertices.
-	 * @param	width		Width of sphere (x-axis).
-	 * @param	height		Height of sphere (y-axis).
-	 * @param	depth		Depth of sphere (z-axis).
+	 * @param	dx			Width of sphere (x-axis).
+	 * @param	dy			Height of sphere (y-axis).
+	 * @param	dz			Depth of sphere (z-axis).
 	 * @param	p			Number of faces around Y-axis to approximate the sphere.
 	 * @param	q			Number of faces around X/Z-axis to approximate the sphere.
 	 * @param	texture		Texture of sphere.

@@ -1,5 +1,14 @@
 package common.renderer;
 
+/*
+ * $Id$
+ *
+ * (C) Copyright Numdata BV 2000,2002 - All Rights Reserved
+ *
+ * This software may not be used, copyied, modified, or distributed in any
+ * form without express permission from Numdata BV. Please contact Numdata BV
+ * for license information.
+ */
 import java.awt.Graphics;
 import java.util.Hashtable;
 import common.model.Matrix3D;
@@ -246,7 +255,7 @@ public class Transform
  	{
 	 	_matrixDirty = true;
 	 	_inverseMatrixDirty = true;
- 	}  
+ 	}
 
 	/**
 	 * Set new rotation values for all axises.
