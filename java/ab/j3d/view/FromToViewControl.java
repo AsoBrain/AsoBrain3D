@@ -48,11 +48,6 @@ public final class FromToViewControl
 	extends ViewControl
 {
 	/**
-	 * Name of this class.
-	 */
-	private static final String CLASS_NAME = FromToViewControl.class.getName();
-
-	/**
 	 * Point to look from.
 	 */
 	private Vector3D _from;
@@ -339,19 +334,17 @@ public final class FromToViewControl
 		final Vector3D upPrimary = _upPrimary;
 		final Vector3D from      = _dragStartFrom;
 		final Vector3D to        = _dragStartTo;
-		final Matrix3D transform = _dragStartTransform;
 
 		final double   deltaX    = -event.getDeltaRadX();
-		final double   deltaY    =  event.getDeltaUnitY();
+		final double   deltaY    = -event.getDeltaUnitY();
 
-		final Vector3D zAxis     = Vector3D.INIT.set( transform.zx , transform.zy , transform.zz );
-		final Vector3D xAxis     = Vector3D.cross( zAxis , upPrimary );
-		final Vector3D yAxis     = Vector3D.cross( upPrimary , xAxis );
 		final Matrix3D rotation  = Matrix3D.getRotationTransform( to , upPrimary , deltaX );
+
+		final Vector3D elevation = upPrimary.multiply( deltaY );
 
 		Vector3D newFrom = from;
 		newFrom = rotation.multiply( newFrom );
-		newFrom = newFrom.plus( yAxis.multiply( deltaY ) );
+		newFrom = newFrom.plus( elevation );
 		setFrom( newFrom );
 	}
 
@@ -362,15 +355,15 @@ public final class FromToViewControl
 		final Matrix3D transform = _dragStartTransform;
 
 		final double   deltaX    =  event.getDeltaUnitX();
-		final double   deltaY    = -event.getDeltaUnitY();
+		final double   deltaY    =  event.getDeltaUnitY();
 
 		final Vector3D zAxis     = Vector3D.INIT.set( transform.zx , transform.zy , transform.zz );
 		final Vector3D xAxis     = Vector3D.cross( zAxis , upPrimary );
-		final Vector3D elevation = upPrimary.multiply( deltaY );
+		final Vector3D yAxis     = Vector3D.cross( upPrimary , xAxis );
 
 		Vector3D newFrom = from;
 		newFrom = newFrom.plus( xAxis.multiply( deltaX ) );
-		newFrom = newFrom.plus( elevation );
+		newFrom = newFrom.plus( yAxis.multiply( deltaY ) );
 		setFrom( newFrom );
 	}
 
