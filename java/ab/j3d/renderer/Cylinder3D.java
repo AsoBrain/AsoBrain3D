@@ -235,8 +235,8 @@ public final class Cylinder3D
 		final Matrix3D mat  = xform.multiply( objXform );
 		final Matrix3D mat2 = xform.multiply( objXform ).multiply( gXform );
 
-		final boolean topViewDrawCircle   = Matrix3D.almost0( mat.xz ) && Matrix3D.almost0( mat.yz ) && ( Matrix3D.almost1(  mat.zz ) || Matrix3D.almost1( -mat.zz ) );
-		final boolean frontViewDrawCircle = Matrix3D.almost0( mat.xz ) && Matrix3D.almost0( mat.zz ) &&   Matrix3D.almost1( -mat.yz );
+		final boolean topViewDrawCircle   = Matrix3D.almostEqual( mat.xz , 0 ) && Matrix3D.almostEqual( mat.yz , 0 ) && ( Matrix3D.almostEqual(  mat.zz , 1 ) || Matrix3D.almostEqual( -mat.zz , 1 ) );
+		final boolean frontViewDrawCircle = Matrix3D.almostEqual( mat.xz , 0 ) && Matrix3D.almostEqual( mat.zz , 0 ) &&   Matrix3D.almostEqual( -mat.yz , 1 );
 
 		if ( topViewDrawCircle || frontViewDrawCircle )
 		{
