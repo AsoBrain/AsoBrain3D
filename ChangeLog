@@ -3,8 +3,12 @@ Current version: pre-1.1
 Changes between 1.0.6 and 1.1:
  - Project uses standarized directory layout ('classes' for temporary .class files, and 'lib' for .jar files).
  - Replaced Java 1.1 containers with Java2 collection classes.
- - Added Renderer.setBackground() method to allow changing the renderer's background color.
- - Code maturaty updates.
+ - Added 'reversePoints' argument to Polyline2D.transform() method to reverse the point ordering of the returned path.
+ - Added 'reversePath' argument to Object3DBuilder.addFace() method to reverse the point ordering of the path.
+ - Split Renderer class into RenderPanel and Renderer:
+   > RenderPanel extends JPanel and contains user interface code (mouse control), temporary wireframe painting, and thread control based on the panel's visibility (stop/start thread when the component is hidden/shown).
+   > Renderer contains the background rendering code. Fixed various concurrency issues from old Renderer class.
+ - Bug-fix: Materials without texture caused NullPointerException in Object3DBuilder.Face.build().
 
 Changes between 1.0.5 and 1.0.6:
  - Added TextureLibrary interface that can be used to retrieve textures from some sort of library.
