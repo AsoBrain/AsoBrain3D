@@ -149,7 +149,6 @@ public class RenderPanel
 	 */
 	public RenderPanel()
 	{
-		setOpaque( true );
 		setDoubleBuffered( true );
 		setForeground( Color.white );
 
@@ -405,7 +404,6 @@ public class RenderPanel
 	protected void paintComponent( final Graphics g )
 	{
 		super.paintComponent( g );
-		g.clearRect( 0 , 0 , getWidth() , getHeight() );
 
 		final Insets insets = getInsets();
 		final int    x      = insets.left;
