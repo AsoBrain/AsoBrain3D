@@ -164,8 +164,8 @@ public class MouseViewControl
 
 		if ( ( unit > 0 ) && ( unit != 1 ) )
 		{
-			for ( int i = 0 ; i < _sensitivity.length ; i++ )
-				_sensitivity[ i ] /= unit;
+			_sensitivity[ PAN  ] /= unit;
+			_sensitivity[ ZOOM ] /= unit;
 		}
 	}
 
@@ -355,7 +355,7 @@ public class MouseViewControl
 		final float sensitivity = _sensitivity[ mode ];
 
 		adjustValue( _controlX[ mode ] , _xStartValue , sensitivity * ( event.getX() - _xStartCoordinate ) );
-		adjustValue( _controlY[ mode ] , _yStartValue , sensitivity * ( event.getY() - _yStartCoordinate ) );
+		adjustValue( _controlY[ mode ] , _yStartValue , sensitivity * ( _yStartCoordinate - event.getY() ) );
 		fireEvent();
 	}
 
