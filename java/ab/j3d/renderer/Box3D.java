@@ -45,12 +45,12 @@ public final class Box3D
 	/**
 	 * Set box properties.
 	 *
-	 * @param	xform		Transformation to apply to all vertices of the box.
-	 * @param	dx			Width of box (x-axis).
-	 * @param	dy			Height of box (y-axis).
-	 * @param	dz			Depth of box (z-axis).
-	 * @param	mainTexture	Main texture of box.
-	 * @param	sideTexture	Texture for sides of box.
+	 * @param   xform           Transformation to apply to all vertices of the box.
+	 * @param   dx              Width of box (x-axis).
+	 * @param   dy              Height of box (y-axis).
+	 * @param   dz              Depth of box (z-axis).
+	 * @param   mainTexture     Main texture of box.
+	 * @param   sideTexture     Texture for sides of box.
 	 */
 	public Box3D( final Matrix3D xform , final float dx , final float dy , final float dz , final TextureSpec mainTexture , final TextureSpec sideTexture )
 	{
@@ -159,7 +159,7 @@ public final class Box3D
 	/**
 	 * Get width of box (x-axis).
 	 *
-	 * @return	Width of box (x-axis).
+	 * @return  Width of box (x-axis).
 	 */
 	public float getDX()
 	{
@@ -169,7 +169,7 @@ public final class Box3D
 	/**
 	 * Get height of box (y-axis).
 	 *
-	 * @return	Height of box (y-axis).
+	 * @return  Height of box (y-axis).
 	 */
 	public float getDY()
 	{
@@ -199,17 +199,17 @@ public final class Box3D
 	/**
 	 * Generate texture coordinates for the specified face.
 	 *
-	 * @param	texture		Texture to use.
-	 * @param	flipUV		<code>true</code> te reverse meaning of u and v.
-	 * @param	index		Index of face.
-	 * @param	faceTU		Target array to store U texture coordinates.
-	 * @param	tu1			Start U coordinate.
-	 * @param	tu2			End U coordinate.
-	 * @param	faceTV		Target array to store V texture coordinates.
-	 * @param	tv1			Start V coordinate.
-	 * @param	tv2			End V coordinate.
+	 * @param   texture     Texture to use.
+	 * @param   flipUV      <code>true</code> te reverse meaning of u and v.
+	 * @param   index       Index of face.
+	 * @param   faceTU      Target array to store U texture coordinates.
+	 * @param   tu1         Start U coordinate.
+	 * @param   tu2         End U coordinate.
+	 * @param   faceTV      Target array to store V texture coordinates.
+	 * @param   tv1         Start V coordinate.
+	 * @param   tv2         End V coordinate.
 	 */
-	protected static void setTexture(
+	private static void setTexture(
 		final TextureSpec texture , final boolean flipUV , final int index ,
 		final int[][] faceTU , final float tu1 , final float tu2 ,
 		final int[][] faceTV , final float tv1 , final float tv2 )
@@ -218,10 +218,13 @@ public final class Box3D
 		 * Return immediately if texture specification is invalid or does not
 		 * specify a texture image.
 		 */
-		if ( texture == null || !texture.isTexture() )
+		if ( ( texture == null ) || !texture.isTexture() )
 			return;
 
-		int i1,i2,t,m;
+		int i1;
+		int i2;
+		int t;
+		int m;
 		int[][] a;
 		final float s = texture.textureScale;
 
@@ -234,7 +237,7 @@ public final class Box3D
 		i1 = (int)( tu1 * s /*+ 0.5f*/ );
 		i2 = (int)( tu2 * s /*+ 0.5f*/ );
 
-		m = flipUV ? texture.getTextureHeight() : texture.getTextureWidth();
+		m = flipUV ? texture.getTextureHeight( null ) : texture.getTextureWidth( null );
 		if ( ( t = ( i1 < i2 ) ? i1 : i2 ) < 0 )
 		{
 			t -= m - 1;
@@ -265,7 +268,7 @@ public final class Box3D
 		i1 = (int)( tv1 * s /*+ 0.5f*/ );
 		i2 = (int)( tv2 * s /*+ 0.5f*/ );
 
-		m = flipUV ? texture.getTextureWidth() : texture.getTextureHeight();
+		m = flipUV ? texture.getTextureWidth( null ) : texture.getTextureHeight( null );
 		if ( ( t = ( i1 < i2 ) ? i1 : i2 ) < 0 )
 		{
 			t -= m - 1;
