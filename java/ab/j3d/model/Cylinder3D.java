@@ -215,4 +215,117 @@ public final class Cylinder3D
 		 */
 		set( vertices ,  faceVert , faceMat , null , null , null , faceSmooth );
 	}
+
+	/**
+	 * Paint 2D representation of this 3D object. The object coordinates are
+	 * transformed using the objXform argument. By default, the object is painted
+	 * by drawing the outlines of its 'visible' faces. Derivatives of this class
+	 * may implement are more realistic approach (sphere, cylinder).
+	 * <p/>
+	 * Objects are painted on the specified graphics context after being
+	 * transformed again by gXform. This may be used to pan/scale the object on the
+	 * graphics context (NOTE: IT MAY NOT ROTATE THE OBJECT!).
+	 *
+	 * @param g        Graphics context.
+	 * @param gXform   Transformation to pan/scale the graphics context.
+	 * @param objXform Transformation from object's to view coordinate system.
+	 */
+	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D objXform )
+	{
+		final Matrix3D mat  = xform.multiply( objXform );
+		final Matrix3D mat2 = xform.multiply( objXform ).multiply( gXform );
+
+		final boolean topViewDrawCircle   = Matrix3D.almost0( mat.xz ) && Matrix3D.almost0( mat.yz ) && ( Matrix3D.almost1(  mat.zz ) || Matrix3D.almost1( -mat.zz ) );
+		final boolean frontViewDrawCircle = Matrix3D.almost0( mat.xz ) && Matrix3D.almost0( mat.zz ) &&   Matrix3D.almost1( -mat.yz );
+
+		if ( topViewDrawCircle || frontViewDrawCircle )
+		{
+			final int x = (int)( mat2.xo );
+			final int y = (int)( mat2.yo );
+
+			int rtx = (int)( radiusTop    * 2 * gXform.xx );
+			int rbx = (int)( radiusBottom * 2 * gXform.xx );
+			int rty = (int)( radiusTop    * 2 * ( topViewDrawCircle ? gXform.yy : gXform.yz ) );
+			int rby = (int)( radiusBottom * 2 * ( topViewDrawCircle ? gXform.yy : gXform.yz ) );
+
+			rtx = rtx < 0 ? -rtx : rtx;
+			rbx = rbx < 0 ? -rbx : rbx;
+			rty = rty < 0 ? -rty : rty;
+			rby = rby < 0 ? -rby : rby;
+
+			if ( rtx != 0 && rty != 0 )
+				g.drawOval( (x - (rtx / 2) ) , (y - (rty / 2) ) , rtx , rty );
+
+			if ( rbx != 0 && rby != 0 )
+				g.drawOval( (x - (rbx / 2) ) , (y - (rby / 2) ) , rbx , rby );
+		}
+
+		final float x = objXform.transformX( xform.xo , xform.yo , xform.zo );
+		final float y = objXform.transformY( xform.xo , xform.yo , xform.zo );
+		float[] pts = null;
+
+		/**
+		 * Top views (look in direction of z-axis).
+		 */
+		if ( mat2.xx < 0 && mat2.yz < 0 )
+		{
+			pts = new float[] { -radiusBottom , 0      , radiusBottom , 0      ,
+								-radiusTop    , height , radiusTop    , height };
+		}
+
+		if ( mat2.xx > 0 && mat2.yz > 0 )
+		{
+			pts = new float[] {  -radiusBottom , 0       , radiusBottom , 0       ,
+								 -radiusTop    , -height , radiusTop    , -height };
+		}
+
+		if ( mat2.xz > 0 && mat2.yx < 0 )
+		{
+			pts = new float[] { 0      , -radiusBottom , 0      , radiusBottom ,
+								height , -radiusTop    , height , radiusTop	};
+		}
+
+		if ( mat2.xz < 0 && mat2.yx > 0 )
+		{
+			pts = new float[] { 0       , -radiusBottom , 0       , radiusBottom ,
+								-height , -radiusTop    , -height , radiusTop	  };
+		}
+
+		/*
+		 * If the points are filled, draw them.
+		 */
+		if ( pts != null && pts.length == 8 )
+		{
+			drawLine( g , gXform , x + pts[ 0 ] , y + pts[ 1 ] , x + pts[ 2 ] , y + pts[ 3 ] );
+			drawLine( g , gXform , x + pts[ 4 ] , y + pts[ 5 ] , x + pts[ 6 ] , y + pts[ 7 ] );
+			drawLine( g , gXform , x + pts[ 0 ] , y + pts[ 1 ] , x + pts[ 4 ] , y + pts[ 5 ] );
+			drawLine( g , gXform , x + pts[ 2 ] , y + pts[ 3 ] , x + pts[ 6 ] , y + pts[ 7 ] );
+		}
+		else
+		{
+			/*
+			 * Not painted, paint fully.
+			 */
+			super.paint( g , gXform , objXform );
+		}
+	}
+
+	/**
+	 * Draws a line between the specified coordinates. Coordinates are transformed
+	 * using the specified matrix.
+	 *
+	 * @param	g		Graphics context.
+	 * @param	gXform 	Transform for coordinates on graphics context.
+	 * @param	x1		X coordinate of line's start point.
+	 * @param	y1		Y coordinate of line's start point.
+	 * @param	x2		X coordinate of line's end point.
+	 * @param	y2		Y coordinate of line's end point.
+	 */
+	public static void drawLine( final Graphics g , final Matrix3D gXform , final float x1 , final float y1 , final float x2 , final float y2 )
+	{
+		g.drawLine( (int)gXform.transformX( x1 , y1 , 0 ) ,
+		            (int)gXform.transformY( x1 , y1 , 0 ) ,
+		            (int)gXform.transformX( x2 , y2 , 0 ) ,
+		            (int)gXform.transformY( x2 , y2 , 0 ) );
+	}
 }
