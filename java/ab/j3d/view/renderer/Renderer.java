@@ -219,8 +219,8 @@ public final class Renderer
 
 					final int    background = _targetComponent.getBackground().getRGB();
 					final Insets insets     = _targetComponent.getInsets();
-					final int    width      = _targetComponent.getWidth() - insets.left - insets.right;
-					final int    height     = _targetComponent.getHeight() - insets.top - insets.bottom;
+					final int    width      = Math.max( 1 , _targetComponent.getWidth() - insets.left - insets.right );
+					final int    height     = Math.max( 1 , _targetComponent.getHeight() - insets.top - insets.bottom );
 
 					final BufferedImage newImage = renderFrame( oldImage , width , height , background );
 					needRepaint = true; //|= ( oldImage != newImage );
