@@ -31,7 +31,7 @@ public class Renderer
 	implements ComponentListener, Runnable, MouseListener, MouseMotionListener, ImageProducer
 {
 	private static final ColorModel _colorModel = ColorModel.getRGBdefault();
-	
+
 	/*
 	 * Values for control mode.
 	 */
@@ -49,15 +49,15 @@ public class Renderer
 	 * Component that uses this renderer.
 	 */
 	protected final Component _owner;
-	
+
 	/**
 	 * Transform of model.
-	 */	
+	 */
 	private Transform _modelTransform;
 
 	/**
 	 * Transform of light.
-	 */	
+	 */
 	private Transform _lightTransform;
 
 	/**
@@ -75,7 +75,7 @@ public class Renderer
 	 * Transform of camera.
 	 */
 	private Transform _cameraTransform;
-	
+
 	/*
 	 * Minimum/maximum coordiantes of displayed model.
 	 */
@@ -85,7 +85,7 @@ public class Renderer
 	private float _maxX = 0f;
 	private float _maxY = 0f;
 	private float _maxZ = 0f;
-	
+
 	/**
 	 * This is the current "control mode" of the view. This
 	 * may be ZOOM, PAN, or ROTATE.
@@ -98,7 +98,7 @@ public class Renderer
 	private float _mouseSensitivity = 1.4f;
 	private float _movementSpeed = 20.0f;
 	private float _zoomSpeed = 30.0f;
-	
+
 	private int   _initX;
 	private int   _initY;
 	private float _initRotationX;
@@ -150,7 +150,7 @@ public class Renderer
 	 * Background color (ARGB)
 	 */
 	public int _background = 0x0FFC0C0C0;
-	
+
 	/**
 	 * Z-Buffer. Each entry corresponds to a pixel's Z-coordinate. If a
 	 * pixel is drawn, its Z-coordinate must exceed this value to be
@@ -169,17 +169,17 @@ public class Renderer
 	 * Registered ImageConsumers.
 	 */
 	private Vector _imageConsumers = new Vector();
-	
+
 	/**
 	 * Image with frame buffer contents.
 	 */
 	protected Image _image = null;
-	
+
 	/**
 	 * This boolean flag indicates if the frame image was painted.
 	 */
 	protected boolean _imagePainted = false;
-	
+
 	/**
 	 * Flag to indicate that a temporary wireframe is drawn
 	 * during the rendering process.
@@ -227,7 +227,7 @@ public class Renderer
 			_owner.addComponentListener( this );
 			_owner.addMouseListener( this );
 			_owner.addMouseMotionListener( this );
-			
+
 			requestUpdate();
 		}
 	}
@@ -244,18 +244,18 @@ public class Renderer
 		{
 			if ( !_imageConsumers.contains( ic ) )
 				_imageConsumers.addElement( ic );
-			
+
 		    final int        width  = _width;
 		    final int        height = _height;
 			final int[]      p      = _pixels;
 		    final ColorModel cm     = _colorModel;
-			    
+
 			if ( isConsumer( ic ) )
 			    ic.setColorModel( _colorModel );
 
 			if ( isConsumer( ic ) )
 			    ic.setDimensions( _width , _height );
-			    
+
 			if ( isConsumer( ic ) )
 			    ic.setHints( ImageConsumer.TOPDOWNLEFTRIGHT | ImageConsumer.COMPLETESCANLINES );
 
@@ -273,24 +273,24 @@ public class Renderer
 	protected TreeNode buildWorld()
 	{
 		Transform location;
-		
+
 		/*
 		 * Create world.
 		 */
 		TreeNode world = new TreeNode();
-		
+
 		/*
 		 * Add base nodes for object.
 		 */
 		world
 			.addChild( _modelTransform = new Transform() )
 				.addChild( _base = new Transform() );
-		
+
 		/*
 		 * Add ambient light to make sure everything is visible.
 		 */
 		world.addChild( new Light( 500 , -1f ) ); // 384
-		
+
 		/*
 		 * Add a point light for more lively lighting effects.
 		 */
@@ -325,7 +325,7 @@ public class Renderer
 	 *
 	 * @param	e	Component event.
 	 */
-	public synchronized void componentHidden( ComponentEvent e ) 
+	public synchronized void componentHidden( ComponentEvent e )
 	{
 		_isRunning = false;
 		requestUpdate();
@@ -336,7 +336,7 @@ public class Renderer
 	 *
 	 * @param	e	Component event.
 	 */
-	public void componentMoved( ComponentEvent e ) 
+	public void componentMoved( ComponentEvent e )
 	{
 	}
 
@@ -346,7 +346,7 @@ public class Renderer
 	 *
 	 * @param	e	Component event.
 	 */
-	public void componentResized( ComponentEvent e ) 
+	public void componentResized( ComponentEvent e )
 	{
 		if ( e.getSource() == _owner )
 		{
@@ -452,7 +452,7 @@ public class Renderer
 			//_camera.scale = minSize * 0.000375f;
 			//, true , 5000.0f ) );
 		}
-			
+
 		requestUpdate();
 	}
 
@@ -514,7 +514,7 @@ public class Renderer
 		int dx = e.getX() - _initX;
 		int dy = e.getY() - _initY;
 
-		
+
 		int modifiers = e.getModifiers();
 		int mode      = _controlMode;
 
@@ -528,7 +528,7 @@ public class Renderer
 		}
 
 		final Transform x = /*_controlLight ? _lightTransform :*/ _cameraTransform;
-		
+
 		switch ( mode )
 		{
 			case ROTATE :
@@ -546,7 +546,7 @@ public class Renderer
 					_initTranslationZ + dy * _movementSpeed );
 				requestUpdate();
 				break;
-				
+
 			case ZOOM :
 				setRenderingMode( Renderer.QUICK );
 				x.setTranslation(
@@ -597,9 +597,9 @@ public class Renderer
 
 		_initX = e.getX();
 		_initY = e.getY();
-	
+
 		final Transform x = /*_controlLight ? _lightTransform :*/ _cameraTransform;
-		
+
 		_initRotationX    = _modelTransform.getRotationX();
 		_initRotationZ    = _modelTransform.getRotationZ();
 		_initTranslationX = x.getTranslationX();
@@ -667,15 +667,15 @@ public class Renderer
 		final Camera camera = _camera;
 		final int    width  = _width;
 		final int    height = _height;
-		
+
 		_updatePending = false;
 		_updating = true;
-		
+
 		/*
 		 * Initialize frame and Z buffer. Re-create these buffers if necessary.
 		 */
 		final int bufferSize = width * height;
-		
+
 		if ( _pixels  == null || _pixels .length < bufferSize ||
 		     _depthBuffer == null || _depthBuffer.length < bufferSize )
 		{
@@ -710,7 +710,7 @@ public class Renderer
 			System.arraycopy( _depthBuffer , 0 , _depthBuffer , i , c );
 			i += c;
 		}
-		
+
 		/*
 		 * Gather objects in this world.
 		 */
@@ -725,7 +725,7 @@ public class Renderer
 		camera.gatherLeafs( _sLights , Light.class , Matrix3D.INIT , true );
 
 		if ( _updatePending ) { _updating = false; return; }
-				
+
 		/*
 		 * Cycle through all available models and draw them.
 		 */
@@ -753,7 +753,7 @@ public class Renderer
 
 		final int         width         = _width;
 		final int         height        = _height;
-		
+
 		final RenderObject ro = face.getRenderObject();
 
 		final int[]			ph = ro.ph;
@@ -786,7 +786,7 @@ public class Renderer
 			n = vertexIndices[ i ];
 			j = ph[ n ] >> 8;
 			k = pv[ n ] >> 8;
-			
+
 			if ( pd[ n ] == 0 ) return;
 
 			if ( j < minH ) { minH = j; }
@@ -796,7 +796,7 @@ public class Renderer
 
 			if ( sfs != null && sfs[ i ] > m ) m = sfs[ i ];
 		}
-		
+
 		final short[][] phongTable = ( m > 0xFF ) && ( sxs != null ) && ( sys != null ) && ( sfs != null ) ? texture.getPhongTable() : null;
 
 		/*
@@ -814,50 +814,50 @@ public class Renderer
 		int     v     = minV;
 		int     nextV = v;
 		int     dx;
-		
+
 		int		li1  = first;	// Index in shape to 1st vertex of segement
 		int		li2  = first;	// Index in shape to 2nd vertex of segement
 		int		lv2  = minV;	// 'left'  vertical coordinate at end of segment
-		
+
 		int		ri1  = first;	// Index in shape to 1st vertex of segement
 		int		ri2  = first;	// Index in shape to 2nd vertex of segement
 		int		rv2  = minV;	// 'right' vertical coordinate at end of segment
-		
+
 		int		lh   = 0;		// 'left'  Horizontal coordinate counter     * 2^8
 		int		lhc  = 0;		// 'left'  Horizontal coordinate coefficient * 2^8
 		int		rh   = 0;		// 'right' Horizontal coordinate counter     * 2^8
 		int		rhc  = 0;		// 'right' Horizontal coordinate coefficient * 2^8
-		
+
 		long	ld   = 0;		// 'left'  Depth counter     * 2^8
 		long	ldc  = 0;		// 'left'  Depth coefficient * 2^8
 		long	rd   = 0;		// 'right' Depth counter     * 2^8
 		long	rdc  = 0;		// 'right' Depth coefficient * 2^8
-		
+
 		long	ltu  = 0;		// 'left'  Texture U-coordinate counter     * 2^8
 		long	ltuc = 0;		// 'left'  Texture U-coordinate coefficient * 2^8
 		long	rtu  = 0;		// 'right' Texture U-coordinate counter     * 2^8
 		long	rtuc = 0;		// 'right' Texture U-coordinate coefficient * 2^8
-		
+
 		long	ltv  = 0;		// 'left'  Texture V-coordinate counter     * 2^8
 		long	ltvc = 0;		// 'left'  Texture V-coordinate coefficient * 2^8
 		long	rtv  = 0;		// 'right' Texture V-coordinate counter     * 2^8
 		long	rtvc = 0;		// 'right' Texture V-coordinate coefficient * 2^8
-		
+
 		int		ldr  = 0;		// 'left'  Diffuse reflection counter     * 2^8
 		int		ldrc = 0;		// 'left'  Diffuse reflection coefficient * 2^8
 		int		rdr  = 0;		// 'right' Diffuse reflection counter     * 2^8
 		int		rdrc = 0;		// 'right' Diffuse reflection coefficient * 2^8
-		
+
 		int		lsx  = 0;		// 'left'  Specular X-coordinate counter     * 2^8
 		int		lsxc = 0;		// 'left'  Specular X-coordinate coefficient * 2^8
 		int		rsx  = 0;		// 'right' Specular X-coordinate counter     * 2^8
 		int		rsxc = 0;		// 'right' Specular X-coordinate coefficient * 2^8
-		
+
 		int		lsy  = 0;		// 'left'  Specular Y-coordinate counter     * 2^8
 		int		lsyc = 0;		// 'left'  Specular Y-coordinate coefficient * 2^8
 		int		rsy  = 0;		// 'right' Specular Y-coordinate counter     * 2^8
 		int		rsyc = 0;		// 'right' Specular Y-coordinate coefficient * 2^8
-		
+
 		int		lsf  = 0;		// 'left'  Specular intensity factor counter     * 2^8
 		int		lsfc = 0;		// 'left'  Specular intensity factor coefficient * 2^8
 		int		rsf  = 0;		// 'right' Specular intensity factor counter     * 2^8
@@ -878,7 +878,7 @@ public class Renderer
 				if ( j < lh ) { li1 = i; lh = j; }
 				if ( j > rh ) { ri1 = i; rh = j; }
 			}
-			
+
 			/*
 			 * Draw single scan line and exit.
 			 */
@@ -887,7 +887,7 @@ public class Renderer
 
 			ldr = ds[ li1 ];
 			rdr = ds[ ri1 ];
-			
+
 			if ( hasTexture )
 			{
 				ltu = tus[ li1 ] * ld;
@@ -911,7 +911,7 @@ public class Renderer
 			renderSolidScanlines( v , v , lh , 0 , rh , 0 , ld , 0 , rd , 0 , colorRGB ,
 				pixels , ltu , 0 , rtu , 0 , ltv , 0 , rtv , 0 , ldr , 0 , rdr , 0 ,
 				phongTable , lsx , 0 , rsx , 0 , lsy , 0 , rsy , 0 , lsf , 0 , rsf , 0 );
-			
+
 			return;
 		}
 
@@ -930,7 +930,7 @@ public class Renderer
 		while ( v < maxV )
 		{
 			if ( v >= height ) return;
-			
+
 			/*
 			 * Update 'left' side if needed.
 			 */
@@ -942,24 +942,24 @@ public class Renderer
 					lv2 = pv[ vertexIndices[ li2 ] ] >> 8;
 				}
 				while ( lv2 == v );
-				
+
 				d1 = pd[ m = vertexIndices[ li1 ] ];
 				d2 = pd[ n = vertexIndices[ li2 ] ];
 
 				i = (j = lv2 - (pv[ m ] >> 8)) + 1; if ( j == 0 ) j = 1;
-				
-				
+
+
 				lhc = ph[ n ] - (lh = ph[ m ]);
 				     if ( lhc < 0 ) lhc = ( lhc - 0x100 ) / i;
 				else if ( lhc > 0 ) lhc = ( lhc + 0x100 ) / i;
 				lh += 0x80;
-				
+
 				//lzc = (d2        - (lz =  d1       )) / j; lz += 0x80;
 				ldc = d2 - ( ld = d1 );
 				     if ( ldc < 0 ) ldc = ( ldc - 0x100 ) / i;
 				else if ( ldc > 0 ) ldc = ( ldc + 0x100 ) / i;
 				ld += 0x80;
-				
+
 				ldrc = (ds[ li2 ] - (ldr =  ds[ li1 ])) / j; ldr += 0x80;
 
 				if ( hasTexture )
@@ -990,20 +990,20 @@ public class Renderer
 
 				d1 = pd[ m = vertexIndices[ ri1 ] ];
 				d2 = pd[ n = vertexIndices[ ri2 ] ];
-				
+
 				i = ( j = rv2 - (pv[ m ] >> 8)) + 1; if ( j == 0 ) j = 1;
 
 				rhc = ph[ n ] - (rh = ph[ m ]);
 				     if ( rhc < 0 ) rhc = ( rhc - 0x100 ) / i;
 				else if ( rhc > 0 ) rhc = ( rhc + 0x100 ) / i;
 				rh += 0x80;
-				
+
 				//rzc = ( d2        - (rz =  d1       )) / j; rz += 0x80;
 				rdc = d2 - ( rd =  d1 );
 				     if ( rdc < 0 ) rdc = ( rdc - 0x100 ) / i;
 				else if ( rdc > 0 ) rdc = ( rdc + 0x100 ) / i;
 				rd += 0x80;
-				
+
 				rdrc = ( ds[ ri2 ] - (rdr =  ds[ ri1 ])) / j; rdr += 0x80;
 
 				if ( hasTexture )
@@ -1019,14 +1019,14 @@ public class Renderer
 					rsfc = (sfs[ ri2 ] - (rsf = sfs[ ri1 ])) / j; rsf += 0x80;
 				}
 			}
-			
+
 			/*
 			 * Prepare for pixel-loop.
 			 */
 			nextV = ( lv2 < rv2 ) ? lv2 : rv2;
 			if ( nextV == maxV ) nextV++;
 			if ( nextV > height ) nextV = height;
-			
+
 			renderSolidScanlines( v , nextV , lh , lhc , rh , rhc , ld , ldc , rd , rdc , colorRGB ,
 				pixels , ltu , ltuc , rtu , rtuc , ltv , ltvc , rtv , rtvc , ldr , ldrc , rdr , rdrc ,
 				phongTable , lsx , lsxc , rsx , rsxc , lsy , lsyc , rsy , rsyc , lsf , lsfc , rsf , rsfc );
@@ -1048,7 +1048,7 @@ public class Renderer
 					lsy += lsyc * i;
 					lsf += lsfc * i;
 				}
-				
+
 				if ( rv2 != nextV )
 				{
 					rh  += rhc  * i;
@@ -1061,7 +1061,7 @@ public class Renderer
 					rsf += rsfc * i;
 				}
 			}
-			
+
 			v = nextV;
 		}
 	}
@@ -1074,7 +1074,7 @@ public class Renderer
 		int i,j,x,y,z;
 		final int[] db = _depthBuffer;
 		final int[] sb = _pixels;
-		
+
 		/*
 		 * Change x2,y2,z2 into delta
 		 */
@@ -1085,7 +1085,7 @@ public class Renderer
 		/*
 		 * Handle 'horizontal' oriented line.
 		 */
-		
+
 		if ( Math.abs( x2 ) > Math.abs( y2 ) )
 		{
 			if ( x2 < 0 )
@@ -1101,7 +1101,7 @@ public class Renderer
 				x = x1 + i;
 				y = y1 + ( y2 * i + hx ) / x2;
 				z = z1 + ( z2 * i + hx ) / x2;
-				
+
 				if ( x >= 0 && x < _width && y >= 0 && y < _height && z >= db[ j = y * _width + x ] )
 				{
 					db[ j ] = z;
@@ -1141,7 +1141,7 @@ public class Renderer
 				x = x1 + ( i * x2 + hy ) / y2;
 				y = y1 + i;
 				z = z1 + ( z2 * i + hy ) / y2;
-				
+
 				if ( x >= 0 && x < _width && y >= 0 && y < _height && z >= db[ j = y * _width + x ] )
 				{
 					db[ j ] = z;
@@ -1160,15 +1160,15 @@ public class Renderer
 	 * @param	width			Width of rendering image.
 	 * @param	height			Height of rendering image.
 	 */
-	protected void renderSolidObject( 
+	protected void renderSolidObject(
 		final Object3D object , final Matrix3D cameraXform , final Camera camera , int width , int height )
 	{
 		_solidObject.set( object , cameraXform , camera.aperture , camera.zoom , width , height , true );
 		if ( _updatePending ) return;
-			
+
 		_solidObject.setLights( _sLights );
 		if ( _updatePending ) return;
-		
+
 		/*
 		 * For each face:
 		 *   - determine if it's invisible (outside view volume & backface culling)
@@ -1176,12 +1176,12 @@ public class Renderer
 		 */
 		final int[]	ph = _solidObject.ph;
 		final int[]	pv = _solidObject.pv;
-		
+
 		int i,j,k,h1,v1,h2,v2;
 		int[] vi;
-				
+
 	    final int c = ( _owner != null ) ? _owner.getForeground().getRGB() : 0xFF000000;
-		
+
 		for ( RenderObject.Face face = _solidObject.faces ; face != null ; face = face.next )
 		{
 			face.applyLighting();
@@ -1197,20 +1197,20 @@ public class Renderer
 			//if ( _showWireframeOverlay )
 			//{
 				//vi = face.vi;
-				
+
 				//h1 = ph[ k = vi[ vi.length - 1 ] ] >> 8;
 				//v1 = pv[ k                       ] >> 8;
-				
+
 				//for ( j = 0 ; j < vi.length ; j++ )
 				//{
 					//h2 = ph[ k = vi[ j ] ] >> 8;
 					//v2 = pv[ k           ] >> 8;
-					
+
 					//renderSolidLine3D( h1 , v1 , 0x7FFFFFFF , h2 , v2 , 0x7FFFFFFF , c );
 
 					//h1 = h2;
 					//v1 = v2;
-					
+
 				//}
 			//}
 		}
@@ -1219,49 +1219,49 @@ public class Renderer
 	/**
 	 * This is the core render loop to render a set of scanlines for a face.
 	 *
-	 * @param	v	
-	 * @param	nextV	
-	 * @param	lh	
-	 * @param	lhc	
-	 * @param	rh	
-	 * @param	rhc	
-	 * @param	ld	
-	 * @param	ldc	
-	 * @param	rd	
-	 * @param	rdc	
-	 * @param	colorRGB	
-	 * @param	texture	
-	 * @param	ltu	
-	 * @param	ltuc	
-	 * @param	rtu	
-	 * @param	rtuc	
-	 * @param	ltv	
-	 * @param	ltvc	
-	 * @param	rtv	
-	 * @param	rtvc	
-	 * @param	ldr	
-	 * @param	ldrc	
-	 * @param	rdr	
-	 * @param	rdrc	
-	 * @param	phongTable	
-	 * @param	lsx	
-	 * @param	lsxc	
-	 * @param	rsx	
-	 * @param	rsxc	
-	 * @param	lsy	
-	 * @param	lsyc	
-	 * @param	rsy	
-	 * @param	rsyc	
-	 * @param	lsf	
-	 * @param	lsfc	
-	 * @param	rsf	
-	 * @param	rsfc	
+	 * @param	v
+	 * @param	nextV
+	 * @param	lh
+	 * @param	lhc
+	 * @param	rh
+	 * @param	rhc
+	 * @param	ld
+	 * @param	ldc
+	 * @param	rd
+	 * @param	rdc
+	 * @param	colorRGB
+	 * @param	texture
+	 * @param	ltu
+	 * @param	ltuc
+	 * @param	rtu
+	 * @param	rtuc
+	 * @param	ltv
+	 * @param	ltvc
+	 * @param	rtv
+	 * @param	rtvc
+	 * @param	ldr
+	 * @param	ldrc
+	 * @param	rdr
+	 * @param	rdrc
+	 * @param	phongTable
+	 * @param	lsx
+	 * @param	lsxc
+	 * @param	rsx
+	 * @param	rsxc
+	 * @param	lsy
+	 * @param	lsyc
+	 * @param	rsy
+	 * @param	rsyc
+	 * @param	lsf
+	 * @param	lsfc
+	 * @param	rsf
+	 * @param	rsfc
 	 */
 	protected final void renderSolidScanlines(
 		int v , final int nextV ,
 		int  lh  , final int  lhc  , int  rh  , final int  rhc  ,
 		long ld  , final long ldc  , long rd  , final long rdc  ,
-		
+
 		final int colorRGB , final int[][] texture ,
 		long ltu , final long ltuc , long rtu , final long rtuc ,
 		long ltv , final long ltvc , long rtv , final long rtvc ,
@@ -1275,13 +1275,13 @@ public class Renderer
 		final int        height        = _height;
 		final int        tw            = ( texture != null ) ? texture[0].length : 0;
 		final int        th            = ( texture != null ) ? texture.length    : 0;
-		final int        ma            = (colorRGB >> 24) & 0xFF; 
-		final int        mr            = (colorRGB >> 16) & 0xFF; 
-		final int        mg            = (colorRGB >>  8) & 0xFF; 
+		final int        ma            = (colorRGB >> 24) & 0xFF;
+		final int        mr            = (colorRGB >> 16) & 0xFF;
+		final int        mg            = (colorRGB >>  8) & 0xFF;
 		final int        mb            =  colorRGB        & 0xFF;
 
 		int i,j,c,r,g,b,s;
-		
+
 		int     h1   = 0;		// 'pixel' Horizontal coordinate counter     * 2^8
 		int     h2   = 0;		// 'pixel' Horizontal coordinate coefficient * 2^8
 		long	d1   = 0;		// 'pixel' Z-coordinate counter     * 2^8
@@ -1300,12 +1300,12 @@ public class Renderer
 		int		sf2  = 0;		// 'pixel' Specular intensity factor coefficient * 2^8
 
 		int[] db = _depthBuffer;
-		
+
 		do
 		{
 			i = lh >> 8;
 			j = rh >> 8;
-			
+
 			if ( ( v >= 0 ) && ( v < height )
 			  && ( i >= 0 || j >= 0 )
 			  && ( i < width || j < width ) )
@@ -1323,7 +1323,7 @@ public class Renderer
 					sx1 = lsx; sx2 = rsx;
 					sy1 = lsy; sy2 = rsy;
 					sf1 = lsf; sf2 = rsf;
-					
+
 					if ( lhc < -0x100 )
 					{
 						h1  += (lhc >> 8) + 1;
@@ -1331,7 +1331,7 @@ public class Renderer
 						dr1 +=  ldrc;
 						sf1 +=  lsfc;
 					}
-					
+
 					if ( rhc >  0x100 )
 					{
 						h2  += (rhc >> 8) - 1;
@@ -1350,15 +1350,15 @@ public class Renderer
 					sx1 = rsx; sx2 = lsx;
 					sy1 = rsy; sy2 = lsy;
 					sf1 = rsf; sf2 = lsf;
-					
-					if ( rhc < -0x100 ) 
+
+					if ( rhc < -0x100 )
 					{
 						h1  += (rhc >> 8) + 1;
 						d1  +=  rdc;
 						dr1 +=  rdrc;
 						sf1 +=  rsfc;
 					}
-					
+
 					if ( lhc >  0x100 )
 					{
 						h2  += (lhc >> 8) - 1;
@@ -1367,9 +1367,9 @@ public class Renderer
 						sf2 +=  lsfc;
 					}
 				}
-				
+
 				if ( ( i = ( h2 -= h1 ) ) == 0 ) i = 1;
-				
+
 				d2  = ( d2  - d1  ) / i;
 				tu2 = ( tu2 - tu1 ) / i;
 				tv2 = ( tv2 - tv1 ) / i;
@@ -1377,7 +1377,7 @@ public class Renderer
 				sx2 = ( sx2 - sx1 ) / i;
 				sy2 = ( sy2 - sy1 ) / i;
 				sf2 = ( sf2 - sf1 ) / i;
-				
+
 				/*
 				 * Clip left/right. On the left side, we must adjust all interpolation
 				 * counters. On the right side, we can simply reduce the number of pixels
@@ -1418,7 +1418,7 @@ public class Renderer
 								int myU = (int)( ( tu1 / d1 ) % tw );
 								int myV = (int)( ( tv1 / d1 ) % th );
 								c = texture[ myV + (myV<0?th:0)][ myU + (myU<0?tw:0) ];
-								// original								
+								// original
 								//c = texture[ (int)( ( tv1 / d1 ) % th )) ]
 								           //[ (int)( ( tu1 / d1 ) % tw )) ];
 								s = phongTable[ sy1 >> 8 ][ sx1 >> 8 ] * sf1;
@@ -1478,10 +1478,10 @@ public class Renderer
 								int myU = (int)( ( tu1 / d1 ) % tw );
 								int myV = (int)( ( tv1 / d1 ) % th );
 								c = texture[ myV + (myV<0?th:0)][ myU + (myU<0?tw:0) ];
-								// original								
+								// original
 								//c = texture[ (int)( ( tv1 / d1 ) % th )) ]
 								           //[ (int)( ( tu1 / d1 ) % tw )) ];
-								
+
 								if ( (r = (dr1 * ((c >> 16) & 0xFF)) >> 16) > 255 ) r = 255;
 								if ( (g = (dr1 * ((c >>  8) & 0xFF)) >> 16) > 255 ) g = 255;
 								if ( (b = (dr1 * ( c        & 0xFF)) >> 16) > 255 ) b = 255;
@@ -1500,13 +1500,13 @@ public class Renderer
 						//System.out.println( "Starting pixels at (" + h1 + "," + y + ")" );
 						//System.out.println( "   length  = " + ( h2 + 1 ) );
 						//System.out.println( "   Z.start = " + d1 );
-						
+
 						for ( i = width * v + h1 ; h2-- >= 0 ; i++ )
 						{
 							if ( (j = (int)(0x7FFFFFFFFFl / d1)) < db[ i ] )
 							{
 								db[ i ] = j;
-								
+
 								if ( ( r = ( dr1 * mr ) >> 16 ) > 255 ) r = 255;
 								if ( ( g = ( dr1 * mg ) >> 16 ) > 255 ) g = 255;
 								if ( ( b = ( dr1 * mb ) >> 16 ) > 255 ) b = 255;
@@ -1517,7 +1517,7 @@ public class Renderer
 							d1  += d2;
 							dr1 += dr2;
 						}
-						
+
 						//System.out.println( "   Z.end    = " + ( d1 - d2 ) );
 					}
 				}
@@ -1531,7 +1531,7 @@ public class Renderer
 			lsx += lsxc; rsx += rsxc;
 			lsy += lsyc; rsy += rsyc;
 			lsf += lsfc; rsf += rsfc;
-			
+
 			v++;
 		}
 		while ( v < nextV );
@@ -1568,7 +1568,7 @@ public class Renderer
 				System.arraycopy( _wireObjects , 0 , objects , 0 , _wireObjects.length );
 			_wireObjects = objects;
 		}
-		
+
 		/*
 		 * Add all objects and draw them.
 		 */
@@ -1584,12 +1584,12 @@ public class Renderer
 		for ( int i = 0 ; i < nrObjects ; i++ )
 		{
 			RenderObject ro = _wireObjects[ i ];
-			
+
 			for ( RenderObject.Face face = ro.faces ; face != null ; face = face.next )
 				renderWireframeFace( g , face );
 		}
 
-		
+
 		//class Iter
 		//{
 			//int	obj = 0;
@@ -1611,7 +1611,7 @@ public class Renderer
 						//face = face.next;
 					//}
 				//}
-				
+
 				//RenderObject.Face result = face;
 				//face = face.next;
 				//return result;
@@ -1646,7 +1646,7 @@ public class Renderer
 
 			//renderWireframeFace( g , face );
 			//face.index = -1;
-		//}	
+		//}
 	}
 
 	/**
@@ -1658,17 +1658,18 @@ public class Renderer
 	protected void renderWireframeFace( Graphics g , RenderObject.Face face )
 	{
 		int i,k,h1,v1,h2,v2;
-		
+
 		int[] vi = face.vi;
 		if ( vi.length < 3 )
 			return;
-		
+
 		int[] h = new int[ vi.length ];
 		int[] v = new int[ vi.length ];
 
-		final int[] ph = face.this$0.ph;
-		final int[] pv = face.this$0.pv;
-		
+		final RenderObject ro = face.getRenderObject();
+		final int[] ph = ro.ph;
+		final int[] pv = ro.pv;
+
 		for ( i = 0 ; i < vi.length ; i++ )
 		{
 			h[ i ] = ph[ k = vi[ i ] ] >> 8;
@@ -1680,23 +1681,23 @@ public class Renderer
 		//float ny = 0.1f + 0.0f * ( 1.0f + face.ny );
 		//float nz = 0.1f + 0.5f * ( 1.0f + face.nz );
 
-		//g.setColor( new Color(	
+		//g.setColor( new Color(
 			//Math.min( (int)(nx * ((c >> 16) & 255)) , 255 ) ,
 			//Math.min( (int)(ny * ((c >>  8) & 255)) , 255 ) ,
 			//Math.min( (int)(nz * ( c        & 255)) , 255 ) ) );
-	
+
 		//g.fillPolygon( h , v , vi.length );
 
 		//g.setColor( Color.black );
-		
+
 		h1 = h[ k = vi.length - 1 ];
 		v1 = v[ k ];
-		
+
 		for ( i = 0 ; i < vi.length ; i++ )
 		{
 			h2 = h[ i ];
 			v2 = v[ i ];
-			
+
 			g.drawLine( h1 , v1 , h2 , v2 );
 
 			h1 = h2;
@@ -1710,14 +1711,14 @@ public class Renderer
 	 *
 	 * @see ImageConsumer
 	 */
-	public void requestTopDownLeftRightResend( ImageConsumer ic ) 
+	public void requestTopDownLeftRightResend( ImageConsumer ic )
 	{
 		if ( isConsumer( ic ) )
 		    ic.setDimensions( _width , _height );
-	    
+
 	    if ( isConsumer( ic ) )
 			ic.setPixels( 0 , 0 , _width , _height , _colorModel , _pixels , 0 , _width );
-	    
+
 	    if ( isConsumer( ic ) )
 		    ic.imageComplete( ImageConsumer.SINGLEFRAMEDONE );
 	}
@@ -1785,15 +1786,15 @@ public class Renderer
 						renderSolid( _background );
 
 						_updating = false;
-						
+
 						if ( !_updatePending )
 						{
-	
+
 							updateImageConsumers();
 							//System.out.println( "*repaint*" );
 							_owner.repaint();
 						}
-								
+
 
 						///*
 						 //* Re-create offscreen image when imageSource was updated.
@@ -1810,7 +1811,7 @@ public class Renderer
 						//_updating = false;
 						//if ( !_updatePending )
 							//_imageSource.newPixels( 0 , 0 , _width , _height );
-						
+
 						continue;
 					}
 
@@ -1822,8 +1823,8 @@ public class Renderer
 						//System.out.println( "*run.repaintX*" );
 						_owner.repaint();
 					}
-				} 
-				catch ( Exception e ) 
+				}
+				catch ( Exception e )
 				{
 					System.out.println( "Exception (" + e + ") during rendering!" );
 					e.printStackTrace();
@@ -1832,15 +1833,15 @@ public class Renderer
 
 			/*
 			 * No update needed, so sleep for a while until we are needed again.
-			 */	
-			try 
+			 */
+			try
 			{
 				for (;;)
 				{
-					synchronized ( this ) 
+					synchronized ( this )
 					{
 						if ( _updatePending ) break;
-						wait( 300 ); 
+						wait( 300 );
 					}
 				}
 			}
@@ -1862,10 +1863,10 @@ public class Renderer
 		    final int        height = _height;
 			final int[]      p      = _pixels;
 		    final ColorModel cm     = _colorModel;
-			    
+
 			if ( isConsumer( ic ) )
 			    ic.setDimensions( _width , _height );
-			    
+
 		    if ( isConsumer( ic ) )
 		    {
 				for ( int y = 0 , o = 0 ; y < height ; y++ , o += width )
@@ -1873,7 +1874,7 @@ public class Renderer
 					if ( _updatePending ) break;
 					ic.setPixels( 0 , y , width , 1 , cm , p , o , width );
 				}
-						    
+
 			    if ( isConsumer( ic ) )
 						ic.imageComplete( _updatePending ? ImageConsumer.IMAGEABORTED : ImageConsumer.SINGLEFRAMEDONE );
 		    }
@@ -1909,7 +1910,7 @@ public class Renderer
 	}
 
 	/**
-	 * Set the rendering mode to use. This may be set to QUICK 
+	 * Set the rendering mode to use. This may be set to QUICK
 	 * during frequent updates, and to FULL when those updates
 	 * are done. The renderer may use this to speed up its
 	 * operation (e.g. by lowering detail) during updates.
@@ -1947,7 +1948,7 @@ public class Renderer
 	{
 		if ( settings == null || settings.length() ==  0 )
 			return;
-			
+
 		try
 		{
 			Bounds3D b = Bounds3D.fromString( settings );
@@ -1972,7 +1973,7 @@ public class Renderer
 	}
 
 	/**
-	 * Send new frame buffer contents to any ImageConsumers that are currently 
+	 * Send new frame buffer contents to any ImageConsumers that are currently
 	 * interested in the data for this image source.
 	 *
 	 * @see ImageConsumer
@@ -1984,7 +1985,7 @@ public class Renderer
 	 		for ( Enumeration e = _imageConsumers.elements() ; e.hasMoreElements() ; )
 	 		{
 		    	ImageConsumer ic = (ImageConsumer)e.nextElement();
-		    	
+
 			    if ( isConsumer( ic ) )
 					sendPixels( ic );
 	 		}
