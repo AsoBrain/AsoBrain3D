@@ -32,6 +32,7 @@ import ab.j3d.Matrix3D;
  * @version $Revision$ $Date$
  */
 public abstract class ViewControl
+		implements DragListener
 {
 	/**
 	 * View control event (reused to avoid too much garbage).

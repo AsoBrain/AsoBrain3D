@@ -15,7 +15,6 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
 package ab.j3d.view;
@@ -27,6 +26,7 @@ import ab.j3d.Vector3D;
  * This class implements a view control based on a 'from' and 'to' point.
  *
  * @author  Peter S. Heijnen
+ * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
 public final class FromToViewControl
@@ -59,6 +59,24 @@ public final class FromToViewControl
 	private Matrix3D _transform;
 
 	/**
+	 * Construct default from-to view. This creates a view from (0,0,0) along
+	 * the positive Y-axis.
+	 */
+	public FromToViewControl()
+	{
+		this( Vector3D.INIT , Vector3D.INIT.set( 0 , 1 , 0 ) );
+	}
+
+	/**
+	 * Construct from-to view from a point at a given distance towards the
+	 * origin along the positive Y-axis.
+	 */
+	public FromToViewControl( final float distance )
+	{
+		this( Vector3D.INIT.set( 0 , -distance , 0 ) , Vector3D.INIT );
+	}
+
+	/**
 	 * Construct new from-to view control.
 	 *
 	 * @param   from    Initial point to look from.
@@ -66,9 +84,9 @@ public final class FromToViewControl
 	 */
 	public FromToViewControl( final Vector3D from , final Vector3D to )
 	{
-		_from        = null;
-		_to          = null;
-		_transform   = null;
+		_from        = Vector3D.INIT;
+		_to          = Vector3D.INIT;
+		_transform   = Matrix3D.INIT;
 		_upPrimary   = Vector3D.INIT.set( 0 , 0 , 1 );
 		_upSecondary = Vector3D.INIT.set( 0 , 1 , 0 );
 
@@ -129,7 +147,7 @@ public final class FromToViewControl
 	public static Matrix3D getFromToTransform( final Vector3D from , final Vector3D to , final Vector3D upPrimary , final Vector3D upSecondary )
 	{
 		if ( from.almostEquals( to ) )
-			throw new IllegalArgumentException( "getTransfrom( from , to ); 'from' and 'to' can not be the same!" );
+			throw new IllegalArgumentException( "'from' and 'to' can not be the same!" );
 
 		/*
 		 * Z-axis points out of the to-point (center) towards the from-point (eye).
@@ -141,6 +159,7 @@ public final class FromToViewControl
 		zx *= normalizeZ;
 		zy *= normalizeZ;
 		zz *= normalizeZ;
+//		System.out.println( "Math.sqrt( zx * zx + zy * zy + zz * zz ) = " + Math.sqrt( zx * zx + zy * zy + zz * zz ) );
 
 		/*
 		 * Select up-vector.
@@ -152,24 +171,29 @@ public final class FromToViewControl
 		/*
 		 * X-axis is perpendicular to the Z-axis and the up-vector.
 		 */
-		final double xx = up.y * zz - zy * up.z;
-		final double xy = up.z * zx - up.x * zz;
-		final double xz = up.x * zy - up.y * zx;
+		double xx = up.y * zz - up.z * zy;
+		double xy = up.z * zx - up.x * zz;
+		double xz = up.x * zy - up.y * zx;
+		final double normalizeX = 1.0 / Math.sqrt( xx * xx + xy * xy + xz * xz );
+		xx *= normalizeX;
+		xy *= normalizeX;
+		xz *= normalizeX;
 
 		/*
 		 * Y-axis is perpendicular to the Z- and X-axis.
 		 */
-		final double yx = zy * xz - xy * zz;
+		final double yx = zy * xz - zz * xy;
 		final double yy = zz * xx - zx * xz;
 		final double yz = zx * xy - zy * xx;
+//		System.out.println( "Math.sqrt( yx * yx + yy * yy + yz * yz ) = " + Math.sqrt( yx * yx + yy * yy + yz * yz ) );
 
 		/*
 		 * Create matrix.
 		 */
 		return Matrix3D.INIT.set(
-			xx , xy , xz , ( from.x * xx -from.y * xy -from.z * xz ) ,
-			yx , yy , yz , ( from.x * yx -from.y * yy -from.z * yz ) ,
-			zx , zy , zz , ( from.x * zx -from.y * zy -from.z * zz ) ).inverse();
+			xx , xy , xz , ( -from.x * xx -from.y * xy -from.z * xz ) ,
+			yx , yy , yz , ( -from.x * yx -from.y * yy -from.z * yz ) ,
+			zx , zy , zz , ( -from.x * zx -from.y * zy -from.z * zz ) );
 	}
 
 	/**
@@ -195,5 +219,65 @@ public final class FromToViewControl
 	public Matrix3D getTransform()
 	{
 		return _transform;
+	}
+
+	//***************************************************
+	// Some first test code for dragging support
+	//***************************************************
+	private Matrix3D oldTransform = _transform;
+	private Vector3D oldFromPoint = _from;
+
+	private double range;
+	private double aboveAngle;
+	private double aboutAngle;
+	private Matrix3D rotBase;
+
+	public void mouseViewChanged( final DragEvent event )
+	{
+	}
+
+	public void dragStart()
+	{
+//		System.out.println( "DRAG START" );
+		oldTransform = _transform;
+		oldFromPoint = _from;
+
+		range      = _from.distanceTo( _to );
+		aboveAngle = 0;
+		aboutAngle = 0;
+
+		final double transX = _from.x - _to.x;
+		final double transY = _from.y - _to.y;
+		final double transZ = _from.z - _to.z;
+		final Matrix3D trans = Matrix3D.INIT.plus( transX , transY , transZ );
+
+		rotBase = getTransform().multiply( trans );
+	}
+
+	public void dragTo( final int buttonNr , final int deltaX , final int deltaY )
+	{
+//		System.out.println( "DRAG TO" );
+
+		if ( buttonNr == 0 )
+		{
+			aboveAngle += deltaX * -0.01;
+			aboutAngle += deltaY *  0.01;
+		}
+		else if ( buttonNr == 2 )
+		{
+			range += deltaY * 0.01;
+		}
+
+		final double rotX = Math.toRadians( aboutAngle );
+		final double rotY = Math.toRadians( aboveAngle );
+
+//		_transform = Matrix3D.INIT.rotateY( rotY ).rotateX( rotX ).multiply( rotBase ).setTranslation( 0 , 0 , -range );
+		_transform = rotBase.rotateY( rotY ).rotateX( rotX ).setTranslation( 0 , 0 , -range );
+	}
+
+	public void dragStop()
+	{
+//		System.out.println( "DRAG STOP" );
+		_from = _transform.inverse().multiply( _to );
 	}
 }

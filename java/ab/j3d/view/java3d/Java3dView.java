@@ -30,6 +30,9 @@ import com.sun.j3d.utils.universe.Viewer;
 import com.sun.j3d.utils.universe.ViewingPlatform;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.view.DragEvent;
+import ab.j3d.view.DragListener;
+import ab.j3d.view.DragSupport;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModelView;
 
@@ -81,7 +84,7 @@ public final class Java3dView
 
 		final ViewingPlatform viewingPlatform = new ViewingPlatform( 1 );
 		viewingPlatform.setUniverse( universe );
-		viewingPlatform.setViewPlatformBehavior( Java3dTools.createOrbitBehavior( canvas3d , universe.getUnit() ) );
+		//viewingPlatform.setViewPlatformBehavior( Java3dTools.createOrbitBehavior( canvas3d , universe.getUnit() ) );
 
 		final Viewer viewer = new Viewer( canvas3d );
 		viewer.setViewingPlatform( viewingPlatform );
@@ -100,6 +103,30 @@ public final class Java3dView
 		_universe = universe;
 		_universe.addViewer( viewer );
 		_universe.getLocale().addBranchGraph( viewingPlatform );
+
+		// Add DragSupport to handle drag events.
+		final DragSupport ds = new DragSupport( canvas3d , universe.getUnit() );
+		ds.addDragListener( viewControl );
+
+		// @FIXME TEMP UPDATE, how to be triggered???
+		ds.addDragListener( new DragListener(){
+			public void mouseViewChanged( final DragEvent event )
+			{
+				update();
+			}
+
+			public void dragStart()
+			{
+			}
+
+			public void dragTo( final int buttonNr , final int deltaX , final int deltaY )
+			{
+			}
+
+			public void dragStop()
+			{
+			}
+		});
 	}
 
 	/**
@@ -145,7 +172,7 @@ public final class Java3dView
 		if ( ( unit > 0 ) && ( unit != 1 ) )
 			xform = xform.setTranslation( xform.xo * unit , xform.yo * unit , xform.zo * unit );
 
-		getTransformGroup().setTransform( Java3dTools.convertMatrix3DToTransform3D( xform ) );
+		getTransformGroup().setTransform( Java3dTools.convertMatrix3DToTransform3D( xform.inverse() ) );
 	}
 
 	/**

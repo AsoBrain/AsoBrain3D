@@ -33,6 +33,7 @@ import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3f;
 
+import com.sun.j3d.utils.geometry.ColorCube;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 import com.sun.j3d.utils.universe.Viewer;
 import com.sun.j3d.utils.universe.ViewingPlatform;
@@ -244,8 +245,18 @@ public final class Java3dUniverse
 		light3.setInfluencingBounds( bounds );
 		scene.addChild( light3 );
 
-//		scene.addChild( Java3dTools.createGrid( new Point3f( 0.0f , 0.0f , 0.0f ) , new Point3i( 30 , 4 , 30 ) , 0.5f , 5 , new Color3f( 1 , 1 , 0 ) ) );
+//		scene.addChild( Java3dTools.createGrid( new Point3f( 0.0f , 0.0f , 0.0f ) , new Point3i( 30 , 30 , 30 ) , 0.5f , 5 , new Color3f( 1 , 1 , 0 ) ) );
 //		scene.addChild( Java3dTools.createGrid( new Point3f( 0.0f , 2.0f , 0.0f ) , new Point3i( 20 , 8 , 20 ) , 0.25f , 4 , new Color3f( 0 , 0 ,0 ) ) );
+
+//		final TransformGroup transformGroup = new TransformGroup( new Transform3D( new Matrix4f(
+//		        1 , 0 , 0 ,  0 ,
+//		        0 , 1 , 0 ,  0 ,
+//		        0 , 0 , 1 ,  0 ,
+//		        0 , 0 , 0 ,  1 ) ) );
+
+//		transformGroup.addChild( new ColorCube( 1 ) );
+//		scene.addChild( transformGroup );
+		scene.addChild( new ColorCube( 1 ) );
 
 		// add scene to scene graph
 

@@ -26,13 +26,17 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.Canvas3D;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.vecmath.Point3d;
 
+import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
 import com.sun.j3d.utils.universe.Viewer;
 import com.sun.j3d.utils.universe.ViewingPlatform;
 
+import ab.j3d.Matrix3D;
 import ab.j3d.TextureLibrary;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
@@ -81,7 +85,7 @@ public final class Java3dModelExample
 
 		final Java3dTools j3dTools = new Java3dTools( tl );
 		final Canvas3D canvas3d = Java3dTools.createCanvas3D();
-		final Java3dUniverse j3dUniverse = new Java3dUniverse( canvas3d , Java3dUniverse.M );
+		final Java3dUniverse j3dUniverse = new Java3dUniverse( /*canvas3d ,*/ Java3dUniverse.M );
 		final Java3dModel j3dModel = new Java3dModel( j3dTools , j3dUniverse );
 
 		final Vector3D lfb = Vector3D.INIT.set( -1 , -1 , -1 );
@@ -110,13 +114,36 @@ public final class Java3dModelExample
 		final Canvas3D viewerCanvas = Java3dTools.createCanvas3D();
 		final Viewer viewer = new Viewer( viewerCanvas );
 		viewer.setViewingPlatform(vwp);
+		final BoundingSphere bounds = new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 100.0 );
+
+		final OrbitBehavior orbit = new OrbitBehavior( viewerCanvas , OrbitBehavior.REVERSE_ALL );
+		orbit.setSchedulingBounds( bounds );
+		vwp.setViewPlatformBehavior( orbit );
+
+
+		final float DEG45  = (float)Math.PI / 4;
+		final float DEG90  = (float)Math.PI / 2;
+		final float DEG135 = DEG90 + DEG45;
+		final float SQRT2 = (float)Math.sqrt( 2 );
+		final float SQRT3 = (float)Math.sqrt( 3 );
+
+
+//		transform3D.lookAt( new Point3d( 0 , 1 , 10 ) , new Point3d( 0 , 0 , 0 ) , new Vector3d( 0 , 0 , 1 ) );
+//		transform3D.invert( transform3D );
+		Matrix3D xform = Matrix3D.INIT.rotateZ( Math.toRadians( 45 ) ).rotateX( Math.toRadians( 125.2 ) ).plus( 0 , 0 , -SQRT3 );
+
+		final float unit = j3dUniverse.getUnit();
+		if ( ( unit > 0 ) && ( unit != 1 ) )
+			xform = xform.setTranslation( xform.xo * unit , xform.yo * unit , xform.zo * unit );
+		vwp.getMultiTransformGroup().getTransformGroup( 0 ).setTransform( Java3dTools.convertMatrix3DToTransform3D( xform.inverse() ) );
+
 		j3dUniverse.addViewer( viewer );
 		j3dUniverse.getLocale().addBranchGraph( vwp );
 		createFrame( 500 , 50 , 400 , 400 , viewerCanvas ).setVisible( true );
 
-		final Component viewComponent = j3dModel.createView( "view" , Vector3D.INIT.set( 0 , -4 , 0 ) , Vector3D.INIT );
+		final Component viewComponent = j3dModel.createView( "view" , Vector3D.INIT.set( 0 , 0 , 10 ) , Vector3D.INIT );
 		createFrame( 800 , 600 , viewComponent ).setVisible( true );
-//		j3dModel.updateViews();
+		j3dModel.updateViews();
 	}
 
 	private static JFrame createFrame( final int width , final int height , final Component content )
