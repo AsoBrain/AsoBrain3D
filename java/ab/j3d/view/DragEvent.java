@@ -60,6 +60,11 @@ public class DragEvent
 	private final int _buttonNumber;
 
 	/**
+	 * Number of times the button was pressed.
+	 */
+	private final int _clickCount;
+
+	/**
 	 * Start X coordinate of drag operation (pixels).
 	 */
 	private final int _startX;
@@ -115,6 +120,7 @@ public class DragEvent
 	 * @param   source          Source from where the event originated.
 	 * @param   id              Event type.
 	 * @param   buttonNumber    Button number on pointing device to select operation mode.
+	 * @param   clickCount      Number of times the button was pressed.
 	 * @param   startX          X start coordinate of drag operation in pixels.
 	 * @param   startY          Y start coordinate of drag operation in pixels.
 	 * @param   toX             Current X end coordinate of drag operation in pixels.
@@ -123,7 +129,7 @@ public class DragEvent
 	 * @param   toRadians       Multiplier to translate pixels to radians.
 	 * @param   toUnits         Multiplier to translate pixels to model units.
 	 */
-	public DragEvent( final DragSupport source , final int id , final int buttonNumber , final int startX , final int startY , final int toX , final int toY , final double toDegrees , final double toRadians , final double toUnits )
+	public DragEvent( final DragSupport source , final int id , final int buttonNumber , final int clickCount , final int startX , final int startY , final int toX , final int toY , final double toDegrees , final double toRadians , final double toUnits )
 	{
 		super( source );
 
@@ -135,6 +141,7 @@ public class DragEvent
 
 		_id           = id;
 		_buttonNumber = buttonNumber;
+		_clickCount   = clickCount;
 		_startX       = startX;
 		_startY       = startY;
 		_deltaX       = deltaX;
@@ -153,6 +160,7 @@ public class DragEvent
 	 * @param   source          Source from where the event originated.
 	 * @param   id              Event type.
 	 * @param   buttonNumber    Button number on pointing device to select operation mode.
+	 * @param   clickCount      Number of times the button was pressed.
 	 * @param   startX          Start X coordinate of drag operation (pixels).
 	 * @param   startY          Start Y coordinate of drag operation (pixels).
 	 * @param   deltaX          Delta X relative to start of drag operation in pixels.
@@ -164,12 +172,13 @@ public class DragEvent
 	 * @param   deltaUnitX      Delta X relative to start of drag operation in model units.
 	 * @param   deltaUnitY      Delta Y relative to start of drag operation in model units.
 	 */
-	public DragEvent( final DragSupport source , final int id , final int buttonNumber , final int startX , final int startY , final int deltaX , final int deltaY , final double deltaDegX , final double deltaDegY , final double deltaRadX , final double deltaRadY , final double deltaUnitX , final double deltaUnitY )
+	public DragEvent( final DragSupport source , final int id , final int buttonNumber , final int clickCount , final int startX , final int startY , final int deltaX , final int deltaY , final double deltaDegX , final double deltaDegY , final double deltaRadX , final double deltaRadY , final double deltaUnitX , final double deltaUnitY )
 	{
 		super( source );
 
 		_id           = id;
 		_buttonNumber = buttonNumber;
+		_clickCount   = clickCount;
 		_startX       = startX;
 		_startY       = startY;
 		_deltaX       = deltaX;
@@ -200,6 +209,16 @@ public class DragEvent
 	public int getButtonNumber()
 	{
 		return _buttonNumber;
+	}
+
+	/**
+	 * Get number of times the button was pressed.
+	 *
+	 * @return  Number of times the button was pressed.
+	 */
+	public int getClickCount()
+	{
+		return _clickCount;
 	}
 
 	/**
