@@ -1,4 +1,7 @@
-Current version: 1.0.3
+Current version: 1.0.4
+
+Changes between 1.0.3 and 1.0.4:
+ - Added TextureSpec.opacity property to support non-opaque objects (fully opaque = 1.0, completely translucent = 0.0).
 
 Changes since 1.0.2:
  - Added Vector3D.normalize() method returning a normalized vector. 

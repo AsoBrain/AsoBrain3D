@@ -52,6 +52,13 @@ public final class TextureSpec
 	public int rgb = 0x00FFFFFF;
 
 	/**
+	 * Opacity. Determines the transparency of the material. This ranges
+	 * from fully opaque (1.0) to completely translucent (0.0). Any value
+	 * outside this ranges renders undefined results.
+	 */
+	public float opacity = 1f;
+
+	/**
 	 * This scale factor can be used to convert world coordinates to
 	 * texture coordinates (multiplying world coordinates with this factor
 	 * will result in texture coordinates). This value is not used by
