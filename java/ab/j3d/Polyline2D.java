@@ -21,7 +21,8 @@ import common.renderer.Object3D;
  * @author	Sjoerd Bouwman
  * @version $Revision$ ($Date$, $Author$)
  */
-public class Polyline2D 
+public class Polyline2D
+	implements Cloneable
 {
 	public final static int UNKNOWN = -1;
 	public final static int VOID    = 0;
@@ -34,7 +35,7 @@ public class Polyline2D
 	/**
 	 * Collection of control points that describe the polyline.
 	 */
-	private final Vector _points = new Vector();
+	private final Vector _points;
 
 	/**
 	 * Cache for line's type. This value will reset when points
@@ -54,6 +55,17 @@ public class Polyline2D
 	 */
 	public Polyline2D()
 	{
+		_points = new Vector();
+	}
+
+	/**
+	 * Clone constructor.
+	 *
+	 * @return	A clone of this instance.
+	 */
+	public Polyline2D( Polyline2D original )
+	{
+		_points = new Vector( original._points );
 	}
 
 	/**
@@ -77,11 +89,152 @@ public class Polyline2D
 	 */
 	public Polyline2D( final float x1 , final float y1 , final float x2 , final float y2 )
 	{
+		this();
 		append( x1 , y1 );
 		if ( x1 != x2 ) append( x2 , y1 );
 		if ( x1 != x2 && y1 != y2 ) append( x2 , y2 );
 		if ( y1 != y2 ) append( x1 , y2 );
 		close();
+	}
+
+	public void adjustAllSegments( final float adjustment )
+	{
+		final int maxSegment = getPointCount() - 1;
+		
+		for ( int i = 0 ; i < maxSegment ; i++ )
+			adjustSegment( i , adjustment );
+	}
+
+	public boolean adjustSegment( final int startIndex , final float adjustment)
+	{
+		/*
+		 * Ignore 0-adjustments.
+		 */
+		if ( adjustment < 0.001f && adjustment > -0.001f )
+			return true;
+
+		final boolean isClosed = isClosed();
+		
+		/*
+		 * Determin prev/start/end/next index (ignore bad indices);
+		 */
+		final int maxIndex = getPointCount() - 1;
+		if ( startIndex < 0 || startIndex >= maxIndex )
+			return false;
+		
+		final int endIndex = startIndex + 1;
+
+		final PolyPoint2D prev  = ( startIndex > 0 ) ? getPoint( startIndex - 1 ) : isClosed ? getPoint( maxIndex - 1 ) : null;
+		final PolyPoint2D start = getPoint( startIndex );
+		final PolyPoint2D end   = getPoint( endIndex );
+		final PolyPoint2D next  = ( endIndex < maxIndex ) ? getPoint( endIndex + 1 ) : isClosed ? getPoint( 1 ) : null;
+
+		/*
+		 * Determine lenght and direction of segment (ignore 0-length segments).
+		 */
+		float x = end.x - start.x;
+		float y = end.y - start.y;
+		float l = (float)Math.sqrt( x * x + y * y );
+		if ( l < 0.001f )
+			return false;
+
+		float baseDirX = x / l;
+		float baseDirY = y / l;
+		
+		/*
+		 * Adjust start point using the previous control point. Assume 90 degree angle if no such point exists.
+		 */
+		final PolyPoint2D newStart;
+		if ( prev != null )
+		{
+			x = prev.x - start.x;
+			y = prev.y - start.y;
+			l = (float)Math.sqrt( x * x + y * y );
+			if ( l < 0.001f )
+				return false;
+
+			float prevDirX = x / l;
+			float prevDirY = y / l;
+
+			float cos = prevDirX * baseDirX + prevDirY * baseDirY;
+			if ( cos < -0.999f || cos > 0.999f )
+				return false;
+				
+			float sin = 1 - ( cos * cos );
+			float hyp = (float)Math.sqrt( ( adjustment * adjustment ) / sin  );
+			if ( hyp > l )
+				return false;
+			
+			float f = prevDirX * ( baseDirY + prevDirY ) - prevDirY * ( baseDirX + prevDirX );
+			if ( ( f < -0.001 ) ^ ( adjustment > 0 ) )
+				hyp = -hyp;
+
+			newStart = new PolyPoint2D( start.x + hyp * prevDirX , start.y + hyp * prevDirY );
+		}
+		else
+		{
+			newStart = new PolyPoint2D( start.x - adjustment * baseDirY , start.y + adjustment * baseDirX );
+		}
+
+		/*
+		 * Adjust end point using the next control point. Assume 90 degree angle if no such point exists.
+		 */
+		final PolyPoint2D newEnd;
+		
+		if ( next != null )
+		{
+			x = next.x - end.x;
+			y = next.y - end.y;
+			l = (float)Math.sqrt( x * x + y * y );
+			if ( l < 0.001f )
+				return false;
+
+			float nextDirX = x / l;
+			float nextDirY = y / l;
+			
+			float cos = nextDirX * baseDirX + nextDirY * baseDirY;
+			if ( cos < -0.999f || cos > 0.999f )
+				return false;
+			
+			float sin = 1 - ( cos * cos );
+			float hyp = (float)Math.sqrt( ( adjustment * adjustment ) / sin  );
+			if ( hyp > l )
+				return false;
+
+			float f = nextDirX * ( baseDirY + nextDirY ) - nextDirY * ( baseDirX + nextDirX );
+			if ( ( f < -0.001 ) ^ ( adjustment > 0 ) )
+				hyp = -hyp;
+
+			newEnd = new PolyPoint2D( end.x + hyp * nextDirX , end.y + hyp * nextDirY );
+		}
+		else
+		{
+			newEnd = new PolyPoint2D( end.x - adjustment * baseDirY , end.y + adjustment * baseDirX );
+		}
+
+		/*
+		 * Set new start and end of polyline segement (clear cached properties).
+		 */
+		_points.setElementAt( newStart , startIndex );
+		_points.setElementAt( newEnd , endIndex );
+
+		_typeCache = UNKNOWN;
+		_boundsCache = null;
+		_encloseCache = null;
+
+		/*
+		 * If the polyline was closed, make sure the first and last control point are synchronized.
+		 */	
+		if ( isClosed )
+		{
+			if ( startIndex == 0 )
+				_points.setElementAt( newStart , maxIndex );
+				
+			if ( endIndex == maxIndex )
+				_points.setElementAt( newEnd , 0 );
+		}
+		
+		return true;
 	}
 
 	/**
@@ -109,6 +262,17 @@ public class Polyline2D
 	public Polyline2D append( float x , float y )
 	{
 		return append( new PolyPoint2D( x , y ) );
+	}
+
+	/**
+	 * Creates and returns a copy of this object.  The precise meaning 
+	 * of "copy" may depend on the class of the object.
+	 *
+	 * @return	A clone of this instance.
+	 */
+	public Object clone()
+	{
+		return new Polyline2D( this );
 	}
 
 	/**
