@@ -1,18 +1,18 @@
-package test.backoffice;
+package com.numdata.soda.backoffice;
 
 /*
  * $Id$
  *
  * (C) Copyright Numdata BV 2002-2003 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
+ * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV. Please contact Numdata BV
  * for license information.
  */
-import test.common.SodaTestCase;
+import com.numdata.soda.common.SodaTestCase;
 
-import backoffice.PolyPoint2D;
-import backoffice.Polyline2D;
+import com.numdata.soda.backoffice.PolyPoint2D;
+import com.numdata.soda.backoffice.Polyline2D;
 
 /**
  * Test functionality of Polyline2D class.

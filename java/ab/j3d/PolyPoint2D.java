@@ -1,16 +1,16 @@
-package backoffice;
+package com.numdata.soda.backoffice;
 
 /*
  * $Id$
  *
  * (C) Copyright Numdata BV 2000-2003 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
+ * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV. Please contact Numdata BV
  * for license information.
  */
-import common.CommonTools;
-import common.model.Matrix3D;
+import com.numdata.soda.common.CommonTools;
+import ab.light3d.Matrix3D;
 
 /**
  * This class describes a polyline control point in 2D.

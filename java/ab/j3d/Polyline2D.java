@@ -1,20 +1,22 @@
-package backoffice;
+package com.numdata.soda.backoffice;
 
 /*
  * $Id$
  *
  * (C) Copyright Numdata BV 2000-2003 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
+ * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV. Please contact Numdata BV
  * for license information.
  */
 import java.awt.geom.Rectangle2D;
 import java.util.Vector;
 
-import common.model.Matrix3D;
-import common.renderer.Object3D;
-import common.CommonTools;
+import ab.light3d.Matrix3D;
+import ab.light3d.TextureSpec;
+import ab.light3d.renderer.Object3D;
+
+import com.numdata.soda.common.CommonTools;
 
 /**
  * This class describes a polyline in 2D.
@@ -1906,7 +1908,7 @@ public final class Polyline2D
 			}
 
 			o = new Object3D();
-			o.set( verts , faces , new common.db.TextureSpec() , false );
+			o.set( verts , faces , new TextureSpec() , false );
 		}
 
 
