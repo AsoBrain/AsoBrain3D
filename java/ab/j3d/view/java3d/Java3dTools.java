@@ -171,10 +171,10 @@ public final class Java3dTools
 							xform.transformY( pointX , pointY , pointZ ) ,
 							xform.transformZ( pointX , pointY , pointZ ) ) );
 
-						j3dFaceNormals.add( new Vector3d(
-							xform.rotateX( normalX , normalY , normalZ ) ,
-							xform.rotateY( normalX , normalY , normalZ ) ,
-							xform.rotateZ( normalX , normalY , normalZ ) ) );
+						j3dFaceNormals.add( new Vector3f(
+							(float)xform.rotateX( normalX , normalY , normalZ ) ,
+							(float)xform.rotateY( normalX , normalY , normalZ ) ,
+							(float)xform.rotateZ( normalX , normalY , normalZ ) ) );
 
 						j3dTextureCoords.add( new TexCoord2f(
 							( j3dTexture == null ) ? 0 : (float)textureU[ vertexIndex ] / j3dTexture.getWidth() ,
@@ -440,7 +440,7 @@ public final class Java3dTools
 		final int what = GeometryArray.COORDINATES | GeometryArray.NORMALS | ( hasTexture ? GeometryArray.TEXTURE_COORDINATE_2 : 0 );
 		final GeometryArray geom = new TriangleArray( j3dVertices.size() , what );
 
-		final Point3f[] coordA = (Point3f[])j3dVertices.toArray( new Point3f[ j3dVertices.size() ] );
+		final Point3d[] coordA = (Point3d[])j3dVertices.toArray( new Point3d[ j3dVertices.size() ] );
 		geom.setCoordinates( 0 , coordA );
 
 		if ( hasTexture )
@@ -449,8 +449,7 @@ public final class Java3dTools
 			geom.setTextureCoordinates( 0 , 0 , textCoordsA );
 		}
 
-		final Vector3f[] normA = (Vector3f[])j3dFaceNormals.toArray( new Vector3f[ j3dFaceNormals.size() ] );
-		geom.setNormals( 0 , normA );
+		geom.setNormals( 0 , (Vector3f[])j3dFaceNormals.toArray( new Vector3f[ j3dFaceNormals.size() ] ) );
 
 		return new Shape3D( geom , appearance );
 	}
@@ -464,7 +463,7 @@ public final class Java3dTools
 	 *
 	 * @return  Transform3D to perform the specified transformation.
 	 */
-	public static Transform3D createTransform3D( final Vector3D position , final float rotation , final float scale )
+	public static Transform3D createTransform3D( final Vector3D position , final double rotation , final double scale )
 	{
 		final Transform3D xform   = new Transform3D();
 		final Transform3D operand = new Transform3D();
@@ -473,7 +472,7 @@ public final class Java3dTools
 		operand.setTranslation( new Vector3d( position.x , position.y , position.z ) );
 		xform.mul( operand );
 
-		operand.rotX( -Math.PI / 2 );
+		operand.rotX( -Math.PI / 2.0 );
 		operand.setScale( scale );
 		xform.mul( operand );
 
