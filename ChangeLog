@@ -1,4 +1,7 @@
-Current version: 1.0.1
+Current version: 1.0.2
+
+Changes since 1.0.1:
+ - Added Object3D.getFaceTextureU/V() methods to allow public access to texture coordinates.
 
 Changes since 1.0.0:
  - Changed Renderer.renderWireframeFace() from static to instance method.
