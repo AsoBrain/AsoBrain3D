@@ -2620,30 +2620,38 @@ public final class Polyline2D
 	}
 
 	/**
-	 * Transform a polyline using the specified transformation matrix. Although the
-	 * matrix is specifies a 3D transformation, only the X and Y components of the
-	 * result is saved.
+	 * Transform a polyline using the specified transformation matrix. Although
+	 * the matrix is specifies a 3D transformation, only the X and Y components
+	 * of the result is saved.
 	 *
-	 * @param   xform	Transformation to apply to the polyline.
+	 * @param   xform           Transformation to apply to the polyline.
+	 * @param   reversePoints   If set, the returned path will be reversed.
 	 *
 	 * @return  Polyline2D that is the result of the transformation (may return
-	 *			this instance if the transformation has no effect).
+	 *          this instance if the transformation has no effect).
 	 */
-	public synchronized Polyline2D transform( final Matrix3D xform )
+	public synchronized Polyline2D transform( final Matrix3D xform , final boolean reversePoints )
 	{
-		if ( !hasEffect( xform ) )
-			return this;
+		final Polyline2D result;
 
-		final Polyline2D result = new Polyline2D();
-
-		for ( int i = 0 ; i < getPointCount() ; i++ )
+		if ( !reversePoints && !hasEffect( xform ) )
 		{
-			final PolyPoint2D p = getPoint( i );
+			result = this;
+		}
+		else
+		{
+			result = new Polyline2D();
 
-			final float tx = p.x * xform.xx + p.y * xform.xy + xform.xo;
-			final float ty = p.x * xform.yx + p.y * xform.yy + xform.yo;
+			final int nrPoints = getPointCount();
+			for ( int i = 0 ; i < nrPoints ; i++ )
+			{
+				final PolyPoint2D p = getPoint( reversePoints ? nrPoints - i - 1 : i );
 
-			result.append( new PolyPoint2D( tx , ty ) );
+				final float tx = p.x * xform.xx + p.y * xform.xy + xform.xo;
+				final float ty = p.x * xform.yx + p.y * xform.yy + xform.yo;
+
+				result.append( new PolyPoint2D( tx , ty ) );
+			}
 		}
 
 		return result;
