@@ -60,6 +60,16 @@ public final class Bounds3D
 	}
 
 	/**
+	 * Get center point of these bounds.
+	 *
+	 * @return  Vector describing boundary center (average of coordinates).
+	 */
+	public Vector3D center()
+	{
+		return v1.set( ( v1.x + v2.x ) / 2.0 , ( v1.y + v2.y ) / 2.0 , ( v1.z + v2.z ) / 2.0 );
+	}
+
+	/**
 	 * Compare these bounds to the specified bounds.
 	 *
 	 * @param   v1  First vector of bounds to compare with.
