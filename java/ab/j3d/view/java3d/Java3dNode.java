@@ -21,9 +21,8 @@
 package ab.j3d.view.java3d;
 
 import javax.media.j3d.BranchGroup;
-import javax.media.j3d.Transform3D;
-import javax.media.j3d.TransformGroup;
 import javax.media.j3d.Group;
+import javax.media.j3d.TransformGroup;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.model.Node3D;
