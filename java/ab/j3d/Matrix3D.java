@@ -21,7 +21,6 @@
 package ab.j3d;
 
 import java.text.DecimalFormat;
-import java.util.StringTokenizer;
 
 import com.numdata.oss.ArrayTools;
 import com.numdata.oss.TextTools;
@@ -182,29 +181,46 @@ public final class Matrix3D
 	}
 
 	/**
-	 * Convert string representation of object (see toString()) back to
-	 * object instance.
+	 * Convert string representation of matrix back to <code>Matrix3D</code>
+	 * instance (see <code>toString()</code>).
 	 *
 	 * @param   value   String representation of object.
 	 *
-	 * @return  Object instance.
+	 * @return  Matrix3D instance.
+	 *
+	 * @throws  NullPointerException if <code>value</code> is <code>null</code>.
+	 * @throws  IllegalArgumentException if the string format is unrecognized.
+	 * @throws  NumberFormatException if any of the numeric components are badly formatted.
+	 *
+	 * @see     #toString()
 	 */
 	public static Matrix3D fromString( final String value )
 	{
-		final StringTokenizer st = new StringTokenizer( value , "," );
+		if ( value == null )
+			throw new NullPointerException( "value" );
 
-		return Matrix3D.INIT.set( Double.parseDouble( st.nextToken() ) ,
-		                          Double.parseDouble( st.nextToken() ) ,
-		                          Double.parseDouble( st.nextToken() ) ,
-		                          Double.parseDouble( st.nextToken() ) ,
-		                          Double.parseDouble( st.nextToken() ) ,
-		                          Double.parseDouble( st.nextToken() ) ,
-		                          Double.parseDouble( st.nextToken() ) ,
-		                          Double.parseDouble( st.nextToken() ) ,
-		                          Double.parseDouble( st.nextToken() ) ,
-		                          Double.parseDouble( st.nextToken() ) ,
-		                          Double.parseDouble( st.nextToken() ) ,
-		                          Double.parseDouble( st.nextToken() ) );
+		final String[] tokens = TextTools.tokenize( value , ',' );
+		if ( tokens.length != 12 )
+			throw new IllegalArgumentException( "tokens" );
+
+		final double xx = Double.parseDouble( tokens[  0 ] );
+		final double xy = Double.parseDouble( tokens[  1 ] );
+		final double xz = Double.parseDouble( tokens[  2 ] );
+		final double xo = Double.parseDouble( tokens[  3 ] );
+
+		final double yx = Double.parseDouble( tokens[  4 ] );
+		final double yy = Double.parseDouble( tokens[  5 ] );
+		final double yz = Double.parseDouble( tokens[  6 ] );
+		final double yo = Double.parseDouble( tokens[  7 ] );
+
+		final double zx = Double.parseDouble( tokens[  8 ] );
+		final double zy = Double.parseDouble( tokens[  9 ] );
+		final double zz = Double.parseDouble( tokens[ 10 ] );
+		final double zo = Double.parseDouble( tokens[ 11 ] );
+
+		return INIT.set( xx , xy , xz , xo ,
+		                 yx , yy , yz , yo ,
+		                 zx , zy , zz , zo );
 	}
 
 	/**
@@ -249,6 +265,157 @@ public final class Matrix3D
 			/* zy */ -ctZ * stX * ctY + stZ * stY ,
 			/* zz */        ctX * ctY ,
 			/* zo */  tz );
+	}
+
+	/**
+	 * Get transformation matrix based on the specified 'from' and 'to' points.
+	 * The result can be used to convert world coordinates to view coordinates.
+	 * <p />
+	 * An up-vector must be specified to determine the correct view orientation.
+	 * Note that both a primary and a secondary up-vector is needed; the primary
+	 * up-vector is used when possible, the secondary up-vector is used when the
+	 * from-to vector is parallel to the primary up-vector.
+	 *
+	 * @param   from        Point to look from.
+	 * @param   to          Point to look at.
+	 * @param   upPrimary   Primary up-vector (must be normalized).
+	 * @param   upSecondary Secondary up-vector (must be normalized).
+	 *
+	 * @return  Transformation matrix.
+	 *
+	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
+	 * @throws  IllegalArgumentException if the from and two points are too close.
+	 */
+	public static Matrix3D getFromToTransform( final Vector3D from , final Vector3D to , final Vector3D upPrimary , final Vector3D upSecondary )
+	{
+		if ( from == null )
+			throw new NullPointerException( "from" );
+
+		if ( to == null )
+			throw new NullPointerException( "to" );
+
+		if ( upPrimary == null )
+			throw new NullPointerException( "upPrimary" );
+
+		if ( upSecondary == null )
+			throw new NullPointerException( "upSecondary" );
+
+		if ( from.almostEquals( to ) )
+			throw new IllegalArgumentException( "from ~= to" );
+
+		/*
+		 * Z-axis points out of the to-point (center) towards the from-point (eye).
+		 */
+		double zx = from.x - to.x;
+		double zy = from.y - to.y;
+		double zz = from.z - to.z;
+
+		final double normalizeZ = 1.0 / Math.sqrt( zx * zx + zy * zy + zz * zz );
+		zx *= normalizeZ;
+		zy *= normalizeZ;
+		zz *= normalizeZ;
+
+		/*
+		 * Select up-vector. If the co-sinus of the angle between the Z-axis
+		 * and up-vector approaches 1 or -1 (0 or 180 degrees), use the secondary
+		 * up-vector; use the primary up-vector otherwise.
+		 */
+		Vector3D up = upPrimary;
+		final double cos = up.x * zx + up.y * zy + up.z * zz;
+		if ( ( cos < -0.999 ) || ( cos > 0.999 ) )
+			up = upSecondary;
+
+		/*
+		 * X-axis is perpendicular to the Z-axis and the up-vector.
+		 */
+		double xx = up.y * zz - up.z * zy;
+		double xy = up.z * zx - up.x * zz;
+		double xz = up.x * zy - up.y * zx;
+
+		final double normalizeX = 1.0 / Math.sqrt( xx * xx + xy * xy + xz * xz );
+		xx *= normalizeX;
+		xy *= normalizeX;
+		xz *= normalizeX;
+
+		/*
+		 * Y-axis is perpendicular to the Z- and X-axis.
+		 */
+		final double yx = zy * xz - zz * xy;
+		final double yy = zz * xx - zx * xz;
+		final double yz = zx * xy - zy * xx;
+
+		/*
+		 * Create matrix.
+		 */
+		return INIT.set(
+			xx , xy , xz , ( -from.x * xx -from.y * xy -from.z * xz ) ,
+			yx , yy , yz , ( -from.x * yx -from.y * yy -from.z * yz ) ,
+			zx , zy , zz , ( -from.x * zx -from.y * zy -from.z * zz ) );
+	}
+
+	/**
+	 * Get transformation matrix for a rotation about an arbitrary axis. The
+	 * rotation is axis is specified by a pivot point and rotation axis
+	 * direction. The rotation angle is specified in radians.
+	 * <p />
+	 * Also read <a href='http://www.cprogramming.com/tutorial/3d/rotation.html'>Rotation About an Arbitrary Axis</a>
+	 * (written by: Confuted, with a cameo by Silvercord (Charles Thibualt)).
+	 *
+	 * @param   pivot       Pivot point about which the rotation is performed.
+	 * @param   direction   Rotation axis direction (must be a unit vector).
+	 * @param   thetaRad    Rotate theta radians.
+	 *
+	 * @return  Transformation matrix with requested rotation.
+	 */
+	public static Matrix3D getRotationTransform( final Vector3D pivot , final Vector3D direction , final double thetaRad )
+	{
+		return getRotationTransform( pivot.x , pivot.y , pivot.z , direction.x , direction.y , direction.z , thetaRad );
+	}
+
+	/**
+	 * Get transformation matrix for a rotation about an arbitrary axis. The
+	 * rotation is axis is specified by a pivot point and rotation axis
+	 * direction. The rotation angle is specified in radians.
+	 * <p />
+	 * Read <a href='http://www.mlahanas.de/Math/orientation.htm'>We consider the problem of the coordinate transformation about a rotation axis.</a>
+	 * (written by Michael Lahanas) for a simple explanation of the problem and
+	 * solution.
+	 *
+	 * @param   pivotX      Pivot point about which the rotation is performed.
+	 * @param   pivotY      Pivot point about which the rotation is performed.
+	 * @param   pivotZ      Pivot point about which the rotation is performed.
+	 * @param   directionX  Rotation axis direction (must be a unit vector).
+	 * @param   directionY  Rotation axis direction (must be a unit vector).
+	 * @param   directionZ  Rotation axis direction (must be a unit vector).
+	 * @param   thetaRad    Rotate theta radians.
+	 *
+	 * @return  Transformation matrix with requested rotation.
+	 */
+	public static Matrix3D getRotationTransform( final double pivotX , final double pivotY , final double pivotZ , final double directionX , final double directionY , final double directionZ , final double thetaRad )
+	{
+		final double cos = Math.cos( thetaRad );
+		final double sin = Math.sin( thetaRad );
+
+		final double t  = ( 1.0 - cos );
+		final double tx = t * directionX;
+		final double ty = t * directionY;
+		final double tz = t * directionZ;
+
+		final double xx = tx * directionX + cos;
+		final double xy = tx * directionY - sin * directionZ;
+		final double xz = tx * directionZ + sin * directionY;
+
+		final double yx = ty * directionX + sin * directionZ;
+		final double yy = ty * directionY + cos;
+		final double yz = ty * directionZ - sin * directionX;
+
+		final double zx = tz * directionX - sin * directionY;
+		final double zy = tz * directionY + sin * directionX;
+		final double zz = tz * directionZ + cos;
+
+		return INIT.set( xx , xy , xz , pivotX - xx * pivotX - xy * pivotY - xz * pivotZ ,
+		                 yx , yy , yz , pivotY - yx * pivotX - yy * pivotY - yz * pivotZ ,
+		                 zx , zy , zz , pivotZ - zx * pivotX - zy * pivotY - zz * pivotZ );
 	}
 
 	/**
@@ -468,9 +635,9 @@ public final class Matrix3D
 			final double cos = Math.cos( thetaRad );
 			final double sin = Math.sin( thetaRad );
 
-			result = set( xx                  , xy                  , xz                  , xo                  ,
-			              yx * cos + zx * sin , yy * cos + zy * sin , yz * cos + zz * sin , yo * cos + zo * sin ,
-			              zx * cos - yx * sin , zy * cos - yy * sin , zz * cos - yz * sin , zo * cos - yo * sin );
+			result = set(       xx            ,       xy            ,       xz            ,       xo            ,
+			              cos * yx + sin * zx , cos * yy + sin * zy , cos * yz + sin * zz , cos * yo + sin * zo ,
+			              cos * zx - sin * yx , cos * zy - sin * yy , cos * zz - sin * yz , cos * zo - sin * yo );
 		}
 
 		return result;
