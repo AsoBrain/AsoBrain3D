@@ -10,171 +10,68 @@
  */
 package ab.light3d.renderer;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.image.ColorModel;
-import java.awt.image.ImageConsumer;
-import java.awt.image.ImageProducer;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.awt.Container;
+import java.awt.Insets;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 
-import ab.light3d.Bounds3D;
 import ab.light3d.Matrix3D;
 import ab.light3d.TextureSpec;
-import ab.light3d.Vector3D;
 
 /**
- * The renderer....
- *
- * @author	Peter S. Heijnen
- * @version	$Revision$ ($Date$, $Author$)
+ * This class implements a background rendering thread.
+ * 
+ * @author Peter S. Heijnen
+ * @version $Revision$ $Date$
  */
-public class Renderer
-	implements ComponentListener, Runnable, MouseListener, MouseMotionListener, ImageProducer
+public final class Renderer
+    extends Thread
 {
 	/**
-	 * Color model used fo rrendering.
+	 * Component that will display the rendered image. It is used for two things:
+	 * <ol>
+	 *  <li>
+	 *   The rendered image size is determined by the component's size
+	 *   (reduced by its insets).
+	 *  </li>
+	 *  <li>
+	 *   Its <code>repaint()</code> method will be envoked when a new image has
+	 *   been rendered.
+	 *  </li>
+	 * </ol>
 	 */
-	private static final ColorModel _colorModel = ColorModel.getRGBdefault();
-
-	/** Control mode: zoom.   */ public static final int ZOOM   = 1;
-	/** Control mode: pan.    */ public static final int PAN    = 2;
-	/** Control mode: rotate. */ public static final int ROTATE = 3;
-
-	/** Render mode: quick (wireframe). */ public static final int QUICK = 1;
-	/** Render mode: full (solid).      */ public static final int FULL  = 2;
+	private final Container _targetComponent;
 
 	/**
-	 * Component that uses this renderer.
+	 * Camera from where a scene is observed.
 	 */
-	protected final Component _owner;
+	private final Camera _camera;
 
 	/**
-	 * Transform of model.
+	 * This thread control flag is set when <code>requestTermination()</code>
+	 * is called. It is used as exit condition by the main thread loop.
+	 *
+	 * @see     #requestTermination()
+	 * @see     #isAlive()
+	 * @see     #join()
 	 */
-	private Transform _modelTransform;
-
-//	/**
-//	 * Transform of light source.
-//	 */
-//	private Transform _lightTransform;
+	private boolean _terminationRequested;
 
 	/**
-	 * Base node of rendered model.
+	 * This thread control flag is set when <code>requestUpdate()</code> is
+	 * called. It is used to trigger the thread loop to start rendering a new
+	 * image. It is also tested at various loop points in the rendering code
+	 * to abort rendering of a previous image, so the next rendering will be
+	 * completed as soon as possible.
+	 *
+	 * @see     #requestUpdate()
 	 */
-	private Transform _base;
+	private boolean _updateRequested;
 
 	/**
-	 * The camera node with which this ViewPanel is associated. The node can
-	 * be considered the model of ViewPanel.
+	 * Last succesfully rendered image.
 	 */
-	protected Camera _camera;
-
-	/**
-	 * Transform of camera.
-	 */
-	private Transform _cameraTransform;
-
-	/** Minimum X coordinate of displayed model. */ private float _minX = 0f;
-	/** Minimum Y coordinate of displayed model. */ private float _minY = 0f;
-	/** Minimum Z coordinate of displayed model. */ private float _minZ = 0f;
-	/** Maximum X coordinate of displayed model. */ private float _maxX = 0f;
-	/** Maximum Y coordinate of displayed model. */ private float _maxY = 0f;
-	/** Maximum Z coordinate of displayed model. */ private float _maxZ = 0f;
-
-	/**
-	 * This is the current "control mode" of the view. This
-	 * may be ZOOM, PAN, or ROTATE.
-	 */
-	private int _controlMode = ROTATE;
-
-	/**
-	 * Mouse drag rotation sensitivity.
-	 */
-	private final float _mouseSensitivity = 1.4f;
-
-	/**
-	 * Mouse drag movement speed.
-	 */
-	private final float _movementSpeed = 20.0f;
-
-	/**
-	 * Mouse X coordinate when dragging started.
-	 */
-	private int _dragMouseStartX;
-
-	/**
-	 * Mouse Y coordinate when dragging started.
-	 */
-	private int _dragMouseStartY;
-
-	/**
-	 * Rotation of model around X axis when dragging started.
-	 */
-	private float _dragStartRotationX;
-
-	/**
-	 * Rotation of model around Z axis when dragging started.
-	 */
-	private float _dragStartRotationZ;
-
-	/**
-	 * Position of dragged object when dragging started.
-	 */
-	private Vector3D _dragStartPosition;
-
-	/**
-	 * This is the current rendering mode (either QUICK or FULL),
-	 * this may set to QUICK during frequent updates and to FULL
-	 * when those updates are done. The renderer may use this to
-	 * speed up its operation (e.g. by lowering detail) during
-	 * updates.
-	 */
-	private int _renderingMode = FULL;
-
-	/**
-	 * This flag is set when the update thread should run.
-	 */
-	private boolean _isRunning;
-
-	/**
-	 * Flag to indicate that the panel must be updated.
-	 */
-	private boolean _updatePending;
-
-	/**
-	 * This boolean is set during rendering.
-	 */
-	protected boolean _updating = true;
-
-	/**
-	 * Thread that handles the update process.
-	 */
-	private Thread _updateThread;
-
-	/**
-	 * Width of frame.
-	 */
-	protected int _width;
-
-	/**
-	 * Height of frame.
-	 */
-	protected int _height;
-
-	/**
-	 * Background color (ARGB).
-	 */
-	private int _background = 0x0FFC0C0C0;
+	private BufferedImage _renderedImage;
 
 	/**
 	 * Z-Buffer. Each entry corresponds to a pixel's Z-coordinate. If a
@@ -182,547 +79,180 @@ public class Renderer
 	 * visible. In such a case, the Z-buffer is updated with the new
 	 * Z-coordinate.
 	 */
-	private int[] _depthBuffer = null;
+	private int[] _depthBuffer;
 
 	/**
-	 * Actual frame buffer with storage for all pixels. Each pixel is
-	 * stored in the usual 0xaarrggbb format.
-	 */
-	private int[] _pixels = null;
-
-	/**
-	 * Registered ImageConsumers.
-	 */
-	private final List _imageConsumers = new ArrayList();
-
-	/**
-	 * Image with frame buffer contents.
-	 */
-	protected Image _image = null;
-
-	/**
-	 * This boolean flag indicates if the frame image was painted.
-	 */
-	protected boolean _imagePainted = false;
-
-	/**
-	 * Flag to indicate that a temporary wireframe is drawn
-	 * during the rendering process.
-	 */
-	protected boolean _showTemporaryWireframe = true;
-
-	/**
-	 * Temporary solid object nodes.
-	 */
-	private final LeafCollection _sObjects = new LeafCollection();
-
-	/**
-	 * Temporary light source nodes.
-	 */
-	private final LeafCollection _sLights = new LeafCollection();
-
-	/**
-	 * Temporary solid render objects.
-	 */
-	private final RenderObject _solidObject = new RenderObject();
-
-	/**
-	 * Temporary wireframe object nodes.
-	 */
-	private final LeafCollection _wfObjects    = new LeafCollection();
-
-	/**
-	 * Temporary wireframe render objects.
-	 */
-	private RenderObject[] _wireObjects = null;
-
-	/**
-	 * Construct renderer for the specified component with the specified
-	 * initial dimensions.
+	 * Temporary collection with objects (Object3D) to be rendered.
 	 *
-	 * @param	owner	Owner component of renderer.
-	 * @param	width	Initial width in pixels.
-	 * @param	height	Initial height in pixels.
+	 * @see     Object3D
 	 */
-	public Renderer( final Component owner , final int width , final int height )
+	private final LeafCollection objects = new LeafCollection();
+
+	/**
+	 * Temporary collection with light sources (Light).
+	 *
+	 * @see     Light
+	 */
+	private final LeafCollection lights = new LeafCollection();
+
+	/**
+	 * Temporary object with information about a rendered object.
+	 *
+	 * @see     #renderObject
+	 */
+	private final RenderObject renderObject = new RenderObject();
+
+	/**
+	 * Construct (and start) render thread.
+	 */
+	public Renderer( final Container targetComponent , final Camera camera )
 	{
-		initialize( width , height );
-		_owner = owner;
+		_targetComponent      = targetComponent;
+		_camera               = camera;
+		_renderedImage        = null;
+		_depthBuffer          = null;
+		_terminationRequested = false;
+		_updateRequested      = true;
 
-		/*
-		 * Build world
-		 */
-		buildWorld();
-		reset();
+		setPriority( Thread.MIN_PRIORITY );
+		setName( getClass().getName() );
+		start();
+	}
 
-		/*
-		 * Prepare 'owner' component.
-		 */
-		if ( _owner != null )
+	/**
+	 * Get last succesfully rendered image. This will return <code>null</code>
+	 * while the renderer is updating the image.
+	 *
+	 * @return  Rendered image;
+	 *          <code>null</code> if the image is not available.
+	 */
+	public BufferedImage getRenderedImage()
+	{
+		return _renderedImage;
+	}
+
+	/**
+	 * Request update of rendered image.
+	 */
+	public void requestUpdate()
+	{
+		if ( !_terminationRequested )
 		{
-			_owner.setSize( width , height );
-			_owner.addComponentListener( this );
-			_owner.addMouseListener( this );
-			_owner.addMouseMotionListener( this );
-
-			requestUpdate();
-		}
-	}
-
-	/**
-	 * Adds an ImageConsumer to the list of consumers interested in
-	 * data for this image.
-	 *
-	 * @param	ic	Image consumer to add.
-	 *
-	 * @see ImageConsumer
-	 */
-	public final void addConsumer( final ImageConsumer ic )
-	{
-		synchronized ( _imageConsumers )
-		{
-			if ( !_imageConsumers.contains( ic ) )
-				_imageConsumers.add( ic );
-
-		    final int        width  = _width;
-		    final int        height = _height;
-		    final ColorModel cm     = _colorModel;
-
-			if ( isConsumer( ic ) )
-			    ic.setColorModel( cm );
-
-			if ( isConsumer( ic ) )
-			    ic.setDimensions( width , height );
-
-			if ( isConsumer( ic ) )
-			    ic.setHints( ImageConsumer.TOPDOWNLEFTRIGHT | ImageConsumer.COMPLETESCANLINES );
-
-		    if ( isConsumer( ic ) )
-				sendPixels( ic );
-		}
-	}
-
-	/**
-	 * This method constructs the graphics tree and therefore
-	 * defined what is to be seen by the user.
-	 */
-	protected final void buildWorld()
-	{
-		/*
-		 * Create world.
-		 */
-		final TreeNode world = new TreeNode();
-
-		/*
-		 * Add base nodes for object.
-		 */
-		world
-			.addChild( _modelTransform = new Transform() )
-				.addChild( _base = new Transform() );
-
-		/*
-		 * Add ambient light to make sure everything is visible.
-		 */
-		world.addChild( new Light( 500 , -1f ) ); // 384
-
-		/*
-		 * Add a point light for more lively lighting effects.
-		 */
-		world
-			.addChild( /*_lightTransform =*/ new Transform( Vector3D.INIT.set( -750.0f , -2500.0f , 1700.0f ) ) )
-				.addChild( new Light( 10000 , 30.0f ) );
-
-		/*
-		 * Put camera in graphics tree.
-		 */
-		world
-			.addChild( _cameraTransform = new Transform( Vector3D.INIT.set( 0 , -3000 , 0 ) ) )
-				.addChild( _camera = new Camera( 300f , 60f ) );
-	}
-
-	/**
-	 * Place base in center of view.
-	 */
-	public final void center()
-	{
-		_base.setTranslation( _base.getTranslation().set(
-			( _minX + _maxX ) / -2 ,
-			( _minY + _maxY ) / -2 ,
-			( _minZ + _maxZ ) / -2 ) );
-	}
-
-	/**
-	 * Respond to 'component hidden' event. This is used to stop the update thread
-	 * of the renderer.
-	 *
-	 * @param	e	Component event.
-	 */
-	public final synchronized void componentHidden( final ComponentEvent e )
-	{
-		_isRunning = false;
-		requestUpdate();
-	}
-
-	/**
-	 * Respond to 'component moved' event.
-	 *
-	 * @param	e	Component event.
-	 */
-	public final void componentMoved( final ComponentEvent e )
-	{
-	}
-
-	/**
-	 * Respond to 'component resized' event. This is used to re-initialize the
-	 * image buffers to the new component size.
-	 *
-	 * @param	e	Component event.
-	 */
-	public final void componentResized( final ComponentEvent e )
-	{
-		if ( e.getSource() == _owner )
-		{
-			_depthBuffer = null;
-			final Dimension d = e.getComponent().getSize();
-			initialize( d.width , d.height );
-			requestUpdate();
-		}
-	}
-
-	/**
-	 * Respond to 'component shown' event. This is used to start the update thread
-	 * of the renderer.
-	 *
-	 * @param	e	Component event.
-	 */
-	public final synchronized void componentShown( final ComponentEvent e )
-	{
-		if ( e.getSource() == _owner )
-		{
-			_depthBuffer = null;
-			final Dimension d = e.getComponent().getSize();
-			initialize( d.width , d.height );
-			requestUpdate();
-		}
-
-		if ( _isRunning )
-			return;
-
-		_isRunning = true;
-		_updateThread = new Thread( this );
-		_updateThread.setPriority( Thread.MIN_PRIORITY );
-		_updateThread.setName( "" + this );
-		_updateThread.start();
-	}
-
-	/**
-	 * Get base transform of rendered model.
-	 *
-	 * @return	Base transform of rendered model.
-	 */
-	public final Transform getBase()
-	{
-		return _base;
-	}
-
-	/**
-	 * Get transform for model.
-	 *
-	 * @return	Transform for model.
-	 */
-	public final Transform getModelTransform()
-	{
-		return _modelTransform;
-	}
-
-	/**
-	 * Get pixel data of rendered image.
-	 *
-	 * @return	Pixel data.
-	 */
-	public final int[] getPixels()
-	{
-		return _pixels;
-	}
-
-	/**
-	 * Get string with view settings of renderer.
-	 *
-	 * @return	String with view settings of renderer.
-	 */
-	public final String getViewSettings()
-	{
-		return Bounds3D.INIT.set(
-			Vector3D.INIT.set(
-				_modelTransform.getRotationX() ,
-				_modelTransform.getRotationY() ,
-				_modelTransform.getRotationZ() ) ,
-				_cameraTransform.getTranslation()
-			).toString();
-	}
-
-	/**
-	 * Initiailization of renderer.
-	 *
-	 * @param	width		Width of renderer view.
-	 * @param	height		Height of renderer view.
-	 */
-	private void initialize( final int width , final int height )
-	{
-		if ( width == _width && height == _height )
-			return;
-
-		_width       = width;
-		_height      = height;
-		_depthBuffer = null;
-		_pixels      = null;
-		_image       = null;
-
-
-//		if ( _camera != null )
-//		{
-//			int minSize = Math.min( width , height );
-//			_camera.scale = minSize * 0.000375f;
-//			, true , 5000.0f ) );
-//		}
-
-		requestUpdate();
-	}
-
-	/**
-	 * Determine if an ImageConsumer is on the list of consumers currently
-	 * interested in data for this image.
-	 *
-	 * @param	ic	Image consumer to test.
-	 *
-	 * @return true if the ImageConsumer is on the list; false otherwise
-	 *
-	 * @see ImageConsumer
-	 */
-	public final boolean isConsumer( final ImageConsumer ic )
-	{
-		return _imageConsumers.contains( ic );
-	}
-
-	/**
-	 * Get flag to indicate that a temporary wireframe is drawn
-	 * during the rendering process.
-	 *
-	 * @return	<code>true</code> if a temporary wireframe is
-	 *			drawn, <code>false</code> if not.
-	 */
-	public final boolean isShowTemporaryWireframe()
-	{
-		return( _showTemporaryWireframe );
-	}
-
-	/**
-	 * Handle mouse button 'clicked' event.
-	 *
-	 * @param	e	Mouse event.
-	 */
-	public final void mouseClicked( final MouseEvent e )
-	{
-		//if ( e.getClickCount() == 3 )
-		//{
-			//if ( ( e.getModifiers() & MouseEvent.BUTTON1_MASK ) != 0 )
-			//{
-				//_showWireframeOverlay = !_showWireframeOverlay;
-				//requestUpdate();
-			//}
-			//else
-			//{
-				//_controlLight = !_controlLight;
-			//}
-		//}
-	}
-
-	/**
-	 * Handle mouse 'dragged' event. When this event occurs, manipulate
-	 * the view settings and repaint the view. The renderer is set to QUICK mode,
-	 * to allow fast manipulation until the mouse button is released.
-	 *
-	 * @param	e	Mouse event.
-	 */
-	public final void mouseDragged( final MouseEvent e )
-	{
-		final int dx = e.getX() - _dragMouseStartX;
-		final int dy = e.getY() - _dragMouseStartY;
-
-
-		final int modifiers = e.getModifiers();
-		int mode      = _controlMode;
-
-		if ( ( modifiers & MouseEvent.BUTTON2_MASK ) != 0 )
-		{
-			mode = PAN;
-		}
-		else if ( ( modifiers & MouseEvent.BUTTON3_MASK ) != 0 )
-		{
-			mode = ZOOM;
-		}
-
-		final Transform x = /*_controlLight ? _lightTransform :*/ _cameraTransform;
-
-		switch ( mode )
-		{
-			case ROTATE :
-				setRenderingMode( Renderer.QUICK );
-				_modelTransform.setRotationZ( _dragStartRotationZ + _mouseSensitivity * dx );
-				_modelTransform.setRotationX( _dragStartRotationX - _mouseSensitivity * dy );
-				requestUpdate();
-				break;
-
-			case PAN :
-				setRenderingMode( Renderer.QUICK );
-				x.setTranslation( _dragStartPosition
-					.plus( -dx * _movementSpeed , 0 , dy * _movementSpeed ) );
-				requestUpdate();
-				break;
-
-			case ZOOM :
-				setRenderingMode( Renderer.QUICK );
-				x.setTranslation( _dragStartPosition.set(
-					_dragStartPosition.x ,
-					Math.max( -10000 , _dragStartPosition.y - dy * _movementSpeed ) ,
-					_dragStartPosition.z ) );
-				requestUpdate();
-				break;
-		}
-	}
-
-	/**
-	 * Handle mouse 'entered' event.
-	 *
-	 * @param	e	Mouse event.
-	 */
-	public final void mouseEntered( final MouseEvent e )
-	{
-	}
-
-	/**
-	 * Handle mouse 'exited' event.
-	 *
-	 * @param	e	Mouse event.
-	 */
-	public final void mouseExited( final MouseEvent e )
-	{
-	}
-
-	/**
-	 * Handle mouse 'moved' event.
-	 *
-	 * @param	e	Mouse event.
-	 */
-	public final void mouseMoved( final MouseEvent e )
-	{
-	}
-
-	/**
-	 * Handle mouse button 'pressed' event. When this event occurs, request focus,
-	 * and save view settings (so that we can manipulate it later).
-	 *
-	 * @param	e	Mouse event.
-	 */
-	public final void mousePressed( final MouseEvent e )
-	{
-		((Component)e.getSource()).requestFocus();
-
-		_dragMouseStartX = e.getX();
-		_dragMouseStartY = e.getY();
-
-		final Transform x = /*_controlLight ? _lightTransform :*/ _cameraTransform;
-
-		_dragStartRotationX = _modelTransform.getRotationX();
-		_dragStartRotationZ = _modelTransform.getRotationZ();
-		_dragStartPosition  = x.getTranslation();
-	}
-
-	/**
-	 * Handle mouse button 'released' event. When this event occurs, change the
-	 * renderer back to FULL mode, so that the manipulated view will be rendered
-	 * fully.
-	 *
-	 * @param	e	Mouse event.
-	 */
-	public final void mouseReleased( final MouseEvent e )
-	{
-		setRenderingMode( Renderer.FULL );
-		//requestUpdate();
-	}
-
-	/**
-	 * Paint the component.
-	 *
-	 * @param	g		Graphics context.
-	 */
-	public void paint( final Graphics g )
-	{
-		if ( _camera != null )
-		{
-			if ( _updating || (_image == null) )
+			_updateRequested = true;
+			synchronized ( this )
 			{
-				_imagePainted = false;
-				if ( _showTemporaryWireframe )
+				notifyAll();
+			}
+		}
+	}
+
+	/**
+	 * Request termination of the render thread.
+	 */
+	public void requestTermination()
+	{
+		_updateRequested = false;
+		_terminationRequested = true;
+		synchronized ( this )
+		{
+			notifyAll();
+		}
+	}
+
+	/**
+	 * This is the thread body to update the rendered image on demand.
+	 */
+	public void run()
+	{
+		BufferedImage oldImage = null;
+		boolean needRepaint = false;
+
+		while ( !_terminationRequested && _targetComponent.isVisible() )
+		{
+			try
+			{
+				if ( _updateRequested )
 				{
-				    g.setColor( _owner.getForeground() );
-					renderWireframe( g , _camera , _width , _height );
+					_updateRequested = false;
+					_renderedImage = null;
+
+					final int    background = _targetComponent.getBackground().getRGB();
+					final Insets insets     = _targetComponent.getInsets();
+					final int    width      = _targetComponent.getWidth() - insets.left - insets.right;
+					final int    height     = _targetComponent.getHeight() - insets.top - insets.bottom;
+
+					final BufferedImage newImage = renderFrame( oldImage , width , height , background );
+					needRepaint = true; //|= ( oldImage != newImage );
+					oldImage = newImage;
+				}
+
+				if ( needRepaint && !_updateRequested )
+				{
+					_renderedImage = oldImage;
+					_targetComponent.repaint();
+					needRepaint = false;
 				}
 			}
-			else
+			catch ( Exception e )
 			{
-				_imagePainted = true;
-				//System.out.println( "*drawImage*" );
-				g.drawImage( _image , 0 , 0 , _owner );
+				System.out.println( "Exception (" + e + ") during rendering!" );
 			}
-		}
-	}
 
-	/**
-	 * Remove an ImageConsumer from the list of consumers interested in
-	 * data for this image.
-	 *
-	 * @param	ic	Image consumer to add.
-	 *
-	 * @see ImageConsumer
-	 */
-	public final void removeConsumer( final ImageConsumer ic )
-	{
-		//System.out.println( "*removeConsumer:" + ic + "*" );
-		_imageConsumers.remove( ic );
+			/*
+			 * No update needed or an exception occured.
+			 *
+			 * Wait 300ms or wait to be notified.
+			 */
+			try
+			{
+				while ( !_updateRequested )
+				{
+					synchronized ( this )
+					{
+						wait( 300 );
+					}
+				}
+			}
+			catch ( InterruptedException e ) { /*ignored*/ }
+		}
+
+		_renderedImage        = null;
+		_depthBuffer          = null;
+		_terminationRequested = false;
+		_updateRequested      = false;
 	}
 
 	/**
 	 * Render scene from camera.
 	 *
-	 * @param	backgroundColor		Background color to use.
+	 * @param   backgroundColor     Background color to use.
 	 */
-	public void renderSolid( final int backgroundColor )
+	public BufferedImage renderFrame( final BufferedImage oldImage , final int width , final int height , final int backgroundColor )
 	{
-		final Camera camera = _camera;
-		final int    width  = _width;
-		final int    height = _height;
-
-		_updatePending = false;
-		_updating = true;
+		/*
+		 * Create image.
+		 */
+		final BufferedImage image;
+		if ( ( oldImage == null ) || ( oldImage.getWidth() != width ) || ( oldImage.getHeight() != height ) )
+			image = new BufferedImage( width , height , BufferedImage.TYPE_INT_RGB );
+		else
+			image = oldImage;
 
 		/*
 		 * Initialize frame and Z buffer. Re-create these buffers if necessary.
 		 */
-		final int bufferSize = width * height;
+		final int   bufferSize  = width * height;
+		final int[] frameBuffer = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
+		final int[] depthBuffer;
 
-		if ( _pixels  == null || _pixels .length < bufferSize ||
-		     _depthBuffer == null || _depthBuffer.length < bufferSize )
+		if ( ( _depthBuffer == null ) || ( _depthBuffer.length < bufferSize ) )
 		{
-			_pixels      = new int[ bufferSize ];
-			_depthBuffer = new int[ bufferSize ];
-			_image       = null;
+			depthBuffer = new int[ bufferSize ];
+			_depthBuffer = depthBuffer;
 		}
-
-		if ( _owner != null && _image == null )
+		else
 		{
-			_image = _owner.createImage( this );
-			_imagePainted = false;
+			depthBuffer = _depthBuffer;
 		}
 
 		/*
@@ -732,46 +262,71 @@ public class Renderer
 		 */
 		for ( int i = ( bufferSize < 512 ) ? bufferSize : 512 ; --i >= 0 ; )
 		{
-			_pixels     [ i ] = backgroundColor;
-			_depthBuffer[ i ] = 0x7FFFFFFF; //0x80000000;
+			frameBuffer[ i ] = backgroundColor;
+			depthBuffer[ i ] = 0x7FFFFFFF;
 		}
 
-		for ( int i = 512 ; i < bufferSize ; )
+		for ( int i = 512 ; !_updateRequested  && ( i < bufferSize ) ; )
 		{
-			if ( _updatePending ) { _updating = false; return; }
 			int c = bufferSize - i;
-			if ( c > i ) c = i;
-			System.arraycopy( _pixels      , 0 , _pixels      , i , c );
-			System.arraycopy( _depthBuffer , 0 , _depthBuffer , i , c );
+			if ( c > i )
+				c = i;
+
+			System.arraycopy( frameBuffer      , 0 , frameBuffer      , i , c );
+			System.arraycopy( depthBuffer , 0 , depthBuffer , i , c );
 			i += c;
 		}
 
 		/*
-		 * Gather objects in this world.
+		 * 1) Gather objects in this world.
+		 * 2) Gather lights in this world. Prepare per-light cached array.
+		 * 3) Cycle through all available models and render them.
 		 */
-		_sObjects.clear();
-		camera.gatherLeafs( _sObjects , Object3D.class , Matrix3D.INIT , true );
-		if ( _updatePending ) { _updating = false; return; }
-
-		/*
-		 * Gather lights in this world. Prepare per-light cached array.
-		 */
-		_sLights.clear();
-		camera.gatherLeafs( _sLights , Light.class , Matrix3D.INIT , true );
-
-		if ( _updatePending ) { _updating = false; return; }
-
-		/*
-		 * Cycle through all available models and draw them.
-		 */
-		for ( int i = 0 ; i < _sObjects.size() ; i++ )
+		if ( !_updateRequested  )
 		{
-			renderSolidObject( (Object3D)_sObjects.getNode( i ) , _sObjects.getMatrix( i ) , camera , width , height );
+			objects.clear();
+			_camera.gatherLeafs( objects , Object3D.class , Matrix3D.INIT , true );
+			if ( !_updateRequested  )
+			{
+				lights.clear();
+				_camera.gatherLeafs( lights , Light.class , Matrix3D.INIT , true );
+
+				for ( int i = 0 ; !_updateRequested   && ( i < objects.size() ) ; i++ )
+					renderObject( depthBuffer , frameBuffer , width , height , objects.getMatrix( i ) , (Object3D)objects.getNode( i ) );
+			}
 		}
 
-		//System.out.println();
-		_updating = false;
-		return;
+		return image;
+	}
+
+	/**
+	 * Render scene from camera.
+	 *
+	 * @param   object          The object to render.
+	 * @param   cameraXform     The transformation of the camera.
+	 * @param   width           Width of rendering image.
+	 * @param   height          Height of rendering image.
+	 */
+	private void renderObject( final int[] depthBuffer , final int[] frameBuffer , final int width , final int height , final Matrix3D cameraXform , final Object3D object )
+	{
+		renderObject.set( object , cameraXform , _camera.aperture , _camera.zoom , width , height , true );
+		if ( !_updateRequested )
+		{
+			renderObject.setLights( lights );
+			if ( !_updateRequested )
+			{
+				/*
+				 * For each face:
+				 *   - determine if it's invisible (outside view volume & backface culling)
+				 *   - calculate weight point (average of vertices)
+				 */
+				for ( RenderObject.Face face = renderObject.faces ; !_updateRequested && ( face != null ) ; face = face.next )
+				{
+					face.applyLighting();
+					renderFace( depthBuffer , frameBuffer , width , height , face );
+				}
+			}
+		}
 	}
 
 	/**
@@ -779,15 +334,12 @@ public class Renderer
 	 * find the left and right edges around a face and use the calculated lighting values
 	 * to render scanlines.
 	 *
-	 * @param	face		Face to be rendered.
+	 * @param   face            Face to be rendered.
 	 */
-	protected final void renderSolidFace( final RenderObject.Face face )
+	private static void renderFace( final int[] depthBuffer , final int[] frameBuffer , final int width , final int height , final RenderObject.Face face )
 	{
 		int i,j,k,m,n;
 		long d1,d2;
-
-		final int         width         = _width;
-		final int         height        = _height;
 
 		final RenderObject ro = face.getRenderObject();
 
@@ -795,12 +347,12 @@ public class Renderer
 		final int[]			pv = ro.pv;
 		final long[]		pd = ro.pd;
 		final int[]			vertexIndices	= face.vi;
-		final TextureSpec	texture			= face.getTexture();
-		final int[][]		pixels			= face.getTexturePixels();
-		final boolean		hasTexture		= pixels != null;
+		final TextureSpec	textureSpec		= face.getTexture();
+		final int[][]		texturePixels	= face.getTexturePixels();
+		final boolean		hasTexture		= texturePixels != null;
 		final int[]			tus				= hasTexture ? face.getTextureU() : null;
 		final int[]			tvs				= hasTexture ? face.getTextureV() : null;
-		final int			colorRGB		= texture.getARGB();
+		final int			colorRGB		= textureSpec.getARGB();
 		final int[]			ds				= face.ds;
 		final int[]			sxs				= face.sxs;
 		final int[]			sys				= face.sys;
@@ -832,7 +384,7 @@ public class Renderer
 			if ( sfs != null && sfs[ i ] > m ) m = sfs[ i ];
 		}
 
-		final short[][] phongTable = ( m > 0xFF ) && ( sxs != null ) && ( sys != null ) && ( sfs != null ) ? texture.getPhongTable() : null;
+		final short[][] phongTable = ( m > 0xFF ) && ( sxs != null ) && ( sys != null ) && ( sfs != null ) ? textureSpec.getPhongTable() : null;
 
 		/*
 		 * Ignore face if it completely outside the screen area.
@@ -849,18 +401,18 @@ public class Renderer
 		int     v     = minV;
 		int     nextV;
 
-		int		li1;			// Index in shape to 1st vertex of segement
-		int		li2  = first;	// Index in shape to 2nd vertex of segement
-		int		lv2  = minV;	// 'left'  vertical coordinate at end of segment
+		int		li1;            // Index in shape to 1st vertex of segement
+		int		li2  = first;   // Index in shape to 2nd vertex of segement
+		int		lv2  = minV;    // 'left'  vertical coordinate at end of segment
 
-		int		ri1;			// Index in shape to 1st vertex of segement
-		int		ri2  = first;	// Index in shape to 2nd vertex of segement
-		int		rv2  = minV;	// 'right' vertical coordinate at end of segment
+		int		ri1;            // Index in shape to 1st vertex of segement
+		int		ri2  = first;   // Index in shape to 2nd vertex of segement
+		int		rv2  = minV;    // 'right' vertical coordinate at end of segment
 
-		int		lh   = 0;		// 'left'  Horizontal coordinate counter     * 2^8
-		int		lhc  = 0;		// 'left'  Horizontal coordinate coefficient * 2^8
-		int		rh   = 0;		// 'right' Horizontal coordinate counter     * 2^8
-		int		rhc  = 0;		// 'right' Horizontal coordinate coefficient * 2^8
+		int		lh   = 0;       // 'left'  Horizontal coordinate counter     * 2^8
+		int		lhc  = 0;       // 'left'  Horizontal coordinate coefficient * 2^8
+		int		rh   = 0;       // 'right' Horizontal coordinate counter     * 2^8
+		int		rhc  = 0;       // 'right' Horizontal coordinate coefficient * 2^8
 
 		long	ld   = 0;		// 'left'  Depth counter     * 2^8
 		long	ldc  = 0;		// 'left'  Depth coefficient * 2^8
@@ -940,8 +492,9 @@ public class Renderer
 				rsf = sfs[ ri1 ];
 			}
 
-			renderSolidScanlines( v , v , lh , 0 , rh , 0 , ld , 0 , rd , 0 , colorRGB ,
-				pixels , ltu , 0 , rtu , 0 , ltv , 0 , rtv , 0 , ldr , 0 , rdr , 0 ,
+			renderScanlines( depthBuffer , frameBuffer , width , height ,
+			    v , v , lh , 0 , rh , 0 , ld , 0 , rd , 0 , colorRGB ,
+				texturePixels , ltu , 0 , rtu , 0 , ltv , 0 , rtv , 0 , ldr , 0 , rdr , 0 ,
 				phongTable , lsx , 0 , rsx , 0 , lsy , 0 , rsy , 0 , lsf , 0 , rsf , 0 );
 
 			return;
@@ -1059,8 +612,9 @@ public class Renderer
 			if ( nextV == maxV ) nextV++;
 			if ( nextV > height ) nextV = height;
 
-			renderSolidScanlines( v , nextV , lh , lhc , rh , rhc , ld , ldc , rd , rdc , colorRGB ,
-				pixels , ltu , ltuc , rtu , rtuc , ltv , ltvc , rtv , rtvc , ldr , ldrc , rdr , rdrc ,
+			renderScanlines( depthBuffer , frameBuffer , width , height ,
+			    v , nextV , lh , lhc , rh , rhc , ld , ldc , rd , rdc , colorRGB ,
+				texturePixels , ltu , ltuc , rtu , rtuc , ltv , ltvc , rtv , rtvc , ldr , ldrc , rdr , rdrc ,
 				phongTable , lsx , lsxc , rsx , rsxc , lsy , lsyc , rsy , rsyc , lsf , lsfc , rsf , rsfc );
 
 			/*
@@ -1095,164 +649,6 @@ public class Renderer
 			}
 
 			v = nextV;
-		}
-	}
-
-	/**
-	 * Draw a line.
-	 *
-	 * @param	x1		Start X coordinate.
-	 * @param	y1		Start Y coordinate.
-	 * @param	z1		Start Z coordinate.
-	 * @param	x2		End X coordinate.
-	 * @param	y2		End Y coordinate.
-	 * @param	z2		End Z coordinate.
-	 * @param	c		Color.
-	 */
-	protected final void renderSolidLine3D( int x1 , int y1 , int z1 , int x2 , int y2 , int z2 , final int c )
-	{
-		int i,j,x,y,z;
-		final int[] db = _depthBuffer;
-		final int[] sb = _pixels;
-
-		/*
-		 * Change x2,y2,z2 into delta
-		 */
-		x2 -= x1;
-		y2 -= y1;
-		z2 -= z1;
-
-		/*
-		 * Handle 'horizontal' oriented line.
-		 */
-
-		if ( Math.abs( x2 ) > Math.abs( y2 ) )
-		{
-			if ( x2 < 0 )
-			{
-				x1 -= ( x2 = -x2 );
-				y1 -= ( y2 = -y2 );
-				z1 -= ( z2 = -z2 );
-			}
-
-			final int hx = x2 / 2;
-			for ( i = 0 ; i <= x2 ; i++ )
-			{
-				x = x1 + i;
-				y = y1 + ( y2 * i + hx ) / x2;
-				z = z1 + ( z2 * i + hx ) / x2;
-
-				if ( x >= 0 && x < _width && y >= 0 && y < _height && z >= db[ j = y * _width + x ] )
-				{
-					db[ j ] = z;
-					sb[ j ] = c;
-				}
-			}
-		}
-
-		/*
-		 * Handle dot
-		 */
-		else if ( y2 == 0 )
-		{
-			if ( x1 >= 0 && x1 < _width && y1 >= 0 && y1 < _height && z1 >= db[ j = y1 * _width + x1 ] )
-			{
-				db[ j ] = z1;
-				sb[ j ] = c;
-			}
-			return;
-		}
-
-		/*
-		 * Handle 'vertical' oriented line.
-		 */
-		else
-		{
-			if ( y2 < 0 )
-			{
-				x1 -= ( x2 = -x2 );
-				y1 -= ( y2 = -y2 );
-				z1 -= ( z2 = -z2 );
-			}
-
-			final int hy = y2 / 2;
-			for ( i = 0 ; i <= y2 ; i++ )
-			{
-				x = x1 + ( i * x2 + hy ) / y2;
-				y = y1 + i;
-				z = z1 + ( z2 * i + hy ) / y2;
-
-				if ( x >= 0 && x < _width && y >= 0 && y < _height && z >= db[ j = y * _width + x ] )
-				{
-					db[ j ] = z;
-					sb[ j ] = c;
-				}
-			}
-		}
-	}
-
-	/**
-	 * Render scene from camera.
-	 *
-	 * @param	object			The object to render.
-	 * @param	cameraXform		The transformation of the camera.
-	 * @param	camera			Node with camera that defines the view.
-	 * @param	width			Width of rendering image.
-	 * @param	height			Height of rendering image.
-	 */
-	protected void renderSolidObject(
-		final Object3D object , final Matrix3D cameraXform , final Camera camera , final int width , final int height )
-	{
-		_solidObject.set( object , cameraXform , camera.aperture , camera.zoom , width , height , true );
-		if ( _updatePending ) return;
-
-		_solidObject.setLights( _sLights );
-		if ( _updatePending ) return;
-
-		/*
-		 * For each face:
-		 *   - determine if it's invisible (outside view volume & backface culling)
-		 *   - calculate weight point (average of vertices)
-		 */
-//		final int[]	ph = _solidObject.ph;
-//		final int[]	pv = _solidObject.pv;
-
-//		int i,j,k,h1,v1,h2,v2;
-//		int[] vi;
-
-//	    final int c = ( _owner != null ) ? _owner.getForeground().getRGB() : 0xFF000000;
-
-		for ( RenderObject.Face face = _solidObject.faces ; face != null ; face = face.next )
-		{
-			face.applyLighting();
-
-			/*
-			 * Draw polygon.
-			 */
-			renderSolidFace( face );
-
-			/*
-			 * Draw wireframe
-			 */
-			//if ( _showWireframeOverlay )
-			//{
-				//vi = face.vi;
-
-				//h1 = ph[ k = vi[ vi.length - 1 ] ] >> 8;
-				//v1 = pv[ k                       ] >> 8;
-
-				//for ( j = 0 ; j < vi.length ; j++ )
-				//{
-					//h2 = ph[ k = vi[ j ] ] >> 8;
-					//v2 = pv[ k           ] >> 8;
-
-					//renderSolidLine3D( h1 , v1 , 0x7FFFFFFF , h2 , v2 , 0x7FFFFFFF , c );
-
-					//h1 = h2;
-					//v1 = v2;
-
-				//}
-			//}
 		}
 	}
 
@@ -1297,7 +693,8 @@ public class Renderer
 	 * @param	rsf			Scanline parameter.
 	 * @param	rsfc		Scanline parameter.
 	 */
-	protected final void renderSolidScanlines(
+	private static void renderScanlines(
+	    final int[] depthBuffer , final int[] frameBuffer , final int width , final int height ,
 		int v , final int nextV ,
 		int  lh  , final int  lhc  , int  rh  , final int  rhc  ,
 		long ld  , final long ldc  , long rd  , final long rdc  ,
@@ -1311,8 +708,6 @@ public class Renderer
 		int  lsy , final int  lsyc , int  rsy , final int  rsyc ,
 		int  lsf , final int  lsfc , int  rsf , final int  rsfc )
 	{
-		final int        width         = _width;
-		final int        height        = _height;
 		final int        tw            = ( texture != null ) ? texture[0].length : 0;
 		final int        th            = ( texture != null ) ? texture.length    : 0;
 //		final int        ma            = (colorRGB >> 24) & 0xFF;
@@ -1338,8 +733,6 @@ public class Renderer
 		int		sy2;	// 'pixel' Specular Y-coordinate coefficient * 2^8
 		int		sf1;	// 'pixel' Specular intensity factor counter     * 2^8
 		int		sf2;	// 'pixel' Specular intensity factor coefficient * 2^8
-
-		final int[] db = _depthBuffer;
 
 		do
 		{
@@ -1449,10 +842,9 @@ public class Renderer
 					{
 						for ( i = width * v + h1 ; h2-- >= 0 ; i++ )
 						{
-							//if ( (j = (int)(d1 >> 8)) >= _zBuffer[ i ] )
-							if ( (j = (int)(0x7FFFFFFFFFl / d1)) < db[ i ] )
+							if ( (j = (int)(0x7FFFFFFFFFL / d1)) < depthBuffer[ i ] )
 							{
-								db[ i ] = j;
+								depthBuffer[ i ] = j;
 
 								// fix , tu1 and tv1 become < 0 don't know how that happens
 								final int myU = (int)( ( tu1 / d1 ) % tw );
@@ -1467,7 +859,7 @@ public class Renderer
 								if ( (g = (dr1 * ((c >>  8) & 0xFF) + s) >> 16) > 255 ) g = 255;
 								if ( (b = (dr1 * ( c        & 0xFF) + s) >> 16) > 255 ) b = 255;
 
-								_pixels[ i ] = 0xFF000000 + (r << 16) + (g << 8) + b;
+								frameBuffer[ i ] = 0xFF000000 + (r << 16) + (g << 8) + b;
 							}
 
 							d1  += d2;
@@ -1483,9 +875,9 @@ public class Renderer
 					{
 						for ( i = width * v + h1 ; h2-- >= 0 ; i++ )
 						{
-							if ( (j = (int)(0x7FFFFFFFFFl / d1)) < db[ i ] )
+							if ( (j = (int)(0x7FFFFFFFFFL / d1)) < depthBuffer[ i ] )
 							{
-								db[ i ] = j;
+								depthBuffer[ i ] = j;
 
 								s = phongTable[ sy1 >> 8 ][ sx1 >> 8 ] * sf1;
 
@@ -1493,7 +885,7 @@ public class Renderer
 								if ( ( g = ( dr1 * mg + s ) >> 16 ) > 255 ) g = 255;
 								if ( ( b = ( dr1 * mb + s ) >> 16 ) > 255 ) b = 255;
 
-								_pixels[ i ] = 0xFF000000 + (r << 16) + (g << 8) + b;
+								frameBuffer[ i ] = 0xFF000000 + (r << 16) + (g << 8) + b;
 							}
 
 							d1  += d2;
@@ -1510,9 +902,9 @@ public class Renderer
 					{
 						for ( i = width * v + h1 ; h2-- >= 0 ; i++ )
 						{
-							if ( (j = (int)(0x7FFFFFFFFFl / d1)) < db[ i ] )
+							if ( (j = (int)(0x7FFFFFFFFFL / d1)) < depthBuffer[ i ] )
 							{
-								db[ i ] = j;
+								depthBuffer[ i ] = j;
 
 								// fix , tu1 and tv1 become < 0 don't know how that happens
 								final int myU = (int)( ( tu1 / d1 ) % tw );
@@ -1526,7 +918,7 @@ public class Renderer
 								if ( (g = (dr1 * ((c >>  8) & 0xFF)) >> 16) > 255 ) g = 255;
 								if ( (b = (dr1 * ( c        & 0xFF)) >> 16) > 255 ) b = 255;
 
-								_pixels[ i ] = 0xFF000000 + (r << 16) + (g << 8) + b;
+								frameBuffer[ i ] = 0xFF000000 + (r << 16) + (g << 8) + b;
 							}
 
 							d1  += d2;
@@ -1537,28 +929,22 @@ public class Renderer
 					}
 					else // no texture
 					{
-						//System.out.println( "Starting pixels at (" + h1 + "," + y + ")" );
-						//System.out.println( "   length  = " + ( h2 + 1 ) );
-						//System.out.println( "   Z.start = " + d1 );
-
 						for ( i = width * v + h1 ; h2-- >= 0 ; i++ )
 						{
-							if ( (j = (int)(0x7FFFFFFFFFl / d1)) < db[ i ] )
+							if ( (j = (int)(0x7FFFFFFFFFL / d1)) < depthBuffer[ i ] )
 							{
-								db[ i ] = j;
+								depthBuffer[ i ] = j;
 
 								if ( ( r = ( dr1 * mr ) >> 16 ) > 255 ) r = 255;
 								if ( ( g = ( dr1 * mg ) >> 16 ) > 255 ) g = 255;
 								if ( ( b = ( dr1 * mb ) >> 16 ) > 255 ) b = 255;
 
-								_pixels[ i ] = 0xFF000000 + (r << 16) + (g << 8) + b;
+								frameBuffer[ i ] = 0xFF000000 + (r << 16) + (g << 8) + b;
 							}
 
 							d1  += d2;
 							dr1 += dr2;
 						}
-
-						//System.out.println( "   Z.end    = " + ( d1 - d2 ) );
 					}
 				}
 			}
@@ -1576,476 +962,4 @@ public class Renderer
 		}
 		while ( v < nextV );
 	}
-
-	/**
-	 * Render scene from camera.
-	 *
-	 * @param	g		Graphics to paint on.
-	 * @param	camera	Node with camera that defines the view.
-	 * @param	width	Width of rendering image.
-	 * @param	height	Height of rendering image.
-	 */
-	public synchronized final void renderWireframe( final Graphics g , final Camera camera , final int width , final int height )
-	{
-		/*
-		 * Gather leafs with models in this world.
-		 */
-		_wfObjects.clear();
-		_camera.gatherLeafs( _wfObjects , Object3D.class , Matrix3D.INIT , true );
-
-		/*
-		 * Prepare object buffer.
-		 */
-		final int nrObjects = _wfObjects.size();
-		if ( nrObjects < 1 )
-			return;
-
-		if ( _wireObjects == null || nrObjects > _wireObjects.length )
-		{
-			final RenderObject[] objects = new RenderObject[ nrObjects ];
-			if ( _wireObjects != null )
-				System.arraycopy( _wireObjects , 0 , objects , 0 , _wireObjects.length );
-			_wireObjects = objects;
-		}
-
-		/*
-		 * Add all objects and draw them.
-		 */
-		for ( int i = 0 ; i < nrObjects ; i++ )
-		{
-			RenderObject ro = _wireObjects[ i ];
-			if ( ro == null )
-				_wireObjects[ i ] = ro = new RenderObject();
-
-			ro.set( (Object3D)_wfObjects.getNode( i ) , _wfObjects.getMatrix( i ) , camera.aperture , camera.zoom , width , height , true );
-		}
-
-		for ( int i = 0 ; i < nrObjects ; i++ )
-		{
-			final RenderObject ro = _wireObjects[ i ];
-
-			for ( RenderObject.Face face = ro.faces ; face != null ; face = face.next )
-				renderWireframeFace( g , face );
-		}
-
-
-		//class Iter
-		//{
-			//int	obj = 0;
-			//RenderObject.Face face = null;
-
-			//public RenderObject.Face next()
-			//{
-				//while ( face == null || face.index < 0 )
-				//{
-					//if ( face == null )
-					//{
-						//if ( obj >= nrObjects )
-							//return null;
-
-						//face = _wireObjects[ obj++ ].faces;
-					//}
-					//else
-					//{
-						//face = face.next;
-					//}
-				//}
-
-				//RenderObject.Face result = face;
-				//face = face.next;
-				//return result;
-			//}
-
-			//public void reset()
-			//{
-				//obj = 0;
-				//face = null;
-			//}
-		//}
-
-
-		//Iter iter = new Iter();
-		//RenderObject.Face face,other;
-
-		//for (;;)
-		//{
-			//iter.reset();
-			//face = iter.next();
-			//if ( face == null )
-				//return;
-
-			////while ( ( other = iter.next() ) != null )
-			////{
-				////if ( other.isBehind( face ) )
-				////{
-					////face = other;
-					////iter.reset();
-				////}
-			////}
-
-			//renderWireframeFace( g , face );
-			//face.index = -1;
-		//}
-	}
-
-	/**
-	 * Render scene from camera.
-	 *
-	 * @param	g		Graphics to paint on
-	 * @param	face	Face to render
-	 */
-	protected void renderWireframeFace( final Graphics g , final RenderObject.Face face )
-	{
-		int i,k,h1,v1,h2,v2;
-
-		final int[] vi = face.vi;
-		if ( vi.length < 3 )
-			return;
-
-		final int[] h = new int[ vi.length ];
-		final int[] v = new int[ vi.length ];
-
-		final RenderObject ro = face.getRenderObject();
-		final int[] ph = ro.ph;
-		final int[] pv = ro.pv;
-
-		for ( i = 0 ; i < vi.length ; i++ )
-		{
-			h[ i ] = ph[ k = vi[ i ] ] >> 8;
-			v[ i ] = pv[ k           ] >> 8;
-		}
-
-//		int c = 0xFFFFFF; //face.getTexture().getARGB();
-		//float nx = 0.1f + 0.5f * ( 1.0f + face.nx );
-		//float ny = 0.1f + 0.0f * ( 1.0f + face.ny );
-		//float nz = 0.1f + 0.5f * ( 1.0f + face.nz );
-
-		//g.setColor( new Color(
-			//Math.min( (int)(nx * ((c >> 16) & 255)) , 255 ) ,
-			//Math.min( (int)(ny * ((c >>  8) & 255)) , 255 ) ,
-			//Math.min( (int)(nz * ( c        & 255)) , 255 ) ) );
-
-		//g.fillPolygon( h , v , vi.length );
-
-		//g.setColor( Color.black );
-
-		h1 = h[ k = vi.length - 1 ];
-		v1 = v[ k ];
-
-		for ( i = 0 ; i < vi.length ; i++ )
-		{
-			h2 = h[ i ];
-			v2 = v[ i ];
-
-			g.drawLine( h1 , v1 , h2 , v2 );
-
-			h1 = h2;
-			v1 = v2;
-		}
-	}
-
-	/**
-	 * Requests that a given ImageConsumer have the image data delivered
-	 * one more time in top-down, left-right order.
-	 *
-	 * @param	ic	Image consumer to add.
-	 *
-	 * @see ImageConsumer
-	 */
-	public final void requestTopDownLeftRightResend( final ImageConsumer ic )
-	{
-		if ( isConsumer( ic ) )
-		    ic.setDimensions( _width , _height );
-
-	    if ( isConsumer( ic ) )
-			ic.setPixels( 0 , 0 , _width , _height , _colorModel , _pixels , 0 , _width );
-
-	    if ( isConsumer( ic ) )
-		    ic.imageComplete( ImageConsumer.SINGLEFRAMEDONE );
-	}
-
-	/**
-	 * Set flag to indicate that the frame must be updated. This
-	 * will only set the flag, render() must be called to actually
-	 * do the rendering at a suitable time.
-	 */
-	public final synchronized void requestUpdate()
-	{
-		_updatePending = true;
-		notifyAll();
-	}
-
-	/**
-	 * Reset to default render view.
-	 */
-	public final void reset()
-	{
-		_modelTransform.setRotationX( -10f );
-		_modelTransform.setRotationZ( -35f );
-		_cameraTransform.setTranslation( Vector3D.INIT.set( 0f , -4000f , 0f ) );
-		center();
-
-		requestUpdate();
-	}
-
-	/**
-	 * This is the thread body to update the rendered image on demand.
-	 */
-	public final void run()
-	{
-		while ( _isRunning )
-		{
-			/*
-			 * Only update if our owner is visible and we have a camera.
-			 */
-			if ( _owner.isVisible() && ( _camera != null ) )
-			{
-				try
-				{
-					/*
-					 * If an update is pending, re-render the scene.
-					 */
-					if ( _updatePending )
-					{
-						_updatePending = false;
-
-						/*
-						 * Prepare for rendering.
-						 */
-						_updating = true;
-
-						if ( _showTemporaryWireframe )
-						{
-							_owner.repaint();
-							if ( _renderingMode == QUICK )
-								continue;
-						}
-
-						/*
-						 * Re-render the scene.
-						 */
-						renderSolid( _background );
-
-						_updating = false;
-
-						if ( !_updatePending )
-						{
-
-							updateImageConsumers();
-							//System.out.println( "*repaint*" );
-							_owner.repaint();
-						}
-
-
-						///*
-						 //* Re-create offscreen image when imageSource was updated.
-						 //*/
-						//if ( _image == null && _imageSource != null )
-						//{
-							//_image = _owner.createImage( _imageSource );
-							//_owner.repaint();
-						//}
-
-						///*
-						 //* Inform ImageConsumer's that the image was updated.
-						 //*/
-						//_updating = false;
-						//if ( !_updatePending )
-							//_imageSource.newPixels( 0 , 0 , _width , _height );
-
-						continue;
-					}
-
-					/*
-					 * Repaint owner if it doesn't show the renderer image yet.
-					 */
-					if ( !_imagePainted )
-					{
-						//System.out.println( "*run.repaintX*" );
-						_owner.repaint();
-					}
-				}
-				catch ( Exception e )
-				{
-					System.out.println( "Exception (" + e + ") during rendering!" );
-					e.printStackTrace();
-				}
-			}
-
-			/*
-			 * No update needed, so sleep for a while until we are needed again.
-			 */
-			try
-			{
-				for (;;)
-				{
-					synchronized ( this )
-					{
-						if ( _updatePending ) break;
-						wait( 300 );
-					}
-				}
-			}
-			catch ( Exception e ) { /*ignored*/ }
-		}
-		_updateThread = null;
-	}
-
-	/**
-	 * Send rendered image data to an image consumer.
-	 *
-	 * @param	ic		Image consumer to send data to.
-	 */
-	private synchronized void sendPixels( final ImageConsumer ic )
-	{
-		try
-		{
-		    final int        width  = _width;
-		    final int        height = _height;
-			final int[]      p      = _pixels;
-		    final ColorModel cm     = _colorModel;
-
-			if ( isConsumer( ic ) )
-			    ic.setDimensions( _width , _height );
-
-		    if ( isConsumer( ic ) )
-		    {
-				for ( int y = 0 , o = 0 ; y < height ; y++ , o += width )
-				{
-					if ( _updatePending ) break;
-					ic.setPixels( 0 , y , width , 1 , cm , p , o , width );
-				}
-
-			    if ( isConsumer( ic ) )
-						ic.imageComplete( _updatePending ? ImageConsumer.IMAGEABORTED : ImageConsumer.SINGLEFRAMEDONE );
-		    }
-		}
-		catch ( Exception e )
-		{
-		    if ( isConsumer( ic ) )
-				ic.imageComplete( ImageConsumer.IMAGEERROR );
-		}
-	}
-
-	/**
-	 * Set background color.
-	 *
-	 * @param   color       Color to use.
-	 */
-	public final void setBackground( final Color color )
-	{
-		_background = color.getRGB();
-	}
-
-	/**
-	 * Set current control mode for panel.
-	 *
-	 * @param	mode	Control mode for panel (ZOOM,PAN,ROTATE).
-	 */
-	public final void setControlMode( final int mode )
-	{
-		_controlMode = mode;
-	}
-
-	/**
-	 * Set minimum/maximum coordiantes of displayed model.
-	 *
-	 * @param	minX	Minimum X coordinate of displayed model.
-	 * @param	minY	Minimum Y coordinate of displayed model.
-	 * @param	minZ	Minimum Z coordinate of displayed model.
-	 * @param	maxX	Maximum X coordinate of displayed model.
-	 * @param	maxY	Maximum Y coordinate of displayed model.
-	 * @param	maxZ	Maximum Z coordinate of displayed model.
-	 */
-	public final void setLimits( final float minX , final float minY , final float minZ , final float maxX , final float maxY , final float maxZ )
-	{
-		_minX = minX;
-		_minY = minY;
-		_minZ = minZ;
-		_maxX = maxX;
-		_maxY = maxY;
-		_maxZ = maxZ;
-	}
-
-	/**
-	 * Set the rendering mode to use. This may be set to QUICK
-	 * during frequent updates, and to FULL when those updates
-	 * are done. The renderer may use this to speed up its
-	 * operation (e.g. by lowering detail) during updates.
-	 *
-	 * @param	mode	Rendering mode to use (QUICK or FULL).
-	 */
-	public final void setRenderingMode( final int mode )
-	{
-		if ( _renderingMode == mode )
-			return;
-
-		_renderingMode = mode;
-		requestUpdate();
-	}
-
-	/**
-	 * Set flag to indicate that a temporary wireframe is drawn
-	 * during the rendering process.
-	 *
-	 * @param	show	<code>true</code> to indicate that a
-	 *					temporary wireframe should be drawn,
-	 *					<code>false</code> if not.
-	 */
-	public final void setShowTemporaryWireframe( final boolean show )
-	{
-		_showTemporaryWireframe = show;
-	}
-
-	/**
-	 * Set view settings based on string previously returned by #getViewSettings().
-	 *
-	 * @param	settings	String with view settings.
-	 */
-	public final void setViewSettings( final String settings )
-	{
-		if ( settings == null || settings.length() ==  0 )
-			return;
-
-		try
-		{
-			final Bounds3D b = Bounds3D.fromString( settings );
-			final Vector3D rv = b.v1;
-			_modelTransform.setRotation( rv.x , rv.y , rv.z );
-			_cameraTransform.setTranslation( b.v2 );
-		}
-		catch ( Exception e ) { /* ignored */ }
-	}
-
-	/**
-	 * Adds an ImageConsumer to the list of consumers interested in
-	 * data for this image, and immediately start delivery of the
-	 * image data through the ImageConsumer interface.
-	 *
-	 * @param	ic		Image consumer to add.
-	 */
-	public final void startProduction( final ImageConsumer ic )
-	{
-		addConsumer( ic );
-	}
-
-	/**
-	 * Send new frame buffer contents to any ImageConsumers that are currently
-	 * interested in the data for this image source.
-	 *
-	 * @see ImageConsumer
-	 */
-	private void updateImageConsumers()
-	{
-		synchronized ( _imageConsumers )
-		{
-	 		for ( Iterator i = _imageConsumers.iterator() ; i.hasNext() ; )
-	 		{
-		    	final ImageConsumer ic = (ImageConsumer)i.next();
-			    if ( isConsumer( ic ) )
-					sendPixels( ic );
-	 		}
-	    }
-	}
-
 }
