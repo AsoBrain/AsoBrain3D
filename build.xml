@@ -19,7 +19,7 @@
 
   <target name="api-check" depends="init" description="Pre-compilation initialization">
     <mkdir dir="classes/test"/>
-    <javac srcdir="." destdir="classes/test" includes="apicheck/ApiCheck.java"/>
+    <javac srcdir="test" destdir="classes/test" includes="apicheck/ApiCheck.java"/>
     <java classname="apicheck.ApiCheck" classpath="classes/test" failonerror="yes"/>
   </target>
 
