@@ -1,7 +1,10 @@
-Current version: pre-1.0.7
+Current version: pre-1.1
 
-Changes between 1.0.6 and 1.0.7:
+Changes between 1.0.6 and 1.1:
+ - Project uses standarized directory layout ('classes' for temporary .class files, and 'lib' for .jar files).
+ - Replaced Java 1.1 containers with Java2 collection classes.
  - Added Renderer.setBackground() method to allow changing the renderer's background color.
+ - Code maturaty updates.
 
 Changes between 1.0.5 and 1.0.6:
  - Added TextureLibrary interface that can be used to retrieve textures from some sort of library.
