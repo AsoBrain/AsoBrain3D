@@ -21,6 +21,7 @@
 package ab.j3d.view.java3d;
 
 import java.awt.Canvas;
+import java.awt.Dimension;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.media.j3d.Alpha;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.BoundingSphere;
@@ -50,9 +52,9 @@ import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.media.j3d.TransparencyAttributes;
 import javax.media.j3d.TriangleArray;
+import javax.media.j3d.LineArray;
 import javax.vecmath.Color3f;
 import javax.vecmath.Matrix4d;
-import javax.vecmath.Matrix4f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
 import javax.vecmath.TexCoord2f;
@@ -133,7 +135,7 @@ public final class Java3dTools
 			final int         vertexCount = face.getVertexCount();
 			final TextureSpec texture     = ( textureOverride != null ) ? textureOverride : face.getTexture();
 
-			if ( ( texture != null ) && ( texture.code != null ) && ( vertexCount > 2 ) )
+			if ( ( texture != null ) && ( texture.code != null ) && ( vertexCount >= 2 ) )
 			{
 				final int[] pointIndices = face.getPointIndices();
 				final int[] textureU     = ( textureOverride != null ) ? null : face.getTextureU();
@@ -145,49 +147,60 @@ public final class Java3dTools
 				else
 					appearances.put( texture.code , data = new List[] { new ArrayList() , new ArrayList() , new ArrayList() } );
 
-				final Texture j3dTexture       = ( ( textureU == null ) || ( textureV == null ) ) ? null : getTexture( texture );
-				final List    j3dVertices      = data[ 0 ];
-				final List    j3dTextureCoords = data[ 1 ];
-				final List    j3dFaceNormals   = data[ 2 ];
-
-				final int nrTriangles = vertexCount - 2;
-				for ( int triangleIndex = 0 ; triangleIndex < nrTriangles ; triangleIndex++ )
+				if ( vertexCount == 2 )
 				{
-					for ( int subIndex = 3 ; --subIndex >= 0 ; )
+					data[ 0 ].add( new Point3d( pointCoords[ 0 ] , pointCoords[ 1 ] , pointCoords[ 2 ] ) );
+					data[ 0 ].add( new Point3d( pointCoords[ 3 ] , pointCoords[ 4 ] , pointCoords[ 5 ] ) );
+				}
+				else
+				{
+					final Texture j3dTexture       = ( ( textureU == null ) || ( textureV == null ) ) ? null : getTexture( texture );
+					final List    j3dVertices      = data[ 0 ];
+					final List    j3dTextureCoords = data[ 1 ];
+					final List    j3dFaceNormals   = data[ 2 ];
+
+					final int nrTriangles = vertexCount - 2;
+					for ( int triangleIndex = 0 ; triangleIndex < nrTriangles ; triangleIndex++ )
 					{
-						final int   vertexIndex = ( subIndex == 0 ) ? 0 : ( triangleIndex + subIndex );
-						final int   pointIndex  = pointIndices[ vertexIndex ] * 3;
+						for ( int subIndex = 3 ; --subIndex >= 0 ; )
+						{
+							final int   vertexIndex = ( subIndex == 0 ) ? 0 : ( triangleIndex + subIndex );
+							final int   pointIndex  = pointIndices[ vertexIndex ] * 3;
 
-						final double pointX = pointCoords[ pointIndex     ];
-						final double pointY = pointCoords[ pointIndex + 1 ];
-						final double pointZ = pointCoords[ pointIndex + 2 ];
+							final double pointX = pointCoords[ pointIndex     ];
+							final double pointY = pointCoords[ pointIndex + 1 ];
+							final double pointZ = pointCoords[ pointIndex + 2 ];
 
-						final double normalX = pointNormals[ pointIndex     ];
-						final double normalY = pointNormals[ pointIndex + 1 ];
-						final double normalZ = pointNormals[ pointIndex + 2 ];
+							final double normalX = pointNormals[ pointIndex     ];
+							final double normalY = pointNormals[ pointIndex + 1 ];
+							final double normalZ = pointNormals[ pointIndex + 2 ];
 
-						j3dVertices.add( new Point3d(
-							xform.transformX( pointX , pointY , pointZ ) ,
-							xform.transformY( pointX , pointY , pointZ ) ,
-							xform.transformZ( pointX , pointY , pointZ ) ) );
+							j3dVertices.add( new Point3d(
+								xform.transformX( pointX , pointY , pointZ ) ,
+								xform.transformY( pointX , pointY , pointZ ) ,
+								xform.transformZ( pointX , pointY , pointZ ) ) );
 
-						j3dFaceNormals.add( new Vector3f(
-							(float)xform.rotateX( normalX , normalY , normalZ ) ,
-							(float)xform.rotateY( normalX , normalY , normalZ ) ,
-							(float)xform.rotateZ( normalX , normalY , normalZ ) ) );
+							j3dFaceNormals.add( new Vector3f(
+								(float)xform.rotateX( normalX , normalY , normalZ ) ,
+								(float)xform.rotateY( normalX , normalY , normalZ ) ,
+								(float)xform.rotateZ( normalX , normalY , normalZ ) ) );
 
-						j3dTextureCoords.add( new TexCoord2f(
-							( j3dTexture == null ) ? 0 : (float)textureU[ vertexIndex ] / j3dTexture.getWidth() ,
-							( j3dTexture == null ) ? 0 : (float)textureV[ vertexIndex ] / j3dTexture.getHeight() ) );
+							j3dTextureCoords.add( ( j3dTexture == null ) ? new TexCoord2f() : new TexCoord2f(
+								(float)textureU[ vertexIndex ] / (float)j3dTexture.getWidth()  ,
+								(float)textureV[ vertexIndex ] / (float)j3dTexture.getHeight() ) );
+						}
 					}
 				}
 			}
 		}
 
+		final Set      appearanceCodes    = appearances.keySet();
+		final Iterator appearanceIterator = appearanceCodes.iterator();
+
 		final Node result;
-		if ( appearances.size() == 1 )
+		if ( appearanceCodes.size() == 1 )
 		{
-			final String     code       = (String)appearances.keySet().iterator().next();
+			final String     code       = (String)appearanceIterator.next();
 			final Appearance appearance = getAppearance( code , opacity );
 			final List[]     data       = (List[])appearances.get( code );
 
@@ -199,9 +212,9 @@ public final class Java3dTools
 			result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
 			result.setCapability( BranchGroup.ALLOW_DETACH );
 
-			for ( Iterator appearanceEnum = appearances.keySet().iterator() ; appearanceEnum.hasNext() ; )
+			while ( appearanceIterator.hasNext() )
 			{
-				final String     code       = (String)appearanceEnum.next();
+				final String     code       = (String)appearanceIterator.next();
 				final Appearance appearance = getAppearance( code , opacity );
 				final List[]     data       = (List[])appearances.get( code );
 
@@ -249,7 +262,7 @@ public final class Java3dTools
 	 */
 	public static Matrix3D convertTransform3DToMatrix3D( final Transform3D transform )
 	{
-		final Matrix4f m4d = new Matrix4f();
+		final Matrix4d m4d = new Matrix4d();
 		transform.get( m4d );
 
 		return Matrix3D.INIT.set(
@@ -273,9 +286,9 @@ public final class Java3dTools
 
 		final Vector3d upVector;
 		if ( ( from.x == 0 ) && ( from.y == 0 ) && ( from.z != 0 ) )
-			upVector = new Vector3d( 0 , 1 , 0 );
+			upVector = new Vector3d( 0.0 , 1.0 , 0.0 );
 		else
-			upVector = new Vector3d( 0 , 0 , 1 );
+			upVector = new Vector3d( 0.0 , 0.0 , 1.0 );
 
 		final Transform3D transform = new Transform3D();
 		transform.setTranslation( new Vector3d( from.x , from.y , from.z ) );
@@ -297,8 +310,8 @@ public final class Java3dTools
 	 */
 	public static Group createGrid( final Tuple3f origin , final Tuple3i size , final float unit , final int interval , final Color3f color )
 	{
-		final Vector3f min     = new Vector3f( origin.x - size.x * unit , origin.y - size.y * unit , origin.z - size.z * unit );
-		final Vector3f max     = new Vector3f( origin.x + size.x * unit , origin.y + size.y * unit , origin.z + size.z * unit );
+		final Vector3f min     = new Vector3f( origin.x - (float)size.x * unit , origin.y - (float)size.y * unit , origin.z - (float)size.z * unit );
+		final Vector3f max     = new Vector3f( origin.x + (float)size.x * unit , origin.y + (float)size.y * unit , origin.z + (float)size.z * unit );
 		final int      maxSize = Math.max( Math.max( size.x , size.y ) , size.z );
 
 		final PolygonAttributes polygonAttributes = new PolygonAttributes();
@@ -320,7 +333,7 @@ public final class Java3dTools
 			{
 				if ( gridIndex <= size.x )
 				{
-					final float x = origin.x + mult * gridIndex * unit;
+					final float x = origin.x + (float)( mult * gridIndex ) * unit;
 					coords.add( new Point3f( x , min.y , min.z ) );
 					coords.add( new Point3f( x , max.y , min.z ) );
 					coords.add( new Point3f( x , max.y , max.z ) );
@@ -329,7 +342,7 @@ public final class Java3dTools
 
 				if ( gridIndex <= size.y )
 				{
-					final float y = origin.y + mult * gridIndex * unit;
+					final float y = origin.y + (float)( mult * gridIndex ) * unit;
 					coords.add( new Point3f( min.x , y , min.z ) );
 					coords.add( new Point3f( max.x , y , min.z ) );
 					coords.add( new Point3f( max.x , y , max.z ) );
@@ -338,7 +351,7 @@ public final class Java3dTools
 
 				if ( gridIndex <= size.z )
 				{
-					final float z = origin.z + mult * gridIndex * unit;
+					final float z = origin.z + (float)( mult * gridIndex ) * unit;
 					coords.add( new Point3f( min.x , min.y , z ) );
 					coords.add( new Point3f( max.x , min.y , z ) );
 					coords.add( new Point3f( max.x , max.y , z ) );
@@ -355,7 +368,7 @@ public final class Java3dTools
 				continue;
 
 			final LineAttributes lineAttributes = new LineAttributes();
-			lineAttributes.setLineWidth( ( i == 0 ) ? 1 : 3 );
+			lineAttributes.setLineWidth( ( i == 0 ) ? 1.0f : 3.0f );
 
 			final Appearance appearance = new Appearance();
 			appearance.setLineAttributes( lineAttributes );
@@ -388,16 +401,17 @@ public final class Java3dTools
 		result.addChild( boxTransform );
 
 		final RotationInterpolator spinner = new RotationInterpolator(
-		        /* alpha          */ new Alpha( -1 , Alpha.INCREASING_ENABLE , 0 , 0 , 8000 , 0 , 0 , 0 , 0 , 0 ) ,
+		        /* alpha          */ new Alpha( -1 , Alpha.INCREASING_ENABLE , 0L , 0L , 8000L , 0L , 0L , 0L , 0L , 0L ) ,
 		        /* transformgroup */ boxTransform ,
 		        /* axis           */ new Transform3D() ,
 		        /* startValue     */ (float) Math.PI * 2.0f ,
 		        /* endValue       */ 0.0f );
-		spinner.setSchedulingBounds( new BoundingSphere( new Point3d( 0 , 0 , 0 ) , 100 ) );
+		spinner.setSchedulingBounds( new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 100.0 ) );
 		boxTransform.addChild( spinner );
 
 		final Appearance appearance = new Appearance();
-		appearance.setTexture( new TextureLoader( image , TEXTURE_OBSERVER ).getTexture() );
+		final TextureLoader loader = new TextureLoader( image , TEXTURE_OBSERVER );
+		appearance.setTexture( loader.getTexture() );
 		boxTransform.addChild( new Box( 0.15f , 0.15f , 0.15f , Box.GENERATE_TEXTURE_COORDS , appearance ) );
 
 		return result;
@@ -413,7 +427,7 @@ public final class Java3dTools
 	 *
 	 * @return  Orbit behavior.
 	 */
-	public static OrbitBehavior createOrbitBehavior( final Canvas3D canvas , final float unit )
+	public static OrbitBehavior createOrbitBehavior( final Canvas3D canvas , final double unit )
 	{
 		final BoundingSphere bounds = new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 100.0 );
 
@@ -435,21 +449,35 @@ public final class Java3dTools
 	 */
 	private static Shape3D createShape3D( final Appearance appearance , final List j3dVertices , final List j3dTextureCoords , final List j3dFaceNormals )
 	{
-		final boolean hasTexture = ( appearance.getTexture() != null );
+		final GeometryArray geom;
 
-		final int what = GeometryArray.COORDINATES | GeometryArray.NORMALS | ( hasTexture ? GeometryArray.TEXTURE_COORDINATE_2 : 0 );
-		final GeometryArray geom = new TriangleArray( j3dVertices.size() , what );
-
-		final Point3d[] coordA = (Point3d[])j3dVertices.toArray( new Point3d[ j3dVertices.size() ] );
-		geom.setCoordinates( 0 , coordA );
-
-		if ( hasTexture )
+		if ( j3dVertices.size() == 2 )
 		{
-			final TexCoord2f[] textCoordsA = (TexCoord2f[])j3dTextureCoords.toArray( new TexCoord2f[ j3dTextureCoords.size() ] );
-			geom.setTextureCoordinates( 0 , 0 , textCoordsA );
-		}
+			final Point3d v1 = (Point3d)j3dVertices.get( 0 );
+			final Point3d v2 = (Point3d)j3dVertices.get( 1 );
 
-		geom.setNormals( 0 , (Vector3f[])j3dFaceNormals.toArray( new Vector3f[ j3dFaceNormals.size() ] ) );
+			geom = new LineArray( 2 , LineArray.COORDINATES );
+			geom.setCoordinate( 0 , new double[]{ v1.x , v1.y , v1.z } );
+			geom.setCoordinate( 1 , new double[]{ v2.x , v2.y , v2.z } );
+		}
+		else
+		{
+			final boolean hasTexture = ( appearance.getTexture() != null );
+
+			final int what = GeometryArray.COORDINATES | GeometryArray.NORMALS | ( hasTexture ? GeometryArray.TEXTURE_COORDINATE_2 : 0 );
+			geom = new TriangleArray( j3dVertices.size() , what );
+
+			final Point3d[] coordA = (Point3d[])j3dVertices.toArray( new Point3d[ j3dVertices.size() ] );
+			geom.setCoordinates( 0 , coordA );
+
+			if ( hasTexture )
+			{
+				final TexCoord2f[] textCoordsA = (TexCoord2f[])j3dTextureCoords.toArray( new TexCoord2f[ j3dTextureCoords.size() ] );
+				geom.setTextureCoordinates( 0 , 0 , textCoordsA );
+			}
+
+			geom.setNormals( 0 , (Vector3f[])j3dFaceNormals.toArray( new Vector3f[ j3dFaceNormals.size() ] ) );
+		}
 
 		return new Shape3D( geom , appearance );
 	}
@@ -502,7 +530,18 @@ public final class Java3dTools
 	 */
 	public static Canvas3D createCanvas3D()
 	{
-		return new Canvas3D( Java3dUniverse.getPreferredConfiguration() );
+		return new Canvas3D( Java3dUniverse.getPreferredConfiguration() )
+			{
+				/*
+				 * Override <code>getMinimumSize()</code> to allow layout manager to
+				 * do its job. Otherwise, this will always return the current size of
+				 * the canvas, not allowing it to be reduced in size.
+				 */
+				public Dimension getMinimumSize()
+				{
+					return new Dimension( 10 , 10 );
+				}
+			};
 	}
 
 	/**
@@ -569,9 +608,9 @@ public final class Java3dTools
 	public Appearance getAppearance( final TextureSpec textureSpec , final float opacity )
 	{
 		final int   rgb = textureSpec.getARGB();
-		final float r   = ( ( rgb >> 16 ) & 255 ) / 255.0f;
-		final float g   = ( ( rgb >>  8 ) & 255 ) / 255.0f;
-		final float b   = (   rgb         & 255 ) / 255.0f;
+		final float r   = (float)( ( rgb >> 16 ) & 255 ) / 255.0f;
+		final float g   = (float)( ( rgb >>  8 ) & 255 ) / 255.0f;
+		final float b   = (float)(   rgb         & 255 ) / 255.0f;
 		final float ar  = 1.9f * textureSpec.ambientReflectivity;
 		final float dr  = 0.9f * textureSpec.diffuseReflectivity;
 		final float sr  = 0.5f * textureSpec.specularReflectivity;
@@ -582,7 +621,7 @@ public final class Java3dTools
 		material.setEmissiveColor ( new Color3f( 0.0f , 0.0f , 0.0f ) );
 		material.setDiffuseColor  ( dr * r , dr * g , dr * b );
 		material.setSpecularColor ( new Color3f( sr , sr , sr ) );
-		material.setShininess     ( textureSpec.specularReflectivity * textureSpec.specularExponent );
+		material.setShininess     ( textureSpec.specularReflectivity * (float)textureSpec.specularExponent );
 
 		final Appearance appearance = new Appearance();
 		appearance.setCapability( Appearance.ALLOW_TEXTURE_READ );
@@ -636,7 +675,8 @@ public final class Java3dTools
 				final Image image = spec.getTextureImage();
 				if ( image != null )
 				{
-					result = new TextureLoader( image , TEXTURE_OBSERVER ).getTexture();
+					final TextureLoader loader = new TextureLoader( image , TEXTURE_OBSERVER );
+					result = loader.getTexture();
 					result.setCapability( Texture.ALLOW_SIZE_READ );
 				}
 
