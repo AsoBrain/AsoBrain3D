@@ -1,5 +1,14 @@
 package backoffice;
 
+/*
+ * $Id$
+ *
+ * (C) Copyright Numdata BV 2000,2002 - All Rights Reserved
+ *
+ * This software may not be used, copyied, modified, or distributed in any
+ * form without express permission from Numdata BV. Please contact Numdata BV
+ * for license information.
+ */
 import java.util.Vector;
 import common.model.Matrix3D;
 import java.awt.geom.Rectangle2D;
@@ -8,11 +17,9 @@ import common.renderer.Object3D;
 /**
  * This class describes a polyline in 2D.
  *
- * @version 1.0 (20011128, PSH) 
  * @author	Peter S. Heijnen
  * @author	Sjoerd Bouwman
- *
- * Copyright (c) 2001 Numdata BV, Eibergen, The Netherlands
+ * @version $Revision$ ($Date$, $Author$)
  */
 public class Polyline2D 
 {
@@ -128,6 +135,11 @@ public class Polyline2D
 	/**
 	 * Test if the specified point is located within the area defined by this
 	 * polyline.
+	 *
+	 * @param	x	x-position of point.
+	 * @param	y	y-position of point.
+	 *
+	 * @return	false.
 	 */
 	public boolean contains( final float x , float y )
 	{
@@ -405,6 +417,16 @@ public class Polyline2D
 		return getBounds().height;
 	}
 
+	/**
+	 * Gets intersecting shape between this polyline and an other one.
+	 *
+	 * This method only delagates all the different types of shapes, it
+	 * does no testing itself.
+	 *
+	 * @param	other	the other shape to get intersection with.
+	 *
+	 * @return	Shape describing the intersecting shape.
+	 */
 	public Polyline2D getIntersection( final Polyline2D other )
 	{
 		if ( other == null ) return null;
@@ -1249,7 +1271,12 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 	}
 
 	/**
-	 * Finished, Works fully.
+	 * Gets the intersection between a convex PolyLine2D and a line PolyLine2D.
+	 *
+	 * @param	convex	The convex Polyline to get intersection from.
+	 * @param	line	The line to get intersection from.
+	 *
+	 * @return	PolyLine2D describing the intersection between the two.
 	 */
 	protected static Polyline2D getIntersectionConvex_Line( final Polyline2D convex , final Polyline2D line )
 	{
@@ -1560,15 +1587,33 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 	}
 
 	/**
-	 * Finished, Works fully.
+	 * Gets the intersection between a convex shape and a point.
+	 *
+	 * This is very easy, if they intersect (for which we have another
+	 * method), the intersection is the point.If they don't the shape is
+	 * empty.
+	 *
+	 * @param	convex	the convex shape to get intersection from.
+	 * @param	points	the point to get intersection from.
+	 *
+	 * @return	Polyline2D describing intersection between the two.
 	 */
 	protected static Polyline2D getIntersectionConvex_Point( final Polyline2D convex , final Polyline2D point )
 	{
-		return isIntersectingConvex_Point( convex , point ) ? point : convex;
+		return isIntersectingConvex_Point( convex , point ) ? point : null;
 	}
 
 	/**
-	 * Finished, Works fully.
+	 * Gets the intersection between two lines.
+	 *
+	 * Calls getIntersectionLine_Line with 8 floats to do the work.
+	 *
+	 * @param	p1	First point of line 1
+	 * @param	p2	Second point of line 1
+	 * @param	p3	First point of line 2
+	 * @param	p4	Second point of line 2
+	 *
+	 * @return	Polyline describing the intersection.
 	 */
 	protected static Polyline2D getIntersectionLine_Line( final PolyPoint2D p1 , final PolyPoint2D p2 , final PolyPoint2D p3 , final PolyPoint2D p4 )
 	{
@@ -1587,7 +1632,13 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 	}
 
 	/**
-	 * Finished, Works fully.
+	 * Gets the intersection between two lines.
+	 * Simply calls getIntersectionLine_Line with four points.
+	 *
+	 * @param	line1	The first line.
+	 * @param	line2	The second line.
+	 *
+	 * @return	Polyline describing the intersection.
 	 */
 	protected static Polyline2D getIntersectionLine_Line( final Polyline2D line1 , final Polyline2D line2 )
 	{
@@ -1602,9 +1653,19 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 	 *    "Intersection point of two lines (2 dimension)"
 	 *    Author: Paul Bourke (april 1989)
 	 *    http://astronomy.swin.edu.au/pbourke/geometry/lineline2d/
-	 */
-	/**
-	 * Finished, Works fully.
+	 *
+	 * @param	x1		start point of line 1.
+	 * @param	y1		start point of line 1
+	 * @param	x2		end point of line 1
+	 * @param	y2		end point of line 1
+	 * @param	x3		start point of line 2.
+	 * @param	y3		start point of line 2
+	 * @param	x4		end point of line 2
+	 * @param	y4		end point of line 2
+	 * @param	cache	cached array of polyline so we don't have to create one.
+	 *
+	 * @return	Array of points describing the intersection between the two
+	 *			(can be 0..2 points).
 	 */
 	protected static PolyPoint2D[] getIntersectionLine_Line( final float x1 , final float y1 , final float x2 , final float y2 , final float x3 , final float y3 , final float x4 , final float y4 , PolyPoint2D[] cache )
 	{
@@ -1709,15 +1770,30 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 	}
 
 	/**
-	 * Finished, Works fully.
+	 * Gets the intersection between a line and a point.
+	 * If the point is on the line, intersection is the point,
+	 * otherwise no intersection.
+	 *
+	 * @param	line	The line.
+	 * @param	point	The point.
+	 *
+	 * @return	Polyline describing the intersection.
 	 */
 	protected static Polyline2D getIntersectionLine_Point( final Polyline2D line , final Polyline2D point )
 	{
 		return isIntersectingLine_Point( line , point )?point:null;
 	}
 
-	/*
+	/**
+	 * Gets the intersection between a path and a line.
+	 *
 	 * Works only when result is one peace of one segment of path (or one point).
+	 *
+	 * @param	path	the path.
+	 * @param	p1		First point of line
+	 * @param	p2		Second point of line.
+	 *
+	 * @return	Polyline describing the intersection.
 	 */
 	protected static Polyline2D getIntersectionPath_Line( final Polyline2D path , final PolyPoint2D p1 , final PolyPoint2D p2 )
 	{
@@ -1811,17 +1887,31 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 		return result;
 	}
 
-	/*
+	/**
+	 * Gets the intersection between a path and a line.
+	 *
 	 * Works only when result is one peace of one segment of path (or one point).
+	 *
+	 * @param	path	the path
+	 * @param	line	the line
+	 * 
+	 * @return	Polyline describing the intersection.
 	 */
 	protected static Polyline2D getIntersectionPath_Line( final Polyline2D path , final Polyline2D line )
 	{
 		return getIntersectionPath_Line( path , line.getPoint( 0 ) , line.getPoint( 1 ) );
 	}
 
-	/*
+	/**
+	 * Gets intersection between two paths.
+	 *
 	 * Works only when seperate intersecting segments can be layed
 	 * head to tail.
+	 *
+	 * @param	path1	First path.
+	 * @param	path2	Second path.
+	 *
+	 * @return	Polyline describing the intersection.
 	 */
 	protected static Polyline2D getIntersectionPath_Path( final Polyline2D path1 , final Polyline2D path2 )
 	{
@@ -1867,7 +1957,15 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 	}
 
 	/**
-	 * Finished, Works fully.
+	 * Gets the intersection between a path and a point.
+	 *
+	 * If the point is on the path, intersection is point, otherwise
+	 * no intersection.
+	 *
+	 * @param	path	The path.
+	 * @param	point	The point.
+	 *
+	 * @return	Polyline describing the intersection.
 	 */
 	protected static Polyline2D getIntersectionPath_Point( final Polyline2D path , final Polyline2D point )
 	{
@@ -1875,7 +1973,12 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 	}
 
 	/**
-	 * Finished, Works fully.
+	 * Gets the intersection between two points.
+	 *
+	 * If the points are the same, intersection is a point, otherwise
+	 * no intersection.
+	 *
+	 * @return	Polyline describing the intersection.
 	 */
 	protected static Polyline2D getIntersectionPoint_Point( final Polyline2D point1 , final Polyline2D point2 )
 	{
@@ -1940,6 +2043,12 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 		return getBounds().y;
 	}
 
+	/**
+	 * Gets an object3d based on this polyline, the result will
+	 * be a face.
+	 *
+	 * @return	Object3D of this polyline.
+	 */
 	public Object3D getObject3D()
 	{
 		Object3D o = null;
@@ -2154,6 +2263,11 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 		return ( first == last ) || first.equals( last );
 	}
 
+	/**
+	 * Checks if this shape is intersecting with an other one.
+	 *
+	 * @return	true if shapes are intersecting, otherwise false.
+	 */
 	public boolean isIntersecting( final Polyline2D other )
 	{
 		if ( other == null ) return false;
@@ -2204,6 +2318,11 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 	 * - convex2 is completely within convex1
 	 * So we have to check intersection between one point on convex1 and convex2 
 	 * to check if convex1 is completely on convex2 (and the otherway around).
+	 *
+	 * @param	convex1		First convex
+	 * @param	convex2		Second convex
+	 *
+	 * @return	true if shapes are intersecting, otherwise false.
 	 */
 	protected static boolean isIntersectingConvex_Convex( final Polyline2D convex1 , final Polyline2D convex2 )
 	{
@@ -2226,6 +2345,14 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 		return isIntersectingPath_Path( convex1 , convex2 );
 	}
 
+	/**
+	 * Checks for intersection between a convex and a line.
+	 *
+	 * @param	convex	The convex
+	 * @param	line	The line.
+	 *
+	 * @return	true if shapes are intersecting, otherwise false.
+	 */	 
 	protected static boolean isIntersectingConvex_Line( final Polyline2D convex , final Polyline2D line )
 	{
 		if ( isIntersectingConvex_Point( convex , line.getPoint( 0 ) ) )
@@ -2240,6 +2367,11 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 	 * - polys do not intersect.
 	 * - line is completely within convex
 	 * So we have to check intersection between one point on the line and the convex poly.
+	 *
+	 * @param	convex	The convex
+	 * @param	path	The path.
+	 *
+	 * @return	true if shapes are intersecting, otherwise false.
 	 */
 	protected static boolean isIntersectingConvex_Path( final Polyline2D convex , final Polyline2D path )
 	{
@@ -2265,6 +2397,11 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 	 * the point is always on the right side or center, the point is inside the
 	 * area. Otherwise, the point is outside the area.
 	 * </I>
+	 *
+	 * @param	convex	The convex
+	 * @param	point	The point
+	 *
+	 * @return	true if shapes are intersecting, otherwise false.
 	 */
 	protected static boolean isIntersectingConvex_Point( final Polyline2D convex , final PolyPoint2D point )
 	{
@@ -2316,12 +2453,25 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 	 * the point is always on the right side or center, the point is inside the
 	 * area. Otherwise, the point is outside the area.
 	 * </I>
+	 *
+	 * @param	convex	The convex.
+	 * @param	point	The point.
+	 *	 
+	 * @return	true if shapes are intersecting, otherwise false.
 	 */
 	protected static boolean isIntersectingConvex_Point( final Polyline2D convex , final Polyline2D point )
 	{
 		return isIntersectingConvex_Point( convex , point.getPoint( 0 ) );
 	}
 
+	/**
+	 * Checks for intersection between two lines.
+	 *
+	 * @param	line1	First line
+	 * @param	line2	Second line
+	 *
+	 * @return	true if shapes are intersecting, otherwise false.
+	 */
 	protected static boolean isIntersectingLine_Line( final Polyline2D line1 , final Polyline2D line2 )
 	{
 		PolyPoint2D p1 = line1.getPoint( 0 );
@@ -2339,6 +2489,17 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 	 *    "Intersection point of two lines (2 dimension)"
 	 *    Author: Paul Bourke (april 1989)
 	 *    http://astronomy.swin.edu.au/pbourke/geometry/lineline2d/
+	 *
+	 * @param	x1		start point of line 1.
+	 * @param	y1		start point of line 1
+	 * @param	x2		end point of line 1
+	 * @param	y2		end point of line 1
+	 * @param	x3		start point of line 2.
+	 * @param	y3		start point of line 2
+	 * @param	x4		end point of line 2
+	 * @param	y4		end point of line 2
+	 *
+	 * @return	true if shapes are intersecting, otherwise false.
 	 */
 	protected static boolean isIntersectingLine_Line( final float x1 , final float y1 , final float x2 , final float y2 , final float x3 , final float y3 , final float x4 , final float y4 )
 	{
@@ -2414,6 +2575,14 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 		
 	}
 
+	/**
+	 * Checks for intersection between a line and a point.
+	 *
+	 * @param	line	The line
+	 * @param	point	The point.
+	 *
+	 * @return	true if shapes are intersecting, otherwise false.
+	 */	 
 	protected static boolean isIntersectingLine_Point( final Polyline2D line , final Polyline2D point )
 	{
 		PolyPoint2D p;
@@ -2443,6 +2612,14 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 		return false;
 	}
 
+	/**
+	 * Checks for intersection between a path and a line.
+	 *
+	 * @param	path	The path.
+	 * @param	line	The line.
+	 *
+	 * @return	true if shapes are intersecting, otherwise false.
+	 */	 
 	protected static boolean isIntersectingPath_Line( final Polyline2D path , final Polyline2D line )
 	{
 		PolyPoint2D p1,p2,p3,p4;
@@ -2465,6 +2642,14 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 		return false;
 	}
 
+	/**
+	 * Checks for intersection between two paths.
+	 *
+	 * @param	path1	The first path.
+	 * @param	path2	The second path.
+	 *
+	 * @return	true if shapes are intersecting, otherwise false.
+	 */	 
 	protected static boolean isIntersectingPath_Path( final Polyline2D path1 , final Polyline2D path2 )
 	{
 		PolyPoint2D p;
@@ -2501,6 +2686,14 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 		return false;
 	}
 
+	/**
+	 * Checks for intersection between a path and a point.
+	 *
+	 * @param	path	The path.
+	 * @param	point	The point.
+	 *
+	 * @return	true if shapes are intersecting, otherwise false.
+	 */	 
 	protected static boolean isIntersectingPath_Point( final Polyline2D path , final Polyline2D point )
 	{
 		PolyPoint2D p;
@@ -2537,11 +2730,27 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 		return false;
 	}
 
+	/**
+	 * Checks for intersection between two points.
+	 *
+	 * @param	point1	First point.
+	 * @param	point2	Second point.
+	 *
+ 	 * @return	true if shapes are intersecting, otherwise false.
+	 */
 	protected static boolean isIntersectingPoint_Point( final Polyline2D point1 , final Polyline2D point2 )
 	{
 		return point1.getPoint( 0 ).equals( point2.getPoint( 0 ) );
 	}
 
+	/**
+	 * Checks for intersection between two rectangles.
+	 *
+	 * @param	r1	First rectangle
+	 * @param	r2	Second rectangle
+	 *
+	 * @return	true if shapes are intersecting, otherwise false.
+	 */	 
 	protected static boolean isIntersectingRectangle_Rectangle( Rectangle2D r1 , Rectangle2D r2 )
 	{
 		return !( r1.getX() > r2.getX() + r2.getWidth() || r1.getX() + r1.getWidth() < r2.getX() ||
@@ -2588,6 +2797,14 @@ outer:		for ( i = 0 ; i < segments.size() ; i++ )
 		return true;
 	}
 
+	/**
+	 * Places the specified polyline2d's (segments) head to tail to make one
+	 * big polyline. The segments must make up a valid shape!.
+	 *
+	 * @param	segments	Vector containing segments of Polyline2D to place head to tail.
+	 *
+	 * @return	The segments put together.
+	 */
 	protected static Polyline2D placeHeadToTail( Vector segments )
 	{
 		if ( segments.size() == 0 )

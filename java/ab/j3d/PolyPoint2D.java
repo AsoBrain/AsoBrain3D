@@ -1,15 +1,22 @@
 package backoffice;
 
+/*
+ * $Id$
+ *
+ * (C) Copyright Numdata BV 2000,2002 - All Rights Reserved
+ *
+ * This software may not be used, copyied, modified, or distributed in any
+ * form without express permission from Numdata BV. Please contact Numdata BV
+ * for license information.
+ */
 import common.model.Matrix3D;
 
 /**
  * This class describes a polyline control point in 2D.
  *
- * @version 1.0 (20011128, PSH) 
  * @author	Peter S. Heijnen
  * @author	Sjoerd Bouwman
- *
- * Copyright (c) 2001 Numdata BV, Eibergen, The Netherlands
+ * @version $Revision$ ($Date$, $Author$)
  */
 public class PolyPoint2D 
 {
