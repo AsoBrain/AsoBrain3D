@@ -157,15 +157,15 @@ public final class FromToViewControl
 	 */
 	public FromToViewControl( final Vector3D from , final Vector3D to , final Vector3D upPrimary , final Vector3D upSecondary )
 	{
-		_from        = null;
-		_to          = null;
+		_from        = from;
+		_to          = to;
 		_upPrimary   = upPrimary;
 		_upSecondary = upSecondary;
 
 		_savedFrom   = from;
 		_savedTo     = to;
 
-		look( from , to );
+		setTransform( Matrix3D.getFromToTransform( from , to , upPrimary , upSecondary ) );
 	}
 
 	/**
