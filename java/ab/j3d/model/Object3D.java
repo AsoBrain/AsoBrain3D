@@ -429,12 +429,15 @@ public class Object3D
 	 *
 	 * @return	Combined bounding box of this object and the existing bounding box (if any).
 	 */
-	public final Bounds3D getBounds( Bounds3D bounds )
+	public final Bounds3D getBounds( final Matrix3D xform , final Bounds3D bounds )
 	{
 		if ( _vertices == null || _vertices.length < 3 )
 			return bounds;
 			
+		final boolean isXform = ( xform != null && xform != Matrix3D.INIT && !Matrix3D.INIT.equals( xform ) );
+		
 		float x1,y1,z1,x2,y2,z2;
+		final Bounds3D result;
 		if ( bounds != null )
 		{
 			x1 = (float)bounds.v1.x;
@@ -443,6 +446,7 @@ public class Object3D
 			x2 = (float)bounds.v2.x;
 			y2 = (float)bounds.v2.y;
 			z2 = (float)bounds.v2.z;
+			result = bounds;
 		}
 		else
 		{
@@ -452,14 +456,24 @@ public class Object3D
 			x2 = Float.MIN_VALUE;
 			y2 = Float.MIN_VALUE;
 			z2 = Float.MIN_VALUE;
-			bounds = Bounds3D.INIT;
+			result = Bounds3D.INIT;
 		}
 
+		float x,y,z,tx,ty;
 		for ( int i = 0 ; i < _vertices.length ; )
 		{
-			float x = _vertices[ i++ ];
-			float y = _vertices[ i++ ];
-			float z = _vertices[ i++ ];
+			x = _vertices[ i++ ];
+			y = _vertices[ i++ ];
+			z = _vertices[ i++ ];
+
+			if ( isXform )
+			{
+				tx = xform.transformX( x , y , z );
+				ty = xform.transformY( x , y , z );
+				z  = xform.transformZ( x , y , z );
+				x  = tx;
+				y  = ty;
+			}
 
 			if ( x < x1 ) x1 = x;
 			if ( y < y1 ) y1 = y;
@@ -472,7 +486,7 @@ public class Object3D
 		if ( x1 > x2 || y1 > y2 || z1 > z2 )
 			return null;
 
-		return bounds.set( bounds.v1.set( x1 , y1 , z1 ) , bounds.v2.set( x2 , y2 , z2 ) );
+		return result.set( result.v1.set( x1 , y1 , z1 ) , result.v2.set( x2 , y2 , z2 ) );
 	}
 
 	/**
