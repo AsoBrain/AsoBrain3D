@@ -538,6 +538,30 @@ public class Object3D
 	}
 
 	/**
+	 * Get texture U coordinates for the specified face.
+	 *
+	 * @param	face	Index of face.
+	 *
+	 * @return	Array with texture U coordinates of face.
+	 */
+	public final int[] getFaceTextureU( final int face )
+	{
+		return ( _faceTU == null ) ? null : _faceTU[ face ];
+	}
+
+	/**
+	 * Get texture V coordinates for the specified face.
+	 *
+	 * @param	face	Index of face.
+	 *
+	 * @return	Array with texture V coordinates of face.
+	 */
+	public final int[] getFaceTextureV( final int face )
+	{
+		return ( _faceTV == null ) ? null : _faceTV[ face ];
+	}
+
+	/**
 	 * Get number of vertices used to define the specified face.
 	 *
 	 * @param	face	Index of face.
