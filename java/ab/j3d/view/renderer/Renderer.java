@@ -1386,7 +1386,7 @@ public class Renderer
 							{
 								db[ i ] = j;
 
-								// fix
+								// fix , tu1 and tv1 become < 0 don't know how that happens
 								int myU = (int)( ( tu1 / d1 ) % tw );
 								int myV = (int)( ( tv1 / d1 ) % th );
 								c = texture[ myV + (myV<0?th:0)][ myU + (myU<0?tw:0) ];
@@ -1415,7 +1415,6 @@ public class Renderer
 					{
 						for ( i = width * v + h1 ; h2-- >= 0 ; i++ )
 						{
-			try {
 							if ( (j = (int)(0x7FFFFFFFFFl / d1)) < db[ i ] )
 							{
 								db[ i ] = j;
@@ -1428,8 +1427,6 @@ public class Renderer
 
 								_pixels[ i ] = 0xFF000000 + (r << 16) + (g << 8) + b;
 							}
-			} catch ( ArrayIndexOutOfBoundsException a )
-			{	System.out.println( "B : " + a.getMessage() + " at line " + v );	return;	}
 
 							d1  += d2;
 							dr1 += dr2;
@@ -1445,12 +1442,11 @@ public class Renderer
 					{
 						for ( i = width * v + h1 ; h2-- >= 0 ; i++ )
 						{
-			try {
 							if ( (j = (int)(0x7FFFFFFFFFl / d1)) < db[ i ] )
 							{
 								db[ i ] = j;
 
-								// fix
+								// fix , tu1 and tv1 become < 0 don't know how that happens
 								int myU = (int)( ( tu1 / d1 ) % tw );
 								int myV = (int)( ( tv1 / d1 ) % th );
 								c = texture[ myV + (myV<0?th:0)][ myU + (myU<0?tw:0) ];
@@ -1464,8 +1460,6 @@ public class Renderer
 
 								_pixels[ i ] = 0xFF000000 + (r << 16) + (g << 8) + b;
 							}
-			} catch ( ArrayIndexOutOfBoundsException a )
-			{	System.out.println( "C : " + a.getMessage() + " at line " + v );	return;	}
 
 							d1  += d2;
 							dr1 += dr2;
