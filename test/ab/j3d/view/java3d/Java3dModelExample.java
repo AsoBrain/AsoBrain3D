@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2004-2004 Numdata BV
+ * Copyright (C) 2004-2005 Numdata BV
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,10 +24,8 @@ import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JFrame;
 
-import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
-import ab.j3d.model.Box3D;
 import ab.j3d.model.Object3D;
 import ab.j3d.view.ViewModel;
 
@@ -58,9 +56,9 @@ public final class Java3dModelExample
 		final ViewModel viewModel = new Java3dModel();
 
 		final Object3D cube = createCube( 100.0 );
-		viewModel.createNode( "cube" , cube );
+		viewModel.createNode( "cube" , cube , null , 1.0f );
 
-		final Vector3D  viewFrom = Vector3D.INIT.set( 0.0 , -800.0 , 300.0 );
+		final Vector3D  viewFrom = Vector3D.INIT.set( 0.0 , -800.0 , 0.0 );
 		final Vector3D  viewAt   = Vector3D.INIT;
 		final Component view     = viewModel.createView( "view" , viewFrom , viewAt );
 
@@ -70,10 +68,47 @@ public final class Java3dModelExample
 
 	private static Object3D createCube( final double size )
 	{
-		final TextureSpec texture = new TextureSpec();
-		texture.code = "green";
-		texture.rgb  = Color.green.getRGB();
+		final Vector3D lfb = Vector3D.INIT.set( -size , -size , -size );
+		final Vector3D rfb = Vector3D.INIT.set(  size , -size , -size );
+		final Vector3D rbb = Vector3D.INIT.set(  size ,  size , -size );
+		final Vector3D lbb = Vector3D.INIT.set( -size ,  size , -size );
+		final Vector3D lft = Vector3D.INIT.set( -size , -size ,  size );
+		final Vector3D rft = Vector3D.INIT.set(  size , -size ,  size );
+		final Vector3D rbt = Vector3D.INIT.set(  size ,  size ,  size );
+		final Vector3D lbt = Vector3D.INIT.set( -size ,  size ,  size );
 
-		return new Box3D( Matrix3D.INIT.minus( size , size , size ) , size * 2.0 , size * 2.0 , size * 2.0 , texture , texture );
+		final TextureSpec red = new TextureSpec();
+		red.code = "red";
+		red.rgb  = Color.red.getRGB();
+
+		final TextureSpec magenta = new TextureSpec();
+		magenta.code = "magenta";
+		magenta.rgb  = Color.magenta.getRGB();
+
+		final TextureSpec blue = new TextureSpec();
+		blue.code = "blue";
+		blue.rgb  = Color.blue.getRGB();
+
+		final TextureSpec cyan = new TextureSpec();
+		cyan.code = "cyan";
+		cyan.rgb  = Color.cyan.getRGB();
+
+		final TextureSpec green = new TextureSpec();
+		green.code = "green";
+		green.rgb  = Color.green.getRGB();
+
+		final TextureSpec yellow = new TextureSpec();
+		yellow.code = "yellow";
+		yellow.rgb  = Color.yellow.getRGB();
+
+		final Object3D cube = new Object3D();
+		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , red     , false ); // Z =  size
+		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , green   , false ); // Z = -size
+		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , cyan    , false ); // Y = -size
+		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , magenta , false ); // Y =  size
+		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , yellow  , false ); // X = -size
+		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , blue    , false ); // X =  size
+
+		return cube;
 	}
 }
