@@ -134,8 +134,8 @@ public final class Matrix3D
 	public boolean equals( Matrix3D other )
 	{
 		return( xx == other.xx && xy == other.xy && xz == other.xz && xo == other.xo &&
-				yx == other.yx && yy == other.yy && yz == other.yz && xo == other.yo &&
-				zx == other.zx && zy == other.zy && zz == other.zz && xo == other.zo );
+				yx == other.yx && yy == other.yy && yz == other.yz && yo == other.yo &&
+				zx == other.zx && zy == other.zy && zz == other.zz && zo == other.zo );
 	}
 
 	/**
