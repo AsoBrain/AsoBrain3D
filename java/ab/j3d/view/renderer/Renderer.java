@@ -10,6 +10,7 @@ package ab.light3d.renderer;
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -22,8 +23,9 @@ import java.awt.event.MouseMotionListener;
 import java.awt.image.ColorModel;
 import java.awt.image.ImageConsumer;
 import java.awt.image.ImageProducer;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import ab.light3d.Bounds3D;
 import ab.light3d.Matrix3D;
@@ -172,7 +174,7 @@ public class Renderer
 	/**
 	 * Background color (ARGB).
 	 */
-	private final int _background = 0x0FFC0C0C0;
+	private int _background = 0x0FFC0C0C0;
 
 	/**
 	 * Z-Buffer. Each entry corresponds to a pixel's Z-coordinate. If a
@@ -191,7 +193,7 @@ public class Renderer
 	/**
 	 * Registered ImageConsumers.
 	 */
-	private final Vector _imageConsumers = new Vector();
+	private final List _imageConsumers = new ArrayList();
 
 	/**
 	 * Image with frame buffer contents.
@@ -280,7 +282,7 @@ public class Renderer
 		synchronized ( _imageConsumers )
 		{
 			if ( !_imageConsumers.contains( ic ) )
-				_imageConsumers.addElement( ic );
+				_imageConsumers.add( ic );
 
 		    final int        width  = _width;
 		    final int        height = _height;
@@ -465,7 +467,7 @@ public class Renderer
 	 * @param	width		Width of renderer view.
 	 * @param	height		Height of renderer view.
 	 */
-	private final void initialize( final int width , final int height )
+	private void initialize( final int width , final int height )
 	{
 		if ( width == _width && height == _height )
 			return;
@@ -551,11 +553,11 @@ public class Renderer
 		final int modifiers = e.getModifiers();
 		int mode      = _controlMode;
 
-		if ( ( modifiers & e.BUTTON2_MASK ) != 0 )
+		if ( ( modifiers & MouseEvent.BUTTON2_MASK ) != 0 )
 		{
 			mode = PAN;
 		}
-		else if ( ( modifiers & e.BUTTON3_MASK ) != 0 )
+		else if ( ( modifiers & MouseEvent.BUTTON3_MASK ) != 0 )
 		{
 			mode = ZOOM;
 		}
@@ -687,7 +689,7 @@ public class Renderer
 	public final void removeConsumer( final ImageConsumer ic )
 	{
 		//System.out.println( "*removeConsumer:" + ic + "*" );
-		_imageConsumers.removeElement( ic );
+		_imageConsumers.remove( ic );
 	}
 
 	/**
@@ -1926,6 +1928,16 @@ public class Renderer
 	}
 
 	/**
+	 * Set background color.
+	 *
+	 * @param   color       Color to use.
+	 */
+	public final void setBackground( final Color color )
+	{
+		_background = color.getRGB();
+	}
+
+	/**
 	 * Set current control mode for panel.
 	 *
 	 * @param	mode	Control mode for panel (ZOOM,PAN,ROTATE).
@@ -2027,9 +2039,9 @@ public class Renderer
 	{
 		synchronized ( _imageConsumers )
 		{
-	 		for ( Enumeration e = _imageConsumers.elements() ; e.hasMoreElements() ; )
+	 		for ( Iterator i = _imageConsumers.iterator() ; i.hasNext() ; )
 	 		{
-		    	final ImageConsumer ic = (ImageConsumer)e.nextElement();
+		    	final ImageConsumer ic = (ImageConsumer)i.next();
 			    if ( isConsumer( ic ) )
 					sendPixels( ic );
 	 		}
