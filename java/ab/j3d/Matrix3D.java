@@ -24,8 +24,8 @@ import java.util.StringTokenizer;
  * | 0  0  0  1  |
  * </pre>
  *
- * @author	Peter S. Heijnen
- * @version	$Revision$ ($Date$, $Author$)
+ * @author  Peter S. Heijnen
+ * @version $Revision$ ($Date$, $Author$)
  */
 public final class Matrix3D
 {
@@ -45,7 +45,7 @@ public final class Matrix3D
 	/**
 	 * Multiplication factor to transform decimal degrees to radians.
 	 */
-	public static final float DEG_TO_RAD = (float)( Math.PI / 180d );
+	public static final float DEG_TO_RAD = (float)( Math.PI / 180.0d );
 
 	/**
 	 * Initial value of a matrix (=identity matrix).
@@ -91,25 +91,25 @@ public final class Matrix3D
 	/**
 	 * Test if the specified value approaches the value 0.
 	 *
-	 * @param	value	Value to test.
+	 * @param   value   Value to test.
 	 *
-	 * @return	<code>true</code> is the specified value is within a
-	 *			+/- 0.01 tolerance of 0; <code>false</code> otherwise.
+	 * @return  <code>true</code> is the specified value is within a
+	 *          +/- 0.01 tolerance of 0; <code>false</code> otherwise.
 	 */
-	public static final boolean almost0( final double value )
+	public static boolean almost0( final double value )
 	{
-		return value > -0.01d && value < 0.01d;
+		return value > -0.01 && value < 0.01;
 	}
 
 	/**
 	 * Test if the specified value approaches the value 0.
 	 *
-	 * @param	value	Value to test.
+	 * @param   value   Value to test.
 	 *
-	 * @return	<code>true</code> is the specified value is within a
-	 *			+/- 0.01 tolerance of 0; <code>false</code> otherwise.
+	 * @return  <code>true</code> is the specified value is within a
+	 *          +/- 0.01 tolerance of 0; <code>false</code> otherwise.
 	 */
-	public static final boolean almost0( final float value )
+	public static boolean almost0( final float value )
 	{
 		return value > -0.01f && value < 0.01f;
 	}
@@ -117,25 +117,25 @@ public final class Matrix3D
 	/**
 	 * Test if the specified value approaches the value 1.
 	 *
-	 * @param	value	Value to test.
+	 * @param   value   Value to test.
 	 *
-	 * @return	<code>true</code> is the specified value is within a
-	 *			+/- 0.01 tolerance of 1; <code>false</code> otherwise.
+	 * @return  <code>true</code> is the specified value is within a
+	 *          +/- 0.01 tolerance of 1; <code>false</code> otherwise.
 	 */
-	public static final boolean almost1( final double value )
+	public static boolean almost1( final double value )
 	{
-		return value > 0.99d && value < 1.01d;
+		return value > 0.99 && value < 1.01;
 	}
 
 	/**
 	 * Test if the specified value approaches the value 1.
 	 *
-	 * @param	value	Value to test.
+	 * @param   value   Value to test.
 	 *
-	 * @return	<code>true</code> is the specified value is within a
-	 *			+/- 0.01 tolerance of 1; <code>false</code> otherwise.
+	 * @return  <code>true</code> is the specified value is within a
+	 *          +/- 0.01 tolerance of 1; <code>false</code> otherwise.
 	 */
-	public static final boolean almost1( final float value )
+	public static boolean almost1( final float value )
 	{
 		return value > 0.99f && value < 1.01f;
 	}
@@ -143,10 +143,10 @@ public final class Matrix3D
 	/**
 	 * Compare this object to another object.
 	 *
-	 * @param	other	Object to compare with.
+	 * @param   other   Object to compare with.
 	 *
-	 * @return	<code>true</code> if the objects are equal;
-	 *			<code>false</code> if not.
+	 * @return  <code>true</code> if the objects are equal;
+	 *          <code>false</code> if not.
 	 */
 	public boolean equals( final Object other )
 	{
@@ -164,11 +164,11 @@ public final class Matrix3D
 	 * Convert string representation of object (see toString()) back to
 	 * object instance.
 	 *
-	 * @param	value	String representation of object.
+	 * @param   value   String representation of object.
 	 *
-	 * @return	Object instance.
+	 * @return  Object instance.
 	 */
-	public static final Matrix3D fromString( final String value )
+	public static Matrix3D fromString( final String value )
 	{
 		final StringTokenizer st = new StringTokenizer( value , "," );
 
@@ -200,14 +200,18 @@ public final class Matrix3D
 	 *
 	 * @return  Transformation matrix.
 	 */
-	public static final Matrix3D getTransform( float rx , float ry , float rz , final float tx , final float ty , final float tz )
+	public static Matrix3D getTransform( final double rx , final double ry , final double rz , final float tx , final float ty , final float tz )
 	{
-		final float ctX = (float)Math.cos( rx *= DEG_TO_RAD );
-		final float stX = (float)Math.sin( rx );
-		final float ctY = (float)Math.cos( ry *= DEG_TO_RAD );
-		final float stY = (float)Math.sin( ry );
-		final float ctZ = (float)Math.cos( rz *= DEG_TO_RAD );
-		final float stZ = (float)Math.sin( rz );
+		final double radX = rx * DEG_TO_RAD;
+		final double radY = ry * DEG_TO_RAD;
+		final double radZ = rz * DEG_TO_RAD;
+
+		final float ctX = (float)Math.cos( radX );
+		final float stX = (float)Math.sin( radX );
+		final float ctY = (float)Math.cos( radY );
+		final float stY = (float)Math.sin( radY );
+		final float ctZ = (float)Math.cos( radZ );
+		final float stZ = (float)Math.sin( radZ );
 
 		return new Matrix3D(
 			/* xx */  ctZ * ctY - stZ * stX * stY ,
@@ -242,7 +246,7 @@ public final class Matrix3D
 	 *
 	 * @return  Inverse matrix.
 	 */
-	public final Matrix3D inverse()
+	public Matrix3D inverse()
 	{
 		return set( xx , yx , zx , - xo * xx - yo * yx - zo * zx ,
 		            xy , yy , zy , - xo * xy - yo * yy - zo * zy ,
@@ -257,15 +261,15 @@ public final class Matrix3D
 	 */
 	public boolean isMirrorXY()
 	{
-		return ( xx * ( yy - yx ) + yx * ( xx - xy ) ) < 0d;
+		return ( xx * ( yy - yx ) + yx * ( xx - xy ) ) < 0;
 	}
 
 	/**
 	 * Translate the transform by the specified vector.
 	 *
-	 * @param	vector	Vector specifying the translation.
+	 * @param   vector  Vector specifying the translation.
 	 *
-	 * @return	new Matrix3D with translation
+	 * @return  new Matrix3D with translation
 	 */
 	public Matrix3D minus( final Vector3D vector )
 	{
@@ -275,24 +279,23 @@ public final class Matrix3D
 	/**
 	 * Translate the transform by the specified vector.
 	 *
-	 * @param	x	x-coordinate of vector specifying the translation.
-	 * @param	y	y-coordinate of vector specifying the translation.
-	 * @param	z	z-coordinate of vector specifying the translation.
+	 * @param   x       X-coordinate of vector specifying the translation.
+	 * @param   y       Y-coordinate of vector specifying the translation.
+	 * @param   z       Z-coordinate of vector specifying the translation.
 	 *
-	 * @return	new Matrix3D with translation
+	 * @return  new Matrix3D with translation
 	 */
 	public Matrix3D minus( final float x , final float y , final float z )
 	{
-		if ( x == 0f && y == 0f && z == 0f ) return this;
-		return setTranslation( xo - x , yo - y , zo - z );
+		return ( x == 0 && y == 0 && z == 0 ) ? this : setTranslation( xo - x , yo - y , zo - z );
 	}
 
 	/**
 	 * Transform a box using this transform.
 	 *
-	 * @param	box		Box to transform.
+	 * @param   box     Box to transform.
 	 *
-	 * @return	Resulting box.
+	 * @return  Resulting box.
 	 */
 	public Bounds3D multiply( final Bounds3D box )
 	{
@@ -303,9 +306,9 @@ public final class Matrix3D
 	 * Execute matrix multiplication between two matrices and set the
 	 * result in this transform.
 	 *
-	 * @param	other	Transform to multiply with.
+	 * @param   other   Transform to multiply with.
 	 *
-	 * @return	Resulting matrix.
+	 * @return  Resulting matrix.
 	 */
 	public Matrix3D multiply( final Matrix3D other )
 	{
@@ -329,9 +332,9 @@ public final class Matrix3D
 	/**
 	 * Transform a vector using this transform.
 	 *
-	 * @param	vector	Vector to transform.
+	 * @param   vector  Vector to transform.
 	 *
-	 * @return	Resulting vector.
+	 * @return  Resulting vector.
 	 */
 	public Vector3D multiply( final Vector3D vector )
 	{
@@ -344,11 +347,11 @@ public final class Matrix3D
 	/**
 	 * Transform a vector using this transform.
 	 *
-	 * @param	x	X-value of vector.
-	 * @param	y	Y-value of vector.
-	 * @param	z	Z-value of vector.
+	 * @param   x       X-value of vector.
+	 * @param   y       Y-value of vector.
+	 * @param   z       Z-value of vector.
 	 *
-	 * @return	Resulting vector.
+	 * @return  Resulting vector.
 	 */
 	public Vector3D multiply( final float x , final float y , final float z )
 	{
@@ -363,22 +366,22 @@ public final class Matrix3D
 	 * Multiply this matrix with another matrix and return the result
 	 * of this multiplication.
 	 *
-	 * @param	xx	Matrix row 0, column 0 (x-factor for x).
-	 * @param	xy	Matrix row 0, column 1 (y-factor for x).
-	 * @param	xz	Matrix row 0, column 2 (z-factor for x).
-	 * @param	xo	Matrix row 0, column 3 (offset   for x).
-	 * @param	yx	Matrix row 1, column 0 (x-factor for y).
-	 * @param	yy	Matrix row 1, column 1 (y-factor for y).
-	 * @param	yz	Matrix row 1, column 2 (z-factor for y).
-	 * @param	yo	Matrix row 1, column 3 (offset   for y).
-	 * @param	zx	Matrix row 2, column 0 (x-factor for z).
-	 * @param	zy	Matrix row 2, column 1 (y-factor for z).
-	 * @param	zz	Matrix row 2, column 2 (z-factor for z).
-	 * @param	zo	Matrix row 2, column 3 (offset   for z).
+	 * @param   xx      Matrix row 0, column 0 (x-factor for x).
+	 * @param   xy      Matrix row 0, column 1 (y-factor for x).
+	 * @param   xz      Matrix row 0, column 2 (z-factor for x).
+	 * @param   xo      Matrix row 0, column 3 (offset   for x).
+	 * @param   yx      Matrix row 1, column 0 (x-factor for y).
+	 * @param   yy      Matrix row 1, column 1 (y-factor for y).
+	 * @param   yz      Matrix row 1, column 2 (z-factor for y).
+	 * @param   yo      Matrix row 1, column 3 (offset   for y).
+	 * @param   zx      Matrix row 2, column 0 (x-factor for z).
+	 * @param   zy      Matrix row 2, column 1 (y-factor for z).
+	 * @param   zz      Matrix row 2, column 2 (z-factor for z).
+	 * @param   zo      Matrix row 2, column 3 (offset   for z).
 	 *
-	 * @return	Resulting matrix.
+	 * @return  Resulting matrix.
 	 */
-	public final Matrix3D multiply(
+	public Matrix3D multiply(
 		final float xx , final float xy , final float xz , final float xo ,
 		final float yx , final float yy , final float yz , final float yo ,
 		final float zx , final float zy , final float zz , final float zo )
@@ -403,9 +406,9 @@ public final class Matrix3D
 	/**
 	 * Translate the transform by the specified vector.
 	 *
-	 * @param	vector	Vector specifying the translation.
+	 * @param   vector  Vector specifying the translation.
 	 *
-	 * @return	new Matrix3D with translation
+	 * @return  new Matrix3D with translation
 	 */
 	public Matrix3D plus( final Vector3D vector )
 	{
@@ -415,11 +418,11 @@ public final class Matrix3D
 	/**
 	 * Translate the transform by the specified vector.
 	 *
-	 * @param	x	x-coordintate of vector specifying the translation.
-	 * @param	y	y-coordintate of vector specifying the translation.
-	 * @param	z	z-coordintate of vector specifying the translation.
+	 * @param   x       X-coordintate of vector specifying the translation.
+	 * @param   y       Y-coordintate of vector specifying the translation.
+	 * @param   z       Z-coordintate of vector specifying the translation.
 	 *
-	 * @return	new Matrix3D with translation
+	 * @return  new Matrix3D with translation
 	 */
 	public Matrix3D plus( final float x , final float y , final float z )
 	{
@@ -433,11 +436,11 @@ public final class Matrix3D
 	 * are supplied using float arrays with a sequence of
 	 * 3 floats for each vertex.
 	 *
-	 * @param	source			Source array.
-	 * @param	dest			Destination array.
-	 * @param	vertexCount		Number of vertices.
+	 * @param   source          Source array.
+	 * @param   dest            Destination array.
+	 * @param   vertexCount     Number of vertices.
 	 */
-	public final void rotate( final float[] source , final float[] dest , int vertexCount )
+	public void rotate( final float[] source , final float[] dest , int vertexCount )
 	{
 		final float lxx = xx;
 		final float lxy = xy;
@@ -477,11 +480,11 @@ public final class Matrix3D
 	/**
 	 * Rotate along the X-axis.
 	 *
-	 * @param	theta	Rotate theta radians about the X-axis
+	 * @param   theta   Rotate theta radians about the X-axis
 	 *
 	 * @return  Rotated matrix.
 	 */
-	public Matrix3D rotateX( final float theta )
+	public Matrix3D rotateX( final double theta )
 	{
 		if ( theta == 0d )
 			return this;
@@ -498,11 +501,11 @@ public final class Matrix3D
 	/**
 	 * Rotate along the Y-axis.
 	 *
-	 * @param	theta	Rotate theta radians about the Y-axis
+	 * @param   theta   Rotate theta radians about the Y-axis
 	 *
 	 * @return  Rotated matrix.
 	 */
-	public Matrix3D rotateY( final float theta )
+	public Matrix3D rotateY( final double theta )
 	{
 		if ( theta == 0d )
 			return this;
@@ -519,11 +522,11 @@ public final class Matrix3D
 	/**
 	 * Rotate along the Z-axis.
 	 *
-	 * @param	theta	Rotate theta radians about the Z-axis
+	 * @param   theta   Rotate theta radians about the Z-axis
 	 *
 	 * @return  Rotated matrix.
 	 */
-	public Matrix3D rotateZ( final float theta )
+	public Matrix3D rotateZ( final double theta )
 	{
 		if ( theta == 0d )
 			return this;
@@ -540,22 +543,22 @@ public final class Matrix3D
 	/**
 	 * Set all values in the matrix and return the resulting matrix.
 	 *
-	 * @param	xx	Matrix row 0, column 0 (x-factor for x).
-	 * @param	xy	Matrix row 0, column 1 (y-factor for x).
-	 * @param	xz	Matrix row 0, column 2 (z-factor for x).
-	 * @param	xo	Matrix row 0, column 3 (offset   for x).
-	 * @param	yx	Matrix row 1, column 0 (x-factor for y).
-	 * @param	yy	Matrix row 1, column 1 (y-factor for y).
-	 * @param	yz	Matrix row 1, column 2 (z-factor for y).
-	 * @param	yo	Matrix row 1, column 3 (offset   for y).
-	 * @param	zx	Matrix row 2, column 0 (x-factor for z).
-	 * @param	zy	Matrix row 2, column 1 (y-factor for z).
-	 * @param	zz	Matrix row 2, column 2 (z-factor for z).
-	 * @param	zo	Matrix row 2, column 3 (offset   for z).
+	 * @param   xx     Matrix row 0, column 0 (x-factor for x).
+	 * @param   xy     Matrix row 0, column 1 (y-factor for x).
+	 * @param   xz     Matrix row 0, column 2 (z-factor for x).
+	 * @param   xo     Matrix row 0, column 3 (offset   for x).
+	 * @param   yx     Matrix row 1, column 0 (x-factor for y).
+	 * @param   yy     Matrix row 1, column 1 (y-factor for y).
+	 * @param   yz     Matrix row 1, column 2 (z-factor for y).
+	 * @param   yo     Matrix row 1, column 3 (offset   for y).
+	 * @param   zx     Matrix row 2, column 0 (x-factor for z).
+	 * @param   zy     Matrix row 2, column 1 (y-factor for z).
+	 * @param   zz     Matrix row 2, column 2 (z-factor for z).
+	 * @param   zo     Matrix row 2, column 3 (offset   for z).
 	 *
-	 * @return	Resulting vector.
+	 * @return  Resulting vector.
 	 */
-	public final Matrix3D set(
+	public Matrix3D set(
 		float xx , float xy , float xz , float xo ,
 		float yx , float yy , float yz , float yo ,
 		float zx , float zy , float zz , float zo )
@@ -588,9 +591,9 @@ public final class Matrix3D
 	/**
 	 * Set translation of a transform to the specified vector.
 	 *
-	 * @param	vector	Vector to use.
+	 * @param   vector  Vector to use.
 	 *
-	 * @return	Resulting matrix.
+	 * @return  Resulting matrix.
 	 */
 	public Matrix3D setTranslation( final Vector3D vector )
 	{
@@ -600,11 +603,11 @@ public final class Matrix3D
 	/**
 	 * Set translation of a transform to the specified vector.
 	 *
-	 * @param	x	X-value of vector.
-	 * @param	y	Y-value of vector.
-	 * @param	z	Z-value of vector.
+	 * @param   x       X-value of vector.
+	 * @param   y       Y-value of vector.
+	 * @param   z       Z-value of vector.
 	 *
-	 * @return	Resulting matrix.
+	 * @return  Resulting matrix.
 	 */
 	public Matrix3D setTranslation( float x , float y , float z )
 	{
@@ -623,7 +626,7 @@ public final class Matrix3D
 	/**
 	 * Get string representation of object.
 	 *
-	 * @return	String representation of object.
+	 * @return  String representation of object.
 	 */
 	public String toString()
 	{
@@ -637,11 +640,11 @@ public final class Matrix3D
 	 * are supplied using float arrays with a sequence of
 	 * 3 floats for each vertex.
 	 *
-	 * @param	source			Source array.
-	 * @param	dest			Destination array.
-	 * @param	vertexCount		Number of vertices.
+	 * @param   source          Source array.
+	 * @param   dest            Destination array.
+	 * @param   vertexCount     Number of vertices.
 	 */
-	public final void transform( final float[] source , final float[] dest , int vertexCount )
+	public void transform( final float[] source , final float[] dest , int vertexCount )
 	{
 		final float lxx = xx;
 		final float lxy = xy;
@@ -703,9 +706,9 @@ public final class Matrix3D
 	/**
 	 * Transform a vector to X-coordinate using this transform.
 	 *
-	 * @param	x		X-coordinate of vector.
-	 * @param	y		Y-coordinate of vector.
-	 * @param	z		Z-coordinate of vector.
+	 * @param   x       X-coordinate of vector.
+	 * @param   y       Y-coordinate of vector.
+	 * @param   z       Z-coordinate of vector.
 	 *
 	 * @return  Resulting X coordinate.
 	 */
@@ -717,9 +720,9 @@ public final class Matrix3D
 	/**
 	 * Transform a vector to Y-coordinate using this transform.
 	 *
-	 * @param	x		X-coordinate of vector.
-	 * @param	y		Y-coordinate of vector.
-	 * @param	z		Z-coordinate of vector.
+	 * @param   x       X-coordinate of vector.
+	 * @param   y       Y-coordinate of vector.
+	 * @param   z       Z-coordinate of vector.
 	 *
 	 * @return  Resulting Y coordinate.
 	 */
@@ -731,9 +734,9 @@ public final class Matrix3D
 	/**
 	 * Transform a vector to Z-coordinate using this transform.
 	 *
-	 * @param	x		X-coordinate of vector.
-	 * @param	y		Y-coordinate of vector.
-	 * @param	z		Z-coordinate of vector.
+	 * @param   x       X-coordinate of vector.
+	 * @param   y       Y-coordinate of vector.
+	 * @param   z       Z-coordinate of vector.
 	 *
 	 * @return  Resulting Z coordinate.
 	 */
