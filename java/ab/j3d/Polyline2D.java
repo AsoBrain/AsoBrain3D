@@ -503,6 +503,28 @@ public final class Polyline2D
 	}
 
 	/**
+	 * Get width of bounding box of polyline.
+	 *
+	 * @return  Width of bounding box of polyline.
+	 */
+	public double getWidth()
+	{
+		final Bounds2D bounds = getBounds();
+		return ( bounds == null ) ? 0.0 : bounds.getWidth();
+	}
+
+	/**
+	 * Get height of bounding box of polyline.
+	 *
+	 * @return  Height of bounding box of polyline.
+	 */
+	public double getHeight()
+	{
+		final Bounds2D bounds = getBounds();
+		return ( bounds == null ) ? 0.0 : bounds.getHeight();
+	}
+
+	/**
 	 * Find rectangular shape enclosed by the convex shape defined by this polyline.
 	 * FIXME : This method is not 'perfect'. It does find a rectangle that is completely
 	 * within the convex, but it can be optimized (speed, memory-use and result).
@@ -630,52 +652,161 @@ public final class Polyline2D
 	 */
 	public Polyline2D getIntersection( final Polyline2D other )
 	{
-		if ( other == null ) return null;
-		if ( other == this ) return this;
-
-		final int myType = getType();
-		if ( myType == VOID )
-			return null;
-
-		final int otherType = other.getType();
-		if ( otherType == VOID )
-			return null;
-
-		/*
-		 * Check bounding box.
-		 */
-		if ( !getBounds().intersects( other.getBounds() ) )
-			return null;
-
-		switch ( myType <<5| otherType )
+		if ( other == null )
 		{
-			/* point vs. ??? & ??? vs. point */
-			case POINT  <<5| POINT  : return getPoint( 0 ).equals( other.getPoint( 0 ) ) ? this : null;
-			case POINT  <<5| LINE   : return isIntersectingLine_Point( other , this ) ? this : null;
-			case POINT  <<5| PATH   : return isIntersectingPath_Point( other , this ) ? this : null;
-			case POINT  <<5| CONVEX : return isIntersectingConvex_Point( other , getPoint( 0 ) ) ? this : null;
-			case LINE   <<5| POINT  : return isIntersectingLine_Point( this , other ) ? other : null;
-			case PATH   <<5| POINT  : return isIntersectingPath_Point( this , other ) ? other : null;
-			case CONVEX <<5| POINT  : return isIntersectingConvex_Point( this , other.getPoint( 0 ) ) ? other : null;
+			return null;
+		}
+		else if ( other == this )
+		{
+			return this;
+		}
+		else
+		{
+			switch ( getType() )
+			{
+				case VOID:
+					return null;
 
-			/* line vs. ??? & ??? vs. line */
-			case LINE   <<5| LINE   : return getIntersectionLine_Line( getPoint( 0 ) , getPoint( 1 ) , other.getPoint( 0 ) , other.getPoint( 1 ) );
-			case LINE   <<5| PATH   : return getIntersectionPath_Line( other , getPoint( 0 ) , getPoint( 1 ) );
-			case LINE   <<5| CONVEX : return getIntersectionConvex_Line( other , this );
-			case PATH   <<5| LINE   : return getIntersectionPath_Line( this , other.getPoint( 0 ) , other.getPoint( 1 ) );
-			case CONVEX <<5| LINE   : return getIntersectionConvex_Line( this , other );
+				case POINT:
+					return other.contains( getPoint( 0 ) ) ? this : null;
 
-			/* convex vs. ??? & ??? vs. convex */
-			case CONVEX <<5| CONVEX : return getIntersectionConvex_Convex( this , other );
-			case CONVEX <<5| PATH   : return getIntersectionConvex_Path( this , other );
-			case PATH   <<5| CONVEX : return getIntersectionConvex_Path( other , this );
+				case LINE:
+					switch ( other.getType() )
+					{
+						case VOID:
+							return null;
 
-			/* path vs. path */
-			case PATH   <<5| PATH   : return getIntersectionPath_Path( this , other );
+						case POINT:
+							return isIntersectingLine_Point( this , other.getPoint( 0 ) ) ? other : null;
+
+						case LINE:
+							return getIntersectionLine_Line( getPoint( 0 ) , getPoint( 1 ) , other.getPoint( 0 ) , other.getPoint( 1 ) );
+
+						case PATH:
+							{
+								final Bounds2D thisBounds  = getBounds();
+								final Bounds2D otherBounds = other.getBounds();
+								return thisBounds.intersects( otherBounds ) ? getIntersectionPath_Line( other , getPoint( 0 ) , getPoint( 1 ) ) : null;
+							}
+
+						case CONVEX:
+							{
+								final Bounds2D thisBounds  = getBounds();
+								final Bounds2D otherBounds = other.getBounds();
+								return thisBounds.intersects( otherBounds ) ? getIntersectionConvex_Line( other , this ) : null;
+							}
+					}
+					break;
+
+				case PATH:
+					switch ( other.getType() )
+					{
+						case VOID:
+							return null;
+
+						case POINT:
+							return isIntersectingPath_Point( this , other.getPoint( 0 ) ) ? other : null;
+
+						case LINE:
+							{
+								final Bounds2D thisBounds  = getBounds();
+								final Bounds2D otherBounds = other.getBounds();
+								return thisBounds.intersects( otherBounds ) ? getIntersectionPath_Line( this , other.getPoint( 0 ) , other.getPoint( 1 ) ) : null;
+							}
+
+						case CONVEX:
+							{
+								final Bounds2D thisBounds  = getBounds();
+								final Bounds2D otherBounds = other.getBounds();
+								return thisBounds.intersects( otherBounds ) ? getIntersectionConvex_Path( other , this ) : null;
+							}
+
+						case PATH:
+							{
+								final Bounds2D thisBounds  = getBounds();
+								final Bounds2D otherBounds = other.getBounds();
+								return thisBounds.intersects( otherBounds ) ? getIntersectionPath_Path( this , other ) : null;
+							}
+					}
+					break;
+
+				case CONVEX:
+					switch ( other.getType() )
+					{
+						case VOID:
+							return null;
+
+						case POINT:
+							return isIntersectingConvex_Point( this , other.getPoint( 0 ) ) ? other : null;
+
+						case LINE:
+						{
+							final Bounds2D thisBounds  = getBounds();
+							final Bounds2D otherBounds = other.getBounds();
+							return thisBounds.intersects( otherBounds ) ? getIntersectionConvex_Line( this , other ) : null;
+						}
+
+						case CONVEX:
+						{
+							final Bounds2D thisBounds  = getBounds();
+							final Bounds2D otherBounds = other.getBounds();
+							return thisBounds.intersects( otherBounds ) ? getIntersectionConvex_Convex( this , other ) : null;
+						}
+
+						case PATH:
+						{
+							final Bounds2D thisBounds  = getBounds();
+							final Bounds2D otherBounds = other.getBounds();
+							return thisBounds.intersects( otherBounds ) ? getIntersectionConvex_Path( this , other ) : null;
+						}
+					}
+					break;
+			}
+
+			throw new RuntimeException( "Can't get intersection between type #" + getType() + " and type #" + other.getType() );
+		}
+	}
+
+	public boolean contains( final PolyPoint2D point )
+	{
+		return contains( point.x , point.y );
+	}
+
+	public boolean contains( final double x , final double y )
+	{
+		final boolean result;
+
+		final int type = getType();
+		switch ( type )
+		{
+			case VOID :
+				result = false;
+				break;
+
+			case POINT  :
+				final PolyPoint2D other = getPoint( 0 );
+				result = ( x == other.x ) && ( y == other.y );
+				break;
+
+			case LINE   :
+				result = isIntersectingLine_Point( this , new PolyPoint2D( x , y ) );
+				break;
+
+			case PATH   :
+				result = isIntersectingPath_Point( this , new PolyPoint2D( x , y ) );
+				break;
+
+			case CONVEX :
+				result = isIntersectingConvex_Point( this , new PolyPoint2D( x , y ) );
+				break;
+
+			default :
+				throw new IllegalArgumentException( "unknown type: " + type );
 		}
 
-		throw new RuntimeException( "Can't get intersection between type #" + myType + " and type #" + otherType );
+		return result;
 	}
+
 
 	/**
 	 * Gets the intersecting area of two convex Polyline2D's.
@@ -1808,8 +1939,21 @@ public final class Polyline2D
 	 */
 	public double getLength( final int index )
 	{
-		return ( ( index < 0 ) || ( index >= getPointCount() - 1 ) ) ? -1.0
-		     : getPoint( index + 1 ).getLength( getPoint( index ) );
+		final double result;
+
+		if ( ( ( index < 0 ) || ( index >= getPointCount() - 1 ) ) )
+		{
+			result = -1.0;
+		}
+		else
+		{
+			final PolyPoint2D p1 = getPoint( index );
+			final PolyPoint2D p2 = getPoint( index + 1 );
+
+			result = p2.getLength( p1 );
+		}
+
+		return result;
 	}
 
 	/**
@@ -1959,9 +2103,9 @@ public final class Polyline2D
 	 */
 	private static boolean hasEffect( final Matrix3D xform )
 	{
-		return xform == null ||
-		       xform.xx != 1 || xform.xy != 0 || xform.xo != 0 ||
-		       xform.yx != 0 || xform.yy != 1 || xform.yo != 0;
+		return ( xform != null )
+		    && ( ( xform.xx != 1.0 ) || ( xform.xy != 0.0 ) || ( xform.xo != 0.0 )
+		      || ( xform.yx != 0.0 ) || ( xform.yy != 1.0 ) || ( xform.yo != 0.0 ) );
 	}
 
 	/**
@@ -2020,14 +2164,14 @@ public final class Polyline2D
 						switch ( myType <<5| otherType )
 						{
 							case POINT  <<5| POINT  : result = getPoint( 0 ).equals( other.getPoint( 0 ) ); break;
-							case POINT  <<5| LINE   : result = isIntersectingLine_Point( other , this ); break;
-							case POINT  <<5| PATH   : result = isIntersectingPath_Point( other , this ); break;
+							case POINT  <<5| LINE   : result = isIntersectingLine_Point( other , getPoint( 0 ) ); break;
+							case POINT  <<5| PATH   : result = isIntersectingPath_Point( other , getPoint( 0 ) ); break;
 							case POINT  <<5| CONVEX : result = isIntersectingConvex_Point( other , getPoint( 0 ) ); break;
-							case LINE   <<5| POINT  : result = isIntersectingLine_Point( this , other ); break;
+							case LINE   <<5| POINT  : result = isIntersectingLine_Point( this , other.getPoint( 0 ) ); break;
 							case LINE   <<5| LINE   : result = isIntersectingLine_Line( this , other ); break;
 							case LINE   <<5| PATH   : result = isIntersectingPath_Line( other , this ); break;
 							case LINE   <<5| CONVEX : result = isIntersectingConvex_Line( other , this ); break;
-							case PATH   <<5| POINT  : result = isIntersectingPath_Point( this , other ); break;
+							case PATH   <<5| POINT  : result = isIntersectingPath_Point( this , other.getPoint( 0 ) ); break;
 							case PATH   <<5| LINE   : result = isIntersectingPath_Line( this , other ); break;
 							case PATH   <<5| PATH   : result = isIntersectingPath_Path( this , other ); break;
 							case PATH   <<5| CONVEX : result = isIntersectingConvex_Path( other , this ); break;
@@ -2304,11 +2448,10 @@ public final class Polyline2D
 	 *
 	 * @return  true if shapes are intersecting, otherwise false.
 	 */
-	private static boolean isIntersectingLine_Point( final Polyline2D line , final Polyline2D point )
+	private static boolean isIntersectingLine_Point( final Polyline2D line , final PolyPoint2D point )
 	{
-		final PolyPoint2D p = point.getPoint( 0 );
-		final double px = p.x;
-		final double py = p.y;
+		final double px = point.x;
+		final double py = point.y;
 
 		final PolyPoint2D p1  = line.getPoint( 0 );
 		final double x1 = p1.x;
@@ -2422,17 +2565,14 @@ public final class Polyline2D
 	 *
 	 * @return  true if shapes are intersecting, otherwise false.
 	 */
-	private static boolean isIntersectingPath_Point( final Polyline2D path , final Polyline2D point )
+	private static boolean isIntersectingPath_Point( final Polyline2D path , final PolyPoint2D point )
 	{
-		PolyPoint2D p;
-
 		int i = path.getPointCount();
 
-		p  = point.getPoint( 0 );
-		final double px = p.x;
-		final double py = p.y;
+		final double px = point.x;
+		final double py = point.y;
 
-		p  = path.getPoint( --i );
+		PolyPoint2D p = path.getPoint( --i );
 		double x1;
 		double y1;
 		double x2 = p.x;
@@ -2636,7 +2776,7 @@ public final class Polyline2D
 		int start = 0;
 		while ( start < str.length() )
 		{
-			int end = str.indexOf( '|' , start );
+			int end = str.indexOf( (int)'|' , start );
 			if ( end < 0 )
 				end = str.length();
 
