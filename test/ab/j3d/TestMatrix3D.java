@@ -13,10 +13,12 @@ package ab.light3d;
 import junit.framework.TestCase;
 
 /**
- * This test verifies the Matrix3D class.
+ * This test verifies the <code>Matrix3D</code> class.
  *
- * @author	Peter S. Heijnen
- * @version	$Revision$ ($Date$, $Author$)
+ * @see     Matrix3D
+ *
+ * @author  Peter S. Heijnen
+ * @version $Revision $ $Date$
  */
 public class TestMatrix3D
 	extends TestCase
