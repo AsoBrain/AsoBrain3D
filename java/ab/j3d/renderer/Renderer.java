@@ -3,11 +3,12 @@ package common.renderer;
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 1999,2000,2001 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
+ * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
  * This software may not be used, copyied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * form without express permission from Numdata BV or Peter S. Heijnen. Please
+ * contact Numdata BV or Peter S. Heijnen for license information.
  */
 import java.awt.*;
 import java.awt.image.ImageConsumer;
@@ -18,7 +19,6 @@ import common.db.TextureSpec;
 import common.model.*;
 import java.util.Enumeration;
 import java.util.Vector;
-import java.util.Stack;
 
 /**
  * The renderer....
@@ -30,20 +30,17 @@ import java.util.Stack;
 public class Renderer
 	implements ComponentListener, Runnable, MouseListener, MouseMotionListener, ImageProducer
 {
+	/**
+	 * Color model used fo rrendering.
+	 */
 	private static final ColorModel _colorModel = ColorModel.getRGBdefault();
 
-	/*
-	 * Values for control mode.
-	 */
-	public static final int ZOOM   = 1;
-	public static final int PAN    = 2;
-	public static final int ROTATE = 3;
+	/** Control mode: zoom.   */ public static final int ZOOM   = 1;
+	/** Control mode: pan.    */ public static final int PAN    = 2;
+	/** Control mode: rotate. */ public static final int ROTATE = 3;
 
-	/*
-	 * Available render modes to pass to renderScene()
-	 */
-	public final static int QUICK = 1;
-	public final static int FULL  = 2;
+	/** Render mode: quick (wireframe). */ public final static int QUICK = 1;
+	/** Render mode: full (solid).      */ public final static int FULL  = 2;
 
 	/**
 	 * Component that uses this renderer.
@@ -55,10 +52,10 @@ public class Renderer
 	 */
 	private Transform _modelTransform;
 
-	/**
-	 * Transform of light.
-	 */
-	private Transform _lightTransform;
+//	/**
+//	 * Transform of light source.
+//	 */
+//	private Transform _lightTransform;
 
 	/**
 	 * Base node of rendered model.
@@ -76,15 +73,12 @@ public class Renderer
 	 */
 	private Transform _cameraTransform;
 
-	/*
-	 * Minimum/maximum coordiantes of displayed model.
-	 */
-	private float _minX = 0f;
-	private float _minY = 0f;
-	private float _minZ = 0f;
-	private float _maxX = 0f;
-	private float _maxY = 0f;
-	private float _maxZ = 0f;
+	/** Minimum X coordinate of displayed model. */ private float _minX = 0f;
+	/** Minimum Y coordinate of displayed model. */ private float _minY = 0f;
+	/** Minimum Z coordinate of displayed model. */ private float _minZ = 0f;
+	/** Maximum X coordinate of displayed model. */ private float _maxX = 0f;
+	/** Maximum Y coordinate of displayed model. */ private float _maxY = 0f;
+	/** Maximum Z coordinate of displayed model. */ private float _maxZ = 0f;
 
 	/**
 	 * This is the current "control mode" of the view. This
@@ -92,20 +86,40 @@ public class Renderer
 	 */
 	private int _controlMode = ROTATE;
 
-	/*
-	 * Control variables.
+	/**
+	 * Mouse drag rotation sensitivity.
 	 */
 	private final float _mouseSensitivity = 1.4f;
-	private final float _movementSpeed = 20.0f;
-	private final float _zoomSpeed = 30.0f;
 
-	private int   _initX;
-	private int   _initY;
-	private float _initRotationX;
-	private float _initRotationZ;
-	private float _initTranslationX;
-	private float _initTranslationY;
-	private float _initTranslationZ;
+	/**
+	 * Mouse drag movement speed.
+	 */
+	private final float _movementSpeed = 20.0f;
+
+	/**
+	 * Mouse X coordinate when dragging started.
+	 */
+	private int _dragMouseStartX;
+
+	/**
+	 * Mouse Y coordinate when dragging started.
+	 */
+	private int _dragMouseStartY;
+
+	/**
+	 * Rotation of model around X axis when dragging started.
+	 */
+	private float _dragStartRotationX;
+
+	/**
+	 * Rotation of model around Z axis when dragging started.
+	 */
+	private float _dragStartRotationZ;
+
+	/**
+	 * Position of dragged object when dragging started.
+	 */
+	private Vector3D _dragStartPosition;
 
 	/**
 	 * This is the current rendering mode (either QUICK or FULL),
@@ -147,7 +161,7 @@ public class Renderer
 	protected int _height;
 
 	/**
-	 * Background color (ARGB)
+	 * Background color (ARGB).
 	 */
 	private final int _background = 0x0FFC0C0C0;
 
@@ -186,17 +200,29 @@ public class Renderer
 	 */
 	protected boolean _showTemporaryWireframe = true;
 
-	/*
-	 * Solid renderer temporary storage.
+	/**
+	 * Temporary solid object nodes.
 	 */
 	private final LeafCollection _sObjects = new LeafCollection();
+
+	/**
+	 * Temporary light source nodes.
+	 */
 	private final LeafCollection _sLights = new LeafCollection();
+
+	/**
+	 * Temporary solid render objects.
+	 */
 	private final RenderObject _solidObject = new RenderObject();
 
-	/*
-	 * Wireframe renderer temporary storage.
+	/**
+	 * Temporary wireframe object nodes.
 	 */
 	private final LeafCollection _wfObjects    = new LeafCollection();
+
+	/**
+	 * Temporary wireframe render objects.
+	 */
 	private RenderObject[] _wireObjects = null;
 
 	/**
@@ -207,7 +233,7 @@ public class Renderer
 	 * @param	width	Initial width in pixels.
 	 * @param	height	Initial height in pixels.
 	 */
-	public Renderer( Component owner , int width , int height )
+	public Renderer( final Component owner , final int width , final int height )
 	{
 		initialize( width , height );
 		_owner = owner;
@@ -215,7 +241,7 @@ public class Renderer
 		/*
 		 * Build world
 		 */
-		TreeNode world = buildWorld();
+		buildWorld();
 		reset();
 
 		/*
@@ -236,9 +262,11 @@ public class Renderer
 	 * Adds an ImageConsumer to the list of consumers interested in
 	 * data for this image.
 	 *
+	 * @param	ic	Image consumer to add.
+	 *
 	 * @see ImageConsumer
 	 */
-	public void addConsumer( ImageConsumer ic )
+	public final void addConsumer( final ImageConsumer ic )
 	{
 		synchronized ( _imageConsumers )
 		{
@@ -247,14 +275,13 @@ public class Renderer
 
 		    final int        width  = _width;
 		    final int        height = _height;
-			final int[]      p      = _pixels;
 		    final ColorModel cm     = _colorModel;
 
 			if ( isConsumer( ic ) )
-			    ic.setColorModel( _colorModel );
+			    ic.setColorModel( cm );
 
 			if ( isConsumer( ic ) )
-			    ic.setDimensions( _width , _height );
+			    ic.setDimensions( width , height );
 
 			if ( isConsumer( ic ) )
 			    ic.setHints( ImageConsumer.TOPDOWNLEFTRIGHT | ImageConsumer.COMPLETESCANLINES );
@@ -267,17 +294,13 @@ public class Renderer
 	/**
 	 * This method constructs the graphics tree and therefore
 	 * defined what is to be seen by the user.
-	 *
-	 * @return	Graphics tree (the world).
 	 */
-	protected TreeNode buildWorld()
+	protected final void buildWorld()
 	{
-		Transform location;
-
 		/*
 		 * Create world.
 		 */
-		TreeNode world = new TreeNode();
+		final TreeNode world = new TreeNode();
 
 		/*
 		 * Add base nodes for object.
@@ -295,28 +318,26 @@ public class Renderer
 		 * Add a point light for more lively lighting effects.
 		 */
 		world
-			.addChild( _lightTransform = new Transform( -750.0f , -2500.0f , 1700.0f ) )
+			.addChild( /*_lightTransform =*/ new Transform( Vector3D.INIT.set( -750.0f , -2500.0f , 1700.0f ) ) )
 				.addChild( new Light( 10000 , 30.0f ) );
 
 		/*
 		 * Put camera in graphics tree.
 		 */
 		world
-			.addChild( _cameraTransform = new Transform( 0 , -3000 , 0 ) )
+			.addChild( _cameraTransform = new Transform( Vector3D.INIT.set( 0 , -3000 , 0 ) ) )
 				.addChild( _camera = new Camera( 300f , 60f ) );
-
-		return( world );
 	}
 
 	/**
 	 * Place base in center of view.
 	 */
-	public void center()
+	public final void center()
 	{
-		_base.setTranslation(
-			-( _minX + _maxX ) / 2f ,
-			-( _minY + _maxY ) / 2f ,
-			-( _minZ + _maxZ ) / 2f );
+		_base.setTranslation( _base.getTranslation().set(
+			( _minX + _maxX ) / -2 ,
+			( _minY + _maxY ) / -2 ,
+			( _minZ + _maxZ ) / -2 ) );
 	}
 
 	/**
@@ -325,7 +346,7 @@ public class Renderer
 	 *
 	 * @param	e	Component event.
 	 */
-	public synchronized void componentHidden( ComponentEvent e )
+	public final synchronized void componentHidden( final ComponentEvent e )
 	{
 		_isRunning = false;
 		requestUpdate();
@@ -336,7 +357,7 @@ public class Renderer
 	 *
 	 * @param	e	Component event.
 	 */
-	public void componentMoved( ComponentEvent e )
+	public final void componentMoved( final ComponentEvent e )
 	{
 	}
 
@@ -346,12 +367,12 @@ public class Renderer
 	 *
 	 * @param	e	Component event.
 	 */
-	public void componentResized( ComponentEvent e )
+	public final void componentResized( final ComponentEvent e )
 	{
 		if ( e.getSource() == _owner )
 		{
 			_depthBuffer = null;
-			Dimension d = e.getComponent().getSize();
+			final Dimension d = e.getComponent().getSize();
 			initialize( d.width , d.height );
 			requestUpdate();
 		}
@@ -363,12 +384,12 @@ public class Renderer
 	 *
 	 * @param	e	Component event.
 	 */
-	public synchronized void componentShown( ComponentEvent e )
+	public final synchronized void componentShown( final ComponentEvent e )
 	{
 		if ( e.getSource() == _owner )
 		{
 			_depthBuffer = null;
-			Dimension d = e.getComponent().getSize();
+			final Dimension d = e.getComponent().getSize();
 			initialize( d.width , d.height );
 			requestUpdate();
 		}
@@ -385,16 +406,20 @@ public class Renderer
 
 	/**
 	 * Get base transform of rendered model.
+	 *
+	 * @return	Base transform of rendered model.
 	 */
-	public Transform getBase()
+	public final Transform getBase()
 	{
 		return _base;
 	}
 
 	/**
 	 * Get transform for model.
+	 *
+	 * @return	Transform for model.
 	 */
-	public Transform getModelTransform()
+	public final Transform getModelTransform()
 	{
 		return _modelTransform;
 	}
@@ -404,7 +429,7 @@ public class Renderer
 	 *
 	 * @return	Pixel data.
 	 */
-	public int[] getPixels()
+	public final int[] getPixels()
 	{
 		return _pixels;
 	}
@@ -414,17 +439,14 @@ public class Renderer
 	 *
 	 * @return	String with view settings of renderer.
 	 */
-	public String getViewSettings()
+	public final String getViewSettings()
 	{
 		return Bounds3D.INIT.set(
 			Vector3D.INIT.set(
 				_modelTransform.getRotationX() ,
 				_modelTransform.getRotationY() ,
 				_modelTransform.getRotationZ() ) ,
-			Vector3D.INIT.set(
-				_cameraTransform.getTranslationX() ,
-				_cameraTransform.getTranslationY() ,
-				_cameraTransform.getTranslationZ() )
+				_cameraTransform.getTranslation()
 			).toString();
 	}
 
@@ -434,7 +456,7 @@ public class Renderer
 	 * @param	width		Width of renderer view.
 	 * @param	height		Height of renderer view.
 	 */
-	private final void initialize( int width , int height )
+	private final void initialize( final int width , final int height )
 	{
 		if ( width == _width && height == _height )
 			return;
@@ -446,12 +468,12 @@ public class Renderer
 		_image       = null;
 
 
-		if ( _camera != null )
-		{
-			int minSize = Math.min( width , height );
-			//_camera.scale = minSize * 0.000375f;
-			//, true , 5000.0f ) );
-		}
+//		if ( _camera != null )
+//		{
+//			int minSize = Math.min( width , height );
+//			_camera.scale = minSize * 0.000375f;
+//			, true , 5000.0f ) );
+//		}
 
 		requestUpdate();
 	}
@@ -460,11 +482,13 @@ public class Renderer
 	 * Determine if an ImageConsumer is on the list of consumers currently
 	 * interested in data for this image.
 	 *
+	 * @param	ic	Image consumer to test.
+	 *
 	 * @return true if the ImageConsumer is on the list; false otherwise
 	 *
 	 * @see ImageConsumer
 	 */
-	public boolean isConsumer( ImageConsumer ic )
+	public final boolean isConsumer( final ImageConsumer ic )
 	{
 		return _imageConsumers.contains( ic );
 	}
@@ -476,7 +500,7 @@ public class Renderer
 	 * @return	<code>true</code> if a temporary wireframe is
 	 *			drawn, <code>false</code> if not.
 	 */
-	public boolean isShowTemporaryWireframe()
+	public final boolean isShowTemporaryWireframe()
 	{
 		return( _showTemporaryWireframe );
 	}
@@ -486,7 +510,7 @@ public class Renderer
 	 *
 	 * @param	e	Mouse event.
 	 */
-	public void mouseClicked( MouseEvent e )
+	public final void mouseClicked( final MouseEvent e )
 	{
 		//if ( e.getClickCount() == 3 )
 		//{
@@ -509,13 +533,13 @@ public class Renderer
 	 *
 	 * @param	e	Mouse event.
 	 */
-	public void mouseDragged( MouseEvent e )
+	public final void mouseDragged( final MouseEvent e )
 	{
-		int dx = e.getX() - _initX;
-		int dy = e.getY() - _initY;
+		final int dx = e.getX() - _dragMouseStartX;
+		final int dy = e.getY() - _dragMouseStartY;
 
 
-		int modifiers = e.getModifiers();
+		final int modifiers = e.getModifiers();
 		int mode      = _controlMode;
 
 		if ( ( modifiers & e.BUTTON2_MASK ) != 0 )
@@ -533,26 +557,24 @@ public class Renderer
 		{
 			case ROTATE :
 				setRenderingMode( Renderer.QUICK );
-				_modelTransform.setRotationZ( _initRotationZ + _mouseSensitivity * dx );
-				_modelTransform.setRotationX( _initRotationX - _mouseSensitivity * dy );
+				_modelTransform.setRotationZ( _dragStartRotationZ + _mouseSensitivity * dx );
+				_modelTransform.setRotationX( _dragStartRotationX - _mouseSensitivity * dy );
 				requestUpdate();
 				break;
 
 			case PAN :
 				setRenderingMode( Renderer.QUICK );
-				x.setTranslation(
-					_initTranslationX - dx * _movementSpeed ,
-					_initTranslationY ,
-					_initTranslationZ + dy * _movementSpeed );
+				x.setTranslation( _dragStartPosition
+					.plus( -dx * _movementSpeed , 0 , dy * _movementSpeed ) );
 				requestUpdate();
 				break;
 
 			case ZOOM :
 				setRenderingMode( Renderer.QUICK );
-				x.setTranslation(
-					_initTranslationX ,
-					Math.max( -10000 , _initTranslationY - dy * _movementSpeed/* )*/ ) ,
-					_initTranslationZ );
+				x.setTranslation( _dragStartPosition.set(
+					_dragStartPosition.x ,
+					Math.max( -10000 , _dragStartPosition.y - dy * _movementSpeed ) ,
+					_dragStartPosition.z ) );
 				requestUpdate();
 				break;
 		}
@@ -563,7 +585,7 @@ public class Renderer
 	 *
 	 * @param	e	Mouse event.
 	 */
-	public void mouseEntered( MouseEvent e )
+	public final void mouseEntered( final MouseEvent e )
 	{
 	}
 
@@ -572,7 +594,7 @@ public class Renderer
 	 *
 	 * @param	e	Mouse event.
 	 */
-	public void mouseExited( MouseEvent e )
+	public final void mouseExited( final MouseEvent e )
 	{
 	}
 
@@ -581,7 +603,7 @@ public class Renderer
 	 *
 	 * @param	e	Mouse event.
 	 */
-	public void mouseMoved( MouseEvent e )
+	public final void mouseMoved( final MouseEvent e )
 	{
 	}
 
@@ -591,20 +613,18 @@ public class Renderer
 	 *
 	 * @param	e	Mouse event.
 	 */
-	public void mousePressed( MouseEvent e )
+	public final void mousePressed( final MouseEvent e )
 	{
 		((Component)e.getSource()).requestFocus();
 
-		_initX = e.getX();
-		_initY = e.getY();
+		_dragMouseStartX = e.getX();
+		_dragMouseStartY = e.getY();
 
 		final Transform x = /*_controlLight ? _lightTransform :*/ _cameraTransform;
 
-		_initRotationX    = _modelTransform.getRotationX();
-		_initRotationZ    = _modelTransform.getRotationZ();
-		_initTranslationX = x.getTranslationX();
-		_initTranslationY = x.getTranslationY();
-		_initTranslationZ = x.getTranslationZ();
+		_dragStartRotationX = _modelTransform.getRotationX();
+		_dragStartRotationZ = _modelTransform.getRotationZ();
+		_dragStartPosition  = x.getTranslation();
 	}
 
 	/**
@@ -614,7 +634,7 @@ public class Renderer
 	 *
 	 * @param	e	Mouse event.
 	 */
-	public void mouseReleased( MouseEvent e )
+	public final void mouseReleased( final MouseEvent e )
 	{
 		setRenderingMode( Renderer.FULL );
 		//requestUpdate();
@@ -625,7 +645,7 @@ public class Renderer
 	 *
 	 * @param	g		Graphics context.
 	 */
-	public void paint( Graphics g )
+	public void paint( final Graphics g )
 	{
 		if ( _camera != null )
 		{
@@ -651,9 +671,11 @@ public class Renderer
 	 * Remove an ImageConsumer from the list of consumers interested in
 	 * data for this image.
 	 *
+	 * @param	ic	Image consumer to add.
+	 *
 	 * @see ImageConsumer
 	 */
-	public void removeConsumer( ImageConsumer ic )
+	public final void removeConsumer( final ImageConsumer ic )
 	{
 		//System.out.println( "*removeConsumer:" + ic + "*" );
 		_imageConsumers.removeElement( ic );
@@ -661,6 +683,8 @@ public class Renderer
 
 	/**
 	 * Render scene from camera.
+	 *
+	 * @param	backgroundColor		Background color to use.
 	 */
 	public void renderSolid( final int backgroundColor )
 	{
@@ -746,7 +770,7 @@ public class Renderer
 	 *
 	 * @param	face		Face to be rendered.
 	 */
-	protected final void renderSolidFace( RenderObject.Face face )
+	protected final void renderSolidFace( final RenderObject.Face face )
 	{
 		int i,j,k,m,n;
 		long d1,d2;
@@ -812,14 +836,13 @@ public class Renderer
 		 * Setup state variables used by the interpolation loops.
 		 */
 		int     v     = minV;
-		int     nextV = v;
-		int     dx;
+		int     nextV;
 
-		int		li1  = first;	// Index in shape to 1st vertex of segement
+		int		li1;			// Index in shape to 1st vertex of segement
 		int		li2  = first;	// Index in shape to 2nd vertex of segement
 		int		lv2  = minV;	// 'left'  vertical coordinate at end of segment
 
-		int		ri1  = first;	// Index in shape to 1st vertex of segement
+		int		ri1;			// Index in shape to 1st vertex of segement
 		int		ri2  = first;	// Index in shape to 2nd vertex of segement
 		int		rv2  = minV;	// 'right' vertical coordinate at end of segment
 
@@ -905,8 +928,6 @@ public class Renderer
 				lsf = sfs[ li1 ];
 				rsf = sfs[ ri1 ];
 			}
-
-			i = ( lh < rh ) ? lh : rh;
 
 			renderSolidScanlines( v , v , lh , 0 , rh , 0 , ld , 0 , rd , 0 , colorRGB ,
 				pixels , ltu , 0 , rtu , 0 , ltv , 0 , rtv , 0 , ldr , 0 , rdr , 0 ,
@@ -1068,8 +1089,16 @@ public class Renderer
 
 	/**
 	 * Draw a line.
+	 *
+	 * @param	x1		Start X coordinate.
+	 * @param	y1		Start Y coordinate.
+	 * @param	z1		Start Z coordinate.
+	 * @param	x2		End X coordinate.
+	 * @param	y2		End Y coordinate.
+	 * @param	z2		End Z coordinate.
+	 * @param	c		Color.
 	 */
-	protected final void renderSolidLine3D( int x1 , int y1 , int z1 , int x2 , int y2 , int z2 , int c )
+	protected final void renderSolidLine3D( int x1 , int y1 , int z1 , int x2 , int y2 , int z2 , final int c )
 	{
 		int i,j,x,y,z;
 		final int[] db = _depthBuffer;
@@ -1161,7 +1190,7 @@ public class Renderer
 	 * @param	height			Height of rendering image.
 	 */
 	protected void renderSolidObject(
-		final Object3D object , final Matrix3D cameraXform , final Camera camera , int width , int height )
+		final Object3D object , final Matrix3D cameraXform , final Camera camera , final int width , final int height )
 	{
 		_solidObject.set( object , cameraXform , camera.aperture , camera.zoom , width , height , true );
 		if ( _updatePending ) return;
@@ -1174,13 +1203,13 @@ public class Renderer
 		 *   - determine if it's invisible (outside view volume & backface culling)
 		 *   - calculate weight point (average of vertices)
 		 */
-		final int[]	ph = _solidObject.ph;
-		final int[]	pv = _solidObject.pv;
+//		final int[]	ph = _solidObject.ph;
+//		final int[]	pv = _solidObject.pv;
 
-		int i,j,k,h1,v1,h2,v2;
-		int[] vi;
+//		int i,j,k,h1,v1,h2,v2;
+//		int[] vi;
 
-	    final int c = ( _owner != null ) ? _owner.getForeground().getRGB() : 0xFF000000;
+//	    final int c = ( _owner != null ) ? _owner.getForeground().getRGB() : 0xFF000000;
 
 		for ( RenderObject.Face face = _solidObject.faces ; face != null ; face = face.next )
 		{
@@ -1219,43 +1248,43 @@ public class Renderer
 	/**
 	 * This is the core render loop to render a set of scanlines for a face.
 	 *
-	 * @param	v
-	 * @param	nextV
-	 * @param	lh
-	 * @param	lhc
-	 * @param	rh
-	 * @param	rhc
-	 * @param	ld
-	 * @param	ldc
-	 * @param	rd
-	 * @param	rdc
-	 * @param	colorRGB
-	 * @param	texture
-	 * @param	ltu
-	 * @param	ltuc
-	 * @param	rtu
-	 * @param	rtuc
-	 * @param	ltv
-	 * @param	ltvc
-	 * @param	rtv
-	 * @param	rtvc
-	 * @param	ldr
-	 * @param	ldrc
-	 * @param	rdr
-	 * @param	rdrc
-	 * @param	phongTable
-	 * @param	lsx
-	 * @param	lsxc
-	 * @param	rsx
-	 * @param	rsxc
-	 * @param	lsy
-	 * @param	lsyc
-	 * @param	rsy
-	 * @param	rsyc
-	 * @param	lsf
-	 * @param	lsfc
-	 * @param	rsf
-	 * @param	rsfc
+	 * @param	v			Scanline parameter.
+	 * @param	nextV		Scanline parameter.
+	 * @param	lh			Scanline parameter.
+	 * @param	lhc			Scanline parameter.
+	 * @param	rh			Scanline parameter.
+	 * @param	rhc			Scanline parameter.
+	 * @param	ld			Scanline parameter.
+	 * @param	ldc			Scanline parameter.
+	 * @param	rd			Scanline parameter.
+	 * @param	rdc			Scanline parameter.
+	 * @param	colorRGB	Scanline parameter.
+	 * @param	texture		Scanline parameter.
+	 * @param	ltu			Scanline parameter.
+	 * @param	ltuc		Scanline parameter.
+	 * @param	rtu			Scanline parameter.
+	 * @param	rtuc		Scanline parameter.
+	 * @param	ltv			Scanline parameter.
+	 * @param	ltvc		Scanline parameter.
+	 * @param	rtv			Scanline parameter.
+	 * @param	rtvc		Scanline parameter.
+	 * @param	ldr			Scanline parameter.
+	 * @param	ldrc		Scanline parameter.
+	 * @param	rdr			Scanline parameter.
+	 * @param	rdrc		Scanline parameter.
+	 * @param	phongTable	Scanline parameter.
+	 * @param	lsx			Scanline parameter.
+	 * @param	lsxc		Scanline parameter.
+	 * @param	rsx			Scanline parameter.
+	 * @param	rsxc		Scanline parameter.
+	 * @param	lsy			Scanline parameter.
+	 * @param	lsyc		Scanline parameter.
+	 * @param	rsy			Scanline parameter.
+	 * @param	rsyc		Scanline parameter.
+	 * @param	lsf			Scanline parameter.
+	 * @param	lsfc		Scanline parameter.
+	 * @param	rsf			Scanline parameter.
+	 * @param	rsfc		Scanline parameter.
 	 */
 	protected final void renderSolidScanlines(
 		int v , final int nextV ,
@@ -1275,31 +1304,31 @@ public class Renderer
 		final int        height        = _height;
 		final int        tw            = ( texture != null ) ? texture[0].length : 0;
 		final int        th            = ( texture != null ) ? texture.length    : 0;
-		final int        ma            = (colorRGB >> 24) & 0xFF;
+//		final int        ma            = (colorRGB >> 24) & 0xFF;
 		final int        mr            = (colorRGB >> 16) & 0xFF;
 		final int        mg            = (colorRGB >>  8) & 0xFF;
 		final int        mb            =  colorRGB        & 0xFF;
 
 		int i,j,c,r,g,b,s;
 
-		int     h1   = 0;		// 'pixel' Horizontal coordinate counter     * 2^8
-		int     h2   = 0;		// 'pixel' Horizontal coordinate coefficient * 2^8
-		long	d1   = 0;		// 'pixel' Z-coordinate counter     * 2^8
-		long	d2   = 0;		// 'pixel' Z-coordinate coefficient * 2^8
-		long	tu1  = 0;		// 'pixel' Texture U-coordinate counter     * 2^8
-		long	tu2  = 0;		// 'pixel' Texture U-coordinate coefficient * 2^8
-		long	tv1  = 0;		// 'pixel' Texture V-coordinate counter     * 2^8
-		long	tv2  = 0;		// 'pixel' Texture V-coordinate coefficient * 2^8
-		int		dr1  = 0;		// 'pixel' Diffuse reflection counter     * 2^8
-		int		dr2  = 0;		// 'pixel' Diffuse reflection coefficient * 2^8
-		int		sx1  = 0;		// 'pixel' Specular X-coordinate counter     * 2^8
-		int		sx2  = 0;		// 'pixel' Specular X-coordinate coefficient * 2^8
-		int		sy1  = 0;		// 'pixel' Specular Y-coordinate counter     * 2^8
-		int		sy2  = 0;		// 'pixel' Specular Y-coordinate coefficient * 2^8
-		int		sf1  = 0;		// 'pixel' Specular intensity factor counter     * 2^8
-		int		sf2  = 0;		// 'pixel' Specular intensity factor coefficient * 2^8
+		int     h1;		// 'pixel' Horizontal coordinate counter     * 2^8
+		int     h2;		// 'pixel' Horizontal coordinate coefficient * 2^8
+		long	d1;		// 'pixel' Z-coordinate counter     * 2^8
+		long	d2;		// 'pixel' Z-coordinate coefficient * 2^8
+		long	tu1;	// 'pixel' Texture U-coordinate counter     * 2^8
+		long	tu2;	// 'pixel' Texture U-coordinate coefficient * 2^8
+		long	tv1;	// 'pixel' Texture V-coordinate counter     * 2^8
+		long	tv2;	// 'pixel' Texture V-coordinate coefficient * 2^8
+		int		dr1;	// 'pixel' Diffuse reflection counter     * 2^8
+		int		dr2;	// 'pixel' Diffuse reflection coefficient * 2^8
+		int		sx1;	// 'pixel' Specular X-coordinate counter     * 2^8
+		int		sx2;	// 'pixel' Specular X-coordinate coefficient * 2^8
+		int		sy1;	// 'pixel' Specular Y-coordinate counter     * 2^8
+		int		sy2;	// 'pixel' Specular Y-coordinate coefficient * 2^8
+		int		sf1;	// 'pixel' Specular intensity factor counter     * 2^8
+		int		sf2;	// 'pixel' Specular intensity factor coefficient * 2^8
 
-		int[] db = _depthBuffer;
+		final int[] db = _depthBuffer;
 
 		do
 		{
@@ -1415,8 +1444,8 @@ public class Renderer
 								db[ i ] = j;
 
 								// fix , tu1 and tv1 become < 0 don't know how that happens
-								int myU = (int)( ( tu1 / d1 ) % tw );
-								int myV = (int)( ( tv1 / d1 ) % th );
+								final int myU = (int)( ( tu1 / d1 ) % tw );
+								final int myV = (int)( ( tv1 / d1 ) % th );
 								c = texture[ myV + (myV<0?th:0)][ myU + (myU<0?tw:0) ];
 								// original
 								//c = texture[ (int)( ( tv1 / d1 ) % th )) ]
@@ -1475,8 +1504,8 @@ public class Renderer
 								db[ i ] = j;
 
 								// fix , tu1 and tv1 become < 0 don't know how that happens
-								int myU = (int)( ( tu1 / d1 ) % tw );
-								int myV = (int)( ( tv1 / d1 ) % th );
+								final int myU = (int)( ( tu1 / d1 ) % tw );
+								final int myV = (int)( ( tv1 / d1 ) % th );
 								c = texture[ myV + (myV<0?th:0)][ myU + (myU<0?tw:0) ];
 								// original
 								//c = texture[ (int)( ( tv1 / d1 ) % th )) ]
@@ -1545,7 +1574,7 @@ public class Renderer
 	 * @param	width	Width of rendering image.
 	 * @param	height	Height of rendering image.
 	 */
-	public synchronized final void renderWireframe( Graphics g , final Camera camera , final int width , final int height )
+	public synchronized final void renderWireframe( final Graphics g , final Camera camera , final int width , final int height )
 	{
 		/*
 		 * Gather leafs with models in this world.
@@ -1560,10 +1589,9 @@ public class Renderer
 		if ( nrObjects < 1 )
 			return;
 
-		RenderObject[] objects = _wireObjects;
 		if ( _wireObjects == null || nrObjects > _wireObjects.length )
 		{
-			objects = new RenderObject[ nrObjects ];
+			final RenderObject[] objects = new RenderObject[ nrObjects ];
 			if ( _wireObjects != null )
 				System.arraycopy( _wireObjects , 0 , objects , 0 , _wireObjects.length );
 			_wireObjects = objects;
@@ -1583,7 +1611,7 @@ public class Renderer
 
 		for ( int i = 0 ; i < nrObjects ; i++ )
 		{
-			RenderObject ro = _wireObjects[ i ];
+			final RenderObject ro = _wireObjects[ i ];
 
 			for ( RenderObject.Face face = ro.faces ; face != null ; face = face.next )
 				renderWireframeFace( g , face );
@@ -1655,16 +1683,16 @@ public class Renderer
 	 * @param	g		Graphics to paint on
 	 * @param	face	Face to render
 	 */
-	protected void renderWireframeFace( Graphics g , RenderObject.Face face )
+	protected void renderWireframeFace( final Graphics g , final RenderObject.Face face )
 	{
 		int i,k,h1,v1,h2,v2;
 
-		int[] vi = face.vi;
+		final int[] vi = face.vi;
 		if ( vi.length < 3 )
 			return;
 
-		int[] h = new int[ vi.length ];
-		int[] v = new int[ vi.length ];
+		final int[] h = new int[ vi.length ];
+		final int[] v = new int[ vi.length ];
 
 		final RenderObject ro = face.getRenderObject();
 		final int[] ph = ro.ph;
@@ -1676,7 +1704,7 @@ public class Renderer
 			v[ i ] = pv[ k           ] >> 8;
 		}
 
-		int c = 0xFFFFFF; //face.getTexture().getARGB();
+//		int c = 0xFFFFFF; //face.getTexture().getARGB();
 		//float nx = 0.1f + 0.5f * ( 1.0f + face.nx );
 		//float ny = 0.1f + 0.0f * ( 1.0f + face.ny );
 		//float nz = 0.1f + 0.5f * ( 1.0f + face.nz );
@@ -1709,9 +1737,11 @@ public class Renderer
 	 * Requests that a given ImageConsumer have the image data delivered
 	 * one more time in top-down, left-right order.
 	 *
+	 * @param	ic	Image consumer to add.
+	 *
 	 * @see ImageConsumer
 	 */
-	public void requestTopDownLeftRightResend( ImageConsumer ic )
+	public final void requestTopDownLeftRightResend( final ImageConsumer ic )
 	{
 		if ( isConsumer( ic ) )
 		    ic.setDimensions( _width , _height );
@@ -1728,7 +1758,7 @@ public class Renderer
 	 * will only set the flag, render() must be called to actually
 	 * do the rendering at a suitable time.
 	 */
-	public synchronized void requestUpdate()
+	public final synchronized void requestUpdate()
 	{
 		_updatePending = true;
 		notifyAll();
@@ -1737,11 +1767,11 @@ public class Renderer
 	/**
 	 * Reset to default render view.
 	 */
-	public void reset()
+	public final void reset()
 	{
 		_modelTransform.setRotationX( -10f );
 		_modelTransform.setRotationZ( -35f );
-		_cameraTransform.setTranslation( 0f , -4000f , 0f );
+		_cameraTransform.setTranslation( Vector3D.INIT.set( 0f , -4000f , 0f ) );
 		center();
 
 		requestUpdate();
@@ -1750,7 +1780,7 @@ public class Renderer
 	/**
 	 * This is the thread body to update the rendered image on demand.
 	 */
-	public void run()
+	public final void run()
 	{
 		while ( _isRunning )
 		{
@@ -1855,7 +1885,7 @@ public class Renderer
 	 *
 	 * @param	ic		Image consumer to send data to.
 	 */
-	private synchronized void sendPixels( ImageConsumer ic )
+	private synchronized void sendPixels( final ImageConsumer ic )
 	{
 		try
 		{
@@ -1891,15 +1921,22 @@ public class Renderer
 	 *
 	 * @param	mode	Control mode for panel (ZOOM,PAN,ROTATE).
 	 */
-	public void setControlMode( int mode )
+	public final void setControlMode( final int mode )
 	{
 		_controlMode = mode;
 	}
 
 	/**
 	 * Set minimum/maximum coordiantes of displayed model.
+	 *
+	 * @param	minX	Minimum X coordinate of displayed model.
+	 * @param	minY	Minimum Y coordinate of displayed model.
+	 * @param	minZ	Minimum Z coordinate of displayed model.
+	 * @param	maxX	Maximum X coordinate of displayed model.
+	 * @param	maxY	Maximum Y coordinate of displayed model.
+	 * @param	maxZ	Maximum Z coordinate of displayed model.
 	 */
-	public void setLimits( float minX , float minY , float minZ , float maxX , float maxY , float maxZ )
+	public final void setLimits( final float minX , final float minY , final float minZ , final float maxX , final float maxY , final float maxZ )
 	{
 		_minX = minX;
 		_minY = minY;
@@ -1917,7 +1954,7 @@ public class Renderer
 	 *
 	 * @param	mode	Rendering mode to use (QUICK or FULL).
 	 */
-	public void setRenderingMode( int mode )
+	public final void setRenderingMode( final int mode )
 	{
 		if ( _renderingMode == mode )
 			return;
@@ -1934,7 +1971,7 @@ public class Renderer
 	 *					temporary wireframe should be drawn,
 	 *					<code>false</code> if not.
 	 */
-	public void setShowTemporaryWireframe( boolean show )
+	public final void setShowTemporaryWireframe( final boolean show )
 	{
 		_showTemporaryWireframe = show;
 	}
@@ -1942,20 +1979,19 @@ public class Renderer
 	/**
 	 * Set view settings based on string previously returned by #getViewSettings().
 	 *
-	 * @return	String with view settings.
+	 * @param	settings	String with view settings.
 	 */
-	public void setViewSettings( String settings )
+	public final void setViewSettings( final String settings )
 	{
 		if ( settings == null || settings.length() ==  0 )
 			return;
 
 		try
 		{
-			Bounds3D b = Bounds3D.fromString( settings );
-			Vector3D rv = b.v1;
+			final Bounds3D b = Bounds3D.fromString( settings );
+			final Vector3D rv = b.v1;
 			_modelTransform.setRotation( rv.x , rv.y , rv.z );
-			Vector3D tv = b.v2;
-			_cameraTransform.setTranslation( tv.x , tv.y , tv.z );
+			_cameraTransform.setTranslation( b.v2 );
 		}
 		catch ( Exception e ) { /* ignored */ }
 	}
@@ -1967,7 +2003,7 @@ public class Renderer
 	 *
 	 * @param	ic		Image consumer to add.
 	 */
-	public void startProduction( ImageConsumer ic )
+	public final void startProduction( final ImageConsumer ic )
 	{
 		addConsumer( ic );
 	}
@@ -1984,8 +2020,7 @@ public class Renderer
 		{
 	 		for ( Enumeration e = _imageConsumers.elements() ; e.hasMoreElements() ; )
 	 		{
-		    	ImageConsumer ic = (ImageConsumer)e.nextElement();
-
+		    	final ImageConsumer ic = (ImageConsumer)e.nextElement();
 			    if ( isConsumer( ic ) )
 					sendPixels( ic );
 	 		}

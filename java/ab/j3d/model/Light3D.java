@@ -3,11 +3,12 @@ package common.renderer;
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2000,2002 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
+ * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
  * This software may not be used, copyied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * form without express permission from Numdata BV or Peter S. Heijnen. Please
+ * contact Numdata BV or Peter S. Heijnen for license information.
  */
 import common.db.TextureSpec;
 
@@ -18,7 +19,7 @@ import common.db.TextureSpec;
  * @version 1.0 (20011128, PSH) 
  * @author	Peter S. Heijnen
  */
-public class Light
+public final class Light
 	extends TreeNode
 {
 	/**
@@ -123,17 +124,17 @@ public class Light
 			/*
 			 * Get direction of light.
 			 */
-			float	lx = lightNormalAndDist[ lightIndex + 0 ];
-			float	ly = lightNormalAndDist[ lightIndex + 1 ];
-			float	lz = lightNormalAndDist[ lightIndex + 2 ];
-			float	ld = lightNormalAndDist[ lightIndex + 3 ];
+			final float	lx = lightNormalAndDist[ lightIndex + 0 ];
+			final float	ly = lightNormalAndDist[ lightIndex + 1 ];
+			final float	lz = lightNormalAndDist[ lightIndex + 2 ];
+			final float	ld = lightNormalAndDist[ lightIndex + 3 ];
 
 			/*
 			 * Get cos( angle ) between light and normal (this is
 			 * simply the inner product of the light direction and
 			 * normal vectors.
 			 */
-			float	lightAngle = nx * lx + ny * ly + nz * lz;
+			final float	lightAngle = nx * lx + ny * ly + nz * lz;
 			
 			/*
 			 * Abort if light shines from back side.
@@ -143,7 +144,7 @@ public class Light
 			/*
 			 * Calculate light intensity of light at the given distance.
 			 */
-			float Il = _fallOff / ( _fallOff + ld );
+			final float Il = _fallOff / ( _fallOff + ld );
 			
 			/*
 			 * Start with the diffuse reflection part of the point light.

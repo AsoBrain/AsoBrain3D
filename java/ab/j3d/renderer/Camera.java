@@ -3,11 +3,12 @@ package common.renderer;
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2000,2002 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
+ * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
  * This software may not be used, copyied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * form without express permission from Numdata BV or Peter S. Heijnen. Please
+ * contact Numdata BV or Peter S. Heijnen for license information.
  */
 import common.model.Matrix3D;
 
@@ -21,7 +22,7 @@ import common.model.Matrix3D;
  * @version 1.0 (20011128, PSH) 
  * @author	Peter S. Heijnen
  */
-public class Camera
+public final class Camera
 	extends TreeNode
 {
 	/**
@@ -36,20 +37,12 @@ public class Camera
 	public final float zoom;
 	 
 	/**
-	 * Default constructor. Zoom is set to 10x, eye distance is set to 300mm.
-	 */
-	public Camera()
-	{
-		this( 10 , 300.0f );
-	}
-
-	/**
 	 * Constructor with specified scale.
 	 *
 	 * @param	zoom		Linear zoom factor.
 	 * @param	aperture	Camera aperture in decimal degrees (0-180).
 	 */
-	public Camera( float zoom , float aperture )
+	public Camera( final float zoom , final float aperture )
 	{
 		this.zoom		= zoom;
 		this.aperture	= (float)Math.tan( aperture * Matrix3D.DEG_TO_RAD / 2f );

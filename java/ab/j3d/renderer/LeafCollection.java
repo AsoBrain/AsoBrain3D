@@ -3,11 +3,12 @@ package common.renderer;
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2000,2002 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
+ * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
  * This software may not be used, copyied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * form without express permission from Numdata BV or Peter S. Heijnen. Please
+ * contact Numdata BV or Peter S. Heijnen for license information.
  */
 import common.model.Matrix3D;
 
@@ -18,7 +19,7 @@ import common.model.Matrix3D;
  * @version 1.0 (20011128, PSH) 
  * @author	Peter S. Heijnen
  */
-public class LeafCollection
+public final class LeafCollection
 {
 	/**
 	 * Number of stored elements.
@@ -45,7 +46,7 @@ public class LeafCollection
 	 *
 	 * @since JDK1.2
 	 */
-	public synchronized void add( Matrix3D matrix , TreeNode node )
+	public synchronized void add( final Matrix3D matrix , final TreeNode node )
 	{
 		ensureCapacity( _elementCount + 1 );
 
@@ -68,19 +69,19 @@ public class LeafCollection
 	 *
 	 * @param   minCapacity   The desired minimum capacity.
 	 */
-	public synchronized void ensureCapacity( int minCapacity )
+	public synchronized void ensureCapacity( final int minCapacity )
 	{
-		int oldCapacity = _nodeData.length;
+		final int oldCapacity = _nodeData.length;
 		
 		if ( minCapacity > oldCapacity )
 		{
-			TreeNode	oldNodes[]		= _nodeData;
-			Matrix3D		oldMatrices[]	= _matrixData;
+			final TreeNode[] oldNodes    = _nodeData;
+			final Matrix3D[] oldMatrices = _matrixData;
 			
-			int newCapacity = oldCapacity * 2;
+			final int newCapacity = oldCapacity * 2;
 
 		    _nodeData   = new TreeNode[ newCapacity ];
-		    _matrixData = new Matrix3D    [ newCapacity ];
+		    _matrixData = new Matrix3D[ newCapacity ];
 		    
 			System.arraycopy( oldNodes    , 0 , _nodeData   , 0 , _elementCount );
 			System.arraycopy( oldMatrices , 0 , _matrixData , 0 , _elementCount );
@@ -94,7 +95,7 @@ public class LeafCollection
 	 *
 	 * @return	Matrix3D object at specified index.
 	 */
-	public Matrix3D getMatrix( int index )
+	public Matrix3D getMatrix( final int index )
 	{
 		if ( index >= _elementCount )
 		    throw new ArrayIndexOutOfBoundsException( index );
@@ -109,7 +110,7 @@ public class LeafCollection
 	 *
 	 * @return	TreeNode object at specified index.
 	 */
-	public TreeNode getNode( int index )
+	public TreeNode getNode( final int index )
 	{
 		if ( index >= _elementCount )
 		    throw new ArrayIndexOutOfBoundsException( index );

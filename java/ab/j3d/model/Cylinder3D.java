@@ -3,14 +3,14 @@ package common.renderer;
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2000,2002 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
+ * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
  * This software may not be used, copyied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * form without express permission from Numdata BV or Peter S. Heijnen. Please
+ * contact Numdata BV or Peter S. Heijnen for license information.
  */
 import java.awt.Graphics;
-import java.util.Hashtable;
 import common.db.TextureSpec;
 import common.model.Matrix3D;
 
@@ -21,12 +21,27 @@ import common.model.Matrix3D;
  * @version 1.0 (20011128, PSH) 
  * @author	Peter S. Heijnen
  */
-public class Cylinder3D
+public final class Cylinder3D
 	extends Object3D
 {
+	/**
+	 * Transformation applied to all vertices of the box.
+	 */
 	public final Matrix3D xform;
+
+	/**
+	 * Height of cylinder (z-axis).
+	 */
 	public final float   height;
+
+	/**
+	 * Radius at top (z=height).
+	 */
 	public final float   radiusTop;
+
+	/**
+	 * Radius at bottom (z=0).
+	 */
 	public final float   radiusBottom;
 
 	/**
@@ -34,9 +49,9 @@ public class Cylinder3D
 	 * a cone.
 	 *
 	 * @param	xform				Transform to apply to the cylinder's vertices.
-	 * @param	radiusBottom		Radius at bottom.
-	 * @param	radiusTop			Radius at top.
-	 * @param	height				Height of box (y-axis).
+	 * @param	radiusBottom		Radius at bottom (z=0).
+	 * @param	radiusTop			Radius at top (z=height).
+	 * @param	height				Height of cylinder (z-axis).
 	 * @param	numEdges			Number of edges to approximate circle (minimum: 3).
 	 * @param	texture				Texture of cylinder.
 	 * @param	smoothCircumference	Apply smoothing to circumference of cylinder.
@@ -91,7 +106,7 @@ public class Cylinder3D
 		{
 			for ( int i = 0 ; i < numEdges ; i++ )
 			{
-				float a = (float)( i * 2 * Math.PI / numEdges );
+				final float a = (float)( i * 2 * Math.PI / numEdges );
 				
 				vertices[ v++ ] =  (float)( Math.sin( a ) * radiusBottom );
 				vertices[ v++ ] = -(float)( Math.cos( a ) * radiusBottom );
@@ -109,7 +124,7 @@ public class Cylinder3D
 		{
 			for ( int i = 0 ; i < numEdges ; i++ )
 			{
-				float a = (float)( i * 2 * Math.PI / numEdges );
+				final float a = (float)( i * 2 * Math.PI / numEdges );
 				
 				vertices[ v++ ] =  (float)( Math.sin( a ) * radiusTop );
 				vertices[ v++ ] = -(float)( Math.cos( a ) * radiusTop );
@@ -118,9 +133,9 @@ public class Cylinder3D
 		}
 		else
 		{
-			vertices[ v++ ] = 0;
-			vertices[ v++ ] = 0;
-			vertices[ v++ ] = height;
+			vertices[ v/*++*/ ] = 0;
+			vertices[ v/*++*/ ] = 0;
+			vertices[ v/*++*/ ] = height;
 		}
 
 		xform.transform( vertices , vertices , vertices.length / 3 );
@@ -135,7 +150,7 @@ public class Cylinder3D
 		 */
 		if ( hasBottom )
 		{
-			int[] fv = new int[ numEdges ];
+			final int[] fv = new int[ numEdges ];
 			for ( int i = 0 ; i < numEdges ; i++ )
 				fv[ i ] = i;
 				
@@ -150,7 +165,7 @@ public class Cylinder3D
 		{
 			for ( int i1 = 0 ; i1 < numEdges ; i1++ )
 			{
-				int i2 = ( i1 + 1 ) % numEdges;
+				final int i2 = ( i1 + 1 ) % numEdges;
 				faceVert  [ f   ] = new int[] { i2 , i1 , numEdges + i1 , numEdges + i2 };
 				faceSmooth[ f++ ] = smoothCircumference;
 			}
@@ -159,7 +174,7 @@ public class Cylinder3D
 		{
 			for ( int i1 = 0 ; i1 < numEdges ; i1++ )
 			{
-				int i2 = ( i1 + 1 ) % numEdges;
+				final int i2 = ( i1 + 1 ) % numEdges;
 				faceVert  [ f   ] = new int[] { i2 , i1 , numEdges };
 				faceSmooth[ f++ ] = smoothCircumference;
 			}
@@ -168,7 +183,7 @@ public class Cylinder3D
 		{
 			for ( int i1 = 0 ; i1 < numEdges ; i1++ )
 			{
-				int i2 = ( i1 + 1 ) % numEdges;
+				final int i2 = ( i1 + 1 ) % numEdges;
 				
 				faceVert  [ f   ] = new int[] { 0 , 1 + i1 , 1 + i2 };
 				faceSmooth[ f++ ] = smoothCircumference;
@@ -180,12 +195,12 @@ public class Cylinder3D
 		 */
 		if ( hasTop )
 		{
-			int[] fv = new int[ numEdges ];
+			final int[] fv = new int[ numEdges ];
 			for ( int i = 0 ; i < numEdges ; i++ )
 				fv[ i ] = ( hasBottom ? numEdges : 1 ) + ( numEdges - i - 1 );
 				
-			faceVert  [ f   ] = fv;
-			faceSmooth[ f++ ] = smoothCaps;
+			faceVert  [ f ] = fv;
+			faceSmooth[ f/*++*/ ] = smoothCaps;
 		}
 		
 		/*
@@ -208,7 +223,7 @@ public class Cylinder3D
 	 * @param	gXform		Transformation to pan/scale the graphics context.
 	 * @param	objXform	Transformation from object's to view coordinate system.
 	 */
-	public void paint( Graphics g , Matrix3D gXform , Matrix3D objXform )
+	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D objXform )
 	{
 		if ( true )
 		{
@@ -216,8 +231,8 @@ public class Cylinder3D
 			return;
 		}
 		
-		float x = objXform.transformX( xform.xo , xform.yo , xform.zo );
-		float y = objXform.transformY( xform.xo , xform.yo , xform.zo );
+		final float x = objXform.transformX( xform.xo , xform.yo , xform.zo );
+		final float y = objXform.transformY( xform.xo , xform.yo , xform.zo );
 		
 		/*
 		 * Frontal = circle.
@@ -227,8 +242,8 @@ public class Cylinder3D
 		 */
 		if ( Matrix3D.almost0( objXform.xy ) && Matrix3D.almost0( objXform.yy ) )
 		{
-			float minR = ( radiusBottom > radiusTop ) ? radiusBottom : radiusTop;
-			float maxR = ( radiusBottom > radiusTop ) ? radiusBottom : radiusTop;
+//			final float minR = ( radiusBottom > radiusTop ) ? radiusBottom : radiusTop;
+			final float maxR = ( radiusBottom > radiusTop ) ? radiusBottom : radiusTop;
 			drawOval( g , gXform , x - maxR, y - maxR , maxR * 2 , maxR * 2 );
 
 			/*

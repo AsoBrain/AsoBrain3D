@@ -3,30 +3,45 @@ package common.renderer;
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2000,2002 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
+ * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
  * This software may not be used, copyied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * form without express permission from Numdata BV or Peter S. Heijnen. Please
+ * contact Numdata BV or Peter S. Heijnen for license information.
  */
-import java.util.Stack;
-import java.util.Hashtable;
 import common.db.TextureSpec;
 import common.model.Matrix3D;
 
 /**
  * This class defines a 3D box.
  *
- * @version 1.0 (20011128, PSH) 
  * @author	Peter S. Heijnen
+ * @version	$Revision$ ($Date$, $Author$)
  */
-public class Box3D
+public final class Box3D
 	extends Object3D
 {
+	/**
+	 * Transformation applied to all vertices of the box.
+	 */
 	private final Matrix3D _xform;
+
+	/**
+	 * Width of box (x-axis).
+	 */
 	private final float _dx;
+
+	/**
+	 * Height of box (y-axis).
+	 */
 	private final float _dy;
+
+	/**
+	 * Depth of box (z-axis).
+	 */
 	private final float _dz;
+
 	/**
 	 * Set box properties.
 	 *
@@ -36,8 +51,6 @@ public class Box3D
 	 * @param	dz			Depth of box (z-axis).
 	 * @param	mainTexture	Main texture of box.
 	 * @param	sideTexture	Texture for sides of box.
-	 *
-	 * @return	This Box3D instance.
 	 */
 	public Box3D( final Matrix3D xform , final float dx , final float dy , final float dz , final TextureSpec mainTexture , final TextureSpec sideTexture )
 	{
@@ -133,21 +146,41 @@ public class Box3D
 		set( vertices , faceVert , faceMat , faceTU , faceTV , false );
 	}
 
+	/**
+	 * Get width of box (x-axis).
+	 *
+	 * @return	Width of box (x-axis).
+	 */
 	public float getDX()
 	{
 		return _dx;
 	}
 
+	/**
+	 * Get height of box (y-axis).
+	 *
+	 * @return	Height of box (y-axis).
+	 */
 	public float getDY()
 	{
 		return _dy;
 	}
 
+	/**
+	 * Get depth of box (z-axis).
+	 *
+	 * @return	Depth of box (z-axis).
+	 */
 	public float getDZ()
 	{
 		return _dz;
 	}
 
+	/**
+	 * Get transformation applied to all vertices of the box.
+	 *
+	 * @return	Transformation applied to all vertices of the box.
+	 */
 	public Matrix3D getTransform()
 	{
 		return _xform;
@@ -167,7 +200,7 @@ public class Box3D
 	 * @param	tv2			End V coordinate.
 	 */
 	protected static void setTexture( 
-		final TextureSpec texture , final boolean flipUV , final int index , 
+		final TextureSpec texture , final boolean flipUV , final int index ,
 		final int[][] faceTU , final float tu1 , final float tu2 , 
 		final int[][] faceTV , final float tv1 , final float tv2 )
 	{
@@ -180,7 +213,7 @@ public class Box3D
 
 		int i1,i2,t,m;
 		int[][] a;
-		float s = texture.textureScale;
+		final float s = texture.textureScale;
 
 		/*
 		 * Translate the U1,U2 texture coordinates to the lowest possible (but

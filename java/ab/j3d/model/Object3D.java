@@ -3,25 +3,25 @@ package common.renderer;
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2000,2002 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
+ * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
  * This software may not be used, copyied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * form without express permission from Numdata BV or Peter S. Heijnen. Please
+ * contact Numdata BV or Peter S. Heijnen for license information.
  */
-import java.awt.Graphics;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.awt.*;
+
 import common.db.TextureSpec;
-import common.model.Matrix3D;
 import common.model.Bounds3D;
-import common.model.Vector3D;
+import common.model.Matrix3D;
+
 /**
- * This interface defines a node of a graphics tree that contains an
- * 3D object model that consists of vertices, edges, and faces.
+ * This class defined a 3D object node in a 3D tree. The 3D object consists of
+ * vertices, edges, and faces.
  *
- * @version 1.0 (20011128, PSH) 
  * @author	Peter S. Heijnen
+ * @version	$Revision$ ($Date$, $Author$)
  */
 public class Object3D
 	extends TreeNode
@@ -41,10 +41,7 @@ public class Object3D
 	private int[][] _faceVert = {};
 
 	/**
-	 * Faces of model. Faces are stored in an two dimensional array of integers.
-	 * Faces are defined using indices in the vertex table to define the outer
-	 * bounds of the face. A simple triangle will have 3 indices. Note that indices
-	 * are absolute, so they come in multiples of 3.
+	 * Smoothing flag for faces of model.
 	 */
 	private boolean[] _faceSmooth = {};
 
@@ -95,7 +92,7 @@ public class Object3D
 	private	float[] _vertexNormals = null;
 
 	/**
-	 * This is used as cache storage for paint(Graphics,Matrix3D,Matrix3D)
+	 * This is used as cache storage for paint(Graphics,Matrix3D,Matrix3D).
 	 */
 	private static final float[] _paintVertexCache = {};
 
@@ -109,37 +106,47 @@ public class Object3D
 
 	/**
 	 * This constructor can be used to create a 3D object that is constructed
-	 * using a 2D outline which is rotated around the Z-axis. If requested,
+	 * using a 2D outline which is rotated around the Y-axis. If requested,
 	 * the ends will be closed (if not done so already).
 	 *
 	 * The 'detail' parameter is used to specify the number of segments used
 	 * to rotate around the Z-axis (minimum: 3).
 	 *
 	 * NOTE: To construct an outer surface, use increasing values for y!
+	 *
+	 * @param	xform				Transform to apply to vertices.
+	 * @param	xs					X coordinates of 2D outline.
+	 * @param	zs					Z coordinates of 2D outline.
+	 * @param	detail				Number of segments around the Y-axis.
+	 * @param	texture				Texture to apply to faces.
+	 * @param	smoothCircumference	Set 'smooth' flag for circumference faces.
+	 * @param	closeEnds			Close ends of shape (make solid).
 	 */
-	public Object3D( Matrix3D xform , float[] xs , float[] zs , int detail , TextureSpec texture , boolean smoothCircumference , boolean closeEnds )
+	public Object3D( final Matrix3D xform , final float[] xs , final float[] zs , final int detail , final TextureSpec texture , final boolean smoothCircumference , final boolean closeEnds )
 	{
 		float[]   vertices = new float[ xs.length * detail * 3 ];
-		int[][]    faces    = new int[ xs.length * detail ][];
-		boolean[]  smooth   = new boolean[ faces.length ];
+		int[][]   faces    = new int[ xs.length * detail ][];
+		boolean[] smooth   = new boolean[ faces.length ];
 		int v = 0;
 		int f = 0;
 
 		int		iPrev;
 		float	xPrev;
-		float	zPrev;
 
 		int		iCur = v / 3;
 		float	xCur = 0;
-		float	zCur = 0;
+		float	zCur;
 
 		for ( int i = 0 ; i < xs.length ; i++ )
 		{
-			iPrev = iCur; iCur = v / 3;
-			xPrev = xCur; xCur = xs[ i ];
-			zPrev = zCur; zCur = zs[ i ];
+			iPrev = iCur;
+			xPrev = xCur;
+
+			iCur = v / 3;
+			xCur = xs[ i ];
+			zCur = zs[ i ];
 			
-			if ( xCur == 0d )
+			if ( xCur == 0f )
 			{
 				vertices[ v++ ] = 0;
 				vertices[ v++ ] = 0;
@@ -147,7 +154,7 @@ public class Object3D
 			}
 			else for ( int j = 0 ; j < detail ; j++ )
 			{
-				float a = (float)( j * 2 * Math.PI / detail );
+				final float a = (float)( j * 2 * Math.PI / detail );
 				
 				vertices[ v++ ] =  (float)(Math.sin( a ) * xCur);
 				vertices[ v++ ] = -(float)(Math.cos( a ) * xCur);
@@ -159,7 +166,7 @@ public class Object3D
 			 */
 			if ( i == 0 )
 			{
-				if ( xCur != 0d && closeEnds )
+				if ( xCur != 0f && closeEnds )
 				{
 					faces[ f ] = new int[ detail ];
 					for ( int j = 0 ; j < detail ; j++ )
@@ -170,17 +177,17 @@ public class Object3D
 			/*
 			 * 2nd + later control points.
 			 */
-			else if ( xCur != 0d || xPrev != 0d )
+			else if ( xCur != 0f || xPrev != 0f )
 			{
 				for ( int j = 0 ; j < detail ; j++ )
 				{
-					int k = ( j + 1 ) % detail;
+					final int k = ( j + 1 ) % detail;
 
-					if ( xCur != 0d && xPrev != 0 )
+					if ( xCur != 0f && xPrev != 0 )
 						faces[ f ] = new int[] { iPrev + j , iCur + j , iCur + k , iPrev + k };
-					else if ( xCur != 0d )
+					else if ( xCur != 0f )
 						faces[ f ] = new int[] { iPrev , iCur + j , iCur + k };
-					else if ( xPrev != 0d )
+					else /*if ( xPrev != 0f )*/
 						faces[ f ] = new int[] { iPrev + j , iCur , iPrev + k };
 
 					smooth[ f++ ] = smoothCircumference;
@@ -191,7 +198,7 @@ public class Object3D
 		/*
 		 * Add closing face is requested.
 		 */
-		if ( xCur != 0d && closeEnds )
+		if ( xCur != 0f && closeEnds )
 		{
 			faces[ f ] = new int[ detail ];
 			for ( int j = 0 ; j < detail ; j++ )
@@ -205,18 +212,18 @@ public class Object3D
 		 */
 		if ( v != vertices.length )
 		{
-			float[] newVertices = new float[ v ];
+			final float[] newVertices = new float[ v ];
 			System.arraycopy( vertices , 0 , newVertices , 0 , v );
 			vertices = newVertices;
 		}
 		
 		if ( f != faces.length )
 		{
-			int[][] newFaces = new int[ f ][];
+			final int[][] newFaces = new int[ f ][];
 			System.arraycopy( faces , 0 , newFaces , 0 , f );
 			faces = newFaces;
 
-			boolean[] newSmooth = new boolean[ f ];
+			final boolean[] newSmooth = new boolean[ f ];
 			System.arraycopy( smooth , 0 , newSmooth , 0 , f );
 			smooth = newSmooth;
 		}
@@ -411,10 +418,10 @@ public class Object3D
 	 */
 	public static void drawOval( final Graphics g , final Matrix3D gXform , final float x , final float y , final float w , final float h )
 	{
-		int x1 = (int)gXform.transformX( x , y , 0 );
-		int y1 = (int)gXform.transformY( x , y , 0 );
-		int x2 = (int)gXform.transformX( x + w , y + w , 0 );
-		int y2 = (int)gXform.transformY( x + w , y + w , 0 );
+		final int x1 = (int)gXform.transformX( x , y , 0 );
+		final int y1 = (int)gXform.transformY( x , y , 0 );
+		final int x2 = (int)gXform.transformX( x + w , y + h , 0 );
+		final int y2 = (int)gXform.transformY( x + w , y + h , 0 );
 			
 		g.drawOval( Math.min( x1 , x2 ) , Math.min( y1 , y2 ) ,
 		            Math.abs( x2 - x1 ) , Math.abs( y2 - y1 ) );
@@ -425,6 +432,7 @@ public class Object3D
 	 * can be specified. The resulting bounds contains all vertices within the object and
 	 * the existing bounding box (if any).
 	 *
+	 * @param	xform		Transform to apply to vertices.
 	 * @param	bounds		Existing bounding box to use.
 	 *
 	 * @return	Combined bounding box of this object and the existing bounding box (if any).
@@ -440,12 +448,12 @@ public class Object3D
 		final Bounds3D result;
 		if ( bounds != null )
 		{
-			x1 = (float)bounds.v1.x;
-			y1 = (float)bounds.v1.y;
-			z1 = (float)bounds.v1.z;
-			x2 = (float)bounds.v2.x;
-			y2 = (float)bounds.v2.y;
-			z2 = (float)bounds.v2.z;
+			x1 = bounds.v1.x;
+			y1 = bounds.v1.y;
+			z1 = bounds.v1.z;
+			x2 = bounds.v2.x;
+			y2 = bounds.v2.y;
+			z2 = bounds.v2.z;
 			result = bounds;
 		}
 		else
@@ -501,6 +509,8 @@ public class Object3D
 
 	/**
 	 * Get transformed face normals.
+	 *
+	 * @return	Transformed face normals.
 	 */
 	public final float[] getFaceNormals()
 	{
@@ -556,6 +566,8 @@ public class Object3D
 
 	/**
 	 * Get transformed vertex normals.
+	 *
+	 * @return	Transformed vertex normals.
 	 */
 	public final float[] getVertexNormals()
 	{
@@ -600,7 +612,7 @@ public class Object3D
 	 * @param	gXform		Transformation to pan/scale the graphics context.
 	 * @param	objXform	Transformation from object's to view coordinate system.
 	 */
-	public void paint( Graphics g , Matrix3D gXform , Matrix3D objXform )
+	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D objXform )
 	{
 		/*
 		 * If the array is to small, create a larger one.
@@ -619,37 +631,36 @@ public class Object3D
 
 			for ( int f = 0 ; f < getFaceCount() ; f++ )
 			{
-				int[] pts = getFaceVertexIndices( f );
+				final int[] pts = getFaceVertexIndices( f );
 				
 				/*
 				 * Perform backface removal
 				 *
 				 * c = (x1-x2)*(y3-y2)-(y1-y2)*(x3-x2)
 				 */
-				float x1 = ver[ pts[ 0 ] * 3     ];
-				float y1 = ver[ pts[ 0 ] * 3 + 1 ];
+				final float x1 = ver[ pts[ 0 ] * 3     ];
+				final float y1 = ver[ pts[ 0 ] * 3 + 1 ];
 				
-				float x2 = ver[ pts[ 1 ] * 3     ];
-				float y2 = ver[ pts[ 1 ] * 3 + 1 ];
+				final float x2 = ver[ pts[ 1 ] * 3     ];
+				final float y2 = ver[ pts[ 1 ] * 3 + 1 ];
 				
-				float x3 = ver[ pts[ 2 ] * 3     ];
-				float y3 = ver[ pts[ 2 ] * 3 + 1 ];
+				final float x3 = ver[ pts[ 2 ] * 3     ];
+				final float y3 = ver[ pts[ 2 ] * 3 + 1 ];
 			
-				float c = ( x1 - x2 ) * ( y3 - y2 ) - ( y1 - y2 ) * ( x3 - x2 );
+				final float c = ( x1 - x2 ) * ( y3 - y2 ) - ( y1 - y2 ) * ( x3 - x2 );
 				if ( c > 0 )
 					continue;
 				 
 				/*
 				 * Now paint it.
 				 */
-				int q = 0;
 				for ( int p = 0 ; p < pts.length ; p++ )
 				{
-					q = (p+1)%pts.length;
+					final int next = ( p + 1 ) % pts.length;
 
 					drawLine( g , gXform , 
 						ver[ pts[ p ] * 3 ] , ver[ pts[ p ] * 3 + 1 ] ,
-						ver[ pts[ q ] * 3 ] , ver[ pts[ q ] * 3 + 1 ] );
+						ver[ pts[ next ] * 3 ] , ver[ pts[ next ] * 3 + 1 ] );
 				}
 			}
 		}
@@ -657,10 +668,17 @@ public class Object3D
 
 	/**
 	 * Set properties of this object.
+	 *
+	 * @param	vertices	Vertices of model (stored as x/y/z triplets).
+	 * @param	faceVert	Faces of model using indices in the vertex table.
+	 * @param	faceMat		Material of each face.
+	 * @param	faceTU		Face texture U coordinates for each face.
+	 * @param	faceTV		Face texture V coordinates for each face.
+	 * @param	faceSmooth	Face smoothing flag for each face.
 	 */
-	public final void set( float[] vertices , int[][] faceVert , TextureSpec[] faceMat , int[][] faceTU , int[][] faceTV , boolean[] faceSmooth )
+	public final void set( final float[] vertices , final int[][] faceVert , final TextureSpec[] faceMat , final int[][] faceTU , final int[][] faceTV , final boolean[] faceSmooth )
 	{
-		boolean hasTexture = ( faceMat != null && faceMat.length >= faceVert.length );
+		final boolean hasTexture = ( faceMat != null && faceMat.length >= faceVert.length );
 			
 		_vertices   = vertices;
 		_faceVert   = faceVert;
@@ -674,54 +692,55 @@ public class Object3D
 
 	/**
 	 * Set properties of this object.
+	 *
+	 * @param	vertices	Vertices of model (stored as x/y/z triplets).
+	 * @param	faceVert	Faces of model using indices in the vertex table.
+	 * @param	faceMat		Material of each face.
+	 * @param	faceTU		Face texture U coordinates for each face.
+	 * @param	faceTV		Face texture V coordinates for each face.
+	 * @param	smooth		Smoothing flag for all faces.
 	 */
-	public final void set( float[] vertices , int[][] faceVert , TextureSpec[] faceMat , int[][] faceTU , int[][] faceTV , boolean smooth )
+	public final void set( final float[] vertices , final int[][] faceVert , final TextureSpec[] faceMat , final int[][] faceTU , final int[][] faceTV , final boolean smooth )
 	{
-		boolean[] s = new boolean[ faceVert.length ];
-		for ( int i = 0 ; i < s.length ; i++ )
-			s[ i ] = smooth;
+		final boolean[] faceSmooth = new boolean[ faceVert.length ];
+		for ( int i = 0 ; i < faceSmooth.length ; i++ )
+			faceSmooth[ i ] = smooth;
 			
-		set( vertices , faceVert , faceMat , faceTU , faceTV , s );
+		set( vertices , faceVert , faceMat , faceTU , faceTV , faceSmooth );
 	}
 
 	/**
 	 * Set properties of this object.
+	 *
+	 * @param	vertices	Vertices of model (stored as x/y/z triplets).
+	 * @param	faceVert	Faces of model using indices in the vertex table.
+	 * @param	texture		Material for all faces in the model.
+	 * @param	faceSmooth	Face smoothing flag for each face.
 	 */
-	public final void set( float[] vertices , int[][] faceVert , TextureSpec texture , boolean[] faceSmooth )
+	public final void set( final float[] vertices , final int[][] faceVert , final TextureSpec texture , final boolean[] faceSmooth )
 	{
-		set( vertices , faceVert , texture , null , null , faceSmooth );
+		set( vertices , faceVert , texture , faceSmooth );
 	}
 
 	/**
 	 * Set properties of this object.
+	 *
+	 * @param	vertices	Vertices of model (stored as x/y/z triplets).
+	 * @param	faceVert	Faces of model using indices in the vertex table.
+	 * @param	texture		Material for all faces in the model.
+	 * @param	smooth		Smoothing flag for all faces.
 	 */
-	public final void set( float[] vertices , int[][] faceVert , TextureSpec texture , boolean smooth )
+	public final void set( final float[] vertices , final int[][] faceVert , final TextureSpec texture , final boolean smooth )
 	{
-		set( vertices , faceVert , texture , null , null , smooth );
-	}
+		final boolean[] faceSmooth = new boolean[ faceVert.length ];
+		for ( int i = 0 ; i < faceSmooth.length ; i++ )
+			faceSmooth[ i ] = smooth;
 
-	/**
-	 * Set properties of this object.
-	 */
-	public final void set( float[] vertices , int[][] faceVert , TextureSpec texture , int[][] faceTU , int[][] faceTV , boolean[] faceSmooth )
-	{
-		TextureSpec[] m = new TextureSpec[ faceVert.length ];
-		for ( int i = 0 ; i < m.length ; i++ )
-			m[ i ] = texture;
-			
-		set( vertices , faceVert ,  m , faceTU , faceTV , faceSmooth );
-	}
+		final TextureSpec[] faceMat = new TextureSpec[ faceVert.length ];
+		for ( int i = 0 ; i < faceMat.length ; i++ )
+			faceMat[ i ] = texture;
 
-	/**
-	 * Set properties of this object.
-	 */
-	public final void set( float[] vertices , int[][] faceVert , TextureSpec texture , int[][] faceTU , int[][] faceTV , boolean smooth )
-	{
-		boolean[] s = new boolean[ faceVert.length ];
-		for ( int i = 0 ; i < s.length ; i++ )
-			s[ i ] = smooth;
-			
-		set( vertices , faceVert , texture , faceTU , faceTV , s );
+		set( vertices , faceVert ,  faceMat , null , null , faceSmooth );
 	}
 
 }
