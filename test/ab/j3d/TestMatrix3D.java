@@ -1,15 +1,15 @@
-package ab.light3d;
-
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2000-2003 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2003 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2004 - All Rights Reserved
+ * (C) Copyright Peter S. Heijnen 1999-2004 - All Rights Reserved
  *
  * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
+package ab.light3d;
+
 import junit.framework.TestCase;
 
 /**
@@ -22,14 +22,9 @@ public class TestMatrix3D
 	extends TestCase
 {
 	/**
-	 * Run test application.
-	 *
-	 * @param	args	Command line arguments.
+	 * Name of this class.
 	 */
-	public static void main( final String args[] )
-	{
-		junit.textui.TestRunner.run( TestMatrix3D.class );
-	}
+	private static final String CLASS_NAME = TestMatrix3D.class.getName();
 
 	/**
 	 * Test <code>Matrix3D.equals()</code> method.
@@ -56,7 +51,7 @@ public class TestMatrix3D
 	 */
 	public static void testEquals()
 	{
-		//System.out.println( "    - equals()" );
+		System.out.println( CLASS_NAME + ".testEquals()" );
 		final Matrix3D i = Matrix3D.INIT;
 		Matrix3D m;
 
@@ -83,7 +78,7 @@ public class TestMatrix3D
 
 		m = i.set( 1 , 0 , 0 , 0 , 9 , 1 , 0 , 0 , 0 , 0 , 1 , 0 );
 		assertTrue( "Matrix3D.equals() did not correctly test 'yx'" , !i.equals( m ) && !m.equals( i ) );
-			
+
 		m = i.set( 1 , 0 , 0 , 0 , 0 , 9 , 0 , 0 , 0 , 0 , 1 , 0 );
 		assertTrue( "Matrix3D.equals() did not correctly test 'yy'" , !i.equals( m ) && !m.equals( i ) );
 
