@@ -19,11 +19,26 @@
  */
 package ab.j3d.view;
 
+import java.util.Properties;
+
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 
 /**
- * This class implements a view control based on a 'from' and 'to' point.
+ * This class implements a view control based on a 'from' and 'to' point. The
+ * control behavior of the <code>ViewControl</code> class is extended as
+ * follows:
+ * <dl>
+ *  <dt>Dragging with the left mouse button</dt>
+ *  <dd>Move 'from' point in plane perpendicular to the up vector.</dd>
+ *
+ *  <dt>Dragging with the middle mouse button</dt>
+ *  <dd>Rotate around 'to' point and change elevation.</dd>
+ *
+ *  <dt>Dragging with the right mouse button</dt>
+ *  <dd>Move 'from' point closer or away from the 'to' point by moving the
+ *      mouse up or down.</dd>
+ * </dl>
  *
  * @author  Peter S. Heijnen
  * @author  G.B.M. Rupert
@@ -45,50 +60,110 @@ public final class FromToViewControl
 	/**
 	 * Primary up-vector (must be normalized).
 	 */
-	private final Vector3D _upPrimary;
+	private Vector3D _upPrimary;
 
 	/**
 	 * Secondary up vector. This up-vector is used in case the from-to vector is
 	 * parallel to the primary up-vector (must be normalized).
 	 */
-	private final Vector3D _upSecondary;
+	private Vector3D _upSecondary;
 
 	/**
-	 * Transform that was derived from the from/to points.
+	 * Saved point to look from.
+	 *
+	 * @see     #save()
+	 * @see     #restore()
 	 */
-	private Matrix3D _transform;
+	private Vector3D _savedFrom;
 
 	/**
-	 * Construct default from-to view. This creates a view from (0,0,0) along
-	 * the positive Y-axis.
+	 * Saved point to look at.
+	 *
+	 * @see     #save()
+	 * @see     #restore()
+	 */
+	private Vector3D _savedTo;
+
+	/**
+	 * View transform when dragging started.
+	 * <p />
+	 * This is used as temporary state variable for dragging operations.
+	 */
+	private Matrix3D _dragStartTransform = Matrix3D.INIT;
+
+	/**
+	 * Point from where was being looked when dragging started.
+	 * <p />
+	 * This is used as temporary state variable for dragging operations.
+	 */
+	private Vector3D _dragStartFrom = Vector3D.INIT;
+
+	/**
+	 * Point to which was being looked when dragging started.
+	 * <p />
+	 * This is used as temporary state variable for dragging operations.
+	 */
+	private Vector3D _dragStartTo = Vector3D.INIT;
+
+	/**
+	 * Construct default from-to view. This creates a view from (1,0,0) to the
+	 * origin along the Y+ axis.
 	 */
 	public FromToViewControl()
 	{
-		this( Vector3D.INIT , Vector3D.INIT.set( 0 , 1 , 0 ) );
+		this( 1.0 );
 	}
 
 	/**
 	 * Construct from-to view from a point at a given distance towards the
 	 * origin along the positive Y-axis.
+	 *
+	 * @throws  IllegalArgumentException if the distance is (almost) 0.
 	 */
-	public FromToViewControl( final float distance )
+	public FromToViewControl( final double distance )
 	{
-		this( Vector3D.INIT.set( 0 , -distance , 0 ) , Vector3D.INIT );
+		this( Vector3D.INIT.set( 0.0 , -distance , 0.0 ) , Vector3D.INIT );
 	}
 
 	/**
-	 * Construct new from-to view control.
+	 * Construct new from-to view control looking from the specified point to
+	 * the other specified point. The primary up vector is the Z+ axis, the
+	 * seconary is the Y+ axis.
 	 *
 	 * @param   from    Initial point to look from.
 	 * @param   to      Initial point to look at.
+	 *
+	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
+	 * @throws  IllegalArgumentException if the from and two points are too close.
 	 */
 	public FromToViewControl( final Vector3D from , final Vector3D to )
 	{
-		_from        = Vector3D.INIT;
-		_to          = Vector3D.INIT;
-		_transform   = Matrix3D.INIT;
-		_upPrimary   = Vector3D.INIT.set( 0 , 0 , 1 );
-		_upSecondary = Vector3D.INIT.set( 0 , 1 , 0 );
+		this( from , to , Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) , Vector3D.INIT.set( 0.0 , 1.0 , 0.0 ) );
+	}
+
+	/**
+	 * Construct new from-to view control looking from the specified point to
+	 * the other specified point. The primary and secondary up vectors need to
+	 * be specified to provide the proper view orientation.
+	 *
+	 * @param   from            Initial point to look from.
+	 * @param   to              Initial point to look at.
+	 * @param   upPrimary       Primary up-vector (must be normalized).
+	 * @param   upSecondary     Secondary up vector. Used if from-to vector is
+	 *                          parallel to the primary up-vector.
+	 *
+	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
+	 * @throws  IllegalArgumentException if the from and two points are too close.
+	 */
+	public FromToViewControl( final Vector3D from , final Vector3D to , final Vector3D upPrimary , final Vector3D upSecondary )
+	{
+		_from        = null;
+		_to          = null;
+		_upPrimary   = upPrimary;
+		_upSecondary = upSecondary;
+
+		_savedFrom   = from;
+		_savedTo     = to;
 
 		look( from , to );
 	}
@@ -98,182 +173,211 @@ public final class FromToViewControl
 	 *
 	 * @param   from    Point to look from.
 	 * @param   to      Point to look at.
+	 *
+	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
+	 * @throws  IllegalArgumentException if the from and two points are too close.
 	 */
 	public void look( final Vector3D from , final Vector3D to )
+	{
+		setFrom( from );
+		setTo( to );
+	}
+
+	/**
+	 * Set the point to look from.
+	 *
+	 * @param   from    New point to look from.
+	 *
+	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
+	 * @throws  IllegalArgumentException if the from and two points are too close.
+	 */
+	public void setFrom( final Vector3D from )
 	{
 		if ( from == null )
 			throw new NullPointerException( "from" );
 
+		final Vector3D oldFrom = _from;
+		if ( !from.equals( oldFrom ) )
+		{
+			final Matrix3D transform = Matrix3D.getFromToTransform( from , _to , _upPrimary , _upSecondary );
+
+			_from = from;
+			_pcs.firePropertyChange( "from" , oldFrom , from );
+
+			setTransform( transform );
+		}
+	}
+
+	/**
+	 * Set the point to look at.
+	 *
+	 * @param   to      New point to look at.
+	 */
+	public void setTo( final Vector3D to )
+	{
 		if ( to == null )
 			throw new NullPointerException( "to" );
 
-		if ( !from.equals( _from ) )
+		final Vector3D oldTo = _to;
+		if ( !to.equals( oldTo ) )
 		{
-			final Vector3D oldFrom = _from;
-			_from = from;
-			_pcs.firePropertyChange( "from" , oldFrom , from );
-		}
+			final Matrix3D transform = Matrix3D.getFromToTransform( _from , to , _upPrimary , _upSecondary );
 
-		if ( !to.equals( _to ) )
-		{
-			final Vector3D oldTo = _to;
 			_to = to;
 			_pcs.firePropertyChange( "to" , oldTo , to );
-		}
 
-		final Matrix3D transform = getFromToTransform( _from , _to , _upPrimary , _upSecondary );
-		if ( !transform.equals( _transform ) )
-		{
-			final Matrix3D oldTransform = _transform;
-			_transform = transform;
-			_pcs.firePropertyChange( "transform" , oldTransform , transform );
+			setTransform( transform );
 		}
 	}
 
 	/**
-	 * Calculate transformation matrix based on the specified 'from' and 'to'
-	 * points. An up-vector must also be specified to determine the correct view
-	 * orientation. A primary and secondary up-vector is needed; the primary
-	 * up-vector is used when possible, the secondary up-vector is used when the
-	 * from-to vector is parallel to the primary up-vector.
+	 * Set primary up-vector.
 	 *
-	 * @param   from        Point to look from.
-	 * @param   to          Point to look at.
 	 * @param   upPrimary   Primary up-vector (must be normalized).
-	 * @param   upSecondary Secondary up-vector (must be normalized).
 	 *
-	 * @return  Transformation matrix.
+	 * @see     #setUpSecondary(Vector3D)
 	 */
-	public static Matrix3D getFromToTransform( final Vector3D from , final Vector3D to , final Vector3D upPrimary , final Vector3D upSecondary )
+	public void setUpPrimary( final Vector3D upPrimary )
 	{
-		if ( from.almostEquals( to ) )
-			throw new IllegalArgumentException( "'from' and 'to' can not be the same!" );
+		if ( upPrimary == null )
+			throw new NullPointerException( "upPrimary" );
 
-		/*
-		 * Z-axis points out of the to-point (center) towards the from-point (eye).
-		 */
-		double zx = from.x - to.x;
-		double zy = from.y - to.y;
-		double zz = from.z - to.z;
-		final double normalizeZ = 1.0 / Math.sqrt( zx * zx + zy * zy + zz * zz );
-		zx *= normalizeZ;
-		zy *= normalizeZ;
-		zz *= normalizeZ;
-//		System.out.println( "Math.sqrt( zx * zx + zy * zy + zz * zz ) = " + Math.sqrt( zx * zx + zy * zy + zz * zz ) );
-
-		/*
-		 * Select up-vector.
-		 */
-		Vector3D up = upPrimary;
-		if ( Math.abs( up.x * zx + up.y * zy + up.z * zz ) > 0.999 )
-			up = upSecondary;
-
-		/*
-		 * X-axis is perpendicular to the Z-axis and the up-vector.
-		 */
-		double xx = up.y * zz - up.z * zy;
-		double xy = up.z * zx - up.x * zz;
-		double xz = up.x * zy - up.y * zx;
-		final double normalizeX = 1.0 / Math.sqrt( xx * xx + xy * xy + xz * xz );
-		xx *= normalizeX;
-		xy *= normalizeX;
-		xz *= normalizeX;
-
-		/*
-		 * Y-axis is perpendicular to the Z- and X-axis.
-		 */
-		final double yx = zy * xz - zz * xy;
-		final double yy = zz * xx - zx * xz;
-		final double yz = zx * xy - zy * xx;
-//		System.out.println( "Math.sqrt( yx * yx + yy * yy + yz * yz ) = " + Math.sqrt( yx * yx + yy * yy + yz * yz ) );
-
-		/*
-		 * Create matrix.
-		 */
-		return Matrix3D.INIT.set(
-			xx , xy , xz , ( -from.x * xx -from.y * xy -from.z * xz ) ,
-			yx , yy , yz , ( -from.x * yx -from.y * yy -from.z * yz ) ,
-			zx , zy , zz , ( -from.x * zx -from.y * zy -from.z * zz ) );
+		final Vector3D oldupPrimary = _upPrimary;
+		_upPrimary = upPrimary;
+		_pcs.firePropertyChange( "upPrimary" , oldupPrimary , upPrimary );
 	}
 
 	/**
-	 * Change te 'look-from' point.
+	 * Set secondary up vector. This up-vector is used in case the from-to
+	 * vector is parallel to the primary up-vector.
 	 *
-	 * @param   from    Point to look from.
-	 */
-	public void lookFrom( final Vector3D from )
-	{
-		look( from , _to );
-	}
-
-	/**
-	 * Change the 'look-at' point.
+	 * @param   upSecondary     Secondary up vector (must be normalized).
 	 *
-	 * @param   to  Point to look at.
+	 * @see     #setUpPrimary(Vector3D)
 	 */
-	public void lookAt( final Vector3D to )
+	public void setUpSecondary( final Vector3D upSecondary )
 	{
-		look( _from , to );
+		if ( upSecondary == null )
+			throw new NullPointerException( "upSecondary" );
+
+		final Vector3D oldUpSecondary = _upSecondary;
+		_upSecondary = upSecondary;
+		_pcs.firePropertyChange( "upSecondary" , oldUpSecondary , upSecondary );
 	}
 
-	public Matrix3D getTransform()
+	public void save()
 	{
-		return _transform;
+		_savedFrom = _from;
+		_savedTo   = _to;
 	}
 
-	//***************************************************
-	// Some first test code for dragging support
-	//***************************************************
-	private double   _startDistance = Double.NaN;
-	private Matrix3D _rotationBase  = Matrix3D.INIT;
+	public void restore()
+	{
+		look( _savedFrom , _savedTo );
+	}
+
+	public void saveSettings( final Properties settings )
+	{
+		if ( settings == null )
+			throw new NullPointerException( "settings" );
+
+		settings.setProperty( "from"        , _from       .toString() );
+		settings.setProperty( "to"          , _to         .toString() );
+		settings.setProperty( "upPrimary"   , _upPrimary  .toString() );
+		settings.setProperty( "upSecondary" , _upSecondary.toString() );
+		settings.setProperty( "savedFrom"   , _savedFrom  .toString() );
+		settings.setProperty( "savedTo"     , _savedTo    .toString() );
+	}
+
+	public void loadSettings( final Properties settings )
+	{
+		try
+		{
+			final Vector3D from        = Vector3D.fromString( settings.getProperty( "from"        ) );
+			final Vector3D to          = Vector3D.fromString( settings.getProperty( "to"          ) );
+			final Vector3D upPrimary   = Vector3D.fromString( settings.getProperty( "upPrimary"   ) );
+			final Vector3D upSecondary = Vector3D.fromString( settings.getProperty( "upSecondary" ) );
+			final Vector3D savedFrom   = Vector3D.fromString( settings.getProperty( "savedFrom"   ) );
+			final Vector3D savedTo     = Vector3D.fromString( settings.getProperty( "savedTo"     ) );
+
+			/* verify settings */
+			Matrix3D.getFromToTransform( from , to , upPrimary , upSecondary );
+
+			/* activate settings */
+			setUpPrimary( upPrimary );
+			setUpSecondary( upSecondary );
+			look( from , to );
+			_savedFrom = savedFrom;
+			_savedTo   = savedTo;
+		}
+		catch ( NullPointerException e )
+		{
+			/* ignored, caused by missing properties */
+		}
+		catch ( IllegalArgumentException e )
+		{
+			/* ignored, caused by malformed properties or invalid control properties */
+		}
+	}
 
 	public void dragStart( final DragEvent event )
 	{
-//		System.out.println( "DRAG START" );
+		_dragStartTransform = getTransform();
+		_dragStartFrom      = _from;
+		_dragStartTo        = _to;
 
-		final Matrix3D transform = getTransform();
-		if ( event.getButtonNumber() == 1 )
-			_rotationBase = transform;
-		else
-			_rotationBase = transform.setTranslation( transform.multiply( _to.minus( _from ) ) );
-
-		_startDistance = _from.distanceTo( _to );
+		super.dragStart( event );
 	}
 
-	public void dragTo( final DragEvent event )
+	protected void dragLeftButton( final DragEvent event )
 	{
-//		System.out.println( "DRAG TO" );
+		final Vector3D upPrimary = _upPrimary;
+		final Vector3D from      = _dragStartFrom;
+		final Matrix3D transform = _dragStartTransform;
 
-		switch ( event.getButtonNumber() )
-		{
-			case 0 : /* button #1 - rotate from point around to point */
-			{
-				final double aboutAngle = -event.getDeltaDegX();
-				final double aboveAngle = -event.getDeltaDegY();
+		final double deltaX = event.getDeltaUnitX();
+		final double deltaY = event.getDeltaUnitY();
 
-				final Matrix3D rotate1 = _rotationBase.rotateY( Math.toRadians( aboveAngle ) );
-				final Matrix3D rotate2 = rotate1.rotateX( Math.toRadians( aboutAngle ) );
-				final Vector3D from    = rotate2.multiply( 0.0 , 0.0 , -_startDistance );
+		final Vector3D zAxis = Vector3D.INIT.set( transform.zx , transform.zy , transform.zz );
+		final Vector3D xAxis = Vector3D.cross( zAxis , upPrimary );
+		final Vector3D yAxis = Vector3D.cross( upPrimary , xAxis );
 
-				lookFrom( from );
-				break;
-			}
-
-			/* button #2 - rotate to point around from point */
-
-			case 2 : /* button #3 - move from point closer or away from the to point */
-			{
-				final double distance = _startDistance + event.getDeltaUnitY();
-
-				lookFrom( _rotationBase.multiply( 0.0 , 0.0 , -distance ) );
-				break;
-			}
-		}
-
+		Vector3D newFrom = from;
+		newFrom = newFrom.plus( xAxis.multiply( deltaX ) );
+		newFrom = newFrom.plus( yAxis.multiply( deltaY ) );
+		setFrom( newFrom );
 	}
 
-	public void dragStop( final DragEvent event )
+	protected void dragMiddleButton( final DragEvent event )
 	{
-//		System.out.println( "DRAG STOP" );
+		final Vector3D upPrimary = _upPrimary;
+		final Vector3D from      = _dragStartFrom;
+		final Vector3D to        = _dragStartTo;
+
+		final double deltaX = -event.getDeltaRadX();
+		final double deltaY = -event.getDeltaUnitY();
+
+		final Matrix3D rotation  = Matrix3D.getRotationTransform( to , upPrimary , deltaX );
+		final Vector3D elevation = upPrimary.multiply( deltaY );
+
+		Vector3D newFrom = from;
+		newFrom = rotation.multiply( newFrom );
+		newFrom = newFrom.plus( elevation );
+		setFrom( newFrom );
+	}
+
+	protected void dragRightButton( final DragEvent event )
+	{
+		final Vector3D from = _dragStartFrom;
+		final Vector3D to   = _dragStartTo;
+
+		final double deltaY = (double)event.getDeltaY();
+
+		final double zoom = Math.max( 0.1 , 1.0 + deltaY / 200.0 );
+
+		Vector3D newFrom = from;
+		newFrom = newFrom.multiply( zoom );
+		newFrom = newFrom.plus( to.multiply( 1.0 - zoom ) );
+		setFrom( newFrom );
 	}
 }
