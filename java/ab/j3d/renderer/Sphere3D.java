@@ -4,10 +4,11 @@ package common.renderer;
  * $Id$
  *
  * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
-
+ * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
+ *
  * This software may not be used, copyied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * form without express permission from Numdata BV or Peter S. Heijnen. Please
+ * contact Numdata BV or Peter S. Heijnen for license information.
  */
 import java.awt.Graphics;
 
@@ -23,10 +24,25 @@ import common.model.Matrix3D;
 public class Sphere3D
 	extends Object3D
 {
+	/**
+	 * Transformation applied to all vertices of the box.
+	 */
 	public final Matrix3D xform;
-	public final float   dx;
-	public final float   dy;
-	public final float   dz;
+
+	/**
+	 * Width of sphere/egg (x-axis).
+	 */
+	public final float dx;
+
+	/**
+	 * Height of sphere/egg (y-axis).
+	 */
+	public final float dy;
+
+	/**
+	 * Depth of sphere/egg (z-axis).
+	 */
+	public final float dz;
 
 	/**
 	 * Constructor for sphere.

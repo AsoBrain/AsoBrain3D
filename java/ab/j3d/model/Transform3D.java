@@ -3,15 +3,16 @@ package common.renderer;
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2000,2002 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
+ * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
  * This software may not be used, copyied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * form without express permission from Numdata BV or Peter S. Heijnen. Please
+ * contact Numdata BV or Peter S. Heijnen for license information.
  */
 import java.awt.Graphics;
-import java.util.Hashtable;
 import common.model.Matrix3D;
+import common.model.Vector3D;
 
 /**
  * This class is a transformation node in the graphics tree. It
@@ -27,10 +28,8 @@ public class Transform
 	private	float		_rotationX		= 0.0f;
 	private	float		_rotationY		= 0.0f;
 	private	float		_rotationZ		= 0.0f;
-	private	float		_translationX	= 0.0f;
-	private	float		_translationY	= 0.0f;
-	private	float		_translationZ	= 0.0f;
-	
+	private	Vector3D _translation = Vector3D.INIT;
+
 	/**
 	 * Matrix with transformation.
 	 */	
@@ -68,7 +67,7 @@ public class Transform
 	 *
 	 * @param	m	Explicit matrix to use for transformation.
 	 */
-	public Transform( Matrix3D m )
+	public Transform( final Matrix3D m )
 	{
 		_matrix = m;
 		_matrixDirty = false;
@@ -77,31 +76,26 @@ public class Transform
 	/**
 	 * Constructor based for transformation based on a translation.
 	 *
-	 * @param	translationX	Translation along X-axis.
-	 * @param	translationY	Translation along Y-axis.
-	 * @param	translationZ	Translation along Z-axis.
+	 * @param	translation	Transform translation.
 	 */
-	public Transform( float translationX , float translationY , float translationZ )
+	public Transform( final Vector3D translation )
 	{
-		setTranslation( translationX , translationY , translationZ );
+		setTranslation( translation );
 	}
 
 	/**
 	 * Constructor based for transformation based on translation and
 	 * rotation.
 	 *
-	 * @param	translationX	Translation along X-axis.
-	 * @param	translationY	Translation along Y-axis.
-	 * @param	translationZ	Translation along Z-axis.
+	 * @param	translation	Transform translation.
 	 * @param	rotationX		Rotation around X-axis in decimal degrees.
 	 * @param	rotationY		Rotation around Y-axis in decimal degrees.
 	 * @param	rotationZ		Rotation around Z-axis in decimal degrees.
 	 */
-	public Transform(
-		float translationX , float translationY , float translationZ ,
-		float rotationX , float rotationY , float rotationZ )
+	public Transform( final Vector3D translation ,
+		final float rotationX , final float rotationY , final float rotationZ )
 	{
-		setTranslation( translationX , translationY , translationZ );
+		setTranslation( translation );
 		setRotation( rotationX , rotationY , rotationZ );
 	}
 
@@ -167,9 +161,7 @@ public class Transform
 	{
 		if ( _matrixDirty )
 		{
-			_matrix = Matrix3D.getTransform( _rotationX , _rotationY , _rotationZ ,
-				_translationX , _translationY , _translationZ );
-			
+			_matrix = Matrix3D.getTransform( _rotationX , _rotationY , _rotationZ , _translation.x , _translation.y , _translation.z );
 			_matrixDirty = false;
 		}
 		return( _matrix );
@@ -206,33 +198,13 @@ public class Transform
 	}
 
 	/**
-	 * Get translation value along X-axis.
+	 * Get transform translation.
 	 *
-	 * @return	Translation around X-axis.
+	 * @return	Transform translation.
 	 */
-	public float getTranslationX()
+	public Vector3D getTranslation()
 	{
-		return( _translationX );
-	}
-
-	/**
-	 * Get translation value along Y-axis.
-	 *
-	 * @return	Translation around Y-axis.
-	 */
-	public float getTranslationY()
-	{
-		return( _translationY );
-	}
-
-	/**
-	 * Get translation value along Z-axis.
-	 *
-	 * @return	Translation around Z-axis.
-	 */
-	public float getTranslationZ()
-	{
-		return( _translationZ );
+		return _translation;
 	}
 
 	/**
@@ -321,66 +293,16 @@ public class Transform
 	}
 
 	/**
-	 * Set new translation for all axises.
+	 * Set new transform translation.
 	 *
-	 * @param	translationX	Translation along X-axis.
-	 * @param	translationY	Translation along Y-axis.
-	 * @param	translationZ	Translation along Z-axis.
+	 * @param	translation	Transform translation.
 	 */
-	public void setTranslation( float translationX , float translationY , float translationZ )
+	public void setTranslation( final Vector3D translation )
 	{
-		if ( translationX != _translationX ||
-			 translationY != _translationY ||
-			 translationZ != _translationZ )
+		if ( translation != null && !_translation.equals( translation ) )
 		{
-			_translationX	= translationX;
-			_translationY	= translationY;
-			_translationZ	= translationZ;
-			
+			_translation = translation;
 			setDirty();
 		}
 	}
-
-	/**
-	 * Set new translation value along X-axis.
-	 *
-	 * @param	translation	Translation along X-axis.
-	 */
-	public void setTranslationX( float translation )
-	{
-		if ( translation != _translationX )
-		{
-			_translationX = translation;
-			setDirty();
-		}
-	}
-
-	/**
-	 * Set new translation value along Y-axis.
-	 *
-	 * @param	translation	Translation along Y-axis.
-	 */
-	public void setTranslationY( float translation )
-	{
-		if ( _translationY != translation )
-		{
-			_translationY = translation;
-			setDirty();
-		}
-	}
-
-	/**
-	 * Set new translation value along Z-axis.
-	 *
-	 * @param	translation	Translation along Z-axis.
-	 */
-	public void setTranslationZ( float translation )
-	{
-		if ( _translationZ != translation )
-		{
-			_translationZ = translation;
-			setDirty();
-		}
-	}
-
 }
