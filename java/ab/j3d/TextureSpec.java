@@ -10,24 +10,24 @@
  */
 package ab.j3d;
 
-import java.awt.*;
-import java.awt.image.PixelGrabber;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Image;
 import java.io.Serializable;
-import java.net.URL;
-import java.util.Map;
-import java.util.HashMap;
+
+import com.numdata.oss.ImageTools;
 
 /**
- * This is the class represents a texture specification in the database.
+ * This class defines a texture to be using in a 3D environment.
  *
- * @author	Peter S. Heijnen
- * @version	$Revision$ ($Date$, $Author$)
+ * @author  Peter S. Heijnen
+ * @version $Revision$ ($Date$, $Author$)
  */
 public final class TextureSpec
 	implements Serializable
 {
 	/**
-	 * Serialization ID
+	 * Serialization ID.
 	 */
 	private static final long serialVersionUID = -8129387219382329102L;
 
@@ -35,6 +35,24 @@ public final class TextureSpec
 	 *  Database table name.
 	 */
 	public static final String TABLE_NAME = "TextureSpecs";
+
+	/**
+	 * Value returned by parseRGBString is an invalid string is detected.
+	 */
+	public static final int BADRGB = 0x00FFFFFF;
+
+	/**
+	 * Texture path prefix from where material texture images are loaded.
+	 */
+	public static String textureFilenamePrefix = "textures/";
+
+	/**
+	 * Texture path suffix from where material texture images are loaded.
+	 *
+	 * FIXME: This static prevents applications from using multiple
+	 *        material libraries.
+	 */
+	public static String textureFilenameSuffix = ".jpg";
 
 	/**
 	 * Unique record ID.
@@ -50,14 +68,14 @@ public final class TextureSpec
 	/**
 	 * RGB value for textures without texture image (-1 -> has texture image).
 	 */
-	public int rgb = 0x00FFFFFF;
+	public int rgb;
 
 	/**
 	 * Opacity. Determines the transparency of the material. This ranges
 	 * from fully opaque (1.0) to completely translucent (0.0). Any value
 	 * outside this ranges renders undefined results.
 	 */
-	public float opacity = 1f;
+	public float opacity;
 
 	/**
 	 * This scale factor can be used to convert world coordinates to
@@ -66,7 +84,7 @@ public final class TextureSpec
 	 * the material itself, but may be used by the modelling engine to
 	 * calculate texture coordinates. This value defaults to 1.0.
 	 */
-	public float  textureScale          = 1.0f;
+	public float textureScale;
 
 	/**
 	 * Ambient reflectivity coefficient. This determines the amount of
@@ -77,7 +95,7 @@ public final class TextureSpec
 	 * surfaces. In many cases this will be the same as the diffuse
 	 * reflectivity coefficient.
 	 */
-	public float  ambientReflectivity   = 0.3f;
+	public float  ambientReflectivity;
 
 	/**
 	 * Diffuse reflectivity coefficient. This determines the amount of
@@ -86,13 +104,13 @@ public final class TextureSpec
 	 * objects that are highly reflective. Typical values range from 0,1
 	 * to 0,2 for dull surfaces and 0,7 to 0,8 for bright surfaces.
 	 */
-	public float  diffuseReflectivity   = 0.5f;
+	public float  diffuseReflectivity;
 
 	/**
 	 * Specular reflection coefficient. Specular reflection is total or
 	 * near total reflection of incoming light in a concentrated region.
 	 */
-	public float  specularReflectivity  = 0.7f;
+	public float  specularReflectivity;
 
 	/**
 	 * Specular reflection exponent. This exponent is an indicator for
@@ -101,7 +119,7 @@ public final class TextureSpec
 	 * optimization reasons, only 1, 2, 4, 8, 16, 32, 64, 128, and 256
 	 * are supported.
 	 */
-	public int specularExponent = 8;
+	public int specularExponent;
 
 	/**
 	 * Flag to indicate that this material's texture has a 'grain'. If so,
@@ -109,86 +127,44 @@ public final class TextureSpec
 	 */
 	public boolean grain;
 
-
-/////////////////////////////////////////////////////////////////
-/// INTERNAL DATA
-/////////////////////////////////////////////////////////////////
-
 	/**
-	 * Value returned by parseRGBString is an invalid string is detected.
+	 * Default constructor.
 	 */
-	public static final int BADRGB = 0x00FFFFFF;
-
-	/**
-	 * Texture path prefix from where material texture images are loaded.
-	 *
-	 * @FIXME This static prevents applications from using multiple material libraries.
-	 */
-	public static String textureFilenamePrefix = "";
-
-	/**
-	 * Texture path suffix from where material texture images are loaded.
-	 *
-	 * FIXME: This static prevents applications from using multiple
-	 *        material libraries.
-	 */
-	public static String textureFilenameSuffix = ".jpg";
-
-	/**
-	 * Last used 'texture' value. If this is unequal to the 'texture'
-	 * field, the values below should be re-assigned.
-	 */
-	private transient boolean _initDone;
-
-	/**
-	 * This hashtable is used to share textures between materials. The
-	 * key is the 'texture' field value, the elements are Object arrays
-	 * with the following layout:
-	 *
-	 *  [ 0 ] = Integer : _argb
-	 *  [ 1 ] = int[][] : _pixels
-	 *  [ 2 ] = Boolean : _transparent
-	 */
-	private static final Map _textureCache = new HashMap();
-
-	/**
-	 * This buffer contains all pixels of a texture in ARGB format. This
-	 * is set to <code>null</code> if no texture is available for this
-	 * material.
-	 */
-	private transient int[][] _pixels;
-
-	/**
-	 * Flag to indicate that this material is (partially) transparent.
-	 */
-	private transient boolean _transparent;
-
-	/**
-	 * Exponent that was used to create the phong approximation table.
-	 */
-	private transient int _phongTableExponent = -1;
-
-	/**
-	 * Phong approximation table. This is a 256x256 bitmap with values
-	 * from 0 to 256 for the selected phong exponent.
-	 */
-	private transient short[][] _phongTable;
-
-	/**
-	 * This hashtable is used to share phong tables between materials.
-	 * The key is the specular exponent that was used to calculate the
-	 * phong table.
-	 */
-	private static final Map _phongTableCache = new HashMap();
+	public TextureSpec()
+	{
+		ID                   = -1;
+		code                 = null;
+		rgb                  = 0x00FFFFFF;
+		opacity              = 1.0f;
+		textureScale         = -1;
+		ambientReflectivity  = 0.3f;
+		diffuseReflectivity  = 0.5f;
+		specularReflectivity = 0.7f;
+		specularExponent     = 8;
+		grain                = false;
+	}
 
 	/**
 	 * This method returns the texture color as ARGB.
 	 *
-	 * @return	Texture color as ARGB.
+	 * @return  Texture color as ARGB.
 	 */
 	public int getARGB()
 	{
-		return 0xFF000000 | rgb;
+		return ( Math.round( opacity * 255 ) << 24 ) | ( rgb & 0xFFFFFF );
+	}
+
+	/**
+	 * Get <code>Color</code> object to represent this texture. This is based on
+	 * the result of the <code>getARGB()</code> method.
+	 *
+	 * @return  Color to use for representing this texture.
+	 *
+	 * @see     #getARGB
+	 */
+	public Color getColor()
+	{
+		return new Color( getARGB() , true );
 	}
 
 	/**
@@ -198,275 +174,92 @@ public final class TextureSpec
 	 */
 	public String getHtmlRGB()
 	{
+		final int i = rgb;
+
 		return new StringBuffer( 7 )
 			.append( '#' )
-			.append( Character.forDigit( ( rgb >> 20 ) & 15 , 16 ) )
-			.append( Character.forDigit( ( rgb >> 16 ) & 15 , 16 ) )
-			.append( Character.forDigit( ( rgb >> 12 ) & 15 , 16 ) )
-			.append( Character.forDigit( ( rgb >>  8 ) & 15 , 16 ) )
-			.append( Character.forDigit( ( rgb >>  4 ) & 15 , 16 ) )
-			.append( Character.forDigit(   rgb         & 15 , 16 ) )
+			.append( Character.forDigit( ( i >> 20 ) & 15 , 16 ) )
+			.append( Character.forDigit( ( i >> 16 ) & 15 , 16 ) )
+			.append( Character.forDigit( ( i >> 12 ) & 15 , 16 ) )
+			.append( Character.forDigit( ( i >>  8 ) & 15 , 16 ) )
+			.append( Character.forDigit( ( i >>  4 ) & 15 , 16 ) )
+			.append( Character.forDigit(   i         & 15 , 16 ) )
 			.toString();
-	}
-
-	/**
-	 * Get phong table for this material.
-	 */
-	public short[][] getPhongTable()
-	{
-		/*
-		 * If we already have the phong table, return it immediately.
-		 */
-		if ( _phongTableExponent == specularExponent && _phongTable != null )
-			return _phongTable;
-
-		synchronized ( _phongTableCache )
-		{
-			final Integer key = new Integer( specularExponent );
-			_phongTableExponent = specularExponent;
-
-			/*
-			 * Get phong table from cache.
-			 */
-			_phongTable = (short[][])_phongTableCache.get( key );
-			if ( _phongTable != null )
-				return _phongTable;
-
-			/*
-			 * If everything failed, build a new phong table.
-			 */
-			_phongTableCache.put( key , _phongTable = new short[ 256 ][] );
-
-			int x,y;
-			double xc,yc,c;
-			short s,t[];
-
-			for ( y = 0 ; y <= 128 ; y++ )
-			{
-				_phongTable[ 128 - y ] = t = new short[ 256 ];
-				if ( y < 128 ) _phongTable[ y + 128 ] = t;
-
-				for ( x = 0 ; x <= 128 ; x++ )
-				{
-					xc = x / 128.0;
-					yc = y / 128.0;
-					c  = 1d - Math.sqrt( xc * xc + yc * yc );
-					if ( c < 0d ) c = 0d;
-
-					t[ 128 - x ] = s = (short)( 256 * Math.pow( c , specularExponent ) );
-					if ( x < 128 ) t[ x + 128 ] = s;
-				}
-			}
-		}
-
-		return( _phongTable );
-	}
-
-	/**
-	 * Get texture for this material. The texture is returned as a 2-dimensional array
-	 * of integers in ARGB format. The primary index is the Y-coordinate, the secondary
-	 * index is the X-coordinate (or U and V coordinates respectively when applied in
-	 * rendering).
-	 *
-	 * @return	2-dimensional array representing texture.
-	 */
-	public int[][] getTexture()
-	{
-		if ( !_initDone ) initTexture();
-		return _pixels;
-	}
-
-	/**
-	 * This method returns the texture bitmap height.
-	 *
-	 * @return	Texture bitmap height; 0 if not available.
-	 */
-	public int getTextureHeight()
-	{
-		if ( !_initDone ) initTexture();
-		return ( _pixels != null ) ? _pixels.length : 0;
 	}
 
 	/**
 	 * This method returns the texture bitmap width.
 	 *
-	 * @return	Texture bitmap width; 0 if not available.
+	 * @param   observer    Observer to use for observe image loading process.
+	 *
+	 * @return  Texture bitmap width; 0 if not available.
+	 *
+	 * @deprecated Please use <code>getImageImage()</code> instead and retrieve width/height from it.
 	 */
-	public int getTextureWidth()
+	public int getTextureWidth( final Component observer )
 	{
-		if ( !_initDone ) initTexture();
-		return ( _pixels != null && _pixels.length > 0 ) ? _pixels[0].length : 0;
-	}
+		final int result;
 
-	/**
-	 * This internal method is called to initialize texture data based
-	 * on the field values. This involves analyzing values and getting
-	 * texture images from disk. Caching is used to share information
-	 * between instances with the same base texture.
-	 */
-	private synchronized void initTexture()
-	{
-		/*
-		 * Only initialize if not initialized before.
-		 */
-		if ( _initDone ) return;
-		_initDone = true;
-
-		/*
-		 * Set default material properties (for renderers that don't render textures,
-		 * and for a default if we were unable to load the texture).
-		 */
-		_pixels       = null;
-		_transparent  = false;
-		//_argb         = 0xFF000000 | rgb;
-
-		/*
-		 * Ignore 'null' textures
-		 */
-		if ( code == null || code.length() == 0 )
-			return;
-
-		/*
-		 * Handle RGB values.
-		 */
-		if ( rgb >= 0 )
-		{
-			/*
-			 * Normalize color
-			 */
-			//int r = ( rgb >> 16 ) & 0xFF;
-			//int g = ( rgb >>  8 ) & 0xFF;
-			//int b =   rgb         & 0xFF;
-
-			//int m = Math.max( r , Math.max( g , b ) );
-			//if ( m > 0 && m != 255 )
-			//{
-				//r = r * 255 / m;
-				//g = g * 255 / m;
-				//b = b * 255 / m;
-			//}
-
-			//_argb = 0xFF000000 + ( r << 16 ) + ( g << 8 ) + b;
-
-			_transparent = false; /*( argb & 0xFF000000 ) != 0xFF000000;*/
-			return;
-		}
-
-		/*
-		 * Try to retrieve the texture info from cache.
-		 */
-		final Object[] cache = (Object[])_textureCache.get( code );
-		if ( cache != null )
-		{
-			_pixels      =  (int[][])cache[ 0 ];
-			_transparent = ((Boolean)cache[ 1 ]).booleanValue();
-			return;
-		}
-
-		/*
-		 * Retrieve image
-		 */
-		final String filename = textureFilenamePrefix + code + textureFilenameSuffix;
-		Image image;
-		try
-		{
-			image = Toolkit.getDefaultToolkit().getImage( new URL( filename ) );
-		}
-		catch ( Exception e )
-		{
-			image = Toolkit.getDefaultToolkit().getImage( filename );
-		}
-
-		/*
-		 * Grab image pixels.
-		 */
-		int   tw     = 0;
-		int   th     = 0;
-		int[] pixels = null;
-
+		final Image image = getTextureImage();
 		if ( image != null )
 		{
-			try
-			{
-				final PixelGrabber pg = new PixelGrabber( image , 0 , 0 , -1 , -1 , true );
-				if ( pg.grabPixels() )
-				{
-					tw = pg.getWidth();
-					th = pg.getHeight();
-					if ( tw > 0 && th > 0 )
-						pixels = (int[])pg.getPixels();
-				}
-			}
-			catch ( InterruptedException ie ) {}
+			ImageTools.waitFor( image , observer );
+			result = image.getWidth( observer );
 		}
-
-		/*
-		 * 1) Convert pixels to 2-dimensional array.
-		 * 2) Flip texture vertically to get the origin at the lower-left corner.
-		 * 3) Analyze pixels to see if any is transparent (alpha < 255).
-		 */
-		if ( pixels != null )
+		else
 		{
-			_pixels = new int[ th ][];
+			result = -1;
+		}
+		return result;
+	}
 
-			for ( int y = 0 ; y < th ; y++ )
-			{
-				System.arraycopy( pixels , ( th - y - 1 ) * tw ,
-					_pixels[ y ] = new int[ tw ] , 0 , tw );
-			}
+	/**
+	 * This method returns the texture bitmap height.
+	 *
+	 * @param   observer    Observer to use for observe image loading process.
+	 *
+	 * @return  Texture bitmap height; 0 if not available.
+	 *
+	 * @deprecated Please use <code>getImageImage()</code> instead and retrieve width/height from it.
+	 */
+	public int getTextureHeight( final Component observer )
+	{
+		final int result;
 
-			for ( int i = tw * th ; --i >= 0 ; )
-			{
-				if ( ( pixels[ i ] & 0xFF000000 ) != 0xFF000000 )
-				{
-						_transparent = true;
-						break;
-				}
-			}
+		final Image image = getTextureImage();
+		if ( image != null )
+		{
+			ImageTools.waitFor( image , observer );
+			result = image.getHeight( observer );
+		}
+		else
+		{
+			result = -1;
 		}
 
-		/*
-		 * Put texture info in cache.
-		 */
-		_textureCache.put( code , new Object[] {
-			/* 0 */ _pixels ,
-			/* 1 */ new Boolean( _transparent ) } );
+		return result;
 	}
 
 	/**
-	 * This method returns <code>true</code> if the material has a texture,
-	 * or <code>false</code> if not.
+	 * Get <code>Image</code> instance with texture image.
 	 *
-	 * @return		<code>true</code> if the material has a texture,
-	 *				<code>false</code> if not.
+	 * @return  Texture image;
+	 *          <code>null</code> if texture has no image or the image could not be loaded.
 	 */
-	public boolean isSolidColor()
+	public Image getTextureImage()
 	{
-		return ( rgb >= 0 );
+		return isTexture() ? ImageTools.getImage( textureFilenamePrefix + code + textureFilenameSuffix ) : null;
 	}
 
 	/**
 	 * This method returns <code>true</code> if the material has a texture,
 	 * or <code>false</code> if not.
 	 *
-	 * @return		<code>true</code> if the material has a texture,
-	 *				<code>false</code> if not.
+	 * @return  <code>true</code> if the material has a texture,
+	 *          <code>false</code> if not.
 	 */
 	public boolean isTexture()
 	{
-		return( getTexture() != null );
+		return ( code != null ) && ( code.length() > 0 ) && ( textureScale > 0 );
 	}
-
-	/**
-	 * This method returns <code>true</code> if the material is (partially) transparent.
-	 *
-	 * @return		<code>true</code> if the material is (partially) transparent;
-	 *				<code>false</code> otherwise.
-	 */
-	public boolean isTransparent()
-	{
-		if ( !_initDone ) initTexture();
-		return _transparent;
-	}
-
 }
