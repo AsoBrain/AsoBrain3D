@@ -12,7 +12,6 @@ package ab.light3d.renderer;
 
 import java.awt.Graphics;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import ab.light3d.Matrix3D;
@@ -94,63 +93,47 @@ public class TreeNode
 	 *						(should be <code>true</code> for the first call).
 	 *
 	 */
-	public void gatherLeafs( final LeafCollection leafs , final Class leafClass ,
-		final Matrix3D xform , boolean upwards )
+	public void gatherLeafs( final LeafCollection leafs , final Class leafClass , final Matrix3D xform , final boolean upwards )
 	{
-		if ( upwards )
+		if ( upwards && !isRoot() )
 		{
-			/*
-			 * If this is the root, go downwards now.
-			 */
-			if ( isRoot() )
-			{
-				upwards = false;
-			}
-
-			/*
-			 * If this is not the root, keep going upwards.
-			 */
-			else
-			{
-				getParent().gatherLeafs( leafs , leafClass , xform , upwards );
-			}
-
+			getParent().gatherLeafs( leafs , leafClass , xform , true );
 		}
-
-		if ( !upwards ) // downwards
+		else
 		{
-			/*
-			 * If this is a leaf, add it to the collection.
-			 */
 			if ( isLeaf() )
 			{
+				/*
+				 * If this is a leaf, add it to the collection.
+				 */
 				if ( leafClass.isInstance( this ) )
 					leafs.add( xform , this );
 			}
-			/*
-			 * If this is not a leaf, traverse the tree recursively to find them.
-			 */
 			else
 			{
-				for ( final Iterator iterator = getChildren() ; iterator.hasNext() ; )
+				/*
+				 * If this is not a leaf, traverse the tree recursively to find them.
+				 */
+				final TreeNode[] children = getChildren();
+				for ( int i = 0 ; i < children.length ; i++ )
 				{
-					final TreeNode node = ((TreeNode)iterator.next() );
-					node.gatherLeafs( leafs , leafClass , xform , upwards );
+					final TreeNode node = children[ i ];
+					node.gatherLeafs( leafs , leafClass , xform , false );
 				}
 			}
 		}
 	}
 
 	/**
-	 * Get iterator that iterates over all children of this node.
+	 * Get array with all currently registered child nodes.
 	 *
-	 * @return	Iterator for child nodes.
+	 * @return	Array with child nodes.
 	 *
 	 * @see     #isLeaf()
 	 */
-	public final Iterator getChildren()
+	public final TreeNode[] getChildren()
 	{
-		return _children.iterator();
+		return (TreeNode[])_children.toArray( new TreeNode[ _children.size() ] );
 	}
 
 	/**
@@ -226,9 +209,10 @@ public class TreeNode
 	 */
 	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D objXform )
 	{
-		for ( final Iterator iterator = getChildren() ; iterator.hasNext() ; )
+		final TreeNode[] children = getChildren();
+		for ( int i = 0 ; i < children.length ; i++ )
 		{
-			final TreeNode node = (TreeNode)iterator.next();
+			final TreeNode node = children[ i ];
 			node.paint( g , gXform , objXform );
 		}
 	}
@@ -240,13 +224,11 @@ public class TreeNode
 	 */
 	public final void removeAllChildren()
 	{
-		for ( final Iterator iterator = getChildren() ; iterator.hasNext() ; )
-		{
-			final TreeNode node = ((TreeNode)iterator.next() );
+		final TreeNode[] children = getChildren();
 
-			iterator.remove();
-			node.setParent( null );
-		}
+		_children.clear();
+		for ( int i = 0 ; i < children.length ; i++ )
+			children[ i ].setParent( null );
 	}
 
 	/**
@@ -258,10 +240,7 @@ public class TreeNode
 	 */
 	public final void removeChild( final TreeNode node )
 	{
-		if ( node == null )
-			return;
-
-		if ( _children.remove( node ) )
+		if ( ( node != null ) && _children.remove( node ) )
 			node.setParent( null );
 	}
 
@@ -275,16 +254,16 @@ public class TreeNode
 	 */
 	public final void setParent( final TreeNode parent )
 	{
-		if ( parent == _parent )
-			return;
+		if ( parent != _parent )
+		{
+			if ( _parent != null )
+				_parent.removeChild( this );
 
-		if ( _parent != null )
-			_parent.removeChild( this );
+			_parent = parent;
 
-		_parent = parent;
-
-		if ( _parent != null )
-			_parent.addChild( this );
+			if ( _parent != null )
+				_parent.addChild( this );
+		}
 	}
 
 	/**
