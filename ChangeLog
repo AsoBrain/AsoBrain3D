@@ -1,4 +1,7 @@
-Current version: 1.0.5
+Current version: 1.0.6
+
+Changes between 1.0.5 and 1.0.6:
+ - Added TextureLibrary interface that can be used to retrieve textures from some sort of library.
 
 Changes between 1.0.4 and 1.0.5:
  - Added Polyline2D class (and its friends PolyPoint2D and Bounds2D) to describe 2D shapes (Numdata Open Source Software license).
