@@ -180,17 +180,17 @@ public final class RenderObject
 
 		public TextureSpec getTexture()
 		{
-			return obj._faceMat != null ? obj._faceMat[ index ] : null;
+			return obj.getFace( index ).getTexture();
 		}
 
 		public int[] getTextureU()
 		{
-			return ( obj._faceTU != null ) ? obj._faceTU[ index ] : null;
+			return obj.getFace( index ).getTextureU();
 		}
 
 		public int[] getTextureV()
 		{
-			return ( obj._faceTV != null ) ? obj._faceTV[ index ] : null;
+			return obj.getFace( index ).getTextureV();
 		}
 
 		public RenderObject getRenderObject()

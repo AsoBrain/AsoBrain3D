@@ -11,16 +11,21 @@ package ab.j3d.renderer;
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
 import java.awt.Graphics;
+import java.util.ArrayList;
+import java.util.List;
 
 import ab.j3d.Bounds3D;
 import ab.j3d.Matrix3D;
+import ab.j3d.PolyPoint2D;
+import ab.j3d.Polyline2D;
 import ab.j3d.TextureSpec;
+import ab.j3d.Vector3D;
 
 /**
  * This class defined a 3D object node in a 3D tree. The 3D object consists of
  * vertices, edges, and faces.
  *
- * @version	$Revision$ ($Date$, $Author$)
+ * @author	Peter S. Heijnen
  * @version	$Revision$ ($Date$, $Author$)
  */
 public class Object3D
@@ -33,60 +38,6 @@ public class Object3D
 	private float[] _vertices = {};
 
 	/**
-	 * Faces of model. Faces are stored in an two dimensional array of integers.
-	 * Faces are defined using indices in the vertex table to define the outer
-	 * bounds of the face. A simple triangle will have 3 indices. Note that indices
-	 * are absolute, so they come in multiples of 3.
-	 */
-	private int[][] _faceVert = {};
-
-	/**
-	 * Smoothing flag for faces of model.
-	 */
-	private boolean[] _faceSmooth = {};
-
-	/**
-	 * Face texture U coordinates. This two dimensional array contains U coordinates
-	 * within the material texture matching the material (if the material has no
-	 * texture, the matching entry in this array is ignored.
-	 */
-	int[][] _faceTU = {};
-
-	/**
-	 * Face texture V coordinates. This two dimensional array contains V coordinates
-	 * within the material texture matching the material (if the material has no
-	 * texture, the matching entry in this array is ignored.
-	 */
-	int[][] _faceTV = {};
-
-	/**
-	 * Array with material of each face of the model. Each face has an
-	 * entry in the array with the corresponding material.
-	 */
-	TextureSpec[] _faceMat = null;
-
-	/**
-	 * Opacity value for faces of model.
-	 */
-	private float[] _faceOpacity = {};
-
-	/**
-	 * This internal flag is set to indicate that the vertices, edges, or
-	 * faces changed and the normals need to be re-calculated.
-	 */
-	private boolean	_normalsDirty = true;
-
-	/**
-	 * Array of floats with normals of each face of the model. Normals are
-	 * stored in an array of floats with a triplet for each normal (x,y,z).
-	 * The number of normals is equal to the number of faces (obviously).
-	 * <p>
-	 * This is only calculated when the model changes (indicated by the
-	 * _normalsDirty field).
-	 */
-	private	float[] _faceNormals = null;
-
-	/**
 	 * Array of floats with normals of each face of the model. Normals are
 	 * stored in an array of floats with a triplet for each normal (x,y,z).
 	 * The number of normals is equal to the number of faces (obviously).
@@ -95,6 +46,17 @@ public class Object3D
 	 * _normalsDirty field).
 	 */
 	private	float[] _vertexNormals = null;
+
+	/**
+	 * List of faces in this object.
+	 */
+	private final List _faces = new ArrayList();
+
+	/**
+	 * This internal flag is set to indicate that the vertices, edges, or
+	 * faces changed and the normals need to be re-calculated.
+	 */
+	private boolean	_normalsDirty = true;
 
 	/**
 	 * This is used as cache storage for paint(Graphics,Matrix3D,Matrix3D).
@@ -288,16 +250,10 @@ public class Object3D
 		if ( !_normalsDirty )
 			return;
 
-		final int[][]	faces             = _faceVert;
-		final int		faceCount         =  faces.length;
-		final int		faceCountTimes3   =  faceCount * 3;
+		final int		faceCount         =  _faces.size();
 	 	final float[]	vertices          = _vertices;
 	 	final int		vertexCount       =  vertices.length / 3;
 	 	final int		vertexCountTimes3 =  vertices.length;
-
-	 	float[] faceNormals = _faceNormals;
-	 	if ( faceNormals == null || faceNormals.length < faceCountTimes3 )
-	 		_faceNormals = faceNormals = new float[ faceCountTimes3 ];
 
 	 	float[] vertexNormals = _vertexNormals;
 	 	if ( vertexNormals == null || vertexNormals.length < vertexCountTimes3 )
@@ -306,16 +262,17 @@ public class Object3D
 	 	/*
 	 	 * Generate face normals, but do not normalize them yet.
 	 	 */
-		for ( int fi = 0 , ni = 0 ; fi < faceCount ; )
+		for ( int fi = 0 ; fi < faceCount ; )
 		{
-			final int[] face = faces[ fi++ ];
+			final Face face = getFace( fi++ );
 
-			if ( face.length < 3 )
+			if ( face.getFacePointCount() < 3 )
 				continue;
 
-			final int vi1 = face[ 0 ] * 3;
-			final int vi2 = face[ 1 ] * 3;
-			final int vi3 = face[ 2 ] * 3;
+			final int[] pointIndices = face.getPointIndices();
+			final int vi1 = pointIndices[ 0 ] * 3;
+			final int vi2 = pointIndices[ 1 ] * 3;
+			final int vi3 = pointIndices[ 2 ] * 3;
 
 			final float u1 = vertices[ vi3     ] - vertices[ vi1     ];
 			final float u2 = vertices[ vi3 + 1 ] - vertices[ vi1 + 1 ];
@@ -329,9 +286,7 @@ public class Object3D
 			final float r2 = u3 * v1 - u1 * v3;
 			final float r3 = u1 * v2 - u2 * v1;
 
-			faceNormals[ ni++ ] = r1;
-			faceNormals[ ni++ ] = r2;
-			faceNormals[ ni++ ] = r3;
+			face.setNormal( r1 , r2 , r3 );
 		}
 
 	 	/*
@@ -348,17 +303,17 @@ public class Object3D
 		 	 */
 		 	for ( int fi = 0 ; fi < faceCount ; fi++ )
 		 	{
-				final int[] face = faces[ fi ];
+				final Face face    = (Face)_faces.get( fi );
+				final int nrPoints = face.getFacePointCount();
 
-				for ( int fvi = face.length ; --fvi >= 0 ; )
+				for ( int fvi = nrPoints ; --fvi >= 0 ; )
 				{
-					if ( face[ fvi ] == vi )
+					if ( face.getPointIndices()[ fvi ] == vi )
 					{
-						final int ni = fi * 3;
-
-						final float fnx = faceNormals[ ni     ];
-						final float fny = faceNormals[ ni + 1 ];
-						final float fnz = faceNormals[ ni + 2 ];
+						final float[] faceNormal = face.getNormal();
+						final float fnx = faceNormal[ 0 ];
+						final float fny = faceNormal[ 1 ];
+						final float fnz = faceNormal[ 2 ];
 
 						if ( fnx != 0 || fny != 0 || fnz != 0 )
 						{
@@ -388,22 +343,26 @@ public class Object3D
 			vertexNormals[ ni + 2 ] = vnz;
 	 	}
 
-
 	 	/*
 	 	 * Normalize face normals.
 	 	 */
-		for ( int i = 0 ; i < faceCountTimes3 ; i += 3 )
+		for ( int i = 0 ; i < _faces.size() ; i++ )
 		{
-			final float r1 = faceNormals[ i     ];
-			final float r2 = faceNormals[ i + 1 ];
-			final float r3 = faceNormals[ i + 2 ];
+			final Face    face       = getFace( i );
+			final float[] faceNormal = face.getNormal();
+
+			final float r1 = faceNormal[ 0 ];
+			final float r2 = faceNormal[ 1 ];
+			final float r3 = faceNormal[ 2 ];
 
 			if ( r1 != 0f || r2 != 0f || r3 != 0f )
 			{
 				final float l = (float)Math.sqrt( r1 * r1 + r2 * r2 + r3 * r3 );
-				faceNormals[ i     ] = r1 / l;
-				faceNormals[ i + 1 ] = r2 / l;
-				faceNormals[ i + 2 ] = r3 / l;
+				final float fnx = r1 / l;
+				final float fny = r2 / l;
+				final float fnz = r3 / l;
+
+				face.setNormal( fnx , fny , fnz );
 			}
 		}
 
@@ -481,87 +440,6 @@ public class Object3D
 	}
 
 	/**
-	 * Get number of faces in the model.
-	 *
-	 * @return	Number of faces.
-	 */
-	public final int getFaceCount()
-	{
-		return( _faceVert.length );
-	}
-
-	/**
-	 * Get transformed face normals.
-	 *
-	 * @return	Transformed face normals.
-	 */
-	public final float[] getFaceNormals()
-	{
-		if ( _normalsDirty ) calculateNormals();
-		return _faceNormals;
-	}
-
-	/**
-	 * Get texture to use for rendering the specified face.
-	 *
-	 * @param	face	Index of face.
-	 *
-	 * @return	Texture to used to render the face.
-	 */
-	public final TextureSpec getFaceTexture( final int face )
-	{
-		return ( _faceMat != null ? _faceMat[ face ] : null );
-	}
-
-	/**
-	 * Get texture U coordinates for the specified face.
-	 *
-	 * @param	face	Index of face.
-	 *
-	 * @return	Array with texture U coordinates of face.
-	 */
-	public final int[] getFaceTextureU( final int face )
-	{
-		return ( _faceTU == null ) ? null : _faceTU[ face ];
-	}
-
-	/**
-	 * Get texture V coordinates for the specified face.
-	 *
-	 * @param	face	Index of face.
-	 *
-	 * @return	Array with texture V coordinates of face.
-	 */
-	public final int[] getFaceTextureV( final int face )
-	{
-		return ( _faceTV == null ) ? null : _faceTV[ face ];
-	}
-
-	/**
-	 * Get number of vertices used to define the specified face.
-	 *
-	 * @param	face	Index of face.
-	 *
-	 * @return	Number of vertices used to define the face.
-	 */
-	public final int getFaceVertexCount( final int face )
-	{
-		return _faceVert[ face ].length;
-	}
-
-	/**
-	 * Get vertex indices to define the shape of the specified face.
-	 *
-	 * @param	face	Index of face.
-	 *
-	 * @return	Array of vertex indices to define the face shape.
-	 */
-	public final int[] getFaceVertexIndices( final int face )
-	{
-		return _faceVert[ face ];
-	}
-
-	/**
 	 * Get number of vertices in the model.
 	 *
 	 * @return	Number of vertices.
@@ -593,28 +471,55 @@ public class Object3D
 	}
 
 	/**
-	 * Get opacity of the specified face (0=transparent, 1=opaque).
+	 * Get the index of the specified point in the <code>_vertices</code> list.
 	 *
-	 * @param	face	Index of face.
+	 * @param x x-coordinate of the point.
+	 * @param y y-coordinate of the point.
+	 * @param z z-coordinate of the point.
 	 *
-	 * @return	Opacity of the specified face (0=transparent, 1=opaque).
+	 * @return The index of the specified point in the <code>_vertices</code> list;
+	 *         -1 if the specified point is not in the <code>_vertices</code> list.
 	 */
-	public final float getFaceOpacity( final int face )
+	public int getPointIndex( final float x , final float y , final float z )
 	{
-		return ( _faceOpacity != null ) ? _faceOpacity[ face ] : 1.0f;
+		boolean found = false;
+		int     index;
+		for ( index = 0 ; index < getTotalVertexCount() && !found ; index++ )
+		{
+			final float vx = _vertices[ index * 3     ];
+			final float vy = _vertices[ index * 3 + 1 ];
+			final float vz = _vertices[ index * 3 + 2 ];
+
+			found = ( x == vx && y == vy && z == vz );
+		}
+
+		return found ? index - 1 : -1;
 	}
 
-	/**
-	 * Check wether the surface defined by the specified face is smooth (curved).
-	 *
-	 * @param	face	Index of face.
-	 *
-	 * @return	<code>true</code> if the surface face is smooth/curved;
-	 *			<code>false</code> if the surface is flat.
-	 */
-	public final boolean isFaceSmooth( final int face )
+	private void ensureObjectCapacity( final int lenght )
 	{
-		return _faceSmooth != null ? _faceSmooth[ face ] : false;
+		final int vertexCount = getTotalVertexCount();
+
+		if ( _vertices == null || vertexCount < lenght )
+		{
+			float[] temp;
+
+			if ( _vertices != null )
+			{
+				temp  = new float[ lenght ];
+
+				System.arraycopy( _vertices , 0 , temp , 0 , vertexCount * 3 );
+				_vertices = temp;
+			}
+
+			if ( _vertexNormals != null )
+			{
+				temp  = new float[ lenght ];
+
+				System.arraycopy( _vertexNormals, 0 , temp , 0 , vertexCount * 3 );
+				_vertexNormals = temp;
+			}
+		}
 	}
 
 	/**
@@ -698,19 +603,41 @@ public class Object3D
 	 * @param	faceMat		Material of each face.
 	 * @param	faceTU		Face texture U coordinates for each face.
 	 * @param	faceTV		Face texture V coordinates for each face.
+	 * @param   faceOpacity Face opacity (0=transparent, 1=opaque).
 	 * @param	faceSmooth	Face smoothing flag for each face.
 	 */
 	public final void set( final float[] vertices , final int[][] faceVert , final TextureSpec[] faceMat , final int[][] faceTU , final int[][] faceTV , final float[] faceOpacity , final boolean[] faceSmooth )
 	{
-		final boolean hasTexture = ( faceMat != null && faceMat.length >= faceVert.length );
+		_vertices  = vertices;
 
-		_vertices    = vertices;
-		_faceVert    = faceVert;
-		_faceMat     = hasTexture ? faceMat : null;
-		_faceTU      = hasTexture ? faceTU  : null;
-		_faceTV      = hasTexture ? faceTV  : null;
-		_faceOpacity = faceOpacity;
-		_faceSmooth  = faceSmooth;
+		final boolean hasTexture = ( faceMat != null && faceMat.length >= faceVert.length );
+		for ( int i = 0 ; i < faceVert.length ; i++ )
+		{
+			final int[]       f_vertices = faceVert[ i ];
+			final TextureSpec f_material = hasTexture ? faceMat[ i ] : null;
+			final int[]       f_textureU = ( hasTexture && faceTU != null ) ? faceTU [ i ] : null; // UGLY!
+			final int[]       f_textureV = ( hasTexture && faceTV != null ) ? faceTV [ i ] : null; // UGLY!
+			final float       f_opacity  = faceOpacity != null ? faceOpacity[ i ] : 1.0f;
+			final boolean     f_smooth   = faceSmooth [ i ];
+
+			final int[] points    = new int[ f_vertices.length ];
+			final int[] textureUs = new int[ f_vertices.length ];
+			final int[] textureVs = new int[ f_vertices.length ];
+
+			for ( int j = 0 ; j < f_vertices.length ; j++ )
+			{
+				final int pointIndex = f_vertices[ j ];
+				final int textureU   = ( hasTexture && f_textureU != null ) ? f_textureU[ j ] : -1;
+				final int textureV   = ( hasTexture && f_textureV != null ) ? f_textureV[ j ] : -1;
+
+				points   [ j ] = pointIndex;
+				textureUs[ j ] = textureU;
+				textureVs[ j ] = textureV;
+			}
+
+			final Face face = new Face( points , f_material , textureUs , textureVs , f_opacity , f_smooth );
+			addFace( face );
+		}
 
 		_normalsDirty = true;
 	}
@@ -734,5 +661,517 @@ public class Object3D
 			faceSmooth[ i ] = smooth;
 
 		set( vertices , faceVert ,  faceMat , null , null , null , faceSmooth );
+	}
+
+	/**
+	 * Add a face to this <code>Object3D</code>.
+	 *
+	 * @param face Face to add.
+	 */
+	public void addFace( final Face face )
+	{
+		_faces.add( face );
+	}
+
+	/**
+	 * Add empty face to the 3D object. Vertices should be added to this shape
+	 * by the caller.
+	 *
+	 * @param   base            Location/orientation of face.
+	 * @param   shape           Shape of face relative to the base.
+	 * @param   reversePath     If set, the returned path will be reversed.
+	 * @param   texture         Texture to apply to the face.
+	 * @param   opacity         Opacity of face (0=transparent, 1=opaque).
+	 * @param   swapUV          Swap texture coordinates to rotate 90 degrees.
+	 * @param   smooth          Face is smooth/curved vs. flat.
+	 */
+	public void addFace( final Matrix3D base , final Polyline2D shape , final boolean reversePath , final TextureSpec texture , final float opacity , final boolean swapUV , final boolean smooth )
+	{
+		final int nrVertices = shape.getPointCount() + ( shape.isClosed() ? -1 : 0 );
+		if ( nrVertices < 3 )
+			return;
+
+		final Face face;
+		if ( ( texture != null ) && texture.isTexture() )
+		{
+			final float txBase = -base.xo * base.xx - base.yo * base.yx - base.zo * base.zx;
+			final float tyBase = -base.xo * base.xy - base.yo * base.yy - base.zo * base.zy;
+
+			final int[] vertU = new int[ nrVertices ];
+			final int[] vertV = new int[ nrVertices ];
+
+			int minU = 0;
+			int maxU = 0;
+			int minV = 0;
+			int maxV = 0;
+
+			for ( int i = 0 ; i < nrVertices ; i++ )
+			{
+				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
+
+				final int u = (int)( ( swapUV ? ( tyBase + point.y ) : ( txBase + point.x ) ) * texture.textureScale );
+				final int v = (int)( ( swapUV ? ( txBase + point.x ) : ( tyBase + point.y ) ) * texture.textureScale );
+
+				if ( i == 0 || u < minU ) minU = u;
+				if ( i == 0 || u > maxU ) maxU = u;
+				if ( i == 0 || v < minV ) minV = v;
+				if ( i == 0 || v > maxV ) maxV = v;
+
+				vertU[ i ] = u;
+				vertV[ i ] = v;
+			}
+
+			final int adjustU = getRangeAdjustment( minU , texture.getTextureWidth( null ) );
+			final int adjustV = getRangeAdjustment( minV , texture.getTextureHeight( null ) );
+
+			face = new Face( null , texture , null , null , opacity , smooth );
+			for ( int i = 0 ; i < nrVertices ; i++ )
+			{
+				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
+				face.addPoint( base.multiply( point.x , point.y , 0 ) , vertU[ i ] + adjustU , vertV[ i ] + adjustV );
+			}
+		}
+		else
+		{
+			face = new Face( null , texture , null , null , opacity , smooth );
+			for ( int i = 0 ; i < nrVertices ; i++ )
+			{
+				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
+				face.addPoint( base.multiply( point.x , point.y , 0 ) , 0 , 0 );
+			}
+		}
+
+		addFace( face );
+	}
+
+	/**
+	 * Get number of faces in the model.
+	 *
+	 * @return	Number of faces.
+	 */
+	public int getFaceCount()
+	{
+		return _faces.size();
+	}
+
+	/**
+	 * Get face with the specified index.
+	 *
+	 * @param index Index of face to retrieve.
+	 *
+	 * @return Face with the specified index.
+	 */
+	public Face getFace( final int index )
+	{
+		return (Face)_faces.get( index );
+	}
+
+	/**
+	 * Get transformed face normals.
+	 *
+	 * @return	Transformed face normals.
+	 */
+	public final float[] getFaceNormals()
+	{
+		if ( _normalsDirty ) calculateNormals();
+
+		final float[] faceNormals = new float[ getFaceCount() * 3 ];
+
+		for ( int i = 0 ; i < getFaceCount() ; i++ )
+		{
+			final Face    face       = getFace( i );
+			final float[] faceNormal = face.getNormal();
+
+			faceNormals[ i * 3     ] = faceNormal[ 0 ];
+			faceNormals[ i * 3 + 1 ] = faceNormal[ 1 ];
+			faceNormals[ i * 3 + 2 ] = faceNormal[ 2 ];
+		}
+
+		return faceNormals;
+	}
+
+	/**
+	 * Check wether the surface defined by the specified face is smooth (curved).
+	 *
+	 * @param	face	Index of face.
+	 *
+	 * @return	<code>true</code> if the surface face is smooth/curved;
+	 *			<code>false</code> if the surface is flat.
+	 */
+	public final boolean isFaceSmooth( final int face )
+	{
+		return ( (Face)_faces.get( face ) ).isSmooth();
+	}
+
+	/**
+	 * Get texture to use for rendering the specified face.
+	 *
+	 * @param	face	Index of face.
+	 *
+	 * @return	Texture to used to render the face.
+	 */
+	public final TextureSpec getFaceTexture( final int face )
+	{
+		return getFace( face ).getTexture();
+	}
+
+	/**
+	 * Get texture U coordinates for the specified face.
+	 *
+	 * @param	face	Index of face.
+	 *
+	 * @return	Array with texture U coordinates of face.
+	 */
+	public final int[] getFaceTextureU( final int face )
+	{
+		return getFace( face ).getTextureU();
+	}
+
+	/**
+	 * Get texture V coordinates for the specified face.
+	 *
+	 * @param	face	Index of face.
+	 *
+	 * @return	Array with texture V coordinates of face.
+	 */
+	public final int[] getFaceTextureV( final int face )
+	{
+		return getFace( face ).getTextureV();
+	}
+
+	/**
+	 * Get number of vertices used to define the specified face.
+	 *
+	 * @param	face	Index of face.
+	 *
+	 * @return	Number of vertices used to define the face.
+	 */
+	public final int getFaceVertexCount( final int face )
+	{
+		return getFace( face ).getFacePointCount();
+	}
+
+	/**
+	 * Get vertex indices to define the shape of the specified face.
+	 *
+	 * @param	face	Index of face.
+	 *
+	 * @return	Array of vertex indices to define the face shape.
+	 */
+	public final int[] getFaceVertexIndices( final int face )
+	{
+		return getFace( face ).getPointIndices();
+	}
+
+	/**
+	 * Helper method to determine an adjustment value to get a reference value in
+	 * a range between 0 and a specified maximum value - 1. The adjustment value
+	 * will always be a multiple of the specified maximum value.
+	 * <p />
+	 * This is used to adjust minimum texture coordinates to the lowest positive
+	 * coordinate within the texture image. The adjustment value should be added
+	 * to all texture coordinates to make the adjustment.
+	 *
+	 * @param   value       Value to adjust.
+	 * @param   range       Specifies the range 0 to (range - 1).
+	 *
+	 * @return  Adjustment value to add to the value.
+	 */
+	public static int getRangeAdjustment( final int value , final int range )
+	{
+		final int result;
+		if ( value < 0 )
+		{
+			result = ( -value + range - 1 ) / range * range;
+		}
+		else
+		{
+			result = -value + ( value % range );
+		}
+		return result;
+	}
+
+	/**
+	 * This class defines a 3D face of a 3D object.
+	 */
+	public class Face
+	{
+		/**
+		 * Points of this face.
+		 */
+		private int[] _facePoints;
+
+		/**
+		 * Number of points of this face.
+		 */
+		private int _facePointCount;
+
+		/**
+		 * Normal of this face.
+		 */
+		public float[] _normal;
+
+		/**
+		* Smoothing flag this face.
+		*/
+		private boolean _smooth;
+
+		/**
+		 * Face texture U coordinates.
+		 */
+		int[] _textureU;
+
+		/**
+		 * Face texture V coordinates.
+		 */
+		int[] _textureV;
+
+		/**
+		 * Texture of this face.
+		 */
+		TextureSpec _texture;
+
+		/**
+		 * Opacity value for this face.
+		 */
+		private float _opacity;
+
+		/**
+		 * Construct new Face.
+		 *
+		 * @param points    List of points.
+		 * @param texture   Texture to apply to the face.
+		 * @param tU        Array for horizontal texture coordinates.
+		 * @param tV        Array for vertical texture coordinates.
+		 * @param opacity   Opacity of face (0=transparent, 1=opaque).
+		 * @param smooth    Face is smooth/curved vs. flat.
+		 */
+		public Face( final int[] points , final TextureSpec texture , final int[] tU , final int[] tV , final float opacity , final boolean smooth )
+		{
+			_facePoints     = points == null ? new int[ 0 ] : points;
+			_facePointCount = points != null ? points.length : 0;
+			_normal         = new float[ 3 ];
+			_texture        = texture;
+			_textureU       = tU == null ? new int[ 0 ] : tU;
+			_textureV       = tV == null ? new int[ 0 ] : tV;
+			_opacity        = opacity;
+			_smooth         = smooth;
+		}
+
+		/**
+		 * Add vertex to face. Note that the last vertex is automatically connected
+		 * to the first vertex.
+		 *
+		 * @param   x   x-coordinate of point to add.
+		 * @param   y   y-coordinate of point to add.
+		 * @param   z   z-coordinate of point to add.
+		 */
+		public void addPoint( final float x , final float y , final float z )
+		{
+			addPoint( x , y , z , -1 , -1 );
+		}
+
+		/**
+		 * Add vertex to face. Note that the last vertex is automatically connected
+		 * to the first vertex.
+		 *
+		 * @param point Point to add.
+		 */
+		public void addPoint( final Vector3D point )
+		{
+			addPoint( point.x , point.y , point.z , -1 , -1 );
+		}
+
+		/**
+		 * Add vertex to face. Note that the last vertex is automatically connected
+		 * to the first vertex.
+		 *
+		 * @param x     x-coordinate of point to add.
+		 * @param y     y-coordinate of point to add.
+		 * @param z     z-coordinate of point to add.
+		 * @param tU    Horizontal texture coordinate.
+		 * @param tV    Vertical texture coordinate.
+		 */
+		public void addPoint( final float x , final float y , final float z , final int tU , final int tV )
+		{
+			int pointIndex = getPointIndex( x ,y ,z );
+
+			if ( pointIndex == -1 )
+			{
+				final int objectPointCount = getTotalVertexCount() * 3;
+				ensureObjectCapacity( objectPointCount + 3 );
+
+				_vertices[ objectPointCount     ] = x;
+				_vertices[ objectPointCount + 1 ] = y;
+				_vertices[ objectPointCount + 2 ] = z;
+
+				_normalsDirty = true;
+
+				pointIndex = objectPointCount / 3;
+			}
+
+			ensureFaceCapacity( _facePointCount + 1 );
+			_facePoints[ _facePointCount ] = pointIndex;
+			_textureU  [ _facePointCount ] = tU;
+			_textureV  [ _facePointCount ] = tV;
+
+			_facePointCount++;
+		}
+
+		/**
+		 * Add vertex to face. Note that the last vertex is automatically connected
+		 * to the first vertex.
+		 *
+		 * @param point Point to add.
+		 * @param tU    Horizontal texture coordinate.
+		 * @param tV    Vertical texture coordinate.
+		 */
+		public void addPoint( final Vector3D point , final int tU , final int tV )
+		{
+			addPoint( point.x , point.y , point.z , tU , tV );
+		}
+
+		/**
+		 * Get number of vertices that define this face.
+		 *
+		 * @return  Number of vertices.
+		 */
+		public int getFacePointCount()
+		{
+			return _facePointCount;
+		}
+
+		/**
+		 * Get point with the specified index from this face.
+		 *
+		 * @param   index   Point index.
+		 *
+		 * @return  Vertex with the specified index.
+		 */
+		public Vector3D getPoint( final int index )
+		{
+			final int pointIndex = _facePoints[ index ] * 3;
+			final float x = _vertices[ pointIndex     ];
+			final float y = _vertices[ pointIndex + 1 ];
+			final float z = _vertices[ pointIndex + 2 ];
+
+			return Vector3D.INIT.set( x , y , z );
+		}
+
+		/**
+		 * Get the point indices of this face.
+		 *
+		 * @return The point indices of this face.
+		 */
+		public int[] getPointIndices()
+		{
+			return _facePoints;
+		}
+
+		/**
+		 * Get the smoothing flag of this face.
+		 *
+		 * @return The smoothing flag of this face.
+		 */
+		public boolean isSmooth()
+		{
+			return _smooth;
+		}
+
+		/**
+		 * Get the horizontal texture coordinate of this face.
+		 *
+		 * @return The horizontal texture coordinate of this face.
+		 */
+		public int[] getTextureU()
+		{
+			return _textureU;
+		}
+
+		/**
+		 * Get the vertical texture coordinate of this face.
+		 *
+		 * @return The vertical texture coordinate of this face.
+		 */
+		public int[] getTextureV()
+		{
+			return _textureV;
+		}
+
+		/**
+		 * Get the texture of this face.
+		 *
+		 * @return The texture of this face.
+		 */
+		public TextureSpec getTexture()
+		{
+			return _texture;
+		}
+
+		/**
+		 * Get the opacity of this face.
+		 *
+		 * @return The opacity of this face.
+		 */
+		public float getOpacity()
+		{
+			return _opacity;
+		}
+
+		/**
+		 * Set the normal of this face.
+		 *
+		 * @param x x-coordinate of the normal of this face.
+		 * @param y y-coordinate of the normal of this face.
+		 * @param z z-coordinate of the normal of this face.
+		 */
+		public void setNormal( final float x , final float y , final float z )
+		{
+			_normal[ 0 ] = x;
+			_normal[ 1 ] = y;
+			_normal[ 2 ] = z;
+		}
+
+		/**
+		 * Get the normal of this face.
+		 *
+		 * @return The normal of this face.
+		 */
+		public float[] getNormal()
+		{
+			return _normal;
+		}
+
+		private void ensureFaceCapacity( final int lenght )
+		{
+			if ( _facePoints == null || _facePointCount < lenght )
+			{
+				int[] temp;
+
+				if ( _facePoints != null )
+				{
+					temp = new int[ lenght ];
+
+					System.arraycopy( _facePoints , 0 , temp , 0 , _facePointCount );
+					_facePoints = temp;
+				}
+
+				if ( _textureU != null )
+				{
+					temp  = new int[ lenght ];
+
+					System.arraycopy( _textureU , 0 , temp , 0 , _facePointCount );
+					_textureU = temp;
+				}
+
+				if ( _textureV != null )
+				{
+					temp  = new int[ lenght ];
+
+					System.arraycopy( _textureV , 0 , temp , 0 , _facePointCount );
+					_textureV = temp;
+				}
+			}
+		}
 	}
 }
