@@ -55,11 +55,6 @@ public class ExtrudedObject2D
 	public final double extrusion;
 
 	/**
-	 * Texture to apply to all faces of the extruded shape.
-	 */
-	public final TextureSpec texture;
-
-	/**
 	 * Tte maximum allowable distance between the control points and the flattened curve.
 	 *
 	 * @see     FlatteningPathIterator
@@ -84,7 +79,6 @@ public class ExtrudedObject2D
 		this.shape     = shape;
 		this.extrusion = extrusion;
 		this.xform     = xform;
-		this.texture   = texture;
 		this.flatness  = flatness;
 
 		generate( this , shape , extrusion , xform , texture , flatness );
