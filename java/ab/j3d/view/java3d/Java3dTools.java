@@ -38,6 +38,7 @@ import javax.media.j3d.Canvas3D;
 import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.Group;
+import javax.media.j3d.LineArray;
 import javax.media.j3d.LineAttributes;
 import javax.media.j3d.LineStripArray;
 import javax.media.j3d.Material;
@@ -52,7 +53,6 @@ import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.media.j3d.TransparencyAttributes;
 import javax.media.j3d.TriangleArray;
-import javax.media.j3d.LineArray;
 import javax.vecmath.Color3f;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
@@ -68,7 +68,6 @@ import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.image.TextureLoader;
 
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureLibrary;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
@@ -88,24 +87,37 @@ public final class Java3dTools
 	private static final Canvas TEXTURE_OBSERVER = new Canvas();
 
 	/**
-	 * Texture library.
-	 */
-	private final TextureLibrary _textureLibrary;
-
-	/**
 	 * Map used to cache textures. Maps texture code (<code>String</code>) to
 	 * texture (<code>Texture</code>).
 	 */
 	private final Map _textureCache = new HashMap();
 
 	/**
-	 * Construct <code>Java3dTools</code> for centralized texture caching, etc.
-	 *
-	 * @param   textureLibrary  Texture library.
+	 * Singleton <code>Java3dTools</code> instance.
 	 */
-	public Java3dTools( final TextureLibrary textureLibrary )
+	private static Java3dTools _singleton;
+
+	/**
+	 * Construct <code>Java3dTools</code> for centralized texture caching, etc.
+	 */
+	private Java3dTools()
 	{
-		_textureLibrary = textureLibrary;
+	}
+
+	/**
+	 * Get singleton instance.
+	 *
+	 * @return  Singleton <code>Java3dTools</code> instance.
+	 */
+	public static Java3dTools getInstance()
+	{
+		Java3dTools result = _singleton;
+		if ( result == null )
+		{
+			result = new Java3dTools();
+			_singleton = result;
+		}
+		return result;
 	}
 
 	/**
@@ -142,10 +154,10 @@ public final class Java3dTools
 				final int[] textureV     = ( textureOverride != null ) ? null : face.getTextureV();
 
 				final List[] data;
-				if ( appearances.containsKey( texture.code ) )
-					data = (List[])appearances.get( texture.code );
+				if ( appearances.containsKey( texture) )
+					data = (List[])appearances.get( texture );
 				else
-					appearances.put( texture.code , data = new List[] { new ArrayList() , new ArrayList() , new ArrayList() } );
+					appearances.put( texture , data = new List[] { new ArrayList() , new ArrayList() , new ArrayList() } );
 
 				if ( vertexCount == 2 )
 				{
@@ -194,15 +206,15 @@ public final class Java3dTools
 			}
 		}
 
-		final Set      appearanceCodes    = appearances.keySet();
-		final Iterator appearanceIterator = appearanceCodes.iterator();
+		final Set      appearanceTextures = appearances.keySet();
+		final Iterator appearanceIterator = appearanceTextures.iterator();
 
 		final Node result;
-		if ( appearanceCodes.size() == 1 )
+		if ( appearanceTextures.size() == 1 )
 		{
-			final String     code       = (String)appearanceIterator.next();
-			final Appearance appearance = getAppearance( code , opacity );
-			final List[]     data       = (List[])appearances.get( code );
+			final TextureSpec texture    = (TextureSpec)appearanceIterator.next();
+			final Appearance  appearance = getAppearance( texture , opacity );
+			final List[]      data       = (List[])appearances.get( texture );
 
 			result = createShape3D( appearance , data[ 0 ] , data[ 1 ] , data[ 2 ] );
 		}
@@ -214,9 +226,9 @@ public final class Java3dTools
 
 			while ( appearanceIterator.hasNext() )
 			{
-				final String     code       = (String)appearanceIterator.next();
-				final Appearance appearance = getAppearance( code , opacity );
-				final List[]     data       = (List[])appearances.get( code );
+				final TextureSpec texture    = (TextureSpec)appearanceIterator.next();
+				final Appearance  appearance = getAppearance( texture , opacity );
+				final List[]      data       = (List[])appearances.get( texture );
 
 				((BranchGroup)result).addChild( createShape3D( appearance , data[ 0 ] , data[ 1 ] , data[ 2 ] ) );
 			}
@@ -505,21 +517,6 @@ public final class Java3dTools
 		xform.mul( operand );
 
 		return new Transform3D( xform );
-	}
-
-	/**
-	 * Get Java3D <code>Appearance</code> for the specified texture code.
-	 *
-	 * @param   code        Texture code to get the Appearance for.
-	 * @param   opacity     Opacity to apply to the returned appearance.
-	 *
-	 * @return  Appearance for the specified texture;
-	 *          <code>null</code> if the specified texture does not exist.
-	 */
-	public Appearance getAppearance( final String code , final float opacity )
-	{
-		final TextureSpec textureSpec = ( _textureLibrary == null ) ? null : _textureLibrary.getTextureSpec( code );
-		return ( textureSpec == null ) ? null : getAppearance( textureSpec , opacity );
 	}
 
 	/**
