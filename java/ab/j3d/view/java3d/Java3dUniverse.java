@@ -287,7 +287,8 @@ public class Java3dUniverse
 		view.setDepthBufferFreezeTransparent( true );
 		view.setTransparencySortingPolicy( View.TRANSPARENCY_SORT_GEOMETRY );
 		view.setBackClipDistance( 100.0 );
-		view.setFrontClipDistance( 0.01 );
+		view.setFrontClipDistance( 0.1 );
+		view.setSceneAntialiasingEnable( true );
 
 		final BranchGroup branchGroup = new BranchGroup();
 		branchGroup.setCapability( BranchGroup.ALLOW_DETACH );
