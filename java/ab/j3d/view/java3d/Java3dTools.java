@@ -23,6 +23,7 @@ package ab.j3d.view.java3d;
 import java.awt.Canvas;
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -201,6 +202,7 @@ public final class Java3dTools
 		else
 		{
 			result = new BranchGroup();
+			result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
 			result.setCapability( BranchGroup.ALLOW_DETACH );
 
 			for ( Iterator appearanceEnum = appearances.keySet().iterator() ; appearanceEnum.hasNext() ; )
@@ -385,6 +387,7 @@ public final class Java3dTools
 	public static BranchGroup createImageSpinnerContent( final Image image )
 	{
 		final BranchGroup result = new BranchGroup();
+		result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
 
 		final TransformGroup boxTransform = new TransformGroup();
 		boxTransform.setCapability( TransformGroup.ALLOW_TRANSFORM_WRITE );
@@ -412,14 +415,15 @@ public final class Java3dTools
 	 * be effective.
 	 *
 	 * @param   canvas  Canvas to create orbit control for.
+	 * @param   unit    Unit scale factor (e.g. <code>MM</code>).
 	 *
 	 * @return  Orbit behavior.
 	 */
-	public static OrbitBehavior createOrbitBehavior( final Canvas3D canvas )
+	public static OrbitBehavior createOrbitBehavior( final Canvas3D canvas , final float unit )
 	{
 		final BoundingSphere bounds = new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 100.0 );
 
-		final OrbitBehavior orbit = new SimpleOrbitBehavior( canvas , OrbitBehavior.REVERSE_ALL | OrbitBehavior.STOP_ZOOM );
+		final OrbitBehavior orbit = new SimpleOrbitBehavior( canvas , OrbitBehavior.REVERSE_ALL | OrbitBehavior.STOP_ZOOM , unit );
 		orbit.setSchedulingBounds( bounds );
 
 		return orbit;
@@ -649,4 +653,62 @@ public final class Java3dTools
 
 		return result;
 	}
+
+	/**
+	 * Show Java 3D scene graph tree. Used for debugging.
+	 *
+	 * @param   node    Root node of tree to display.
+	 */
+	public static void showTree( final Node node )
+	{
+		showTreeNode( "" , null , node );
+	}
+
+	/**
+	 * Internal recursive method used by the <code>showTree</code> method
+	 * to show a tree node and all its child nodes recursively while mainting
+	 * the correct list layout.
+	 *
+	 * @param   prefix          Text prefix for layout.
+	 * @param   parentChildren  Child nodes of parent node (needed for layout).
+	 * @param   node            Tree node to display.
+	 */
+	private static void showTreeNode( final String prefix , final List parentChildren , final Node node )
+	{
+		final List children = new ArrayList();
+		if ( node instanceof Group )
+		{
+			final Group group = (Group)node;
+			for ( Enumeration e = group.getAllChildren() ; e.hasMoreElements() ; )
+				children.add( e.nextElement() );
+		}
+
+		final boolean isLast  = ( parentChildren == null ) || parentChildren.indexOf( node ) == ( parentChildren.size() - 1 );
+		final boolean isLeaf  = children.size() == 0;
+
+		if ( parentChildren != null )
+		{
+			System.out.print( prefix );
+			System.out.print( isLast ? "`-" : "|-" );
+		}
+		System.out.print( isLeaf ? "- " : "[+] " );
+		final Class nodeClass = node.getClass();
+		System.out.println( nodeClass.getName() );
+
+		final String nextPrefix = prefix + ( ( parentChildren == null ) ? " " : isLast ? "   " : "|  " );
+
+		final String subPrefix = nextPrefix + ( isLeaf ? "     " : "|      " );
+
+//		if ( node instanceof Paneel )
+//		{
+//			System.out.println( subPrefix + "soort         = " + Paneel.enumPaneelSoort[ paneel.getSoort() ] );
+//		}
+
+		System.out.println( subPrefix );
+
+		for ( int i = 0 ; i < children.size() ; i++ )
+			showTreeNode( nextPrefix , children , (Node)children.get( i ) );
+
+	}
+
 }
