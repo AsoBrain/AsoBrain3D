@@ -90,6 +90,10 @@ public class Object3D
 	 */
 	private static float[] _paintVertexCache = {};
 
+	/**
+	 * Construct base object. Additional properties need to be set to make the
+	 * object usable.
+	 */
 	public Object3D()
 	{
 	}
@@ -407,6 +411,15 @@ public class Object3D
 		            Math.abs( x2 - x1 ) , Math.abs( y2 - y1 ) );
 	}
 
+	/**
+	 * Get outer bounds (bounding box) of the object. Optionally, an existing bounding box
+	 * can be specified. The resulting bounds contains all vertices within the object and
+	 * the existing bounding box (if any).
+	 *
+	 * @param	bounds		Existing bounding box to use.
+	 *
+	 * @return	Combined bounding box of this object and the existing bounding box (if any).
+	 */
 	public final Bounds3D getBounds( Bounds3D bounds )
 	{
 		if ( _vertices == null || _vertices.length < 3 )
@@ -472,16 +485,37 @@ public class Object3D
 		return _faceNormals;
 	}
 
+	/**
+	 * Get texture to use for rendering the specified face.
+	 *
+	 * @param	face	Index of face.
+	 *
+	 * @return	Texture to used to render the face.
+	 */
 	public final TextureSpec getFaceTexture( final int face )
 	{
 		return ( _faceMat != null ? _faceMat[ face ] : null );
 	}
 
+	/**
+	 * Get number of vertices used to define the specified face.
+	 *
+	 * @param	face	Index of face.
+	 *
+	 * @return	Number of vertices used to define the face.
+	 */
 	public final int getFaceVertexCount( final int face )
 	{
 		return _faceVert[ face ].length;
 	}
 
+	/**
+	 * Get vertex indices to define the shape of the specified face.
+	 *
+	 * @param	face	Index of face.
+	 *
+	 * @return	Array of vertex indices to define the face shape.
+	 */
 	public final int[] getFaceVertexIndices( final int face )
 	{
 		return _faceVert[ face ];
@@ -516,6 +550,14 @@ public class Object3D
 		return _vertices;
 	}
 
+	/**
+	 * Check wether the surface defined by the specified face is smooth (curved).
+	 *
+	 * @param	face	Index of face.
+	 *
+	 * @return	<code>true</code> if the surface face is smooth/curved;
+	 *			<code>false</code> if the surface is flat.
+	 */
 	public final boolean isFaceSmooth( final int face )
 	{
 		return _faceSmooth != null ? _faceSmooth[ face ] : false;

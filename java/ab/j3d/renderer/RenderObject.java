@@ -3,6 +3,14 @@ package common.renderer;
 import common.db.TextureSpec;
 import common.model.Matrix3D;
 
+/**
+ * This class contains specifications to render a 3D object on a 2D surface. It is
+ * constructed for each Object3D instance by the Renderer class as preparation for
+ * the actual rendering process.
+ *
+ * @author	Peter S. Heijnen
+ * @version	$Revision$ ($Date$, $Author$)
+ */
 public class RenderObject 
 {
 	Object3D	obj;
@@ -188,11 +196,22 @@ public class RenderObject
 	}
 
 	
+	/**
+	 * Get Object3D that was used to construct the render object.
+	 *
+	 * @return	Object3D use to construct the render object.
+	 */
 	public Object3D getObject()
 	{
 		return obj;
 	}
 
+	/**
+	 * Get vertex normals relative to the render view. The result is returned as
+	 * a float array with 3 entries per vertex.
+	 *
+	 * @return	Float array with vertex normals in render view.
+	 */
 	public float[] getVertexNormals()
 	{
 		if ( vertNormDirty )
@@ -210,6 +229,17 @@ public class RenderObject
 		return vertNorm;
 	}
 
+	/**
+	 * Set properties of the render object.
+	 *
+	 * @param	obj					Object3D used to define the object.
+	 * @param	xform				View transform (rotation, translation).
+	 * @param	aperture			Camera aperture.
+	 * @param	zoom				Linear zoom factor.
+	 * @param	width				Width of render area in pixels.
+	 * @param	height				Height of render area in pixels.
+	 * @param	backfaceCullling	Discard backfaces if set to <code>true</code>.
+	 */
 	public void set( Object3D obj , Matrix3D xform , float aperture , float zoom , final int width , final int height , boolean backfaceCullling )
 	{
 		int i,j,k,l,ih,iv,id;
@@ -392,6 +422,12 @@ public class RenderObject
 		}
 	}
 
+	/**
+	 * Set light sources to use for lighting effects of the object. This will be used
+	 * by the <code>applyLighting()</code> method of the <code>Face</code> class.
+	 *
+	 * @param	lightSources	Collection of light sources.
+	 */
 	public void setLights( LeafCollection lightSources )
 	{
 		int i,j,k;

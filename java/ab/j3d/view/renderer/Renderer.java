@@ -15,7 +15,6 @@ import java.awt.image.ImageConsumer;
 import java.awt.image.ImageProducer;
 import java.awt.image.ColorModel;
 import java.awt.event.*;
-//import ab.components.*;
 import common.db.TextureSpec;
 import common.model.*;
 import java.util.Enumeration;
@@ -201,31 +200,6 @@ public class Renderer
 	private LeafCollection _wfObjects    = new LeafCollection();
 	private RenderObject[] _wireObjects = null;
 
-	///**
-	 //* Flag to indicate that a wireframe is to be drawn over the
-	 //* rendered image. This may help interpreting the image.
-	 //*/
-	//protected boolean _showWireframeOverlay = false;
-
-	//public void setShowWireframeOverlay( boolean flag )
-	//{
-		//if ( flag != _showWireframeOverlay )
-		//{
-			//_showWireframeOverlay = flag;
-			//requestUpdate();
-		//}
-	//}
-
-	//public boolean isShowWireframeOverlay()
-	//{
-		//return _showWireframeOverlay;
-	//}
-	
-	///**
-	 //* Flag to select base/light control.
-	 //*/
-	//protected boolean _controlLight = false;
-	
 	/**
 	 * Construct renderer for the specified component with the specified
 	 * initial dimensions.
@@ -770,6 +744,13 @@ public class Renderer
 		return;
 	}
 
+	/**
+	 * Render the specified face. This is the most complex process of the renderer. It will
+	 * find the left and right edges around a face and use the calculated lighting values
+	 * to render scanlines.
+	 *
+	 * @param	face		Face to be rendered.
+	 */
 	protected final void renderSolidFace( RenderObject.Face face )
 	{
 		int i,j,k,m,n;
@@ -1237,6 +1218,47 @@ public class Renderer
 		}
 	}
 
+	/**
+	 * This is the core render loop to render a set of scanlines for a face.
+	 *
+	 * @param	v	
+	 * @param	nextV	
+	 * @param	lh	
+	 * @param	lhc	
+	 * @param	rh	
+	 * @param	rhc	
+	 * @param	ld	
+	 * @param	ldc	
+	 * @param	rd	
+	 * @param	rdc	
+	 * @param	colorRGB	
+	 * @param	texture	
+	 * @param	ltu	
+	 * @param	ltuc	
+	 * @param	rtu	
+	 * @param	rtuc	
+	 * @param	ltv	
+	 * @param	ltvc	
+	 * @param	rtv	
+	 * @param	rtvc	
+	 * @param	ldr	
+	 * @param	ldrc	
+	 * @param	rdr	
+	 * @param	rdrc	
+	 * @param	phongTable	
+	 * @param	lsx	
+	 * @param	lsxc	
+	 * @param	rsx	
+	 * @param	rsxc	
+	 * @param	lsy	
+	 * @param	lsyc	
+	 * @param	rsy	
+	 * @param	rsyc	
+	 * @param	lsf	
+	 * @param	lsfc	
+	 * @param	rsf	
+	 * @param	rsfc	
+	 */
 	protected final void renderSolidScanlines(
 		int v , final int nextV ,
 		int  lh  , final int  lhc  , int  rh  , final int  rhc  ,

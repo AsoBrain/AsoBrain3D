@@ -206,6 +206,19 @@ public class Box3D
 		set( vertices , faceVert , faceMat , faceTU , faceTV , false );
 	}
 
+	/**
+	 * Generate texture coordinates for the specified face.
+	 *
+	 * @param	texture		Texture to use.
+	 * @param	flipUV		<code>true</code> te reverse meaning of u and v.
+	 * @param	index		Index of face.
+	 * @param	faceTU		Target array to store U texture coordinates.
+	 * @param	tu1			Start U coordinate.
+	 * @param	tu2			End U coordinate.
+	 * @param	faceTV		Target array to store V texture coordinates.
+	 * @param	tv1			Start V coordinate.
+	 * @param	tv2			End V coordinate.
+	 */
 	public void generateTexture( 
 		final TextureSpec texture , final boolean flipUV , final int index , 
 		final int[][] faceTU , final float tu1 , final float tu2 , 
