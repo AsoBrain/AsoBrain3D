@@ -190,7 +190,7 @@ public final class Object3DBuilder
 		 * texture coordinates should be provided).
 		 *
 		 * @return  <code>true</code> if face has a texture image;
-		 *			<code>false</code> otherwise.
+		 *          <code>false</code> otherwise.
 		 */
 		public boolean hasTextureImage()
 		{
@@ -202,7 +202,7 @@ public final class Object3DBuilder
 		 * texture coordinates should be provided).
 		 *
 		 * @return  <code>true</code> if face is smooth/curved;
-		 *			<code>false</code> if face is flat.
+		 *          <code>false</code> if face is flat.
 		 */
 		public boolean isSmooth()
 		{
@@ -239,18 +239,28 @@ public final class Object3DBuilder
 
 			vert[ faceIndex ] = new int[ nrVertices ];
 			mat[ faceIndex ] = _texture;
+			smooth[ faceIndex ] = _smooth;
+
+			final int[] ftu;
+			final int[] ftv;
+
 			if ( hasTexture )
 			{
-				tu[ faceIndex ] = new int[ nrVertices ];
-				tv[ faceIndex ] = new int[ nrVertices ];
+				ftu = new int[ nrVertices ];
+				ftv = new int[ nrVertices ];
+				tu[ faceIndex ] = ftu;
+				tv[ faceIndex ] = ftv;
 			}
-			smooth[ faceIndex ] = _smooth;
+			else
+			{
+				ftu = null;
+				ftv = null;
+			}
 
 			for ( int vertexIndex = 0 ; vertexIndex < nrVertices ; vertexIndex++ )
 			{
 				final Vertex vertex = (Vertex)_vertices.get( vertexIndex );
-				vertex.build( points , vertexIndex , vert[ faceIndex ] , tu[ faceIndex ] , tv[ faceIndex ] );
-
+				vertex.build( points , vertexIndex , vert[ faceIndex ] , ftu , ftv );
 			}
 		}
 	}
@@ -275,13 +285,14 @@ public final class Object3DBuilder
 	 * Add empty face to the 3D object. Vertices should be added to this shape
 	 * by the caller.
 	 *
-	 * @param   base        Location/orientation of face.
-	 * @param   shape       Shape of face relative to the base.
-	 * @param   texture     Texture to apply to the face.
-	 * @param   swapUV      Swap texture coordinates to rotate 90 degrees.
-	 * @param   smooth      Face is smooth/curved vs. flat.
+	 * @param   base            Location/orientation of face.
+	 * @param   shape           Shape of face relative to the base.
+	 * @param   reversePath     If set, the returned path will be reversed.
+	 * @param   texture         Texture to apply to the face.
+	 * @param   swapUV          Swap texture coordinates to rotate 90 degrees.
+	 * @param   smooth          Face is smooth/curved vs. flat.
 	 */
-	public void addFace( final Matrix3D base , final Polyline2D shape , final TextureSpec texture , final boolean swapUV , final boolean smooth )
+	public void addFace( final Matrix3D base , final Polyline2D shape , final boolean reversePath , final TextureSpec texture , final boolean swapUV , final boolean smooth )
 	{
 		final int nrVertices = shape.getPointCount() + ( shape.isClosed() ? -1 : 0 );
 		if ( nrVertices < 3 )
@@ -302,7 +313,7 @@ public final class Object3DBuilder
 
 			for ( int i = 0 ; i < nrVertices ; i++ )
 			{
-				final PolyPoint2D point = shape.getPoint( i );
+				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
 
 				final int u = (int)( ( swapUV ? ( tyBase + point.y ) : ( txBase + point.x ) ) * texture.textureScale );
 				final int v = (int)( ( swapUV ? ( txBase + point.x ) : ( tyBase + point.y ) ) * texture.textureScale );
@@ -322,7 +333,7 @@ public final class Object3DBuilder
 			final Face face = addFace( texture , smooth );
 			for ( int i = 0 ; i < nrVertices ; i++ )
 			{
-				final PolyPoint2D point = shape.getPoint( i );
+				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
 				face.addVertex( base.multiply( point.x , point.y , 0 ) , vertU[ i ] + adjustU , vertV[ i ] + adjustV );
 			}
 		}
@@ -331,7 +342,7 @@ public final class Object3DBuilder
 			final Face face = addFace( texture , smooth );
 			for ( int i = 0 ; i < nrVertices ; i++ )
 			{
-				final PolyPoint2D point = shape.getPoint( i );
+				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
 				face.addVertex( base.multiply( point.x , point.y , 0 ) , 0 , 0 );
 			}
 		}
@@ -353,14 +364,16 @@ public final class Object3DBuilder
 	 */
 	public static int getRangeAdjustment( final int value , final int range )
 	{
+		final int result;
 		if ( value < 0 )
 		{
-			return ( -value + range - 1 ) / range * range;
+			result = ( -value + range - 1 ) / range * range;
 		}
 		else
 		{
-			return -value + ( value % range );
+			result = -value + ( value % range );
 		}
+		return result;
 	}
 
 	/**
