@@ -23,6 +23,7 @@ import javax.media.j3d.BranchGroup;
 import javax.media.j3d.TransformGroup;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.TextureSpec;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
@@ -58,13 +59,15 @@ public final class Java3dNode
 	 *    (BG) content branch group (re-created on updates)
 	 * </pre>
 	 *
-	 * @param   nodeTransform   Transform node in Java 3D scene graph.
-	 * @param   id              Application-assigned ID of this node.
-	 * @param   node3D          Root in the 3D scene.
+	 * @param   nodeTransform       Transform node in Java 3D scene graph.
+	 * @param   id                  Application-assigned ID of this node.
+	 * @param   node3D              Root in the 3D scene.
+	 * @param   textureOverride     Texture to use instead of actual textures.
+	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).
 	 */
-	Java3dNode( final TransformGroup nodeTransform , final Object id , final Node3D node3D )
+	Java3dNode( final TransformGroup nodeTransform , final Object id , final Node3D node3D , final TextureSpec textureOverride , final float opacity )
 	{
-		super( id , node3D );
+		super( id , node3D , textureOverride , opacity );
 
 		_nodeTransform = nodeTransform;
 
@@ -76,24 +79,11 @@ public final class Java3dNode
 
 	public void update()
 	{
-		final Node3D node3D = getNode3D();
-
 		final Node3DCollection nodes = new Node3DCollection();
+		final Node3D node3D = getNode3D();
 		node3D.gatherLeafs( nodes , Object3D.class , Matrix3D.INIT , false );
 
-		final Java3dTools j3dTools = Java3dTools.getInstance();
-
-		final BranchGroup bg = new BranchGroup();
-		bg.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
-		bg.setCapability( BranchGroup.ALLOW_DETACH );
-
-		for ( int i = 0 ; i < nodes.size() ; i++ )
-		{
-			final Matrix3D xform = nodes.getMatrix( i );
-			final Object3D obj3d = (Object3D)nodes.getNode( i );
-
-			bg.addChild( j3dTools.convertObject3DToNode( xform , obj3d , null , 1.0f ) );
-		}
+		final BranchGroup bg = Shape3DBuilder.createBranchGroup( nodes , _textureOverride , _opacity );
 
 		/*
 		 * Attach content to scene graph (replace existing branch group).
