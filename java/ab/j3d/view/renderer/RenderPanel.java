@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2005 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -318,11 +318,13 @@ public class RenderPanel
 
 		if ( ( image == null ) || ( _renderingMode != FULL ) )
 		{
+			final Graphics clipped = g.create( x , y , width , height );
 			if ( _showTemporaryWireframe )
 			{
-				g.setColor( getForeground() );
-				paintWireframe( g , _camera , x , y , width , height );
+				clipped.setColor( getForeground() );
+				paintWireframe( clipped , _camera , 0 , 0 , width , height );
 			}
+			clipped.dispose();
 		}
 		else
 		{
