@@ -105,4 +105,9 @@ public final class Java2dView
 	{
 		_canvas.repaint();
 	}
+
+	public void setProjectionPolicy( final int policy )
+	{
+		/* Not implemented yet */
+	}
 }

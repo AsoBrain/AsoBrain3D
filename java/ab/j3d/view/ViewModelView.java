@@ -38,6 +38,20 @@ import ab.j3d.Matrix3D;
 public abstract class ViewModelView
 {
 	/**
+	 * Perspective projection policy constant.
+	 *
+	 * @see     #setProjectionPolicy
+	 */
+	public static final int PERSPECTIVE = 0;
+
+	/**
+	 * Parallel projection policy constant.
+	 *
+	 * @see     #setProjectionPolicy
+	 */
+	public static final int PARALLEL = 1;
+
+	/**
 	 * Application-assigned ID of this view.
 	 */
 	private final Object _id;
@@ -116,4 +130,13 @@ public abstract class ViewModelView
 	 * scene or view control.
 	 */
 	public abstract void update();
+
+	/**
+	 * Set projection policy of this view. The policy can be either
+	 * <code>PERSPECTIVE</code> or <code>PARALLEL</code>.
+	 *
+	 * @param   policy      Projection policy of this view
+	 *                      (<code>PERSPECTIVE</code> or <code>PARALLEL</code>).
+	 */
+	public abstract void setProjectionPolicy( final int policy );
 }

@@ -46,20 +46,6 @@ public final class Java3dView
 	extends ViewModelView
 {
 	/**
-	 * Perspective projection policy constant.
-	 *
-	 * @see     #setProjectionPolicy
-	 */
-	private static final int PERSPECTIVE = 0;
-
-	/**
-	 * Parallel projection policy constant.
-	 *
-	 * @see     #setProjectionPolicy
-	 */
-	private static final int PARALLEL = 1;
-
-	/**
 	 * Viewer with all Java 3D related information about this view.
 	 */
 	private final Viewer _viewer;
@@ -167,13 +153,6 @@ public final class Java3dView
 		tg.setTransform( Java3dTools.convertMatrix3DToTransform3D( xform.inverse() ) );
 	}
 
-	/**
-	 * Set projection policy of this view. The policy can be either
-	 * <code>PERSPECTIVE</code> or <code>PARALLEL</code>.
-	 *
-	 * @param   policy      Projection policy of this view
-	 *                      (<code>PERSPECTIVE</code> or <code>PARALLEL</code>).
-	 */
 	public void setProjectionPolicy( final int policy )
 	{
 		switch ( policy )
