@@ -71,7 +71,7 @@ public class ABtoJ3DConvertor
 	/**
 	 * The J3D model.
 	 */
-	private J3DModel _j3dModel;
+	private J3dModel _j3dModel;
 
 	/**
 	 * Construct new ABtoJ3DConvertor.
@@ -80,7 +80,7 @@ public class ABtoJ3DConvertor
 	 * @param   abRootNode  The Ab root node to convert from.
 	 * @param   j3dModel    The j3d model.
 	 */
-	public ABtoJ3DConvertor( final MountingDb db , final TreeNode abRootNode , final J3DModel j3dModel )
+	public ABtoJ3DConvertor( final MountingDb db , final TreeNode abRootNode , final J3dModel j3dModel )
 	{
 		super( abRootNode );
 
@@ -309,7 +309,7 @@ public class ABtoJ3DConvertor
 
 		if ( ( spec != null ) && ( spec.isTexture() ) )
 		{
-			final J3DModel j3dModel = _j3dModel;
+			final J3dModel j3dModel = _j3dModel;
 
 			result = j3dModel.getTextureFromCache( spec.code );
 			if ( result == null )
