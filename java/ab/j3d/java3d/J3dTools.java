@@ -215,24 +215,6 @@ public class J3dTools
 
 	public static Group abToJ3D( final TextureLibrary textureLibrary , final float opacity , final Matrix3D xform , final Object3D obj )
 	{
-//		if ( obj instanceof Box3D )
-//		{
-//			final Box3D       abBox = (Box3D)obj;
-//			final Matrix3D    base  = abBox.getTransform().multiply( xform );
-//			final float       dx    = abBox.getDX();
-//			final float       dy    = abBox.getDY();
-//			final float       dz    = abBox.getDZ();
-//			final TextureSpec spec  = abBox.getFaceTexture( 0 );
-//
-//			final Vector3D   center     = base.multiply( dx / 2 , dy / 2 , dz / 2 );
-//			final Appearance appearance = abToJ3D( spec , opacity );
-//
-//			TransformGroup tg = new TransformGroup( abToJ3D( base.setTranslation( center ) ) );
-//			tg.addChild( new Box( dx , dy , dz , appearance ) );
-//		}
-//
-//
-
 		final int     faceCount     = obj.getFaceCount();
 		final float[] vertices      = obj.getVertices();
 		final float[] vertexNormals = obj.getVertexNormals();
@@ -391,7 +373,7 @@ public class J3dTools
 
 		// Setup Transparency
 		final float combinedOpacity = opacity * spec.opacity;
-		if ( combinedOpacity >= 0.0f && combinedOpacity < 1.0f )
+		if ( combinedOpacity >= 0.0f && combinedOpacity < 0.999f )
 		{
 			final TransparencyAttributes transparency = new TransparencyAttributes( TransparencyAttributes.NICEST , 1.0f - combinedOpacity );
 			appearance.setTransparencyAttributes( transparency );
