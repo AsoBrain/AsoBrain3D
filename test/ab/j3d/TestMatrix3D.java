@@ -38,6 +38,8 @@ public class TestMatrix3D
 	 */
 	private static final String CLASS_NAME = TestMatrix3D.class.getName();
 
+	public static final Matrix3D INIT = Matrix3D.INIT;
+
 	/**
 	 * Test <code>Matrix3D.equals()</code> method.
 	 *
@@ -64,67 +66,65 @@ public class TestMatrix3D
 	public static void testEquals()
 	{
 		System.out.println( CLASS_NAME + ".testEquals()" );
-		final Matrix3D i = Matrix3D.INIT;
 		Matrix3D m;
 
 		/*
-		 * INIT must match identity matrix
+		 * INIT must be identity matrix
 		 */
 		assertEquals( "Matrix3D.equals() returned 'false' where it should have returned 'true'"
-		            , i.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 ) , i );
+		            , INIT.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 ) , INIT );
 
 		/*
 		 * Test if each component is correctly tested by equals()
 		 */
-		m = i.set( 9.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'xx'" , !i.equals( m ) && !m.equals( i ) );
+		m = INIT.set( 9.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'xx'" , !INIT.equals( m ) && !m.equals( INIT ) );
 
-		m = i.set( 1.0 , 9.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'xy'" , !i.equals( m ) && !m.equals( i ) );
+		m = INIT.set( 1.0 , 9.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'xy'" , !INIT.equals( m ) && !m.equals( INIT ) );
 
-		m = i.set( 1.0 , 0.0 , 9.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'xz'" , !i.equals( m ) && !m.equals( i ) );
+		m = INIT.set( 1.0 , 0.0 , 9.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'xz'" , !INIT.equals( m ) && !m.equals( INIT ) );
 
-		m = i.set( 1.0 , 0.0 , 0.0 , 9.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'xo'" , !i.equals( m ) && !m.equals( i ) );
+		m = INIT.set( 1.0 , 0.0 , 0.0 , 9.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'xo'" , !INIT.equals( m ) && !m.equals( INIT ) );
 
-		m = i.set( 1.0 , 0.0 , 0.0 , 0.0 , 9.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'yx'" , !i.equals( m ) && !m.equals( i ) );
+		m = INIT.set( 1.0 , 0.0 , 0.0 , 0.0 , 9.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'yx'" , !INIT.equals( m ) && !m.equals( INIT ) );
 
-		m = i.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 9.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'yy'" , !i.equals( m ) && !m.equals( i ) );
+		m = INIT.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 9.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'yy'" , !INIT.equals( m ) && !m.equals( INIT ) );
 
-		m = i.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 9.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'yz'" , !i.equals( m ) && !m.equals( i ) );
+		m = INIT.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 9.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'yz'" , !INIT.equals( m ) && !m.equals( INIT ) );
 
-		m = i.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 9.0 , 0.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'yo'" , !i.equals( m ) && !m.equals( i ) );
+		m = INIT.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 9.0 , 0.0 , 0.0 , 1.0 , 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'yo'" , !INIT.equals( m ) && !m.equals( INIT ) );
 
-		m = i.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 9.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'zx'" , !i.equals( m ) && !m.equals( i ) );
+		m = INIT.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 9.0 , 0.0 , 1.0 , 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'zx'" , !INIT.equals( m ) && !m.equals( INIT ) );
 
-		m = i.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 9.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'zy'" , !i.equals( m ) && !m.equals( i ) );
+		m = INIT.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 9.0 , 1.0 , 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'zy'" , !INIT.equals( m ) && !m.equals( INIT ) );
 
-		m = i.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 9.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'zz'" , !i.equals( m ) && !m.equals( i ) );
+		m = INIT.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 9.0 , 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'zz'" , !INIT.equals( m ) && !m.equals( INIT ) );
 
-		m = i.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 9.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'zo'" , !i.equals( m ) && !m.equals( i ) );
+		m = INIT.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 9.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'zo'" , !INIT.equals( m ) && !m.equals( INIT ) );
 	}
 
 	/**
 	 * Test the <code>getFromToTransform()</code> method.
 	 *
 	 * @throws  Exception if the test fails.
+	 *
 	 * @see     Matrix3D#getFromToTransform
 	 */
 	public void testGetFromToTransform()
 		throws Exception
 	{
 		System.out.println( CLASS_NAME + ".testGetFromToTransform()" );
-
-		System.out.println( CLASS_NAME + ".testLook()" );
 
 		/*
 		 * Define test properties.
@@ -147,7 +147,6 @@ public class TestMatrix3D
 		 * Define useful constants.
 		 */
 		final Vector3D v0     = Vector3D.INIT;
-		final Matrix3D m0     = Matrix3D.INIT;
 		final Vector3D origin = v0;
 
 		/*
@@ -172,32 +171,32 @@ public class TestMatrix3D
 		final Vector3D Zmin1  = v0.set(  0.0 ,  0.0 , -1.0 );
 		final Vector3D Z1     = v0.set(  0.0 ,  0.0 ,  1.0 );
 
-		final Matrix3D LEFT_VIEW = m0.set(
+		final Matrix3D LEFT_VIEW = INIT.set(
 			 0.0 , -1.0 ,  0.0 , 0.0 ,
 			 0.0 ,  0.0 ,  1.0 , 0.0 ,
 			-1.0 ,  0.0 ,  0.0 , 0.0 );
 
-		final Matrix3D RIGHT_VIEW = m0.set(
+		final Matrix3D RIGHT_VIEW = INIT.set(
 			 0.0 ,  1.0 ,  0.0 , 0.0 ,
 			 0.0 ,  0.0 ,  1.0 , 0.0 ,
 			 1.0 ,  0.0 ,  0.0 , 0.0 );
 
-		final Matrix3D FRONT_VIEW = m0.set(
+		final Matrix3D FRONT_VIEW = INIT.set(
 			 1.0 ,  0.0 ,  0.0 , 0.0 ,
 			 0.0 ,  0.0 ,  1.0 , 0.0 ,
 			 0.0 , -1.0 ,  0.0 , 0.0 );
 
-		final Matrix3D BACK_VIEW = m0.set(
+		final Matrix3D BACK_VIEW = INIT.set(
 			-1.0 ,  0.0 ,  0.0 , 0.0 ,
 			 0.0 ,  0.0 ,  1.0 , 0.0 ,
 			 0.0 ,  1.0 ,  0.0 , 0.0 );
 
-		final Matrix3D BOTTOM_VIEW = m0.set(
+		final Matrix3D BOTTOM_VIEW = INIT.set(
 			-1.0 ,  0.0 ,  0.0 , 0.0 ,
 			 0.0 ,  1.0 ,  0.0 , 0.0 ,
 			 0.0 ,  0.0 , -1.0 , 0.0 );
 
-		final Matrix3D TOP_VIEW = m0.set(
+		final Matrix3D TOP_VIEW = INIT.set(
 			 1.0 ,  0.0 ,  0.0 , 0.0 ,
 			 0.0 ,  1.0 ,  0.0 , 0.0 ,
 			 0.0 ,  0.0 ,  1.0 , 0.0 );
@@ -239,11 +238,11 @@ public class TestMatrix3D
 		final double DEG_125_2 = Math.toRadians( 125.2 );
 		final Test[] diagonalTests =
 		{
-			/* Test #17 */ new Test( v0.set(  0.0 , -1.0 , -1.0 ) , origin , m0.rotateX( DEG135 )                     .plus( 0.0 , 0.0 , -SQRT2 ) ) ,
-			/* Test #18 */ new Test( v0.set( -1.0 ,  0.0 ,  1.0 ) , origin , m0.rotateY(  DEG45 ).rotateZ(     DEG90 ).plus( 0.0 , 0.0 , -SQRT2 ) ) ,
-			/* Test #19 */ new Test( v0.set(  1.0 ,  0.0 ,  1.0 ) , origin , m0.rotateY( -DEG45 ).rotateZ(    -DEG90 ).plus( 0.0 , 0.0 , -SQRT2 ) ) ,
-			/* Test #20 */ new Test( v0.set(  1.0 ,  0.0 ,  0.0 ) , origin , m0.rotateZ( -DEG90 ).rotateX(     DEG90 ).plus( 0.0 , 0.0 , -1.0   ) ) ,
-			/* Test #21 */ new Test( v0.set( -1.0 , -1.0 , -1.0 ) , origin , m0.rotateZ(  DEG45 ).rotateX( DEG_125_2 ).plus( 0.0 , 0.0 , -SQRT3 ) ) ,
+			/* Test #17 */ new Test( v0.set(  0.0 , -1.0 , -1.0 ) , origin , INIT.rotateX( -DEG135 )                      .plus( 0.0 , 0.0 , -SQRT2 ) ) ,
+			/* Test #18 */ new Test( v0.set( -1.0 ,  0.0 ,  1.0 ) , origin , INIT.rotateY(   DEG45 ).rotateZ(      DEG90 ).plus( 0.0 , 0.0 , -SQRT2 ) ) ,
+			/* Test #19 */ new Test( v0.set(  1.0 ,  0.0 ,  1.0 ) , origin , INIT.rotateY(  -DEG45 ).rotateZ(     -DEG90 ).plus( 0.0 , 0.0 , -SQRT2 ) ) ,
+			/* Test #20 */ new Test( v0.set(  1.0 ,  0.0 ,  0.0 ) , origin , INIT.rotateZ(  -DEG90 ).rotateX(     -DEG90 ).plus( 0.0 , 0.0 , -1.0   ) ) ,
+			/* Test #21 */ new Test( v0.set( -1.0 , -1.0 , -1.0 ) , origin , INIT.rotateZ(   DEG45 ).rotateX( -DEG_125_2 ).plus( 0.0 , 0.0 , -SQRT3 ) ) ,
 		};
 
 		/*
@@ -321,17 +320,16 @@ public class TestMatrix3D
 		/*
 		 * Define tests to execute.
 		 */
-		final Vector3D v0    = Vector3D.INIT;
-		final Matrix3D ident = Matrix3D.INIT;
+		final Vector3D v0 = Vector3D.INIT;
 
 		final Test[] tests =
 		{
-			/* Test #1 */ new Test( v0 , v0.set( 1.0 , 0.0 , 0.0 ) , 0.0 , ident ),
-			/* Test #2 */ new Test( v0 , v0.set( 1.0 , 0.0 , 0.0 ) , 1.0 , ident.rotateX( 1.0 ) ),
-			/* Test #3 */ new Test( v0 , v0.set( 0.0 , 1.0 , 0.0 ) , 0.0 , ident ),
-			/* Test #4 */ new Test( v0 , v0.set( 0.0 , 1.0 , 0.0 ) , 1.0 , ident.rotateY( 1.0 ) ),
-			/* Test #5 */ new Test( v0 , v0.set( 0.0 , 0.0 , 1.0 ) , 0.0 , ident ),
-			/* Test #6 */ new Test( v0 , v0.set( 0.0 , 0.0 , 1.0 ) , 1.0 , ident.rotateZ( 1.0 ) ),
+			/* Test #1 */ new Test( v0 , v0.set( 1.0 , 0.0 , 0.0 ) , 0.0 , INIT ),
+			/* Test #2 */ new Test( v0 , v0.set( 1.0 , 0.0 , 0.0 ) , 1.0 , INIT.rotateX( 1.0 ) ),
+			/* Test #3 */ new Test( v0 , v0.set( 0.0 , 1.0 , 0.0 ) , 0.0 , INIT ),
+			/* Test #4 */ new Test( v0 , v0.set( 0.0 , 1.0 , 0.0 ) , 1.0 , INIT.rotateY( 1.0 ) ),
+			/* Test #5 */ new Test( v0 , v0.set( 0.0 , 0.0 , 1.0 ) , 0.0 , INIT ),
+			/* Test #6 */ new Test( v0 , v0.set( 0.0 , 0.0 , 1.0 ) , 1.0 , INIT.rotateZ( 1.0 ) ),
 		};
 
 		/*
@@ -363,6 +361,210 @@ public class TestMatrix3D
 				}
 
 				assertEquals( description + " threw wrong exception" , expectedException.getName() , e.getClass() );
+			}
+		}
+	}
+
+	/**
+	 * Test the <code>rotateX()</code> method.
+	 *
+	 * @throws  Exception if the test fails.
+	 *
+	 * @see     Matrix3D#rotateX
+	 */
+	public void testRotateX()
+		throws Exception
+	{
+		System.out.println( CLASS_NAME + ".testRotateX()" );
+
+		/*
+		 * Test matrix contents for simple rotations.
+		 */
+		for ( double angle = 0.0 ; angle < 360.0 ; angle += 15.0 )
+		{
+			final double rad = Math.toRadians( angle );
+			final double cos = Math.cos( rad );
+			final double sin = Math.sin( rad );
+
+			final Matrix3D matrix = INIT.rotateX( rad );
+
+			final String where = "Rotate X over " + angle + " degrees";
+
+			assertEquals( where + " - xx" ,  1.0 , matrix.xx , 0.0 );
+			assertEquals( where + " - xy" ,  0.0 , matrix.xy , 0.0 );
+			assertEquals( where + " - xz" ,  0.0 , matrix.xz , 0.0 );
+			assertEquals( where + " - xo" ,  0.0 , matrix.xo , 0.0 );
+			assertEquals( where + " - yx" ,  0.0 , matrix.yx , 0.0 );
+			assertEquals( where + " - yy" ,  cos , matrix.yy , 0.0 );
+			assertEquals( where + " - yz" , -sin , matrix.yz , 0.0 );
+			assertEquals( where + " - yo" ,  0.0 , matrix.yo , 0.0 );
+			assertEquals( where + " - zx" ,  0.0 , matrix.zx , 0.0 );
+			assertEquals( where + " - zy" ,  sin , matrix.zy , 0.0 );
+			assertEquals( where + " - zz" ,  cos , matrix.zz , 0.0 );
+			assertEquals( where + " - zo" ,  0.0 , matrix.zo , 0.0 );
+		}
+
+		/*
+		 * Test vector rotation.
+		 */
+		final double[][][] vectorTests =
+		{
+			{ { 90 } , { 1.0 , 0.0 , 0.0 } , {  1.0 ,  0.0 ,  0.0 } } ,
+			{ { 90 } , { 0.0 , 1.0 , 0.0 } , {  0.0 ,  0.0 ,  1.0 } } ,
+			{ { 90 } , { 0.0 , 0.0 , 1.0 } , {  0.0 , -1.0 ,  0.0 } } ,
+		};
+
+		for ( int i = 0 ; i < vectorTests.length ; i++ )
+		{
+			final double[][] test     = vectorTests[ i ];
+			final double     deg      = test[ 0 ][ 0 ];
+			final Vector3D   vector   = Vector3D.INIT.set( test[ 1 ][ 0 ] , test[ 1 ][ 1 ] , test[ 1 ][ 2 ] );
+			final Vector3D   expected = Vector3D.INIT.set( test[ 2 ][ 0 ] , test[ 2 ][ 1 ] , test[ 2 ][ 2 ] );
+
+			final Matrix3D matrix = INIT.rotateX( Math.toRadians( deg ) );
+			final Vector3D actual = matrix.multiply( vector );
+
+			if ( !expected.almostEquals( actual ) )
+			{
+				fail( "Rotate vector " + vector.toFriendlyString() + ' ' + deg + " degrees over X-axis failed -"
+				    + " expected:" + expected.toFriendlyString()
+				    + " but was:" + actual.toFriendlyString() );
+			}
+		}
+	}
+
+	/**
+	 * Test the <code>rotateY()</code> method.
+	 *
+	 * @throws  Exception if the test fails.
+	 *
+	 * @see     Matrix3D#rotateY
+	 */
+	public void testRotateY()
+	throws Exception
+	{
+		System.out.println( CLASS_NAME + ".testRotateY()" );
+
+		/*
+		 * Test matrix contents for simple rotations.
+		 */
+		for ( double angle = 0.0 ; angle < 360.0 ; angle += 15.0 )
+		{
+			final double rad = Math.toRadians( angle );
+			final double cos = Math.cos( rad );
+			final double sin = Math.sin( rad );
+
+			final Matrix3D matrix = INIT.rotateY( rad );
+
+			final String where = "Rotate Y over " + angle + " degrees";
+
+			assertEquals( where + " - xx" ,  cos , matrix.xx , 0.0 );
+			assertEquals( where + " - xy" ,  0.0 , matrix.xy , 0.0 );
+			assertEquals( where + " - xz" ,  sin , matrix.xz , 0.0 );
+			assertEquals( where + " - xo" ,  0.0 , matrix.xo , 0.0 );
+			assertEquals( where + " - yx" ,  0.0 , matrix.yx , 0.0 );
+			assertEquals( where + " - yy" ,  1.0 , matrix.yy , 0.0 );
+			assertEquals( where + " - yz" ,  0.0 , matrix.yz , 0.0 );
+			assertEquals( where + " - yo" ,  0.0 , matrix.yo , 0.0 );
+			assertEquals( where + " - zx" , -sin , matrix.zx , 0.0 );
+			assertEquals( where + " - zy" ,  0.0 , matrix.zy , 0.0 );
+			assertEquals( where + " - zz" ,  cos , matrix.zz , 0.0 );
+			assertEquals( where + " - zo" ,  0.0 , matrix.zo , 0.0 );
+		}
+
+		/*
+		 * Test vector rotation.
+		 */
+		final double[][][] vectorTests =
+		{
+			{ { 90 } , { 1.0 , 0.0 , 0.0 } , {  0.0 ,  0.0 , -1.0 } } ,
+			{ { 90 } , { 0.0 , 1.0 , 0.0 } , {  0.0 ,  1.0 ,  0.0 } } ,
+			{ { 90 } , { 0.0 , 0.0 , 1.0 } , {  1.0 ,  0.0 ,  0.0 } } ,
+		};
+
+		for ( int i = 0 ; i < vectorTests.length ; i++ )
+		{
+			final double[][] test     = vectorTests[ i ];
+			final double     deg      = test[ 0 ][ 0 ];
+			final Vector3D   vector   = Vector3D.INIT.set( test[ 1 ][ 0 ] , test[ 1 ][ 1 ] , test[ 1 ][ 2 ] );
+			final Vector3D   expected = Vector3D.INIT.set( test[ 2 ][ 0 ] , test[ 2 ][ 1 ] , test[ 2 ][ 2 ] );
+
+			final Matrix3D matrix = INIT.rotateY( Math.toRadians( deg ) );
+			final Vector3D actual = matrix.multiply( vector );
+
+			if ( !expected.almostEquals( actual ) )
+			{
+				fail( "Rotate vector " + vector.toFriendlyString() + ' ' + deg + " degrees over Y-axis failed -"
+				    + " expected:" + expected.toFriendlyString()
+				    + " but was:" + actual.toFriendlyString() );
+			}
+		}
+	}
+
+	/**
+	 * Test the <code>rotateZ()</code> method.
+	 *
+	 * @throws  Exception if the test fails.
+	 *
+	 * @see     Matrix3D#rotateZ
+	 */
+	public void testRotateZ()
+		throws Exception
+	{
+		System.out.println( CLASS_NAME + ".testRotateZ()" );
+
+		/*
+		 * Test matrix contents for simple rotations.
+		 */
+		for ( double angle = 0.0 ; angle < 360.0 ; angle += 15.0 )
+		{
+			final double rad = Math.toRadians( angle );
+			final double cos = Math.cos( rad );
+			final double sin = Math.sin( rad );
+
+			final Matrix3D matrix = INIT.rotateZ( rad );
+
+			final String where = "Rotate Z over " + angle + " degrees";
+
+			assertEquals( where + " - xx" ,  cos , matrix.xx , 0.0 );
+			assertEquals( where + " - xy" , -sin , matrix.xy , 0.0 );
+			assertEquals( where + " - xz" ,  0.0 , matrix.xz , 0.0 );
+			assertEquals( where + " - xo" ,  0.0 , matrix.xo , 0.0 );
+			assertEquals( where + " - yx" ,  sin , matrix.yx , 0.0 );
+			assertEquals( where + " - yy" ,  cos , matrix.yy , 0.0 );
+			assertEquals( where + " - yz" ,  0.0 , matrix.yz , 0.0 );
+			assertEquals( where + " - yo" ,  0.0 , matrix.yo , 0.0 );
+			assertEquals( where + " - zx" ,  0.0 , matrix.zx , 0.0 );
+			assertEquals( where + " - zy" ,  0.0 , matrix.zy , 0.0 );
+			assertEquals( where + " - zz" ,  1.0 , matrix.zz , 0.0 );
+			assertEquals( where + " - zo" ,  0.0 , matrix.zo , 0.0 );
+		}
+
+		/*
+		 * Test vector rotation.
+		 */
+		final double[][][] vectorTests =
+		{
+			{ { 90 } , { 1.0 , 0.0 , 0.0 } , {  0.0 ,  1.0 ,  0.0 } } ,
+			{ { 90 } , { 0.0 , 1.0 , 0.0 } , { -1.0 ,  0.0 ,  0.0 } } ,
+			{ { 90 } , { 0.0 , 0.0 , 1.0 } , {  0.0 ,  0.0 ,  1.0 } } ,
+		};
+
+		for ( int i = 0 ; i < vectorTests.length ; i++ )
+		{
+			final double[][] test     = vectorTests[ i ];
+			final double     deg      = test[ 0 ][ 0 ];
+			final Vector3D   vector   = Vector3D.INIT.set( test[ 1 ][ 0 ] , test[ 1 ][ 1 ] , test[ 1 ][ 2 ] );
+			final Vector3D   expected = Vector3D.INIT.set( test[ 2 ][ 0 ] , test[ 2 ][ 1 ] , test[ 2 ][ 2 ] );
+
+			final Matrix3D matrix = INIT.rotateZ( Math.toRadians( deg ) );
+			final Vector3D actual = matrix.multiply( vector );
+
+			if ( !expected.almostEquals( actual ) )
+			{
+				fail( "Rotate vector " + vector.toFriendlyString() + ' ' + deg + " degrees over Z-axis failed -"
+				    + " expected:" + expected.toFriendlyString()
+				    + " but was:" + actual.toFriendlyString() );
 			}
 		}
 	}
