@@ -72,6 +72,11 @@ public final class Face3D
 	private boolean _smooth;
 
 	/**
+	 * Flag to indicate if this face has an backface.
+	 */
+	private boolean _hasBackface;
+
+	/**
 	 * Construct new Face.
 	 *
 	 * @param   object      Object to which this face belongs.
@@ -84,6 +89,23 @@ public final class Face3D
 	 */
 	Face3D( final Object3D object , final int[] points , final TextureSpec texture , final int[] textureU , final int[] textureV , final double opacity , final boolean smooth )
 	{
+		this ( object , points , texture , textureU , textureV , opacity , smooth , false );
+	}
+
+	/**
+	 * Construct new Face.
+	 *
+	 * @param   object          Object to which this face belongs.
+	 * @param   points          List of points.
+	 * @param   texture         Texture to apply to the face.
+	 * @param   textureU        Array for horizontal texture coordinates.
+	 * @param   textureV        Array for vertical texture coordinates.
+	 * @param   opacity         Opacity of face (0=transparent, 1=opaque).
+	 * @param   smooth          Face is smooth/curved vs. flat.
+	 * @param   hasBackface     Face has an backface.
+	 */
+	Face3D( final Object3D object , final int[] points , final TextureSpec texture , final int[] textureU , final int[] textureV , final double opacity , final boolean smooth , final boolean hasBackface )
+	{
 		_object       = object;
 		_pointIndices = points;
 		_pointCount   = ( points != null ) ? points.length : 0;
@@ -93,6 +115,7 @@ public final class Face3D
 		_textureV     = textureV;
 		_smooth       = smooth;
 		_opacity      = opacity;
+		_hasBackface  = hasBackface;
 	}
 
 	/**
@@ -327,6 +350,28 @@ public final class Face3D
 	public void setOpacity( final double opacity )
 	{
 		_opacity = opacity;
+	}
+
+	/**
+	 * Get backface flag of this face.
+	 *
+	 * @return  <code>True</code> if this face has an backface;
+	 *          <code>False</code> otherwise.
+	 */
+	public boolean isHasBackface()
+	{
+		return _hasBackface;
+	}
+
+	/**
+	 * Set backface flag of this face.
+	 *
+	 * @param hasBackface   <code>True</code> if this face has an backface;
+	 *                      <code>False</code> otherwise.
+	 */
+	public void setHasBackface( final boolean hasBackface )
+	{
+		_hasBackface = hasBackface;
 	}
 
 	/**
