@@ -30,9 +30,11 @@ import javax.media.j3d.TransformGroup;
 import javax.media.j3d.TransparencyAttributes;
 import javax.media.j3d.TriangleArray;
 import javax.vecmath.Color3f;
+import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3f;
 import javax.vecmath.TexCoord2f;
 import javax.vecmath.Vector3f;
+import javax.vecmath.Vector4d;
 
 import com.sun.j3d.utils.image.TextureLoader;
 
@@ -393,5 +395,28 @@ public class ABtoJ3DConvertor
 			matrix.yx , matrix.yy , matrix.yz , matrix.yo ,
 			matrix.zx , matrix.zy , matrix.zz , matrix.zo ,
 			0.0f , 0.0f , 0.0f , 1.0f } );
+	}
+
+	/**
+	 * Convert Java3D <code>Tranform3D<code/> object to <code>MAtrix3D</code>.
+	 *
+	 * @param   transform   Transform3D to convert.
+	 */
+	public static Matrix3D convertTransform3D( final Transform3D transform )
+	{
+		final Matrix4d m4d = new Matrix4d();
+		transform.get( m4d );
+
+		Vector4d xRow = new Vector4d();
+		Vector4d yRow = new Vector4d();
+		Vector4d zRow = new Vector4d();
+		m4d.getRow( 0 , xRow );
+		m4d.getRow( 1 , yRow );
+		m4d.getRow( 2 , zRow );
+
+		return Matrix3D.INIT.set(
+			(float)xRow.x , (float)xRow.y , (float)xRow.z , (float)xRow.w ,
+			(float)yRow.x , (float)yRow.y , (float)yRow.z , (float)yRow.w ,
+			(float)zRow.x , (float)zRow.y , (float)zRow.z , (float)zRow.w );
 	}
 }

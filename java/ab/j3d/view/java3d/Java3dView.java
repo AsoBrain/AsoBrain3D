@@ -10,7 +10,6 @@
 package com.numdata.soda.Gerwin.AbtoJ3D;
 
 import javax.media.j3d.Group;
-import javax.media.j3d.Transform3D;
 import javax.media.j3d.View;
 
 import com.sun.j3d.utils.universe.Viewer;
@@ -38,23 +37,26 @@ public class J3dView
 
 	private final Viewer _viewer;
 
+	private Vector3D _from;
+
+	private Vector3D _to;
+
 	/**
 	 * Construct new J3dView.
 	 */
 	public J3dView( final J3dUniverse universe , final Vector3D from , final Vector3D to )
 	{
 		_universe = universe;
+		_from     = from;
+		_to       = to;
 
 		_canvas = new J3dPanel( _universe );
 
 		_viewer = new Viewer( _canvas );
 		_universe.addViewer( _viewer );
 
-		final Transform3D viewTransform = _universe.getTransform( from , to );
-
 		_j3dRootNode = new ViewingPlatform( 1 );
 		_j3dRootNode.setUniverse( _universe );
-		_j3dRootNode.getMultiTransformGroup().getTransformGroup( 0 ).setTransform( viewTransform );
 		_j3dRootNode.setViewPlatformBehavior( _universe.getOrbitBehavior( _canvas ) );
 		_viewer.setViewingPlatform( _j3dRootNode );
 
@@ -62,9 +64,10 @@ public class J3dView
 		final View view = _viewer.getView();
 		view.setDepthBufferFreezeTransparent( true );
 		view.setTransparencySortingPolicy( View.TRANSPARENCY_SORT_GEOMETRY );
-		
+
 		//view.setBackClipDistance( 100 );
 
+		setTransform( _from , _to );
 		setProjectionPolicy( PERSPECTIVE );
 	}
 
@@ -90,6 +93,12 @@ public class J3dView
 			_j3dRootNode.getMultiTransformGroup().getTransformGroup( 0 ).setTransform( ABtoJ3DConvertor.convertMatrix3D( transform ) );
 	}
 
+	public void setTransform ( final Vector3D from , final Vector3D to )
+	{
+		final Matrix3D viewTransform = ABtoJ3DConvertor.convertTransform3D( _universe.getTransform( _from , _to ) );
+		setTransform( viewTransform );
+	}
+
 	public void setProjectionPolicy( final int policy )
 	{
 		if ( !(policy == PERSPECTIVE || policy == PARALLEL) )
@@ -97,5 +106,17 @@ public class J3dView
 
 		final View view = _viewer.getView();
 		view.setProjectionPolicy( policy == PERSPECTIVE ? View.PERSPECTIVE_PROJECTION : View.PARALLEL_PROJECTION );
+	}
+
+	public void setFrom( final Vector3D from )
+	{
+		_from = from;
+		setTransform( _from , _to );
+	}
+
+	public void setTo( final Vector3D to )
+	{
+		_to = to;
+		setTransform( _from , _to );
 	}
 }
