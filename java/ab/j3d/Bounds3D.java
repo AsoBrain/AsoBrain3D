@@ -36,23 +36,21 @@ public final class Bounds3D
 	 * @param	v1	First vector of box.
 	 * @param	v2	Second vector of box.
 	 */
-	private Bounds3D( Vector3D nv1 , Vector3D nv2 )
+	private Bounds3D( final Vector3D v1 , final Vector3D v2 )
 	{
-		if ( nv1 == null ) nv1 = Vector3D.INIT;
-		if ( nv2 == null ) nv2 = Vector3D.INIT;
-		v1 = nv1;
-		v2 = nv2;
+		this.v1 = ( v1 == null ) ? Vector3D.INIT : v1;
+		this.v2 = ( v2 == null ) ? Vector3D.INIT : v2;
 	}
 
 	/**
-	 * Compare this box to another box.
+	 * Compare these bounds to other bounds.
 	 *
-	 * @param	box	Box to compare with.
+	 * @param	other	Bounds to compare with.
 	 *
-	 * @return	<code>true</code> if boxs are equal,
-	 *		<code>false</code> if not.
+	 * @return	<code>true</code> if the bounds are equal,
+	 *			<code>false</code> otherwise.
 	 */
-	public final boolean equals( Bounds3D other )
+	public boolean equals( final Bounds3D other )
 	{
 		if ( other == this ) return( true );
 		if ( other == null ) return( false );
@@ -60,12 +58,15 @@ public final class Bounds3D
 	}
 
 	/**
-	 * Compare this box to another box.
+	 * Compare these bounds to the specified bounds.
 	 *
-	 * @return	<code>true</code> if boxes are equal,
+	 * @param	v1		First vector of bounds to compare with.
+	 * @param	v2		Second vector of bounds to compare with.
+	 *
+	 * @return	<code>true</code> if the bounds are equal,
 	 *			<code>false</code> if not.
 	 */
-	public final boolean equals( Vector3D v1 , Vector3D v2 )
+	public boolean equals( Vector3D v1 , Vector3D v2 )
 	{
 		return( ( ( v1 == null ) || this.v1.equals( v1 ) ) &&
 				( ( v2 == null ) || this.v2.equals( v2 ) ) );
@@ -79,7 +80,7 @@ public final class Bounds3D
 	 *
 	 * @return	Object instance.
 	 */
-	public final static Bounds3D fromString( String value )
+	public static Bounds3D fromString( final String value )
 	{
 		StringTokenizer st = new StringTokenizer( value , ";" );
 		
@@ -89,57 +90,75 @@ public final class Bounds3D
 	}
 
 	/**
-	 * Calculate intersection between this box and another box. Note that
-	 * if the boxes are disjunct, the result will have one or more negative
-	 * factors for v2 - v1.
+	 * Calculate intersection between two bounding boxes. Note that the result
+	 * will have one or more negative factors for v2 - v1 when the bounding
+	 * boxes are disjunct.
+	 *
+	 * @param	bounds1		First object for intersection.
+	 * @param	bounds2		Seconds object for intersection.
+	 *
+	 * @return	Bounds of intersection.
 	 */
-	public final static Bounds3D intersect( Bounds3D box1 , Bounds3D box2 )
+	public static Bounds3D intersect( final Bounds3D bounds1 , final Bounds3D bounds2 )
 	{
-		return rebuild( box1 , box2 ,
-			Math.max( Math.min( box1.v1.x , box1.v2.x ) , Math.min( box2.v1.x , box2.v2.x ) ) ,
-			Math.max( Math.min( box1.v1.y , box1.v2.y ) , Math.min( box2.v1.y , box2.v2.y ) ) ,
-			Math.max( Math.min( box1.v1.z , box1.v2.z ) , Math.min( box2.v1.z , box2.v2.z ) ) ,
-			Math.min( Math.max( box1.v1.x , box1.v2.x ) , Math.max( box2.v1.x , box2.v2.x ) ) ,
-			Math.min( Math.max( box1.v1.y , box1.v2.y ) , Math.max( box2.v1.y , box2.v2.y ) ) ,
-			Math.min( Math.max( box1.v1.z , box1.v2.z ) , Math.max( box2.v1.z , box2.v2.z ) ) );
+		return rebuild( bounds1 , bounds2 ,
+			Math.max( Math.min( bounds1.v1.x , bounds1.v2.x ) , Math.min( bounds2.v1.x , bounds2.v2.x ) ) ,
+			Math.max( Math.min( bounds1.v1.y , bounds1.v2.y ) , Math.min( bounds2.v1.y , bounds2.v2.y ) ) ,
+			Math.max( Math.min( bounds1.v1.z , bounds1.v2.z ) , Math.min( bounds2.v1.z , bounds2.v2.z ) ) ,
+			Math.min( Math.max( bounds1.v1.x , bounds1.v2.x ) , Math.max( bounds2.v1.x , bounds2.v2.x ) ) ,
+			Math.min( Math.max( bounds1.v1.y , bounds1.v2.y ) , Math.max( bounds2.v1.y , bounds2.v2.y ) ) ,
+			Math.min( Math.max( bounds1.v1.z , bounds1.v2.z ) , Math.max( bounds2.v1.z , bounds2.v2.z ) ) );
 	}
 
 	/**
-	 * Determine whether the two specified boxes intersect.
+	 * Determine whether the two specified bounding boxes intersect.
+	 *
+	 * @param	bounds1		First object for intersection test.
+	 * @param	bounds2		Seconds object for intersection test.
+	 *
+	 * @return	<code>true</code> if the bounds intersect;
+	 *			<code>false</code> if the bounds are disjunct.
 	 */
-	public final static boolean intersects( Bounds3D box1 , Bounds3D box2 )
+	public static boolean intersects( final Bounds3D bounds1 , final Bounds3D bounds2 )
 	{
-		if ( box1 == null || box2 == null )
+		if ( bounds1 == null || bounds2 == null )
 			return false;
 		return
-		( Math.min( box1.v1.x , box1.v2.x ) < Math.max( box2.v1.x , box2.v2.x ) ) &&
-		( Math.min( box2.v1.x , box2.v2.x ) < Math.max( box1.v1.x , box1.v2.x ) ) &&
-		( Math.min( box1.v1.y , box1.v2.y ) < Math.max( box2.v1.y , box2.v2.y ) ) &&
-		( Math.min( box2.v1.y , box2.v2.y ) < Math.max( box1.v1.y , box1.v2.y ) ) &&
-		( Math.min( box1.v1.z , box1.v2.z ) < Math.max( box2.v1.z , box2.v2.z ) ) &&
-		( Math.min( box2.v1.z , box2.v2.z ) < Math.max( box1.v1.z , box1.v2.z ) );
+		( Math.min( bounds1.v1.x , bounds1.v2.x ) < Math.max( bounds2.v1.x , bounds2.v2.x ) ) &&
+		( Math.min( bounds2.v1.x , bounds2.v2.x ) < Math.max( bounds1.v1.x , bounds1.v2.x ) ) &&
+		( Math.min( bounds1.v1.y , bounds1.v2.y ) < Math.max( bounds2.v1.y , bounds2.v2.y ) ) &&
+		( Math.min( bounds2.v1.y , bounds2.v2.y ) < Math.max( bounds1.v1.y , bounds1.v2.y ) ) &&
+		( Math.min( bounds1.v1.z , bounds1.v2.z ) < Math.max( bounds2.v1.z , bounds2.v2.z ) ) &&
+		( Math.min( bounds2.v1.z , bounds2.v2.z ) < Math.max( bounds1.v1.z , bounds1.v2.z ) );
 	}
 
 	/**
-	 * Calculate join between this box and another box.
+	 * Calculate joined bounds of the two specified bounding objects.
+	 *
+	 * @param	bounds1		First object for join.
+	 * @param	bounds2		Seconds object for join.
+	 *
+	 * @return	Joined bounds.
 	 */
-	public final static Bounds3D join( Bounds3D box1 , Bounds3D box2 )
+	public static Bounds3D join( final Bounds3D bounds1 , final Bounds3D bounds2 )
 	{
-		return rebuild( box1 , box2 ,
-			Math.min( Math.min( box1.v1.x , box1.v2.x ) , Math.min( box2.v1.x , box2.v2.x ) ) ,
-			Math.min( Math.min( box1.v1.y , box1.v2.y ) , Math.min( box2.v1.y , box2.v2.y ) ) ,
-			Math.min( Math.min( box1.v1.z , box1.v2.z ) , Math.min( box2.v1.z , box2.v2.z ) ) ,
-			Math.max( Math.max( box1.v1.x , box1.v2.x ) , Math.max( box2.v1.x , box2.v2.x ) ) ,
-			Math.max( Math.max( box1.v1.y , box1.v2.y ) , Math.max( box2.v1.y , box2.v2.y ) ) ,
-			Math.max( Math.max( box1.v1.z , box1.v2.z ) , Math.max( box2.v1.z , box2.v2.z ) ) );
+		return rebuild( bounds1 , bounds2 ,
+			Math.min( Math.min( bounds1.v1.x , bounds1.v2.x ) , Math.min( bounds2.v1.x , bounds2.v2.x ) ) ,
+			Math.min( Math.min( bounds1.v1.y , bounds1.v2.y ) , Math.min( bounds2.v1.y , bounds2.v2.y ) ) ,
+			Math.min( Math.min( bounds1.v1.z , bounds1.v2.z ) , Math.min( bounds2.v1.z , bounds2.v2.z ) ) ,
+			Math.max( Math.max( bounds1.v1.x , bounds1.v2.x ) , Math.max( bounds2.v1.x , bounds2.v2.x ) ) ,
+			Math.max( Math.max( bounds1.v1.y , bounds1.v2.y ) , Math.max( bounds2.v1.y , bounds2.v2.y ) ) ,
+			Math.max( Math.max( bounds1.v1.z , bounds1.v2.z ) , Math.max( bounds2.v1.z , bounds2.v2.z ) ) );
 	}
 
 	/**
-	 * Determine maximum vector of box.
+	 * Determine maximum vector of bounds.
+	 *
+	 * @param	bounds	Bounds to get the vector for.
 	 *
 	 * @return	Resulting vector.
 	 */
-	public final static Vector3D max( Bounds3D box )
+	public static Vector3D max( final Bounds3D box )
 	{
 		float x = Math.max( box.v1.x , box.v2.x );
 		float y = Math.max( box.v1.y , box.v2.y );
@@ -151,46 +170,50 @@ public final class Bounds3D
 	}
 
 	/**
-	 * Determine minimum vector of box.
+	 * Determine minimum vector of bounds.
+	 *
+	 * @param	bounds	Bounds to get the vector for.
 	 *
 	 * @return	Resulting vector.
 	 */
-	public final static Vector3D min( Bounds3D box )
+	public static Vector3D min( final Bounds3D bounds )
 	{
-		float x = Math.min( box.v1.x , box.v2.x );
-		float y = Math.min( box.v1.y , box.v2.y );
-		float z = Math.min( box.v1.z , box.v2.z );
+		float x = Math.min( bounds.v1.x , bounds.v2.x );
+		float y = Math.min( bounds.v1.y , bounds.v2.y );
+		float z = Math.min( bounds.v1.z , bounds.v2.z );
 		
-			 if ( box.v1.equals( x , y , z ) ) return box.v1;
-		else if ( box.v2.equals( x , y , z ) ) return box.v2;
+			 if ( bounds.v1.equals( x , y , z ) ) return bounds.v1;
+		else if ( bounds.v2.equals( x , y , z ) ) return bounds.v2;
 		else return Vector3D.INIT.set( x , y , z );
 	}
 
 	/**
-	 * Subtract a vector from this box.
+	 * Subtract vector from bounds.
 	 *
-	 * @param	vector	Vector to subtract from this box.
+	 * @param	vector	Vector to subtract from bounds.
 	 *
-	 * @return	Resulting box.
+	 * @return	Resulting bounds.
 	 */
-	public final Bounds3D minus( Vector3D vector )
+	public Bounds3D minus( final Vector3D vector )
 	{
 		return minus( vector.x , vector.y , vector.z );
 	}
 
 	/**
-	 * Subtract a vector from this box.
+	 * Subtract vector from bounds.
 	 *
-	 * @param	x	X-coordinate of box.
-	 * @param	y	Y-coordinate of box.
-	 * @param	z	Z-coordinate of box.
+	 * @param	x	X-coordinate of vector to subtract.
+	 * @param	y	Y-coordinate of vector to subtract.
+	 * @param	z	Z-coordinate of vector to subtract.
 	 *
-	 * @return	Resulting box.
+	 * @return	Resulting bounds.
 	 */
-	public final Bounds3D minus( float x , float y , float z )
+	public Bounds3D minus( final float x , final float y , final float z )
 	{
-		if ( x == 0d && y == 0d && z == 0d ) return( this );
-		return set( v1.minus( x , y , z ) , v2.minus( x , y , z ) );
+		if ( x == 0f && y == 0f && z == 0f )
+			return this;
+		else
+			return set( v1.minus( x , y , z ) , v2.minus( x , y , z ) );
 	}
 
 	/**
@@ -200,43 +223,45 @@ public final class Bounds3D
 	 *
 	 * @return	Resulting box.
 	 */
-	public final Bounds3D multiply( float factor )
+	public Bounds3D multiply( final float factor )
 	{
 		return set( v1.multiply( factor ) , v2.multiply( factor ) );
 	}
 
 	/**
-	 * Add a vector to this box.
+	 * Add a vector to bounds.
 	 *
-	 * @param	vector	Vector to add to this box.
+	 * @param	vector	Vector to add to bounds.
 	 *
-	 * @return	Resulting box.
+	 * @return	Resulting bounds.
 	 */
-	public final Bounds3D plus( Vector3D vector )
+	public Bounds3D plus( final Vector3D vector )
 	{
 		return plus( vector.x , vector.y , vector.z );
 	}
 
 	/**
-	 * Add a vector to this box.
+	 * Add a vector to bounds.
 	 *
-	 * @param	x	X-coordinate of vector.
-	 * @param	y	Y-coordinate of vector.
-	 * @param	z	Z-coordinate of vector.
+	 * @param	x	X-coordinate of vector to add.
+	 * @param	y	Y-coordinate of vector to add.
+	 * @param	z	Z-coordinate of vector to add.
 	 *
-	 * @return	Resulting box.
+	 * @return	Resulting bounds.
 	 */
-	public final Bounds3D plus( float x , float y , float z )
+	public Bounds3D plus( final float x , final float y , final float z )
 	{
-		if ( x == 0d && y == 0d && z == 0d ) return( this );
-		return set( v1.plus( x , y , z ) , v2.plus( x , y , z ) );
+		if ( x == 0f && y == 0f && z == 0f )
+			return this;
+		else
+			return set( v1.plus( x , y , z ) , v2.plus( x , y , z ) );
 	}
 
 	/**
 	 * Construct new box from the specified coordinates, and try to reuse
 	 * existing boxes.
 	 */
-	private final static Bounds3D rebuild( Bounds3D box1 , Bounds3D box2 ,
+	private static Bounds3D rebuild( Bounds3D box1 , Bounds3D box2 ,
 		float x1 , float y1 , float z1 ,
 		float x2 , float y2 , float z2 )
 	{
@@ -271,38 +296,42 @@ public final class Bounds3D
 	}
 
 	/**
-	 * Stel box in op opgegeven coordinaten.
+	 * Set bounds to the specified vectors.
 	 *
-	 * @param	x	X-coordinaat of box.
-	 * @param	y	Y-coordinaat of box.
-	 * @param	z	Z-coordinaat of box.
+	 * @param	v1	First vector of bounds.
+	 * @param	v2	Second vector of bounds.
 	 *
-	 * @return	Resulterende box.
+	 * @return	Resulting bounds.
 	 */
-	public final Bounds3D set( Vector3D v1 , Vector3D v2 )
+	public Bounds3D set( final Vector3D v1 , final Vector3D v2 )
 	{
-		if ( v1 == null ) v1 = this.v1;
-		if ( v2 == null ) v2 = this.v2;
-		
-		if ( v1.equals( this.v1 ) &&  v2.equals( this.v2 ) )
-		return( this );
+		if ( ( v1 == null || v1.equals( this.v1 ) )
+		  && ( v2 == null || v2.equals( this.v2 ) ) )
+		{
+			return this;
+		}
 		else
-		return( new Bounds3D( v1 , v2 ) );
+		{
+			return new Bounds3D( v1 == null ? this.v1 : v1 , v2 == null ? this.v2 : v2 );
+		}
 	}
 
 	/**
-	 * Get size of this box.
+	 * Get size of these bounds.
 	 *
-	 * @return	Vector describing box size (v2-v1).
+	 * @return	Vector describing bound size (v2-v1).
 	 */
-	public final Vector3D size()
+	public Vector3D size()
 	{
-		Bounds3D b = sort( this );
-		return b.v2.minus( b.v1 );
+		return v2.set( Math.abs( v2.x - v1.x ) , Math.abs( v2.y - v1.y ) , Math.abs( v2.z - v1.z ) );
 	}
 
 	/**
-	 * Determine sorted box.
+	 * Determine sorted bounds. If bounds are sorted, than the x/y/z
+	 * components of <code>v1</code> are always less or equal to the
+	 * matching components of <code>v2</code>.
+	 *
+	 * @return	Resulting bounds.
 	 */
 	public Bounds3D sort()
 	{
@@ -310,11 +339,15 @@ public final class Bounds3D
 	}
 
 	/**
-	 * Determine sorted box.
+	 * Get sorted bounds.
+	 *
+	 * @param	bounds	Bounds to sort.
+	 *
+	 * @return	Sorted bounds.
 	 */
-	public final static Bounds3D sort( Bounds3D box )
+	public static Bounds3D sort( final Bounds3D bounds )
 	{
-		return( box.set( min( box ) , max( box ) ) );
+		return( bounds.set( min( bounds ) , max( bounds ) ) );
 	}
 
 	/**

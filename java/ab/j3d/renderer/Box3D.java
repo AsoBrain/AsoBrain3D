@@ -42,9 +42,16 @@ public class Box3D
 	/**
 	 * Constructor for box object.
 	 *
-	 * @param	dx			Width of box (x-axis).
-	 * @param	dy			Height of box (y-axis).
-	 * @param	dz			Depth of box (z-axis).
+	 * @param	xform				Transformation to apply to all vertices of the box.
+	 * @param	dx					Width of box (x-axis).
+	 * @param	dy					Height of box (y-axis).
+	 * @param	dz					Depth of box (z-axis).
+	 * @param	frontalTexture		Texture to use for front and back (Y-axis).
+	 * @param	flipFrontal			Rotate texture for front and back 90 degrees.
+	 * @param	verticalTexture		Texture to use for left and right (X-axis).
+	 * @param	flipVertical		Rotate texture for left and right 90 degrees.
+	 * @param	horizontalTexture	Texture to use for top and bottom (Z-axis).
+	 * @param	flipHorizontal		Rotate texture for top and bottom 90 degrees.
 	 */
 	public Box3D( final Matrix3D xform , final float dx , final float dy , final float dz , 
 		TextureSpec frontalTexture    , boolean flipFrontal ,
@@ -66,6 +73,7 @@ public class Box3D
 	/**
 	 * Constructor for box object.
 	 *
+	 * @param	xform		Transformation to apply to all vertices of the box.
 	 * @param	dx			Width of box (x-axis).
 	 * @param	dy			Height of box (y-axis).
 	 * @param	dz			Depth of box (z-axis).
@@ -111,6 +119,7 @@ public class Box3D
 	 * @param	dx			Width of box (x-axis).
 	 * @param	dy			Height of box (y-axis).
 	 * @param	dz			Depth of box (z-axis).
+	 * @param	texture		Texture to use for all sides of the 3D box.
 	 */
 	public Box3D( final float x , final float y , final float z , final float dx , final float dy , final float dz , TextureSpec texture )
 	{
@@ -120,11 +129,12 @@ public class Box3D
 	/**
 	 * Generate Object3D properties.
 	 *
-	 * @param	mainTexture	Main texture of box.
-	 * @param	sideTexture	Texture for sides of box.
-	 * @param	textureX	Texture X-coordinate (in world units).
-	 * @param	textureY	Texture Y-coordinate (in world units).
-	 * @param	rotate		If true, the texture will be rotated 90 degrees (and mirrored).
+	 * @param	frontalTexture		Texture to use for front and back (Y-axis).
+	 * @param	flipFrontal			Rotate texture for front and back 90 degrees.
+	 * @param	verticalTexture		Texture to use for left and right (X-axis).
+	 * @param	flipVertical		Rotate texture for left and right 90 degrees.
+	 * @param	horizontalTexture	Texture to use for top and bottom (Z-axis).
+	 * @param	flipHorizontal		Rotate texture for top and bottom 90 degrees.
 	 */
 	public void generate( 
 		TextureSpec frontalTexture    , boolean flipFrontal ,
