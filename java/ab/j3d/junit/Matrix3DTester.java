@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2004-2005 - All Rights Reserved
+ * (C) Copyright Numdata BV 2005-2005 - All Rights Reserved
  *
  * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV. Please contact Numdata BV
@@ -9,25 +9,29 @@
  */
 package ab.j3d.junit;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import junit.framework.Assert;
+import junit.framework.AssertionFailedError;
 
 import ab.j3d.Matrix3D;
 
 /**
- * JUnit unit tool class to help with testing Matrix3D objects.
+ * JUnit unit tool class to help with testing <code>Matrix3D</code> objects.
+ *
+ * @see     Matrix3D
  *
  * @author  H.B.J. te Lintelo
- *
  * @version $Revision$ $Date$
  */
 public final class Matrix3DTester
+	extends Assert
 {
 	/**
-	 * Test variant when testing two values with each other.
-	 * (i.e. A less than B.)
+	 *
+	 * Constant to specify a negative direction.
+	 *
+	 * @see     #assertRelativeDirectionX
+	 * @see     #assertRelativeDirectionY
+	 * @see     #assertRelativeDirectionZ
 	 */
 	public static final int LESS = -1;
 
@@ -44,32 +48,30 @@ public final class Matrix3DTester
 	public static final int GREATER = 1;
 
 	/**
-	 * Array with posssible (test)bases for the world.
-	 * These bases can be used to set the world in different orientations
-	 * There are steps from 45 degrees for each axis used to fill the array
-	 * with orientation. Also a 'random' position is calculated.
+	 * Array with posssible base transforms for tests.
+	 * <p />
+	 * These transforms can be used to test different orientations. Each axis is
+	 * set in steps of 45 degrees. Also, various translations are applied.
 	 */
 	public static final Matrix3D[] ROTATED_TEST_MATRICES;
-
 	static
 	{
-		final List matrices = new ArrayList();
+		final Matrix3D[] matrices = new Matrix3D[ 8 * 8 * 8 ];
 
-		for ( int x = 0 ; x < 8 ; x++ )
+		int index = 0;
+		for ( double rx = 0.0 ; rx < 360.0 ; rx += 45.0 )
 		{
-			final double rx = (double)x * 45.0;
-			for ( int y = 0 ; y < 8 ; y++ )
+			for ( double ry = 0.0 ; ry < 360.0 ; ry += 45.0 )
 			{
-				final double ry = (double)y * 45.0;
-				for ( int z = 0 ; z < 8 ; z++ )
+				for ( double rz = 0.0 ; rz < 360.0 ; rz += 45.0 )
 				{
-					final double rz = (double)z * 45.0;
-					matrices.add( Matrix3D.getTransform( rx ,ry , rz , (double)(x * y) , (double)(y * z) , (double)(z * x) ) );
+					matrices[ index++ ] = Matrix3D.getTransform( rx ,ry , rz , rx * ry , ry * rz , rz * rx );
 				}
 			}
 		}
 
-		ROTATED_TEST_MATRICES = (Matrix3D[])matrices.toArray( new Matrix3D[ matrices.size() ] );
+		assertEquals( "Initialization error." , matrices.length , index );
+		ROTATED_TEST_MATRICES = matrices;
 	}
 
 	/**
@@ -80,115 +82,297 @@ public final class Matrix3DTester
 	}
 
 	/**
-	 * Asserts that the expected distances (x,y and z) between two matrices is
-	 * true, <code>AssertionFailedError</code> is thrown otherwise.
+	 * Asserts that the 'distance' between two matrices has a specific value.
+	 * <p />
+	 * The distance is defined as the distance between the two positional
+	 * vectors defined by the translational parts of the 3D transformation
+	 * matrices. These vectors are defined in the following 3x1 sub-matrix:
+	 * <pre>
+	 *   [   xx   xy   xz [ xo ] ]
+	 *   [   yx   yy   yz [ yo ] ]
+	 *   [   zx   zy   zz [ zo ] ]
+	 *   [    0    0    0    1   ]
+	 * <pre>
 	 *
-	 * @param   messagePrefix   Prefix to failure messages.
-	 * @param   matrix1     First matrix.
-	 * @param   matrix2     Second matrix.
-	 * @param   x           Expected x distance between the two matrices.
-	 * @param   y           Expected y distance between the two matrices.
-	 * @param   z           Expected z distance between the two matrices.
-	 * @param   delta       Delta value checked distance.
+	 * @param   messagePrefix       Prefix to failure messages.
+	 * @param   matrix1             First matrix determine distance between.
+	 * @param   matrix2             Second matrix determine distance between.
+	 * @param   expectedDistance    Expected distance between the matrices.
+	 * @param   delta               Delta value to limit the acceptable value range.
+	 *
+	 * @throws  AssertionFailedError is the assertion fails.
 	 */
-	public static void assertDistance( final String messagePrefix , final Matrix3D matrix1 , final Matrix3D matrix2 , final double x , final double y , final double z , final double delta )
+	public static void assertDistance( final String messagePrefix , final Matrix3D matrix1 , final Matrix3D matrix2 , final double expectedDistance , final double delta )
 	{
-		final Matrix3D m = matrix2.multiply( matrix1.inverse() );
-		Assert.assertEquals( messagePrefix + " (x).", x , m.xo , delta );
-		Assert.assertEquals( messagePrefix + " (y).", y , m.yo , delta );
-		Assert.assertEquals( messagePrefix + " (z).", z , m.zo , delta );
+		final double dx            = matrix2.xo - matrix1.xo;
+		final double dy            = matrix2.yo - matrix1.yo;
+		final double dz            = matrix2.zo - matrix1.zo;
+		final double distance      = Math.sqrt( dx * dx + dy * dy + dz * dz );
+		final String actualPrefix  = ( messagePrefix != null ) ? messagePrefix + " - " : "";
+		final String messageSuffix = "\n\nmatrix1 =\n" + matrix1.toFriendlyString()
+		                           + "\n\nmatrix2 =\n" + matrix2.toFriendlyString();
+
+		assertEquals( actualPrefix + "Has incorrect distance." + messageSuffix , expectedDistance , distance , delta );
 	}
 
 	/**
-	 * Asserts that the position from one matrix is on the correct side from
-	 * another matrix. Check this for each axis (x,y and z). Throw
-	 * <code>AssertionFailedError</code> if the assertion could not be granted.
+	 * Asserts that one matrix has the specified relative position to another
+	 * matrix.
+	 * <p />
+	 * The position of a 3D transformation matrix is defined by its
+	 * translational components as defined by the following 3x1 sub-matrix:
+	 * <pre>
+	 *   [   xx   xy   xz [ xo ] ]
+	 *   [   yx   yy   yz [ yo ] ]
+	 *   [   zx   zy   zz [ zo ] ]
+	 *   [    0    0    0    1   ]
+	 * <pre>
 	 *
 	 * @param   messagePrefix   Prefix to failure messages.
-	 * @param   matrix1         First matrix.
-	 * @param   matrix2         Second matrix.
-	 * @param   xPos            Expected side for x-axis, value can be:
-	 *                          <ul>
-	 *                          <li>-1 = matrix2 is less then matrix1</li>
-	 *                          <li> 0 = matrix2 is equal with matrix1</li>
-	 *                          <li> 1 = matrix2 is greater then matrix1</li>
-	 *                          </ul>
-	 * @param   yPos            Expected side for y-axis, value can be:
-	 *                          <ul>
-	 *                          <li>-1 = matrix2 is less then matrix1</li>
-	 *                          <li> 0 = matrix2 is equal with matrix1</li>
-	 *                          <li> 1 = matrix2 is greater then matrix1</li>
-	 *                          </ul>
-	 * @param   zPos            Expected side for z-axis, value can be:
-	 *                          <ul>
-	 *                          <li>-1 = matrix2 is less then matrix1</li>
-	 *                          <li> 0 = matrix2 is equal with matrix1</li>
-	 *                          <li> 1 = matrix2 is greater then matrix1</li>
-	 *                          </ul>
-	 * @param   testX           <code>True</code> to check the x side,
-	 *                          <code>false</code> otherwise.
-	 * @param   testY           <code>True</code> to check the y side,
-	 *                          <code>false</code> otherwise.
-	 * @param   testZ           <code>True</code> to check the z side,
-	 *                          <code>false</code> otherwise.
+	 * @param   relativeTo      Matrix relative to which the test is performed.
+	 * @param   matrix          Matrix to test the position of.
+	 * @param   expectedX       Expected x distance between the two matrices.
+	 * @param   expectedY       Expected y distance between the two matrices.
+	 * @param   expectedZ       Expected z distance between the two matrices.
+	 * @param   delta           Delta value to limit the acceptable value range.
+	 *
+	 * @throws  AssertionFailedError is the assertion fails.
 	 */
-	public static void assertPosition( final String messagePrefix , final Matrix3D matrix1 , final Matrix3D matrix2 , final int xPos , final int yPos , final int zPos , final boolean testX , final boolean testY , final boolean testZ )
+	public static void assertRelativePosition( final String messagePrefix , final Matrix3D relativeTo , final Matrix3D matrix , final double expectedX , final double expectedY , final double expectedZ , final double delta )
 	{
-		final Matrix3D positionMatrix = matrix2.multiply( matrix1.inverse() );
+		final Matrix3D relativeMatrix = matrix.multiply( relativeTo.inverse() );
+		final String   actualPrefix   = ( messagePrefix != null ) ? messagePrefix + " - " : "";
+		final String   messageSuffix  = "\n\nrelativeTo =\n" + relativeTo.toFriendlyString()
+		                              + "\n\nmatrix =\n" + matrix.toFriendlyString()
+		                              + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
 
-		if ( testX )
-		{
-			switch( xPos )
-			{
-				case LESS    :{ Assert.assertTrue  ( messagePrefix + " (x-axis < 0),"  + positionMatrix.toFriendlyString() , positionMatrix.xo <  0        ); break; }
-				case EQUAL   :{ Assert.assertEquals( messagePrefix + " (x-axis == 0)," + positionMatrix.toFriendlyString() , 0.0 , positionMatrix.xo , 0.001 ); break; }
-				case GREATER :{ Assert.assertTrue  ( messagePrefix + " (x-axis > 0),"  + positionMatrix.toFriendlyString() , positionMatrix.xo >  0        ); break; }
-				default      :{ Assert.fail( messagePrefix + ". Unknown choosen side value (x)." ); }
-			}
-		}
+		assertEquals( actualPrefix + "Incorrect relative X-value." + messageSuffix , expectedX , relativeMatrix.xo , delta );
+		assertEquals( actualPrefix + "Incorrect relative Y-value." + messageSuffix , expectedY , relativeMatrix.yo , delta );
+		assertEquals( actualPrefix + "Incorrect relative Z-value." + messageSuffix , expectedZ , relativeMatrix.zo , delta );
+	}
 
-		if ( testY )
-		{
-			switch( yPos )
-			{
-				case LESS    :{ Assert.assertTrue  ( messagePrefix + " (y-axis < 0),"  + positionMatrix.toFriendlyString() , positionMatrix.yo <  0        ); break; }
-				case EQUAL   :{ Assert.assertEquals( messagePrefix + " (y-axis == 0)," + positionMatrix.toFriendlyString() , 0.0 , positionMatrix.yo , 0.001 ); break; }
-				case GREATER :{ Assert.assertTrue  ( messagePrefix + " (y-axis > 0),"  + positionMatrix.toFriendlyString() , positionMatrix.yo >  0        ); break; }
-				default      :{ Assert.fail( messagePrefix + ". Unknown choosen side value (y)." ); }
-			}
-		}
+	/**
+	 * Asserts that one matrix lies at the specified relative direction along
+	 * the X-axis to another matrix.
+	 * <p />
+	 * The required direction is specified using an integer which is less than,
+	 * equal to, or greater than <code>0</code>. You may use the constants
+	 * <code>LESS</code>, <code>EQUAL</code>, or <code>GREATER</code> to specify
+	 * this in a more friendly matter.
+	 * <p />
+	 * The position of a 3D transformation matrix is defined by its
+	 * translational components as defined by the following 3x1 sub-matrix:
+	 * <pre>
+	 *   [   xx   xy   xz [ xo ] ]
+	 *   [   yx   yy   yz [ yo ] ]
+	 *   [   zx   zy   zz [ zo ] ]
+	 *   [    0    0    0    1   ]
+	 * <pre>
+	 *
+	 * @param   messagePrefix   Prefix to failure messages.
+	 * @param   relativeTo      Matrix relative to which the test is performed.
+	 * @param   matrix          Matrix to test the direction of.
+	 * @param   direction       Relative direction to test (see method comment).
+	 * @param   delta           Delta value to limit the acceptable value range.
+	 *
+	 * @throws  AssertionFailedError is the assertion fails.
+	 *
+	 * @see     #LESS
+	 * @see     #EQUAL
+	 * @see     #GREATER
+	 */
+	public static void assertRelativeDirectionX( final String messagePrefix , final Matrix3D relativeTo , final Matrix3D matrix , final int direction , final double delta )
+	{
+		final Matrix3D relativeMatrix = matrix.multiply( relativeTo.inverse() );
+		final String   actualPrefix   = ( messagePrefix != null ) ? messagePrefix + " - " : "";
+		final String   messageSuffix  = "\n\nrelativeTo =\n" + relativeTo.toFriendlyString()
+		                              + "\n\nmatrix =\n" + matrix.toFriendlyString()
+		                              + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
 
-		if ( testZ )
-		{
-			switch( zPos )
-			{
-				case LESS    :{ Assert.assertTrue  ( messagePrefix + " (z-axis < 0), " + positionMatrix.toFriendlyString() , positionMatrix.zo <  0         ); break; }
-				case EQUAL   :{ Assert.assertEquals( messagePrefix + " (z-axis == 0)," + positionMatrix.toFriendlyString() , 0.0 ,  positionMatrix.zo , 0.001 ); break; }
-				case GREATER :{ Assert.assertTrue  ( messagePrefix + " (z-axis > 0), " + positionMatrix.toFriendlyString() , positionMatrix.zo >  0         ); break; }
-				default      :{ Assert.fail( messagePrefix + ". Unknown choosen side value (z)." ); }
-			}
-		}
+		     if ( direction < 0  ) assertTrue  ( actualPrefix + "Should have 'xo < 0', but it isn't." + messageSuffix ,       relativeMatrix.xo <  delta );
+		else if ( direction == 0 ) assertEquals( actualPrefix + "Should have 'xo = 0', but it isn't." + messageSuffix , 0.0 , relativeMatrix.xo ,  delta );
+		else /*   direction > 0 */ assertTrue  ( actualPrefix + "Should have 'xo > 0', but it isn't." + messageSuffix ,       relativeMatrix.xo > -delta );
+	}
+
+	/**
+	 * Asserts that one matrix lies at the specified relative direction along
+	 * the Y-axis to another matrix.
+	 * <p />
+	 * The required direction is specified using an integer which is less than,
+	 * equal to, or greater than <code>0</code>. You may use the constants
+	 * <code>LESS</code>, <code>EQUAL</code>, or <code>GREATER</code> to specify
+	 * this in a more friendly matter.
+	 * <p />
+	 * The position of a 3D transformation matrix is defined by its
+	 * translational components as defined by the following 3x1 sub-matrix:
+	 * <pre>
+	 *   [   xx   xy   xz [ xo ] ]
+	 *   [   yx   yy   yz [ yo ] ]
+	 *   [   zx   zy   zz [ zo ] ]
+	 *   [    0    0    0    1   ]
+	 * <pre>
+	 *
+	 * @param   messagePrefix   Prefix to failure messages.
+	 * @param   relativeTo      Matrix relative to which the test is performed.
+	 * @param   matrix          Matrix to test the direction of.
+	 * @param   direction       Relative direction to test (see method comment).
+	 * @param   delta           Delta value to limit the acceptable value range.
+	 *
+	 * @throws  AssertionFailedError is the assertion fails.
+	 *
+	 * @see     #LESS
+	 * @see     #EQUAL
+	 * @see     #GREATER
+	 */
+	public static void assertRelativeDirectionY( final String messagePrefix , final Matrix3D relativeTo , final Matrix3D matrix , final int direction , final double delta )
+	{
+		final Matrix3D relativeMatrix = matrix.multiply( relativeTo.inverse() );
+		final String   actualPrefix   = ( messagePrefix != null ) ? messagePrefix + " - " : "";
+		final String   messageSuffix  = "\n\nrelativeTo =\n" + relativeTo.toFriendlyString()
+		                              + "\n\nmatrix =\n" + matrix.toFriendlyString()
+		                              + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
+
+		     if ( direction < 0  ) assertTrue  ( actualPrefix + "Should have 'yo < 0', but it isn't." + messageSuffix ,       relativeMatrix.yo <  delta);
+		else if ( direction == 0 ) assertEquals( actualPrefix + "Should have 'yo = 0', but it isn't." + messageSuffix , 0.0 , relativeMatrix.yo ,  delta );
+		else /*   direction > 0 */ assertTrue  ( actualPrefix + "Should have 'yo > 0', but it isn't." + messageSuffix ,       relativeMatrix.yo > -delta );
+	}
+
+	/**
+	 * Asserts that one matrix lies at the specified relative direction along
+	 * the Z-axis to another matrix.
+	 * <p />
+	 * The required direction is specified using an integer which is less than,
+	 * equal to, or greater than <code>0</code>. You may use the constants
+	 * <code>LESS</code>, <code>EQUAL</code>, or <code>GREATER</code> to specify
+	 * this in a more friendly matter.
+	 * <p />
+	 * The position of a 3D transformation matrix is defined by its
+	 * translational components as defined by the following 3x1 sub-matrix:
+	 * <pre>
+	 *   [   xx   xy   xz [ xo ] ]
+	 *   [   yx   yy   yz [ yo ] ]
+	 *   [   zx   zy   zz [ zo ] ]
+	 *   [    0    0    0    1   ]
+	 * <pre>
+	 *
+	 * @param   messagePrefix   Prefix to failure messages.
+	 * @param   relativeTo      Matrix relative to which the test is performed.
+	 * @param   matrix          Matrix to test the direction of.
+	 * @param   direction       Relative direction to test (see method comment).
+	 * @param   delta           Delta value to limit the acceptable value range.
+	 *
+	 * @throws  AssertionFailedError is the assertion fails.
+	 *
+	 * @see     #LESS
+	 * @see     #EQUAL
+	 * @see     #GREATER
+	 */
+	public static void assertRelativeDirectionZ( final String messagePrefix , final Matrix3D relativeTo , final Matrix3D matrix , final int direction , final double delta )
+	{
+		final Matrix3D relativeMatrix = matrix.multiply( relativeTo.inverse() );
+		final String   actualPrefix   = ( messagePrefix != null ) ? messagePrefix + " - " : "";
+		final String   messageSuffix  = "\n\nrelativeTo =\n" + relativeTo.toFriendlyString()
+		                              + "\n\nmatrix =\n" + matrix.toFriendlyString()
+		                              + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
+
+		     if ( direction < 0  ) assertTrue  ( actualPrefix + "Should have 'zo < 0', but it isn't." + messageSuffix ,       relativeMatrix.zo <  delta );
+		else if ( direction == 0 ) assertEquals( actualPrefix + "Should have 'zo = 0', but it isn't." + messageSuffix , 0.0 , relativeMatrix.zo ,  delta );
+		else /*   direction > 0 */ assertTrue  ( actualPrefix + "Should have 'zo > 0', but it isn't." + messageSuffix ,       relativeMatrix.zo > -delta );
 	}
 
 	/**
 	 * Asserts that the orientation from one matrix is equal to the orientation
-	 * from another matrix. Throw <code>AssertionFailedError</code> if the
-	 * assertion could not be granted.
+	 * from another matrix.
+	 * <p />
+	 * The orientation of a 3D transformation matrix is defined by the following
+	 * 3x3 sub-matrix:
+	 * <pre>
+	 *   [  [ xx   xy   xz ] xo  ]
+	 *   [  [ yx   yy   yz ] yo  ]
+	 *   [  [ zx   zy   zz ] zo  ]
+	 *   [     0    0    0    1  ]
+	 * <pre>
 	 *
 	 * @param   messagePrefix   Prefix to failure messages.
-	 * @param   matrix1         First matrix.
-	 * @param   matrix2         Second matrix.
+	 * @param   expected        Expected matrix value.
+	 * @param   actual          Actual matrix value.
+	 * @param   delta           Delta value to limit the acceptable value range.
+	 *
+	 * @throws  AssertionFailedError is the assertion fails.
 	 */
-	public static void assertOrientation( final String messagePrefix , final Matrix3D matrix1 , final Matrix3D matrix2 )
+	public static void assertEqualOrientation( final String messagePrefix , final Matrix3D expected , final Matrix3D actual , final double delta )
 	{
-		Assert.assertEquals( messagePrefix + " (xx)." , matrix1.xx , matrix2.xx );
-		Assert.assertEquals( messagePrefix + " (xy)." , matrix1.xy , matrix2.xy );
-		Assert.assertEquals( messagePrefix + " (xz)." , matrix1.xz , matrix2.xz );
-		Assert.assertEquals( messagePrefix + " (yx)." , matrix1.yx , matrix2.yx );
-		Assert.assertEquals( messagePrefix + " (yy)." , matrix1.yy , matrix2.yy );
-		Assert.assertEquals( messagePrefix + " (yz)." , matrix1.yz , matrix2.yz );
-		Assert.assertEquals( messagePrefix + " (zx)." , matrix1.zx , matrix2.zx );
-		Assert.assertEquals( messagePrefix + " (zy)." , matrix1.zy , matrix2.zy );
-		Assert.assertEquals( messagePrefix + " (zz)." , matrix1.zz , matrix2.zz );
+		final String actualPrefix = ( messagePrefix != null ) ? messagePrefix + " - " : "";
+
+		assertEquals( actualPrefix + "Incorrect 'xx' value." , expected.xx , actual.xx , delta );
+		assertEquals( actualPrefix + "Incorrect 'xy' value." , expected.xy , actual.xy , delta );
+		assertEquals( actualPrefix + "Incorrect 'xz' value." , expected.xz , actual.xz , delta );
+
+		assertEquals( actualPrefix + "Incorrect 'yx' value." , expected.yx , actual.yx , delta );
+		assertEquals( actualPrefix + "Incorrect 'yy' value." , expected.yy , actual.yy , delta );
+		assertEquals( actualPrefix + "Incorrect 'yz' value." , expected.yz , actual.yz , delta );
+
+		assertEquals( actualPrefix + "Incorrect 'zx' value." , expected.zx , actual.zx , delta );
+		assertEquals( actualPrefix + "Incorrect 'zy' value." , expected.zy , actual.zy , delta );
+		assertEquals( actualPrefix + "Incorrect 'zz' value." , expected.zz , actual.zz , delta );
+	}
+
+	/**
+	 * Asserts that the TRANSLATION from one matrix is equal to the translation
+	 * from another matrix.
+	 * <p />
+	 * The translational components of a 3D transformation matrix are defined by
+	 * the following 3x1 sub-matrix:
+	 * <pre>
+	 *   [   xx   xy   xz [ xo ] ]
+	 *   [   yx   yy   yz [ yo ] ]
+	 *   [   zx   zy   zz [ zo ] ]
+	 *   [    0    0    0    1   ]
+	 * <pre>
+	 *
+	 * @param   messagePrefix   Prefix to failure messages.
+	 * @param   expected        Expected matrix value.
+	 * @param   actual          Actual matrix value.
+	 * @param   delta           Delta value to limit the acceptable value range.
+	 *
+	 * @throws  AssertionFailedError is the assertion fails.
+	 */
+	public static void assertEqualTranslation( final String messagePrefix , final Matrix3D expected , final Matrix3D actual , final double delta )
+	{
+		final String actualPrefix = ( messagePrefix != null ) ? messagePrefix + " - " : "";
+
+		assertEquals( actualPrefix + "Incorrect 'xo' value." , expected.xo , actual.xo , delta );
+		assertEquals( actualPrefix + "Incorrect 'yo' value." , expected.yo , actual.yo , delta );
+		assertEquals( actualPrefix + "Incorrect 'zo' value." , expected.zo , actual.zo , delta );
+	}
+
+	/**
+	 * Asserts that one matrix is equal to another matrix.
+	 *
+	 * @param   messagePrefix   Prefix to failure messages.
+	 * @param   expected        Expected matrix value.
+	 * @param   actual          Actual matrix value.
+	 * @param   delta           Delta value to limit the acceptable value range.
+	 *
+	 * @throws  AssertionFailedError is the assertion fails.
+	 */
+	public static void assertEquals( final String messagePrefix , final Matrix3D expected , final Matrix3D actual , final double delta )
+	{
+		final String actualPrefix = ( messagePrefix != null ) ? messagePrefix + " - " : "";
+
+		assertEquals( actualPrefix + "Incorrect 'xx' value." , expected.xx , actual.xx , delta );
+		assertEquals( actualPrefix + "Incorrect 'xy' value." , expected.xy , actual.xy , delta );
+		assertEquals( actualPrefix + "Incorrect 'xz' value." , expected.xz , actual.xz , delta );
+		assertEquals( actualPrefix + "Incorrect 'xo' value." , expected.xo , actual.xo , delta );
+
+		assertEquals( actualPrefix + "Incorrect 'yx' value." , expected.yx , actual.yx , delta );
+		assertEquals( actualPrefix + "Incorrect 'yy' value." , expected.yy , actual.yy , delta );
+		assertEquals( actualPrefix + "Incorrect 'yz' value." , expected.yz , actual.yz , delta );
+		assertEquals( actualPrefix + "Incorrect 'yo' value." , expected.yo , actual.yo , delta );
+
+		assertEquals( actualPrefix + "Incorrect 'zx' value." , expected.zx , actual.zx , delta );
+		assertEquals( actualPrefix + "Incorrect 'zy' value." , expected.zy , actual.zy , delta );
+		assertEquals( actualPrefix + "Incorrect 'zz' value." , expected.zz , actual.zz , delta );
+		assertEquals( actualPrefix + "Incorrect 'zo' value." , expected.zo , actual.zo , delta );
 	}
 }
