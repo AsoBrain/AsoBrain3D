@@ -20,6 +20,8 @@
  */
 package ab.j3d;
 
+import java.awt.Shape;
+import java.awt.geom.GeneralPath;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -200,7 +202,7 @@ public final class Polyline2D
 
 	/**
 	 * Adjust the position of a segment perdendular to the segment direction.
-	 * This is used to reduce/enlartge the polyline at one of its segements.
+	 * This is used to reduce/enlarge the polyline at one of its segments.
 	 *
 	 * @param   startIndex      Start index of segment in polyline.
 	 * @param   adjustment      Position adjustment of segment.
@@ -2262,7 +2264,7 @@ public final class Polyline2D
 			return true;
 
 		/*
-		 * Now test for any intersection between segements.
+		 * Now test for any intersection between segments.
 		 */
 		return isIntersectingPath_Path( convex , path );
 	}
@@ -2784,6 +2786,31 @@ public final class Polyline2D
 			result.append( PolyPoint2D.createInstance( pointStr.trim() ) );
 
 			start = end + 1;
+		}
+
+		return result;
+	}
+
+	/**
+	 * Get Java 2D shape for polyline.
+	 *
+	 * @return  Java 2D shape.
+	 */
+	public Shape getShape()
+	{
+		final GeneralPath result = new GeneralPath();
+
+		final int pointCount = getPointCount();
+		for ( int i = 0 ; i < pointCount ; i++ )
+		{
+			final PolyPoint2D point = getPoint( i );
+			final float       x     = (float)point.x;
+			final float       y     = (float)point.y;
+
+			if ( i == 0 )
+				result.moveTo( x , y );
+			else
+				result.lineTo( x , y );
 		}
 
 		return result;
