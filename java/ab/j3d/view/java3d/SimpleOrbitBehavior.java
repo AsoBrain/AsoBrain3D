@@ -51,7 +51,7 @@ public final class SimpleOrbitBehavior
 	 * @param   c       The Canvas3D to add the behavior to.
 	 * @param   unit    Unit scale factor (e.g. <code>MM</code>).
 	 */
-	public SimpleOrbitBehavior( final Canvas3D c , final float unit )
+	public SimpleOrbitBehavior( final Canvas3D c , final double unit )
 	{
 		super( c , 0 );
 

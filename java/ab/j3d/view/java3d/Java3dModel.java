@@ -67,7 +67,7 @@ public final class Java3dModel
 	 * @param   j3dTools    Java 3D utility toolbox.
 	 * @param   unit        Unit scale factor (e.g. <code>Java3dUniverse.MM</code>).
 	 */
-	public Java3dModel( final Java3dTools j3dTools , final float unit )
+	public Java3dModel( final Java3dTools j3dTools , final double unit )
 	{
 		this( j3dTools , new Java3dUniverse( unit ) );
 	}

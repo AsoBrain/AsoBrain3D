@@ -132,7 +132,7 @@ public final class Java3dModelExample
 //		transform3D.invert( transform3D );
 		Matrix3D xform = Matrix3D.INIT.rotateZ( Math.toRadians( 45 ) ).rotateX( Math.toRadians( 125.2 ) ).plus( 0 , 0 , -SQRT3 );
 
-		final float unit = j3dUniverse.getUnit();
+		final double unit = j3dUniverse.getUnit();
 		if ( ( unit > 0 ) && ( unit != 1 ) )
 			xform = xform.setTranslation( xform.xo * unit , xform.yo * unit , xform.zo * unit );
 		vwp.getMultiTransformGroup().getTransformGroup( 0 ).setTransform( Java3dTools.convertMatrix3DToTransform3D( xform.inverse() ) );
