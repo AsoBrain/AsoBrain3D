@@ -3,14 +3,14 @@ package common.model;
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
- * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2003 - All Rights Reserved
+ * (C) Copyright Peter S. Heijnen 1999-2003 - All Rights Reserved
  *
  * This software may not be used, copyied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-import java.util.StringTokenizer;
+import common.CommonTools;
 
 /**
  * This class represents rectangular 3D bounds (specified by two vectors).
@@ -18,19 +18,29 @@ import java.util.StringTokenizer;
  * depend on ROM classes).
  *
  * @author	Peter S. Heijnen
- *
  * @version	$Revision$ ($Date$, $Author$)
  */
 public final class Bounds3D
 {
+	/**
+	 * First vector component of box. Normally the minimum vector.
+	 *
+	 * @see #sort
+	 */
 	public final Vector3D v1;
+
+	/**
+	 * Second vector component of box. Normally the maximum vector.
+	 *
+	 * @see #sort
+	 */
 	public final Vector3D v2;
-	
+
 	/**
 	 * Initial value of a box (0-box).
 	 */
 	public final static Bounds3D INIT = new Bounds3D( Vector3D.INIT , Vector3D.INIT );
-	
+
 	/**
 	 * Create a new box.
 	 *
@@ -49,10 +59,10 @@ public final class Bounds3D
 	 * @param	v1		First vector of bounds to compare with.
 	 * @param	v2		Second vector of bounds to compare with.
 	 *
-	 * @return	<code>true</code> if the bounds are equal,
-	 *			<code>false</code> if not.
+	 * @return	<CODE>true</CODE> if the bounds are equal,
+	 *			<CODE>false</CODE> if not.
 	 */
-	public boolean equals( Vector3D v1 , Vector3D v2 )
+	public boolean equals( final Vector3D v1 , final Vector3D v2 )
 	{
 		return( ( ( v1 == null ) || this.v1.equals( v1 ) ) &&
 				( ( v2 == null ) || this.v2.equals( v2 ) ) );
@@ -63,16 +73,16 @@ public final class Bounds3D
 	 *
 	 * @param	other	Object to compare with.
 	 *
-	 * @return	<code>true</code> if the objects are equal;
-	 *			<code>false</code> if not.
+	 * @return	<CODE>true</CODE> if the objects are equal;
+	 *			<CODE>false</CODE> if not.
 	 */
-	public boolean equals( Object other )
+	public boolean equals( final Object other )
 	{
 		if ( other == this ) return true;
 		if ( other == null ) return false;
 		if ( !( other instanceof Bounds3D ) ) return false;
-		Bounds3D b = (Bounds3D)other;
 
+		final Bounds3D b = (Bounds3D)other;
 		return( v1.equals( b.v1 ) && v2.equals( b.v2 ) );
 	}
 
@@ -86,11 +96,8 @@ public final class Bounds3D
 	 */
 	public static Bounds3D fromString( final String value )
 	{
-		StringTokenizer st = new StringTokenizer( value , ";" );
-		
-		return Bounds3D.INIT.set(
-			Vector3D.fromString( st.nextToken() ) ,
-			Vector3D.fromString( st.nextToken() ) );
+		final String[] tokens = CommonTools.tokenize( value , ';' );
+		return Bounds3D.INIT.set( Vector3D.fromString( tokens[ 0 ] ) , Vector3D.fromString( tokens[ 1 ] ) );
 	}
 
 	/**
@@ -120,8 +127,8 @@ public final class Bounds3D
 	 * @param	bounds1		First object for intersection test.
 	 * @param	bounds2		Seconds object for intersection test.
 	 *
-	 * @return	<code>true</code> if the bounds intersect;
-	 *			<code>false</code> if the bounds are disjunct.
+	 * @return	<CODE>true</CODE> if the bounds intersect;
+	 *			<CODE>false</CODE> if the bounds are disjunct.
 	 */
 	public static boolean intersects( final Bounds3D bounds1 , final Bounds3D bounds2 )
 	{
@@ -156,18 +163,18 @@ public final class Bounds3D
 	}
 
 	/**
-	 * Determine maximum vector of bounds.
+	 * Determine maximum vector of box.
 	 *
-	 * @param	bounds	Bounds to get the vector for.
+	 * @param	box     Box to get the vector for.
 	 *
 	 * @return	Resulting vector.
 	 */
 	public static Vector3D max( final Bounds3D box )
 	{
-		float x = Math.max( box.v1.x , box.v2.x );
-		float y = Math.max( box.v1.y , box.v2.y );
-		float z = Math.max( box.v1.z , box.v2.z );
-		
+		final float x = Math.max( box.v1.x , box.v2.x );
+		final float y = Math.max( box.v1.y , box.v2.y );
+		final float z = Math.max( box.v1.z , box.v2.z );
+
 			 if ( box.v1.equals( x , y , z ) ) return( box.v1 );
 		else if ( box.v2.equals( x , y , z ) ) return( box.v2 );
 		else return Vector3D.INIT.set( x , y , z );
@@ -182,10 +189,10 @@ public final class Bounds3D
 	 */
 	public static Vector3D min( final Bounds3D bounds )
 	{
-		float x = Math.min( bounds.v1.x , bounds.v2.x );
-		float y = Math.min( bounds.v1.y , bounds.v2.y );
-		float z = Math.min( bounds.v1.z , bounds.v2.z );
-		
+		final float x = Math.min( bounds.v1.x , bounds.v2.x );
+		final float y = Math.min( bounds.v1.y , bounds.v2.y );
+		final float z = Math.min( bounds.v1.z , bounds.v2.z );
+
 			 if ( bounds.v1.equals( x , y , z ) ) return bounds.v1;
 		else if ( bounds.v2.equals( x , y , z ) ) return bounds.v2;
 		else return Vector3D.INIT.set( x , y , z );
@@ -264,32 +271,44 @@ public final class Bounds3D
 	/**
 	 * Construct new box from the specified coordinates, and try to reuse
 	 * existing boxes.
+	 *
+	 * @param   box1    Reusable box object.
+	 * @param   box2    Reusable box object.
+	 * @param   x1      X component of desired first vector component.
+	 * @param   y1      Y component of desired first vector component.
+	 * @param   z1      Z component of desired first vector component.
+	 * @param   x2      X component of desired second vector component.
+	 * @param   y2      Y component of desired second vector component.
+	 * @param   z2      Z component of desired second vector component.
+	 *
+	 * @return  Bounds3D object based on the desired coordinates.
 	 */
-	private static Bounds3D rebuild( Bounds3D box1 , Bounds3D box2 ,
-		float x1 , float y1 , float z1 ,
-		float x2 , float y2 , float z2 )
+	private static Bounds3D rebuild(
+		final Bounds3D box1 , final Bounds3D box2 ,
+		final float x1 , final float y1 , final float z1 ,
+		final float x2 , final float y2 , final float z2 )
 	{
 		/*
 		 * Try to reuse the existing vectors. If not possible, create
 		 * new ones.
 		 */
-		Vector3D v1;
-		
+		final Vector3D v1;
+
 			 if ( box1.v1.equals( x1 , y1 , z1 ) ) v1 = box1.v1;
 		else if ( box1.v2.equals( x1 , y1 , z1 ) ) v1 = box1.v2;
 		else if ( box2.v1.equals( x1 , y1 , z1 ) ) v1 = box2.v1;
 		else if ( box2.v2.equals( x1 , y1 , z1 ) ) v1 = box2.v2;
 		else v1 = Vector3D.INIT.set( x1 , y1 , z1 );
-		
-		Vector3D v2;
-		
+
+		final Vector3D v2;
+
 			 if ( box1.v1.equals( x2 , y2 , z2 ) ) v2 = box1.v1;
 		else if ( box1.v2.equals( x2 , y2 , z2 ) ) v2 = box1.v2;
 		else if ( box2.v1.equals( x2 , y2 , z2 ) ) v2 = box2.v1;
 		else if ( box2.v2.equals( x2 , y2 , z2 ) ) v2 = box2.v2;
 		else if (      v1.equals( x2 , y2 , z2 ) ) v2 =      v1;
 		else v2 = Vector3D.INIT.set( x2 , y2 , z2 );
-		
+
 		/*
 		 * Try to reuse the existing boxes. If not possible, create
 		 * a new one.
@@ -332,8 +351,8 @@ public final class Bounds3D
 
 	/**
 	 * Determine sorted bounds. If bounds are sorted, than the x/y/z
-	 * components of <code>v1</code> are always less or equal to the
-	 * matching components of <code>v2</code>.
+	 * components of <CODE>v1</CODE> are always less or equal to the
+	 * matching components of <CODE>v2</CODE>.
 	 *
 	 * @return	Resulting bounds.
 	 */
