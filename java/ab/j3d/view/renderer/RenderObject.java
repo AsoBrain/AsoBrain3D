@@ -297,7 +297,7 @@ public class RenderObject
 
 			id = (int)y;
 			
-			if ( id < 1 )
+			if ( id < 10 )
 			{
 				pd[ j ] = 0;
 				ph[ j ] = centerH;
@@ -362,6 +362,8 @@ public class RenderObject
 			 * Determine bounding box of face. Don't draw if outside screen range.
 			 */
 			l = vi[ 0 ];
+			if ( pd[ l ] == 0 ) 
+				continue nextFace;
 			
 			int		minH = ph[ l ] >> 8;
 			int		maxH = minH;
@@ -374,12 +376,10 @@ public class RenderObject
 			{
 				l = vi[ k ];
 				
+				if ( pd[ l ] == 0 ) 	continue nextFace;
 				ih = ph[ l ] >> 8;
 				iv = pv[ l ] >> 8;
 				id = (int)verts[ l * 3 + 1 ];
-
-				if ( id < 1 ) 
-					continue nextFace;
 
 				if ( ih < minH ) minH = ih;
 				if ( ih > maxH ) maxH = ih;
