@@ -11,6 +11,7 @@ package ab.j3d.renderer;
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
 import java.awt.Graphics;
+import java.awt.Color;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
@@ -262,50 +263,86 @@ public final class Cylinder3D
 
 		final float x = objXform.transformX( xform.xo , xform.yo , xform.zo );
 		final float y = objXform.transformY( xform.xo , xform.yo , xform.zo );
-		float[] pts = null;
+		final float z = objXform.transformZ( xform.xo , xform.yo , xform.zo );
 
-		/**
+		/*
 		 * Top views (look in direction of z-axis).
 		 */
+		float[] topViewPts = null;
+
 		if ( mat2.xx < 0 && mat2.yz < 0 )
 		{
-			pts = new float[] { -radiusBottom , 0      , radiusBottom , 0      ,
-								-radiusTop    , height , radiusTop    , height };
+			topViewPts = new float[] { -radiusBottom , 0      , radiusBottom , 0      ,
+									   -radiusTop    , height , radiusTop    , height };
 		}
 
 		if ( mat2.xx > 0 && mat2.yz > 0 )
 		{
-			pts = new float[] {  -radiusBottom , 0       , radiusBottom , 0       ,
-								 -radiusTop    , -height , radiusTop    , -height };
+			topViewPts = new float[] { -radiusBottom , 0       , radiusBottom , 0       ,
+									   -radiusTop    , -height , radiusTop    , -height };
 		}
 
 		if ( mat2.xz > 0 && mat2.yx < 0 )
 		{
-			pts = new float[] { 0      , -radiusBottom , 0      , radiusBottom ,
-								height , -radiusTop    , height , radiusTop	};
+			topViewPts = new float[] { 0      , -radiusBottom , 0      , radiusBottom ,
+									   height , -radiusTop    , height , radiusTop    };
 		}
 
 		if ( mat2.xz < 0 && mat2.yx > 0 )
 		{
-			pts = new float[] { 0       , -radiusBottom , 0       , radiusBottom ,
-								-height , -radiusTop    , -height , radiusTop	  };
+			topViewPts = new float[] { 0       , -radiusBottom , 0       , radiusBottom ,
+									   -height , -radiusTop    , -height , radiusTop    };
+		}
+
+		/*
+		 * Front views.
+		 */
+		float[] frontViewPts = null;
+
+		if ( mat2.xx > 0 && mat2.yz < 0 )
+		{
+			frontViewPts = new float[] { -radiusBottom , 0      , radiusBottom , 0      ,
+										 -radiusTop    , height , radiusTop    , height };
+		}
+
+		if ( mat2.xx < 0 && mat2.yz > 0 )
+		{
+			frontViewPts = new float[] { -radiusBottom , 0       , radiusBottom , 0       ,
+										 -radiusTop    , -height , radiusTop    , -height };
+		}
+
+		if ( mat2.xz > 0 && mat2.yy < 0 )
+		{
+			frontViewPts = new float[] { 0      , -radiusBottom , 0      , radiusBottom ,
+										 height , -radiusTop    , height , radiusTop    };
+		}
+
+		if ( mat2.xz < 0 && mat2.yy < 0 )
+		{
+			frontViewPts = new float[] { 0       , -radiusBottom , 0       , radiusBottom ,
+										 -height , -radiusTop    , -height , radiusTop    };
 		}
 
 		/*
 		 * If the points are filled, draw them.
 		 */
-		if ( pts != null && pts.length == 8 )
+		if ( topViewPts != null && topViewPts.length == 8 )
 		{
-			drawLine( g , gXform , x + pts[ 0 ] , y + pts[ 1 ] , x + pts[ 2 ] , y + pts[ 3 ] );
-			drawLine( g , gXform , x + pts[ 4 ] , y + pts[ 5 ] , x + pts[ 6 ] , y + pts[ 7 ] );
-			drawLine( g , gXform , x + pts[ 0 ] , y + pts[ 1 ] , x + pts[ 4 ] , y + pts[ 5 ] );
-			drawLine( g , gXform , x + pts[ 2 ] , y + pts[ 3 ] , x + pts[ 6 ] , y + pts[ 7 ] );
+			drawLine( g , gXform , x + topViewPts[ 0 ] , y + topViewPts[ 1 ] , 0 , x + topViewPts[ 2 ] , y + topViewPts[ 3 ] , 0 );
+			drawLine( g , gXform , x + topViewPts[ 4 ] , y + topViewPts[ 5 ] , 0 , x + topViewPts[ 6 ] , y + topViewPts[ 7 ] , 0 );
+			drawLine( g , gXform , x + topViewPts[ 0 ] , y + topViewPts[ 1 ] , 0 , x + topViewPts[ 4 ] , y + topViewPts[ 5 ] , 0 );
+			drawLine( g , gXform , x + topViewPts[ 2 ] , y + topViewPts[ 3 ] , 0 , x + topViewPts[ 6 ] , y + topViewPts[ 7 ] , 0 );
+		}
+		else if ( frontViewPts != null && frontViewPts.length == 8 )
+		{
+			drawLine( g , gXform , x + frontViewPts[ 0 ] , 0 , z + frontViewPts[ 1 ] , x + frontViewPts[ 2 ] , 0 , z + frontViewPts[ 3 ] );
+			drawLine( g , gXform , x + frontViewPts[ 4 ] , 0 , z + frontViewPts[ 5 ] , x + frontViewPts[ 6 ] , 0 , z + frontViewPts[ 7 ] );
+			drawLine( g , gXform , x + frontViewPts[ 0 ] , 0 , z + frontViewPts[ 1 ] , x + frontViewPts[ 4 ] , 0 , z + frontViewPts[ 5 ] );
+			drawLine( g , gXform , x + frontViewPts[ 2 ] , 0 , z + frontViewPts[ 3 ] , x + frontViewPts[ 6 ] , 0 , z + frontViewPts[ 7 ] );
 		}
 		else
 		{
-			/*
-			 * Not painted, paint fully.
-			 */
+			// Not painted, paint fully.
 			super.paint( g , gXform , objXform );
 		}
 	}
@@ -318,14 +355,16 @@ public final class Cylinder3D
 	 * @param	gXform 	Transform for coordinates on graphics context.
 	 * @param	x1		X coordinate of line's start point.
 	 * @param	y1		Y coordinate of line's start point.
+	 * @param	z1		Y coordinate of line's start point in front view (y and z are switched).
 	 * @param	x2		X coordinate of line's end point.
 	 * @param	y2		Y coordinate of line's end point.
+	 * @param	z2		Y coordinate of line's end point in front view (y and z are switched).
 	 */
-	public static void drawLine( final Graphics g , final Matrix3D gXform , final float x1 , final float y1 , final float x2 , final float y2 )
+	public static void drawLine( final Graphics g , final Matrix3D gXform , final float x1 , final float y1 , final float z1 , final float x2 , final float y2 , final float z2 )
 	{
-		g.drawLine( (int)gXform.transformX( x1 , y1 , 0 ) ,
-		            (int)gXform.transformY( x1 , y1 , 0 ) ,
-		            (int)gXform.transformX( x2 , y2 , 0 ) ,
-		            (int)gXform.transformY( x2 , y2 , 0 ) );
+		g.drawLine( (int)gXform.transformX( x1 , y1 , z1 ) ,
+		            (int)gXform.transformY( x1 , y1 , z1 ) ,
+		            (int)gXform.transformX( x2 , y2 , z2 ) ,
+		            (int)gXform.transformY( x2 , y2 , z2 ) );
 	}
 }
