@@ -50,59 +50,59 @@ import com.numdata.oss.ArrayTools;
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public final class Java3dUniverse
+public class Java3dUniverse
 	extends SimpleUniverse
 {
 	/**
 	 * Scale factor for meters (metric system).
 	 */
-	public static final float METER = 1.0f;
+	public static final double METER = 1.0;
 
 	/**
 	 * Scale factor for meters (metric system).
 	 */
-	public static final float M = 1.0f;
+	public static final double M = 1.0;
 
 	/**
 	 * Scale factor for millimeters (metric system).
 	 */
-	public static final float MM = 0.001f;
+	public static final double MM = 0.001;
 
 	/**
 	 * Scale factor for centimeters (metric system).
 	 */
-	public static final float CM = 0.01f;
+	public static final double CM = 0.01;
 
 	/**
 	 * Scale factor for inches (imperial system).
 	 */
-	public static final float INCH = 0.0254f;
+	public static final double INCH = 0.0254;
 
 	/**
 	 * Scale factor for feet (imperial system).
 	 */
-	public static final float FOOT = 12 * INCH;
+	public static final double FOOT = 12.0 * INCH;
 
 	/**
 	 * Scale factor for yards (imperial system).
 	 */
-	public static final float YARD = 3 * FOOT;
+	public static final double YARD = 3.0 * FOOT;
 
 	/**
 	 * Scale factor for miles (imperial system).
 	 */
-	public static final float MILE = 1760 * YARD;
+	public static final double MILE = 1760.0 * YARD;
 
 	/**
 	 * Scale factor for miles (imperial system).
 	 */
-	public static final float NAUTIC_MILE = 2025.4f * YARD;
+	public static final double NAUTIC_MILE = 2025.4 * YARD;
 
 	/**
 	 * Unit scale factor in this universe. This scale factor, when multiplied,
 	 * converts design units to Java 3D units (meters).
 	 */
-	private final float _unit;
+	private final double _unit;
 
 	/**
 	 * The scene content is either a user-defined group node, or create using the
@@ -126,7 +126,7 @@ public final class Java3dUniverse
 	 * @see     #addViewer
 	 * @see     #getContent
 	 */
-	public Java3dUniverse( final float unit )
+	public Java3dUniverse( final double unit )
 	{
 		//@FIXME The Viewer that is created standard by SimpleUniverse is shown, even though the viewer[] is emptied!?!?
 		final Viewer notUsed = viewer[ 0 ];
@@ -135,7 +135,7 @@ public final class Java3dUniverse
 		viewer = new Viewer[ 0 ];
 
 		_unit = unit;
-		_content = createStaticContent( new Color( 0.2f , 0.3f , 0.4f ) );
+		_content = createContent( new Color( 0.2f , 0.3f , 0.4f ) );
 	}
 
 	/**
@@ -157,12 +157,12 @@ public final class Java3dUniverse
 	 *
 	 * @see     #getContent
 	 */
-	public Java3dUniverse( final Canvas3D canvas3d , final float unit )
+	public Java3dUniverse( final Canvas3D canvas3d , final double unit )
 	{
 		super( canvas3d );
 
 		_unit = unit;
-		_content = createStaticContent( new Color( 0.2f , 0.3f , 0.4f ) );
+		_content = createContent( new Color( 0.2f , 0.3f , 0.4f ) );
 	}
 
 	/**
@@ -185,7 +185,7 @@ public final class Java3dUniverse
 	 *
 	 * @see     #addBranchGraph
 	 */
-	public Java3dUniverse( final Canvas3D canvas3d , final Group content , final float unit )
+	public Java3dUniverse( final Canvas3D canvas3d , final Group content , final double unit )
 	{
 		super( canvas3d );
 
@@ -194,16 +194,56 @@ public final class Java3dUniverse
 	}
 
 	/**
-	 * Create a default static content scene graph to which applications can add
-	 * their own content.
+	 * Create content graph to which applications can add their own content.
+	 *
+	 * @param   backgroundColor     Background to apply to content.
 	 *
 	 * @return  Content scene graph object.
 	 *
 	 * @see     Java3dTools#createDynamicScene
 	 * @see     #getContent
-	 * @see     #_unit
+	 * @see     #getUnit
 	 */
-	private Group createStaticContent( final Color backgroundColor )
+	protected Group createContent( final Color backgroundColor )
+	{
+		final Group result;
+
+		final BranchGroup scene = createContentScene( backgroundColor );
+
+		final double unit = getUnit();
+		if ( ( unit > 0 ) && ( unit != 1 ) )
+		{
+			result = new TransformGroup( Java3dTools.createTransform3D( Vector3D.INIT , 0.0 , unit ) );
+			result.setCapability( TransformGroup.ALLOW_CHILDREN_READ );
+			scene.addChild( result );
+		}
+		else
+		{
+			result = scene;
+		}
+
+		result.setCapability( BranchGroup.ALLOW_CHILDREN_EXTEND );
+
+		scene.compile();
+		addBranchGraph( scene );
+
+		return result;
+	}
+
+	/**
+	 * Called by <code>createContent()</code> to create a scene to add to the
+	 * initial scene graph. Note that the unit scale factor is NOT applied to
+	 * this scene (everything is in meters, which is the Java 3D default).
+	 *
+	 * @param   backgroundColor     Background to apply to content.
+	 *
+	 * @return  Scene graph object.
+	 *
+	 * @see     Java3dTools#createDynamicScene
+	 * @see     #getContent
+	 * @see     #getUnit
+	 */
+	protected BranchGroup createContentScene( final Color backgroundColor )
 	{
 		final BoundingSphere bounds = new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 100.0 );
 
@@ -230,7 +270,7 @@ public final class Java3dUniverse
 		final Vector3f light1Direction = new Vector3f(  0.6f ,  1.0f ,  1.0f );
 		final DirectionalLight light1 = new DirectionalLight( light1Color , light1Direction );
 		light1.setInfluencingBounds( bounds );
-//		scene.addChild( light1 );
+		scene.addChild( light1 );
 
 		final Color3f  light2Color     = new Color3f (  0.9f ,  0.9f ,  0.9f );
 		final Vector3f light2Direction = new Vector3f( -0.6f , -1.0f , -0.2f );
@@ -258,27 +298,7 @@ public final class Java3dUniverse
 //		scene.addChild( new ColorCube( 1 ) );
 
 		// add scene to scene graph
-
-		// determine result node (insert scale transform group if needed).
-		final Group result;
-
-		final float unit = getUnit();
-		if ( ( unit > 0 ) && ( unit != 1 ) )
-		{
-			result = new TransformGroup( Java3dTools.createTransform3D( Vector3D.INIT , 0 , unit ) );
-			result.setCapability( TransformGroup.ALLOW_CHILDREN_READ );
-			scene.addChild( result );
-		}
-		else
-		{
-			result = scene;
-		}
-
-		result.setCapability( BranchGroup.ALLOW_CHILDREN_EXTEND );
-		scene.compile();
-		addBranchGraph( scene );
-
-		return result;
+		return scene;
 	}
 
 	public Viewer getViewer()
@@ -313,7 +333,8 @@ public final class Java3dUniverse
 	 */
 	public ViewingPlatform getViewingPlatform( final int viewerNum )
 	{
-		return getViewer( viewerNum ).getViewingPlatform();
+		final Viewer viewer = getViewer( viewerNum );
+		return viewer.getViewingPlatform();
 	}
 
 	public Canvas3D getCanvas( final int canvasNum )
@@ -333,7 +354,8 @@ public final class Java3dUniverse
 	 */
 	public Canvas3D getCanvas( final int viewerNum , final int canvasNum )
 	{
-	    return getViewer( viewerNum ).getCanvas3D( canvasNum );
+		final Viewer viewer = getViewer( viewerNum );
+		return viewer.getCanvas3D( canvasNum );
 	}
 
 	/**
@@ -373,7 +395,7 @@ public final class Java3dUniverse
 	 *
 	 * @return  Unit scale factor in this universe.
 	 */
-	public float getUnit()
+	public double getUnit()
 	{
 		return _unit;
 	}
