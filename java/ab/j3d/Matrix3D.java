@@ -15,7 +15,7 @@ import java.util.StringTokenizer;
 /**
  * This class is used to represent a 3D transformation matrix (although
  * it may also be used for 2D transformations).
- * <P>
+ * <p />
  * The matrix is organized as follows:
  * <pre>
  * | xx xy xz xo |

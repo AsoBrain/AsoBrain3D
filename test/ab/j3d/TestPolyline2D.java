@@ -166,7 +166,7 @@ public final class TestPolyline2D
 	/**
 	 * Test getIntersection for two rectangular polylines.
 	 * In this test, two intersections should be found.
- 	 * <P>
+ 	 * <p />
 	 * RELATED BUGS:
 	 * <ul>
 	 *  <li>

@@ -77,7 +77,7 @@ public final class Object3DBuilder
 	/**
 	 * This class represents a vertex of a face. A vertex contains the coordinates
 	 * of the vertex in the object space and texture coordinates (if applicable).
-	 * <P>
+	 * <p />
 	 * Instances of this class should be created using the
 	 * <code>Face.addVertex()</code> method.
 	 *
@@ -147,7 +147,7 @@ public final class Object3DBuilder
 	 * This class represents a face of an 3D object. A face contains rendering
 	 * paramters for the face and a list of vertices that define the shape
 	 * of the face.
-	 * <P>
+	 * <p />
 	 * Instances of this class should be created using the
 	 * <code>Object3DBuilder.addFace()</code> methods.
 	 *
@@ -341,7 +341,7 @@ public final class Object3DBuilder
 	 * Helper method to determine an adjustment value to get a reference value in
 	 * a range between 0 and a specified maximum value - 1. The adjustment value
 	 * will always be a multiple of the specified maximum value.
-	 * <P>
+	 * <p />
 	 * This is used to adjust minimum texture coordinates to the lowest positive
 	 * coordinate within the texture image. The adjustment value should be added
 	 * to all texture coordinates to make the adjustment.

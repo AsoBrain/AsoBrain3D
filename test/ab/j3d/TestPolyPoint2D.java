@@ -98,7 +98,7 @@ public final class TestPolyPoint2D
 	 * Test almostEqual( Polypoint2D ).
 	 * In this test, two polypoints with the same large coordinates
 	 * should 'almost be equal'.
- 	 * <P>
+ 	 * <p />
 	 * RELATED BUGS:
 	 * <ul>
 	 *  <li>

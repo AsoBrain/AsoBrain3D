@@ -179,18 +179,18 @@ public final class Polyline2D
 
 	/**
 	 * Constructor for polyline for rectangular shape based at origin.
-	 * <P>
+	 * <p />
 	 * If <code>dx != 0</code> and <code>dy != 0</code>, then the result will be the rectanle:
 	 * <pre>
 	 *   (0,0) -> (dx,0) -> (dx,dy) -> (0,dy) -> (0,0)
 	 * </pre>
-	 * <P>
+	 * <p />
 	 * If <code>dx != 0</code> and <code>dy = 0</code>; or
 	 * if <code>dx = 0</code> and <code>dy != 0</code>, then the result will be the line:
 	 * <pre>
 	 *   (0,0) -> (dx,dy)
 	 * </pre>
-	 * <P>
+	 * <p />
 	 * If <code>dy = 0</code> and <code>dy = 0</code>, then the result will be the point:
 	 * <pre>
 	 *   (0,0)
@@ -2098,13 +2098,13 @@ public final class Polyline2D
 
 	/**
 	 * Test is a point is inside a convex area. The algorithm works as follows:
-	 * <I>
+	 * <i>
 	 * Traverse all segments of the path that define the area. For each segment,
 	 * determine if the specified point is on the left side or right side (or right
 	 * in the center). If the point is always at the left side or center, or if
 	 * the point is always on the right side or center, the point is inside the
 	 * area. Otherwise, the point is outside the area.
-	 * </I>
+	 * </i>
 	 *
 	 * @param   convex	The convex
 	 * @param   point	The point
