@@ -69,7 +69,7 @@ public abstract class ViewModelView
 	{
 		_id = id;
 		_viewControl = viewControl;
-		viewControl.addPropertyChangeListener( "tranform" , _propertyChangeListener );
+		viewControl.addPropertyChangeListener( "transform" , _propertyChangeListener );
 	}
 
 	/**
@@ -99,7 +99,9 @@ public abstract class ViewModelView
 	 */
 	public final Matrix3D getViewTransform()
 	{
-		return getViewControl().getTransform();
+		final ViewControl viewControl = getViewControl();
+
+		return viewControl.getTransform();
 	}
 
 	/**
