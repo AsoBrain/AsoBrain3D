@@ -65,6 +65,18 @@ public final class PolyPoint2D
 	}
 
 	/**
+	 * Clone constructor.
+	 *
+	 * @param   original    Original to clone.
+	 */
+	public PolyPoint2D( final PolyPoint2D original )
+	{
+		x      = original.x;
+		y      = original.y;
+		buldge = original.buldge;
+	}
+
+	/**
 	 * Test if the specified point is 'almost equal to' this point. The
 	 * other point must have the same coordinates with a extremely small
 	 * tolerance.
