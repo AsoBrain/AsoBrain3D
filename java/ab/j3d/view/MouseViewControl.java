@@ -112,7 +112,7 @@ public class MouseViewControl
 	/**
 	 * Mouse sensivity for each control mode.
 	 */
-	final float[] _sensitivity = { 1.4f , 20.0f , 20.0f };
+	final float[] _sensitivity = { 1.4f , 0.02f , 0.02f };
 
 	/**
 	 * Number of button that is currently down (-1 = none).
@@ -146,8 +146,11 @@ public class MouseViewControl
 
 	/**
 	 * Construct new MouseViewConrol.
+	 *
+	 * @param   target  Target component to attach mouse control to.
+	 * @param   unit    Unit scale factor (e.g. <code>MM</code>).
 	 */
-	public MouseViewControl( final Component target )
+	public MouseViewControl( final Component target , final float unit )
 	{
 		_buttonDown       = -1;
 		_xStartCoordinate = 0;
@@ -159,7 +162,11 @@ public class MouseViewControl
 		target.addMouseMotionListener( this );
 //		target.addMouseWheelListener( this );
 
-
+		if ( ( unit > 0 ) && ( unit != 1 ) )
+		{
+			for ( int i = 0 ; i < _sensitivity.length ; i++ )
+				_sensitivity[ i ] /= unit;
+		}
 	}
 
 	/**
