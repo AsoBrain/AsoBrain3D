@@ -157,33 +157,4 @@ public final class Sphere3D
 		 */
 		set( vertices ,  faceVert , texture , smooth );
 	}
-
-	/**
-	 * Paint 2D representation of this 3D object. The object coordinates are
-	 * transformed using the objXform argument. By default, the object is painted
-	 * by drawing the outlines of its 'visible' faces. Derivatives of this class
-	 * may implement are more realistic approach (sphere, cylinder).
-	 *
-	 * Objects are painted on the specified graphics context after being
-	 * transformed again by gXform. This may be used to pan/scale the object on
-	 * the graphics context (NOTE: IT MAY NOT ROTATE THE OBJECT!).
-	 *
-	 * @param	g			Graphics context.
-	 * @param	gXform		Transformation to pan/scale the graphics context.
-	 * @param	objXform	Transformation from object's to view coordinate system.
-	 */
-	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D objXform )
-	{
-		if ( true )
-		{
-			super.paint( g , gXform , objXform );
-			return;
-		}
-
-		final float x = objXform.transformX( xform.xo , xform.yo , xform.zo );
-		final float y = objXform.transformY( xform.xo , xform.yo , xform.zo );
-
-		drawOval( g , gXform , x - dx / 2 , y - dy / 2 , dx , dy );
-	}
-
 }

@@ -411,47 +411,6 @@ public class Object3D
 	}
 
 	/**
-	 * Draws a line between the specified coordinates. Coordinates are transformed
-	 * using the specified matrix.
-	 *
-	 * @param	g		Graphics context.
-	 * @param	gXform 	Transform for coordinates on graphics context.
-	 * @param	x1		X coordinate of line's start point.
-	 * @param	y1		Y coordinate of line's start point.
-	 * @param	x2		X coordinate of line's end point.
-	 * @param	y2		Y coordinate of line's end point.
-	 */
-	public static void drawLine( final Graphics g , final Matrix3D gXform , final float x1 , final float y1 , final float x2 , final float y2 )
-	{
-		g.drawLine( (int)gXform.transformX( x1 , y1 , 0 ) ,
-		            (int)gXform.transformY( x1 , y1 , 0 ) ,
-		            (int)gXform.transformX( x2 , y2 , 0 ) ,
-		            (int)gXform.transformY( x2 , y2 , 0 ) );
-	}
-
-	/**
-	 * Draws a rectangle circle/oval with the specified coordinates. Coordinates
-	 * are transformed using the specified matrix.
-	 *
-	 * @param	g		Graphics context.
-	 * @param	gXform 	Transform for coordinates on graphics context.
-	 * @param	x		X coordinate of lower-left corner.
-	 * @param	y		Y coordinate of lower-left corder.
-	 * @param	w		Width of oval.
-	 * @param	h		Height of oval.
-	 */
-	public static void drawOval( final Graphics g , final Matrix3D gXform , final float x , final float y , final float w , final float h )
-	{
-		final int x1 = (int)gXform.transformX( x , y , 0 );
-		final int y1 = (int)gXform.transformY( x , y , 0 );
-		final int x2 = (int)gXform.transformX( x + w , y + h , 0 );
-		final int y2 = (int)gXform.transformY( x + w , y + h , 0 );
-
-		g.drawOval( Math.min( x1 , x2 ) , Math.min( y1 , y2 ) ,
-		            Math.abs( x2 - x1 ) , Math.abs( y2 - y1 ) );
-	}
-
-	/**
 	 * Get outer bounds (bounding box) of the object. Optionally, an existing bounding box
 	 * can be specified. The resulting bounds contains all vertices within the object and
 	 * the existing bounding box (if any).
@@ -668,9 +627,9 @@ public class Object3D
 	 * transformed again by gXform. This may be used to pan/scale the object on
 	 * the graphics context (NOTE: IT MAY NOT ROTATE THE OBJECT!).
 	 *
-	 * @param	g			Graphics context.
-	 * @param	gXform		Transformation to pan/scale the graphics context.
-	 * @param	objXform	Transformation from object's to view coordinate system.
+	 * @param   g           Graphics context.
+	 * @param   gXform      Transformation to pan/scale the graphics context.
+	 * @param   objXform    Transformation from object's to view coordinate system.
 	 */
 	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D objXform )
 	{
@@ -698,29 +657,35 @@ public class Object3D
 				 *
 				 * c = (x1-x2)*(y3-y2)-(y1-y2)*(x3-x2)
 				 */
-				final float x1 = ver[ pts[ 0 ] * 3     ];
-				final float y1 = ver[ pts[ 0 ] * 3 + 1 ];
+				int i = pts[ 0 ] * 3;
+				final int ix1 = (int)gXform.transformX( ver[ i ] , ver[ i + 1 ] , ver[ i + 2 ] );
+				final int iy1 = (int)gXform.transformY( ver[ i ] , ver[ i + 1 ] , ver[ i + 2 ] );
 
-				final float x2 = ver[ pts[ 1 ] * 3     ];
-				final float y2 = ver[ pts[ 1 ] * 3 + 1 ];
+				i = pts[ 1 ] * 3;
+				int ix2 = (int)gXform.transformX( ver[ i ] , ver[ i + 1 ] , ver[ i + 2 ] );
+				int iy2 = (int)gXform.transformY( ver[ i ] , ver[ i + 1 ] , ver[ i + 2 ] );
 
-				final float x3 = ver[ pts[ 2 ] * 3     ];
-				final float y3 = ver[ pts[ 2 ] * 3 + 1 ];
+				i = pts[ 2 ] * 3;
+				int ix3 = (int)gXform.transformX( ver[ i ] , ver[ i + 1 ] , ver[ i + 2 ] );
+				int iy3 = (int)gXform.transformY( ver[ i ] , ver[ i + 1 ] , ver[ i + 2 ] );
 
-				final float c = ( x1 - x2 ) * ( y3 - y2 ) - ( y1 - y2 ) * ( x3 - x2 );
-				if ( c > 0 )
-					continue;
-
-				/*
-				 * Now paint it.
-				 */
-				for ( int p = 0 ; p < pts.length ; p++ )
+				final float c = ( ix1 - ix2 ) * ( iy3 - iy2 ) - ( iy1 - iy2 ) * ( ix3 - ix2 );
+				if ( c <= 0 )
 				{
-					final int next = ( p + 1 ) % pts.length;
+					g.drawLine( ix1 , iy1 , ix2 , iy2 );
+					g.drawLine( ix2 , iy2 , ix3 , iy3 );
 
-					drawLine( g , gXform ,
-						ver[ pts[ p ] * 3 ] , ver[ pts[ p ] * 3 + 1 ] ,
-						ver[ pts[ next ] * 3 ] , ver[ pts[ next ] * 3 + 1 ] );
+					for ( int p = 3 ; p < pts.length ; p++ )
+					{
+						i = pts[ p ] * 3;
+						ix2 = ix3;
+						iy2 = iy3;
+						ix3 = (int)gXform.transformX( ver[ i ] , ver[ i + 1 ] , ver[ i + 2 ] );
+						iy3 = (int)gXform.transformY( ver[ i ] , ver[ i + 1 ] , ver[ i + 2 ] );
+
+						g.drawLine( ix2 , iy2 , ix3 , iy3 );
+
+					}
 				}
 			}
 		}
