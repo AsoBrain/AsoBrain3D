@@ -108,13 +108,13 @@ public class J3dView
 		view.setProjectionPolicy( policy == PERSPECTIVE ? View.PERSPECTIVE_PROJECTION : View.PARALLEL_PROJECTION );
 	}
 
-	public void setFrom( final Vector3D from )
+	public void lookFrom( final Vector3D from )
 	{
 		_from = from;
 		setTransform( _from , _to );
 	}
 
-	public void setTo( final Vector3D to )
+	public void lookAt( final Vector3D to )
 	{
 		_to = to;
 		setTransform( _from , _to );
