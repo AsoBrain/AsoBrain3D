@@ -9,7 +9,6 @@
  */
 package com.numdata.soda.Gerwin.AbtoJ3D;
 
-import java.awt.Canvas;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,11 +68,6 @@ public class ABtoJ3DConvertor
 	 * The J3D model.
 	 */
 	private J3DModel _j3dModel;
-
-	//--------
-	private final Canvas TEXTURE_OBSERVER = new Canvas();
-	private final Map _textureCache = new HashMap();
-	//--------
 
 	/**
 	 * Construct new ABtoJ3DConvertor.
@@ -334,15 +328,15 @@ public class ABtoJ3DConvertor
 
 		if ( ( code != null ) && ( code.isTexture() ) )
 		{
-			result = (Texture)_textureCache.get( code.code );
+			result = (Texture)_j3dModel._textureCache.get( code.code );
 			if ( result == null )
 			{
 				final Image image = code.getTextureImage();
 				if ( image != null )
 				{
-					result = new TextureLoader( image , TEXTURE_OBSERVER ).getTexture();
+					result = new TextureLoader( image , _j3dModel.TEXTURE_OBSERVER ).getTexture();
 					result.setCapability( Texture.ALLOW_SIZE_READ );
-					_textureCache.put( code.code , result );
+					_j3dModel._textureCache.put( code.code , result );
 				}
 			}
 		}
