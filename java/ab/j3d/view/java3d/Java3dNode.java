@@ -20,6 +20,7 @@ import javax.media.j3d.BranchGroup;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.Group;
 import javax.media.j3d.Material;
+import javax.media.j3d.Node;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Texture;
 import javax.media.j3d.TextureAttributes;
@@ -103,13 +104,13 @@ public class ABtoJ3DConvertor
 		/*
 		 * Finally do an update to convert the ab root node to the j3d root node.
 		 */
-		update();
+		convert();
 	}
 
 	/**
 	 * Convert the ab root node to the j3d root node.
 	 */
-	public void update()
+	public void convert()
 	{
 		final LeafCollection leafs = new LeafCollection();
 		_abRootNode.gatherLeafs( leafs , Object3D.class , Matrix3D.INIT , false );
@@ -135,7 +136,49 @@ public class ABtoJ3DConvertor
 		}
 	}
 
-	private Group convertObject3D( final Matrix3D xform , final Object3D obj )
+	/**
+	 * Set the transform for the j3d root node.
+	 *
+	 * @param   transform   Transform to set.
+	 */
+	public void setTransform( final Matrix3D transform )
+	{
+		_j3dRootNode.setTransform( convertMatrix3D( transform ) );
+	}
+
+	/**
+	 * Get the j3d root node.
+	 *
+	 * @return  The j3d root node.
+	 */
+	public Group getJ3dRootNode()
+	{
+		return _j3dRootNode;
+	}
+
+	/**
+	 * Get the ab root node.
+	 *
+	 * @return  The ab root node.
+	 */
+	public TreeNode getAbRootNode()
+	{
+		return _abRootNode;
+	}
+
+	/**
+	 * Convert <code>Object3D<code/> to Java3D <code>Node</code>
+	 * object.
+	 *
+	 * @param   xform   Transform to apply to vertices.
+	 * @param   obj     Object3D to convert.
+	 *
+	 * @return  If only one j3d <code>Appearance</code> is created
+	 *          a <code>Shape3D</code> is returned. Otherwise a <code>
+	 *          BranchGroup</code> is returned containing <code>Shape3D</code>s
+	 *          for each separate <code>Appearance</code>.
+	 */
+	private Node convertObject3D( final Matrix3D xform , final Object3D obj )
 	{
 		final Map appearances = new HashMap();
 
@@ -158,25 +201,24 @@ public class ABtoJ3DConvertor
 			if ( nrTriangles < 1 )
 				continue;
 
-			final Texture texture = ( ( faceTU == null ) || ( faceTV == null ) || !faceTexture.isTexture() ) ? null : getTexture( faceTexture );
+			final Texture texture = ( ( faceTU == null ) || ( faceTV == null ) || !faceTexture.isTexture() ) ? null : convertTextureSpec( faceTexture );
 
-			final List j3dVertices;
-			final List j3dTextureCoords;
-			final List j3dFaceNormals;
+			final List[] data;
+			if ( appearances.containsKey( faceTexture.code ) )
 			{
-				final List[] data;
-				if ( appearances.containsKey( faceTexture.code ) )
-					data = (List[])appearances.get( faceTexture.code );
-				else
-					appearances.put( faceTexture.code , data = new List[] { new ArrayList() , new ArrayList() , new ArrayList() } );
-
-				j3dVertices      = data[ 0 ];
-				j3dTextureCoords = data[ 1 ];
-				j3dFaceNormals   = data[ 2 ];
+				data = (List[])appearances.get( faceTexture.code );
+			}
+			else
+			{
+				appearances.put( faceTexture.code , data = new List[] { new ArrayList() , new ArrayList() , new ArrayList() } );
 			}
 
-			final float[] vertex     = new float[ 3 ];
-			final float[] faceNormal = new float[ 3 ];
+			final List    j3dVertices      = data[ 0 ];
+			final List    j3dTextureCoords = data[ 1 ];
+			final List    j3dFaceNormals   = data[ 2 ];
+			final float[] vertex           = new float[ 3 ];
+			final float[] faceNormal       = new float[ 3 ];
+
 			for ( int triangleIndex = 0 ; triangleIndex < nrTriangles ; triangleIndex++ )
 			{
 				for ( int subIndex = 3 ; --subIndex >= 0 ; )
@@ -209,21 +251,43 @@ public class ABtoJ3DConvertor
 			}
 		}
 
-		final BranchGroup result = new BranchGroup();
-		result.setCapability( BranchGroup.ALLOW_DETACH );
-
-		for ( Iterator appearanceEnum = appearances.keySet().iterator() ; appearanceEnum.hasNext() ; )
+		final Node result;
+		if ( appearances.size() == 1 )
 		{
-			final String     code       = (String)appearanceEnum.next();
-			final Appearance appearance = abToJ3D( _db.getTextureSpec( code ) , 1 );
+			final String     code       = (String)appearances.keySet().iterator().next();
+			final Appearance appearance = convertTextureSpec( _db.getTextureSpec( code ) , 1 );
 			final List[]     data       = (List[])appearances.get( code );
 
-			result.addChild( createShape( appearance , data[ 0 ] , data[ 1 ] , data[ 2 ] ) );
+			result = createShape( appearance , data[ 0 ] , data[ 1 ] , data[ 2 ] );
+		}
+		else
+		{
+			result = new BranchGroup();
+			result.setCapability( BranchGroup.ALLOW_DETACH );
+
+			for ( Iterator appearanceEnum = appearances.keySet().iterator() ; appearanceEnum.hasNext() ; )
+			{
+				final String     code       = (String)appearanceEnum.next();
+				final Appearance appearance = convertTextureSpec( _db.getTextureSpec( code ) , 1 );
+				final List[]     data       = (List[])appearances.get( code );
+
+				((BranchGroup)result).addChild( createShape( appearance , data[ 0 ] , data[ 1 ] , data[ 2 ] ) );
+			}
 		}
 
 		return result;
 	}
 
+	/**
+	 * Create a <code>Shape3D</code> by using the specified parameters.
+	 *
+	 * @param   appearance          Appearance of the Shape3D to create.
+	 * @param   j3dVertices         Vertices of the Shape3D to create.
+	 * @param   j3dTextureCoords    Texture U- and V-coordinates of the Shape3D.
+	 * @param   j3dFaceNormals      Face normals of the Shape3D to create.
+	 *
+	 * @return  Shape3d created out of the specified parameters.
+	 */
 	private Shape3D createShape( final Appearance appearance , final List j3dVertices , final List j3dTextureCoords , final List j3dFaceNormals )
 	{
 		final boolean hasTexture = ( appearance.getTexture() != null );
@@ -247,12 +311,41 @@ public class ABtoJ3DConvertor
 	}
 
 	/**
-	 * Translate <code>TextureSpec<code/> to Java3D <code>Appearance</code>
+	 * Convert <code>TextureSpec<code/> to Java3D <code>Texture</code>
 	 * object.
 	 *
-	 * @param   spec    TextureSpec to translate.
+	 * @param   spec    TextureSpec to convert.
 	 */
-	private Appearance abToJ3D( final TextureSpec spec , final float opacity )
+	private Texture convertTextureSpec( final TextureSpec spec )
+	{
+		Texture result = null;
+
+		if ( ( spec != null ) && ( spec.isTexture() ) )
+		{
+			result = (Texture)_j3dModel._textureCache.get( spec.code );
+			if ( result == null )
+			{
+				final Image image = spec.getTextureImage();
+				if ( image != null )
+				{
+					result = new TextureLoader( image , _j3dModel.TEXTURE_OBSERVER ).getTexture();
+					result.setCapability( Texture.ALLOW_SIZE_READ );
+					_j3dModel._textureCache.put( spec.code , result );
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Convert <code>TextureSpec<code/> to Java3D <code>Appearance</code>
+	 * object.
+	 *
+	 * @param   spec    TextureSpec to convert.
+	 * @param   opacity Opacity of the appearance.
+	 */
+	private Appearance convertTextureSpec( final TextureSpec spec , final float opacity )
 	{
 		final int   rgb = spec.getARGB();
 		final float r   = ( ( rgb >> 16 ) & 255 ) / 255.0f;
@@ -276,7 +369,7 @@ public class ABtoJ3DConvertor
 
 		if ( spec.isTexture() )
 		{
-			final Texture texture = getTexture( spec );
+			final Texture texture = convertTextureSpec( spec );
 			appearance.setTexture( texture );
 
 			final TextureAttributes textureAttributes = new TextureAttributes();
@@ -298,61 +391,18 @@ public class ABtoJ3DConvertor
 		return appearance;
 	}
 
-	private Transform3D abToJ3D( final Matrix3D m )
+	/**
+	 * Convert <code>Matrix3D<code/> to Java3D <code>Transform3D</code>
+	 * object.
+	 *
+	 * @param   matrix  Matrix3D to convert.
+	 */
+	private Transform3D convertMatrix3D( final Matrix3D matrix )
 	{
 		return new Transform3D( new float[] {
-			m.xx , m.xy , m.xz , m.xo ,
-			m.yx , m.yy , m.yz , m.yo ,
-			m.zx , m.zy , m.zz , m.zo ,
+			matrix.xx , matrix.xy , matrix.xz , matrix.xo ,
+			matrix.yx , matrix.yy , matrix.yz , matrix.yo ,
+			matrix.zx , matrix.zy , matrix.zz , matrix.zo ,
 			0.0f , 0.0f , 0.0f , 1.0f } );
-	}
-
-	private Texture getTexture( final TextureSpec code )
-	{
-		Texture result = null;
-
-		if ( ( code != null ) && ( code.isTexture() ) )
-		{
-			result = (Texture)_j3dModel._textureCache.get( code.code );
-			if ( result == null )
-			{
-				final Image image = code.getTextureImage();
-				if ( image != null )
-				{
-					result = new TextureLoader( image , _j3dModel.TEXTURE_OBSERVER ).getTexture();
-					result.setCapability( Texture.ALLOW_SIZE_READ );
-					_j3dModel._textureCache.put( code.code , result );
-				}
-			}
-		}
-
-		return result;
-	}
-
-	/**
-	 * Set the transform for the j3d root node.
-	 *
-	 * @param   transform   Transform to set.
-	 *                      Note: Because j3d uses meters and AB uses milimeters
-	 *                            a scalar of 0.001 should be added.
-	 */
-	public void setTransform( final Matrix3D transform )
-	{
-		_j3dRootNode.setTransform( abToJ3D( transform ) );
-	}
-
-	public Group getJ3dRootNode()
-	{
-		return _j3dRootNode;
-	}
-
-	/**
-	 * Get the ab root node.
-	 *
-	 * @return  The ab root node.
-	 */
-	public TreeNode getAbRootNode()
-	{
-		return _abRootNode;
 	}
 }
