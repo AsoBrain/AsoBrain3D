@@ -3,22 +3,22 @@ package common.renderer;
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2000,2002 - All Rights Reserved
- *
+ * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
+
  * This software may not be used, copyied, modified, or distributed in any
  * form without express permission from Numdata BV. Please contact Numdata BV
  * for license information.
  */
 import java.awt.Graphics;
-import java.util.Hashtable;
+
 import common.db.TextureSpec;
 import common.model.Matrix3D;
 
 /**
  * This class defines a 3D sphere.
  *
- * @version 1.0 (20011128, PSH) 
  * @author	Peter S. Heijnen
+ * @version $Revision$ ($Date$, $Author$)
  */
 public class Sphere3D
 	extends Object3D
@@ -42,15 +42,12 @@ public class Sphere3D
 	 */
 	public Sphere3D( final Matrix3D xform , final float dx , final float dy , final float dz , final int p , final int q , final TextureSpec texture , final boolean smooth )
 	{
-		if ( texture == null )
-			texture = new TextureSpec();
-
 		this.xform =  xform;
 		this.dx    = dx;
 		this.dy    = dy;
 		this.dz    = dz;
 
-		generate( p , q , texture , smooth );
+		generate( p , q , ( texture == null ) ? new TextureSpec() : texture , smooth );
 	}
 
 	/**
