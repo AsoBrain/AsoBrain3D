@@ -46,16 +46,16 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  * ====================================================================
  */
-package ab.light3d.renderer;
+package ab.j3d.renderer;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import ab.light3d.Matrix3D;
-import ab.light3d.PolyPoint2D;
-import ab.light3d.Polyline2D;
-import ab.light3d.TextureSpec;
-import ab.light3d.Vector3D;
+import ab.j3d.Matrix3D;
+import ab.j3d.PolyPoint2D;
+import ab.j3d.Polyline2D;
+import ab.j3d.TextureSpec;
+import ab.j3d.Vector3D;
 
 /**
  * This class implements a builder for an <code>Object3D</code>. It allows
@@ -156,9 +156,19 @@ public final class Object3DBuilder
 	public static final class Face
 	{
 		/**
+		 * List of vertices in this face.
+		 */
+		private final List _vertices = new ArrayList();
+
+		/**
 		 * Texture to apply to this face.
 		 */
 		private final TextureSpec _texture;
+
+		/**
+		 * Opacity of face (0=transparent, 1=opaque).
+		 */
+		private final float _opacity;
 
 		/**
 		 * Face is smooth/curved vs. flat.
@@ -166,22 +176,19 @@ public final class Object3DBuilder
 		private final boolean _smooth;
 
 		/**
-		 * List of vertices in this face.
-		 */
-		private final List _vertices = new ArrayList();
-
-		/**
 		 * Construct 3D object face.
 		 *
 		 * @param   texture     Texture to apply to the face.
+		 * @param   opacity     Opacity of face (0=transparent, 1=opaque).
 		 * @param   smooth      Face is smooth/curved vs. flat.
 		 */
-		public Face( final TextureSpec texture , final boolean smooth )
+		public Face( final TextureSpec texture , final float opacity , final boolean smooth )
 		{
 			if ( texture == null )
 				throw new RuntimeException( "texture == null" );
 
 			_texture = texture;
+			_opacity = opacity;
 			_smooth = smooth;
 		}
 
@@ -228,18 +235,20 @@ public final class Object3DBuilder
 		 * @param   faceIndex   Index in result arrays.
 		 * @param   vert        Result array for face vertex coordinates.
 		 * @param   mat         Result array for face materials.
+		 * @param   opacity     Result array for face opacity.
 		 * @param   tu          Result array for horizontal texture coordinates.
 		 * @param   tv          Result array for vertical texture coordinates.
 		 * @param   smooth      Result array for face smoothing.
 		 */
-		public void build( final List points , final int faceIndex , final int[][] vert , final TextureSpec[] mat , final int[][] tu , final int[][] tv , final boolean[] smooth )
+		public void build( final List points , final int faceIndex , final int[][] vert , final TextureSpec[] mat , final float[] opacity , final int[][] tu , final int[][] tv , final boolean[] smooth )
 		{
 			final int     nrVertices = _vertices.size();
 			final boolean hasTexture = hasTextureImage();
 
-			vert[ faceIndex ] = new int[ nrVertices ];
-			mat[ faceIndex ] = _texture;
-			smooth[ faceIndex ] = _smooth;
+			vert   [ faceIndex ] = new int[ nrVertices ];
+			mat    [ faceIndex ] = _texture;
+			opacity[ faceIndex ] = _opacity;
+			smooth [ faceIndex ] = _smooth;
 
 			final int[] ftu;
 			final int[] ftv;
@@ -270,13 +279,14 @@ public final class Object3DBuilder
 	 * by the caller.
 	 *
 	 * @param   texture     Texture to apply to the face.
+	 * @param   opacity     Opacity of face (0=transparent, 1=opaque).
 	 * @param   smooth      Face is smooth/curved vs. flat.
 	 *
 	 * @return  Face that was added to this object.
 	 */
-	public Face addFace( final TextureSpec texture , final boolean smooth )
+	public Face addFace( final TextureSpec texture , final float opacity , final boolean smooth )
 	{
-		final Face face = new Face( texture , smooth );
+		final Face face = new Face( texture , opacity , smooth );
 		_faces.add( face );
 		return face;
 	}
@@ -289,10 +299,11 @@ public final class Object3DBuilder
 	 * @param   shape           Shape of face relative to the base.
 	 * @param   reversePath     If set, the returned path will be reversed.
 	 * @param   texture         Texture to apply to the face.
+	 * @param   opacity         Opacity of face (0=transparent, 1=opaque).
 	 * @param   swapUV          Swap texture coordinates to rotate 90 degrees.
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 */
-	public void addFace( final Matrix3D base , final Polyline2D shape , final boolean reversePath , final TextureSpec texture , final boolean swapUV , final boolean smooth )
+	public void addFace( final Matrix3D base , final Polyline2D shape , final boolean reversePath , final TextureSpec texture , final float opacity , final boolean swapUV , final boolean smooth )
 	{
 		final int nrVertices = shape.getPointCount() + ( shape.isClosed() ? -1 : 0 );
 		if ( nrVertices < 3 )
@@ -330,7 +341,7 @@ public final class Object3DBuilder
 			final int adjustU = getRangeAdjustment( minU , texture.getTextureWidth() );
 			final int adjustV = getRangeAdjustment( minV , texture.getTextureHeight() );
 
-			final Face face = addFace( texture , smooth );
+			final Face face = addFace( texture , opacity , smooth );
 			for ( int i = 0 ; i < nrVertices ; i++ )
 			{
 				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
@@ -339,7 +350,7 @@ public final class Object3DBuilder
 		}
 		else
 		{
-			final Face face = addFace( texture , smooth );
+			final Face face = addFace( texture , opacity , smooth );
 			for ( int i = 0 ; i < nrVertices ; i++ )
 			{
 				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
@@ -392,17 +403,18 @@ public final class Object3DBuilder
 		/*
 		 * Build face data and point list to generate vertex data.
 		 */
-		final List          points     = new ArrayList();
-		final int[][]       faceVert   = new int[ nrFaces ][];
-		final TextureSpec[] faceMat    = new TextureSpec[ nrFaces ];
-		final int[][]       faceTU     = hasTexture ? new int[ nrFaces ][] : null;
-		final int[][]       faceTV     = hasTexture ? new int[ nrFaces ][] : null;
-		final boolean[]     faceSmooth = new boolean[ nrFaces ];
+		final List          points      = new ArrayList();
+		final int[][]       faceVert    = new int[ nrFaces ][];
+		final TextureSpec[] faceMat     = new TextureSpec[ nrFaces ];
+		final float[]       faceOpacity = new float[ nrFaces ];
+		final int[][]       faceTU      = hasTexture ? new int[ nrFaces ][] : null;
+		final int[][]       faceTV      = hasTexture ? new int[ nrFaces ][] : null;
+		final boolean[]     faceSmooth  = new boolean[ nrFaces ];
 
 		for ( int i = 0 ; i < nrFaces ; i++ )
 		{
 			final Face face = (Face)_faces.get( i );
-			face.build( points , i , faceVert , faceMat , faceTU , faceTV , faceSmooth );
+			face.build( points , i , faceVert , faceMat , faceOpacity , faceTU , faceTV , faceSmooth );
 		}
 
 		/*
@@ -423,7 +435,7 @@ public final class Object3DBuilder
 		/*
 		 * Hurray, we can set the resulting data now.
 		 */
-		obj3d.set( vertices , faceVert , faceMat , faceTU , faceTV , faceSmooth );
+		obj3d.set( vertices , faceVert , faceMat , faceTU , faceTV , faceOpacity , faceSmooth );
 	}
 
 	/**
