@@ -16,8 +16,8 @@ import junit.framework.TestCase;
  *
  * @see	PolyPoint2D
  *
- * @author	H.B.J. te Lintelo
- * @version	$Revision$ ($Date$, $Author$)
+ * @author  H.B.J. te Lintelo
+ * @version $Revision$ $Date$
  */
 public final class TestPolyPoint2D
 	extends TestCase

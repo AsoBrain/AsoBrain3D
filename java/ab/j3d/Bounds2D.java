@@ -13,7 +13,7 @@ package com.numdata.soda.mountings;
  * This class describes 2D boundaries.
  *
  * @author  Peter S. Heijnen
- * @version $Revision$ ($Date$, $Author$)
+ * @version $Revision$ $Date$
  */
 public final class Bounds2D
 {

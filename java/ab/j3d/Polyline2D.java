@@ -20,9 +20,9 @@ import com.numdata.oss.TextTools;
 /**
  * This class describes a polyline in 2D.
  *
- * @author	Peter S. Heijnen
- * @author	Sjoerd Bouwman
- * @version $Revision$ ($Date$, $Author$)
+ * @author  Peter S. Heijnen
+ * @author  Sjoerd Bouwman
+ * @version $Revision$ $Date$
  */
 public final class Polyline2D
 	implements Cloneable
@@ -132,7 +132,7 @@ public final class Polyline2D
 	/**
 	 * Clone constructor.
 	 *
-	 * @param	original	Polyline to clone.
+	 * @param   original	Polyline to clone.
 	 */
 	public Polyline2D( final Polyline2D original )
 	{
@@ -162,8 +162,8 @@ public final class Polyline2D
 	 *   (0,0)
 	 * </PRE>
 	 *
-	 * @param	dx	Delta-X (may be 0).
-	 * @param	dy	Delta-Y (may be 0).
+	 * @param   dx	Delta-X (may be 0).
+	 * @param   dy	Delta-Y (may be 0).
 	 */
 	public Polyline2D( final float dx , final float dy )
 	{
@@ -190,10 +190,10 @@ public final class Polyline2D
 	 * Adjust the position of a segment perdendular to the segment direction.
 	 * This is used to reduce/enlartge the polyline at one of its segements.
 	 *
-	 * @param	startIndex		Start index of segment in polyline.
-	 * @param	adjustment		Position adjustment of segment.
+	 * @param   startIndex		Start index of segment in polyline.
+	 * @param   adjustment		Position adjustment of segment.
 	 *
-	 * @return	<CODE>true</CODE> if the adjustment was succesful;
+	 * @return  <CODE>true</CODE> if the adjustment was succesful;
 	 *			<CODE>false</CODE> if the adjustment failed (it may fail when
 	 * 			the adjustment changes the structure of the polyline, e.g.
 	 *			number of segments).
@@ -333,7 +333,7 @@ public final class Polyline2D
 	/**
 	 * Add control point to polyline.
 	 *
-	 * @param	point	Control point to append to polyline.
+	 * @param   point	Control point to append to polyline.
 	 */
 	public void append( final PolyPoint2D point )
 	{
@@ -348,8 +348,8 @@ public final class Polyline2D
 	/**
 	 * Add control point to polyline.
 	 *
-	 * @param	x	X coordinate of segment end point.
-	 * @param	y	Y coordinate of segment end point.
+	 * @param   x	X coordinate of segment end point.
+	 * @param   y	Y coordinate of segment end point.
 	 */
 	public void append( final float x , final float y )
 	{
@@ -360,7 +360,7 @@ public final class Polyline2D
 	 * Creates and returns a copy of this object.  The precise meaning
 	 * of "copy" may depend on the class of the object.
 	 *
-	 * @return	A clone of this instance.
+	 * @return  A clone of this instance.
 	 */
 	public Object clone()
 	{
@@ -396,9 +396,9 @@ public final class Polyline2D
 	 * coordinate system of the polyline, so it may need to be transformed to a common coordinate
 	 * system.
 	 *
-	 * @param	index	Index of start point of segment.
+	 * @param   index	Index of start point of segment.
 	 *
-	 * @return	Matrix representing base of extruded surface, or <code>null</code> if no
+	 * @return  Matrix representing base of extruded surface, or <code>null</code> if no
 	 *			extruded surface can be constructed (invalid segment, segment is not
 	 *			straight, ....).
 	 */
@@ -442,7 +442,7 @@ public final class Polyline2D
 	/**
 	 * Get bounding box of polyline.
 	 *
-	 * @return	Bounds2D with bounding box for polyline;
+	 * @return  Bounds2D with bounding box for polyline;
 	 *			<code>null</code> if the poyline has no bounds (it's void).
 	 */
 	public synchronized Bounds2D getBounds()
@@ -484,7 +484,7 @@ public final class Polyline2D
 	 *
 	 * THIS IS ONLY VALID FOR POLYLINES DEFINING A 'CONVEX' SHAPE.
 	 *
-	 * @return	Bounds2D that is enclosed by this polyline.
+	 * @return  Bounds2D that is enclosed by this polyline.
 	 */
 	public Bounds2D getEnclosedRectangle()
 	{
@@ -594,7 +594,7 @@ public final class Polyline2D
 	 *
 	 * THIS IS ONLY VALID FOR POLYLINES DEFINING A 'CONVEX' SHAPE.
 	 *
-	 * @return	Bounds2D that is enclosed by this polyline.
+	 * @return  Bounds2D that is enclosed by this polyline.
 	 */
 	public Bounds2D getEnclosedRectangleOLD()
 	{
@@ -651,9 +651,9 @@ public final class Polyline2D
 	 * This method only delagates all the different types of shapes, it
 	 * does no testing itself.
 	 *
-	 * @param	other	the other shape to get intersection with.
+	 * @param   other	the other shape to get intersection with.
 	 *
-	 * @return	Shape describing the intersecting shape.
+	 * @return  Shape describing the intersecting shape.
 	 */
 	public Polyline2D getIntersection( final Polyline2D other )
 	{
@@ -749,10 +749,10 @@ public final class Polyline2D
 	 *		of the last one. If so, add the tail of the segment to
 	 *		the polyline.
 	 *
-	 * @param	convex1		a polyline that is guaranteed convex.
-	 * @param	convex2		an other polyline that is convex.
+	 * @param   convex1		a polyline that is guaranteed convex.
+	 * @param   convex2		an other polyline that is convex.
 	 *
-	 * @return	the intersecting area of the two convex polylines.
+	 * @return  the intersecting area of the two convex polylines.
 	 */
 	protected static Polyline2D getIntersectionConvex_Convex( final Polyline2D convex1 , final Polyline2D convex2 )
 	{
@@ -1174,10 +1174,10 @@ public final class Polyline2D
 	/**
 	 * Gets the intersection between a convex PolyLine2D and a line PolyLine2D.
 	 *
-	 * @param	convex	The convex Polyline to get intersection from.
-	 * @param	line	The line to get intersection from.
+	 * @param   convex	The convex Polyline to get intersection from.
+	 * @param   line	The line to get intersection from.
 	 *
-	 * @return	PolyLine2D describing the intersection between the two.
+	 * @return  PolyLine2D describing the intersection between the two.
 	 */
 	protected static Polyline2D getIntersectionConvex_Line( final Polyline2D convex , final Polyline2D line )
 	{
@@ -1313,10 +1313,10 @@ public final class Polyline2D
 	 * the convex more than one time. So the path may only enter/exit the
 	 * convex once.
 	 *
-	 * @param	convex		a polyline that is guaranteed convex.
-	 * @param	path		a polyline that is a path.
+	 * @param   convex		a polyline that is guaranteed convex.
+	 * @param   path		a polyline that is a path.
 	 *
-	 * @return	the intersecting area of the two convex polylines.
+	 * @return  the intersecting area of the two convex polylines.
 	 *
 	 * @see		#getIntersectionConvex_Convex
 	 */
@@ -1505,12 +1505,12 @@ public final class Polyline2D
 	 *
 	 * Calls getIntersectionLine_Line with 8 floats to do the work.
 	 *
-	 * @param	p1	First point of line 1
-	 * @param	p2	Second point of line 1
-	 * @param	p3	First point of line 2
-	 * @param	p4	Second point of line 2
+	 * @param   p1	First point of line 1
+	 * @param   p2	Second point of line 1
+	 * @param   p3	First point of line 2
+	 * @param   p4	Second point of line 2
 	 *
-	 * @return	Polyline describing the intersection.
+	 * @return  Polyline describing the intersection.
 	 */
 	protected static Polyline2D getIntersectionLine_Line( final PolyPoint2D p1 , final PolyPoint2D p2 , final PolyPoint2D p3 , final PolyPoint2D p4 )
 	{
@@ -1537,17 +1537,17 @@ public final class Polyline2D
 	 *    Author: Paul Bourke (april 1989)
 	 *    http://astronomy.swin.edu.au/pbourke/geometry/lineline2d/
 	 *
-	 * @param	x1		start point of line 1.
-	 * @param	y1		start point of line 1
-	 * @param	x2		end point of line 1
-	 * @param	y2		end point of line 1
-	 * @param	x3		start point of line 2.
-	 * @param	y3		start point of line 2
-	 * @param	x4		end point of line 2
-	 * @param	y4		end point of line 2
-	 * @param	cache	cached array of polyline so we don't have to create one.
+	 * @param   x1		start point of line 1.
+	 * @param   y1		start point of line 1
+	 * @param   x2		end point of line 1
+	 * @param   y2		end point of line 1
+	 * @param   x3		start point of line 2.
+	 * @param   y3		start point of line 2
+	 * @param   x4		end point of line 2
+	 * @param   y4		end point of line 2
+	 * @param   cache	cached array of polyline so we don't have to create one.
 	 *
-	 * @return	Array of points describing the intersection between the two
+	 * @return  Array of points describing the intersection between the two
 	 *			(can be 0..2 points).
 	 */
 	protected static PolyPoint2D[] getIntersectionLine_Line( final float x1 , final float y1 , final float x2 , final float y2 , final float x3 , final float y3 , final float x4 , final float y4 , PolyPoint2D[] cache )
@@ -1657,11 +1657,11 @@ public final class Polyline2D
 	 *
 	 * Works only when result is one peace of one segment of path (or one point).
 	 *
-	 * @param	path	the path.
-	 * @param	p1		First point of line
-	 * @param	p2		Second point of line.
+	 * @param   path	the path.
+	 * @param   p1		First point of line
+	 * @param   p2		Second point of line.
 	 *
-	 * @return	Polyline describing the intersection.
+	 * @return  Polyline describing the intersection.
 	 */
 	protected static Polyline2D getIntersectionPath_Line( final Polyline2D path , final PolyPoint2D p1 , final PolyPoint2D p2 )
 	{
@@ -1761,10 +1761,10 @@ public final class Polyline2D
 	 * Works only when seperate intersecting segments can be layed
 	 * head to tail.
 	 *
-	 * @param	path1	First path.
-	 * @param	path2	Second path.
+	 * @param   path1	First path.
+	 * @param   path2	Second path.
 	 *
-	 * @return	Polyline describing the intersection.
+	 * @return  Polyline describing the intersection.
 	 */
 	protected static Polyline2D getIntersectionPath_Path( final Polyline2D path1 , final Polyline2D path2 )
 	{
@@ -1812,9 +1812,9 @@ public final class Polyline2D
 	/**
 	 * Get length of segment.
 	 *
-	 * @param	index	Index of start point of segment.
+	 * @param   index	Index of start point of segment.
 	 *
-	 * @return	Length of segment, or -1 if the length of the specified segment can not
+	 * @return  Length of segment, or -1 if the length of the specified segment can not
 	 *			be determined (invalid index).
 	 */
 	public float getLength( final int index )
@@ -1829,7 +1829,7 @@ public final class Polyline2D
 	 * Gets an object3d based on this polyline, the result will
 	 * be a face.
 	 *
-	 * @return	Object3D of this polyline.
+	 * @return  Object3D of this polyline.
 	 */
 	public Object3D getObject3D()
 	{
@@ -1867,9 +1867,9 @@ public final class Polyline2D
 	/**
 	 * Get control point at specified index from this polyline.
 	 *
-	 * @param	index	Index of control point to get.
+	 * @param   index	Index of control point to get.
 	 *
-	 * @return	PolyPoint2D instance at specified index.
+	 * @return  PolyPoint2D instance at specified index.
 	 */
 	public PolyPoint2D getPoint( final int index )
 	{
@@ -1879,7 +1879,7 @@ public final class Polyline2D
 	/**
 	 * Get number of control points in this polyline.
 	 *
-	 * @return	Number of control points in this polyline.
+	 * @return  Number of control points in this polyline.
 	 */
 	public int getPointCount()
 	{
@@ -1889,7 +1889,7 @@ public final class Polyline2D
 	/**
 	 * Get type of polyline.
 	 *
-	 * @return	VOID, POINT, PATH, CONVEX, or CONCAVE.
+	 * @return  VOID, POINT, PATH, CONVEX, or CONCAVE.
 	 */
 	public int getType()
 	{
@@ -2004,9 +2004,9 @@ public final class Polyline2D
 	/**
 	 * Test if the specified transformation has any effect on 2D polylines.
 	 *
-	 * @param	xform	Transformation matrix.
+	 * @param   xform	Transformation matrix.
 	 *
-	 * @return	<code>true</code> if the transformation has effect on 2D polylines;
+	 * @return  <code>true</code> if the transformation has effect on 2D polylines;
 	 *			<code>false</code> otherwise.
 	 */
 	protected static boolean hasEffect( final Matrix3D xform )
@@ -2021,7 +2021,7 @@ public final class Polyline2D
 	 * contain two control points and have the first and last control meet at
 	 * the exact same point to be classified as closed.
 	 *
-	 * @return	<code>true</code> if the polyline defines a closed path;
+	 * @return  <code>true</code> if the polyline defines a closed path;
 	 *			<code>false</code> otherwise.
 	 */
 	public boolean isClosed()
@@ -2038,9 +2038,9 @@ public final class Polyline2D
 	/**
 	 * Checks if this shape is intersecting with an other one.
 	 *
-	 * @param	other	Polyline to check for intersection.
+	 * @param   other	Polyline to check for intersection.
 	 *
-	 * @return	<CODE>true</CODE> if shapes are intersecting;
+	 * @return  <CODE>true</CODE> if shapes are intersecting;
 	 *			<CODE>false</CODE> otherwise.
 	 */
 	public boolean isIntersecting( final Polyline2D other )
@@ -2094,10 +2094,10 @@ public final class Polyline2D
 	 * So we have to check intersection between one point on convex1 and convex2
 	 * to check if convex1 is completely on convex2 (and the otherway around).
 	 *
-	 * @param	convex1		First convex
-	 * @param	convex2		Second convex
+	 * @param   convex1		First convex
+	 * @param   convex2		Second convex
 	 *
-	 * @return	true if shapes are intersecting, otherwise false.
+	 * @return  true if shapes are intersecting, otherwise false.
 	 */
 	protected static boolean isIntersectingConvex_Convex( final Polyline2D convex1 , final Polyline2D convex2 )
 	{
@@ -2123,10 +2123,10 @@ public final class Polyline2D
 	/**
 	 * Checks for intersection between a convex and a line.
 	 *
-	 * @param	convex	The convex
-	 * @param	line	The line.
+	 * @param   convex	The convex
+	 * @param   line	The line.
 	 *
-	 * @return	true if shapes are intersecting, otherwise false.
+	 * @return  true if shapes are intersecting, otherwise false.
 	 */
 	protected static boolean isIntersectingConvex_Line( final Polyline2D convex , final Polyline2D line )
 	{
@@ -2143,10 +2143,10 @@ public final class Polyline2D
 	 * - line is completely within convex
 	 * So we have to check intersection between one point on the line and the convex poly.
 	 *
-	 * @param	convex	The convex
-	 * @param	path	The path.
+	 * @param   convex	The convex
+	 * @param   path	The path.
 	 *
-	 * @return	true if shapes are intersecting, otherwise false.
+	 * @return  true if shapes are intersecting, otherwise false.
 	 */
 	protected static boolean isIntersectingConvex_Path( final Polyline2D convex , final Polyline2D path )
 	{
@@ -2173,10 +2173,10 @@ public final class Polyline2D
 	 * area. Otherwise, the point is outside the area.
 	 * </I>
 	 *
-	 * @param	convex	The convex
-	 * @param	point	The point
+	 * @param   convex	The convex
+	 * @param   point	The point
 	 *
-	 * @return	true if shapes are intersecting, otherwise false.
+	 * @return  true if shapes are intersecting, otherwise false.
 	 */
 	protected static boolean isIntersectingConvex_Point( final Polyline2D convex , final PolyPoint2D point )
 	{
@@ -2222,10 +2222,10 @@ public final class Polyline2D
 	/**
 	 * Checks for intersection between two lines.
 	 *
-	 * @param	line1	First line
-	 * @param	line2	Second line
+	 * @param   line1	First line
+	 * @param   line2	Second line
 	 *
-	 * @return	true if shapes are intersecting, otherwise false.
+	 * @return  true if shapes are intersecting, otherwise false.
 	 */
 	protected static boolean isIntersectingLine_Line( final Polyline2D line1 , final Polyline2D line2 )
 	{
@@ -2245,16 +2245,16 @@ public final class Polyline2D
 	 *    Author: Paul Bourke (april 1989)
 	 *    http://astronomy.swin.edu.au/pbourke/geometry/lineline2d/
 	 *
-	 * @param	x1		start point of line 1.
-	 * @param	y1		start point of line 1
-	 * @param	x2		end point of line 1
-	 * @param	y2		end point of line 1
-	 * @param	x3		start point of line 2.
-	 * @param	y3		start point of line 2
-	 * @param	x4		end point of line 2
-	 * @param	y4		end point of line 2
+	 * @param   x1		start point of line 1.
+	 * @param   y1		start point of line 1
+	 * @param   x2		end point of line 1
+	 * @param   y2		end point of line 1
+	 * @param   x3		start point of line 2.
+	 * @param   y3		start point of line 2
+	 * @param   x4		end point of line 2
+	 * @param   y4		end point of line 2
 	 *
-	 * @return	true if shapes are intersecting, otherwise false.
+	 * @return  true if shapes are intersecting, otherwise false.
 	 */
 	protected static boolean isIntersectingLine_Line( final float x1 , final float y1 , final float x2 , final float y2 , final float x3 , final float y3 , final float x4 , final float y4 )
 	{
@@ -2333,10 +2333,10 @@ public final class Polyline2D
 	/**
 	 * Checks for intersection between a line and a point.
 	 *
-	 * @param	line	The line
-	 * @param	point	The point.
+	 * @param   line	The line
+	 * @param   point	The point.
 	 *
-	 * @return	true if shapes are intersecting, otherwise false.
+	 * @return  true if shapes are intersecting, otherwise false.
 	 */
 	protected static boolean isIntersectingLine_Point( final Polyline2D line , final Polyline2D point )
 	{
@@ -2369,10 +2369,10 @@ public final class Polyline2D
 	/**
 	 * Checks for intersection between a path and a line.
 	 *
-	 * @param	path	The path.
-	 * @param	line	The line.
+	 * @param   path	The path.
+	 * @param   line	The line.
 	 *
-	 * @return	true if shapes are intersecting, otherwise false.
+	 * @return  true if shapes are intersecting, otherwise false.
 	 */
 	protected static boolean isIntersectingPath_Line( final Polyline2D path , final Polyline2D line )
 	{
@@ -2400,10 +2400,10 @@ public final class Polyline2D
 	/**
 	 * Checks for intersection between two paths.
 	 *
-	 * @param	path1	The first path.
-	 * @param	path2	The second path.
+	 * @param   path1	The first path.
+	 * @param   path2	The second path.
 	 *
-	 * @return	true if shapes are intersecting, otherwise false.
+	 * @return  true if shapes are intersecting, otherwise false.
 	 */
 	protected static boolean isIntersectingPath_Path( final Polyline2D path1 , final Polyline2D path2 )
 	{
@@ -2444,10 +2444,10 @@ public final class Polyline2D
 	/**
 	 * Checks for intersection between a path and a point.
 	 *
-	 * @param	path	The path.
-	 * @param	point	The point.
+	 * @param   path	The path.
+	 * @param   point	The point.
 	 *
-	 * @return	true if shapes are intersecting, otherwise false.
+	 * @return  true if shapes are intersecting, otherwise false.
 	 */
 	protected static boolean isIntersectingPath_Point( final Polyline2D path , final Polyline2D point )
 	{
@@ -2492,10 +2492,10 @@ public final class Polyline2D
 	/**
 	 * Checks for intersection between two rectangles.
 	 *
-	 * @param	r1	First rectangle
-	 * @param	r2	Second rectangle
+	 * @param   r1	First rectangle
+	 * @param   r2	Second rectangle
 	 *
-	 * @return	true if shapes are intersecting, otherwise false.
+	 * @return  true if shapes are intersecting, otherwise false.
 	 */
 	protected static boolean isIntersectingRectangle_Rectangle( final Bounds2D r1 , final Bounds2D r2 )
 	{
@@ -2506,7 +2506,7 @@ public final class Polyline2D
 	 * Checks if this polyline describes a rectangle.
 	 * (4 sides and 4 corners of 90 degrees).
 	 *
-	 * @return	true if polyline is a rectangle
+	 * @return  true if polyline is a rectangle
 	 */
 	public boolean isRectangle()
 	{
@@ -2546,9 +2546,9 @@ public final class Polyline2D
 	 * Places the specified polyline2d's (segments) head to tail to make one
 	 * big polyline. The segments must make up a valid shape!.
 	 *
-	 * @param	segments	Vector containing segments of Polyline2D to place head to tail.
+	 * @param   segments	Vector containing segments of Polyline2D to place head to tail.
 	 *
-	 * @return	The segments put together.
+	 * @return  The segments put together.
 	 */
 	protected static Polyline2D placeHeadToTail( final Vector segments )
 	{
@@ -2660,9 +2660,9 @@ public final class Polyline2D
 	 * Construct polyline from string representation that was previously
 	 * generated by the toString() method.
 	 *
-	 * @param	str		String representation of polyline.
+	 * @param   str		String representation of polyline.
 	 *
-	 * @return	Polyline that was created (never <CODE>null</CODE>).
+	 * @return  Polyline that was created (never <CODE>null</CODE>).
 	 */
 	public static Polyline2D createInstance( final String str )
 	{
@@ -2680,7 +2680,7 @@ public final class Polyline2D
 	/**
 	 * Get string representation of this object.
 	 *
-	 * @return	String representing this object.
+	 * @return  String representing this object.
 	 */
 	public synchronized String toString()
 	{
@@ -2698,9 +2698,9 @@ public final class Polyline2D
 	 * matrix is specifies a 3D transformation, only the X and Y components of the
 	 * result is saved.
 	 *
-	 * @param	xform	Transformation to apply to the polyline.
+	 * @param   xform	Transformation to apply to the polyline.
 	 *
-	 * @return	Polyline2D that is the result of the transformation (may return
+	 * @return  Polyline2D that is the result of the transformation (may return
 	 *			this instance if the transformation has no effect).
 	 */
 	public synchronized Polyline2D transform( final Matrix3D xform )

@@ -16,8 +16,8 @@ import junit.framework.TestCase;
  *
  * @see	Polyline2D
  *
- * @author	Peter S. Heijnen
- * @version	$Revision$ ($Date$, $Author$)
+ * @author  Peter S. Heijnen
+ * @version $Revision$ $Date$
  */
 public final class TestPolyline2D
 	extends TestCase
