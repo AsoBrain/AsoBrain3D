@@ -53,7 +53,7 @@ public class TestMatrix3D
 	 *  </LI>
 	 * </UL>
 	 */
-	public void testEquals()
+	public static void testEquals()
 	{
 		//System.out.println( "    - equals()" );
 		final Matrix3D i = Matrix3D.INIT;
