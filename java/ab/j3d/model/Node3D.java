@@ -22,8 +22,8 @@ package ab.j3d.model;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import ab.j3d.Matrix3D;
 
@@ -50,7 +50,7 @@ public class Node3D
 	/**
 	 * Collection of children of this node.
 	 */
-	private final Set _children = new HashSet();
+	private final List _children = new ArrayList();
 
 	/**
 	 * Parent of this node (<code>null</code> if this a root node).
@@ -77,8 +77,15 @@ public class Node3D
 	 */
 	public final Node3D addChild( final Node3D node )
 	{
-		if ( ( node != null ) && _children.add( node ) )
-			node.setParent( this );
+		if ( ( node != null ) )
+		{
+			final List children = _children;
+			if ( !children.contains( node ) )
+			{
+				children.add( node );
+				node.setParent( this );
+			}
+		}
 
 		return node;
 	}
@@ -107,7 +114,8 @@ public class Node3D
 	{
 		if ( upwards && !isRoot() )
 		{
-			getParent().gatherLeafs( leafs , leafClass , xform , true );
+			final Node3D parent = getParent();
+			parent.gatherLeafs( leafs , leafClass , xform , true );
 		}
 		else
 		{
@@ -211,8 +219,34 @@ public class Node3D
 	}
 
 	/**
+	 * Paint 2D representation of 3D objects at this node and its child nodes
+	 * using rendering hints defined for this object. See the other
+	 * <code>paint()</code> method in this class for a more elaborate
+	 * description of this process.
+	 * <p />
+	 * If the <code>alternateAppearance</code> flag is set, objects should be
+	 * use alternate rendering hints, if available. Alternate appearance can be
+	 * used to visualize state information, like marking selected or active
+	 * objects.
+	 *
+	 * @param   g                       Graphics2D context.
+	 * @param   gTransform              Projection transform for Graphics2D context (3D->2D, pan, sale).
+	 * @param   viewTransform           Transformation from object's to view coordinate system.
+	 * @param   alternateAppearance     Use alternate appearance.
+	 */
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final boolean alternateAppearance )
+	{
+		final Node3D[] children = getChildren();
+		for ( int i = 0 ; i < children.length ; i++ )
+		{
+			final Node3D node = children[ i ];
+			node.paint( g , gTransform , viewTransform , alternateAppearance );
+		}
+	}
+
+	/**
 	 * Paint 2D representation of this 3D object. The object coordinates are
-	 * transformed using the objXform argument. By default, the object is painted
+	 * transformed using the <code>viewTransform</code> argument. By default, the object is painted
 	 * by drawing the outlines of its 'visible' faces. Derivatives of this class
 	 * may implement are more realistic approach (sphere, cylinder).
 	 * <p />
@@ -238,7 +272,7 @@ public class Node3D
 	 * @param   fillColor       Color to use for filling faces (<code>null</code> to disable drawing).
 	 * @param   shadeFactor     Amount of shading that may be applied (0=none, 1=extreme).
 	 */
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final double shadeFactor )
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
 	{
 		final Node3D[] children = getChildren();
 		for ( int i = 0 ; i < children.length ; i++ )
@@ -285,15 +319,16 @@ public class Node3D
 	 */
 	public final void setParent( final Node3D parent )
 	{
-		if ( parent != _parent )
+		final Node3D oldParent = _parent;
+		if ( parent != oldParent )
 		{
-			if ( _parent != null )
-				_parent.removeChild( this );
+			if ( oldParent != null )
+				oldParent.removeChild( this );
 
 			_parent = parent;
 
-			if ( _parent != null )
-				_parent.addChild( this );
+			if ( parent != null )
+				parent.addChild( this );
 		}
 	}
 
