@@ -1,7 +1,7 @@
 Current version: pre-1.1
 
 Changes between 1.0.6 and 1.1:
- - Renamed project from 'AsoBrain Lightweight 3D Toolkit' to 'AsoBrain 3D Toolkit' (no longer 'lightweight', because it also supports heavyweight Java 3D now).
+ - Changed project name to 'AsoBrain Lightweight 3D Toolkit' (because of heavyweight Java 3D support). Renamed packages from 'ab.light3d' to 'ab.j3d'.
  - Added Java 3D support (ab.j3d.java3d).
  - Added 3D Studio file (.3ds) support (ab.j3d.a3ds).
  - Added opacity properties for faces.
