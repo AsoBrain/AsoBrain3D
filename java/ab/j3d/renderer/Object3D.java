@@ -515,17 +515,17 @@ public class Object3D
 		return found ? index - 1 : -1;
 	}
 
-	private void ensureCapacity( final int lenght )
+	private void ensureCapacity( final int length )
 	{
 		final int vertexCount = getTotalVertexCount();
 
-		if ( _vertices == null || vertexCount < lenght )
+		if ( _vertices == null || vertexCount < length )
 		{
 			float[] temp;
 
 			if ( _vertices != null )
 			{
-				temp  = new float[ lenght ];
+				temp  = new float[ length ];
 
 				System.arraycopy( _vertices , 0 , temp , 0 , vertexCount * 3 );
 				_vertices = temp;
@@ -533,7 +533,7 @@ public class Object3D
 
 			if ( _vertexNormals != null )
 			{
-				temp  = new float[ lenght ];
+				temp  = new float[ length ];
 
 				System.arraycopy( _vertexNormals, 0 , temp , 0 , vertexCount * 3 );
 				_vertexNormals = temp;
@@ -1153,15 +1153,15 @@ public class Object3D
 			return _normal;
 		}
 
-		private void ensureCapacity( final int lenght )
+		private void ensureCapacity( final int length )
 		{
-			if ( _pointIndices == null || _pointCount < lenght )
+			if ( _pointIndices == null || _pointCount < length )
 			{
 				int[] temp;
 
 				if ( _pointIndices != null )
 				{
-					temp = new int[ lenght ];
+					temp = new int[ length ];
 
 					System.arraycopy( _pointIndices , 0 , temp , 0 , _pointCount );
 					_pointIndices = temp;
@@ -1169,7 +1169,7 @@ public class Object3D
 
 				if ( _textureU != null )
 				{
-					temp  = new int[ lenght ];
+					temp  = new int[ length ];
 
 					System.arraycopy( _textureU , 0 , temp , 0 , _pointCount );
 					_textureU = temp;
@@ -1177,7 +1177,7 @@ public class Object3D
 
 				if ( _textureV != null )
 				{
-					temp  = new int[ lenght ];
+					temp  = new int[ length ];
 
 					System.arraycopy( _textureV , 0 , temp , 0 , _pointCount );
 					_textureV = temp;
