@@ -34,6 +34,8 @@ import javax.vecmath.Vector3f;
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.model.Face3D;
+import ab.j3d.model.Node3DCollection;
+import ab.j3d.model.Object3D;
 
 /**
  * This object builds <code>Shape3D</code> objects based on data from
@@ -69,8 +71,83 @@ import ab.j3d.model.Face3D;
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-class Shape3DBuilder
+public class Shape3DBuilder
 {
+	/**
+	 * Create a Java 3D <code>BranchGroup</code> containing a content graph by
+	 * converting <code>Object3D</code> instances in a
+	 * <code>Node3DCollection</code> using this builder.
+	 *
+	 * @param   nodes               Collection of nodes to create the branch group from.
+	 * @param   textureOverride     Texture to use instead of actual object texture.
+	 * @param   opacity             Extra object opacity (0.0=translucent, 1.0=opaque).
+	 *
+	 * @return  <code>BranchGroup</code> containing the created content graph.
+	 */
+	public static BranchGroup createBranchGroup( final Node3DCollection nodes , final TextureSpec textureOverride , final float opacity )
+	{
+		final Shape3DBuilder shapeBuilder = new Shape3DBuilder();
+
+		for ( int i = 0 ; i < nodes.size() ; i++ )
+		{
+			final Object3D object3d  = (Object3D)nodes.getNode( i );
+			final int      faceCount = object3d.getFaceCount();
+
+			for ( int j = 0 ; j < faceCount ; j++ )
+				shapeBuilder.prepareFace( object3d.getFace( j ) , textureOverride , opacity );
+		}
+
+		for ( int i = 0 ; i < nodes.size() ; i++ )
+		{
+			final Matrix3D xform         = nodes.getMatrix( i );
+			final Object3D object3d      = (Object3D)nodes.getNode( i );
+			final int      faceCount     = object3d.getFaceCount();
+			final double[] pointCoords   = object3d.getPointCoords();
+			final double[] vertexNormals = object3d.getVertexNormals();
+
+			for ( int j = 0 ; j < faceCount ; j++ )
+				shapeBuilder.addFace( xform , pointCoords , vertexNormals , object3d.getFace( j ) , textureOverride , opacity );
+		}
+
+		final BranchGroup result = new BranchGroup();
+		result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
+		result.setCapability( BranchGroup.ALLOW_DETACH );
+		shapeBuilder.buildShapes( result );
+		return result;
+	}
+
+	/**
+	 * Create a Java 3D <code>BranchGroup</code> containing a content graph by
+	 * converting an <code>Object3D</code> instance using this builder.
+	 *
+	 * @param   xform               Transform to apply to vertices.
+	 * @param   object3d            Object3D to convert.
+	 * @param   textureOverride     Texture to use instead of actual object texture.
+	 * @param   opacity             Extra object opacity (0.0=translucent, 1.0=opaque).
+	 *
+	 * @return  <code>BranchGroup</code> containing the created content graph.
+	 */
+	public static BranchGroup createBranchGroup( final Matrix3D xform , final Object3D object3d , final TextureSpec textureOverride , final float opacity )
+	{
+		final Shape3DBuilder shapeBuilder = new Shape3DBuilder();
+
+		final int      faceCount     = object3d.getFaceCount();
+		final double[] pointCoords   = object3d.getPointCoords();
+		final double[] vertexNormals = object3d.getVertexNormals();
+
+		for ( int j = 0 ; j < faceCount ; j++ )
+			shapeBuilder.prepareFace( object3d.getFace( j ) , textureOverride , opacity );
+
+		for ( int j = 0 ; j < faceCount ; j++ )
+			shapeBuilder.addFace( xform , pointCoords , vertexNormals , object3d.getFace( j ) , textureOverride , opacity );
+
+		final BranchGroup result = new BranchGroup();
+		result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
+		result.setCapability( BranchGroup.ALLOW_DETACH );
+		shapeBuilder.buildShapes( result );
+		return result;
+	}
+
 	/**
 	 * Array containing texture groups. A texture group contains shapes that
 	 * share the same texture.
@@ -235,22 +312,22 @@ class Shape3DBuilder
 
 							final int coordinateIndex = quadCount * 4;
 
-							quadArray.setCoordinate( coordinateIndex     , pointCoord0 );
-							quadArray.setCoordinate( coordinateIndex + 1 , pointCoord1 );
-							quadArray.setCoordinate( coordinateIndex + 2 , pointCoord2 );
-							quadArray.setCoordinate( coordinateIndex + 3 , pointCoord3 );
+							quadArray.setCoordinate( coordinateIndex     , pointCoord3 );
+							quadArray.setCoordinate( coordinateIndex + 1 , pointCoord2 );
+							quadArray.setCoordinate( coordinateIndex + 2 , pointCoord1 );
+							quadArray.setCoordinate( coordinateIndex + 3 , pointCoord0 );
 
-							quadArray.setNormal( coordinateIndex     , normal0 );
-							quadArray.setNormal( coordinateIndex + 1 , normal1 );
-							quadArray.setNormal( coordinateIndex + 2 , normal2 );
-							quadArray.setNormal( coordinateIndex + 3 , normal3 );
+							quadArray.setNormal( coordinateIndex     , normal3 );
+							quadArray.setNormal( coordinateIndex + 1 , normal2 );
+							quadArray.setNormal( coordinateIndex + 2 , normal1 );
+							quadArray.setNormal( coordinateIndex + 3 , normal0 );
 
 							if ( hasTexture )
 							{
-								quadArray.setTextureCoordinate( 0 , coordinateIndex     , textureCoord0 );
-								quadArray.setTextureCoordinate( 0 , coordinateIndex + 1 , textureCoord1 );
-								quadArray.setTextureCoordinate( 0 , coordinateIndex + 2 , textureCoord2 );
-								quadArray.setTextureCoordinate( 0 , coordinateIndex + 3 , textureCoord3 );
+								quadArray.setTextureCoordinate( 0 , coordinateIndex     , textureCoord3 );
+								quadArray.setTextureCoordinate( 0 , coordinateIndex + 1 , textureCoord2 );
+								quadArray.setTextureCoordinate( 0 , coordinateIndex + 2 , textureCoord1 );
+								quadArray.setTextureCoordinate( 0 , coordinateIndex + 3 , textureCoord0 );
 							}
 
 							pointCoord1   = pointCoord3;
@@ -274,7 +351,7 @@ class Shape3DBuilder
 							if ( triangleCount == 0 )
 								throw new IllegalStateException( "should have called prepareFace()!" );
 
-							triangleArray = new TriangleArray( 4 * triangleCount , TriangleArray.COORDINATES | TriangleArray.NORMALS | ( hasTexture ? TriangleArray.TEXTURE_COORDINATE_2 : 0 ) );
+							triangleArray = new TriangleArray( 3 * triangleCount , TriangleArray.COORDINATES | TriangleArray.NORMALS | ( hasTexture ? TriangleArray.TEXTURE_COORDINATE_2 : 0 ) );
 							triangleCount = 0;
 						}
 
@@ -285,19 +362,19 @@ class Shape3DBuilder
 
 						final int coordinateIndex = triangleCount * 3;
 
-						triangleArray.setCoordinate( coordinateIndex     , pointCoord0 );
+						triangleArray.setCoordinate( coordinateIndex     , pointCoord2 );
 						triangleArray.setCoordinate( coordinateIndex + 1 , pointCoord1 );
-						triangleArray.setCoordinate( coordinateIndex + 2 , pointCoord2 );
+						triangleArray.setCoordinate( coordinateIndex + 2 , pointCoord0 );
 
-						triangleArray.setNormal( coordinateIndex     , normal0 );
+						triangleArray.setNormal( coordinateIndex     , normal2 );
 						triangleArray.setNormal( coordinateIndex + 1 , normal1 );
-						triangleArray.setNormal( coordinateIndex + 2 , normal2 );
+						triangleArray.setNormal( coordinateIndex + 2 , normal0 );
 
 						if ( hasTexture )
 						{
-							triangleArray.setTextureCoordinate( 0 , coordinateIndex     , textureCoord0 );
+							triangleArray.setTextureCoordinate( 0 , coordinateIndex     , textureCoord2 );
 							triangleArray.setTextureCoordinate( 0 , coordinateIndex + 1 , textureCoord1 );
-							triangleArray.setTextureCoordinate( 0 , coordinateIndex + 2 , textureCoord2 );
+							triangleArray.setTextureCoordinate( 0 , coordinateIndex + 2 , textureCoord0 );
 						}
 
 						_triangleArray = triangleArray;
