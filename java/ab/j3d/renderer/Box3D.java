@@ -101,14 +101,14 @@ public final class Box3D
 
 		/*
 		 * Set texture properties.
-		 */	
+		 */
 		final TextureSpec frontalTexture    = isFrontal ? mainTexture : sideTexture;
 		final boolean     flipFrontal       = isHorizontal;
 		final TextureSpec verticalTexture   = isVertical ? mainTexture : sideTexture;
 		final boolean     flipVertical      = isHorizontal;
 		final TextureSpec horizontalTexture = isHorizontal ? mainTexture : sideTexture;
 		final boolean     flipHorizontal    = !isVertical;
-		 
+
 		final TextureSpec[] faceMat =
 		{
 			frontalTexture ,
@@ -119,6 +119,16 @@ public final class Box3D
 			horizontalTexture
 		};
 
+		final boolean[] faceSmooth =
+		{
+			false ,
+			false ,
+			false ,
+			false ,
+			false ,
+			false
+		};
+
 		int[][] faceTU = null;
 		int[][] faceTV = null;
 		if ( ( mainTexture != null && mainTexture.isTexture() )
@@ -126,24 +136,24 @@ public final class Box3D
 		{
 			faceTU = new int[ 6 ][];
 			faceTV = new int[ 6 ][];
-			
-			setTexture( frontalTexture , flipFrontal , 0 , 
+
+			setTexture( frontalTexture , flipFrontal , 0 ,
 				faceTU , xform.xo , xform.xo + _dx ,
 				faceTV , xform.zo , xform.zo + _dz );
 
-			setTexture( verticalTexture , flipVertical , 2 , 
+			setTexture( verticalTexture , flipVertical , 2 ,
 				faceTU , xform.yo , xform.yo + _dy ,
 				faceTV , xform.zo , xform.zo + _dz );
 
-			setTexture( horizontalTexture , flipHorizontal , 4 , 
-				faceTU , xform.xo , xform.xo + _dx , 
+			setTexture( horizontalTexture , flipHorizontal , 4 ,
+				faceTU , xform.xo , xform.xo + _dx ,
 				faceTV , xform.yo , xform.yo + _dy );
 		}
 
 		/*
 		 * Set Object3D properties.
 		 */
-		set( vertices , faceVert , faceMat , faceTU , faceTV , false );
+		set( vertices , faceVert , faceMat , faceTU , faceTV , faceSmooth );
 	}
 
 	/**
