@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="AsoBrain Lightweight 3D Toolkit" default="all">
-    <property environment="env" />
+  <property environment="env" />
 
   <target name="all" depends="dist,test" description="Generate distribution files and run unit tests"/>
 
@@ -45,7 +45,7 @@
   </target>
 
   <target name="test" depends="compile-tests" description="Execute unit tests">
-    <junit printSummary="withOutAndErr" haltonfailure="on">
+    <junit fork="yes" haltonfailure="on">
       <classpath refid="test.classpath"/>
       <test name="${testcase}" if="testcase"/>
       <batchtest unless="testcase">
@@ -54,6 +54,7 @@
           <exclude name="**/*$*"/>
         </fileset>
       </batchtest>
+      <formatter type="brief" usefile="false"/>
     </junit>
   </target>
 </project>
