@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="AsoBrain 3D Toolkit" default="all">
+  <property file="build.properties"/>
+  <property file="../build.properties"/>
+  <property file="${user.home}/build.properties"/>
   <property name="build.sysclasspath" value="last"/>
 
   <target name="all" depends="dist,test" description="Generate distribution files and run unit tests"/>
@@ -20,11 +23,12 @@
   <target name="api-check" depends="init" description="Pre-compilation initialization">
     <mkdir dir="classes/test"/>
     <javac srcdir="test" destdir="classes/test" includes="apicheck/ApiCheck.java"/>
-    <java classname="apicheck.ApiCheck" classpath="classes/test" failonerror="yes"/>
+    <java classname="apicheck.ApiCheck" classpath="classes/test" classpathref="java.classpath" failonerror="yes"/>
   </target>
 
   <path id="java.classpath">
-    <path path="classes"/>
+    <pathelement location="classes"/>
+    <pathelement location="${numdata.oss.home}/lib/numdata-oss.jar"/>
   </path>
 
   <target name="compile-java" depends="api-check" description="Compile Java source files">
@@ -42,7 +46,7 @@
 
   <path id="test.classpath">
     <path refid="java.classpath"/>
-    <pathelement path="classes/test"/>
+    <pathelement location="classes/test"/>
   </path>
 
   <target name="compile-tests" depends="compile-java" description="Compile unit tests">
