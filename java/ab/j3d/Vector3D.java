@@ -217,6 +217,18 @@ public final class Vector3D
 	}
 
 	/**
+	 * Normalize this vector (make length 1). If the vector has length 0 or 1,
+	 * it will be returned as-is.
+	 *
+	 * @return  Normalized vector.
+	 */
+	public Vector3D normalize()
+	{
+		float l = length();
+		return ( l == 0 || l == 1 ) ? this : set( x / l , y / l , z / l );
+	}
+
+	/**
 	 * Add another vector to this vector.
 	 *
 	 * @param	other	Vector to add to this vector.
