@@ -477,7 +477,7 @@ public class Object3D
 	 * @param   y   Y-coordinate of the point.
 	 * @param   z   Z-coordinate of the point.
 	 */
-	public void addPoint( final float x , final float y , final float z )
+	private void addPoint( final float x , final float y , final float z )
 	{
 		final int objectPointCount = getTotalVertexCount() * 3;
 		ensureCapacity( objectPointCount + 3 );
@@ -499,7 +499,7 @@ public class Object3D
 	 * @return  The index of the specified point in the <code>_vertices</code> list;
 	 *          -1 if the specified point is not in the <code>_vertices</code> list.
 	 */
-	public int getPointIndex( final float x , final float y , final float z )
+	private int getPointIndex( final float x , final float y , final float z )
 	{
 		boolean found = false;
 		int     index;
@@ -904,7 +904,7 @@ public class Object3D
 	 *
 	 * @return  Adjustment value to add to the value.
 	 */
-	public static int getRangeAdjustment( final int value , final int range )
+	private static int getRangeAdjustment( final int value , final int range )
 	{
 		final int result;
 		if ( value < 0 )
@@ -1152,7 +1152,7 @@ public class Object3D
 		 * @param   y   y-coordinate of the normal of this face.
 		 * @param   z   z-coordinate of the normal of this face.
 		 */
-		public void setNormal( final float x , final float y , final float z )
+		private void setNormal( final float x , final float y , final float z )
 		{
 			_normal[ 0 ] = x;
 			_normal[ 1 ] = y;
