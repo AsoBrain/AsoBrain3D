@@ -89,55 +89,64 @@ public final class Matrix3D
 	}
 
 	/**
-	 * Test if the specified value approaches the value 0.
+	 * Test if the specified values are 'almost' equal (the difference between
+	 * them approaches the value 0).
 	 *
-	 * @param   value   Value to test.
+	 * @param   value1      First value to compare.
+	 * @param   value2      Second value to compare.
 	 *
-	 * @return  <code>true</code> is the specified value is within a
-	 *          +/- 0.01 tolerance of 0; <code>false</code> otherwise.
+	 * @return  <code>true</code> is the values are within a +/- 0.001 tolerance
+	 *          of eachother; <code>false</code> otherwise.
 	 */
-	public static boolean almost0( final double value )
+	public static boolean almostEqual( final double value1 , final double value2 )
 	{
-		return value > -0.01 && value < 0.01;
+		final double delta = value1 - value2;
+		return ( delta >= -0.001 ) && ( delta <= 0.001 );
 	}
 
 	/**
-	 * Test if the specified value approaches the value 0.
+	 * Test if the specified values are 'almost' equal (the difference between
+	 * them approaches the value 0).
 	 *
-	 * @param   value   Value to test.
+	 * @param   value1      First value to compare.
+	 * @param   value2      Second value to compare.
 	 *
-	 * @return  <code>true</code> is the specified value is within a
-	 *          +/- 0.01 tolerance of 0; <code>false</code> otherwise.
+	 * @return  <code>true</code> is the values are within a +/- 0.001 tolerance
+	 *          of eachother; <code>false</code> otherwise.
 	 */
-	public static boolean almost0( final float value )
+	public static boolean almostEqual( final float value1 , final float value2 )
 	{
-		return value > -0.01f && value < 0.01f;
+		final float delta = value1 - value2;
+		return ( delta >= -0.001f ) && ( delta <= 0.001f );
 	}
 
 	/**
-	 * Test if the specified value approaches the value 1.
+	 * Compare this object to another object.
 	 *
-	 * @param   value   Value to test.
+	 * @param   other   Object to compare with.
 	 *
-	 * @return  <code>true</code> is the specified value is within a
-	 *          +/- 0.01 tolerance of 1; <code>false</code> otherwise.
+	 * @return  <code>true</code> if the objects are equal;
+	 *          <code>false</code> if not.
 	 */
-	public static boolean almost1( final double value )
+	public boolean almostEquals( final Object other )
 	{
-		return value > 0.99 && value < 1.01;
-	}
+		if ( other == this ) return true;
+		if ( other == null ) return false;
+		if ( !( other instanceof Matrix3D ) ) return false;
 
-	/**
-	 * Test if the specified value approaches the value 1.
-	 *
-	 * @param   value   Value to test.
-	 *
-	 * @return  <code>true</code> is the specified value is within a
-	 *          +/- 0.01 tolerance of 1; <code>false</code> otherwise.
-	 */
-	public static boolean almost1( final float value )
-	{
-		return value > 0.99f && value < 1.01f;
+		final Matrix3D m = (Matrix3D)other;
+		return almostEqual( xx , m.xx )
+		    && almostEqual( xy , m.xy )
+		    && almostEqual( xz , m.xz )
+		    && almostEqual( xo , m.xo )
+		    && almostEqual( yx , m.yx )
+		    && almostEqual( yy , m.yy )
+		    && almostEqual( yz , m.yz )
+		    && almostEqual( yo , m.yo )
+		    && almostEqual( zx , m.zx )
+		    && almostEqual( zy , m.zy )
+		    && almostEqual( zz , m.zz )
+		    && almostEqual( zo , m.zo );
 	}
 
 	/**
@@ -486,7 +495,7 @@ public final class Matrix3D
 	 */
 	public Matrix3D rotateX( final double theta )
 	{
-		if ( theta == 0d )
+		if ( almostEqual( theta , 0 ) )
 			return this;
 
 		final float ct = (float)Math.cos( theta );
@@ -507,7 +516,7 @@ public final class Matrix3D
 	 */
 	public Matrix3D rotateY( final double theta )
 	{
-		if ( theta == 0d )
+		if ( almostEqual( theta , 0 ) )
 			return this;
 
 		final float ct = (float)Math.cos( theta );
@@ -528,7 +537,7 @@ public final class Matrix3D
 	 */
 	public Matrix3D rotateZ( final double theta )
 	{
-		if ( theta == 0d )
+		if ( almostEqual( theta , 0 ) )
 			return this;
 
 		final float ct = (float)Math.cos( theta );
