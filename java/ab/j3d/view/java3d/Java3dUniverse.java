@@ -20,6 +20,7 @@
  */
 package ab.j3d.view.java3d;
 
+import java.awt.Color;
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Background;
 import javax.media.j3d.BoundingSphere;
@@ -30,9 +31,9 @@ import javax.media.j3d.Group;
 import javax.media.j3d.TransformGroup;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
-import javax.vecmath.Vector3f;
 import javax.vecmath.Point3f;
 import javax.vecmath.Point3i;
+import javax.vecmath.Vector3f;
 
 import com.sun.j3d.utils.universe.SimpleUniverse;
 import com.sun.j3d.utils.universe.Viewer;
@@ -134,7 +135,7 @@ public final class Java3dUniverse
 		viewer = new Viewer[ 0 ];
 
 		_unit = unit;
-		_content = createStaticContent();
+		_content = createStaticContent( new Color( 0.2f , 0.3f , 0.4f ) );
 	}
 
 	/**
@@ -161,7 +162,7 @@ public final class Java3dUniverse
 		super( canvas3d );
 
 		_unit = unit;
-		_content = createStaticContent();
+		_content = createStaticContent( new Color( 0.2f , 0.3f , 0.4f ) );
 	}
 
 	/**
@@ -202,19 +203,21 @@ public final class Java3dUniverse
 	 * @see     #getContent
 	 * @see     #_unit
 	 */
-	private Group createStaticContent()
+	private Group createStaticContent( final Color backgroundColor )
 	{
 		final BoundingSphere bounds = new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 100.0 );
 
 		// create static scene
 		final BranchGroup scene = new BranchGroup();
+		scene.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
 
 		// Set up the background
-//		final Background background = new Background( new Color3f( 0.8f , 0.8f , 0.8f ) );
-		final Background background = new Background( new Color3f( 0.2f , 0.3f , 0.4f ) );
-//		Background background = new Background( new Color3f( 0.3f , 0.4f , 0.6f ) );
-		background.setApplicationBounds( bounds );
-		scene.addChild( background );
+		if ( backgroundColor != null )
+		{
+			final Background background = new Background( new Color3f( backgroundColor ) );
+			background.setApplicationBounds( bounds );
+			scene.addChild( background );
+		}
 
 		// Set up the ambient light
 		final Color3f ambientColor = new Color3f( 1.0f , 1.0f , 1.0f );
