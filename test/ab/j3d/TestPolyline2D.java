@@ -4,109 +4,29 @@ import backoffice.Polyline2D;
 import backoffice.PolyPoint2D;
 import ab.components.*;
 import java.awt.*;
+import java.awt.event.*;
 
 
-public class TestPolyline2D 
+public class TestPolyline2D
+	extends AbPanel
+	implements MouseListener , MouseMotionListener
 {
-	public static Polyline2D getAdjusted( final Polyline2D pl , float[] segmentAdjustments )
+	private Polyline2D _baseLine;
+	private Polyline2D _adjusted;
+	private int _dragPoint = -1;
+
+	private TestPolyline2D( final Polyline2D base )
 	{
-		boolean isClosed = pl.isClosed();
+		setBackground( Color.white );
+		setOpaque( true );
+		setDoubleBuffered( true );
+
+		_baseLine = base;
+		_adjusted = new Polyline2D( _baseLine );
+		_adjusted.adjustAllSegments( 10 );
 		
-		PolyPoint2D[] pts = new PolyPoint2D[ pl.getPointCount() - ( isClosed ? 1 : 0 ) ];
-		for ( int i = 0 ; i < pts.length ; i++ )
-			pts[ i ] = pl.getPoint( i );
-		
-		for ( int i1 = 0 ; i1 < segmentAdjustments.length ; i1++ )
-		{
-			/*
-			 * Get adjustment for segment. Ignore 0-adjustments.
-			 */
-			final float adjustment = segmentAdjustments[ i1 ];
-			if ( adjustment < 0.001f && adjustment > -0.001f )
-				continue;
-				
-			final int i2 = ( i1 + 1 ) % pts.length;
-			final PolyPoint2D p1 = pts[ i1 ];
-			final PolyPoint2D p2 = pts[ i2 ];
-
-			/*
-			 * Determine lenght and direction of segment (ignore 0-length segments).
-			 */
-			float sdx = p2.x - p1.x;
-			float sdy = p2.y - p1.y;
-			float l = (float)Math.sqrt( sdx * sdx + sdy * sdy );
-			if ( l < 0.001f )
-				continue;
-
-			sdx = sdx / l;
-			sdy = sdy / l;
-			
-			/*
-			 * Adjust start point using the previous control point. Assume 90 degree angle if no such point exists.
-			 */	
-			if ( i1 == 0 && !isClosed )
-			{
-				pts[ i1 ] = new PolyPoint2D( p1.x - adjustment * sdy , p1.y + adjustment * sdx );
-			}
-			else
-			{
-				PolyPoint2D prev = pts[ ( ( i1 == 0 ) ? pts.length : i1 ) - 1 ];
-				
-				float tx = prev.x - p1.x;
-				float ty = prev.y - p1.y;
-				float tl = (float)Math.sqrt( tx * tx + ty * ty );
-				if ( tl < 0.001f )
-					continue;
-
-				tx = tx / tl;
-				ty = ty / tl;
-
-				float cos = tx * sdx + ty * sdy;
-				float sin = 1 - ( cos * cos );
-				float hyp = (float)Math.sqrt( ( adjustment * adjustment ) / sin  );
-
-				pts[ i1 ] = new PolyPoint2D( p1.x + hyp * tx , p1.y + hyp * ty );
-			}
-
-			/*
-			 * Adjust end point using the next control point. Assume 90 degree angle if no such point exists.
-			 */
-			if ( !isClosed && ( i2 == pts.length - 1 ) )
-			{
-				pts[ i2 ] = new PolyPoint2D( p2.x - adjustment * sdy , p2.y + adjustment * sdx );
-			}
-			else
-			{
-				PolyPoint2D next = pts[ ( i2 + 1 ) % pts.length ];
-				float tx = next.x - p2.x;
-				float ty = next.y - p2.y;
-				float tl = (float)Math.sqrt( tx * tx + ty * ty );
-				if ( tl < 0.001f )
-					continue;
-
-				tx = tx / tl;
-				ty = ty / tl;
-				
-				float cos = tx * sdx + ty * sdy;
-				float sin = 1 - ( cos * cos );
-				float hyp = (float)Math.sqrt( ( adjustment * adjustment ) / sin  );
-
-				pts[ i2 ] = new PolyPoint2D( p2.x + hyp * tx , p2.y + hyp * ty );
-			}
-		}
-
-		/*
-		 * Build result.
-		 */
-		Polyline2D result = new Polyline2D();
-		
-		for ( int i = 0 ; i < pts.length ; i++ )
-			result.append( pts[ i ] );
-			
-		if ( isClosed )
-			result.close();
-		
-		return result;
+		addMouseListener( this );
+		addMouseMotionListener( this );
 	}
 
 	/**
@@ -119,6 +39,170 @@ public class TestPolyline2D
 		System.exit( test( args ) ? 0 : 1 );
 	}
 
+/**
+ * Invoked when the mouse has been clicked on a component.
+ */
+public void mouseClicked(java.awt.event.MouseEvent e)
+{
+}
+
+	/**
+	 * Invoked when a mouse button is pressed on a component and then 
+	 * dragged.  Mouse drag events will continue to be delivered to
+	 * the component where the first originated until the mouse button is
+	 * released (regardless of whether the mouse position is within the
+	 * bounds of the component).
+	 */
+	public void mouseDragged( MouseEvent e )
+	{
+		if ( _dragPoint < 0 )
+			return;
+			
+		
+		Dimension size = getSize();
+		int x = e.getX();
+		int y = size.height - 1 - e.getY();
+		
+		if ( x < 0 || y < 0 || x >= size.width || y >= size.height )
+			return;
+		
+		Polyline2D newPoly = new Polyline2D();
+		for ( int i = 0 ; i < _baseLine.getPointCount() ; i++ )
+		{
+			if ( i == _dragPoint )
+				newPoly.append( x , y );
+			else
+				newPoly.append( _baseLine.getPoint( i ) );
+		}
+
+		_baseLine = newPoly;
+		
+		_adjusted = new Polyline2D( _baseLine );
+		_adjusted.adjustAllSegments( 10 );
+		
+		repaint();
+	}
+
+/**
+ * Invoked when the mouse enters a component.
+ */
+public void mouseEntered(java.awt.event.MouseEvent e)
+{
+}
+
+/**
+ * Invoked when the mouse exits a component.
+ */
+public void mouseExited(java.awt.event.MouseEvent e)
+{
+}
+
+/**
+ * Invoked when the mouse button has been moved on a component
+ * (with no buttons no down).
+ */
+public void mouseMoved(java.awt.event.MouseEvent e)
+{
+}
+
+	/**
+	 * Invoked when a mouse button has been pressed on a component.
+	 */
+	public void mousePressed( final MouseEvent e )
+	{
+		Dimension size = getSize();
+		int x = e.getX();
+		int y = size.height - 1 - e.getY();
+		
+		if ( x < 0 || y < 0 || x >= size.width || y >= size.height )
+			return;
+
+		float distanceSquared = 3f * 3f;
+		
+		_dragPoint = -1;
+		for ( int i = 0 ; i < _baseLine.getPointCount() ; i++ )
+		{
+			PolyPoint2D p = _baseLine.getPoint( i );
+			float dx = p.x - x;
+			float dy = p.y - y;
+
+			if ( ( dx * dx + dy * dy ) < distanceSquared )
+			{
+				_dragPoint = i;
+				break;
+			}
+		}
+
+		repaint();
+	}
+
+	/**
+	 * Invoked when a mouse button has been released on a component.
+	 */
+	public void mouseReleased( MouseEvent e )
+	{
+		_dragPoint = -1;
+		repaint();
+	}
+
+	/**
+	 * Paint component.
+	 *
+	 * @param	g	Graphics context.
+	 */
+	protected void paintComponent( Graphics g )
+	{
+		super.paintComponent( g );
+
+		if ( _baseLine != null )
+		{
+			g.setColor( Color.black );
+			paintPoly( g , _baseLine , _dragPoint , Color.black , Color.gray , Color.blue , 3 );
+		}
+
+		if ( _adjusted != null )
+		{
+			g.setColor( Color.red );
+			paintPoly( g , _adjusted , -1 , Color.pink , Color.pink , null , 2 );
+		}
+	}
+
+	/**
+	 * Paint polyline using dots and lines.
+	 *
+	 * @param	g		Graphics context.
+	 * @param	pl		Polyline to draw.
+	 */
+	private void paintPoly( Graphics g , Polyline2D pl , int selected , Color dotColor , Color lineColor , Color selectColor , int radius )
+	{
+		final int height = getHeight();
+		final int maxIndex = pl.getPointCount() - 1;
+		final int maxY = height - 1;
+		
+		g.setColor( lineColor );
+		
+		for ( int i = 0 ; i < maxIndex ; i++ )
+		{
+			PolyPoint2D p1 = pl.getPoint( i );
+			PolyPoint2D p2 = pl.getPoint( i + 1 );
+			
+			g.drawLine( Math.round( p1.x ) , maxY - Math.round( p1.y ) ,
+			            Math.round( p2.x ) , maxY - Math.round( p2.y ) );
+		}
+
+		final int ovalX    = -radius;
+		final int ovalY    = maxY - radius;
+		final int ovalSize = radius * 2 + 1;
+		
+		for ( int i = 0 ; i <= maxIndex ; i++ )
+		{
+			PolyPoint2D p = pl.getPoint( i );
+			g.setColor( ( i == selected ) ? selectColor : dotColor );
+			g.fillOval( ovalX + Math.round( p.x ) , ovalY - Math.round( p.y ) , ovalSize , ovalSize );
+		}
+		
+	}
+
 	/**
 	 * Run test application.
 	 *
@@ -129,53 +213,17 @@ public class TestPolyline2D
 	 */
 	public static boolean test( final String[] args )
 	{
-		final Polyline2D pl1 = new Polyline2D();
-		pl1.append( 50 , 50 );
-		pl1.append( 550 , 50 );
-		pl1.append( 300 , 120 );
-		pl1.append( 470 , 290 );
-		pl1.append( 180 , 290 );
-		pl1.append( 50 , 140 );
-		pl1.close();
-
-		final Polyline2D pl2 = getAdjusted( pl1 , new float[] { 10 , 10 , 10 , 10 , 10 , 10 } );
+		final Polyline2D base = new Polyline2D();
+		base.append( 50 , 50 );
+		base.append( 550 , 50 );
+		base.append( 300 , 120 );
+		base.append( 470 , 290 );
+		base.append( 180 , 290 );
+		base.append( 50 , 140 );
+		base.close();
 		
 		AbDialog f = new AbDialog( TestPolyline2D.class.getName() , true );
-		AbPanel p = new AbPanel()
-		{
-			private void paintPoly( Graphics g , Polyline2D pl )
-			{
-				for ( int i = 0 ; i < pl.getPointCount() ; i++ )
-				{
-					PolyPoint2D p1 = pl.getPoint( i );
-					int x1 = Math.round( p1.x );
-					int y1 = Math.round( p1.y );
-
-					g.fillOval( x1 - 2 , y1 - 2 , 5 , 5 );
-
-					if ( i < ( pl.getPointCount() - 1 ) )
-					{
-						PolyPoint2D p2 = pl.getPoint( i + 1 );
-						int x2 = Math.round( p2.x );
-						int y2 = Math.round( p2.y );
-						
-						g.drawLine( x1 , y1 , x2 , y2 );
-					}
-				}
-			}
-			
-			protected void paintComponent( Graphics g )
-			{
-				super.paintComponent( g );
-				
-				g.setColor( Color.black );
-				paintPoly( g , pl1 );
-				
-				g.setColor( Color.red );
-				paintPoly( g , pl2 );
-			}
-		};
-		p.setBackground( Color.white );
+		TestPolyline2D p = new TestPolyline2D( base );
 		f.getContent().add( p , BorderLayout.CENTER );
 		f.setSize( 600 , 400 );
 		f.setAlignment( 50 , 50 );
