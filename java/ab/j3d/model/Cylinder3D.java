@@ -106,14 +106,10 @@ public final class Cylinder3D
 		/*
 		 * Setup properties of cylinder.
 		 */
-		final boolean       hasBottom   = ( radiusBottom > 0 );
-		final boolean       hasTop      = ( radiusTop > 0 );
-		final int           vertexCount = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
-		final int           faceCount   = ( hasBottom ? 1 : 0 ) + numEdges + ( hasTop ? 1 : 0 );
-		final float[]       vertices    = new float[ vertexCount * 3 ];
-		final int[][]       faceVert    = new int  [ faceCount ][];
-		final TextureSpec[] faceMat     = new TextureSpec[ faceCount ];
-		final boolean[]     faceSmooth  = new boolean[ faceCount ];
+		final boolean hasBottom   = ( radiusBottom > 0 );
+		final boolean hasTop      = ( radiusTop > 0 );
+		final int     pointCount  = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
+		final float[] pointCoords = new float[ pointCount * 3 ];
 
 		/*
 		 * Generate vertices.
@@ -126,16 +122,16 @@ public final class Cylinder3D
 			{
 				final float a = (float)( i * 2 * Math.PI / numEdges );
 
-				vertices[ v++ ] =  (float)( Math.sin( a ) * radiusBottom );
-				vertices[ v++ ] = -(float)( Math.cos( a ) * radiusBottom );
-				vertices[ v++ ] = 0;
+				pointCoords[ v++ ] =  (float)( Math.sin( a ) * radiusBottom );
+				pointCoords[ v++ ] = -(float)( Math.cos( a ) * radiusBottom );
+				pointCoords[ v++ ] = 0;
 			}
 		}
 		else
 		{
-			vertices[ v++ ] = 0;
-			vertices[ v++ ] = 0;
-			vertices[ v++ ] = 0;
+			pointCoords[ v++ ] = 0;
+			pointCoords[ v++ ] = 0;
+			pointCoords[ v++ ] = 0;
 		}
 
 		if ( hasTop )
@@ -144,24 +140,20 @@ public final class Cylinder3D
 			{
 				final float a = (float)( i * 2 * Math.PI / numEdges );
 
-				vertices[ v++ ] =  (float)( Math.sin( a ) * radiusTop );
-				vertices[ v++ ] = -(float)( Math.cos( a ) * radiusTop );
-				vertices[ v++ ] = height;
+				pointCoords[ v++ ] =  (float)( Math.sin( a ) * radiusTop );
+				pointCoords[ v++ ] = -(float)( Math.cos( a ) * radiusTop );
+				pointCoords[ v++ ] = height;
 			}
 		}
 		else
 		{
-			vertices[ v/*++*/ ] = 0;
-			vertices[ v/*++*/ ] = 0;
-			vertices[ v/*++*/ ] = height;
+			pointCoords[ v++ ] = 0;
+			pointCoords[ v++ ] = 0;
+			pointCoords[ v/*++*/ ] = height;
 		}
 
-		xform.transform( vertices , vertices , vertices.length / 3 );
-
-		/*
-		 * Construct faces
-		 */
-		int f = 0;
+		clear();
+		setPointCoords( xform.transform( pointCoords , pointCoords , pointCount ) );
 
 		/*
 		 * Bottom face (if it exists).
@@ -172,9 +164,7 @@ public final class Cylinder3D
 			for ( int i = 0 ; i < numEdges ; i++ )
 				fv[ i ] = i;
 
-			faceVert  [ f   ] = fv;
-			faceMat   [ f   ] = texture;
-			faceSmooth[ f++ ] = smoothCaps;
+			addFace( fv , texture , smoothCaps );
 		}
 
 		/*
@@ -184,31 +174,30 @@ public final class Cylinder3D
 		{
 			for ( int i1 = 0 ; i1 < numEdges ; i1++ )
 			{
-				final int i2 = ( i1 + 1 ) % numEdges;
-				faceVert  [ f   ] = new int[] { i2 , i1 , numEdges + i1 , numEdges + i2 };
-				faceMat   [ f   ] = texture;
-				faceSmooth[ f++ ] = smoothCircumference;
+				final int   i2 = ( i1 + 1 ) % numEdges;
+				final int[] fv = { i2 , i1 , numEdges + i1 , numEdges + i2 };
+
+				addFace( fv , texture , smoothCircumference );
 			}
 		}
 		else if ( hasBottom )
 		{
 			for ( int i1 = 0 ; i1 < numEdges ; i1++ )
 			{
-				final int i2 = ( i1 + 1 ) % numEdges;
-				faceVert  [ f   ] = new int[] { i2 , i1 , numEdges };
-				faceMat   [ f   ] = texture;
-				faceSmooth[ f++ ] = smoothCircumference;
+				final int   i2 = ( i1 + 1 ) % numEdges;
+				final int[] fv = { i2 , i1 , numEdges };
+
+				addFace( fv , texture , smoothCircumference );
 			}
 		}
 		else if ( hasTop )
 		{
 			for ( int i1 = 0 ; i1 < numEdges ; i1++ )
 			{
-				final int i2 = ( i1 + 1 ) % numEdges;
+				final int   i2 = ( i1 + 1 ) % numEdges;
+				final int[] fv = { 0 , 1 + i1 , 1 + i2 };
 
-				faceVert  [ f   ] = new int[] { 0 , 1 + i1 , 1 + i2 };
-				faceMat   [ f   ] = texture;
-				faceSmooth[ f++ ] = smoothCircumference;
+				addFace( fv , texture , smoothCircumference );
 			}
 		}
 
@@ -221,15 +210,8 @@ public final class Cylinder3D
 			for ( int i = 0 ; i < numEdges ; i++ )
 				fv[ i ] = ( hasBottom ? numEdges : 1 ) + ( numEdges - i - 1 );
 
-			faceVert  [ f ] = fv;
-			faceMat   [ f   ] = texture;
-			faceSmooth[ f/*++*/ ] = smoothCaps;
+			addFace( fv , texture , smoothCaps );
 		}
-
-		/*
-		 * Set Object3D properties.
-		 */
-		set( vertices ,  faceVert , faceMat , null , null , null , faceSmooth );
 	}
 
 	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )

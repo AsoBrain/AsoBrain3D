@@ -36,6 +36,8 @@ import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 
+import com.numdata.oss.ArrayTools;
+
 /**
  * This class implements a background rendering thread.
  *
@@ -282,17 +284,8 @@ public final class Renderer
 		 */
 		final int   bufferSize  = width * height;
 		final int[] frameBuffer = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
-		final int[] depthBuffer;
-
-		if ( ( _depthBuffer == null ) || ( _depthBuffer.length < bufferSize ) )
-		{
-			depthBuffer = new int[ bufferSize ];
-			_depthBuffer = depthBuffer;
-		}
-		else
-		{
-			depthBuffer = _depthBuffer;
-		}
+		final int[] depthBuffer = (int[])ArrayTools.ensureLength( _depthBuffer , int.class , -1 , bufferSize );
+		_depthBuffer = depthBuffer;
 
 		/*
 		 * Clear buffers in 2 phases:
@@ -377,30 +370,31 @@ public final class Renderer
 	 */
 	private static void renderFace( final int[] depthBuffer , final int[] frameBuffer , final int width , final int height , final RenderObject.Face face )
 	{
-		int i;
-		int j;
-		int k;
-		int m;
-		int n;
+		int  i;
+		int  j;
+		int  k;
+		int  m;
+		int  n;
 		long d1;
 		long d2;
 
 		final RenderObject ro = face.getRenderObject();
 
-		final int[]			ph = ro._ph;
-		final int[]			pv = ro._pv;
-		final long[]		pd = ro._pd;
-		final int[]			vertexIndices	= face._vi;
-		final TextureSpec	textureSpec		= face.getTexture();
-		final int[][]		texturePixels	= getTextureImage( textureSpec );
-		final boolean		hasTexture		= texturePixels != null;
-		final int[]			tus				= hasTexture ? face.getTextureU() : null;
-		final int[]			tvs				= hasTexture ? face.getTextureV() : null;
-		final int			colorRGB		= textureSpec.getARGB();
-		final int[]			ds				= face._ds;
-		final int[]			sxs				= face._sxs;
-		final int[]			sys				= face._sys;
-		final int[]			sfs				= face._sfs;
+		final int[]       ph            = ro._ph;
+		final int[]       pv            = ro._pv;
+		final long[]      pd            = ro._pd;
+		final int[]       vertexIndices = face._vi;
+		final int         vertexCount   = vertexIndices.length;
+		final TextureSpec textureSpec   = face.getTexture();
+		final int[][]     texturePixels = getTextureImage( textureSpec );
+		final boolean     hasTexture    = texturePixels != null;
+		final int[]       tus           = hasTexture ? face.getTextureU() : null;
+		final int[]       tvs           = hasTexture ? face.getTextureV() : null;
+		final int         colorRGB      = textureSpec.getARGB();
+		final int[]       ds            = face._ds;
+		final int[]       sxs           = face._sxs;
+		final int[]       sys           = face._sys;
+		final int[]       sfs           = face._sfs;
 
 		/*
 		 * Determine minimum and maximum Y value, and set the first vertex
@@ -412,7 +406,7 @@ public final class Renderer
 		int maxV  = minV;
 		int first = 0;
 
-		for ( i = vertexIndices.length , m = 0 ; --i > 0 ; )
+		for ( i = vertexCount , m = 0 ; --i > 0 ; )
 		{
 			n = vertexIndices[ i ];
 			j = ph[ n ] >> 8;
@@ -442,56 +436,56 @@ public final class Renderer
 		/*
 		 * Setup state variables used by the interpolation loops.
 		 */
-		int     v     = minV;
-		int     nextV;
+		int  v     = minV;
+		int  nextV;
 
-		int		li1;            // Index in shape to 1st vertex of segement
-		int		li2  = first;   // Index in shape to 2nd vertex of segement
-		int		lv2  = minV;    // 'left'  vertical coordinate at end of segment
+		int  li1;           // Index in shape to 1st vertex of segement
+		int  li2   = first; // Index in shape to 2nd vertex of segement
+		int  lv2   = minV;  // 'left'  vertical coordinate at end of segment
 
-		int		ri1;            // Index in shape to 1st vertex of segement
-		int		ri2  = first;   // Index in shape to 2nd vertex of segement
-		int		rv2  = minV;    // 'right' vertical coordinate at end of segment
+		int  ri1;           // Index in shape to 1st vertex of segement
+		int  ri2   = first; // Index in shape to 2nd vertex of segement
+		int  rv2   = minV;  // 'right' vertical coordinate at end of segment
 
-		int		lh   = 0;       // 'left'  Horizontal coordinate counter     * 2^8
-		int		lhc  = 0;       // 'left'  Horizontal coordinate coefficient * 2^8
-		int		rh   = 0;       // 'right' Horizontal coordinate counter     * 2^8
-		int		rhc  = 0;       // 'right' Horizontal coordinate coefficient * 2^8
+		int  lh    = 0;     // 'left'  Horizontal coordinate counter     * 2^8
+		int  lhc   = 0;     // 'left'  Horizontal coordinate coefficient * 2^8
+		int  rh    = 0;     // 'right' Horizontal coordinate counter     * 2^8
+		int  rhc   = 0;     // 'right' Horizontal coordinate coefficient * 2^8
 
-		long	ld   = 0;		// 'left'  Depth counter     * 2^8
-		long	ldc  = 0;		// 'left'  Depth coefficient * 2^8
-		long	rd   = 0;		// 'right' Depth counter     * 2^8
-		long	rdc  = 0;		// 'right' Depth coefficient * 2^8
+		long ld    = 0;     // 'left'  Depth counter     * 2^8
+		long ldc   = 0;     // 'left'  Depth coefficient * 2^8
+		long rd    = 0;     // 'right' Depth counter     * 2^8
+		long rdc   = 0;     // 'right' Depth coefficient * 2^8
 
-		long	ltu  = 0;		// 'left'  Texture U-coordinate counter     * 2^8
-		long	ltuc = 0;		// 'left'  Texture U-coordinate coefficient * 2^8
-		long	rtu  = 0;		// 'right' Texture U-coordinate counter     * 2^8
-		long	rtuc = 0;		// 'right' Texture U-coordinate coefficient * 2^8
+		long ltu   = 0;     // 'left'  Texture U-coordinate counter     * 2^8
+		long ltuc  = 0;     // 'left'  Texture U-coordinate coefficient * 2^8
+		long rtu   = 0;     // 'right' Texture U-coordinate counter     * 2^8
+		long rtuc  = 0;     // 'right' Texture U-coordinate coefficient * 2^8
 
-		long	ltv  = 0;		// 'left'  Texture V-coordinate counter     * 2^8
-		long	ltvc = 0;		// 'left'  Texture V-coordinate coefficient * 2^8
-		long	rtv  = 0;		// 'right' Texture V-coordinate counter     * 2^8
-		long	rtvc = 0;		// 'right' Texture V-coordinate coefficient * 2^8
+		long ltv   = 0;     // 'left'  Texture V-coordinate counter     * 2^8
+		long ltvc  = 0;     // 'left'  Texture V-coordinate coefficient * 2^8
+		long rtv   = 0;     // 'right' Texture V-coordinate counter     * 2^8
+		long rtvc  = 0;     // 'right' Texture V-coordinate coefficient * 2^8
 
-		int		ldr  = 0;		// 'left'  Diffuse reflection counter     * 2^8
-		int		ldrc = 0;		// 'left'  Diffuse reflection coefficient * 2^8
-		int		rdr  = 0;		// 'right' Diffuse reflection counter     * 2^8
-		int		rdrc = 0;		// 'right' Diffuse reflection coefficient * 2^8
+		int  ldr   = 0;     // 'left'  Diffuse reflection counter     * 2^8
+		int  ldrc  = 0;     // 'left'  Diffuse reflection coefficient * 2^8
+		int  rdr   = 0;     // 'right' Diffuse reflection counter     * 2^8
+		int  rdrc  = 0;     // 'right' Diffuse reflection coefficient * 2^8
 
-		int		lsx  = 0;		// 'left'  Specular X-coordinate counter     * 2^8
-		int		lsxc = 0;		// 'left'  Specular X-coordinate coefficient * 2^8
-		int		rsx  = 0;		// 'right' Specular X-coordinate counter     * 2^8
-		int		rsxc = 0;		// 'right' Specular X-coordinate coefficient * 2^8
+		int  lsx   = 0;     // 'left'  Specular X-coordinate counter     * 2^8
+		int  lsxc  = 0;     // 'left'  Specular X-coordinate coefficient * 2^8
+		int  rsx   = 0;     // 'right' Specular X-coordinate counter     * 2^8
+		int  rsxc  = 0;     // 'right' Specular X-coordinate coefficient * 2^8
 
-		int		lsy  = 0;		// 'left'  Specular Y-coordinate counter     * 2^8
-		int		lsyc = 0;		// 'left'  Specular Y-coordinate coefficient * 2^8
-		int		rsy  = 0;		// 'right' Specular Y-coordinate counter     * 2^8
-		int		rsyc = 0;		// 'right' Specular Y-coordinate coefficient * 2^8
+		int  lsy   = 0;     // 'left'  Specular Y-coordinate counter     * 2^8
+		int  lsyc  = 0;     // 'left'  Specular Y-coordinate coefficient * 2^8
+		int  rsy   = 0;     // 'right' Specular Y-coordinate counter     * 2^8
+		int  rsyc  = 0;     // 'right' Specular Y-coordinate coefficient * 2^8
 
-		int		lsf  = 0;		// 'left'  Specular intensity factor counter     * 2^8
-		int		lsfc = 0;		// 'left'  Specular intensity factor coefficient * 2^8
-		int		rsf  = 0;		// 'right' Specular intensity factor counter     * 2^8
-		int		rsfc = 0;		// 'right' Specular intensity factor coefficient * 2^8
+		int  lsf   = 0;     // 'left'  Specular intensity factor counter     * 2^8
+		int  lsfc  = 0;     // 'left'  Specular intensity factor coefficient * 2^8
+		int  rsf   = 0;     // 'right' Specular intensity factor counter     * 2^8
+		int  rsfc  = 0;     // 'right' Specular intensity factor coefficient * 2^8
 
 		/*
 		 * Handle exception: single horizontal line. The the description of the 'segment
@@ -502,7 +496,7 @@ public final class Renderer
 			/*
 			 * Find vertices with minimum and maximum X.
 			 */
-			for ( lh = rh = ph[ vertexIndices[ li1 = ri1 = 0 ] ] , i = vertexIndices.length ; --i > 0 ; )
+			for ( lh = rh = ph[ vertexIndices[ li1 = ri1 = 0 ] ] , i = vertexCount ; --i > 0 ; )
 			{
 				j = ph[ vertexIndices[ i ] ];
 				if ( j < lh ) { li1 = i; lh = j; }
@@ -567,7 +561,7 @@ public final class Renderer
 			{
 				do
 				{
-					if ( (li2 = (li1 = li2) - 1) < 0 ) li2 = vertexIndices.length - 1;
+					if ( (li2 = (li1 = li2) - 1) < 0 ) li2 = vertexCount - 1;
 					lv2 = pv[ vertexIndices[ li2 ] ] >> 8;
 				}
 				while ( lv2 == v );
@@ -612,7 +606,7 @@ public final class Renderer
 			{
 				do
 				{
-					if ( (ri2 = ( ri1 = ri2 ) + 1) == vertexIndices.length ) ri2 = 0;
+					if ( (ri2 = ( ri1 = ri2 ) + 1) == vertexCount ) ri2 = 0;
 					rv2 = pv[ vertexIndices[ ri2 ] ] >> 8;
 				}
 				while ( rv2 == v );
@@ -699,43 +693,43 @@ public final class Renderer
 	/**
 	 * This is the core render loop to render a set of scanlines for a face.
 	 *
-	 * @param   v			Scanline parameter.
-	 * @param   nextV		Scanline parameter.
-	 * @param   lh			Scanline parameter.
-	 * @param   lhc			Scanline parameter.
-	 * @param   rh			Scanline parameter.
-	 * @param   rhc			Scanline parameter.
-	 * @param   ld			Scanline parameter.
-	 * @param   ldc			Scanline parameter.
-	 * @param   rd			Scanline parameter.
-	 * @param   rdc			Scanline parameter.
-	 * @param   colorRGB	Scanline parameter.
-	 * @param   texture		Scanline parameter.
-	 * @param   ltu			Scanline parameter.
-	 * @param   ltuc		Scanline parameter.
-	 * @param   rtu			Scanline parameter.
-	 * @param   rtuc		Scanline parameter.
-	 * @param   ltv			Scanline parameter.
-	 * @param   ltvc		Scanline parameter.
-	 * @param   rtv			Scanline parameter.
-	 * @param   rtvc		Scanline parameter.
-	 * @param   ldr			Scanline parameter.
-	 * @param   ldrc		Scanline parameter.
-	 * @param   rdr			Scanline parameter.
-	 * @param   rdrc		Scanline parameter.
-	 * @param   phongTable	Scanline parameter.
-	 * @param   lsx			Scanline parameter.
-	 * @param   lsxc		Scanline parameter.
-	 * @param   rsx			Scanline parameter.
-	 * @param   rsxc		Scanline parameter.
-	 * @param   lsy			Scanline parameter.
-	 * @param   lsyc		Scanline parameter.
-	 * @param   rsy			Scanline parameter.
-	 * @param   rsyc		Scanline parameter.
-	 * @param   lsf			Scanline parameter.
-	 * @param   lsfc		Scanline parameter.
-	 * @param   rsf			Scanline parameter.
-	 * @param   rsfc		Scanline parameter.
+	 * @param   v           Scanline parameter.
+	 * @param   nextV       Scanline parameter.
+	 * @param   lh          Scanline parameter.
+	 * @param   lhc         Scanline parameter.
+	 * @param   rh          Scanline parameter.
+	 * @param   rhc         Scanline parameter.
+	 * @param   ld          Scanline parameter.
+	 * @param   ldc         Scanline parameter.
+	 * @param   rd          Scanline parameter.
+	 * @param   rdc         Scanline parameter.
+	 * @param   colorRGB    Scanline parameter.
+	 * @param   texture     Scanline parameter.
+	 * @param   ltu         Scanline parameter.
+	 * @param   ltuc        Scanline parameter.
+	 * @param   rtu         Scanline parameter.
+	 * @param   rtuc        Scanline parameter.
+	 * @param   ltv         Scanline parameter.
+	 * @param   ltvc        Scanline parameter.
+	 * @param   rtv         Scanline parameter.
+	 * @param   rtvc        Scanline parameter.
+	 * @param   ldr         Scanline parameter.
+	 * @param   ldrc        Scanline parameter.
+	 * @param   rdr         Scanline parameter.
+	 * @param   rdrc        Scanline parameter.
+	 * @param   phongTable  Scanline parameter.
+	 * @param   lsx         Scanline parameter.
+	 * @param   lsxc        Scanline parameter.
+	 * @param   rsx         Scanline parameter.
+	 * @param   rsxc        Scanline parameter.
+	 * @param   lsy         Scanline parameter.
+	 * @param   lsyc        Scanline parameter.
+	 * @param   rsy         Scanline parameter.
+	 * @param   rsyc        Scanline parameter.
+	 * @param   lsf         Scanline parameter.
+	 * @param   lsfc        Scanline parameter.
+	 * @param   rsf         Scanline parameter.
+	 * @param   rsfc        Scanline parameter.
 	 */
 	private static void renderScanlines(
 	    final int[] depthBuffer , final int[] frameBuffer , final int width , final int height ,
@@ -752,12 +746,12 @@ public final class Renderer
 		int  lsy , final int  lsyc , int  rsy , final int  rsyc ,
 		int  lsf , final int  lsfc , int  rsf , final int  rsfc )
 	{
-		final int        tw            = ( texture != null ) ? texture[0].length : 0;
-		final int        th            = ( texture != null ) ? texture.length    : 0;
-//		final int        ma            = (colorRGB >> 24) & 0xFF;
-		final int        mr            = (colorRGB >> 16) & 0xFF;
-		final int        mg            = (colorRGB >>  8) & 0xFF;
-		final int        mb            =  colorRGB        & 0xFF;
+		final int tw = ( texture != null ) ? texture[ 0 ].length : 0;
+		final int th = ( texture != null ) ? texture.length    : 0;
+//		final int ma = ( colorRGB >> 24 ) & 0xFF;
+		final int mr = ( colorRGB >> 16 ) & 0xFF;
+		final int mg = ( colorRGB >> 8  ) & 0xFF;
+		final int mb = colorRGB           & 0xFF;
 
 		int i;
 		int j;
@@ -767,22 +761,22 @@ public final class Renderer
 		int b;
 		int s;
 
-		int     h1;		// 'pixel' Horizontal coordinate counter     * 2^8
-		int     h2;		// 'pixel' Horizontal coordinate coefficient * 2^8
-		long	d1;		// 'pixel' Z-coordinate counter     * 2^8
-		long	d2;		// 'pixel' Z-coordinate coefficient * 2^8
-		long	tu1;	// 'pixel' Texture U-coordinate counter     * 2^8
-		long	tu2;	// 'pixel' Texture U-coordinate coefficient * 2^8
-		long	tv1;	// 'pixel' Texture V-coordinate counter     * 2^8
-		long	tv2;	// 'pixel' Texture V-coordinate coefficient * 2^8
-		int		dr1;	// 'pixel' Diffuse reflection counter     * 2^8
-		int		dr2;	// 'pixel' Diffuse reflection coefficient * 2^8
-		int		sx1;	// 'pixel' Specular X-coordinate counter     * 2^8
-		int		sx2;	// 'pixel' Specular X-coordinate coefficient * 2^8
-		int		sy1;	// 'pixel' Specular Y-coordinate counter     * 2^8
-		int		sy2;	// 'pixel' Specular Y-coordinate coefficient * 2^8
-		int		sf1;	// 'pixel' Specular intensity factor counter     * 2^8
-		int		sf2;	// 'pixel' Specular intensity factor coefficient * 2^8
+		int  h1;  // 'pixel' Horizontal coordinate counter     * 2^8
+		int  h2;  // 'pixel' Horizontal coordinate coefficient * 2^8
+		long d1;  // 'pixel' Z-coordinate counter     * 2^8
+		long d2;  // 'pixel' Z-coordinate coefficient * 2^8
+		long tu1; // 'pixel' Texture U-coordinate counter     * 2^8
+		long tu2; // 'pixel' Texture U-coordinate coefficient * 2^8
+		long tv1; // 'pixel' Texture V-coordinate counter     * 2^8
+		long tv2; // 'pixel' Texture V-coordinate coefficient * 2^8
+		int  dr1; // 'pixel' Diffuse reflection counter     * 2^8
+		int  dr2; // 'pixel' Diffuse reflection coefficient * 2^8
+		int  sx1; // 'pixel' Specular X-coordinate counter     * 2^8
+		int  sx2; // 'pixel' Specular X-coordinate coefficient * 2^8
+		int  sy1; // 'pixel' Specular Y-coordinate counter     * 2^8
+		int  sy2; // 'pixel' Specular Y-coordinate coefficient * 2^8
+		int  sf1; // 'pixel' Specular intensity factor counter     * 2^8
+		int  sf2; // 'pixel' Specular intensity factor coefficient * 2^8
 
 		do
 		{

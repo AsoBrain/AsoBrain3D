@@ -94,12 +94,12 @@ public final class Java3dModelExample
 		final Vector3D lbt = Vector3D.INIT.set( -1 ,  1 ,  1 );
 
 		final Object3D cube = new Object3D();
-		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , texture , 1.0f , false );
-		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , texture , 1.0f , false );
-		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , texture , 1.0f , false );
-		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , texture , 1.0f , false );
-		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , texture , 1.0f , false );
-		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , texture , 1.0f , false );
+		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , texture , false );
+		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , texture , false );
+		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , texture , false );
+		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , texture , false );
+		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , texture , false );
+		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , texture , false );
 
 		j3dModel.createNode( "node" , cube );
 

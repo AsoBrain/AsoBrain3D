@@ -70,19 +70,9 @@ public final class Box3D
 		_dz    = dz;
 
 		/*
-		 * Set frontal, vertical, and horizontal face properties.
+		 * Create point coordinates.
 		 */
-		final float ax = Math.abs( dx );
-		final float ay = Math.abs( dy );
-		final float az = Math.abs( dz );
-		final boolean isFrontal    = ( ay < ax && ay < az );
-		final boolean isVertical   = ( ax < ay && ax < az );
-		final boolean isHorizontal = ( az < ax && az < ay );
-
-		/*
-		 * Create vertices;
-		 */
-		final float[] vertices =
+		final float[] pointCoords =
 		{
 			  0 ,   0 ,   0 , // 0
 			_dx ,   0 ,   0 , // 1
@@ -94,76 +84,53 @@ public final class Box3D
 			  0 , _dy , _dz   // 7
 		};
 
-		xform.transform( vertices , vertices , 8 );
+		setPointCoords( xform.transform( pointCoords , pointCoords , 8 ) );
 
 		/*
-		 * Create faces
+		 * Set frontal, vertical, and horizontal face properties.
 		 */
-		final int[][] faceVert =
-		{
-			{ 0 , 4 , 5 , 1 } , // 0 - front
-			{ 2 , 6 , 7 , 3 } , // 1 - back
-			{ 1 , 5 , 6 , 2 } , // 2 - right
-			{ 3 , 7 , 4 , 0 } , // 3 - left
-			{ 4 , 7 , 6 , 5 } , // 4 - top
-			{ 1 , 2 , 3 , 0 }   // 5 - bottom
-		};
+		final float ax = Math.abs( dx );
+		final float ay = Math.abs( dy );
+		final float az = Math.abs( dz );
+
+		final boolean isFrontal    = ( ay < ax && ay < az );
+		final boolean isVertical   = ( ax < ay && ax < az );
+		final boolean isHorizontal = ( az < ax && az < ay );
+
+		TextureSpec texture;
+		final int[][] textureU = new int[ 2 ][];
+		final int[][] textureV = new int[ 2 ][];
 
 		/*
-		 * Set texture properties.
+		 * Add front/back face
 		 */
-		final TextureSpec frontalTexture    = isFrontal ? mainTexture : sideTexture;
-		final boolean     flipFrontal       = isHorizontal;
-		final TextureSpec verticalTexture   = isVertical ? mainTexture : sideTexture;
-		final boolean     flipVertical      = isHorizontal;
-		final TextureSpec horizontalTexture = isHorizontal ? mainTexture : sideTexture;
-		final boolean     flipHorizontal    = !isVertical;
+		texture = isFrontal ? mainTexture : sideTexture;
 
-		final TextureSpec[] faceMat =
-		{
-			frontalTexture ,
-			frontalTexture ,
-			verticalTexture ,
-			verticalTexture ,
-			horizontalTexture ,
-			horizontalTexture
-		};
+		if ( ( texture != null ) && texture.isTexture() )
+			setTexture( texture , isHorizontal , 0 , textureU , xform.xo , xform.xo + _dx , textureV , xform.zo , xform.zo + _dz );
 
-		final boolean[] faceSmooth =
-		{
-			false ,
-			false ,
-			false ,
-			false ,
-			false ,
-			false
-		};
-
-		int[][] faceTU = null;
-		int[][] faceTV = null;
-		if ( ( mainTexture != null && mainTexture.isTexture() )
-		  || ( sideTexture != null && sideTexture.isTexture() ) )
-		{
-			faceTU = new int[ 6 ][];
-			faceTV = new int[ 6 ][];
-
-			setTexture( frontalTexture , flipFrontal , 0 ,
-				faceTU , xform.xo , xform.xo + _dx ,
-				faceTV , xform.zo , xform.zo + _dz );
-
-			setTexture( verticalTexture , flipVertical , 2 ,
-				faceTU , xform.yo , xform.yo + _dy ,
-				faceTV , xform.zo , xform.zo + _dz );
-
-			setTexture( horizontalTexture , flipHorizontal , 4 ,
-				faceTU , xform.xo , xform.xo + _dx ,
-				faceTV , xform.yo , xform.yo + _dy );
-		}
+		addFace( new int[] { 0 , 4 , 5 , 1 } , texture , textureU[ 0 ] , textureV[ 0 ] , 1.0f , false );
+		addFace( new int[] { 2 , 6 , 7 , 3 } , texture , textureU[ 1 ] , textureV[ 1 ] , 1.0f , false );
 
 		/*
-		 * Set Object3D properties.
+		 * Add right/left face
 		 */
-		set( vertices , faceVert , faceMat , faceTU , faceTV , null , faceSmooth );
+		texture = isVertical ? mainTexture : sideTexture;
+		if ( ( texture != null ) && texture.isTexture() )
+			setTexture( texture , isHorizontal , 0 , textureU , xform.yo , xform.yo + _dy , textureV , xform.zo , xform.zo + _dz );
+
+		addFace( new int[] { 1 , 5 , 6 , 2 } , texture , textureU[ 0 ] , textureV[ 0 ] , 1.0f , false );
+		addFace( new int[] { 3 , 7 , 4 , 0 } , texture , textureU[ 1 ] , textureV[ 1 ] , 1.0f , false );
+
+		/*
+		 * Add top/bottom face
+		 */
+		texture = isHorizontal ? mainTexture : sideTexture;
+		if ( ( texture != null ) && texture.isTexture() )
+			setTexture( texture , !isVertical , 0 , textureU , xform.xo , xform.xo + _dx , textureV , xform.yo , xform.yo + _dy );
+
+		addFace( new int[] { 4 , 7 , 6 , 5 } , texture , textureU[ 0 ] , textureV[ 0 ] , 1.0f , false );
+		addFace( new int[] { 1 , 2 , 3 , 0 } , texture , textureU[ 1 ] , textureV[ 1 ] , 1.0f , false );
 	}
 
 	/**

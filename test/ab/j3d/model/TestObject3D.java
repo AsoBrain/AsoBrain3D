@@ -62,13 +62,13 @@ public class TestObject3D
 
 		final Object3D obj3d = new Object3D();
 		assertEquals( "[pre] faceCount" , 0 , obj3d.getFaceCount() );
-		assertEquals( "[pre] totalVertexCount" , 0 , obj3d.getTotalVertexCount() );
+		assertEquals( "[pre] totalVertexCount" , 0 , obj3d.getPointCount() );
 
-		obj3d.addFace( points , null , 1.0f , false );
+		obj3d.addFace( points , null , false );
 		assertEquals( "[post] faceCount" , 1 , obj3d.getFaceCount() );
-		assertEquals( "[post] totalVertexCount" , 4 , obj3d.getTotalVertexCount() );
+		assertEquals( "[post] totalVertexCount" , 4 , obj3d.getPointCount() );
 
-		final Object3D.Face face = obj3d.getFace( 0 );
+		final Face3D face = obj3d.getFace( 0 );
 		final int[] pointIndices = face.getPointIndices();
 		assertEquals( "face.pointIndices.length" , 4 , pointIndices.length );
 		assertEquals( "face.pointIndices[ 0 ]" , 0 , pointIndices[ 0 ] );
@@ -99,12 +99,12 @@ public class TestObject3D
 		final Vector3D lbt = Vector3D.INIT.set( -1 ,  1 ,  1 );
 
 		final Object3D cube = new Object3D();
-		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , 1.0f , false );
-		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , null , 1.0f , false );
-		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , null , 1.0f , false );
-		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , null , 1.0f , false );
-		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , 1.0f , false );
-		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , 1.0f , false );
+		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , false );
+		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , null , false );
+		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , null , false );
+		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , null , false );
+		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , false );
+		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , false );
 
 		final float[] faceNormals = cube.getFaceNormals();
 
@@ -146,22 +146,22 @@ public class TestObject3D
 		System.out.println( CLASS_NAME + ".testGetOrAddPointIndex" );
 
 		final Object3D obj3d = new Object3D();
-		assertEquals( "[pre] totalVertexCount" , 0 , obj3d.getTotalVertexCount() );
+		assertEquals( "[pre] totalVertexCount" , 0 , obj3d.getPointCount() );
 
 		assertEquals( "test1 - pointIndex"       , 0 , obj3d.getOrAddPointIndex( 0 , 0 , 0 ) );
-		assertEquals( "test1 - totalVertexCount" , 1 , obj3d.getTotalVertexCount() );
+		assertEquals( "test1 - totalVertexCount" , 1 , obj3d.getPointCount() );
 
 		assertEquals( "test2 - pointIndex"       , 0 , obj3d.getOrAddPointIndex( 0 , 0 , 0 ) );
-		assertEquals( "test2 - totalVertexCount" , 1 , obj3d.getTotalVertexCount() );
+		assertEquals( "test2 - totalVertexCount" , 1 , obj3d.getPointCount() );
 
 		assertEquals( "test3 - pointIndex"       , 1 , obj3d.getOrAddPointIndex( 1 , 0 , 0 ) );
-		assertEquals( "test3 - totalVertexCount" , 2 , obj3d.getTotalVertexCount() );
+		assertEquals( "test3 - totalVertexCount" , 2 , obj3d.getPointCount() );
 
 		assertEquals( "test4 - pointIndex"       , 2 , obj3d.getOrAddPointIndex( 0 , 1 , 0 ) );
-		assertEquals( "test4 - totalVertexCount" , 3 , obj3d.getTotalVertexCount() );
+		assertEquals( "test4 - totalVertexCount" , 3 , obj3d.getPointCount() );
 
 		assertEquals( "test5 - pointIndex"       , 3 , obj3d.getOrAddPointIndex( 0 , 0 , 1 ) );
-		assertEquals( "test5 - totalVertexCount" , 4 , obj3d.getTotalVertexCount() );
+		assertEquals( "test5 - totalVertexCount" , 4 , obj3d.getPointCount() );
 	}
 
 	/**
@@ -222,12 +222,12 @@ public class TestObject3D
 		final Vector3D lbt = Vector3D.INIT.set( -1 ,  1 ,  1 );
 
 		final Object3D cube = new Object3D();
-		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , 1.0f , false );
-		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , null , 1.0f , false );
-		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , null , 1.0f , false );
-		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , null , 1.0f , false );
-		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , 1.0f , false );
-		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , 1.0f , false );
+		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , false );
+		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , null , false );
+		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , null , false );
+		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , null , false );
+		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , false );
+		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , false );
 
 		final double e = Math.sqrt( 3 ) / 3;
 

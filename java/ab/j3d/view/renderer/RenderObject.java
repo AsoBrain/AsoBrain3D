@@ -22,6 +22,7 @@ package ab.j3d.view.renderer;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
+import ab.j3d.model.Face3D;
 import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
@@ -39,7 +40,7 @@ public final class RenderObject
 	Object3D    _obj;
 	Matrix3D    _xform;
 
-	int         _nrVerts;
+	int         _pointCount;
 	float[]     _verts;
 	int[]       _ph;
 	int[]       _pv;
@@ -57,10 +58,10 @@ public final class RenderObject
 
 	/**
 	 * Sindle face of rendered object.
-	 */ 
+	 */
 	public final class Face
 	{
-		Object3D.Face _face3d;
+		Face3D      _face3d;
 		Face        _next;
 		//Face      isBehind;
 		//Face      isBefore;
@@ -106,7 +107,7 @@ public final class RenderObject
 			_sys    = null;
 			_sfs    = null;
 		}
-		private void set( final Object3D.Face face3d , final int index , final int minH , final int minV , final int minD , final int maxH , final int maxV , final int maxD , final float nx , final float ny , final float nz )
+		private void set( final Face3D face3d , final int index , final int minH , final int minV , final int minD , final int maxH , final int maxV , final int maxD , final float nx , final float ny , final float nz )
 		{
 			_face3d = face3d;
 			_index  = index;
@@ -245,7 +246,7 @@ public final class RenderObject
 		_obj             = null;
 		_xform           = null;
 
-		_nrVerts         = 0;
+		_pointCount         = 0;
 		_verts           = null;
 		_ph              = null;
 		_pv              = null;
@@ -282,13 +283,7 @@ public final class RenderObject
 		if ( _vertNormDirty )
 		{
 			_vertNormDirty = false;
-
-			final int nrVerts3 = _nrVerts * 3;
-
-			if ( _vertNorm == null || nrVerts3 > _vertNorm.length )
-				_vertNorm = new float[ nrVerts3 ];
-
-			_xform.rotate( _obj.getVertexNormals() , _vertNorm , _nrVerts );
+			_vertNorm = _xform.rotate( _obj.getVertexNormals() , _vertNorm , _pointCount );
 		}
 
 		return _vertNorm;
@@ -318,56 +313,41 @@ public final class RenderObject
 		float y;
 		float z;
 
+		final int     pointCount  = obj.getPointCount();
+		final float[] pointCoords = obj.getPointCoords();
+		final float[] faceNormals = obj.getFaceNormals();
+		final int     centerH     = width << 7;
+		final int     centerV     = height << 7;
+
 		_obj           = obj;
 		_xform         = xform;
 		_nrLights      = 0;
 		_vertNormDirty = true;
-
-		_nrVerts = obj.getTotalVertexCount();
-		final int     nrVerts3    = _nrVerts * 3;
-		final float[] oVerts      = obj.getVertices();
-		final float[] faceNormals = obj.getFaceNormals();
-		final int     centerH     = width <<  7;
-		final int     centerV     = height << 7;
-
-		obj.getFaceNormals();
-
-		final float xx = xform.xx;
-		final float xy = xform.xy;
-		final float xz = xform.xz;
-		final float xo = xform.xo;
-		final float yx = xform.yx;
-		final float yy = xform.yy;
-		final float yz = xform.yz;
-		final float yo = xform.yo;
-		final float zx = xform.zx;
-		final float zy = xform.zy;
-		final float zz = xform.zz;
-		final float zo = xform.zo;
+		_pointCount    = pointCount;
 
 		/*
 		 * Prepare vertex buffers, transform vertices, project vertices.
 		 */
-		if ( _verts == null || nrVerts3 > _verts.length )
+		if ( ( _verts == null ) || ( pointCount * 3 > _verts.length ) )
 		{
-			_verts = new float[ nrVerts3 ];
-			_ph    = new int  [ _nrVerts  ];
-			_pv    = new int  [ _nrVerts  ];
-			_pd    = new long [ _nrVerts  ];
+			_verts = new float[ pointCount * 3 ];
+			_ph    = new int  [ pointCount ];
+			_pv    = new int  [ pointCount ];
+			_pd    = new long [ pointCount ];
 		}
 
 
 		final float perspectiveFactor = 256.0f * zoom / aperture;
 
-		for ( i = 0 , j = 0 ; i < nrVerts3 ; i += 3 , j++ )
+		for ( i = 0 , j = 0 ; j < pointCount ; i += 3 , j++ )
 		{
-			final float ox = oVerts[ i     ];
-			final float oy = oVerts[ i + 1 ];
-			final float oz = oVerts[ i + 2 ];
+			final float ox = pointCoords[ i     ];
+			final float oy = pointCoords[ i + 1 ];
+			final float oz = pointCoords[ i + 2 ];
 
-			x = _verts[ i     ] = ox * xx + oy * xy + oz * xz + xo;
-			y = _verts[ i + 1 ] = ox * yx + oy * yy + oz * yz + yo;
-			z = _verts[ i + 2 ] = ox * zx + oy * zy + oz * zz + zo;
+			x = _verts[ i     ] = xform.transformX( ox , oy , oz );
+			y = _verts[ i + 1 ] = xform.transformY( ox , oy , oz );
+			z = _verts[ i + 2 ] = xform.transformZ( ox , oy , oz );
 
 			id = (int)y;
 
@@ -398,7 +378,9 @@ public final class RenderObject
 			if ( _facesFree != null )
 			{
 				previous = _faces;
-				while ( previous._next != null ) previous = previous._next;
+				while ( previous._next != null )
+					previous = previous._next;
+
 				previous._next = _facesFree;
 			}
 			_facesFree = _faces;
@@ -407,9 +389,10 @@ public final class RenderObject
 
 		nextFace: for ( i = obj.getFaceCount() ; --i >= 0 ; )
 		{
-			final Object3D.Face face3d = obj.getFace( i );
-			final int[] vi = face3d.getPointIndices();
-			if ( vi.length < 3 )
+			final Face3D face3d       = obj.getFace( i );
+			final int[]  pointIndices = face3d.getPointIndices();
+
+			if ( pointIndices.length < 3 )
 				continue nextFace;
 
 			/*
@@ -423,12 +406,12 @@ public final class RenderObject
 			 */
 			if ( backfaceCullling )
 			{
-				final int h1 = _ph[ l = vi[ 0 ] ] >> 8;
-				final int v1 = _pv[ l           ] >> 8;
-				final int h2 = _ph[ l = vi[ 1 ] ] >> 8;
-				final int v2 = _pv[ l           ] >> 8;
-				final int h3 = _ph[ l = vi[ 2 ] ] >> 8;
-				final int v3 = _pv[ l           ] >> 8;
+				final int h1 = _ph[ l = pointIndices[ 0 ] ] >> 8;
+				final int v1 = _pv[ l                     ] >> 8;
+				final int h2 = _ph[ l = pointIndices[ 1 ] ] >> 8;
+				final int v2 = _pv[ l                     ] >> 8;
+				final int h3 = _ph[ l = pointIndices[ 2 ] ] >> 8;
+				final int v3 = _pv[ l                     ] >> 8;
 
 				if ( (h1 - h2) * (v3 - v2) >= (v1 - v2) * (h3 - h2) )
 					continue nextFace;
@@ -437,7 +420,7 @@ public final class RenderObject
 			/*
 			 * Determine bounding box of face. Don't draw if outside screen range.
 			 */
-			l = vi[ 0 ];
+			l = pointIndices[ 0 ];
 			if ( _pd[ l ] == 0 )
 				continue nextFace;
 
@@ -448,9 +431,9 @@ public final class RenderObject
 			int minD = (int)_verts[ l * 3 + 1 ];
 			int maxD = minD;
 
-			for ( k = vi.length ; --k >= 1 ; )
+			for ( k = pointIndices.length ; --k >= 1 ; )
 			{
-				l = vi[ k ];
+				l = pointIndices[ k ];
 
 				if ( _pd[ l ] == 0 )
 					continue nextFace;
@@ -490,21 +473,17 @@ public final class RenderObject
 			else
 				current = new Face();
 
-			current.set( face3d , i , minH , minV , minD , maxH , maxV , maxD ,
-				x * xx + y * xy + z * xz ,
-				x * yx + y * yy + z * yz ,
-				x * zx + y * zy + z * zz );
-
+			current.set( face3d , i , minH , minV , minD , maxH , maxV , maxD , xform.rotateX( x , y , z ) , xform.rotateY( x , y , z ) , xform.rotateZ( x , y , z ) );
 			current._next = _faces;
 			_faces = current;
 
 			//for ( previous = null , next = faces ; next != null && next.isBehind( current ) ; )
-				//next = ( previous = next ).next;
+			//next = ( previous = next ).next;
 
 			//if ( previous == null )
-				//faces = current;
+			//faces = current;
 			//else
-				//previous.next = current;
+			//previous.next = current;
 
 			//current.next = next;
 		}
@@ -547,7 +526,7 @@ public final class RenderObject
 		/*
 		 * Prepare light directions and distance for light sources that need them.
 		 */
-		final int nrVerts4 = _nrVerts * 4;
+		final int nrVerts4 = _pointCount * 4;
 
 		if ( lightSources != null ) for ( i = 0 ; i < _nrLights ; i++ )
 		{

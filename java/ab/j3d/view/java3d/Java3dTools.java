@@ -68,6 +68,7 @@ import ab.j3d.Matrix3D;
 import ab.j3d.TextureLibrary;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
+import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
 
 /**
@@ -121,71 +122,63 @@ public final class Java3dTools
 	{
 		final Map appearances = new HashMap();
 
-		final int     faceCount     = object3d.getFaceCount();
-		final float[] vertices      = object3d.getVertices();
-		final float[] vertexNormals = object3d.getVertexNormals();
+		final int     faceCount    = object3d.getFaceCount();
+		final float[] pointCoords  = object3d.getPointCoords();
+		final float[] pointNormals = object3d.getVertexNormals();
 
 		for ( int i = 0 ; i < faceCount ; i++ )
 		{
-			final Object3D.Face face        = object3d.getFace( i );
-			final int[]         faceVert    = face.getPointIndices();
-			final int[]         faceTU      = ( textureOverride != null ) ? null : face.getTextureU();
-			final int[]         faceTV      = ( textureOverride != null ) ? null : face.getTextureV();
-			final TextureSpec   faceTexture = ( textureOverride != null ) ? textureOverride : face.getTexture();
+			final Face3D      face        = object3d.getFace( i );
+			final int         vertexCount = face.getVertexCount();
+			final TextureSpec texture     = ( textureOverride != null ) ? textureOverride : face.getTexture();
 
-			if ( ( faceTexture == null ) || ( faceTexture.code == null ) )
-				continue;
-
-			final int nrTriangles = faceVert.length - 2;
-			if ( nrTriangles < 1 )
-				continue;
-
-			final Texture texture = ( ( faceTU == null ) || ( faceTV == null ) ) ? null : getTexture( faceTexture );
-
-			final List[] data;
-			if ( appearances.containsKey( faceTexture.code ) )
+			if ( ( texture != null ) && ( texture.code != null ) && ( vertexCount > 2 ) )
 			{
-				data = (List[])appearances.get( faceTexture.code );
-			}
-			else
-			{
-				appearances.put( faceTexture.code , data = new List[] { new ArrayList() , new ArrayList() , new ArrayList() } );
-			}
+				final int[] pointIndices = face.getPointIndices();
+				final int[] textureU     = ( textureOverride != null ) ? null : face.getTextureU();
+				final int[] textureV     = ( textureOverride != null ) ? null : face.getTextureV();
 
-			final List    j3dVertices      = data[ 0 ];
-			final List    j3dTextureCoords = data[ 1 ];
-			final List    j3dFaceNormals   = data[ 2 ];
-			final float[] vertex           = new float[ 3 ];
-			final float[] faceNormal       = new float[ 3 ];
+				final List[] data;
+				if ( appearances.containsKey( texture.code ) )
+					data = (List[])appearances.get( texture.code );
+				else
+					appearances.put( texture.code , data = new List[] { new ArrayList() , new ArrayList() , new ArrayList() } );
 
-			for ( int triangleIndex = 0 ; triangleIndex < nrTriangles ; triangleIndex++ )
-			{
-				for ( int subIndex = 3 ; --subIndex >= 0 ; )
+				final Texture j3dTexture       = ( ( textureU == null ) || ( textureV == null ) ) ? null : getTexture( texture );
+				final List    j3dVertices      = data[ 0 ];
+				final List    j3dTextureCoords = data[ 1 ];
+				final List    j3dFaceNormals   = data[ 2 ];
+
+				final int nrTriangles = vertexCount - 2;
+				for ( int triangleIndex = 0 ; triangleIndex < nrTriangles ; triangleIndex++ )
 				{
-					final int vertexIndex = ( subIndex == 0 ) ? 0 : ( triangleIndex + subIndex );
-					final int vi = faceVert[ vertexIndex ] * 3;
-
-					vertex[ 0 ] = vertices[ vi     ];
-					vertex[ 1 ] = vertices[ vi + 1 ];
-					vertex[ 2 ] = vertices[ vi + 2 ];
-					xform.transform( vertex , vertex , 1 );
-
-					float tu = 0;
-					float tv = 0;
-					if ( texture != null )
+					for ( int subIndex = 3 ; --subIndex >= 0 ; )
 					{
-						tu = (float)faceTU[ vertexIndex ] / texture.getWidth();
-						tv = (float)faceTV[ vertexIndex ] / texture.getHeight();
+						final int   vertexIndex = ( subIndex == 0 ) ? 0 : ( triangleIndex + subIndex );
+						final int   pointIndex  = pointIndices[ vertexIndex ] * 3;
+
+						final float pointX = pointCoords[ pointIndex     ];
+						final float pointY = pointCoords[ pointIndex + 1 ];
+						final float pointZ = pointCoords[ pointIndex + 2 ];
+
+						final float normalX = pointNormals[ pointIndex     ];
+						final float normalY = pointNormals[ pointIndex + 1 ];
+						final float normalZ = pointNormals[ pointIndex + 2 ];
+
+						j3dVertices.add( new Point3f(
+							xform.transformX( pointX , pointY , pointZ ) ,
+							xform.transformY( pointX , pointY , pointZ ) ,
+							xform.transformZ( pointX , pointY , pointZ ) ) );
+
+						j3dFaceNormals.add( new Vector3f(
+							xform.rotateX( normalX , normalY , normalZ ) ,
+							xform.rotateY( normalX , normalY , normalZ ) ,
+							xform.rotateZ( normalX , normalY , normalZ ) ) );
+
+						j3dTextureCoords.add( new TexCoord2f(
+							( j3dTexture == null ) ? 0 : (float)textureU[ vertexIndex ] / j3dTexture.getWidth() ,
+							( j3dTexture == null ) ? 0 : (float)textureV[ vertexIndex ] / j3dTexture.getHeight() ) );
 					}
-
-					faceNormal[ 0 ] = vertexNormals[ vi     ];
-					faceNormal[ 1 ] = vertexNormals[ vi + 1 ];
-					faceNormal[ 2 ] = vertexNormals[ vi + 2 ];
-					xform.rotate( faceNormal , faceNormal , 1 );
-
-					j3dVertices.add( new Point3f( vertex ) );
-					j3dTextureCoords.add( new TexCoord2f( tu , tv ) );
-					j3dFaceNormals.add( new Vector3f( faceNormal ) );
 				}
 			}
 		}
