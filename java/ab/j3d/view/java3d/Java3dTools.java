@@ -317,6 +317,8 @@ public final class Java3dTools
 		appearance.setCapability( Appearance.ALLOW_TEXTURE_READ );
 		appearance.setMaterial( material );
 
+		boolean noCulling = false;
+
 		if ( textureSpec.isTexture() )
 		{
 			final Texture texture = getTexture( textureSpec );
@@ -336,6 +338,15 @@ public final class Java3dTools
 		{
 			final TransparencyAttributes transparency = new TransparencyAttributes( TransparencyAttributes.NICEST , 1.0f - combinedOpacity );
 			appearance.setTransparencyAttributes( transparency );
+			noCulling = true;
+		}
+
+		if ( noCulling )
+		{
+			final PolygonAttributes polygonAttributes = new PolygonAttributes();
+			polygonAttributes.setBackFaceNormalFlip( true );
+			polygonAttributes.setCullFace( PolygonAttributes.CULL_NONE );
+			appearance.setPolygonAttributes( polygonAttributes );
 		}
 
 		return appearance;
