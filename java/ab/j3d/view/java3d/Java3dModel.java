@@ -26,7 +26,6 @@ import javax.media.j3d.BranchGroup;
 import ab.j3d.model.Node3D;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModel;
-import ab.j3d.view.ViewModelNode;
 
 /**
  * View model implementation for Java 3D.
@@ -88,13 +87,7 @@ public final class Java3dModel
 
 	public void createNode( final Object id , final Node3D node3D )
 	{
-		addNode( new Java3dNode( _j3dTools , id , node3D ) );
-	}
-
-	protected void addNode( final ViewModelNode node )
-	{
-		super.addNode( node );
-		_contentGraph.addChild( ((Java3dNode)node).getSceneGraphObject() );
+		addNode( new Java3dNode( _j3dTools , _contentGraph , id , node3D ) );
 	}
 
 	public void removeNode( final Object id )
