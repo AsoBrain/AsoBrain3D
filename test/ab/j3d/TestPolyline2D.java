@@ -3,17 +3,25 @@ package test.backoffice;
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2002 - All Rights Reserved
+ * (C) Copyright Numdata BV 2002-2003 - All Rights Reserved
  *
  * This software may not be used, copyied, modified, or distributed in any
  * form without express permission from Numdata BV. Please contact Numdata BV
  * for license information.
  */
-import backoffice.Polyline2D;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+
+import ab.components.AbDialog;
+import ab.components.AbPanel;
+
 import backoffice.PolyPoint2D;
-import ab.components.*;
-import java.awt.*;
-import java.awt.event.*;
+import backoffice.Polyline2D;
 
 /**
  * This is a small test-app to manually test the Polyline2D class.
@@ -54,9 +62,12 @@ public final class TestPolyline2D
 		setDoubleBuffered( true );
 
 		_baseLine = base;
+
 		_adjusted = new Polyline2D( _baseLine );
-		_adjusted.adjustAllSegments( 10 );
-		
+		final int maxSegment = _adjusted.getPointCount() - 1;
+		for ( int i = 0 ; i < maxSegment ; i++ )
+			_adjusted.adjustSegment( i , 10 );
+
 		addMouseListener( this );
 		addMouseMotionListener( this );
 	}
@@ -82,7 +93,7 @@ public final class TestPolyline2D
 	}
 
 	/**
-	 * Invoked when a mouse button is pressed on a component and then 
+	 * Invoked when a mouse button is pressed on a component and then
 	 * dragged.  Mouse drag events will continue to be delivered to
 	 * the component where the first originated until the mouse button is
 	 * released (regardless of whether the mouse position is within the
@@ -94,15 +105,15 @@ public final class TestPolyline2D
 	{
 		if ( _dragPoint < 0 )
 			return;
-			
-		
+
+
 		final Dimension size = getSize();
 		final int       x    = e.getX();
 		final int       y    = size.height - 1 - e.getY();
-		
+
 		if ( x < 0 || y < 0 || x >= size.width || y >= size.height )
 			return;
-		
+
 		final Polyline2D newPoly = new Polyline2D();
 		for ( int i = 0 ; i < _baseLine.getPointCount() ; i++ )
 		{
@@ -113,10 +124,12 @@ public final class TestPolyline2D
 		}
 
 		_baseLine = newPoly;
-		
+
 		_adjusted = new Polyline2D( _baseLine );
-		_adjusted.adjustAllSegments( 10 );
-		
+		final int maxSegment = _adjusted.getPointCount() - 1;
+		for ( int i = 0 ; i < maxSegment ; i++ )
+			_adjusted.adjustSegment( i , 10 );
+
 		repaint();
 	}
 
@@ -158,12 +171,12 @@ public final class TestPolyline2D
 		final Dimension size = getSize();
 		final int       x    = e.getX();
 		final int       y    = size.height - 1 - e.getY();
-		
+
 		if ( x < 0 || y < 0 || x >= size.width || y >= size.height )
 			return;
 
 		final float distanceSquared = 3f * 3f;
-		
+
 		_dragPoint = -1;
 		for ( int i = 0 ; i < _baseLine.getPointCount() ; i++ )
 		{
@@ -230,14 +243,14 @@ public final class TestPolyline2D
 		final int height = getHeight();
 		final int maxIndex = pl.getPointCount() - 1;
 		final int maxY = height - 1;
-		
+
 		g.setColor( lineColor );
-		
+
 		for ( int i = 0 ; i < maxIndex ; i++ )
 		{
 			final PolyPoint2D p1 = pl.getPoint( i );
 			final PolyPoint2D p2 = pl.getPoint( i + 1 );
-			
+
 			g.drawLine( Math.round( p1.x ) , maxY - Math.round( p1.y ) ,
 			            Math.round( p2.x ) , maxY - Math.round( p2.y ) );
 		}
@@ -245,14 +258,14 @@ public final class TestPolyline2D
 		final int ovalX    = -radius;
 		final int ovalY    = maxY - radius;
 		final int ovalSize = radius * 2 + 1;
-		
+
 		for ( int i = 0 ; i <= maxIndex ; i++ )
 		{
 			final PolyPoint2D p = pl.getPoint( i );
 			g.setColor( ( i == selected ) ? selectColor : dotColor );
 			g.fillOval( ovalX + Math.round( p.x ) , ovalY - Math.round( p.y ) , ovalSize , ovalSize );
 		}
-		
+
 	}
 
 	/**
@@ -268,7 +281,7 @@ public final class TestPolyline2D
 		base.append( 180 , 290 );
 		base.append( 50 , 140 );
 		base.close();
-		
+
 		final AbDialog f = new AbDialog( TestPolyline2D.class.getName() , true );
 		final TestPolyline2D p = new TestPolyline2D( base );
 		f.getContent().add( p , BorderLayout.CENTER );
