@@ -146,12 +146,14 @@ public final class Polyline2D
 	 */
 	public Polyline2D( final Polyline2D original )
 	{
-		final int originalPoints = original._points.size();
+		final List orignalPoints = original._points;
+		final int  pointCount    = orignalPoints.size();
+		final List clonedPoints  = new ArrayList( pointCount );
 
-		_points = new ArrayList( originalPoints );
-		for ( int i = 0 ; i < originalPoints ; i++ )
-			_points.add( original._points.get( i ) );
+		for ( int i = 0 ; i < pointCount ; i++ )
+			clonedPoints.add( new PolyPoint2D( (PolyPoint2D)orignalPoints.get( i ) ) );
 
+		_points       = clonedPoints;
 		_typeCache    = original._typeCache;
 		_boundsCache  = original._boundsCache;
 		_encloseCache = original._encloseCache;
@@ -197,6 +199,162 @@ public final class Polyline2D
 		else if ( dy != 0.0 )
 		{
 			addLineSegment( 0.0 , dy );
+		}
+	}
+
+	/**
+	 * Copy contents from another polyline. All existing data will overwritten.
+	 *
+	 * @param   original    Polyline to copy.
+	 */
+	public void copy( final Polyline2D original )
+	{
+		final List points = _points;
+		points.clear();
+		points.addAll( original._points ); // use this because there is no 'List.ensureCapacity()' or something
+		for ( int i = 0 ; i < points.size() ; i++ )
+			points.set( i , new PolyPoint2D( (PolyPoint2D) points.get( i ) ) );
+
+		_typeCache    = original._typeCache;
+		_boundsCache  = original._boundsCache;
+		_encloseCache = original._encloseCache;
+	}
+
+
+	/**
+	 * Clear all points in the polyline.
+	 */
+	public void clear()
+	{
+		_points.clear();
+
+		_typeCache    = UNKNOWN;
+		_boundsCache  = null;
+		_encloseCache = null;
+	}
+
+	/**
+	 * Add control point to polyline.
+	 *
+	 * @param   x       X coordinate of control point.
+	 * @param   y       Y coordinate of control point.
+	 * @param   buldge  Buldge factor (only meaningful for arc segments).
+	 */
+	private void addImpl( final double x , final double y , final double buldge )
+	{
+		addImpl( new PolyPoint2D( x , y , buldge ) );
+	}
+
+	/**
+	 * Add control point to polyline.
+	 *
+	 * @param   point   Control point.
+	 */
+	private void addImpl( final PolyPoint2D point )
+	{
+		_points.add( point );
+
+		_typeCache    = UNKNOWN;
+		_boundsCache  = null;
+		_encloseCache = null;
+	}
+
+	/**
+	 * Add start point to polyline.
+	 *
+	 * @param   x   X coordinate of segment end point.
+	 * @param   y   Y coordinate of segment end point.
+	 *
+	 * @see     #addLineSegment
+	 * @see     #addArcSegmentWithAngle
+	 * @see     #addArcSegmentWithBuldge
+	 */
+	public void addStartPoint( final double x , final double y )
+	{
+		if ( getPointCount() != 0 )
+			throw new IllegalStateException( "can't add second start point" );
+
+		addImpl( x , y , 0.0 );
+	}
+
+	/**
+	 * Add line segment to polyline.
+	 *
+	 * @param   endX   X coordinate of segment end point.
+	 * @param   endY   Y coordinate of segment end point.
+	 *
+	 * @see     #addStartPoint
+	 * @see     #addArcSegmentWithAngle
+	 * @see     #addArcSegmentWithBuldge
+	 */
+	public void addLineSegment( final double endX , final double endY )
+	{
+		if ( getPointCount() == 0 )
+			throw new IllegalStateException( "can't add segment without start point" );
+
+		addImpl( endX , endY , 0.0 );
+	}
+
+	/**
+	 * Add arc segment to polyline.
+	 *
+	 * @param   endX    X coordinate of segment end point.
+	 * @param   endY    Y coordinate of segment end point.
+	 * @param   angle   Enclosed angle of arc segment (radians).
+	 *
+	 * @see     #addStartPoint
+	 * @see     #addLineSegment
+	 * @see     #addArcSegmentWithBuldge
+	 */
+	public void addArcSegmentWithAngle( final double endX , final double endY , final double angle )
+	{
+		if ( angle == 0.0 )
+			throw new IllegalArgumentException( "angle can't be 0.0" );
+
+		addArcSegmentWithBuldge( endX , endY , Math.tan( angle / 4.0 ) );
+	}
+
+	/**
+	 * Add arc segment to polyline.
+	 *
+	 * @param   endX    X coordinate of segment end point.
+	 * @param   endY    Y coordinate of segment end point.
+	 * @param   buldge  Buldge factor for arc segment.
+	 *
+	 * @see     #addStartPoint
+	 * @see     #addLineSegment
+	 * @see     #addArcSegmentWithAngle
+	 */
+	public void addArcSegmentWithBuldge( final double endX , final double endY , final double buldge )
+	{
+		if ( buldge == 0.0 )
+			throw new IllegalArgumentException( "buldge can't be 0.0" );
+
+		if ( getPointCount() == 0 )
+			throw new IllegalStateException( "can't add segment without start point" );
+
+		addImpl( endX , endY , buldge );
+	}
+
+	/**
+	 * Close the polyline (if it was not closed already).
+	 */
+	public void close()
+	{
+		final int pointCount = getPointCount();
+		if ( pointCount > 2 )
+		{
+			final PolyPoint2D first = getPoint( 0 );
+			final PolyPoint2D last  = getPoint( pointCount - 1 );
+
+			if ( ( first.x != last.x ) || ( first.y != last.y ) );
+			{
+				addImpl( first.x , first.y , 0.0 );
+
+				_typeCache    = UNKNOWN;
+				_boundsCache  = null;
+				_encloseCache = null;
+			}
 		}
 	}
 
@@ -342,160 +500,6 @@ public final class Polyline2D
 		}
 
 		return true;
-	}
-
-	/**
-	 * Adds a new point to the polyLine. Points with the same or a greater index then the new one, will be shift to the right.
-	 *
-	 * @param index     Index of the new point
-	 * @param point     The point
-	 */
-	public void addPoint( final int index , final PolyPoint2D point )
-	{
-		if ( point == null )
-			throw new NullPointerException( "Cannot add a null point to a polyline" );
-
-		_points.add( index , point );
-		_typeCache = UNKNOWN;
-		_boundsCache = null;
-		_encloseCache = null;
-	}
-
-	/**
-	 * Add control point to polyline.
-	 *
-	 * @param   x       X coordinate of control point.
-	 * @param   y       Y coordinate of control point.
-	 * @param   buldge  Buldge factor (only meaningful for arc segments).
-	 */
-	private void addImpl( final double x , final double y , final double buldge )
-	{
-		addImpl( new PolyPoint2D( x , y , buldge ) );
-	}
-
-	/**
-	 * Add control point to polyline.
-	 *
-	 * @param   point   Control point.
-	 */
-	private void addImpl( final PolyPoint2D point )
-	{
-		_points.add( point );
-
-		_typeCache    = UNKNOWN;
-		_boundsCache  = null;
-		_encloseCache = null;
-	}
-
-	/**
-	 * Add start point to polyline.
-	 *
-	 * @param   x   X coordinate of segment end point.
-	 * @param   y   Y coordinate of segment end point.
-	 *
-	 * @see     #addLineSegment
-	 * @see     #addArcSegmentWithAngle
-	 * @see     #addArcSegmentWithBuldge
-	 */
-	public void addStartPoint( final double x , final double y )
-	{
-		if ( getPointCount() != 0 )
-			throw new IllegalStateException( "can't add second point" );
-
-		addImpl( x , y , 0.0 );
-	}
-
-	/**
-	 * Add line segment to polyline.
-	 *
-	 * @param   endX   X coordinate of segment end point.
-	 * @param   endY   Y coordinate of segment end point.
-	 *
-	 * @see     #addStartPoint
-	 * @see     #addArcSegmentWithAngle
-	 * @see     #addArcSegmentWithBuldge
-	 */
-	public void addLineSegment( final double endX , final double endY )
-	{
-		if ( getPointCount() == 0 )
-			throw new IllegalStateException( "can't add segment without start point" );
-
-		addImpl( endX , endY , 0.0 );
-	}
-
-	/**
-	 * Add arc segment to polyline.
-	 *
-	 * @param   endX    X coordinate of segment end point.
-	 * @param   endY    Y coordinate of segment end point.
-	 * @param   angle   Enclosed angle of arc segment (radians).
-	 *
-	 * @see     #addStartPoint
-	 * @see     #addLineSegment
-	 * @see     #addArcSegmentWithBuldge
-	 */
-	public void addArcSegmentWithAngle( final double endX , final double endY , final double angle )
-	{
-		if ( angle == 0.0 )
-			throw new IllegalArgumentException( "angle can't be 0.0" );
-
-		addArcSegmentWithBuldge( endX , endY , Math.tan( angle / 4.0 ) );
-	}
-
-	/**
-	 * Add arc segment to polyline.
-	 *
-	 * @param   endX    X coordinate of segment end point.
-	 * @param   endY    Y coordinate of segment end point.
-	 * @param   buldge  Buldge factor for arc segment.
-	 *
-	 * @see     #addStartPoint
-	 * @see     #addLineSegment
-	 * @see     #addArcSegmentWithAngle
-	 */
-	public void addArcSegmentWithBuldge( final double endX , final double endY , final double buldge )
-	{
-		if ( buldge == 0.0 )
-			throw new IllegalArgumentException( "buldge can't be 0.0" );
-
-		if ( getPointCount() == 0 )
-			throw new IllegalStateException( "can't add segment without start point" );
-
-		addImpl( endX , endY , buldge );
-	}
-
-	/**
-	 * Clear all points in the polyline.
-	 */
-	public void clear()
-	{
-		_points.clear();
-
-		_typeCache    = UNKNOWN;
-		_boundsCache  = null;
-		_encloseCache = null;
-	}
-
-	/**
-	 * Close the polyline (if it was not closed already).
-	 */
-	public void close()
-	{
-		final int pointCount = getPointCount();
-		if ( pointCount > 2 )
-		{
-			final PolyPoint2D first = getPoint( 0 );
-			final PolyPoint2D last  = getPoint( pointCount - 1 );
-
-			if ( ( first.x != last.x ) || ( first.y != last.y ) );
-			{
-				addImpl( first.x , first.y , 0.0 );
-
-				_typeCache    = UNKNOWN;
-				_boundsCache  = null;
-				_encloseCache = null;
-			}
-		}
 	}
 
 	/**
