@@ -136,25 +136,55 @@ public final class PolyPoint2D
 	}
 
 	/**
-	 * Get length of segment of which this is the end point, and the specified argument
-	 * represents the start point.
+	 * Get direction of segment with the given start and end points.
 	 *
-	 * @param   start   PolyPoint2D instance that defines the start point.
+	 * @param   start   Start point.
+	 * @param   end     End point.
+	 *
+	 * @return  Direction of segment;
+	 *          <code>null</code> if start and end are too close.
+	 */
+	public static PolyPoint2D getDirection( final PolyPoint2D start , final PolyPoint2D end )
+	{
+		final PolyPoint2D result;
+
+		if ( start.almostEquals( end ) )
+		{
+			result = null;
+		}
+		else
+		{
+			final double dx = end.x - start.x;
+			final double dy = end.y - start.y;
+
+			final double length = Math.sqrt( dx * dx + dy * dy );
+
+			result = new PolyPoint2D( dx / length , dy / length );
+		}
+
+		return result;
+	}
+
+	/**
+	 * Get length of segment with the given start and end points.
+	 *
+	 * @param   start   Start point.
+	 * @param   end     End point.
 	 *
 	 * @return  Length of segment.
 	 */
-	public double getLength( final PolyPoint2D start )
+	public static double getLength( final PolyPoint2D start , final PolyPoint2D end )
 	{
 		final double result;
 
-		if ( almostEquals( start ) )
+		if ( start.almostEquals( end ) )
 		{
 			result = 0.0;
 		}
 		else
 		{
-			final double dx = x - start.x;
-			final double dy = y - start.y;
+			final double dx = end.x - start.x;
+			final double dy = end.y - start.y;
 
 			result = Math.sqrt( dx * dx + dy * dy );
 		}
@@ -175,7 +205,7 @@ public final class PolyPoint2D
 		if ( str == null || str.length() == 0 )
 			throw new IllegalArgumentException( "invalid point specification: " + str );
 
-		final int firstComma = str.indexOf( ',' );
+		final int firstComma = str.indexOf( (int)',' );
 		if ( firstComma < 0 )
 			throw new IllegalArgumentException( "insufficient tokens in specification: " + str );
 
@@ -183,8 +213,8 @@ public final class PolyPoint2D
 
 		if ( "L".equals( type ) )
 		{
-			final int secondComma = str.indexOf( ',' , firstComma + 1 );
-			if ( ( secondComma < 0 ) || ( str.indexOf( ',' , secondComma + 1 ) >= 0 ) )
+			final int secondComma = str.indexOf( (int)',' , firstComma + 1 );
+			if ( ( secondComma < 0 ) || ( str.indexOf( (int)',' , secondComma + 1 ) >= 0 ) )
 				throw new IllegalArgumentException( "invalid token count in line specification: " + str );
 
 			final double lx = Double.parseDouble( str.substring( firstComma + 1 , secondComma ).trim() );

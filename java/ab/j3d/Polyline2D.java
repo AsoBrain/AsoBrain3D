@@ -990,7 +990,7 @@ public final class Polyline2D
 				 */
 				if ( sect1 != null && sect2 != null )
 				{
-					if ( this1.getLength( sect2 ) < this1.getLength( sect1 ) )
+					if ( PolyPoint2D.getLength( this1 , sect2 ) < PolyPoint2D.getLength( this1 , sect1 ) )
 					{
 						final PolyPoint2D temp = sect1;
 						sect1 = sect2; sect2 = temp;
@@ -1375,16 +1375,16 @@ public final class Polyline2D
 		 * (There is also a case, where all points are equal. Return one point only).
 		 */
 		PolyPoint2D p1Close       = iPoints[0];
-		double      p1CloseLength = p1.getLength( p1Close );
+		double      p1CloseLength = PolyPoint2D.getLength( p1, p1Close );
 		PolyPoint2D p2Close       = iPoints[0];
-		double      p2CloseLength = p2.getLength( p1Close );
+		double      p2CloseLength = PolyPoint2D.getLength( p2 , p1Close );
 		PolyPoint2D p;
 
 		for ( i = 1 ; i < iPointCount ; i++ )
 		{
 			p = iPoints[i];
-			final double p1Length = p.getLength( p1 );
-			final double p2Length = p.getLength( p2 );
+			final double p1Length = PolyPoint2D.getLength( p , p1 );
+			final double p2Length = PolyPoint2D.getLength( p , p2 );
 			if ( p1Length < p1CloseLength )
 			{
 				p1Close = p;
@@ -1950,7 +1950,7 @@ public final class Polyline2D
 			final PolyPoint2D p1 = getPoint( index );
 			final PolyPoint2D p2 = getPoint( index + 1 );
 
-			result = p2.getLength( p1 );
+			result = PolyPoint2D.getLength( p1 , p2 );
 		}
 
 		return result;
