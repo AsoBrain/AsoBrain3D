@@ -31,8 +31,6 @@ import javax.media.j3d.Group;
 import javax.media.j3d.TransformGroup;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
-import javax.vecmath.Point3f;
-import javax.vecmath.Point3i;
 import javax.vecmath.Vector3f;
 
 import com.sun.j3d.utils.universe.SimpleUniverse;
@@ -40,6 +38,8 @@ import com.sun.j3d.utils.universe.Viewer;
 import com.sun.j3d.utils.universe.ViewingPlatform;
 
 import ab.j3d.Vector3D;
+
+import com.numdata.oss.ArrayTools;
 
 /**
  * This class extends the <code>SimpleUniverse</code> class and adds extra
@@ -333,10 +333,7 @@ public final class Java3dUniverse
 	 */
 	public void addViewer( final Viewer theViewer )
 	{
-		final Viewer[] newViewers = new Viewer[ viewer.length + 1 ];
-		System.arraycopy( viewer , 0 , newViewers , 0 , viewer.length );
-		newViewers[ viewer.length ] = theViewer;
-		viewer = newViewers;
+		viewer = (Viewer[])ArrayTools.append( viewer , theViewer );
 	}
 
 	/**
