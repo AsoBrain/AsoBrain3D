@@ -1,5 +1,3 @@
-package com.numdata.soda.backoffice;
-
 /*
  * $Id$
  *
@@ -9,8 +7,11 @@ package com.numdata.soda.backoffice;
  * form without express permission from Numdata BV. Please contact Numdata BV
  * for license information.
  */
-import com.numdata.soda.common.CommonTools;
+package com.numdata.soda;
+
 import ab.light3d.Matrix3D;
+
+import com.numdata.oss.TextTools;
 
 /**
  * This class describes a polyline control point in 2D.
@@ -81,8 +82,9 @@ public final class PolyPoint2D
 		if ( other == null ) return false;
 		if ( other == this ) return true;
 
-		return 	x > other.x - tolerance && x < other.x + tolerance
-	         && y > other.y - tolerance && y < other.y + tolerance;
+		float d;
+		return ( ( d = x - other.x ) > -tolerance ) && ( d < tolerance )
+		    && ( ( d = y - other.y ) > -tolerance ) && ( d < tolerance );
 	}
 
 	/**
@@ -155,7 +157,7 @@ public final class PolyPoint2D
 		if ( str == null || str.length() == 0 )
 			throw new IllegalArgumentException( "invalid point specification: " + str );
 
-		final String[] tokens = CommonTools.tokenize( str , ',' );
+		final String[] tokens = TextTools.tokenize( str , ',' );
 		if ( tokens.length < 2 )
 			throw new IllegalArgumentException( "insufficient tokens in specification: " + str );
 
