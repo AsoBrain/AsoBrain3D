@@ -12,9 +12,9 @@ package ab.light3d;
  */
 import java.awt.*;
 import java.awt.image.PixelGrabber;
-import java.util.Hashtable;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.Hashtable;
 
 /**
  * This is the class represents a texture specification in the database.
@@ -180,9 +180,25 @@ public final class TextureSpec
 	 */
 	public int getARGB()
 	{
-		//if ( !_initDone ) initTexture();
-		//return _argb;
 		return 0xFF000000 | rgb;
+	}
+
+	/**
+	 * Get RGB value as HTML text in '#rrggbb' format.
+	 *
+	 * @return  RGB value as HTML text in '#rrggbb' format.
+	 */
+	public String getHtmlRGB()
+	{
+		return new StringBuffer( 7 )
+			.append( '#' )
+			.append( Character.forDigit( ( rgb >> 20 ) & 15 , 16 ) )
+			.append( Character.forDigit( ( rgb >> 16 ) & 15 , 16 ) )
+			.append( Character.forDigit( ( rgb >> 12 ) & 15 , 16 ) )
+			.append( Character.forDigit( ( rgb >>  8 ) & 15 , 16 ) )
+			.append( Character.forDigit( ( rgb >>  4 ) & 15 , 16 ) )
+			.append( Character.forDigit(   rgb         & 15 , 16 ) )
+			.toString();
 	}
 
 	/**
