@@ -334,13 +334,13 @@ public final class FromToViewControl
 		final Vector3D upPrimary = _upPrimary;
 		final Vector3D from      = _dragStartFrom;
 		final Vector3D to        = _dragStartTo;
+		final double   distance  = to.distanceTo( from );
 
 		final double   deltaX    = -event.getDeltaRadX();
-		final double   deltaY    = -event.getDeltaUnitY();
+		final double   deltaY    = (double)event.getDeltaY();
 
 		final Matrix3D rotation  = Matrix3D.getRotationTransform( to , upPrimary , deltaX );
-
-		final Vector3D elevation = upPrimary.multiply( deltaY );
+		final Vector3D elevation = upPrimary.multiply( distance * deltaY / 100.0 );
 
 		Vector3D newFrom = from;
 		newFrom = rotation.multiply( newFrom );
@@ -374,7 +374,7 @@ public final class FromToViewControl
 
 		final double deltaY = (double)event.getDeltaY();
 
-		final double zoom = Math.max( 0.1 , 1.0 + deltaY / 200.0 );
+		final double zoom = Math.max( 0.1 , 1.0 + deltaY / 100.0 );
 
 		Vector3D newFrom = from;
 		newFrom = newFrom.multiply( zoom );
