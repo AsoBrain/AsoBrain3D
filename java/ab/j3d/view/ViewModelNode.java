@@ -20,6 +20,7 @@
 package ab.j3d.view;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.TextureSpec;
 import ab.j3d.model.Node3D;
 
 /**
@@ -38,26 +39,42 @@ public abstract class ViewModelNode
 	private final Object _id;
 
 	/**
-	 * Root in the 3D scene associated with this node.
-	 */
-	private final Node3D _node3D;
-
-	/**
 	 * Transform for this node.
 	 */
 	private Matrix3D _transform;
 
 	/**
-	 * Construct new view model node.
-	 *
-	 * @param   id      Application-assigned ID of this node.
-	 * @param   node3D  Root in the 3D scene.
+	 * Root in the 3D scene associated with this node.
 	 */
-	protected ViewModelNode( final Object id , final Node3D node3D )
+	private final Node3D _node3D;
+
+	/**
+	 * Texture to use instead of actual textures.
+	 */
+	protected final TextureSpec _textureOverride;
+
+	/**
+	 * Extra opacity (0.0=translucent, 1.0=opaque).
+	 */
+	protected final float _opacity;
+
+	/**
+	 * Construct new view model node. The <code>textureOverride</code> and
+	 * <code>opacity</code> values can be used to provide extra hints for
+	 * rendering objects.
+	 *
+	 * @param   id                  Application-assigned ID of this node.
+	 * @param   node3D              Root in the 3D scene.
+	 * @param   textureOverride     Texture to use instead of actual textures.
+	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).
+	 */
+	protected ViewModelNode( final Object id , final Node3D node3D , final TextureSpec textureOverride , final float opacity )
 	{
-		_id = id;
-		_node3D = node3D;
-		_transform = Matrix3D.INIT;
+		_id              = id;
+		_node3D          = node3D;
+		_textureOverride = textureOverride;
+		_opacity         = opacity;
+		_transform       = Matrix3D.INIT;
 	}
 
 	/**

@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.TextureSpec;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
@@ -49,18 +50,21 @@ public final class Java2dNode
 	/**
 	 * Construct new view model node.
 	 *
-	 * @param   id      Application-assigned ID of this node.
-	 * @param   node3D  Root in the 3D scene.
+	 * @param   id                  Application-assigned ID of this node.
+	 * @param   node3D              Root in the 3D scene.
+	 * @param   textureOverride     Texture to use instead of actual textures.
+	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).
 	 */
-	Java2dNode( final Object id , final Node3D node3D )
+	Java2dNode( final Object id , final Node3D node3D , final TextureSpec textureOverride , final float opacity )
 	{
-		super( id , node3D );
+		super( id , node3D , textureOverride , opacity );
 	}
 
 	public void update()
 	{
 		final Node3DCollection leafs = new Node3DCollection();
-		getNode3D().gatherLeafs( leafs , Object3D.class , Matrix3D.INIT , false );
+		final Node3D node3D = getNode3D();
+		node3D.gatherLeafs( leafs , Object3D.class , Matrix3D.INIT , false );
 
 		// update paint queue....
 		// @FIXME How to determine 'smart' paint order....

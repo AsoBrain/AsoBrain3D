@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import ab.j3d.TextureSpec;
 import ab.j3d.model.Node3D;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModel;
@@ -50,11 +51,11 @@ public final class Java2dModel
 	{
 	}
 
-	public void createNode( final Object id , final Node3D node3D )
+	public void createNode( final Object id , final Node3D node3D , final TextureSpec textureOverride , final float opacity )
 	{
 		removeNode( id );
 		if ( node3D != null )
-			addNode( new Java2dNode( id , node3D ) );
+			addNode( new Java2dNode( id , node3D , textureOverride , opacity ) );
 	}
 
 	protected void addNode( final ViewModelNode node )

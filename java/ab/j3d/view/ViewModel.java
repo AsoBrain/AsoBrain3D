@@ -28,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Node3D;
 
@@ -170,12 +171,14 @@ public abstract class ViewModel
 	 * tree. If an existing node exists with the same ID, then the existing
 	 * node will be removed before creating the new node.
 	 *
-	 * @param   id      Application-assigned ID of view model node.
-	 * @param   node3D  Root in the 3D scene to create a view model node for.
+	 * @param   id                  Application-assigned ID of view model node.
+	 * @param   node3D              Root in the 3D scene to create a view model node for.
+	 * @param   textureOverride     Texture to use instead of actual textures.
+	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).);
 	 *
 	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public abstract void createNode( Object id , Node3D node3D );
+	public abstract void createNode( Object id , Node3D node3D , TextureSpec textureOverride , float opacity );
 
 	/**
 	 * Remove view model node.
