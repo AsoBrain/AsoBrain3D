@@ -95,9 +95,9 @@ public class Renderer
 	/*
 	 * Control variables.
 	 */
-	private float _mouseSensitivity = 1.4f;
-	private float _movementSpeed = 20.0f;
-	private float _zoomSpeed = 30.0f;
+	private final float _mouseSensitivity = 1.4f;
+	private final float _movementSpeed = 20.0f;
+	private final float _zoomSpeed = 30.0f;
 
 	private int   _initX;
 	private int   _initY;
@@ -149,7 +149,7 @@ public class Renderer
 	/**
 	 * Background color (ARGB)
 	 */
-	public int _background = 0x0FFC0C0C0;
+	private final int _background = 0x0FFC0C0C0;
 
 	/**
 	 * Z-Buffer. Each entry corresponds to a pixel's Z-coordinate. If a
@@ -168,7 +168,7 @@ public class Renderer
 	/**
 	 * Registered ImageConsumers.
 	 */
-	private Vector _imageConsumers = new Vector();
+	private final Vector _imageConsumers = new Vector();
 
 	/**
 	 * Image with frame buffer contents.
@@ -189,14 +189,14 @@ public class Renderer
 	/*
 	 * Solid renderer temporary storage.
 	 */
-	private LeafCollection _sObjects         = new LeafCollection();
-	private LeafCollection _sLights          = new LeafCollection();
-	private RenderObject _solidObject = new RenderObject();
+	private final LeafCollection _sObjects = new LeafCollection();
+	private final LeafCollection _sLights = new LeafCollection();
+	private final RenderObject _solidObject = new RenderObject();
 
 	/*
 	 * Wireframe renderer temporary storage.
 	 */
-	private LeafCollection _wfObjects    = new LeafCollection();
+	private final LeafCollection _wfObjects    = new LeafCollection();
 	private RenderObject[] _wireObjects = null;
 
 	/**

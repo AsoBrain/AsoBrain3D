@@ -23,10 +23,10 @@ import common.model.Matrix3D;
 public class Box3D
 	extends Object3D
 {
-	private Matrix3D _xform;
-	private float _dx;
-	private float _dy;
-	private float _dz;
+	private final Matrix3D _xform;
+	private final float _dx;
+	private final float _dy;
+	private final float _dz;
 	/**
 	 * Set box properties.
 	 *

@@ -28,12 +28,12 @@ public class Camera
 	 * Distance from view plane to eye. This defines the perspective effect
 	 * of the view.
 	 */
-	public float aperture;
+	public final float aperture;
 
 	/**
 	 * Linear zoom factor.
 	 */
-	public float zoom;
+	public final float zoom;
 	 
 	/**
 	 * Default constructor. Zoom is set to 10x, eye distance is set to 300mm.

@@ -24,7 +24,7 @@ public class Light
 	/**
 	 * Intensity of light (0-255).
 	 */
-	int _intensity;
+	private final int _intensity;
 
 	/**
 	 * Fall-off of light. This is factor f in the formula:
@@ -39,7 +39,7 @@ public class Light
 	 *
 	 * Setting this to a negative value, will create an ambient light source.
 	 */
-	float _fallOff;
+	private final float _fallOff;
 	
 	/**
 	 * Constructor.
@@ -47,7 +47,7 @@ public class Light
 	 * @param	intensity	Intensity of white light (0-255).
 	 * @param	fallOff		Light fall-off characteristic (negavtive => ambient).
 	 */
-	public Light( int intensity , float fallOff )
+	public Light( final int intensity , final float fallOff )
 	{
 		_intensity = intensity;
 		_fallOff   = fallOff;
