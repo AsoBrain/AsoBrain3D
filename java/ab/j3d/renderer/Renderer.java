@@ -1716,8 +1716,8 @@ public class Renderer
 	 */
 	public void reset()
 	{
-		//_modelTransform.setRotationX( -10f );
-		//_modelTransform.setRotationZ( -35f );
+		_modelTransform.setRotationX( -10f );
+		_modelTransform.setRotationZ( -35f );
 		_cameraTransform.setTranslation( 0f , -4000f , 0f );
 		center();
 
