@@ -145,12 +145,13 @@ public class ABtoJ3DConvertor
 
 		final Map appearances = new HashMap();
 
-		for ( int face = 0 ; face < faceCount ; face++ )
+		for ( int i = 0 ; i < faceCount ; i++ )
 		{
-			final int[]       faceVert    = obj.getFaceVertexIndices( face );
-			final int[]       faceTU      = obj.getFaceTextureU( face );
-			final int[]       faceTV      = obj.getFaceTextureV( face );
-			final TextureSpec faceTexture = obj.getFaceTexture( face );
+			final Object3D.Face face        = obj.getFace( i );
+			final int[]         faceVert    = face.getPointIndices();
+			final int[]         faceTU      = face.getTextureU();
+			final int[]         faceTV      = face.getTextureV();
+			final TextureSpec   faceTexture = face.getTexture();
 
 			if ( faceTexture == null || faceTexture.code == null )
 				continue;
@@ -208,18 +209,6 @@ public class ABtoJ3DConvertor
 			}
 		}
 
-		return createShapes( appearances );
-	}
-
-	/**
-	 *
-	 *
-	 * @param   appearances
-	 *
-	 * @return
-	 */
-	private Group createShapes( final Map appearances )
-	{
 		final BranchGroup result = new BranchGroup();
 		result.setCapability( BranchGroup.ALLOW_DETACH );
 
@@ -227,38 +216,43 @@ public class ABtoJ3DConvertor
 		{
 			final String     code       = (String)appearanceEnum.next();
 			final Appearance appearance = abToJ3D( _db.getTextureSpec( code ) , 1 );
-			final boolean    hasTexture = ( appearance.getTexture() != null );
+			final List[]     data       = (List[])appearances.get( code );
 
-			final List j3dVertices;
-			final List j3dTextureCoords;
-			final List j3dFaceNormals;
-			{
-				final List[] data = (List[])appearances.get( code );
-				j3dVertices       = data[ 0 ];
-				j3dTextureCoords  = data[ 1 ];
-				j3dFaceNormals    = data[ 2 ];
-			}
-
-			final int what = GeometryArray.COORDINATES | GeometryArray.NORMALS | ( hasTexture ? GeometryArray.TEXTURE_COORDINATE_2 : 0 );
-			final GeometryArray geom = new TriangleArray( j3dVertices.size() , what );
-
-			final Point3f[] coordA = (Point3f[])j3dVertices.toArray( new Point3f[ j3dVertices.size() ] );
-			geom.setCoordinates( 0 , coordA );
-
-			if ( hasTexture )
-			{
-				final TexCoord2f[] textCoordsA = (TexCoord2f[])j3dTextureCoords.toArray( new TexCoord2f[ j3dTextureCoords.size() ] );
-				geom.setTextureCoordinates( 0 , 0 , textCoordsA );
-			}
-
-			final Vector3f[] normA = (Vector3f[])j3dFaceNormals.toArray( new Vector3f[ j3dFaceNormals.size() ] );
-			geom.setNormals( 0 , normA );
-
-			final Shape3D shape = new Shape3D( geom , appearance );
-			result.addChild( shape );
+			result.addChild( createShape( appearance , data ) );
 		}
 
 		return result;
+	}
+
+	private Shape3D createShape( final Appearance appearance , final List[] data )
+	{
+		final boolean hasTexture = ( appearance.getTexture() != null );
+
+		final List j3dVertices;
+		final List j3dTextureCoords;
+		final List j3dFaceNormals;
+		{
+			j3dVertices       = data[ 0 ];
+			j3dTextureCoords  = data[ 1 ];
+			j3dFaceNormals    = data[ 2 ];
+		}
+
+		final int what = GeometryArray.COORDINATES | GeometryArray.NORMALS | ( hasTexture ? GeometryArray.TEXTURE_COORDINATE_2 : 0 );
+		final GeometryArray geom = new TriangleArray( j3dVertices.size() , what );
+
+		final Point3f[] coordA = (Point3f[])j3dVertices.toArray( new Point3f[ j3dVertices.size() ] );
+		geom.setCoordinates( 0 , coordA );
+
+		if ( hasTexture )
+		{
+			final TexCoord2f[] textCoordsA = (TexCoord2f[])j3dTextureCoords.toArray( new TexCoord2f[ j3dTextureCoords.size() ] );
+			geom.setTextureCoordinates( 0 , 0 , textCoordsA );
+		}
+
+		final Vector3f[] normA = (Vector3f[])j3dFaceNormals.toArray( new Vector3f[ j3dFaceNormals.size() ] );
+		geom.setNormals( 0 , normA );
+
+		return new Shape3D( geom , appearance );
 	}
 
 	/**
