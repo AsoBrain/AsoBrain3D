@@ -616,7 +616,15 @@ public final class Matrix3D
 	}
 
 	/**
-	 * Rotate along the X-axis.
+	 * Rotate about the X-axis in anti-clockwise direction.
+	 * <p />
+	 * The returned matrix is the current matrix multiplied by the following
+	 * transformation matrix:
+	 * <pre>
+	 *    [   1     0     0   ]
+	 *    [   0    cos  -sin  ]
+	 *    [   0    sin   cos  ]
+	 * </pre>
 	 *
 	 * @param   thetaRad    Rotate theta radians about the X-axis
 	 *
@@ -635,16 +643,24 @@ public final class Matrix3D
 			final double cos = Math.cos( thetaRad );
 			final double sin = Math.sin( thetaRad );
 
-			result = set(       xx            ,       xy            ,       xz            ,       xo            ,
-			              cos * yx + sin * zx , cos * yy + sin * zy , cos * yz + sin * zz , cos * yo + sin * zo ,
-			              cos * zx - sin * yx , cos * zy - sin * yy , cos * zz - sin * yz , cos * zo - sin * yo );
+			result = set( xx , xy , xz , xo ,
+			              cos * yx - sin * zx , cos * yy - sin * zy , cos * yz - sin * zz , cos * yo - sin * zo ,
+			              sin * yx + cos * zx , sin * yy + cos * zy , sin * yz + cos * zz , sin * yo + cos * zo );
 		}
 
 		return result;
 	}
 
 	/**
-	 * Rotate along the Y-axis.
+	 * Rotate about the Y-axis in anti-clockwise direction.
+	 * <p />
+	 * The returned matrix is the current matrix multiplied by the following
+	 * transformation matrix:
+	 * <pre>
+	 *    [  cos    0    sin  ]
+	 *    [   0     1     0   ]
+	 *    [ -sin    0    cos  ]
+	 * </pre>
 	 *
 	 * @param   thetaRad    Rotate theta radians about the Y-axis
 	 *
@@ -663,16 +679,24 @@ public final class Matrix3D
 			final double cos = Math.cos( thetaRad );
 			final double sin = Math.sin( thetaRad );
 
-			result = set( xx * cos + zx * sin , xy * cos + zy * sin , xz * cos + zz * sin , xo * cos + zo * sin ,
-			              yx                  , yy                  , yz                  , yo                  ,
-			              zx * cos - xx * sin , zy * cos - xy * sin , zz * cos - xz * sin , zo * cos - xo * sin );
+			result = set( cos * xx + zx * sin ,  cos * xy + zy * sin ,  cos * xz + zz * sin ,  cos * xo + zo * sin ,
+			                       yx         ,           yy         ,           yz         ,          yo          ,
+			             -sin * xx + zx * cos , -sin * xy + zy * cos , -sin * xz + zz * cos , -sin * xo + zo * cos );
 		}
 
 		return result;
 	}
 
 	/**
-	 * Rotate along the Z-axis.
+	 * Rotate about the Z-axis in anti-clockwise direction.
+	 * <p />
+	 * The returned matrix is the current matrix multiplied by the following
+	 * transformation matrix:
+	 * <pre>
+	 *    [  cos  -sin    0   ]
+	 *    [  sin   cos    0   ]
+	 *    [   0     0     1   ]
+	 * </pre>
 	 *
 	 * @param   thetaRad    Rotate theta radians about the Z-axis
 	 *
@@ -691,9 +715,9 @@ public final class Matrix3D
 			final double cos = Math.cos( thetaRad );
 			final double sin = Math.sin( thetaRad );
 
-			result = set( xx * cos - yx * sin , xy * cos - yy * sin , xz * cos - yz * sin , xo * cos - yo * sin ,
-			              yx * cos + xx * sin , yy * cos + xy * sin , yz * cos + xz * sin , yo * cos + xo * sin ,
-			              zx                  , zy                  , zz                  , zo );
+			result = set( cos * xx - sin * yx , cos * xy - sin * yy , cos * xz - sin * yz , cos * xo - sin * yo ,
+				          sin * xx + cos * yx , sin * xy + cos * yy , sin * xz + cos * yz , sin * xo + cos * yo ,
+				          zx , zy , zz , zo                   );
 		}
 
 		return result;
