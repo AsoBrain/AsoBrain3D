@@ -20,11 +20,18 @@
  */
 package ab.j3d.view;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Locale;
 import java.util.Properties;
+import java.util.ResourceBundle;
+import javax.swing.Action;
 
 import ab.j3d.Matrix3D;
+
+import com.numdata.oss.ResourceBundleTools;
+import com.numdata.oss.ui.BasicAction;
 
 /**
  * This abstract class defined a control(ler) for a view in the view model.
@@ -51,6 +58,9 @@ import ab.j3d.Matrix3D;
 public abstract class ViewControl
 	implements DragListener
 {
+	/** Action ID: Save settings.    */ public static final String SAVE_ACTION     = "save";
+	/** Action ID: Restore settings. */ public static final String RESTORE_ACTION  = "restore";
+
 	/**
 	 * View control event (reused to avoid too much garbage).
 	 */
@@ -70,6 +80,33 @@ public abstract class ViewControl
 	protected ViewControl()
 	{
 		_transform = Matrix3D.INIT;
+	}
+
+	/**
+	 * Get actions of the view control.
+	 *
+	 * @param   locale  Preferred locale for internationalization.
+	 *
+	 * @return  Actions of the view control.
+	 */
+	public Action[] getActions( final Locale locale )
+	{
+		final ResourceBundle res = ResourceBundleTools.getBundle( ViewControl.class , locale );
+
+		return new Action[]
+			{
+				new BasicAction( res , RESTORE_ACTION ) {
+					public void actionPerformed( final ActionEvent event )
+					{
+						restore();
+					} } ,
+
+				new BasicAction( res , SAVE_ACTION ) {
+					public void actionPerformed( final ActionEvent event )
+					{
+						save();
+					} } ,
+			};
 	}
 
 	/**
@@ -211,7 +248,7 @@ public abstract class ViewControl
 	public abstract void save();
 
 	/**
-	 * Save current view control settings. The saved settings can be restored
+	 * Restore current view control settings. The saved settings can be restored
 	 * later using the <code>restore()</code> method.
 	 *
 	 * @see     #save()
