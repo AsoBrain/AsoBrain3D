@@ -9,7 +9,6 @@
  */
 package com.numdata.soda.mountings;
 
-import java.awt.geom.Rectangle2D;
 import java.util.Vector;
 
 import ab.light3d.Matrix3D;
@@ -113,14 +112,14 @@ public final class Polyline2D
 	 * Cache for line's bounds. This value will reset when points
 	 * are added/removed.
 	 */
-	private Rectangle2D.Float _boundsCache = null;
+	private Bounds2D _boundsCache = null;
 
 	/**
 	 * Cache for enclosed rectangel of a convex shape.
 	 *
 	 * @see	#getEnclosedRectangle
 	 */
-	private Rectangle2D.Float _encloseCache = null;
+	private Bounds2D _encloseCache = null;
 
 	/**
 	 * Constructor for polyline.
@@ -137,7 +136,11 @@ public final class Polyline2D
 	 */
 	public Polyline2D( final Polyline2D original )
 	{
-		_points = new Vector( original._points );
+		final int l = original._points.size();
+
+		_points = new Vector( l );
+		for ( int i = 0 ; i < l ; i++ )
+			_points.addElement( original._points.elementAt( i ) );
 	}
 
 	/**
@@ -439,35 +442,33 @@ public final class Polyline2D
 	/**
 	 * Get bounding box of polyline.
 	 *
-	 * @return	Rectangle2D with bounding box for polyline;
+	 * @return	Bounds2D with bounding box for polyline;
 	 *			<code>null</code> if the poyline has no bounds (it's void).
 	 */
-	public synchronized Rectangle2D.Float getBounds()
+	public synchronized Bounds2D getBounds()
 	{
 		if ( _boundsCache == null )
 		{
-			float      x1 = Float.MAX_VALUE;
-			float      y1 = Float.MAX_VALUE;
-			float      x2 = Float.MIN_VALUE;
-			float      y2 = Float.MIN_VALUE;
-			PolyPoint2D p;
-			int         i  = getPointCount();
-
+			int i = getPointCount();
 			if ( i == 0 )
 				return null;
 
+			float x1 = Float.MAX_VALUE;
+			float y1 = Float.MAX_VALUE;
+			float x2 = Float.MIN_VALUE;
+			float y2 = Float.MIN_VALUE;
+
 			while ( --i >= 0 )
 			{
-				p = getPoint( i );
+				final PolyPoint2D p = getPoint( i );
 
 				if ( p.x < x1 ) x1 = p.x;
-				if ( p.x > x2 ) x2 = p.x;
 				if ( p.y < y1 ) y1 = p.y;
+				if ( p.x > x2 ) x2 = p.x;
 				if ( p.y > y2 ) y2 = p.y;
 			}
 
-
-			_boundsCache = new Rectangle2D.Float( x1 , y1 , x2 - x1 , y2 - y1 );
+			_boundsCache = new Bounds2D( x1 , y1 , x2 , y2 );
 		}
 
 		return _boundsCache;
@@ -483,9 +484,9 @@ public final class Polyline2D
 	 *
 	 * THIS IS ONLY VALID FOR POLYLINES DEFINING A 'CONVEX' SHAPE.
 	 *
-	 * @return	Rectangle2D that is enclosed by this polyline.
+	 * @return	Bounds2D that is enclosed by this polyline.
 	 */
-	public Rectangle2D getEnclosedRectangle()
+	public Bounds2D getEnclosedRectangle()
 	{
 		/*
 		 * Only for convex shapes.
@@ -498,17 +499,17 @@ public final class Polyline2D
 			/*
 			 * Get bounds.
 			 */
-			final Rectangle2D.Float bounds = getBounds();
+			final Bounds2D bounds = getBounds();
 			if ( bounds == null )
 				return null;
 
 			/*
 			 * Define starting points.
 			 */
-			float x1 = bounds.x;
-			float y1 = bounds.y;
-			float x2 = x1 + bounds.width;
-			float y2 = y1 + bounds.height;
+			float x1 = bounds.x1;
+			float y1 = bounds.y1;
+			float x2 = bounds.x2;
+			float y2 = bounds.y2;
 
 			/*
 			 * Amount to move when line is not in shape.
@@ -530,8 +531,8 @@ public final class Polyline2D
 				/*
 				 * Check if we missed it.
 				 */
-				if ( x1 > bounds.getMaxX() || x2 < bounds.getMinX() ||
-					 y1 > bounds.getMaxY() || y2 < bounds.getMinY() )
+				if ( x1 > bounds.x2 || x2 < bounds.x1 ||
+				     y1 > bounds.y2 || y2 < bounds.y1 )
 					throw new RuntimeException( "No enclosed rectangle can be found" );
 
 				/*
@@ -576,7 +577,7 @@ public final class Polyline2D
 				{	y2 -= verticalStep; p2 = null; p4 = null; }
 			}
 
-			_encloseCache = new Rectangle2D.Float( x1 , y1 , x2 - x1 , y2 - y1 );
+			_encloseCache = new Bounds2D( x1 , y1 , x2 - x1 , y2 - y1 );
 		}
 
 		return _encloseCache;
@@ -593,18 +594,18 @@ public final class Polyline2D
 	 *
 	 * THIS IS ONLY VALID FOR POLYLINES DEFINING A 'CONVEX' SHAPE.
 	 *
-	 * @return	Rectangle2D that is enclosed by this polyline.
+	 * @return	Bounds2D that is enclosed by this polyline.
 	 */
-	public Rectangle2D getEnclosedRectangleOLD()
+	public Bounds2D getEnclosedRectangleOLD()
 	{
-		final Rectangle2D.Float bounds = getBounds();
+		final Bounds2D bounds = getBounds();
 		if ( bounds == null )
 			return null;
 
-		final float boundsX1 = bounds.x;
-		final float boundsY1 = bounds.y;
-		final float boundsX2 = boundsX1 + bounds.width;
-		final float boundsY2 = boundsY1 + bounds.height;
+		final float boundsX1 = bounds.x1;
+		final float boundsY1 = bounds.y1;
+		final float boundsX2 = bounds.x2;
+		final float boundsY2 = bounds.y2;
 
 		PolyPoint2D p;
 		float      x1 = boundsX1;
@@ -641,17 +642,7 @@ public final class Polyline2D
 		}
 
 
-		return new Rectangle2D.Float( x1 , y1 , x2 - x1 , y2 - y1 );
-	}
-
-	/**
-	 * Get height of bounding box for this polyline.
-	 *
-	 * @return	Height of bounding box for this polyline.
-	 */
-	public float getHeight()
-	{
-		return getBounds().height;
+		return new Bounds2D( x1 , y1 , x2 - x1 , y2 - y1 );
 	}
 
 	/**
@@ -1835,48 +1826,6 @@ public final class Polyline2D
 	}
 
 	/**
-	 * Get maximal X boundary for this polyline.
-	 *
-	 * @return	Maximal X boundary for this polyline.
-	 */
-	public float getMaxX()
-	{
-		final Rectangle2D.Float b = getBounds();
-		return b.x + b.width;
-	}
-
-	/**
-	 * Get maximal Y boundary for this polyline.
-	 *
-	 * @return	Maximal Y boundary for this polyline.
-	 */
-	public float getMaxY()
-	{
-		final Rectangle2D.Float b = getBounds();
-		return b.y + b.height;
-	}
-
-	/**
-	 * Get minimal X boundary for this polyline.
-	 *
-	 * @return	Minimal X boundary for this polyline.
-	 */
-	public float getMinX()
-	{
-		return getBounds().x;
-	}
-
-	/**
-	 * Get minimal Y boundary for this polyline.
-	 *
-	 * @return	Minimal Y boundary for this polyline.
-	 */
-	public float getMinY()
-	{
-		return getBounds().y;
-	}
-
-	/**
 	 * Gets an object3d based on this polyline, the result will
 	 * be a face.
 	 *
@@ -2050,16 +1999,6 @@ public final class Polyline2D
 		}
 
 		return _typeCache;
-	}
-
-	/**
-	 * Get width of bounding box for this polyline.
-	 *
-	 * @return	Width of bounding box for this polyline.
-	 */
-	public float getWidth()
-	{
-		return getBounds().width;
 	}
 
 	/**
@@ -2558,10 +2497,9 @@ public final class Polyline2D
 	 *
 	 * @return	true if shapes are intersecting, otherwise false.
 	 */
-	protected static boolean isIntersectingRectangle_Rectangle( final Rectangle2D r1 , final Rectangle2D r2 )
+	protected static boolean isIntersectingRectangle_Rectangle( final Bounds2D r1 , final Bounds2D r2 )
 	{
-		return !( r1.getX() > r2.getX() + r2.getWidth() || r1.getX() + r1.getWidth() < r2.getX() ||
-				  r1.getY() > r2.getY() + r2.getHeight() || r1.getY() + r1.getHeight() < r2.getY() );
+		return !( r1.x1 > r2.x2 || r1.x2 < r2.x1 || r1.y1 > r2.y2 || r1.y2 < r2.y1 );
 	}
 
 	/**

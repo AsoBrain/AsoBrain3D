@@ -168,7 +168,7 @@ public final class PolyPoint2D
 			if ( tokens.length != 3 )
 				throw new IllegalArgumentException( "invalid token count in line specification: " + str );
 
-			return new PolyPoint2D( Float.parseFloat( tokens[ 1 ] ) , Float.parseFloat( tokens[ 2 ] ) );
+			return new PolyPoint2D( new Float( tokens[ 1 ] ).floatValue() , new Float( tokens[ 2 ] ).floatValue() );
 		}
 		else
 		{
