@@ -22,6 +22,8 @@ package ab.j3d;
 
 import java.util.StringTokenizer;
 
+import com.numdata.oss.ArrayTools;
+
 /**
  * This class is used to represent a 3D transformation matrix (although
  * it may also be used for 2D transformations).
@@ -448,55 +450,6 @@ public final class Matrix3D
 	}
 
 	/**
-	 * This function performs just the rotational part of
-	 * of the transform on a set of vertices. Vertices
-	 * are supplied using float arrays with a sequence of
-	 * 3 floats for each vertex.
-	 *
-	 * @param   source          Source array.
-	 * @param   dest            Destination array.
-	 * @param   vertexCount     Number of vertices.
-	 */
-	public void rotate( final float[] source , final float[] dest , final int vertexCount )
-	{
-		final float lxx = xx;
-		final float lxy = xy;
-		final float lxz = xz;
-		final float lyx = yx;
-		final float lyy = yy;
-		final float lyz = yz;
-		final float lzx = zx;
-		final float lzy = zy;
-		final float lzz = zz;
-
-		final int vertexArrayLength = vertexCount * 3;
-
-		if ( ( lxx == 1.0f ) && ( lxy == 0.0f ) && ( lxz == 0.0f ) &&
-		     ( lyx == 0.0f ) && ( lyy == 1.0f ) && ( lyz == 0.0f ) &&
-		     ( lzx == 0.0f ) && ( lzy == 0.0f ) && ( lzz == 1.0f ) )
-		{
-			System.arraycopy( source , 0 , dest , 0 , vertexArrayLength );
-		}
-		else
-		{
-			float x;
-			float y;
-			float z;
-
-			for ( int i = 0 ; i < vertexArrayLength ; i += 3 )
-			{
-				x = source[ i     ];
-				y = source[ i + 1 ];
-				z = source[ i + 2 ];
-
-				dest[ i     ] = x * lxx + y * lxy + z * lxz;
-				dest[ i + 1 ] = x * lyx + y * lyy + z * lyz;
-				dest[ i + 2 ] = x * lzx + y * lzy + z * lzz;
-			}
-		}
-	}
-
-	/**
 	 * Rotate along the X-axis.
 	 *
 	 * @param   thetaRad    Rotate theta radians about the X-axis
@@ -671,16 +624,125 @@ public final class Matrix3D
 	}
 
 	/**
-	 * This function transforms a set of vertices. Vertices
-	 * are supplied using float arrays with a sequence of
-	 * 3 floats for each vertex.
+	 * This function performs just the rotational part of of the transform on a
+	 * set of vectors. Vectors are supplied using float arrays with a triplet for
+	 * each vector.
 	 *
 	 * @param   source          Source array.
-	 * @param   dest            Destination array.
-	 * @param   vertexCount     Number of vertices.
+	 * @param   dest            Destination array (may be <code>null</code> or too small to create new).
+	 * @param   vectorCount     Number of vertices.
+	 *
+	 * @return  Array to which the transformed coordinates were written
+	 *          (may be different from the <code>dest</code> argument).
+	 *
+	 * @see     #multiply(float, float, float)
+	 * @see     #multiply(Vector3D)
+	 * @see     ArrayTools#ensureLength
 	 */
-	public void transform( final float[] source , final float[] dest , final int vertexCount )
+	public float[] rotate( final float[] source , final float[] dest , final int vectorCount )
 	{
+		final int     resultLength = vectorCount * 3;
+		final float[] result       = (float[])ArrayTools.ensureLength( dest , float.class , -1 , resultLength );
+
+		final float lxx = xx;
+		final float lxy = xy;
+		final float lxz = xz;
+		final float lyx = yx;
+		final float lyy = yy;
+		final float lyz = yz;
+		final float lzx = zx;
+		final float lzy = zy;
+		final float lzz = zz;
+
+		if ( ( lxx == 1.0f ) && ( lxy == 0.0f ) && ( lxz == 0.0f ) &&
+		     ( lyx == 0.0f ) && ( lyy == 1.0f ) && ( lyz == 0.0f ) &&
+		     ( lzx == 0.0f ) && ( lzy == 0.0f ) && ( lzz == 1.0f ) )
+		{
+			System.arraycopy( source , 0 , result , 0 , resultLength );
+		}
+		else
+		{
+			float x;
+			float y;
+			float z;
+
+			for ( int i = 0 ; i < resultLength ; i += 3 )
+			{
+				x = source[ i     ];
+				y = source[ i + 1 ];
+				z = source[ i + 2 ];
+
+				result[ i     ] = x * lxx + y * lxy + z * lxz;
+				result[ i + 1 ] = x * lyx + y * lyy + z * lyz;
+				result[ i + 2 ] = x * lzx + y * lzy + z * lzz;
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Rotate a vector to X-coordinate using this rotate.
+	 *
+	 * @param   x       X-coordinate of vector.
+	 * @param   y       Y-coordinate of vector.
+	 * @param   z       Z-coordinate of vector.
+	 *
+	 * @return  Resulting X coordinate.
+	 */
+	public float rotateX( final float x , final float y , final float z )
+	{
+		return x * xx + y * xy + z * xz;
+	}
+
+	/**
+	 * Rotate a vector to Y-coordinate using this rotate.
+	 *
+	 * @param   x       X-coordinate of vector.
+	 * @param   y       Y-coordinate of vector.
+	 * @param   z       Z-coordinate of vector.
+	 *
+	 * @return  Resulting Y coordinate.
+	 */
+	public float rotateY( final float x , final float y , final float z )
+	{
+		return x * yx + y * yy + z * yz;
+	}
+
+	/**
+	 * Rotate a vector to Z-coordinate using this rotate.
+	 *
+	 * @param   x       X-coordinate of vector.
+	 * @param   y       Y-coordinate of vector.
+	 * @param   z       Z-coordinate of vector.
+	 *
+	 * @return  Resulting Z coordinate.
+	 */
+	public float rotateZ( final float x , final float y , final float z )
+	{
+		return x * zx + y * zy + z * zz;
+	}
+
+	/**
+	 * This function transforms a set of points. Point coordinates are supplied
+	 * using float arrays containing a triplet for each point.
+	 *
+	 * @param   source      Source array.
+	 * @param   dest        Destination array (may be <code>null</code> or too small to create new).
+	 * @param   pointCount  Number of vertices.
+	 *
+	 * @return  Array to which the transformed coordinates were written
+	 *          (may be different from the <code>dest</code> argument).
+	 *
+	 * @see     #multiply(float, float, float)
+	 * @see     #multiply(Vector3D)
+	 * @see     ArrayTools#ensureLength
+	 */
+	public float[] transform( final float[] source , final float[] dest , final int pointCount )
+	{
+		final int     resultLength = pointCount * 3;
+		final float[] result       = (float[])ArrayTools.ensureLength( dest , float.class , -1 , resultLength );
+
 		final float lxx = xx;
 		final float lxy = xy;
 		final float lxz = xz;
@@ -694,8 +756,6 @@ public final class Matrix3D
 		final float lyo = yo;
 		final float lzo = zo;
 
-		final int vertexArrayLength = vertexCount * 3;
-
 		/*
 		 * Perform rotate, translate, or copy only if possible.
 		 */
@@ -705,21 +765,21 @@ public final class Matrix3D
 		{
 			if ( ( lxo == 0.0f ) && ( lyo == 0.0f ) && ( lzo == 0.0f ) )
 			{
-				System.arraycopy( source , 0 , dest , 0 , vertexArrayLength );
+				System.arraycopy( source , 0 , result , 0 , resultLength );
 			}
 			else
 			{
-				for ( int i = 0 ; i < vertexArrayLength ; i += 3 )
+				for ( int i = 0 ; i < resultLength ; i += 3 )
 				{
-					dest[ i     ] = source[ i     ] + lxo;
-					dest[ i + 1 ] = source[ i + 1 ] + lyo;
-					dest[ i + 2 ] = source[ i + 2 ] + lzo;
+					result[ i     ] = source[ i     ] + lxo;
+					result[ i + 1 ] = source[ i + 1 ] + lyo;
+					result[ i + 2 ] = source[ i + 2 ] + lzo;
 				}
 			}
 		}
 		else if ( ( lxo == 0.0f ) && ( lyo == 0.0f ) && ( lzo == 0.0f ) )
 		{
-			rotate( source , dest , vertexCount );
+			rotate( source , result , pointCount );
 		}
 		else
 		{
@@ -727,17 +787,19 @@ public final class Matrix3D
 			float y;
 			float z;
 
-			for ( int i = 0 ; i < vertexArrayLength ; i += 3 )
+			for ( int i = 0 ; i < resultLength ; i += 3 )
 			{
 				x = source[ i     ];
 				y = source[ i + 1 ];
 				z = source[ i + 2 ];
 
-				dest[ i     ] = x * lxx + y * lxy + z * lxz + lxo;
-				dest[ i + 1 ] = x * lyx + y * lyy + z * lyz + lyo;
-				dest[ i + 2 ] = x * lzx + y * lzy + z * lzz + lzo;
+				result[ i     ] = x * lxx + y * lxy + z * lxz + lxo;
+				result[ i + 1 ] = x * lyx + y * lyy + z * lyz + lyo;
+				result[ i + 2 ] = x * lzx + y * lzy + z * lzz + lzo;
 			}
 		}
+
+		return result;
 	}
 
 	/**
@@ -781,5 +843,4 @@ public final class Matrix3D
 	{
 		return x * zx + y * zy + z * zz + zo;
 	}
-
 }
