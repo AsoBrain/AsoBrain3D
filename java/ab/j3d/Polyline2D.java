@@ -167,7 +167,7 @@ public final class Polyline2D
 		append( 0 , 0 );
 		if ( dx != 0 )
 		{
-			append( dy , 0 );
+			append( dx , 0 );
 			if ( dy != 0 )
 			{
 				append( dx , dy );
@@ -179,7 +179,6 @@ public final class Polyline2D
 		{
 			append( 0 , dy );
 		}
-
 	}
 
 	/**
