@@ -1,4 +1,9 @@
-Current version: 1.0.4
+Current version: 1.0.5
+
+Changes between 1.0.4 and 1.0.5:
+ - Added Polyline2D class (and its friends PolyPoint2D and Bounds2D) to describe 2D shapes (Numdata Open Source Software license).
+ - Added Object3DBuilder class to simplify creation of Object3D instances (Numdata Open Source Software license).
+ - Moved source files from 'src' directory to project root.
 
 Changes between 1.0.3 and 1.0.4:
  - Added TextureSpec.opacity property to support non-opaque objects (fully opaque = 1.0, completely translucent = 0.0).
