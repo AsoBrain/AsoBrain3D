@@ -57,13 +57,13 @@ public final class SimpleOrbitBehavior
 
 		_mouseViewControl = new MouseViewControl( c , unit );
 		_mouseViewControl.addMouseViewListener( this );
-		_mouseViewControl._controlX[ 0 ] = MouseViewControl.ROTATION_Y;
+		_mouseViewControl._controlX[ 0 ] =  MouseViewControl.ROTATION_Y;
 		_mouseViewControl._controlX[ 1 ] = -MouseViewControl.TRANSLATION_X;
-		_mouseViewControl._controlX[ 2 ] = MouseViewControl.DISABLED;
+		_mouseViewControl._controlX[ 2 ] =  MouseViewControl.DISABLED;
 
-		_mouseViewControl._controlY[ 0 ] = MouseViewControl.ROTATION_X;
-		_mouseViewControl._controlY[ 1 ] = MouseViewControl.TRANSLATION_Y;
-		_mouseViewControl._controlY[ 2 ] = MouseViewControl.TRANSLATION_Z;
+		_mouseViewControl._controlY[ 0 ] =  MouseViewControl.ROTATION_X;
+		_mouseViewControl._controlY[ 1 ] = -MouseViewControl.TRANSLATION_Y;
+		_mouseViewControl._controlY[ 2 ] =  MouseViewControl.TRANSLATION_Z;
 	}
 
 	protected synchronized void integrateTransforms()
