@@ -657,25 +657,25 @@ public class Object3D
 				 *
 				 * c = (x1-x2)*(y3-y2)-(y1-y2)*(x3-x2)
 				 */
-				int i = pts[ 0 ] * 3;
+				int i = pts[ pts.length - 1 ] * 3;
 				final int ix1 = (int)gXform.transformX( ver[ i ] , ver[ i + 1 ] , ver[ i + 2 ] );
 				final int iy1 = (int)gXform.transformY( ver[ i ] , ver[ i + 1 ] , ver[ i + 2 ] );
 
-				i = pts[ 1 ] * 3;
+				i = pts[ 0 ] * 3;
 				int ix2 = (int)gXform.transformX( ver[ i ] , ver[ i + 1 ] , ver[ i + 2 ] );
 				int iy2 = (int)gXform.transformY( ver[ i ] , ver[ i + 1 ] , ver[ i + 2 ] );
 
-				i = pts[ 2 ] * 3;
+				i = pts[ 1 ] * 3;
 				int ix3 = (int)gXform.transformX( ver[ i ] , ver[ i + 1 ] , ver[ i + 2 ] );
 				int iy3 = (int)gXform.transformY( ver[ i ] , ver[ i + 1 ] , ver[ i + 2 ] );
 
-				final float c = ( ix1 - ix2 ) * ( iy3 - iy2 ) - ( iy1 - iy2 ) * ( ix3 - ix2 );
+				final float c = ( ( ix1 - ix2 ) * ( iy3 - iy2 ) ) - ( ( iy1 - iy2 ) * ( ix3 - ix2 ) );
 				if ( c <= 0 )
 				{
 					g.drawLine( ix1 , iy1 , ix2 , iy2 );
 					g.drawLine( ix2 , iy2 , ix3 , iy3 );
 
-					for ( int p = 3 ; p < pts.length ; p++ )
+					for ( int p = 2 ; p < pts.length - 1 ; p++ )
 					{
 						i = pts[ p ] * 3;
 						ix2 = ix3;
@@ -684,7 +684,6 @@ public class Object3D
 						iy3 = (int)gXform.transformY( ver[ i ] , ver[ i + 1 ] , ver[ i + 2 ] );
 
 						g.drawLine( ix2 , iy2 , ix3 , iy3 );
-
 					}
 				}
 			}
