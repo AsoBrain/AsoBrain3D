@@ -97,7 +97,7 @@ public class Object3D
 	/**
 	 * This is used as cache storage for paint(Graphics,Matrix3D,Matrix3D)
 	 */
-	private static float[] _paintVertexCache = {};
+	private static final float[] _paintVertexCache = {};
 
 	/**
 	 * Construct base object. Additional properties need to be set to make the
@@ -390,7 +390,7 @@ public class Object3D
 	 * @param	x2		X coordinate of line's end point.
 	 * @param	y2		Y coordinate of line's end point.
 	 */
-	public void drawLine( final Graphics g , final Matrix3D gXform , final float x1 , final float y1 , final float x2 , final float y2 )
+	public static void drawLine( final Graphics g , final Matrix3D gXform , final float x1 , final float y1 , final float x2 , final float y2 )
 	{
 		g.drawLine( (int)gXform.transformX( x1 , y1 , 0 ) ,
 		            (int)gXform.transformY( x1 , y1 , 0 ) ,
@@ -409,7 +409,7 @@ public class Object3D
 	 * @param	w		Width of oval.
 	 * @param	h		Height of oval.
 	 */
-	public void drawOval( final Graphics g , final Matrix3D gXform , final float x , final float y , final float w , final float h )
+	public static void drawOval( final Graphics g , final Matrix3D gXform , final float x , final float y , final float w , final float h )
 	{
 		int x1 = (int)gXform.transformX( x , y , 0 );
 		int y1 = (int)gXform.transformY( x , y , 0 );
