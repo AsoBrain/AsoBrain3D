@@ -44,9 +44,9 @@ public class TestFromToViewControl
 		final FromToViewControl fromToViewControl = new FromToViewControl();
 
 		final Matrix3D expected = Matrix3D.INIT.set(
-			 1.0 ,  0.0 ,  0.0 , 0.0 ,
-			 0.0 ,  0.0 ,  1.0 , 0.0 ,
-			 0.0 , -1.0 ,  0.0 , 0.0 );
+			  1.0 ,  0.0 ,  0.0 ,  0.0 ,
+			  0.0 ,  0.0 ,  1.0 ,  0.0 ,
+			  0.0 , -1.0 ,  0.0 , -1.0 );
 
 		final Matrix3D actual = fromToViewControl.getTransform();
 
