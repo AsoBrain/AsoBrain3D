@@ -796,9 +796,24 @@ public class Object3D
 	 */
 	public final void addFace( final Vector3D[] points , final TextureSpec texture , final float opacity , final boolean smooth )
 	{
+		addFace( points , null , null , texture , opacity , smooth );
+	}
+
+	/**
+	 * Add simple face to this object.
+	 *
+	 * @param   points      Points that define the face.
+	 * @param   tu          Horizontal texture coordinates (<code>null</code> = none).
+	 * @param   tv          Vertical texture coordinates (<code>null</code> = none).
+	 * @param   texture     Texture to apply to the face.
+	 * @param   opacity     Opacity of face (0=transparent, 1=opaque).
+	 * @param   smooth      Face is smooth/curved vs. flat.
+	 */
+	public final void addFace( final Vector3D[] points , final int[] tu , final int[] tv , final TextureSpec texture , final float opacity , final boolean smooth )
+	{
 		final Face face = new Face( null , texture , null , null , opacity , smooth );
 		for ( int i = 0 ; i < points.length ; i++ )
-			face.addVertex( points[ i ] );
+			face.addVertex( points[ i ] , ( tu == null ) ? -1 : tu[ i ] , ( tv == null ) ? -1 : tv[ i ] );
 
 		addFace( face );
 	}
