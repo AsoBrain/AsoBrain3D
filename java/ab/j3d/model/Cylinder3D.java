@@ -223,7 +223,7 @@ public class Cylinder3D
 			drawOval( g , gXform , x - maxR, y - maxR , maxR * 2 , maxR * 2 );
 
 			/*
-			 * FIXME: should also draw small oval is the smaller surface is visible
+			 * @FIXME should also draw small oval is the smaller surface is visible
 			 */
 			//if ( minR != maxR && <smaller oval is visable> )
 				//drawOval( g , gXform , x - minR, y - minR , minR * 2 , minR * 2 );
