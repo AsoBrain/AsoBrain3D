@@ -92,7 +92,7 @@ public abstract class ViewModel
 	 * @return  Node with the specified ID;
 	 *          <code>null</code> if no node with the specified ID was found.
 	 *
-	 * @throws  NullPointerException if ID is null.
+	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
 	protected final ViewModelNode getNode( final Object id )
 	{
@@ -135,6 +135,8 @@ public abstract class ViewModel
 	 *
 	 * @return  Root in the 3D scene associated with the specified node;
 	 *          <code>null</code> if the requested node was not found.
+	 *
+	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
 	public final Node3D getNode3D( final Object id )
 	{
@@ -147,7 +149,7 @@ public abstract class ViewModel
 	 *
 	 * @param   node    Node to add.
 	 *
-	 * @throws  NullPointerException if node is null.
+	 * @throws  NullPointerException if <code>node</code> is <code>null</code>.
 	 */
 	protected void addNode( final ViewModelNode node )
 	{
@@ -159,11 +161,15 @@ public abstract class ViewModel
 	}
 
 	/**
-	 * Create a new node (sub tree) in the view tree. The specified abNode is
-	 * converted into view and then added to the view tree.
+	 * Create a new node (sub tree) in the view tree. The specified
+	 * <code>node3D</code> is converted into view and then added to the view
+	 * tree. If an existing node exists with the same ID, then the existing
+	 * node will be removed before creating the new node.
 	 *
 	 * @param   id      Application-assigned ID of view model node.
 	 * @param   node3D  Root in the 3D scene to create a view model node for.
+	 *
+	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
 	public abstract void createNode( Object id , Node3D node3D );
 
@@ -172,7 +178,7 @@ public abstract class ViewModel
 	 *
 	 * @param   id      Application-assigned ID of view model node.
 	 *
-	 * @throws  NullPointerException if ID is null.
+	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
 	public void removeNode( final Object id )
 	{
@@ -187,6 +193,8 @@ public abstract class ViewModel
 	 *
 	 * @param   id          Application-assigned ID of view model node.
 	 * @param   transform   Transform to set.
+	 *
+	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
 	public final void setNodeTransform( final Object id , final Matrix3D transform )
 	{
@@ -201,6 +209,8 @@ public abstract class ViewModel
 	 * Update a specified part (sub tree) of the view tree.
 	 *
 	 * @param   id          Application-assigned ID of view model node.
+	 *
+	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
 	public void updateNode( final Object id )
 	{
@@ -219,7 +229,7 @@ public abstract class ViewModel
 	 * @return  View with the specified ID;
 	 *          <code>null</code> if no view with the specified ID was found.
 	 *
-	 * @throws  NullPointerException if ID is null.
+	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
 	public final ViewModelView getView( final Object id )
 	{
@@ -248,6 +258,8 @@ public abstract class ViewModel
 	 *
 	 * @return  Component with graphical representation of view;
 	 *          <code>null</code> if the requested view was not found.
+	 *
+	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
 	public final Component getViewComponent( final Object id )
 	{
@@ -262,6 +274,8 @@ public abstract class ViewModel
 	 *
 	 * @return  ViewControl that controls the specified view;
 	 *          <code>null</code> if the requested view was not found.
+	 *
+	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
 	public final ViewControl getViewControl( final Object id )
 	{
@@ -306,6 +320,8 @@ public abstract class ViewModel
 	 * @param   viewControl     Control to use for this view.
 	 *
 	 * @return  Panel containing view.
+	 *
+	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
 	public final JPanel createViewPanel( final Locale locale , final Object id , final ViewControl viewControl )
 	{
@@ -327,6 +343,8 @@ public abstract class ViewModel
 	 * @param   viewControl     Control to use for this view.
 	 *
 	 * @return  View component for create view.
+	 *
+	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
 	public abstract Component createView( final Object id , final ViewControl viewControl );
 
@@ -338,6 +356,8 @@ public abstract class ViewModel
 	 * @param   to      Point to look at.
 	 *
 	 * @return  View component for create view.
+	 *
+	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
 	public final Component createView( final Object id , final Vector3D from , final Vector3D to )
 	{
@@ -349,7 +369,7 @@ public abstract class ViewModel
 	 *
 	 * @param   id      Application-assigned ID for a view model view.
 	 *
-	 * @throws  NullPointerException if ID is null.
+	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
 	public final void removeView( final Object id )
 	{
