@@ -42,9 +42,9 @@ public final class Java3dModel
 	private final Java3dTools _j3dTools;
 
 	/**
-	 * J3d universe.
+	 * Java 3D universe containing scene.
 	 */
-	private final Java3dUniverse _j3dUniverse;
+	private final Java3dUniverse _universe;
 
 	/**
 	 * Content branch graph of the j3d tree.
@@ -81,8 +81,8 @@ public final class Java3dModel
 	public Java3dModel( final Java3dTools j3dTools , final Java3dUniverse j3dUniverse )
 	{
 		_j3dTools = j3dTools;
-		_j3dUniverse = j3dUniverse;
-		_contentGraph = Java3dTools.createDynamicScene( _j3dUniverse.getContent() );
+		_universe = j3dUniverse;
+		_contentGraph = Java3dTools.createDynamicScene( _universe.getContent() );
 	}
 
 	public void createNode( final Object id , final Node3D node3D )
@@ -101,8 +101,18 @@ public final class Java3dModel
 
 	public Component createView( final Object id , final ViewControl viewControl )
 	{
-		final Java3dView view = new Java3dView( _j3dUniverse , id , viewControl );
+		final Java3dView view = new Java3dView( _universe , id , viewControl );
 		addView( view );
 		return view.getComponent();
+	}
+
+	/**
+	 * Get Java 3D universe containing scene.
+	 *
+	 * @return  Java 3D universe containing scene.
+	 */
+	public Java3dUniverse getUniverse()
+	{
+		return _universe;
 	}
 }
