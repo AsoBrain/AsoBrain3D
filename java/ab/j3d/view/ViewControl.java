@@ -158,29 +158,25 @@ public abstract class ViewControl
 
 	public void dragTo( final DragEvent event )
 	{
-		if ( event.getClickCount() == 1 )
+		switch ( event.getButtonNumber() )
 		{
-			switch ( event.getButtonNumber() )
-			{
-				case 0 :
-					dragLeftButton( event );
-					break;
+			case 0 :
+				dragLeftButton( event );
+				break;
 
-				case 1 :
-					dragMiddleButton( event );
-					break;
+			case 1 :
+				dragMiddleButton( event );
+				break;
 
-				case 2 :
-					dragRightButton( event );
-					break;
-			}
+			case 2 :
+				dragRightButton( event );
+				break;
 		}
 	}
 
 	public void dragStop( final DragEvent event )
 	{
 	}
-
 
 	/**
 	 * Handle drag operation with left mouse button. This method is called by
