@@ -33,11 +33,20 @@ public abstract class ViewModel
 	private Map _nodes;
 
 	/**
+	 * Map containg the views.
+	 *
+	 * key   : ID (<code>Object</code>).
+	 * value : view (<code>ViewView</code>).
+	 */
+	private Map _views;
+
+	/**
 	 * Construct new ViewModel.
 	 */
 	protected ViewModel()
 	{
 		_nodes = new HashMap();
+		_views = new HashMap();
 	}
 
 	/**
@@ -60,6 +69,25 @@ public abstract class ViewModel
 	}
 
 	/**
+	 * Add view view. This method is only supposed to be used internally.
+	 *
+	 * @param   ID      Application-assigned ID for a view view.
+	 * @param   view    View to add.
+	 *
+	 * @throws  NullPointerException if ID or node is null.
+	 */
+	protected void addView( final Object ID , final ViewView view )
+	{
+		if ( ID == null )
+			throw new NullPointerException( "ID" );
+
+		if ( view == null )
+			throw new NullPointerException( "node" );
+
+		_views.put( ID , view );
+	}
+
+	/**
 	 * Get view node by ID. This method is only supposed to be used internally.
 	 *
 	 * @param   ID      Application-assigned ID of view node to get.
@@ -75,6 +103,21 @@ public abstract class ViewModel
 	}
 
 	/**
+	 * Get view view by ID. This method is only supposed to be used internally.
+	 *
+	 * @param   ID      Application-assigned ID of view view to get.
+	 *
+	 * @throws  NullPointerException if ID is null.
+	 */
+	protected ViewView getView( final Object ID )
+	{
+		if ( ID == null )
+			throw new NullPointerException( "ID" );
+
+		return (ViewView)_views.get( ID );
+	}
+
+	/**
 	 * Get iterator for the IDs of all view sub trees that were added to the model.
 	 *
 	 * @return  Iterator for the IDs of all view sub trees that were added to the model.
@@ -82,6 +125,16 @@ public abstract class ViewModel
 	public Iterator getAllNodeIDs()
 	{
 		return _nodes.keySet().iterator();
+	}
+
+	/**
+	 * Get iterator for the IDs of all views of the model.
+	 *
+	 * @return  Iterator for the IDs of all views of the model.
+	 */
+	public Iterator getAllViewIDs()
+	{
+		return _views.keySet().iterator();
 	}
 
 	/**
@@ -93,6 +146,13 @@ public abstract class ViewModel
 	 * @param   abNode  AbNode to create a view node for.
 	 */
 	public abstract void createNode( Object ID , TreeNode abNode );
+
+	/**
+	 * Create a new view.
+	 *
+	 * @param   ID      ID of the view that is created.
+	 */
+	public abstract void createView( Object ID );
 
 	/**
 	 * Update a specified part (sub tree) of the view tree.
@@ -141,6 +201,20 @@ public abstract class ViewModel
 			throw new IllegalArgumentException( "ID '" + ID + "' does not refer to a known view node" );
 
 		node.setTransform( transform );
+	}
+
+	/**
+	 * Set the transform for a specified view.
+	 *
+	 * @param   transform   Transform to set.
+	 */
+	public void setViewTransform( final Object ID , final Matrix3D transform )
+	{
+		final ViewView view = getView( ID );
+		if ( view == null )
+			throw new IllegalArgumentException( "ID '" + ID + "' does not refer to a known view node" );
+
+		view.setTransform( transform );
 	}
 
 	/**
