@@ -43,21 +43,6 @@ public final class Bounds3D
 	}
 
 	/**
-	 * Compare these bounds to other bounds.
-	 *
-	 * @param	other	Bounds to compare with.
-	 *
-	 * @return	<code>true</code> if the bounds are equal,
-	 *			<code>false</code> otherwise.
-	 */
-	public boolean equals( final Bounds3D other )
-	{
-		if ( other == this ) return( true );
-		if ( other == null ) return( false );
-		return( v1.equals( other.v1 ) && v2.equals( other.v2 ) );
-	}
-
-	/**
 	 * Compare these bounds to the specified bounds.
 	 *
 	 * @param	v1		First vector of bounds to compare with.
@@ -70,6 +55,24 @@ public final class Bounds3D
 	{
 		return( ( ( v1 == null ) || this.v1.equals( v1 ) ) &&
 				( ( v2 == null ) || this.v2.equals( v2 ) ) );
+	}
+
+	/**
+	 * Compare this object to another object.
+	 *
+	 * @param	other	Object to compare with.
+	 *
+	 * @return	<code>true</code> if the objects are equal;
+	 *			<code>false</code> if not.
+	 */
+	public boolean equals( Object other )
+	{
+		if ( other == this ) return true;
+		if ( other == null ) return false;
+		if ( !( other instanceof Bounds3D ) ) return false;
+		Bounds3D b = (Bounds3D)other;
+
+		return( v1.equals( b.v1 ) && v2.equals( b.v2 ) );
 	}
 
 	/**
