@@ -20,9 +20,11 @@
  */
 package ab.j3d;
 
+import java.text.DecimalFormat;
 import java.util.StringTokenizer;
 
 import com.numdata.oss.ArrayTools;
+import com.numdata.oss.TextTools;
 
 /**
  * This class is used to represent a 3D transformation matrix (although
@@ -618,6 +620,61 @@ public final class Matrix3D
 		return xx + "," + xy + ',' + xz + ',' + xo + ',' +
 		       yx + ',' + yy + ',' + yz + ',' + yo + ',' +
 		       zx + ',' + zy + ',' + zz + ',' + zo;
+	}
+
+	/**
+	 * Create human-readable representation of this <code>Matrix3D</code> object.
+	 * This is aspecially useful for debugging purposes.
+	 *
+	 * @return  Human-readable representation of this <code>Matrix3D</code> object.
+	 */
+	public String toFriendlyString()
+	{
+		return toFriendlyString( this );
+	}
+
+	/**
+	 * Create human-readable representation of Matrix3D object. This is
+	 * aspecially useful for debugging purposes.
+	 *
+	 * @param   m   Matrix3D instance.
+	 *
+	 * @return  Human-readable representation of Matrix3D object.
+	 */
+	public static String toFriendlyString( final Matrix3D m )
+	{
+		final StringBuffer sb = new StringBuffer();
+		final DecimalFormat df = new DecimalFormat( "0.0" );
+
+		sb.append( "\n\t\t\t[ " );
+		TextTools.appendFixed( sb , df.format( m.xx ) , 4 , true , ' ' );
+		sb.append( " , " );
+		TextTools.appendFixed( sb , df.format( m.xy ) , 4 , true , ' ' );
+		sb.append( " , " );
+		TextTools.appendFixed( sb , df.format( m.xz ) , 4 , true , ' ' );
+		sb.append( " , " );
+		TextTools.appendFixed( sb , df.format( m.xo ) , 6 , true , ' ' );
+		sb.append( " ]" );
+		sb.append( "\n\t\t\t[ " );
+		TextTools.appendFixed( sb , df.format( m.yx ) , 4 , true , ' ' );
+		sb.append( " , " );
+		TextTools.appendFixed( sb , df.format( m.yy ) , 4 , true , ' ' );
+		sb.append( " , " );
+		TextTools.appendFixed( sb , df.format( m.yz ) , 4 , true , ' ' );
+		sb.append( " , " );
+		TextTools.appendFixed( sb , df.format( m.yo ) , 6 , true , ' ' );
+		sb.append( " ]" );
+		sb.append( "\n\t\t\t[ " );
+		TextTools.appendFixed( sb , df.format( m.zx ) , 4 , true , ' ' );
+		sb.append( " , " );
+		TextTools.appendFixed( sb , df.format( m.zy ) , 4 , true , ' ' );
+		sb.append( " , " );
+		TextTools.appendFixed( sb , df.format( m.zz ) , 4 , true , ' ' );
+		sb.append( " , " );
+		TextTools.appendFixed( sb , df.format( m.zo ) , 6 , true , ' ' );
+		sb.append( " ]" );
+
+		return sb.toString();
 	}
 
 	/**
