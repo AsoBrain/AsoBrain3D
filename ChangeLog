@@ -1,4 +1,7 @@
-Current version: 1.0.6
+Current version: pre-1.0.7
+
+Changes between 1.0.6 and 1.0.7:
+ - Added Renderer.setBackground() method to allow changing the renderer's background color.
 
 Changes between 1.0.5 and 1.0.6:
  - Added TextureLibrary interface that can be used to retrieve textures from some sort of library.
