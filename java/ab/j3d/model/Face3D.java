@@ -1,15 +1,26 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * (C) Copyright Numdata BV 2004-2005
  *
- * (C) Copyright Numdata BV 2004-2004 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
- */package ab.j3d.model;
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
+ */
+package ab.j3d.model;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
@@ -19,6 +30,9 @@ import com.numdata.oss.ArrayTools;
 
 /**
  * This class defines a 3D face of a 3D object.
+ *
+ * @author  G.B.M. Rupert
+ * @version $Revision$ ($Date$, $Author$)
  */
 public final class Face3D
 {
@@ -181,20 +195,20 @@ public final class Face3D
 	 *
 	 * @param   g               Graphics2D context.
 	 * @param   gTransform      Projection transform for Graphics2D context (3D->2D, pan, sale).
-	 * @param   outlineColor    Color to use for face outlines (<code>null</code> to disable drawing).
-	 * @param   fillColor       Color to use for filling faces (<code>null</code> to disable drawing).
+	 * @param   outlinePaint    Paint to use for face outlines (<code>null</code> to disable drawing).
+	 * @param   fillPaint       Paint to use for filling faces (<code>null</code> to disable drawing).
 	 * @param   pointCoords     Coordinates of points (after view transform is applied).
 	 * @param   xs              Temporary storage for 2D coordinates.
 	 * @param   ys              Temporary storage for 2D coordinates.
 	 *
 	 * @see     Object3D#paint
 	 */
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Color outlineColor , final Color fillColor , final double[] pointCoords , final int[] xs , final int[] ys )
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Paint outlinePaint , final Paint fillPaint , final double[] pointCoords , final int[] xs , final int[] ys )
 	{
 		final int    vertexCount  = getVertexCount();
 		final int[]  pointIndices = getPointIndices();
 
-		if ( ( vertexCount > 0 ) && ( ( outlineColor != null ) || ( fillColor != null ) ) )
+		if ( ( vertexCount > 0 ) && ( ( outlinePaint != null ) || ( fillPaint != null ) ) )
 		{
 			boolean show = true;
 			for ( int p = 0 ; p < vertexCount ; p++ )
@@ -228,13 +242,13 @@ public final class Face3D
 
 			if ( show )
 			{
-				if ( fillColor != null )
+				if ( fillPaint != null )
 				{
-					g.setColor( fillColor );
+					g.setPaint( fillPaint );
 
 					if ( vertexCount < 3 ) /* point or line */
 					{
-						if ( outlineColor == null )
+						if ( outlinePaint == null )
 							g.drawLine( xs[ 0 ] , ys[ 0 ] , xs[ vertexCount - 1 ] , ys[ vertexCount - 1 ] );
 					}
 					else
@@ -243,9 +257,9 @@ public final class Face3D
 					}
 				}
 
-				if ( outlineColor != null )
+				if ( outlinePaint != null )
 				{
-					g.setColor( outlineColor );
+					g.setPaint( outlinePaint );
 					if ( vertexCount < 3 ) /* point or line */
 						g.drawLine( xs[ 0 ] , ys[ 0 ] , xs[ vertexCount - 1 ] , ys[ vertexCount - 1 ] );
 					else
