@@ -17,17 +17,9 @@ import common.model.Matrix3D;
  * @author	Peter S. Heijnen
  * @version	$Revision$ ($Date$, $Author$)
  */
-public class TestMatrix3D 
+public class TestMatrix3D
+	extends SodaTestCase
 {
-	/**
-	 * Report error.
-	 */
-	protected static boolean error( String msg )
-	{
-		System.err.println( "ERROR: " + msg );
-		return false;
-	}
-
 	/**
 	 * Run test application.
 	 *
@@ -35,35 +27,7 @@ public class TestMatrix3D
 	 */
 	public static void main( final String args[] )
 	{
-		System.exit( test( args ) ? 0 : 1 );
-	}
-
-	/**
-	 * Run test application.
-	 *
-	 * @param	args	Command line arguments.
-	 *
-	 * @return	<code>true</code> if test was succesful;
-	 *			<code>false</code> if one or more errors occured.
-	 */
-	public static boolean test( final String[] args )
-	{
-		System.out.println( "-------------------------------------------------------------------------------" );
-		System.out.println( TestMatrix3D.class.getName() + " - started." );
-
-		if ( testEquals() )
-		{
-			System.out.println( "Test completed without errors." );
-			return true;
-		}
-		else
-		{
-			System.out.println();
-			System.err.println( "**************" );
-			System.err.println( " Test Failed!" );
-			System.err.println( "**************" );
-			return false;
-		}
+		junit.textui.TestRunner.run( TestMatrix3D.class );
 	}
 
 	/**
@@ -92,77 +56,85 @@ public class TestMatrix3D
 	 * @return	<code>true</code> if test was succesful;
 	 *			<code>false</code> if one or more errors occured.
 	 */
-	private static boolean testEquals()
+	public void testEquals()
 	{
-		System.out.println( "    - equals()" );
-
-		boolean ok = true;
+		//System.out.println( "    - equals()" );
 		final Matrix3D i = Matrix3D.INIT;
 
 		/*
 		 * INIT must match identify matrix
 		 */
-		if ( !i.equals( i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) ) )
-			ok = error( "equals() returned 'false' where it should have returned 'true'" );
+		assertEquals( "Matrix3D.equals() returned 'false' where it should have returned 'true'"
+		            , i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) , i );
 
 		/*
 		 * test x?
 		 */
-		if ( i.equals( i.set( 9 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) )
-		  ||           i.set( 9 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ).equals( i ) )
-			ok = error( "equals() did not correctly test 'xx'" );
+		assertEquals( "Matrix3D.equals() did not correctly test 'xx'"
+		            , i , i.set( 9 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) );
+		assertEquals( "Matrix3D.equals() did not correctly test 'xx'"
+		            ,     i.set( 9 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) , i );
 
-		if ( i.equals( i.set( 1 , 9 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) )
-		  ||           i.set( 1 , 9 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ).equals( i ) )
-			ok = error( "equals() did not correctly test 'xy'" );
+		assertEquals( "Matrix3D.equals() did not correctly test 'xy'"
+		            , i , i.set( 1 , 9 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) );
+		assertEquals( "Matrix3D.equals() did not correctly test 'xy'"
+		            ,     i.set( 1 , 9 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) , i );
 			
-		if ( i.equals( i.set( 1 , 0 , 9 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) )
-		  ||           i.set( 1 , 0 , 9 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ).equals( i ) )
-			ok = error( "equals() did not correctly test 'xz'" );
+		assertEquals( "Matrix3D.equals() did not correctly test 'xz'"
+		            , i , i.set( 1 , 0 , 9 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) );
+		assertEquals( "Matrix3D.equals() did not correctly test 'xz'"
+		            ,     i.set( 1 , 0 , 9 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) , i );
 
-		if ( i.equals( i.set( 1 , 0 , 0 , 9 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) )
-		  ||           i.set( 1 , 0 , 0 , 9 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ).equals( i ) )
-			ok = error( "equals() did not correctly test 'xo'" );
+		assertEquals( "Matrix3D.equals() did not correctly test 'xo'"
+		            , i , i.set( 1 , 0 , 0 , 9 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) );
+		assertEquals( "Matrix3D.equals() did not correctly test 'xo'"
+		            ,     i.set( 1 , 0 , 0 , 9 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) , i );
 
 		/*
 		 * test y?
 		 */
-		if ( i.equals( i.set( 1 , 0 , 0 , 0 , 9 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) )
-		  ||           i.set( 1 , 0 , 0 , 0 , 9 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ).equals( i ) )
-			ok = error( "equals() did not correctly test 'yx'" );
+		assertEquals( "Matrix3D.equals() did not correctly test 'yx'"
+		            , i , i.set( 1 , 0 , 0 , 0 , 9 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) );
+		assertEquals( "Matrix3D.equals() did not correctly test 'yx'"
+		            ,     i.set( 1 , 0 , 0 , 0 , 9 , 1 , 0 , 0 , 0 , 0 , 1 , 0 ) , i );
 			
-		if ( i.equals( i.set( 1 , 0 , 0 , 0 , 0 , 9 , 0 , 0 , 0 , 0 , 1 , 0 ) )
-		  ||           i.set( 1 , 0 , 0 , 0 , 0 , 9 , 0 , 0 , 0 , 0 , 1 , 0 ).equals( i ) )
-			ok = error( "equals() did not correctly test 'yy'" );
+		assertEquals( "Matrix3D.equals() did not correctly test 'yy'"
+		            , i , i.set( 1 , 0 , 0 , 0 , 0 , 9 , 0 , 0 , 0 , 0 , 1 , 0 ) );
+		assertEquals( "Matrix3D.equals() did not correctly test 'yy'"
+		            ,     i.set( 1 , 0 , 0 , 0 , 0 , 9 , 0 , 0 , 0 , 0 , 1 , 0 ) , i );
 			
-		if ( i.equals( i.set( 1 , 0 , 0 , 0 , 0 , 1 , 9 , 0 , 0 , 0 , 1 , 0 ) )
-		  ||           i.set( 1 , 0 , 0 , 0 , 0 , 1 , 9 , 0 , 0 , 0 , 1 , 0 ).equals( i ) )
-			ok = error( "equals() did not correctly test 'yz'" );
+		assertEquals( "Matrix3D.equals() did not correctly test 'yz'"
+		            , i , i.set( 1 , 0 , 0 , 0 , 0 , 1 , 9 , 0 , 0 , 0 , 1 , 0 ) );
+		assertEquals( "Matrix3D.equals() did not correctly test 'yz'"
+		            ,     i.set( 1 , 0 , 0 , 0 , 0 , 1 , 9 , 0 , 0 , 0 , 1 , 0 ) , i );
 			
-		if ( i.equals( i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 9 , 0 , 0 , 1 , 0 ) )
-		  ||           i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 9 , 0 , 0 , 1 , 0 ).equals( i ) )
-			ok = error( "equals() did not correctly test 'yo'" );
+		assertEquals( "Matrix3D.equals() did not correctly test 'yo'"
+		            , i , i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 9 , 0 , 0 , 1 , 0 ) );
+		assertEquals( "Matrix3D.equals() did not correctly test 'yo'"
+		            ,     i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 9 , 0 , 0 , 1 , 0 ) , i );
 			
 		/*
 		 * test z?
 		 */
-		if ( i.equals( i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 9 , 0 , 1 , 0 ) )
-		  ||           i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 9 , 0 , 1 , 0 ).equals( i ) )
-			ok = error( "equals() did not correctly test 'zx'" );
+		assertEquals( "Matrix3D.equals() did not correctly test 'zx'"
+		            , i , i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 9 , 0 , 1 , 0 ) );
+		assertEquals( "Matrix3D.equals() did not correctly test 'zx'"
+		            ,     i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 9 , 0 , 1 , 0 ) , i );
 			
-		if ( i.equals( i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 9 , 1 , 0 ) )
-		  ||           i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 9 , 1 , 0 ).equals( i ) )
-			ok = error( "equals() did not correctly test 'zy'" );
+		assertEquals( "Matrix3D.equals() did not correctly test 'zy'"
+		            , i , i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 9 , 1 , 0 ) );
+		assertEquals( "Matrix3D.equals() did not correctly test 'zy'"
+		            ,     i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 9 , 1 , 0 ) , i );
 			
-		if ( i.equals( i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 9 , 0 ) )
-		  ||           i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 9 , 0 ).equals( i ) )
-			ok = error( "equals() did not correctly test 'zz'" );
+		assertEquals( "Matrix3D.equals() did not correctly test 'zz'"
+		            , i , i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 9 , 0 ) );
+		assertEquals( "Matrix3D.equals() did not correctly test 'zz'"
+		            ,     i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 9 , 0 ) , i );
 			
-		if ( i.equals( i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 9 ) )
-		  ||           i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 9 ).equals( i ) )
-			ok = error( "equals() did not correctly test 'zo'" );
-			
-		return true;
+		assertEquals( "Matrix3D.equals() did not correctly test 'zo'"
+		            , i , i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 9 ) );
+		assertEquals( "Matrix3D.equals() did not correctly test 'zo'"
+		            ,     i.set( 1 , 0 , 0 , 0 , 0 , 1 , 0 , 0 , 0 , 0 , 1 , 9 ) , i );
 	}
 
 }
