@@ -21,7 +21,10 @@
 package ab.j3d.view.java3d;
 
 import java.awt.Component;
+import java.util.HashMap;
+import java.util.Map;
 import javax.media.j3d.BranchGroup;
+import javax.media.j3d.TransformGroup;
 
 import ab.j3d.model.Node3D;
 import ab.j3d.view.ViewControl;
@@ -37,70 +40,105 @@ public final class Java3dModel
 	extends ViewModel
 {
 	/**
-	 * Shared Java 3D toolbox.
-	 */
-	private final Java3dTools _j3dTools;
-
-	/**
 	 * Java 3D universe containing scene.
 	 */
 	private final Java3dUniverse _universe;
 
 	/**
-	 * Content branch graph of the j3d tree.
+	 * Content branch graph of the Java 3D scene.
 	 */
 	private final BranchGroup _contentGraph;
 
 	/**
-	 * Construct new Java 3D model.
-	 *
-	 * @param   j3dTools    Java 3D utility toolbox.
+	 * Map node ID (<code>Object</code>) to Java 3D content graph object
+	 * (<code>BranchGroup</code>).
 	 */
-	public Java3dModel( final Java3dTools j3dTools )
+	private final Map _nodeContentMap = new HashMap();
+
+	/**
+	 * Construct new Java 3D model.
+	 */
+	public Java3dModel()
 	{
-		this( j3dTools , Java3dUniverse.MM );
+		this( Java3dUniverse.MM );
 	}
 
 	/**
 	 * Construct new Java 3D model.
 	 *
-	 * @param   j3dTools    Java 3D utility toolbox.
-	 * @param   unit        Unit scale factor (e.g. <code>Java3dUniverse.MM</code>).
+	 * @param   unit    Unit scale factor (e.g. <code>Java3dUniverse.MM</code>).
 	 */
-	public Java3dModel( final Java3dTools j3dTools , final double unit )
+	public Java3dModel( final double unit )
 	{
-		this( j3dTools , new Java3dUniverse( unit ) );
+		this( new Java3dUniverse( unit ) );
 	}
 
 	/**
 	 * Construct new Java 3D model.
 	 *
 	 * @param   j3dUniverse Java 3D universe.
-	 * @param   j3dTools    Java 3D utility toolbox.
 	 */
-	public Java3dModel( final Java3dTools j3dTools , final Java3dUniverse j3dUniverse )
+	public Java3dModel( final Java3dUniverse j3dUniverse )
 	{
-		_j3dTools = j3dTools;
-		_universe = j3dUniverse;
+		_universe     = j3dUniverse;
 		_contentGraph = Java3dTools.createDynamicScene( _universe.getContent() );
 	}
 
 	public void createNode( final Object id , final Node3D node3D )
 	{
-		addNode( new Java3dNode( _j3dTools , _contentGraph , id , node3D ) );
+		if ( id == null )
+			throw new NullPointerException( "id" );
+
+		removeNode( id );
+
+		if ( node3D != null )
+		{
+			final BranchGroup nodeRoot = new BranchGroup();
+			nodeRoot.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
+			nodeRoot.setCapability( BranchGroup.ALLOW_DETACH );
+			_nodeContentMap.put( id , nodeRoot );
+
+			final TransformGroup nodeTransform = new TransformGroup();
+			nodeTransform.setCapability( TransformGroup.ALLOW_CHILDREN_READ   );
+			nodeTransform.setCapability( TransformGroup.ALLOW_CHILDREN_WRITE );
+			nodeTransform.setCapability( TransformGroup.ALLOW_CHILDREN_EXTEND );
+			nodeTransform.setCapability( TransformGroup.ALLOW_TRANSFORM_WRITE );
+			nodeRoot.addChild( nodeTransform );
+
+			addNode( new Java3dNode( nodeTransform , id , node3D ) );
+
+			_contentGraph.addChild( nodeRoot );
+		}
 	}
 
 	public void removeNode( final Object id )
 	{
-		final Java3dNode node = (Java3dNode)getNode( id );
-		if ( node != null )
-			_contentGraph.removeChild( node.getSceneGraphObject() );
+		final BranchGroup nodeRoot = getJava3dNode( id );
+		if ( nodeRoot != null )
+			_contentGraph.removeChild( nodeRoot );
 
 		super.removeNode( id );
 	}
 
+	public BranchGroup getJava3dNode( final Object id )
+	{
+		if ( id == null )
+			throw new NullPointerException( "id" );
+
+		return (BranchGroup)_nodeContentMap.get( id );
+	}
+
+	public TransformGroup getJava3dTransform( final Object id )
+	{
+		final BranchGroup nodeRoot = getJava3dNode( id );
+		return (TransformGroup)nodeRoot.getChild( 0 );
+	}
+
 	public Component createView( final Object id , final ViewControl viewControl )
 	{
+		if ( id == null )
+			throw new NullPointerException( "id" );
+
 		final Java3dView view = new Java3dView( _universe , id , viewControl );
 		addView( view );
 		return view.getComponent();
