@@ -77,8 +77,8 @@ public final class Node3DCollection
 	 */
 	public synchronized void add( final Matrix3D matrix , final Node3D node )
 	{
-		ArrayTools.append( _matrixData , Matrix3D.class , _elementCount   , INCREMENT_SIZE , matrix );
-		ArrayTools.append( _matrixData , Node3D  .class , _elementCount++ , INCREMENT_SIZE , node );
+		_matrixData = (Matrix3D[])ArrayTools.append( _matrixData , Matrix3D.class , _elementCount   , INCREMENT_SIZE , matrix );
+		_nodeData   = (Node3D  [])ArrayTools.append( _nodeData   , Node3D  .class , _elementCount++ , INCREMENT_SIZE , node );
 	}
 
 	/**
