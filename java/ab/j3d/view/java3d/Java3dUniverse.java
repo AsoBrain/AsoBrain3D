@@ -256,6 +256,7 @@ public final class Java3dUniverse
 		if ( ( unit > 0 ) && ( unit != 1 ) )
 		{
 			result = new TransformGroup( Java3dTools.createTransform3D( Vector3D.INIT , 0 , unit ) );
+			result.setCapability( TransformGroup.ALLOW_CHILDREN_READ );
 			scene.addChild( result );
 		}
 		else
