@@ -770,7 +770,7 @@ public class Object3D
 			final double[] faceNormals;
 			final float[]  rgb;
 
-			if ( ( fillColor != null ) && ( maxVertexCount > 2 ) && ( shadeFactor > 0.0 ) && ( shadeFactor <= 1.0 ) )
+			if ( ( fillColor != null ) && ( maxVertexCount > 2 ) && ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) )
 			{
 				faceNormals = getFaceNormals();
 				rgb     = fillColor.getRGBComponents( null );
