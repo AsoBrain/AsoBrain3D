@@ -161,8 +161,28 @@ public final class Java3dTools
 
 				if ( vertexCount == 2 )
 				{
-					data[ 0 ].add( new Point3d( pointCoords[ 0 ] , pointCoords[ 1 ] , pointCoords[ 2 ] ) );
-					data[ 0 ].add( new Point3d( pointCoords[ 3 ] , pointCoords[ 4 ] , pointCoords[ 5 ] ) );
+					int pointIndex  = pointIndices[ 0 ] * 3;
+					final double p1X = pointCoords[ pointIndex     ];
+					final double p1Y = pointCoords[ pointIndex + 1 ];
+					final double p1Z = pointCoords[ pointIndex + 2 ];
+
+					pointIndex = pointIndices[ 1 ] * 3;
+					final double p2X = pointCoords[ pointIndex     ];
+					final double p2Y = pointCoords[ pointIndex + 1 ];
+					final double p2Z = pointCoords[ pointIndex + 2 ];
+
+					final Point3d point1 = new Point3d(
+						xform.transformX( p1X , p1Y , p1Z ) ,
+						xform.transformY( p1X , p1Y , p1Z ) ,
+						xform.transformZ( p1X , p1Y , p1Z ) );
+
+					final Point3d point2 = new Point3d(
+						xform.transformX( p2X , p2Y , p2Z ) ,
+						xform.transformY( p2X , p2Y , p2Z ) ,
+						xform.transformZ( p2X , p2Y , p2Z ) );
+
+					data[ 0 ].add( point1 );
+					data[ 0 ].add( point2 );
 				}
 				else
 				{
@@ -463,14 +483,17 @@ public final class Java3dTools
 	{
 		final GeometryArray geom;
 
-		if ( j3dVertices.size() == 2 )
+		final int numVertices = j3dVertices.size();
+		if ( numVertices == 2 )
 		{
-			final Point3d v1 = (Point3d)j3dVertices.get( 0 );
-			final Point3d v2 = (Point3d)j3dVertices.get( 1 );
 
-			geom = new LineArray( 2 , LineArray.COORDINATES );
-			geom.setCoordinate( 0 , new double[]{ v1.x , v1.y , v1.z } );
-			geom.setCoordinate( 1 , new double[]{ v2.x , v2.y , v2.z } );
+			geom = new LineArray( numVertices , LineArray.COORDINATES );
+
+			for ( int i = 0 ; i < numVertices ; i++ )
+			{
+				final Point3d p = (Point3d)j3dVertices.get( i );
+				geom.setCoordinate( i , new double[]{ p.x , p.y , p.z } );
+			}
 		}
 		else
 		{
