@@ -39,12 +39,12 @@ public final class Camera3D
 	 * Distance from view plane to eye. This defines the perspective effect
 	 * of the view.
 	 */
-	public final float aperture;
+	public final double aperture;
 
 	/**
 	 * Linear zoom factor.
 	 */
-	public final float zoom;
+	public final double zoom;
 
 	/**
 	 * Constructor with specified scale.
@@ -52,10 +52,10 @@ public final class Camera3D
 	 * @param   zoom        Linear zoom factor.
 	 * @param   aperture    Camera aperture in decimal degrees (0-180).
 	 */
-	public Camera3D( final float zoom , final float aperture )
+	public Camera3D( final double zoom , final double aperture )
 	{
 		this.zoom     = zoom;
-		this.aperture = (float)Math.tan( aperture * Matrix3D.DEG_TO_RAD / 2.0f );
+		this.aperture = Math.tan( aperture * Matrix3D.DEG_TO_RAD / 2.0 );
 	}
 
 }

@@ -40,17 +40,17 @@ public final class Sphere3D
 	/**
 	 * Width of sphere/egg (x-axis).
 	 */
-	public final float dx;
+	public final double dx;
 
 	/**
 	 * Height of sphere/egg (y-axis).
 	 */
-	public final float dy;
+	public final double dy;
 
 	/**
 	 * Depth of sphere/egg (z-axis).
 	 */
-	public final float dz;
+	public final double dz;
 
 	/**
 	 * Constructor for sphere.
@@ -64,7 +64,7 @@ public final class Sphere3D
 	 * @param   texture     Texture of sphere.
 	 * @param   smooth      Smooth surface.
 	 */
-	public Sphere3D( final Matrix3D xform , final float dx , final float dy , final float dz , final int p , final int q , final TextureSpec texture , final boolean smooth )
+	public Sphere3D( final Matrix3D xform , final double dx , final double dy , final double dz , final int p , final int q , final TextureSpec texture , final boolean smooth )
 	{
 		this.xform =  xform;
 		this.dx    = dx;
@@ -82,7 +82,7 @@ public final class Sphere3D
 	 * @param   p           Number of faces around Y-axis to approximate the sphere.
 	 * @param   q           Number of faces around X/Z-axis to approximate the sphere.
 	 */
-	public Sphere3D( final Matrix3D xform , final float radius , final int p , final int q )
+	public Sphere3D( final Matrix3D xform , final double radius , final int p , final int q )
 	{
 		this( xform , radius * 2 , radius * 2 , radius * 2 , p , q , null , false );
 	}
@@ -99,8 +99,8 @@ public final class Sphere3D
 	{
 		final TextureSpec actualTexture = ( texture == null ) ? new TextureSpec() : texture;
 
-		final int     pointCount  = p * ( q - 1 ) + 2;
-		final float[] pointCoords = new float[ pointCount * 3 ];
+		final int      pointCount  = p * ( q - 1 ) + 2;
+		final double[] pointCoords = new double[ pointCount * 3 ];
 
 		/*
 		 * Generate vertices.
@@ -109,29 +109,29 @@ public final class Sphere3D
 
 		pointCoords[ v++ ] = 0;
 		pointCoords[ v++ ] = 0;
-		pointCoords[ v++ ] = dz / -2.0f;
+		pointCoords[ v++ ] = dz / -2.0;
 
 		for ( int qc = 1 ; qc < q ; qc++ )
 		{
-			final float qa = (float)( qc * Math.PI / q );
+			final double qa = qc * Math.PI / q;
 
-			final float radiusX =  (float)( Math.sin( qa ) * dx / 2 );
-			final float radiusY =  (float)( Math.sin( qa ) * dy / 2 );
-			final float circleZ = -(float)( Math.cos( qa ) * dz / 2 );
+			final double radiusX =  0.5 * dx * Math.sin( qa );
+			final double radiusY =  0.5 * dy * Math.sin( qa );
+			final double circleZ = -0.5 * dz * Math.cos( qa );
 
 			for ( int pc = 0 ; pc < p ; pc++ )
 			{
-				final float pa = (float)( pc * 2 * Math.PI / p );
+				final double pa = pc * 2 * Math.PI / p;
 
-				pointCoords[ v++ ] =  (float)( Math.sin( pa ) * radiusX );
-				pointCoords[ v++ ] = -(float)( Math.cos( pa ) * radiusY );
+				pointCoords[ v++ ] =  radiusX * Math.sin( pa );
+				pointCoords[ v++ ] = -radiusY * Math.cos( pa );
 				pointCoords[ v++ ] = circleZ;
 			}
 		}
 
 		pointCoords[ v++ ] = 0;
 		pointCoords[ v++ ] = 0;
-		pointCoords[ v   ] = dz / 2.0f;
+		pointCoords[ v   ] = dz / 2.0;
 
 		clear();
 		setPointCoords( xform.transform( pointCoords , pointCoords , pointCount ) );

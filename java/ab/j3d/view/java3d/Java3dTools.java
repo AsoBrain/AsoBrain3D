@@ -51,6 +51,7 @@ import javax.media.j3d.TransformGroup;
 import javax.media.j3d.TransparencyAttributes;
 import javax.media.j3d.TriangleArray;
 import javax.vecmath.Color3f;
+import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
@@ -122,9 +123,9 @@ public final class Java3dTools
 	{
 		final Map appearances = new HashMap();
 
-		final int     faceCount    = object3d.getFaceCount();
-		final float[] pointCoords  = object3d.getPointCoords();
-		final float[] pointNormals = object3d.getVertexNormals();
+		final int      faceCount    = object3d.getFaceCount();
+		final double[] pointCoords  = object3d.getPointCoords();
+		final double[] pointNormals = object3d.getVertexNormals();
 
 		for ( int i = 0 ; i < faceCount ; i++ )
 		{
@@ -157,20 +158,20 @@ public final class Java3dTools
 						final int   vertexIndex = ( subIndex == 0 ) ? 0 : ( triangleIndex + subIndex );
 						final int   pointIndex  = pointIndices[ vertexIndex ] * 3;
 
-						final float pointX = pointCoords[ pointIndex     ];
-						final float pointY = pointCoords[ pointIndex + 1 ];
-						final float pointZ = pointCoords[ pointIndex + 2 ];
+						final double pointX = pointCoords[ pointIndex     ];
+						final double pointY = pointCoords[ pointIndex + 1 ];
+						final double pointZ = pointCoords[ pointIndex + 2 ];
 
-						final float normalX = pointNormals[ pointIndex     ];
-						final float normalY = pointNormals[ pointIndex + 1 ];
-						final float normalZ = pointNormals[ pointIndex + 2 ];
+						final double normalX = pointNormals[ pointIndex     ];
+						final double normalY = pointNormals[ pointIndex + 1 ];
+						final double normalZ = pointNormals[ pointIndex + 2 ];
 
-						j3dVertices.add( new Point3f(
+						j3dVertices.add( new Point3d(
 							xform.transformX( pointX , pointY , pointZ ) ,
 							xform.transformY( pointX , pointY , pointZ ) ,
 							xform.transformZ( pointX , pointY , pointZ ) ) );
 
-						j3dFaceNormals.add( new Vector3f(
+						j3dFaceNormals.add( new Vector3d(
 							xform.rotateX( normalX , normalY , normalZ ) ,
 							xform.rotateY( normalX , normalY , normalZ ) ,
 							xform.rotateZ( normalX , normalY , normalZ ) ) );
@@ -218,13 +219,13 @@ public final class Java3dTools
 	 *
 	 * @return  <code>Matrix4f</code> instance.
 	 */
-	public static Matrix4f convertMatrix3DToMatrix4f( final Matrix3D matrix )
+	public static Matrix4d convertMatrix3DToMatrix4d( final Matrix3D matrix )
 	{
-		return new Matrix4f(
+		return new Matrix4d(
 			matrix.xx , matrix.xy , matrix.xz , matrix.xo ,
 			matrix.yx , matrix.yy , matrix.yz , matrix.yo ,
 			matrix.zx , matrix.zy , matrix.zz , matrix.zo ,
-			0.0f , 0.0f , 0.0f , 1.0f );
+			0.0 , 0.0 , 0.0 , 1.0 );
 	}
 
 	/**
@@ -236,7 +237,7 @@ public final class Java3dTools
 	 */
 	public static Transform3D convertMatrix3DToTransform3D( final Matrix3D matrix )
 	{
-		return new Transform3D( convertMatrix3DToMatrix4f( matrix ) );
+		return new Transform3D( convertMatrix3DToMatrix4d( matrix ) );
 	}
 
 	/**
@@ -277,7 +278,7 @@ public final class Java3dTools
 			upVector = new Vector3d( 0 , 0 , 1 );
 
 		final Transform3D transform = new Transform3D();
-		transform.setTranslation( new Vector3f( from.x , from.y , from.z ) );
+		transform.setTranslation( new Vector3d( from.x , from.y , from.z ) );
 		transform.lookAt( new Point3d( from.x , from.y , from.z ) , new Point3d( to.x , to.y , to.z ) , upVector );
 		transform.invert();
 		return transform;
@@ -469,7 +470,7 @@ public final class Java3dTools
 		final Transform3D operand = new Transform3D();
 
 		operand.rotY( rotation );
-		operand.setTranslation( new Vector3f( position.x , position.y , position.z ) );
+		operand.setTranslation( new Vector3d( position.x , position.y , position.z ) );
 		xform.mul( operand );
 
 		operand.rotX( -Math.PI / 2 );

@@ -54,7 +54,7 @@ public class Object3D
 	 * Coordinates of points in object. Points are stored in an array of floats
 	 * with a triplet for each point (x,y,z).
 	 */
-	float[] _pointCoords = {};
+	double[] _pointCoords = {};
 
 	/**
 	 * This internal flag is set to indicate that the points or faces changed,
@@ -70,7 +70,7 @@ public class Object3D
 	 * This is only calculated when the model changes (indicated by the
 	 * _normalsDirty field).
 	 */
-	private float[] _vertexNormals = null;
+	private double[] _vertexNormals = null;
 
 	/**
 	 * Array of floats with normals of each face of the model. Normals are
@@ -80,12 +80,12 @@ public class Object3D
 	 * This is only calculated when the model changes (indicated by the
 	 * _normalsDirty field) occur.
 	 */
-	private float[] _faceNormals = null;
+	private double[] _faceNormals = null;
 
 	/**
 	 * This is used as cache storage for paint(Graphics2D,Matrix3D,Matrix3D).
 	 */
-	private static float[] _paintPointCoordsCache = {};
+	private static double[] _paintPointCoordsCache = {};
 
 	/**
 	 * Construct base object. Additional properties need to be set to make the
@@ -115,17 +115,17 @@ public class Object3D
 	 *
 	 * @FIXME should be a utility/factory method.
 	 */
-	public Object3D( final Matrix3D xform , final float[] xs , final float[] zs , final int detail , final TextureSpec texture , final boolean smoothCircumference , final boolean closeEnds )
+	public Object3D( final Matrix3D xform , final double[] xs , final double[] zs , final int detail , final TextureSpec texture , final boolean smoothCircumference , final boolean closeEnds )
 	{
-		float[] coords = new float[ xs.length * detail * 3 ];
+		double[] coords = new double[ xs.length * detail * 3 ];
 		int v = 0;
 
 		int   iPrev;
-		float xPrev;
+		double xPrev;
 
 		int   iCur = v / 3;
-		float xCur = 0;
-		float zCur;
+		double xCur = 0;
+		double zCur;
 
 		for ( int i = 0 ; i < xs.length ; i++ )
 		{
@@ -136,7 +136,7 @@ public class Object3D
 			xCur = xs[ i ];
 			zCur = zs[ i ];
 
-			if ( xCur == 0.0f )
+			if ( xCur == 0.0 )
 			{
 				coords[ v++ ] = 0;
 				coords[ v++ ] = 0;
@@ -144,10 +144,10 @@ public class Object3D
 			}
 			else for ( int j = 0 ; j < detail ; j++ )
 			{
-				final float a = (float)( j * 2 * Math.PI / detail );
+				final double a = j * 2 * Math.PI / detail;
 
-				coords[ v++ ] =  (float)(Math.sin( a ) * xCur);
-				coords[ v++ ] = -(float)(Math.cos( a ) * xCur);
+				coords[ v++ ] =  Math.sin( a ) * xCur;
+				coords[ v++ ] = -Math.cos( a ) * xCur;
 				coords[ v++ ] = zCur;
 			}
 
@@ -156,7 +156,7 @@ public class Object3D
 			 */
 			if ( i == 0 )
 			{
-				if ( xCur != 0.0f && closeEnds )
+				if ( xCur != 0.0 && closeEnds )
 				{
 					final int[] fv = new int[ detail ];
 					for ( int j = 0 ; j < detail ; j++ )
@@ -168,18 +168,18 @@ public class Object3D
 			/*
 			 * 2nd + later control points.
 			 */
-			else if ( xCur != 0.0f || xPrev != 0.0f )
+			else if ( xCur != 0.0 || xPrev != 0.0 )
 			{
 				for ( int j = 0 ; j < detail ; j++ )
 				{
 					final int nextJ = ( j + 1 ) % detail;
 
 					final int[] fv;
-					if ( xCur != 0.0f && xPrev != 0 )
+					if ( xCur != 0.0 && xPrev != 0 )
 						fv = new int[] { iPrev + j , iCur + j , iCur + nextJ , iPrev + nextJ };
-					else if ( xCur != 0.0f )
+					else if ( xCur != 0.0 )
 						fv = new int[] { iPrev , iCur + j , iCur + nextJ };
-					else /*if ( xPrev != 0f )*/
+					else /*if ( xPrev != 0.0 )*/
 						fv = new int[] { iPrev + j , iCur , iPrev + nextJ };
 
 					addFace( fv , texture , smoothCircumference );
@@ -190,7 +190,7 @@ public class Object3D
 		/*
 		 * Add closing face is requested.
 		 */
-		if ( ( xCur != 0.0f ) && closeEnds )
+		if ( ( xCur != 0.0 ) && closeEnds )
 		{
 			final int[] fv = new int[ detail ];
 			for ( int j = 0 ; j < detail ; j++ )
@@ -200,7 +200,7 @@ public class Object3D
 		}
 
 
-		coords = (float[])ArrayTools.setLength( coords , float.class , v );
+		coords = (double[])ArrayTools.setLength( coords , double.class , v );
 		if ( xform != null )
 			xform.transform( coords , coords , v / 3 );
 
@@ -247,14 +247,14 @@ public class Object3D
 	{
 		if ( _normalsDirty )
 		{
-			final int     faceCount   = getFaceCount();
-			final float[] pointCoords = getPointCoords();
-			final int     pointCount  = getPointCount();
+			final int      faceCount   = getFaceCount();
+			final double[] pointCoords = getPointCoords();
+			final int      pointCount  = getPointCount();
 
-			final float[] faceNormals = (float[])ArrayTools.ensureLength( _faceNormals , float.class , -1 , faceCount * 3 );
+			final double[] faceNormals = (double[])ArrayTools.ensureLength( _faceNormals , double.class , -1 , faceCount * 3 );
 			_faceNormals = faceNormals;
 
-			final float[] vertexNormals = (float[])ArrayTools.ensureLength( _vertexNormals , float.class , -1 , pointCount * 3 );
+			final double[] vertexNormals = (double[])ArrayTools.ensureLength( _vertexNormals , double.class , -1 , pointCount * 3 );
 			_vertexNormals = vertexNormals;
 
 			/*
@@ -280,13 +280,13 @@ public class Object3D
 					final int vi2 = pointIndices[ 1 ] * 3;
 					final int vi3 = pointIndices[ 2 ] * 3;
 
-					final float u1 = pointCoords[ vi3     ] - pointCoords[ vi1     ];
-					final float u2 = pointCoords[ vi3 + 1 ] - pointCoords[ vi1 + 1 ];
-					final float u3 = pointCoords[ vi3 + 2 ] - pointCoords[ vi1 + 2 ];
+					final double u1 = pointCoords[ vi3     ] - pointCoords[ vi1     ];
+					final double u2 = pointCoords[ vi3 + 1 ] - pointCoords[ vi1 + 1 ];
+					final double u3 = pointCoords[ vi3 + 2 ] - pointCoords[ vi1 + 2 ];
 
-					final float v1 = pointCoords[ vi2     ] - pointCoords[ vi1     ];
-					final float v2 = pointCoords[ vi2 + 1 ] - pointCoords[ vi1 + 1 ];
-					final float v3 = pointCoords[ vi2 + 2 ] - pointCoords[ vi1 + 2 ];
+					final double v1 = pointCoords[ vi2     ] - pointCoords[ vi1     ];
+					final double v2 = pointCoords[ vi2 + 1 ] - pointCoords[ vi1 + 1 ];
+					final double v3 = pointCoords[ vi2 + 2 ] - pointCoords[ vi1 + 2 ];
 
 					faceNormals[ normalIndex     ] = u2 * v3 - u3 * v2;
 					faceNormals[ normalIndex + 1 ] = u3 * v1 - u1 * v3;
@@ -299,9 +299,9 @@ public class Object3D
 			 */
 			for ( int pointIndex = 0 ; pointIndex < pointCount ; pointIndex++ )
 			{
-				float vnx = 0;
-				float vny = 0;
-				float vnz = 0;
+				double vnx = 0;
+				double vny = 0;
+				double vnz = 0;
 
 				/*
 				 * Sum normals of faces that use this point.
@@ -330,7 +330,7 @@ public class Object3D
 				 */
 				if ( vnx != 0 || vny != 0 || vnz != 0 )
 				{
-					final float l = (float)Math.sqrt( vnx * vnx + vny * vny + vnz * vnz );
+					final double l = Math.sqrt( vnx * vnx + vny * vny + vnz * vnz );
 					vnx /= l;
 					vny /= l;
 					vnz /= l;
@@ -349,13 +349,13 @@ public class Object3D
 			{
 				final int normalIndex = faceIndex * 3;
 
-				final float nx = faceNormals[ normalIndex     ];
-				final float ny = faceNormals[ normalIndex + 1 ];
-				final float nz = faceNormals[ normalIndex + 2 ];
+				final double nx = faceNormals[ normalIndex     ];
+				final double ny = faceNormals[ normalIndex + 1 ];
+				final double nz = faceNormals[ normalIndex + 2 ];
 
 				if ( nx != 0 || ny != 0 || nz != 0 )
 				{
-					final float l = (float)Math.sqrt( nx * nx + ny * ny + nz * nz );
+					final double l = Math.sqrt( nx * nx + ny * ny + nz * nz );
 
 					faceNormals[ normalIndex     ] = nx / l;
 					faceNormals[ normalIndex + 1 ] = ny / l;
@@ -384,12 +384,12 @@ public class Object3D
 
 		final boolean isXform = ( xform != null ) && ( xform != Matrix3D.INIT ) && ( !Matrix3D.INIT.equals( xform ) );
 
-		float x1;
-		float y1;
-		float z1;
-		float x2;
-		float y2;
-		float z2;
+		double x1;
+		double y1;
+		double z1;
+		double x2;
+		double y2;
+		double z2;
 		final Bounds3D result;
 		if ( bounds != null )
 		{
@@ -403,20 +403,20 @@ public class Object3D
 		}
 		else
 		{
-			x1 = Float.MAX_VALUE;
-			y1 = Float.MAX_VALUE;
-			z1 = Float.MAX_VALUE;
-			x2 = Float.MIN_VALUE;
-			y2 = Float.MIN_VALUE;
-			z2 = Float.MIN_VALUE;
+			x1 = Double.MAX_VALUE;
+			y1 = Double.MAX_VALUE;
+			z1 = Double.MAX_VALUE;
+			x2 = Double.MIN_VALUE;
+			y2 = Double.MIN_VALUE;
+			z2 = Double.MIN_VALUE;
 			result = Bounds3D.INIT;
 		}
 
-		float x;
-		float y;
-		float z;
-		float tx;
-		float ty;
+		double x;
+		double y;
+		double z;
+		double tx;
+		double ty;
 
 		int i = 0;
 		for ( int j = 0 ; j < pointCount ; j++ )
@@ -453,7 +453,7 @@ public class Object3D
 	 *
 	 * @return  Transformed face normals.
 	 */
-	public final float[] getFaceNormals()
+	public final double[] getFaceNormals()
 	{
 		if ( _normalsDirty )
 			calculateNormals();
@@ -471,10 +471,10 @@ public class Object3D
 	 *
 	 * @return  The index of the point.
 	 */
-	int getOrAddPointIndex( final float x , final float y , final float z )
+	int getOrAddPointIndex( final double x , final double y , final double z )
 	{
-		final float[] pointCoords = getPointCoords();
-		final int     pointCount  = getPointCount();
+		final double[] pointCoords = getPointCoords();
+		final int      pointCount  = getPointCount();
 
 		int index = pointCount * 3;
 		while ( ( index -= 3 ) >= 0 )
@@ -486,7 +486,7 @@ public class Object3D
 		if ( index < 0 )
 		{
 			index = pointCount * 3;
-			final float[] newCoords = (float[])ArrayTools.ensureLength( pointCoords , float.class , -1 , index + 3 );
+			final double[] newCoords = (double[])ArrayTools.ensureLength( pointCoords , double.class , -1 , index + 3 );
 			newCoords[ index     ] = x;
 			newCoords[ index + 1 ] = y;
 			newCoords[ index + 2 ] = z;
@@ -515,7 +515,7 @@ public class Object3D
 	 *
 	 * @return  Float array with triplet for each point in this object.
 	 */
-	public final float[] getPointCoords()
+	public final double[] getPointCoords()
 	{
 		return _pointCoords;
 	}
@@ -529,7 +529,7 @@ public class Object3D
 	 *
 	 * @throws  IllegalStateException if faces have been added to the object.
 	 */
-	public final void setPointCoords( final float[] pointCoords )
+	public final void setPointCoords( final double[] pointCoords )
 	{
 		if ( !_faces.isEmpty() )
 			throw new IllegalStateException( "can't set coordinates after adding faces" );
@@ -544,7 +544,7 @@ public class Object3D
 	 *
 	 * @return  Transformed vertex normals.
 	 */
-	public final float[] getVertexNormals()
+	public final double[] getVertexNormals()
 	{
 		if ( _normalsDirty )
 			calculateNormals();
@@ -683,8 +683,8 @@ public class Object3D
 		}
 		else if ( ( texture != null ) && texture.isTexture() )
 		{
-			final float txBase = -base.xo * base.xx - base.yo * base.yx - base.zo * base.zx;
-			final float tyBase = -base.xo * base.xy - base.yo * base.yy - base.zo * base.zy;
+			final double txBase = -base.xo * base.xx - base.yo * base.yx - base.zo * base.zx;
+			final double tyBase = -base.xo * base.xy - base.yo * base.yy - base.zo * base.zy;
 
 			final int[] vertU = new int[ nrVertices ];
 			final int[] vertV = new int[ nrVertices ];
@@ -761,7 +761,7 @@ public class Object3D
 		return result;
 	}
 
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final double shadeFactor )
 	{
 		final int faceCount = getFaceCount();
 		if ( ( faceCount > 0 ) && ( ( outlineColor != null ) || ( fillColor != null ) ) )
@@ -771,7 +771,7 @@ public class Object3D
 			/*
 			 * If the array is to small, create a larger one.
 			 */
-			final float[] pointCoords = viewTransform.transform( _pointCoords , _paintPointCoordsCache , pointCount );
+			final double[] pointCoords = viewTransform.transform( _pointCoords , _paintPointCoordsCache , pointCount );
 			_paintPointCoordsCache = pointCoords;
 
 			int maxVertexCount = 0;
@@ -797,9 +797,9 @@ public class Object3D
 					{
 						final int vi = pointIndices[ p ] * 3;
 
-						final float x  = pointCoords[ vi ];
-						final float y  = pointCoords[ vi + 1 ];
-						final float z  = pointCoords[ vi + 2 ];
+						final double x  = pointCoords[ vi ];
+						final double y  = pointCoords[ vi + 1 ];
+						final double z  = pointCoords[ vi + 2 ];
 
 						final int ix = (int)gTransform.transformX( x , y , z );
 						final int iy = (int)gTransform.transformY( x , y , z );
@@ -827,11 +827,11 @@ public class Object3D
 						{
 							if ( ( shadeFactor > 0 ) && ( shadeFactor <= 1 ) )
 							{
-								final float[] faceNormals = getFaceNormals();
-								final int     normalIndex = faceIndex * 3;
-								final float   nx          = faceNormals[ normalIndex     ];
-								final float   ny          = faceNormals[ normalIndex + 1 ];
-								final float   nz          = faceNormals[ normalIndex + 2 ];
+								final double[] faceNormals = getFaceNormals();
+								final int      normalIndex = faceIndex * 3;
+								final double   nx          = faceNormals[ normalIndex     ];
+								final double   ny          = faceNormals[ normalIndex + 1 ];
+								final double   nz          = faceNormals[ normalIndex + 2 ];
 
 								g.setColor( getAdjustedFillColor( viewTransform , fillColor , shadeFactor , nx , ny , nz ) );
 							}
@@ -884,7 +884,7 @@ public class Object3D
 	 *
 	 * @return  Fill color.
 	 */
-	protected static final Color getAdjustedFillColor( final Matrix3D viewTransform , final Color fillColor , final float shadeFactor , final float nx , final float ny , final float nz )
+	protected static final Color getAdjustedFillColor( final Matrix3D viewTransform , final Color fillColor , final double shadeFactor , final double nx , final double ny , final double nz )
 	{
 		final Color result;
 
@@ -894,14 +894,14 @@ public class Object3D
 		}
 		else
 		{
-			final float rnz = nx * viewTransform.zx + ny * viewTransform.zy + nz * viewTransform.zz;
+			final double rnz = nx * viewTransform.zx + ny * viewTransform.zy + nz * viewTransform.zz;
 
-			final float factor = Math.min( 1.0f , ( 1 - shadeFactor ) + shadeFactor * Math.abs( rnz ) );
+			final double factor = Math.min( 1.0 , ( 1 - shadeFactor ) + shadeFactor * Math.abs( rnz ) );
 			if ( factor < 1 )
 			{
-				result = new Color( (int)( factor * fillColor.getRed()   + 0.5f ) ,
-				                    (int)( factor * fillColor.getGreen() + 0.5f ) ,
-				                    (int)( factor * fillColor.getBlue()  + 0.5f ) );
+				result = new Color( (int)( factor * fillColor.getRed()   + 0.5 ) ,
+				                    (int)( factor * fillColor.getGreen() + 0.5 ) ,
+				                    (int)( factor * fillColor.getBlue()  + 0.5 ) );
 			}
 			else
 			{

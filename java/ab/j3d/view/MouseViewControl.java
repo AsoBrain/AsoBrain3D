@@ -91,7 +91,7 @@ public class MouseViewControl
 	/**
 	 * Rotation and translation values.
 	 */
-	private final float[] _variables = new float[ 6 ];
+	private final double[] _variables = new double[ 6 ];
 
 	/**
 	 * This is the current "control mode" of the view. This
@@ -112,7 +112,7 @@ public class MouseViewControl
 	/**
 	 * Mouse sensivity for each control mode.
 	 */
-	final float[] _sensitivity = { 1.4f , 0.02f , 0.02f };
+	final double[] _sensitivity = { 1.4f , 0.02f , 0.02f };
 
 	/**
 	 * Number of button that is currently down (-1 = none).
@@ -127,7 +127,7 @@ public class MouseViewControl
 	/**
 	 * Drag start target value for X-axis movement.
 	 */
-	private float _xStartValue;
+	private double _xStartValue;
 
 	/**
 	 * Drag start coordinate value for Y-axis movement.
@@ -137,7 +137,7 @@ public class MouseViewControl
 	/**
 	 * Drag start target value for Y-axis movement.
 	 */
-	private float _yStartValue;
+	private double _yStartValue;
 
 	/**
 	 * Registered event listeners.
@@ -150,7 +150,7 @@ public class MouseViewControl
 	 * @param   target  Target component to attach mouse control to.
 	 * @param   unit    Unit scale factor (e.g. <code>MM</code>).
 	 */
-	public MouseViewControl( final Component target , final float unit )
+	public MouseViewControl( final Component target , final double unit )
 	{
 		_buttonDown       = -1;
 		_xStartCoordinate = 0;
@@ -174,7 +174,7 @@ public class MouseViewControl
 	 *
 	 * @return  Rotation around X axis (in degrees).
 	 */
-	private float getRotationX()
+	private double getRotationX()
 	{
 		return _variables[ ROTATION_X ];
 	}
@@ -184,7 +184,7 @@ public class MouseViewControl
 	 *
 	 * @return  Rotation around Y axis (in degrees).
 	 */
-	private float getRotationY()
+	private double getRotationY()
 	{
 		return _variables[ ROTATION_Y ];
 	}
@@ -194,7 +194,7 @@ public class MouseViewControl
 	 *
 	 * @return  Rotation around Z axis (in degrees).
 	 */
-	private float getRotationZ()
+	private double getRotationZ()
 	{
 		return _variables[ ROTATION_Z ];
 	}
@@ -204,7 +204,7 @@ public class MouseViewControl
 	 *
 	 * @return  Translation along X axis (in model units).
 	 */
-	private float getTranslationX()
+	private double getTranslationX()
 	{
 		return _variables[ TRANSLATION_X ];
 	}
@@ -214,7 +214,7 @@ public class MouseViewControl
 	 *
 	 * @return  Translation along Y axis (in model units).
 	 */
-	private float getTranslationY()
+	private double getTranslationY()
 	{
 		return _variables[ TRANSLATION_Y ];
 	}
@@ -224,7 +224,7 @@ public class MouseViewControl
 	 *
 	 * @return  Translation along Z axis (in model units).
 	 */
-	private float getTranslationZ()
+	private double getTranslationZ()
 	{
 		return _variables[ TRANSLATION_Z ];
 	}
@@ -308,7 +308,7 @@ public class MouseViewControl
 	 *
 	 * @return  Variable value.
 	 */
-	private float getValue( final int varIndex )
+	private double getValue( final int varIndex )
 	{
 		final int absIndex = ( varIndex < 0 ) ? -varIndex : varIndex;
 		return ( absIndex == DISABLED ) ? 0 : _variables[ absIndex ];
@@ -321,7 +321,7 @@ public class MouseViewControl
 	 * @param   startValue  Value when dragging started.
 	 * @param   deltaValue  Value change since dragging started.
 	 */
-	private void adjustValue( final int varIndex , final float startValue , final float deltaValue )
+	private void adjustValue( final int varIndex , final double startValue , final double deltaValue )
 	{
 		final int absIndex = ( varIndex < 0 ) ? -varIndex : varIndex;
 		if ( absIndex != DISABLED )
@@ -350,9 +350,9 @@ public class MouseViewControl
 
 	public void mouseDragged( final MouseEvent event )
 	{
-		final int   buttonNr    = getButtonNumber( event );
-		final int   mode        = ( buttonNr == 1 ) ? PAN : (buttonNr == 2) ? ZOOM : _controlMode;
-		final float sensitivity = _sensitivity[ mode ];
+		final int    buttonNr    = getButtonNumber( event );
+		final int    mode        = ( buttonNr == 1 ) ? PAN : (buttonNr == 2) ? ZOOM : _controlMode;
+		final double sensitivity = _sensitivity[ mode ];
 
 		adjustValue( _controlX[ mode ] , _xStartValue , sensitivity * ( event.getX() - _xStartCoordinate ) );
 		adjustValue( _controlY[ mode ] , _yStartValue , sensitivity * ( _yStartCoordinate - event.getY() ) );

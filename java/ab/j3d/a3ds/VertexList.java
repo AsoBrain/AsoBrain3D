@@ -141,9 +141,9 @@ public final class VertexList
 
 		for ( int i = 0 ; i < _vertices.length ; i++ )
 		{
-			os.writeFloat( _vertices[i].x );
-			os.writeFloat( _vertices[i].y );
-			os.writeFloat( _vertices[i].z );
+			os.writeFloat( (float)_vertices[ i ].x );
+			os.writeFloat( (float)_vertices[ i ].y );
+			os.writeFloat( (float)_vertices[ i ].z );
 		}
 	}
 }

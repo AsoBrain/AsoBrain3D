@@ -41,17 +41,17 @@ public final class RenderObject
 	Matrix3D    _xform;
 
 	int         _pointCount;
-	float[]     _verts;
+	double[]    _verts;
 	int[]       _ph;
 	int[]       _pv;
 	long[]      _pd;
 
 	boolean     _vertNormDirty;
-	float[]     _vertNorm;
+	double[]    _vertNorm;
 
 	int         _nrLights;
 	Light3D[]   _lights;
-	float[][]   _lightNormalDist;
+	double[][]  _lightNormalDist;
 
 	Face        _faces;
 	Face        _facesFree;
@@ -73,10 +73,10 @@ public final class RenderObject
 		int         _maxH;
 		int         _maxV;
 		int         _maxD;
-		float       _nx;
-		float       _ny;
-		float       _nz;
-		float       _dist;
+		double      _nx;
+		double      _ny;
+		double      _nz;
+		double      _dist;
 
 		/*
 		 * All following variables are only valid after calling applyLighting()
@@ -107,7 +107,7 @@ public final class RenderObject
 			_sys    = null;
 			_sfs    = null;
 		}
-		private void set( final Face3D face3d , final int index , final int minH , final int minV , final int minD , final int maxH , final int maxV , final int maxD , final float nx , final float ny , final float nz )
+		private void set( final Face3D face3d , final int index , final int minH , final int minV , final int minD , final int maxH , final int maxV , final int maxD , final double nx , final double ny , final double nz )
 		{
 			_face3d = face3d;
 			_index  = index;
@@ -136,11 +136,11 @@ public final class RenderObject
 			if ( _maxD < other._minD ) return false;
 
 
-			final int i = other._vi[ 0 ] * 3;
-			final float[] v = other.getRenderObject()._verts;
-			final float x = v[ i     ];
-			final float y = v[ i + 1 ];
-			final float z = v[ i + 2 ];
+			final int      i = other._vi[ 0 ] * 3;
+			final double[] v = other.getRenderObject()._verts;
+			final double   x = v[ i     ];
+			final double   y = v[ i + 1 ];
+			final double   z = v[ i + 2 ];
 
 			return y > ( _dist - _nx * x - _nz * z ) / _ny;
 		}
@@ -184,12 +184,12 @@ public final class RenderObject
 
 			if ( _face3d.isSmooth() )
 			{
-				final float[] vertNorm = getVertexNormals();
+				final double[] vertNorm = getVertexNormals();
 
 				for ( i = _nrLights ; --i >= 0 ; )
 				{
 					final Light3D light      = _lights[ i ];
-					final float[] normalDist = _lightNormalDist[ i ];
+					final double[] normalDist = _lightNormalDist[ i ];
 
 					for ( j = _vi.length ; --j >= 0 ; )
 					{
@@ -207,7 +207,7 @@ public final class RenderObject
 				for ( i = _nrLights ; --i >= 0 ; )
 				{
 					final Light3D light      = _lights[ i ];
-					final float[] normalDist = _lightNormalDist[ i ];
+					final double[] normalDist = _lightNormalDist[ i ];
 
 					for ( j = _vi.length ; --j >= 0 ; )
 					{
@@ -278,7 +278,7 @@ public final class RenderObject
 	 *
 	 * @return  Float array with vertex normals in render view.
 	 */
-	public float[] getVertexNormals()
+	public double[] getVertexNormals()
 	{
 		if ( _vertNormDirty )
 		{
@@ -300,7 +300,7 @@ public final class RenderObject
 	 * @param   height              Height of render area in pixels.
 	 * @param   backfaceCullling    Discard backfaces if set to <code>true</code>.
 	 */
-	public void set( final Object3D obj , final Matrix3D xform , final float aperture , final float zoom , final int width , final int height , final boolean backfaceCullling )
+	public void set( final Object3D obj , final Matrix3D xform , final double aperture , final double zoom , final int width , final int height , final boolean backfaceCullling )
 	{
 		int i;
 		int j;
@@ -309,15 +309,15 @@ public final class RenderObject
 		int ih;
 		int iv;
 		int id;
-		float x;
-		float y;
-		float z;
+		double x;
+		double y;
+		double z;
 
-		final int     pointCount  = obj.getPointCount();
-		final float[] pointCoords = obj.getPointCoords();
-		final float[] faceNormals = obj.getFaceNormals();
-		final int     centerH     = width << 7;
-		final int     centerV     = height << 7;
+		final int      pointCount  = obj.getPointCount();
+		final double[] pointCoords = obj.getPointCoords();
+		final double[] faceNormals = obj.getFaceNormals();
+		final int      centerH     = width << 7;
+		final int      centerV     = height << 7;
 
 		_obj           = obj;
 		_xform         = xform;
@@ -330,20 +330,20 @@ public final class RenderObject
 		 */
 		if ( ( _verts == null ) || ( pointCount * 3 > _verts.length ) )
 		{
-			_verts = new float[ pointCount * 3 ];
-			_ph    = new int  [ pointCount ];
-			_pv    = new int  [ pointCount ];
-			_pd    = new long [ pointCount ];
+			_verts = new double[ pointCount * 3 ];
+			_ph    = new int   [ pointCount ];
+			_pv    = new int   [ pointCount ];
+			_pd    = new long  [ pointCount ];
 		}
 
 
-		final float perspectiveFactor = 256.0f * zoom / aperture;
+		final double perspectiveFactor = 256.0 * zoom / aperture;
 
 		for ( i = 0 , j = 0 ; j < pointCount ; i += 3 , j++ )
 		{
-			final float ox = pointCoords[ i     ];
-			final float oy = pointCoords[ i + 1 ];
-			final float oz = pointCoords[ i + 2 ];
+			final double ox = pointCoords[ i     ];
+			final double oy = pointCoords[ i + 1 ];
+			final double oz = pointCoords[ i + 2 ];
 
 			x = _verts[ i     ] = xform.transformX( ox , oy , oz );
 			y = _verts[ i + 1 ] = xform.transformY( ox , oy , oz );
@@ -509,8 +509,8 @@ public final class RenderObject
 		/*
 		 * Prepare light source buffer.
 		 */
-		Light3D[] lights          = _lights;
-		float[][] lightNormalDist = _lightNormalDist;
+		Light3D[]  lights          = _lights;
+		double[][] lightNormalDist = _lightNormalDist;
 
 		if ( _nrLights > 0 && ( lights == null || _nrLights > lights.length ) )
 		{
@@ -519,7 +519,7 @@ public final class RenderObject
 				System.arraycopy( _lightNormalDist , 0 , lightNormalDist , 0 , this._lights.length );
 			_lights = lights;
 
-			lightNormalDist = new float[ _nrLights ][];
+			lightNormalDist = new double[ _nrLights ][];
 			_lightNormalDist = lightNormalDist;
 		}
 
@@ -535,27 +535,27 @@ public final class RenderObject
 			if ( lights[ i ].requiresNormalsOrDistance() )
 			{
 				final Matrix3D m = lightSources.getMatrix( i );
-				final float x = m.xo;
-				final float y = m.yo;
-				final float z = m.zo;
+				final double x = m.xo;
+				final double y = m.yo;
+				final double z = m.zo;
 
-				float[] dest = lightNormalDist[ i ];
+				double[] dest = lightNormalDist[ i ];
 				if ( dest == null || dest.length < nrVerts4 )
-					lightNormalDist[ i ] = dest = new float[ nrVerts4 ];
+					lightNormalDist[ i ] = dest = new double[ nrVerts4 ];
 
 				for ( j = 0 , k = 0 ; k < nrVerts4 ; )
 				{
-					final float dx = x - _verts[ j++ ];
-					final float dy = y - _verts[ j++ ];
-					final float dz = z - _verts[ j++ ];
+					final double dx = x - _verts[ j++ ];
+					final double dy = y - _verts[ j++ ];
+					final double dz = z - _verts[ j++ ];
 
-					final float d = (float)Math.sqrt( dx * dx + dy * dy + dz * dz );
-					if ( d < 1.0f )
+					final double d = Math.sqrt( dx * dx + dy * dy + dz * dz );
+					if ( d < 1.0 )
 					{
 						dest[ k++ ] = dx;
 						dest[ k++ ] = dy;
 						dest[ k++ ] = dz;
-						dest[ k++ ] = 1.0f;
+						dest[ k++ ] = 1.0;
 					}
 					else
 					{

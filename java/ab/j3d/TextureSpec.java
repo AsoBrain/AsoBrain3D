@@ -67,7 +67,7 @@ public final class TextureSpec
 	/**
 	 * Unique record ID.
 	 */
-	public long ID = -1;
+	public long ID = -1L;
 
 	/**
 	 * Code that uniquely identifies the texture (it should be used instead
@@ -105,7 +105,7 @@ public final class TextureSpec
 	 * surfaces. In many cases this will be the same as the diffuse
 	 * reflectivity coefficient.
 	 */
-	public float  ambientReflectivity;
+	public float ambientReflectivity;
 
 	/**
 	 * Diffuse reflectivity coefficient. This determines the amount of
@@ -114,13 +114,13 @@ public final class TextureSpec
 	 * objects that are highly reflective. Typical values range from 0,1
 	 * to 0,2 for dull surfaces and 0,7 to 0,8 for bright surfaces.
 	 */
-	public float  diffuseReflectivity;
+	public float diffuseReflectivity;
 
 	/**
 	 * Specular reflection coefficient. Specular reflection is total or
 	 * near total reflection of incoming light in a concentrated region.
 	 */
-	public float  specularReflectivity;
+	public float specularReflectivity;
 
 	/**
 	 * Specular reflection exponent. This exponent is an indicator for
@@ -142,11 +142,11 @@ public final class TextureSpec
 	 */
 	public TextureSpec()
 	{
-		ID                   = -1;
+		ID                   = -1L;
 		code                 = null;
 		rgb                  = 0x00FFFFFF;
 		opacity              = 1.0f;
-		textureScale         = -1;
+		textureScale         = -1.0f;
 		ambientReflectivity  = 0.3f;
 		diffuseReflectivity  = 0.5f;
 		specularReflectivity = 0.7f;
@@ -161,7 +161,7 @@ public final class TextureSpec
 	 */
 	public int getARGB()
 	{
-		return ( Math.round( opacity * 255 ) << 24 ) | ( rgb & 0xFFFFFF );
+		return ( Math.round( opacity * 255.0f ) << 24 ) | ( rgb & 0xFFFFFF );
 	}
 
 	/**
@@ -186,15 +186,13 @@ public final class TextureSpec
 	{
 		final int i = rgb;
 
-		return new StringBuffer( 7 )
-			.append( '#' )
-			.append( Character.forDigit( ( i >> 20 ) & 15 , 16 ) )
-			.append( Character.forDigit( ( i >> 16 ) & 15 , 16 ) )
-			.append( Character.forDigit( ( i >> 12 ) & 15 , 16 ) )
-			.append( Character.forDigit( ( i >>  8 ) & 15 , 16 ) )
-			.append( Character.forDigit( ( i >>  4 ) & 15 , 16 ) )
-			.append( Character.forDigit(   i         & 15 , 16 ) )
-			.toString();
+		return "#"
+			+ Character.forDigit( ( i >> 20 ) & 15 , 16 )
+			+ Character.forDigit( ( i >> 16 ) & 15 , 16 )
+			+ Character.forDigit( ( i >> 12 ) & 15 , 16 )
+			+ Character.forDigit( ( i >>  8 ) & 15 , 16 )
+			+ Character.forDigit( ( i >>  4 ) & 15 , 16 )
+			+ Character.forDigit(   i         & 15 , 16 );
 	}
 
 	/**

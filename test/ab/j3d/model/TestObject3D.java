@@ -54,10 +54,10 @@ public class TestObject3D
 
 		final Vector3D[] points =
 		{
-			Vector3D.INIT.set( 0 , 0 , 0 ),
-			Vector3D.INIT.set( 0 , 0 , 1 ),
-			Vector3D.INIT.set( 1 , 0 , 1 ),
-			Vector3D.INIT.set( 1 , 0 , 0 ),
+			Vector3D.INIT.set( 0.0 , 0.0 , 0.0 ),
+			Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ),
+			Vector3D.INIT.set( 1.0 , 0.0 , 1.0 ),
+			Vector3D.INIT.set( 1.0 , 0.0 , 0.0 ),
 		};
 
 		final Object3D obj3d = new Object3D();
@@ -89,14 +89,14 @@ public class TestObject3D
 	{
 		System.out.println( CLASS_NAME + ".testGetFaceNormals" );
 
-		final Vector3D lfb = Vector3D.INIT.set( -1 , -1 , -1 );
-		final Vector3D rfb = Vector3D.INIT.set(  1 , -1 , -1 );
-		final Vector3D rbb = Vector3D.INIT.set(  1 ,  1 , -1 );
-		final Vector3D lbb = Vector3D.INIT.set( -1 ,  1 , -1 );
-		final Vector3D lft = Vector3D.INIT.set( -1 , -1 ,  1 );
-		final Vector3D rft = Vector3D.INIT.set(  1 , -1 ,  1 );
-		final Vector3D rbt = Vector3D.INIT.set(  1 ,  1 ,  1 );
-		final Vector3D lbt = Vector3D.INIT.set( -1 ,  1 ,  1 );
+		final Vector3D lfb = Vector3D.INIT.set( -1.0 , -1.0 , -1.0 );
+		final Vector3D rfb = Vector3D.INIT.set(  1.0 , -1.0 , -1.0 );
+		final Vector3D rbb = Vector3D.INIT.set(  1.0 ,  1.0 , -1.0 );
+		final Vector3D lbb = Vector3D.INIT.set( -1.0 ,  1.0 , -1.0 );
+		final Vector3D lft = Vector3D.INIT.set( -1.0 , -1.0 ,  1.0 );
+		final Vector3D rft = Vector3D.INIT.set(  1.0 , -1.0 ,  1.0 );
+		final Vector3D rbt = Vector3D.INIT.set(  1.0 ,  1.0 ,  1.0 );
+		final Vector3D lbt = Vector3D.INIT.set( -1.0 ,  1.0 ,  1.0 );
 
 		final Object3D cube = new Object3D();
 		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , false );
@@ -106,31 +106,31 @@ public class TestObject3D
 		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , false );
 		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , false );
 
-		final float[] faceNormals = cube.getFaceNormals();
+		final double[] faceNormals = cube.getFaceNormals();
 
-		assertEquals( "Normal(top).x"    ,  0 , faceNormals[  0 ] , 0.001f );
-		assertEquals( "Normal(top).y"    ,  0 , faceNormals[  1 ] , 0.001f );
-		assertEquals( "Normal(top).z"    ,  1 , faceNormals[  2 ] , 0.001f );
+		assertEquals( "Normal(top).x"    ,  0.0 , faceNormals[  0 ] , 0.001 );
+		assertEquals( "Normal(top).y"    ,  0.0 , faceNormals[  1 ] , 0.001 );
+		assertEquals( "Normal(top).z"    ,  1.0 , faceNormals[  2 ] , 0.001 );
 
-		assertEquals( "Normal(bottom).x" ,  0 , faceNormals[  3 ] , 0.001f );
-		assertEquals( "Normal(bottom).y" ,  0 , faceNormals[  4 ] , 0.001f );
-		assertEquals( "Normal(bottom).z" , -1 , faceNormals[  5 ] , 0.001f );
+		assertEquals( "Normal(bottom).x" ,  0.0 , faceNormals[  3 ] , 0.001 );
+		assertEquals( "Normal(bottom).y" ,  0.0 , faceNormals[  4 ] , 0.001 );
+		assertEquals( "Normal(bottom).z" , -1.0 , faceNormals[  5 ] , 0.001 );
 
-		assertEquals( "Normal(front).x"  ,  0 , faceNormals[  6 ] , 0.001f );
-		assertEquals( "Normal(front).y"  , -1 , faceNormals[  7 ] , 0.001f );
-		assertEquals( "Normal(front).z"  ,  0 , faceNormals[  8 ] , 0.001f );
+		assertEquals( "Normal(front).x"  ,  0.0 , faceNormals[  6 ] , 0.001 );
+		assertEquals( "Normal(front).y"  , -1.0 , faceNormals[  7 ] , 0.001 );
+		assertEquals( "Normal(front).z"  ,  0.0 , faceNormals[  8 ] , 0.001 );
 
-		assertEquals( "Normal(back).x"   ,  0 , faceNormals[  9 ] , 0.001f );
-		assertEquals( "Normal(back).y"   ,  1 , faceNormals[ 10 ] , 0.001f );
-		assertEquals( "Normal(back).z"   ,  0 , faceNormals[ 11 ] , 0.001f );
+		assertEquals( "Normal(back).x"   ,  0.0 , faceNormals[  9 ] , 0.001 );
+		assertEquals( "Normal(back).y"   ,  1.0 , faceNormals[ 10 ] , 0.001 );
+		assertEquals( "Normal(back).z"   ,  0.0 , faceNormals[ 11 ] , 0.001 );
 
-		assertEquals( "Normal(left).x"   , -1 , faceNormals[ 12 ] , 0.001f );
-		assertEquals( "Normal(left).y"   ,  0 , faceNormals[ 13 ] , 0.001f );
-		assertEquals( "Normal(left).z"   ,  0 , faceNormals[ 14 ] , 0.001f );
+		assertEquals( "Normal(left).x"   , -1.0 , faceNormals[ 12 ] , 0.001 );
+		assertEquals( "Normal(left).y"   ,  0.0 , faceNormals[ 13 ] , 0.001 );
+		assertEquals( "Normal(left).z"   ,  0.0 , faceNormals[ 14 ] , 0.001 );
 
-		assertEquals( "Normal(right).x"  ,  1 , faceNormals[ 15 ] , 0.001f );
-		assertEquals( "Normal(right).y"  ,  0 , faceNormals[ 16 ] , 0.001f );
-		assertEquals( "Normal(right).z"  ,  0 , faceNormals[ 17 ] , 0.001f );
+		assertEquals( "Normal(right).x"  ,  1.0 , faceNormals[ 15 ] , 0.001 );
+		assertEquals( "Normal(right).y"  ,  0.0 , faceNormals[ 16 ] , 0.001 );
+		assertEquals( "Normal(right).z"  ,  0.0 , faceNormals[ 17 ] , 0.001 );
 	}
 
 	/**
@@ -148,19 +148,19 @@ public class TestObject3D
 		final Object3D obj3d = new Object3D();
 		assertEquals( "[pre] totalVertexCount" , 0 , obj3d.getPointCount() );
 
-		assertEquals( "test1 - pointIndex"       , 0 , obj3d.getOrAddPointIndex( 0 , 0 , 0 ) );
+		assertEquals( "test1 - pointIndex"       , 0 , obj3d.getOrAddPointIndex( 0.0 , 0.0 , 0.0 ) );
 		assertEquals( "test1 - totalVertexCount" , 1 , obj3d.getPointCount() );
 
-		assertEquals( "test2 - pointIndex"       , 0 , obj3d.getOrAddPointIndex( 0 , 0 , 0 ) );
+		assertEquals( "test2 - pointIndex"       , 0 , obj3d.getOrAddPointIndex( 0.0 , 0.0 , 0.0 ) );
 		assertEquals( "test2 - totalVertexCount" , 1 , obj3d.getPointCount() );
 
-		assertEquals( "test3 - pointIndex"       , 1 , obj3d.getOrAddPointIndex( 1 , 0 , 0 ) );
+		assertEquals( "test3 - pointIndex"       , 1 , obj3d.getOrAddPointIndex( 1.0 , 0.0 , 0.0 ) );
 		assertEquals( "test3 - totalVertexCount" , 2 , obj3d.getPointCount() );
 
-		assertEquals( "test4 - pointIndex"       , 2 , obj3d.getOrAddPointIndex( 0 , 1 , 0 ) );
+		assertEquals( "test4 - pointIndex"       , 2 , obj3d.getOrAddPointIndex( 0.0 , 1.0 , 0.0 ) );
 		assertEquals( "test4 - totalVertexCount" , 3 , obj3d.getPointCount() );
 
-		assertEquals( "test5 - pointIndex"       , 3 , obj3d.getOrAddPointIndex( 0 , 0 , 1 ) );
+		assertEquals( "test5 - pointIndex"       , 3 , obj3d.getOrAddPointIndex( 0.0 , 0.0 , 1.0 ) );
 		assertEquals( "test5 - totalVertexCount" , 4 , obj3d.getPointCount() );
 	}
 
@@ -212,14 +212,14 @@ public class TestObject3D
 	{
 		System.out.println( CLASS_NAME + ".testGetVertexNormals" );
 
-		final Vector3D lfb = Vector3D.INIT.set( -1 , -1 , -1 );
-		final Vector3D rfb = Vector3D.INIT.set(  1 , -1 , -1 );
-		final Vector3D rbb = Vector3D.INIT.set(  1 ,  1 , -1 );
-		final Vector3D lbb = Vector3D.INIT.set( -1 ,  1 , -1 );
-		final Vector3D lft = Vector3D.INIT.set( -1 , -1 ,  1 );
-		final Vector3D rft = Vector3D.INIT.set(  1 , -1 ,  1 );
-		final Vector3D rbt = Vector3D.INIT.set(  1 ,  1 ,  1 );
-		final Vector3D lbt = Vector3D.INIT.set( -1 ,  1 ,  1 );
+		final Vector3D lfb = Vector3D.INIT.set( -1.0 , -1.0 , -1.0 );
+		final Vector3D rfb = Vector3D.INIT.set(  1.0 , -1.0 , -1.0 );
+		final Vector3D rbb = Vector3D.INIT.set(  1.0 ,  1.0 , -1.0 );
+		final Vector3D lbb = Vector3D.INIT.set( -1.0 ,  1.0 , -1.0 );
+		final Vector3D lft = Vector3D.INIT.set( -1.0 , -1.0 ,  1.0 );
+		final Vector3D rft = Vector3D.INIT.set(  1.0 , -1.0 ,  1.0 );
+		final Vector3D rbt = Vector3D.INIT.set(  1.0 ,  1.0 ,  1.0 );
+		final Vector3D lbt = Vector3D.INIT.set( -1.0 ,  1.0 ,  1.0 );
 
 		final Object3D cube = new Object3D();
 		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , false );
@@ -229,40 +229,40 @@ public class TestObject3D
 		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , false );
 		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , false );
 
-		final double e = Math.sqrt( 3 ) / 3;
+		final double e = Math.sqrt( 3.0 ) / 3.0;
 
-		final float[] vertexNormals = cube.getVertexNormals();
+		final double[] vertexNormals = cube.getVertexNormals();
 
-		assertEquals( "lft.x" , -e , vertexNormals[  0 ] , 0.001f );
-		assertEquals( "lft.y" , -e , vertexNormals[  1 ] , 0.001f );
-		assertEquals( "lft.z" ,  e , vertexNormals[  2 ] , 0.001f );
+		assertEquals( "lft.x" , -e , vertexNormals[  0 ] , 0.001 );
+		assertEquals( "lft.y" , -e , vertexNormals[  1 ] , 0.001 );
+		assertEquals( "lft.z" ,  e , vertexNormals[  2 ] , 0.001 );
 
-		assertEquals( "lbt.x" , -e , vertexNormals[  3 ] , 0.001f );
-		assertEquals( "lbt.y" ,  e , vertexNormals[  4 ] , 0.001f );
-		assertEquals( "lbt.z" ,  e , vertexNormals[  5 ] , 0.001f );
+		assertEquals( "lbt.x" , -e , vertexNormals[  3 ] , 0.001 );
+		assertEquals( "lbt.y" ,  e , vertexNormals[  4 ] , 0.001 );
+		assertEquals( "lbt.z" ,  e , vertexNormals[  5 ] , 0.001 );
 
-		assertEquals( "rbt.x" ,  e , vertexNormals[  6 ] , 0.001f );
-		assertEquals( "rbt.y" ,  e , vertexNormals[  7 ] , 0.001f );
-		assertEquals( "rbt.z" ,  e , vertexNormals[  8 ] , 0.001f );
+		assertEquals( "rbt.x" ,  e , vertexNormals[  6 ] , 0.001 );
+		assertEquals( "rbt.y" ,  e , vertexNormals[  7 ] , 0.001 );
+		assertEquals( "rbt.z" ,  e , vertexNormals[  8 ] , 0.001 );
 
-		assertEquals( "rft.x" ,  e , vertexNormals[  9 ] , 0.001f );
-		assertEquals( "rft.y" , -e , vertexNormals[ 10 ] , 0.001f );
-		assertEquals( "rft.z" ,  e , vertexNormals[ 11 ] , 0.001f );
+		assertEquals( "rft.x" ,  e , vertexNormals[  9 ] , 0.001 );
+		assertEquals( "rft.y" , -e , vertexNormals[ 10 ] , 0.001 );
+		assertEquals( "rft.z" ,  e , vertexNormals[ 11 ] , 0.001 );
 
-		assertEquals( "lbb.x" , -e , vertexNormals[ 12 ] , 0.001f );
-		assertEquals( "lbb.y" ,  e , vertexNormals[ 13 ] , 0.001f );
-		assertEquals( "lbb.z" , -e , vertexNormals[ 14 ] , 0.001f );
+		assertEquals( "lbb.x" , -e , vertexNormals[ 12 ] , 0.001 );
+		assertEquals( "lbb.y" ,  e , vertexNormals[ 13 ] , 0.001 );
+		assertEquals( "lbb.z" , -e , vertexNormals[ 14 ] , 0.001 );
 
-		assertEquals( "lfb.x" , -e , vertexNormals[ 15 ] , 0.001f );
-		assertEquals( "lfb.y" , -e , vertexNormals[ 16 ] , 0.001f );
-		assertEquals( "lfb.z" , -e , vertexNormals[ 17 ] , 0.001f );
+		assertEquals( "lfb.x" , -e , vertexNormals[ 15 ] , 0.001 );
+		assertEquals( "lfb.y" , -e , vertexNormals[ 16 ] , 0.001 );
+		assertEquals( "lfb.z" , -e , vertexNormals[ 17 ] , 0.001 );
 
-		assertEquals( "rfb.x" ,  e , vertexNormals[ 18 ] , 0.001f );
-		assertEquals( "rfb.y" , -e , vertexNormals[ 19 ] , 0.001f );
-		assertEquals( "rfb.z" , -e , vertexNormals[ 20 ] , 0.001f );
+		assertEquals( "rfb.x" ,  e , vertexNormals[ 18 ] , 0.001 );
+		assertEquals( "rfb.y" , -e , vertexNormals[ 19 ] , 0.001 );
+		assertEquals( "rfb.z" , -e , vertexNormals[ 20 ] , 0.001 );
 
-		assertEquals( "rbb.x" ,  e , vertexNormals[ 21 ] , 0.001f );
-		assertEquals( "rbb.y" ,  e , vertexNormals[ 22 ] , 0.001f );
-		assertEquals( "rbb.z" , -e , vertexNormals[ 23 ] , 0.001f );
+		assertEquals( "rbb.x" ,  e , vertexNormals[ 21 ] , 0.001 );
+		assertEquals( "rbb.y" ,  e , vertexNormals[ 22 ] , 0.001 );
+		assertEquals( "rbb.z" , -e , vertexNormals[ 23 ] , 0.001 );
 	}
 }

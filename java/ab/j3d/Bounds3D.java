@@ -145,15 +145,14 @@ public final class Bounds3D
 	 */
 	public static boolean intersects( final Bounds3D bounds1 , final Bounds3D bounds2 )
 	{
-		if ( bounds1 == null || bounds2 == null )
-			return false;
-		return
-		( Math.min( bounds1.v1.x , bounds1.v2.x ) < Math.max( bounds2.v1.x , bounds2.v2.x ) ) &&
-		( Math.min( bounds2.v1.x , bounds2.v2.x ) < Math.max( bounds1.v1.x , bounds1.v2.x ) ) &&
-		( Math.min( bounds1.v1.y , bounds1.v2.y ) < Math.max( bounds2.v1.y , bounds2.v2.y ) ) &&
-		( Math.min( bounds2.v1.y , bounds2.v2.y ) < Math.max( bounds1.v1.y , bounds1.v2.y ) ) &&
-		( Math.min( bounds1.v1.z , bounds1.v2.z ) < Math.max( bounds2.v1.z , bounds2.v2.z ) ) &&
-		( Math.min( bounds2.v1.z , bounds2.v2.z ) < Math.max( bounds1.v1.z , bounds1.v2.z ) );
+		return ( bounds1 != null )
+		    && ( bounds2 != null )
+		    && ( Math.min( bounds1.v1.x , bounds1.v2.x ) < Math.max( bounds2.v1.x , bounds2.v2.x ) )
+		    && ( Math.min( bounds2.v1.x , bounds2.v2.x ) < Math.max( bounds1.v1.x , bounds1.v2.x ) )
+		    && ( Math.min( bounds1.v1.y , bounds1.v2.y ) < Math.max( bounds2.v1.y , bounds2.v2.y ) )
+		    && ( Math.min( bounds2.v1.y , bounds2.v2.y ) < Math.max( bounds1.v1.y , bounds1.v2.y ) )
+		    && ( Math.min( bounds1.v1.z , bounds1.v2.z ) < Math.max( bounds2.v1.z , bounds2.v2.z ) )
+		    && ( Math.min( bounds2.v1.z , bounds2.v2.z ) < Math.max( bounds1.v1.z , bounds1.v2.z ) );
 	}
 
 	/**
@@ -184,13 +183,17 @@ public final class Bounds3D
 	 */
 	public static Vector3D max( final Bounds3D box )
 	{
-		final float x = Math.max( box.v1.x , box.v2.x );
-		final float y = Math.max( box.v1.y , box.v2.y );
-		final float z = Math.max( box.v1.z , box.v2.z );
+		final Vector3D result;
 
-			 if ( box.v1.equals( x , y , z ) ) return( box.v1 );
-		else if ( box.v2.equals( x , y , z ) ) return( box.v2 );
-		else return Vector3D.INIT.set( x , y , z );
+		final double x = Math.max( box.v1.x , box.v2.x );
+		final double y = Math.max( box.v1.y , box.v2.y );
+		final double z = Math.max( box.v1.z , box.v2.z );
+
+			 if ( box.v1.equals( x , y , z ) ) result = box.v1;
+		else if ( box.v2.equals( x , y , z ) ) result = box.v2;
+		else result = Vector3D.INIT.set( x , y , z );
+
+		return result;
 	}
 
 	/**
@@ -202,13 +205,17 @@ public final class Bounds3D
 	 */
 	public static Vector3D min( final Bounds3D bounds )
 	{
-		final float x = Math.min( bounds.v1.x , bounds.v2.x );
-		final float y = Math.min( bounds.v1.y , bounds.v2.y );
-		final float z = Math.min( bounds.v1.z , bounds.v2.z );
+		final Vector3D result;
 
-			 if ( bounds.v1.equals( x , y , z ) ) return bounds.v1;
-		else if ( bounds.v2.equals( x , y , z ) ) return bounds.v2;
-		else return Vector3D.INIT.set( x , y , z );
+		final double x = Math.min( bounds.v1.x , bounds.v2.x );
+		final double y = Math.min( bounds.v1.y , bounds.v2.y );
+		final double z = Math.min( bounds.v1.z , bounds.v2.z );
+
+			 if ( bounds.v1.equals( x , y , z ) ) result = bounds.v1;
+		else if ( bounds.v2.equals( x , y , z ) ) result = bounds.v2;
+		else result = Vector3D.INIT.set( x , y , z );
+
+		return result;
 	}
 
 	/**
@@ -232,12 +239,10 @@ public final class Bounds3D
 	 *
 	 * @return  Resulting bounds.
 	 */
-	public Bounds3D minus( final float x , final float y , final float z )
+	public Bounds3D minus( final double x , final double y , final double z )
 	{
-		if ( x == 0f && y == 0f && z == 0f )
-			return this;
-		else
-			return set( v1.minus( x , y , z ) , v2.minus( x , y , z ) );
+		return ( ( x == 0.0 ) && ( y == 0.0 ) && ( z == 0.0 ) ) ? this
+		     : set( v1.minus( x , y , z ) , v2.minus( x , y , z ) );
 	}
 
 	/**
@@ -247,7 +252,7 @@ public final class Bounds3D
 	 *
 	 * @return  Resulting box.
 	 */
-	public Bounds3D multiply( final float factor )
+	public Bounds3D multiply( final double factor )
 	{
 		return set( v1.multiply( factor ) , v2.multiply( factor ) );
 	}
@@ -273,12 +278,10 @@ public final class Bounds3D
 	 *
 	 * @return  Resulting bounds.
 	 */
-	public Bounds3D plus( final float x , final float y , final float z )
+	public Bounds3D plus( final double x , final double y , final double z )
 	{
-		if ( x == 0f && y == 0f && z == 0f )
-			return this;
-		else
-			return set( v1.plus( x , y , z ) , v2.plus( x , y , z ) );
+		return ( ( x == 0.0 ) && ( y == 0.0 ) && ( z == 0.0 ) ) ? this
+		     : set( v1.plus( x , y , z ) , v2.plus( x , y , z ) );
 	}
 
 	/**
@@ -298,9 +301,11 @@ public final class Bounds3D
 	 */
 	private static Bounds3D rebuild(
 		final Bounds3D box1 , final Bounds3D box2 ,
-		final float x1 , final float y1 , final float z1 ,
-		final float x2 , final float y2 , final float z2 )
+		final double x1 , final double y1 , final double z1 ,
+		final double x2 , final double y2 , final double z2 )
 	{
+		final Bounds3D result;
+
 		/*
 		 * Try to reuse the existing vectors. If not possible, create
 		 * new ones.
@@ -326,9 +331,11 @@ public final class Bounds3D
 		 * Try to reuse the existing boxes. If not possible, create
 		 * a new one.
 		 */
-			 if ( box1.v1 == v1 && box1.v2 == v2 ) return( box1 );
-		else if ( box2.v1 == v1 && box2.v2 == v2 ) return( box2 );
-		else return Bounds3D.INIT.set( v1 , v2 );
+			 if ( ( box1.v1 == v1 ) && ( box1.v2 == v2 ) ) result = box1;
+		else if ( ( box2.v1 == v1 ) && ( box2.v2 == v2 ) ) result = box2;
+		else result = Bounds3D.INIT.set( v1 , v2 );
+
+		return result;
 	}
 
 	/**
@@ -341,15 +348,9 @@ public final class Bounds3D
 	 */
 	public Bounds3D set( final Vector3D v1 , final Vector3D v2 )
 	{
-		if ( ( v1 == null || v1.equals( this.v1 ) )
-		  && ( v2 == null || v2.equals( this.v2 ) ) )
-		{
-			return this;
-		}
-		else
-		{
-			return new Bounds3D( v1 == null ? this.v1 : v1 , v2 == null ? this.v2 : v2 );
-		}
+		return ( ( ( v1 == null ) || v1.equals( this.v1 ) )
+		      && ( ( v2 == null ) || v2.equals( this.v2 ) ) ) ? this
+		     : new Bounds3D( ( v1 == null ) ? this.v1 : v1 , ( v2 == null ) ? this.v2 : v2 );
 	}
 
 	/**
@@ -383,7 +384,7 @@ public final class Bounds3D
 	 */
 	public static Bounds3D sort( final Bounds3D bounds )
 	{
-		return( bounds.set( min( bounds ) , max( bounds ) ) );
+		return bounds.set( min( bounds ) , max( bounds ) );
 	}
 
 	/**
@@ -393,7 +394,7 @@ public final class Bounds3D
 	 */
 	public String toString()
 	{
-		return( v1 + ";" + v2 );
+		return v1 + ";" + v2;
 	}
 
 	/**

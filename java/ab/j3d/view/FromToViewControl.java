@@ -167,9 +167,9 @@ public final class FromToViewControl
 		 * Create matrix.
 		 */
 		return Matrix3D.INIT.set(
-			(float)xx , (float)xy , (float)xz , (float)( from.x * xx -from.y * xy -from.z * xz ) ,
-			(float)yx , (float)yy , (float)yz , (float)( from.x * yx -from.y * yy -from.z * yz ) ,
-			(float)zx , (float)zy , (float)zz , (float)( from.x * zx -from.y * zy -from.z * zz ) ).inverse();
+			xx , xy , xz , ( from.x * xx -from.y * xy -from.z * xz ) ,
+			yx , yy , yz , ( from.x * yx -from.y * yy -from.z * yz ) ,
+			zx , zy , zz , ( from.x * zx -from.y * zy -from.z * zz ) ).inverse();
 	}
 
 	/**

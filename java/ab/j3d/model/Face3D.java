@@ -40,7 +40,7 @@ public final class Face3D
 	/**
 	 * Normal of this face.
 	 */
-	public final float[] _normal;
+	public final double[] _normal;
 
 	/**
 	 * Texture of this face.
@@ -60,7 +60,7 @@ public final class Face3D
 	/**
 	 * Opacity value for this face.
 	 */
-	private float _opacity;
+	private double _opacity;
 
 	/**
 	* Smoothing flag this face. Smooth faces are used to approximate
@@ -82,12 +82,12 @@ public final class Face3D
 	 * @param   opacity     Opacity of face (0=transparent, 1=opaque).
 	 * @param   smooth      Face is smooth/curved vs. flat.
 	 */
-	Face3D( final Object3D object , final int[] points , final TextureSpec texture , final int[] textureU , final int[] textureV , final float opacity , final boolean smooth )
+	Face3D( final Object3D object , final int[] points , final TextureSpec texture , final int[] textureU , final int[] textureV , final double opacity , final boolean smooth )
 	{
 		_object       = object;
 		_pointIndices = points;
 		_pointCount   = ( points != null ) ? points.length : 0;
-		_normal       = new float[ 3 ];
+		_normal       = new double[ 3 ];
 		_texture      = texture;
 		_textureU     = textureU;
 		_textureV     = textureV;
@@ -103,7 +103,7 @@ public final class Face3D
 	 * @param   y   Y-coordinate of vertex to add.
 	 * @param   z   Z-coordinate of vertex to add.
 	 */
-	public void addVertex( final float x , final float y , final float z )
+	public void addVertex( final double x , final double y , final double z )
 	{
 		addVertex( x , y , z , -1 , -1 );
 	}
@@ -129,7 +129,7 @@ public final class Face3D
 	 * @param   tU  Horizontal texture coordinate.
 	 * @param   tV  Vertical texture coordinate.
 	 */
-	public void addVertex( final float x , final float y , final float z , final int tU , final int tV )
+	public void addVertex( final double x , final double y , final double z , final int tU , final int tV )
 	{
 		ensureCapacity( _pointCount + 1 );
 		_pointIndices[ _pointCount ] = _object.getOrAddPointIndex( x , y ,z );
@@ -168,7 +168,7 @@ public final class Face3D
 	 *
 	 * @return  X coordinate for the specified vertex.
 	 */
-	public float getX( final int index )
+	public double getX( final int index )
 	{
 		return _object.getPointCoords()[ _pointIndices[ index ] * 3 ];
 	}
@@ -180,7 +180,7 @@ public final class Face3D
 	 *
 	 * @return  Y coordinate for the specified vertex.
 	 */
-	public float getY( final int index )
+	public double getY( final int index )
 	{
 		return _object.getPointCoords()[ _pointIndices[ index ] * 3 + 1 ];
 	}
@@ -192,7 +192,7 @@ public final class Face3D
 	 *
 	 * @return  Z coordinate for the specified vertex.
 	 */
-	public float getZ( final int index )
+	public double getZ( final int index )
 	{
 		return _object.getPointCoords()[ _pointIndices[ index ] * 3 + 2 ];
 	}
@@ -313,7 +313,7 @@ public final class Face3D
 	 *
 	 * @return  Opacity (0.0 - 1.0).
 	 */
-	public float getOpacity()
+	public double getOpacity()
 	{
 		return _opacity;
 	}
@@ -324,7 +324,7 @@ public final class Face3D
 	 *
 	 * @param   opacity     Opacity (0.0 - 1.0).
 	 */
-	public void setOpacity( final float opacity )
+	public void setOpacity( final double opacity )
 	{
 		_opacity = opacity;
 	}

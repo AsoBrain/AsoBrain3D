@@ -40,17 +40,17 @@ public final class Transform3D
 	/**
 	 * Rotation around X-axis in decimal degrees.
 	 */
-	private float _rotationX;
+	private double _rotationX;
 
 	/**
 	 * Rotation around Y-axis in decimal degrees.
 	 */
-	private float _rotationY;
+	private double _rotationY;
 
 	/**
 	 * Rotation around Z-axis in decimal degrees.
 	 */
-	private float _rotationZ;
+	private double _rotationZ;
 
 	/**
 	 * Transform translation.
@@ -88,9 +88,9 @@ public final class Transform3D
 	 */
 	public Transform3D()
 	{
-		_rotationX          = 0.0f;
-		_rotationY          = 0.0f;
-		_rotationZ          = 0.0f;
+		_rotationX          = 0.0;
+		_rotationY          = 0.0;
+		_rotationZ          = 0.0;
 		_translation        = Vector3D.INIT;
 		_matrix             = Matrix3D.INIT;
 		_matrixDirty        = true;
@@ -105,9 +105,9 @@ public final class Transform3D
 	 */
 	public Transform3D( final Matrix3D m )
 	{
-		_rotationX          = 0.0f;
-		_rotationY          = 0.0f;
-		_rotationZ          = 0.0f;
+		_rotationX          = 0.0;
+		_rotationY          = 0.0;
+		_rotationZ          = 0.0;
 		_translation        = Vector3D.INIT;
 		_matrix             = m;
 		_matrixDirty        = false;
@@ -135,7 +135,7 @@ public final class Transform3D
 	 * @param   rotationY       Rotation around Y-axis in decimal degrees.
 	 * @param   rotationZ       Rotation around Z-axis in decimal degrees.
 	 */
-	public Transform3D( final Vector3D translation , final float rotationX , final float rotationY , final float rotationZ )
+	public Transform3D( final Vector3D translation , final double rotationX , final double rotationY , final double rotationZ )
 	{
 		this( translation );
 		setRotation( rotationX , rotationY , rotationZ );
@@ -226,7 +226,7 @@ public final class Transform3D
 	 *
 	 * @return  Rotation around X-axis in decimal degrees.
 	 */
-	public float getRotationX()
+	public double getRotationX()
 	{
 		return _rotationX;
 	}
@@ -236,7 +236,7 @@ public final class Transform3D
 	 *
 	 * @return  Rotation around Y-axis in decimal degrees.
 	 */
-	public float getRotationY()
+	public double getRotationY()
 	{
 		return _rotationY;
 	}
@@ -246,7 +246,7 @@ public final class Transform3D
 	 *
 	 * @return  Rotation around Z-axis in decimal degrees.
 	 */
-	public float getRotationZ()
+	public double getRotationZ()
 	{
 		return _rotationZ;
 	}
@@ -261,7 +261,7 @@ public final class Transform3D
 		return _translation;
 	}
 
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final double shadeFactor )
 	{
 		super.paint( g , gTransform , getMatrix().multiply( viewTransform ) , outlineColor , fillColor , shadeFactor );
 	}
@@ -283,7 +283,7 @@ public final class Transform3D
 	 * @param   rotationY   Rotation around Y-axis in decimal degrees.
 	 * @param   rotationZ   Rotation around Z-axis in decimal degrees.
 	 */
-	public void setRotation( final float rotationX , final float rotationY , final float rotationZ )
+	public void setRotation( final double rotationX , final double rotationY , final double rotationZ )
 	{
 		if ( rotationX != _rotationX ||
 			 rotationY != _rotationY ||
@@ -302,7 +302,7 @@ public final class Transform3D
 	 *
 	 * @param   rotation    Rotation around X-axis in decimal degrees.
 	 */
-	public void setRotationX( final float rotation )
+	public void setRotationX( final double rotation )
 	{
 		if ( _rotationX != rotation )
 		{
@@ -316,7 +316,7 @@ public final class Transform3D
 	 *
 	 * @param   rotation    Rotation around Y-axis in decimal degrees.
 	 */
-	public void setRotationY( final float rotation )
+	public void setRotationY( final double rotation )
 	{
 		if ( _rotationY != rotation )
 		{
@@ -330,7 +330,7 @@ public final class Transform3D
 	 *
 	 * @param   rotation    Rotation around Z-axis in decimal degrees.
 	 */
-	public void setRotationZ( final float rotation )
+	public void setRotationZ( final double rotation )
 	{
 		if ( _rotationZ != rotation )
 		{

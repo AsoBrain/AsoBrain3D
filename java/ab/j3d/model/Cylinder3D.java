@@ -49,17 +49,17 @@ public final class Cylinder3D
 	/**
 	 * Height of cylinder (z-axis).
 	 */
-	public final float height;
+	public final double height;
 
 	/**
 	 * Radius at top (z=height).
 	 */
-	public final float radiusTop;
+	public final double radiusTop;
 
 	/**
 	 * Radius at bottom (z=0).
 	 */
-	public final float radiusBottom;
+	public final double radiusBottom;
 
 	/**
 	 * Constructor for cylinder object. Radius of top or bottom may be set to 0 to create
@@ -74,7 +74,7 @@ public final class Cylinder3D
 	 * @param   smoothCircumference Apply smoothing to circumference of cylinder.
 	 * @param   smoothCaps          Apply smoothing to caps of cylinder.
 	 */
-	public Cylinder3D( final Matrix3D xform , final float radiusBottom , final float radiusTop , final float height , final int numEdges , final TextureSpec texture , final boolean smoothCircumference , final boolean smoothCaps )
+	public Cylinder3D( final Matrix3D xform , final double radiusBottom , final double radiusTop , final double height , final int numEdges , final TextureSpec texture , final boolean smoothCircumference , final boolean smoothCaps )
 	{
 		if ( radiusBottom < 0 || radiusTop < 0 || height < 0 || numEdges < 3 )
 			throw new IllegalArgumentException( "inacceptable arguments to Cylinder constructor (height=" + height + ", text=" + texture + ')' );
@@ -106,10 +106,10 @@ public final class Cylinder3D
 		/*
 		 * Setup properties of cylinder.
 		 */
-		final boolean hasBottom   = ( radiusBottom > 0 );
-		final boolean hasTop      = ( radiusTop > 0 );
-		final int     pointCount  = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
-		final float[] pointCoords = new float[ pointCount * 3 ];
+		final boolean  hasBottom   = ( radiusBottom > 0 );
+		final boolean  hasTop      = ( radiusTop > 0 );
+		final int      pointCount  = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
+		final double[] pointCoords = new double[ pointCount * 3 ];
 
 		/*
 		 * Generate vertices.
@@ -120,10 +120,10 @@ public final class Cylinder3D
 		{
 			for ( int i = 0 ; i < numEdges ; i++ )
 			{
-				final float a = (float)( i * 2 * Math.PI / numEdges );
+				final double a = i * 2 * Math.PI / numEdges;
 
-				pointCoords[ v++ ] =  (float)( Math.sin( a ) * radiusBottom );
-				pointCoords[ v++ ] = -(float)( Math.cos( a ) * radiusBottom );
+				pointCoords[ v++ ] =  Math.sin( a ) * radiusBottom;
+				pointCoords[ v++ ] = -Math.cos( a ) * radiusBottom;
 				pointCoords[ v++ ] = 0;
 			}
 		}
@@ -138,10 +138,10 @@ public final class Cylinder3D
 		{
 			for ( int i = 0 ; i < numEdges ; i++ )
 			{
-				final float a = (float)( i * 2 * Math.PI / numEdges );
+				final double a = i * 2 * Math.PI / numEdges;
 
-				pointCoords[ v++ ] =  (float)( Math.sin( a ) * radiusTop );
-				pointCoords[ v++ ] = -(float)( Math.cos( a ) * radiusTop );
+				pointCoords[ v++ ] =  Math.sin( a ) * radiusTop;
+				pointCoords[ v++ ] = -Math.cos( a ) * radiusTop;
 				pointCoords[ v++ ] = height;
 			}
 		}
@@ -214,19 +214,19 @@ public final class Cylinder3D
 		}
 	}
 
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final float shadeFactor )
+	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Color outlineColor , final Color fillColor , final double shadeFactor )
 	{
 		final Matrix3D viewBase = xform.multiply( viewTransform );
-		final float    h        = height;
-		final float    rBottom  = radiusBottom;
-		final float    rTop     = radiusTop;
+		final double   h        = height;
+		final double   rBottom  = radiusBottom;
+		final double   rTop     = radiusTop;
 
-		final float zz = viewBase.zz;
-		final float xz = viewBase.xz;
-		final float yz = viewBase.yz;
-		final float xo = viewBase.xo;
-		final float yo = viewBase.yo;
-		final float zo = viewBase.zo;
+		final double zz = viewBase.zz;
+		final double xz = viewBase.xz;
+		final double yz = viewBase.yz;
+		final double xo = viewBase.xo;
+		final double yo = viewBase.yo;
+		final double zo = viewBase.zo;
 
 		final float goldenRatio = 0.6180339f;
 
@@ -241,26 +241,26 @@ public final class Cylinder3D
 			// (xz,yz) = direction of cylinder Z-axis in XY plane
 			// (xo,yo,zo) = view coordinate of cylinder bottom centeroid
 
-			final float p1x = xo  + yz * rBottom;       // p1 = bottom left,
-			final float p1y = yo  - xz * rBottom;
-			final float p2x = xo  + yz * rTop + xz * h; // p2 = top left
-			final float p2y = yo  - xz * rTop + yz * h;
-			final float p3x = xo  - yz * rTop + xz * h; // p3 = top right
-			final float p3y = yo  + xz * rTop + yz * h;
-			final float p4x = xo  - yz * rBottom;       // p4 = bottom right
-			final float p4y = yo  + xz * rBottom;
+			final double p1x = xo  + yz * rBottom;       // p1 = bottom left,
+			final double p1y = yo  - xz * rBottom;
+			final double p2x = xo  + yz * rTop + xz * h; // p2 = top left
+			final double p2y = yo  - xz * rTop + yz * h;
+			final double p3x = xo  - yz * rTop + xz * h; // p3 = top right
+			final double p3y = yo  + xz * rTop + yz * h;
+			final double p4x = xo  - yz * rBottom;       // p4 = bottom right
+			final double p4y = yo  + xz * rBottom;
 
 			/*
 			 * Project and draw trapezoid.
 			 */
-			final float x1 = gTransform.transformX( p1x , p1y , zo );
-			final float y1 = gTransform.transformY( p1x , p1y , zo );
-			final float x2 = gTransform.transformX( p2x , p2y , zo );
-			final float y2 = gTransform.transformY( p2x , p2y , zo );
-			final float x3 = gTransform.transformX( p3x , p3y , zo );
-			final float y3 = gTransform.transformY( p3x , p3y , zo );
-			final float x4 = gTransform.transformX( p4x , p4y , zo );
-			final float y4 = gTransform.transformY( p4x , p4y , zo );
+			final float x1 = (float)gTransform.transformX( p1x , p1y , zo );
+			final float y1 = (float)gTransform.transformY( p1x , p1y , zo );
+			final float x2 = (float)gTransform.transformX( p2x , p2y , zo );
+			final float y2 = (float)gTransform.transformY( p2x , p2y , zo );
+			final float x3 = (float)gTransform.transformX( p3x , p3y , zo );
+			final float y3 = (float)gTransform.transformY( p3x , p3y , zo );
+			final float x4 = (float)gTransform.transformX( p4x , p4y , zo );
+			final float y4 = (float)gTransform.transformY( p4x , p4y , zo );
 
 			final GeneralPath path = new GeneralPath( GeneralPath.WIND_EVEN_ODD , 5 );
 			path.moveTo( x1 , y1 );
@@ -292,27 +292,27 @@ public final class Cylinder3D
 		{
 			final Matrix3D combinedTransform = viewBase.multiply( gTransform );
 
-			final float x = combinedTransform.transformX( 0 , 0 , 0 );
-			final float y = combinedTransform.transformY( 0 , 0 , 0 );
-			final float botZ = combinedTransform.transformZ( 0 , 0 , 0 );
+			final float x = (float)combinedTransform.transformX( 0 , 0 , 0 );
+			final float y = (float)combinedTransform.transformY( 0 , 0 , 0 );
+			final float botZ = (float)combinedTransform.transformZ( 0 , 0 , 0 );
 			final float botRadius;
 			{
-				final float dx = combinedTransform.transformX( rBottom , 0 , 0 ) - x;
-				final float dy = combinedTransform.transformY( rBottom , 0 , 0 ) - y;
+				final double dx = combinedTransform.transformX( rBottom , 0 , 0 ) - x;
+				final double dy = combinedTransform.transformY( rBottom , 0 , 0 ) - y;
 				botRadius = (float)Math.sqrt( dx * dx + dy * dy );
 			}
 
-			final Ellipse2D bot = Matrix3D.almostEqual( botRadius , 0 ) ? null : new Ellipse2D.Float( x - botRadius , y - botRadius , 2 * botRadius , 2 * botRadius );
+			final Ellipse2D bot = Matrix3D.almostEqual( botRadius , 0 ) ? null : new Ellipse2D.Double( x - botRadius , y - botRadius , 2 * botRadius , 2 * botRadius );
 
-			final float topZ = combinedTransform.transformZ( 0 , 0 , h );
+			final float topZ = (float)combinedTransform.transformZ( 0 , 0 , h );
 			final float topRadius;
 			{
-				final float dx = combinedTransform.transformX( rTop , 0 , h ) - x;
-				final float dy = combinedTransform.transformY( rTop , 0 , h ) - y;
+				final double dx = combinedTransform.transformX( rTop , 0 , h ) - x;
+				final double dy = combinedTransform.transformY( rTop , 0 , h ) - y;
 				topRadius = (float)Math.sqrt( dx * dx + dy * dy );
 			}
 
-			final Ellipse2D top = Matrix3D.almostEqual( topRadius , 0 ) ? null : new Ellipse2D.Float( x - topRadius , y - topRadius , 2 * topRadius , 2 * topRadius );
+			final Ellipse2D top = Matrix3D.almostEqual( topRadius , 0 ) ? null : new Ellipse2D.Double( x - topRadius , y - topRadius , 2 * topRadius , 2 * topRadius );
 
 			if ( ( bot != null ) || ( top != null ) )
 			{

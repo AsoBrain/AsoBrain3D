@@ -40,17 +40,17 @@ public final class Box3D
 	/**
 	 * Width of box (x-axis).
 	 */
-	private final float _dx;
+	private final double _dx;
 
 	/**
 	 * Height of box (y-axis).
 	 */
-	private final float _dy;
+	private final double _dy;
 
 	/**
 	 * Depth of box (z-axis).
 	 */
-	private final float _dz;
+	private final double _dz;
 
 	/**
 	 * Set box properties.
@@ -62,7 +62,7 @@ public final class Box3D
 	 * @param   mainTexture     Main texture of box.
 	 * @param   sideTexture     Texture for sides of box.
 	 */
-	public Box3D( final Matrix3D xform , final float dx , final float dy , final float dz , final TextureSpec mainTexture , final TextureSpec sideTexture )
+	public Box3D( final Matrix3D xform , final double dx , final double dy , final double dz , final TextureSpec mainTexture , final TextureSpec sideTexture )
 	{
 		_xform = xform;
 		_dx    = dx;
@@ -72,7 +72,7 @@ public final class Box3D
 		/*
 		 * Create point coordinates.
 		 */
-		final float[] pointCoords =
+		final double[] pointCoords =
 		{
 			  0 ,   0 ,   0 , // 0
 			_dx ,   0 ,   0 , // 1
@@ -89,9 +89,9 @@ public final class Box3D
 		/*
 		 * Set frontal, vertical, and horizontal face properties.
 		 */
-		final float ax = Math.abs( dx );
-		final float ay = Math.abs( dy );
-		final float az = Math.abs( dz );
+		final double ax = Math.abs( dx );
+		final double ay = Math.abs( dy );
+		final double az = Math.abs( dz );
 
 		final boolean isFrontal    = ( ay < ax && ay < az );
 		final boolean isVertical   = ( ax < ay && ax < az );
@@ -138,7 +138,7 @@ public final class Box3D
 	 *
 	 * @return  Width of box (x-axis).
 	 */
-	public float getDX()
+	public double getDX()
 	{
 		return _dx;
 	}
@@ -148,7 +148,7 @@ public final class Box3D
 	 *
 	 * @return  Height of box (y-axis).
 	 */
-	public float getDY()
+	public double getDY()
 	{
 		return _dy;
 	}
@@ -158,7 +158,7 @@ public final class Box3D
 	 *
 	 * @return  Depth of box (z-axis).
 	 */
-	public float getDZ()
+	public double getDZ()
 	{
 		return _dz;
 	}
@@ -188,8 +188,8 @@ public final class Box3D
 	 */
 	private static void setTexture(
 		final TextureSpec texture , final boolean flipUV , final int index ,
-		final int[][] faceTU , final float tu1 , final float tu2 ,
-		final int[][] faceTV , final float tv1 , final float tv2 )
+		final int[][] faceTU , final double tu1 , final double tu2 ,
+		final int[][] faceTV , final double tv1 , final double tv2 )
 	{
 		/*
 		 * Return immediately if texture specification is invalid or does not
@@ -203,7 +203,7 @@ public final class Box3D
 		int t;
 		int m;
 		int[][] a;
-		final float s = texture.textureScale;
+		final double s = texture.textureScale;
 
 		/*
 		 * Translate the U1,U2 texture coordinates to the lowest possible (but
@@ -211,8 +211,8 @@ public final class Box3D
 		 * direction; if both are beyond the maximum value, translation occurs in
 		 * negative direction.
 		 */
-		i1 = (int)( tu1 * s /*+ 0.5f*/ );
-		i2 = (int)( tu2 * s /*+ 0.5f*/ );
+		i1 = (int)( tu1 * s /*+ 0.5*/ );
+		i2 = (int)( tu2 * s /*+ 0.5*/ );
 
 		m = flipUV ? texture.getTextureHeight( null ) : texture.getTextureWidth( null );
 		if ( ( t = ( i1 < i2 ) ? i1 : i2 ) < 0 )
@@ -242,8 +242,8 @@ public final class Box3D
 		 * direction; if both are beyond the maximum value, translation occurs in
 		 * negative direction.
 		 */
-		i1 = (int)( tv1 * s /*+ 0.5f*/ );
-		i2 = (int)( tv2 * s /*+ 0.5f*/ );
+		i1 = (int)( tv1 * s /*+ 0.5*/ );
+		i2 = (int)( tv2 * s /*+ 0.5*/ );
 
 		m = flipUV ? texture.getTextureWidth( null ) : texture.getTextureHeight( null );
 		if ( ( t = ( i1 < i2 ) ? i1 : i2 ) < 0 )

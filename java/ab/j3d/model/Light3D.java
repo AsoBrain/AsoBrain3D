@@ -50,7 +50,7 @@ public final class Light3D
 	 *
 	 * Setting this to a negative value, will create an ambient light source.
 	 */
-	private final float _fallOff;
+	private final double _fallOff;
 
 	/**
 	 * Constructor.
@@ -58,7 +58,7 @@ public final class Light3D
 	 * @param   intensity   Intensity of white light (0-255).
 	 * @param   fallOff     Light fall-off characteristic (negavtive => ambient).
 	 */
-	public Light3D( final int intensity , final float fallOff )
+	public Light3D( final int intensity , final double fallOff )
 	{
 		_intensity = intensity;
 		_fallOff   = fallOff;
@@ -102,14 +102,14 @@ public final class Light3D
 	 */
 	public void calculateShadingProperties(
 		final TextureSpec texture ,
-		final float[] lightNormalAndDist , final int lightIndex ,
-		final float nx , final float ny , final float nz ,
+		final double[] lightNormalAndDist , final int lightIndex ,
+		final double nx , final double ny , final double nz ,
 		final int[] ds , final int[] sxs , final int[] sys , final int[] sfs, final int targetIndex )
 	{
 		/*
 		 * Handle ambient light.
 		 */
-		if ( _fallOff < 0.0f )
+		if ( _fallOff < 0.0 )
 		{
 			/*
 			 * Calculate diffuse reflection of the ambient light
@@ -123,7 +123,7 @@ public final class Light3D
 			 *
 			 * We just add this to any existing diffuse reflection value.
 			 */
-			final int Id = (int)( _intensity * texture.ambientReflectivity * 256.0f );
+			final int Id = (int)( _intensity * texture.ambientReflectivity * 256.0 );
 			ds[ targetIndex ] += Id;
 		}
 		/*
@@ -134,17 +134,17 @@ public final class Light3D
 			/*
 			 * Get direction of light.
 			 */
-			final float lx = lightNormalAndDist[ lightIndex + 0 ];
-			final float ly = lightNormalAndDist[ lightIndex + 1 ];
-			final float lz = lightNormalAndDist[ lightIndex + 2 ];
-			final float ld = lightNormalAndDist[ lightIndex + 3 ];
+			final double lx = lightNormalAndDist[ lightIndex + 0 ];
+			final double ly = lightNormalAndDist[ lightIndex + 1 ];
+			final double lz = lightNormalAndDist[ lightIndex + 2 ];
+			final double ld = lightNormalAndDist[ lightIndex + 3 ];
 
 			/*
 			 * Get cos( angle ) between light and normal (this is
 			 * simply the inner product of the light direction and
 			 * normal vectors.
 			 */
-			final float lightAngle = nx * lx + ny * ly + nz * lz;
+			final double lightAngle = nx * lx + ny * ly + nz * lz;
 
 			/*
 			 * Abort if light shines from back side.
@@ -154,7 +154,7 @@ public final class Light3D
 			/*
 			 * Calculate light intensity of light at the given distance.
 			 */
-			final float Il = _fallOff / ( _fallOff + ld );
+			final double Il = _fallOff / ( _fallOff + ld );
 
 			/*
 			 * Start with the diffuse reflection part of the point light.
@@ -169,7 +169,7 @@ public final class Light3D
 			 *
 			 * We just add this to any existing diffuse reflection value.
 			 */
-			final int Id = (int)( _intensity * Il * texture.diffuseReflectivity * lightAngle * 1024.0f );
+			final int Id = (int)( _intensity * Il * texture.diffuseReflectivity * lightAngle * 1024.0 );
 			ds[ targetIndex ] += Id;
 
 			/*
@@ -193,11 +193,11 @@ public final class Light3D
 			 * the properties will only be stored if this light is brighter than
 			 * any previous specular light source.
 			 */
-			final int Is = (int)(_intensity * Il * texture.specularReflectivity * 2048.0f );
+			final int Is = (int)(_intensity * Il * texture.specularReflectivity * 2048.0 );
 			if ( Is > sfs[ targetIndex ] )
 			{
-				sxs[ targetIndex ] = (int)(32767.5f * lx + 32768.0f );
-				sys[ targetIndex ] = (int)(32767.5f * ly + 32768.0f );
+				sxs[ targetIndex ] = (int)(32767.5 * lx + 32768.0 );
+				sys[ targetIndex ] = (int)(32767.5 * ly + 32768.0 );
 				sfs[ targetIndex ] = ( Is > 131072 ) ? 131072 : Is;
 			}
 		}
@@ -215,7 +215,7 @@ public final class Light3D
 	 */
 	public boolean requiresNormalsOrDistance()
 	{
-		return _fallOff >= 0f;
+		return _fallOff >= 0.0;
 	}
 
 }

@@ -31,22 +31,22 @@ public final class Bounds2D
 	/**
 	 * Lower bound X coordinate.
 	 */
-	public final float minX;
+	public final double minX;
 
 	/**
 	 * Lower bound Y coordinate.
 	 */
-	public final float minY;
+	public final double minY;
 
 	/**
 	 * Upper bound X coordinate.
 	 */
-	public final float maxX;
+	public final double maxX;
 
 	/**
 	 * Upper bound Y coordinate.
 	 */
-	public final float maxY;
+	public final double maxY;
 
 	/**
 	 * Construct boundaries.
@@ -56,7 +56,7 @@ public final class Bounds2D
 	 * @param   maxX      Upper bound X coordinate.
 	 * @param   maxY      Upper bound Y coordinate.
 	 */
-	public Bounds2D( final float minX , final float minY , final float maxX , final float maxY )
+	public Bounds2D( final double minX , final double minY , final double maxX , final double maxY )
 	{
 		this.minX = minX;
 		this.minY = minY;

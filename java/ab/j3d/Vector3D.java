@@ -28,14 +28,14 @@ package ab.j3d;
  */
 public final class Vector3D
 {
-	/** X component of 3D vector. */ public final float x;
-	/** Y component of 3D vector. */ public final float y;
-	/** Z component of 3D vector. */ public final float z;
+	/** X component of 3D vector. */ public final double x;
+	/** Y component of 3D vector. */ public final double y;
+	/** Z component of 3D vector. */ public final double z;
 
 	/**
 	 * Initial value of a vector (0-vector).
 	 */
-	public static final Vector3D INIT = new Vector3D( 0 , 0 , 0 );
+	public static final Vector3D INIT = new Vector3D( 0.0 , 0.0 , 0.0 );
 	/**
 	 * Construct new vector.
 	 *
@@ -43,7 +43,7 @@ public final class Vector3D
 	 * @param   ny  Y-coordinate of vector.
 	 * @param   nz  Z-coordinate of vector.
 	 */
-	private Vector3D( final float nx , final float ny , final float nz )
+	private Vector3D( final double nx , final double ny , final double nz )
 	{
 		x = nx;
 		y = ny;
@@ -58,9 +58,9 @@ public final class Vector3D
 	 *
 	 * @return  angle between vectors in radians.
 	 */
-	public static float angle( final Vector3D v1 , final Vector3D v2 )
+	public static double angle( final Vector3D v1 , final Vector3D v2 )
 	{
-		return (float)Math.acos( cosAngle( v1 , v2 ) );
+		return Math.acos( cosAngle( v1 , v2 ) );
 	}
 
 	/**
@@ -71,10 +71,10 @@ public final class Vector3D
 	 *
 	 * @return  cos(angle) between vectors.
 	 */
-	public static float cosAngle( final Vector3D v1 , final Vector3D v2 )
+	public static double cosAngle( final Vector3D v1 , final Vector3D v2 )
 	{
-		final float l = v1.length() * v2.length();
-		return ( l == 0.0f ) ? 0.0f : ( dot( v1 , v2 ) / l );
+		final double l = v1.length() * v2.length();
+		return ( l == 0.0 ) ? 0.0 : ( dot( v1 , v2 ) / l );
 	}
 
 	/**
@@ -99,13 +99,13 @@ public final class Vector3D
 	 *
 	 * @return  Distance between this and the specified other vector.
 	 */
-	public float distanceTo( final Vector3D other )
+	public double distanceTo( final Vector3D other )
 	{
-		final float dx = x - other.x;
-		final float dy = y - other.y;
-		final float dz = z - other.z;
+		final double dx = x - other.x;
+		final double dy = y - other.y;
+		final double dz = z - other.z;
 
-		return (float)Math.sqrt( dx * dx + dy * dy + dz * dz );
+		return Math.sqrt( dx * dx + dy * dy + dz * dz );
 	}
 
 	/**
@@ -117,7 +117,7 @@ public final class Vector3D
 	 *
 	 * @return  Dot product.
 	 */
-	public static float dot( final Vector3D v1 , final Vector3D v2 )
+	public static double dot( final Vector3D v1 , final Vector3D v2 )
 	{
 		return ( v1.x * v2.x + v1.y * v2.y + v1.z * v2.z );
 	}
@@ -151,11 +151,11 @@ public final class Vector3D
 	 * @return  <code>true</code> if vectors are equal;
 	 *          <code>false</code> if not.
 	 */
-	public boolean equals( final float otherX , final float otherY , final float otherZ )
+	public boolean equals( final double otherX , final double otherY , final double otherZ )
 	{
-		return ( Float.isNaN( otherX ) || ( otherX == x ) )
-		    && ( Float.isNaN( otherY ) || ( otherY == y ) )
-		    && ( Float.isNaN( otherZ ) || ( otherZ == z ) );
+		return ( Double.isNaN( otherX ) || ( otherX == x ) )
+		    && ( Double.isNaN( otherY ) || ( otherY == y ) )
+		    && ( Double.isNaN( otherZ ) || ( otherZ == z ) );
 	}
 
 	public boolean equals( final Object other )
@@ -181,7 +181,10 @@ public final class Vector3D
 
 	public int hashCode()
 	{
-		return Float.floatToIntBits( x ) ^ Float.floatToIntBits( y ) ^ Float.floatToIntBits( z );
+		long l;
+		return (int)( ( l = Double.doubleToLongBits( x ) ) ^ ( l >>> 32 )
+		            ^ ( l = Double.doubleToLongBits( y ) ) ^ ( l >>> 32 )
+		            ^ ( l = Double.doubleToLongBits( z ) ) ^ ( l >>> 32 ) );
 	}
 
 	/**
@@ -197,9 +200,9 @@ public final class Vector3D
 		final int comma1 = value.indexOf( ',' );
 		final int comma2 = value.indexOf( ',' , comma1 + 1 );
 
-		return Vector3D.INIT.set( Float.parseFloat( value.substring( 0 , comma1 ) ) ,
-		                          Float.parseFloat( value.substring( comma1 + 1 , comma2 ) ) ,
-		                          Float.parseFloat( value.substring( comma2 + 1 ) ) );
+		return Vector3D.INIT.set( Double.parseDouble( value.substring( 0 , comma1 ) ) ,
+		                          Double.parseDouble( value.substring( comma1 + 1 , comma2 ) ) ,
+		                          Double.parseDouble( value.substring( comma2 + 1 ) ) );
 	}
 
 	/**
@@ -207,9 +210,9 @@ public final class Vector3D
 	 *
 	 * @return  Length of vector.
 	 */
-	public float length()
+	public double length()
 	{
-		return (float)Math.sqrt( x * x + y * y + z * z );
+		return Math.sqrt( x * x + y * y + z * z );
 	}
 
 	/**
@@ -233,7 +236,7 @@ public final class Vector3D
 	 *
 	 * @return  Resulting vector.
 	 */
-	public Vector3D minus( final float otherX , final float otherY , final float otherZ )
+	public Vector3D minus( final double otherX , final double otherY , final double otherZ )
 	{
 		return set( x - otherX , y - otherY , z - otherZ );
 	}
@@ -245,7 +248,7 @@ public final class Vector3D
 	 *
 	 * @return  Resulting vector.
 	 */
-	public Vector3D multiply( final float factor )
+	public Vector3D multiply( final double factor )
 	{
 		return set( x * factor , y * factor , z * factor );
 	}
@@ -258,7 +261,7 @@ public final class Vector3D
 	 */
 	public Vector3D normalize()
 	{
-		final float l = length();
+		final double l = length();
 		return ( l == 0 || l == 1 ) ? this : set( x / l , y / l , z / l );
 	}
 
@@ -283,7 +286,7 @@ public final class Vector3D
 	 *
 	 * @return  Resulting vector.
 	 */
-	public Vector3D plus( final float otherX , final float otherY , final float otherZ )
+	public Vector3D plus( final double otherX , final double otherY , final double otherZ )
 	{
 		return set( x + otherX , y + otherY , z + otherZ );
 	}
@@ -297,7 +300,7 @@ public final class Vector3D
 	 *
 	 * @return  Resulting vector.
 	 */
-	public Vector3D set( final float nx , final float ny , final float nz )
+	public Vector3D set( final double nx , final double ny , final double nz )
 	{
 		final Vector3D result;
 
@@ -311,9 +314,9 @@ public final class Vector3D
 		}
 		else
 		{
-			result = new Vector3D( Float.isNaN( nx ) ? x : nx ,
-			                       Float.isNaN( ny ) ? y : ny ,
-			                       Float.isNaN( nz ) ? z : nz );
+			result = new Vector3D( Double.isNaN( nx ) ? x : nx ,
+			                       Double.isNaN( ny ) ? y : ny ,
+			                       Double.isNaN( nz ) ? z : nz );
 		}
 
 		return result;
