@@ -394,7 +394,7 @@ public final class Cylinder3D
 		else
 		{
 			// Not painted, paint fully.
-			super.paint( g , gTransform , viewBase , outlineColor , fillColor , shadeFactor );
+			super.paint( g , gTransform , viewTransform , outlineColor , fillColor , shadeFactor );
 		}
 	}
 }
