@@ -158,7 +158,7 @@ public class RenderPanel
 		 * Enable control events.
 		 */
 		addComponentListener( this );
-		_mouseViewControl = new MouseViewControl( this );
+		_mouseViewControl = new MouseViewControl( this , 0.001f );
 		_mouseViewControl.addMouseViewListener( this );
 	}
 

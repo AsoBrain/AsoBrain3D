@@ -50,11 +50,12 @@ public final class SimpleOrbitBehavior
 	 *
 	 * @param   c       The Canvas3D to add the behavior to.
 	 * @param   flags   The option flags.
+	 * @param   unit    Unit scale factor (e.g. <code>MM</code>).
 	 */
-	public SimpleOrbitBehavior( final Canvas3D c , final int flags )
+	public SimpleOrbitBehavior( final Canvas3D c , final int flags , final float unit )
 	{
 		super( c , flags );
-		_mouseViewControl = new MouseViewControl( c );
+		_mouseViewControl = new MouseViewControl( c , unit );
 		_mouseViewControl.addMouseViewListener( this );
 	}
 

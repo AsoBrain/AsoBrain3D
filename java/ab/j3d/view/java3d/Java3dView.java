@@ -54,7 +54,7 @@ public final class Java3dView
 	 *
 	 * @see     #setProjectionPolicy
 	 */
-	private static final int PARALLEL    = 1;
+	private static final int PARALLEL = 1;
 
 	/**
 	 * Viewer with all Java 3D related information about this view.
@@ -81,7 +81,7 @@ public final class Java3dView
 
 		final ViewingPlatform viewingPlatform = new ViewingPlatform( 1 );
 		viewingPlatform.setUniverse( universe );
-		viewingPlatform.setViewPlatformBehavior( Java3dTools.createOrbitBehavior( canvas3d ) );
+		viewingPlatform.setViewPlatformBehavior( Java3dTools.createOrbitBehavior( canvas3d , universe.getUnit() ) );
 
 		final Viewer viewer = new Viewer( canvas3d );
 		viewer.setViewingPlatform( viewingPlatform );
