@@ -15,7 +15,7 @@ import java.awt.Component;
 import java.awt.Image;
 import java.io.Serializable;
 
-import com.numdata.oss.ImageTools;
+import com.numdata.oss.ui.ImageTools;
 
 /**
  * This class defines a texture to be using in a 3D environment.
