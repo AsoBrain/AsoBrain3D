@@ -33,7 +33,7 @@
 
   <target name="compile-java" depends="api-check" description="Compile Java source files">
     <mkdir dir="classes"/>
-    <javac srcdir="java" destdir="classes" classpathref="java.classpath"/>
+    <javac srcdir="java" destdir="classes" classpathref="java.classpath" source="1.3"/>
     <copy todir="classes">
       <fileset dir="java" includes="**/*.properties"/>
     </copy>
