@@ -128,14 +128,17 @@ public final class Java3dTools
 	 * @param   textureOverride     Texture to use instead of actual object texture.
 	 * @param   opacity             Extra object opacity (0.0=translucent, 1.0=opaque).
 	 *
-	 * @return  If only one Java 3D <code>Appearance</code> is created
-	 *          a <code>Shape3D</code> is returned. Otherwise, a
-	 *          <code>BranchGroup</code> is returned containing
+	 * @return  A <code>BranchGroup</code> is returned containing
 	 *          <code>Shape3D</code>s for each separate <code>Appearance</code>.
 	 */
 	public Node convertObject3DToNode( final Matrix3D xform , final Object3D object3d , final TextureSpec textureOverride , final float opacity )
 	{
+		final BranchGroup result = new BranchGroup();
+		result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
+		result.setCapability( BranchGroup.ALLOW_DETACH );
+
 		final Map appearances = new HashMap();
+		final Shape3D lines   = new Shape3D();
 
 		final int      faceCount    = object3d.getFaceCount();
 		final double[] pointCoords  = object3d.getPointCoords();
@@ -181,8 +184,11 @@ public final class Java3dTools
 						xform.transformY( p2X , p2Y , p2Z ) ,
 						xform.transformZ( p2X , p2Y , p2Z ) );
 
-					data[ 0 ].add( point1 );
-					data[ 0 ].add( point2 );
+					final GeometryArray geom = new LineArray( 2 , LineArray.COORDINATES );
+					geom.setCoordinate( 0 , new double[]{ point1.x , point1.y , point1.z } );
+					geom.setCoordinate( 1 , new double[]{ point2.x , point2.y , point2.z } );
+
+					lines.addGeometry( geom );
 				}
 				else
 				{
@@ -229,30 +235,29 @@ public final class Java3dTools
 		final Set      appearanceTextures = appearances.keySet();
 		final Iterator appearanceIterator = appearanceTextures.iterator();
 
-		final Node result;
 		if ( appearanceTextures.size() == 1 )
 		{
 			final TextureSpec texture    = (TextureSpec)appearanceIterator.next();
 			final Appearance  appearance = getAppearance( texture , opacity );
 			final List[]      data       = (List[])appearances.get( texture );
 
-			result = createShape3D( appearance , data[ 0 ] , data[ 1 ] , data[ 2 ] );
+			if ( ( (List)data[ 0 ] ).size() > 2 )
+				result.addChild( createShape3D( appearance , data[ 0 ] , data[ 1 ] , data[ 2 ] ) );
 		}
 		else
 		{
-			result = new BranchGroup();
-			result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
-			result.setCapability( BranchGroup.ALLOW_DETACH );
-
 			while ( appearanceIterator.hasNext() )
 			{
 				final TextureSpec texture    = (TextureSpec)appearanceIterator.next();
 				final Appearance  appearance = getAppearance( texture , opacity );
 				final List[]      data       = (List[])appearances.get( texture );
 
-				((BranchGroup)result).addChild( createShape3D( appearance , data[ 0 ] , data[ 1 ] , data[ 2 ] ) );
+				if ( ( (List)data[ 0 ] ).size() > 2 )
+					result.addChild( createShape3D( appearance , data[ 0 ] , data[ 1 ] , data[ 2 ] ) );
 			}
 		}
+
+		result.addChild( lines );
 
 		return result;
 	}
@@ -481,38 +486,21 @@ public final class Java3dTools
 	 */
 	private static Shape3D createShape3D( final Appearance appearance , final List j3dVertices , final List j3dTextureCoords , final List j3dFaceNormals )
 	{
-		final GeometryArray geom;
+		final boolean hasTexture = ( appearance.getTexture() != null );
 
-		final int numVertices = j3dVertices.size();
-		if ( numVertices == 2 )
+		final int           what = GeometryArray.COORDINATES | GeometryArray.NORMALS | ( hasTexture ? GeometryArray.TEXTURE_COORDINATE_2 : 0 );
+		final GeometryArray geom = new TriangleArray( j3dVertices.size() , what );
+
+		final Point3d[] coordA = (Point3d[])j3dVertices.toArray( new Point3d[ j3dVertices.size() ] );
+		geom.setCoordinates( 0 , coordA );
+
+		if ( hasTexture )
 		{
-
-			geom = new LineArray( numVertices , LineArray.COORDINATES );
-
-			for ( int i = 0 ; i < numVertices ; i++ )
-			{
-				final Point3d p = (Point3d)j3dVertices.get( i );
-				geom.setCoordinate( i , new double[]{ p.x , p.y , p.z } );
-			}
+			final TexCoord2f[] textCoordsA = (TexCoord2f[])j3dTextureCoords.toArray( new TexCoord2f[ j3dTextureCoords.size() ] );
+			geom.setTextureCoordinates( 0 , 0 , textCoordsA );
 		}
-		else
-		{
-			final boolean hasTexture = ( appearance.getTexture() != null );
 
-			final int what = GeometryArray.COORDINATES | GeometryArray.NORMALS | ( hasTexture ? GeometryArray.TEXTURE_COORDINATE_2 : 0 );
-			geom = new TriangleArray( j3dVertices.size() , what );
-
-			final Point3d[] coordA = (Point3d[])j3dVertices.toArray( new Point3d[ j3dVertices.size() ] );
-			geom.setCoordinates( 0 , coordA );
-
-			if ( hasTexture )
-			{
-				final TexCoord2f[] textCoordsA = (TexCoord2f[])j3dTextureCoords.toArray( new TexCoord2f[ j3dTextureCoords.size() ] );
-				geom.setTextureCoordinates( 0 , 0 , textCoordsA );
-			}
-
-			geom.setNormals( 0 , (Vector3f[])j3dFaceNormals.toArray( new Vector3f[ j3dFaceNormals.size() ] ) );
-		}
+		geom.setNormals( 0 , (Vector3f[])j3dFaceNormals.toArray( new Vector3f[ j3dFaceNormals.size() ] ) );
 
 		return new Shape3D( geom , appearance );
 	}
