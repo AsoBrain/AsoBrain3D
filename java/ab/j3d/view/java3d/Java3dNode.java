@@ -37,7 +37,6 @@ import com.sun.j3d.utils.image.TextureLoader;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
-import ab.j3d.java3d.J3dTools;
 import ab.j3d.renderer.LeafCollection;
 import ab.j3d.renderer.Object3D;
 import ab.j3d.renderer.TreeNode;
@@ -274,7 +273,7 @@ public class ABtoJ3DConvertor
 	 *
 	 * @param   spec    TextureSpec to translate.
 	 */
-	public Appearance abToJ3D( final TextureSpec spec , final float opacity )
+	private Appearance abToJ3D( final TextureSpec spec , final float opacity )
 	{
 		final int   rgb = spec.getARGB();
 		final float r   = ( ( rgb >> 16 ) & 255 ) / 255.0f;
@@ -320,6 +319,15 @@ public class ABtoJ3DConvertor
 		return appearance;
 	}
 
+	private Transform3D abToJ3D( final Matrix3D m )
+	{
+		return new Transform3D( new float[] {
+			m.xx , m.xy , m.xz , m.xo ,
+			m.yx , m.yy , m.yz , m.yo ,
+			m.zx , m.zy , m.zz , m.zo ,
+			0.0f , 0.0f , 0.0f , 1.0f } );
+	}
+
 	private Texture getTexture( final TextureSpec code )
 	{
 		Texture result = null;
@@ -351,7 +359,7 @@ public class ABtoJ3DConvertor
 	 */
 	public void setTransform( final Matrix3D transform )
 	{
-		_j3dRootNode.setTransform( J3dTools.abToJ3D( transform ) );
+		_j3dRootNode.setTransform( abToJ3D( transform ) );
 	}
 
 	public Group getJ3dRootNode()
