@@ -2632,10 +2632,10 @@ public class Polyline2D
 		StringBuffer sb = new StringBuffer( 40 );
 		String cn = getClass().getName();
 		sb.append( cn.substring( cn.lastIndexOf( '.' ) + 1 ) );
-		sb.append( "[{\n" );
+		sb.append( "[{" );
 		for ( int i = 0 ; i < getPointCount() ; i++ )
 		{
-			if ( i > 0 ) sb.append( ",\n" );
+			if ( i > 0 ) sb.append( "," );
 			sb.append( getPoint( i ) );
 		}
 		sb.append( "},type=" );
@@ -2652,7 +2652,6 @@ public class Polyline2D
 		sb.append( ",closed=" );
 		sb.append( isClosed() );
 		sb.append( "]" );
-		sb.append( "\n----------------------------\n" );
 		return sb.toString();
 	}
 
