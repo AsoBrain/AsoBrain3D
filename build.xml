@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="AsoBrain Lightweight 3D Toolkit" default="dist">
+<project name="AsoBrain Lightweight 3D Toolkit" default="all">
     <property environment="env" />
 
   <target name="all" depends="dist,test" description="Generate distribution files and run unit tests"/>
