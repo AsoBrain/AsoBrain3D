@@ -574,22 +574,22 @@ public final class Polyline2D
 			int pointIndex = getPointCount();
 			if ( pointIndex != 0 )
 			{
-				double x1 = Double.MAX_VALUE;
-				double y1 = Double.MAX_VALUE;
-				double x2 = Double.MIN_VALUE;
-				double y2 = Double.MIN_VALUE;
+				double minX = Double.POSITIVE_INFINITY;
+				double minY = Double.POSITIVE_INFINITY;
+				double maxX = Double.NEGATIVE_INFINITY;
+				double maxY = Double.NEGATIVE_INFINITY;
 
 				while ( --pointIndex >= 0 )
 				{
 					final PolyPoint2D p = getPoint( pointIndex );
 
-					if ( p.x < x1 ) x1 = p.x;
-					if ( p.y < y1 ) y1 = p.y;
-					if ( p.x > x2 ) x2 = p.x;
-					if ( p.y > y2 ) y2 = p.y;
+					if ( p.x < minX ) minX = p.x;
+					if ( p.y < minY ) minY = p.y;
+					if ( p.x > maxX ) maxX = p.x;
+					if ( p.y > maxY ) maxY = p.y;
 				}
 
-				result = new Bounds2D( x1 , y1 , x2 , y2 );
+				result = new Bounds2D( minX , minY , maxX , maxY );
 				_boundsCache = result;
 			}
 		}
