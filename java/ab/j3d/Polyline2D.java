@@ -160,7 +160,7 @@ public class Polyline2D
 		final PolyPoint2D p2 = getPoint( index + 1 );
 
 		/*
-		 * FIXME: should check here if the segment is straight.
+		 * @FIXME should check here if the segment is straight.
 		 */
 
 		/*
