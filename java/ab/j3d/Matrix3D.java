@@ -1,4 +1,4 @@
-package common.model;
+package ab.light3d;
 
 /*
  * $Id$
@@ -6,11 +6,11 @@ package common.model;
  * (C) Copyright Numdata BV 2000-2003 - All Rights Reserved
  * (C) Copyright Peter S. Heijnen 1999-2003 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
+ * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-import common.CommonTools;
+import java.util.StringTokenizer;
 
 /**
  * This class is used to represent a 3D transformation matrix (although
@@ -170,20 +170,20 @@ public final class Matrix3D
 	 */
 	public final static Matrix3D fromString( final String value )
 	{
-		final String[] tokens = CommonTools.tokenize( value , ',' );
+		final StringTokenizer st = new StringTokenizer( value , "," );
 
-		return Matrix3D.INIT.set( new Float( tokens[  0 ] ).floatValue() ,
-		                          new Float( tokens[  1 ] ).floatValue() ,
-		                          new Float( tokens[  2 ] ).floatValue() ,
-		                          new Float( tokens[  3 ] ).floatValue() ,
-		                          new Float( tokens[  4 ] ).floatValue() ,
-		                          new Float( tokens[  5 ] ).floatValue() ,
-		                          new Float( tokens[  6 ] ).floatValue() ,
-		                          new Float( tokens[  7 ] ).floatValue() ,
-		                          new Float( tokens[  8 ] ).floatValue() ,
-		                          new Float( tokens[  9 ] ).floatValue() ,
-		                          new Float( tokens[ 10 ] ).floatValue() ,
-		                          new Float( tokens[ 11 ] ).floatValue() );
+		return Matrix3D.INIT.set( new Float( st.nextToken() ).floatValue() ,
+		                          new Float( st.nextToken() ).floatValue() ,
+		                          new Float( st.nextToken() ).floatValue() ,
+		                          new Float( st.nextToken() ).floatValue() ,
+		                          new Float( st.nextToken() ).floatValue() ,
+		                          new Float( st.nextToken() ).floatValue() ,
+		                          new Float( st.nextToken() ).floatValue() ,
+		                          new Float( st.nextToken() ).floatValue() ,
+		                          new Float( st.nextToken() ).floatValue() ,
+		                          new Float( st.nextToken() ).floatValue() ,
+		                          new Float( st.nextToken() ).floatValue() ,
+		                          new Float( st.nextToken() ).floatValue() );
 	}
 
 	/**

@@ -1,4 +1,4 @@
-package common.renderer;
+package ab.light3d.renderer;
 
 /*
  * $Id$
@@ -6,14 +6,14 @@ package common.renderer;
  * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
  * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
+ * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
 import java.awt.Graphics;
 
-import common.db.TextureSpec;
-import common.model.Matrix3D;
+import ab.light3d.Matrix3D;
+import ab.light3d.TextureSpec;
 
 /**
  * This class defines a 3D sphere.
@@ -21,7 +21,7 @@ import common.model.Matrix3D;
  * @author	Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public class Sphere3D
+public final class Sphere3D
 	extends Object3D
 {
 	/**
@@ -95,63 +95,63 @@ public class Sphere3D
 		final int vertexCount = p * ( q - 1 ) + 2;
 		final int faceCount = p * q;
 
-		float[] vertices = new float[ vertexCount * 3 ];
-		int[][] faceVert = new int[ faceCount ][];
+		final float[] vertices = new float[ vertexCount * 3 ];
+		final int[][] faceVert = new int[ faceCount ][];
 
 		/*
 		 * Generate vertices.
 		 */
 		int v = 0;
-		
+
 		vertices[ v++ ] = 0;
 		vertices[ v++ ] = 0;
 		vertices[ v++ ] = dz / -2f;
-		
+
 		for ( int qc = 1 ; qc < q ; qc++ )
 		{
-			float qa = (float)( qc * Math.PI / q );
-			
-			float radiusX =  (float)( Math.sin( qa ) * dx / 2 );
-			float radiusY =  (float)( Math.sin( qa ) * dy / 2 );
-			float circleZ = -(float)( Math.cos( qa ) * dz / 2 );
-				
+			final float qa = (float)( qc * Math.PI / q );
+
+			final float radiusX =  (float)( Math.sin( qa ) * dx / 2 );
+			final float radiusY =  (float)( Math.sin( qa ) * dy / 2 );
+			final float circleZ = -(float)( Math.cos( qa ) * dz / 2 );
+
 			for ( int pc = 0 ; pc < p ; pc++ )
 			{
-				float pa = (float)( pc * 2 * Math.PI / p );
+				final float pa = (float)( pc * 2 * Math.PI / p );
 
 				vertices[ v++ ] =  (float)( Math.sin( pa ) * radiusX );
 				vertices[ v++ ] = -(float)( Math.cos( pa ) * radiusY );
 				vertices[ v++ ] = circleZ;
 			}
 		}
-		
+
 		vertices[ v++ ] = 0;
 		vertices[ v++ ] = 0;
 		vertices[ v++ ] = dz / 2f;
 
 		xform.transform( vertices , vertices , v / 3 );
-		
+
 		/*
 		 * Define faces (new style)
 		 */
 		final int lastQ = q - 1;
 		final int lastV = vertexCount - 1;
-		
+
 		for ( int f = 0 , qc = 0 ; qc < q ; qc++ )
 		{
 			for ( int pc = 0 ; pc < p ; pc++ , f++ )
 			{
-				int p1 = ( qc - 1 ) * p +     pc             + 1;
-				int p2 = ( qc - 1 ) * p + ( ( pc + 1 ) % p ) + 1;
-				int p3 =   qc       * p +     pc             + 1;
-				int p4 =   qc       * p + ( ( pc + 1 ) % p ) + 1;
+				final int p1 = ( qc - 1 ) * p +     pc             + 1;
+				final int p2 = ( qc - 1 ) * p + ( ( pc + 1 ) % p ) + 1;
+				final int p3 =   qc       * p +     pc             + 1;
+				final int p4 =   qc       * p + ( ( pc + 1 ) % p ) + 1;
 
 				faceVert  [ f ] = ( qc == 0     ) ? new int[] { 0 , p3 , p4 } :
 				                  ( qc == lastQ ) ? new int[] { p2 , p1 , lastV } :
 				                                    new int[] { p2 , p1 , p3 , p4 };
 			}
 		}
-		
+
 		/*
 		 * Set Object3D properties.
 		 */
@@ -172,7 +172,7 @@ public class Sphere3D
 	 * @param	gXform		Transformation to pan/scale the graphics context.
 	 * @param	objXform	Transformation from object's to view coordinate system.
 	 */
-	public void paint( Graphics g , Matrix3D gXform , Matrix3D objXform )
+	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D objXform )
 	{
 		if ( true )
 		{
@@ -180,9 +180,9 @@ public class Sphere3D
 			return;
 		}
 
-		float x = objXform.transformX( xform.xo , xform.yo , xform.zo );
-		float y = objXform.transformY( xform.xo , xform.yo , xform.zo );
-		
+		final float x = objXform.transformX( xform.xo , xform.yo , xform.zo );
+		final float y = objXform.transformY( xform.xo , xform.yo , xform.zo );
+
 		drawOval( g , gXform , x - dx / 2 , y - dy / 2 , dx , dy );
 	}
 

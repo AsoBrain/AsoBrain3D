@@ -1,4 +1,4 @@
-package common.renderer;
+package ab.light3d.renderer;
 
 /*
  * $Id$
@@ -6,21 +6,21 @@ package common.renderer;
  * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
  * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
+ * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-import java.awt.*;
+import java.awt.Graphics;
 
-import common.db.TextureSpec;
-import common.model.Bounds3D;
-import common.model.Matrix3D;
+import ab.light3d.Bounds3D;
+import ab.light3d.Matrix3D;
+import ab.light3d.TextureSpec;
 
 /**
  * This class defined a 3D object node in a 3D tree. The 3D object consists of
  * vertices, edges, and faces.
  *
- * @author	Peter S. Heijnen
+ * @version	$Revision$ ($Date$, $Author$)
  * @version	$Revision$ ($Date$, $Author$)
  */
 public class Object3D
@@ -51,26 +51,26 @@ public class Object3D
 	 * texture, the matching entry in this array is ignored.
 	 */
 	int[][] _faceTU = {};
-	
+
 	/**
 	 * Face texture V coordinates. This two dimensional array contains V coordinates
 	 * within the material texture matching the material (if the material has no
 	 * texture, the matching entry in this array is ignored.
 	 */
 	int[][] _faceTV = {};
-	 
+
 	/**
 	 * Array with material of each face of the model. Each face has an
 	 * entry in the array with the corresponding material.
 	 */
 	TextureSpec[] _faceMat = null;
-	
+
 	/**
 	 * This internal flag is set to indicate that the vertices, edges, or
 	 * faces changed and the normals need to be re-calculated.
 	 */
 	private boolean	_normalsDirty = true;
-	
+
 	/**
 	 * Array of floats with normals of each face of the model. Normals are
 	 * stored in an array of floats with a triplet for each normal (x,y,z).
@@ -146,7 +146,7 @@ public class Object3D
 			iCur = v / 3;
 			xCur = xs[ i ];
 			zCur = zs[ i ];
-			
+
 			if ( xCur == 0f )
 			{
 				vertices[ v++ ] = 0;
@@ -156,7 +156,7 @@ public class Object3D
 			else for ( int j = 0 ; j < detail ; j++ )
 			{
 				final float a = (float)( j * 2 * Math.PI / detail );
-				
+
 				vertices[ v++ ] =  (float)(Math.sin( a ) * xCur);
 				vertices[ v++ ] = -(float)(Math.cos( a ) * xCur);
 				vertices[ v++ ] = zCur;
@@ -209,7 +209,7 @@ public class Object3D
 			faceMat[ f ] = texture;
 			faceSmooth[ f++ ] = false;
 		}
-		
+
 
 		/*
 		 * Construct final vertex and face arrays
@@ -220,7 +220,7 @@ public class Object3D
 			System.arraycopy( vertices , 0 , newVertices , 0 , v );
 			vertices = newVertices;
 		}
-		
+
 		if ( f != faceVert.length )
 		{
 			final int[][] newFaces = new int[ f ][];
@@ -241,7 +241,7 @@ public class Object3D
 		 */
 		if ( xform != null )
 			xform.transform( vertices , vertices , vertices.length / 3 );
-			
+
 		set( vertices , faceVert , faceMat , null , null , faceSmooth );
 	}
 
@@ -254,9 +254,9 @@ public class Object3D
 	 * normals will be a breeze. A vertex normal is simply the average of the face
 	 * normals that surround a particular vertex. So how do you go about
 	 * calculating a vertex normal? For every face in your face list you need to
-	 * generate the normal to that face but, do not normalize it. Then for each 
-	 * vertex in the face add the face normal to the corresponding vertex normal 
-	 * for the current vertex. After you have gone through all the verticies of 
+	 * generate the normal to that face but, do not normalize it. Then for each
+	 * vertex in the face add the face normal to the corresponding vertex normal
+	 * for the current vertex. After you have gone through all the verticies of
 	 * the face you then can normalize the face normal, do not normalize the vertex
 	 * normal. After you have done this for all faces walk the vertex normal list
 	 * and normalize each normal. Once you have done this you have your vertex
@@ -268,20 +268,20 @@ public class Object3D
 	 */
 	private synchronized void calculateNormals()
 	{
-		if ( !_normalsDirty ) 
+		if ( !_normalsDirty )
 			return;
-		
+
 		final int[][]	faces             = _faceVert;
 		final int		faceCount         =  faces.length;
 		final int		faceCountTimes3   =  faceCount * 3;
 	 	final float[]	vertices          = _vertices;
 	 	final int		vertexCount       =  vertices.length / 3;
 	 	final int		vertexCountTimes3 =  vertices.length;
-	 	
+
 	 	float[] faceNormals = _faceNormals;
 	 	if ( faceNormals == null || faceNormals.length < faceCountTimes3 )
 	 		_faceNormals = faceNormals = new float[ faceCountTimes3 ];
-		 	
+
 	 	float[] vertexNormals = _vertexNormals;
 	 	if ( vertexNormals == null || vertexNormals.length < vertexCountTimes3 )
 	 		_vertexNormals = vertexNormals = new float[ vertexCountTimes3 ];
@@ -303,11 +303,11 @@ public class Object3D
 			final float u1 = vertices[ vi3     ] - vertices[ vi1     ];
 			final float u2 = vertices[ vi3 + 1 ] - vertices[ vi1 + 1 ];
 			final float u3 = vertices[ vi3 + 2 ] - vertices[ vi1 + 2 ];
-		
+
 			final float v1 = vertices[ vi2     ] - vertices[ vi1     ];
 			final float v2 = vertices[ vi2 + 1 ] - vertices[ vi1 + 1 ];
 			final float v3 = vertices[ vi2 + 2 ] - vertices[ vi1 + 2 ];
-		
+
 			final float r1 = u2 * v3 - u3 * v2;
 			final float r2 = u3 * v1 - u1 * v3;
 			final float r3 = u1 * v2 - u2 * v1;
@@ -332,13 +332,13 @@ public class Object3D
 		 	for ( int fi = 0 ; fi < faceCount ; fi++ )
 		 	{
 				final int[] face = faces[ fi ];
-				
+
 				for ( int fvi = face.length ; --fvi >= 0 ; )
 				{
 					if ( face[ fvi ] == vi )
 					{
 						final int ni = fi * 3;
-						
+
 						final float fnx = faceNormals[ ni     ];
 						final float fny = faceNormals[ ni + 1 ];
 						final float fnz = faceNormals[ ni + 2 ];
@@ -370,8 +370,8 @@ public class Object3D
 			vertexNormals[ ni + 1 ] = vny;
 			vertexNormals[ ni + 2 ] = vnz;
 	 	}
-	 	
-	 		
+
+
 	 	/*
 	 	 * Normalize face normals.
 	 	 */
@@ -429,7 +429,7 @@ public class Object3D
 		final int y1 = (int)gXform.transformY( x , y , 0 );
 		final int x2 = (int)gXform.transformX( x + w , y + h , 0 );
 		final int y2 = (int)gXform.transformY( x + w , y + h , 0 );
-			
+
 		g.drawOval( Math.min( x1 , x2 ) , Math.min( y1 , y2 ) ,
 		            Math.abs( x2 - x1 ) , Math.abs( y2 - y1 ) );
 	}
@@ -448,9 +448,9 @@ public class Object3D
 	{
 		if ( _vertices == null || _vertices.length < 3 )
 			return bounds;
-			
+
 		final boolean isXform = ( xform != null && xform != Matrix3D.INIT && !Matrix3D.INIT.equals( xform ) );
-		
+
 		float x1,y1,z1,x2,y2,z2;
 		final Bounds3D result;
 		if ( bounds != null )
@@ -639,7 +639,7 @@ public class Object3D
 			for ( int f = 0 ; f < getFaceCount() ; f++ )
 			{
 				final int[] pts = getFaceVertexIndices( f );
-				
+
 				/*
 				 * Perform backface removal
 				 *
@@ -647,17 +647,17 @@ public class Object3D
 				 */
 				final float x1 = ver[ pts[ 0 ] * 3     ];
 				final float y1 = ver[ pts[ 0 ] * 3 + 1 ];
-				
+
 				final float x2 = ver[ pts[ 1 ] * 3     ];
 				final float y2 = ver[ pts[ 1 ] * 3 + 1 ];
-				
+
 				final float x3 = ver[ pts[ 2 ] * 3     ];
 				final float y3 = ver[ pts[ 2 ] * 3 + 1 ];
-			
+
 				final float c = ( x1 - x2 ) * ( y3 - y2 ) - ( y1 - y2 ) * ( x3 - x2 );
 				if ( c > 0 )
 					continue;
-				 
+
 				/*
 				 * Now paint it.
 				 */
@@ -665,7 +665,7 @@ public class Object3D
 				{
 					final int next = ( p + 1 ) % pts.length;
 
-					drawLine( g , gXform , 
+					drawLine( g , gXform ,
 						ver[ pts[ p ] * 3 ] , ver[ pts[ p ] * 3 + 1 ] ,
 						ver[ pts[ next ] * 3 ] , ver[ pts[ next ] * 3 + 1 ] );
 				}
@@ -686,7 +686,7 @@ public class Object3D
 	public final void set( final float[] vertices , final int[][] faceVert , final TextureSpec[] faceMat , final int[][] faceTU , final int[][] faceTV , final boolean[] faceSmooth )
 	{
 		final boolean hasTexture = ( faceMat != null && faceMat.length >= faceVert.length );
-			
+
 		_vertices   = vertices;
 		_faceVert   = faceVert;
 		_faceMat    = hasTexture ? faceMat : null;

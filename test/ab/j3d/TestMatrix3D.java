@@ -1,15 +1,16 @@
-package test.common;
+package ab.light3d;
 
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2001 - All Rights Reserved
+ * (C) Copyright Numdata BV 2000-2003 - All Rights Reserved
+ * (C) Copyright Peter S. Heijnen 1999-2003 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * This software may not be used, copied, modified, or distributed in any
+ * form without express permission from Numdata BV or Peter S. Heijnen. Please
+ * contact Numdata BV or Peter S. Heijnen for license information.
  */
-import common.model.Matrix3D;
+import junit.framework.TestCase;
 
 /**
  * This test verifies the Matrix3D class.
@@ -18,7 +19,7 @@ import common.model.Matrix3D;
  * @version	$Revision$ ($Date$, $Author$)
  */
 public class TestMatrix3D
-	extends SodaTestCase
+	extends TestCase
 {
 	/**
 	 * Run test application.

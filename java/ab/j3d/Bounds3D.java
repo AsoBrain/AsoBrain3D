@@ -1,4 +1,4 @@
-package common.model;
+package ab.light3d;
 
 /*
  * $Id$
@@ -6,11 +6,10 @@ package common.model;
  * (C) Copyright Numdata BV 2000-2003 - All Rights Reserved
  * (C) Copyright Peter S. Heijnen 1999-2003 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
+ * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-import common.CommonTools;
 
 /**
  * This class represents rectangular 3D bounds (specified by two vectors).
@@ -96,8 +95,8 @@ public final class Bounds3D
 	 */
 	public static Bounds3D fromString( final String value )
 	{
-		final String[] tokens = CommonTools.tokenize( value , ';' );
-		return Bounds3D.INIT.set( Vector3D.fromString( tokens[ 0 ] ) , Vector3D.fromString( tokens[ 1 ] ) );
+		final int semi = value.indexOf( ';' );
+		return Bounds3D.INIT.set( Vector3D.fromString( value.substring( 0 , semi ) ) , Vector3D.fromString( value.substring( semi + 1 ) ) );
 	}
 
 	/**

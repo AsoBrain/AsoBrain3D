@@ -1,4 +1,4 @@
-package common.renderer;
+package ab.light3d.renderer;
 
 /*
  * $Id$
@@ -6,18 +6,18 @@ package common.renderer;
  * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
  * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
+ * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-import common.db.TextureSpec;
+import ab.light3d.TextureSpec;
 
 /**
  * This class is a light node in the graphics tree. It contains a
  * LightModel that defines the light associated with this node.
  *
- * @version 1.0 (20011128, PSH) 
  * @author	Peter S. Heijnen
+ * @version	$Revision$ ($Date$, $Author$)
  */
 public final class Light
 	extends TreeNode
@@ -41,7 +41,7 @@ public final class Light
 	 * Setting this to a negative value, will create an ambient light source.
 	 */
 	private final float _fallOff;
-	
+
 	/**
 	 * Constructor.
 	 *
@@ -64,7 +64,7 @@ public final class Light
 	 * respectively.
 	 *
 	 * <code>lightNormalAndDist</code> contains light normals and distances
-	 * stored as quads; x,y,z of the light direction vector (normal), and 
+	 * stored as quads; x,y,z of the light direction vector (normal), and
 	 * distance as last value.
 	 *
 	 * All indices must be absolute (so you may need to multiply them by three
@@ -135,17 +135,17 @@ public final class Light
 			 * normal vectors.
 			 */
 			final float	lightAngle = nx * lx + ny * ly + nz * lz;
-			
+
 			/*
 			 * Abort if light shines from back side.
 			 */
 			if ( lightAngle <= 0 ) return;
-			
+
 			/*
 			 * Calculate light intensity of light at the given distance.
 			 */
 			final float Il = _fallOff / ( _fallOff + ld );
-			
+
 			/*
 			 * Start with the diffuse reflection part of the point light.
 			 * As basis, we use the following formula:
@@ -164,7 +164,7 @@ public final class Light
 
 			/*
 			 * To add specular reflection, we have the following formula:
-			 * 
+			 *
 			 *     Is = Il * Ks * cos^n( theta )
 			 *
 			 * Where:

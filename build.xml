@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="AsoBrain Lightweight 3D Toolkit" default="dist">
+
+    <!-- Global properties for build process -->
+    <property environment="env" />
+    <property name="jar"   value="ab3d.jar" />
+
+    <target name="init">
+      <tstamp />
+    </target>
+
+    <target name="clean" depends="init" description="Removes classses and javadoc">
+        <delete dir="build" />
+        <delete file="${jar}" />
+    </target>
+
+    <target name="compile" depends="init" description="Compiles Java sources">
+      <mkdir dir="build/classes" />
+      <javac srcdir="src/java" destdir="build/classes" debuglevel="none" target="1.1" compiler="modern">
+        <bootclasspath>
+          <pathelement location="${env.JAVA1_HOME}/lib/classes.zip" />
+        </bootclasspath>
+      </javac>
+      <copy todir="build/classes">
+        <fileset dir="src/java" includes="*.properties" />
+      </copy>
+    </target>
+
+    <target name="dist" depends="compile" description="Generate distribution">
+        <jar destfile="${jar}" basedir="build/classes" excludes="**/.dependency-info/**" />
+    </target>
+
+    <target name="compile-tests" depends="compile" description="Compiles unit tests">
+      <mkdir dir="build/test" />
+      <javac srcdir="src/test" destdir="build/test">
+        <classpath>
+            <pathelement location="build/classes" />
+        </classpath>
+      </javac>
+    </target>
+
+    <target name="test" depends="compile-tests" description="Execute Unit Tests">
+      <junit printSummary="withOutAndErr" haltonfailure="on">
+        <classpath>
+            <pathelement location="build/classes" />
+            <pathelement path="build/test" />
+        </classpath>
+        <batchtest>
+          <fileset dir="src/test">
+            <include name="**/Test*.java" />
+          </fileset>
+        </batchtest>
+      </junit>
+    </target>
+</project>
+

@@ -1,4 +1,4 @@
-package common.model;
+package ab.light3d;
 
 /*
  * $Id$
@@ -6,11 +6,10 @@ package common.model;
  * (C) Copyright Numdata BV 2000-2003 - All Rights Reserved
  * (C) Copyright Peter S. Heijnen 1999-2003 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
+ * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-import common.CommonTools;
 
 /**
  * This class represents a 3D vector. It is used by ROM, but can also
@@ -161,11 +160,12 @@ public final class Vector3D
 	 */
 	public static Vector3D fromString( final String value )
 	{
-		final String[] tokens = CommonTools.tokenize( value , ',' );
+		final int comma1 = value.indexOf( ',' );
+		final int comma2 = value.indexOf( ',' , comma1 + 1 );
 		
-		return Vector3D.INIT.set( new Float( tokens[ 0 ] ).floatValue() ,
-		                          new Float( tokens[ 1 ] ).floatValue() ,
-		                          new Float( tokens[ 2 ] ).floatValue() );
+		return Vector3D.INIT.set( new Float( value.substring( 0 , comma1 ) ).floatValue() ,
+		                          new Float( value.substring( comma1 + 1 , comma2 ) ).floatValue() ,
+		                          new Float( value.substring( comma2 + 1 ) ).floatValue() );
 	}
 
 	/**

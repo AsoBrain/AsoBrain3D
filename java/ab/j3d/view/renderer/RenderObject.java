@@ -1,4 +1,4 @@
-package common.renderer;
+package ab.light3d.renderer;
 
 /*
  * $Id$
@@ -6,12 +6,12 @@ package common.renderer;
  * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
  * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
+ * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-import common.db.TextureSpec;
-import common.model.Matrix3D;
+import ab.light3d.Matrix3D;
+import ab.light3d.TextureSpec;
 
 /**
  * This class contains specifications to render a 3D object on a 2D surface. It is
@@ -21,7 +21,7 @@ import common.model.Matrix3D;
  * @author	Peter S. Heijnen
  * @version	$Revision$ ($Date$, $Author$)
  */
-public class RenderObject
+public final class RenderObject
 {
 	Object3D	obj;
 	Matrix3D	xform;
@@ -42,7 +42,7 @@ public class RenderObject
 	Face		faces;
 	Face		facesFree;
 
-	public class Face
+	public final class Face
 	{
 		Face		next;
 		//Face		isBehind;
@@ -68,7 +68,7 @@ public class RenderObject
 		int[]		sys;
 		int[]		sfs;
 
-		private void set( int index , int minH , int minV , int minD , int maxH , int maxV , int maxD , float nx , float ny , float nz )
+		private void set( final int index , final int minH , final int minV , final int minD , final int maxH , final int maxV , final int maxD , final float nx , final float ny , final float nz )
 		{
 			this.index	= index;
 			this.minH	= minH;
@@ -82,11 +82,11 @@ public class RenderObject
 			this.nz		= nz;
 
 			vi = obj.getFaceVertexIndices( index );
-			int i = vi[ 0 ] * 3;
+			final int i = vi[ 0 ] * 3;
 			dist = nx * verts[ i ] + ny * verts[ i + 1 ] + nz * verts[ i + 2 ];
 		}
 
-		public boolean isBehind( Face other )
+		public boolean isBehind( final Face other )
 		{
 			if ( minH > other.maxH ) return false;
 			if ( maxH < other.minH ) return false;
@@ -96,11 +96,11 @@ public class RenderObject
 			if ( maxD < other.minD ) return false;
 
 
-			int i = other.vi[ 0 ] * 3;
-			float[] v = other.getRenderObject().verts;
-			float x = v[ i     ];
-			float y = v[ i + 1 ];
-			float z = v[ i + 2 ];
+			final int i = other.vi[ 0 ] * 3;
+			final float[] v = other.getRenderObject().verts;
+			final float x = v[ i     ];
+			final float y = v[ i + 1 ];
+			final float z = v[ i + 2 ];
 
 			return y > ( dist - nx * x - nz * z ) / ny;
 		}
@@ -138,16 +138,16 @@ public class RenderObject
 			if ( nrLights < 1 )
 				return;
 
-			TextureSpec texture = getTexture();
+			final TextureSpec texture = getTexture();
 
 			if ( obj.isFaceSmooth( index ) )
 			{
-				float[] vertNorm = getVertexNormals();
+				final float[] vertNorm = getVertexNormals();
 
 				for ( i = nrLights ; --i >= 0 ; )
 				{
-					Light   light      = lights[ i ];
-					float[] normalDist = lightNormalDist[ i ];
+					final Light   light      = lights[ i ];
+					final float[] normalDist = lightNormalDist[ i ];
 
 					for ( j = vi.length ; --j >= 0 ; )
 					{
@@ -164,8 +164,8 @@ public class RenderObject
 			{
 				for ( i = nrLights ; --i >= 0 ; )
 				{
-					Light   light      = lights[ i ];
-					float[] normalDist = lightNormalDist[ i ];
+					final Light   light      = lights[ i ];
+					final float[] normalDist = lightNormalDist[ i ];
 
 					for ( j = vi.length ; --j >= 0 ; )
 					{
@@ -185,7 +185,7 @@ public class RenderObject
 
 		public int[][] getTexturePixels()
 		{
-			TextureSpec texture = getTexture();
+			final TextureSpec texture = getTexture();
 			return ( texture != null && texture.isTexture() ) ? texture.getTexture() : null;
 		}
 
@@ -250,7 +250,7 @@ public class RenderObject
 	 * @param	height				Height of render area in pixels.
 	 * @param	backfaceCullling	Discard backfaces if set to <code>true</code>.
 	 */
-	public void set( Object3D obj , Matrix3D xform , float aperture , float zoom , final int width , final int height , boolean backfaceCullling )
+	public void set( final Object3D obj , final Matrix3D xform , final float aperture , final float zoom , final int width , final int height , final boolean backfaceCullling )
 	{
 		int i,j,k,l,ih,iv,id;
 		float x,y,z;
@@ -265,7 +265,7 @@ public class RenderObject
 		final float[]	oVerts		= obj.getVertices();
 		final int		centerH		= width << 7;
 		final int		centerV		= height << 7;
-		float[]			faceNormals	= obj.getFaceNormals();
+		final float[]			faceNormals	= obj.getFaceNormals();
 
 		final float xx = xform.xx , xy = xform.xy , xz = xform.xz , xo = xform.xo;
 		final float yx = xform.yx , yy = xform.yy , yz = xform.yz , yo = xform.yo;
@@ -283,7 +283,7 @@ public class RenderObject
 		}
 
 
-		float perspectiveFactor = 256f * zoom / aperture;
+		final float perspectiveFactor = 256f * zoom / aperture;
 
 		for ( i = 0 , j = 0 ; i < nrVerts3 ; i += 3 , j++ )
 		{
@@ -332,7 +332,7 @@ public class RenderObject
 
 		nextFace: for ( i = obj.getFaceCount() ; --i >= 0 ; )
 		{
-			int[] vi = obj.getFaceVertexIndices( i );
+			final int[] vi = obj.getFaceVertexIndices( i );
 			if ( vi.length < 3 )
 				continue nextFace;
 
@@ -437,7 +437,7 @@ public class RenderObject
 	 *
 	 * @param	lightSources	Collection of light sources.
 	 */
-	public void setLights( LeafCollection lightSources )
+	public void setLights( final LeafCollection lightSources )
 	{
 		int i,j,k;
 

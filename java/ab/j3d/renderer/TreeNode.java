@@ -1,4 +1,4 @@
-package common.renderer;
+package ab.light3d.renderer;
 
 /*
  * $Id$
@@ -6,15 +6,15 @@ package common.renderer;
  * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
  * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
+ * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-import java.awt.*;
+import java.awt.Graphics;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import common.model.Matrix3D;
+import ab.light3d.Matrix3D;
 
 /**
  * This class forms a default implementation of a node of the
@@ -27,13 +27,7 @@ import common.model.Matrix3D;
  *
  * @author	Peter S. Heijnen
  * @author	Sjoerd Bouwman
- *
- * #version 1.0 (19991224, PSH, initial implementation)
- * #version ?.? (20010328, PSH, translated to C++)
- * #version 1.180 (20010827, SB, name(String) -> tag(Object)
- * #Version 1.181 (20010919, PSH, minor stuff)
- *
- * @version 1.0 (20011128, PSH) 
+ * @version	$Revision$ ($Date$, $Author$)
  */
 public class TreeNode
 {
@@ -41,7 +35,7 @@ public class TreeNode
 	 * Tag of this node.
 	 */
 	private Object _tag = null;
-	
+
 	/**
 	 * Collection of children of this node.
 	 */
@@ -61,14 +55,14 @@ public class TreeNode
 	 *
 	 * @see	#removeChild
 	 */
-	public TreeNode addChild( TreeNode node )
+	public final TreeNode addChild( final TreeNode node )
 	{
 		if ( node == null || _children.contains( node ) )
 			return( node );
-			
+
 		_children.addElement( node );
 		node.setParent( this );
-		
+
 		return( node );
 	}
 
@@ -93,8 +87,8 @@ public class TreeNode
 	 *						(should be <code>true</code> for the first call).
 	 *
 	 */
-	public void gatherLeafs( LeafCollection leafs , Class leafClass ,
-		Matrix3D xform , boolean upwards )
+	public void gatherLeafs( final LeafCollection leafs , final Class leafClass ,
+		final Matrix3D xform , boolean upwards )
 	{
 		if ( upwards )
 		{
@@ -113,7 +107,7 @@ public class TreeNode
 			{
 				getParent().gatherLeafs( leafs , leafClass , xform , upwards );
 			}
-			
+
 		}
 
 		if ( !upwards ) // downwards
@@ -131,7 +125,7 @@ public class TreeNode
 			 */
 			else
 			{
-				Enumeration e = _children.elements();
+				final Enumeration e = _children.elements();
 				while ( e.hasMoreElements() ) ((TreeNode)e.nextElement()).
 						gatherLeafs( leafs , leafClass , xform , upwards );
 			}
@@ -147,7 +141,7 @@ public class TreeNode
 	 *
 	 * @see #getChildCount
 	 */
-	public TreeNode getChild( int index )
+	public final TreeNode getChild( final int index )
 	{
 		return( (TreeNode)_children.elementAt( index ) );
 	}
@@ -158,8 +152,8 @@ public class TreeNode
 	 * @return	Number of child nodes.
 	 *
 	 * @see	#getChild
-	 */ 
-	public int getChildCount()
+	 */
+	public final int getChildCount()
 	{
 		return( _children.size() );
 	}
@@ -171,7 +165,7 @@ public class TreeNode
 	 *
 	 * @see #isRoot
 	 */
-	public TreeNode getParent()
+	public final TreeNode getParent()
 	{
 		return( _parent );
 	}
@@ -183,7 +177,7 @@ public class TreeNode
 	 *
 	 * @see #isRoot
 	 */
-	public TreeNode getRoot()
+	public final TreeNode getRoot()
 	{
 		TreeNode node = this;
 		while( !node.isRoot() ) node = node.getParent();
@@ -195,7 +189,7 @@ public class TreeNode
 	 *
 	 * @return	Tag that was set by setTag().
 	 */
-	public Object getTag()
+	public final Object getTag()
 	{
 		return _tag;
 	}
@@ -210,7 +204,7 @@ public class TreeNode
 	 * @see	#getChildCount
 	 * @see	#getChild
 	 */
-	public boolean isLeaf()
+	public final boolean isLeaf()
 	{
 		return( _children.size() == 0 );
 	}
@@ -224,7 +218,7 @@ public class TreeNode
 	 *
 	 * @see	#getParent
 	 */
-	public boolean isRoot()
+	public final boolean isRoot()
 	{
 		return( _parent == null );
 	}
@@ -236,9 +230,9 @@ public class TreeNode
 	 * @param	gXform		Transformation to pan/scale the graphics context.
 	 * @param	objXform	Transformation from object's to view coordinate system.
 	 */
-	public void paint( Graphics g , Matrix3D gXform , Matrix3D objXform )
+	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D objXform )
 	{
-		Enumeration e = _children.elements();
+		final Enumeration e = _children.elements();
 		while ( e.hasMoreElements() ) ((TreeNode)e.nextElement()).
 				paint( g , gXform , objXform );
 	}
@@ -248,11 +242,11 @@ public class TreeNode
 	 *
 	 * @see	#removeChild
 	 */
-	public void removeAllChildren()
+	public final void removeAllChildren()
 	{
 		while ( _children.size() > 0 )
 		{
-			TreeNode node = (TreeNode)_children.elementAt( 0 );
+			final TreeNode node = (TreeNode)_children.elementAt( 0 );
 			_children.removeElement( node );
 			node.setParent( null );
 		}
@@ -265,7 +259,7 @@ public class TreeNode
 	 *
 	 * @see	#addChild
 	 */
-	public void removeChild( TreeNode node )
+	public final void removeChild( final TreeNode node )
 	{
 		if ( node == null || !_children.contains( node ) )
 			return;
@@ -282,14 +276,14 @@ public class TreeNode
 	 * @see #getRoot
 	 * @see #isRoot
 	 */
-	public void setParent( TreeNode parent )
+	public final void setParent( final TreeNode parent )
 	{
 		if ( parent == _parent )
 			return;
-	
+
 		if ( _parent != null )
 			_parent.removeChild( this );
-			
+
 		_parent = parent;
 
 		if ( _parent != null )
@@ -301,7 +295,7 @@ public class TreeNode
 	 *
 	 * @param	tag	Tag of node.
 	 */
-	public void setTag( Object tag )
+	public final void setTag( final Object tag )
 	{
 		_tag = tag;
 	}

@@ -1,4 +1,4 @@
-package common.renderer;
+package ab.light3d.renderer;
 
 /*
  * $Id$
@@ -6,20 +6,21 @@ package common.renderer;
  * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
  * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
+ * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
 import java.awt.Graphics;
-import common.db.TextureSpec;
-import common.model.Matrix3D;
+
+import ab.light3d.Matrix3D;
+import ab.light3d.TextureSpec;
 
 /**
  * This class defines a 3D cylinder with optionally different radi for the caps. Using
  * these radi, this class may also be used to construct cones.
  *
- * @version 1.0 (20011128, PSH) 
  * @author	Peter S. Heijnen
+ * @version	$Revision$ ($Date$, $Author$)
  */
 public final class Cylinder3D
 	extends Object3D
@@ -108,7 +109,7 @@ public final class Cylinder3D
 			for ( int i = 0 ; i < numEdges ; i++ )
 			{
 				final float a = (float)( i * 2 * Math.PI / numEdges );
-				
+
 				vertices[ v++ ] =  (float)( Math.sin( a ) * radiusBottom );
 				vertices[ v++ ] = -(float)( Math.cos( a ) * radiusBottom );
 				vertices[ v++ ] = 0;
@@ -126,7 +127,7 @@ public final class Cylinder3D
 			for ( int i = 0 ; i < numEdges ; i++ )
 			{
 				final float a = (float)( i * 2 * Math.PI / numEdges );
-				
+
 				vertices[ v++ ] =  (float)( Math.sin( a ) * radiusTop );
 				vertices[ v++ ] = -(float)( Math.cos( a ) * radiusTop );
 				vertices[ v++ ] = height;
@@ -154,7 +155,7 @@ public final class Cylinder3D
 			final int[] fv = new int[ numEdges ];
 			for ( int i = 0 ; i < numEdges ; i++ )
 				fv[ i ] = i;
-				
+
 			faceVert  [ f   ] = fv;
 			faceMat   [ f   ] = texture;
 			faceSmooth[ f++ ] = smoothCaps;
@@ -188,7 +189,7 @@ public final class Cylinder3D
 			for ( int i1 = 0 ; i1 < numEdges ; i1++ )
 			{
 				final int i2 = ( i1 + 1 ) % numEdges;
-				
+
 				faceVert  [ f   ] = new int[] { 0 , 1 + i1 , 1 + i2 };
 				faceMat   [ f   ] = texture;
 				faceSmooth[ f++ ] = smoothCircumference;
@@ -203,12 +204,12 @@ public final class Cylinder3D
 			final int[] fv = new int[ numEdges ];
 			for ( int i = 0 ; i < numEdges ; i++ )
 				fv[ i ] = ( hasBottom ? numEdges : 1 ) + ( numEdges - i - 1 );
-				
+
 			faceVert  [ f ] = fv;
 			faceMat   [ f   ] = texture;
 			faceSmooth[ f/*++*/ ] = smoothCaps;
 		}
-		
+
 		/*
 		 * Set Object3D properties.
 		 */
@@ -236,10 +237,10 @@ public final class Cylinder3D
 			super.paint( g , gXform , objXform );
 			return;
 		}
-		
+
 		final float x = objXform.transformX( xform.xo , xform.yo , xform.zo );
 		final float y = objXform.transformY( xform.xo , xform.yo , xform.zo );
-		
+
 		/*
 		 * Frontal = circle.
 		 *
@@ -257,7 +258,7 @@ public final class Cylinder3D
 			 */
 			//if ( minR != maxR && <smaller oval is visable> )
 				//drawOval( g , gXform , x - minR, y - minR , minR * 2 , minR * 2 );
-				
+
 			return;
 		}
 
@@ -274,7 +275,7 @@ public final class Cylinder3D
 			pts = new float[] { -radiusBottom , 0      , radiusBottom , 0      ,
 			                     -radiusTop    , height , radiusTop    , height };
 		}
-	
+
 		/*
 		 * Side, mirrored Y, = poly
 		 *
@@ -300,7 +301,7 @@ public final class Cylinder3D
 			pts = new float[] { 0      , -radiusBottom , 0      , radiusBottom ,
 			                    height , -radiusTop    , height , radiusTop	};
 		}
-		
+
 		/*
 		 * Side, 90deg z rotation, mirrored x = poly
 		 *

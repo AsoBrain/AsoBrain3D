@@ -1,4 +1,4 @@
-package common.renderer;
+package ab.light3d.renderer;
 
 /*
  * $Id$
@@ -6,25 +6,34 @@ package common.renderer;
  * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
  * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
+ * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.image.ColorModel;
 import java.awt.image.ImageConsumer;
 import java.awt.image.ImageProducer;
-import java.awt.image.ColorModel;
-import java.awt.event.*;
-import common.db.TextureSpec;
-import common.model.*;
 import java.util.Enumeration;
 import java.util.Vector;
+
+import ab.light3d.Bounds3D;
+import ab.light3d.Matrix3D;
+import ab.light3d.TextureSpec;
+import ab.light3d.Vector3D;
 
 /**
  * The renderer....
  *
  * @author	Peter S. Heijnen
- *
  * @version	$Revision$ ($Date$, $Author$)
  */
 public class Renderer
@@ -1683,7 +1692,7 @@ public class Renderer
 	 * @param	g		Graphics to paint on
 	 * @param	face	Face to render
 	 */
-	protected void renderWireframeFace( final Graphics g , final RenderObject.Face face )
+	protected static void renderWireframeFace( final Graphics g , final RenderObject.Face face )
 	{
 		int i,k,h1,v1,h2,v2;
 

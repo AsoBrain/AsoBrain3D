@@ -1,4 +1,4 @@
-package common.renderer;
+package ab.light3d.renderer;
 
 /*
  * $Id$
@@ -6,12 +6,12 @@ package common.renderer;
  * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
  * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
+ * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-import common.db.TextureSpec;
-import common.model.Matrix3D;
+import ab.light3d.Matrix3D;
+import ab.light3d.TextureSpec;
 
 /**
  * This class defines a 3D box.
@@ -209,9 +209,9 @@ public final class Box3D
 	 * @param	tv1			Start V coordinate.
 	 * @param	tv2			End V coordinate.
 	 */
-	protected static void setTexture( 
+	protected static void setTexture(
 		final TextureSpec texture , final boolean flipUV , final int index ,
-		final int[][] faceTU , final float tu1 , final float tu2 , 
+		final int[][] faceTU , final float tu1 , final float tu2 ,
 		final int[][] faceTV , final float tv1 , final float tv2 )
 	{
 		/*
@@ -233,7 +233,7 @@ public final class Box3D
 		 */
 		i1 = (int)( tu1 * s /*+ 0.5f*/ );
 		i2 = (int)( tu2 * s /*+ 0.5f*/ );
-		
+
 		m = flipUV ? texture.getTextureHeight() : texture.getTextureWidth();
 		if ( ( t = ( i1 < i2 ) ? i1 : i2 ) < 0 )
 		{
@@ -251,11 +251,11 @@ public final class Box3D
 
 		/*
 		 * Set texture coordinates. Flip meaning of U and V if requested.
-		 */	
+		 */
 		a = ( flipUV ? faceTV : faceTU );
 		a[ index     ] = new int[] { i1 , i1 , i2 , i2 };
 		a[ index + 1 ] = new int[] { i2 , i2 , i1 , i1 };
-		
+
 		/*
 		 * Translate the V1,V2 texture coordinates to the lowest possible (but
 		 * positive) range. If either is negative, translation occurs in positive
@@ -279,7 +279,7 @@ public final class Box3D
 			i1 -= t;
 			i2 -= t;
 		}
-		
+
 		/*
 		 * Set texture coordinates. Flip meaning of U and V if requested.
 		 */

@@ -1,4 +1,4 @@
-package common.renderer;
+package ab.light3d.renderer;
 
 /*
  * $Id$
@@ -6,18 +6,18 @@ package common.renderer;
  * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
  * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
+ * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-import common.model.Matrix3D;
+import ab.light3d.Matrix3D;
 
 /**
  * This collection class is used to store combinations of Matrix3D
- * and TreeNode objects. 
+ * and TreeNode objects.
  *
- * @version 1.0 (20011128, PSH) 
  * @author	Peter S. Heijnen
+ * @version	$Revision$ ($Date$, $Author$)
  */
 public final class LeafCollection
 {
@@ -37,7 +37,7 @@ public final class LeafCollection
 	 * array may exceed the element count, but is never smaller.
 	 */
 	TreeNode[] _nodeData = new TreeNode[ 10 ];
-	
+
 	/**
 	 * Appends the specified node to the end of this collection.
 	 *
@@ -63,8 +63,8 @@ public final class LeafCollection
 	}
 
 	/**
-	 * Increases the capacity of this collection, if necessary, to ensure 
-	 * that it can hold at least the number of components specified by 
+	 * Increases the capacity of this collection, if necessary, to ensure
+	 * that it can hold at least the number of components specified by
 	 * the minimum capacity argument.
 	 *
 	 * @param   minCapacity   The desired minimum capacity.
@@ -72,17 +72,17 @@ public final class LeafCollection
 	public synchronized void ensureCapacity( final int minCapacity )
 	{
 		final int oldCapacity = _nodeData.length;
-		
+
 		if ( minCapacity > oldCapacity )
 		{
 			final TreeNode[] oldNodes    = _nodeData;
 			final Matrix3D[] oldMatrices = _matrixData;
-			
+
 			final int newCapacity = oldCapacity * 2;
 
 		    _nodeData   = new TreeNode[ newCapacity ];
 		    _matrixData = new Matrix3D[ newCapacity ];
-		    
+
 			System.arraycopy( oldNodes    , 0 , _nodeData   , 0 , _elementCount );
 			System.arraycopy( oldMatrices , 0 , _matrixData , 0 , _elementCount );
 		}

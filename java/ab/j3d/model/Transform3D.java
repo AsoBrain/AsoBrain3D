@@ -1,4 +1,4 @@
-package common.renderer;
+package ab.light3d.renderer;
 
 /*
  * $Id$
@@ -6,23 +6,24 @@ package common.renderer;
  * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
  * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
+ * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
 import java.awt.Graphics;
-import common.model.Matrix3D;
-import common.model.Vector3D;
+
+import ab.light3d.Matrix3D;
+import ab.light3d.Vector3D;
 
 /**
  * This class is a transformation node in the graphics tree. It
  * contains a TransformModel that manages a transformation matrix
  * to be associated with this node.
  *
- * @version 1.0 (20011128, PSH) 
  * @author	Peter S. Heijnen
+ * @version	$Revision$ ($Date$, $Author$)
  */
-public class Transform
+public final class Transform
 	extends TreeNode
 {
 	private	float		_rotationX		= 0.0f;
@@ -32,7 +33,7 @@ public class Transform
 
 	/**
 	 * Matrix with transformation.
-	 */	
+	 */
 	private	Matrix3D _matrix = Matrix3D.INIT;
 
 	/**
@@ -42,12 +43,12 @@ public class Transform
 	 * transformation is changed.
 	 */
 	private	boolean _matrixDirty = true;
-	
+
 	/**
 	 * Matrix with inverse transformation.
-	 */	
+	 */
 	private	Matrix3D _inverseMatrix = Matrix3D.INIT;
-	
+
 	/**
 	 * This flag indicates that the inverse transformation matrix
 	 * is not up-to-date and must be re-calculated when it is
@@ -120,8 +121,7 @@ public class Transform
 	 *						(should be <code>true</code> for the first call).
 	 *
 	 */
-	public void gatherLeafs( LeafCollection leafs , Class leafClass ,
-		Matrix3D xform , boolean upwards )
+	public void gatherLeafs( final LeafCollection leafs , final Class leafClass , Matrix3D xform , final boolean upwards )
 	{
 		/*
 		 * Determine modified transform based on combination of the
@@ -148,7 +148,7 @@ public class Transform
 			_inverseMatrix = getMatrix().inverse();
 			_inverseMatrixDirty = false;
 		}
-		
+
 		return( _inverseMatrix );
 	}
 
@@ -214,7 +214,7 @@ public class Transform
 	 * @param	gXform		Transformation to pan/scale the graphics context.
 	 * @param	objXform	Transformation from object's to view coordinate system.
 	 */
-	public void paint( Graphics g , Matrix3D gXform , Matrix3D objXform )
+	public void paint( final Graphics g , final Matrix3D gXform , final Matrix3D objXform )
 	{
 		super.paint( g , gXform , getMatrix().multiply( objXform ) );
 	}
@@ -236,7 +236,7 @@ public class Transform
 	 * @param	rotationY	Rotation around Y-axis in decimal degrees.
 	 * @param	rotationZ	Rotation around Z-axis in decimal degrees.
 	 */
-	public void setRotation( float rotationX , float rotationY , float rotationZ )
+	public void setRotation( final float rotationX , final float rotationY , final float rotationZ )
 	{
 		if ( rotationX != _rotationX ||
 			 rotationY != _rotationY ||
@@ -245,7 +245,7 @@ public class Transform
 			_rotationX	= rotationX;
 			_rotationY	= rotationY;
 			_rotationZ	= rotationZ;
-			
+
 			setDirty();
 		}
 	}
@@ -255,7 +255,7 @@ public class Transform
 	 *
 	 * @param	rotation	Rotation around X-axis in decimal degrees.
 	 */
-	public void setRotationX( float rotation )
+	public void setRotationX( final float rotation )
 	{
 		if ( _rotationX != rotation )
 		{
@@ -269,7 +269,7 @@ public class Transform
 	 *
 	 * @param	rotation	Rotation around Y-axis in decimal degrees.
 	 */
-	public void setRotationY( float rotation )
+	public void setRotationY( final float rotation )
 	{
 		if ( _rotationY != rotation )
 		{
@@ -283,7 +283,7 @@ public class Transform
 	 *
 	 * @param	rotation	Rotation around Z-axis in decimal degrees.
 	 */
-	public void setRotationZ( float rotation )
+	public void setRotationZ( final float rotation )
 	{
 		if ( _rotationZ != rotation )
 		{

@@ -1,4 +1,4 @@
-package common.renderer;
+package ab.light3d.renderer;
 
 /*
  * $Id$
@@ -6,11 +6,11 @@ package common.renderer;
  * (C) Copyright Numdata BV 2000-2002 - All Rights Reserved
  * (C) Copyright Peter S. Heijnen 1999-2002 - All Rights Reserved
  *
- * This software may not be used, copyied, modified, or distributed in any
+ * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV or Peter S. Heijnen. Please
  * contact Numdata BV or Peter S. Heijnen for license information.
  */
-import common.model.Matrix3D;
+import ab.light3d.Matrix3D;
 
 /**
  * This class is a camera node in the graphics tree and defines
@@ -19,8 +19,8 @@ import common.model.Matrix3D;
  * how the camera is placed in the world (this must be done using
  * transformations).
  *
- * @version 1.0 (20011128, PSH) 
  * @author	Peter S. Heijnen
+ * @version	$Revision$ ($Date$, $Author$)
  */
 public final class Camera
 	extends TreeNode
@@ -35,7 +35,7 @@ public final class Camera
 	 * Linear zoom factor.
 	 */
 	public final float zoom;
-	 
+
 	/**
 	 * Constructor with specified scale.
 	 *
