@@ -89,13 +89,14 @@ public final class Cylinder3D
 		/*
 		 * Setup properties of cylinder.
 		 */
-		final boolean   hasBottom   = ( radiusBottom > 0 );
-		final boolean   hasTop      = ( radiusTop > 0 );
-		final int       vertexCount = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
-		final int       faceCount   = ( hasBottom ? 1 : 0 ) + numEdges + ( hasTop ? 1 : 0 );
-		final float[]   vertices    = new float[ vertexCount * 3 ];
-		final int[][]   faceVert    = new int  [ faceCount ][];
-		final boolean[] faceSmooth  = new boolean[ faceCount ];
+		final boolean       hasBottom   = ( radiusBottom > 0 );
+		final boolean       hasTop      = ( radiusTop > 0 );
+		final int           vertexCount = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
+		final int           faceCount   = ( hasBottom ? 1 : 0 ) + numEdges + ( hasTop ? 1 : 0 );
+		final float[]       vertices    = new float[ vertexCount * 3 ];
+		final int[][]       faceVert    = new int  [ faceCount ][];
+		final TextureSpec[] faceMat     = new TextureSpec[ faceCount ];
+		final boolean[]     faceSmooth  = new boolean[ faceCount ];
 
 		/*
 		 * Generate vertices.
@@ -155,6 +156,7 @@ public final class Cylinder3D
 				fv[ i ] = i;
 				
 			faceVert  [ f   ] = fv;
+			faceMat   [ f   ] = texture;
 			faceSmooth[ f++ ] = smoothCaps;
 		}
 
@@ -167,6 +169,7 @@ public final class Cylinder3D
 			{
 				final int i2 = ( i1 + 1 ) % numEdges;
 				faceVert  [ f   ] = new int[] { i2 , i1 , numEdges + i1 , numEdges + i2 };
+				faceMat   [ f   ] = texture;
 				faceSmooth[ f++ ] = smoothCircumference;
 			}
 		}
@@ -176,6 +179,7 @@ public final class Cylinder3D
 			{
 				final int i2 = ( i1 + 1 ) % numEdges;
 				faceVert  [ f   ] = new int[] { i2 , i1 , numEdges };
+				faceMat   [ f   ] = texture;
 				faceSmooth[ f++ ] = smoothCircumference;
 			}
 		}
@@ -186,6 +190,7 @@ public final class Cylinder3D
 				final int i2 = ( i1 + 1 ) % numEdges;
 				
 				faceVert  [ f   ] = new int[] { 0 , 1 + i1 , 1 + i2 };
+				faceMat   [ f   ] = texture;
 				faceSmooth[ f++ ] = smoothCircumference;
 			}
 		}
@@ -200,13 +205,14 @@ public final class Cylinder3D
 				fv[ i ] = ( hasBottom ? numEdges : 1 ) + ( numEdges - i - 1 );
 				
 			faceVert  [ f ] = fv;
+			faceMat   [ f   ] = texture;
 			faceSmooth[ f/*++*/ ] = smoothCaps;
 		}
 		
 		/*
 		 * Set Object3D properties.
 		 */
-		set( vertices ,  faceVert , texture , faceSmooth );
+		set( vertices ,  faceVert , faceMat , null , null , faceSmooth );
 	}
 
 	/**
