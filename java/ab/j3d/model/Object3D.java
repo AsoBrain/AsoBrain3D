@@ -564,10 +564,24 @@ public class Object3D
 	 *                          to points previously defined in this object.
 	 * @param   texture         Texture to apply to the face.
 	 * @param   smooth          Face is smooth/curved vs. flat.
+	 * @param   hasBackface     Flag to indicate if face has a backface.
+	 */
+	public final void addFace( final int[] pointIndices , final TextureSpec texture , final boolean smooth , final boolean hasBackface )
+	{
+		addFace( pointIndices , texture , null , null , 1.0 , smooth , hasBackface );
+	}
+
+	/**
+	 * Add face to this object.
+	 *
+	 * @param   pointIndices    Point indices of added face. These indices refer
+	 *                          to points previously defined in this object.
+	 * @param   texture         Texture to apply to the face.
+	 * @param   smooth          Face is smooth/curved vs. flat.
 	 */
 	public final void addFace( final int[] pointIndices , final TextureSpec texture , final boolean smooth )
 	{
-		addFace( pointIndices , texture , null , null , 1.0 , smooth );
+		addFace( pointIndices , texture , null , null , 1.0 , smooth , false );
 	}
 
 	/**
@@ -583,7 +597,24 @@ public class Object3D
 	 */
 	public final void addFace( final int[] pointIndices , final TextureSpec texture , final int[] textureU , final int[] textureV , final double opacity , final boolean smooth )
 	{
-		addFace( new Face3D( this , pointIndices , texture , textureU , textureV , opacity , smooth , false ) );
+		addFace( pointIndices , texture , textureU , textureV , opacity , smooth , false );
+	}
+
+	/**
+	 * Add face to this object.
+	 *
+	 * @param   pointIndices    Point indices of added face. These indices refer
+	 *                          to points previously defined in this object.
+	 * @param   texture         Texture to apply to the face.
+	 * @param   textureU        Horizontal texture coordinates (<code>null</code> = none).
+	 * @param   textureV        Vertical texture coordinates (<code>null</code> = none).
+	 * @param   opacity         Opacity of face (0=transparent, 1=opaque).
+	 * @param   smooth          Face is smooth/curved vs. flat.
+	 * @param   hasBackface     Flag to indicate if face has a backface.
+	 */
+	public final void addFace( final int[] pointIndices , final TextureSpec texture , final int[] textureU , final int[] textureV , final double opacity , final boolean smooth , final boolean hasBackface )
+	{
+		addFace( new Face3D( this , pointIndices , texture , textureU , textureV , opacity , smooth , hasBackface ) );
 	}
 
 	/**
