@@ -77,7 +77,7 @@ public final class Bounds3D
 	public boolean equals( final Object other )
 	{
 		final boolean result;
-		
+
 		if ( other == this )
 		{
 			result = true;
@@ -396,4 +396,16 @@ public final class Bounds3D
 		return( v1 + ";" + v2 );
 	}
 
+	/**
+	 * Produce user-friendly string representation of the specified value.
+	 *
+	 * @param   bounds      Bounds3D value.
+	 *
+	 * @return  User-friendly string representation of the specified value.
+	 */
+	public static String toFriendlyString( final Bounds3D bounds )
+	{
+		return "( " + bounds.v1.x + " , " + bounds.v1.y + " , " + bounds.v1.z + " ) - ( " +
+		              bounds.v2.x + " , " + bounds.v2.y + " , " + bounds.v2.z + " )";
+	}
 }
