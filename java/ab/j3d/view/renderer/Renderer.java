@@ -27,7 +27,7 @@ import java.util.Stack;
  *
  * @author	Peter S. Heijnen
  *
- * @version	$Revision$ ($Date$, $Auhor$)
+ * @version	$Revision$ ($Date$, $Author$)
  */
 public class Renderer
 	implements ComponentListener, Runnable, MouseListener, MouseMotionListener, ImageProducer
@@ -1251,7 +1251,7 @@ public class Renderer
 		final int        mr            = (colorRGB >> 16) & 0xFF; 
 		final int        mg            = (colorRGB >>  8) & 0xFF; 
 		final int        mb            =  colorRGB        & 0xFF;
-		
+
 		int i,j,c,r,g,b,s;
 		
 		int     h1   = 0;		// 'pixel' Horizontal coordinate counter     * 2^8
@@ -1385,10 +1385,14 @@ public class Renderer
 							if ( (j = (int)(0x7FFFFFFFFFl / d1)) < db[ i ] )
 							{
 								db[ i ] = j;
-								
-								c = texture[ (int)( ( tv1 / d1 ) % th ) ]
-								           [ (int)( ( tu1 / d1 ) % tw ) ];
 
+								// fix
+								int myU = (int)( ( tu1 / d1 ) % tw );
+								int myV = (int)( ( tv1 / d1 ) % th );
+								c = texture[ myV + (myV<0?th:0)][ myU + (myU<0?tw:0) ];
+								// original								
+								//c = texture[ (int)( ( tv1 / d1 ) % th )) ]
+								           //[ (int)( ( tu1 / d1 ) % tw )) ];
 								s = phongTable[ sy1 >> 8 ][ sx1 >> 8 ] * sf1;
 
 								if ( (r = (dr1 * ((c >> 16) & 0xFF) + s) >> 16) > 255 ) r = 255;
@@ -1411,6 +1415,7 @@ public class Renderer
 					{
 						for ( i = width * v + h1 ; h2-- >= 0 ; i++ )
 						{
+			try {
 							if ( (j = (int)(0x7FFFFFFFFFl / d1)) < db[ i ] )
 							{
 								db[ i ] = j;
@@ -1423,6 +1428,8 @@ public class Renderer
 
 								_pixels[ i ] = 0xFF000000 + (r << 16) + (g << 8) + b;
 							}
+			} catch ( ArrayIndexOutOfBoundsException a )
+			{	System.out.println( "B : " + a.getMessage() + " at line " + v );	return;	}
 
 							d1  += d2;
 							dr1 += dr2;
@@ -1438,12 +1445,18 @@ public class Renderer
 					{
 						for ( i = width * v + h1 ; h2-- >= 0 ; i++ )
 						{
+			try {
 							if ( (j = (int)(0x7FFFFFFFFFl / d1)) < db[ i ] )
 							{
 								db[ i ] = j;
-								
-								c = texture[ (int)( ( tv1 / d1 ) % th ) ]
-								           [ (int)( ( tu1 / d1 ) % tw ) ];
+
+								// fix
+								int myU = (int)( ( tu1 / d1 ) % tw );
+								int myV = (int)( ( tv1 / d1 ) % th );
+								c = texture[ myV + (myV<0?th:0)][ myU + (myU<0?tw:0) ];
+								// original								
+								//c = texture[ (int)( ( tv1 / d1 ) % th )) ]
+								           //[ (int)( ( tu1 / d1 ) % tw )) ];
 								
 								if ( (r = (dr1 * ((c >> 16) & 0xFF)) >> 16) > 255 ) r = 255;
 								if ( (g = (dr1 * ((c >>  8) & 0xFF)) >> 16) > 255 ) g = 255;
@@ -1451,6 +1464,8 @@ public class Renderer
 
 								_pixels[ i ] = 0xFF000000 + (r << 16) + (g << 8) + b;
 							}
+			} catch ( ArrayIndexOutOfBoundsException a )
+			{	System.out.println( "C : " + a.getMessage() + " at line " + v );	return;	}
 
 							d1  += d2;
 							dr1 += dr2;
