@@ -47,4 +47,9 @@ public abstract class ViewView
 
 		_transform = transform;
 	}
+
+	public Matrix3D getTransform()
+	{
+		return _transform;
+	}
 }

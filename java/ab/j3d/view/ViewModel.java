@@ -9,11 +9,13 @@
  */
 package com.numdata.soda.Gerwin.AbtoJ3D;
 
+import java.awt.Component;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.Vector3D;
 import ab.j3d.renderer.TreeNode;
 
 /**
@@ -82,7 +84,7 @@ public abstract class ViewModel
 			throw new NullPointerException( "ID" );
 
 		if ( view == null )
-			throw new NullPointerException( "node" );
+			throw new NullPointerException( "view" );
 
 		_views.put( ID , view );
 	}
@@ -151,8 +153,10 @@ public abstract class ViewModel
 	 * Create a new view.
 	 *
 	 * @param   ID      ID of the view that is created.
+	 * @param   from    Point to look from.
+	 * @param   to      Point to look at.
 	 */
-	public abstract void createView( Object ID );
+	public abstract Component createView( Object ID , final Vector3D from , final Vector3D to );
 
 	/**
 	 * Update a specified part (sub tree) of the view tree.

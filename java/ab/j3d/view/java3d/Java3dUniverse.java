@@ -111,14 +111,24 @@ public class J3dUniverse extends SimpleUniverse
 		view.setTransparencySortingPolicy( View.TRANSPARENCY_SORT_GEOMETRY );
 //		view.setBackClipDistance( 100 );
 
-		final Viewer[] newViewers = new Viewer[ viewer.length + 1 ];
-		System.arraycopy( viewer , 0 , newViewers , 0 , viewer.length );
-		newViewers[ viewer.length ] = newViewer;
-		viewer = newViewers;
+		addViewer( newViewer );
 
-		viewingPlatform.setViewPlatformBehavior( getOrbitBehavior( viewer.length -1) );
+		viewingPlatform.setViewPlatformBehavior( getOrbitBehavior( getViewerCount() -1) );
 
 		return panel;
+	}
+
+	public void addViewer( final Viewer theViewer )
+	{
+		final Viewer[] newViewers = new Viewer[ viewer.length + 1 ];
+		System.arraycopy( viewer , 0 , newViewers , 0 , viewer.length );
+		newViewers[ viewer.length ] = theViewer;
+		viewer = newViewers;
+	}
+
+	public int getViewerCount()
+	{
+		return viewer.length;
 	}
 
 	/**

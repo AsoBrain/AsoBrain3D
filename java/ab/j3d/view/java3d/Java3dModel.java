@@ -40,9 +40,19 @@ public class J3dModel
 	private J3dUniverse _universe;
 
 	/**
-	 * Branch graph of the j3d tree.
+	 * The scene graph. Contains a content graph and a view graph.
 	 */
-	private BranchGroup _branchGraph;
+	private BranchGroup _sceneGraph;
+
+	/**
+	 * Content branch graph of the j3d tree.
+	 */
+	private BranchGroup _contentBranchGraph;
+
+	/**
+	 *View branch graph of the j3d tree.
+	 */
+	private BranchGroup _viewBranchGraph;
 
 	/**
 	 * Map used to cache textures. Maps texture code (<code>String</code>) to
@@ -57,12 +67,18 @@ public class J3dModel
 	 */
 	public J3dModel( final MountingDb db )
 	{
-		_db                = db;
-		_universe          = new J3dUniverse();
-		_branchGraph       = new BranchGroup();
+		_db                 = db;
+		_universe           = new J3dUniverse();
+		_sceneGraph         = new BranchGroup();
+		_contentBranchGraph = new BranchGroup();
+		_viewBranchGraph    = new BranchGroup();
 
-		_branchGraph.setCapability( BranchGroup.ALLOW_CHILDREN_EXTEND );
-		_universe.addBranchGraph( _branchGraph );
+		_contentBranchGraph.setCapability( BranchGroup.ALLOW_CHILDREN_EXTEND );
+		_viewBranchGraph.setCapability   ( BranchGroup.ALLOW_CHILDREN_EXTEND );
+
+		_sceneGraph.addChild( _contentBranchGraph );
+		_sceneGraph.addChild( _viewBranchGraph    );
+		_universe.addBranchGraph( _sceneGraph );
 	}
 
 	public void createNode( final Object ID , final TreeNode abNode )
@@ -72,7 +88,7 @@ public class J3dModel
 
 		final BranchGroup node = new BranchGroup();
 		node.addChild( convertor.getJ3dRootNode() );
-		_branchGraph.addChild( node );
+		_contentBranchGraph.addChild( node );
 	}
 
 	/**
@@ -98,21 +114,20 @@ public class J3dModel
 	/**
 	 * Create a view from a specified point to a specified point.
 	 *
-	 * @return  The created view.
+	 * @param   ID      ID of the view that is created.
+	 * @param   from    Point to look from.
+	 * @param   to      Point to look at.
 	 */
-	public Component createFromToView( final Vector3D from , final Vector3D to )
+	public Component createView( final Object ID , final Vector3D from , final Vector3D to )
 	{
-		return _universe.addView( from , to , 1 , true );
-	}
+		final J3dView view = new J3dView( _universe , from , to );
+		addView( ID , view );
 
-	/**
-	 * Create a new view.
-	 *
-	 * @param ID ID of the view that is created.
-	 */
-	public void createView( Object ID )
-	{
-		// @FIXME implement.
+		final BranchGroup node = new BranchGroup();
+		node.addChild( view.getJ3dRootNode() );
+		_viewBranchGraph.addChild( node );
+
+		return view.getCanvas();
 	}
 
 	/**

@@ -386,7 +386,7 @@ public class ABtoJ3DConvertor
 	 *
 	 * @param   matrix  Matrix3D to convert.
 	 */
-	private Transform3D convertMatrix3D( final Matrix3D matrix )
+	public static Transform3D convertMatrix3D( final Matrix3D matrix )
 	{
 		return new Transform3D( new float[] {
 			matrix.xx , matrix.xy , matrix.xz , matrix.xo ,
