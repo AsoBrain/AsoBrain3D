@@ -1,10 +1,14 @@
 Current version: pre-1.1
 
 Changes between 1.0.6 and 1.1:
- - Project uses standarized directory layout ('classes' for temporary .class files, and 'lib' for .jar files).
- - Replaced Java 1.1 containers with Java2 collection classes.
+ - Renamed project from 'AsoBrain Lightweight 3D Toolkit' to 'AsoBrain 3D Toolkit' (no longer 'lightweight', because it also supports heavyweight Java 3D now).
+ - Added Java 3D support (ab.j3d.java3d).
+ - Added 3D Studio file (.3ds) support (ab.j3d.a3ds).
+ - Added opacity properties for faces.
  - Added 'reversePoints' argument to Polyline2D.transform() method to reverse the point ordering of the returned path.
  - Added 'reversePath' argument to Object3DBuilder.addFace() method to reverse the point ordering of the path.
+ - Project uses standarized directory layout ('classes' for temporary .class files, and 'lib' for .jar files).
+ - Replaced Java 1.1 containers with Java2 collection classes.
  - Split Renderer class into RenderPanel and Renderer:
    > RenderPanel extends JPanel and contains user interface code (mouse control), temporary wireframe painting, and thread control based on the panel's visibility (stop/start thread when the component is hidden/shown).
    > Renderer contains the background rendering code. Fixed various concurrency issues from old Renderer class.
