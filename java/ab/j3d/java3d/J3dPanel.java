@@ -78,7 +78,7 @@ import com.sun.j3d.utils.universe.ViewingPlatform;
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public final class J3dPanel
+public class J3dPanel
     extends Canvas3D
 {
 	/**
@@ -115,7 +115,8 @@ public final class J3dPanel
 		final BranchGroup staticScene = new BranchGroup();
 
 		// Set up the background
-		final Background background = new Background( new Color3f( 0.2f , 0.3f , 0.4f ) );
+		final Background background = new Background( new Color3f( 0.8f , 0.8f , 0.8f ) );
+//		final Background background = new Background( new Color3f( 0.2f , 0.3f , 0.4f ) );
 //		Background background = new Background( new Color3f( 0.3f , 0.4f , 0.6f ) );
 		background.setApplicationBounds( bounds );
 		staticScene.addChild( background );
