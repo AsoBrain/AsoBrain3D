@@ -98,11 +98,8 @@ public final class Cylinder3D
 	 * @param   smoothCircumference Apply smoothing to circumference of cylinder.
 	 * @param   smoothCaps          Apply smoothing to caps of cylinder.
 	 */
-	public void generate( final int numEdges , TextureSpec texture , final boolean smoothCircumference , final boolean smoothCaps )
+	public void generate( final int numEdges , final TextureSpec texture , final boolean smoothCircumference , final boolean smoothCaps )
 	{
-		if ( texture == null )
-			texture = new TextureSpec();
-
 		/*
 		 * Setup properties of cylinder.
 		 */
@@ -118,28 +115,30 @@ public final class Cylinder3D
 
 		if ( hasBottom )
 		{
+			final double step = 2.0 * Math.PI / (double)numEdges;
+
 			for ( int i = 0 ; i < numEdges ; i++ )
 			{
-				final double a = i * 2 * Math.PI / numEdges;
-
+				final double a = (double)i * step;
 				pointCoords[ v++ ] =  Math.sin( a ) * radiusBottom;
 				pointCoords[ v++ ] = -Math.cos( a ) * radiusBottom;
-				pointCoords[ v++ ] = 0;
+				pointCoords[ v++ ] = 0.0;
 			}
 		}
 		else
 		{
-			pointCoords[ v++ ] = 0;
-			pointCoords[ v++ ] = 0;
-			pointCoords[ v++ ] = 0;
+			pointCoords[ v++ ] = 0.0;
+			pointCoords[ v++ ] = 0.0;
+			pointCoords[ v++ ] = 0.0;
 		}
 
 		if ( hasTop )
 		{
+			final double step = 2.0 * Math.PI / (double)numEdges;
+
 			for ( int i = 0 ; i < numEdges ; i++ )
 			{
-				final double a = i * 2 * Math.PI / numEdges;
-
+				final double a = (double)i * step;
 				pointCoords[ v++ ] =  Math.sin( a ) * radiusTop;
 				pointCoords[ v++ ] = -Math.cos( a ) * radiusTop;
 				pointCoords[ v++ ] = height;
@@ -147,8 +146,8 @@ public final class Cylinder3D
 		}
 		else
 		{
-			pointCoords[ v++ ] = 0;
-			pointCoords[ v++ ] = 0;
+			pointCoords[ v++ ] = 0.0;
+			pointCoords[ v++ ] = 0.0;
 			pointCoords[ v/*++*/ ] = height;
 		}
 
@@ -236,7 +235,7 @@ public final class Cylinder3D
 		 *
 		 * We can can only see the outline of the cylinder (trapezoid).
 		 */
-		if ( Matrix3D.almostEqual( zz , 0 ) )
+		if ( Matrix3D.almostEqual( zz , 0.0 ) )
 		{
 			// (xz,yz) = direction of cylinder Z-axis in XY plane
 			// (xo,yo,zo) = view coordinate of cylinder bottom centeroid

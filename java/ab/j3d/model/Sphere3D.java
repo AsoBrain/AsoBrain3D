@@ -103,8 +103,6 @@ public final class Sphere3D
 	 */
 	public void generate( final int p , final int q , final TextureSpec texture , final boolean smooth )
 	{
-		final TextureSpec actualTexture = ( texture == null ) ? new TextureSpec() : texture;
-
 		final int      pointCount  = p * ( q - 1 ) + 2;
 		final double[] pointCoords = new double[ pointCount * 3 ];
 
@@ -161,7 +159,7 @@ public final class Sphere3D
 				                         : ( qc == lastQ ) ? new int[] { p2 , p1 , lastV }
 				                         :                   new int[] { p2 , p1 , p3 , p4 };
 
-				addFace( pointIndices , actualTexture , smooth );
+				addFace( pointIndices , texture , smooth );
 			}
 		}
 	}
