@@ -224,60 +224,56 @@ public final class FromToViewControl
 	//***************************************************
 	// Some first test code for dragging support
 	//***************************************************
-	private Matrix3D oldTransform = _transform;
-	private Vector3D oldFromPoint = _from;
+	private double   _startDistance = Double.NaN;
+	private Matrix3D _rotationBase  = Matrix3D.INIT;
 
-	private double range;
-	private double aboveAngle;
-	private double aboutAngle;
-	private Matrix3D rotBase;
-
-	public void mouseViewChanged( final DragEvent event )
-	{
-	}
-
-	public void dragStart()
+	public void dragStart( final DragEvent event )
 	{
 //		System.out.println( "DRAG START" );
-		oldTransform = _transform;
-		oldFromPoint = _from;
 
-		range      = _from.distanceTo( _to );
-		aboveAngle = 0;
-		aboutAngle = 0;
+		final Matrix3D transform = getTransform();
+		if ( event.getButtonNumber() == 1 )
+			_rotationBase = transform;
+		else
+			_rotationBase = transform.setTranslation( transform.multiply( _to.minus( _from ) ) );
 
-		final double transX = _from.x - _to.x;
-		final double transY = _from.y - _to.y;
-		final double transZ = _from.z - _to.z;
-		final Matrix3D trans = Matrix3D.INIT.plus( transX , transY , transZ );
-
-		rotBase = getTransform().multiply( trans );
+		_startDistance = _from.distanceTo( _to );
 	}
 
-	public void dragTo( final int buttonNr , final int deltaX , final int deltaY )
+	public void dragTo( final DragEvent event )
 	{
 //		System.out.println( "DRAG TO" );
 
-		if ( buttonNr == 0 )
+		switch ( event.getButtonNumber() )
 		{
-			aboveAngle += deltaX * -0.01;
-			aboutAngle += deltaY *  0.01;
-		}
-		else if ( buttonNr == 2 )
-		{
-			range += deltaY * 0.01;
+			case 0 : /* button #1 - rotate from point around to point */
+			{
+				final double aboutAngle = -event.getDeltaDegX();
+				final double aboveAngle = -event.getDeltaDegY();
+
+				final Matrix3D rotate1 = _rotationBase.rotateY( Math.toRadians( aboveAngle ) );
+				final Matrix3D rotate2 = rotate1.rotateX( Math.toRadians( aboutAngle ) );
+				final Vector3D from    = rotate2.multiply( 0.0 , 0.0 , -_startDistance );
+
+				lookFrom( from );
+				break;
+			}
+
+			/* button #2 - rotate to point around from point */
+
+			case 2 : /* button #3 - move from point closer or away from the to point */
+			{
+				final double distance = _startDistance + event.getDeltaUnitY();
+
+				lookFrom( _rotationBase.multiply( 0.0 , 0.0 , -distance ) );
+				break;
+			}
 		}
 
-		final double rotX = Math.toRadians( aboutAngle );
-		final double rotY = Math.toRadians( aboveAngle );
-
-//		_transform = Matrix3D.INIT.rotateY( rotY ).rotateX( rotX ).multiply( rotBase ).setTranslation( 0 , 0 , -range );
-		_transform = rotBase.rotateY( rotY ).rotateX( rotX ).setTranslation( 0 , 0 , -range );
 	}
 
-	public void dragStop()
+	public void dragStop( final DragEvent event )
 	{
 //		System.out.println( "DRAG STOP" );
-		_from = _transform.inverse().multiply( _to );
 	}
 }

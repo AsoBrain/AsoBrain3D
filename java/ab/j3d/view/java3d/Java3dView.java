@@ -110,20 +110,16 @@ public final class Java3dView
 
 		// @FIXME TEMP UPDATE, how to be triggered???
 		ds.addDragListener( new DragListener(){
-			public void mouseViewChanged( final DragEvent event )
+			public void dragStart( final DragEvent event )
+			{
+			}
+
+			public void dragTo( final DragEvent event )
 			{
 				update();
 			}
 
-			public void dragStart()
-			{
-			}
-
-			public void dragTo( final int buttonNr , final int deltaX , final int deltaY )
-			{
-			}
-
-			public void dragStop()
+			public void dragStop( final DragEvent event )
 			{
 			}
 		});

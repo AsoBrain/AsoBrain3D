@@ -39,6 +39,11 @@ public class DragSupport
 	implements MouseListener, MouseMotionListener
 {
 	/**
+	 * Multiplication factor to transform decimal degrees to radians.
+	 */
+	private static final double DEG_TO_RAD = Math.PI / 180.0;
+
+	/**
 	 * Control mode: rotate.
 	 */
 	public static final int ROTATE = 0;
@@ -52,21 +57,6 @@ public class DragSupport
 	 * Control mode: zoom.
 	 */
 	public static final int ZOOM = 2;
-
-	/**
-	 * Drag event: drag start.
-	 */
-	public static final int DRAG_START = 0;
-
-	/**
-	 * Drag event: drag to.
-	 */
-	public static final int DRAG_TO = 1;
-
-	/**
-	 * Drag event: drag stop.
-	 */
-	public static final int DRAG_STOP = 2;
 
 	/**
 	 * Variable index constant for rotation around X axis.
@@ -106,7 +96,7 @@ public class DragSupport
 	/**
 	 * Rotation and translation values.
 	 */
-	private final float[] _variables = new float[ 6 ];
+	private final double[] _variables = new double[ 6 ];
 
 	/**
 	 * This is the current "control mode" of the view. This
@@ -127,36 +117,37 @@ public class DragSupport
 	/**
 	 * Mouse sensivity for each control mode.
 	 */
-	final float[] _sensitivity = { 1.4f , 0.02f , 0.02f };
+	final double[] _sensitivity;
 
 	/**
-	 * Number of button that is currently down (-1 = none).
+	 * Mouse sensivity to translate pixels to decimal degrees.
 	 */
-	private int _buttonDown;
+	final double _toDegrees;
+
+	/**
+	 * Mouse sensivity to translate pixels to decimal degrees.
+	 */
+	final double _toUnits;
 
 	/**
 	 * Drag start coordinate value for X-axis movement.
 	 */
 	private int _xStartCoordinate;
 
-	private int _xLastKnownCoordinate;
-
 	/**
 	 * Drag start target value for X-axis movement.
 	 */
-	private float _xStartValue;
+	private double _xStartValue;
 
 	/**
 	 * Drag start coordinate value for Y-axis movement.
 	 */
 	private int _yStartCoordinate;
 
-	private int _yLastKnownCoordinate;
-
 	/**
 	 * Drag start target value for Y-axis movement.
 	 */
-	private float _yStartValue;
+	private double _yStartValue;
 
 	/**
 	 * Registered event listeners.
@@ -169,83 +160,72 @@ public class DragSupport
 	 * @param   target  Target component to attach mouse control to.
 	 * @param   unit    Unit scale factor (e.g. <code>MM</code>).
 	 */
-	public DragSupport( final Component target , final float unit )
+	public DragSupport( final Component target , final double unit )
 	{
-		_buttonDown       = -1;
 		_xStartCoordinate = 0;
 		_yStartCoordinate = 0;
-		_xStartValue      = 0;
-		_yStartValue      = 0;
+		_xStartValue      = 0.0;
+		_yStartValue      = 0.0;
 
 		target.addMouseListener( this );
 		target.addMouseMotionListener( this );
-//		target.addMouseWheelListener( this );
 
-		if ( ( unit > 0 ) && ( unit != 1 ) )
+		_toDegrees   = 1.4;
+		_toUnits     = ( ( unit > 0 ) && ( unit != 1 ) ) ? ( 0.02 / unit ) : 0.02;
+		_sensitivity = new double[] { _toDegrees , _toUnits , _toUnits };
+	}
+
+	public void addDragListener( final DragListener listener )
+	{
+		if ( !_listeners.contains( listener ) )
+			_listeners.add( listener );
+	}
+
+	public void removeDragListener( final DragListener listener )
+	{
+		_listeners.remove( listener );
+	}
+
+	protected void fireEvent( final int id , final int buttonNumber , final int x , final int y )
+	{
+		final List listeners = _listeners;
+		if ( !listeners.isEmpty() )
 		{
-			_sensitivity[ PAN  ] /= unit;
-			_sensitivity[ ZOOM ] /= unit;
+			final DragEvent event = new DragEvent( this , id , buttonNumber , _xStartCoordinate , _yStartCoordinate , x , y , _toDegrees , _toDegrees * DEG_TO_RAD , _toUnits );
+			for ( int i = 0 ; i < listeners.size() ; i++ )
+			{
+				final DragListener listener = (DragListener)listeners.get( i );
+
+				switch ( id )
+				{
+					case DragEvent.DRAG_START : listener.dragStart( event ); break;
+					case DragEvent.DRAG_TO    : listener.dragTo( event ); break;
+					case DragEvent.DRAG_STOP  : listener.dragStop ( event ); break;
+				}
+			}
 		}
 	}
 
 	/**
-	 * Get rotation around X axis (in degrees).
+	 * Get suggested control mode for the specified button number.
 	 *
-	 * @return  Rotation around X axis (in degrees).
+	 * @param   buttonNumber    Button number on control device.
+	 *
+	 * @return  Control mode (<code>ROTATE</codE>, <code>PAN</code>, <code>ZOOM</code>).
 	 */
-	private float getRotationX()
+	protected int getModeForButton( final int buttonNumber )
 	{
-		return _variables[ ROTATION_X ];
+		return ( buttonNumber == 1 ) ? PAN : ( buttonNumber == 2 ) ? ZOOM : _controlMode;
 	}
 
 	/**
-	 * Get rotation around Y axis (in degrees).
+	 * Set current control mode for panel.
 	 *
-	 * @return  Rotation around Y axis (in degrees).
+	 * @param   mode    Control mode for panel (ZOOM,PAN,ROTATE).
 	 */
-	private float getRotationY()
+	public final void setControlMode( final int mode )
 	{
-		return _variables[ ROTATION_Y ];
-	}
-
-	/**
-	 * Get rotation around Z axis (in degrees).
-	 *
-	 * @return  Rotation around Z axis (in degrees).
-	 */
-	private float getRotationZ()
-	{
-		return _variables[ ROTATION_Z ];
-	}
-
-	/**
-	 * Get translation along X axis (in model units).
-	 *
-	 * @return  Translation along X axis (in model units).
-	 */
-	private float getTranslationX()
-	{
-		return _variables[ TRANSLATION_X ];
-	}
-
-	/**
-	 * Get translation along Y axis (in model units).
-	 *
-	 * @return  Translation along Y axis (in model units).
-	 */
-	private float getTranslationY()
-	{
-		return _variables[ TRANSLATION_Y ];
-	}
-
-	/**
-	 * Get translation along Z axis (in model units).
-	 *
-	 * @return  Translation along Z axis (in model units).
-	 */
-	private float getTranslationZ()
-	{
-		return _variables[ TRANSLATION_Z ];
+		_controlMode = mode;
 	}
 
 	/**
@@ -261,84 +241,16 @@ public class DragSupport
 	}
 
 	/**
-	 * Test if (any) mouse button is currently down.
-	 *
-	 * @return  <code>true</code> if a mouse button is down;
-	 *          <code>false</code> otherwise.
-	 */
-	public boolean isButtonDown()
-	{
-		return ( _buttonDown >= 0 );
-	}
-
-	/**
-	 * Set current control mode for panel.
-	 *
-	 * @param   mode    Control mode for panel (ZOOM,PAN,ROTATE).
-	 */
-	public final void setControlMode( final int mode )
-	{
-		_controlMode = mode;
-	}
-
-	public void addDragListener( final DragListener listener )
-	{
-		if ( !_listeners.contains( listener ) )
-			_listeners.add( listener );
-	}
-
-	public void removeMouseViewListener( final DragListener listener )
-	{
-		_listeners.remove( listener );
-	}
-
-	protected void fireEvent( final int type )
-	{
-		if ( !_listeners.isEmpty() )
-		{
-			final DragEvent event = new DragEvent( this );
-			for ( int i = 0 ; i < _listeners.size() ; i++ )
-			{
-				final DragListener listener = (DragListener)_listeners.get( i );
-
-				switch( type )
-				{
-					case DRAG_START: listener.dragStart(); break;
-					case DRAG_TO   : listener.dragTo( _buttonDown , _xStartCoordinate - _xLastKnownCoordinate , _yStartCoordinate - _yLastKnownCoordinate ); break;
-					case DRAG_STOP : listener.dragStop(); break;
-				}
-
-				listener.mouseViewChanged( event ); // NOT NEEDED ANYMORE?
-			}
-		}
-	}
-
-	/**
-	 * Get button number from the specified mouse event.
-	 *
-	 * @param   event   Mouse event.
-	 *
-	 * @return  Button number (0-2).
-	 */
-	private int getButtonNumber( final MouseEvent event )
-	{
-		final int modifiers = event.getModifiers();
-
-		return ( ( modifiers & MouseEvent.BUTTON2_MASK ) != 0 ) ? 1 :
-		       ( ( modifiers & MouseEvent.BUTTON3_MASK ) != 0 ) ? 2 : 0;
-	}
-
-	/**
 	 * Get variable value.
 	 *
 	 * @param   varIndex    Variable index constant (negative for reverse value change).
 	 *
 	 * @return  Variable value.
 	 */
-	private float getValue( final int varIndex )
+	private double getValue( final int varIndex )
 	{
 		final int absIndex = ( varIndex < 0 ) ? -varIndex : varIndex;
-		return ( absIndex == DISABLED ) ? 0 : _variables[ absIndex ];
+		return ( absIndex == DISABLED ) ? 0.0 : _variables[ absIndex ];
 	}
 
 	/**
@@ -348,53 +260,108 @@ public class DragSupport
 	 * @param   startValue  Value when dragging started.
 	 * @param   deltaValue  Value change since dragging started.
 	 */
-	private void adjustValue( final int varIndex , final float startValue , final float deltaValue )
+	private void adjustValue( final int varIndex , final double startValue , final double deltaValue )
 	{
 		final int absIndex = ( varIndex < 0 ) ? -varIndex : varIndex;
 		if ( absIndex != DISABLED )
 			_variables[ absIndex ] = ( varIndex < 0 ) ? ( startValue - deltaValue ) : ( startValue + deltaValue );
 	}
 
+	/**
+	 * Get rotation around X axis (in degrees).
+	 *
+	 * @return  Rotation around X axis (in degrees).
+	 */
+	private double getRotationX()
+	{
+		return _variables[ ROTATION_X ];
+	}
+
+	/**
+	 * Get rotation around Y axis (in degrees).
+	 *
+	 * @return  Rotation around Y axis (in degrees).
+	 */
+	private double getRotationY()
+	{
+		return _variables[ ROTATION_Y ];
+	}
+
+	/**
+	 * Get rotation around Z axis (in degrees).
+	 *
+	 * @return  Rotation around Z axis (in degrees).
+	 */
+	private double getRotationZ()
+	{
+		return _variables[ ROTATION_Z ];
+	}
+
+	/**
+	 * Get translation along X axis (in model units).
+	 *
+	 * @return  Translation along X axis (in model units).
+	 */
+	private double getTranslationX()
+	{
+		return _variables[ TRANSLATION_X ];
+	}
+
+	/**
+	 * Get translation along Y axis (in model units).
+	 *
+	 * @return  Translation along Y axis (in model units).
+	 */
+	private double getTranslationY()
+	{
+		return _variables[ TRANSLATION_Y ];
+	}
+
+	/**
+	 * Get translation along Z axis (in model units).
+	 *
+	 * @return  Translation along Z axis (in model units).
+	 */
+	private double getTranslationZ()
+	{
+		return _variables[ TRANSLATION_Z ];
+	}
+
 	public void mousePressed( final MouseEvent event )
 	{
 		final int buttonNr = getButtonNumber( event );
-		final int mode     = ( buttonNr == 1 ) ? PAN : (buttonNr == 2) ? ZOOM : _controlMode;
+		final int x        = event.getX();
+		final int y        = event.getY();
+		final int mode     = getModeForButton( buttonNr );
 
-		_xStartCoordinate = event.getX();
-		_yStartCoordinate = event.getY();
+		_xStartCoordinate = x;
+		_yStartCoordinate = y;
 		_xStartValue      = getValue( _controlX[ mode ] );
 		_yStartValue      = getValue( _controlY[ mode ] );
 
-		_xLastKnownCoordinate = event.getX(); // Temporary used, not sure on how the 'adjustValue()' method stores this info.
-		_yLastKnownCoordinate = event.getY(); // Temporary used, not sure on how the 'adjustValue()' method stores this info.
-
-		_buttonDown = buttonNr;
-		fireEvent( DRAG_START );
-	}
-
-	public void mouseReleased( final MouseEvent event )
-	{
-		_buttonDown = -1;
-
-		_xLastKnownCoordinate = event.getX(); // Temporary used, not sure on how the 'adjustValue()' method stores this info.
-		_yLastKnownCoordinate = event.getY(); // Temporary used, not sure on how the 'adjustValue()' method stores this info.
-
-		fireEvent( DRAG_STOP );
+		fireEvent( DragEvent.DRAG_START , buttonNr , x , y );
 	}
 
 	public void mouseDragged( final MouseEvent event )
 	{
-		final int   buttonNr    = getButtonNumber( event );
-		final int   mode        = ( buttonNr == 1 ) ? PAN : (buttonNr == 2) ? ZOOM : _controlMode;
-		final float sensitivity = _sensitivity[ mode ];
+		final int buttonNr = getButtonNumber( event );
+		final int x        = event.getX();
+		final int y        = event.getY();
+		final int mode     = getModeForButton( buttonNr );
 
-		adjustValue( _controlX[ mode ] , _xStartValue , sensitivity * ( event.getX() - _xStartCoordinate ) );
-		adjustValue( _controlY[ mode ] , _yStartValue , sensitivity * ( _yStartCoordinate - event.getY() ) );
+		adjustValue( _controlX[ mode ] , _xStartValue , _sensitivity[ mode ] * (double)( x - _xStartCoordinate ) );
+		adjustValue( _controlY[ mode ] , _yStartValue , _sensitivity[ mode ] * (double)( _yStartCoordinate - y ) );
 
-		_xLastKnownCoordinate = event.getX(); // Temporary used, not sure on how the 'adjustValue()' method stores this info.
-		_yLastKnownCoordinate = event.getY(); // Temporary used, not sure on how the 'adjustValue()' method stores this info.
+		fireEvent( DragEvent.DRAG_TO , buttonNr , x , y );
+	}
 
-		fireEvent( DRAG_TO );
+	public void mouseReleased( final MouseEvent event )
+	{
+		final int buttonNr = getButtonNumber( event );
+		final int x        = event.getX();
+		final int y        = event.getY();
+
+		fireEvent( DragEvent.DRAG_STOP , buttonNr , x , y );
 	}
 
 	public void mouseMoved( final MouseEvent event )
@@ -411,5 +378,19 @@ public class DragSupport
 
 	public void mouseExited( final MouseEvent event )
 	{
+	}
+
+	/**
+	 * Get button number from mouse event.
+	 *
+	 * @param   mouseEvent  Mouse event to get button number from.
+	 *
+	 * @return  Button number (0-2).
+	 */
+	protected static int getButtonNumber( final MouseEvent mouseEvent )
+	{
+		final int modifiers = mouseEvent.getModifiers();
+
+		return ( ( modifiers & MouseEvent.BUTTON2_MASK ) != 0 ) ? 1 : ( ( modifiers & MouseEvent.BUTTON3_MASK ) != 0 ) ? 2 : 0;
 	}
 }

@@ -24,9 +24,9 @@ import javax.media.j3d.Canvas3D;
 
 import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
 
-import ab.j3d.view.MouseViewControl;
-import ab.j3d.view.MouseViewEvent;
-import ab.j3d.view.MouseViewListener;
+import ab.j3d.view.DragEvent;
+import ab.j3d.view.DragListener;
+import ab.j3d.view.DragSupport;
 
 /**
  * Replacement of <code>OrbitBehavior</code> for more manageable controls. Drag
@@ -38,12 +38,12 @@ import ab.j3d.view.MouseViewListener;
  */
 public final class SimpleOrbitBehavior
 	extends OrbitBehavior
-	implements MouseViewListener
+	implements DragListener
 {
 	/**
-	 * Mouse view control for behavior.
+	 * Drag control for behavior.
 	 */
-	private final MouseViewControl _mouseViewControl;
+	private final DragSupport _dragSupport;
 
 	/**
 	 * Creates a new <code>SimpleOrbitBehavior</code>.
@@ -55,24 +55,32 @@ public final class SimpleOrbitBehavior
 	{
 		super( c , 0 );
 
-		_mouseViewControl = new MouseViewControl( c , unit );
-		_mouseViewControl.addMouseViewListener( this );
-		_mouseViewControl._controlX[ 0 ] =  MouseViewControl.ROTATION_Y;
-		_mouseViewControl._controlX[ 1 ] = -MouseViewControl.TRANSLATION_X;
-		_mouseViewControl._controlX[ 2 ] =  MouseViewControl.DISABLED;
+		_dragSupport = new DragSupport( c , unit );
+		_dragSupport.addDragListener( this );
+		_dragSupport._controlX[ 0 ] =  DragSupport.ROTATION_Y;
+		_dragSupport._controlX[ 1 ] = -DragSupport.TRANSLATION_X;
+		_dragSupport._controlX[ 2 ] =  DragSupport.DISABLED;
 
-		_mouseViewControl._controlY[ 0 ] =  MouseViewControl.ROTATION_X;
-		_mouseViewControl._controlY[ 1 ] = -MouseViewControl.TRANSLATION_Y;
-		_mouseViewControl._controlY[ 2 ] =  MouseViewControl.TRANSLATION_Z;
+		_dragSupport._controlY[ 0 ] =  DragSupport.ROTATION_X;
+		_dragSupport._controlY[ 1 ] = -DragSupport.TRANSLATION_Y;
+		_dragSupport._controlY[ 2 ] =  DragSupport.TRANSLATION_Z;
 	}
 
 	protected synchronized void integrateTransforms()
 	{
-		targetTG.setTransform( Java3dTools.convertMatrix3DToTransform3D( _mouseViewControl.getTransform() ) );
+		targetTG.setTransform( Java3dTools.convertMatrix3DToTransform3D( _dragSupport.getTransform() ) );
 	}
 
-	public void mouseViewChanged( final MouseViewEvent event )
+	public void dragStart( final DragEvent event )
+	{
+	}
+
+	public void dragTo( final DragEvent event )
 	{
 		integrateTransforms();
+	}
+
+	public void dragStop( final DragEvent event )
+	{
 	}
 }

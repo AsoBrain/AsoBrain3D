@@ -21,7 +21,7 @@
 package ab.j3d.view;
 
 /**
- * Listener for events from the <code>MouseViewControl</code> class.
+ * Listener for events from the <code>DragSupport</code> class.
  *
  * @see     DragSupport
  * @see     DragEvent
@@ -32,30 +32,34 @@ package ab.j3d.view;
 public interface DragListener
 {
 	/**
-	 * This event is fired when the mouse view was changed.
+	 * This event is fired when a drag operation is started. When using a mouse,
+	 * this happens when a mouse button is pressed.
 	 *
-	 * @param   event   Event from drag support.
-	 */
-	void mouseViewChanged( final DragEvent event );
-
-	/**
-	 * This event is fired when a mouse button is pressed,
-	 * the starting point of a drag action.
-	 */
-	void dragStart();
-
-	/**
-	 * This event is fired when the actual mouse dragging takes place.
+	 * @param   event   Drag event.
 	 *
-	 * @param   buttonNr    Number of the pressed mouse button.
-	 * @param   deltaX      
-	 * @param   deltaY
+	 * @see     DragEvent#DRAG_START
 	 */
-	void dragTo( final int buttonNr , final int deltaX , final int deltaY );
+	void dragStart( DragEvent event );
 
 	/**
-	 * This event is fired when a mouse button is released,
-	 * the end point of a drag action.
+	 * This event is fired when the drag operation is in progress and the
+	 * drag point has been dragged to a new position. When using a mouse to
+	 * drag, this happens when the mouse is moved while a mouse button is
+	 * pressed.
+	 *
+	 * @param   event   Drag event.
+	 *
+	 * @see     DragEvent#DRAG_TO
 	 */
-	void dragStop();
+	void dragTo( DragEvent event );
+
+	/**
+	 * This event is fired when the drag operation is stopped. When using a
+	 * mouse to drag, this when the mouse button is released.
+	 *
+	 * @param   event   Drag event.
+	 *
+	 * @see     DragEvent#DRAG_STOP
+	 */
+	void dragStop( DragEvent event );
 }

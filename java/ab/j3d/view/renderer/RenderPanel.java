@@ -37,9 +37,9 @@ import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 import ab.j3d.model.Transform3D;
-import ab.j3d.view.MouseViewControl;
-import ab.j3d.view.MouseViewEvent;
-import ab.j3d.view.MouseViewListener;
+import ab.j3d.view.DragEvent;
+import ab.j3d.view.DragListener;
+import ab.j3d.view.DragSupport;
 
 /**
  * This panel is used as view and control of a <code>Renderer</code>. It starts
@@ -52,15 +52,15 @@ import ab.j3d.view.MouseViewListener;
  */
 public class RenderPanel
     extends JComponent
-	implements ComponentListener, MouseViewListener
+	implements ComponentListener, DragListener
 {
 	/** Render mode: quick (wireframe). */ public static final int QUICK = 1;
 	/** Render mode: full (solid).      */ public static final int FULL  = 2;
 
 	/**
-	 * Mouse view control for render panel.
+	 * Drag support for render panel.
 	 */
-	private final MouseViewControl _mouseViewControl;
+	private final DragSupport _dragSupport;
 
 	/**
 	 * Transform of model.
@@ -133,19 +133,25 @@ public class RenderPanel
 		/*
 		 * Construct 3D world.
 		 */
+		final Node3D world = new Node3D();
+
 		_model = new Transform3D();
 		_modelTransform = new Transform3D();
 		_modelTransform.addChild( _model );
-
-		_camera = new Camera3D( 300.0f , 60.0f );
-		_cameraTransform = new Transform3D( Vector3D.INIT.set( 0 , -3000 , 0 ) );
-		_cameraTransform.addChild( _camera );
-
-		final Node3D world = new Node3D();
 		world.addChild( _modelTransform );
+
+		_camera = new Camera3D( 300.0 , 60.0 );
+		_cameraTransform = new Transform3D( Vector3D.INIT.set( 0.0 , -3000.0 , 0.0 ) );
+		_cameraTransform.addChild( _camera );
 		world.addChild( _cameraTransform );
-		world.addChild( new Light3D( 500 , -1.0f ) ); // 384
-		world.addChild( new Transform3D( Vector3D.INIT.set( -750.0f , -2500.0f , 1700.0f ) ) ).addChild( new Light3D( 10000 , 30.0f ) );
+
+		final Light3D ambientLight = new Light3D( 500 , -1.0 ); // 384
+		world.addChild( ambientLight );
+
+		final Light3D pointLight = new Light3D( 10000 , 30.0 );
+		final Transform3D pointLightTransform = new Transform3D( Vector3D.INIT.set( -750.0 , -2500.0 , 1700.0 ) );
+		world.addChild( pointLightTransform );
+		pointLightTransform.addChild( pointLight );
 
 		/*
 		 * Initialize render/control variables.
@@ -158,8 +164,8 @@ public class RenderPanel
 		 * Enable control events.
 		 */
 		addComponentListener( this );
-		_mouseViewControl = new MouseViewControl( this , 0.001f );
-		_mouseViewControl.addMouseViewListener( this );
+		_dragSupport = new DragSupport( this , 0.001f );
+		_dragSupport.addDragListener( this );
 	}
 
 	/**
@@ -168,9 +174,9 @@ public class RenderPanel
 	public final void center()
 	{
 		_model.setTranslation( _model.getTranslation().set(
-			( _bounds.v1.x + _bounds.v2.x ) / -2 ,
-			( _bounds.v1.y + _bounds.v2.y ) / -2 ,
-			( _bounds.v1.z + _bounds.v2.z ) / -2 ) );
+			( _bounds.v1.x + _bounds.v2.x ) / -2.0 ,
+			( _bounds.v1.y + _bounds.v2.y ) / -2.0 ,
+			( _bounds.v1.z + _bounds.v2.z ) / -2.0 ) );
 	}
 
 	/**
@@ -274,13 +280,21 @@ public class RenderPanel
 		return( _showTemporaryWireframe );
 	}
 
-	/**
-	 * Handle event from mouse control.
-	 */
-	public void mouseViewChanged( final MouseViewEvent event )
+	public void dragStart( final DragEvent event )
 	{
-		setRenderingMode( _mouseViewControl.isButtonDown() ? QUICK : FULL );
-		_modelTransform.setMatrix( _mouseViewControl.getTransform() );
+		setRenderingMode( QUICK );
+		requestUpdate();
+	}
+
+	public void dragTo( final DragEvent event )
+	{
+		_modelTransform.setMatrix( _dragSupport.getTransform() );
+		requestUpdate();
+	}
+
+	public void dragStop( final DragEvent event )
+	{
+		setRenderingMode( FULL );
 		requestUpdate();
 	}
 
@@ -421,9 +435,9 @@ public class RenderPanel
 	 */
 	public final void reset()
 	{
-		_modelTransform.setRotationX( -10.0f );
-		_modelTransform.setRotationZ( -35.0f );
-		_cameraTransform.setTranslation( Vector3D.INIT.set( 0.0f , -4000.0f , 0.0f ) );
+		_modelTransform.setRotationX( -10.0 );
+		_modelTransform.setRotationZ( -35.0 );
+		_cameraTransform.setTranslation( Vector3D.INIT.set( 0.0 , -4000.0 , 0.0 ) );
 		center();
 
 		requestUpdate();
@@ -436,7 +450,7 @@ public class RenderPanel
 	 */
 	public final void setControlMode( final int mode )
 	{
-		_mouseViewControl.setControlMode( mode );
+		_dragSupport.setControlMode( mode );
 	}
 
 	/**
