@@ -181,6 +181,21 @@ public abstract class ViewModel
 	public abstract void createNode( Object id , Node3D node3D , TextureSpec textureOverride , float opacity );
 
 	/**
+	 * Test if view model contains a node with the specified ID.
+	 *
+	 * @param   id      Application-assigned ID of view model node.
+	 *
+	 * @return  <code>true</code> if a node with the specified ID was found;
+	 *          <code>false</code> if the model contains no such node.
+	 *
+	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
+	 */
+	public boolean hasNode( final Object id )
+	{
+		return ( getNode( id ) != null );
+	}
+
+	/**
 	 * Remove view model node.
 	 *
 	 * @param   id      Application-assigned ID of view model node.
@@ -189,10 +204,9 @@ public abstract class ViewModel
 	 */
 	public void removeNode( final Object id )
 	{
-		if ( id == null )
-			throw new NullPointerException( "id" );
-
-		_nodes.remove( id );
+		final ViewModelNode node = getNode( id );
+		if ( node != null )
+			_nodes.remove( id );
 	}
 
 	/**
@@ -389,6 +403,21 @@ public abstract class ViewModel
 	}
 
 	/**
+	 * Test if view model contains a view with the specified ID.
+	 *
+	 * @param   id      Application-assigned ID of view model view.
+	 *
+	 * @return  <code>true</code> if a view with the specified ID was found;
+	 *          <code>false</code> if the model contains no such view.
+	 *
+	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
+	 */
+	public boolean hasView( final Object id )
+	{
+		return ( getView( id ) != null );
+	}
+
+	/**
 	 * Remove view model view.
 	 *
 	 * @param   id      Application-assigned ID for a view model view.
@@ -397,10 +426,9 @@ public abstract class ViewModel
 	 */
 	public final void removeView( final Object id )
 	{
-		if ( id == null )
-			throw new NullPointerException( "id" );
-
-		_views.remove( id );
+		final ViewModelView view = getView( id );
+		if ( view != null )
+			_views.remove( view );
 	}
 
 	/**
