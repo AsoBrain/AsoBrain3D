@@ -171,7 +171,7 @@ public class DragSupport
 		target.addMouseMotionListener( this );
 
 		_toDegrees   = 1.4;
-		_toUnits     = ( ( unit > 0 ) && ( unit != 1 ) ) ? ( 0.02 / unit ) : 0.02;
+		_toUnits     = ( ( unit > 0 ) && ( unit != 1 ) ) ? ( 0.05 / unit ) : 0.05;
 		_sensitivity = new double[] { _toDegrees , _toUnits , _toUnits };
 	}
 
@@ -186,12 +186,12 @@ public class DragSupport
 		_listeners.remove( listener );
 	}
 
-	protected void fireEvent( final int id , final int buttonNumber , final int x , final int y )
+	protected void fireEvent( final int id , final int buttonNumber , final int clickCount , final int x , final int y )
 	{
 		final List listeners = _listeners;
 		if ( !listeners.isEmpty() )
 		{
-			final DragEvent event = new DragEvent( this , id , buttonNumber , _xStartCoordinate , _yStartCoordinate , x , y , _toDegrees , _toDegrees * DEG_TO_RAD , _toUnits );
+			final DragEvent event = new DragEvent( this , id , buttonNumber , clickCount ,  _xStartCoordinate , _yStartCoordinate , x , y , _toDegrees , _toDegrees * DEG_TO_RAD , _toUnits );
 			for ( int i = 0 ; i < listeners.size() ; i++ )
 			{
 				final DragListener listener = (DragListener)listeners.get( i );
@@ -329,39 +329,42 @@ public class DragSupport
 
 	public void mousePressed( final MouseEvent event )
 	{
-		final int buttonNr = getButtonNumber( event );
-		final int x        = event.getX();
-		final int y        = event.getY();
-		final int mode     = getModeForButton( buttonNr );
+		final int buttonNumber = getButtonNumber( event );
+		final int clickCount   = event.getClickCount();
+		final int x            = event.getX();
+		final int y            = event.getY();
+		final int mode         = getModeForButton( buttonNumber );
 
 		_xStartCoordinate = x;
 		_yStartCoordinate = y;
 		_xStartValue      = getValue( _controlX[ mode ] );
 		_yStartValue      = getValue( _controlY[ mode ] );
 
-		fireEvent( DragEvent.DRAG_START , buttonNr , x , y );
+		fireEvent( DragEvent.DRAG_START , buttonNumber , clickCount , x , y );
 	}
 
 	public void mouseDragged( final MouseEvent event )
 	{
-		final int buttonNr = getButtonNumber( event );
-		final int x        = event.getX();
-		final int y        = event.getY();
-		final int mode     = getModeForButton( buttonNr );
+		final int buttonNumber = getButtonNumber( event );
+		final int clickCount   = event.getClickCount();
+		final int x            = event.getX();
+		final int y            = event.getY();
+		final int mode         = getModeForButton( buttonNumber );
 
 		adjustValue( _controlX[ mode ] , _xStartValue , _sensitivity[ mode ] * (double)( x - _xStartCoordinate ) );
 		adjustValue( _controlY[ mode ] , _yStartValue , _sensitivity[ mode ] * (double)( _yStartCoordinate - y ) );
 
-		fireEvent( DragEvent.DRAG_TO , buttonNr , x , y );
+		fireEvent( DragEvent.DRAG_TO , buttonNumber , clickCount , x , y );
 	}
 
 	public void mouseReleased( final MouseEvent event )
 	{
-		final int buttonNr = getButtonNumber( event );
-		final int x        = event.getX();
-		final int y        = event.getY();
+		final int buttonNumber = getButtonNumber( event );
+		final int clickCount   = event.getClickCount();
+		final int x            = event.getX();
+		final int y            = event.getY();
 
-		fireEvent( DragEvent.DRAG_STOP , buttonNr , x , y );
+		fireEvent( DragEvent.DRAG_STOP , buttonNumber , clickCount , x , y );
 	}
 
 	public void mouseMoved( final MouseEvent event )
