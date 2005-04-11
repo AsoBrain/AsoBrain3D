@@ -20,7 +20,8 @@
 package ab.j3d.view.java2d;
 
 import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,8 +32,8 @@ import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 
 /**
- * This class implements a simple renderer using filled polygons on a Graphics
- * (Java 1.1) context (no pixel buffers are used).
+ * This class implements a simple renderer using Java 2D for rendering (no pixel
+ * buffers/rendering is performed).
  *
  * @FIXME   This class is not production-quality, but it serves as a working starting-point for a proper Java 2D renderer.
  *
@@ -51,41 +52,61 @@ public final class PolygonRenderer
 
 	static final class QueueItem
 	{
-		final double z;
-		final int[]  xs;
-		final int[]  ys;
-		final Color  color;
-		final double nz;
+		final Face3D  face;
+		final double  z;
+		final int[]   xs;
+		final int[]   ys;
+		final boolean alternateAppearance;
+		final double  nz;
 
-		QueueItem( final int[] xs , final int[] ys , final double z , final Color color , final double nz )
+		QueueItem( final Face3D face , final int[] xs , final int[] ys , final double z , final boolean alternateAppearance , final double nz )
 		{
-			this.z     = z;
-			this.xs    = xs;
-			this.ys    = ys;
-			this.color = color;
-			this.nz    = nz;
+			this.face                = face;
+			this.z                   = z;
+			this.xs                  = xs;
+			this.ys                  = ys;
+			this.alternateAppearance = alternateAppearance;
+			this.nz                  = nz;
 		}
 	}
 
 	public PolygonRenderer( final Matrix3D gTransform , final Matrix3D viewTransform , final boolean hasPerspective )
 	{
-		_projectionTransform      = gTransform;
-		_viewTransform   = viewTransform;
-		_perspective = hasPerspective;
-		_queue       = new ArrayList();
-		_nodes          = new Node3DCollection();
-		_pointCoordsCache         = null;
+		_projectionTransform = gTransform;
+		_viewTransform       = viewTransform;
+		_perspective         = hasPerspective;
+		_queue               = new ArrayList();
+		_nodes               = new Node3DCollection();
+		_pointCoordsCache    = null;
 	}
 
-	public synchronized void add( final Node3D node , final Color color )
+	public void add( final Node3D node , final Color overridePaint )
 	{
-		_nodes.clear();
-		node.gatherLeafs( _nodes , Object3D.class , _viewTransform , false );
+		final Node3DCollection nodes = _nodes;
+		nodes.clear();
+		node.gatherLeafs( nodes , Object3D.class , Matrix3D.INIT , false );
 
-		for ( int nodeIndex = 0 ; nodeIndex < _nodes.size() ; nodeIndex++ )
+		for ( int nodeIndex = 0 ; nodeIndex < nodes.size() ; nodeIndex++ )
 		{
-			final Object3D object      = (Object3D)_nodes.getNode( nodeIndex );
-			final Matrix3D xform       = _nodes.getMatrix( nodeIndex );
+			final Object3D object = (Object3D)nodes.getNode( nodeIndex );
+
+			object.outlinePaint = overridePaint;
+			object.fillPaint    = overridePaint;
+		}
+
+		add( node , false );
+	}
+
+	public void add( final Node3D node , final boolean alternateAppearance )
+	{
+		final Node3DCollection nodes = _nodes;
+		nodes.clear();
+		node.gatherLeafs( nodes , Object3D.class , _viewTransform , false );
+
+		for ( int nodeIndex = 0 ; nodeIndex < nodes.size() ; nodeIndex++ )
+		{
+			final Object3D object      = (Object3D)nodes.getNode( nodeIndex );
+			final Matrix3D xform       = nodes.getMatrix( nodeIndex );
 			final int      pointCount  = object.getPointCount();
 			final double[] pointCoords = ( _pointCoordsCache = xform.transform( object.getPointCoords() , _pointCoordsCache , pointCount ) );
 			final int      faceCount   = object.getFaceCount();
@@ -161,22 +182,22 @@ public final class PolygonRenderer
 						ys[ p ] = (int)_projectionTransform.transformY( x , y , 0.0 );
 					}
 
-					averageZ = averageZ / vertexCount;
-					_queue.add( new QueueItem( xs , ys , averageZ , color , normalZ ) );
+					averageZ = averageZ / (double)vertexCount;
+					_queue.add( new QueueItem( face , xs , ys , averageZ , alternateAppearance , normalZ ) );
 				}
 			}
 		}
 	}
 
-	public void paint( final Graphics g , final boolean solid )
+	public void paint( final Graphics2D g , final boolean solid )
 	{
 		/*
 		 * Process queue and process its entries in sorted order.
 		 */
-		final QueueItem[] list = new QueueItem[ _queue.size() ];
-		_queue.toArray( list );
+		final QueueItem[] list = (QueueItem[])_queue.toArray( new QueueItem[ _queue.size() ] );
 
-		for ( int todo = list.length ; todo > 0 ; )
+		int todo = list.length;
+		while ( todo > 0 )
 		{
 			/*
 			 * Remove 'entry' with lowest Z from 'list' (todo - 1).
@@ -195,37 +216,39 @@ public final class PolygonRenderer
 			/*
 			 * Paint entry
 			 */
-			if ( solid && _perspective )
-			{
-				final int c = entry.color.getRGB();
-				final double nz = 0.1 + 1.0 * ( 1.0 + entry.nz );
-				if ( nz < 0 )
-					continue;
+			final Face3D   face   = entry.face;
+			final Object3D object = face.getObject();
+			final int[]    xs     = entry.xs;
+			final int[]    ys     = entry.ys;
+			final int      length = xs.length;
 
-				g.setColor( new Color(
-					Math.min( (int)(nz * ((c >> 16) & 255)) , 255 ) ,
-					Math.min( (int)(nz * ((c >>  8) & 255)) , 255 ) ,
-					Math.min( (int)(nz * ( c        & 255)) , 255 ) ) );
+			if ( solid || ( length == 1 ) )
+			{
+				Paint paint = entry.alternateAppearance ? object.alternateFillPaint : object.fillPaint;
+				if ( solid && _perspective && ( paint instanceof Color ) )
+				{
+					final float shadeFactor = 0.5f;
+
+					final float factor = Math.min( 1.0f , ( 1.0f - shadeFactor ) + shadeFactor * Math.abs( (float)entry.nz ) );
+					if ( factor < 1.0f )
+					{
+						final Color   color = (Color)paint;
+						final float[] rgb   = color.getRGBComponents( null );
+
+						paint = new Color( factor * rgb[ 0 ] , factor * rgb[ 1 ] , factor * rgb[ 2 ] , rgb[ 3 ] );
+					}
+				}
+
+				g.setPaint( paint );
+				g.fillPolygon( xs , ys , length );
+				g.setColor( Color.DARK_GRAY );
 			}
 			else
 			{
-				g.setColor( entry.color );
+				g.setPaint( entry.alternateAppearance ? object.alternateOutlinePaint : object.outlinePaint );
 			}
 
-			final int[] xs = entry.xs;
-			final int[] ys = entry.ys;
-			final int   l  = xs.length;
-
-			if ( solid || l == 1 )
-			{
-				g.fillPolygon( xs , ys , l );
-				//g.setColor( Color.black );
-				g.setColor( new Color( 64 , 64 , 64 ) );
-				//g.setColor( new Color( 128 , 128 , 128 ) );
-			}
-
-			for ( int i = 0 , j = l - 1 ; i < l ; j = i++ )
-				g.drawLine( xs[ i ] , ys[ i ] , xs[ j ] , ys[ j ] );
+			g.drawPolygon( xs , ys , length );
 		}
 	}
 }

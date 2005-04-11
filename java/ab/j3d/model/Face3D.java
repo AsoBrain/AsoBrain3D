@@ -304,6 +304,16 @@ public final class Face3D
 	}
 
 	/**
+	 * Get object to which this face belongs.
+	 *
+	 * @return  Object to which this face belongs.
+	 */
+	public Object3D getObject()
+	{
+		return _object;
+	}
+
+	/**
 	 * Get opacity. This ranges from fully opaque (1.0) to completely
 	 * translucent (0.0).
 	 *
