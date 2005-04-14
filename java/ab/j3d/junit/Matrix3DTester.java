@@ -58,6 +58,39 @@ public final class Matrix3DTester
 	public static final int GREATER = 1;
 
 	/**
+	 * Standard matrix usable for tests. This defines the identity matrix.
+	 */
+	public static final Matrix3D IDENTITY = Matrix3D.INIT;
+
+	/**
+	 * Standard matrix usable for tests. This defines a rotation of 180 degrees
+	 * over the Y-axis.
+	 */
+	public static final Matrix3D FLIPPED_OVER_X_AXIS = Matrix3D.INIT.set(
+		 1.0 ,  0.0 ,  0.0 , 0.0 ,
+		 0.0 , -1.0 ,  0.0 , 0.0 ,
+		 0.0 ,  0.0 , -1.0 , 0.0 );
+
+	/**
+	 * Standard matrix usable for tests. This defines a rotation of 180 degrees
+	 * over the Y-axis.
+	 */
+	public static final Matrix3D FLIPPED_OVER_Y_AXIS = Matrix3D.INIT.set(
+		-1.0 ,  0.0 ,  0.0 , 0.0 ,
+		 0.0 ,  1.0 ,  0.0 , 0.0 ,
+		 0.0 ,  0.0 , -1.0 , 0.0 );
+
+	/**
+	 * Standard matrix usable for tests. This defines a rotation of 180 degrees
+	 * over the Z-axis.
+	 */
+	public static final Matrix3D FLIPPED_OVER_Z_AXIS = Matrix3D.INIT.set(
+		-1.0 ,  0.0 ,  0.0 , 0.0 ,
+		 0.0 , -1.0 ,  0.0 , 0.0 ,
+		 0.0 ,  0.0 ,  1.0 , 0.0 );
+
+
+	/**
 	 * Array with posssible base transforms for tests.
 	 * <p />
 	 * These transforms can be used to test different orientations. Each axis is
