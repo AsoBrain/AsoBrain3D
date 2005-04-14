@@ -423,15 +423,28 @@ public final class Bounds3D
 	}
 
 	/**
-	 * Produce user-friendly string representation of the specified value.
+	 * Create human-readable representation of this <code>Bounds3D</code> object.
+	 * This is aspecially useful for debugging purposes.
 	 *
-	 * @param   bounds      Bounds3D value.
+	 * @return  Human-readable representation of this <code>Bounds3D</code> object.
+	 */
+	public String toFriendlyString()
+	{
+		return toFriendlyString( this );
+	}
+
+	/**
+	 * Create human-readable representation of <code>Bounds3D</code> object.
+	 * This is aspecially useful for debugging purposes.
 	 *
-	 * @return  User-friendly string representation of the specified value.
+	 * @param   bounds      Bounds3D value (<code>null</code> produces 'null').
+	 *
+	 * @return  Human-readable representation of <code>Bounds3D</code> object.
 	 */
 	public static String toFriendlyString( final Bounds3D bounds )
 	{
-		return "( " + bounds.v1.x + " , " + bounds.v1.y + " , " + bounds.v1.z + " ) - ( " +
+		return ( bounds == null ) ? "null" :
+		       "( " + bounds.v1.x + " , " + bounds.v1.y + " , " + bounds.v1.z + " ) - ( " +
 		              bounds.v2.x + " , " + bounds.v2.y + " , " + bounds.v2.z + " )";
 	}
 }
