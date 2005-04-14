@@ -382,18 +382,19 @@ public final class Vector3D
 	}
 
 	/**
-	 * Create human-readable representation of Vector3D object. This is
-	 * aspecially useful for debugging purposes.
+	 * Create human-readable representation of <code>Vector3D</code> object.
+	 * This is aspecially useful for debugging purposes.
 	 *
-	 * @param   vector   Vector3D instance.
+	 * @param   vector   Vector3D instance (<code>null</code> produces 'null').
 	 *
-	 * @return  Human-readable representation of Vector3D object.
+	 * @return  Human-readable representation of <code>Vector3D</code> object.
 	 */
 	public static String toFriendlyString( final Vector3D vector )
 	{
 		final DecimalFormat df = new DecimalFormat( "0.0" );
 
-		return "[ " + df.format( vector.x ) + " , "
+		return ( vector == null ) ? "null" :
+		       "[ " + df.format( vector.x ) + " , "
 		            + df.format( vector.y ) + " , "
 		            + df.format( vector.z ) + " ]";
 	}
