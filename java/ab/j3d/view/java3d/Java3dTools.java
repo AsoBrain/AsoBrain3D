@@ -21,10 +21,19 @@
 package ab.j3d.view.java3d;
 
 import java.awt.Canvas;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
+import java.awt.image.BufferedImage;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.ImageObserver;
+import java.awt.image.Raster;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -36,6 +45,8 @@ import javax.media.j3d.Canvas3D;
 import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.GraphicsConfigTemplate3D;
 import javax.media.j3d.Group;
+import javax.media.j3d.ImageComponent;
+import javax.media.j3d.ImageComponent2D;
 import javax.media.j3d.LineAttributes;
 import javax.media.j3d.LineStripArray;
 import javax.media.j3d.Material;
@@ -44,6 +55,7 @@ import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Texture;
+import javax.media.j3d.Texture2D;
 import javax.media.j3d.TextureAttributes;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransparencyAttributes;
@@ -53,8 +65,6 @@ import javax.vecmath.Point3f;
 import javax.vecmath.Tuple3f;
 import javax.vecmath.Tuple3i;
 import javax.vecmath.Vector3f;
-
-import com.sun.j3d.utils.image.TextureLoader;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
@@ -68,9 +78,16 @@ import ab.j3d.TextureSpec;
 public final class Java3dTools
 {
 	/**
-	 * Texture observer needed by <code>TextureLoader</code> to load textures.
+	 * Texture observer needed by {@link #loadTexture} to load textures.
+	 *
+	 * @see     #loadTexture
 	 */
 	private static final Canvas TEXTURE_OBSERVER = new Canvas();
+
+	/**
+	 * Color model for <code>loadTexture()</code>.
+	 */
+	private static final ComponentColorModel TEXTURE_CM = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ) , new int[] { 8 , 8 , 8 , 8 } , true , false , Transparency.TRANSLUCENT , 0 );
 
 	/**
 	 * Map used to cache textures. Maps texture code (<code>String</code>) to
@@ -376,13 +393,104 @@ public final class Java3dTools
 				final Image image = spec.getTextureImage();
 				if ( image != null )
 				{
-					final TextureLoader loader = new TextureLoader( image , TEXTURE_OBSERVER );
-					result = loader.getTexture();
+					result = loadTexture( image );
 					result.setCapability( Texture.ALLOW_SIZE_READ );
 				}
 
 				_textureCache.put( code , result );
 			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Helper method to perform actual texture loading.
+	 *
+	 * @param   image   Image to use for image.
+	 *
+	 * @return  Texture2D instance for image;
+	 *          <code>null</code> if a problem occured.
+	 *
+	 * @see     #getTexture
+	 */
+	public static Texture2D loadTexture( final Image image )
+	{
+		Texture2D result = null;
+
+		if ( image != null )
+		{
+			final Component observer = TEXTURE_OBSERVER;
+			observer.prepareImage( image , null );
+
+			while ( true )
+			{
+				final int status = observer.checkImage( image , null );
+				if ( ( status & ImageObserver.ERROR ) != 0 )
+				{
+					break;
+				}
+				else if ( ( status & ImageObserver.ALLBITS ) != 0 )
+				{
+					final int width  = getAdjustedTextureSize( image.getWidth( observer ) );
+					final int height = getAdjustedTextureSize( image.getHeight( observer ) );
+
+					final BufferedImage bufferedImage = new BufferedImage( TEXTURE_CM , Raster.createInterleavedRaster( DataBuffer.TYPE_BYTE , width , height , width * 4 , 4 , new int[] { 0 , 1 , 2 , 3 } , null ) , false , null );
+
+					final Graphics g = bufferedImage.getGraphics();
+					g.drawImage( image , 0 , 0 , width , height , observer );
+					g.dispose();
+
+					result = new Texture2D( Texture2D.BASE_LEVEL , Texture.RGBA , width , height );
+					result.setImage( 0 , new ImageComponent2D( ImageComponent.FORMAT_RGBA , bufferedImage , false , false ) );
+					result.setMinFilter( Texture.BASE_LEVEL_LINEAR );
+					result.setMagFilter( Texture.BASE_LEVEL_LINEAR );
+					break;
+				}
+
+				try
+				{
+					Thread.sleep( 100L );
+				}
+				catch ( InterruptedException e )
+				{
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Helper method to calculate an adjusted texture size. The Java 3D API
+	 * requires this to be a power of 2.
+	 *
+	 * @param   size   Raw texture image size.
+	 *
+	 * @return  Adjusted size to comply with Java 3D API (may be unaltered).
+	 *
+	 * @see     #loadTexture
+	 */
+	private static int getAdjustedTextureSize( final int size )
+	{
+		int result;
+
+		if ( size > 1 )
+		{
+			result = 2;
+			while ( size > result )
+				result *= 2;
+
+			if ( size != result )
+			{
+				final int halfResult = result / 2;
+				if ( ( result - size ) > ( size - halfResult ) )
+					result = halfResult;
+			}
+		}
+		else
+		{
+			result = size;
 		}
 
 		return result;
