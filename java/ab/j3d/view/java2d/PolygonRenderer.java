@@ -189,7 +189,7 @@ public final class PolygonRenderer
 		}
 	}
 
-	public void paint( final Graphics2D g , final boolean solid )
+	public void paint( final Graphics2D g , final boolean fill , final boolean outline )
 	{
 		/*
 		 * Process queue and process its entries in sorted order.
@@ -216,16 +216,17 @@ public final class PolygonRenderer
 			/*
 			 * Paint entry
 			 */
-			final Face3D   face   = entry.face;
-			final Object3D object = face.getObject();
-			final int[]    xs     = entry.xs;
-			final int[]    ys     = entry.ys;
-			final int      length = xs.length;
+			final Face3D   face          = entry.face;
+			final Object3D object        = face.getObject();
+			final int[]    xs            = entry.xs;
+			final int[]    ys            = entry.ys;
+			final int      length        = xs.length;
+			final boolean  polygonFilled = ( fill || ( length == 1 ) );
 
-			if ( solid || ( length == 1 ) )
+			if ( polygonFilled )
 			{
 				Paint paint = entry.alternateAppearance ? object.alternateFillPaint : object.fillPaint;
-				if ( solid && _perspective && ( paint instanceof Color ) )
+				if ( fill && _perspective && ( paint instanceof Color ) )
 				{
 					final float shadeFactor = 0.5f;
 
@@ -241,14 +242,17 @@ public final class PolygonRenderer
 
 				g.setPaint( paint );
 				g.fillPolygon( xs , ys , length );
-				g.setColor( Color.DARK_GRAY );
-			}
-			else
-			{
-				g.setPaint( entry.alternateAppearance ? object.alternateOutlinePaint : object.outlinePaint );
 			}
 
-			g.drawPolygon( xs , ys , length );
+			if ( outline )
+			{
+				if ( polygonFilled )
+					g.setColor( Color.DARK_GRAY );
+				else
+					g.setPaint( entry.alternateAppearance ? object.alternateOutlinePaint : object.outlinePaint );
+
+				g.drawPolygon( xs , ys , length );
+			}
 		}
 	}
 }
