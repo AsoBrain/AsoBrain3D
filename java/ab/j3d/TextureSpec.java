@@ -23,6 +23,12 @@ package ab.j3d;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Image;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
 import java.io.Serializable;
 
 import com.numdata.oss.ui.ImageTools;
@@ -67,7 +73,7 @@ public final class TextureSpec
 	/**
 	 * Unique record ID.
 	 */
-	public long ID = -1L;
+	public long ID;
 
 	/**
 	 * Code that uniquely identifies the texture (it should be used instead
@@ -269,5 +275,98 @@ public final class TextureSpec
 	public boolean isTexture()
 	{
 		return ( code != null ) && ( code.length() > 0 ) && ( textureScale > 0 );
+	}
+
+	/**
+	 * Read object from byte-aray.
+	 *
+	 * @param   data    Byte-array to read the object from.
+	 *
+	 * @throws  IOException if a problem occured.
+	 */
+	public void read( final byte[] data )
+		throws IOException
+	{
+		final DataInputStream is = new DataInputStream( new ByteArrayInputStream( data ) );
+
+		ID                   = -1L;
+		code                 = null;
+		rgb                  = 0x00FFFFFF;
+		opacity              = 1.0f;
+		textureScale         = -1.0f;
+		ambientReflectivity  = 0.3f;
+		diffuseReflectivity  = 0.5f;
+		specularReflectivity = 0.7f;
+		specularExponent     = 8;
+		grain                = false;
+
+		while ( true )
+		{
+			final String fieldName;
+			try
+			{
+				fieldName = is.readUTF();
+			}
+			catch ( EOFException e )
+			{
+				break;
+			}
+
+			     if ( "ID"                   .equals( fieldName ) ) ID                   = is.readLong();
+			else if ( "code"                 .equals( fieldName ) ) code                 = is.readUTF();
+			else if ( "rgb"                  .equals( fieldName ) ) rgb                  = is.readInt();
+			else if ( "opacity"              .equals( fieldName ) ) opacity              = is.readFloat();
+			else if ( "textureScale"         .equals( fieldName ) ) textureScale         = is.readFloat();
+			else if ( "ambientReflectivity"  .equals( fieldName ) ) ambientReflectivity  = is.readFloat();
+			else if ( "diffuseReflectivity"  .equals( fieldName ) ) diffuseReflectivity  = is.readFloat();
+			else if ( "specularReflectivity" .equals( fieldName ) ) specularReflectivity = is.readFloat();
+			else if ( "specularExponent"     .equals( fieldName ) ) specularExponent     = is.readInt();
+			else if ( "grain"                .equals( fieldName ) ) grain                = is.readBoolean();
+			else throw new IOException( "unrecognized field: " + fieldName );
+		}
+	}
+
+	/**
+	 * Write object to a byte-array.
+	 *
+	 * @return  Byte-array containing object data.
+	 *
+	 * @throws  IOException if a problem occured.
+	 */
+	public byte[] write()
+		throws IOException
+	{
+		final ByteArrayOutputStream result = new ByteArrayOutputStream();
+
+		final DataOutputStream os = new DataOutputStream( result );
+		try
+		{
+			if ( ID != -1L )
+			{
+				os.writeUTF( "ID" );
+				os.writeLong( ID );
+			}
+
+			if ( code != null )
+			{
+				os.writeUTF( "code" );
+				os.writeUTF( code );
+			}
+
+			os.writeUTF( "rgb"                  ); os.writeInt    ( rgb                  );
+			os.writeUTF( "opacity"              ); os.writeFloat  ( opacity              );
+			os.writeUTF( "textureScale"         ); os.writeFloat  ( textureScale         );
+			os.writeUTF( "ambientReflectivity"  ); os.writeFloat  ( ambientReflectivity  );
+			os.writeUTF( "diffuseReflectivity"  ); os.writeFloat  ( diffuseReflectivity  );
+			os.writeUTF( "specularReflectivity" ); os.writeFloat  ( specularReflectivity );
+			os.writeUTF( "specularExponent"     ); os.writeInt    ( specularExponent     );
+			os.writeUTF( "grain"                ); os.writeBoolean( grain                );
+		}
+		finally
+		{
+			os.close();
+		}
+
+		return result.toByteArray();
 	}
 }
