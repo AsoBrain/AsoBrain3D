@@ -271,9 +271,19 @@ public class DragSupport
 	 *
 	 * @return  Rotation around X axis (in degrees).
 	 */
-	private double getRotationX()
+	public double getRotationX()
 	{
 		return _variables[ ROTATION_X ];
+	}
+
+	/**
+	 * Set rotation around X axis (in degrees).
+	 *
+	 * @param   value   Rotation around X axis (in degrees).
+	 */
+	public void setRotationX( final double value )
+	{
+		_variables[ ROTATION_X ] = value;
 	}
 
 	/**
@@ -281,9 +291,19 @@ public class DragSupport
 	 *
 	 * @return  Rotation around Y axis (in degrees).
 	 */
-	private double getRotationY()
+	public double getRotationY()
 	{
 		return _variables[ ROTATION_Y ];
+	}
+
+	/**
+	 * Set rotation around Y axis (in degrees).
+	 *
+	 * @param   value   Rotation around Y axis (in degrees).
+	 */
+	public void setRotationY( final double value )
+	{
+		_variables[ ROTATION_Y ] = value;
 	}
 
 	/**
@@ -291,9 +311,19 @@ public class DragSupport
 	 *
 	 * @return  Rotation around Z axis (in degrees).
 	 */
-	private double getRotationZ()
+	public double getRotationZ()
 	{
 		return _variables[ ROTATION_Z ];
+	}
+
+	/**
+	 * Set rotation around Z axis (in degrees).
+	 *
+	 * @param   value   Rotation around Z axis (in degrees).
+	 */
+	public void setRotationZ( final double value )
+	{
+		_variables[ ROTATION_Z ] = value;
 	}
 
 	/**
@@ -301,9 +331,19 @@ public class DragSupport
 	 *
 	 * @return  Translation along X axis (in model units).
 	 */
-	private double getTranslationX()
+	public double getTranslationX()
 	{
 		return _variables[ TRANSLATION_X ];
+	}
+
+	/**
+	 * Set translation along X axis (in model units).
+	 *
+	 * @param   value   Translation along X axis (in model units).
+	 */
+	public void setTranslationX( final double value )
+	{
+		_variables[ TRANSLATION_X ] = value;
 	}
 
 	/**
@@ -311,9 +351,19 @@ public class DragSupport
 	 *
 	 * @return  Translation along Y axis (in model units).
 	 */
-	private double getTranslationY()
+	public double getTranslationY()
 	{
 		return _variables[ TRANSLATION_Y ];
+	}
+
+	/**
+	 * Set translation along Y axis (in model units).
+	 *
+	 * @param   value   Translation along Y axis (in model units).
+	 */
+	public void setTranslationY( final double value )
+	{
+		_variables[ TRANSLATION_Y ] = value;
 	}
 
 	/**
@@ -321,9 +371,19 @@ public class DragSupport
 	 *
 	 * @return  Translation along Z axis (in model units).
 	 */
-	private double getTranslationZ()
+	public double getTranslationZ()
 	{
 		return _variables[ TRANSLATION_Z ];
+	}
+
+	/**
+	 * Set translation along Z axis (in model units).
+	 *
+	 * @param   value   Translation along Z axis (in model units).
+	 */
+	public void setTranslationZ( final double value )
+	{
+		_variables[ TRANSLATION_Z ] = value;
 	}
 
 	public void mousePressed( final MouseEvent event )
