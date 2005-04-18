@@ -428,6 +428,7 @@ public class RenderPanel
 		final Renderer renderer = _renderer;
 		if ( renderer != null )
 		{
+			_modelTransform.setMatrix( _dragSupport.getTransform() );
 //			System.out.println( "_modelTransform.getMatrix() = " + _modelTransform.getMatrix().toFriendlyString() );
 			renderer.requestUpdate();
 			repaint();
@@ -446,8 +447,6 @@ public class RenderPanel
 		dragSupport.setTranslationX( 0.0 );
 		dragSupport.setTranslationY( 0.0 );
 		dragSupport.setTranslationZ( 0.0 );
-
-		_modelTransform.setMatrix( dragSupport.getTransform() );
 
 		center();
 		requestUpdate();
@@ -510,7 +509,6 @@ public class RenderPanel
 	{
 		if ( ( settings != null ) && ( settings.length() > 0 ) )
 		{
-			System.out.println( "setViewSettings( " + settings + " )" );
 			try
 			{
 				final Bounds3D b = Bounds3D.fromString( settings );
@@ -518,12 +516,15 @@ public class RenderPanel
 				final DragSupport ds = _dragSupport;
 				ds.setRotationX( b.v1.x );
 				ds.setRotationY( b.v1.y );
-				ds.setRotationY( b.v1.z );
+				ds.setRotationZ( b.v1.z );
 				ds.setTranslationX( b.v2.x );
 				ds.setTranslationY( b.v2.y );
-				ds.setTranslationY( b.v2.z );
+				ds.setTranslationZ( b.v2.z );
 			}
-			catch ( Exception e ) { /* ignored */ }
+			catch ( Exception e )
+			{
+				System.err.println( "setViewSettings( '" + settings + "' ) => " + e );
+			}
 		}
 	}
 }
