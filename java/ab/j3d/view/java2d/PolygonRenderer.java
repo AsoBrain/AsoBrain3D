@@ -247,7 +247,7 @@ public final class PolygonRenderer
 			if ( outline )
 			{
 				if ( polygonFilled )
-					g.setColor( Color.DARK_GRAY );
+					g.setColor( Color.darkGray );
 				else
 					g.setPaint( entry.alternateAppearance ? object.alternateOutlinePaint : object.outlinePaint );
 
