@@ -79,11 +79,6 @@ public class RenderPanel
 	private final Camera3D _camera;
 
 	/**
-	 * Transform of camera.
-	 */
-	private final Transform3D _cameraTransform;
-
-	/**
 	 * Model bounds. Used to center the output.
 	 *
 	 * @see     #setBounds
@@ -135,15 +130,12 @@ public class RenderPanel
 		 */
 		final Node3D world = new Node3D();
 
-		_model = new Transform3D();
-		_modelTransform = new Transform3D();
-		_modelTransform.addChild( _model );
-		world.addChild( _modelTransform );
-
-		_camera = new Camera3D( 300.0 , 60.0 );
-		_cameraTransform = new Transform3D( Vector3D.INIT.set( 0.0 , -3000.0 , 0.0 ) );
-		_cameraTransform.addChild( _camera );
-		world.addChild( _cameraTransform );
+		final Transform3D model = new Transform3D();
+		final Transform3D modelTransform = new Transform3D();
+		modelTransform.addChild( model );
+		world.addChild( modelTransform );
+		_modelTransform = modelTransform;
+		_model = model;
 
 		final Light3D ambientLight = new Light3D( 500 , -1.0 ); // 384
 		world.addChild( ambientLight );
@@ -152,6 +144,16 @@ public class RenderPanel
 		final Transform3D pointLightTransform = new Transform3D( Vector3D.INIT.set( -750.0 , -2500.0 , 1700.0 ) );
 		world.addChild( pointLightTransform );
 		pointLightTransform.addChild( pointLight );
+
+		final Camera3D camera = new Camera3D( 300.0 , 60.0 );
+		final Transform3D cameraTransform = new Transform3D( Vector3D.INIT.set( 0.0 , -3000.0 , 0.0 ) );
+		cameraTransform .addChild( camera );
+		world.addChild( cameraTransform );
+		_camera = camera;
+
+		final DragSupport dragSupport = new DragSupport( this , 0.001 );
+		dragSupport.addDragListener( this );
+		_dragSupport = dragSupport;
 
 		/*
 		 * Initialize render/control variables.
@@ -164,8 +166,6 @@ public class RenderPanel
 		 * Enable control events.
 		 */
 		addComponentListener( this );
-		_dragSupport = new DragSupport( this , 0.001f );
-		_dragSupport.addDragListener( this );
 	}
 
 	/**
@@ -173,10 +173,14 @@ public class RenderPanel
 	 */
 	public final void center()
 	{
-		_model.setTranslation( _model.getTranslation().set(
-			( _bounds.v1.x + _bounds.v2.x ) / -2.0 ,
-			( _bounds.v1.y + _bounds.v2.y ) / -2.0 ,
-			( _bounds.v1.z + _bounds.v2.z ) / -2.0 ) );
+		final Transform3D model       = _model;
+		final Bounds3D    bounds      = _bounds;
+		final Vector3D    translation = model.getTranslation();
+
+		model.setTranslation( translation.set(
+			-0.5 * ( bounds.v1.x + bounds.v2.x ) ,
+			-0.5 * ( bounds.v1.y + bounds.v2.y ) ,
+			-0.5 * ( bounds.v1.z + bounds.v2.z ) ) );
 	}
 
 	/**
@@ -243,29 +247,22 @@ public class RenderPanel
 	}
 
 	/**
-	 * Get transform for model.
-	 *
-	 * @return  Transform3D for model.
-	 */
-	public final Transform3D getModelTransform()
-	{
-		return _modelTransform;
-	}
-
-	/**
 	 * Get string with view settings of renderer.
 	 *
 	 * @return  String with view settings of renderer.
 	 */
 	public final String getViewSettings()
 	{
-		return Bounds3D.INIT.set(
+		return String.valueOf( Bounds3D.INIT.set(
 			Vector3D.INIT.set(
-				_modelTransform.getRotationX() ,
-				_modelTransform.getRotationY() ,
-				_modelTransform.getRotationZ() ) ,
-				_cameraTransform.getTranslation()
-			).toString();
+				_dragSupport.getRotationX() ,
+				_dragSupport.getRotationY() ,
+				_dragSupport.getRotationZ() ) ,
+			Vector3D.INIT.set(
+				_dragSupport.getTranslationX() ,
+				_dragSupport.getTranslationY() ,
+				_dragSupport.getTranslationZ() )
+			) );
 	}
 
 	/**
@@ -344,18 +341,22 @@ public class RenderPanel
 	 */
 	public final void paintWireframe( final Graphics g , final Camera3D camera , final int x , final int y , final int width , final int height )
 	{
-		_wireframeObjects.clear();
-		_camera.gatherLeafs( _wireframeObjects , Object3D.class , Matrix3D.INIT , true );
-		final int nrObjects = _wireframeObjects.size();
+		final Node3DCollection wireframeObjects = _wireframeObjects;
+		wireframeObjects.clear();
+		_camera.gatherLeafs( wireframeObjects , Object3D.class , Matrix3D.INIT , true );
+		final int nrObjects = wireframeObjects.size();
 
 		if ( nrObjects > 0 )
 		{
-			if ( _wireframeRenderObjects == null || nrObjects > _wireframeRenderObjects.length )
+			RenderObject[] wireframeRenderObjects = _wireframeRenderObjects;
+			if ( ( wireframeRenderObjects == null ) || ( nrObjects > wireframeRenderObjects.length ) )
 			{
-				final RenderObject[] objects = new RenderObject[ nrObjects ];
-				if ( _wireframeRenderObjects != null )
-					System.arraycopy( _wireframeRenderObjects , 0 , objects , 0 , _wireframeRenderObjects.length );
-				_wireframeRenderObjects = objects;
+				final RenderObject[] newWireframeRenderObjects = new RenderObject[ nrObjects ];
+				if ( wireframeRenderObjects != null )
+					System.arraycopy( wireframeRenderObjects , 0 , newWireframeRenderObjects , 0 , wireframeRenderObjects.length );
+
+				wireframeRenderObjects = newWireframeRenderObjects;
+				_wireframeRenderObjects = newWireframeRenderObjects;
 			}
 
 			/*
@@ -363,16 +364,16 @@ public class RenderPanel
 			 */
 			for ( int i = 0 ; i < nrObjects ; i++ )
 			{
-				RenderObject ro = _wireframeRenderObjects[ i ];
+				RenderObject ro = wireframeRenderObjects[ i ];
 				if ( ro == null )
-					_wireframeRenderObjects[ i ] = ro = new RenderObject();
+					wireframeRenderObjects[ i ] = ro = new RenderObject();
 
-				ro.set( (Object3D)_wireframeObjects.getNode( i ) , _wireframeObjects.getMatrix( i ) , camera.aperture , camera.zoom , width , height , true );
+				ro.set( (Object3D)wireframeObjects.getNode( i ) , wireframeObjects.getMatrix( i ) , camera.aperture , camera.zoom , width , height , true );
 			}
 
 			for ( int i = 0 ; i < nrObjects ; i++ )
 			{
-				final RenderObject ro = _wireframeRenderObjects[ i ];
+				final RenderObject ro = wireframeRenderObjects[ i ];
 
 				for ( RenderObject.Face face = ro._faces ; face != null ; face = face._next )
 					paintWireframeFace( g , x , y , face );
@@ -427,6 +428,7 @@ public class RenderPanel
 		final Renderer renderer = _renderer;
 		if ( renderer != null )
 		{
+//			System.out.println( "_modelTransform.getMatrix() = " + _modelTransform.getMatrix().toFriendlyString() );
 			renderer.requestUpdate();
 			repaint();
 		}
@@ -437,11 +439,17 @@ public class RenderPanel
 	 */
 	public final void reset()
 	{
-		_modelTransform.setRotationX( -10.0 );
-		_modelTransform.setRotationZ( -35.0 );
-		_cameraTransform.setTranslation( Vector3D.INIT.set( 0.0 , -4000.0 , 0.0 ) );
-		center();
+		final DragSupport dragSupport = _dragSupport;
+		dragSupport.setRotationX( -10.0 );
+		dragSupport.setRotationY( 0.0 );
+		dragSupport.setRotationZ( -35.0 );
+		dragSupport.setTranslationX( 0.0 );
+		dragSupport.setTranslationY( 0.0 );
+		dragSupport.setTranslationZ( 0.0 );
 
+		_modelTransform.setMatrix( dragSupport.getTransform() );
+
+		center();
 		requestUpdate();
 	}
 
@@ -502,12 +510,18 @@ public class RenderPanel
 	{
 		if ( ( settings != null ) && ( settings.length() > 0 ) )
 		{
+			System.out.println( "setViewSettings( " + settings + " )" );
 			try
 			{
 				final Bounds3D b = Bounds3D.fromString( settings );
-				final Vector3D rv = b.v1;
-				_modelTransform.setRotation( rv.x , rv.y , rv.z );
-				_cameraTransform.setTranslation( b.v2 );
+
+				final DragSupport ds = _dragSupport;
+				ds.setRotationX( b.v1.x );
+				ds.setRotationY( b.v1.y );
+				ds.setRotationY( b.v1.z );
+				ds.setTranslationX( b.v2.x );
+				ds.setTranslationY( b.v2.y );
+				ds.setTranslationY( b.v2.z );
 			}
 			catch ( Exception e ) { /* ignored */ }
 		}
