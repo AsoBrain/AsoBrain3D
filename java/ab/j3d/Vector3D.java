@@ -67,6 +67,48 @@ public final class Vector3D
 	}
 
 	/**
+	 * Test if two vectors are parallel to each other.
+	 *
+	 * @param   v1      First vector.
+	 * @param   v2      Second vector.
+	 *
+	 * @return  <code>true</code> if the vectors are parallel;
+	 *          <code>false</code> if not.
+	 */
+	public static boolean areParallel( final Vector3D v1 , final Vector3D v2 )
+	{
+		return Matrix3D.almostEqual( Math.abs( cosAngle( v1 , v2 ) ) , 1.0 );
+	}
+
+	/**
+	 * Test if two vectors define the same direction.
+	 *
+	 * @param   v1      First vector.
+	 * @param   v2      Second vector.
+	 *
+	 * @return  <code>true</code> if the vectors define the same direction;
+	 *          <code>false</code> if not.
+	 */
+	public static boolean areSameDirection( final Vector3D v1 , final Vector3D v2 )
+	{
+		return Matrix3D.almostEqual( cosAngle( v1 , v2 ) , 1.0 );
+	}
+
+	/**
+	 * Test if two vectors are perpendicular to each other.
+	 *
+	 * @param   v1      First vector.
+	 * @param   v2      Second vector.
+	 *
+	 * @return  <code>true</code> if the vectors are perpendicular;
+	 *          <code>false</code> if not.
+	 */
+	public static boolean arePerpendicular( final Vector3D v1 , final Vector3D v2 )
+	{
+		return Matrix3D.almostEqual( dot( v1 , v2 ) , 0.0 );
+	}
+
+	/**
 	 * Get cos(angle) between this vector and another one specified as argument.
 	 *
 	 * @param   v1      First vector.
@@ -96,19 +138,28 @@ public final class Vector3D
 	}
 
 	/**
-	 * Calculate distance between this and another vector (both should be absolute).
+	 * Calculate distance between two point vectors.
 	 *
-	 * @param   other   Vector to calculate the distance to.
+	 * @param   p1      First point vector to calculate the distance between.
+	 * @param   p2      Second point vector to calculate the distance between.
 	 *
 	 * @return  Distance between this and the specified other vector.
 	 */
+	public static double distanceBetween( final Vector3D p1 , final Vector3D p2 )
+	{
+		return length( p1.x - p2.x , p1.y - p2.y , p1.z - p2.z );
+	}
+
+	/**
+	 * Calculate distance between this point vector and another.
+	 *
+	 * @param   other   Point vector to calculate the distance to.
+	 *
+	 * @return  Distance between this and the other vector.
+	 */
 	public double distanceTo( final Vector3D other )
 	{
-		final double dx = x - other.x;
-		final double dy = y - other.y;
-		final double dz = z - other.z;
-
-		return Math.sqrt( dx * dx + dy * dy + dz * dz );
+		return distanceBetween( this , other );
 	}
 
 	/**
@@ -250,6 +301,19 @@ public final class Vector3D
 	 */
 	public double length()
 	{
+		final double x = this.x;
+		final double y = this.y;
+		final double z = this.z;
+		return length( x , y , z );
+	}
+
+	/**
+	 * Calculate length of vector.
+	 *
+	 * @return  Length of vector.
+	 */
+	public static double length( final double x , final double y , final double z )
+	{
 		return Math.sqrt( x * x + y * y + z * z );
 	}
 
@@ -300,7 +364,23 @@ public final class Vector3D
 	public Vector3D normalize()
 	{
 		final double l = length();
-		return ( l == 0 || l == 1 ) ? this : set( x / l , y / l , z / l );
+		return ( ( l == 0.0 ) || ( l == 1.0 ) ) ? this : set( x / l , y / l , z / l );
+	}
+
+	/**
+	 * Normalize the specified vector. If the vector has length 0 or 1, a
+	 * 0-vector will be returned.
+	 *
+	 * @param   x   X-component of vector.
+	 * @param   y   Y-component of vector.
+	 * @param   z   Z-component of vector.
+	 *
+	 * @return  Normalized vector.
+	 */
+	public static Vector3D normalize( final double x , final double y , final double z )
+	{
+		final double l = length( x , y , z );
+		return ( l == 0.0 ) ? INIT : new Vector3D( x / l , y / l , z / l );
 	}
 
 	/**
