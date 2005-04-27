@@ -869,6 +869,36 @@ public final class Matrix3D
 	}
 
 	/**
+	 * Rotate a (directional) vector using this transform. This multiplies the
+	 * vector with this matrix, excluding the translational components.
+	 *
+	 * @param   vector  Directional vector to rotate.
+	 *
+	 * @return  Rotated vector.
+	 */
+	public Vector3D rotate( final Vector3D vector )
+	{
+		return rotate( vector.x , vector.y , vector.z );
+	}
+
+	/**
+	 * Rotate a vector using this transform. This multiplies the vector with
+	 * this matrix, excluding the translational components.
+	 *
+	 * @param   x       X component of directional vector to rotate.
+	 * @param   y       Y component of directional vector to rotate.
+	 * @param   z       Z component of directional vector to rotate.
+	 *
+	 * @return  Rotated vector.
+	 */
+	public Vector3D rotate( final double x , final double y , final double z )
+	{
+		return Vector3D.INIT.set( x * xx + y * xy + z * xz ,
+		                          x * yx + y * yy + z * yz ,
+		                          x * zx + y * zy + z * zz );
+	}
+
+	/**
 	 * This function performs just the rotational part of of the transform on a
 	 * set of vectors. Vectors are supplied using float arrays with a triplet for
 	 * each vector.
