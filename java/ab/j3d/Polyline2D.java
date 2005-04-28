@@ -336,6 +336,18 @@ public final class Polyline2D
 	}
 
 	/**
+	 * Add copy of control point (from other polyline) to this polyline.
+	 *
+	 * @param   point   Control point.
+	 *
+	 * @throws  NullPointerException if <code>point</code> is <code>null</code>.
+	 */
+	public void addCopyOf( final PolyPoint2D point )
+	{
+		addImpl( point.x , point.y , point.buldge );
+	}
+
+	/**
 	 * Close the polyline (if it was not closed already).
 	 */
 	public void close()
