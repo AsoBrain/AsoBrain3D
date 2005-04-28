@@ -51,6 +51,32 @@ public final class PolyPoint2D
 	public final double buldge;
 
 	/**
+	 * This helper-method calculates the enclosed angle of an arc segment for
+	 * the specified buldge value.
+	 *
+	 * @param   buldge  Buldge factor for arc segment.
+	 *
+	 * @return  Angle for arc segment.
+	 */
+	public static double calculateAngleFromBuldge( final double buldge )
+	{
+		return Math.atan( buldge ) * 4.0;
+	}
+
+	/**
+	 * This helper-method calculates the buldge value for the specified enclosed
+	 * angle of an arc segment.
+	 *
+	 * @param   angle   Angle for arc segment.
+	 *
+	 * @return  Buldge factor for arc segment.
+	 */
+	public static double calculateBuldgeFromAngle( final double angle )
+	{
+		return Math.tan( angle / 4.0 );
+	}
+
+	/**
 	 * Construct new control point.
 	 *
 	 * @param   newX    X coordinate of control point.
@@ -170,6 +196,74 @@ public final class PolyPoint2D
 		return (int)( ( l = Double.doubleToLongBits( x      ) ) ^ ( l >>> 32 )
 		            ^ ( l = Double.doubleToLongBits( y      ) ) ^ ( l >>> 32 )
 		            ^ ( l = Double.doubleToLongBits( buldge ) ) ^ ( l >>> 32 ) );
+	}
+
+	/**
+	 * Test if the segment ending at this point is an arc segment (line
+	 * otherwise). This is derived from the {@link #buldge} value.
+	 *
+	 * @return  <code>true</code> if the segment ending at this point is an arc;
+	 *          <code>false</code> otherwise (line / start point).
+	 */
+	public boolean isArcSegment()
+	{
+		return ( buldge != 0.0 );
+	}
+
+	/**
+	 * Get angle for arc segment ending at this point. This angle is derived
+	 * from the {@link #buldge} value.
+	 *
+	 * @return  Angle for arc segment ending at this point.
+	 */
+	public double getArcSegmentAngle()
+	{
+		return calculateAngleFromBuldge( buldge );
+	}
+
+	/**
+	 * Get center point of arc segment ending at this point. The start point of
+	 * the arc must be specified.
+	 *
+	 * @param   start   Start point of arc.
+	 *
+	 * @return  Center point.
+	 */
+	public PolyPoint2D getArcSegmentCenter( final PolyPoint2D start )
+	{
+		final double startX = start.x;
+		final double startY = start.y;
+		final double endX   = x;
+		final double endY   = y;
+		final double buldge = this.buldge;
+
+		return new PolyPoint2D( ( startX + endX ) / 2.0 , ( startY + endY ) / 2.0 , 0.0 );
+	}
+
+	/**
+	 * Get radius of arc segment ending at this point. The start point of the
+	 * arc must be specified.
+	 *
+	 * @param   start   Start point of arc.
+	 *
+	 * @return  Radius of arc.
+	 */
+	public double getArcSegmentRadius( final PolyPoint2D start )
+	{
+		return getLength( start , this ) / 2.0;
+	}
+
+	/**
+	 * Test if arc segment ending at this point is clockwise vs. anti-clockwise.
+	 * This is derived from the {@link #buldge} value.
+	 *
+	 * @return  <code>true</code> if the arc segment is clockwise;
+	 *          <code>false</code> if the arc segment is anti-clockwise or
+	 *          not an arc at all.
+	 */
+	public boolean isArcSegmentClockwise()
+	{
+		return ( buldge < 0.0 );
 	}
 
 	/**
