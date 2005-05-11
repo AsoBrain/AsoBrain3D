@@ -129,13 +129,23 @@ public final class Polyline2D
 
 	/**
 	 * Constructor for polyline.
+	 *
+	 * @param   capacity    Capacity of polyline (number of control points).
 	 */
-	public Polyline2D()
+	public Polyline2D( final int capacity )
 	{
-		_points       = new ArrayList();
+		_points       = new ArrayList( capacity );
 		_typeCache    = UNKNOWN;
 		_boundsCache  = null;
 		_encloseCache = null;
+	}
+
+	/**
+	 * Constructor for polyline.
+	 */
+	public Polyline2D()
+	{
+		this( 5 );
 	}
 
 	/**
@@ -237,11 +247,11 @@ public final class Polyline2D
 	 *
 	 * @param   x       X coordinate of control point.
 	 * @param   y       Y coordinate of control point.
-	 * @param   buldge  Buldge factor (only meaningful for arc segments).
+	 * @param   bulge  Bulge factor (only meaningful for arc segments).
 	 */
-	private void addImpl( final double x , final double y , final double buldge )
+	private void addImpl( final double x , final double y , final double bulge )
 	{
-		addImpl( new PolyPoint2D( x , y , buldge ) );
+		addImpl( new PolyPoint2D( x , y , bulge ) );
 	}
 
 	/**
@@ -266,7 +276,7 @@ public final class Polyline2D
 	 *
 	 * @see     #addLineSegment
 	 * @see     #addArcSegmentWithAngle
-	 * @see     #addArcSegmentWithBuldge
+	 * @see     #addArcSegmentWithBulge
 	 */
 	public void addStartPoint( final double x , final double y )
 	{
@@ -284,7 +294,7 @@ public final class Polyline2D
 	 *
 	 * @see     #addStartPoint
 	 * @see     #addArcSegmentWithAngle
-	 * @see     #addArcSegmentWithBuldge
+	 * @see     #addArcSegmentWithBulge
 	 */
 	public void addLineSegment( final double endX , final double endY )
 	{
@@ -303,14 +313,14 @@ public final class Polyline2D
 	 *
 	 * @see     #addStartPoint
 	 * @see     #addLineSegment
-	 * @see     #addArcSegmentWithBuldge
+	 * @see     #addArcSegmentWithBulge
 	 */
 	public void addArcSegmentWithAngle( final double endX , final double endY , final double angle )
 	{
 		if ( angle == 0.0 )
 			throw new IllegalArgumentException( "angle can't be 0.0" );
 
-		addArcSegmentWithBuldge( endX , endY , Math.tan( angle / 4.0 ) );
+		addArcSegmentWithBulge( endX , endY , Math.tan( angle / 4.0 ) );
 	}
 
 	/**
@@ -318,21 +328,21 @@ public final class Polyline2D
 	 *
 	 * @param   endX    X coordinate of segment end point.
 	 * @param   endY    Y coordinate of segment end point.
-	 * @param   buldge  Buldge factor for arc segment.
+	 * @param   bulge  Bulge factor for arc segment.
 	 *
 	 * @see     #addStartPoint
 	 * @see     #addLineSegment
 	 * @see     #addArcSegmentWithAngle
 	 */
-	public void addArcSegmentWithBuldge( final double endX , final double endY , final double buldge )
+	public void addArcSegmentWithBulge( final double endX , final double endY , final double bulge )
 	{
-		if ( buldge == 0.0 )
-			throw new IllegalArgumentException( "buldge can't be 0.0" );
+		if ( bulge == 0.0 )
+			throw new IllegalArgumentException( "bulge can't be 0.0" );
 
 		if ( getPointCount() == 0 )
 			throw new IllegalStateException( "can't add segment without start point" );
 
-		addImpl( endX , endY , buldge );
+		addImpl( endX , endY , bulge );
 	}
 
 	/**
@@ -344,7 +354,7 @@ public final class Polyline2D
 	 */
 	public void addCopyOf( final PolyPoint2D point )
 	{
-		addImpl( point.x , point.y , point.buldge );
+		addImpl( point.x , point.y , point.bulge );
 	}
 
 	/**
@@ -445,11 +455,11 @@ public final class Polyline2D
 			if ( ( f < -0.001 ) ^ ( adjustment > 0 ) )
 				hyp = -hyp;
 
-			newStart = new PolyPoint2D( start.x + hyp * prevDirX , start.y + hyp * prevDirY , start.buldge );
+			newStart = new PolyPoint2D( start.x + hyp * prevDirX , start.y + hyp * prevDirY , start.bulge );
 		}
 		else
 		{
-			newStart = new PolyPoint2D( start.x - adjustment * baseDirY , start.y + adjustment * baseDirX , start.buldge );
+			newStart = new PolyPoint2D( start.x - adjustment * baseDirY , start.y + adjustment * baseDirX , start.bulge );
 		}
 
 		/*
@@ -481,11 +491,11 @@ public final class Polyline2D
 			if ( ( f < -0.001 ) ^ ( adjustment > 0 ) )
 				hyp = -hyp;
 
-			newEnd = new PolyPoint2D( end.x + hyp * nextDirX , end.y + hyp * nextDirY , end.buldge );
+			newEnd = new PolyPoint2D( end.x + hyp * nextDirX , end.y + hyp * nextDirY , end.bulge );
 		}
 		else
 		{
-			newEnd = new PolyPoint2D( end.x - adjustment * baseDirY , end.y + adjustment * baseDirX , end.buldge );
+			newEnd = new PolyPoint2D( end.x - adjustment * baseDirY , end.y + adjustment * baseDirX , end.bulge );
 		}
 
 		/*
@@ -744,13 +754,14 @@ public final class Polyline2D
 
 	/**
 	 * Gets intersecting shape between this polyline and an other one.
-	 *
+	 * <p />
 	 * This method only delagates all the different types of shapes, it
 	 * does no testing itself.
 	 *
 	 * @param   other   Other shape to get intersection with.
 	 *
-	 * @return  Shape describing the intersecting shape.
+	 * @return  Shape describing the intersecting shape;
+	 *          <code>null</code> if no intersection was found.
 	 */
 	public Polyline2D getIntersection( final Polyline2D other )
 	{
@@ -1443,17 +1454,40 @@ public final class Polyline2D
 		/*
 		 * No intersection.
 		 */
-		if ( iPointCount == 0 )
-			return null;
+		final Polyline2D result;
 
-		final Polyline2D result = new Polyline2D();
+		if ( iPointCount == 0 )
+		{
+			if ( p1Inside || p2Inside )
+			{
+				result = new Polyline2D( 1 );
+				result.addCopyOf( p1Inside ? p1 : p2 );
+
+			}
+			else
+			{
+				result = null;
+			}
+			return result;
+		}
+
+		result = new Polyline2D();
 
 		/*
 		 * Point intersection.
 		 */
 		if ( iPointCount == 1 || ( iPointCount == 2 && iPoints[0].almostEquals( iPoints[1] ) ) )
 		{
-			result.addImpl( iPoints[0] );
+			final PolyPoint2D intersection = iPoints[0];
+
+			if ( p1Inside && !p1.almostEquals( intersection ) )
+				result.addCopyOf( p1 );
+
+			result.addImpl( intersection );
+
+			if ( p2Inside && !p2.almostEquals( intersection ) )
+				result.addCopyOf( p2 );
+
 			return result;
 		}
 
@@ -2085,7 +2119,8 @@ public final class Polyline2D
 	/**
 	 * Get type of polyline.
 	 *
-	 * @return  VOID, POINT, PATH, CONVEX, or CONCAVE.
+	 * @return  {@link #VOID}, {@link #POINT}, {@link #PATH}, {@link #CONVEX},
+	 *          or {@link #CONCAVE}.
 	 */
 	public int getType()
 	{
@@ -2965,7 +3000,7 @@ public final class Polyline2D
 				final double tx = p.x * xform.xx + p.y * xform.xy + xform.xo;
 				final double ty = p.x * xform.yx + p.y * xform.yy + xform.yo;
 
-				result.addImpl( new PolyPoint2D( tx , ty , p.buldge ) );
+				result.addImpl( new PolyPoint2D( tx , ty , p.bulge ) );
 			}
 		}
 
