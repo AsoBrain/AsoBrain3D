@@ -2938,16 +2938,30 @@ public final class Polyline2D
 		final GeneralPath result = new GeneralPath();
 
 		final int pointCount = getPointCount();
-		for ( int i = 0 ; i < pointCount ; i++ )
+		if ( pointCount > 0 )
 		{
-			final PolyPoint2D point = getPoint( i );
-			final float       x     = (float)point.x;
-			final float       y     = (float)point.y;
+			final PolyPoint2D p1 = getPoint( 0 );
+			result.moveTo( (float)p1.x , (float)p1.y );
 
-			if ( i == 0 )
-				result.moveTo( x , y );
-			else
-				result.lineTo( x , y );
+			for ( int i = 1 ; i < pointCount ; i++ )
+			{
+				final PolyPoint2D p2 = getPoint( i );
+				if ( p2.isArcSegment() )
+				{
+					final double[] curves = PolyPoint2D.calculateArcCurves( p1.x , p1.y , p2.x , p2.y , p2.bulge );
+					for ( int j = 0 ; j < curves.length ; j += 6 )
+					{
+						result.curveTo( (float)curves[ j     ] , (float)curves[ j + 1 ] ,
+						                (float)curves[ j + 2 ] , (float)curves[ j + 3 ] ,
+						                (float)curves[ j + 4 ] , (float)curves[ j + 5 ] );
+					}
+
+				}
+				else
+				{
+					result.lineTo( (float)p2.x , (float)p2.y );
+				}
+			}
 		}
 
 		return result;
