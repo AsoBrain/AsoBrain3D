@@ -28,6 +28,16 @@ package ab.j3d;
  */
 public final class PolyPoint2D
 {
+	public static final double BULDGE_STRAIGHT = 0.0;
+	public static final double BULDGE_90_CW    = Math.tan( -Math.PI / 8.0 );
+	public static final double BULDGE_90_CCW   = Math.tan(  Math.PI / 8.0 );
+	public static final double BULDGE_180_CW   = Math.tan( -Math.PI / 4.0 );
+	public static final double BULDGE_180_CCW  = Math.tan(  Math.PI / 4.0 );
+	public static final double BULDGE_270_CW   = Math.tan( -Math.PI * 3.0 / 8.0 );
+	public static final double BULDGE_270_CCW  = Math.tan(  Math.PI * 3.0 / 8.0 );
+	public static final double BULDGE_360_CW   = -1.0;
+	public static final double BULDGE_360_CCW  =  1.0;
+
 	/**
 	 * Tolerance for almostEquals() method.
 	 *
@@ -64,7 +74,7 @@ public final class PolyPoint2D
 	 *
 	 * @param   bulge  Bulge factor for arc segment.
 	 *
-	 * @return  Angle for arc segment.
+	 * @return  Angle for arc segment (in radians).
 	 */
 	public static double calculateAngleFromBulge( final double bulge )
 	{
@@ -75,7 +85,7 @@ public final class PolyPoint2D
 	 * This utility-method calculates the bulge value for the specified enclosed
 	 * angle of an arc segment.
 	 *
-	 * @param   angle   Angle for arc segment.
+	 * @param   angle   Angle for arc segment (in radians).
 	 *
 	 * @return  Bulge factor for arc segment.
 	 */
@@ -169,6 +179,112 @@ public final class PolyPoint2D
 		final double      angle  = Math.toDegrees( Math.atan2( p1Y - center.y , p1X - center.x ) );
 
 		return ( angle < 0.0 ) ? angle + 360.0 : angle;
+	}
+
+	/**
+	 * This utility-method calculates an approximation of an arc segment or
+	 * semicircle using quadratic B&eacute;zier curves.
+	 * <p />
+	 * The implementation is based on {@link java.awt.geom.ArcIterator} (most
+	 * magic is in {@link java.awt.geom.ArcIterator#btan}), and information that
+	 * was found at  <a href='http://www.afralisp.com/lisp/Bulges1.htm'>http://www.afralisp.com/lisp/Bulges1.htm</a>.
+	 * <p />
+	 * This approximation consists of one or more curves, each defined by 3
+	 * control points stored as 6 doubles in the returned array (see
+	 * {@link java.awt.geom.PathIterator#SEG_QUADTO}).
+	 *
+	 * @param   p1X     Start X coordinate of arc segment.
+	 * @param   p1Y     Start Y coordinate of arc segment.
+	 * @param   p2X     End X coordinate of arc segment.
+	 * @param   p2Y     End Y coordinate of arc segment.
+	 * @param   bulge   Bulge factor.
+	 *
+	 * @return  Radius of circle containing arc (can be negative, see comment).
+	 *
+	 * @see     #bulge
+	 */
+	public static double[] calculateArcCurves( final double p1X , final double p1Y , final double p2X , final double p2Y , final double bulge )
+	{
+		final double[] result;
+
+		final double includedAngle = Math.atan( bulge ) * 4.0;
+		final int    segmentCount;
+		final double angleIncrement;
+		final double bezierSegmentLength;
+
+		if ( bulge >= 1.0 )
+		{
+			segmentCount        = 4;
+			angleIncrement      = Math.PI / 2.0;
+			bezierSegmentLength = 0.5522847498307933;
+		}
+		else if ( bulge <= -1.0 )
+		{
+			segmentCount        = 4;
+			angleIncrement      = -Math.PI / 2.0;
+			bezierSegmentLength = -0.5522847498307933;
+		}
+		else
+		{
+			segmentCount        = (int)Math.ceil( Math.abs( includedAngle ) );
+			angleIncrement      = includedAngle / (double)segmentCount;
+			bezierSegmentLength = 4.0 / 3.0 * Math.sin( angleIncrement / 2.0 ) / ( 1.0 + Math.cos( angleIncrement / 2.0  ) );
+
+		}
+
+		if ( ( segmentCount == 0 ) || ( bezierSegmentLength == 0 ) )
+		{
+			result = null;
+		}
+		else
+		{
+			final double centerX;
+			final double centerY;
+			final double radius;
+			{
+				final double chordDeltaX     = p2X - p1X;
+				final double chordDeltaY     = p2Y - p1Y;
+				final double chordMidX       = ( p1X + p2X ) / 2.0;
+				final double chordMidY       = ( p1Y + p2Y ) / 2.0;
+				final double chordLength     = Math.sqrt( chordDeltaX * chordDeltaX + chordDeltaY * chordDeltaY );
+				final double halfChordLength = chordLength / 2.0;
+				final double arcHeight       = halfChordLength * bulge;
+
+				radius = ( halfChordLength * halfChordLength + arcHeight * arcHeight ) / ( 2.0 * arcHeight );
+
+				final double apothemLength = ( radius - arcHeight );
+				final double tanApothem    = apothemLength / chordLength;
+
+				centerX = chordMidX - tanApothem * chordDeltaY;
+				centerY = chordMidY + tanApothem * chordDeltaX;
+			}
+
+			double angle     = Math.atan2( p1Y - centerY , p1X - centerX );
+			double cosAngle1 = Math.cos( angle );
+			double sinAngle1 = Math.sin( angle );
+
+			result = new double[ segmentCount * 6 ];
+			int resultIndex = 0;
+
+			for ( int i = 0 ; i < segmentCount ; i++ )
+			{
+				angle += angleIncrement;
+				final double cosAngle2  = Math.cos( angle );
+				final double sinAngle2  = Math.sin( angle );
+
+				result[ resultIndex++ ] = centerX + ( cosAngle1 - bezierSegmentLength * sinAngle1 ) * radius;
+				result[ resultIndex++ ] = centerY + ( sinAngle1 + bezierSegmentLength * cosAngle1 ) * radius;
+				result[ resultIndex++ ] = centerX + ( cosAngle2 + bezierSegmentLength * sinAngle2 ) * radius;
+				result[ resultIndex++ ] = centerY + ( sinAngle2 - bezierSegmentLength * cosAngle2 ) * radius;
+				result[ resultIndex++ ] = centerX + ( cosAngle2                                   ) * radius;
+				result[ resultIndex++ ] = centerY + ( sinAngle2                                   ) * radius;
+
+				cosAngle1 = cosAngle2;
+				sinAngle1 = sinAngle2;
+			}
+		}
+
+		return result;
 	}
 
 	/**
