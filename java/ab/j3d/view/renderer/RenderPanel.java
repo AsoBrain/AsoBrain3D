@@ -123,7 +123,7 @@ public class RenderPanel
 	public RenderPanel()
 	{
 		setDoubleBuffered( true );
-		setForeground( Color.white );
+		setForeground( Color.black );
 
 		/*
 		 * Construct 3D world.
@@ -188,12 +188,14 @@ public class RenderPanel
 	 * of the renderer.
 	 *
 	 * @param   e   Component event.
+	 *
+	 * @see     #componentShown
+	 * @see     #startRenderer
+	 * @see     #stopRenderer
 	 */
 	public void componentHidden( final ComponentEvent e )
 	{
-		final Renderer renderer = _renderer;
-		if ( renderer != null )
-			renderer.requestTermination();
+		stopRenderer();
 	}
 
 	/**
@@ -225,15 +227,45 @@ public class RenderPanel
 	 */
 	public final void componentShown( final ComponentEvent e )
 	{
+		startRenderer();
+
+		if ( e.getSource() == this )
+			requestUpdate();
+	}
+
+	/**
+	 * Start background render thread if it was not already started. It is not
+	 * required to call this method if the panel is registered as component
+	 * listener to a container, in which case the render will be started/stopped
+	 * automatically.
+	 *
+	 * @see     #stopRenderer
+	 * @see     #componentShown
+	 * @see     #componentHidden
+	 */
+	public void startRenderer()
+	{
 		final Renderer renderer = _renderer;
 		if ( ( renderer == null ) || !renderer.isAlive() )
 		{
 			_renderer = new Renderer( this , _camera );
 		}
-		else if ( e.getSource() == this )
-		{
-			requestUpdate();
-		}
+	}
+
+	/**
+	 * Stop background render thread if it was started. It is not required to
+	 * call this method if the panel is registered as component listener to a
+	 * container, in which case the render will be started/stopped automatically.
+	 *
+	 * @see     #startRenderer
+	 * @see     #componentShown
+	 * @see     #componentHidden
+	 */
+	public void stopRenderer()
+	{
+		final Renderer renderer = _renderer;
+		if ( renderer != null )
+			renderer.requestTermination();
 	}
 
 	/**
@@ -318,6 +350,8 @@ public class RenderPanel
 			final Graphics clipped = g.create( x , y , width , height );
 			if ( _showTemporaryWireframe )
 			{
+				clipped.setColor( getBackground() );
+				clipped.fillRect( 0 , 0 , width , height );
 				clipped.setColor( getForeground() );
 				paintWireframe( clipped , _camera , 0 , 0 , width , height );
 			}
