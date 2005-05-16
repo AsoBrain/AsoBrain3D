@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2005 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,12 +20,12 @@
  */
 package ab.j3d.view.renderer;
 
-import java.awt.Container;
+import java.awt.Color;
 import java.awt.Image;
-import java.awt.Insets;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.awt.image.PixelGrabber;
+import java.awt.image.WritableRaster;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,60 +39,14 @@ import ab.j3d.model.Object3D;
 import com.numdata.oss.ArrayTools;
 
 /**
- * This class implements a background rendering thread.
+ * This class implements a software renderer for 3D scenes, shading the scene
+ * on a per-pixel basis to create a {@link BufferedImage}.
  *
  * @author Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public final class Renderer
-    extends Thread
+public final class ImageRenderer
 {
-	/**
-	 * Component that will display the rendered image. It is used for two things:
-	 * <ol>
-	 *  <li>
-	 *   The rendered image size is determined by the component's size
-	 *   (reduced by its insets).
-	 *  </li>
-	 *  <li>
-	 *   Its <code>repaint()</code> method will be envoked when a new image has
-	 *   been rendered.
-	 *  </li>
-	 * </ol>
-	 */
-	private final Container _targetComponent;
-
-	/**
-	 * Camera from where a scene is observed.
-	 */
-	private final Camera3D _camera;
-
-	/**
-	 * This thread control flag is set when <code>requestTermination()</code>
-	 * is called. It is used as exit condition by the main thread loop.
-	 *
-	 * @see     #requestTermination()
-	 * @see     #isAlive()
-	 * @see     #join()
-	 */
-	private boolean _terminationRequested;
-
-	/**
-	 * This thread control flag is set when <code>requestUpdate()</code> is
-	 * called. It is used to trigger the thread loop to start rendering a new
-	 * image. It is also tested at various loop points in the rendering code
-	 * to abort rendering of a previous image, so the next rendering will be
-	 * completed as soon as possible.
-	 *
-	 * @see     #requestUpdate()
-	 */
-	private boolean _updateRequested;
-
-	/**
-	 * Last succesfully rendered image.
-	 */
-	private BufferedImage _renderedImage;
-
 	/**
 	 * Z-Buffer. Each entry corresponds to a pixel's Z-coordinate. If a
 	 * pixel is drawn, its Z-coordinate must exceed this value to be
@@ -102,25 +56,30 @@ public final class Renderer
 	private int[] _depthBuffer;
 
 	/**
+	 * Flag to indicate that the renderer should abort it works as soon as possible.
+	 */
+	boolean _abort;
+
+	/**
 	 * Temporary collection with objects (Object3D) to be rendered.
 	 *
 	 * @see     Object3D
 	 */
-	private final Node3DCollection objects = new Node3DCollection();
+	private final Node3DCollection _collectedObjects = new Node3DCollection();
 
 	/**
 	 * Temporary collection with light sources (Light).
 	 *
 	 * @see     Light3D
 	 */
-	private final Node3DCollection lights = new Node3DCollection();
+	private final Node3DCollection _collectedLights = new Node3DCollection();
 
 	/**
 	 * Temporary object with information about a rendered object.
 	 *
 	 * @see     #renderObject
 	 */
-	private final RenderObject renderObject = new RenderObject();
+	private final RenderObject _renderObject = new RenderObject();
 
 	/**
 	 * This hashtable is used to share phong tables between materials.
@@ -141,127 +100,36 @@ public final class Renderer
 	private static final Map _textureCache = new HashMap();
 
 	/**
-	 * Construct (and start) render thread.
-	 *
-	 * @param   targetComponent     On-screen component to render for.
-	 * @param   camera              Camera that defines the view.
+	 * Construct renderer.
 	 */
-	public Renderer( final Container targetComponent , final Camera3D camera )
+	public ImageRenderer()
 	{
-		_targetComponent      = targetComponent;
-		_camera               = camera;
-		_renderedImage        = null;
-		_depthBuffer          = null;
-		_terminationRequested = false;
-		_updateRequested      = true;
-
-		setPriority( Thread.MIN_PRIORITY );
-		setName( getClass().getName() );
-		start();
+		_depthBuffer   = null;
+		_abort         = false;
 	}
 
 	/**
-	 * Get last succesfully rendered image. This will return <code>null</code>
-	 * while the renderer is updating the image.
-	 *
-	 * @return  Rendered image;
-	 *          <code>null</code> if the image is not available.
+	 * Request abort of running {@link #renderScene} request. This can be used
+	 * in multi-threaded applications to request the renderer to stop working
+	 * when its output has become irrelivant, typically because the scene has
+	 * changed and a new frame should be rendered.
 	 */
-	public BufferedImage getRenderedImage()
+	public void abort()
 	{
-		return _renderedImage;
+		_abort = true;
 	}
 
 	/**
-	 * Request update of rendered image.
+	 * Test if abort was called during the last {@link #renderScene} request.
+	 * This can be used in multi-threaded applications to test if the last
+	 * rendered image was completed or not.
+	 * <p />
+	 * This flag is cleared immediately when {@link #renderScene} is called; it
+	 * is set by {@link #abort().
 	 */
-	public void requestUpdate()
+	public boolean isAborted()
 	{
-		if ( !_terminationRequested )
-		{
-			_updateRequested = true;
-			synchronized ( this )
-			{
-				notifyAll();
-			}
-		}
-	}
-
-	/**
-	 * Request termination of the render thread.
-	 */
-	public void requestTermination()
-	{
-		_updateRequested = false;
-		_terminationRequested = true;
-		synchronized ( this )
-		{
-			notifyAll();
-		}
-	}
-
-	/**
-	 * This is the thread body to update the rendered image on demand.
-	 */
-	public void run()
-	{
-		BufferedImage oldImage = null;
-		boolean needRepaint = false;
-
-		while ( !_terminationRequested && _targetComponent.isVisible() )
-		{
-			try
-			{
-				if ( _updateRequested )
-				{
-					_updateRequested = false;
-					_renderedImage = null;
-
-					final int    background = _targetComponent.getBackground().getRGB();
-					final Insets insets     = _targetComponent.getInsets();
-					final int    width      = Math.max( 1 , _targetComponent.getWidth() - insets.left - insets.right );
-					final int    height     = Math.max( 1 , _targetComponent.getHeight() - insets.top - insets.bottom );
-
-					final BufferedImage newImage = renderFrame( oldImage , width , height , background );
-					needRepaint = true; //|= ( oldImage != newImage );
-					oldImage = newImage;
-				}
-
-				if ( needRepaint && !_updateRequested )
-				{
-					_renderedImage = oldImage;
-					_targetComponent.repaint();
-					needRepaint = false;
-				}
-			}
-			catch ( Exception e )
-			{
-				System.out.println( "Render exception: " + e );
-				e.printStackTrace();
-			}
-
-			/*
-			 * No update needed or an exception occured.
-			 *
-			 * Wait 300ms or wait to be notified.
-			 */
-			try
-			{
-				while ( !_updateRequested )
-				{
-					synchronized ( this )
-					{
-						wait( 300 );
-					}
-				}
-			}
-			catch ( InterruptedException e ) { /*ignored*/ }
-		}
-
-		_renderedImage        = null;
-		_depthBuffer          = null;
-		_terminationRequested = false;
-		_updateRequested      = false;
+		return _abort;
 	}
 
 	/**
@@ -269,8 +137,10 @@ public final class Renderer
 	 *
 	 * @param   backgroundColor     Background color to use.
 	 */
-	public BufferedImage renderFrame( final BufferedImage oldImage , final int width , final int height , final int backgroundColor )
+	public BufferedImage renderScene( final BufferedImage oldImage , final int width , final int height , final Color backgroundColor , final Camera3D camera )
 	{
+		_abort = false;
+
 		/*
 		 * Create image.
 		 */
@@ -283,9 +153,11 @@ public final class Renderer
 		/*
 		 * Initialize frame and Z buffer. Re-create these buffers if necessary.
 		 */
-		final int   bufferSize  = width * height;
-		final int[] frameBuffer = ((DataBufferInt)image.getRaster().getDataBuffer()).getData();
-		final int[] depthBuffer = (int[])ArrayTools.ensureLength( _depthBuffer , int.class , -1 , bufferSize );
+		final int            bufferSize   = width * height;
+		final WritableRaster raster       = image.getRaster();
+		final DataBufferInt  rasterBuffer = (DataBufferInt)raster.getDataBuffer();
+		final int[]          frameBuffer  = rasterBuffer.getData();
+		final int[]          depthBuffer  = (int[])ArrayTools.ensureLength( _depthBuffer , int.class , -1 , bufferSize );
 		_depthBuffer = depthBuffer;
 
 		/*
@@ -293,13 +165,14 @@ public final class Renderer
 		 *  1) use for-loop to clear fixed number of entries (512 seems reasonable?);
 		 *  2) use System.arraycopy for base 2 fill of buffers (how expensive is this?).
 		 */
+		final int backgroundRGB = backgroundColor.getRGB();
 		for ( int i = ( bufferSize < 512 ) ? bufferSize : 512 ; --i >= 0 ; )
 		{
-			frameBuffer[ i ] = backgroundColor;
+			frameBuffer[ i ] = backgroundRGB;
 			depthBuffer[ i ] = 0x7FFFFFFF;
 		}
 
-		for ( int i = 512 ; !_updateRequested  && ( i < bufferSize ) ; )
+		for ( int i = 512 ; !_abort  && ( i < bufferSize ) ; )
 		{
 			int c = bufferSize - i;
 			if ( c > i )
@@ -315,17 +188,17 @@ public final class Renderer
 		 * 2) Gather lights in this world. Prepare per-light cached array.
 		 * 3) Cycle through all available models and render them.
 		 */
-		if ( !_updateRequested  )
+		if ( !_abort  )
 		{
-			objects.clear();
-			_camera.gatherLeafs( objects , Object3D.class , Matrix3D.INIT , true );
-			if ( !_updateRequested  )
+			_collectedObjects.clear();
+			camera.gatherLeafs( _collectedObjects , Object3D.class , Matrix3D.INIT , true );
+			if ( !_abort  )
 			{
-				lights.clear();
-				_camera.gatherLeafs( lights , Light3D.class , Matrix3D.INIT , true );
+				_collectedLights.clear();
+				camera.gatherLeafs( _collectedLights , Light3D.class , Matrix3D.INIT , true );
 
-				for ( int i = 0 ; !_updateRequested   && ( i < objects.size() ) ; i++ )
-					renderObject( depthBuffer , frameBuffer , width , height , objects.getMatrix( i ) , (Object3D)objects.getNode( i ) );
+				for ( int i = 0 ; !_abort   && ( i < _collectedObjects.size() ) ; i++ )
+					renderObject( depthBuffer , frameBuffer , width , height , camera , _collectedObjects.getMatrix( i ) , (Object3D)_collectedObjects.getNode( i ) );
 			}
 		}
 
@@ -340,20 +213,22 @@ public final class Renderer
 	 * @param   width           Width of rendering image.
 	 * @param   height          Height of rendering image.
 	 */
-	private void renderObject( final int[] depthBuffer , final int[] frameBuffer , final int width , final int height , final Matrix3D cameraXform , final Object3D object )
+	private void renderObject( final int[] depthBuffer , final int[] frameBuffer , final int width , final int height , final Camera3D camera , final Matrix3D cameraXform , final Object3D object )
 	{
-		renderObject.set( object , cameraXform , _camera.aperture , _camera.zoom , width , height , true );
-		if ( !_updateRequested )
+		final RenderObject renderObject = _renderObject;
+
+		renderObject.set( object , cameraXform , camera.aperture , camera.zoom , width , height , true );
+		if ( !_abort )
 		{
-			renderObject.setLights( lights );
-			if ( !_updateRequested )
+			renderObject.setLights( _collectedLights );
+			if ( !_abort )
 			{
 				/*
 				 * For each face:
 				 *   - determine if it's invisible (outside view volume & backface culling)
 				 *   - calculate weight point (average of vertices)
 				 */
-				for ( RenderObject.Face face = renderObject._faces ; !_updateRequested && ( face != null ) ; face = face._next )
+				for ( RenderObject.Face face = renderObject._faces ; !_abort && ( face != null ) ; face = face._next )
 				{
 					face.applyLighting();
 					renderFace( depthBuffer , frameBuffer , width , height , face );
@@ -453,20 +328,20 @@ public final class Renderer
 		int  rh    = 0;     // 'right' Horizontal coordinate counter     * 2^8
 		int  rhc   = 0;     // 'right' Horizontal coordinate coefficient * 2^8
 
-		long ld    = 0;     // 'left'  Depth counter     * 2^8
-		long ldc   = 0;     // 'left'  Depth coefficient * 2^8
-		long rd    = 0;     // 'right' Depth counter     * 2^8
-		long rdc   = 0;     // 'right' Depth coefficient * 2^8
+		long ld    = 0L;    // 'left'  Depth counter     * 2^8
+		long ldc   = 0L;    // 'left'  Depth coefficient * 2^8
+		long rd    = 0L;    // 'right' Depth counter     * 2^8
+		long rdc   = 0L;    // 'right' Depth coefficient * 2^8
 
-		long ltu   = 0;     // 'left'  Texture U-coordinate counter     * 2^8
-		long ltuc  = 0;     // 'left'  Texture U-coordinate coefficient * 2^8
-		long rtu   = 0;     // 'right' Texture U-coordinate counter     * 2^8
-		long rtuc  = 0;     // 'right' Texture U-coordinate coefficient * 2^8
+		long ltu   = 0L;    // 'left'  Texture U-coordinate counter     * 2^8
+		long ltuc  = 0L;    // 'left'  Texture U-coordinate coefficient * 2^8
+		long rtu   = 0L;    // 'right' Texture U-coordinate counter     * 2^8
+		long rtuc  = 0L;    // 'right' Texture U-coordinate coefficient * 2^8
 
-		long ltv   = 0;     // 'left'  Texture V-coordinate counter     * 2^8
-		long ltvc  = 0;     // 'left'  Texture V-coordinate coefficient * 2^8
-		long rtv   = 0;     // 'right' Texture V-coordinate counter     * 2^8
-		long rtvc  = 0;     // 'right' Texture V-coordinate coefficient * 2^8
+		long ltv   = 0L;    // 'left'  Texture V-coordinate counter     * 2^8
+		long ltvc  = 0L;    // 'left'  Texture V-coordinate coefficient * 2^8
+		long rtv   = 0L;    // 'right' Texture V-coordinate counter     * 2^8
+		long rtvc  = 0L;    // 'right' Texture V-coordinate coefficient * 2^8
 
 		int  ldr   = 0;     // 'left'  Diffuse reflection counter     * 2^8
 		int  ldrc  = 0;     // 'left'  Diffuse reflection coefficient * 2^8
@@ -515,10 +390,10 @@ public final class Renderer
 
 			if ( hasTexture )
 			{
-				ltu = tus[ li1 ] * ld;
-				rtu = tus[ ri1 ] * rd;
-				ltv = tvs[ li1 ] * ld;
-				rtv = tvs[ ri1 ] * rd;
+				ltu = (long)tus[ li1 ] * ld;
+				rtu = (long)tus[ ri1 ] * rd;
+				ltv = (long)tvs[ li1 ] * ld;
+				rtv = (long)tvs[ ri1 ] * rd;
 			}
 
 			if ( phongTable != null )
@@ -532,8 +407,8 @@ public final class Renderer
 			}
 
 			renderScanlines( depthBuffer , frameBuffer , width , height ,
-			    v , v , lh , 0 , rh , 0 , ld , 0 , rd , 0 , colorRGB ,
-				texturePixels , ltu , 0 , rtu , 0 , ltv , 0 , rtv , 0 , ldr , 0 , rdr , 0 ,
+			    v , v , lh , 0 , rh , 0 , ld , 0L , rd , 0L , colorRGB ,
+				texturePixels , ltu , 0L , rtu , 0L , ltv , 0L , rtv , 0L , ldr , 0 , rdr , 0 ,
 				phongTable , lsx , 0 , rsx , 0 , lsy , 0 , rsy , 0 , lsf , 0 , rsf , 0 );
 
 			return;
@@ -580,16 +455,16 @@ public final class Renderer
 
 				//lzc = (d2        - (lz =  d1       )) / j; lz += 0x80;
 				ldc = d2 - ( ld = d1 );
-				     if ( ldc < 0 ) ldc = ( ldc - 0x100 ) / i;
-				else if ( ldc > 0 ) ldc = ( ldc + 0x100 ) / i;
-				ld += 0x80;
+				     if ( ldc < 0 ) ldc = ( ldc - 0x100L ) / (long)i;
+				else if ( ldc > 0 ) ldc = ( ldc + 0x100L ) / (long)i;
+				ld += 0x80L;
 
 				ldrc = (ds[ li2 ] - (ldr =  ds[ li1 ])) / j; ldr += 0x80;
 
 				if ( hasTexture )
 				{
-					ltuc = ((tus[ li2 ] * d2) - (ltu = (tus[ li1 ] * d1))) / j; ltu += 0x80;
-					ltvc = ((tvs[ li2 ] * d2) - (ltv = (tvs[ li1 ] * d1))) / j; ltv += 0x80;
+					ltuc = ( ( (long)tus[ li2 ] * d2 ) - ( ltu = ( (long)tus[ li1 ] * d1 ) ) ) / (long)j; ltu += 0x80L;
+					ltvc = ( ( (long)tvs[ li2 ] * d2 ) - ( ltv = ( (long)tvs[ li1 ] * d1 ) ) ) / (long)j; ltv += 0x80L;
 				}
 
 				if ( phongTable != null )
@@ -624,16 +499,16 @@ public final class Renderer
 
 				//rzc = ( d2        - (rz =  d1       )) / j; rz += 0x80;
 				rdc = d2 - ( rd =  d1 );
-				     if ( rdc < 0 ) rdc = ( rdc - 0x100 ) / i;
-				else if ( rdc > 0 ) rdc = ( rdc + 0x100 ) / i;
-				rd += 0x80;
+				     if ( rdc < 0 ) rdc = ( rdc - 0x100L ) / (long)i;
+				else if ( rdc > 0 ) rdc = ( rdc + 0x100L ) / (long)i;
+				rd += 0x80L;
 
 				rdrc = ( ds[ ri2 ] - (rdr =  ds[ ri1 ])) / j; rdr += 0x80;
 
 				if ( hasTexture )
 				{
-					rtuc = ((tus[ ri2 ] * d2) - (rtu = (tus[ ri1 ] * d1))) / j; rtu += 0x80;
-					rtvc = ((tvs[ ri2 ] * d2) - (rtv = (tvs[ ri1 ] * d1))) / j; rtv += 0x80;
+					rtuc = (( (long)tus[ ri2 ] * d2) - (rtu = ( (long)tus[ ri1 ] * d1))) / (long)j; rtu += 0x80L;
+					rtvc = (( (long)tvs[ ri2 ] * d2) - (rtv = ( (long)tvs[ ri1 ] * d1))) / (long)j; rtv += 0x80L;
 				}
 
 				if ( phongTable != null )
@@ -665,9 +540,9 @@ public final class Renderer
 				if ( lv2 != nextV )
 				{
 					lh  += lhc  * i;
-					ld  += ldc  * i;
-					ltu += ltuc * i;
-					ltv += ltvc * i;
+					ld  += ldc  * (long)i;
+					ltu += ltuc * (long)i;
+					ltv += ltvc * (long)i;
 					ldr  += ldrc  * i;
 					lsx += lsxc * i;
 					lsy += lsyc * i;
@@ -677,9 +552,9 @@ public final class Renderer
 				if ( rv2 != nextV )
 				{
 					rh  += rhc  * i;
-					rd  += rdc  * i;
-					rtu += rtuc * i;
-					rtv += rtvc * i;
+					rd  += rdc  * (long)i;
+					rtu += rtuc * (long)i;
+					rtv += rtvc * (long)i;
 					rdr  += rdrc  * i;
 					rsx += rsxc * i;
 					rsy += rsyc * i;
@@ -848,9 +723,9 @@ public final class Renderer
 
 				if ( ( i = ( h2 -= h1 ) ) == 0 ) i = 1;
 
-				d2  = ( d2  - d1  ) / i;
-				tu2 = ( tu2 - tu1 ) / i;
-				tv2 = ( tv2 - tv1 ) / i;
+				d2  = ( d2  - d1  ) / (long)i;
+				tu2 = ( tu2 - tu1 ) / (long)i;
+				tv2 = ( tv2 - tv1 ) / (long)i;
 				dr2 = ( dr2 - dr1 ) / i;
 				sx2 = ( sx2 - sx1 ) / i;
 				sy2 = ( sy2 - sy1 ) / i;
@@ -863,9 +738,9 @@ public final class Renderer
 				 */
 				if ( h1 < 0 )
 				{
-					 d1 -=  d2 * h1;
-					tu1 -= tu2 * h1;
-					tv1 -= tv2 * h1;
+					 d1 -=  d2 * (long)h1;
+					tu1 -= tu2 * (long)h1;
+					tv1 -= tv2 * (long)h1;
 					dr1 -= dr2 * h1;
 					sx1 -= sx2 * h1;
 					sy1 -= sy2 * h1;
@@ -892,13 +767,13 @@ public final class Renderer
 								depthBuffer[ i ] = j;
 
 								// fix , tu1 and tv1 become < 0 don't know how that happens
-								final int myU = (int)( ( tu1 / d1 ) % tw );
-								final int myV = (int)( ( tv1 / d1 ) % th );
+								final int myU = (int)( ( tu1 / d1 ) % (long)tw );
+								final int myV = (int)( ( tv1 / d1 ) % (long)th );
 								c = texture[ myV + (myV<0?th:0)][ myU + (myU<0?tw:0) ];
 								// original
 								//c = texture[ (int)( ( tv1 / d1 ) % th )) ]
 								           //[ (int)( ( tu1 / d1 ) % tw )) ];
-								s = phongTable[ sy1 >> 8 ][ sx1 >> 8 ] * sf1;
+								s = (int)phongTable[ sy1 >> 8 ][ sx1 >> 8 ] * sf1;
 
 								if ( (r = (dr1 * ((c >> 16) & 0xFF) + s) >> 16) > 255 ) r = 255;
 								if ( (g = (dr1 * ((c >>  8) & 0xFF) + s) >> 16) > 255 ) g = 255;
@@ -924,7 +799,7 @@ public final class Renderer
 							{
 								depthBuffer[ i ] = j;
 
-								s = phongTable[ sy1 >> 8 ][ sx1 >> 8 ] * sf1;
+								s = (int)phongTable[ sy1 >> 8 ][ sx1 >> 8 ] * sf1;
 
 								if ( ( r = ( dr1 * mr + s ) >> 16 ) > 255 ) r = 255;
 								if ( ( g = ( dr1 * mg + s ) >> 16 ) > 255 ) g = 255;
@@ -952,8 +827,8 @@ public final class Renderer
 								depthBuffer[ i ] = j;
 
 								// fix , tu1 and tv1 become < 0 don't know how that happens
-								final int myU = (int)( ( tu1 / d1 ) % tw );
-								final int myV = (int)( ( tv1 / d1 ) % th );
+								final int myU = (int)( ( tu1 / d1 ) % (long)tw );
+								final int myV = (int)( ( tv1 / d1 ) % (long)th );
 								c = texture[ myV + (myV<0?th:0)][ myU + (myU<0?tw:0) ];
 								// original
 								//c = texture[ (int)( ( tv1 / d1 ) % th )) ]
@@ -1046,12 +921,12 @@ public final class Renderer
 
 				for ( x = 0 ; x <= 128 ; x++ )
 				{
-					xc = x / 128.0;
-					yc = y / 128.0;
+					xc = (double)x / 128.0;
+					yc = (double)y / 128.0;
 					c  = 1.0 - Math.sqrt( xc * xc + yc * yc );
 					if ( c < 0.0 ) c = 0.0;
 
-					t[ 128 - x ] = s = (short)( 256 * Math.pow( c , exponent ) );
+					t[ 128 - x ] = s = (short)( 256.0 * Math.pow( c , (double)exponent ) );
 					if ( x < 128 ) t[ x + 128 ] = s;
 				}
 			}
