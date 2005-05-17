@@ -19,7 +19,6 @@
  */
 package ab.j3d.view;
 
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Locale;
@@ -95,13 +94,13 @@ public abstract class ViewControl
 		return new Action[]
 			{
 				new BasicAction( res , RESTORE_ACTION ) {
-					public void actionPerformed( final ActionEvent event )
+					public void run()
 					{
 						restore();
 					} } ,
 
 				new BasicAction( res , SAVE_ACTION ) {
-					public void actionPerformed( final ActionEvent event )
+					public void run()
 					{
 						save();
 					} } ,
