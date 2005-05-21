@@ -40,25 +40,25 @@ import com.numdata.oss.ui.ActionTools;
  * <p />
  * The following entities are defined by this model:
  * <dl>
- *   <dt>View model (<code>ViewModel</code>, this class)</dt>
+ *   <dt>View model ({@link ViewModel}, this class)</dt>
  *   <dd>
  *     This is the main application interface. The main application functions
  *     are adding, updating, and nodes or views, and handling user interaction.
  *   </dd>
- *   <dt>Node (<code>ViewModelNode</code>)</dt>
+ *   <dt>Node ({@link ViewModelNode})</dt>
  *   <dd>
- *     A node links an application-assigned object (<code>ID : Object</code>) to
- *     a part of the 3D scene (<code>abRootNode : Node3D</code>). The application
+ *     A node links an application-assigned object (<code>ID</code> : {@link Object}) to
+ *     a part of the 3D scene (<code>node</code> : {@link Node3D}). The application
  *     defines how the specified object is represented in 3D, and allows it to be
  *     placed in the 3D environment. A transform can be applied to define the
  *     location, orientation, and scale of the object.
  *   </dd>
- *   <dt>View (<code>ViewModelView</code>)</dt>
+ *   <dt>View ({@link ViewModelView})</dt>
  *   <dd>
  *     A view provides a graphical representation of the 3D scene
- *     (<code>component : Component</code>). Multiple views may be
+ *     (<code>component</code> : {@link Component}). Multiple views may be
  *     defined for a single view model; each identified by an
- *     application-assigned object (<code>ID : Object</code>).
+ *     application-assigned object (<code>ID</code> : {@link Object}).
  *   </dd>
  * </dl>
  *
@@ -68,12 +68,12 @@ import com.numdata.oss.ui.ActionTools;
 public abstract class ViewModel
 {
 	/**
-	 * List of nodes (element type: <code>ViewModelNode</code>).
+	 * List of nodes (element type: {@link ViewModelNode}).
 	 */
 	private final List _nodes = new ArrayList();
 
 	/**
-	 * List of views (element type: <code>ViewModelView</code>).
+	 * List of views (element type: {@link ViewModelView}).
 	 */
 	private final List _views = new ArrayList();
 
@@ -167,7 +167,7 @@ public abstract class ViewModel
 
 	/**
 	 * Create a new node (sub tree) in the view tree. The specified
-	 * <code>node3D</code> is converted into view and then added to the view
+	 * {@link Node3D} is converted into view and then added to the view
 	 * tree. If an existing node exists with the same ID, then the existing
 	 * node will be removed before creating the new node.
 	 *
@@ -178,7 +178,20 @@ public abstract class ViewModel
 	 *
 	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public abstract void createNode( Object id , Node3D node3D , TextureSpec textureOverride , float opacity );
+	public final void createNode( final Object id , final Node3D node3D , final TextureSpec textureOverride , final float opacity )
+	{
+		if ( id == null )
+			throw new NullPointerException( "id" );
+
+		removeNode( id );
+
+		if ( node3D != null )
+		{
+			final ViewModelNode node = new ViewModelNode( id , node3D , textureOverride , opacity );
+			initializeNode( node );
+			addNode( node );
+		}
+	}
 
 	/**
 	 * Test if view model contains a node with the specified ID.
@@ -228,7 +241,7 @@ public abstract class ViewModel
 	 * @param   id          Application-assigned ID of view model node.
 	 * @param   transform   Transform to set.
 	 *
-	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
+	 * @throws  NullPointerException if an argument is <code>null</code>.
 	 */
 	public final void setNodeTransform( final Object id , final Matrix3D transform )
 	{
@@ -237,23 +250,54 @@ public abstract class ViewModel
 			throw new IllegalArgumentException( "ID '" + id + "' does not refer to a known view model node" );
 
 		node.setTransform( transform );
+		updateNodeTransform( node );
 	}
 
 	/**
 	 * Update a specified part (sub tree) of the view tree.
 	 *
-	 * @param   id          Application-assigned ID of view model node.
+	 * @param   id      Application-assigned ID of view model node.
 	 *
 	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public void updateNode( final Object id )
+	public final void updateNode( final Object id )
 	{
 		final ViewModelNode node = getNode( id );
 		if ( node == null )
 			throw new IllegalArgumentException( "ID '" + id + "' does not refer to a known view model node" );
 
-		node.update();
+		updateNodeContent( node );
 	}
+
+	/**
+	 * This method initializes the contents in the view for the specified node.
+	 * Its implemententation depends largely on the view model implementation,
+	 * which typically sets up resources in the underlying render engine for the
+	 * node.
+	 *
+	 * @param   node    Node being set up (never <code>null</code>).
+	 */
+	protected abstract void initializeNode( ViewModelNode node );
+
+	/**
+	 * This method updates the transform in the view for the specified node. Its
+	 * implemententation depends largely on the view model implementation, which
+	 * typically translates and updates the transform in the underlying render
+	 * engine.
+	 *
+	 * @param   node    Node being updated (never <code>null</code>).
+	 */
+	protected abstract void updateNodeTransform( ViewModelNode node );
+
+	/**
+	 * This method updates the contents in the view for the specified node. Its
+	 * implemententation depends largely on the view model implementation, which
+	 * typically translates the content of a node to a form suitable for the
+	 * underlying render engine.
+	 *
+	 * @param   node    Node being updated (never <code>null</code>).
+	 */
+	protected abstract void updateNodeContent( ViewModelNode node );
 
 	/**
 	 * Get view view by ID. This method is only supposed to be used internally.
@@ -447,7 +491,7 @@ public abstract class ViewModel
 	/**
 	 * Update all views.
 	 */
-	public final void updateViews()
+	public void updateViews()
 	{
 		for ( int i = 0 ; i < _views.size() ; i++ )
 		{

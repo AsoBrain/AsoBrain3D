@@ -31,7 +31,7 @@ import ab.j3d.model.Node3D;
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public abstract class ViewModelNode
+public final class ViewModelNode
 {
 	/**
 	 * Application-assigned ID of this node.
@@ -46,17 +46,17 @@ public abstract class ViewModelNode
 	/**
 	 * Root in the 3D scene associated with this node.
 	 */
-	private final Node3D _node3D;
+	private Node3D _node3D;
 
 	/**
 	 * Texture to use instead of actual textures.
 	 */
-	protected final TextureSpec _textureOverride;
+	protected TextureSpec _textureOverride;
 
 	/**
-	 * Extra opacity (0.0=translucent, 1.0=opaque).
+	 * Extra opacity (0.0=translucent, 1.0=opaque/unchanged).
 	 */
-	protected final float _opacity;
+	protected float _opacity;
 
 	/**
 	 * Construct new view model node. The <code>textureOverride</code> and
@@ -68,7 +68,7 @@ public abstract class ViewModelNode
 	 * @param   textureOverride     Texture to use instead of actual textures.
 	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).
 	 */
-	protected ViewModelNode( final Object id , final Node3D node3D , final TextureSpec textureOverride , final float opacity )
+	public ViewModelNode( final Object id , final Node3D node3D , final TextureSpec textureOverride , final float opacity )
 	{
 		_id              = id;
 		_node3D          = node3D;
@@ -121,7 +121,54 @@ public abstract class ViewModelNode
 	}
 
 	/**
-	 * Update view node.
+	 * Set root in the 3D scene associated with this node.
+	 *
+	 * @param   node3D  Root in the 3D scene associated with this node.
 	 */
-	public abstract void update();
+	public void setNode3D( final Node3D node3D )
+	{
+		_node3D = node3D;
+	}
+
+	/**
+	 * Get texture to override actual textures.
+	 *
+	 * @return  Texture to use instead of actual textures;
+	 *          <code>null</code> to use only actual textures.
+	 */
+	public TextureSpec getTextureOverride()
+	{
+		return _textureOverride;
+	}
+
+	/**
+	 * Set texture to override actual textures.
+	 *
+	 * @param   texture     Texture to use instead of actual textures;
+	 *                      <code>null</code> to use only actual textures.
+	 */
+	public void setTextureOverride( final TextureSpec texture )
+	{
+		_textureOverride = texture;
+	}
+
+	/**
+	 * Get extra opacity, multiplied with existing opacity values.
+	 *
+	 * @return  Extra opacity (0.0=translucent, 1.0=opaque/unchanged).
+	 */
+	public float getOpacity()
+	{
+		return _opacity;
+	}
+
+	/**
+	 * Set extra opacity, multiplied with existing opacity values.
+	 *
+	 * @param   opacity     Extra opacity (0.0=translucent, 1.0=opaque/unchanged).
+	 */
+	public void setOpacity( final float opacity )
+	{
+		_opacity = opacity;
+	}
 }

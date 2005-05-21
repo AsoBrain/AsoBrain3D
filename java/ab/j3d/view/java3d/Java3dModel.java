@@ -26,10 +26,14 @@ import java.util.Map;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.TransformGroup;
 
+import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.model.Node3D;
+import ab.j3d.model.Node3DCollection;
+import ab.j3d.model.Object3D;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModel;
+import ab.j3d.view.ViewModelNode;
 
 /**
  * View model implementation for Java 3D.
@@ -51,8 +55,8 @@ public final class Java3dModel
 	private final BranchGroup _contentGraph;
 
 	/**
-	 * Map node ID (<code>Object</code>) to Java 3D content graph object
-	 * (<code>BranchGroup</code>).
+	 * Map node ID ({@link Object}) to Java 3D content graph object
+	 * ({@link BranchGroup}).
 	 */
 	private final Map _nodeContentMap = new HashMap();
 
@@ -67,7 +71,7 @@ public final class Java3dModel
 	/**
 	 * Construct new Java 3D model.
 	 *
-	 * @param   unit            Unit scale factor (e.g. <code>Java3dUniverse.MM</code>).
+	 * @param   unit            Unit scale factor (e.g. {@link Java3dUniverse.MM}).
 	 * @param   background      Background color to use for 3D views.
 	 */
 	public Java3dModel( final double unit , final Color background )
@@ -86,31 +90,74 @@ public final class Java3dModel
 		_contentGraph = Java3dTools.createDynamicScene( _universe.getContent() );
 	}
 
-	public void createNode( final Object id , final Node3D node3D , final TextureSpec textureOverride , final float opacity )
+	/**
+	 * Setup the Java 3D side of a view node.
+	 * <p />
+	 * This adds the following part to the Java 3D content graph:
+	 * <pre>
+	 *    (G)  {@link Java3dUniverse#getContent()}
+	 *     |
+	 *    (BG) {@link #_contentGraph}
+	 *     |
+	 *    <b>(BG) <code>nodeRoot</code> (added to {@link #_nodeContentMap} with <code>id</code> as key)
+	 *     |
+	 *    (TG) <code>nodeTransform</code>
+	 *     |
+	 *    (BG) content branch group (re-created on updates)</b>
+	 * </pre>
+	 *
+	 * @param   node    View node being set up.
+	 *
+	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
+	 */
+	protected void initializeNode( final ViewModelNode node )
 	{
-		if ( id == null )
-			throw new NullPointerException( "id" );
+		final Object id = node.getID();
 
-		removeNode( id );
+		final BranchGroup nodeRoot = new BranchGroup();
+		nodeRoot.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
+		nodeRoot.setCapability( BranchGroup.ALLOW_DETACH );
+		_nodeContentMap.put( id , nodeRoot );
 
-		if ( node3D != null )
-		{
-			final BranchGroup nodeRoot = new BranchGroup();
-			nodeRoot.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
-			nodeRoot.setCapability( BranchGroup.ALLOW_DETACH );
-			_nodeContentMap.put( id , nodeRoot );
+		final TransformGroup nodeTransform = new TransformGroup();
+		nodeTransform.setCapability( TransformGroup.ALLOW_CHILDREN_READ   );
+		nodeTransform.setCapability( TransformGroup.ALLOW_CHILDREN_WRITE );
+		nodeTransform.setCapability( TransformGroup.ALLOW_CHILDREN_EXTEND );
+		nodeTransform.setCapability( TransformGroup.ALLOW_TRANSFORM_WRITE );
+		nodeRoot.addChild( nodeTransform );
 
-			final TransformGroup nodeTransform = new TransformGroup();
-			nodeTransform.setCapability( TransformGroup.ALLOW_CHILDREN_READ   );
-			nodeTransform.setCapability( TransformGroup.ALLOW_CHILDREN_WRITE );
-			nodeTransform.setCapability( TransformGroup.ALLOW_CHILDREN_EXTEND );
-			nodeTransform.setCapability( TransformGroup.ALLOW_TRANSFORM_WRITE );
-			nodeRoot.addChild( nodeTransform );
+		_contentGraph.addChild( nodeRoot );
+	}
 
-			addNode( new Java3dNode( nodeTransform , id , node3D , textureOverride , opacity ) );
+	protected void updateNodeTransform( final ViewModelNode node )
+	{
+		final Object         id            = node.getID();
+		final Matrix3D       transform     = node.getTransform();
+		final TransformGroup nodeTransform = getJava3dTransform( id );
 
-			_contentGraph.addChild( nodeRoot );
-		}
+		nodeTransform.setTransform( Java3dTools.convertMatrix3DToTransform3D( transform ) );
+	}
+
+	protected void updateNodeContent( final ViewModelNode node )
+	{
+		final Object         id              = node.getID();
+		final TransformGroup nodeTransform   = getJava3dTransform( id );
+		final Node3D         node3D          = node.getNode3D();
+		final TextureSpec    textureOverride = node.getTextureOverride();
+		final float          opacity         = node.getOpacity();
+
+		final Node3DCollection nodes = new Node3DCollection();
+		node3D.gatherLeafs( nodes , Object3D.class , Matrix3D.INIT , false );
+
+		final BranchGroup bg = Shape3DBuilder.createBranchGroup( nodes , textureOverride , opacity );
+
+		/*
+		 * Attach content to scene graph (replace existing branch group).
+		 */
+		if ( nodeTransform.numChildren() == 0 )
+			nodeTransform.addChild( bg );
+		else
+			nodeTransform.setChild( bg , 0 );
 	}
 
 	public void removeNode( final Object id )
