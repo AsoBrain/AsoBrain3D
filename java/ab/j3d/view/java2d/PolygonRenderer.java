@@ -104,87 +104,88 @@ public final class PolygonRenderer
 		node.gatherLeafs( nodes , Object3D.class , _viewTransform , false );
 
 		for ( int nodeIndex = 0 ; nodeIndex < nodes.size() ; nodeIndex++ )
-		{
-			final Object3D object      = (Object3D)nodes.getNode( nodeIndex );
-			final Matrix3D xform       = nodes.getMatrix( nodeIndex );
-			final int      pointCount  = object.getPointCount();
-			final double[] pointCoords = ( _pointCoordsCache = xform.transform( object.getPointCoords() , _pointCoordsCache , pointCount ) );
-			final int      faceCount   = object.getFaceCount();
-			final double[] faceNormals = ( _normalsCache = xform.rotate( object.getFaceNormals() , _normalsCache , faceCount ) );
+			add( nodes.getMatrix( nodeIndex ) , (Object3D)nodes.getNode( nodeIndex ) , alternateAppearance );
+	}
 
-			if ( _perspective )
+	public void add( final Matrix3D xform , final Object3D object , final boolean alternateAppearance )
+	{
+		final int      pointCount  = object.getPointCount();
+		final double[] pointCoords = ( _pointCoordsCache = xform.transform( object.getPointCoords() , _pointCoordsCache , pointCount ) );
+		final int      faceCount   = object.getFaceCount();
+		final double[] faceNormals = ( _normalsCache = xform.rotate( object.getFaceNormals() , _normalsCache , faceCount ) );
+
+		if ( _perspective )
+		{
+			for ( int i = 0 , k = 0 ; i < pointCount ; i++ , k += 3 )
 			{
-				for ( int i = 0 , k = 0 ; i < pointCount ; i++ , k += 3 )
-				{
-					final double x = pointCoords[ k     ];
-					final double y = pointCoords[ k + 1 ];
-					final double z = pointCoords[ k + 2 ];
+				final double x = pointCoords[ k     ];
+				final double y = pointCoords[ k + 1 ];
+				final double z = pointCoords[ k + 2 ];
 
 					if ( z > 1999.0 )
 						return;
 
-					final double f = 1000.0 / ( 2000.0 - z );
+				final double f = 1000.0 / ( 2000.0 - z );
 
-					pointCoords[ k     ] = x * f;
-					pointCoords[ k + 1 ] = y * f;
-				}
+				pointCoords[ k     ] = x * f;
+				pointCoords[ k + 1 ] = y * f;
 			}
+		}
 
-			for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
+		for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
+		{
+			final Face3D face         = object.getFace( faceIndex );
+			final int    vertexCount  = face.getVertexCount();
+			final int[]  pointIndices = face.getPointIndices();
+
+			/*
+			 * If we have less than three points, its not a valid face.
+			 */
+			if ( vertexCount > 2 )
 			{
-				final Face3D face         = object.getFace( faceIndex );
-				final int    vertexCount  = face.getVertexCount();
-				final int[]  pointIndices = face.getPointIndices();
+				/*
+				 * Perform backface removal
+				 *
+				 * c = (x1-x2)*(y3-y2)-(y1-y2)*(x3-x2)
+				 */
+				final double x1 = pointCoords[ pointIndices[ 0 ] * 3     ];
+				final double y1 = pointCoords[ pointIndices[ 0 ] * 3 + 1 ];
+
+				final double x2 = pointCoords[ pointIndices[ 1 ] * 3     ];
+				final double y2 = pointCoords[ pointIndices[ 1 ] * 3 + 1 ];
+
+				final double x3 = pointCoords[ pointIndices[ 2 ] * 3     ];
+				final double y3 = pointCoords[ pointIndices[ 2 ] * 3 + 1 ];
+
+				if ( ( ( x1 - x2 ) * ( y3 - y2 ) - ( y1 - y2 ) * ( x3 - x2 ) ) < 0 )
+					continue;
 
 				/*
-				 * If we have less than three points, its not a valid face.
+				 * Put entry in queue.
 				 */
-				if ( vertexCount > 2 )
+				final double normalZ = faceNormals[ faceIndex * 3 + 2 ];
+
+				final int[] xs = new int[ vertexCount ];
+				final int[] ys = new int[ vertexCount ];
+
+				double averageZ = 0.0;
+
+				for ( int p = 0 ; p < vertexCount ; p++ )
 				{
-					/*
-					 * Perform backface removal
-					 *
-					 * c = (x1-x2)*(y3-y2)-(y1-y2)*(x3-x2)
-					 */
-					final double x1 = pointCoords[ pointIndices[ 0 ] * 3     ];
-					final double y1 = pointCoords[ pointIndices[ 0 ] * 3 + 1 ];
+					final int    vi = pointIndices[ p ] * 3;
+					final double x  = pointCoords[ vi     ];
+					final double y  = pointCoords[ vi + 1 ];
+					final double z  = pointCoords[ vi + 2 ];
 
-					final double x2 = pointCoords[ pointIndices[ 1 ] * 3     ];
-					final double y2 = pointCoords[ pointIndices[ 1 ] * 3 + 1 ];
+					averageZ += z;
+					//if ( p == 0 || z < qz ) qz = z;
 
-					final double x3 = pointCoords[ pointIndices[ 2 ] * 3     ];
-					final double y3 = pointCoords[ pointIndices[ 2 ] * 3 + 1 ];
-
-					if ( ( ( x1 - x2 ) * ( y3 - y2 ) - ( y1 - y2 ) * ( x3 - x2 ) ) < 0 )
-						continue;
-
-					/*
-					 * Put entry in queue.
-					 */
-					final double normalZ = faceNormals[ faceIndex * 3 + 2 ];
-
-					final int[] xs = new int[ vertexCount ];
-					final int[] ys = new int[ vertexCount ];
-
-					double averageZ = 0.0;
-
-					for ( int p = 0 ; p < vertexCount ; p++ )
-					{
-						final int    vi = pointIndices[ p ] * 3;
-						final double x  = pointCoords[ vi     ];
-						final double y  = pointCoords[ vi + 1 ];
-						final double z  = pointCoords[ vi + 2 ];
-
-						averageZ += z;
-						//if ( p == 0 || z < qz ) qz = z;
-
-						xs[ p ] = (int)_projectionTransform.transformX( x , y , 0.0 );
-						ys[ p ] = (int)_projectionTransform.transformY( x , y , 0.0 );
-					}
-
-					averageZ = averageZ / (double)vertexCount;
-					_queue.add( new QueueItem( face , xs , ys , averageZ , alternateAppearance , normalZ ) );
+					xs[ p ] = (int)_projectionTransform.transformX( x , y , 0.0 );
+					ys[ p ] = (int)_projectionTransform.transformY( x , y , 0.0 );
 				}
+
+				averageZ = averageZ / (double)vertexCount;
+				_queue.add( new QueueItem( face , xs , ys , averageZ , alternateAppearance , normalZ ) );
 			}
 		}
 	}
