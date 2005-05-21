@@ -20,12 +20,11 @@
 package ab.j3d.view.java2d;
 
 import java.awt.Component;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
-import ab.j3d.TextureSpec;
+import ab.j3d.Matrix3D;
 import ab.j3d.model.Node3D;
+import ab.j3d.model.Node3DCollection;
+import ab.j3d.model.Object3D;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelNode;
@@ -42,7 +41,7 @@ public final class Java2dModel
 	/**
 	 * Paint queue.
 	 */
-	private final List _paintQueue = new LinkedList();
+	private final Node3DCollection _paintQueue = new Node3DCollection();
 
 	/**
 	 * Construct new Java 2D view model.
@@ -51,32 +50,17 @@ public final class Java2dModel
 	{
 	}
 
-	public void createNode( final Object id , final Node3D node3D , final TextureSpec textureOverride , final float opacity )
+	protected void initializeNode( final ViewModelNode node )
 	{
-		removeNode( id );
-		if ( node3D != null )
-			addNode( new Java2dNode( id , node3D , textureOverride , opacity ) );
 	}
 
-	protected void addNode( final ViewModelNode node )
+	protected void updateNodeTransform( final ViewModelNode node )
 	{
-		super.addNode( node );
-		updatePaintQueue();
 		updateViews();
 	}
 
-	public void removeNode( final Object id )
+	protected void updateNodeContent( final ViewModelNode node )
 	{
-		super.removeNode( id );
-		updatePaintQueue();
-		updateViews();
-	}
-
-	public void updateNode( final Object id )
-	{
-		super.updateNode( id );
-
-		updatePaintQueue();
 		updateViews();
 	}
 
@@ -87,21 +71,25 @@ public final class Java2dModel
 		return view.getComponent();
 	}
 
-	/**
-	 * Update the paint queue.
-	 */
-	private void updatePaintQueue()
+	public void updateViews()
 	{
-		_paintQueue.clear();
+		final Node3DCollection queue = _paintQueue;
+		queue.clear();
+
 		final Object[] nodeIDs = getNodeIDs();
 		for ( int i = 0 ; i < nodeIDs.length ; i++ )
 		{
-			final Object     nodeID = nodeIDs[ i ];
-			final Java2dNode node   = (Java2dNode)getNode( nodeID );
+			final Object        id              = nodeIDs[ i ];
+			final ViewModelNode node            = getNode( id );
+			final Node3D        node3D          = node.getNode3D();
+			final Matrix3D      transform       = node.getTransform();
+//			final TextureSpec   textureOverride = node.getTextureOverride();
+//			final float         opacity         = node.getOpacity();
 
-			for ( Iterator paintQueue = node.getPaintQueue() ; paintQueue.hasNext() ; )
-				_paintQueue.add( paintQueue.next() );
+			node3D.gatherLeafs( queue , Object3D.class , transform , false );
 		}
+
+		super.updateViews();
 	}
 
 	/**
@@ -109,8 +97,8 @@ public final class Java2dModel
 	 *
 	 * @return  Paint queue iterator.
 	 */
-	public Iterator getPaintQueue()
+	public Node3DCollection getPaintQueue()
 	{
-		return _paintQueue.iterator();
+		return _paintQueue;
 	}
 }
