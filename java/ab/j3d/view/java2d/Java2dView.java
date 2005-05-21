@@ -30,6 +30,7 @@ import javax.swing.JComponent;
 import ab.j3d.Matrix3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
+import ab.j3d.view.DragSupport;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModelView;
 
@@ -111,10 +112,11 @@ public final class Java2dView
 			final Node3DCollection paintQueue          = model.getPaintQueue();
 			final Matrix3D         viewTransform       = getViewTransform();
 			final boolean          hasPerspective      = ( _projectionPolicy != PARALLEL );
+			final double           scale               = 2000.0 / (double)Math.max( width , height );
 			final Matrix3D         projectionTransform = Matrix3D.INIT.set(
-				 1.0 ,  0.0 , 0.0 , (double)width  / 2.0 ,
-				 0.0 , -1.0 , 0.0 , (double)height / 2.0 ,
-				 0.0 ,  0.0 , 0.0 , 0.0 );
+				 scale ,    0.0 , 0.0 , (double)width  / 2.0 ,
+				   0.0 , -scale , 0.0 , (double)height / 2.0 ,
+				   0.0 ,    0.0 , 0.0 , 0.0 );
 
 			final PolygonRenderer renderer = new PolygonRenderer( projectionTransform , viewTransform , hasPerspective );
 			for ( int i = 0 ; i < paintQueue.size() ; i++ )
@@ -155,8 +157,25 @@ public final class Java2dView
 	Java2dView( final Java2dModel model , final Object id , final ViewControl viewControl )
 	{
 		super( id , viewControl );
+
 		_model = model;
-		_viewComponent = new ViewComponent();
+
+		/*
+		 * Create view component.
+		 */
+		final ViewComponent viewComponent = new ViewComponent();
+		_viewComponent = viewComponent;
+
+		/*
+		 * Update view to initial transform.
+		 */
+		update();
+
+		/*
+		 * Add DragSupport to handle drag events.
+		 */
+		final DragSupport ds = new DragSupport( viewComponent , 0.001 );
+		ds.addDragListener( viewControl );
 	}
 
 	public Component getComponent()
