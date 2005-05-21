@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.TextureSpec;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
@@ -217,16 +218,17 @@ public final class PolygonRenderer
 			/*
 			 * Paint entry
 			 */
-			final Face3D   face          = entry.face;
-			final Object3D object        = face.getObject();
-			final int[]    xs            = entry.xs;
-			final int[]    ys            = entry.ys;
-			final int      length        = xs.length;
-			final boolean  polygonFilled = ( fill || ( length == 1 ) );
+			final Face3D      face          = entry.face;
+			final TextureSpec texture       = face.getTexture();
+			final Object3D    object        = face.getObject();
+			final int[]       xs            = entry.xs;
+			final int[]       ys            = entry.ys;
+			final int         length        = xs.length;
+			final boolean     polygonFilled = ( fill || ( length == 1 ) );
 
 			if ( polygonFilled )
 			{
-				Paint paint = entry.alternateAppearance ? object.alternateFillPaint : object.fillPaint;
+				Paint paint = entry.alternateAppearance ? object.alternateFillPaint : ( ( texture != null ) && !texture.isTexture() ) ? texture.getColor() : object.fillPaint;
 				if ( fill && _perspective && ( paint instanceof Color ) )
 				{
 					final float shadeFactor = 0.5f;
