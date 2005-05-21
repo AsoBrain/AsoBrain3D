@@ -190,6 +190,7 @@ public abstract class ViewModel
 			final ViewModelNode node = new ViewModelNode( id , node3D , textureOverride , opacity );
 			initializeNode( node );
 			addNode( node );
+			updateNodeContent( node );
 		}
 	}
 
