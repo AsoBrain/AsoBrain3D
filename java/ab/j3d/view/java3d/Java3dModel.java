@@ -142,6 +142,7 @@ public final class Java3dModel
 	{
 		final Object         id              = node.getID();
 		final TransformGroup nodeTransform   = getJava3dTransform( id );
+		final Matrix3D       transform       = node.getTransform();
 		final Node3D         node3D          = node.getNode3D();
 		final TextureSpec    textureOverride = node.getTextureOverride();
 		final float          opacity         = node.getOpacity();
@@ -154,6 +155,8 @@ public final class Java3dModel
 		/*
 		 * Attach content to scene graph (replace existing branch group).
 		 */
+		nodeTransform.setTransform( Java3dTools.convertMatrix3DToTransform3D( transform ) );
+
 		if ( nodeTransform.numChildren() == 0 )
 			nodeTransform.addChild( bg );
 		else
