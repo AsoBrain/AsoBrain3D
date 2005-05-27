@@ -354,6 +354,84 @@ public final class Matrix3D
 	}
 
 	/**
+	 * Calculate transform for a plane that passes through <code>origin</code>
+	 * and has the specified <code>normal</code> vector.
+	 * <p />
+	 * The main purpose for this method is creating a suitable 3D transformation
+	 * for a 2D plane whose Z-axis points 'out' of the plane; the orientation of
+	 * the X/Y-axes on the plane is inheritently undeterminate, but this function
+	 * tries to find reasonable defaults.
+	 * <p />
+	 * A 0-vector multiplied with the resulting transform will match the
+	 * <code>origin</code>.
+	 *
+	 * @param   origin          Origin of plane.
+	 * @param   normal          Normal of plane.
+	 * @param   rightHanded     3D-space is right- vs. left-handed.
+	 *
+	 * @return  Transformation matrix (translation set to 0-vector) to be used
+	 *          for extrusion of 2D shapes.
+	 */
+	public static Matrix3D getPlaneTransform( final Vector3D origin , final Vector3D normal , final boolean rightHanded )
+	{
+		/*
+		 * Z-axis direction = normal
+		 */
+		double zAxisX = normal.x;
+		double zAxisY = normal.y;
+		double zAxisZ = normal.z;
+
+		final double length = Math.sqrt( zAxisX * zAxisX + zAxisY * zAxisY + zAxisZ * zAxisZ );
+		if ( length == 0.0 )
+		{
+			zAxisX = 0.0;
+			zAxisY = 0.0;
+			zAxisZ = 1.0;
+		}
+		else if ( length != 1.0 )
+		{
+			zAxisX /= length;
+			zAxisY /= length;
+			zAxisZ /= length;
+		}
+
+		/*
+		 * X-axis direction is perpendicular to the plane between the (local)
+		 * Z-axis and the world's Z-axis. If the Z-axes are parallel, then the
+		 * world Y-axis is used.
+		 *
+ 		 * This will keep the local X-axis on the X/Y-plane as much as possible.
+		 */
+		final double xAxisX;
+		final double xAxisY;
+		final double xAxisZ;
+
+		if ( Matrix3D.almostEqual( zAxisZ , ( zAxisZ < 0.0 ) ? -1.0 : 1.0 ) )
+		{
+			xAxisX = rightHanded ?  zAxisZ : -zAxisZ;
+			xAxisY = 0.0;
+			xAxisZ = rightHanded ? -zAxisX :  zAxisX;
+		}
+		else
+		{
+			xAxisX = rightHanded ? -zAxisY :  zAxisY;
+			xAxisY = rightHanded ?  zAxisX : -zAxisX;
+			xAxisZ = 0.0;
+		}
+
+		/*
+		 * Y-axis can be derived simply from the calculated X- and Z-axis.
+		 */
+		final double yAxisX = zAxisY * xAxisZ - zAxisZ * xAxisY;
+		final double yAxisY = zAxisZ * xAxisX - zAxisX * xAxisZ;
+		final double yAxisZ = zAxisX * xAxisY - zAxisY * xAxisX;
+
+		return Matrix3D.INIT.set( xAxisX , yAxisX , zAxisX , origin.x ,
+		                          xAxisY , yAxisY , zAxisY , origin.y ,
+		                          xAxisZ , yAxisZ , zAxisZ , origin.z );
+	}
+
+	/**
 	 * Get transformation matrix for a rotation about an arbitrary axis. The
 	 * rotation is axis is specified by a pivot point and rotation axis
 	 * direction. The rotation angle is specified in radians.
