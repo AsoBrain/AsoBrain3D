@@ -220,6 +220,25 @@ public final class Vector3D
 	 * @param   otherY  Y-coordinate of vector to compare with.
 	 * @param   otherZ  Z-coordinate of vector to compare with.
 	 *
+	 * @return  <code>true</code> if the objects are almost equal;
+	 *          <code>false</code> if not.
+	 *
+	 * @see     Matrix3D#almostEqual
+	 */
+	public boolean almostEquals( final double otherX , final double otherY , final double otherZ )
+	{
+		return Matrix3D.almostEqual( x , otherX )
+		    && Matrix3D.almostEqual( y , otherY )
+		    && Matrix3D.almostEqual( z , otherZ );
+	}
+
+	/**
+	 * Compare this vector to another vector.
+	 *
+	 * @param   otherX  X-coordinate of vector to compare with.
+	 * @param   otherY  Y-coordinate of vector to compare with.
+	 * @param   otherZ  Z-coordinate of vector to compare with.
+	 *
 	 * @return  <code>true</code> if vectors are equal;
 	 *          <code>false</code> if not.
 	 */
@@ -448,6 +467,89 @@ public final class Vector3D
 	public String toString()
 	{
 		return x + "," + y + ',' + z;
+	}
+
+	/**
+	 * This function translates catesian coordinates to polar/spherial
+	 * coordinates.
+	 * <p />
+	 * The polar/spherial coordinates are defined as the triplet
+	 * <code>( r , ? , ? )</code>, where r is radius, ? is the azimuth, and? is
+	 * the zenith.
+	 *
+	 * @return  Polar coordinates (radius,azimuth,zenith) based on cartesian
+	 *          coordinates defined by this vector.
+	 */
+	public Vector3D cartesianToPolar()
+	{
+		return cartesianToPolar( x , y , z );
+	}
+
+	/**
+	 * This function translates catesian coordinates to polar/spherial
+	 * coordinates.
+	 * <p />
+	 * The polar/spherial coordinates are defined as the triplet
+	 * <code>( r , ? , ? )</code>, where r is radius, ? is the azimuth, and? is
+	 * the zenith.
+	 * <p />
+	 * See <a href="http://mathworld.wolfram.com/SphericalCoordinates.html">Spherical Coordinates</a>
+	 * at <a href="http://mathworld.wolfram.com/">MathWorld</a>.<br />
+	 * See <a href="http://astronomy.swin.edu.au/~pbourke/projection/coords/">Coordinate System Transformation</a>
+	 * by <a href="http://astronomy.swin.edu.au/~pbourke/">Paul Bourke</a>.
+	 *
+	 * @param   x       Cartesian X coordinate.
+	 * @param   y       Cartesian Y coordinate.
+	 * @param   z       Cartesian Z coordinate.
+	 *
+	 * @return  Polar coordinates (radius,azimuth,zenith) based on cartesian
+	 *          coordinates defined by this vector.
+	 */
+	public static Vector3D cartesianToPolar( final double x , final double y , final double z )
+	{
+		final double radius = length( x , y , z );
+
+		return ( radius == 0.0 ) ? INIT : new Vector3D( radius , Math.atan2( y , x ) , Math.atan2( Math.sqrt( x * x + y * y ) , z ) );
+	}
+
+	/**
+	 * This function translates polar/spherial coordinates to catesian
+	 * coordinates.
+	 * <p />
+	 * The polar/spherial coordinates are defined as the triplet
+	 * <code>( r , ? , ? )</code>, where r is radius, ? is the azimuth, and? is
+	 * the zenith.
+	 * <p />
+	 * See <a href="http://mathworld.wolfram.com/SphericalCoordinates.html">Spherical Coordinates</a>
+	 * at <a href="http://mathworld.wolfram.com/">MathWorld</a>.<br />
+	 * See <a href="http://astronomy.swin.edu.au/~pbourke/projection/coords/">Coordinate System Transformation</a>
+	 * by <a href="http://astronomy.swin.edu.au/~pbourke/">Paul Bourke</a>.
+	 *
+	 * @param   radius      Radius of sphere.
+	 * @param   azimuth     Angle measured from the x-axis in the XY-plane (0 => point on XZ-plane).
+	 * @param   zenith      Angle measured from the z-axis toward the XY-plane (0 => point on Z-axis).
+	 *
+	 * @return  Cartesian coordinates based on polar coordinates
+	 *          (radius,azimuth,zenith) defined by this vector.
+	 */
+	public static Vector3D polarToCartesian( final double radius , final double azimuth , final double zenith )
+	{
+		final Vector3D result;
+
+		if ( radius == 0.0 )
+		{
+			result = INIT;
+		}
+		else
+		{
+			final double radiusXY = radius * Math.sin( zenith );
+
+			result = new Vector3D( radiusXY * Math.cos( azimuth ) ,
+			                       radiusXY * Math.sin( azimuth ) ,
+			                       radius   * Math.cos( zenith  ) );
+		}
+
+		return result;
 	}
 
 	/**
