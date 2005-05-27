@@ -39,8 +39,8 @@ import com.numdata.oss.ArrayTools;
  * This class defined a 3D object node in a 3D tree. The 3D object consists of
  * points, edges, and faces.
  *
- * @author  G.B.M. Rupert
  * @author  Peter S. Heijnen
+ * @author  G.B.M. Rupert
  * @version $Revision$ ($Date$, $Author$)
  */
 public class Object3D
@@ -542,20 +542,16 @@ public class Object3D
 	}
 
 	/**
-	 * Add 'empty' face to this object. Vertices can be added to the returned
-	 * face instance.
+	 * Add face to this object.
 	 *
-	 * @param   texture     Texture to apply to the face.
-	 * @param   opacity     Opacity of face (0=transparent, 1=opaque).
-	 * @param   smooth      Face is smooth/curved vs. flat.
-	 *
-	 * @return  Face that was added.
+	 * @param   pointIndices    Point indices of added face. These indices refer
+	 *                          to points previously defined in this object.
+	 * @param   texture         Texture to apply to the face.
+	 * @param   smooth          Face is smooth/curved vs. flat.
 	 */
-	public final Face3D addFace( final TextureSpec texture , final float opacity , final boolean smooth )
+	public final void addFace( final int[] pointIndices , final TextureSpec texture , final boolean smooth )
 	{
-		final Face3D result = new Face3D( this , null , texture , null , null , opacity , smooth , false );
-		addFace( result );
-		return result;
+		addFace( pointIndices , texture , null , null , 1.0f , smooth , false );
 	}
 
 	/**
@@ -578,19 +574,6 @@ public class Object3D
 	 * @param   pointIndices    Point indices of added face. These indices refer
 	 *                          to points previously defined in this object.
 	 * @param   texture         Texture to apply to the face.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 */
-	public final void addFace( final int[] pointIndices , final TextureSpec texture , final boolean smooth )
-	{
-		addFace( pointIndices , texture , null , null , 1.0f , smooth , false );
-	}
-
-	/**
-	 * Add face to this object.
-	 *
-	 * @param   pointIndices    Point indices of added face. These indices refer
-	 *                          to points previously defined in this object.
-	 * @param   texture         Texture to apply to the face.
 	 * @param   textureU        Horizontal texture coordinates (<code>null</code> = none).
 	 * @param   textureV        Vertical texture coordinates (<code>null</code> = none).
 	 * @param   opacity         Opacity of face (0=transparent, 1=opaque).
@@ -598,7 +581,7 @@ public class Object3D
 	 */
 	public final void addFace( final int[] pointIndices , final TextureSpec texture , final int[] textureU , final int[] textureV , final float opacity , final boolean smooth )
 	{
-		addFace( pointIndices , texture , textureU , textureV , opacity , smooth , false );
+		addFace( new Face3D( this , pointIndices , texture , textureU , textureV , opacity , smooth , false ) );
 	}
 
 	/**
@@ -621,54 +604,72 @@ public class Object3D
 	/**
 	 * Add face to this object.
 	 *
-	 * @param   points      Points that define the face.
-	 * @param   texture     Texture to apply to the face.
-	 * @param   smooth      Face is smooth/curved vs. flat.
+	 * @param   points          Points that define the face.
+	 * @param   texture         Texture to apply to the face.
+	 * @param   smooth          Face is smooth/curved vs. flat.
 	 */
 	public final void addFace( final Vector3D[] points , final TextureSpec texture , final boolean smooth )
 	{
-		addFace( points , texture , null , null , 1.0f , smooth );
+		addFace( points , texture , null , null , 1.0f , smooth , false );
 	}
 
 	/**
 	 * Add face to this object.
 	 *
-	 * @param   points      Points that define the face.
-	 * @param   texture     Texture to apply to the face.
-	 * @param   textureU    Horizontal texture coordinates (<code>null</code> = none).
-	 * @param   textureV    Vertical texture coordinates (<code>null</code> = none).
-	 * @param   opacity     Opacity of face (0=transparent, 1=opaque).
-	 * @param   smooth      Face is smooth/curved vs. flat.
+	 * @param   points          Points that define the face.
+	 * @param   texture         Texture to apply to the face.
+	 * @param   smooth          Face is smooth/curved vs. flat.
+	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public final void addFace( final Vector3D[] points , final TextureSpec texture , final int[] textureU , final int[] textureV , final float opacity , final boolean smooth )
+	public final void addFace( final Vector3D[] points , final TextureSpec texture , final boolean smooth , final boolean hasBackface )
 	{
-		final Face3D face = addFace( texture , opacity , smooth );
-		face.ensureCapacity( points.length );
+		addFace( points , texture , null , null , 1.0f , smooth , hasBackface );
+	}
 
-		for ( int i = 0 ; i < points.length ; i++ )
+	/**
+	 * Add face to this object.
+	 *
+	 * @param   points          Points that define the face.
+	 * @param   texture         Texture to apply to the face.
+	 * @param   textureU        Horizontal texture coordinates (<code>null</code> = none).
+	 * @param   textureV        Vertical texture coordinates (<code>null</code> = none).
+	 * @param   opacity         Opacity of face (0=transparent, 1=opaque).
+	 * @param   smooth          Face is smooth/curved vs. flat.
+	 * @param   hasBackface     Flag to indicate if face has a backface.
+	 */
+	public final void addFace( final Vector3D[] points , final TextureSpec texture , final int[] textureU , final int[] textureV , final float opacity , final boolean smooth , final boolean hasBackface )
+	{
+		final int nrVertices = points.length;
+
+		final Face3D face = new Face3D( this , null , texture , null , null , opacity , smooth , false );
+		face.ensureCapacity( nrVertices );
+
+		for ( int i = 0 ; i < nrVertices ; i++ )
 			face.addVertex( points[ i ] , ( textureU == null ) ? -1 : textureU[ i ] , ( textureV == null ) ? -1 : textureV[ i ] );
+
+		addFace( face );
 	}
 
 	/**
 	 * Add face based on a 2D shape to this object.
 	 *
-	 * @param   base        Location/orientation of face.
-	 * @param   shape       Shape of face relative to the base.
-	 * @param   reversePath If set, the returned path will be reversed.
-	 * @param   flipTexture Swap texture coordinates to rotate 90 degrees.
-	 * @param   texture     Texture to apply to the face.
-	 * @param   opacity     Opacity of face (0=transparent, 1=opaque).
-	 * @param   smooth      Face is smooth/curved vs. flat.
+	 * @param   base            Location/orientation of face.
+	 * @param   shape           Shape of face relative to the base.
+	 * @param   reversePath If  set, the returned path will be reversed.
+	 * @param   flipTexture     Swap texture coordinates to rotate 90 degrees.
+	 * @param   texture         Texture to apply to the face.
+	 * @param   opacity         Opacity of face (0=transparent, 1=opaque).
+	 * @param   smooth          Face is smooth/curved vs. flat.
+	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public final void addFace( final Matrix3D base , final Polyline2D shape , final boolean reversePath , final boolean flipTexture , final TextureSpec texture , final float opacity , final boolean smooth )
+	public final void addFace( final Matrix3D base , final Polyline2D shape , final boolean reversePath , final boolean flipTexture , final TextureSpec texture , final float opacity , final boolean smooth , final boolean hasBackface )
 	{
 		final int nrVertices = shape.getPointCount() + ( shape.isClosed() ? -1 : 0 );
 
-		if ( nrVertices < 3 )
-		{
-			/* no edge/point support (yet?) */
-		}
-		else if ( ( texture != null ) && texture.isTexture() )
+		final Face3D face = new Face3D( this , null , texture , null , null , opacity , smooth , false );
+		face.ensureCapacity( nrVertices );
+
+		if ( ( nrVertices > 2 ) && ( texture != null ) && texture.isTexture() )
 		{
 			final double txBase = -base.xo * base.xx - base.yo * base.yx - base.zo * base.zx;
 			final double tyBase = -base.xo * base.xy - base.yo * base.yy - base.zo * base.zy;
@@ -700,8 +701,6 @@ public class Object3D
 			final int adjustU = getRangeAdjustment( minU , texture.getTextureWidth( null ) );
 			final int adjustV = getRangeAdjustment( minV , texture.getTextureHeight( null ) );
 
-			final Face3D face = addFace( texture , opacity , smooth );
-			face.ensureCapacity( nrVertices );
 			for ( int i = 0 ; i < nrVertices ; i++ )
 			{
 				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
@@ -710,14 +709,14 @@ public class Object3D
 		}
 		else
 		{
-			final Face3D face = addFace( texture , opacity , smooth );
-			face.ensureCapacity( nrVertices );
 			for ( int i = 0 ; i < nrVertices ; i++ )
 			{
 				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
 				face.addVertex( base.multiply( point.x , point.y , 0.0 ) , 0 , 0 );
 			}
 		}
+
+		addFace( face );
 	}
 
 	/**
