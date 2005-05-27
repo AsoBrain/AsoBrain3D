@@ -531,6 +531,20 @@ public final class Matrix3D
 	}
 
 	/**
+	 * Transform a vector using the inverse of this transform.
+	 *
+	 * @param   vector  Vector to transform.
+	 *
+	 * @return  Resulting vector.
+	 */
+	public Vector3D multiplyInverse( final Vector3D vector )
+	{
+		return vector.set( vector.x * xx + vector.y * xy + vector.z * zx -xo * xx - yo * yx - zo * zx ,
+		                   vector.x * xy + vector.y * yy + vector.z * zy -xo * xy - yo * yy - zo * zy ,
+		                   vector.x * xz + vector.y * zy + vector.z * zz -xo * xz - yo * yz - zo * zz );
+	}
+
+	/**
 	 * Transform a vector using this transform.
 	 *
 	 * @param   x       X-value of vector.
@@ -544,6 +558,22 @@ public final class Matrix3D
 		return Vector3D.INIT.set( x * xx + y * xy + z * xz + xo ,
 		                          x * yx + y * yy + z * yz + yo ,
 		                          x * zx + y * zy + z * zz + zo );
+	}
+
+	/**
+	 * Transform a vector using the inverse of this transform.
+	 *
+	 * @param   x       X-value of vector.
+	 * @param   y       Y-value of vector.
+	 * @param   z       Z-value of vector.
+	 *
+	 * @return  Resulting vector.
+	 */
+	public Vector3D multiplyInverse( final double x , final double y , final double z )
+	{
+		return Vector3D.INIT.set( x * xx + y * xy + z * zx -xo * xx - yo * yx - zo * zx ,
+		                          x * xy + y * yy + z * zy -xo * xy - yo * yy - zo * zy ,
+		                          x * xz + y * zy + z * zz -xo * xz - yo * yz - zo * zz );
 	}
 
 	/**
