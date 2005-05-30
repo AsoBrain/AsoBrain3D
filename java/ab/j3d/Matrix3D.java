@@ -942,10 +942,26 @@ public final class Matrix3D
 	 */
 	public static String toFriendlyString( final Matrix3D m )
 	{
+		return toFriendlyString( m , "\n\t\t\t" , "\n\t\t\t" );
+	}
+
+	/**
+	 * Create human-readable representation of Matrix3D object. This is
+	 * aspecially useful for debugging purposes.
+	 *
+	 * @param   m           Matrix3D instance.
+	 * @param   prefix      Prefix of returned string.
+	 * @param   infix       Infix inserted between matrix rows in returned string.
+	 *
+	 * @return  Human-readable representation of Matrix3D object.
+	 */
+	public static String toFriendlyString( final Matrix3D m , final String prefix , final String infix )
+	{
 		final StringBuffer sb = new StringBuffer();
 		final DecimalFormat df = new DecimalFormat( "0.0" );
 
-		sb.append( "\n\t\t\t[ " );
+		sb.append( prefix );
+		sb.append( "[ " );
 		TextTools.appendFixed( sb , df.format( m.xx ) , 4 , true , ' ' );
 		sb.append( " , " );
 		TextTools.appendFixed( sb , df.format( m.xy ) , 4 , true , ' ' );
@@ -954,7 +970,8 @@ public final class Matrix3D
 		sb.append( " , " );
 		TextTools.appendFixed( sb , df.format( m.xo ) , 6 , true , ' ' );
 		sb.append( " ]" );
-		sb.append( "\n\t\t\t[ " );
+		sb.append( infix );
+		sb.append( "[ " );
 		TextTools.appendFixed( sb , df.format( m.yx ) , 4 , true , ' ' );
 		sb.append( " , " );
 		TextTools.appendFixed( sb , df.format( m.yy ) , 4 , true , ' ' );
@@ -963,7 +980,8 @@ public final class Matrix3D
 		sb.append( " , " );
 		TextTools.appendFixed( sb , df.format( m.yo ) , 6 , true , ' ' );
 		sb.append( " ]" );
-		sb.append( "\n\t\t\t[ " );
+		sb.append( infix );
+		sb.append( "[ " );
 		TextTools.appendFixed( sb , df.format( m.zx ) , 4 , true , ' ' );
 		sb.append( " , " );
 		TextTools.appendFixed( sb , df.format( m.zy ) , 4 , true , ' ' );
