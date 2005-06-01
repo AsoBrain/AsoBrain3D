@@ -154,43 +154,6 @@ public class DragEvent
 	}
 
 	/**
-	 * Construct event.
-	 *
-	 * @param   source          Source from where the event originated.
-	 * @param   id              Event type.
-	 * @param   buttonNumber    Button number on pointing device to select operation mode.
-	 * @param   clickCount      Number of times the button was pressed.
-	 * @param   startX          Start X coordinate of drag operation (pixels).
-	 * @param   startY          Start Y coordinate of drag operation (pixels).
-	 * @param   deltaX          Delta X relative to start of drag operation in pixels.
-	 * @param   deltaY          Delta Y relative to start of drag operation in pixels.
-	 * @param   deltaDegX       Delta X relative to start of drag operation in decimal degrees.
-	 * @param   deltaDegY       Delta Y relative to start of drag operation in decimal degrees.
-	 * @param   deltaRadX       Delta X relative to start of drag operation in radians.
-	 * @param   deltaRadY       Delta Y relative to start of drag operation in radians.
-	 * @param   deltaUnitX      Delta X relative to start of drag operation in model units.
-	 * @param   deltaUnitY      Delta Y relative to start of drag operation in model units.
-	 */
-	public DragEvent( final DragSupport source , final int id , final int buttonNumber , final int clickCount , final int startX , final int startY , final int deltaX , final int deltaY , final double deltaDegX , final double deltaDegY , final double deltaRadX , final double deltaRadY , final double deltaUnitX , final double deltaUnitY )
-	{
-		super( source );
-
-		_id           = id;
-		_buttonNumber = buttonNumber;
-		_clickCount   = clickCount;
-		_startX       = startX;
-		_startY       = startY;
-		_deltaX       = deltaX;
-		_deltaY       = deltaY;
-		_deltaDegX    = deltaDegX;
-		_deltaDegY    = deltaDegY;
-		_deltaRadX    = deltaRadX;
-		_deltaRadY    = deltaRadY;
-		_deltaUnitX   = deltaUnitX;
-		_deltaUnitY   = deltaUnitY;
-	}
-
-	/**
 	 * Get event type.
 	 *
 	 * @return  Event type (<code>DRAG_START , DRAG_TO, or DRAG_STOP</code>).
