@@ -138,6 +138,7 @@ public final class Java3dView
 				view.setProjectionPolicy( View.PERSPECTIVE_PROJECTION );
 				break;
 
+			case ISOMETRIC :
 			case PARALLEL :
 				view.setProjectionPolicy( View.PARALLEL_PROJECTION );
 				break;
@@ -199,5 +200,10 @@ public final class Java3dView
 
 		transform3d.set( rotation , translation , 1.0 );
 		tg.setTransform( transform3d );
+	}
+
+	public void setRenderingPolicy( final int policy )
+	{
+		/* @FIXME how can we implement such a feature? I think this really requires different geometry! Maybe something with 'alternate appearance' helps a little? */
 	}
 }

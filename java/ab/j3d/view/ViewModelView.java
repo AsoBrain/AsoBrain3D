@@ -51,6 +51,90 @@ public abstract class ViewModelView
 	public static final int PARALLEL = 1;
 
 	/**
+	 * Projection policy: isometric.
+	 * <p />
+	 * Isometric projection is a parallel projection method that projects the
+	 * view Z-axis onto the rendered X- and Y-axis by using the displacing
+	 * points by the half Z-value 30 degrees relative to the X-axis (top-right).
+	 *
+	 * @see     #setProjectionPolicy
+	 * @see     #ISOMETRIC_X_COMPONENT
+	 * @see     #ISOMETRIC_Y_COMPONENT
+	 */
+	public static final int ISOMETRIC = 2;
+
+	/**
+	 * This constant can be used as default X-component of the Z-axis in
+	 * {@link #ISOMETRIC} projections.
+	 *
+	 * @see     #ISOMETRIC
+	 * @see     #ISOMETRIC_Y_COMPONENT
+	 * @see     #setProjectionPolicy
+	 */
+	public static final double ISOMETRIC_X_COMPONENT = 0.5 * Math.cos( Math.PI / 6.0 );
+
+	/**
+	 * This constant can be used as default Y-component of the Z-axis in
+	 * {@link #ISOMETRIC} projections.
+	 *
+	 * @see     #ISOMETRIC
+	 * @see     #ISOMETRIC_X_COMPONENT
+	 * @see     #setProjectionPolicy
+	 */
+	public static final double ISOMETRIC_Y_COMPONENT = 0.5 * Math.sin( Math.PI / 6.0 );
+
+	/**
+	 * Rendering policy: solid.
+	 * <p />
+	 * This should result in a photorealistic rendering of the scene, taking the
+	 * physical properties of the scene into account as much as possible.
+	 * <p />
+	 * Example implementation: ray-tracing / per-pixel shading and texture mapping.
+	 *
+	 * @see     #setRenderingPolicy
+	 */
+	public static final int SOLID = 0;
+
+	/**
+	 * Rendering policy: schematic.
+	 * <p />
+	 * This should clarify the structure and design of the scene. This is
+	 * generally a form that should allow manipulation of (large) objects in a
+	 * scene and could be used to provide dimension information.
+	 * <p />
+	 * Example implementation: flat shading / functional color coding.
+	 *
+	 * @see     #setRenderingPolicy
+	 */
+	public static final int SCHEMATIC = 1;
+
+	/**
+	 * Rendering policy: schematic.
+	 * <p />
+	 * A non-photorealistic rendering method that give a good idea of what is
+	 * intended by the scene, but does not require much detail.
+	 * <p />
+	 * Example implementation: pencil sketch / cartoon rendering / silhouette.
+	 *
+	 * @see     #setRenderingPolicy
+	 */
+	public static final int SKETCH = 2;
+
+	/**
+	 * Rendering policy: wireframe.
+	 * <p />
+	 * Technical rendering including only edges, points, or iconic
+	 * representations of elements in a scene. This is the classical rendering
+	 * method in CAD software. This provides a quick overview and insight to
+	 * the complexity of a scene.
+	 * <p />
+	 * Example implementation: pencil sketch / cartoon rendering / silhouette.
+	 *
+	 * @see     #setRenderingPolicy
+	 */
+	public static final int WIREFRAME = 3;
+
+	/**
 	 * Application-assigned ID of this view.
 	 */
 	private final Object _id;
@@ -131,11 +215,20 @@ public abstract class ViewModelView
 	public abstract void update();
 
 	/**
-	 * Set projection policy of this view. The policy can be either
-	 * <code>PERSPECTIVE</code> or <code>PARALLEL</code>.
+	 * Set projection policy of this view.
 	 *
 	 * @param   policy      Projection policy of this view
-	 *                      (<code>PERSPECTIVE</code> or <code>PARALLEL</code>).
+	 *                      ({@link #PERSPECTIVE}, {@link #ISOMETRIC}, or
+	 *                      {@link #PARALLEL}).
 	 */
 	public abstract void setProjectionPolicy( final int policy );
+
+	/**
+	 * Set rendering policy of this view.
+	 *
+	 * @param   policy      Projection policy of this view
+	 *                      ({@link #SOLID}, {@link #SCHEMATIC},
+	 *                      {@link #SKETCH}, or {@link #WIREFRAME}).
+	 */
+	public abstract void setRenderingPolicy( final int policy );
 }
