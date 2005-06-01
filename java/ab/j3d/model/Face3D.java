@@ -43,9 +43,10 @@ public final class Face3D
 
 	/**
 	 * Point indices of this face. These indices indicate the index of the
-	 * point in the <code>_vertices</code> array of the <code>Object3D</code>.
-	 * Because points in the <code>_vertices</code> array are stored with a
-	 * triplet for each vertex (x,y,z), these indices should be multiplied
+	 * point in the {@link Object3D#_pointCoords} array.
+	 * <p />
+	 * Because points in the {@link Object3D#_pointCoords} array are stored with
+	 * a triplet for each vertex (x,y,z), these indices should be multiplied
 	 * by 3 to get the 'real' index.
 	 */
 	private int[] _pointIndices;
@@ -227,7 +228,7 @@ public final class Face3D
 				 *
 				 * c = (x1-x2)*(y3-y2)-(y1-y2)*(x3-x2)
 				 */
-				if ( ( p == 2 ) && !isHasBackface() )
+				if ( ( p == 2 ) && !hasBackface() )
 				{
 					show = ( ( ( xs[ 0 ] - xs[ 1 ] ) * ( iy - ys[ 1 ] ) )
 					      <= ( ( ys[ 0 ] - ys[ 1 ] ) * ( ix - xs[ 1 ] ) ) );
@@ -278,10 +279,10 @@ public final class Face3D
 	 * (default) if the faces of an object cover the complete interior(s) of
 	 * an object.
 	 *
-	 * @return  <code>True</code> if this face has an backface;
-	 *          <code>False</code> otherwise.
+	 * @return  <code>true</code> if this face has an backface;
+	 *          <code>false</code> otherwise.
 	 */
-	public boolean isHasBackface()
+	public boolean hasBackface()
 	{
 		return _hasBackface;
 	}
@@ -295,8 +296,8 @@ public final class Face3D
 	 * (default) if the faces of an object cover the complete interior(s) of
 	 * an object.
 	 *
-	 * @param hasBackface   <code>True</code> if this face has an backface;
-	 *                      <code>False</code> otherwise.
+	 * @param hasBackface   <code>true</code> if this face has an backface;
+	 *                      <code>false</code> otherwise.
 	 */
 	public void setHasBackface( final boolean hasBackface )
 	{
@@ -337,7 +338,7 @@ public final class Face3D
 
 	/**
 	 * Get the point indices of this face. These indices are an index in the
-	 * point list of the <code>Object3D</code> to which this face belongs.
+	 * point list of the {@link Object3D} to which this face belongs.
 	 * <p />
 	 * Because points coordinates are stored with a triplet for each point
 	 * (x,y,z), these indices should be multiplied by 3 to get the 'real' index.
