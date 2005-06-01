@@ -90,4 +90,108 @@ public class Object3DBuilder
 	public void addText( final String text , final Vector3D origin , final double height , final double rotationAngle , final double obliqueAngle , final Vector3D extrusion , final TextureSpec textureSpec )
 	{
 	}
+
+	/**
+	 * This constructor can be used to create a 3D object that is constructed
+	 * using a 2D outline which is rotated around the Y-axis. If requested,
+	 * the ends will be closed (if not done so already).
+	 *
+	 * The 'detail' parameter is used to specify the number of segments used
+	 * to rotate around the Z-axis (minimum: 3).
+	 *
+	 * NOTE: To construct an outer surface, use increasing values for Z!
+	 *
+	 * @param   xform               Transform to apply to points.
+	 * @param   radii               X coordinates of 2D outline.
+	 * @param   zCoordinates        Z coordinates of 2D outline.
+	 * @param   detail              Number of segments around the Y-axis.
+	 * @param   texture             Texture to apply to faces.
+	 * @param   smoothCircumference Set 'smooth' flag for circumference faces.
+	 * @param   closeEnds           Close ends of shape (make solid).
+	 */
+	public static Object3D constructRotatedObject( final Matrix3D xform , final double[] radii , final double[] zCoordinates , final int detail , final TextureSpec texture , final boolean smoothCircumference , final boolean closeEnds )
+	{
+		final Object3D result = new Object3D();
+		int[] prevPointIndices = null;
+
+		for ( int i = 0 ; i < radii.length ; i++ )
+		{
+			final double radius = radii[ i ];
+			final double z      = zCoordinates[ i ];
+
+			/*
+			 * Based on 'radius', create a list of point indices at this point.
+			 */
+			final int[] pointIndices;
+			if ( Matrix3D.almostEqual( radius , 0.0 ) )
+			{
+				pointIndices = new int[] { ( xform == null )
+					? result.getOrAddPointIndex( 0.0 , 0.0 , z )
+					: result.getOrAddPointIndex( xform.transformX( 0.0 , 0.0 , z ) , xform.transformY( 0.0 , 0.0 , z ) , xform.transformZ( 0.0 , 0.0 , z ) ) };
+			}
+			else
+			{
+				pointIndices = new int[ detail ];
+
+				final double stepSize = 2.0 * Math.PI / (double)detail;
+				for ( int step = 0 ; step < detail ; step++ )
+				{
+					final double angle = (double)step * stepSize;
+					final double x     =  Math.sin( angle ) * radius;
+					final double y     = -Math.cos( angle ) * radius;
+
+					pointIndices[ step ] = ( xform == null )
+						? result.getOrAddPointIndex( x , y , z )
+						: result.getOrAddPointIndex( xform.transformX( x , y , z ) , xform.transformY( x , y , z ) , xform.transformZ( x , y , z ) );
+				}
+
+				if ( closeEnds )
+				{
+					if ( i == 0 )
+					{
+						result.addFace( pointIndices , texture , false );
+					}
+					else if ( i == radii.length - 1 )
+					{
+						final int[] reversed = new int[ detail ];
+						for ( int step = 0 ; step < detail ; step++ )
+							reversed[ step ] = pointIndices[ detail - 1 - step ];
+
+						result.addFace( reversed , texture , false );
+					}
+				}
+			}
+
+			/*
+			 * Construct faces between this and the previous 'row'.
+			 */
+			if ( prevPointIndices != null )
+			{
+				if ( pointIndices.length > 1 )
+				{
+					if ( prevPointIndices.length > 1 )
+					{
+						for ( int step = 0 ; step < detail ; step++ )
+						{
+							final int nextStep = ( step + 1 ) % detail;
+							result.addFace( new int[] { prevPointIndices[ step ] , pointIndices[ step ] , pointIndices[ nextStep ] , prevPointIndices[ nextStep ] } , texture , smoothCircumference );
+						}
+					}
+					else
+					{
+						for ( int step = 0 ; step < detail ; step++ )
+							result.addFace( new int[] { prevPointIndices[ 0 ] , pointIndices[ step ] , pointIndices[ ( step + 1 ) % detail ] } , texture , smoothCircumference );
+					}
+				}
+				else if ( prevPointIndices.length > 1 )
+				{
+					for ( int step = 0 ; step < detail ; step++ )
+						result.addFace( new int[] { prevPointIndices[ step ] , pointIndices[ 0 ] , prevPointIndices[ ( step + 1 ) % detail ] } , texture , smoothCircumference );
+				}
+			}
+			prevPointIndices = pointIndices;
+		}
+
+		return result;
+	}
 }
