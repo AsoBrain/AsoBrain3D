@@ -57,14 +57,23 @@ public final class Java2dView
 	private final Java2dModel _model;
 
 	/**
+	 * Projection policy of this view.
+	 *
+	 * @see     #setProjectionPolicy
+	 */
+	private int _projectionPolicy;
+
+	/**
+	 * Rendering policy of this view.
+	 *
+	 * @see     #setRenderingPolicy
+	 */
+	private int _renderingPolicy;
+
+	/**
 	 * Component through which a rendering of the view is shown.
 	 */
 	private final ViewComponent _viewComponent;
-
-	/**
-	 * Projection policy of this view ({@link #PERSPECTIVE} or {@link #PARALLEL}).
-	 */
-	private int _projectionPolicy;
 
 	/**
 	 * Simple mounting view panel to show a 3D perspective rendering of the
@@ -82,7 +91,7 @@ public final class Java2dView
 		{
 			final Color originalBackground = getBackground();
 			setDoubleBuffered( true );
-			setBackground( ( originalBackground == null ) ? Color.LIGHT_GRAY : originalBackground.brighter() );
+			setBackground( ( originalBackground == null ) ? new Color( 51 , 77 , 102 ) : originalBackground.brighter() );
 
 			_insets = null;
 		}
@@ -108,12 +117,14 @@ public final class Java2dView
 			g.setColor( getBackground() );
 			g.fillRect( insets.left , insets.top , width , height );
 
-			final Java2dModel      model               = _model;
-			final Node3DCollection paintQueue          = model.getPaintQueue();
-			final Matrix3D         viewTransform       = getViewTransform();
-			final boolean          hasPerspective      = ( _projectionPolicy != PARALLEL );
-			final double           scale               = 2000.0 / (double)Math.max( width , height );
-			final Matrix3D         projectionTransform = Matrix3D.INIT.set(
+			final Java2dModel      model            = _model;
+			final Node3DCollection paintQueue       = model.getPaintQueue();
+			final Matrix3D         viewTransform    = getViewTransform();
+			final int              projectionPolicy = _projectionPolicy;
+			final boolean          hasPerspective   = ( projectionPolicy != PARALLEL );
+			final double           scale            = 1000.0 / (double)Math.max( width , height );
+
+			final Matrix3D projectionTransform = Matrix3D.INIT.set(
 				 scale ,    0.0 , 0.0 , (double)width  / 2.0 ,
 				   0.0 , -scale , 0.0 , (double)height / 2.0 ,
 				   0.0 ,    0.0 , 0.0 , 0.0 );
@@ -124,12 +135,26 @@ public final class Java2dView
 				final Matrix3D matrix = paintQueue.getMatrix( i );
 				final Object3D object = (Object3D)paintQueue.getNode( i );
 
-				renderer.add( matrix.multiply( viewTransform ) , object , false );
+				if ( object != null )
+					renderer.add( matrix.multiply( viewTransform ) , object , false );
 			}
 
 			final Graphics2D g2d = (Graphics2D)g.create( insets.left , insets.top , width , height );
 
-			renderer.paint( g2d , true , true );
+			final boolean fill;
+			final boolean outline;
+			final boolean useTextures;
+
+			switch ( _renderingPolicy )
+			{
+					case SOLID     : fill = true;  outline = false; useTextures = true;  break;
+					case SCHEMATIC : fill = true;  outline = true;  useTextures = false; break;
+					case SKETCH    : fill = true;  outline = false; useTextures = false; break;
+					case WIREFRAME : fill = false; outline = true;  useTextures = false; break;
+					default        : fill = false; outline = false; useTextures = false; break;
+			}
+
+			renderer.paint( g2d , fill , outline , useTextures );
 
 //			final RenderingHints renderingHints = g2d.getRenderingHints();
 //			final Object oldAntiAliasing = renderingHints.get( RenderingHints.KEY_ANTIALIASING );
@@ -159,6 +184,9 @@ public final class Java2dView
 		super( id , viewControl );
 
 		_model = model;
+
+		_projectionPolicy = PERSPECTIVE;
+		_renderingPolicy  = SCHEMATIC;
 
 		/*
 		 * Create view component.
@@ -191,5 +219,10 @@ public final class Java2dView
 	public void setProjectionPolicy( final int policy )
 	{
 		_projectionPolicy = policy;
+	}
+
+	public void setRenderingPolicy( final int policy )
+	{
+		_renderingPolicy = policy;
 	}
 }
