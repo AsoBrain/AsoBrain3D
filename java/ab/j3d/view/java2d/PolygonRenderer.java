@@ -135,9 +135,10 @@ public final class PolygonRenderer
 
 		for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
 		{
-			final Face3D face         = object.getFace( faceIndex );
-			final int    vertexCount  = face.getVertexCount();
-			final int[]  pointIndices = face.getPointIndices();
+			final Face3D  face         = object.getFace( faceIndex );
+			final boolean hasBackface  = face.hasBackface();
+			final int     vertexCount  = face.getVertexCount();
+			final int[]   pointIndices = face.getPointIndices();
 
 			/*
 			 * If we have less than three points, its not a valid face.
@@ -149,17 +150,20 @@ public final class PolygonRenderer
 				 *
 				 * c = (x1-x2)*(y3-y2)-(y1-y2)*(x3-x2)
 				 */
-				final double x1 = pointCoords[ pointIndices[ 0 ] * 3     ];
-				final double y1 = pointCoords[ pointIndices[ 0 ] * 3 + 1 ];
+				if ( !hasBackface )
+				{
+					final double x1 = pointCoords[ pointIndices[ 0 ] * 3     ];
+					final double y1 = pointCoords[ pointIndices[ 0 ] * 3 + 1 ];
 
-				final double x2 = pointCoords[ pointIndices[ 1 ] * 3     ];
-				final double y2 = pointCoords[ pointIndices[ 1 ] * 3 + 1 ];
+					final double x2 = pointCoords[ pointIndices[ 1 ] * 3     ];
+					final double y2 = pointCoords[ pointIndices[ 1 ] * 3 + 1 ];
 
-				final double x3 = pointCoords[ pointIndices[ 2 ] * 3     ];
-				final double y3 = pointCoords[ pointIndices[ 2 ] * 3 + 1 ];
+					final double x3 = pointCoords[ pointIndices[ 2 ] * 3     ];
+					final double y3 = pointCoords[ pointIndices[ 2 ] * 3 + 1 ];
 
-				if ( ( ( x1 - x2 ) * ( y3 - y2 ) - ( y1 - y2 ) * ( x3 - x2 ) ) < 0 )
-					continue;
+					if ( ( ( x1 - x2 ) * ( y3 - y2 ) - ( y1 - y2 ) * ( x3 - x2 ) ) < 0 )
+						continue;
+				}
 
 				/*
 				 * Put entry in queue.
@@ -191,7 +195,7 @@ public final class PolygonRenderer
 		}
 	}
 
-	public void paint( final Graphics2D g , final boolean fill , final boolean outline )
+	public void paint( final Graphics2D g , final boolean fill , final boolean outline , final boolean useTextures )
 	{
 		/*
 		 * Process queue and process its entries in sorted order.
@@ -224,32 +228,36 @@ public final class PolygonRenderer
 			final int[]       xs            = entry.xs;
 			final int[]       ys            = entry.ys;
 			final int         length        = xs.length;
-			final boolean     polygonFilled = ( fill || ( length == 1 ) );
+			final boolean     polygonFilled = ( fill || ( length < 3 ) );
 
+			Paint fillPaint = null;
 			if ( polygonFilled )
 			{
-				Paint paint = entry.alternateAppearance ? object.alternateFillPaint : ( ( texture != null ) && !texture.isTexture() ) ? texture.getColor() : object.fillPaint;
-				if ( fill && _perspective && ( paint instanceof Color ) )
+				fillPaint = entry.alternateAppearance ? object.alternateFillPaint : ( useTextures && ( texture != null ) && !texture.isTexture() ) ? texture.getColor() : object.fillPaint;
+				if ( fill && _perspective && ( fillPaint instanceof Color ) )
 				{
 					final float shadeFactor = 0.5f;
 
 					final float factor = Math.min( 1.0f , ( 1.0f - shadeFactor ) + shadeFactor * Math.abs( (float)entry.nz ) );
 					if ( factor < 1.0f )
 					{
-						final Color   color = (Color)paint;
+						final Color   color = (Color)fillPaint;
 						final float[] rgb   = color.getRGBComponents( null );
 
-						paint = new Color( factor * rgb[ 0 ] , factor * rgb[ 1 ] , factor * rgb[ 2 ] , rgb[ 3 ] );
+						fillPaint = new Color( factor * rgb[ 0 ] , factor * rgb[ 1 ] , factor * rgb[ 2 ] , rgb[ 3 ] );
 					}
 				}
 
-				g.setPaint( paint );
-				g.fillPolygon( xs , ys , length );
+				if ( fillPaint != null )
+				{
+					g.setPaint( fillPaint );
+					g.fillPolygon( xs , ys , length );
+				}
 			}
 
-			if ( outline )
+			if ( outline || ( fillPaint == null ) )
 			{
-				if ( polygonFilled )
+				if ( fillPaint != null )
 					g.setColor( Color.darkGray );
 				else
 					g.setPaint( entry.alternateAppearance ? object.alternateOutlinePaint : object.outlinePaint );
