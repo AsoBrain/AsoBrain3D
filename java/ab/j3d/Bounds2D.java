@@ -263,4 +263,21 @@ public final class Bounds2D
 			return result;
 		}
 	}
+
+	public String toString()
+	{
+		return "Bounds2D[minX=" + minX + ",minY" + minY + ",maxX=" + maxX + ",maxY=" + maxY + ']';
+	}
+
+	/**
+	 * Create human-readable representation of this object.
+	 * <p />
+	 * This is specifically useful for debugging purposes.
+	 *
+	 * @return  Human-readable representation of this object.
+	 */
+	public String toFriendlyString()
+	{
+		return "( " + minX + " , " + minY + " ) - ( " + maxX + " , " + maxY + " )";
+	}
 }
