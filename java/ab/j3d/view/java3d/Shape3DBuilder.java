@@ -38,30 +38,30 @@ import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 
 /**
- * This object builds <code>Shape3D</code> objects based on data from
- * <code>Face3D</code> objects fed to it. The faces (with any number of
+ * This object builds {@link Shape3D} objects based on data from
+ * {@link Face3D} objects fed to it. The faces (with any number of
  * vertices), are translated into lines, triangles, and quads as defined by the
  * Java 3D API.
  *
  * IMPORTANT: This class should be used following a strict recipe:
  * <ol>
  *   <li>
- *     Construct a new <code>Shape3DBuilder</code>.
+ *     Construct a new {@link Shape3DBuilder}.
  *   </li>
  *   <li>
- *     Call the <code>prepareFace()</code> method for every face that will be
+ *     Call the {@link #prepareFace} method for every face that will be
  *     added later. This is used to determine correct storage requirements,
  *     so no collection classes are needed.
  *   </li>
  *   <li>
- *     Call the <code>addFace()</code> method for every face that was
- *     previously announced using <code>prepareFace()</code>. This will take
+ *     Call the {@link #addFace} method for every face that was
+ *     previously announced using {@link #prepareFace}. This will take
  *     care of the the line/triangle/quad geometry conversions.
  *   </li>
  *   <li>
- *     Call the <code>buildShapes()</code> method. This will build the
- *     actual <code>Shape3D</code> objects from the collected geometry data,
- *     and add them to a supplied <code>BranchGroup</code> node.
+ *     Call the {@link #buildShapes} method. This will build the
+ *     actual {@link Shape3D} objects from the collected geometry data,
+ *     and add them to a supplied {@link BranchGroup} node.
  *   </li>
  * </ol>
  * After completion, steps 2 to 4 may be repeated to create more shapes.
@@ -74,17 +74,17 @@ import ab.j3d.model.Object3D;
 public class Shape3DBuilder
 {
 	/**
-	 * Create a Java 3D <code>BranchGroup</code> containing a content graph by
-	 * converting <code>Object3D</code> instances in a
-	 * <code>Node3DCollection</code> using this builder.
+	 * Create a Java 3D {@link BranchGroup} containing a content graph by
+	 * converting {@link Object3D} instances in a
+	 * {@link Node3DCollection} using this builder.
 	 *
 	 * @param   nodes               Collection of nodes to create the branch group from.
 	 * @param   textureOverride     Texture to use instead of actual object texture.
-	 * @param   opacity             Extra object opacity (0.0=translucent, 1.0=opaque).
+	 * @param   extraOpacity        Extra object opacity (0.0=translucent, 1.0=opaque).
 	 *
-	 * @return  <code>BranchGroup</code> containing the created content graph.
+	 * @return  {@link BranchGroup} containing the created content graph.
 	 */
-	public static BranchGroup createBranchGroup( final Node3DCollection nodes , final TextureSpec textureOverride , final float opacity )
+	public static BranchGroup createBranchGroup( final Node3DCollection nodes , final TextureSpec textureOverride , final float extraOpacity )
 	{
 		final Shape3DBuilder shapeBuilder = new Shape3DBuilder();
 
@@ -94,7 +94,7 @@ public class Shape3DBuilder
 			final int      faceCount = object3d.getFaceCount();
 
 			for ( int j = 0 ; j < faceCount ; j++ )
-				shapeBuilder.prepareFace( object3d.getFace( j ) , textureOverride , opacity );
+				shapeBuilder.prepareFace( object3d.getFace( j ) , textureOverride , extraOpacity );
 		}
 
 		for ( int i = 0 ; i < nodes.size() ; i++ )
@@ -106,7 +106,7 @@ public class Shape3DBuilder
 			final double[] vertexNormals = object3d.getVertexNormals();
 
 			for ( int j = 0 ; j < faceCount ; j++ )
-				shapeBuilder.addFace( xform , pointCoords , vertexNormals , object3d.getFace( j ) , textureOverride , opacity );
+				shapeBuilder.addFace( xform , pointCoords , vertexNormals , object3d.getFace( j ) , textureOverride , extraOpacity );
 		}
 
 		final BranchGroup result = new BranchGroup();
@@ -117,17 +117,17 @@ public class Shape3DBuilder
 	}
 
 	/**
-	 * Create a Java 3D <code>BranchGroup</code> containing a content graph by
-	 * converting an <code>Object3D</code> instance using this builder.
+	 * Create a Java 3D {@link BranchGroup} containing a content graph by
+	 * converting an {@link Object3D} instance using this builder.
 	 *
 	 * @param   xform               Transform to apply to vertices.
 	 * @param   object3d            Object3D to convert.
 	 * @param   textureOverride     Texture to use instead of actual object texture.
-	 * @param   opacity             Extra object opacity (0.0=translucent, 1.0=opaque).
+	 * @param   extraOpacity        Extra object opacity (0.0=translucent, 1.0=opaque).
 	 *
-	 * @return  <code>BranchGroup</code> containing the created content graph.
+	 * @return  {@link BranchGroup} containing the created content graph.
 	 */
-	public static BranchGroup createBranchGroup( final Matrix3D xform , final Object3D object3d , final TextureSpec textureOverride , final float opacity )
+	public static BranchGroup createBranchGroup( final Matrix3D xform , final Object3D object3d , final TextureSpec textureOverride , final float extraOpacity )
 	{
 		final Shape3DBuilder shapeBuilder = new Shape3DBuilder();
 
@@ -136,10 +136,10 @@ public class Shape3DBuilder
 		final double[] vertexNormals = object3d.getVertexNormals();
 
 		for ( int j = 0 ; j < faceCount ; j++ )
-			shapeBuilder.prepareFace( object3d.getFace( j ) , textureOverride , opacity );
+			shapeBuilder.prepareFace( object3d.getFace( j ) , textureOverride , extraOpacity );
 
 		for ( int j = 0 ; j < faceCount ; j++ )
-			shapeBuilder.addFace( xform , pointCoords , vertexNormals , object3d.getFace( j ) , textureOverride , opacity );
+			shapeBuilder.addFace( xform , pointCoords , vertexNormals , object3d.getFace( j ) , textureOverride , extraOpacity );
 
 		final BranchGroup result = new BranchGroup();
 		result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
@@ -154,12 +154,12 @@ public class Shape3DBuilder
 	 * <p />
 	 * The array length should not be used to determine the number of elements
 	 * contained therein (it is initially <code>null</code> anyway), use the
-	 * <code>_textureGroupCount</code> field instead.
+	 * {@link #_textureGroupCount} field instead.
 	 */
 	private TextureGroup[] _textureGroups;
 
 	/**
-	 * The number of elements stored in <code>_textureGroups</code>.
+	 * The number of elements stored in {@link #_textureGroups}.
 	 */
 	private int _textureGroupCount;
 
@@ -172,22 +172,22 @@ public class Shape3DBuilder
 	 * <ol>
 	 *   <li>
 	 *     Construct the group with the correct texture
-	 *     (<code>TextureSpec</code>) and appearance (<code>Appearance</code>).
+	 *     ({@link TextureSpec}) and appearance ({@link Appearance}).
 	 *   </li>
 	 *   <li>
-	 *     Call the <code>prepareFace()</code> method for every face that will be
+	 *     Call the {@link #prepareFace} method for every face that will be
 	 *     added later. This is used to determine correct storage requirements,
 	 *     so no collection classes are needed.
 	 *   </li>
 	 *   <li>
-	 *     Call the <code>addFace()</code> method for every face that was
-	 *     previously announced using <code>prepareFace()</code>. This will take
+	 *     Call the {@link #addFace} method for every face that was
+	 *     previously announced using {@link #prepareFace}. This will take
 	 *     care of the the line/triangle/quad geometry conversions.
 	 *   </li>
 	 *   <li>
-	 *     Call the <code>buildShapes()</code> method. This will build the
-	 *     actual <code>Shape3D</code> objects from the collected geometry data,
-	 *     and add them to a supplied <code>BranchGroup</code> node.
+	 *     Call the {@link #buildShapes} method. This will build the
+	 *     actual {@link Shape3D} objects from the collected geometry data,
+	 *     and add them to a supplied {@link BranchGroup} node.
 	 *   </li>
 	 * </ol>
 	 * After completion, steps 2 to 4 may be repeated to create more shapes.
@@ -197,6 +197,7 @@ public class Shape3DBuilder
 	private static class TextureGroup
 	{
 		private TextureSpec   _texture;
+		private int           _alpha;
 		private Appearance    _appearance;
 		private int           _lineCount;
 		private LineArray     _lineArray;
@@ -205,9 +206,10 @@ public class Shape3DBuilder
 		private int           _quadCount;
 		private QuadArray     _quadArray;
 
-		TextureGroup( final TextureSpec texture , final Appearance appearance )
+		TextureGroup( final TextureSpec texture , final int alpha , final Appearance appearance )
 		{
 			_texture       = texture;
+			_alpha         = alpha;
 			_appearance    = appearance;
 			_lineCount     = 0;
 			_lineArray     = null;
@@ -269,9 +271,9 @@ public class Shape3DBuilder
 				}
 				else // vertexCount > 2
 				{
-					final boolean hasTexture = ( _texture == face.getTexture() ) && ( appearance.getTexture() != null );
-					final int[]   textureU   = hasTexture ? face.getTextureU() : null;
-					final int[]   textureV   = hasTexture ? face.getTextureV() : null;
+					final int[]   textureU   = face.getTextureU();
+					final int[]   textureV   = face.getTextureV();
+					final boolean hasTexture = ( _texture == face.getTexture() ) && ( textureU != null ) && ( textureV != null ) && ( appearance.getTexture() != null );
 
 					final int        index0        = pointIndices[ 0 ];
 					final Point3d    pointCoord0   = getPointCoordinate( xform , pointCoords , index0 );
@@ -454,30 +456,22 @@ public class Shape3DBuilder
 	}
 
 	/**
-	 * Convert <code>Object3D<code/> to Java3D <code>Node</code> object.
-	 *
-	 * @param   xform               Transform to apply to vertices.
-	 * @param   object3d            Object3D to convert.
-	 *
-	 * @return  A <code>BranchGroup</code> is returned containing
-	 *          <code>Shape3D</code>s for each separate <code>Appearance</code>.
-	 */
-
-	/**
 	 * Prepare for building the specified face. This is used to determine the
 	 * correct storage requirements, so no collection classes are needed.
 	 *
 	 * @param   face                Face to prepare for.
 	 * @param   textureOverride     Texture to use instead of actual face texture.
-	 * @param   opacity             Extra face opacity (0.0=translucent, 1.0=opaque).
+	 * @param   extraOpacity        Extra face opacity (0.0=translucent, 1.0=opaque).
 	 *
 	 * @see     #addFace
 	 */
-	public void prepareFace( final Face3D face , final TextureSpec textureOverride , final float opacity )
+	public void prepareFace( final Face3D face , final TextureSpec textureOverride , final float extraOpacity )
 	{
 		final TextureSpec texture = ( textureOverride != null ) ? textureOverride : face.getTexture();
 		if ( texture != null )
 		{
+			final float opacity = extraOpacity * face.getOpacity();
+
 			final TextureGroup group = getGroup( texture , opacity );
 			group.prepareFace( face.getVertexCount() );
 		}
@@ -485,7 +479,7 @@ public class Shape3DBuilder
 
 	/**
 	 * Add the specified face. This myst be called for every face that was
-	 * previously announced using <code>prepareFace()</code>. This will take
+	 * previously announced using {@link #prepareFace}. This will take
 	 * care of the the line/triangle/quad geometry conversions.
 	 *
 	 * @param   xform               Transform to apply to point coordinates.
@@ -493,25 +487,27 @@ public class Shape3DBuilder
 	 * @param   vertexNormals       Normals of vertices referred to by the face.
 	 * @param   face                Face to add.
 	 * @param   textureOverride     Texture to use instead of actual face texture.
-	 * @param   opacity             Extra face opacity (0.0=translucent, 1.0=opaque).
+	 * @param   extraOpacity        Extra face opacity (0.0=translucent, 1.0=opaque).
 	 *
 	 * @see     #prepareFace
 	 * @see     #buildShapes
 	 */
-	public void addFace( final Matrix3D xform , final double[] pointCoords , final double[] vertexNormals , final Face3D face , final TextureSpec textureOverride , final float opacity )
+	public void addFace( final Matrix3D xform , final double[] pointCoords , final double[] vertexNormals , final Face3D face , final TextureSpec textureOverride , final float extraOpacity )
 	{
 		final TextureSpec texture = ( textureOverride != null ) ? textureOverride : face.getTexture();
 		if ( texture != null )
 		{
+			final float opacity = extraOpacity * face.getOpacity();
+
 			final TextureGroup group = getGroup( texture , opacity );
 			group.addFace( xform , pointCoords , vertexNormals , face );
 		}
 	}
 
 	/**
-	 * Build shapes. This will build the <code>Shape3D</code> objects from the
-	 * geometry data collected by the <code>addFace()</code> method, and add
-	 * them to a supplied <code>BranchGroup</code> node.
+	 * Build shapes. This will build the {@link Shape3D} objects from the
+	 * geometry data collected by the {@link #addFace} method, and add
+	 * them to a supplied {@link BranchGroup} node.
 	 *
 	 * @param   result  Branch group to add shapes to.
 	 *
@@ -530,13 +526,14 @@ public class Shape3DBuilder
 	{
 		TextureGroup result = null;
 
+		final int            alpha  = Math.max( 0 , Math.min( Math.round( opacity * 255.0f ) , 255 ) );
 		final TextureGroup[] groups = _textureGroups;
 		final int            count  = _textureGroupCount;
 
 		for ( int i = 0 ; i < count ; i++ )
 		{
 			final TextureGroup group = groups[ i ];
-			if ( group._texture == texture )
+			if ( ( group._texture == texture ) && ( group._alpha == alpha ) )
 			{
 				result = group;
 				break;
@@ -560,8 +557,10 @@ public class Shape3DBuilder
 				newGroups = groups;
 			}
 
-			final Java3dTools tools = Java3dTools.getInstance();
-			result = new TextureGroup( texture , tools.getAppearance( texture , opacity ) );
+			final Java3dTools tools      = Java3dTools.getInstance();
+			final Appearance  appearance = tools.getAppearance( texture , opacity );
+
+			result = new TextureGroup( texture , alpha , appearance );
 			newGroups[ count ] = result;
 
 			_textureGroups     = newGroups;
