@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2005 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -72,16 +72,16 @@ public final class Bounds3D
 	/**
 	 * Compare these bounds to the specified bounds.
 	 *
-	 * @param   v1  First vector of bounds to compare with.
-	 * @param   v2  Second vector of bounds to compare with.
+	 * @param   otherV1     First vector of bounds to compare with.
+	 * @param   otherV2     Second vector of bounds to compare with.
 	 *
 	 * @return  <code>true</code> if the bounds are equal,
 	 *          <code>false</code> if not.
 	 */
-	public boolean equals( final Vector3D v1 , final Vector3D v2 )
+	public boolean equals( final Vector3D otherV1 , final Vector3D otherV2 )
 	{
-		return( ( ( v1 == null ) || this.v1.equals( v1 ) ) &&
-				( ( v2 == null ) || this.v2.equals( v2 ) ) );
+		return( ( ( otherV1 == null ) || v1.equals( otherV1 ) ) &&
+				( ( otherV2 == null ) || v2.equals( otherV2 ) ) );
 	}
 
 	public boolean equals( final Object other )
@@ -110,8 +110,8 @@ public final class Bounds3D
 	}
 
 	/**
-	 * Convert string representation of bounds back to <code>Bounds3D</code>
-	 * instance (see <code>toString()</code>).
+	 * Convert string representation of bounds back to {@link Bounds3D}
+	 * instance (see {@link #toString}).
 	 *
 	 * @param   value   String representation of object.
 	 *
@@ -190,7 +190,7 @@ public final class Bounds3D
 	 */
 	public static Bounds3D join( final Bounds3D bounds1 , final Bounds3D bounds2 )
 	{
-		return rebuild( bounds1 , bounds2 ,
+		return ( bounds1 == null ) ? bounds2 : ( bounds2 == null ) ? bounds1 : rebuild( bounds1 , bounds2 ,
 			Math.min( Math.min( bounds1.v1.x , bounds1.v2.x ) , Math.min( bounds2.v1.x , bounds2.v2.x ) ) ,
 			Math.min( Math.min( bounds1.v1.y , bounds1.v2.y ) , Math.min( bounds2.v1.y , bounds2.v2.y ) ) ,
 			Math.min( Math.min( bounds1.v1.z , bounds1.v2.z ) , Math.min( bounds2.v1.z , bounds2.v2.z ) ) ,
@@ -364,18 +364,39 @@ public final class Bounds3D
 	}
 
 	/**
-	 * Set bounds to the specified vectors.
+	 * Set bounds to the specified coordinates.
 	 *
-	 * @param   v1      First vector of bounds.
-	 * @param   v2      Second vector of bounds.
+	 * @param   x1      First X coordinate of bounds.
+	 * @param   y1      First Y coordinate of bounds.
+	 * @param   z1      First Z coordinate of bounds.
+	 * @param   x2      Second X coordinate of bounds.
+	 * @param   y2      Second Y coordinate of bounds.
+	 * @param   z2      Second Z coordinate of bounds.
 	 *
 	 * @return  Resulting bounds.
 	 */
-	public Bounds3D set( final Vector3D v1 , final Vector3D v2 )
+	public Bounds3D set( final double x1 , final double y1 , final double z1 , final double x2 , final double y2 , final double z2 )
 	{
-		return ( ( ( v1 == null ) || v1.equals( this.v1 ) )
-		      && ( ( v2 == null ) || v2.equals( this.v2 ) ) ) ? this
-		     : new Bounds3D( ( v1 == null ) ? this.v1 : v1 , ( v2 == null ) ? this.v2 : v2 );
+		final Vector3D v0 = Vector3D.INIT;
+		final Vector3D v1 = v0.set( x1 , y1 , z1 );
+		final Vector3D v2 = v0.set( x2 , y2 , z2 );
+
+		return ( ( v1 == v0 ) && ( v2 == v0 ) ) ? INIT : new Bounds3D( v1 , v2 );
+	}
+
+	/**
+	 * Set bounds to the specified vectors.
+	 *
+	 * @param   newV1   First vector of bounds to set.
+	 * @param   newV2   Second vector of bounds to set.
+	 *
+	 * @return  Resulting bounds.
+	 */
+	public Bounds3D set( final Vector3D newV1 , final Vector3D newV2 )
+	{
+		return ( ( ( newV1 == null ) || newV1.equals( v1 ) )
+		      && ( ( newV2 == null ) || newV2.equals( v2 ) ) ) ? this
+		     : new Bounds3D( ( newV1 == null ) ? v1 : newV1 , ( newV2 == null ) ? v2 : newV2 );
 	}
 
 	/**
@@ -390,8 +411,8 @@ public final class Bounds3D
 
 	/**
 	 * Determine sorted bounds. If bounds are sorted, than the x/y/z
-	 * components of <code>v1</code> are always less or equal to the
-	 * matching components of <code>v2</code>.
+	 * components of {@link #v1} are always less or equal to the
+	 * matching components of {@link #v2}.
 	 *
 	 * @return  Resulting bounds.
 	 */
@@ -423,10 +444,10 @@ public final class Bounds3D
 	}
 
 	/**
-	 * Create human-readable representation of this <code>Bounds3D</code> object.
+	 * Create human-readable representation of this {@link Bounds3D} object.
 	 * This is aspecially useful for debugging purposes.
 	 *
-	 * @return  Human-readable representation of this <code>Bounds3D</code> object.
+	 * @return  Human-readable representation of this {@link Bounds3D} object.
 	 */
 	public String toFriendlyString()
 	{
@@ -434,12 +455,12 @@ public final class Bounds3D
 	}
 
 	/**
-	 * Create human-readable representation of <code>Bounds3D</code> object.
+	 * Create human-readable representation of {@link Bounds3D} object.
 	 * This is aspecially useful for debugging purposes.
 	 *
 	 * @param   bounds      Bounds3D value (<code>null</code> produces 'null').
 	 *
-	 * @return  Human-readable representation of <code>Bounds3D</code> object.
+	 * @return  Human-readable representation of {@link Bounds3D} object.
 	 */
 	public static String toFriendlyString( final Bounds3D bounds )
 	{
