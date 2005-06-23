@@ -71,6 +71,11 @@ public final class Java2dView
 	private int _renderingPolicy;
 
 	/**
+	 * Renderer to use for rendering the scene.
+	 */
+	private final PolygonRenderer _renderer = new PolygonRenderer();
+
+	/**
 	 * Component through which a rendering of the view is shown.
 	 */
 	private final ViewComponent _viewComponent;
@@ -124,12 +129,28 @@ public final class Java2dView
 			final boolean          hasPerspective   = ( projectionPolicy != PARALLEL );
 			final double           scale            = 1000.0 / (double)Math.max( width , height );
 
+			final boolean fill;
+			final boolean outline;
+			final boolean useTextures;
+			final boolean backfaceCulling;
+
+			switch ( _renderingPolicy )
+			{
+					case SOLID     : fill = true;  outline = false; useTextures = true;  backfaceCulling = true;  break;
+					case SCHEMATIC : fill = true;  outline = true;  useTextures = false; backfaceCulling = true;  break;
+					case SKETCH    : fill = true;  outline = false; useTextures = false; backfaceCulling = true;  break;
+					case WIREFRAME : fill = false; outline = true;  useTextures = false; backfaceCulling = false; break;
+					default        : fill = false; outline = false; useTextures = false; backfaceCulling = false; break;
+			}
+
 			final Matrix3D projectionTransform = Matrix3D.INIT.set(
 				 scale ,    0.0 , 0.0 , (double)width  / 2.0 ,
 				   0.0 , -scale , 0.0 , (double)height / 2.0 ,
 				   0.0 ,    0.0 , 0.0 , 0.0 );
 
-			final PolygonRenderer renderer = new PolygonRenderer( projectionTransform , viewTransform , hasPerspective );
+			final PolygonRenderer renderer = _renderer;
+			renderer.clear( projectionTransform , viewTransform , hasPerspective , backfaceCulling );
+
 			for ( int i = 0 ; i < paintQueue.size() ; i++ )
 			{
 				final Matrix3D matrix = paintQueue.getMatrix( i );
@@ -140,19 +161,6 @@ public final class Java2dView
 			}
 
 			final Graphics2D g2d = (Graphics2D)g.create( insets.left , insets.top , width , height );
-
-			final boolean fill;
-			final boolean outline;
-			final boolean useTextures;
-
-			switch ( _renderingPolicy )
-			{
-					case SOLID     : fill = true;  outline = false; useTextures = true;  break;
-					case SCHEMATIC : fill = true;  outline = true;  useTextures = false; break;
-					case SKETCH    : fill = true;  outline = false; useTextures = false; break;
-					case WIREFRAME : fill = false; outline = true;  useTextures = false; break;
-					default        : fill = false; outline = false; useTextures = false; break;
-			}
 
 			renderer.paint( g2d , fill , outline , useTextures );
 
