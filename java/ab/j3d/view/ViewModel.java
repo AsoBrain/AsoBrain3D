@@ -27,6 +27,7 @@ import java.util.Locale;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
+import ab.j3d.Bounds3D;
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
@@ -415,6 +416,52 @@ public abstract class ViewModel
 		final JToolBar toolbar = ActionTools.createToolbar( null , viewControl.getActions( locale ) );
 		if ( toolbar != null )
 			result.add( toolbar , BorderLayout.NORTH );
+
+		return result;
+	}
+
+	/**
+	 * Create a new view for this model.
+	 *
+	 * @param   id                      Application-assigned ID for the new view.
+	 * @param   renderingPolicy         Desired rendering policy for view.
+	 * @param   estimatedSceneBounds    Estimated bounding box of scene.
+	 * @param   viewDirection           Direction from which to view the scene.
+	 *
+	 * @return  View component for create view.
+	 *
+	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
+	 */
+	public Component createView( final Object id , final int renderingPolicy , final int projectionPolicy , final Bounds3D estimatedSceneBounds , final Vector3D viewDirection )
+	{
+		final ViewControl viewControl;
+
+		final double   sceneSize = Vector3D.distanceBetween( estimatedSceneBounds.v1 , estimatedSceneBounds.v2 );
+		final Vector3D center    = estimatedSceneBounds.center();
+
+		if ( ( renderingPolicy != ViewModelView.SOLID ) || ( projectionPolicy != ViewModelView.PERSPECTIVE ) )
+		{
+			final double x = -center.x + viewDirection.x * sceneSize;
+			final double y = -center.y + viewDirection.y * sceneSize;
+			final double z = -center.z + viewDirection.z * sceneSize;
+
+			final double rx = Math.toDegrees( Math.atan2( -viewDirection.y , -viewDirection.z ) );
+			final double ry = Math.toDegrees( Math.atan2( -viewDirection.x , -viewDirection.z ) );
+
+			final OrbitViewControl orbitViewControl = new OrbitViewControl( rx , ry , 0.0 , x , y , z );
+			viewControl = orbitViewControl;
+		}
+		else
+		{
+			final Vector3D from = center.minus( viewDirection.multiply( sceneSize * 2.0 ) );
+			viewControl = new FromToViewControl( from , center );
+		}
+
+		final Component result = createView( id , viewControl );
+
+		final ViewModelView view = getView( id );
+		view.setRenderingPolicy( renderingPolicy );
+		view.setProjectionPolicy( projectionPolicy );
 
 		return result;
 	}
