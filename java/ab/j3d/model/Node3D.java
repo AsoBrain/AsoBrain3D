@@ -28,13 +28,12 @@ import java.util.List;
 import ab.j3d.Matrix3D;
 
 /**
- * This class forms a default implementation of a node of the
- * graphics tree. It can not be instantiated directly, but must
- * sub-classed for a specific purpose.
+ * This class defines a node in a 3D scene graph. It can be used directly as
+ * a collection or merge point. Actual scene graph functionality is implemented
+ * by sub-classes.
  * <p>
- * The implementation consists of the tree and event mechanism
- * of the graphics tree, so sub-classes should normally implement
- * only their specific properties.
+ * This class implements basic functionality for graph manipulation and
+ * traversal.
  *
  * @author  Sjoerd Bouwman
  * @author  Peter S. Heijnen
@@ -43,27 +42,123 @@ import ab.j3d.Matrix3D;
 public class Node3D
 {
 	/**
-	 * Tag of this node.
+	 * Parent of this node (<code>null</code> if this a root node).
 	 */
-	private Object _tag;
+	private Node3D _parent;
 
 	/**
 	 * Collection of children of this node.
 	 */
-	private final List _children = new ArrayList();
+	private final List _children;
 
 	/**
-	 * Parent of this node (<code>null</code> if this a root node).
+	 * Tag of this node.
+	 * <p />
+	 * A tag is an application-assigned object that is typically used to link
+	 * application objects to scene graph objects. It is not used in any way
+	 * by the AsoBrain 3D Toolkit classes.
+	 *
+	 * @see     #getTag
+	 * @see     #setTag
 	 */
-	private Node3D _parent;
+	private Object _tag;
 
 	/**
 	 * Construct empty tree node.
 	 */
 	public Node3D()
 	{
-		_tag = null;
-		_parent = null;
+		_parent   = null;
+		_children = new ArrayList();
+		_tag      = null;
+	}
+
+	/**
+	 * Get tag that was set by {@link #setTag}.
+	 * <p />
+	 * A tag is an application-assigned object that is typically used to link
+	 * application objects to scene graph objects. It is not used in any way
+	 * by the AsoBrain 3D Toolkit classes.
+	 *
+	 * @return  Tag that was set by setTag().
+	 *
+	 * @see     #setTag
+	 */
+	public final Object getTag()
+	{
+		return _tag;
+	}
+
+	/**
+	 * Set tag of this node.
+	 * <p />
+	 * A tag is an application-assigned object that is typically used to link
+	 * application objects to scene graph objects. It is not used in any way
+	 * by the AsoBrain 3D Toolkit classes.
+	 *
+	 * @param   tag     Tag of node.
+	 *
+	 * @see     #getTag
+	 */
+	public final void setTag( final Object tag )
+	{
+		_tag = tag;
+	}
+
+	/**
+	 * Get parent of this node.
+	 *
+	 * @return  Parent node, or <code>null</code> if none exists.
+	 *
+	 * @see     #addChild
+	 * @see     #removeChild
+	 */
+	public final Node3D getParent()
+	{
+		return _parent;
+	}
+
+	/**
+	 * Get child node with the specified index.
+	 *
+	 * @param   index   Index of child node.
+	 *
+	 * @return  Child node with specified index.
+	 *
+	 * @throws  IndexOutOfBoundsException if the index is out of range.
+	 *
+	 * @see     #getChildCount
+	 */
+	public final Node3D getChild( final int index )
+	{
+		return (Node3D)_children.get( index );
+	}
+
+	/**
+	 * Get number of child nodes of this node.
+	 *
+	 * @return  Number of child nodes (0 => none => leaf node).
+	 *
+	 * @see     #getChild
+	 * @see     #isLeaf
+	 */
+	public final int getChildCount()
+	{
+		return _children.size();
+	}
+
+	/**
+	 * This method returns <code>true</code> if this node is a leaf node
+	 * (it has no children).
+	 *
+	 * @return  <code>true</code> if this node is a leaf node,
+	 *          <code>false</code> otherwise.
+	 *
+	 * @see     #getChildCount
+	 */
+	public final boolean isLeaf()
+	{
+		return _children.isEmpty();
 	}
 
 	/**
@@ -74,20 +169,66 @@ public class Node3D
 	 * @return  Node that was added (same as node argument).
 	 *
 	 * @see     #removeChild
+	 * @see     #getParent
 	 */
 	public final Node3D addChild( final Node3D node )
 	{
-		if ( ( node != null ) )
+		if ( node != null )
 		{
 			final List children = _children;
 			if ( !children.contains( node ) )
 			{
 				children.add( node );
-				node.setParent( this );
+				setParentOfChild( node );
 			}
 		}
 
 		return node;
+	}
+
+	/**
+	 * This method is used internally by {@link #addChild} to update the
+	 * {@link #_parent} field of a newly added child node. This takes care of
+	 * removing the child node from its previous parent and setting it to this
+	 * node.
+	 *
+	 * @param   node    Node whose {@link #_parent} field to update.
+	 *
+	 * @see     Insert3D#setParentOfChild
+	 */
+	void setParentOfChild( final Node3D node )
+	{
+		final Node3D oldParent = node._parent;
+		if ( ( oldParent != null ) && ( oldParent != this ) )
+			oldParent.removeChild( node );
+
+		node._parent = this;
+	}
+
+	/**
+	 * Remove a child node from this node.
+	 *
+	 * @param   node    Child node to remove.
+	 *
+	 * @see     #addChild
+	 * @see     #getParent
+	 */
+	public final void removeChild( final Node3D node )
+	{
+		if ( ( node != null ) && _children.remove( node ) && ( node._parent == this ) )
+			node._parent = null;
+	}
+
+	/**
+	 * Remove all child nodes from this node.
+	 *
+	 * @see     #removeChild
+	 */
+	public final void removeAllChildren()
+	{
+		final List children = _children;
+		while ( !children.isEmpty() )
+			removeChild( (Node3D)children.get( children.size() - 1 ) );
 	}
 
 	/**
@@ -105,26 +246,29 @@ public class Node3D
 	 * in combination with its matrix in the returned collection.
 	 *
 	 * @param   leafs       Collection that contains all gathered leafs.
-	 * @param   leafClass   Class of requested leafs.
+	 * @param   leafClass   Class of requested leafs (<code>null</code> => don't care).
 	 * @param   xform       Transformation matrix upto this node.
 	 * @param   upwards     Direction in which the tree is being traversed
 	 *                      (should be <code>true</code> for the first call).
 	 */
 	public void gatherLeafs( final Node3DCollection leafs , final Class leafClass , final Matrix3D xform , final boolean upwards )
 	{
-		if ( upwards && !isRoot() )
+		final Node3D parent = getParent();
+		if ( upwards && ( parent != null ) )
 		{
-			final Node3D parent = getParent();
 			parent.gatherLeafs( leafs , leafClass , xform , true );
 		}
 		else
 		{
-			if ( isLeaf() )
+			final List children   = _children;
+			final int  childCount = children.size();
+
+			if ( childCount == 0 )
 			{
 				/*
 				 * If this is a leaf, add it to the collection.
 				 */
-				if ( leafClass.isInstance( this ) )
+				if ( ( leafClass == null ) || leafClass.isInstance( this ) )
 					leafs.add( xform , this );
 			}
 			else
@@ -132,10 +276,9 @@ public class Node3D
 				/*
 				 * If this is not a leaf, traverse the tree recursively to find them.
 				 */
-				final Node3D[] children = getChildren();
-				for ( int i = 0 ; i < children.length ; i++ )
+				for ( int i = 0 ; i < childCount ; i++ )
 				{
-					final Node3D node = children[ i ];
+					final Node3D node = (Node3D)children.get( i );
 					node.gatherLeafs( leafs , leafClass , xform , false );
 				}
 			}
@@ -143,85 +286,10 @@ public class Node3D
 	}
 
 	/**
-	 * Get array with all currently registered child nodes.
-	 *
-	 * @return  Array with child nodes.
-	 *
-	 * @see     #isLeaf()
-	 */
-	public final Node3D[] getChildren()
-	{
-		return (Node3D[])_children.toArray( new Node3D[ _children.size() ] );
-	}
-
-	/**
-	 * Get parent of this node.
-	 *
-	 * @return  Parent node, or <code>null</code> if none exists.
-	 *
-	 * @see #isRoot
-	 */
-	public final Node3D getParent()
-	{
-		return( _parent );
-	}
-
-	/**
-	 * Get root of the graphics tree.
-	 *
-	 * @return  Root node of graphics tree.
-	 *
-	 * @see #isRoot
-	 */
-	public final Node3D getRoot()
-	{
-		Node3D node = this;
-		while( !node.isRoot() ) node = node.getParent();
-		return( node );
-	}
-
-	/**
-	 * Get tag that was set by setTag().
-	 *
-	 * @return  Tag that was set by setTag().
-	 */
-	public final Object getTag()
-	{
-		return _tag;
-	}
-
-	/**
-	 * This method returns <code>true</code> if this node is a leaf node
-	 * (it has no children).
-	 *
-	 * @return  <code>true</code> if this node is a leaf node,
-	 *          <code>false</code> otherwise.
-	 *
-	 * @see     #getChildren
-	 */
-	public final boolean isLeaf()
-	{
-		return _children.isEmpty();
-	}
-
-	/**
-	 * This method returns <code>true</code> if this node is a root node
-	 * (it has no parents).
-	 *
-	 * @return  <code>true</code> if this node is a root node,
-	 *          <code>false</code> otherwise.
-	 *
-	 * @see     #getParent
-	 */
-	public final boolean isRoot()
-	{
-		return( _parent == null );
-	}
-
-	/**
 	 * Paint 2D representation of 3D objects at this node and its child nodes
 	 * using rendering hints defined for this object. See the other
-	 * <code>paint()</code> method in this class for a more elaborate
+	 * {@link #paint(Graphics2D, Matrix3D, Matrix3D, Paint, Paint, float)}
+	 * method in this class for a more elaborate
 	 * description of this process.
 	 * <p />
 	 * If the <code>alternateAppearance</code> flag is set, objects should be
@@ -236,10 +304,12 @@ public class Node3D
 	 */
 	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final boolean alternateAppearance )
 	{
-		final Node3D[] children = getChildren();
-		for ( int i = 0 ; i < children.length ; i++ )
+		final List children   = _children;
+		final int  childCount = children.size();
+
+		for ( int i = 0 ; i < childCount ; i++ )
 		{
-			final Node3D node = children[ i ];
+			final Node3D node = (Node3D)children.get( i );
 			node.paint( g , gTransform , viewTransform , alternateAppearance );
 		}
 	}
@@ -274,71 +344,13 @@ public class Node3D
 	 */
 	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
 	{
-		final Node3D[] children = getChildren();
-		for ( int i = 0 ; i < children.length ; i++ )
+		final List children   = _children;
+		final int  childCount = children.size();
+
+		for ( int i = 0 ; i < childCount ; i++ )
 		{
-			final Node3D node = children[ i ];
+			final Node3D node = (Node3D)children.get( i );
 			node.paint( g , gTransform , viewTransform , outlinePaint , fillPaint , shadeFactor );
 		}
-	}
-
-	/**
-	 * Remove all child nodes from this node.
-	 *
-	 * @see     #removeChild
-	 */
-	public final void removeAllChildren()
-	{
-		final Node3D[] children = getChildren();
-
-		_children.clear();
-		for ( int i = 0 ; i < children.length ; i++ )
-			children[ i ].setParent( null );
-	}
-
-	/**
-	 * Remove a child node from this node.
-	 *
-	 * @param   node    Child node to remove.
-	 *
-	 * @see     #addChild
-	 */
-	public final void removeChild( final Node3D node )
-	{
-		if ( ( node != null ) && _children.remove( node ) )
-			node.setParent( null );
-	}
-
-	/**
-	 * Set parent of this node.
-	 *
-	 * @param   parent  Parent node (existing parent is removed).
-	 *
-	 * @see     #getRoot
-	 * @see     #isRoot
-	 */
-	public final void setParent( final Node3D parent )
-	{
-		final Node3D oldParent = _parent;
-		if ( parent != oldParent )
-		{
-			if ( oldParent != null )
-				oldParent.removeChild( this );
-
-			_parent = parent;
-
-			if ( parent != null )
-				parent.addChild( this );
-		}
-	}
-
-	/**
-	 * Set tag of this node.
-	 *
-	 * @param   tag     Tag of node.
-	 */
-	public final void setTag( final Object tag )
-	{
-		_tag = tag;
 	}
 }
