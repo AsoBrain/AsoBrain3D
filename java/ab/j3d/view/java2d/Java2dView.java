@@ -126,7 +126,7 @@ public final class Java2dView
 			final Node3DCollection paintQueue       = model.getPaintQueue();
 			final Matrix3D         viewTransform    = getViewTransform();
 			final int              projectionPolicy = _projectionPolicy;
-			final boolean          hasPerspective   = ( projectionPolicy != PARALLEL );
+			final boolean          hasPerspective   = ( projectionPolicy == PERSPECTIVE );
 			final double           scale            = 1000.0 / (double)Math.max( width , height );
 
 			final boolean fill;
