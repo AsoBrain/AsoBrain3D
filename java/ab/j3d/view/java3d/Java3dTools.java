@@ -314,10 +314,10 @@ public final class Java3dTools
 	 */
 	public Appearance getAppearance( final TextureSpec textureSpec , final float opacity )
 	{
-		final int   rgb = textureSpec.getARGB();
-		final float r   = (float)( ( rgb >> 16 ) & 255 ) / 255.0f;
-		final float g   = (float)( ( rgb >>  8 ) & 255 ) / 255.0f;
-		final float b   = (float)(   rgb         & 255 ) / 255.0f;
+		final int   rgb = textureSpec.rgb;
+		final float r   = ( rgb >= 0 ) ? (float)( ( rgb >> 16 ) & 255 ) / 255.0f : 255.0f;
+		final float g   = ( rgb >= 0 ) ? (float)( ( rgb >>  8 ) & 255 ) / 255.0f : 255.0f;
+		final float b   = ( rgb >= 0 ) ? (float)(   rgb         & 255 ) / 255.0f : 255.0f;
 		final float ar  = 1.9f * textureSpec.ambientReflectivity;
 		final float dr  = 0.9f * textureSpec.diffuseReflectivity;
 		final float sr  = 0.5f * textureSpec.specularReflectivity;
@@ -365,6 +365,9 @@ public final class Java3dTools
 			polygonAttributes.setCullFace( PolygonAttributes.CULL_NONE );
 			appearance.setPolygonAttributes( polygonAttributes );
 		}
+
+		if ( rgb >= 0 )
+			appearance.setColoringAttributes( new ColoringAttributes( r , g , b , ColoringAttributes.FASTEST ) );
 
 		return appearance;
 	}
