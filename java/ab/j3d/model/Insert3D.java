@@ -53,7 +53,7 @@ public final class Insert3D
 	private Matrix3D _transform;
 
 	/**
-	 * Default constructor. Creates an identity transform model.
+	 * Construct node with default (void) properties.
 	 */
 	public Insert3D()
 	{
@@ -61,13 +61,25 @@ public final class Insert3D
 	}
 
 	/**
-	 * Constructor based for transformation based on a matrix.
+	 * Construct node with the specified transformation matrix.
 	 *
 	 * @param   transform   Explicit matrix to use for transformation.
 	 */
 	public Insert3D( final Matrix3D transform )
 	{
 		_transform = transform;
+	}
+
+	/**
+	 * Construct node with the specified transformation matrix and child node.
+	 *
+	 * @param   transform   Explicit matrix to use for transformation.
+	 * @param   childNode   Child node to add to this node.
+	 */
+	public Insert3D( final Matrix3D transform , final Node3D childNode )
+	{
+		this( transform );
+		addChild( childNode );
 	}
 
 	public void gatherLeafs( final Node3DCollection leafs , final Class leafClass , final Matrix3D previousTransform , final boolean upwards )
