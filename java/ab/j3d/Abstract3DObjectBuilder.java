@@ -19,8 +19,6 @@
  */
 package ab.j3d;
 
-import java.awt.geom.Ellipse2D;
-
 /**
  * This abstract class defines an interface through which an 3D object can easily
  * be created from (mostly 2D) shapes.
