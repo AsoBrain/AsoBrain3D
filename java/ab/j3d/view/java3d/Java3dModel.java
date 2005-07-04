@@ -65,13 +65,13 @@ public final class Java3dModel
 	 */
 	public Java3dModel()
 	{
-		this( Java3dUniverse.MM , new Color( 51 , 77 , 102 ) );
+		this( MM , new Color( 51 , 77 , 102 ) );
 	}
 
 	/**
 	 * Construct new Java 3D model.
 	 *
-	 * @param   unit            Unit scale factor (e.g. {@link Java3dUniverse.MM}).
+	 * @param   unit            Unit scale factor (e.g. {@link ViewModel.MM}).
 	 * @param   background      Background color to use for 3D views.
 	 */
 	public Java3dModel( final double unit , final Color background )

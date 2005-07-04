@@ -51,50 +51,6 @@ import javax.vecmath.Vector3f;
 public class Java3dUniverse
 	extends VirtualUniverse
 {
-	/**
-	 * Scale factor for meters (metric system).
-	 */
-	public static final double METER = 1.0;
-
-	/**
-	 * Scale factor for meters (metric system).
-	 */
-	public static final double M = 1.0;
-
-	/**
-	 * Scale factor for millimeters (metric system).
-	 */
-	public static final double MM = 0.001;
-
-	/**
-	 * Scale factor for centimeters (metric system).
-	 */
-	public static final double CM = 0.01;
-
-	/**
-	 * Scale factor for inches (imperial system).
-	 */
-	public static final double INCH = 0.0254;
-
-	/**
-	 * Scale factor for feet (imperial system).
-	 */
-	public static final double FOOT = 12.0 * INCH;
-
-	/**
-	 * Scale factor for yards (imperial system).
-	 */
-	public static final double YARD = 3.0 * FOOT;
-
-	/**
-	 * Scale factor for miles (imperial system).
-	 */
-	public static final double MILE = 1760.0 * YARD;
-
-	/**
-	 * Scale factor for miles (imperial system).
-	 */
-	public static final double NAUTIC_MILE = 2025.4 * YARD;
 
 	/**
 	 * The scene content is either a user-defined group node, or create using the
