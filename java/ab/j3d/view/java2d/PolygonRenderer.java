@@ -184,7 +184,7 @@ public final class PolygonRenderer
 					 *
 					 * c = (x1-x2)*(y3-y2)-(y1-y2)*(x3-x2)
 					 */
-					if ( !hasBackface && backfaceCulling )
+					if ( !hasBackface && backfaceCulling && ( vertexCount > 2 ) )
 					{
 						final double x1 = pointCoords[ pointIndices[ 0 ] * 3     ];
 						final double y1 = pointCoords[ pointIndices[ 0 ] * 3 + 1 ];
