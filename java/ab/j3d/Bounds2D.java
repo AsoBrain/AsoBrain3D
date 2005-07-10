@@ -163,7 +163,7 @@ public final class Bounds2D
 
 	public boolean contains( final Rectangle2D r )
 	{
-		return intersects(r.getX(), r.getY(), r.getWidth(), r.getHeight());
+		return contains(r.getX(), r.getY(), r.getWidth(), r.getHeight());
 	}
 
 	public boolean contains( final Point2D p )
