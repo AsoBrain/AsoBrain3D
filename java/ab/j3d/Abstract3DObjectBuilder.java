@@ -90,7 +90,7 @@ public abstract class Abstract3DObjectBuilder
 					final Vector3D point1a = point1.plus( extrusion );
 					final Vector3D point2a = point2.plus( extrusion );
 
-					addQuad( point1 , point2 , point2a , point1a , null , stroke , textureSpec , fill );
+					addQuad( point1 , point2 , point2a , point1a , null , stroke , textureSpec , fill , true );
 				}
 				else
 				{
@@ -134,18 +134,18 @@ public abstract class Abstract3DObjectBuilder
 					final boolean isFirst = ( i == 0 );
 					final boolean isLast  = ( i == ( nrSegments -1 ) );
 
-					addQuad( outer1 , outer2 , inner2 , inner1 , null , stroke , textureSpec , fill );
+					addQuad( outer1 , outer2 , inner2 , inner1 , null , stroke , textureSpec , fill , true );
 
-					if ( isFirst ) addQuad( outer1 , inner1 , extrudedInner1 , extrudedOuter1 , null , stroke , textureSpec , fill );
-					addQuad( inner1 , inner2 , extrudedInner2 , extrudedInner1 , null , stroke , textureSpec , fill );
-					addQuad( inner2 , outer2 , extrudedOuter2 , extrudedInner2 , null , stroke , textureSpec , fill );
-					if ( isLast  ) addQuad( outer2 , outer1 , extrudedOuter1 , extrudedOuter2 , null , stroke , textureSpec , fill );
+					if ( isFirst ) addQuad( outer1 , inner1 , extrudedInner1 , extrudedOuter1 , null , stroke , textureSpec , fill , true );
+					addQuad( inner1 , inner2 , extrudedInner2 , extrudedInner1 , null , stroke , textureSpec , fill , true );
+					addQuad( inner2 , outer2 , extrudedOuter2 , extrudedInner2 , null , stroke , textureSpec , fill , true );
+					if ( isLast  ) addQuad( outer2 , outer1 , extrudedOuter1 , extrudedOuter2 , null , stroke , textureSpec , fill , true );
 
-					addQuad( extrudedOuter1 , extrudedInner1 , extrudedInner2 , extrudedOuter2 , null , stroke , textureSpec , fill );
+					addQuad( extrudedOuter1 , extrudedInner1 , extrudedInner2 , extrudedOuter2 , null , stroke , textureSpec , fill , true );
 				}
 				else
 				{
-					addQuad( outer1 , inner1 , inner2 , outer2 , null , stroke , textureSpec , fill );
+					addQuad( outer1 , inner1 , inner2 , outer2 , null , stroke , textureSpec , fill , true );
 				}
 
 				inner1 = inner2;
@@ -203,7 +203,7 @@ public abstract class Abstract3DObjectBuilder
 			final Vector3D p1a = point1.plus( extrusion );
 			final Vector3D p2a = point2.plus( extrusion );
 
-			addQuad( point1 , p1a , p2a , point2 , null , -1 , textureSpec , fill );
+			addQuad( point1 , p1a , p2a , point2 , null , -1 , textureSpec , fill , true );
 		}
 		else
 		{
@@ -219,8 +219,9 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   point3          Third vertex coordinates.
 	 * @param   point4          Fourth vertex coordinates.
 	 * @param   textureSpec     Texture specification to use for shading.
+	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public abstract void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final TextureSpec textureSpec );
+	public abstract void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final TextureSpec textureSpec , final boolean hasBackface );
 
 	/**
 	 * Add quad with optional extrusion.
@@ -236,8 +237,9 @@ public abstract class Abstract3DObjectBuilder
 	 *                          <code>-1</code> otherwise).
 	 * @param   textureSpec     Texture specification to use for shading.
 	 * @param   fill            Create filled shape vs. create wireframe.
+	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final Vector3D extrusion , final int stroke , final TextureSpec textureSpec , final boolean fill )
+	public void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final Vector3D extrusion , final int stroke , final TextureSpec textureSpec , final boolean fill , final boolean hasBackface )
 	{
 		if ( ( extrusion != null ) && !extrusion.almostEquals( Vector3D.INIT ) )
 		{
@@ -248,12 +250,12 @@ public abstract class Abstract3DObjectBuilder
 
 			if ( fill )
 			{
-				addQuad( point4  , point3  , point2  , point1  , textureSpec );
-				addQuad( point1  , point2  , point2a , point1a , textureSpec );
-				addQuad( point2  , point3  , point3a , point2a , textureSpec );
-				addQuad( point3  , point4  , point4a , point3a , textureSpec );
-				addQuad( point4  , point1  , point1a , point4a , textureSpec );
-				addQuad( point1a , point2a , point3a , point4a , textureSpec );
+				addQuad( point4  , point3  , point2  , point1  , textureSpec , false );
+				addQuad( point1  , point2  , point2a , point1a , textureSpec , false );
+				addQuad( point2  , point3  , point3a , point2a , textureSpec , false );
+				addQuad( point3  , point4  , point4a , point3a , textureSpec , false );
+				addQuad( point4  , point1  , point1a , point4a , textureSpec , false );
+				addQuad( point1a , point2a , point3a , point4a , textureSpec , false );
 			}
 			else
 			{
@@ -278,7 +280,7 @@ public abstract class Abstract3DObjectBuilder
 		{
 			if ( fill )
 			{
-				addQuad( point1 , point2 , point3 , point4 , textureSpec );
+				addQuad( point1 , point2 , point3 , point4 , textureSpec , hasBackface );
 			}
 			else
 			{
@@ -310,8 +312,9 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   point2          Second vertex coordinates.
 	 * @param   point3          Third vertex coordinates.
 	 * @param   textureSpec     Texture specification to use for shading.
+	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public abstract void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final TextureSpec textureSpec );
+	public abstract void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final TextureSpec textureSpec , boolean hasBackface );
 
 	/**
 	 * Add triangle with optional extrusion.
@@ -326,8 +329,9 @@ public abstract class Abstract3DObjectBuilder
 	 *                          <code>-1</code> otherwise).
 	 * @param   textureSpec     Texture specification to use for shading.
 	 * @param   fill            Create filled shape vs. create wireframe.
+	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D extrusion , final int stroke , final TextureSpec textureSpec , final boolean fill )
+	public void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D extrusion , final int stroke , final TextureSpec textureSpec , final boolean fill , final boolean hasBackface )
 	{
 		if ( ( extrusion != null ) && !extrusion.almostEquals( Vector3D.INIT ) )
 		{
@@ -337,11 +341,11 @@ public abstract class Abstract3DObjectBuilder
 
 			if ( fill )
 			{
-				addTriangle( point3  , point2  , point1  ,           textureSpec );
-				addQuad    ( point1  , point2  , point2a , point1a , textureSpec );
-				addQuad    ( point2  , point3  , point3a , point2a , textureSpec );
-				addQuad    ( point3  , point1  , point1a , point3a , textureSpec );
-				addTriangle( point1a , point2a , point3a ,           textureSpec );
+				addTriangle( point3  , point2  , point1  ,           textureSpec , false );
+				addQuad    ( point1  , point2  , point2a , point1a , textureSpec , false );
+				addQuad    ( point2  , point3  , point3a , point2a , textureSpec , false );
+				addQuad    ( point3  , point1  , point1a , point3a , textureSpec , false );
+				addTriangle( point1a , point2a , point3a ,           textureSpec , false );
 			}
 			else
 			{
@@ -362,7 +366,7 @@ public abstract class Abstract3DObjectBuilder
 		{
 			if ( fill )
 			{
-				addTriangle( point1 , point2 , point3 , textureSpec );
+				addTriangle( point1 , point2 , point3 , textureSpec , hasBackface );
 			}
 			else
 			{

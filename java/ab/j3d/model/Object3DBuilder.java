@@ -69,14 +69,14 @@ public class Object3DBuilder
 		_target.addFace( new Vector3D[] { point1 , point2 } , textureSpec , false , true );
 	}
 
-	public void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final TextureSpec textureSpec )
+	public void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final TextureSpec textureSpec , final boolean hasBackface )
 	{
-		_target.addFace( new Vector3D[] { point1 , point2 , point3 } , textureSpec , false , true );
+		_target.addFace( new Vector3D[] { point1 , point2 , point3 } , textureSpec , false , hasBackface );
 	}
 
-	public void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final TextureSpec textureSpec )
+	public void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final TextureSpec textureSpec , final boolean hasBackface )
 	{
-		_target.addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , textureSpec , false , true );
+		_target.addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , textureSpec , false , hasBackface );
 	}
 
 	public void addCircle( final Vector3D centerPoint , final double radius , final Vector3D normal , final Vector3D extrusion , final int stroke , final TextureSpec textureSpec , final boolean fill )

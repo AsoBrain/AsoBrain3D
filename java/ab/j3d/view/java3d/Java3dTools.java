@@ -309,10 +309,11 @@ public final class Java3dTools
 	 *
 	 * @param   textureSpec     TextureSpec to get the Appearance for.
 	 * @param   opacity         Opacity to apply to the returned appearance.
+	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 *
 	 * @return  Appearance for the specified texture spec.
 	 */
-	public Appearance getAppearance( final TextureSpec textureSpec , final float opacity )
+	public Appearance getAppearance( final TextureSpec textureSpec , final float opacity , final boolean hasBackface )
 	{
 		final int   rgb = textureSpec.rgb;
 		final float r   = ( rgb >= 0 ) ? (float)( ( rgb >> 16 ) & 255 ) / 255.0f : 255.0f;
@@ -334,8 +335,6 @@ public final class Java3dTools
 		appearance.setCapability( Appearance.ALLOW_TEXTURE_READ );
 		appearance.setMaterial( material );
 
-		boolean noCulling = false;
-
 		if ( textureSpec.isTexture() )
 		{
 			final Texture texture = getTexture( textureSpec );
@@ -350,6 +349,8 @@ public final class Java3dTools
 		}
 
 		// Setup Transparency
+		boolean noCulling = hasBackface;
+
 		final float combinedOpacity = opacity * textureSpec.opacity;
 		if ( combinedOpacity >= 0.0f && combinedOpacity < 0.999f )
 		{

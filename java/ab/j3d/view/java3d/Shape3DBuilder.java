@@ -198,6 +198,7 @@ public class Shape3DBuilder
 	{
 		private TextureSpec   _texture;
 		private int           _alpha;
+		private boolean       _hasBackface;
 		private Appearance    _appearance;
 		private int           _lineCount;
 		private LineArray     _lineArray;
@@ -206,10 +207,12 @@ public class Shape3DBuilder
 		private int           _quadCount;
 		private QuadArray     _quadArray;
 
-		TextureGroup( final TextureSpec texture , final int alpha , final Appearance appearance )
+
+		TextureGroup( final TextureSpec texture , final int alpha , final boolean hasBackface , final Appearance appearance )
 		{
 			_texture       = texture;
 			_alpha         = alpha;
+			_hasBackface   = hasBackface;
 			_appearance    = appearance;
 			_lineCount     = 0;
 			_lineArray     = null;
@@ -470,9 +473,10 @@ public class Shape3DBuilder
 		final TextureSpec texture = ( textureOverride != null ) ? textureOverride : face.getTexture();
 		if ( texture != null )
 		{
-			final float opacity = extraOpacity * face.getOpacity();
+			final float   opacity     = extraOpacity * face.getOpacity();
+			final boolean hasBackface = face.hasBackface();
 
-			final TextureGroup group = getGroup( texture , opacity );
+			final TextureGroup group = getGroup( texture , opacity , hasBackface );
 			group.prepareFace( face.getVertexCount() );
 		}
 	}
@@ -497,9 +501,10 @@ public class Shape3DBuilder
 		final TextureSpec texture = ( textureOverride != null ) ? textureOverride : face.getTexture();
 		if ( texture != null )
 		{
-			final float opacity = extraOpacity * face.getOpacity();
+			final float   opacity     = extraOpacity * face.getOpacity();
+			final boolean hasBackface = face.hasBackface();
 
-			final TextureGroup group = getGroup( texture , opacity );
+			final TextureGroup group = getGroup( texture , opacity , hasBackface );
 			group.addFace( xform , pointCoords , vertexNormals , face );
 		}
 	}
@@ -522,7 +527,7 @@ public class Shape3DBuilder
 			_textureGroups[ i ].buildShapes( result );
 	}
 
-	private TextureGroup getGroup( final TextureSpec texture , final float opacity )
+	private TextureGroup getGroup( final TextureSpec texture , final float opacity , final boolean hasBackface )
 	{
 		TextureGroup result = null;
 
@@ -533,7 +538,7 @@ public class Shape3DBuilder
 		for ( int i = 0 ; i < count ; i++ )
 		{
 			final TextureGroup group = groups[ i ];
-			if ( ( group._texture == texture ) && ( group._alpha == alpha ) )
+			if ( ( group._texture == texture ) && ( group._alpha == alpha ) && ( group._hasBackface == hasBackface ) )
 			{
 				result = group;
 				break;
@@ -558,9 +563,9 @@ public class Shape3DBuilder
 			}
 
 			final Java3dTools tools      = Java3dTools.getInstance();
-			final Appearance  appearance = tools.getAppearance( texture , opacity );
+			final Appearance  appearance = tools.getAppearance( texture , opacity , hasBackface );
 
-			result = new TextureGroup( texture , alpha , appearance );
+			result = new TextureGroup( texture , alpha , hasBackface , appearance );
 			newGroups[ count ] = result;
 
 			_textureGroups     = newGroups;

@@ -641,7 +641,7 @@ public class Object3D
 	{
 		final int nrVertices = points.length;
 
-		final Face3D face = new Face3D( this , null , texture , null , null , opacity , smooth , false );
+		final Face3D face = new Face3D( this , null , texture , null , null , opacity , smooth , hasBackface );
 		face.ensureCapacity( nrVertices );
 
 		for ( int i = 0 ; i < nrVertices ; i++ )
@@ -666,7 +666,7 @@ public class Object3D
 	{
 		final int nrVertices = shape.getPointCount() + ( shape.isClosed() ? -1 : 0 );
 
-		final Face3D face = new Face3D( this , null , texture , null , null , opacity , smooth , false );
+		final Face3D face = new Face3D( this , null , texture , null , null , opacity , smooth , hasBackface );
 		face.ensureCapacity( nrVertices );
 
 		if ( ( nrVertices > 2 ) && ( texture != null ) && texture.isTexture() )
