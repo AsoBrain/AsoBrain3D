@@ -443,33 +443,18 @@ public abstract class ViewModel
 	}
 
 	/**
-	 * Create view panel with associated controls (if any).
-	 *
-	 * @param   id              Application-assigned ID for the new view.
-	 * @param   viewControl     Control to use for this view.
-	 *
-	 * @return  Panel containing view.
-	 *
-	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
-	 */
-	public final JPanel createViewPanel( final Locale locale , final Object id , final ViewControl viewControl )
-	{
-		final JPanel result = new JPanel( new BorderLayout() );
-
-		result.add( createView( id , viewControl ) , BorderLayout.CENTER );
-
-		final JToolBar toolbar = ActionTools.createToolbar( null , viewControl.getActions( locale ) );
-		if ( toolbar != null )
-			result.add( toolbar , BorderLayout.NORTH );
-
-		return result;
-	}
-
-	/**
 	 * Create a new view for this model.
 	 *
 	 * @param   id                      Application-assigned ID for the new view.
-	 * @param   renderingPolicy         Desired rendering policy for view.
+	 * @param   renderingPolicy         Desired rendering policy for view
+	 *                                  ({@link ViewModelView#SOLID},
+	 *                                  {@link ViewModelView#SCHEMATIC},
+	 *                                  {@link ViewModelView#SKETCH}, or
+	 *                                  {@link ViewModelView#WIREFRAME}).
+	 * @param   projectionPolicy        Desired projection policy for view
+	 *                                  ({@link ViewModelView#PERSPECTIVE},
+	 *                                  {@link ViewModelView#PARALLEL}, or
+	 *                                  {@link ViewModelView#ISOMETRIC}).
 	 * @param   estimatedSceneBounds    Estimated bounding box of scene.
 	 * @param   viewDirection           Direction from which to view the scene.
 	 *
@@ -524,19 +509,33 @@ public abstract class ViewModel
 	public abstract Component createView( final Object id , final ViewControl viewControl );
 
 	/**
-	 * Convenience method to create a new from-to view.
+	 * Create view panel for the specified view.
 	 *
-	 * @param   id      ID of the view that is created.
-	 * @param   from    Point to look from.
-	 * @param   to      Point to look at.
+	 * @param   locale      Locale for internationalized user interface.
+	 * @param   id          Application-assigned ID of existing view.
 	 *
-	 * @return  View component for create view.
+	 * @return  Panel containing view.
 	 *
+	 * @throws  IllegalArgumentException if no view with the specified <code>id</code> was found.
 	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public final Component createView( final Object id , final Vector3D from , final Vector3D to )
+	public final JPanel createViewPanel( final Locale locale , final Object id )
 	{
-		return createView( id , new FromToViewControl( from , to ) );
+		final ViewModelView view = getView( id );
+		if ( view == null )
+			throw new IllegalArgumentException( String.valueOf( id ) );
+
+		final Component   viewComponent = view.getComponent();
+		final ViewControl viewControl   = view.getViewControl();
+
+		final JPanel result = new JPanel( new BorderLayout() );
+		result.add( viewComponent , BorderLayout.CENTER );
+
+		final JToolBar toolbar = ActionTools.createToolbar( null , viewControl.getActions( locale ) );
+		if ( toolbar != null )
+			result.add( toolbar , BorderLayout.NORTH );
+
+		return result;
 	}
 
 	/**

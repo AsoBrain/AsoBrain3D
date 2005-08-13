@@ -28,6 +28,7 @@ import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Object3D;
 import ab.j3d.view.ViewModel;
+import ab.j3d.view.FromToViewControl;
 
 import com.numdata.oss.ui.WindowTools;
 
@@ -60,7 +61,7 @@ public final class Java3dModelExample
 
 		final Vector3D  viewFrom = Vector3D.INIT.set( 0.0 , -800.0 , 0.0 );
 		final Vector3D  viewAt   = Vector3D.INIT;
-		final Component view     = viewModel.createView( "view" , viewFrom , viewAt );
+		final Component view     = viewModel.createView( "view" , new FromToViewControl( viewFrom , viewAt ) );
 
 		final JFrame frame = WindowTools.createFrame( "Java 3D Model Example" , 800 , 600 , view );
 		frame.setVisible( true );
