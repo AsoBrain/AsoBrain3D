@@ -101,7 +101,7 @@ public final class OrbitViewControl
 		saved[ 3 ] = _translationX;
 		saved[ 4 ] = _translationY;
 		saved[ 5 ] = _translationZ;
-		System.out.println( "saved = " + ArrayTools.toString( saved ) );
+//		System.out.println( "saved = " + ArrayTools.toString( saved ) );
 	}
 
 	public void restore()
