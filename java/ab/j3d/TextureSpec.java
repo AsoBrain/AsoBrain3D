@@ -31,6 +31,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.Serializable;
 
+import com.numdata.oss.TextTools;
 import com.numdata.oss.ui.ImageTools;
 
 /**
@@ -148,16 +149,70 @@ public final class TextureSpec
 	 */
 	public TextureSpec()
 	{
+		this( null , 0x00FFFFFF , 1.0f , -1.0f , 0.3f , 0.5f , 0.7f , 8 , false );
+	}
+
+	/**
+	 * Construct texture for RGB {@link Color}.
+	 *
+	 * @param   color   Color specification.
+	 */
+	public TextureSpec( final Color color )
+	{
+		this( color.getRGB() );
+	}
+
+	/**
+	 * Construct texture for ARGB value (see {@link Color}).
+	 *
+	 * @param   argb    ARGB color specification.
+	 */
+	public TextureSpec( final int argb )
+	{
+		final int     alpha   = ( argb >> 24 ) & 0xFF;
+		final int     red     = ( argb >> 16 ) & 0xFF;
+		final int     green   = ( argb >> 8 ) & 0xFF;
+		final int     blue    = argb & 0xFF;
+		final boolean opaque  = ( ( alpha <= 0 ) || ( alpha >= 255 ) );
+		final boolean isBlack = ( red <= 1 ) && ( green <=1 ) && ( blue <= 1 );
+
 		ID                   = -1L;
-		code                 = null;
-		rgb                  = 0x00FFFFFF;
-		opacity              = 1.0f;
-		textureScale         = -1.0f;
-		ambientReflectivity  = 0.3f;
-		diffuseReflectivity  = 0.5f;
-		specularReflectivity = 0.7f;
-		specularExponent     = 8;
+		code                 = '#' + TextTools.toHexString( argb , 6 , false );
+		rgb                  = isBlack ? 0x010101 : ( argb & 0xFFFFFF );
+		opacity              = opaque ? 1.0f : ( (float)alpha / 255.0f );
+		textureScale         = 0.0f;
+		ambientReflectivity  = isBlack ? 0.10f : 0.3f;
+		diffuseReflectivity  = isBlack ? 0.15f : 0.3f;
+		specularReflectivity = isBlack ? 0.90f : 0.3f;
+		specularExponent     = isBlack ? 16    : 8;
 		grain                = false;
+	}
+
+	/**
+	 * Construct texture with the specified properties.
+	 *
+	 * @param   code                    Code that uniquely identifies the texture.
+	 * @param   rgb                     RGB color value  (-1 -> has texture image).
+	 * @param   opacity                 Opacity (opaque: 1.0, completely translucent: 0.0).
+	 * @param   textureScale            Scale factor from world to texture coordinates.
+	 * @param   ambientReflectivity     Ambient reflectivity coefficient.
+	 * @param   diffuseReflectivity     Diffuse reflectivity coefficient.
+	 * @param   specularReflectivity    Specular reflection coefficient.
+	 * @param   specularExponent        Specular reflection exponent.
+	 * @param   grain                   Flag to indicate that texture has a 'grain'.
+	 */
+	public TextureSpec( final String code , final int rgb , final float opacity , final float textureScale , final float ambientReflectivity , final float diffuseReflectivity , final float specularReflectivity , final int specularExponent , final boolean grain )
+	{
+		ID                        = -1L;
+		this.code                 = code;
+		this.rgb                  = rgb;
+		this.opacity              = opacity;
+		this.textureScale         = textureScale;
+		this.ambientReflectivity  = ambientReflectivity;
+		this.diffuseReflectivity  = diffuseReflectivity;
+		this.specularReflectivity = specularReflectivity;
+		this.specularExponent     = specularExponent;
+		this.grain                = grain;
 	}
 
 	/**
