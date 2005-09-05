@@ -56,8 +56,43 @@ public final class Vector3DTester
 	{
 		final String actualPrefix = ( messagePrefix != null ) ? messagePrefix + " - " : "";
 
-		assertEquals( actualPrefix + "Incorrect 'x' value." , expected.x , actual.x , delta );
-		assertEquals( actualPrefix + "Incorrect 'y' value." , expected.y , actual.y , delta );
-		assertEquals( actualPrefix + "Incorrect 'z' value." , expected.z , actual.z , delta );
+		AssertionFailedError errorX = null;
+		try
+		{
+			assertEquals( actualPrefix + "Incorrect 'x' value." , expected.x , actual.x , delta );
+		}
+		catch ( AssertionFailedError e )
+		{
+			errorX = e;
+		}
+
+		AssertionFailedError errorY = null;
+		try
+		{
+			assertEquals( actualPrefix + "Incorrect 'y' value." , expected.y , actual.y , delta );
+		}
+		catch ( AssertionFailedError e )
+		{
+			errorY = e;
+		}
+
+		AssertionFailedError errorZ = null;
+		try
+		{
+			assertEquals( actualPrefix + "Incorrect 'z' value." , expected.z , actual.z , delta );
+		}
+		catch ( AssertionFailedError e )
+		{
+			errorZ = e;
+		}
+
+		if ( ( ( errorX != null ) && ( ( errorY != null ) || ( errorZ != null ) ) )
+		                          || ( ( errorY != null ) && ( errorZ != null ) ) )
+		{
+			assertEquals( messagePrefix , expected , actual );
+		}
+		else if ( errorX != null ) throw errorX;
+		else if ( errorY != null ) throw errorY;
+		else if ( errorZ != null ) throw errorZ;
 	}
 }
