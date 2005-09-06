@@ -171,13 +171,13 @@ public final class TextureSpec
 	{
 		final int     alpha   = ( argb >> 24 ) & 0xFF;
 		final int     red     = ( argb >> 16 ) & 0xFF;
-		final int     green   = ( argb >> 8 ) & 0xFF;
-		final int     blue    = argb & 0xFF;
+		final int     green   = ( argb >>  8 ) & 0xFF;
+		final int     blue    =   argb         & 0xFF;
 		final boolean opaque  = ( ( alpha <= 0 ) || ( alpha >= 255 ) );
 		final boolean isBlack = ( red <= 1 ) && ( green <=1 ) && ( blue <= 1 );
 
 		ID                   = -1L;
-		code                 = '#' + TextTools.toHexString( argb , 6 , false );
+		code                 = '#' + TextTools.toHexString( argb & 0xFFFFFF , 6 , false );
 		rgb                  = isBlack ? 0x010101 : ( argb & 0xFFFFFF );
 		opacity              = opaque ? 1.0f : ( (float)alpha / 255.0f );
 		textureScale         = 0.0f;

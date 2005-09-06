@@ -27,8 +27,8 @@ import javax.swing.JFrame;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Object3D;
-import ab.j3d.view.ViewModel;
 import ab.j3d.view.FromToViewControl;
+import ab.j3d.view.ViewModel;
 
 import com.numdata.oss.ui.WindowTools;
 
@@ -67,7 +67,7 @@ public final class Java2dModelExample
 		frame.setVisible( true );
 	}
 
-	private static Object3D createCube( final double size )
+	public static Object3D createCube( final double size )
 	{
 		final Vector3D lfb = Vector3D.INIT.set( -size , -size , -size );
 		final Vector3D rfb = Vector3D.INIT.set(  size , -size , -size );
@@ -78,29 +78,12 @@ public final class Java2dModelExample
 		final Vector3D rbt = Vector3D.INIT.set(  size ,  size ,  size );
 		final Vector3D lbt = Vector3D.INIT.set( -size ,  size ,  size );
 
-		final TextureSpec red = new TextureSpec();
-		red.code = "red";
-		red.rgb  = Color.red.getRGB();
-
-		final TextureSpec magenta = new TextureSpec();
-		magenta.code = "magenta";
-		magenta.rgb  = Color.magenta.getRGB();
-
-		final TextureSpec blue = new TextureSpec();
-		blue.code = "blue";
-		blue.rgb  = Color.blue.getRGB();
-
-		final TextureSpec cyan = new TextureSpec();
-		cyan.code = "cyan";
-		cyan.rgb  = Color.cyan.getRGB();
-
-		final TextureSpec green = new TextureSpec();
-		green.code = "green";
-		green.rgb  = Color.green.getRGB();
-
-		final TextureSpec yellow = new TextureSpec();
-		yellow.code = "yellow";
-		yellow.rgb  = Color.yellow.getRGB();
+		final TextureSpec red     = new TextureSpec( Color.red     );
+		final TextureSpec magenta = new TextureSpec( Color.magenta );
+		final TextureSpec blue    = new TextureSpec( Color.blue    );
+		final TextureSpec cyan    = new TextureSpec( Color.cyan    );
+		final TextureSpec green   = new TextureSpec( Color.green   );
+		final TextureSpec yellow  = new TextureSpec( Color.yellow  );
 
 		final Object3D cube = new Object3D();
 		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , red     , false ); // Z =  size
