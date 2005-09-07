@@ -61,11 +61,13 @@ public abstract class Abstract3DObjectBuilder
 	 */
 	public void addArc( final Vector3D centerPoint , final double radius , final double startAngle , final double endAngle , final double startWidth , final double endWidth , final Vector3D extrusion , final int stroke , final TextureSpec textureSpec , final boolean fill )
 	{
-		double enclosedAngle = ( endAngle - startAngle );
-		while ( enclosedAngle < 0.0 )
-			enclosedAngle += 2.0 * Math.PI;
+		final double twoPI = 2.0 * Math.PI;
 
-		final int     nrSegments = 32;
+		double enclosedAngle = ( endAngle - startAngle ) % twoPI;
+		if ( enclosedAngle < 0.0 )
+			enclosedAngle += twoPI;
+
+		final int     nrSegments = ( enclosedAngle < Math.PI / 4 ) ? 3 : (int)( ( 32.0 * enclosedAngle ) / twoPI + 0.5 );
 		final double  angleStep  = enclosedAngle / (double)nrSegments;
 		final boolean extruded   = ( extrusion != null ) && !extrusion.almostEquals( Vector3D.INIT );
 
