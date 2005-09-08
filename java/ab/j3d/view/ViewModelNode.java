@@ -64,17 +64,18 @@ public final class ViewModelNode
 	 * rendering objects.
 	 *
 	 * @param   id                  Application-assigned ID of this node.
+	 * @param   transform           Initial transform (<code>null</code> => identity).
 	 * @param   node3D              Root in the 3D scene.
 	 * @param   textureOverride     Texture to use instead of actual textures.
 	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).
 	 */
-	public ViewModelNode( final Object id , final Node3D node3D , final TextureSpec textureOverride , final float opacity )
+	public ViewModelNode( final Object id , final Matrix3D transform , final Node3D node3D , final TextureSpec textureOverride , final float opacity )
 	{
 		_id              = id;
 		_node3D          = node3D;
 		_textureOverride = textureOverride;
 		_opacity         = opacity;
-		_transform       = Matrix3D.INIT;
+		_transform       = ( transform != null ) ? transform : Matrix3D.INIT;
 	}
 
 	/**
