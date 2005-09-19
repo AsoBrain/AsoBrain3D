@@ -28,22 +28,27 @@ package ab.j3d;
  */
 public final class PolyPoint2D
 {
-	public static final double BULDGE_STRAIGHT = 0.0;
-	public static final double BULDGE_90_CW    = Math.tan( -Math.PI / 8.0 );
-	public static final double BULDGE_90_CCW   = Math.tan(  Math.PI / 8.0 );
-	public static final double BULDGE_180_CW   = Math.tan( -Math.PI / 4.0 );
-	public static final double BULDGE_180_CCW  = Math.tan(  Math.PI / 4.0 );
-	public static final double BULDGE_270_CW   = Math.tan( -Math.PI * 3.0 / 8.0 );
-	public static final double BULDGE_270_CCW  = Math.tan(  Math.PI * 3.0 / 8.0 );
-	public static final double BULDGE_360_CW   = -1.0;
-	public static final double BULDGE_360_CCW  =  1.0;
+	/**
+	 * Half {@link Math#PI} value.
+	 */
+	private static final double HALF_PI = Math.PI / 2.0;
+
+	public static final double BULGE_STRAIGHT = 0.0;
+	public static final double BULGE_90_CW    = Math.tan( -Math.PI / 8.0 );
+	public static final double BULGE_90_CCW   = Math.tan(  Math.PI / 8.0 );
+	public static final double BULGE_180_CW   = Math.tan( -Math.PI / 4.0 );
+	public static final double BULGE_180_CCW  = Math.tan(  Math.PI / 4.0 );
+	public static final double BULGE_270_CW   = Math.tan( -Math.PI * 3.0 / 8.0 );
+	public static final double BULGE_270_CCW  = Math.tan(  Math.PI * 3.0 / 8.0 );
+	public static final double BULGE_360_CW   = -1.0;
+	public static final double BULGE_360_CCW  =  1.0;
 
 	/**
 	 * Tolerance for almostEquals() method.
 	 *
 	 * @see     #almostEquals
 	 */
-	public static final double ALMOST = 0.0001;
+	public static final double ALMOST = 0.001;
 
 	/**
 	 * X coordinate of control point.
@@ -215,13 +220,13 @@ public final class PolyPoint2D
 		if ( bulge >= 1.0 )
 		{
 			segmentCount        = 4;
-			angleIncrement      = Math.PI / 2.0;
+			angleIncrement      = HALF_PI;
 			bezierSegmentLength = 0.5522847498307933;
 		}
 		else if ( bulge <= -1.0 )
 		{
 			segmentCount        = 4;
-			angleIncrement      = -Math.PI / 2.0;
+			angleIncrement      = -HALF_PI;
 			bezierSegmentLength = -0.5522847498307933;
 		}
 		else
@@ -229,7 +234,6 @@ public final class PolyPoint2D
 			segmentCount        = (int)Math.ceil( Math.abs( includedAngle ) );
 			angleIncrement      = includedAngle / (double)segmentCount;
 			bezierSegmentLength = 4.0 / 3.0 * Math.sin( angleIncrement / 2.0 ) / ( 1.0 + Math.cos( angleIncrement / 2.0  ) );
-
 		}
 
 		if ( ( segmentCount == 0 ) || ( bezierSegmentLength == 0 ) )
@@ -250,11 +254,12 @@ public final class PolyPoint2D
 				final double halfChordLength = chordLength / 2.0;
 				final double arcHeight       = halfChordLength * bulge;
 
-				radius = ( halfChordLength * halfChordLength + arcHeight * arcHeight ) / ( 2.0 * arcHeight );
+				final double signedRadius = ( halfChordLength * halfChordLength + arcHeight * arcHeight ) / ( 2.0 * arcHeight );
 
-				final double apothemLength = ( radius - arcHeight );
+				final double apothemLength = ( signedRadius - arcHeight );
 				final double tanApothem    = apothemLength / chordLength;
 
+				radius  = Math.abs( signedRadius );
 				centerX = chordMidX - tanApothem * chordDeltaY;
 				centerY = chordMidY + tanApothem * chordDeltaX;
 			}
