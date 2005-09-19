@@ -2940,7 +2940,7 @@ public final class Polyline2D
 		final int pointCount = getPointCount();
 		if ( pointCount > 0 )
 		{
-			final PolyPoint2D p1 = getPoint( 0 );
+			PolyPoint2D p1 = getPoint( 0 );
 			result.moveTo( (float)p1.x , (float)p1.y );
 
 			for ( int i = 1 ; i < pointCount ; i++ )
@@ -2955,12 +2955,13 @@ public final class Polyline2D
 						                (float)curves[ j + 2 ] , (float)curves[ j + 3 ] ,
 						                (float)curves[ j + 4 ] , (float)curves[ j + 5 ] );
 					}
-
 				}
 				else
 				{
 					result.lineTo( (float)p2.x , (float)p2.y );
 				}
+
+				p1 = p2;
 			}
 		}
 
