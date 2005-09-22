@@ -24,6 +24,7 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Iterator;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
@@ -608,6 +609,35 @@ public abstract class ViewModel
 		{
 			final ViewModelView view = (ViewModelView) _views.get( i );
 			view.update();
+		}
+	}
+
+	/**
+	 * Add a {@link NodeSelectionListener} to all the views this ViewModel
+	 * currently has. Any views added later do not listen to selection events.
+	 *
+	 * @param   listener    The {@link NodeSelectionListener} to add
+	 */
+	public void addSelectionListener( final NodeSelectionListener listener )
+	{
+		for ( Iterator iter = _views.iterator() ; iter.hasNext() ; )
+		{
+			/*@FIXME: Only existing views now add the selection listener */
+			final ViewModelView view = (ViewModelView) iter.next();
+			view.getSelectionSupport().addSelectionListener( listener );
+		}
+	}
+
+	/**
+	 * Remove a {@link NodeSelectionListener} from all views.
+	 * @param   listener    The listener to remove
+	 */
+	public void removeSelectionListener( final NodeSelectionListener listener )
+	{
+		for ( Iterator iter = _views.iterator() ; iter.hasNext() ; )
+		{
+			final ViewModelView view = (ViewModelView) iter.next();
+			view.getSelectionSupport().removeSelectionListener( listener );
 		}
 	}
 }

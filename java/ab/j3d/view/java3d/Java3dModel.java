@@ -24,7 +24,12 @@ import java.awt.Component;
 import java.util.HashMap;
 import java.util.Map;
 import javax.media.j3d.BranchGroup;
+import javax.media.j3d.Group;
+import javax.media.j3d.Node;
+import javax.media.j3d.Shape3D;
 import javax.media.j3d.TransformGroup;
+
+import com.sun.j3d.utils.picking.PickTool;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
@@ -117,6 +122,7 @@ public final class Java3dModel
 		final BranchGroup nodeRoot = new BranchGroup();
 		nodeRoot.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
 		nodeRoot.setCapability( BranchGroup.ALLOW_DETACH );
+		nodeRoot.setUserData( id );
 		_nodeContentMap.put( id , nodeRoot );
 
 		final TransformGroup nodeTransform = new TransformGroup();
@@ -152,6 +158,12 @@ public final class Java3dModel
 
 		final BranchGroup bg = Shape3DBuilder.createBranchGroup( nodes , textureOverride , opacity );
 
+		/* @FIXME: Because Java3D does not allow use of the getParent() method for a live scene, a node now has the parent in it's user data. This will be fixed in j3d 1.4. */
+		final BranchGroup rootNode = getJava3dNode( id );
+		updateChildren( rootNode );
+		updateChildren( bg );
+		bg.setUserData( rootNode.getChild( 0 ) );
+
 		/*
 		 * Attach content to scene graph (replace existing branch group).
 		 */
@@ -161,6 +173,37 @@ public final class Java3dModel
 			nodeTransform.addChild( bg );
 		else
 			nodeTransform.setChild( bg , 0 );
+	}
+
+	/**
+	 * Walks through the children of a group, and sets the parent as the user
+	 * object. This is necessary because Java3D 1.3 does not allow the use of
+	 * getParent() on a live scene.<br> If one of the children of
+	 * <code>group</code> is a Group itself, this method is called on that group as
+	 * well, so the tree is traversed recursively. If the child is a Shape3D, it it
+	 * set to allow intersection. This is required for picking an object.
+	 *
+	 * @param group The {@link Group} object for which the children must be
+	 *              updated.
+	 *
+	 * @see Java3dSelectionSupport
+	 */
+	private void updateChildren( final Group group )
+	{
+		for ( int i = 0; i < group.numChildren(); i++ )
+		{
+			final Node node = group.getChild( i );
+
+			node.setUserData( group );
+			if ( node instanceof Group )
+			{
+				updateChildren( (Group)node );
+			}
+			else if ( node instanceof Shape3D )
+			{
+				PickTool.setCapabilities( node, PickTool.INTERSECT_FULL );
+			}
+		}
 	}
 
 	public void removeNode( final Object id )

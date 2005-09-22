@@ -31,6 +31,8 @@ import ab.j3d.Matrix3D;
 import ab.j3d.view.DragSupport;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModelView;
+import ab.j3d.view.SelectionSupport;
+import ab.j3d.view.NodeSelectionListener;
 
 /**
  * Java 3D implementation of view model view.
@@ -87,6 +89,13 @@ public final class Java3dView
 	private Transform3D _transform3d = new Transform3D();
 
 	/**
+	 * The JAva3D Selection support for this view.
+	 * {@link NodeSelectionListener}s can register themselves to receive events
+	 * when a node is selected
+	 */
+	private Java3dSelectionSupport _selectionSupport;
+
+	/**
 	 * Construct view node using Java3D for rendering.
 	 *
 	 * @param   universe        Java3D universe for which the view is created.
@@ -116,11 +125,22 @@ public final class Java3dView
 		 */
 		update();
 
+		_selectionSupport = new Java3dSelectionSupport( _canvas , _universe);
+
 		/*
 		 * Add DragSupport to handle drag events.
 		 */
 		final DragSupport ds = new DragSupport( _canvas , universe.getUnit() );
 		ds.addDragListener( viewControl );
+	}
+
+	/**
+	 * Returns the {@link SelectionSupport} for this view.
+	 * @return The {@link SelectionSupport} for this view.
+	 */
+	public SelectionSupport getSelectionSupport()
+	{
+		return _selectionSupport;
 	}
 
 	public Component getComponent()

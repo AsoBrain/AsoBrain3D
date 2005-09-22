@@ -33,6 +33,7 @@ import ab.j3d.model.Object3D;
 import ab.j3d.view.DragSupport;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModelView;
+import ab.j3d.view.SelectionSupport;
 
 /**
  * Java 2D implementation of view model view.
@@ -212,6 +213,16 @@ public final class Java2dView
 		 */
 		final DragSupport ds = new DragSupport( viewComponent , 0.001 );
 		ds.addDragListener( viewControl );
+	}
+
+	/**
+	 * Returns the {@link SelectionSupport} for this view.
+	 * @return The {@link SelectionSupport} for this view.
+	 */
+	public SelectionSupport getSelectionSupport()
+	{
+		/*@FIXME: Create SelectionSupport class for 2D view */
+		return null;
 	}
 
 	public Component getComponent()

@@ -231,4 +231,10 @@ public abstract class ViewModelView
 	 *                      {@link #SKETCH}, or {@link #WIREFRAME}).
 	 */
 	public abstract void setRenderingPolicy( final int policy );
+
+	/**
+	 * Returns the SelectionSupport of this view.
+	 * @return  This view's selectionsupport
+	 */
+	public abstract SelectionSupport getSelectionSupport();
 }

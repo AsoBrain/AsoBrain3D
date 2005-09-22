@@ -221,7 +221,12 @@ public final class Java3dTools
 			final Point3f[] pCoords = (Point3f[])vCoords.toArray( new Point3f[ vCoords.size() ] );
 			quadArray.setCoordinates( 0 , pCoords );
 
-			group.addChild( new Shape3D( quadArray , appearance ) );
+			final Shape3D child = new Shape3D( quadArray , appearance );
+
+			/*@FIXME dirty hack to prevent "Intesection not allowed" exceptions when checking for mouseclicks */
+			child.setPickable( false );
+
+			group.addChild( child );
 		}
 		return group;
 	}
