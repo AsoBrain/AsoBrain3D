@@ -24,10 +24,13 @@ import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JFrame;
 
+import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Object3D;
 import ab.j3d.view.FromToViewControl;
+import ab.j3d.view.NodeSelectionEvent;
+import ab.j3d.view.NodeSelectionListener;
 import ab.j3d.view.ViewModel;
 
 import com.numdata.oss.ui.WindowTools;
@@ -40,6 +43,7 @@ import com.numdata.oss.ui.WindowTools;
  */
 public final class Java3dModelExample
 {
+
 	/**
 	 * Utility/Application class is not supposed to be instantiated.
 	 */
@@ -56,15 +60,30 @@ public final class Java3dModelExample
 	{
 		final ViewModel viewModel = new Java3dModel();
 
-		final Object3D cube = createCube( 100.0 );
-		viewModel.createNode( "cube" , cube , null , 1.0f );
+		final Object3D cube1 = createCube( 100.0 );
+		Matrix3D transform1 = Matrix3D.getTransform( 225, 0, 90, 0, 100, 0);
+		viewModel.createNode( "cube1" , transform1 , cube1 , null , 1.0f );
 
-		final Vector3D  viewFrom = Vector3D.INIT.set( 0.0 , -800.0 , 0.0 );
+		final Object3D cube2 = createCube( 75.0 );
+		Matrix3D transform2 = Matrix3D.getTransform( 0, 225, 90, -250, 50, 0);
+		viewModel.createNode( "cube2" , transform2 , cube2 , null , 1.0f );
+
+		final Object3D cube3 = createCube( 50.0 );
+		Matrix3D transform3 = Matrix3D.getTransform( 90, 0, 315, 225, 0, 0);
+		viewModel.createNode( "cube3" , transform3 , cube3 , null , 1.0f );
+
+		final Vector3D  viewFrom = Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 );
 		final Vector3D  viewAt   = Vector3D.INIT;
 		final Component view     = viewModel.createView( "view" , new FromToViewControl( viewFrom , viewAt ) );
 
 		final JFrame frame = WindowTools.createFrame( "Java 3D Model Example" , 800 , 600 , view );
 		frame.setVisible( true );
+
+		viewModel.addSelectionListener(new NodeSelectionListener() {
+			public void nodeSelected(NodeSelectionEvent e){
+				System.out.println( "Node selected. Id: " + e.getNodeID().toString() );
+			}
+		} );
 	}
 
 	private static Object3D createCube( final double size )
