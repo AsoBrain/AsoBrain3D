@@ -130,6 +130,7 @@ public final class Java3dModel
 		nodeTransform.setCapability( TransformGroup.ALLOW_CHILDREN_WRITE );
 		nodeTransform.setCapability( TransformGroup.ALLOW_CHILDREN_EXTEND );
 		nodeTransform.setCapability( TransformGroup.ALLOW_TRANSFORM_WRITE );
+		nodeTransform.setUserData( nodeRoot );
 		nodeRoot.addChild( nodeTransform );
 
 		_contentGraph.addChild( nodeRoot );
@@ -158,11 +159,9 @@ public final class Java3dModel
 
 		final BranchGroup bg = Shape3DBuilder.createBranchGroup( nodes , textureOverride , opacity );
 
-		/* @FIXME: Because Java3D does not allow use of the getParent() method for a live scene, a node now has the parent in it's user data. This will be fixed in j3d 1.4. */
-		final BranchGroup rootNode = getJava3dNode( id );
-		updateChildren( rootNode );
+		/* @FIXME: Because Java3D does not allow use of the getParent() method for a live scene, a node now has the parent in its user data. This will be fixed in j3d 1.4. */
 		updateChildren( bg );
-		bg.setUserData( rootNode.getChild( 0 ) );
+		bg.setUserData( nodeTransform );
 
 		/*
 		 * Attach content to scene graph (replace existing branch group).
