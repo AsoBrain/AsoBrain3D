@@ -29,6 +29,7 @@ import java.awt.image.BufferedImage;
 import javax.swing.JComponent;
 
 import ab.j3d.Bounds3D;
+import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Light3D;
@@ -127,12 +128,12 @@ public class RenderPanel
 		world.addChild( ambientLight );
 
 		final Light3D pointLight = new Light3D( 10000 , 30.0 );
-		final Transform3D pointLightTransform = new Transform3D( Vector3D.INIT.set( -750.0 , -2500.0 , 1700.0 ) );
+		final Transform3D pointLightTransform = new Transform3D( Matrix3D.getTransform( 0.0 , 0.0 , 0.0 , -750.0 , -2500.0 , 1700.0 ) );
 		world.addChild( pointLightTransform );
 		pointLightTransform.addChild( pointLight );
 
 		final Camera3D camera = new Camera3D( 300.0 , 60.0 );
-		final Transform3D cameraTransform = new Transform3D( Vector3D.INIT.set( 0.0 , -3000.0 , 0.0 ) );
+		final Transform3D cameraTransform = new Transform3D( Matrix3D.getTransform( 0.0 , 0.0 , 0.0 , 0.0 , -3000.0 , 0.0 ) );
 		cameraTransform .addChild( camera );
 		world.addChild( cameraTransform );
 		_camera = camera;
@@ -278,11 +279,11 @@ public class RenderPanel
 	 */
 	public final void center()
 	{
-		final Transform3D model       = _model;
-		final Bounds3D    bounds      = _bounds;
-		final Vector3D    translation = model.getTranslation();
+		final Transform3D model     = _model;
+		final Bounds3D    bounds    = _bounds;
+		final Matrix3D    transform = model.getTransform();
 
-		model.setTranslation( translation.set(
+		model.setTransform( transform.setTranslation(
 			-0.5 * ( bounds.v1.x + bounds.v2.x ) ,
 			-0.5 * ( bounds.v1.y + bounds.v2.y ) ,
 			-0.5 * ( bounds.v1.z + bounds.v2.z ) ) );
@@ -327,7 +328,7 @@ public class RenderPanel
 	 * This method is called by {@link #startRenderer}
 	 *
 	 * @return  Render thread instance (never <code>null</code>).
-	 */ 
+	 */
 	protected RenderThread createRenderThread()
 	{
 		return new RenderThread( this , getCamera() );
@@ -376,7 +377,7 @@ public class RenderPanel
 		final RenderThread renderThread = _renderThread;
 		if ( renderThread != null )
 		{
-			_modelTransform.setMatrix( _dragSupport.getTransform() );
+			_modelTransform.setTransform( _dragSupport.getTransform() );
 //			System.out.println( "_modelTransform.getMatrix() = " + _modelTransform.getMatrix().toFriendlyString() );
 			renderThread.requestUpdate();
 			repaint();
@@ -441,7 +442,7 @@ public class RenderPanel
 
 	public void dragTo( final DragEvent event )
 	{
-		_modelTransform.setMatrix( _dragSupport.getTransform() );
+		_modelTransform.setTransform( _dragSupport.getTransform() );
 		requestUpdate();
 	}
 
