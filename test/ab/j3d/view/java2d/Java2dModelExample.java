@@ -20,17 +20,7 @@
  */
 package ab.j3d.view.java2d;
 
-import java.awt.Color;
-import java.awt.Component;
-import javax.swing.JFrame;
-
-import ab.j3d.TextureSpec;
-import ab.j3d.Vector3D;
-import ab.j3d.model.Object3D;
-import ab.j3d.view.FromToViewControl;
-import ab.j3d.view.ViewModel;
-
-import com.numdata.oss.ui.WindowTools;
+import ab.j3d.view.ViewModelExample;
 
 /**
  * Example program for the Java 2D view model implementation.
@@ -39,12 +29,14 @@ import com.numdata.oss.ui.WindowTools;
  * @version $Revision$ $Date$
  */
 public final class Java2dModelExample
+	extends ViewModelExample
 {
 	/**
-	 * Utility/Application class is not supposed to be instantiated.
+	 * Construct application.
 	 */
 	private Java2dModelExample()
 	{
+		super( new Java2dModel() );
 	}
 
 	/**
@@ -54,45 +46,7 @@ public final class Java2dModelExample
 	 */
 	public static void main( final String[] args )
 	{
-		final ViewModel viewModel = new Java2dModel();
-
-		final Object3D cube = createCube( 100.0 );
-		viewModel.createNode( "cube" , cube , null , 1.0f );
-
-		final Vector3D  viewFrom = Vector3D.INIT.set( 0.0 , -800.0 , 0.0 );
-		final Vector3D  viewAt   = Vector3D.INIT;
-		final Component view     = viewModel.createView( "view" , new FromToViewControl( viewFrom , viewAt ) );
-
-		final JFrame frame = WindowTools.createFrame( "Java 3D Model Example" , 800 , 600 , view );
-		frame.setVisible( true );
+		new Java2dModelExample();
 	}
 
-	public static Object3D createCube( final double size )
-	{
-		final Vector3D lfb = Vector3D.INIT.set( -size , -size , -size );
-		final Vector3D rfb = Vector3D.INIT.set(  size , -size , -size );
-		final Vector3D rbb = Vector3D.INIT.set(  size ,  size , -size );
-		final Vector3D lbb = Vector3D.INIT.set( -size ,  size , -size );
-		final Vector3D lft = Vector3D.INIT.set( -size , -size ,  size );
-		final Vector3D rft = Vector3D.INIT.set(  size , -size ,  size );
-		final Vector3D rbt = Vector3D.INIT.set(  size ,  size ,  size );
-		final Vector3D lbt = Vector3D.INIT.set( -size ,  size ,  size );
-
-		final TextureSpec red     = new TextureSpec( Color.red     );
-		final TextureSpec magenta = new TextureSpec( Color.magenta );
-		final TextureSpec blue    = new TextureSpec( Color.blue    );
-		final TextureSpec cyan    = new TextureSpec( Color.cyan    );
-		final TextureSpec green   = new TextureSpec( Color.green   );
-		final TextureSpec yellow  = new TextureSpec( Color.yellow  );
-
-		final Object3D cube = new Object3D();
-		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , red     , false ); // Z =  size
-		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , green   , false ); // Z = -size
-		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , cyan    , false ); // Y = -size
-		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , magenta , false ); // Y =  size
-		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , yellow  , false ); // X = -size
-		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , blue    , false ); // X =  size
-
-		return cube;
-	}
 }
