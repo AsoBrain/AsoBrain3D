@@ -20,12 +20,6 @@
  */
 package ab.j3d.model;
 
-import java.awt.Color;
-import java.awt.GradientPaint;
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.geom.Ellipse2D;
-
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 
@@ -163,60 +157,4 @@ public final class Sphere3D
 			}
 		}
 	}
-
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
-	{
-		final double dx = this.dx;
-		if ( Matrix3D.almostEqual( dx , dy )
-		  && Matrix3D.almostEqual( dx , dz ) )
-		{
-			final Matrix3D viewBase          = xform.multiply( viewTransform );
-			final Matrix3D combinedTransform = viewBase.multiply( gTransform );
-
-			final float x = (float)combinedTransform.xo;
-			final float y = (float)combinedTransform.yo;
-
-			final float r;
-			{
-				final double xx = combinedTransform.xx;
-				final double xy = combinedTransform.xy;
-				final double xz = combinedTransform.xz;
-
-				r = (float)( 0.5 * dx * Math.sqrt( xx * xx + xy * xy + xz * xz ) );
-			}
-
-			final Ellipse2D shape = Matrix3D.almostEqual( (double)r , 0.0 ) ? null : new Ellipse2D.Float( x - r , y - r , r + r , r + r );
-
-			if ( fillPaint != null )
-			{
-				final Paint paint;
-				if ( ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ))
-				{
-					final float goldenRatio = 0.6180339f;
-					final float highlight   = ( goldenRatio - 0.5f ) * r;
-
-					paint = new GradientPaint( x + highlight , y - highlight , (Color)fillPaint , x -r , y + r , (Color)outlinePaint , true );
-				}
-				else
-				{
-					paint = fillPaint;
-				}
-
-				g.setPaint( paint );
-				g.fill( shape );
-			}
-
-			if ( outlinePaint != null )
-			{
-				g.setPaint( outlinePaint );
-				g.draw( shape );
-			}
-		}
-		else
-		{
-			// Not painted, paint fully.
-			super.paint( g , gTransform , viewTransform , outlinePaint , fillPaint , shadeFactor );
-		}
-	}
-
 }
