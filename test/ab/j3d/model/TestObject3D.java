@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2005 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,17 +22,18 @@ package ab.j3d.model;
 
 import junit.framework.TestCase;
 
+import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 
 /**
- * This class tests the <code>Object3D</code> class.
+ * This class tests the {@link Object3D} class.
  *
  * @see     Object3D
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public class TestObject3D
+public final class TestObject3D
     extends TestCase
 {
 	/**
@@ -41,15 +42,11 @@ public class TestObject3D
 	private static final String CLASS_NAME = TestObject3D.class.getName();
 
 	/**
-	 * Test <code>Object3D.addFace()</code> method.
-	 *
-	 * @throws  Exception if the test fails.
-	 *
-	 * @see     Object3D#addFace
+	 * Test {@link Object3D#addFace(Vector3D[], TextureSpec, boolean, boolean)}
+	 * method.
 	 */
-	public void testAddFace()
-		throws Exception
-	{
+	public static void testAddFace()
+    {
 		System.out.println( CLASS_NAME + ".testAddFace" );
 
 		final Vector3D[] points =
@@ -64,7 +61,7 @@ public class TestObject3D
 		assertEquals( "[pre] faceCount" , 0 , obj3d.getFaceCount() );
 		assertEquals( "[pre] totalVertexCount" , 0 , obj3d.getPointCount() );
 
-		obj3d.addFace( points , null , false );
+		obj3d.addFace( points , null , false , false );
 		assertEquals( "[post] faceCount" , 1 , obj3d.getFaceCount() );
 		assertEquals( "[post] totalVertexCount" , 4 , obj3d.getPointCount() );
 
@@ -78,14 +75,9 @@ public class TestObject3D
 	}
 
 	/**
-	 * Test <code>Object3D.getFaceNormals()</code> method.
-	 *
-	 * @throws  Exception if the test fails.
-	 *
-	 * @see     Object3D#getFaceNormals
+	 * Test {@link Object3D#getFaceNormals()} method.
 	 */
-	public void testGetFaceNormals()
-		throws Exception
+	public static void testGetFaceNormals()
 	{
 		System.out.println( CLASS_NAME + ".testGetFaceNormals" );
 
@@ -99,12 +91,12 @@ public class TestObject3D
 		final Vector3D lbt = Vector3D.INIT.set( -1.0 ,  1.0 ,  1.0 );
 
 		final Object3D cube = new Object3D();
-		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , false );
-		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , null , false );
-		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , null , false );
-		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , null , false );
-		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , false );
-		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , false );
+		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , false , false );
+		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , null , false , false );
+		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , null , false , false );
+		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , null , false , false );
+		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , false , false );
+		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , false , false );
 
 		final double[] faceNormals = cube.getFaceNormals();
 
@@ -134,14 +126,9 @@ public class TestObject3D
 	}
 
 	/**
-	 * Test <code>Object3D.getOrAddPointIndex()</code> method.
-	 *
-	 * @throws  Exception if the test fails.
-	 *
-	 * @see     Object3D#getOrAddPointIndex
+	 * Test {@link Object3D#getOrAddPointIndex(double, double, double)} method.
 	 */
-	public void testGetOrAddPointIndex()
-		throws Exception
+	public static void testGetOrAddPointIndex()
 	{
 		System.out.println( CLASS_NAME + ".testGetOrAddPointIndex" );
 
@@ -165,9 +152,7 @@ public class TestObject3D
 	}
 
 	/**
-	 * Test <code>Object3D.getRangeAdjustment()</code> method.
-	 *
-	 * @see Object3D#getRangeAdjustment
+	 * Test {@link Object3D#getRangeAdjustment(int, int)} method.
 	 */
 	public static void testGetRangeAdjustment()
 	{
@@ -201,14 +186,9 @@ public class TestObject3D
 	}
 
 	/**
-	 * Test <code>Object3D.getVertexNormals()</code> method.
-	 *
-	 * @throws  Exception if the test fails.
-	 *
-	 * @see     Object3D#getVertexNormals
+	 * Test {@link Object3D#getVertexNormals()} method.
 	 */
-	public void testGetVertexNormals()
-		throws Exception
+	public static void testGetVertexNormals()
 	{
 		System.out.println( CLASS_NAME + ".testGetVertexNormals" );
 
@@ -222,12 +202,12 @@ public class TestObject3D
 		final Vector3D lbt = Vector3D.INIT.set( -1.0 ,  1.0 ,  1.0 );
 
 		final Object3D cube = new Object3D();
-		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , false );
-		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , null , false );
-		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , null , false );
-		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , null , false );
-		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , false );
-		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , false );
+		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , false , false );
+		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , null , false , false );
+		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , null , false , false );
+		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , null , false , false );
+		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , false , false );
+		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , false , false );
 
 		final double e = Math.sqrt( 3.0 ) / 3.0;
 
