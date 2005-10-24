@@ -21,7 +21,6 @@
 package ab.j3d.model;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +86,6 @@ public class Object3D
 	 * Outline color to use when this object is painted using Java 2D. If this
 	 * is set to <code>null</code>, the object outline will not be painted.
 	 *
-	 * @see     #paint
 	 * @see     #fillPaint
 	 * @see     #alternateOutlinePaint
 	 */
@@ -97,7 +95,6 @@ public class Object3D
 	 * Fill color to use when this object is painted using Java 2D. If this is
 	 * set to <code>null</code>, the object faces will not be filled.
 	 *
-	 * @see     #paint
 	 * @see     #outlinePaint
 	 * @see     #alternateFillPaint
 	 */
@@ -106,19 +103,14 @@ public class Object3D
 	/**
 	 * Amount of shading that may be applied (0=none, 1=extreme) when this
 	 * object is painted using Java 2D.
-	 *
-	 * @see     #paint
 	 */
 	public float shadeFactor;
 
 	/**
 	 * Alternate outline color to use when this object is painted using Java 2D.
-	 * This is used when the <code>alternateAppearance</code> argument of the
-	 * <code>paint()</code> method is set. If this is set to <code>null</code>,
-	 * the object outline will not be painted when the
-	 * <code>alternateAppearance</code> argument is set.
+	 * If this is set to <code>null</code>, the object outline will not be
+	 * painted.
 	 *
-	 * @see     #paint
 	 * @see     #alternateFillPaint
 	 * @see     #outlinePaint
 	 */
@@ -126,21 +118,12 @@ public class Object3D
 
 	/**
 	 * Alternate fill color to use when this object is painted using Java 2D.
-	 * This is used when the <code>alternateAppearance</code> argument of the
-	 * <code>paint()</code> method is set. If this is set to <code>null</code>,
-	 * the object faces will not be filled when the
-	 * <code>alternateAppearance</code> argument is set.
+	 * If this is set to <code>null</code>, the object faces will not be filled.
 	 *
-	 * @see     #paint
 	 * @see     #alternateOutlinePaint
 	 * @see     #fillPaint
 	 */
 	public Paint alternateFillPaint;
-
-	/**
-	 * This is used as cache storage for paint(Graphics2D,Matrix3D,Matrix3D).
-	 */
-	private static double[] _paintPointCoordsCache;
 
 	/**
 	 * Construct base object. Additional properties need to be set to make the
@@ -160,8 +143,6 @@ public class Object3D
 		shadeFactor           = 0.5f;
 		alternateOutlinePaint = Color.blue;
 		alternateFillPaint    = Color.white;
-
-		_paintPointCoordsCache = null;
 	}
 
 	/**
@@ -171,7 +152,7 @@ public class Object3D
 	 * the state after calling the default constructor. However, internal
 	 * cache/buffers are preserved to reduce memory fragmentation.
 	 */
-	public void clear()
+	public final void clear()
 	{
 		_faces.clear();
 		_pointCoords  = null;
@@ -427,7 +408,7 @@ public class Object3D
 	 *
 	 * @return  The index of the point.
 	 */
-	public int getOrAddPointIndex( final double x , final double y , final double z )
+	public final int getOrAddPointIndex( final double x , final double y , final double z )
 	{
 		final double[] pointCoords = getPointCoords();
 		final int      pointCount  = getPointCount();
@@ -509,16 +490,6 @@ public class Object3D
 	}
 
 	/**
-	 * Get number of faces in the model.
-	 *
-	 * @return  Number of faces.
-	 */
-	public final int getFaceCount()
-	{
-		return _faces.size();
-	}
-
-	/**
 	 * Get face with the specified index.
 	 *
 	 * @param   index   Index of face to retrieve.
@@ -531,7 +502,47 @@ public class Object3D
 	}
 
 	/**
-	 * Add a face to this <code>Object3D</code>.
+	 * Get index of the specified face.
+	 *
+	 * @param   face    Face to get index of (may be <code>null</code>).
+	 *
+	 * @return  Index of face;
+	 *          -1 if the face is not part of this object.
+	 */
+	public final int getFaceIndex( final Face3D face )
+	{
+		int result = -1;
+
+		if ( ( face != null ) && ( face.getObject() == this ) )
+		{
+			final List faces = _faces;
+
+			for ( int i = 0 ; i < faces.size() ; i++ )
+			{
+				if ( face == faces.get( i ) )
+				{
+					result = i;
+					break;
+				}
+
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Get number of faces in the model.
+	 *
+	 * @return  Number of faces.
+	 */
+	public final int getFaceCount()
+	{
+		return _faces.size();
+	}
+
+	/**
+	 * Add a face to this object.
 	 *
 	 * @param   face    Face to add.
 	 */
@@ -560,36 +571,6 @@ public class Object3D
 	 * @param   pointIndices    Point indices of added face. These indices refer
 	 *                          to points previously defined in this object.
 	 * @param   texture         Texture to apply to the face.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   hasBackface     Flag to indicate if face has a backface.
-	 */
-	public final void addFace( final int[] pointIndices , final TextureSpec texture , final boolean smooth , final boolean hasBackface )
-	{
-		addFace( pointIndices , texture , null , null , 1.0f , smooth , hasBackface );
-	}
-
-	/**
-	 * Add face to this object.
-	 *
-	 * @param   pointIndices    Point indices of added face. These indices refer
-	 *                          to points previously defined in this object.
-	 * @param   texture         Texture to apply to the face.
-	 * @param   textureU        Horizontal texture coordinates (<code>null</code> = none).
-	 * @param   textureV        Vertical texture coordinates (<code>null</code> = none).
-	 * @param   opacity         Opacity of face (0=transparent, 1=opaque).
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 */
-	public final void addFace( final int[] pointIndices , final TextureSpec texture , final int[] textureU , final int[] textureV , final float opacity , final boolean smooth )
-	{
-		addFace( new Face3D( this , pointIndices , texture , textureU , textureV , opacity , smooth , false ) );
-	}
-
-	/**
-	 * Add face to this object.
-	 *
-	 * @param   pointIndices    Point indices of added face. These indices refer
-	 *                          to points previously defined in this object.
-	 * @param   texture         Texture to apply to the face.
 	 * @param   textureU        Horizontal texture coordinates (<code>null</code> = none).
 	 * @param   textureV        Vertical texture coordinates (<code>null</code> = none).
 	 * @param   opacity         Opacity of face (0=transparent, 1=opaque).
@@ -599,18 +580,6 @@ public class Object3D
 	public final void addFace( final int[] pointIndices , final TextureSpec texture , final int[] textureU , final int[] textureV , final float opacity , final boolean smooth , final boolean hasBackface )
 	{
 		addFace( new Face3D( this , pointIndices , texture , textureU , textureV , opacity , smooth , hasBackface ) );
-	}
-
-	/**
-	 * Add face to this object.
-	 *
-	 * @param   points          Points that define the face.
-	 * @param   texture         Texture to apply to the face.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 */
-	public final void addFace( final Vector3D[] points , final TextureSpec texture , final boolean smooth )
-	{
-		addFace( points , texture , null , null , 1.0f , smooth , false );
 	}
 
 	/**
@@ -745,105 +714,5 @@ public class Object3D
 			result = -value + ( value % range );
 		}
 		return result;
-	}
-
-	/**
-	 * This implementation will use the <code>outlinePaint</code>,
-	 * <code>fillPaint</code>, and <code>shadeFactor</code> to render the object,
-	 * unless the <code>alternateAppearance</code> flag is set, in which case the
-	 * <code>alternateOutlinePaint</code> and <code>alternateFillPaint</code>
-	 * will be used.
-	 *
-	 * @param   g                       Graphics2D context.
-	 * @param   gTransform              Projection transform for Graphics2D context (3D->2D, pan, sale).
-	 * @param   viewTransform           Transformation from object's to view coordinate system.
-	 * @param   alternateAppearance     Use alternate appearance.
-	 *
-	 * @see     #outlinePaint
-	 * @see     #fillPaint
-	 * @see     #shadeFactor
-	 * @see     #alternateOutlinePaint
-	 * @see     #alternateFillPaint
-	 */
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final boolean alternateAppearance )
-	{
-		paint( g , gTransform , viewTransform , alternateAppearance ? alternateOutlinePaint : outlinePaint , alternateAppearance ? alternateFillPaint : fillPaint , shadeFactor );
-	}
-
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
-	{
-		final int faceCount = getFaceCount();
-
-		if ( ( g != null )
-		  && ( gTransform != null )
-		  && ( viewTransform != null )
-		  && ( ( outlinePaint != null ) || ( fillPaint != null ) )
-		  && ( faceCount > 0 ) )
-		{
-			final int pointCount = getPointCount();
-
-			/*
-			 * If the array is to small, create a larger one.
-			 */
-			final double[] pointCoords = viewTransform.transform( _pointCoords , _paintPointCoordsCache , pointCount );
-			_paintPointCoordsCache = pointCoords;
-
-			int maxVertexCount = 0;
-			for ( int faceIndex = 0; faceIndex < faceCount; faceIndex++ )
-			{
-				final Face3D face = getFace( faceIndex );
-				maxVertexCount = Math.max( maxVertexCount , face.getVertexCount() );
-			}
-
-			final int[] xs = new int[ maxVertexCount ];
-			final int[] ys = new int[ maxVertexCount ];
-
-			final double[] faceNormals;
-			final float[]  rgb;
-
-			if ( ( fillPaint instanceof Color ) && ( maxVertexCount > 2 ) && ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) )
-			{
-				faceNormals = getFaceNormals();
-				rgb         = ((Color)fillPaint).getRGBComponents( null );
-			}
-			else
-			{
-				faceNormals = null;
-				rgb     = null;
-			}
-
-			for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
-			{
-				final Face3D face = getFace( faceIndex );
-
-				final Paint faceFillPaint;
-				if ( ( faceNormals != null ) && ( face.getVertexCount() > 2 ) )
-				{
-					/*
-					 * The <code>shadeFactor</code> is used to modify the fill color based on
-					 * the Z component of a face's normal vector. A typical value of
-					 * <code>0.5</code> would render faces pointing towards the Z-axis at 100%,
-					 * and faces perpendicular to the Z-axis at 50%; specifying <code>0.0</code>
-					 * completely disables the effect (always 100%); whilst <code>1.0</code>
-					 * makes faces perpendicular to the Z-axis black (0%).
-					 */
-					final int    normalIndex = faceIndex * 3;
-					final double faceNormalX = faceNormals[ normalIndex ];
-					final double faceNormalY = faceNormals[ normalIndex + 1 ];
-					final double faceNormalZ = faceNormals[ normalIndex + 2 ];
-
-					final float transformedNormalZ = (float)( faceNormalX * viewTransform.zx + faceNormalY * viewTransform.zy + faceNormalZ * viewTransform.zz );
-					final float factor = Math.min( 1.0f , ( 1.0f - shadeFactor ) + shadeFactor * Math.abs( transformedNormalZ ) );
-
-					faceFillPaint = ( factor < 1.0f ) ? new Color( factor * rgb[ 0 ] , factor * rgb[ 1 ] , factor * rgb[ 2 ] , rgb[ 3 ] ) : fillPaint;
-				}
-				else
-				{
-					faceFillPaint = fillPaint;
-				}
-
-				face.paint( g , gTransform , outlinePaint , faceFillPaint , pointCoords , xs , ys );
-			}
-		}
 	}
 }
