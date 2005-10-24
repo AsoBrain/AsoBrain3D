@@ -37,53 +37,6 @@ import ab.j3d.Matrix3D;
 public abstract class ViewModelView
 {
 	/**
-	 * Perspective projection policy constant.
-	 *
-	 * @see     #setProjectionPolicy
-	 */
-	public static final int PERSPECTIVE = 0;
-
-	/**
-	 * Parallel projection policy constant.
-	 *
-	 * @see     #setProjectionPolicy
-	 */
-	public static final int PARALLEL = 1;
-
-	/**
-	 * Projection policy: isometric.
-	 * <p />
-	 * Isometric projection is a parallel projection method that projects the
-	 * view Z-axis onto the rendered X- and Y-axis by using the displacing
-	 * points by the half Z-value 30 degrees relative to the X-axis (top-right).
-	 *
-	 * @see     #setProjectionPolicy
-	 * @see     #ISOMETRIC_X_COMPONENT
-	 * @see     #ISOMETRIC_Y_COMPONENT
-	 */
-	public static final int ISOMETRIC = 2;
-
-	/**
-	 * This constant can be used as default X-component of the Z-axis in
-	 * {@link #ISOMETRIC} projections.
-	 *
-	 * @see     #ISOMETRIC
-	 * @see     #ISOMETRIC_Y_COMPONENT
-	 * @see     #setProjectionPolicy
-	 */
-	public static final double ISOMETRIC_X_COMPONENT = 0.5 * Math.cos( Math.PI / 6.0 );
-
-	/**
-	 * This constant can be used as default Y-component of the Z-axis in
-	 * {@link #ISOMETRIC} projections.
-	 *
-	 * @see     #ISOMETRIC
-	 * @see     #ISOMETRIC_X_COMPONENT
-	 * @see     #setProjectionPolicy
-	 */
-	public static final double ISOMETRIC_Y_COMPONENT = 0.5 * Math.sin( Math.PI / 6.0 );
-
-	/**
 	 * Rendering policy: solid.
 	 * <p />
 	 * This should result in a photorealistic rendering of the scene, taking the
@@ -218,8 +171,9 @@ public abstract class ViewModelView
 	 * Set projection policy of this view.
 	 *
 	 * @param   policy      Projection policy of this view
-	 *                      ({@link #PERSPECTIVE}, {@link #ISOMETRIC}, or
-	 *                      {@link #PARALLEL}).
+	 *                      ({@link Projector#PERSPECTIVE},
+	 *                      {@link Projector#ISOMETRIC}, or
+	 *                      {@link Projector#PARALLEL}).
 	 */
 	public abstract void setProjectionPolicy( final int policy );
 
@@ -233,8 +187,10 @@ public abstract class ViewModelView
 	public abstract void setRenderingPolicy( final int policy );
 
 	/**
-	 * Returns the SelectionSupport of this view.
-	 * @return  This view's selectionsupport
+	 * Returns the {@link SelectionSupport} of this view.
+	 *
+	 * @return  This view's {@link SelectionSupport};
+	 *          <code>null</code> if this view has no selection support.
 	 */
 	public abstract SelectionSupport getSelectionSupport();
 }
