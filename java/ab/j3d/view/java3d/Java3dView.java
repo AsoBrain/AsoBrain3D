@@ -29,10 +29,11 @@ import javax.vecmath.Vector3d;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.view.DragSupport;
+import ab.j3d.view.NodeSelectionListener;
+import ab.j3d.view.Projector;
+import ab.j3d.view.SelectionSupport;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModelView;
-import ab.j3d.view.SelectionSupport;
-import ab.j3d.view.NodeSelectionListener;
 
 /**
  * Java 3D implementation of view model view.
@@ -53,7 +54,7 @@ public final class Java3dView
 	 *
 	 * @see     Java3dUniverse#createView
 	 */
-	private TransformGroup _tg;
+	private final TransformGroup _tg;
 
 	/**
 	 * The <code>View</code> object is what ties all things together that are
@@ -71,29 +72,29 @@ public final class Java3dView
 	 *
 	 * @see     Java3dUniverse#createView
 	 */
-	private Canvas3D _canvas;
+	private final Canvas3D _canvas;
 
 	/**
 	 * Cached <code>Matrix3d</code> instance (used by <code>update()</code).
 	 */
-	private Matrix3d _rotation = new Matrix3d();
+	private final Matrix3d _rotation = new Matrix3d();
 
 	/**
 	 * Cached <code>Vector3d</code> instance (used by <code>update()</code).
 	 */
-	private Vector3d _translation = new Vector3d();
+	private final Vector3d _translation = new Vector3d();
 
 	/**
 	 * Cached <code>Matrix4d</code> instance (used by <code>update()</code).
 	 */
-	private Transform3D _transform3d = new Transform3D();
+	private final Transform3D _transform3d = new Transform3D();
 
 	/**
 	 * The JAva3D Selection support for this view.
 	 * {@link NodeSelectionListener}s can register themselves to receive events
 	 * when a node is selected
 	 */
-	private Java3dSelectionSupport _selectionSupport;
+	private final Java3dSelectionSupport _selectionSupport;
 
 	/**
 	 * Construct view node using Java3D for rendering.
@@ -115,17 +116,16 @@ public final class Java3dView
 		final Canvas3D       canvas = Java3dTools.createCanvas3D();
 		final View           view   = universe.createView( tg , canvas );
 
-		_universe = universe;
-		_tg       = tg;
-		_canvas   = canvas;
-		_view     = view;
+		_universe         = universe;
+		_tg               = tg;
+		_canvas           = canvas;
+		_view             = view;
+		_selectionSupport = new Java3dSelectionSupport( _canvas , _universe );
 
 		/*
 		 * Update view to initial transform.
 		 */
 		update();
-
-		_selectionSupport = new Java3dSelectionSupport( _canvas , _universe);
 
 		/*
 		 * Add DragSupport to handle drag events.
@@ -134,10 +134,6 @@ public final class Java3dView
 		ds.addDragListener( viewControl );
 	}
 
-	/**
-	 * Returns the {@link SelectionSupport} for this view.
-	 * @return The {@link SelectionSupport} for this view.
-	 */
 	public SelectionSupport getSelectionSupport()
 	{
 		return _selectionSupport;
@@ -154,12 +150,12 @@ public final class Java3dView
 
 		switch ( policy )
 		{
-			case PERSPECTIVE :
+			case Projector.PERSPECTIVE :
 				view.setProjectionPolicy( View.PERSPECTIVE_PROJECTION );
 				break;
 
-			case ISOMETRIC :
-			case PARALLEL :
+			case Projector.ISOMETRIC :
+			case Projector.PARALLEL :
 				view.setProjectionPolicy( View.PARALLEL_PROJECTION );
 				break;
 
