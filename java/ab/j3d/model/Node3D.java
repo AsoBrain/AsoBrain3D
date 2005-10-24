@@ -20,8 +20,6 @@
  */
 package ab.j3d.model;
 
-import java.awt.Graphics2D;
-import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -247,16 +245,16 @@ public class Node3D
 	 *
 	 * @param   leafs       Collection that contains all gathered leafs.
 	 * @param   leafClass   Class of requested leafs (<code>null</code> => don't care).
-	 * @param   xform       Transformation matrix upto this node.
+	 * @param   transform   Transformation matrix upto this node.
 	 * @param   upwards     Direction in which the tree is being traversed
 	 *                      (should be <code>true</code> for the first call).
 	 */
-	public void gatherLeafs( final Node3DCollection leafs , final Class leafClass , final Matrix3D xform , final boolean upwards )
+	public void gatherLeafs( final Node3DCollection leafs , final Class leafClass , final Matrix3D transform , final boolean upwards )
 	{
 		final Node3D parent = getParent();
 		if ( upwards && ( parent != null ) )
 		{
-			parent.gatherLeafs( leafs , leafClass , xform , true );
+			parent.gatherLeafs( leafs , leafClass , transform , true );
 		}
 		else
 		{
@@ -269,7 +267,7 @@ public class Node3D
 				 * If this is a leaf, add it to the collection.
 				 */
 				if ( ( leafClass == null ) || leafClass.isInstance( this ) )
-					leafs.add( xform , this );
+					leafs.add( transform , this );
 			}
 			else
 			{
@@ -279,78 +277,9 @@ public class Node3D
 				for ( int i = 0 ; i < childCount ; i++ )
 				{
 					final Node3D node = (Node3D)children.get( i );
-					node.gatherLeafs( leafs , leafClass , xform , false );
+					node.gatherLeafs( leafs , leafClass , transform , false );
 				}
 			}
-		}
-	}
-
-	/**
-	 * Paint 2D representation of 3D objects at this node and its child nodes
-	 * using rendering hints defined for this object. See the other
-	 * {@link #paint(Graphics2D, Matrix3D, Matrix3D, Paint, Paint, float)}
-	 * method in this class for a more elaborate
-	 * description of this process.
-	 * <p />
-	 * If the <code>alternateAppearance</code> flag is set, objects should be
-	 * use alternate rendering hints, if available. Alternate appearance can be
-	 * used to visualize state information, like marking selected or active
-	 * objects.
-	 *
-	 * @param   g                       Graphics2D context.
-	 * @param   gTransform              Projection transform for Graphics2D context (3D->2D, pan, sale).
-	 * @param   viewTransform           Transformation from object's to view coordinate system.
-	 * @param   alternateAppearance     Use alternate appearance.
-	 */
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final boolean alternateAppearance )
-	{
-		final List children   = _children;
-		final int  childCount = children.size();
-
-		for ( int i = 0 ; i < childCount ; i++ )
-		{
-			final Node3D node = (Node3D)children.get( i );
-			node.paint( g , gTransform , viewTransform , alternateAppearance );
-		}
-	}
-
-	/**
-	 * Paint 2D representation of this 3D object. The object coordinates are
-	 * transformed using the <code>viewTransform</code> argument. By default, the object is painted
-	 * by drawing the outlines of its 'visible' faces. Derivatives of this class
-	 * may implement are more realistic approach (sphere, cylinder).
-	 * <p />
-	 * The rendering settings are determined by the <code>outlinePaint</code>,
-	 * <code>fillPaint</code>, and <code>shadeFactor</code> arguments. The
-	 * colors may be set to <code>null</code> to disable drawing of the
-	 * outline or inside of faces respectively. The <code>shadeFactor</code> is
-	 * used to modify the fill color based on the Z component of the face normal.
-	 * A typical value of <code>0.5</code> would render faces pointing towards
-	 * the Z-axis at 100%, and faces perpendicular to the Z-axis at 50%;
-	 * specifying <code>0.0</code> completely disables the effect (always 100%);
-	 * whilst <code>1.0</code> makes faces perpendicular to the Z-axis black
-	 * (0%). The outline color is not influenced by the <code>shadeFactor</code>.
-	 * <p />
-	 * Objects are painted on the specified graphics context after being
-	 * transformed again by gTransform. This may be used to pan/scale the object on the
-	 * graphics context (NOTE: IT MAY NOT ROTATE THE OBJECT!).
-	 *
-	 * @param   g               Graphics2D context.
-	 * @param   gTransform      Projection transform for Graphics2D context (3D->2D, pan, sale).
-	 * @param   viewTransform   Transformation from object's to view coordinate system.
-	 * @param   outlinePaint    Paint to use for face outlines (<code>null</code> to disable drawing).
-	 * @param   fillPaint       Paint to use for filling faces (<code>null</code> to disable drawing).
-	 * @param   shadeFactor     Amount of shading that may be applied (0=none, 1=extreme).
-	 */
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Matrix3D viewTransform , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
-	{
-		final List children   = _children;
-		final int  childCount = children.size();
-
-		for ( int i = 0 ; i < childCount ; i++ )
-		{
-			final Node3D node = (Node3D)children.get( i );
-			node.paint( g , gTransform , viewTransform , outlinePaint , fillPaint , shadeFactor );
 		}
 	}
 }
