@@ -94,7 +94,7 @@ public class WireframeRenderer
 				if ( ro == null )
 					renderObjects[ i ] = ro = new RenderObject();
 
-				ro.set( (Object3D)objects.getNode( i ) , objects.getMatrix( i ) , camera.aperture , camera.zoom , width , height , true );
+				ro.set( (Object3D)objects.getNode( i ) , objects.getMatrix( i ) , Math.tan( camera.getFieldOfView() / 2.0 ) , camera.getZoomFactor() , width , height , true );
 			}
 
 			for ( int i = 0 ; i < nrObjects ; i++ )
