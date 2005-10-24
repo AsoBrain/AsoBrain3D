@@ -38,13 +38,13 @@ import ab.j3d.Vector3D;
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public class Object3DBuilder
+public final class Object3DBuilder
 	extends Abstract3DObjectBuilder
 {
 	/**
 	 * The {@link Object3D} being build.
 	 */
-	private Object3D _target;
+	private final Object3D _target;
 
 	/**
 	 * Construct builder.
@@ -108,6 +108,8 @@ public class Object3DBuilder
 	 * @param   texture             Texture to apply to faces.
 	 * @param   smoothCircumference Set 'smooth' flag for circumference faces.
 	 * @param   closeEnds           Close ends of shape (make solid).
+	 *
+	 * @return  Generated {@link Object3D}.
 	 */
 	public static Object3D constructRotatedObject( final Matrix3D xform , final double[] radii , final double[] zCoordinates , final int detail , final TextureSpec texture , final boolean smoothCircumference , final boolean closeEnds )
 	{
