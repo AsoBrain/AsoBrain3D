@@ -19,10 +19,6 @@
  */
 package ab.j3d.model;
 
-import java.awt.Graphics2D;
-import java.awt.Paint;
-
-import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 
@@ -160,11 +156,14 @@ public final class Face3D
 	 */
 	public void addVertex( final double x , final double y , final double z , final int tU , final int tV )
 	{
-		ensureCapacity( _pointCount + 1 );
-		_pointIndices[ _pointCount ] = _object.getOrAddPointIndex( x , y ,z );
-		_textureU    [ _pointCount ] = tU;
-		_textureV    [ _pointCount ] = tV;
-		_pointCount++;
+		final int pointCount = _pointCount;
+
+		ensureCapacity( pointCount + 1 );
+		_pointIndices[ pointCount ] = _object.getOrAddPointIndex( x , y ,z );
+		_textureU    [ pointCount ] = tU;
+		_textureV    [ pointCount ] = tV;
+
+		_pointCount = pointCount + 1;
 	}
 
 	/**
@@ -189,85 +188,6 @@ public final class Face3D
 	public void addVertex( final Vector3D point , final int tU , final int tV )
 	{
 		addVertex( point.x , point.y , point.z , tU , tV );
-	}
-
-	/**
-	 * Paint 2D representation of this 3D face.
-	 *
-	 * @param   g               Graphics2D context.
-	 * @param   gTransform      Projection transform for Graphics2D context (3D->2D, pan, sale).
-	 * @param   outlinePaint    Paint to use for face outlines (<code>null</code> to disable drawing).
-	 * @param   fillPaint       Paint to use for filling faces (<code>null</code> to disable drawing).
-	 * @param   pointCoords     Coordinates of points (after view transform is applied).
-	 * @param   xs              Temporary storage for 2D coordinates.
-	 * @param   ys              Temporary storage for 2D coordinates.
-	 *
-	 * @see     Object3D#paint
-	 */
-	public void paint( final Graphics2D g , final Matrix3D gTransform , final Paint outlinePaint , final Paint fillPaint , final double[] pointCoords , final int[] xs , final int[] ys )
-	{
-		final int    vertexCount  = getVertexCount();
-		final int[]  pointIndices = getPointIndices();
-
-		if ( ( vertexCount > 0 ) && ( ( outlinePaint != null ) || ( fillPaint != null ) ) )
-		{
-			boolean show = true;
-			for ( int p = 0 ; p < vertexCount ; p++ )
-			{
-				final int vi = pointIndices[ p ] * 3;
-
-				final double x  = pointCoords[ vi ];
-				final double y  = pointCoords[ vi + 1 ];
-				final double z  = pointCoords[ vi + 2 ];
-
-				final int ix = (int)gTransform.transformX( x , y , z );
-				final int iy = (int)gTransform.transformY( x , y , z );
-
-				/*
-				 * Perform backface removal if we have 3 points, so we can calculate the normal.
-				 *
-				 * c = (x1-x2)*(y3-y2)-(y1-y2)*(x3-x2)
-				 */
-				if ( ( p == 2 ) && !hasBackface() )
-				{
-					show = ( ( ( xs[ 0 ] - xs[ 1 ] ) * ( iy - ys[ 1 ] ) )
-					      <= ( ( ys[ 0 ] - ys[ 1 ] ) * ( ix - xs[ 1 ] ) ) );
-
-					if ( !show )
-						break;
-				}
-
-				xs[ p ] = ix;
-				ys[ p ] = iy;
-			}
-
-			if ( show )
-			{
-				if ( fillPaint != null )
-				{
-					g.setPaint( fillPaint );
-
-					if ( vertexCount < 3 ) /* point or line */
-					{
-						if ( outlinePaint == null )
-							g.drawLine( xs[ 0 ] , ys[ 0 ] , xs[ vertexCount - 1 ] , ys[ vertexCount - 1 ] );
-					}
-					else
-					{
-						g.fillPolygon( xs , ys , vertexCount );
-					}
-				}
-
-				if ( outlinePaint != null )
-				{
-					g.setPaint( outlinePaint );
-					if ( vertexCount < 3 ) /* point or line */
-						g.drawLine( xs[ 0 ] , ys[ 0 ] , xs[ vertexCount - 1 ] , ys[ vertexCount - 1 ] );
-					else
-						g.drawPolygon( xs , ys , vertexCount );
-				}
-			}
-		}
 	}
 
 	/**
