@@ -21,10 +21,6 @@ package ab.j3d.view.java2d;
 
 import java.awt.Component;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.model.Node3D;
-import ab.j3d.model.Node3DCollection;
-import ab.j3d.model.Object3D;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelNode;
@@ -39,15 +35,27 @@ public final class Java2dModel
 	extends ViewModel
 {
 	/**
-	 * Paint queue.
+	 * Unit scale factor in this model. This scale factor, when multiplied,
+	 * converts design units to meters.
 	 */
-	private final Node3DCollection _paintQueue = new Node3DCollection();
+	private final double _unit;
 
 	/**
 	 * Construct new Java 2D view model.
 	 */
 	public Java2dModel()
 	{
+		this( MM );
+	}
+
+	/**
+	 * Construct new Java 2D view model.
+	 *
+	 * @param   unit            Unit scale factor (e.g. {@link ViewModel#MM}).
+	 */
+	public Java2dModel( final double unit )
+	{
+		_unit = unit;
 	}
 
 	protected void initializeNode( final ViewModelNode node )
@@ -56,6 +64,7 @@ public final class Java2dModel
 
 	protected void updateNodeTransform( final ViewModelNode node )
 	{
+
 		updateViews();
 	}
 
@@ -71,34 +80,14 @@ public final class Java2dModel
 		return view.getComponent();
 	}
 
-	public void updateViews()
-	{
-		final Node3DCollection queue = _paintQueue;
-		queue.clear();
-
-		final Object[] nodeIDs = getNodeIDs();
-		for ( int i = 0 ; i < nodeIDs.length ; i++ )
-		{
-			final Object        id              = nodeIDs[ i ];
-			final ViewModelNode node            = getNode( id );
-			final Node3D        node3D          = node.getNode3D();
-			final Matrix3D      transform       = node.getTransform();
-//			final TextureSpec   textureOverride = node.getTextureOverride();
-//			final float         opacity         = node.getOpacity();
-
-			node3D.gatherLeafs( queue , Object3D.class , transform , false );
-		}
-
-		super.updateViews();
-	}
-
 	/**
-	 * Get paint queue iterator.
+	 * Unit scale factor in this model. This scale factor, when multiplied,
+	 * converts design units to meters.
 	 *
-	 * @return  Paint queue iterator.
+	 * @return  Unit scale factor in this model.
 	 */
-	public Node3DCollection getPaintQueue()
+	public double getUnit()
 	{
-		return _paintQueue;
+		return _unit;
 	}
 }
