@@ -28,20 +28,20 @@ import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 
 /**
- * This class extends <code>Object3D</code>. The vertices and faces
- * are generated out of a simple awt shape. A extrusion factor can
- * be added.
+ * This class extends {@link Object3D}. The vertices and faces are generated out
+ * of a Java 2D simple {@link Shape}. An extrusion vector is used to define the
+ * coordinate displacement.
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public class ExtrudedObject2D
+public final class ExtrudedObject2D
 	extends Object3D
 {
 	/**
 	 * Transform to apply.
 	 */
-	public final Matrix3D xform;
+	public final Matrix3D transform;
 
 	/**
 	 * Base shape.
@@ -49,13 +49,14 @@ public class ExtrudedObject2D
 	public final Shape shape;
 
 	/**
-	 * Extrusion value (control-point displacement). This is a displacement
+	 * Extrusion vector (control-point displacement). This is a displacement
 	 * relative to the shape being extruded.
 	 */
 	public final Vector3D extrusion;
 
 	/**
-	 * The maximum allowable distance between the control points and the flattened curve.
+	 * The maximum allowable distance between the control points and a
+	 * flattened curve.
 	 *
 	 * @see     FlatteningPathIterator
 	 * @see     Shape#getPathIterator(AffineTransform, double)
@@ -68,11 +69,11 @@ public class ExtrudedObject2D
 	public final boolean hasBackface;
 
 	/**
-	 * Construct new ExtrudedObject2D.
+	 * Construct extruded object.
 	 *
 	 * @param   shape           Base shape.
-	 * @param   extrusion       Extrusion value (control-point displacement).
-	 * @param   xform           Transform to apply.
+	 * @param   extrusion       Extrusion vector (control-point displacement).
+	 * @param   transform       Transform to apply.
 	 * @param   texture         Texture to apply.
 	 * @param   flatness        Flatness to use.
 	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
@@ -80,18 +81,29 @@ public class ExtrudedObject2D
 	 * @see     FlatteningPathIterator
 	 * @see     Shape#getPathIterator( AffineTransform , double )
 	 */
-	public ExtrudedObject2D( final Shape shape , final Vector3D extrusion , final Matrix3D xform , final TextureSpec texture , final double flatness , final boolean hasBackface )
+	public ExtrudedObject2D( final Shape shape , final Vector3D extrusion , final Matrix3D transform , final TextureSpec texture , final double flatness , final boolean hasBackface )
 	{
 		this.shape       = shape;
 		this.extrusion   = extrusion;
-		this.xform       = xform;
+		this.transform   = transform;
 		this.flatness    = flatness;
 		this.hasBackface = hasBackface;
 
-		generate( this , shape , extrusion , xform , texture , flatness , hasBackface );
+		generate( this , shape , extrusion , transform , texture , flatness , hasBackface );
 	}
 
-	public static void generate( final Object3D target , final Shape shape , final Vector3D extrusion , final Matrix3D xform , final TextureSpec texture , final double flatness , final boolean hasBackface )
+	/**
+	 * Generate data from object properties.
+	 *
+	 * @param   target          Target {@link Object3D} to store generated data.
+	 * @param   shape           Base shape.
+	 * @param   extrusion       Extrusion vector (control-point displacement).
+	 * @param   transform       Transform to apply.
+	 * @param   texture         Texture to apply.
+	 * @param   flatness        Flatness to use.
+	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
+	 */
+	public static void generate( final Object3D target , final Shape shape , final Vector3D extrusion , final Matrix3D transform , final TextureSpec texture , final double flatness , final boolean hasBackface )
 	{
 		final double  ex            = extrusion.x;
 		final double  ey            = extrusion.y;
@@ -116,18 +128,18 @@ public class ExtrudedObject2D
 					final double shapeX = coords[ 0 ];
 					final double shapeY = coords[ 1 ];
 
-					final double x1 = xform.transformX( shapeX , shapeY , 0.0 );
-					final double y1 = xform.transformY( shapeX , shapeY , 0.0 );
-					final double z1 = xform.transformZ( shapeX , shapeY , 0.0 );
+					final double x1 = transform.transformX( shapeX , shapeY , 0.0 );
+					final double y1 = transform.transformY( shapeX , shapeY , 0.0 );
+					final double z1 = transform.transformZ( shapeX , shapeY , 0.0 );
 
 					lastIndex  = target.getOrAddPointIndex( x1 , y1 , z1 );
 					lastMoveTo = lastIndex;
 
 					if ( hasExtrusion )
 					{
-						final double x2 = xform.transformX( shapeX + ex , shapeY + ey , ez );
-						final double y2 = xform.transformY( shapeX + ex , shapeY + ey , ez );
-						final double z2 = xform.transformZ( shapeX + ex , shapeY + ey , ez );
+						final double x2 = transform.transformX( shapeX + ex , shapeY + ey , ez );
+						final double y2 = transform.transformY( shapeX + ex , shapeY + ey , ez );
+						final double z2 = transform.transformZ( shapeX + ex , shapeY + ey , ez );
 
 						lastExtrudedIndex  = target.getOrAddPointIndex( x2 , y2 , z2 );
 						lastExtrudedMoveTo = lastExtrudedIndex;
@@ -140,18 +152,18 @@ public class ExtrudedObject2D
 					final double shapeX = coords[ 0 ];
 					final double shapeY = coords[ 1 ];
 
-					final double x1 = xform.transformX( shapeX , shapeY , 0.0 );
-					final double y1 = xform.transformY( shapeX , shapeY , 0.0 );
-					final double z1 = xform.transformZ( shapeX , shapeY , 0.0 );
+					final double x1 = transform.transformX( shapeX , shapeY , 0.0 );
+					final double y1 = transform.transformY( shapeX , shapeY , 0.0 );
+					final double z1 = transform.transformZ( shapeX , shapeY , 0.0 );
 
 					final int pointIndex = target.getOrAddPointIndex( x1 , y1 , z1 );
 
 					int extrudedPointIndex = -1;
 					if ( hasExtrusion )
 					{
-						final double x2 = xform.transformX( shapeX + ex , shapeY + ey , ez );
-						final double y2 = xform.transformY( shapeX + ex , shapeY + ey , ez );
-						final double z2 = xform.transformZ( shapeX + ex , shapeY + ey , ez );
+						final double x2 = transform.transformX( shapeX + ex , shapeY + ey , ez );
+						final double y2 = transform.transformY( shapeX + ex , shapeY + ey , ez );
+						final double z2 = transform.transformZ( shapeX + ex , shapeY + ey , ez );
 						extrudedPointIndex = target.getOrAddPointIndex( x2 , y2 , z2 );
 					}
 
@@ -159,13 +171,15 @@ public class ExtrudedObject2D
 					{
 						if ( hasExtrusion )
 						{
-							target.addFace( flipExtrusion ? new int[] { pointIndex , extrudedPointIndex , lastExtrudedIndex , lastIndex }
-							                              : new int[] { lastIndex , lastExtrudedIndex , extrudedPointIndex , pointIndex } , texture  , false , hasBackface );
+							target.addFace(
+								flipExtrusion ? new int[] { pointIndex , extrudedPointIndex , lastExtrudedIndex  , lastIndex  }
+								              : new int[] { lastIndex  , lastExtrudedIndex  , extrudedPointIndex , pointIndex } ,
+								texture , null , null , 1.0f , false , hasBackface );
 							lastExtrudedIndex = extrudedPointIndex;
 						}
 						else
 						{
-							target.addFace( new int[]{ lastIndex , pointIndex } , texture  , false , true );
+							target.addFace( new int[]{ lastIndex , pointIndex } , texture , null , null , 1.0f , false , true );
 						}
 					}
 
@@ -179,14 +193,16 @@ public class ExtrudedObject2D
 					{
 						if ( hasExtrusion )
 						{
-							target.addFace( flipExtrusion ? new int[] { lastMoveTo , lastExtrudedMoveTo , lastExtrudedIndex  , lastIndex  }
-							                              : new int[] { lastIndex  , lastExtrudedIndex  , lastExtrudedMoveTo , lastMoveTo } , texture  , false , hasBackface );
+							target.addFace(
+								flipExtrusion ? new int[] { lastMoveTo , lastExtrudedMoveTo , lastExtrudedIndex  , lastIndex  }
+								              : new int[] { lastIndex  , lastExtrudedIndex  , lastExtrudedMoveTo , lastMoveTo } ,
+								texture , null , null , 1.0f , false , hasBackface );
 
 							lastExtrudedIndex = lastExtrudedMoveTo;
 						}
 						else
 						{
-							target.addFace( new int[] { lastIndex , lastMoveTo } , texture  , false , true );
+							target.addFace( new int[] { lastIndex , lastMoveTo } , texture , null , null , 1.0f , false , true );
 						}
 					}
 
