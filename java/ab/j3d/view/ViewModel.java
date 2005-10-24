@@ -22,9 +22,9 @@ package ab.j3d.view;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Iterator;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
@@ -141,7 +141,7 @@ public abstract class ViewModel
 	 *
 	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	protected final ViewModelNode getNode( final Object id )
+	public final ViewModelNode getNode( final Object id )
 	{
 		ViewModelNode result = null;
 
@@ -203,7 +203,7 @@ public abstract class ViewModel
 	 *
 	 * @throws  NullPointerException if <code>node</code> is <code>null</code>.
 	 */
-	protected void addNode( final ViewModelNode node )
+	protected final void addNode( final ViewModelNode node )
 	{
 		if ( node == null )
 			throw new NullPointerException( "node" );
@@ -270,7 +270,7 @@ public abstract class ViewModel
 	 *
 	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public boolean hasNode( final Object id )
+	public final boolean hasNode( final Object id )
 	{
 		return ( getNode( id ) != null );
 	}
@@ -295,7 +295,7 @@ public abstract class ViewModel
 	 * @see     #removeNode
 	 * @see     #getNodeIDs
 	 */
-	public void removeAllNodes()
+	public final void removeAllNodes()
 	{
 		final Object[] ids = getNodeIDs();
 		for ( int i = 0 ; i < ids.length ; i++ )
@@ -472,9 +472,9 @@ public abstract class ViewModel
 	 *                                  {@link ViewModelView#SKETCH}, or
 	 *                                  {@link ViewModelView#WIREFRAME}).
 	 * @param   projectionPolicy        Desired projection policy for view
-	 *                                  ({@link ViewModelView#PERSPECTIVE},
-	 *                                  {@link ViewModelView#PARALLEL}, or
-	 *                                  {@link ViewModelView#ISOMETRIC}).
+	 *                                  ({@link Projector#PERSPECTIVE},
+	 *                                  {@link Projector#PARALLEL}, or
+	 *                                  {@link Projector#ISOMETRIC}).
 	 * @param   estimatedSceneBounds    Estimated bounding box of scene.
 	 * @param   viewDirection           Direction from which to view the scene.
 	 *
@@ -482,14 +482,14 @@ public abstract class ViewModel
 	 *
 	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public Component createView( final Object id , final int renderingPolicy , final int projectionPolicy , final Bounds3D estimatedSceneBounds , final Vector3D viewDirection )
+	public final Component createView( final Object id , final int renderingPolicy , final int projectionPolicy , final Bounds3D estimatedSceneBounds , final Vector3D viewDirection )
 	{
 		final ViewControl viewControl;
 
 		final double   sceneSize = Vector3D.distanceBetween( estimatedSceneBounds.v1 , estimatedSceneBounds.v2 );
 		final Vector3D center    = estimatedSceneBounds.center();
 
-		if ( ( renderingPolicy != ViewModelView.SOLID ) || ( projectionPolicy != ViewModelView.PERSPECTIVE ) )
+		if ( ( renderingPolicy != ViewModelView.SOLID ) || ( projectionPolicy != Projector.PERSPECTIVE ) )
 		{
 			final double x = -center.x + viewDirection.x * sceneSize;
 			final double y = -center.y + viewDirection.y * sceneSize;
@@ -498,8 +498,7 @@ public abstract class ViewModel
 			final double rx = Math.toDegrees( Math.atan2( -viewDirection.y , -viewDirection.z ) );
 			final double ry = Math.toDegrees( Math.atan2( -viewDirection.x , -viewDirection.z ) );
 
-			final OrbitViewControl orbitViewControl = new OrbitViewControl( rx , ry , 0.0 , x , y , z );
-			viewControl = orbitViewControl;
+			viewControl = new OrbitViewControl( rx , ry , 0.0 , x , y , z );
 		}
 		else
 		{
@@ -568,7 +567,7 @@ public abstract class ViewModel
 	 *
 	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public boolean hasView( final Object id )
+	public final boolean hasView( final Object id )
 	{
 		return ( getView( id ) != null );
 	}
@@ -593,7 +592,7 @@ public abstract class ViewModel
 	 * @see     #removeView
 	 * @see     #getViewIDs
 	 */
-	public void removeAllViews()
+	public final void removeAllViews()
 	{
 		final Object[] ids = getViewIDs();
 		for ( int i = 0 ; i < ids.length ; i++ )
@@ -603,7 +602,7 @@ public abstract class ViewModel
 	/**
 	 * Update all views.
 	 */
-	public void updateViews()
+	public final void updateViews()
 	{
 		for ( int i = 0 ; i < _views.size() ; i++ )
 		{
@@ -616,28 +615,35 @@ public abstract class ViewModel
 	 * Add a {@link NodeSelectionListener} to all the views this ViewModel
 	 * currently has. Any views added later do not listen to selection events.
 	 *
-	 * @param   listener    The {@link NodeSelectionListener} to add
+	 * @param   listener    Selection listener to add.
 	 */
-	public void addSelectionListener( final NodeSelectionListener listener )
+	public final void addSelectionListener( final NodeSelectionListener listener )
 	{
 		for ( Iterator iter = _views.iterator() ; iter.hasNext() ; )
 		{
-			/*@FIXME: Only existing views now add the selection listener */
-			final ViewModelView view = (ViewModelView) iter.next();
-			view.getSelectionSupport().addSelectionListener( listener );
+			// @FIXME: Only existing views now add the selection listener
+			final ViewModelView view = (ViewModelView)iter.next();
+
+			final SelectionSupport selectionSupport = view.getSelectionSupport();
+			if ( selectionSupport != null )
+				selectionSupport.addSelectionListener( listener );
 		}
 	}
 
 	/**
 	 * Remove a {@link NodeSelectionListener} from all views.
-	 * @param   listener    The listener to remove
+	 *
+	 * @param   listener    Selection listener to remove.
 	 */
-	public void removeSelectionListener( final NodeSelectionListener listener )
+	public final void removeSelectionListener( final NodeSelectionListener listener )
 	{
 		for ( Iterator iter = _views.iterator() ; iter.hasNext() ; )
 		{
 			final ViewModelView view = (ViewModelView) iter.next();
-			view.getSelectionSupport().removeSelectionListener( listener );
+
+			final SelectionSupport selectionSupport = view.getSelectionSupport();
+			if ( selectionSupport != null )
+				selectionSupport.removeSelectionListener( listener );
 		}
 	}
 }
