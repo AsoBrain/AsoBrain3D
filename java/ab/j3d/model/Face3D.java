@@ -411,4 +411,76 @@ public final class Face3D
 	{
 		return _object.getPointCoords()[ _pointIndices[ index ] * 3 + 2 ];
 	}
+
+
+	/**
+	 * Create human-readable representation of this object.
+	 * This is aspecially useful for debugging purposes.
+	 *
+	 * @return  Human-readable representation of this object.
+	 */
+	public String toFriendlyString( final String prefix )
+	{
+		final StringBuffer sb = new StringBuffer();
+
+		final Object3D    object       = _object;
+		final int         faceIndex    = object.getFaceIndex( this );
+		final int[]       pointIndices = _pointIndices;
+		final double[]    pointCoords  = object.getPointCoords();
+		final TextureSpec texture      = _texture;
+		final float       opacity      = _opacity;
+		final boolean     smooth       = _smooth;
+		final boolean     hasBackface  = _hasBackface;
+
+		sb.append( prefix );
+		sb.append( "face[ " );
+		sb.append( faceIndex );
+		sb.append( " ]:" );
+		sb.append( '\n' );
+
+		sb.append( prefix );
+		sb.append( "  texture     = " );
+		sb.append( texture );
+		sb.append( '\n' );
+
+		sb.append( prefix );
+		sb.append( "  opacity     = " );
+		sb.append( opacity );
+		sb.append( '\n' );
+
+		sb.append( prefix );
+		sb.append( "  smooth      = " );
+		sb.append( smooth );
+		sb.append( '\n' );
+
+		sb.append( prefix );
+		sb.append( "  normal      = " );
+		sb.append( Vector3D.INIT.set(_normal[0], _normal[1] , _normal[2] ).toFriendlyString() );
+		sb.append( '\n' );
+
+		sb.append( prefix );
+		sb.append( "  backface    = " );
+		sb.append( hasBackface );
+		sb.append( '\n' );
+
+		for ( int i = 0 ; i < pointIndices.length ; i++ )
+		{
+			final int    index = pointIndices[ i ];
+			final double x     = pointCoords[ index * 3     ];
+			final double y     = pointCoords[ index * 3 + 1 ];
+			final double z     = pointCoords[ index * 3 + 2 ];
+
+			sb.append( prefix );
+			sb.append( "  vertex[ " );
+			if ( i < 10 ) sb.append( ' ' );
+			sb.append( i );
+			sb.append( " ] = index=" );
+			sb.append( index );
+			sb.append( ", coordinates=" );
+			sb.append( Vector3D.INIT.set( x , y , z ).toFriendlyString() );
+			sb.append( '\n' );
+		}
+
+		return sb.toString();
+	}
 }
