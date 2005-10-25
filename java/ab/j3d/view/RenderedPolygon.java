@@ -125,6 +125,10 @@ public final class RenderedPolygon
 	 */
 	public double _planeConstant;
 
+	public int _minZ;
+
+	public int _maxZ;
+
 	/**
 	 * Construct polygon.
 	 *
@@ -159,6 +163,8 @@ public final class RenderedPolygon
 		_planeNormalY        = 0.0;
 		_planeNormalZ        = 1.0;
 		_planeConstant       = 0.0;
+		_minZ                = 0;
+		_maxZ                = 0;
 		_texture             = null;
 		_alternateAppearance = false;
 
@@ -198,6 +204,8 @@ public final class RenderedPolygon
 		final Object3D object       = face.getObject();
 		final int[]    pointIndices = face.getPointIndices();
 
+		_minZ = Integer.MAX_VALUE;
+		_maxZ = Integer.MIN_VALUE;
 		for ( int vertexIndex = 0 ; vertexIndex < pointCount ; vertexIndex++ )
 		{
 			final int pointIndex  = pointIndices[ vertexIndex ];
@@ -209,7 +217,11 @@ public final class RenderedPolygon
 
 			viewX[ vertexIndex ] = objectViewCoords[ pointIndex3     ];
 			viewY[ vertexIndex ] = objectViewCoords[ pointIndex3 + 1 ];
-			viewZ[ vertexIndex ] = objectViewCoords[ pointIndex3 + 2 ];
+			double z             = objectViewCoords[ pointIndex3 + 2 ];
+			viewZ[ vertexIndex ] = z;
+
+			_minZ = (int)z < _minZ ? (int)z : _minZ;
+			_maxZ = (int)z > _maxZ ? (int)z : _maxZ;
 		}
 
 		final double planeNormalX;
