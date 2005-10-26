@@ -132,7 +132,7 @@ public class RenderPanel
 		world.addChild( pointLightTransform );
 		pointLightTransform.addChild( pointLight );
 
-		final Camera3D camera = new Camera3D( 300.0 , 60.0 );
+		final Camera3D camera = new Camera3D( 300.0 , Math.toRadians( 60.0 ) );
 		final Transform3D cameraTransform = new Transform3D( Matrix3D.getTransform( 0.0 , 0.0 , 0.0 , 0.0 , -3000.0 , 0.0 ) );
 		cameraTransform .addChild( camera );
 		world.addChild( cameraTransform );
