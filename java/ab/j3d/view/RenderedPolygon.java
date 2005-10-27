@@ -125,9 +125,25 @@ public final class RenderedPolygon
 	 */
 	public double _planeConstant;
 
+	/**
+	 * The smallest of all the z values of this polygon
+	 */
 	public int _minZ;
 
+	/**
+	 * The largest of all the z values of this polygon
+	 */
 	public int _maxZ;
+
+	/**
+	 * Debugging variable. Not for other uses.
+	 */
+	public String name = "";
+
+	/**
+	 * Debugging variable. Not for other uses.
+	 */
+	public String text = "";
 
 	/**
 	 * Construct polygon.
@@ -264,6 +280,8 @@ public final class RenderedPolygon
 		_planeConstant       = planeConstant;
 		_texture             = face.getTexture();
 		_alternateAppearance = alternateAppearance;
+
+		name = (String)object.getTag();
 	}
 
 	/**
