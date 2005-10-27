@@ -32,6 +32,7 @@ import ab.j3d.model.Object3D;
 
 import com.numdata.oss.AugmentedArrayList;
 import com.numdata.oss.AugmentedList;
+import com.numdata.oss.ArrayTools;
 
 /**
  * This class manages a render queue that can be used by a 3D render engine. It
@@ -93,6 +94,25 @@ public final class RenderQueue
 	 * Temporary/shared storage area for {@link #enqueueObject}.
 	 */
 	private double[] _tmpFaceNormals;
+
+	/**
+	 * Temporary storage for clipping variables
+	 */
+	private double[] _frontX;
+	private double[] _frontY;
+	private double[] _frontZ;
+	private double[] _backX;
+	private double[] _backY;
+	private double[] _backZ;
+
+	/**
+	 * Temporary storage for clipping variables
+	 */
+	private int[] _frontProjX;
+	private int[] _frontProjY;
+	private int[] _backProjX;
+	private int[] _backProjY;
+
 
 //	/**
 //	 * Temporary/shared storage area for {@link #enqueueObject}.
@@ -177,6 +197,10 @@ public final class RenderQueue
 				if ( !backfaceCulling || face.hasBackface() || !polygon.isBackface() ) // Perform backface removal
 					enqueuePolygon( polygon );
 			}
+			else
+			{
+				//System.out.println( "Face not in view volume" );
+			}
 		}
 	}
 
@@ -187,12 +211,12 @@ public final class RenderQueue
 	 */
 	public void enqueuePolygon( final RenderedPolygon polygon )
 	{
-//		System.out.println( "inserting item" );
+		//System.out.println( "\ninserting item " + polygon.name );
 		boolean stop = false;
 
 		if ( _queue.isEmpty() )
 		{
-			/*System.out.println( "empty" );*/
+			//System.out.println( "Queue is empty, just adding item." );
 			_queue.add( polygon );
 			stop = true;
 		}
@@ -200,22 +224,27 @@ public final class RenderQueue
 		{
 			final RenderedPolygon other = (RenderedPolygon)_queue.get( pointer );
 
+			//System.out.println( "Comparing with " + other.name );
 			switch ( compare( polygon , other ) )
 			{
 				case IN_FRONT:
+					//System.out.println( "In front. Stop sorting." );
 					_queue.add( pointer + 1 , polygon );
 					stop = true;
 					break;
 
 				case INTERSECTING:
+					//System.out.print( "Intersecting -- " );
 					switch ( compare( other , polygon ) )
 					{
-						case IN_FRONT:
+						case BEHIND:
+							//System.out.println( "Other item is behind. Stop sorting" );
 							_queue.add( pointer + 1 , polygon );
 							stop = true;
 							break;
 
 						case INTERSECTING:
+							//System.out.println( "Intersecting. Clipping." );
 							//if ( overlap(item, other) )
 							{
 								//polygon.text += "Clipping  ";
@@ -224,8 +253,9 @@ public final class RenderQueue
 							}
 							break;
 
-						case BEHIND:
 						case COPLANAR:
+						case IN_FRONT:
+							//System.out.println( "Other item is coplanar or in front. Keep sorting" );
 							/* keep sorting */
 							break;
 					}
@@ -233,6 +263,7 @@ public final class RenderQueue
 
 				case COPLANAR:
 				case BEHIND:
+					//System.out.println( "Coplanar or behind. Keep sorting" );
 					/* keep sorting */
 					break;
 			}
@@ -241,6 +272,7 @@ public final class RenderQueue
 		if ( !stop )
 		{
 			/*System.out.println( "insert at 0 (size: " +_queuedItems.size()+ ")" );*/
+			//System.out.println( "Stop is false. Inserting item at front" );
 			_queue.add( 0 , polygon );
 		}
 	}
@@ -255,13 +287,16 @@ public final class RenderQueue
 		double[] yCoords     = polygon._viewY;
 		double[] zCoords     = polygon._viewZ;
 
+//		System.out.print( "compare: " );
 		if ( polygon._maxZ <= other._minZ )
 		{
+//			System.out.println( " Item's Z ("+polygon._maxZ+") is smaller than other's Z ("+other._minZ+")" );
 			/*item.text += " - Item's Z ("+item.maxZ+") is smaller than other's Z ("+other.minZ+")";*/
 			behind = true;
 		}
 		else if ( polygon._minZ >= other._maxZ )
 		{
+//			System.out.println( " Others Z ("+other._maxZ+") is smaller than item's Z ("+polygon._minZ+")" );
 			/*item.text += " - Others Z ("+other.maxZ+") is smaller than item's Z ("+item.minZ+")";*/
 			inFront = true;
 		}
@@ -325,17 +360,17 @@ public final class RenderQueue
 
 		int frontCount = 0;
 		int backCount = 0;
-		double[] frontX = new double[ vertexCount + 2 ];
-		double[] frontY = new double[ vertexCount + 2 ];
-		double[] frontZ = new double[ vertexCount + 2 ];
-		double[] backX  = new double[ vertexCount + 2 ];
-		double[] backY  = new double[ vertexCount + 2 ];
-		double[] backZ  = new double[ vertexCount + 2 ];
+		_frontX = (double[])ArrayTools.ensureLength( _frontX , double.class , 1 , vertexCount + 2 );
+		_frontY = (double[])ArrayTools.ensureLength( _frontY , double.class , 1 , vertexCount + 2 );
+		_frontZ = (double[])ArrayTools.ensureLength( _frontZ , double.class , 1 , vertexCount + 2 );
+		_backX  = (double[])ArrayTools.ensureLength( _backX , double.class , 1 ,  vertexCount + 2 );
+		_backY  = (double[])ArrayTools.ensureLength( _backY , double.class , 1 ,  vertexCount + 2 );
+		_backZ  = (double[])ArrayTools.ensureLength( _backZ , double.class , 1 ,  vertexCount + 2 );
 
-		int[] frontProjX = new int[ vertexCount + 2 ];
-		int[] frontProjY = new int[ vertexCount + 2 ];
-		int[] backProjX  = new int[ vertexCount + 2 ];
-		int[] backProjY  = new int[ vertexCount + 2 ];
+		_frontProjX = (int[])ArrayTools.ensureLength( _frontProjX , int.class , 1 , vertexCount + 2 );
+		_frontProjY = (int[])ArrayTools.ensureLength( _frontProjY , int.class , 1 , vertexCount + 2 );
+		_backProjX  = (int[])ArrayTools.ensureLength( _backProjX , int.class , 1 ,  vertexCount + 2 );
+		_backProjY  = (int[])ArrayTools.ensureLength( _backProjY , int.class , 1 ,  vertexCount + 2 );
 
 		final double cuttingNX = cuttingPlane._planeNormalX;
 		final double cuttingNY = cuttingPlane._planeNormalY;
@@ -347,7 +382,7 @@ public final class RenderQueue
 		double lastZ     = zCoords[ lastIndex ];
 		int    lastProjX = projectedX[ lastIndex ];
 		int    lastProjY = projectedY[ lastIndex ];
-		double lastDot = Vector3D.dot( cuttingNX , cuttingNY , cuttingNZ , lastX , lastY , lastZ );
+		double lastDot   = Vector3D.dot( cuttingNX , cuttingNY , cuttingNZ , lastX , lastY , lastZ );
 
 		for ( int vertex = 0; vertex < vertexCount; vertex++ )
 		{
@@ -376,43 +411,43 @@ public final class RenderQueue
 				double cutX     = lastX + u * ( x - lastX );
 				double cutY     = lastY + u * ( y - lastY );
 				double cutZ     = lastZ + u * ( z - lastZ );
-				int    cutProjX = (int)( lastProjX + u * ( projX - lastProjX ) );
-				int    cutProjY = (int)( lastProjY + u * ( projY - lastProjY ) );
+				int    cutProjX = (int)( (double)lastProjX + u * (double)( projX - lastProjX ) );
+				int    cutProjY = (int)( (double)lastProjY + u * (double)( projY - lastProjY ) );
 
 //				System.out.println( "Intersection  newX: " + cutX + "  newY: " +cutY+ "  newZ: " +cutZ+ " " );
-				frontX[ frontCount ]     = cutX;
-				frontY[ frontCount ]     = cutY;
-				frontZ[ frontCount ]     = cutZ;
-				frontProjX[ frontCount ] = cutProjX;
-				frontProjY[ frontCount ] = cutProjY;
+				_frontX[ frontCount ]     = cutX;
+				_frontY[ frontCount ]     = cutY;
+				_frontZ[ frontCount ]     = cutZ;
+				_frontProjX[ frontCount ] = cutProjX;
+				_frontProjY[ frontCount ] = cutProjY;
 				frontCount++;
 
-				backX[ backCount ]     = cutX;
-				backY[ backCount ]     = cutY;
-				backZ[ backCount ]     = cutZ;
-				backProjX[ backCount ] = cutProjX;
-				backProjY[ backCount ] = cutProjY;
+				_backX[ backCount ]     = cutX;
+				_backY[ backCount ]     = cutY;
+				_backZ[ backCount ]     = cutZ;
+				_backProjX[ backCount ] = cutProjX;
+				_backProjY[ backCount ] = cutProjY;
 				backCount++;
 				//System.out.println( "Item "+item.name+"A: " +cuttingNX+ " B: " +cuttingNY+ " C: " +cuttingNZ+ " D: " +cuttingD+ " U: "+u+" P1 Coordinates: (" +(int)lastX+ "," +(int)lastY+ "," +(int)lastZ+ ") - P2 coordinates: (" +(int)x+ "," +(int)y+ "," +(int)z+ ") - Cut point (" +cutX+ "," +cutY+ "," +cutZ+ ")");
 			}
 			if ( dot >= cuttingD )
 			{
 //				System.out.println( "Front  newX: " + x + "  newY: " +y+ "  newZ: " +z+ " " );
-				frontX[ frontCount ]     = x;
-				frontY[ frontCount ]     = y;
-				frontZ[ frontCount ]     = z;
-				frontProjX[ frontCount ] = projX;
-				frontProjY[ frontCount ] = projY;
+				_frontX[ frontCount ]     = x;
+				_frontY[ frontCount ]     = y;
+				_frontZ[ frontCount ]     = z;
+				_frontProjX[ frontCount ] = projX;
+				_frontProjY[ frontCount ] = projY;
 				frontCount++;
 			}
 			if ( dot <= cuttingD )
 			{
 //				System.out.println( "Back  newX: " + x + "  newY: " +y+ "  newZ: " +z+ " " );
-				backX[ backCount ]     = x;
-				backY[ backCount ]     = y;
-				backZ[ backCount ]     = z;
-				backProjX[ backCount ] = projX;
-				backProjY[ backCount ] = projY;
+				_backX[ backCount ]     = x;
+				_backY[ backCount ]     = y;
+				_backZ[ backCount ]     = z;
+				_backProjX[ backCount ] = projX;
+				_backProjY[ backCount ] = projY;
 				backCount++;
 			}
 
@@ -430,13 +465,13 @@ public final class RenderQueue
 		int maxZ = Integer.MIN_VALUE;
 		for ( int i = 0; i < frontCount; i++ )
 		{
-			int vertexZ = (int)frontX[ i + 2 ];
-			front._viewX[ i ] = frontX[ i ];
-			front._viewY[ i ] = frontY[ i ];
-			front._viewZ[ i ] = frontZ[ i ];
+			int vertexZ = (int)_frontZ[ i ];
+			front._viewX[ i ] = _frontX[ i ];
+			front._viewY[ i ] = _frontY[ i ];
+			front._viewZ[ i ] = _frontZ[ i ];
 
-			front._projectedX[ i ] = frontProjX[ i ];
-			front._projectedY[ i ] = frontProjY[ i ];
+			front._projectedX[ i ] = _frontProjX[ i ];
+			front._projectedY[ i ] = _frontProjY[ i ];
 //			System.out.println( "Front: (" +frontCoords[p]+ ", " +frontCoords[p+1]+ ", " +frontCoords[p+2]+ ")" );
 
 			minZ = vertexZ < minZ ? vertexZ : minZ;
@@ -451,6 +486,7 @@ public final class RenderQueue
 		front._planeNormalY        = polygon._planeNormalY;
 		front._planeNormalZ        = polygon._planeNormalZ;
 		front._texture             = polygon._texture;
+		front.name                 = polygon.name + "_front";
 		enqueuePolygon( front );
 
 //		System.out.println( "backcount: " + backVertexCount + "  - backcount: " + backVertexCount );
@@ -459,13 +495,13 @@ public final class RenderQueue
 		maxZ = Integer.MIN_VALUE;
 		for ( int i = 0; i < backCount; i++ )
 		{
-			int vertexZ = (int)backX[ i ];
-			back._viewX[ i ] = backX[ i ];
-			back._viewY[ i ] = backY[ i ];
-			back._viewZ[ i ] = backZ[ i ];
+			int vertexZ = (int)_backZ[ i ];
+			back._viewX[ i ] = _backX[ i ];
+			back._viewY[ i ] = _backY[ i ];
+			back._viewZ[ i ] = _backZ[ i ];
 
-			back._projectedX[ i ] = backProjX[ i ];
-			back._projectedY[ i ] = backProjY[ i ];
+			back._projectedX[ i ] = _backProjX[ i ];
+			back._projectedY[ i ] = _backProjY[ i ];
 //			System.out.println( "back: (" +backCoords[p]+ ", " +backCoords[p+1]+ ", " +backCoords[p+2]+ ")" );
 
 			minZ = vertexZ < minZ ? vertexZ : minZ;
@@ -480,6 +516,7 @@ public final class RenderQueue
 		back._planeNormalY        = polygon._planeNormalY;
 		back._planeNormalZ        = polygon._planeNormalZ;
 		back._texture             = polygon._texture;
+		back.name                 = polygon.name + "_back";
 		enqueuePolygon( back );
 	}
 
@@ -572,3 +609,4 @@ public final class RenderQueue
 	private static final int INTERSECTING = 2;
 	private static final int COPLANAR     = 3;
 }
+
