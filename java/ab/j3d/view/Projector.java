@@ -21,6 +21,7 @@ package ab.j3d.view;
 
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
+import ab.j3d.Vector3D;
 
 import com.numdata.oss.ArrayTools;
 
@@ -275,6 +276,8 @@ public abstract class Projector
 	 */
 	public abstract int[] project( final double[] source , final int[] dest , final int pointCount );
 
+	public abstract Vector3D screenToWorld( int x , int y, double distance );
+
 	/**
 	 * Perspective projector implementation.
 	 * <p />
@@ -376,6 +379,21 @@ public abstract class Projector
 
 			return result;
 		}
+
+		public Vector3D screenToWorld(int x, int y, double distance){
+			final int    centerX     = _imageWidth >> 1;
+			final int    centerY     = _imageHeight >> 1;
+			final double view2pixels = _view2pixels;
+			final double eyeDistance = _eyeDistance;
+
+			final double f = view2pixels / ( 1.0 - ( distance + eyeDistance ) / eyeDistance );
+
+			double worldX = (x - centerX - 0.5) / f;
+			double worldY = (-y + centerY - 0.5) / f;
+			double worldZ = distance;
+
+			return Vector3D.INIT.set( worldX, worldY, worldZ);
+		}
 	}
 
 	/**
@@ -441,6 +459,18 @@ public abstract class Projector
 			return ( x >= -_limitX ) && ( x <= _limitX )
 			    && ( y >= -_limitY ) && ( y <= _limitY )
 			    && ( z >= _backClipDistance ) && ( z <= _frontClipDistance );
+		}
+
+		public Vector3D screenToWorld(int x, int y, double distance){
+			final int    centerX     = _imageWidth >> 1;
+			final int    centerY     = _imageHeight >> 1;
+			final double view2pixels = _view2pixels;
+
+			double worldX = (x - centerX - 0.5) / view2pixels;
+			double worldY = (-y + centerY - 0.5) / view2pixels;
+			double worldZ = distance;
+
+			return Vector3D.INIT.set( worldX, worldY, worldZ);
 		}
 	}
 
@@ -514,6 +544,10 @@ public abstract class Projector
 			return ( z >= _backClipDistance ) && ( z <= _frontClipDistance )
 			    && ( ( tmp = ( x - z * _xComponentOfZ     ) ) >= -_limitX ) && ( tmp <= _limitX )
 			    && ( ( tmp = (     z * _yComponentOfZ - y ) ) >= -_limitY ) && ( tmp <= _limitY );
+		}
+
+		public Vector3D screenToWorld(int x, int y, double distance){
+			return Vector3D.INIT;
 		}
 	}
 }
