@@ -193,4 +193,27 @@ public abstract class ViewModelView
 	 *          <code>null</code> if this view has no selection support.
 	 */
 	public abstract SelectionSupport getSelectionSupport();
+
+	/**
+	 * Returns wether or not this ViewModelView has a
+	 * {@link SceneInputTranslator}.
+	 * @return true if there is a SceneInputTranslator, false otherwise
+	 */
+	public boolean hasInputTranslator()
+	{
+		return false;
+	}
+
+	/**
+	 * Returns the {@link SceneInputTranslator}, if this class has one. The
+	 * method {@link #hasInputTranslator()} can be used to
+	 * check before calling this function.
+	 * @return The SceneInputTranslator for this View
+	 */
+	public SceneInputTranslator getInputTranslator()
+	{
+		return null;
+	}
+
+	public abstract Projector getProjector ();
 }
