@@ -57,15 +57,12 @@ public class IntersectionSupport
 	{
 		final List rawIntersections = new LinkedList();
 
-		final Vector3D direction = ( lineEnd.minus( lineStart ) ).normalize();
-		final double rotateX = Math.asin( direction.z );
-		final double rotateZ = Math.asin( direction.x );
-		Matrix3D lineTransform = Matrix3D.INIT.rotateX( rotateX ).rotateZ( rotateZ );
-		lineTransform = Matrix3D.INIT.setTranslation( -lineStart.x, -lineStart.y, -lineStart.z ).multiply( lineTransform );
-
+		final Vector3D from = Vector3D.INIT.set( lineStart.x, lineStart.y, lineStart.z);
+		final Vector3D to = Vector3D.INIT.set( lineEnd.x, lineEnd.y, lineEnd.z);
+		final Matrix3D lineTransform = Matrix3D.getFromToTransform( from , to , Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) , Vector3D.INIT.set( 0.0 , 1.0 , 0.0 ) );
 		final double d = Vector3D.distanceBetween( lineStart, lineEnd );
 		lineStart = Vector3D.INIT;
-		lineEnd   = Vector3D.INIT.set( 0 , d , 0 );
+		lineEnd   = Vector3D.INIT.set( 0 , 0 , -d );
 
 		for ( int i = 0; i < scene.size(); i++ )
 		{
@@ -175,12 +172,12 @@ public class IntersectionSupport
 				{
 //					System.out.println( "u between 0 and 1, u="+ u );
 					final double intX = lineStart.x + u * ( lineEnd.x - lineStart.x );
-					final double intZ = lineStart.z + u * ( lineEnd.z - lineStart.z );
-//					System.out.println( "Intersection  intX" + intX + "  intZ" + intZ );
+					final double intY = lineStart.y + u * ( lineEnd.y - lineStart.y );
+//					System.out.println( "Intersection  intX" + intX + "  inty" + inty );
 
 					final int lastIndex = pointIndices[ pointIndices.length - 1 ] * 3;
 					double  x1        = vertices[ lastIndex ];
-					double  z1        = vertices[ lastIndex + 2 ];
+					double  y1        = vertices[ lastIndex + 1 ];
 					boolean left      = false;
 					boolean right     = false;
 					boolean center    = false;
@@ -189,12 +186,12 @@ public class IntersectionSupport
 					{
 						final int    index = pointIndices[ vertex ] * 3;
 						final double x2    = vertices[ index ];
-						final double z2    = vertices[ index + 2 ];
-//						System.out.println( "Vertex " + vertex + "  x1 " +x1 + "  x2 " +x2+ "  z1 " +z1+ "  z2 " +z2);
+						final double y2    = vertices[ index + 1 ];
+//						System.out.println( "Vertex " + vertex + "  x1 " +x1 + "  x2 " +x2+ "  y1 " +y1+ "  y2 " +y2);
 
-						if ( x1 != x2 || z1 != z2 )
+						if ( x1 != x2 || y1 != y2 )
 						{
-							final double dir = ( intZ - z1 ) * ( x2 - x1 ) - ( intX - x1 ) * ( z2 - z1 );
+							final double dir = ( intY - y1 ) * ( x2 - x1 ) - ( intX - x1 ) * ( y2 - y1 );
 							left  = left  || dir > 0;
 							right = right || dir < 0;
 
@@ -202,15 +199,15 @@ public class IntersectionSupport
 							{
 								final double minX = x1 <  x2 ? x1 : x2;
 								final double maxX = x1 >= x2 ? x1 : x2;
-								final double minZ = z1 <  z2 ? z1 : z2;
-								final double maxZ = z1 >= z2 ? z1 : z2;
-								center = center || intX >= minX && intX <= maxX && intZ >= minZ && intZ <= maxZ;
+								final double minY = y1 <  y2 ? y1 : y2;
+								final double maxY = y1 >= y2 ? y1 : y2;
+								center = center || intX >= minX && intX <= maxX && intY >= minY && intY <= maxY;
 							}
 
 //							System.out.println( "Vertex " + vertex + "  x1 " +x1 + "  x2 " +x2+ "  z1 " +z1+ "  z2 " +z2 + "  dir="+ dir );
 
 							x1 = x2;
-							z1 = z2;
+							y1 = y2;
 						}
 					}
 
