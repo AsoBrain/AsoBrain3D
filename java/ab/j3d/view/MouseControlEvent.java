@@ -12,34 +12,79 @@ package ab.j3d.view;
 import java.awt.Event;
 import java.util.List;
 
+import ab.j3d.model.Face3D;
+
 /**
  * @author Mart Slot
  * @version $Revision$ $Date$
- * @FIXME Need comment
+ * This event indicates that a mouse action has occured on a view component.
+ * The information of this event is available from this event. The x and y
+ * component of the mouse location, the button that was pressed and the faces
+ * that are beneath the mouse in the view component.
  */
 public class MouseControlEvent
 	extends ControlEvent
 {
+	/**
+	 * The type of event. One of MOUSE_PRESSED, MOUSE_RELEASED, MOUSE_MOVED or
+	 * MOUSE_DRAGGED
+	 */
 	private int _type;
 
+	/**
+	 * The event number. After each MOUSE_RELEASED event, this number is
+	 * increased. This makes it easy to see if a mouse press and a mouse release
+	 * event are from the same mouse click.
+	 */
 	private int _number;
 
+	/**
+	 * The modifier mask for this event. Modifiers represent the state of all
+	 * modal keys, such as ALT, CTRL, META, and the mouse buttons just after the
+	 * event occurred.
+	 */
 	private int _modifiers;
 
+	/**
+	 * The x location of the mouse
+	 */
 	private int _x;
 
+	/**
+	 * The y location of the mouse
+	 */
 	private int _y;
 
+	/**
+	 * The button that was clicked
+	 */
 	private int _button;
 
+	/**
+	 * Wether the mouse has been dragged since the button was pressed
+	 */
 	private boolean _mouseDragged;
 
+	/**
+	 * The faces that are beneath the mouse pointer on the view component.
+	 */
 	private List _nodesClicked;
 
 	/**
-	 * Construct new MouseControlEvent.
+	 * Creates a new MouseControlEvent
+	 * @param number        The number of this event.
+	 * @param type          The event type. One of MOUSE_PRESSED,
+	 *                      MOUSE_RELEASED, MOUSE_MOVED or MOUSE_DRAGGED
+	 * @param modifiers     The modifiers for this event
+	 * @param x             The x location of the mouse
+	 * @param y             The y location of the mouse
+	 * @param button        The button that was pressed
+	 * @param dragged       Wether or not the mouse has been dragged since it
+	 *                      was pressed
+	 * @param nodesClicked  The faces that are beneath the mouse pointer on the
+	 *                      view component.
 	 */
-	public MouseControlEvent( int number, int type , int modifiers , int x , int y , int button, boolean dragged , List nodesClicked )
+	public MouseControlEvent( final int number, final int type , final int modifiers , final int x , final int y , final int button, final boolean dragged , final List nodesClicked )
 	{
 		_number = number;
 		_type = type;
@@ -51,31 +96,61 @@ public class MouseControlEvent
 		_nodesClicked = nodesClicked;
 	}
 
+	/**
+	 * Returns the faces that are beneath the mouse in the view component.
+	 * @return The faces beneath the mouse
+	 */
 	public List getNodesClicked()
 	{
 		return _nodesClicked;
 	}
 
+	/**
+	 * Returns type of this event. One of MOUSE_PRESSED, MOUSE_RELEASED,
+	 * MOUSE_MOVED or MOUSE_DRAGGED
+	 * @return The event type.
+	 */
 	public int getType()
 	{
 		return _type;
 	}
 
+	/**
+	 * The event number. After each MOUSE_RELEASED event, this number is
+	 * increased. This makes it easy to see if a mouse press and a mouse release
+	 * event are from the same mouse click.
+	 * @return The event number
+	 */
 	public int getNumber()
 	{
 		return _number;
 	}
 
+	/**
+	 * The button that was clicked
+	 * @return The button that was clicked
+	 */
 	public int getButton()
 	{
 		return _button;
 	}
 
+	/**
+	 * Wether the mouse has been dragged since the button was pressed
+	 * @return True if the mouse was dragged
+	 */
 	public boolean isMouseDragged()
 	{
 		return _mouseDragged;
 	}
 
+	/**
+	 * The modifier mask for this event. Modifiers represent the state of all
+	 * modal keys, such as ALT, CTRL, META, and the mouse buttons just after the
+	 * event occurred.
+	 * These modifiers are the same as the extended modifiers in an AWT event.
+	 * @return The modifier mask for this event.
+	 */
 	public int getModifiers()
 	{
 		return _modifiers;
@@ -121,13 +196,52 @@ public class MouseControlEvent
 		return ( _modifiers & ALT_GRAPH_MASK ) != 0;
 	}
 
+	/**
+	 * Create a human readable representation of this MouseControlEvent. This
+	 * is especially useful for debugging.
+	 * @return A human readable representation of this MouseControlEvent.
+	 */
+	public String toFriendlyString()
+	{
+		String string = "";
 
+		string += "MouseControlEvent\n";
+
+		final String[] types = new String[] { "", "Mouse pressed", "Mouse moved", "Mouse released", "Mouse dragged"};
+		string += "Type: " + types[_type] +" \n";
+		string += "Event number: " + _number +" \n";
+		string += "Modifiers: " + _modifiers +" \n";
+		string += "Clicked: button " + _button +" at (" + _x + " , " + _y + ")\n";
+		string += "Mouse has " + (_mouseDragged ? "" : "not ") +" been dragged.\n";
+		string += _nodesClicked.size() + " faces under the mouse: ";
+
+		for ( int i = 0; i < _nodesClicked.size(); i++ )
+		{
+			final Face3D face = (Face3D)_nodesClicked.get( i );
+			string += "  Face of " + face.getObject().getTag();
+		}
+
+		return string;
+	}
+
+	/**
+	 * Indicates the mouse button has been pressed.
+	 */
 	public static final int MOUSE_PRESSED = 1;
 
+	/**
+	 * Indicates the mouse has been moved, without any buttons pressed.
+	 */
 	public static final int MOUSE_MOVED = 2;
 
+	/**
+	 * Indicates the mouse button has been released.
+	 */
 	public static final int MOUSE_RELEASED = 3;
 
+	/**
+	 * Indicates the mouse has been dragged.
+	 */
 	public static final int MOUSE_DRAGGED = 4;
 
     /**
