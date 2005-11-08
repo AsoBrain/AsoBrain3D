@@ -98,8 +98,8 @@ public abstract class SceneInputTranslator
 
 	/**
 	 * Called from {@link SceneInputTranslator#getFacesAt}. This method can walk
-	 * through the objects in the <code>scene</code> to throw away any that do
-	 * not need to be tested for intersection.
+	 * through the objects in the <code>scene</code> to throw away any object
+	 * that does  not need to be tested for intersection.
 	 * Though implemented in this class, this method simply returns the scene
 	 * that is given to it. Classes that extends this class may override it to
 	 * increase efficiency.
@@ -111,31 +111,31 @@ public abstract class SceneInputTranslator
 	 *          for intersection.
 	 * @see     #getFacesAt
 	 */
-	protected Node3DCollection siftRelevantFaces( final Node3DCollection scene, final Projector projector, final int clickX, final int clickY )
+	protected Node3DCollection siftRelevantObjects( final Node3DCollection scene, final Projector projector, final int clickX, final int clickY )
 	{
 		return scene;
 	}
 
 	/**
-	 * Returns the {@link Face3D}s that lie below the point clickX, clickY. This
-	 * method calls <code>getScene</code> to get the objects in the scene,
-	 * <code>getProjector</code> to get the projector for the scene, and <code>
-	 * siftRelevantFaces</code> before checking intersection. Subclasses do not
-	 * need to override this method, overriding the three other methods should
-	 * suffice.
+	 * Returns the {@link Face3D}s in the world, below the point clickX, clickY
+	 * on the viewing plane. This method calls <code>getScene</code> to get the
+	 * objects in the scene, <code>getProjector</code> to get the projector for
+	 * the scene, and <code>siftRelevantFaces</code> before checking
+	 * intersection. Subclasses do not need to override this method, overriding
+	 * the three other methods should suffice.
 	 * @param clickX    The x position of the mouse click
 	 * @param clickY    The y position of the mouse click
 	 * @return  The {@link Face3D}s that lie below the point clickX, clickY.
 	 * @see     #getScene
 	 * @see     #getProjector
-	 * @see     #siftRelevantFaces
+	 * @see     #siftRelevantObjects
 	 */
 	protected List getFacesAt( final int clickX, final int clickY )
 	{
 		final Node3DCollection scene = getScene();
 		final Projector projector = getProjector();
 
-		siftRelevantFaces(scene, projector, clickX, clickY);
+		siftRelevantObjects(scene, projector, clickX, clickY);
 
 		final Vector3D lineStart = projector.screenToWorld(clickX, clickY, 0);
 		final Vector3D lineEnd = projector.screenToWorld( clickX, clickY, 1000000);

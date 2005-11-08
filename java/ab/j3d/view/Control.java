@@ -10,8 +10,8 @@
 package ab.j3d.view;
 
 /**
- * A Control listens to controlevent, and manipulates the view or 3d world with
- * the information in the events it receives.
+ * A Control listens to {@link ControlEvent}s, and manipulates the view or 3d
+ * world with the information in the events it receives.
  *
  * @author  Mart Slot
  * @version $Revision$ $Date$

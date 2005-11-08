@@ -10,7 +10,6 @@
 package ab.j3d.view;
 
 import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
@@ -31,11 +30,6 @@ public class ViewInputTranslator
 	private ViewModel _model;
 
 	/**
-	 * The projector for this view
-	 */
-	private Projector _projector;
-
-	/**
 	 * Reused collection of nodes in the model
 	 */
 	private Node3DCollection _tmpNodeCollection;
@@ -48,13 +42,12 @@ public class ViewInputTranslator
 	/**
 	 * Construct new ViewInputTranslator.
 	 */
-	public ViewInputTranslator( ViewModelView view, ViewModel model, Projector projector)
+	public ViewInputTranslator( final ViewModelView view, final ViewModel model )
 	{
 		super(view.getComponent());
 
 		_view = view;
 		_model = model;
-		_projector = projector;
 		_tmpNodeCollection = new Node3DCollection();
 	}
 
@@ -93,7 +86,7 @@ public class ViewInputTranslator
 	 */
 	protected Projector getProjector()
 	{
-		return _projector;
+		return _view.getProjector();
 	}
 
 }
