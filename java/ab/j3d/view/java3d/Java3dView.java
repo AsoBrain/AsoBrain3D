@@ -34,6 +34,8 @@ import ab.j3d.view.Projector;
 import ab.j3d.view.SelectionSupport;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModelView;
+import ab.j3d.view.SceneInputTranslator;
+import ab.j3d.view.ViewInputTranslator;
 
 /**
  * Java 3D implementation of view model view.
@@ -96,16 +98,19 @@ public final class Java3dView
 	 */
 	private final Java3dSelectionSupport _selectionSupport;
 
+	private SceneInputTranslator _inputTranslator;
+
 	/**
 	 * Construct view node using Java3D for rendering.
 	 *
+	 * @param model
 	 * @param   universe        Java3D universe for which the view is created.
 	 * @param   id              Application-assigned ID of this view.
 	 * @param   viewControl     Control to use for this view.
 	 *
 	 * @see     Java3dUniverse#createView
 	 */
-	Java3dView( final Java3dUniverse universe , final Object id , final ViewControl viewControl )
+	Java3dView( Java3dModel model, final Java3dUniverse universe, final Object id, final ViewControl viewControl )
 	{
 		super( id , viewControl );
 
@@ -126,6 +131,8 @@ public final class Java3dView
 		 * Update view to initial transform.
 		 */
 		update();
+
+		_inputTranslator = new ViewInputTranslator(this, model);
 
 		/*
 		 * Add DragSupport to handle drag events.
@@ -221,5 +228,30 @@ public final class Java3dView
 	public void setRenderingPolicy( final int policy )
 	{
 		/* @FIXME how can we implement such a feature? I think this really requires different geometry! Maybe something with 'alternate appearance' helps a little? */
+	}
+
+	public Projector getProjector ()
+	{
+		int policy = _view.getProjectionPolicy() == View.PARALLEL_PROJECTION ? Projector.PARALLEL : Projector.PERSPECTIVE;
+
+		int width = _canvas.getWidth();
+		int height = _canvas.getHeight();
+		double resolution = 0.0254 / 90.0;
+		double unit = _universe.getUnit();
+		double frontClip = _view.getFrontClipDistance();
+		double backClip = _view.getBackClipDistance();
+		double fov = _view.getFieldOfView();
+		double zoom = 1.0;
+		return Projector.createInstance( policy, width, height, resolution, unit, frontClip, backClip, fov, zoom);
+	}
+
+	public boolean hasInputTranslator()
+	{
+		return true;
+	}
+
+	public SceneInputTranslator getInputTranslator()
+	{
+		return _inputTranslator;
 	}
 }

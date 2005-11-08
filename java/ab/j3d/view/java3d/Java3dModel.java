@@ -233,7 +233,7 @@ public final class Java3dModel
 		if ( id == null )
 			throw new NullPointerException( "id" );
 
-		final Java3dView view = new Java3dView( _universe , id , viewControl );
+		final Java3dView view = new Java3dView( this, _universe , id , viewControl );
 		addView( view );
 		return view.getComponent();
 	}
