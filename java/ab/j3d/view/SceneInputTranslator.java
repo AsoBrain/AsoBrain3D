@@ -138,8 +138,7 @@ public abstract class SceneInputTranslator
 		siftRelevantObjects(scene, projector, clickX, clickY);
 
 		final Vector3D lineStart = projector.screenToWorld(clickX, clickY, 0);
-		final Vector3D lineEnd = projector.screenToWorld( clickX, clickY, 1000000);
-		System.out.println( "Linestart: " + lineStart.toString() + "   Lineend: " + lineEnd.toString() );
+		final Vector3D lineEnd = projector.screenToWorld( clickX, clickY, -1000000);
 
 		final IntersectionSupport support = new IntersectionSupport( );
 
