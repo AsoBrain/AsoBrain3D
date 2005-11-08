@@ -39,6 +39,8 @@ import ab.j3d.view.SelectionSupport;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModelNode;
 import ab.j3d.view.ViewModelView;
+import ab.j3d.view.SceneInputTranslator;
+import ab.j3d.view.ViewInputTranslator;
 
 /**
  * Java 2D implementation of view model view.
@@ -80,6 +82,8 @@ public final class Java2dView
 	 * Component through which a rendering of the view is shown.
 	 */
 	private final ViewComponent _viewComponent;
+
+	private SceneInputTranslator _inputTranslator;
 
 	/**
 	 * Stroke to use for sketched rendering.
@@ -130,26 +134,37 @@ public final class Java2dView
 			return new Dimension( MINIMUM_IMAGE_SIZE , MINIMUM_IMAGE_SIZE );
 		}
 
-		public void paintComponent( final Graphics g )
+		public Projector getProjector ()
 		{
-			super.paintComponent( g );
-
 			final Insets      insets            = getInsets( _insets );
 			final int         imageWidth        = getWidth() - insets.left - insets.right;
 			final int         imageHeight       = getHeight() - insets.top - insets.bottom;
 			final double      imageResolution   = 0.0254 / 90.0; // getToolkit().getScreenResolution();
 
-			final Java2dModel model             = _model;
-			final Object[]    nodeIDs           = model.getNodeIDs();
-			final Matrix3D    model2view     = getViewTransform();
-			final double      viewUnit          = model.getUnit();
+			final double      viewUnit          = _model.getUnit();
 
 			final int         projectionPolicy  = _projectionPolicy;
 			final double      fieldOfView       = Math.toRadians( 45.0 );
 			final double      zoomFactor        = 1.0;
 			final double      frontClipDistance = -0.1 / viewUnit;
 			final double      backClipDistance  = -100.0 / viewUnit;
-			final Projector   projector         = Projector.createInstance( projectionPolicy , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
+
+			return Projector.createInstance( projectionPolicy , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
+		}
+
+		public void paintComponent( final Graphics g )
+		{
+			super.paintComponent( g );
+
+			final Insets      insets      = getInsets( _insets );
+			final int         imageWidth  = getWidth()  - insets.left - insets.right;
+			final int         imageHeight = getHeight() - insets.top  - insets.bottom;
+
+			final Java2dModel model       = _model;
+			final Object[]    nodeIDs     = model.getNodeIDs();
+			final Matrix3D    model2view  = getViewTransform();
+
+			Projector projector = getProjector();
 
 			final boolean fill;
 			final boolean outline;
@@ -233,6 +248,8 @@ public final class Java2dView
 		 */
 		update();
 
+		_inputTranslator = new ViewInputTranslator(this, model);
+
 		/*
 		 * Add DragSupport to handle drag events.
 		 */
@@ -264,5 +281,20 @@ public final class Java2dView
 	public void setRenderingPolicy( final int policy )
 	{
 		_renderingPolicy = policy;
+	}
+
+	public boolean hasInputTranslator()
+	{
+		return true;
+	}
+
+	public SceneInputTranslator getInputTranslator()
+	{
+		return _inputTranslator;
+	}
+
+	public Projector getProjector ()
+	{
+		return _viewComponent.getProjector();
 	}
 }
