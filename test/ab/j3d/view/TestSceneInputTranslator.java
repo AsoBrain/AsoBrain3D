@@ -11,16 +11,17 @@ package ab.j3d.view;
 
 import java.awt.event.MouseEvent;
 import java.awt.Color;
+import java.util.List;
 import javax.swing.JPanel;
 
 import junit.framework.TestCase;
 
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
+import ab.j3d.model.Face3D;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.TextureSpec;
-import ab.j3d.view.java2d.Java2dModel;
 
 /**
  * This class tests the {@link SceneInputTranslator} class.
@@ -43,6 +44,13 @@ extends TestCase
 	private SceneInputTranslator _translator;
 	private ControlEvent _lastEvent;
 
+	private Object3D _plane1;
+	private Object3D _plane2;
+	private Matrix3D _transform1;
+	private Matrix3D _transform2;
+
+	private Node3DCollection _collection;
+
 	/**
 	 * Setup text fixture.
 	 *
@@ -53,21 +61,38 @@ extends TestCase
 	{
 		super.setUp();
 
+		_collection = new Node3DCollection();
+
+		final Matrix3D viewTransform = Matrix3D.INIT
+		.set( 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, -1.0, 0.0, -500 );
+
+		_plane1 = createPlane( 100.0 );
+		_plane1.setTag( "Plane 1" );
+		_transform1 = Matrix3D.getTransform( 90, 0, 0, 0, 0, 0 )
+		.multiply( viewTransform );
+		_collection.add( _transform1, _plane1 );
+
+		_plane2 = createPlane( 100.0 );
+		_plane2.setTag( "Plane 2" );
+		_transform2 = Matrix3D.getTransform( 0, 0, 0, 0, 0, -75 )
+		.multiply( viewTransform );
+		_collection.add( _transform2, _plane2 );
+
 		_translator = new SceneInputTranslator(new JPanel()){
 			public boolean blaat = true;
 			protected Node3DCollection getScene()
 			{
-				return new Node3DCollection();
+				return _collection;
 			}
 
 			protected Projector getProjector()
 			{
-				return Projector.createInstance( Projector.PARALLEL, 100, 100, 1, 1, 10, 1000, Math.toRadians( 45 ) , 1.0);
+				return Projector.createInstance( Projector.PERSPECTIVE, 100, 100, 1, ViewModel.M, 10, 1000, Math.toRadians( 45 ) , 1.0);
 			}
 		};
 
 		_translator.getEventQueue().addControl( new Control() {
-			public ControlEvent handleEvent( ControlEvent e )
+			public ControlEvent handleEvent( final ControlEvent e )
 			{
 				_lastEvent = e;
 				return e;
@@ -86,6 +111,40 @@ extends TestCase
 		_translator = null;
 
 		super.tearDown();
+	}
+
+	/**
+	 * Test the {@link SceneInputTranslator#getFacesAt} method.
+	 *
+	 * @throws Exception if the test fails.
+	 */
+	public void testGetFacesAt()
+	throws Exception
+	{
+		System.out.println( CLASS_NAME + ".testGetFacesAt()" );
+
+		System.out.println( "Selecting Plane 1" );
+		List selection = _translator.getFacesAt( 50, 50);
+		assertEquals( "The number of selected items is not 2, but " + selection.size() , 2, selection.size() );
+		Object tag = ((Face3D)selection.get( 0)).getObject().getTag();
+		assertEquals( "The selected object should have the tag Plane 1" , "Plane 1" , tag);
+
+		System.out.println( "Selecting Plane 1" );
+		selection = _translator.getFacesAt( 40, 40);
+		assertEquals( "The number of selected items is not 2, but " + selection.size() , 2, selection.size() );
+		tag = ((Face3D)selection.get( 0)).getObject().getTag();
+		assertEquals( "The selected object should have the tag Plane 1" , "Plane 1" , tag);
+
+		System.out.println( "Selecting nothing" );
+		selection = _translator.getFacesAt( 50, 63);
+		assertEquals( "The number of selected items is not 0, but " + selection.size() , 0, selection.size() );
+
+		System.out.println( "Selecting Plane 2" );
+		selection = _translator.getFacesAt( 50, 67);
+		assertEquals( "The number of selected items is not 2, but " + selection.size() , 2, selection.size() );
+		tag = ((Face3D)selection.get( 0)).getObject().getTag();
+		assertEquals( "The selected object should have the tag Plane 2" , "Plane 2" , tag);
+
 	}
 
 	/**
@@ -108,7 +167,7 @@ extends TestCase
 		assertEquals( "The event modifiers have changed", modifiers, event.getModifiers() );
 		assertEquals( "The mouse button is not 1", 1 , event.getButton() );
 		assertEquals( "The event type should be MOUSE_PRESSED", MouseControlEvent.MOUSE_PRESSED , event.getType() );
-		int lastNumber = event.getNumber();
+		final int lastNumber = event.getNumber();
 
 
 		modifiers = MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.CTRL_DOWN_MASK;
@@ -145,7 +204,7 @@ extends TestCase
 		assertEquals( "The event modifiers have changed", modifiers, event.getModifiers() );
 		assertEquals( "The mouse button is not 1", 1 , event.getButton() );
 		assertEquals( "The event type should be MOUSE_RELEASED", MouseControlEvent.MOUSE_RELEASED , event.getType() );
-		int lastNumber = event.getNumber();
+		final int lastNumber = event.getNumber();
 
 
 		modifiers = MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.CTRL_DOWN_MASK;
