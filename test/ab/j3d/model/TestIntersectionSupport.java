@@ -139,60 +139,62 @@ extends TestCase
 
 		System.out.println( "\n\n" + CLASS_NAME + ".testFaceSelection( Object3D , Matrix3D , Vector3D , Vector3D )" );
 
+		final Matrix3D viewTransform = Matrix3D.INIT.set( 1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0);
+
 		System.out.println( "\nTesting intersection with plane 1" );
-		selection = _intersectionSupport.getIntersectingFaces( _plane1, _transform1, Vector3D.INIT.set( 0, -500, 0 ), Vector3D.INIT.set( 0, 500, 0 ) );
+		selection = _intersectionSupport.getIntersectingFaces( _plane1, _transform1.multiply( viewTransform ) , Vector3D.INIT.set( 0, 0, -500 ), Vector3D.INIT.set( 0, 0, 500 ) );
 		assertTrue( "The number of intersected faces is not 2, but " + selection.size() , selection.size() == 2 );
 		Object tag1 = ((IntersectionSupport.Intersection)selection.get( 0)).object.getTag();
 		assertEquals( "The intersected wrong object was intersected" , "Plane 1" , tag1);
 
 		System.out.println( "\nTesting intersection with plane 1" );
-		selection = _intersectionSupport.getIntersectingFaces( _plane1, _transform1, Vector3D.INIT.set( -25, -500, -25 ), Vector3D.INIT.set( -25, 500, -25 ) );
+		selection = _intersectionSupport.getIntersectingFaces( _plane1, _transform1.multiply( viewTransform ) , Vector3D.INIT.set( -25, -25, -500 ), Vector3D.INIT.set( -25, -25, 500 ) );
 		assertTrue( "The number of intersected faces is not 2, but " + selection.size() , selection.size() == 2 );
 		tag1 = ((IntersectionSupport.Intersection)selection.get( 0)).object.getTag();
 		assertEquals( "The intersected wrong object was intersected" , "Plane 1" , tag1);
 
 		System.out.println( "\nTesting intersection with plane 1" );
-		selection = _intersectionSupport.getIntersectingFaces( _plane1, _transform1, Vector3D.INIT.set( -25, -50, 25 ), Vector3D.INIT.set( 25, 50, 25 ) );
+		selection = _intersectionSupport.getIntersectingFaces( _plane1, _transform1.multiply( viewTransform ) , Vector3D.INIT.set( -25, 25, -50 ), Vector3D.INIT.set( 25, 25, 50 ) );
 		assertTrue( "The number of intersected faces is not 2, but " + selection.size() , selection.size() == 2 );
 		tag1 = ((IntersectionSupport.Intersection)selection.get( 0)).object.getTag();
 		assertEquals( "The intersected wrong object was intersected" , "Plane 1" , tag1);
 
 		System.out.println( "\nTesting intersection with plane 1" );
-		selection = _intersectionSupport.getIntersectingFaces( _plane1, _transform1, Vector3D.INIT.set( 50, -500, 50 ), Vector3D.INIT.set( 50, 500, 50 ) );
+		selection = _intersectionSupport.getIntersectingFaces( _plane1, _transform1.multiply( viewTransform ) , Vector3D.INIT.set( 50, 50, -500 ), Vector3D.INIT.set( 50, 50, 500 ) );
 		assertTrue( "The number of intersected faces is not 2, but " + selection.size() , selection.size() == 2 );
 		tag1 = ((IntersectionSupport.Intersection)selection.get( 0)).object.getTag();
 		assertEquals( "The intersected wrong object was intersected" , "Plane 1" , tag1);
 
 		System.out.println( "\nTesting intersection with plane 1" );
-		selection = _intersectionSupport.getIntersectingFaces( _plane1, _transform1, Vector3D.INIT.set( 50.1, -500, 0 ), Vector3D.INIT.set( 50.1, 500, 0 ) );
+		selection = _intersectionSupport.getIntersectingFaces( _plane1, _transform1.multiply( viewTransform ) , Vector3D.INIT.set( 50.1, 0, -500 ), Vector3D.INIT.set( 50.1, 0, 500 ) );
 		assertTrue( "The number of intersected faces is not 0, but " + selection.size() , selection.size() == 0 );
 
 		System.out.println( "\nTesting intersection with plane 1" );
-		selection = _intersectionSupport.getIntersectingFaces( _plane1, _transform1, Vector3D.INIT.set( 0, -500, 50.1 ), Vector3D.INIT.set( 0, 500, 50.1 ) );
+		selection = _intersectionSupport.getIntersectingFaces( _plane1, _transform1.multiply( viewTransform ) , Vector3D.INIT.set( 0, 50.1, -500 ), Vector3D.INIT.set( 0, 50.1, 500 ) );
 		assertTrue( "The number of intersected faces is not 0, but " + selection.size() , selection.size() == 0 );
 
 		System.out.println( "\nTesting intersection with plane 7" );
-		selection = _intersectionSupport.getIntersectingFaces( _plane7, _transform7, Vector3D.INIT.set( 150, -500, 0 ), Vector3D.INIT.set( 150, 500, 0 ) );
+		selection = _intersectionSupport.getIntersectingFaces( _plane7, _transform7.multiply( viewTransform ) , Vector3D.INIT.set( 150, 0, -500 ), Vector3D.INIT.set( 150, 0, 500 ) );
 		assertTrue( "The number of intersected faces is not 2, but " + selection.size() , selection.size() == 2 );
 		tag1 = ((IntersectionSupport.Intersection)selection.get( 0)).object.getTag();
 		assertEquals( "The intersected wrong object was intersected" , "Plane 7" , tag1);
 
 		System.out.println( "\nTesting intersection with plane 7" );
-		selection = _intersectionSupport.getIntersectingFaces( _plane7, _transform7, Vector3D.INIT.set( 150.1, -500, 0 ), Vector3D.INIT.set( 150.1, 500, 0 ) );
+		selection = _intersectionSupport.getIntersectingFaces( _plane7, _transform7.multiply( viewTransform ) , Vector3D.INIT.set( 150.1, 0, -500 ), Vector3D.INIT.set( 150.1, 0, 500 ) );
 		assertTrue( "The number of intersected faces is not 0, but " + selection.size() , selection.size() == 0 );
 
 		System.out.println( "\nTesting intersection with plane 7" );
-		selection = _intersectionSupport.getIntersectingFaces( _plane7, _transform7, Vector3D.INIT.set( 150, -500, 50.1 ), Vector3D.INIT.set( 150, 500, 50.1 ) );
+		selection = _intersectionSupport.getIntersectingFaces( _plane7, _transform7.multiply( viewTransform ) , Vector3D.INIT.set( 150, 50.1, -500 ), Vector3D.INIT.set( 150, 50.1, 500 ) );
 		assertTrue( "The number of intersected faces is not 0, but " + selection.size() , selection.size() == 0 );
 
 		System.out.println( "\nTesting intersection with plane 7" );
-		selection = _intersectionSupport.getIntersectingFaces( _plane7, _transform7, Vector3D.INIT.set( 100, 25, 0 ), Vector3D.INIT.set( 200, 25, 0 ) );
+		selection = _intersectionSupport.getIntersectingFaces( _plane7, _transform7.multiply( viewTransform ) , Vector3D.INIT.set( 100, 0, 25 ), Vector3D.INIT.set( 200, 0, 25 ) );
 		assertTrue( "The number of intersected faces is not 2, but " + selection.size() , selection.size() == 2 );
 		tag1 = ((IntersectionSupport.Intersection)selection.get( 0)).object.getTag();
 		assertEquals( "The intersected wrong object was intersected" , "Plane 7" , tag1);
 
 		System.out.println( "\nTesting intersection with plane 7" );
-		selection = _intersectionSupport.getIntersectingFaces( _plane7, _transform7, Vector3D.INIT.set( -500, 200, 0 ), Vector3D.INIT.set( 500, 200, 0 ) );
+		selection = _intersectionSupport.getIntersectingFaces( _plane7, _transform7.multiply( viewTransform ) , Vector3D.INIT.set( -500, 0, 200 ), Vector3D.INIT.set( 500, 0, 200 ) );
 		assertTrue( "The number of intersected faces is not 2, but " + selection.size() , selection.size() == 2 );
 		tag1 = ((IntersectionSupport.Intersection)selection.get( 0)).object.getTag();
 		assertEquals( "The intersected wrong object was intersected" , "Plane 7" , tag1);
@@ -285,5 +287,10 @@ extends TestCase
 
 		return plane;
 	}
-
+/*
+		final Vector3D lf = Vector3D.INIT.set( -halfSize , 0.0 , -halfSize );
+		final Vector3D rf = Vector3D.INIT.set(  halfSize , 0.0 , -halfSize );
+		final Vector3D rb = Vector3D.INIT.set(  halfSize , 0.0 ,  halfSize );
+		final Vector3D lb = Vector3D.INIT.set( -halfSize , 0.0 ,  halfSize );
+*/
 }
