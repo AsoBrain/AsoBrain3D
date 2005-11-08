@@ -53,17 +53,17 @@ public class IntersectionSupport
 	 *
 	 * @return A list of the selected {@link Face3D}s, ordered from front to back.
 	 */
-	public List getIntersectingFaces( Node3DCollection scene, Vector3D lineStart, Vector3D lineEnd )
+	public List getIntersectingFaces( final Node3DCollection scene, Vector3D lineStart, Vector3D lineEnd )
 	{
-		List rawIntersections = new LinkedList();
+		final List rawIntersections = new LinkedList();
 
-		Vector3D direction = ( lineEnd.minus( lineStart ) ).normalize();
-		double rotateX = Math.asin( direction.z );
-		double rotateZ = Math.asin( direction.x );
+		final Vector3D direction = ( lineEnd.minus( lineStart ) ).normalize();
+		final double rotateX = Math.asin( direction.z );
+		final double rotateZ = Math.asin( direction.x );
 		Matrix3D lineTransform = Matrix3D.INIT.rotateX( rotateX ).rotateZ( rotateZ );
 		lineTransform = Matrix3D.INIT.setTranslation( -lineStart.x, -lineStart.y, -lineStart.z ).multiply( lineTransform );
 
-		double d = Vector3D.distanceBetween( lineStart, lineEnd );
+		final double d = Vector3D.distanceBetween( lineStart, lineEnd );
 		lineStart = Vector3D.INIT;
 		lineEnd   = Vector3D.INIT.set( 0 , d , 0 );
 
@@ -76,11 +76,11 @@ public class IntersectionSupport
 			rawIntersections.addAll( getIntersectingFaces( object, matrix, lineStart, lineEnd ) );
 		}
 
-		List sortedIntersections = new ArrayList( rawIntersections.size() );
+		final List sortedIntersections = new ArrayList( rawIntersections.size() );
 		for ( Iterator iterator = rawIntersections.iterator(); iterator.hasNext(); )
 		{
 			final Intersection intersection = (Intersection)iterator.next();
-			double distance = intersection.intersectionDistance;
+			final double distance = intersection.intersectionDistance;
 //			System.out.println( "Face: "+ intersection.object.getTag()+"  distance: " + distance );
 			boolean stop = false;
 
@@ -93,7 +93,7 @@ public class IntersectionSupport
 
 			for ( int i = sortedIntersections.size() - 1; i >= 0 && !stop; i-- )
 			{
-				Intersection temp = (Intersection)sortedIntersections.get( i );
+				final Intersection temp = (Intersection)sortedIntersections.get( i );
 				if ( distance >= temp.intersectionDistance )
 				{
 //					System.out.println( "added at " + (i+1) );
@@ -109,10 +109,10 @@ public class IntersectionSupport
 			}
 		}
 
-		List intersectingFaces = new ArrayList( sortedIntersections.size() );
+		final List intersectingFaces = new ArrayList( sortedIntersections.size() );
 		for ( int i = 0; i < sortedIntersections.size(); i++ )
 		{
-			Intersection intersection = (Intersection)sortedIntersections.get( i );
+			final Intersection intersection = (Intersection)sortedIntersections.get( i );
 			intersectingFaces.add( intersection.face );
 		}
 		return intersectingFaces;
@@ -134,9 +134,9 @@ public class IntersectionSupport
 	 *
 	 * @return A list with the intersected faces
 	 */
-	protected List getIntersectingFaces( Object3D object, Matrix3D objectTransform, Vector3D lineStart, Vector3D lineEnd )
+	protected List getIntersectingFaces( final Object3D object, final Matrix3D objectTransform, final Vector3D lineStart, final Vector3D lineEnd )
 	{
-		List intersections = new ArrayList( object.getFaceCount() );
+		final List intersections = new ArrayList( object.getFaceCount() );
 
 		final int      faceCount   = object.getFaceCount();
 		final double[] vertices    = objectTransform.transform( object.getPointCoords() , null , object.getPointCount() );
@@ -174,11 +174,11 @@ public class IntersectionSupport
 				if ( u >= 0 && u <= 1 )
 				{
 //					System.out.println( "u between 0 and 1, u="+ u );
-					double intX = lineStart.x + u * ( lineEnd.x - lineStart.x );
-					double intZ = lineStart.z + u * ( lineEnd.z - lineStart.z );
+					final double intX = lineStart.x + u * ( lineEnd.x - lineStart.x );
+					final double intZ = lineStart.z + u * ( lineEnd.z - lineStart.z );
 //					System.out.println( "Intersection  intX" + intX + "  intZ" + intZ );
 
-					int     lastIndex = pointIndices[ pointIndices.length - 1 ] * 3;
+					final int lastIndex = pointIndices[ pointIndices.length - 1 ] * 3;
 					double  x1        = vertices[ lastIndex ];
 					double  z1        = vertices[ lastIndex + 2 ];
 					boolean left      = false;
@@ -194,16 +194,16 @@ public class IntersectionSupport
 
 						if ( x1 != x2 || z1 != z2 )
 						{
-							double dir = ( intZ - z1 ) * ( x2 - x1 ) - ( intX - x1 ) * ( z2 - z1 );
+							final double dir = ( intZ - z1 ) * ( x2 - x1 ) - ( intX - x1 ) * ( z2 - z1 );
 							left  = left  || dir > 0;
 							right = right || dir < 0;
 
 							if ( dir == 0 )
 							{
-								double minX = x1 <  x2 ? x1 : x2;
-								double maxX = x1 >= x2 ? x1 : x2;
-								double minZ = z1 <  z2 ? z1 : z2;
-								double maxZ = z1 >= z2 ? z1 : z2;
+								final double minX = x1 <  x2 ? x1 : x2;
+								final double maxX = x1 >= x2 ? x1 : x2;
+								final double minZ = z1 <  z2 ? z1 : z2;
+								final double maxZ = z1 >= z2 ? z1 : z2;
 								center = center || intX >= minX && intX <= maxX && intZ >= minZ && intZ <= maxZ;
 							}
 
@@ -217,7 +217,7 @@ public class IntersectionSupport
 //					System.out.println( "Left: " + left + "  Right: " + right + "  Center: " + center );
 					if ( left ^ right || center )
 					{
-						Intersection intersection = new Intersection();
+						final Intersection intersection = new Intersection();
 						intersection.object = object;
 						intersection.face = face;
 						intersection.intersectionDistance = u;
