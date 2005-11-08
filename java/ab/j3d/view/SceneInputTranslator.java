@@ -10,17 +10,16 @@
 package ab.j3d.view;
 
 import java.awt.Component;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseEvent;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 
-import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
-import ab.j3d.model.Node3DCollection;
-import ab.j3d.model.IntersectionSupport;
 import ab.j3d.model.Face3D;
+import ab.j3d.model.IntersectionSupport;
+import ab.j3d.model.Node3DCollection;
 
 /**
  * The SceneInputTranslator listens to events on a component and dispatches
@@ -61,7 +60,7 @@ public abstract class SceneInputTranslator
 	 * Construct new EventHandler.
 	 * @param component
 	 */
-	public SceneInputTranslator( Component component )
+	public SceneInputTranslator( final Component component )
 	{
 		_component = component;
 		_component.addMouseListener( this );
@@ -112,7 +111,7 @@ public abstract class SceneInputTranslator
 	 *          for intersection.
 	 * @see     #getFacesAt
 	 */
-	protected Node3DCollection siftRelevantFaces( Node3DCollection scene, Projector projector, int clickX, int clickY )
+	protected Node3DCollection siftRelevantFaces( final Node3DCollection scene, final Projector projector, final int clickX, final int clickY )
 	{
 		return scene;
 	}
@@ -131,35 +130,34 @@ public abstract class SceneInputTranslator
 	 * @see     #getProjector
 	 * @see     #siftRelevantFaces
 	 */
-	protected List getFacesAt(int clickX, int clickY )
+	protected List getFacesAt( final int clickX, final int clickY )
 	{
-		Node3DCollection scene = getScene();
-		Projector projector = getProjector();
+		final Node3DCollection scene = getScene();
+		final Projector projector = getProjector();
 
 		siftRelevantFaces(scene, projector, clickX, clickY);
 
-		Vector3D lineStart = projector.screenToWorld(clickX, clickY, 0);
-		Vector3D lineEnd = projector.screenToWorld( clickX, clickY, 2000);
+		final Vector3D lineStart = projector.screenToWorld(clickX, clickY, 0);
+		final Vector3D lineEnd = projector.screenToWorld( clickX, clickY, 1000000);
+		System.out.println( "Linestart: " + lineStart.toString() + "   Lineend: " + lineEnd.toString() );
 
-		IntersectionSupport support = new IntersectionSupport( );
+		final IntersectionSupport support = new IntersectionSupport( );
 
-		List selections = support.getIntersectingFaces( scene, lineStart, lineEnd );
-
-		return selections;
+		return support.getIntersectingFaces( scene, lineStart, lineEnd );
 	}
 
 	/**
 	 * Invoked when a mouse button has been pressed on a component.
 	 */
-	public void mousePressed( MouseEvent e ) {
-		int type = MouseControlEvent.MOUSE_PRESSED;
-		int x = e.getX();
-		int y = e.getY();
-		int button = e.getButton();
-		int modifiers = e.getModifiersEx();
-		List nodesClicked = getFacesAt(x, y);
+	public void mousePressed( final MouseEvent e ) {
+		final int type = MouseControlEvent.MOUSE_PRESSED;
+		final int x = e.getX();
+		final int y = e.getY();
+		final int button = e.getButton();
+		final int modifiers = e.getModifiersEx();
+		final List nodesClicked = getFacesAt(x, y);
 
-		MouseControlEvent event = new MouseControlEvent(_eventNumber, type, modifiers, x, y, button, _mouseDragged, nodesClicked );
+		final MouseControlEvent event = new MouseControlEvent(_eventNumber, type, modifiers, x, y, button, _mouseDragged, nodesClicked );
 
 		_eventQueue.dispatchEvent( event );
 	}
@@ -167,16 +165,16 @@ public abstract class SceneInputTranslator
 	/**
 	 * Invoked when a mouse button has been released on a component.
 	 */
-	public void mouseReleased( MouseEvent e )
+	public void mouseReleased( final MouseEvent e )
 	{
-		int type = MouseControlEvent.MOUSE_RELEASED;
-		int x = e.getX();
-		int y = e.getY();
-		int button = e.getButton();
-		int modifiers = e.getModifiersEx();
-		List nodesClicked = new LinkedList();
+		final int type = MouseControlEvent.MOUSE_RELEASED;
+		final int x = e.getX();
+		final int y = e.getY();
+		final int button = e.getButton();
+		final int modifiers = e.getModifiersEx();
+		final List nodesClicked = new LinkedList();
 
-		MouseControlEvent event = new MouseControlEvent(_eventNumber, type, modifiers, x, y, button, _mouseDragged, nodesClicked );
+		final MouseControlEvent event = new MouseControlEvent(_eventNumber, type, modifiers, x, y, button, _mouseDragged, nodesClicked );
 
 		_eventQueue.dispatchEvent( event );
 
@@ -188,17 +186,17 @@ public abstract class SceneInputTranslator
 	 * Invoked when the mouse button has been clicked (pressed and released) on a
 	 * component.
 	 */
-	public void mouseClicked( MouseEvent e ) { }
+	public void mouseClicked( final MouseEvent e ) { }
 
 	/**
 	 * Invoked when the mouse enters a component.
 	 */
-	public void mouseEntered( MouseEvent e ) { }
+	public void mouseEntered( final MouseEvent e ) { }
 
 	/**
 	 * Invoked when the mouse exits a component.
 	 */
-	public void mouseExited( MouseEvent e ) { }
+	public void mouseExited( final MouseEvent e ) { }
 
 	/**
 	 * Invoked when a mouse button is pressed on a component and then dragged.
@@ -211,12 +209,12 @@ public abstract class SceneInputTranslator
 	 * <code>MOUSE_DRAGGED</code> events may not be delivered during a native
 	 * Drag&Drop operation.
 	 */
-	public void mouseDragged( MouseEvent e ) { }
+	public void mouseDragged( final MouseEvent e ) { }
 
 	/**
 	 * Invoked when the mouse cursor has been moved onto a component but no buttons
 	 * have been pushed.
 	 */
-	public void mouseMoved( MouseEvent e ) { }
+	public void mouseMoved( final MouseEvent e ) { }
 
 }
