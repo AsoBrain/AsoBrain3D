@@ -22,7 +22,6 @@ package ab.j3d.view;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import javax.swing.JPanel;
@@ -176,6 +175,32 @@ public abstract class ViewModel
 		result = new Object[ nodes.size() ];
 		for ( int i = 0 ; i < result.length ; i++ )
 			result[ i ] = ((ViewModelNode)nodes.get( i ) ).getID();
+
+		return result;
+	}
+
+	/**
+	 * Returns the ID object for a {@link Node3D}. If the node is not part of this
+	 * model, null is returned.
+	 *
+	 * @param node The node for which the id is required
+	 *
+	 * @return The ID of the given node
+	 */
+	public final Object getID( final Node3D node )
+	{
+		Object result = null;
+
+		final List nodes = _nodes;
+
+		for ( int i = 0; i < nodes.size() && result == null; i++ )
+		{
+			ViewModelNode modelNode = (ViewModelNode)nodes.get( i );
+			if ( modelNode.getNode3D() == node )
+			{
+				result = modelNode.getID();
+			}
+		}
 
 		return result;
 	}
@@ -612,38 +637,32 @@ public abstract class ViewModel
 	}
 
 	/**
-	 * Add a {@link NodeSelectionListener} to all the views this ViewModel
-	 * currently has. Any views added later do not listen to selection events.
+	 * Returns wether or not this ViewModel supports selection of objects. If it
+	 * does not, the methods {@link #addSelectionListener} and {@link
+	 * #removeSelectionListener} do not have any effect.
 	 *
-	 * @param   listener    Selection listener to add.
+	 * @return <code>true</code> if this ViewModel supports selection,
+	 *         <code>false</code> if it does not.
 	 */
-	public final void addSelectionListener( final NodeSelectionListener listener )
-	{
-		for ( Iterator iter = _views.iterator() ; iter.hasNext() ; )
-		{
-			// @FIXME: Only existing views now add the selection listener
-			final ViewModelView view = (ViewModelView)iter.next();
+	public abstract boolean supportsSelection();
 
-			final SelectionSupport selectionSupport = view.getSelectionSupport();
-			if ( selectionSupport != null )
-				selectionSupport.addSelectionListener( listener );
-		}
+	/**
+	 * Add a {@link SelectionListener}, which will be notified when the selection
+	 * changes. Note that not all ViewModels support selection. This can be checked
+	 * with the {@link #supportsSelection} method.
+	 *
+	 * @param listener Selection listener to add.
+	 */
+	public void addSelectionListener( final SelectionListener listener )
+	{
 	}
 
 	/**
-	 * Remove a {@link NodeSelectionListener} from all views.
+	 * Remove a {@link SelectionListener}.
 	 *
 	 * @param   listener    Selection listener to remove.
 	 */
-	public final void removeSelectionListener( final NodeSelectionListener listener )
+	public void removeSelectionListener( final SelectionListener listener )
 	{
-		for ( Iterator iter = _views.iterator() ; iter.hasNext() ; )
-		{
-			final ViewModelView view = (ViewModelView) iter.next();
-
-			final SelectionSupport selectionSupport = view.getSelectionSupport();
-			if ( selectionSupport != null )
-				selectionSupport.removeSelectionListener( listener );
-		}
 	}
 }
