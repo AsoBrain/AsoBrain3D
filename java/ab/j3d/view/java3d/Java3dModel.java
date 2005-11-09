@@ -39,6 +39,10 @@ import ab.j3d.model.Object3D;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelNode;
+import ab.j3d.view.SelectionListener;
+import ab.j3d.view.SelectionModel;
+import ab.j3d.view.Control;
+import ab.j3d.view.SelectionControl;
 
 /**
  * View model implementation for Java 3D.
@@ -64,6 +68,11 @@ public final class Java3dModel
 	 * ({@link BranchGroup}).
 	 */
 	private final Map _nodeContentMap = new HashMap();
+
+	/**
+	 * SelectionModel for this ViewModel
+	 */
+	private SelectionModel _selectionModel;
 
 	/**
 	 * Construct new Java 3D model.
@@ -93,6 +102,8 @@ public final class Java3dModel
 	{
 		_universe     = j3dUniverse;
 		_contentGraph = Java3dTools.createDynamicScene( _universe.getContent() );
+
+		_selectionModel = new SelectionModel( this );
 	}
 
 	/**
@@ -234,6 +245,13 @@ public final class Java3dModel
 			throw new NullPointerException( "id" );
 
 		final Java3dView view = new Java3dView( this, _universe , id , viewControl );
+
+		if ( view.hasInputTranslator() )
+		{
+			final Control control = new SelectionControl( _selectionModel );
+			view.getInputTranslator().getEventQueue().addControl( control );
+		}
+
 		addView( view );
 		return view.getComponent();
 	}
@@ -246,5 +264,20 @@ public final class Java3dModel
 	public Java3dUniverse getUniverse()
 	{
 		return _universe;
+	}
+
+	public boolean supportsSelection()
+	{
+		return true;
+	}
+
+	public void addSelectionListener( final SelectionListener listener )
+	{
+		_selectionModel.addSelectionListener( listener );
+	}
+
+	public void removeSelectionListener( final SelectionListener listener )
+	{
+		_selectionModel.removeSelectionListener( listener );
 	}
 }

@@ -24,6 +24,10 @@ import java.awt.Component;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelNode;
+import ab.j3d.view.SelectionModel;
+import ab.j3d.view.SelectionListener;
+import ab.j3d.view.SelectionControl;
+import ab.j3d.view.Control;
 
 /**
  * Java 2D implementation of view model.
@@ -41,6 +45,11 @@ public final class Java2dModel
 	private final double _unit;
 
 	/**
+	 * SelectionModel for this ViewModel
+	 */
+	private SelectionModel _selectionModel;
+
+	/**
 	 * Construct new Java 2D view model.
 	 */
 	public Java2dModel()
@@ -56,6 +65,8 @@ public final class Java2dModel
 	public Java2dModel( final double unit )
 	{
 		_unit = unit;
+
+		_selectionModel = new SelectionModel( this );
 	}
 
 	protected void initializeNode( final ViewModelNode node )
@@ -76,6 +87,13 @@ public final class Java2dModel
 	public Component createView( final Object id , final ViewControl viewControl )
 	{
 		final Java2dView view = new Java2dView( this , id , viewControl );
+
+		if ( view.hasInputTranslator() )
+		{
+			final Control control = new SelectionControl( _selectionModel );
+			view.getInputTranslator().getEventQueue().addControl( control );
+		}
+
 		addView( view );
 		return view.getComponent();
 	}
@@ -89,5 +107,20 @@ public final class Java2dModel
 	public double getUnit()
 	{
 		return _unit;
+	}
+
+	public boolean supportsSelection()
+	{
+		return true;
+	}
+
+	public void addSelectionListener( final SelectionListener listener )
+	{
+		_selectionModel.addSelectionListener( listener );
+	}
+
+	public void removeSelectionListener( final SelectionListener listener )
+	{
+		_selectionModel.removeSelectionListener( listener );
 	}
 }
