@@ -21,7 +21,8 @@
 package ab.j3d.view;
 
 import java.awt.Color;
-import java.awt.Component;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.JFrame;
 
 import ab.j3d.Matrix3D;
@@ -45,26 +46,70 @@ public class ViewModelExample
 	protected ViewModelExample( final ViewModel viewModel )
 	{
 		final Object3D cube = createCube( 100.0 );
+		cube.setTag( "Cube 1" );
 		viewModel.createNode( "cube" , Matrix3D.INIT , cube , null , 1.0f );
 
 		final Object3D cubeLeft = createCube( 75.0 );
+		cubeLeft.setTag( "Cube left");
 		viewModel.createNode( "cubeLeft" , Matrix3D.getTransform( 0, 225, 90, -250, 50, 0) , cubeLeft , null , 1.0f );
 
 		final Object3D cubeRight = createCube( 50.0 );
+		cubeRight.setTag( "Cube right");
 		viewModel.createNode( "cubeRight" , Matrix3D.getTransform( 90, 0, 315, 225, 0, 0) , cubeRight , null , 1.0f );
 
 		final Vector3D  viewFrom = Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 );
 		final Vector3D  viewAt   = Vector3D.INIT;
-		final Component view     = viewModel.createView( "view" , new FromToViewControl( viewFrom , viewAt ) );
 
-		final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , view );
+		viewModel.createView( "view" , new FromToViewControl( viewFrom , viewAt ) );
+		ViewModelView view = viewModel.getView( "view" );
+
+		final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , view.getComponent() );
 		frame.setVisible( true );
 
-		viewModel.addSelectionListener(new NodeSelectionListener() {
-			public void nodeSelected(NodeSelectionEvent e){
-				System.out.println( "Node selected. Id: " + e.getNodeID().toString() );
-			}
-		} );
+		/*if ( view.hasInputTranslator() )
+		{
+			SceneInputTranslator translator = view.getInputTranslator();
+			translator.getEventQueue().addControl( new Control() {
+
+				public ControlEvent handleEvent( ControlEvent e )
+				{
+					if ( e instanceof MouseControlEvent )
+					{
+						MouseControlEvent event = (MouseControlEvent)e;
+						List faces = event.getFacesClicked();
+						String string = faces.size() + " faces under the mouse: ";
+						for ( int i = 0; i < faces.size(); i++ )
+						{
+							Face3D face = (Face3D)faces.get( i );
+							string += "  Face of " + face.getObject().getTag();
+						}
+						System.out.println( string );
+					}
+					//System.out.println( "\n" + e.toString() );
+					return e;
+				}
+			});
+		}*/
+
+		if ( viewModel.supportsSelection() )
+		{
+			viewModel.addSelectionListener( new SelectionListener() {
+
+				public void selectionChanged( SelectionChangeEvent e )
+				{
+					List selected = new LinkedList(e.getSelection());
+
+					String string = selected.size() + " object selected. ID's: ";
+					for ( int i = 0; i < selected.size(); i++ )
+					{
+						Object id = (Object)selected.get( i );
+						string += "  "  + id;
+					}
+					System.out.println( string );
+				}
+			});
+		}
+
 	}
 
 	/**
