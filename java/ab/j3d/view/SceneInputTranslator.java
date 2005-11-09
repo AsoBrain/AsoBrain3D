@@ -13,7 +13,6 @@ import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.util.LinkedList;
 import java.util.List;
 
 import ab.j3d.Vector3D;
@@ -171,7 +170,7 @@ public abstract class SceneInputTranslator
 		final int y = e.getY();
 		final int button = e.getButton();
 		final int modifiers = e.getModifiersEx();
-		final List nodesClicked = new LinkedList();
+		final List nodesClicked = getFacesAt(x, y);
 
 		final MouseControlEvent event = new MouseControlEvent(_eventNumber, type, modifiers, x, y, button, _mouseDragged, nodesClicked );
 

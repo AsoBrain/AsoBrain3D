@@ -68,7 +68,7 @@ public class MouseControlEvent
 	/**
 	 * The faces that are beneath the mouse pointer on the view component.
 	 */
-	private List _nodesClicked;
+	private List _facesClicked;
 
 	/**
 	 * Creates a new MouseControlEvent
@@ -81,10 +81,10 @@ public class MouseControlEvent
 	 * @param button        The button that was pressed
 	 * @param dragged       Wether or not the mouse has been dragged since it
 	 *                      was pressed
-	 * @param nodesClicked  The faces that are beneath the mouse pointer on the
+	 * @param facesClicked  The faces that are beneath the mouse pointer on the
 	 *                      view component.
 	 */
-	public MouseControlEvent( final int number, final int type , final int modifiers , final int x , final int y , final int button, final boolean dragged , final List nodesClicked )
+	public MouseControlEvent( final int number, final int type , final int modifiers , final int x , final int y , final int button, final boolean dragged , final List facesClicked )
 	{
 		_number = number;
 		_type = type;
@@ -93,16 +93,16 @@ public class MouseControlEvent
 		_y = y;
 		_button = button;
 		_mouseDragged = dragged;
-		_nodesClicked = nodesClicked;
+		_facesClicked = facesClicked;
 	}
 
 	/**
 	 * Returns the faces that are beneath the mouse in the view component.
 	 * @return The faces beneath the mouse
 	 */
-	public List getNodesClicked()
+	public List getFacesClicked()
 	{
-		return _nodesClicked;
+		return _facesClicked;
 	}
 
 	/**
@@ -213,11 +213,11 @@ public class MouseControlEvent
 		string += "Modifiers: " + _modifiers +" \n";
 		string += "Clicked: button " + _button +" at (" + _x + " , " + _y + ")\n";
 		string += "Mouse has " + (_mouseDragged ? "" : "not ") +" been dragged.\n";
-		string += _nodesClicked.size() + " faces under the mouse: ";
+		string += _facesClicked.size() + " faces under the mouse: ";
 
-		for ( int i = 0; i < _nodesClicked.size(); i++ )
+		for ( int i = 0; i < _facesClicked.size(); i++ )
 		{
-			final Face3D face = (Face3D)_nodesClicked.get( i );
+			final Face3D face = (Face3D)_facesClicked.get( i );
 			string += "  Face of " + face.getObject().getTag();
 		}
 
