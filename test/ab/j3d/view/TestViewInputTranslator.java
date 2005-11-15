@@ -72,7 +72,7 @@ extends TestCase
 		model.createNode( "plane2" , _transform2 , _plane2 , null , 1.0f );
 
 
-		_translator = new ViewInputTranslator(view, model, projector);
+		_translator = new ViewInputTranslator(view, model);
 	}
 
 	/**
