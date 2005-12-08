@@ -21,13 +21,17 @@
 package ab.j3d.view;
 
 import java.awt.Color;
-import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JFrame;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
+import ab.j3d.control.SceneInputTranslator;
+import ab.j3d.control.MouseControlEvent;
+import ab.j3d.control.ControlEvent;
+import ab.j3d.control.Control;
+import ab.j3d.control.Intersection;
 import ab.j3d.model.Object3D;
 
 import com.numdata.oss.ui.WindowTools;
@@ -45,6 +49,21 @@ public class ViewModelExample
 	 */
 	protected ViewModelExample( final ViewModel viewModel )
 	{
+//		final Object3D plane1 = createPlane( 200.0 );
+//		plane1.setTag( "Plane 1" );
+//		Matrix3D transform1 = Matrix3D.getTransform( 225, 0, 90, 0, 175, 20);
+//		viewModel.createNode( "plane1" , transform1 , plane1 , null , 1.0f );
+//
+//		final Object3D plane2 = createPlane( 150.0 );
+//		plane2.setTag( "Plane 2" );
+//		Matrix3D transform2 = Matrix3D.getTransform( 0, 225, 90, -250, 50, 0);
+//		viewModel.createNode( "plane2" , transform2 , plane2 , null , 1.0f );
+//
+//		final Object3D plane3 = createPlane( 100.0 );
+//		plane3.setTag( "Plane 3" );
+//		Matrix3D transform3 = Matrix3D.getTransform( 90, 0, 315, 225, 0, 0);
+//		viewModel.createNode( "plane3" , transform3 , plane3 , null , 1.0f );
+//
 		final Object3D cube = createCube( 100.0 );
 		cube.setTag( "Cube 1" );
 		viewModel.createNode( "cube" , Matrix3D.INIT , cube , null , 1.0f );
@@ -66,7 +85,7 @@ public class ViewModelExample
 		final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , view.getComponent() );
 		frame.setVisible( true );
 
-		/*if ( view.hasInputTranslator() )
+		if ( view.hasInputTranslator() )
 		{
 			SceneInputTranslator translator = view.getInputTranslator();
 			translator.getEventQueue().addControl( new Control() {
@@ -76,39 +95,27 @@ public class ViewModelExample
 					if ( e instanceof MouseControlEvent )
 					{
 						MouseControlEvent event = (MouseControlEvent)e;
-						List faces = event.getFacesClicked();
-						String string = faces.size() + " faces under the mouse: ";
-						for ( int i = 0; i < faces.size(); i++ )
+						if ( event.getType() == MouseControlEvent.MOUSE_PRESSED )
 						{
-							Face3D face = (Face3D)faces.get( i );
-							string += "  Face of " + face.getObject().getTag();
+							List objects = event.getIntersections();
+							String string = objects.size() + " objects under the mouse: ";
+							for ( int i = 0; i < objects.size(); i++ )
+							{
+								string += "  Object: " + ((Intersection)objects.get( i)).getID();
+							}
+							System.out.println( string );
 						}
-						System.out.println( string );
 					}
-					//System.out.println( "\n" + e.toString() );
 					return e;
 				}
-			});
-		}*/
 
-		if ( viewModel.supportsSelection() )
-		{
-			viewModel.addSelectionListener( new SelectionListener() {
-
-				public void selectionChanged( SelectionChangeEvent e )
+				public int getDataRequiredMask()
 				{
-					List selected = new LinkedList(e.getSelection());
-
-					String string = selected.size() + " object selected. ID's: ";
-					for ( int i = 0; i < selected.size(); i++ )
-					{
-						Object id = (Object)selected.get( i );
-						string += "  "  + id;
-					}
-					System.out.println( string );
+					return 0;
 				}
 			});
 		}
+
 
 	}
 
@@ -161,5 +168,22 @@ public class ViewModelExample
 		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , blue    , false , false ); // X =  size
 
 		return cube;
+	}
+
+	public static Object3D createPlane( final double size )
+	{
+		final Vector3D lf = Vector3D.INIT.set( -size , -size , 0.0 );
+		final Vector3D rf = Vector3D.INIT.set(  size , -size , 0.0 );
+		final Vector3D rb = Vector3D.INIT.set(  size ,  size , 0.0 );
+		final Vector3D lb = Vector3D.INIT.set( -size ,  size , 0.0 );
+
+		final TextureSpec red     = new TextureSpec( Color.red     );
+		final TextureSpec green   = new TextureSpec( Color.green   );
+
+		final Object3D plane = new Object3D();
+		/* top    */ plane.addFace( new Vector3D[] { lf , lb , rb , rf } , red   , false , false ); // Z =  size
+		/* bottom */ plane.addFace( new Vector3D[] { lb , lf , rf , rb } , green , false , false ); // Z = -size
+
+		return plane;
 	}
 }
