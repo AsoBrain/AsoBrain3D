@@ -24,6 +24,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.control.SceneInputTranslator;
+import ab.j3d.control.ControlEventQueue;
+import ab.j3d.control.Control;
 
 /**
  * This class defines a view in the view model.
@@ -187,19 +190,20 @@ public abstract class ViewModelView
 	public abstract void setRenderingPolicy( final int policy );
 
 	/**
-	 * Returns the {@link SelectionSupport} of this view.
+	 * Returns the {@link Projector} for this View.
 	 *
-	 * @return  This view's {@link SelectionSupport};
-	 *          <code>null</code> if this view has no selection support.
+	 * @return  the {@link Projector} for this view
 	 */
-	public abstract SelectionSupport getSelectionSupport();
+	protected abstract Projector getProjector ();
 
 	/**
 	 * Returns wether or not this ViewModelView has a
 	 * {@link SceneInputTranslator}.
-	 * @return true if there is a SceneInputTranslator, false otherwise
+	 *
+	 * @return  <code>true</code> if there is a SceneInputTranslator,
+	 *          <code>false</code> otherwise.
 	 */
-	public boolean hasInputTranslator()
+	protected boolean hasInputTranslator()
 	{
 		return false;
 	}
@@ -208,12 +212,69 @@ public abstract class ViewModelView
 	 * Returns the {@link SceneInputTranslator}, if this class has one. The
 	 * method {@link #hasInputTranslator()} can be used to
 	 * check before calling this function.
-	 * @return The SceneInputTranslator for this View
+	 *
+	 * @return  The {@link SceneInputTranslator} for this view
 	 */
-	public SceneInputTranslator getInputTranslator()
+	protected SceneInputTranslator getInputTranslator()
 	{
 		return null;
 	}
 
-	public abstract Projector getProjector ();
+	/**
+	 * Adds a {@link Control} to this view. This control is added to the end of
+	 * the list of controls. <p>Note that not all views support
+	 * controls. This can be check with the method
+	 * {@link ViewModel#supportsControls()}.
+	 *
+	 * @param   control     The {@link Control} to add
+	 */
+	public final void addControl( final Control control )
+	{
+		final SceneInputTranslator inputTranslator = getInputTranslator();
+		final ControlEventQueue queue = inputTranslator.getEventQueue();
+
+		addControl( queue.size() , control);
+	}
+
+	/**
+	 * Adds a {@link Control} to this view. This control is added to  the list
+	 * of Controls at <code>index</code>. <p>Note that not all views support
+	 * Controls. This can be checked with the method
+	 * {@link ViewModel#supportsControls()}.
+	 *
+	 * @param   index       The index at which to place the control
+	 * @param   control     The {@link Control} to add
+	 */
+	public final void addControl( final int index , final Control control )
+	{
+		if ( hasInputTranslator() )
+		{
+			final SceneInputTranslator inputTranslator = getInputTranslator();
+			final ControlEventQueue queue = inputTranslator.getEventQueue();
+
+			if ( index < 0 || index > queue.size() )
+				throw new IllegalArgumentException( "The given index must be greater than 0 and smaller or equal to the number of controllers" );
+
+			queue.addControl( index , control );
+		}
+	}
+
+	/**
+	 * Removes a {@link Control} from the list of controls.
+	 * <p>Note that not all views support Controls. This can be checked with the
+	 * method {@link ViewModel#supportsControls()}.
+	 *
+	 * @param   control     The Control to remove
+	 */
+	public final void removeControl( final Control control )
+	{
+		if ( hasInputTranslator() )
+		{
+			final SceneInputTranslator inputTranslator = getInputTranslator();
+			final ControlEventQueue queue = inputTranslator.getEventQueue();
+
+			queue.removeControl( control );
+		}
+	}
+
 }

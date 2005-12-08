@@ -31,6 +31,7 @@ import ab.j3d.Bounds3D;
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
+import ab.j3d.control.Control;
 import ab.j3d.model.Node3D;
 
 import com.numdata.oss.ui.ActionTools;
@@ -181,11 +182,11 @@ public abstract class ViewModel
 
 	/**
 	 * Returns the ID object for a {@link Node3D}. If the node is not part of this
-	 * model, null is returned.
+	 * model, <code>null</code> is returned.
 	 *
-	 * @param node The node for which the id is required
+	 * @param   node    The {@link Node3D} for which the id is required
 	 *
-	 * @return The ID of the given node
+	 * @return  The ID of the given node
 	 */
 	public final Object getID( final Node3D node )
 	{
@@ -195,7 +196,7 @@ public abstract class ViewModel
 
 		for ( int i = 0; i < nodes.size() && result == null; i++ )
 		{
-			ViewModelNode modelNode = (ViewModelNode)nodes.get( i );
+			final ViewModelNode modelNode = (ViewModelNode)nodes.get( i );
 			if ( modelNode.getNode3D() == node )
 			{
 				result = modelNode.getID();
@@ -637,32 +638,50 @@ public abstract class ViewModel
 	}
 
 	/**
-	 * Returns wether or not this ViewModel supports selection of objects. If it
-	 * does not, the methods {@link #addSelectionListener} and {@link
-	 * #removeSelectionListener} do not have any effect.
+	 * Returns wether or not this view supports {@link Control}s. This should be
+	 * checked before adding any {@link Control}s to a view.
 	 *
-	 * @return <code>true</code> if this ViewModel supports selection,
-	 *         <code>false</code> if it does not.
+	 * @return  <code>true</code> if this view supports {@link Control}s,
+	 *          <code>false</code> if not.
 	 */
-	public abstract boolean supportsSelection();
+	public abstract boolean supportsControls();
 
 	/**
-	 * Add a {@link SelectionListener}, which will be notified when the selection
-	 * changes. Note that not all ViewModels support selection. This can be checked
-	 * with the {@link #supportsSelection} method.
+	 * Add a {@link Control} to all {@link ViewModelView}s currently added to
+	 * the model. If a new view is added afterwards, the control is not added to
+	 * that view.<p>
+	 * Note that not all views support controls. This can be checked with the
+	 * method {@link #supportsControls()}.
 	 *
-	 * @param listener Selection listener to add.
+	 * @param   control     The {@link Control} to add
 	 */
-	public void addSelectionListener( final SelectionListener listener )
+	public final void addControl( final Control control )
 	{
+		if ( supportsControls() )
+		{
+			for ( int i = 0 ; i < _views.size() ; i++ )
+			{
+				final ViewModelView view = (ViewModelView) _views.get( i );
+				view.addControl( control );
+			}
+		}
 	}
 
 	/**
-	 * Remove a {@link SelectionListener}.
+	 * Remove a {@link Control} from all {@link ViewModelView}s currently added
+	 * to the model.
 	 *
-	 * @param   listener    Selection listener to remove.
+	 * @param   control     The {@link Control} to remove
 	 */
-	public void removeSelectionListener( final SelectionListener listener )
+	public final void removeControl( final Control control)
 	{
+		if ( !supportsControls() )
+		{
+			for ( int i = 0 ; i < _views.size() ; i++ )
+			{
+				final ViewModelView view = (ViewModelView) _views.get( i );
+				view.removeControl( control );
+			}
+		}
 	}
 }

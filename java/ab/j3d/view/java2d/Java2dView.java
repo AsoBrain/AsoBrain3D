@@ -29,17 +29,16 @@ import java.awt.Insets;
 import javax.swing.JComponent;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.control.SceneInputTranslator;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 import ab.j3d.view.DragSupport;
 import ab.j3d.view.Projector;
 import ab.j3d.view.RenderQueue;
-import ab.j3d.view.SelectionSupport;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModelNode;
 import ab.j3d.view.ViewModelView;
-import ab.j3d.view.SceneInputTranslator;
 import ab.j3d.view.ViewInputTranslator;
 
 /**
@@ -83,7 +82,10 @@ public final class Java2dView
 	 */
 	private final ViewComponent _viewComponent;
 
-	private SceneInputTranslator _inputTranslator;
+	/**
+	 * The SceneInputTranslator for this View.
+	 */
+	private final SceneInputTranslator _inputTranslator;
 
 	/**
 	 * Stroke to use for sketched rendering.
@@ -164,7 +166,7 @@ public final class Java2dView
 			final Object[]    nodeIDs     = model.getNodeIDs();
 			final Matrix3D    model2view  = getViewTransform();
 
-			Projector projector = getProjector();
+			final Projector projector = getProjector();
 
 			final boolean fill;
 			final boolean outline;
@@ -257,12 +259,6 @@ public final class Java2dView
 		ds.addDragListener( viewControl );
 	}
 
-	public SelectionSupport getSelectionSupport()
-	{
-		/*@FIXME: Create SelectionSupport class for 2D view */
-		return null;
-	}
-
 	public Component getComponent()
 	{
 		return _viewComponent;
@@ -283,18 +279,38 @@ public final class Java2dView
 		_renderingPolicy = policy;
 	}
 
-	public boolean hasInputTranslator()
+	/**
+	 * Returns the {@link Projector} for this view.
+	 *
+	 * @return  the {@link Projector} for this view
+	 */
+	protected Projector getProjector()
+	{
+		return _viewComponent.getProjector();
+	}
+
+	/**
+	 * Returns wether or not this {@link ViewModelView} has a
+	 * {@link SceneInputTranslator}. The {@link Java2dView} does, so it always
+	 * returns <code>true</code>
+	 *
+	 * @return  <code>true</code>, because the {@link Java2dView} has a
+	 *          {@link SceneInputTranslator}.
+	 */
+	protected boolean hasInputTranslator()
 	{
 		return true;
 	}
 
-	public SceneInputTranslator getInputTranslator()
+	/**
+	 * Returns the {@link SceneInputTranslator} for this view. For the
+	 * {@link Java2dView}, this is a {@link ViewInputTranslator}.
+	 *
+	 * @return  the {@link SceneInputTranslator} for this view.
+	 */
+	protected SceneInputTranslator getInputTranslator()
 	{
 		return _inputTranslator;
 	}
 
-	public Projector getProjector ()
-	{
-		return _viewComponent.getProjector();
-	}
 }

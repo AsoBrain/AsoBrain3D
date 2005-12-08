@@ -29,12 +29,10 @@ import javax.vecmath.Vector3d;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.view.DragSupport;
-import ab.j3d.view.NodeSelectionListener;
 import ab.j3d.view.Projector;
-import ab.j3d.view.SelectionSupport;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModelView;
-import ab.j3d.view.SceneInputTranslator;
+import ab.j3d.control.SceneInputTranslator;
 import ab.j3d.view.ViewInputTranslator;
 
 /**
@@ -92,13 +90,9 @@ public final class Java3dView
 	private final Transform3D _transform3d = new Transform3D();
 
 	/**
-	 * The JAva3D Selection support for this view.
-	 * {@link NodeSelectionListener}s can register themselves to receive events
-	 * when a node is selected
+	 * The SceneInputTranslator for this View.
 	 */
-	private final Java3dSelectionSupport _selectionSupport;
-
-	private SceneInputTranslator _inputTranslator;
+	private final SceneInputTranslator _inputTranslator;
 
 	/**
 	 * Construct view node using Java3D for rendering.
@@ -110,7 +104,7 @@ public final class Java3dView
 	 *
 	 * @see     Java3dUniverse#createView
 	 */
-	Java3dView( Java3dModel model, final Java3dUniverse universe, final Object id, final ViewControl viewControl )
+	Java3dView( final Java3dModel model, final Java3dUniverse universe, final Object id, final ViewControl viewControl )
 	{
 		super( id , viewControl );
 
@@ -125,7 +119,6 @@ public final class Java3dView
 		_tg               = tg;
 		_canvas           = canvas;
 		_view             = view;
-		_selectionSupport = new Java3dSelectionSupport( _canvas , _universe );
 
 		/*
 		 * Update view to initial transform.
@@ -139,11 +132,6 @@ public final class Java3dView
 		 */
 		final DragSupport ds = new DragSupport( _canvas , universe.getUnit() );
 		ds.addDragListener( viewControl );
-	}
-
-	public SelectionSupport getSelectionSupport()
-	{
-		return _selectionSupport;
 	}
 
 	public Component getComponent()
@@ -230,27 +218,50 @@ public final class Java3dView
 		/* @FIXME how can we implement such a feature? I think this really requires different geometry! Maybe something with 'alternate appearance' helps a little? */
 	}
 
-	public Projector getProjector ()
+	/**
+	 * Returns the {@link Projector} for this view.
+	 *
+	 * @return  the {@link Projector} for this view
+	 */
+	protected Projector getProjector ()
 	{
-		int policy = _view.getProjectionPolicy() == View.PARALLEL_PROJECTION ? Projector.PARALLEL : Projector.PERSPECTIVE;
+		final View view = _view;
+		final Canvas3D canvas = _canvas;
 
-		int width = _canvas.getWidth();
-		int height = _canvas.getHeight();
-		double resolution = 0.0254 / 90.0;
-		double unit = _universe.getUnit();
-		double frontClip = _view.getFrontClipDistance();
-		double backClip = _view.getBackClipDistance();
-		double fov = _view.getFieldOfView();
-		double zoom = 1.0;
-		return Projector.createInstance( policy, width, height, resolution, unit, frontClip, backClip, fov, zoom);
+		final int policy = view.getProjectionPolicy() == View.PARALLEL_PROJECTION ? Projector.PARALLEL : Projector.PERSPECTIVE;
+
+		final int    width      = canvas.getWidth();
+		final int    height     = canvas.getHeight();
+		final double resolution = 0.0254 / 90.0;
+		final double unit       = _universe.getUnit();
+		final double frontClip  = view.getFrontClipDistance();
+		final double backClip   = view.getBackClipDistance();
+		final double fov        = view.getFieldOfView      ();
+		final double zoom       = 1.0;
+
+		return Projector.createInstance( policy , width , height , resolution , unit , frontClip , backClip , fov , zoom );
 	}
 
-	public boolean hasInputTranslator()
+	/**
+	 * Returns wether or not this {@link ViewModelView} has a
+	 * {@link SceneInputTranslator}. The {@link Java3dView} does, so it always
+	 * returns <code>true</code>
+	 *
+	 * @return  <code>true</code>, because the {@link Java3dView} has a
+	 *          {@link SceneInputTranslator}.
+	 */
+	protected boolean hasInputTranslator()
 	{
 		return true;
 	}
 
-	public SceneInputTranslator getInputTranslator()
+	/**
+	 * Returns the {@link SceneInputTranslator} for this view. For the
+	 * {@link Java3dView}, this is a {@link ViewInputTranslator}.
+	 *
+	 * @return  the {@link SceneInputTranslator} for this view.
+	 */
+	protected SceneInputTranslator getInputTranslator()
 	{
 		return _inputTranslator;
 	}
