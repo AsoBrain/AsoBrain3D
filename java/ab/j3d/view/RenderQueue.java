@@ -21,6 +21,7 @@ package ab.j3d.view;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedList;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
@@ -211,7 +212,6 @@ public final class RenderQueue
 	 */
 	public void enqueuePolygon( final RenderedPolygon polygon )
 	{
-		//System.out.println( "\ninserting item " + polygon.name );
 		boolean stop = false;
 
 		if ( _queue.isEmpty() )
@@ -220,61 +220,112 @@ public final class RenderQueue
 			_queue.add( polygon );
 			stop = true;
 		}
-		for ( int pointer = _queue.size() - 1; pointer >= 0 && !stop; pointer-- )
+
+		double z = polygon._minZ;
+		for ( int pointer = 0; pointer < _queue.size() && !stop; pointer++ )
 		{
-			final RenderedPolygon other = (RenderedPolygon)_queue.get( pointer );
+			RenderedPolygon other = (RenderedPolygon)_queue.get( pointer );
+			double otherZ = other._minZ;
 
-			//System.out.println( "Comparing with " + other.name );
-			switch ( compare( polygon , other ) )
+			if ( z < otherZ )
 			{
-				case IN_FRONT:
-					//System.out.println( "In front. Stop sorting." );
-					_queue.add( pointer + 1 , polygon );
-					stop = true;
-					break;
-
-				case INTERSECTING:
-					//System.out.print( "Intersecting -- " );
-					switch ( compare( other , polygon ) )
-					{
-						case BEHIND:
-							//System.out.println( "Other item is behind. Stop sorting" );
-							_queue.add( pointer + 1 , polygon );
-							stop = true;
-							break;
-
-						case INTERSECTING:
-							//System.out.println( "Intersecting. Clipping." );
-							//if ( overlap(item, other) )
-							{
-								//polygon.text += "Clipping  ";
-								clip( polygon , other );
-								stop = true;
-							}
-							break;
-
-						case COPLANAR:
-						case IN_FRONT:
-							//System.out.println( "Other item is coplanar or in front. Keep sorting" );
-							/* keep sorting */
-							break;
-					}
-					break;
-
-				case COPLANAR:
-				case BEHIND:
-					//System.out.println( "Coplanar or behind. Keep sorting" );
-					/* keep sorting */
-					break;
+				_queue.add( pointer , polygon);
+				stop = true;
 			}
 		}
 
 		if ( !stop )
 		{
-			/*System.out.println( "insert at 0 (size: " +_queuedItems.size()+ ")" );*/
-			//System.out.println( "Stop is false. Inserting item at front" );
-			_queue.add( 0 , polygon );
+			_queue.add( _queue.size() , polygon);
 		}
+	}
+
+	/**
+	 * Get sorted list of polygons in queue.
+	 *
+	 * @return  Sorted list of polygons in queue.
+	 */
+	public RenderedPolygon[] getQueuedPolygons()
+	{
+		final ArrayList finalQueue = new ArrayList( _queue.size() + (_queue.size() / 3));
+		final ArrayList tempQueue = new ArrayList(_queue);
+
+		while ( tempQueue.size() > 1 )
+		{
+			RenderedPolygon p = (RenderedPolygon)tempQueue.get( 0 );
+			tempQueue.remove( 0 );
+			order(p , tempQueue, finalQueue);
+		}
+
+		if ( tempQueue.size() == 1 )
+			finalQueue.add( tempQueue.get( 0 ) );
+
+		final RenderedPolygon[] result = new RenderedPolygon[ finalQueue.size() ];
+		finalQueue.toArray( result );
+
+		return result;
+	}
+
+	private void order( RenderedPolygon polygon, List queue , List newQueue )
+	{
+		for ( int i = 0; i < queue.size(); i++ )
+		{
+			RenderedPolygon other = (RenderedPolygon)queue.get( i );
+			if ( other._minZ < polygon._maxZ )
+			{
+//				System.out.println( "z overlap" );
+				if ( other._minX < polygon._maxX && other._maxX > polygon._minX )
+				{
+//					System.out.println( "x overlap" );
+					if ( other._minY < polygon._maxY && other._maxY > polygon._minY )
+					{
+//						System.out.println( "y overlap" );
+						int compared = compare(polygon, other);
+
+						if ( compared == IN_FRONT)
+						{
+							RenderedPolygon p = (RenderedPolygon)queue.remove( i );
+							order(p, queue, newQueue);
+						}
+						else if ( compared == INTERSECTING )
+						{
+//							System.out.println( "blaat" );
+							RenderedPolygon[] clipped = clip(polygon, other);
+							RenderedPolygon clip;
+
+							if ( clipped[0]._minZ == polygon._minZ )
+							{
+								polygon = clipped[0];
+								clip = clipped[1];
+							}
+							else
+							{
+								polygon = clipped[1];
+								clip = clipped[0];
+							}
+
+							double z = clip._minZ;
+							boolean stop = false;
+							int pointer;
+							for ( pointer = 0; pointer < queue.size() && !stop; pointer++ )
+							{
+								RenderedPolygon p = (RenderedPolygon)queue.get( pointer );
+								if ( p._minZ > z )
+								{
+									queue.add( pointer, clip );
+									stop = true;
+								}
+							}
+
+							if ( !stop )
+								queue.add( queue.size() , clip);
+						}
+					}
+				}
+			}
+
+		}
+		newQueue.add( polygon );
 	}
 
 	private int compare( RenderedPolygon polygon , RenderedPolygon other )
@@ -287,55 +338,16 @@ public final class RenderQueue
 		double[] yCoords     = polygon._viewY;
 		double[] zCoords     = polygon._viewZ;
 
-//		System.out.print( "compare: " );
-		if ( polygon._maxZ <= other._minZ )
+		for ( int vertex = 0; !( behind && inFront ) && vertex < vertexCount; vertex++ )
 		{
-//			System.out.println( " Item's Z ("+polygon._maxZ+") is smaller than other's Z ("+other._minZ+")" );
-			/*item.text += " - Item's Z ("+item.maxZ+") is smaller than other's Z ("+other.minZ+")";*/
-			behind = true;
-		}
-		else if ( polygon._minZ >= other._maxZ )
-		{
-//			System.out.println( " Others Z ("+other._maxZ+") is smaller than item's Z ("+polygon._minZ+")" );
-			/*item.text += " - Others Z ("+other.maxZ+") is smaller than item's Z ("+item.minZ+")";*/
-			inFront = true;
-		}
-		else
-		{
-			behind = false;
-			inFront = false;
-			for ( int vertex = 0; !( behind && inFront ) && vertex < vertexCount; vertex++ )
-			{
-				final double x = xCoords[ vertex ];
-				final double y = yCoords[ vertex ];
-				final double z = zCoords[ vertex ];
+			final double x = xCoords[ vertex ];
+			final double y = yCoords[ vertex ];
+			final double z = zCoords[ vertex ];
+			final double dot = Vector3D.dot( other._planeNormalX , other._planeNormalY , other._planeNormalZ , x , y , z );
 
-				final double dot = Vector3D.dot( other._planeNormalX , other._planeNormalY , other._planeNormalZ , x , y , z );
-//				System.out.println( "Checking wether in front or behind. Coordinates: (" +x+ ", " +y+ "," +z+ "). D: " + d + "  Dot: " +dot+ "." );
-				behind  = behind  || ( d > ( dot + 0.001 ) );
-				inFront = inFront || ( d < ( dot - 0.001 ) );
-			}
-
-/*			if ( behind && !inFront )
-			{
-//				System.out.println( "Item is behind" );
-				polygon.text += " - " + polygon.name + " is behind " + other.name;
-			}
-			if ( inFront && !behind)
-			{
-//				System.out.println( "Item is in front" );
-				polygon.text += " - " + polygon.name + " is in front of " + other.name;
-			}
-
-			if ( behind && inFront )
-			{
-				polygon.text += " - " +polygon.name+ " intersects " + other.name;
-			}
-
-			if ( !behind && !inFront )
-			{
-				polygon.text += " - " +polygon.name+ " is coplanar to " + other.name;
-			}*/
+//			System.out.println( "Checking wether in front or behind. Coordinates: (" +x+ ", " +y+ "," +z+ "). D: " + d + "  Dot: " +dot+ "." );
+			behind  = behind  || ( d > ( dot + 0.001 ) );
+			inFront = inFront || ( d < ( dot - 0.001 ) );
 		}
 
 		int compared = behind
@@ -344,7 +356,7 @@ public final class RenderQueue
 		return compared;
 	}
 
-	private void clip( RenderedPolygon polygon , RenderedPolygon cuttingPlane )
+	private RenderedPolygon[] clip( RenderedPolygon polygon , RenderedPolygon cuttingPlane )
 	{
 		/*System.out.println( "----------------------------------------------------------------------" );
 		System.out.println( item.face.toFriendlyString( "item: " ) );
@@ -399,7 +411,7 @@ public final class RenderQueue
 				double u = ( ( cuttingNX * lastX ) + ( cuttingNY * lastY ) + ( cuttingNZ * lastZ ) - cuttingD )
 				           / ( cuttingNX * ( lastX - x ) + cuttingNY * ( lastY - y ) + cuttingNZ * ( lastZ - z ) );
 
-				if ( u < 0 || u > 1 )
+				if ( u < -0.001 || u > 1.001 )
 				{
 					System.out.println( "cuttingNormal: " + Vector3D.toFriendlyString( Vector3D.INIT.set( cuttingNX , cuttingNY , cuttingNZ ) ) + " - cuttingD: " + cuttingD );
 					System.out.println( "Last: coordinates: (" + (int)lastX + ',' + (int)lastY + ',' + (int)lastZ + ") - dot: " + lastDot );
@@ -463,6 +475,10 @@ public final class RenderQueue
 		RenderedPolygon front = new RenderedPolygon( frontCount );
 		int minZ = Integer.MAX_VALUE;
 		int maxZ = Integer.MIN_VALUE;
+		int minX = Integer.MAX_VALUE;
+		int maxX = Integer.MIN_VALUE;
+		int minY = Integer.MAX_VALUE;
+		int maxY = Integer.MIN_VALUE;
 		for ( int i = 0; i < frontCount; i++ )
 		{
 			int vertexZ = (int)_frontZ[ i ];
@@ -470,15 +486,25 @@ public final class RenderQueue
 			front._viewY[ i ] = _frontY[ i ];
 			front._viewZ[ i ] = _frontZ[ i ];
 
-			front._projectedX[ i ] = _frontProjX[ i ];
-			front._projectedY[ i ] = _frontProjY[ i ];
+			final int projX = _frontProjX[ i ];
+			final int projY = _frontProjY[ i ];
+			front._projectedX[ i ] = projX;
+			front._projectedY[ i ] = projY;
 //			System.out.println( "Front: (" +frontCoords[p]+ ", " +frontCoords[p+1]+ ", " +frontCoords[p+2]+ ")" );
 
 			minZ = vertexZ < minZ ? vertexZ : minZ;
 			maxZ = vertexZ > maxZ ? vertexZ : maxZ;
+			minX = projX < minX ? projX : minX;
+			maxX = projX > maxX ? projX : maxX;
+			minY = projY < minY ? projY : minY;
+			maxY = projY > maxY ? projY : maxY;
 		}
 		front._minZ                = minZ;
 		front._maxZ                = maxZ;
+		front._minX                = minX;
+		front._maxX                = maxX;
+		front._minY                = minY;
+		front._maxY                = maxY;
 		front._alternateAppearance = polygon._alternateAppearance;
 		front._object              = polygon._object;
 		front._planeConstant       = polygon._planeConstant;
@@ -487,12 +513,15 @@ public final class RenderQueue
 		front._planeNormalZ        = polygon._planeNormalZ;
 		front._texture             = polygon._texture;
 		front.name                 = polygon.name + "_front";
-		enqueuePolygon( front );
 
 //		System.out.println( "backcount: " + backVertexCount + "  - backcount: " + backVertexCount );
 		RenderedPolygon back = new RenderedPolygon( backCount );
 		minZ = Integer.MAX_VALUE;
 		maxZ = Integer.MIN_VALUE;
+		minX = Integer.MAX_VALUE;
+		maxX = Integer.MIN_VALUE;
+		minY = Integer.MAX_VALUE;
+		maxY = Integer.MIN_VALUE;
 		for ( int i = 0; i < backCount; i++ )
 		{
 			int vertexZ = (int)_backZ[ i ];
@@ -500,8 +529,10 @@ public final class RenderQueue
 			back._viewY[ i ] = _backY[ i ];
 			back._viewZ[ i ] = _backZ[ i ];
 
-			back._projectedX[ i ] = _backProjX[ i ];
-			back._projectedY[ i ] = _backProjY[ i ];
+			final int projX = _backProjX[ i ];
+			final int projY = _backProjY[ i ];
+			back._projectedX[ i ] = projX;
+			back._projectedY[ i ] = projY;
 //			System.out.println( "back: (" +backCoords[p]+ ", " +backCoords[p+1]+ ", " +backCoords[p+2]+ ")" );
 
 			minZ = vertexZ < minZ ? vertexZ : minZ;
@@ -509,6 +540,10 @@ public final class RenderQueue
 		}
 		back._minZ                = minZ;
 		back._maxZ                = maxZ;
+		back._minX                = minX;
+		back._maxX                = maxX;
+		back._minY                = minY;
+		back._maxY                = maxY;
 		back._alternateAppearance = polygon._alternateAppearance;
 		back._object              = polygon._object;
 		back._planeConstant       = polygon._planeConstant;
@@ -517,19 +552,8 @@ public final class RenderQueue
 		back._planeNormalZ        = polygon._planeNormalZ;
 		back._texture             = polygon._texture;
 		back.name                 = polygon.name + "_back";
-		enqueuePolygon( back );
-	}
 
-	/**
-	 * Get sorted list of polygons in queue.
-	 *
-	 * @return  Sorted list of polygons in queue.
-	 */
-	public RenderedPolygon[] getQueuedPolygons()
-	{
-		final RenderedPolygon[] result = new RenderedPolygon[ _queue.size() ];
-		_queue.toArray( result );
-		return result;
+		return new RenderedPolygon[] { back , front };
 	}
 
 	/**
@@ -609,4 +633,3 @@ public final class RenderQueue
 	private static final int INTERSECTING = 2;
 	private static final int COPLANAR     = 3;
 }
-

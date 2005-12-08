@@ -22,6 +22,7 @@ package ab.j3d.view;
 import java.awt.Polygon;
 
 import ab.j3d.TextureSpec;
+import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
 
@@ -135,6 +136,14 @@ public final class RenderedPolygon
 	 */
 	public int _maxZ;
 
+	public int _minX;
+
+	public int _maxX;
+
+	public int _minY;
+
+	public int _maxY;
+
 	/**
 	 * Debugging variable. Not for other uses.
 	 */
@@ -181,6 +190,10 @@ public final class RenderedPolygon
 		_planeConstant       = 0.0;
 		_minZ                = 0;
 		_maxZ                = 0;
+		_minX                = 0;
+		_maxX                = 0;
+		_minY                = 0;
+		_maxY                = 0;
 		_texture             = null;
 		_alternateAppearance = false;
 
@@ -228,8 +241,10 @@ public final class RenderedPolygon
 			final int pointIndex2 = pointIndex * 2;
 			final int pointIndex3 = pointIndex * 3;
 
-			projectedX[ vertexIndex ] = objectProjectedCoords[ pointIndex2     ];
-			projectedY[ vertexIndex ] = objectProjectedCoords[ pointIndex2 + 1 ];
+			final int projX = objectProjectedCoords[ pointIndex2     ];
+			final int projY = objectProjectedCoords[ pointIndex2 + 1 ];
+			projectedX[ vertexIndex ] = projX;
+			projectedY[ vertexIndex ] = projY;
 
 			viewX[ vertexIndex ] = objectViewCoords[ pointIndex3     ];
 			viewY[ vertexIndex ] = objectViewCoords[ pointIndex3 + 1 ];
@@ -238,6 +253,11 @@ public final class RenderedPolygon
 
 			_minZ = (int)z < _minZ ? (int)z : _minZ;
 			_maxZ = (int)z > _maxZ ? (int)z : _maxZ;
+			_minX = projX < _minX ? projX : _minX;
+			_maxX = projX > _maxX ? projX : _maxX;
+			_minY = projY < _minY ? projY : _minY;
+			_maxY = projY > _maxY ? projY : _maxY;
+
 		}
 
 		final double planeNormalX;
@@ -281,7 +301,7 @@ public final class RenderedPolygon
 		_texture             = face.getTexture();
 		_alternateAppearance = alternateAppearance;
 
-		name = (String)object.getTag();
+//		name = (String)object.getTag();
 	}
 
 	/**
@@ -337,5 +357,29 @@ public final class RenderedPolygon
 		}
 
 		return result;
+	}
+
+	public String toFriendlyString(){
+		String string = "";
+
+		string += "Object: " + ( _object == null ? "null" : _object.toString() ) + "\n";
+		string += "Texture: " + ( _texture == null ? "null" : _texture.code ) + "\n";
+		string += "Alternate appearance: " + _alternateAppearance + "\n";
+		string += "Normal: " + Vector3D.toFriendlyString( Vector3D.INIT.set( _planeNormalX, _planeNormalY, _planeNormalZ) ) + "\n";
+		string += "Plane constant: " + _planeConstant + "\n";
+		string += "Coordinates: \n";
+		for ( int i = 0; i < _pointCount; i++ )
+		{
+			string += "\t" + Vector3D.toFriendlyString( Vector3D.INIT.set( _viewX[i] , _viewY[i], _viewZ[i] ) ) + "\n";
+		}
+		string += "Projected coordinates:\n";
+		for ( int i = 0; i < _pointCount; i++ )
+		{
+			string += "\t[ " + _projectedX[i] + " , " + _projectedY[i]  + " ]\n";
+		}
+		string += "Minimum Z: " + _minZ + "\n";
+		string += "Maximum Z: " + _maxZ + "\n";
+
+		return string;
 	}
 }

@@ -375,21 +375,22 @@ public abstract class Projector
 		{
 			final boolean result;
 
-			if ( ( z >= _backClipDistance ) && ( z <= _frontClipDistance ) )
-			{
-				final double f      = 1.0 - z / _eyeDistance;
-				final double limitX = _limitX * f;
-				final double limitY = _limitY * f;
-
-				result = ( x >= -limitX ) && ( x <= limitX )
-				      && ( y >= -limitY ) && ( y <= limitY );
-			}
-			else /* outside front/back clipping plane */
-			{
-				result = false;
-			}
-
-			return result;
+//			if ( ( z >= _backClipDistance ) && ( z <= _frontClipDistance ) )
+//			{
+				return true;
+//				final double f      = 1.0 - z / _eyeDistance;
+//				final double limitX = _limitX * f;
+//				final double limitY = _limitY * f;
+//
+//				result = ( x >= -limitX ) && ( x <= limitX )
+//				      && ( y >= -limitY ) && ( y <= limitY );
+//			}
+//			else /* outside front/back clipping plane */
+//			{
+//				result = false;
+//			}
+//
+//			return result;
 		}
 
 		public Vector3D screenToWorld( final int x, final int y, final double distance){
