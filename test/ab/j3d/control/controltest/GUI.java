@@ -1,0 +1,130 @@
+/*
+ * $Id$
+ *
+ * (C) Copyright Numdata BV 2005-2005 - All Rights Reserved
+ *
+ * This software may not be used, copied, modified, or distributed in any
+ * form without express permission from Numdata BV. Please contact Numdata BV
+ * for license information.
+ */
+package ab.j3d.control.controltest;
+
+import java.awt.Container;
+import java.awt.BorderLayout;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import javax.swing.JFrame;
+import javax.swing.JSplitPane;
+import javax.swing.JToolBar;
+import javax.swing.JToggleButton;
+import javax.swing.ButtonGroup;
+
+import ab.j3d.control.Control;
+import ab.j3d.control.controltest.model.Model;
+
+/**
+ * The GUI mamanges the GUI for this test application. Among other things it
+ * creates the {@link JFrame}, the {@link Model3D}, and four {@link View3D}s on
+ * that 3d model. It also registers a number of {@link Control}s to these views,
+ * so that the user can manipulate the {@link Model}.
+ *
+ * @author  Mart Slot
+ * @version $Revision$ $Date$
+ */
+public class GUI
+	implements ActionListener
+{
+
+	/**
+	 * Construct new GUI.
+	 *
+	 * @param   main    The main application that created this class.
+	 */
+	public GUI( final ControlTest main )
+	{
+
+		final Model3D model3D = new Model3D( main );
+
+		final JFrame frame = new JFrame( "ControlTest" );
+		final Container contentPane = frame.getContentPane();
+		contentPane.setLayout( new BorderLayout() );
+
+		final View3D view1 = new View3D( model3D , View3D.TOP_VIEW         , true );
+		final View3D view2 = new View3D( model3D , View3D.FRONT_VIEW       , true );
+		final View3D view3 = new View3D( model3D , View3D.LEFT_VIEW        , true );
+		final View3D view4 = new View3D( model3D , View3D.PERSPECTIVE_VIEW , true );
+
+		final JSplitPane topSplit      = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT , view1.getComponent() , view2.getComponent() );
+		final JSplitPane bottomSplit   = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT , view3.getComponent() , view4.getComponent() );
+		final JSplitPane verticalSplit = new JSplitPane( JSplitPane.VERTICAL_SPLIT   , topSplit              , bottomSplit         );
+		contentPane.add( verticalSplit , BorderLayout.CENTER );
+
+		final JToolBar toolBar = createToolBar();
+		contentPane.add( toolBar , BorderLayout.NORTH );
+
+		final SelectionControl selectionControl = new SelectionControl( main );
+		view1.addControl( selectionControl );
+		view2.addControl( selectionControl );
+		view3.addControl( selectionControl );
+		view4.addControl( selectionControl );
+
+		frame.setBounds( 200 , 0 , 1200 , 1000 );
+		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+		frame.setVisible( true );
+
+		topSplit.setDividerLocation( 0.5 );
+		bottomSplit.setDividerLocation( 0.5 );
+		verticalSplit.setDividerLocation( 0.5 );
+	}
+
+	/**
+	 * Creates the {@link JToolBar} for this application.
+	 *
+	 * @return  {@link JToolBar} for this application.
+	 */
+	private static JToolBar createToolBar()
+	{
+		final JToolBar result = new JToolBar( "Actions" );
+		final ButtonGroup group = new ButtonGroup();
+
+		final JToggleButton moveButton = new JToggleButton( "Move object" );
+		group.add( moveButton );
+		result.add( moveButton );
+
+		final JToggleButton rotateButton = new JToggleButton( "Rotate object" );
+		group.add( rotateButton );
+		result.add( rotateButton );
+
+		final JToggleButton resizeButton = new JToggleButton( "Resize object" );
+		group.add( resizeButton );
+		result.add( resizeButton );
+
+		result.addSeparator();
+
+		final JToggleButton rotateCameraButton = new JToggleButton( "Rotate camera" );
+		group.add( rotateCameraButton );
+		result.add( rotateCameraButton );
+
+		final JToggleButton moveCameraButton = new JToggleButton( "Move camera" );
+		group.add( moveCameraButton );
+		result.add( moveCameraButton );
+
+		final JToggleButton zoomCameraButton = new JToggleButton( "Zoom camera" );
+		group.add( zoomCameraButton );
+		result.add( zoomCameraButton );
+
+		rotateCameraButton.setSelected( true );
+
+		return result;
+	}
+
+	/**
+	 * Invoked when an action occurs.
+	 *
+	 * @param   e   The event that occured.
+	 */
+	public void actionPerformed( final ActionEvent e )
+	{
+
+	}
+}
