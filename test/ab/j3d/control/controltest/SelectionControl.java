@@ -69,12 +69,12 @@ public class SelectionControl
 
 			if ( MouseControlEvent.MOUSE_RELEASED == event.getType()  && ! event.isMouseDragged() )
 			{
-				final List<Intersection> intersections = event.getIntersections();
+				final List intersections = event.getIntersections();
 				final Model model = _model;
 
 				if ( ! intersections.isEmpty() )
 				{
-					final Intersection intersection = intersections.get( 0 );
+					final Intersection intersection = (Intersection)intersections.get( 0 );
 					final Object id = intersection.getID();
 
 					if ( id instanceof SceneElement && ! ( id instanceof Floor ) )
