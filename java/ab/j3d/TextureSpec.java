@@ -272,13 +272,14 @@ public final class TextureSpec
 		final Image image = getTextureImage();
 		if ( image != null )
 		{
-			ImageTools.waitFor( image , observer );
-			result = image.getWidth( observer );
+			ImageTools.waitFor( image , ( observer != null ) ? observer : ImageTools.SHARED_OBSERVER );
+			result = image.getWidth( null );
 		}
 		else
 		{
 			result = -1;
 		}
+
 		return result;
 	}
 
@@ -298,8 +299,8 @@ public final class TextureSpec
 		final Image image = getTextureImage();
 		if ( image != null )
 		{
-			ImageTools.waitFor( image , observer );
-			result = image.getHeight( observer );
+			ImageTools.waitFor( image , ( observer != null ) ? observer : ImageTools.SHARED_OBSERVER );
+			result = image.getHeight( null );
 		}
 		else
 		{
