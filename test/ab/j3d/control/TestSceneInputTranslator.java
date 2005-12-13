@@ -221,7 +221,7 @@ extends TestCase
 	{
 		System.out.println( CLASS_NAME + ".testMouseReleased()" );
 
-		int modifiers = MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.SHIFT_DOWN_MASK;
+		int modifiers = MouseEvent.SHIFT_DOWN_MASK;
 		MouseEvent e = new MouseEvent(new JPanel() , MouseEvent.MOUSE_RELEASED , 0L, modifiers, 0, 0, 1, false, MouseEvent.BUTTON1);
 		_translator.mouseReleased( e );
 
@@ -232,8 +232,7 @@ extends TestCase
 		assertEquals( "The event type should be MOUSE_RELEASED", MouseControlEvent.MOUSE_RELEASED , event.getType() );
 		final int lastNumber = event.getNumber();
 
-
-		modifiers = MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.CTRL_DOWN_MASK;
+		modifiers = MouseEvent.CTRL_DOWN_MASK;
 		e = new MouseEvent(new JPanel() , MouseEvent.MOUSE_RELEASED , 0L, modifiers, 0, 0, 1, false, MouseEvent.BUTTON3);
 		_translator.mouseReleased( e );
 
