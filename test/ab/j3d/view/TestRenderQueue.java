@@ -10,22 +10,13 @@
 package ab.j3d.view;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.ImageIcon;
 
 import junit.framework.TestCase;
 
-import ab.j3d.model.Object3D;
 import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
 import ab.j3d.TextureSpec;
-import ab.j3d.view.java2d.Painter;
+import ab.j3d.Vector3D;
+import ab.j3d.model.Object3D;
 
 /**
  * This class tests the {@link RenderQueue} class.
@@ -34,7 +25,7 @@ import ab.j3d.view.java2d.Painter;
  * @version $Revision$ $Date$
  * @see RenderQueue
  */
-public class TestRenderQueue
+public final class TestRenderQueue
 extends TestCase
 {
 	/**
@@ -43,105 +34,79 @@ extends TestCase
 	private static final String CLASS_NAME = TestRenderQueue.class.getName();
 
 	/**
-	 * Fixture instance.
-	 */
-	private RenderQueue _renderQueue;
-
-	/**
-	 * Setup text fixture.
-	 *
-	 * @throws Exception if there was a problem setting up the fixture.
-	 */
-	public void setUp()
-	throws Exception
-	{
-		super.setUp();
-
-		_renderQueue = new RenderQueue();
-	}
-
-	/**
-	 * Tear down test fixture.
-	 *
-	 * @throws Exception if there was a problem tearing down the fixture.
-	 */
-	public void tearDown()
-	throws Exception
-	{
-		_renderQueue = null;
-
-		super.tearDown();
-	}
-
-	/**
 	 * Test the {@link RenderQueue#enqueueObject} method.
-	 *
-	 * @throws Exception if the test fails.
 	 */
-	public void testEnqueueObject()
-	throws Exception
-	{
+	public static void testEnqueueObject()
+    {
 		System.out.println( CLASS_NAME + ".testEnqueueObject()" );
 
-		System.out.println( "\n--------------------------" );
-		System.out.println( "Testing planes h1 and h2" );
-		_renderQueue.clearQueue();
-		addPlane( "h2" );
-		addPlane( "h1" );
-		RenderedPolygon[] rendered = _renderQueue.getQueuedPolygons();
-		assertEquals( "The number of rendered polygons should be 2, not "+rendered.length, 2, rendered.length );
-		assertTrue( "The first item in the queue should be h1, not " + rendered[ 0 ]._object.getTag(), rendered[ 0 ]._object.getTag().equals( "h1" ) );
-
+		final RenderQueue renderQueue = new RenderQueue();
 
 		System.out.println( "\n--------------------------" );
 		System.out.println( "Testing planes h1 and h2" );
-		_renderQueue.clearQueue();
-		addPlane( "h1" );
-		addPlane( "h2" );
-		rendered = _renderQueue.getQueuedPolygons();
-		assertEquals( "The number of rendered polygons should be 2, not " + rendered.length, 2, rendered.length );
-		assertTrue( "The first item in the queue should be h1, not " + rendered[ 0 ]._object.getTag(), rendered[ 0 ]._object.getTag().equals( "h1" ) );
-
-		System.out.println( "\n--------------------------" );
-		System.out.println( "Testing planes d1 and d2" );
-		_renderQueue.clearQueue();
-		addPlane( "d1" );
-		addPlane( "d2" );
-		rendered = _renderQueue.getQueuedPolygons();
+		renderQueue.clearQueue();
+		addPlane( renderQueue, "h2" );
+		addPlane( renderQueue, "h1" );
+		RenderedPolygon[] rendered = renderQueue.getQueuedPolygons();
 		assertEquals( "The number of rendered polygons should be 2, not "+rendered.length, 2, rendered.length );
-		assertTrue( "The first item in the queue should be d2, not " + rendered[ 0 ]._object.getTag(), rendered[ 0 ]._object.getTag().equals( "d2" ) );
+		assertTrue( "The first item in the queue should be h1, not " + rendered[ 0 ]._object.getTag(), "h1".equals( rendered[ 0 ]._object.getTag() ) );
+
+
+		System.out.println( "\n--------------------------" );
+		System.out.println( "Testing planes h1 and h2" );
+		renderQueue.clearQueue();
+		addPlane( renderQueue, "h1" );
+		addPlane( renderQueue, "h2" );
+		rendered = renderQueue.getQueuedPolygons();
+		assertEquals( "The number of rendered polygons should be 2, not " + rendered.length, 2, rendered.length );
+		assertTrue( "The first item in the queue should be h1, not " + rendered[ 0 ]._object.getTag(), "h1".equals( rendered[ 0 ]._object.getTag() ) );
 
 		System.out.println( "\n--------------------------" );
 		System.out.println( "Testing planes d1 and d2" );
-		_renderQueue.clearQueue();
-		addPlane( "d2" );
-		addPlane( "d1" );
-		rendered = _renderQueue.getQueuedPolygons();
+		renderQueue.clearQueue();
+		addPlane( renderQueue, "d1" );
+		addPlane( renderQueue, "d2" );
+		rendered = renderQueue.getQueuedPolygons();
+		assertEquals( "The number of rendered polygons should be 2, not "+rendered.length, 2, rendered.length );
+		assertTrue( "The first item in the queue should be d2, not " + rendered[ 0 ]._object.getTag(), "d2".equals( rendered[ 0 ]._object.getTag() ) );
+
+		System.out.println( "\n--------------------------" );
+		System.out.println( "Testing planes d1 and d2" );
+		renderQueue.clearQueue();
+		addPlane( renderQueue, "d2" );
+		addPlane( renderQueue, "d1" );
+		rendered = renderQueue.getQueuedPolygons();
 		assertEquals( "The number of rendered polygons should be 2, not " + rendered.length, 2, rendered.length );
-		assertTrue( "The first item in the queue should be d2, not " + rendered[ 0 ]._object.getTag(), rendered[ 0 ]._object.getTag().equals( "d2" ) );
+		assertTrue( "The first item in the queue should be d2, not " + rendered[ 0 ]._object.getTag(), "d2".equals( rendered[ 0 ]._object.getTag() ) );
 
 		System.out.println( "\n--------------------------" );
 		System.out.println( "Testing planes h1 and v1" );
-		_renderQueue.clearQueue();
-		addPlane( "h1" );
-		addPlane( "v1" );
-		rendered = _renderQueue.getQueuedPolygons();
+		renderQueue.clearQueue();
+		addPlane( renderQueue, "h1" );
+		addPlane( renderQueue, "v1" );
+		rendered = renderQueue.getQueuedPolygons();
 		assertEquals( "The number of rendered polygons should be 3, not " + rendered.length, 3, rendered.length );
-		assertTrue( "The order in which the polygons are given back should be v1, h1, v1, not " + rendered[ 0 ]._object.getTag() + ", " + rendered[ 1 ]._object.getTag() + ", " + rendered[ 2 ]._object.getTag() + "" , rendered[ 0 ]._object.getTag().equals( "v1" ) && rendered[ 1 ]._object.getTag().equals( "h1" ) && rendered[ 2 ]._object.getTag().equals( "v1" ));
+		assertTrue( "The order in which the polygons are given back should be v1, h1, v1, not " + rendered[ 0 ]._object.getTag() + ", " + rendered[ 1 ]._object.getTag() + ", " + rendered[ 2 ]._object.getTag() + "" , "v1"
+		.equals( rendered[ 0 ]._object.getTag() ) && "h1"
+		.equals( rendered[ 1 ]._object.getTag() ) && "v1".equals( rendered[ 2 ]._object.getTag() ) );
 
 		System.out.println( "\n--------------------------" );
 		System.out.println( "Testing planes h1, h2 and v1" );
-		_renderQueue.clearQueue();
-		addPlane( "h1" );
-		addPlane( "h2" );
-		addPlane( "v1" );
-		rendered = _renderQueue.getQueuedPolygons();
+		renderQueue.clearQueue();
+		addPlane( renderQueue, "h1" );
+		addPlane( renderQueue, "h2" );
+		addPlane( renderQueue, "v1" );
+		rendered = renderQueue.getQueuedPolygons();
 		assertEquals( "The number of rendered polygons should be 5, not " + rendered.length, 5, rendered.length );
-		assertTrue( "The order in which the polygons are given back should be v1, h1, v1, h2, v1, not " + rendered[ 0 ]._object.getTag() + ", " + rendered[ 1 ]._object.getTag() + ", " + rendered[ 2 ]._object.getTag() + ""  + rendered[ 3 ]._object.getTag() + ""  + rendered[ 4 ]._object.getTag() + "" , rendered[ 0 ]._object.getTag().equals( "v1" ) && rendered[ 1 ]._object.getTag().equals( "h1" ) && rendered[ 2 ]._object.getTag().equals( "v1" ) && rendered[ 3 ]._object.getTag().equals( "h2" ) && rendered[ 4 ]._object.getTag().equals( "v1" ));
+		assertTrue( "The order in which the polygons are given back should be v1, h1, v1, h2, v1, not " + rendered[ 0 ]._object.getTag() + ", " + rendered[ 1 ]._object.getTag() + ", " + rendered[ 2 ]._object.getTag() + ""  + rendered[ 3 ]._object.getTag() + ""  + rendered[ 4 ]._object.getTag() + "" , "v1"
+		.equals( rendered[ 0 ]._object.getTag() ) && "h1"
+		.equals( rendered[ 1 ]._object.getTag() ) && "v1".equals( rendered[ 2 ]._object.getTag() ) && "h2"
+		.equals( rendered[ 3 ]._object.getTag() ) && "v1"
+		.equals( rendered[ 4 ]._object.getTag() ) );
 
 	}
 
-	private void addPlane(String tag)
+	private static void addPlane( final RenderQueue renderQueue , final String tag )
 	{
 		Object3D object = null;
 		Matrix3D transform = null;
@@ -154,55 +119,55 @@ extends TestCase
 		final double      imageResolution   = 0.0254 / 90.0; // getToolkit().getScreenResolution();
 		final Projector   projector         = Projector.createInstance( Projector.PERSPECTIVE , 800 , 600 , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
 
-		if ( tag.equals( "h1" ) )
+		if ( "h1".equals( tag ) )
 		{
 			object = createPlane( 100.0 );
 			object.setTag( "h1" );
-			transform = Matrix3D.getTransform( 90, 0, 0, 0, 0, 0 );
+			transform = Matrix3D.getTransform( 90.0, 0.0, 0.0, 0.0, 0.0, 0.0 );
 		}
-		else if ( tag.equals( "h2" ) )
+		else if ( "h2".equals( tag ) )
 		{
 			object = createPlane( 100.0 );
 			object.setTag( "h2" );
-			transform = Matrix3D.getTransform( 90, 0, 0, -50, -50, 0 );
+			transform = Matrix3D.getTransform( 90.0, 0.0, 0.0, -50.0, -50.0, 0.0 );
 		}
-		else if ( tag.equals( "h3" ) )
+		else if ( "h3".equals( tag ) )
 		{
-			object = createPlane( 50 );
+			object = createPlane( 50.0 );
 			object.setTag( "h3" );
-			transform = Matrix3D.getTransform( 90, 0, 0, -100, 25, 0 );
+			transform = Matrix3D.getTransform( 90.0, 0.0, 0.0, -100.0, 25.0, 0.0 );
 		}
-		else if ( tag.equals( "v1" ) )
+		else if ( "v1".equals( tag ) )
 		{
 			object = createPlane( 100.0 );
 			object.setTag( "v1" );
-			transform = Matrix3D.getTransform( 0, 90, 0, -10, 0, 0 );
+			transform = Matrix3D.getTransform( 0.0, 90.0, 0.0, -10.0, 0.0, 0.0 );
 		}
-		else if ( tag.equals( "v2" ) )
+		else if ( "v2".equals( tag ) )
 		{
-			object = createPlane( 20 );
+			object = createPlane( 20.0 );
 			object.setTag( "v2" );
-			transform = Matrix3D.getTransform( 0, 90, 0, 105, -25, 0 );
+			transform = Matrix3D.getTransform( 0.0, 90.0, 0.0, 105.0, -25.0, 0.0 );
 		}
-		else if ( tag.equals( "d1" ) )
+		else if ( "d1".equals( tag ) )
 		{
 			object = createPlane( 100.0 );
 			object.setTag( "d1" );
-			transform = Matrix3D.getTransform( -45, 90, 0, 0, 0, 0 );
+			transform = Matrix3D.getTransform( -45.0, 90.0, 0.0, 0.0, 0.0, 0.0 );
 		}
-		else if ( tag.equals( "d2" ) )
+		else if ( "d2".equals( tag ) )
 		{
 			object = createPlane( 100.0 );
 			object.setTag( "d2" );
-			transform = Matrix3D.getTransform( 45, 90, 0, 80, 80, 0 );
+			transform = Matrix3D.getTransform( 45.0, 90.0, 0.0, 80.0, 80.0, 0.0 );
 		}
 
-		Matrix3D viewTransform = Matrix3D.getFromToTransform(  Vector3D.INIT.set( 0, -1000, 0), Vector3D.INIT , Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) , Vector3D.INIT.set( 0.0 , 1.0 , 0.0 ) );
+		final Matrix3D viewTransform = Matrix3D.getFromToTransform(  Vector3D.INIT.set( 0.0, -1000.0, 0.0 ), Vector3D.INIT , Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) , Vector3D.INIT.set( 0.0 , 1.0 , 0.0 ) );
 		transform = transform.multiply( viewTransform );
-		_renderQueue.enqueueObject( projector , true, transform, object, false );
+		renderQueue.enqueueObject( projector , true, transform, object, false );
 	}
 
-	public static Object3D createPlane( final double size )
+	private static Object3D createPlane( final double size )
 	{
 		final Vector3D lf = Vector3D.INIT.set( -size, -size, 0.0 );
 		final Vector3D rf = Vector3D.INIT.set( size, -size, 0.0 );
