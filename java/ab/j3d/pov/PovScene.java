@@ -180,6 +180,7 @@ public class PovScene
 				"-D" ,                      // don't show preview
 				"+A"  ,                     // turn on anti-aliasing
 				"+GA" ,
+				"+L\\povray-3.6\\include"
 			};
 
 			final Runtime runtime = Runtime.getRuntime();
