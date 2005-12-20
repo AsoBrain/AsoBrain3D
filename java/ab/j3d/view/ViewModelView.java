@@ -277,4 +277,13 @@ public abstract class ViewModelView
 		}
 	}
 
+	/**
+	 * Temporary method, can be removed when camera3d/projector classes are implemented correctly
+	 *
+	 * @return The field of view (45 degrees).
+	 */
+	public static double getFieldOfView()
+	{
+		return 45.0;
+	}
 }
