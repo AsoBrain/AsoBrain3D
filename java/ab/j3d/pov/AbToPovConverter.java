@@ -58,7 +58,7 @@ public class AbToPovConverter
 	 */
 	public AbToPovConverter()
 	{
-		PovTexture.texturePath = "../../../soda/SODA_BaseComponents/images/textures/";
+		PovTexture.texturePath = "SODA_BaseComponents/images/textures/";
 		_scene = new PovScene();
 	}
 
