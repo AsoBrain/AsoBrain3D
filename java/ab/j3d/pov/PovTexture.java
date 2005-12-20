@@ -139,7 +139,9 @@ public class PovTexture
 	 */
 	public float reflection = 0.0f;
 
-	//Rob
+	/**
+	 * Filter factor (transparancy).
+	 */
 	public float _filter = 0.0f;
 
 	/**
@@ -336,7 +338,7 @@ public class PovTexture
 		_filter = 1.0f - texture.opacity;
 		ambient = texture.ambientReflectivity;
 		diffuse = texture.diffuseReflectivity;
-		specular = texture.specularReflectivity;    // x texture.specularExponent
+		specular = texture.specularReflectivity;
 	}
 
 	public boolean equals( final Object other )
@@ -404,12 +406,12 @@ public class PovTexture
 		{
 			//String type = map.substring( map.lastIndexOf( "." ) + 1 );
 
-			//out.writeln( "pigment" );
-			//out.writeln( "{" );
-			//out.indentIn();
-			out.writeln( "pigment { image_map { " + type + " \"" + map + "\" } }" );
-			//out.indentOut();
-			//out.writeln( "}" );
+			out.writeln( "pigment" );
+			out.writeln( "{" );
+			out.indentIn();
+			out.writeln( "image_map { " + type + " \"" + map + "\" }" );
+			out.indentOut();
+			out.writeln( "}" );
 		}
 
 		out.writeln( "finish" );
@@ -530,7 +532,7 @@ public class PovTexture
 		out.indentIn();
 		if ( rgb != null )
 		{
-			if ( _filter > 0.0 )
+			if ( _filter > 0.0f )
 			{
 				out.writeln( "pigment" );
 				out.writeln( "{" );
@@ -549,12 +551,12 @@ public class PovTexture
 		{
 			//String type = map.substring( map.lastIndexOf( "." ) + 1 );
 
-			//out.writeln( "pigment" );
-			//out.writeln( "{" );
-			//out.indentIn();
-			out.writeln( "pigment { image_map { " + type + " \"" + map + "\" } }" );
-			//out.indentOut();
-			//out.writeln( "}" );
+			out.writeln( "pigment" );
+			out.writeln( "{" );
+			out.indentIn();
+			out.writeln( "image_map { " + type + " \"" + map + "\" }" );
+			out.indentOut();
+			out.writeln( "}" );
 		}
 
 		out.writeln( "finish" );
