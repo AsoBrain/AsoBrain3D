@@ -21,20 +21,36 @@ package ab.j3d.view;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Insets;
+import java.awt.Frame;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.ResourceBundle;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
-
+import javax.swing.Action;
+import javax.swing.JDialog;
+import javax.swing.JProgressBar;
+import javax.swing.BoundedRangeModel;
 import ab.j3d.Bounds3D;
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
+import ab.j3d.pov.AbToPovConverter;
+import ab.j3d.pov.PovScene;
 import ab.j3d.control.Control;
 import ab.j3d.model.Node3D;
-
 import com.numdata.oss.ui.ActionTools;
+import com.numdata.oss.ui.BasicAction;
+import com.numdata.oss.ui.ImagePanel;
+import com.numdata.oss.ui.WindowTools;
+import com.numdata.oss.ResourceBundleTools;
+import com.numdata.oss.ArrayTools;
 
 /**
  * The view model provides a high level interface between an application and a
@@ -576,7 +592,99 @@ public abstract class ViewModel
 		final JPanel result = new JPanel( new BorderLayout() );
 		result.add( viewComponent , BorderLayout.CENTER );
 
-		final JToolBar toolbar = ActionTools.createToolbar( null , viewControl.getActions( locale ) );
+		final ResourceBundle res     = ResourceBundleTools.getBundle( ViewControl.class , locale );
+		final ViewModel      model   = this;
+		      Action[]       actions = viewControl.getActions( locale );
+
+		/**
+		 * Add invisible image panel to the view for later drawing of pov images. Better would be to just
+		 * draw the image onto the viewComponent, but then the image disappears when the component is repainted
+		 * (resize , minimize etc).
+		 */
+		final ImagePanel panel = new ImagePanel();
+		result.add(  panel , BorderLayout.SOUTH );
+		panel.setVisible( false );
+
+		panel.addMouseListener( new MouseAdapter() {
+			public void mousePressed( final MouseEvent e)
+			{
+				panel.setVisible( false );
+				viewComponent.setVisible( true );
+			}
+		} );
+
+		/**
+		 * Add pov button to view.
+		 */
+		final Action povAction = new BasicAction( res , "POV" )
+		{
+			/**
+			 * Thread for rendering pov.
+			 */
+			public void run()
+			{
+				final Thread thread = new Thread( new Runnable() {
+					public void run()
+					{
+						render();
+					} } );
+				thread.start();
+			}
+
+			public void render()
+			{
+				int viewWidth  = viewComponent.getWidth();
+				int viewHeight = viewComponent.getHeight();
+
+				if ( viewComponent instanceof Container )
+				{
+					final Insets insets = ( (Container)viewComponent ).getInsets();
+					viewWidth  -= insets.left + insets.right;
+					viewHeight -= insets.top + insets.bottom;
+				}
+
+				/**
+				 * Convert the model to a povscene.
+				 */
+				final AbToPovConverter converter = new AbToPovConverter();
+				final PovScene scene = converter.convert( model );
+
+				/**
+				 * Manually add the camera, since Camera3D isnt't implemented correctly yet.
+				 */
+				scene.add( AbToPovConverter.convertCamera3D( view ) );
+
+				/**
+				 * Show progressbar.
+				 */
+				final JDialog      progress    = WindowTools.createProgressWindow( (Frame)WindowTools.getWindow( viewComponent ) , "Rendering..." , "Rendering..." );
+				final Container    contentPane = progress.getContentPane();
+				final JProgressBar progressBar = new JProgressBar();
+
+				contentPane.add( progressBar , BorderLayout.SOUTH );
+				WindowTools.packAndCenter( progress );
+
+				final BoundedRangeModel progressModel = progressBar.getModel();
+				final BufferedImage     image;
+
+				/**
+				 * Render the pov scene.
+				 */
+				image = scene.render( viewWidth , viewHeight , progressModel );
+				WindowTools.close( progress );
+
+				if ( image != null )
+				{
+					viewComponent.setVisible( false );
+					panel.setImage( image );
+					panel.setVisible( true );
+				}
+			}
+		};
+
+		actions = (Action[])ArrayTools.append( actions , povAction );
+		final JToolBar toolbar = ActionTools.createToolbar( null , actions );
+
 		if ( toolbar != null )
 			result.add( toolbar , BorderLayout.NORTH );
 
