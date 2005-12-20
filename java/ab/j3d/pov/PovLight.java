@@ -95,7 +95,7 @@ public final class PovLight
 	 *
 	 * @FIXME need description
 	 */
-	public final boolean jitter = false;
+	public boolean jitter = false;
 
 	/**
 	 * Light is an area light to soften shadows.
@@ -158,6 +158,24 @@ public final class PovLight
 	}
 
 	/**
+	 * Same as above constructor, but now jitter can be set also.
+	 *
+	 * @param   horSize     Horizontal range vector of area array.
+	 * @param   horCount    Number of horizontal lights.
+	 * @param   verSize     Vertical range vector of  area array.
+	 * @param   verCount    Number of vertical lights.
+	 */
+	public void makeArea( final PovVector horSize , final double horCount , final PovVector verSize , final double verCount , final boolean jitter )
+	{
+		arealight = true;
+		area_hor_size = horSize;
+		area_ver_size = verSize;
+		area_hor_count = horCount;
+		area_ver_count = verCount;
+		this.jitter = jitter;
+	}
+
+	/**
 	 * Make the light a spot light.
 	 *
 	 * @param   target      Target point of the spot.
@@ -206,11 +224,12 @@ public final class PovLight
 		if ( arealight )
 		{
 			out.writeln( "area_light " + area_hor_size + ", " + area_ver_size + ", " + area_hor_count + ", " + area_ver_count );
+			if ( jitter )
+				out.writeln( "jitter" );
 		}
 		writeTransformation( out );
 		out.indentOut();
 		out.write( "}" );
 		out.writeln();
 	}
-
 }
