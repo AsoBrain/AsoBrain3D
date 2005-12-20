@@ -160,13 +160,18 @@ public class PovMatrix
 		out.write( " >" );
 	}
 
-	//Rob
+	/**
+	 * Write this matrix in a readable way, as defined in the povray documentation.
+	 *
+	 * @param out The outputstream to write to.
+	 * @throws IOException If an error occured while writing to out.
+	 */
 	public void writeAB( final IndentingWriter out )
 		throws IOException
 	{
-		out.write( "matrix < " + data[0] + " , " + data[1] + " , " + data[2] + " ,\n" +
-		           "             " + data[3] + " , " + data[4] + " , " + data[5] + " ,\n" +
-		           "             " + data[6] + " , " + data[7] + " , " + data[8] + " ,\n" +
-		           "             " + data[9] + " , " + data[10] + " , " + data[11] + " >\n" );
+		out.writeln( "matrix < " + data[0] + " , " + data[1] + " , " + data[2] + " ," );
+		out.writeln( "         " + data[3] + " , " + data[4] + " , " + data[5] + " ," );
+		out.writeln( "         " + data[6] + " , " + data[7] + " , " + data[8] + " ," );
+		out.writeln( "         " + data[9] + " , " + data[10] + " , " + data[11] + " >" );
 	}
 }
