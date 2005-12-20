@@ -136,13 +136,13 @@ public class PovScene
 	}
 
 	/**
-	 * Renders the specified input file and
-	 * returns the rendered output file.
+	 * Renders the specified input file and returns the rendered output file.
 	 *
-	 * @return  Rendered image;
-	 *          <code>null</code> if the pov scene could not be rendered.
-	 *
-	 * @throws  SecurityException if file or process execution is denied.
+	 * @param width         The width of the rendered image.
+	 * @param height        The height of the rendered image.
+	 * @param progressModel Progressbar model.
+	 * @return              Rendered image;
+	 *                      <code>null</code> if the pov scene could not be rendered.
 	 */
 	public BufferedImage render( final int width , final int height , final BoundedRangeModel progressModel )
 	{
@@ -172,7 +172,6 @@ public class PovScene
 			final String[] command =
 			{
 				"povray" ,
-				"+V" ,
 				"+I" + tempFile.getPath() , // input file ('-' = stdin)
 				"+O-" ,                     // output file ('-' = stdout)
 				"+FN" ,                     // file format: PNG
@@ -215,16 +214,16 @@ public class PovScene
 								{
 									if  ( line.indexOf(  " Rendering line " ) != -1 )
 									{
-										String temp = line.substring( line.indexOf( " Rendering line ") + 16 );
+										String temp = line.substring( line.indexOf( " Rendering line " ) + 16 );
 										final int end = temp.indexOf( (int)' ' );
-										temp = temp.substring( 0 , end);
+										temp = temp.substring( 0 , end );
 
 										try
 										{
 											final int value = Integer.parseInt( temp );
 											progressModel.setValue( value );
 										}
-										catch(Exception e )
+										catch( Exception e )
 										{
 											/* ignore */
 										}
@@ -397,44 +396,20 @@ public class PovScene
 		out.writeln( "texture");
 		out.writeln( "{" );
 		out.indentIn();
-		out.writeln( "pigment { image_map { jpeg \"/home/rob/soda/SODA_BaseComponents/images/textures/PF_R5474\" } }" );
+		out.writeln( "pigment { image_map { jpeg \"SODA_BaseComponents/images/textures/PF_R5474\" } }" );
 		out.writeln( "scale < 1000 , 1000 , 1000 >" );
+		out.writeln( "finish" );
+		out.writeln( "{" );
+		out.indentIn();
+		out.writeln( "ambient 0.2" );
+		out.writeln( "diffuse 0.6" );
+		out.indentOut();
+		out.writeln( "}" );
 		out.indentOut();
 		out.writeln( "}" );
 		out.indentOut();
 		out.writeln( "}" );
 		out.newLine();
-/*
-		// infinite wall1
-		out.writeln( "plane" );
-		out.writeln( "{" );
-		out.indentIn();
-		out.writeln( "y , 1000.0" );
-		out.writeln( "texture");
-		out.writeln( "{" );
-		out.indentIn();
-		out.writeln( "pigment {  color < 0.76 , 0.76 , 0.7 > }" );
-		out.indentOut();
-		out.writeln( "}" );
-		out.indentOut();
-		out.writeln( "}" );
-		out.newLine();
-
-		// infinite wall2
-		out.writeln( "plane" );
-		out.writeln( "{" );
-		out.indentIn();
-		out.writeln( "x , 1000.0" );
-		out.writeln( "texture");
-		out.writeln( "{" );
-		out.indentIn();
-		out.writeln( "pigment {  color < 0.76 , 0.76 , 0.7 > }" );
-		out.indentOut();
-		out.writeln( "}" );
-		out.indentOut();
-		out.writeln( "}" );
-		out.newLine();
-*/
 	}
 
 	protected void writeCameras( final IndentingWriter out , final PovGeometry[] geometry )
@@ -546,11 +521,5 @@ public class PovScene
 			}
 		}
 		//System.out.println( "" );
-	}
-
-	//check of een texture met code al is gedeclareerd.
-	public boolean isDeclared( final String code )
-	{
-		return textures.containsKey( code );
 	}
 }
