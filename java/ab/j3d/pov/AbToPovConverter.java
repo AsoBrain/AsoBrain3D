@@ -121,12 +121,11 @@ public class AbToPovConverter
 		/**
 		 * Add some ligt to the scene. Light is not fully implemented yet in AB.
 		 */
-		final Color color = new Color( 255 , 255 , 240 );
-
-
+		final Color    color    = new Color( 255 , 255 , 240 );
 		final PovLight povLight = new PovLight( "light1" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
+
 		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( -4000.0 , -4000.0 , 8000.0 ) ) );
-		povLight.makeArea( new PovVector( 1.0 , 0.0 , 0.0 ) , 5.0 , new PovVector( 0.0 , 1.0 , 0.0 ) , 5.0 );
+		povLight.makeArea( new PovVector( 1.0 , 0.0 , 0.0 ) , 5.0 , new PovVector( 0.0 , 1.0 , 0.0 ) , 5.0 , true );
 		scene.add( povLight );
 
 		/**
