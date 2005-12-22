@@ -125,7 +125,8 @@ public class AbToPovConverter
 		final PovLight povLight = new PovLight( "light1" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
 
 		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( -4000.0 , -4000.0 , 8000.0 ) ) );
-		povLight.makeArea( new PovVector( 1.0 , 0.0 , 0.0 ) , 5.0 , new PovVector( 0.0 , 1.0 , 0.0 ) , 5.0 , true );
+		povLight.makeArea( new PovVector( 1.0 , 0.0 , 0.0 ) , 3.0 , new PovVector( 0.0 , 1.0 , 0.0 ) , 3.0 , false );
+		povLight.adaptive = 1.0;
 		scene.add( povLight );
 
 		/**
@@ -214,7 +215,7 @@ public class AbToPovConverter
 
 		povBox.setTransform( new PovMatrix( box.getTransform() ) );
 
-		povTexture.reflection = 0.1f;
+		povTexture.reflection = 0.05f;
 		_scene.addTexture( povTexture.name , povTexture );
 		povTexture.setDeclared();
 
@@ -233,7 +234,7 @@ public class AbToPovConverter
 		final TextureSpec textureSpec = face.getTexture();
 		final PovTexture  povTexture  = new PovTexture( textureSpec );
 
-		povTexture.reflection = 0.1f;
+		povTexture.reflection = 0.05f;
 		_scene.addTexture( povTexture.name , povTexture );
 		povTexture.setDeclared();
 
@@ -255,7 +256,7 @@ public class AbToPovConverter
 		final TextureSpec textureSpec = face.getTexture();
 		final PovTexture  povTexture  = new PovTexture( textureSpec );
 
-		povTexture.reflection = 0.1f;
+		povTexture.reflection = 0.05f;
 		_scene.addTexture( povTexture.name , povTexture );
 		povTexture.setDeclared();
 
@@ -352,7 +353,7 @@ public class AbToPovConverter
 				final PovVector  thirdVertex = new PovVector( x , y , z );
 				final PovTexture povTexture  = new PovTexture( texture );
 
-				povTexture.reflection = 0.1f;
+				povTexture.reflection = 0.05f;
 				_scene.addTexture( povTexture.name , povTexture );
 				povTexture.setDeclared();
 
