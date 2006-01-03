@@ -25,7 +25,6 @@ import java.awt.Component;
 import ab.j3d.Vector3D;
 import ab.j3d.control.Control;
 import ab.j3d.view.FromToViewControl;
-import ab.j3d.view.Projector;
 import ab.j3d.view.ViewModelView;
 import ab.j3d.view.ViewControl;
 
@@ -34,13 +33,27 @@ import ab.j3d.view.ViewControl;
  * {@link Component} which displays this view. The view position can be changed
  * to a pre defined position using the method {@link #setViewType}. The type
  * of projection (parallel or perspective) can be changed with the method
- * {@link #setPerspective}.
+ * {@link #setProjection}.
  *
  * @author  Mart Slot
  * @version $Revision$ $Date$
  */
 public class View3D
 {
+	/**
+	 * Use perspective projection.
+	 *
+	 * @see #setProjection
+	 */
+	public static final int PERSPECTIVE_PROJECTION = 1;
+
+	/**
+	 * Use parralel projection.
+	 *
+	 * @see #setProjection
+	 */
+	public static final int PARRALEL_PROJECTION = 2;
+
 	/**
 	 * A view from above, giving an overview of the x,y plane.
 	 */
@@ -85,14 +98,14 @@ public class View3D
 	 *                      {@link #LEFT_VIEW} or {@link #PERSPECTIVE_VIEW}.
 	 * @param   perspective Wether this view should have perspective projection.
 	 */
-	public View3D( final Model3D model , final int viewType , final boolean perspective)
+	public View3D( final Model3D model , final int viewType , final int perspective)
 	{
 		_viewControl = new FromToViewControl( 100.0 );
 
 		_view = model.createView( this , _viewControl);
 		_component = _view.getComponent();
 
-		setPerspective( perspective );
+		setProjection( perspective );
 		setViewType( viewType );
 	}
 
@@ -110,12 +123,18 @@ public class View3D
 	 * Sets wether this view should have perspective projection
 	 * (<code>true</code>) or parallel projection (<code>false</code>).
 	 *
-	 * @param   perspective     Wether this view should have perspective
-	 *                          projection.
+	 * @param projection
 	 */
-	public void setPerspective( final boolean perspective )
+	public void setProjection( final int projection )
 	{
-		_view.setProjectionPolicy( perspective ? Projector.PERSPECTIVE : Projector.PARALLEL );
+		if ( PERSPECTIVE_PROJECTION == projection || PARRALEL_PROJECTION == projection )
+		{
+			_view.setProjectionPolicy( projection );
+		}
+		else
+		{
+			throw new IllegalArgumentException( "projection has to been one of PERSPECTIVE or PARRALEL" );
+		}
 	}
 
 	/**

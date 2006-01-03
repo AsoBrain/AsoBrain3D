@@ -22,8 +22,6 @@ package ab.j3d.control.controltest;
 
 import java.awt.Container;
 import java.awt.BorderLayout;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import javax.swing.JFrame;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
@@ -43,7 +41,6 @@ import ab.j3d.control.controltest.model.Model;
  * @version $Revision$ $Date$
  */
 public class GUI
-	implements ActionListener
 {
 
 	/**
@@ -60,10 +57,10 @@ public class GUI
 		final Container contentPane = frame.getContentPane();
 		contentPane.setLayout( new BorderLayout() );
 
-		final View3D view1 = new View3D( model3D , View3D.TOP_VIEW         , true );
-		final View3D view2 = new View3D( model3D , View3D.FRONT_VIEW       , true );
-		final View3D view3 = new View3D( model3D , View3D.LEFT_VIEW        , true );
-		final View3D view4 = new View3D( model3D , View3D.PERSPECTIVE_VIEW , true );
+		final View3D view1 = new View3D( model3D , View3D.TOP_VIEW         , View3D.PERSPECTIVE_PROJECTION );
+		final View3D view2 = new View3D( model3D , View3D.FRONT_VIEW       , View3D.PERSPECTIVE_PROJECTION );
+		final View3D view3 = new View3D( model3D , View3D.LEFT_VIEW        , View3D.PERSPECTIVE_PROJECTION );
+		final View3D view4 = new View3D( model3D , View3D.PERSPECTIVE_VIEW , View3D.PERSPECTIVE_PROJECTION );
 
 		final JSplitPane topSplit      = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT , view1.getComponent() , view2.getComponent() );
 		final JSplitPane bottomSplit   = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT , view3.getComponent() , view4.getComponent() );
@@ -127,15 +124,5 @@ public class GUI
 		rotateCameraButton.setSelected( true );
 
 		return result;
-	}
-
-	/**
-	 * Invoked when an action occurs.
-	 *
-	 * @param   e   The event that occured.
-	 */
-	public void actionPerformed( final ActionEvent e )
-	{
-
 	}
 }

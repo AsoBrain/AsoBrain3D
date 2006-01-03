@@ -122,7 +122,7 @@ public final class Model3D
 
 		_elements = new HashSet();
 
-		createScene();
+		updateScene();
 	}
 
 	/**
@@ -155,7 +155,7 @@ public final class Model3D
 
 		if ( Model.MODEL_CHANGED == property )
 		{
-			createScene();
+			updateScene();
 		}
 		else if ( SceneElement.ELEMENT_CHANGED == property )
 		{
@@ -180,7 +180,7 @@ public final class Model3D
 	 * Updates the scene. Any existing 3d objects are either updated or deleted
 	 * if they were removed from the {@link Model}.
 	 */
-	private void createScene()
+	private void updateScene()
 	{
 		final ViewModel viewModel = _viewModel;
 
