@@ -71,35 +71,35 @@ extends TestCase
 	{
 		System.out.println( CLASS_NAME + ".PerspectiveProjector.testScreenToWorld()" );
 
-		Projector projector = Projector.createInstance( Projector.PERSPECTIVE , 100, 100, 1.0, ViewModel.M, 0.1, 1000, Math.toRadians( 45), 1.0);
+		Projector projector = Projector.createInstance( Projector.PERSPECTIVE , 100, 100, 1.0, ViewModel.M, 0.1, 1000.0, Math.toRadians( 45.0 ), 1.0);
 
-		Vector3D screen = Vector3D.INIT.set( 0, 100, 100);
+		Vector3D screen = Vector3D.INIT.set( 0.0, 100.0, 100.0 );
 		Vector3D world = projector.screenToWorld( (int)screen.x , (int)screen.y, screen.z );
-		Vector3D expected = Vector3D.INIT.set( 41.42, 41.42, 100);
+		Vector3D expected = Vector3D.INIT.set( 41.42, 41.42, 100.0 );
 		System.out.println( "\nTesting " + screen.toString() );
 		assertTrue( "The expected world coordinates are not correct. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
 
-		screen = Vector3D.INIT.set( 0, 0, 100);
+		screen = Vector3D.INIT.set( 0.0, 0.0, 100.0 );
 		world = projector.screenToWorld( (int)screen.x , (int)screen.y, screen.z );
-		expected = Vector3D.INIT.set( 41.42, -41.42, 100);
+		expected = Vector3D.INIT.set( 41.42, -41.42, 100.0 );
 		System.out.println( "\nTesting " + screen.toString() );
 		assertTrue( "The expected world coordinates are not correct. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
 
-		screen = Vector3D.INIT.set( 100, 100, 100);
+		screen = Vector3D.INIT.set( 100.0, 100.0, 100.0 );
 		world = projector.screenToWorld( (int)screen.x , (int)screen.y, screen.z );
-		expected = Vector3D.INIT.set( -41.42, 42.42, 100);
+		expected = Vector3D.INIT.set( -41.42, 42.42, 100.0 );
 		System.out.println( "\nTesting " + screen.toString() );
 		assertTrue( "The expected world coordinates are not correct. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
 
-		screen = Vector3D.INIT.set( 100, 0, 100);
+		screen = Vector3D.INIT.set( 100.0, 0.0, 100.0 );
 		world = projector.screenToWorld( (int)screen.x , (int)screen.y, screen.z );
-		expected = Vector3D.INIT.set( -41.42, -41.42, 100);
+		expected = Vector3D.INIT.set( -41.42, -41.42, 100.0 );
 		System.out.println( "\nTesting " + screen.toString() );
 		assertTrue( "The expected world coordinates are not correct. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
 
-		screen = Vector3D.INIT.set( 50, 50, 100);
+		screen = Vector3D.INIT.set( 50.0, 50.0, 100.0 );
 		world = projector.screenToWorld( (int)screen.x , (int)screen.y, screen.z );
-		expected = Vector3D.INIT.set( 0, 0, 100);
+		expected = Vector3D.INIT.set( 0.0, 0.0, 100.0 );
 		System.out.println( "\nTesting " + screen.toString() );
 		assertTrue( "The expected world coordinates are not correct. Expected: " + expected.toString() + "  result: " + world.toString() , world.almostEquals( expected ));
 
@@ -107,35 +107,35 @@ extends TestCase
 
 		System.out.println( CLASS_NAME + ".ParallelProjector.testScreenToWorld()" );
 
-		projector = Projector.createInstance( Projector.PARALLEL , 100, 100, 1.0, ViewModel.M, 0.1, 1000, Math.toRadians( 45), 1.0);
+		projector = Projector.createInstance( Projector.PARALLEL , 100, 100, 1.0, ViewModel.M, 0.1, 1000.0, Math.toRadians( 45.0 ), 1.0);
 
-		screen = Vector3D.INIT.set( 0, 0, 100);
+		screen = Vector3D.INIT.set( 0.0, 0.0, 100.0 );
 		world = projector.screenToWorld( (int)screen.x , (int)screen.y, screen.z );
-		expected = Vector3D.INIT.set( -1, 1, 100);
+		expected = Vector3D.INIT.set( -1.0, 1.0, 100.0 );
 		System.out.println( "\nTesting " + screen.toString() );
 		assertTrue( "The expected world coordinates are not correct. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
 
-		screen = Vector3D.INIT.set( 0, 100, 100);
+		screen = Vector3D.INIT.set( 0.0, 100.0, 100.0 );
 		world = projector.screenToWorld( (int)screen.x , (int)screen.y, screen.z );
-		expected = Vector3D.INIT.set( -1, -1, 100);
+		expected = Vector3D.INIT.set( -1.0, -1.0, 100.0 );
 		System.out.println( "\nTesting " + screen.toString() );
 		assertTrue( "The expected world coordinates are not correct. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
 
-		screen = Vector3D.INIT.set( 100, 0, 100);
+		screen = Vector3D.INIT.set( 100.0, 0.0, 100.0 );
 		world = projector.screenToWorld( (int)screen.x , (int)screen.y, screen.z );
-		expected = Vector3D.INIT.set( 1, 1, 100);
+		expected = Vector3D.INIT.set( 1.0, 1.0, 100.0 );
 		System.out.println( "\nTesting " + screen.toString() );
 		assertTrue( "The expected world coordinates are not correct. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
 
-		screen = Vector3D.INIT.set( 100, 100, 100);
+		screen = Vector3D.INIT.set( 100.0, 100.0, 100.0 );
 		world = projector.screenToWorld( (int)screen.x , (int)screen.y, screen.z );
-		expected = Vector3D.INIT.set( 1, -1, 100);
+		expected = Vector3D.INIT.set( 1.0, -1.0, 100.0 );
 		System.out.println( "\nTesting " + screen.toString() );
 		assertTrue( "The expected world coordinates are not correct. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
 
-		screen = Vector3D.INIT.set( 50, 50, 100);
+		screen = Vector3D.INIT.set( 50.0, 50.0, 100.0 );
 		world = projector.screenToWorld( (int)screen.x , (int)screen.y, screen.z );
-		expected = Vector3D.INIT.set( 0, 0, 100);
+		expected = Vector3D.INIT.set( 0.0, 0.0, 100.0 );
 		System.out.println( "\nTesting " + screen.toString() );
 		assertTrue( "The expected world coordinates are not correct. Expected: " + expected.toString() + "  result: " + world.toString() , world.almostEquals( expected ));
 

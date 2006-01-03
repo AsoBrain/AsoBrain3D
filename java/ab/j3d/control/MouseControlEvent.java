@@ -30,7 +30,7 @@ import java.util.List;
  * There are methods to return the x and y coordinates of the mouse location,
  * the button that was pressed and the faces that are beneath the mouse in the
  * view component.
-
+ *
  * @author Mart Slot
  * @version $Revision$ $Date$
  */

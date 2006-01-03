@@ -250,7 +250,7 @@ public final class Java2dView
 		 */
 		update();
 
-		_inputTranslator = new ViewInputTranslator(this, model);
+		_inputTranslator = new ViewInputTranslator( this , model );
 
 		/*
 		 * Add DragSupport to handle drag events.

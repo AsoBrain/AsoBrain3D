@@ -43,12 +43,12 @@ public abstract class IntersectionSupport
 	/**
 	 * Returns a {@link Node3DCollection} with all {@link Object3D}s in the
 	 * scene. Implementing classes should only put objects that need to be
-	 * tested for intersection in this collections. The transform matrices in
+	 * tested for intersection in this collection. The transform matrices in
 	 * the {@link Node3DCollection} should hold the matrix for transforming the
 	 * object to world coordinates. If the scene is empty, an empty
 	 * {@link Node3DCollection} should be returned.
 	 *
-	 * @return  The objects in the scene.
+	 * @return  A {@link Node3DCollection} containing the objects in the scene.
 	 */
 	protected abstract Node3DCollection getScene();
 
@@ -57,7 +57,7 @@ public abstract class IntersectionSupport
 	 *
 	 * @param   object  The object for which to return the ID.
 	 *
-	 * @return  the ID for <code>object</code>.
+	 * @return  The ID for <code>object</code>.
 	 */
 	protected abstract Object getIDForObject( Object3D object );
 
@@ -67,7 +67,7 @@ public abstract class IntersectionSupport
 	 * <code>lineStart</code> going through <code>linePoint</code>.
 	 *
 	 * @param   lineStart   The startpoint of the intersection line
-	 * @param   linePoint   The endpoint of the intersection line
+	 * @param   linePoint   A point on the intersection line.
 	 *
 	 * @return  A list of {@link Intersection}s, ordered from front to back.
 	 */
@@ -138,17 +138,17 @@ public abstract class IntersectionSupport
 	 * <code>lineTransform</code>, which transforms the world so that the
 	 * intersection line runs parallel to the z axis.
 	 *
-	 * @param   object          The object to check intersection.
-	 * @param   worldTransform  The Matrix to transform the object coordinates
-	 *                          to world coordinates
-	 * @param   lineTransform   The Matrix to transform the object to de line's
-	 *                          coordinates
-	 * @param   lineStart       The startpoint of the intersection line
-	 * @param   lineEnd         The endpoint of the intersection line
+	 * @param   object          The object for which to check intersection.
+	 * @param   worldTransform  The Matrix for transforming the object.
+	 *                          coordinates to world coordinates.
+	 * @param   lineTransform   The Matrix for transforming the object
+	 *                          coordinates to line coordinates.
+	 * @param   lineStart       The startpoint of the intersection line.
+	 * @param   linePoint       A point on the intersection line.
 	 *
 	 * @return  A list with the intersections.
 	 */
-	protected List getIntersections( final Object3D object , final Matrix3D worldTransform , final Matrix3D lineTransform , final Vector3D lineStart , final Vector3D lineEnd )
+	protected List getIntersections( final Object3D object , final Matrix3D worldTransform , final Matrix3D lineTransform , final Vector3D lineStart , final Vector3D linePoint )
 	{
 		final List intersections = new ArrayList( object.getFaceCount() );
 
@@ -175,7 +175,7 @@ public abstract class IntersectionSupport
 				final Vector3D p3     = Vector3D.INIT.set( vertices[ in ] , vertices[ in + 1 ] , vertices[ in + 2 ]                                                       );
 
 				final double divide1 = Vector3D.dot( normal , p3.minus( lineStart )      );
-				final double divide2 = Vector3D.dot( normal , lineEnd.minus( lineStart ) );
+				final double divide2 = Vector3D.dot( normal , linePoint.minus( lineStart ) );
 				double u = 0.0;
 				if ( divide2 != 0.0 )
 				{
@@ -187,9 +187,9 @@ public abstract class IntersectionSupport
 				 */
 				if ( u >= 0.0 )
 				{
-					final double intX = lineStart.x + u * ( lineEnd.x - lineStart.x );
-					final double intY = lineStart.y + u * ( lineEnd.y - lineStart.y );
-					final double intZ = lineStart.z + u * ( lineEnd.z - lineStart.z );
+					final double intX = lineStart.x + u * ( linePoint.x - lineStart.x );
+					final double intY = lineStart.y + u * ( linePoint.y - lineStart.y );
+					final double intZ = lineStart.z + u * ( linePoint.z - lineStart.z );
 
 					final int lastIndex = pointIndices[ pointIndices.length - 1 ] * 3;
 					double  x1        = vertices[ lastIndex ];

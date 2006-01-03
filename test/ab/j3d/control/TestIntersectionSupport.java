@@ -36,9 +36,10 @@ import ab.j3d.view.java2d.Java2dModel;
 /**
  * This class tests the {@link IntersectionSupport} class.
  *
- * @author Peter S. Heijnen
+ * @see     IntersectionSupport
+
+ * @author  Mart Slot
  * @version $Revision$ $Date$
- * @see IntersectionSupport
  */
 public class TestIntersectionSupport
 extends TestCase
@@ -304,8 +305,10 @@ extends TestCase
 
 	/**
 	 * Creates a new Object3D in a plane shape, with a top and a bottom face.
-	 * @param size The size of the plane
-	 * @return The plane object
+	 *
+	 * @param   size    The size of the plane
+	 * 
+	 * @return  The plane object
 	 */
 	private static Object3D createPlane( final double size )
 	{
@@ -325,10 +328,4 @@ extends TestCase
 		return plane;
 	}
 
-/*
-		final Vector3D lf = Vector3D.INIT.set( -halfSize , 0.0 , -halfSize );
-		final Vector3D rf = Vector3D.INIT.set(  halfSize , 0.0 , -halfSize );
-		final Vector3D rb = Vector3D.INIT.set(  halfSize , 0.0 ,  halfSize );
-		final Vector3D lb = Vector3D.INIT.set( -halfSize , 0.0 ,  halfSize );
-*/
 }

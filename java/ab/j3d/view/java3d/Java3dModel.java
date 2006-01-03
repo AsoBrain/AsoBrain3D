@@ -240,7 +240,7 @@ public final class Java3dModel
 	}
 
 	/**
-	 * Returns wether or not this view supports {@link Control}s. For a
+	 * Returns wether or not this model supports {@link Control}s. For a
 	 * {@link Java3dModel}, this is always <code>true</code>.
 	 *
 	 * @return  <code>true</code>, because a {@link Java3dModel} supports

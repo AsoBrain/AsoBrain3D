@@ -101,7 +101,8 @@ public final class Intersection
 
 	/**
 	 * Returns the intersected {@link Object3D}.
-	 * @return  intersected {@link Object3D}.
+	 * 
+	 * @return  Intersected {@link Object3D}.
 	 */
 	public Object3D getObject()
 	{
@@ -111,7 +112,7 @@ public final class Intersection
 	/**
 	 * Returns the intersected {@link Face3D}.
 	 *
-	 * @return  intersected {@link Face3D}.
+	 * @return  Intersected {@link Face3D}.
 	 */
 	public Face3D getFace()
 	{
@@ -122,7 +123,7 @@ public final class Intersection
 	 * Returns the distance from the start of the intersection line to the
 	 * intersected face.
 	 *
-	 * @return  distance from the start of the intersection line to the
+	 * @return  Iistance from the start of the intersection line to the
 	 *          intersected face.
 	 */
 	public double getIntersectionDistance()
@@ -144,7 +145,7 @@ public final class Intersection
 	 * Returns the intersection point in the intersected object's coordinate
 	 * system.
 	 *
-	 * @return  intersection point in the coordinate system of the object.
+	 * @return  Intersection point in the coordinate system of the object.
 	 */
 	public Vector3D getLocalIntersection()
 	{

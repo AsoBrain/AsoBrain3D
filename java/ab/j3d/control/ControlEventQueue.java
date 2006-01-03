@@ -95,7 +95,7 @@ public final class ControlEventQueue
 	 * The event is passed to a first control, which can either return the
 	 * original event or return <code>null</code>. If <code>null</code> is
 	 * returned, nothing happens, but if an event is returned, it is passed on
-	 * to the next {@link Control} in the list.<p> {@link Control} are allowed
+	 * to the next {@link Control} in the list.<p> {@link Control}s are allowed
 	 * modify an event.
 	 *
 	 * @param   e   The {@link ControlEvent} to dispatch.

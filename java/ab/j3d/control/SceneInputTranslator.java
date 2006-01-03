@@ -70,7 +70,7 @@ public abstract class SceneInputTranslator
 	private long _lastDrag;
 
 	/**
-	 * Construct new EventHandler.
+	 * Construct new SceneInputTranslator.
 	 *
 	 * @param   component   The component to listen to for events
 	 */
@@ -134,12 +134,12 @@ public abstract class SceneInputTranslator
 	/**
 	 * Returns a list of all {@link Intersection}s for a line cast into the
 	 * world from point <code>clickX</code>, <code>clickY</code>
-	 * on the viewing plane. <p>This method calls {@link #getProjector()} to
-	 * get the projector for the scene, {@link #getViewTransform()} to transform
-	 * the line from view to world coordinates, and
-	 * {@link #getIntersectionSupport()} to get the intersection support for
-	 * this scene. Subclasses do not need to override this method, overriding
-	 * the three other methods should suffice.
+	 * on the viewing plane. Returns an empty set if there are no intersections.
+	 * <p>This method calls {@link #getProjector()} to get the projector for the
+	 * scene, {@link #getViewTransform()} to transform the line from view to
+	 * world coordinates, and {@link #getIntersectionSupport()} to get the
+	 * intersection support for this scene. Subclasses do not need to override
+	 * this method, overriding the three other methods should suffice.
 	 *
 	 * @param   clickX  The x position of the mouse click
 	 * @param   clickY  The y position of the mouse click

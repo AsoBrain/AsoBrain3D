@@ -328,7 +328,7 @@ public abstract class ViewModel
 	{
 		final ViewModelNode node = getNode( id );
 		if ( node != null )
-			_nodes.remove( id );
+			_nodes.remove( node );
 	}
 
 	/**

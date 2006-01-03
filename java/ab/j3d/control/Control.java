@@ -51,8 +51,9 @@ public interface Control
 
 	/**
 	 * Handle a {@link ControlEvent}. If the event should be passed on to the
-	 * next {@link Control} in the {@link ControlEventQueue}, the original event
-	 * should be returned. If not, <code>null</code> should be returned.
+	 * next {@link Control} in the {@link ControlEventQueue}, the original
+	 * event, or a modified event should be returned. If not, <code>null</code>
+	 * should be returned.
 	 *
 	 * @param   e   The {@link ControlEvent} that was fired.
 	 *
@@ -64,7 +65,7 @@ public interface Control
 
 	/**
 	 * Returns a bitwise mask which tells what information this {@link Control}
-	 * is interested in. This may help performance of the
+	 * is interested in. This may help to improve the performance of the
 	 * {@link SceneInputTranslator}, because it does not need to calculate
 	 * information that is not used.
 	 *

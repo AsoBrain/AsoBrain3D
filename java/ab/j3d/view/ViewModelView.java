@@ -223,7 +223,7 @@ public abstract class ViewModelView
 	/**
 	 * Adds a {@link Control} to this view. This control is added to the end of
 	 * the list of controls. <p>Note that not all views support
-	 * controls. This can be check with the method
+	 * controls. This can be checked with the method
 	 * {@link ViewModel#supportsControls()}.
 	 *
 	 * @param   control     The {@link Control} to add

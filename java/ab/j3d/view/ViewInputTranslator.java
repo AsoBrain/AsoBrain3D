@@ -50,9 +50,9 @@ public class ViewInputTranslator
 	 * @param   view    The view to listen for events
 	 * @param   model   The ViewModel for the view
 	 */
-	public ViewInputTranslator( final ViewModelView view, final ViewModel model )
+	public ViewInputTranslator( final ViewModelView view , final ViewModel model )
 	{
-		super(view.getComponent());
+		super( view.getComponent() );
 
 		_view = view;
 		_support = new ViewIntersectionSupport( model );

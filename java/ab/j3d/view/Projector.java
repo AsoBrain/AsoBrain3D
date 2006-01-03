@@ -288,7 +288,7 @@ public abstract class Projector
 	 *                  viewing plane.
 	 * @return The world location for the given screen coordinate.
 	 */
-	public abstract Vector3D screenToWorld( int x , int y, double distance );
+	public abstract Vector3D screenToWorld( int x , int y , double distance );
 
 	/**
 	 * Perspective projector implementation.
@@ -393,18 +393,18 @@ public abstract class Projector
 //			return result;
 		}
 
-		public Vector3D screenToWorld( final int x, final int y, final double distance){
-			final int    centerX     = _imageWidth >> 1;
-			final int    centerY     = _imageHeight >> 1;
+		public Vector3D screenToWorld( final int x , final int y , final double distance ){
+			final double centerX     = (double)_imageWidth / 2.0;
+			final double centerY     = (double)_imageHeight / 2.0;
 			final double view2pixels = _view2pixels;
 			final double eyeDistance = _eyeDistance;
 
 			final double f = view2pixels / ( 1.0 - ( distance + eyeDistance ) / eyeDistance );
 
-			final double worldX = (x - centerX) / f;
-			final double worldY = (-y + centerY) / f;
+			final double worldX = ( (double) x - centerX ) / f;
+			final double worldY = ( (double)-y + centerY ) / f;
 
-			return Vector3D.INIT.set( worldX, worldY, distance);
+			return Vector3D.INIT.set( worldX , worldY , distance );
 		}
 	}
 
@@ -473,15 +473,15 @@ public abstract class Projector
 			    && ( z >= _backClipDistance ) && ( z <= _frontClipDistance );
 		}
 
-		public Vector3D screenToWorld( final int x, final int y, final double distance){
-			final int    centerX     = _imageWidth >> 1;
-			final int    centerY     = _imageHeight >> 1;
+		public Vector3D screenToWorld( final int x , final int y , final double distance ){
+			final double centerX     = (double)_imageWidth / 2.0;
+			final double centerY     = (double)_imageHeight / 2.0;
 			final double view2pixels = _view2pixels;
 
-			final double worldX = (x - centerX) / view2pixels;
-			final double worldY = (-y + centerY) / view2pixels;
+			final double worldX = ( (double) x - centerX ) / view2pixels;
+			final double worldY = ( (double)-y + centerY ) / view2pixels;
 
-			return Vector3D.INIT.set( worldX, worldY, distance);
+			return Vector3D.INIT.set( worldX , worldY , distance );
 		}
 	}
 
@@ -557,7 +557,7 @@ public abstract class Projector
 			    && ( ( tmp = (     z * _yComponentOfZ - y ) ) >= -_limitY ) && ( tmp <= _limitY );
 		}
 
-		public Vector3D screenToWorld( final int x, final int y, final double distance){
+		public Vector3D screenToWorld( final int x , final int y , final double distance ){
 			return Vector3D.INIT;
 		}
 	}
