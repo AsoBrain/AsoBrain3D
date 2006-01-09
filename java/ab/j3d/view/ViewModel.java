@@ -45,6 +45,8 @@ import ab.j3d.pov.AbToPovConverter;
 import ab.j3d.pov.PovScene;
 import ab.j3d.control.Control;
 import ab.j3d.model.Node3D;
+import ab.j3d.model.Object3D;
+
 import com.numdata.oss.ui.ActionTools;
 import com.numdata.oss.ui.BasicAction;
 import com.numdata.oss.ui.ImagePanel;
@@ -197,8 +199,12 @@ public abstract class ViewModel
 	}
 
 	/**
-	 * Returns the ID object for a {@link Node3D}. If the node is not part of this
-	 * model, <code>null</code> is returned.
+	 * Returns the ID object for a {@link Node3D}. If the node is not part of
+	 * this model, <code>null</code> is returned. <p>
+	 * Note that the top most parent of the given node is the node for which the
+	 * id is returned. This is because only these nodes have an id. This means
+	 * two {@link Object3D}s can have the same id, because of the way the
+	 * application has created the model.
 	 *
 	 * @param   node    The {@link Node3D} for which the id is required
 	 *
@@ -208,12 +214,18 @@ public abstract class ViewModel
 	{
 		Object result = null;
 
+		Node3D topNode = node;
+		while ( topNode.getParent() != null )
+		{
+			topNode = topNode.getParent();
+		}
+
 		final List nodes = _nodes;
 
 		for ( int i = 0; i < nodes.size() && result == null; i++ )
 		{
 			final ViewModelNode modelNode = (ViewModelNode)nodes.get( i );
-			if ( modelNode.getNode3D() == node )
+			if ( modelNode.getNode3D() == topNode )
 			{
 				result = modelNode.getID();
 			}
