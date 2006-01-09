@@ -27,6 +27,7 @@ import ab.j3d.control.Control;
 import ab.j3d.view.FromToViewControl;
 import ab.j3d.view.ViewModelView;
 import ab.j3d.view.ViewControl;
+import ab.j3d.view.Projector;
 
 /**
  * The {@link View3D} provides a view on a {@link Model3D}. It has a
@@ -127,9 +128,13 @@ public class View3D
 	 */
 	public void setProjection( final int projection )
 	{
-		if ( PERSPECTIVE_PROJECTION == projection || PARRALEL_PROJECTION == projection )
+		if ( PERSPECTIVE_PROJECTION == projection )
 		{
-			_view.setProjectionPolicy( projection );
+			_view.setProjectionPolicy( Projector.PERSPECTIVE );
+		}
+		else if ( PARRALEL_PROJECTION == projection )
+		{
+			_view.setProjectionPolicy( Projector.PARALLEL );
 		}
 		else
 		{
