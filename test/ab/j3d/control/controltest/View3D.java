@@ -49,11 +49,11 @@ public class View3D
 	public static final int PERSPECTIVE_PROJECTION = 1;
 
 	/**
-	 * Use parralel projection.
+	 * Use parallel projection.
 	 *
 	 * @see #setProjection
 	 */
-	public static final int PARRALEL_PROJECTION = 2;
+	public static final int PARALLEL_PROJECTION = 2;
 
 	/**
 	 * A view from above, giving an overview of the x,y plane.
@@ -132,13 +132,13 @@ public class View3D
 		{
 			_view.setProjectionPolicy( Projector.PERSPECTIVE );
 		}
-		else if ( PARRALEL_PROJECTION == projection )
+		else if ( PARALLEL_PROJECTION == projection )
 		{
 			_view.setProjectionPolicy( Projector.PARALLEL );
 		}
 		else
 		{
-			throw new IllegalArgumentException( "projection has to been one of PERSPECTIVE or PARRALEL" );
+			throw new IllegalArgumentException( "projection has to been one of PERSPECTIVE or PARALLEL" );
 		}
 	}
 
