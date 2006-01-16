@@ -25,6 +25,7 @@ import ab.j3d.view.FromToViewControl;
 import ab.j3d.view.java3d.Java3dModel;
 import ab.j3d.Vector3D;
 import com.numdata.oss.ui.WindowTools;
+import com.numdata.oss.ui.ImageTools;
 
 /**
  * This test application can be used for visual testing of the AbToPovConverter. The application uses the same objects
@@ -47,13 +48,16 @@ public class AbPovTestApp
 	 */
 	public static void main( final String[] args )
 	{
+		// Path to test textures.
+		ImageTools.addToSearchPath( "AsoBrain3D/test/ab/j3d/pov" );
+
 		// Get testmodel
 		final AbPovTestModel testModel = new AbPovTestModel();
 
-		//Create 3dmodel
+		// Create 3dmodel
 		final Java3dModel viewModel = new Java3dModel();
 
-		//Fill model with objects from the testmodel.
+		// Fill model with objects from the testmodel.
 		viewModel.createNode( "camera"      , null               , testModel.getCamera3D()           , null , 1.0f );
 		viewModel.createNode( "redbox"      , null               , testModel.getRedXRotatedBox3D()   , null , 1.0f );
 		viewModel.createNode( "greenbox"    , null               , testModel.getGreenYRotatedBox3D() , null , 1.0f );

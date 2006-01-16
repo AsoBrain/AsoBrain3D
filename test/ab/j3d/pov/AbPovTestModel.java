@@ -36,7 +36,6 @@ import ab.j3d.model.Sphere3D;
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.FromToViewControl;
 import ab.j3d.view.java2d.Java2dModel;
-import com.numdata.oss.ui.ImageTools;
 
 /**
  * This class constructs a testmodel (Java2D) for testing the AbToPovConverter. The model is used by
@@ -56,22 +55,20 @@ public class AbPovTestModel
 
 	public AbPovTestModel() {
 
-		ImageTools.addToSearchPath( "AsoBrain3D/test/ab/j3d/pov" );
-
 		//Create model
 		final Java2dModel viewModel = _viewModel;
 
 		//Fill model with objects from the testmodel.
-		viewModel.createNode( "camera"      , null               , getCamera3D()           , null , 1.0f );
-		viewModel.createNode( "redbox"      , null               , getRedXRotatedBox3D()   , null , 1.0f );
-		viewModel.createNode( "greenbox"    , null               , getGreenYRotatedBox3D() , null , 1.0f );
-		viewModel.createNode( "bluebox"     , null               , getBlueZRotatedBox3D()  , null , 1.0f );
-		viewModel.createNode( "panel"       , null               , getTexturedBox3D()      , null , 1.0f );
-		viewModel.createNode( "sphere"      , null               , getSphere3D()           , null , 1.0f );
-		viewModel.createNode( "cylinder"    , null               , getCylinder3D()         , null , 1.0f );
-		viewModel.createNode( "cone"        , null               , getCone3D()             , null , 1.0f );
-		viewModel.createNode( "extruded"    , null               , getExtrudedObject2D()   , null , 1.0f );
-		viewModel.createNode( "colorcube"   , null               , getColorCube()          , null , 1.0f );
+		viewModel.createNode( "camera"      , null , getCamera3D()           , null , 1.0f );
+		viewModel.createNode( "redbox"      , null , getRedXRotatedBox3D()   , null , 1.0f );
+		viewModel.createNode( "greenbox"    , null , getGreenYRotatedBox3D() , null , 1.0f );
+		viewModel.createNode( "bluebox"     , null , getBlueZRotatedBox3D()  , null , 1.0f );
+		viewModel.createNode( "panel"       , null , getTexturedBox3D()      , null , 1.0f );
+		viewModel.createNode( "sphere"      , null , getSphere3D()           , null , 1.0f );
+		viewModel.createNode( "cylinder"    , null , getCylinder3D()         , null , 1.0f );
+		viewModel.createNode( "cone"        , null , getCone3D()             , null , 1.0f );
+		viewModel.createNode( "extruded"    , null , getExtrudedObject2D()   , null , 1.0f );
+		viewModel.createNode( "colorcube"   , null , getColorCube()          , null , 1.0f );
 
 		// Create view
 		final Vector3D viewFrom = Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 );

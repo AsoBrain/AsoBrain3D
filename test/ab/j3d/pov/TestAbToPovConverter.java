@@ -25,6 +25,7 @@ import java.io.File;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import com.numdata.oss.io.IndentingWriter;
+import com.numdata.oss.ui.ImageTools;
 import ab.j3d.Matrix3D;
 import ab.j3d.view.ViewModel;
 
@@ -47,6 +48,12 @@ public class TestAbToPovConverter
 	{
 		final String actual;
 		{
+			// For running from IDEA.
+			ImageTools.addToSearchPath( "AsoBrain3D/test/ab/j3d/pov" );
+
+			// For running from the commandline.
+			ImageTools.addToSearchPath( "test/ab/j3d/pov" );
+
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter();
 			final PovScene         scene           = converter.convert( testModel.getModel() );
@@ -80,7 +87,7 @@ public class TestAbToPovConverter
 			"            ambient 0.3\n" +
 			"            diffuse 0.3\n" +
 			"            specular 0.3\n" +
-			"            reflection 0.1\n" +
+			"            reflection 0.05\n" +
 			"        }\n" +
 			"    }\n\n" +
 
@@ -97,7 +104,7 @@ public class TestAbToPovConverter
 			"            ambient 0.3\n" +
 			"            diffuse 0.3\n" +
 			"            specular 0.3\n" +
-			"            reflection 0.1\n" +
+			"            reflection 0.05\n" +
 			"        }\n" +
 			"    }\n\n" +
 
@@ -114,7 +121,7 @@ public class TestAbToPovConverter
 			"            ambient 0.3\n" +
 			"            diffuse 0.3\n" +
 			"            specular 0.3\n" +
-			"            reflection 0.1\n" +
+			"            reflection 0.05\n" +
 			"        }\n" +
 			"    }\n\n" +
 
@@ -131,7 +138,7 @@ public class TestAbToPovConverter
 			"            ambient 0.3\n" +
 			"            diffuse 0.3\n" +
 			"            specular 0.3\n" +
-			"            reflection 0.1\n" +
+			"            reflection 0.05\n" +
 			"        }\n" +
 			"    }\n\n" +
 
@@ -148,7 +155,7 @@ public class TestAbToPovConverter
 			"            ambient 0.3\n" +
 			"            diffuse 0.3\n" +
 			"            specular 0.3\n" +
-			"            reflection 0.1\n" +
+			"            reflection 0.05\n" +
 			"        }\n" +
 			"    }\n\n" +
 
@@ -165,7 +172,7 @@ public class TestAbToPovConverter
 			"            ambient 0.3\n" +
 			"            diffuse 0.3\n" +
 			"            specular 0.3\n" +
-			"            reflection 0.1\n" +
+			"            reflection 0.05\n" +
 			"        }\n" +
 			"    }\n\n" +
 
@@ -182,7 +189,7 @@ public class TestAbToPovConverter
 			"            ambient 0.3\n" +
 			"            diffuse 0.3\n" +
 			"            specular 0.3\n" +
-			"            reflection 0.1\n" +
+			"            reflection 0.05\n" +
 			"        }\n" +
 			"    }\n\n" +
 
@@ -199,7 +206,7 @@ public class TestAbToPovConverter
 			"            ambient 0.3\n" +
 			"            diffuse 0.3\n" +
 			"            specular 0.3\n" +
-			"            reflection 0.1\n" +
+			"            reflection 0.05\n" +
 			"        }\n" +
 			"    }\n\n" +
 
@@ -213,7 +220,7 @@ public class TestAbToPovConverter
 			"            ambient 0.3\n" +
 			"            diffuse 0.3\n" +
 			"            specular 0.3\n" +
-			"            reflection 0.1\n" +
+			"            reflection 0.05\n" +
 			"        }\n" +
 			"    }\n\n" +
 
@@ -231,7 +238,7 @@ public class TestAbToPovConverter
 			"            ambient 0.3\n" +
 			"            diffuse 0.3\n" +
 			"            specular 0.3\n" +
-			"            reflection 0.1\n" +
+			"            reflection 0.05\n" +
 			"        }\n" +
 			"    }\n\n" +
 
@@ -245,7 +252,7 @@ public class TestAbToPovConverter
 			"            ambient 0.3\n" +
 			"            diffuse 0.3\n" +
 			"            specular 0.3\n" +
-			"            reflection 0.1\n" +
+			"            reflection 0.05\n" +
 			"        }\n" +
 			"    }\n\n" +
 
@@ -259,7 +266,7 @@ public class TestAbToPovConverter
 			"            ambient 0.3\n" +
 			"            diffuse 0.3\n" +
 			"            specular 0.3\n" +
-			"            reflection 0.1\n" +
+			"            reflection 0.05\n" +
 			"        }\n" +
 			"    }\n\n" +
 
@@ -273,7 +280,7 @@ public class TestAbToPovConverter
 			"            ambient 0.3\n" +
 			"            diffuse 0.3\n" +
 			"            specular 0.3\n" +
-			"            reflection 0.1\n" +
+			"            reflection 0.05\n" +
 			"        }\n" +
 			"    }\n\n" +
 
@@ -287,7 +294,7 @@ public class TestAbToPovConverter
 			"            ambient 0.3\n" +
 			"            diffuse 0.3\n" +
 			"            specular 0.3\n" +
-			"            reflection 0.1\n" +
+			"            reflection 0.05\n" +
 			"        }\n" +
 			"    }\n\n";
 
