@@ -58,7 +58,7 @@ public class AbToPovConverter
 	 */
 	public AbToPovConverter()
 	{
-		PovTexture.texturePath = "SODA_BaseComponents/images/textures/";
+		PovTexture.texturePath = "../../../soda/SODA_BaseComponents/images/textures/";
 		_scene = new PovScene();
 	}
 
@@ -121,11 +121,25 @@ public class AbToPovConverter
 		/**
 		 * Add some ligt to the scene. Light is not fully implemented yet in AB.
 		 */
-		final Color    color    = new Color( 255 , 255 , 240 );
-		final PovLight povLight = new PovLight( "light1" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
+		final Color    color    = new Color( 155 , 155 , 145 );
 
-		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( -4000.0 , -4000.0 , 8000.0 ) ) );
-		povLight.makeArea( new PovVector( 1.0 , 0.0 , 0.0 ) , 3.0 , new PovVector( 0.0 , 1.0 , 0.0 ) , 3.0 , false );
+		PovLight povLight = new PovLight( "light1" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
+		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( 5000.0 , -5000.0 , 6000.0 ) ) );
+		povLight.adaptive = 1.0;
+		scene.add( povLight );
+
+		povLight = new PovLight( "light1" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
+		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( -5000.0 , -5000.0 , 6000.0 ) ) );
+		povLight.adaptive = 1.0;
+		scene.add( povLight );
+
+		povLight = new PovLight( "light1" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
+		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( -5000.0 , 5000.0 , 6000.0 ) ) );
+		povLight.adaptive = 1.0;
+		scene.add( povLight );
+
+		povLight = new PovLight( "light1" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
+		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( 5000.0 , 5000.0 , 6000.0 ) ) );
 		povLight.adaptive = 1.0;
 		scene.add( povLight );
 
@@ -194,7 +208,7 @@ public class AbToPovConverter
 		final double    ratio         = viewWidth / viewHeight;
 		final PovVector right         = new PovVector( ratio , 0.0 , 0.0 );
 
-		final PovCamera povCamera = new PovCamera( "camera" , null , null , right ,  view.getFieldOfView() );
+		final PovCamera povCamera = new PovCamera( "camera" , null , null , right ,  ViewModelView.getFieldOfView() );
 		povCamera.setTransform( new PovMatrix( viewTransform ) );
 
 		return povCamera;
