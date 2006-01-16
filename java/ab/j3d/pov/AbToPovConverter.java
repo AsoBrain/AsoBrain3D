@@ -28,13 +28,13 @@ import ab.j3d.Vector3D;
 import ab.j3d.model.Box3D;
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Cylinder3D;
+import ab.j3d.model.ExtrudedObject2D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 import ab.j3d.model.Sphere3D;
-import ab.j3d.model.ExtrudedObject2D;
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelNode;
 import ab.j3d.view.ViewModelView;
@@ -54,11 +54,22 @@ public class AbToPovConverter
 	private PovScene _scene;
 
 	/**
-	 * Construct new AbToPovConverter and set the texturepath.
+	 * Directory containing POV-textures.
 	 */
-	public AbToPovConverter()
+	private final String _textureDirectory;
+
+	/**
+	 * Construct new converter and set the texture directory.
+	 *
+	 * @param   textureDirectory    Directory containing POV-textures.
+	 */
+	public AbToPovConverter( final String textureDirectory )
 	{
-		PovTexture.texturePath = "../../../soda/SODA_BaseComponents/images/textures/";
+		if ( textureDirectory == null )
+			throw new NullPointerException( "textureDirectory" );
+
+		_textureDirectory = textureDirectory;
+
 		_scene = new PovScene();
 	}
 
@@ -224,7 +235,7 @@ public class AbToPovConverter
 	{
 		final Face3D      face        = box.getFace( 0 );
 		final TextureSpec textureSpec = face.getTexture();
-		final PovTexture  povTexture  = new PovTexture( textureSpec );
+		final PovTexture  povTexture  = new PovTexture( _textureDirectory , textureSpec );
 		final PovBox      povBox      = new PovBox( "box" , box , povTexture );
 
 		povBox.setTransform( new PovMatrix( box.getTransform() ) );
@@ -246,7 +257,7 @@ public class AbToPovConverter
 	{
 		final Face3D      face        = sphere.getFace( 0 );
 		final TextureSpec textureSpec = face.getTexture();
-		final PovTexture  povTexture  = new PovTexture( textureSpec );
+		final PovTexture  povTexture  = new PovTexture( _textureDirectory , textureSpec );
 
 		povTexture.reflection = 0.05f;
 		_scene.addTexture( povTexture.name , povTexture );
@@ -268,7 +279,7 @@ public class AbToPovConverter
 	{
 		final Face3D      face        = cylinder.getFace( 0 );
 		final TextureSpec textureSpec = face.getTexture();
-		final PovTexture  povTexture  = new PovTexture( textureSpec );
+		final PovTexture  povTexture  = new PovTexture( _textureDirectory , textureSpec );
 
 		povTexture.reflection = 0.05f;
 		_scene.addTexture( povTexture.name , povTexture );
@@ -365,7 +376,7 @@ public class AbToPovConverter
 				z = pointCoords[ pointIndices[ j + 1 ] * 3 + 2 ];
 
 				final PovVector  thirdVertex = new PovVector( x , y , z );
-				final PovTexture povTexture  = new PovTexture( texture );
+				final PovTexture povTexture  = new PovTexture( _textureDirectory , texture );
 
 				povTexture.reflection = 0.05f;
 				_scene.addTexture( povTexture.name , povTexture );
@@ -420,18 +431,18 @@ public class AbToPovConverter
 	 */
 	public static boolean containsTextures( final Object3D object )
 	{
-		final int     numFaces         = object.getFaceCount();
-		      boolean containsTextures = false;
+		boolean result = false;
 
-		for ( int i = 0 ; i < numFaces && !containsTextures ; i++ )
+		final int numFaces = object.getFaceCount();
+
+		for ( int i = 0 ; !result && ( i < numFaces ) ; i++ )
 		{
-			final Face3D face = object.getFace( i );
+			final Face3D      face    = object.getFace( i );
 			final TextureSpec texture = face.getTexture();
 
-			if ( texture.isTexture() )
-				containsTextures = true;
+			result = texture.isTexture();
 		}
 
-		return containsTextures;
+		return result;
 	}
 }
