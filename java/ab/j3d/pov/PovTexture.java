@@ -21,10 +21,8 @@ package ab.j3d.pov;
 
 import java.awt.Color;
 import java.io.IOException;
-
-import com.numdata.oss.io.IndentingWriter;
-
 import ab.j3d.TextureSpec;
+import com.numdata.oss.io.IndentingWriter;
 
 /**
  * Pov Texture / material definition.
@@ -79,13 +77,6 @@ import ab.j3d.TextureSpec;
 public class PovTexture
 	extends PovObject
 {
-	/**
-	 * Path to textures.
-	 *
-	 * @FIXME Make adjustable.
-	 */
-	public static String texturePath = "Z:\\apps\\povexport\\textures\\";
-
 	/**
 	 * Name of texture (for declaration).
 	 */
@@ -285,14 +276,16 @@ public class PovTexture
 	/**
 	 * Creates a texture map using the specified map.
 	 *
-	 * @param   name    Name of the texture.
-	 * @param   map     Filename of map to use.
+	 * @param   textureDirectory    Directory containing POV-textures.
+	 * @param   name                Name of the texture.
+	 * @param   map                 Filename of map to use.
+
 	 */
-	public PovTexture( final String name , final String map )
+	public PovTexture( final String textureDirectory , final String name , final String map )
 	{
 		this.name = name;
 		rgb = null;
-		this.map = texturePath + map;
+		this.map = ( textureDirectory != null ) ? textureDirectory + map : map;
 		free = null;
 	}
 
@@ -305,9 +298,8 @@ public class PovTexture
 	 *
 	 * @param   name    Name of the texture.
 	 * @param   free    Definition of the texture.
-	 * @param   a       Extra argument to differ from other String,String constructor.
 	 */
-	public PovTexture( final String name , final String free , final boolean a )
+	public PovTexture( final String name, final String free )
 	{
 		this.name = name;
 		rgb = null;
@@ -316,19 +308,26 @@ public class PovTexture
 	}
 
 	/**
-	 * Create a new PovTexture based on the given TextureSpec object.
+	 * Create a new {@link PovTexture} based on the given {@link TextureSpec}
+	 * object.
 	 *
-	 * @param texture The TextureSpec object to be used to construct the PovTexture.
+	 * @param   textureDirectory    Directory containing POV-textures.
+	 * @param   texture             {@link TextureSpec} object to be used to
+	 *                              construct the {@link PovTexture}.
+
 	 */
-	public PovTexture( final TextureSpec texture )
+	public PovTexture( final String textureDirectory, final TextureSpec texture )
 	{
 		if ( texture.isTexture() )
 		{
 			rgb = null;
-			map = texturePath + texture.code;
+			map = ( textureDirectory != null ) ? textureDirectory + texture.code : texture.code;
 			name = texture.code;
-		} else {
+		}
+		else
+		{
 			final Color color = texture.getColor();
+
 			rgb = new PovVector( color );
 			map = null;
 			name = "RGB_" + color.getRed() + "_" + color.getGreen() + "_" + color.getBlue();
