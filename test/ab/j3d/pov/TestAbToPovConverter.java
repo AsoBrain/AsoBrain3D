@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,7 @@ package ab.j3d.pov;
 import java.io.StringWriter;
 import java.io.IOException;
 import java.io.File;
+import java.net.URL;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import com.numdata.oss.io.IndentingWriter;
@@ -46,16 +47,13 @@ public class TestAbToPovConverter
 	public void testDeclarations()
 		throws IOException
 	{
+		ImageTools.addToSearchPath( getTestDirectory() );
+		final String texturesDirectory = getTexturesDirectory();
+
 		final String actual;
 		{
-			// For running from IDEA.
-			ImageTools.addToSearchPath( "AsoBrain3D/test/ab/j3d/pov" );
-
-			// For running from the commandline.
-			ImageTools.addToSearchPath( "test/ab/j3d/pov" );
-
 			final AbPovTestModel   testModel       = new AbPovTestModel();
-			final AbToPovConverter converter       = new AbToPovConverter();
+			final AbToPovConverter converter       = new AbToPovConverter( texturesDirectory );
 			final PovScene         scene           = converter.convert( testModel.getModel() );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
@@ -79,7 +77,7 @@ public class TestAbToPovConverter
 			"    {\n" +
 			"        pigment\n" +
 			"        {\n" +
-			"            image_map { jpeg \"../../../soda/SODA_BaseComponents/images/textures/CUBE_BACK\" }\n" +
+			"            image_map { jpeg \"" + texturesDirectory + "CUBE_BACK\" }\n" +
 			"        }\n" +
 			"        finish\n" +
 			"        {\n" +
@@ -96,7 +94,7 @@ public class TestAbToPovConverter
 			"    {\n" +
 			"        pigment\n" +
 			"        {\n" +
-			"            image_map { jpeg \"../../../soda/SODA_BaseComponents/images/textures/CUBE_BOTTOM\" }\n" +
+			"            image_map { jpeg \"" + texturesDirectory + "CUBE_BOTTOM\" }\n" +
 			"        }\n" +
 			"        finish\n" +
 			"        {\n" +
@@ -113,7 +111,7 @@ public class TestAbToPovConverter
 			"    {\n" +
 			"        pigment\n" +
 			"        {\n" +
-			"            image_map { jpeg \"../../../soda/SODA_BaseComponents/images/textures/CUBE_FRONT\" }\n" +
+			"            image_map { jpeg \"" + texturesDirectory + "CUBE_FRONT\" }\n" +
 			"        }\n" +
 			"        finish\n" +
 			"        {\n" +
@@ -130,7 +128,7 @@ public class TestAbToPovConverter
 			"    {\n" +
 			"        pigment\n" +
 			"        {\n" +
-			"            image_map { jpeg \"../../../soda/SODA_BaseComponents/images/textures/CUBE_LEFT\" }\n" +
+			"            image_map { jpeg \"" + texturesDirectory + "CUBE_LEFT\" }\n" +
 			"        }\n" +
 			"        finish\n" +
 			"        {\n" +
@@ -147,7 +145,7 @@ public class TestAbToPovConverter
 			"    {\n" +
 			"        pigment\n" +
 			"        {\n" +
-			"            image_map { jpeg \"../../../soda/SODA_BaseComponents/images/textures/CUBE_RIGHT\" }\n" +
+			"            image_map { jpeg \"" + texturesDirectory + "CUBE_RIGHT\" }\n" +
 			"        }\n" +
 			"        finish\n" +
 			"        {\n" +
@@ -164,7 +162,7 @@ public class TestAbToPovConverter
 			"    {\n" +
 			"        pigment\n" +
 			"        {\n" +
-			"            image_map { jpeg \"../../../soda/SODA_BaseComponents/images/textures/CUBE_TOP\" }\n" +
+			"            image_map { jpeg \"" + texturesDirectory + "CUBE_TOP\" }\n" +
 			"        }\n" +
 			"        finish\n" +
 			"        {\n" +
@@ -181,7 +179,7 @@ public class TestAbToPovConverter
 			"    {\n" +
 			"        pigment\n" +
 			"        {\n" +
-			"            image_map { jpeg \"../../../soda/SODA_BaseComponents/images/textures/MFCs\" }\n" +
+			"            image_map { jpeg \"" + texturesDirectory + "MFCs\" }\n" +
 			"        }\n" +
 			"        finish\n" +
 			"        {\n" +
@@ -198,7 +196,7 @@ public class TestAbToPovConverter
 			"    {\n" +
 			"        pigment\n" +
 			"        {\n" +
-			"            image_map { jpeg \"../../../soda/SODA_BaseComponents/images/textures/MPXs\" }\n" +
+			"            image_map { jpeg \"" + texturesDirectory + "MPXs\" }\n" +
 			"        }\n" +
 			"        finish\n" +
 			"        {\n" +
@@ -343,7 +341,7 @@ public class TestAbToPovConverter
 		final String actual;
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
-			final AbToPovConverter converter       = new AbToPovConverter();
+			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovBox           povBox          = converter.convertBox3D( testModel.getRedXRotatedBox3D() );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
@@ -379,7 +377,7 @@ public class TestAbToPovConverter
 		final String actual;
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
-			final AbToPovConverter converter       = new AbToPovConverter();
+			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovBox           povBox          = converter.convertBox3D( testModel.getGreenYRotatedBox3D() );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
@@ -414,7 +412,7 @@ public class TestAbToPovConverter
 		final String actual;
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
-			final AbToPovConverter converter       = new AbToPovConverter();
+			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovBox           povBox          = converter.convertBox3D( testModel.getBlueZRotatedBox3D() );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
@@ -450,7 +448,7 @@ public class TestAbToPovConverter
 		final String actual;
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
-			final AbToPovConverter converter       = new AbToPovConverter();
+			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovMesh2         mesh            = converter.convertObject3D( testModel.getTexturedBox3D() , Matrix3D.INIT );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
@@ -514,7 +512,7 @@ public class TestAbToPovConverter
 		final String actual;
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
-			final AbToPovConverter converter       = new AbToPovConverter();
+			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovSphere        sphere          = converter.convertSphere3D( testModel.getSphere3D() );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
@@ -548,7 +546,7 @@ public class TestAbToPovConverter
 		final String actual;
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
-			final AbToPovConverter converter       = new AbToPovConverter();
+			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovCylinder      cylinder        = converter.convertCylinder3D( testModel.getCylinder3D() );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
@@ -583,7 +581,7 @@ public class TestAbToPovConverter
 		final String actual;
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
-			final AbToPovConverter converter       = new AbToPovConverter();
+			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovCylinder      cylinder        = converter.convertCylinder3D( testModel.getCone3D() );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
@@ -619,7 +617,7 @@ public class TestAbToPovConverter
 		final String actual;
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
-			final AbToPovConverter converter       = new AbToPovConverter();
+			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovMesh2         mesh            = converter.convertObject3D( testModel.getColorCube() , Matrix3D.INIT );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
@@ -686,7 +684,7 @@ public class TestAbToPovConverter
 		final String actual;
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
-			final AbToPovConverter converter       = new AbToPovConverter();
+			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovMesh2         mesh            = converter.convertObject3D( testModel.getExtrudedObject2D() , Matrix3D.INIT );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
@@ -757,6 +755,23 @@ public class TestAbToPovConverter
 		Assert.assertEquals( "Light3D to pov conversion error" , expected , actual );
 	}
 
+	private static String getTestDirectory()
+	{
+		final Class       thisClass        = TestAbToPovConverter.class;
+		final ClassLoader classLoader      = thisClass.getClassLoader();
+		final Package     thisPackage      = thisClass.getPackage();
+		final String      packageName      = thisPackage.getName();
+		final URL         packageDirectory = classLoader.getResource( packageName.replace( '.' , '/' ) );
+
+		return packageDirectory.getPath();
+	}
+
+	private static String getTexturesDirectory()
+	{
+		final String testDirectory = getTestDirectory();
+		return testDirectory + "/textures/";
+	}
+
 	/**
 	 * Write the whole test scene to test.pov
 	 */
@@ -764,11 +779,11 @@ public class TestAbToPovConverter
 	{
 		final AbPovTestModel   testModel = new AbPovTestModel();
 		final ViewModel        viewModel = testModel.getModel();
-		final AbToPovConverter converter = new AbToPovConverter();
+		final AbToPovConverter converter = new AbToPovConverter( getTexturesDirectory() );
 		final PovScene         scene     = converter.convert( viewModel );
 		final Object[]         ids       = viewModel.getViewIDs();
 
 		scene.add( AbToPovConverter.convertCamera3D( viewModel.getView( ids[ 0 ] ) ) );
-		scene.write( new File( "testos.pov" ) );
+		scene.write( new File( "test.pov" ) );
 	}
 }
