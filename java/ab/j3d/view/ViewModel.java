@@ -46,7 +46,6 @@ import ab.j3d.pov.PovScene;
 import ab.j3d.control.Control;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Object3D;
-
 import com.numdata.oss.ui.ActionTools;
 import com.numdata.oss.ui.BasicAction;
 import com.numdata.oss.ui.ImagePanel;
@@ -658,7 +657,7 @@ public abstract class ViewModel
 				/**
 				 * Convert the model to a povscene.
 				 */
-				final AbToPovConverter converter = new AbToPovConverter();
+				final AbToPovConverter converter = new AbToPovConverter( "../../../soda/SODA_BaseComponents/images/textures/" );
 				final PovScene scene = converter.convert( model );
 
 				/**
