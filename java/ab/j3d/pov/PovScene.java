@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.BoundedRangeModel;
-
 import com.numdata.oss.ArrayTools;
 import com.numdata.oss.io.IndentingWriter;
 import com.numdata.oss.log.ClassLogger;
@@ -288,7 +287,6 @@ public class PovScene
 			{
 				LOG.debug( "failed to delete temporary POV-Ray file: " + tempFile.getPath() , e );
 			}
-
 		}
 
 		return result;
