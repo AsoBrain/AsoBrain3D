@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2005
+ * (C) Copyright Numdata BV 2000-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.BoundedRangeModel;
+
 import com.numdata.oss.ArrayTools;
 import com.numdata.oss.io.IndentingWriter;
 import com.numdata.oss.log.ClassLogger;

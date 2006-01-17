@@ -22,6 +22,7 @@ package ab.j3d.pov;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Image;
+
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
@@ -38,6 +39,7 @@ import ab.j3d.model.Sphere3D;
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelNode;
 import ab.j3d.view.ViewModelView;
+
 import com.numdata.oss.ui.ImageTools;
 
 /**

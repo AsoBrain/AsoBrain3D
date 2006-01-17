@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2005
+ * (C) Copyright Numdata BV 2000-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,9 @@ package ab.j3d.pov;
 
 import java.awt.Color;
 import java.io.IOException;
+
 import ab.j3d.TextureSpec;
+
 import com.numdata.oss.io.IndentingWriter;
 
 /**

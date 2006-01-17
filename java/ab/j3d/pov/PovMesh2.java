@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,7 @@ package ab.j3d.pov;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import com.numdata.oss.io.IndentingWriter;
 
 /**

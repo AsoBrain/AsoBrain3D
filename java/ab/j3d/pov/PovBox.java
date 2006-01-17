@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2005
+ * (C) Copyright Numdata BV 2000-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,10 +21,10 @@ package ab.j3d.pov;
 
 import java.io.IOException;
 
-import com.numdata.oss.io.IndentingWriter;
-
 import ab.j3d.Vector3D;
 import ab.j3d.model.Box3D;
+
+import com.numdata.oss.io.IndentingWriter;
 
 /**
  * Pov Box, 8 points / 12 faces.
