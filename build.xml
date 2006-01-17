@@ -45,13 +45,16 @@
   </target>
 
   <path id="test.classpath">
-    <path refid="java.classpath"/>
     <pathelement location="classes/test"/>
+    <path refid="java.classpath"/>
   </path>
 
   <target name="compile-tests" depends="compile-java" description="Compile unit tests">
     <mkdir dir="classes/test"/>
     <javac srcdir="test" destdir="classes/test" classpathref="test.classpath" />
+    <copy todir="classes/test">
+      <fileset dir="test" excludes="**/*.java"/>
+    </copy>
   </target>
 
   <target name="test" depends="compile-tests" description="Execute unit tests">
