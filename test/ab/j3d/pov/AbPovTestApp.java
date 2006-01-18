@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,55 +21,75 @@ package ab.j3d.pov;
 
 import java.util.Locale;
 import javax.swing.JFrame;
+
+import ab.j3d.Vector3D;
 import ab.j3d.view.FromToViewControl;
 import ab.j3d.view.java3d.Java3dModel;
-import ab.j3d.Vector3D;
-import com.numdata.oss.ui.WindowTools;
+
 import com.numdata.oss.ui.ImageTools;
+import com.numdata.oss.ui.WindowTools;
 
 /**
- * This test application can be used for visual testing of the AbToPovConverter. The application uses the same objects
- * as the test. These objects are defined by AbPovTestModel.
+ * This test application can be used for visual testing of the
+ * {@link AbToPovConverter}. The application uses the same objects as
+ * {@link TestAbToPovConverter}. These objects are defined by the
+ * {@link AbPovTestModel}.
+ *
+ * @see     AbPovTestModel
+ * @see     TestAbToPovConverter
+ * @see     AbPovTestModel
  *
  * @author  Rob Veneberg
  * @version $Revision$ $Date$
- * @see     AbPovTestModel
- * @see     TestAbToPovConverter
  */
-public class AbPovTestApp
+final class AbPovTestApp
 {
+	/**
+	 * No need for objects of this class.
+	 */
 	private AbPovTestApp() {}
 
 	/**
-	 * An object of type AbPovTestModel is constructed, the objects retrieved and
-	 * a view is created and added to a frame. The Java3dModel is used here.
+	 * An object of type {@link AbPovTestModel} is constructed, the objects are
+	 * retrieved and a view is created and added to a frame. The
+	 * {@link Java3dModel} is used here.
 	 *
 	 * @param args Command-line arguments.
 	 */
 	public static void main( final String[] args )
 	{
-		// Path to test textures.
+		/*
+		 * Path to test textures.
+		 */
 		ImageTools.addToSearchPath( "AsoBrain3D/test/ab/j3d/pov" );
 
-		// Get testmodel
+		/*
+		 * Create testmodel.
+		 */
 		final AbPovTestModel testModel = new AbPovTestModel();
 
-		// Create 3dmodel
+		/*
+		 * Create Java3D-model.
+		 */
 		final Java3dModel viewModel = new Java3dModel();
 
-		// Fill model with objects from the testmodel.
-		viewModel.createNode( "camera"      , null               , testModel.getCamera3D()           , null , 1.0f );
-		viewModel.createNode( "redbox"      , null               , testModel.getRedXRotatedBox3D()   , null , 1.0f );
-		viewModel.createNode( "greenbox"    , null               , testModel.getGreenYRotatedBox3D() , null , 1.0f );
-		viewModel.createNode( "bluebox"     , null               , testModel.getBlueZRotatedBox3D()  , null , 1.0f );
-		viewModel.createNode( "panel"       , null               , testModel.getTexturedBox3D()      , null , 1.0f );
-		viewModel.createNode( "sphere"      , null               , testModel.getSphere3D()           , null , 1.0f );
-		viewModel.createNode( "cylinder"    , null               , testModel.getCylinder3D()         , null , 1.0f );
-		viewModel.createNode( "cone"        , null               , testModel.getCone3D()             , null , 1.0f );
-		viewModel.createNode( "extruded"    , null               , testModel.getExtrudedObject2D()   , null , 1.0f );
-		viewModel.createNode( "colorcube"   , null               , testModel.getColorCube()          , null , 1.0f );
+		/*
+		 * Fill the Java3D-model with objects from the testmodel.
+		 */
+		viewModel.createNode( "camera"    , null , testModel.getCamera3D()           , null , 1.0f );
+		viewModel.createNode( "redbox"    , null , testModel.getRedXRotatedBox3D()   , null , 1.0f );
+		viewModel.createNode( "greenbox"  , null , testModel.getGreenYRotatedBox3D() , null , 1.0f );
+		viewModel.createNode( "bluebox"   , null , testModel.getBlueZRotatedBox3D()  , null , 1.0f );
+		viewModel.createNode( "panel"     , null , testModel.getTexturedBox3D()      , null , 1.0f );
+		viewModel.createNode( "sphere"    , null , testModel.getSphere3D()           , null , 1.0f );
+		viewModel.createNode( "cylinder"  , null , testModel.getCylinder3D()         , null , 1.0f );
+		viewModel.createNode( "cone"      , null , testModel.getCone3D()             , null , 1.0f );
+		viewModel.createNode( "extruded"  , null , testModel.getExtrudedObject2D()   , null , 1.0f );
+		viewModel.createNode( "colorcube" , null , testModel.getColorCube()          , null , 1.0f );
 
-		// Create and display view
+		/*
+		 * Create and display view.
+		 */
 		final Vector3D viewFrom = Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 );
 		final Vector3D viewAt   = Vector3D.INIT;
 

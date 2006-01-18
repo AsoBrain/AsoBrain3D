@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,7 @@ package ab.j3d.pov;
 import java.awt.Color;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
+
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
@@ -33,44 +34,55 @@ import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Object3D;
 import ab.j3d.model.Sphere3D;
-import ab.j3d.view.ViewModel;
 import ab.j3d.view.FromToViewControl;
+import ab.j3d.view.ViewModel;
 import ab.j3d.view.java2d.Java2dModel;
 
 /**
- * This class constructs a testmodel (Java2D) for testing the AbToPovConverter. The model is used by
- * both the test and test application.
+ * This class constructs a testmodel ({@link Java2dModel}) for testing the
+ * {@link AbToPovConverter}. The model is used by both the test and test
+ * application.
+ *
+ * @see     TestAbToPovConverter
+ * @see     AbPovTestApp
  *
  * @author  Rob Veneberg
  * @version $Revision$ $Date$
- * @see     TestAbToPovConverter
- * @see     AbPovTestApp
  */
-public class AbPovTestModel
+public final class AbPovTestModel
 {
 	/**
 	 * The used model.
 	 */
-	private Java2dModel _viewModel = new Java2dModel();
+	private final Java2dModel _viewModel = new Java2dModel();
 
+	/**
+	 * Construct new {@link AbPovTestModel}.
+	 */
 	public AbPovTestModel() {
 
-		//Create model
+		/*
+		 * Create model.
+		 */
 		final Java2dModel viewModel = _viewModel;
 
-		//Fill model with objects from the testmodel.
-		viewModel.createNode( "camera"      , null , getCamera3D()           , null , 1.0f );
-		viewModel.createNode( "redbox"      , null , getRedXRotatedBox3D()   , null , 1.0f );
-		viewModel.createNode( "greenbox"    , null , getGreenYRotatedBox3D() , null , 1.0f );
-		viewModel.createNode( "bluebox"     , null , getBlueZRotatedBox3D()  , null , 1.0f );
-		viewModel.createNode( "panel"       , null , getTexturedBox3D()      , null , 1.0f );
-		viewModel.createNode( "sphere"      , null , getSphere3D()           , null , 1.0f );
-		viewModel.createNode( "cylinder"    , null , getCylinder3D()         , null , 1.0f );
-		viewModel.createNode( "cone"        , null , getCone3D()             , null , 1.0f );
-		viewModel.createNode( "extruded"    , null , getExtrudedObject2D()   , null , 1.0f );
-		viewModel.createNode( "colorcube"   , null , getColorCube()          , null , 1.0f );
+		/*
+		 * Fill model with objects from the testmodel.
+		 */
+		viewModel.createNode( "camera"    , null , getCamera3D()           , null , 1.0f );
+		viewModel.createNode( "redbox"    , null , getRedXRotatedBox3D()   , null , 1.0f );
+		viewModel.createNode( "greenbox"  , null , getGreenYRotatedBox3D() , null , 1.0f );
+		viewModel.createNode( "bluebox"   , null , getBlueZRotatedBox3D()  , null , 1.0f );
+		viewModel.createNode( "panel"     , null , getTexturedBox3D()      , null , 1.0f );
+		viewModel.createNode( "sphere"    , null , getSphere3D()           , null , 1.0f );
+		viewModel.createNode( "cylinder"  , null , getCylinder3D()         , null , 1.0f );
+		viewModel.createNode( "cone"      , null , getCone3D()             , null , 1.0f );
+		viewModel.createNode( "extruded"  , null , getExtrudedObject2D()   , null , 1.0f );
+		viewModel.createNode( "colorcube" , null , getColorCube()          , null , 1.0f );
 
-		// Create view
+		/*
+		 * Create view.
+		 */
 		final Vector3D viewFrom = Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 );
 		final Vector3D viewAt   = Vector3D.INIT;
 
@@ -78,6 +90,8 @@ public class AbPovTestModel
 	}
 
 	/**
+	 * Get a reference to the used model.
+	 *
 	 * @return The test model.
 	 */
 	public ViewModel getModel()
@@ -86,9 +100,12 @@ public class AbPovTestModel
 	}
 
 	/**
-	 * Construct a camera with a zoomfactor of 1.0 and a field of view of 45 degrees.
+	 * Construct a camera with a zoomfactor of 1.0 and a field of view of 45
+	 * degrees.
 	 *
-	 * @return The constructed camera object.
+	 * @see Camera3D
+	 *
+	 * @return The constructed {@link Camera3D} object.
 	 */
 	public Camera3D getCamera3D()
 	{
@@ -108,9 +125,12 @@ public class AbPovTestModel
 	}
 
 	/**
-	 * This method constructs a red box of size 100 mm, rotated 10 degrees around the x-axis.
+	 * This method constructs a red box of size 100 mm, rotated 10 degrees
+	 * around the x-axis.
 	 *
-	 * @return The constructed Box3D.
+	 * @see Box3D
+	 *
+	 * @return The constructed {@link Box3D}.
 	 */
 	public Box3D getRedXRotatedBox3D()
 	{
@@ -135,9 +155,12 @@ public class AbPovTestModel
 	}
 
 	/**
-	 * This method constructs a green box of size 100 mm, rotated 10 degrees around the y-axis.
+	 * This method constructs a green box of size 100 mm, rotated 10 degrees
+	 * around the y-axis.
 	 *
-	 * @return The constructed Box3D.
+	 * @see Box3D
+	 *
+	 * @return The constructed {@link Box3D}.
 	 */
 	public Box3D getGreenYRotatedBox3D()
 	{
@@ -164,9 +187,12 @@ public class AbPovTestModel
 	}
 
 	/**
-	 * This method constructs a blue box of size 100 mm, rotated 10 degrees around the z-axis.
+	 * This method constructs a blue box of size 100 mm, rotated 10 degrees
+	 * around the z-axis.
 	 *
-	 * @return The constructed Box3D.
+	 * @see Box3D
+	 *
+	 * @return The constructed {@link Box3D}.
 	 */
 	public Box3D getBlueZRotatedBox3D()
 	{
@@ -191,10 +217,13 @@ public class AbPovTestModel
 	}
 
 	/**
-	 * This method constructs a textured box (wooden panel) with 2 different textures and
-	 * a width of 200 mm, a height of 200 mm and a depth of 10 mm. The panel is rotated 45 degrees around the z-axix.
+	 * This method constructs a textured box (wooden panel) with 2 different
+	 * textures and a width of 200 mm, a height of 200 mm and a depth of 10 mm.
+	 * The panel is rotated 45 degrees around the z-axix.
 	 *
-	 * @return The constructed Box3D
+	 * @see Box3D
+	 *
+	 * @return The constructed {@link Box3D}.
 	 */
 	public Box3D getTexturedBox3D()
 	{
@@ -220,9 +249,12 @@ public class AbPovTestModel
 	}
 
 	/**
-	 * This method constructs a blue sphere with a radius of 100 mm and 20 faces per axis.
+	 * This method constructs a blue sphere with a radius of 100 mm and 20
+	 * faces per axis.
 	 *
-	 * @return The constructed Sphere3D.
+	 * @see Sphere3D
+	 *
+	 * @return The constructed {@link Sphere3D}.
 	 */
 	public Sphere3D getSphere3D()
 	{
@@ -245,10 +277,13 @@ public class AbPovTestModel
 	}
 
 	/**
-	 * This method constructs a magenta colored cylinder with a topradius of 50 mm, a bottomradius of 50 mm, a height
-	 * of 100 mm and 100 faces to approximate a circle.
+	 * This method constructs a magenta colored cylinder with a topradius of
+	 * 50 mm, a bottomradius of 50 mm, a height of 100 mm and 100 faces to
+	 * approximate a circle.
 	 *
-	 * @return The constructed Cylinder3D.
+	 * @see Cylinder3D
+	 *
+	 * @return The constructed {@link Cylinder3D}.
 	 */
 	public Cylinder3D getCylinder3D()
 	{
@@ -271,10 +306,13 @@ public class AbPovTestModel
 	}
 
 	/**
-	 * This method constructs a white cone with a topradius of 50 mm, a bottomradius of 100 mm, a height
-	 * of 200 mm and 100 faces to approximate a circle. Note that the cone is actually a cylinder.
+	 * This method constructs a white cone with a topradius of 50 mm, a
+	 * bottomradius of 100 mm, a height of 200 mm and 100 faces to approximate
+	 * a circle. Note that the cone is actually a cylinder.
 	 *
-	 * @return The constructed Cylinder3D.
+	 * @see Cylinder3D
+	 *
+	 * @return The constructed {@link Cylinder3D}.
 	 */
 	public Cylinder3D getCone3D()
 	{
@@ -301,7 +339,9 @@ public class AbPovTestModel
 	 * This method constructs a cube with a different texture per face.
 	 * The width, height and depth of the cube are all 200 mm (-100 to 100).
 	 *
-	 * @return The constructed Object3D.
+	 * @see Object3D
+	 *
+	 * @return The constructed {@link Object3D}.
 	 */
 	public Object3D getColorCube()
 	{
@@ -319,32 +359,32 @@ public class AbPovTestModel
 			final Vector3D rbt = Vector3D.INIT.set(  100.0 ,  100.0 ,  100.0 );
 			final Vector3D lbt = Vector3D.INIT.set( -100.0 ,  100.0 ,  100.0 );
 
-			final int[] textureU = new int[]{128 , 128 , 0 , 0};
-			final int[] textureV = new int[]{0 , 128 , 128 , 0};
+			final int[] textureU = new int[]{ 128 , 128 , 0   , 0 };
+			final int[] textureV = new int[]{ 0   , 128 , 128 , 0 };
 
 			cube = new Object3D();
 
-			// Z =  100 (top)
+			/* Z =  100 (top) */
 			final TextureSpec red     = new TextureSpec( "CUBE_TOP"      , -1 , 1.0f , 1.0f , 0.3f , 0.3f , 0.3f , 8 , false );
 			cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , red     , textureU , textureV , 1.0f , false, false );
 
-			// Z = -100 (bottom)
+			/* Z = -100 (bottom) */
 			final TextureSpec green   = new TextureSpec( "CUBE_BOTTOM" , -1 , 1.0f , 1.0f , 0.3f , 0.3f , 0.3f , 8 , false );
 			cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , green   , textureU , textureV , 1.0f , false, false );
 
-			// Y = -100 (front)
+			/* Y = -100 (front) */
 			final TextureSpec cyan    = new TextureSpec( "CUBE_FRONT"   , -1 , 1.0f , 1.0f , 0.3f , 0.3f , 0.3f , 8 , false );
 			cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , cyan    , textureU , textureV , 1.0f , false, false );
 
-			 // Y =  100 (back)
+			/* Y =  100 (back) */
 			final TextureSpec magenta = new TextureSpec( "CUBE_BACK" , -1 , 1.0f , 1.0f , 0.3f , 0.3f , 0.3f , 8 , false );
 			cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , magenta , textureU , textureV , 1.0f , false, false );
 
-			// X = -100 (left)
+			/* X = -100 (left) */
 			final TextureSpec yellow  = new TextureSpec( "CUBE_LEFT"  , -1 , 1.0f , 1.0f , 0.3f , 0.3f , 0.3f , 8 , false );
 			cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , yellow  , textureU , textureV , 1.0f , false, false );
 
-			// X =  100 (right)
+			/* X =  100 (right) */
 			final TextureSpec blue    = new TextureSpec( "CUBE_RIGHT"   , -1 , 1.0f , 1.0f , 0.3f , 0.3f , 0.3f , 8 , false );
 			cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , blue    , textureU , textureV , 1.0f , false, false );
 		}
@@ -357,10 +397,13 @@ public class AbPovTestModel
 	}
 
 	/**
-	 * This method constructs an extruded object. The object is rectangular with a width and height of 100 mm and
-	 * all extruded vertices are placed 100 back (y) and 100 up (z).
+	 * This method constructs an extruded object. The object is rectangular with
+	 * a width and height of 100 mm and all extruded vertices are placed 100
+	 * back (y) and 100 up (z).
 	 *
-	 * @return The constructed ExtrudedObject2D.
+	 * @see ExtrudedObject2D
+	 *
+	 * @return The constructed {@link ExtrudedObject2D}.
 	 */
 	public ExtrudedObject2D getExtrudedObject2D()
 	{
@@ -385,9 +428,12 @@ public class AbPovTestModel
 	}
 
 	/**
-	 * This method constructs a light object with an intensity of 1 and falloff of 1.0.
+	 * This method constructs a light object with an intensity of 1 and falloff
+	 * of 1.0.
 	 *
-	 * @return The constructed Light3D.
+	 * @see Light3D
+	 *
+	 * @return The constructed {@link Light3D}.
 	 */
 	public Light3D getLight3D()
 	{

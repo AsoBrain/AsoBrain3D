@@ -20,14 +20,15 @@
 package ab.j3d.pov;
 
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.numdata.oss.io.IndentingWriter;
 
 /**
- * This class represents a pov mesh2 object. All lists are zero-based (start with index 0). The mesh2
- * object has the following structure:
+ * This class represents a POV-Ray mesh2 object. All lists are zero-based
+ * (start with index 0). The mesh2 object has the following structure:
  *
  * -----------------------------------------------------------------------------
  *
@@ -72,55 +73,64 @@ import com.numdata.oss.io.IndentingWriter;
  *
  * vertex_vectors:   All vertices defining this mesh
  * uv_vectors:       Only the x en y are used (uv-coordinates are 2d).
- * texture_list:     Textures should not be declared insidide a mesh for efficiency reasons.
- * face_indices:     Each vector points to 3 vertices in the uv_vectors list wich defines a single face (triangle).
- * uv_indices:       Each vector points to 3 uv-coordinates in the uv_vectors list defining a single triangular
- *                   texture section wich is mapped to the face pointed to by the corresponding face index.
+ * texture_list:     Textures should not be declared insidide a mesh for
+ *                   efficiency reasons.
+ * face_indices:     Each vector points to 3 vertices in the uv_vectors list
+ *                   wich defines a single face (triangle).
+ * uv_indices:       Each vector points to 3 uv-coordinates in the uv_vectors
+ *                   list defining a single triangular texture section wich is
+ *                   mapped to the face pointed to by the corresponding face
+ *                   index.
  * uv_mapping:       Needed when up-mapping is applied.
  * texture { TEX3 }: Applied to all faces that have not been textured yet.
- * [textureNr]:      Points to a texture in the texture list. The number of face indices must equals the number
- *                   of uv indices.
+ * [textureNr]:      Points to a texture in the texture list. The number of
+ *                   face indices must equal the number of uv indices.
  *
  * @author  Rob Veneberg
  * @version $Revision$ $Date$
  */
-public class PovMesh2
+public final class PovMesh2
 	extends PovGeometry
 {
 	/**
-	 * List containing povvectors describing all vertices of the mesh. The list contains no duplicates.
+	 * List containing {@link PovVector}s describing all vertices of the mesh.
+	 * The list contains no duplicates.
 	 */
-	private List _vertexvectors = new ArrayList();
+	private final List _vertexvectors = new ArrayList();
 
 	/**
-	 * List containing povvectors describing all uv-coordinates of the mesh. The list contains no duplicates.
+	 * List containing {@link PovVector}s describing all uv-coordinates of the
+	 * mesh. The list contains no duplicates.
 	 */
-	private List _uvvectors = new ArrayList();
+	private final List _uvvectors = new ArrayList();
 
 	/**
-	 * List containing all used textures. The duplicates are filtered in the write method. The reason for this is
-	 * that a face index can also have an index into the texture list [textureNr].
+	 * List containing all used textures. The duplicates are filtered in the
+	 * write method. The reason for this is that a face index can also have an
+	 * index into the texture list [textureNr].
 	 */
-	private List _duplicateTextureList = new ArrayList();
+	private final List _duplicateTextureList = new ArrayList();
 
 	/**
-	 * List containing povvectors, every vector points to 3 vertices in the vertexvectors list.
+	 * List containing {@link PovVector}s, every {@link PovVector} points to 3
+	 * vertices in the vertexvectors list.
 	 */
-	private List _faceindices = new ArrayList();
+	private final List _faceindices = new ArrayList();
 
 	/**
-	 * List containing povvectors, every vector points to 3 uv-coordinates in the uvvectors list.
+	 * List containing {@link PovVector}s, every {@link PovVector} points to 3
+	 * uv-coordinates in the uvvectors list.
 	 */
-	private List _uvindices = new ArrayList();
+	private final List _uvindices = new ArrayList();
 
 	/**
-	 * Construct new object of type PovMesh2.
+	 * Construct new {@link PovMesh2}.
 	 *
-	 * @param name The name for this mesh.
+	 * @param meshName The name for this mesh.
 	 */
-	public PovMesh2( final String name )
+	public PovMesh2( final String meshName )
 	{
-		super( name );
+		super( meshName );
 	}
 
 	/**
@@ -143,10 +153,11 @@ public class PovMesh2
 
 		_duplicateTextureList.add( povTexture );
 
-		/**
-		 * For each vertex, if the vertex has nog been added yet to the list, add it, then
-		 * add an index to the vertices in the face_indices list. If a vertex has been added already,
-		 * only a new index is created to the vertex.
+		/*
+		 * For each vertex, if the vertex has nog been added yet to the list,
+		 * add it, then add an index to the vertices in the face_indices list.
+		 * If a vertex has been added already,only a new index is created to
+		 * the vertex.
 		 */
 		if ( vertexVectors.indexOf( v1 ) == -1 )
 			vertexVectors.add( v1 );
@@ -164,7 +175,7 @@ public class PovMesh2
 
 		if ( uv1 != null && uv2 != null && uv3 != null )
 		{
-			/**
+			/*
 			 * Same method as for the vertices.
 			 */
 			if ( uvvectors.indexOf( uv1 ) == -1 )
@@ -183,16 +194,25 @@ public class PovMesh2
 		}
 		else
 		{
-			/**
-			 * The number of face indices must equals the number of uv indices. This does however result
-			 * in many unnessesary indices, especially when no uv-mapping is needed.
+			/*
+			 * The number of face indices must equals the number of uv-indices.
+			 * This does however result in unnessesary indices when the object
+			 * contains a mixture of textures and unicolors and when no
+			 * uv-mapping is needed.
+			 *
+			 * @FIXME:
+			 *
+			 * Get rid of unnessesary indices (might not be possible at
+			 * all since the number of face indices must equal the
+			 * number of uv-indices).
 			 */
 			_uvindices.add( new PovVector( 0.0 , 0.0 , 0.0 ) );
 		}
 	}
 
 	/**
-	 * This method writes this mesh2 object to the given outputstream in the format described above.
+	 * This method writes this mesh2 object to the given outputstream in the
+	 * format described above.
 	 *
 	 * @param out The outputstream to write to.
 	 * @throws IOException When there is an error writing to out.
@@ -200,16 +220,18 @@ public class PovMesh2
 	public void write( final IndentingWriter out )
 		throws IOException
 	{
-		final List vertexVectors        = _vertexvectors;
-		final List uvVectors            = _uvvectors;
-		final List uvIndices            = _uvindices;
-		final List duplicateTextureList = _duplicateTextureList;
-		final List faceIndices          = _faceindices;
-		final int  vertexCount          = vertexVectors.size();
-		final int  uvVectorsCount       = uvVectors.size();
-		final int  faceIndiceCount      = faceIndices.size();
-		final int  textureCount         = duplicateTextureList.size();
-		final int  uvIndicesCount       = uvIndices.size();
+		final List         vertexVectors        = _vertexvectors;
+		final List         uvVectors            = _uvvectors;
+		final List         uvIndices            = _uvindices;
+		final List         duplicateTextureList = _duplicateTextureList;
+		final List         faceIndices          = _faceindices;
+		final int          vertexCount          = vertexVectors.size();
+		final int          uvVectorsCount       = uvVectors.size();
+		final int          faceIndiceCount      = faceIndices.size();
+		final int          textureCount         = duplicateTextureList.size();
+		final int          uvIndicesCount       = uvIndices.size();
+		final NumberFormat floatFormat          = FLOAT_FORMAT;
+		final NumberFormat intFormat            = INT_FORMAT;
 
 		out.writeln( "mesh2" );
 		out.writeln( "{" );
@@ -260,9 +282,9 @@ public class PovMesh2
 				}
 
 				out.write( "< " );
-				out.write( FLOAT_FORMAT.format( uvVector.v.x ) );
+				out.write( floatFormat.format( uvVector.v.x ) );
 				out.write( " , " );
-				out.write( FLOAT_FORMAT.format( uvVector.v.y ) );
+				out.write( floatFormat.format( uvVector.v.y ) );
 				out.write( " >" );
 			}
 
@@ -320,11 +342,11 @@ public class PovMesh2
 			final PovVector index = (PovVector) _faceindices.get( i );
 
 			out.write( "< " );
-			out.write( INT_FORMAT.format( index.v.x ) );
+			out.write( intFormat.format( index.v.x ) );
 			out.write( " , " );
-			out.write( INT_FORMAT.format( index.v.y ) );
+			out.write( intFormat.format( index.v.y ) );
 			out.write( " , " );
-			out.write( INT_FORMAT.format( index.v.z ) );
+			out.write( intFormat.format( index.v.z ) );
 			out.write( " >" );
 
 			if ( numTextures > 1 )
@@ -359,11 +381,11 @@ public class PovMesh2
 				final PovVector index = (PovVector) uvIndices.get( i );
 
 				out.write( "< " );
-				out.write( INT_FORMAT.format( index.v.x ) );
+				out.write( intFormat.format( index.v.x ) );
 				out.write( " , " );
-				out.write( INT_FORMAT.format( index.v.y ) );
+				out.write( intFormat.format( index.v.y ) );
 				out.write( " , " );
-				out.write( INT_FORMAT.format( index.v.z ) );
+				out.write( intFormat.format( index.v.z ) );
 				out.write( " >" );
 			}
 

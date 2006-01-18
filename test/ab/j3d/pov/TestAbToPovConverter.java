@@ -19,32 +19,48 @@
  */
 package ab.j3d.pov;
 
-import java.io.StringWriter;
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URL;
+
 import junit.framework.Assert;
 import junit.framework.TestCase;
-import com.numdata.oss.io.IndentingWriter;
-import com.numdata.oss.ui.ImageTools;
+
 import ab.j3d.Matrix3D;
+import ab.j3d.model.Box3D;
+import ab.j3d.model.Camera3D;
+import ab.j3d.model.Cylinder3D;
+import ab.j3d.model.ExtrudedObject2D;
+import ab.j3d.model.Light3D;
+import ab.j3d.model.Object3D;
+import ab.j3d.model.Sphere3D;
 import ab.j3d.view.ViewModel;
 
+import com.numdata.oss.io.IndentingWriter;
+import com.numdata.oss.ui.ImageTools;
+
 /**
- * This class tests the conversion from the testmodel to POV. All objects are converted seperately.
+ * This class tests the conversion of the testmodel to POV-Ray.
+ * All objects are converted seperately.
+ *
+ * @see     AbPovTestModel
+ * @see     AbToPovConverter
  *
  * @author  Rob Veneberg
  * @version $Revision$ $Date$
- * @see     AbPovTestModel
- * @see     AbPovTestApp
  */
-public class TestAbToPovConverter
+public final class TestAbToPovConverter
 	extends TestCase
 {
 	/**
-	 * This method tests if the needed texture declarations are generated. All textures should be declared.
+	 * This method tests if the needed texture declarations are generated.
+	 * All textures should be declared.
+	 *
+	 * @throws IOException When there was a problem writing to the
+	 * {@link IndentingWriter}.
 	 */
-	public void testDeclarations()
+	public static void testDeclarations()
 		throws IOException
 	{
 		ImageTools.addToSearchPath( getTestDirectory() );
@@ -61,7 +77,10 @@ public class TestAbToPovConverter
 			scene.write( indentingWriter );
 			String temp = stringWriter.toString();
 
-			// The whole scene needs to be converted, but only the texture definition part is needed.
+			/*
+			 * The whole scene needs to be converted, but only the texture
+			 * definition part is needed.
+			 */
 			temp = temp.substring( temp.indexOf( " * Texture definitions" ) - 3 , temp.indexOf( " * Declared geometry" ) - 3 );
 
 			actual = temp;
@@ -300,17 +319,22 @@ public class TestAbToPovConverter
 	}
 
 	/**
-	 * This method tests the conversion from Camera3D object to pov camera.
+	 * This method tests the conversion from {@link Camera3D} object to
+	 * {@link PovCamera}.
+	 *
+	 * @throws IOException When there was a problem writing to the
+	 * {@link IndentingWriter}.
 	 */
-	public void testCamera3DToPovCamera()
+	public static void testCamera3DToPovCamera()
 		throws IOException
 	{
-
 		final String actual;
 		{
 			final AbPovTestModel  testModel       = new AbPovTestModel();
 			final ViewModel       model           = testModel.getModel();
 			final Object[]        ids             = model.getViewIDs();
+
+			//@TODO Test conversion of Camera3D when integrated in model.
 			final PovCamera       camera          = AbToPovConverter.convertCamera3D( model.getView( ids[ 0 ] ) );
 			final StringWriter    stringWriter    = new StringWriter();
 			final IndentingWriter indentingWriter = new IndentingWriter( stringWriter );
@@ -333,9 +357,13 @@ public class TestAbToPovConverter
 	}
 
 	/**
-	 * This method tests the conversion of a red, rotated (10 degrees around x-axis) Box3D object to a pov box.
+	 * This method tests the conversion of a red, rotated (10 degrees around
+	 * x-axis) {@link Box3D} object to a {@link PovBox}.
+	 *
+	 * @throws IOException When there was a problem writing to the
+	 * {@link IndentingWriter}.
 	 */
-	public void testRedXRotatedBox3DToPov()
+	public static void testRedXRotatedBox3DToPov()
 		throws IOException
 	{
 		final String actual;
@@ -368,10 +396,15 @@ public class TestAbToPovConverter
 	}
 
 	/**
-	 * This method tests the conversion of a green, rotated (10 degrees around y-axis) Box3D object to a pov box. The Box3D
-	 * characteristics opacity, ambient, diffuse, specular reflectivity and specular exponent are also tested.
+	 * This method tests the conversion of a green, rotated (10 degrees around
+	 * y-axis) {@link Box3D} object to a {@link PovBox}. The box characteristics
+	 * opacity, ambient, diffuse, specular reflectivity and specular exponent
+	 * are also tested.
+	 *
+	 * @throws IOException When there was a problem writing to the
+	 * {@link IndentingWriter}.
 	 */
-	public void testGreenYRotatedBox3DToPov()
+	public static void testGreenYRotatedBox3DToPov()
 		throws IOException
 	{
 		final String actual;
@@ -404,9 +437,13 @@ public class TestAbToPovConverter
 	}
 
 	/**
-	 * This method tests the conversion of a blue, rotated (10 degrees around z-axis) Box3D object to a pov box.
+	 * This method tests the conversion of a blue, rotated (10 degrees around
+	 * z-axis) {@link Box3D} object to a {@link PovBox}.
+	 *
+	 * @throws IOException When there was a problem writing to the
+	 * {@link IndentingWriter}.
 	 */
-	public void testBlueZRotatedBox3DToPov()
+	public static void testBlueZRotatedBox3DToPov()
 		throws IOException
 	{
 		final String actual;
@@ -439,10 +476,13 @@ public class TestAbToPovConverter
 	}
 
 	/**
-	 * This method tests the conversion of a textured Box3D object (a wooden panel) with a different side-texture to pov.
-	 * In pov the object needs to be converted to a mesh object, because the pov box can have only one texture.
+	 * This method tests the conversion of a textured {@link Box3D} object
+	 * (a wooden panel) with a different side-texture to a {@link PovMesh2}.
+	 *
+	 * @throws IOException When there was a problem writing to the
+	 * {@link IndentingWriter}.
 	 */
-	public void testTexturedBox3DToPov()
+	public static void testTexturedBox3DToPov()
 		throws IOException
 	{
 		final String actual;
@@ -504,9 +544,13 @@ public class TestAbToPovConverter
 	}
 
 	/**
-	 * This method tests the conversion of a Sphere3D object to a pov sphere.
+	 * This method tests the conversion of a {@link Sphere3D} object to a
+	 * {@link PovSphere}.
+	 *
+	 * @throws IOException When there was a problem writing to the
+	 * {@link IndentingWriter}.
 	 */
-	public void testSphere3DToPov()
+	public static void testSphere3DToPov()
 		throws IOException
 	{
 		final String actual;
@@ -538,9 +582,13 @@ public class TestAbToPovConverter
 	}
 
 	/**
-	 * This method tests the conversion of a Cylinder3D object to a pov cylinder.
+	 * This method tests the conversion of a {@link Cylinder3D} object to a
+	 * {@link PovCylinder}.
+	 *
+	 * @throws IOException When there was a problem writing to the
+	 * {@link IndentingWriter}.
 	 */
-	public void testCylinder3DToPov()
+	public static void testCylinder3DToPov()
 		throws IOException
 	{
 		final String actual;
@@ -573,9 +621,13 @@ public class TestAbToPovConverter
 	}
 
 	/**
-	 * This method tests the conversion of a Cone3D object to a pov cone.
+	 * This method tests the conversion of a cone (also a {@link Cylinder3D}) to
+	 * a {@link PovCylinder}.
+	 *
+	 * @throws IOException When there was a problem writing to the
+	 * {@link IndentingWriter}.
 	 */
-	public void testCone3DToPov()
+	public static void testCone3DToPov()
 		throws IOException
 	{
 		final String actual;
@@ -608,10 +660,13 @@ public class TestAbToPovConverter
 	}
 
 	/**
-	 * This method tests the conversion of an Object3D (a colored cube with a different texture per face) to
-	 * a pov mesh2 object.
+	 * This method tests the conversion of an {@link Object3D} (a colored cube
+	 * with a different texture per face) to a {@link PovMesh2}.
+	 *
+	 * @throws IOException When there was a problem writing to the
+	 * {@link IndentingWriter}.
 	 */
-	public void testColorCubeToPov()
+	public static void testColorCubeToPov()
 		throws IOException
 	{
 		final String actual;
@@ -675,10 +730,13 @@ public class TestAbToPovConverter
 	}
 
 	/**
-	 * This method tests the conversion of an ExtrudedObject2D object to pov. There is no extruded object type in pov, so the
-	 * object needs to be converted to a pov mesh2 object.
+	 * This method tests the conversion of an {@link ExtrudedObject2D} to
+	 * a {@link PovMesh2}.
+	 *
+	 * @throws IOException When there was a problem writing to the
+	 * {@link IndentingWriter}.
 	 */
-	public void testExtrudedObject2DToPov()
+	public static void testExtrudedObject2DToPov()
 		throws IOException
 	{
 		final String actual;
@@ -724,16 +782,22 @@ public class TestAbToPovConverter
 	}
 
 	/**
-	 * This method tests the conversion of a Light3D object to a pov light.
+	 * This method tests the conversion of a {@link Light3D} object to a
+	 * {@link PovLight}.
+	 *
+	 * @throws IOException When there was a problem writing to the
+	 * {@link IndentingWriter}.
 	 */
-	public void testLight3DToPov()
+	public static void testLight3DToPov()
 		throws IOException
 	{
 		final String actual;
 		{
-			final AbPovTestModel  testModel       = new AbPovTestModel();
+			//@TODO Properly test the light conversion when Light3D is completed.
+			//final AbPovTestModel  testModel       = new AbPovTestModel();
+
 			final Matrix3D        transform       = Matrix3D.INIT.setTranslation( 500.0 , -500.0 , 500.0 );
-			final PovLight        light           = AbToPovConverter.convertLight3D( testModel.getLight3D() , transform );
+			final PovLight        light           = AbToPovConverter.convertLight3D( /* testModel.getLight3D() , */ transform );
 			final StringWriter    stringWriter    = new StringWriter();
 			final IndentingWriter indentingWriter = new IndentingWriter( stringWriter );
 
@@ -755,6 +819,11 @@ public class TestAbToPovConverter
 		Assert.assertEquals( "Light3D to pov conversion error" , expected , actual );
 	}
 
+	/**
+	 * Get the path to the package directory.
+	 *
+	 * @return The path to the package directory.
+	 */
 	private static String getTestDirectory()
 	{
 		final Class       thisClass        = TestAbToPovConverter.class;
@@ -766,6 +835,11 @@ public class TestAbToPovConverter
 		return packageDirectory.getPath();
 	}
 
+	/**
+	 * Get the path to the test textures.
+	 *
+	 * @return The path to the test textures.
+	 */
 	private static String getTexturesDirectory()
 	{
 		final String testDirectory = getTestDirectory();
@@ -773,7 +847,7 @@ public class TestAbToPovConverter
 	}
 
 	/**
-	 * Write the whole test scene to test.pov
+	 * Write the whole testscene to a POV-Ray file.
 	 */
 	public static void writeToFile()
 	{

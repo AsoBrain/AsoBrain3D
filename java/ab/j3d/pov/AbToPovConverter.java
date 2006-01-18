@@ -43,12 +43,13 @@ import ab.j3d.view.ViewModelView;
 import com.numdata.oss.ui.ImageTools;
 
 /**
- * This class can be used to convert an AB-scene (ViewModel) to a POV-scene.
+ * This class can be used to convert an AB-scene ({@link ViewModel}) to a
+ * POV-Ray scene ({@link PovScene}).
  *
  * @author  Rob Veneberg
  * @version $Revision$ $Date$
  */
-public class AbToPovConverter
+public final class AbToPovConverter
 {
 	/**
 	 * Variable that will hold the converted scene.
@@ -56,7 +57,7 @@ public class AbToPovConverter
 	private PovScene _scene;
 
 	/**
-	 * Directory containing POV-textures.
+	 * Directory containing the used textures.
 	 */
 	private final String _textureDirectory;
 
@@ -76,12 +77,13 @@ public class AbToPovConverter
 	}
 
 	/**
-	 * Workhorse of the converter. First the model is converted to a Node3DCollection and then all
-	 * individual nodes are converted. Objects with texture mapping and/or multiple textures and extruded
-	 * objects are converted as Object3D's.
+	 * Workhorse of the converter. First the model is converted to a
+	 * {@link Node3DCollection} and then all individual nodes are converted.
+	 * Objects with texture mapping and/or multiple textures and extruded
+	 * objects are converted as {@link Object3D}'s.
 	 *
-	 * @param viewModel The model to be converted to a POV-scene.
-	 * @return The resulting PovScene object.
+	 * @param viewModel The AB-model to be converted to a POV-Ray scene.
+	 * @return The resulting {@link PovScene} object.
 	 */
 	public PovScene convert( final ViewModel viewModel )
 	{
@@ -131,9 +133,6 @@ public class AbToPovConverter
 			}
 		}
 
-		/**
-		 * Add some ligt to the scene. Light is not fully implemented yet in AB.
-		 */
 		final Color    color    = new Color( 155 , 155 , 145 );
 
 		PovLight povLight = new PovLight( "light1" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
@@ -141,23 +140,35 @@ public class AbToPovConverter
 		povLight.adaptive = 1.0;
 		scene.add( povLight );
 
-		povLight = new PovLight( "light1" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
+		povLight = new PovLight( "light2" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
 		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( -5000.0 , -5000.0 , 6000.0 ) ) );
 		povLight.adaptive = 1.0;
 		scene.add( povLight );
 
-		povLight = new PovLight( "light1" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
+		povLight = new PovLight( "light3" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
 		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( -5000.0 , 5000.0 , 6000.0 ) ) );
 		povLight.adaptive = 1.0;
 		scene.add( povLight );
 
-		povLight = new PovLight( "light1" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
+		povLight = new PovLight( "light4" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
 		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( 5000.0 , 5000.0 , 6000.0 ) ) );
 		povLight.adaptive = 1.0;
 		scene.add( povLight );
 
-		/**
-		 * 2.2 is the best value for pc's.
+		/*
+		povLight = new PovLight( "light2" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
+		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( 5000.0 , -5100.0 , 6000.0 ) ) );
+		povLight.adaptive = 1.0;
+		scene.add( povLight );
+
+		povLight = new PovLight( "light3" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
+		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( 5000.0 , -5200.0 , 6000.0 ) ) );
+		povLight.adaptive = 1.0;
+		scene.add( povLight );
+		*/
+
+		/*
+		 * Best value for pc's.
 		 */
 		scene.gamma = 2.2f;
 
@@ -165,11 +176,13 @@ public class AbToPovConverter
 	}
 
 	/**
-	 * The AB-tree is traversed and all leafs are gathered in a Node3DCollection (could be method of ViewModel?)
+	 * The AB-tree is traversed and all leafs are gathered
+	 * in a {@link Node3DCollection}.
 	 *
-	 * @return The resulting Node3DCollection.
+	 * @param viewModel The model to be converted.
+	 * @return The resulting {@link Node3DCollection}.
 	 */
-	public static Node3DCollection getNode3DCollection( final ViewModel viewModel )
+	private static Node3DCollection getNode3DCollection( final ViewModel viewModel )
 	{
 		final Node3DCollection nodeCollection = new Node3DCollection();
 		final Object[]         ids            = viewModel.getViewIDs();
@@ -194,14 +207,19 @@ public class AbToPovConverter
 	}
 
 	/**
-	 * The Camera3D is not fully implemented yet in AB. The PovCamera is temporarily constructed based
-	 * on data obtained from the view.
+	 * The {@link Camera3D} is not fully implemented yet in AB. The
+	 * {@link PovCamera} is temporarily constructed based on data obtained
+	 * from the view.
 	 *
+	 * //@param camera The {@link Camera3D} object to be converted.
+	 * //@param transform The node2model transform.
 	 * @param view The view to get the camera data from.
-	 * @return The resulting PovCamera object.
+	 * @return The resulting {@link PovCamera} object.
 	 */
-	public static PovCamera convertCamera3D( final ViewModelView view )
+	public static PovCamera convertCamera3D( /* final Camera3D camera , final Matrix3D transform */ final ViewModelView view )
 	{
+		//@TODO Convert camera when Camera3D class has been fully integrated.
+
 		Matrix3D viewTransform = view.getViewTransform();
 
 		final Matrix3D swapYZ = Matrix3D.INIT.set( 1.0 , 0.0 ,  0.0 , 0.0 ,
@@ -210,10 +228,12 @@ public class AbToPovConverter
 
 		viewTransform = swapYZ.multiply( viewTransform.inverse() );
 
-		/**
-		 * The standard ratio used in POV is 4:3, wich means the rendered image will
-		 * get deformed if resolutions with a ratio other than 4:3 are used. Since the view does not have a fixed
-		 * ratio (the user can resize the view for example), the ratio also needs to be specified in the POV camera.
+		/*
+		 * The standard ratio used in POV-Ray is 4:3, wich means the rendered
+		 * image will get deformed if resolutions with a ratio other than 4:3
+		 * are used. Since the view does not have a fixed ratio (the user can
+		 * resize the view for example), the ratio also needs to be specified
+		 * in the POV-Ray camera.
 		 */
 		final Component viewComponent = view.getComponent();
 		final double    viewWidth     = (double)viewComponent.getWidth();
@@ -228,10 +248,10 @@ public class AbToPovConverter
 	}
 
 	/**
-	 * This method constructs a PovBox from a Box3D object.
+	 * This method constructs a {@link PovBox} from a {@link Box3D} object.
 	 *
-	 * @param box The box to be converted to a PovBox object.
-	 * @return The resulting PovBox object.
+	 * @param box The {@link Box3D} to be converted.
+	 * @return The resulting {@link PovBox} object.
 	 */
 	public PovBox convertBox3D( final Box3D box )
 	{
@@ -250,10 +270,10 @@ public class AbToPovConverter
 	}
 
 	/**
-	 * This method constructs a PovSphere from a Sphere3D object.
+	 * This method constructs a {@link PovSphere} from a {@link Sphere3D} object.
 	 *
-	 * @param sphere The sphere to be converted to a PovSphere object.
-	 * @return The resulting PovSphere object.
+	 * @param sphere The {@link Sphere3D} to be converted.
+	 * @return The resulting {@link PovSphere object}.
 	 */
 	public PovSphere convertSphere3D( final Sphere3D sphere )
 	{
@@ -272,10 +292,11 @@ public class AbToPovConverter
 	}
 
 	/**
-	 * This method constructs a PovCylinder from a Cylinder3D object.
+	 * This method constructs a {@link PovCylinder} from a {@link Cylinder3D}
+	 * object.
 	 *
-	 * @param cylinder The cylinder to be converted to a PovCylinder object.
-	 * @return The resulting PovCylinder object.
+	 * @param cylinder The {@link Cylinder3D} to be converted.
+	 * @return The resulting {@link PovCylinder} object.
 	 */
 	public PovCylinder convertCylinder3D( final Cylinder3D cylinder )
 	{
@@ -291,12 +312,28 @@ public class AbToPovConverter
 	}
 
 	/**
-	 * This method converts an Object3D to a PovMesh2. All faces are converted to one or more mesh triangles and
-	 * the face textures are up-mapped to the triangles.
+	 * This method converts an {@link Object3D} to a {@link PovMesh2}.
+	 * All faces are converted to one or more mesh triangles and the face
+	 * textures are uv-mapped to the triangles. For every triangle the first
+	 * vertex is the same (a {@link Face3D} is always convex).
 	 *
-	 * @param object The object to be converted to a Mesh2 object.
+	 *  0  _________ 1
+	 *    |\        |
+	 *    | \       |
+	 *    |  \      |
+	 *    |   \     |
+	 *    |    \    |
+	 *    |     \   |
+	 *    |      \  |
+	 *    |       \ |
+	 *  3 |________\| 2
+	 *
+	 * Triangle 1: ( 0 , 1 , 2 )
+	 * Triangle 2: ( 0 , 2 , 3 )
+	 *
+	 * @param object The {@link Object3D} to be converted.
 	 * @param transform The node2model transform.
-	 * @return The resulting PovMesh2 object.
+	 * @return The resulting {@link PovMesh2} object.
 	 */
 	public PovMesh2 convertObject3D( final Object3D object , final Matrix3D transform )
 	{
@@ -305,24 +342,6 @@ public class AbToPovConverter
 		final double[] temp        = object.getPointCoords();
 		final double[] pointCoords = transform.transform( temp , null , temp.length / 3 );
 
-		/**
-		 * Loop all faces and create triangles from 3 vertices. For every triangle
-		 * the first vertex is the same (the face is always convex).
-		 *
-		 *  0  _________ 1
-		 *    |\        |
-		 *    | \       |
-		 *    |  \      |
-		 *    |   \     |
-		 *    |    \    |
-		 *    |     \   |
-		 *    |      \  |
-		 *    |       \ |
-		 *  3 |________\| 2
-		 *
-		 * Triangle 1: ( 0 , 1 , 2 )
-		 * Triangle 2: ( 0 , 2 , 3 )
-		 */
 		for ( int i = 0 ; i < numFaces ; i++ )
 		{
 			final Face3D      face              = object.getFace( i );
@@ -343,14 +362,16 @@ public class AbToPovConverter
 				textureWidth  = textureImage.getWidth( null );
 				textureHeight = textureImage.getHeight( null );
 
-				// If material has texture, get first uv-coordinate.
+				/*
+				 * If the material has a texture, get first uv-coordinate.
+				 */
 				u = (double)face.getTextureU( 0 ) / (double)textureWidth;
 				v = (double)face.getTextureV( 0 ) / (double)textureHeight;
 
 				firstUvCoord = new PovVector( u , v , 0.0 );
 			}
 
-			/**
+			/*
 			 * For every triangle, the first vertex is the same.
 			 */
 			double x = pointCoords[ pointIndices[ 0 ] * 3     ];
@@ -361,7 +382,7 @@ public class AbToPovConverter
 
 			for ( int j = 1 ; j < faceVerticesCount - 1 ; j++ )
 			{
-				/**
+				/*
 				 * Second vertex.
 				 */
 				x = pointCoords[ pointIndices[ j ] * 3     ];
@@ -370,7 +391,7 @@ public class AbToPovConverter
 
 				final PovVector secondVertex  = new PovVector( x , y , z );
 
-				/**
+				/*
 				 * Third vertex.
 				 */
 				x = pointCoords[ pointIndices[ j + 1 ] * 3     ];
@@ -386,12 +407,16 @@ public class AbToPovConverter
 
 				if ( uvMapping )
 				{
-					// If material has texture, get second uv-coordinate.
+					/*
+					 * If the material has a texture, get second uv-coordinate.
+					 */
 					u = (double)face.getTextureU( j ) / (double)textureWidth;
 					v = (double)face.getTextureV( j ) / (double)textureHeight;
 					final PovVector secondUvCoord = new PovVector( u , v , 0.0 );
 
-					// If material has texture, get third uv-coordinate.
+					/*
+					 * If the material has a texture, get third uv-coordinate.
+					 */
 					u = (double)face.getTextureU( j + 1 ) / (double)textureWidth;
 					v = (double)face.getTextureV( j + 1 ) / (double)textureHeight;
 					final PovVector thirdUvCoord = new PovVector( u , v , 0.0 );
@@ -410,15 +435,17 @@ public class AbToPovConverter
 	}
 
 	/**
-	 * This method converts a Light3D object to a PovLight object. The Light3D class is not
-	 * implemented correctly yet.
+	 * This method converts a {@link Light3D} object to a {@link PovLight}
+	 * object. The {@link Light3D} class is not implemented fully yet.
 	 *
-	 * @param light The Light3D object to be converted.
+	 * //@param light The {@link Light3D} object to be converted.
 	 * @param transform The node2model transform.
-	 * @return The resulting PovLight object.
+	 * @return The resulting {@link PovLight} object.
 	 */
-	public static PovLight convertLight3D( final Light3D light , final Matrix3D transform )
+	public static PovLight convertLight3D( /* final Light3D light , */ final Matrix3D transform )
 	{
+		//@TODO Convert light when Light3D class is completed.
+
 		final PovLight povLight = new PovLight( "light" , 0.0 , 0.0 , 0.0 , new PovVector( Color.WHITE ) , true );
 		povLight.setTransform( new PovMatrix( transform ) );
 
@@ -426,12 +453,12 @@ public class AbToPovConverter
 	}
 
 	/**
-	 * Method to check if an object contains textures (could be method of Object3D).
+	 * Method to check if an {@link Object3D} contains textures.
 	 *
-	 * @param object The object to check.
-	 * @return True if the object contains textures, false otherwise.
+	 * @param object The {@link Object3D} to check.
+	 * @return True if the {@link Object3D} contains textures, false otherwise.
 	 */
-	public static boolean containsTextures( final Object3D object )
+	private static boolean containsTextures( final Object3D object )
 	{
 		boolean result = false;
 

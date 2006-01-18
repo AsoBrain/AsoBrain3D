@@ -41,19 +41,21 @@ import com.numdata.oss.ui.ImagePanel;
 import com.numdata.oss.ui.WindowTools;
 
 /**
- * This action converts the given {@link ViewModel} to a POV-Ray image using the {@link AbToPovConverter} and this
- * image is then painted on an {@link ImagePanel}. This panel is added to the view and set visible when needed.
+ * This action converts the given {@link ViewModel} to a POV-Ray image using
+ * the {@link AbToPovConverter} and this image is then painted on an
+ * {@link ImagePanel}. This panel is added to the view and set visible when
+ * needed.
  *
  * @author  Rob Veneberg
  * @version $Revision$ $Date$
  */
-public class ViewModelToPovAction
+public final class ViewModelToPovAction
 	extends BasicAction
 {
 	/**
 	 * The {@link ViewModel} that this action uses.
 	 */
-	private final ViewModel     _model;
+	private final ViewModel _model;
 
 	/**
 	 * The {@link ViewModelView} this action belongs to.
@@ -63,16 +65,17 @@ public class ViewModelToPovAction
 	/**
 	 * The {@link ImagePanel} used to draw the rendered POV-Ray image.
 	 */
-	private final ImagePanel    _imagePanel;
+	private final ImagePanel _imagePanel;
 
 	/**
 	 * Location of the POV-Ray textures.
 	 */
-	private final String        _textureDirectory;
+	private final String _textureDirectory;
 
 	/**
-	 * The {@link ImagePanel} is constructed and added to the view. When the user clicks on the view, the panel
-	 * is set invisible and the viewcomponent is set visible (the original view is visible again).
+	 * The {@link ImagePanel} is constructed and added to the view. When the
+	 * user clicks on the view, the panel is set invisible and the viewcomponent
+	 * is set visible (the original view is visible again).
 	 *
 	 * @param locale Needed to retrieve the correct resource bundle.
 	 * @param model The model that this action uses.
@@ -119,10 +122,11 @@ public class ViewModelToPovAction
 	}
 
 	/**
-	 * The {@link ViewModel} is converted to a {@link PovScene}, the scene is rendered with POV-Ray and
-	 * the resulting image is placed onto the imagepanel.
+	 * The {@link ViewModel} is converted to a {@link PovScene}, the scene is
+	 * rendered with POV-Ray and the resulting image is placed onto the
+	 * imagepanel.
 	 */
-	public void render()
+	private void render()
 	{
 		final Component viewComponent = _view.getComponent();
 
@@ -143,7 +147,7 @@ public class ViewModelToPovAction
 		final PovScene scene = converter.convert( _model );
 
 		/*
-		 * Manually add the camera, since Camera3D isnt't implemented correctly yet.
+		 * Manually add the camera, since Camera3D isnt't integrated yet.
 		 */
 		scene.add( AbToPovConverter.convertCamera3D( _view ) );
 
