@@ -591,7 +591,7 @@ public abstract class ViewModel
 		result.add( viewComponent , BorderLayout.CENTER );
 
 		Action[] actions = viewControl.getActions( locale );
-		actions = (Action[])ArrayTools.append( actions , new ViewModelToPovAction( locale , this , view , result , BorderLayout.SOUTH , "../../../soda/SODA_BaseComponents/images/textures/" ) );
+		actions = (Action[])ArrayTools.append( actions , new ViewModelToPovAction( locale , this , view , result , BorderLayout.SOUTH , "SODA_BaseComponents/images/textures/" ) );
 
 		final JToolBar toolbar = ActionTools.createToolbar( null , actions );
 		if ( toolbar != null )
