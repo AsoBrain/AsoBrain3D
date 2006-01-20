@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2005
+ * (C) Copyright Numdata BV 2004-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -141,14 +141,14 @@ public final class Java2dView
 			final Insets      insets            = getInsets( _insets );
 			final int         imageWidth        = getWidth() - insets.left - insets.right;
 			final int         imageHeight       = getHeight() - insets.top - insets.bottom;
-			final double      imageResolution   = 0.0254 / 90.0; // getToolkit().getScreenResolution();
+			final double      imageResolution   = getResolution();
 
-			final double      viewUnit          = _model.getUnit();
+			final double      viewUnit          = getUnit();
 
 			final int         projectionPolicy  = _projectionPolicy;
-			final double      fieldOfView       = Math.toRadians( 45.0 );
-			final double      zoomFactor        = 1.0;
-			final double      frontClipDistance = -0.1 / viewUnit;
+			final double      fieldOfView       = getAperture();
+			final double      zoomFactor        = getZoomFactor();
+			final double      frontClipDistance =   -0.1 / viewUnit;
 			final double      backClipDistance  = -100.0 / viewUnit;
 
 			return Projector.createInstance( projectionPolicy , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
@@ -216,12 +216,13 @@ public final class Java2dView
 
 			Painter.paintQueue( g2d , renderQueue , outline , fill , applyLighting , useTextures );
 
+			paintOverlay( g2d );
+
 			g2d.dispose();
 
 			_insets = insets;
 		}
 	}
-
 
 	/**
 	 * Construct new view.
@@ -232,7 +233,7 @@ public final class Java2dView
 	 */
 	Java2dView( final Java2dModel model , final Object id , final ViewControl viewControl )
 	{
-		super( id , viewControl );
+		super( id , model , viewControl );
 
 		_model = model;
 
@@ -290,19 +291,6 @@ public final class Java2dView
 	}
 
 	/**
-	 * Returns wether or not this {@link ViewModelView} has a
-	 * {@link SceneInputTranslator}. The {@link Java2dView} does, so it always
-	 * returns <code>true</code>
-	 *
-	 * @return  <code>true</code>, because the {@link Java2dView} has a
-	 *          {@link SceneInputTranslator}.
-	 */
-	protected boolean hasInputTranslator()
-	{
-		return true;
-	}
-
-	/**
 	 * Returns the {@link SceneInputTranslator} for this view. For the
 	 * {@link Java2dView}, this is a {@link ViewInputTranslator}.
 	 *
@@ -312,5 +300,4 @@ public final class Java2dView
 	{
 		return _inputTranslator;
 	}
-
 }
