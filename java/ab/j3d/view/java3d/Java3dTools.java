@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2006 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,7 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Transparency;
+import java.awt.GraphicsConfiguration;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ComponentColorModel;
@@ -232,6 +233,21 @@ public final class Java3dTools
 	}
 
 	/**
+	 * Returns the best {@link GraphicsConfiguration} for the default
+	 * {@link GraphicsDevice}.
+	 *
+	 * @return  best {@link GraphicsConfiguration} for the default
+	 *          {@link GraphicsDevice}.
+	 */
+	public static GraphicsConfiguration getGraphicsConfiguration()
+	{
+		final GraphicsEnvironment environment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		final GraphicsDevice device = environment.getDefaultScreenDevice();
+
+		return device.getBestConfiguration( new GraphicsConfigTemplate3D() );
+	}
+
+	/**
 	 * Conveniene method to create a <code>Canvas3D</code> with default
 	 * configuration settings.
 	 *
@@ -239,10 +255,7 @@ public final class Java3dTools
 	 */
 	public static Canvas3D createCanvas3D()
 	{
-		final GraphicsEnvironment environment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		final GraphicsDevice device = environment.getDefaultScreenDevice();
-
-		return new Canvas3D( device.getBestConfiguration( new GraphicsConfigTemplate3D() ) )
+		return new Canvas3D( getGraphicsConfiguration() )
 			{
 				/*
 				 * Override <code>getMinimumSize()</code> to allow layout manager to
