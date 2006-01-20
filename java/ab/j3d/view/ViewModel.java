@@ -129,10 +129,19 @@ public abstract class ViewModel
 	public static final double NAUTIC_MILE = 2025.4 * YARD;
 
 	/**
-	 * Construct new ViewModel.
+	 * Unit scale factor in this model. This scale factor, when multiplied,
+	 * converts design units to meters.
 	 */
-	protected ViewModel()
+	protected final double _unit;
+
+	/**
+	 * Construct new view model.
+	 *
+	 * @param   unit    Unit scale factor (e.g. {@link ViewModel#MM}).
+	 */
+	protected ViewModel( final double unit )
 	{
+		_unit = unit;
 	}
 
 	/**
@@ -700,5 +709,16 @@ public abstract class ViewModel
 				view.removeControl( control );
 			}
 		}
+	}
+
+	/**
+	 * Unit scale factor in this model in meters per unit. This factor, when
+	 * multiplied, converts units to meters.
+	 *
+	 * @return  Unit scale (meters per unit).
+	 */
+	public double getUnit()
+	{
+		return _unit;
 	}
 }
