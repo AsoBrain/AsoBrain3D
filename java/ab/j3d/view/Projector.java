@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,9 +19,9 @@
  */
 package ab.j3d.view;
 
+import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
-import ab.j3d.Vector3D;
 
 import com.numdata.oss.ArrayTools;
 
@@ -373,8 +373,8 @@ public abstract class Projector
 
 		public boolean inViewVolume( final double x , final double y , final double z )
 		{
-			final boolean result;
-
+//			final boolean result;
+//
 //			if ( ( z >= _backClipDistance ) && ( z <= _frontClipDistance ) )
 //			{
 				return true;
@@ -429,7 +429,7 @@ public abstract class Projector
 		 * @param   imageWidth          Image width in pixels.
 		 * @param   imageHeight         Image height in pixels.
 		 * @param   imageResolution     Image resolution in meters per pixel.
-		 * @param   viewUnit            Unit scale factor (e.g. {@link ViewModel#MM}).
+		 * @param   viewUnit            Unit scale factor in meters per view unit.
 		 * @param   frontClipDistance   Front clipping plane distance in view units.
 		 * @param   backClipDistance    Back clipping plane distance in view units.
 		 * @param   zoomFactor          Linear zoom factor.
@@ -438,9 +438,10 @@ public abstract class Projector
 		{
 			super( imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , zoomFactor );
 
-			final double view2pixels = zoomFactor * 0.5 * (double)imageWidth * viewUnit;
+			final double view2pixels = zoomFactor * viewUnit / imageResolution;
 
 			_view2pixels = view2pixels;
+
 			_limitX      = view2pixels * 0.5 * (double)_imageWidth;
 			_limitY      = view2pixels * 0.5 * (double)_imageHeight;
 		}
