@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2005
+ * (C) Copyright Numdata BV 2004-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,14 +35,9 @@ import ab.j3d.control.Control;
 public final class Java2dModel
 	extends ViewModel
 {
-	/**
-	 * Unit scale factor in this model. This scale factor, when multiplied,
-	 * converts design units to meters.
-	 */
-	private final double _unit;
 
 	/**
-	 * Construct new Java 2D view model.
+	 * Construct new Java 2D view model using {@link ViewModel#MM} units.
 	 */
 	public Java2dModel()
 	{
@@ -52,11 +47,11 @@ public final class Java2dModel
 	/**
 	 * Construct new Java 2D view model.
 	 *
-	 * @param   unit            Unit scale factor (e.g. {@link ViewModel#MM}).
+	 * @param   unit    Unit scale factor (e.g. {@link ViewModel#MM}).
 	 */
 	public Java2dModel( final double unit )
 	{
-		_unit = unit;
+		super( unit );
 	}
 
 	protected void initializeNode( final ViewModelNode node )
@@ -92,17 +87,6 @@ public final class Java2dModel
 	public boolean supportsControls()
 	{
 		return true;
-	}
-
-	/**
-	 * Unit scale factor in this model. This scale factor, when multiplied,
-	 * converts design units to meters.
-	 *
-	 * @return  Unit scale factor in this model.
-	 */
-	public double getUnit()
-	{
-		return _unit;
 	}
 
 }
