@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2005
+ * (C) Copyright Numdata BV 2004-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,21 +19,30 @@
  */
 package ab.j3d.view.java3d;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.Transparency;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import javax.media.j3d.Canvas3D;
+import javax.media.j3d.J3DGraphics2D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.media.j3d.View;
+import javax.media.j3d.ViewPlatform;
 import javax.vecmath.Matrix3d;
 import javax.vecmath.Vector3d;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.control.SceneInputTranslator;
 import ab.j3d.view.DragSupport;
 import ab.j3d.view.Projector;
 import ab.j3d.view.ViewControl;
-import ab.j3d.view.ViewModelView;
-import ab.j3d.control.SceneInputTranslator;
 import ab.j3d.view.ViewInputTranslator;
+import ab.j3d.view.ViewModelView;
 
 /**
  * Java 3D implementation of view model view.
@@ -45,9 +54,11 @@ public final class Java3dView
 	extends ViewModelView
 {
 	/**
-	 * Universe for which this view is defined.
+	 * The hardcoded resolution (meters per pixel) used by Java 3D.
+	 *
+	 * @see     javax.media.j3d.Screen3D#METERS_PER_PIXEL
 	 */
-	private final Java3dUniverse _universe;
+	private static final double JAVA3D_RESOLUTION = 0.0254 / 90.0;
 
 	/**
 	 * Transform group in view branch.
@@ -57,11 +68,11 @@ public final class Java3dView
 	private final TransformGroup _tg;
 
 	/**
-	 * The <code>View</code> object is what ties all things together that are
+	 * The {@link View} object is what ties all things together that are
 	 * needed to create a rendering of the scene.
 	 * <p />
-	 * Note that the <code>View</code> object is actually outside the scene
-	 * graph; it attaches to a <code>ViewPlatform</code> in the graph.
+	 * Note that the {@link View} object is actually outside the scene
+	 * graph; it attaches to a {@link ViewPlatform} in the graph.
 	 *
 	 * @see     Java3dUniverse#createView
 	 */
@@ -75,17 +86,17 @@ public final class Java3dView
 	private final Canvas3D _canvas;
 
 	/**
-	 * Cached <code>Matrix3d</code> instance (used by <code>update()</code).
+	 * Cached {@link Matrix3d} instance (used by {@link #update()}).
 	 */
 	private final Matrix3d _rotation = new Matrix3d();
 
 	/**
-	 * Cached <code>Vector3d</code> instance (used by <code>update()</code).
+	 * Cached {@link Vector3d} instance (used by {@link #update()}).
 	 */
 	private final Vector3d _translation = new Vector3d();
 
 	/**
-	 * Cached <code>Matrix4d</code> instance (used by <code>update()</code).
+	 * Cached {@link Transform3D} instance (used by {@link #update()}).
 	 */
 	private final Transform3D _transform3d = new Transform3D();
 
@@ -95,9 +106,123 @@ public final class Java3dView
 	private final SceneInputTranslator _inputTranslator;
 
 	/**
+	 * The component that displays the rendered scene. This class subclasses
+	 * {@link Canvas3D}, but it overrides some functions to allow
+	 * {@link ab.j3d.view.OverlayPainter}s to paint on top of the rendered
+	 * scene.
+	 */
+	private final class ViewComponent
+		extends Canvas3D
+	{
+		/**
+		 * Wether or not this overlay is double buffered.
+		 */
+		private boolean _overlayDoubleBuffered;
+
+		/**
+		 * The image used as buffer.
+		 */
+		private BufferedImage _overlayBufferImage;
+
+		/**
+		 * Creates a new view component.
+		 */
+		private ViewComponent()
+		{
+			super( Java3dTools.getGraphicsConfiguration() );
+
+			_overlayDoubleBuffered = true;
+			_overlayBufferImage    = null;
+		}
+
+		/**
+		 * Overrides {@link Canvas3D#paint} and sets the field of view and
+		 * screen scale before a new frame is rendered.
+		 *
+		 * @param   g   Graphics context
+		 */
+		public void paint( final Graphics g )
+		{
+			final View     view            = _view;
+			final double   aperture        = getAperture();
+			final double   imageResolution = getResolution();
+			final double   zoomFactor      = getZoomFactor();
+
+			view.setFieldOfView( aperture );
+
+			final double scale = ( JAVA3D_RESOLUTION / imageResolution ) * zoomFactor;
+			view.setScreenScale( scale );
+
+			super.paint( g );
+		}
+
+		/**
+		 * Called after the rendering has been completed. This method makes sure
+		 * {@link ab.j3d.view.OverlayPainter}s get to paint over the rendered
+		 * scene.
+		 */
+		public void postRender()
+		{
+			BufferedImage overlayBufferImage = null;
+
+			if ( hasOverlayPainters() )
+			{
+				if ( _overlayDoubleBuffered )
+				{
+					final int width  = getWidth();
+					final int height = getHeight();
+
+					final Graphics2D g2d;
+
+					overlayBufferImage = _overlayBufferImage;
+					if ( ( overlayBufferImage == null ) || ( overlayBufferImage.getWidth() != width ) || ( overlayBufferImage.getHeight() != height ) )
+					{
+						final GraphicsConfiguration gc = getGraphicsConfiguration();
+						overlayBufferImage = gc.createCompatibleImage( width , height , Transparency.BITMASK );
+						g2d = (Graphics2D)overlayBufferImage.getGraphics();
+					}
+					else
+					{
+						g2d = (Graphics2D)overlayBufferImage.getGraphics();
+						g2d.setBackground( new Color( 0 , 0 , 0 , 0 ) );
+						g2d.clearRect( 0 , 0 , width , height );
+					}
+
+					paintOverlay( g2d );
+					g2d.dispose();
+
+					final J3DGraphics2D j3dg2d = getGraphics2D();
+					j3dg2d.drawAndFlushImage( overlayBufferImage , 0 , 0 , this );
+				}
+				else
+				{
+					final J3DGraphics2D g2d = getGraphics2D();
+					paintOverlay( g2d );
+					g2d.flush( false );
+				}
+			}
+
+			_overlayBufferImage = overlayBufferImage;
+		}
+
+		/**
+		 * Override {@link #getMinimumSize} to allow layout manager to
+		 * do its job. Otherwise, this will always return the current size of
+		 * the canvas, not allowing it to be reduced in size.
+		 *
+		 * @return  a dimension object indicating this component's minimum size.
+		 */
+		public Dimension getMinimumSize()
+		{
+			return new Dimension( 10 , 10 );
+		}
+	}
+
+	/**
 	 * Construct view node using Java3D for rendering.
 	 *
-	 * @param model
+	 * @param   model           {@link Java3dModel} for which this class is a
+	 *                          view.
 	 * @param   universe        Java3D universe for which the view is created.
 	 * @param   id              Application-assigned ID of this view.
 	 * @param   viewControl     Control to use for this view.
@@ -106,19 +231,21 @@ public final class Java3dView
 	 */
 	Java3dView( final Java3dModel model, final Java3dUniverse universe, final Object id, final ViewControl viewControl )
 	{
-		super( id , viewControl );
+		super( id , model, viewControl );
 
 		/*
 		 * Create view branch.
 		 */
 		final TransformGroup tg     = new TransformGroup();
-		final Canvas3D       canvas = Java3dTools.createCanvas3D();
+		final Canvas3D       canvas = new ViewComponent();
 		final View           view   = universe.createView( tg , canvas );
 
-		_universe         = universe;
-		_tg               = tg;
-		_canvas           = canvas;
-		_view             = view;
+		view.setScreenScalePolicy( View.SCALE_EXPLICIT );
+		view.setWindowResizePolicy( View.VIRTUAL_WORLD );
+
+		_tg     = tg;
+		_canvas = canvas;
+		_view   = view;
 
 		/*
 		 * Update view to initial transform.
@@ -130,7 +257,7 @@ public final class Java3dView
 		/*
 		 * Add DragSupport to handle drag events.
 		 */
-		final DragSupport ds = new DragSupport( _canvas , universe.getUnit() );
+		final DragSupport ds = new DragSupport( _canvas , getUnit() );
 		ds.addDragListener( viewControl );
 	}
 
@@ -161,24 +288,18 @@ public final class Java3dView
 
 	public void update()
 	{
-		/*
-		 * Get the view-transform from the view control.
-		 */
-		final ViewControl control       = getViewControl();
-		final Matrix3D    viewTransform = control.getTransform();
+		final Matrix3D viewTransform = getViewTransform();
+		final double   unit          = getUnit();
 
 		/*
 		 * Determine rotation and translation. If a unit is set, use it to
 		 * scale the translation.
 		 */
-		final Java3dUniverse universe = _universe;
-		final double         unit     = universe.getUnit();
-
 		double xo = viewTransform.xo;
 		double yo = viewTransform.yo;
 		double zo = viewTransform.zo;
 
-		if ( ( unit > 0 ) && ( unit != 1 ) )
+		if ( ( unit > 0.0 ) && ( unit != 1.0 ) )
 		{
 			xo *= unit;
 			yo *= unit;
@@ -223,7 +344,7 @@ public final class Java3dView
 	 *
 	 * @return  the {@link Projector} for this view
 	 */
-	protected Projector getProjector ()
+	protected Projector getProjector()
 	{
 		final View view = _view;
 		final Canvas3D canvas = _canvas;
@@ -232,35 +353,16 @@ public final class Java3dView
 
 		final int    width      = canvas.getWidth();
 		final int    height     = canvas.getHeight();
-		final double resolution = 0.0254 / 90.0;
-		final double unit       = _universe.getUnit();
-		final double frontClip  = view.getFrontClipDistance();
-		final double backClip   = view.getBackClipDistance();
-		final double fov        = view.getFieldOfView      ();
-		final double zoom       = 1.0;
+		final double resolution = getResolution();
+		final double unit       = getUnit();
+		final double frontClip  = view.getFrontClipDistance() / unit;
+		final double backClip   = view.getBackClipDistance()  / unit;
+		final double aperture   = getAperture();
+		final double zoomFactor = getZoomFactor();
 
-		return Projector.createInstance( policy , width , height , resolution , unit , frontClip , backClip , fov , zoom );
+		return Projector.createInstance( policy , width , height , resolution , unit , frontClip , backClip , aperture , zoomFactor );
 	}
 
-	/**
-	 * Returns wether or not this {@link ViewModelView} has a
-	 * {@link SceneInputTranslator}. The {@link Java3dView} does, so it always
-	 * returns <code>true</code>
-	 *
-	 * @return  <code>true</code>, because the {@link Java3dView} has a
-	 *          {@link SceneInputTranslator}.
-	 */
-	protected boolean hasInputTranslator()
-	{
-		return true;
-	}
-
-	/**
-	 * Returns the {@link SceneInputTranslator} for this view. For the
-	 * {@link Java3dView}, this is a {@link ViewInputTranslator}.
-	 *
-	 * @return  the {@link SceneInputTranslator} for this view.
-	 */
 	protected SceneInputTranslator getInputTranslator()
 	{
 		return _inputTranslator;
