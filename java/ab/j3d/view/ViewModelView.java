@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2005
+ * (C) Copyright Numdata BV 2004-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,13 +20,18 @@
 package ab.j3d.view;
 
 import java.awt.Component;
+import java.awt.Graphics2D;
+import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import ab.j3d.Matrix3D;
-import ab.j3d.control.SceneInputTranslator;
-import ab.j3d.control.ControlEventQueue;
 import ab.j3d.control.Control;
+import ab.j3d.control.ControlEventQueue;
+import ab.j3d.control.SceneInputTranslator;
+import ab.j3d.model.Camera3D;
 
 /**
  * This class defines a view in the view model.
@@ -96,9 +101,25 @@ public abstract class ViewModelView
 	private final Object _id;
 
 	/**
+	 * {@link ViewModel} for which this is a view.
+	 */
+	private final ViewModel _viewModel;
+
+	/**
+	 * Camera from where the view is created.
+	 */
+	private final Camera3D _camera;
+
+	/**
 	 * Control for this view.
 	 */
 	private final ViewControl _viewControl;
+
+	/**
+	 * A {@link List} of {@link OverlayPainter}s that are to paint over this
+	 * view after rendering is completed.
+	 */
+	private final List _painters = new ArrayList();
 
 	/**
 	 * Property change event listener.
@@ -116,12 +137,16 @@ public abstract class ViewModelView
 	 * Construct new view.
 	 *
 	 * @param   id              Application-assigned ID of this view.
+	 * @param viewModel
 	 * @param   viewControl     Control to use for this view.
 	 */
-	protected ViewModelView( final Object id , final ViewControl viewControl )
+	protected ViewModelView( final Object id, final ViewModel viewModel, final ViewControl viewControl )
 	{
-		_id = id;
+		_id          = id;
+		_viewModel   = viewModel;
+		_camera      = new Camera3D();
 		_viewControl = viewControl;
+
 		viewControl.addPropertyChangeListener( "transform" , _propertyChangeListener );
 	}
 
@@ -133,6 +158,48 @@ public abstract class ViewModelView
 	public final Object getID()
 	{
 		return _id;
+	}
+
+	/**
+	 * Get camera from where the view is created.
+	 *
+	 * @return  Camera from where the view is created (never <code>null</code>).
+	 */
+	public Camera3D getCamera()
+	{
+		return _camera;
+	}
+
+	/**
+	 * Unit scale factor in meters per unit.
+	 *
+	 * @return  Unit scale (meters per unit).
+	 */
+	public double getUnit()
+	{
+		return _viewModel.getUnit();
+	}
+
+	/**
+	 * Get camera aperture for this view. This only applies to perspective
+	 * projections.
+	 *
+	 * @return  Camera aperture in radians.
+	 */
+	public final double getAperture()
+	{
+		return _camera.getAperture();
+	}
+
+	/**
+	 * Get linear zoom factor. View units are multiplied by this factor to get
+	 * rendered units.
+	 *
+	 * @return  Linear zoom factor.
+	 */
+	public final double getZoomFactor()
+	{
+		return _camera.getZoomFactor();
 	}
 
 	/**
@@ -165,6 +232,19 @@ public abstract class ViewModelView
 	public abstract Component getComponent();
 
 	/**
+	 * Get resolution of image in meters per pixel.
+	 *
+	 * @return  Resolution of image in meters per pixel.
+	 */
+	public double getResolution()
+	{
+		final Component component = getComponent();
+		final Toolkit   toolkit   = ( component != null ) ? component.getToolkit() : Toolkit.getDefaultToolkit();
+
+		return 0.0254 / (double)toolkit.getScreenResolution();
+	}
+
+	/**
 	 * Update contents of view. This may be the result of changes to the 3D
 	 * scene or view control.
 	 */
@@ -194,31 +274,16 @@ public abstract class ViewModelView
 	 *
 	 * @return  the {@link Projector} for this view
 	 */
-	protected abstract Projector getProjector ();
+	protected abstract Projector getProjector();
 
 	/**
-	 * Returns wether or not this ViewModelView has a
-	 * {@link SceneInputTranslator}.
+	 * Returns the {@link SceneInputTranslator}, if this class has one. If it
+	 * does not, <code>null</code> is returned.
 	 *
-	 * @return  <code>true</code> if there is a SceneInputTranslator,
-	 *          <code>false</code> otherwise.
+	 * @return  The {@link SceneInputTranslator} for this view;
+	 *          <code>null</code> if this view has none.
 	 */
-	protected boolean hasInputTranslator()
-	{
-		return false;
-	}
-
-	/**
-	 * Returns the {@link SceneInputTranslator}, if this class has one. The
-	 * method {@link #hasInputTranslator()} can be used to
-	 * check before calling this function.
-	 *
-	 * @return  The {@link SceneInputTranslator} for this view
-	 */
-	protected SceneInputTranslator getInputTranslator()
-	{
-		return null;
-	}
+	protected abstract SceneInputTranslator getInputTranslator();
 
 	/**
 	 * Adds a {@link Control} to this view. This control is added to the end of
@@ -247,15 +312,11 @@ public abstract class ViewModelView
 	 */
 	public final void addControl( final int index , final Control control )
 	{
-		if ( hasInputTranslator() )
+		final SceneInputTranslator inputTranslator = getInputTranslator();
+		if ( inputTranslator != null )
 		{
-			final SceneInputTranslator inputTranslator = getInputTranslator();
-			final ControlEventQueue queue = inputTranslator.getEventQueue();
-
-			if ( index < 0 || index > queue.size() )
-				throw new IllegalArgumentException( "The given index must be greater than 0 and smaller or equal to the number of controllers" );
-
-			queue.addControl( index , control );
+			final ControlEventQueue eventQueue = inputTranslator.getEventQueue();
+			eventQueue.addControl( index , control );
 		}
 	}
 
@@ -268,22 +329,78 @@ public abstract class ViewModelView
 	 */
 	public final void removeControl( final Control control )
 	{
-		if ( hasInputTranslator() )
+		final SceneInputTranslator inputTranslator = getInputTranslator();
+		if ( inputTranslator != null )
 		{
-			final SceneInputTranslator inputTranslator = getInputTranslator();
-			final ControlEventQueue queue = inputTranslator.getEventQueue();
-
-			queue.removeControl( control );
+			final ControlEventQueue eventQueue = inputTranslator.getEventQueue();
+			eventQueue.removeControl( control );
 		}
 	}
 
 	/**
-	 * Temporary method, can be removed when camera3d/projector classes are implemented correctly
+	 * Adds an {@link OverlayPainter} to the list of painters. The painter that
+	 * is added first will get the first turn in painting.
 	 *
-	 * @return The field of view (45 degrees).
+	 * @param   painter     {@link OverlayPainter} to add.
+
+	 * @see     #removeOverlayPainter
+	 * @see     #hasOverlayPainters
+	 * @see     #paintOverlay
 	 */
-	public static double getFieldOfView()
+	public void addOverlayPainter( final OverlayPainter painter )
 	{
-		return 45.0;
+		_painters.add( painter );
+	}
+
+	/**
+	 * Removes an {@link OverlayPainter} from the list of painters.
+	 *
+	 * @param   painter     {@link OverlayPainter} to remove.
+
+	 * @see     #addOverlayPainter
+	 * @see     #hasOverlayPainters
+	 * @see     #paintOverlay
+	 */
+	public final void removeOverlayPainter( final OverlayPainter painter )
+	{
+		_painters.remove( painter );
+	}
+
+	/**
+	 * Returns wether or not this view has registered {@link OverlayPainter}.
+	 *
+	 * @return  wether or not this view has registered {@link OverlayPainter}.
+	 *
+	 * @see     #addOverlayPainter
+	 * @see     #removeOverlayPainter
+	 * @see     #paintOverlay
+	 */
+	protected final boolean hasOverlayPainters()
+	{
+		return !_painters.isEmpty();
+	}
+
+	/**
+	 * Iterates through all registered {@link OverlayPainter}s, and for each of
+	 * them calls the {@link OverlayPainter#paint} method. This method should
+	 * only be called by the view after rendering of the 3d scene has been
+	 * completed.
+	 *
+	 * @param   g2d     {@link Graphics2D} object the painters can use to paint.
+
+	 * @see     #addOverlayPainter
+	 * @see     #hasOverlayPainters
+	 * @see     #removeOverlayPainter
+	 */
+	protected final void paintOverlay( final Graphics2D g2d )
+	{
+		final List painters = _painters;
+
+		for ( int index = 0 ; index < painters.size() ; index++ )
+		{
+			final OverlayPainter painter = (OverlayPainter)painters.get( index );
+
+			painter.paint( _viewModel , this , g2d );
+		}
 	}
 }
