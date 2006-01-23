@@ -241,7 +241,7 @@ public final class AbToPovConverter
 		final double    ratio         = viewWidth / viewHeight;
 		final PovVector right         = new PovVector( ratio , 0.0 , 0.0 );
 
-		final PovCamera povCamera = new PovCamera( "camera" , null , null , right ,  ViewModelView.getFieldOfView() );
+		final PovCamera povCamera = new PovCamera( "camera" , null , null , right ,  Math.toDegrees( view.getAperture() ) );
 		povCamera.setTransform( new PovMatrix( viewTransform ) );
 
 		return povCamera;

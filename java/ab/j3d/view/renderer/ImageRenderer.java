@@ -217,7 +217,7 @@ public final class ImageRenderer
 	{
 		final RenderObject renderObject = _renderObject;
 
-		renderObject.set( object , cameraXform , Math.tan( camera.getFieldOfView() / 2.0 ) , camera.getZoomFactor() , width , height , true );
+		renderObject.set( object , cameraXform , Math.tan( camera.getAperture() / 2.0 ) , camera.getZoomFactor() , width , height , true );
 		if ( !_abort )
 		{
 			renderObject.setLights( _collectedLights );
