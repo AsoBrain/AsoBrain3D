@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2004-2005 Numdata BV
+ * Copyright (C) 2004-2006 Numdata BV
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,6 +32,7 @@ import ab.j3d.control.MouseControlEvent;
 import ab.j3d.control.ControlEvent;
 import ab.j3d.control.Control;
 import ab.j3d.control.Intersection;
+import ab.j3d.control.ControlEventQueue;
 import ab.j3d.model.Object3D;
 
 import com.numdata.oss.ui.WindowTools;
@@ -42,10 +43,12 @@ import com.numdata.oss.ui.WindowTools;
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public class ViewModelExample
+public abstract class ViewModelExample
 {
 	/**
 	 * Construct example application.
+	 *
+	 * @param   viewModel   View model used to create example.
 	 */
 	protected ViewModelExample( final ViewModel viewModel )
 	{
@@ -64,59 +67,65 @@ public class ViewModelExample
 //		Matrix3D transform3 = Matrix3D.getTransform( 90, 0, 315, 225, 0, 0);
 //		viewModel.createNode( "plane3" , transform3 , plane3 , null , 1.0f );
 //
-		final Object3D cube = createCube( 100.0 );
+
+		final double unit = viewModel.getUnit();
+
+		final Object3D cube = createCube( 0.1 / unit );
 		cube.setTag( "Cube 1" );
 		viewModel.createNode( "cube" , Matrix3D.INIT , cube , null , 1.0f );
 
-		final Object3D cubeLeft = createCube( 75.0 );
+		final Object3D cubeLeft = createCube( 0.075 / unit );
 		cubeLeft.setTag( "Cube left");
-		viewModel.createNode( "cubeLeft" , Matrix3D.getTransform( 0, 225, 90, -250, 50, 0) , cubeLeft , null , 1.0f );
+		viewModel.createNode( "cubeLeft" , Matrix3D.getTransform( 0.0 , 225.0 , 90.0 , -0.250 / unit , 0.050 / unit , 0.0 ) , cubeLeft , null , 1.0f );
 
-		final Object3D cubeRight = createCube( 50.0 );
+		final Object3D cubeRight = createCube( 0.050 / unit );
 		cubeRight.setTag( "Cube right");
-		viewModel.createNode( "cubeRight" , Matrix3D.getTransform( 90, 0, 315, 225, 0, 0) , cubeRight , null , 1.0f );
+		viewModel.createNode( "cubeRight" , Matrix3D.getTransform( 90.0 , 0.0 , 315.0 , 0.225 / unit , 0.0 , 0.0 ) , cubeRight , null , 1.0f );
 
-		final Vector3D  viewFrom = Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 );
+		final Vector3D  viewFrom = Vector3D.INIT.set( 0.0 , -1.0 / unit , 0.0 );
 		final Vector3D  viewAt   = Vector3D.INIT;
 
 		viewModel.createView( "view" , new FromToViewControl( viewFrom , viewAt ) );
-		ViewModelView view = viewModel.getView( "view" );
+		final ViewModelView view = viewModel.getView( "view" );
+		view.setProjectionPolicy( Projector.PARALLEL );
 
 		final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , view.getComponent() );
 		frame.setVisible( true );
 
-		if ( view.hasInputTranslator() )
+		final SceneInputTranslator inputTranslator = view.getInputTranslator();
+		if ( inputTranslator != null )
 		{
-			SceneInputTranslator translator = view.getInputTranslator();
-			translator.getEventQueue().addControl( new Control() {
+			final ControlEventQueue eventQueue = inputTranslator.getEventQueue();
+			eventQueue.addControl( new Control() {
 
-				public ControlEvent handleEvent( ControlEvent e )
-				{
-					if ( e instanceof MouseControlEvent )
+					public ControlEvent handleEvent( final ControlEvent e )
 					{
-						MouseControlEvent event = (MouseControlEvent)e;
-						if ( event.getType() == MouseControlEvent.MOUSE_PRESSED )
+						if ( e instanceof MouseControlEvent )
 						{
-							List objects = event.getIntersections();
-							String string = objects.size() + " objects under the mouse: ";
-							for ( int i = 0; i < objects.size(); i++ )
+							final MouseControlEvent event = (MouseControlEvent)e;
+							if ( MouseControlEvent.MOUSE_PRESSED == event.getType() )
 							{
-								string += "  Object: " + ((Intersection)objects.get( i)).getID();
+								final List objects = event.getIntersections();
+								final StringBuffer string = new StringBuffer();
+								string.append( objects.size() );
+								string.append( " objects under the mouse: " );
+								for ( int i = 0 ; i < objects.size() ; i++ )
+								{
+									string.append( "  Object: " );
+									string.append( ((Intersection)objects.get( i )).getID() );
+								}
+								System.out.println( string.toString() );
 							}
-							System.out.println( string );
 						}
+						return e;
 					}
-					return e;
-				}
 
-				public int getDataRequiredMask()
-				{
-					return 0;
-				}
-			});
+					public int getDataRequiredMask()
+					{
+						return 0;
+					}
+				} );
 		}
-
-
 	}
 
 	/**
@@ -177,8 +186,8 @@ public class ViewModelExample
 		final Vector3D rb = Vector3D.INIT.set(  size ,  size , 0.0 );
 		final Vector3D lb = Vector3D.INIT.set( -size ,  size , 0.0 );
 
-		final TextureSpec red     = new TextureSpec( Color.red     );
-		final TextureSpec green   = new TextureSpec( Color.green   );
+		final TextureSpec red     = new TextureSpec( Color.red   );
+		final TextureSpec green   = new TextureSpec( Color.green );
 
 		final Object3D plane = new Object3D();
 		/* top    */ plane.addFace( new Vector3D[] { lf , lb , rb , rf } , red   , false , false ); // Z =  size
