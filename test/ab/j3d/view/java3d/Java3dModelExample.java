@@ -20,7 +20,10 @@
  */
 package ab.j3d.view.java3d;
 
+import java.awt.Color;
+
 import ab.j3d.view.ViewModelExample;
+import ab.j3d.view.ViewModel;
 
 /**
  * Example program for the Java 3D view model implementation.
@@ -36,7 +39,7 @@ public final class Java3dModelExample
 	 */
 	private Java3dModelExample()
 	{
-		super( new Java3dModel() );
+		super( new Java3dModel( ViewModel.MM , Color.BLACK ) );
 	}
 
 	/**

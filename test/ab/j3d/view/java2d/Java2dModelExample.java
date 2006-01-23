@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2004-2005 Numdata BV
+ * Copyright (C) 2004-2006 Numdata BV
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,8 @@
 package ab.j3d.view.java2d;
 
 import ab.j3d.view.ViewModelExample;
+import ab.j3d.view.ViewModelView;
+import ab.j3d.view.ViewModel;
 
 /**
  * Example program for the Java 2D view model implementation.
@@ -36,7 +38,7 @@ public final class Java2dModelExample
 	 */
 	private Java2dModelExample()
 	{
-		super( new Java2dModel() );
+		super( new Java2dModel( ViewModel.METER ) );
 	}
 
 	/**
