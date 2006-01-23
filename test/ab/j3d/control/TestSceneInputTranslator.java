@@ -1,7 +1,7 @@
 /*
  * $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -38,9 +38,10 @@ import ab.j3d.view.ViewModel;
 /**
  * This class tests the {@link SceneInputTranslator} class.
  *
- * @author Peter S. Heijnen
+ * @see     SceneInputTranslator
+ *
+ * @author  Mart Slot
  * @version $Revision$ $Date$
- * @see SceneInputTranslator
  */
 public class TestSceneInputTranslator
 extends TestCase
