@@ -54,23 +54,13 @@ public class Object3D
 	 * Coordinates of points in object. Points are stored in an array of floats
 	 * with a triplet for each point (x,y,z).
 	 */
-	double[] _pointCoords;
+	private double[] _pointCoords;
 
 	/**
 	 * This internal flag is set to indicate that the points or faces changed,
 	 * so the normals need to be re-calculated.
 	 */
-	boolean _normalsDirty;
-
-	/**
-	 * Array of floats with normals of each face of the model. Normals are
-	 * stored in an array of floats with a triplet for each normal (x,y,z).
-	 * The number of normals is equal to the number of faces (obviously).
-	 * <p>
-	 * This is only calculated when the model changes (indicated by the
-	 * _normalsDirty field).
-	 */
-	private double[] _vertexNormals;
+	private boolean _faceNormalsDirty;
 
 	/**
 	 * Array of floats with normals of each face of the model. Normals are
@@ -81,6 +71,22 @@ public class Object3D
 	 * _normalsDirty field) occur.
 	 */
 	private double[] _faceNormals;
+
+	/**
+	 * This internal flag is set to indicate that the points or faces changed,
+	 * so the normals need to be re-calculated.
+	 */
+	private boolean _vertexNormalsDirty;
+
+	/**
+	 * Array of floats with normals of each face of the model. Normals are
+	 * stored in an array of floats with a triplet for each normal (x,y,z).
+	 * The number of normals is equal to the number of faces (obviously).
+	 * <p>
+	 * This is only calculated when the model changes (indicated by the
+	 * _normalsDirty field).
+	 */
+	private double[] _vertexNormals;
 
 	/**
 	 * Outline color to use when this object is painted using Java 2D. If this
@@ -134,9 +140,10 @@ public class Object3D
 		_faces       = new ArrayList();
 		_pointCoords = null;
 
-		_normalsDirty  = true;
-		_vertexNormals = null;
-		_faceNormals   = null;
+		_faceNormalsDirty   = true;
+		_faceNormals        = null;
+		_vertexNormalsDirty = true;
+		_vertexNormals      = null;
 
 		outlinePaint          = Color.black;
 		fillPaint             = Color.white;
@@ -155,8 +162,11 @@ public class Object3D
 	public final void clear()
 	{
 		_faces.clear();
-		_pointCoords  = null;
-		_normalsDirty = true;
+
+		_faceNormalsDirty   = true;
+		_faceNormals        = null;
+		_vertexNormalsDirty = true;
+		_vertexNormals      = null;
 	}
 
 	/**
@@ -182,7 +192,7 @@ public class Object3D
 	 */
 	private synchronized void calculateNormals()
 	{
-		if ( _normalsDirty )
+		if ( _faceNormalsDirty || _vertexNormalsDirty )
 		{
 			final int      faceCount   = getFaceCount();
 			final double[] pointCoords = getPointCoords();
@@ -190,9 +200,6 @@ public class Object3D
 
 			final double[] faceNormals = (double[])ArrayTools.ensureLength( _faceNormals , double.class , -1 , faceCount * 3 );
 			_faceNormals = faceNormals;
-
-			final double[] vertexNormals = (double[])ArrayTools.ensureLength( _vertexNormals , double.class , -1 , pointCount * 3 );
-			_vertexNormals = vertexNormals;
 
 			/*
 			 * Generate face normals, but do not normalize them yet.
@@ -234,49 +241,57 @@ public class Object3D
 			/*
 			 * Generate vertex normals.
 			 */
-			for ( int pointIndex = 0 ; pointIndex < pointCount ; pointIndex++ )
+			if ( _vertexNormalsDirty )
 			{
-				double vnx = 0.0;
-				double vny = 0.0;
-				double vnz = 0.0;
+				final double[] vertexNormals = (double[])ArrayTools.ensureLength( _vertexNormals , double.class , -1 , pointCount * 3 );
+				_vertexNormals = vertexNormals;
 
-				/*
-				 * Sum normals of faces that use this point.
-				 */
-				for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
+				for ( int pointIndex = 0 ; pointIndex < pointCount ; pointIndex++ )
 				{
-					final Face3D face         = (Face3D)_faces.get( faceIndex );
-					final int    vertexCount  = face.getVertexCount();
-					final int[]  pointIndices = face.getPointIndices();
+					double vnx = 0.0;
+					double vny = 0.0;
+					double vnz = 0.0;
 
-					for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
+					/*
+					 * Sum normals of faces that use this point.
+					 */
+					for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
 					{
-						if ( pointIndices[ vertexIndex ] == pointIndex )
+						final Face3D face         = (Face3D)_faces.get( faceIndex );
+						final int    vertexCount  = face.getVertexCount();
+						final int[]  pointIndices = face.getPointIndices();
+
+						for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
 						{
-							final int normalIndex = faceIndex * 3;
-							vnx += faceNormals[ normalIndex     ];
-							vny += faceNormals[ normalIndex + 1 ];
-							vnz += faceNormals[ normalIndex + 2 ];
-							break;
+							if ( pointIndices[ vertexIndex ] == pointIndex )
+							{
+								final int normalIndex = faceIndex * 3;
+								vnx += faceNormals[ normalIndex     ];
+								vny += faceNormals[ normalIndex + 1 ];
+								vnz += faceNormals[ normalIndex + 2 ];
+								break;
+							}
 						}
 					}
+
+					/*
+					 * Normalize vertex normal.
+					 */
+					if ( ( vnx != 0.0 ) || ( vny != 0.0 ) || ( vnz != 0.0 ) )
+					{
+						final double l = Math.sqrt( vnx * vnx + vny * vny + vnz * vnz );
+						vnx /= l;
+						vny /= l;
+						vnz /= l;
+					}
+
+					final int ni = pointIndex * 3;
+					vertexNormals[ ni     ] = vnx;
+					vertexNormals[ ni + 1 ] = vny;
+					vertexNormals[ ni + 2 ] = vnz;
 				}
 
-				/*
-				 * Normalize vertex normal.
-				 */
-				if ( vnx != 0 || vny != 0 || vnz != 0 )
-				{
-					final double l = Math.sqrt( vnx * vnx + vny * vny + vnz * vnz );
-					vnx /= l;
-					vny /= l;
-					vnz /= l;
-				}
-
-				final int ni = pointIndex * 3;
-				vertexNormals[ ni     ] = vnx;
-				vertexNormals[ ni + 1 ] = vny;
-				vertexNormals[ ni + 2 ] = vnz;
+				_vertexNormalsDirty = false;
 			}
 
 			/*
@@ -290,7 +305,7 @@ public class Object3D
 				final double ny = faceNormals[ normalIndex + 1 ];
 				final double nz = faceNormals[ normalIndex + 2 ];
 
-				if ( nx != 0 || ny != 0 || nz != 0 )
+				if ( ( nx != 0.0 ) || ( ny != 0.0 ) || ( nz != 0.0 ) )
 				{
 					final double l = Math.sqrt( nx * nx + ny * ny + nz * nz );
 
@@ -299,8 +314,9 @@ public class Object3D
 					faceNormals[ normalIndex + 2 ] = nz / l;
 				}
 			}
+
+			_faceNormalsDirty = false;
 		}
-		_normalsDirty = false;
 	}
 
 	/**
@@ -392,7 +408,7 @@ public class Object3D
 	 */
 	public final double[] getFaceNormals()
 	{
-		if ( _normalsDirty )
+		if ( _faceNormalsDirty )
 			calculateNormals();
 
 		return _faceNormals;
@@ -428,8 +444,9 @@ public class Object3D
 			newCoords[ index + 1 ] = y;
 			newCoords[ index + 2 ] = z;
 
-			_pointCoords  = newCoords;
-			_normalsDirty = true;
+			_pointCoords = newCoords;
+
+			_vertexNormalsDirty = true;
 		}
 
 		return index / 3;
@@ -450,7 +467,7 @@ public class Object3D
 	/**
 	 * Get coordinates of all points in this object.
 	 *
-	 * @return  Float array with triplet for each point in this object.
+	 * @return  Point coordinates (one triplet per point).
 	 */
 	public final double[] getPointCoords()
 	{
@@ -462,31 +479,42 @@ public class Object3D
 	 * no faces have been added yet, since the object integrity is otherwise
 	 * lost.
 	 *
-	 * @param   pointCoords     Float array with triplet for each point.
+	 * @param   pointCoords     Point coordinates (one triplet per point).
 	 *
 	 * @throws  IllegalStateException if faces have been added to the object.
 	 */
 	public final void setPointCoords( final double[] pointCoords )
 	{
-		if ( !_faces.isEmpty() )
-			throw new IllegalStateException( "can't set coordinates after adding faces" );
-
 		_pointCoords = pointCoords;
-		_normalsDirty = true;
+
+		_vertexNormalsDirty = true;
+		_faceNormalsDirty   = true;
 	}
 
 	/**
-	 * Get transformed vertex normals. Vertex normals are pseudo-normals based
-	 * on average face normals at common points.
+	 * Get vertex normals. Vertex normals are pseudo-normals based on average
+	 * face normals at common points.
 	 *
-	 * @return  Transformed vertex normals.
+	 * @return  Vertex normals (one triplet per vertex).
 	 */
 	public final double[] getVertexNormals()
 	{
-		if ( _normalsDirty )
+		if ( _vertexNormalsDirty )
 			calculateNormals();
 
 		return _vertexNormals;
+	}
+
+	/**
+	 * Set vertex normals. Vertex normals are pseudo-normals based on average
+	 * face normals at common points.
+	 *
+	 * @param   vertexNormals   Vertex normals (one triplet per vertex).
+	 */
+	public final void setVertexNormals( final double[] vertexNormals )
+	{
+		_vertexNormals = vertexNormals;
+		_vertexNormalsDirty = false;
 	}
 
 	/**
@@ -549,7 +577,9 @@ public class Object3D
 	protected final void addFace( final Face3D face )
 	{
 		_faces.add( face );
-		_normalsDirty = true;
+
+		_faceNormalsDirty   = true;
+		_vertexNormalsDirty = true;
 	}
 
 	/**
