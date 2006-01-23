@@ -42,7 +42,7 @@ public final class ControlEventQueue
 	private final List _controls;
 
 	/**
-	 * Construct new ControlEventQueue.
+	 * Construct new control event queue.
 	 */
 	public ControlEventQueue()
 	{
@@ -53,20 +53,28 @@ public final class ControlEventQueue
 	 * Adds a {@link Control} at the end of the list of controls.
 	 *
 	 * @param   control     The {@link Control} to add
+	 *
+	 * @throws  NullPointerException if <code>control</code> is <code>null</code>.
 	 */
 	public void addControl( final Control control )
 	{
-		addControl( _controls.size() , control);
+		addControl( _controls.size() , control );
 	}
 
 	/**
 	 * Adds a {@link Control} at the specified position in the list of controls.
 	 *
 	 * @param   index       The index at which to place the control
-	 * @param   control     The Control to add
+	 * @param   control     The {@link Control} to add
+	 *
+	 * @throws  NullPointerException if <code>control</code> is <code>null</code>.
+	 * @throws  IndexOutOfBoundsException if the index is out of range.
 	 */
 	public void addControl( final int index , final Control control )
 	{
+		if ( control == null )
+			throw new NullPointerException( "control" );
+
 		_controls.add( index , control );
 	}
 
@@ -83,7 +91,7 @@ public final class ControlEventQueue
 	/**
 	 * Returns the number of {@link Control}s in this queue.
 	 *
-	 * @return  the number of {@link Control}s in the queue.
+	 * @return  Number of {@link Control}s in the queue.
 	 */
 	public int size()
 	{
@@ -98,15 +106,15 @@ public final class ControlEventQueue
 	 * to the next {@link Control} in the list.<p> {@link Control}s are allowed
 	 * modify an event.
 	 *
-	 * @param   e   The {@link ControlEvent} to dispatch.
+	 * @param   event   The {@link ControlEvent} to dispatch.
 	 */
-	void dispatchEvent( final ControlEvent e )
+	void dispatchEvent( final ControlEvent event )
 	{
-		ControlEvent event = e;
-		for ( int i = 0 ; i < _controls.size() && event != null ; i++ )
+		ControlEvent filteredEvent = event;
+		for ( int i = 0 ; ( filteredEvent != null ) && ( i < _controls.size() ) ; i++ )
 		{
 			final Control control = (Control)_controls.get( i );
-			event = control.handleEvent( event );
+			filteredEvent = control.handleEvent( filteredEvent );
 		}
 	}
 }
