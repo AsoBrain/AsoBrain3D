@@ -55,11 +55,11 @@ public final class Object3DBuilder
 	}
 
 	/**
-	 * Get {@link Node3D} that was build.
+	 * Get {@link Node3D} that was built.
 	 *
-	 * @return  The {@link Node3D} that was build.
+	 * @return  The {@link Node3D} that was built.
 	 */
-	public Node3D getScene()
+	public Node3D getObject3D()
 	{
 		return _target;
 	}
