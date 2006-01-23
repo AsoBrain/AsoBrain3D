@@ -33,21 +33,20 @@ package ab.j3d.model;
 public final class Camera3D
 	extends Node3D
 {
-
 	/**
-	 * Field of view (opening angle/aperture of camera) in radians. This only
-	 * applies to perspective projections. Typically, this is set to 45 decimal
-	 * degrees.
-	 */
-	private double _fieldOfView;
-
-	/**
-	 * Linear zoom factor.
+	 * Linear zoom factor. View units are multiplied by this factor to get
+	 * rendered units.
 	 */
 	private double _zoomFactor;
 
 	/**
-	 * Constructor with scale 1:1 and a field of view of 45 decimal degrees.
+	 * Aperture or opening angle of camera in radians. This only applies to
+	 * perspective projections. Typically, this is set to 45 decimal degrees.
+	 */
+	private double _aperture;
+
+	/**
+	 * Constructor with zoom factor 1:1 and a aperture of 45 decimal degrees.
 	 */
 	public Camera3D()
 	{
@@ -55,43 +54,42 @@ public final class Camera3D
 	}
 
 	/**
-	 * Constructor with specified zoom factor and field of view.
+	 * Constructor with specified zoom factor and aperture.
 	 *
-	 * @param   zoomFactor      Linear zoom factor.
-	 * @param   fieldOfView     Camera's field of view in radians.
+	 * @param   zoomFactor  Linear zoom factor.
+	 * @param   aperture    Aperture or opening angle of camera in radians.
 	 */
-	public Camera3D( final double zoomFactor , final double fieldOfView )
+	public Camera3D( final double zoomFactor , final double aperture )
 	{
-		_zoomFactor  = zoomFactor;
-		_fieldOfView = fieldOfView;
+		_zoomFactor = zoomFactor;
+		_aperture   = aperture;
 	}
 
 	/**
-	 * Get field of view (opening angle/aperture of camera) in radians. This
-	 * only applies to perspective projections. Typically, this is set to 45
-	 * decimal degrees.
+	 * Get aperture or opening angle of camera in radians. This only applies to
+	 * perspective projections. Typically, this is set to 45 decimal degrees.
 	 *
-	 * @return  Field of view in radians.
+	 * @return  Aperture or opening angle of camera in radians.
 	 */
-	public double getFieldOfView()
+	public double getAperture()
 	{
-		return _fieldOfView;
+		return _aperture;
 	}
 
 	/**
-	 * Set field of view (opening angle/aperture of camera) in radians. This
-	 * only applies to perspective projections. Typically, this is set to 45
-	 * decimal degrees.
+	 * Set aperture or opening angle of camera in radians. This only applies to
+	 * perspective projections. Typically, this is set to 45 decimal degrees.
 	 *
-	 * @param   fieldOfView     Field of view in radians.
+	 * @param   aperture    Aperture or opening angle of camera in radians.
 	 */
-	public void setFieldOfView( final double fieldOfView )
+	public void setAperture( final double aperture )
 	{
-		_fieldOfView = fieldOfView;
+		_aperture = aperture;
 	}
 
 	/**
-	 * Get linear zoom factor.
+	 * Get linear zoom factor. View units are multiplied by this factor to get
+	 * rendered units.
 	 *
 	 * @return  Linear zoom factor.
 	 */
@@ -101,7 +99,8 @@ public final class Camera3D
 	}
 
 	/**
-	 * Set linear zoom factor.
+	 * Set linear zoom factor. View units are multiplied by this factor to get
+	 * rendered units.
 	 *
 	 * @param   zoomFactor  Linear zoom factor.
 	 */
