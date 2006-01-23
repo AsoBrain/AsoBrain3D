@@ -44,7 +44,7 @@ import ab.j3d.view.ViewModel;
  * @version $Revision$ $Date$
  */
 public class TestSceneInputTranslator
-extends TestCase
+	extends TestCase
 {
 	/**
 	 * Name of this class.
@@ -57,13 +57,6 @@ extends TestCase
 	private SceneInputTranslator _translator;
 	private ControlEvent _lastEvent;
 
-	private Object3D _plane1;
-	private Object3D _plane2;
-	private Matrix3D _transform1;
-	private Matrix3D _transform2;
-
-	private Node3DCollection _collection;
-
 	/**
 	 * Setup text fixture.
 	 *
@@ -74,22 +67,19 @@ extends TestCase
 	{
 		super.setUp();
 
-		_collection = new Node3DCollection();
+		final Node3DCollection collection = new Node3DCollection();
 
-//		final Matrix3D viewTransform = Matrix3D.INIT
-//		.set( 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, -1.0, 0.0, -500 );
+		final Object3D plane1 = createPlane( 100.0 );
+		final Object3D plane2 = createPlane( 100.0 );
 
-		_plane1 = createPlane( 100.0 );
-		_plane1.setTag( "Plane 1" );
-		_transform1 = Matrix3D.getTransform( 90.0, 0.0, 0.0, 0.0, 0.0, 0.0 );
-//		.multiply( viewTransform );
-		_collection.add( _transform1, _plane1 );
+		plane1.setTag( "Plane 1" );
+		plane2.setTag( "Plane 2" );
 
-		_plane2 = createPlane( 100.0 );
-		_plane2.setTag( "Plane 2" );
-		_transform2 = Matrix3D.getTransform( 0.0, 0.0, 0.0, 0.0, 0.0, -75.0 );
-//		.multiply( viewTransform );
-		_collection.add( _transform2, _plane2 );
+		final Matrix3D transform1 = Matrix3D.getTransform( 90.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0   );
+		final Matrix3D transform2 = Matrix3D.getTransform( 0.0  , 0.0 , 0.0 , 0.0 , 0.0 , -75.0 );
+
+		collection.add( transform1 , plane1 );
+		collection.add( transform2 , plane2 );
 
 		_translator = new SceneInputTranslator(new JPanel()){
 
@@ -99,7 +89,7 @@ extends TestCase
 
 					protected Node3DCollection getScene()
 					{
-						return _collection;
+						return collection;
 					}
 
 					protected Object getIDForObject( final Object3D object )
@@ -111,12 +101,12 @@ extends TestCase
 
 			protected Projector getProjector()
 			{
-				return Projector.createInstance( Projector.PERSPECTIVE, 100, 100, 1.0, ViewModel.M, 10.0, 1000.0, Math.toRadians( 45.0 ) , 1.0);
+				return Projector.createInstance( Projector.PERSPECTIVE , 100 , 100 , 1.0 , ViewModel.M , 10.0 , 1000.0 , Math.toRadians( 45.0 ) , 1.0 );
 			}
 
 			protected Matrix3D getViewTransform()
 			{
-				return Matrix3D.INIT.set( 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, -1.0, 0.0, -500.0 );
+				return Matrix3D.INIT.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , -1.0 , 0.0 , -500.0 );
 			}
 
 			protected List getIDsForFaces( final List faces )
@@ -164,25 +154,27 @@ extends TestCase
 	{
 		System.out.println( CLASS_NAME + ".testGetIntersectionsAt()" );
 
+		final SceneInputTranslator translator = _translator;
+
 		System.out.println( "Selecting Plane 1" );
-		List selection = _translator.getIntersectionsAt( 50, 50);
-		assertEquals( "The number of selected items is not 2, but " + selection.size() , 2, selection.size() );
+		List selection = translator.getIntersectionsAt( 50 , 50 );
+		assertEquals( "The number of selected items is not 2, but " + selection.size() , 2 , selection.size() );
 		Object tag = ((Intersection)selection.get( 0 )).getID();
 		assertEquals( "The selected object should have the tag Plane 1" , "Plane 1" , tag);
 
 		System.out.println( "Selecting Plane 1" );
-		selection = _translator.getIntersectionsAt( 40, 40);
-		assertEquals( "The number of selected items is not 2, but " + selection.size() , 2, selection.size() );
+		selection = translator.getIntersectionsAt( 40 , 40 );
+		assertEquals( "The number of selected items is not 2, but " + selection.size() , 2 , selection.size() );
 		tag = ((Intersection)selection.get( 0 )).getID();
 		assertEquals( "The selected object should have the tag Plane 1" , "Plane 1" , tag);
 
 		System.out.println( "Selecting nothing" );
-		selection = _translator.getIntersectionsAt( 50, 63);
-		assertEquals( "The number of selected items is not 0, but " + selection.size() , 0, selection.size() );
+		selection = translator.getIntersectionsAt( 50 , 63 );
+		assertEquals( "The number of selected items is not 0, but " + selection.size() , 0 , selection.size() );
 
 		System.out.println( "Selecting Plane 2" );
-		selection = _translator.getIntersectionsAt( 50, 67);
-		assertEquals( "The number of selected items is not 2, but " + selection.size() , 2, selection.size() );
+		selection = translator.getIntersectionsAt( 50 , 67 );
+		assertEquals( "The number of selected items is not 2, but " + selection.size() , 2 , selection.size() );
 		tag = ((Intersection)selection.get( 0 )).getID();
 		assertEquals( "The selected object should have the tag Plane 2" , "Plane 2" , tag);
 
@@ -199,27 +191,27 @@ extends TestCase
 		System.out.println( CLASS_NAME + ".testMousePressed()" );
 
 		int modifiers = MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.SHIFT_DOWN_MASK;
-		MouseEvent e = new MouseEvent(new JPanel() , MouseEvent.MOUSE_PRESSED , 0L, modifiers, 0, 0, 1, false, MouseEvent.BUTTON1);
+		MouseEvent e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_PRESSED , 0L , modifiers , 0 , 0 , 1 , false , MouseEvent.BUTTON1 );
 		_translator.mousePressed( e );
 
 		assertTrue("The last event is not a MouseControlEvent", _lastEvent instanceof MouseControlEvent);
 		MouseControlEvent event = (MouseControlEvent)_lastEvent;
 
-		assertEquals( "The mouse button is not 1", MouseControlEvent.BUTTON1 , event.getButton() );
+		assertEquals( "The mouse button is not 1" , MouseControlEvent.BUTTON1 , event.getButton() );
 		assertEquals( "The event type should be MOUSE_PRESSED", MouseControlEvent.MOUSE_PRESSED , event.getType() );
 		final int lastNumber = event.getNumber();
 
 
 		modifiers = MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.CTRL_DOWN_MASK;
-		e = new MouseEvent(new JPanel() , MouseEvent.MOUSE_PRESSED , 0L, modifiers, 50, 50, 1, false, MouseEvent.BUTTON2);
+		e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_PRESSED , 0L , modifiers , 50 , 50 , 1 , false , MouseEvent.BUTTON2 );
 		_translator.mousePressed( e );
 
-		assertTrue("The last event is not a MouseControlEvent", _lastEvent instanceof MouseControlEvent);
+		assertTrue( "The last event is not a MouseControlEvent" , _lastEvent instanceof MouseControlEvent );
 		event = (MouseControlEvent)_lastEvent;
 
-		assertEquals( "The mouse button is not 2", MouseControlEvent.BUTTON2 , event.getButton() );
-		assertEquals( "The event type should be MOUSE_PRESSED", MouseControlEvent.MOUSE_PRESSED , event.getType() );
-		assertEquals( "The event number has changed", lastNumber, event.getNumber());
+		assertEquals( "The mouse button is not 2" , MouseControlEvent.BUTTON2 , event.getButton() );
+		assertEquals( "The event type should be MOUSE_PRESSED" , MouseControlEvent.MOUSE_PRESSED , event.getType() );
+		assertEquals( "The event number has changed" , lastNumber , event.getNumber() );
 	}
 
 
@@ -234,26 +226,26 @@ extends TestCase
 		System.out.println( CLASS_NAME + ".testMouseReleased()" );
 
 		int modifiers = MouseEvent.SHIFT_DOWN_MASK;
-		MouseEvent e = new MouseEvent(new JPanel() , MouseEvent.MOUSE_RELEASED , 0L, modifiers, 0, 0, 1, false, MouseEvent.BUTTON1);
+		MouseEvent e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_RELEASED , 0L , modifiers , 0 , 0 , 1 , false , MouseEvent.BUTTON1 );
 		_translator.mouseReleased( e );
 
-		assertTrue("The last event is not a MouseControlEvent", _lastEvent instanceof MouseControlEvent);
+		assertTrue("The last event is not a MouseControlEvent" , _lastEvent instanceof MouseControlEvent);
 		MouseControlEvent event = (MouseControlEvent)_lastEvent;
 
-		assertEquals( "The mouse button is not 1", MouseControlEvent.BUTTON1 , event.getButton() );
-		assertEquals( "The event type should be MOUSE_RELEASED", MouseControlEvent.MOUSE_RELEASED , event.getType() );
+		assertEquals( "The mouse button is not 1" , MouseControlEvent.BUTTON1 , event.getButton() );
+		assertEquals( "The event type should be MOUSE_RELEASED" , MouseControlEvent.MOUSE_RELEASED , event.getType() );
 		final int lastNumber = event.getNumber();
 
 		modifiers = MouseEvent.CTRL_DOWN_MASK;
-		e = new MouseEvent(new JPanel() , MouseEvent.MOUSE_RELEASED , 0L, modifiers, 0, 0, 1, false, MouseEvent.BUTTON3);
+		e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_RELEASED , 0L , modifiers , 0 , 0 , 1 , false , MouseEvent.BUTTON3 );
 		_translator.mouseReleased( e );
 
-		assertTrue("The last event is not a MouseControlEvent", _lastEvent instanceof MouseControlEvent);
+		assertTrue( "The last event is not a MouseControlEvent" , _lastEvent instanceof MouseControlEvent );
 		event = (MouseControlEvent)_lastEvent;
 
-		assertEquals( "The mouse button is not 3", MouseControlEvent.BUTTON3 , event.getButton() );
-		assertEquals( "The event type should be MOUSE_RELEASED", MouseControlEvent.MOUSE_RELEASED , event.getType() );
-		assertEquals( "The event number has not increased", lastNumber + 1, event.getNumber());
+		assertEquals( "The mouse button is not 3" , MouseControlEvent.BUTTON3 , event.getButton() );
+		assertEquals( "The event type should be MOUSE_RELEASED" , MouseControlEvent.MOUSE_RELEASED , event.getType() );
+		assertEquals( "The event number has not increased" , lastNumber + 1 , event.getNumber() );
 
 	}
 
@@ -270,12 +262,12 @@ extends TestCase
 		final Vector3D rb = Vector3D.INIT.set(  halfSize ,  halfSize , 0.0 );
 		final Vector3D lb = Vector3D.INIT.set( -halfSize ,  halfSize , 0.0 );
 
-		final TextureSpec red     = new TextureSpec( Color.red     );
-		final TextureSpec green   = new TextureSpec( Color.green   );
+		final TextureSpec red   = new TextureSpec( Color.red   );
+		final TextureSpec green = new TextureSpec( Color.green );
 
 		final Object3D plane = new Object3D();
-		/* top    */ plane.addFace( new Vector3D[] { lf , lb , rb , rf } , red     , false , false ); // Z =  size
-		/* bottom */ plane.addFace( new Vector3D[] { lb , lf , rf , rb } , green   , false , false ); // Z = -size
+		/* top    */plane.addFace( new Vector3D[]{ lf , lb , rb , rf } , red   , false , false ); // Z =  size
+		/* bottom */plane.addFace( new Vector3D[]{ lb , lf , rf , rb } , green , false , false ); // Z = -size
 
 		return plane;
 	}

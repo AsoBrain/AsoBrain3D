@@ -32,7 +32,7 @@ import ab.j3d.Vector3D;
  * @see Projector
  */
 public class TestProjector
-extends TestCase
+	extends TestCase
 {
 	/**
 	 * Name of this class.
