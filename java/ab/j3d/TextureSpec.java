@@ -183,7 +183,7 @@ public final class TextureSpec
 		textureScale         = 0.0f;
 		ambientReflectivity  = isBlack ? 0.10f : 0.3f;
 		diffuseReflectivity  = isBlack ? 0.15f : 0.3f;
-		specularReflectivity = isBlack ? 0.90f : 0.3f;
+		specularReflectivity = isBlack ? 0.60f : 0.25f;
 		specularExponent     = isBlack ? 16    : 8;
 		grain                = false;
 	}
