@@ -145,42 +145,6 @@ public class TestSceneInputTranslator
 	}
 
 	/**
-	 * Test the {@link SceneInputTranslator#getIntersectionsAt} method.
-	 *
-	 * @throws Exception if the test fails.
-	 */
-	public void testGetIntersectionsAt()
-	throws Exception
-	{
-		System.out.println( CLASS_NAME + ".testGetIntersectionsAt()" );
-
-		final SceneInputTranslator translator = _translator;
-
-		System.out.println( "Selecting Plane 1" );
-		List selection = translator.getIntersectionsAt( 50 , 50 );
-		assertEquals( "The number of selected items is not 2, but " + selection.size() , 2 , selection.size() );
-		Object tag = ((Intersection)selection.get( 0 )).getID();
-		assertEquals( "The selected object should have the tag Plane 1" , "Plane 1" , tag);
-
-		System.out.println( "Selecting Plane 1" );
-		selection = translator.getIntersectionsAt( 40 , 40 );
-		assertEquals( "The number of selected items is not 2, but " + selection.size() , 2 , selection.size() );
-		tag = ((Intersection)selection.get( 0 )).getID();
-		assertEquals( "The selected object should have the tag Plane 1" , "Plane 1" , tag);
-
-		System.out.println( "Selecting nothing" );
-		selection = translator.getIntersectionsAt( 50 , 63 );
-		assertEquals( "The number of selected items is not 0, but " + selection.size() , 0 , selection.size() );
-
-		System.out.println( "Selecting Plane 2" );
-		selection = translator.getIntersectionsAt( 50 , 67 );
-		assertEquals( "The number of selected items is not 2, but " + selection.size() , 2 , selection.size() );
-		tag = ((Intersection)selection.get( 0 )).getID();
-		assertEquals( "The selected object should have the tag Plane 2" , "Plane 2" , tag);
-
-	}
-
-	/**
 	 * Test the {@link SceneInputTranslator#mousePressed} method.
 	 *
 	 * @throws Exception if the test fails.

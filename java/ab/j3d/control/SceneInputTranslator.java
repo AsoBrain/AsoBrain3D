@@ -99,109 +99,130 @@ public abstract class SceneInputTranslator
 
 	/**
 	 * Returns the {@link IntersectionSupport} for this scene. This
-	 * {@link IntersectionSupport} is used by {@link #getIntersectionsAt} to
+	 * {@link IntersectionSupport} is used by {@link #createMouseControlEvent} to
 	 * get the objects beneath the mouse pointer.
 	 *
-	 * @return  The {@link IntersectionSupport} for this scene.
+	 * @return  {@link IntersectionSupport} for this scene.
 	 *
-	 * @see     #getIntersectionsAt
+	 * @see     #createMouseControlEvent
 	 */
 	protected abstract IntersectionSupport getIntersectionSupport();
 
-
 	/**
 	 * Returns the {@link Projector} for this scene. The projector is used by
-	 * {@link #getIntersectionsAt} to convert the mouse click location to view
+	 * {@link #screenToWorld} to convert a location on the screen to world
 	 * coordinates.
 	 *
-	 * @return  The {@link Projector} for this scene.
+	 * @return  {@link Projector} for this scene.
 	 *
-	 * @see     #getIntersectionsAt
+	 * @see     #screenToWorld
 	 */
 	protected abstract Projector getProjector();
 
 	/**
 	 * Returns the current view transform for this scene. The view transform is
-	 * used to transform an intersection line in {@link #getIntersectionsAt}
-	 * from view coordinates to world coordinates.
+	 * used to transform a point in {@link #screenToWorld} from view coordinates
+	 * to world coordinates.
 	 *
 	 * @return  the view transform for this scene.
 	 *
-	 * @see     #getIntersectionsAt
+	 * @see     #screenToWorld
 	 */
 	protected abstract Matrix3D getViewTransform();
 
 	/**
-	 * Returns a list of all {@link Intersection}s for a line cast into the
-	 * world from point <code>clickX</code>, <code>clickY</code>
-	 * on the viewing plane. Returns an empty set if there are no intersections.
-	 * <p>This method calls {@link #getProjector()} to get the projector for the
-	 * scene, {@link #getViewTransform()} to transform the line from view to
-	 * world coordinates, and {@link #getIntersectionSupport()} to get the
-	 * intersection support for this scene. Subclasses do not need to override
-	 * this method, overriding the three other methods should suffice.
+	 * Creates a {@link MouseControlEvent} for a specific {@link MouseEvent}.
+	 * This method calls {@link #screenToWorld} to get the line 'shot' from the
+	 * mouse, and {@link #getIntersectionSupport} to get the
+	 * {@link IntersectionSupport}, which can calculate the objects under the
+	 * mouse.
 	 *
-	 * @param   clickX  The x position of the mouse click
-	 * @param   clickY  The y position of the mouse click
+	 * @param   e               {@link MouseEvent} to create a
+	 *                          {@link MouseControlEvent} for
+	 * @param   eventNumber     Number of the current series of events.
+	 * @param   mouseDragged    Wether or not the mouse has been dragged since
+	 *                          the last mouse press event.
 	 *
-	 * @return  The {@link Intersection}s for a line cast into the world from
-	 *          point clickX, clickY
+	 * @return  a {@link MouseControlEvent} for the specified {@link MouseEvent}
 	 *
-	 * @see     #getProjector
+	 * @see     #_eventNumber
+	 * @see     #_mouseDragged
+	 * @see     #screenToWorld
 	 * @see     #getIntersectionSupport
-	 * @see     #getViewTransform
 	 */
-	protected List getIntersectionsAt( final int clickX , final int clickY )
+	private MouseControlEvent createMouseControlEvent( final MouseEvent e, final int eventNumber, final boolean mouseDragged )
 	{
-		final Projector projector = getProjector();
-
-		Vector3D lineStart = projector.screenToWorld( clickX , clickY , 0.0 );
-		Vector3D linePoint = projector.screenToWorld( clickX , clickY , -100.0 );
-
-		final Matrix3D viewTransform = getViewTransform();
-		final Matrix3D inverseView = viewTransform.inverse();
-		lineStart = inverseView.multiply( lineStart );
-		linePoint = inverseView.multiply( linePoint );
-
 		final IntersectionSupport support = getIntersectionSupport();
 
-		return support.getIntersections( lineStart , linePoint );
+		final int x = e.getX();
+		final int y = e.getY();
+
+		final Vector3D lineStart = screenToWorld( x , y ,    0.0 );
+		final Vector3D linePoint = screenToWorld( x , y , -100.0 );
+
+		final List facesClicked = support.getIntersections( lineStart, linePoint );
+
+		return new MouseControlEvent( e , eventNumber , mouseDragged , facesClicked , lineStart , linePoint );
+	}
+
+	/**
+	 * This method returns the point in the world for a given point on the
+	 * screen. <code>screenX</code> and <code>screenY</code> are the screen
+	 * coordinates, and distance is the distance between the viewing plane and
+	 * the 'unprojected' coordinate.<p>
+	 * This method uses {@link #getProjector} to get the {@link Projector} for
+	 * this scene and {@link #getViewTransform} to get the camera position.
+	 *
+	 * @param   screenX     x-value of the screen coordinate
+	 * @param   screenY     y-value of the screen coordinate.
+	 * @param   distance    distance between the world coordinate and the
+	 *                      viewing plane.
+	 *
+	 * @return  World location for the given screen coordinate.
+	 *
+	 * @see     #getProjector
+	 * @see     #getViewTransform
+	 */
+	private Vector3D screenToWorld( final int screenX , final int screenY , final double distance )
+	{
+		final Projector projector = getProjector();
+		final Matrix3D viewTransform = getViewTransform();
+		final Matrix3D inverseView = viewTransform.inverse();
+
+		Vector3D linePoint = projector.screenToWorld( screenX , screenY , distance );
+		linePoint = inverseView.multiply( linePoint );
+
+		return linePoint;
 	}
 
 	/**
 	 * Called when the mouse has been pressed on the component this translator
-	 * is listening to. A new {@link MouseControlEvent} is generated and
-	 * dispatched to the {@link ControlEventQueue}. To get the objects under the
-	 * mouse pointer, {@link #getIntersectionsAt} is called.
+	 * is listening to. A new {@link MouseControlEvent} is created and
+	 * dispatched to the {@link ControlEventQueue}.
      *
      * @param   e   {@link MouseEvent} that was dispatched
+	 *
+	 * @see     #createMouseControlEvent
 	 */
 	public void mousePressed( final MouseEvent e )
 	{
-		final int x = e.getX();
-		final int y = e.getY();
-		final List facesClicked = getIntersectionsAt( x , y );
-
-		final MouseControlEvent event = new MouseControlEvent( e , _eventNumber , _mouseDragged , facesClicked );
+		final MouseControlEvent event = createMouseControlEvent( e, _eventNumber, _mouseDragged );
 
 		_eventQueue.dispatchEvent( event );
 	}
 
 	/**
 	 * Called when the mouse has been released on the component this translator
-	 * is listening to. A new {@link MouseControlEvent} is generated and
-	 * dispatched to the {@link ControlEventQueue}. To get the objects under the
-	 * mouse pointer, {@link #getIntersectionsAt} is called.
+	 * is listening to. A new {@link MouseControlEvent} is created and
+	 * dispatched to the {@link ControlEventQueue}.
      *
      * @param   e   {@link MouseEvent} that was dispatched
+	 *
+	 * @see     #createMouseControlEvent
 	 */
 	public void mouseReleased( final MouseEvent e )
 	{
-		final int x = e.getX();
-		final int y = e.getY();
-		final List facesClicked = getIntersectionsAt( x , y );
-
-		final MouseControlEvent event = new MouseControlEvent( e , _eventNumber , _mouseDragged , facesClicked );
+		final MouseControlEvent event = createMouseControlEvent( e, _eventNumber, _mouseDragged );
 
 		_eventQueue.dispatchEvent( event );
 
@@ -237,23 +258,20 @@ public abstract class SceneInputTranslator
 
 	/**
 	 * Called when the mouse has been dragged on the component this translator
-	 * is listening to. A new {@link MouseControlEvent} is generated and
-	 * dispatched to the {@link ControlEventQueue}. To get the objects under the
-	 * mouse pointer, {@link #getIntersectionsAt} is called.<p>
+	 * is listening to. A new {@link MouseControlEvent} is created and
+	 * dispatched to the {@link ControlEventQueue}. <p>
 	 * Note that, in order to improve performance, only one drag event every 100
 	 * miliseconds is processed. Any others are discarded.
      *
      * @param   e   {@link MouseEvent} that was dispatched
+	 *
+	 * @see     #createMouseControlEvent
 	 */
 	public void mouseDragged( final MouseEvent e ) {
 		final long timeStamp = e.getWhen();
 		if ( timeStamp > _lastDrag + 100L )
 		{
-			final int x = e.getX();
-			final int y = e.getY();
-			final List facesClicked = getIntersectionsAt( x , y );
-
-			final MouseControlEvent event = new MouseControlEvent( e , _eventNumber , true , facesClicked );
+			final MouseControlEvent event = createMouseControlEvent( e, _eventNumber, true );
 
 			_eventQueue.dispatchEvent( event );
 

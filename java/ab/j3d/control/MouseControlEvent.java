@@ -25,6 +25,8 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import ab.j3d.Vector3D;
+
 /**
  * This event indicates that a mouse action has occured on a view component.
  * There are methods to return the x and y coordinates of the mouse location,
@@ -107,6 +109,21 @@ public class MouseControlEvent
 	private List _intersections;
 
 	/**
+	 * Start of the line shot from the mouse pointer location into the 3d world.
+	 *
+	 * @see #_linePoint
+	 */
+	private Vector3D _lineStart;
+
+	/**
+	 * Another point of the line shot from the mouse pointer location into the
+	 * 3d world.
+	 *
+	 * @see #_lineStart
+	 */
+	private Vector3D _linePoint;
+
+	/**
 	 * Creates a new MouseControlEvent.
 	 *
 	 * @param   event           The original mouse event
@@ -117,12 +134,16 @@ public class MouseControlEvent
 	 *                          mouse pointer on the view component. Should be
 	 *                          a list with {@link Intersection}s. If there are
 	 *                          no intersections, this should be an empty list.
+	 * @param lineStart         Start of the line shot from the mouse pointer
+	 *                          location into the 3d world.
+	 * @param linePoint         Another point of the line shot from the mouse
+	 *                          pointer location into the 3d world.
 	 *
 	 * @throws  NullPointerException        if <code>event</code> is null
 	 * @throws  IllegalArgumentException    if the mouse event is not a mouse
 	 *                                      press, release, move or drag event.
 	 */
-	public MouseControlEvent( final MouseEvent event , final int number , final boolean dragged , final List intersections )
+	public MouseControlEvent( final MouseEvent event, final int number, final boolean dragged, final List intersections, final Vector3D lineStart, final Vector3D linePoint )
 	{
 		final int id = event.getID();
 		if ( MOUSE_PRESSED == id || MOUSE_RELEASED == id || MOUSE_MOVED == id || MOUSE_DRAGGED == id )
@@ -138,6 +159,47 @@ public class MouseControlEvent
 		_number = number;
 		_mouseDragged = dragged;
 		_intersections = new ArrayList( intersections );
+		_lineStart = lineStart;
+		_linePoint = linePoint;
+	}
+
+	/**
+	 * Returns a {@link Vector3D} with the location where the line shot from the
+	 * mouse pointer into the 3d world intersects with a given plane. This plane
+	 * is defined by a {@link Vector3D} with a point on the plane and a
+	 * {@link Vector3D} with the plane normal.
+	 *
+	 * @param planeNormal   Normal of the plane to check for intersection
+	 * @param planePoint    A point on the plane to check for intersection
+	 *
+	 * @return  a {@link Vector3D} with the location where the line shot from
+	 *          the mouse pointer intersects with a given plane.
+	 */
+	public Vector3D getIntersectionWithPlane( final Vector3D planeNormal, final Vector3D planePoint )
+	{
+		/*
+		 For an explanation of the math used here, see this site:
+		 http://astronomy.swin.edu.au/~pbourke/geometry/planeline/
+		*/
+		Vector3D result = null;
+
+		final Vector3D lineStart = _lineStart;
+		final Vector3D linePoint = _linePoint;
+
+		final double part1 = Vector3D.dot( planeNormal , planePoint.minus( lineStart ) );
+		final double part2 = Vector3D.dot( planeNormal , linePoint.minus( lineStart ) );
+
+		final double intersection = part1 / part2;
+
+		if ( intersection > 0.0 )
+		{
+			final double intX = lineStart.x + intersection * ( linePoint.x - lineStart.x );
+			final double intY = lineStart.y + intersection * ( linePoint.y - lineStart.y );
+			final double intZ = lineStart.z + intersection * ( linePoint.z - lineStart.z );
+			result = Vector3D.INIT.set( intX, intY, intZ );
+		}
+
+		return result;
 	}
 
 	/**
