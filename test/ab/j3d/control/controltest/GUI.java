@@ -24,9 +24,6 @@ import java.awt.Container;
 import java.awt.BorderLayout;
 import javax.swing.JFrame;
 import javax.swing.JSplitPane;
-import javax.swing.JToolBar;
-import javax.swing.JToggleButton;
-import javax.swing.ButtonGroup;
 
 import ab.j3d.control.Control;
 import ab.j3d.control.controltest.model.Model;
@@ -57,9 +54,9 @@ public class GUI
 		final Container contentPane = frame.getContentPane();
 		contentPane.setLayout( new BorderLayout() );
 
-		final View3D view1 = new View3D( model3D , View3D.TOP_VIEW         , View3D.PERSPECTIVE_PROJECTION );
-		final View3D view2 = new View3D( model3D , View3D.FRONT_VIEW       , View3D.PERSPECTIVE_PROJECTION );
-		final View3D view3 = new View3D( model3D , View3D.LEFT_VIEW        , View3D.PERSPECTIVE_PROJECTION );
+		final View3D view1 = new View3D( model3D , View3D.TOP_VIEW         , View3D.PARALLEL_PROJECTION );
+		final View3D view2 = new View3D( model3D , View3D.FRONT_VIEW       , View3D.PARALLEL_PROJECTION );
+		final View3D view3 = new View3D( model3D , View3D.LEFT_VIEW        , View3D.PARALLEL_PROJECTION );
 		final View3D view4 = new View3D( model3D , View3D.PERSPECTIVE_VIEW , View3D.PERSPECTIVE_PROJECTION );
 
 		final JSplitPane topSplit      = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT , view1.getComponent() , view2.getComponent() );
@@ -67,14 +64,17 @@ public class GUI
 		final JSplitPane verticalSplit = new JSplitPane( JSplitPane.VERTICAL_SPLIT   , topSplit              , bottomSplit         );
 		contentPane.add( verticalSplit , BorderLayout.CENTER );
 
-		final JToolBar toolBar = createToolBar();
-		contentPane.add( toolBar , BorderLayout.NORTH );
-
 		final SelectionControl selectionControl = new SelectionControl( main );
 		view1.addControl( selectionControl );
 		view2.addControl( selectionControl );
 		view3.addControl( selectionControl );
 		view4.addControl( selectionControl );
+
+		final MoveControl moveControl = new MoveControl( main );
+		view1.addControl( moveControl );
+		view2.addControl( moveControl );
+		view3.addControl( moveControl );
+		view4.addControl( moveControl );
 
 		frame.setBounds( 200 , 0 , 1200 , 1000 );
 		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
@@ -85,44 +85,4 @@ public class GUI
 		verticalSplit.setDividerLocation( 0.5 );
 	}
 
-	/**
-	 * Creates the {@link JToolBar} for this application.
-	 *
-	 * @return  {@link JToolBar} for this application.
-	 */
-	private static JToolBar createToolBar()
-	{
-		final JToolBar result = new JToolBar( "Actions" );
-		final ButtonGroup group = new ButtonGroup();
-
-		final JToggleButton moveButton = new JToggleButton( "Move object" );
-		group.add( moveButton );
-		result.add( moveButton );
-
-		final JToggleButton rotateButton = new JToggleButton( "Rotate object" );
-		group.add( rotateButton );
-		result.add( rotateButton );
-
-		final JToggleButton resizeButton = new JToggleButton( "Resize object" );
-		group.add( resizeButton );
-		result.add( resizeButton );
-
-		result.addSeparator();
-
-		final JToggleButton rotateCameraButton = new JToggleButton( "Rotate camera" );
-		group.add( rotateCameraButton );
-		result.add( rotateCameraButton );
-
-		final JToggleButton moveCameraButton = new JToggleButton( "Move camera" );
-		group.add( moveCameraButton );
-		result.add( moveCameraButton );
-
-		final JToggleButton zoomCameraButton = new JToggleButton( "Zoom camera" );
-		group.add( zoomCameraButton );
-		result.add( zoomCameraButton );
-
-		rotateCameraButton.setSelected( true );
-
-		return result;
-	}
 }
