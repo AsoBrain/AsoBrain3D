@@ -23,8 +23,8 @@ package ab.j3d.control.controltest;
 import java.awt.Component;
 
 import ab.j3d.Vector3D;
+import ab.j3d.model.Camera3D;
 import ab.j3d.control.Control;
-import ab.j3d.view.FromToViewControl;
 import ab.j3d.view.ViewModelView;
 import ab.j3d.view.ViewControl;
 import ab.j3d.view.Projector;
@@ -88,7 +88,7 @@ public class View3D
 	/**
 	 * The {@link ViewControl} that controls the camera position.
 	 */
-	private final FromToViewControl _viewControl;
+	private final FixedViewControl _viewControl;
 
 	/**
 	 * Construct new View3D.
@@ -101,7 +101,7 @@ public class View3D
 	 */
 	public View3D( final Model3D model , final int viewType , final int perspective)
 	{
-		_viewControl = new FromToViewControl( 100.0 );
+		_viewControl = new FixedViewControl( 100.0 );
 
 		_view = model.createView( this , _viewControl);
 		_component = _view.getComponent();
@@ -124,7 +124,7 @@ public class View3D
 	 * Sets wether this view should have perspective projection
 	 * (<code>true</code>) or parallel projection (<code>false</code>).
 	 *
-	 * @param projection
+	 * @param   projection  Wether this view should have perspective projection.
 	 */
 	public void setProjection( final int projection )
 	{
@@ -134,7 +134,10 @@ public class View3D
 		}
 		else if ( PARALLEL_PROJECTION == projection )
 		{
+			final Camera3D camera = _view.getCamera();
+
 			_view.setProjectionPolicy( Projector.PARALLEL );
+			camera.setZoomFactor( 0.004 );
 		}
 		else
 		{
@@ -158,15 +161,15 @@ public class View3D
 		switch( viewType ){
 
 			case TOP_VIEW :
-				from = Vector3D.INIT.set( 0.0 , 0.0 , 100.0 );
+				from = Vector3D.INIT.set( 0.0 , 0.0 , 200.0 );
 				break;
 
 			case FRONT_VIEW :
-				from = Vector3D.INIT.set( 0.0 , -100.0 , 0.0 );
+				from = Vector3D.INIT.set( 0.0 , -200.0 , 0.0 );
 				break;
 
 			case LEFT_VIEW :
-				from = Vector3D.INIT.set( -100.0 , 0.0 , 0.0 );
+				from = Vector3D.INIT.set( -200.0 , 0.0 , 0.0 );
 				break;
 
 			case PERSPECTIVE_VIEW :
