@@ -20,8 +20,8 @@
 package ab.j3d.pov;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Image;
+import java.util.ArrayList;
+import java.util.List;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
@@ -29,22 +29,16 @@ import ab.j3d.Vector3D;
 import ab.j3d.model.Box3D;
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Cylinder3D;
-import ab.j3d.model.ExtrudedObject2D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 import ab.j3d.model.Sphere3D;
-import ab.j3d.view.ViewModel;
-import ab.j3d.view.ViewModelNode;
-import ab.j3d.view.ViewModelView;
-
-import com.numdata.oss.ui.ImageTools;
 
 /**
- * This class can be used to convert an AB-scene ({@link ViewModel}) to a
- * POV-Ray scene ({@link PovScene}).
+ * This class can be used to convert a 3D scene from <code>ab.j3d.model</code>
+ * into a POV-Ray scene ({@link PovScene}).
  *
  * @author  Rob Veneberg
  * @version $Revision$ $Date$
@@ -77,238 +71,209 @@ public final class AbToPovConverter
 	}
 
 	/**
-	 * Workhorse of the converter. First the model is converted to a
-	 * {@link Node3DCollection} and then all individual nodes are converted.
-	 * Objects with texture mapping and/or multiple textures and extruded
-	 * objects are converted as {@link Object3D}'s.
+	 * Method to check if an {@link Object3D} contains multiple textures and/or
+	 * texture mapping.
 	 *
-	 * @param viewModel The AB-model to be converted to a POV-Ray scene.
-	 * @return The resulting {@link PovScene} object.
+	 * @param   object  The {@link Object3D} to inspect.
+	 *
+	 * @return  <code>true</code> if the {@link Object3D} contains multiple
+	 *          texture and/or texture mapping;
+	 *          <code>false</code> otherwise.
 	 */
-	public PovScene convert( final ViewModel viewModel )
+	private static boolean containsMultipleTexturesOrMapping( final Object3D object )
 	{
-		final PovScene         scene = _scene;
-		final Node3DCollection nodes = getNode3DCollection( viewModel );
+		boolean result = false;
+
+		final int faceCount = object.getFaceCount();
+		TextureSpec lastTexture = null;
+
+		for ( int i = 0 ; !result && ( i < faceCount ) ; i++ )
+		{
+			final Face3D      face    = object.getFace( i );
+			final TextureSpec texture = face.getTexture();
+
+			if ( texture != null )
+			{
+				result = ( ( lastTexture != null ) && !lastTexture.equals( texture ) ) || texture.isTexture();
+				lastTexture = texture;
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Work horse of the converter. Takes a {@link Node3DCollection} and then
+	 * converts all individual nodes. Objects with texture mapping and/or
+	 * multiple textures and extruded objects are converted as
+	 * {@link Object3D}'s.
+	 *
+	 * @param   nodes   Nodes that need to be converted.
+	 *
+	 * @return  The resulting {@link PovScene} object.
+	 */
+	public PovScene convert( final Node3DCollection nodes )
+	{
+		final PovScene scene = _scene;
 
 		for ( int i = 0 ; i < nodes.size() ; i++ )
 		{
 			final Node3D   node      = nodes.getNode( i );
 			final Matrix3D transform = nodes.getMatrix( i );
 
-			if ( node instanceof Object3D )
+			if ( node instanceof Camera3D )
 			{
-				final Object3D object = (Object3D)node;
-
-				if ( containsTextures( object ) || object instanceof ExtrudedObject2D )
-				{
-					scene.add( convertObject3D( object , transform ) );
-					continue;
-				}
-
-				if ( object instanceof Box3D )
-				{
-					scene.add( convertBox3D( (Box3D)object ) );
-				}
-				else if ( object instanceof Sphere3D )
-				{
-					scene.add( convertSphere3D( (Sphere3D)object ) );
-				}
-				else if ( object instanceof Cylinder3D )
-				{
-					scene.add( convertCylinder3D( (Cylinder3D)object ) );
-				}
-				else
-				{
-					scene.add( convertObject3D( object , transform ) );
-				}
+//				scene.add( convertCamera3D( transform , (Camera3D)node , 1.0 ) );
 			}
-			else if (node instanceof Light3D )
+			else if ( node instanceof Light3D )
 			{
-				//scene.add( convertLight3D( (Light3D)node , transform ) );
+				scene.add( convertLight3D( transform , (Light3D)node ) );
 			}
-			else if (node instanceof Camera3D )
+			else if ( node instanceof Box3D )
 			{
-				//final Camera3D camera = (Camera3D)node;
-				//scene.add( convertCamera3D( camera ) , transform );
+				scene.add( convertBox3D( transform , (Box3D)node ) );
+			}
+			else if ( node instanceof Cylinder3D )
+			{
+				scene.add( convertCylinder3D( transform , (Cylinder3D)node ) );
+			}
+			else if ( node instanceof Sphere3D )
+			{
+				scene.add( convertSphere3D( transform , (Sphere3D)node ) );
+			}
+//			else if ( node instanceof ExtrudedObject2D ) // not optimized support available
+//			{
+//				scene.add( convertExtrudedObject2D( transform , (ExtrudedObject2D)node ) );
+//			}
+			else if ( node instanceof Object3D )
+			{
+				scene.add( convertObject3D( transform, (Object3D)node ) );
 			}
 		}
 
-		final Color    color    = new Color( 155 , 155 , 145 );
+		final PovVector color = new PovVector( new Color( 155 , 155 , 145 ) );
 
-		PovLight povLight = new PovLight( "light1" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
-		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( 5000.0 , -5000.0 , 6000.0 ) ) );
-		povLight.adaptive = 1.0;
-		scene.add( povLight );
-
-		povLight = new PovLight( "light2" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
-		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( -5000.0 , -5000.0 , 6000.0 ) ) );
-		povLight.adaptive = 1.0;
-		scene.add( povLight );
-
-		povLight = new PovLight( "light3" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
-		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( -5000.0 , 5000.0 , 6000.0 ) ) );
-		povLight.adaptive = 1.0;
-		scene.add( povLight );
-
-		povLight = new PovLight( "light4" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
-		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( 5000.0 , 5000.0 , 6000.0 ) ) );
-		povLight.adaptive = 1.0;
-		scene.add( povLight );
+		scene.add( new PovLight( "light1" ,  5000.0 , -5000.0 , 6000.0 , color , true ) );
+		scene.add( new PovLight( "light2" , -5000.0 , -5000.0 , 6000.0 , color , true ) );
+		scene.add( new PovLight( "light3" , -5000.0 ,  5000.0 , 6000.0 , color , true ) );
+		scene.add( new PovLight( "light4" ,  5000.0 ,  5000.0 , 6000.0 , color , true ) );
 
 		/*
-		povLight = new PovLight( "light2" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
-		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( 5000.0 , -5100.0 , 6000.0 ) ) );
-		povLight.adaptive = 1.0;
-		scene.add( povLight );
-
-		povLight = new PovLight( "light3" , 0.0 , 0.0 , 0.0 , new PovVector( color ) , true );
-		povLight.setTransform( new PovMatrix( Matrix3D.INIT.setTranslation( 5000.0 , -5200.0 , 6000.0 ) ) );
-		povLight.adaptive = 1.0;
-		scene.add( povLight );
+		scene.add( new PovLight( "light2" , 5000.0 , -5100.0 , 6000.0 , color , true ) );
+		scene.add( new PovLight( "light3" , 5000.0 , -5200.0 , 6000.0 , color , true ) );
 		*/
-
-		/*
-		 * Best value for pc's.
-		 */
-		scene.gamma = 2.2f;
 
 		return scene;
 	}
 
 	/**
-	 * The AB-tree is traversed and all leafs are gathered
-	 * in a {@link Node3DCollection}.
-	 *
-	 * @param viewModel The model to be converted.
-	 * @return The resulting {@link Node3DCollection}.
-	 */
-	private static Node3DCollection getNode3DCollection( final ViewModel viewModel )
-	{
-		final Node3DCollection nodeCollection = new Node3DCollection();
-		final Object[]         ids            = viewModel.getViewIDs();
-		final ViewModelView    view           = viewModel.getView( ids[ 0 ] );
-
-		if ( view != null )
-		{
-			final Object[] nodeIDs = viewModel.getNodeIDs();
-
-			for ( int i = 0 ; i < nodeIDs.length ; i++ )
-			{
-				final Object        id         = nodeIDs[ i ];
-				final ViewModelNode node       = viewModel.getNode( id );
-				final Matrix3D      node2model = node.getTransform();
-				final Node3D        node3D     = node.getNode3D();
-
-				node3D.gatherLeafs( nodeCollection , Node3D.class , node2model , false );
-			}
-		}
-
-		return nodeCollection;
-	}
-
-	/**
-	 * The {@link Camera3D} is not fully implemented yet in AB. The
-	 * {@link PovCamera} is temporarily constructed based on data obtained
-	 * from the view.
-	 *
-	 * //@param camera The {@link Camera3D} object to be converted.
-	 * //@param transform The node2model transform.
-	 * @param view The view to get the camera data from.
-	 * @return The resulting {@link PovCamera} object.
-	 */
-	public static PovCamera convertCamera3D( /* final Camera3D camera , final Matrix3D transform */ final ViewModelView view )
-	{
-		//@TODO Convert camera when Camera3D class has been fully integrated.
-
-		Matrix3D viewTransform = view.getViewTransform();
-
-		final Matrix3D swapYZ = Matrix3D.INIT.set( 1.0 , 0.0 ,  0.0 , 0.0 ,
-		                                           0.0 , 1.0 ,  0.0 , 0.0 ,
-		                                           0.0 , 0.0 , -1.0 , 0.0 );
-
-		viewTransform = swapYZ.multiply( viewTransform.inverse() );
-
-		/*
-		 * The standard ratio used in POV-Ray is 4:3, wich means the rendered
-		 * image will get deformed if resolutions with a ratio other than 4:3
-		 * are used. Since the view does not have a fixed ratio (the user can
-		 * resize the view for example), the ratio also needs to be specified
-		 * in the POV-Ray camera.
-		 */
-		final Component viewComponent = view.getComponent();
-		final double    viewWidth     = (double)viewComponent.getWidth();
-		final double    viewHeight    = (double)viewComponent.getHeight();
-		final double    ratio         = viewWidth / viewHeight;
-		final PovVector right         = new PovVector( ratio , 0.0 , 0.0 );
-
-		final PovCamera povCamera = new PovCamera( "camera" , null , null , right ,  Math.toDegrees( view.getAperture() ) );
-		povCamera.setTransform( new PovMatrix( viewTransform ) );
-
-		return povCamera;
-	}
-
-	/**
 	 * This method constructs a {@link PovBox} from a {@link Box3D} object.
 	 *
-	 * @param box The {@link Box3D} to be converted.
-	 * @return The resulting {@link PovBox} object.
+	 * @param   transform   Transform to apply to node.
+	 * @param   box         The {@link Box3D} to be converted.
+	 *
+	 * @return  The resulting {@link PovGeometry} object.
 	 */
-	public PovBox convertBox3D( final Box3D box )
+	public PovGeometry convertBox3D( final Matrix3D transform , final Box3D box )
 	{
-		final Face3D      face        = box.getFace( 0 );
-		final TextureSpec textureSpec = face.getTexture();
-		final PovTexture  povTexture  = new PovTexture( _textureDirectory , textureSpec );
-		final PovBox      povBox      = new PovBox( "box" , box , povTexture );
+		final PovGeometry result;
 
-		povBox.setTransform( new PovMatrix( box.getTransform() ) );
+		if ( containsMultipleTexturesOrMapping( box ) )
+		{
+			result = convertObject3D( transform , box );
+		}
+		else
+		{
+			final Matrix3D boxTransform = box.getTransform();
 
-		povTexture.reflection = 0.05f;
-		_scene.addTexture( povTexture.name , povTexture );
-		povTexture.setDeclared();
+			final Vector3D   v1      = Vector3D.INIT;
+			final Vector3D   v2      = v1.plus( box.getDX() , box.getDY() , box.getDZ() );
+			final Face3D     face    = box.getFace( 0 );
+			final PovTexture texture = convertTexture( face.getTexture() );
 
-		return povBox;
+			result = new PovBox( ( box.getTag() != null ) ? String.valueOf( box.getTag() ) : null , v1 , v2 , texture );
+			result.setTransform( new PovMatrix( boxTransform.multiply( transform ) ) );
+		}
+
+		return result;
 	}
 
 	/**
-	 * This method constructs a {@link PovSphere} from a {@link Sphere3D} object.
+	 * This method constructs a {@link PovCamera} from a {@link Camera3D} object.
+	 * <p>
+	 * The standard ratio used in POV-Ray is 4:3, wich means the rendered
+	 * image will get deformed if resolutions with a ratio other than 4:3
+	 * are used. Since the resulting image does not have a fixed ratio (the user
+	 * can choose any size, for example), the ratio also needs to be specified
+	 * in the POV-Ray camera.
 	 *
-	 * @param sphere The {@link Sphere3D} to be converted.
-	 * @return The resulting {@link PovSphere object}.
+	 * @param   transform       Camera transform (camera -> model, NOT model->camera/view transform).
+	 * @param   camera          The {@link Camera3D} object to be converted.
+	 * @param   aspectRatio     Aspect ratio of image (for square pixels: width / height).
+	 *
+	 * @return  The resulting {@link PovCamera} object.
 	 */
-	public PovSphere convertSphere3D( final Sphere3D sphere )
+	public static PovCamera convertCamera3D( final Matrix3D transform , final Camera3D camera , final double aspectRatio )
 	{
-		final Face3D      face        = sphere.getFace( 0 );
-		final TextureSpec textureSpec = face.getTexture();
-		final PovTexture  povTexture  = new PovTexture( _textureDirectory , textureSpec );
+		final PovCamera result = new PovCamera(
+			/* name     */ ( camera.getTag() != null ) ? String.valueOf( camera.getTag() ) : null ,
+		    /* location */ null ,
+		    /* lookAt   */ null ,
+		    /* angle    */ new PovVector( aspectRatio , 0.0 , 0.0 ) , Math.toDegrees( camera.getAperture() ) );
 
-		povTexture.reflection = 0.05f;
-		_scene.addTexture( povTexture.name , povTexture );
-		povTexture.setDeclared();
+		result.setTransform( new PovMatrix( new double[]
+			{
+				 transform.xx ,  transform.yx ,  transform.zx ,
+				 transform.xy ,  transform.yy ,  transform.zy ,
+				-transform.xz , -transform.yz , -transform.zz ,
+				 transform.xo ,  transform.yo ,  transform.zo
+			} ) );
 
-		final PovSphere povSphere =  new PovSphere( "sphere" , Vector3D.INIT , sphere.dx / 2.0 , povTexture );
-		povSphere.setTransform( new PovMatrix( sphere.xform ) );
-
-		return povSphere;
+		return result;
 	}
 
 	/**
 	 * This method constructs a {@link PovCylinder} from a {@link Cylinder3D}
 	 * object.
 	 *
-	 * @param cylinder The {@link Cylinder3D} to be converted.
-	 * @return The resulting {@link PovCylinder} object.
+	 * @param   transform   Transform to apply to node.
+	 * @param   cylinder    The {@link Cylinder3D} to be converted.
+	 *
+	 * @return  The resulting {@link PovGeometry} object.
 	 */
-	public PovCylinder convertCylinder3D( final Cylinder3D cylinder )
+	public PovGeometry convertCylinder3D( final Matrix3D transform , final Cylinder3D cylinder )
 	{
-		final Face3D      face        = cylinder.getFace( 0 );
-		final TextureSpec textureSpec = face.getTexture();
-		final PovTexture  povTexture  = new PovTexture( _textureDirectory , textureSpec );
+		final PovGeometry result;
 
-		povTexture.reflection = 0.05f;
-		_scene.addTexture( povTexture.name , povTexture );
-		povTexture.setDeclared();
+		if ( containsMultipleTexturesOrMapping( cylinder ) )
+		{
+			result = convertObject3D( transform , cylinder );
+		}
+		else
+		{
+			final Face3D     face    = cylinder.getFace( 0 );
+			final PovTexture texture = convertTexture( face.getTexture() );
 
-		return new PovCylinder( "cylinder" , cylinder , povTexture );
+			result = new PovCylinder( ( cylinder.getTag() != null ) ? String.valueOf( cylinder.getTag() ) : null , 0.0 , 0.0 , 0.0 , cylinder.height , cylinder.radiusBottom , cylinder.radiusTop , texture );
+			result.setTransform( new PovMatrix( cylinder.xform.multiply( transform ) ) );
+		}
+
+		return result;
+	}
+
+	/**
+	 * This method converts a {@link Light3D} object to a {@link PovLight}
+	 * object.
+	 *
+	 * @param   transform   Transform to apply to node.
+	 * @param   light       The {@link Light3D} object to be converted.
+	 *
+	 * @return  The resulting {@link PovLight} object.
+	 */
+	public static PovLight convertLight3D( final Matrix3D transform , final Light3D light )
+	{
+		//@TODO Convert light when Light3D class is completed.
+		return new PovLight( "light", transform.xo, transform.yo, transform.zo, new PovVector( Color.WHITE ), true );
 	}
 
 	/**
@@ -316,7 +281,7 @@ public final class AbToPovConverter
 	 * All faces are converted to one or more mesh triangles and the face
 	 * textures are uv-mapped to the triangles. For every triangle the first
 	 * vertex is the same (a {@link Face3D} is always convex).
-	 *
+	 * <pre>
 	 *  0  _________ 1
 	 *    |\        |
 	 *    | \       |
@@ -328,148 +293,167 @@ public final class AbToPovConverter
 	 *    |       \ |
 	 *  3 |________\| 2
 	 *
-	 * Triangle 1: ( 0 , 1 , 2 )
+	 * </pre>
+	 * Triangle 1: ( 0 , 1 , 2 )<br>
 	 * Triangle 2: ( 0 , 2 , 3 )
 	 *
-	 * @param object The {@link Object3D} to be converted.
-	 * @param transform The node2model transform.
-	 * @return The resulting {@link PovMesh2} object.
+	 * @param   transform   Transform to apply to node.
+	 * @param   object      The {@link Object3D} to be converted.
+	 *
+	 * @return  The resulting {@link PovMesh2} object.
 	 */
-	public PovMesh2 convertObject3D( final Object3D object , final Matrix3D transform )
+	public PovMesh2 convertObject3D( final Matrix3D transform , final Object3D object )
 	{
-		final PovMesh2 mesh        = new PovMesh2( "mesh2" );
-		final int      numFaces    = object.getFaceCount();
-		final double[] temp        = object.getPointCoords();
-		final double[] pointCoords = transform.transform( temp , null , temp.length / 3 );
+		final PovMesh2 result = new PovMesh2( ( object.getTag() != null ) ? String.valueOf( object.getTag() ) : null );
 
-		for ( int i = 0 ; i < numFaces ; i++ )
+		final int      faceCount   = object.getFaceCount();
+		final int      pointCount  = object.getPointCount();
+		final double[] pointCoords = transform.transform( object.getPointCoords() , null , pointCount );
+
+		final List vertexVectors = new ArrayList( pointCount );
+		for ( int pi = 0 , vi = 0 ; vi < pointCount ; pi += 3 , vi++ )
+			vertexVectors.add( new PovVector( pointCoords[ pi ] , pointCoords[ pi + 1 ] , pointCoords[ pi + 2 ] ) );
+
+		result.setVertexVectors( vertexVectors );
+
+		double[]    vertexNormals = null;
+		TextureSpec lastTexture   = null;
+		int         textureIndex  = 0;
+		double      textureWidth            = 0.0;
+		double      textureHeight            = 0.0;
+		boolean     uvMapping     = false;
+
+		for ( int i = 0 ; i < faceCount ; i++ )
 		{
-			final Face3D      face              = object.getFace( i );
-			final int[]       pointIndices      = face.getPointIndices();
-			final TextureSpec texture           = face.getTexture();
-			final boolean     uvMapping         = texture.isTexture();
-			final int         faceVerticesCount = pointIndices.length;
-			      int         textureWidth      = 0;
-			      int         textureHeight     = 0;
-			      PovVector   firstUvCoord      = null;
-			      double      u;
-			      double      v;
+			final Face3D face        = object.getFace( i );
+			final int    vertexCount = face.getVertexCount();
 
-			if ( uvMapping )
+			if ( vertexCount > 2 )
 			{
-				final Image textureImage = texture.getTextureImage();
-				ImageTools.waitFor( textureImage , ImageTools.SHARED_OBSERVER );
-				textureWidth  = textureImage.getWidth( null );
-				textureHeight = textureImage.getHeight( null );
+				final boolean     smooth       = face.isSmooth();
+				final int[]       pointIndices = face.getPointIndices();
+				final TextureSpec texture      = face.getTexture();
 
 				/*
-				 * If the material has a texture, get first uv-coordinate.
+				 * Require vertex normals for smooth faces.
 				 */
-				u = (double)face.getTextureU( 0 ) / (double)textureWidth;
-				v = (double)face.getTextureV( 0 ) / (double)textureHeight;
+				if ( smooth && ( vertexNormals == null ) )
+				{
+					vertexNormals = transform.rotate( object.getVertexNormals() , null , pointCount );
 
-				firstUvCoord = new PovVector( u , v , 0.0 );
+					final List normalVectors = new ArrayList( pointCount );
+					for ( int pi = 0 , vi = 0 ; vi < pointCount ; pi += 3 , vi++ )
+						normalVectors.add( new PovVector( vertexNormals[ pi ] , vertexNormals[ pi + 1 ] , vertexNormals[ pi + 2 ] ) );
+
+					result.setNormalVectors( normalVectors );
+				}
+
+				/*
+				 * Convert texture.
+				 */
+				if ( texture != lastTexture )
+				{
+					final boolean isTexture = texture.isTexture();
+
+					final int w = isTexture ? texture.getTextureWidth ( null ) : -1;
+					final int h = isTexture ? texture.getTextureHeight( null ) : -1;
+
+					textureWidth  = (double)w;
+					textureHeight = (double)h;
+					uvMapping     = ( ( w > 0 ) && ( h > 0 ) );
+
+					textureIndex = result.getOrAddTextureIndex( convertTexture( texture ) );
+					lastTexture  = texture;
+				}
+
+				/*
+				 * For every triangle, the first vertex is the same.
+				 */
+				final int v1  = pointIndices[ 0 ];
+				final int vn1 = smooth ? v1 : 0;
+				final int uv1 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)face.getTextureU( 0 ) / textureWidth , (double)face.getTextureV( 0 ) / textureHeight , 0.0 ) ) : -1;
+
+				int v2;
+				int vn2;
+				int uv2;
+
+				int v3  = pointIndices[ 1 ];
+				int vn3 = smooth ? v3 : 0;
+				int uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)face.getTextureU( 1 ) / textureWidth , (double)face.getTextureV( 1 ) / textureHeight , 0.0 ) ) : -1;
+
+				for ( int j = 2 ; j < vertexCount ; j++ )
+				{
+					v2  = v3;
+					vn2 = vn3;
+					uv2 = uv3;
+
+					v3  = pointIndices[ j ];
+					vn3 = smooth ? v3 : 0;
+					uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)face.getTextureU( j ) / textureWidth , (double)face.getTextureV( j ) / textureHeight , 0.0 ) ) : -1;
+
+					result.addTriangle( v1 , uv1 , vn1 , v2 , uv2 , vn2 , v3 , uv3 , vn3 , textureIndex );
+				}
 			}
+		}
 
-			/*
-			 * For every triangle, the first vertex is the same.
-			 */
-			double x = pointCoords[ pointIndices[ 0 ] * 3     ];
-			double y = pointCoords[ pointIndices[ 0 ] * 3 + 1 ];
-			double z = pointCoords[ pointIndices[ 0 ] * 3 + 2 ];
-
-			final PovVector firstVertex  = new PovVector( x , y , z );
-
-			for ( int j = 1 ; j < faceVerticesCount - 1 ; j++ )
-			{
-				/*
-				 * Second vertex.
-				 */
-				x = pointCoords[ pointIndices[ j ] * 3     ];
-				y = pointCoords[ pointIndices[ j ] * 3 + 1 ];
-				z = pointCoords[ pointIndices[ j ] * 3 + 2 ];
-
-				final PovVector secondVertex  = new PovVector( x , y , z );
-
-				/*
-				 * Third vertex.
-				 */
-				x = pointCoords[ pointIndices[ j + 1 ] * 3     ];
-				y = pointCoords[ pointIndices[ j + 1 ] * 3 + 1 ];
-				z = pointCoords[ pointIndices[ j + 1 ] * 3 + 2 ];
-
-				final PovVector  thirdVertex = new PovVector( x , y , z );
-				final PovTexture povTexture  = new PovTexture( _textureDirectory , texture );
-
-				povTexture.reflection = 0.05f;
-				_scene.addTexture( povTexture.name , povTexture );
-				povTexture.setDeclared();
-
-				if ( uvMapping )
-				{
-					/*
-					 * If the material has a texture, get second uv-coordinate.
-					 */
-					u = (double)face.getTextureU( j ) / (double)textureWidth;
-					v = (double)face.getTextureV( j ) / (double)textureHeight;
-					final PovVector secondUvCoord = new PovVector( u , v , 0.0 );
-
-					/*
-					 * If the material has a texture, get third uv-coordinate.
-					 */
-					u = (double)face.getTextureU( j + 1 ) / (double)textureWidth;
-					v = (double)face.getTextureV( j + 1 ) / (double)textureHeight;
-					final PovVector thirdUvCoord = new PovVector( u , v , 0.0 );
-
-					mesh.addTriangle( firstVertex , secondVertex , thirdVertex , firstUvCoord , secondUvCoord , thirdUvCoord , povTexture );
-				}
-				else
-				{
-
-					mesh.addTriangle( firstVertex , secondVertex , thirdVertex , null , null , null , povTexture );
-				}
-			 }
-		 }
-
-		 return mesh;
+		return result;
 	}
 
 	/**
-	 * This method converts a {@link Light3D} object to a {@link PovLight}
-	 * object. The {@link Light3D} class is not implemented fully yet.
+	 * This method constructs a {@link PovSphere} from a {@link Sphere3D} object.
 	 *
-	 * //@param light The {@link Light3D} object to be converted.
-	 * @param transform The node2model transform.
-	 * @return The resulting {@link PovLight} object.
-	 */
-	public static PovLight convertLight3D( /* final Light3D light , */ final Matrix3D transform )
-	{
-		//@TODO Convert light when Light3D class is completed.
-
-		final PovLight povLight = new PovLight( "light" , 0.0 , 0.0 , 0.0 , new PovVector( Color.WHITE ) , true );
-		povLight.setTransform( new PovMatrix( transform ) );
-
-		return povLight;
-	}
-
-	/**
-	 * Method to check if an {@link Object3D} contains textures.
+	 * @param   transform   Transform to apply to node.
+	 * @param   sphere      The {@link Sphere3D} to be converted.
 	 *
-	 * @param object The {@link Object3D} to check.
-	 * @return True if the {@link Object3D} contains textures, false otherwise.
+	 * @return  The resulting {@link PovGeometry} object.
 	 */
-	private static boolean containsTextures( final Object3D object )
+	public PovGeometry convertSphere3D( final Matrix3D transform , final Sphere3D sphere )
 	{
-		boolean result = false;
+		final PovGeometry result;
 
-		final int numFaces = object.getFaceCount();
-
-		for ( int i = 0 ; !result && ( i < numFaces ) ; i++ )
+		if ( ( sphere.dx != sphere.dy ) || ( sphere.dy != sphere.dz ) || containsMultipleTexturesOrMapping( sphere ) )
 		{
-			final Face3D      face    = object.getFace( i );
-			final TextureSpec texture = face.getTexture();
+			result = convertObject3D( transform , sphere );
+		}
+		else
+		{
+			final Face3D     face    = sphere.getFace( 0 );
+			final PovTexture texture = convertTexture( face.getTexture() );
 
-			result = texture.isTexture();
+			result = new PovSphere( ( sphere.getTag() != null ) ? String.valueOf( sphere.getTag() ) : null , Vector3D.INIT , sphere.dx / 2.0 , texture );
+			result.setTransform( new PovMatrix( sphere.xform.multiply( transform ) ) );
+		}
+		return result;
+	}
+
+	/**
+	 * Convert a {@link TextureSpec} to a {@link PovTexture} object.
+	 *
+	 * @param   texture     The {@link TextureSpec} object to convert.
+	 *
+	 * @return  The resulting {@link PovTexture}.
+	 */
+	private PovTexture convertTexture( final TextureSpec texture )
+	{
+		PovTexture result;
+
+		if ( texture != null )
+		{
+			final PovTexture newTexture = new PovTexture( _textureDirectory , texture );
+			final String textureName = newTexture.getName();
+
+			result = _scene.getTexture( textureName );
+			if ( result == null )
+			{
+//				newTexture.setReflection( 0.05 );
+				newTexture.setDeclared();
+				_scene.addTexture( textureName , newTexture );
+				result = newTexture;
+			}
+		}
+		else
+		{
+			result = null;
 		}
 
 		return result;
