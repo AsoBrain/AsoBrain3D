@@ -28,13 +28,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.BoundedRangeModel;
 
@@ -45,7 +46,7 @@ import com.numdata.oss.log.ClassLogger;
 /**
  * World/Scene contains all geometry and predefined textures.
  *
- * @FIXME Improve geometry declaration (could be done in one class)
+ * @FIXME   Improve geometry declaration (could be done in one class)
  *
  * @author  Sjoerd Bouwman
  * @version $Revision$ ($Date$, $Author$)
@@ -67,14 +68,35 @@ public class PovScene
 	 * These textures will be declared on top of the pov source
 	 * like : #declare TEX_name = texture { definition }
 	 */
-	private Map textures = new HashMap();
+	private Map _textures = new HashMap();
 
 	/**
 	 * Declared or predefined shapes in the scene.
 	 */
-	private Map declaredShapes = new HashMap();
+	private Map _declaredShapes = new HashMap();
 
-	public float gamma = 1.8f;
+	/**
+	 * Assumed gamma level.
+	 */
+	private double _assumedGamma = 2.2;
+
+	/**
+	 * Get indenting writer from the specified writer. If the specified writer
+	 * is already an {@link IndentingWriter}, it will be returned as-is.
+	 *
+	 * @param   out     Writer to use for output.
+	 *
+	 * @return  Indenting writer (may be the same as <code>out</code>).
+	 *
+	 * @throws  NullPointerException if <code>out</code> is <code>null</code>.
+	 */
+	static IndentingWriter getIndentingWriter( final Writer out )
+	{
+		if ( out == null )
+			throw new NullPointerException( "out" );
+
+		return ( out instanceof IndentingWriter ) ? (IndentingWriter)out : new IndentingWriter( out , "\t" );
+	}
 
 	/**
 	 * Adds new geometry to the scene.
@@ -87,48 +109,9 @@ public class PovScene
 	}
 
 	/**
-	 * Adds a new declared texture to the scene.
-	 *
-	 * @param   code	the reference name of the texture.
-	 * @param   texture	the texture to add.
-	 */
-	public void addTexture( final String code , final PovTexture texture )
-	{
-		textures.put( code , texture );
-	}
-
-	/**
-	 * Adds geometry to the declared list, these
-	 * geometry objects are declared and can be referenced
-	 * to use them more than once.
-	 *
-	 * @param   geom	the geometry to declare.
-	 *
-	 * @return  the name of the declared geometry.
-	 */
-	public String declare( final PovGeometry geom )
-	{
-		final String name = PovDeclared.getDeclaredName( geom.name );
-		declaredShapes.put( name , geom );
-		return name;
-	}
-
-	/**
-	 * Gets a declared texture from the scene.
-	 *
-	 * @param   code	the reference name of the texture.
-	 *
-	 * @return  the texture with the specified reference name.
-	 */
-	public PovTexture getTexture( final String code )
-	{
-		return (PovTexture)textures.get( code );
-	}
-
-	/**
 	 * Removes an object from the scene.
 	 *
-	 * @param   object	the object to remove.
+	 * @param   object  Object to remove.
 	 */
 	public void remove( final PovGeometry object )
 	{
@@ -136,15 +119,77 @@ public class PovScene
 	}
 
 	/**
-	 * Renders the specified input file and returns the rendered output file.
+	 * Adds geometry to the declared list, these
+	 * geometry objects are declared and can be referenced
+	 * to use them more than once.
 	 *
-	 * @param width         The width of the rendered image.
-	 * @param height        The height of the rendered image.
-	 * @param progressModel Progressbar model.
-	 * @return              Rendered image;
-	 *                      <code>null</code> if the pov scene could not be rendered.
+	 * @param   geom    Geometry to declare.
+	 *
+	 * @return  the name of the declared geometry.
 	 */
-	public BufferedImage render( final int width , final int height , final BoundedRangeModel progressModel )
+	public String declare( final PovGeometry geom )
+	{
+		final String name = PovDeclared.getDeclaredName( geom.getName() );
+		_declaredShapes.put( name , geom );
+		return name;
+	}
+
+	/**
+	 * Adds a new declared texture to the scene.
+	 *
+	 * @param   code        Reference name of the texture.
+	 * @param   texture     Texture to add.
+	 */
+	public void addTexture( final String code , final PovTexture texture )
+	{
+		_textures.put( code , texture );
+	}
+
+	/**
+	 * Gets a declared texture from the scene.
+	 *
+	 * @param   code    Reference name of the texture.
+	 *
+	 * @return  the texture with the specified reference name.
+	 */
+	public PovTexture getTexture( final String code )
+	{
+		return (PovTexture)_textures.get( code );
+	}
+
+	/**
+	 * Get assumed gamma level.
+	 *
+	 * @return  Assumed gamma level.
+	 */
+	public final double getAssumedGamma()
+	{
+		return _assumedGamma;
+	}
+
+	/**
+	 * Get assumed gamma level.
+	 *
+	 * @param   assumedGamma   Assumed gamma level.
+	 */
+	public final void setAssumedGamma( final double assumedGamma )
+	{
+		_assumedGamma = assumedGamma;
+	}
+
+	/**
+	 * Renders the scene to an image with the specified size and returns the
+	 * resulting image.
+	 *
+	 * @param   width           The width of the rendered image.
+	 * @param   height          The height of the rendered image.
+	 * @param   progressModel   Progressbar model.
+	 * @param   log             Log to write console output to.
+	 *
+	 * @return  Rendered image;
+	 *          <code>null</code> if the pov scene could not be rendered.
+	 */
+	public BufferedImage render( final int width , final int height , final BoundedRangeModel progressModel , final PrintWriter log )
 	{
 		if ( progressModel != null )
 		{
@@ -152,6 +197,8 @@ public class PovScene
 			progressModel.setMaximum( height );
 			progressModel.setValue( 0 );
 		}
+
+		write( new File( "x.pov" ) ); // write POV file for debugging purposes.
 
 		File tempFile = null;
 		try
@@ -190,85 +237,97 @@ public class PovScene
 				LOG.debug( "rendering (command=" + ArrayTools.toString( command ) + ')' );
 				final Process process = runtime.exec( command , null , null );
 
-				/* close stdin */
-				final OutputStream os = process.getOutputStream();
 				try
 				{
-					os.close();
-				}
-				catch ( IOException e )
-				{
-				}
+					/* close stdin */
+					final OutputStream os = process.getOutputStream();
+					try
+					{
+						os.close();
+					}
+					catch ( IOException e )
+					{
+					}
 
-				/* start progress monitor of POV-Ray console */
-				if ( progressModel != null )
-				{
-					final Thread stderrMonitor = new Thread( new Runnable() {
-						public void run()
-						{
-							final InputStream stderr = process.getErrorStream();
-							try
+					/* start progress monitor of POV-Ray console */
+					if ( ( progressModel != null ) || ( log != null ) )
+					{
+						final Thread stderrMonitor = new Thread( new Runnable() {
+							public void run()
 							{
-								final BufferedReader errorStream = new BufferedReader( new InputStreamReader( stderr ) );
-								String line;
-								while ( ( line = errorStream.readLine() ) != null )
-								{
-									if  ( line.indexOf(  " Rendering line " ) != -1 )
-									{
-										String temp = line.substring( line.indexOf( " Rendering line " ) + 16 );
-										final int end = temp.indexOf( (int)' ' );
-										temp = temp.substring( 0 , end );
-
-										try
-										{
-											final int value = Integer.parseInt( temp );
-											progressModel.setValue( value );
-										}
-										catch( Exception e )
-										{
-											/* ignore */
-										}
-
-									}
-								}
-							}
-							catch ( IOException e )
-							{
-								/* ignore */
-							}
-							finally
-							{
+								final InputStream stderr = process.getErrorStream();
 								try
 								{
-									stderr.close();
+									final BufferedReader errorStream = new BufferedReader( new InputStreamReader( stderr ) );
+									String line;
+									while ( ( line = errorStream.readLine() ) != null )
+									{
+										if ( log != null )
+										{
+											log.println( line );
+											log.flush();
+										}
+
+										if ( ( progressModel != null ) && ( line.indexOf(  " Rendering line " ) >= 0 ) )
+										{
+											String temp = line.substring( line.indexOf( " Rendering line " ) + 16 );
+											final int end = temp.indexOf( (int)' ' );
+											temp = temp.substring( 0 , end );
+
+											try
+											{
+												final int value = Integer.parseInt( temp );
+												progressModel.setValue( value );
+											}
+											catch( Exception e )
+											{
+												/* ignore */
+											}
+
+										}
+									}
 								}
 								catch ( IOException e )
 								{
 									/* ignore */
 								}
-							}
-						} } );
-					stderrMonitor.start();
-				}
+								finally
+								{
+									try
+									{
+										stderr.close();
+									}
+									catch ( IOException e )
+									{
+										/* ignore */
+									}
+								}
+							} } );
+						stderrMonitor.start();
+					}
 
-				/* read image from stdout */
-				LOG.debug( "reading rendered image data" );
-				final InputStream is = process.getInputStream();
-				try
-				{
-					result = ImageIO.read( is );
-				}
-				catch ( IOException e )
-				{
-					LOG.error( "failed to render image" , e );
+					/* read image from stdout */
+					LOG.debug( "reading rendered image data" );
+					final InputStream is = process.getInputStream();
+					try
+					{
+						result = ImageIO.read( is );
+					}
+					catch ( IOException e )
+					{
+						LOG.error( "failed to render image" , e );
+					}
+					finally
+					{
+						is.close();
+					}
+
+					LOG.trace( "waiting for POV-Ray process to finish" );
 				}
 				finally
 				{
-					is.close();
 					process.destroy();
 				}
-
-				LOG.trace( "waiting for POV-Ray process to finish" );
 			}
 			catch ( IOException e )
 			{
@@ -319,7 +378,7 @@ public class PovScene
 			}
 			catch (IOException e)
 			{
-//			e.printStackTrace();
+//				e.printStackTrace();
 			}
 		}
 
@@ -329,25 +388,29 @@ public class PovScene
 	/**
 	 * Saves the current scene as a .pov file.
 	 *
-	 * @param   outstream   Stream to save to.
+	 * @param   out     Stream to save to.
+	 *
+	 * @throws  IOException when writing failed.
 	 */
-	public void write( final OutputStream outstream )
+	public void write( final OutputStream out )
 		throws IOException
 	{
-		final OutputStreamWriter osw = new OutputStreamWriter( outstream );
-		write( osw );
-		osw.flush();
+		final OutputStreamWriter streamWriter = new OutputStreamWriter( out );
+		write( streamWriter );
+		streamWriter.flush();
 	}
 
 	/**
 	 * Saves the current scene as a .pov file.
 	 *
-	 * @param   out     Destination writer.
+	 * @param   out     Writer to use for output.
+	 *
+	 * @throws  IOException when writing failed.
 	 */
 	public void write( final Writer out )
 		throws IOException
 	{
-		final IndentingWriter iw = ( out instanceof IndentingWriter ) ? (IndentingWriter)out : new IndentingWriter( out );
+		final IndentingWriter iw = getIndentingWriter( out );
 
 		/*
 		 * Make sure, all geometry is sorted alfabetically.
@@ -383,9 +446,12 @@ public class PovScene
 		out.writeln( "global_settings" );
 		out.writeln( "{" );
 		out.indentIn();
-		out.writeln( "assumed_gamma " + gamma );
+		out.write( "assumed_gamma " );
+		out.write( PovObject.format( getAssumedGamma() ) );
+		out.newLine();
 		out.indentOut();
 		out.writeln( "}" );
+
 		out.newLine();
 
 		// infinite floor
@@ -417,7 +483,8 @@ public class PovScene
 	{
 		for ( int i = 0 ; i < geometry.length ; i++ )
 		{
-			final PovGeometry geom = (PovGeometry)geometry[i];
+			final PovGeometry geom = geometry[ i ];
+
 			if ( geom instanceof PovCamera )
 			{
 				geom.write( out );
@@ -431,7 +498,7 @@ public class PovScene
 	{
 		for ( int i = 0 ; i < geometry.length ; i++ )
 		{
-			final PovGeometry geom = (PovGeometry)geometry[i];
+			final PovGeometry geom = geometry[ i ];
 			if ( geom instanceof PovLight )
 			{
 				geom.write( out );
@@ -443,83 +510,100 @@ public class PovScene
 	/**
 	 * Writes all declared textures to the output stream.
 	 *
-	 * @param   out	the stream to write to.
+	 * @param   out     Writer to use for output.
+	 *
+	 * @throws  IOException when writing failed.
 	 */
 	protected void writeTextureDefs( final IndentingWriter out )
 		throws IOException
 	{
-		int i = 0;
+		final Map textures = _textures;
 
-		final Object[] textureKeys = new Object[ textures.size() ];
-		for ( Iterator iterator = textures.keySet().iterator() ; iterator.hasNext() ; )
+		if ( !textures.isEmpty() )
 		{
-			textureKeys[ i++ ] = iterator.next();
-		}
-		Arrays.sort( textureKeys );
+			final Set      textureKeySet = textures.keySet();
+			final Object[] textureKeys   = textureKeySet.toArray();
 
-		out.writeln( "/*" );
-		out.writeln( " * Texture definitions" );
-		out.writeln( " */" );
+			Arrays.sort( textureKeys );
 
-		for ( i = 0 ; i < textureKeys.length ; i++ )
-		{
-			final Object     key     = textureKeys[ i ];
-			final PovTexture texture = (PovTexture)textures.get( key );
+			out.writeln( "/*" );
+			out.writeln( " * Texture definitions" );
+			out.writeln( " */" );
 
-			texture.declare( out );
-			out.newLine();
+			for ( int i = 0 ; i < textureKeys.length ; i++ )
+			{
+				final Object     key     = textureKeys[ i ];
+				final PovTexture texture = (PovTexture)textures.get( key );
+
+				texture.declare( out );
+				out.newLine();
+			}
 		}
 	}
 
 	/**
 	 * Writes all declared shapes to the output stream.
 	 *
-	 * @param   out	the stream to write to.
+	 * @param   out     Writer to use for output.
+	 *
+	 * @throws  IOException when writing failed.
 	 */
 	protected void writeDeclaredShapes( final IndentingWriter out )
 		throws IOException
 	{
-		int i = 0;
+		final Map declaredShapes = _declaredShapes;
 
-		final String[] shapeKeys = new String[ declaredShapes.size() ];
-		for ( final Iterator iterator = declaredShapes.keySet().iterator() ; iterator.hasNext() ; )
-			shapeKeys[ i++ ] = (String)iterator.next();
-		Arrays.sort( shapeKeys );
-
-		out.writeln( "/*" );
-		out.writeln( " * Declared geometry" );
-		out.writeln( " */" );
-
-		for ( i = 0 ; i  < shapeKeys.length ; i++ )
+		if ( !declaredShapes.isEmpty() )
 		{
-			final String      name = shapeKeys[ i ];
-			final PovGeometry geom = (PovGeometry)declaredShapes.get( name );
+			final Set      declaredKeySet = declaredShapes.keySet();
+			final String[] declaredKeys   = (String[])declaredKeySet.toArray( new String[ declaredKeySet.size() ] );
+			Arrays.sort( declaredKeys );
 
-			out.writeln( "#declare " + name + " =" );
-			out.indentIn();
-			geom.write( out );
-			out.indentOut();
+			out.writeln( "/*" );
+			out.writeln( " * Declared geometry" );
+			out.writeln( " */" );
+
+			for ( int i = 0 ; i < declaredKeys.length ; i++ )
+			{
+				final String      name = declaredKeys[ i ];
+				final PovGeometry geom = (PovGeometry)declaredShapes.get( name );
+
+				out.write( "#declare " );
+				out.write( name );
+				out.write( " =" );
+				out.newLine();
+				out.indentIn();
+
+				geom.write( out );
+				out.indentOut();
+			}
+
+			out.newLine();
 		}
-
-		out.newLine();
 	}
 
 	protected void writeGeometry( final IndentingWriter out , final PovGeometry[] geometry )
 		throws IOException
 	{
-		out.writeln( "/*" );
-		out.writeln( " * Geometry" );
-		out.writeln( " */" );
-		//System.out.print( "Writing geometry : " );
-		for ( int i = 0 ; i < geometry.length ; i++ )
+		if ( ( geometry != null ) && ( geometry.length > 0 ) )
 		{
-			final PovGeometry geom = (PovGeometry)geometry[i];
-			if ( !( geom instanceof PovLight ) && !( geom instanceof PovCamera ) )
+			out.writeln( "/*" );
+			out.writeln( " * Geometry" );
+			out.writeln( " */" );
+
+			//System.out.print( "Writing geometry : " );
+			for ( int i = 0 ; i < geometry.length ; i++ )
 			{
-				geom.write( out );
-				out.write( "\n" );
+				final PovGeometry geom = geometry[ i ];
+
+				if ( !( geom instanceof PovLight  )
+				     && !( geom instanceof PovCamera ) )
+				{
+					geom.write( out );
+					out.newLine();
+				}
 			}
+			//System.out.println( "" );
 		}
-		//System.out.println( "" );
 	}
 }

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2005
+ * (C) Copyright Numdata BV 2000-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -48,59 +48,72 @@ public class PovMesh
 	/**
 	 * Collection of all triangles of the mesh.
 	 */
-	public List triangles = new ArrayList();
+	private List _triangles = new ArrayList();
 
 	/**
-	 * The inside vector to make the mesh solid.
+	 * The inside vector of a mesh can be used to make it solid. Which, in turn,
+	 * makes it possible to use it as constructive solid geometry; for example,
+	 * to perform boolean operations, like {@link PovBool#DIFFERENCE} to make
+	 * holes.
 	 */
-	public PovVector insideVector = null;
+	private PovVector _insideVector;
 
 	/**
 	 * Represents one triangle of the mesh.
 	 */
-	public static class Triangle
+	private static class Triangle
 		extends PovObject
 	{
-		public final PovVector p1;
-		public final PovVector p2;
-		public final PovVector p3;
-		public final boolean   smooth;
-		public PovTexture      texture;
+		public final PovVector _p1;
+		public final PovVector _p2;
+		public final PovVector _p3;
+		public final boolean   _smooth;
+		public PovTexture      _texture;
 
-		public Triangle( final PovVector p1 , final PovVector p2 , final PovVector p3 , final boolean smooth )
+		Triangle( final PovVector p1 , final PovVector p2 , final PovVector p3 , final boolean smooth )
 		{
 			this( p1 , p2 , p3 , smooth , null );
 		}
 
-		public Triangle( final PovVector p1 , final PovVector p2 , final PovVector p3 , final boolean smooth , final PovTexture texture )
+		Triangle( final PovVector p1 , final PovVector p2 , final PovVector p3 , final boolean smooth , final PovTexture texture )
 		{
-			this.p1      = p1;
-			this.p2      = p2;
-			this.p3      = p3;
-			this.smooth  = smooth;
-			this.texture = texture;
+			_p1      = p1;
+			_p2      = p2;
+			_p3      = p3;
+			_smooth  = smooth;
+			_texture = texture;
 		}
 
 		public void write( final IndentingWriter out )
 			throws IOException
 		{
-			if ( texture != null && !texture.isDeclared() )
+			final PovTexture texture    = _texture;
+
+			if ( ( texture != null ) && !texture.isDeclared() )
 			{
 				out.write( "#declare TM = " );
 				texture.write( out );
 				out.newLine();
-				out.write( "triangle { " + p1 + " , " + p2 + " , " + p3 + " " );
-				if ( texture != null )
-					out.write( "texture { TM }" );
-				out.writeln( " }" );
 			}
-			else
+
+			out.write( "triangle { " );
+			_p1.write( out );
+			out.write( " , " );
+			_p2.write( out );
+			out.write( " , " );
+			_p3.write( out );
+			out.write( (int)' ' );
+
+			if ( texture != null )
 			{
-				out.write( "triangle { " + p1 + " , " + p2 + " , " + p3 + " " );
-				if ( texture != null )
+				if ( !texture.isDeclared() )
+					out.write( "texture { TM }" );
+				else
 					texture.write( out );
-				out.writeln( " }" );
 			}
+
+			out.write( " }" );
+			out.newLine();
 		}
 	}
 
@@ -113,34 +126,66 @@ public class PovMesh
 	public PovMesh( final String name , final PovTexture texture )
 	{
 		super( name , texture );
+
+		_insideVector = null;
 	}
 
 	/**
-	 * Adds a triangle to the mesh.
+	 * Get optional inside vector of a mesh that makes it solid. Which, in turn,
+	 * makes it possible to use it as constructive solid geometry; for example,
+	 * to perform boolean operations, like {@link PovBool#DIFFERENCE} to make
+	 * holes.
 	 *
-	 * @param   t   New triangle.
+	 * @return  Inside vector of a mesh that makes it solid;
+	 *          <code>null</code> if the mesh is not solid (just surfaces).
 	 */
-	public void add( final Triangle t )
+	public PovVector getInsideVector()
 	{
-		triangles.add( t );
+		return _insideVector;
 	}
 
 	/**
-	 * Adds a number of points that make one face.
-	 * The N-face is converted into triangles because
-	 * pov only supports triangles.
-	 * The face MUST be convex!
+	 * Set optional inside vector of a mesh to make it solid. Which, in turn,
+	 * makes it possible to use it as constructive solid geometry; for example,
+	 * to perform boolean operations, like {@link PovBool#DIFFERENCE} to make
+	 * holes.
+	 *
+	 * @param   insideVector    Inside vector of a mesh to make it solid
+	 *                          (typically <code>&lt;0,0,1&gt;</code>;
+	 *                          <code>null</code> to make the mesh not solid).
+	 */
+	public void setInsideVector( final PovVector insideVector )
+	{
+		_insideVector = insideVector;
+	}
+
+	/**
+	 * Add triangle to mesh.
+	 *
+	 * @param   p1          First vertex' coordinates.
+	 * @param   p2          Second vertex' coordinates.
+	 * @param   p3          Third vertex' coordinates.
+	 * @param   smooth      The triangle is used to immitate a smooth surface.
+	 * @param   texture     Texture applied to triangle.
+	 */
+	public void addTriangle( final PovVector p1 , final PovVector p2 , final PovVector p3 , final boolean smooth , final PovTexture texture )
+	{
+		_triangles.add( new Triangle( p1 , p2 , p3 , smooth , texture ) );
+	}
+
+	/**
+	 * Adds a number of points that make one face. The N-face is converted into
+	 * triangles, because POV-Ray only supports triangles. The face MUST be
+	 * convex!
 	 *
 	 * @param   points      Array of points that make the face.
 	 * @param   smooth      Face is smooth.
 	 * @param   texture     Texture of the face (may be <code>null</code>).
 	 */
-	public void add( final PovVector[] points , final boolean smooth , final PovTexture texture )
+	public void addPolygon( final PovVector[] points , final boolean smooth , final PovTexture texture )
 	{
 		for ( int i = 0 ; i < points.length - 2 ; i++ )
-		{
-			add( new Triangle( points[0] , points[i+1] , points[i+2], smooth , texture ) );
-		}
+			addTriangle( points[ 0 ] , points[ i + 1 ] , points[ i + 2 ] , smooth , texture );
 	}
 
 	public void write( final IndentingWriter out )
@@ -149,63 +194,73 @@ public class PovMesh
 		/*
 		 * No triangles, no mesh.
 		 */
-		if ( triangles.size() == 0 )
-			return;
-
-		out.writeln( "mesh //" + name );
-		out.writeln( "{" );
-		out.indentIn();
-
-		if ( insideVector != null )
-			out.writeln( "inside_vector " + insideVector );
-
-		/*
-		 * Figure out if maybee each triangle is same texture.
-		 */
-		boolean allTrianglesSame = true;
-		boolean allTrianglesNull = true;
-		PovTexture last = ((Triangle)triangles.get( 0 )).texture;
-		for ( int i = 1 ; i < triangles.size() ; i++ )
+		final List triangles = _triangles;
+		if ( !triangles.isEmpty() )
 		{
-			final Triangle t = (Triangle)triangles.get( i );
-			if ( t.texture == null )
-			{
-				last = null;
-				allTrianglesSame = false;
-				continue;
-			}
-			allTrianglesNull = false;
-			if ( !t.texture.equals( last ) )
-				allTrianglesSame = false;
-			last = t.texture;
-		}
-
-		PovTexture main = texture;
-		/*
-		 * All the same textures, but not null,
-		 * use global texture;
-		 */
-		if ( allTrianglesSame && !allTrianglesNull )
-		{
-			main = last;
-			for ( int i = 0 ; i < triangles.size() ; i++ )
-				((Triangle)triangles.get( i )).texture = null;
-		}
-
-		for ( int i = 0 ; i < triangles.size() ; i++ )
-		{
-			((Triangle)triangles.get( i )).write( out );
-		}
-
-		writeTransformation( out );
-
-		if ( main != null )
-		{
-			main.write( out );
+			out.write( "mesh //" );
+			out.write( getName() );
+			out.write( (int)'{' );
 			out.newLine();
-		}
+			out.indentIn();
 
-		out.indentOut();
-		out.writeln( "}" );
+			final PovVector insideVector = getInsideVector();
+			if ( insideVector != null )
+			{
+				out.write( "inside_vector " );
+				insideVector.write( out );
+				out.newLine();
+			}
+
+			/*
+			 * Figure out if maybee each triangle is same texture.
+			 */
+			boolean allTrianglesSame = true;
+			boolean allTrianglesNull = true;
+
+			final PovTexture first = ((Triangle)triangles.get( 0 ))._texture;
+
+			for ( int i = 1 ; i < triangles.size() ; i++ )
+			{
+				final Triangle   triangle = (Triangle)triangles.get( i );
+				final PovTexture texture  = triangle._texture;
+
+				allTrianglesNull &= ( texture == null );
+				allTrianglesSame &= ( texture != null ) && texture.equals( first );
+			}
+
+			PovTexture main = getTexture();
+
+			/*
+			 * All the same textures, but not null,
+			 * use global texture;
+			 */
+			if ( allTrianglesSame && !allTrianglesNull )
+			{
+				main = first;
+
+				for ( int i = 0; i < triangles.size(); i++ )
+				{
+					final Triangle triangle = (Triangle)triangles.get( i );
+					triangle._texture = null;
+				}
+			}
+
+			for ( int i = 0; i < triangles.size(); i++ )
+			{
+				final Triangle triangle = (Triangle)triangles.get( i );
+				triangle.write( out );
+			}
+
+			writeTransformation( out );
+
+			if ( main != null )
+			{
+				main.write( out );
+				out.newLine();
+			}
+
+			out.indentOut();
+			out.writeln( "}" );
+		}
 	}
 }

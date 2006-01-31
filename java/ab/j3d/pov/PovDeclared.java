@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2005
+ * (C) Copyright Numdata BV 2000-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,14 +30,14 @@ import com.numdata.oss.io.IndentingWriter;
  * @version $Revision$ ($Date$, $Author$)
  */
 public class PovDeclared
-	extends PovGeometry 
+	extends PovGeometry
 {
 	/**
 	 * Creates a new reference to a declared shape.
 	 *
 	 * @param   reference   Name of the shape to reference.
 	 */
-	public PovDeclared( String reference ) 
+	public PovDeclared( final String reference )
 	{
 		super( getDeclaredName( reference ) );
 	}
@@ -48,7 +48,7 @@ public class PovDeclared
 	 * @param   reference   Name of the shape to reference.
 	 * @param   texture     New texture for the shape.
 	 */
-	public PovDeclared( String reference, PovTexture texture ) 
+	public PovDeclared( final String reference, final PovTexture texture )
 	{
 		super( getDeclaredName( reference ) , texture );
 	}
@@ -56,11 +56,11 @@ public class PovDeclared
 	/**
 	 * Gets the name of the declared shape.
 	 *
-	 * @param   reference   Name of the shape to reference.
+	 * @param   name    Name of the shape to reference.
 	 *
-	 * @return the name of the reference.
+	 * @return  Name of the reference.
 	 */
-	public static String getDeclaredName( String name )
+	public static String getDeclaredName( final String name )
 	{
 		return "SHAPE_" + name.replace( '.' , '_' );
 	}
@@ -68,7 +68,9 @@ public class PovDeclared
 	public void write( final IndentingWriter out )
 		throws IOException
 	{
-		out.write( "object { " + name + " " );
+		out.write( "object { " );
+		out.write( getName() );
+		out.write( (int)' ' );
 		writeShortTransformation( out );
 		out.writeln( "}" );
 	}

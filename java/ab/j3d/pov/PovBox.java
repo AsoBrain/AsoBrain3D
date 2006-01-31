@@ -22,7 +22,6 @@ package ab.j3d.pov;
 import java.io.IOException;
 
 import ab.j3d.Vector3D;
-import ab.j3d.model.Box3D;
 
 import com.numdata.oss.io.IndentingWriter;
 
@@ -50,26 +49,12 @@ public class PovBox
 	/**
 	 * Lower left front corner of box.
 	 */
-	public final PovVector p1;
+	private PovVector _p1;
 
 	/**
 	 * Upper right back corner of box.
 	 */
-	public final PovVector p2;
-
-	/**
-	 * Construct box based on Box3D.
-	 *
-	 * @param   name        Name of shape.
-	 * @param   box         Box3D specification.
-	 * @param   texture     Texture for shape.
-	 */
-	public PovBox( final String name , final Box3D box , final PovTexture texture )
-	{
-		this( name , Vector3D.INIT , Vector3D.INIT.set( box.getDX() , box.getDY() , box.getDZ() ) , texture );
-
-		setTransform( new PovMatrix( box.getTransform() ) );
-	}
+	private PovVector _p2;
 
 	/**
 	 * Creates a box with name, bounds and texture using 6 floats.
@@ -97,42 +82,107 @@ public class PovBox
 	{
 		super( name , texture );
 
-		this.p1 = p1;
-		this.p2 = p2;
+		_p1 = p1;
+		_p2 = p2;
 	}
 
 	/**
-	 * Writes the PovObject to the specified output stream.
-	 * The method should use indentIn and indentOut to maintain the overview.
+	 * Get lower-left-front corner of box.
 	 *
-	 * @param   out     IndentingWriter to use for writing.
-	 *
-	 * @throws  IOException when writing failed.
+	 * @return  Lower-left-front corner of box.
 	 */
+	public PovVector getP1()
+	{
+		return _p1;
+	}
+
+	/**
+	 * Set lower-left-front corner of box.
+	 *
+	 * @param   p1  Lower-left-front corner of box.
+	 */
+	public void setP1( final PovVector p1 )
+	{
+		_p1 = p1;
+	}
+
+	/**
+	 * Get upper-right-back corner of box.
+	 *
+	 * @return  Upper-right-back corner of box.
+	 */
+	public PovVector getP2()
+	{
+		return _p2;
+	}
+
+	/**
+	 * Set upper-right-back corner of box.
+	 *
+	 * @param   p2  Upper-right-back corner of box.
+	 */
+	public void setP2( final PovVector p2 )
+	{
+		_p2 = p2;
+	}
+
 	public void write( final IndentingWriter out )
 		throws IOException
 	{
-		if ( COMPACT && ( xform == null ) && ( translation == null ) && ( rotation == null ) )
+		final PovVector p1 = getP1();
+		final PovVector p2 = getP2();
+
+		if ( COMPACT && !isTransformed() )
 		{
-			out.write( "box { " + p1 + ", " + p2 );
+			out.write( "box { " );
+			p1.write( out );
+			out.write( ", " );
+			p2.write( out );
+
+			final PovTexture texture = getTexture();
 			if ( texture != null )
 			{
-				out.write( " " );
+				out.write( (int)' ' );
 				texture.write( out );
 			}
-			out.writeln( " } // " + name );
+
+			out.write( " }" );
+
+			final String name = getName();
+			if ( name != null )
+			{
+				out.write( " // " );
+				out.write( name );
+			}
+
+			out.newLine();
 		}
 		else
 		{
-			out.writeln( "box // " + name );
+			out.write( "box" );
+			final String name = getName();
+			if ( name != null )
+			{
+				out.write( " // " );
+				out.write( name );
+			}
+			out.newLine();
 			out.writeln( "{" );
 			out.indentIn();
-			out.writeln( String.valueOf( p1 ) + "," );
-			out.writeln( String.valueOf( p2 ) );
+
+			p1.write( out );
+			out.write( (int)',' );
+			out.newLine();
+
+			p2.write( out );
+			out.newLine();
+
 			writeTexture( out );
 			writeTransformation( out );
+
 			out.indentOut();
-			out.write( "}\n" );
+			out.write( (int)'}' );
+			out.newLine();
 		}
 	}
 }

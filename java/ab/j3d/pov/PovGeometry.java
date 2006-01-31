@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2005
+ * (C) Copyright Numdata BV 2000-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,8 +24,10 @@ import java.io.IOException;
 import com.numdata.oss.io.IndentingWriter;
 
 /**
- * Baseclass for all geometry in the Pov world.
- * Note that the Light and the Camera are PovGeometry also.
+ * Base class for all geometry in the POV world.
+ * <p>
+ * Note that the {@link PovLight} and the {@link PovCamera} are
+ * {@link PovGeometry} aswell.
  *
  * @author  Sjoerd Bouwman
  * @version $Revision$ ($Date$, $Author$)
@@ -35,186 +37,321 @@ public abstract class PovGeometry
 	implements Comparable
 {
 	/**
-	 * The name of the geometry. Has no use in the Pov language, is only used
-	 * to make the Pov source human-readable so objects can be identified.
+	 * The name of the geometry object. Has no use in the Pov language, is only
+	 * used to make the Pov source human-readable so objects can be identified.
 	 */
-	public final String name;
+	private String _name;
 
 	/**
-	 * The texture of the geometry. Not used by PovCamera and PovLight.
+	 * The texture applied to this geometry object (<code>null</code> if no
+	 * texture is applied).
 	 */
-	public final PovTexture texture;
+	private PovTexture _texture;
 
 	/**
-	 * Rotation of the geometry.
-	 * NOTE: Either rotation or xform should be used, not both.
+	 * Transformation matrix applied to this geometry object. Set to
+	 * <code>null</code> if no transformation matrix is applied.
+	 * <p>
+	 * NOTE: Either rotation/translation or transform should be used, not both.
 	 */
-	protected PovVector rotation = null;
+	private PovMatrix _transform;
 
 	/**
-	 * Transformation of the geometry.
-	 * NOTE: Either rotation or xform should be used, not both.
+	 * Rotation of the geometry (vector with decimal degrees for each axis).
+	 * <p>
+	 * NOTE: Either rotation/translation or transform should be used, not both.
 	 */
-	protected PovMatrix xform = null;
+	private PovVector _rotation;
 
 	/**
 	 * Translation of the geometry.
-	 * NOTE : Either translation or xform should be used, not both.
+	 * <p>
+	 * NOTE: Either rotation/translation or transform should be used, not both.
 	 */
-	protected PovVector translation = null;
+	private PovVector _translation;
 
 	/**
-	 * PovGeometry constructor comment.
+	 * Construct geometry object with the specified name and no texture.
+	 *
+	 * @param   name    Name of object.
 	 */
-	public PovGeometry( String name )
+	protected PovGeometry( final String name )
 	{
-		this.name = name;
-		this.texture = null;
+		this( name , null );
 	}
 
 	/**
-	 * PovGeometry constructor comment.
+	 * Construct geometry object with the specified name and texture.
+	 *
+	 * @param   name        Name of object.
+	 * @param   texture     Optional texture to apply to object.
 	 */
-	public PovGeometry( String name , PovTexture texture )
+	protected PovGeometry( final String name , final PovTexture texture )
 	{
-		this.name = name;
-		this.texture = texture;
+		_name        = name;
+		_texture     = texture;
+		_transform   = null;
+		_rotation    = null;
+		_translation = null;
 	}
 
 	/**
-	 * Implemtation of compareTo from comparable interface,
-	 * compares one geometry to another to enable sorting.
+	 * Get the name of the geometry object. Has no use in the Pov language, is only
+	 * used to make the Pov source human-readable so objects can be identified.
 	 *
-	 * @param   other	the other geometry to check with this one.
-	 *
-	 * @return < 0 if other object is greater.
-	 * 			  0 if other object is equal
-	 * 			> 1 if other object is smaller.
+	 * @return  Name of the object;
+	 *          <code>null</code> if the object has no name.
 	 */
-	public int compareTo( Object other )
+	public final String getName()
 	{
-		if ( (this instanceof PovCamera) && !(other instanceof PovCamera) )
-			return -1;
-		if ( !(this instanceof PovCamera) && (other instanceof PovCamera) )
-			return 1;
-
-		if ( other instanceof PovGeometry )
-			return name.compareTo( ((PovGeometry)other).name );
-
-		return 0;
+		return _name;
 	}
 
 	/**
-	 * Gets the transformation of the geometry.
+	 * Set the name of the geometry object. Has no use in the Pov language, is only
+	 * used to make the Pov source human-readable so objects can be identified.
 	 *
-	 * @return transformation matrix.
+	 * @param   name    Optional name of the object.
 	 */
-	public PovMatrix getTransform()
+	public final void setName( final String name )
 	{
-		return xform;
+		_name = name;
+	}
+
+	/**
+	 * Get the texture that is applied to this geometry object.
+	 *
+	 * @return  Texture that is applied to this geometry object;
+	 *          <code>null</code> if no texture is applied.
+	 */
+	public final PovTexture getTexture()
+	{
+		return _texture;
+	}
+
+	/**
+	 * Set the texture to apply to this geometry object.
+	 *
+	 * @param   texture     Texture to apply to this geometry object
+	 *                      (<code>null</code> to apply no texture).
+	 */
+	public final void setTexture( final PovTexture texture )
+	{
+		_texture = texture;
+	}
+
+	/**
+	 * Test if geometry is transformed/rotated/translated.
+	 *
+	 * @return  <code>true</code> if the geometry is transformed/rotated/translated;
+	 *          <code>false</code> otherwise.
+	 */
+	protected boolean isTransformed()
+	{
+		return ( ( getTransform() != null ) || ( getTranslation() != null ) || ( getRotation() != null ) );
+	}
+
+	/**
+	 * Get transformation matrix applied to this geometry object.
+	 * <p>
+	 * NOTE: Either rotation/translation or transform should be used, not both.
+	 *
+	 * @return  Transformation matrix;
+	 *          <code>null</code> if no transformation matrix is used.
+	 */
+	public final PovMatrix getTransform()
+	{
+		return _transform;
+	}
+
+	/**
+	 * Set transformation matrix to apply to this geometry object.
+	 * <p>
+	 * NOTE: Either rotation/translation or transform should be used, not both.
+	 *
+	 * @param   transform   Transformation matrix (<code>null</code> to
+	 *                      clear transformation matrix).
+	 */
+	public final void setTransform( final PovMatrix transform )
+	{
+		_transform = transform;
+	}
+
+	/**
+	 * Get rotation for this geometry.
+	 * <p>
+	 * NOTE: Either rotation/translation or transform should be used, not both.
+	 *
+	 * @return  Rotation (vector with decimal degrees for each axis);
+	 *          <code>null</code> if geometry is not rotated.
+	 */
+	public final PovVector getRotation()
+	{
+		return _rotation;
 	}
 
 	/**
 	 * Set rotation for this geometry.
+	 * <p>
+	 * NOTE: Either rotation/translation or transform should be used, not both.
 	 *
-	 * @param   rotation	the new rotation.
+	 * @param   rotation    Rotation (vector with decimal degrees for each axis;
+	 *                      <code>null</code> to clear rotation).
 	 */
-	public void setRotation( PovVector rotation )
+	public final void setRotation( final PovVector rotation )
 	{
-		this.rotation = rotation;
+		_rotation = rotation;
 	}
 
 	/**
-	 * Set transformation for this geometry.
+	 * Get translation for this geometry.
+	 * <p>
+	 * NOTE: Either rotation/translation or transform should be used, not both.
 	 *
-	 * @param   xform	the new transformation.
+	 * @return  Translation (vector);
+	 *          <code>null</code> if geometry is not translated.
 	 */
-	public void setTransform( PovMatrix xform )
+	public final PovVector getTranslation()
 	{
-		this.xform = xform;
+		return _translation;
 	}
 
 	/**
 	 * Set translation for this geometry.
+	 * <p>
+	 * NOTE: Either rotation/translation or transform should be used, not both.
 	 *
-	 * @param   translation		the new translation.
+	 * @param   translation     Translation (vector; <code>null</code> to clear
+	 *                          translation).
 	 */
-	public void setTranslation( PovVector translation )
+	public final void setTranslation( final PovVector translation )
 	{
-		this.translation = translation;
+		_translation = translation;
 	}
 
 	/**
-	 * String representation of the geometry, simply returns the name
+	 * Writes the transformation part of rthe geometry to the specified writer.
 	 *
-	 * @return String representation of the geometry.
+	 * @param   out     Writer to use for output.
+	 *
+	 * @throws  IOException when writing failed.
+	 */
+	protected final void writeShortTransformation( final IndentingWriter out )
+		throws IOException
+	{
+		final PovMatrix transform = getTransform();
+		if ( transform != null )
+		{
+			out.write( " matrix " );
+			transform.writeShort( out );
+		}
+
+		final PovVector rotation = getRotation();
+		if ( rotation != null )
+		{
+			out.write( "rotate " );
+			rotation.write( out );
+		}
+
+		final PovVector translation = getTranslation();
+		if ( translation != null )
+		{
+			out.write( "translate " );
+			translation.write( out );
+		}
+	}
+
+	/**
+	 * Writes the texture part of the geometry to the specified writer.
+	 *
+	 * @param   out     Writer to use for output.
+	 *
+	 * @throws  IOException when writing failed.
+	 */
+	protected final void writeTexture( final IndentingWriter out )
+		throws IOException
+	{
+		final PovTexture texture = getTexture();
+		if ( texture != null )
+			texture.write( out );
+	}
+
+	/**
+	 * Writes the transformation part of the geometry to the specified writer.
+	 *
+	 * @param   out     Writer to use for output.
+	 *
+	 * @throws  IOException when writing failed.
+	 */
+	protected final void writeTransformation( final IndentingWriter out )
+		throws IOException
+	{
+		final PovMatrix transform = getTransform();
+		if ( transform != null )
+		{
+			transform.write( out );
+		}
+
+		final PovVector rotation = getRotation();
+		if ( rotation != null )
+		{
+			out.write( "rotate " );
+			rotation.write( out );
+			out.newLine();
+		}
+
+		final PovVector translation = getTranslation();
+		if ( translation != null )
+		{
+			out.write( "translate " );
+			translation.write( out );
+			out.newLine();
+		}
+	}
+
+	/**
+	 * Implemtation of {@link Comparable#compareTo} from comparable interface,
+	 * compares one geometry to another to enable sorting.
+	 *
+	 * @param   other   Other geometry to compare with this one.
+	 *
+	 * @return  <0 if other object is greater;
+	 *          0  if other object is equal;
+	 *          >1 if other object is smaller.
+	 */
+	public int compareTo( final Object other )
+	{
+		final int result;
+
+		final boolean thisIsCamera  = ( this  instanceof PovCamera );
+		final boolean otherIsCamera = ( other instanceof PovCamera );
+
+		if ( thisIsCamera != otherIsCamera )
+		{
+			result = thisIsCamera ? -1 : 1;
+		}
+		else if ( other instanceof PovGeometry )
+		{
+			final String thisName  = getName();
+			final String otherName = ((PovGeometry)other).getName();
+
+			result = ( thisName == null ) ? ( ( otherName == null ) ? 0 : 1 ) : thisName.compareTo( otherName );
+		}
+		else
+		{
+			result = 0;
+		}
+
+		return result;
+	}
+
+	/**
+	 * String representation of the geometry. Simply returns the name.
+	 *
+	 * @return  String representation of the geometry.
 	 */
 	public String toString()
 	{
-		return name;
+		return getName();
 	}
-
-	/**
-	 * Writes the transformation part of the geometry to the
-	 * output stream.
-	 *
-	 * @param   out		the stream to print to.
-	 */
-	protected void writeShortTransformation( IndentingWriter out )
-		throws IOException
-	{
-		if ( xform != null )
-		{
-			out.write( " matrix " );
-			xform.writeShort( out );
-		}
-		if ( rotation != null )
-		{
-			out.write( " rotate " + rotation );
-		}
-		if ( translation != null )
-		{
-			out.write( " translate " + translation );
-		}
-	}
-
-	/**
-	 * Writes the texture part of the geometry to the
-	 * output stream.
-	 *
-	 * @param   out		the stream to print to.
-	 */
-	protected void writeTexture( IndentingWriter out )
-		throws IOException
-	{
-		if ( texture != null )
-		{
-			texture.write( out );
-		}
-	}
-
-	/**
-	 * Writes the transformation part of the geometry to the
-	 * output stream.
-	 *
-	 * @param   out		the stream to print to.
-	 */
-	protected void writeTransformation( IndentingWriter out )
-		throws IOException
-	{
-		if ( xform != null )
-		{
-			xform.write( out );
-			out.indentOut();
-		}
-		if ( rotation != null )
-		{
-			out.writeln( "rotate " + rotation );
-		}
-		if ( translation != null )
-		{
-			out.writeln( "translate " + translation );
-		}
-	}
-
 }

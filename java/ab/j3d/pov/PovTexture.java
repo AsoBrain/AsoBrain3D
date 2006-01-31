@@ -36,12 +36,12 @@ import com.numdata.oss.io.IndentingWriter;
  *     pigment { color rgb &lt; r , g , b &gt; }
  *     finish
  *     {
- *         phong P
- *         [ambient A]
- *         [diffuse D]
- *         [specular S]
- *         [reflection R]
- *         [metallic]
+ *         phong      P
+ *        [ambient    A]
+ *        [diffuse    D]
+ *        [specular   S]
+ *        [reflection R]
+ *        [metallic]
  *     }
  *     [scale &lt; x , y , z&gt;]
  * }
@@ -54,12 +54,12 @@ import com.numdata.oss.io.IndentingWriter;
  *     pigment { image_map { (gif/png) "filename" } }
  *     finish
  *     {
- *         phong p
- *         [ambient a]
- *         [diffuse d]
- *         [specular s]
- *         [reflection r]
- *         [metallic]
+ *         phong      p
+ *        [ambient    a]
+ *        [diffuse    d]
+ *        [specular   s]
+ *        [reflection r]
+ *        [metallic]
  *     }
  *     [scale &lt; x , y , z&gt;]
  * }
@@ -82,70 +82,70 @@ public class PovTexture
 	/**
 	 * Name of texture (for declaration).
 	 */
-	public final String name;
+	private String _name;
 
-	public String type = "jpeg";
+	private String _type;
 
 	/**
 	 * A free material
 	 */
-	public final String free;
+	private String _free;
 
 	/**
 	 * Indicates the texture has been declared,
 	 * so when used we only have to specify reference name.
 	 */
-	private boolean _declared = false;
+	private boolean _declared;
 
 	/**
 	 * In case of RGB texture, the rgb value.
 	 */
-	public final PovVector rgb;
+	private PovVector _rgb;
 
 	/**
 	 * In case of image map, the name of the image file.
 	 */
-	public final String map;
+	private String _map;
 
 	/**
-	 * Phong value.
+	 * Ambient reflectivity factor.
 	 */
-	public float phong = 0.5f;
+	private double _ambient;
 
 	/**
-	 * Ambient reflectivity.
+	 * Diffuse reflectivity factor.
 	 */
-	public float ambient = 0.0f;
+	private double _diffuse;
 
 	/**
-	 * Diffuse reflectivity.
+	 * Specular reflectivity factor.
 	 */
-	public float diffuse = 0.0f;
-
-	/**
-	 * Specular reflectivity.
-	 */
-	public float specular = 0.0f;
+	private double _specular;
 
 	/**
 	 * Reflection factor.
 	 */
-	public float reflection = 0.0f;
+	private double _reflection;
 
 	/**
-	 * Filter factor (transparancy).
+	 * Metallic texture flag.
 	 */
-	public float _filter = 0.0f;
+	private boolean _metallic;
 
 	/**
-	 * Scaling factor for image maps.
+	 * Filter factor (transparency).
 	 */
-	public PovVector scale = null;
+	private double _filter;
 
 	/**
-	 * Metallic setting.
+	 * Phong shading factor.
 	 */
-	public boolean metallic = false;
+	private double _phong;
+
+	/**
+	 * Scaling factor for texture image maps.
+	 */
+	private PovVector _scale;
 
 	/**
 	 * Modified reference to a Texture.
@@ -157,68 +157,68 @@ public class PovTexture
 		/**
 		 * The texture that is referenced.
 		 */
-		public final PovTexture reference;
+		public final PovTexture _reference;
 
 		/**
 		 * The rotation of the texture.
 		 */
-		public final PovVector rotation;
+		public final PovVector _rotation;
 
 		/**
 		 * Construct reference to PovTexture instance.
 		 */
 		public Reference( final PovTexture reference , final PovVector rotation )
 		{
-			super( getReferenceCode( reference.name , rotation ) );
+			super( getReferenceCode( reference._name , rotation ) );
 
-			this.rotation = rotation;
-			this.reference= reference;
+			_rotation  = rotation;
+			_reference = reference;
 		}
 
-		/**
-		 * Writes the PovObject to the specified output stream.
-		 * The method should use indentIn and indentOut to maintain the overview.
-		 *
-		 * @param   out     IndentingWriter to use for writing.
-		 *
-		 * @throws  IOException when writing failed.
-		 */
 		public void write( final IndentingWriter out )
 			throws IOException
 		{
 			if ( isDeclared() )
 			{
-				out.write( "texture { " + name  + " }" );
-				return;
-			}
-
-			if ( rotation == null )
-			{
-				out.write( "texture { " + reference.name + " }" );
+				out.write( "texture { " );
+				out.write( getName() );
+				out.write( " }" );
 			}
 			else
 			{
-				out.write( "texture { " + reference.name + " rotate " + rotation + " }" );
+				out.write( "texture { " );
+				out.write( _reference._name );
+
+				if ( _rotation != null )
+				{
+					out.write( " rotate " );
+					_rotation.write( out );
+				}
+
+				out.write( " }" );
 			}
 		}
 
-		public boolean isDeclared()
+		public final boolean isDeclared()
 		{
-			if ( rotation == null )
-				return reference.isDeclared();
-			else
-				return super.isDeclared();
+			return ( ( _rotation == null ) ? _reference.isDeclared() : super.isDeclared() );
 		}
 
-		public void declare( final IndentingWriter out )
+		public final void declare( final IndentingWriter out )
 			throws IOException
 		{
-			if ( !reference.isDeclared() )
-				reference.declare( out );
+			final PovTexture reference = _reference;
 
-			if ( rotation != null )
+			if ( !reference.isDeclared() )
 			{
-				out.write( "#declare " + name + " = " );
+				reference.declare( out );
+			}
+
+			if ( _rotation != null )
+			{
+				out.write( "#declare " );
+				out.write( getName() );
+				out.write( " = " );
 				out.indentIn();
 				write( out );
 				out.newLine();
@@ -230,6 +230,31 @@ public class PovTexture
 	}
 
 	/**
+	 * Creates a texture map using the specified map.
+	 *
+	 * @param   name    Name of the texture.
+	 * @param   rgb     Color of the texture.
+	 * @param   map     Path to map image to use.
+	 */
+	private PovTexture( final String name, final PovVector rgb, final String free, final String map )
+	{
+		_name       = name;
+		_type       = "jpeg";
+		_free       = free;
+		_declared   = false;
+		_rgb        = rgb;
+		_map        = map;
+		_phong      = 0.5;
+		_ambient    = 0.0;
+		_diffuse    = 0.0;
+		_specular   = 0.0;
+		_reflection = 0.0;
+		_filter     = 0.0;
+		_scale      = null;
+		_metallic   = false;
+	}
+
+	/**
 	 * Creates a texture only based on a name.
 	 * This constructor may only be used by descendants of
 	 * this class. It is currently used to create a texture reference.
@@ -238,10 +263,7 @@ public class PovTexture
 	 */
 	protected PovTexture( final String name )
 	{
-		this.name = name;
-		rgb = null;
-		map = null;
-		free = null;
+		this( name , null , null , null );
 	}
 
 	/**
@@ -254,11 +276,7 @@ public class PovTexture
 	 */
 	public PovTexture( final String name , final double r , final double g , final double b )
 	{
-		this.name = name;
-
-		rgb  = new PovVector( r , g , b );
-		map  = null;
-		free = null;
+		this( name , new PovVector( r , g , b ) , null , null );
 	}
 
 	/**
@@ -269,44 +287,33 @@ public class PovTexture
 	 */
 	public PovTexture( final String name , final Color rgb )
 	{
-		this.name = name;
-		this.rgb = new PovVector( rgb );
-		map = null;
-		free = null;
+		this( name , new PovVector( rgb ) , null , null );
 	}
 
 	/**
 	 * Creates a texture map using the specified map.
 	 *
-	 * @param   textureDirectory    Directory containing POV-textures.
 	 * @param   name                Name of the texture.
+	 * @param   textureDirectory    Directory containing POV-textures.
 	 * @param   map                 Filename of map to use.
-
 	 */
-	public PovTexture( final String textureDirectory , final String name , final String map )
+	public PovTexture( final String name, final String textureDirectory , final String map )
 	{
-		this.name = name;
-		rgb = null;
-		this.map = ( textureDirectory != null ) ? textureDirectory + map : map;
-		free = null;
+		this( name , null , null , ( ( map != null ) && ( textureDirectory != null ) ) ? textureDirectory + map : map );
 	}
 
 	/**
-	 * Creates a texture that can be specified as you would
-	 * specify a texture in pov-ray yourself. Nothing will be
-	 * generated, only the string specified as free will be
-	 * printed. Use this constructor with care, since you can
+	 * Creates a texture that can be specified as you would specify a texture in
+	 * pov-ray yourself. Nothing will be generated, only the string specified as
+	 * free will be printed. Use this constructor with care, since you can
 	 * introduce errors in the scene.
 	 *
 	 * @param   name    Name of the texture.
 	 * @param   free    Definition of the texture.
 	 */
-	public PovTexture( final String name, final String free )
+	public PovTexture( final String name , final String free )
 	{
-		this.name = name;
-		rgb = null;
-		map = null;
-		this.free = free;
+		this( name , null , free , null );
 	}
 
 	/**
@@ -318,121 +325,29 @@ public class PovTexture
 	 *                              construct the {@link PovTexture}.
 
 	 */
-	public PovTexture( final String textureDirectory, final TextureSpec texture )
+	public PovTexture( final String textureDirectory , final TextureSpec texture )
 	{
+		this( null , null , null , null );
+
 		if ( texture.isTexture() )
 		{
-			rgb = null;
-			map = ( textureDirectory != null ) ? textureDirectory + texture.code : texture.code;
-			name = texture.code;
+			_rgb  = null;
+			_map  = ( textureDirectory != null ) ? textureDirectory + texture.code : texture.code;
+			_name = texture.code;
 		}
 		else
 		{
 			final Color color = texture.getColor();
 
-			rgb = new PovVector( color );
-			map = null;
-			name = "RGB_" + color.getRed() + "_" + color.getGreen() + "_" + color.getBlue();
+			_rgb  = new PovVector( color );
+			_map  = null;
+			_name = "RGB_" + color.getRed() + '_' + color.getGreen() + '_' + color.getBlue();
 		}
 
-		free = null;
-		_filter = 1.0f - texture.opacity;
-		ambient = texture.ambientReflectivity;
-		diffuse = texture.diffuseReflectivity;
-		specular = texture.specularReflectivity;
-	}
-
-	public boolean equals( final Object other )
-	{
-		final boolean equals;
-
-		if ( other instanceof PovTexture )
-		{
-			final PovTexture texture = (PovTexture)other;
-			equals =  name.equalsIgnoreCase( texture.name );
-		}
-		else
-		{
-			equals = false;
-		}
-
-		return equals;
-	}
-
-	/**
-	 * When the scene is writing to a scene, it can call
-	 * this method to have the texture be declared, so it
-	 * only has to be specified once. When actually using
-	 * this texture, only the reference code has to be printed.
-	 * This not only saves filesize, it also improves readability.
-	 *
-	 * @param   out     IndentingWriter to use for writing.
-	 *
-	 * @throws  IOException when writing failed.
-	 */
-	public void declare( final IndentingWriter out )
-		throws IOException
-	{
-		//if ( !_declared )
-		//{
-			out.writeln( "#declare " + PovTexture.getTextureCode( name ) + " =" );
-			out.indentIn();
-			//write( out );
-			//out.indentOut();
-			_declared = true;
-		//}
-
-
-		out.writeln( "texture" );
-		out.writeln( "{" );
-		out.indentIn();
-		if ( rgb != null )
-		{
-			if ( _filter > 0.0 )
-			{
-				out.writeln( "pigment" );
-				out.writeln( "{" );
-				out.indentIn();
-				out.writeln( "color rgb " + rgb );
-				out.writeln( "filter " + _filter );
-				out.indentOut();
-				out.writeln( "}" );
-			}
-			else
-			{
-				out.writeln( "pigment { color rgb "  + rgb + " }");
-			}
-		}
-		else if ( map != null )
-		{
-			//String type = map.substring( map.lastIndexOf( "." ) + 1 );
-
-			out.writeln( "pigment" );
-			out.writeln( "{" );
-			out.indentIn();
-			out.writeln( "image_map { " + type + " \"" + map + "\" }" );
-			out.indentOut();
-			out.writeln( "}" );
-		}
-
-		out.writeln( "finish" );
-		out.writeln( "{" );
-		out.indentIn();
-
-		if ( phong      > 0 ) out.writeln( "phong " + phong );
-		if ( ambient    > 0 ) out.writeln( "ambient " + ambient );
-		if ( diffuse    > 0 ) out.writeln( "diffuse " + diffuse );
-		if ( specular   > 0 ) out.writeln( "specular " + specular );
-		if ( reflection > 0 ) out.writeln( "reflection " + reflection );
-		if ( metallic        ) out.writeln( "metallic" );
-		out.indentOut();
-		out.writeln( "}" );
-		if ( scale != null ) out.writeln( "scale " + scale );
-		out.indentOut();
-		out.writeln( "}" );
-		out.indentOut();
-
-
+		_filter   = 1.0 - (double)texture.opacity;
+		_ambient  =       (double)texture.ambientReflectivity;
+		_diffuse  = 2.0 * (double)texture.diffuseReflectivity;
+		_specular = 0.7 * (double)texture.specularReflectivity;
 	}
 
 	/**
@@ -453,16 +368,16 @@ public class PovTexture
 		}
 		else
 		{
-			final int rx = (int)Math.round( rotation.v.x );
-			final int ry = (int)Math.round( rotation.v.y );
-			final int rz = (int)Math.round( rotation.v.z );
+			final int rx = (int)Math.round( rotation.getX() );
+			final int ry = (int)Math.round( rotation.getY() );
+			final int rz = (int)Math.round( rotation.getZ() );
 
-			sb.append( rx < 0 ? "_m" : "_" );
-			sb.append( rx < 0 ? -rx : rx );
-			sb.append( ry < 0 ? "_m" : "_" );
-			sb.append( ry < 0 ? -ry : ry );
-			sb.append( rz < 0 ? "_m" : "_" );
-			sb.append( rz < 0 ? -rz : rz );
+			sb.append( ( rx < 0 ) ? "_m" : "_" );
+			sb.append( ( rx < 0 ) ? -rx : rx );
+			sb.append( ( ry < 0 ) ? "_m" : "_" );
+			sb.append( ( ry < 0 ) ? -ry : ry );
+			sb.append( ( rz < 0 ) ? "_m" : "_" );
+			sb.append( ( rz < 0 ) ? -rz : rz );
 		}
 
 		return sb.toString();
@@ -477,9 +392,187 @@ public class PovTexture
 	 */
 	public static String getTextureCode( final String code )
 	{
-		if ( code.startsWith( "TEX_" ) )
-			return code;
-		return "TEX_" + code;
+		return !code.startsWith( "TEX_" ) ? "TEX_" + code : code;
+	}
+
+	/**
+	 * Get name of texture (for declaration).
+	 *
+	 * @return  Name of texture.
+	 */
+	public final String getName()
+	{
+		return _name;
+	}
+
+	/**
+	 * Get ambient reflectivity factor.
+	 *
+	 * @return  Ambient reflectivity factor.
+	 */
+	public final double getAmbient()
+	{
+		return _ambient;
+	}
+
+	/**
+	 * Set ambient reflectivity factor.
+	 *
+	 * @param   ambient     Ambient reflectivity factor.
+	 */
+	public final void setAmbient( final double ambient )
+	{
+		_ambient = ambient;
+	}
+
+	/**
+	 * Get diffuse reflectivity factor.
+	 *
+	 * @return  Diffuse reflectivity factor.
+	 */
+	public final double getDiffuse()
+	{
+		return _diffuse;
+	}
+
+	/**
+	 * Set diffuse reflectivity factor.
+	 *
+	 * @param   diffuse     Diffuse reflectivity factor.
+	 */
+	public final void setDiffuse( final double diffuse )
+	{
+		_diffuse = diffuse;
+	}
+
+	/**
+	 * Get specular reflectivity factor.
+	 *
+	 * @return  Specular reflectivity factor.
+	 */
+	public final double getSpecular()
+	{
+		return _specular;
+	}
+
+	/**
+	 * Set specular reflectivity factor.
+	 *
+	 * @param   specular    Specular reflectivity factor.
+	 */
+	public final void setSpecular( final double specular )
+	{
+		_specular = specular;
+	}
+
+	/**
+	 * Get reflection factor.
+	 *
+	 * @return  Reflection factor.
+	 */
+	public final double getReflection()
+	{
+		return _reflection;
+	}
+
+	/**
+	 * Set reflection factor.
+	 *
+	 * @param   reflection  Reflection factor.
+	 */
+	public final void setReflection( final double reflection )
+	{
+		_reflection = reflection;
+	}
+
+	/**
+	 * Get metallic texture flag.
+	 *
+	 * @return  Metallic texture flag.
+	 */
+	public final boolean isMetallic()
+	{
+		return _metallic;
+	}
+
+	/**
+	 * Set metallic texture flag.
+	 *
+	 * @param   metallic    Metallic texture flag.
+	 */
+	public final void setMetallic( final boolean metallic )
+	{
+		_metallic = metallic;
+	}
+
+	/**
+	 * Get filter factor (transparency).
+	 *
+	 * @return  Filter factor (transparency).
+	 */
+	public final double getFilter()
+	{
+		return _filter;
+	}
+
+	/**
+	 * Set filter factor (transparency).
+	 *
+	 * @param   filter  Filter factor (transparency).
+	 */
+	public final void setFilter( final double filter )
+	{
+		_filter = filter;
+	}
+
+	/**
+	 * Get phong shading factor.
+	 *
+	 * @return  Phong shading factor.
+	 */
+	public final double getPhong()
+	{
+		return _phong;
+	}
+
+	/**
+	 * Set phong shading factor.
+	 *
+	 * @param   phong   Phong shading factor.
+	 */
+	public final void setPhong( final double phong )
+	{
+		_phong = phong;
+	}
+
+	/**
+	 * Get scaling factor for texture image maps.
+	 *
+	 * @return  Scaling factor for texture image maps.
+	 */
+	public final PovVector getScale()
+	{
+		return _scale;
+	}
+
+	/**
+	 * Set scaling factor for texture image maps.
+	 *
+	 * @param   scale   Scaling factor for texture image maps.
+	 */
+	public final void setScale( final PovVector scale )
+	{
+		_scale = scale;
+	}
+
+	/**
+	 * Checks if this texture is a texture map.
+	 *
+	 * @return  true if this is a texturemap.
+	 */
+	public final boolean isMap()
+	{
+		return ( _map != null );
 	}
 
 	/**
@@ -496,92 +589,201 @@ public class PovTexture
 	}
 
 	/**
-	 * Checks if this texture is a texture map.
-	 *
-	 * @return  true if this is a texturemap.
+	 * Method to set this texture as declared.
 	 */
-	public boolean isMap()
+	public final void setDeclared()
 	{
-		return map != null;
+		_declared = true;
 	}
 
 	/**
-	 * Writes the PovObject to the specified output stream.
-	 * The method should use indentIn and indentOut to maintain the overview.
+	 * When the scene is writing to a scene, it can call
+	 * this method to have the texture be declared, so it
+	 * only has to be specified once. When actually using
+	 * this texture, only the reference code has to be printed.
+	 * This not only saves filesize, it also improves readability.
 	 *
 	 * @param   out     IndentingWriter to use for writing.
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	public void write( final IndentingWriter out )
+	public void declare( final IndentingWriter out )
 		throws IOException
 	{
-		if ( isDeclared() )
-		{
-			out.writeln( "texture { " + getTextureCode( name )  + " }" );
-			return;
-		}
+		//if ( !_declared )
+		//{
+			out.write( "#declare " );
+			out.write( getTextureCode( _name ) );
+			out.write( " =" );
+			out.newLine();
+			out.indentIn();
 
-		if ( free != null )
-		{
-			out.writeln( free );
-			return;
-		}
+			//write( out );
+
+			//out.indentOut();
+			_declared = true;
+		//}
+
 
 		out.writeln( "texture" );
 		out.writeln( "{" );
 		out.indentIn();
+
+		out.writeln( "pigment" );
+		out.writeln( "{" );
+		out.indentIn();
+
+		final PovVector rgb = _rgb;
 		if ( rgb != null )
 		{
-			if ( _filter > 0.0f )
-			{
-				out.writeln( "pigment" );
-				out.writeln( "{" );
-				out.indentIn();
-				out.writeln( "color rgb " + rgb );
-				out.writeln( "filter " + _filter );
-				out.indentOut();
-				out.writeln( "}" );
-			}
-			else
-			{
-				out.writeln( "pigment { color rgb "  + rgb + " }");
-			}
+			out.write( "color rgb " );
+			rgb.write( out );
+			out.newLine();
 		}
-		else if ( map != null )
-		{
-			//String type = map.substring( map.lastIndexOf( "." ) + 1 );
 
-			out.writeln( "pigment" );
-			out.writeln( "{" );
-			out.indentIn();
-			out.writeln( "image_map { " + type + " \"" + map + "\" }" );
-			out.indentOut();
-			out.writeln( "}" );
+		if ( _map != null )
+		{
+			//String type = map.substring( map.lastIndexOf( (int)'.' ) + 1 );
+
+			out.write( "image_map { " );
+			out.write( _type );
+			out.write( " \"" );
+			out.write( _map );
+			out.write( "\" }" );
+			out.newLine();
 		}
+
+		if ( _filter > 0.0 )
+		{
+			out.write( "filter " );
+			out.write( format( _filter ) );
+			out.newLine();
+		}
+
+		out.indentOut();
+		out.writeln( "}" );
 
 		out.writeln( "finish" );
 		out.writeln( "{" );
 		out.indentIn();
 
-		if ( phong      > 0 ) out.writeln( "phong " + phong );
-		if ( ambient    > 0 ) out.writeln( "ambient " + ambient );
-		if ( diffuse    > 0 ) out.writeln( "diffuse " + diffuse );
-		if ( specular   > 0 ) out.writeln( "specular " + specular );
-		if ( reflection > 0 ) out.writeln( "reflection " + reflection );
-		if ( metallic        ) out.writeln( "metallic" );
+		if ( _phong      > 0.0 ) { out.write( "phong      " ); out.writeln( format( _phong      ) ); }
+		if ( _ambient    > 0.0 ) { out.write( "ambient    " ); out.writeln( format( _ambient    ) ); }
+		if ( _diffuse    > 0.0 ) { out.write( "diffuse    " ); out.writeln( format( _diffuse    ) ); }
+		if ( _specular   > 0.0 ) { out.write( "specular   " ); out.writeln( format( _specular   ) ); }
+		if ( _reflection > 0.0 ) { out.write( "reflection " ); out.writeln( format( _reflection ) ); }
+		if ( _metallic         ) out.writeln( "metallic" );
+
 		out.indentOut();
 		out.writeln( "}" );
-		if ( scale != null ) out.writeln( "scale " + scale );
+
+		if ( _scale != null )
+		{
+			out.write( "scale " );
+			_scale.write( out );
+			out.newLine();
+		}
+
 		out.indentOut();
 		out.writeln( "}" );
+		out.indentOut();
 	}
 
-	/**
-	 * Method to set this texture as declared.
-	 */
-	public void setDeclared()
+	public void write( final IndentingWriter out )
+		throws IOException
 	{
-		_declared = true;
+		if ( isDeclared() )
+		{
+			out.write( "texture { " );
+			out.write( getTextureCode( _name ) );
+			out.write( " }" );
+			out.newLine();
+		}
+		else if ( _free != null )
+		{
+			out.writeln( _free );
+		}
+		else
+		{
+			out.writeln( "texture" );
+			out.writeln( "{" );
+			out.indentIn();
+
+			out.writeln( "pigment" );
+			out.writeln( "{" );
+			out.indentIn();
+
+			final PovVector rgb = _rgb;
+			if ( rgb != null )
+			{
+				out.write( "color rgb " );
+				rgb.write( out );
+				out.newLine();
+			}
+
+			if ( _map != null )
+			{
+				//String type = map.substring( map.lastIndexOf( (int)'.' ) + 1 );
+
+				out.write( "image_map { " );
+				out.write( _type );
+				out.write( " \"" );
+				out.write( _map );
+				out.write( "\" }" );
+				out.newLine();
+			}
+
+			if ( _filter > 0.0 )
+			{
+				out.write( "filter " );
+				out.write( format( _filter ) );
+				out.newLine();
+			}
+
+			out.indentOut();
+			out.writeln( "}" );
+
+			out.writeln( "finish" );
+			out.writeln( "{" );
+			out.indentIn();
+
+			if ( _phong      > 0.0 ) { out.write( "phong "      ); out.writeln( format( _phong      ) ); }
+			if ( _ambient    > 0.0 ) { out.write( "ambient "    ); out.writeln( format( _ambient    ) ); }
+			if ( _diffuse    > 0.0 ) { out.write( "diffuse "    ); out.writeln( format( _diffuse    ) ); }
+			if ( _specular   > 0.0 ) { out.write( "specular "   ); out.writeln( format( _specular   ) ); }
+			if ( _reflection > 0.0 ) { out.write( "reflection " ); out.writeln( format( _reflection ) ); }
+			if ( _metallic         ) out.writeln( "metallic"    );
+
+			out.indentOut();
+			out.writeln( "}" );
+
+			final PovVector scale = _scale;
+			if ( scale != null )
+			{
+				out.write( "scale " );
+				scale.write( out );
+				out.newLine();
+			}
+
+			out.indentOut();
+			out.writeln( "}" );
+		}
+	}
+
+	public final boolean equals( final Object other )
+	{
+		final boolean equals;
+
+		if ( other instanceof PovTexture )
+		{
+			final PovTexture texture = (PovTexture)other;
+			equals =  _name.equalsIgnoreCase( texture._name );
+		}
+		else
+		{
+			equals = false;
+		}
+
+		return equals;
 	}
 }

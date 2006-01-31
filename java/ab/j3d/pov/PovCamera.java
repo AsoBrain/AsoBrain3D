@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2005
+ * (C) Copyright Numdata BV 2000-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -45,60 +45,104 @@ public class PovCamera
 	/**
 	 * Location of camera.
 	 */
-	public final PovVector location;
+	private PovVector _location;
 
 	/**
 	 * Direction/target of camera.
 	 */
-	public final PovVector lookAt;
-
-	public PovVector right = new PovVector( 1.33 , 0 , 0 );
-
-	public double angle = 30.0;
+	private PovVector _lookAt;
 
 	/**
-	 * Camera constructor comment.
+	 * Right vector of camera. Also determines aspect ratio (e.g. "&lt;1.33 , 0.0 , 0.0&gt;" for a 4:3 aspect ratio).
 	 */
-	public PovCamera( String name , float x , float y , float z , float tx , float ty , float tz , double angle )
-	{
-		super( name );
+	private PovVector _right;
 
-		this.location = new PovVector( x , y , z );
-		this.lookAt   = new PovVector( tx , ty , tz );
-		this.angle    = angle;
+	/**
+	 * Camera opening angle in decimal degrees (aperture; typically 45).
+	 */
+	private double _angle;
+
+	/**
+	 * Construct camera.
+	 *
+	 * @param   name        Name of camera object.
+	 * @param   x           X coordinate location of camera in scene.
+	 * @param   y           Y coordinate location of camera in scene.
+	 * @param   z           Z coordinate location of camera in scene.
+	 * @param   tx          X coordinate location of target point in scene.
+	 * @param   ty          Y coordinate location of target point in scene.
+	 * @param   tz          Z coordinate location of target point in scene.
+	 * @param   angle       Camera opening angle in decimal degrees (aperture; typically 45).
+	 */
+	public PovCamera( final String name , final double x , final double y , final double z , final double tx , final double ty , final double tz , final double angle )
+	{
+		this( name , new PovVector( x , y , z ) , new PovVector( tx , ty , tz ) , null , angle );
 	}
 
 	/**
 	 * Construct camera.
+	 *
+	 * @param   name        Name of camera object.
+	 * @param   location    Location of camera in scene.
+	 * @param   lookAt      Location of target point in scene.
+	 * @param   angle       Camera opening angle in decimal degrees (aperture; typically 45).
 	 */
-	public PovCamera( String name , PovVector location , PovVector lookAt , double angle )
+	public PovCamera( final String name , final PovVector location , final PovVector lookAt , final double angle )
+	{
+		this ( name , location , lookAt , null , angle );
+	}
+
+	/**
+	 * Construct camera.
+	 *
+	 * @param   name        Name of camera object.
+	 * @param   location    Location of camera in scene.
+	 * @param   lookAt      Location of target point in scene.
+	 * @param   right       Right vector of camera (optional).
+	 * @param   angle       Camera opening angle in decimal degrees (aperture; typically 45).
+	 */
+	public PovCamera( final String name , final PovVector location , final PovVector lookAt , final PovVector right , final double angle )
 	{
 		super( name );
 
-		this.location = location;
-		this.lookAt   = lookAt;
-		this.angle    = angle;
-	}
-
-	public PovCamera( final String name , final PovVector location , final PovVector lookAt , final PovVector right , final double angle )
-	{
-		this( name, location , lookAt , angle );
-		if ( ( right != null ) && ( right.v.x > 0.0 ) )
-			this.right = right;
+		_location = location;
+		_lookAt   = lookAt;
+		_angle    = angle;
+		_right    = ( ( right != null ) && ( right.getX() > 0.0 ) ) ? right : new PovVector( 1.33 , 0.0 , 0.0 );
 	}
 
 	public void write( final IndentingWriter out )
 		throws IOException
 	{
-		out.writeln( "camera // " + name );
+		out.write( "camera" );
+		final String name = getName();
+		if ( name != null )
+		{
+			out.write( " // " );
+			out.write( name );
+		}
+		out.newLine();
 		out.writeln( "{" );
 		out.indentIn();
 
-		if ( xform == null )
+		final PovVector right = getRight();
+		out.write( "right  " );
+		right.write( out );
+		out.newLine();
+
+		out.write( "angle  " );
+		out.write( format( getAngle() ) );
+		out.newLine();
+
+		final PovMatrix transform = getTransform();
+		if ( transform == null )
 		{
+			final PovVector location = getLocation();
+			final PovVector lookAt   = getLookAt();
+
 			out.write( "location\t" );
 			location.write( out );
-			out.writeln();
+			out.newLine();
 
 			out.writeln( "up\t\t<0,0,1>" );
 
@@ -106,19 +150,97 @@ public class PovCamera
 
 			out.write( "look_at\t" );
 			lookAt.write( out );
-			out.writeln();
+			out.newLine();
+		}
+		else
+		{
+			writeTransformation( out );
 		}
 
-		out.write( "right    " );
-		right.write( out );
-		out.writeln();
-
-		out.write( "angle    " );
-		out.writeln( String.valueOf( angle ) );
-		writeTransformation( out );
 
 		out.indentOut();
 		out.writeln( "}" );
 	}
 
+	/**
+	 * Get location of camera.
+	 *
+	 * @return  Location of camera.
+	 */
+	public final PovVector getLocation()
+	{
+		return _location;
+	}
+
+	/**
+	 * Set location of camera.
+	 *
+	 * @param   location    Location of camera.
+	 */
+	public final void setLocation( final PovVector location )
+	{
+		_location = location;
+	}
+
+	/**
+	 * Get direction/target of camera.
+	 *
+	 * @return  Direction/target of camera.
+	 */
+	public final PovVector getLookAt()
+	{
+		return _lookAt;
+	}
+
+	/**
+	 * Set direction/target of camera.
+	 *
+	 * @param   lookAt  Direction/target of camera.
+	 */
+	public final void setLookAt( final PovVector lookAt )
+	{
+		_lookAt = lookAt;
+	}
+
+	/**
+	 * Get right vector of camera. Also determines aspect ratio (e.g.
+	 * "&lt;1.33 , 0.0 , 0.0&gt;" for a 4:3 aspect ratio).
+	 *
+	 * @return  Right vector of camera.
+	 */
+	public final PovVector getRight()
+	{
+		return _right;
+	}
+
+	/**
+	 * Set right vector of camera. Also determines aspect ratio (e.g.
+	 * "&lt;1.33 , 0.0 , 0.0&gt;" for a 4:3 aspect ratio).
+	 *
+	 * @param   right   Right vector of camera.
+	 */
+	public final void setRight( final PovVector right )
+	{
+		_right = right;
+	}
+
+	/**
+	 * Get camera opening angle (aperture).
+	 *
+	 * @return  Camera opening angle (decimal degrees; typically 45).
+	 */
+	public final double getAngle()
+	{
+		return _angle;
+	}
+
+	/**
+	 * Set camera opening angle (aperture).
+	 *
+	 * @param   angle   Camera opening angle (decimal degrees; typically 45).
+	 */
+	public final void setAngle( final double angle )
+	{
+		_angle = angle;
+	}
 }

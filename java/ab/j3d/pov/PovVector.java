@@ -41,7 +41,7 @@ public class PovVector
 	/**
 	 * Vector.
 	 */
-	public final Vector3D v;
+	private Vector3D _vector;
 
 	/**
 	 * Creates a vector based on a 3D vector.
@@ -50,7 +50,7 @@ public class PovVector
 	 */
 	public PovVector( final Vector3D v )
 	{
-		this.v = v;
+		_vector = v;
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class PovVector
 	 */
 	public PovVector( final double x , final double y , final double z )
 	{
-		v = Vector3D.INIT.set( x , y , z );
+		_vector = Vector3D.INIT.set( x , y , z );
 	}
 
 	/**
@@ -77,55 +77,84 @@ public class PovVector
 	}
 
 	/**
-	 * Check whether this object equals other object.
+	 * Get X component of vector.
 	 *
-	 * @param other The object to be compared to this object.
-	 * @return True if other equals this object, false otherwise.
+	 * @return  X component of vector.
 	 */
-	public boolean equals( final Object other )
+	public double getX()
 	{
-		boolean equals = false;
-
-		if ( other instanceof PovVector )
-		{
-			final PovVector otherVector = (PovVector)other;
-			if ( v.x == otherVector.v.x && v.y == otherVector.v.y && v.z == otherVector.v.z )
-			{
-				equals = true;
-			}
-		}
-
-		return equals;
+		return _vector.x;
 	}
 
 	/**
-	 * Returns a string representation of the vector.
+	 * Get Y component of vector.
 	 *
-	 * @return  String representation of the vector.
+	 * @return  Y component of vector.
 	 */
-	public String toString()
+	public double getY()
 	{
-		return "< " + FLOAT_FORMAT.format( v.x ) + " , " + FLOAT_FORMAT.format( v.y ) + " , " + FLOAT_FORMAT.format( v.z ) + " >";
+		return _vector.y;
 	}
 
 	/**
-	 * Writes the PovObject to the specified output stream.
-	 * The method should use indentIn and indentOut to maintain the overview.
+	 * Get Z component of vector.
 	 *
-	 * @param   out     IndentingWriter to use for writing.
-	 *
-	 * @throws  IOException when writing failed.
+	 * @return  Z component of vector.
 	 */
+	public double getZ()
+	{
+		return _vector.z;
+	}
+
+	/**
+	 * Set vector.
+	 *
+	 * @param   vector  Vector to set.
+	 */
+	public void setVector3D( final Vector3D vector )
+	{
+		_vector = vector;
+	}
+
 	public void write( final IndentingWriter out )
 		throws IOException
 	{
-		out.write( "< " );
-		out.write( FLOAT_FORMAT.format( v.x ) );
-		out.write( " , " );
-		out.write( FLOAT_FORMAT.format( v.y ) );
-		out.write( " , " );
-		out.write( FLOAT_FORMAT.format( v.z ) );
-		out.write( " >" );
+		out.write( (int)'<' );
+		out.write( format( getX() ) );
+		out.write( (int)',' );
+		out.write( format( getY() ) );
+		out.write( (int)',' );
+		out.write( format( getZ() ) );
+		out.write( (int)'>' );
 	}
 
+	public boolean equals( final Object other )
+	{
+		final boolean result;
+
+		if ( other == this )
+		{
+			result = true;
+		}
+		else if ( other instanceof PovVector )
+		{
+			result = _vector.equals( ((PovVector)other)._vector );
+		}
+		else
+		{
+			result = false;
+		}
+
+		return result;
+	}
+
+	public int hashCode()
+	{
+		return _vector.hashCode();
+	}
+
+	public String toString()
+	{
+		return "PovVector[x=" + getX() + ",y=" + getY() + ",z=" + getZ() + ']';
+	}
 }

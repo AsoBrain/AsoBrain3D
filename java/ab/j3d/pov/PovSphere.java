@@ -44,26 +44,26 @@ public class PovSphere
 	extends PovGeometry
 {
 	/**
-	 * The center of the sphere.
+	 * Center of the sphere.
 	 */
-	public final PovVector location;
+	private PovVector _location;
 
 	/**
-	 * The radius of the sphere.
+	 * Radius of the sphere.
 	 */
-	public final double  radius;
+	private double _radius;
 
 	/**
 	 * Creates a sphere with name at specified position and size.
 	 *
 	 * @param   name        Name of the shape.
 	 * @param   location    Position of the sphere.
-	 * @param   r           Radius of the sphere.
+	 * @param   radius      Radius of the sphere.
 	 * @param   texture     Texture of the shape.
 	 */
-	public PovSphere( final String name , final Vector3D location , final double r , final PovTexture texture )
+	public PovSphere( final String name , final Vector3D location , final double radius , final PovTexture texture )
 	{
-		this( name , new PovVector( location ) , r , texture );
+		this( name , new PovVector( location ) , radius , texture );
 	}
 
 	/**
@@ -77,29 +77,75 @@ public class PovSphere
 	public PovSphere( final String name , final PovVector location , final double radius , final PovTexture texture )
 	{
 		super( name , texture );
-		this.location = location;
-		this.radius = radius;
+
+		_location = location;
+		_radius   = radius;
 	}
 
 	/**
-	 * Writes the PovObject to the specified output stream.
-	 * The method should use indentIn and indentOut to maintain the overview.
+	 * Get center of the sphere.
 	 *
-	 * @param   out     IndentingWriter to use for writing.
-	 *
-	 * @throws  IOException when writing failed.
+	 * @return  Center of the sphere.
 	 */
+	public final PovVector getLocation()
+	{
+		return _location;
+	}
+
+	/**
+	 * Set center of the sphere.
+	 *
+	 * @param   location    Center of the sphere.
+	 */
+	public final void setLocation( final PovVector location )
+	{
+		_location = location;
+	}
+
+	/**
+	 * Get radius of the sphere.
+	 *
+	 * @return  Radius of the sphere.
+	 */
+	public final double getRadius()
+	{
+		return _radius;
+	}
+
+	/**
+	 * Set radius of the sphere.
+	 *
+	 * @param   radius  Radius of the sphere.
+	 */
+	public final void setRadius( final double radius )
+	{
+		_radius = radius;
+	}
+
 	public void write( final IndentingWriter out )
 		throws IOException
 	{
-		out.writeln( "sphere // " + name );
+		out.write( "sphere" );
+		final String name = getName();
+		if ( name != null )
+		{
+			out.write( " // " );
+			out.write( name );
+		}
+		out.newLine();
 		out.writeln( "{" );
 		out.indentIn();
-		out.write( String.valueOf( location ) );
+
+		final PovVector location = getLocation();
+		location.write( out );
 		out.write( ", " );
-		out.writeln( String.valueOf( radius ) );
+		out.write( format( getRadius() ) );
+		out.newLine();
+
 		writeTransformation( out );
+
 		writeTexture( out );
+
 		out.indentOut();
 		out.writeln( "}" );
 	}

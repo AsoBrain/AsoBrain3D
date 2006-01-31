@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2005
+ * (C) Copyright Numdata BV 2000-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,84 +43,84 @@ public final class PovLight
 	/**
 	 * The location of the light.
 	 */
-	public final PovVector location;
+	private PovVector _location;
 
 	/**
 	 * The color of the light.
 	 */
-	public final PovVector color;
+	private PovVector _color;
 
 	/**
 	 * If true, this light casts shadows (default in pov).
 	 * If false it is equal to the 'shadowless' parameter in pov.
 	 */
-	public boolean castShadows = true;
+	private boolean _castShadows;
 
 	/**
 	 * Light is a spot light.
 	 */
-	public boolean spotlight = false;
+	public boolean _spotlight;
 
 	/**
 	 * Target point of the spot ligt.
 	 */
-	public PovVector target = new PovVector( 0.0 , 0.0 , 0.0 );
+	private PovVector _pointAt;
 
 	/**
 	 * Fall-off distance.
 	 */
-	public double falloff = 200000.0;
+	private double _falloff;
 
 	/**
 	 * Spot light parameter.
 	 *
 	 * @FIXME need description
 	 */
-	public final double hotspot = -1.0;
+	private double _hotspot;
 
 	/**
 	 * Spot light parameter.
 	 *
 	 * @FIXME need description
 	 */
-	public final double tightness = 1.0;
+	private double _tightness;
 
 	/**
 	 * Adaptive parameter of spotlight.
 	 */
-	public double adaptive = 1.0;
+	private double _adaptive;
 
 	/**
 	 * Light parameter.
 	 *
 	 * @FIXME need description
 	 */
-	public boolean jitter = false;
+	private boolean _jitter;
 
 	/**
 	 * Light is an area light to soften shadows.
 	 */
-	public boolean arealight = false;
+	public boolean _arealight;
 
 	/**
 	 * Horizontal range vector of area array.
 	 */
-	public PovVector area_hor_size = null;
+	public PovVector _areaHorSize;
 
 	/**
 	 * Vertical range vector of  area array.
 	 */
-	public PovVector area_ver_size = null;
+	public PovVector _areaVerSize;
 
 	/**
 	 * Number of horizontal lights.
 	 */
-	public double area_hor_count = 1.0;
+	public double _areaHorCount;
 
 	/**
 	 * Number of vertical lights.
 	 */
-	public double area_ver_count = 1.0;
+	public double _areaVerCount;
 
 	/**
 	 * Creates a light with name, color, and optional shadow cast flag.
@@ -135,9 +135,22 @@ public final class PovLight
 	public PovLight( final String name , final double x , final double y , final double z , final PovVector color , final boolean castShadows )
 	{
 		super( name );
-		location    = new PovVector( x , y , z );
-		this.color       = color;
-		this.castShadows = castShadows;
+
+		_location     = new PovVector( x , y , z );
+		_color        = color;
+		_castShadows  = castShadows;
+		_spotlight    = false;
+		_pointAt      = new PovVector( 0.0 , 0.0 , 0.0 );
+		_falloff      = 200000.0;
+		_hotspot      = -1.0;
+		_tightness    = 1.0;
+		_adaptive     = 1.0;
+		_jitter       = false;
+		_arealight    = false;
+		_areaHorSize  = null;
+		_areaVerSize  = null;
+		_areaHorCount = 1.0;
+		_areaVerCount = 1.0;
 	}
 
 	/**
@@ -150,11 +163,11 @@ public final class PovLight
 	 */
 	public void makeArea( final PovVector horSize , final double horCount , final PovVector verSize , final double verCount )
 	{
-		arealight = true;
-		area_hor_size = horSize;
-		area_ver_size = verSize;
-		area_hor_count = horCount;
-		area_ver_count = verCount;
+		_arealight    = true;
+		_areaHorSize  = horSize;
+		_areaVerSize  = verSize;
+		_areaHorCount = horCount;
+		_areaVerCount = verCount;
 	}
 
 	/**
@@ -167,12 +180,8 @@ public final class PovLight
 	 */
 	public void makeArea( final PovVector horSize , final double horCount , final PovVector verSize , final double verCount , final boolean jitter )
 	{
-		arealight = true;
-		area_hor_size = horSize;
-		area_ver_size = verSize;
-		area_hor_count = horCount;
-		area_ver_count = verCount;
-		this.jitter = jitter;
+		makeArea( horSize , horCount , verSize , verCount );
+		_jitter = jitter;
 	}
 
 	/**
@@ -184,52 +193,95 @@ public final class PovLight
 	 */
 	public void makeSpot( final PovVector target , final double falloff , final double adaptive )
 	{
-		spotlight = true;
-		this.target = target;
-		this.falloff = falloff;
-		this.adaptive = adaptive;
+		_spotlight = true;
+		_pointAt   = target;
+		_falloff   = falloff;
+		_adaptive  = adaptive;
 	}
 
-	/**
-	 * Writes the PovObject to the specified output stream.
-	 * The method should use indentIn and indentOut to maintain the overview.
-	 *
-	 * @param   out     IndentingWriter to use for writing.
-	 *
-	 * @throws  IOException when writing failed.
-	 */
 	public void write( final IndentingWriter out )
 		throws IOException
 	{
-		out.writeln( "light_source // " + name );
+		out.write( "light_source" );
+		final String name = getName();
+		if ( name != null )
+		{
+			out.write( " // " );
+			out.write( name );
+		}
+		out.newLine();
 		out.writeln( "{" );
 		out.indentIn();
-		out.writeln( "" + location );
-		out.writeln( "color " + color );
-		if( !castShadows )
+
+		_location.write( out );
+		out.newLine();
+
+		out.write( "color " );
+		_color.write( out );
+		out.newLine();
+
+		if( !_castShadows )
+		{
 			out.writeln( "shadowless" );
-		if ( spotlight )
+		}
+
+		if ( _spotlight )
 		{
 			out.writeln( "spotlight" );
-			out.writeln( "point_at " + target );
-			if ( hotspot != -1 )
-				out.writeln( "hotspot " + hotspot );
-			if ( falloff != -1 )
-				out.writeln( "falloff " + falloff );
-			out.writeln( "adaptive " + adaptive );
-			out.writeln( "tightness " + tightness );
-			if ( jitter )
+
+			out.write( "point_at " );
+			_pointAt.write( out );
+			out.newLine();
+
+			if ( _hotspot != -1.0 )
+			{
+				out.write( "hotspot " );
+				out.write( format( _hotspot ) );
+				out.newLine();
+			}
+
+			if ( _falloff != -1.0 )
+			{
+				out.write( "falloff " );
+				out.write( format( _falloff ) );
+				out.newLine();
+			}
+
+			out.write( "adaptive " );
+			out.write( format( _adaptive ) );
+			out.newLine();
+
+			out.write( "tightness " );
+			out.write( format( _tightness ) );
+			out.newLine();
+
+			if ( _jitter )
+			{
 				out.writeln( "jitter" );
+			}
 		}
-		if ( arealight )
+
+		if ( _arealight )
 		{
-			out.writeln( "area_light " + area_hor_size + ", " + area_ver_size + ", " + area_hor_count + ", " + area_ver_count );
-			if ( jitter )
+			out.write( "area_light " );
+			_areaHorSize.write( out );
+			out.write( ", " );
+			_areaVerSize.write( out );
+			out.write( ", " );
+			out.write( format( _areaHorCount ) );
+			out.write( ", " );
+			out.write( format( _areaVerCount ) );
+			out.newLine();
+
+			if ( _jitter )
+			{
 				out.writeln( "jitter" );
+			}
 		}
+
 		writeTransformation( out );
+
 		out.indentOut();
-		out.write( "}" );
-		out.writeln();
+		out.writeln( "}" );
 	}
 }

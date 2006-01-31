@@ -21,12 +21,10 @@ package ab.j3d.pov;
 
 import java.io.IOException;
 
-import ab.j3d.model.Cylinder3D;
-
 import com.numdata.oss.io.IndentingWriter;
 
 /**
- * Pov Cylinder
+ * Pov cylinder.
  * <pre>
  * cone
  * {
@@ -47,39 +45,25 @@ public class PovCylinder
 	/**
 	 * Lower center of cylinder/cone.
 	 */
-	public final PovVector p1;
+	private PovVector _p1;
 
 	/**
 	 * Upper center of cylinder/cone.
 	 */
-	public final PovVector p2;
+	private PovVector _p2;
 
 	/**
 	 * The radius of the cylinder/cone at p1.
 	 */
-	public final double r1;
+	private double _r1;
 
 	/**
 	 * The radius of the cylinder/cone at p2.
 	 */
-	public final double r2;
+	private double _r2;
 
 	/**
-	 * Create cylinder based on Cylinder3D object.
-	 *
-	 * @param   name        Name of shape.
-	 * @param   c           Cylinder3D to use for specification.
-	 * @param   texture     Texture for shape.
-	 */
-	public PovCylinder( final String name , final Cylinder3D c , final PovTexture texture )
-	{
-		this( name , 0.0 , 0.0 , 0.0 , c.height , c.radiusBottom , c.radiusTop , texture );
-		setTransform( new PovMatrix( c.xform ) );
-	}
-
-	/**
-	 * Creates a cylinder with name, bounds and texture
-	 * using 8 doubles.
+	 * Creates a cylinder with name, bounds and texture using 8 doubles.
 	 *
 	 * @param   name        Name of the shape.
 	 * @param   x1          Bottom x-position of cylinder.
@@ -98,8 +82,7 @@ public class PovCylinder
 	}
 
 	/**
-	 * Creates a cylinder with name, bounds and texture
-	 * using 6 doubles.
+	 * Creates a cylinder with name, bounds and texture using 6 doubles.
 	 *
 	 * @param   name        Name of the shape.
 	 * @param   x           X-position of cylinder.
@@ -116,8 +99,7 @@ public class PovCylinder
 	}
 
 	/**
-	 * Creates a cylinder with name, bounds and texture
-	 * using 5 doubles.
+	 * Creates a cylinder with name, bounds and texture using 5 doubles.
 	 *
 	 * @param   name        Name of the shape.
 	 * @param   x           X-position of cylinder.
@@ -133,8 +115,8 @@ public class PovCylinder
 	}
 
 	/**
-	 * Creates a cylinder with name, bounds and texture
-	 * using 2 vectors for pos and height and 2 doubles for radius.
+	 * Creates a cylinder with name, bounds and texture using 2 vectors for
+	 * position and height and 2 doubles for radius.
 	 *
 	 * @param   name        Name of the shape.
 	 * @param   p1          Position of lower cap.
@@ -146,34 +128,124 @@ public class PovCylinder
 	public PovCylinder( final String name , final PovVector p1 , final double r1 , final PovVector p2 , final double r2 , final PovTexture texture )
 	{
 		super( name , texture );
-		this.p1   = p1;
-		this.p2   = p2;
-		this.r1   = r1;
-		this.r2   = r2;
+
+		_p1 = p1;
+		_r1 = r1;
+		_p2 = p2;
+		_r2 = r2;
 	}
 
 	/**
-	 * Writes the PovObject to the specified output stream.
-	 * The method should use indentIn and indentOut to maintain the overview.
+	 * Get lower center of cylinder/cone.
 	 *
-	 * @param   out     IndentingWriter to use for writing.
-	 *
-	 * @throws  IOException when writing failed.
+	 * @return  Lower center of cylinder/cone.
 	 */
+	public final PovVector getP1()
+	{
+		return _p1;
+	}
+
+	/**
+	 * Set lower center of cylinder/cone.
+	 *
+	 * @param   p1  Lower center of cylinder/cone.
+	 */
+	public final void setP1( final PovVector p1 )
+	{
+		_p1 = p1;
+	}
+
+	/**
+	 * Get upper center of cylinder/cone.
+	 *
+	 * @return  Upper center of cylinder/cone.
+	 */
+	public final PovVector getP2()
+	{
+		return _p2;
+	}
+
+	/**
+	 * Set upper center of cylinder/cone.
+	 *
+	 * @param   p2  Upper center of cylinder/cone.
+	 */
+	public final void setP2( final PovVector p2 )
+	{
+		_p2 = p2;
+	}
+
+	/**
+	 * Get radius of the cylinder/cone at p1.
+	 *
+	 * @return  Radius of the cylinder/cone at p1.
+	 */
+	public final double getR1()
+	{
+		return _r1;
+	}
+
+	/**
+	 * Set radius of the cylinder/cone at p1.
+	 *
+	 * @param   r1  Radius of the cylinder/cone at p1.
+	 */
+	public final void setR1( final double r1 )
+	{
+		_r1 = r1;
+	}
+
+	/**
+	 * Get radius of the cylinder/cone at p2.
+	 *
+	 * @return  Radius of the cylinder/cone at p2.
+	 */
+	public final double getR2()
+	{
+		return _r2;
+	}
+
+	/**
+	 * Set radius of the cylinder/cone at p2.
+	 *
+	 * @param   r2  Radius of the cylinder/cone at p2.
+	 */
+	public final void setR2( final double r2 )
+	{
+		_r2 = r2;
+	}
+
 	public void write( final IndentingWriter out )
 		throws IOException
 	{
-		out.writeln( "cone // " + name );
+		out.write( "cone" );
+		final String name = getName();
+		if ( name != null )
+		{
+			out.write( " // " );
+			out.write( name );
+		}
+		out.newLine();
 		out.writeln( "{" );
 		out.indentIn();
-		out.writeln( "" + p1 + " , " + r1 );
-		out.writeln( "" + p2 + " , " + r2 );
+
+		final PovVector p1 = getP1();
+		p1.write( out );
+		out.write( (int)',' );
+		out.write( format( getR1() ) );
+		out.newLine();
+
+		final PovVector p2 = getP2();
+		p2.write( out );
+		out.write( (int)',' );
+		out.write( format( getR2() ) );
+		out.newLine();
+
 		writeTransformation( out );
-		out.writeln();
-		out.indentIn();
+		out.newLine();
+
 		writeTexture( out );
 		out.indentOut();
 		out.writeln( "}" );
 	}
-
 }

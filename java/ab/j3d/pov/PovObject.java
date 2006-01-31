@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2005
+ * (C) Copyright Numdata BV 2000-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,6 @@
 package ab.j3d.pov;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.Locale;
 
@@ -38,7 +36,7 @@ public abstract class PovObject
 	/**
 	 * Number format to format numeric values as integers.
 	 */
-	public static final NumberFormat INT_FORMAT;
+	private static final NumberFormat INT_FORMAT;
 	static
 	{
 		final NumberFormat nf = NumberFormat.getIntegerInstance( Locale.US );
@@ -49,24 +47,50 @@ public abstract class PovObject
 	/**
 	 * Number format to format numeric as floating-point values.
 	 */
-	public static final NumberFormat FLOAT_FORMAT;
+	private static final NumberFormat FLOAT_FORMAT;
 	static
 	{
-		final NumberFormat nf = new DecimalFormat( "0.0#################################" , new DecimalFormatSymbols( Locale.US ) );
+		final NumberFormat nf = NumberFormat.getNumberInstance( Locale.US );
 		nf.setMinimumFractionDigits( 1 );
+		nf.setMaximumFractionDigits( 5 );
 		nf.setGroupingUsed( false );
 		FLOAT_FORMAT = nf;
 	}
 
 	/**
-	 * Writes the PovObject to the specified output stream.
-	 * The method should use indentIn and indentOut to maintain the overview.
+	 * Writes the PovObject to the specified writer.
+	 * <p>
+	 * The method should use {@link IndentingWriter#indentIn} and
+	 * {@link IndentingWriter#indentOut} to keep the output readable.
 	 *
-	 * @param   out     IndentingWriter to use for writing.
+	 * @param   out     Writer to use for output.
 	 *
 	 * @throws  IOException when writing failed.
 	 */
 	public abstract void write( final IndentingWriter out )
 		throws IOException;
 
+	/**
+	 * Format integer value.
+	 *
+	 * @param   value   Floating-point value.
+	 *
+	 * @return  Formatted string.
+	 */
+	protected static String format( final int value )
+	{
+		return INT_FORMAT.format( (long)value );
+	}
+
+	/**
+	 * Format float-point value.
+	 *
+	 * @param   value   Floating-point value.
+	 *
+	 * @return  Formatted string.
+	 */
+	protected static String format( final double value )
+	{
+		return FLOAT_FORMAT.format( ( value == -0.0 ) ? 0.0 : value );
+	}
 }
