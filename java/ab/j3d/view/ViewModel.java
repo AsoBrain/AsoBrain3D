@@ -34,6 +34,7 @@ import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.control.Control;
 import ab.j3d.model.Node3D;
+import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 import ab.j3d.pov.ViewModelToPovAction;
 
@@ -709,6 +710,29 @@ public abstract class ViewModel
 				view.removeControl( control );
 			}
 		}
+	}
+
+	/**
+	 * Get all (leaf) nodes in the scene being viewed.
+	 *
+	 * @return  A {@link Node3DCollection} with all nodes in the scene
+	 *          (may be empty, but never <code>null</code>).
+	 */
+	public Node3DCollection getScene()
+	{
+		final Node3DCollection result = new Node3DCollection();
+
+		final List nodes = _nodes;
+
+		for ( int i = 0 ; i < nodes.size() ; i++ )
+		{
+			final ViewModelNode node   = (ViewModelNode)nodes.get( i );
+			final Node3D        node3D = node.getNode3D();
+
+			node3D.gatherLeafs( result , Node3D.class , node.getTransform() , false );
+		}
+
+		return result;
 	}
 
 	/**
