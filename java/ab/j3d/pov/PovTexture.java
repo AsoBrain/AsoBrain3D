@@ -346,8 +346,8 @@ public class PovTexture
 
 		_filter   = 1.0 - (double)texture.opacity;
 		_ambient  =       (double)texture.ambientReflectivity;
-		_diffuse  = 2.0 * (double)texture.diffuseReflectivity;
-		_specular = 0.7 * (double)texture.specularReflectivity;
+		_diffuse  = 1.5 * (double)texture.diffuseReflectivity;
+		_specular = 0.6 * (double)texture.specularReflectivity;
 	}
 
 	/**
@@ -636,7 +636,7 @@ public class PovTexture
 		final PovVector rgb = _rgb;
 		if ( rgb != null )
 		{
-			out.write( "color rgb " );
+			out.write( "color      rgb " );
 			rgb.write( out );
 			out.newLine();
 		}
@@ -645,7 +645,7 @@ public class PovTexture
 		{
 			//String type = map.substring( map.lastIndexOf( (int)'.' ) + 1 );
 
-			out.write( "image_map { " );
+			out.write( "image_map  { " );
 			out.write( _type );
 			out.write( " \"" );
 			out.write( _map );
@@ -655,7 +655,7 @@ public class PovTexture
 
 		if ( _filter > 0.0 )
 		{
-			out.write( "filter " );
+			out.write( "filter     " );
 			out.write( format( _filter ) );
 			out.newLine();
 		}
