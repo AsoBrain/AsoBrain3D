@@ -52,11 +52,12 @@ public class SelectionControl
 
 	/**
 	 * Construct new SelectionControl.
-	 * @param   main    The main application class.
+	 *
+	 * @param   model   {@link Model} that keeps track of selection.
 	 */
-	public SelectionControl( final ControlTest main )
+	public SelectionControl( final Model model )
 	{
-		_model = main.getModel();
+		_model = model;
 	}
 
 	/**

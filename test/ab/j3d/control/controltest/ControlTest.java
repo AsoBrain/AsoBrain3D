@@ -56,8 +56,7 @@ public class ControlTest
 	 */
 	public ControlTest()
 	{
-		_model = new Model();
-		final Model model = _model;
+		final Model model = new Model();
 
 		model.addSceneElement( new Floor( 200.0 , 200.0 ) );
 
@@ -70,7 +69,8 @@ public class ControlTest
 		model.addSceneElement( new TetraHedron(  40.0, -20.0, 0.0, 20.0 ) );
 		model.addSceneElement( new TetraHedron( -20.0,  40.0, 0.0, 20.0 ) );
 
-		new GUI( this );
+		new GUI( model );
+		_model = model;
 	}
 
 	/**

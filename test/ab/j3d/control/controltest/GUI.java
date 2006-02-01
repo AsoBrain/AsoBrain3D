@@ -43,12 +43,12 @@ public class GUI
 	/**
 	 * Construct new GUI.
 	 *
-	 * @param   main    The main application that created this class.
+	 * @param   model   {@link Model} for which to create the {@link Model3D},
+	 *                  the {@link View3D}s and {@link Control}s.
 	 */
-	public GUI( final ControlTest main )
+	public GUI( final Model model )
 	{
-
-		final Model3D model3D = new Model3D( main );
+		final Model3D model3D = new Model3D( model );
 
 		final JFrame frame = new JFrame( "ControlTest" );
 		final Container contentPane = frame.getContentPane();
@@ -64,13 +64,13 @@ public class GUI
 		final JSplitPane verticalSplit = new JSplitPane( JSplitPane.VERTICAL_SPLIT   , topSplit              , bottomSplit         );
 		contentPane.add( verticalSplit , BorderLayout.CENTER );
 
-		final SelectionControl selectionControl = new SelectionControl( main );
+		final SelectionControl selectionControl = new SelectionControl( model );
 		view1.addControl( selectionControl );
 		view2.addControl( selectionControl );
 		view3.addControl( selectionControl );
 		view4.addControl( selectionControl );
 
-		final MoveControl moveControl = new MoveControl( main );
+		final MoveControl moveControl = new MoveControl( model );
 		view1.addControl( moveControl );
 		view2.addControl( moveControl );
 		view3.addControl( moveControl );

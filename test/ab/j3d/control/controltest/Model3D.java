@@ -80,7 +80,7 @@ public final class Model3D
 	private static final TextureSpec FACE_SELECTION_TEXTURE = new TextureSpec( Color.MAGENTA );
 
 	/**
-	 * Model whose objects should be translated to 3d.
+	 * {@link Model} whose objects should be translated to 3d.
 	 */
 	private final Model _model;
 
@@ -95,16 +95,14 @@ public final class Model3D
 	private final Set _elements;
 
 	/**
-	 * Construct new Model3D.
+	 * Construct new Model3D to represent the given {@link Model} in 3D.
 	 *
-	 * @param   main    The main application that holds the {@link Model} .
+	 * @param   model   {@link Model} whose objects should be translated to 3d.
 	 *
 	 * @throws  NullPointerException if <code>main</code> is <code>null</code>.
 	 */
-	public Model3D( final ControlTest main )
+	public Model3D( final Model model )
 	{
-		final Model model = main.getModel();
-
 		final PropertyChangeListener propertyListener = new PropertyChangeListener()
 		{
 			public void propertyChange( final PropertyChangeEvent event )

@@ -32,8 +32,9 @@ import ab.j3d.control.controltest.model.TetraHedron;
 import ab.j3d.control.controltest.model.SceneElement;
 
 /**
- * The SelectionControl handles events from the View, and moves
- * {@link TetraHedron}s when the user drags the mouse while one is selected.
+ * The {@link MoveControl} extends {@link Control} to handle events from a
+ * {@link ab.j3d.view.ViewModelView}. It moves {@link TetraHedron}s when the
+ * user drags the mouse while one is selected.
  *
  * @author  Mart Slot
  * @version $Revision$ $Date$
@@ -42,12 +43,12 @@ public class MoveControl
 	implements Control
 {
 	/**
-	 * The {@link Model} that keeps track of selection.
+	 * The {@link Model} that holds all objects in the scene. 
 	 */
 	private Model _model;
 
 	/**
-	 * Event number of the last control event.
+	 * Event number of the last {@link MouseControlEvent}.
 	 *
 	 * @see MouseControlEvent#getNumber()
 	 */
@@ -61,13 +62,13 @@ public class MoveControl
 	private Vector3D _dragDifference;
 
 	/**
-	 * Construct new MoveControl.
+	 * Construct new {@link MoveControl}.
 	 *
-	 * @param   main    The main application class.
+	 * @param   model   {@link Model} that holds all objects in the scene.
 	 */
-	public MoveControl( final ControlTest main )
+	public MoveControl( final Model model )
 	{
-		_model = main.getModel();
+		_model = model;
 
 		_lastPressNumber = -1;
 		_dragDifference = Vector3D.INIT;
@@ -76,8 +77,8 @@ public class MoveControl
 	/**
 	 * Handles a {@link ControlEvent}. If the user presses the mouse while over
 	 * a selected {@link TetraHedron}, dragging is started. While the user drags
-	 * the TetraHedron is moved along with the mouse over the ground plane.
-	 * Dragging stops when the user releases the mouse.<p>
+	 * the hedron is moved along with the mouse over the ground plane. Dragging
+	 * stops when the user releases the mouse.<p>
 	 * This method returns <code>null</code> if an object was moved, and it
 	 * returns the original event if nothing happened.
 	 *
