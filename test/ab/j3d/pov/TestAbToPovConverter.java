@@ -19,6 +19,7 @@
  */
 package ab.j3d.pov;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -32,10 +33,10 @@ import ab.j3d.model.Box3D;
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Cylinder3D;
 import ab.j3d.model.ExtrudedObject2D;
-import ab.j3d.model.Light3D;
 import ab.j3d.model.Object3D;
 import ab.j3d.model.Sphere3D;
 import ab.j3d.view.ViewModel;
+import ab.j3d.view.ViewModelView;
 
 import com.numdata.oss.io.IndentingWriter;
 import com.numdata.oss.ui.ImageTools;
@@ -69,21 +70,24 @@ public final class TestAbToPovConverter
 		final String actual;
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
+			final ViewModel        viewModel       = testModel.getModel();
 			final AbToPovConverter converter       = new AbToPovConverter( texturesDirectory );
-			final PovScene         scene           = converter.convert( testModel.getModel() );
+			final PovScene         scene           = converter.convert( viewModel.getScene() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
+			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
 			scene.write( indentingWriter );
-			String temp = stringWriter.toString();
+
+			final String povScript = stringWriter.toString();
 
 			/*
 			 * The whole scene needs to be converted, but only the texture
 			 * definition part is needed.
 			 */
-			temp = temp.substring( temp.indexOf( " * Texture definitions" ) - 3 , temp.indexOf( " * Declared geometry" ) - 3 );
+			final int texturesStart         = povScript.indexOf( " * Texture definitions" ) - 3;
+			final int declaredGeometryStart = povScript.indexOf( " * Geometry" ) - 3;
 
-			actual = temp;
+			actual = povScript.substring( texturesStart , declaredGeometryStart );
 		}
 
 		final String expected =
@@ -92,228 +96,229 @@ public final class TestAbToPovConverter
 			" */\n" +
 
 			"#declare TEX_CUBE_BACK =\n" +
-			"    texture\n" +
-			"    {\n" +
-			"        pigment\n" +
-			"        {\n" +
-			"            image_map { jpeg \"" + texturesDirectory + "CUBE_BACK\" }\n" +
-			"        }\n" +
-			"        finish\n" +
-			"        {\n" +
-			"            phong 0.5\n" +
-			"            ambient 0.3\n" +
-			"            diffuse 0.3\n" +
-			"            specular 0.3\n" +
-			"            reflection 0.05\n" +
-			"        }\n" +
-			"    }\n\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_BACK\" }\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tphong      0.5\n" +
+			"\t\t\tambient    0.3\n" +
+			"\t\t\tdiffuse    0.45\n" +
+			"\t\t\tspecular   0.18\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
 
 			"#declare TEX_CUBE_BOTTOM =\n" +
-			"    texture\n" +
-			"    {\n" +
-			"        pigment\n" +
-			"        {\n" +
-			"            image_map { jpeg \"" + texturesDirectory + "CUBE_BOTTOM\" }\n" +
-			"        }\n" +
-			"        finish\n" +
-			"        {\n" +
-			"            phong 0.5\n" +
-			"            ambient 0.3\n" +
-			"            diffuse 0.3\n" +
-			"            specular 0.3\n" +
-			"            reflection 0.05\n" +
-			"        }\n" +
-			"    }\n\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_BOTTOM\" }\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tphong      0.5\n" +
+			"\t\t\tambient    0.3\n" +
+			"\t\t\tdiffuse    0.45\n" +
+			"\t\t\tspecular   0.18\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
 
 			"#declare TEX_CUBE_FRONT =\n" +
-			"    texture\n" +
-			"    {\n" +
-			"        pigment\n" +
-			"        {\n" +
-			"            image_map { jpeg \"" + texturesDirectory + "CUBE_FRONT\" }\n" +
-			"        }\n" +
-			"        finish\n" +
-			"        {\n" +
-			"            phong 0.5\n" +
-			"            ambient 0.3\n" +
-			"            diffuse 0.3\n" +
-			"            specular 0.3\n" +
-			"            reflection 0.05\n" +
-			"        }\n" +
-			"    }\n\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_FRONT\" }\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tphong      0.5\n" +
+			"\t\t\tambient    0.3\n" +
+			"\t\t\tdiffuse    0.45\n" +
+			"\t\t\tspecular   0.18\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
 
 			"#declare TEX_CUBE_LEFT =\n" +
-			"    texture\n" +
-			"    {\n" +
-			"        pigment\n" +
-			"        {\n" +
-			"            image_map { jpeg \"" + texturesDirectory + "CUBE_LEFT\" }\n" +
-			"        }\n" +
-			"        finish\n" +
-			"        {\n" +
-			"            phong 0.5\n" +
-			"            ambient 0.3\n" +
-			"            diffuse 0.3\n" +
-			"            specular 0.3\n" +
-			"            reflection 0.05\n" +
-			"        }\n" +
-			"    }\n\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_LEFT\" }\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tphong      0.5\n" +
+			"\t\t\tambient    0.3\n" +
+			"\t\t\tdiffuse    0.45\n" +
+			"\t\t\tspecular   0.18\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
 
 			"#declare TEX_CUBE_RIGHT =\n" +
-			"    texture\n" +
-			"    {\n" +
-			"        pigment\n" +
-			"        {\n" +
-			"            image_map { jpeg \"" + texturesDirectory + "CUBE_RIGHT\" }\n" +
-			"        }\n" +
-			"        finish\n" +
-			"        {\n" +
-			"            phong 0.5\n" +
-			"            ambient 0.3\n" +
-			"            diffuse 0.3\n" +
-			"            specular 0.3\n" +
-			"            reflection 0.05\n" +
-			"        }\n" +
-			"    }\n\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_RIGHT\" }\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tphong      0.5\n" +
+			"\t\t\tambient    0.3\n" +
+			"\t\t\tdiffuse    0.45\n" +
+			"\t\t\tspecular   0.18\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
 
 			"#declare TEX_CUBE_TOP =\n" +
-			"    texture\n" +
-			"    {\n" +
-			"        pigment\n" +
-			"        {\n" +
-			"            image_map { jpeg \"" + texturesDirectory + "CUBE_TOP\" }\n" +
-			"        }\n" +
-			"        finish\n" +
-			"        {\n" +
-			"            phong 0.5\n" +
-			"            ambient 0.3\n" +
-			"            diffuse 0.3\n" +
-			"            specular 0.3\n" +
-			"            reflection 0.05\n" +
-			"        }\n" +
-			"    }\n\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_TOP\" }\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tphong      0.5\n" +
+			"\t\t\tambient    0.3\n" +
+			"\t\t\tdiffuse    0.45\n" +
+			"\t\t\tspecular   0.18\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
 
 			"#declare TEX_MFCs =\n" +
-			"    texture\n" +
-			"    {\n" +
-			"        pigment\n" +
-			"        {\n" +
-			"            image_map { jpeg \"" + texturesDirectory + "MFCs\" }\n" +
-			"        }\n" +
-			"        finish\n" +
-			"        {\n" +
-			"            phong 0.5\n" +
-			"            ambient 0.3\n" +
-			"            diffuse 0.3\n" +
-			"            specular 0.3\n" +
-			"            reflection 0.05\n" +
-			"        }\n" +
-			"    }\n\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "MFCs\" }\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tphong      0.5\n" +
+			"\t\t\tambient    0.3\n" +
+			"\t\t\tdiffuse    0.45\n" +
+			"\t\t\tspecular   0.18\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
 
 			"#declare TEX_MPXs =\n" +
-			"    texture\n" +
-			"    {\n" +
-			"        pigment\n" +
-			"        {\n" +
-			"            image_map { jpeg \"" + texturesDirectory + "MPXs\" }\n" +
-			"        }\n" +
-			"        finish\n" +
-			"        {\n" +
-			"            phong 0.5\n" +
-			"            ambient 0.3\n" +
-			"            diffuse 0.3\n" +
-			"            specular 0.3\n" +
-			"            reflection 0.05\n" +
-			"        }\n" +
-			"    }\n\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "MPXs\" }\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tphong      0.5\n" +
+			"\t\t\tambient    0.3\n" +
+			"\t\t\tdiffuse    0.45\n" +
+			"\t\t\tspecular   0.18\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
 
 			"#declare TEX_RGB_0_0_255 =\n" +
-			"    texture\n" +
-			"    {\n" +
-			"        pigment { color rgb < 0.0 , 0.0 , 1.0 > }\n" +
-			"        finish\n" +
-			"        {\n" +
-			"            phong 0.5\n" +
-			"            ambient 0.3\n" +
-			"            diffuse 0.3\n" +
-			"            specular 0.3\n" +
-			"            reflection 0.05\n" +
-			"        }\n" +
-			"    }\n\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\tcolor      rgb <0.0,0.0,1.0>\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tphong      0.5\n" +
+			"\t\t\tambient    0.3\n" +
+			"\t\t\tdiffuse    0.45\n" +
+			"\t\t\tspecular   0.15\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
 
 			"#declare TEX_RGB_0_255_0 =\n" +
-			"    texture\n" +
-			"    {\n" +
-			"        pigment\n" +
-			"        {\n" +
-			"            color rgb < 0.0 , 1.0 , 0.0 >\n" +
-			"            filter 0.8\n" +
-			"        }\n" +
-			"        finish\n" +
-			"        {\n" +
-			"            phong 0.5\n" +
-			"            ambient 0.3\n" +
-			"            diffuse 0.3\n" +
-			"            specular 0.3\n" +
-			"            reflection 0.05\n" +
-			"        }\n" +
-			"    }\n\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\tcolor      rgb <0.0,1.0,0.0>\n" +
+			"\t\t\tfilter     0.8\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tphong      0.5\n" +
+			"\t\t\tambient    0.3\n" +
+			"\t\t\tdiffuse    0.45\n" +
+			"\t\t\tspecular   0.15\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
 
 			"#declare TEX_RGB_255_0_0 =\n" +
-			"    texture\n" +
-			"    {\n" +
-			"        pigment { color rgb < 1.0 , 0.0 , 0.0 > }\n" +
-			"        finish\n" +
-			"        {\n" +
-			"            phong 0.5\n" +
-			"            ambient 0.3\n" +
-			"            diffuse 0.3\n" +
-			"            specular 0.3\n" +
-			"            reflection 0.05\n" +
-			"        }\n" +
-			"    }\n\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\tcolor      rgb <1.0,0.0,0.0>\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tphong      0.5\n" +
+			"\t\t\tambient    0.3\n" +
+			"\t\t\tdiffuse    0.45\n" +
+			"\t\t\tspecular   0.15\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
 
 			"#declare TEX_RGB_255_0_255 =\n" +
-			"    texture\n" +
-			"    {\n" +
-			"        pigment { color rgb < 1.0 , 0.0 , 1.0 > }\n" +
-			"        finish\n" +
-			"        {\n" +
-			"            phong 0.5\n" +
-			"            ambient 0.3\n" +
-			"            diffuse 0.3\n" +
-			"            specular 0.3\n" +
-			"            reflection 0.05\n" +
-			"        }\n" +
-			"    }\n\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\tcolor      rgb <1.0,0.0,1.0>\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tphong      0.5\n" +
+			"\t\t\tambient    0.3\n" +
+			"\t\t\tdiffuse    0.45\n" +
+			"\t\t\tspecular   0.15\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
 
 			"#declare TEX_RGB_255_175_175 =\n" +
-			"    texture\n" +
-			"    {\n" +
-			"        pigment { color rgb < 1.0 , 0.6862745098039216 , 0.6862745098039216 > }\n" +
-			"        finish\n" +
-			"        {\n" +
-			"            phong 0.5\n" +
-			"            ambient 0.3\n" +
-			"            diffuse 0.3\n" +
-			"            specular 0.3\n" +
-			"            reflection 0.05\n" +
-			"        }\n" +
-			"    }\n\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\tcolor      rgb <1.0,0.68627,0.68627>\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tphong      0.5\n" +
+			"\t\t\tambient    0.3\n" +
+			"\t\t\tdiffuse    0.45\n" +
+			"\t\t\tspecular   0.15\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
 
 			"#declare TEX_RGB_255_255_255 =\n" +
-			"    texture\n" +
-			"    {\n" +
-			"        pigment { color rgb < 1.0 , 1.0 , 1.0 > }\n" +
-			"        finish\n" +
-			"        {\n" +
-			"            phong 0.5\n" +
-			"            ambient 0.3\n" +
-			"            diffuse 0.3\n" +
-			"            specular 0.3\n" +
-			"            reflection 0.05\n" +
-			"        }\n" +
-			"    }\n\n";
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\tcolor      rgb <1.0,1.0,1.0>\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tphong      0.5\n" +
+			"\t\t\tambient    0.3\n" +
+			"\t\t\tdiffuse    0.45\n" +
+			"\t\t\tspecular   0.15\n" +
+			"\t\t}\n" +
+			"\t}\n\n";
 
 		Assert.assertEquals( "Declaration generation error" , expected , actual );
 	}
@@ -330,27 +335,31 @@ public final class TestAbToPovConverter
 	{
 		final String actual;
 		{
-			final AbPovTestModel  testModel       = new AbPovTestModel();
-			final ViewModel       model           = testModel.getModel();
-			final Object[]        ids             = model.getViewIDs();
+			final AbPovTestModel testModel = new AbPovTestModel();
+			final ViewModel      model     = testModel.getModel();
+			final Object[]       ids       = model.getViewIDs();
 
-			//@TODO Test conversion of Camera3D when integrated in model.
-			final PovCamera       camera          = AbToPovConverter.convertCamera3D( model.getView( ids[ 0 ] ) );
+			final ViewModelView view          = model.getView( ids[ 0 ] );
+			final Matrix3D      viewTransform = view.getViewTransform();
+			final Component     viewComponent = view.getComponent();
+			final double        aspectRatio   = (double)viewComponent.getWidth() / (double)viewComponent.getHeight();
+
+			final PovCamera       camera          = AbToPovConverter.convertCamera3D( viewTransform.inverse() , view.getCamera() , aspectRatio );
 			final StringWriter    stringWriter    = new StringWriter();
-			final IndentingWriter indentingWriter = new IndentingWriter( stringWriter );
+			final IndentingWriter indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
 			camera.write( indentingWriter );
 			actual = stringWriter.toString();
 		}
 
-		final String expected = "camera // camera\n" +
+		final String expected = "camera\n" +
 		                        "{\n" +
-		                        "    right    < 1.33 , 0.0 , 0.0 >\n" +
-		                        "    angle    45.0\n" +
-		                        "    matrix < 1.0 , 0.0 , 0.0 ,\n" +
-		                        "             0.0 , 0.0 , 1.0 ,\n" +
-		                        "             0.0 , 1.0 , 0.0 ,\n" +
-		                        "             0.0 , -1000.0 , 0.0 >\n" +
+		                        "\tright  <1.33,0.0,0.0>\n" +
+		                        "\tangle  45.0\n" +
+		                        "\tmatrix < 1.0 , 0.0 , 0.0 ,\n" +
+		                        "\t         0.0 , 0.0 , 1.0 ,\n" +
+		                        "\t         0.0 , 1.0 , 0.0 ,\n" +
+		                        "\t         0.0 , -1000.0 , 0.0 >\n" +
 		                        "}\n";
 
 		Assert.assertEquals( "Camera to pov conversion error" , expected , actual );
@@ -370,26 +379,24 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovBox           povBox          = converter.convertBox3D( testModel.getRedXRotatedBox3D() );
+			final PovGeometry      povBox          = converter.convertBox3D( Matrix3D.INIT , testModel.getRedXRotatedBox3D() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
-
-			povBox.texture.setDeclared();
+			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
 			povBox.write( indentingWriter );
 			actual = stringWriter.toString();
 		}
 
 		final String expected =
-			"box // box\n" +
+			"box\n" +
 			"{\n" +
-			"    < 0.0 , 0.0 , 0.0 >,\n" +
-			"    < 100.0 , 200.0 , 100.0 >\n" +
-			"    texture { TEX_RGB_255_0_0 }\n" +
-			"    matrix < 1.0 , 0.0 , 0.0 ,\n" +
-			"             0.0 , 0.984807753012208 , 0.17364817766693033 ,\n" +
-			"             0.0 , -0.17364817766693033 , 0.984807753012208 ,\n" +
-			"             -200.0 , 0.0 , -250.0 >\n" +
+			"\t<0.0,0.0,0.0>,\n" +
+			"\t<100.0,200.0,100.0>\n" +
+			"\ttexture { TEX_RGB_255_0_0 }\n" +
+			"\tmatrix < 1.0 , 0.0 , 0.0 ,\n" +
+			"\t         0.0 , 0.98481 , 0.17365 ,\n" +
+			"\t         0.0 , -0.17365 , 0.98481 ,\n" +
+			"\t         -200.0 , 0.0 , -250.0 >\n" +
 			"}\n";
 
 		Assert.assertEquals( "RedBox3D to pov conversion error" , expected , actual );
@@ -411,26 +418,24 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovBox           povBox          = converter.convertBox3D( testModel.getGreenYRotatedBox3D() );
+			final PovGeometry      povBox          = converter.convertBox3D( Matrix3D.INIT , testModel.getGreenYRotatedBox3D() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
-
-			povBox.texture.setDeclared();
+			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
 			povBox.write( indentingWriter );
 			actual = stringWriter.toString();
 		}
 
 		final String expected =
-			"box // box\n" +
+			"box\n" +
 			"{\n" +
-			"    < 0.0 , 0.0 , 0.0 >,\n" +
-			"    < 100.0 , 200.0 , 100.0 >\n" +
-			"    texture { TEX_RGB_0_255_0 }\n" +
-			"    matrix < 0.984807753012208 , 0.0 , -0.17364817766693033 ,\n" +
-			"             0.0 , 1.0 , 0.0 ,\n" +
-			"             0.17364817766693033 , 0.0 , 0.984807753012208 ,\n" +
-			"             -50.0 , 0.0 , -250.0 >\n" +
+			"\t<0.0,0.0,0.0>,\n" +
+			"\t<100.0,200.0,100.0>\n" +
+			"\ttexture { TEX_RGB_0_255_0 }\n" +
+			"\tmatrix < 0.98481 , 0.0 , -0.17365 ,\n" +
+			"\t         0.0 , 1.0 , 0.0 ,\n" +
+			"\t         0.17365 , 0.0 , 0.98481 ,\n" +
+			"\t         -50.0 , 0.0 , -250.0 >\n" +
 			"}\n";
 
 		Assert.assertEquals( "GreenBox3D to pov conversion error" , expected , actual );
@@ -450,26 +455,24 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovBox           povBox          = converter.convertBox3D( testModel.getBlueZRotatedBox3D() );
+			final PovGeometry      povBox          = converter.convertBox3D( Matrix3D.INIT , testModel.getBlueZRotatedBox3D() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
-
-			povBox.texture.setDeclared();
+			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
 			povBox.write( indentingWriter );
 			actual = stringWriter.toString();
 		}
 
 		final String expected =
-			"box // box\n" +
+			"box\n" +
 			"{\n" +
-			"    < 0.0 , 0.0 , 0.0 >,\n" +
-			"    < 100.0 , 200.0 , 100.0 >\n" +
-			"    texture { TEX_RGB_0_0_255 }\n" +
-			"    matrix < 0.984807753012208 , 0.17364817766693033 , 0.0 ,\n" +
-			"             -0.17364817766693033 , 0.984807753012208 , 0.0 ,\n" +
-			"             0.0 , 0.0 , 1.0 ,\n" +
-			"             200.0 , 0.0 , -250.0 >\n" +
+			"\t<0.0,0.0,0.0>,\n" +
+			"\t<100.0,200.0,100.0>\n" +
+			"\ttexture { TEX_RGB_0_0_255 }\n" +
+			"\tmatrix < 0.98481 , 0.17365 , 0.0 ,\n" +
+			"\t         -0.17365 , 0.98481 , 0.0 ,\n" +
+			"\t         0.0 , 0.0 , 1.0 ,\n" +
+			"\t         200.0 , 0.0 , -250.0 >\n" +
 			"}\n";
 
 		Assert.assertEquals( "BlueBox3D to pov conversion error" , expected , actual );
@@ -489,9 +492,9 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovMesh2         mesh            = converter.convertObject3D( testModel.getTexturedBox3D() , Matrix3D.INIT );
+			final PovMesh2         mesh            = converter.convertObject3D( Matrix3D.INIT, testModel.getTexturedBox3D() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
+			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
 			mesh.write( indentingWriter );
 			actual = stringWriter.toString();
@@ -500,44 +503,40 @@ public final class TestAbToPovConverter
 		final String expected =
 			"mesh2\n" +
 			"{\n" +
-			"    vertex_vectors\n" +
-			"    {\n" +
-			"        8,\n" +
-			"        < -350.0 , 0.0 , 0.0 > , < -350.0 , 0.0 , 200.0 > , < -208.5786437626905 , 141.42135623730948 , 200.0 > ,\n" +
-			"        < -208.5786437626905 , 141.42135623730948 , 0.0 > , < -215.64971157455597 , 148.49242404917496 , 0.0 > , < -215.64971157455597 , 148.49242404917496 , 200.0 > ,\n" +
-			"        < -357.0710678118655 , 7.0710678118654755 , 200.0 > , < -357.0710678118655 , 7.0710678118654755 , 0.0 >\n" +
-			"    }\n" +
-			"    uv_vectors\n" +
-			"    {\n" +
-			"        12,\n" +
-			"        < 0.53125 , -3.0 > , < 0.53125 , 0.125 > , < 3.65625 , 0.125 > ,\n" +
-			"        < 3.65625 , -3.0 > , < 0.0 , -6.0 > , < 0.0 , 0.25 > ,\n" +
-			"        < 0.3125 , 0.25 > , < 0.3125 , -6.0 > , < 0.0 , 0.0625 > ,\n" +
-			"        < 0.3125 , 0.0625 > , < 0.3125 , 6.3125 > , < 0.0 , 6.3125 >\n" +
-			"    }\n" +
-			"    texture_list\n" +
-			"    {\n" +
-			"        2,\n" +
-			"        texture { TEX_MPXs }\n" +
-			"        texture { TEX_MFCs }\n" +
-			"    }\n" +
-			"    face_indices\n" +
-			"    {\n" +
-			"        12,\n" +
-			"        < 0 , 1 , 2 > , 0 , < 0 , 2 , 3 > , 0 , < 4 , 5 , 6 > , 0 ,\n" +
-			"        < 4 , 6 , 7 > , 0 , < 3 , 2 , 5 > , 1 , < 3 , 5 , 4 > , 1 ,\n" +
-			"        < 7 , 6 , 1 > , 1 , < 7 , 1 , 0 > , 1 , < 1 , 6 , 5 > , 1 ,\n" +
-			"        < 1 , 5 , 2 > , 1 , < 3 , 4 , 7 > , 1 , < 3 , 7 , 0 > , 1\n" +
-			"    }\n" +
-			"    uv_indices\n" +
-			"    {\n" +
-			"        12,\n" +
-			"        < 0 , 1 , 2 > , < 0 , 2 , 3 > , < 3 , 2 , 1 > ,\n" +
-			"        < 3 , 1 , 0 > , < 4 , 5 , 6 > , < 4 , 6 , 7 > ,\n" +
-			"        < 7 , 6 , 5 > , < 7 , 5 , 4 > , < 8 , 9 , 10 > ,\n" +
-			"        < 8 , 10 , 11 > , < 11 , 10 , 9 > , < 11 , 9 , 8 >\n" +
-			"    }\n" +
-			"    uv_mapping\n" +
+			"\tvertex_vectors\n" +
+			"\t{\n" +
+			"\t\t8,\n" +
+			"\t\t<-350.0,0.0,0.0> , <-208.57864,141.42136,0.0> , <-215.64971,148.49242,0.0> ,\n" +
+			"\t\t<-357.07107,7.07107,0.0> , <-350.0,0.0,200.0> , <-208.57864,141.42136,200.0> ,\n" +
+			"\t\t<-215.64971,148.49242,200.0> , <-357.07107,7.07107,200.0>\n" +
+			"\t}\n" +
+			"\tuv_vectors\n" +
+			"\t{\n" +
+			"\t\t12,\n" +
+			"\t\t<0.53125,-3.0> , <0.53125,0.125> , <3.65625,0.125> ,\n" +
+			"\t\t<3.65625,-3.0> , <0.0,-6.0> , <0.0,0.25> ,\n" +
+			"\t\t<0.3125,0.25> , <0.3125,-6.0> , <0.0,0.0625> ,\n" +
+			"\t\t<0.3125,0.0625> , <0.3125,6.3125> , <0.0,6.3125>\n" +
+			"\t}\n" +
+			"\ttexture_list\n" +
+			"\t{\n" +
+			"\t\t2,\n" +
+			"\t\ttexture { TEX_MPXs }\n" +
+			"\t\ttexture { TEX_MFCs }\n" +
+			"\t}\n" +
+			"\tface_indices\n" +
+			"\t{\n" +
+			"\t\t12,\n" +
+			"\t\t<0,4,5>,0 , <0,5,1>,0 , <2,6,7>,0 , <2,7,3>,0 , <1,5,6>,1 , <1,6,2>,1 ,\n" +
+			"\t\t<3,7,4>,1 , <3,4,0>,1 , <4,7,6>,1 , <4,6,5>,1 , <1,2,3>,1 , <1,3,0>,1\n" +
+			"\t}\n" +
+			"\tuv_indices\n" +
+			"\t{\n" +
+			"\t\t12,\n" +
+			"\t\t<0,1,2> , <0,2,3> , <3,2,1> , <3,1,0> , <4,5,6> , <4,6,7> ,\n" +
+			"\t\t<7,6,5> , <7,5,4> , <8,9,10> , <8,10,11> , <11,10,9> , <11,9,8>\n" +
+			"\t}\n" +
+			"\tuv_mapping\n" +
 			"}\n";
 
 		Assert.assertEquals( "Textured Box3D to pov conversion error" , expected , actual );
@@ -557,25 +556,23 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovSphere        sphere          = converter.convertSphere3D( testModel.getSphere3D() );
+			final PovGeometry      sphere          = converter.convertSphere3D( Matrix3D.INIT , testModel.getSphere3D() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
-
-			sphere.texture.setDeclared();
+			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
 			sphere.write( indentingWriter );
 			actual = stringWriter.toString();
 		}
 
 		final String expected =
-			"sphere // sphere\n" +
+			"sphere\n" +
 			"{\n" +
-			"    < 0.0 , 0.0 , 0.0 >, 50.0\n" +
-			"    matrix < 1.0 , 0.0 , 0.0 ,\n" +
-			"             0.0 , 1.0 , 0.0 ,\n" +
-			"             0.0 , 0.0 , 1.0 ,\n" +
-			"             0.0 , 300.0 , -200.0 >\n" +
-			"texture { TEX_RGB_0_0_255 }\n" +
+			"\t<0.0,0.0,0.0>, 50.0\n" +
+			"\tmatrix < 1.0 , 0.0 , 0.0 ,\n" +
+			"\t         0.0 , 1.0 , 0.0 ,\n" +
+			"\t         0.0 , 0.0 , 1.0 ,\n" +
+			"\t         0.0 , 300.0 , -200.0 >\n" +
+			"\ttexture { TEX_RGB_0_0_255 }\n" +
 			"}\n";
 
 		Assert.assertEquals( "Sphere3D to pov conversion error" , expected , actual );
@@ -595,26 +592,24 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovCylinder      cylinder        = converter.convertCylinder3D( testModel.getCylinder3D() );
+			final PovGeometry      cylinder        = converter.convertCylinder3D( Matrix3D.INIT , testModel.getCylinder3D() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
-
-			cylinder.texture.setDeclared();
+			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
 			cylinder.write( indentingWriter );
 			actual = stringWriter.toString();
 		}
 
 		final String expected =
-			"cone // cylinder\n" +
+			"cone\n" +
 			"{\n" +
-			"    < 0.0 , 0.0 , 0.0 > , 50.0\n" +
-			"    < 0.0 , 0.0 , 100.0 > , 50.0\n" +
-			"    matrix < 1.0 , 0.0 , 0.0 ,\n" +
-			"             0.0 , 1.0 , 0.0 ,\n" +
-			"             0.0 , 0.0 , 1.0 ,\n" +
-			"             0.0 , 0.0 , 150.0 >\n\n" +
-			"    texture { TEX_RGB_255_0_255 }\n" +
+			"\t<0.0,0.0,0.0>,50.0\n" +
+			"\t<0.0,0.0,100.0>,50.0\n" +
+			"\tmatrix < 1.0 , 0.0 , 0.0 ,\n" +
+			"\t         0.0 , 1.0 , 0.0 ,\n" +
+			"\t         0.0 , 0.0 , 1.0 ,\n" +
+			"\t         0.0 , 0.0 , 150.0 >\n\n" +
+			"\ttexture { TEX_RGB_255_0_255 }\n" +
 			"}\n";
 
 		Assert.assertEquals( "Cylinder3D to pov conversion error" , expected , actual );
@@ -634,26 +629,24 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovCylinder      cylinder        = converter.convertCylinder3D( testModel.getCone3D() );
+			final PovGeometry      cylinder        = converter.convertCylinder3D( Matrix3D.INIT , testModel.getCone3D() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
-
-			cylinder.texture.setDeclared();
+			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
 			cylinder.write( indentingWriter );
 			actual = stringWriter.toString();
 		}
 
 		final String expected =
-			"cone // cylinder\n" +
+			"cone\n" +
 			"{\n" +
-			"    < 0.0 , 0.0 , 0.0 > , 100.0\n" +
-			"    < 0.0 , 0.0 , 200.0 > , 50.0\n" +
-			"    matrix < 1.0 , 0.0 , 0.0 ,\n" +
-			"             0.0 , 0.7071067811865476 , 0.7071067811865475 ,\n" +
-			"             0.0 , -0.7071067811865475 , 0.7071067811865476 ,\n" +
-			"             250.0 , 0.0 , 0.0 >\n\n" +
-			"    texture { TEX_RGB_255_255_255 }\n" +
+			"\t<0.0,0.0,0.0>,100.0\n" +
+			"\t<0.0,0.0,200.0>,50.0\n" +
+			"\tmatrix < 1.0 , 0.0 , 0.0 ,\n" +
+			"\t         0.0 , 0.70711 , 0.70711 ,\n" +
+			"\t         0.0 , -0.70711 , 0.70711 ,\n" +
+			"\t         250.0 , 0.0 , 0.0 >\n\n" +
+			"\ttexture { TEX_RGB_255_255_255 }\n" +
 			"}\n";
 
 		Assert.assertEquals( "Cone3D to pov conversion error" , expected , actual );
@@ -673,9 +666,9 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovMesh2         mesh            = converter.convertObject3D( testModel.getColorCube() , Matrix3D.INIT );
+			final PovGeometry      mesh            = converter.convertObject3D( Matrix3D.INIT, testModel.getColorCube() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
+			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
 			mesh.write( indentingWriter );
 			actual = stringWriter.toString();
@@ -684,46 +677,42 @@ public final class TestAbToPovConverter
 		final String expected =
 			"mesh2\n" +
 			"{\n" +
-			"    vertex_vectors\n" +
-			"    {\n" +
-			"        8,\n" +
-			"        < -100.0 , -100.0 , 100.0 > , < -100.0 , 100.0 , 100.0 > , < 100.0 , 100.0 , 100.0 > ,\n" +
-			"        < 100.0 , -100.0 , 100.0 > , < -100.0 , 100.0 , -100.0 > , < -100.0 , -100.0 , -100.0 > ,\n" +
-			"        < 100.0 , -100.0 , -100.0 > , < 100.0 , 100.0 , -100.0 >\n" +
-			"    }\n" +
-			"    uv_vectors\n" +
-			"    {\n" +
-			"        4,\n" +
-			"        < 2.0 , 0.0 > , < 2.0 , 2.0 > , < 0.0 , 2.0 > ,\n" +
-			"        < 0.0 , 0.0 >\n" +
-			"    }\n" +
-			"    texture_list\n" +
-			"    {\n" +
-			"        6,\n" +
-			"        texture { TEX_CUBE_TOP }\n" +
-			"        texture { TEX_CUBE_BOTTOM }\n" +
-			"        texture { TEX_CUBE_FRONT }\n" +
-			"        texture { TEX_CUBE_BACK }\n" +
-			"        texture { TEX_CUBE_LEFT }\n" +
-			"        texture { TEX_CUBE_RIGHT }\n" +
-			"    }\n" +
-			"    face_indices\n" +
-			"    {\n" +
-			"        12,\n" +
-			"        < 0 , 1 , 2 > , 0 , < 0 , 2 , 3 > , 0 , < 4 , 5 , 6 > , 1 ,\n" +
-			"        < 4 , 6 , 7 > , 1 , < 5 , 0 , 3 > , 2 , < 5 , 3 , 6 > , 2 ,\n" +
-			"        < 7 , 2 , 1 > , 3 , < 7 , 1 , 4 > , 3 , < 4 , 1 , 0 > , 4 ,\n" +
-			"        < 4 , 0 , 5 > , 4 , < 6 , 3 , 2 > , 5 , < 6 , 2 , 7 > , 5\n" +
-			"    }\n" +
-			"    uv_indices\n" +
-			"    {\n" +
-			"        12,\n" +
-			"        < 0 , 1 , 2 > , < 0 , 2 , 3 > , < 0 , 1 , 2 > ,\n" +
-			"        < 0 , 2 , 3 > , < 0 , 1 , 2 > , < 0 , 2 , 3 > ,\n" +
-			"        < 0 , 1 , 2 > , < 0 , 2 , 3 > , < 0 , 1 , 2 > ,\n" +
-			"        < 0 , 2 , 3 > , < 0 , 1 , 2 > , < 0 , 2 , 3 >\n" +
-			"    }\n" +
-			"    uv_mapping\n" +
+			"\tvertex_vectors\n" +
+			"\t{\n" +
+			"\t\t8,\n" +
+			"\t\t<-100.0,-100.0,100.0> , <-100.0,100.0,100.0> , <100.0,100.0,100.0> ,\n" +
+			"\t\t<100.0,-100.0,100.0> , <-100.0,100.0,-100.0> , <-100.0,-100.0,-100.0> ,\n" +
+			"\t\t<100.0,-100.0,-100.0> , <100.0,100.0,-100.0>\n" +
+			"\t}\n" +
+			"\tuv_vectors\n" +
+			"\t{\n" +
+			"\t\t4,\n" +
+			"\t\t<2.0,0.0> , <2.0,2.0> , <0.0,2.0> ,\n" +
+			"\t\t<0.0,0.0>\n" +
+			"\t}\n" +
+			"\ttexture_list\n" +
+			"\t{\n" +
+			"\t\t6,\n" +
+			"\t\ttexture { TEX_CUBE_TOP }\n" +
+			"\t\ttexture { TEX_CUBE_BOTTOM }\n" +
+			"\t\ttexture { TEX_CUBE_FRONT }\n" +
+			"\t\ttexture { TEX_CUBE_BACK }\n" +
+			"\t\ttexture { TEX_CUBE_LEFT }\n" +
+			"\t\ttexture { TEX_CUBE_RIGHT }\n" +
+			"\t}\n" +
+			"\tface_indices\n" +
+			"\t{\n" +
+			"\t\t12,\n" +
+			"\t\t<0,1,2>,0 , <0,2,3>,0 , <4,5,6>,1 , <4,6,7>,1 , <5,0,3>,2 , <5,3,6>,2 ,\n" +
+			"\t\t<7,2,1>,3 , <7,1,4>,3 , <4,1,0>,4 , <4,0,5>,4 , <6,3,2>,5 , <6,2,7>,5\n" +
+			"\t}\n" +
+			"\tuv_indices\n" +
+			"\t{\n" +
+			"\t\t12,\n" +
+			"\t\t<0,1,2> , <0,2,3> , <0,1,2> , <0,2,3> , <0,1,2> , <0,2,3> ,\n" +
+			"\t\t<0,1,2> , <0,2,3> , <0,1,2> , <0,2,3> , <0,1,2> , <0,2,3>\n" +
+			"\t}\n" +
+			"\tuv_mapping\n" +
 			"}\n";
 
 		Assert.assertEquals( "ColorCube3D to pov conversion error" , expected , actual );
@@ -743,9 +732,9 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovMesh2         mesh            = converter.convertObject3D( testModel.getExtrudedObject2D() , Matrix3D.INIT );
+			final PovGeometry      mesh            = converter.convertObject3D( Matrix3D.INIT, testModel.getExtrudedObject2D() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = new IndentingWriter( stringWriter );
+			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
 			mesh.write( indentingWriter );
 			actual = stringWriter.toString();
@@ -754,42 +743,32 @@ public final class TestAbToPovConverter
 		final String expected =
 			"mesh2\n" +
 			"{\n" +
-			"    vertex_vectors\n" +
-			"    {\n" +
-			"        8,\n" +
-			"        < -400.0 , 0.0 , -250.0 > , < -400.0 , 100.0 , -150.0 > , < -300.0 , 100.0 , -150.0 > ,\n" +
-			"        < -300.0 , 0.0 , -250.0 > , < -300.0 , 200.0 , -150.0 > , < -300.0 , 100.0 , -250.0 > ,\n" +
-			"        < -400.0 , 200.0 , -150.0 > , < -400.0 , 100.0 , -250.0 >\n" +
-			"    }\n" +
-			"    face_indices\n" +
-			"    {\n" +
-			"        8,\n" +
-			"        < 0 , 1 , 2 > , < 0 , 2 , 3 > , < 3 , 2 , 4 > ,\n" +
-			"        < 3 , 4 , 5 > , < 5 , 4 , 6 > , < 5 , 6 , 7 > ,\n" +
-			"        < 7 , 6 , 1 > , < 7 , 1 , 0 >\n" +
-			"    }\n" +
-			"    uv_indices\n" +
-			"    {\n" +
-			"        8,\n" +
-			"        < 0 , 0 , 0 > , < 0 , 0 , 0 > , < 0 , 0 , 0 > ,\n" +
-			"        < 0 , 0 , 0 > , < 0 , 0 , 0 > , < 0 , 0 , 0 > ,\n" +
-			"        < 0 , 0 , 0 > , < 0 , 0 , 0 >\n" +
-			"    }\n" +
-			"    texture { TEX_RGB_255_175_175 }\n" +
+			"\tvertex_vectors\n" +
+			"\t{\n" +
+			"\t\t8,\n" +
+			"\t\t<-400.0,0.0,-250.0> , <-400.0,100.0,-150.0> , <-300.0,0.0,-250.0> ,\n" +
+			"\t\t<-300.0,100.0,-150.0> , <-300.0,100.0,-250.0> , <-300.0,200.0,-150.0> ,\n" +
+			"\t\t<-400.0,100.0,-250.0> , <-400.0,200.0,-150.0>\n" +
+			"\t}\n" +
+			"\tface_indices\n" +
+			"\t{\n" +
+			"\t\t8,\n" +
+			"\t\t<0,1,3> , <0,3,2> , <2,3,5> , <2,5,4> , <4,5,7> , <4,7,6> ,\n" +
+			"\t\t<6,7,1> , <6,1,0>\n" +
+			"\t}\n" +
+			"\ttexture { TEX_RGB_255_175_175 }\n" +
 			"}\n";
 
 		Assert.assertEquals( "ExtrudedObject2D to pov conversion error" , expected , actual );
 	}
 
 	/**
-	 * This method tests the conversion of a {@link Light3D} object to a
-	 * {@link PovLight}.
+	 * This method tests the {@link AbToPovConverter#convertLight3D} method.
 	 *
-	 * @throws IOException When there was a problem writing to the
-	 * {@link IndentingWriter}.
+	 * @throws  Exception if the test fails.
 	 */
 	public static void testLight3DToPov()
-		throws IOException
+		throws Exception
 	{
 		final String actual;
 		{
@@ -797,9 +776,9 @@ public final class TestAbToPovConverter
 			//final AbPovTestModel  testModel       = new AbPovTestModel();
 
 			final Matrix3D        transform       = Matrix3D.INIT.setTranslation( 500.0 , -500.0 , 500.0 );
-			final PovLight        light           = AbToPovConverter.convertLight3D( /* testModel.getLight3D() , */ transform );
+			final PovLight        light           = AbToPovConverter.convertLight3D( transform , null );
 			final StringWriter    stringWriter    = new StringWriter();
-			final IndentingWriter indentingWriter = new IndentingWriter( stringWriter );
+			final IndentingWriter indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
 			light.write( indentingWriter );
 			actual = stringWriter.toString();
@@ -808,12 +787,8 @@ public final class TestAbToPovConverter
 		final String expected =
 			"light_source // light\n" +
 			"{\n" +
-			"    < 0.0 , 0.0 , 0.0 >\n" +
-			"    color < 1.0 , 1.0 , 1.0 >\n" +
-			"    matrix < 1.0 , 0.0 , 0.0 ,\n" +
-			"             0.0 , 1.0 , 0.0 ,\n" +
-			"             0.0 , 0.0 , 1.0 ,\n" +
-			"             500.0 , -500.0 , 500.0 >\n" +
+			"\t<500.0,-500.0,500.0>\n" +
+			"\tcolor <1.0,1.0,1.0>\n" +
 			"}\n";
 
 		Assert.assertEquals( "Light3D to pov conversion error" , expected , actual );
@@ -851,13 +826,18 @@ public final class TestAbToPovConverter
 	 */
 	public static void writeToFile()
 	{
-		final AbPovTestModel   testModel = new AbPovTestModel();
-		final ViewModel        viewModel = testModel.getModel();
-		final AbToPovConverter converter = new AbToPovConverter( getTexturesDirectory() );
-		final PovScene         scene     = converter.convert( viewModel );
-		final Object[]         ids       = viewModel.getViewIDs();
+		final AbPovTestModel testModel = new AbPovTestModel();
+		final ViewModel      viewModel = testModel.getModel();
 
-		scene.add( AbToPovConverter.convertCamera3D( viewModel.getView( ids[ 0 ] ) ) );
+		final Object[]      viewIDs       = viewModel.getViewIDs();
+		final ViewModelView view          = viewModel.getView( viewIDs[ 0 ] );
+		final Matrix3D      viewTransform = view.getViewTransform();
+		final Component     viewComponent = view.getComponent();
+		final double        aspectRatio   = (double)viewComponent.getWidth() / (double)viewComponent.getHeight();
+
+		final AbToPovConverter converter = new AbToPovConverter( getTexturesDirectory() );
+		final PovScene scene = converter.convert( viewModel.getScene() );
+		scene.add( AbToPovConverter.convertCamera3D( viewTransform.inverse(), view.getCamera(), aspectRatio ) );
 		scene.write( new File( "test.pov" ) );
 	}
 }
