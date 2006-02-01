@@ -100,13 +100,13 @@ public class MoveControl
 			{
 				if ( selection instanceof TetraHedron )
 				{
-					final TetraHedron selectedHedron = (TetraHedron)selection;
-					final List<Intersection> intersections = event.getIntersections();
-					final Intersection intersection = intersections.get( 0 );
+					final TetraHedron  selectedHedron = (TetraHedron)selection;
+					final List         intersections  = event.getIntersections();
+					final Intersection intersection   = (Intersection)intersections.get( 0 );
 
 					if ( selectedHedron == intersection.getID() )
 					{
-						final Vector3D dragStart = event.getIntersectionWithPlane( Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ), Vector3D.INIT );
+						final Vector3D dragStart = event.getIntersectionWithPlane( Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) , Vector3D.INIT );
 
 						if ( dragStart != null )
 						{
@@ -122,9 +122,8 @@ public class MoveControl
 			{
 				if ( event.getNumber() == _lastPressNumber )
 				{
-						if ( selection instanceof TetraHedron )
-						{
-
+					if ( selection instanceof TetraHedron )
+					{
 						final TetraHedron selectedHedron = (TetraHedron)selection;
 
 						final Vector3D dragPosition = event.getIntersectionWithPlane( Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ), Vector3D.INIT );
@@ -137,8 +136,8 @@ public class MoveControl
 							selectedHedron.setY( location.y );
 
 							result = null;
-							}
 						}
+					}
 				}
 			}
 			else if ( type == MouseControlEvent.MOUSE_RELEASED )
