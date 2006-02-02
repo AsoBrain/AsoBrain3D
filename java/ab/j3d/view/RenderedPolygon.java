@@ -127,32 +127,46 @@ public final class RenderedPolygon
 	public double _planeConstant;
 
 	/**
-	 * The smallest of all the z values of this polygon
-	 */
-	public int _minZ;
-
-	/**
-	 * The largest of all the z values of this polygon
-	 */
-	public int _maxZ;
-
+	* The smallest of all the x values of this polygon.
+	*/
 	public int _minX;
 
+	/**
+	* The largest of all the x values of this polygon.
+	*/
 	public int _maxX;
 
+	/**
+	* The smallest of all the y values of this polygon.
+	*/
 	public int _minY;
 
+	/**
+	* The largest of all the y values of this polygon.
+	*/
 	public int _maxY;
 
 	/**
-	 * Debugging variable. Not for other uses.
+	 * The smallest of all the z values of this polygon.
 	 */
-	public String name = "";
+	public double _minZ;
 
 	/**
-	 * Debugging variable. Not for other uses.
+	 * The largest of all the z values of this polygon.
 	 */
-	public String text = "";
+	public double _maxZ;
+
+	/**
+	 * Debugging variable. Not for other uses. Should be removed once
+	 * {@link RenderQueue} works properly.
+	 */
+	public String _name = "";
+
+	/**
+	 * Debugging variable. Not for other uses. Should be removed once
+	 * {@link RenderQueue} works properly.
+	 */
+	public String _text = "";
 
 	/**
 	 * Construct polygon.
@@ -188,12 +202,12 @@ public final class RenderedPolygon
 		_planeNormalY        = 0.0;
 		_planeNormalZ        = 1.0;
 		_planeConstant       = 0.0;
-		_minZ                = 0;
-		_maxZ                = 0;
 		_minX                = 0;
 		_maxX                = 0;
 		_minY                = 0;
 		_maxY                = 0;
+		_minZ                = 0.0;
+		_maxZ                = 0.0;
 		_texture             = null;
 		_alternateAppearance = false;
 
@@ -233,8 +247,12 @@ public final class RenderedPolygon
 		final Object3D object       = face.getObject();
 		final int[]    pointIndices = face.getPointIndices();
 
-		_minZ = Integer.MAX_VALUE;
-		_maxZ = Integer.MIN_VALUE;
+		int    minX = Integer.MAX_VALUE;
+		int    maxX = Integer.MIN_VALUE;
+		int    minY = Integer.MAX_VALUE;
+		int    maxY = Integer.MIN_VALUE;
+		double minZ = Double.MAX_VALUE;
+		double maxZ = Double.MIN_VALUE;
 		for ( int vertexIndex = 0 ; vertexIndex < pointCount ; vertexIndex++ )
 		{
 			final int pointIndex  = pointIndices[ vertexIndex ];
@@ -248,17 +266,22 @@ public final class RenderedPolygon
 
 			viewX[ vertexIndex ] = objectViewCoords[ pointIndex3     ];
 			viewY[ vertexIndex ] = objectViewCoords[ pointIndex3 + 1 ];
-			double z             = objectViewCoords[ pointIndex3 + 2 ];
-			viewZ[ vertexIndex ] = z;
+			viewZ[ vertexIndex ] = objectViewCoords[ pointIndex3 + 2 ];
+			final double z       = objectViewCoords[ pointIndex3 + 2 ];
 
-			_minZ = (int)z < _minZ ? (int)z : _minZ;
-			_maxZ = (int)z > _maxZ ? (int)z : _maxZ;
-			_minX = projX < _minX ? projX : _minX;
-			_maxX = projX > _maxX ? projX : _maxX;
-			_minY = projY < _minY ? projY : _minY;
-			_maxY = projY > _maxY ? projY : _maxY;
-
+			minX = projX < minX ? projX : minX;
+			maxX = projX > maxX ? projX : maxX;
+			minY = projY < minY ? projY : minY;
+			maxY = projY > maxY ? projY : maxY;
+			minZ = z     < minZ ? z     : minZ;
+			maxZ = z     > maxZ ? z     : maxZ;
 		}
+		_minX = minX;
+		_maxX = maxX;
+		_minY = minY;
+		_maxY = maxY;
+		_minZ = minZ;
+		_maxZ = maxZ;
 
 		final double planeNormalX;
 		final double planeNormalY;
@@ -300,8 +323,6 @@ public final class RenderedPolygon
 		_planeConstant       = planeConstant;
 		_texture             = face.getTexture();
 		_alternateAppearance = alternateAppearance;
-
-//		name = (String)object.getTag();
 	}
 
 	/**
@@ -359,24 +380,45 @@ public final class RenderedPolygon
 		return result;
 	}
 
+	/**
+	 * Returns a string with the values of all fields of this
+	 * {@link RenderedPolygon}. This string is formatted along multiple lines.
+	 *
+	 * @return string with the values of all fields of this
+	 *          {@link RenderedPolygon}.
+	 */
 	public String toFriendlyString(){
 		String string = "";
 
-		string += "Object: " + ( _object == null ? "null" : _object.toString() ) + "\n";
-		string += "Texture: " + ( _texture == null ? "null" : _texture.code ) + "\n";
-		string += "Alternate appearance: " + _alternateAppearance + "\n";
-		string += "Normal: " + Vector3D.toFriendlyString( Vector3D.INIT.set( _planeNormalX, _planeNormalY, _planeNormalZ) ) + "\n";
-		string += "Plane constant: " + _planeConstant + "\n";
+		string += "Object: "               + (  _object == null ? "null" : _object.toString() )                                              + "\n";
+		string += "Texture: "              + ( _texture == null ? "null" : _texture.code      )                                              + "\n";
+		string += "Alternate appearance: " + _alternateAppearance                                                                            + "\n";
+		string += "Normal: "               + Vector3D.toFriendlyString( Vector3D.INIT.set( _planeNormalX , _planeNormalY , _planeNormalZ ) ) + "\n";
+		string += "Plane constant: "       + _planeConstant                                                                                  + "\n";
 		string += "Coordinates: \n";
+
+		StringBuffer sb = new StringBuffer();
 		for ( int i = 0; i < _pointCount; i++ )
 		{
-			string += "\t" + Vector3D.toFriendlyString( Vector3D.INIT.set( _viewX[i] , _viewY[i], _viewZ[i] ) ) + "\n";
+			sb.append( "\t" );
+			sb.append( Vector3D.toFriendlyString( Vector3D.INIT.set( _viewX[ i ] , _viewY[ i ] , _viewZ[ i ] ) ) );
+			sb.append( "\n" );
 		}
+		string += sb.toString();
+
 		string += "Projected coordinates:\n";
-		for ( int i = 0; i < _pointCount; i++ )
+
+		sb = new StringBuffer();
+		for ( int i = 0 ; i < _pointCount ; i++ )
 		{
-			string += "\t[ " + _projectedX[i] + " , " + _projectedY[i]  + " ]\n";
+			sb.append( "\t[ " );
+			sb.append( _projectedX[ i ] );
+			sb.append( " , " );
+			sb.append( _projectedY[ i ] );
+			sb.append( " ]\n" );
 		}
+		string += sb.toString();
+
 		string += "Minimum Z: " + _minZ + "\n";
 		string += "Maximum Z: " + _maxZ + "\n";
 
