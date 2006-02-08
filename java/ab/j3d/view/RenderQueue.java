@@ -251,7 +251,7 @@ public final class RenderQueue
 				polygon.initialize( face , pointCoords , projectedCoords , faceNormals , alternateAppearance );
 
 				//@FIXME: Debugging variable. Should be removed when the renderqueue works properly.
-				polygon._name = (String)object.getTag();
+				polygon._name = String.valueOf( object.getTag() );
 
 				if ( !backfaceCulling || face.hasBackface() || !polygon.isBackface() ) // Perform backface removal
 					enqueuePolygon( polygon );
