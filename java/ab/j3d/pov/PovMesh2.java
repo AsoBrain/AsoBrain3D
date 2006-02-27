@@ -207,6 +207,10 @@ public final class PovMesh2
 				out.write( format( _uvIndex3 ) );
 				out.write( (int)'>' );
 			}
+			else
+			{
+				out.write( "<0,0,0>" );
+			}
 		}
 
 		boolean hasNormals()
@@ -463,33 +467,31 @@ public final class PovMesh2
 	public void write( final IndentingWriter out )
 		throws IOException
 	{
-//		final List triangles;
-//		final int  triangleCount;
-//
-//		{
-//			final List unsortedTriangles = _triangles;
-//
-//			triangleCount = unsortedTriangles.size();
-//			triangles     = new ArrayList( unsortedTriangles.size() );
-//
-//			for ( int i = 0 ; i < triangleCount ; i++ )
-//			{
-//				final Triangle triangle = (Triangle)triangles.get( i );
-//				if ( triangle.hasNormals() )
-//					triangles.add( triangle );
-//			}
-//
-//			normalsCount = triangles.size();
-//
-//			for ( int i = 0 ; i < triangleCount ; i++ )
-//			{
-//				final Triangle triangle = (Triangle)triangles.get( i );
-//				if ( !triangle.hasNormals() )
-//					triangles.add( triangle );
-//			}
-//		}
+		/*
+		 * Sorted triangles so that triangles with UV-indices come first;
+		 * those without, come last.
+		 */
+		final List triangles;
+		{
+			final List unsortedTriangles = _triangles;
+			final int  triangleCount     = unsortedTriangles.size();
 
-		final List triangles = _triangles;
+			triangles = new ArrayList( triangleCount );
+
+			for ( int i = 0 ; i < triangleCount ; i++ )
+			{
+				final Triangle triangle = (Triangle)unsortedTriangles.get( i );
+				if ( triangle.hasUV() )
+					triangles.add( triangle );
+			}
+
+			for ( int i = 0 ; i < triangleCount ; i++ )
+			{
+				final Triangle triangle = (Triangle)unsortedTriangles.get( i );
+				if ( !triangle.hasUV() )
+					triangles.add( triangle );
+			}
+		}
 
 		out.write( "mesh2" );
 		final String name = getName();
@@ -774,9 +776,11 @@ public final class PovMesh2
 
 			for ( int i = 0 ; i < triangles.size() ; i++ )
 			{
-				writeElementSeparator( out , 6 , i );
-
 				final Triangle triangle = (Triangle)triangles.get( i );
+				if ( !triangle.hasUV() )
+					break;
+
+				writeElementSeparator( out , 6 , i );
 				triangle.writeUvIndices( out );
 			}
 			out.newLine();
