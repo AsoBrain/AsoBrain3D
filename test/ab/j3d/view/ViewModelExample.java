@@ -52,23 +52,23 @@ public abstract class ViewModelExample
 	 */
 	protected ViewModelExample( final ViewModel viewModel )
 	{
-//		final Object3D plane1 = createPlane( 200.0 );
+		final double unit = viewModel.getUnit();
+
+//		final Object3D plane1 = createPlane( 0.2 / unit );
 //		plane1.setTag( "Plane 1" );
-//		Matrix3D transform1 = Matrix3D.getTransform( 225, 0, 90, 0, 175, 20);
+//		Matrix3D transform1 = Matrix3D.getTransform( 225, 0, 90, 0.0 , 0.175 / unit , 0.02 / unit );
 //		viewModel.createNode( "plane1" , transform1 , plane1 , null , 1.0f );
 //
-//		final Object3D plane2 = createPlane( 150.0 );
+//		final Object3D plane2 = createPlane( 0.150 / unit );
 //		plane2.setTag( "Plane 2" );
-//		Matrix3D transform2 = Matrix3D.getTransform( 0, 225, 90, -250, 50, 0);
+//		Matrix3D transform2 = Matrix3D.getTransform( 0, 225, 90, -0.250 / unit , 0.050 / unit , 0);
 //		viewModel.createNode( "plane2" , transform2 , plane2 , null , 1.0f );
 //
-//		final Object3D plane3 = createPlane( 100.0 );
+//		final Object3D plane3 = createPlane( 0.100 / unit );
 //		plane3.setTag( "Plane 3" );
-//		Matrix3D transform3 = Matrix3D.getTransform( 90, 0, 315, 225, 0, 0);
+//		Matrix3D transform3 = Matrix3D.getTransform( 90, 0, 315, 0.225 / unit , 0, 0);
 //		viewModel.createNode( "plane3" , transform3 , plane3 , null , 1.0f );
-//
 
-		final double unit = viewModel.getUnit();
 
 		final Object3D cube = createCube( 0.1 / unit );
 		cube.setTag( "Cube 1" );
