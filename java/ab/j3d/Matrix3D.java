@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2006 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -406,7 +406,7 @@ public final class Matrix3D
 		final double xAxisY;
 		final double xAxisZ;
 
-		if ( Matrix3D.almostEqual( zAxisZ , ( zAxisZ < 0.0 ) ? -1.0 : 1.0 ) )
+		if ( almostEqual( zAxisZ , ( zAxisZ < 0.0 ) ? -1.0 : 1.0 ) )
 		{
 			xAxisX = rightHanded ?  zAxisZ : -zAxisZ;
 			xAxisY = 0.0;
@@ -617,9 +617,13 @@ public final class Matrix3D
 	 */
 	public Vector3D multiplyInverse( final Vector3D vector )
 	{
-		return vector.set( vector.x * xx + vector.y * xy + vector.z * zx -xo * xx - yo * yx - zo * zx ,
-		                   vector.x * xy + vector.y * yy + vector.z * zy -xo * xy - yo * yy - zo * zy ,
-		                   vector.x * xz + vector.y * zy + vector.z * zz -xo * xz - yo * yz - zo * zz );
+		final double tz = vector.z - zo;
+		final double ty = vector.y - yo;
+		final double tx = vector.x - xo;
+
+		return vector.set( tx * xx + ty * yx + tz * zx ,
+		                   tx * xy + ty * yy + tz * zy ,
+		                   tx * xz + ty * yz + tz * zz );
 	}
 
 	/**
@@ -649,9 +653,13 @@ public final class Matrix3D
 	 */
 	public Vector3D multiplyInverse( final double x , final double y , final double z )
 	{
-		return Vector3D.INIT.set( x * xx + y * xy + z * zx -xo * xx - yo * yx - zo * zx ,
-		                          x * xy + y * yy + z * zy -xo * xy - yo * yy - zo * zy ,
-		                          x * xz + y * zy + z * zz -xo * xz - yo * yz - zo * zz );
+		final double tz = z - zo;
+		final double ty = y - yo;
+		final double tx = x - xo;
+
+		return Vector3D.INIT.set( tx * xx + ty * yx + tz * zx ,
+		                          tx * xy + ty * yy + tz * zy ,
+		                          tx * xz + ty * yz + tz * zz );
 	}
 
 	/**
