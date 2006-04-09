@@ -105,6 +105,18 @@ public class Transform3D
 	}
 
 	/**
+	 * Set inverse transformation matrix. This also sets the normal
+	 * transformation matrix.
+	 *
+	 * @param   transform   Inverse transformation matrix.
+	 */
+	public void setInverseTransform( final Matrix3D transform )
+	{
+		_transform        = transform.inverse();
+		_inverseTransform = transform;
+	}
+
+	/**
 	 * Get transformation matrix.
 	 *
 	 * @return  Transformation matrix.
