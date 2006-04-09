@@ -520,6 +520,82 @@ public final class Matrix3D
 	}
 
 	/**
+	 * Transform a vector using the inverse of this transform.
+	 *
+	 * @param   vector  Vector to transform.
+	 *
+	 * @return  Resulting vector.
+	 */
+	public Vector3D inverseMultiply( final Vector3D vector )
+	{
+		final double tx = vector.x - xo;
+		final double ty = vector.y - yo;
+		final double tz = vector.z - zo;
+
+		return vector.set( tx * xx + ty * yx + tz * zx ,
+		                   tx * xy + ty * yy + tz * zy ,
+		                   tx * xz + ty * yz + tz * zz );
+	}
+
+	/**
+	 * Transform a vector using the inverse of this transform.
+	 *
+	 * @param   x       X-value of vector.
+	 * @param   y       Y-value of vector.
+	 * @param   z       Z-value of vector.
+	 *
+	 * @return  Resulting vector.
+	 */
+	public Vector3D inverseMultiply( final double x , final double y , final double z )
+	{
+		final double tz = z - zo;
+		final double ty = y - yo;
+		final double tx = x - xo;
+
+		return Vector3D.INIT.set( tx * xx + ty * yx + tz * zx ,
+		                          tx * xy + ty * yy + tz * zy ,
+		                          tx * xz + ty * yz + tz * zz );
+	}
+
+	/**
+	 * Rotate a (directional) vector using the inverse of this transform. This
+	 * multiplies the vector with the inverse of this matrix, excluding the
+	 * translational components.
+	 *
+	 * @param   vector  Directional vector to rotate.
+	 *
+	 * @return  Rotated vector.
+	 */
+	public Vector3D inverseRotate( final Vector3D vector )
+	{
+		final double x = vector.x;
+		final double y = vector.y;
+		final double z = vector.z;
+
+		return vector.set( x * xx + y * yx + z * zx ,
+		                   x * xy + y * yy + z * zy ,
+		                   x * xz + y * yz + z * zz );
+	}
+
+	/**
+	 * Rotate a vector using the inverse of this transform. This multiplies the
+	 * vector with the inverse of this matrix, excluding the translational
+	 * components.
+	 *
+	 * @param   x       X component of directional vector to rotate.
+	 * @param   y       Y component of directional vector to rotate.
+	 * @param   z       Z component of directional vector to rotate.
+	 *
+	 * @return  Rotated vector.
+	 */
+	public Vector3D inverseRotate( final double x , final double y , final double z )
+	{
+		return Vector3D.INIT.set( x * xx + y * yx + z * zx ,
+		                          x * xy + y * yy + z * zy ,
+		                          x * xz + y * yz + z * zz );
+	}
+
+	/**
 	 * Test is this matrix causes mirroring in the XY plane.
 	 *
 	 * @return  <code>true</code> if this matrix causes mirroring in the XY plane.
@@ -609,24 +685,6 @@ public final class Matrix3D
 	}
 
 	/**
-	 * Transform a vector using the inverse of this transform.
-	 *
-	 * @param   vector  Vector to transform.
-	 *
-	 * @return  Resulting vector.
-	 */
-	public Vector3D multiplyInverse( final Vector3D vector )
-	{
-		final double tz = vector.z - zo;
-		final double ty = vector.y - yo;
-		final double tx = vector.x - xo;
-
-		return vector.set( tx * xx + ty * yx + tz * zx ,
-		                   tx * xy + ty * yy + tz * zy ,
-		                   tx * xz + ty * yz + tz * zz );
-	}
-
-	/**
 	 * Transform a vector using this transform.
 	 *
 	 * @param   x       X-value of vector.
@@ -640,26 +698,6 @@ public final class Matrix3D
 		return Vector3D.INIT.set( x * xx + y * xy + z * xz + xo ,
 		                          x * yx + y * yy + z * yz + yo ,
 		                          x * zx + y * zy + z * zz + zo );
-	}
-
-	/**
-	 * Transform a vector using the inverse of this transform.
-	 *
-	 * @param   x       X-value of vector.
-	 * @param   y       Y-value of vector.
-	 * @param   z       Z-value of vector.
-	 *
-	 * @return  Resulting vector.
-	 */
-	public Vector3D multiplyInverse( final double x , final double y , final double z )
-	{
-		final double tz = z - zo;
-		final double ty = y - yo;
-		final double tx = x - xo;
-
-		return Vector3D.INIT.set( tx * xx + ty * yx + tz * zx ,
-		                          tx * xy + ty * yy + tz * zy ,
-		                          tx * xz + ty * yz + tz * zz );
 	}
 
 	/**
@@ -1050,40 +1088,46 @@ public final class Matrix3D
 	 */
 	public double[] rotate( final double[] source , final double[] dest , final int vectorCount )
 	{
-		final int      resultLength = vectorCount * 3;
-		final double[] result       = (double[])ArrayTools.ensureLength( dest , double.class , -1 , resultLength );
+		double[] result = dest;
 
-		final double lxx = xx;
-		final double lxy = xy;
-		final double lxz = xz;
-		final double lyx = yx;
-		final double lyy = yy;
-		final double lyz = yz;
-		final double lzx = zx;
-		final double lzy = zy;
-		final double lzz = zz;
-
-		if ( ( lxx == 1.0 ) && ( lxy == 0.0 ) && ( lxz == 0.0 ) &&
-		     ( lyx == 0.0 ) && ( lyy == 1.0 ) && ( lyz == 0.0 ) &&
-		     ( lzx == 0.0 ) && ( lzy == 0.0 ) && ( lzz == 1.0 ) )
+		if ( ( source != dest ) || ( this != INIT ) )
 		{
-			System.arraycopy( source , 0 , result , 0 , resultLength );
-		}
-		else
-		{
-			double x;
-			double y;
-			double z;
+			final int resultLength = vectorCount * 3;
+			result = (double[])ArrayTools.ensureLength( dest , double.class , -1 , resultLength );
 
-			for ( int i = 0 ; i < resultLength ; i += 3 )
+			final double lxx = xx;
+			final double lxy = xy;
+			final double lxz = xz;
+			final double lyx = yx;
+			final double lyy = yy;
+			final double lyz = yz;
+			final double lzx = zx;
+			final double lzy = zy;
+			final double lzz = zz;
+
+			if ( ( lxx == 1.0 ) && ( lxy == 0.0 ) && ( lxz == 0.0 )
+			  && ( lyx == 0.0 ) && ( lyy == 1.0 ) && ( lyz == 0.0 )
+			  && ( lzx == 0.0 ) && ( lzy == 0.0 ) && ( lzz == 1.0 ) )
 			{
-				x = source[ i     ];
-				y = source[ i + 1 ];
-				z = source[ i + 2 ];
+				if ( source != result )
+					System.arraycopy( source , 0 , result , 0 , resultLength );
+			}
+			else
+			{
+				double x;
+				double y;
+				double z;
 
-				result[ i     ] = x * lxx + y * lxy + z * lxz;
-				result[ i + 1 ] = x * lyx + y * lyy + z * lyz;
-				result[ i + 2 ] = x * lzx + y * lzy + z * lzz;
+				for ( int resultIndex = 0 ; resultIndex < resultLength ; resultIndex += 3 )
+				{
+					x = source[ resultIndex     ];
+					y = source[ resultIndex + 1 ];
+					z = source[ resultIndex + 2 ];
+
+					result[ resultIndex     ] = x * lxx + y * lxy + z * lxz;
+					result[ resultIndex + 1 ] = x * lyx + y * lyy + z * lyz;
+					result[ resultIndex + 2 ] = x * lzx + y * lzy + z * lzz;
+				}
 			}
 		}
 
@@ -1149,62 +1193,67 @@ public final class Matrix3D
 	 */
 	public double[] transform( final double[] source , final double[] dest , final int pointCount )
 	{
-		final int      resultLength = pointCount * 3;
-		final double[] result       = (double[])ArrayTools.ensureLength( dest , double.class , -1 , resultLength );
+		double[] result = dest;
 
-		final double lxx = xx;
-		final double lxy = xy;
-		final double lxz = xz;
-		final double lyx = yx;
-		final double lyy = yy;
-		final double lyz = yz;
-		final double lzx = zx;
-		final double lzy = zy;
-		final double lzz = zz;
-		final double lxo = xo;
-		final double lyo = yo;
-		final double lzo = zo;
-
-		/*
-		 * Perform rotate, translate, or copy only if possible.
-		 */
-		if ( ( lxx == 1.0 ) && ( lxy == 0.0 ) && ( lxz == 0.0 ) &&
-		     ( lyx == 0.0 ) && ( lyy == 1.0 ) && ( lyz == 0.0 ) &&
-		     ( lzx == 0.0 ) && ( lzy == 0.0 ) && ( lzz == 1.0 ) )
+		if ( ( source != dest ) || ( this != INIT ) )
 		{
-			if ( ( lxo == 0.0 ) && ( lyo == 0.0 ) && ( lzo == 0.0 ) )
+			final int resultLength = pointCount * 3;
+			result = (double[])ArrayTools.ensureLength( dest , double.class , -1 , resultLength );
+
+			final double lxx = xx;
+			final double lxy = xy;
+			final double lxz = xz;
+			final double lyx = yx;
+			final double lyy = yy;
+			final double lyz = yz;
+			final double lzx = zx;
+			final double lzy = zy;
+			final double lzz = zz;
+			final double lxo = xo;
+			final double lyo = yo;
+			final double lzo = zo;
+
+			/*
+			 * Perform rotate, translate, or copy only if possible.
+			 */
+			if ( ( lxx == 1.0 ) && ( lxy == 0.0 ) && ( lxz == 0.0 ) &&
+			     ( lyx == 0.0 ) && ( lyy == 1.0 ) && ( lyz == 0.0 ) &&
+			     ( lzx == 0.0 ) && ( lzy == 0.0 ) && ( lzz == 1.0 ) )
 			{
-				System.arraycopy( source , 0 , result , 0 , resultLength );
+				if ( ( lxo == 0.0 ) && ( lyo == 0.0 ) && ( lzo == 0.0 ) )
+				{
+					System.arraycopy( source , 0 , result , 0 , resultLength );
+				}
+				else
+				{
+					for ( int i = 0 ; i < resultLength ; i += 3 )
+					{
+						result[ i     ] = source[ i     ] + lxo;
+						result[ i + 1 ] = source[ i + 1 ] + lyo;
+						result[ i + 2 ] = source[ i + 2 ] + lzo;
+					}
+				}
+			}
+			else if ( ( lxo == 0.0 ) && ( lyo == 0.0 ) && ( lzo == 0.0 ) )
+			{
+				rotate( source , result , pointCount );
 			}
 			else
 			{
+				double x;
+				double y;
+				double z;
+
 				for ( int i = 0 ; i < resultLength ; i += 3 )
 				{
-					result[ i     ] = source[ i     ] + lxo;
-					result[ i + 1 ] = source[ i + 1 ] + lyo;
-					result[ i + 2 ] = source[ i + 2 ] + lzo;
+					x = source[ i     ];
+					y = source[ i + 1 ];
+					z = source[ i + 2 ];
+
+					result[ i     ] = x * lxx + y * lxy + z * lxz + lxo;
+					result[ i + 1 ] = x * lyx + y * lyy + z * lyz + lyo;
+					result[ i + 2 ] = x * lzx + y * lzy + z * lzz + lzo;
 				}
-			}
-		}
-		else if ( ( lxo == 0.0 ) && ( lyo == 0.0 ) && ( lzo == 0.0 ) )
-		{
-			rotate( source , result , pointCount );
-		}
-		else
-		{
-			double x;
-			double y;
-			double z;
-
-			for ( int i = 0 ; i < resultLength ; i += 3 )
-			{
-				x = source[ i     ];
-				y = source[ i + 1 ];
-				z = source[ i + 2 ];
-
-				result[ i     ] = x * lxx + y * lxy + z * lxz + lxo;
-				result[ i + 1 ] = x * lyx + y * lyy + z * lyz + lyo;
-				result[ i + 2 ] = x * lzx + y * lzy + z * lzz + lzo;
 			}
 		}
 
