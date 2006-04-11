@@ -87,7 +87,7 @@ public abstract class ViewModelExample
 
 		viewModel.createView( "view" , new FromToViewControl( viewFrom , viewAt ) );
 		final ViewModelView view = viewModel.getView( "view" );
-		view.setProjectionPolicy( Projector.PARALLEL );
+		view.setProjectionPolicy( Projector.PERSPECTIVE );
 
 		final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , view.getComponent() );
 		frame.setVisible( true );
