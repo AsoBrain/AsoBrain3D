@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2005
+ * (C) Copyright Numdata BV 2004-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -114,7 +114,7 @@ public final class Object3DBuilder
 	public static Object3D constructRotatedObject( final Matrix3D xform , final double[] radii , final double[] zCoordinates , final int detail , final TextureSpec texture , final boolean smoothCircumference , final boolean closeEnds )
 	{
 		final Object3D result = new Object3D();
-		int[] prevPointIndices = null;
+		int[] prevVertexIndices = null;
 
 		for ( int i = 0 ; i < radii.length ; i++ )
 		{
@@ -122,18 +122,18 @@ public final class Object3DBuilder
 			final double z      = zCoordinates[ i ];
 
 			/*
-			 * Based on 'radius', create a list of point indices at this point.
+			 * Based on 'radius', create a list of vertex indices at this point.
 			 */
-			final int[] pointIndices;
+			final int[] vertexIndices;
 			if ( Matrix3D.almostEqual( radius , 0.0 ) )
 			{
-				pointIndices = new int[] { ( xform == null )
-					? result.getOrAddPointIndex( 0.0 , 0.0 , z )
-					: result.getOrAddPointIndex( xform.transformX( 0.0 , 0.0 , z ) , xform.transformY( 0.0 , 0.0 , z ) , xform.transformZ( 0.0 , 0.0 , z ) ) };
+				vertexIndices = new int[] { ( xform == null )
+					? result.getVertexIndex( 0.0 , 0.0 , z )
+					: result.getVertexIndex( xform.transformX( 0.0 , 0.0 , z ) , xform.transformY( 0.0 , 0.0 , z ) , xform.transformZ( 0.0 , 0.0 , z ) ) };
 			}
 			else
 			{
-				pointIndices = new int[ detail ];
+				vertexIndices = new int[ detail ];
 
 				final double stepSize = 2.0 * Math.PI / (double)detail;
 				for ( int step = 0 ; step < detail ; step++ )
@@ -142,22 +142,22 @@ public final class Object3DBuilder
 					final double x     =  Math.sin( angle ) * radius;
 					final double y     = -Math.cos( angle ) * radius;
 
-					pointIndices[ step ] = ( xform == null )
-						? result.getOrAddPointIndex( x , y , z )
-						: result.getOrAddPointIndex( xform.transformX( x , y , z ) , xform.transformY( x , y , z ) , xform.transformZ( x , y , z ) );
+					vertexIndices[ step ] = ( xform == null )
+						? result.getVertexIndex( x , y , z )
+						: result.getVertexIndex( xform.transformX( x , y , z ) , xform.transformY( x , y , z ) , xform.transformZ( x , y , z ) );
 				}
 
 				if ( closeEnds )
 				{
 					if ( i == 0 )
 					{
-						result.addFace( pointIndices , texture , false );
+						result.addFace( vertexIndices , texture , false );
 					}
 					else if ( i == radii.length - 1 )
 					{
 						final int[] reversed = new int[ detail ];
 						for ( int step = 0 ; step < detail ; step++ )
-							reversed[ step ] = pointIndices[ detail - 1 - step ];
+							reversed[ step ] = vertexIndices[ detail - 1 - step ];
 
 						result.addFace( reversed , texture , false );
 					}
@@ -167,31 +167,31 @@ public final class Object3DBuilder
 			/*
 			 * Construct faces between this and the previous 'row'.
 			 */
-			if ( prevPointIndices != null )
+			if ( prevVertexIndices != null )
 			{
-				if ( pointIndices.length > 1 )
+				if ( vertexIndices.length > 1 )
 				{
-					if ( prevPointIndices.length > 1 )
+					if ( prevVertexIndices.length > 1 )
 					{
 						for ( int step = 0 ; step < detail ; step++ )
 						{
 							final int nextStep = ( step + 1 ) % detail;
-							result.addFace( new int[] { prevPointIndices[ step ] , pointIndices[ step ] , pointIndices[ nextStep ] , prevPointIndices[ nextStep ] } , texture , smoothCircumference );
+							result.addFace( new int[] { prevVertexIndices[ step ] , vertexIndices[ step ] , vertexIndices[ nextStep ] , prevVertexIndices[ nextStep ] } , texture , smoothCircumference );
 						}
 					}
 					else
 					{
 						for ( int step = 0 ; step < detail ; step++ )
-							result.addFace( new int[] { prevPointIndices[ 0 ] , pointIndices[ step ] , pointIndices[ ( step + 1 ) % detail ] } , texture , smoothCircumference );
+							result.addFace( new int[] { prevVertexIndices[ 0 ] , vertexIndices[ step ] , vertexIndices[ ( step + 1 ) % detail ] } , texture , smoothCircumference );
 					}
 				}
-				else if ( prevPointIndices.length > 1 )
+				else if ( prevVertexIndices.length > 1 )
 				{
 					for ( int step = 0 ; step < detail ; step++ )
-						result.addFace( new int[] { prevPointIndices[ step ] , pointIndices[ 0 ] , prevPointIndices[ ( step + 1 ) % detail ] } , texture , smoothCircumference );
+						result.addFace( new int[] { prevVertexIndices[ step ] , vertexIndices[ 0 ] , prevVertexIndices[ ( step + 1 ) % detail ] } , texture , smoothCircumference );
 				}
 			}
-			prevPointIndices = pointIndices;
+			prevVertexIndices = vertexIndices;
 		}
 
 		return result;

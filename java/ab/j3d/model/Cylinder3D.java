@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2005 Peter S. Heijnen
+ * Copyright (C) 1999-2006 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -95,10 +95,10 @@ public final class Cylinder3D
 		/*
 		 * Setup properties of cylinder.
 		 */
-		final boolean  hasBottom   = ( radiusBottom > 0 );
-		final boolean  hasTop      = ( radiusTop > 0 );
-		final int      pointCount  = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
-		final double[] pointCoords = new double[ pointCount * 3 ];
+		final boolean  hasBottom         = ( radiusBottom > 0 );
+		final boolean  hasTop            = ( radiusTop > 0 );
+		final int      vertexCount       = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
+		final double[] vertexCoordinates = new double[ vertexCount * 3 ];
 
 		/*
 		 * Generate vertices.
@@ -112,16 +112,16 @@ public final class Cylinder3D
 			for ( int i = 0 ; i < numEdges ; i++ )
 			{
 				final double a = (double)i * step;
-				pointCoords[ v++ ] =  Math.sin( a ) * radiusBottom;
-				pointCoords[ v++ ] = -Math.cos( a ) * radiusBottom;
-				pointCoords[ v++ ] = 0.0;
+				vertexCoordinates[ v++ ] =  Math.sin( a ) * radiusBottom;
+				vertexCoordinates[ v++ ] = -Math.cos( a ) * radiusBottom;
+				vertexCoordinates[ v++ ] = 0.0;
 			}
 		}
 		else
 		{
-			pointCoords[ v++ ] = 0.0;
-			pointCoords[ v++ ] = 0.0;
-			pointCoords[ v++ ] = 0.0;
+			vertexCoordinates[ v++ ] = 0.0;
+			vertexCoordinates[ v++ ] = 0.0;
+			vertexCoordinates[ v++ ] = 0.0;
 		}
 
 		if ( hasTop )
@@ -131,20 +131,20 @@ public final class Cylinder3D
 			for ( int i = 0 ; i < numEdges ; i++ )
 			{
 				final double a = (double)i * step;
-				pointCoords[ v++ ] =  Math.sin( a ) * radiusTop;
-				pointCoords[ v++ ] = -Math.cos( a ) * radiusTop;
-				pointCoords[ v++ ] = height;
+				vertexCoordinates[ v++ ] =  Math.sin( a ) * radiusTop;
+				vertexCoordinates[ v++ ] = -Math.cos( a ) * radiusTop;
+				vertexCoordinates[ v++ ] = height;
 			}
 		}
 		else
 		{
-			pointCoords[ v++ ] = 0.0;
-			pointCoords[ v++ ] = 0.0;
-			pointCoords[ v/*++*/ ] = height;
+			vertexCoordinates[ v++ ] = 0.0;
+			vertexCoordinates[ v++ ] = 0.0;
+			vertexCoordinates[ v/*++*/ ] = height;
 		}
 
 		clear();
-		setPointCoords( xform.transform( pointCoords , pointCoords , pointCount ) );
+		setVertexCoordinates( xform.transform( vertexCoordinates , vertexCoordinates , vertexCount ) );
 
 		/*
 		 * Bottom face (if it exists).

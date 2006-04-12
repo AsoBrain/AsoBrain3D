@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2005 Peter S. Heijnen
+ * Copyright (C) 1999-2006 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -97,17 +97,17 @@ public final class Sphere3D
 	 */
 	public void generate( final int p , final int q , final TextureSpec texture , final boolean smooth )
 	{
-		final int      pointCount  = p * ( q - 1 ) + 2;
-		final double[] pointCoords = new double[ pointCount * 3 ];
+		final int      vertexCount       = p * ( q - 1 ) + 2;
+		final double[] vertexCoordinates = new double[ vertexCount * 3 ];
 
 		/*
 		 * Generate vertices.
 		 */
 		int v = 0;
 
-		pointCoords[ v++ ] = 0.0;
-		pointCoords[ v++ ] = 0.0;
-		pointCoords[ v++ ] = dz / -2.0;
+		vertexCoordinates[ v++ ] = 0.0;
+		vertexCoordinates[ v++ ] = 0.0;
+		vertexCoordinates[ v++ ] = dz / -2.0;
 
 		for ( int qc = 1 ; qc < q ; qc++ )
 		{
@@ -121,24 +121,24 @@ public final class Sphere3D
 			{
 				final double pa = (double)pc * 2.0 * Math.PI / (double)p;
 
-				pointCoords[ v++ ] =  radiusX * Math.sin( pa );
-				pointCoords[ v++ ] = -radiusY * Math.cos( pa );
-				pointCoords[ v++ ] = circleZ;
+				vertexCoordinates[ v++ ] =  radiusX * Math.sin( pa );
+				vertexCoordinates[ v++ ] = -radiusY * Math.cos( pa );
+				vertexCoordinates[ v++ ] = circleZ;
 			}
 		}
 
-		pointCoords[ v++ ] = 0.0;
-		pointCoords[ v++ ] = 0.0;
-		pointCoords[ v   ] = dz / 2.0;
+		vertexCoordinates[ v++ ] = 0.0;
+		vertexCoordinates[ v++ ] = 0.0;
+		vertexCoordinates[ v   ] = dz / 2.0;
 
 		clear();
-		setPointCoords( xform.transform( pointCoords , pointCoords , pointCount ) );
+		setVertexCoordinates( xform.transform( vertexCoordinates , vertexCoordinates , vertexCount ) );
 
 		/*
 		 * Define faces (new style)
 		 */
 		final int lastQ = q - 1;
-		final int lastV = pointCount - 1;
+		final int lastV = vertexCount - 1;
 
 		for ( int qc = 0 ; qc < q ; qc++ )
 		{
@@ -149,11 +149,11 @@ public final class Sphere3D
 				final int p3 =   qc       * p +     pc             + 1;
 				final int p4 =   qc       * p + ( ( pc + 1 ) % p ) + 1;
 
-				final int[] pointIndices = ( qc == 0     ) ? new int[] { 0 , p3 , p4 }
-				                         : ( qc == lastQ ) ? new int[] { p2 , p1 , lastV }
-				                         :                   new int[] { p2 , p1 , p3 , p4 };
+				final int[] vertexIndices = ( qc == 0     ) ? new int[] { 0 , p3 , p4 }
+				                          : ( qc == lastQ ) ? new int[] { p2 , p1 , lastV }
+				                          :                   new int[] { p2 , p1 , p3 , p4 };
 
-				addFace( pointIndices , texture , smooth );
+				addFace( vertexIndices , texture , smooth );
 			}
 		}
 	}

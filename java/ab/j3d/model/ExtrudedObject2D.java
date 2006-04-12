@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2005
+ * (C) Copyright Numdata BV 2004-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -132,7 +132,7 @@ public final class ExtrudedObject2D
 					final double y1 = transform.transformY( shapeX , shapeY , 0.0 );
 					final double z1 = transform.transformZ( shapeX , shapeY , 0.0 );
 
-					lastIndex  = target.getOrAddPointIndex( x1 , y1 , z1 );
+					lastIndex  = target.getVertexIndex( x1 , y1 , z1 );
 					lastMoveTo = lastIndex;
 
 					if ( hasExtrusion )
@@ -141,7 +141,7 @@ public final class ExtrudedObject2D
 						final double y2 = transform.transformY( shapeX + ex , shapeY + ey , ez );
 						final double z2 = transform.transformZ( shapeX + ex , shapeY + ey , ez );
 
-						lastExtrudedIndex  = target.getOrAddPointIndex( x2 , y2 , z2 );
+						lastExtrudedIndex  = target.getVertexIndex( x2 , y2 , z2 );
 						lastExtrudedMoveTo = lastExtrudedIndex;
 					}
 					break;
@@ -156,34 +156,34 @@ public final class ExtrudedObject2D
 					final double y1 = transform.transformY( shapeX , shapeY , 0.0 );
 					final double z1 = transform.transformZ( shapeX , shapeY , 0.0 );
 
-					final int pointIndex = target.getOrAddPointIndex( x1 , y1 , z1 );
+					final int vertexIndex = target.getVertexIndex( x1 , y1 , z1 );
 
-					int extrudedPointIndex = -1;
+					int extrudedVertexIndex = -1;
 					if ( hasExtrusion )
 					{
 						final double x2 = transform.transformX( shapeX + ex , shapeY + ey , ez );
 						final double y2 = transform.transformY( shapeX + ex , shapeY + ey , ez );
 						final double z2 = transform.transformZ( shapeX + ex , shapeY + ey , ez );
-						extrudedPointIndex = target.getOrAddPointIndex( x2 , y2 , z2 );
+						extrudedVertexIndex = target.getVertexIndex( x2 , y2 , z2 );
 					}
 
-					if ( lastIndex != pointIndex )
+					if ( lastIndex != vertexIndex )
 					{
 						if ( hasExtrusion )
 						{
 							target.addFace(
-								flipExtrusion ? new int[] { pointIndex , extrudedPointIndex , lastExtrudedIndex  , lastIndex  }
-								              : new int[] { lastIndex  , lastExtrudedIndex  , extrudedPointIndex , pointIndex } ,
+								flipExtrusion ? new int[] { vertexIndex , extrudedVertexIndex , lastExtrudedIndex  , lastIndex  }
+								              : new int[] { lastIndex  , lastExtrudedIndex  , extrudedVertexIndex , vertexIndex } ,
 								texture , null , null , 1.0f , false , hasBackface );
-							lastExtrudedIndex = extrudedPointIndex;
+							lastExtrudedIndex = extrudedVertexIndex;
 						}
 						else
 						{
-							target.addFace( new int[]{ lastIndex , pointIndex } , texture , null , null , 1.0f , false , true );
+							target.addFace( new int[]{ lastIndex , vertexIndex } , texture , null , null , 1.0f , false , true );
 						}
 					}
 
-					lastIndex = pointIndex;
+					lastIndex = vertexIndex;
 					break;
 				}
 

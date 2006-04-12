@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2006 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -70,21 +70,21 @@ public final class Box3D
 		_dz    = dz;
 
 		/*
-		 * Create point coordinates.
+		 * Create vertex coordinates.
 		 */
-		final double[] pointCoords =
+		final double[] vertexCoordinates =
 		{
-			  0 ,   0 ,   0 , // 0
-			_dx ,   0 ,   0 , // 1
-			_dx , _dy ,   0 , // 2
-			  0 , _dy ,   0 , // 3
-			  0 ,   0 , _dz , // 4
-			_dx ,   0 , _dz , // 5
+			0.0 , 0.0 , 0.0 , // 0
+			_dx , 0.0 , 0.0 , // 1
+			_dx , _dy , 0.0 , // 2
+			0.0 , _dy , 0.0 , // 3
+			0.0 , 0.0 , _dz , // 4
+			_dx , 0.0 , _dz , // 5
 			_dx , _dy , _dz , // 6
-			  0 , _dy , _dz   // 7
+			0.0 , _dy , _dz   // 7
 		};
 
-		setPointCoords( xform.transform( pointCoords , pointCoords , 8 ) );
+		setVertexCoordinates( xform.transform( vertexCoordinates , vertexCoordinates , 8 ) );
 
 		/*
 		 * Set frontal, vertical, and horizontal face properties.
@@ -109,34 +109,28 @@ public final class Box3D
 		if ( ( texture != null ) && texture.isTexture() )
 			setTexture( texture , isHorizontal , 0 , textureU , xform.xo , xform.xo + _dx , textureV , xform.zo , xform.zo + _dz );
 
-		final int[] pointIndices5 = new int[] { 0 , 4 , 5 , 1 };
-		addFace( pointIndices5 , texture , textureU[ 0 ] , textureV[ 0 ] , 1.0f , false , false );
-		final int[] pointIndices4 = new int[] { 2 , 6 , 7 , 3 };
-		addFace( pointIndices4 , texture , textureU[ 1 ] , textureV[ 1 ] , 1.0f , false , false );
+		addFace( new int[] { 0 , 4 , 5 , 1 } , texture , textureU[ 0 ] , textureV[ 0 ] , 1.0f , false , false );
+		addFace( new int[] { 2 , 6 , 7 , 3 } , texture , textureU[ 1 ] , textureV[ 1 ] , 1.0f , false , false );
 
 		/*
-		         * Add right/left face
-		         */
+		 * Add right/left face
+		 */
 		texture = isVertical ? mainTexture : sideTexture;
 		if ( ( texture != null ) && texture.isTexture() )
 			setTexture( texture , isHorizontal , 0 , textureU , xform.yo , xform.yo + _dy , textureV , xform.zo , xform.zo + _dz );
 
-		final int[] pointIndices3 = new int[] { 1 , 5 , 6 , 2 };
-		addFace( pointIndices3 , texture , textureU[ 0 ] , textureV[ 0 ] , 1.0f , false , false );
-		final int[] pointIndices2 = new int[] { 3 , 7 , 4 , 0 };
-		addFace( pointIndices2 , texture , textureU[ 1 ] , textureV[ 1 ] , 1.0f , false , false );
+		addFace( new int[] { 1 , 5 , 6 , 2 } , texture , textureU[ 0 ] , textureV[ 0 ] , 1.0f , false , false );
+		addFace( new int[] { 3 , 7 , 4 , 0 } , texture , textureU[ 1 ] , textureV[ 1 ] , 1.0f , false , false );
 
 		/*
-		         * Add top/bottom face
-		         */
+		 * Add top/bottom face
+		 */
 		texture = isHorizontal ? mainTexture : sideTexture;
 		if ( ( texture != null ) && texture.isTexture() )
 			setTexture( texture , !isVertical , 0 , textureU , xform.xo , xform.xo + _dx , textureV , xform.yo , xform.yo + _dy );
 
-		final int[] pointIndices1 = new int[] { 4 , 7 , 6 , 5 };
-		addFace( pointIndices1 , texture , textureU[ 0 ] , textureV[ 0 ] , 1.0f , false , false );
-		final int[] pointIndices = new int[] { 1 , 2 , 3 , 0 };
-		addFace( pointIndices , texture , textureU[ 1 ] , textureV[ 1 ] , 1.0f , false , false );
+		addFace( new int[] { 4 , 7 , 6 , 5 } , texture , textureU[ 0 ] , textureV[ 0 ] , 1.0f , false , false );
+		addFace( new int[] { 1 , 2 , 3 , 0 } , texture , textureU[ 1 ] , textureV[ 1 ] , 1.0f , false , false );
 	}
 
 	/**
