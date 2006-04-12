@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2005 Peter S. Heijnen
+ * Copyright (C) 1999-2006 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,14 @@
  */
 package ab.j3d.model;
 
+import java.awt.Color;
+import java.util.List;
+
 import junit.framework.TestCase;
 
+import com.numdata.oss.junit.ArrayTester;
+
+import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 
@@ -49,7 +55,7 @@ public final class TestObject3D
     {
 		System.out.println( CLASS_NAME + ".testAddFace" );
 
-		final Vector3D[] points =
+		final Vector3D[] vertexCoordinates =
 		{
 			Vector3D.INIT.set( 0.0 , 0.0 , 0.0 ),
 			Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ),
@@ -57,25 +63,20 @@ public final class TestObject3D
 			Vector3D.INIT.set( 1.0 , 0.0 , 0.0 ),
 		};
 
-		final Object3D obj3d = new Object3D();
-		assertEquals( "[pre] faceCount" , 0 , obj3d.getFaceCount() );
-		assertEquals( "[pre] totalVertexCount" , 0 , obj3d.getPointCount() );
+		final Object3D object = new Object3D();
+		assertEquals( "[pre] faceCount" , 0 , object.getFaceCount() );
+		assertEquals( "[pre] totalVertexCount" , 0 , object.getVertexCount() );
 
-		obj3d.addFace( points , null , false , false );
-		assertEquals( "[post] faceCount" , 1 , obj3d.getFaceCount() );
-		assertEquals( "[post] totalVertexCount" , 4 , obj3d.getPointCount() );
+		object.addFace( vertexCoordinates , null , false , false );
+		assertEquals( "[post] faceCount" , 1 , object.getFaceCount() );
+		assertEquals( "[post] totalVertexCount" , 4 , object.getVertexCount() );
 
-		final Face3D face = obj3d.getFace( 0 );
-		final int[] pointIndices = face.getPointIndices();
-		assertEquals( "face.pointIndices.length" , 4 , pointIndices.length );
-		assertEquals( "face.pointIndices[ 0 ]" , 0 , pointIndices[ 0 ] );
-		assertEquals( "face.pointIndices[ 1 ]" , 1 , pointIndices[ 1 ] );
-		assertEquals( "face.pointIndices[ 2 ]" , 2 , pointIndices[ 2 ] );
-		assertEquals( "face.pointIndices[ 3 ]" , 3 , pointIndices[ 3 ] );
+		final Face3D face = object.getFace( 0 );
+	    ArrayTester.assertEquals( "face.vertexIndices" , "expected" , "vertexIndices" , new int[] { 0 , 1 , 2 , 3 } , face.getVertexIndices() );
 	}
 
 	/**
-	 * Test {@link Object3D#getFaceNormals()} method.
+	 * Test {@link Object3D#getFaceNormals} method.
 	 */
 	public static void testGetFaceNormals()
 	{
@@ -98,7 +99,7 @@ public final class TestObject3D
 		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , false , false );
 		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , false , false );
 
-		final double[] faceNormals = cube.getFaceNormals();
+		final double[] faceNormals = cube.getFaceNormals( null , null );
 
 		assertEquals( "Normal(top).x"    ,  0.0 , faceNormals[  0 ] , 0.001 );
 		assertEquals( "Normal(top).y"    ,  0.0 , faceNormals[  1 ] , 0.001 );
@@ -126,37 +127,103 @@ public final class TestObject3D
 	}
 
 	/**
-	 * Test {@link Object3D#getOrAddPointIndex(double, double, double)} method.
+	 * Test the {@link Object3D#getIntersectionsWithRay} method.
+	 *
+	 * @throws  Exception if the test fails.
 	 */
-	public static void testGetOrAddPointIndex()
+	public static void testGetIntersectionsWithRay()
+		throws Exception
 	{
-		System.out.println( CLASS_NAME + ".testGetOrAddPointIndex" );
+		System.out.println( CLASS_NAME + ".testGetIntersectionsWithRay" );
 
-		final Object3D obj3d = new Object3D();
-		assertEquals( "[pre] totalVertexCount" , 0 , obj3d.getPointCount() );
+		final Vector3D v0 = Vector3D.INIT;
+		final Vector3D lf = v0.set( -( 100.0 / 2.0 ) , -( 100.0 / 2.0 ) , 0.0 );
+		final Vector3D rf = v0.set(    100.0 / 2.0   , -( 100.0 / 2.0 ) , 0.0 );
+		final Vector3D rb = v0.set(    100.0 / 2.0   ,    100.0 / 2.0   , 0.0 );
+		final Vector3D lb = v0.set( -( 100.0 / 2.0 ) ,    100.0 / 2.0   , 0.0 );
 
-		assertEquals( "test1 - pointIndex"       , 0 , obj3d.getOrAddPointIndex( 0.0 , 0.0 , 0.0 ) );
-		assertEquals( "test1 - totalVertexCount" , 1 , obj3d.getPointCount() );
+		final TextureSpec red   = new TextureSpec( Color.red   );
+		final TextureSpec green = new TextureSpec( Color.green );
 
-		assertEquals( "test2 - pointIndex"       , 0 , obj3d.getOrAddPointIndex( 0.0 , 0.0 , 0.0 ) );
-		assertEquals( "test2 - totalVertexCount" , 1 , obj3d.getPointCount() );
+		final Object3D twoSidedPlaneOnZ0 = new Object3D();
+		twoSidedPlaneOnZ0.setTag( "Plane" );
+		twoSidedPlaneOnZ0.addFace( new Vector3D[] { lf , lb , rb , rf } , red   , false , false ); // Z =  size
+		twoSidedPlaneOnZ0.addFace( new Vector3D[] { lb , lf , rf , rb } , green , false , false ); // Z = -size
 
-		assertEquals( "test3 - pointIndex"       , 1 , obj3d.getOrAddPointIndex( 1.0 , 0.0 , 0.0 ) );
-		assertEquals( "test3 - totalVertexCount" , 2 , obj3d.getPointCount() );
+		final Matrix3D transform1 = Matrix3D.getTransform(  90.0 ,  0.0 , 0.0 ,    0.0 ,   0.0 , 0.0 );
+		final Matrix3D transform2 = Matrix3D.getTransform(   0.0 , 90.0 , 0.0 ,  150.0 ,   0.0 , 0.0 );
 
-		assertEquals( "test4 - pointIndex"       , 2 , obj3d.getOrAddPointIndex( 0.0 , 1.0 , 0.0 ) );
-		assertEquals( "test4 - totalVertexCount" , 3 , obj3d.getPointCount() );
+		List selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , v0.set( 0.0 , 0.0 , -500.0 ) , v0.set( 0.0 , 0.0 , 1.0 ) );
+		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
 
-		assertEquals( "test5 - pointIndex"       , 3 , obj3d.getOrAddPointIndex( 0.0 , 0.0 , 1.0 ) );
-		assertEquals( "test5 - totalVertexCount" , 4 , obj3d.getPointCount() );
+		Face3DIntersection intersection      = (Face3DIntersection)selection.get( 0 );
+		Object             tag1              = intersection.getObjectID();
+		Vector3D           intersectionPoint = intersection.getIntersectionPoint();
+		Matrix3D           object2world      = intersection.getObject2world();
+		Vector3D           local             = object2world.inverseMultiply( intersectionPoint );
+
+		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
+		assertTrue( "The object was not intersected at the right place" , local.almostEquals( 0.0 , 0.0 , 0.0 ) );
+
+
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , v0.set( -25.0 , -500.0 , -25.0 ) , v0.set( 0.0 , 1.0 , 0.0 ) );
+		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
+
+		intersection      = (Face3DIntersection)selection.get( 0 );
+		tag1              = intersection.getObjectID();
+		intersectionPoint = intersection.getIntersectionPoint();
+		object2world       = intersection.getObject2world();
+		local             = object2world.inverseMultiply( intersectionPoint );
+
+		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
+		assertTrue( "The object was not intersected at the right place" , intersectionPoint.almostEquals( -25.0 , 0.0 , -25.0 ) );
+		assertTrue( "The object was not intersected at the right place" , local.almostEquals( -25.0 , 25.0 , 0.0 ) );
+
+
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , v0.set( -25.0 , -50.0 , 25.0 ) , v0.set( Math.sqrt( 0.5 ) , Math.sqrt( 0.5 ) , 0.0 ) );
+		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
+		tag1 = ( (Face3DIntersection)selection.get( 0 ) ).getObjectID();
+		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
+
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , v0.set( 50.0 , -500.0 , 50.0 ) , v0.set( 0.0 , 1.0 , 0.0 ) );
+		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
+		tag1 = ( (Face3DIntersection)selection.get( 0) ).getObjectID();
+		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
+
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , v0.set( 50.1 , -500.0 , 0.0 ) , v0.set( 0.0 , 1.0 , 0.0 ) );
+		assertEquals( "Incorrect number of intersections;" , 0 , selection.size() );
+
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , v0.set( 0.0 , -500.0 , 50.1 ) , v0.set( 0.0 , 1.0 , 0.0 ) );
+		assertEquals( "Incorrect number of intersections;" , 0 , selection.size() );
+
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , v0.set( 150.0 , -50.0 , 0.0 ) , v0.set( 1.0 , 0.0 , 0.0 ) );
+		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
+		tag1 = ( (Face3DIntersection)selection.get( 0 ) ).getObjectID();
+		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
+
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , v0.set( 150.1 , 0.0 , -500.0 ) , v0.set( 0.0 , 0.0 , 1.0 ) );
+		assertEquals( "Incorrect number of intersections;" , 0 , selection.size() );
+
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , v0.set( 150.0 , 50.1 , -500.0 ) , v0.set( 0.0 , 0.0 , 1.0 ) );
+		assertEquals( "Incorrect number of intersections;" , 0 , selection.size() );
+
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , v0.set( 100.0 , 0.0 , 25.0 ) , v0.set( 1.0 , 0.0 , 0.0 ) );
+		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
+		tag1 = ( (Face3DIntersection)selection.get( 0 ) ).getObjectID();
+		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
+
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , v0.set( -500.0 , 0.0 , 0.0 ) , v0.set( 1.0 , 0.0 , 0.0 ) );
+		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
+		tag1 = ( (Face3DIntersection)selection.get( 0 ) ).getObjectID();
+		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
 	}
 
 	/**
-	 * Test {@link Object3D#getRangeAdjustment(int, int)} method.
+	 * Test {@link Object3D#calculateBoundValue(int, int)} method.
 	 */
-	public static void testGetRangeAdjustment()
+	public static void testCalculateBoundValue()
 	{
-		System.out.println( CLASS_NAME + ".testGetRangeAdjustment" );
+		System.out.println( CLASS_NAME + ".testCalculateBoundValue" );
 
 		final int[][] tests =
 		{
@@ -181,12 +248,38 @@ public final class TestObject3D
 			final int range  = tests[ i ][ 1 ];
 			final int result = tests[ i ][ 2 ];
 
-			assertEquals( "getRangeAdjustment( " + value + " , " + range + " )" , result , Object3D.getRangeAdjustment( value , range ) );
+			assertEquals( "getRangeAdjustment( " + value + " , " + range + " )" , result , Object3D.calculateBoundValue( value , range ) );
 		}
 	}
 
 	/**
-	 * Test {@link Object3D#getVertexNormals()} method.
+	 * Test {@link Object3D#getVertexIndex(double, double, double)} method.
+	 */
+	public static void testGetVertexIndex()
+	{
+		System.out.println( CLASS_NAME + ".testGetVertexIndex" );
+
+		final Object3D obj3d = new Object3D();
+		assertEquals( "[pre] totalVertexCount" , 0 , obj3d.getVertexCount() );
+
+		assertEquals( "test1 - vertexIndex"      , 0 , obj3d.getVertexIndex( 0.0 , 0.0 , 0.0 ) );
+		assertEquals( "test1 - totalVertexCount" , 1 , obj3d.getVertexCount() );
+
+		assertEquals( "test2 - vertexIndex"      , 0 , obj3d.getVertexIndex( 0.0 , 0.0 , 0.0 ) );
+		assertEquals( "test2 - totalVertexCount" , 1 , obj3d.getVertexCount() );
+
+		assertEquals( "test3 - vertexIndex"      , 1 , obj3d.getVertexIndex( 1.0 , 0.0 , 0.0 ) );
+		assertEquals( "test3 - totalVertexCount" , 2 , obj3d.getVertexCount() );
+
+		assertEquals( "test4 - vertexIndex"      , 2 , obj3d.getVertexIndex( 0.0 , 1.0 , 0.0 ) );
+		assertEquals( "test4 - totalVertexCount" , 3 , obj3d.getVertexCount() );
+
+		assertEquals( "test5 - vertexIndex"      , 3 , obj3d.getVertexIndex( 0.0 , 0.0 , 1.0 ) );
+		assertEquals( "test5 - totalVertexCount" , 4 , obj3d.getVertexCount() );
+	}
+
+	/**
+	 * Test {@link Object3D#getVertexNormals} method.
 	 */
 	public static void testGetVertexNormals()
 	{
@@ -211,7 +304,7 @@ public final class TestObject3D
 
 		final double e = Math.sqrt( 3.0 ) / 3.0;
 
-		final double[] vertexNormals = cube.getVertexNormals();
+		final double[] vertexNormals = cube.getVertexNormals( null , null );
 
 		assertEquals( "lft.x" , -e , vertexNormals[  0 ] , 0.001 );
 		assertEquals( "lft.y" , -e , vertexNormals[  1 ] , 0.001 );
