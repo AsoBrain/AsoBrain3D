@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2005 Peter S. Heijnen
+ * Copyright (C) 1999-2006 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -121,8 +121,8 @@ public class WireframeRenderer
 		if ( vertexIndices.length >= 3 )
 		{
 			final RenderObject ro = face.getRenderObject();
-			final int[] vertexX = ro._ph;
-			final int[] vertexY = ro._pv;
+			final int[] vertexX = ro._projectedX;
+			final int[] vertexY = ro._projectedY;
 
 			int vertexIndex = vertexIndices[ vertexIndices.length - 1 ];
 			int x1 = x + ( vertexX[ vertexIndex ] >> 8 );

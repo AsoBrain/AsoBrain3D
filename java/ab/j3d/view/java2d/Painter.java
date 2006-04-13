@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2005 Peter S. Heijnen
+ * Copyright (C) 1999-2006 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -51,7 +51,7 @@ public final class Painter
 	/**
 	 * This is used as cache storage for {@link #paintObject}.
 	 */
-	private static double[] _paintPointCoordsCache;
+	private static double[] _paintVertexCoordinatesCache;
 
 	/**
 	 * Utility class is not supposed to be instantiated.
@@ -78,7 +78,7 @@ public final class Painter
 			final RenderedPolygon polygon = polygons[ i ];
 
 			Paint fillPaint = null;
-			if ( fill || ( polygon._pointCount < 3 ) )
+			if ( fill || ( polygon._vertexCount < 3 ) )
 			{
 				final TextureSpec texture = polygon._texture;
 
@@ -263,13 +263,11 @@ public final class Painter
 		     && ( !( object instanceof Cylinder3D ) || !paintCylinder( g , gTransform , object2view , (Cylinder3D)object , outlinePaint , fillPaint , shadeFactor ) )
 		     && ( !( object instanceof Sphere3D   ) || !paintSphere  ( g , gTransform , object2view , (Sphere3D  )object , outlinePaint , fillPaint , shadeFactor ) ) )
 		{
-			final int pointCount = object.getPointCount();
-
 			/*
 			 * If the array is to small, create a larger one.
 			 */
-			final double[] pointCoords = object2view.transform( object.getPointCoords() , _paintPointCoordsCache , pointCount );
-			_paintPointCoordsCache = pointCoords;
+			final double[] vertexCoordinates = object.getVertexCoordinates( object2view , _paintVertexCoordinatesCache );
+			_paintVertexCoordinatesCache = vertexCoordinates;
 
 			int maxVertexCount = 0;
 			for ( int faceIndex = 0; faceIndex < faceCount; faceIndex++ )
@@ -281,26 +279,16 @@ public final class Painter
 			final int[] xs = new int[ maxVertexCount ];
 			final int[] ys = new int[ maxVertexCount ];
 
-			final double[] faceNormals;
-			final float[]  rgb;
-
-			if ( ( fillPaint instanceof Color ) && ( maxVertexCount > 2 ) && ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) )
-			{
-				faceNormals = object.getFaceNormals();
-				rgb         = ((Color)fillPaint).getRGBComponents( null );
-			}
-			else
-			{
-				faceNormals = null;
-				rgb     = null;
-			}
+			float[] rgb = null;
+			if ( ( fillPaint instanceof Color ) && ( maxVertexCount > 2 ) && ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) )
+				rgb = ((Color)fillPaint).getRGBComponents( null );
 
 			for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
 			{
 				final Face3D face = object.getFace( faceIndex );
 
 				final Paint faceFillPaint;
-				if ( ( faceNormals != null ) && ( face.getVertexCount() > 2 ) )
+				if ( ( rgb != null ) && ( face.getVertexCount() > 2 ) )
 				{
 					/*
 					 * The <code>shadeFactor</code> is used to modify the fill color based on
@@ -310,10 +298,9 @@ public final class Painter
 					 * completely disables the effect (always 100%); whilst <code>1.0</code>
 					 * makes faces perpendicular to the Z-axis black (0%).
 					 */
-					final int    normalIndex = faceIndex * 3;
-					final double faceNormalX = faceNormals[ normalIndex ];
-					final double faceNormalY = faceNormals[ normalIndex + 1 ];
-					final double faceNormalZ = faceNormals[ normalIndex + 2 ];
+					final double faceNormalX = face.getNormalX();
+					final double faceNormalY = face.getNormalY();
+					final double faceNormalZ = face.getNormalZ();
 
 					final float transformedNormalZ = (float)( faceNormalX * object2view.zx + faceNormalY * object2view.zy + faceNormalZ * object2view.zz );
 					final float factor = Math.min( 1.0f , ( 1.0f - shadeFactor ) + shadeFactor * Math.abs( transformedNormalZ ) );
@@ -325,7 +312,7 @@ public final class Painter
 					faceFillPaint = fillPaint;
 				}
 
-				paintFace( g , gTransform , face , outlinePaint , faceFillPaint , pointCoords , xs , ys );
+				paintFace( g , gTransform , face , outlinePaint , faceFillPaint , vertexCoordinates , xs , ys );
 			}
 		}
 	}
@@ -389,7 +376,7 @@ public final class Painter
 
 			if ( fillPaint != null )
 			{
-				if ( ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ) )
+				if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ) )
 				{
 					final float highlightX = ( 1.0f - goldenRatio ) * x1 + goldenRatio * x4;
 					final float highlightY = ( 1.0f - goldenRatio ) * y1 + goldenRatio * y4;
@@ -469,7 +456,7 @@ public final class Painter
 				final Paint paint;
 				if ( fillPaint != null )
 				{
-					if ( ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ))
+					if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ))
 					{
 						final float r = Math.max( topRadius , botRadius );
 						final float highlight = ( goldenRatio - 0.5f ) * r;
@@ -564,7 +551,7 @@ public final class Painter
 			if ( fillPaint != null )
 			{
 				final Paint paint;
-				if ( ( shadeFactor >= 0.1 ) && ( shadeFactor <= 1.0 ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ))
+				if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ))
 				{
 					final float goldenRatio = 0.6180339f;
 					final float highlight   = ( goldenRatio - 0.5f ) * r;
@@ -601,32 +588,32 @@ public final class Painter
 	/**
 	 * Paint 2D representation of this 3D face.
 	 *
-	 * @param   g               Graphics2D context.
-	 * @param   gTransform      Projection transform for Graphics2D context (3D->2D, pan, sale).
-	 * @param   face            Face to paint.
-	 * @param   outlinePaint    Paint to use for face outlines (<code>null</code> to disable drawing).
-	 * @param   fillPaint       Paint to use for filling faces (<code>null</code> to disable drawing).
-	 * @param   pointCoords     Coordinates of points (after view transform is applied).
-	 * @param   xs              Temporary storage for 2D coordinates.
-	 * @param   ys              Temporary storage for 2D coordinates.
+	 * @param   g                   Graphics2D context.
+	 * @param   gTransform          Projection transform for Graphics2D context (3D->2D, pan, sale).
+	 * @param   face                Face to paint.
+	 * @param   outlinePaint        Paint to use for face outlines (<code>null</code> to disable drawing).
+	 * @param   fillPaint           Paint to use for filling faces (<code>null</code> to disable drawing).
+	 * @param   vertexCoordinates   Coordinates of vertices (after view transform is applied).
+	 * @param   xs                  Temporary storage for 2D coordinates.
+	 * @param   ys                  Temporary storage for 2D coordinates.
 	 *
 	 * @see     #paintNode
 	 */
-	private static void paintFace( final Graphics2D g , final Matrix3D gTransform , final Face3D face , final Paint outlinePaint , final Paint fillPaint , final double[] pointCoords , final int[] xs , final int[] ys )
+	private static void paintFace( final Graphics2D g , final Matrix3D gTransform , final Face3D face , final Paint outlinePaint , final Paint fillPaint , final double[] vertexCoordinates , final int[] xs , final int[] ys )
 	{
-		final int    vertexCount  = face.getVertexCount();
-		final int[]  pointIndices = face.getPointIndices();
+		final int   vertexCount   = face.getVertexCount();
+		final int[] vertexIndices = face.getVertexIndices();
 
 		if ( ( vertexCount > 0 ) && ( ( outlinePaint != null ) || ( fillPaint != null ) ) )
 		{
 			boolean show = true;
 			for ( int p = 0 ; p < vertexCount ; p++ )
 			{
-				final int vi = pointIndices[ p ] * 3;
+				final int vi = vertexIndices[ p ] * 3;
 
-				final double x  = pointCoords[ vi ];
-				final double y  = pointCoords[ vi + 1 ];
-				final double z  = pointCoords[ vi + 2 ];
+				final double x  = vertexCoordinates[ vi ];
+				final double y  = vertexCoordinates[ vi + 1 ];
+				final double z  = vertexCoordinates[ vi + 2 ];
 
 				final int ix = (int)gTransform.transformX( x , y , z );
 				final int iy = (int)gTransform.transformY( x , y , z );
@@ -636,10 +623,10 @@ public final class Painter
 				 *
 				 * c = (x1-x2)*(y3-y2)-(y1-y2)*(x3-x2)
 				 */
-				if ( ( p == 2 ) && !face.hasBackface() )
+				if ( ( p == 2 ) && !face.isTwoSided() )
 				{
 					show = ( ( ( xs[ 0 ] - xs[ 1 ] ) * ( iy - ys[ 1 ] ) )
-					         <= ( ( ys[ 0 ] - ys[ 1 ] ) * ( ix - xs[ 1 ] ) ) );
+					      <= ( ( ys[ 0 ] - ys[ 1 ] ) * ( ix - xs[ 1 ] ) ) );
 
 					if ( !show )
 						break;

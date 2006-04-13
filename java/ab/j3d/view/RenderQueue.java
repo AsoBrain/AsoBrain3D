@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,8 +21,11 @@ package ab.j3d.view;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.io.PrintWriter;
-import java.io.IOException;
+
+import com.numdata.oss.ArrayTools;
+import com.numdata.oss.AugmentedArrayList;
+import com.numdata.oss.AugmentedList;
+import com.numdata.oss.io.IndentingWriter;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
@@ -31,11 +34,6 @@ import ab.j3d.model.Face3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
-
-import com.numdata.oss.ArrayTools;
-import com.numdata.oss.AugmentedArrayList;
-import com.numdata.oss.AugmentedList;
-import com.numdata.oss.io.IndentingWriter;
 
 /**
  * This class manages a render queue that can be used by a 3D render engine. It
@@ -101,8 +99,8 @@ public final class RenderQueue
 
 	/**
 	 * List of {@link List} instances containing freed objects. The index in the
-	 * list is the number of points in the freed polygon Index minus 1. Elements
-	 * are created on-demand (inialized to <code>null</code>).
+	 * list is the number of vertices in the freed polygon Index minus 1.
+	 * Elements are created on-demand (inialized to <code>null</code>).
 	 */
 	final AugmentedList _freeLists;
 
@@ -114,12 +112,12 @@ public final class RenderQueue
 	/**
 	 * Temporary/shared storage area for {@link #enqueueObject}.
 	 */
-	private double[] _tmpPointCoords;
+	private double[] _tmpVertexCoordinates;
 
 	/**
 	 * Temporary/shared storage area for {@link #enqueueObject}.
 	 */
-	private int[] _tmpProjectedCoords;
+	private int[] _tmpProjectedCoordinates;
 
 	/**
 	 * Temporary/shared storage area for {@link #enqueueObject}.
@@ -184,8 +182,8 @@ public final class RenderQueue
 		_queue              = new ArrayList( 64 );
 		_freeLists          = new AugmentedArrayList( 4 );
 		_tmpNodeCollection  = new Node3DCollection();
-		_tmpPointCoords     = null;
-		_tmpProjectedCoords = null;
+		_tmpVertexCoordinates     = null;
+		_tmpProjectedCoordinates = null;
 		_tmpFaceNormals     = null;
 	}
 
@@ -234,26 +232,26 @@ public final class RenderQueue
 	 */
 	public void enqueueObject( final Projector projector , final boolean backfaceCulling , final Matrix3D object2view , final Object3D object , final boolean alternateAppearance )
 	{
-		final int      faceCount       = object.getFaceCount();
-		final int      pointCount      = object.getPointCount();
-		final double[] pointCoords     = ( _tmpPointCoords     = object2view.transform( object.getPointCoords()   , _tmpPointCoords     , pointCount ) );
-		final int[]    projectedCoords = ( _tmpProjectedCoords = projector.project    ( pointCoords               , _tmpProjectedCoords , pointCount ) );
-		final double[] faceNormals     = ( _tmpFaceNormals     = object2view.rotate   ( object.getFaceNormals()   , _tmpFaceNormals     , faceCount  ) );
-//		final double[] vertexNormals   = ( _tmpVertexNormals   = object2view.rotate   ( object.getVertexNormals() , _tmpVertexNormals   , pointCount ) );
+		final int      faceCount            = object.getFaceCount();
+		final int      vertexCount          = object.getVertexCount();
+		final double[] vertexCoordinates    = ( _tmpVertexCoordinates    = object.getVertexCoordinates( object2view , _tmpVertexCoordinates ) );
+		final int[]    projectedCoordinates = ( _tmpProjectedCoordinates = projector.project( vertexCoordinates , _tmpProjectedCoordinates , vertexCount ) );
+		final double[] faceNormals          = ( _tmpFaceNormals          = object.getFaceNormals( object2view , _tmpFaceNormals     ) );
+//		final double[] vertexNormals        = ( _tmpVertexNormals        = object.getVertexNormals( object2view , _tmpVertexNormals ) );
 
 		for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
 		{
 			final Face3D face = object.getFace( faceIndex );
 
-			if ( projector.inViewVolume( face , pointCoords ) )
+			if ( projector.inViewVolume( face , vertexCoordinates ) )
 			{
 				final RenderedPolygon polygon = allocatePolygon( face.getVertexCount() );
-				polygon.initialize( face , pointCoords , projectedCoords , faceNormals , alternateAppearance );
+				polygon.initialize( face , vertexCoordinates , projectedCoordinates , faceNormals , alternateAppearance );
 
 				//@FIXME: Debugging variable. Should be removed when the renderqueue works properly.
 				polygon._name = String.valueOf( object.getTag() );
 
-				if ( !backfaceCulling || face.hasBackface() || !polygon.isBackface() ) // Perform backface removal
+				if ( !backfaceCulling || face.isTwoSided() || !polygon.isBackface() ) // Perform backface removal
 					enqueuePolygon( polygon );
 			}
 		}
@@ -355,9 +353,7 @@ public final class RenderQueue
 //		}
 //		System.out.println( " " );
 
-		final IndentingWriter out = new IndentingWriter( new PrintWriter( System.out ) );
-
-		queue = sortQueue( queue , out );
+		queue = sortQueue( queue );
 //		queue = sortPolygonList( queue );
 //		queue = sortQueue( queue );
 
@@ -380,15 +376,12 @@ public final class RenderQueue
 	 *
 	 * @param   queue   {@link List} with the {@link RenderedPolygon}s to be
 	 *                  sorted.
-	 * @param   out     {@link IndentingWriter} used for writing debugging info
-	 *                  to the command line. Should be removed when renderqueue
-	 *                  works properly
 	 *
 	 * @return  Sorted list of polygons in queue.
 	 *
 	 * @see     #order
 	 */
-	public List sortQueue( final List queue , final IndentingWriter out )
+	public List sortQueue( final List queue )
 	{
 		final ArrayList result = new ArrayList( queue.size() + ( queue.size() / 3 ) );
 		final ArrayList tempQueue = new ArrayList( queue );
@@ -401,20 +394,12 @@ public final class RenderQueue
 				final RenderedPolygon p = (RenderedPolygon)tempQueue.get( i );
 				if ( p != null )
 				{
-					try
-					{
-//						out.writeln( "Ordering polygon " + p._name );
-//						out.writeln( "{" );
-//						out.indentIn();
-						order( p , tempQueue , result , new ArrayList( 5 ), out );
-//						out.indentOut();
-//						out.writeln( "}" );
-//						out.flush();
-					}
-					catch ( IOException e )
-					{
-						e.printStackTrace();
-					}
+//					out.writeln( "Ordering polygon " + p._name );
+//					out.writeln( "{" );
+//					out.indentIn();
+					order( p , tempQueue , result , new ArrayList( 5 ) );
+//					out.indentOut();
+//					out.writeln( "}" );
 					break;
 				}
 			}
@@ -460,14 +445,8 @@ public final class RenderQueue
 	 *                          sorted but needed to recursively call this
 	 *                          method because another polygon lay behind them.
 	 *                          Used for cycle detection.
-	 * @param   out             {@link IndentingWriter} used for writing
-	 *                          debugging info to the command line. Should be
-	 *                          removed when renderqueue works properly.
-	 *
-	 * @throws  IOException if the {@link IndentingWriter} throws an exception.
 	 */
-	private void order( final RenderedPolygon poly , final List tempQueue , final List finalQueue , final List polygonStack , final IndentingWriter out )
-		throws IOException
+	private void order( final RenderedPolygon poly , final List tempQueue , final List finalQueue , final List polygonStack )
 	{
 		RenderedPolygon polygon = poly;
 		final int queueIndex = tempQueue.indexOf( polygon );
@@ -550,7 +529,7 @@ public final class RenderQueue
 //									out.writeln( "{" );
 //									out.indentIn();
 									polygonStack.add( polygon );
-									order( other , tempQueue , finalQueue , polygonStack , out );
+									order( other , tempQueue , finalQueue , polygonStack );
 									polygonStack.remove( polygon );
 //									out.indentOut();
 //									out.writeln( "}" );
@@ -662,7 +641,7 @@ public final class RenderQueue
 		boolean  behind      = false;
 		boolean  inFront     = false;
 		final double   d           = other._planeConstant;
-		final int      vertexCount = polygon._pointCount;
+		final int      vertexCount = polygon._vertexCount;
 		final double[] xCoords     = polygon._viewX;
 		final double[] yCoords     = polygon._viewY;
 		final double[] zCoords     = polygon._viewZ;
@@ -707,7 +686,7 @@ public final class RenderQueue
 		 * Setup variables to be used.
 		 */
 		final double   cuttingD    = cuttingPlane._planeConstant;
-		final int      vertexCount = polygon._pointCount;
+		final int      vertexCount = polygon._vertexCount;
 		final double[] xCoords     = polygon._viewX;
 		final double[] yCoords     = polygon._viewY;
 		final double[] zCoords     = polygon._viewZ;
@@ -927,31 +906,31 @@ public final class RenderQueue
 	}
 
 	/**
-	 * Allocate polygon with the specified number of points.
+	 * Allocate polygon with the specified number of vertices.
 	 *
-	 * @param   pointCount      Desired number of points in polygon.
+	 * @param   vertexCount      Desired number of vertices in polygon.
 	 *
 	 * @return  {@link RenderedPolygon} object.
 	 *
 	 * @see     #releasePolygon
 	 */
-	public RenderedPolygon allocatePolygon( final int pointCount )
+	public RenderedPolygon allocatePolygon( final int vertexCount )
 	{
 		final RenderedPolygon result;
 
 		final List lists     = _freeLists;
-		final int  listIndex = pointCount - 1;
+		final int  listIndex = vertexCount - 1;
 
 		if ( listIndex >= lists.size() )
 		{
-			result = new RenderedPolygon( pointCount );
+			result = new RenderedPolygon( vertexCount );
 		}
 		else
 		{
 			final List list = (List)lists.get( listIndex );
 			if ( ( list == null ) || list.isEmpty() )
 			{
-				result = new RenderedPolygon( pointCount );
+				result = new RenderedPolygon( vertexCount );
 			}
 			else
 			{
@@ -980,12 +959,12 @@ public final class RenderQueue
 	 */
 	public void releasePolygon( final RenderedPolygon polygon )
 	{
-		final int pointCount = polygon._pointCount;
-		final int listIndex  = pointCount - 1;
+		final int vertexCount = polygon._vertexCount;
+		final int listIndex   = vertexCount - 1;
 
 		final AugmentedList lists = _freeLists;
-		if ( pointCount >= lists.size() )
-			lists.setLength( pointCount );
+		if ( vertexCount >= lists.size() )
+			lists.setLength( vertexCount );
 
 		List list = (List)lists.get( listIndex );
 		if ( list == null )

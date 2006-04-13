@@ -1,7 +1,6 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -305,7 +304,7 @@ public final class Model3D
 		final double depth1    = height / Math.tan( Math.toRadians( 51.0 ) );
 		final double depth2    = depth  - depth1;
 
-		result.setPointCoords( new double[]
+		result.setVertexCoordinates( new double[]
 			{
 				/* 0 */ -halfWidth , -depth2 ,    0.0 ,
 				/* 1 */  halfWidth , -depth2 ,    0.0 ,

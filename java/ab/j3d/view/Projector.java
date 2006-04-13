@@ -210,32 +210,30 @@ public abstract class Projector
 	 * <code>double</code>-array argument.
 	 *
 	 * @param   face            Face to test against view volume.
-	 * @param   pointCoords     View coordinates of object's points.
+	 * @param   vertexCoordinates     View coordinates of object's vertices.
 	 *
 	 * @return  <code>true</code> if the face lies completely within the view volume;
 	 *          <code>false</code> if the face has no vertices, or lies (partly)
 	 *          outside the view volume.
 	 *
 	 * @see     #inViewVolume(double, double, double)
-	 * @see     Face3D#getPointIndices
-	 * @see     Object3D#getPointCoords
+	 * @see     Face3D#getVertexIndices
 	 */
-	public final boolean inViewVolume( final Face3D face , final double[] pointCoords )
+	public final boolean inViewVolume( final Face3D face , final double[] vertexCoordinates )
 	{
 		boolean result = false;
 
-		final int[] pointIndices = face.getPointIndices();
-		final int   vertexCount   = pointIndices.length;
-
+		final int vertexCount = face.getVertexCount();
 		if ( vertexCount > 0 )
 		{
 			result = true;
 
-			for ( int vertexIndex = 0 ; vertexIndex < vertexCount ; vertexIndex++ )
+			final int[] vertexIndices = face.getVertexIndices();
+			for ( int vertex = 0 ; vertex < vertexCount ; vertex++ )
 			{
-				final int pointIndex = pointIndices[ vertexIndex ] * 3;
+				final int vertexIndex = vertexIndices[ vertex ] * 3;
 
-				if ( !inViewVolume( pointCoords[ pointIndex  ] , pointCoords[ pointIndex + 1 ] , pointCoords[ pointIndex + 2 ] ) )
+				if ( !inViewVolume( vertexCoordinates[ vertexIndex  ] , vertexCoordinates[ vertexIndex + 1 ] , vertexCoordinates[ vertexIndex + 2 ] ) )
 				{
 					result = false;
 					break;

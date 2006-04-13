@@ -1,7 +1,6 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -155,8 +154,8 @@ public abstract class IntersectionSupport
 		final Matrix3D objectTransform = worldTransform.multiply( lineTransform );
 
 		final int      faceCount   = object.getFaceCount();
-		final double[] vertices    = objectTransform.transform( object.getPointCoords() , null , object.getPointCount() );
-		final double[] faceNormals = objectTransform.rotate( object.getFaceNormals() , null , faceCount );
+		final double[] vertices    = object.getVertexCoordinates( objectTransform , null );
+		final double[] faceNormals = object.getFaceNormals( objectTransform , null );
 
 		for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
 		{
@@ -168,8 +167,8 @@ public abstract class IntersectionSupport
 			 */
 			if ( vertexCount > 1 )
 			{
-				final int[] pointIndices = face.getPointIndices();
-				final int in = pointIndices[ 1 ] * 3;
+				final int[] vertexIndices = face.getVertexIndices();
+				final int   in            = vertexIndices[ 1 ] * 3;
 
 				final Vector3D normal = Vector3D.INIT.set( faceNormals[ ( faceIndex * 3 ) ] , faceNormals[ ( faceIndex * 3 ) + 1 ] , faceNormals[ ( faceIndex * 3 ) + 2 ] );
 				final Vector3D p3     = Vector3D.INIT.set( vertices[ in ] , vertices[ in + 1 ] , vertices[ in + 2 ]                                                       );
@@ -191,7 +190,7 @@ public abstract class IntersectionSupport
 					final double intY = lineStart.y + u * ( linePoint.y - lineStart.y );
 					final double intZ = lineStart.z + u * ( linePoint.z - lineStart.z );
 
-					final int lastIndex = pointIndices[ pointIndices.length - 1 ] * 3;
+					final int lastIndex = vertexIndices[ vertexIndices.length - 1 ] * 3;
 					double  x1        = vertices[ lastIndex ];
 					double  y1        = vertices[ lastIndex + 1 ];
 					boolean left      = false;
@@ -200,7 +199,7 @@ public abstract class IntersectionSupport
 
 					for ( int vertex = 0 ; vertex < vertexCount && !( left && right ) ; vertex++ )
 					{
-						final int    index = pointIndices[ vertex ] * 3;
+						final int    index = vertexIndices[ vertex ] * 3;
 						final double x2    = vertices[ index ];
 						final double y2    = vertices[ index + 1 ];
 

@@ -304,11 +304,11 @@ public final class Max3DSLoader
 					// System.out.println( "    > point coordinates array" );
 					final int vertexCount = readShort( in );
 
-					final double[] pointCoords = new double[ vertexCount * 3 ];
-					for ( int i = 0 ; i < pointCoords.length ; i++ )
-						pointCoords[ i ] = (double)readFloat( in );
+					final double[] vertexCoordinates = new double[ vertexCount * 3 ];
+					for ( int i = 0 ; i < vertexCoordinates.length ; i++ )
+						vertexCoordinates[ i ] = (double)readFloat( in );
 
-					_object.setPointCoords( pointCoords );
+					_object.setVertexCoordinates( vertexCoordinates );
 				}
 				break;
 
@@ -390,11 +390,11 @@ public final class Max3DSLoader
 
 			case 0x4140 : // OBJECT_TEX_VERTS - 2D Texture coordinates - only valid with planar mapping
 				{
-					final int vertexCount = readShort( in );
-					final int pointCount = _object.getPointCount();
+					final int faceVertexCount = readShort( in );
+					final int vertexCount     = _object.getVertexCount();
 
-					if ( vertexCount != pointCount )
-						throw new IOException( "Number of texture vertices != #model vertices (" + vertexCount + " != " + pointCount + ')' );
+					if ( faceVertexCount != vertexCount )
+						throw new IOException( "Number of texture vertices != #model vertices (" + faceVertexCount + " != " + vertexCount + ')' );
 
 					final TextureSpec texture   = _texture;
 					final boolean     mayHaveUV = texture.isTexture();
@@ -404,9 +404,9 @@ public final class Max3DSLoader
 					final float       wf        = (float)wi;
 					final float       hf        = (float)hi;
 
-					final int[] textureCoords = hasUV ? new int[ vertexCount * 2 ] : null;
+					final int[] textureCoords = hasUV ? new int[ faceVertexCount * 2 ] : null;
 
-					for ( int i = 0 ; i < vertexCount ; i++ )
+					for ( int i = 0 ; i < faceVertexCount ; i++ )
 					{
 						final float uf = readFloat( in );
 						final float vf = readFloat( in );

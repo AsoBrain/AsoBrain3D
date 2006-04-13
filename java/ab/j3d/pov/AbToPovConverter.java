@@ -306,13 +306,13 @@ public final class AbToPovConverter
 	{
 		final PovMesh2 result = new PovMesh2( ( object.getTag() != null ) ? String.valueOf( object.getTag() ) : null );
 
-		final int      faceCount   = object.getFaceCount();
-		final int      pointCount  = object.getPointCount();
-		final double[] pointCoords = transform.transform( object.getPointCoords() , null , pointCount );
+		final int      faceCount         = object.getFaceCount();
+		final int      vertexCount       = object.getVertexCount();
+		final double[] vertexCoordinates = object.getVertexCoordinates( transform , null );
 
-		final List vertexVectors = new ArrayList( pointCount );
-		for ( int pi = 0 , vi = 0 ; vi < pointCount ; pi += 3 , vi++ )
-			vertexVectors.add( new PovVector( pointCoords[ pi ] , pointCoords[ pi + 1 ] , pointCoords[ pi + 2 ] ) );
+		final List vertexVectors = new ArrayList( vertexCount );
+		for ( int pi = 0 , vi = 0 ; vi < vertexCount ; pi += 3 , vi++ )
+			vertexVectors.add( new PovVector( vertexCoordinates[ pi ] , vertexCoordinates[ pi + 1 ] , vertexCoordinates[ pi + 2 ] ) );
 
 		result.setVertexVectors( vertexVectors );
 
@@ -325,24 +325,24 @@ public final class AbToPovConverter
 
 		for ( int i = 0 ; i < faceCount ; i++ )
 		{
-			final Face3D face        = object.getFace( i );
-			final int    vertexCount = face.getVertexCount();
+			final Face3D face            = object.getFace( i );
+			final int    faceVertexCount = face.getVertexCount();
 
-			if ( vertexCount > 2 )
+			if ( faceVertexCount > 2 )
 			{
-				final boolean     smooth       = face.isSmooth();
-				final int[]       pointIndices = face.getPointIndices();
-				final TextureSpec texture      = face.getTexture();
+				final boolean     smooth        = face.isSmooth();
+				final int[]       vertexIndices = face.getVertexIndices();
+				final TextureSpec texture       = face.getTexture();
 
 				/*
 				 * Require vertex normals for smooth faces.
 				 */
 				if ( smooth && ( vertexNormals == null ) )
 				{
-					vertexNormals = transform.rotate( object.getVertexNormals() , null , pointCount );
+					vertexNormals = object.getVertexNormals( transform , null );
 
-					final List normalVectors = new ArrayList( pointCount );
-					for ( int pi = 0 , vi = 0 ; vi < pointCount ; pi += 3 , vi++ )
+					final List normalVectors = new ArrayList( vertexCount );
+					for ( int pi = 0 , vi = 0 ; vi < vertexCount ; pi += 3 , vi++ )
 						normalVectors.add( new PovVector( vertexNormals[ pi ] , vertexNormals[ pi + 1 ] , vertexNormals[ pi + 2 ] ) );
 
 					result.setNormalVectors( normalVectors );
@@ -369,7 +369,7 @@ public final class AbToPovConverter
 				/*
 				 * For every triangle, the first vertex is the same.
 				 */
-				final int v1  = pointIndices[ 0 ];
+				final int v1  = vertexIndices[ 0 ];
 				final int vn1 = smooth ? v1 : 0;
 				final int uv1 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)face.getTextureU( 0 ) / textureWidth , (double)face.getTextureV( 0 ) / textureHeight , 0.0 ) ) : -1;
 
@@ -377,17 +377,17 @@ public final class AbToPovConverter
 				int vn2;
 				int uv2;
 
-				int v3  = pointIndices[ 1 ];
+				int v3  = vertexIndices[ 1 ];
 				int vn3 = smooth ? v3 : 0;
 				int uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)face.getTextureU( 1 ) / textureWidth , (double)face.getTextureV( 1 ) / textureHeight , 0.0 ) ) : -1;
 
-				for ( int j = 2 ; j < vertexCount ; j++ )
+				for ( int j = 2 ; j < faceVertexCount ; j++ )
 				{
 					v2  = v3;
 					vn2 = vn3;
 					uv2 = uv3;
 
-					v3  = pointIndices[ j ];
+					v3  = vertexIndices[ j ];
 					vn3 = smooth ? v3 : 0;
 					uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)face.getTextureU( j ) / textureWidth , (double)face.getTextureV( j ) / textureHeight , 0.0 ) ) : -1;
 

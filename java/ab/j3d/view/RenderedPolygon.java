@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -61,20 +61,20 @@ public final class RenderedPolygon
 	public boolean _alternateAppearance;
 
 	/**
-	 * The total number of points in polygon.
+	 * The total number of vertices in polygon.
 	 */
-	public final int _pointCount;
+	public final int _vertexCount;
 
 	/**
 	 * Array of projected X coordinates. The number of elements matches the
-	 * {@link #_pointCount} field, and the {@link #xpoints} field must always
+	 * {@link #_vertexCount} field, and the {@link #xpoints} field must always
 	 * remain the same as this field.
 	 */
 	public final int[] _projectedX;
 
 	/**
 	 * Array of projected Y coordinates. The number of elements matches the
-	 * {@link #_pointCount} field, and the {@link #xpoints} field must always
+	 * {@link #_vertexCount} field, and the {@link #xpoints} field must always
 	 * remain the same as this field.
 	 */
 	public final int[] _projectedY;
@@ -98,7 +98,7 @@ public final class RenderedPolygon
 	 * X component of face's plane normal in view space.
 	 * <p />
 	 * Any point (x,y,z,) on the face's plane satifies the plane equation:
-	 * <pre>  (x,y,z) x ({@link #_planeNormalX},{@link #_planeNormalY},{@link #_planeNormalZ}) = {@link #_planeConstant}</pre>
+	 * <pre>  (x,y,z) &#183; ({@link #_planeNormalX},{@link #_planeNormalY},{@link #_planeNormalZ}) = {@link #_planeConstant}</pre>
 	 */
 	public double _planeNormalX;
 
@@ -106,7 +106,7 @@ public final class RenderedPolygon
 	 * Y component of face's plane normal in view space.
 	 * <p />
 	 * Any point (x,y,z,) on the face's plane satifies the plane equation:
-	 * <pre>  (x,y,z) x ({@link #_planeNormalX},{@link #_planeNormalY},{@link #_planeNormalZ}) = {@link #_planeConstant}</pre>
+	 * <pre>  (x,y,z) &#183; ({@link #_planeNormalX},{@link #_planeNormalY},{@link #_planeNormalZ}) = {@link #_planeConstant}</pre>
 	 */
 	public double _planeNormalY;
 
@@ -114,7 +114,7 @@ public final class RenderedPolygon
 	 * Z component of face's plane normal in view space.
 	 * <p />
 	 * Any point (x,y,z,) on the face's plane satifies the plane equation:
-	 * <pre>  (x,y,z) x ({@link #_planeNormalX},{@link #_planeNormalY},{@link #_planeNormalZ}) = {@link #_planeConstant}</pre>
+	 * <pre>  (x,y,z) &#183; ({@link #_planeNormalX},{@link #_planeNormalY},{@link #_planeNormalZ}) = {@link #_planeConstant}</pre>
 	 */
 	public double _planeNormalZ;
 
@@ -122,7 +122,7 @@ public final class RenderedPolygon
 	 * Plane constant of face in view space.
 	 * <p />
 	 * Any point (x,y,z,) on the face's plane satifies the plane equation:
-	 * <pre>  (x,y,z) x ({@link #_planeNormalX},{@link #_planeNormalY},{@link #_planeNormalZ}) = {@link #_planeConstant}</pre>
+	 * <pre>  (x,y,z) &#183; ({@link #_planeNormalX},{@link #_planeNormalY},{@link #_planeNormalZ}) = {@link #_planeConstant}</pre>
 	 */
 	public double _planeConstant;
 
@@ -171,11 +171,11 @@ public final class RenderedPolygon
 	/**
 	 * Construct polygon.
 	 *
-	 * @param   pointCount      Desired number of points in polygon.
+	 * @param   vertexCount     Desired number of vertices in polygon.
 	 */
-	RenderedPolygon( final int pointCount )
+	RenderedPolygon( final int vertexCount )
 	{
-		this( pointCount , new int[ pointCount ] , new int[ pointCount ] );
+		this( vertexCount , new int[ vertexCount ] , new int[ vertexCount ] );
 	}
 
 	/**
@@ -183,21 +183,21 @@ public final class RenderedPolygon
 	 * array allocation in the {@link Polygon#Polygon(int[],int[],int)}
 	 * constructor.
 	 *
-	 * @param   pointCount  Desired number of points in polygon.
-	 * @param   projectedX  Newly created array for projected X coordinates.
-	 * @param   projectedY  Newly created array for projected Y coordinates.
+	 * @param   vertexCount     Desired number of vertices in polygon.
+	 * @param   projectedX      Newly created array for projected X coordinates.
+	 * @param   projectedY      Newly created array for projected Y coordinates.
 	 */
-	private RenderedPolygon( final int pointCount , final int[] projectedX , final int[] projectedY )
+	private RenderedPolygon( final int vertexCount , final int[] projectedX , final int[] projectedY )
 	{
 		super( projectedX , projectedY , 0 );
 
 		_object              = null;
-		_pointCount          = pointCount;
+		_vertexCount         = vertexCount;
 		_projectedX          = projectedX;
 		_projectedY          = projectedY;
-		_viewX               = new double[ pointCount ];
-		_viewY               = new double[ pointCount ];
-		_viewZ               = new double[ pointCount ];
+		_viewX               = new double[ vertexCount ];
+		_viewY               = new double[ vertexCount ];
+		_viewZ               = new double[ vertexCount ];
 		_planeNormalX        = 0.0;
 		_planeNormalY        = 0.0;
 		_planeNormalZ        = 1.0;
@@ -213,25 +213,25 @@ public final class RenderedPolygon
 
 		xpoints = projectedX;
 		ypoints = projectedY;
-		npoints = pointCount;
+		npoints = vertexCount;
 	}
 
 	/**
 	 * Initialize polygon with face properties.
 	 *
-	 * @param   face                    Face to get polygon properties from.
-	 * @param   objectViewCoords        Point coordinates of object in view space.
-	 * @param   objectProjectedCoords   Projected points on image plate (pixels).
-	 * @param   faceNormals             Normals of object faces.
-	 * @param   alternateAppearance     Use alternate vs. regular object appearance.
+	 * @param   face                            Face to get polygon properties from.
+	 * @param   objectViewCoordinates           Vertex coordinates of object in view space.
+	 * @param   objectProjectedCoordindates     Projected points on image plate (pixels).
+	 * @param   faceViewNormals                 Normals of object faces in view space.
+	 * @param   alternateAppearance             Use alternate vs. regular object appearance.
 	 *
 	 * @see     Face3D
-	 * @see     Object3D#getPointCoords()
-	 * @see     Object3D#getFaceNormals()
+	 * @see     Object3D#getVertexCoordinates
+	 * @see     Object3D#getFaceNormals
 	 */
-	public void initialize( final Face3D face , final double[] objectViewCoords , final int[] objectProjectedCoords , final double[] faceNormals , final boolean alternateAppearance )
+	public void initialize( final Face3D face , final double[] objectViewCoordinates , final int[] objectProjectedCoordindates , final double[] faceViewNormals , final boolean alternateAppearance )
 	{
-		final int      pointCount   = _pointCount;
+		final int      pointCount   = _vertexCount;
 		final int[]    projectedX   = _projectedX;
 		final int[]    projectedY   = _projectedY;
 		final double[] viewX        = _viewX;
@@ -244,8 +244,8 @@ public final class RenderedPolygon
 		if ( face.getVertexCount() != pointCount )
 			throw new IllegalArgumentException();
 
-		final Object3D object       = face.getObject();
-		final int[]    pointIndices = face.getPointIndices();
+		final Object3D object        = face.getObject();
+		final int[]    vertexIndices = face.getVertexIndices();
 
 		int    minX = Integer.MAX_VALUE;
 		int    maxX = Integer.MIN_VALUE;
@@ -253,21 +253,22 @@ public final class RenderedPolygon
 		int    maxY = Integer.MIN_VALUE;
 		double minZ = Double.MAX_VALUE;
 		double maxZ = Double.MIN_VALUE;
-		for ( int vertexIndex = 0 ; vertexIndex < pointCount ; vertexIndex++ )
+
+		for ( int faceVertex = 0 ; faceVertex < pointCount ; faceVertex++ )
 		{
-			final int pointIndex  = pointIndices[ vertexIndex ];
-			final int pointIndex2 = pointIndex * 2;
-			final int pointIndex3 = pointIndex * 3;
+			final int objectVertex  = vertexIndices[ faceVertex ];
+			final int objectVertex2 = objectVertex * 2;
+			final int objectVertex3 = objectVertex * 3;
 
-			final int projX = objectProjectedCoords[ pointIndex2     ];
-			final int projY = objectProjectedCoords[ pointIndex2 + 1 ];
-			projectedX[ vertexIndex ] = projX;
-			projectedY[ vertexIndex ] = projY;
+			final int projX = objectProjectedCoordindates[ objectVertex2     ];
+			final int projY = objectProjectedCoordindates[ objectVertex2 + 1 ];
+			projectedX[ faceVertex ] = projX;
+			projectedY[ faceVertex ] = projY;
 
-			viewX[ vertexIndex ] = objectViewCoords[ pointIndex3     ];
-			viewY[ vertexIndex ] = objectViewCoords[ pointIndex3 + 1 ];
-			viewZ[ vertexIndex ] = objectViewCoords[ pointIndex3 + 2 ];
-			final double z       = objectViewCoords[ pointIndex3 + 2 ];
+			viewX[ faceVertex ] = objectViewCoordinates[ objectVertex3     ];
+			viewY[ faceVertex ] = objectViewCoordinates[ objectVertex3 + 1 ];
+			viewZ[ faceVertex ] = objectViewCoordinates[ objectVertex3 + 2 ];
+			final double z      = objectViewCoordinates[ objectVertex3 + 2 ];
 
 			minX = projX < minX ? projX : minX;
 			maxX = projX > maxX ? projX : maxX;
@@ -276,6 +277,7 @@ public final class RenderedPolygon
 			minZ = z     < minZ ? z     : minZ;
 			maxZ = z     > maxZ ? z     : maxZ;
 		}
+
 		_minX = minX;
 		_maxX = maxX;
 		_minY = minY;
@@ -292,13 +294,13 @@ public final class RenderedPolygon
 		final double y0 = viewY[ 0 ];
 		final double z0 = viewZ[ 0 ];
 
-		if ( faceNormals != null )
+		if ( faceViewNormals != null )
 		{
 			final int faceIndex3 = object.getFaceIndex( face ) * 3;
 
-			planeNormalX = faceNormals[ faceIndex3 ];
-			planeNormalY = faceNormals[ faceIndex3 + 1 ];
-			planeNormalZ = faceNormals[ faceIndex3 + 2 ];
+			planeNormalX = faceViewNormals[ faceIndex3 ];
+			planeNormalY = faceViewNormals[ faceIndex3 + 1 ];
+			planeNormalZ = faceViewNormals[ faceIndex3 + 2 ];
 		}
 		else
 		{
@@ -341,7 +343,7 @@ public final class RenderedPolygon
 	 * A backface is identified by a negative Z component of the face normal.
 	 * This is derived as follows:
 	 * <pre>
-	 * (x1,y1,z1) = first point of face
+	 * (x1,y1,z1) = first vertex of face
 	 * (x2,y2,z2) = second point of face
 	 * (x3,y3,z3) = third point of face
 	 * </pre>
@@ -364,7 +366,7 @@ public final class RenderedPolygon
 	{
 		final boolean result;
 
-		if ( _pointCount < 3 ) /* a void, point, or line can not be culled */
+		if ( _vertexCount < 3 ) /* a void, point, or line can not be culled */
 		{
 			result = false;
 		}
@@ -387,41 +389,41 @@ public final class RenderedPolygon
 	 * @return string with the values of all fields of this
 	 *          {@link RenderedPolygon}.
 	 */
-	public String toFriendlyString(){
-		String string = "";
+	public String toFriendlyString()
+	{
+		final StringBuffer sb = new StringBuffer();
 
-		string += "Object: "               + (  _object == null ? "null" : _object.toString() )                                              + "\n";
-		string += "Texture: "              + ( _texture == null ? "null" : _texture.code      )                                              + "\n";
-		string += "Alternate appearance: " + _alternateAppearance                                                                            + "\n";
-		string += "Normal: "               + Vector3D.toFriendlyString( Vector3D.INIT.set( _planeNormalX , _planeNormalY , _planeNormalZ ) ) + "\n";
-		string += "Plane constant: "       + _planeConstant                                                                                  + "\n";
-		string += "Coordinates: \n";
+		sb.append(   "Object: "               ); sb.append( _object );
+		sb.append( "\nTexture: "              ); sb.append( ( _texture == null ? "null" : _texture.code ) );
+		sb.append( "\nAlternate appearance: " ); sb.append( _alternateAppearance );
+		sb.append( "\nNormal: "               ); sb.append( Vector3D.toFriendlyString( Vector3D.INIT.set( _planeNormalX , _planeNormalY , _planeNormalZ ) ) );
+		sb.append( "\nPlane constant: "       ); sb.append( _planeConstant );
 
-		StringBuffer sb = new StringBuffer();
-		for ( int i = 0; i < _pointCount; i++ )
+		sb.append( "\nCoordinates:" );
+		for ( int i = 0; i < _vertexCount; i++ )
 		{
-			sb.append( "\t" );
+			sb.append( "\n\t" );
 			sb.append( Vector3D.toFriendlyString( Vector3D.INIT.set( _viewX[ i ] , _viewY[ i ] , _viewZ[ i ] ) ) );
 			sb.append( "\n" );
 		}
-		string += sb.toString();
 
-		string += "Projected coordinates:\n";
-
-		sb = new StringBuffer();
-		for ( int i = 0 ; i < _pointCount ; i++ )
+		sb.append( "Projected coordinates:" );
+		for ( int i = 0 ; i < _vertexCount ; i++ )
 		{
-			sb.append( "\t[ " );
+			sb.append( "\n\t[ " );
 			sb.append( _projectedX[ i ] );
 			sb.append( " , " );
 			sb.append( _projectedY[ i ] );
 			sb.append( " ]\n" );
 		}
-		string += sb.toString();
 
-		string += "Minimum Z: " + _minZ + "\n";
-		string += "Maximum Z: " + _maxZ + "\n";
+		sb.append( "\nMinimum Z: " );
+		sb.append( _minZ );
+		sb.append( "\nMaximum Z: " );
+		sb.append( _maxZ );
 
-		return string;
+		sb.append( '\n' );
+
+		return sb.toString();
 	}
 }

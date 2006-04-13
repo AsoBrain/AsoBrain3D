@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2006 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -37,19 +37,19 @@ import ab.j3d.model.Object3D;
  */
 public final class RenderObject
 {
-	Object3D    _obj;
-	Matrix3D    _xform;
+	Object3D    _object;
+	Matrix3D    _object2view;
 
-	int         _pointCount;
-	double[]    _verts;
-	int[]       _ph;
-	int[]       _pv;
-	long[]      _pd;
+	int         _vertexCount;
+	double[]    _vertexCoordinates;
+	int[]       _projectedX;
+	int[]       _projectedY;
+	long[]      _vertexDepths;
 
-	boolean     _vertNormDirty;
-	double[]    _vertNorm;
+	boolean     _vertexNormalsDirty;
+	double[]    _vertexNormals;
 
-	int         _nrLights;
+	int         _lightCount;
 	Light3D[]   _lights;
 	double[][]  _lightNormalDist;
 
@@ -98,10 +98,10 @@ public final class RenderObject
 			_maxH   = 0;
 			_maxV   = 0;
 			_maxD   = 0;
-			_nx     = 0;
-			_ny     = 0;
-			_nz     = 0;
-			_dist   = 0;
+			_nx     = 0.0;
+			_ny     = 0.0;
+			_nz     = 0.0;
+			_dist   = 0.0;
 			_ds     = null;
 			_sxs    = null;
 			_sys    = null;
@@ -121,9 +121,9 @@ public final class RenderObject
 			_ny     = ny;
 			_nz     = nz;
 
-			_vi = face3d.getPointIndices();
+			_vi = face3d.getVertexIndices();
 			final int i = _vi[ 0 ] * 3;
-			_dist = nx * _verts[ i ] + ny * _verts[ i + 1 ] + nz * _verts[ i + 2 ];
+			_dist = nx * _vertexCoordinates[ i ] + ny * _vertexCoordinates[ i + 1 ] + nz * _vertexCoordinates[ i + 2 ];
 		}
 
 		public boolean isBehind( final Face other )
@@ -137,7 +137,7 @@ public final class RenderObject
 
 
 			final int      i = other._vi[ 0 ] * 3;
-			final double[] v = other.getRenderObject()._verts;
+			final double[] v = other.getRenderObject()._vertexCoordinates;
 			final double   x = v[ i     ];
 			final double   y = v[ i + 1 ];
 			final double   z = v[ i + 2 ];
@@ -177,7 +177,7 @@ public final class RenderObject
 			/*
 			 * Calculate shading properties for all light sources.
 			 */
-			if ( _nrLights < 1 )
+			if ( _lightCount < 1 )
 				return;
 
 			final TextureSpec texture = getTexture();
@@ -186,7 +186,7 @@ public final class RenderObject
 			{
 				final double[] vertNorm = getVertexNormals();
 
-				for ( i = _nrLights ; --i >= 0 ; )
+				for ( i = _lightCount ; --i >= 0 ; )
 				{
 					final Light3D light      = _lights[ i ];
 					final double[] normalDist = _lightNormalDist[ i ];
@@ -204,7 +204,7 @@ public final class RenderObject
 			}
 			else
 			{
-				for ( i = _nrLights ; --i >= 0 ; )
+				for ( i = _lightCount ; --i >= 0 ; )
 				{
 					final Light3D light      = _lights[ i ];
 					final double[] normalDist = _lightNormalDist[ i ];
@@ -243,24 +243,24 @@ public final class RenderObject
 
 	public RenderObject()
 	{
-		_obj             = null;
-		_xform           = null;
+		_object             = null;
+		_object2view          = null;
 
-		_pointCount         = 0;
-		_verts           = null;
-		_ph              = null;
-		_pv              = null;
-		_pd              = null;
+		_vertexCount        = 0;
+		_vertexCoordinates  = null;
+		_projectedX         = null;
+		_projectedY         = null;
+		_vertexDepths       = null;
 
-		_vertNormDirty   = false;
-		_vertNorm        = null;
+		_vertexNormals      = null;
+		_vertexNormalsDirty = false;
 
-		_nrLights        = 0;
-		_lights          = null;
-		_lightNormalDist = null;
+		_lightCount         = 0;
+		_lights             = null;
+		_lightNormalDist    = null;
 
-		_faces           = null;
-		_facesFree       = null;
+		_faces              = null;
+		_facesFree          = null;
 	}
 	/**
 	 * Get Object3D that was used to construct the render object.
@@ -269,7 +269,7 @@ public final class RenderObject
 	 */
 	public Object3D getObject()
 	{
-		return _obj;
+		return _object;
 	}
 
 	/**
@@ -280,27 +280,31 @@ public final class RenderObject
 	 */
 	public double[] getVertexNormals()
 	{
-		if ( _vertNormDirty )
+		double[] result = _vertexNormals;
+
+		if ( _vertexNormalsDirty )
 		{
-			_vertNormDirty = false;
-			_vertNorm = _xform.rotate( _obj.getVertexNormals() , _vertNorm , _pointCount );
+			result = _object.getVertexNormals( _object2view, result );
+
+			_vertexNormals      = result;
+			_vertexNormalsDirty = false;
 		}
 
-		return _vertNorm;
+		return result;
 	}
 
 	/**
 	 * Set properties of the render object.
 	 *
-	 * @param   obj                 Object3D used to define the object.
-	 * @param   xform               View transform (rotation, translation).
+	 * @param   object                 Object3D used to define the object.
+	 * @param   object2view               View transform (rotation, translation).
 	 * @param   aperture            Camera aperture.
 	 * @param   zoom                Linear zoom factor.
 	 * @param   width               Width of render area in pixels.
 	 * @param   height              Height of render area in pixels.
 	 * @param   backfaceCullling    Discard backfaces if set to <code>true</code>.
 	 */
-	public void set( final Object3D obj , final Matrix3D xform , final double aperture , final double zoom , final int width , final int height , final boolean backfaceCullling )
+	public void set( final Object3D object , final Matrix3D object2view , final double aperture , final double zoom , final int width , final int height , final boolean backfaceCullling )
 	{
 		int i;
 		int j;
@@ -309,59 +313,52 @@ public final class RenderObject
 		int ih;
 		int iv;
 		int id;
-		double x;
-		double y;
-		double z;
 
-		final int      pointCount  = obj.getPointCount();
-		final double[] pointCoords = obj.getPointCoords();
-		final double[] faceNormals = obj.getFaceNormals();
+		final int      vertexCount = object.getVertexCount();
+		final double[] vertexCoordinates = ( _vertexCoordinates = object.getVertexCoordinates( object2view , _vertexCoordinates ) );
 		final int      centerH     = width << 7;
 		final int      centerV     = height << 7;
 
-		_obj           = obj;
-		_xform         = xform;
-		_nrLights      = 0;
-		_vertNormDirty = true;
-		_pointCount    = pointCount;
+		_object             = object;
+		_object2view        = object2view;
+		_lightCount         = 0;
+		_vertexCount        = vertexCount;
+		_vertexNormalsDirty = true;
 
 		/*
 		 * Prepare vertex buffers, transform vertices, project vertices.
 		 */
-		if ( ( _verts == null ) || ( pointCount * 3 > _verts.length ) )
+		if ( ( _vertexDepths == null ) || ( vertexCount > _vertexDepths.length ) )
 		{
-			_verts = new double[ pointCount * 3 ];
-			_ph    = new int   [ pointCount ];
-			_pv    = new int   [ pointCount ];
-			_pd    = new long  [ pointCount ];
+			_projectedX   = new int [ vertexCount ];
+			_projectedY   = new int [ vertexCount ];
+			_vertexDepths = new long[ vertexCount ];
 		}
 
 
 		final double perspectiveFactor = 256.0 * zoom / aperture;
 
-		for ( i = 0 , j = 0 ; j < pointCount ; i += 3 , j++ )
+		for ( i = 0 , j = 0 ; j < vertexCount ; i += 3 , j++ )
 		{
-			final double ox = pointCoords[ i     ];
-			final double oy = pointCoords[ i + 1 ];
-			final double oz = pointCoords[ i + 2 ];
-
-			x = _verts[ i     ] = xform.transformX( ox , oy , oz );
-			y = _verts[ i + 1 ] = xform.transformY( ox , oy , oz );
-			z = _verts[ i + 2 ] = xform.transformZ( ox , oy , oz );
+			final double x = vertexCoordinates[ i     ];
+			final double y = vertexCoordinates[ i + 1 ];
+			final double z = vertexCoordinates[ i + 2 ];
 
 			id = (int)y;
 
 			if ( id < 10 )
 			{
-				_pd[ j ] = 0;
-				_ph[ j ] = centerH;
-				_pv[ j ] = centerV;
+				_vertexDepths[ j ] = 0L;
+				_projectedX  [ j ] = centerH;
+				_projectedY  [ j ] = centerV;
 			}
 			else
 			{
-				_pd[ j ] = (long)( 549755813887.0 / y ); /*0x7FFFFFFFFF / id;*/
-				_ph[ j ] = centerH + (int)( x * ( y = perspectiveFactor / y ) );
-				_pv[ j ] = centerV - (int)( z *   y                           );
+				final double d = perspectiveFactor / y;
+
+				_vertexDepths[ j ] = (long)( 549755813887.0 / y ); /*0x7FFFFFFFFF / id;*/
+				_projectedX  [ j ] = centerH + (int)( x * d );
+				_projectedY  [ j ] = centerV - (int)( z * d );
 			}
 		}
 
@@ -387,105 +384,105 @@ public final class RenderObject
 			_faces = null;
 		}
 
-		nextFace: for ( i = obj.getFaceCount() ; --i >= 0 ; )
+		nextFace: for ( i = object.getFaceCount() ; --i >= 0 ; )
 		{
-			final Face3D face3d       = obj.getFace( i );
-			final int[]  pointIndices = face3d.getPointIndices();
+			final Face3D face3d          = object.getFace( i );
+			final int    faceVertexCount = object.getVertexCount();
+			final int[]  vertexIndices   = face3d.getVertexIndices();
 
-			if ( pointIndices.length < 3 )
-				continue nextFace;
-
-			/*
-			 * Backface culling.
-			 *
-			 * c = (x1-x2)*(y3-y2)-(y1-y2)*(x3-x2)
-			 *
-			 * If c is positive the polygon is visible. (note that we negate this
-			 * test below, since the y-coordinates are drawn top to bottom and are
-			 * therefore mirrored).
-			 */
-			if ( backfaceCullling )
+			if ( faceVertexCount >= 3 )
 			{
-				final int h1 = _ph[ l = pointIndices[ 0 ] ] >> 8;
-				final int v1 = _pv[ l                     ] >> 8;
-				final int h2 = _ph[ l = pointIndices[ 1 ] ] >> 8;
-				final int v2 = _pv[ l                     ] >> 8;
-				final int h3 = _ph[ l = pointIndices[ 2 ] ] >> 8;
-				final int v3 = _pv[ l                     ] >> 8;
+				/*
+				 * Backface culling.
+				 *
+				 * c = (x1-x2)*(y3-y2)-(y1-y2)*(x3-x2)
+				 *
+				 * If c is positive the polygon is visible. (note that we negate this
+				 * test below, since the y-coordinates are drawn top to bottom and are
+				 * therefore mirrored).
+				 */
+				if ( backfaceCullling )
+				{
+					final int h1 = _projectedX[ l = vertexIndices[ 0 ] ] >> 8;
+					final int v1 = _projectedY[ l ] >> 8;
+					final int h2 = _projectedX[ l = vertexIndices[ 1 ] ] >> 8;
+					final int v2 = _projectedY[ l ] >> 8;
+					final int h3 = _projectedX[ l = vertexIndices[ 2 ] ] >> 8;
+					final int v3 = _projectedY[ l ] >> 8;
 
-				if ( (h1 - h2) * (v3 - v2) >= (v1 - v2) * (h3 - h2) )
-					continue nextFace;
+					if ( ( h1 - h2 ) * ( v3 - v2 ) >= ( v1 - v2 ) * ( h3 - h2 ) )
+						continue;
+				}
+
+				/*
+				 * Determine bounding box of face. Don't draw if outside screen range.
+				 */
+				l = vertexIndices[ 0 ];
+				if ( _vertexDepths[ l ] != 0L )
+				{
+					int minH = _projectedX[ l ] >> 8;
+					int maxH = minH;
+					int minV = _projectedY[ l ] >> 8;
+					int maxV = minV;
+					int minD = (int)_vertexCoordinates[ l * 3 + 1 ];
+					int maxD = minD;
+
+					for ( k = faceVertexCount ; --k >= 1; )
+					{
+						l = vertexIndices[ k ];
+
+						if ( _vertexDepths[ l ] == 0L )
+							continue nextFace;
+
+						ih = _projectedX[ l ] >> 8;
+						iv = _projectedY[ l ] >> 8;
+						id = (int)_vertexCoordinates[ l * 3 + 1 ];
+
+						if ( ih < minH ) minH = ih;
+						if ( ih > maxH ) maxH = ih;
+						if ( iv < minV ) minV = iv;
+						if ( iv > maxV ) maxV = iv;
+						if ( id < minD ) minD = id;
+						if ( id > maxD ) maxD = id;
+					}
+
+					if ( minH < width && maxH >= 0 && minV < height && maxV >= 0 )
+					{
+						/*
+						 * Calculate face normal
+						 */
+						final double x = face3d.getNormalX();
+						final double y = face3d.getNormalY();
+						final double z = face3d.getNormalZ();
+
+						/*
+						 * Insert face
+						 *  1) Reuse face from 'free list' or construct new 'Face' object
+						 *  2) Set face properties
+						 *  3) Find insertion point in face chain
+						 *  4) Insert face in face chain
+						 */
+						if ( _facesFree != null )
+							_facesFree = ( current = _facesFree )._next;
+						else
+							current = new Face();
+
+						current.set( face3d, i, minH, minV, minD, maxH, maxV, maxD, object2view.rotateX( x, y, z ), object2view.rotateY( x, y, z ), object2view.rotateZ( x, y, z ) );
+						current._next = _faces;
+						_faces = current;
+
+						//for ( previous = null , next = faces ; next != null && next.isBehind( current ) ; )
+						//next = ( previous = next ).next;
+
+						//if ( previous == null )
+						//faces = current;
+						//else
+						//previous.next = current;
+
+						//current.next = next;
+					}
+				}
 			}
-
-			/*
-			 * Determine bounding box of face. Don't draw if outside screen range.
-			 */
-			l = pointIndices[ 0 ];
-			if ( _pd[ l ] == 0 )
-				continue nextFace;
-
-			int minH = _ph[ l ] >> 8;
-			int maxH = minH;
-			int minV = _pv[ l ] >> 8;
-			int maxV = minV;
-			int minD = (int)_verts[ l * 3 + 1 ];
-			int maxD = minD;
-
-			for ( k = pointIndices.length ; --k >= 1 ; )
-			{
-				l = pointIndices[ k ];
-
-				if ( _pd[ l ] == 0 )
-					continue nextFace;
-
-				ih = _ph[ l ] >> 8;
-				iv = _pv[ l ] >> 8;
-				id = (int)_verts[ l * 3 + 1 ];
-
-				if ( ih < minH ) minH = ih;
-				if ( ih > maxH ) maxH = ih;
-				if ( iv < minV ) minV = iv;
-				if ( iv > maxV ) maxV = iv;
-				if ( id < minD ) minD = id;
-				if ( id > maxD ) maxD = id;
-			}
-
-			if ( minH >= width || maxH < 0 || minV >= height || maxV < 0 )
-				continue nextFace;
-
-			/*
-			 * Calculate face normal
-			 */
-			final int ni = i * 3;
-			x = faceNormals[ ni     ];
-			y = faceNormals[ ni + 1 ];
-			z = faceNormals[ ni + 2 ];
-
-			/*
-			 * Insert face
-			 *  1) Reuse face from 'free list' or construct new 'Face' object
-			 *  2) Set face properties
-			 *  3) Find insertion point in face chain
-			 *  4) Insert face in face chain
-			 */
-			if ( _facesFree != null )
-				_facesFree = ( current = _facesFree )._next;
-			else
-				current = new Face();
-
-			current.set( face3d , i , minH , minV , minD , maxH , maxV , maxD , xform.rotateX( x , y , z ) , xform.rotateY( x , y , z ) , xform.rotateZ( x , y , z ) );
-			current._next = _faces;
-			_faces = current;
-
-			//for ( previous = null , next = faces ; next != null && next.isBehind( current ) ; )
-			//next = ( previous = next ).next;
-
-			//if ( previous == null )
-			//faces = current;
-			//else
-			//previous.next = current;
-
-			//current.next = next;
 		}
 	}
 
@@ -504,7 +501,7 @@ public final class RenderObject
 		/*
 		 * Set number of light sources.
 		 */
-		_nrLights = ( lightSources != null ) ? lightSources.size() : 0;
+		_lightCount = ( lightSources != null ) ? lightSources.size() : 0;
 
 		/*
 		 * Prepare light source buffer.
@@ -512,23 +509,23 @@ public final class RenderObject
 		Light3D[]  lights          = _lights;
 		double[][] lightNormalDist = _lightNormalDist;
 
-		if ( _nrLights > 0 && ( lights == null || _nrLights > lights.length ) )
+		if ( _lightCount > 0 && ( lights == null || _lightCount > lights.length ) )
 		{
-			lights = new Light3D[ _nrLights ];
+			lights = new Light3D[ _lightCount ];
 			if ( _lights != null )
-				System.arraycopy( _lightNormalDist , 0 , lightNormalDist , 0 , this._lights.length );
+				System.arraycopy( _lightNormalDist , 0 , lightNormalDist , 0 , _lights.length );
 			_lights = lights;
 
-			lightNormalDist = new double[ _nrLights ][];
+			lightNormalDist = new double[ _lightCount ][];
 			_lightNormalDist = lightNormalDist;
 		}
 
 		/*
 		 * Prepare light directions and distance for light sources that need them.
 		 */
-		final int nrVerts4 = _pointCount * 4;
+		final int nrVerts4 = _vertexCount * 4;
 
-		if ( lightSources != null ) for ( i = 0 ; i < _nrLights ; i++ )
+		if ( lightSources != null ) for ( i = 0 ; i < _lightCount ; i++ )
 		{
 			lights[ i ] = (Light3D)lightSources.getNode( i );
 
@@ -545,9 +542,9 @@ public final class RenderObject
 
 				for ( j = 0 , k = 0 ; k < nrVerts4 ; )
 				{
-					final double dx = x - _verts[ j++ ];
-					final double dy = y - _verts[ j++ ];
-					final double dz = z - _verts[ j++ ];
+					final double dx = x - _vertexCoordinates[ j++ ];
+					final double dy = y - _vertexCoordinates[ j++ ];
+					final double dz = z - _vertexCoordinates[ j++ ];
 
 					final double d = Math.sqrt( dx * dx + dy * dy + dz * dz );
 					if ( d < 1.0 )

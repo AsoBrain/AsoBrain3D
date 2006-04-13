@@ -22,19 +22,19 @@ package ab.j3d.loader;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.numdata.oss.TextTools;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
-
-import com.numdata.oss.TextTools;
 
 /**
  * Loader for Wavefront Object Files (.obj).
@@ -191,7 +191,7 @@ public class ObjLoader
 		final List objTextureVertices = new ArrayList(); // element: Vector3D (u,v,w)
 		final List objVertexNormals   = new ArrayList(); // element: Vector3D (i,j,k)
 
-		double[]    abPointCoords   = null;
+		double[]    abVertexCoordinates   = null;
 		double[]    abVertexNormals = null;
 		TextureSpec abTexture       = defaultTexture;
 
@@ -390,17 +390,17 @@ public class ObjLoader
 						if ( argCount < 1 )
 							throw new IOException( "too few face arguments in: " + line );
 
-						final int   objVertexCount      = objVertices.size();
-						final int   abPointCoordsLength = objVertexCount * 3;
-						final int[] abFacePointIndices  = new int[ argCount ];
+						final int   objVertexCount            = objVertices.size();
+						final int   abVertexCoordinatesLength = objVertexCount * 3;
+						final int[] abFaceVertexIndices       = new int[ argCount ];
 
-						if ( ( abPointCoords == null ) || ( abPointCoords.length < abPointCoordsLength ) )
+						if ( ( abVertexCoordinates == null ) || ( abVertexCoordinates.length < abVertexCoordinatesLength ) )
 						{
 							if ( objVertexCount < 1 )
 								throw new IOException( "vertex used before vertex declaration" );
 
-							final double[] oldCoords = abPointCoords;
-							abPointCoords = new double[ abPointCoordsLength ];
+							final double[] oldCoords = abVertexCoordinates;
+							abVertexCoordinates = new double[ abVertexCoordinatesLength ];
 
 							int objIndex = 0;
 							int abIndex  = 0;
@@ -410,16 +410,16 @@ public class ObjLoader
 								abIndex  = oldCoords.length;
 								objIndex = abIndex / 3;
 
-								System.arraycopy( oldCoords , 0 , abPointCoords , 0 , abIndex );
+								System.arraycopy( oldCoords , 0 , abVertexCoordinates , 0 , abIndex );
 							}
 
 							while ( objIndex < objVertexCount )
 							{
-								final Vector3D point = (Vector3D)objVertices.get( objIndex++ );
+								final Vector3D vertex = (Vector3D)objVertices.get( objIndex++ );
 
-								abPointCoords[ abIndex++ ] = point.x;
-								abPointCoords[ abIndex++ ] = point.y;
-								abPointCoords[ abIndex++ ] = point.z;
+								abVertexCoordinates[ abIndex++ ] = vertex.x;
+								abVertexCoordinates[ abIndex++ ] = vertex.y;
+								abVertexCoordinates[ abIndex++ ] = vertex.z;
 							}
 						}
 
@@ -451,18 +451,18 @@ public class ObjLoader
 							final int objTextureVertexIndex = ( matcher.group( 3 ) != null ) ? Integer.parseInt( matcher.group( 3 ) ) : 0;
 							final int objVertexNormalIndex  = ( matcher.group( 5 ) != null ) ? Integer.parseInt( matcher.group( 5 ) ) : 0;
 
-							final int abFaceVertexIndex  = argCount - argIndex;
-							final int abPointIndex       = objVertexIndex - 1;
-							final int abPointIndexTimes3 = abPointIndex * 3;
+							final int abFaceVertexIndex   = argCount - argIndex;
+							final int abVertexIndex       = objVertexIndex - 1;
+							final int abVertexIndexTimes3 = abVertexIndex * 3;
 
-							if ( abPointIndexTimes3 >= abPointCoordsLength )
-								throw new IOException( "face references non-existing vertex (vertex=" + objVertexIndex + ", abPoints=" + ( abPointCoords.length / 3 ) + ", objVertices=" + objVertices.size() + ")" );
+							if ( abVertexIndexTimes3 >= abVertexCoordinatesLength )
+								throw new IOException( "face references non-existing vertex (vertex=" + objVertexIndex + ", abVertexCoordinates=" + ( abVertexCoordinates.length / 3 ) + ", objVertices=" + objVertices.size() + ")" );
 
 							if ( abTextureIsMapped && ( objTextureVertexIndex > 0 ) )
 							{
 								if ( abTextureU == null )
 								{
-									final int faceVertexCount = abFacePointIndices.length;
+									final int faceVertexCount = abFaceVertexIndices.length;
 
 									abTextureU = new int[ faceVertexCount ];
 									abTextureV = new int[ faceVertexCount ];
@@ -475,13 +475,13 @@ public class ObjLoader
 
 							if ( objVertexNormalIndex > 0 )
 							{
-								if ( ( abVertexNormals == null ) || ( abVertexNormals.length < abPointCoordsLength ) )
+								if ( ( abVertexNormals == null ) || ( abVertexNormals.length < abVertexCoordinatesLength ) )
 								{
 									if ( objVertexNormals.size() < 1 )
 										throw new IOException( "vertex normal used before normal declaration" );
 
 									final double[] oldNormals = abVertexNormals;
-									abVertexNormals = new double[ abPointCoordsLength ];
+									abVertexNormals = new double[ abVertexCoordinatesLength ];
 
 									if ( oldNormals != null )
 										System.arraycopy( oldNormals , 0 , abVertexNormals , 0 , oldNormals.length );
@@ -489,15 +489,15 @@ public class ObjLoader
 
 								final Vector3D vertexNormal = (Vector3D)objVertexNormals.get( objVertexNormalIndex - 1 );
 
-								abVertexNormals[ abPointIndexTimes3     ] = vertexNormal.x;
-								abVertexNormals[ abPointIndexTimes3 + 1 ] = vertexNormal.y;
-								abVertexNormals[ abPointIndexTimes3 + 2 ] = vertexNormal.z;
+								abVertexNormals[ abVertexIndexTimes3     ] = vertexNormal.x;
+								abVertexNormals[ abVertexIndexTimes3 + 1 ] = vertexNormal.y;
+								abVertexNormals[ abVertexIndexTimes3 + 2 ] = vertexNormal.z;
 							}
 
-							abFacePointIndices[ abFaceVertexIndex ] = abPointIndex;
+							abFaceVertexIndices[ abFaceVertexIndex ] = abVertexIndex;
 						}
 
-						result.addFace( abFacePointIndices , abTexture , abTextureU , abTextureV , 1.0f , true , false );
+						result.addFace( abFaceVertexIndices , abTexture , abTextureU , abTextureV , 1.0f , true , false );
 					}
 					/*
 					 * g group_name1 group_name2 . . .
@@ -605,7 +605,7 @@ public class ObjLoader
 
 //		System.out.println( " - OBJ file loaded succesfully" );
 
-		result.setPointCoords( abPointCoords );
+		result.setVertexCoordinates( abVertexCoordinates );
 
 		if ( abVertexNormals != null )
 		{
@@ -616,21 +616,21 @@ public class ObjLoader
 			 */
 			for ( int faceIndex = 0 ; faceIndex < result.getFaceCount() ; faceIndex++ )
 			{
-				final Face3D face             = result.getFace( faceIndex );
-				final int[]  facePointIndices = face.getPointIndices();
-				final int    faceVertexCount  = facePointIndices.length;
+				final Face3D face          = result.getFace( faceIndex );
+				final int[]  vertexIndices = face.getVertexIndices();
+				final int    vertexCount   = face.getVertexCount();
 
-				if ( faceVertexCount > 2 )
+				if ( vertexCount > 2 )
 				{
-					boolean haveAll  = ( faceVertexCount > 2 );
+					boolean haveAll  = ( vertexCount > 2 );
 					boolean allSame  = true;
 					double  firstVNX = 0.0;
 					double  firstVNY = 0.0;
 					double  firstVNZ = 0.0;
 
-					for ( int faceVertexIndex = 0 ; haveAll && ( faceVertexIndex < faceVertexCount ) ; faceVertexIndex++ )
+					for ( int faceVertexIndex = 0 ; haveAll && ( faceVertexIndex < vertexCount ) ; faceVertexIndex++ )
 					{
-						final int vi = facePointIndices[ faceVertexIndex ] * 3;
+						final int vi = vertexIndices[ faceVertexIndex ] * 3;
 
 						final double vnx = abVertexNormals[ vi     ];
 						final double vny = abVertexNormals[ vi + 1 ];

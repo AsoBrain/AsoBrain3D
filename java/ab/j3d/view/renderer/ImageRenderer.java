@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2005 Peter S. Heijnen
+ * Copyright (C) 1999-2006 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -256,9 +256,9 @@ public final class ImageRenderer
 
 		final RenderObject ro = face.getRenderObject();
 
-		final int[]       ph            = ro._ph;
-		final int[]       pv            = ro._pv;
-		final long[]      pd            = ro._pd;
+		final int[]       ph            = ro._projectedX;
+		final int[]       pv            = ro._projectedY;
+		final long[]      pd            = ro._vertexDepths;
 		final int[]       vertexIndices = face._vi;
 		final int         vertexCount   = vertexIndices.length;
 		final TextureSpec textureSpec   = face.getTexture();
