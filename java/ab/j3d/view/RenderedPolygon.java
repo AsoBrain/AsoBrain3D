@@ -251,8 +251,8 @@ public final class RenderedPolygon
 		int    maxX = Integer.MIN_VALUE;
 		int    minY = Integer.MAX_VALUE;
 		int    maxY = Integer.MIN_VALUE;
-		double minZ = Double.MAX_VALUE;
-		double maxZ = Double.MIN_VALUE;
+		double minZ = Double.POSITIVE_INFINITY;
+		double maxZ = Double.NEGATIVE_INFINITY;
 
 		for ( int faceVertex = 0 ; faceVertex < pointCount ; faceVertex++ )
 		{
