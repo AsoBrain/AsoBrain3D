@@ -123,26 +123,41 @@ public final class RenderObject
 
 			_vi = face3d.getVertexIndices();
 			final int i = _vi[ 0 ] * 3;
-			_dist = nx * _vertexCoordinates[ i ] + ny * _vertexCoordinates[ i + 1 ] + nz * _vertexCoordinates[ i + 2 ];
+			final double[] vertexCoordinates = _vertexCoordinates;
+			_dist = nx * vertexCoordinates[ i ] + ny * vertexCoordinates[ i + 1 ] + nz * vertexCoordinates[ i + 2 ];
 		}
 
 		public boolean isBehind( final Face other )
 		{
-			if ( _minH > other._maxH ) return false;
-			if ( _maxH < other._minH ) return false;
-			if ( _minV > other._maxV ) return false;
-			if ( _maxV < other._minV ) return false;
-			if ( _minD > other._maxD ) return true;
-			if ( _maxD < other._minD ) return false;
+			final boolean result;
 
+			if ( ( _minH > other._maxH )
+			  || ( _maxH < other._minH )
+			  || ( _minV > other._maxV )
+			  || ( _maxV < other._minV ) )
+			{
+				result = false;
+			}
+			else if ( _minD > other._maxD )
+			{
+				result = true;
+			}
+			else if ( _maxD < other._minD )
+			{
+				result = false;
+			}
+			else
+			{
+				final int      i = other._vi[ 0 ] * 3;
+				final double[] v = other.getRenderObject()._vertexCoordinates;
+				final double   x = v[ i     ];
+				final double   y = v[ i + 1 ];
+				final double   z = v[ i + 2 ];
 
-			final int      i = other._vi[ 0 ] * 3;
-			final double[] v = other.getRenderObject()._vertexCoordinates;
-			final double   x = v[ i     ];
-			final double   y = v[ i + 1 ];
-			final double   z = v[ i + 2 ];
+				result = ( y > ( _dist - _nx * x - _nz * z ) / _ny );
+			}
 
-			return y > ( _dist - _nx * x - _nz * z ) / _ny;
+			return result;
 		}
 
 		public void applyLighting()
@@ -177,7 +192,8 @@ public final class RenderObject
 			/*
 			 * Calculate shading properties for all light sources.
 			 */
-			if ( _lightCount < 1 )
+			final int lightCount = _lightCount;
+			if ( lightCount < 1 )
 				return;
 
 			final TextureSpec texture = getTexture();
@@ -186,7 +202,7 @@ public final class RenderObject
 			{
 				final double[] vertNorm = getVertexNormals();
 
-				for ( i = _lightCount ; --i >= 0 ; )
+				for ( i = lightCount ; --i >= 0 ; )
 				{
 					final Light3D light      = _lights[ i ];
 					final double[] normalDist = _lightNormalDist[ i ];
@@ -204,7 +220,7 @@ public final class RenderObject
 			}
 			else
 			{
-				for ( i = _lightCount ; --i >= 0 ; )
+				for ( i = lightCount ; --i >= 0 ; )
 				{
 					final Light3D light      = _lights[ i ];
 					final double[] normalDist = _lightNormalDist[ i ];
@@ -284,7 +300,7 @@ public final class RenderObject
 
 		if ( _vertexNormalsDirty )
 		{
-			result = _object.getVertexNormals( _object2view, result );
+			result = _object.getVertexNormals( _object2view , result );
 
 			_vertexNormals      = result;
 			_vertexNormalsDirty = false;
@@ -314,10 +330,10 @@ public final class RenderObject
 		int iv;
 		int id;
 
-		final int      vertexCount = object.getVertexCount();
+		final int      vertexCount       = object.getVertexCount();
 		final double[] vertexCoordinates = ( _vertexCoordinates = object.getVertexCoordinates( object2view , _vertexCoordinates ) );
-		final int      centerH     = width << 7;
-		final int      centerV     = height << 7;
+		final int      centerH           = width << 7;
+		final int      centerV           = height << 7;
 
 		_object             = object;
 		_object2view        = object2view;

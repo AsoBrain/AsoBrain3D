@@ -279,9 +279,12 @@ public final class Painter
 			final int[] xs = new int[ maxVertexCount ];
 			final int[] ys = new int[ maxVertexCount ];
 
-			float[] rgb = null;
+			final float[]  rgb;
+
 			if ( ( fillPaint instanceof Color ) && ( maxVertexCount > 2 ) && ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) )
 				rgb = ((Color)fillPaint).getRGBComponents( null );
+			else
+				rgb = null;
 
 			for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
 			{
@@ -302,7 +305,7 @@ public final class Painter
 					final double faceNormalY = face.getNormalY();
 					final double faceNormalZ = face.getNormalZ();
 
-					final float transformedNormalZ = (float)( faceNormalX * object2view.zx + faceNormalY * object2view.zy + faceNormalZ * object2view.zz );
+					final float transformedNormalZ = (float)object2view.rotateZ( faceNormalX , faceNormalY , faceNormalZ );
 					final float factor = Math.min( 1.0f , ( 1.0f - shadeFactor ) + shadeFactor * Math.abs( transformedNormalZ ) );
 
 					faceFillPaint = ( factor < 1.0f ) ? new Color( factor * rgb[ 0 ] , factor * rgb[ 1 ] , factor * rgb[ 2 ] , rgb[ 3 ] ) : fillPaint;
