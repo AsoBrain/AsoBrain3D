@@ -22,22 +22,23 @@ package ab.j3d.view;
 import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.Toolkit;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.numdata.oss.event.EventDispatcher;
+
 import ab.j3d.Matrix3D;
+import ab.j3d.control.CameraControl;
 import ab.j3d.control.Control;
-import ab.j3d.control.ControlEventQueue;
-import ab.j3d.control.SceneInputTranslator;
+import ab.j3d.control.ControlInput;
 import ab.j3d.model.Camera3D;
+import ab.j3d.model.Transform3D;
 
 /**
  * This class defines a view in the view model.
  *
  * @see     ViewModel
- * @see     ViewControl
+ * @see     CameraControl
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
@@ -96,14 +97,23 @@ public abstract class ViewModelView
 	public static final int WIREFRAME = 3;
 
 	/**
-	 * Application-assigned ID of this view.
+	 * Scale factor from pixels to radians to make a full circle by moving the
+	 * mouse cursor 250 pixels (in no particular direction).
+	 *
+	 * @see     #getPixelsToRadiansFactor()
 	 */
-	private final Object _id;
+	public static final double FULL_CIRCLE_PER_250_PIXELS = ( 2.0 *  Math.PI ) / 250.0;
 
 	/**
-	 * {@link ViewModel} for which this is a view.
+	 * Unit scale factor in meters per unit. This scale factor, when multiplied,
+	 * converts design units to meters.
 	 */
-	private final ViewModel _viewModel;
+	private final double _unit;
+
+	/**
+	 * Transformation of view.
+	 */
+	private Transform3D _transform;
 
 	/**
 	 * Camera from where the view is created.
@@ -113,7 +123,7 @@ public abstract class ViewModelView
 	/**
 	 * Control for this view.
 	 */
-	private final ViewControl _viewControl;
+	private CameraControl _cameraControl;
 
 	/**
 	 * A {@link List} of {@link OverlayPainter}s that are to paint over this
@@ -122,32 +132,24 @@ public abstract class ViewModelView
 	private final List _painters = new ArrayList();
 
 	/**
-	 * Property change event listener.
-	 */
-	private final PropertyChangeListener _propertyChangeListener =
-		new PropertyChangeListener()
-		{
-			public void propertyChange( final PropertyChangeEvent evt )
-			{
-				update();
-			}
-		};
-
-	/**
 	 * Construct new view.
 	 *
-	 * @param   id              Application-assigned ID of this view.
-	 * @param viewModel
-	 * @param   viewControl     Control to use for this view.
+	 * @param   unit    Unit scale (meters per unit).
+	 * @param   id      Application-assigned ID of this view.
 	 */
-	protected ViewModelView( final Object id, final ViewModel viewModel, final ViewControl viewControl )
+	protected ViewModelView( final double unit , final Object id )
 	{
-		_id          = id;
-		_viewModel   = viewModel;
-		_camera      = new Camera3D();
-		_viewControl = viewControl;
+		_unit = unit;
 
-		viewControl.addPropertyChangeListener( "transform" , _propertyChangeListener );
+		final Camera3D camera = new Camera3D();
+		camera.setTag( id );
+		_camera = camera;
+
+		final Transform3D transform = new Transform3D();
+		transform.addChild( camera );
+		_transform = transform;
+
+		_cameraControl = null;
 	}
 
 	/**
@@ -157,7 +159,7 @@ public abstract class ViewModelView
 	 */
 	public final Object getID()
 	{
-		return _id;
+		return _camera.getTag();
 	}
 
 	/**
@@ -171,13 +173,43 @@ public abstract class ViewModelView
 	}
 
 	/**
-	 * Unit scale factor in meters per unit.
+	 * Get unit scale factor in meters per unit. This scale factor, when
+	 * multiplied, converts design units to meters.
 	 *
 	 * @return  Unit scale (meters per unit).
 	 */
 	public double getUnit()
 	{
-		return _viewModel.getUnit();
+		return _unit;
+	}
+
+	/**
+	 * Get multiplicative scale factor from image coordinates (pixels) to
+	 * rotational units (radians).
+	 *
+	 * @return  Scale factor from pixels to radians.
+	 *
+	 * @see     #getResolution
+	 */
+	public double getPixelsToRadiansFactor()
+	{
+		return FULL_CIRCLE_PER_250_PIXELS;
+	}
+
+	/**
+	 * Get multiplicative scale factor from image coordinates (pixels) to view
+	 * coordinates (units).
+	 *
+	 * @return  Scale factor from pixels to view units.
+	 *
+	 * @see     #getUnit
+	 * @see     #getProjector
+	 * @see     Projector#getView2pixels
+	 */
+	public double getPixelsToUnitsFactor()
+	{
+		final Projector projector = getProjector();
+		return 1.0 / projector.getView2pixels();
 	}
 
 	/**
@@ -185,6 +217,8 @@ public abstract class ViewModelView
 	 * projections.
 	 *
 	 * @return  Camera aperture in radians.
+	 *
+	 * @see     Camera3D#getAperture
 	 */
 	public final double getAperture()
 	{
@@ -196,6 +230,8 @@ public abstract class ViewModelView
 	 * rendered units.
 	 *
 	 * @return  Linear zoom factor.
+	 *
+	 * @see     Camera3D#getZoomFactor
 	 */
 	public final double getZoomFactor()
 	{
@@ -207,21 +243,56 @@ public abstract class ViewModelView
 	 *
 	 * @return  Control for this view.
 	 */
-	public final ViewControl getViewControl()
+	public final CameraControl getCameraControl()
 	{
-		return _viewControl;
+		return _cameraControl;
 	}
 
 	/**
-	 * Get view transform from view control.
+	 * Set control for this view.
 	 *
-	 * @return  View transform from view control.
+	 * @param   cameraControl     Control for this view.
+	 */
+	public final void setCameraControl( final CameraControl cameraControl )
+	{
+		final CameraControl oldCameraControl = getCameraControl();
+		_cameraControl = cameraControl;
+
+		if ( oldCameraControl != cameraControl )
+		{
+			if ( oldCameraControl != null )
+				removeControl( cameraControl );
+
+			if ( cameraControl != null )
+				appendControl( cameraControl );
+		}
+	}
+
+
+	/**
+	 * Get view transform (tranforms model coordinates to view coordinates).
+	 *
+	 * @return  View transform.
 	 */
 	public final Matrix3D getViewTransform()
 	{
-		final ViewControl viewControl = getViewControl();
+		return _transform.getInverseTransform();
+	}
 
-		return viewControl.getTransform();
+	/**
+	 * Set view transform (tranforms model coordinates to view coordinates).
+	 *
+	 * @param   transform   View transform.
+	 *
+	 * @throws  NullPointerException if <code>transform</code> is <code>null</code>.
+	 */
+	public final void setViewTransform( final Matrix3D transform )
+	{
+		if ( !transform.equals( getViewTransform() ) )
+		{
+			_transform.setInverseTransform( transform );
+			update();
+		}
 	}
 
 	/**
@@ -241,12 +312,12 @@ public abstract class ViewModelView
 		final Component component = getComponent();
 		final Toolkit   toolkit   = ( component != null ) ? component.getToolkit() : Toolkit.getDefaultToolkit();
 
-		return 0.0254 / (double)toolkit.getScreenResolution();
+		return ViewModel.INCH / (double)toolkit.getScreenResolution();
 	}
 
 	/**
 	 * Update contents of view. This may be the result of changes to the 3D
-	 * scene or view control.
+	 * scene or view transform.
 	 */
 	public abstract void update();
 
@@ -274,66 +345,75 @@ public abstract class ViewModelView
 	 *
 	 * @return  the {@link Projector} for this view
 	 */
-	protected abstract Projector getProjector();
+	public abstract Projector getProjector();
 
 	/**
-	 * Returns the {@link SceneInputTranslator}, if this class has one. If it
+	 * Returns the {@link ControlInput}, if this class has one. If it
 	 * does not, <code>null</code> is returned.
 	 *
-	 * @return  The {@link SceneInputTranslator} for this view;
+	 * @return  The {@link ControlInput} for this view;
 	 *          <code>null</code> if this view has none.
 	 */
-	protected abstract SceneInputTranslator getInputTranslator();
+	protected abstract ControlInput getControlInput();
 
 	/**
-	 * Adds a {@link Control} to this view. This control is added to the end of
-	 * the list of controls. <p>Note that not all views support
-	 * controls. This can be checked with the method
-	 * {@link ViewModel#supportsControls()}.
+	 * Adds a {@link Control} to the end of the control chain of this view.
+	 * the list of controls.
+	 * <dl>
+	 *  <dt>NOTE:</dt>
+	 *  <dd>Not all views support user input. If not, calls to this method may
+	 *   be ignored.</dd>
+	 * </dl>
 	 *
 	 * @param   control     The {@link Control} to add
 	 */
-	public final void addControl( final Control control )
+	public final void appendControl( final Control control )
 	{
-		final SceneInputTranslator inputTranslator = getInputTranslator();
-		final ControlEventQueue queue = inputTranslator.getEventQueue();
-
-		addControl( queue.size() , control);
+		final ControlInput controlInput = getControlInput();
+		if ( controlInput != null )
+		{
+			final EventDispatcher eventQueue = controlInput.getEventDispatcher();
+			eventQueue.appendFilter( control );
+		}
 	}
 
 	/**
-	 * Adds a {@link Control} to this view. This control is added to  the list
-	 * of Controls at <code>index</code>. <p>Note that not all views support
-	 * Controls. This can be checked with the method
-	 * {@link ViewModel#supportsControls()}.
+	 * Inserts a {@link Control} at the start of the control chain of this view.
+	 * <dl>
+	 *  <dt>NOTE:</dt>
+	 *  <dd>Not all views support user input. If not, calls to this method may
+	 *   be ignored.</dd>
+	 * </dl>
 	 *
-	 * @param   index       The index at which to place the control
-	 * @param   control     The {@link Control} to add
+	 * @param   control     The {@link Control} to add.
 	 */
-	public final void addControl( final int index , final Control control )
+	public final void insertControl( final Control control )
 	{
-		final SceneInputTranslator inputTranslator = getInputTranslator();
-		if ( inputTranslator != null )
+		final ControlInput controlInput = getControlInput();
+		if ( controlInput != null )
 		{
-			final ControlEventQueue eventQueue = inputTranslator.getEventQueue();
-			eventQueue.addControl( index , control );
+			final EventDispatcher eventQueue = controlInput.getEventDispatcher();
+			eventQueue.insertFilter( control );
 		}
 	}
 
 	/**
 	 * Removes a {@link Control} from the list of controls.
-	 * <p>Note that not all views support Controls. This can be checked with the
-	 * method {@link ViewModel#supportsControls()}.
+	 * <dl>
+	 *  <dt>NOTE:</dt>
+	 *  <dd>Not all views support user input. If not, calls to this method may
+	 *   be ignored.</dd>
+	 * </dl>
 	 *
 	 * @param   control     The Control to remove
 	 */
 	public final void removeControl( final Control control )
 	{
-		final SceneInputTranslator inputTranslator = getInputTranslator();
-		if ( inputTranslator != null )
+		final ControlInput controlInput = getControlInput();
+		if ( controlInput != null )
 		{
-			final ControlEventQueue eventQueue = inputTranslator.getEventQueue();
-			eventQueue.removeControl( control );
+			final EventDispatcher eventQueue = controlInput.getEventDispatcher();
+			eventQueue.removeFilter( control );
 		}
 	}
 
@@ -399,8 +479,7 @@ public abstract class ViewModelView
 		for ( int index = 0 ; index < painters.size() ; index++ )
 		{
 			final OverlayPainter painter = (OverlayPainter)painters.get( index );
-
-			painter.paint( _viewModel , this , g2d );
+			painter.paint( this , g2d );
 		}
 	}
 }
