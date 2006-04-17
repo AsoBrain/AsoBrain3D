@@ -1,7 +1,6 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,10 +19,13 @@
  */
 package ab.j3d.control.controltest;
 
-import java.awt.Container;
 import java.awt.BorderLayout;
+import java.awt.Container;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+
+import com.numdata.oss.ui.WindowTools;
 
 import ab.j3d.control.Control;
 import ab.j3d.control.controltest.model.Model;
@@ -39,7 +41,6 @@ import ab.j3d.control.controltest.model.Model;
  */
 public class GUI
 {
-
 	/**
 	 * Construct new GUI.
 	 *
@@ -50,39 +51,37 @@ public class GUI
 	{
 		final Model3D model3D = new Model3D( model );
 
-		final JFrame frame = new JFrame( "ControlTest" );
-		final Container contentPane = frame.getContentPane();
-		contentPane.setLayout( new BorderLayout() );
+		final SelectionControl selectionControl = new SelectionControl( model );
+		final MoveControl      moveControl      = new MoveControl( model );
 
-		final View3D view1 = new View3D( model3D , View3D.TOP_VIEW         , View3D.PARALLEL_PROJECTION );
-		final View3D view2 = new View3D( model3D , View3D.FRONT_VIEW       , View3D.PARALLEL_PROJECTION );
-		final View3D view3 = new View3D( model3D , View3D.LEFT_VIEW        , View3D.PARALLEL_PROJECTION );
+		final View3D view1 = new View3D( model3D , View3D.TOP_VIEW , View3D.PARALLEL_PROJECTION );
+		view1.insertControl( selectionControl );
+		view1.insertControl( moveControl );
+
+		final View3D view2 = new View3D( model3D , View3D.FRONT_VIEW , View3D.PARALLEL_PROJECTION );
+		view2.insertControl( selectionControl );
+		view2.insertControl( moveControl );
+
+		final View3D view3 = new View3D( model3D , View3D.LEFT_VIEW , View3D.PARALLEL_PROJECTION );
+		view3.insertControl( selectionControl );
+		view3.insertControl( moveControl );
+
 		final View3D view4 = new View3D( model3D , View3D.PERSPECTIVE_VIEW , View3D.PERSPECTIVE_PROJECTION );
+		view4.insertControl( selectionControl );
+		view4.insertControl( moveControl );
 
 		final JSplitPane topSplit      = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT , view1.getComponent() , view2.getComponent() );
 		final JSplitPane bottomSplit   = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT , view3.getComponent() , view4.getComponent() );
 		final JSplitPane verticalSplit = new JSplitPane( JSplitPane.VERTICAL_SPLIT   , topSplit              , bottomSplit         );
+
+		final Container contentPane = new JPanel( new BorderLayout() );
 		contentPane.add( verticalSplit , BorderLayout.CENTER );
 
-		final SelectionControl selectionControl = new SelectionControl( model );
-		view1.addControl( selectionControl );
-		view2.addControl( selectionControl );
-		view3.addControl( selectionControl );
-		view4.addControl( selectionControl );
-
-		final MoveControl moveControl = new MoveControl( model );
-		view1.addControl( moveControl );
-		view2.addControl( moveControl );
-		view3.addControl( moveControl );
-		view4.addControl( moveControl );
-
-		frame.setBounds( 200 , 0 , 1200 , 1000 );
-		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+		final JFrame frame = WindowTools.createFrame( "ControlTest", -300 , -100 , contentPane );
 		frame.setVisible( true );
 
 		topSplit.setDividerLocation( 0.5 );
 		bottomSplit.setDividerLocation( 0.5 );
 		verticalSplit.setDividerLocation( 0.5 );
 	}
-
 }

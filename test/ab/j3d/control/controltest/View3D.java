@@ -1,7 +1,6 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,11 +22,12 @@ package ab.j3d.control.controltest;
 import java.awt.Component;
 
 import ab.j3d.Vector3D;
-import ab.j3d.model.Camera3D;
+import ab.j3d.control.CameraControl;
 import ab.j3d.control.Control;
-import ab.j3d.view.ViewModelView;
-import ab.j3d.view.ViewControl;
+import ab.j3d.control.FromToCameraControl;
+import ab.j3d.model.Camera3D;
 import ab.j3d.view.Projector;
+import ab.j3d.view.ViewModelView;
 
 /**
  * The {@link View3D} provides a view on a {@link Model3D}. It has a
@@ -86,9 +86,9 @@ public class View3D
 	private final Component _component;
 
 	/**
-	 * The {@link ViewControl} that controls the camera position.
+	 * The {@link CameraControl} that controls the camera position.
 	 */
-	private final FixedViewControl _viewControl;
+	private final FromToCameraControl _cameraControl;
 
 	/**
 	 * Construct new View3D.
@@ -101,9 +101,10 @@ public class View3D
 	 */
 	public View3D( final Model3D model , final int viewType , final int perspective)
 	{
-		_viewControl = new FixedViewControl( 100.0 );
+		_view = model.createView( this );
+		_cameraControl = new FromToCameraControl( _view , 100.0 );
+		_view.setCameraControl( _cameraControl );
 
-		_view = model.createView( this , _viewControl);
 		_component = _view.getComponent();
 
 		setProjection( perspective );
@@ -180,8 +181,8 @@ public class View3D
 				throw new IllegalArgumentException( "The viewType should be one of TOP_VIEW, FRONT_VIEW, SIDE_VIEW or PERSPECTIVE_VIEW" );
 		}
 
-		_viewControl.setTo( Vector3D.INIT );
-		_viewControl.setFrom( from );
+		_cameraControl.setTo( Vector3D.INIT );
+		_cameraControl.setFrom( from );
 	}
 
 	/**
@@ -189,9 +190,9 @@ public class View3D
 	 *
 	 * @param   control     The {@link Control} to add.
 	 */
-	public void addControl( final Control control )
+	public void insertControl( final Control control )
 	{
-		_view.addControl( control );
+		_view.insertControl( control );
 	}
 
 	/**

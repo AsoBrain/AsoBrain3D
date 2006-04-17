@@ -1,7 +1,6 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,16 +19,16 @@
  */
 package ab.j3d.control.controltest;
 
-import ab.j3d.control.controltest.model.Model;
-import ab.j3d.control.controltest.model.Wall;
-import ab.j3d.control.controltest.model.Floor;
-import ab.j3d.control.controltest.model.TetraHedron;
 import ab.j3d.control.Control;
+import ab.j3d.control.controltest.model.Floor;
+import ab.j3d.control.controltest.model.Model;
+import ab.j3d.control.controltest.model.TetraHedron;
+import ab.j3d.control.controltest.model.Wall;
 
 /**
  * The ControlTest test application demonstrates what is possible with the
  * {@link Control} system. The test application is structured using MVC; model,
- * view controller.<p>
+ * camera controller.<p>
  * There is a {@link Model} that holds a number of objects. A {@link Floor},
  * some {@link Wall}s, some pyramids ({@link TetraHedron}s). The objects all
  * have a number of properties that can be changed, such as the location,

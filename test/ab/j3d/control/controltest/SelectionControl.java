@@ -1,7 +1,6 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,17 +19,17 @@
  */
 package ab.j3d.control.controltest;
 
+import java.util.EventObject;
 import java.util.List;
 
-import ab.j3d.control.Control;
-import ab.j3d.control.ControlEvent;
-import ab.j3d.control.MouseControlEvent;
-import ab.j3d.control.Intersection;
-import ab.j3d.control.controltest.model.Model;
-import ab.j3d.control.controltest.model.SceneElement;
-import ab.j3d.control.controltest.model.PaintableTriangle;
+import ab.j3d.control.ControlInputEvent;
+import ab.j3d.control.MouseControl;
 import ab.j3d.control.controltest.model.Floor;
+import ab.j3d.control.controltest.model.Model;
+import ab.j3d.control.controltest.model.PaintableTriangle;
+import ab.j3d.control.controltest.model.SceneElement;
 import ab.j3d.control.controltest.model.TetraHedron;
+import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Object3D;
 
 /**
@@ -43,7 +42,7 @@ import ab.j3d.model.Object3D;
  * @version $Revision$ $Date$
  */
 public class SelectionControl
-	implements Control
+	extends MouseControl
 {
 	/**
 	 * The {@link Model} that keeps track of selection.
@@ -61,71 +60,60 @@ public class SelectionControl
 	}
 
 	/**
-	 * Handles a {@link ControlEvent}. If the mouse was released on a
-	 * {@link SceneElement} that is not a {@link Floor}, thath element is
-	 * selected. If the mouse is released on one of the faces of a selected
-	 * {@link TetraHedron}, that {@link PaintableTriangle} is selected.<p>
-	 * If nothing is selected, the original event is returned. Otherwise, null
-	 * is returned.
+	 * If the mouse was clicked on a {@link SceneElement} that is not a
+	 * {@link Floor}, that element is selected. If the mouse is clicked on one
+	 * of the faces of a selected {@link TetraHedron}, that
+	 * {@link PaintableTriangle} is selected.
 	 *
-	 * @param   e   The event passed on.
+	 * @param   event   The event passed on.
+	 *
 	 * @return  The original event if nothing was selected, null if it was.
 	 */
-	public ControlEvent handleEvent( final ControlEvent e )
+	public EventObject mouseClicked( final ControlInputEvent event )
 	{
-		ControlEvent result = e;
+		final EventObject result;
 
-		if ( e instanceof MouseControlEvent )
+		final Model model = _model;
+
+		final List intersections = event.getIntersections();
+		if ( ! intersections.isEmpty() )
 		{
-			final MouseControlEvent event = (MouseControlEvent)e;
+			final Face3DIntersection intersection = (Face3DIntersection)intersections.get( 0 );
+			final Object id = intersection.getObjectID();
 
-			if ( MouseControlEvent.MOUSE_RELEASED == event.getType()  && ! event.isMouseDragged() )
+			if ( id instanceof SceneElement && ! ( id instanceof Floor ) )
 			{
-				final List intersections = event.getIntersections();
-				final Model model = _model;
-
-				if ( ! intersections.isEmpty() )
+				final SceneElement element = (SceneElement)id;
+				if ( element == model.getSelection() )
 				{
-					final Intersection intersection = (Intersection)intersections.get( 0 );
-					final Object id = intersection.getID();
-
-					if ( id instanceof SceneElement && ! ( id instanceof Floor ) )
+					if ( id instanceof TetraHedron )
 					{
-						final SceneElement element = (SceneElement)id;
-						if ( element == model.getSelection() )
-						{
-							if ( id instanceof TetraHedron )
-							{
-								final TetraHedron hedron = (TetraHedron)id;
+						final TetraHedron hedron = (TetraHedron)id;
 
-								final Object3D object = intersection.getObject();
-								final int faceIndex = object.getFaceIndex( intersection.getFace() );
+						final Object3D object = intersection.getObject();
+						final int faceIndex = object.getFaceIndex( intersection.getFace() );
 
-								_model.setSelectedFace( hedron.getFace( faceIndex ) );
-							}
-						}
-						else
-						{
-							model.setSelection( element );
-						}
-					}
-					else
-					{
-						model.setSelection( null );
+						_model.setSelectedFace( hedron.getFace( faceIndex ) );
 					}
 				}
 				else
 				{
-					model.setSelection( null );
+					model.setSelection( element );
 				}
-				result = null;
 			}
-		}
-		return result;
-	}
+			else
+			{
+				model.setSelection( null );
+			}
 
-	public int getDataRequiredMask()
-	{
-		return 0;
+			result = null;
+		}
+		else
+		{
+			model.setSelection( null );
+			result = event;
+		}
+
+		return result;
 	}
 }

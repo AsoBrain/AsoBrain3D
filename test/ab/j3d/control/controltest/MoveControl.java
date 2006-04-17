@@ -1,7 +1,6 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,16 +19,17 @@
  */
 package ab.j3d.control.controltest;
 
+import java.util.EventObject;
 import java.util.List;
 
 import ab.j3d.Vector3D;
 import ab.j3d.control.Control;
-import ab.j3d.control.ControlEvent;
-import ab.j3d.control.Intersection;
-import ab.j3d.control.MouseControlEvent;
+import ab.j3d.control.ControlInputEvent;
+import ab.j3d.control.MouseControl;
 import ab.j3d.control.controltest.model.Model;
-import ab.j3d.control.controltest.model.TetraHedron;
 import ab.j3d.control.controltest.model.SceneElement;
+import ab.j3d.control.controltest.model.TetraHedron;
+import ab.j3d.model.Face3DIntersection;
 
 /**
  * The {@link MoveControl} extends {@link Control} to handle events from a
@@ -40,19 +40,12 @@ import ab.j3d.control.controltest.model.SceneElement;
  * @version $Revision$ $Date$
  */
 public class MoveControl
-	implements Control
+	extends MouseControl
 {
 	/**
-	 * The {@link Model} that holds all objects in the scene. 
+	 * The {@link Model} that holds all objects in the scene.
 	 */
 	private Model _model;
-
-	/**
-	 * Event number of the last {@link MouseControlEvent}.
-	 *
-	 * @see MouseControlEvent#getNumber()
-	 */
-	private int _lastPressNumber;
 
 	/**
 	 * The difference between the mouse click location and the selected tetra
@@ -70,83 +63,32 @@ public class MoveControl
 	{
 		_model = model;
 
-		_lastPressNumber = -1;
 		_dragDifference = Vector3D.INIT;
 	}
 
-	/**
-	 * Handles a {@link ControlEvent}. If the user presses the mouse while over
-	 * a selected {@link TetraHedron}, dragging is started. While the user drags
-	 * the hedron is moved along with the mouse over the ground plane. Dragging
-	 * stops when the user releases the mouse.<p>
-	 * This method returns <code>null</code> if an object was moved, and it
-	 * returns the original event if nothing happened.
-	 *
-	 * @param   e   The event passed on.
-	 *
-	 * @return  Original event if no object is moved, <code>null</code> if an
-	 *          object was moved.
-	 */
-	public ControlEvent handleEvent( final ControlEvent e )
+	public EventObject mousePressed( final ControlInputEvent event )
 	{
-		ControlEvent result = e;
+		EventObject result = event;
 
-		if ( e instanceof MouseControlEvent )
+		final SceneElement selection = _model.getSelection();
+		if ( selection instanceof TetraHedron )
 		{
-			final MouseControlEvent event = (MouseControlEvent)e;
-			final SceneElement selection = _model.getSelection();
-			final int type = event.getType();
+			final TetraHedron selectedHedron = (TetraHedron)selection;
 
-			if ( type == MouseControlEvent.MOUSE_PRESSED )
+			final List intersections = event.getIntersections();
+			if ( !intersections.isEmpty() )
 			{
-				if ( selection instanceof TetraHedron )
+				final Face3DIntersection intersection = (Face3DIntersection)intersections.get( 0 );
+
+				if ( selectedHedron == intersection.getObjectID() )
 				{
-					final TetraHedron  selectedHedron = (TetraHedron)selection;
-					final List         intersections  = event.getIntersections();
-					final Intersection intersection   = (Intersection)intersections.get( 0 );
-
-					if ( selectedHedron == intersection.getID() )
+					final Vector3D dragStart = event.getIntersectionWithPlane( 0.0 , 0.0 , 1.0 , 0.0 , true ); /* floor plane */
+					if ( dragStart != null )
 					{
-						final Vector3D dragStart = event.getIntersectionWithPlane( Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) , Vector3D.INIT );
+						final Vector3D hedronLocation = Vector3D.INIT.set( selectedHedron.getX() , selectedHedron.getY() , 0.0 );
+						_dragDifference = hedronLocation.minus( dragStart );
 
-						if ( dragStart != null )
-						{
-							final Vector3D hedronLocation = Vector3D.INIT.set( selectedHedron.getX(), selectedHedron.getY(), 0.0 );
-							_dragDifference = hedronLocation.minus( dragStart );
-							_lastPressNumber = event.getNumber();
-							result = null;
-						}
-					}
-				}
-			}
-			else if ( type == MouseControlEvent.MOUSE_DRAGGED )
-			{
-				if ( event.getNumber() == _lastPressNumber )
-				{
-					if ( selection instanceof TetraHedron )
-					{
-						final TetraHedron selectedHedron = (TetraHedron)selection;
-
-						final Vector3D dragPosition = event.getIntersectionWithPlane( Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ), Vector3D.INIT );
-
-						if ( dragPosition != null )
-						{
-							final Vector3D location = dragPosition.plus( _dragDifference );
-
-							selectedHedron.setX( location.x );
-							selectedHedron.setY( location.y );
-
-							result = null;
-						}
-					}
-				}
-			}
-			else if ( type == MouseControlEvent.MOUSE_RELEASED )
-			{
-				if ( selection instanceof TetraHedron )
-				{
-					if ( event.getNumber() == _lastPressNumber )
-					{
+						startCapture( event );
 						result = null;
 					}
 				}
@@ -156,8 +98,21 @@ public class MoveControl
 		return result;
 	}
 
-	public int getDataRequiredMask()
+	public void mouseDragged( final ControlInputEvent event )
 	{
-		return 0;
+		final SceneElement selection = _model.getSelection();
+		if ( selection instanceof TetraHedron )
+		{
+			final TetraHedron selectedHedron = (TetraHedron)selection;
+
+			final Vector3D dragPosition = event.getIntersectionWithPlane( 0.0 , 0.0 , 1.0 , 0.0 , true ); /* floor plane */
+			if ( dragPosition != null )
+			{
+				final Vector3D location = dragPosition.plus( _dragDifference );
+
+				selectedHedron.setX( location.x );
+				selectedHedron.setY( location.y );
+			}
+		}
 	}
 }

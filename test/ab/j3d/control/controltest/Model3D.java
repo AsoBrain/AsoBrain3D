@@ -38,7 +38,6 @@ import ab.j3d.control.controltest.model.Wall;
 import ab.j3d.model.Box3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
-import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelView;
 import ab.j3d.view.java3d.Java3dModel;
@@ -126,18 +125,13 @@ public final class Model3D
 	 * Creates a {@link ViewModelView} that displays the 3d scene. The id object
 	 * is used to identify the view, and should be unique for each view.
 	 *
-	 * @param id        The id object used to register the view.
-	 * @param control   The {@link ViewControl} that manipulates the camera.
+	 * @param   id      The ID object used to register the view.
 	 *
-	 * @return A {@link ViewModelView} that displays the 3d scene.
+	 * @return  A {@link ViewModelView} that displays the 3D scene.
 	 */
-	public ViewModelView createView(final Object id , final ViewControl control)
+	public ViewModelView createView( final Object id )
 	{
-		final ViewModel viewModel = _viewModel;
-
-		viewModel.createView( id , control );
-
-		return viewModel.getView( id );
+		return _viewModel.createView( id );
 	}
 
 	/**
@@ -209,7 +203,7 @@ public final class Model3D
 	}
 
 	/**
-	 * Updates a {@link SceneElement} in the 3d world. This method recreates the
+	 * Updates a {@link SceneElement} in the 3D world. This method recreates the
 	 * 3d object and then adds it to the scene.
 	 *
 	 * @param   element     {@link SceneElement} to update.
