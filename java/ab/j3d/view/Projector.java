@@ -19,11 +19,10 @@
  */
 package ab.j3d.view;
 
+import com.numdata.oss.ArrayTools;
+
 import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
-import ab.j3d.model.Object3D;
-
-import com.numdata.oss.ArrayTools;
 
 /**
  * A projector defines an abstract method to project 3D points on to a 2D
@@ -96,6 +95,11 @@ public abstract class Projector
 	protected final double _zoomFactor;
 
 	/**
+	 * Scale factor from view coordinates to image coordinates (pixels).
+	 */
+	protected final double _view2pixels;
+
+	/**
 	 * Horizontal limit of view volume.
 	 * <p />
 	 * This is the distance from the left edge of the view volume to the
@@ -115,7 +119,7 @@ public abstract class Projector
 	 * +-------------+
 	 * </pre>
 	 */
-	protected double _limitX;
+	protected final double _limitX;
 
 	/**
 	 * Vertical limit of view volume.
@@ -137,7 +141,7 @@ public abstract class Projector
 	 * +-------------+
 	 * </pre>
 	 */
-	protected double _limitY;
+	protected final double _limitY;
 
 	/**
 	 * Create projector with the specified properties.
@@ -202,6 +206,12 @@ public abstract class Projector
 		_frontClipDistance = -Math.abs( frontClipDistance );
 		_backClipDistance  = -Math.abs( backClipDistance );
 		_zoomFactor        = zoomFactor;
+
+		final double view2pixels = zoomFactor * viewUnit / imageResolution;
+
+		_view2pixels = view2pixels;
+		_limitX      = (double)imageWidth  / ( 2.0 * view2pixels );
+		_limitY      = (double)imageHeight / ( 2.0 * view2pixels );
 	}
 
 	/**
@@ -275,18 +285,30 @@ public abstract class Projector
 	public abstract int[] project( final double[] source , final int[] dest , final int pointCount );
 
 	/**
+	 * Get multiplicative scale factor from view coordinates to image
+	 * coordinates (pixels).
+	 *
+	 * @return  Scale factor from view units to pixels.
+	 */
+	public double getView2pixels()
+	{
+		return _view2pixels;
+	}
+
+	/**
 	 * This method does the oposite of project. Where project returns a point on
-	 * the screen for a given point in the 3d world, this method returns the
-	 * point in the world for a given point on the screen. <code>x</code> and
+	 * the screen for a given point in the 3D view, this method returns the
+	 * point in the view for a given point on the screen. <code>x</code> and
 	 * <code>y</code> are the screen coordinates, and distance is the distance
 	 * between the viewing plane and the 'unprojected' coordinate.
-	 * @param x         The x of the screen coordinate
-	 * @param y         The y of the screen coordinate.
-	 * @param distance  The distance between the world coordinate and the
-	 *                  viewing plane.
-	 * @return The world location for the given screen coordinate.
+	 *
+	 * @param   imageX  X image plane coordinate (pixels).
+	 * @param   imageY  Y image plane coordinate (pixels).
+	 * @param   viewZ   Z coordinate relative to view plane (view units).
+	 *
+	 * @return  3D view coordinates for the given 2D image coordinates.
 	 */
-	public abstract Vector3D screenToWorld( int x , int y , double distance );
+	public abstract Vector3D imageToView( int imageX , int imageY , double viewZ );
 
 	/**
 	 * Perspective projector implementation.
@@ -309,14 +331,9 @@ public abstract class Projector
 		extends Projector
 	{
 		/**
-		 * Scale factor from view (plate) coordinates to pixels.
-		 */
-		protected final double _view2pixels;
-
-		/**
 		 * Eye distance in view coordinates.
 		 */
-		protected final double _eyeDistance;
+		private final double _eyeDistance;
 
 		/**
 		 * Construct perspective projector.
@@ -334,14 +351,10 @@ public abstract class Projector
 		{
 			super( imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , zoomFactor );
 
-			final double view2pixels = zoomFactor * viewUnit / imageResolution;
+			final double view2pixels = _view2pixels;
 			final double viewWidth   = (double)imageWidth / view2pixels;
 
 			_eyeDistance = viewWidth / ( 2.0 * Math.tan( fieldOfView / 2.0 ) );
-			_view2pixels = view2pixels;
-
-			_limitX =  (double)imageWidth  / ( 2.0 * view2pixels );
-			_limitY =  (double)imageHeight / ( 2.0 * view2pixels );
 		}
 
 		public int[] project( final double[] source , final int[] dest , final int pointCount )
@@ -369,6 +382,21 @@ public abstract class Projector
 			return result;
 		}
 
+		public Vector3D imageToView( final int imageX , final int imageY , final double viewZ )
+		{
+			final double centerX     = (double)_imageWidth / 2.0;
+			final double centerY     = (double)_imageHeight / 2.0;
+			final double view2pixels = _view2pixels;
+			final double eyeDistance = _eyeDistance;
+
+			final double f = view2pixels / ( 1.0 - ( viewZ + eyeDistance ) / eyeDistance );
+
+			final double viewX = ( (double)imageX - centerX ) / f;
+			final double viewY = ( centerY - (double)imageY ) / f;
+
+			return Vector3D.INIT.set( viewX , viewY , viewZ );
+		}
+
 		public boolean inViewVolume( final double x , final double y , final double z )
 		{
 //			final boolean result;
@@ -391,19 +419,6 @@ public abstract class Projector
 //			return result;
 		}
 
-		public Vector3D screenToWorld( final int x , final int y , final double distance ){
-			final double centerX     = (double)_imageWidth / 2.0;
-			final double centerY     = (double)_imageHeight / 2.0;
-			final double view2pixels = _view2pixels;
-			final double eyeDistance = _eyeDistance;
-
-			final double f = view2pixels / ( 1.0 - ( distance + eyeDistance ) / eyeDistance );
-
-			final double worldX = ( (double) x - centerX ) / f;
-			final double worldY = ( (double)-y + centerY ) / f;
-
-			return Vector3D.INIT.set( worldX , worldY , distance );
-		}
 	}
 
 	/**
@@ -416,11 +431,6 @@ public abstract class Projector
 	public static class ParallelProjector
 		extends Projector
 	{
-		/**
-		 * Scale factor from view coordinates to pixels.
-		 */
-		protected final double _view2pixels;
-
 		/**
 		 * Construct parallel projector.
 		 *
@@ -435,13 +445,6 @@ public abstract class Projector
 		public ParallelProjector( final int imageWidth , final int imageHeight , final double imageResolution , final double viewUnit , final double frontClipDistance , final double backClipDistance , final double zoomFactor )
 		{
 			super( imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , zoomFactor );
-
-			final double view2pixels = zoomFactor * viewUnit / imageResolution;
-
-			_view2pixels = view2pixels;
-
-			_limitX      = view2pixels * 0.5 * (double)_imageWidth;
-			_limitY      = view2pixels * 0.5 * (double)_imageHeight;
 		}
 
 		public int[] project( final double[] source , final int[] dest , final int pointCount )
@@ -449,7 +452,7 @@ public abstract class Projector
 			final int    resultLength = pointCount * 2;
 			final int[]  result       = (int[])ArrayTools.ensureLength( dest , int.class , -1 , resultLength );
 
-			final int    centerX     = _imageWidth >> 1;
+			final int    centerX     = _imageWidth  >> 1;
 			final int    centerY     = _imageHeight >> 1;
 			final double view2pixels = _view2pixels;
 
@@ -472,15 +475,16 @@ public abstract class Projector
 			    && ( z >= _backClipDistance ) && ( z <= _frontClipDistance );
 		}
 
-		public Vector3D screenToWorld( final int x , final int y , final double distance ){
+		public Vector3D imageToView( final int imageX , final int imageY , final double viewZ )
+		{
 			final double centerX     = (double)_imageWidth / 2.0;
 			final double centerY     = (double)_imageHeight / 2.0;
 			final double view2pixels = _view2pixels;
 
-			final double worldX = ( (double) x - centerX ) / view2pixels;
-			final double worldY = ( (double)-y + centerY ) / view2pixels;
+			final double viewX = ( (double)imageX - centerX ) / view2pixels;
+			final double viewY = ( centerY - (double)imageY ) / view2pixels;
 
-			return Vector3D.INIT.set( worldX , worldY , distance );
+			return Vector3D.INIT.set( viewX , viewY , viewZ );
 		}
 	}
 
@@ -491,7 +495,7 @@ public abstract class Projector
 	 * view Z-axis onto the rendered X- and Y-axis by using the displacing
 	 * points by the half Z-value 30 degrees relative to the X-axis (top-right).
 	 */
-	public static final class IsometricProjector
+	public static class IsometricProjector
 		extends ParallelProjector
 	{
 		/**
@@ -554,10 +558,6 @@ public abstract class Projector
 			return ( z >= _backClipDistance ) && ( z <= _frontClipDistance )
 			    && ( ( tmp = ( x - z * _xComponentOfZ     ) ) >= -_limitX ) && ( tmp <= _limitX )
 			    && ( ( tmp = (     z * _yComponentOfZ - y ) ) >= -_limitY ) && ( tmp <= _limitY );
-		}
-
-		public Vector3D screenToWorld( final int x , final int y , final double distance ){
-			return Vector3D.INIT;
 		}
 	}
 }
