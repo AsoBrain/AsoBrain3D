@@ -151,10 +151,10 @@ public class TestControlInput
 		selection = translator.getIntersections( v0.set( -150.0 , -500.0 , 0.0 ) , v0.set( 0.0 , 1.0 , 0.0 ) );
 		assertEquals( "Incorrect number of intersected faces;" , 2 , selection.size() );
 
-		selection = translator.getIntersections( v0.set( 150.0 , -500.0 , 0.0 ) , v0.set( 0.0 , 1.0 , 0.0 ) );
+		selection = translator.getIntersections( v0.set( 200.0 , -25.0 , 0.0 ) , v0.set( -Math.sqrt( 0.5 ) , Math.sqrt( 0.5 ) , 0.0 ) );
 		assertEquals( "Incorrect number of intersected faces;" , 2 , selection.size() );
-		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 7" , ((Face3DIntersection)selection.get( 0 )).getObjectID() );
-		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 6" , ((Face3DIntersection)selection.get( 1 )).getObjectID() );
+		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 6" , ((Face3DIntersection)selection.get( 0 )).getObjectID() );
+		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 7" , ((Face3DIntersection)selection.get( 1 )).getObjectID() );
 
 		selection = translator.getIntersections( v0.set( 100.0 , 0.0 , -25.0 ) , v0.set( 1.0 , 0.0 , 0.0 ) );
 		assertEquals( "The number of intersected faces is not 2, but " + selection.size() , 1 , selection.size() );
