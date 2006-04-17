@@ -21,10 +21,11 @@ package ab.j3d.pov;
 
 import java.io.IOException;
 import java.text.NumberFormat;
-
-import ab.j3d.Matrix3D;
+import java.util.Locale;
 
 import com.numdata.oss.io.IndentingWriter;
+
+import ab.j3d.Matrix3D;
 
 /**
  * Pov Transformation matrix.
@@ -41,6 +42,19 @@ import com.numdata.oss.io.IndentingWriter;
 public class PovMatrix
 	extends PovObject
 {
+	/**
+	 * Number format to format numeric as floating-point values.
+	 */
+	private static final NumberFormat DOUBLE_FORMAT;
+	static
+	{
+		final NumberFormat nf = NumberFormat.getNumberInstance( Locale.US );
+		nf.setMinimumFractionDigits( 1 );
+		nf.setMaximumFractionDigits( 16 );
+		nf.setGroupingUsed( false );
+		DOUBLE_FORMAT = nf;
+	}
+
 	/**
 	 * Matrix data as a <code>double</code>-array. This data is organized as
 	 * follows:
@@ -118,7 +132,19 @@ public class PovMatrix
 		return Matrix3D.INIT.set(
 			data[  0 ] , data[  3 ] , data[  6 ] , data[  9 ] ,
 			data[  1 ] , data[  4 ] , data[  7 ] , data[ 10 ] ,
-			data[  2 ] , data[  5]  , data[  8 ] , data[ 11 ] );
+			data[  2 ] , data[  5 ] , data[  8 ] , data[ 11 ] );
+	}
+
+	/**
+	 * Format float-point value.
+	 *
+	 * @param   value   Floating-point value.
+	 *
+	 * @return  Formatted string.
+	 */
+	protected static String format( final double value )
+	{
+		return DOUBLE_FORMAT.format( ( value == -0.0 ) ? 0.0 : value );
 	}
 
 	public void write( final IndentingWriter out )
