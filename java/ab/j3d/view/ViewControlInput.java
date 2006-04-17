@@ -1,7 +1,6 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,35 +19,68 @@
  */
 package ab.j3d.view;
 
-import ab.j3d.control.IntersectionSupport;
+import ab.j3d.Matrix3D;
+import ab.j3d.control.ControlInput;
+import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
-import ab.j3d.model.Node3D;
-import ab.j3d.Matrix3D;
 
 /**
- * Implements {@link IntersectionSupport} for a {@link ViewModel}.
+ * The ViewInputTranslator subclasses {@link ControlInput} to provide
+ * an InputTranslator for a {@link ViewModelView}.
  *
  * @author  Mart Slot
  * @version $Revision$ $Date$
  */
-public class ViewIntersectionSupport
-extends IntersectionSupport
+public class ViewControlInput
+	extends ControlInput
 {
 	/**
-	 * The ViewModel used to get the objects for intersection.
+	 * {@link ViewModel} with the scene contents.
 	 */
 	private final ViewModel _model;
 
 	/**
-	 * Construct new ViewIntersectionSupport.
-	 *
-	 * @param   model   The {@link ViewModel} from which the {@link Object3D}s
-	 *                  in the scene can be retreived.
+	 * {@link ViewModelView} whose input events to monitor.
 	 */
-	public ViewIntersectionSupport( final ViewModel model )
+	private final ViewModelView _view;
+
+	/**
+	 * Construct new ViewInputTranslator.
+	 *
+	 *
+	 * @param   model   {@link ViewModel} with the scene contents.
+	 * @param   view    {@link ViewModelView} whose input events to monitor.
+	 */
+	public ViewControlInput( final ViewModel model , final ViewModelView view )
 	{
+		super( view.getComponent() );
+
 		_model = model;
+		_view  = view;
+	}
+
+	/**
+	 * Returns the ID for an {@link Object3D}, as stored in the
+	 * {@link ViewModel}.
+	 *
+	 * @param   object  {@link Object3D} for which to return the ID.
+	 *
+	 * @return  ID of <code>object</code>
+	 */
+	protected Object getIDForObject( final Object3D object )
+	{
+		return _model.getID( object );
+	}
+
+	/**
+	 * Returns the {@link Projector} for the {@link ViewModelView}.
+	 *
+	 * @return  The {@link Projector} for the {@link ViewModelView}.
+	 */
+	protected Projector getProjector()
+	{
+		return _view.getProjector();
 	}
 
 	/**
@@ -77,15 +109,12 @@ extends IntersectionSupport
 	}
 
 	/**
-	 * Returns the ID for an {@link Object3D}, as stored in the
-	 * {@link ViewModel}.
+	 * Returns the current view transform for the {@link ViewModelView}.
 	 *
-	 * @param   object  {@link Object3D} for which to return the ID.
-	 *
-	 * @return  ID of <code>object</code>
+	 * @return  the view transform for the {@link ViewModelView}.
 	 */
-	protected Object getIDForObject( final Object3D object )
+	protected Matrix3D getViewTransform()
 	{
-		return _model.getID( object );
+		return _view.getViewTransform();
 	}
 }

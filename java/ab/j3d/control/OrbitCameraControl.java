@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2005
+ * (C) Copyright Numdata BV 2004-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,19 +16,20 @@
  * License along with this library; if not, write to the Free Software
  * ====================================================================
  */
-package ab.j3d.view;
+package ab.j3d.control;
 
+import java.util.EventObject;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
-import ab.j3d.Matrix3D;
-
 import com.numdata.oss.PropertyTools;
-import com.numdata.oss.ArrayTools;
+
+import ab.j3d.Matrix3D;
+import ab.j3d.view.ViewModelView;
 
 /**
- * This class implements a view control based on a 'from' and 'to' point. The
- * control behavior of the <code>ViewControl</code> class is extended as
+ * This class implements a camera control based on a 'from' and 'to' point. The
+ * control behavior of the {@link CameraControl} class is extended as
  * follows:
  * <dl>
  *  <dt>Dragging with the left mouse button</dt>
@@ -46,8 +47,8 @@ import com.numdata.oss.ArrayTools;
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public final class OrbitViewControl
-	extends ViewControl
+public final class OrbitCameraControl
+	extends CameraControl
 {
 	private double _rotationX;
 	private double _rotationY;
@@ -69,20 +70,54 @@ public final class OrbitViewControl
 	 * @see     #save()
 	 * @see     #restore()
 	 */
-	private double[] _savedSettings;
+	private final double[] _savedSettings;
 
-	public OrbitViewControl()
+	/**
+	 * Create orbit camera control with no rotations and a distance of one meter
+	 * from the origin along the negative Y-axis.
+	 *
+	 * @param   view    View to be controlled.
+	 */
+	public OrbitCameraControl( final ViewModelView view )
 	{
-		this( 1.0 );
+		this( view , 1.0 );
 	}
 
-	public OrbitViewControl( final double distance )
+	/**
+	 * Create orbit camera control with no rotations and the specified distance
+	 * from the origin along the negative Y-axis.
+	 *
+	 * @param   view        View to be controlled.
+	 * @param   distance    Distance from origin.
+	 */
+	public OrbitCameraControl( final ViewModelView view , final double distance )
 	{
-		this( 0.0 , 0.0 , 0.0 , 0.0 , -distance , 0.0 );
+		this( view , 0.0 , 0.0 , 0.0 , 0.0 , -distance , 0.0 );
 	}
 
-	public OrbitViewControl( final double rx , final double ry , final double rz , final double x , final double y , final double z )
+	/**
+	 * Create orbit camera control with the specified rotation and translation
+	 * parameters.
+	 *
+	 * @param   view    View to be controlled.
+	 * @param   rx      Initial rotation around X axis.
+	 * @param   ry      Initial rotation around Y axis.
+	 * @param   rz      Initial rotation around Z axis.
+	 * @param   x       Initial translation along X axis.
+	 * @param   y       Initial translation along Y axis.
+	 * @param   z       Initial translation along Z axis.
+	 */
+	public OrbitCameraControl( final ViewModelView view , final double rx , final double ry , final double rz , final double x , final double y , final double z )
 	{
+		super( view );
+
+		_dragStartRotationX    = 0.0;
+		_dragStartRotationY    = 0.0;
+//		_dragStartRotationZ    = 0.0;
+		_dragStartTranslationX = 0.0;
+		_dragStartTranslationY = 0.0;
+		_dragStartTranslationZ = 0.0;
+
 		_savedSettings = new double[] { _rotationX = rx , _rotationY = ry , _rotationZ = rz , _translationX = x , _translationY = y , _translationZ = z };
 		updateTransform();
 	}
@@ -115,12 +150,12 @@ public final class OrbitViewControl
 		if ( settings == null )
 			throw new NullPointerException( "settings" );
 
-		settings.setProperty( "rx" , String.valueOf( _rotationX ) );
-		settings.setProperty( "ry" , String.valueOf( _rotationY ) );
-		settings.setProperty( "rz" , String.valueOf( _rotationZ ) );
-		settings.setProperty( "x"  , String.valueOf( _translationX  ) );
-		settings.setProperty( "y"  , String.valueOf( _translationY  ) );
-		settings.setProperty( "z"  , String.valueOf( _translationZ  ) );
+		settings.setProperty( "rx" , String.valueOf( _rotationX    ) );
+		settings.setProperty( "ry" , String.valueOf( _rotationY    ) );
+		settings.setProperty( "rz" , String.valueOf( _rotationZ    ) );
+		settings.setProperty( "x"  , String.valueOf( _translationX ) );
+		settings.setProperty( "y"  , String.valueOf( _translationY ) );
+		settings.setProperty( "z"  , String.valueOf( _translationZ ) );
 	}
 
 	public void loadSettings( final Properties settings )
@@ -153,7 +188,7 @@ public final class OrbitViewControl
 		}
 	}
 
-	public void dragStart( final DragEvent event )
+	public EventObject mousePressed( final ControlInputEvent event )
 	{
 		_dragStartRotationX    = _rotationX;
 		_dragStartRotationY    = _rotationY;
@@ -162,26 +197,34 @@ public final class OrbitViewControl
 		_dragStartTranslationY = _translationY;
 		_dragStartTranslationZ = _translationZ;
 
-		super.dragStart( event );
+		return super.mousePressed( event );
 	}
 
-	protected void dragLeftButton( final DragEvent event )
+	protected void mouseDragButton1( final ControlInputEvent event )
 	{
-		_rotationY = _dragStartRotationY + event.getDeltaDegX();
-		_rotationX = _dragStartRotationX + event.getDeltaDegY();
+		final double toDegrees = Math.toDegrees( _view.getPixelsToRadiansFactor() );
+
+		_rotationY = _dragStartRotationY + toDegrees * (double)event.getDragDeltaX();
+		_rotationX = _dragStartRotationX - toDegrees * (double)event.getDragDeltaX();
+
 		updateTransform();
 	}
 
-	protected void dragMiddleButton( final DragEvent event )
+	protected void mouseDragButton2( final ControlInputEvent event )
 	{
-		_translationX = _dragStartTranslationX + event.getDeltaUnitX();
-		_translationY = _dragStartTranslationY + event.getDeltaUnitY();
+		final double toUnits = _view.getPixelsToUnitsFactor();
+
+		_translationX = _dragStartTranslationX + toUnits * (double)event.getDragDeltaX();
+		_translationY = _dragStartTranslationY - toUnits * (double)event.getDragDeltaY();
+
 		updateTransform();
 	}
 
-	protected void dragRightButton( final DragEvent event )
+	protected void mouseDragButton3( final ControlInputEvent event )
 	{
-		_translationZ = _dragStartTranslationZ + event.getDeltaUnitY();
+		final double toUnits = _view.getPixelsToUnitsFactor();
+
+		_translationZ = _dragStartTranslationZ - toUnits * (double)event.getDragDeltaY();
 		updateTransform();
 	}
 

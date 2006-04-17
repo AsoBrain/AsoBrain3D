@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2005
+ * (C) Copyright Numdata BV 2004-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,48 +17,78 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view;
+package ab.j3d.control;
+
+import java.awt.Component;
 
 import junit.framework.TestCase;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.view.Projector;
+import ab.j3d.view.ViewModelView;
 
 /**
- * This class tests the <code>FromToViewControl</code> class.
+ * This class tests the {@link FromToCameraControl} class.
  *
- * @see     FromToViewControl
+ * @see     FromToCameraControl
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public class TestFromToViewControl
+public class TestFromToCameraControl
 	extends TestCase
 {
 	/**
 	 * Name of this class.
 	 */
-	private static final String CLASS_NAME = TestFromToViewControl.class.getName();
+	private static final String CLASS_NAME = TestFromToCameraControl.class.getName();
 
 	/**
-	 * Test the <code>FromToViewControl()</code> method.
+	 * Test the {@link FromToCameraControl} constructor.
 	 *
 	 * @throws  Exception if the test fails.
-	 *
-	 * @see     FromToViewControl#FromToViewControl
 	 */
-	public void testFromToViewControl()
+	public void testFromToCameraControl()
 		throws Exception
 	{
-		System.out.println( CLASS_NAME + ".testFromToViewControl()" );
+		System.out.println( CLASS_NAME + ".testConstructor()" );
 
-		final FromToViewControl fromToViewControl = new FromToViewControl();
+		final FromToCameraControl fromToCameraControl = new FromToCameraControl( new ViewModelView( 1.0 , "id" )
+			{
+				public Component getComponent()
+				{
+					return null;
+				}
+
+				public void update()
+				{
+				}
+
+				public void setProjectionPolicy( final int policy )
+				{
+				}
+
+				public void setRenderingPolicy( final int policy )
+				{
+				}
+
+				public Projector getProjector()
+				{
+					return null;
+				}
+
+				protected ControlInput getControlInput()
+				{
+					return null;
+				}
+			} );
 
 		final Matrix3D expected = Matrix3D.INIT.set(
 			  1.0 ,  0.0 ,  0.0 ,  0.0 ,
 			  0.0 ,  0.0 ,  1.0 ,  0.0 ,
 			  0.0 , -1.0 ,  0.0 , -1.0 );
 
-		final Matrix3D actual = fromToViewControl.getTransform();
+		final Matrix3D actual = fromToCameraControl.getTransform();
 
 		assertTrue( "Initial transform failed!\nExpected:" + expected.toFriendlyString() + "\nActual:" + actual.toFriendlyString()
 		          , expected.almostEquals( actual ) );

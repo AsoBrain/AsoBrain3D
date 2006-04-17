@@ -22,12 +22,13 @@ package ab.j3d.pov;
 import java.util.Locale;
 import javax.swing.JFrame;
 
-import ab.j3d.Vector3D;
-import ab.j3d.view.FromToViewControl;
-import ab.j3d.view.java3d.Java3dModel;
-
 import com.numdata.oss.ui.ImageTools;
 import com.numdata.oss.ui.WindowTools;
+
+import ab.j3d.Vector3D;
+import ab.j3d.control.FromToCameraControl;
+import ab.j3d.view.ViewModelView;
+import ab.j3d.view.java3d.Java3dModel;
 
 /**
  * This test application can be used for visual testing of the
@@ -93,7 +94,8 @@ final class AbPovTestApp
 		final Vector3D viewFrom = Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 );
 		final Vector3D viewAt   = Vector3D.INIT;
 
-		viewModel.createView( "view" , new FromToViewControl( viewFrom , viewAt ) );
+		final ViewModelView view = viewModel.createView( "view" );
+		view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
 
 		final JFrame frame = WindowTools.createFrame( "Testscene" , 800 , 600 , viewModel.createViewPanel( Locale.ENGLISH , "view" ) );
 

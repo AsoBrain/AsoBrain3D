@@ -26,15 +26,16 @@ import java.util.Locale;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import com.numdata.oss.ui.WindowTools;
+
 import ab.j3d.Bounds3D;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
+import ab.j3d.control.FromToCameraControl;
 import ab.j3d.model.Node3D;
-import ab.j3d.view.FromToViewControl;
 import ab.j3d.view.ViewModel;
+import ab.j3d.view.ViewModelView;
 import ab.j3d.view.java3d.Java3dModel;
-
-import com.numdata.oss.ui.WindowTools;
 
 /**
  * This is a sample application for the {@link Max3DSLoader} class.
@@ -95,7 +96,8 @@ public class Max3DSLoaderApp
 			final Vector3D  viewFrom = Vector3D.INIT.set( 0.0 , bounds.v1.y - 3.0 / unit , bounds.v2.z / 2.0 + 1.2 / unit );
 			final Vector3D  viewAt   = Vector3D.INIT.set( 0.0 , 0.0 , bounds.v2.z / 2.0 );
 
-			viewModel.createView( "view" , new FromToViewControl( viewFrom , viewAt ) );
+			final ViewModelView view = viewModel.createView( "view" );
+			view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
 
 			final JPanel viewPanel = viewModel.createViewPanel( new Locale( "nl" ), "view" );
 

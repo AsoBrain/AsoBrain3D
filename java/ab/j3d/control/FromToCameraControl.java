@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2005
+ * (C) Copyright Numdata BV 2004-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,16 +16,18 @@
  * License along with this library; if not, write to the Free Software
  * ====================================================================
  */
-package ab.j3d.view;
+package ab.j3d.control;
 
+import java.util.EventObject;
 import java.util.Properties;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
+import ab.j3d.view.ViewModelView;
 
 /**
- * This class implements a view control based on a 'from' and 'to' point. The
- * control behavior of the <code>ViewControl</code> class is extended as
+ * This class implements a camera control based on a 'from' and 'to' point. The
+ * control behavior of the {@link CameraControl} class is extended as
  * follows:
  * <dl>
  *  <dt>Dragging with the left mouse button</dt>
@@ -43,8 +45,8 @@ import ab.j3d.Vector3D;
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public final class FromToViewControl
-	extends ViewControl
+public final class FromToCameraControl
+	extends CameraControl
 {
 	/**
 	 * Point to look from.
@@ -107,44 +109,51 @@ public final class FromToViewControl
 	/**
 	 * Construct default from-to view. This creates a view from (1,0,0) to the
 	 * origin along the Y+ axis.
+	 *
+	 * @param   view    View to be controlled.
 	 */
-	public FromToViewControl()
+	public FromToCameraControl( final ViewModelView view )
 	{
-		this( 1.0 );
+		this( view , 1.0 );
 	}
 
 	/**
 	 * Construct from-to view from a point at a given distance towards the
 	 * origin along the positive Y-axis.
 	 *
+	 * @param   view        View to be controlled.
+	 * @param   distance    Distance from the origin.
+	 *
 	 * @throws  IllegalArgumentException if the distance is (almost) 0.
 	 */
-	public FromToViewControl( final double distance )
+	public FromToCameraControl( final ViewModelView view , final double distance )
 	{
-		this( Vector3D.INIT.set( 0.0 , -distance , 0.0 ) , Vector3D.INIT );
+		this( view , Vector3D.INIT.set( 0.0 , -distance , 0.0 ) , Vector3D.INIT );
 	}
 
 	/**
-	 * Construct new from-to view control looking from the specified point to
+	 * Construct new from-to camera control looking from the specified point to
 	 * the other specified point. The primary up vector is the Z+ axis, the
 	 * seconary is the Y+ axis.
 	 *
+	 * @param   view    View to be controlled.
 	 * @param   from    Initial point to look from.
 	 * @param   to      Initial point to look at.
 	 *
 	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
 	 * @throws  IllegalArgumentException if the from and two points are too close.
 	 */
-	public FromToViewControl( final Vector3D from , final Vector3D to )
+	public FromToCameraControl( final ViewModelView view , final Vector3D from , final Vector3D to )
 	{
-		this( from , to , Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) , Vector3D.INIT.set( 0.0 , 1.0 , 0.0 ) );
+		this( view , from , to , Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) , Vector3D.INIT.set( 0.0 , 1.0 , 0.0 ) );
 	}
 
 	/**
-	 * Construct new from-to view control looking from the specified point to
+	 * Construct new from-to camera control looking from the specified point to
 	 * the other specified point. The primary and secondary up vectors need to
 	 * be specified to provide the proper view orientation.
 	 *
+	 * @param   view            View to be controlled.
 	 * @param   from            Initial point to look from.
 	 * @param   to              Initial point to look at.
 	 * @param   upPrimary       Primary up-vector (must be normalized).
@@ -154,8 +163,10 @@ public final class FromToViewControl
 	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
 	 * @throws  IllegalArgumentException if the from and two points are too close.
 	 */
-	public FromToViewControl( final Vector3D from , final Vector3D to , final Vector3D upPrimary , final Vector3D upSecondary )
+	public FromToCameraControl( final ViewModelView view , final Vector3D from , final Vector3D to , final Vector3D upPrimary , final Vector3D upSecondary )
 	{
+		super( view );
+
 		_from        = from;
 		_to          = to;
 		_upPrimary   = upPrimary;
@@ -195,15 +206,10 @@ public final class FromToViewControl
 		if ( from == null )
 			throw new NullPointerException( "from" );
 
-		final Vector3D oldFrom = _from;
-		if ( !from.equals( oldFrom ) )
+		if ( !from.equals( _from ) )
 		{
-			final Matrix3D transform = Matrix3D.getFromToTransform( from , _to , _upPrimary , _upSecondary );
-
 			_from = from;
-			_pcs.firePropertyChange( "from" , oldFrom , from );
-
-			setTransform( transform );
+			setTransform( Matrix3D.getFromToTransform( from , _to , _upPrimary , _upSecondary ) );
 		}
 	}
 
@@ -217,15 +223,10 @@ public final class FromToViewControl
 		if ( to == null )
 			throw new NullPointerException( "to" );
 
-		final Vector3D oldTo = _to;
-		if ( !to.equals( oldTo ) )
+		if ( !to.equals( _to ) )
 		{
-			final Matrix3D transform = Matrix3D.getFromToTransform( _from , to , _upPrimary , _upSecondary );
-
 			_to = to;
-			_pcs.firePropertyChange( "to" , oldTo , to );
-
-			setTransform( transform );
+			setTransform( Matrix3D.getFromToTransform( _from , to , _upPrimary , _upSecondary ) );
 		}
 	}
 
@@ -241,9 +242,7 @@ public final class FromToViewControl
 		if ( upPrimary == null )
 			throw new NullPointerException( "upPrimary" );
 
-		final Vector3D oldupPrimary = _upPrimary;
 		_upPrimary = upPrimary;
-		_pcs.firePropertyChange( "upPrimary" , oldupPrimary , upPrimary );
 	}
 
 	/**
@@ -259,9 +258,7 @@ public final class FromToViewControl
 		if ( upSecondary == null )
 			throw new NullPointerException( "upSecondary" );
 
-		final Vector3D oldUpSecondary = _upSecondary;
 		_upSecondary = upSecondary;
-		_pcs.firePropertyChange( "upSecondary" , oldUpSecondary , upSecondary );
 	}
 
 	public void save()
@@ -319,24 +316,25 @@ public final class FromToViewControl
 		}
 	}
 
-	public void dragStart( final DragEvent event )
+	public EventObject mousePressed( final ControlInputEvent event )
 	{
 		_dragStartTransform = getTransform();
 		_dragStartFrom      = _from;
 		_dragStartTo        = _to;
 
-		super.dragStart( event );
+		return super.mousePressed( event );
 	}
 
-	protected void dragLeftButton( final DragEvent event )
+	protected void mouseDragButton1( final ControlInputEvent event )
 	{
 		final Vector3D upPrimary = _upPrimary;
 		final Vector3D from      = _dragStartFrom;
 		final Vector3D to        = _dragStartTo;
 		final double   distance  = to.distanceTo( from );
 
-		final double   deltaX    = -event.getDeltaRadX();
-		final double   deltaY    = (double)event.getDeltaY();
+		final double   toRadians = _view.getPixelsToRadiansFactor();
+		final double   deltaX    = -toRadians * (double)event.getDragDeltaX();
+		final double   deltaY    = (double)event.getDragDeltaY();
 
 		final Matrix3D rotation  = Matrix3D.getRotationTransform( to , upPrimary , deltaX );
 		final Vector3D elevation = upPrimary.multiply( distance * deltaY / 100.0 );
@@ -347,14 +345,15 @@ public final class FromToViewControl
 		setFrom( newFrom );
 	}
 
-	protected void dragMiddleButton( final DragEvent event )
+	protected void mouseDragButton2( final ControlInputEvent event )
 	{
 		final Vector3D upPrimary = _upPrimary;
 		final Vector3D from      = _dragStartFrom;
 		final Matrix3D transform = _dragStartTransform;
 
-		final double   deltaX    =  event.getDeltaUnitX();
-		final double   deltaY    =  event.getDeltaUnitY();
+		final double   toUnits   = _view.getPixelsToUnitsFactor();
+		final double   deltaX    =  toUnits * (double)event.getDragDeltaX();
+		final double   deltaY    = -toUnits * (double)event.getDragDeltaY();
 
 		final Vector3D zAxis     = Vector3D.INIT.set( transform.zx , transform.zy , transform.zz );
 		final Vector3D xAxis     = Vector3D.cross( zAxis , upPrimary );
@@ -366,12 +365,12 @@ public final class FromToViewControl
 		setFrom( newFrom );
 	}
 
-	protected void dragRightButton( final DragEvent event )
+	protected void mouseDragButton3( final ControlInputEvent event )
 	{
 		final Vector3D from = _dragStartFrom;
 		final Vector3D to   = _dragStartTo;
 
-		final double deltaY = (double)event.getDeltaY();
+		final double deltaY = (double)event.getDragDeltaY();
 
 		final double zoom = Math.max( 0.1 , 1.0 + deltaY / 100.0 );
 

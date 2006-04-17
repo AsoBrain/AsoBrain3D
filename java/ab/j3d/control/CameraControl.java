@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2005
+ * (C) Copyright Numdata BV 2004-2006
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,24 +17,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view;
+package ab.j3d.control;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.awt.event.MouseEvent;
+import java.util.EventObject;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import javax.swing.Action;
 
-import ab.j3d.Matrix3D;
-
 import com.numdata.oss.ResourceBundleTools;
 import com.numdata.oss.ui.BasicAction;
+
+import ab.j3d.Matrix3D;
+import ab.j3d.view.ViewModelView;
 
 /**
  * This abstract class defined a control(ler) for a view in the view model.
  * <p />
- * The basic function of a view control is providing a view transform (this is
+ * The basic function of a camera control is providing a view transform (this is
  * available as a bound '<code>transform</code>' property, so property change
  * listeners may act on it).
  * <p />
@@ -44,52 +45,46 @@ import com.numdata.oss.ui.BasicAction;
  * implemented:
  * <dl>
  *  <dt>Double-clicking the left mouse button.</dt>
- *  <dd>Restore last saved view control state (calls <code>restore()</code>).</dd>
+ *  <dd>Restore last saved camera control state (calls <code>restore()</code>).</dd>
  *
  *  <dt>Double-clicking any other mouse button.</dt>
- *  <dd>Save view control state (calls <code>save()</code>).</dd>
+ *  <dd>Save camera control state (calls <code>save()</code>).</dd>
  * </dl>
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public abstract class ViewControl
-	implements DragListener
+public abstract class CameraControl
+	extends MouseControl
 {
 	/** Action ID: Save settings.    */ public static final String SAVE_ACTION     = "save";
 	/** Action ID: Restore settings. */ public static final String RESTORE_ACTION  = "restore";
 
 	/**
-	 * View control event (reused to avoid too much garbage).
+	 * View being controlled.
 	 */
-	protected final PropertyChangeSupport _pcs = new PropertyChangeSupport( this );
+	protected final ViewModelView _view;
 
 	/**
-	 * Current view transform value.
+	 * Construct camera control.
 	 *
-	 * @see     #getTransform()
-	 * @see     #setTransform(Matrix3D)
+	 * @param   view    View to be controlled.
 	 */
-	private Matrix3D _transform;
-
-	/**
-	 * Construct view control.
-	 */
-	protected ViewControl()
+	protected CameraControl( final ViewModelView view )
 	{
-		_transform = Matrix3D.INIT;
+		_view = view;
 	}
 
 	/**
-	 * Get actions of the view control.
+	 * Get actions of the camera control.
 	 *
 	 * @param   locale  Preferred locale for internationalization.
 	 *
-	 * @return  Actions of the view control.
+	 * @return  Actions of the camera control.
 	 */
 	public Action[] getActions( final Locale locale )
 	{
-		final ResourceBundle res = ResourceBundleTools.getBundle( ViewControl.class , locale );
+		final ResourceBundle res = ResourceBundleTools.getBundle( CameraControl.class , locale );
 
 		return new Action[]
 			{
@@ -108,58 +103,13 @@ public abstract class ViewControl
 	}
 
 	/**
-	 * Add a <code>PropertyChangeListener</code> to the listener list. The
-	 * listener is registered for all properties.
-	 *
-	 * @param   listener    Listener to be added
-	 */
-	public final void addPropertyChangeListener( final PropertyChangeListener listener )
-	{
-		_pcs.addPropertyChangeListener( listener );
-	}
-
-	/**
-	 * Remove a <code>PropertyChangeListener</code> from the listener list. This
-	 * removes a listener that was registered for all properties.
-	 *
-	 * @param   listener    Listener to be removed
-	 */
-	public final void removePropertyChangeListener( final PropertyChangeListener listener )
-	{
-		_pcs.removePropertyChangeListener( listener );
-	}
-
-	/**
-	 * Add a <code>PropertyChangeListener</code> for a specific property. The
-	 * listener will be invoked only when a that specific property is changed.
-	 *
-	 * @param   propertyName    Name of the property to listen on.
-	 * @param   listener        Listener to be added
-	 */
-	public final void addPropertyChangeListener( final String propertyName , final PropertyChangeListener listener )
-	{
-		_pcs.addPropertyChangeListener( propertyName , listener );
-	}
-
-	/**
-	 * Remove a <code>PropertyChangeListener</code> for a specific property.
-	 *
-	 * @param   propertyName    Name of the property that was listened on.
-	 * @param   listener        Listener to be removed
-	 */
-	public final void removePropertyChangeListener( final String propertyName , final PropertyChangeListener listener )
-	{
-		_pcs.removePropertyChangeListener( propertyName , listener );
-	}
-
-	/**
 	 * Get view transform.
 	 *
 	 * @return  View transform.
 	 */
 	public Matrix3D getTransform()
 	{
-		return _transform;
+		return _view.getViewTransform();
 	}
 
 	/**
@@ -169,18 +119,16 @@ public abstract class ViewControl
 	 */
 	protected void setTransform( final Matrix3D transform )
 	{
-		final Matrix3D oldTransform = _transform;
-		_transform = transform;
-		_pcs.firePropertyChange( "transform" , oldTransform , transform );
+		_view.setViewTransform( transform );
 	}
 
-	public void dragStart( final DragEvent event )
+	public EventObject mouseClicked( final ControlInputEvent event )
 	{
 		if ( event.getClickCount() == 2 )
 		{
-			switch ( event.getButtonNumber() )
+			switch ( event.getMouseButton() )
 			{
-				case 0 : /* button #1 - restore saved state */
+				case MouseEvent.BUTTON1 : /* button #1 - restore saved state */
 					restore();
 					break;
 
@@ -189,28 +137,26 @@ public abstract class ViewControl
 					break;
 			}
 		}
+
+		return null;
 	}
 
-	public void dragTo( final DragEvent event )
+	public EventObject mousePressed( final ControlInputEvent event )
 	{
-		switch ( event.getButtonNumber() )
-		{
-			case 0 :
-				dragLeftButton( event );
-				break;
-
-			case 1 :
-				dragMiddleButton( event );
-				break;
-
-			case 2 :
-				dragRightButton( event );
-				break;
-		}
+		startCapture( event );
+		return null;
 	}
 
-	public void dragStop( final DragEvent event )
+	public void mouseDragged( final ControlInputEvent event )
 	{
+		if ( event.isMouseButton1Down() )
+			mouseDragButton1( event );
+
+		if ( event.isMouseButton2Down() )
+			mouseDragButton2( event );
+
+		if ( event.isMouseButton3Down() )
+			mouseDragButton3( event );
 	}
 
 	/**
@@ -219,7 +165,7 @@ public abstract class ViewControl
 	 *
 	 * @param   event   Drag event.
 	 */
-	protected abstract void dragLeftButton( final DragEvent event );
+	protected abstract void mouseDragButton1( final ControlInputEvent event );
 
 	/**
 	 * Handle drag operation with middle mouse button. This method is called by
@@ -227,7 +173,7 @@ public abstract class ViewControl
 	 *
 	 * @param   event   Drag event.
 	 */
-	protected abstract void dragMiddleButton( final DragEvent event );
+	protected abstract void mouseDragButton2( final ControlInputEvent event );
 
 	/**
 	 * Handle drag operation with right mouse button. This method is called by
@@ -235,10 +181,10 @@ public abstract class ViewControl
 	 *
 	 * @param   event   Drag event.
 	 */
-	protected abstract void dragRightButton( final DragEvent event );
+	protected abstract void mouseDragButton3( final ControlInputEvent event );
 
 	/**
-	 * Save current view control settings. The saved settings can be restored
+	 * Save current camera control settings. The saved settings can be restored
 	 * later using the <code>restore()</code> method.
 	 *
 	 * @see     #restore()
@@ -246,13 +192,12 @@ public abstract class ViewControl
 	public abstract void save();
 
 	/**
-	 * Restore current view control settings. The saved settings can be restored
+	 * Restore current camera control settings. The saved settings can be restored
 	 * later using the <code>restore()</code> method.
 	 *
 	 * @see     #save()
 	 */
 	public abstract void restore();
-
 
 	/**
 	 * Save settings into a <code>Properties</code> object. This may set any

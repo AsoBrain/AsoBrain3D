@@ -26,6 +26,7 @@ import java.awt.geom.Rectangle2D;
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
+import ab.j3d.control.FromToCameraControl;
 import ab.j3d.model.Box3D;
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Cylinder3D;
@@ -34,8 +35,8 @@ import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Object3D;
 import ab.j3d.model.Sphere3D;
-import ab.j3d.view.FromToViewControl;
 import ab.j3d.view.ViewModel;
+import ab.j3d.view.ViewModelView;
 import ab.j3d.view.java2d.Java2dModel;
 
 /**
@@ -86,7 +87,8 @@ public final class AbPovTestModel
 		final Vector3D viewFrom = Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 );
 		final Vector3D viewAt   = Vector3D.INIT;
 
-		viewModel.createView( "view" , new FromToViewControl( viewFrom , viewAt ) );
+		final ViewModelView view = viewModel.createView( "view" );
+		view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
 	}
 
 	/**

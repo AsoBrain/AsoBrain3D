@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2005 Peter S. Heijnen
+ * Copyright (C) 1999-2006 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,9 +35,7 @@ import ab.j3d.model.Camera3D;
 import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Transform3D;
-import ab.j3d.view.DragEvent;
-import ab.j3d.view.DragListener;
-import ab.j3d.view.DragSupport;
+import ab.j3d.view.ViewModelView;
 
 /**
  * This panel is used as view and control of a <code>Renderer</code>. It starts
@@ -50,7 +48,7 @@ import ab.j3d.view.DragSupport;
  */
 public class RenderPanel
 	extends JComponent
-	implements ComponentListener, DragListener
+	implements ComponentListener
 {
 	/** Render mode: quick (wireframe). */ public static final int QUICK = 1;
 	/** Render mode: full (solid).      */ public static final int FULL  = 2;
@@ -58,10 +56,10 @@ public class RenderPanel
 	/**
 	 * Drag support for render panel.
 	 */
-	private final DragSupport _dragSupport;
+	private final RenderControl _renderControl;
 
 	/**
-	 * Transform of model.
+	 * Transform node of view.
 	 */
 	private final Transform3D _modelTransform;
 
@@ -138,9 +136,7 @@ public class RenderPanel
 		world.addChild( cameraTransform );
 		_camera = camera;
 
-		final DragSupport dragSupport = new DragSupport( this , 0.001 );
-		dragSupport.addDragListener( this );
-		_dragSupport = dragSupport;
+		_renderControl = new RenderControl( this , 50.0 , ViewModelView.FULL_CIRCLE_PER_250_PIXELS );
 
 		/*
 		 * Initialize render/control variables.
@@ -175,6 +171,16 @@ public class RenderPanel
 	}
 
 	/**
+	 * Get transform node of view.
+	 *
+	 * @return  Transform node of view.
+	 */
+	public Transform3D getModelTransform()
+	{
+		return _modelTransform;
+	}
+
+	/**
 	 * Set minimum/maximum coordiantes of displayed model.
 	 *
 	 * @param   bounds  Bounds of displayed model.
@@ -191,7 +197,7 @@ public class RenderPanel
 	 */
 	public final void setControlMode( final int mode )
 	{
-		_dragSupport.setControlMode( mode );
+		_renderControl.setControlMode( mode );
 	}
 
 	/**
@@ -219,13 +225,13 @@ public class RenderPanel
 	{
 		return String.valueOf( Bounds3D.INIT.set(
 			Vector3D.INIT.set(
-				_dragSupport.getRotationX() ,
-				_dragSupport.getRotationY() ,
-				_dragSupport.getRotationZ() ) ,
-			Vector3D.INIT.set(
-				_dragSupport.getTranslationX() ,
-				_dragSupport.getTranslationY() ,
-				_dragSupport.getTranslationZ() )
+				_renderControl.getRotationX() ,
+			    _renderControl.getRotationY() ,
+			    _renderControl.getRotationZ() ) ,
+		    Vector3D.INIT.set(
+			    _renderControl.getTranslationX() ,
+		        _renderControl.getTranslationY() ,
+		        _renderControl.getTranslationZ() )
 			) );
 	}
 
@@ -242,7 +248,7 @@ public class RenderPanel
 			{
 				final Bounds3D b = Bounds3D.fromString( settings );
 
-				final DragSupport ds = _dragSupport;
+				final RenderControl ds = _renderControl;
 				ds.setRotationX( b.v1.x );
 				ds.setRotationY( b.v1.y );
 				ds.setRotationZ( b.v1.z );
@@ -262,13 +268,13 @@ public class RenderPanel
 	 */
 	public final void reset()
 	{
-		final DragSupport dragSupport = _dragSupport;
-		dragSupport.setRotationX( -10.0 );
-		dragSupport.setRotationY( 0.0 );
-		dragSupport.setRotationZ( -35.0 );
-		dragSupport.setTranslationX( 0.0 );
-		dragSupport.setTranslationY( 0.0 );
-		dragSupport.setTranslationZ( 0.0 );
+		final RenderControl renderControl = _renderControl;
+		renderControl.setRotationX( -10.0 );
+		renderControl.setRotationY( 0.0 );
+		renderControl.setRotationZ( -35.0 );
+		renderControl.setTranslationX( 0.0 );
+		renderControl.setTranslationY( 0.0 );
+		renderControl.setTranslationZ( 0.0 );
 
 		center();
 		requestUpdate();
@@ -285,8 +291,8 @@ public class RenderPanel
 
 		model.setTransform( transform.setTranslation(
 			-0.5 * ( bounds.v1.x + bounds.v2.x ) ,
-			-0.5 * ( bounds.v1.y + bounds.v2.y ) ,
-			-0.5 * ( bounds.v1.z + bounds.v2.z ) ) );
+		    -0.5 * ( bounds.v1.y + bounds.v2.y ) ,
+		    -0.5 * ( bounds.v1.z + bounds.v2.z ) ) );
 	}
 
 	/**
@@ -377,7 +383,7 @@ public class RenderPanel
 		final RenderThread renderThread = _renderThread;
 		if ( renderThread != null )
 		{
-			_modelTransform.setTransform( _dragSupport.getTransform() );
+			_modelTransform.setTransform( _renderControl.getTransform() );
 //			System.out.println( "_modelTransform.getMatrix() = " + _modelTransform.getMatrix().toFriendlyString() );
 			renderThread.requestUpdate();
 			repaint();
@@ -432,23 +438,5 @@ public class RenderPanel
 
 		if ( e.getSource() == this )
 			requestUpdate();
-	}
-
-	public void dragStart( final DragEvent event )
-	{
-		setRenderingMode( QUICK );
-		requestUpdate();
-	}
-
-	public void dragTo( final DragEvent event )
-	{
-		_modelTransform.setTransform( _dragSupport.getTransform() );
-		requestUpdate();
-	}
-
-	public void dragStop( final DragEvent event )
-	{
-		setRenderingMode( FULL );
-		requestUpdate();
 	}
 }
