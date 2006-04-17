@@ -36,10 +36,8 @@ public interface OverlayPainter
 	 * Called after a view has been rendered, after which the painters can paint
 	 * whatever they wish on the view component.
 	 *
-	 * @param   viewModel   {@link ViewModel} which contains the objects in the
-	 *                      scene.
-	 * @param   view        {@link ViewModelView} which has rendered the scene.
-	 * @param   g2d         {@link Graphics2D} object which can do the painting.
+	 * @param   view    {@link ViewModelView} which has rendered the scene.
+	 * @param   g2d     {@link Graphics2D} object which can do the painting.
 	 */
-	void paint( final ViewModel viewModel , final ViewModelView view , final Graphics2D g2d );
+	void paint( final ViewModelView view , final Graphics2D g2d );
 }
