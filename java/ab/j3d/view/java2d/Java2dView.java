@@ -29,17 +29,15 @@ import java.awt.Insets;
 import javax.swing.JComponent;
 
 import ab.j3d.Matrix3D;
-import ab.j3d.control.SceneInputTranslator;
+import ab.j3d.control.ControlInput;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
-import ab.j3d.view.DragSupport;
 import ab.j3d.view.Projector;
 import ab.j3d.view.RenderQueue;
-import ab.j3d.view.ViewControl;
+import ab.j3d.view.ViewControlInput;
 import ab.j3d.view.ViewModelNode;
 import ab.j3d.view.ViewModelView;
-import ab.j3d.view.ViewInputTranslator;
 
 /**
  * Java 2D implementation of view model view.
@@ -50,7 +48,7 @@ import ab.j3d.view.ViewInputTranslator;
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public final class Java2dView
+final class Java2dView
 	extends ViewModelView
 {
 	/**
@@ -85,7 +83,7 @@ public final class Java2dView
 	/**
 	 * The SceneInputTranslator for this View.
 	 */
-	private final SceneInputTranslator _inputTranslator;
+	private final ControlInput _controlInput;
 
 	/**
 	 * Stroke to use for sketched rendering.
@@ -227,13 +225,12 @@ public final class Java2dView
 	/**
 	 * Construct new view.
 	 *
-	 * @param   model           Model for which this view is created.
-	 * @param   id              Application-assigned ID of this view.
-	 * @param   viewControl     Control to use for this view.
+	 * @param   model   Model for which this view is created.
+	 * @param   id      Application-assigned ID of this view.
 	 */
-	Java2dView( final Java2dModel model , final Object id , final ViewControl viewControl )
+	Java2dView( final Java2dModel model , final Object id )
 	{
-		super( id , model , viewControl );
+		super( model.getUnit() , id );
 
 		_model = model;
 
@@ -243,21 +240,14 @@ public final class Java2dView
 		/*
 		 * Create view component.
 		 */
-		final ViewComponent viewComponent = new ViewComponent();
-		_viewComponent = viewComponent;
+		_viewComponent = new ViewComponent();
 
 		/*
 		 * Update view to initial transform.
 		 */
 		update();
 
-		_inputTranslator = new ViewInputTranslator( this , model );
-
-		/*
-		 * Add DragSupport to handle drag events.
-		 */
-		final DragSupport ds = new DragSupport( viewComponent , 0.001 );
-		ds.addDragListener( viewControl );
+		_controlInput = new ViewControlInput( model , this );
 	}
 
 	public Component getComponent()
@@ -285,19 +275,13 @@ public final class Java2dView
 	 *
 	 * @return  the {@link Projector} for this view
 	 */
-	protected Projector getProjector()
+	public Projector getProjector()
 	{
 		return _viewComponent.getProjector();
 	}
 
-	/**
-	 * Returns the {@link SceneInputTranslator} for this view. For the
-	 * {@link Java2dView}, this is a {@link ViewInputTranslator}.
-	 *
-	 * @return  the {@link SceneInputTranslator} for this view.
-	 */
-	protected SceneInputTranslator getInputTranslator()
+	protected ControlInput getControlInput()
 	{
-		return _inputTranslator;
+		return _controlInput;
 	}
 }

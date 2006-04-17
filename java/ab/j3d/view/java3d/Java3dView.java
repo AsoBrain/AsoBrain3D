@@ -22,10 +22,11 @@ package ab.j3d.view.java3d;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.Transparency;
-import java.awt.Graphics;
+import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.J3DGraphics2D;
@@ -37,11 +38,10 @@ import javax.vecmath.Matrix3d;
 import javax.vecmath.Vector3d;
 
 import ab.j3d.Matrix3D;
-import ab.j3d.control.SceneInputTranslator;
-import ab.j3d.view.DragSupport;
+import ab.j3d.control.ControlInput;
 import ab.j3d.view.Projector;
-import ab.j3d.view.ViewControl;
-import ab.j3d.view.ViewInputTranslator;
+import ab.j3d.view.ViewControlInput;
+import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelView;
 
 /**
@@ -50,7 +50,7 @@ import ab.j3d.view.ViewModelView;
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public final class Java3dView
+final class Java3dView
 	extends ViewModelView
 {
 	/**
@@ -58,7 +58,7 @@ public final class Java3dView
 	 *
 	 * @see     javax.media.j3d.Screen3D#METERS_PER_PIXEL
 	 */
-	private static final double JAVA3D_RESOLUTION = 0.0254 / 90.0;
+	private static final double JAVA3D_RESOLUTION = ViewModel.INCH / 90.0;
 
 	/**
 	 * Transform group in view branch.
@@ -103,7 +103,7 @@ public final class Java3dView
 	/**
 	 * The SceneInputTranslator for this View.
 	 */
-	private final SceneInputTranslator _inputTranslator;
+	private final ControlInput _controlInput;
 
 	/**
 	 * The component that displays the rendered scene. This class subclasses
@@ -221,17 +221,15 @@ public final class Java3dView
 	/**
 	 * Construct view node using Java3D for rendering.
 	 *
-	 * @param   model           {@link Java3dModel} for which this class is a
-	 *                          view.
-	 * @param   universe        Java3D universe for which the view is created.
-	 * @param   id              Application-assigned ID of this view.
-	 * @param   viewControl     Control to use for this view.
+	 * @param   model       {@link Java3dModel} for which this class is a view.
+	 * @param   universe    Java3D universe for which the view is created.
+	 * @param   id          Application-assigned ID of this view.
 	 *
 	 * @see     Java3dUniverse#createView
 	 */
-	Java3dView( final Java3dModel model, final Java3dUniverse universe, final Object id, final ViewControl viewControl )
+	Java3dView( final Java3dModel model, final Java3dUniverse universe , final Object id )
 	{
-		super( id , model, viewControl );
+		super( model.getUnit() , id );
 
 		/*
 		 * Create view branch.
@@ -252,13 +250,7 @@ public final class Java3dView
 		 */
 		update();
 
-		_inputTranslator = new ViewInputTranslator(this, model);
-
-		/*
-		 * Add DragSupport to handle drag events.
-		 */
-		final DragSupport ds = new DragSupport( _canvas , getUnit() );
-		ds.addDragListener( viewControl );
+		_controlInput = new ViewControlInput( model , this );
 	}
 
 	public Component getComponent()
@@ -344,7 +336,7 @@ public final class Java3dView
 	 *
 	 * @return  the {@link Projector} for this view
 	 */
-	protected Projector getProjector()
+	public Projector getProjector()
 	{
 		final View view = _view;
 		final Canvas3D canvas = _canvas;
@@ -363,8 +355,8 @@ public final class Java3dView
 		return Projector.createInstance( policy , width , height , resolution , unit , frontClip , backClip , aperture , zoomFactor );
 	}
 
-	protected SceneInputTranslator getInputTranslator()
+	protected ControlInput getControlInput()
 	{
-		return _inputTranslator;
+		return _controlInput;
 	}
 }

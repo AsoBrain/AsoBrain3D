@@ -28,18 +28,20 @@ import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
+import com.numdata.oss.ArrayTools;
+import com.numdata.oss.ui.ActionTools;
+
 import ab.j3d.Bounds3D;
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
-import ab.j3d.control.Control;
+import ab.j3d.control.CameraControl;
+import ab.j3d.control.FromToCameraControl;
+import ab.j3d.control.OrbitCameraControl;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 import ab.j3d.pov.ViewModelToPovAction;
-
-import com.numdata.oss.ArrayTools;
-import com.numdata.oss.ui.ActionTools;
 
 /**
  * The view model provides a high level interface between an application and a
@@ -463,22 +465,6 @@ public abstract class ViewModel
 	}
 
 	/**
-	 * Get view control for the specified view node.
-	 *
-	 * @param   id      Application-assigned ID of view.
-	 *
-	 * @return  ViewControl that controls the specified view;
-	 *          <code>null</code> if the requested view was not found.
-	 *
-	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
-	 */
-	public final ViewControl getViewControl( final Object id )
-	{
-		final ViewModelView view = getView( id );
-		return ( view != null ) ? view.getViewControl() : null;
-	}
-
-	/**
 	 * Get ID's of all views for the model.
 	 *
 	 * @return  Array containing ID's of all views for the model.
@@ -528,13 +514,13 @@ public abstract class ViewModel
 	 * @param   estimatedSceneBounds    Estimated bounding box of scene.
 	 * @param   viewDirection           Direction from which to view the scene.
 	 *
-	 * @return  View component for create view.
+	 * @return  View that was created.
 	 *
 	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public final Component createView( final Object id , final int renderingPolicy , final int projectionPolicy , final Bounds3D estimatedSceneBounds , final Vector3D viewDirection )
+	public final ViewModelView createView( final Object id , final int renderingPolicy , final int projectionPolicy , final Bounds3D estimatedSceneBounds , final Vector3D viewDirection )
 	{
-		final ViewControl viewControl;
+		final ViewModelView view = createView( id );
 
 		final double   sceneSize = Vector3D.distanceBetween( estimatedSceneBounds.v1 , estimatedSceneBounds.v2 );
 		final Vector3D center    = estimatedSceneBounds.center();
@@ -548,34 +534,30 @@ public abstract class ViewModel
 			final double rx = Math.toDegrees( Math.atan2( -viewDirection.y , -viewDirection.z ) );
 			final double ry = Math.toDegrees( Math.atan2( -viewDirection.x , -viewDirection.z ) );
 
-			viewControl = new OrbitViewControl( rx , ry , 0.0 , x , y , z );
+			view.setCameraControl( new OrbitCameraControl( view , rx , ry , 0.0 , x , y , z ) );
 		}
 		else
 		{
 			final Vector3D from = center.minus( viewDirection.multiply( sceneSize * 2.0 ) );
-			viewControl = new FromToViewControl( from , center );
+			view.setCameraControl( new FromToCameraControl( view , from , center ) );
 		}
 
-		final Component result = createView( id , viewControl );
-
-		final ViewModelView view = getView( id );
 		view.setRenderingPolicy( renderingPolicy );
 		view.setProjectionPolicy( projectionPolicy );
 
-		return result;
+		return view;
 	}
 
 	/**
 	 * Create a new view for this model.
 	 *
-	 * @param   id              Application-assigned ID for the new view.
-	 * @param   viewControl     Control to use for this view.
+	 * @param   id  Application-assigned ID for the new view.
 	 *
-	 * @return  View component for create view.
+	 * @return  View that was created.
 	 *
 	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public abstract Component createView( final Object id , final ViewControl viewControl );
+	public abstract ViewModelView createView( final Object id );
 
 	/**
 	 * Create view panel for the specified view.
@@ -595,12 +577,16 @@ public abstract class ViewModel
 			throw new IllegalArgumentException( String.valueOf( id ) );
 
 		final Component   viewComponent = view.getComponent();
-		final ViewControl viewControl   = view.getViewControl();
 
 		final JPanel result = new JPanel( new BorderLayout() );
 		result.add( viewComponent , BorderLayout.CENTER );
 
-		Action[] actions = viewControl.getActions( locale );
+		Action[] actions = new Action[ 0 ];
+
+		final CameraControl cameraControl = view.getCameraControl();
+		if ( cameraControl != null )
+			ArrayTools.addAll(  actions , cameraControl.getActions( locale ) );
+
 		actions = (Action[])ArrayTools.append( actions , new ViewModelToPovAction( locale , this , view , result , BorderLayout.SOUTH , "SODA_BaseComponents/images/textures/" ) );
 
 		final JToolBar toolbar = ActionTools.createToolbar( null , actions );
@@ -661,54 +647,6 @@ public abstract class ViewModel
 		{
 			final ViewModelView view = (ViewModelView) _views.get( i );
 			view.update();
-		}
-	}
-
-	/**
-	 * Returns wether or not this view supports {@link Control}s. This should be
-	 * checked before adding any {@link Control}s to a view.
-	 *
-	 * @return  <code>true</code> if this view supports {@link Control}s,
-	 *          <code>false</code> if not.
-	 */
-	public abstract boolean supportsControls();
-
-	/**
-	 * Add a {@link Control} to all {@link ViewModelView}s currently added to
-	 * the model. If a new view is added afterwards, the control is not added to
-	 * that view.<p>
-	 * Note that not all views support controls. This can be checked with the
-	 * method {@link #supportsControls()}.
-	 *
-	 * @param   control     The {@link Control} to add
-	 */
-	public final void addControl( final Control control )
-	{
-		if ( supportsControls() )
-		{
-			for ( int i = 0 ; i < _views.size() ; i++ )
-			{
-				final ViewModelView view = (ViewModelView) _views.get( i );
-				view.addControl( control );
-			}
-		}
-	}
-
-	/**
-	 * Remove a {@link Control} from all {@link ViewModelView}s currently added
-	 * to the model.
-	 *
-	 * @param   control     The {@link Control} to remove
-	 */
-	public final void removeControl( final Control control)
-	{
-		if ( !supportsControls() )
-		{
-			for ( int i = 0 ; i < _views.size() ; i++ )
-			{
-				final ViewModelView view = (ViewModelView) _views.get( i );
-				view.removeControl( control );
-			}
 		}
 	}
 

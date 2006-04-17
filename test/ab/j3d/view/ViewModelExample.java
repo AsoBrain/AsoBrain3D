@@ -21,21 +21,20 @@
 package ab.j3d.view;
 
 import java.awt.Color;
+import java.util.EventObject;
 import java.util.List;
 import javax.swing.JFrame;
+
+import com.numdata.oss.ui.WindowTools;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
-import ab.j3d.control.SceneInputTranslator;
-import ab.j3d.control.MouseControlEvent;
-import ab.j3d.control.ControlEvent;
-import ab.j3d.control.Control;
-import ab.j3d.control.Intersection;
-import ab.j3d.control.ControlEventQueue;
+import ab.j3d.control.ControlInputEvent;
+import ab.j3d.control.FromToCameraControl;
+import ab.j3d.control.MouseControl;
+import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Object3D;
-
-import com.numdata.oss.ui.WindowTools;
 
 /**
  * Base implementation for view model examples.
@@ -69,7 +68,6 @@ public abstract class ViewModelExample
 //		Matrix3D transform3 = Matrix3D.getTransform( 90, 0, 315, 0.225 / unit , 0, 0);
 //		viewModel.createNode( "plane3" , transform3 , plane3 , null , 1.0f );
 
-
 		final Object3D cube = createCube( 0.1 / unit );
 		cube.setTag( "Cube 1" );
 		viewModel.createNode( "cube" , Matrix3D.INIT , cube , null , 1.0f );
@@ -85,47 +83,34 @@ public abstract class ViewModelExample
 		final Vector3D  viewFrom = Vector3D.INIT.set( 0.0 , -1.0 / unit , 0.0 );
 		final Vector3D  viewAt   = Vector3D.INIT;
 
-		viewModel.createView( "view" , new FromToViewControl( viewFrom , viewAt ) );
-		final ViewModelView view = viewModel.getView( "view" );
-		view.setProjectionPolicy( Projector.PERSPECTIVE );
+		final ViewModelView view = viewModel.createView( "view" );
+		view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
+//		view.setProjectionPolicy( Projector.PARALLEL );
 
 		final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , view.getComponent() );
 		frame.setVisible( true );
 
-		final SceneInputTranslator inputTranslator = view.getInputTranslator();
-		if ( inputTranslator != null )
-		{
-			final ControlEventQueue eventQueue = inputTranslator.getEventQueue();
-			eventQueue.addControl( new Control() {
 
-					public ControlEvent handleEvent( final ControlEvent e )
+		view.appendControl( new MouseControl()
+			{
+				public EventObject mouseClicked( final ControlInputEvent event )
+				{
+					final List objects = event.getIntersections();
+
+					final StringBuffer sb = new StringBuffer();
+					sb.append( objects.size() );
+					sb.append( " objects under the mouse: " );
+					for ( int i = 0 ; i < objects.size() ; i++ )
 					{
-						if ( e instanceof MouseControlEvent )
-						{
-							final MouseControlEvent event = (MouseControlEvent)e;
-							if ( MouseControlEvent.MOUSE_PRESSED == event.getType() )
-							{
-								final List objects = event.getIntersections();
-								final StringBuffer string = new StringBuffer();
-								string.append( objects.size() );
-								string.append( " objects under the mouse: " );
-								for ( int i = 0 ; i < objects.size() ; i++ )
-								{
-									string.append( "  Object: " );
-									string.append( ((Intersection)objects.get( i )).getID() );
-								}
-								System.out.println( string.toString() );
-							}
-						}
-						return e;
+						sb.append( "  Object: " );
+						sb.append( ( (Face3DIntersection)objects.get( i ) ).getObjectID() );
 					}
 
-					public int getDataRequiredMask()
-					{
-						return 0;
-					}
-				} );
-		}
+					System.out.println( sb.toString() );
+
+					return event;
+				}
+			} );
 	}
 
 	/**

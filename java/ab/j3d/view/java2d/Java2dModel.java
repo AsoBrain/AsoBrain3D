@@ -19,12 +19,9 @@
  */
 package ab.j3d.view.java2d;
 
-import java.awt.Component;
-
-import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelNode;
-import ab.j3d.control.Control;
+import ab.j3d.view.ViewModelView;
 
 /**
  * Java 2D implementation of view model.
@@ -69,24 +66,11 @@ public final class Java2dModel
 		updateViews();
 	}
 
-	public Component createView( final Object id , final ViewControl viewControl )
+	public ViewModelView createView( final Object id )
 	{
-		final Java2dView view = new Java2dView( this , id , viewControl );
-
+		final Java2dView view = new Java2dView( this , id );
 		addView( view );
-		return view.getComponent();
-	}
-
-	/**
-	 * Returns wether or not this view supports {@link Control}s. For a
-	 * {@link Java2dModel}, this is always <code>true</code>.
-	 *
-	 * @return  <code>true</code>, because a {@link Java2dModel} supports
-	 *          {@link Control}s.
-	 */
-	public boolean supportsControls()
-	{
-		return true;
+		return view;
 	}
 
 }

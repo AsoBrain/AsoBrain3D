@@ -20,7 +20,6 @@
 package ab.j3d.view.java3d;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.util.HashMap;
 import java.util.Map;
 import javax.media.j3d.BranchGroup;
@@ -28,13 +27,12 @@ import javax.media.j3d.TransformGroup;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
-import ab.j3d.control.Control;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
-import ab.j3d.view.ViewControl;
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelNode;
+import ab.j3d.view.ViewModelView;
 
 /**
  * View model implementation for Java 3D.
@@ -190,27 +188,14 @@ public final class Java3dModel
 		return (TransformGroup)nodeRoot.getChild( 0 );
 	}
 
-	public Component createView( final Object id , final ViewControl viewControl )
+	public ViewModelView createView( final Object id )
 	{
 		if ( id == null )
 			throw new NullPointerException( "id" );
 
-		final Java3dView view = new Java3dView( this , _universe , id , viewControl );
-
+		final Java3dView view = new Java3dView( this , _universe , id );
 		addView( view );
-		return view.getComponent();
-	}
-
-	/**
-	 * Returns wether or not this model supports {@link Control}s. For a
-	 * {@link Java3dModel}, this is always <code>true</code>.
-	 *
-	 * @return  <code>true</code>, because a {@link Java3dModel} supports
-	 *          {@link Control}s.
-	 */
-	public boolean supportsControls()
-	{
-		return true;
+		return view;
 	}
 
 	/**
