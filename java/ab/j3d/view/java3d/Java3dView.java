@@ -131,7 +131,7 @@ final class Java3dView
 		{
 			super( Java3dTools.getGraphicsConfiguration() );
 
-			_overlayDoubleBuffered = true;
+			_overlayDoubleBuffered = false;
 			_overlayBufferImage    = null;
 		}
 
