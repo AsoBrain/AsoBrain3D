@@ -136,7 +136,7 @@ public class RenderPanel
 		world.addChild( cameraTransform );
 		_camera = camera;
 
-		_renderControl = new RenderControl( this , 50.0 , ViewModelView.FULL_CIRCLE_PER_250_PIXELS );
+		_renderControl = new RenderControl( this , 50.0 , Math.toDegrees( ViewModelView.FULL_CIRCLE_PER_250_PIXELS ) );
 
 		/*
 		 * Initialize render/control variables.
