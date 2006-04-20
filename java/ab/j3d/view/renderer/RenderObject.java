@@ -403,7 +403,7 @@ public final class RenderObject
 		nextFace: for ( i = object.getFaceCount() ; --i >= 0 ; )
 		{
 			final Face3D face3d          = object.getFace( i );
-			final int    faceVertexCount = object.getVertexCount();
+			final int    faceVertexCount = face3d.getVertexCount();
 			final int[]  vertexIndices   = face3d.getVertexIndices();
 
 			if ( faceVertexCount >= 3 )
