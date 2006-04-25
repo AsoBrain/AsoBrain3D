@@ -29,14 +29,14 @@ import java.awt.event.MouseMotionListener;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.numdata.oss.event.EventDispatcher;
-
 import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
+import ab.j3d.geom.Ray3D;
 import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 import ab.j3d.view.Projector;
+
+import com.numdata.oss.event.EventDispatcher;
 
 /**
  * The SceneInputTranslator listens to events on a component and creates
@@ -120,37 +120,27 @@ public abstract class ControlInput
 	 *
 	 * @see     #_eventNumber
 	 * @see     #_wasDragged
-	 * @see     #screenToWorld
 	 */
 	private ControlInputEvent createSceneInputEvent( final InputEvent inputEvent )
 	{
-		final Vector3D pointerLocation;
-		final Vector3D pointerDirection;
+		final Ray3D pointerRay;
 
 		if ( inputEvent instanceof MouseEvent )
 		{
 			final MouseEvent mouseEvent = (MouseEvent)inputEvent;
 
-			final int x = mouseEvent.getX();
-			final int y = mouseEvent.getY();
+			final Projector projector  = getProjector();
+			final Matrix3D  world2view = getViewTransform();
+			final Matrix3D  view2world = world2view.inverse();
 
-			pointerLocation = screenToWorld( x , y , 0.0 );
-			final Vector3D behindPointer = screenToWorld( x , y , -100.0 );
-
-			final double deltaX   = behindPointer.x - pointerLocation.x;
-			final double deltaY   = behindPointer.y - pointerLocation.y;
-			final double deltaZ   = behindPointer.z - pointerLocation.z;
-			final double distance = Math.sqrt( deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ );
-
-			pointerDirection = Vector3D.INIT.set( deltaX / distance , deltaY / distance , deltaZ / distance );
+			pointerRay = projector.getPointerRay( view2world , (double)mouseEvent.getX() , (double)mouseEvent.getY() );
 		}
 		else
 		{
-			pointerLocation  = Vector3D.INIT;
-			pointerDirection = Vector3D.INIT;
+			pointerRay = null;
 		}
 
-		return new ControlInputEvent( this , inputEvent , _eventNumber , _wasDragged , _dragStartX , _dragStartY , pointerLocation , pointerDirection );
+		return new ControlInputEvent( this , inputEvent , _eventNumber , _wasDragged , _dragStartX , _dragStartY , pointerRay );
 	}
 
 	/**
@@ -174,18 +164,16 @@ public abstract class ControlInput
 	protected abstract Object getIDForObject( Object3D object );
 
 	/**
-	 * Returns a List of {@link Face3DIntersection}s, which hold information about the
-	 * objects that are intersected by a line starting at
-	 * <code>lineStart</code> going through <code>linePoint</code>.
+	 * Returns a List of {@link Face3DIntersection}s, which hold information
+	 * about the objects that are intersected by the specified ray.
 	 *
-	 * @param   rayOrigin       Origin of ray (WCS).
-	 * @param   rayDirection    Direction of ray (WCS).
+	 * @param   ray     Ray to get intersections for.
 	 *
-	 * @return  A list of {@link Face3DIntersection}s, ordered from front to back.
+	 * @return  A list of {@link Face3DIntersection}s, ordered from near to far.
 	 *
-	 * @throws  NullPointerException if a required input argument is <code>null</code>.
+	 * @throws  NullPointerException if <code>ray</code> is <code>null</code>.
 	 */
-	public List getIntersections( final Vector3D rayOrigin , final Vector3D rayDirection )
+	public List getIntersections( final Ray3D ray )
 	{
 		final List result = new LinkedList();
 
@@ -195,20 +183,16 @@ public abstract class ControlInput
 			final Object3D object       = (Object3D)scene.getNode( i );
 			final Matrix3D object2world = scene.getMatrix( i );
 
-			object.getIntersectionsWithRay( result , true , getIDForObject( object ), object2world , rayOrigin , rayDirection );
+			object.getIntersectionsWithRay( result , true , getIDForObject( object ) , object2world , ray );
 		}
 
 		return result;
 	}
 
 	/**
-	 * Returns the {@link Projector} for this scene. The projector is used by
-	 * {@link #screenToWorld} to convert a location on the screen to world
-	 * coordinates.
+	 * Returns the {@link Projector} for this scene.
 	 *
 	 * @return  {@link Projector} for this scene.
-	 *
-	 * @see     #screenToWorld
 	 */
 	protected abstract Projector getProjector();
 
@@ -226,11 +210,9 @@ public abstract class ControlInput
 
 	/**
 	 * Returns the current view transform for this scene. The view transform
-	 * transform world to view coordinates.
+	 * transforms world to view coordinates.
 	 *
-	 * @return  the view transform for this scene.
-	 *
-	 * @see     #screenToWorld
+	 * @return  View transform for this scene.
 	 */
 	protected abstract Matrix3D getViewTransform();
 
@@ -358,34 +340,6 @@ public abstract class ControlInput
 			_eventNumber++;
 			_wasDragged = false;
 		}
-	}
-
-	/**
-	 * This method returns the point in the world for a given point on the
-	 * screen. <code>screenX</code> and <code>screenY</code> are the screen
-	 * coordinates, and distance is the distance between the viewing plane and
-	 * the 'unprojected' coordinate.<p>
-	 * This method uses {@link #getProjector} to get the {@link Projector} for
-	 * this scene and {@link #getViewTransform} to get the camera position.
-	 *
-	 * @param   screenX     X-value of the screen coordinate
-	 * @param   screenY     Y-value of the screen coordinate.
-	 * @param   distance    Distance between the world coordinate and the
-	 *                      viewing plane.
-	 *
-	 * @return  World location for the given screen coordinate.
-	 *
-	 * @see     #getProjector
-	 * @see     #getViewTransform
-	 */
-	private Vector3D screenToWorld( final int screenX , final int screenY , final double distance )
-	{
-		final Projector projector  = getProjector();
-		final Matrix3D  world2view = getViewTransform();
-
-		final Vector3D viewPoint = projector.imageToView( screenX , screenY , distance );
-
-		return world2view.inverseMultiply( viewPoint );
 	}
 }
 
