@@ -235,7 +235,7 @@ public class Shape3DBuilder
 			}
 		}
 
-		void addFace( final Matrix3D xform , final Face3D face )
+		void addFace( final Matrix3D object2view , final Face3D face )
 		{
 			final int vertexCount = face.getVertexCount();
 			if ( vertexCount >= 2 )
@@ -257,8 +257,8 @@ public class Shape3DBuilder
 					}
 
 					final int coordinateIndex = lineCount * 2;
-					lineArray.setCoordinate( coordinateIndex     , getVertexCoordinate( xform , face , 0 ) );
-					lineArray.setCoordinate( coordinateIndex + 1 , getVertexCoordinate( xform , face , 0 ) );
+					lineArray.setCoordinate( coordinateIndex     , getVertexCoordinate( object2view , face , 0 ) );
+					lineArray.setCoordinate( coordinateIndex + 1 , getVertexCoordinate( object2view , face , 1 ) );
 
 					_lineArray = lineArray;
 					_lineCount = lineCount + 1;
@@ -269,12 +269,12 @@ public class Shape3DBuilder
 					final int[]   textureV   = face.getTextureV();
 					final boolean hasTexture = ( _texture == face.getTexture() ) && ( textureU != null ) && ( textureV != null ) && ( appearance.getTexture() != null );
 
-					final Point3d    vertexCoord0  = getVertexCoordinate( xform , face , 0 );
-					final Vector3f   vertexNormal0 = getVertexNormal( xform , face , 0 );
+					final Point3d    vertexCoord0  = getVertexCoordinate( object2view , face , 0 );
+					final Vector3f   vertexNormal0 = getVertexNormal( object2view , face , 0 );
 					final TexCoord2f textureCoord0 = hasTexture ? getTextureCoordinate( textureU , textureV , 0 ) : null;
 
-					Point3d    vertexCoord1  = getVertexCoordinate( xform , face , 1 );
-					Vector3f   vertexNormal1 = getVertexNormal( xform , face , 1 );
+					Point3d    vertexCoord1  = getVertexCoordinate( object2view , face , 1 );
+					Vector3f   vertexNormal1 = getVertexNormal( object2view , face , 1 );
 					TexCoord2f textureCoord1 = hasTexture ? getTextureCoordinate( textureU , textureV , 1 ) : null;
 
 					if ( vertexCount > 3 ) // more than 3 vertices => add quads
@@ -294,12 +294,12 @@ public class Shape3DBuilder
 						for ( int vertex3 = 3 ; vertex3 < vertexCount ; vertex3 += 2 )
 						{
 							final int        vertex2       = vertex3 - 1;
-							final Point3d    vertexCoord2  = getVertexCoordinate( xform , face , vertex2 );
-							final Vector3f   vertexNormal2 = getVertexNormal( xform , face , vertex2 );
+							final Point3d    vertexCoord2  = getVertexCoordinate( object2view , face , vertex2 );
+							final Vector3f   vertexNormal2 = getVertexNormal( object2view , face , vertex2 );
 							final TexCoord2f textureCoord2 = hasTexture ? getTextureCoordinate( textureU , textureV , vertex2 ) : null;
 
-							final Point3d    vertexCoord3  = getVertexCoordinate( xform , face , vertex3 );
-							final Vector3f   vertexNormal3 = getVertexNormal( xform , face , vertex3 );
+							final Point3d    vertexCoord3  = getVertexCoordinate( object2view , face , vertex3 );
+							final Vector3f   vertexNormal3 = getVertexNormal( object2view , face , vertex3 );
 							final TexCoord2f textureCoord3 = hasTexture ? getTextureCoordinate( textureU , textureV , vertex3 ) : null;
 
 							final int coordinateIndex = quadCount * 4;
@@ -347,8 +347,8 @@ public class Shape3DBuilder
 							triangleCount = 0;
 						}
 
-						final Point3d    vertexCoord2  = getVertexCoordinate( xform , face , vertexCount - 1 );
-						final Vector3f   vertexNormal2 = getVertexNormal( xform , face , vertexCount - 1 );
+						final Point3d    vertexCoord2  = getVertexCoordinate( object2view , face , vertexCount - 1 );
+						final Vector3f   vertexNormal2 = getVertexNormal( object2view , face , vertexCount - 1 );
 						final TexCoord2f textureCoord2 = hasTexture ? getTextureCoordinate( textureU , textureV , vertexCount - 1 ) : null;
 
 						final int coordinateIndex = triangleCount * 3;
@@ -408,7 +408,7 @@ public class Shape3DBuilder
 			return new Point3d( xform.transformX( x , y , z ) , xform.transformY( x , y , z ) , xform.transformZ( x , y , z ) );
 		}
 
-		private static Vector3f getVertexNormal( final Matrix3D xform , final Face3D face , final int vertexIndex )
+		private static Vector3f getVertexNormal( final Matrix3D object2view , final Face3D face , final int vertexIndex )
 		{
 			final boolean smooth = face.isSmooth();
 
@@ -416,7 +416,7 @@ public class Shape3DBuilder
 			final double y = smooth ? face.getVertexNormalY( vertexIndex ) : face.getNormalY();
 			final double z = smooth ? face.getVertexNormalZ( vertexIndex ) : face.getNormalZ();
 
-			return new Vector3f( (float)xform.rotateX( x , y , z ) , (float)xform.transformY( x , y , z ) , (float)xform.transformZ( x , y , z ) );
+			return new Vector3f( (float)object2view.rotateX( x , y , z ) , (float)object2view.rotateY( x , y , z ) , (float)object2view.rotateZ( x , y , z ) );
 		}
 
 		private TexCoord2f getTextureCoordinate( final int[] textureU , final int[] textureV , final int vertexIndex )
@@ -468,7 +468,7 @@ public class Shape3DBuilder
 	 * previously announced using {@link #prepareFace}. This will take
 	 * care of the the line/triangle/quad geometry conversions.
 	 *
-	 * @param   xform               Transform to apply to vertex coordinates.
+	 * @param   object2view         Transform to apply to vertex coordinates.
 	 * @param   face                Face to add.
 	 * @param   textureOverride     Texture to use instead of actual face texture.
 	 * @param   extraOpacity        Extra face opacity (0.0=translucent, 1.0=opaque).
@@ -476,7 +476,7 @@ public class Shape3DBuilder
 	 * @see     #prepareFace
 	 * @see     #buildShapes
 	 */
-	public void addFace( final Matrix3D xform , final Face3D face , final TextureSpec textureOverride , final float extraOpacity )
+	public void addFace( final Matrix3D object2view , final Face3D face , final TextureSpec textureOverride , final float extraOpacity )
 	{
 		final TextureSpec texture = ( textureOverride != null ) ? textureOverride : face.getTexture();
 		if ( texture != null )
@@ -485,7 +485,7 @@ public class Shape3DBuilder
 			final boolean hasBackface = face.isTwoSided();
 
 			final TextureGroup group = getGroup( texture , opacity , hasBackface );
-			group.addFace( xform , face );
+			group.addFace( object2view , face );
 		}
 	}
 
