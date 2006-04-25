@@ -47,24 +47,23 @@ public class GeometryTools
 	 *  <li>The ray intersects the polygon's plane outside the polygon.</li>
 	 * </ol>
 	 *
-	 * @param   polygon         Polygon to get intersection of.
-	 * @param   rayOrigin       Origin of ray (OCS).
-	 * @param   rayDirection    Direction of ray (OCS).
+	 * @param   polygon     Polygon to get intersection from.
+	 * @param   ray         Ray to get intersection from.
 	 *
 	 * @return  A {@link Vector3D} with the location where the line shot from
 	 *          the mouse pointer intersects with a given plane.
 	 *
 	 * @throws  NullPointerException if a required input argument is <code>null</code>.
 	 */
-	public static Vector3D getIntersectionBetweenRayAndPolygon( final Polygon3D polygon , final Vector3D rayOrigin , final Vector3D rayDirection )
+	public static Vector3D getIntersectionBetweenRayAndPolygon( final Polygon3D polygon , final Ray3D ray )
 	{
 		Vector3D result = null;
 
 		final int vertexCount = polygon.getVertexCount();
 		if ( vertexCount >= 3 )
 		{
-			result = getIntersectionBetweenRayAndPlane( polygon , rayOrigin , rayDirection );
-			if ( ( result != null ) && !isPointInsidePolygon( polygon , result.x , result.y , result.z ) )
+			result = getIntersectionBetweenRayAndPlane( polygon , ray );
+			if ( ( result != null ) && !isPointInsidePolygon( polygon , result ) )
 				result = null;
 		}
 
@@ -84,18 +83,16 @@ public class GeometryTools
 	 * <a href='http://astronomy.swin.edu.au/~pbourke/geometry/planeline/'>http://astronomy.swin.edu.au/~pbourke/geometry/planeline/</a> and
 	 * <A href='http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm'>http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm</a>.
 	 *
-	 * @param   plane           Plane to get intersection of.
-	 * @param   rayOrigin       Origin of ray.
-	 * @param   rayDirection    Direction of ray.
+	 * @param   plane   Plane to get intersection from.
+	 * @param   ray     Ray to get intersection from.
 	 *
-	 * @return  A {@link Vector3D} with the location where the line shot from
-	 *          the mouse pointer intersects with a given plane.
+	 * @return  Intersection-point between ray and plane.
 	 *
 	 * @throws  NullPointerException if a required input argument is <code>null</code>.
 	 */
-	public static Vector3D getIntersectionBetweenRayAndPlane( final Plane3D plane , final Vector3D rayOrigin , final Vector3D rayDirection )
+	public static Vector3D getIntersectionBetweenRayAndPlane( final Plane3D plane , final Ray3D ray )
 	{
-		return getIntersectionBetweenRayAndPlane( plane.getNormalX() , plane.getNormalY() , plane.getNormalZ() , plane.getDistance() , plane.isTwoSided() , rayOrigin , rayDirection );
+		return getIntersectionBetweenRayAndPlane( plane.getNormalX() , plane.getNormalY() , plane.getNormalZ() , plane.getDistance() , plane.isTwoSided() , ray.getOrigin() , ray.getDirection() );
 	}
 
 	/**
@@ -119,8 +116,7 @@ public class GeometryTools
 	 * @param   rayOrigin       Origin of ray.
 	 * @param   rayDirection    Direction of ray.
 	 *
-	 * @return  A {@link Vector3D} with the location where the line shot from
-	 *          the mouse pointer intersects with a given plane.
+	 * @return  Intersection-point between ray and plane.
 	 *
 	 * @throws  NullPointerException if a required input argument is <code>null</code>.
 	 */
@@ -181,8 +177,8 @@ public class GeometryTools
 	}
 
 	/**
-	 * Test if the specified point is 'inside' the specified 3D face. Points on
-	 * the edges and vertices are also considered 'inside'.
+	 * Test if the specified point is 'inside' the specified 3D polygon. Points
+	 * on the edges and vertices are also considered 'inside'.
 	 * <dl>
 	 *  <dt>IMPORTANT:</dt>
 	 *  <dd>The point must be specified in the object's own coordinate system.</dd>
@@ -190,15 +186,38 @@ public class GeometryTools
 	 * For an explanation of the math used here, see this site under 'Solution 4 (3D)':
 	 * <a href='http://astronomy.swin.edu.au/~pbourke/geometry/insidepoly/'>http://astronomy.swin.edu.au/~pbourke/geometry/insidepoly/</a>
 	 *
-	 * @param   polygon     Face defining polygon to test point against.
-	 * @param   x           X coordinate of point to test (OCS).
-	 * @param   y           Y coordinate of point to test (OCS).
-	 * @param   z           Z coordinate of point to test (OCS).
+	 * @param   polygon     Polygon to test point against.
+	 * @param   point       Point to test.
 	 *
-	 * @return  <code>true</code> if the point is inside the face;
+	 * @return  <code>true</code> if the point is inside the polygon;
 	 *          <code>false</code> otherwise.
 	 *
-	 * @throws  NullPointerException if a required input argument is <code>null</code>.
+	 * @throws  NullPointerException if an input argument is <code>null</code>.
+	 */
+	public static boolean isPointInsidePolygon( final Polygon3D polygon , final Vector3D point )
+	{
+		return isPointInsidePolygon( polygon , point.x , point.y , point.z );
+	}
+
+	/**
+	 * Test if the specified point is 'inside' the specified 3D polygon. Points
+	 * on the edges and vertices are also considered 'inside'.
+	 * <dl>
+	 *  <dt>IMPORTANT:</dt>
+	 *  <dd>The point must be specified in the object's own coordinate system.</dd>
+	 * </dl>
+	 * For an explanation of the math used here, see this site under 'Solution 4 (3D)':
+	 * <a href='http://astronomy.swin.edu.au/~pbourke/geometry/insidepoly/'>http://astronomy.swin.edu.au/~pbourke/geometry/insidepoly/</a>
+	 *
+	 * @param   polygon     Polygon to test point against.
+	 * @param   x           X coordinate of point to test.
+	 * @param   y           Y coordinate of point to test.
+	 * @param   z           Z coordinate of point to test.
+	 *
+	 * @return  <code>true</code> if the point is inside the polygon;
+	 *          <code>false</code> otherwise.
+	 *
+	 * @throws  NullPointerException if <code>polygon</code> is <code>null</code>.
 	 */
 	public static boolean isPointInsidePolygon( final Polygon3D polygon , final double x , final double y , final double z )
 	{
