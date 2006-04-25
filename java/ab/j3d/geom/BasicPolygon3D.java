@@ -19,17 +19,17 @@
  */
 package ab.j3d.geom;
 
-import com.numdata.oss.ArrayTools;
-
 import ab.j3d.Vector3D;
 
+import com.numdata.oss.ArrayTools;
+
 /**
- * This class implements a static 3D polygon.
- 0
+ * Basic implementation of {@link Polygon3D}.
+ *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public final class StaticPolygon3D
+public class BasicPolygon3D
 	implements Polygon3D
 {
 	/**
@@ -56,7 +56,7 @@ public final class StaticPolygon3D
 	 * @throws  NullPointerException if <code>vertices</code> is <code>null</code>.
 	 * @throws  IllegalArgumentException if <code>vertices</code> has less than 3 elements.
 	 */
-	public StaticPolygon3D( final Vector3D[] vertices , final boolean twoSided )
+	public BasicPolygon3D( final Vector3D[] vertices , final boolean twoSided )
 	{
 		if ( vertices == null )
 			throw new NullPointerException( "vertices" );
