@@ -19,15 +19,20 @@
  */
 package ab.j3d.view;
 
-import com.numdata.oss.ArrayTools;
+import java.awt.geom.Point2D;
 
+import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
+import ab.j3d.geom.BasicRay3D;
+import ab.j3d.geom.Ray3D;
 import ab.j3d.model.Face3D;
 
+import com.numdata.oss.ArrayTools;
+
 /**
- * A projector defines an abstract method to project 3D points on to a 2D
- * surface (image plate, view plane, screen). Implementations of this class
- * provide projection methods.
+ * A projector defines abstract methods to project 3D points on to a 2D
+ * surface (image plate, view plane, screen) and back. Implementations
+ * of this class provide several projection methods.
  *
  * @author  Rob Veneberg
  * @author  Peter S. Heijnen
@@ -308,7 +313,47 @@ public abstract class Projector
 	 *
 	 * @return  3D view coordinates for the given 2D image coordinates.
 	 */
-	public abstract Vector3D imageToView( int imageX , int imageY , double viewZ );
+	public abstract Vector3D imageToView( double imageX , double imageY , double viewZ );
+
+	/**
+	 * This method projects a 3D point in view coordinates onto the 2D image
+	 * (image plate, view plane, screen).
+	 *
+	 * @param   point   Point in view coordinate system.
+	 *
+	 * @return  Point on 2D image (pixels).
+	 */
+	public Point2D viewToImage( final Vector3D point )
+	{
+		return viewToImage( point.x , point.y , point.z );
+	}
+
+	/**
+	 * This method projects a 3D point in view coordinates onto the 2D image
+	 * (image plate, view plane, screen).
+	 *
+	 * @param   viewX   X coordinate of point in view.
+	 * @param   viewY   Y coordinate of point in view.
+	 * @param   viewZ   Z coordinate of point in view.
+	 *
+	 * @return  Point on 2D image (pixels).
+	 */
+	public abstract Point2D viewToImage( double viewX , double viewY , double viewZ );
+
+	/**
+	 * Get a ray originating from a (mouse) pointer at (<code>pointerX</code> ,
+	 * <code>pointerY</code>) on the image plate, pointing into the view volume.
+	 * <p />
+	 * The ray is defined in the view's coordinate system, but may optionally be
+	 * transformed using the <code>transform</code> argument.
+	 *
+	 * @param   transform   Optional transformation to apply to ray.
+	 * @param   pointerX    X coordinate of pointer on image (in pixels).
+	 * @param   pointerY    Y coordinate of pointer on image (in pixels).
+	 *
+	 * @return  Ray from pointer into view volume (VCS if not transformed).
+	 */
+	public abstract Ray3D getPointerRay( final Matrix3D transform , final double pointerX , final double pointerY );
 
 	/**
 	 * Perspective projector implementation.
@@ -357,12 +402,27 @@ public abstract class Projector
 			_eyeDistance = viewWidth / ( 2.0 * Math.tan( fieldOfView / 2.0 ) );
 		}
 
+		public Ray3D getPointerRay( final Matrix3D transform , final double pointerX , final double pointerY )
+		{
+			final double centerX     = (double)( _imageWidth  >> 1 );
+			final double centerY     = (double)( _imageHeight >> 1 );
+			final double view2pixels = _view2pixels;
+			final double eyeDistance = _eyeDistance;
+
+			final double viewX = ( pointerX - centerX ) / view2pixels;
+			final double viewY = ( centerY - pointerY ) / view2pixels;
+
+			final double distance = Math.sqrt( viewX * viewX + viewY * viewY + eyeDistance * eyeDistance );
+
+			return new BasicRay3D( transform , viewX , viewY , -eyeDistance , viewX / distance , viewY / distance , -eyeDistance / distance );
+		}
+
 		public int[] project( final double[] source , final int[] dest , final int pointCount )
 		{
 			final int    resultLength = pointCount * 2;
 			final int[]  result       = (int[])ArrayTools.ensureLength( dest , int.class , -1 , resultLength );
 
-			final int    centerX     = _imageWidth >> 1;
+			final int    centerX     = _imageWidth  >> 1;
 			final int    centerY     = _imageHeight >> 1;
 			final double view2pixels = _view2pixels;
 			final double eyeDistance = _eyeDistance;
@@ -382,17 +442,17 @@ public abstract class Projector
 			return result;
 		}
 
-		public Vector3D imageToView( final int imageX , final int imageY , final double viewZ )
+		public Vector3D imageToView( final double imageX , final double imageY , final double viewZ )
 		{
-			final double centerX     = (double)_imageWidth / 2.0;
-			final double centerY     = (double)_imageHeight / 2.0;
+			final double centerX     = (double)( _imageWidth  >> 1 );
+			final double centerY     = (double)( _imageHeight >> 1 );
 			final double view2pixels = _view2pixels;
 			final double eyeDistance = _eyeDistance;
 
 			final double f = view2pixels / ( 1.0 - ( viewZ + eyeDistance ) / eyeDistance );
 
-			final double viewX = ( (double)imageX - centerX ) / f;
-			final double viewY = ( centerY - (double)imageY ) / f;
+			final double viewX = ( imageX - centerX ) / f;
+			final double viewY = ( centerY - imageY ) / f;
 
 			return Vector3D.INIT.set( viewX , viewY , viewZ );
 		}
@@ -419,6 +479,20 @@ public abstract class Projector
 //			return result;
 		}
 
+		public Point2D viewToImage( final double viewX , final double viewY , final double viewZ )
+		{
+			final double centerX     = (double)( _imageWidth  >> 1 );
+			final double centerY     = (double)( _imageHeight >> 1 );
+			final double view2pixels = _view2pixels;
+			final double eyeDistance = _eyeDistance;
+
+			final double f = view2pixels / ( 1.0 - ( viewZ + eyeDistance ) / eyeDistance );
+
+			final double imageX = centerX + f * viewX;
+			final double imageY = centerY - f * viewY;
+
+			return new Point2D.Double( imageX , imageY );
+		}
 	}
 
 	/**
@@ -431,6 +505,11 @@ public abstract class Projector
 	public static class ParallelProjector
 		extends Projector
 	{
+		/**
+		 * Direction of pointer ray.
+		 */
+		private static final Vector3D POINTER_DIRECTION = Vector3D.INIT.set( 0.0 , 0.0 , -1.0 );
+
 		/**
 		 * Construct parallel projector.
 		 *
@@ -445,6 +524,14 @@ public abstract class Projector
 		public ParallelProjector( final int imageWidth , final int imageHeight , final double imageResolution , final double viewUnit , final double frontClipDistance , final double backClipDistance , final double zoomFactor )
 		{
 			super( imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , zoomFactor );
+		}
+
+		public Ray3D getPointerRay( final Matrix3D transform , final double pointerX , final double pointerY )
+		{
+			final Vector3D origin    = imageToView( pointerX , pointerY , 0.0 );
+			final Vector3D direction = POINTER_DIRECTION;
+
+			return new BasicRay3D( transform , origin , direction );
 		}
 
 		public int[] project( final double[] source , final int[] dest , final int pointCount )
@@ -468,6 +555,18 @@ public abstract class Projector
 			return result;
 		}
 
+		public Vector3D imageToView( final double imageX , final double imageY , final double viewZ )
+		{
+			final double centerX     = (double)_imageWidth / 2.0;
+			final double centerY     = (double)_imageHeight / 2.0;
+			final double view2pixels = _view2pixels;
+
+			final double viewX = ( imageX - centerX ) / view2pixels;
+			final double viewY = ( centerY - imageY ) / view2pixels;
+
+			return Vector3D.INIT.set( viewX , viewY , viewZ );
+		}
+
 		public boolean inViewVolume( final double x , final double y , final double z )
 		{
 			return ( x >= -_limitX ) && ( x <= _limitX )
@@ -475,16 +574,16 @@ public abstract class Projector
 			    && ( z >= _backClipDistance ) && ( z <= _frontClipDistance );
 		}
 
-		public Vector3D imageToView( final int imageX , final int imageY , final double viewZ )
+		public Point2D viewToImage( final double viewX , final double viewY , final double viewZ )
 		{
-			final double centerX     = (double)_imageWidth / 2.0;
-			final double centerY     = (double)_imageHeight / 2.0;
+			final double centerX     = (double)( _imageWidth  >> 1 );
+			final double centerY     = (double)( _imageHeight >> 1 );
 			final double view2pixels = _view2pixels;
 
-			final double viewX = ( (double)imageX - centerX ) / view2pixels;
-			final double viewY = ( centerY - (double)imageY ) / view2pixels;
+			final double imageX = centerX + view2pixels * viewX;
+			final double imageY = centerY - view2pixels * viewY;
 
-			return Vector3D.INIT.set( viewX , viewY , viewZ );
+			return new Point2D.Double( imageX , imageY );
 		}
 	}
 
@@ -496,7 +595,7 @@ public abstract class Projector
 	 * points by the half Z-value 30 degrees relative to the X-axis (top-right).
 	 */
 	public static class IsometricProjector
-		extends ParallelProjector
+		extends Projector
 	{
 		/**
 		 * X-component of the Z-axis.
@@ -507,6 +606,13 @@ public abstract class Projector
 		 * Y-component of the Z-axis.
 		 */
 		private final double _yComponentOfZ;
+
+		/**
+		 * Direction of pointer ray (calculated on-demand).
+		 *
+		 * @see     #getPointerRay
+		 */
+		private Vector3D _pointerDirection;
 
 		/**
 		 * Construct isometric projector.
@@ -523,8 +629,30 @@ public abstract class Projector
 		{
 			super( imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , zoomFactor );
 
-			_xComponentOfZ = 0.5 * Math.cos( Math.PI / 6.0 );
-			_yComponentOfZ = 0.5 * Math.sin( Math.PI / 6.0 );
+			final double zScale = 0.5;
+			final double zAngle = Math.PI / 6.0; // 30 decimal degrees
+
+			_xComponentOfZ    = zScale * Math.cos( zAngle );
+			_yComponentOfZ    = zScale * Math.sin( zAngle );
+			_pointerDirection = null;
+		}
+
+		public Ray3D getPointerRay( final Matrix3D transform , final double pointerX , final double pointerY )
+		{
+			final Vector3D origin = imageToView( pointerX , pointerY , 0.0 );
+
+			Vector3D direction = _pointerDirection;
+			if ( direction == null )
+			{
+				final double isoX   = _xComponentOfZ;
+				final double isoY   = _yComponentOfZ;
+				final double length = Math.sqrt( isoX * isoX + isoY * isoY + 1.0 );
+
+				direction = Vector3D.INIT.set( -isoX / length , -isoY / length , -1.0 / length );
+				_pointerDirection = direction;
+			}
+
+			return new BasicRay3D( transform , origin , direction );
 		}
 
 		public int[] project( final double[] src , final int[] dest , final int pointCount )
@@ -551,6 +679,20 @@ public abstract class Projector
 			return result;
 		}
 
+		public Vector3D imageToView( final double imageX , final double imageY , final double viewZ )
+		{
+			final double centerX     = (double)_imageWidth / 2.0;
+			final double centerY     = (double)_imageHeight / 2.0;
+			final double view2pixels = _view2pixels;
+			final double isoX        = _xComponentOfZ;
+			final double isoY        = _yComponentOfZ;
+
+			final double viewX = ( imageX - centerX ) / view2pixels + viewZ * isoX;
+			final double viewY = ( centerY - imageY ) / view2pixels + viewZ * isoY;
+
+			return Vector3D.INIT.set( viewX , viewY , viewZ );
+		}
+
 		public boolean inViewVolume( final double x , final double y , final double z )
 		{
 			double tmp;
@@ -558,6 +700,20 @@ public abstract class Projector
 			return ( z >= _backClipDistance ) && ( z <= _frontClipDistance )
 			    && ( ( tmp = ( x - z * _xComponentOfZ     ) ) >= -_limitX ) && ( tmp <= _limitX )
 			    && ( ( tmp = (     z * _yComponentOfZ - y ) ) >= -_limitY ) && ( tmp <= _limitY );
+		}
+
+		public Point2D viewToImage( final double viewX , final double viewY , final double viewZ )
+		{
+			final double centerX     = (double)( _imageWidth  >> 1 );
+			final double centerY     = (double)( _imageHeight >> 1 );
+			final double view2pixels = _view2pixels;
+			final double isoX        = _xComponentOfZ;
+			final double isoY        = _yComponentOfZ;
+
+			final double imageX = centerX + view2pixels * ( viewX - viewZ * isoX );
+			final double imageY = centerY - view2pixels * ( viewY - viewZ * isoY );
+
+			return new Point2D.Double( imageX , imageY );
 		}
 	}
 }
