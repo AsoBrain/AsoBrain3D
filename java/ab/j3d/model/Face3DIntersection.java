@@ -23,13 +23,18 @@ import java.util.List;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
+import ab.j3d.geom.Ray3D;
 
 /**
- * An {@link Face3DIntersection} holds information about an intersection between a
- * line and an object. It holds a reference to the intersected face and it's
- * parent object, holds the location of the intersection (both in world and
- * local coordinates) and it holds the distance from the start of the
- * intersection line to the intersection point.
+ * This class provides information about the intersection between a ray and a
+ * face. It provides:
+ * <ul>
+ *   <li>Information about the intersected object;</li>
+ *   <li>The intersected face;</li>
+ *   <li>The intersecting ray;</li>
+ *   <li>The intersection point;</li>
+ *   <li>Distance between ray origin and intersection point.</li>
+ * </ul>
  *
  * @author  Mart Slot
  * @version $Revision$ $Date$
@@ -58,31 +63,59 @@ public final class Face3DIntersection
 	private final Vector3D _intersectionPoint;
 
 	/**
-	 * Distance between reference and intersection point.
+	 * Ray that intersected the face.
 	 */
-	private final double _distance;
+	private final Ray3D _ray;
 
 	/**
-	 * Construct new intersection information object.
+	 * Distance between reference and intersection point. This value is
+	 * calculated on-demand (until then, it's set to {@link Double#NaN}.
+	 *
+	 * @see     #getDistance
+	 */
+	private double _distance;
+
+	/**
+	 * Construct new intersection information object. All geometry is expressed
+	 * in world coordinates (wcs).
 	 *
 	 * @param   objectID            ID of intersected object.
 	 * @param   object2world        Transforms object to world coordinates.
 	 * @param   face                The {@link Face3D} that was intersected.
-	 * @param   intersectionPoint   Intersection point in world coordinates.
-	 * @param   distance            Distance between reference and intersection point.
+	 * @param   ray                 Ray that intersected the face.
+	 * @param   intersectionPoint   Intersection point.
 	 */
-	public Face3DIntersection( final Object objectID , final Matrix3D object2world ,  final Face3D face , final Vector3D intersectionPoint , final double distance )
+	public Face3DIntersection( final Object objectID , final Matrix3D object2world , final Face3D face , final Ray3D ray , final Vector3D intersectionPoint )
 	{
+		if ( object2world == null )
+			throw new NullPointerException( "object2world" );
+
+		if ( face == null )
+			throw new NullPointerException( "face" );
+
+		if ( ray == null )
+			throw new NullPointerException( "ray" );
+
+		if ( intersectionPoint == null )
+			throw new NullPointerException( "intersectionPoint" );
+
 		_objectID          = objectID;
-		_object2world       = object2world;
+		_object2world      = object2world;
 		_face              = face;
+		_ray               = ray;
 		_intersectionPoint = intersectionPoint;
-		_distance          = distance;
+		_distance          = Double.NaN;
 	}
 
-	public void addSortedByDistance( final List result )
+	/**
+	 * This methods implements insertion-sort by intersection distance.
+	 *
+	 * @param   result          Sorted list of
+	 * @param   intersection
+	 */
+	public static void addSortedByDistance( final List result , final Face3DIntersection intersection )
 	{
-		final double distance = _distance;
+		final double distance = intersection.getDistance();
 
 		int insertionIndex = 0;
 
@@ -96,14 +129,16 @@ public final class Face3DIntersection
 			{
 				insertionIndex = ( max + min ) / 2;
 
-				if ( distance <= ((Face3DIntersection)result.get( insertionIndex )).getDistance() )
+				final Face3DIntersection other = (Face3DIntersection)result.get( insertionIndex );
+
+				if ( distance <= other.getDistance() )
 					max = insertionIndex - 1;
 				else
 					min = ++insertionIndex;
 			}
 		}
 
-		result.add( insertionIndex , this );
+		result.add( insertionIndex , intersection );
 	}
 
 	public int compareTo( final Object o )
@@ -113,33 +148,20 @@ public final class Face3DIntersection
 	}
 
 	/**
-	 * Returns the ID of the intersected object.
+	 * Get distance between reference and intersection point.
 	 *
-	 * @return  ID of the intersected object.
+	 * @return  Distance between reference and intersection point.
 	 */
-	public Object getObjectID()
+	public double getDistance()
 	{
-		return _objectID;
-	}
+		double result = _distance;
+		if ( Double.isNaN( result ) )
+		{
+			result = _intersectionPoint.distanceTo( _ray.getOrigin() );
+			_distance = result;
+		}
 
-	/**
-	 * Get transformation matrix that transforms object to world coordinates.
-	 *
-	 * @return  Transformation matrix from object to world coordinates.
-	 */
-	public Matrix3D getObject2world()
-	{
-		return _object2world;
-	}
-
-	/**
-	 * Get the {@link Object3D} that was intersected.
-	 *
-	 * @return  {@link Object3D} that was intersected.
-	 */
-	public Object3D getObject()
-	{
-		return _face.getObject();
+		return result;
 	}
 
 	/**
@@ -163,12 +185,42 @@ public final class Face3DIntersection
 	}
 
 	/**
-	 * Get distance between reference and intersection point.
+	 * Get the {@link Object3D} that was intersected.
 	 *
-	 * @return  Distance between reference and intersection point.
+	 * @return  {@link Object3D} that was intersected.
 	 */
-	public double getDistance()
+	public Object3D getObject()
 	{
-		return _distance;
+		return _face.getObject();
+	}
+
+	/**
+	 * Get transformation matrix that transforms object to world coordinates.
+	 *
+	 * @return  Transformation matrix from object to world coordinates.
+	 */
+	public Matrix3D getObject2world()
+	{
+		return _object2world;
+	}
+
+	/**
+	 * Returns the ID of the intersected object.
+	 *
+	 * @return  ID of the intersected object.
+	 */
+	public Object getObjectID()
+	{
+		return _objectID;
+	}
+
+	/**
+	 * Get ray that intersected the face.
+	 *
+	 * @return  Ray that intersected the face.
+	 */
+	public Ray3D getRay()
+	{
+		return _ray;
 	}
 }
