@@ -29,6 +29,7 @@ import ab.j3d.control.MouseControl;
 import ab.j3d.control.controltest.model.Model;
 import ab.j3d.control.controltest.model.SceneElement;
 import ab.j3d.control.controltest.model.TetraHedron;
+import ab.j3d.geom.BasicPlane3D;
 import ab.j3d.model.Face3DIntersection;
 
 /**
@@ -42,6 +43,11 @@ import ab.j3d.model.Face3DIntersection;
 public class MoveControl
 	extends MouseControl
 {
+	/**
+	 * Plane that defines the 'floor'.
+	 */
+	private static final BasicPlane3D FLOOR_PLANE = new BasicPlane3D( 0.0 , 0.0 , 1.0 , 0.0 , true );
+
 	/**
 	 * The {@link Model} that holds all objects in the scene.
 	 */
@@ -82,7 +88,7 @@ public class MoveControl
 
 				if ( selectedHedron == intersection.getObjectID() )
 				{
-					final Vector3D dragStart = event.getIntersectionWithPlane( 0.0 , 0.0 , 1.0 , 0.0 , true ); /* floor plane */
+					final Vector3D dragStart = event.getIntersectionWithPlane( FLOOR_PLANE );
 					if ( dragStart != null )
 					{
 						final Vector3D hedronLocation = Vector3D.INIT.set( selectedHedron.getX() , selectedHedron.getY() , 0.0 );
@@ -105,7 +111,7 @@ public class MoveControl
 		{
 			final TetraHedron selectedHedron = (TetraHedron)selection;
 
-			final Vector3D dragPosition = event.getIntersectionWithPlane( 0.0 , 0.0 , 1.0 , 0.0 , true ); /* floor plane */
+			final Vector3D dragPosition = event.getIntersectionWithPlane( FLOOR_PLANE );
 			if ( dragPosition != null )
 			{
 				final Vector3D location = dragPosition.plus( _dragDifference );
