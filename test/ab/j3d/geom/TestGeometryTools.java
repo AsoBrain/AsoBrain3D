@@ -56,15 +56,13 @@ public final class TestGeometryTools
 		class Test
 		{
 			final Polygon3D _polygon;
-			final Vector3D _rayOrigin;
-			final Vector3D _rayDirection;
+			final Ray3D    _ray;
 			final Vector3D _expected;
 
-			private Test( final Polygon3D polygon , final Vector3D rayOrigin , final Vector3D rayDirection , final Vector3D expected )
+			private Test( final Polygon3D polygon , final double rayOriginX , final double rayOriginY , final double rayOriginZ , final double rayDirectionX , final double rayDirectionY , final double rayDirectionZ , final Vector3D expected )
 			{
 				_polygon      = polygon;
-				_rayOrigin    = rayOrigin;
-				_rayDirection = rayDirection;
+				_ray          = new BasicRay3D( rayOriginX , rayOriginY , rayOriginZ , rayDirectionX , rayDirectionY , rayDirectionZ );
 				_expected     = expected;
 			}
 		}
@@ -83,50 +81,50 @@ public final class TestGeometryTools
 		final Vector3D rightRearBottom  = v0.set(  1.0 ,  1.0 , -1.0 );
 		final Vector3D rightRearTop     = v0.set(  1.0 ,  1.0 ,  1.0 );
 
-		final Polygon3D leftSide   = new StaticPolygon3D( new Vector3D[] { leftRearBottom   , leftRearTop      , leftFrontTop     , leftFrontBottom  } , false );
-		final Polygon3D rightSide  = new StaticPolygon3D( new Vector3D[] { rightFrontBottom , rightFrontTop    , rightRearTop     , rightRearBottom  } , false );
-		final Polygon3D frontSide  = new StaticPolygon3D( new Vector3D[] { leftFrontBottom  , leftFrontTop     , rightFrontTop    , rightFrontBottom } , false );
-		final Polygon3D rearSide   = new StaticPolygon3D( new Vector3D[] { rightRearBottom  , rightRearTop     , leftRearTop      , leftRearBottom   } , false );
-		final Polygon3D bottomSide = new StaticPolygon3D( new Vector3D[] { leftRearBottom   , leftFrontBottom  , rightFrontBottom , rightRearBottom  } , false );
-		final Polygon3D topSide    = new StaticPolygon3D( new Vector3D[] { leftFrontTop     , leftRearTop      , rightRearTop     , rightFrontTop    } , false );
+		final Polygon3D leftSide   = new BasicPolygon3D( new Vector3D[] { leftRearBottom   , leftRearTop      , leftFrontTop     , leftFrontBottom  } , false );
+		final Polygon3D rightSide  = new BasicPolygon3D( new Vector3D[] { rightFrontBottom , rightFrontTop    , rightRearTop     , rightRearBottom  } , false );
+		final Polygon3D frontSide  = new BasicPolygon3D( new Vector3D[] { leftFrontBottom  , leftFrontTop     , rightFrontTop    , rightFrontBottom } , false );
+		final Polygon3D rearSide   = new BasicPolygon3D( new Vector3D[] { rightRearBottom  , rightRearTop     , leftRearTop      , leftRearBottom   } , false );
+		final Polygon3D bottomSide = new BasicPolygon3D( new Vector3D[] { leftRearBottom   , leftFrontBottom  , rightFrontBottom , rightRearBottom  } , false );
+		final Polygon3D topSide    = new BasicPolygon3D( new Vector3D[] { leftFrontTop     , leftRearTop      , rightRearTop     , rightFrontTop    } , false );
 
 		final Test[] tests =
 		{
-			/* Test #1  */ new Test( leftSide   , v0.set( -2.0 ,  0.0 ,  0.0 ) , v0.set(  1.0 ,  0.0 ,  0.0 ) , v0.set( -1.0 ,  0.0 ,  0.0 ) ) ,
-			/* Test #2  */ new Test( leftSide   , v0.set( -1.0 ,  0.0 ,  0.0 ) , v0.set(  1.0 ,  0.0 ,  0.0 ) , v0.set( -1.0 ,  0.0 ,  0.0 ) ) ,
-			/* Test #3  */ new Test( leftSide   , v0.set(  0.0 ,  0.0 ,  0.0 ) , v0.set(  1.0 ,  0.0 ,  0.0 ) , null                         ) ,
-			/* Test #4  */ new Test( leftSide   , v0.set(  1.0 ,  0.0 ,  0.0 ) , v0.set(  1.0 ,  0.0 ,  0.0 ) , null                         ) ,
-			/* Test #5  */ new Test( leftSide   , v0.set(  2.0 ,  0.0 ,  0.0 ) , v0.set(  1.0 ,  0.0 ,  0.0 ) , null                         ) ,
+			/* Test #1  */ new Test( leftSide   , -2.0 ,  0.0 ,  0.0 ,  1.0 ,  0.0 ,  0.0 , v0.set( -1.0 ,  0.0 ,  0.0 ) ) ,
+			/* Test #2  */ new Test( leftSide   , -1.0 ,  0.0 ,  0.0 ,  1.0 ,  0.0 ,  0.0 , v0.set( -1.0 ,  0.0 ,  0.0 ) ) ,
+			/* Test #3  */ new Test( leftSide   ,  0.0 ,  0.0 ,  0.0 ,  1.0 ,  0.0 ,  0.0 , null                         ) ,
+			/* Test #4  */ new Test( leftSide   ,  1.0 ,  0.0 ,  0.0 ,  1.0 ,  0.0 ,  0.0 , null                         ) ,
+			/* Test #5  */ new Test( leftSide   ,  2.0 ,  0.0 ,  0.0 ,  1.0 ,  0.0 ,  0.0 , null                         ) ,
 
-			/* Test #6  */ new Test( rightSide  , v0.set( -2.0 ,  0.0 ,  0.0 ) , v0.set( -1.0 ,  0.0 ,  0.0 ) , null                         ) ,
-			/* Test #7  */ new Test( rightSide  , v0.set( -1.0 ,  0.0 ,  0.0 ) , v0.set( -1.0 ,  0.0 ,  0.0 ) , null                         ) ,
-			/* Test #8  */ new Test( rightSide  , v0.set(  0.0 ,  0.0 ,  0.0 ) , v0.set( -1.0 ,  0.0 ,  0.0 ) , null                         ) ,
-			/* Test #9  */ new Test( rightSide  , v0.set(  1.0 ,  0.0 ,  0.0 ) , v0.set( -1.0 ,  0.0 ,  0.0 ) , v0.set(  1.0 ,  0.0 ,  0.0 ) ) ,
-			/* Test #10 */ new Test( rightSide  , v0.set(  2.0 ,  0.0 ,  0.0 ) , v0.set( -1.0 ,  0.0 ,  0.0 ) , v0.set(  1.0 ,  0.0 ,  0.0 ) ) ,
+			/* Test #6  */ new Test( rightSide  , -2.0 ,  0.0 ,  0.0 , -1.0 ,  0.0 ,  0.0 , null                         ) ,
+			/* Test #7  */ new Test( rightSide  , -1.0 ,  0.0 ,  0.0 , -1.0 ,  0.0 ,  0.0 , null                         ) ,
+			/* Test #8  */ new Test( rightSide  ,  0.0 ,  0.0 ,  0.0 , -1.0 ,  0.0 ,  0.0 , null                         ) ,
+			/* Test #9  */ new Test( rightSide  ,  1.0 ,  0.0 ,  0.0 , -1.0 ,  0.0 ,  0.0 , v0.set(  1.0 ,  0.0 ,  0.0 ) ) ,
+			/* Test #10 */ new Test( rightSide  ,  2.0 ,  0.0 ,  0.0 , -1.0 ,  0.0 ,  0.0 , v0.set(  1.0 ,  0.0 ,  0.0 ) ) ,
 
-			/* Test #11 */ new Test( frontSide  , v0.set(  0.0 , -2.0 ,  0.0 ) , v0.set(  0.0 ,  1.0 ,  0.0 ) , v0.set(  0.0 , -1.0 ,  0.0 ) ) ,
-			/* Test #12 */ new Test( frontSide  , v0.set(  0.0 , -1.0 ,  0.0 ) , v0.set(  0.0 ,  1.0 ,  0.0 ) , v0.set(  0.0 , -1.0 ,  0.0 ) ) ,
-			/* Test #13 */ new Test( frontSide  , v0.set(  0.0 ,  0.0 ,  0.0 ) , v0.set(  0.0 ,  1.0 ,  0.0 ) , null                         ) ,
-			/* Test #14 */ new Test( frontSide  , v0.set(  0.0 ,  1.0 ,  0.0 ) , v0.set(  0.0 ,  1.0 ,  0.0 ) , null                         ) ,
-			/* Test #15 */ new Test( frontSide  , v0.set(  0.0 ,  2.0 ,  0.0 ) , v0.set(  0.0 ,  1.0 ,  0.0 ) , null                         ) ,
+			/* Test #11 */ new Test( frontSide  ,  0.0 , -2.0 ,  0.0 ,  0.0 ,  1.0 ,  0.0 , v0.set(  0.0 , -1.0 ,  0.0 ) ) ,
+			/* Test #12 */ new Test( frontSide  ,  0.0 , -1.0 ,  0.0 ,  0.0 ,  1.0 ,  0.0 , v0.set(  0.0 , -1.0 ,  0.0 ) ) ,
+			/* Test #13 */ new Test( frontSide  ,  0.0 ,  0.0 ,  0.0 ,  0.0 ,  1.0 ,  0.0 , null                         ) ,
+			/* Test #14 */ new Test( frontSide  ,  0.0 ,  1.0 ,  0.0 ,  0.0 ,  1.0 ,  0.0 , null                         ) ,
+			/* Test #15 */ new Test( frontSide  ,  0.0 ,  2.0 ,  0.0 ,  0.0 ,  1.0 ,  0.0 , null                         ) ,
 
-			/* Test #16 */ new Test( rearSide   , v0.set(  0.0 , -2.0 ,  0.0 ) , v0.set(  0.0 , -1.0 ,  0.0 ) , null                         ) ,
-			/* Test #17 */ new Test( rearSide   , v0.set(  0.0 , -1.0 ,  0.0 ) , v0.set(  0.0 , -1.0 ,  0.0 ) , null                         ) ,
-			/* Test #18 */ new Test( rearSide   , v0.set(  0.0 ,  0.0 ,  0.0 ) , v0.set(  0.0 , -1.0 ,  0.0 ) , null                         ) ,
-			/* Test #19 */ new Test( rearSide   , v0.set(  0.0 ,  1.0 ,  0.0 ) , v0.set(  0.0 , -1.0 ,  0.0 ) , v0.set(  0.0 ,  1.0 ,  0.0 ) ) ,
-			/* Test #20 */ new Test( rearSide   , v0.set(  0.0 ,  2.0 ,  0.0 ) , v0.set(  0.0 , -1.0 ,  0.0 ) , v0.set(  0.0 ,  1.0 ,  0.0 ) ) ,
+			/* Test #16 */ new Test( rearSide   ,  0.0 , -2.0 ,  0.0 ,  0.0 , -1.0 ,  0.0 , null                         ) ,
+			/* Test #17 */ new Test( rearSide   ,  0.0 , -1.0 ,  0.0 ,  0.0 , -1.0 ,  0.0 , null                         ) ,
+			/* Test #18 */ new Test( rearSide   ,  0.0 ,  0.0 ,  0.0 ,  0.0 , -1.0 ,  0.0 , null                         ) ,
+			/* Test #19 */ new Test( rearSide   ,  0.0 ,  1.0 ,  0.0 ,  0.0 , -1.0 ,  0.0 , v0.set(  0.0 ,  1.0 ,  0.0 ) ) ,
+			/* Test #20 */ new Test( rearSide   ,  0.0 ,  2.0 ,  0.0 ,  0.0 , -1.0 ,  0.0 , v0.set(  0.0 ,  1.0 ,  0.0 ) ) ,
 
-			/* Test #21 */ new Test( bottomSide , v0.set(  0.0 ,  0.0 , -2.0 ) , v0.set(  0.0 ,  0.0 ,  1.0 ) , v0.set(  0.0 ,  0.0 , -1.0 ) ) ,
-			/* Test #22 */ new Test( bottomSide , v0.set(  0.0 ,  0.0 , -1.0 ) , v0.set(  0.0 ,  0.0 ,  1.0 ) , v0.set(  0.0 ,  0.0 , -1.0 ) ) ,
-			/* Test #23 */ new Test( bottomSide , v0.set(  0.0 ,  0.0 ,  0.0 ) , v0.set(  0.0 ,  0.0 ,  1.0 ) , null                         ) ,
-			/* Test #24 */ new Test( bottomSide , v0.set(  0.0 ,  0.0 ,  1.0 ) , v0.set(  0.0 ,  0.0 ,  1.0 ) , null                         ) ,
-			/* Test #25 */ new Test( bottomSide , v0.set(  0.0 ,  0.0 ,  2.0 ) , v0.set(  0.0 ,  0.0 ,  1.0 ) , null                         ) ,
+			/* Test #21 */ new Test( bottomSide ,  0.0 ,  0.0 , -2.0 ,  0.0 ,  0.0 ,  1.0 , v0.set(  0.0 ,  0.0 , -1.0 ) ) ,
+			/* Test #22 */ new Test( bottomSide ,  0.0 ,  0.0 , -1.0 ,  0.0 ,  0.0 ,  1.0 , v0.set(  0.0 ,  0.0 , -1.0 ) ) ,
+			/* Test #23 */ new Test( bottomSide ,  0.0 ,  0.0 ,  0.0 ,  0.0 ,  0.0 ,  1.0 , null                         ) ,
+			/* Test #24 */ new Test( bottomSide ,  0.0 ,  0.0 ,  1.0 ,  0.0 ,  0.0 ,  1.0 , null                         ) ,
+			/* Test #25 */ new Test( bottomSide ,  0.0 ,  0.0 ,  2.0 ,  0.0 ,  0.0 ,  1.0 , null                         ) ,
 
-			/* Test #26 */ new Test( topSide    , v0.set(  0.0 ,  0.0 , -2.0 ) , v0.set(  0.0 ,  0.0 , -1.0 ) , null                         ) ,
-			/* Test #27 */ new Test( topSide    , v0.set(  0.0 ,  0.0 , -1.0 ) , v0.set(  0.0 ,  0.0 , -1.0 ) , null                         ) ,
-			/* Test #28 */ new Test( topSide    , v0.set(  0.0 ,  0.0 ,  0.0 ) , v0.set(  0.0 ,  0.0 , -1.0 ) , null                         ) ,
-			/* Test #29 */ new Test( topSide    , v0.set(  0.0 ,  0.0 ,  1.0 ) , v0.set(  0.0 ,  0.0 , -1.0 ) , v0.set(  0.0 ,  0.0 ,  1.0 ) ) ,
-			/* Test #30 */ new Test( topSide    , v0.set(  0.0 ,  0.0 ,  2.0 ) , v0.set(  0.0 ,  0.0 , -1.0 ) , v0.set(  0.0 ,  0.0 ,  1.0 ) ) ,
+			/* Test #26 */ new Test( topSide    ,  0.0 ,  0.0 , -2.0 ,  0.0 ,  0.0 , -1.0 , null                         ) ,
+			/* Test #27 */ new Test( topSide    ,  0.0 ,  0.0 , -1.0 ,  0.0 ,  0.0 , -1.0 , null                         ) ,
+			/* Test #28 */ new Test( topSide    ,  0.0 ,  0.0 ,  0.0 ,  0.0 ,  0.0 , -1.0 , null                         ) ,
+			/* Test #29 */ new Test( topSide    ,  0.0 ,  0.0 ,  1.0 ,  0.0 ,  0.0 , -1.0 , v0.set(  0.0 ,  0.0 ,  1.0 ) ) ,
+			/* Test #30 */ new Test( topSide    ,  0.0 ,  0.0 ,  2.0 ,  0.0 ,  0.0 , -1.0 , v0.set(  0.0 ,  0.0 ,  1.0 ) ) ,
 		};
 
 		/*
@@ -137,7 +135,7 @@ public final class TestGeometryTools
 			final Test test = tests[ i ];
 			final String description = "Test #" + ( i + 1 );
 
-			final Vector3D result = GeometryTools.getIntersectionBetweenRayAndPolygon( test._polygon , test._rayOrigin , test._rayDirection );
+			final Vector3D result = GeometryTools.getIntersectionBetweenRayAndPolygon( test._polygon , test._ray );
 
 			assertEquals( description, test._expected, result );
 		}
@@ -389,7 +387,7 @@ public final class TestGeometryTools
 	 * @throws Exception if the test fails.
 	 */
 	public void testIsPointInsidePolygon()
-	throws Exception
+		throws Exception
 	{
 		System.out.println( CLASS_NAME + ".testIsPointInsidePolygon()" );
 
@@ -447,17 +445,17 @@ public final class TestGeometryTools
 					/* 7 */ Vector3D.INIT.set(  0.0 , 10.0 , 5.0 ) ,
 				};
 
-			private final Vector3D _normal;
-			{
-				final Vector3D[] vertices = _vertices;
-				final Vector3D   y        = vertices[ 0 ].minus( vertices[ 1 ] );
-				final Vector3D   x        = vertices[ 2 ].minus( vertices[ 1 ] );
-				final Vector3D   cross    = Vector3D.cross( x , y );
+				private final Vector3D _normal;
+				{
+					final Vector3D[] vertices = _vertices;
+					final Vector3D   y        = vertices[ 0 ].minus( vertices[ 1 ] );
+					final Vector3D   x        = vertices[ 2 ].minus( vertices[ 1 ] );
+					final Vector3D   cross    = Vector3D.cross( x , y );
 
-				_normal = cross.normalize();
-			}
+					_normal = cross.normalize();
+				}
 
-			public int      getVertexCount()        { return _vertices.length; }
+				public int      getVertexCount()        { return _vertices.length; }
 				public double   getX( final int index ) { return _vertices[ index ].x; }
 				public double   getY( final int index ) { return _vertices[ index ].y; }
 				public double   getZ( final int index ) { return _vertices[ index ].z; }
@@ -469,7 +467,7 @@ public final class TestGeometryTools
 				public boolean  isTwoSided()            { return false; }
 			};
 
-		final Polygon3D polygon2 = new Polygon3D()
+			final Polygon3D polygon2 = new Polygon3D()
 			{
 				private final Vector3D[] _vertices =
 				{

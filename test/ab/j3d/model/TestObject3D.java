@@ -25,11 +25,12 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import com.numdata.oss.junit.ArrayTester;
-
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
+import ab.j3d.geom.BasicRay3D;
+
+import com.numdata.oss.junit.ArrayTester;
 
 /**
  * This class tests the {@link Object3D} class.
@@ -153,7 +154,7 @@ public final class TestObject3D
 		final Matrix3D transform1 = Matrix3D.getTransform(  90.0 ,  0.0 , 0.0 ,    0.0 ,   0.0 , 0.0 );
 		final Matrix3D transform2 = Matrix3D.getTransform(   0.0 , 90.0 , 0.0 ,  150.0 ,   0.0 , 0.0 );
 
-		List selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , v0.set( 0.0 , 0.0 , -500.0 ) , v0.set( 0.0 , 0.0 , 1.0 ) );
+		List selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , new BasicRay3D( 0.0 , 0.0 , -500.0 , 0.0 , 0.0 , 1.0 ) );
 		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
 
 		Face3DIntersection intersection      = (Face3DIntersection)selection.get( 0 );
@@ -166,7 +167,7 @@ public final class TestObject3D
 		assertTrue( "The object was not intersected at the right place" , local.almostEquals( 0.0 , 0.0 , 0.0 ) );
 
 
-		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , v0.set( -25.0 , -500.0 , -25.0 ) , v0.set( 0.0 , 1.0 , 0.0 ) );
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , new BasicRay3D( -25.0 , -500.0 , -25.0 , 0.0 , 1.0 , 0.0 ) );
 		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
 
 		intersection      = (Face3DIntersection)selection.get( 0 );
@@ -180,39 +181,39 @@ public final class TestObject3D
 		assertTrue( "The object was not intersected at the right place" , local.almostEquals( -25.0 , 25.0 , 0.0 ) );
 
 
-		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , v0.set( -25.0 , -50.0 , 25.0 ) , v0.set( Math.sqrt( 0.5 ) , Math.sqrt( 0.5 ) , 0.0 ) );
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , new BasicRay3D( -25.0 , -50.0 , 25.0 , Math.sqrt( 0.5 ) , Math.sqrt( 0.5 ) , 0.0 ) );
 		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
 		tag1 = ( (Face3DIntersection)selection.get( 0 ) ).getObjectID();
 		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
 
-		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , v0.set( 50.0 , -500.0 , 50.0 ) , v0.set( 0.0 , 1.0 , 0.0 ) );
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , new BasicRay3D( 50.0 , -500.0 , 50.0 , 0.0 , 1.0 , 0.0 ) );
 		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
 		tag1 = ( (Face3DIntersection)selection.get( 0) ).getObjectID();
 		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
 
-		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , v0.set( 50.1 , -500.0 , 0.0 ) , v0.set( 0.0 , 1.0 , 0.0 ) );
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , new BasicRay3D( 50.1 , -500.0 , 0.0 , 0.0 , 1.0 , 0.0 ) );
 		assertEquals( "Incorrect number of intersections;" , 0 , selection.size() );
 
-		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , v0.set( 0.0 , -500.0 , 50.1 ) , v0.set( 0.0 , 1.0 , 0.0 ) );
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , new BasicRay3D( 0.0 , -500.0 , 50.1 , 0.0 , 1.0 , 0.0 ) );
 		assertEquals( "Incorrect number of intersections;" , 0 , selection.size() );
 
-		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , v0.set( 150.0 , -50.0 , 0.0 ) , v0.set( 1.0 , 0.0 , 0.0 ) );
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , new BasicRay3D( 150.0 , -50.0 , 0.0 , 1.0 , 0.0 , 0.0 ) );
 		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
 		tag1 = ( (Face3DIntersection)selection.get( 0 ) ).getObjectID();
 		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
 
-		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , v0.set( 150.1 , 0.0 , -500.0 ) , v0.set( 0.0 , 0.0 , 1.0 ) );
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , new BasicRay3D( 150.1 , 0.0 , -500.0 , 0.0 , 0.0 , 1.0 ) );
 		assertEquals( "Incorrect number of intersections;" , 0 , selection.size() );
 
-		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , v0.set( 150.0 , 50.1 , -500.0 ) , v0.set( 0.0 , 0.0 , 1.0 ) );
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , new BasicRay3D( 150.0 , 50.1 , -500.0 , 0.0 , 0.0 , 1.0 ) );
 		assertEquals( "Incorrect number of intersections;" , 0 , selection.size() );
 
-		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , v0.set( 100.0 , 0.0 , 25.0 ) , v0.set( 1.0 , 0.0 , 0.0 ) );
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , new BasicRay3D( 100.0 , 0.0 , 25.0 , 1.0 , 0.0 , 0.0 ) );
 		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
 		tag1 = ( (Face3DIntersection)selection.get( 0 ) ).getObjectID();
 		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
 
-		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , v0.set( -500.0 , 0.0 , 0.0 ) , v0.set( 1.0 , 0.0 , 0.0 ) );
+		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , new BasicRay3D( -500.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 ) );
 		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
 		tag1 = ( (Face3DIntersection)selection.get( 0 ) ).getObjectID();
 		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
