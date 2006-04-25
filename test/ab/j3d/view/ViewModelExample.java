@@ -25,8 +25,6 @@ import java.util.EventObject;
 import java.util.List;
 import javax.swing.JFrame;
 
-import com.numdata.oss.ui.WindowTools;
-
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
@@ -35,6 +33,8 @@ import ab.j3d.control.FromToCameraControl;
 import ab.j3d.control.MouseControl;
 import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Object3D;
+
+import com.numdata.oss.ui.WindowTools;
 
 /**
  * Base implementation for view model examples.
@@ -90,8 +90,7 @@ public abstract class ViewModelExample
 		final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , view.getComponent() );
 		frame.setVisible( true );
 
-
-		view.appendControl( new MouseControl()
+		view.insertControl( new MouseControl()
 			{
 				public EventObject mouseClicked( final ControlInputEvent event )
 				{
