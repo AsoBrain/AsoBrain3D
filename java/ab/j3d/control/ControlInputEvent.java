@@ -25,11 +25,13 @@ import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 
+import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.geom.GeometryTools;
 import ab.j3d.geom.Plane3D;
 import ab.j3d.geom.Ray3D;
 import ab.j3d.model.Face3DIntersection;
+import ab.j3d.view.Projector;
 
 import com.numdata.oss.event.EventDispatcher;
 
@@ -87,44 +89,43 @@ public class ControlInputEvent
 	private int _dragStartY;
 
 	/**
-	 * Ray from pointer into view volume (WCS).
-	 *
-	 * @see     ab.j3d.view.Projector#getPointerRay
-	 */
-	private Ray3D _pointerRay;
-
-	/**
 	 * A list of {@link Face3DIntersection}s of all objects beneath the mouse pointer
 	 * in the 3D world.
 	 */
 	private List _intersections;
 
 	/**
+	 * Ray from pointer into view volume (WCS). Calculated on-demand.
+	 *
+	 * @see     #getPointerRay
+	 */
+	private Ray3D _pointerRay;
+
+	/**
 	 * Creates a new mouse control event.
 	 *
-	 * @param   controlInput     The input translator on which this event occured.
-	 * @param   inputEvent          The original {@link InputEvent}.
-	 * @param   sequenceNumber      The sequence number of this event.
-	 * @param   wasDragged          Wether or not the mouse has been dragged
-	 *                              since it was pressed.
-	 * @param   dragStartX          X coordinate where drag started (pixel).
-	 * @param   dragStartY          Y coordinate where drag started (pixel).
-	 * @param   pointerRay          Ray from pointer into view volume (WCS).
+	 * @param   controlInput    The control input on which this event occured.
+	 * @param   inputEvent      The original {@link InputEvent}.
+	 * @param   sequenceNumber  The sequence number of this event.
+	 * @param   wasDragged      Wether or not the mouse has been dragged
+	 *                          since it was pressed.
+	 * @param   dragStartX      X coordinate where drag started (pixel).
+	 * @param   dragStartY      Y coordinate where drag started (pixel).
 	 *
 	 * @throws  NullPointerException if <code>event</code> is <code>null</code>.
 	 */
-	public ControlInputEvent( final ControlInput controlInput , final InputEvent inputEvent , final int sequenceNumber , final boolean wasDragged , final int dragStartX , final int dragStartY , final Ray3D pointerRay )
+	public ControlInputEvent( final ControlInput controlInput , final InputEvent inputEvent , final int sequenceNumber , final boolean wasDragged , final int dragStartX , final int dragStartY )
 	{
 		super( controlInput );
 
-		_controlInput     = controlInput;
-		_inputEvent       = inputEvent;
-		_sequenceNumber   = sequenceNumber;
-		_wasDragged       = wasDragged;
-		_dragStartX       = dragStartX;
-		_dragStartY       = dragStartY;
-		_pointerRay       = pointerRay;
+		_controlInput   = controlInput;
+		_inputEvent     = inputEvent;
+		_sequenceNumber = sequenceNumber;
+		_wasDragged     = wasDragged;
+		_dragStartX     = dragStartX;
+		_dragStartY     = dragStartY;
 
+		_pointerRay    = null;
 		_intersections = null;
 	}
 
@@ -212,7 +213,7 @@ public class ControlInputEvent
 		List intersections = _intersections;
 		if ( intersections == null )
 		{
-			intersections = _controlInput.getIntersections( _pointerRay );
+			intersections = _controlInput.getIntersections( getPointerRay() );
 			_intersections = intersections;
 		}
 
@@ -237,7 +238,7 @@ public class ControlInputEvent
 	 */
 	public Vector3D getIntersectionWithPlane( final Plane3D plane )
 	{
-		return GeometryTools.getIntersectionBetweenRayAndPlane( plane , _pointerRay );
+		return GeometryTools.getIntersectionBetweenRayAndPlane( plane , getPointerRay() );
 	}
 
 	/**
@@ -251,6 +252,31 @@ public class ControlInputEvent
 	{
 		final InputEvent inputEvent = _inputEvent;
 		return ( inputEvent instanceof MouseEvent ) ? ((MouseEvent)inputEvent).getButton() : MouseEvent.NOBUTTON;
+	}
+
+	/**
+	 * Get ray from pointer into view volume, defined in world coordinates.
+	 *
+	 * @return  Ray from pointer into view volume (WCS).
+	 *
+	 * @see     Projector#getPointerRay
+	 */
+	public Ray3D getPointerRay()
+	{
+		Ray3D result = _pointerRay;
+		if ( ( result == null ) && ( _inputEvent instanceof MouseEvent ) )
+		{
+			final MouseEvent   mouseEvent   = (MouseEvent)_inputEvent;
+			final ControlInput controlInput = _controlInput;
+			final Projector    projector    = controlInput.getProjector();
+			final Matrix3D     world2view   = controlInput.getViewTransform();
+			final Matrix3D     view2world   = world2view.inverse();
+
+			result = projector.getPointerRay( view2world , (double)mouseEvent.getX() , (double)mouseEvent.getY() );
+			_pointerRay = result;
+		}
+
+		return result;
 	}
 
 	/**

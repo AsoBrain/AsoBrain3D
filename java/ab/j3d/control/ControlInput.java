@@ -123,24 +123,7 @@ public abstract class ControlInput
 	 */
 	private ControlInputEvent createSceneInputEvent( final InputEvent inputEvent )
 	{
-		final Ray3D pointerRay;
-
-		if ( inputEvent instanceof MouseEvent )
-		{
-			final MouseEvent mouseEvent = (MouseEvent)inputEvent;
-
-			final Projector projector  = getProjector();
-			final Matrix3D  world2view = getViewTransform();
-			final Matrix3D  view2world = world2view.inverse();
-
-			pointerRay = projector.getPointerRay( view2world , (double)mouseEvent.getX() , (double)mouseEvent.getY() );
-		}
-		else
-		{
-			pointerRay = null;
-		}
-
-		return new ControlInputEvent( this , inputEvent , _eventNumber , _wasDragged , _dragStartX , _dragStartY , pointerRay );
+		return new ControlInputEvent( this , inputEvent , _eventNumber , _wasDragged , _dragStartX , _dragStartY );
 	}
 
 	/**
