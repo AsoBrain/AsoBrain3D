@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2006 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -573,7 +573,7 @@ public final class Vector3D
 	 */
 	public static String toFriendlyString( final Vector3D vector )
 	{
-		final DecimalFormat df = new DecimalFormat( "0.0" );
+		final DecimalFormat df = new DecimalFormat( "0.00" );
 
 		return ( vector == null ) ? "null" :
 		       "[ " + df.format( vector.x ) + " , "
