@@ -23,10 +23,7 @@ package ab.j3d.model;
 import java.awt.Color;
 import java.awt.Paint;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-
-import com.numdata.oss.ArrayTools;
 
 import ab.j3d.Bounds3D;
 import ab.j3d.Matrix3D;
@@ -34,7 +31,11 @@ import ab.j3d.PolyPoint2D;
 import ab.j3d.Polyline2D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
+import ab.j3d.geom.BasicRay3D;
 import ab.j3d.geom.GeometryTools;
+import ab.j3d.geom.Ray3D;
+
+import com.numdata.oss.ArrayTools;
 
 /**
  * This class defined a 3D object node in a 3D tree. The 3D object consists of
@@ -597,36 +598,34 @@ public class Object3D
 	 * @param   dest            Destination for found intersections (<code>null</code> => create new).
 	 * @param   sortResult      Perform insertion sort in list.
 	 * @param   objectID        ID of object to test for intersections.
-	 * @param   object2world    Transformation from object to world coordinates.
-	 * @param   rayOrigin       Origin of ray (WCS).
-	 * @param   rayDirection    Direction of ray (WCS).
+	 * @param   object2world    Transformation from object to world coordinates (OCS->WCS).
+	 * @param   ray             Ray expression in world coordinates (WCS).
 	 *
 	 * @return  List containing found intersection (never <code>null</code>,
 	 *          same as <code>dest</code> argument if it was non-<code>null</code>).
 	 *
 	 * @throws  NullPointerException if a required input argument is <code>null</code>.
 	 */
-	public List getIntersectionsWithRay( final List dest , final boolean sortResult , final Object objectID , final Matrix3D object2world , final Vector3D rayOrigin , final Vector3D rayDirection )
+	public List getIntersectionsWithRay( final List dest , final boolean sortResult , final Object objectID , final Matrix3D object2world , final Ray3D ray )
 	{
-		final Vector3D ocsRayOrigin    = object2world.inverseMultiply( rayOrigin );
-		final Vector3D ocsRayDirection = object2world.inverseRotate( rayDirection );
+		final Matrix3D world2object = object2world.inverse();
+		final Ray3D    ocsRay       = new BasicRay3D( world2object , ray );
 
-		final List result = ( dest != null ) ? dest : new LinkedList();
+		final List result = ( dest != null ) ? dest : new ArrayList();
 
 		final int faceCount = getFaceCount();
 		for ( int i = 0 ; i < faceCount ; i++ )
 		{
 			final Face3D face = getFace( i );
 
-			final Vector3D ocsPoint = GeometryTools.getIntersectionBetweenRayAndPolygon( face , ocsRayOrigin , ocsRayDirection );
+			final Vector3D ocsPoint = GeometryTools.getIntersectionBetweenRayAndPolygon( face , ocsRay );
 			if ( ocsPoint != null )
 			{
 				final Vector3D wcsPoint = object2world.multiply( ocsPoint );
-				final double   distance = ocsPoint.distanceTo( ocsRayOrigin );
 
-				final Face3DIntersection intersection = new Face3DIntersection( objectID , object2world , face , wcsPoint , distance );
+				final Face3DIntersection intersection = new Face3DIntersection( objectID , object2world , face , ray , wcsPoint );
 				if ( sortResult )
-					intersection.addSortedByDistance( result );
+					Face3DIntersection.addSortedByDistance( result , intersection );
 				else
 					result.add( intersection );
 			}
@@ -705,8 +704,8 @@ public class Object3D
 		while ( ( index -= 3 ) >= 0 )
 		{
 			if ( ( x == vertexCoordinates[ index     ] )
-			  && ( y == vertexCoordinates[ index + 1 ] )
-			  && ( z == vertexCoordinates[ index + 2 ] ) )
+			     && ( y == vertexCoordinates[ index + 1 ] )
+			     && ( z == vertexCoordinates[ index + 2 ] ) )
 				break;
 		}
 
