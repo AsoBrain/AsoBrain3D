@@ -27,17 +27,18 @@ import javax.swing.JPanel;
 
 import junit.framework.TestCase;
 
-import com.numdata.oss.event.EventDispatcher;
-import com.numdata.oss.event.EventFilter;
-
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
+import ab.j3d.geom.BasicRay3D;
 import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 import ab.j3d.view.Projector;
 import ab.j3d.view.ViewModel;
+
+import com.numdata.oss.event.EventDispatcher;
+import com.numdata.oss.event.EventFilter;
 
 /**
  * This class tests the {@link ControlInput} class.
@@ -92,10 +93,9 @@ public class TestControlInput
 	{
 		System.out.println( CLASS_NAME + ".testGetIntersections()" );
 
-		final Vector3D v0 = Vector3D.INIT;
 		List selection;
 
-		final SceneInputTestTranslator translator = new SceneInputTestTranslator();
+		final ControlTestInput input = new ControlTestInput();
 
 		final Object3D plane1 = createPlane( "Plane 1" , 100.0 );
 		final Object3D plane2 = createPlane( "Plane 2" , 100.0 );
@@ -113,7 +113,7 @@ public class TestControlInput
 		final Matrix3D transform6 = Matrix3D.getTransform(  90.0 ,  0.0 , 0.0 ,  150.0 ,   0.0 , 0.0 );
 		final Matrix3D transform7 = Matrix3D.getTransform(   0.0 , 90.0 , 0.0 ,  150.0 ,   0.0 , 0.0 );
 
-		final Node3DCollection scene = translator.getScene();
+		final Node3DCollection scene = input.getScene();
 		scene.add( transform1 , plane1 );
 		scene.add( transform2 , plane2 );
 		scene.add( transform3 , plane3 );
@@ -122,48 +122,48 @@ public class TestControlInput
 		scene.add( transform6 , plane6 );
 		scene.add( transform7 , plane7 );
 
-		selection = translator.getIntersections( v0.set( -45.0 , -500.0 , 0.0 ) , v0.set( 0.0 , 1.0 , 0.0 ) );
+		selection = input.getIntersections( new BasicRay3D( -45.0 , -500.0 , 0.0 , 0.0 , 1.0 , 0.0 ) );
 		assertEquals( "Incorrect number of intersected faces;" , 2 , selection.size() );
 		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 3" , ((Face3DIntersection)selection.get( 0 )).getObjectID() );
 		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 1" , ((Face3DIntersection)selection.get( 1 )).getObjectID() );
 
-		selection = translator.getIntersections( v0.set( 45.0 , -500.0 , 0.0 ) , v0.set( 0.0 , 1.0 , 0.0 ) );
+		selection = input.getIntersections( new BasicRay3D( 45.0 , -500.0 , 0.0 , 0.0 , 1.0 , 0.0 ) );
 		assertEquals( "Incorrect number of intersected faces;" , 2 , selection.size() );
 		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 2" , ((Face3DIntersection)selection.get( 0 )).getObjectID() );
 		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 1" , ((Face3DIntersection)selection.get( 1 )).getObjectID() );
 
-		selection = translator.getIntersections( v0.set( 0.0 , -500.0 , 0.0 ) , v0.set( 0.0 , 1.0 , 0.0 ) );
+		selection = input.getIntersections( new BasicRay3D( 0.0 , -500.0 , 0.0 , 0.0 , 1.0 , 0.0 ) );
 		assertEquals( "Incorrect number of intersected faces;" , 3 , selection.size() );
 		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 3" , ((Face3DIntersection)selection.get( 0 )).getObjectID() );
 		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 2" , ((Face3DIntersection)selection.get( 1 )).getObjectID() );
 		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 1" , ((Face3DIntersection)selection.get( 2 )).getObjectID() );
 
-		selection = translator.getIntersections( v0.set( -125.0 , -500.0 , 0.0 ) , v0.set( 0.0 , 1.0 , 0.0 ) );
+		selection = input.getIntersections( new BasicRay3D( -125.0 , -500.0 , 0.0 , 0.0 , 1.0 , 0.0 ) );
 		assertEquals( "Incorrect number of intersected faces;" , 2 , selection.size() );
 		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 4" , ((Face3DIntersection)selection.get( 0 )).getObjectID() );
 		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 5" , ((Face3DIntersection)selection.get( 1 )).getObjectID() );
 
-		selection = translator.getIntersections( v0.set( -149.9 , -500.0 , 0.0 ) , v0.set( 0.0 , 1.0 , 0.0 ) );
+		selection = input.getIntersections( new BasicRay3D( -149.9 , -500.0 , 0.0 , 0.0 , 1.0 , 0.0 ) );
 		assertEquals( "Incorrect number of intersected faces;" , 2 , selection.size() );
 		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 4" , ((Face3DIntersection)selection.get( 0 )).getObjectID() );
 		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 5" , ((Face3DIntersection)selection.get( 1 )).getObjectID() );
 
-		selection = translator.getIntersections( v0.set( -150.0 , -500.0 , 0.0 ) , v0.set( 0.0 , 1.0 , 0.0 ) );
+		selection = input.getIntersections( new BasicRay3D( -150.0 , -500.0 , 0.0 , 0.0 , 1.0 , 0.0 ) );
 		assertEquals( "Incorrect number of intersected faces;" , 2 , selection.size() );
 
-		selection = translator.getIntersections( v0.set( 200.0 , -25.0 , 0.0 ) , v0.set( -Math.sqrt( 0.5 ) , Math.sqrt( 0.5 ) , 0.0 ) );
+		selection = input.getIntersections( new BasicRay3D( 200.0 , -25.0 , 0.0 , -Math.sqrt( 0.5 ) , Math.sqrt( 0.5 ) , 0.0 ) );
 		assertEquals( "Incorrect number of intersected faces;" , 2 , selection.size() );
 		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 6" , ((Face3DIntersection)selection.get( 0 )).getObjectID() );
 		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 7" , ((Face3DIntersection)selection.get( 1 )).getObjectID() );
 
-		selection = translator.getIntersections( v0.set( 100.0 , 0.0 , -25.0 ) , v0.set( 1.0 , 0.0 , 0.0 ) );
+		selection = input.getIntersections( new BasicRay3D( 100.0 , 0.0 , -25.0 , 1.0 , 0.0 , 0.0 ) );
 		assertEquals( "The number of intersected faces is not 2, but " + selection.size() , 1 , selection.size() );
 		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 7" , ((Face3DIntersection)selection.get( 0 )).getObjectID() );
 
-		selection = translator.getIntersections( v0.set( 100.0 , 0.0 , -100.0 ) , v0.set( 1.0 , 0.0 , 0.0 ) );
+		selection = input.getIntersections( new BasicRay3D( 100.0 , 0.0 , -100.0 , 1.0 , 0.0 , 0.0 ) );
 		assertEquals( "Incorrect number of intersected faces;" , 0 , selection.size() );
 
-		selection = translator.getIntersections( v0.set( -60.1  , 0.0 , -500.0) , v0.set( 0.0 , 0.0 , 1.0 ) );
+		selection = input.getIntersections( new BasicRay3D( -60.1  , 0.0 , -500.0, 0.0 , 0.0 , 1.0 ) );
 		assertEquals( "Incorrect number of intersected faces;" , 0 , selection.size() );
 	}
 
@@ -177,7 +177,7 @@ public class TestControlInput
 	{
 		System.out.println( CLASS_NAME + ".testMousePressed()" );
 
-		final SceneInputTestTranslator translator = new SceneInputTestTranslator();
+		final ControlTestInput input = new ControlTestInput();
 
 		final Object3D plane1 = createPlane( "Plane 1" , 100.0 );
 		final Object3D plane2 = createPlane( "Plane 2" , 100.0 );
@@ -185,16 +185,16 @@ public class TestControlInput
 		final Matrix3D transform1 = Matrix3D.getTransform( 90.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0   );
 		final Matrix3D transform2 = Matrix3D.getTransform( 0.0  , 0.0 , 0.0 , 0.0 , 0.0 , -75.0 );
 
-		final Node3DCollection scene = translator.getScene();
+		final Node3DCollection scene = input.getScene();
 		scene.add( transform1 , plane1 );
 		scene.add( transform2 , plane2 );
 
 		int modifiers = MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.SHIFT_DOWN_MASK;
 		MouseEvent e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_PRESSED , 0L , modifiers , 0 , 0 , 1 , false , MouseEvent.BUTTON1 );
-		translator.mousePressed( e );
+		input.mousePressed( e );
 
-		assertTrue("The last event is not a MouseControlEvent", translator.getLastEvent() instanceof ControlInputEvent );
-		ControlInputEvent event = (ControlInputEvent)translator.getLastEvent();
+		assertTrue("The last event is not a MouseControlEvent", input.getLastEvent() instanceof ControlInputEvent );
+		ControlInputEvent event = (ControlInputEvent)input.getLastEvent();
 
 		assertEquals( "The mouse button is not 1" , MouseEvent.BUTTON1 , event.getMouseButton() );
 		assertEquals( "The event type should be MOUSE_PRESSED" , MouseEvent.MOUSE_PRESSED , event.getID() );
@@ -203,10 +203,10 @@ public class TestControlInput
 
 		modifiers = MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.CTRL_DOWN_MASK;
 		e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_PRESSED , 0L , modifiers , 50 , 50 , 1 , false , MouseEvent.BUTTON2 );
-		translator.mousePressed( e );
+		input.mousePressed( e );
 
-		assertTrue( "The last event is not a MouseControlEvent" , translator.getLastEvent() instanceof ControlInputEvent );
-		event = (ControlInputEvent)translator.getLastEvent();
+		assertTrue( "The last event is not a MouseControlEvent" , input.getLastEvent() instanceof ControlInputEvent );
+		event = (ControlInputEvent)input.getLastEvent();
 
 		assertEquals( "The mouse button is not 2" , MouseEvent.BUTTON2 , event.getMouseButton() );
 		assertEquals( "The event type should be MOUSE_PRESSED" , MouseEvent.MOUSE_PRESSED , event.getID() );
@@ -223,7 +223,7 @@ public class TestControlInput
 	{
 		System.out.println( CLASS_NAME + ".testMouseReleased()" );
 
-		final SceneInputTestTranslator translator = new SceneInputTestTranslator();
+		final ControlTestInput input = new ControlTestInput();
 
 		final Object3D plane1 = createPlane( "Plane 1" , 100.0 );
 		final Object3D plane2 = createPlane( "Plane 2" , 100.0 );
@@ -231,16 +231,16 @@ public class TestControlInput
 		final Matrix3D transform1 = Matrix3D.getTransform( 90.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0   );
 		final Matrix3D transform2 = Matrix3D.getTransform( 0.0  , 0.0 , 0.0 , 0.0 , 0.0 , -75.0 );
 
-		final Node3DCollection scene = translator.getScene();
+		final Node3DCollection scene = input.getScene();
 		scene.add( transform1 , plane1 );
 		scene.add( transform2 , plane2 );
 
 		int modifiers = MouseEvent.SHIFT_DOWN_MASK;
 		MouseEvent e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_RELEASED , 0L , modifiers , 0 , 0 , 1 , false , MouseEvent.BUTTON1 );
-		translator.mouseReleased( e );
+		input.mouseReleased( e );
 
-		assertTrue("The last event is not a MouseControlEvent" , translator.getLastEvent() instanceof ControlInputEvent );
-		ControlInputEvent event = (ControlInputEvent)translator.getLastEvent();
+		assertTrue("The last event is not a MouseControlEvent" , input.getLastEvent() instanceof ControlInputEvent );
+		ControlInputEvent event = (ControlInputEvent)input.getLastEvent();
 
 		assertEquals( "The mouse button is not 1" , MouseEvent.BUTTON1 , event.getMouseButton() );
 		assertEquals( "The event type should be MOUSE_RELEASED" , MouseEvent.MOUSE_RELEASED , event.getID() );
@@ -248,10 +248,10 @@ public class TestControlInput
 
 		modifiers = MouseEvent.CTRL_DOWN_MASK;
 		e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_RELEASED , 0L , modifiers , 0 , 0 , 1 , false , MouseEvent.BUTTON3 );
-		translator.mouseReleased( e );
+		input.mouseReleased( e );
 
-		assertTrue( "The last event is not a MouseControlEvent" , translator.getLastEvent() instanceof ControlInputEvent );
-		event = (ControlInputEvent)translator.getLastEvent();
+		assertTrue( "The last event is not a MouseControlEvent" , input.getLastEvent() instanceof ControlInputEvent );
+		event = (ControlInputEvent)input.getLastEvent();
 
 		assertEquals( "The mouse button is not 3" , MouseEvent.BUTTON3 , event.getMouseButton() );
 		assertEquals( "The event type should be MOUSE_RELEASED" , MouseEvent.MOUSE_RELEASED , event.getID() );
@@ -261,7 +261,7 @@ public class TestControlInput
 	/**
 	 * This inner class implements {@link ControlInput} for testing.
 	 */
-	public static class SceneInputTestTranslator
+	public static class ControlTestInput
 		extends ControlInput
 	{
 		/**
@@ -275,9 +275,9 @@ public class TestControlInput
 		private EventObject _lastEvent;
 
 		/**
-		 * Create {@link SceneInputTestTranslator} with default scene.
+		 * Create {@link ControlTestInput} with default scene.
 		 */
-		public SceneInputTestTranslator()
+		public ControlTestInput()
 		{
 			super( new JPanel() );
 
