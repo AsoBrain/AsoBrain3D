@@ -19,8 +19,6 @@
  */
 package ab.j3d.control;
 
-import java.awt.geom.Point2D;
-
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.geom.BasicPlane3D;
@@ -67,16 +65,10 @@ public class PlaneMovementDragger
 	private final Projector _projector;
 
 	/**
-	 * Translation to apply to pointer in 2D image to move the pointer from the
-	 * intersection point to the object origin in a perspectively correct manner.
+	 * Translation from intersection point within object to object origin in
+	 * world coordinates (WCS).
 	 */
-	private final double _imageAdjustX;
-
-	/**
-	 * Translation to apply to pointer in 2D image to move the pointer from the
-	 * intersection point to the object origin in a perspectively correct manner.
-	 */
-	private final double _imageAdjustY;
+	private Vector3D _wcsTranslation;
 
 	/**
 	 * End location of dragged object in the world coordinates (WCS).
@@ -134,26 +126,19 @@ public class PlaneMovementDragger
 	 */
 	public PlaneMovementDragger( final Matrix3D model2world , final Plane3D wcsDragPlane , final Matrix3D world2view , final Projector projector , final Face3DIntersection intersection )
 	{
-		final Matrix3D object2world           = intersection.getObject2world();
-		final Matrix3D view2world             = world2view.inverse();
+		final Matrix3D object2world         = intersection.getObject2world();
+		final Matrix3D view2world           = world2view.inverse();
 
-		final Vector3D wcsObjectOrigin        = object2world.multiply( Vector3D.INIT );
-		final Vector3D wcsIntersectionPoint   = intersection.getIntersectionPoint();
+		final Vector3D wcsObjectOrigin      = object2world.multiply( Vector3D.INIT );
+		final Vector3D wcsIntersectionPoint = intersection.getIntersectionPoint();
 
-		final Vector3D viewObjectOrigin       = world2view.multiply( wcsObjectOrigin );
-		final Vector3D viewIntersectionPoint  = world2view.multiply( wcsIntersectionPoint );
-
-		final Point2D  imageObjectOrigin      = projector.viewToImage( viewObjectOrigin );
-		final Point2D  imageIntersectionPoint = projector.viewToImage( viewIntersectionPoint );
-
-		_imageAdjustX  = imageObjectOrigin.getX() - imageIntersectionPoint.getX();
-		_imageAdjustY  = imageObjectOrigin.getY() - imageIntersectionPoint.getY();
-		_view2world    = view2world;
-		_projector     = projector;
-		_wcsDragPlane  = new BasicPlane3D( wcsDragPlane , wcsObjectOrigin );
-		_wcsStart      = wcsObjectOrigin;
-		_wcsEnd        = wcsObjectOrigin;
-		_model2world   = model2world;
+		_view2world     = view2world;
+		_projector      = projector;
+		_wcsTranslation = wcsObjectOrigin.minus( wcsIntersectionPoint );
+		_wcsDragPlane   = new BasicPlane3D( wcsDragPlane , wcsIntersectionPoint );
+		_wcsStart       = wcsObjectOrigin;
+		_wcsEnd         = wcsObjectOrigin;
+		_model2world    = model2world;
 
 		_wcsMovement   = null;
 		_modelMovement = null;
@@ -169,15 +154,19 @@ public class PlaneMovementDragger
 	 */
 	public void dragTo( final int x , final int y )
 	{
-		final Ray3D pointerRay = _projector.getPointerRay( _view2world , (double)x + _imageAdjustX , (double)y + _imageAdjustY );
+		final Ray3D pointerRay = _projector.getPointerRay( _view2world , (double)x , (double)y );
 
-		final Vector3D wcsEnd = GeometryTools.getIntersectionBetweenRayAndPlane( _wcsDragPlane , pointerRay );
-		if ( ( wcsEnd != null ) && !wcsEnd.equals( _wcsEnd ) )
+		final Vector3D wcsIntersection = GeometryTools.getIntersectionBetweenRayAndPlane( _wcsDragPlane , pointerRay );
+		if ( wcsIntersection != null )
 		{
-			_wcsEnd        = wcsEnd;
-			_wcsMovement   = null;
-			_modelEnd      = null;
-			_modelMovement = null;
+			final Vector3D wcsEnd = wcsIntersection.plus( _wcsTranslation );
+			if ( !wcsEnd.equals( _wcsEnd ) )
+			{
+				_wcsEnd        = wcsEnd;
+				_wcsMovement   = null;
+				_modelEnd      = null;
+				_modelMovement = null;
+			}
 		}
 	}
 
