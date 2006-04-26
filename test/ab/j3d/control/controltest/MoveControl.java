@@ -22,10 +22,12 @@ package ab.j3d.control.controltest;
 import java.util.EventObject;
 import java.util.List;
 
+import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.control.Control;
 import ab.j3d.control.ControlInputEvent;
 import ab.j3d.control.MouseControl;
+import ab.j3d.control.PlaneMovementDragger;
 import ab.j3d.control.controltest.model.Model;
 import ab.j3d.control.controltest.model.SceneElement;
 import ab.j3d.control.controltest.model.TetraHedron;
@@ -58,7 +60,7 @@ public class MoveControl
 	 * hedron's location. Used when dragging, so that the hedron stays in the
 	 * same place in relation to the mouse.
 	 */
-	private Vector3D _dragDifference;
+	private PlaneMovementDragger _dragger;
 
 	/**
 	 * Construct new {@link MoveControl}.
@@ -67,9 +69,8 @@ public class MoveControl
 	 */
 	public MoveControl( final Model model )
 	{
-		_model = model;
-
-		_dragDifference = Vector3D.INIT;
+		_model   = model;
+		_dragger = null;
 	}
 
 	public EventObject mousePressed( final ControlInputEvent event )
@@ -85,18 +86,11 @@ public class MoveControl
 			if ( !intersections.isEmpty() )
 			{
 				final Face3DIntersection intersection = (Face3DIntersection)intersections.get( 0 );
-
 				if ( selectedHedron == intersection.getObjectID() )
 				{
-					final Vector3D dragStart = event.getIntersectionWithPlane( FLOOR_PLANE );
-					if ( dragStart != null )
-					{
-						final Vector3D hedronLocation = Vector3D.INIT.set( selectedHedron.getX() , selectedHedron.getY() , 0.0 );
-						_dragDifference = hedronLocation.minus( dragStart );
-
-						startCapture( event );
-						result = null;
-					}
+					_dragger = new PlaneMovementDragger( Matrix3D.INIT , FLOOR_PLANE , event.getViewTransform() , event.getProjector() , intersection );
+					startCapture( event );
+					result = null;
 				}
 			}
 		}
@@ -111,14 +105,11 @@ public class MoveControl
 		{
 			final TetraHedron selectedHedron = (TetraHedron)selection;
 
-			final Vector3D dragPosition = event.getIntersectionWithPlane( FLOOR_PLANE );
-			if ( dragPosition != null )
-			{
-				final Vector3D location = dragPosition.plus( _dragDifference );
+			final PlaneMovementDragger dragger = _dragger;
+			dragger.dragTo( event.getX() , event.getY() );
+			final Vector3D newPosition = dragger.getModelEnd();
 
-				selectedHedron.setX( location.x );
-				selectedHedron.setY( location.y );
-			}
+			selectedHedron.setLocation( newPosition.x , newPosition.y );
 		}
 	}
 }
