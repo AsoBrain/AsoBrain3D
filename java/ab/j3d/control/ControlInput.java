@@ -173,9 +173,10 @@ public abstract class ControlInput
 	}
 
 	/**
-	 * Returns the {@link Projector} for this scene.
+	 * Get {@link Projector} that was used to project the 3D scene onto the
+	 * 2D image.
 	 *
-	 * @return  {@link Projector} for this scene.
+	 * @return  {@link Projector} used project the 3D scene onto the 2D image.
 	 */
 	protected abstract Projector getProjector();
 
