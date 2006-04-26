@@ -122,6 +122,7 @@ public final class Java3dModel
 		_nodeContentMap.put( id , nodeRoot );
 
 		final TransformGroup nodeTransform = new TransformGroup();
+		nodeTransform.setTransform( Java3dTools.convertMatrix3DToTransform3D( node.getTransform() ) );
 		nodeTransform.setCapability( TransformGroup.ALLOW_CHILDREN_READ   );
 		nodeTransform.setCapability( TransformGroup.ALLOW_CHILDREN_WRITE );
 		nodeTransform.setCapability( TransformGroup.ALLOW_CHILDREN_EXTEND );
