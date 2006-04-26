@@ -267,9 +267,8 @@ public class ControlInputEvent
 		if ( ( result == null ) && ( _inputEvent instanceof MouseEvent ) )
 		{
 			final MouseEvent   mouseEvent   = (MouseEvent)_inputEvent;
-			final ControlInput controlInput = _controlInput;
-			final Projector    projector    = controlInput.getProjector();
-			final Matrix3D     world2view   = controlInput.getViewTransform();
+			final Projector    projector    = getProjector();
+			final Matrix3D     world2view   = getViewTransform();
 			final Matrix3D     view2world   = world2view.inverse();
 
 			result = projector.getPointerRay( view2world , (double)mouseEvent.getX() , (double)mouseEvent.getY() );
@@ -277,6 +276,17 @@ public class ControlInputEvent
 		}
 
 		return result;
+	}
+
+	/**
+	 * Get {@link Projector} that was used to project the 3D scene onto the
+	 * 2D image.
+	 *
+	 * @return  {@link Projector} used project the 3D scene onto the 2D image.
+	 */
+	public Projector getProjector()
+	{
+		return _controlInput.getProjector();
 	}
 
 	/**
@@ -289,6 +299,16 @@ public class ControlInputEvent
 	public int getSequenceNumber()
 	{
 		return _sequenceNumber;
+	}
+
+	/**
+	 * Get transformation matrix to transform world to view coordinates.
+	 *
+	 * @return  Transfrom from world to view coordinates.
+	 */
+	public Matrix3D getViewTransform()
+	{
+		return _controlInput.getViewTransform();
 	}
 
 	/**
