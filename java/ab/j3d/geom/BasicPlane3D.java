@@ -227,4 +227,9 @@ public class BasicPlane3D
 	{
 		_twoSided = twoSided;
 	}
+
+	public String toString()
+	{
+		return BasicPlane3D.class.getName() + "[normal=" + _normal.toFriendlyString() + ",distance=" + _distance + ']';
+	}
 }
