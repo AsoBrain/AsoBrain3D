@@ -19,15 +19,12 @@
  */
 package ab.j3d.control;
 
-import java.awt.Component;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.util.LinkedList;
 import java.util.List;
+
+import com.numdata.oss.event.EventDispatcher;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.geom.Ray3D;
@@ -36,33 +33,16 @@ import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 import ab.j3d.view.Projector;
 
-import com.numdata.oss.event.EventDispatcher;
-
 /**
- * The SceneInputTranslator listens to events on a component and creates
- * {@link java.util.EventObject}s with their information. These
- * {@link java.util.EventObject}s are then dispatched by the
+ * The <code>ControlInput</code> receives input events, converts them to
+ * {@link ControlInputEvent}s, and dispatches them to a local
  * {@link EventDispatcher}.
  *
  * @author  Mart Slot
  * @version $Revision$ $Date$
  */
 public abstract class ControlInput
-	implements KeyListener , MouseListener , MouseMotionListener
 {
-	/**
-	 * The number of the current series of events. This number is increased
-	 * after a {@link MouseEvent#MOUSE_RELEASED} event with no mouse buttons
-	 * down.
-	 */
-	private int _eventNumber;
-
-	/**
-	 * Wether or not the mouse has been dragged since the last mouse press
-	 * event.
-	 */
-	private boolean _wasDragged;
-
 	/**
 	 * X coordinate of pointer when drag operation was started. This is stored
 	 * when a {@link MouseEvent#MOUSE_PRESSED} event is received.
@@ -81,33 +61,29 @@ public abstract class ControlInput
 	 */
 	private EventDispatcher _eventDispatcher;
 
-//	/**
-//	 * The timestamp of the last processed mouse drag event. For efficiency, not
-//	 * all mouse drag events are processed. If a certain amount of time passes
-//	 * since this last drag, a new event is processed. Any other are discarded.
-//	 * After a new event has been processed, this event's timestamp is used as
-//	 * the new <code>_lastDrag</code>.
-//	 */
-//	private long _lastDrag;
+	/**
+	 * The number of the current series of events. This number is increased
+	 * after a {@link MouseEvent#MOUSE_RELEASED} event with no mouse buttons
+	 * down.
+	 */
+	private int _eventNumber;
 
 	/**
-	 * Construct new SceneInputTranslator.
-	 *
-	 * @param   component   The component to listen to for events
+	 * Wether or not the mouse has been dragged since the last mouse press
+	 * event.
 	 */
-	protected ControlInput( final Component component )
+	private boolean _wasDragged;
+
+	/**
+	 * Construct new control input.
+	 */
+	protected ControlInput()
 	{
-		_eventNumber = 0;
-		_dragStartX  = 0;
-		_dragStartY  = 0;
-		_wasDragged  = false;
-//		_lastDrag    = -1L;
-
+		_dragStartX      = 0;
+		_dragStartY      = 0;
 		_eventDispatcher = new EventDispatcher();
-
-		component.addKeyListener( this );
-		component.addMouseListener( this );
-		component.addMouseMotionListener( this );
+		_eventNumber     = 0;
+		_wasDragged      = false;
 	}
 
 	/**
@@ -121,9 +97,44 @@ public abstract class ControlInput
 	 * @see     #_eventNumber
 	 * @see     #_wasDragged
 	 */
-	private ControlInputEvent createSceneInputEvent( final InputEvent inputEvent )
+	protected ControlInputEvent createControlnputEvent( final InputEvent inputEvent )
 	{
-		return new ControlInputEvent( this , inputEvent , _eventNumber , _wasDragged , _dragStartX , _dragStartY );
+		boolean wasDragged = _wasDragged;
+
+		final int eventID = inputEvent.getID();
+		if ( eventID == MouseEvent.MOUSE_PRESSED )
+		{
+			_dragStartX = ((MouseEvent)inputEvent).getX();
+			_dragStartY = ((MouseEvent)inputEvent).getY();
+		}
+		else if ( eventID == MouseEvent.MOUSE_DRAGGED )
+		{
+			wasDragged = true;
+		}
+
+		final ControlInputEvent result = new ControlInputEvent( this , inputEvent , _eventNumber , wasDragged , _dragStartX , _dragStartY );
+
+		if ( ( eventID == MouseEvent.MOUSE_RELEASED ) && !result.isMouseButtonDown() )
+		{
+			_eventNumber++;
+			wasDragged = false;
+		}
+
+		_wasDragged = wasDragged;
+
+		return result;
+	}
+
+	/**
+	 * This method takes an {@link InputEvent}, converts it to a
+	 * {@link ControlInputEvent}, and dispatches it on the local
+	 * {@link EventDispatcher}.
+	 *
+	 * @param   inputEvent  Input event to dispatch.
+	 */
+	protected void dispatchControlInputEvent( final InputEvent inputEvent )
+	{
+		_eventDispatcher.dispatch( createControlnputEvent( inputEvent ) );
 	}
 
 	/**
@@ -199,132 +210,4 @@ public abstract class ControlInput
 	 * @return  View transform for this scene.
 	 */
 	protected abstract Matrix3D getViewTransform();
-
-	/**
-	 * Simply let {@link KeyEvent} pass through.
-	 *
-	 * @param   event   Key event.
-	 */
-	public void keyPressed( final KeyEvent event )
-	{
-		_eventDispatcher.dispatch( createSceneInputEvent( event ) );
-	}
-
-	/**
-	 * Simply let {@link KeyEvent} pass through.
-	 *
-	 * @param   event   Key event.
-	 */
-	public void keyReleased( final KeyEvent event )
-	{
-		_eventDispatcher.dispatch( createSceneInputEvent( event ) );
-	}
-
-	/**
-	 * Simply let {@link KeyEvent} pass through.
-	 *
-	 * @param   event   Key event.
-	 */
-	public void keyTyped( final KeyEvent event )
-	{
-		_eventDispatcher.dispatch( createSceneInputEvent( event ) );
-	}
-
-	/**
-	 * Invoked when the mouse button has been clicked (pressed and released) on a
-	 * component. Does nothing.
-	 *
-	 * @param   event   {@link MouseEvent} that was dispatched
-	 */
-	public void mouseClicked( final MouseEvent event )
-	{
-		_eventDispatcher.dispatch( createSceneInputEvent( event ) );
-	}
-
-	/**
-	 * Called when the mouse has been dragged on the component this translator
-	 * is listening to. A new {@link ControlInputEvent} is created and
-	 * dispatched to the {@link EventDispatcher}.
-	 * <p>
-	 * Note that, in order to improve performance, only one drag event every
-	 * 100 miliseconds is processed. Any others are discarded.
-	 *
-	 * @param   event   {@link MouseEvent} that was dispatched.
-	 *
-	 * @see     #createSceneInputEvent
-	 */
-	public void mouseDragged( final MouseEvent event )
-	{
-//		final long timeStamp = event.getWhen();
-//		if ( timeStamp > ( _lastDrag + 100L ) )
-//		{
-			_wasDragged = true;
-			_eventDispatcher.dispatch( createSceneInputEvent( event ) );
-//			_lastDrag = timeStamp;
-//		}
-	}
-
-	/**
-	 * Invoked when the mouse enters a component. Does nothing.
-	 *
-	 * @param   event   {@link MouseEvent} that was dispatched
-	 */
-	public void mouseEntered( final MouseEvent event ) { }
-
-	/**
-	 * Invoked when the mouse exits a component. Does nothing.
-	 *
-	 * @param   event   {@link MouseEvent} that was dispatched
-	 */
-	public void mouseExited( final MouseEvent event ) { }
-
-	/**
-	 * Invoked when the mouse cursor has been moved onto a component
-	 * but no buttons have been pushed. Does nothing.
-	 *
-	 * @param   event   {@link MouseEvent} that was dispatched
-	 */
-	public void mouseMoved( final MouseEvent event )
-	{
-	}
-
-	/**
-	 * Called when the mouse has been pressed on the component this translator
-	 * is listening to. A new {@link ControlInputEvent} is created and
-	 * dispatched to the {@link EventDispatcher}.
-	 *
-	 * @param   event   {@link MouseEvent} that was dispatched
-	 *
-	 * @see     #createSceneInputEvent
-	 */
-	public void mousePressed( final MouseEvent event )
-	{
-		_dragStartX = event.getX();
-		_dragStartY = event.getY();
-
-		_eventDispatcher.dispatch( createSceneInputEvent( event ) );
-	}
-
-	/**
-	 * Called when the mouse has been released on the component this translator
-	 * is listening to. A new {@link ControlInputEvent} is created and
-	 * dispatched to the {@link EventDispatcher}.
-	 *
-	 * @param   event   {@link MouseEvent} that was dispatched
-	 *
-	 * @see     #createSceneInputEvent
-	 */
-	public void mouseReleased( final MouseEvent event )
-	{
-		final ControlInputEvent controlInputEvent = createSceneInputEvent( event );
-		_eventDispatcher.dispatch( controlInputEvent );
-
-		if ( !controlInputEvent.isMouseButtonDown() )
-		{
-			_eventNumber++;
-			_wasDragged = false;
-		}
-	}
 }
-
-
