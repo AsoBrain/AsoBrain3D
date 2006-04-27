@@ -44,6 +44,11 @@ public class BasicRay3D
 	private Vector3D _origin;
 
 	/**
+	 * If true, this ray is a half-ray; otherwise, this is a complete ray.
+	 */
+	private boolean _halfRay;
+
+	/**
 	 * Construct ray with the specified ray origin and direction.
 	 *
 	 * @param   originX     X coordinate for origin of ray in 3D space.
@@ -52,13 +57,16 @@ public class BasicRay3D
 	 * @param   directionX  X component for direction of ray in 3D space.
 	 * @param   directionY  Y component for direction of ray in 3D space.
 	 * @param   directionZ  Z component for direction of ray in 3D space.
+	 * @param   halfRay     If <code>true</code>, mark this as a half-ray;
+	 *                      if <code>false</code>, mark this as a complete ray.
 	 *
 	 * @throws  NullPointerException if <code>origin</code> or <code>direction</code> is <code>null</code>.
 	 */
-	public BasicRay3D( final double originX , final double originY , final double originZ , final double directionX , final double directionY , final double directionZ )
+	public BasicRay3D( final double originX , final double originY , final double originZ , final double directionX , final double directionY , final double directionZ , final boolean halfRay )
 	{
 		_origin    = Vector3D.INIT.set( originX , originY , originZ );
 		_direction = Vector3D.INIT.set( directionX , directionY , directionZ );
+		_halfRay   = halfRay;
 	}
 
 	/**
@@ -72,10 +80,12 @@ public class BasicRay3D
 	 * @param   directionX  X component for direction of ray in 3D space.
 	 * @param   directionY  Y component for direction of ray in 3D space.
 	 * @param   directionZ  Z component for direction of ray in 3D space.
+	 * @param   halfRay     If <code>true</code>, mark this as a half-ray;
+	 *                      if <code>false</code>, mark this as a complete ray.
 	 *
 	 * @throws  NullPointerException if <code>origin</code> or <code>direction</code> is <code>null</code>.
 	 */
-	public BasicRay3D( final Matrix3D transform , final double originX , final double originY , final double originZ , final double directionX , final double directionY , final double directionZ )
+	public BasicRay3D( final Matrix3D transform , final double originX , final double originY , final double originZ , final double directionX , final double directionY , final double directionZ , final boolean halfRay )
 	{
 		if ( ( transform != null ) && ( transform != Matrix3D.INIT ) )
 		{
@@ -87,6 +97,8 @@ public class BasicRay3D
 			_origin    = Vector3D.INIT.set( originX , originY , originZ );
 			_direction = Vector3D.INIT.set( directionX , directionY , directionZ );
 		}
+
+		_halfRay = halfRay;
 	}
 
 	/**
@@ -99,7 +111,7 @@ public class BasicRay3D
 	 */
 	public BasicRay3D( final Matrix3D transform , final Ray3D ray )
 	{
-		this( transform , ray.getOrigin() , ray.getDirection() );
+		this( transform , ray.getOrigin() , ray.getDirection() , ray.isHalfRay() );
 	}
 
 	/**
@@ -109,10 +121,12 @@ public class BasicRay3D
 	 * @param   transform   Optional transformation to apply.
 	 * @param   origin      Origin of ray in 3D space.
 	 * @param   direction   Direction of ray in 3D space.
+	 * @param   halfRay     If <code>true</code>, mark this as a half-ray;
+	 *                      if <code>false</code>, mark this as a complete ray.
 	 *
 	 * @throws  NullPointerException if <code>origin</code> or <code>direction</code> is <code>null</code>.
 	 */
-	public BasicRay3D( final Matrix3D transform , final Vector3D origin , final Vector3D direction )
+	public BasicRay3D( final Matrix3D transform , final Vector3D origin , final Vector3D direction , final boolean halfRay )
 	{
 		if ( origin == null )
 			throw new NullPointerException( "origin" );
@@ -130,6 +144,8 @@ public class BasicRay3D
 			_origin    = origin;
 			_direction = direction;
 		}
+
+		_halfRay = halfRay;
 	}
 
 	/**
@@ -141,7 +157,7 @@ public class BasicRay3D
 	 */
 	public BasicRay3D( final Ray3D original )
 	{
-		this( original.getOrigin() , original.getDirection() );
+		this( original.getOrigin() , original.getDirection() , original.isHalfRay() );
 	}
 
 	/**
@@ -149,10 +165,12 @@ public class BasicRay3D
 	 *
 	 * @param   origin      Origin of ray in 3D space.
 	 * @param   direction   Direction of ray in 3D space.
+	 * @param   halfRay     If <code>true</code>, mark this as a half-ray;
+	 *                      if <code>false</code>, mark this as a complete ray.
 	 *
 	 * @throws  NullPointerException if an argument is <code>null</code>.
 	 */
-	public BasicRay3D( final Vector3D origin , final Vector3D direction )
+	public BasicRay3D( final Vector3D origin , final Vector3D direction , final boolean halfRay )
 	{
 		if ( origin == null )
 			throw new NullPointerException( "origin" );
@@ -162,6 +180,7 @@ public class BasicRay3D
 
 		_origin    = origin;
 		_direction = direction;
+		_halfRay   = halfRay;
 	}
 
 	public Vector3D getDirection()
@@ -172,6 +191,11 @@ public class BasicRay3D
 	public Vector3D getOrigin()
 	{
 		return _origin;
+	}
+
+	public boolean isHalfRay()
+	{
+		return _halfRay;
 	}
 
 	/**
@@ -187,6 +211,19 @@ public class BasicRay3D
 			throw new NullPointerException( "direction" );
 
 		_direction = direction;
+	}
+
+	/**
+	 * Mark this ray as a half-ray or complete ray. A half-ray has a distinct
+	 * point of origin and extends indefinitely into one direction; a complete
+	 * ray has neither a distinct origin, nor a direction.
+	 *
+	 * @param   halfRay     If <code>true</code>, mark this as a half-ray;
+	 *                      if <code>false</code>, mark this as a complete ray.
+	 */
+	public void setHalfRay( final boolean halfRay )
+	{
+		_halfRay = halfRay;
 	}
 
 	/**
@@ -224,6 +261,6 @@ public class BasicRay3D
 	 */
 	public String toString()
 	{
-		return BasicRay3D.class.getName() + "=[origin=" + _origin.toFriendlyString() + ",direction=" + _direction.toFriendlyString() + "]";
+		return BasicRay3D.class.getName() + "=[origin=" + _origin.toFriendlyString() + ",direction=" + _direction.toFriendlyString() + ']';
 	}
 }

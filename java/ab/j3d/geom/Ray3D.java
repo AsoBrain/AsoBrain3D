@@ -31,7 +31,8 @@ import ab.j3d.Vector3D;
 public interface Ray3D
 {
 	/**
-	 * Get origin of ray in 3D space.
+	 * Get origin of ray in 3D space. For a complete ray, as apposed to a
+	 * half-ray, this may be any point on the ray.
 	 *
 	 * @return  Origin of ray in 3D space.
 	 */
@@ -43,4 +44,14 @@ public interface Ray3D
 	 * @return  Direction of ray in 3D space.
 	 */
 	Vector3D getDirection();
+
+	/**
+	 * Is this ray a half-ray, or a complete ray? A half-ray has a distinct
+	 * point of origin and extends indefinitely into one direction; a complete
+	 * ray has neither a distinct origin, nor a direction.
+	 *
+	 * @return  <code>true</code> if this is a half-ray;
+	 *          <code>false</code> if this is a complete ray.
+	 */
+	boolean isHalfRay();
 }

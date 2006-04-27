@@ -92,7 +92,7 @@ public class GeometryTools
 	 */
 	public static Vector3D getIntersectionBetweenRayAndPlane( final Plane3D plane , final Ray3D ray )
 	{
-		return getIntersectionBetweenRayAndPlane( plane.getNormalX() , plane.getNormalY() , plane.getNormalZ() , plane.getDistance() , plane.isTwoSided() , ray.getOrigin() , ray.getDirection() );
+		return getIntersectionBetweenRayAndPlane( plane.getNormalX() , plane.getNormalY() , plane.getNormalZ() , plane.getDistance() , plane.isTwoSided() , ray.getOrigin() , ray.getDirection() , ray.isHalfRay() );
 	}
 
 	/**
@@ -120,7 +120,7 @@ public class GeometryTools
 	 *
 	 * @throws  NullPointerException if a required input argument is <code>null</code>.
 	 */
-	public static Vector3D getIntersectionBetweenRayAndPlane( final double planeNormalX , final double planeNormalY , final double planeNormalZ , final double planeDistance , final boolean twoSidedPlane , final Vector3D rayOrigin , final Vector3D rayDirection )
+	public static Vector3D getIntersectionBetweenRayAndPlane( final double planeNormalX , final double planeNormalY , final double planeNormalZ , final double planeDistance , final boolean twoSidedPlane , final Vector3D rayOrigin , final Vector3D rayDirection , final boolean halfRay )
 	{
 		Vector3D result = null;
 
@@ -135,17 +135,19 @@ public class GeometryTools
 			                                       - planeNormalZ * rayOrigin.z;
 
 			final double intersectionDistance = numerator / denominator;
-			if ( intersectionDistance > 0.000001 ) /* ray pointing in plane direction */
+
+			if ( ( intersectionDistance > -0.000001 )/* almost on plane */
+			  && ( intersectionDistance <  0.000001 ) )
+			{
+				result = rayOrigin;
+			}
+			else if ( !halfRay || ( intersectionDistance > 0.0 ) ) /* complete ray, or ray pointing in plane direction */
 			{
 				final double x = rayOrigin.x + intersectionDistance * rayDirection.x;
 				final double y = rayOrigin.y + intersectionDistance * rayDirection.y;
 				final double z = rayOrigin.z + intersectionDistance * rayDirection.z;
 
 				result = Vector3D.INIT.set( x , y , z );
-			}
-			else if ( intersectionDistance > -0.0000001 )
-			{
-				result = rayOrigin;
 			}
 		}
 

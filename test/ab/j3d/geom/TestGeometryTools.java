@@ -62,7 +62,7 @@ public final class TestGeometryTools
 			private Test( final Polygon3D polygon , final double rayOriginX , final double rayOriginY , final double rayOriginZ , final double rayDirectionX , final double rayDirectionY , final double rayDirectionZ , final Vector3D expected )
 			{
 				_polygon      = polygon;
-				_ray          = new BasicRay3D( rayOriginX , rayOriginY , rayOriginZ , rayDirectionX , rayDirectionY , rayDirectionZ );
+				_ray          = new BasicRay3D( rayOriginX , rayOriginY , rayOriginZ , rayDirectionX , rayDirectionY , rayDirectionZ, true );
 				_expected     = expected;
 			}
 		}
@@ -279,7 +279,7 @@ public final class TestGeometryTools
 
 			try
 			{
-				final Vector3D result = GeometryTools.getIntersectionBetweenRayAndPlane( test._planeNormalX , test._planeNormalY , test._planeNormalZ , test._planeDistance , test._planeTwoSided , test._rayOrigin , test._rayDirection );
+				final Vector3D result = GeometryTools.getIntersectionBetweenRayAndPlane( test._planeNormalX , test._planeNormalY , test._planeNormalZ , test._planeDistance , test._planeTwoSided , test._rayOrigin , test._rayDirection , true );
 				if ( expectedException != null )
 					fail( description + " should have thrown exception" );
 

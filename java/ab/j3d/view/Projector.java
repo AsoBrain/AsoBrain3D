@@ -414,7 +414,7 @@ public abstract class Projector
 
 			final double distance = Math.sqrt( viewX * viewX + viewY * viewY + eyeDistance * eyeDistance );
 
-			return new BasicRay3D( transform , viewX , viewY , -eyeDistance , viewX / distance , viewY / distance , -eyeDistance / distance );
+			return new BasicRay3D( transform , viewX , viewY , -eyeDistance , viewX / distance , viewY / distance , -eyeDistance / distance , true );
 		}
 
 		public int[] project( final double[] source , final int[] dest , final int pointCount )
@@ -427,7 +427,7 @@ public abstract class Projector
 			final double view2pixels = _view2pixels;
 			final double eyeDistance = _eyeDistance;
 
-			for ( int sourceIndex = 0 , resultIndex = 0 ; resultIndex < resultLength ; sourceIndex += 3 , resultIndex +=2 )
+			for ( int sourceIndex = 0 , resultIndex = 0 ; resultIndex < resultLength ; sourceIndex += 3 , resultIndex += 2 )
 			{
 				final double x = source[ sourceIndex     ];
 				final double y = source[ sourceIndex + 1 ];
@@ -531,7 +531,7 @@ public abstract class Projector
 			final Vector3D origin    = imageToView( pointerX , pointerY , 0.0 );
 			final Vector3D direction = POINTER_DIRECTION;
 
-			return new BasicRay3D( transform , origin , direction );
+			return new BasicRay3D( transform , origin , direction , false );
 		}
 
 		public int[] project( final double[] source , final int[] dest , final int pointCount )
@@ -652,7 +652,7 @@ public abstract class Projector
 				_pointerDirection = direction;
 			}
 
-			return new BasicRay3D( transform , origin , direction );
+			return new BasicRay3D( transform , origin , direction , false );
 		}
 
 		public int[] project( final double[] src , final int[] dest , final int pointCount )
