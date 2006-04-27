@@ -20,6 +20,7 @@
 package ab.j3d.view;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.control.ComponentControlInput;
 import ab.j3d.control.ControlInput;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
@@ -33,7 +34,7 @@ import ab.j3d.model.Object3D;
  * @version $Revision$ $Date$
  */
 public class ViewControlInput
-	extends ControlInput
+	extends ComponentControlInput
 {
 	/**
 	 * {@link ViewModel} with the scene contents.
