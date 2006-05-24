@@ -24,6 +24,7 @@ import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
@@ -142,6 +143,7 @@ public final class Painter
 
 			if ( fillPaint != null )
 			{
+				g.setRenderingHint( RenderingHints.KEY_ANTIALIASING , RenderingHints.VALUE_ANTIALIAS_OFF );
 				g.setPaint( fillPaint );
 				g.fill( polygon );
 			}
@@ -155,6 +157,7 @@ public final class Painter
 						 : polygon._alternateAppearance ? polygon._object.alternateOutlinePaint
 														: polygon._object.outlinePaint;
 
+			g.setRenderingHint( RenderingHints.KEY_ANTIALIASING , RenderingHints.VALUE_ANTIALIAS_ON );
 			g.setPaint( outlinePaint );
 			g.draw( polygon );
 		}
