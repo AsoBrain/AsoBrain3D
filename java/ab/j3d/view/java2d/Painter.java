@@ -64,7 +64,7 @@ public final class Painter
 	 * Paint all polygons in the render queue.
 	 *
 	 * @param   g                   Graphics context to paint on.
-	 * @param   renderQueue         REnder queue whose contents to paint.
+	 * @param   renderQueue         Render queue whose contents to paint.
 	 * @param   outline             Paint polygon outlines.
 	 * @param   fill                Fill polygons (vs. outline only).
 	 * @param   applyLighting       Apply lighting effect to filled polygons.
@@ -73,60 +73,90 @@ public final class Painter
 	public static void paintQueue( final Graphics2D g , final RenderQueue renderQueue , final boolean outline , final boolean fill , final boolean applyLighting , final boolean useTextureColor )
 	{
 		final RenderedPolygon[] polygons = renderQueue.getQueuedPolygons();
+		paintQueue( g , polygons , outline , fill , applyLighting , useTextureColor );
+	}
+
+	/**
+	 * Paint all specified polygons.
+	 *
+	 * @param   g                   Graphics context to paint on.
+	 * @param   polygons            Polygons to paint.
+	 * @param   outline             Paint polygon outlines.
+	 * @param   fill                Fill polygons (vs. outline only).
+	 * @param   applyLighting       Apply lighting effect to filled polygons.
+	 * @param   useTextureColor     Try to apply texture properties when filling polygons.
+	 */
+	public static void paintQueue( final Graphics2D g , final RenderedPolygon[] polygons , final boolean outline , final boolean fill , final boolean applyLighting , final boolean useTextureColor )
+	{
 		for ( int i = 0 ; i < polygons.length ; i++ )
 		{
 			final RenderedPolygon polygon = polygons[ i ];
 
-			Paint fillPaint = null;
-			if ( fill || ( polygon._vertexCount < 3 ) )
+			paintPolygon( g , polygon , outline , fill , applyLighting , useTextureColor );
+		}
+	}
+
+	/**
+	 * Paint the specified polygon.
+	 *
+	 * @param   g                   Graphics context to paint on.
+	 * @param   polygon             Polygon to paint.
+	 * @param   outline             Paint polygon outlines.
+	 * @param   fill                Fill polygons (vs. outline only).
+	 * @param   applyLighting       Apply lighting effect to filled polygons.
+	 * @param   useTextureColor     Try to apply texture properties when filling polygons.
+	 */
+	public static void paintPolygon( final Graphics2D g , final RenderedPolygon polygon , final boolean outline , final boolean fill , final boolean applyLighting , final boolean useTextureColor )
+	{
+		Paint fillPaint = null;
+		if ( fill || ( polygon._vertexCount < 3 ) )
+		{
+			final TextureSpec texture = polygon._texture;
+
+			if ( polygon._alternateAppearance )
 			{
-				final TextureSpec texture = polygon._texture;
+				fillPaint = polygon._object.alternateFillPaint;
+			}
+			else if ( useTextureColor && ( texture != null ) && !texture.isTexture() )
+			{
+				fillPaint = texture.getColor();
+			}
+			else
+			{
+				fillPaint = polygon._object.fillPaint;
+			}
 
-				if ( polygon._alternateAppearance )
-				{
-					fillPaint = polygon._object.alternateFillPaint;
-				}
-				else if ( useTextureColor && ( texture != null ) && !texture.isTexture() )
-				{
-					fillPaint = texture.getColor();
-				}
-				else
-				{
-					fillPaint = polygon._object.fillPaint;
-				}
+			if ( fill && applyLighting && ( polygon._object.shadeFactor > 0.01f ) && ( fillPaint instanceof Color ) )
+			{
+				final float shadeFactor = polygon._object.shadeFactor;
 
-				if ( fill && applyLighting && ( polygon._object.shadeFactor > 0.01f ) && ( fillPaint instanceof Color ) )
+				final float factor = Math.min( 1.0f , ( 1.0f - shadeFactor ) + shadeFactor * Math.abs( (float)polygon._planeNormalZ ) );
+				if ( factor < 1.0f )
 				{
-					final float shadeFactor = polygon._object.shadeFactor;
+					final Color color = (Color)fillPaint;
+					final float[] rgb = color.getRGBComponents( null );
 
-					final float factor = Math.min( 1.0f , ( 1.0f - shadeFactor ) + shadeFactor * Math.abs( (float)polygon._planeNormalZ ) );
-					if ( factor < 1.0f )
-					{
-						final Color color = (Color)fillPaint;
-						final float[] rgb = color.getRGBComponents( null );
-
-						fillPaint = new Color( factor * rgb[ 0 ] , factor * rgb[ 1 ] , factor * rgb[ 2 ] , rgb[ 3 ] );
-					}
-				}
-
-				if ( fillPaint != null )
-				{
-					g.setPaint( fillPaint );
-					g.fill( polygon );
+					fillPaint = new Color( factor * rgb[ 0 ] , factor * rgb[ 1 ] , factor * rgb[ 2 ] , rgb[ 3 ] );
 				}
 			}
 
-			if ( outline || ( fillPaint == null ) )
+			if ( fillPaint != null )
 			{
-				final Paint outlinePaint;
-
-				outlinePaint = ( fillPaint != null )        ? Color.darkGray
-				             : polygon._alternateAppearance ? polygon._object.alternateOutlinePaint
-				                                            : polygon._object.outlinePaint;
-
-				g.setPaint( outlinePaint );
-				g.draw( polygon );
+				g.setPaint( fillPaint );
+				g.fill( polygon );
 			}
+		}
+
+		if ( outline || ( fillPaint == null ) )
+		{
+			final Paint outlinePaint;
+
+			outlinePaint = ( fillPaint != null )        ? Color.darkGray
+						 : polygon._alternateAppearance ? polygon._object.alternateOutlinePaint
+														: polygon._object.outlinePaint;
+
+			g.setPaint( outlinePaint );
+			g.draw( polygon );
 		}
 	}
 
