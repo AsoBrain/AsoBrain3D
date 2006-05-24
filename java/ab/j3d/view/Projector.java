@@ -281,7 +281,9 @@ public abstract class Projector
 
 			for ( int i = 0 ; i < vertexCount ; i++ )
 			{
-				if ( inViewVolume( vertices[ i * 3 ] , vertices[ i * 3 + 1 ] , vertices[ i * 3 + 2 ] ) )
+				final int vertexIndex = i * 3;
+
+				if ( inViewVolume( vertices[ vertexIndex ] , vertices[ vertexIndex + 1 ] , vertices[ vertexIndex + 2 ] ) )
 				{
 					result = false;
 					break;
