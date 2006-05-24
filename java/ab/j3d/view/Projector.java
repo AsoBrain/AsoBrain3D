@@ -260,6 +260,39 @@ public abstract class Projector
 	}
 
 	/**
+	 * This function tests if a polygon lies outside the view volume of this projector.
+	 *
+	 * @param   vertices    Vertices that specify the polygon (one triplet per vertex).
+	 *
+	 * @return  <code>true</code> if the polygon lies completely outside the view volume;
+	 *          <code>false</code> if the polygon has no vertices, or lies (partly)
+	 *          inside the view volume.
+	 *
+	 * @see     #inViewVolume(double, double, double)
+	 */
+	public final boolean outsideViewVolume( final double[] vertices )
+	{
+		boolean result = false;
+
+		final int vertexCount = vertices.length / 3;
+		if ( vertexCount > 0 )
+		{
+			result = true;
+
+			for ( int i = 0 ; i < vertexCount ; i++ )
+			{
+				if ( inViewVolume( vertices[ i * 3 ] , vertices[ i * 3 + 1 ] , vertices[ i * 3 + 2 ] ) )
+				{
+					result = false;
+					break;
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/**
 	 * This function tests if a point defined in view coordinates lies within
 	 * the view volume of this projector.
 	 *
