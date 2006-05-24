@@ -22,11 +22,6 @@ package ab.j3d.view;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.numdata.oss.ArrayTools;
-import com.numdata.oss.AugmentedArrayList;
-import com.numdata.oss.AugmentedList;
-import com.numdata.oss.io.IndentingWriter;
-
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Camera3D;
@@ -34,6 +29,11 @@ import ab.j3d.model.Face3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
+
+import com.numdata.oss.ArrayTools;
+import com.numdata.oss.AugmentedArrayList;
+import com.numdata.oss.AugmentedList;
+import com.numdata.oss.io.IndentingWriter;
 
 /**
  * This class manages a render queue that can be used by a 3D render engine. It
@@ -68,28 +68,28 @@ public final class RenderQueue
 	 *
 	 * @see #compare
 	 */
-	private static final int IN_FRONT     = 0;
+	public static final int IN_FRONT     = 0;
 
 	/**
 	 * Indicates a polygon is in behind another. Used in {@link #compare}.
 	 *
 	 * @see #compare
 	 */
-	private static final int BEHIND       = 1;
+	public static final int BEHIND       = 1;
 
 	/**
 	 * Indicates a polygon intersects with another. Used in {@link #compare}.
 	 *
 	 * @see #compare
 	 */
-	private static final int INTERSECTING = 2;
+	public static final int INTERSECTING = 2;
 
 	/**
 	 * Indicates a polygon is coplanar to another. Used in {@link #compare}.
 	 *
 	 * @see #compare
 	 */
-	private static final int COPLANAR     = 3;
+	public static final int COPLANAR     = 3;
 
 	/**
 	 * List of queued {@link RenderedPolygon} instances. If sorted, they shall
@@ -636,7 +636,7 @@ public final class RenderQueue
 	 * @see     #INTERSECTING
 	 * @see     #COPLANAR
 	 */
-	private static int compare( final RenderedPolygon polygon , final RenderedPolygon other )
+	public static int compare( final RenderedPolygon polygon , final RenderedPolygon other )
 	{
 		boolean  behind      = false;
 		boolean  inFront     = false;
@@ -671,6 +671,25 @@ public final class RenderQueue
 	}
 
 	/**
+	 * Compare a specified point to the plane of a specified {@link RenderedPolygon}.
+	 *
+	 * @param   plane   Plane to compare point with.
+	 * @param   point   Point to compare with the plane.
+	 *
+	 * @return  Relation of point to plane ( {@link #IN_FRONT}, {@link #BEHIND} or {@link #COPLANAR} ).
+	 */
+	public static int compare( final RenderedPolygon plane , final Vector3D point )
+	{
+		final double  dot           = Vector3D.dot( plane._planeNormalX , plane._planeNormalY , plane._planeNormalZ , point.x , point.y , point.z );
+		final double  planeDistance = plane._planeConstant;
+
+		final boolean behind  = planeDistance > ( dot + 0.001 );
+		final boolean inFront = planeDistance < ( dot - 0.001 );
+
+		return inFront ? IN_FRONT : behind ? BEHIND : COPLANAR;
+	}
+
+	/**
 	 * Clips {@link RenderedPolygon} <code>polygon</code> into two polygons,
 	 * clipping at the plane of <code>cuttingPlane</code>. The result is an
 	 * array containing the two new {@link RenderedPolygon}s.
@@ -680,7 +699,7 @@ public final class RenderQueue
 	 *
 	 * @return  An array containing the two new {@link RenderedPolygon}s.
 	 */
-	private RenderedPolygon[] clip( final RenderedPolygon polygon , final RenderedPolygon cuttingPlane )
+	public RenderedPolygon[] clip( final RenderedPolygon polygon , final RenderedPolygon cuttingPlane )
 	{
 		/**
 		 * Setup variables to be used.
