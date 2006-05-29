@@ -374,7 +374,7 @@ public class BSPTree
 	 */
 	private void build( final BSPTreeNode root , final List polygons )
 	{
-		final RenderedPolygon  partitionPolygon = (RenderedPolygon)polygons.get( 0 ); // Not very intelligent....
+		final RenderedPolygon  partitionPolygon = getPartitionPlane( polygons );
 		final RenderedPolygon  partitionPlane   = partitionPolygon;
 		final List             frontList        = new ArrayList();
 		final List             backList         = new ArrayList();
@@ -435,6 +435,61 @@ public class BSPTree
 
 			build( backTree , backList );
 		}
+	}
+
+	/**
+	 * Method that tries to determine the "best" polygon that can be used as
+	 * partition plane from a list of polygons.
+	 * <p />
+	 * The polygon that potentially has the greatest surface, will be returned.
+	 *
+	 * @param   polygons    Polygons to choose from (not <code>null</code>).
+	 *
+	 * @return  Determined polygon;
+	 *          <code>null</code> if specified polygon list is empty.
+	 */
+	private static RenderedPolygon getPartitionPlane( final List polygons )
+	{
+		final RenderedPolygon result;
+
+		if ( polygons.isEmpty() )
+		{
+			result = null;
+		}
+		else if ( polygons.size() == 1 )
+		{
+			result = (RenderedPolygon)polygons.get( 0 );
+		}
+		else
+		{
+			RenderedPolygon potential     = null;
+			double          potentialSize = 0.0;
+
+			for ( int i = 0 ; i < polygons.size() ; i++ )
+			{
+				final RenderedPolygon polygon = (RenderedPolygon)polygons.get( i );
+				final double x1 = polygon._viewX[ 1 ] - polygon._viewX[ 0 ];
+				final double x2 = polygon._viewX[ 2 ] - polygon._viewX[ 1 ];
+				final double y1 = polygon._viewY[ 1 ] - polygon._viewY[ 0 ];
+				final double y2 = polygon._viewY[ 2 ] - polygon._viewY[ 1 ];
+				final double z1 = polygon._viewZ[ 1 ] - polygon._viewZ[ 0 ];
+				final double z2 = polygon._viewZ[ 2 ] - polygon._viewZ[ 1 ];
+
+				final double d1   = ( x1 * x1 ) + ( y1 * y1 ) + ( z1 * z1 );
+				final double d2   = ( x2 * x2 ) + ( y2 * y2 ) + ( z2 * z2 );
+				final double size = d1 * d2;
+
+				if ( size > potentialSize )
+				{
+					potentialSize = size;
+					potential = polygon;
+				}
+			}
+
+			result = potential;
+		}
+
+		return result;
 	}
 
 	/**
