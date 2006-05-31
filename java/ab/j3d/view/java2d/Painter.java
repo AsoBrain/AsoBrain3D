@@ -109,6 +109,8 @@ public final class Painter
 	 */
 	public static void paintPolygon( final Graphics2D g , final RenderedPolygon polygon , final boolean outline , final boolean fill , final boolean applyLighting , final boolean useTextureColor )
 	{
+		final Object antiAliasingValue = g.getRenderingHint( RenderingHints.KEY_ANTIALIASING );
+
 		Paint fillPaint = null;
 		if ( fill || ( polygon._vertexCount < 3 ) )
 		{
@@ -161,6 +163,8 @@ public final class Painter
 			g.setPaint( outlinePaint );
 			g.draw( polygon );
 		}
+
+		g.setRenderingHint( RenderingHints.KEY_ANTIALIASING , antiAliasingValue );
 	}
 
 	/**
