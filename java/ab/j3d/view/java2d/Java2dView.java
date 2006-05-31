@@ -20,7 +20,6 @@
 package ab.j3d.view.java2d;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -104,10 +103,7 @@ final class Java2dView
 		 */
 		private ViewComponent()
 		{
-			final Color originalBackground = getBackground();
-			setOpaque( true );
 			setDoubleBuffered( true );
-			setBackground( ( originalBackground == null ) ? new Color( 51 , 77 , 102 ) : originalBackground.brighter() );
 
 			_insets = null;
 		}
@@ -173,9 +169,6 @@ final class Java2dView
 			final RenderedPolygon[] renderQueue = bspTree.getRenderQueue( viewPoint , projector , model2view , backfaceCulling , true );
 
 			final Graphics2D g2d = (Graphics2D)g.create( insets.left , insets.top , imageWidth , imageHeight );
-			g2d.setColor( getBackground() );
-			g2d.fillRect( 0 , 0 , imageWidth , imageHeight );
-
 			Painter.paintQueue( g2d , renderQueue , outline , fill , applyLighting , useTextures );
 
 			if ( renderingPolicy == SKETCH )
