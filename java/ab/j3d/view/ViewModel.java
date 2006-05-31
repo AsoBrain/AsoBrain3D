@@ -28,9 +28,6 @@ import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
-import com.numdata.oss.ArrayTools;
-import com.numdata.oss.ui.ActionTools;
-
 import ab.j3d.Bounds3D;
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
@@ -42,6 +39,9 @@ import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 import ab.j3d.pov.ViewModelToPovAction;
+
+import com.numdata.oss.ArrayTools;
+import com.numdata.oss.ui.ActionTools;
 
 /**
  * The view model provides a high level interface between an application and a
@@ -138,13 +138,31 @@ public abstract class ViewModel
 	protected final double _unit;
 
 	/**
+	 * Binary Space Partitioning Tree ({@link BSPTree}) of this model.
+	 * <p />
+	 * The tree is only calculated when the scene changes (indicated by
+	 * the {@link #_bspTreeDirty} field).
+	 */
+	private final BSPTree _bspTree;
+
+	/**
+	 * This internal flag is set to indicate that the scene is
+	 * changed, so the {@link BSPTree} needs to be re-calculated.
+	 *
+	 * @see #updateViews
+	 */
+	private boolean _bspTreeDirty;
+
+	/**
 	 * Construct new view model.
 	 *
 	 * @param   unit    Unit scale factor (e.g. {@link ViewModel#MM}).
 	 */
 	protected ViewModel( final double unit )
 	{
-		_unit = unit;
+		_unit         = unit;
+		_bspTree      = new BSPTree();
+		_bspTreeDirty = true;
 	}
 
 	/**
@@ -640,9 +658,13 @@ public abstract class ViewModel
 
 	/**
 	 * Update all views.
+	 * <p />
+	 * Before updating all views, the {@link #_bspTreeDirty} flag is set <code>true</code>.
 	 */
 	public final void updateViews()
 	{
+		_bspTreeDirty = true;
+
 		for ( int i = 0 ; i < _views.size() ; i++ )
 		{
 			final ViewModelView view = (ViewModelView) _views.get( i );
@@ -682,5 +704,29 @@ public abstract class ViewModel
 	public double getUnit()
 	{
 		return _unit;
+	}
+
+	/**
+	 * Binary Space Partitioning Tree ({@link BSPTree}) of this model.
+	 * <p />
+	 * The tree is only calculated when the scene changes (indicated by
+	 * the {@link #_bspTreeDirty} field).
+	 *
+	 * @return  The Binary Space Partitioning Tree of this model.
+	 */
+	public BSPTree getBspTree()
+	{
+		final BSPTree result = _bspTree;
+
+		if ( _bspTreeDirty )
+		{
+			result.reset();
+			result.addScene( getScene() );
+			result.build();
+
+			_bspTreeDirty = false;
+		}
+
+		return result;
 	}
 }
