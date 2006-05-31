@@ -16,6 +16,8 @@ import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
+import ab.j3d.model.Node3DCollection;
+import ab.j3d.model.Node3D;
 
 /**
  * This class manages a Binary Space Partitioning Tree that can be used by a 3D render engine.
@@ -119,11 +121,6 @@ public class BSPTree
 	private List _polygons;
 
 	/**
-	 * Boolean indicating if the tree is build.
-	 */
-	private boolean _isBuild;
-
-	/**
 	 * Used to split polygons.
 	 *
 	 * @see RenderQueue#clip
@@ -155,20 +152,25 @@ public class BSPTree
 	{
 		_root                 = new BSPTreeNode();
 		_polygons             = new ArrayList();
-		_isBuild              = false;
 		_tmpVertexCoordinates = null;
 		_tmpFaceNormals       = null;
 	}
 
 	/**
-	 * Check if the tree is build.
+	 * Add a scene to the tree ( Note: the tree is not rebuild! ).
 	 *
-	 * @return  <code>true</code> if the tree is build;
-	 *          <code>false</code> otherwise.
+	 * @param   nodes   Nodes that specify the scene (only {@link Object3D} objects are used).
 	 */
-	public boolean isBuild()
+	public void addScene( final Node3DCollection nodes )
 	{
-		return _isBuild;
+		for ( int i = 0 ; i < nodes.size() ; i++ )
+		{
+			final Node3D   object       = nodes.getNode( i );
+			final Matrix3D object2world = nodes.getMatrix( i );
+
+			if ( object instanceof Object3D )
+				addObject3D( (Object3D)object , object2world );
+		}
 	}
 
 	/**
@@ -212,23 +214,24 @@ public class BSPTree
 	/**
 	 * Get polygons to render in the specified order ('back-to-front' or 'front-to-back').
 	 *
-	 * @param   eyePoint        Eye point in model coordinates.
-	 * @param   projector       Projector used to e.g. check polygons against view volume.
-	 * @param   model2view      Transformation from model to view coordinates.
-	 * @param   backToFront     Should the polygons be ordered 'back-to-front' or 'front-to-back'.
+	 * @param   viewPoint           Point from where the view is rendered.
+	 * @param   projector           Projector used to e.g. check polygons against view volume.
+	 * @param   model2view          Transformation from model to view coordinates.
+	 * @param   backfaceCulling     Prevent backfaces from being rendered.
+	 * @param   backToFront         Should the polygons be ordered 'back-to-front' or 'front-to-back'.
 	 *
 	 * @return  Array filled with {@link RenderedPolygon} objects in specified paint order.
 	 */
-	public RenderedPolygon[] getRenderQueue( final Vector3D eyePoint , final Projector projector , final Matrix3D model2view , final boolean backToFront )
+	public RenderedPolygon[] getRenderQueue( final Vector3D viewPoint , final Projector projector , final Matrix3D model2view , final boolean backfaceCulling , final boolean backToFront )
 	{
 		final ArrayList queue = new ArrayList();
-		getSortedPolygons( eyePoint , _root , queue , backToFront );
+		getSortedPolygons( viewPoint , _root , queue , backToFront );
 
 		final List result = new ArrayList();
 		for ( int i = 0 ; i < queue.size() ; i++ )
 		{
 			final RenderedPolygon  polygon         = (RenderedPolygon)queue.get( i );
-			final RenderedPolygon  renderedPolygon = getRenderedPolygon( polygon , model2view , projector );
+			final RenderedPolygon  renderedPolygon = getRenderedPolygon( polygon , model2view , projector , backfaceCulling );
 
 			if ( renderedPolygon != null )
 			{
@@ -245,13 +248,14 @@ public class BSPTree
 	 * The vertices are translated by using the specified {@link Matrix3D},
 	 * and projected by using the specified {@link Projector}.
 	 *
-	 * @param   polygon     Source polygon (that is in BSP tree).
-	 * @param   model2view  Transformation from model to view coordinates.
-	 * @param   projector   Projector used to e.g. check polygons against view volume.
+	 * @param   polygon             Source polygon (that is in BSP tree).
+	 * @param   model2view          Transformation from model to view coordinates.
+	 * @param   projector           Projector used to e.g. check polygons against view volume.
+	 * @param   backfaceCulling     Prevent backfaces from being rendered.
 	 *
 	 * @return  The created rendered polygon.
 	 */
-	private static RenderedPolygon getRenderedPolygon( final RenderedPolygon polygon , final Matrix3D model2view , final Projector projector )
+	private static RenderedPolygon getRenderedPolygon( final RenderedPolygon polygon , final Matrix3D model2view , final Projector projector , final boolean backfaceCulling )
 	{
 		double x;
 		double y;
@@ -278,7 +282,7 @@ public class BSPTree
 		}
 		projector.project( viewCoordinates , projectedCoordinates , vertexCount );
 
-		if ( !projector.outsideViewVolume( viewCoordinates ) ) // @TODO Also add backface culling test??
+		if ( !projector.outsideViewVolume( viewCoordinates ) )
 		{
 			result = new RenderedPolygon( vertexCount );
 
@@ -336,6 +340,10 @@ public class BSPTree
 			result._alternateAppearance = polygon._alternateAppearance;
 		}
 
+		// Perform backface culling.
+		if ( result != null && result.isBackface() && backfaceCulling )
+			result = null;
+
 		return result;
 	}
 
@@ -348,7 +356,6 @@ public class BSPTree
 		if ( _polygons.size() > 0 )
 		{
 			build( _root , _polygons );
-			_isBuild = true;
 		}
 	}
 
@@ -495,12 +502,12 @@ public class BSPTree
 	/**
 	 * Sort polygons in the specified order ('back-to-front' or 'front-to-back').
 	 *
-	 * @param   eyePoint        Eye point in model coordinates.
+	 * @param   viewPoint       Point from where the view is rendered.
 	 * @param   root            Start node in tree.
 	 * @param   result          Result list.
 	 * @param   backToFront     Should the polygons be ordered 'back-to-front' or 'front-to-back'.
 	 */
-	private static void getSortedPolygons( final Vector3D eyePoint , final BSPTreeNode root , final List result , final boolean backToFront )
+	private static void getSortedPolygons( final Vector3D viewPoint , final BSPTreeNode root , final List result , final boolean backToFront )
 	{
 		if ( root != null )
 		{
@@ -515,28 +522,28 @@ public class BSPTree
 			}
 			else
 			{
-				switch ( RenderQueue.compare( partitionPlane , eyePoint ) )
+				switch ( RenderQueue.compare( partitionPlane , viewPoint ) )
 				{
 					case RenderQueue.IN_FRONT :
 					{
-						getSortedPolygons( eyePoint , back  , result , backToFront );
+						getSortedPolygons( viewPoint , back  , result , backToFront );
 						result.addAll( polygons );
-						getSortedPolygons( eyePoint , front , result , backToFront );
+						getSortedPolygons( viewPoint , front , result , backToFront );
 						break;
 					}
 
 					case RenderQueue.BEHIND :
 					{
-						getSortedPolygons( eyePoint , front , result , backToFront );
+						getSortedPolygons( viewPoint , front , result , backToFront );
 						result.addAll( polygons );
-						getSortedPolygons( eyePoint , back  , result , backToFront );
+						getSortedPolygons( viewPoint , back  , result , backToFront );
 						break;
 					}
 
 					case RenderQueue.COPLANAR :
 					{
-						getSortedPolygons( eyePoint , back  , result , backToFront );
-						getSortedPolygons( eyePoint , front , result , backToFront );
+						getSortedPolygons( viewPoint , back  , result , backToFront );
+						getSortedPolygons( viewPoint , front , result , backToFront );
 						break;
 					}
 				}
