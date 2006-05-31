@@ -25,14 +25,14 @@ import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.numdata.oss.event.EventDispatcher;
-
 import ab.j3d.Matrix3D;
 import ab.j3d.control.CameraControl;
 import ab.j3d.control.Control;
 import ab.j3d.control.ControlInput;
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Transform3D;
+
+import com.numdata.oss.event.EventDispatcher;
 
 /**
  * This class defines a view in the view model.
@@ -277,6 +277,16 @@ public abstract class ViewModelView
 	public final Matrix3D getViewTransform()
 	{
 		return _transform.getInverseTransform();
+	}
+
+	/**
+	 * Get inverse view transform (tranforms view coordinates to model coordinates).
+	 *
+	 * @return  Inverse view transform.
+	 */
+	public final Matrix3D getInverseViewTransform()
+	{
+		return _transform.getTransform();
 	}
 
 	/**
