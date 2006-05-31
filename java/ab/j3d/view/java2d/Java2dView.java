@@ -29,14 +29,12 @@ import java.awt.Insets;
 import javax.swing.JComponent;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.Vector3D;
 import ab.j3d.control.ControlInput;
-import ab.j3d.model.Node3D;
-import ab.j3d.model.Node3DCollection;
-import ab.j3d.model.Object3D;
+import ab.j3d.view.BSPTree;
 import ab.j3d.view.Projector;
-import ab.j3d.view.RenderQueue;
+import ab.j3d.view.RenderedPolygon;
 import ab.j3d.view.ViewControlInput;
-import ab.j3d.view.ViewModelNode;
 import ab.j3d.view.ViewModelView;
 
 /**
@@ -88,7 +86,7 @@ final class Java2dView
 	/**
 	 * Stroke to use for sketched rendering.
 	 */
-	private static final BasicStroke SKETCH_STROKE = new BasicStroke( 3.0f , BasicStroke.CAP_BUTT , BasicStroke.JOIN_BEVEL );
+	private static final BasicStroke SKETCH_STROKE = new BasicStroke( 0.5f , BasicStroke.CAP_BUTT , BasicStroke.JOIN_BEVEL );
 
 	/**
 	 * UI component to present view to user.
@@ -100,16 +98,6 @@ final class Java2dView
 		 * Insets cache.
 		 */
 		private Insets _insets;
-
-		/**
-		 * Render queue for view.
-		 */
-		private final RenderQueue _renderQueue = new RenderQueue();
-
-		/**
-		 * Temporary/shared storage area for the {@link #paintComponent} method.
-		 */
-		private final Node3DCollection _tmpNodeCollection = new Node3DCollection();
 
 		/**
 		 * Construct view component.
@@ -156,15 +144,13 @@ final class Java2dView
 		{
 			super.paintComponent( g );
 
-			final Insets      insets      = getInsets( _insets );
-			final int         imageWidth  = getWidth()  - insets.left - insets.right;
-			final int         imageHeight = getHeight() - insets.top  - insets.bottom;
+			final BSPTree   bspTree    = _model.getBspTree();
+			final Projector projector  = getProjector();
+			final Matrix3D  model2view = getViewTransform();
 
-			final Java2dModel model       = _model;
-			final Object[]    nodeIDs     = model.getNodeIDs();
-			final Matrix3D    model2view  = getViewTransform();
-
-			final Projector projector = getProjector();
+			final Insets insets      = getInsets( _insets );
+			final int    imageWidth  = getWidth()  - insets.left - insets.right;
+			final int    imageHeight = getHeight() - insets.top  - insets.bottom;
 
 			final boolean fill;
 			final boolean outline;
@@ -172,47 +158,31 @@ final class Java2dView
 			final boolean backfaceCulling;
 			final boolean applyLighting;
 
-			switch ( _renderingPolicy )
+			final int renderingPolicy = _renderingPolicy;
+			switch ( renderingPolicy )
 			{
 					case SOLID     : fill = true;  outline = false; useTextures = true;  backfaceCulling = true;  applyLighting = true;  break;
 					case SCHEMATIC : fill = true;  outline = true;  useTextures = false; backfaceCulling = true;  applyLighting = false; break;
-					case SKETCH    : fill = true;  outline = true;  useTextures = true;  backfaceCulling = true;  applyLighting = true;  break;
+					case SKETCH    : fill = true;  outline = false; useTextures = true;  backfaceCulling = true;  applyLighting = true;  break;
 					case WIREFRAME : fill = false; outline = true;  useTextures = false; backfaceCulling = false; applyLighting = false; break;
 					default        : fill = false; outline = false; useTextures = false; backfaceCulling = false; applyLighting = true;  break;
 			}
 
-			final RenderQueue renderQueue = _renderQueue;
-			renderQueue.clearQueue();
-
-			final Node3DCollection nodeCollection = _tmpNodeCollection;
-			nodeCollection.clear();
-
-			for ( int i = 0 ; i < nodeIDs.length ; i++ )
-			{
-				final Object        id              = nodeIDs[ i ];
-				final ViewModelNode node            = model.getNode( id );
-				final Matrix3D      node2model      = node.getTransform();
-				final Node3D        node3D          = node.getNode3D();
-//				final TextureSpec   textureOverride = node.getTextureOverride();
-//				final float         opacity         = node.getOpacity();
-
-				node3D.gatherLeafs( nodeCollection , Object3D.class , node2model.multiply( model2view ) , false );
-				for ( int j = 0 ; j < nodeCollection.size() ; j++ )
-				{
-					final Object3D object = (Object3D)nodeCollection.getNode( j );
-					renderQueue.enqueueObject( projector , backfaceCulling , nodeCollection.getMatrix( j ) , object , false );
-				}
-				nodeCollection.clear();
-			}
+			final Matrix3D view2model = getInverseViewTransform();
+			final Vector3D viewPoint  = Vector3D.INIT.set( view2model.xo , view2model.yo , view2model.zo );
+			final RenderedPolygon[] renderQueue = bspTree.getRenderQueue( viewPoint , projector , model2view , backfaceCulling , true );
 
 			final Graphics2D g2d = (Graphics2D)g.create( insets.left , insets.top , imageWidth , imageHeight );
 			g2d.setColor( getBackground() );
 			g2d.fillRect( 0 , 0 , imageWidth , imageHeight );
 
-			if ( _renderingPolicy == SKETCH )
+			if ( renderingPolicy == SKETCH )
 				g2d.setStroke( SKETCH_STROKE );
 
 			Painter.paintQueue( g2d , renderQueue , outline , fill , applyLighting , useTextures );
+
+			if ( renderingPolicy == SKETCH )
+				Painter.paintQueue( g2d , renderQueue , true , false , false , false );
 
 			paintOverlay( g2d );
 
