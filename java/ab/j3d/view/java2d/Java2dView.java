@@ -176,13 +176,13 @@ final class Java2dView
 			g2d.setColor( getBackground() );
 			g2d.fillRect( 0 , 0 , imageWidth , imageHeight );
 
-			if ( renderingPolicy == SKETCH )
-				g2d.setStroke( SKETCH_STROKE );
-
 			Painter.paintQueue( g2d , renderQueue , outline , fill , applyLighting , useTextures );
 
 			if ( renderingPolicy == SKETCH )
+			{
+				g2d.setStroke( SKETCH_STROKE );
 				Painter.paintQueue( g2d , renderQueue , true , false , false , false );
+			}
 
 			paintOverlay( g2d );
 
