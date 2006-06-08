@@ -250,6 +250,11 @@ public final class Painter
 			final Matrix3D insertTransform = ((Insert3D)node).getTransform();
 			transform = insertTransform.multiply( node2view );
 		}
+		else if ( node instanceof Transform3D )
+		{
+			final Matrix3D transformTransform = ((Transform3D)node).getTransform();
+			transform = transformTransform.multiply( node2view );
+		}
 		else
 		{
 			transform = node2view;
