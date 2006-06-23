@@ -111,6 +111,15 @@ public abstract class ViewModelView
 	private final double _unit;
 
 	/**
+	 * Resolution of image in meters per pixel. If is set to <code>0.0</code>,
+	 * the resolution will be determined automatically.
+	 *
+	 * @see     #getResolution
+	 * @see     #setResolution
+	 */
+	private double _resolution;
+
+	/**
 	 * Transformation of view.
 	 */
 	private Transform3D _transform;
@@ -140,6 +149,8 @@ public abstract class ViewModelView
 	protected ViewModelView( final double unit , final Object id )
 	{
 		_unit = unit;
+
+		_resolution = 0.0;
 
 		final Camera3D camera = new Camera3D();
 		camera.setTag( id );
@@ -319,10 +330,31 @@ public abstract class ViewModelView
 	 */
 	public double getResolution()
 	{
-		final Component component = getComponent();
-		final Toolkit   toolkit   = ( component != null ) ? component.getToolkit() : Toolkit.getDefaultToolkit();
+		double result = _resolution;
 
-		return ViewModel.INCH / (double)toolkit.getScreenResolution();
+		if ( result == 0.0 )
+		{
+			final Component component = getComponent();
+			final Toolkit   toolkit   = ( component != null ) ? component.getToolkit() : Toolkit.getDefaultToolkit();
+
+			result = ViewModel.INCH / (double)toolkit.getScreenResolution();
+		}
+
+		return result;
+	}
+
+	/**
+	 * Set resolution of image in meters per pixel. If is set to
+	 * <code>0.0</code>, the resolution will be determined automatically.
+	 *
+	 * @param   resolution  Resolution in meters per pixel, 0.0 if automatic.
+	 */
+	public void setResolution( final double resolution )
+	{
+		if ( ( resolution < 0.0 ) || Double.isNaN( resolution ) )
+			throw new IllegalArgumentException( String.valueOf( resolution ) );
+
+		_resolution = resolution;
 	}
 
 	/**
