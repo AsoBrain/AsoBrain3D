@@ -15,9 +15,9 @@ import java.util.List;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
-import ab.j3d.model.Object3D;
-import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Node3D;
+import ab.j3d.model.Node3DCollection;
+import ab.j3d.model.Object3D;
 
 /**
  * This class manages a Binary Space Partitioning Tree that can be used by a 3D render engine.
@@ -469,22 +469,13 @@ public class BSPTree
 		}
 		else
 		{
-			RenderedPolygon potential     = null;
-			double          potentialSize = 0.0;
+			RenderedPolygon potential     = (RenderedPolygon)polygons.get( 0 );
+			double          potentialSize = potential.getEstimatedSurfaceAreaFactor();
 
-			for ( int i = 0 ; i < polygons.size() ; i++ )
+			for ( int i = 1 ; i < polygons.size() ; i++ )
 			{
 				final RenderedPolygon polygon = (RenderedPolygon)polygons.get( i );
-				final double x1 = polygon._viewX[ 1 ] - polygon._viewX[ 0 ];
-				final double x2 = polygon._viewX[ 2 ] - polygon._viewX[ 1 ];
-				final double y1 = polygon._viewY[ 1 ] - polygon._viewY[ 0 ];
-				final double y2 = polygon._viewY[ 2 ] - polygon._viewY[ 1 ];
-				final double z1 = polygon._viewZ[ 1 ] - polygon._viewZ[ 0 ];
-				final double z2 = polygon._viewZ[ 2 ] - polygon._viewZ[ 1 ];
-
-				final double d1   = ( x1 * x1 ) + ( y1 * y1 ) + ( z1 * z1 );
-				final double d2   = ( x2 * x2 ) + ( y2 * y2 ) + ( z2 * z2 );
-				final double size = d1 * d2;
+				final double          size    = polygon.getEstimatedSurfaceAreaFactor();
 
 				if ( size > potentialSize )
 				{
