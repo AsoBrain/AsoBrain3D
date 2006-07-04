@@ -383,6 +383,32 @@ public final class RenderedPolygon
 	}
 
 	/**
+	 * Get the estimated surface area factor of this rendered polygon.
+	 * <p />
+	 * This method does not return a estimated surface size, but only
+	 * a factor which can be used to i.e. determine the polygon that has
+	 * potentially the greatest surface area from a list of polygons.
+	 *
+	 * @return  The estimated surface area factor of this rendered polygon.
+	 *
+	 * @see     BSPTree#getPartitionPlane
+	 */
+	public double getEstimatedSurfaceAreaFactor()
+	{
+		final double x1 = _viewX[ 1 ] - _viewX[ 0 ];
+		final double x2 = _viewX[ 2 ] - _viewX[ 1 ];
+		final double y1 = _viewY[ 1 ] - _viewY[ 0 ];
+		final double y2 = _viewY[ 2 ] - _viewY[ 1 ];
+		final double z1 = _viewZ[ 1 ] - _viewZ[ 0 ];
+		final double z2 = _viewZ[ 2 ] - _viewZ[ 1 ];
+
+		final double d1   = ( x1 * x1 ) + ( y1 * y1 ) + ( z1 * z1 );
+		final double d2   = ( x2 * x2 ) + ( y2 * y2 ) + ( z2 * z2 );
+
+		return d1 * d2;
+	}
+
+	/**
 	 * Returns a string with the values of all fields of this
 	 * {@link RenderedPolygon}. This string is formatted along multiple lines.
 	 *
