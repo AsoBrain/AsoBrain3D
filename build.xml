@@ -29,6 +29,8 @@
   <path id="java.classpath">
     <pathelement location="classes"/>
     <pathelement location="${numdata.oss.home}/lib/numdata-oss.jar"/>
+    <pathelement location="${jpct.home}/lib/jpct/jpct.jar"/>
+    <pathelement location="${jpct.home}/lib/lwjgl-0.99/lwjgl.jar"/>
   </path>
 
   <target name="compile-java" depends="api-check" description="Compile Java source files">
