@@ -150,7 +150,7 @@ public class RenderControl
 
 		_toUnits     = pixelsToUnits;
 		_toRadians   = Math.toRadians( pixelsToDegrees );
-		_sensitivity = new double[] { pixelsToDegrees , _toUnits , _toUnits };
+		_sensitivity = new double[] { pixelsToDegrees , _toUnits , -_toUnits };
 
 		_xStartCoordinate = 0;
 		_yStartCoordinate = 0;
