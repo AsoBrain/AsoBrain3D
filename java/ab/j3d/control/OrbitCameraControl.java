@@ -205,7 +205,7 @@ public final class OrbitCameraControl
 		final double toDegrees = Math.toDegrees( _view.getPixelsToRadiansFactor() );
 
 		_rotationY = _dragStartRotationY + toDegrees * (double)event.getDragDeltaX();
-		_rotationX = _dragStartRotationX - toDegrees * (double)event.getDragDeltaX();
+		_rotationX = _dragStartRotationX - toDegrees * (double)event.getDragDeltaY();
 
 		updateTransform();
 	}
