@@ -21,6 +21,7 @@
 package ab.j3d;
 
 import java.text.DecimalFormat;
+import java.util.Properties;
 
 /**
  * This class represents a 3D vector.
@@ -51,6 +52,30 @@ public final class Vector3D
 		x = nx;
 		y = ny;
 		z = nz;
+	}
+
+	/**
+	 * Get Vector3D property with the specified name from the 'properties' field.
+	 *
+	 * @param   name    Property name.
+	 *
+	 * @return  Vector3D value (<code>null</code> if property is not found).
+	 */
+	public static Vector3D getProperty( final Properties properties , final String name )
+	{
+		Vector3D result = null;
+
+		final String s = ( properties != null ) ? properties.getProperty( name ) : null;
+		if ( s != null && s.length() > 0 )
+		{
+			try
+			{
+				result = fromString( s );
+			}
+			catch ( Exception e ) {}
+		}
+
+		return result;
 	}
 
 	/**
@@ -207,10 +232,10 @@ public final class Vector3D
 	public boolean almostEquals( final Vector3D other )
 	{
 		return ( other != null )
-		    && ( ( other == this )
-		      || ( Matrix3D.almostEqual( x , other.x )
-		        && Matrix3D.almostEqual( y , other.y )
-		        && Matrix3D.almostEqual( z , other.z ) ) );
+		       && ( ( other == this )
+		            || ( Matrix3D.almostEqual( x , other.x )
+		                 && Matrix3D.almostEqual( y , other.y )
+		                 && Matrix3D.almostEqual( z , other.z ) ) );
 	}
 
 	/**
@@ -228,8 +253,8 @@ public final class Vector3D
 	public boolean almostEquals( final double otherX , final double otherY , final double otherZ )
 	{
 		return Matrix3D.almostEqual( x , otherX )
-		    && Matrix3D.almostEqual( y , otherY )
-		    && Matrix3D.almostEqual( z , otherZ );
+		       && Matrix3D.almostEqual( y , otherY )
+		       && Matrix3D.almostEqual( z , otherZ );
 	}
 
 	/**
@@ -245,8 +270,8 @@ public final class Vector3D
 	public boolean equals( final double otherX , final double otherY , final double otherZ )
 	{
 		return ( Double.isNaN( otherX ) || ( otherX == x ) )
-		    && ( Double.isNaN( otherY ) || ( otherY == y ) )
-		    && ( Double.isNaN( otherZ ) || ( otherZ == z ) );
+		       && ( Double.isNaN( otherY ) || ( otherY == y ) )
+		       && ( Double.isNaN( otherZ ) || ( otherZ == z ) );
 	}
 
 	public boolean equals( final Object other )
@@ -274,8 +299,8 @@ public final class Vector3D
 	{
 		long l;
 		return (int)( ( l = Double.doubleToLongBits( x ) ) ^ ( l >>> 32 )
-		            ^ ( l = Double.doubleToLongBits( y ) ) ^ ( l >>> 32 )
-		            ^ ( l = Double.doubleToLongBits( z ) ) ^ ( l >>> 32 ) );
+		              ^ ( l = Double.doubleToLongBits( y ) ) ^ ( l >>> 32 )
+		              ^ ( l = Double.doubleToLongBits( z ) ) ^ ( l >>> 32 ) );
 	}
 
 	/**
@@ -577,7 +602,7 @@ public final class Vector3D
 
 		return ( vector == null ) ? "null" :
 		       "[ " + df.format( vector.x ) + " , "
-		            + df.format( vector.y ) + " , "
-		            + df.format( vector.z ) + " ]";
+		       + df.format( vector.y ) + " , "
+		       + df.format( vector.z ) + " ]";
 	}
 }
