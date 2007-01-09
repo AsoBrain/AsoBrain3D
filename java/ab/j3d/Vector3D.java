@@ -23,6 +23,8 @@ package ab.j3d;
 import java.text.DecimalFormat;
 import java.util.Properties;
 
+import com.numdata.oss.PropertyTools;
+
 /**
  * This class represents a 3D vector.
  *
@@ -55,22 +57,41 @@ public final class Vector3D
 	}
 
 	/**
-	 * Get Vector3D property with the specified name from the 'properties' field.
+	 * Get <code>Vector3D</code> property with the specified name from a
+	 * {@link Properties} object.
 	 *
-	 * @param   name    Property name.
+	 * @param   properties  Properties to get vector from.
+	 * @param   name        Property name.
 	 *
-	 * @return  Vector3D value (<code>null</code> if property is not found).
+	 * @return  <code>Vector3D</code> object;
+	 *          <code>null</code> if property value is absent/invalid.
 	 */
 	public static Vector3D getProperty( final Properties properties , final String name )
 	{
-		Vector3D result = null;
+		return getProperty( properties , name , null );
+	}
 
-		final String s = ( properties != null ) ? properties.getProperty( name ) : null;
-		if ( s != null && s.length() > 0 )
+	/**
+	 * Get <code>Vector3D</code> property with the specified name from a
+	 * {@link Properties} object.
+	 *
+	 * @param   properties      Properties to get vector from.
+	 * @param   name            Property name.
+	 * @param   defaultValue    Value to use if property value is absent/invalid.
+	 *
+	 * @return  <code>Vector3D</code> object;
+	 *          <code>defaultValue</code> if property value is absent/invalid.
+	 */
+	public static Vector3D getProperty( final Properties properties , final String name , final Vector3D defaultValue )
+	{
+		Vector3D result = defaultValue;
+
+		final String stringValue = PropertyTools.getString( properties , name , null );
+		if ( stringValue != null )
 		{
 			try
 			{
-				result = fromString( s );
+				result = fromString( stringValue );
 			}
 			catch ( Exception e ) {}
 		}
