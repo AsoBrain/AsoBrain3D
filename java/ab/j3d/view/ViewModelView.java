@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2006
+ * (C) Copyright Numdata BV 2004-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -219,8 +219,7 @@ public abstract class ViewModelView
 	 */
 	public double getPixelsToUnitsFactor()
 	{
-		final Projector projector = getProjector();
-		return 1.0 / projector.getView2pixels();
+		return getResolution() / ( getZoomFactor() * getUnit() );
 	}
 
 	/**
