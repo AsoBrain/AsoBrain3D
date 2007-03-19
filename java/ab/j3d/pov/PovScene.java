@@ -218,16 +218,15 @@ public class PovScene
 		{
 			final String[] command =
 			{
-				"povray" ,
-				"+I" + tempFile.getPath() , // input file ('-' = stdin)
-				"+O-" ,                     // output file ('-' = stdout)
-				"+FN" ,                     // file format: PNG
-				"+W" + width ,              // image width
-				"+H" + height ,             // image height
-				"-D" ,                      // don't show preview
-				"+A"  ,                     // turn on anti-aliasing
-				"+GA" ,
-				"+L/numdata/bin/pov/povray-3.6/share/povray-3.6/include"
+				"povray"
+				, "+I" + tempFile.getPath() /* Input file ('-' = stdin) */
+				, "+O-"                     /* Output file ('-' = stdout) */
+				, "+FN"                     /* File format: PNG */
+				, "+W" + width              /* Image width */
+				, "+H" + height             /* Image height */
+				, "-D"                      /* Don't show preview */
+				, "+A"                      /* Turn on anti-aliasing */
+				, "+GA"                     /* Turn on all debug, fatal, render, statistic, and warning text to the console */
 			};
 
 			final Runtime runtime = Runtime.getRuntime();
