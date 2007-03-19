@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * (C) Copyright Numdata BV 2005-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -777,8 +777,6 @@ public final class PovMesh2
 			for ( int i = 0 ; i < triangles.size() ; i++ )
 			{
 				final Triangle triangle = (Triangle)triangles.get( i );
-				if ( !triangle.hasUV() )
-					break;
 
 				writeElementSeparator( out , 6 , i );
 				triangle.writeUvIndices( out );
