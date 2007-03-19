@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * (C) Copyright Numdata BV 2005-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@
 package ab.j3d.control;
 
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.EventObject;
@@ -252,6 +253,19 @@ public class ControlInputEvent
 	{
 		final InputEvent inputEvent = _inputEvent;
 		return ( inputEvent instanceof MouseEvent ) ? ((MouseEvent)inputEvent).getButton() : MouseEvent.NOBUTTON;
+	}
+
+	/**
+	 * Get key code, if any, that caused the event.
+	 *
+	 * @return  Key code.
+	 *
+	 * @see     KeyEvent#getKeyCode()
+	 */
+	public int getKeyCode()
+	{
+		final InputEvent inputEvent = _inputEvent;
+		return ( inputEvent instanceof KeyEvent ) ? ((KeyEvent)inputEvent).getKeyCode() : KeyEvent.VK_UNDEFINED;
 	}
 
 	/**
