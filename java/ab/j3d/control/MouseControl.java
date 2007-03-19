@@ -1,14 +1,25 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * (C) Copyright Numdata BV 2006-2007
  *
- * (C) Copyright Numdata BV 2006-2006 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d.control;
 
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
 
@@ -75,6 +86,13 @@ public class MouseControl
 						result = mouseClicked( controlInputEvent );
 
 					break;
+
+				case KeyEvent.KEY_PRESSED :
+					final int keyCode = controlInputEvent.getKeyCode();
+					handleKey( keyCode );
+					break;
+
+				case KeyEvent.KEY_RELEASED :
 			}
 		}
 
@@ -195,6 +213,17 @@ public class MouseControl
 	 * @see     MouseEvent#MOUSE_RELEASED
 	 */
 	public void mouseReleased( final ControlInputEvent event )
+	{
+	}
+
+	/**
+	 * This method is called when a key on the keyboard must be handled.
+	 *
+	 * @param   keyCode     Key code to handle.
+	 *
+	 * @see     KeyEvent#getKeyCode
+	 */
+	public void handleKey( final int keyCode )
 	{
 	}
 }
