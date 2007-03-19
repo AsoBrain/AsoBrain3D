@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2006
+ * (C) Copyright Numdata BV 2000-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -335,7 +335,8 @@ public abstract class PovGeometry
 			final String thisName  = getName();
 			final String otherName = ((PovGeometry)other).getName();
 
-			result = ( thisName == null ) ? ( ( otherName == null ) ? 0 : 1 ) : thisName.compareTo( otherName );
+			result = ( thisName != null ) ? ( otherName != null ) ? thisName.compareTo( otherName ) : -1
+			                              : ( otherName != null ) ? 1 : 0;
 		}
 		else
 		{
