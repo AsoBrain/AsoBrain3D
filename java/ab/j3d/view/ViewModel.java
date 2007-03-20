@@ -603,7 +603,7 @@ public abstract class ViewModel
 
 		final CameraControl cameraControl = view.getCameraControl();
 		if ( cameraControl != null )
-			ArrayTools.addAll(  actions , cameraControl.getActions( locale ) );
+			actions = (Action[])ArrayTools.addAll( actions , cameraControl.getActions( locale ) );
 
 		actions = (Action[])ArrayTools.append( actions , new ViewModelToPovAction( locale , this , view , result , BorderLayout.SOUTH , "SODA_BaseComponents/images/textures/" ) );
 
