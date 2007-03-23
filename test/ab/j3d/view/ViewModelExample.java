@@ -23,6 +23,7 @@ package ab.j3d.view;
 import java.awt.Color;
 import java.util.EventObject;
 import java.util.List;
+import java.util.Locale;
 import javax.swing.JFrame;
 
 import ab.j3d.Matrix3D;
@@ -87,7 +88,7 @@ public abstract class ViewModelExample
 		view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
 //		view.setProjectionPolicy( Projector.PARALLEL );
 
-		final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , view.getComponent() );
+		final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , viewModel.createViewPanel( Locale.ENGLISH , view.getID() ) );
 		frame.setVisible( true );
 
 		view.insertControl( new MouseControl()
