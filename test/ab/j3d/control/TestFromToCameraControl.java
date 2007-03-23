@@ -20,6 +20,9 @@
 package ab.j3d.control;
 
 import java.awt.Component;
+import java.util.Locale;
+
+import javax.swing.Action;
 
 import junit.framework.TestCase;
 
@@ -81,7 +84,12 @@ public class TestFromToCameraControl
 				{
 					return null;
 				}
-			} );
+
+				public Action[] getActions( final Locale locale )
+				{
+					return new Action[ 0 ];
+				}
+		} );
 
 		final Matrix3D expected = Matrix3D.INIT.set(
 			  1.0 ,  0.0 ,  0.0 ,  0.0 ,

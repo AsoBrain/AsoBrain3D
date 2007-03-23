@@ -26,14 +26,15 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.Transparency;
-import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
+import java.util.Locale;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.J3DGraphics2D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.media.j3d.View;
 import javax.media.j3d.ViewPlatform;
+import javax.swing.Action;
 import javax.vecmath.Matrix3d;
 import javax.vecmath.Vector3d;
 
@@ -358,5 +359,10 @@ final class Java3dView
 	protected ControlInput getControlInput()
 	{
 		return _controlInput;
+	}
+
+	public Action[] getActions( final Locale locale )
+	{
+		return new Action[ 0 ];
 	}
 }

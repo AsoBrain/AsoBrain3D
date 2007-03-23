@@ -24,6 +24,8 @@ import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import javax.swing.Action;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.control.CameraControl;
@@ -523,4 +525,13 @@ public abstract class ViewModelView
 			painter.paint( this , g2d );
 		}
 	}
+
+	/**
+	 * Get actions of the view.
+	 *
+	 * @param   locale  Preferred locale for internationalization.
+	 *
+	 * @return  Actions of the view.
+	 */
+	public abstract Action[] getActions( final Locale locale );
 }

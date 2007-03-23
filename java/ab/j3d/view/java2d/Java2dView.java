@@ -25,9 +25,12 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.util.Locale;
+import javax.swing.Action;
 import javax.swing.JComponent;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.SwitchRenderingPolicyAction;
 import ab.j3d.Vector3D;
 import ab.j3d.control.ControlInput;
 import ab.j3d.view.BSPTree;
@@ -246,5 +249,10 @@ final class Java2dView
 	protected ControlInput getControlInput()
 	{
 		return _controlInput;
+	}
+
+	public Action[] getActions( final Locale locale )
+	{
+		return new Action[]{ new SwitchRenderingPolicyAction( locale , this , _renderingPolicy , new int[]{ SOLID , SCHEMATIC , WIREFRAME , SKETCH } ) };
 	}
 }

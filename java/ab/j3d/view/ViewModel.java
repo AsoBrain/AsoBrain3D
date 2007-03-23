@@ -594,16 +594,18 @@ public abstract class ViewModel
 		if ( view == null )
 			throw new IllegalArgumentException( String.valueOf( id ) );
 
-		final Component   viewComponent = view.getComponent();
-
 		final JPanel result = new JPanel( new BorderLayout() );
-		result.add( viewComponent , BorderLayout.CENTER );
+		result.add( view.getComponent() , BorderLayout.CENTER );
 
 		Action[] actions = new Action[ 0 ];
 
 		final CameraControl cameraControl = view.getCameraControl();
 		if ( cameraControl != null )
 			actions = (Action[])ArrayTools.addAll( actions , cameraControl.getActions( locale ) );
+
+		final Action[] viewActions = view.getActions( locale );
+		for ( int i = 0 ; i < viewActions.length ; i++ )
+			actions = (Action[])ArrayTools.append( actions , viewActions[ i ] );
 
 		actions = (Action[])ArrayTools.append( actions , new ViewModelToPovAction( locale , this , view , result , BorderLayout.SOUTH , "SODA_BaseComponents/images/textures/" ) );
 

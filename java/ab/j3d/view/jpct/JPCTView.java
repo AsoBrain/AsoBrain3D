@@ -23,6 +23,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.util.Locale;
+import javax.swing.Action;
 import javax.swing.JComponent;
 
 import com.threed.jpct.Camera;
@@ -336,5 +338,10 @@ public class JPCTView
 	protected ControlInput getControlInput()
 	{
 		return _controlInput;
+	}
+
+	public Action[] getActions( final Locale locale )
+	{
+		return new Action[ 0 ];
 	}
 }
