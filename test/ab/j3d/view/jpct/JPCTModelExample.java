@@ -19,7 +19,8 @@
  */
 package ab.j3d.view.jpct;
 
-import ab.j3d.view.jpct.JPCTModel;
+import java.awt.Color;
+
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelExample;
 
@@ -37,7 +38,7 @@ public class JPCTModelExample
 	 */
 	public JPCTModelExample()
 	{
-		super( new JPCTModel( ViewModel.MM ) );
+		super( new JPCTModel( ViewModel.MM , Color.BLACK ) );
 	}
 
 	/**

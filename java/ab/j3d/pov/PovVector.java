@@ -77,6 +77,20 @@ public class PovVector
 	}
 
 	/**
+	 * Creates a vector based on a java.awt.Color, with each resulting color
+	 * value (RGB) multiplied by the given scalar.
+	 *
+	 * @param   color   Color to base the vector on.
+	 * @param   scalar  Scalar to multiply the color with.
+	 */
+	public PovVector( final Color color , final double scalar )
+	{
+		this( (double)color.getRed()   * scalar / 255.0 ,
+	          (double)color.getGreen() * scalar / 255.0 ,
+	          (double)color.getBlue()  * scalar / 255.0 );
+	}
+
+	/**
 	 * Get X component of vector.
 	 *
 	 * @return  X component of vector.

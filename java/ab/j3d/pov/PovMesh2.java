@@ -512,6 +512,11 @@ public final class PovMesh2
 		writeUvIndices    ( out , triangles ); // uv_indices {}
 		writeNormalIndices( out , triangles ); // normal_indices {}
 
+		if ( hasUV() )
+		{
+			out.writeln( "uv_mapping" );
+		}
+
 		if ( _textureList.size() == 1 )
 		{
 			final PovTexture texture = (PovTexture)_textureList.get( 0 );
@@ -785,7 +790,6 @@ public final class PovMesh2
 
 			out.indentOut();
 			out.writeln( "}" );
-			out.writeln( "uv_mapping" );
 		}
 	}
 

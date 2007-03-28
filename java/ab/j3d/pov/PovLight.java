@@ -40,6 +40,12 @@ import com.numdata.oss.io.IndentingWriter;
 public final class PovLight
 	extends PovGeometry
 {
+	public static final int FADE_NONE      = 0;
+
+	public static final int FADE_LINEAR    = 1;
+
+	public static final int FADE_QUADRATIC = 2;
+
 	/**
 	 * The location of the light.
 	 */
@@ -121,6 +127,16 @@ public final class PovLight
 	 * Number of vertical lights.
 	 */
 	public double _areaVerCount;
+
+	/**
+	 * Distance at which the light reaches its specified intensity.
+	 */
+	private double _fadeDistance = 0.0;
+
+	/**
+	 * Indicates the falloff rate of the light.
+	 */
+	private int _fadePower = FADE_NONE;
 
 	/**
 	 * Creates a light with name, color, and optional shadow cast flag.
@@ -279,9 +295,61 @@ public final class PovLight
 			}
 		}
 
+		if ( _fadePower != FADE_NONE )
+		{
+			out.write( "fade_distance " );
+			out.write( format( _fadeDistance ) );
+			out.newLine();
+			out.write( "fade_power " );
+			out.write( format( _fadePower ) );
+			out.newLine();
+		}
+
 		writeTransformation( out );
 
 		out.indentOut();
 		out.writeln( "}" );
+	}
+
+	/**
+	 * Returns the distance at which the light reaches its specified intensity.
+	 *
+	 * @return  Distance of 100% light intensity.
+	 */
+	public double getFadeDistance()
+	{
+		return _fadeDistance;
+	}
+
+	/**
+	 * Sets the distance at which the light reaches its specified intensity.
+	 *
+	 * @param   fadeDistance    Distance of 100% light intensity.
+	 */
+	public void setFadeDistance( final double fadeDistance )
+	{
+		_fadeDistance = fadeDistance;
+	}
+
+	/**
+	 * Indicates the falloff rate of the light.
+	 *
+	 * @return  One of: {@link #FADE_NONE}, {@link #FADE_LINEAR},
+	 *          {@link #FADE_QUADRATIC}.
+	 */
+	public int getFadePower()
+	{
+		return _fadePower;
+	}
+
+	/**
+	 * Sets the falloff rate of the light.
+	 *
+	 * @param   fadePower   One of: {@link #FADE_NONE}, {@link #FADE_LINEAR},
+	 *                      {@link #FADE_QUADRATIC}.
+	 */
+	public void setFadePower( final int fadePower )
+	{
+		_fadePower = fadePower;
 	}
 }

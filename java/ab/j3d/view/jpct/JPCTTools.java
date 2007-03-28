@@ -19,19 +19,21 @@
  */
 package ab.j3d.view.jpct;
 
+import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 
-import com.threed.jpct.TextureInfo;
-import com.threed.jpct.Texture;
-import com.threed.jpct.TextureManager;
-import com.threed.jpct.Object3D;
 import com.threed.jpct.Matrix;
+import com.threed.jpct.Object3D;
 import com.threed.jpct.SimpleVector;
+import com.threed.jpct.Texture;
+import com.threed.jpct.TextureInfo;
+import com.threed.jpct.TextureManager;
 
-import ab.j3d.TextureSpec;
 import ab.j3d.Matrix3D;
-import ab.j3d.model.Node3DCollection;
+import ab.j3d.TextureSpec;
 import ab.j3d.model.Face3D;
+import ab.j3d.model.Node3DCollection;
 
 /**
  * Utility methods for jPCT support.
@@ -61,14 +63,22 @@ public class JPCTTools
 
 		for ( int i = 0 ; i < nodes.size() ; i++ )
 		{
-			final ab.j3d.model.Object3D node  = (ab.j3d.model.Object3D)nodes.getNode( i );
+			final ab.j3d.model.Object3D node      = (ab.j3d.model.Object3D)nodes.getNode( i );
 			final int                   faceCount = node.getFaceCount();
 
 			for ( int j = 0 ; j < faceCount ; j++ )
 			{
 				final Face3D      face        = node.getFace( j );
 				final int         vertexCount = face.getVertexCount();
-				final TextureInfo texture     = convert2TextureInfo( face.getTexture() );
+				final TextureSpec textureSpec = face.getTexture();
+				final TextureInfo texture     = convert2TextureInfo( textureSpec );
+				final int         textureID   = _texMan.getTextureID( textureSpec.code );
+
+				final Image textureImage  = textureSpec.getTextureImage();
+				final boolean isTexture = textureSpec.isTexture() && ( textureImage != null );
+
+				final float textureWidth  = isTexture ? (float)textureImage.getWidth( null )  : 0.0f;
+				final float textureHeight = isTexture ? (float)textureImage.getHeight( null ) : 0.0f;
 
 				if ( vertexCount < 2 )
 				{
@@ -86,7 +96,14 @@ public class JPCTTools
 						final SimpleVector vert2 = new SimpleVector( face.getX( k + 1 ), face.getY( k + 1 ), face.getZ( k + 1 ) );
 						final SimpleVector vert3 = new SimpleVector( face.getX( k + 2 ), face.getY( k + 2 ), face.getZ( k + 2 ) );
 
-						result.addTriangle( vert3 , vert2 , vert1 , texture );
+						if ( isTexture )
+						{
+							result.addTriangle( vert3 , (float)face.getTextureU( k + 2 ) / textureWidth , (float)face.getTextureV( k + 2 ) / textureHeight , vert2 , (float)face.getTextureU( k + 1 ) / textureWidth , (float)face.getTextureV( k + 1 ) / textureHeight , vert1 , (float)face.getTextureU( 0 ) / textureWidth , (float)face.getTextureV( 0 ) / textureHeight , textureID );
+						}
+						else
+						{
+							result.addTriangle( vert3 , vert2 , vert1 , texture );
+						}
 					}
 				}
 			}
@@ -96,27 +113,32 @@ public class JPCTTools
 	}
 
 	// Only converts solid colors, should add texture support..
-	public static TextureInfo convert2TextureInfo( final TextureSpec texture )
+	public static TextureInfo convert2TextureInfo( final TextureSpec textureSpec )
 	{
-		final String textureCode = texture.code;
+		final String textureCode = textureSpec.code;
 
-		final Texture result = _texMan.getTexture( textureCode );
-		if ( result == null )
+		final TextureManager texMan = _texMan;
+
+		if ( !texMan.containsTexture( textureCode ) )
 		{
-			if ( texture.isTexture() )
+			if ( textureSpec.isTexture() )
 			{
-				// Not implemented yet...
+				final Image image = textureSpec.getTextureImage();
+				texMan.addTexture( textureCode , new Texture( image ) );
 			}
 			else
 			{
-				final BufferedImage image = new BufferedImage( 1 , 1 , BufferedImage.TYPE_INT_ARGB ); // @TODO CHECK IF REALLY ARGB!
-				image.setRGB( 0 , 0 , texture.getARGB() );
-
-				_texMan.addTexture( textureCode , new Texture( image ) );
+				final int size = 8; // smaller sizes are not supported
+				final BufferedImage image = new BufferedImage( size , size , BufferedImage.TYPE_INT_ARGB ); // @TODO CHECK IF REALLY ARGB!
+				final Graphics g = image.getGraphics();
+				g.setColor( textureSpec.getColor() );
+				g.fillRect( 0 , 0 , size , size );
+				g.dispose();
+				texMan.addTexture( textureCode , new Texture( image , true ) );
 			}
 		}
 
-		return new TextureInfo( _texMan.getTextureID( textureCode ) );
+		return new TextureInfo( texMan.getTextureID( textureCode ) );
 	}
 
 	public static Matrix convert2Matrix( final Matrix3D m )
@@ -124,12 +146,6 @@ public class JPCTTools
 		final Matrix result = new Matrix();
 
 		result.setDump( new float[]
-//		{
-//			(float)m.xx , (float)m.xy , (float)m.xz , (float)m.xo ,
-//			(float)m.yx , (float)m.yy , (float)m.yz , (float)m.yo ,
-//			(float)m.zx , (float)m.zy , (float)m.zz , (float)m.zo ,
-//			       0.0f ,        0.0f ,        0.0f ,        1.0f
-//		} );
 		{
 			(float)m.xx , (float)m.yx , (float)m.zx , 0.0f ,
 			(float)m.xy , (float)m.yy , (float)m.zy , 0.0f ,

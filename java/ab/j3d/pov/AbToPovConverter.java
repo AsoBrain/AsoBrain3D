@@ -151,18 +151,6 @@ public final class AbToPovConverter
 			}
 		}
 
-		final PovVector color = new PovVector( new Color( 155 , 155 , 145 ) );
-
-		scene.add( new PovLight( "light1" ,  5000.0 , -5000.0 , 6000.0 , color , true ) );
-		scene.add( new PovLight( "light2" , -5000.0 , -5000.0 , 6000.0 , color , true ) );
-		scene.add( new PovLight( "light3" , -5000.0 ,  5000.0 , 6000.0 , color , true ) );
-		scene.add( new PovLight( "light4" ,  5000.0 ,  5000.0 , 6000.0 , color , true ) );
-
-		/*
-		scene.add( new PovLight( "light2" , 5000.0 , -5100.0 , 6000.0 , color , true ) );
-		scene.add( new PovLight( "light3" , 5000.0 , -5200.0 , 6000.0 , color , true ) );
-		*/
-
 		return scene;
 	}
 
@@ -272,8 +260,21 @@ public final class AbToPovConverter
 	 */
 	public static PovLight convertLight3D( final Matrix3D transform , final Light3D light )
 	{
-		//@TODO Convert light when Light3D class is completed.
-		return new PovLight( "light", transform.xo, transform.yo, transform.zo, new PovVector( Color.WHITE ), true );
+
+		final PovLight result = new PovLight( "light" , transform.xo , transform.yo , transform.zo , new PovVector( Color.WHITE , (double)light.getIntensity() / 255.0 ) , true );
+
+		final double fallOff = light.getFallOff();
+		if ( fallOff > 0.0 )
+		{
+			result.setFadeDistance( fallOff );
+			result.setFadePower( 1 );
+		}
+		else if ( fallOff == 0.0 )
+		{
+			result.setFadeDistance( 0.00001 );
+			result.setFadePower( 1 );
+		}
+		return result;
 	}
 
 	/**

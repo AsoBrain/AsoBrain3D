@@ -19,15 +19,21 @@
  */
 package ab.j3d.view.jpct;
 
+import java.awt.BorderLayout;
+import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.Locale;
 import javax.swing.Action;
 import javax.swing.JComponent;
 
 import com.threed.jpct.Camera;
+import com.threed.jpct.Config;
 import com.threed.jpct.FrameBuffer;
 import com.threed.jpct.IRenderer;
 import com.threed.jpct.Matrix;
@@ -36,15 +42,9 @@ import com.threed.jpct.World;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.control.ControlInput;
-import ab.j3d.model.Light3D;
-import ab.j3d.model.Node3D;
-import ab.j3d.model.Node3DCollection;
-import ab.j3d.model.Object3D;
 import ab.j3d.view.Projector;
 import ab.j3d.view.ViewControlInput;
 import ab.j3d.view.ViewModelView;
-
-import com.numdata.oss.ArrayTools;
 
 /**
  * jPCT implementation of view model view.
@@ -59,11 +59,6 @@ public class JPCTView
 	 * Practical minimum size of images in dialog.
 	 */
 	private static final int MINIMUM_IMAGE_SIZE = 150;
-
-	/**
-	 * The world that is viewed.
-	 */
-	private final World _world;
 
 	/**
 	 * Component through which a rendering of the view is shown.
@@ -89,11 +84,13 @@ public class JPCTView
 	 */
 	private final ControlInput _controlInput;
 
-	private FrameBuffer _buffer;
-
 	private JPCTModel _model;
 
-	private boolean _idle = false;
+	private boolean _stopRenderer = false;
+
+	private Color _backgroundColor;
+
+	private boolean _updateNeeded;
 
 	/**
 	 * UI component to present view to user.
@@ -107,11 +104,53 @@ public class JPCTView
 		private Insets _insets;
 
 		/**
+		 * Canvas used for hardware-accelerated rendering.
+		 */
+		private Canvas _canvas;
+
+		/**
 		 * Construct view component.
 		 */
 		private ViewComponent()
 		{
 			_insets = null;
+			_canvas = null;
+
+			setLayout( new BorderLayout() );
+		}
+
+		public void setCanvas( final Canvas canvas )
+		{
+			removeAll();
+			if ( canvas != null )
+			{
+				add( canvas );
+				revalidate();
+
+				final MouseListener[] mouseListeners = getMouseListeners();
+				for ( int i = 0 ; i < mouseListeners.length ; i++ )
+				{
+					canvas.addMouseListener( mouseListeners[ i ] );
+				}
+
+				final MouseMotionListener[] mouseMotionListeners = getMouseMotionListeners();
+				for ( int i = 0 ; i < mouseMotionListeners.length ; i++ )
+				{
+					canvas.addMouseMotionListener( mouseMotionListeners[ i ] );
+				}
+			}
+			_canvas = canvas;
+		}
+
+		public void paint( final Graphics g )
+		{
+			super.paint( g );
+
+			final Canvas canvas = _canvas;
+			if ( canvas != null )
+			{
+				canvas.repaint();
+			}
 		}
 
 		public Dimension getMinimumSize()
@@ -124,7 +163,7 @@ public class JPCTView
 			return new Dimension( MINIMUM_IMAGE_SIZE , MINIMUM_IMAGE_SIZE );
 		}
 
-		public Projector getProjector ()
+		public Projector getProjector()
 		{
 			final Insets      insets            = getInsets( _insets );
 			final int         imageWidth        = getWidth() - insets.left - insets.right;
@@ -136,103 +175,57 @@ public class JPCTView
 			final int         projectionPolicy  = _projectionPolicy;
 			final double      fieldOfView       = getAperture();
 			final double      zoomFactor        = getZoomFactor();
-			final double      frontClipDistance =   -0.1 / viewUnit;
+			final double      frontClipDistance =  -0.1 / viewUnit;
 			final double      backClipDistance  = -100.0 / viewUnit;
 
 			return Projector.createInstance( projectionPolicy , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
 		}
 
-		public void paintComponent( final Graphics g )
+		public Dimension getFrameSize()
 		{
-			super.paintComponent( g );
-
-			final int currentBufferWidth  = (int)_buffer.getMiddleX() * 2;
-			final int currentBufferHeight = (int)_buffer.getMiddleY() * 2;
-
-			final Insets insets      = getInsets( _insets );
-			final int    imageWidth  = getWidth()  - insets.left - insets.right;
-			final int    imageHeight = getHeight() - insets.top  - insets.bottom;
-
-			if ( ( imageWidth != currentBufferWidth ) || ( imageHeight != currentBufferHeight ) )
-			{
-				_buffer = new FrameBuffer( imageWidth , imageHeight , FrameBuffer.SAMPLINGMODE_NORMAL );
-				_buffer.enableRenderer( IRenderer.RENDERER_SOFTWARE, IRenderer.MODE_OPENGL );
-			}
-
+			final Insets insets = getInsets( _insets );
 			_insets = insets;
+
+			final int imageWidth  = getWidth()  - insets.left - insets.right;
+			final int imageHeight = getHeight() - insets.top  - insets.bottom;
+
+			return new Dimension( imageWidth , imageHeight );
 		}
 	}
 
 	/**
 	 * Construct new jPCTView.
 	 */
-	public JPCTView( final JPCTModel model , final Object id )
+	public JPCTView( final JPCTModel model , final Object id , final Color backgroundColor )
 	{
 		super( model.getUnit() , id );
+		_backgroundColor = backgroundColor;
 
 		_model = model;
 
 		_projectionPolicy = Projector.PERSPECTIVE;
 		_renderingPolicy  = SOLID;
 
-		_buffer = new FrameBuffer( 1024 , 768 , FrameBuffer.SAMPLINGMODE_NORMAL );
-		_buffer.enableRenderer( IRenderer.RENDERER_SOFTWARE, IRenderer.MODE_OPENGL );
-
-		_world = new World();
-		_world.setAmbientLight( 200 , 200 , 200 );
+		Config.useLocking   = true;
+		Config.fadeoutLight = true;
 
 		_viewComponent = new ViewComponent();
 		_controlInput  = new ViewControlInput( model , this );
 
-		update();
+		_updateNeeded = true;
 		mainLoop();
 	}
 
 	private void mainLoop()
 	{
-		final Runnable loop =new Runnable()
-			{
-				public void run()
-				{
-					final Thread currentThread = Thread.currentThread();
-					currentThread.setPriority( Thread.NORM_PRIORITY );
-
-					long nextCheck    = System.currentTimeMillis() + 1000L;
-					int  frameCounter = 0;
-					int  fps          = 0;
-					while ( !_idle )
-					{
-						// ---- Calculate fps ----
-						if ( System.currentTimeMillis() >= nextCheck )
-						{
-							nextCheck = System.currentTimeMillis() + 1000L;
-							fps = frameCounter;
-							frameCounter = 0;
-
-							System.out.println( "fps = " + fps );
-						}
-						frameCounter ++;
-						// -----------------------
-
-						final Graphics graphics = _viewComponent.getGraphics();
-						if ( graphics != null )
-						{
-							_buffer.clear();
-
-							_world.renderScene( _buffer );
-							_world.draw( _buffer );
-
-							_buffer.update();
-							_buffer.display( graphics );
-
-							Thread.yield();
-						}
-					}
-				}
-			};
-
-		final Thread viewThread = new Thread( loop , "viewThread:" + getID() );
+		final Runnable renderer = new Renderer();
+		final Thread viewThread = new Thread( renderer , "viewThread:" + getID() );
 		viewThread.start();
+	}
+
+	private World getWorld()
+	{
+		return _model.getWorld();
 	}
 
 	public Component getComponent()
@@ -240,79 +233,47 @@ public class JPCTView
 		return _viewComponent;
 	}
 
-	// For now, just clear the world and rebuild it.
 	public void update()
 	{
-		// Stop render loop.
-		_idle = true;
+		/*
+		 * Renderer will perform an update before the next frame is rendered.
+		 */
+		_updateNeeded = true;
+	}
 
-		// Clear the world.
-		_world.removeAll();
-
-		// Rebuild the world.
-		final Node3DCollection nodes = _model.getScene();
-		for ( int i = 0 ; i < nodes.size() ; i++ )
-		{
-			final Node3D   object       = nodes.getNode( i );
-			final Matrix3D object2world = nodes.getMatrix( i );
-
-			if ( object instanceof Object3D )
-			{
-				final com.threed.jpct.Object3D object3D = JPCTTools.convert2Object3D( (Object3D)object );
-				final Matrix                   matrix   = JPCTTools.convert2Matrix  ( object2world     );
-
-				object3D.setRotationMatrix( matrix );
-				object3D.setTranslationMatrix( matrix );
-
-				_world.addObject( object3D );
-			}
-			else if ( object instanceof Light3D )
-			{
-//				_world.addLight( ... );
-			}
-			else
-			{
-				/* Maybe there are some other types? */
-			}
-		}
-
-		// Camera should also come from AB-tree.
-		final Matrix3D ab2jpct = Matrix3D.INIT.set(
-		1.0, 0.0, 0.0, 0.5 * _viewComponent.getWidth(),
-		0.0, 0.0, -1.0, 0.5 * _viewComponent.getHeight(),
-		0.0, -1.0, 0.0, 0.0 );
-
+	/**
+	 * Updates the camera.
+	 *
+	 * NOTE: must only be invoked from renderer thread.
+ 	 */
+	public void updateImpl()
+	{
 		final Matrix3D viewTransform = getViewTransform();
-		final Matrix vt = JPCTTools.convert2Matrix( ab2jpct.multiply( viewTransform ) );
 
-		final Camera camera = _world.getCamera();
-		camera.setPosition( new SimpleVector( 0.0 , -1.0 / _model.getUnit() , 0.0  ) );
-		camera.lookAt( new SimpleVector( 0.0 , 0.0 , 0.0 ) );
+		final Matrix cameraRotation = new Matrix();
+		cameraRotation.setDump( new float[]
+			{
+				(float)viewTransform.xx , (float)-viewTransform.yx , (float)-viewTransform.zx , 0.0f ,
+				(float)viewTransform.xy , (float)-viewTransform.yy , (float)-viewTransform.zy , 0.0f ,
+				(float)viewTransform.xz , (float)-viewTransform.yz , (float)-viewTransform.zz , 0.0f ,
+				0.5f * (float)viewTransform.xo , 0.5f * (float)-viewTransform.yo , 0.5f * (float)-viewTransform.zo , 1.0f
+			} ); // not sure why the "0.5f" works, but it does
 
-		System.out.println( ArrayTools.toString( camera.getBack().getDump() ) );
+		final World world = getWorld();
 
-		final Matrix back = new Matrix();
-		back.setDump( new float[] {
-			 0.0f , -1.0f ,  0.0f ,  0.0f ,
-			 0.0f ,  0.0f ,  1.0f ,  0.0f ,
-			-1.0f ,  0.0f ,  0.0f ,  0.0f ,
-			 0.0f ,  0.0f ,  0.0f ,  1.0f } );
+		final Camera camera = world.getCamera();
+		camera.setFOV( camera.convertRADAngleIntoFOV( (float)getAperture() ) );
 
-		back.setDump( new float[] {
-			 1.0f ,  0.0f ,  0.0f ,  0.0f ,
-			 0.0f ,  0.0f ,  1.0f ,  0.0f ,
-			 0.0f , -1.0f ,  0.0f ,  0.0f ,
-			 0.0f ,  0.0f ,  0.0f ,  1.0f } );
+		final SimpleVector cameraPosition = new SimpleVector( 0.0 , 0.0 , 0.0 );
+		cameraPosition.matMul( cameraRotation.invert() );
 
-		camera.setBack( back );
+		camera.setPosition( cameraPosition );
+		camera.setBack( cameraRotation );
 
-//		camera.setBack( vt );
+		Config.farPlane = 10.0f / (float)_model.getUnit();
 
 		// Build all objects in the world.
-		_world.buildAllObjects();
-
-		// Start render loop.
-		_idle = false;
+		world.buildAllObjects();
 	}
 
 	public void setProjectionPolicy( final int policy )
@@ -338,6 +299,131 @@ public class JPCTView
 	protected ControlInput getControlInput()
 	{
 		return _controlInput;
+	}
+
+	private class Renderer
+		implements Runnable
+	{
+		public void run()
+		{
+			final Thread currentThread = Thread.currentThread();
+			currentThread.setPriority( Thread.NORM_PRIORITY );
+
+			long nextCheck    = System.currentTimeMillis() + 1000L;
+			int  frameCounter = 0;
+			int  fps;
+
+			final ViewComponent viewComponent = _viewComponent;
+
+			FrameBuffer buffer = null;
+
+			final Dimension   bufferSize = new Dimension();
+			final Dimension   viewSize   = new Dimension();
+
+			boolean renderOpenGL = false;
+			try
+			{
+				System.loadLibrary( "lwjgl" );
+				renderOpenGL = true;
+			}
+			catch ( UnsatisfiedLinkError e )
+			{
+				/** OpenGL renderer is not available. */
+			}
+			catch ( SecurityException e )
+			{
+				/** OpenGL renderer is not available. */
+			}
+
+			final World world = getWorld();
+
+			while ( !_stopRenderer )
+			{
+				/*
+				 * Create frame buffer (if needed) matching view size and with
+				 * the appropriated renderer.
+				 */
+				viewComponent.getSize( viewSize );
+				if ( viewSize.width * viewSize.height == 0 )
+				{
+					try
+					{
+						Thread.sleep( 10L );
+					}
+					catch ( InterruptedException e )
+					{
+					}
+					continue;
+				}
+
+				if ( !viewSize.equals( bufferSize ) )
+				{
+					if ( buffer != null )
+					{
+						viewComponent.setCanvas( null );
+						buffer.dispose();
+					}
+
+					//viewSize.width , viewSize.height
+					Config.glColorDepth = 24;
+					buffer = new FrameBuffer( viewSize.width , viewSize.height , FrameBuffer.SAMPLINGMODE_HARDWARE_ONLY );
+					if ( renderOpenGL )
+					{
+						buffer.enableRenderer( IRenderer.RENDERER_OPENGL , IRenderer.MODE_OPENGL );
+						viewComponent.setCanvas( buffer.enableGLCanvasRenderer( IRenderer.MODE_OPENGL ) );
+						buffer.disableRenderer( IRenderer.RENDERER_SOFTWARE );
+					}
+					else
+					{
+						buffer.enableRenderer( IRenderer.RENDERER_SOFTWARE , IRenderer.MODE_OPENGL );
+					}
+
+					bufferSize.setSize( viewSize );
+				}
+
+				if ( _updateNeeded )
+				{
+					updateImpl();
+					_updateNeeded = false;
+				}
+
+				// ---- Calculate fps ----
+				if ( System.currentTimeMillis() >= nextCheck )
+				{
+					nextCheck = System.currentTimeMillis() + 1000L;
+					fps = frameCounter;
+					frameCounter = 0;
+
+					System.out.println( "fps = " + fps );
+				}
+				frameCounter ++;
+				// -----------------------
+
+				final Graphics graphics = viewComponent.getGraphics();
+				if ( graphics != null )
+				{
+					buffer.clear( _backgroundColor );
+
+					/*
+					 * @FIXME major problem: random exceptions in render loop
+					 * These happen when the World is changed, so the problem
+					 * probably lies in the implementation of the initialize/
+					 * update methods of JPCTModel.
+					 */
+					world.renderScene( buffer );
+					world.draw( buffer );
+
+					buffer.update();
+					buffer.display( graphics );
+					if ( renderOpenGL )
+					{
+						viewComponent.repaint();
+					}
+
+					Thread.yield();
+				}
+			}
+		}
 	}
 
 	public Action[] getActions( final Locale locale )

@@ -25,7 +25,6 @@ import javax.media.j3d.Background;
 import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
-import javax.media.j3d.DirectionalLight;
 import javax.media.j3d.Group;
 import javax.media.j3d.Locale;
 import javax.media.j3d.PhysicalBody;
@@ -37,7 +36,6 @@ import javax.media.j3d.ViewPlatform;
 import javax.media.j3d.VirtualUniverse;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
-import javax.vecmath.Vector3f;
 
 /**
  * This class extends the <code>VirtualUniverse</code> class and adds extra
@@ -169,7 +167,7 @@ public class Java3dUniverse
 		final BranchGroup scene = createContentScene( backgroundColor );
 
 		final double unit = getUnit();
-		if ( ( unit > 0 ) && ( unit != 1 ) )
+		if ( ( unit > 0.0 ) && ( unit != 1.0 ) )
 		{
 			final Transform3D xform = new Transform3D();
 			xform.setScale( unit );
@@ -285,29 +283,10 @@ public class Java3dUniverse
 		}
 
 		// Set up the ambient light
-		final Color3f ambientColor = new Color3f( 1.0f , 1.0f , 1.0f );
+		final Color3f ambientColor = new Color3f( 0.5f , 0.5f , 0.5f );
 		final AmbientLight ambientLightNode = new AmbientLight( ambientColor );
 		ambientLightNode.setInfluencingBounds( bounds );
 		scene.addChild( ambientLightNode );
-
-		// Set up the directional lights
-		final Color3f  light1Color     = new Color3f (  1.0f ,  1.0f ,  1.0f );
-		final Vector3f light1Direction = new Vector3f(  0.6f ,  1.0f ,  1.0f );
-		final DirectionalLight light1 = new DirectionalLight( light1Color , light1Direction );
-		light1.setInfluencingBounds( bounds );
-		scene.addChild( light1 );
-
-		final Color3f  light2Color     = new Color3f (  0.9f ,  0.9f ,  0.9f );
-		final Vector3f light2Direction = new Vector3f( -0.6f , -1.0f , -0.2f );
-		final DirectionalLight light2 = new DirectionalLight( light2Color , light2Direction );
-		light2.setInfluencingBounds( bounds );
-		scene.addChild( light2 );
-
-		final Color3f  light3Color     = new Color3f (  0.8f ,  0.8f , 0.8f );
-		final Vector3f light3Direction = new Vector3f(  1.0f , -0.5f , -1.0f );
-		final DirectionalLight light3 = new DirectionalLight( light3Color , light3Direction );
-		light3.setInfluencingBounds( bounds );
-		scene.addChild( light3 );
 
 //		scene.addChild( Java3dTools.createGrid( new Point3f( 0.0f , 0.0f , 0.0f ) , new Point3i( 30 , 30 , 30 ) , 0.5f , 5 , new Color3f( 1 , 1 , 0 ) ) );
 //		scene.addChild( Java3dTools.createGrid( new Point3f( 0.0f , 2.0f , 0.0f ) , new Point3i( 20 , 8 , 20 ) , 0.25f , 4 , new Color3f( 0 , 0 ,0 ) ) );

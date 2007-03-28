@@ -772,11 +772,9 @@ public final class TestAbToPovConverter
 	{
 		final String actual;
 		{
-			//@TODO Properly test the light conversion when Light3D is completed.
-			//final AbPovTestModel  testModel       = new AbPovTestModel();
-
+			final AbPovTestModel  testModel       = new AbPovTestModel();
 			final Matrix3D        transform       = Matrix3D.INIT.setTranslation( 500.0 , -500.0 , 500.0 );
-			final PovLight        light           = AbToPovConverter.convertLight3D( transform , null );
+			final PovLight        light           = AbToPovConverter.convertLight3D( transform , testModel.getLight3D() );
 			final StringWriter    stringWriter    = new StringWriter();
 			final IndentingWriter indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
@@ -789,8 +787,9 @@ public final class TestAbToPovConverter
 			"{\n" +
 			"\t<500.0,-500.0,500.0>\n" +
 			"\tcolor <1.0,1.0,1.0>\n" +
+			"\tfade_distance 100.0\n" +
+			"\tfade_power 1\n" +
 			"}\n";
-
 		Assert.assertEquals( "Light3D to pov conversion error" , expected , actual );
 	}
 

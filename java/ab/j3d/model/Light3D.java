@@ -65,6 +65,30 @@ public final class Light3D
 	}
 
 	/**
+	 * Returns the intensity of the light. An intensity of zero indicates that
+	 * no light is emitted (i.e. the light is off), while an intensity of 255
+	 * indicates a 'typical' white light. Higher values may be specified for
+	 * lights that are even brighter.
+	 *
+	 * @return  Intensity value.
+	 */
+	public int getIntensity()
+	{
+		return _intensity;
+	}
+
+	/**
+	 * Returns the fall-off distance of the light, which is the distance at
+	 * which the light reaches half its specified intensity.
+	 *
+	 * @return  Fall-off distance.
+	 */
+	public double getFallOff()
+	{
+		return _fallOff;
+	}
+
+	/**
 	 * Calculate vertex shading properties based on this light source. Several
 	 * metrics about the vertex must be provided. Note that lightNormals will
 	 * only be provided if the requiresNormalsOrDistance() method of this light
@@ -217,5 +241,4 @@ public final class Light3D
 	{
 		return _fallOff >= 0.0;
 	}
-
 }

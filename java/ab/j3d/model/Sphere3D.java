@@ -20,6 +20,8 @@
  */
 package ab.j3d.model;
 
+import java.awt.Image;
+
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 
@@ -140,6 +142,24 @@ public final class Sphere3D
 		final int lastQ = q - 1;
 		final int lastV = vertexCount - 1;
 
+		final int maxU;
+		final int maxV;
+
+		final boolean isTexture    = texture.isTexture();
+		final Image   textureImage = texture.getTextureImage();
+		if ( isTexture && ( textureImage != null ) )
+		{
+			final int width = textureImage.getWidth( null );
+			final int height = textureImage.getHeight( null );
+			maxU = ( width  == -1 ) ? 256 : width;
+			maxV = ( height == -1 ) ? 256 : height;
+		}
+		else
+		{
+			maxU = -1;
+			maxV = -1;
+		}
+
 		for ( int qc = 0 ; qc < q ; qc++ )
 		{
 			for ( int pc = 0 ; pc < p ; pc++ )
@@ -153,7 +173,27 @@ public final class Sphere3D
 				                          : ( qc == lastQ ) ? new int[] { p2 , p1 , lastV }
 				                          :                   new int[] { p2 , p1 , p3 , p4 };
 
-				addFace( vertexIndices , texture , smooth );
+				if ( isTexture )
+				{
+					final int left   = pc         * maxU / p;
+					final int right  = ( pc + 1 ) * maxU / p;
+					final int center = ( left + right )  / 2;
+					final int[] textureU = ( qc == 0     ) ? new int[] { center , left , right }
+										 : ( qc == lastQ ) ? new int[] { right , left , center }
+										 :                   new int[] { right , left , left , right };
+
+					final int bottom = ( q - qc ) * maxV / q;
+					final int top    = ( q - ( qc + 1 ) ) * maxV / q;
+					final int[] textureV = ( qc == 0     ) ? new int[] { bottom , top , top }
+										 : ( qc == lastQ ) ? new int[] { bottom , bottom , top }
+										 :                   new int[] { bottom , bottom , top , top };
+
+					addFace( vertexIndices , texture , textureU , textureV , 1.0f , smooth , false );
+				}
+				else
+				{
+					addFace( vertexIndices , texture , smooth );
+				}
 			}
 		}
 	}

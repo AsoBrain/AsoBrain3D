@@ -444,7 +444,7 @@ public final class AbPovTestModel
 
 		if ( node == null )
 		{
-			light = new Light3D( 1 , 1.0 );
+			light = new Light3D( 255 , 100.0 );
 		}
 		else
 		{

@@ -81,6 +81,11 @@ public class PovScene
 	private double _assumedGamma = 2.2;
 
 	/**
+	 * Indicates whether an infinite floor (z = 0) should be rendered.
+	 */
+	private boolean _infiniteFloor = true;
+
+	/**
 	 * Get indenting writer from the specified writer. If the specified writer
 	 * is already an {@link IndentingWriter}, it will be returned as-is.
 	 *
@@ -175,6 +180,18 @@ public class PovScene
 	public final void setAssumedGamma( final double assumedGamma )
 	{
 		_assumedGamma = assumedGamma;
+	}
+
+	/**
+	 * Sets whether an infinite floor should be included in the scene. The
+	 * default is <code>true</code>.
+	 *
+	 * @param   infiniteFloor   <code>true</code> to render an infinite floor;
+	 *                          <code>false</code> otherwise.
+	 */
+	public void setInfiniteFloor( final boolean infiniteFloor )
+	{
+		_infiniteFloor = infiniteFloor;
 	}
 
 	/**
@@ -453,28 +470,31 @@ public class PovScene
 
 		out.newLine();
 
-		// infinite floor
-		out.writeln( "plane" );
-		out.writeln( "{" );
-		out.indentIn();
-		out.writeln( "z , 0.0" );
-		out.writeln( "texture");
-		out.writeln( "{" );
-		out.indentIn();
-		out.writeln( "pigment { image_map { jpeg \"SODA_BaseComponents/images/textures/PF_R5474\" } }" );
-		out.writeln( "scale < 1000 , 1000 , 1000 >" );
-		out.writeln( "finish" );
-		out.writeln( "{" );
-		out.indentIn();
-		out.writeln( "ambient 0.2" );
-		out.writeln( "diffuse 0.6" );
-		out.indentOut();
-		out.writeln( "}" );
-		out.indentOut();
-		out.writeln( "}" );
-		out.indentOut();
-		out.writeln( "}" );
-		out.newLine();
+		if ( _infiniteFloor )
+		{
+			// infinite floor
+			out.writeln( "plane" );
+			out.writeln( "{" );
+			out.indentIn();
+			out.writeln( "z , 0.0" );
+			out.writeln( "texture");
+			out.writeln( "{" );
+			out.indentIn();
+			out.writeln( "pigment { image_map { jpeg \"SODA_BaseComponents/images/textures/PF_R5474\" } }" );
+			out.writeln( "scale < 1000 , 1000 , 1000 >" );
+			out.writeln( "finish" );
+			out.writeln( "{" );
+			out.indentIn();
+			out.writeln( "ambient 0.2" );
+			out.writeln( "diffuse 0.6" );
+			out.indentOut();
+			out.writeln( "}" );
+			out.indentOut();
+			out.writeln( "}" );
+			out.indentOut();
+			out.writeln( "}" );
+			out.newLine();
+		}
 	}
 
 	protected void writeCameras( final IndentingWriter out , final PovGeometry[] geometry )

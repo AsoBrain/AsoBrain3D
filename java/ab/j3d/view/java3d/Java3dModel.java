@@ -22,11 +22,16 @@ package ab.j3d.view.java3d;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
+import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
+import javax.media.j3d.PointLight;
 import javax.media.j3d.TransformGroup;
+import javax.vecmath.Color3f;
+import javax.vecmath.Point3d;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
+import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
@@ -154,6 +159,23 @@ public final class Java3dModel
 		node3D.gatherLeafs( nodes , Object3D.class , Matrix3D.INIT , false );
 
 		final BranchGroup bg = Shape3DBuilder.createBranchGroup( nodes , textureOverride , opacity );
+
+		final Node3DCollection lights = new Node3DCollection();
+		node3D.gatherLeafs( lights , Light3D.class , Matrix3D.INIT , false );
+
+		for ( int i = 0 ; i < lights.size() ; i++ )
+		{
+			final Light3D light     = (Light3D)lights.getNode( i );
+			final float   fallOff   = (float)light.getFallOff();
+			final float   intensity = (float)light.getIntensity() / 255.0f;
+
+			final PointLight pointLight = new PointLight();
+			pointLight.setColor( new Color3f( intensity , intensity , intensity ) );
+			pointLight.setPosition( (float)transform.xo , (float)transform.yo , (float)transform.zo );
+			pointLight.setInfluencingBounds( new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 10000.0 ) );
+			pointLight.setAttenuation( 1.0f , 0.0f , 0.1f / ( fallOff * fallOff ) );
+			bg.addChild( pointLight );
+		}
 
 		/*
 		 * Attach content to scene graph (replace existing branch group).
