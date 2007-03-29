@@ -260,18 +260,16 @@ public final class AbToPovConverter
 	 */
 	public static PovLight convertLight3D( final Matrix3D transform , final Light3D light )
 	{
-
 		final PovLight result = new PovLight( "light" , transform.xo , transform.yo , transform.zo , new PovVector( Color.WHITE , (double)light.getIntensity() / 255.0 ) , true );
 
 		final double fallOff = light.getFallOff();
-		if ( fallOff > 0.0 )
+		if ( fallOff >= 0.0 )
 		{
-			result.setFadeDistance( fallOff );
-			result.setFadePower( 1 );
-		}
-		else if ( fallOff == 0.0 )
-		{
-			result.setFadeDistance( 0.00001 );
+			/*
+			 * POV interprets a value of 0.0 (or anything really close) as no
+			 * fall-off, so we use a very small value in stead.
+			 */
+			result.setFadeDistance( Math.max( 0.00001 , fallOff ) );
 			result.setFadePower( 1 );
 		}
 		return result;
