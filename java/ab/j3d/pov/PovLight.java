@@ -40,11 +40,9 @@ import com.numdata.oss.io.IndentingWriter;
 public final class PovLight
 	extends PovGeometry
 {
-	public static final int FADE_NONE      = 0;
-
-	public static final int FADE_LINEAR    = 1;
-
-	public static final int FADE_QUADRATIC = 2;
+	/** Fade power constant: no falloff.        */ public static final int FADE_NONE      = 0;
+	/** Fade power constant: linear falloff.    */ public static final int FADE_LINEAR    = 1;
+	/** Fade power constant: quadratic falloff. */ public static final int FADE_QUADRATIC = 2;
 
 	/**
 	 * The location of the light.
@@ -325,9 +323,15 @@ public final class PovLight
 	 * Sets the distance at which the light reaches its specified intensity.
 	 *
 	 * @param   fadeDistance    Distance of 100% light intensity.
+	 *
+	 * @throws  IllegalArgumentException if <code>fadeDistance &lt; 0.0</code>.
 	 */
 	public void setFadeDistance( final double fadeDistance )
 	{
+		if ( fadeDistance < 0.0 )
+		{
+			throw new IllegalArgumentException( "fadeDistance" );
+		}
 		_fadeDistance = fadeDistance;
 	}
 
@@ -347,9 +351,16 @@ public final class PovLight
 	 *
 	 * @param   fadePower   One of: {@link #FADE_NONE}, {@link #FADE_LINEAR},
 	 *                      {@link #FADE_QUADRATIC}.
+	 *
+	 * @throws  IllegalArgumentException if <code>fadePower</code> is not one
+	 *          of the specified values.
 	 */
 	public void setFadePower( final int fadePower )
 	{
+		if ( ( fadePower != FADE_NONE ) && ( fadePower != FADE_LINEAR ) && ( fadePower != FADE_QUADRATIC ) )
+		{
+			throw new IllegalArgumentException( "fadePower" );
+		}
 		_fadePower = fadePower;
 	}
 }
