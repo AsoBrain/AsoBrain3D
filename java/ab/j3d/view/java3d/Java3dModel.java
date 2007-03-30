@@ -160,9 +160,23 @@ public final class Java3dModel
 
 		final BranchGroup bg = Shape3DBuilder.createBranchGroup( nodes , textureOverride , opacity );
 
-		final Node3DCollection lights = new Node3DCollection();
-		node3D.gatherLeafs( lights , Light3D.class , Matrix3D.INIT , false );
+		nodes.clear();
+		node3D.gatherLeafs( nodes , Light3D.class , Matrix3D.INIT , false );
+		addLights( bg , nodes , transform );
 
+		/*
+		 * Attach content to scene graph (replace existing branch group).
+		 */
+		nodeTransform.setTransform( Java3dTools.convertMatrix3DToTransform3D( transform ) );
+
+		if ( nodeTransform.numChildren() == 0 )
+			nodeTransform.addChild( bg );
+		else
+			nodeTransform.setChild( bg , 0 );
+	}
+
+	private static void addLights( final BranchGroup bg , final Node3DCollection lights , final Matrix3D transform )
+	{
 		for ( int i = 0 ; i < lights.size() ; i++ )
 		{
 			final Light3D light     = (Light3D)lights.getNode( i );
@@ -176,16 +190,6 @@ public final class Java3dModel
 			pointLight.setAttenuation( 1.0f , 0.0f , 0.1f / ( fallOff * fallOff ) );
 			bg.addChild( pointLight );
 		}
-
-		/*
-		 * Attach content to scene graph (replace existing branch group).
-		 */
-		nodeTransform.setTransform( Java3dTools.convertMatrix3DToTransform3D( transform ) );
-
-		if ( nodeTransform.numChildren() == 0 )
-			nodeTransform.addChild( bg );
-		else
-			nodeTransform.setChild( bg , 0 );
 	}
 
 	public void removeNode( final Object id )
