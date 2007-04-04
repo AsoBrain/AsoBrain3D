@@ -80,22 +80,31 @@ public class JPCTView
 	private int _renderingPolicy;
 
 	/**
-	 * The SceneInputTranslator for this View.
+	 * Scene input translator for this View.
 	 */
 	private final ControlInput _controlInput;
 
+	/**
+	 * Model being viewed.
+	 */
 	private JPCTModel _model;
 
-	private boolean _stopRenderer = false;
-
+	/**
+	 * Background color of the view.
+	 */
 	private Color _backgroundColor;
 
+	/**
+	 * Whether the view needs to be updated to model changes.
+	 */
 	private boolean _updateNeeded;
 
 	/**
 	 * UI component to present view to user.
+	 *
+	 * @TODO refactor to allow switching between software/hardware on the fly
 	 */
-	private final class ViewComponent
+	private abstract class ViewComponent
 		extends JComponent
 	{
 		/**
@@ -104,64 +113,73 @@ public class JPCTView
 		private Insets _insets;
 
 		/**
-		 * Canvas used for hardware-accelerated rendering.
+		 * Frame buffer displayed by the component.
 		 */
-		private Canvas _canvas;
+		private FrameBuffer _frameBuffer;
 
 		/**
 		 * Construct view component.
 		 */
 		private ViewComponent()
 		{
-			_insets = null;
-			_canvas = null;
+			_insets      = null;
+			_frameBuffer = null;
 
-			setLayout( new BorderLayout() );
+			final Dimension size = new Dimension( MINIMUM_IMAGE_SIZE, MINIMUM_IMAGE_SIZE );
+			setMinimumSize( size );
+			setPreferredSize( size );
 		}
 
-		public void setCanvas( final Canvas canvas )
+		/**
+		 * Returns the frame buffer displayed by the view component.
+		 *
+		 * @return  Frame buffer.
+		 */
+		private FrameBuffer getFrameBuffer()
 		{
-			removeAll();
-			if ( canvas != null )
-			{
-				add( canvas );
-				revalidate();
+			final Dimension size = getSize();
 
-				final MouseListener[] mouseListeners = getMouseListeners();
-				for ( int i = 0 ; i < mouseListeners.length ; i++ )
+			FrameBuffer result = _frameBuffer;
+
+			if ( ( result == null ) ||
+			     ( result.getOutputWidth()  != size.width  ) ||
+			     ( result.getOutputHeight() != size.height ) )
+			{
+				if ( result != null )
 				{
-					canvas.addMouseListener( mouseListeners[ i ] );
+					result.dispose();
 				}
 
-				final MouseMotionListener[] mouseMotionListeners = getMouseMotionListeners();
-				for ( int i = 0 ; i < mouseMotionListeners.length ; i++ )
+				if ( ( size.width > 0 ) && ( size.height > 0 ) )
 				{
-					canvas.addMouseMotionListener( mouseMotionListeners[ i ] );
+					result = new FrameBuffer( size.width , size.height , FrameBuffer.SAMPLINGMODE_HARDWARE_ONLY );
+					_frameBuffer = result;
+					frameBufferReplaced( result );
+				}
+				else
+				{
+					result = null;
 				}
 			}
-			_canvas = canvas;
+
+			return result;
 		}
 
-		public void paint( final Graphics g )
-		{
-			super.paint( g );
+		/**
+		 * Performs implementation-specific clean-up and initialization needed
+		 * as a result fo replacing the frame buffer.
+		 *
+		 * @param   newBuffer   New frame buffer.
+		 */
+		protected abstract void frameBufferReplaced( final FrameBuffer newBuffer );
 
-			final Canvas canvas = _canvas;
-			if ( canvas != null )
-			{
-				canvas.repaint();
-			}
-		}
-
-		public Dimension getMinimumSize()
-		{
-			return new Dimension( MINIMUM_IMAGE_SIZE , MINIMUM_IMAGE_SIZE );
-		}
-
-		public Dimension getPreferredSize()
-		{
-			return new Dimension( MINIMUM_IMAGE_SIZE , MINIMUM_IMAGE_SIZE );
-		}
+		/**
+		 * Notifies the component that the contents of the frame buffer was
+		 * modified.
+		 *
+		 * @param   frameBuffer     Frame buffer.
+		 */
+		public abstract void frameBufferUpdated( final FrameBuffer frameBuffer );
 
 		public Projector getProjector()
 		{
@@ -194,7 +212,91 @@ public class JPCTView
 	}
 
 	/**
-	 * Construct new jPCTView.
+	 * View component implementation for the (lightweight) software renderer.
+	 *
+	 * @TODO should probably be refactored to a UI/strategy of sorts, that can be installed/uninstalled in a ViewComponent
+	 */
+	private class SoftwareViewComponent
+		extends ViewComponent
+	{
+		protected void frameBufferReplaced( final FrameBuffer newBuffer )
+		{
+			newBuffer.enableRenderer( IRenderer.RENDERER_SOFTWARE , IRenderer.MODE_OPENGL );
+		}
+
+		public void frameBufferUpdated( final FrameBuffer frameBuffer )
+		{
+			final Graphics graphics = getGraphics();
+			frameBuffer.display( graphics );
+			graphics.dispose();
+		}
+	}
+
+	/**
+	 * View component implementation for the (heavyweight) hardware renderer.
+	 *
+	 * @TODO should probably be refactored to a UI/strategy of sorts, that can be installed/uninstalled in a ViewComponent
+	 */
+	private class HardwareViewComponent
+		extends ViewComponent
+	{
+		/**
+		 * Canvas used for hardware-accelerated rendering.
+		 */
+		private Canvas _canvas = null;
+
+		HardwareViewComponent()
+		{
+			setLayout( new BorderLayout() );
+		}
+
+		protected void frameBufferReplaced( final FrameBuffer newBuffer )
+		{
+			newBuffer.enableRenderer( IRenderer.RENDERER_OPENGL , IRenderer.MODE_OPENGL );
+			setCanvas( newBuffer.enableGLCanvasRenderer( IRenderer.MODE_OPENGL ) );
+			newBuffer.disableRenderer( IRenderer.RENDERER_SOFTWARE );
+		}
+
+		public void frameBufferUpdated( final FrameBuffer frameBuffer )
+		{
+			frameBuffer.displayGLOnly();
+			final Graphics graphics = _canvas.getGraphics();
+			_canvas.update( graphics );
+			graphics.dispose();
+		}
+
+		/**
+		 * Sets the component's canvas and configures it to fire mouse events
+		 * to the component's listeners.
+		 *
+		 * @param   canvas  Canvas to be set.
+		 */
+		private void setCanvas( final Canvas canvas )
+		{
+			removeAll();
+			if ( canvas != null )
+			{
+				add( canvas );
+				revalidate();
+
+				final MouseListener[] mouseListeners = getMouseListeners();
+				for ( MouseListener listener : mouseListeners )
+				{
+					canvas.addMouseListener( listener );
+				}
+
+				final MouseMotionListener[] mouseMotionListeners = getMouseMotionListeners();
+				for ( MouseMotionListener listener : mouseMotionListeners )
+				{
+					canvas.addMouseMotionListener( listener );
+				}
+			}
+			_canvas = canvas;
+		}
+	}
+
+	/**
+	 * Construct new jPCT-based view.
 	 */
 	public JPCTView( final JPCTModel model , final Object id , final Color backgroundColor )
 	{
@@ -206,21 +308,51 @@ public class JPCTView
 		_projectionPolicy = Projector.PERSPECTIVE;
 		_renderingPolicy  = SOLID;
 
-		Config.useLocking   = true;
-		Config.fadeoutLight = true;
+		Config.glColorDepth    = 24;    // @FIXME: set this on Linux only
+		Config.useLocking      = true;
+		Config.fadeoutLight    = true;
+		Config.specPow         = 60.0f;
+		Config.specTerm        = 30.0f;
+		Config.useFastSpecular = false;
 
-		_viewComponent = new ViewComponent();
+		_viewComponent = createViewComponent();
 		_controlInput  = new ViewControlInput( model , this );
 
 		_updateNeeded = true;
-		mainLoop();
+		startRenderer();
 	}
 
-	private void mainLoop()
+	/**
+	 * Returns an appropriate view component, based on whether hardware
+	 * acceleration is available.
+	 *
+	 * @return  View component.
+	 */
+	private ViewComponent createViewComponent()
 	{
-		final Runnable renderer = new Renderer();
-		final Thread viewThread = new Thread( renderer , "viewThread:" + getID() );
-		viewThread.start();
+		boolean useHardware = false;
+		try
+		{
+			System.loadLibrary( "lwjgl" );
+			useHardware = true;
+		}
+		catch ( UnsatisfiedLinkError e )
+		{
+			/** Hardware OpenGL renderer is not available. */
+		}
+		catch ( SecurityException e )
+		{
+			/** Hardware OpenGL renderer is not available. */
+		}
+
+		return useHardware ? new HardwareViewComponent() : new SoftwareViewComponent();
+	}
+
+	private void startRenderer()
+	{
+		final Thread renderThread = new Thread( new Renderer() , "JPCTView.renderThread:" + getID() );
+		renderThread.setPriority( Thread.NORM_PRIORITY );
+		renderThread.start();
 	}
 
 	private World getWorld()
@@ -238,7 +370,11 @@ public class JPCTView
 		/*
 		 * Renderer will perform an update before the next frame is rendered.
 		 */
-		_updateNeeded = true;
+		synchronized ( this )
+		{
+			_updateNeeded = true;
+			notifyAll();
+		}
 	}
 
 	/**
@@ -246,29 +382,25 @@ public class JPCTView
 	 *
 	 * NOTE: must only be invoked from renderer thread.
  	 */
-	public void updateImpl()
+	private void updateCamera()
 	{
 		final Matrix3D viewTransform = getViewTransform();
 
-		final Matrix cameraRotation = new Matrix();
-		cameraRotation.setDump( new float[]
+		final Matrix cameraTransform = new Matrix();
+		cameraTransform.setDump( new float[]
 			{
 				(float)viewTransform.xx , (float)-viewTransform.yx , (float)-viewTransform.zx , 0.0f ,
 				(float)viewTransform.xy , (float)-viewTransform.yy , (float)-viewTransform.zy , 0.0f ,
 				(float)viewTransform.xz , (float)-viewTransform.yz , (float)-viewTransform.zz , 0.0f ,
-				0.5f * (float)viewTransform.xo , 0.5f * (float)-viewTransform.yo , 0.5f * (float)-viewTransform.zo , 1.0f
-			} ); // not sure why the "0.5f" works, but it does
+				(float)viewTransform.xo , (float)-viewTransform.yo , (float)-viewTransform.zo , 1.0f
+			} );
 
 		final World world = getWorld();
 
 		final Camera camera = world.getCamera();
 		camera.setFOV( camera.convertRADAngleIntoFOV( (float)getAperture() ) );
-
-		final SimpleVector cameraPosition = new SimpleVector( 0.0 , 0.0 , 0.0 );
-		cameraPosition.matMul( cameraRotation.invert() );
-
-		camera.setPosition( cameraPosition );
-		camera.setBack( cameraRotation );
+		camera.setPosition( SimpleVector.ORIGIN );
+		camera.setBack( cameraTransform );
 
 		Config.farPlane = 10.0f / (float)_model.getUnit();
 
@@ -301,123 +433,74 @@ public class JPCTView
 		return _controlInput;
 	}
 
+	/**
+	 * Render loop for the view.
+	 */
 	private class Renderer
 		implements Runnable
 	{
 		public void run()
 		{
-			final Thread currentThread = Thread.currentThread();
-			currentThread.setPriority( Thread.NORM_PRIORITY );
-
 			long nextCheck    = System.currentTimeMillis() + 1000L;
 			int  frameCounter = 0;
 			int  fps;
 
 			final ViewComponent viewComponent = _viewComponent;
 
-			FrameBuffer buffer = null;
-
-			final Dimension   bufferSize = new Dimension();
-			final Dimension   viewSize   = new Dimension();
-
-			boolean renderOpenGL = false;
-			try
-			{
-				System.loadLibrary( "lwjgl" );
-				renderOpenGL = true;
-			}
-			catch ( UnsatisfiedLinkError e )
-			{
-				/** OpenGL renderer is not available. */
-			}
-			catch ( SecurityException e )
-			{
-				/** OpenGL renderer is not available. */
-			}
-
 			final World world = getWorld();
 
-			while ( !_stopRenderer )
+			updateCamera();
+			while ( true )
 			{
 				/*
-				 * Create frame buffer (if needed) matching view size and with
-				 * the appropriated renderer.
+				 * Pause the renderer unless the are changes.
 				 */
-				viewComponent.getSize( viewSize );
-				if ( viewSize.width * viewSize.height == 0 )
+				try
 				{
-					try
+					synchronized ( JPCTView.this )
 					{
-						Thread.sleep( 10L );
+						while ( !_updateNeeded )
+						{
+							JPCTView.this.wait();
+						}
+						_updateNeeded = false;
 					}
-					catch ( InterruptedException e )
-					{
-					}
-					continue;
+				}
+				catch ( InterruptedException e )
+				{
+					break;
 				}
 
-				if ( !viewSize.equals( bufferSize ) )
+				final FrameBuffer frameBuffer = viewComponent.getFrameBuffer();
+
+				if ( frameBuffer != null )
 				{
-					if ( buffer != null )
-					{
-						viewComponent.setCanvas( null );
-						buffer.dispose();
-					}
+					_model.updateWorld();
 
-					//viewSize.width , viewSize.height
-					Config.glColorDepth = 24;
-					buffer = new FrameBuffer( viewSize.width , viewSize.height , FrameBuffer.SAMPLINGMODE_HARDWARE_ONLY );
-					if ( renderOpenGL )
-					{
-						buffer.enableRenderer( IRenderer.RENDERER_OPENGL , IRenderer.MODE_OPENGL );
-						viewComponent.setCanvas( buffer.enableGLCanvasRenderer( IRenderer.MODE_OPENGL ) );
-						buffer.disableRenderer( IRenderer.RENDERER_SOFTWARE );
-					}
-					else
-					{
-						buffer.enableRenderer( IRenderer.RENDERER_SOFTWARE , IRenderer.MODE_OPENGL );
-					}
+					updateCamera();
+					world.buildAllObjects();
 
-					bufferSize.setSize( viewSize );
-				}
+					frameBuffer.clear( _backgroundColor );
 
-				if ( _updateNeeded )
-				{
-					updateImpl();
-					_updateNeeded = false;
-				}
+					world.renderScene( frameBuffer );
+					world.draw( frameBuffer );
 
-				// ---- Calculate fps ----
-				if ( System.currentTimeMillis() >= nextCheck )
-				{
-					nextCheck = System.currentTimeMillis() + 1000L;
-					fps = frameCounter;
-					frameCounter = 0;
+					frameBuffer.update();
+					viewComponent.frameBufferUpdated( frameBuffer );
 
-					System.out.println( "fps = " + fps );
-				}
-				frameCounter ++;
-				// -----------------------
-
-				final Graphics graphics = viewComponent.getGraphics();
-				if ( graphics != null )
-				{
-					buffer.clear( _backgroundColor );
+					frameCounter ++;
 
 					/*
-					 * @FIXME major problem: random exceptions in render loop
-					 * These happen when the World is changed, so the problem
-					 * probably lies in the implementation of the initialize/
-					 * update methods of JPCTModel.
-					 */
-					world.renderScene( buffer );
-					world.draw( buffer );
-
-					buffer.update();
-					buffer.display( graphics );
-					if ( renderOpenGL )
+					 * Calculate frames per second.
+ 					 */
+					if ( System.currentTimeMillis() >= nextCheck )
 					{
-						viewComponent.repaint();
+						nextCheck = System.currentTimeMillis() + 1000L;
+						fps = frameCounter;
+						frameCounter = 0;
+
+						System.out.print( "fps = " );
+						System.out.println( fps );
 					}
 
 					Thread.yield();

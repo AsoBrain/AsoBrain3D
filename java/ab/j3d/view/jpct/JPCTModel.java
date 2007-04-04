@@ -22,11 +22,14 @@ package ab.j3d.view.jpct;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-import com.threed.jpct.Matrix;
 import com.threed.jpct.SimpleVector;
 import com.threed.jpct.World;
 import com.threed.jpct.util.Light;
@@ -55,21 +58,32 @@ public class JPCTModel
 	private final World _world;
 
 	/**
-	 * Maps node ID ({@link Object}) to jPCT nodes, such as
-	 * {@link com.threed.jpct.Object3D} and {@link Light}.
+	 * Maps node IDs ({@link Object}) to jPCT objects.
 	 */
-	private final Map _nodeMap;
+	private final Map<Object,List<com.threed.jpct.Object3D>> _objects;
 
 	/**
-	 * There appears to be no getter for childs of an
-	 * {@link com.threed.jpct.Object3D}, so they are stored here.
+	 * Maps node IDs ({@link Object}) to jPCT lights.
 	 */
-	private final Map _childNodes;
+	private final Map<Object,List<Light>> _lights;
+
+	/**
+	 * Set of available lights. These lights are still part of the world, but
+	 * are no longer needed and therefore disabled. Before adding new lights
+	 * to the world, these existing ones should be reused first.
+	 */
+	private final Set<Light> _availableLights;
 
 	/**
 	 * Background color of the frame buffer.
 	 */
 	private Color _backgroundColor;
+
+	/**
+	 * Modifications that have been made to the view model, but have not yet
+	 * been propagated to the world ({@link #_world}).
+	 */
+	private final Queue<Modification> _modifications;
 
 	/**
 	 * Construct new jPCT model.
@@ -85,141 +99,182 @@ public class JPCTModel
 		final World world = new World();
 		_world = world;
 
-		final int ambient = 75;// -100;
-		world.setAmbientLight( ambient , ambient , ambient );
+		// @TODO get ambient level from scene
+		world.setAmbientLight( 75 , 75 , 75 );
 
-		_nodeMap    = new HashMap();
-		_childNodes = new HashMap();
+		_objects         = new HashMap<Object , List<com.threed.jpct.Object3D>>();
+		_lights          = new HashMap<Object , List<Light>>();
+		_availableLights = new HashSet<Light>();
+
+		_modifications = new ConcurrentLinkedQueue<Modification>();
 	}
 
 	protected void initializeNode( final ViewModelNode node )
 	{
-		final Node3D node3D = node.getNode3D();
-
-		final Map nodeMap = _nodeMap;
-		final Object existing = nodeMap.get( node.getID() );
-		if ( existing instanceof com.threed.jpct.Object3D )
-		{
-			removeObject( (com.threed.jpct.Object3D)existing );
-		}
-
-		final Matrix3D object2world = node.getTransform();
-
-		final World world = _world;
-
-		if ( node3D instanceof Object3D )
-		{
-			final com.threed.jpct.Object3D object = JPCTTools.convert2Object3D( (Object3D)node3D );
-			setTransformation( object , object2world );
-
-			world.addObject( object );
-			nodeMap.put( node.getID() , object );
-		}
-		else if ( node3D instanceof Light3D )
-		{
-			/* Lights can't be removed, so they are re-used. */
-			if ( existing == null )
-			{
-				final Light jpctLight = new Light( world );
-				nodeMap.put( node.getID() , jpctLight );
-			}
-		}
-		else
-		{
-			final com.threed.jpct.Object3D jpctObject = com.threed.jpct.Object3D.createDummyObj();
-			jpctObject.setVisibility( false );
-
-			world.addObject( jpctObject );
-
-			final Node3DCollection leafs = new Node3DCollection();
-			node3D.gatherLeafs( leafs , Object3D.class , object2world , false );
-
-			final List childNodes = new ArrayList( leafs.size() );
-			for ( int i = 0 ; i < leafs.size() ; i++ )
-			{
-				final Object3D leaf      = (Object3D)leafs.getNode( i );
-				final Matrix3D transform = leafs.getMatrix( i );
-
-				final com.threed.jpct.Object3D leaf3D = JPCTTools.convert2Object3D( leaf );
-				setTransformation( leaf3D , transform );
-
-				world.addObject( leaf3D );
-				jpctObject.addChild( leaf3D );
-				childNodes.add( leaf3D );
-			}
-			_childNodes.put( jpctObject , childNodes );
-
-			nodeMap.put( node.getID() , jpctObject );
-		}
-	}
-
-	private static void setTransformation( final com.threed.jpct.Object3D object3D , final Matrix3D object2world )
-	{
-		final Matrix matrix = JPCTTools.convert2Matrix( object2world );
-
-		final SimpleVector translationVector = matrix.getTranslation();
-		final Matrix translation = new Matrix();
-		translation.translate( translationVector );
-
-		final Matrix rotation = matrix.cloneMatrix();
-		translationVector.scalarMul( -1.0f );
-		rotation.translate( translationVector );
-
-		object3D.setRotationMatrix( rotation );
-		object3D.setTranslationMatrix( translation );
-	}
-
-	protected void updateNodeTransform( final ViewModelNode node )
-	{
-		final Matrix3D transform = node.getTransform();
-		final Object   jpctNode  = _nodeMap.get( node.getID() );
-
-		if ( jpctNode instanceof com.threed.jpct.Object3D )
-		{
-			setTransformation( (com.threed.jpct.Object3D)jpctNode , transform );
-		}
-		else if ( jpctNode instanceof Light )
-		{
-			final Light light = (Light)jpctNode;
-			light.setPosition( new SimpleVector( (float)transform.xo , (float)transform.yo , (float)transform.zo ) );
-		}
+		_modifications.add( new Addition( node ) );
 	}
 
 	protected void updateNodeContent( final ViewModelNode node )
 	{
-		final Node3D node3D   = node.getNode3D();
-		final Object jpctNode = _nodeMap.get( node.getID() );
+		_modifications.add( new Update( node ) );
+	}
 
-		if ( jpctNode instanceof com.threed.jpct.Object3D )
+	public void removeNode( final Object id )
+	{
+		final ViewModelNode node = getNode( id );
+		if ( node != null )
 		{
-			initializeNode( node );
-		}
-		else if ( jpctNode instanceof Light )
-		{
-			final Light3D  light     = (Light3D)node3D;
-			final Matrix3D transform = node.getTransform();
-
-			final Light jpctLight = (Light)jpctNode;
-			final float intensity = (float)light.getIntensity() * 10.0f / 255.0f;
-			jpctLight.setPosition( new SimpleVector( transform.xo , transform.yo , transform.zo ) );
-			jpctLight.setIntensity( intensity , intensity , intensity );
-			jpctLight.setAttenuation( (float)light.getFallOff() );
+			super.removeNode( id );
+			_modifications.add( new Removal( node ) );
 		}
 	}
 
-	private void removeObject( final com.threed.jpct.Object3D object3D )
+	/**
+	 * Creates and initializes the view-specific objects for the specified node.
+	 *
+	 * @param   node    Node to perform initialization for.
+	 */
+	private void initializeNodeImpl( final ViewModelNode node )
 	{
-		final List childNodes = (List)_childNodes.remove( object3D );
-		if ( childNodes != null )
+		final Object   nodeID    = node.getID();
+		final Node3D   node3D    = node.getNode3D();
+		final Matrix3D transform = node.getTransform();
+
+		final World world = _world;
+
+		final Node3DCollection nodes = new Node3DCollection();
+		node3D.gatherLeafs( nodes , Object3D.class , transform , false );
+
+		if ( nodes.size() > 0 )
 		{
-			for ( Iterator i = childNodes.iterator() ; i.hasNext() ; )
+			List<com.threed.jpct.Object3D> objects = _objects.get( nodeID );
+			if ( objects == null )
 			{
-				final com.threed.jpct.Object3D childNode = (com.threed.jpct.Object3D)i.next();
-				_world.removeObject( childNode );
+				objects = new ArrayList<com.threed.jpct.Object3D>();
+				_objects.put( nodeID , objects );
 			}
-			childNodes.clear();
+
+			for ( int i = 0 ; i < nodes.size() ; i++ )
+			{
+				final Object3D                 modelObject = (Object3D)nodes.getNode( i );
+				final com.threed.jpct.Object3D viewObject  = JPCTTools.convert2Object3D( modelObject );
+
+				JPCTTools.setTransformation( viewObject , nodes.getMatrix( i ) );
+				viewObject.setSpecularLighting( true );
+
+				objects.add( viewObject );
+				world.addObject( viewObject );
+			}
 		}
-		_world.removeObject( object3D );
+
+		nodes.clear();
+		node3D.gatherLeafs( nodes , Light3D.class , transform , false );
+
+		if ( nodes.size() > 0 )
+		{
+			List<Light> lights = _lights.get( nodeID );
+			if ( lights == null )
+			{
+				lights = new ArrayList<Light>();
+				_lights.put( nodeID , lights );
+			}
+
+			for ( int i = 0 ; i < nodes.size() ; i++ )
+			{
+				final Light3D modelLight = (Light3D)node3D;
+				final Light   viewLight  = addLight();
+
+				final Matrix3D lightTransform = nodes.getMatrix( i );
+
+				final float intensity = (float)modelLight.getIntensity() * 10.0f / 255.0f;
+				viewLight.setIntensity( intensity , intensity , intensity );
+				viewLight.setAttenuation( (float)modelLight.getFallOff() );
+				viewLight.setPosition( new SimpleVector( lightTransform.xo , lightTransform.yo , lightTransform.zo ) );
+
+				lights.add( viewLight );
+			}
+		}
+	}
+
+	/**
+	 * Adds a light to the world. If any lights that were previously removed
+	 * using {@link #removeLight(Light)} are still available, one of those
+	 * lights is re-enabled and returned.
+	 *
+	 * @return  Light instance.
+	 */
+	private Light addLight()
+	{
+		final Light result;
+		if ( _availableLights.isEmpty() )
+		{
+			result = new Light( _world );
+		}
+		else
+		{
+			final Iterator<Light> iterator = _availableLights.iterator();
+			result = iterator.next();
+			result.enable();
+			iterator.remove();
+		}
+		return result;
+	}
+
+	/**
+	 * Removes a light from the world. Note that the light only appears to be
+	 * removed, due to the lack of a <code>removeLight</code> method or
+	 * something similar in the {@link World} class. In stead of actual removal,
+	 * the light is disabled and internally kept for re-use.
+	 *
+	 * @param   light   Light to be removed.
+	 */
+	private void removeLight( final Light light )
+	{
+		light.disable();
+		_availableLights.add( light );
+	}
+
+	protected void updateNodeTransform( final ViewModelNode node )
+	{
+		// @TODO implement a more efficient update method
+		updateNodeContent( node );
+	}
+
+	private void updateNodeContentsImpl( final ViewModelNode node )
+	{
+		// @TODO implement a more efficient update method
+		removeNodeImpl( node );
+		initializeNodeImpl( node );
+	}
+
+	/**
+	 * Removes the given nod efrom the model.
+	 *
+	 * @param   node    Node to be removed.
+	 */
+	private void removeNodeImpl( final ViewModelNode node )
+	{
+		final Object id = node.getID();
+
+		final List<com.threed.jpct.Object3D> objects = _objects.get( id );
+		if ( objects != null )
+		{
+			for ( final com.threed.jpct.Object3D object : objects )
+			{
+				_world.removeObject( object );
+			}
+			_objects.remove( id );
+		}
+
+		final List<Light> lights = _lights.get( id );
+		if ( lights != null )
+		{
+			for ( final Light light : lights )
+			{
+				removeLight( light );
+			}
+			_lights.remove( id );
+		}
 	}
 
 	public ViewModelView createView( final Object id )
@@ -232,8 +287,126 @@ public class JPCTModel
 		return view;
 	}
 
+	/**
+	 * Returns the world containing the objects represented by this model.
+	 *
+	 * @return  World for this model.
+	 */
 	public World getWorld()
 	{
 		return _world;
+	}
+
+	/**
+	 * Applies any updates made to the view model to the world. This method must
+	 * only be called from the renderer thread (which is why this method exists
+	 * in the first place). Modifications to the world cause problems when
+	 * performed from outside the renderer thread.
+	 *
+	 * @return  <code>true</code> if the world was changed;
+	 *          <code>false</code> otherwise, i.e. if no changes were needed.
+	 */
+	public boolean updateWorld()
+	{
+		final boolean result = !_modifications.isEmpty();
+
+		if ( result )
+		{
+			for ( final Modification modification : _modifications )
+			{
+				modification.perform();
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Base class for classes that specify a modification to the model.
+	 */
+	private static abstract class Modification
+	{
+		protected final ViewModelNode _node;
+
+		/**
+		 * Constructs a modification for the given node.
+		 *
+		 * @param   node    Node that the modifications is related to.
+		 */
+		protected Modification( final ViewModelNode node )
+		{
+			_node = node;
+		}
+
+		/**
+		 * Performs the modification in the current thread.
+		 */
+		protected abstract void perform();
+	}
+
+	/**
+	 * Represents the addition of a node to the model.
+	 */
+	private class Addition
+		extends Modification
+	{
+		/**
+		 * Constructs an addition of the given node.
+		 *
+		 * @param   node    Added node.
+		 */
+		Addition( final ViewModelNode node )
+		{
+			super( node );
+		}
+
+		protected void perform()
+		{
+			initializeNodeImpl( _node );
+		}
+	}
+
+	/**
+	 * Represents an update of a node in the model.
+	 */
+	private class Update
+		extends Modification
+	{
+		/**
+		 * Constructs an update for the given node.
+		 *
+		 * @param   node    Updated node.
+		 */
+		Update( final ViewModelNode node )
+		{
+			super( node );
+		}
+
+		protected void perform()
+		{
+			updateNodeContentsImpl( _node );
+		}
+	}
+
+	/**
+	 * Represents the removal of a node from the model.
+	 */
+	private class Removal
+		extends Modification
+	{
+		/**
+		 * Constructs a removal of the given node.
+		 *
+		 * @param   node    Removed node.
+		 */
+		Removal( final ViewModelNode node )
+		{
+			super( node );
+		}
+
+		protected void perform()
+		{
+			removeNodeImpl( _node );
+		}
 	}
 }
