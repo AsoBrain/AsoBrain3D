@@ -22,13 +22,14 @@ package ab.j3d.pov;
 import java.util.Locale;
 import javax.swing.JFrame;
 
-import com.numdata.oss.ui.ImageTools;
-import com.numdata.oss.ui.WindowTools;
-
 import ab.j3d.Vector3D;
 import ab.j3d.control.FromToCameraControl;
+import ab.j3d.view.ViewModelTools;
 import ab.j3d.view.ViewModelView;
 import ab.j3d.view.java3d.Java3dModel;
+
+import com.numdata.oss.ui.ImageTools;
+import com.numdata.oss.ui.WindowTools;
 
 /**
  * This test application can be used for visual testing of the
@@ -73,6 +74,7 @@ final class AbPovTestApp
 		 * Create Java3D-model.
 		 */
 		final Java3dModel viewModel = new Java3dModel();
+		ViewModelTools.addLegacyLights( viewModel );
 
 		/*
 		 * Fill the Java3D-model with objects from the testmodel.

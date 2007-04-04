@@ -39,6 +39,7 @@ import ab.j3d.model.Box3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
 import ab.j3d.view.ViewModel;
+import ab.j3d.view.ViewModelTools;
 import ab.j3d.view.ViewModelView;
 import ab.j3d.view.java3d.Java3dModel;
 
@@ -115,6 +116,7 @@ public final class Model3D
 		_model = model;
 
 		_viewModel = new Java3dModel( ViewModel.FOOT , Color.GRAY);
+		ViewModelTools.addLegacyLights( _viewModel );
 
 		_elements = new HashSet();
 

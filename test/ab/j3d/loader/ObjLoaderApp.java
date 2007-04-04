@@ -29,17 +29,18 @@ import java.util.Map;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import com.numdata.oss.ui.WindowTools;
-
 import ab.j3d.Bounds3D;
 import ab.j3d.Matrix3D;
 import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
-import ab.j3d.model.Object3D;
 import ab.j3d.control.FromToCameraControl;
+import ab.j3d.model.Object3D;
 import ab.j3d.view.ViewModel;
+import ab.j3d.view.ViewModelTools;
 import ab.j3d.view.ViewModelView;
 import ab.j3d.view.java3d.Java3dModel;
+
+import com.numdata.oss.ui.WindowTools;
 
 /**
  * This is a sample application for the {@link ObjLoader} class.
@@ -199,6 +200,7 @@ public class ObjLoaderApp
 				System.out.println( "object size = " + Math.round( toCM * size.x ) + " x " + Math.round( toCM * size.y ) + " x " + Math.round( toCM * size.z ) + " cm" );
 
 				final ViewModel viewModel = new Java3dModel( unit , Color.white ); // new Color( 51 , 77 , 102 ) );
+				ViewModelTools.addLegacyLights( viewModel );
 				viewModel.createNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d , null , 1.0f );
 
 				final Vector3D  viewFrom = Vector3D.INIT.set( 0.0 , bounds.v1.y - 3.0 / unit , bounds.v2.z / 2.0 + 1.2 / unit );
