@@ -86,8 +86,8 @@ public class PovVector
 	public PovVector( final Color color , final double scalar )
 	{
 		this( (double)color.getRed()   * scalar / 255.0 ,
-	          (double)color.getGreen() * scalar / 255.0 ,
-	          (double)color.getBlue()  * scalar / 255.0 );
+		      (double)color.getGreen() * scalar / 255.0 ,
+		      (double)color.getBlue()  * scalar / 255.0   );
 	}
 
 	/**
