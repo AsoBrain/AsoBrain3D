@@ -68,6 +68,16 @@ public class JPCTModel
 	private final Map<Object,List<Light>> _lights;
 
 	/**
+	 * Combined ambient light level from all ambient lights in the model.
+	 */
+	private int _ambientLight;
+
+	/**
+	 * Ambient light intensity by node ID.
+	 */
+	private final Map<Object,Integer> _ambientLights;
+
+	/**
 	 * Set of available lights. These lights are still part of the world, but
 	 * are no longer needed and therefore disabled. Before adding new lights
 	 * to the world, these existing ones should be reused first.
@@ -96,17 +106,15 @@ public class JPCTModel
 		super( unit );
 		_backgroundColor = background;
 
-		final World world = new World();
-		_world = world;
+		_world           = new World();
 
-		// @TODO get ambient level from scene
-		world.setAmbientLight( 75 , 75 , 75 );
-
-		_objects         = new HashMap<Object , List<com.threed.jpct.Object3D>>();
-		_lights          = new HashMap<Object , List<Light>>();
+		_objects         = new HashMap<Object,List<com.threed.jpct.Object3D>>();
+		_lights          = new HashMap<Object,List<Light>>();
+		_ambientLights   = new HashMap<Object,Integer>();
 		_availableLights = new HashSet<Light>();
+		_modifications   = new ConcurrentLinkedQueue<Modification>();
 
-		_modifications = new ConcurrentLinkedQueue<Modification>();
+		setAmbientLight( 0 );
 	}
 
 	protected void initializeNode( final ViewModelNode node )
@@ -179,21 +187,49 @@ public class JPCTModel
 				_lights.put( nodeID , lights );
 			}
 
+			int nodeAmbientLight = 0;
+
 			for ( int i = 0 ; i < nodes.size() ; i++ )
 			{
 				final Light3D modelLight = (Light3D)node3D;
-				final Light   viewLight  = addLight();
 
 				final Matrix3D lightTransform = nodes.getMatrix( i );
 
-				final float intensity = (float)modelLight.getIntensity() * 10.0f / 255.0f;
-				viewLight.setIntensity( intensity , intensity , intensity );
-				viewLight.setAttenuation( (float)modelLight.getFallOff() );
-				viewLight.setPosition( new SimpleVector( lightTransform.xo , lightTransform.yo , lightTransform.zo ) );
+				final int   modelIntensity = modelLight.getIntensity();
+				final float viewIntensity  = (float)modelIntensity * 10.0f / 255.0f;
+				final float fallOff        = (float)modelLight.getFallOff();
 
-				lights.add( viewLight );
+				if ( fallOff < 0.0f )
+				{
+					/* Note: jPCT's ambient lights use the same units as the model. */
+					nodeAmbientLight += modelIntensity;
+				}
+				else
+				{
+					final Light   viewLight  = addLight();
+					viewLight.setIntensity( viewIntensity , viewIntensity , viewIntensity );
+					viewLight.setAttenuation( fallOff );
+					viewLight.setPosition( new SimpleVector( lightTransform.xo , lightTransform.yo , lightTransform.zo ) );
+					lights.add( viewLight );
+				}
+			}
+
+			if ( nodeAmbientLight > 0 )
+			{
+				removeAmbientLight( nodeID );
+
+				final int ambientLight = _ambientLight + nodeAmbientLight;
+				_ambientLights.put( nodeID , Integer.valueOf( nodeAmbientLight ) );
+				setAmbientLight( ambientLight );
 			}
 		}
+	}
+
+	private void setAmbientLight( final int ambientLight )
+	{
+		_ambientLight = ambientLight;
+		final int worldAmbient = ambientLight / 2;
+		_world.setAmbientLight( worldAmbient , worldAmbient , worldAmbient );
 	}
 
 	/**
@@ -274,6 +310,18 @@ public class JPCTModel
 				removeLight( light );
 			}
 			_lights.remove( id );
+		}
+
+		removeAmbientLight( id );
+	}
+
+	private void removeAmbientLight( final Object id )
+	{
+		final Integer nodeAmbientLight = _ambientLights.remove( id );
+		if ( nodeAmbientLight != null )
+		{
+			final int ambientLight = _ambientLight - nodeAmbientLight;
+			setAmbientLight( ambientLight );
 		}
 	}
 

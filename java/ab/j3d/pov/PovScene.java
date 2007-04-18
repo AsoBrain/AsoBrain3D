@@ -19,6 +19,7 @@
  */
 package ab.j3d.pov;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -76,14 +77,14 @@ public class PovScene
 	private Map _declaredShapes = new HashMap();
 
 	/**
+	 * Ambient light in the scene.
+	 */
+	private PovVector _ambientLight = new PovVector( Color.BLACK );
+
+	/**
 	 * Assumed gamma level.
 	 */
 	private double _assumedGamma = 2.2;
-
-	/**
-	 * Indicates whether an infinite floor (z = 0) should be rendered.
-	 */
-	private boolean _infiniteFloor = true;
 
 	/**
 	 * Get indenting writer from the specified writer. If the specified writer
@@ -163,6 +164,26 @@ public class PovScene
 	}
 
 	/**
+	 * Returns the scene's ambient light intensity.
+	 *
+	 * @return  Ambient light.
+	 */
+	public PovVector getAmbientLight()
+	{
+		return _ambientLight;
+	}
+
+	/**
+	 * Sets the scene's ambient light intensity.
+	 *
+	 * @param   ambientLight    Ambient light to be set.
+	 */
+	public void setAmbientLight( final PovVector ambientLight )
+	{
+		_ambientLight = ambientLight;
+	}
+
+	/**
 	 * Get assumed gamma level.
 	 *
 	 * @return  Assumed gamma level.
@@ -180,18 +201,6 @@ public class PovScene
 	public final void setAssumedGamma( final double assumedGamma )
 	{
 		_assumedGamma = assumedGamma;
-	}
-
-	/**
-	 * Sets whether an infinite floor should be included in the scene. The
-	 * default is <code>true</code>.
-	 *
-	 * @param   infiniteFloor   <code>true</code> to render an infinite floor;
-	 *                          <code>false</code> otherwise.
-	 */
-	public void setInfiniteFloor( final boolean infiniteFloor )
-	{
-		_infiniteFloor = infiniteFloor;
 	}
 
 	/**
@@ -462,6 +471,9 @@ public class PovScene
 		out.writeln( "global_settings" );
 		out.writeln( "{" );
 		out.indentIn();
+		out.write( "ambient_light rgb " );
+		_ambientLight.write( out );
+		out.newLine();
 		out.write( "assumed_gamma " );
 		out.write( PovObject.format( getAssumedGamma() ) );
 		out.newLine();
@@ -469,32 +481,6 @@ public class PovScene
 		out.writeln( "}" );
 
 		out.newLine();
-
-		if ( _infiniteFloor )
-		{
-			// infinite floor
-			out.writeln( "plane" );
-			out.writeln( "{" );
-			out.indentIn();
-			out.writeln( "z , 0.0" );
-			out.writeln( "texture");
-			out.writeln( "{" );
-			out.indentIn();
-			out.writeln( "pigment { image_map { jpeg \"SODA_BaseComponents/images/textures/PF_R5474\" } }" );
-			out.writeln( "scale < 1000 , 1000 , 1000 >" );
-			out.writeln( "finish" );
-			out.writeln( "{" );
-			out.indentIn();
-			out.writeln( "ambient 0.2" );
-			out.writeln( "diffuse 0.6" );
-			out.indentOut();
-			out.writeln( "}" );
-			out.indentOut();
-			out.writeln( "}" );
-			out.indentOut();
-			out.writeln( "}" );
-			out.newLine();
-		}
 	}
 
 	protected void writeCameras( final IndentingWriter out , final PovGeometry[] geometry )

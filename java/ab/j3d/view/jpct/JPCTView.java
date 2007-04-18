@@ -101,10 +101,8 @@ public class JPCTView
 
 	/**
 	 * UI component to present view to user.
-	 *
-	 * @TODO refactor to allow switching between software/hardware on the fly
 	 */
-	private abstract class ViewComponent
+	private class ViewComponent
 		extends JComponent
 	{
 		/**
@@ -117,17 +115,36 @@ public class JPCTView
 		 */
 		private FrameBuffer _frameBuffer;
 
+		private ViewStrategy _strategy;
+
 		/**
 		 * Construct view component.
 		 */
 		private ViewComponent()
 		{
+			_strategy    = null;
 			_insets      = null;
 			_frameBuffer = null;
 
 			final Dimension size = new Dimension( MINIMUM_IMAGE_SIZE, MINIMUM_IMAGE_SIZE );
 			setMinimumSize( size );
 			setPreferredSize( size );
+
+//			addMouseListener( new MouseListener);
+		}
+
+		public void setStrategy( final ViewStrategy strategy )
+		{
+			final ViewStrategy oldStrategy = _strategy;
+			if ( oldStrategy != strategy )
+			{
+				if ( oldStrategy != null )
+				{
+					oldStrategy.uninstall( this );
+				}
+				_strategy = strategy;
+				strategy.install( this );
+			}
 		}
 
 		/**
@@ -137,28 +154,29 @@ public class JPCTView
 		 */
 		private FrameBuffer getFrameBuffer()
 		{
-			final Dimension size = getSize();
+			FrameBuffer result = null;
 
-			FrameBuffer result = _frameBuffer;
-
-			if ( ( result == null ) ||
-			     ( result.getOutputWidth()  != size.width  ) ||
-			     ( result.getOutputHeight() != size.height ) )
+			if ( _strategy != null )
 			{
-				if ( result != null )
-				{
-					result.dispose();
-				}
+				final Dimension size = getSize();
 
-				if ( ( size.width > 0 ) && ( size.height > 0 ) )
+				result = _frameBuffer;
+
+				if ( ( result == null ) ||
+					 ( result.getOutputWidth()  != size.width  ) ||
+					 ( result.getOutputHeight() != size.height ) )
 				{
-					result = new FrameBuffer( size.width , size.height , FrameBuffer.SAMPLINGMODE_HARDWARE_ONLY );
-					_frameBuffer = result;
-					frameBufferReplaced( result );
-				}
-				else
-				{
-					result = null;
+					if ( result != null )
+					{
+						result.dispose();
+					}
+
+					if ( ( size.width > 0 ) && ( size.height > 0 ) )
+					{
+						result = new FrameBuffer( size.width , size.height , FrameBuffer.SAMPLINGMODE_HARDWARE_ONLY );
+						_frameBuffer = result;
+						_strategy.frameBufferReplaced( this , result );
+					}
 				}
 			}
 
@@ -166,20 +184,15 @@ public class JPCTView
 		}
 
 		/**
-		 * Performs implementation-specific clean-up and initialization needed
-		 * as a result fo replacing the frame buffer.
-		 *
-		 * @param   newBuffer   New frame buffer.
-		 */
-		protected abstract void frameBufferReplaced( final FrameBuffer newBuffer );
-
-		/**
 		 * Notifies the component that the contents of the frame buffer was
 		 * modified.
 		 *
 		 * @param   frameBuffer     Frame buffer.
 		 */
-		public abstract void frameBufferUpdated( final FrameBuffer frameBuffer );
+		public void frameBufferUpdated( final FrameBuffer frameBuffer )
+		{
+			_strategy.frameBufferUpdated( this , frameBuffer );
+		}
 
 		public Projector getProjector()
 		{
@@ -209,55 +222,89 @@ public class JPCTView
 
 			return new Dimension( imageWidth , imageHeight );
 		}
+
+		public void paint( final Graphics g )
+		{
+			JPCTView.this.update();
+		}
+
+		public void update( final Graphics g )
+		{
+			JPCTView.this.update();
+		}
+	}
+
+	private interface ViewStrategy
+	{
+		/**
+		 * Performs implementation-specific clean-up and initialization needed
+		 * as a result fo replacing the frame buffer.
+		 *
+		 * @param   component   View component.
+		 * @param   newBuffer   New frame buffer.
+		 */
+		void frameBufferReplaced( final ViewComponent component , final FrameBuffer newBuffer );
+
+		/**
+		 * Notifies the strategy that the contents of the frame buffer was
+		 * modified.
+		 *
+		 * @param   component   View component.
+		 * @param   frameBuffer     Frame buffer.
+		 */
+		void frameBufferUpdated( final ViewComponent component , final FrameBuffer frameBuffer );
+
+		void install( final ViewComponent component );
+
+		void uninstall( final ViewComponent component );
 	}
 
 	/**
-	 * View component implementation for the (lightweight) software renderer.
-	 *
-	 * @TODO should probably be refactored to a UI/strategy of sorts, that can be installed/uninstalled in a ViewComponent
+	 * View component UI implementation for the (lightweight) software renderer.
 	 */
-	private class SoftwareViewComponent
-		extends ViewComponent
+	private class SoftwareViewStrategy
+		implements ViewStrategy
 	{
-		protected void frameBufferReplaced( final FrameBuffer newBuffer )
+		public void frameBufferReplaced( final ViewComponent component , final FrameBuffer newBuffer )
 		{
 			newBuffer.enableRenderer( IRenderer.RENDERER_SOFTWARE , IRenderer.MODE_OPENGL );
 		}
 
-		public void frameBufferUpdated( final FrameBuffer frameBuffer )
+		public void frameBufferUpdated( final ViewComponent viewComponent , final FrameBuffer frameBuffer )
 		{
-			final Graphics graphics = getGraphics();
+			final Graphics graphics = viewComponent.getGraphics();
 			frameBuffer.display( graphics );
 			graphics.dispose();
+		}
+
+		public void install( final ViewComponent viewComponent )
+		{
+		}
+
+		public void uninstall( final ViewComponent viewComponent )
+		{
 		}
 	}
 
 	/**
 	 * View component implementation for the (heavyweight) hardware renderer.
-	 *
-	 * @TODO should probably be refactored to a UI/strategy of sorts, that can be installed/uninstalled in a ViewComponent
 	 */
-	private class HardwareViewComponent
-		extends ViewComponent
+	private class HardwareViewStrategy
+		implements ViewStrategy
 	{
 		/**
 		 * Canvas used for hardware-accelerated rendering.
 		 */
 		private Canvas _canvas = null;
 
-		HardwareViewComponent()
-		{
-			setLayout( new BorderLayout() );
-		}
-
-		protected void frameBufferReplaced( final FrameBuffer newBuffer )
+		public void frameBufferReplaced( final ViewComponent component , final FrameBuffer newBuffer )
 		{
 			newBuffer.enableRenderer( IRenderer.RENDERER_OPENGL , IRenderer.MODE_OPENGL );
-			setCanvas( newBuffer.enableGLCanvasRenderer( IRenderer.MODE_OPENGL ) );
+			setCanvas( component , newBuffer.enableGLCanvasRenderer( IRenderer.MODE_OPENGL ) );
 			newBuffer.disableRenderer( IRenderer.RENDERER_SOFTWARE );
 		}
 
-		public void frameBufferUpdated( final FrameBuffer frameBuffer )
+		public void frameBufferUpdated( final ViewComponent component , final FrameBuffer frameBuffer )
 		{
 			frameBuffer.displayGLOnly();
 			final Graphics graphics = _canvas.getGraphics();
@@ -269,29 +316,41 @@ public class JPCTView
 		 * Sets the component's canvas and configures it to fire mouse events
 		 * to the component's listeners.
 		 *
-		 * @param   canvas  Canvas to be set.
+		 * @param   component   View component.
+		 * @param   canvas      Canvas to be set.
 		 */
-		private void setCanvas( final Canvas canvas )
+		private void setCanvas( final ViewComponent component , final Canvas canvas )
 		{
-			removeAll();
+			component.removeAll();
 			if ( canvas != null )
 			{
-				add( canvas );
-				revalidate();
+				component.add( canvas );
+				component.revalidate();
 
-				final MouseListener[] mouseListeners = getMouseListeners();
+				final MouseListener[] mouseListeners = component.getMouseListeners();
 				for ( MouseListener listener : mouseListeners )
 				{
 					canvas.addMouseListener( listener );
 				}
 
-				final MouseMotionListener[] mouseMotionListeners = getMouseMotionListeners();
+				final MouseMotionListener[] mouseMotionListeners = component.getMouseMotionListeners();
 				for ( MouseMotionListener listener : mouseMotionListeners )
 				{
 					canvas.addMouseMotionListener( listener );
 				}
 			}
 			_canvas = canvas;
+		}
+
+		public void install( final ViewComponent component )
+		{
+			component.setLayout( new BorderLayout() );
+		}
+
+		public void uninstall( final ViewComponent component )
+		{
+			component.remove( _canvas );
+			component.revalidate();
 		}
 	}
 
@@ -345,7 +404,9 @@ public class JPCTView
 			/** Hardware OpenGL renderer is not available. */
 		}
 
-		return useHardware ? new HardwareViewComponent() : new SoftwareViewComponent();
+		final ViewComponent result = new ViewComponent();
+		result.setStrategy( useHardware ? new HardwareViewStrategy() : new SoftwareViewStrategy() );
+		return result;
 	}
 
 	private void startRenderer()
@@ -415,7 +476,10 @@ public class JPCTView
 
 	public void setRenderingPolicy( final int policy )
 	{
-		_renderingPolicy = policy;
+		if ( _renderingPolicy != policy )
+		{
+			_renderingPolicy = policy;
+		}
 	}
 
 	/**
@@ -483,7 +547,14 @@ public class JPCTView
 					frameBuffer.clear( _backgroundColor );
 
 					world.renderScene( frameBuffer );
-					world.draw( frameBuffer );
+					if ( _renderingPolicy == WIREFRAME )
+					{
+						world.drawWireframe( frameBuffer , Color.BLACK );
+					}
+					else
+					{
+						world.draw( frameBuffer );
+					}
 
 					frameBuffer.update();
 					viewComponent.frameBufferUpdated( frameBuffer );

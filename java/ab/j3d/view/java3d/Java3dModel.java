@@ -22,8 +22,10 @@ package ab.j3d.view.java3d;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
+import javax.media.j3d.AmbientLight;
 import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
+import javax.media.j3d.Light;
 import javax.media.j3d.PointLight;
 import javax.media.j3d.TransformGroup;
 import javax.vecmath.Color3f;
@@ -62,7 +64,7 @@ public final class Java3dModel
 	 * Map node ID ({@link Object}) to Java 3D content graph object
 	 * ({@link BranchGroup}).
 	 */
-	private final Map _nodeContentMap = new HashMap();
+	private final Map<Object,BranchGroup> _nodeContentMap = new HashMap();
 
 	/**
 	 * Construct new Java 3D model using {@link ViewModel#MM} units
@@ -179,16 +181,34 @@ public final class Java3dModel
 	{
 		for ( int i = 0 ; i < lights.size() ; i++ )
 		{
-			final Light3D light     = (Light3D)lights.getNode( i );
-			final float   fallOff   = (float)light.getFallOff();
-			final float   intensity = (float)light.getIntensity() / 255.0f;
+			final Light3D modelLight = (Light3D)lights.getNode( i );
+			final float   fallOff    = (float)modelLight.getFallOff();
+			final float   intensity  = (float)modelLight.getIntensity() / 255.0f;
 
-			final PointLight pointLight = new PointLight();
-			pointLight.setColor( new Color3f( intensity , intensity , intensity ) );
-			pointLight.setPosition( (float)transform.xo , (float)transform.yo , (float)transform.zo );
-			pointLight.setInfluencingBounds( new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 10000.0 ) );
-			pointLight.setAttenuation( 1.0f , 0.0f , 0.1f / ( fallOff * fallOff ) );
-			bg.addChild( pointLight );
+			final Light viewLight;
+			if ( fallOff < 0.0f )
+			{
+				viewLight = new AmbientLight();
+			}
+			else
+			{
+				final PointLight pointLight = new PointLight();
+				if ( fallOff > 0.0f )
+				{
+					pointLight.setInfluencingBounds( new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , (double)fallOff * 10.0 ) );
+					pointLight.setAttenuation( 1.0f , 0.0f , 0.1f / ( fallOff * fallOff ) );
+				}
+				else if ( fallOff == 0.0f )
+				{
+					pointLight.setInfluencingBounds( new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 10000.0 ) );
+				}
+				pointLight.setPosition( (float)transform.xo , (float)transform.yo , (float)transform.zo );
+
+				viewLight = pointLight;
+			}
+			viewLight.setColor( new Color3f( intensity , intensity , intensity ) );
+
+			bg.addChild( viewLight );
 		}
 	}
 
@@ -206,7 +226,7 @@ public final class Java3dModel
 		if ( id == null )
 			throw new NullPointerException( "id" );
 
-		return (BranchGroup)_nodeContentMap.get( id );
+		return _nodeContentMap.get( id );
 	}
 
 	public TransformGroup getJava3dTransform( final Object id )

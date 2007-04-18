@@ -116,6 +116,8 @@ public final class AbToPovConverter
 	{
 		final PovScene scene = _scene;
 
+		int ambient = 0;
+
 		for ( int i = 0 ; i < nodes.size() ; i++ )
 		{
 			final Node3D   node      = nodes.getNode( i );
@@ -127,7 +129,12 @@ public final class AbToPovConverter
 			}
 			else if ( node instanceof Light3D )
 			{
-				scene.add( convertLight3D( transform , (Light3D)node ) );
+				final Light3D light = (Light3D)node;
+				if ( light.getFallOff() < 0.0 )
+				{
+					ambient += light.getIntensity();
+				}
+				scene.add( convertLight3D( transform , light ) );
 			}
 			else if ( node instanceof Box3D )
 			{
@@ -150,6 +157,9 @@ public final class AbToPovConverter
 				scene.add( convertObject3D( transform, (Object3D)node ) );
 			}
 		}
+
+		final double povAmbient = (double)ambient / 255.0;
+		scene.setAmbientLight( new PovVector( povAmbient , povAmbient , povAmbient ) );
 
 		return scene;
 	}
@@ -272,6 +282,13 @@ public final class AbToPovConverter
 			result.setFadeDistance( Math.max( 0.00001 , fallOff ) );
 			result.setFadePower( 1 );
 		}
+		else
+		{
+			/*
+			 * Ambient light is ignored here. See {@link #convert}.
+			 */
+		}
+
 		return result;
 	}
 
