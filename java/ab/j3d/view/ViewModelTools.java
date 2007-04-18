@@ -42,10 +42,7 @@ public final class ViewModelTools
 		if ( model == null )
 			throw new NullPointerException( "model" );
 
-		/*
-		// @TODO: Set up the ambient light
-		final Color3f ambientColor = new Color3f( 1.0f , 1.0f , 1.0f );
-		*/
+		model.createNode( "legacy-ambient-1" , Matrix3D.INIT , new Light3D( 255 , -1.0 ) , null , 1.0f );
 
 		/* A distance of over 100000 units from the origin should be sufficient to mimic a directional light. */
 		model.createNode( "legacy-light-1" , Matrix3D.INIT.plus(  60000.0 ,  100000.0 ,  100000.0 ) , new Light3D( 255 , 300000.0 ) , null , 1.0f );
