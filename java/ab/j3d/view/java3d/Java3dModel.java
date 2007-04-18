@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2006
+ * (C) Copyright Numdata BV 2004-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -179,6 +179,8 @@ public final class Java3dModel
 
 	private static void addLights( final BranchGroup bg , final Node3DCollection lights , final Matrix3D transform )
 	{
+		final BoundingSphere worldBounds = new BoundingSphere( new Point3d( 0.0, 0.0, 0.0 ), 10000.0 ); // @TODO How to determine the 'correct' world bounds.
+
 		for ( int i = 0 ; i < lights.size() ; i++ )
 		{
 			final Light3D modelLight = (Light3D)lights.getNode( i );
@@ -189,6 +191,7 @@ public final class Java3dModel
 			if ( fallOff < 0.0f )
 			{
 				viewLight = new AmbientLight();
+				viewLight.setInfluencingBounds( worldBounds );
 			}
 			else
 			{
@@ -200,7 +203,7 @@ public final class Java3dModel
 				}
 				else if ( fallOff == 0.0f )
 				{
-					pointLight.setInfluencingBounds( new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 10000.0 ) );
+					pointLight.setInfluencingBounds( worldBounds );
 				}
 				pointLight.setPosition( (float)transform.xo , (float)transform.yo , (float)transform.zo );
 
