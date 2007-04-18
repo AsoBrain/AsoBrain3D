@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2005
+ * (C) Copyright Numdata BV 2004-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,6 @@
 package ab.j3d.view.java3d;
 
 import java.awt.Color;
-import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Background;
 import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
@@ -281,25 +280,6 @@ public class Java3dUniverse
 			background.setApplicationBounds( bounds );
 			scene.addChild( background );
 		}
-
-		// Set up the ambient light
-		final Color3f ambientColor = new Color3f( 0.5f , 0.5f , 0.5f );
-		final AmbientLight ambientLightNode = new AmbientLight( ambientColor );
-		ambientLightNode.setInfluencingBounds( bounds );
-		scene.addChild( ambientLightNode );
-
-//		scene.addChild( Java3dTools.createGrid( new Point3f( 0.0f , 0.0f , 0.0f ) , new Point3i( 30 , 30 , 30 ) , 0.5f , 5 , new Color3f( 1 , 1 , 0 ) ) );
-//		scene.addChild( Java3dTools.createGrid( new Point3f( 0.0f , 2.0f , 0.0f ) , new Point3i( 20 , 8 , 20 ) , 0.25f , 4 , new Color3f( 0 , 0 ,0 ) ) );
-
-//		final TransformGroup transformGroup = new TransformGroup( new Transform3D( new Matrix4f(
-//		        1 , 0 , 0 ,  0 ,
-//		        0 , 1 , 0 ,  0 ,
-//		        0 , 0 , 1 ,  0 ,
-//		        0 , 0 , 0 ,  1 ) ) );
-
-//		transformGroup.addChild( new ColorCube( 1 ) );
-//		scene.addChild( transformGroup );
-//		scene.addChild( new ColorCube( 1 ) );
 
 		// add scene to scene graph
 		return scene;
