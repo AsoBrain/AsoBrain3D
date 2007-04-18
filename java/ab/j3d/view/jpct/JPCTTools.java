@@ -84,6 +84,7 @@ public class JPCTTools
 		final TextureManager textureManager = TextureManager.getInstance();
 
 		final Object3D result = new Object3D( maxTriangles );
+		result.setShadingMode( Object3D.SHADING_FAKED_FLAT );
 		for ( int i = 0 ; i < nodes.size() ; i++ )
 		{
 			final ab.j3d.model.Object3D node      = (ab.j3d.model.Object3D)nodes.getNode( i );
