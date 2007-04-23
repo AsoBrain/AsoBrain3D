@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * (C) Copyright Numdata BV 2005-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -274,21 +274,12 @@ public abstract class Projector
 	{
 		boolean result = false;
 
-		final int vertexCount = vertices.length / 3;
-		if ( vertexCount > 0 )
+		if ( vertices.length / 3 > 0 )
 		{
 			result = true;
 
-			for ( int i = 0 ; i < vertexCount ; i++ )
-			{
-				final int vertexIndex = i * 3;
-
-				if ( inViewVolume( vertices[ vertexIndex ] , vertices[ vertexIndex + 1 ] , vertices[ vertexIndex + 2 ] ) )
-				{
-					result = false;
-					break;
-				}
-			}
+			for ( int i = 0 ; result && ( i < vertices.length ) ; i += 3 )
+				result = !inViewVolume( vertices[ i ] , vertices[ i + 1 ] , vertices[ i + 2 ] );
 		}
 
 		return result;
