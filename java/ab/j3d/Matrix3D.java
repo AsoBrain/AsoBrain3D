@@ -1263,6 +1263,18 @@ public final class Matrix3D
 	/**
 	 * Transform a vector to X-coordinate using this transform.
 	 *
+	 * @param   vector  Vector to transform.
+	 *
+	 * @return  Resulting X coordinate.
+	 */
+	public double transformX( final Vector3D vector )
+	{
+		return transformX( vector.x , vector.y , vector.z );
+	}
+
+	/**
+	 * Transform a vector to X-coordinate using this transform.
+	 *
 	 * @param   x       X-coordinate of vector.
 	 * @param   y       Y-coordinate of vector.
 	 * @param   z       Z-coordinate of vector.
@@ -1277,6 +1289,18 @@ public final class Matrix3D
 	/**
 	 * Transform a vector to Y-coordinate using this transform.
 	 *
+	 * @param   vector  Vector to transform.
+	 *
+	 * @return  Resulting Y coordinate.
+	 */
+	public double transformY( final Vector3D vector )
+	{
+		return transformY( vector.x , vector.y , vector.z );
+	}
+
+	/**
+	 * Transform a vector to Y-coordinate using this transform.
+	 *
 	 * @param   x       X-coordinate of vector.
 	 * @param   y       Y-coordinate of vector.
 	 * @param   z       Z-coordinate of vector.
@@ -1286,6 +1310,18 @@ public final class Matrix3D
 	public double transformY( final double x , final double y , final double z )
 	{
 		return x * yx + y * yy + z * yz + yo;
+	}
+
+	/**
+	 * Transform a vector to Z-coordinate using this transform.
+	 *
+	 * @param   vector  Vector to transform.
+	 *
+	 * @return  Resulting Z coordinate.
+	 */
+	public double transformZ( final Vector3D vector )
+	{
+		return transformZ( vector.x , vector.y , vector.z );
 	}
 
 	/**
