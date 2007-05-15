@@ -3021,4 +3021,44 @@ public final class Polyline2D
 
 		return result;
 	}
+
+	/**
+	 * Test for equality between this polyline and the specified object. The
+	 * other points must have the same coordinates with a extremely small
+	 * tolerance.
+	 *
+	 * @param   obj   Object to compare with.
+	 *
+	 * @return  <code>true</code> if the specified object is almost equal to this;
+	 *          <code>false</code> otherwise.
+	 */
+	public boolean almostEquals( final Object obj )
+	{
+		boolean result = false;
+
+		if ( obj == this )
+		{
+			result = true;
+		}
+		else if ( obj instanceof Polyline2D )
+		{
+			final Polyline2D other = (Polyline2D)obj;
+
+			if ( getPointCount() == other.getPointCount() )
+			{
+				result = true;
+
+				for ( int i = 0 ; result && i < _points.size() ; i++ )
+				{
+					final PolyPoint2D thisPoint  = getPoint( i );
+					final PolyPoint2D otherPoint = other.getPoint( i );
+
+					if ( !thisPoint.almostEquals( otherPoint ) )
+						result = false;
+				}
+			}
+		}
+
+		return result;
+	}
 }
