@@ -99,6 +99,17 @@ public abstract class ViewModelView
 	public static final int WIREFRAME = 3;
 
 	/**
+	 * Rendering policies.
+	 */
+	public static final String[] enumRenderingPolicy =
+	{
+		"SOLID" ,
+		"SCHEMATIC" ,
+		"SKETCH" ,
+		"WIREFRAME" ,
+	};
+
+	/**
 	 * Scale factor from pixels to radians to make a full circle by moving the
 	 * mouse cursor 250 pixels (in no particular direction).
 	 *
@@ -140,7 +151,7 @@ public abstract class ViewModelView
 	 * A {@link List} of {@link OverlayPainter}s that are to paint over this
 	 * view after rendering is completed.
 	 */
-	private final List _painters = new ArrayList();
+	private final List<OverlayPainter> _painters = new ArrayList();
 
 	/**
 	 * Construct new view.
@@ -517,13 +528,8 @@ public abstract class ViewModelView
 	 */
 	protected final void paintOverlay( final Graphics2D g2d )
 	{
-		final List painters = _painters;
-
-		for ( int index = 0 ; index < painters.size() ; index++ )
-		{
-			final OverlayPainter painter = (OverlayPainter)painters.get( index );
+		for ( final OverlayPainter painter : _painters )
 			painter.paint( this , g2d );
-		}
 	}
 
 	/**
