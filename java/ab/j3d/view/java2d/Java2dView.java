@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2006
+ * (C) Copyright Numdata BV 2004-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,12 +30,12 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 
 import ab.j3d.Matrix3D;
-import ab.j3d.SwitchRenderingPolicyAction;
 import ab.j3d.Vector3D;
 import ab.j3d.control.ControlInput;
 import ab.j3d.view.BSPTree;
 import ab.j3d.view.Projector;
 import ab.j3d.view.RenderedPolygon;
+import ab.j3d.view.SwitchRenderingPolicyAction;
 import ab.j3d.view.ViewControlInput;
 import ab.j3d.view.ViewModelView;
 
@@ -253,6 +253,6 @@ final class Java2dView
 
 	public Action[] getActions( final Locale locale )
 	{
-		return new Action[]{ new SwitchRenderingPolicyAction( locale , this , _renderingPolicy , new int[]{ SOLID , SCHEMATIC , WIREFRAME , SKETCH } ) };
+		return new Action[] { new SwitchRenderingPolicyAction( locale , this , _renderingPolicy ) };
 	}
 }
