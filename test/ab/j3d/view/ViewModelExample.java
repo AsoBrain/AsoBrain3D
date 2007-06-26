@@ -81,6 +81,8 @@ public abstract class ViewModelExample
 		cubeRight.setTag( "Cube right");
 		viewModel.createNode( "cubeRight" , Matrix3D.getTransform( 90.0 , 0.0 , 315.0 , 0.225 / unit , 0.0 , 0.0 ) , cubeRight , null , 1.0f );
 
+		ViewModelTools.addLegacyLights( viewModel );
+
 		final Vector3D  viewFrom = Vector3D.INIT.set( 0.0 , -1.0 / unit , 0.0 );
 		final Vector3D  viewAt   = Vector3D.INIT;
 
@@ -95,15 +97,15 @@ public abstract class ViewModelExample
 			{
 				public EventObject mouseClicked( final ControlInputEvent event )
 				{
-					final List objects = event.getIntersections();
+					final List<Face3DIntersection> objects = event.getIntersections();
 
-					final StringBuffer sb = new StringBuffer();
+					final StringBuilder sb = new StringBuilder();
 					sb.append( objects.size() );
 					sb.append( " objects under the mouse: " );
-					for ( int i = 0 ; i < objects.size() ; i++ )
+					for ( final Face3DIntersection object : objects )
 					{
 						sb.append( "  Object: " );
-						sb.append( ( (Face3DIntersection)objects.get( i ) ).getObjectID() );
+						sb.append( object.getObjectID() );
 					}
 
 					System.out.println( sb.toString() );
