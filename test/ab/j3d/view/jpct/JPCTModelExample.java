@@ -23,7 +23,6 @@ import java.awt.Color;
 
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelExample;
-import ab.j3d.view.ViewModelTools;
 
 /**
  * Example program for the jPCT view model implementation.
@@ -39,14 +38,7 @@ public class JPCTModelExample
 	 */
 	public JPCTModelExample()
 	{
-		super( createModel() );
-	}
-
-	private static JPCTModel createModel()
-	{
-		final JPCTModel result = new JPCTModel( ViewModel.MM, Color.BLACK );
-		ViewModelTools.addLegacyLights( result );
-		return result;
+		super( new JPCTModel( ViewModel.MM, Color.BLACK ) );
 	}
 
 	/**
