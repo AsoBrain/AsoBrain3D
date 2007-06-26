@@ -39,7 +39,7 @@ public final class Java3dModelExample
 	 */
 	private Java3dModelExample()
 	{
-		super( new Java3dModel( ViewModel.MM, Color.BLACK ) );
+		super( new Java3dModel( ViewModel.MM , Color.BLACK ) );
 	}
 
 	/**

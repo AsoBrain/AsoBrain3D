@@ -38,7 +38,7 @@ public class JPCTModelExample
 	 */
 	public JPCTModelExample()
 	{
-		super( new JPCTModel( ViewModel.MM, Color.BLACK ) );
+		super( new JPCTModel( ViewModel.MM , Color.BLACK ) );
 	}
 
 	/**
