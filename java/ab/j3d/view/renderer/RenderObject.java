@@ -20,8 +20,9 @@
  */
 package ab.j3d.view.renderer;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
+import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3DCollection;
@@ -196,7 +197,7 @@ public final class RenderObject
 			if ( lightCount < 1 )
 				return;
 
-			final TextureSpec texture = getTexture();
+			final Material material = getMaterial();
 
 			if ( _face3d.isSmooth() )
 			{
@@ -211,7 +212,7 @@ public final class RenderObject
 					{
 						k = _vi[ j ] * 3;
 
-						light.calculateShadingProperties( texture ,
+						calculateShadingProperties( light , material ,
 							normalDist , _vi[ j ] * 4 ,
 							vertNorm[ k ] , vertNorm[ k + 1 ] , vertNorm[ k + 2 ] ,
 							_ds , _sxs , _sys , _sfs , j );
@@ -227,7 +228,7 @@ public final class RenderObject
 
 					for ( j = _vi.length ; --j >= 0 ; )
 					{
-						light.calculateShadingProperties( texture ,
+						calculateShadingProperties( light , material ,
 							normalDist , _vi[ j ] * 4 ,
 							_nx , _ny , _nz ,
 							_ds , _sxs , _sys , _sfs , j );
@@ -236,17 +237,168 @@ public final class RenderObject
 			}
 		}
 
-		public TextureSpec getTexture()
+		/**
+		 * Calculate vertex shading properties based on a light source. Several
+		 * metrics about the vertex must be provided. Note that lightNormals will
+		 * only be provided if the requiresNormalsOrDistance() method of this light
+		 * returns <code>true</code>.
+		 *
+		 * <code>viewNormals</code> is an array of tripplets for the x,y,z values
+		 * respectively.
+		 *
+		 * <code>lightNormalAndDist</code> contains light normals and distances
+		 * stored as quads; x,y,z of the light direction vector (normal), and
+		 * distance as last value.
+		 *
+		 * All indices must be absolute (so you may need to multiply them by three
+		 * or four before passing them as arguments).
+		 * <p>
+		 * Diffuse reflection is based on a 0-256 scale and all affecting light
+		 * sources should add to this value.
+		 * <p>
+		 * Because of current limitations, only one specular light source is supported
+		 * (since there is only one set of specular properties). Therefore, only one
+		 * light source can fill this in (this is currently priority based, with the
+		 * brightest light source overruling fainter light sources).
+		 *
+		 * @param   material            Material of surface.
+		 * @param   lightNormalAndDist  Float array with light normals and distance.
+		 * @param   lightIndex          Index in light array.
+		 * @param   nx                  X-coordinate of normal
+		 * @param   ny                  Y-coordinate of normal
+		 * @param   nz                  Z-coordinate of normal
+		 * @param   ds                  Diffuse reflection result array.
+		 * @param   sxs                 Specular reflection X-component result array.
+		 * @param   sys                 Specular reflection Y-component result array.
+		 * @param   sfs                 Specular reflection fraction result array.
+		 * @param   targetIndex         Index in result arrays.
+		 */
+		public void calculateShadingProperties(
+			final Light3D light ,
+			final Material material ,
+			final double[] lightNormalAndDist , final int lightIndex ,
+			final double nx , final double ny , final double nz ,
+			final int[] ds , final int[] sxs , final int[] sys , final int[] sfs, final int targetIndex )
 		{
-			return _face3d.getTexture();
+			final int    intensity = light.getIntensity();
+			final double fallOff   = light.getFallOff();
+
+			/*
+			 * Handle ambient light.
+			 */
+			if ( fallOff < 0.0 )
+			{
+				/*
+				 * Calculate diffuse reflection of the ambient light
+				 * using the following formula:
+				 *
+				 *     Id = Il * Ka
+				 *
+				 * Where:
+				 *     Il       = light intensity
+				 *     Ka       = ambient reflectivity of material
+				 *
+				 * We just add this to any existing diffuse reflection value.
+				 */
+				final double ka = material.getAmbientReflectivity();
+				final double id = (double)intensity * ka;
+
+				ds[ targetIndex ] += (int)( id * 256.0 );
+			}
+			/*
+			 * Handle point light
+			 */
+			else
+			{
+				/*
+				 * Get direction of light.
+				 */
+				final double lightNormalX  = lightNormalAndDist[ lightIndex     ];
+				final double lightNormalY  = lightNormalAndDist[ lightIndex + 1 ];
+				final double lightNormalZ  = lightNormalAndDist[ lightIndex + 2 ];
+				final double lightDistance = lightNormalAndDist[ lightIndex + 3 ];
+
+				/*
+				 * Get cos( angle ) between light and normal (this is
+				 * simply the inner product of the light direction and
+				 * normal vectors.
+				 */
+				final double cosLightAngle = nx * lightNormalX + ny * lightNormalY + nz * lightNormalZ;
+
+				/*
+				 * Only apply light if it does not come from the back side.
+				 */
+				if ( cosLightAngle > 0.0 )
+				{
+					/*
+					 * Calculate light intensity of light at the given distance.
+					 */
+					final double il = (double)intensity * ( fallOff / ( fallOff + lightDistance ) );
+
+					/*
+					 * Start with the diffuse reflection part of the point light.
+					 * As basis, we use the following formula:
+					 *
+					 *     Id = Il * Kd * cos( gamma )
+					 *
+					 * Where:
+					 *     Il       = light intensity
+					 *     Kd       = diffusion reflection coefficient of material,
+					 *     gamma    = angle between normal and light
+					 *
+					 * We just add this to any existing diffuse reflection value.
+					 */
+					final double kd = material.getDiffuseReflectivity();
+					final double id = il * kd * cosLightAngle;
+
+					ds[ targetIndex ] += (int)( id * 256.0 );
+
+					/*
+					 * To add specular reflection, we have the following formula:
+					 *
+					 *     Is = Il * Ks * cos^n( theta )
+					 *
+					 * Where:
+					 *     Il       = light intensity
+					 *     Ks       = specular reflection coefficient of material,
+					 *     n        = specular reflection exponent
+					 *     theta    = angle between light and view
+					 *
+					 * However, the cos^n factor is not calculated here. Instead, the
+					 * the x and y coordinates of the light direction vector are stored
+					 * in the shading properties array. These are used by the rendering
+					 * engine to interpolate the light normal accross a face. The result
+					 * of the first part of the formula is also stored.
+					 *
+					 * Since only one specular light source is supported at this moment,
+					 * the properties will only be stored if this light is brighter than
+					 * any previous specular light source.
+					 */
+					final double ks = material.getSpecularReflectivity();
+					final double is = il * ks;
+					final int isInt = (int)( is * 256.0 );
+
+					if ( isInt > sfs[ targetIndex ] )
+					{
+						sxs[ targetIndex ] = (int)(32767.5 * lightNormalX + 32768.0 );
+						sys[ targetIndex ] = (int)(32767.5 * lightNormalY + 32768.0 );
+						sfs[ targetIndex ] = ( isInt > 131072 ) ? 131072 : isInt;
+					}
+				}
+			}
 		}
 
-		public int[] getTextureU()
+		public Material getMaterial()
+		{
+			return _face3d.getMaterial();
+		}
+
+		public float[] getTextureU()
 		{
 			return _face3d.getTextureU();
 		}
 
-		public int[] getTextureV()
+		public float[] getTextureV()
 		{
 			return _face3d.getTextureV();
 		}
@@ -467,9 +619,7 @@ public final class RenderObject
 						/*
 						 * Calculate face normal
 						 */
-						final double x = face3d.getNormalX();
-						final double y = face3d.getNormalY();
-						final double z = face3d.getNormalZ();
+						final Vector3D normal = face3d.getNormal();
 
 						/*
 						 * Insert face
@@ -483,7 +633,7 @@ public final class RenderObject
 						else
 							current = new Face();
 
-						current.set( face3d, i, minH, minV, minD, maxH, maxV, maxD, object2view.rotateX( x, y, z ), object2view.rotateY( x, y, z ), object2view.rotateZ( x, y, z ) );
+						current.set( face3d , i , minH , minV , minD , maxH , maxV , maxD , object2view.rotateX( normal.x , normal.y , normal.z ) , object2view.rotateY( normal .x , normal.y , normal.z ) , object2view.rotateZ( normal .x , normal.y , normal.z ) );
 						current._next = _faces;
 						_faces = current;
 
@@ -545,7 +695,7 @@ public final class RenderObject
 		{
 			lights[ i ] = (Light3D)lightSources.getNode( i );
 
-			if ( lights[ i ].requiresNormalsOrDistance() )
+			if ( requiresNormalsOrDistance( lights[ i ] ) )
 			{
 				final Matrix3D m = lightSources.getMatrix( i );
 				final double x = m.xo;
@@ -580,5 +730,22 @@ public final class RenderObject
 				}
 			}
 		}
+	}
+
+	/**
+	 * This function should return <code>true</code> if this light model requires
+	 * the normal of a surface to calculate its color. This is the case for most
+	 * light sources, but an "ambient" light is one exception to this rule (there
+	 * may be more). If this function returns <code>false</code> time can be saved
+	 * by not calculating the normals.
+	 *
+	 * @param   light       Light to consider.
+	 *
+	 * @return  <code>true</code> if surface normals are required by
+	 *          calculateColor(), <code>false</code> otherwise.
+	 */
+	public static boolean requiresNormalsOrDistance( final Light3D light )
+	{
+		return ( light.getFallOff() >= 0.0 );
 	}
 }
