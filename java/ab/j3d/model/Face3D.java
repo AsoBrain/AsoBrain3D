@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2006
+ * (C) Copyright Numdata BV 2004-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,7 @@ package ab.j3d.model;
 
 import com.numdata.oss.ArrayTools;
 
-import ab.j3d.TextureSpec;
+import ab.j3d.Material;
 import ab.j3d.Vector3D;
 import ab.j3d.geom.Polygon3D;
 
@@ -34,6 +34,66 @@ import ab.j3d.geom.Polygon3D;
 public final class Face3D
 	implements Polygon3D
 {
+	/**
+	 * Value used for normal vector if no normal vector can be determined.
+	 */
+	private static final Vector3D NO_NORMAL = Vector3D.INIT.set( Double.NaN , 0.0 , Double.NaN );
+
+	/**
+	 * Object to which this face belongs.
+	 */
+	private final Object3D _object;
+
+	/**
+	 * Opacity value for this face.
+	 */
+	private float _opacity;
+
+	/**
+	 * Vertex indices of this face. These indices indicate the index of the
+	 * vertex in the {@link Object3D#_vertexCoordinates} array.
+	 * <p />
+	 * Because coordinates in the {@link Object3D#_vertexCoordinates} array are
+	 * stored with a triplet for each vertex, these indices should be multiplied
+	 * by 3 to get the 'real' index.
+	 */
+	private int[] _vertexIndices;
+
+	/**
+	 * Number of vertices of this face.
+	 */
+	private int _vertexCount;
+
+	/**
+	* Smoothing flag this face. Smooth faces are used to approximate
+	 * smooth/curved/rounded parts of objects.
+	 * <p />
+	 * This information would typically be used to select the most appropriate
+	 * shading algorithm.
+	*/
+	private boolean _smooth;
+
+	/**
+	 * Material of this face.
+	 */
+	Material _material;
+
+	/**
+	 * Face texture U coordinates.
+	 */
+	float[] _textureU;
+
+	/**
+	 * Face texture V coordinates.
+	 */
+	float[] _textureV;
+
+	/**
+	 * Flag to indicate that the plane is two-sided. This means, that the
+	 * plane is 'visible' on both sides.
+	 */
+	private boolean _twoSided;
+
 	/**
 	 * X component of cross product of first and second edge of this face.
 	 */
@@ -75,86 +135,9 @@ public final class Face3D
 	private Vector3D _normal;
 
 	/**
-	 * X component of plane normal. This defines the <code>A</code> variable in
-	 * the plane equation:
-	 * <pre>
-	 *   A * x + B * y + C * z = D
-	 * </pre>
+	 * Triangulated face. Stored as triplets of vertex indices in this plane.
 	 */
-	double _normalX;
-
-	/**
-	 * Y component of plane normal. This defines the <code>B</code> variable in
-	 * the plane equation:
-	 * <pre>
-	 *   A * x + B * y + C * z = D
-	 * </pre>
-	 */
-	double _normalY;
-
-	/**
-	 * Z component of plane normal. This defines the <code>C</code> variable in
-	 * the plane equation:
-	 * <pre>
-	 *   A * x + B * y + C * z = D
-	 * </pre>
-	 */
-	double _normalZ;
-
-	/**
-	 * Object to which this face belongs.
-	 */
-	private final Object3D _object;
-
-	/**
-	 * Opacity value for this face.
-	 */
-	private float _opacity;
-
-	/**
-	 * Vertex indices of this face. These indices indicate the index of the
-	 * vertex in the {@link Object3D#_vertexCoordinates} array.
-	 * <p />
-	 * Because coordinates in the {@link Object3D#_vertexCoordinates} array are
-	 * stored with a triplet for each vertex, these indices should be multiplied
-	 * by 3 to get the 'real' index.
-	 */
-	private int[] _vertexIndices;
-
-	/**
-	 * Number of vertices of this face.
-	 */
-	private int _vertexCount;
-
-	/**
-	* Smoothing flag this face. Smooth faces are used to approximate
-	 * smooth/curved/rounded parts of objects.
-	 * <p />
-	 * This information would typically be used to select the most appropriate
-	 * shading algorithm.
-	*/
-	private boolean _smooth;
-
-	/**
-	 * Texture of this face.
-	 */
-	TextureSpec _texture;
-
-	/**
-	 * Face texture U coordinates.
-	 */
-	int[] _textureU;
-
-	/**
-	 * Face texture V coordinates.
-	 */
-	int[] _textureV;
-
-	/**
-	 * Flag to indicate that the plane is two-sided. This means, that the
-	 * plane is 'visible' on both sides.
-	 */
-	private boolean _twoSided;
+	private int[] _triangles;
 
 	/**
 	 * Construct new face.
@@ -162,14 +145,14 @@ public final class Face3D
 	 * @param   object          Object to which this face belongs.
 	 * @param   vertexIndices   Vertex indices of added face. These indices refer
 	 *                          to vertices previously defined in <code>object</code>.
-	 * @param   texture         Texture to apply to the face.
+	 * @param   material        Material to apply to the face.
 	 * @param   textureU        Array for horizontal texture coordinates.
 	 * @param   textureV        Array for vertical texture coordinates.
 	 * @param   opacity         Opacity of face (0=transparent, 1=opaque).
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	Face3D( final Object3D object , final int[] vertexIndices , final TextureSpec texture , final int[] textureU , final int[] textureV , final float opacity , final boolean smooth , final boolean twoSided )
+	Face3D( final Object3D object , final int[] vertexIndices , final Material material , final float[] textureU , final float[] textureV , final float opacity , final boolean smooth , final boolean twoSided )
 	{
 		if ( object == null )
 			throw new NullPointerException( "object" );
@@ -177,7 +160,7 @@ public final class Face3D
 		_object        = object;
 		_vertexIndices = vertexIndices;
 		_vertexCount   = ( vertexIndices != null ) ? vertexIndices.length : 0;
-		_texture       = texture;
+		_material      = material;
 		_textureU      = textureU;
 		_textureV      = textureV;
 		_smooth        = smooth;
@@ -187,9 +170,6 @@ public final class Face3D
 		_crossX   = Double.NaN;
 		_crossY   = Double.NaN;
 		_crossZ   = Double.NaN;
-		_normalX  = Double.NaN;
-		_normalY  = Double.NaN;
-		_normalZ  = Double.NaN;
 		_distance = Double.NaN;
 		_normal   = null;
 	}
@@ -217,7 +197,7 @@ public final class Face3D
 	 * @param   textureU    Horizontal texture coordinate.
 	 * @param   textureV    Vertical texture coordinate.
 	 */
-	public void addVertex( final double x , final double y , final double z , final int textureU , final int textureV )
+	public void addVertex( final double x , final double y , final double z , final float textureU , final float textureV )
 	{
 		final int vertexCount = _vertexCount;
 
@@ -250,7 +230,7 @@ public final class Face3D
 	 * @param   textureU        Horizontal texture coordinate.
 	 * @param   textureV        Vertical texture coordinate.
 	 */
-	public void addVertex( final Vector3D coordinates , final int textureU , final int textureV )
+	public void addVertex( final Vector3D coordinates , final float textureU , final float textureV )
 	{
 		addVertex( coordinates.x , coordinates.y , coordinates.z , textureU , textureV );
 	}
@@ -268,7 +248,6 @@ public final class Face3D
 	 * and {@link #_crossZ} fields. The cache is invalidated by setting the
 	 * {@link #_crossY} field to {@link Double#NaN}.
 	 *
-	 * @see     #calculateNormal()
 	 * @see     #invalidate()
 	 * @see     Object3D#calculateVertexNormals()
 	 */
@@ -316,51 +295,6 @@ public final class Face3D
 	}
 
 	/**
-	 * This internal method is used to calculate the plane normal.
-	 * <p />
-	 * The normal is cached in the {@link #_normalX}, {@link #_normalY}, and
-	 * {@link #_normalZ} fields. The cache is invalidated by setting the
-	 * {@link #_normalY} field to {@link Double#NaN}.
-	 * <p />
-	 * If the normal can not be calculated (less than 3 vertices, coincident
-	 * vertices, parallel edges), the normal will be set to
-	 * <code>( {@link Double#NaN} , 0.0 , {@link Double#NaN} )</code>.
-	 *
-	 * @see     #calculateCross()
-	 * @see     #invalidate()
-	 */
-	void calculateNormal()
-	{
-		if ( Double.isNaN( _normalY ) )
-		{
-			calculateCross();
-
-			double x = _crossX;
-			double y = _crossY;
-			double z = _crossZ;
-
-			if ( ( x != 0.0 ) || ( y != 0.0 ) || ( z != 0.0 ) )
-			{
-				final double l = Math.sqrt( x * x + y * y + z * z );
-
-				x /= l;
-				y /= l;
-				z /= l;
-			}
-			else
-			{
-				x = Double.NaN;
-				y = 0.0;
-				z = Double.NaN;
-			}
-
-			_normalX = x;
-			_normalY = y;
-			_normalZ = z;
-		}
-	}
-
-	/**
 	 * Make sure that the internal vertex buffers meet the requested minimum
 	 * capacity requirement. This can be used prior to adding vertices to a face
 	 * to optimize buffer allocations.
@@ -369,9 +303,9 @@ public final class Face3D
 	 */
 	public void ensureCapacity( final int vertexCount )
 	{
-		_vertexIndices = (int[])ArrayTools.ensureLength( _vertexIndices , int.class , -1 , vertexCount );
-		_textureU      = (int[])ArrayTools.ensureLength( _textureU      , int.class , -1 , vertexCount );
-		_textureV      = (int[])ArrayTools.ensureLength( _textureV      , int.class , -1 , vertexCount );
+		_vertexIndices = (int  [])ArrayTools.ensureLength( _vertexIndices , int  .class , -1 , vertexCount );
+		_textureU      = (float[])ArrayTools.ensureLength( _textureU      , float.class , -1 , vertexCount );
+		_textureV      = (float[])ArrayTools.ensureLength( _textureV      , float.class , -1 , vertexCount );
 	}
 
 	public double getDistance()
@@ -379,9 +313,9 @@ public final class Face3D
 		double result = _distance;
 		if ( Double.isNaN( result ) )
 		{
-			calculateNormal();
+			final Vector3D normal = getNormal();
 
-			if ( !Double.isNaN( _normalX ) )
+			if ( normal != NO_NORMAL )
 			{
 				final int      vertexIndex       = _vertexIndices[ 0 ] * 3;
 				final double[] vertexCoordinates = _object.getVertexCoordinates();
@@ -390,7 +324,7 @@ public final class Face3D
 				final double y0 = vertexCoordinates[ vertexIndex + 1 ];
 				final double z0 = vertexCoordinates[ vertexIndex + 2 ];
 
-				result = Vector3D.dot( _normalX , _normalY , _normalZ , x0 , y0 , z0 );
+				result = Vector3D.dot( normal.x , normal.y , normal.z , x0 , y0 , z0 );
 			}
 			else
 			{
@@ -408,30 +342,25 @@ public final class Face3D
 		Vector3D result = _normal;
 		if ( result == null )
 		{
-			calculateNormal();
-			result = Vector3D.INIT.set( _normalX , _normalY , _normalZ );
-			_normal = result;
+			calculateCross();
+
+			double x = _crossX;
+			double y = _crossY;
+			double z = _crossZ;
+
+			if ( ( x != 0.0 ) || ( y != 0.0 ) || ( z != 0.0 ) )
+			{
+				final double l = Math.sqrt( x * x + y * y + z * z );
+
+				result = Vector3D.INIT.set( x / l , y / l , z / l );
+			}
+			else
+			{
+				result = NO_NORMAL;
+			}
 		}
 
 		return result;
-	}
-
-	public double getNormalX()
-	{
-		calculateNormal();
-		return _normalX;
-	}
-
-	public double getNormalY()
-	{
-		calculateNormal();
-		return _normalY;
-	}
-
-	public double getNormalZ()
-	{
-		calculateNormal();
-		return _normalZ;
 	}
 
 	/**
@@ -471,14 +400,12 @@ public final class Face3D
 	 */
 	void invalidate()
 	{
-		_crossX   = Double.NaN;
-		_crossY   = Double.NaN;
-		_crossZ   = Double.NaN;
-		_normalX  = Double.NaN;
-		_normalY  = Double.NaN;
-		_normalZ  = Double.NaN;
-		_distance = Double.NaN;
-		_normal   = null;
+		_crossX    = Double.NaN;
+		_crossY    = Double.NaN;
+		_crossZ    = Double.NaN;
+		_distance  = Double.NaN;
+		_normal    = null;
+		_triangles = null;
 
 		_object._vertexNormalsDirty = true;
 	}
@@ -514,23 +441,23 @@ public final class Face3D
 	}
 
 	/**
-	 * Get texture of this face.
+	 * Get material of this face.
 	 *
-	 * @return  Texture of this face..
+	 * @return  Material of this face..
 	 */
-	public TextureSpec getTexture()
+	public Material getMaterial()
 	{
-		return _texture;
+		return _material;
 	}
 
 	/**
-	 * Set texture of this face.
+	 * Set material of this face.
 	 *
-	 * @param   texture     Texture to assign to this face.
+	 * @param   material    Material to assign to this face.
 	 */
-	public void setTexture( final TextureSpec texture )
+	public void setMaterial( final Material material )
 	{
-		_texture = texture;
+		_material = material;
 	}
 
 	/**
@@ -538,7 +465,7 @@ public final class Face3D
 	 *
 	 * @return  The horizontal texture coordinates of this face.
 	 */
-	public int[] getTextureU()
+	public float[] getTextureU()
 	{
 		return _textureU;
 	}
@@ -548,7 +475,7 @@ public final class Face3D
 	 *
 	 * @return  The vertical texture coordinates of this face.
 	 */
-	public int[] getTextureV()
+	public float[] getTextureV()
 	{
 		return _textureV;
 	}
@@ -561,7 +488,7 @@ public final class Face3D
 	 *
 	 * @return  Horizontal texture coordinate (U) for the specified vertex.
 	 */
-	public int getTextureU( final int index )
+	public float getTextureU( final int index )
 	{
 		return ( _textureU != null ) ? _textureU[ index ] : 0;
 	}
@@ -574,7 +501,7 @@ public final class Face3D
 	 *
 	 * @return  Horizontal texture coordinate (U) for the specified vertex.
 	 */
-	public int getTextureV( final int index )
+	public float getTextureV( final int index )
 	{
 		return ( _textureV != null ) ? _textureV[ index ] : 0;
 	}
@@ -687,14 +614,14 @@ public final class Face3D
 	{
 		final StringBuffer sb = new StringBuffer();
 
-		final Object3D    object            = _object;
-		final int         faceIndex         = object.getFaceIndex( this );
-		final int[]       vertexIndices     = _vertexIndices;
-		final double[]    vertexCoordinates = object.getVertexCoordinates();
-		final TextureSpec texture           = _texture;
-		final float       opacity           = _opacity;
-		final boolean     smooth            = _smooth;
-		final boolean     twoSided          = _twoSided;
+		final Object3D object            = _object;
+		final int      faceIndex         = object.getFaceIndex( this );
+		final int[]    vertexIndices     = _vertexIndices;
+		final double[] vertexCoordinates = object.getVertexCoordinates();
+		final Material material          = _material;
+		final float    opacity           = _opacity;
+		final boolean  smooth            = _smooth;
+		final boolean  twoSided          = _twoSided;
 
 		sb.append( prefix );
 		sb.append( "face[ " );
@@ -703,8 +630,8 @@ public final class Face3D
 		sb.append( '\n' );
 
 		sb.append( prefix );
-		sb.append( "  texture     = " );
-		sb.append( texture );
+		sb.append( "  material    = " );
+		sb.append( material );
 		sb.append( '\n' );
 
 		sb.append( prefix );
@@ -746,5 +673,39 @@ public final class Face3D
 		}
 
 		return sb.toString();
+	}
+
+	/**
+	 * This method returns a triangulated version of this face. The result
+	 * is an array containing indices of vertices in this face. If this
+	 * face has no triangles, <code>null</code> is returned.
+	 *
+	 * @return  Array with indices to vertices in this face;
+	 *          <code>null</code> if this face has no triangles.
+	 */
+	public int[] triangulate()
+	{
+		int[] result = _triangles;
+		if ( result == null )
+		{
+			final int vertexCount = getVertexCount();
+			if ( vertexCount >= 3 )
+			{
+				final int triangleCount = vertexCount - 2;
+
+				result = new int[ triangleCount * 3 ];
+
+				int rc = 0;
+
+				for ( int k = 1 ; k <= triangleCount ; k++ )
+				{
+					result[ rc++ ] = 0;
+					result[ rc++ ] = k;
+					result[ rc++ ] = k + 1;
+				}
+			}
+		}
+
+		return result;
 	}
 }
