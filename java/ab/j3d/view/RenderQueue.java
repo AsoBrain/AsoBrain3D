@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * (C) Copyright Numdata BV 2005-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -877,7 +877,7 @@ public final class RenderQueue
 		front._planeNormalX        = polygon._planeNormalX;
 		front._planeNormalY        = polygon._planeNormalY;
 		front._planeNormalZ        = polygon._planeNormalZ;
-		front._texture             = polygon._texture;
+		front._material            = polygon._material;
 		front._name                = polygon._name + "_front";
 
 		final RenderedPolygon back = new RenderedPolygon( backCount );
@@ -918,7 +918,7 @@ public final class RenderQueue
 		back._planeNormalX        = polygon._planeNormalX;
 		back._planeNormalY        = polygon._planeNormalY;
 		back._planeNormalZ        = polygon._planeNormalZ;
-		back._texture             = polygon._texture;
+		back._material            = polygon._material;
 		back._name                = polygon._name + "_back";
 
 		return new RenderedPolygon[] { back , front };

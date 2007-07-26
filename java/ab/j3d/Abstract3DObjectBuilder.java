@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2005
+ * (C) Copyright Numdata BV 2004-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -56,10 +56,10 @@ public abstract class Abstract3DObjectBuilder
 	 *                          <code>2</code> if it's a dot linetype,
 	 *                          <code>3</code> if it's a dashdot linetype,
 	 *                          <code>-1</code> otherwise).
-	 * @param   textureSpec     Texture specification to use for shading.
+	 * @param   material        Material specification to use for shading.
 	 * @param   fill            Create filled shape vs. create wireframe.
 	 */
-	public void addArc( final Vector3D centerPoint , final double radius , final double startAngle , final double endAngle , final double startWidth , final double endWidth , final Vector3D extrusion , final int stroke , final TextureSpec textureSpec , final boolean fill )
+	public void addArc( final Vector3D centerPoint , final double radius , final double startAngle , final double endAngle , final double startWidth , final double endWidth , final Vector3D extrusion , final int stroke , final Material material , final boolean fill )
 	{
 		final double twoPI = 2.0 * Math.PI;
 
@@ -92,11 +92,11 @@ public abstract class Abstract3DObjectBuilder
 					final Vector3D point1a = point1.plus( extrusion );
 					final Vector3D point2a = point2.plus( extrusion );
 
-					addQuad( point1 , point2 , point2a , point1a , null , stroke , textureSpec , fill , true );
+					addQuad( point1 , point2 , point2a , point1a , null , stroke , material , fill , true );
 				}
 				else
 				{
-					addLine( point1 , point2 , -1 , textureSpec );
+					addLine( point1 , point2 , -1 , material );
 				}
 
 				point1 = point2;
@@ -136,18 +136,18 @@ public abstract class Abstract3DObjectBuilder
 					final boolean isFirst = ( i == 0 );
 					final boolean isLast  = ( i == ( nrSegments -1 ) );
 
-					addQuad( outer1 , outer2 , inner2 , inner1 , null , stroke , textureSpec , fill , true );
+					addQuad( outer1 , outer2 , inner2 , inner1 , null , stroke , material , fill , true );
 
-					if ( isFirst ) addQuad( outer1 , inner1 , extrudedInner1 , extrudedOuter1 , null , stroke , textureSpec , fill , true );
-					addQuad( inner1 , inner2 , extrudedInner2 , extrudedInner1 , null , stroke , textureSpec , fill , true );
-					addQuad( inner2 , outer2 , extrudedOuter2 , extrudedInner2 , null , stroke , textureSpec , fill , true );
-					if ( isLast  ) addQuad( outer2 , outer1 , extrudedOuter1 , extrudedOuter2 , null , stroke , textureSpec , fill , true );
+					if ( isFirst ) addQuad( outer1 , inner1 , extrudedInner1 , extrudedOuter1 , null , stroke , material , fill , true );
+					addQuad( inner1 , inner2 , extrudedInner2 , extrudedInner1 , null , stroke , material , fill , true );
+					addQuad( inner2 , outer2 , extrudedOuter2 , extrudedInner2 , null , stroke , material , fill , true );
+					if ( isLast  ) addQuad( outer2 , outer1 , extrudedOuter1 , extrudedOuter2 , null , stroke , material , fill , true );
 
-					addQuad( extrudedOuter1 , extrudedInner1 , extrudedInner2 , extrudedOuter2 , null , stroke , textureSpec , fill , true );
+					addQuad( extrudedOuter1 , extrudedInner1 , extrudedInner2 , extrudedOuter2 , null , stroke , material , fill , true );
 				}
 				else
 				{
-					addQuad( outer1 , inner1 , inner2 , outer2 , null , stroke , textureSpec , fill , true );
+					addQuad( outer1 , inner1 , inner2 , outer2 , null , stroke , material , fill , true );
 				}
 
 				inner1 = inner2;
@@ -167,49 +167,49 @@ public abstract class Abstract3DObjectBuilder
 	 *                          <code>2</code> if it's a dot linetype,
 	 *                          <code>3</code> if it's a dashdot linetype,
 	 *                          <code>-1</code> otherwise).
-	 * @param   textureSpec     Texture specification to use for shading.
+	 * @param   material        Material specification to use for shading.
 	 * @param   fill            Create filled shape vs. create wireframe.
 	 */
-	public abstract void addCircle( final Vector3D centerPoint , final double radius , final Vector3D normal , final Vector3D extrusion , final int stroke , final TextureSpec textureSpec , final boolean fill );
+	public abstract void addCircle( final Vector3D centerPoint , final double radius , final Vector3D normal , final Vector3D extrusion , final int stroke , final Material material , final boolean fill );
 
 	/**
 	 * Add line primitive.
 	 *
-	 * @param   point1          First point.
-	 * @param   point2          Second point.
-	 * @param   stroke          Stroke to use (<code>1</code> if it's a dash linetype,
-	 *                          <code>2</code> if it's a dot linetype,
-	 *                          <code>3</code> if it's a dashdot linetype,
-	 *                          <code>-1</code> otherwise).
-	 * @param   textureSpec     Texture specification to use for shading.
+	 * @param   point1      First point.
+	 * @param   point2      Second point.
+	 * @param   stroke      Stroke to use (<code>1</code> if it's a dash linetype,
+	 *                      <code>2</code> if it's a dot linetype,
+	 *                      <code>3</code> if it's a dashdot linetype,
+	 *                      <code>-1</code> otherwise).
+	 * @param   material    Material specification to use for shading.
 	 */
-	public abstract void addLine( final Vector3D point1 , final Vector3D point2 , final int stroke , final TextureSpec textureSpec );
+	public abstract void addLine( final Vector3D point1 , final Vector3D point2 , final int stroke , final Material material );
 
 	/**
 	 * Add line.
 	 *
-	 * @param   point1          First point.
-	 * @param   point2          Second point.
-	 * @param   extrusion       Extrusion to apply (<code>null</code> or 0-vector => no extrusion).
-	 * @param   stroke          Stroke to use (<code>1</code> if it's a dash linetype,
-	 *                          <code>2</code> if it's a dot linetype,
-	 *                          <code>3</code> if it's a dashdot linetype,
-	 *                          <code>-1</code> otherwise).
-	 * @param   textureSpec     Texture specification to use for shading.
-	 * @param   fill            Create filled shape vs. create wireframe.
+	 * @param   point1      First point.
+	 * @param   point2      Second point.
+	 * @param   extrusion   Extrusion to apply (<code>null</code> or 0-vector => no extrusion).
+	 * @param   stroke      Stroke to use (<code>1</code> if it's a dash linetype,
+	 *                      <code>2</code> if it's a dot linetype,
+	 *                      <code>3</code> if it's a dashdot linetype,
+	 *                      <code>-1</code> otherwise).
+	 * @param   material    Material specification to use for shading.
+	 * @param   fill        Create filled shape vs. create wireframe.
 	 */
-	public void addLine( final Vector3D point1 , final Vector3D point2 , final Vector3D extrusion , final int stroke , final TextureSpec textureSpec , final boolean fill )
+	public void addLine( final Vector3D point1 , final Vector3D point2 , final Vector3D extrusion , final int stroke , final Material material , final boolean fill )
 	{
 		if ( ( extrusion != null ) && !extrusion.almostEquals( Vector3D.INIT ) )
 		{
 			final Vector3D p1a = point1.plus( extrusion );
 			final Vector3D p2a = point2.plus( extrusion );
 
-			addQuad( point1 , p1a , p2a , point2 , null , -1 , textureSpec , fill , true );
+			addQuad( point1 , p1a , p2a , point2 , null , -1 , material , fill , true );
 		}
 		else
 		{
-			addLine( point1 , point2 , stroke , textureSpec );
+			addLine( point1 , point2 , stroke , material );
 		}
 	}
 
@@ -220,10 +220,10 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   point2          Second vertex coordinates.
 	 * @param   point3          Third vertex coordinates.
 	 * @param   point4          Fourth vertex coordinates.
-	 * @param   textureSpec     Texture specification to use for shading.
+	 * @param   material        Material specification to use for shading.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public abstract void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final TextureSpec textureSpec , final boolean hasBackface );
+	public abstract void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final Material material , final boolean hasBackface );
 
 	/**
 	 * Add quad with optional extrusion.
@@ -237,11 +237,11 @@ public abstract class Abstract3DObjectBuilder
 	 *                          <code>2</code> if it's a dot linetype,
 	 *                          <code>3</code> if it's a dashdot linetype,
 	 *                          <code>-1</code> otherwise).
-	 * @param   textureSpec     Texture specification to use for shading.
+	 * @param   material        Material specification to use for shading.
 	 * @param   fill            Create filled shape vs. create wireframe.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final Vector3D extrusion , final int stroke , final TextureSpec textureSpec , final boolean fill , final boolean hasBackface )
+	public void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final Vector3D extrusion , final int stroke , final Material material , final boolean fill , final boolean hasBackface )
 	{
 		if ( ( extrusion != null ) && !extrusion.almostEquals( Vector3D.INIT ) )
 		{
@@ -252,44 +252,44 @@ public abstract class Abstract3DObjectBuilder
 
 			if ( fill )
 			{
-				addQuad( point4  , point3  , point2  , point1  , textureSpec , false );
-				addQuad( point1  , point2  , point2a , point1a , textureSpec , false );
-				addQuad( point2  , point3  , point3a , point2a , textureSpec , false );
-				addQuad( point3  , point4  , point4a , point3a , textureSpec , false );
-				addQuad( point4  , point1  , point1a , point4a , textureSpec , false );
-				addQuad( point1a , point2a , point3a , point4a , textureSpec , false );
+				addQuad( point4  , point3  , point2  , point1  , material , false );
+				addQuad( point1  , point2  , point2a , point1a , material , false );
+				addQuad( point2  , point3  , point3a , point2a , material , false );
+				addQuad( point3  , point4  , point4a , point3a , material , false );
+				addQuad( point4  , point1  , point1a , point4a , material , false );
+				addQuad( point1a , point2a , point3a , point4a , material , false );
 			}
 			else
 			{
-				addLine( point1  , point1a , stroke , textureSpec );
-				addLine( point1  , point2  , stroke , textureSpec );
-				addLine( point1a , point2a , stroke , textureSpec );
+				addLine( point1  , point1a , stroke , material );
+				addLine( point1  , point2  , stroke , material );
+				addLine( point1a , point2a , stroke , material );
 
-				addLine( point2  , point2a , stroke , textureSpec );
-				addLine( point2  , point3  , stroke , textureSpec );
-				addLine( point2a , point3a , stroke , textureSpec );
+				addLine( point2  , point2a , stroke , material );
+				addLine( point2  , point3  , stroke , material );
+				addLine( point2a , point3a , stroke , material );
 
-				addLine( point3  , point3a , stroke , textureSpec );
-				addLine( point3  , point4  , stroke , textureSpec );
-				addLine( point3a , point4a , stroke , textureSpec );
+				addLine( point3  , point3a , stroke , material );
+				addLine( point3  , point4  , stroke , material );
+				addLine( point3a , point4a , stroke , material );
 
-				addLine( point4  , point4a , stroke , textureSpec );
-				addLine( point4  , point1  , stroke , textureSpec );
-				addLine( point4a , point1a , stroke , textureSpec );
+				addLine( point4  , point4a , stroke , material );
+				addLine( point4  , point1  , stroke , material );
+				addLine( point4a , point1a , stroke , material );
 			}
 		}
 		else
 		{
 			if ( fill )
 			{
-				addQuad( point1 , point2 , point3 , point4 , textureSpec , hasBackface );
+				addQuad( point1 , point2 , point3 , point4 , material , hasBackface );
 			}
 			else
 			{
-				addLine( point1 , point2 , stroke , textureSpec );
-				addLine( point2 , point3 , stroke , textureSpec );
-				addLine( point3 , point4 , stroke , textureSpec );
-				addLine( point4 , point1 , stroke , textureSpec );
+				addLine( point1 , point2 , stroke , material );
+				addLine( point2 , point3 , stroke , material );
+				addLine( point3 , point4 , stroke , material );
+				addLine( point4 , point1 , stroke , material );
 			}
 		}
 	}
@@ -303,9 +303,9 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   rotationAngle   Rotation angle.
 	 * @param   obliqueAngle    Oblique angle.
 	 * @param   extrusion       Extrusion to apply (<code>null</code> or 0-vector => no extrusion).
-	 * @param   textureSpec     Texture specification to use for shading.
+	 * @param   material        Material specification to use for shading.
 	 */
-	public abstract void addText( final String text , final Vector3D origin , final double height , final double rotationAngle , final double obliqueAngle , final Vector3D extrusion , final TextureSpec textureSpec );
+	public abstract void addText( final String text , final Vector3D origin , final double height , final double rotationAngle , final double obliqueAngle , final Vector3D extrusion , final Material material );
 
 	/**
 	 * Add triangle primitive.
@@ -313,10 +313,10 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   point1          First vertex coordinates.
 	 * @param   point2          Second vertex coordinates.
 	 * @param   point3          Third vertex coordinates.
-	 * @param   textureSpec     Texture specification to use for shading.
+	 * @param   material        Material specification to use for shading.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public abstract void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final TextureSpec textureSpec , boolean hasBackface );
+	public abstract void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Material material , boolean hasBackface );
 
 	/**
 	 * Add triangle with optional extrusion.
@@ -329,11 +329,11 @@ public abstract class Abstract3DObjectBuilder
 	 *                          <code>2</code> if it's a dot linetype,
 	 *                          <code>3</code> if it's a dashdot linetype,
 	 *                          <code>-1</code> otherwise).
-	 * @param   textureSpec     Texture specification to use for shading.
+	 * @param   material        Material specification to use for shading.
 	 * @param   fill            Create filled shape vs. create wireframe.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D extrusion , final int stroke , final TextureSpec textureSpec , final boolean fill , final boolean hasBackface )
+	public void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D extrusion , final int stroke , final Material material , final boolean fill , final boolean hasBackface )
 	{
 		if ( ( extrusion != null ) && !extrusion.almostEquals( Vector3D.INIT ) )
 		{
@@ -343,38 +343,38 @@ public abstract class Abstract3DObjectBuilder
 
 			if ( fill )
 			{
-				addTriangle( point3  , point2  , point1  ,           textureSpec , false );
-				addQuad    ( point1  , point2  , point2a , point1a , textureSpec , false );
-				addQuad    ( point2  , point3  , point3a , point2a , textureSpec , false );
-				addQuad    ( point3  , point1  , point1a , point3a , textureSpec , false );
-				addTriangle( point1a , point2a , point3a ,           textureSpec , false );
+				addTriangle( point3  , point2  , point1  ,           material , false );
+				addQuad    ( point1  , point2  , point2a , point1a , material , false );
+				addQuad    ( point2  , point3  , point3a , point2a , material , false );
+				addQuad    ( point3  , point1  , point1a , point3a , material , false );
+				addTriangle( point1a , point2a , point3a ,           material , false );
 			}
 			else
 			{
-				addLine( point1  , point1a , stroke , textureSpec );
-				addLine( point1  , point2  , stroke , textureSpec );
-				addLine( point1a , point2a , stroke , textureSpec );
+				addLine( point1  , point1a , stroke , material );
+				addLine( point1  , point2  , stroke , material );
+				addLine( point1a , point2a , stroke , material );
 
-				addLine( point2  , point2a , stroke , textureSpec );
-				addLine( point2  , point3  , stroke , textureSpec );
-				addLine( point2a , point3a , stroke , textureSpec );
+				addLine( point2  , point2a , stroke , material );
+				addLine( point2  , point3  , stroke , material );
+				addLine( point2a , point3a , stroke , material );
 
-				addLine( point3  , point3a , stroke , textureSpec );
-				addLine( point3  , point1  , stroke , textureSpec );
-				addLine( point3a , point1a , stroke , textureSpec );
+				addLine( point3  , point3a , stroke , material );
+				addLine( point3  , point1  , stroke , material );
+				addLine( point3a , point1a , stroke , material );
 			}
 		}
 		else
 		{
 			if ( fill )
 			{
-				addTriangle( point1 , point2 , point3 , textureSpec , hasBackface );
+				addTriangle( point1 , point2 , point3 , material , hasBackface );
 			}
 			else
 			{
-				addLine( point1 , point2 , stroke , textureSpec );
-				addLine( point2 , point3 , stroke , textureSpec );
-				addLine( point3 , point1 , stroke , textureSpec );
+				addLine( point1 , point2 , stroke , material );
+				addLine( point2 , point3 , stroke , material );
+				addLine( point3 , point1 , stroke , material );
 			}
 		}
 	}

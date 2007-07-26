@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2006
+ * (C) Copyright Numdata BV 2006-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,8 +30,8 @@ import java.util.regex.Pattern;
 
 import com.numdata.oss.TextTools;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
@@ -112,38 +112,38 @@ public class ObjLoader
 	public static final Pattern POLYGON_VERTEX_PATTERN  = Pattern.compile( "(\\d+)(/(\\d+)?(/(\\d+))?)?" ); // vertex#[/textureVertex#1[/vertexNormal#]]
 
 	/**
-	 * Default texture map to use for OBJ files.
+	 * Default materials to use for OBJ files.
 	 */
-	private static final Map DEFAULT_TEXTURES;
+	private static final Map<String,Material> DEFAULT_MATERIALS;
 	static
 	{
-		final Map textureMap = new HashMap();
+		final Map materials = new HashMap();
 
-		/* default texture (also used for unknown materials) */
-		textureMap.put(  "default"       , new TextureSpec( 0xFFC0C0C0 ) );
+		/* default material (also used for unknown materials) */
+		materials.put( "default"       , new Material( 0xFFC0C0C0 ) );
 
 		/* basic colors */
-		textureMap.put(  "black"         , new TextureSpec( 0xFF000000 ) );
-		textureMap.put(  "blue"          , new TextureSpec( 0xFF0000FF ) );
-		textureMap.put(  "green"         , new TextureSpec( 0xFF00FF00 ) );
-		textureMap.put(  "cyan"          , new TextureSpec( 0xFF00FFFF ) );
-		textureMap.put(  "red"           , new TextureSpec( 0xFFFF0000 ) );
-		textureMap.put(  "magenta"       , new TextureSpec( 0xFFFF00FF ) );
-		textureMap.put(  "yellow"        , new TextureSpec( 0xFFFFFF00 ) );
-		textureMap.put(  "white"         , new TextureSpec( 0xFFFCFCFC ) );
+		materials.put( "black"         , new Material( 0xFF000000 ) );
+		materials.put( "blue"          , new Material( 0xFF0000FF ) );
+		materials.put( "green"         , new Material( 0xFF00FF00 ) );
+		materials.put( "cyan"          , new Material( 0xFF00FFFF ) );
+		materials.put( "red"           , new Material( 0xFFFF0000 ) );
+		materials.put( "magenta"       , new Material( 0xFFFF00FF ) );
+		materials.put( "yellow"        , new Material( 0xFFFFFF00 ) );
+		materials.put( "white"         , new Material( 0xFFFCFCFC ) );
 
 		/* materials */
-		textureMap.put(  "brass"         , new TextureSpec( 0xFFE0E010 ) );
-//		textureMap.put(  "glass"         , new TextureSpec( 0x20102010 ) );
-//		textureMap.put(  "light"         , new TextureSpec( 0x80FFFF20 ) );
-//		textureMap.put(  "metal"         , new TextureSpec( 0xFFE0E0F8 ) );
-//		textureMap.put(  "plastic"       , new TextureSpec( 0xFFC0C0C0 ) );
-//		textureMap.put(  "porcelin"      , new TextureSpec( 0xFFFFFFFF ) );
-//		textureMap.put(  "steel"         , new TextureSpec( 0xFFD0D0E8 ) );
-//		textureMap.put(  "white_plastic" , new TextureSpec( 0xFFC0C0C0 ) );
-//		textureMap.put(  "wood"          , new TextureSpec( 0xFF603820 ) );
+		materials.put( "brass"         , new Material( 0xFFE0E010 ) );
+//		materials.put( "glass"         , new Material( 0x20102010 ) );
+//		materials.put( "light"         , new Material( 0x80FFFF20 ) );
+//		materials.put( "metal"         , new Material( 0xFFE0E0F8 ) );
+//		materials.put( "plastic"       , new Material( 0xFFC0C0C0 ) );
+//		materials.put( "porcelin"      , new Material( 0xFFFFFFFF ) );
+//		materials.put( "steel"         , new Material( 0xFFD0D0E8 ) );
+//		materials.put( "white_plastic" , new Material( 0xFFC0C0C0 ) );
+//		materials.put( "wood"          , new Material( 0xFF603820 ) );
 
-		DEFAULT_TEXTURES = textureMap;
+		DEFAULT_MATERIALS = materials;
 	}
 
 	/**
@@ -151,7 +151,7 @@ public class ObjLoader
 	 *
 	 * @param   transform       Transormation to apply to the OBJ (mostly used
 	 *                          to for scaling and axis alignment).
-	 * @param   textureMap      Maps material names ({@link String}) to textures ({@link TextureSpec}.
+	 * @param   materials       Maps material names to {@link Material}s.
 	 * @param   objReader       Source from which the OBJ file is read (the
 	 *                          reader will not be closed by this method).
 	 *
@@ -159,28 +159,28 @@ public class ObjLoader
 	 *
 	 * @throws  IOException if an error occured while loading the OBJ file.
 	 */
-	public static Object3D load( final Matrix3D transform , final Map textureMap , final BufferedReader objReader )
+	public static Object3D load( final Matrix3D transform , final Map<String,Material> materials , final BufferedReader objReader )
 		throws IOException
 	{
-		final Map actualTextureMap;
-		if ( textureMap != null && !textureMap.isEmpty() )
+		final Map<String,Material> actualMaterials;
+		if ( materials  != null && !materials .isEmpty() )
 		{
-			actualTextureMap = new HashMap( DEFAULT_TEXTURES.size() + textureMap.size() );
-			actualTextureMap.putAll( DEFAULT_TEXTURES );
-			actualTextureMap.putAll( textureMap );
+			actualMaterials = new HashMap( DEFAULT_MATERIALS.size() + materials.size() );
+			actualMaterials.putAll( DEFAULT_MATERIALS );
+			actualMaterials.putAll( materials );
 		}
 		else
 		{
-			actualTextureMap = DEFAULT_TEXTURES;
+			actualMaterials = DEFAULT_MATERIALS;
 		}
 
 		final Object3D result = new Object3D();
 
-		final TextureSpec defaultTexture;
-		if ( actualTextureMap.containsKey( "default" ) )
-			defaultTexture = (TextureSpec)actualTextureMap.get( "default" );
+		final Material defaultMaterial;
+		if ( actualMaterials.containsKey( "default" ) )
+			defaultMaterial = actualMaterials.get( "default" );
 		else
-			defaultTexture = new TextureSpec( 0xFFC0C0C0 );
+			defaultMaterial = new Material( 0xFFC0C0C0 );
 
 		/*
 		 * Read OBJ data
@@ -191,9 +191,9 @@ public class ObjLoader
 		final List objTextureVertices = new ArrayList(); // element: Vector3D (u,v,w)
 		final List objVertexNormals   = new ArrayList(); // element: Vector3D (i,j,k)
 
-		double[]    abVertexCoordinates   = null;
-		double[]    abVertexNormals = null;
-		TextureSpec abTexture       = defaultTexture;
+		double[] abVertexCoordinates = null;
+		double[] abVertexNormals     = null;
+		Material abMaterial          = defaultMaterial;
 
 		String line;
 		while ( ( line = objReader.readLine() ) != null )
@@ -423,21 +423,8 @@ public class ObjLoader
 							}
 						}
 
-						final boolean abTextureIsMapped;
-						final double  abTextureWidth;
-						final double  abTextureHeight;
-						{
-							final boolean hasTexture = abTexture.isTexture();
-							final int     width      = hasTexture ? abTexture.getTextureWidth ( null ) : -1;
-							final int     height     = hasTexture ? abTexture.getTextureHeight( null ) : -1;
-
-							abTextureIsMapped = ( ( width > 0 ) && ( height > 0 ) );
-							abTextureWidth    = (double)width;
-							abTextureHeight   = (double)height;
-						}
-
-						int[]  abTextureU = null;
-						int[]  abTextureV = null;
+						float[] abTextureU = null;
+						float[] abTextureV = null;
 
 						for ( int argIndex = 1 ; argIndex <= argCount ; argIndex++ )
 						{
@@ -458,26 +445,26 @@ public class ObjLoader
 							if ( abVertexIndexTimes3 >= abVertexCoordinatesLength )
 								throw new IOException( "face references non-existing vertex (vertex=" + objVertexIndex + ", abVertexCoordinates=" + ( abVertexCoordinates.length / 3 ) + ", objVertices=" + objVertices.size() + ")" );
 
-							if ( abTextureIsMapped && ( objTextureVertexIndex > 0 ) )
+							if ( objTextureVertexIndex > 0 )
 							{
 								if ( abTextureU == null )
 								{
 									final int faceVertexCount = abFaceVertexIndices.length;
 
-									abTextureU = new int[ faceVertexCount ];
-									abTextureV = new int[ faceVertexCount ];
+									abTextureU = new float[ faceVertexCount ];
+									abTextureV = new float[ faceVertexCount ];
 								}
 
 								final Vector3D textureVertex = (Vector3D)objTextureVertices.get( objTextureVertexIndex - 1 );
-								abTextureU[ abFaceVertexIndex ] = Math.round( (float)( textureVertex.x * abTextureWidth  ) );
-								abTextureV[ abFaceVertexIndex ] = Math.round( (float)( textureVertex.y * abTextureHeight ) );
+								abTextureU[ abFaceVertexIndex ] = (float)textureVertex.x;
+								abTextureV[ abFaceVertexIndex ] = (float)textureVertex.y;
 							}
 
 							if ( objVertexNormalIndex > 0 )
 							{
 								if ( ( abVertexNormals == null ) || ( abVertexNormals.length < abVertexCoordinatesLength ) )
 								{
-									if ( objVertexNormals.size() < 1 )
+									if ( objVertexNormals.isEmpty() )
 										throw new IOException( "vertex normal used before normal declaration" );
 
 									final double[] oldNormals = abVertexNormals;
@@ -497,7 +484,7 @@ public class ObjLoader
 							abFaceVertexIndices[ abFaceVertexIndex ] = abVertexIndex;
 						}
 
-						result.addFace( abFaceVertexIndices , abTexture , abTextureU , abTextureV , 1.0f , true , false );
+						result.addFace( abFaceVertexIndices , abMaterial , abTextureU , abTextureV , 1.0f , true , false );
 					}
 					/*
 					 * g group_name1 group_name2 . . .
@@ -584,10 +571,10 @@ public class ObjLoader
 						material = material.toLowerCase();
 						material = material.replace( ' ' , '_' );
 
-						abTexture = (TextureSpec)actualTextureMap.get( material );
-						if ( abTexture == null )
+						abMaterial = actualMaterials.get( material );
+						if ( abMaterial == null )
 						{
-							abTexture = defaultTexture;
+							abMaterial = defaultMaterial;
 							//System.err.println( "'usemtl' references unknown material '" + material + "'" );
 						}
 					}

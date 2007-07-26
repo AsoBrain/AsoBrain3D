@@ -346,7 +346,7 @@ public class BSPTree
 			result._planeNormalY        = planeNormalY;
 			result._planeNormalZ        = planeNormalZ;
 			result._planeConstant       = planeConstant;
-			result._texture             = polygon._texture;
+			result._material            = polygon._material;
 			result._alternateAppearance = polygon._alternateAppearance;
 		}
 

@@ -29,8 +29,9 @@ import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
+import ab.j3d.Vector3D;
 import ab.j3d.model.Cylinder3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Insert3D;
@@ -69,12 +70,12 @@ public final class Painter
 	 * @param   outline             Paint polygon outlines.
 	 * @param   fill                Fill polygons (vs. outline only).
 	 * @param   applyLighting       Apply lighting effect to filled polygons.
-	 * @param   useTextureColor     Try to apply texture properties when filling polygons.
+	 * @param   useMaterialColor    Try to apply material properties when filling polygons.
 	 */
-	public static void paintQueue( final Graphics2D g , final RenderQueue renderQueue , final boolean outline , final boolean fill , final boolean applyLighting , final boolean useTextureColor )
+	public static void paintQueue( final Graphics2D g , final RenderQueue renderQueue , final boolean outline , final boolean fill , final boolean applyLighting , final boolean useMaterialColor )
 	{
 		final RenderedPolygon[] polygons = renderQueue.getQueuedPolygons();
-		paintQueue( g , polygons , outline , fill , applyLighting , useTextureColor );
+		paintQueue( g , polygons , outline , fill , applyLighting , useMaterialColor );
 	}
 
 	/**
@@ -85,15 +86,15 @@ public final class Painter
 	 * @param   outline             Paint polygon outlines.
 	 * @param   fill                Fill polygons (vs. outline only).
 	 * @param   applyLighting       Apply lighting effect to filled polygons.
-	 * @param   useTextureColor     Try to apply texture properties when filling polygons.
+	 * @param   useMaterialColor    Try to apply material properties when filling polygons.
 	 */
-	public static void paintQueue( final Graphics2D g , final RenderedPolygon[] polygons , final boolean outline , final boolean fill , final boolean applyLighting , final boolean useTextureColor )
+	public static void paintQueue( final Graphics2D g , final RenderedPolygon[] polygons , final boolean outline , final boolean fill , final boolean applyLighting , final boolean useMaterialColor )
 	{
 		for ( int i = 0 ; i < polygons.length ; i++ )
 		{
 			final RenderedPolygon polygon = polygons[ i ];
 
-			paintPolygon( g , polygon , outline , fill , applyLighting , useTextureColor );
+			paintPolygon( g , polygon , outline , fill , applyLighting , useMaterialColor );
 		}
 	}
 
@@ -105,24 +106,24 @@ public final class Painter
 	 * @param   outline             Paint polygon outlines.
 	 * @param   fill                Fill polygons (vs. outline only).
 	 * @param   applyLighting       Apply lighting effect to filled polygons.
-	 * @param   useTextureColor     Try to apply texture properties when filling polygons.
+	 * @param   useMaterialColor    Try to apply material properties when filling polygons.
 	 */
-	public static void paintPolygon( final Graphics2D g , final RenderedPolygon polygon , final boolean outline , final boolean fill , final boolean applyLighting , final boolean useTextureColor )
+	public static void paintPolygon( final Graphics2D g , final RenderedPolygon polygon , final boolean outline , final boolean fill , final boolean applyLighting , final boolean useMaterialColor )
 	{
 		final Object antiAliasingValue = g.getRenderingHint( RenderingHints.KEY_ANTIALIASING );
 
 		Paint fillPaint = null;
 		if ( fill || ( polygon._vertexCount < 3 ) )
 		{
-			final TextureSpec texture = polygon._texture;
+			final Material material = polygon._material;
 
 			if ( polygon._alternateAppearance )
 			{
 				fillPaint = polygon._object.alternateFillPaint;
 			}
-			else if ( useTextureColor && ( texture != null ) && !texture.isTexture() )
+			else if ( useMaterialColor && ( material != null ) && ( material.colorMap == null ) )
 			{
-				fillPaint = texture.getColor();
+				fillPaint = new Color( material.getARGB() );
 			}
 			else
 			{
@@ -155,7 +156,7 @@ public final class Painter
 		{
 			final Paint outlinePaint;
 
-			outlinePaint = ( fillPaint != null )        ? Color.darkGray
+			outlinePaint = ( fillPaint != null )        ? Color.DARK_GRAY
 						 : polygon._alternateAppearance ? polygon._object.alternateOutlinePaint
 														: polygon._object.outlinePaint;
 
@@ -343,11 +344,9 @@ public final class Painter
 					 * completely disables the effect (always 100%); whilst <code>1.0</code>
 					 * makes faces perpendicular to the Z-axis black (0%).
 					 */
-					final double faceNormalX = face.getNormalX();
-					final double faceNormalY = face.getNormalY();
-					final double faceNormalZ = face.getNormalZ();
+					final Vector3D faceNormal = face.getNormal();
 
-					final float transformedNormalZ = (float)object2view.rotateZ( faceNormalX , faceNormalY , faceNormalZ );
+					final float transformedNormalZ = (float)object2view.rotateZ( faceNormal.x , faceNormal.y , faceNormal.z );
 					final float factor = Math.min( 1.0f , ( 1.0f - shadeFactor ) + shadeFactor * Math.abs( transformedNormalZ ) );
 
 					faceFillPaint = ( factor < 1.0f ) ? new Color( factor * rgb[ 0 ] , factor * rgb[ 1 ] , factor * rgb[ 2 ] , rgb[ 3 ] ) : fillPaint;

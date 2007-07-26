@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2006
+ * (C) Copyright Numdata BV 2004-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,8 +22,8 @@ package ab.j3d.model;
 import java.awt.geom.Ellipse2D;
 
 import ab.j3d.Abstract3DObjectBuilder;
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 
 /**
@@ -64,30 +64,30 @@ public final class Object3DBuilder
 		return _target;
 	}
 
-	public void addLine( final Vector3D point1 , final Vector3D point2 , final int stroke , final TextureSpec textureSpec )
+	public void addLine( final Vector3D point1 , final Vector3D point2 , final int stroke , final Material material )
 	{
-		_target.addFace( new Vector3D[] { point1 , point2 } , textureSpec , false , true );
+		_target.addFace( new Vector3D[] { point1 , point2 } , material , false , true );
 	}
 
-	public void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final TextureSpec textureSpec , final boolean hasBackface )
+	public void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Material material , final boolean hasBackface )
 	{
-		_target.addFace( new Vector3D[] { point1 , point2 , point3 } , textureSpec , false , hasBackface );
+		_target.addFace( new Vector3D[] { point1 , point2 , point3 } , material , false , hasBackface );
 	}
 
-	public void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final TextureSpec textureSpec , final boolean hasBackface )
+	public void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final Material material , final boolean hasBackface )
 	{
-		_target.addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , textureSpec , false , hasBackface );
+		_target.addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , material , false , hasBackface );
 	}
 
-	public void addCircle( final Vector3D centerPoint , final double radius , final Vector3D normal , final Vector3D extrusion , final int stroke , final TextureSpec textureSpec , final boolean fill )
+	public void addCircle( final Vector3D centerPoint , final double radius , final Vector3D normal , final Vector3D extrusion , final int stroke , final Material material , final boolean fill )
 	{
 		final Matrix3D  base      = Matrix3D.getPlaneTransform( centerPoint , normal , true );
 		final Ellipse2D ellipse2d = new Ellipse2D.Double( -radius , -radius , radius * 2.0 , radius * 2.0 );
 
-		ExtrudedObject2D.generate( _target , ellipse2d , extrusion , base , textureSpec , radius * 0.02 , true );
+		ExtrudedObject2D.generate( _target , ellipse2d , extrusion , base , material , radius * 0.02 , true );
 	}
 
-	public void addText( final String text , final Vector3D origin , final double height , final double rotationAngle , final double obliqueAngle , final Vector3D extrusion , final TextureSpec textureSpec )
+	public void addText( final String text , final Vector3D origin , final double height , final double rotationAngle , final double obliqueAngle , final Vector3D extrusion , final Material material )
 	{
 	}
 
@@ -105,13 +105,13 @@ public final class Object3DBuilder
 	 * @param   radii               X coordinates of 2D outline.
 	 * @param   zCoordinates        Z coordinates of 2D outline.
 	 * @param   detail              Number of segments around the Y-axis.
-	 * @param   texture             Texture to apply to faces.
+	 * @param   material            Material to apply to faces.
 	 * @param   smoothCircumference Set 'smooth' flag for circumference faces.
 	 * @param   closeEnds           Close ends of shape (make solid).
 	 *
 	 * @return  Generated {@link Object3D}.
 	 */
-	public static Object3D constructRotatedObject( final Matrix3D xform , final double[] radii , final double[] zCoordinates , final int detail , final TextureSpec texture , final boolean smoothCircumference , final boolean closeEnds )
+	public static Object3D constructRotatedObject( final Matrix3D xform , final double[] radii , final double[] zCoordinates , final int detail , final Material material , final boolean smoothCircumference , final boolean closeEnds )
 	{
 		final Object3D result = new Object3D();
 		int[] prevVertexIndices = null;
@@ -151,7 +151,7 @@ public final class Object3DBuilder
 				{
 					if ( i == 0 )
 					{
-						result.addFace( vertexIndices , texture , false );
+						result.addFace( vertexIndices , material , false );
 					}
 					else if ( i == radii.length - 1 )
 					{
@@ -159,7 +159,7 @@ public final class Object3DBuilder
 						for ( int step = 0 ; step < detail ; step++ )
 							reversed[ step ] = vertexIndices[ detail - 1 - step ];
 
-						result.addFace( reversed , texture , false );
+						result.addFace( reversed , material , false );
 					}
 				}
 			}
@@ -176,19 +176,19 @@ public final class Object3DBuilder
 						for ( int step = 0 ; step < detail ; step++ )
 						{
 							final int nextStep = ( step + 1 ) % detail;
-							result.addFace( new int[] { prevVertexIndices[ step ] , vertexIndices[ step ] , vertexIndices[ nextStep ] , prevVertexIndices[ nextStep ] } , texture , smoothCircumference );
+							result.addFace( new int[] { prevVertexIndices[ step ] , vertexIndices[ step ] , vertexIndices[ nextStep ] , prevVertexIndices[ nextStep ] } , material , smoothCircumference );
 						}
 					}
 					else
 					{
 						for ( int step = 0 ; step < detail ; step++ )
-							result.addFace( new int[] { prevVertexIndices[ 0 ] , vertexIndices[ step ] , vertexIndices[ ( step + 1 ) % detail ] } , texture , smoothCircumference );
+							result.addFace( new int[] { prevVertexIndices[ 0 ] , vertexIndices[ step ] , vertexIndices[ ( step + 1 ) % detail ] } , material , smoothCircumference );
 					}
 				}
 				else if ( prevVertexIndices.length > 1 )
 				{
 					for ( int step = 0 ; step < detail ; step++ )
-						result.addFace( new int[] { prevVertexIndices[ step ] , vertexIndices[ 0 ] , prevVertexIndices[ ( step + 1 ) % detail ] } , texture , smoothCircumference );
+						result.addFace( new int[] { prevVertexIndices[ step ] , vertexIndices[ 0 ] , prevVertexIndices[ ( step + 1 ) % detail ] } , material , smoothCircumference );
 				}
 			}
 			prevVertexIndices = vertexIndices;

@@ -29,14 +29,16 @@ import java.awt.image.WritableRaster;
 import java.util.HashMap;
 import java.util.Map;
 
+import ab.j3d.MapTools;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
+import ab.j3d.Material;
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 
 import com.numdata.oss.ArrayTools;
+import com.numdata.oss.TextTools;
 
 /**
  * This class implements a software renderer for 3D scenes, shading the scene
@@ -89,15 +91,14 @@ public final class ImageRenderer
 	private static final Map _phongTableCache = new HashMap();
 
 	/**
-	 * This hashtable is used to share textures between materials. The
-	 * key is the 'texture' field value, the elements are Object arrays
-	 * with the following layout:
+	 * This hashtable is used to cache maps. The key is the map name,
+	 * the elements are Object arrays with the following layout:
 	 *
 	 *  [ 0 ] = Integer : _argb
 	 *  [ 1 ] = int[][] : _pixels
 	 *  [ 2 ] = Boolean : _transparent
 	 */
-	private static final Map _textureCache = new HashMap();
+	private static final Map _mapCache = new HashMap();
 
 	/**
 	 * Construct renderer.
@@ -256,21 +257,23 @@ public final class ImageRenderer
 
 		final RenderObject ro = face.getRenderObject();
 
-		final int[]       ph            = ro._projectedX;
-		final int[]       pv            = ro._projectedY;
-		final long[]      pd            = ro._vertexDepths;
-		final int[]       vertexIndices = face._vi;
-		final int         vertexCount   = vertexIndices.length;
-		final TextureSpec textureSpec   = face.getTexture();
-		final int[][]     texturePixels = getTextureImage( textureSpec );
-		final boolean     hasTexture    = texturePixels != null;
-		final int[]       tus           = hasTexture ? face.getTextureU() : null;
-		final int[]       tvs           = hasTexture ? face.getTextureV() : null;
-		final int         colorRGB      = textureSpec.getARGB();
-		final int[]       ds            = face._ds;
-		final int[]       sxs           = face._sxs;
-		final int[]       sys           = face._sys;
-		final int[]       sfs           = face._sfs;
+		final int[]    ph             = ro._projectedX;
+		final int[]    pv             = ro._projectedY;
+		final long[]   pd             = ro._vertexDepths;
+		final int[]    vertexIndices  = face._vi;
+		final int      vertexCount    = vertexIndices.length;
+		final Material material       = face.getMaterial();
+		final int[][]  colorMap       = getMap( material.colorMap );
+		final boolean  hasColorMap    = ( colorMap != null );
+		final float    colorMapWidth  = hasColorMap ? (float)colorMap[ 0 ].length : 1.0f;
+		final float    colorMapHeight = hasColorMap ? (float)colorMap.length : 1.0f;
+		final float[]  textureU       = hasColorMap ? face.getTextureU() : null;
+		final float[]  textureV       = hasColorMap ? face.getTextureV() : null;
+		final int      colorRGB       = material.getARGB();
+		final int[]    ds             = face._ds;
+		final int[]    sxs            = face._sxs;
+		final int[]    sys            = face._sys;
+		final int[]    sfs            = face._sfs;
 
 		/*
 		 * Determine minimum and maximum Y value, and set the first vertex
@@ -298,7 +301,7 @@ public final class ImageRenderer
 			if ( sfs != null && sfs[ i ] > m ) m = sfs[ i ];
 		}
 
-		final short[][] phongTable = ( m > 0xFF ) && ( sxs != null ) && ( sys != null ) && ( sfs != null ) ? getPhongTable( textureSpec ) : null;
+		final short[][] phongTable = ( m > 0xFF ) && ( sxs != null ) && ( sys != null ) && ( sfs != null ) ? getPhongTable( material ) : null;
 
 		/*
 		 * Ignore face if it completely outside the screen area.
@@ -388,12 +391,12 @@ public final class ImageRenderer
 			ldr = ds[ li1 ];
 			rdr = ds[ ri1 ];
 
-			if ( hasTexture )
+			if ( hasColorMap )
 			{
-				ltu = (long)tus[ li1 ] * ld;
-				rtu = (long)tus[ ri1 ] * rd;
-				ltv = (long)tvs[ li1 ] * ld;
-				rtv = (long)tvs[ ri1 ] * rd;
+				ltu = (long)( textureU[ li1 ] * colorMapWidth  ) * ld;
+				rtu = (long)( textureU[ ri1 ] * colorMapWidth  ) * rd;
+				ltv = (long)( textureV[ li1 ] * colorMapHeight ) * ld;
+				rtv = (long)( textureV[ ri1 ] * colorMapHeight ) * rd;
 			}
 
 			if ( phongTable != null )
@@ -408,7 +411,7 @@ public final class ImageRenderer
 
 			renderScanlines( depthBuffer , frameBuffer , width , height ,
 			    v , v , lh , 0 , rh , 0 , ld , 0L , rd , 0L , colorRGB ,
-				texturePixels , ltu , 0L , rtu , 0L , ltv , 0L , rtv , 0L , ldr , 0 , rdr , 0 ,
+				colorMap , ltu , 0L , rtu , 0L , ltv , 0L , rtv , 0L , ldr , 0 , rdr , 0 ,
 				phongTable , lsx , 0 , rsx , 0 , lsy , 0 , rsy , 0 , lsf , 0 , rsf , 0 );
 
 			return;
@@ -437,41 +440,71 @@ public final class ImageRenderer
 			{
 				do
 				{
-					if ( (li2 = (li1 = li2) - 1) < 0 ) li2 = vertexCount - 1;
+					li1 = li2;
+					li2 = ( ( li1 == 0 ) ? vertexCount : li1 ) - 1;
+
 					lv2 = pv[ vertexIndices[ li2 ] ] >> 8;
 				}
 				while ( lv2 == v );
 
-				d1 = pd[ m = vertexIndices[ li1 ] ];
-				d2 = pd[ n = vertexIndices[ li2 ] ];
+				m = vertexIndices[ li1 ];
+				n = vertexIndices[ li2 ];
 
-				i = (j = lv2 - (pv[ m ] >> 8)) + 1; if ( j == 0 ) j = 1;
+				d1 = pd[ m ];
+				d2 = pd[ n ];
+
+				j = lv2 - ( pv[ m ] >> 8 );
+				i = j + 1;
+				if ( j == 0 )
+					j = 1;
 
 
-				lhc = ph[ n ] - (lh = ph[ m ]);
-				     if ( lhc < 0 ) lhc = ( lhc - 0x100 ) / i;
-				else if ( lhc > 0 ) lhc = ( lhc + 0x100 ) / i;
+				lh  = ph[ m ];
+				lhc = ph[ n ] - lh;
 				lh += 0x80;
 
-				//lzc = (d2        - (lz =  d1       )) / j; lz += 0x80;
-				ldc = d2 - ( ld = d1 );
-				     if ( ldc < 0 ) ldc = ( ldc - 0x100L ) / (long)i;
-				else if ( ldc > 0 ) ldc = ( ldc + 0x100L ) / (long)i;
+				     if ( lhc < 0 ) lhc = ( lhc - 0x100 ) / i;
+				else if ( lhc > 0 ) lhc = ( lhc + 0x100 ) / i;
+
+				// lz  =   d1;
+				// lzc = ( d2 - lz ) / j;
+				// lz += 0x80;
+
+				ld  = d1;
+				ldc = d2 - ld;
 				ld += 0x80L;
 
-				ldrc = (ds[ li2 ] - (ldr =  ds[ li1 ])) / j; ldr += 0x80;
+				     if ( ldc < 0 ) ldc = ( ldc - 0x100L ) / (long)i;
+				else if ( ldc > 0 ) ldc = ( ldc + 0x100L ) / (long)i;
 
-				if ( hasTexture )
+				ldr  =   ds[ li1 ];
+				ldrc = ( ds[ li2 ] - ldr ) / j;
+				ldr += 0x80;
+
+				if ( hasColorMap )
 				{
-					ltuc = ( ( (long)tus[ li2 ] * d2 ) - ( ltu = ( (long)tus[ li1 ] * d1 ) ) ) / (long)j; ltu += 0x80L;
-					ltvc = ( ( (long)tvs[ li2 ] * d2 ) - ( ltv = ( (long)tvs[ li1 ] * d1 ) ) ) / (long)j; ltv += 0x80L;
+					ltu  =   (long)( textureU[ li1 ] * colorMapWidth  ) * d1;
+					ltuc = ( (long)( textureU[ li2 ] * colorMapWidth  ) * d2 - ltu ) / (long)j;
+					ltu += 0x80L;
+
+					ltv  =   (long)( textureV[ li1 ] * colorMapHeight ) * d1;
+					ltvc = ( (long)( textureV[ li2 ] * colorMapHeight ) * d2 - ltv ) / (long)j;
+					ltv += 0x80L;
 				}
 
 				if ( phongTable != null )
 				{
-					lsxc = (sxs[ li2 ] - (lsx = sxs[ li1 ])) / j; lsx += 0x80;
-					lsyc = (sys[ li2 ] - (lsy = sys[ li1 ])) / j; lsy += 0x80;
-					lsfc = (sfs[ li2 ] - (lsf = sfs[ li1 ])) / j; lsf += 0x80;
+					lsx  =   sxs[ li1 ];
+					lsxc = ( sxs[ li2 ] - lsx ) / j;
+					lsx += 0x80;
+
+					lsy  =   sys[ li1 ];
+					lsyc = ( sys[ li2 ] - lsy ) / j;
+					lsy += 0x80;
+
+					lsf  =   sfs[ li1 ];
+					lsfc = ( sfs[ li2 ] - lsf ) / j;
+					lsf += 0x80;
 				}
 			}
 
@@ -505,17 +538,30 @@ public final class ImageRenderer
 
 				rdrc = ( ds[ ri2 ] - (rdr =  ds[ ri1 ])) / j; rdr += 0x80;
 
-				if ( hasTexture )
+				if ( hasColorMap )
 				{
-					rtuc = (( (long)tus[ ri2 ] * d2) - (rtu = ( (long)tus[ ri1 ] * d1))) / (long)j; rtu += 0x80L;
-					rtvc = (( (long)tvs[ ri2 ] * d2) - (rtv = ( (long)tvs[ ri1 ] * d1))) / (long)j; rtv += 0x80L;
+					rtu  =   (long)( textureU[ ri1 ] * colorMapWidth  ) * d1;
+					rtuc = ( (long)( textureU[ ri2 ] * colorMapWidth  ) * d2 - rtu ) / (long)j;
+					rtu += 0x80L;
+
+					rtv  =   (long)( textureV[ ri1 ] * colorMapHeight ) * d1;
+					rtvc = ( (long)( textureV[ ri2 ] * colorMapHeight ) * d2 - rtv ) / (long)j;
+					rtv += 0x80L;
 				}
 
 				if ( phongTable != null )
 				{
-					rsxc = (sxs[ ri2 ] - (rsx = sxs[ ri1 ])) / j; rsx += 0x80;
-					rsyc = (sys[ ri2 ] - (rsy = sys[ ri1 ])) / j; rsy += 0x80;
-					rsfc = (sfs[ ri2 ] - (rsf = sfs[ ri1 ])) / j; rsf += 0x80;
+					rsx  =   sxs[ ri1 ];
+					rsxc = ( sxs[ ri2 ] - rsx ) / j;
+					rsx += 0x80;
+
+					rsy  =   sys[ ri1 ];
+					rsyc = ( sys[ ri2 ] - rsy ) / j;
+					rsy += 0x80;
+
+					rsf  =   sfs[ ri1 ];
+					rsfc = ( sfs[ ri2 ] - rsf ) / j;
+					rsf += 0x80;
 				}
 			}
 
@@ -528,7 +574,7 @@ public final class ImageRenderer
 
 			renderScanlines( depthBuffer , frameBuffer , width , height ,
 			    v , nextV , lh , lhc , rh , rhc , ld , ldc , rd , rdc , colorRGB ,
-				texturePixels , ltu , ltuc , rtu , rtuc , ltv , ltvc , rtv , rtvc , ldr , ldrc , rdr , rdrc ,
+				colorMap , ltu , ltuc , rtu , rtuc , ltv , ltvc , rtv , rtvc , ldr , ldrc , rdr , rdrc ,
 				phongTable , lsx , lsxc , rsx , rsxc , lsy , lsyc , rsy , rsyc , lsf , lsfc , rsf , rsfc );
 
 			/*
@@ -580,7 +626,7 @@ public final class ImageRenderer
 	 * @param   rd          Scanline parameter.
 	 * @param   rdc         Scanline parameter.
 	 * @param   colorRGB    Scanline parameter.
-	 * @param   texture     Scanline parameter.
+	 * @param   colorMap    Scanline parameter.
 	 * @param   ltu         Scanline parameter.
 	 * @param   ltuc        Scanline parameter.
 	 * @param   rtu         Scanline parameter.
@@ -613,7 +659,7 @@ public final class ImageRenderer
 		int  lh  , final int  lhc  , int  rh  , final int  rhc  ,
 		long ld  , final long ldc  , long rd  , final long rdc  ,
 
-		final int colorRGB , final int[][] texture ,
+		final int colorRGB , final int[][] colorMap ,
 		long ltu , final long ltuc , long rtu , final long rtuc ,
 		long ltv , final long ltvc , long rtv , final long rtvc ,
 		int  ldr , final int  ldrc , int  rdr , final int  rdrc ,
@@ -622,8 +668,8 @@ public final class ImageRenderer
 		int  lsy , final int  lsyc , int  rsy , final int  rsyc ,
 		int  lsf , final int  lsfc , int  rsf , final int  rsfc )
 	{
-		final int tw = ( texture != null ) ? texture[ 0 ].length : 0;
-		final int th = ( texture != null ) ? texture.length    : 0;
+		final int tw = ( colorMap != null ) ? colorMap[ 0 ].length : 0;
+		final int th = ( colorMap != null ) ? colorMap.length      : 0;
 //		final int ma = ( colorRGB >> 24 ) & 0xFF;
 		final int mr = ( colorRGB >> 16 ) & 0xFF;
 		final int mg = ( colorRGB >> 8  ) & 0xFF;
@@ -758,7 +804,7 @@ public final class ImageRenderer
 				 */
 				if ( ( phongTable != null ) && ((lsf > 0xFF) || (rsf > 0xFF)) )
 				{
-					if ( texture != null )
+					if ( colorMap != null )
 					{
 						for ( i = width * v + h1 ; h2-- >= 0 ; i++ )
 						{
@@ -769,9 +815,9 @@ public final class ImageRenderer
 								// fix , tu1 and tv1 become < 0 don't know how that happens
 								final int myU = (int)( ( tu1 / d1 ) % (long)tw );
 								final int myV = (int)( ( tv1 / d1 ) % (long)th );
-								c = texture[ myV + (myV<0?th:0)][ myU + (myU<0?tw:0) ];
+								c = colorMap[ myV + (myV<0?th:0)][ myU + (myU<0?tw:0) ];
 								// original
-								//c = texture[ (int)( ( tv1 / d1 ) % th )) ]
+								//c = colorMap[ (int)( ( tv1 / d1 ) % th )) ]
 								           //[ (int)( ( tu1 / d1 ) % tw )) ];
 								s = (int)phongTable[ sy1 >> 8 ][ sx1 >> 8 ] * sf1;
 
@@ -791,7 +837,7 @@ public final class ImageRenderer
 							sf1 += sf2;
 						}
 					}
-					else // no texture
+					else // no color map
 					{
 						for ( i = width * v + h1 ; h2-- >= 0 ; i++ )
 						{
@@ -818,7 +864,7 @@ public final class ImageRenderer
 				}
 				else
 				{
-					if ( texture != null )
+					if ( colorMap != null )
 					{
 						for ( i = width * v + h1 ; h2-- >= 0 ; i++ )
 						{
@@ -829,9 +875,9 @@ public final class ImageRenderer
 								// fix , tu1 and tv1 become < 0 don't know how that happens
 								final int myU = (int)( ( tu1 / d1 ) % (long)tw );
 								final int myV = (int)( ( tv1 / d1 ) % (long)th );
-								c = texture[ myV + (myV<0?th:0)][ myU + (myU<0?tw:0) ];
+								c = colorMap[ myV + (myV<0?th:0)][ myU + (myU<0?tw:0) ];
 								// original
-								//c = texture[ (int)( ( tv1 / d1 ) % th )) ]
+								//c = colorMap[ (int)( ( tv1 / d1 ) % th )) ]
 								           //[ (int)( ( tu1 / d1 ) % tw )) ];
 
 								if ( (r = (dr1 * ((c >> 16) & 0xFF)) >> 16) > 255 ) r = 255;
@@ -847,7 +893,7 @@ public final class ImageRenderer
 							tv1 += tv2;
 						}
 					}
-					else // no texture
+					else // no color map
 					{
 						for ( i = width * v + h1 ; h2-- >= 0 ; i++ )
 						{
@@ -884,16 +930,16 @@ public final class ImageRenderer
 	}
 
 	/**
-	 * Get phong table for the specified texture. The returned phong table
+	 * Get phong table for the specified material. The returned phong table
 	 * contains intensity values ranging from 0 to 256.
 	 *
-	 * @param   texture     Texture to get phong table for.
+	 * @param   material    Material to get phong table for.
 	 *
 	 * @return  2-dimensional array representing phong table.
 	 */
-	private static short[][] getPhongTable( final TextureSpec texture )
+	private static short[][] getPhongTable( final Material material )
 	{
-		final int exponent = texture.specularExponent;
+		final int exponent = material.shininess;
 
 		/*
 		 * Get phong table from cache.
@@ -938,27 +984,23 @@ public final class ImageRenderer
 	}
 
 	/**
-	 * Get image for the specified texture. The image is returned as a
+	 * Get map image with the specified name. The image is returned as a
 	 * 2-dimensional array of integers in ARGB format. The primary index is the
 	 * Y-coordinate, the secondary index is the X-coordinate (or U and V
 	 * coordinates respectively when applied in rendering).
 	 *
-	 * @param   texture     Texture to get image for.
+	 * @param   name  Name of map to get.
 	 *
-	 * @return  2-dimensional array representing texture image;
+	 * @return  2-dimensional array representing map image;
 	 *          <code>null</code> if no image could be created.
 	 */
-	private static int[][] getTextureImage( final TextureSpec texture )
+	private static int[][] getMap( final String name )
 	{
 		int[][] result;
 
-		if ( ( texture == null ) || !texture.isTexture() )
+		if ( TextTools.isNonEmpty( name ) )
 		{
-			result = null;
-		}
-		else
-		{
-			result = (int[][])_textureCache.get( texture.code );
+			result = (int[][])_mapCache.get( name );
 			if ( result == null )
 			{
 				/*
@@ -968,7 +1010,7 @@ public final class ImageRenderer
 				int   th     = 0;
 				int[] pixels = null;
 
-				final Image image = texture.getTextureImage();
+				final Image image = MapTools.getImage( name );
 				if ( image != null )
 				{
 					try
@@ -987,7 +1029,7 @@ public final class ImageRenderer
 
 				/*
 				 * 1) Convert pixels to 2-dimensional array.
-				 * 2) Flip texture vertically to get the origin at the lower-left corner.
+				 * 2) Flip image vertically to get the origin at the lower-left corner.
 				 */
 				if ( pixels != null )
 				{
@@ -998,9 +1040,13 @@ public final class ImageRenderer
 			}
 
 			/*
-			 * Put texture info in cache.
+			 * Put image in cache.
 			 */
-			_textureCache.put( texture.code , result );
+			_mapCache.put( name , result );
+		}
+		else
+		{
+			result = null;
 		}
 
 		return result;

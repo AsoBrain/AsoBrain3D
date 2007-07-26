@@ -1,7 +1,6 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,8 +23,8 @@ import java.awt.Color;
 
 import junit.framework.TestCase;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Object3D;
 
@@ -177,8 +176,8 @@ public final class TestRenderQueue
 		final Vector3D rb = Vector3D.INIT.set(  size ,  size , 0.0 );
 		final Vector3D lb = Vector3D.INIT.set( -size ,  size , 0.0 );
 
-		final TextureSpec red = new TextureSpec( Color.red );
-		final TextureSpec green = new TextureSpec( Color.green );
+		final Material red   = new Material( Color.RED  .getRGB() );
+		final Material green = new Material( Color.GREEN.getRGB() );
 
 		final Object3D plane = new Object3D();
 		plane.setTag( tag );

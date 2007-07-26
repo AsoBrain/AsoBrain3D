@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2006
+ * (C) Copyright Numdata BV 2004-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,8 +23,8 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.FlatteningPathIterator;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 
 /**
@@ -74,14 +74,14 @@ public final class ExtrudedObject2D
 	 * @param   shape           Base shape.
 	 * @param   extrusion       Extrusion vector (control-point displacement).
 	 * @param   transform       Transform to apply.
-	 * @param   texture         Texture to apply.
+	 * @param   material        Material to apply.
 	 * @param   flatness        Flatness to use.
 	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
 	 *
 	 * @see     FlatteningPathIterator
 	 * @see     Shape#getPathIterator( AffineTransform , double )
 	 */
-	public ExtrudedObject2D( final Shape shape , final Vector3D extrusion , final Matrix3D transform , final TextureSpec texture , final double flatness , final boolean hasBackface )
+	public ExtrudedObject2D( final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material material , final double flatness , final boolean hasBackface )
 	{
 		this.shape       = shape;
 		this.extrusion   = extrusion;
@@ -89,7 +89,7 @@ public final class ExtrudedObject2D
 		this.flatness    = flatness;
 		this.hasBackface = hasBackface;
 
-		generate( this , shape , extrusion , transform , texture , flatness , hasBackface );
+		generate( this , shape , extrusion , transform , material , flatness , hasBackface );
 	}
 
 	/**
@@ -99,11 +99,11 @@ public final class ExtrudedObject2D
 	 * @param   shape           Base shape.
 	 * @param   extrusion       Extrusion vector (control-point displacement).
 	 * @param   transform       Transform to apply.
-	 * @param   texture         Texture to apply.
+	 * @param   material        Material to apply.
 	 * @param   flatness        Flatness to use.
 	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
 	 */
-	public static void generate( final Object3D target , final Shape shape , final Vector3D extrusion , final Matrix3D transform , final TextureSpec texture , final double flatness , final boolean hasBackface )
+	public static void generate( final Object3D target , final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material material , final double flatness , final boolean hasBackface )
 	{
 		final double  ex            = extrusion.x;
 		final double  ey            = extrusion.y;
@@ -174,12 +174,12 @@ public final class ExtrudedObject2D
 							target.addFace(
 								flipExtrusion ? new int[] { vertexIndex , extrudedVertexIndex , lastExtrudedIndex  , lastIndex  }
 								              : new int[] { lastIndex  , lastExtrudedIndex  , extrudedVertexIndex , vertexIndex } ,
-								texture , null , null , 1.0f , false , hasBackface );
+								material , null , null , 1.0f , false , hasBackface );
 							lastExtrudedIndex = extrudedVertexIndex;
 						}
 						else
 						{
-							target.addFace( new int[]{ lastIndex , vertexIndex } , texture , null , null , 1.0f , false , true );
+							target.addFace( new int[]{ lastIndex , vertexIndex } , material , null , null , 1.0f , false , true );
 						}
 					}
 
@@ -196,13 +196,13 @@ public final class ExtrudedObject2D
 							target.addFace(
 								flipExtrusion ? new int[] { lastMoveTo , lastExtrudedMoveTo , lastExtrudedIndex  , lastIndex  }
 								              : new int[] { lastIndex  , lastExtrudedIndex  , lastExtrudedMoveTo , lastMoveTo } ,
-								texture , null , null , 1.0f , false , hasBackface );
+								material , null , null , 1.0f , false , hasBackface );
 
 							lastExtrudedIndex = lastExtrudedMoveTo;
 						}
 						else
 						{
-							target.addFace( new int[] { lastIndex , lastMoveTo } , texture , null , null , 1.0f , false , true );
+							target.addFace( new int[] { lastIndex , lastMoveTo } , material , null , null , 1.0f , false , true );
 						}
 					}
 

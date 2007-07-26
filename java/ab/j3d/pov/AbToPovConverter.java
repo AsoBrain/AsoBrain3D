@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * (C) Copyright Numdata BV 2005-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,8 +23,8 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Box3D;
 import ab.j3d.model.Camera3D;
@@ -51,51 +51,51 @@ public final class AbToPovConverter
 	private PovScene _scene;
 
 	/**
-	 * Directory containing the used textures.
+	 * Directory containing the used materials.
 	 */
-	private final String _textureDirectory;
+	private final String _imageMapDirectory;
 
 	/**
-	 * Construct new converter and set the texture directory.
+	 * Construct new converter and set the image map directory.
 	 *
-	 * @param   textureDirectory    Directory containing POV-textures.
+	 * @param   imageMapDirectory    Directory containing POV-image maps.
 	 */
-	public AbToPovConverter( final String textureDirectory )
+	public AbToPovConverter( final String imageMapDirectory )
 	{
-		if ( textureDirectory == null )
-			throw new NullPointerException( "textureDirectory" );
+		if ( imageMapDirectory == null )
+			throw new NullPointerException( "imageMapDirectory" );
 
-		_textureDirectory = textureDirectory;
+		_imageMapDirectory = imageMapDirectory;
 
 		_scene = new PovScene();
 	}
 
 	/**
-	 * Method to check if an {@link Object3D} contains multiple textures and/or
-	 * texture mapping.
+	 * Method to check if an {@link Object3D} contains multiple materials and/or
+	 * maps.
 	 *
 	 * @param   object  The {@link Object3D} to inspect.
 	 *
 	 * @return  <code>true</code> if the {@link Object3D} contains multiple
-	 *          texture and/or texture mapping;
+	 *          materials and/or maps;
 	 *          <code>false</code> otherwise.
 	 */
-	private static boolean containsMultipleTexturesOrMapping( final Object3D object )
+	private static boolean containsMultipleMaterialsOrMaps( final Object3D object )
 	{
 		boolean result = false;
 
 		final int faceCount = object.getFaceCount();
-		TextureSpec lastTexture = null;
+		Material lastMaterial = null;
 
 		for ( int i = 0 ; !result && ( i < faceCount ) ; i++ )
 		{
-			final Face3D      face    = object.getFace( i );
-			final TextureSpec texture = face.getTexture();
+			final Face3D   face     = object.getFace( i );
+			final Material material = face.getMaterial();
 
-			if ( texture != null )
+			if ( material != null )
 			{
-				result = ( ( lastTexture != null ) && !lastTexture.equals( texture ) ) || texture.isTexture();
-				lastTexture = texture;
+				result = ( ( lastMaterial != null ) && !lastMaterial.equals( material ) ) || ( material.colorMap != null );
+				lastMaterial = material;
 			}
 		}
 
@@ -176,7 +176,7 @@ public final class AbToPovConverter
 	{
 		final PovGeometry result;
 
-		if ( containsMultipleTexturesOrMapping( box ) )
+		if ( containsMultipleMaterialsOrMaps( box ) )
 		{
 			result = convertObject3D( transform , box );
 		}
@@ -187,7 +187,7 @@ public final class AbToPovConverter
 			final Vector3D   v1      = Vector3D.INIT;
 			final Vector3D   v2      = v1.plus( box.getDX() , box.getDY() , box.getDZ() );
 			final Face3D     face    = box.getFace( 0 );
-			final PovTexture texture = convertTexture( face.getTexture() );
+			final PovTexture texture = convertMaterialToPovTexture( face.getMaterial() );
 
 			result = new PovBox( ( box.getTag() != null ) ? String.valueOf( box.getTag() ) : null , v1 , v2 , texture );
 			result.setTransform( new PovMatrix( boxTransform.multiply( transform ) ) );
@@ -243,14 +243,14 @@ public final class AbToPovConverter
 	{
 		final PovGeometry result;
 
-		if ( containsMultipleTexturesOrMapping( cylinder ) )
+		if ( containsMultipleMaterialsOrMaps( cylinder ) )
 		{
 			result = convertObject3D( transform , cylinder );
 		}
 		else
 		{
 			final Face3D     face    = cylinder.getFace( 0 );
-			final PovTexture texture = convertTexture( face.getTexture() );
+			final PovTexture texture = convertMaterialToPovTexture( face.getMaterial() );
 
 			result = new PovCylinder( ( cylinder.getTag() != null ) ? String.valueOf( cylinder.getTag() ) : null , 0.0 , 0.0 , 0.0 , cylinder.height , cylinder.radiusBottom , cylinder.radiusTop , texture );
 			result.setTransform( new PovMatrix( cylinder.xform.multiply( transform ) ) );
@@ -332,12 +332,10 @@ public final class AbToPovConverter
 
 		result.setVertexVectors( vertexVectors );
 
-		double[]    vertexNormals = null;
-		TextureSpec lastTexture   = null;
-		int         textureIndex  = 0;
-		double      textureWidth            = 0.0;
-		double      textureHeight            = 0.0;
-		boolean     uvMapping     = false;
+		double[] vertexNormals = null;
+		Material lastMaterial  = null;
+		int      textureIndex  = 0;
+		boolean  uvMapping     = false;
 
 		for ( int i = 0 ; i < faceCount ; i++ )
 		{
@@ -346,9 +344,9 @@ public final class AbToPovConverter
 
 			if ( faceVertexCount > 2 )
 			{
-				final boolean     smooth        = face.isSmooth();
-				final int[]       vertexIndices = face.getVertexIndices();
-				final TextureSpec texture       = face.getTexture();
+				final boolean  smooth        = face.isSmooth();
+				final int[]    vertexIndices = face.getVertexIndices();
+				final Material material      = face.getMaterial();
 
 				/*
 				 * Require vertex normals for smooth faces.
@@ -365,21 +363,13 @@ public final class AbToPovConverter
 				}
 
 				/*
-				 * Convert texture.
+				 * Convert material.
 				 */
-				if ( texture != lastTexture )
+				if ( material != lastMaterial )
 				{
-					final boolean isTexture = texture.isTexture();
-
-					final int w = isTexture ? texture.getTextureWidth ( null ) : -1;
-					final int h = isTexture ? texture.getTextureHeight( null ) : -1;
-
-					textureWidth  = (double)w;
-					textureHeight = (double)h;
-					uvMapping     = ( ( w > 0 ) && ( h > 0 ) );
-
-					textureIndex = result.getOrAddTextureIndex( convertTexture( texture ) );
-					lastTexture  = texture;
+					uvMapping    = ( material.colorMap != null );
+					textureIndex = result.getOrAddTextureIndex( convertMaterialToPovTexture( material ) );
+					lastMaterial = material;
 				}
 
 				/*
@@ -387,7 +377,7 @@ public final class AbToPovConverter
 				 */
 				final int v1  = vertexIndices[ 0 ];
 				final int vn1 = smooth ? v1 : 0;
-				final int uv1 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)face.getTextureU( 0 ) / textureWidth , (double)face.getTextureV( 0 ) / textureHeight , 0.0 ) ) : -1;
+				final int uv1 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)face.getTextureU( 0 ) , (double)face.getTextureV( 0 ) , 0.0 ) ) : -1;
 
 				int v2;
 				int vn2;
@@ -395,7 +385,7 @@ public final class AbToPovConverter
 
 				int v3  = vertexIndices[ 1 ];
 				int vn3 = smooth ? v3 : 0;
-				int uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)face.getTextureU( 1 ) / textureWidth , (double)face.getTextureV( 1 ) / textureHeight , 0.0 ) ) : -1;
+				int uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)face.getTextureU( 1 ) , (double)face.getTextureV( 1 ) , 0.0 ) ) : -1;
 
 				for ( int j = 2 ; j < faceVertexCount ; j++ )
 				{
@@ -405,7 +395,7 @@ public final class AbToPovConverter
 
 					v3  = vertexIndices[ j ];
 					vn3 = smooth ? v3 : 0;
-					uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)face.getTextureU( j ) / textureWidth , (double)face.getTextureV( j ) / textureHeight , 0.0 ) ) : -1;
+					uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)face.getTextureU( j ) , (double)face.getTextureV( j ) , 0.0 ) ) : -1;
 
 					result.addTriangle( v1 , uv1 , vn1 , v2 , uv2 , vn2 , v3 , uv3 , vn3 , textureIndex );
 				}
@@ -427,14 +417,14 @@ public final class AbToPovConverter
 	{
 		final PovGeometry result;
 
-		if ( ( sphere.dx != sphere.dy ) || ( sphere.dy != sphere.dz ) || containsMultipleTexturesOrMapping( sphere ) )
+		if ( ( sphere.dx != sphere.dy ) || ( sphere.dy != sphere.dz ) || containsMultipleMaterialsOrMaps( sphere ) )
 		{
 			result = convertObject3D( transform , sphere );
 		}
 		else
 		{
 			final Face3D     face    = sphere.getFace( 0 );
-			final PovTexture texture = convertTexture( face.getTexture() );
+			final PovTexture texture = convertMaterialToPovTexture( face.getMaterial() );
 
 			result = new PovSphere( ( sphere.getTag() != null ) ? String.valueOf( sphere.getTag() ) : null , Vector3D.INIT , sphere.dx / 2.0 , texture );
 			result.setTransform( new PovMatrix( sphere.xform.multiply( transform ) ) );
@@ -443,19 +433,19 @@ public final class AbToPovConverter
 	}
 
 	/**
-	 * Convert a {@link TextureSpec} to a {@link PovTexture} object.
+	 * Convert a {@link Material} to a {@link PovTexture} object.
 	 *
-	 * @param   texture     The {@link TextureSpec} object to convert.
+	 * @param   material    The {@link Material} object to convert.
 	 *
 	 * @return  The resulting {@link PovTexture}.
 	 */
-	private PovTexture convertTexture( final TextureSpec texture )
+	private PovTexture convertMaterialToPovTexture( final Material material )
 	{
 		PovTexture result;
 
-		if ( texture != null )
+		if ( material != null )
 		{
-			final PovTexture newTexture = new PovTexture( _textureDirectory , texture );
+			final PovTexture newTexture = new PovTexture( _imageMapDirectory , material );
 			final String textureName = newTexture.getName();
 
 			result = _scene.getTexture( textureName );

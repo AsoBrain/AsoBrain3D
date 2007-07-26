@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2006
+ * (C) Copyright Numdata BV 2006-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,8 +30,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import ab.j3d.Bounds3D;
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.control.FromToCameraControl;
 import ab.j3d.model.Object3D;
@@ -59,13 +59,13 @@ public class ObjLoaderApp
 	{
 		try
 		{
-			final Map textureMap = new HashMap();
+			final Map<String,Material> materials = new HashMap();
 
-//		textureMap.put(  "casing_black"  , new TextureSpec( 0xFF000000 ) );
-//		textureMap.put(  "key_blue"      , new TextureSpec( 0xFF8080FF ) );
-//		textureMap.put(  "keys_auv"      , new TextureSpec( 0xFF808080 ) );
-//		textureMap.put(  "paint"         , new TextureSpec( 0xFFFF0000 ) );
-//		textureMap.put(  "wrought"       , new TextureSpec( 0xFFC0C0D0 ) );
+//		materials.put(  "casing_black"  , new Material( 0xFF000000 ) );
+//		materials.put(  "key_blue"      , new Material( 0xFF8080FF ) );
+//		materials.put(  "keys_auv"      , new Material( 0xFF808080 ) );
+//		materials.put(  "paint"         , new Material( 0xFFFF0000 ) );
+//		materials.put(  "wrought"       , new Material( 0xFFC0C0D0 ) );
 
 
 // lava lamp
@@ -82,7 +82,7 @@ public class ObjLoaderApp
 //			final double   unit      = Java3dModel.M / 2.0;
 //			final Matrix3D transform = Matrix3D.INIT.rotateX( Math.toRadians( 90.0 ) );
 //			final String   path      = "/numdata/3d/obj-from-web/chair1.obj";
-//			textureMap.put(  "fabric"        , new TextureSpec( 0xFF0000FF ) );
+//			materials.put(  "fabric"        , new Material( 0xFF0000FF ) );
 
 // T computer desk (wood panels + metal frame)
 //			final double   unit      = Java3dModel.M;
@@ -103,9 +103,9 @@ public class ObjLoaderApp
 //			final double   unit      = Java3dModel.CM;
 //			final Matrix3D transform = Matrix3D.INIT.rotateX( Math.toRadians( 90.0 ) );
 //			final String   path      = "/numdata/3d/obj-from-web/turbosquid/7chair.obj";
-//			textureMap.put(  "cap"           , new TextureSpec( 0xFF101010 ) );
-//			textureMap.put(  "leg"           , new TextureSpec( 0xFFE0E0F0 ) );
-//			textureMap.put(  "sheet"         , new TextureSpec( 0xFFE0C060 ) );
+//			materials.put(  "cap"           , new Material( 0xFF101010 ) );
+//			materials.put(  "leg"           , new Material( 0xFFE0E0F0 ) );
+//			materials.put(  "sheet"         , new Material( 0xFFE0C060 ) );
 
 // overly detailed toilet
 //			final double   unit      = Java3dModel.M / 10.0;
@@ -121,85 +121,85 @@ public class ObjLoaderApp
 //			final double   unit      = Java3dModel.M;
 //			final Matrix3D transform = Matrix3D.INIT.rotateX( Math.toRadians( 90.0 ) );
 //			final String   path      = "/numdata/3d/obj-from-web/lynnart.net/bed.obj";
-//			textureMap.put(  "wood_dark" , new TextureSpec( 0xFF502810 ) );
-//			textureMap.put(  "sheet"     , new TextureSpec( 0xFFA0C0A0 ) );
+//			materials.put(  "wood_dark" , new Material( 0xFF502810 ) );
+//			materials.put(  "sheet"     , new Material( 0xFFA0C0A0 ) );
 
 // T coffee table (wood + glass)
 //			final double   unit      = Java3dModel.M / 10.0;
 //			final Matrix3D transform = Matrix3D.INIT.rotateX( Math.toRadians( 90.0 ) );
 //			final String   path      = "/numdata/3d/obj-from-web/lynnart.net/coffeetable.obj";
-//			textureMap.put(  "wood_1" , new TextureSpec( 0xFF603820 ) );
-//			textureMap.put(  "wood_2" , new TextureSpec( 0xFF603820 ) );
-//			textureMap.put(  "wood_3" , new TextureSpec( 0xFF603820 ) );
-//			textureMap.put(  "wood_4" , new TextureSpec( 0xFF603820 ) );
-//			textureMap.put(  "glass2" , new TextureSpec( 0x20101814 ) );
+//			materials.put(  "wood_1" , new Material( 0xFF603820 ) );
+//			materials.put(  "wood_2" , new Material( 0xFF603820 ) );
+//			materials.put(  "wood_3" , new Material( 0xFF603820 ) );
+//			materials.put(  "wood_4" , new Material( 0xFF603820 ) );
+//			materials.put(  "glass2" , new Material( 0x20101814 ) );
 
 // T dining room chair
 //			final double   unit      = Java3dModel.M;
 //			final Matrix3D transform = Matrix3D.INIT.rotateX( Math.toRadians( 90.0 ) );
 //			final String   path      = "/numdata/3d/obj-from-web/lynnart.net/chair2.obj";
-//			textureMap.put(  "surf1" , new TextureSpec( 0xFF603820 ) ); // main
-//			textureMap.put(  "surf2" , new TextureSpec( 0xFF502810 ) ); // bottom side
+//			materials.put(  "surf1" , new Material( 0xFF603820 ) ); // main
+//			materials.put(  "surf2" , new Material( 0xFF502810 ) ); // bottom side
 
 // T love seat (modern, lush purple)
 //			final double   unit      = Java3dModel.M;
 //			final Matrix3D transform = Matrix3D.INIT.rotateX( Math.toRadians( 90.0 ) );
 //			final String   path      = "/numdata/3d/obj-from-web/lynnart.net/loveseat.obj";
-//			textureMap.put(  "fabric" , new TextureSpec( 0xFF4000FF ) );
+//			materials.put(  "fabric" , new Material( 0xFF4000FF ) );
 
 // T office chair
 //			final double   unit      = Java3dModel.CM;
 //			final Matrix3D transform = Matrix3D.INIT.rotateX( Math.toRadians( 90.0 ) );
 //			final String   path      = "/numdata/3d/obj-from-web/lynnart.net/office_chair.obj";
-//			textureMap.put(  "surf1" , new TextureSpec( 0xFFC0C8C4 ) ); // stand
-//			textureMap.put(  "surf2" , new TextureSpec( 0xFF7BA598 ) ); // fabric
-//			textureMap.put(  "surf3" , new TextureSpec( 0xFF303020 ) ); // bottom surface
+//			materials.put(  "surf1" , new Material( 0xFFC0C8C4 ) ); // stand
+//			materials.put(  "surf2" , new Material( 0xFF7BA598 ) ); // fabric
+//			materials.put(  "surf3" , new Material( 0xFF303020 ) ); // bottom surface
 
 // T piano chair
 //			final double   unit      = Java3dModel.M / 10.0;
 //			final Matrix3D transform = Matrix3D.INIT.rotateX( Math.toRadians( 90.0 ) );
 //			final String   path      = "/numdata/3d/obj-from-web/lynnart.net/piano_chair.obj";
-//			textureMap.put(  "fabric" , new TextureSpec( 0xFFD8D0C0 ) );
+//			materials.put(  "fabric" , new Material( 0xFFD8D0C0 ) );
 
 // T table
 //			final double   unit      = Java3dModel.M;
 //			final Matrix3D transform = Matrix3D.INIT.rotateX( Math.toRadians( 90.0 ) );
 //			final String   path      = "/numdata/3d/obj-from-web/lynnart.net/table.obj";
-//			textureMap.put( "default" , new TextureSpec( 0xFF603820 ) );
+//			materials.put( "default" , new Material( 0xFF603820 ) );
 
 // ax
 //			final double   unit      = Java3dModel.M;
 //			final Matrix3D transform = Matrix3D.INIT.rotateX( Math.toRadians( 90.0 ) );
 //			final String   path      = "/numdata/3d/obj-from-web/lynnart.net/ax.obj";
-//			textureMap.put(  "steel" , new TextureSpec( 0xFFC0C0A8 ) );
-//			textureMap.put(  "wood"  , new TextureSpec( 0xFF502810 ) );
+//			materials.put(  "steel" , new Material( 0xFFC0C0A8 ) );
+//			materials.put(  "wood"  , new Material( 0xFF502810 ) );
 
 // grand piano
 			final double   unit      = Java3dModel.M;
 			final Matrix3D transform = Matrix3D.INIT.rotateX( Math.toRadians( 90.0 ) );
 			final String   path      = "/numdata/3d/obj-from-web/lynnart.net/grand_piano.obj";
-			textureMap.put(  "strings"      , new TextureSpec( 0xFFA0A0A8 ) );
-			textureMap.put(  "blackkeys"    , new TextureSpec( 0xFF101010 ) );
-			textureMap.put(  "whitekeys"    , new TextureSpec( 0xFFF0E8E0 ) );
-			textureMap.put(  "piano_case_1" , new TextureSpec( 0xFF101010 ) );
-			textureMap.put(  "piano_case_2" , new TextureSpec( 0xFF101010 ) );
-			textureMap.put(  "piano_case3"  , new TextureSpec( 0xFF101010 ) );
-			textureMap.put(  "piano_wheels" , new TextureSpec( 0xFF202020 ) );
-			textureMap.put(  "piano_harp"   , new TextureSpec( 0xFF202010 ) );
-			textureMap.put(  "piano_metal"  , new TextureSpec( 0xFF282810 ) );
-			textureMap.put(  "wood"         , new TextureSpec( 0xFF502810 ) );
+			materials.put(  "strings"      , new Material( 0xFFA0A0A8 ) );
+			materials.put(  "blackkeys"    , new Material( 0xFF101010 ) );
+			materials.put(  "whitekeys"    , new Material( 0xFFF0E8E0 ) );
+			materials.put(  "piano_case_1" , new Material( 0xFF101010 ) );
+			materials.put(  "piano_case_2" , new Material( 0xFF101010 ) );
+			materials.put(  "piano_case3"  , new Material( 0xFF101010 ) );
+			materials.put(  "piano_wheels" , new Material( 0xFF202020 ) );
+			materials.put(  "piano_harp"   , new Material( 0xFF202010 ) );
+			materials.put(  "piano_metal"  , new Material( 0xFF282810 ) );
+			materials.put(  "wood"         , new Material( 0xFF502810 ) );
 
 			final FileReader fr = new FileReader( path );
 			try
 			{
-				final Object3D object3d = ObjLoader.load( transform , textureMap , new BufferedReader( fr ) );
+				final Object3D object3d = ObjLoader.load( transform , materials , new BufferedReader( fr ) );
 				final Bounds3D bounds   = object3d.getBounds( null , null );
 				final Vector3D size     = bounds.size();
 				final double   toCM     = 100.0 * unit;
 
 				System.out.println( "object size = " + Math.round( toCM * size.x ) + " x " + Math.round( toCM * size.y ) + " x " + Math.round( toCM * size.z ) + " cm" );
 
-				final ViewModel viewModel = new Java3dModel( unit , Color.white ); // new Color( 51 , 77 , 102 ) );
+				final ViewModel viewModel = new Java3dModel( unit , Color.WHITE ); // new Color( 51 , 77 , 102 ) );
 				ViewModelTools.addLegacyLights( viewModel );
 				viewModel.createNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d , null , 1.0f );
 

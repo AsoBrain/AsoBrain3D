@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2007 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,22 +21,22 @@
 package ab.j3d;
 
 /**
- * This interface is used to retrieve textures from a library. A typical
- * implementation of this interface would generate the texture data or retrieve
+ * This interface is used to retrieve materials from a library. A typical
+ * implementation of this interface would generate the material data or retrieve
  * it from some data source (a database for example).
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public interface TextureLibrary
+public interface MaterialLibrary
 {
 	/**
-	 * Get texture specifications from the library for the specified code.
+	 * Get material from the library for the specified code.
 	 *
-	 * @param   code    Texture code.
+	 * @param   code    Material code.
 	 *
-	 * @return  TextureSpec instance;
-	 *          <code>null</code> if an error occured (unknown texture).
+	 * @return  Material instance;
+	 *          <code>null</code> if an error occured (unknown material).
 	 */
-	TextureSpec getTextureSpec( String code );
+	Material getMaterial( String code );
 }

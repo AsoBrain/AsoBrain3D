@@ -19,6 +19,7 @@
  */
 package ab.j3d.view.jpct;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -27,11 +28,11 @@ import com.threed.jpct.Matrix;
 import com.threed.jpct.Object3D;
 import com.threed.jpct.SimpleVector;
 import com.threed.jpct.Texture;
-import com.threed.jpct.TextureInfo;
 import com.threed.jpct.TextureManager;
 
+import ab.j3d.MapTools;
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Node3DCollection;
 
@@ -81,28 +82,18 @@ public class JPCTTools
 			}
 		}
 
-		final TextureManager textureManager = TextureManager.getInstance();
-
 		final Object3D result = new Object3D( maxTriangles );
 		result.setShadingMode( Object3D.SHADING_FAKED_FLAT );
 		for ( int i = 0 ; i < nodes.size() ; i++ )
 		{
-			final ab.j3d.model.Object3D node      = (ab.j3d.model.Object3D)nodes.getNode( i );
-			final int                   faceCount = node.getFaceCount();
+			final ab.j3d.model.Object3D node              = (ab.j3d.model.Object3D)nodes.getNode( i );
+			final double[]              vertexCoordinates = node.getVertexCoordinates();
+			final int                   faceCount         = node.getFaceCount();
 
 			for ( int j = 0 ; j < faceCount ; j++ )
 			{
 				final Face3D      face        = node.getFace( j );
 				final int         vertexCount = face.getVertexCount();
-				final TextureSpec textureSpec = face.getTexture();
-				final TextureInfo texture     = convert2TextureInfo( textureSpec );
-				final int         textureID   = textureManager.getTextureID( textureSpec.code );
-
-				final Image textureImage  = textureSpec.getTextureImage();
-				final boolean isTexture = textureSpec.isTexture() && ( textureImage != null );
-
-				final float textureWidth  = isTexture ? (float)textureImage.getWidth( null )  : 0.0f;
-				final float textureHeight = isTexture ? (float)textureImage.getHeight( null ) : 0.0f;
 
 				if ( vertexCount < 2 )
 				{
@@ -114,20 +105,38 @@ public class JPCTTools
 				}
 				else
 				{
-					for( int k = 0 ; k + 2 < vertexCount ; k++ )
-					{
-						final SimpleVector vert1 = new SimpleVector( face.getX(     0 ), face.getY(     0 ), face.getZ(     0 ) );
-						final SimpleVector vert2 = new SimpleVector( face.getX( k + 1 ), face.getY( k + 1 ), face.getZ( k + 1 ) );
-						final SimpleVector vert3 = new SimpleVector( face.getX( k + 2 ), face.getY( k + 2 ), face.getZ( k + 2 ) );
+					final int[] vertexIndices = face.getVertexIndices();
+					final int   texture       = getTextureID( face.getMaterial() );
 
-						if ( isTexture )
-						{
-							result.addTriangle( vert3 , (float)face.getTextureU( k + 2 ) / textureWidth , (float)face.getTextureV( k + 2 ) / textureHeight , vert2 , (float)face.getTextureU( k + 1 ) / textureWidth , (float)face.getTextureV( k + 1 ) / textureHeight , vert1 , (float)face.getTextureU( 0 ) / textureWidth , (float)face.getTextureV( 0 ) / textureHeight , textureID );
-						}
-						else
-						{
-							result.addTriangle( vert3 , vert2 , vert1 , texture );
-						}
+					int vi = vertexIndices[ 0 ] * 3;
+
+					final SimpleVector p0 = new SimpleVector( vertexCoordinates[ vi ] , vertexCoordinates[ vi + 1 ] , vertexCoordinates[ vi + 2 ] );
+					final float        u0 = face.getTextureU( 0 );
+					final float        v0 = face.getTextureV( 0 );
+
+					vi = vertexIndices[ 1 ] * 3;
+
+					final SimpleVector p1 = new SimpleVector( vertexCoordinates[ vi ] , vertexCoordinates[ vi + 1 ] , vertexCoordinates[ vi + 2 ] );
+					float u1 = face.getTextureU( 1 );
+					float v1 = face.getTextureV( 1 );
+
+					final SimpleVector p2 = new SimpleVector();
+
+					for( int k = 2 ; k < vertexCount ; k++ )
+					{
+						vi = vertexIndices[ k ] * 3;
+
+						p2.x = (float)vertexCoordinates[ vi     ];
+						p2.y = (float)vertexCoordinates[ vi + 1 ];
+						p2.z = (float)vertexCoordinates[ vi + 2 ];
+						final float u2 = face.getTextureU( k );
+						final float v2 = face.getTextureV( k );
+
+						result.addTriangle( p2 , u2 , v2 , p1 , u1 , v1 , p0 , u0 , v0 , texture );
+
+						p1.set( p2 );
+						u1 = u2;
+						v1 = v2;
 					}
 				}
 			}
@@ -137,38 +146,54 @@ public class JPCTTools
 	}
 
 	/**
-	 * Converts a {@link TextureSpec} to jPCT {@link TextureInfo}.
+	 * Converts a {@link Material} to jPCT texture and return its ID.
 	 *
-	 * @param   textureSpec     Texture specification to be converted.
+	 * @param   material    Material specification to be converted.
 	 *
-	 * @return  Result of the conversion.
+	 * @return  Texture ID.
 	 */
-	public static TextureInfo convert2TextureInfo( final TextureSpec textureSpec )
+	public static int getTextureID( final Material material )
 	{
-		final String textureCode = textureSpec.code;
-
 		final TextureManager textureManager = TextureManager.getInstance();
 
-		if ( !textureManager.containsTexture( textureCode ) )
+		int result = -1;
+
+		final String colorMap = material.colorMap;
+		if ( colorMap != null )
 		{
-			if ( textureSpec.isTexture() )
+			result = textureManager.getTextureID( colorMap );
+			if ( result < 0 )
 			{
-				final Image image = textureSpec.getTextureImage();
-				textureManager.addTexture( textureCode , new Texture( image ) );
+				final Image colorMapImage = MapTools.getImage( colorMap );
+				if ( colorMapImage != null )
+				{
+					textureManager.addTexture( colorMap , new Texture( colorMapImage ) );
+					result = textureManager.getTextureID( colorMap );
+				}
 			}
-			else
+		}
+
+		if ( result < 0 )
+		{
+			final int    argb       = material.getARGB();
+			final String argbString = String.valueOf( argb );
+
+			result = textureManager.getTextureID( argbString );
+			if ( result < 0 )
 			{
 				final int size = 8; // smaller sizes are not supported
 				final BufferedImage image = new BufferedImage( size , size , BufferedImage.TYPE_INT_ARGB ); // @TODO CHECK IF REALLY ARGB!
 				final Graphics g = image.getGraphics();
-				g.setColor( textureSpec.getColor() );
+				g.setColor( new Color( argb ) );
 				g.fillRect( 0 , 0 , size , size );
 				g.dispose();
-				textureManager.addTexture( textureCode , new Texture( image , true ) );
+
+				textureManager.addTexture( argbString , new Texture( image , true ) );
+				result = textureManager.getTextureID( argbString );
 			}
 		}
 
-		return new TextureInfo( textureManager.getTextureID( textureCode ) );
+		return result;
 	}
 
 	/**

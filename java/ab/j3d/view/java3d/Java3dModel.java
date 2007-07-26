@@ -31,8 +31,8 @@ import javax.media.j3d.TransformGroup;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
@@ -150,17 +150,17 @@ public final class Java3dModel
 
 	protected void updateNodeContent( final ViewModelNode node )
 	{
-		final Object         id              = node.getID();
-		final TransformGroup nodeTransform   = getJava3dTransform( id );
-		final Matrix3D       transform       = node.getTransform();
-		final Node3D         node3D          = node.getNode3D();
-		final TextureSpec    textureOverride = node.getTextureOverride();
-		final float          opacity         = node.getOpacity();
+		final Object         id               = node.getID();
+		final TransformGroup nodeTransform    = getJava3dTransform( id );
+		final Matrix3D       transform        = node.getTransform();
+		final Node3D         node3D           = node.getNode3D();
+		final Material       materialOverride = node.getMaterialOverride();
+		final float          opacity          = node.getOpacity();
 
 		final Node3DCollection nodes = new Node3DCollection();
 		node3D.gatherLeafs( nodes , Object3D.class , Matrix3D.INIT , false );
 
-		final BranchGroup bg = Shape3DBuilder.createBranchGroup( nodes , textureOverride , opacity );
+		final BranchGroup bg = Shape3DBuilder.createBranchGroup( nodes , materialOverride , opacity );
 
 		nodes.clear();
 		node3D.gatherLeafs( nodes , Light3D.class , Matrix3D.INIT , false );

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2005
+ * (C) Copyright Numdata BV 2004-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,8 +19,8 @@
  */
 package ab.j3d.view;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 import ab.j3d.model.Node3D;
 
 /**
@@ -49,9 +49,9 @@ public final class ViewModelNode
 	private Node3D _node3D;
 
 	/**
-	 * Texture to use instead of actual textures.
+	 * Material to use instead of actual materials.
 	 */
-	protected TextureSpec _textureOverride;
+	protected Material _materialOverride;
 
 	/**
 	 * Extra opacity (0.0=translucent, 1.0=opaque/unchanged).
@@ -59,21 +59,21 @@ public final class ViewModelNode
 	protected float _opacity;
 
 	/**
-	 * Construct new view model node. The <code>textureOverride</code> and
+	 * Construct new view model node. The <code>materialOverride</code> and
 	 * <code>opacity</code> values can be used to provide extra hints for
 	 * rendering objects.
 	 *
 	 * @param   id                  Application-assigned ID of this node.
 	 * @param   transform           Initial transform (<code>null</code> => identity).
 	 * @param   node3D              Root in the 3D scene.
-	 * @param   textureOverride     Texture to use instead of actual textures.
+	 * @param   materialOverride    Material to use instead of actual materials.
 	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).
 	 */
-	public ViewModelNode( final Object id , final Matrix3D transform , final Node3D node3D , final TextureSpec textureOverride , final float opacity )
+	public ViewModelNode( final Object id , final Matrix3D transform , final Node3D node3D , final Material materialOverride , final float opacity )
 	{
 		_id              = id;
 		_node3D          = node3D;
-		_textureOverride = textureOverride;
+		_materialOverride = materialOverride;
 		_opacity         = opacity;
 		_transform       = ( transform != null ) ? transform : Matrix3D.INIT;
 	}
@@ -132,25 +132,25 @@ public final class ViewModelNode
 	}
 
 	/**
-	 * Get texture to override actual textures.
+	 * Get material to override actual materials.
 	 *
-	 * @return  Texture to use instead of actual textures;
-	 *          <code>null</code> to use only actual textures.
+	 * @return  Material to use instead of actual materials;
+	 *          <code>null</code> to use only actual materials.
 	 */
-	public TextureSpec getTextureOverride()
+	public Material getMaterialOverride()
 	{
-		return _textureOverride;
+		return _materialOverride;
 	}
 
 	/**
-	 * Set texture to override actual textures.
+	 * Set material to override actual materials.
 	 *
-	 * @param   texture     Texture to use instead of actual textures;
-	 *                      <code>null</code> to use only actual textures.
+	 * @param   material    Material to use instead of actual materials;
+	 *                      <code>null</code> to use only actual materials.
 	 */
-	public void setTextureOverride( final TextureSpec texture )
+	public void setMaterialOverride( final Material material )
 	{
-		_textureOverride = texture;
+		_materialOverride = material;
 	}
 
 	/**

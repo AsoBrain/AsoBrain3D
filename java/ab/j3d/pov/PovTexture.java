@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2006
+ * (C) Copyright Numdata BV 2000-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,9 +22,10 @@ package ab.j3d.pov;
 import java.awt.Color;
 import java.io.IOException;
 
-import ab.j3d.TextureSpec;
+import ab.j3d.Material;
 
 import com.numdata.oss.io.IndentingWriter;
+import com.numdata.oss.TextTools;
 
 /**
  * Pov Texture / material definition.
@@ -317,49 +318,64 @@ public class PovTexture
 	}
 
 	/**
-	 * Create a new {@link PovTexture} based on the given {@link TextureSpec}
+	 * Create a new {@link PovTexture} based on the given {@link Material}
 	 * object.
 	 *
 	 * @param   textureDirectory    Directory containing POV-textures.
-	 * @param   texture             {@link TextureSpec} object to be used to
+	 * @param   material            {@link Material} object to be used to
 	 *                              construct the {@link PovTexture}.
-
 	 */
-	public PovTexture( final String textureDirectory , final TextureSpec texture )
+	public PovTexture( final String textureDirectory , final Material material )
 	{
-		this( null , null , null , null );
+		this( getNameForMaterial( material ) ,
+		      ( material.colorMap == null ) ? new PovVector( new Color( material.getARGB() ) ) : null , null ,
+		      ( material.colorMap != null ) ? ( textureDirectory != null ) ? textureDirectory + material.colorMap : material.colorMap : null );
 
-		if ( texture.isTexture() )
-		{
-			_rgb  = null;
-			_map  = ( textureDirectory != null ) ? textureDirectory + texture.code : texture.code;
-			_name = texture.code;
-		}
-		else
-		{
-			final Color color = texture.getColor();
-
-			_rgb  = new PovVector( color );
-			_map  = null;
-			_name = "RGB_" + color.getRed() + '_' + color.getGreen() + '_' + color.getBlue();
-		}
-
-		_filter   = 1.0 - (double)texture.opacity;
-		_ambient  =       (double)texture.ambientReflectivity;
-		_diffuse  = 1.5 * (double)texture.diffuseReflectivity;
-		_specular = 0.6 * (double)texture.specularReflectivity;
+		_filter   = 1.0 - (double)material.diffuseColorAlpha;
+		_ambient  = material.getAmbientReflectivity();
+		_diffuse  = material.getDiffuseReflectivity();
+		_specular = material.getSpecularReflectivity();
 	}
 
 	/**
-	 * Returns the name of the texture with specified rotation if it where
+	 * Get name to give to a texture for the specified material.
+	 *
+	 * @param   material    Material to get name for.
+	 *
+	 * @return  Name for material.
+	 */
+	public static String getNameForMaterial( final Material material )
+	{
+		final String result;
+
+		if ( material.code != null )
+		{
+			result = material.code;
+		}
+		else if ( material.colorMap != null )
+		{
+			result = material.colorMap;
+		}
+		else
+		{
+			result = "RGB_" + TextTools.toHexString( material.getARGB() , 6 , true );
+		}
+
+		return result;
+	}
+
+	/**
+	 * Returns the name of the texture with specified rotation if it is
 	 * referenced.
 	 *
 	 * @param   parentCode  Name of the texture to reference.
 	 * @param   rotation    Rotation of the texture when referencing.
+	 *
+	 * @return  Name of texture with specified rotation if it is referenced.
 	 */
 	public static String getReferenceCode( final String parentCode , final PovVector rotation )
 	{
-		final StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 		sb.append( parentCode );
 
 		if ( rotation == null )

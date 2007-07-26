@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2006
+ * (C) Copyright Numdata BV 2006-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,8 +29,8 @@ import junit.framework.TestCase;
 import com.numdata.oss.event.EventDispatcher;
 import com.numdata.oss.event.EventFilter;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
@@ -68,8 +68,8 @@ public class TestComponentControlInput
 		final Vector3D rb = Vector3D.INIT.set(  halfSize ,  halfSize , 0.0 );
 		final Vector3D lb = Vector3D.INIT.set( -halfSize ,  halfSize , 0.0 );
 
-		final TextureSpec red   = new TextureSpec( Color.red   );
-		final TextureSpec green = new TextureSpec( Color.green );
+		final Material red   = new Material( Color.RED  .getRGB() );
+		final Material green = new Material( Color.GREEN.getRGB() );
 
 		final Object3D result = new Object3D();
 		result.setTag( tag );

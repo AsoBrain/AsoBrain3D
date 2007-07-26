@@ -20,10 +20,8 @@
  */
 package ab.j3d.model;
 
-import java.awt.Image;
-
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 
 /**
  * This class defines a 3D sphere.
@@ -63,17 +61,17 @@ public final class Sphere3D
 	 * @param   dz          Depth of sphere (z-axis).
 	 * @param   p           Number of faces around Y-axis to approximate the sphere.
 	 * @param   q           Number of faces around X/Z-axis to approximate the sphere.
-	 * @param   texture     Texture of sphere.
+	 * @param   material    Material of sphere.
 	 * @param   smooth      Smooth surface.
 	 */
-	public Sphere3D( final Matrix3D xform , final double dx , final double dy , final double dz , final int p , final int q , final TextureSpec texture , final boolean smooth )
+	public Sphere3D( final Matrix3D xform , final double dx , final double dy , final double dz , final int p , final int q , final Material material , final boolean smooth )
 	{
 		this.xform =  xform;
 		this.dx    = dx;
 		this.dy    = dy;
 		this.dz    = dz;
 
-		generate( p , q , ( texture == null ) ? new TextureSpec() : texture , smooth );
+		generate( p , q , ( material == null ) ? new Material() : material , smooth );
 	}
 
 	/**
@@ -94,10 +92,10 @@ public final class Sphere3D
 	 *
 	 * @param   p           Number of faces around Y-axis to approximate the sphere.
 	 * @param   q           Number of faces around X/Z-axis to approximate the sphere.
-	 * @param   texture     Texture of sphere.
+	 * @param   material    Material of sphere.
 	 * @param   smooth      Smooth surface.
 	 */
-	public void generate( final int p , final int q , final TextureSpec texture , final boolean smooth )
+	public void generate( final int p , final int q , final Material material , final boolean smooth )
 	{
 		final int      vertexCount       = p * ( q - 1 ) + 2;
 		final double[] vertexCoordinates = new double[ vertexCount * 3 ];
@@ -137,28 +135,13 @@ public final class Sphere3D
 		setVertexCoordinates( xform.transform( vertexCoordinates , vertexCoordinates , vertexCount ) );
 
 		/*
-		 * Define faces (new style)
+		 * Define faces
 		 */
 		final int lastQ = q - 1;
 		final int lastV = vertexCount - 1;
 
-		final int maxU;
-		final int maxV;
-
-		final boolean isTexture    = texture.isTexture();
-		final Image   textureImage = texture.getTextureImage();
-		if ( isTexture && ( textureImage != null ) )
-		{
-			final int width = textureImage.getWidth( null );
-			final int height = textureImage.getHeight( null );
-			maxU = ( width  == -1 ) ? 256 : width;
-			maxV = ( height == -1 ) ? 256 : height;
-		}
-		else
-		{
-			maxU = -1;
-			maxV = -1;
-		}
+		final float scaleU = 1.0f / (float)p;
+		final float scaleV = 1.0f / (float)q;
 
 		for ( int qc = 0 ; qc < q ; qc++ )
 		{
@@ -169,31 +152,37 @@ public final class Sphere3D
 				final int p3 =   qc       * p +     pc             + 1;
 				final int p4 =   qc       * p + ( ( pc + 1 ) % p ) + 1;
 
-				final int[] vertexIndices = ( qc == 0     ) ? new int[] { 0 , p3 , p4 }
-				                          : ( qc == lastQ ) ? new int[] { p2 , p1 , lastV }
-				                          :                   new int[] { p2 , p1 , p3 , p4 };
+				final float uLeft   = (float)pc         * scaleU;
+				final float uRight  = (float)( pc + 1 ) * scaleU;
+				final float uCenter = ( uLeft + uRight )  * 0.5f;
 
-				if ( isTexture )
+				final float vBottom = (float)( q -   qc       ) * scaleV;
+				final float vTop    = (float)( q - ( qc + 1 ) ) * scaleV;
+
+				final int[]   vertexIndices;
+				final float[] textureU;
+				final float[] textureV;
+
+				if ( qc == 0 )
 				{
-					final int left   = pc         * maxU / p;
-					final int right  = ( pc + 1 ) * maxU / p;
-					final int center = ( left + right )  / 2;
-					final int[] textureU = ( qc == 0     ) ? new int[] { center , left , right }
-										 : ( qc == lastQ ) ? new int[] { right , left , center }
-										 :                   new int[] { right , left , left , right };
-
-					final int bottom = ( q - qc ) * maxV / q;
-					final int top    = ( q - ( qc + 1 ) ) * maxV / q;
-					final int[] textureV = ( qc == 0     ) ? new int[] { bottom , top , top }
-										 : ( qc == lastQ ) ? new int[] { bottom , bottom , top }
-										 :                   new int[] { bottom , bottom , top , top };
-
-					addFace( vertexIndices , texture , textureU , textureV , 1.0f , smooth , false );
+					vertexIndices = new int[]   {     0             , p3    , p4     };
+				    textureU      = new float[] {     uCenter       , uLeft , uRight };
+					textureV      = new float[] {     vBottom       , vTop  , vTop   };
 				}
-				else
+				else if ( qc < lastQ )
 				{
-					addFace( vertexIndices , texture , smooth );
+					vertexIndices = new int[]   { p2      , p1      , p3    , p4     };
+					textureU      = new float[] { uRight  , uLeft   , uLeft , uRight };
+					textureV      = new float[] { vBottom , vBottom , vTop  , vTop   };
 				}
+				else // qc == lastQ
+				{
+					vertexIndices = new int[]   { p2      , p1      ,     lastV      };
+					textureU      = new float[] { uRight  , uLeft   ,     uCenter    };
+					textureV      = new float[] { vBottom , vBottom ,     vTop       };
+				}
+
+				addFace( vertexIndices , material , textureU , textureV , 1.0f , smooth , false );
 			}
 		}
 	}

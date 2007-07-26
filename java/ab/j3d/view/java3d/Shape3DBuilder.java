@@ -31,8 +31,9 @@ import javax.vecmath.Point3d;
 import javax.vecmath.TexCoord2f;
 import javax.vecmath.Vector3f;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
+import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
@@ -79,12 +80,12 @@ public class Shape3DBuilder
 	 * {@link Node3DCollection} using this builder.
 	 *
 	 * @param   nodes               Collection of nodes to create the branch group from.
-	 * @param   textureOverride     Texture to use instead of actual object texture.
+	 * @param   materialOverride    Material to use instead of actual object material.
 	 * @param   extraOpacity        Extra object opacity (0.0=translucent, 1.0=opaque).
 	 *
 	 * @return  {@link BranchGroup} containing the created content graph.
 	 */
-	public static BranchGroup createBranchGroup( final Node3DCollection nodes , final TextureSpec textureOverride , final float extraOpacity )
+	public static BranchGroup createBranchGroup( final Node3DCollection nodes , final Material materialOverride , final float extraOpacity )
 	{
 		final Shape3DBuilder shapeBuilder = new Shape3DBuilder();
 
@@ -94,7 +95,7 @@ public class Shape3DBuilder
 			final int      faceCount = object3d.getFaceCount();
 
 			for ( int j = 0 ; j < faceCount ; j++ )
-				shapeBuilder.prepareFace( object3d.getFace( j ) , textureOverride , extraOpacity );
+				shapeBuilder.prepareFace( object3d.getFace( j ) , materialOverride , extraOpacity );
 		}
 
 		for ( int i = 0 ; i < nodes.size() ; i++ )
@@ -104,7 +105,7 @@ public class Shape3DBuilder
 			final int      faceCount = object3d.getFaceCount();
 
 			for ( int j = 0 ; j < faceCount ; j++ )
-				shapeBuilder.addFace( xform , object3d.getFace( j ) , textureOverride , extraOpacity );
+				shapeBuilder.addFace( xform , object3d.getFace( j ) , materialOverride , extraOpacity );
 		}
 
 		final BranchGroup result = new BranchGroup();
@@ -120,22 +121,22 @@ public class Shape3DBuilder
 	 *
 	 * @param   xform               Transform to apply to vertices.
 	 * @param   object3d            Object3D to convert.
-	 * @param   textureOverride     Texture to use instead of actual object texture.
+	 * @param   materialOverride    Material to use instead of actual object material.
 	 * @param   extraOpacity        Extra object opacity (0.0=translucent, 1.0=opaque).
 	 *
 	 * @return  {@link BranchGroup} containing the created content graph.
 	 */
-	public static BranchGroup createBranchGroup( final Matrix3D xform , final Object3D object3d , final TextureSpec textureOverride , final float extraOpacity )
+	public static BranchGroup createBranchGroup( final Matrix3D xform , final Object3D object3d , final Material materialOverride , final float extraOpacity )
 	{
 		final Shape3DBuilder shapeBuilder = new Shape3DBuilder();
 
 		final int faceCount = object3d.getFaceCount();
 
 		for ( int j = 0 ; j < faceCount ; j++ )
-			shapeBuilder.prepareFace( object3d.getFace( j ) , textureOverride , extraOpacity );
+			shapeBuilder.prepareFace( object3d.getFace( j ) , materialOverride , extraOpacity );
 
 		for ( int j = 0 ; j < faceCount ; j++ )
-			shapeBuilder.addFace( xform , object3d.getFace( j ) , textureOverride , extraOpacity );
+			shapeBuilder.addFace( xform , object3d.getFace( j ) , materialOverride , extraOpacity );
 
 		final BranchGroup result = new BranchGroup();
 		result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
@@ -145,30 +146,30 @@ public class Shape3DBuilder
 	}
 
 	/**
-	 * Array containing texture groups. A texture group contains shapes that
-	 * share the same texture.
+	 * Array containing appearance groups. A appearance group contains shapes that
+	 * share the same material.
 	 * <p />
 	 * The array length should not be used to determine the number of elements
 	 * contained therein (it is initially <code>null</code> anyway), use the
-	 * {@link #_textureGroupCount} field instead.
+	 * {@link #_appearanceGroupCount} field instead.
 	 */
-	private TextureGroup[] _textureGroups;
+	private AppearanceGroup[] _appearanceGroups;
 
 	/**
-	 * The number of elements stored in {@link #_textureGroups}.
+	 * The number of elements stored in {@link #_appearanceGroups}.
 	 */
-	private int _textureGroupCount;
+	private int _appearanceGroupCount;
 
 	/**
 	 * This is the workhorse of the builder. It contains a set of shapes that
-	 * share the same texture. It translates faces with any number of vertices
+	 * share the same appearance. It translates faces with any number of vertices
 	 * to lines, triangles, and quads as defined by the Java 3D API.
 	 *
 	 * IMPORTANT: This class should be used following a strict recipe:
 	 * <ol>
 	 *   <li>
-	 *     Construct the group with the correct texture
-	 *     ({@link TextureSpec}) and appearance ({@link Appearance}).
+	 *     Construct the group with the correct material
+	 *     ({@link Material}) and appearance ({@link Appearance}).
 	 *   </li>
 	 *   <li>
 	 *     Call the {@link #prepareFace} method for every face that will be
@@ -190,9 +191,9 @@ public class Shape3DBuilder
 	 * Notice that this is probably not worthwhile, since no other data than the
 	 * object itself is reused.
 	 */
-	private static class TextureGroup
+	private static class AppearanceGroup
 	{
-		private TextureSpec   _texture;
+		private Material      _material;
 		private int           _alpha;
 		private boolean       _hasBackface;
 		private Appearance    _appearance;
@@ -204,9 +205,9 @@ public class Shape3DBuilder
 		private QuadArray     _quadArray;
 
 
-		TextureGroup( final TextureSpec texture , final int alpha , final boolean hasBackface , final Appearance appearance )
+		AppearanceGroup( final Material material , final int alpha , final boolean hasBackface , final Appearance appearance )
 		{
-			_texture       = texture;
+			_material      = material;
 			_alpha         = alpha;
 			_hasBackface   = hasBackface;
 			_appearance    = appearance;
@@ -265,17 +266,17 @@ public class Shape3DBuilder
 				}
 				else // vertexCount > 2
 				{
-					final int[]   textureU   = face.getTextureU();
-					final int[]   textureV   = face.getTextureV();
-					final boolean hasTexture = ( _texture == face.getTexture() ) && ( textureU != null ) && ( textureV != null ) && ( appearance.getTexture() != null );
+					final float[] faceU = face.getTextureU();
+					final float[] faceV = face.getTextureV();
+					final boolean hasUV = ( _material == face.getMaterial() ) && ( faceU != null ) && ( faceV != null ) && ( appearance.getTexture() != null );
 
 					final Point3d    vertexCoord0  = getVertexCoordinate( object2view , face , 0 );
 					final Vector3f   vertexNormal0 = getVertexNormal( object2view , face , 0 );
-					final TexCoord2f textureCoord0 = hasTexture ? getTextureCoordinate( textureU , textureV , 0 ) : null;
+					final TexCoord2f textureCoord0 = hasUV ? new TexCoord2f( faceU[ 0 ] , faceV[ 0 ] ) : null;
 
 					Point3d    vertexCoord1  = getVertexCoordinate( object2view , face , 1 );
 					Vector3f   vertexNormal1 = getVertexNormal( object2view , face , 1 );
-					TexCoord2f textureCoord1 = hasTexture ? getTextureCoordinate( textureU , textureV , 1 ) : null;
+					TexCoord2f textureCoord1 = hasUV ? new TexCoord2f( faceU[ 1 ] , faceV[ 1 ] ) : null;
 
 					if ( vertexCount > 3 ) // more than 3 vertices => add quads
 					{
@@ -287,7 +288,7 @@ public class Shape3DBuilder
 							if ( quadCount == 0 )
 								throw new IllegalStateException( "should have called prepareFace()!" );
 
-							quadArray = new QuadArray( 4 * quadCount , QuadArray.COORDINATES | QuadArray.NORMALS | ( hasTexture ? QuadArray.TEXTURE_COORDINATE_2 : 0 ) );
+							quadArray = new QuadArray( 4 * quadCount , QuadArray.COORDINATES | QuadArray.NORMALS | ( hasUV ? QuadArray.TEXTURE_COORDINATE_2 : 0 ) );
 							quadCount = 0;
 						}
 
@@ -296,11 +297,11 @@ public class Shape3DBuilder
 							final int        vertex2       = vertex3 - 1;
 							final Point3d    vertexCoord2  = getVertexCoordinate( object2view , face , vertex2 );
 							final Vector3f   vertexNormal2 = getVertexNormal( object2view , face , vertex2 );
-							final TexCoord2f textureCoord2 = hasTexture ? getTextureCoordinate( textureU , textureV , vertex2 ) : null;
+							final TexCoord2f textureCoord2 = hasUV ? new TexCoord2f( faceU[ vertex2 ] ,  faceV[ vertex2 ] ) : null;
 
 							final Point3d    vertexCoord3  = getVertexCoordinate( object2view , face , vertex3 );
 							final Vector3f   vertexNormal3 = getVertexNormal( object2view , face , vertex3 );
-							final TexCoord2f textureCoord3 = hasTexture ? getTextureCoordinate( textureU , textureV , vertex3 ) : null;
+							final TexCoord2f textureCoord3 = hasUV ? new TexCoord2f( faceU[ vertex3 ] , faceV[ vertex3 ] ) : null;
 
 							final int coordinateIndex = quadCount * 4;
 
@@ -314,7 +315,7 @@ public class Shape3DBuilder
 							quadArray.setNormal( coordinateIndex + 2 , vertexNormal1 );
 							quadArray.setNormal( coordinateIndex + 3 , vertexNormal0 );
 
-							if ( hasTexture )
+							if ( hasUV )
 							{
 								quadArray.setTextureCoordinate( 0 , coordinateIndex     , textureCoord3 );
 								quadArray.setTextureCoordinate( 0 , coordinateIndex + 1 , textureCoord2 );
@@ -343,13 +344,14 @@ public class Shape3DBuilder
 							if ( triangleCount == 0 )
 								throw new IllegalStateException( "should have called prepareFace()!" );
 
-							triangleArray = new TriangleArray( 3 * triangleCount , TriangleArray.COORDINATES | TriangleArray.NORMALS | ( hasTexture ? TriangleArray.TEXTURE_COORDINATE_2 : 0 ) );
+							triangleArray = new TriangleArray( 3 * triangleCount , TriangleArray.COORDINATES | TriangleArray.NORMALS | ( hasUV ? TriangleArray.TEXTURE_COORDINATE_2 : 0 ) );
 							triangleCount = 0;
 						}
 
-						final Point3d    vertexCoord2  = getVertexCoordinate( object2view , face , vertexCount - 1 );
-						final Vector3f   vertexNormal2 = getVertexNormal( object2view , face , vertexCount - 1 );
-						final TexCoord2f textureCoord2 = hasTexture ? getTextureCoordinate( textureU , textureV , vertexCount - 1 ) : null;
+						final int        vertexIndex2  = vertexCount - 1;
+						final Point3d    vertexCoord2  = getVertexCoordinate( object2view , face , vertexIndex2 );
+						final Vector3f   vertexNormal2 = getVertexNormal( object2view , face , vertexIndex2 );
+						final TexCoord2f textureCoord2 = hasUV ? new TexCoord2f( faceU[ vertexIndex2 ] , faceV[ vertexIndex2 ] ) : null;
 
 						final int coordinateIndex = triangleCount * 3;
 
@@ -361,7 +363,7 @@ public class Shape3DBuilder
 						triangleArray.setNormal( coordinateIndex + 1 , vertexNormal1 );
 						triangleArray.setNormal( coordinateIndex + 2 , vertexNormal0 );
 
-						if ( hasTexture )
+						if ( hasUV )
 						{
 							triangleArray.setTextureCoordinate( 0 , coordinateIndex     , textureCoord2 );
 							triangleArray.setTextureCoordinate( 0 , coordinateIndex + 1 , textureCoord1 );
@@ -412,20 +414,25 @@ public class Shape3DBuilder
 		{
 			final boolean smooth = face.isSmooth();
 
-			final double x = smooth ? face.getVertexNormalX( vertexIndex ) : face.getNormalX();
-			final double y = smooth ? face.getVertexNormalY( vertexIndex ) : face.getNormalY();
-			final double z = smooth ? face.getVertexNormalZ( vertexIndex ) : face.getNormalZ();
+			final double x;
+			final double y;
+			final double z;
+
+			if ( smooth )
+			{
+				x = face.getVertexNormalX( vertexIndex );
+				y = face.getVertexNormalY( vertexIndex );
+				z = face.getVertexNormalZ( vertexIndex );
+			}
+			else
+			{
+				final Vector3D faceNormal = face.getNormal();
+				x = faceNormal.x;
+				y = faceNormal.y;
+				z = faceNormal.z;
+			}
 
 			return new Vector3f( (float)object2view.rotateX( x , y , z ) , (float)object2view.rotateY( x , y , z ) , (float)object2view.rotateZ( x , y , z ) );
-		}
-
-		private TexCoord2f getTextureCoordinate( final int[] textureU , final int[] textureV , final int vertexIndex )
-		{
-			final Texture j3dTexture = _appearance.getTexture();
-
-			return ( j3dTexture == null ) ? new TexCoord2f() : new TexCoord2f(
-				(float)textureU[ vertexIndex ] / (float)j3dTexture.getWidth()  ,
-				(float)textureV[ vertexIndex ] / (float)j3dTexture.getHeight() );
 		}
 	}
 
@@ -436,8 +443,8 @@ public class Shape3DBuilder
 	 */
 	Shape3DBuilder()
 	{
-		_textureGroups     = null;
-		_textureGroupCount = 0;
+		_appearanceGroups     = null;
+		_appearanceGroupCount = 0;
 	}
 
 	/**
@@ -445,20 +452,20 @@ public class Shape3DBuilder
 	 * correct storage requirements, so no collection classes are needed.
 	 *
 	 * @param   face                Face to prepare for.
-	 * @param   textureOverride     Texture to use instead of actual face texture.
+	 * @param   materialOverride     Texture to use instead of actual face material.
 	 * @param   extraOpacity        Extra face opacity (0.0=translucent, 1.0=opaque).
 	 *
 	 * @see     #addFace
 	 */
-	public void prepareFace( final Face3D face , final TextureSpec textureOverride , final float extraOpacity )
+	public void prepareFace( final Face3D face , final Material materialOverride , final float extraOpacity )
 	{
-		final TextureSpec texture = ( textureOverride != null ) ? textureOverride : face.getTexture();
-		if ( texture != null )
+		final Material material = ( materialOverride != null ) ? materialOverride : face.getMaterial();
+		if ( material != null )
 		{
 			final float   opacity     = extraOpacity * face.getOpacity();
 			final boolean hasBackface = face.isTwoSided();
 
-			final TextureGroup group = getGroup( texture , opacity , hasBackface );
+			final AppearanceGroup group = getGroup( material , opacity , hasBackface );
 			group.prepareFace( face.getVertexCount() );
 		}
 	}
@@ -470,21 +477,21 @@ public class Shape3DBuilder
 	 *
 	 * @param   object2view         Transform to apply to vertex coordinates.
 	 * @param   face                Face to add.
-	 * @param   textureOverride     Texture to use instead of actual face texture.
+	 * @param   materialOverride     Texture to use instead of actual face material.
 	 * @param   extraOpacity        Extra face opacity (0.0=translucent, 1.0=opaque).
 	 *
 	 * @see     #prepareFace
 	 * @see     #buildShapes
 	 */
-	public void addFace( final Matrix3D object2view , final Face3D face , final TextureSpec textureOverride , final float extraOpacity )
+	public void addFace( final Matrix3D object2view , final Face3D face , final Material materialOverride , final float extraOpacity )
 	{
-		final TextureSpec texture = ( textureOverride != null ) ? textureOverride : face.getTexture();
-		if ( texture != null )
+		final Material material = ( materialOverride != null ) ? materialOverride : face.getMaterial();
+		if ( material != null )
 		{
 			final float   opacity     = extraOpacity * face.getOpacity();
 			final boolean hasBackface = face.isTwoSided();
 
-			final TextureGroup group = getGroup( texture , opacity , hasBackface );
+			final AppearanceGroup group = getGroup( material , opacity , hasBackface );
 			group.addFace( object2view , face );
 		}
 	}
@@ -501,24 +508,24 @@ public class Shape3DBuilder
 	 */
 	public void buildShapes( final BranchGroup result )
 	{
-		final int groupCount = _textureGroupCount;
+		final int groupCount = _appearanceGroupCount;
 
 		for ( int i = 0 ; i < groupCount ; i++ )
-			_textureGroups[ i ].buildShapes( result );
+			_appearanceGroups[ i ].buildShapes( result );
 	}
 
-	private TextureGroup getGroup( final TextureSpec texture , final float opacity , final boolean hasBackface )
+	private AppearanceGroup getGroup( final Material material , final float opacity , final boolean hasBackface )
 	{
-		TextureGroup result = null;
+		AppearanceGroup result = null;
 
 		final int            alpha  = Math.max( 0 , Math.min( Math.round( opacity * 255.0f ) , 255 ) );
-		final TextureGroup[] groups = _textureGroups;
-		final int            count  = _textureGroupCount;
+		final AppearanceGroup[] groups = _appearanceGroups;
+		final int            count  = _appearanceGroupCount;
 
 		for ( int i = 0 ; i < count ; i++ )
 		{
-			final TextureGroup group = groups[ i ];
-			if ( ( group._texture == texture ) && ( group._alpha == alpha ) && ( group._hasBackface == hasBackface ) )
+			final AppearanceGroup group = groups[ i ];
+			if ( ( group._material == material ) && ( group._alpha == alpha ) && ( group._hasBackface == hasBackface ) )
 			{
 				result = group;
 				break;
@@ -527,14 +534,14 @@ public class Shape3DBuilder
 
 		if ( result == null )
 		{
-			final TextureGroup[] newGroups;
+			final AppearanceGroup[] newGroups;
 			if ( groups == null )
 			{
-				newGroups = new TextureGroup[ 8 ];
+				newGroups = new AppearanceGroup[ 8 ];
 			}
 			else if ( count >= groups.length )
 			{
-				newGroups = new TextureGroup[ groups.length * 2 ];
+				newGroups = new AppearanceGroup[ groups.length * 2 ];
 				System.arraycopy( groups , 0 , newGroups , 0 , count );
 			}
 			else
@@ -543,13 +550,13 @@ public class Shape3DBuilder
 			}
 
 			final Java3dTools tools      = Java3dTools.getInstance();
-			final Appearance  appearance = tools.getAppearance( texture , opacity , hasBackface );
+			final Appearance  appearance = tools.getAppearance( material , opacity , hasBackface );
 
-			result = new TextureGroup( texture , alpha , hasBackface , appearance );
+			result = new AppearanceGroup( material , alpha , hasBackface , appearance );
 			newGroups[ count ] = result;
 
-			_textureGroups     = newGroups;
-			_textureGroupCount = count + 1;
+			_appearanceGroups     = newGroups;
+			_appearanceGroupCount = count + 1;
 		}
 
 		return result;

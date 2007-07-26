@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * (C) Copyright Numdata BV 2005-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,8 +23,8 @@ import java.awt.Color;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.control.FromToCameraControl;
 import ab.j3d.model.Box3D;
@@ -141,12 +141,12 @@ public final class AbPovTestModel
 
 		if ( node == null )
 		{
-			final TextureSpec texture   = new TextureSpec( Color.RED );
-			final Matrix3D    rotate    = Matrix3D.INIT.rotateX( Math.toRadians( 10.0 ) );
-			final Matrix3D    translate = Matrix3D.INIT.setTranslation( -200.0 , 0.0 , -250.0 );
-			final Matrix3D    transform = rotate.multiply( translate );
+			final Material material  = new Material( Color.RED.getRGB() );
+			final Matrix3D rotate    = Matrix3D.INIT.rotateX( Math.toRadians( 10.0 ) );
+			final Matrix3D translate = Matrix3D.INIT.setTranslation( -200.0 , 0.0 , -250.0 );
+			final Matrix3D transform = rotate.multiply( translate );
 
-			box = new Box3D( transform , 100.0 , 200.0 , 100.0 , texture  , texture );
+			box = new Box3D( transform , 100.0 , 200.0 , 100.0 , material , material );
 		}
 		else
 		{
@@ -171,14 +171,14 @@ public final class AbPovTestModel
 
 		if ( node == null )
 		{
-			final TextureSpec texture   = new TextureSpec( Color.GREEN );
-			final Matrix3D    rotate    = Matrix3D.INIT.rotateY( Math.toRadians( 10.0 ) );
-			final Matrix3D    translate = Matrix3D.INIT.setTranslation( -50.0 , 0.0 , -250.0 );
-			final Matrix3D    transform = rotate.multiply( translate );
+			final Material material  = new Material( Color.GREEN.getRGB() );
+			final Matrix3D rotate    = Matrix3D.INIT.rotateY( Math.toRadians( 10.0 ) );
+			final Matrix3D translate = Matrix3D.INIT.setTranslation( -50.0 , 0.0 , -250.0 );
+			final Matrix3D transform = rotate.multiply( translate );
 
-			texture.opacity = 0.2f;
+			material.diffuseColorAlpha = 0.2f;
 
-			box = new Box3D( transform , 100.0 , 200.0 , 100.0 , texture , texture );
+			box = new Box3D( transform , 100.0 , 200.0 , 100.0 , material , material );
 		}
 		else
 		{
@@ -203,12 +203,12 @@ public final class AbPovTestModel
 
 		if ( node == null )
 		{
-			final TextureSpec texture   = new TextureSpec( Color.BLUE );
-			final Matrix3D    rotate    = Matrix3D.INIT.rotateZ( Math.toRadians( 10.0 ) );
-			final Matrix3D    translate = Matrix3D.INIT.setTranslation( 200.0 , 0.0 , -250.0 );
-			final Matrix3D    transform = rotate.multiply( translate );
+			final Material material  = new Material( Color.BLUE.getRGB() );
+			final Matrix3D rotate    = Matrix3D.INIT.rotateZ( Math.toRadians( 10.0 ) );
+			final Matrix3D translate = Matrix3D.INIT.setTranslation( 200.0 , 0.0 , -250.0 );
+			final Matrix3D transform = rotate.multiply( translate );
 
-			box =  new Box3D( transform , 100.0 , 200.0 , 100.0 , texture , texture );
+			box =  new Box3D( transform , 100.0 , 200.0 , 100.0 , material , material );
 		}
 		else
 		{
@@ -237,10 +237,13 @@ public final class AbPovTestModel
 			Matrix3D transform = Matrix3D.INIT.rotateZ( Math.toRadians( 45.0 ) );
 			transform = transform.setTranslation( -350.0 , 0.0 , 0.0 );
 
-			final TextureSpec mainTexture = new TextureSpec( "MPXs" , -1 , 1.0f , 1.0f , 0.3f , 0.3f , 0.3f , 8 , false );
-			final TextureSpec sideTexture = new TextureSpec( "MFCs" , -1 , 1.0f , 2.0f , 0.3f , 0.3f , 0.3f , 8 , false );
+			final Material mainMaterial = new Material();
+			mainMaterial.code = "MPXs";
 
-			box =  new Box3D( transform , 200.0 , 10.0 , 200.0 , mainTexture , sideTexture );
+			final Material sideMaterial = new Material();
+			sideMaterial.code = "MFCs";
+
+			box =  new Box3D( transform , 200.0 , 10.0 , 200.0 , mainMaterial , sideMaterial );
 		}
 		else
 		{
@@ -265,10 +268,10 @@ public final class AbPovTestModel
 
 		if ( node == null )
 		{
-			final TextureSpec texture   = new TextureSpec( Color.BLUE );
-			final Matrix3D    transform = Matrix3D.INIT.setTranslation( 0.0 , 300.0 , -200.0 );
+			final Material material  = new Material( Color.BLUE.getRGB() );
+			final Matrix3D transform = Matrix3D.INIT.setTranslation( 0.0 , 300.0 , -200.0 );
 
-			sphere = new Sphere3D( transform , 100.0 , 100.0 , 100.0 , 20 , 20 , texture , false );
+			sphere = new Sphere3D( transform , 100.0 , 100.0 , 100.0 , 20 , 20 , material , false );
 		}
 		else
 		{
@@ -294,10 +297,10 @@ public final class AbPovTestModel
 
 		if ( node == null )
 		{
-			final TextureSpec texture   = new TextureSpec( Color.MAGENTA );
-			final Matrix3D    transform = Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 150.0 );
+			final Material material  = new Material( Color.MAGENTA.getRGB() );
+			final Matrix3D transform = Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 150.0 );
 
-			cylinder = new Cylinder3D( transform , 50.0 , 50.0 , 100.0 , 100 , texture , true , true );
+			cylinder = new Cylinder3D( transform , 50.0 , 50.0 , 100.0 , 100 , material , true , true );
 		}
 		else
 		{
@@ -323,11 +326,11 @@ public final class AbPovTestModel
 
 		if ( node == null )
 		{
-			final TextureSpec texture   = new TextureSpec( Color.WHITE );
-			final Matrix3D    rotate    = Matrix3D.INIT.rotateX( Math.toRadians( 45.0 ) );
-			final Matrix3D    transform = rotate.setTranslation( 250.0 , 0.0 , 0.0 );
+			final Material material  = new Material( Color.WHITE.getRGB() );
+			final Matrix3D rotate    = Matrix3D.INIT.rotateX( Math.toRadians( 45.0 ) );
+			final Matrix3D transform = rotate.setTranslation( 250.0 , 0.0 , 0.0 );
 
-			cone = new Cylinder3D( transform , 100.0 , 50.0 , 200.0 , 100 , texture , true , true );
+			cone = new Cylinder3D( transform , 100.0 , 50.0 , 200.0 , 100 , material , true , true );
 		}
 		else
 		{
@@ -338,7 +341,7 @@ public final class AbPovTestModel
 	}
 
 	/**
-	 * This method constructs a cube with a different texture per face.
+	 * This method constructs a cube with a different color per face.
 	 * The width, height and depth of the cube are all 200 mm (-100 to 100).
 	 *
 	 * @see Object3D
@@ -361,34 +364,23 @@ public final class AbPovTestModel
 			final Vector3D rbt = Vector3D.INIT.set(  100.0 ,  100.0 ,  100.0 );
 			final Vector3D lbt = Vector3D.INIT.set( -100.0 ,  100.0 ,  100.0 );
 
-			final int[] textureU = new int[]{ 128 , 128 , 0   , 0 };
-			final int[] textureV = new int[]{ 0   , 128 , 128 , 0 };
+			final Material topMaterial    = new Material(); topMaterial   .colorMap = "CUBE_TOP";
+			final Material bottomMaterial = new Material(); bottomMaterial.colorMap = "CUBE_BOTTOM";
+			final Material frontMaterial  = new Material(); frontMaterial .colorMap = "CUBE_FRONT";
+			final Material backMaterial   = new Material(); backMaterial  .colorMap = "CUBE_BACK";
+			final Material leftMaterial   = new Material(); leftMaterial  .colorMap = "CUBE_LEFT";
+			final Material rightMaterial  = new Material(); rightMaterial .colorMap = "CUBE_RIGHT";
+
+			final float[] textureU = { 0.5f , 0.5f , 0.0f , 0.0f };
+			final float[] textureV = { 0.0f , 0.5f , 0.5f , 0.0f };
 
 			cube = new Object3D();
-
-			/* Z =  100 (top) */
-			final TextureSpec red     = new TextureSpec( "CUBE_TOP"      , -1 , 1.0f , 1.0f , 0.3f , 0.3f , 0.3f , 8 , false );
-			cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , red     , textureU , textureV , 1.0f , false, false );
-
-			/* Z = -100 (bottom) */
-			final TextureSpec green   = new TextureSpec( "CUBE_BOTTOM" , -1 , 1.0f , 1.0f , 0.3f , 0.3f , 0.3f , 8 , false );
-			cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , green   , textureU , textureV , 1.0f , false, false );
-
-			/* Y = -100 (front) */
-			final TextureSpec cyan    = new TextureSpec( "CUBE_FRONT"   , -1 , 1.0f , 1.0f , 0.3f , 0.3f , 0.3f , 8 , false );
-			cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , cyan    , textureU , textureV , 1.0f , false, false );
-
-			/* Y =  100 (back) */
-			final TextureSpec magenta = new TextureSpec( "CUBE_BACK" , -1 , 1.0f , 1.0f , 0.3f , 0.3f , 0.3f , 8 , false );
-			cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , magenta , textureU , textureV , 1.0f , false, false );
-
-			/* X = -100 (left) */
-			final TextureSpec yellow  = new TextureSpec( "CUBE_LEFT"  , -1 , 1.0f , 1.0f , 0.3f , 0.3f , 0.3f , 8 , false );
-			cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , yellow  , textureU , textureV , 1.0f , false, false );
-
-			/* X =  100 (right) */
-			final TextureSpec blue    = new TextureSpec( "CUBE_RIGHT"   , -1 , 1.0f , 1.0f , 0.3f , 0.3f , 0.3f , 8 , false );
-			cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , blue    , textureU , textureV , 1.0f , false, false );
+			cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , topMaterial    , textureU , textureV , 1.0f , false, false );
+			cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , bottomMaterial , textureU , textureV , 1.0f , false, false );
+			cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , frontMaterial  , textureU , textureV , 1.0f , false, false );
+			cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , backMaterial   , textureU , textureV , 1.0f , false, false );
+			cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , leftMaterial   , textureU , textureV , 1.0f , false, false );
+			cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , rightMaterial  , textureU , textureV , 1.0f , false, false );
 		}
 		else
 		{
@@ -414,12 +406,12 @@ public final class AbPovTestModel
 
 		if ( node == null )
 		{
-			final TextureSpec texture   = new TextureSpec( Color.PINK );
-			final Shape       shape     = new Rectangle2D.Double( 0.0 , 0.0 , 100.0 , 100.0 );
-			final Vector3D    extrusion = Vector3D.INIT.set( 0.0 , 100.0 , 100.0 );
-			final Matrix3D    transform = Matrix3D.INIT.setTranslation( -400.0 , 0.0 , -250.0 );
+			final Material material  = new Material( Color.PINK.getRGB() );
+			final Shape    shape     = new Rectangle2D.Double( 0.0 , 0.0 , 100.0 , 100.0 );
+			final Vector3D extrusion = Vector3D.INIT.set( 0.0 , 100.0 , 100.0 );
+			final Matrix3D transform = Matrix3D.INIT.setTranslation( -400.0 , 0.0 , -250.0 );
 
-			extrudedObject = new ExtrudedObject2D( shape , extrusion , transform , texture , 1.0 , true );
+			extrudedObject = new ExtrudedObject2D( shape , extrusion , transform , material , 1.0 , true );
 		}
 		else
 		{

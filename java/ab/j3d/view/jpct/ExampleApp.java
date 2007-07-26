@@ -14,8 +14,8 @@ import com.threed.jpct.TextureInfo;
 import com.threed.jpct.TextureManager;
 import com.threed.jpct.World;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Node3DCollection;
@@ -91,19 +91,15 @@ public class ExampleApp
 			for ( int j = 0 ; j < faceCount ; j++ )
 			{
 				final Face3D      face    = object3d.getFace( j );
-				final TextureInfo texture = JPCTTools.convert2TextureInfo( face.getTexture() );
+				final TextureInfo texture = new TextureInfo( JPCTTools.getTextureID( face.getMaterial() ) );
 
 				final SimpleVector vert1 = new SimpleVector( face.getX( 0 ), face.getY( 0 ), face.getZ( 0 ) );
 				final SimpleVector vert2 = new SimpleVector( face.getX( 1 ), face.getY( 1 ), face.getZ( 1 ) );
 				final SimpleVector vert3 = new SimpleVector( face.getX( 2 ), face.getY( 2 ), face.getZ( 2 ) );
+				final SimpleVector vert4 = new SimpleVector( face.getX( 3 ), face.getY( 3 ), face.getZ( 3 ) );
 
 				jpctCube.addTriangle( vert3 , vert2 , vert1 , texture );
-
-				final SimpleVector vert4 = new SimpleVector( face.getX( 0 ), face.getY( 0 ), face.getZ( 0 ) );
-				final SimpleVector vert5 = new SimpleVector( face.getX( 2 ), face.getY( 2 ), face.getZ( 2 ) );
-				final SimpleVector vert6 = new SimpleVector( face.getX( 3 ), face.getY( 3 ), face.getZ( 3 ) );
-
-				jpctCube.addTriangle( vert6 , vert5 , vert4 , texture );
+				jpctCube.addTriangle( vert4 , vert3 , vert1 , texture );
 			}
 		}
 
@@ -129,12 +125,12 @@ public class ExampleApp
 		final Vector3D rbt = Vector3D.INIT.set(  size ,  size ,  size );
 		final Vector3D lbt = Vector3D.INIT.set( -size ,  size ,  size );
 
-		final TextureSpec red     = new TextureSpec( Color.red     );
-		final TextureSpec magenta = new TextureSpec( Color.magenta );
-		final TextureSpec blue    = new TextureSpec( Color.blue    );
-		final TextureSpec cyan    = new TextureSpec( Color.cyan    );
-		final TextureSpec green   = new TextureSpec( Color.green   );
-		final TextureSpec yellow  = new TextureSpec( Color.yellow  );
+		final Material red     = new Material( Color.RED    .getRGB() );
+		final Material magenta = new Material( Color.MAGENTA.getRGB() );
+		final Material blue    = new Material( Color.BLUE   .getRGB() );
+		final Material cyan    = new Material( Color.CYAN   .getRGB() );
+		final Material green   = new Material( Color.GREEN  .getRGB() );
+		final Material yellow  = new Material( Color.YELLOW .getRGB() );
 
 		final ab.j3d.model.Object3D cube = new ab.j3d.model.Object3D();
 		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , red     , false , false ); // Z =  size

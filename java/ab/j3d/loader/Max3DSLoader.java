@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2006
+ * (C) Copyright Numdata BV 2006-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,8 +30,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Object3D;
@@ -40,7 +40,7 @@ import ab.j3d.model.Transform3D;
 import com.numdata.oss.TextTools;
 
 /**
- * Loader for 3D Studio or 3D Studio MAX (<code>.3DS</code>) files.
+ * Loader for 3D Studio or 3D Studio MAX (<code>.3DS</colorMap>) files.
  * <p>
  * A <code>.3DS</code> file consists of chunks, each startin with an ID and the
  * chunk length. This allows easy skipping of unrecognized chunks.
@@ -74,10 +74,10 @@ public final class Max3DSLoader
 	private URL _supplementURL;
 
 	/**
-	 * Maps material names ({@link String}) to {@link TextureSpec} objects
+	 * Maps material names ({@link String}) to {@link Material} objects
 	 * representing the materials in the <code>.3DS</code> file.
 	 */
-	private final Map _textures = new HashMap();
+	private final Map<String,Material> _materials = new HashMap();
 
 	/**
 	 * 3D object currently being constructed.
@@ -87,12 +87,12 @@ public final class Max3DSLoader
 	/**
 	 * Texture for material currently being contructed/used.
 	 */
-	private TextureSpec _texture;
+	private Material _material;
 
 	/**
 	 * Temporary texture coordinates array.
 	 */
-	private int[] _textureCoords;
+	private float[] _textureCoords;
 
 	/**
 	 * Load a scene graph from the contents of a 3D Studio or 3D Studio MAX
@@ -202,7 +202,7 @@ public final class Max3DSLoader
 		_root          = root;
 		_supplementURL = supplementURL;
 		_object        = null;
-		_texture       = null;
+		_material      = null;
 		_textureCoords = null;
 	}
 
@@ -260,7 +260,7 @@ public final class Max3DSLoader
 
 			case 0x2100 : // LIGHT_AMBIENT - Ambient light
 				{
-					final Color color = readColor( in );
+					final float[] color = readColor( in );
 					System.out.println( " - LIGHT - ambient: " + color );
 				}
 				break;
@@ -273,15 +273,16 @@ public final class Max3DSLoader
 					// System.out.println( " - START: object: " + objectName );
 
 					_object        = null;
-					_texture       = null;
+					_material      = null;
 					_textureCoords = null;
 
 					if ( ( objectName.length() > 0 ) && ( objectName.charAt( 0 ) != '$' ) ) // ignore hidden objects
 					{
 						final Object3D object = new Object3D();
 						object.setTag( objectName );
-						_object = object;
-						_texture = new TextureSpec( 0xFFC0C0C0 );
+
+						_object   = object;
+						_material = new Material( 0xFFC0C0C0 );
 
 						readChunk( in );
 					}
@@ -323,9 +324,9 @@ public final class Max3DSLoader
 					 */
 					final int faceCount = readShort( in );
 
-					final Object3D    object        = _object;
-					final TextureSpec texture       = _texture;
-					final int[]       textureCoords = _textureCoords;
+					final Object3D object        = _object;
+					final Material material      = _material;
+					final float[]  textureCoords = _textureCoords;
 
 					for ( int i = 0 ; i < faceCount ; i++ )
 					{
@@ -334,20 +335,20 @@ public final class Max3DSLoader
 						final int vertexIndex3 = readShort( in );
 						/*nal int flags       */ readShort( in );
 
-						final int[] tu;
-						final int[] tv;
+						final float[] tu;
+						final float[] tv;
 
 						if ( textureCoords != null )
 						{
-							final int u1 = textureCoords[ vertexIndex1 * 2     ];
-							final int v1 = textureCoords[ vertexIndex1 * 2 + 1 ];
-							final int u2 = textureCoords[ vertexIndex2 * 2     ];
-							final int v2 = textureCoords[ vertexIndex2 * 2 + 1 ];
-							final int u3 = textureCoords[ vertexIndex3 * 2     ];
-							final int v3 = textureCoords[ vertexIndex3 * 2 + 1 ];
+							final float u1 = textureCoords[ vertexIndex1 * 2     ];
+							final float v1 = textureCoords[ vertexIndex1 * 2 + 1 ];
+							final float u2 = textureCoords[ vertexIndex2 * 2     ];
+							final float v2 = textureCoords[ vertexIndex2 * 2 + 1 ];
+							final float u3 = textureCoords[ vertexIndex3 * 2     ];
+							final float v3 = textureCoords[ vertexIndex3 * 2 + 1 ];
 
-							tu = new int[] { u3 , u2 , u1 };
-							tv = new int[] { v3 , v2 , v1 };
+							tu = new float[] { u3 , u2 , u1 };
+							tv = new float[] { v3 , v2 , v1 };
 						}
 						else
 						{
@@ -355,8 +356,8 @@ public final class Max3DSLoader
 							tv = null;
 						}
 
-						final boolean hasBackface = true; // ( texture.opacity < 0.99f );
-						object.addFace( new int[] { vertexIndex3 , vertexIndex2 , vertexIndex1 } , texture , tu , tv , 1.0f , false , hasBackface );
+						final boolean hasBackface = true; // ( material.opacity < 0.99f );
+						object.addFace( new int[] { vertexIndex3 , vertexIndex2 , vertexIndex1 } , material , tu , tv , 1.0f , false , hasBackface );
 					}
 
 					_root.addChild( object );
@@ -370,8 +371,8 @@ public final class Max3DSLoader
 					final String materialName = readString( in );
 					final int    faceCount    = readShort( in );
 
-					final TextureSpec texture = (TextureSpec)_textures.get( materialName );
-					if ( texture == null )
+					final Material material = _materials.get( materialName );
+					if ( material == null )
 						throw new IOException( "can't find referenced material: " + materialName );
 
 					for ( int i = 0 ; i < faceCount ; i++ )
@@ -381,10 +382,10 @@ public final class Max3DSLoader
 					for ( int i = 0 ; i < object.getFaceCount() ; i++ )
 					{
 						final Face3D face = object.getFace( i );
-						face.setTexture( texture );
+						face.setMaterial( material );
 					}
 
-					_texture = texture;
+					_material = material;
 				}
 				break;
 
@@ -396,15 +397,10 @@ public final class Max3DSLoader
 					if ( faceVertexCount != vertexCount )
 						throw new IOException( "Number of texture vertices != #model vertices (" + faceVertexCount + " != " + vertexCount + ')' );
 
-					final TextureSpec texture   = _texture;
-					final boolean     mayHaveUV = texture.isTexture();
-					final int         wi        = mayHaveUV ? texture.getTextureWidth( null ) : -1;
-					final int         hi        = mayHaveUV ? texture.getTextureHeight( null ) : -1;
-					final boolean     hasUV     = ( wi > 0 ) && ( hi > 0 );
-					final float       wf        = (float)wi;
-					final float       hf        = (float)hi;
+					final Material material = _material;
+					final boolean  hasUV    = ( material.colorMap != null );
 
-					final int[] textureCoords = hasUV ? new int[ faceVertexCount * 2 ] : null;
+					final float[] textureCoords = hasUV ? new float[ faceVertexCount * 2 ] : null;
 
 					for ( int i = 0 ; i < faceVertexCount ; i++ )
 					{
@@ -413,8 +409,8 @@ public final class Max3DSLoader
 
 						if ( hasUV )
 						{
-							textureCoords[ i * 2     ] = Math.round( uf * wf );
-							textureCoords[ i * 2 + 1 ] = Math.round( vf * hf );
+							textureCoords[ i * 2     ] = uf;
+							textureCoords[ i * 2 + 1 ] = vf;
 						}
 					}
 
@@ -453,57 +449,42 @@ public final class Max3DSLoader
 					final String materialName = readString( in );
 					System.out.println( " - START: material: " + materialName );
 
-					final TextureSpec texture = new TextureSpec( Color.red );
-					_textures.put( materialName , texture );
-					_texture = texture;
+					final Material material = new Material( Color.RED.getRGB() );
+					_materials.put( materialName , material );
+					_material = material;
 				}
 				break;
 
 			case 0xA010 : // MAT_AMBIENT - Ambient color of material
 				{
-					final Color color = readColor( in );
+					final float[] color = readColor( in );
 					System.out.println( "    > ambient color: " + color );
 
-					final int r = color.getRed();
-					final int g = color.getGreen();
-					final int b = color.getBlue();
-
-					if ( r != g || g != b )
-						_texture.rgb = ( r << 16 ) + ( g << 8 ) + ( b << 8 );
-
-					_texture.ambientReflectivity = (float)( r + g + b ) / 1024.0f;
+					_material.ambientColorRed   = color[ 0 ];
+					_material.ambientColorGreen = color[ 1 ];
+					_material.ambientColorBlue  = color[ 2 ];
 				}
 				break;
 
 			case 0xA020 : // MAT_DIFFUSE - Diffuse color of material
 				{
-					final Color color = readColor( in );
+					final float[] color = readColor( in );
 					System.out.println( "    > diffuse color: " + color );
 
-					final int r = color.getRed();
-					final int g = color.getGreen();
-					final int b = color.getBlue();
-
-					if ( r != g || g != b )
-						_texture.rgb = ( r << 16 ) + ( g << 8 ) + ( b << 8 );
-
-					_texture.diffuseReflectivity = (float)( r + g + b ) / 1024.0f;
+					_material.diffuseColorRed   = color[ 0 ];
+					_material.diffuseColorGreen = color[ 1 ];
+					_material.diffuseColorBlue  = color[ 2 ];
 				}
 				break;
 
 			case 0xA030 : // MAT_SPECULAR - Specular color of material
 				{
-					final Color color = readColor( in );
+					final float[] color = readColor( in );
 					System.out.println( "    > specular color: " + color );
 
-					final int r = color.getRed();
-					final int g = color.getGreen();
-					final int b = color.getBlue();
-
-					if ( r != g || g != b )
-						_texture.rgb = ( r << 16 ) + ( g << 8 ) + ( b << 8 );
-
-					_texture.specularReflectivity = (float)( r + g + b ) / 1024.0f;
+					_material.specularColorRed   = color[ 0 ];
+					_material.specularColorGreen = color[ 1 ];
+					_material.specularColorBlue  = color[ 2 ];
 				}
 				break;
 
@@ -530,7 +511,7 @@ public final class Max3DSLoader
 
 					if ( transparency > 0.1f )
 					{
-						_texture.opacity = 1.0f - transparency;
+						_material.diffuseColorAlpha = 1.0f - transparency;
 					}
 				}
 				break;
@@ -593,8 +574,7 @@ public final class Max3DSLoader
 					final URL  supplementURL = _supplementURL;
 					final URL  imageURL      = new URL( supplementURL , TextTools.replace( TextTools.replace( materialName , '-' , "minus" ) , '+' , "plus" ).replace( ' ' , '_' ) );
 
-					_texture.code         = imageURL.toExternalForm();
-					_texture.textureScale = 1.0f;
+					_material.colorMap = imageURL.toExternalForm();
 				}
 				break;
 
@@ -611,7 +591,7 @@ public final class Max3DSLoader
 			case 0xB000 : // HIERARCHY - Start of the instance tree
 				{
 					_object        = null;
-					_texture       = null;
+					_material      = null;
 					_textureCoords = null;
 					// System.out.println( "### HIERARCHY" );
 					readChunk( in );
@@ -766,10 +746,10 @@ public final class Max3DSLoader
 	 * @throws  EOFException if the end of the file was reached.
 	 * @throws  IOException if a read error occured.
 	 */
-	private static Color readColor( final InputStream in )
+	private static float[] readColor( final InputStream in )
 		throws IOException
 	{
-		final Color result;
+		final float[] result;
 
 		final int chunkID      = readShort( in );
 		/*        chunkLength */ readLong( in );
@@ -777,11 +757,11 @@ public final class Max3DSLoader
 		switch ( chunkID )
 		{
 			case 0x0010 : // COLOR_F
-				result = new Color( readFloat( in ), readFloat( in ), readFloat( in ) );
+				result = new float[] { readFloat( in ), readFloat( in ), readFloat( in ) };
 				break;
 
 			case 0x0011 : // COLOR_24
-				result = new Color( readChar( in ) , readChar( in ) , readChar( in ) );
+				result = new float[] { (float)readChar( in ) / 255.0f , (float)readChar( in ) / 255.0f , (float)readChar( in ) / 255.0f };
 				break;
 
 			default :

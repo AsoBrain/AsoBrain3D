@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2006 Peter S. Heijnen
+ * Copyright (C) 1999-2007 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,8 @@
  */
 package ab.j3d.model;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 
 /**
  * This class defines a 3D box.
@@ -32,6 +32,13 @@ import ab.j3d.TextureSpec;
 public final class Box3D
 	extends Object3D
 {
+	/** Vertices for front face.  */ private static final int[] FRONT_VERTICES  = { 0 , 4 , 5 , 1 };
+	/** Vertices for rear face.   */ private static final int[] REAR_VERTICES   = { 2 , 6 , 7 , 3 };
+	/** Vertices for right face.  */ private static final int[] RIGHT_VERTICES  = { 1 , 5 , 6 , 2 };
+	/** Vertices for left face.   */ private static final int[] LEFT_VERTICES   = { 3 , 7 , 4 , 0 };
+	/** Vertices for top face.    */ private static final int[] TOP_VERTICES    = { 4 , 7 , 6 , 5 };
+	/** Vertices for bottom face. */ private static final int[] BOTTOM_VERTICES = { 1 , 2 , 3 , 0 };
+
 	/**
 	 * Transformation applied to all vertices of the box.
 	 */
@@ -59,10 +66,10 @@ public final class Box3D
 	 * @param   dx              Width of box (x-axis).
 	 * @param   dy              Height of box (y-axis).
 	 * @param   dz              Depth of box (z-axis).
-	 * @param   mainTexture     Main texture of box.
-	 * @param   sideTexture     Texture for sides of box.
+	 * @param   mainMaterial    Main material of box.
+	 * @param   sideMaterial    Material for sides of box.
 	 */
-	public Box3D( final Matrix3D xform , final double dx , final double dy , final double dz , final TextureSpec mainTexture , final TextureSpec sideTexture )
+	public Box3D( final Matrix3D xform , final double dx , final double dy , final double dz , final Material mainMaterial , final Material sideMaterial )
 	{
 		_xform = xform;
 		_dx    = dx;
@@ -87,50 +94,86 @@ public final class Box3D
 		setVertexCoordinates( xform.transform( vertexCoordinates , vertexCoordinates , 8 ) );
 
 		/*
-		 * Set frontal, vertical, and horizontal face properties.
+		 * Determine flat side.
 		 */
 		final double ax = Math.abs( dx );
 		final double ay = Math.abs( dy );
 		final double az = Math.abs( dz );
 
-		final boolean isFrontal    = ( ay < ax && ay < az );
-		final boolean isVertical   = ( ax < ay && ax < az );
-		final boolean isHorizontal = ( az < ax && az < ay );
+		final boolean flatY = ( ay < ax && ay < az );
+		final boolean flatX = ( ax < ay && ax < az );
+		final boolean flatZ = ( az < ax && az < ay );
 
-		TextureSpec texture;
-		final int[][] textureU = new int[ 2 ][];
-		final int[][] textureV = new int[ 2 ][];
+		addFaces( FRONT_VERTICES , REAR_VERTICES   , flatY ? mainMaterial : sideMaterial ,  flatZ , xform.xo , xform.xo + _dx , xform.zo , xform.zo + _dz );
+		addFaces( RIGHT_VERTICES , LEFT_VERTICES   , flatX ? mainMaterial : sideMaterial ,  flatZ , xform.yo , xform.yo + _dy , xform.zo , xform.zo + _dz );
+		addFaces( TOP_VERTICES   , BOTTOM_VERTICES , flatZ ? mainMaterial : sideMaterial , !flatX , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy );
+	}
 
-		/*
-		 * Add front/back face
-		 */
-		texture = isFrontal ? mainTexture : sideTexture;
+	/**
+	 * Helper method to add two opposite faces.
+	 *
+	 * @param   frontVertices   Vertices that define the 'front' face.
+	 * @param   rearVertices    Vertices that define the 'rear' face.
+	 * @param   material        Material to use for faces.
+	 * @param   flipUV          <code>true</code> te reverse meaning of u and v.
+	 * @param   modelHor1       Start horizontal model coordinate.
+	 * @param   modelHor2       End horizontal model coordinate.
+	 * @param   modelVer1       Start vertical model coordinate.
+	 * @param   modelVer2       End vertical model coordinate.
+	 */
+	private void addFaces( final int[] frontVertices , final int[] rearVertices , final Material material , final boolean flipUV , final double modelHor1 , final double modelHor2 , final double modelVer1 , final double modelVer2 )
+	{
+		if ( ( material != null ) && ( material.colorMap != null ) )
+		{
+			final double modelUnit = 0.001;
 
-		if ( ( texture != null ) && texture.isTexture() )
-			setTexture( texture , isHorizontal , 0 , textureU , xform.xo , xform.xo + _dx , textureV , xform.zo , xform.zo + _dz );
+			double min = ( flipUV ? modelVer1 : modelHor1 );
+			double max = ( flipUV ? modelVer2 : modelHor2 );
 
-		addFace( new int[] { 0 , 4 , 5 , 1 } , texture , textureU[ 0 ] , textureV[ 0 ] , 1.0f , false , false );
-		addFace( new int[] { 2 , 6 , 7 , 3 } , texture , textureU[ 1 ] , textureV[ 1 ] , 1.0f , false , false );
+			double adjustment = material.colorMapWidth;
+			if ( adjustment > 0.0 )
+			{
+				adjustment *= modelUnit;
+				min /= adjustment;
+				max /= adjustment;
+			}
 
-		/*
-		 * Add right/left face
-		 */
-		texture = isVertical ? mainTexture : sideTexture;
-		if ( ( texture != null ) && texture.isTexture() )
-			setTexture( texture , isHorizontal , 0 , textureU , xform.yo , xform.yo + _dy , textureV , xform.zo , xform.zo + _dz );
+			adjustment = Math.min( Math.floor( min ) , Math.floor( max ) );
 
-		addFace( new int[] { 1 , 5 , 6 , 2 } , texture , textureU[ 0 ] , textureV[ 0 ] , 1.0f , false , false );
-		addFace( new int[] { 3 , 7 , 4 , 0 } , texture , textureU[ 1 ] , textureV[ 1 ] , 1.0f , false , false );
+			final float u1 = (float)( min - adjustment );
+			final float u2 = (float)( max - adjustment );
 
-		/*
-		 * Add top/bottom face
-		 */
-		texture = isHorizontal ? mainTexture : sideTexture;
-		if ( ( texture != null ) && texture.isTexture() )
-			setTexture( texture , !isVertical , 0 , textureU , xform.xo , xform.xo + _dx , textureV , xform.yo , xform.yo + _dy );
+			min = ( flipUV ? modelHor1 : modelVer1 );
+			max = ( flipUV ? modelHor2 : modelVer2 );
 
-		addFace( new int[] { 4 , 7 , 6 , 5 } , texture , textureU[ 0 ] , textureV[ 0 ] , 1.0f , false , false );
-		addFace( new int[] { 1 , 2 , 3 , 0 } , texture , textureU[ 1 ] , textureV[ 1 ] , 1.0f , false , false );
+			adjustment = material.colorMapHeight;
+			if ( adjustment > 0.0 )
+			{
+				adjustment *= modelUnit;
+				min /= adjustment;
+				max /= adjustment;
+			}
+
+			adjustment = Math.min( Math.floor( min ) , Math.floor( max ) );
+
+			final float v1 = (float)( min - adjustment );
+			final float v2 = (float)( max - adjustment );
+
+			final float[] frontU = new float[] { u1 , u1 , u2 , u2 };
+			final float[] frontV = new float[] { v1 , v2 , v2 , v1 };
+
+			final float[] rearU  = new float[] { u2 , u2 , u1 , u1 };
+			final float[] rearV  = frontV;
+
+			addFace( frontVertices , material , frontU , frontV , 1.0f , false , false );
+			addFace( rearVertices  , material , rearU  , rearV  , 1.0f , false , false );
+		}
+		else
+		{
+			addFace( frontVertices , material , null , null , 1.0f , false , false );
+			addFace( rearVertices  , material , null , null , 1.0f , false , false );
+		}
+
 	}
 
 	/**
@@ -172,100 +215,4 @@ public final class Box3D
 	{
 		return _xform;
 	}
-
-	/**
-	 * Generate texture coordinates for the specified face.
-	 *
-	 * @param   texture     Texture to use.
-	 * @param   flipUV      <code>true</code> te reverse meaning of u and v.
-	 * @param   index       Index of face.
-	 * @param   faceTU      Target array to store U texture coordinates.
-	 * @param   tu1         Start U coordinate.
-	 * @param   tu2         End U coordinate.
-	 * @param   faceTV      Target array to store V texture coordinates.
-	 * @param   tv1         Start V coordinate.
-	 * @param   tv2         End V coordinate.
-	 */
-	private static void setTexture(
-		final TextureSpec texture , final boolean flipUV , final int index ,
-		final int[][] faceTU , final double tu1 , final double tu2 ,
-		final int[][] faceTV , final double tv1 , final double tv2 )
-	{
-		/*
-		 * Return immediately if texture specification is invalid or does not
-		 * specify a texture image.
-		 */
-		if ( ( texture == null ) || !texture.isTexture() )
-			return;
-
-		int i1;
-		int i2;
-		int t;
-		int m;
-		int[][] a;
-		final double s = texture.textureScale;
-
-		/*
-		 * Translate the U1,U2 texture coordinates to the lowest possible (but
-		 * positive) range. If either is negative, translation occurs in positive
-		 * direction; if both are beyond the maximum value, translation occurs in
-		 * negative direction.
-		 */
-		i1 = (int)( tu1 * s /*+ 0.5*/ );
-		i2 = (int)( tu2 * s /*+ 0.5*/ );
-
-		m = flipUV ? texture.getTextureHeight( null ) : texture.getTextureWidth( null );
-		if ( ( t = ( i1 < i2 ) ? i1 : i2 ) < 0 )
-		{
-			t -= m - 1;
-			t -= t % m;
-			i1 -= t;
-			i2 -= t;
-		}
-		else if ( ( t = i1 + i2 - t ) >= m )
-		{
-			t -= t % m;
-			i1 -= t;
-			i2 -= t;
-		}
-
-		/*
-		 * Set texture coordinates. Flip meaning of U and V if requested.
-		 */
-		a = ( flipUV ? faceTV : faceTU );
-		a[ index     ] = new int[] { i1 , i1 , i2 , i2 };
-		a[ index + 1 ] = new int[] { i2 , i2 , i1 , i1 };
-
-		/*
-		 * Translate the V1,V2 texture coordinates to the lowest possible (but
-		 * positive) range. If either is negative, translation occurs in positive
-		 * direction; if both are beyond the maximum value, translation occurs in
-		 * negative direction.
-		 */
-		i1 = (int)( tv1 * s /*+ 0.5*/ );
-		i2 = (int)( tv2 * s /*+ 0.5*/ );
-
-		m = flipUV ? texture.getTextureWidth( null ) : texture.getTextureHeight( null );
-		if ( ( t = ( i1 < i2 ) ? i1 : i2 ) < 0 )
-		{
-			t -= m - 1;
-			t -= t % m;
-			i1 -= t;
-			i2 -= t;
-		}
-		else if ( ( t = i1 + i2 - t ) >= m )
-		{
-			t -= t % m;
-			i1 -= t;
-			i2 -= t;
-		}
-
-		/*
-		 * Set texture coordinates. Flip meaning of U and V if requested.
-		 */
-		a = ( flipUV ? faceTU : faceTV);
-		a[ index     ] =// new int[] { i1 , i2 , i2 , i1 };
-		a[ index + 1 ] = new int[] { i1 , i2 , i2 , i1 };
-	}
-
 }

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * (C) Copyright Numdata BV 2005-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,8 +26,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.control.controltest.model.Floor;
 import ab.j3d.control.controltest.model.Model;
@@ -54,29 +54,29 @@ import ab.j3d.view.java3d.Java3dModel;
 public final class Model3D
 {
 	/**
-	 * The texture for the floor.
+	 * The material for the floor.
 	 */
-	private static final TextureSpec FLOOR_TEXTURE = new TextureSpec( Color.WHITE );
+	private static final Material FLOOR_MATERIAL = new Material( Color.WHITE.getRGB() );
 
 	/**
-	 * The texture for a Wall.
+	 * The material for a Wall.
 	 */
-	private static final TextureSpec WALL_TEXTURE = new TextureSpec( Color.RED );
+	private static final Material WALL_MATERIAL = new Material( Color.RED.getRGB() );
 
 	/**
-	 * The texture for a TetraHedron.
+	 * The material for a TetraHedron.
 	 */
-	private static final TextureSpec HEDRON_TEXTURE = new TextureSpec( Color.GREEN );
+	private static final Material HEDRON_MATERIAL = new Material( Color.GREEN.getRGB() );
 
 	/**
-	 * The texture for a selected TetraHedron.
+	 * The material for a selected TetraHedron.
 	 */
-	private static final TextureSpec SELECTION_TEXTURE = new TextureSpec( Color.BLUE );
+	private static final Material SELECTION_MATERIAL = new Material( Color.BLUE.getRGB() );
 
 	/**
-	 * The texture for a selected face.
+	 * The material for a selected face.
 	 */
-	private static final TextureSpec FACE_SELECTION_TEXTURE = new TextureSpec( Color.MAGENTA );
+	private static final Material FACE_SELECTION_MATERIAL = new Material( Color.MAGENTA.getRGB() );
 
 	/**
 	 * {@link Model} whose objects should be translated to 3d.
@@ -115,7 +115,7 @@ public final class Model3D
 		model.addPropertyChangeListener( Model.FACE_SELECTION_CHANGED   , propertyListener );
 		_model = model;
 
-		_viewModel = new Java3dModel( ViewModel.FOOT , Color.GRAY);
+		_viewModel = new Java3dModel( ViewModel.FOOT , Color.GRAY );
 		ViewModelTools.addLegacyLights( _viewModel );
 
 		_elements = new HashSet();
@@ -230,7 +230,7 @@ public final class Model3D
 
 		if ( element == _model.getSelection() )
 		{
-			setTextureOfAllFaces( element3D , SELECTION_TEXTURE );
+			setMaterialOfAllFaces( element3D , SELECTION_MATERIAL );
 		}
 
 		_viewModel.createNode( element , transform , element3D , null , 1.0f);
@@ -258,7 +258,7 @@ public final class Model3D
 		};
 
 		final Object3D result = new Object3D();
-		result.addFace( floorCoords , FLOOR_TEXTURE , false , true );
+		result.addFace( floorCoords , FLOOR_MATERIAL , false , true );
 		return result;
 	}
 
@@ -275,7 +275,7 @@ public final class Model3D
 		final double height = wall.getZSize();
 		final double depth  = wall.getYSize();
 
-		return new Box3D( Matrix3D.INIT , width , depth , height , WALL_TEXTURE , WALL_TEXTURE );
+		return new Box3D( Matrix3D.INIT , width , depth , height , WALL_MATERIAL , WALL_MATERIAL );
 	}
 
 	/**
@@ -290,7 +290,7 @@ public final class Model3D
 	{
 		final Object3D result = new Object3D();
 
-		final TextureSpec texture = HEDRON_TEXTURE;
+		final Material material = HEDRON_MATERIAL;
 
 		final double width     = hedron.getSize();
 		final double depth     = Math.cos( Math.toRadians( 30.0 ) ) * width;
@@ -309,10 +309,10 @@ public final class Model3D
 			} );
 
 
-		/* Bottom */ result.addFace( new int[] { 2 , 0 , 1 } , texture , false );
-		/* Back   */ result.addFace( new int[] { 3 , 1 , 0 } , texture , false );
-		/* Left   */ result.addFace( new int[] { 3 , 0 , 2 } , texture , false );
-		/* Right  */ result.addFace( new int[] { 3 , 2 , 1 } , texture , false );
+		/* Bottom */ result.addFace( new int[] { 2 , 0 , 1 } , material , false );
+		/* Back   */ result.addFace( new int[] { 3 , 1 , 0 } , material , false );
+		/* Left   */ result.addFace( new int[] { 3 , 0 , 2 } , material , false );
+		/* Right  */ result.addFace( new int[] { 3 , 2 , 1 } , material , false );
 
 		return result;
 	}
@@ -320,7 +320,7 @@ public final class Model3D
 	/**
 	 * Updates selection from <code>oldSelection</code> to
 	 * <code>newSelection</code>. The old {@link SceneElement} (if not
-	 * <code>null</code>) is given back the normal texture, while the new
+	 * <code>null</code>) is given back the normal material, while the new
 	 * {@link SceneElement} (if not <code>null</code>) is given the color of a
 	 * selected {@link SceneElement}.
 	 *
@@ -334,36 +334,36 @@ public final class Model3D
 		if ( oldSelection != null )
 		{
 			final Object3D oldObject3D = (Object3D)viewModel.getNode3D( oldSelection );
-			TextureSpec texture = null;
+			Material material = null;
 
 			if ( oldSelection instanceof Floor )
 			{
-				texture = FLOOR_TEXTURE;
+				material = FLOOR_MATERIAL;
 			}
 			else if ( oldSelection instanceof Wall )
 			{
-				texture = WALL_TEXTURE;
+				material = WALL_MATERIAL;
 			}
 			else if ( oldSelection instanceof TetraHedron )
 			{
-				texture = HEDRON_TEXTURE;
+				material = HEDRON_MATERIAL;
 			}
 
-			setTextureOfAllFaces( oldObject3D , texture );
+			setMaterialOfAllFaces( oldObject3D , material );
 			viewModel.updateNode( oldSelection );
 		}
 
 		if ( newSelection != null )
 		{
 			final Object3D newObject3D = (Object3D)viewModel.getNode3D( newSelection );
-			setTextureOfAllFaces( newObject3D , SELECTION_TEXTURE );
+			setMaterialOfAllFaces( newObject3D , SELECTION_MATERIAL );
 			viewModel.updateNode( newSelection );
 		}
 	}
 
 	/**
 	 * Updates face selection from <code>oldFace</code> to <code>newFace</code>.
-	 * The old face (if not <code>null</code>) is given back the normal texture,
+	 * The old face (if not <code>null</code>) is given back the normal material,
 	 * while the new face (if not <code>null</code>) is given the color of a
 	 * selected face.
 	 *
@@ -381,7 +381,7 @@ public final class Model3D
 
 			final Object3D hedron3D = (Object3D)viewModel.getNode3D( oldHedron );
 
-			setTextureOfAllFaces( hedron3D , SELECTION_TEXTURE );
+			setMaterialOfAllFaces( hedron3D , SELECTION_MATERIAL );
 		}
 
 		TetraHedron newHedron = null;
@@ -392,7 +392,7 @@ public final class Model3D
 			final Object3D hedron3D = (Object3D)viewModel.getNode3D( newHedron );
 			final Face3D   face     = hedron3D.getFace( newFace.getFaceNumber() );
 
-			face.setTexture( FACE_SELECTION_TEXTURE );
+			face.setMaterial( FACE_SELECTION_MATERIAL );
 		}
 
 		if ( oldHedron != null )
@@ -403,17 +403,17 @@ public final class Model3D
 	}
 
 	/**
-	 * Set texture of all faces of the specified 3D object.
+	 * Set material of all faces of the specified 3D object.
 	 *
-	 * @param   object      3D object whose face textures to set.
-	 * @param   texture     Texture to set.
+	 * @param   object      3D object whose face material to set.
+	 * @param   material    Material to set.
 	 */
-	private static void setTextureOfAllFaces( final Object3D object , final TextureSpec texture )
+	private static void setMaterialOfAllFaces( final Object3D object , final Material material )
 	{
 		for ( int i = 0 ; i < object.getFaceCount() ; i++ )
 		{
 			final Face3D face = object.getFace( i );
-			face.setTexture( texture );
+			face.setMaterial( material );
 		}
 	}
 }

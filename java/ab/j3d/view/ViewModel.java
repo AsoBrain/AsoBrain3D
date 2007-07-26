@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2006
+ * (C) Copyright Numdata BV 2004-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,8 +29,8 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
 import ab.j3d.Bounds3D;
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.control.CameraControl;
 import ab.j3d.control.FromToCameraControl;
@@ -290,14 +290,14 @@ public abstract class ViewModel
 	 *
 	 * @param   id                  Application-assigned ID of view model node.
 	 * @param   node3D              Root in the 3D scene to create a view model node for.
-	 * @param   textureOverride     Texture to use instead of actual textures.
+	 * @param   materialOverride    Material to use instead of actual materials.
 	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).);
 	 *
 	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public final void createNode( final Object id , final Node3D node3D , final TextureSpec textureOverride , final float opacity )
+	public final void createNode( final Object id , final Node3D node3D , final Material materialOverride , final float opacity )
 	{
-		createNode( id , null , node3D , textureOverride , opacity );
+		createNode( id , null , node3D , materialOverride , opacity );
 	}
 
 	/**
@@ -309,12 +309,12 @@ public abstract class ViewModel
 	 * @param   id                  Application-assigned ID of view model node.
 	 * @param   transform           Initial transform (<code>null</code> => identity).
 	 * @param   node3D              Root in the 3D scene to create a view model node for.
-	 * @param   textureOverride     Texture to use instead of actual textures.
+	 * @param   materialOverride    Material to use instead of actual materials.
 	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).);
 	 *
 	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public final void createNode( final Object id , final Matrix3D transform , final Node3D node3D , final TextureSpec textureOverride , final float opacity )
+	public final void createNode( final Object id , final Matrix3D transform , final Node3D node3D , final Material materialOverride , final float opacity )
 	{
 		if ( id == null )
 			throw new NullPointerException( "id" );
@@ -323,7 +323,7 @@ public abstract class ViewModel
 
 		if ( node3D != null )
 		{
-			final ViewModelNode node = new ViewModelNode( id , transform , node3D , textureOverride , opacity );
+			final ViewModelNode node = new ViewModelNode( id , transform , node3D , materialOverride , opacity );
 			initializeNode( node );
 			addNode( node );
 			updateNodeContent( node );

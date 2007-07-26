@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * (C) Copyright Numdata BV 2005-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,7 @@ package ab.j3d.view;
 
 import java.awt.Polygon;
 
-import ab.j3d.TextureSpec;
+import ab.j3d.Material;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
@@ -42,13 +42,13 @@ public final class RenderedPolygon
 	public Object3D _object;
 
 	/**
-	 * Texture applied to this face. Taken from {@link Face3D#getTexture()}.
+	 * Material applied to this face. Taken from {@link Face3D#getMaterial()}.
 	 *
-	 * @see     Face3D#getTexture
+	 * @see     Face3D#getMaterial
 	 * @see     Face3D#getTextureU
 	 * @see     Face3D#getTextureV
 	 */
-	public TextureSpec _texture;
+	public Material _material;
 
 	/**
 	 * Use alternate vs. regular appearance for face.
@@ -208,7 +208,7 @@ public final class RenderedPolygon
 		_maxY                = 0;
 		_minZ                = 0.0;
 		_maxZ                = 0.0;
-		_texture             = null;
+		_material            = null;
 		_alternateAppearance = false;
 
 		xpoints = projectedX;
@@ -323,7 +323,7 @@ public final class RenderedPolygon
 		_planeNormalY        = planeNormalY;
 		_planeNormalZ        = planeNormalZ;
 		_planeConstant       = planeConstant;
-		_texture             = face.getTexture();
+		_material            = face.getMaterial();
 		_alternateAppearance = alternateAppearance;
 	}
 
@@ -333,8 +333,8 @@ public final class RenderedPolygon
 	void destroy()
 	{
 		invalidate();
-		_object  = null;
-		_texture = null;
+		_object   = null;
+		_material = null;
 	}
 
 	/**
@@ -420,7 +420,7 @@ public final class RenderedPolygon
 		final StringBuffer sb = new StringBuffer();
 
 		sb.append(   "Object: "               ); sb.append( _object );
-		sb.append( "\nTexture: "              ); sb.append( ( _texture == null ? "null" : _texture.code ) );
+		sb.append( "\nMaterial: "             ); sb.append( ( _material == null ? "null" : _material.code ) );
 		sb.append( "\nAlternate appearance: " ); sb.append( _alternateAppearance );
 		sb.append( "\nNormal: "               ); sb.append( Vector3D.toFriendlyString( Vector3D.INIT.set( _planeNormalX , _planeNormalY , _planeNormalZ ) ) );
 		sb.append( "\nPlane constant: "       ); sb.append( _planeConstant );

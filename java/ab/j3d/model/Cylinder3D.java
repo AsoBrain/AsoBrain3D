@@ -20,8 +20,8 @@
  */
 package ab.j3d.model;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 
 /**
  * This class defines a 3D cylinder with optionally different radi for the caps. Using
@@ -62,16 +62,16 @@ public final class Cylinder3D
 	 * @param   radiusTop           Radius at top (z=height).
 	 * @param   height              Height of cylinder (z-axis).
 	 * @param   numEdges            Number of edges to approximate circle (minimum: 3).
-	 * @param   texture             Texture of cylinder.
+	 * @param   material            Material of cylinder.
 	 * @param   smoothCircumference Apply smoothing to circumference of cylinder.
 	 * @param   smoothCaps          Apply smoothing to caps of cylinder.
 	 */
-	public Cylinder3D( final Matrix3D xform , final double radiusBottom , final double radiusTop , final double height , final int numEdges , final TextureSpec texture , final boolean smoothCircumference , final boolean smoothCaps )
+	public Cylinder3D( final Matrix3D xform , final double radiusBottom , final double radiusTop , final double height , final int numEdges , final Material material , final boolean smoothCircumference , final boolean smoothCaps )
 	{
-		if ( radiusBottom < 0 || radiusTop < 0 || height < 0 || numEdges < 3 )
-			throw new IllegalArgumentException( "inacceptable arguments to Cylinder constructor (height=" + height + ", text=" + texture + ')' );
+		if ( radiusBottom < 0.0 || radiusTop < 0.0 || height < 0.0 || numEdges < 3 )
+			throw new IllegalArgumentException( "inacceptable arguments to Cylinder constructor (height=" + height + ", material=" + material + ')' );
 
-		if ( radiusBottom == 0 && radiusTop == 0 )
+		if ( radiusBottom == 0.0 && radiusTop == 0.0 )
 			throw new IllegalArgumentException( "radius of bottom or top of cylinder must be non-zero" );
 
 		this.xform        = xform;
@@ -79,26 +79,15 @@ public final class Cylinder3D
 		this.radiusBottom = radiusBottom;
 		this.height       = height;
 
-		generate( numEdges , texture , smoothCircumference , smoothCaps );
-	}
-
-	/**
-	 * Generate Object3D properties for cylinder.
-	 *
-	 * @param   numEdges            Number of edges to approximate circle (minimum: 3).
-	 * @param   texture             Texture of cylinder.
-	 * @param   smoothCircumference Apply smoothing to circumference of cylinder.
-	 * @param   smoothCaps          Apply smoothing to caps of cylinder.
-	 */
-	public void generate( final int numEdges , final TextureSpec texture , final boolean smoothCircumference , final boolean smoothCaps )
-	{
 		/*
 		 * Setup properties of cylinder.
 		 */
-		final boolean  hasBottom         = ( radiusBottom > 0 );
-		final boolean  hasTop            = ( radiusTop > 0 );
+		final boolean  hasBottom         = ( radiusBottom > 0.0 );
+		final boolean  hasTop            = ( radiusTop > 0.0 );
 		final int      vertexCount       = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
 		final double[] vertexCoordinates = new double[ vertexCount * 3 ];
+
+		final double radStep = 2.0 * Math.PI / (double)numEdges;
 
 		/*
 		 * Generate vertices.
@@ -107,13 +96,11 @@ public final class Cylinder3D
 
 		if ( hasBottom )
 		{
-			final double step = 2.0 * Math.PI / (double)numEdges;
-
 			for ( int i = 0 ; i < numEdges ; i++ )
 			{
-				final double a = (double)i * step;
-				vertexCoordinates[ v++ ] =  Math.sin( a ) * radiusBottom;
-				vertexCoordinates[ v++ ] = -Math.cos( a ) * radiusBottom;
+				final double rad = (double)i * radStep;
+				vertexCoordinates[ v++ ] =  Math.sin( rad ) * radiusBottom;
+				vertexCoordinates[ v++ ] = -Math.cos( rad ) * radiusBottom;
 				vertexCoordinates[ v++ ] = 0.0;
 			}
 		}
@@ -126,13 +113,11 @@ public final class Cylinder3D
 
 		if ( hasTop )
 		{
-			final double step = 2.0 * Math.PI / (double)numEdges;
-
 			for ( int i = 0 ; i < numEdges ; i++ )
 			{
-				final double a = (double)i * step;
-				vertexCoordinates[ v++ ] =  Math.sin( a ) * radiusTop;
-				vertexCoordinates[ v++ ] = -Math.cos( a ) * radiusTop;
+				final double rad = (double)i * radStep;
+				vertexCoordinates[ v++ ] =  Math.sin( rad ) * radiusTop;
+				vertexCoordinates[ v++ ] = -Math.cos( rad ) * radiusTop;
 				vertexCoordinates[ v++ ] = height;
 			}
 		}
@@ -151,44 +136,57 @@ public final class Cylinder3D
 		 */
 		if ( hasBottom )
 		{
-			final int[] fv = new int[ numEdges ];
-			for ( int i = 0 ; i < numEdges ; i++ )
-				fv[ i ] = i;
+			final int[]   vertexIndices = new int[ numEdges ];
+			final float[] textureU      = new float[ numEdges ];
+			final float[] textureV      = new float[ numEdges ];
 
-			addFace( fv , texture , smoothCaps );
+			for ( int i = 0 ; i < numEdges ; i++ )
+			{
+				final double rad = (double)i * radStep;
+
+				vertexIndices[ i ] = i;
+				textureU     [ i ] = (float)( 0.5 + 0.5 * Math.sin( rad ) );
+				textureV     [ i ] = (float)( 0.5 - 0.5 * Math.cos( rad ) );
+			}
+
+			addFace( vertexIndices , material , textureU , textureV , 1.0f , smoothCaps , false );
 		}
 
 		/*
 		 * Circumference.
 		 */
-		if ( hasBottom && hasTop )
+		if ( hasTop || hasBottom )
 		{
+			final float[] textureV =    !hasTop ? new float[] { 0.0f , 0.0f , 1.0f        } :
+			                         !hasBottom ? new float[] {        0.0f , 1.0f , 1.0f } :
+			                                      new float[] { 0.0f , 0.0f , 1.0f , 1.0f };
+
 			for ( int i1 = 0 ; i1 < numEdges ; i1++ )
 			{
 				final int   i2 = ( i1 + 1 ) % numEdges;
-				final int[] fv = { i2 , i1 , numEdges + i1 , numEdges + i2 };
+				final float u1 = (float)  i1       / (float)numEdges;
+				final float u2 = (float)( i1 + 1 ) / (float)numEdges;
 
-				addFace( fv , texture , smoothCircumference );
-			}
-		}
-		else if ( hasBottom )
-		{
-			for ( int i1 = 0 ; i1 < numEdges ; i1++ )
-			{
-				final int   i2 = ( i1 + 1 ) % numEdges;
-				final int[] fv = { i2 , i1 , numEdges };
+				final int[] vertexIndices;
+				final float[] textureU;
 
-				addFace( fv , texture , smoothCircumference );
-			}
-		}
-		else if ( hasTop )
-		{
-			for ( int i1 = 0 ; i1 < numEdges ; i1++ )
-			{
-				final int   i2 = ( i1 + 1 ) % numEdges;
-				final int[] fv = { 0 , 1 + i1 , 1 + i2 };
+				if ( !hasTop )
+				{
+					vertexIndices = new int[]   {   i2 ,   i1 , numEdges };
+					textureU      = new float[] {   u2 ,   u1 ,     0.5f };
+				}
+				else if ( !hasBottom )
+				{
+					vertexIndices = new int[]   {    0 , 1 + i1 , 1 + i2 };
+					textureU      = new float[] { 0.5f ,     u1 ,     u2 };
+				}
+				else
+				{
+					vertexIndices = new int[]   {   i2 ,   i1 , numEdges + i1 , numEdges + i2 };
+					textureU      = new float[] {   u2 ,   u1 ,            u1 ,            u2 };
+				}
 
-				addFace( fv , texture , smoothCircumference );
+				addFace( vertexIndices , material , textureU , textureV , 1.0f , smoothCircumference , false );
 			}
 		}
 
@@ -197,11 +195,22 @@ public final class Cylinder3D
 		 */
 		if ( hasTop )
 		{
-			final int[] fv = new int[ numEdges ];
-			for ( int i = 0 ; i < numEdges ; i++ )
-				fv[ i ] = ( hasBottom ? numEdges : 1 ) + ( numEdges - i - 1 );
+			final int[]   vertexIndices = new int[ numEdges ];
+			final float[] textureU      = new float[ numEdges ];
+			final float[] textureV      = new float[ numEdges ];
 
-			addFace( fv , texture , smoothCaps );
+			final int lastVertex = ( hasBottom ? numEdges : 1 ) + numEdges - 1;
+
+			for ( int i = 0 ; i < numEdges ; i++ )
+			{
+				final double rad = (double)i * radStep;
+
+				vertexIndices[ i ] = lastVertex - i;
+				textureU     [ i ] = (float)( 0.5 + 0.5 * Math.sin( rad ) );
+				textureV     [ i ] = (float)( 0.5 - 0.5 * Math.cos( rad ) );
+			}
+
+			addFace( vertexIndices , material , textureU , textureV , 1.0f , smoothCaps , false );
 		}
 	}
 }

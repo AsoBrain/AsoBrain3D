@@ -67,8 +67,10 @@ import javax.vecmath.Tuple3f;
 import javax.vecmath.Tuple3i;
 import javax.vecmath.Vector3f;
 
+import ab.j3d.MapTools;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
+
+import com.numdata.oss.TextTools;
 
 /**
  * Utility methods for Java 3D support.
@@ -91,18 +93,17 @@ public final class Java3dTools
 	private static final ComponentColorModel TEXTURE_CM = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ) , new int[] { 8 , 8 , 8 , 8 } , true , false , Transparency.TRANSLUCENT , 0 );
 
 	/**
-	 * Map used to cache textures. Maps texture code (<code>String</code>) to
-	 * texture (<code>Texture</code>).
+	 * Texture map cache (maps map name to texture).
 	 */
-	private final Map _textureCache = new HashMap();
+	private final Map<String,Texture> _textureCache = new HashMap();
 
 	/**
-	 * Singleton <code>Java3dTools</code> instance.
+	 * Singleton {@link Java3dTools} instance.
 	 */
 	private static Java3dTools _singleton;
 
 	/**
-	 * Construct <code>Java3dTools</code> for centralized texture caching, etc.
+	 * Construct {@link Java3dTools} for centralized texture caching, etc.
 	 */
 	private Java3dTools()
 	{
@@ -111,7 +112,7 @@ public final class Java3dTools
 	/**
 	 * Get singleton instance.
 	 *
-	 * @return  Singleton <code>Java3dTools</code> instance.
+	 * @return  Singleton {@link Java3dTools} instance.
 	 */
 	public static Java3dTools getInstance()
 	{
@@ -125,11 +126,11 @@ public final class Java3dTools
 	}
 
 	/**
-	 * Convert <code>Matrix3D<code/> to Java3D <code>Transform3D</code> object.
+	 * Convert <code>Matrix3D<code/> to Java3D {@link Transform3D} object.
 	 *
 	 * @param   matrix  Matrix3D to convert.
 	 *
-	 * @return  <code>Transform3D</code> instance.
+	 * @return  {@link Transform3D} instance.
 	 */
 	public static Transform3D convertMatrix3DToTransform3D( final Matrix3D matrix )
 	{
@@ -248,7 +249,7 @@ public final class Java3dTools
 	}
 
 	/**
-	 * Conveniene method to create a <code>Canvas3D</code> with default
+	 * Conveniene method to create a {@link Canvas3D} with default
 	 * configuration settings.
 	 *
 	 * @return  Canvas that wascreated.
@@ -292,7 +293,7 @@ public final class Java3dTools
 	}
 
 	/**
-	 * Add content defined by a <code>BranchGroup</code> to the specified dynamic
+	 * Add content defined by a {@link BranchGroup} to the specified dynamic
 	 * scene graph. The <code>ALLOW_DETACH</code> capability of the added content
 	 * is set, to allow it to be removed later.
 	 *
@@ -323,53 +324,42 @@ public final class Java3dTools
 	}
 
 	/**
-	 * Get Java3D <code>Appearance</code> for the specified <code>TextureSpec</code>.
+	 * Get Java3D {@link Appearance} for the specified material.
 	 *
-	 * @param   textureSpec     TextureSpec to get the Appearance for.
+	 * @param   abMaterial      Material to get the {@link Appearance} for.
 	 * @param   opacity         Opacity to apply to the returned appearance.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 *
 	 * @return  Appearance for the specified texture spec.
 	 */
-	public Appearance getAppearance( final TextureSpec textureSpec , final float opacity , final boolean hasBackface )
+	public Appearance getAppearance( final ab.j3d.Material abMaterial , final float opacity , final boolean hasBackface )
 	{
-		final int   rgb = textureSpec.rgb;
-		final float r   = ( rgb >= 0 ) ? (float)( ( rgb >> 16 ) & 255 ) / 255.0f : 255.0f;
-		final float g   = ( rgb >= 0 ) ? (float)( ( rgb >>  8 ) & 255 ) / 255.0f : 255.0f;
-		final float b   = ( rgb >= 0 ) ? (float)(   rgb         & 255 ) / 255.0f : 255.0f;
-		final float ar  = 1.9f * textureSpec.ambientReflectivity;
-		final float dr  = 0.9f * textureSpec.diffuseReflectivity;
-		final float sr  = 0.5f * textureSpec.specularReflectivity;
-
-		final Material material = new Material();
-		material.setLightingEnable( true );
-		material.setAmbientColor  ( ar * r , ar * g , ar * b );
-		material.setEmissiveColor ( new Color3f( 0.0f , 0.0f , 0.0f ) );
-		material.setDiffuseColor  ( dr * r , dr * g , dr * b );
-		material.setSpecularColor ( new Color3f( sr , sr , sr ) );
-		material.setShininess     ( textureSpec.specularReflectivity * (float)textureSpec.specularExponent );
+		final Material j3dMaterial = new Material();
+		j3dMaterial.setLightingEnable( true );
+		j3dMaterial.setAmbientColor  ( abMaterial.ambientColorRed , abMaterial.ambientColorGreen , abMaterial.ambientColorBlue );
+		j3dMaterial.setEmissiveColor ( abMaterial.emissiveColorRed , abMaterial.emissiveColorGreen , abMaterial.emissiveColorBlue );
+		j3dMaterial.setDiffuseColor  ( abMaterial.diffuseColorRed , abMaterial.diffuseColorGreen , abMaterial.diffuseColorBlue );
+		j3dMaterial.setSpecularColor ( abMaterial.specularColorRed , abMaterial.specularColorGreen , abMaterial.specularColorBlue );
+		j3dMaterial.setShininess     ( abMaterial.shininess );
 
 		final Appearance appearance = new Appearance();
 		appearance.setCapability( Appearance.ALLOW_TEXTURE_READ );
-		appearance.setMaterial( material );
+		appearance.setMaterial( j3dMaterial );
 
-		if ( textureSpec.isTexture() )
+		final Texture texture = getTexture( abMaterial.colorMap );
+		if ( texture != null )
 		{
-			final Texture texture = getTexture( textureSpec );
 			appearance.setTexture( texture );
 
 			final TextureAttributes textureAttributes = new TextureAttributes();
 			textureAttributes.setTextureMode( TextureAttributes.MODULATE );
-//			final Transform3D t = new Transform3D();
-//			t.setScale( spec.textureScale );
-//			textureAttributes.setTextureTransform( t  );
 			appearance.setTextureAttributes( textureAttributes );
 		}
 
 		// Setup Transparency
 		boolean noCulling = hasBackface;
 
-		final float combinedOpacity = opacity * textureSpec.opacity;
+		final float combinedOpacity = opacity * abMaterial.diffuseColorAlpha;
 		if ( combinedOpacity >= 0.0f && combinedOpacity < 0.999f )
 		{
 			final TransparencyAttributes transparency = new TransparencyAttributes( TransparencyAttributes.NICEST , 1.0f - combinedOpacity );
@@ -385,41 +375,41 @@ public final class Java3dTools
 			appearance.setPolygonAttributes( polygonAttributes );
 		}
 
-		if ( rgb >= 0 )
-			appearance.setColoringAttributes( new ColoringAttributes( r , g , b , ColoringAttributes.FASTEST ) );
+		appearance.setColoringAttributes( new ColoringAttributes( abMaterial.diffuseColorRed , abMaterial.diffuseColorGreen , abMaterial.diffuseColorBlue , ColoringAttributes.FASTEST ) );
 
 		return appearance;
 	}
 
 	/**
-	 * Convert <code>TextureSpec<code/> to Java3D <code>Texture</code>
-	 * object.
+	 * Get {@link Texture} for the specified map.
 	 *
-	 * @param   spec    TextureSpec to convert.
+	 * @param   name    Name of texture map to get.
 	 *
-	 * @return  Texture for the specified texture spec.
+	 * @return  Texture for the specified name;
+	 *          <code>null</code> if the name was empty or no map by the
+	 *          given name was found.
 	 */
-	public Texture getTexture( final TextureSpec spec )
+	public Texture getTexture( final String name )
 	{
 		Texture result = null;
 
-		if ( ( spec != null ) && ( spec.isTexture() ) )
+		if ( TextTools.isNonEmpty( name ) )
 		{
-			final String code = spec.code;
-			if ( _textureCache.containsKey( code ) )
+			final Map<String,Texture> cache = _textureCache;
+			if ( cache.containsKey( name ) )
 			{
-				result = (Texture)_textureCache.get( code );
+				result = cache.get( name );
 			}
 			else
 			{
-				final Image image = spec.getTextureImage();
+				final Image image = MapTools.getImage( name );
 				if ( image != null )
 				{
 					result = loadTexture( image );
 					result.setCapability( Texture.ALLOW_SIZE_READ );
 				}
 
-				_textureCache.put( code , result );
+				cache.put( name , result );
 			}
 		}
 

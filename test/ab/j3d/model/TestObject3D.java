@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2006 Peter S. Heijnen
+ * Copyright (C) 1999-2007 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,8 +25,8 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.geom.BasicRay3D;
 
@@ -49,7 +49,7 @@ public final class TestObject3D
 	private static final String CLASS_NAME = TestObject3D.class.getName();
 
 	/**
-	 * Test {@link Object3D#addFace(Vector3D[], TextureSpec, boolean, boolean)}
+	 * Test {@link Object3D#addFace( Vector3D[] , Material , boolean, boolean )}
 	 * method.
 	 */
 	public static void testAddFace()
@@ -143,8 +143,8 @@ public final class TestObject3D
 		final Vector3D rb = v0.set(    100.0 / 2.0   ,    100.0 / 2.0   , 0.0 );
 		final Vector3D lb = v0.set( -( 100.0 / 2.0 ) ,    100.0 / 2.0   , 0.0 );
 
-		final TextureSpec red   = new TextureSpec( Color.red   );
-		final TextureSpec green = new TextureSpec( Color.green );
+		final Material red   = new Material( Color.RED  .getRGB() );
+		final Material green = new Material( Color.GREEN.getRGB() );
 
 		final Object3D twoSidedPlaneOnZ0 = new Object3D();
 		twoSidedPlaneOnZ0.setTag( "Plane" );
@@ -217,40 +217,6 @@ public final class TestObject3D
 		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
 		tag1 = ( (Face3DIntersection)selection.get( 0 ) ).getObjectID();
 		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
-	}
-
-	/**
-	 * Test {@link Object3D#calculateBoundValue(int, int)} method.
-	 */
-	public static void testCalculateBoundValue()
-	{
-		System.out.println( CLASS_NAME + ".testCalculateBoundValue" );
-
-		final int[][] tests =
-		{
-			{ -20 , 10 ,  20 } ,
-			{ -19 , 10 ,  20 } ,
-			{ -11 , 10 ,  20 } ,
-			{ -10 , 10 ,  10 } ,
-			{  -9 , 10 ,  10 } ,
-			{  -1 , 10 ,  10 } ,
-			{   0 , 10 ,   0 } ,
-			{   1 , 10 ,   0 } ,
-			{   9 , 10 ,   0 } ,
-			{  10 , 10 , -10 } ,
-			{  11 , 10 , -10 } ,
-			{  19 , 10 , -10 } ,
-			{  20 , 10 , -20 } ,
-		};
-
-		for ( int i = 0 ; i < tests.length ; i++ )
-		{
-			final int value  = tests[ i ][ 0 ];
-			final int range  = tests[ i ][ 1 ];
-			final int result = tests[ i ][ 2 ];
-
-			assertEquals( "getRangeAdjustment( " + value + " , " + range + " )" , result , Object3D.calculateBoundValue( value , range ) );
-		}
 	}
 
 	/**
