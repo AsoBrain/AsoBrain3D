@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2006
+ * (C) Copyright Numdata BV 2006-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -104,21 +104,6 @@ public class BasicPolygon3D
 			_normal = result;
 		}
 		return result;
-	}
-
-	public double getNormalX()
-	{
-		return getNormal().x;
-	}
-
-	public double getNormalY()
-	{
-		return getNormal().y;
-	}
-
-	public double getNormalZ()
-	{
-		return getNormal().z;
 	}
 
 	public boolean isTwoSided()

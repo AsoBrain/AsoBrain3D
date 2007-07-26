@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2006
+ * (C) Copyright Numdata BV 2006-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -92,7 +92,8 @@ public class GeometryTools
 	 */
 	public static Vector3D getIntersectionBetweenRayAndPlane( final Plane3D plane , final Ray3D ray )
 	{
-		return getIntersectionBetweenRayAndPlane( plane.getNormalX() , plane.getNormalY() , plane.getNormalZ() , plane.getDistance() , plane.isTwoSided() , ray.getOrigin() , ray.getDirection() , ray.isHalfRay() );
+		final Vector3D planeNormal = plane.getNormal();
+		return getIntersectionBetweenRayAndPlane( planeNormal.x , planeNormal.y , planeNormal.z , plane.getDistance() , plane.isTwoSided() , ray.getOrigin() , ray.getDirection() , ray.isHalfRay() );
 	}
 
 	/**

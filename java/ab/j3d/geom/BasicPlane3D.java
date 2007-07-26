@@ -176,21 +176,6 @@ public class BasicPlane3D
 		return _normal;
 	}
 
-	public double getNormalX()
-	{
-		return _normal.x;
-	}
-
-	public double getNormalY()
-	{
-		return _normal.y;
-	}
-
-	public double getNormalZ()
-	{
-		return _normal.z;
-	}
-
 	public boolean isTwoSided()
 	{
 		return _twoSided;

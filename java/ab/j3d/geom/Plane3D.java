@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2006
+ * (C) Copyright Numdata BV 2006-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -57,39 +57,6 @@ public interface Plane3D
 	 * @see     #getDistance
 	 */
 	Vector3D getNormal();
-
-	/**
-	 * Get X component of plane normal. This defines the <code>A</code> variable
-	 * in the plane equation:
-	 * <pre>
-	 *   A * x + B * y + C * z = D
-	 * </pre>
-	 *
-	 * @return  X component of plane normal.
-	 */
-	double getNormalX();
-
-	/**
-	 * Get Y component of plane normal. This defines the <code>B</code> variable
-	 * in the plane equation:
-	 * <pre>
-	 *   A * x + B * y + C * z = D
-	 * </pre>
-	 *
-	 * @return  Y component of plane normal.
-	 */
-	double getNormalY();
-
-	/**
-	 * Get Z component of plane normal. This defines the <code>C</code> variable
-	 * in the plane equation:
-	 * <pre>
-	 *   A * x + B * y + C * z = D
-	 * </pre>
-	 *
-	 * @return  Z component of plane normal.
-	 */
-	double getNormalZ();
 
 	/**
 	 * Get flag that indicates that the plane is two-sided. This means, if set,

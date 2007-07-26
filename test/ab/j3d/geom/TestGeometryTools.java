@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2006
+ * (C) Copyright Numdata BV 2006-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -461,9 +461,6 @@ public final class TestGeometryTools
 				public double   getZ( final int index ) { return _vertices[ index ].z; }
 				public double   getDistance()           { return Vector3D.dot( _normal , _vertices[ 0 ] ); }
 				public Vector3D getNormal()             { return _normal; }
-				public double   getNormalX()            { return _normal.x; }
-				public double   getNormalY()            { return _normal.y; }
-				public double   getNormalZ()            { return _normal.z; }
 				public boolean  isTwoSided()            { return false; }
 			};
 
@@ -485,9 +482,6 @@ public final class TestGeometryTools
 				public double   getZ( final int index ) { return _vertices[ index ].z; }
 				public double   getDistance()           { return Vector3D.dot( _normal , _vertices[ 0 ] ); }
 				public Vector3D getNormal()             { return _normal; }
-				public double   getNormalX()            { return _normal.x; }
-				public double   getNormalY()            { return _normal.y; }
-				public double   getNormalZ()            { return _normal.z; }
 				public boolean  isTwoSided()            { return false; }
 			};
 
