@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2006 Peter S. Heijnen
+ * Copyright (C) 1999-2007 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,10 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ab.j3d.Bounds3D;
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.PolyPoint2D;
 import ab.j3d.Polyline2D;
-import ab.j3d.TextureSpec;
 import ab.j3d.Vector3D;
 import ab.j3d.geom.BasicRay3D;
 import ab.j3d.geom.GeometryTools;
@@ -129,11 +129,11 @@ public class Object3D
 		_vertexNormals        = null;
 		_vertexNormalsDirty   = true;
 
-		outlinePaint          = Color.black;
-		fillPaint             = Color.white;
+		outlinePaint          = Color.BLACK;
+		fillPaint             = Color.WHITE;
 		shadeFactor           = 0.5f;
-		alternateOutlinePaint = Color.blue;
-		alternateFillPaint    = Color.white;
+		alternateOutlinePaint = Color.BLUE;
+		alternateFillPaint    = Color.WHITE;
 	}
 
 	/**
@@ -154,12 +154,12 @@ public class Object3D
 	 *
 	 * @param   vertexIndices   Vertex indices of added face. These indices refer
 	 *                          to vertices previously defined in this object.
-	 * @param   texture         Texture to apply to the face.
+	 * @param   material        Material to apply to the face.
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 */
-	public final void addFace( final int[] vertexIndices , final TextureSpec texture , final boolean smooth )
+	public final void addFace( final int[] vertexIndices , final Material material , final boolean smooth )
 	{
-		addFace( vertexIndices , texture , null , null , 1.0f , smooth , false );
+		addFace( vertexIndices , material , null , null , 1.0f , smooth , false );
 	}
 
 	/**
@@ -167,16 +167,16 @@ public class Object3D
 	 *
 	 * @param   vertexIndices   Vertex indices of added face. These indices refer
 	 *                          to vertices previously defined in this object.
-	 * @param   texture         Texture to apply to the face.
+	 * @param   material        Material to apply to the face.
 	 * @param   textureU        Horizontal texture coordinates (<code>null</code> = none).
 	 * @param   textureV        Vertical texture coordinates (<code>null</code> = none).
 	 * @param   opacity         Opacity of face (0=transparent, 1=opaque).
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	public final void addFace( final int[] vertexIndices , final TextureSpec texture , final int[] textureU , final int[] textureV , final float opacity , final boolean smooth , final boolean twoSided )
+	public final void addFace( final int[] vertexIndices , final Material material , final float[] textureU , final float[] textureV , final float opacity , final boolean smooth , final boolean twoSided )
 	{
-		addFace( new Face3D( this , vertexIndices , texture , textureU , textureV , opacity , smooth , twoSided ) );
+		addFace( new Face3D( this , vertexIndices , material , textureU , textureV , opacity , smooth , twoSided ) );
 	}
 
 	/**
@@ -185,55 +185,52 @@ public class Object3D
 	 * @param   base            Location/orientation of face.
 	 * @param   shape           Shape of face relative to the base.
 	 * @param   reversePath If  set, the returned path will be reversed.
-	 * @param   flipTexture     Swap texture coordinates to rotate 90 degrees.
-	 * @param   texture         Texture to apply to the face.
+	 * @param   flipUV          Swap texture coordinates to rotate 90 degrees.
+	 * @param   material        Material to apply to the face.
 	 * @param   opacity         Opacity of face (0=transparent, 1=opaque).
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	public final void addFace( final Matrix3D base , final Polyline2D shape , final boolean reversePath , final boolean flipTexture , final TextureSpec texture , final float opacity , final boolean smooth , final boolean twoSided )
+	public final void addFace( final Matrix3D base , final Polyline2D shape , final boolean reversePath , final boolean flipUV , final Material material , final float opacity , final boolean smooth , final boolean twoSided )
 	{
 		final int nrVertices = shape.getPointCount() + ( shape.isClosed() ? -1 : 0 );
 
-		final Face3D face = new Face3D( this , null , texture , null , null , opacity , smooth , twoSided );
+		final Face3D face = new Face3D( this , null , material , null , null , opacity , smooth , twoSided );
 		face.ensureCapacity( nrVertices );
 
-		if ( ( nrVertices > 2 ) && ( texture != null ) && texture.isTexture() )
+		if ( ( nrVertices > 2 ) && ( material != null ) && ( material.colorMap != null ) )
 		{
 			final double txBase = -base.xo * base.xx - base.yo * base.yx - base.zo * base.zx;
 			final double tyBase = -base.xo * base.xy - base.yo * base.yy - base.zo * base.zy;
 
-			final int[] vertU = new int[ nrVertices ];
-			final int[] vertV = new int[ nrVertices ];
+			final double[] vertU = new double[ nrVertices ];
+			final double[] vertV = new double[ nrVertices ];
 
-			int minU = 0;
-			int maxU = 0;
-			int minV = 0;
-			int maxV = 0;
+			double floorU = Double.POSITIVE_INFINITY;
+			double floorV = Double.POSITIVE_INFINITY;
+
+			final double modelUnit = 0.001;
+			final double scaleU    = ( material.colorMapWidth  > 0.0 ) ? modelUnit / material.colorMapWidth  : 1.0;
+			final double scaleV    = ( material.colorMapHeight > 0.0 ) ? modelUnit / material.colorMapHeight : 1.0;
 
 			for ( int i = 0 ; i < nrVertices ; i++ )
 			{
 				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
 
-				final int u = (int)( ( flipTexture ? ( tyBase + point.y ) : ( txBase + point.x ) ) * (double)texture.textureScale );
-				final int v = (int)( ( flipTexture ? ( txBase + point.x ) : ( tyBase + point.y ) ) * (double)texture.textureScale );
+				final double u = scaleU * ( flipUV ? ( tyBase + point.y ) : ( txBase + point.x ) );
+				final double v = scaleV * ( flipUV ? ( txBase + point.x ) : ( tyBase + point.y ) );
 
-				if ( i == 0 || u < minU ) minU = u;
-				if ( i == 0 || u > maxU ) maxU = u;
-				if ( i == 0 || v < minV ) minV = v;
-				if ( i == 0 || v > maxV ) maxV = v;
+				if ( u < floorU ) floorU = Math.floor( u );
+				if ( v < floorV ) floorV = Math.floor( v );
 
 				vertU[ i ] = u;
 				vertV[ i ] = v;
 			}
 
-			final int adjustU = calculateBoundValue( minU , texture.getTextureWidth( null ) );
-			final int adjustV = calculateBoundValue( minV , texture.getTextureHeight( null ) );
-
 			for ( int i = 0 ; i < nrVertices ; i++ )
 			{
 				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
-				face.addVertex( base.multiply( point.x , point.y , 0.0 ) , vertU[ i ] + adjustU , vertV[ i ] + adjustV );
+				face.addVertex( base.multiply( point.x , point.y , 0.0 ) , (float)( vertU[ i ] - floorU ) , (float)( vertV[ i ] - floorV ) );
 			}
 		}
 		else
@@ -241,7 +238,7 @@ public class Object3D
 			for ( int i = 0 ; i < nrVertices ; i++ )
 			{
 				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
-				face.addVertex( base.multiply( point.x , point.y , 0.0 ) , 0 , 0 );
+				face.addVertex( base.multiply( point.x , point.y , 0.0 ) , 0.0f , 0.0f );
 			}
 		}
 
@@ -252,65 +249,37 @@ public class Object3D
 	 * Add face to this object.
 	 *
 	 * @param   vertexCoordinates   Vertex coordinates that define the face.
-	 * @param   texture             Texture to apply to the face.
+	 * @param   material            Material to apply to the face.
 	 * @param   smooth              Face is smooth/curved vs. flat.
 	 * @param   twoSided            Face is two-sided.
 	 */
-	public final void addFace( final Vector3D[] vertexCoordinates , final TextureSpec texture , final boolean smooth , final boolean twoSided )
+	public final void addFace( final Vector3D[] vertexCoordinates , final Material material , final boolean smooth , final boolean twoSided )
 	{
-		addFace( vertexCoordinates , texture , null , null , 1.0f , smooth , twoSided );
+		addFace( vertexCoordinates , material , null , null , 1.0f , smooth , twoSided );
 	}
 
 	/**
 	 * Add face to this object.
 	 *
 	 * @param   vertexCoordinates   Vertex coordinates that define the face.
-	 * @param   texture             Texture to apply to the face.
+	 * @param   material            Material to apply to the face.
 	 * @param   textureU            Horizontal texture coordinates (<code>null</code> = none).
 	 * @param   textureV            Vertical texture coordinates (<code>null</code> = none).
 	 * @param   opacity             Opacity of face (0=transparent, 1=opaque).
 	 * @param   smooth              Face is smooth/curved vs. flat.
 	 * @param   twoSided            Face is two-sided.
 	 */
-	public final void addFace( final Vector3D[] vertexCoordinates , final TextureSpec texture , final int[] textureU , final int[] textureV , final float opacity , final boolean smooth , final boolean twoSided )
+	public final void addFace( final Vector3D[] vertexCoordinates , final Material material , final float[] textureU , final float[] textureV , final float opacity , final boolean smooth , final boolean twoSided )
 	{
 		final int nrVertices = vertexCoordinates.length;
 
-		final Face3D face = new Face3D( this , null , texture , null , null , opacity , smooth , twoSided );
+		final Face3D face = new Face3D( this , null , material , null , null , opacity , smooth , twoSided );
 		face.ensureCapacity( nrVertices );
 
 		for ( int i = 0 ; i < nrVertices ; i++ )
 			face.addVertex( vertexCoordinates[ i ] , ( textureU == null ) ? -1 : textureU[ i ] , ( textureV == null ) ? -1 : textureV[ i ] );
 
 		addFace( face );
-	}
-
-	/**
-	 * Helper method to determine an adjustment value to get a reference value in
-	 * a range between 0 and a specified maximum value - 1. The adjustment value
-	 * will always be a multiple of the specified maximum value.
-	 * <p />
-	 * This is used to adjust minimum texture coordinates to the lowest positive
-	 * coordinate within the texture image. The adjustment value should be added
-	 * to all texture coordinates to make the adjustment.
-	 *
-	 * @param   value   Value to adjust.
-	 * @param   range   Specifies the range 0 to (range - 1).
-	 *
-	 * @return  Adjustment value to add to the value.
-	 */
-	static int calculateBoundValue( final int value , final int range )
-	{
-		final int result;
-		if ( value < 0 )
-		{
-			result = ( -value + range - 1 ) / range * range;
-		}
-		else
-		{
-			result = -value + ( value % range );
-		}
-		return result;
 	}
 
 	/**
@@ -573,13 +542,12 @@ public class Object3D
 		int resultIndex = 0;
 		for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
 		{
-			final Face3D face = (Face3D)faces.get( faceIndex );
+			final Face3D   face       = (Face3D)faces.get( faceIndex );
+			final Vector3D faceNormal = face.getNormal();
 
-			face.calculateNormal();
-
-			result[ resultIndex++ ] = face._normalX;
-			result[ resultIndex++ ] = face._normalY;
-			result[ resultIndex++ ] = face._normalZ;
+			result[ resultIndex++ ] = faceNormal.x;
+			result[ resultIndex++ ] = faceNormal.y;
+			result[ resultIndex++ ] = faceNormal.z;
 		}
 
 		return ( transform != null ) ? transform.rotate( result , result , faceCount ) : result;
