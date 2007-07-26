@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2006 Peter S. Heijnen
+ * Copyright (C) 1999-2007 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -54,11 +54,6 @@ public final class Matrix3D
 	/** Y quotient for Z component. */ public final double zy;
 	/** Z quotient for Z component. */ public final double zz;
 	/** Translation of Z component. */ public final double zo;
-
-	/**
-	 * Multiplication factor to transform decimal degrees to radians.
-	 */
-	public static final double DEG_TO_RAD = Math.PI / 180.0;
 
 	/**
 	 * Initial value of a matrix (=identity matrix).
@@ -239,9 +234,9 @@ public final class Matrix3D
 	 */
 	public static Matrix3D getTransform( final double rx , final double ry , final double rz , final double tx , final double ty , final double tz )
 	{
-		final double radX = rx * DEG_TO_RAD;
-		final double radY = ry * DEG_TO_RAD;
-		final double radZ = rz * DEG_TO_RAD;
+		final double radX = Math.toRadians( rx );
+		final double radY = Math.toRadians( ry );
+		final double radZ = Math.toRadians( rz );
 
 		final double ctX = Math.cos( radX );
 		final double stX = Math.sin( radX );
@@ -426,9 +421,9 @@ public final class Matrix3D
 		final double yAxisY = zAxisZ * xAxisX - zAxisX * xAxisZ;
 		final double yAxisZ = zAxisX * xAxisY - zAxisY * xAxisX;
 
-		return Matrix3D.INIT.set( xAxisX , yAxisX , zAxisX , origin.x ,
-		                          xAxisY , yAxisY , zAxisY , origin.y ,
-		                          xAxisZ , yAxisZ , zAxisZ , origin.z );
+		return INIT.set( xAxisX , yAxisX , zAxisX , origin.x ,
+		                 xAxisY , yAxisY , zAxisY , origin.y ,
+		                 xAxisZ , yAxisZ , zAxisZ , origin.z );
 	}
 
 	/**
@@ -603,7 +598,7 @@ public final class Matrix3D
 	 */
 	public boolean isMirrorXY()
 	{
-		return ( xx * ( yy - yx ) + yx * ( xx - xy ) ) < 0;
+		return ( xx * ( yy - yx ) + yx * ( xx - xy ) ) < 0.0;
 	}
 
 	/**
