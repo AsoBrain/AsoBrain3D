@@ -679,6 +679,12 @@ public final class Face3D
 	 * This method returns a triangulated version of this face. The result
 	 * is an array containing indices of vertices in this face. If this
 	 * face has no triangles, <code>null</code> is returned.
+	 * <dl>
+	 *  <dt>NOTE:</dt>
+	 *  <dd>This method caches its result, so it can be called multiple times
+	 *      without consequence. However, the result is not cloned, so
+	 *      THE CONTENTS OF THE RESULT SHOULD NOT BE MODIFIED.</dd>
+	 * </dl>
 	 *
 	 * @return  Array with indices to vertices in this face;
 	 *          <code>null</code> if this face has no triangles.
