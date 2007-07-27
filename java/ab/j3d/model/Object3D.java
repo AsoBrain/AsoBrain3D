@@ -25,6 +25,8 @@ import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.photoneffect.coldet.JCollisionModel3D;
+
 import ab.j3d.Bounds3D;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
@@ -36,6 +38,7 @@ import ab.j3d.geom.GeometryTools;
 import ab.j3d.geom.Ray3D;
 
 import com.numdata.oss.ArrayTools;
+
 
 /**
  * This class defined a 3D object node in a 3D tree. The 3D object consists of
@@ -51,7 +54,7 @@ public class Object3D
 	/**
 	 * List of faces in this object.
 	 */
-	private final List _faces;
+	final List<Face3D> _faces;
 
 	/**
 	 * Coordinates of vertex coordinates in object. Vertex coordinates are
@@ -74,6 +77,13 @@ public class Object3D
 	 * faces changed, so the vertex normals need to be re-calculated.
 	 */
 	boolean _vertexNormalsDirty;
+
+	/**
+	 * Helper for collision tests.
+	 *
+	 * @see     CollisionTester
+	 */
+	private CollisionTester _collisionTester = null;
 
 	/**
 	 * Outline color to use when this object is painted using Java 2D. If this
@@ -309,9 +319,9 @@ public class Object3D
 		{
 			synchronized( this )
 			{
-				final int  vertexCount = getVertexCount();
-				final int  faceCount   = getFaceCount();
-				final List faces       = _faces;
+				final int          vertexCount = getVertexCount();
+				final List<Face3D> faces       = _faces;
+				final int          faceCount   = faces.size();
 
 				final double[] vertexNormals = (double[])ArrayTools.ensureLength( _vertexNormals , double.class , -1 , vertexCount * 3 );
 				_vertexNormals = vertexNormals;
@@ -327,7 +337,7 @@ public class Object3D
 					 */
 					for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
 					{
-						final Face3D face              = (Face3D)faces.get( faceIndex );
+						final Face3D face              = faces.get( faceIndex );
 						final int    faceVertexCount   = face.getVertexCount();
 						final int[]  faceVertexIndices = face.getVertexIndices();
 
@@ -378,6 +388,37 @@ public class Object3D
 		_faces.clear();
 		_vertexCoordinates = null;
 		invalidate();
+	}
+
+	/**
+	 * Test if this object collides with another.
+	 *
+	 * @param   fromOtherToThis     Transformation from other object to this.
+	 * @param   other               Object to test collision with.
+	 *
+	 * @return  <code>true</code> if the objects collide;
+	 *          <code>false</code> otherwise.
+	 */
+	public boolean collidesWith( final Matrix3D fromOtherToThis , final Object3D otherObject )
+	{
+		final CollisionTester collisionTester = getCollisionTester();
+		return collisionTester.testCollision( fromOtherToThis , otherObject.getCollisionTester()  );
+	}
+
+	/**
+	 * Get helper to perform collision tests.
+	 *
+	 * @return  A {@link CollisionTester} for this object.
+	 */
+	private CollisionTester getCollisionTester()
+	{
+		CollisionTester result = _collisionTester;
+		if ( result == null )
+		{
+			result = new CollisionTester( this );
+			_collisionTester = result;
+		}
+		return result;
 	}
 
 	/**
@@ -480,7 +521,7 @@ public class Object3D
 	 */
 	public final Face3D getFace( final int index )
 	{
-		return (Face3D)_faces.get( index );
+		return _faces.get( index );
 	}
 
 	/**
@@ -507,7 +548,7 @@ public class Object3D
 
 		if ( ( face != null ) && ( face.getObject() == this ) )
 		{
-			final List faces = _faces;
+			final List<Face3D> faces = _faces;
 
 			for ( int i = 0 ; i < faces.size() ; i++ )
 			{
@@ -534,15 +575,15 @@ public class Object3D
 	 */
 	public final double[] getFaceNormals( final Matrix3D transform , final double[] dest )
 	{
-		final List     faces        = _faces;
-		final int      faceCount    = faces.size();
-		final int      resultLength = faceCount * 3;
-		final double[] result       = (double[])ArrayTools.ensureLength( dest , double.class , -1 , resultLength );
+		final List<Face3D> faces        = _faces;
+		final int          faceCount    = faces.size();
+		final int          resultLength = faceCount * 3;
+		final double[]     result       = (double[])ArrayTools.ensureLength( dest , double.class , -1 , resultLength );
 
 		int resultIndex = 0;
 		for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
 		{
-			final Face3D   face       = (Face3D)faces.get( faceIndex );
+			final Face3D   face       = faces.get( faceIndex );
 			final Vector3D faceNormal = face.getNormal();
 
 			result[ resultIndex++ ] = faceNormal.x;
@@ -574,12 +615,12 @@ public class Object3D
 	 *
 	 * @throws  NullPointerException if a required input argument is <code>null</code>.
 	 */
-	public List getIntersectionsWithRay( final List dest , final boolean sortResult , final Object objectID , final Matrix3D object2world , final Ray3D ray )
+	public List<Face3DIntersection> getIntersectionsWithRay( final List<Face3DIntersection> dest , final boolean sortResult , final Object objectID , final Matrix3D object2world , final Ray3D ray )
 	{
 		final Matrix3D world2object = object2world.inverse();
 		final Ray3D    ocsRay       = new BasicRay3D( world2object , ray );
 
-		final List result = ( dest != null ) ? dest : new ArrayList();
+		final List<Face3DIntersection> result = ( dest != null ) ? dest : new ArrayList();
 
 		final int faceCount = getFaceCount();
 		for ( int i = 0 ; i < faceCount ; i++ )
@@ -733,12 +774,16 @@ public class Object3D
 	{
 		_vertexNormalsDirty = true;
 
-		final List faces     = _faces;
-		final int  faceCount = faces.size();
+		CollisionTester collisionTester = _collisionTester;
+		if ( collisionTester != null )
+			collisionTester.invalidate();
+
+		final List<Face3D> faces     = _faces;
+		final int          faceCount = faces.size();
 
 		for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
 		{
-			final Face3D face = (Face3D)faces.get( faceIndex );
+			final Face3D face = faces.get( faceIndex );
 			face.invalidate();
 		}
 	}
@@ -769,5 +814,20 @@ public class Object3D
 	{
 		_vertexNormals = vertexNormals;
 		_vertexNormalsDirty = false;
+	}
+
+	/**
+	 * This internal method is used to set a transformation to apply to a
+	 * collision model.
+	 *
+	 * @param   collisionModel  Collision model whose transform to set.
+	 * @param   transform       Transformation to apply to model.
+	 */
+	private static void setCollisionModelTransform( final JCollisionModel3D collisionModel, final Matrix3D transform )
+	{
+		collisionModel.setTransform(
+			(float)transform.xx , (float)transform.xy , (float)transform.xz , (float)transform.xo ,
+			(float)transform.yx , (float)transform.yy , (float)transform.yz , (float)transform.yo ,
+			(float)transform.zx , (float)transform.zy , (float)transform.zz , (float)transform.zo );
 	}
 }
