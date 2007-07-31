@@ -42,11 +42,6 @@ public final class Material
 	public static final String TABLE_NAME = "Materials";
 
 	/**
-	 * Value returned by parseRGBString is an invalid string is detected.
-	 */
-	public static final int BADRGB = 0x00FFFFFF;
-
-	/**
 	 * Unique record ID.
 	 */
 	public long ID;
@@ -200,6 +195,37 @@ public final class Material
 	public Material()
 	{
 		this( -1 ); /* opaque white */
+	}
+
+	/**
+	 * Clone constructor. Note that the {@link #ID} field is reset to
+	 * <code>-1</code> to mark the clone as a new record, all other fields are
+	 * copied as-is.
+	 *
+	 * @param   original    Original to clone.
+	 */
+	public Material( final Material original )
+	{
+		ID                 = -1L;
+		code               = original.code;
+		ambientColorRed    = original.ambientColorRed;
+		ambientColorGreen  = original.ambientColorGreen;
+		ambientColorBlue   = original.ambientColorBlue;
+		diffuseColorRed    = original.diffuseColorRed;
+		diffuseColorGreen  = original.diffuseColorGreen;
+		diffuseColorBlue   = original.diffuseColorBlue;
+		diffuseColorAlpha  = original.diffuseColorAlpha;
+		specularColorRed   = original.specularColorRed;
+		specularColorGreen = original.specularColorGreen;
+		specularColorBlue  = original.specularColorBlue;
+		shininess          = original.shininess;
+		emissiveColorRed   = original.emissiveColorRed;
+		emissiveColorGreen = original.emissiveColorGreen;
+		emissiveColorBlue  = original.emissiveColorBlue;
+		colorMap           = original.colorMap;
+		colorMapWidth      = original.colorMapWidth;
+		colorMapHeight     = original.colorMapHeight;
+		grain              = original.grain;
 	}
 
 	/**
