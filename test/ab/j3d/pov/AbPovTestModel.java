@@ -238,10 +238,12 @@ public final class AbPovTestModel
 			transform = transform.setTranslation( -350.0 , 0.0 , 0.0 );
 
 			final Material mainMaterial = new Material();
-			mainMaterial.code = "MPXs";
+			mainMaterial.code     = "MPXs";
+			mainMaterial.colorMap = "MPXs";
 
 			final Material sideMaterial = new Material();
-			sideMaterial.code = "MFCs";
+			sideMaterial.code     = "MFCs";
+			sideMaterial.colorMap = "MFCs";
 
 			box =  new Box3D( transform , 200.0 , 10.0 , 200.0 , mainMaterial , sideMaterial );
 		}
