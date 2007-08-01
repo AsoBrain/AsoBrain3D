@@ -100,14 +100,14 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_BACK\" }\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_BACK\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tphong      0.5\n" +
-			"\t\t\tambient    0.3\n" +
-			"\t\t\tdiffuse    0.45\n" +
-			"\t\t\tspecular   0.18\n" +
+			"\t\t\tambient    0.2\n" +
+			"\t\t\tdiffuse    1.0\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -116,14 +116,14 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_BOTTOM\" }\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_BOTTOM\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tphong      0.5\n" +
-			"\t\t\tambient    0.3\n" +
-			"\t\t\tdiffuse    0.45\n" +
-			"\t\t\tspecular   0.18\n" +
+			"\t\t\tambient    0.2\n" +
+			"\t\t\tdiffuse    1.0\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -132,14 +132,14 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_FRONT\" }\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_FRONT\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tphong      0.5\n" +
-			"\t\t\tambient    0.3\n" +
-			"\t\t\tdiffuse    0.45\n" +
-			"\t\t\tspecular   0.18\n" +
+			"\t\t\tambient    0.2\n" +
+			"\t\t\tdiffuse    1.0\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -148,14 +148,14 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_LEFT\" }\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_LEFT\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tphong      0.5\n" +
-			"\t\t\tambient    0.3\n" +
-			"\t\t\tdiffuse    0.45\n" +
-			"\t\t\tspecular   0.18\n" +
+			"\t\t\tambient    0.2\n" +
+			"\t\t\tdiffuse    1.0\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -164,14 +164,14 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_RIGHT\" }\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_RIGHT\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tphong      0.5\n" +
-			"\t\t\tambient    0.3\n" +
-			"\t\t\tdiffuse    0.45\n" +
-			"\t\t\tspecular   0.18\n" +
+			"\t\t\tambient    0.2\n" +
+			"\t\t\tdiffuse    1.0\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -180,14 +180,14 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_TOP\" }\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_TOP\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tphong      0.5\n" +
-			"\t\t\tambient    0.3\n" +
-			"\t\t\tdiffuse    0.45\n" +
-			"\t\t\tspecular   0.18\n" +
+			"\t\t\tambient    0.2\n" +
+			"\t\t\tdiffuse    1.0\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -196,14 +196,14 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "MFCs\" }\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "/MFCs\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tphong      0.5\n" +
-			"\t\t\tambient    0.3\n" +
-			"\t\t\tdiffuse    0.45\n" +
-			"\t\t\tspecular   0.18\n" +
+			"\t\t\tambient    0.2\n" +
+			"\t\t\tdiffuse    1.0\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -212,14 +212,14 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "MPXs\" }\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "/MPXs\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tphong      0.5\n" +
-			"\t\t\tambient    0.3\n" +
-			"\t\t\tdiffuse    0.45\n" +
-			"\t\t\tspecular   0.18\n" +
+			"\t\t\tambient    0.2\n" +
+			"\t\t\tdiffuse    1.0\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -232,10 +232,10 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tphong      0.5\n" +
-			"\t\t\tambient    0.3\n" +
-			"\t\t\tdiffuse    0.45\n" +
-			"\t\t\tspecular   0.15\n" +
+			"\t\t\tambient    rgb <0.0,0.0,0.2>\n" +
+			"\t\t\tdiffuse    0.11\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -249,10 +249,10 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tphong      0.5\n" +
-			"\t\t\tambient    0.3\n" +
-			"\t\t\tdiffuse    0.45\n" +
-			"\t\t\tspecular   0.15\n" +
+			"\t\t\tambient    rgb <0.0,0.2,0.0>\n" +
+			"\t\t\tdiffuse    0.59\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -265,10 +265,10 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tphong      0.5\n" +
-			"\t\t\tambient    0.3\n" +
-			"\t\t\tdiffuse    0.45\n" +
-			"\t\t\tspecular   0.15\n" +
+			"\t\t\tambient    rgb <0.2,0.0,0.0>\n" +
+			"\t\t\tdiffuse    0.3\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -281,10 +281,10 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tphong      0.5\n" +
-			"\t\t\tambient    0.3\n" +
-			"\t\t\tdiffuse    0.45\n" +
-			"\t\t\tspecular   0.15\n" +
+			"\t\t\tambient    rgb <0.2,0.0,0.2>\n" +
+			"\t\t\tdiffuse    0.41\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -297,10 +297,10 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tphong      0.5\n" +
-			"\t\t\tambient    0.3\n" +
-			"\t\t\tdiffuse    0.45\n" +
-			"\t\t\tspecular   0.15\n" +
+			"\t\t\tambient    rgb <0.2,0.13725,0.13725>\n" +
+			"\t\t\tdiffuse    0.78039\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -313,10 +313,10 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tphong      0.5\n" +
-			"\t\t\tambient    0.3\n" +
-			"\t\t\tdiffuse    0.45\n" +
-			"\t\t\tspecular   0.15\n" +
+			"\t\t\tambient    0.2\n" +
+			"\t\t\tdiffuse    1.0\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n";
 
@@ -512,11 +512,9 @@ public final class TestAbToPovConverter
 			"\t}\n" +
 			"\tuv_vectors\n" +
 			"\t{\n" +
-			"\t\t12,\n" +
-			"\t\t<0.53125,-3.0> , <0.53125,0.125> , <3.65625,0.125> ,\n" +
-			"\t\t<3.65625,-3.0> , <0.0,-6.0> , <0.0,0.25> ,\n" +
-			"\t\t<0.3125,0.25> , <0.3125,-6.0> , <0.0,0.0625> ,\n" +
-			"\t\t<0.3125,0.0625> , <0.3125,6.3125> , <0.0,6.3125>\n" +
+			"\t\t6,\n" +
+			"\t\t<0.0,0.0> , <0.0,200.0> , <200.0,200.0> ,\n" +
+			"\t\t<200.0,0.0> , <10.0,200.0> , <10.0,0.0>\n" +
 			"\t}\n" +
 			"\ttexture_list\n" +
 			"\t{\n" +
@@ -533,8 +531,8 @@ public final class TestAbToPovConverter
 			"\tuv_indices\n" +
 			"\t{\n" +
 			"\t\t12,\n" +
-			"\t\t<0,1,2> , <0,2,3> , <3,2,1> , <3,1,0> , <4,5,6> , <4,6,7> ,\n" +
-			"\t\t<7,6,5> , <7,5,4> , <8,9,10> , <8,10,11> , <11,10,9> , <11,9,8>\n" +
+			"\t\t<0,1,2> , <0,2,3> , <3,2,1> , <3,1,0> , <0,1,4> , <0,4,5> ,\n" +
+			"\t\t<5,4,1> , <5,1,0> , <0,1,4> , <0,4,5> , <5,4,1> , <5,1,0>\n" +
 			"\t}\n" +
 			"\tuv_mapping\n" +
 			"}\n";
@@ -687,7 +685,7 @@ public final class TestAbToPovConverter
 			"\tuv_vectors\n" +
 			"\t{\n" +
 			"\t\t4,\n" +
-			"\t\t<2.0,0.0> , <2.0,2.0> , <0.0,2.0> ,\n" +
+			"\t\t<0.5,0.0> , <0.5,0.5> , <0.0,0.5> ,\n" +
 			"\t\t<0.0,0.0>\n" +
 			"\t}\n" +
 			"\ttexture_list\n" +
@@ -800,7 +798,7 @@ public final class TestAbToPovConverter
 	 */
 	private static String getTestDirectory()
 	{
-		final Class       thisClass        = TestAbToPovConverter.class;
+		final Class<?>    thisClass        = TestAbToPovConverter.class;
 		final ClassLoader classLoader      = thisClass.getClassLoader();
 		final Package     thisPackage      = thisClass.getPackage();
 		final String      packageName      = thisPackage.getName();
@@ -817,7 +815,7 @@ public final class TestAbToPovConverter
 	private static String getTexturesDirectory()
 	{
 		final String testDirectory = getTestDirectory();
-		return testDirectory + "/textures/";
+		return testDirectory + "/textures";
 	}
 
 	/**
