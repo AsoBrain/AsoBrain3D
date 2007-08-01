@@ -79,12 +79,12 @@ public abstract class ViewModel
 	/**
 	 * List of nodes (element type: {@link ViewModelNode}).
 	 */
-	private final List _nodes = new ArrayList();
+	private final List<ViewModelNode> _nodes = new ArrayList();
 
 	/**
 	 * List of views (element type: {@link ViewModelView}).
 	 */
-	private final List _views = new ArrayList();
+	private final List<ViewModelView> _views = new ArrayList();
 
 	/**
 	 * Scale factor for meters (metric system).
@@ -182,10 +182,8 @@ public abstract class ViewModel
 		if ( id == null )
 			throw new NullPointerException( "id" );
 
-		final List nodes = _nodes;
-		for ( int i = 0 ; i < nodes.size() ; i++ )
+		for ( final ViewModelNode node : _nodes )
 		{
-			final ViewModelNode node = (ViewModelNode)nodes.get( i );
 			if ( id == node.getID() )
 			{
 				result = node;
@@ -203,13 +201,15 @@ public abstract class ViewModel
 	 */
 	public final Object[] getNodeIDs()
 	{
-		final Object[] result;
+		final List<ViewModelNode> nodes = _nodes;
 
-		final List nodes = _nodes;
+		final Object[] result = new Object[ nodes.size() ];
 
-		result = new Object[ nodes.size() ];
 		for ( int i = 0 ; i < result.length ; i++ )
-			result[ i ] = ((ViewModelNode)nodes.get( i ) ).getID();
+		{
+			final ViewModelNode node = nodes.get( i );
+			result[ i ] = node.getID();
+		}
 
 		return result;
 	}
@@ -232,18 +232,15 @@ public abstract class ViewModel
 
 		Node3D topNode = node;
 		while ( topNode.getParent() != null )
-		{
 			topNode = topNode.getParent();
-		}
 
-		final List nodes = _nodes;
-
-		for ( int i = 0; i < nodes.size() && result == null; i++ )
+		for ( final ViewModelNode modelNode : _nodes )
 		{
-			final ViewModelNode modelNode = (ViewModelNode)nodes.get( i );
 			if ( modelNode.getNode3D() == topNode )
 			{
 				result = modelNode.getID();
+				if ( result != null )
+					break;
 			}
 		}
 
@@ -367,9 +364,8 @@ public abstract class ViewModel
 	 */
 	public final void removeAllNodes()
 	{
-		final Object[] ids = getNodeIDs();
-		for ( int i = 0 ; i < ids.length ; i++ )
-			removeNode( ids[ i ] );
+		for ( final Object id : getNodeIDs() )
+			removeNode( id );
 	}
 
 	/**
@@ -453,9 +449,8 @@ public abstract class ViewModel
 
 		ViewModelView result = null;
 
-		for ( int i = 0 ; i < _views.size() ; i++ )
+		for ( final ViewModelView view : _views )
 		{
-			final ViewModelView view = (ViewModelView) _views.get( i );
 			if ( id == view.getID() )
 			{
 				result = view;
@@ -491,11 +486,14 @@ public abstract class ViewModel
 	{
 		final Object[] result;
 
-		final List views = _views;
+		final List<ViewModelView> views = _views;
 
 		result = new Object[ views.size() ];
 		for ( int i = 0 ; i < result.length ; i++ )
-			result[ i ] = ((ViewModelView)views.get( i )).getID();
+		{
+			final ViewModelView view = views.get( i );
+			result[ i ] = view.getID();
+		}
 
 		return result;
 	}
@@ -603,11 +601,10 @@ public abstract class ViewModel
 		if ( cameraControl != null )
 			actions = (Action[])ArrayTools.addAll( actions , cameraControl.getActions( locale ) );
 
-		final Action[] viewActions = view.getActions( locale );
-		for ( int i = 0 ; i < viewActions.length ; i++ )
-			actions = (Action[])ArrayTools.append( actions , viewActions[ i ] );
+		for ( final Action action : view.getActions( locale ) )
+			actions = (Action[])ArrayTools.append( actions , action );
 
-		actions = (Action[])ArrayTools.append( actions , new ViewModelToPovAction( locale , this , view , result , BorderLayout.SOUTH , "SODA_BaseComponents/images/textures/" ) );
+		actions = (Action[])ArrayTools.append( actions , new ViewModelToPovAction( locale , this , view , result , BorderLayout.SOUTH , "SODA_BaseComponents/images/textures" ) );
 
 		final JToolBar toolbar = ActionTools.createToolbar( null , actions );
 		if ( toolbar != null )
@@ -653,9 +650,8 @@ public abstract class ViewModel
 	 */
 	public final void removeAllViews()
 	{
-		final Object[] ids = getViewIDs();
-		for ( int i = 0 ; i < ids.length ; i++ )
-			removeView( ids[ i ] );
+		for ( final Object id : getViewIDs() )
+			removeView( id );
 	}
 
 	/**
@@ -667,9 +663,8 @@ public abstract class ViewModel
 	{
 		_bspTreeDirty = true;
 
-		for ( int i = 0 ; i < _views.size() ; i++ )
+		for ( final ViewModelView view : _views )
 		{
-			final ViewModelView view = (ViewModelView) _views.get( i );
 			view.update();
 		}
 	}
@@ -684,14 +679,10 @@ public abstract class ViewModel
 	{
 		final Node3DCollection result = new Node3DCollection();
 
-		final List nodes = _nodes;
-
-		for ( int i = 0 ; i < nodes.size() ; i++ )
+		for ( final ViewModelNode node : _nodes )
 		{
-			final ViewModelNode node   = (ViewModelNode)nodes.get( i );
-			final Node3D        node3D = node.getNode3D();
-
-			node3D.gatherLeafs( result , Node3D.class , node.getTransform() , false );
+			final Node3D node3D = node.getNode3D();
+			node3D.gatherLeafs( result, Node3D.class, node.getTransform(), false );
 		}
 
 		return result;
