@@ -10,6 +10,7 @@ CREATE TABLE Materials
   diffuseColorGreen  DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,
   diffuseColorBlue   DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,
   diffuseColorAlpha  DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,
+  specularColorRed   DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,
   specularColorGreen DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,
   specularColorBlue  DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,
   specularColorAlpha DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,
