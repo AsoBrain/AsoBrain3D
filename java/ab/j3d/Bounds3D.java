@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2005 Peter S. Heijnen
+ * Copyright (C) 1999-2007 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -202,6 +202,16 @@ public final class Bounds3D
 	/**
 	 * Determine maximum vector of box.
 	 *
+	 * @return  Resulting vector.
+	 */
+	public Vector3D max()
+	{
+		return max( this );
+	}
+
+	/**
+	 * Determine maximum vector of box.
+	 *
 	 * @param   box     Box to get the vector for.
 	 *
 	 * @return  Resulting vector.
@@ -219,6 +229,16 @@ public final class Bounds3D
 		else result = Vector3D.INIT.set( x , y , z );
 
 		return result;
+	}
+
+	/**
+	 * Determine minimum vector of bounds.
+	 *
+	 * @return  Resulting vector.
+	 */
+	public Vector3D min()
+	{
+		return min( this );
 	}
 
 	/**
@@ -337,7 +357,7 @@ public final class Bounds3D
 		 */
 		final Vector3D v1;
 
-			 if ( box1.v1.equals( x1 , y1 , z1 ) ) v1 = box1.v1;
+		     if ( box1.v1.equals( x1 , y1 , z1 ) ) v1 = box1.v1;
 		else if ( box1.v2.equals( x1 , y1 , z1 ) ) v1 = box1.v2;
 		else if ( box2.v1.equals( x1 , y1 , z1 ) ) v1 = box2.v1;
 		else if ( box2.v2.equals( x1 , y1 , z1 ) ) v1 = box2.v2;
@@ -345,7 +365,7 @@ public final class Bounds3D
 
 		final Vector3D v2;
 
-			 if ( box1.v1.equals( x2 , y2 , z2 ) ) v2 = box1.v1;
+		     if ( box1.v1.equals( x2 , y2 , z2 ) ) v2 = box1.v1;
 		else if ( box1.v2.equals( x2 , y2 , z2 ) ) v2 = box1.v2;
 		else if ( box2.v1.equals( x2 , y2 , z2 ) ) v2 = box2.v1;
 		else if ( box2.v2.equals( x2 , y2 , z2 ) ) v2 = box2.v2;
@@ -358,7 +378,7 @@ public final class Bounds3D
 		 */
 			 if ( ( box1.v1 == v1 ) && ( box1.v2 == v2 ) ) result = box1;
 		else if ( ( box2.v1 == v1 ) && ( box2.v2 == v2 ) ) result = box2;
-		else result = Bounds3D.INIT.set( v1 , v2 );
+		else result = INIT.set( v1 , v2 );
 
 		return result;
 	}
@@ -377,11 +397,15 @@ public final class Bounds3D
 	 */
 	public Bounds3D set( final double x1 , final double y1 , final double z1 , final double x2 , final double y2 , final double z2 )
 	{
-		final Vector3D v0 = Vector3D.INIT;
-		final Vector3D v1 = v0.set( x1 , y1 , z1 );
-		final Vector3D v2 = v0.set( x2 , y2 , z2 );
+		final Vector3D v0    = Vector3D.INIT;
+		final Vector3D oldV1 = v1;
+		final Vector3D oldV2 = v2;
+		final Vector3D newV1 = oldV1.set( x1 , y1 , z1 );
+		final Vector3D newV2 = oldV2.set( x2 , y2 , z2 );
 
-		return ( ( v1 == v0 ) && ( v2 == v0 ) ) ? INIT : new Bounds3D( v1 , v2 );
+		return ( ( newV1 == oldV1 ) && ( newV2 == oldV2 ) ) ? this :
+		       ( ( newV1 == v0    ) && ( newV2 == v0    ) ) ? INIT :
+		       new Bounds3D( newV1 , newV2 );
 	}
 
 	/**
