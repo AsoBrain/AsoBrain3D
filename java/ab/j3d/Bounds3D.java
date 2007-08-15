@@ -440,7 +440,7 @@ public final class Bounds3D
 	 *
 	 * @return  Resulting bounds.
 	 */
-	public Bounds3D sort()
+	public Bounds3D sorted()
 	{
 		return sort( this );
 	}
