@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2005 Peter S. Heijnen
+ * Copyright (C) 1999-2007 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -47,7 +47,7 @@ public class Node3D
 	/**
 	 * Collection of children of this node.
 	 */
-	private final List _children;
+	private final List<Node3D> _children;
 
 	/**
 	 * Tag of this node.
@@ -129,7 +129,7 @@ public class Node3D
 	 */
 	public final Node3D getChild( final int index )
 	{
-		return (Node3D)_children.get( index );
+		return _children.get( index );
 	}
 
 	/**
@@ -173,7 +173,7 @@ public class Node3D
 	{
 		if ( node != null )
 		{
-			final List children = _children;
+			final List<Node3D> children = _children;
 			if ( !children.contains( node ) )
 			{
 				children.add( node );
@@ -224,9 +224,9 @@ public class Node3D
 	 */
 	public final void removeAllChildren()
 	{
-		final List children = _children;
+		final List<Node3D> children = _children;
 		while ( !children.isEmpty() )
-			removeChild( (Node3D)children.get( children.size() - 1 ) );
+			removeChild( children.get( children.size() - 1 ) );
 	}
 
 	/**
@@ -249,7 +249,7 @@ public class Node3D
 	 * @param   upwards     Direction in which the tree is being traversed
 	 *                      (should be <code>true</code> for the first call).
 	 */
-	public void gatherLeafs( final Node3DCollection leafs , final Class leafClass , final Matrix3D transform , final boolean upwards )
+	public void gatherLeafs( final Node3DCollection leafs , final Class<? extends Node3D> leafClass , final Matrix3D transform , final boolean upwards )
 	{
 		final Node3D parent = getParent();
 		if ( upwards && ( parent != null ) )
@@ -258,10 +258,9 @@ public class Node3D
 		}
 		else
 		{
-			final List children   = _children;
-			final int  childCount = children.size();
+			final List<Node3D> children = _children;
 
-			if ( childCount == 0 )
+			if ( children.isEmpty() )
 			{
 				/*
 				 * If this is a leaf, add it to the collection.
@@ -274,10 +273,9 @@ public class Node3D
 				/*
 				 * If this is not a leaf, traverse the tree recursively to find them.
 				 */
-				for ( int i = 0 ; i < childCount ; i++ )
+				for ( final Node3D node : children )
 				{
-					final Node3D node = (Node3D)children.get( i );
-					node.gatherLeafs( leafs , leafClass , transform , false );
+					node.gatherLeafs( leafs, leafClass, transform, false );
 				}
 			}
 		}
