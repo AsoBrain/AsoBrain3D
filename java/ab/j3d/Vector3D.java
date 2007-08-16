@@ -366,9 +366,6 @@ public final class Vector3D
 	 */
 	public double length()
 	{
-		final double x = this.x;
-		final double y = this.y;
-		final double z = this.z;
 		return length( x , y , z );
 	}
 
@@ -516,12 +513,12 @@ public final class Vector3D
 	}
 
 	/**
-	 * This function translates catesian coordinates to polar/spherial
+	 * This function translates cartesian coordinates to polar/spherial
 	 * coordinates.
 	 * <p />
 	 * The polar/spherial coordinates are defined as the triplet
-	 * <code>( r , ? , ? )</code>, where r is radius, ? is the azimuth, and? is
-	 * the zenith.
+	 * <code>( r , &theta; , &rho; )</code>, where r is radius, &theta; is the
+	 * azimuth, and &rho; is the zenith.
 	 *
 	 * @return  Polar coordinates (radius,azimuth,zenith) based on cartesian
 	 *          coordinates defined by this vector.
@@ -532,12 +529,12 @@ public final class Vector3D
 	}
 
 	/**
-	 * This function translates catesian coordinates to polar/spherial
+	 * This function translates cartesian coordinates to polar/spherial
 	 * coordinates.
 	 * <p />
 	 * The polar/spherial coordinates are defined as the triplet
-	 * <code>( r , ? , ? )</code>, where r is radius, ? is the azimuth, and? is
-	 * the zenith.
+	 * <code>( r , &theta; , &rho; )</code>, where r is radius, &theta; is the
+	 * azimuth, and &rho; is the zenith.
 	 * <p />
 	 * See <a href="http://mathworld.wolfram.com/SphericalCoordinates.html">Spherical Coordinates</a>
 	 * at <a href="http://mathworld.wolfram.com/">MathWorld</a>.<br />
@@ -559,12 +556,28 @@ public final class Vector3D
 	}
 
 	/**
-	 * This function translates polar/spherial coordinates to catesian
+	 * This function translates polar/spherial coordinates to cartesian
 	 * coordinates.
 	 * <p />
 	 * The polar/spherial coordinates are defined as the triplet
-	 * <code>( r , ? , ? )</code>, where r is radius, ? is the azimuth, and? is
-	 * the zenith.
+	 * <code>( r , &theta; , &rho; )</code>, where r is radius, &theta; is the
+	 * azimuth, and &rho; is the zenith.
+	 *
+	 * @return  Cartesian coordinates based on polar coordinates
+	 *          (radius,azimuth,zenith) defined by this vector.
+	 */
+	public Vector3D polarToCartesian()
+	{
+		return polarToCartesian( x , y , z );
+	}
+
+	/**
+	 * This function translates polar/spherial coordinates to cartesian
+	 * coordinates.
+	 * <p />
+	 * The polar/spherial coordinates are defined as the triplet
+	 * <code>( r , &theta; , &rho; )</code>, where r is radius, &theta; is the
+	 * azimuth, and &rho; is the zenith.
 	 * <p />
 	 * See <a href="http://mathworld.wolfram.com/SphericalCoordinates.html">Spherical Coordinates</a>
 	 * at <a href="http://mathworld.wolfram.com/">MathWorld</a>.<br />
