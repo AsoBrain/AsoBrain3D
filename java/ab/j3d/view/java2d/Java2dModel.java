@@ -19,6 +19,8 @@
  */
 package ab.j3d.view.java2d;
 
+import java.awt.Color;
+
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelNode;
 import ab.j3d.view.ViewModelView;
@@ -32,13 +34,17 @@ import ab.j3d.view.ViewModelView;
 public final class Java2dModel
 	extends ViewModel
 {
+	/**
+	 * Background color for the model.
+	 */
+	private final Color _background;
 
 	/**
 	 * Construct new Java 2D view model using {@link ViewModel#MM} units.
 	 */
 	public Java2dModel()
 	{
-		this( MM );
+		this( MM , null );
 	}
 
 	/**
@@ -48,7 +54,22 @@ public final class Java2dModel
 	 */
 	public Java2dModel( final double unit )
 	{
+		this( unit , null );
+	}
+
+	/**
+	 * Construct new Java 2D view model.
+	 *
+	 * @param   unit        Unit scale factor (e.g. {@link ViewModel#MM}).
+	 * @param   background  Background color to use for 3D views. May be
+	 *                      <code>null</code>, in which case the default
+	 *                      background color of the current look and feel is
+	 *                      used.
+	 */
+	public Java2dModel( final double unit , final Color background )
+	{
 		super( unit );
+		_background = background;
 	}
 
 	protected void initializeNode( final ViewModelNode node )
@@ -68,7 +89,7 @@ public final class Java2dModel
 
 	public ViewModelView createView( final Object id )
 	{
-		final Java2dView view = new Java2dView( this , id );
+		final Java2dView view = new Java2dView( this , _background , id );
 		addView( view );
 		return view;
 	}

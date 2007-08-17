@@ -20,6 +20,7 @@
 package ab.j3d.view.java2d;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -141,7 +142,11 @@ final class Java2dView
 
 		public void paintComponent( final Graphics g )
 		{
-			super.paintComponent( g );
+			if ( isOpaque() )
+			{
+				g.setColor( getBackground() );
+				g.fillRect( 0 , 0 , getWidth() , getHeight() );
+			}
 
 			final BSPTree   bspTree    = _model.getBspTree();
 			final Projector projector  = getProjector();
@@ -191,10 +196,14 @@ final class Java2dView
 	/**
 	 * Construct new view.
 	 *
-	 * @param   model   Model for which this view is created.
-	 * @param   id      Application-assigned ID of this view.
+	 * @param   model       Model for which this view is created.
+	 * @param   background  Background color to use for 3D views. May be
+	 *                      <code>null</code>, in which case the default
+	 *                      background color of the current look and feel is
+	 *                      used.
+	 * @param   id          Application-assigned ID of this view.
 	 */
-	Java2dView( final Java2dModel model , final Object id )
+	Java2dView( final Java2dModel model , final Color background , final Object id )
 	{
 		super( model.getUnit() , id );
 
@@ -206,7 +215,13 @@ final class Java2dView
 		/*
 		 * Create view component.
 		 */
-		_viewComponent = new ViewComponent();
+		final ViewComponent viewComponent = new ViewComponent();
+		viewComponent.setOpaque( true );
+		if ( background != null )
+		{
+			viewComponent.setBackground( background );
+		}
+		_viewComponent = viewComponent;
 
 		/*
 		 * Update view to initial transform.
