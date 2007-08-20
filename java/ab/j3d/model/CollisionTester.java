@@ -36,7 +36,7 @@ import ab.j3d.Vector3D;
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-class CollisionTester
+public class CollisionTester
 {
 	/**
 	 * Object on behalf of which collision tests are performed.
@@ -96,6 +96,42 @@ class CollisionTester
 	}
 
 	/**
+	 * Test collision between two scene graphs
+	 */
+	public static boolean testCollision( final Node3D subTree1 , final Node3D subTree2 )
+	{
+		boolean result = false;
+
+		if ( ( subTree1 != null ) && ( subTree2 != null ) )
+		{
+			final Node3DCollection<Object3D> objects1 = subTree1.collectNodes( null , Object3D.class , Matrix3D.INIT , false );
+			if ( objects1 != null )
+			{
+				final Node3DCollection<Object3D> objects2  = subTree2.collectNodes( null , Object3D.class , Matrix3D.INIT , false );
+				if ( objects2 != null )
+				{
+					for ( int i = 0 ; !result && ( i < objects1.size() ); i++ )
+					{
+						final Object3D object1      = objects1.getNode( i );
+						final Matrix3D object1ToWcs = objects1.getMatrix( i );
+						final Matrix3D wcsToObject1 = object1ToWcs.inverse();
+
+						for ( int j = 0 ; !result && ( j < objects2.size() ); j++ )
+						{
+							final Object3D object2      = objects2.getNode( j );
+							final Matrix3D object2ToWcs = objects2.getMatrix( j );
+
+							result = object1.collidesWith( object2ToWcs.multiply( wcsToObject1 ), object2 );
+						}
+					}
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/**
 	 * Test if this object collides with another.
 	 *
 	 * @param   fromOtherToThis     Transformation from other object to this.
@@ -104,7 +140,7 @@ class CollisionTester
 	 * @return  <code>true</code> if the objects collide;
 	 *          <code>false</code> otherwise.
 	 */
-	public boolean testCollision( final Matrix3D fromOtherToThis, final CollisionTester other )
+	public boolean testCollision( final Matrix3D fromOtherToThis , final CollisionTester other )
 	{
 		synchronized ( this )
 		{
