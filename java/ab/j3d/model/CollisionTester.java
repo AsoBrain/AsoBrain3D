@@ -96,7 +96,14 @@ public class CollisionTester
 	}
 
 	/**
-	 * Test collision between two scene graphs
+	 * Test collision between two scene (sub)graphs. Note that an object can
+	 * collide with itself.
+	 *
+	 * @param   subTree1    First scene (sub)graph to test.
+	 * @param   subTree1    Second scene (sub)graph to test.
+	 *
+	 * @return  <code>true</code> if the two graphs collide;
+	 *          <code>false</code> otherwise.
 	 */
 	public static boolean testCollision( final Node3D subTree1 , final Node3D subTree2 )
 	{
@@ -110,18 +117,18 @@ public class CollisionTester
 				final Node3DCollection<Object3D> objects2  = subTree2.collectNodes( null , Object3D.class , Matrix3D.INIT , false );
 				if ( objects2 != null )
 				{
-					for ( int i = 0 ; !result && ( i < objects1.size() ); i++ )
+					for ( int i = 0 ; !result && ( i < objects1.size() ) ; i++ )
 					{
 						final Object3D object1      = objects1.getNode( i );
 						final Matrix3D object1ToWcs = objects1.getMatrix( i );
 						final Matrix3D wcsToObject1 = object1ToWcs.inverse();
 
-						for ( int j = 0 ; !result && ( j < objects2.size() ); j++ )
+						for ( int j = 0 ; !result && ( j < objects2.size() ) ; j++ )
 						{
 							final Object3D object2      = objects2.getNode( j );
 							final Matrix3D object2ToWcs = objects2.getMatrix( j );
 
-							result = object1.collidesWith( object2ToWcs.multiply( wcsToObject1 ), object2 );
+							result = object1.collidesWith( object2ToWcs.multiply( wcsToObject1 ) , object2 );
 						}
 					}
 				}
