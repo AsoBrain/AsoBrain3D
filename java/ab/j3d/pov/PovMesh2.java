@@ -112,31 +112,31 @@ public final class PovMesh2
 	 * List containing {@link PovVector}s describing all vertices of the mesh.
 	 * The list contains no duplicates.
 	 */
-	private final List _vertexVectors = new ArrayList();
+	private final List<PovVector> _vertexVectors = new ArrayList();
 
 	/**
 	 * List containing {@link PovVector}s describing all U/V-vectors of the
 	 * mesh. The list contains no duplicates.
 	 */
-	private final List _uvVectors = new ArrayList();
+	private final List<PovVector> _uvVectors = new ArrayList();
 
 	/**
 	 * List containing {@link PovVector}s describing all vertices of the mesh.
 	 * The list contains no duplicates.
 	 */
-	private final List _normalVectors = new ArrayList();
+	private final List<PovVector> _normalVectors = new ArrayList();
 
 	/**
 	 * List containing all used textures. The duplicates are filtered in the
 	 * write method. The reason for this is that a face index can also have an
 	 * index into the texture list [textureNr].
 	 */
-	private final List _textureList = new ArrayList();
+	private final List<PovTexture> _textureList = new ArrayList();
 
 	/**
 	 * List containing all triangle in this mesh.
 	 */
-	private final List _triangles = new ArrayList();
+	private final List<Triangle> _triangles = new ArrayList();
 
 	/**
 	 * This inner class represents a single triangle in the mesh.
@@ -314,7 +314,7 @@ public final class PovMesh2
 	 *
 	 * @throws  NullPointerException if <code>list</code> is <code>null</code>.
 	 */
-	static int getOrAddElementIndex( final List list , final Object element )
+	private static <T> int getOrAddElementIndex( final List<T> list , final T element )
 	{
 		int result;
 
@@ -408,11 +408,11 @@ public final class PovMesh2
 	 *
 	 * @param   vectors     List of vectors
 	 */
-	public void setVertexVectors( final List vectors )
+	public void setVertexVectors( final List<PovVector> vectors )
 	{
 		if ( vectors != null )
 		{
-			final List vertexVectors = _vertexVectors;
+			final List<PovVector> vertexVectors = _vertexVectors;
 			vertexVectors.clear();
 			vertexVectors.addAll( vectors );
 		}
@@ -431,11 +431,11 @@ public final class PovMesh2
 	 *
 	 * @param   vectors     List of vectors
 	 */
-	public void setUvVectors( final List vectors )
+	public void setUvVectors( final List<PovVector> vectors )
 	{
 		if ( vectors != null )
 		{
-			final List uvVectors = _uvVectors;
+			final List<PovVector> uvVectors = _uvVectors;
 			uvVectors.clear();
 			uvVectors.addAll( vectors );
 		}
@@ -454,11 +454,11 @@ public final class PovMesh2
 	 *
 	 * @param   vectors     List of vectors
 	 */
-	public void setNormalVectors( final List vectors )
+	public void setNormalVectors( final List<PovVector> vectors )
 	{
 		if ( vectors != null )
 		{
-			final List normalVectors = _normalVectors;
+			final List<PovVector> normalVectors = _normalVectors;
 			normalVectors.clear();
 			normalVectors.addAll( vectors );
 		}
@@ -471,23 +471,23 @@ public final class PovMesh2
 		 * Sorted triangles so that triangles with UV-indices come first;
 		 * those without, come last.
 		 */
-		final List triangles;
+		final List<Triangle> triangles;
 		{
-			final List unsortedTriangles = _triangles;
-			final int  triangleCount     = unsortedTriangles.size();
+			final List<Triangle> unsortedTriangles = _triangles;
+			final int            triangleCount     = unsortedTriangles.size();
 
 			triangles = new ArrayList( triangleCount );
 
 			for ( int i = 0 ; i < triangleCount ; i++ )
 			{
-				final Triangle triangle = (Triangle)unsortedTriangles.get( i );
+				final Triangle triangle = unsortedTriangles.get( i );
 				if ( triangle.hasUV() )
 					triangles.add( triangle );
 			}
 
 			for ( int i = 0 ; i < triangleCount ; i++ )
 			{
-				final Triangle triangle = (Triangle)unsortedTriangles.get( i );
+				final Triangle triangle = unsortedTriangles.get( i );
 				if ( !triangle.hasUV() )
 					triangles.add( triangle );
 			}
@@ -519,7 +519,7 @@ public final class PovMesh2
 
 		if ( _textureList.size() == 1 )
 		{
-			final PovTexture texture = (PovTexture)_textureList.get( 0 );
+			final PovTexture texture = _textureList.get( 0 );
 			texture.write( out );
 		}
 
@@ -546,8 +546,8 @@ public final class PovMesh2
 	void writeVertexVectors( final IndentingWriter out )
 		throws IOException
 	{
-		final List vertexVectors = _vertexVectors;
-		final int  vertexCount   = vertexVectors.size();
+		final List<PovVector> vertexVectors = _vertexVectors;
+		final int             vertexCount   = vertexVectors.size();
 
 		out.writeln( "vertex_vectors" );
 		out.writeln( "{" );
@@ -559,7 +559,7 @@ public final class PovMesh2
 
 		for ( int i = 0 ; i < vertexCount ; i++ )
 		{
-			final PovVector vector = (PovVector)vertexVectors.get( i );
+			final PovVector vector = vertexVectors.get( i );
 
 			writeElementSeparator( out , 3 , i );
 			vector.write( out );
@@ -591,8 +591,8 @@ public final class PovMesh2
 	{
 		if ( hasUV() )
 		{
-			final List uvVectors = _uvVectors;
-			final int  uvCount   = uvVectors.size();
+			final List<PovVector> uvVectors = _uvVectors;
+			final int             uvCount   = uvVectors.size();
 
 			out.writeln( "uv_vectors" );
 			out.writeln( "{" );
@@ -604,7 +604,7 @@ public final class PovMesh2
 
 			for ( int i = 0 ; i < uvCount ; i++ )
 			{
-				final PovVector vector = (PovVector)uvVectors.get( i );
+				final PovVector vector = uvVectors.get( i );
 
 				writeElementSeparator( out , 3 , i );
 				out.write( (int)'<' );
@@ -641,8 +641,8 @@ public final class PovMesh2
 	{
 		if ( hasNormals() )
 		{
-			final List normalVectors = _normalVectors;
-			final int  normalCount   = normalVectors.size();
+			final List<PovVector> normalVectors = _normalVectors;
+			final int             normalCount   = normalVectors.size();
 
 			out.writeln( "normal_vectors" );
 			out.writeln( "{" );
@@ -654,7 +654,7 @@ public final class PovMesh2
 
 			for ( int i = 0 ; i < normalCount ; i++ )
 			{
-				final PovVector vector = (PovVector)normalVectors.get( i );
+				final PovVector vector = normalVectors.get( i );
 
 				writeElementSeparator( out , 3 , i );
 				vector.write( out );
@@ -686,8 +686,8 @@ public final class PovMesh2
 	void writeTextureList( final IndentingWriter out )
 		throws IOException
 	{
-		final List textureList  = _textureList;
-		final int  textureCount = textureList.size();
+		final List<PovTexture> textureList  = _textureList;
+		final int              textureCount = textureList.size();
 
 		if ( textureCount > 1 )
 		{
@@ -701,7 +701,7 @@ public final class PovMesh2
 
 			for ( int i = 0 ; i < textureCount ; i++ )
 			{
-				final PovTexture texture = (PovTexture)textureList.get( i );
+				final PovTexture texture = textureList.get( i );
 				texture.write( out );
 			}
 
@@ -726,7 +726,7 @@ public final class PovMesh2
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	void writeFaceIndices( final IndentingWriter out , final List triangles )
+	void writeFaceIndices( final IndentingWriter out , final List<Triangle> triangles )
 		throws IOException
 	{
 		final boolean includeTextureIndex = ( _textureList.size() > 1 );
@@ -742,7 +742,7 @@ public final class PovMesh2
 		{
 			writeElementSeparator( out , 6 , i );
 
-			final Triangle triangle = (Triangle)triangles.get( i );
+			final Triangle triangle = triangles.get( i );
 			triangle.writeFaceIndices( out , includeTextureIndex );
 		}
 		out.newLine();
@@ -767,7 +767,7 @@ public final class PovMesh2
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	void writeUvIndices( final IndentingWriter out , final List triangles )
+	void writeUvIndices( final IndentingWriter out , final List<Triangle> triangles )
 		throws IOException
 	{
 		if ( hasUV() )
@@ -781,7 +781,7 @@ public final class PovMesh2
 
 			for ( int i = 0 ; i < triangles.size() ; i++ )
 			{
-				final Triangle triangle = (Triangle)triangles.get( i );
+				final Triangle triangle = triangles.get( i );
 
 				writeElementSeparator( out , 6 , i );
 				triangle.writeUvIndices( out );
@@ -809,7 +809,7 @@ public final class PovMesh2
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	void writeNormalIndices( final IndentingWriter out , final List triangles )
+	void writeNormalIndices( final IndentingWriter out , final List<Triangle> triangles )
 		throws IOException
 	{
 		if ( hasNormals() )
@@ -825,7 +825,7 @@ public final class PovMesh2
 			{
 				writeElementSeparator( out , 3 , i );
 
-				final Triangle triangle = (Triangle)triangles.get( i );
+				final Triangle triangle = triangles.get( i );
 				triangle.writeNormalIndices( out );
 			}
 			out.newLine();
@@ -835,7 +835,7 @@ public final class PovMesh2
 		}
 	}
 
-	static void writeElementSeparator( final IndentingWriter out, final int elementsPerLine, final int elementIndex )
+	private static void writeElementSeparator( final IndentingWriter out, final int elementsPerLine, final int elementIndex )
 		throws IOException
 	{
 		if ( elementIndex > 0 )
