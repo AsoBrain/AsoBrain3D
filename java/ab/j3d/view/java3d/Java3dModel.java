@@ -78,7 +78,7 @@ public final class Java3dModel
 	/**
 	 * Construct new Java 3D model.
 	 *
-	 * @param   unit        Unit scale factor (e.g. {@link ViewModel.MM}).
+	 * @param   unit        Unit scale factor (e.g. {@link ViewModel#MM}).
 	 * @param   background  Background color to use for 3D views.
 	 */
 	public Java3dModel( final double unit , final Color background )
@@ -157,14 +157,11 @@ public final class Java3dModel
 		final Material       materialOverride = node.getMaterialOverride();
 		final float          opacity          = node.getOpacity();
 
-		final Node3DCollection nodes = new Node3DCollection();
-		node3D.gatherLeafs( nodes , Object3D.class , Matrix3D.INIT , false );
+		final Node3DCollection<Object3D> objects = node3D.collectNodes( null , Object3D.class , Matrix3D.INIT , false );
+		final BranchGroup bg = Shape3DBuilder.createBranchGroup( objects , materialOverride , opacity );
 
-		final BranchGroup bg = Shape3DBuilder.createBranchGroup( nodes , materialOverride , opacity );
-
-		nodes.clear();
-		node3D.gatherLeafs( nodes , Light3D.class , Matrix3D.INIT , false );
-		addLights( bg , nodes , transform );
+		final Node3DCollection<Light3D> lights = node3D.collectNodes( null , Light3D.class , Matrix3D.INIT , false );
+		addLights( bg , lights , transform );
 
 		/*
 		 * Attach content to scene graph (replace existing branch group).
@@ -177,41 +174,44 @@ public final class Java3dModel
 			nodeTransform.setChild( bg , 0 );
 	}
 
-	private static void addLights( final BranchGroup bg , final Node3DCollection lights , final Matrix3D transform )
+	private static void addLights( final BranchGroup bg , final Node3DCollection<Light3D> lights , final Matrix3D transform )
 	{
-		final BoundingSphere worldBounds = new BoundingSphere( new Point3d( 0.0, 0.0, 0.0 ), 10000.0 ); // @TODO How to determine the 'correct' world bounds.
-
-		for ( int i = 0 ; i < lights.size() ; i++ )
+		if ( ( lights != null ) && ( lights.size() > 0 ) )
 		{
-			final Light3D modelLight = (Light3D)lights.getNode( i );
-			final float   fallOff    = (float)modelLight.getFallOff();
-			final float   intensity  = (float)modelLight.getIntensity() / 255.0f;
+			final BoundingSphere worldBounds = new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 10000.0 ); // @TODO How to determine the 'correct' world bounds.
 
-			final Light viewLight;
-			if ( fallOff < 0.0f )
+			for ( int i = 0 ; i < lights.size() ; i++ )
 			{
-				viewLight = new AmbientLight();
-				viewLight.setInfluencingBounds( worldBounds );
-			}
-			else
-			{
-				final PointLight pointLight = new PointLight();
-				if ( fallOff > 0.0f )
-				{
-					pointLight.setInfluencingBounds( new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , (double)fallOff * 10.0 ) );
-					pointLight.setAttenuation( 1.0f , 0.0f , 0.1f / ( fallOff * fallOff ) );
-				}
-				else if ( fallOff == 0.0f )
-				{
-					pointLight.setInfluencingBounds( worldBounds );
-				}
-				pointLight.setPosition( (float)transform.xo , (float)transform.yo , (float)transform.zo );
+				final Light3D modelLight = lights.getNode( i );
+				final float   fallOff    = (float)modelLight.getFallOff();
+				final float   intensity  = (float)modelLight.getIntensity() / 255.0f;
 
-				viewLight = pointLight;
-			}
-			viewLight.setColor( new Color3f( intensity , intensity , intensity ) );
+				final Light viewLight;
+				if ( fallOff < 0.0f )
+				{
+					viewLight = new AmbientLight();
+					viewLight.setInfluencingBounds( worldBounds );
+				}
+				else
+				{
+					final PointLight pointLight = new PointLight();
+					if ( fallOff > 0.0f )
+					{
+						pointLight.setInfluencingBounds( new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , (double)fallOff * 10.0 ) );
+						pointLight.setAttenuation( 1.0f , 0.0f , 0.1f / ( fallOff * fallOff ) );
+					}
+					else if ( fallOff == 0.0f )
+					{
+						pointLight.setInfluencingBounds( worldBounds );
+					}
+					pointLight.setPosition( (float)transform.xo , (float)transform.yo , (float)transform.zo );
 
-			bg.addChild( viewLight );
+					viewLight = pointLight;
+				}
+				viewLight.setColor( new Color3f( intensity , intensity , intensity ) );
+
+				bg.addChild( viewLight );
+			}
 		}
 	}
 

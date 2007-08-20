@@ -112,7 +112,7 @@ public final class AbToPovConverter
 	 *
 	 * @return  The resulting {@link PovScene} object.
 	 */
-	public PovScene convert( final Node3DCollection nodes )
+	public PovScene convert( final Node3DCollection<Node3D> nodes )
 	{
 		final PovScene scene = _scene;
 
@@ -326,7 +326,7 @@ public final class AbToPovConverter
 		final int      vertexCount       = object.getVertexCount();
 		final double[] vertexCoordinates = object.getVertexCoordinates( transform , null );
 
-		final List vertexVectors = new ArrayList( vertexCount );
+		final List<PovVector> vertexVectors = new ArrayList<PovVector>( vertexCount );
 		for ( int pi = 0 , vi = 0 ; vi < vertexCount ; pi += 3 , vi++ )
 			vertexVectors.add( new PovVector( vertexCoordinates[ pi ] , vertexCoordinates[ pi + 1 ] , vertexCoordinates[ pi + 2 ] ) );
 
@@ -355,7 +355,7 @@ public final class AbToPovConverter
 				{
 					vertexNormals = object.getVertexNormals( transform , null );
 
-					final List normalVectors = new ArrayList( vertexCount );
+					final List<PovVector> normalVectors = new ArrayList<PovVector>( vertexCount );
 					for ( int pi = 0 , vi = 0 ; vi < vertexCount ; pi += 3 , vi++ )
 						normalVectors.add( new PovVector( vertexNormals[ pi ] , vertexNormals[ pi + 1 ] , vertexNormals[ pi + 2 ] ) );
 

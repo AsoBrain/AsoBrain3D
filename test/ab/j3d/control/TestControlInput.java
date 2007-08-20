@@ -25,9 +25,6 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import com.numdata.oss.event.EventDispatcher;
-import com.numdata.oss.event.EventFilter;
-
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
@@ -37,6 +34,9 @@ import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 import ab.j3d.view.Projector;
 import ab.j3d.view.ViewModel;
+
+import com.numdata.oss.event.EventDispatcher;
+import com.numdata.oss.event.EventFilter;
 
 /**
  * This class tests the {@link ControlInput} class.
@@ -91,7 +91,7 @@ public class TestControlInput
 	{
 		System.out.println( CLASS_NAME + ".testGetIntersections()" );
 
-		List selection;
+		List<Face3DIntersection> selection;
 
 		final ControlTestInput input = new ControlTestInput();
 
@@ -111,7 +111,7 @@ public class TestControlInput
 		final Matrix3D transform6 = Matrix3D.getTransform(  90.0 ,  0.0 , 0.0 ,  150.0 ,   0.0 , 0.0 );
 		final Matrix3D transform7 = Matrix3D.getTransform(   0.0 , 90.0 , 0.0 ,  150.0 ,   0.0 , 0.0 );
 
-		final Node3DCollection scene = input.getScene();
+		final Node3DCollection<Object3D> scene = input.getScene();
 		scene.add( transform1 , plane1 );
 		scene.add( transform2 , plane2 );
 		scene.add( transform3 , plane3 );
@@ -122,41 +122,41 @@ public class TestControlInput
 
 		selection = input.getIntersections( new BasicRay3D( -45.0 , -500.0 , 0.0 , 0.0 , 1.0 , 0.0, true ) );
 		assertEquals( "Incorrect number of intersected faces;" , 2 , selection.size() );
-		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 3" , ((Face3DIntersection)selection.get( 0 )).getObjectID() );
-		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 1" , ((Face3DIntersection)selection.get( 1 )).getObjectID() );
+		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 3" , selection.get( 0 ).getObjectID() );
+		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 1" , selection.get( 1 ).getObjectID() );
 
 		selection = input.getIntersections( new BasicRay3D( 45.0 , -500.0 , 0.0 , 0.0 , 1.0 , 0.0, true ) );
 		assertEquals( "Incorrect number of intersected faces;" , 2 , selection.size() );
-		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 2" , ((Face3DIntersection)selection.get( 0 )).getObjectID() );
-		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 1" , ((Face3DIntersection)selection.get( 1 )).getObjectID() );
+		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 2" , selection.get( 0 ).getObjectID() );
+		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 1" , selection.get( 1 ).getObjectID() );
 
 		selection = input.getIntersections( new BasicRay3D( 0.0 , -500.0 , 0.0 , 0.0 , 1.0 , 0.0, true ) );
 		assertEquals( "Incorrect number of intersected faces;" , 3 , selection.size() );
-		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 3" , ((Face3DIntersection)selection.get( 0 )).getObjectID() );
-		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 2" , ((Face3DIntersection)selection.get( 1 )).getObjectID() );
-		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 1" , ((Face3DIntersection)selection.get( 2 )).getObjectID() );
+		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 3" , selection.get( 0 ).getObjectID() );
+		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 2" , selection.get( 1 ).getObjectID() );
+		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 1" , selection.get( 2 ).getObjectID() );
 
 		selection = input.getIntersections( new BasicRay3D( -125.0 , -500.0 , 0.0 , 0.0 , 1.0 , 0.0, true ) );
 		assertEquals( "Incorrect number of intersected faces;" , 2 , selection.size() );
-		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 4" , ((Face3DIntersection)selection.get( 0 )).getObjectID() );
-		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 5" , ((Face3DIntersection)selection.get( 1 )).getObjectID() );
+		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 4" , selection.get( 0 ).getObjectID() );
+		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 5" , selection.get( 1 ).getObjectID() );
 
 		selection = input.getIntersections( new BasicRay3D( -149.9 , -500.0 , 0.0 , 0.0 , 1.0 , 0.0, true ) );
 		assertEquals( "Incorrect number of intersected faces;" , 2 , selection.size() );
-		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 4" , ((Face3DIntersection)selection.get( 0 )).getObjectID() );
-		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 5" , ((Face3DIntersection)selection.get( 1 )).getObjectID() );
+		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 4" , selection.get( 0 ).getObjectID() );
+		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 5" , selection.get( 1 ).getObjectID() );
 
 		selection = input.getIntersections( new BasicRay3D( -150.0 , -500.0 , 0.0 , 0.0 , 1.0 , 0.0, true ) );
 		assertEquals( "Incorrect number of intersected faces;" , 2 , selection.size() );
 
 		selection = input.getIntersections( new BasicRay3D( 200.0 , -25.0 , 0.0 , -Math.sqrt( 0.5 ) , Math.sqrt( 0.5 ) , 0.0, true ) );
 		assertEquals( "Incorrect number of intersected faces;" , 2 , selection.size() );
-		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 6" , ((Face3DIntersection)selection.get( 0 )).getObjectID() );
-		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 7" , ((Face3DIntersection)selection.get( 1 )).getObjectID() );
+		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 6" , selection.get( 0 ).getObjectID() );
+		assertEquals( "The planes are not listed from front to back at pos #1" , "Plane 7" , selection.get( 1 ).getObjectID() );
 
 		selection = input.getIntersections( new BasicRay3D( 100.0 , 0.0 , -25.0 , 1.0 , 0.0 , 0.0, true ) );
 		assertEquals( "The number of intersected faces is not 2, but " + selection.size() , 1 , selection.size() );
-		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 7" , ((Face3DIntersection)selection.get( 0 )).getObjectID() );
+		assertEquals( "The planes are not listed from front to back at pos #0" , "Plane 7" , selection.get( 0 ).getObjectID() );
 
 		selection = input.getIntersections( new BasicRay3D( 100.0 , 0.0 , -100.0 , 1.0 , 0.0 , 0.0, true ) );
 		assertEquals( "Incorrect number of intersected faces;" , 0 , selection.size() );
@@ -174,7 +174,7 @@ public class TestControlInput
 		/**
 		  Static scene;
 		 */
-		private final Node3DCollection _scene;
+		private final Node3DCollection<Object3D> _scene;
 
 		/**
 		 * Last event that was handled.
@@ -215,7 +215,7 @@ public class TestControlInput
 			return Matrix3D.INIT.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , -1.0 , 0.0 , -500.0 );
 		}
 
-		protected Node3DCollection getScene()
+		protected Node3DCollection<Object3D> getScene()
 		{
 			return _scene;
 		}

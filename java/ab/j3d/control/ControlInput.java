@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * (C) Copyright Numdata BV 2005-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,14 +24,14 @@ import java.awt.event.MouseEvent;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.numdata.oss.event.EventDispatcher;
-
 import ab.j3d.Matrix3D;
 import ab.j3d.geom.Ray3D;
 import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 import ab.j3d.view.Projector;
+
+import com.numdata.oss.event.EventDispatcher;
 
 /**
  * The <code>ControlInput</code> receives input events, converts them to
@@ -167,14 +167,14 @@ public abstract class ControlInput
 	 *
 	 * @throws  NullPointerException if <code>ray</code> is <code>null</code>.
 	 */
-	public List getIntersections( final Ray3D ray )
+	public List<Face3DIntersection> getIntersections( final Ray3D ray )
 	{
-		final List result = new LinkedList();
+		final List<Face3DIntersection> result = new LinkedList();
 
-		final Node3DCollection scene = getScene();
+		final Node3DCollection<Object3D> scene = getScene();
 		for ( int i = 0 ; i < scene.size() ; i++ )
 		{
-			final Object3D object       = (Object3D)scene.getNode( i );
+			final Object3D object       = scene.getNode( i );
 			final Matrix3D object2world = scene.getMatrix( i );
 
 			object.getIntersectionsWithRay( result , true , getIDForObject( object ) , object2world , ray );
@@ -201,7 +201,7 @@ public abstract class ControlInput
 	 *
 	 * @return  A {@link Node3DCollection} containing the objects in the scene.
 	 */
-	protected abstract Node3DCollection getScene();
+	protected abstract Node3DCollection<Object3D> getScene();
 
 	/**
 	 * Returns the current view transform for this scene. The view transform

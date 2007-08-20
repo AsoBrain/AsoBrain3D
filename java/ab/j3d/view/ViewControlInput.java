@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * (C) Copyright Numdata BV 2005-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -91,22 +91,20 @@ public class ViewControlInput
 	 * @return  a {@link Node3DCollection} with all objects in the
 	 *          {@link ViewModel}.
 	 */
-	protected Node3DCollection getScene()
+	protected Node3DCollection<Object3D> getScene()
 	{
-		final Node3DCollection nodeCollection = new Node3DCollection();
+		final Node3DCollection<Object3D> result = new Node3DCollection<Object3D>();
 
-		final Object[]    nodeIDs = _model.getNodeIDs();
-		for ( int i = 0 ; i < nodeIDs.length ; i++ )
+		for ( final Object id : _model.getNodeIDs() )
 		{
-			final Object id = nodeIDs[ i ];
 			final ViewModelNode node = _model.getNode( id );
 			final Matrix3D node2model = node.getTransform();
 			final Node3D node3D = node.getNode3D();
 
-			node3D.gatherLeafs( nodeCollection , Object3D.class , node2model , false );
+			node3D.collectNodes( result , Object3D.class , node2model , false );
 		}
 
-		return nodeCollection;
+		return result;
 	}
 
 	/**

@@ -45,10 +45,10 @@ public class BSPTree
 {
 	private class BSPTreeNode
 	{
-		private RenderedPolygon _partitionPlane;
-		private List            _nodePolygons;
-		private BSPTreeNode     _front;
-		private BSPTreeNode     _back;
+		private RenderedPolygon       _partitionPlane;
+		private List<RenderedPolygon> _nodePolygons;
+		private BSPTreeNode           _front;
+		private BSPTreeNode           _back;
 
 		private BSPTreeNode()
 		{
@@ -63,7 +63,7 @@ public class BSPTree
 			_nodePolygons.add( polygon );
 		}
 
-		public List getPolygons()
+		public List<RenderedPolygon> getPolygons()
 		{
 			return _nodePolygons;
 		}
@@ -126,16 +126,16 @@ public class BSPTree
 	private BSPTreeNode _root;
 
 	/**
-	 * List containing {@link RenderedPolygon} objects to create tree from.
+	 * List containing polygons to create tree from.
 	 */
-	private List _polygons;
+	private List<RenderedPolygon> _polygons;
 
 	/**
 	 * Used to split polygons.
 	 *
 	 * @see RenderQueue#clip
 	 */
-	private RenderQueue _renderQueue = new RenderQueue();
+	private RenderQueue _renderQueue;
 
 	/**
 	 * Temporary/shared storage area for {@link #addObject3D}.
@@ -152,6 +152,12 @@ public class BSPTree
 	 */
 	public BSPTree()
 	{
+		_root                 = null;
+		_polygons             = null;
+		_renderQueue          = new RenderQueue();
+		_tmpVertexCoordinates = null;
+		_tmpFaceNormals       = null;
+
 		reset();
 	}
 
@@ -171,7 +177,7 @@ public class BSPTree
 	 *
 	 * @param   nodes   Nodes that specify the scene (only {@link Object3D} objects are used).
 	 */
-	public void addScene( final Node3DCollection nodes )
+	public void addScene( final Node3DCollection<Node3D> nodes )
 	{
 		for ( int i = 0 ; i < nodes.size() ; i++ )
 		{
@@ -234,22 +240,20 @@ public class BSPTree
 	 */
 	public RenderedPolygon[] getRenderQueue( final Vector3D viewPoint , final Projector projector , final Matrix3D model2view , final boolean backfaceCulling , final boolean backToFront )
 	{
-		final ArrayList queue = new ArrayList();
+		final List<RenderedPolygon> queue = new ArrayList<RenderedPolygon>();
 		getSortedPolygons( viewPoint , _root , queue , backToFront );
 
-		final List result = new ArrayList();
-		for ( int i = 0 ; i < queue.size() ; i++ )
+		final List<RenderedPolygon> result = new ArrayList();
+		for ( final RenderedPolygon polygon : queue )
 		{
-			final RenderedPolygon  polygon         = (RenderedPolygon)queue.get( i );
-			final RenderedPolygon  renderedPolygon = getRenderedPolygon( polygon , model2view , projector , backfaceCulling );
-
+			final RenderedPolygon renderedPolygon = getRenderedPolygon( polygon , model2view , projector , backfaceCulling );
 			if ( renderedPolygon != null )
 			{
 				result.add( renderedPolygon );
 			}
 		}
 
-		return (RenderedPolygon[])result.toArray( new RenderedPolygon[ result.size() ] );
+		return result.toArray( new RenderedPolygon[ result.size() ] );
 	}
 
 	/**
@@ -363,7 +367,7 @@ public class BSPTree
 	 */
 	public void build()
 	{
-		if ( _polygons.size() > 0 )
+		if ( !_polygons.isEmpty() )
 		{
 			build( _root , _polygons );
 		}
@@ -389,50 +393,47 @@ public class BSPTree
 	 * @param   root        Root node of the tree.
 	 * @param   polygons    List of polygons to build up tree from.
 	 */
-	private void build( final BSPTreeNode root , final List polygons )
+	private void build( final BSPTreeNode root , final List<RenderedPolygon> polygons )
 	{
-		final RenderedPolygon  partitionPolygon = getPartitionPlane( polygons );
-		final RenderedPolygon  partitionPlane   = partitionPolygon;
-		final List             frontList        = new ArrayList();
-		final List             backList         = new ArrayList();
+		final RenderedPolygon       partitionPolygon = getPartitionPlane( polygons );
+		final RenderedPolygon       partitionPlane   = partitionPolygon;
+		final List<RenderedPolygon> frontList        = new ArrayList();
+		final List<RenderedPolygon> backList         = new ArrayList();
 
 		root.setPartitionPlane( partitionPlane );
 		root.addPolygon( partitionPolygon );
 
-		RenderedPolygon poly;
-		for ( int i = 0 ; i < polygons.size() ; i++ )
+		for ( final RenderedPolygon poly : polygons )
 		{
-			poly = (RenderedPolygon)polygons.get( i );
-
-			if ( poly == partitionPolygon )
-				continue;
-
-			switch ( RenderQueue.compare( poly , partitionPlane ) )
+			if ( poly != partitionPolygon )
 			{
-				case RenderQueue.COPLANAR:
+				switch ( RenderQueue.compare( poly, partitionPlane ) )
 				{
-					root.addPolygon( poly );
-					break;
-				}
+					case RenderQueue.COPLANAR:
+					{
+						root.addPolygon( poly );
+						break;
+					}
 
-				case RenderQueue.BEHIND:
-				{
-					backList.add( poly );
-					break;
-				}
+					case RenderQueue.BEHIND:
+					{
+						backList.add( poly );
+						break;
+					}
 
-				case RenderQueue.IN_FRONT:
-				{
-					frontList.add( poly );
-					break;
-				}
+					case RenderQueue.IN_FRONT:
+					{
+						frontList.add( poly );
+						break;
+					}
 
-				case RenderQueue.INTERSECTING:
-				{
-					final RenderedPolygon[] splitted = _renderQueue.clip( poly , partitionPlane );
-					backList.add ( splitted[ 0 ] );
-					frontList.add( splitted[ 1 ] );
-					break;
+					case RenderQueue.INTERSECTING:
+					{
+						final RenderedPolygon[] splitted = _renderQueue.clip( poly, partitionPlane );
+						backList.add( splitted[ 0 ] );
+						frontList.add( splitted[ 1 ] );
+						break;
+					}
 				}
 			}
 		}
@@ -465,7 +466,7 @@ public class BSPTree
 	 * @return  Determined polygon;
 	 *          <code>null</code> if specified polygon list is empty.
 	 */
-	private static RenderedPolygon getPartitionPlane( final List polygons )
+	private static RenderedPolygon getPartitionPlane( final List<RenderedPolygon> polygons )
 	{
 		final RenderedPolygon result;
 
@@ -475,16 +476,16 @@ public class BSPTree
 		}
 		else if ( polygons.size() == 1 )
 		{
-			result = (RenderedPolygon)polygons.get( 0 );
+			result = polygons.get( 0 );
 		}
 		else
 		{
-			RenderedPolygon potential     = (RenderedPolygon)polygons.get( 0 );
+			RenderedPolygon potential     = polygons.get( 0 );
 			double          potentialSize = potential.getEstimatedSurfaceAreaFactor();
 
 			for ( int i = 1 ; i < polygons.size() ; i++ )
 			{
-				final RenderedPolygon polygon = (RenderedPolygon)polygons.get( i );
+				final RenderedPolygon polygon = polygons.get( i );
 				final double          size    = polygon.getEstimatedSurfaceAreaFactor();
 
 				if ( size > potentialSize )
@@ -508,14 +509,14 @@ public class BSPTree
 	 * @param   result          Result list.
 	 * @param   backToFront     Should the polygons be ordered 'back-to-front' or 'front-to-back'.
 	 */
-	private static void getSortedPolygons( final Vector3D viewPoint , final BSPTreeNode root , final List result , final boolean backToFront )
+	private static void getSortedPolygons( final Vector3D viewPoint , final BSPTreeNode root , final List<RenderedPolygon> result , final boolean backToFront )
 	{
 		if ( root != null )
 		{
-			final RenderedPolygon partitionPlane = root.getPartitionPlane();
-			final BSPTreeNode     front          = backToFront ? root.getFront() : root.getBack();
-			final BSPTreeNode     back           = backToFront ? root.getBack() : root.getFront();
-			final List            polygons       = root.getPolygons();
+			final RenderedPolygon       partitionPlane = root.getPartitionPlane();
+			final BSPTreeNode           front          = backToFront ? root.getFront() : root.getBack();
+			final BSPTreeNode           back           = backToFront ? root.getBack() : root.getFront();
+			final List<RenderedPolygon> polygons       = root.getPolygons();
 
 			if ( front == null && back == null )
 			{
