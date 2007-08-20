@@ -146,6 +146,27 @@ public class Node3D
 	}
 
 	/**
+	 * Test if the specified node is an ancestor of this node.
+	 * 
+	 * @param   node    Node to test.
+	 *
+	 * @return  <code>true</code> if the specified node is an ancestor;
+	 *          <code>false</code> otherwise.
+	 */
+	public final boolean isAncesor( final Node3D node )
+	{
+		boolean result = false;
+
+		if ( node != null )
+		{
+			for ( Node3D ancestor = getParent() ; !result && ( ancestor != null ) ; ancestor = ancestor.getParent() )
+				result = ( node == ancestor );
+		}
+
+		return result;
+	}
+
+	/**
 	 * This method returns <code>true</code> if this node is a leaf node
 	 * (it has no children).
 	 *
