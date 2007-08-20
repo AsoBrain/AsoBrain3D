@@ -147,13 +147,13 @@ public class Node3D
 
 	/**
 	 * Test if the specified node is an ancestor of this node.
-	 * 
+	 *
 	 * @param   node    Node to test.
 	 *
 	 * @return  <code>true</code> if the specified node is an ancestor;
 	 *          <code>false</code> otherwise.
 	 */
-	public final boolean isAncesor( final Node3D node )
+	public final boolean isAncestor( final Node3D node )
 	{
 		boolean result = false;
 
