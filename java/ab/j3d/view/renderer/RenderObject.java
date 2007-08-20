@@ -658,7 +658,7 @@ public final class RenderObject
 	 *
 	 * @param   lightSources    Collection of light sources.
 	 */
-	public void setLights( final Node3DCollection lightSources )
+	public void setLights( final Node3DCollection<Light3D> lightSources )
 	{
 		int i;
 		int j;
@@ -693,7 +693,7 @@ public final class RenderObject
 
 		if ( lightSources != null ) for ( i = 0 ; i < _lightCount ; i++ )
 		{
-			lights[ i ] = (Light3D)lightSources.getNode( i );
+			lights[ i ] = lightSources.getNode( i );
 
 			if ( requiresNormalsOrDistance( lights[ i ] ) )
 			{

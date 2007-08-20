@@ -670,19 +670,19 @@ public abstract class ViewModel
 	}
 
 	/**
-	 * Get all (leaf) nodes in the scene being viewed.
+	 * Get all nodes in the scene being viewed.
 	 *
 	 * @return  A {@link Node3DCollection} with all nodes in the scene
 	 *          (may be empty, but never <code>null</code>).
 	 */
-	public Node3DCollection getScene()
+	public Node3DCollection<Node3D> getScene()
 	{
-		final Node3DCollection result = new Node3DCollection();
+		final Node3DCollection<Node3D> result = new Node3DCollection<Node3D>();
 
 		for ( final ViewModelNode node : _nodes )
 		{
 			final Node3D node3D = node.getNode3D();
-			node3D.gatherLeafs( result, Node3D.class, node.getTransform(), false );
+			node3D.collectNodes( result , Node3D.class , node.getTransform() , false );
 		}
 
 		return result;

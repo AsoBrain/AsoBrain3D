@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -73,12 +73,12 @@ public final class Insert3D
 		addChild( childNode );
 	}
 
-	public void gatherLeafs( final Node3DCollection leafs , final Class leafClass , final Matrix3D transform , final boolean upwards )
+	public <T extends Node3D> Node3DCollection<T> collectNodes( final Node3DCollection<T> collection , final Class<? extends T> nodeClass , final Matrix3D transform , final boolean upwards )
 	{
 		if ( upwards )
 			throw new IllegalStateException( "can't traverse up from insert" );
 
-		super.gatherLeafs( leafs , leafClass , transform , upwards );
+		return super.collectNodes( collection , nodeClass , transform , upwards );
 	}
 
 	/**

@@ -61,85 +61,93 @@ public class JPCTTools
 	// Code must be changed to increase performance, but works for now.
 	public static Object3D convert2Object3D( final ab.j3d.model.Object3D object3d )
 	{
-		final Node3DCollection nodes = new Node3DCollection();
-		object3d.gatherLeafs( nodes , ab.j3d.model.Object3D.class , Matrix3D.INIT , false );
+		final Object3D result;
 
-		/*
-		 * Determine number of triangles for creation of an Object3D.
-		 */
-		int maxTriangles = 0;
-		for ( int i = 0 ; i < nodes.size() ; i++ )
+		final Node3DCollection<ab.j3d.model.Object3D> nodes = object3d.collectNodes( null , ab.j3d.model.Object3D.class , Matrix3D.INIT , false );
+		if ( nodes != null )
 		{
-			final ab.j3d.model.Object3D node = (ab.j3d.model.Object3D)nodes.getNode( i );
-
-			final int faceCount = node.getFaceCount();
-			for ( int j = 0 ; j < faceCount ; j++ )
+			/*
+			 * Determine number of triangles for creation of an Object3D.
+			 */
+			int maxTriangles = 0;
+			for ( int i = 0 ; i < nodes.size() ; i++ )
 			{
-				final Face3D face = node.getFace( j );
+				final ab.j3d.model.Object3D node = nodes.getNode( i );
 
-				final int vertexCount = face.getVertexCount();
-				maxTriangles += ( vertexCount > 2 ) ? vertexCount - 2 : 0;
+				final int faceCount = node.getFaceCount();
+				for ( int j = 0 ; j < faceCount ; j++ )
+				{
+					final Face3D face = node.getFace( j );
+
+					final int vertexCount = face.getVertexCount();
+					maxTriangles += ( vertexCount > 2 ) ? vertexCount - 2 : 0;
+				}
 			}
-		}
 
-		final Object3D result = new Object3D( maxTriangles );
-		result.setShadingMode( Object3D.SHADING_FAKED_FLAT );
-		for ( int i = 0 ; i < nodes.size() ; i++ )
-		{
-			final ab.j3d.model.Object3D node              = (ab.j3d.model.Object3D)nodes.getNode( i );
-			final double[]              vertexCoordinates = node.getVertexCoordinates();
-			final int                   faceCount         = node.getFaceCount();
+			result = new Object3D( maxTriangles );
+			result.setShadingMode( Object3D.SHADING_FAKED_FLAT );
 
-			for ( int j = 0 ; j < faceCount ; j++ )
+			for ( int i = 0 ; i < nodes.size() ; i++ )
 			{
-				final Face3D      face        = node.getFace( j );
-				final int         vertexCount = face.getVertexCount();
+				final ab.j3d.model.Object3D node              = nodes.getNode( i );
+				final double[]              vertexCoordinates = node.getVertexCoordinates();
+				final int                   faceCount         = node.getFaceCount();
 
-				if ( vertexCount < 2 )
+				for ( int j = 0 ; j < faceCount ; j++ )
 				{
-					/* Ignore... */
-				}
-				else if ( vertexCount == 2 )
-				{
-					/* Ignore for now, in future draw a line? */
-				}
-				else
-				{
-					final int[] vertexIndices = face.getVertexIndices();
-					final int   texture       = getTextureID( face.getMaterial() );
+					final Face3D      face        = node.getFace( j );
+					final int         vertexCount = face.getVertexCount();
 
-					int vi = vertexIndices[ 0 ] * 3;
-
-					final SimpleVector p0 = new SimpleVector( vertexCoordinates[ vi ] , vertexCoordinates[ vi + 1 ] , vertexCoordinates[ vi + 2 ] );
-					final float        u0 = face.getTextureU( 0 );
-					final float        v0 = face.getTextureV( 0 );
-
-					vi = vertexIndices[ 1 ] * 3;
-
-					final SimpleVector p1 = new SimpleVector( vertexCoordinates[ vi ] , vertexCoordinates[ vi + 1 ] , vertexCoordinates[ vi + 2 ] );
-					float u1 = face.getTextureU( 1 );
-					float v1 = face.getTextureV( 1 );
-
-					final SimpleVector p2 = new SimpleVector();
-
-					for( int k = 2 ; k < vertexCount ; k++ )
+					if ( vertexCount < 2 )
 					{
-						vi = vertexIndices[ k ] * 3;
+						/* Ignore... */
+					}
+					else if ( vertexCount == 2 )
+					{
+						/* Ignore for now, in future draw a line? */
+					}
+					else
+					{
+						final int[] vertexIndices = face.getVertexIndices();
+						final int   texture       = getTextureID( face.getMaterial() );
 
-						p2.x = (float)vertexCoordinates[ vi     ];
-						p2.y = (float)vertexCoordinates[ vi + 1 ];
-						p2.z = (float)vertexCoordinates[ vi + 2 ];
-						final float u2 = face.getTextureU( k );
-						final float v2 = face.getTextureV( k );
+						int vi = vertexIndices[ 0 ] * 3;
 
-						result.addTriangle( p2 , u2 , v2 , p1 , u1 , v1 , p0 , u0 , v0 , texture );
+						final SimpleVector p0 = new SimpleVector( vertexCoordinates[ vi ] , vertexCoordinates[ vi + 1 ] , vertexCoordinates[ vi + 2 ] );
+						final float        u0 = face.getTextureU( 0 );
+						final float        v0 = face.getTextureV( 0 );
 
-						p1.set( p2 );
-						u1 = u2;
-						v1 = v2;
+						vi = vertexIndices[ 1 ] * 3;
+
+						final SimpleVector p1 = new SimpleVector( vertexCoordinates[ vi ] , vertexCoordinates[ vi + 1 ] , vertexCoordinates[ vi + 2 ] );
+						float u1 = face.getTextureU( 1 );
+						float v1 = face.getTextureV( 1 );
+
+						final SimpleVector p2 = new SimpleVector();
+
+						for( int k = 2 ; k < vertexCount ; k++ )
+						{
+							vi = vertexIndices[ k ] * 3;
+
+							p2.x = (float)vertexCoordinates[ vi     ];
+							p2.y = (float)vertexCoordinates[ vi + 1 ];
+							p2.z = (float)vertexCoordinates[ vi + 2 ];
+							final float u2 = face.getTextureU( k );
+							final float v2 = face.getTextureV( k );
+
+							result.addTriangle( p2 , u2 , v2 , p1 , u1 , v1 , p0 , u0 , v0 , texture );
+
+							p1.set( p2 );
+							u1 = u2;
+							v1 = v2;
+						}
 					}
 				}
 			}
+		}
+		else
+		{
+			result = new Object3D( 0 );
 		}
 
 		return result;

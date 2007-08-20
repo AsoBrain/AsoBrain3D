@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2007 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,54 +20,31 @@
  */
 package ab.j3d.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ab.j3d.Matrix3D;
 
-import com.numdata.oss.ArrayTools;
-
 /**
- * This collection is used to store combinations of <code>Matrix3D</code> and
- * <code>Node3D</code> objects.
+ * This collection is used to store combinations of {@link Matrix3D} and
+ * {@link Node3D} objects.
  *
- * @see     Node3D#gatherLeafs
+ * @see     Node3D#collectNodes
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public final class Node3DCollection
+public final class Node3DCollection<T extends Node3D>
 {
 	/**
-	 * Increment size for arrays.
-	 *
-	 * @see     ArrayTools#ensureLength
+	 * List of {@link Matrix3D} objects in collection.
 	 */
-	public static final int INCREMENT_SIZE = 10;
+	private final List<Matrix3D> _matrices = new ArrayList<Matrix3D>();
 
 	/**
-	 * Number of stored elements.
+	 * List of nodes in collection.
 	 */
-	private int _elementCount;
-
-	/**
-	 * Array with Matrix3D objects in collection. This size of this
-	 * array may exceed the element count, but is never smaller.
-	 */
-	private Matrix3D[] _matrixData;
-
-	/**
-	 * Array with Node3D objects in collection. This size of this
-	 * array may exceed the element count, but is never smaller.
-	 */
-	private Node3D[] _nodeData;
-
-	/**
-	 * Default constructor.
-	 */
-	public Node3DCollection()
-	{
-		_elementCount = 0;
-		_matrixData   = null;
-		_nodeData     = null;
-	}
+	private final List<T> _nodes = new ArrayList<T>();
 
 	/**
 	 * Appends the specified node to the end of this collection.
@@ -75,10 +52,13 @@ public final class Node3DCollection
 	 * @param   matrix  Matrix3D associated with node.
 	 * @param   node    Node to add.
 	 */
-	public synchronized void add( final Matrix3D matrix , final Node3D node )
+	public void add( final Matrix3D matrix , final T node )
 	{
-		_matrixData = (Matrix3D[])ArrayTools.append( _matrixData , Matrix3D.class , _elementCount   , INCREMENT_SIZE , matrix );
-		_nodeData   = (Node3D  [])ArrayTools.append( _nodeData   , Node3D  .class , _elementCount++ , INCREMENT_SIZE , node );
+		synchronized ( this )
+		{
+			_matrices.add( matrix );
+			_nodes.add( node );
+		}
 	}
 
 	/**
@@ -86,12 +66,10 @@ public final class Node3DCollection
 	 */
 	public void clear()
 	{
-		final int elementCount = _elementCount;
-		if ( elementCount > 0 )
+		synchronized ( this )
 		{
-			ArrayTools.clear( _nodeData   , 0 , elementCount );
-			ArrayTools.clear( _matrixData , 0 , elementCount );
-			_elementCount = 0;
+			_matrices.clear();
+			_nodes.clear();
 		}
 	}
 
@@ -102,9 +80,12 @@ public final class Node3DCollection
 	 *
 	 * @return  Matrix3D object at specified index.
 	 */
-	public synchronized Matrix3D getMatrix( final int index )
+	public Matrix3D getMatrix( final int index )
 	{
-		return (Matrix3D)ArrayTools.get( _matrixData , _elementCount , index );
+		synchronized ( this )
+		{
+			return _matrices.get( index );
+		}
 	}
 
 	/**
@@ -112,11 +93,14 @@ public final class Node3DCollection
 	 *
 	 * @param   index   Index of element.
 	 *
-	 * @return  Node3D object at specified index.
+	 * @return  T object at specified index.
 	 */
-	public synchronized Node3D getNode( final int index )
+	public T getNode( final int index )
 	{
-		return (Node3D)ArrayTools.get( _nodeData , _elementCount , index );
+		synchronized ( this )
+		{
+			return _nodes.get( index );
+		}
 	}
 
 	/**
@@ -124,8 +108,8 @@ public final class Node3DCollection
 	 *
 	 * @return  The number of elements.
 	 */
-	public synchronized int size()
+	public int size()
 	{
-		return _elementCount;
+		return _nodes.size();
 	}
 }

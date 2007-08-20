@@ -230,54 +230,62 @@ public class Node3D
 	}
 
 	/**
-	 * This method creates a collection of leafs of the graphics tree of a
-	 * specific class. This is typically used during the rendering process to
-	 * collect objects that need to be rendered.
+	 * This method collects nodes of a specific time from the scene graph.
 	 * <p>
-	 * This proces consists of two phases: first going up the tree to find the
-	 * root; then going down the tree to gather the leafs and storing them in
-	 * a collection.
+	 * The scene graph can be traversed in two directions. First, going up the
+	 * tree to find the root, automatically followed by going down the tree to
+	 * collect the nodes. Second, going down the tree immediately.
 	 * <p>
-	 * During both phases, a matrix is maintained that transforms coordinates
-	 * from the current node to coordinates of the node where the proces
-	 * started. If a node of the requested class is found, it will be stored
-	 * in combination with its matrix in the returned collection.
+	 * In both directions, a transformation is maintained that transforms
+	 * coordinates from the current node to coordinates of the node where the
+	 * process started. This transformation is collected in combination with
+	 * the found node.
 	 *
-	 * @param   leafs       Collection that contains all gathered leafs.
-	 * @param   leafClass   Class of requested leafs (<code>null</code> => don't care).
+	 * @param   collection  Collection that contains all gathered nodes (may be
+	 *                      <code>null</code> to create a collection on demand).
+	 * @param   nodeClass   Class of requested nodes.
 	 * @param   transform   Transformation matrix upto this node.
-	 * @param   upwards     Direction in which the tree is being traversed
-	 *                      (should be <code>true</code> for the first call).
+	 * @param   upwards     Direction in which the tree is being traversed.
+	 *
+	 * @return  Collection (same as <code>collection</code> or newly created if
+	 *          it was <code>null</code> and at least one node was added).
 	 */
-	public void gatherLeafs( final Node3DCollection leafs , final Class<? extends Node3D> leafClass , final Matrix3D transform , final boolean upwards )
+	public <T extends Node3D> Node3DCollection<T> collectNodes( final Node3DCollection<T> collection , final Class<? extends T> nodeClass , final Matrix3D transform , final boolean upwards )
 	{
+		Node3DCollection<T> result = collection;
+
 		final Node3D parent = getParent();
 		if ( upwards && ( parent != null ) )
 		{
-			parent.gatherLeafs( leafs , leafClass , transform , true );
+			/*
+			 * Traverse the tree upwards.
+			 */
+			result = parent.collectNodes( result , nodeClass , transform , true );
 		}
 		else
 		{
 			final List<Node3D> children = _children;
 
-			if ( children.isEmpty() )
+			/*
+			 * If this is a matching node, add it to the collection.
+			 */
+			if ( nodeClass.isInstance( this ) )
 			{
-				/*
-				 * If this is a leaf, add it to the collection.
-				 */
-				if ( ( leafClass == null ) || leafClass.isInstance( this ) )
-					leafs.add( transform , this );
+				if ( result == null )
+					result = new Node3DCollection<T>();
+
+				result.add( transform , (T)this );
 			}
-			else
+
+			/*
+			 * Traverse the tree downwards.
+			 */
+			for ( final Node3D node : children )
 			{
-				/*
-				 * If this is not a leaf, traverse the tree recursively to find them.
-				 */
-				for ( final Node3D node : children )
-				{
-					node.gatherLeafs( leafs, leafClass, transform, false );
-				}
+				result = node.collectNodes( result , nodeClass , transform , false );
 			}
 		}
+
+		return result;
 	}
 }

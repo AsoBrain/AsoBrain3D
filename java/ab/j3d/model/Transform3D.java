@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2005 Peter S. Heijnen
+ * Copyright (C) 1999-2007 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -61,7 +61,7 @@ public class Transform3D
 		_inverseTransform = null;
 	}
 
-	public void gatherLeafs( final Node3DCollection leafs , final Class leafClass , final Matrix3D transform , final boolean upwards )
+	public <T extends Node3D> Node3DCollection<T> collectNodes( final Node3DCollection<T> collection , final Class<? extends T> nodeClass , final Matrix3D transform , final boolean upwards )
 	{
 		/*
 		 * Determine modified transform based on combination of the
@@ -83,7 +83,7 @@ public class Transform3D
 		/*
 		 * Let super-class do its job with the modified transformation.
 		 */
-		super.gatherLeafs( leafs , leafClass , combinedTransform , upwards );
+		return super.collectNodes( collection , nodeClass , combinedTransform , upwards );
 	}
 
 	/**
