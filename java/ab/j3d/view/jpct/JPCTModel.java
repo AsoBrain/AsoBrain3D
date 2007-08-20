@@ -98,7 +98,7 @@ public class JPCTModel
 	/**
 	 * Construct new jPCT model.
 	 *
-	 * @param   unit        Unit scale factor (e.g. {@link ViewModel.MM}).
+	 * @param   unit        Unit scale factor (e.g. {@link ViewModel#MM}).
 	 * @param   background  Background color of the frame buffer.
 	 */
 	public JPCTModel( final double unit , final Color background )
@@ -150,8 +150,9 @@ public class JPCTModel
 
 		final World world = _world;
 
-		final Node3DCollection nodes = new Node3DCollection();
-		node3D.gatherLeafs( nodes , Object3D.class , transform , false );
+		final Node3DCollection<Node3D> nodes = new Node3DCollection<Node3D>();
+
+		node3D.collectNodes( nodes , Object3D.class , transform , false );
 
 		if ( nodes.size() > 0 )
 		{
@@ -176,7 +177,7 @@ public class JPCTModel
 		}
 
 		nodes.clear();
-		node3D.gatherLeafs( nodes , Light3D.class , transform , false );
+		node3D.collectNodes( nodes , Light3D.class , transform , false );
 
 		if ( nodes.size() > 0 )
 		{
@@ -372,7 +373,7 @@ public class JPCTModel
 	/**
 	 * Base class for classes that specify a modification to the model.
 	 */
-	private static abstract class Modification
+	private abstract static class Modification
 	{
 		protected final ViewModelNode _node;
 

@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2006 Peter S. Heijnen
+ * Copyright (C) 1999-2007 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -39,7 +39,7 @@ public class WireframeRenderer
 	/**
 	 * Temporary object nodes.
 	 */
-	private final Node3DCollection _collectedObjects;
+	private final Node3DCollection<Object3D> _collectedObjects;
 
 	/**
 	 * Temporary render objects.
@@ -67,9 +67,9 @@ public class WireframeRenderer
 	 */
 	public final void renderScene( final Graphics g , final int x , final int y , final int width , final int height , final Camera3D camera )
 	{
-		final Node3DCollection objects = _collectedObjects;
+		final Node3DCollection<Object3D> objects = _collectedObjects;
 		objects.clear();
-		camera.gatherLeafs( objects , Object3D.class , Matrix3D.INIT , true );
+		camera.collectNodes( objects , Object3D.class , Matrix3D.INIT , true );
 		final int nrObjects = objects.size();
 
 		if ( nrObjects > 0 )
@@ -94,7 +94,7 @@ public class WireframeRenderer
 				if ( ro == null )
 					renderObjects[ i ] = ro = new RenderObject();
 
-				ro.set( (Object3D)objects.getNode( i ) , objects.getMatrix( i ) , Math.tan( camera.getAperture() / 2.0 ) , camera.getZoomFactor() , width , height , true );
+				ro.set( objects.getNode( i ) , objects.getMatrix( i ) , Math.tan( camera.getAperture() / 2.0 ) , camera.getZoomFactor() , width , height , true );
 			}
 
 			for ( int i = 0 ; i < nrObjects ; i++ )
@@ -124,15 +124,14 @@ public class WireframeRenderer
 			final int[] vertexX = ro._projectedX;
 			final int[] vertexY = ro._projectedY;
 
-			int vertexIndex = vertexIndices[ vertexIndices.length - 1 ];
-			int x1 = x + ( vertexX[ vertexIndex ] >> 8 );
-			int y1 = y + ( vertexY[ vertexIndex ] >> 8 );
+			final int lastIndex = vertexIndices[ vertexIndices.length - 1 ];
+			int x1 = x + ( vertexX[ lastIndex ] >> 8 );
+			int y1 = y + ( vertexY[ lastIndex ] >> 8 );
 			int x2;
 			int y2;
 
-			for ( int vertex = 0 ; vertex < vertexIndices.length ; vertex++ )
+			for ( final int vertexIndex : vertexIndices )
 			{
-				vertexIndex = vertexIndices[ vertex ];
 				x2 = x + ( vertexX[ vertexIndex ] >> 8 );
 				y2 = y + ( vertexY[ vertexIndex ] >> 8 );
 

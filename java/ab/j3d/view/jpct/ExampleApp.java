@@ -81,11 +81,11 @@ public class ExampleApp
 		final ab.j3d.model.Object3D abCube = createCube( 3.0 );
 		final Object3D jpctCube = new Object3D( 12 );
 
-		final Node3DCollection nodes = new Node3DCollection();
-		abCube.gatherLeafs( nodes , ab.j3d.model.Object3D.class , Matrix3D.INIT , false );
+		final Node3DCollection<ab.j3d.model.Object3D> nodes = abCube.collectNodes( null , ab.j3d.model.Object3D.class , Matrix3D.INIT , false );
+
 		for ( int i = 0 ; i < nodes.size() ; i++ )
 		{
-			final ab.j3d.model.Object3D object3d  = (ab.j3d.model.Object3D)nodes.getNode( i );
+			final ab.j3d.model.Object3D object3d  = nodes.getNode( i );
 			final int                   faceCount = object3d.getFaceCount();
 
 			for ( int j = 0 ; j < faceCount ; j++ )
@@ -145,7 +145,9 @@ public class ExampleApp
 
 	private void mainLoop()
 	{
-		Thread.currentThread().setPriority( Thread.NORM_PRIORITY );
+		final Thread currentThread = Thread.currentThread();
+		currentThread.setPriority( Thread.NORM_PRIORITY );
+
 		while ( !_exit )
 		{
 			_buffer.clear();
