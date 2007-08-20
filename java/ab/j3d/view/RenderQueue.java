@@ -26,7 +26,6 @@ import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Face3D;
-import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 
@@ -92,22 +91,22 @@ public final class RenderQueue
 	public static final int COPLANAR     = 3;
 
 	/**
-	 * List of queued {@link RenderedPolygon} instances. If sorted, they shall
-	 * be sorted in rear-to-front ordering.
+	 * List of queued polygons. If sorted, they shall be sorted in rear-to-front
+	 * ordering.
 	 */
-	final List _queue;
+	final List<RenderedPolygon> _queue;
 
 	/**
 	 * List of {@link List} instances containing freed objects. The index in the
 	 * list is the number of vertices in the freed polygon Index minus 1.
 	 * Elements are created on-demand (inialized to <code>null</code>).
 	 */
-	final AugmentedList _freeLists;
+	final AugmentedList<List<RenderedPolygon>> _freeLists;
 
 	/**
 	 * Temporary/shared storage area for {@link #enqueueScene}.
 	 */
-	private final Node3DCollection _tmpNodeCollection;
+	private final Node3DCollection<Object3D> _tmpNodeCollection;
 
 	/**
 	 * Temporary/shared storage area for {@link #enqueueObject}.
@@ -179,12 +178,22 @@ public final class RenderQueue
 	 */
 	public RenderQueue()
 	{
-		_queue              = new ArrayList( 64 );
-		_freeLists          = new AugmentedArrayList( 4 );
-		_tmpNodeCollection  = new Node3DCollection();
-		_tmpVertexCoordinates     = null;
+		_queue                   = new ArrayList<RenderedPolygon>( 64 );
+		_freeLists               = new AugmentedArrayList<List<RenderedPolygon>>( 4 );
+		_tmpNodeCollection       = new Node3DCollection<Object3D>();
+		_tmpVertexCoordinates    = null;
 		_tmpProjectedCoordinates = null;
-		_tmpFaceNormals     = null;
+		_tmpFaceNormals          = null;
+		_frontX                  = null;
+		_frontY                  = null;
+		_frontZ                  = null;
+		_backX                   = null;
+		_backY                   = null;
+		_backZ                   = null;
+		_frontProjX              = null;
+		_frontProjY              = null;
+		_backProjX               = null;
+		_backProjY               = null;
 	}
 
 	/**
@@ -192,10 +201,10 @@ public final class RenderQueue
 	 */
 	public void clearQueue()
 	{
-		final List queue = _queue;
+		final List<RenderedPolygon> queue = _queue;
 
 		for ( int i = queue.size() ; --i >= 0 ; )
-			releasePolygon( (RenderedPolygon)queue.get( i ) );
+			releasePolygon( queue.get( i ) );
 
 		queue.clear();
 	}
@@ -209,15 +218,14 @@ public final class RenderQueue
 	 */
 	public void enqueueScene( final Camera3D camera , final Projector projector , final boolean backfaceCulling )
 	{
-		final Node3DCollection nodeCollection = _tmpNodeCollection;
+		final Node3DCollection<Object3D> nodeCollection = _tmpNodeCollection;
 		nodeCollection.clear();
-		camera.gatherLeafs( nodeCollection , Object3D.class , Matrix3D.INIT , true );
+		camera.collectNodes( nodeCollection , Object3D.class , Matrix3D.INIT , true );
 
 		for ( int i = 0 ; i < nodeCollection.size() ; i++ )
 		{
-			final Node3D node = nodeCollection.getNode( i );
-			if ( node instanceof Object3D )
-				enqueueObject( projector , backfaceCulling , nodeCollection.getMatrix( i ) , (Object3D)node , false );
+			final Object3D node = nodeCollection.getNode( i );
+			enqueueObject( projector , backfaceCulling , nodeCollection.getMatrix( i ) , node , false );
 		}
 	}
 
@@ -275,7 +283,7 @@ public final class RenderQueue
 		final double z = polygon._minZ;
 		for ( int pointer = 0 ; pointer < _queue.size() && !stop ; pointer++ )
 		{
-			final RenderedPolygon other = (RenderedPolygon)_queue.get( pointer );
+			final RenderedPolygon other = _queue.get( pointer );
 			final double otherZ = other._minZ;
 
 			if ( otherZ > z )
@@ -300,12 +308,12 @@ public final class RenderQueue
 	 *
 	 * @return  Sorted version of the {@link List}.
 	 */
-	public static List sortPolygonList( final List tempQueue )
+	public static List<RenderedPolygon> sortPolygonList( final List<RenderedPolygon> tempQueue )
 	{
-		final List result = new ArrayList( tempQueue.size() );
-		for ( int i = 0 ; i < tempQueue.size() ; i++ )
+		final List<RenderedPolygon> result = new ArrayList( tempQueue.size() );
+
+		for ( final RenderedPolygon polygon : tempQueue )
 		{
-			final RenderedPolygon polygon = (RenderedPolygon)tempQueue.get( i );
 			boolean stop = false;
 
 			if ( result.isEmpty() )
@@ -317,7 +325,7 @@ public final class RenderQueue
 			final double z = polygon._minZ;
 			for ( int pointer = 0 ; pointer < result.size() && !stop ; pointer++ )
 			{
-				final RenderedPolygon other = (RenderedPolygon)result.get( pointer );
+				final RenderedPolygon other = result.get( pointer );
 				final double otherZ = other._minZ;
 
 				if ( otherZ > z )
@@ -343,7 +351,7 @@ public final class RenderQueue
 	 */
 	public RenderedPolygon[] getQueuedPolygons()
 	{
-		List queue = _queue;
+		List<RenderedPolygon> queue = _queue;
 
 //		System.out.print( "Temp queue order: " );
 //		for( int i = 0 ; i < queue.size() ; i++ )
@@ -365,7 +373,7 @@ public final class RenderQueue
 //		}
 //		System.out.println( " " );
 
-		return (RenderedPolygon[])queue.toArray( new RenderedPolygon[ queue.size() ] );
+		return queue.toArray( new RenderedPolygon[ queue.size() ] );
 	}
 
 	/**
@@ -381,17 +389,17 @@ public final class RenderQueue
 	 *
 	 * @see     #order
 	 */
-	public List sortQueue( final List queue )
+	public List<RenderedPolygon> sortQueue( final List<RenderedPolygon> queue )
 	{
-		final ArrayList result = new ArrayList( queue.size() + ( queue.size() / 3 ) );
-		final ArrayList tempQueue = new ArrayList( queue );
+		final ArrayList<RenderedPolygon> result = new ArrayList( queue.size() + ( queue.size() / 3 ) );
+		final ArrayList<RenderedPolygon> tempQueue = new ArrayList( queue );
 
 		int i = 0;
 		while ( i < tempQueue.size() )
 		{
 			for ( i = 0 ; i < tempQueue.size() ; i++ )
 			{
-				final RenderedPolygon p = (RenderedPolygon)tempQueue.get( i );
+				final RenderedPolygon p = tempQueue.get( i );
 				if ( p != null )
 				{
 //					out.writeln( "Ordering polygon " + p._name );
@@ -446,7 +454,7 @@ public final class RenderQueue
 	 *                          method because another polygon lay behind them.
 	 *                          Used for cycle detection.
 	 */
-	private void order( final RenderedPolygon poly , final List tempQueue , final List finalQueue , final List polygonStack )
+	private void order( final RenderedPolygon poly , final List<RenderedPolygon> tempQueue , final List<RenderedPolygon> finalQueue , final List<RenderedPolygon> polygonStack )
 	{
 		RenderedPolygon polygon = poly;
 		final int queueIndex = tempQueue.indexOf( polygon );
@@ -565,7 +573,7 @@ public final class RenderQueue
 								{
 									if ( tempQueue.get( pointer ) != null )
 									{
-										final RenderedPolygon rp = (RenderedPolygon)tempQueue.get( pointer );
+										final RenderedPolygon rp = tempQueue.get( pointer );
 										if ( rp._minZ > z )
 										{
 											tempQueue.add( pointer , clip );
@@ -937,7 +945,7 @@ public final class RenderQueue
 	{
 		final RenderedPolygon result;
 
-		final List lists     = _freeLists;
+		final List<List<RenderedPolygon>> lists = _freeLists;
 		final int  listIndex = vertexCount - 1;
 
 		if ( listIndex >= lists.size() )
@@ -946,15 +954,14 @@ public final class RenderQueue
 		}
 		else
 		{
-			final List list = (List)lists.get( listIndex );
+			final List<RenderedPolygon> list = lists.get( listIndex );
 			if ( ( list == null ) || list.isEmpty() )
 			{
 				result = new RenderedPolygon( vertexCount );
 			}
 			else
 			{
-				final int listSize = list.size();
-				result = (RenderedPolygon)list.remove( listSize - 1 );
+				result = list.remove( list.size() - 1 );
 			}
 		}
 
@@ -981,14 +988,14 @@ public final class RenderQueue
 		final int vertexCount = polygon._vertexCount;
 		final int listIndex   = vertexCount - 1;
 
-		final AugmentedList lists = _freeLists;
+		final AugmentedList<List<RenderedPolygon>> lists = _freeLists;
 		if ( vertexCount >= lists.size() )
 			lists.setLength( vertexCount );
 
-		List list = (List)lists.get( listIndex );
+		List<RenderedPolygon> list = lists.get( listIndex );
 		if ( list == null )
 		{
-			list = new ArrayList( 16 );
+			list = new ArrayList<RenderedPolygon>( 16 );
 			lists.set( listIndex , list );
 		}
 

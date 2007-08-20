@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2006 Peter S. Heijnen
+ * Copyright (C) 1999-2007 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,8 +30,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ab.j3d.MapTools;
-import ab.j3d.Matrix3D;
 import ab.j3d.Material;
+import ab.j3d.Matrix3D;
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3DCollection;
@@ -67,14 +67,14 @@ public final class ImageRenderer
 	 *
 	 * @see     Object3D
 	 */
-	private final Node3DCollection _collectedObjects = new Node3DCollection();
+	private final Node3DCollection<Object3D> _collectedObjects = new Node3DCollection();
 
 	/**
 	 * Temporary collection with light sources (Light).
 	 *
 	 * @see     Light3D
 	 */
-	private final Node3DCollection _collectedLights = new Node3DCollection();
+	private final Node3DCollection<Light3D> _collectedLights = new Node3DCollection();
 
 	/**
 	 * Temporary object with information about a rendered object.
@@ -88,7 +88,7 @@ public final class ImageRenderer
 	 * The key is the specular exponent that was used to calculate the
 	 * phong table.
 	 */
-	private static final Map _phongTableCache = new HashMap();
+	private static final Map<Integer,short[][]> _phongTableCache = new HashMap();
 
 	/**
 	 * This hashtable is used to cache maps. The key is the map name,
@@ -98,7 +98,7 @@ public final class ImageRenderer
 	 *  [ 1 ] = int[][] : _pixels
 	 *  [ 2 ] = Boolean : _transparent
 	 */
-	private static final Map _mapCache = new HashMap();
+	private static final Map<String,Object[]> _mapCache = new HashMap();
 
 	/**
 	 * Construct renderer.
@@ -173,7 +173,8 @@ public final class ImageRenderer
 			depthBuffer[ i ] = 0x7FFFFFFF;
 		}
 
-		for ( int i = 512 ; !_abort  && ( i < bufferSize ) ; )
+		int i = 512;
+		while ( !_abort  && ( i < bufferSize ) )
 		{
 			int c = bufferSize - i;
 			if ( c > i )
@@ -192,14 +193,14 @@ public final class ImageRenderer
 		if ( !_abort  )
 		{
 			_collectedObjects.clear();
-			camera.gatherLeafs( _collectedObjects , Object3D.class , Matrix3D.INIT , true );
+			camera.collectNodes( _collectedObjects , Object3D.class , Matrix3D.INIT , true );
 			if ( !_abort  )
 			{
 				_collectedLights.clear();
-				camera.gatherLeafs( _collectedLights , Light3D.class , Matrix3D.INIT , true );
+				camera.collectNodes( _collectedLights , Light3D.class , Matrix3D.INIT , true );
 
-				for ( int i = 0 ; !_abort   && ( i < _collectedObjects.size() ) ; i++ )
-					renderObject( depthBuffer , frameBuffer , width , height , camera , _collectedObjects.getMatrix( i ) , (Object3D)_collectedObjects.getNode( i ) );
+				for ( i = 0 ; !_abort   && ( i < _collectedObjects.size() ) ; i++ )
+					renderObject( depthBuffer , frameBuffer , width , height , camera , _collectedObjects.getMatrix( i ) , _collectedObjects.getNode( i ) );
 			}
 		}
 
@@ -291,7 +292,7 @@ public final class ImageRenderer
 			j = ph[ n ] >> 8;
 			k = pv[ n ] >> 8;
 
-			if ( pd[ n ] == 0 ) return;
+			if ( pd[ n ] == 0L ) return;
 
 			if ( j < minH ) { minH = j; }
 			if ( j > maxH ) { maxH = j; }
@@ -474,8 +475,8 @@ public final class ImageRenderer
 				ldc = d2 - ld;
 				ld += 0x80L;
 
-				     if ( ldc < 0 ) ldc = ( ldc - 0x100L ) / (long)i;
-				else if ( ldc > 0 ) ldc = ( ldc + 0x100L ) / (long)i;
+				     if ( ldc < 0L ) ldc = ( ldc - 0x100L ) / (long)i;
+				else if ( ldc > 0L ) ldc = ( ldc + 0x100L ) / (long)i;
 
 				ldr  =   ds[ li1 ];
 				ldrc = ( ds[ li2 ] - ldr ) / j;
@@ -532,8 +533,8 @@ public final class ImageRenderer
 
 				//rzc = ( d2        - (rz =  d1       )) / j; rz += 0x80;
 				rdc = d2 - ( rd =  d1 );
-				     if ( rdc < 0 ) rdc = ( rdc - 0x100L ) / (long)i;
-				else if ( rdc > 0 ) rdc = ( rdc + 0x100L ) / (long)i;
+				     if ( rdc < 0L ) rdc = ( rdc - 0x100L ) / (long)i;
+				else if ( rdc > 0L ) rdc = ( rdc + 0x100L ) / (long)i;
 				rd += 0x80L;
 
 				rdrc = ( ds[ ri2 ] - (rdr =  ds[ ri1 ])) / j; rdr += 0x80;
@@ -945,7 +946,7 @@ public final class ImageRenderer
 		 * Get phong table from cache.
 		 */
 		final Integer cacheKey = new Integer( exponent );
-		short[][] result = (short[][])_phongTableCache.get( cacheKey );
+		short[][] result = _phongTableCache.get( cacheKey );
 		if ( result == null )
 		{
 			/*

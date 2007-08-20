@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2006 Peter S. Heijnen
+ * Copyright (C) 1999-2007 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,6 @@ import javax.media.j3d.BranchGroup;
 import javax.media.j3d.LineArray;
 import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
-import javax.media.j3d.Texture;
 import javax.media.j3d.TriangleArray;
 import javax.vecmath.Point3d;
 import javax.vecmath.TexCoord2f;
@@ -85,33 +84,38 @@ public class Shape3DBuilder
 	 *
 	 * @return  {@link BranchGroup} containing the created content graph.
 	 */
-	public static BranchGroup createBranchGroup( final Node3DCollection nodes , final Material materialOverride , final float extraOpacity )
+	public static BranchGroup createBranchGroup( final Node3DCollection<Object3D> nodes , final Material materialOverride , final float extraOpacity )
 	{
-		final Shape3DBuilder shapeBuilder = new Shape3DBuilder();
-
-		for ( int i = 0 ; i < nodes.size() ; i++ )
-		{
-			final Object3D object3d  = (Object3D)nodes.getNode( i );
-			final int      faceCount = object3d.getFaceCount();
-
-			for ( int j = 0 ; j < faceCount ; j++ )
-				shapeBuilder.prepareFace( object3d.getFace( j ) , materialOverride , extraOpacity );
-		}
-
-		for ( int i = 0 ; i < nodes.size() ; i++ )
-		{
-			final Matrix3D xform     = nodes.getMatrix( i );
-			final Object3D object3d  = (Object3D)nodes.getNode( i );
-			final int      faceCount = object3d.getFaceCount();
-
-			for ( int j = 0 ; j < faceCount ; j++ )
-				shapeBuilder.addFace( xform , object3d.getFace( j ) , materialOverride , extraOpacity );
-		}
-
 		final BranchGroup result = new BranchGroup();
 		result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
 		result.setCapability( BranchGroup.ALLOW_DETACH );
-		shapeBuilder.buildShapes( result );
+
+		if ( ( nodes != null ) && ( nodes.size() > 0 ) )
+		{
+			final Shape3DBuilder shapeBuilder = new Shape3DBuilder();
+
+			for ( int i = 0 ; i < nodes.size() ; i++ )
+			{
+				final Object3D object3d  = nodes.getNode( i );
+				final int      faceCount = object3d.getFaceCount();
+
+				for ( int j = 0 ; j < faceCount ; j++ )
+					shapeBuilder.prepareFace( object3d.getFace( j ) , materialOverride , extraOpacity );
+			}
+
+			for ( int i = 0 ; i < nodes.size() ; i++ )
+			{
+				final Matrix3D xform     = nodes.getMatrix( i );
+				final Object3D object3d  = nodes.getNode( i );
+				final int      faceCount = object3d.getFaceCount();
+
+				for ( int j = 0 ; j < faceCount ; j++ )
+					shapeBuilder.addFace( xform , object3d.getFace( j ) , materialOverride , extraOpacity );
+			}
+
+			shapeBuilder.buildShapes( result );
+		}
+
 		return result;
 	}
 

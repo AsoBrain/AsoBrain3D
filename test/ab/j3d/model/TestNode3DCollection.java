@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2007 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -41,10 +41,9 @@ extends TestCase
 	private static final String CLASS_NAME = TestNode3DCollection.class.getName();
 
 	/**
-	 * Test the <code>Node3DCollection</code> constructor.
+	 * Test the {@link Node3DCollection} constructor.
 	 *
 	 * @throws Exception if the test fails.
-	 * @see Node3DCollection#Node3DCollection
 	 */
 	public void testNode3DCollection()
 		throws Exception
@@ -70,7 +69,7 @@ extends TestCase
 	{
 		System.out.println( CLASS_NAME + ".testAdd()" );
 
-		final Node3DCollection collection = new Node3DCollection();
+		final Node3DCollection<Node3D> collection = new Node3DCollection();
 		assertEquals( "Test #1" , 0 , collection.size() );
 
 		collection.add( null , null );
@@ -98,7 +97,7 @@ extends TestCase
 	{
 		System.out.println( CLASS_NAME + ".testClear()" );
 
-		final Node3DCollection collection = new Node3DCollection();
+		final Node3DCollection<Node3D> collection = new Node3DCollection();
 		assertEquals( "Test #1" , 0 , collection.size() );
 		collection.add( Matrix3D.INIT , new Node3D() );
 		assertEquals( "Test #2" , 1 , collection.size() );
@@ -122,26 +121,26 @@ extends TestCase
 		 * Define test properties.
 		 */
 		final Matrix3D matrix0 = Matrix3D.INIT;
-		final Matrix3D matrix1 = Matrix3D.getTransform( 1 , 2 , 3 , 4 , 5 , 6 );
+		final Matrix3D matrix1 = Matrix3D.getTransform( 1.0 , 2.0 , 3.0 , 4.0 , 5.0 , 6.0 );
 		final Node3D   node    = new Node3D();
 
 		class Test
 		{
-			final int    index;
-			final Object out;
+			final int    _index;
+			final Object _out;
 
-			final Node3DCollection collection;
+			final Node3DCollection<Node3D> _collection;
 
 			Test( final int nrMatrices , final int index , final Object out )
 			{
-				this.index = index;
-				this.out = out;
+				_index = index;
+				_out   = out;
 
-				final Node3DCollection collection = new Node3DCollection();
+				final Node3DCollection<Node3D> collection = new Node3DCollection<Node3D>();
 				if ( nrMatrices > 0 ) collection.add( matrix0 , node );
 				if ( nrMatrices > 1 ) collection.add( matrix1 , node );
 				if ( nrMatrices > 2 ) throw new IllegalArgumentException( "nrMatrices" );
-				this.collection = collection;
+				_collection = collection;
 			}
 		}
 
@@ -170,14 +169,14 @@ extends TestCase
 			final Test   test        = tests[ i ];
 			final String description = "Test #" + ( i + 1 );
 
-			final Class expectedException = ( test.out instanceof Class ) ? (Class)test.out : null;
+			final Class<?> expectedException = ( test._out instanceof Class ) ? (Class<?>)test._out : null;
 			try
 			{
-				final Matrix3D result = test.collection.getMatrix( test.index );
+				final Matrix3D result = test._collection.getMatrix( test._index );
 				if ( expectedException != null )
 					fail( description + " should have thrown exception" );
 
-				assertSame( description , test.out , result );
+				assertSame( description , test._out, result );
 			}
 			catch ( Exception e )
 			{
@@ -187,7 +186,8 @@ extends TestCase
 					throw e;
 				}
 
-				assertEquals( description + " threw wrong exception" , expectedException.getName() , e.getClass().getName() );
+				final Class<? extends Exception> exceptionClass = e.getClass();
+				assertEquals( description + " threw wrong exception" , expectedException.getName() , exceptionClass.getName() );
 			}
 		}
 	}
@@ -213,21 +213,21 @@ extends TestCase
 
 		class Test
 		{
-			final int    index;
-			final Object out;
+			final int    _index;
+			final Object _out;
 
-			final Node3DCollection collection;
+			final Node3DCollection<Node3D> _collection;
 
 			Test( final int nrNodes , final int index , final Object out )
 			{
-				this.index = index;
-				this.out = out;
+				_index = index;
+				_out = out;
 
-				final Node3DCollection collection = new Node3DCollection();
+				final Node3DCollection<Node3D> collection = new Node3DCollection<Node3D>();
 				if ( nrNodes > 0 ) collection.add( matrix , node0 );
 				if ( nrNodes > 1 ) collection.add( matrix , node1 );
 				if ( nrNodes > 2 ) throw new IllegalArgumentException( "nrNodes" );
-				this.collection = collection;
+				_collection = collection;
 			}
 		}
 
@@ -256,14 +256,14 @@ extends TestCase
 			final Test   test        = tests[ i ];
 			final String description = "Test #" + ( i + 1 );
 
-			final Class expectedException = ( test.out instanceof Class ) ? (Class)test.out : null;
+			final Class<?> expectedException = ( test._out instanceof Class ) ? (Class<?>)test._out : null;
 			try
 			{
-				final Node3D result = test.collection.getNode( test.index );
+				final Node3D result = test._collection.getNode( test._index );
 				if ( expectedException != null )
 					fail( description + " should have thrown exception" );
 
-				assertSame( description , test.out , result );
+				assertSame( description , test._out, result );
 			}
 			catch ( Exception e )
 			{
@@ -273,7 +273,8 @@ extends TestCase
 					throw e;
 				}
 
-				assertEquals( description + " threw wrong exception" , expectedException.getName() , e.getClass().getName() );
+				final Class<? extends Exception> exceptionClass = e.getClass();
+				assertEquals( description + " threw wrong exception" , expectedException.getName() , exceptionClass.getName() );
 			}
 		}
 	}
@@ -290,7 +291,7 @@ extends TestCase
 	{
 		System.out.println( CLASS_NAME + ".testSize()" );
 
-		final Node3DCollection collection = new Node3DCollection();
+		final Node3DCollection<Node3D> collection = new Node3DCollection<Node3D>();
 		assertEquals( "Test #1" , 0 , collection.size() );
 		collection.add( Matrix3D.INIT , new Node3D() );
 		assertEquals( "Test #2" , 1 , collection.size() );
