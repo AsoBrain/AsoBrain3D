@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2006
+ * (C) Copyright Numdata BV 2000-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -134,12 +134,11 @@ public class PovCamera
 		out.write( format( getAngle() ) );
 		out.newLine();
 
-		final PovMatrix transform = getTransform();
-		if ( transform == null )
-		{
-			final PovVector location = getLocation();
-			final PovVector lookAt   = getLookAt();
+		final PovVector location = getLocation();
+		final PovVector lookAt   = getLookAt();
 
+		if ( ( location != null ) && ( lookAt != null ) )
+		{
 			out.write( "location\t" );
 			location.write( out );
 			out.newLine();
@@ -152,11 +151,8 @@ public class PovCamera
 			lookAt.write( out );
 			out.newLine();
 		}
-		else
-		{
-			writeTransformation( out );
-		}
 
+		writeModifiers( out );
 
 		out.indentOut();
 		out.writeln( "}" );
