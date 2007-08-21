@@ -79,6 +79,8 @@ public final class Node3DCollection<T extends Node3D>
 	 * @param   index   Index of element.
 	 *
 	 * @return  Matrix3D object at specified index.
+	 *
+	 * @throws  IndexOutOfBoundsException if an incorrect index is specified.
 	 */
 	public Matrix3D getMatrix( final int index )
 	{
@@ -94,6 +96,8 @@ public final class Node3DCollection<T extends Node3D>
 	 * @param   index   Index of element.
 	 *
 	 * @return  T object at specified index.
+	 *
+	 * @throws  IndexOutOfBoundsException if an incorrect index is specified.
 	 */
 	public T getNode( final int index )
 	{
