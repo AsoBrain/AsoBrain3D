@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2006
+ * (C) Copyright Numdata BV 2000-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -178,8 +178,7 @@ public class PovBool
 				geometry.write( out );
 			}
 
-			writeTransformation( out );
-			writeTexture( out );
+			writeModifiers( out );
 
 			out.indentOut();
 			out.writeln( "}" );

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2006
+ * (C) Copyright Numdata BV 2000-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -241,10 +241,8 @@ public class PovCylinder
 		out.write( format( getR2() ) );
 		out.newLine();
 
-		writeTransformation( out );
-		out.newLine();
+		writeModifiers( out );
 
-		writeTexture( out );
 		out.indentOut();
 		out.writeln( "}" );
 	}

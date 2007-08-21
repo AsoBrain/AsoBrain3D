@@ -523,7 +523,7 @@ public final class PovMesh2
 			texture.write( out );
 		}
 
-		writeTexture( out );
+		writeModifiers( out );
 		out.indentOut();
 		out.writeln( "}" );
 	}
