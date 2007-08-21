@@ -130,11 +130,14 @@ public final class AbToPovConverter
 			else if ( node instanceof Light3D )
 			{
 				final Light3D light = (Light3D)node;
-				if ( light.getFallOff() < 0.0 )
+				if ( light.isAmbient() )
 				{
 					ambient += light.getIntensity();
 				}
-				scene.add( convertLight3D( transform , light ) );
+				else
+				{
+					scene.add( convertLight3D( transform , light ) );
+				}
 			}
 			else if ( node instanceof Box3D )
 			{
@@ -183,13 +186,14 @@ public final class AbToPovConverter
 		else
 		{
 			final Matrix3D boxTransform = box.getTransform();
+			final Face3D   anyFace      = box.getFace( 0 );
 
+			final String     name    = ( box.getTag() != null ) ? String.valueOf( box.getTag() ) : null;
 			final Vector3D   v1      = Vector3D.INIT;
 			final Vector3D   v2      = v1.plus( box.getDX() , box.getDY() , box.getDZ() );
-			final Face3D     face    = box.getFace( 0 );
-			final PovTexture texture = convertMaterialToPovTexture( face.getMaterial() );
+			final PovTexture texture = convertMaterialToPovTexture( anyFace.getMaterial() );
 
-			result = new PovBox( ( box.getTag() != null ) ? String.valueOf( box.getTag() ) : null , v1 , v2 , texture );
+			result = new PovBox( name , v1 , v2 , texture );
 			result.setTransform( new PovMatrix( boxTransform.multiply( transform ) ) );
 		}
 
@@ -213,11 +217,13 @@ public final class AbToPovConverter
 	 */
 	public static PovCamera convertCamera3D( final Matrix3D transform , final Camera3D camera , final double aspectRatio )
 	{
-		final PovCamera result = new PovCamera(
-			/* name     */ ( camera.getTag() != null ) ? String.valueOf( camera.getTag() ) : null ,
-		    /* location */ null ,
-		    /* lookAt   */ null ,
-		    /* angle    */ new PovVector( aspectRatio , 0.0 , 0.0 ) , Math.toDegrees( camera.getAperture() ) );
+		final String    name     = ( camera.getTag() != null ) ? String.valueOf( camera.getTag() ) : null;
+		final PovVector location = null;
+		final PovVector lookAt   = null;
+		final PovVector right    = new PovVector( aspectRatio , 0.0 , 0.0 );
+		final double    angle    = Math.toDegrees( camera.getAperture() );
+
+		final PovCamera result = new PovCamera( name , location , lookAt , right , angle );
 
 		result.setTransform( new PovMatrix( new double[]
 			{
@@ -249,10 +255,11 @@ public final class AbToPovConverter
 		}
 		else
 		{
-			final Face3D     face    = cylinder.getFace( 0 );
-			final PovTexture texture = convertMaterialToPovTexture( face.getMaterial() );
+			final String     name    = ( cylinder.getTag() != null ) ? String.valueOf( cylinder.getTag() ) : null;
+			final Face3D     anyFace = cylinder.getFace( 0 );
+			final PovTexture texture = convertMaterialToPovTexture( anyFace.getMaterial() );
 
-			result = new PovCylinder( ( cylinder.getTag() != null ) ? String.valueOf( cylinder.getTag() ) : null , 0.0 , 0.0 , 0.0 , cylinder.height , cylinder.radiusBottom , cylinder.radiusTop , texture );
+			result = new PovCylinder( name , 0.0 , 0.0 , 0.0 , cylinder.height , cylinder.radiusBottom , cylinder.radiusTop , texture );
 			result.setTransform( new PovMatrix( cylinder.xform.multiply( transform ) ) );
 		}
 
@@ -270,23 +277,23 @@ public final class AbToPovConverter
 	 */
 	public static PovLight convertLight3D( final Matrix3D transform , final Light3D light )
 	{
-		final PovLight result = new PovLight( "light" , transform.xo , transform.yo , transform.zo , new PovVector( Color.WHITE , (double)light.getIntensity() / 255.0 ) , true );
+		if ( light.isAmbient() )
+			throw new IllegalArgumentException( "ambient lights can't be created, only set as global property" );
 
-		final double fallOff = light.getFallOff();
-		if ( fallOff >= 0.0 )
+		final String    name    = ( light.getTag() != null ) ? String.valueOf( light.getTag() ) : null;
+		final PovVector color   = new PovVector( Color.WHITE , (double)light.getIntensity() / 255.0 );
+		final double    fallOff = light.getFallOff();
+
+		final PovLight result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
+
+		if ( fallOff > 0.0001 )
 		{
-			/*
-			 * POV interprets a value of 0.0 (or anything really close) as no
-			 * fall-off, so we use a very small value in stead.
-			 */
-			result.setFadeDistance( Math.max( 0.00001 , fallOff ) );
-			result.setFadePower( 1 );
+			result.setFadeDistance( fallOff );
+			result.setFadePower( PovLight.FADE_LINEAR );
 		}
 		else
 		{
-			/*
-			 * Ambient light is ignored here. See {@link #convert}.
-			 */
+			result.setFadePower( PovLight.FADE_NONE );
 		}
 
 		return result;
