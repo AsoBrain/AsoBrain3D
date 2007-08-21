@@ -20,14 +20,13 @@
  */
 package ab.j3d.model;
 
+import junit.framework.ComparisonFailure;
 import junit.framework.TestCase;
 
 import ab.j3d.Matrix3D;
 
 /**
- * This class tests the <code>Node3DCollection</code> class.
- *
- * @see     Node3DCollection
+ * This class tests the {@link Node3DCollection} class.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
@@ -58,11 +57,9 @@ extends TestCase
 	}
 
 	/**
-	 * Test the <code>add()</code> method.
+	 * Test the {@link Node3DCollection#add} method.
 	 *
 	 * @throws  Exception if the test fails.
-	 *
-	 * @see     Node3DCollection#add
 	 */
 	public void testAdd()
 		throws Exception
@@ -86,9 +83,7 @@ extends TestCase
 	}
 
 	/**
-	 * Test the <code>clear()</code> method.
-	 *
-	 * @see     Node3DCollection#clear
+	 * Test the {@link Node3DCollection#clear} method.
 	 *
 	 * @throws  Exception if the test fails.
 	 */
@@ -106,11 +101,9 @@ extends TestCase
 	}
 
 	/**
-	 * Test the <code>getMatrix()</code> method.
+	 * Test the {@link Node3DCollection#getMatrix} method.
 	 *
 	 * @throws  Exception if the test fails.
-	 *
-	 * @see     Node3DCollection#getMatrix
 	 */
 	public void testGetMatrix()
 		throws Exception
@@ -149,16 +142,16 @@ extends TestCase
 		 */
 		final Test[] tests =
 		{
-			/* Test #1  */ new Test( 0 , -1 , ArrayIndexOutOfBoundsException.class ),
-			/* Test #2  */ new Test( 0 ,  0 , ArrayIndexOutOfBoundsException.class ),
-			/* Test #3  */ new Test( 0 ,  1 , ArrayIndexOutOfBoundsException.class ),
-			/* Test #4  */ new Test( 1 , -1 , ArrayIndexOutOfBoundsException.class ),
+			/* Test #1  */ new Test( 0 , -1 , IndexOutOfBoundsException.class ),
+			/* Test #2  */ new Test( 0 ,  0 , IndexOutOfBoundsException.class ),
+			/* Test #3  */ new Test( 0 ,  1 , IndexOutOfBoundsException.class ),
+			/* Test #4  */ new Test( 1 , -1 , IndexOutOfBoundsException.class ),
 			/* Test #5  */ new Test( 1 ,  0 , matrix0 ),
-			/* Test #6  */ new Test( 1 ,  1 , ArrayIndexOutOfBoundsException.class ),
-			/* Test #7  */ new Test( 2 , -1 , ArrayIndexOutOfBoundsException.class ),
+			/* Test #6  */ new Test( 1 ,  1 , IndexOutOfBoundsException.class ),
+			/* Test #7  */ new Test( 2 , -1 , IndexOutOfBoundsException.class ),
 			/* Test #8  */ new Test( 2 ,  0 , matrix0 ),
 			/* Test #9  */ new Test( 2 ,  1 , matrix1 ),
-			/* Test #10 */ new Test( 2 ,  2 , ArrayIndexOutOfBoundsException.class ),
+			/* Test #10 */ new Test( 2 ,  2 , IndexOutOfBoundsException.class ),
 		};
 
 		/*
@@ -187,17 +180,16 @@ extends TestCase
 				}
 
 				final Class<? extends Exception> exceptionClass = e.getClass();
-				assertEquals( description + " threw wrong exception" , expectedException.getName() , exceptionClass.getName() );
+				if ( !expectedException.isAssignableFrom( exceptionClass ) )
+					throw new ComparisonFailure( description + " threw wrong exception" , expectedException.getName() , exceptionClass.getName() );
 			}
 		}
 	}
 
 	/**
-	 * Test the <code>getNode()</code> method.
+	 * Test the {@link Node3DCollection#getNode} method.
 	 *
 	 * @throws  Exception if the test fails.
-	 *
-	 * @see     Node3DCollection#getNode
 	 */
 	public void testGetNode()
 		throws Exception
@@ -236,16 +228,16 @@ extends TestCase
 		 */
 		final Test[] tests =
 		{
-			/* Test #1  */ new Test( 0 , -1 , ArrayIndexOutOfBoundsException.class ),
-			/* Test #2  */ new Test( 0 ,  0 , ArrayIndexOutOfBoundsException.class ),
-			/* Test #3  */ new Test( 0 ,  1 , ArrayIndexOutOfBoundsException.class ),
-			/* Test #4  */ new Test( 1 , -1 , ArrayIndexOutOfBoundsException.class ),
+			/* Test #1  */ new Test( 0 , -1 , IndexOutOfBoundsException.class ),
+			/* Test #2  */ new Test( 0 ,  0 , IndexOutOfBoundsException.class ),
+			/* Test #3  */ new Test( 0 ,  1 , IndexOutOfBoundsException.class ),
+			/* Test #4  */ new Test( 1 , -1 , IndexOutOfBoundsException.class ),
 			/* Test #5  */ new Test( 1 ,  0 , node0 ),
-			/* Test #6  */ new Test( 1 ,  1 , ArrayIndexOutOfBoundsException.class ),
-			/* Test #7  */ new Test( 2 , -1 , ArrayIndexOutOfBoundsException.class ),
+			/* Test #6  */ new Test( 1 ,  1 , IndexOutOfBoundsException.class ),
+			/* Test #7  */ new Test( 2 , -1 , IndexOutOfBoundsException.class ),
 			/* Test #8  */ new Test( 2 ,  0 , node0 ),
 			/* Test #9  */ new Test( 2 ,  1 , node1 ),
-			/* Test #10 */ new Test( 2 ,  2 , ArrayIndexOutOfBoundsException.class ),
+			/* Test #10 */ new Test( 2 ,  2 , IndexOutOfBoundsException.class ),
 		};
 
 		/*
@@ -274,17 +266,16 @@ extends TestCase
 				}
 
 				final Class<? extends Exception> exceptionClass = e.getClass();
-				assertEquals( description + " threw wrong exception" , expectedException.getName() , exceptionClass.getName() );
+				if ( !expectedException.isAssignableFrom( exceptionClass ) )
+					throw new ComparisonFailure( description + " threw wrong exception" , expectedException.getName() , exceptionClass.getName() );
 			}
 		}
 	}
 
 	/**
-	 * Test the <code>size()</code> method.
+	 * Test the {@link Node3DCollection#size} method.
 	 *
 	 * @throws  Exception if the test fails.
-	 *
-	 * @see     Node3DCollection#size
 	 */
 	public void testSize()
 		throws Exception
