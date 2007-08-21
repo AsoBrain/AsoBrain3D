@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2006
+ * (C) Copyright Numdata BV 2006-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,8 +22,8 @@ package ab.j3d.pov;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Frame;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -148,7 +148,7 @@ public final class ViewModelToPovAction
 		 */
 		final ViewModelView view          = _view;
 		final Component     viewComponent = view.getComponent();
-		final Frame         viewFrame     = (Frame)WindowTools.getWindow( viewComponent );
+		final Window        viewWindow    = WindowTools.getWindow( viewComponent );
 
 		int viewWidth  = viewComponent.getWidth();
 		int viewHeight = viewComponent.getHeight();
@@ -163,7 +163,7 @@ public final class ViewModelToPovAction
 		/*
 		 * Show progress bar.
 		 */
-		final JDialog           progress        = WindowTools.createProgressWindow( viewFrame , res.getString( "progressTitle" ) , res.getString( "progressMessage" ) );
+		final JDialog           progress        = WindowTools.createProgressWindow( viewWindow , res.getString( "progressTitle" ) , res.getString( "progressMessage" ) );
 		final Container         progressContent = progress.getContentPane();
 		final JProgressBar      progressBar     = new JProgressBar();
 		final BoundedRangeModel progressModel   = progressBar.getModel();
@@ -223,7 +223,7 @@ public final class ViewModelToPovAction
 			for ( int i = 0 ; ( pos > 0 ) && ( i < 25 ) ; i++ )
 				pos = logText.lastIndexOf( (int)'\n' , pos - 1 );
 
-			WindowTools.showErrorDialog( viewFrame , res.getString( "errorTitle" ) , MessageFormat.format( res.getString( "errorMessage" ) , new Object[] { ( ( pos < 0 ) ? logText : logText.substring( pos ) ) } ) );
+			WindowTools.showErrorDialog( viewWindow , res.getString( "errorTitle" ) , MessageFormat.format( res.getString( "errorMessage" ) , ( ( pos < 0 ) ? logText : logText.substring( pos ) ) ) );
 		}
 	}
 }
