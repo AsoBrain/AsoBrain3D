@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2006 Peter S. Heijnen
+ * Copyright (C) 1999-2007 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -68,6 +68,26 @@ public final class Cylinder3D
 	 */
 	public Cylinder3D( final Matrix3D xform , final double radiusBottom , final double radiusTop , final double height , final int numEdges , final Material material , final boolean smoothCircumference , final boolean smoothCaps )
 	{
+		this( xform , radiusBottom , radiusTop , height , numEdges , material , smoothCircumference , smoothCaps , true , true );
+	}
+
+	/**
+	 * Constructor for cylinder object. Radius of top or bottom may be set to 0 to create
+	 * a cone.
+	 *
+	 * @param   xform               Transform to apply to the cylinder's vertices.
+	 * @param   radiusBottom        Radius at bottom (z=0).
+	 * @param   radiusTop           Radius at top (z=height).
+	 * @param   height              Height of cylinder (z-axis).
+	 * @param   numEdges            Number of edges to approximate circle (minimum: 3).
+	 * @param   material            Material of cylinder.
+	 * @param   smoothCircumference Apply smoothing to circumference of cylinder.
+	 * @param   smoothCaps          Apply smoothing to caps of cylinder.
+	 * @param   hasTopCap           Whether the cylinder is capped at the top.
+	 * @param   hasBottomCap        Whether the cylinder is capped at the bottom.
+	 */
+	public Cylinder3D( final Matrix3D xform , final double radiusBottom , final double radiusTop , final double height , final int numEdges , final Material material , final boolean smoothCircumference , final boolean smoothCaps , final boolean hasTopCap , final boolean hasBottomCap )
+	{
 		if ( radiusBottom < 0.0 || radiusTop < 0.0 || height < 0.0 || numEdges < 3 )
 			throw new IllegalArgumentException( "inacceptable arguments to Cylinder constructor (height=" + height + ", material=" + material + ')' );
 
@@ -83,7 +103,7 @@ public final class Cylinder3D
 		 * Setup properties of cylinder.
 		 */
 		final boolean  hasBottom         = ( radiusBottom > 0.0 );
-		final boolean  hasTop            = ( radiusTop > 0.0 );
+		final boolean  hasTop            = ( radiusTop    > 0.0 );
 		final int      vertexCount       = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
 		final double[] vertexCoordinates = new double[ vertexCount * 3 ];
 
@@ -134,7 +154,7 @@ public final class Cylinder3D
 		/*
 		 * Bottom face (if it exists).
 		 */
-		if ( hasBottom )
+		if ( hasBottom && hasBottomCap )
 		{
 			final int[]   vertexIndices = new int[ numEdges ];
 			final float[] textureU      = new float[ numEdges ];
@@ -193,7 +213,7 @@ public final class Cylinder3D
 		/*
 		 * Top face (if it exists).
 		 */
-		if ( hasTop )
+		if ( hasTop && hasTopCap )
 		{
 			final int[]   vertexIndices = new int[ numEdges ];
 			final float[] textureU      = new float[ numEdges ];
