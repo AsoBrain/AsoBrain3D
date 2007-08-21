@@ -21,6 +21,7 @@ package ab.j3d.pov;
 
 import java.io.IOException;
 
+import com.numdata.oss.TextTools;
 import com.numdata.oss.io.IndentingWriter;
 
 /**
@@ -34,13 +35,73 @@ import com.numdata.oss.io.IndentingWriter;
  */
 public abstract class PovGeometry
 	extends PovObject
-	implements Comparable
+	implements Comparable<PovGeometry>
 {
 	/**
 	 * The name of the geometry object. Has no use in the Pov language, is only
 	 * used to make the Pov source human-readable so objects can be identified.
 	 */
 	private String _name;
+
+	/**
+	 * Flat to indicate that an object is hollow.
+	 * <p>
+	 * POV-Ray by default assumes that objects are made of a solid material that
+	 * completely fills the interior of an object. Hollow objects are very
+	 * useful if you want atmospheric effects to exist inside an object. It is
+	 * even required for objects containing an interior media.
+	 * <p>
+	 * In order to get a hollow CSG object you just have to make the top level
+	 * object hollow. All children will assume the same hollow state except
+	 * their state is explicitly set. The following example will set both
+	 * spheres inside the union hollow:
+	 * <pre>
+	 * union {
+	 *   sphere { -0.5*x, 1 }
+	 *   sphere {  0.5*x, 1 }
+	 *   hollow
+	 * }
+	 * </pre>
+	 * while the next example will only set the second sphere hollow because the
+	 * first sphere was explicitly set to be not hollow.
+	 * <pre>
+	 * union {
+	 *   sphere { -0.5*x, 1 hollow off }
+	 *   sphere {  0.5*x, 1 }
+	 *   hollow on
+	 * }
+	 * </pre>
+	 */
+	private boolean _hollow;
+
+	/**
+	 * Flag to indicate that an object is inside-out.
+	 * <p>
+	 * When using CSG it is often useful to invert an object so that it'll be
+	 * inside-out. The appearance of the object is not changed, just the way
+	 * that POV-Ray perceives it. If set to inverse, the inside of the shape is
+	 * flipped to become the outside and vice versa.
+	 * <p>
+	 * The inside/outside distinction is also important when attaching interior
+	 * to an object especially if media is also used. Atmospheric media and fog
+	 * also do not work as expected if your camera is inside an object. Using
+	 * inverse is useful to correct that problem.
+	 * <p>
+	 * Finally the <code>internal_reflections</code> and
+	 * <code>internal_highlights</code> keywords depend upon the inside/outside
+	 * status of an object.
+	 */
+	private boolean _inverse;
+
+	/**
+	 * Flag to indicate that an object casts no shadow.
+	 * <pre>
+	 * This is useful for special effects and for creating the illusion that a
+	 * light source actually is visible. It is useful for creating things like
+	 * laser beams or other unreal effects. During test rendering it speeds
+	 * things up if no_shadow is applied.
+	 */
+	private boolean _noShadow;
 
 	/**
 	 * The texture applied to this geometry object (<code>null</code> if no
@@ -89,6 +150,9 @@ public abstract class PovGeometry
 	protected PovGeometry( final String name , final PovTexture texture )
 	{
 		_name        = name;
+		_hollow      = false;
+		_inverse     = false;
+		_noShadow    = false;
 		_texture     = texture;
 		_transform   = null;
 		_rotation    = null;
@@ -116,6 +180,104 @@ public abstract class PovGeometry
 	public final void setName( final String name )
 	{
 		_name = name;
+	}
+
+	/**
+	 * Test if object is hollow. POV-Ray by default assumes that objects are
+	 * made of a solid material that completely fills the interior of an object.
+	 *
+	 * @return  <code>true</code> if this object is explicitly hollow;
+	 *          <code>false</code> otherwise (may be hollow due to hollow parent).
+	 */
+	public boolean isHollow()
+	{
+		return _hollow;
+	}
+
+	/**
+	 * Set object explicitly to hollow. POV-Ray by default assumes that objects
+	 * are made of a solid material that completely fills the interior of an
+	 * object. Hollow objects are very useful if you want atmospheric effects to
+	 * exist inside an object. It is even required for objects containing an
+	 * interior media.
+	 * <p>
+	 * In order to get a hollow CSG object you just have to make the top level
+	 * object hollow. All children will assume the same hollow state except
+	 * their state is explicitly set.
+	 *
+	 * @param   hollow      If <code>true</code>, the object is explicitly set
+	 *                      to hollow (may still be implicitly hollow due to
+	 *                      hollow parent).
+	 */
+	public void setHollow( final boolean hollow )
+	{
+		_hollow = hollow;
+	}
+
+	/**
+	 * Test if object is inside-out. The appearance of the object is not
+	 * changed, just the way that POV-Ray perceives it. If set to inverse, the
+	 * inside of the shape is flipped to become the outside and vice versa.
+	 *
+	 * @return  <code>true</code> if the object is inside-out;
+	 *          <code>false</code> if the object is outside-out.
+	 */
+	public boolean isInverse()
+	{
+		return _inverse;
+	}
+
+	/**
+	 * Set object to be inside-out. When using CSG it is often useful to invert
+	 * an object so that it'll be inside-out. The appearance of the object is
+	 * not changed, just the way that POV-Ray perceives it. If set to inverse,
+	 * the inside of the shape is flipped to become the outside and vice versa.
+	 * <p>
+	 * The inside/outside distinction is also important when attaching interior
+	 * to an object especially if media is also used. Atmospheric media and fog
+	 * also do not work as expected if your camera is inside an object. Using
+	 * inverse is useful to correct that problem.
+	 * <p>
+	 * Finally the <code>internal_reflections</code> and
+	 * <code>internal_highlights</code> keywords depend upon the inside/outside
+	 * status of an object.
+	 *
+	 * @param   inverse     If <code>true</code>, the object is inside-out.
+	 */
+	public void setInverse( final boolean inverse )
+	{
+		_inverse = inverse;
+	}
+
+	/**
+	 * Test if object casts no shadow. This is useful for special effects and for
+	 * creating the illusion that a light source actually is visible. It is
+	 * useful for creating things like laser beams or other unreal effects.
+	 * During test rendering it speeds things up if no_shadow is applied.
+	 * Flag to indicate that an object casts no shadow.
+	 * <pre>
+	 * This is useful for special effects and for creating the illusion that a
+	 * light source actually is visible. It is useful for creating things like
+	 * laser beams or other unreal effects. During test rendering it speeds
+	 * things up if no_shadow is applied.
+	 */
+	public boolean isNoShadow()
+	{
+		return _noShadow;
+	}
+
+	/**
+	 * Set object to cast no shadow. This is useful for special effects and for
+	 * creating the illusion that a light source actually is visible. It is
+	 * useful for creating things like laser beams or other unreal effects.
+	 * During test rendering it speeds things up if no_shadow is applied.
+	 *
+	 * @param   noShadow        If <code>true</code>, the object casts no
+	 *                          shadow.
+	 */
+	public void setNoShadow( final boolean noShadow )
+	{
+		_noShadow = noShadow;
 	}
 
 	/**
@@ -262,30 +424,57 @@ public abstract class PovGeometry
 	}
 
 	/**
-	 * Writes the texture part of the geometry to the specified writer.
+	 * Writes the modifiers of the geometry to the specified writer.
+	 * <pre>
+	 * OBJECT_MODIFIER:
+	 *  clipped_by { UNTEXTURED_SOLID_OBJECT... } |
+	 *  clipped_by { bounded_by } |
+	 *  bounded_by { UNTEXTURED_SOLID_OBJECT... } |
+	 *  bounded_by { clipped_by } |
+	 *  inverse |
+	 *  hollow |
+	 *  no_shadow |
+	 *  sturm [ Bool ] |
+	 *  hierarchy [ Bool ] |
+	 *  interior { INTERIOR_ITEMS... } |
+	 *  texture { TEXTURE_BODY } |
+	 *  pigment { PIGMENT_BODY } |
+	 *  normal { NORMAL_BODY } |
+	 *  finish { FINISH_ITEMS... } |
+	 *  TRANSFORMATION
+	 * </pre>
 	 *
 	 * @param   out     Writer to use for output.
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	protected final void writeTexture( final IndentingWriter out )
+	protected final void writeModifiers( final IndentingWriter out )
 		throws IOException
 	{
+		/* inverse/hollow/no_shadow */
+		if ( isInverse() )
+		{
+			out.writeln( "inverse" );
+		}
+
+		if ( isHollow() )
+		{
+			out.writeln( "hollow" );
+		}
+
+		if ( isNoShadow() )
+		{
+			out.writeln( "no_shadow" );
+		}
+
+		/* texture/pigment/finish */
 		final PovTexture texture = getTexture();
 		if ( texture != null )
+		{
 			texture.write( out );
-	}
+		}
 
-	/**
-	 * Writes the transformation part of the geometry to the specified writer.
-	 *
-	 * @param   out     Writer to use for output.
-	 *
-	 * @throws  IOException when writing failed.
-	 */
-	protected final void writeTransformation( final IndentingWriter out )
-		throws IOException
-	{
+		/* TRANSFORMATION */
 		final PovMatrix transform = getTransform();
 		if ( transform != null )
 		{
@@ -319,7 +508,7 @@ public abstract class PovGeometry
 	 *          0  if other object is equal;
 	 *          >1 if other object is smaller.
 	 */
-	public int compareTo( final Object other )
+	public int compareTo( final PovGeometry other )
 	{
 		final int result;
 
@@ -330,17 +519,9 @@ public abstract class PovGeometry
 		{
 			result = thisIsCamera ? -1 : 1;
 		}
-		else if ( other instanceof PovGeometry )
-		{
-			final String thisName  = getName();
-			final String otherName = ((PovGeometry)other).getName();
-
-			result = ( thisName != null ) ? ( otherName != null ) ? thisName.compareTo( otherName ) : -1
-			                              : ( otherName != null ) ? 1 : 0;
-		}
 		else
 		{
-			result = 0;
+			result = TextTools.compare( getName() , other.getName() );
 		}
 
 		return result;
