@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * (C) Copyright Numdata BV 2005-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -352,15 +352,16 @@ public final class TestAbToPovConverter
 			actual = stringWriter.toString();
 		}
 
-		final String expected = "camera // view\n" +
-		                        "{\n" +
-		                        "\tright  <1.33,0.0,0.0>\n" +
-		                        "\tangle  45.0\n" +
-		                        "\tmatrix < 1.0 , 0.0 , 0.0 ,\n" +
-		                        "\t         0.0 , 0.0 , 1.0 ,\n" +
-		                        "\t         0.0 , 1.0 , 0.0 ,\n" +
-		                        "\t         0.0 , -1000.0 , 0.0 >\n" +
-		                        "}\n";
+		final String expected =
+			"camera // view\n" +
+			"{\n" +
+			"\tright  <1.33,0.0,0.0>\n" +
+			"\tangle  45.0\n" +
+			"\tmatrix < 1.0 , 0.0 , 0.0 ,\n" +
+			"\t         0.0 , 0.0 , 1.0 ,\n" +
+			"\t         0.0 , 1.0 , 0.0 ,\n" +
+			"\t         0.0 , -1000.0 , 0.0 >\n" +
+			"}\n";
 
 		Assert.assertEquals( "Camera to pov conversion error" , expected , actual );
 	}
@@ -566,11 +567,11 @@ public final class TestAbToPovConverter
 			"sphere\n" +
 			"{\n" +
 			"\t<0.0,0.0,0.0>, 50.0\n" +
+			"\ttexture { TEX_RGB_0_0_255 }\n" +
 			"\tmatrix < 1.0 , 0.0 , 0.0 ,\n" +
 			"\t         0.0 , 1.0 , 0.0 ,\n" +
 			"\t         0.0 , 0.0 , 1.0 ,\n" +
 			"\t         0.0 , 300.0 , -200.0 >\n" +
-			"\ttexture { TEX_RGB_0_0_255 }\n" +
 			"}\n";
 
 		Assert.assertEquals( "Sphere3D to pov conversion error" , expected , actual );
@@ -603,11 +604,11 @@ public final class TestAbToPovConverter
 			"{\n" +
 			"\t<0.0,0.0,0.0>,50.0\n" +
 			"\t<0.0,0.0,100.0>,50.0\n" +
+			"\ttexture { TEX_RGB_255_0_255 }\n" +
 			"\tmatrix < 1.0 , 0.0 , 0.0 ,\n" +
 			"\t         0.0 , 1.0 , 0.0 ,\n" +
 			"\t         0.0 , 0.0 , 1.0 ,\n" +
-			"\t         0.0 , 0.0 , 150.0 >\n\n" +
-			"\ttexture { TEX_RGB_255_0_255 }\n" +
+			"\t         0.0 , 0.0 , 150.0 >\n" +
 			"}\n";
 
 		Assert.assertEquals( "Cylinder3D to pov conversion error" , expected , actual );
@@ -640,11 +641,11 @@ public final class TestAbToPovConverter
 			"{\n" +
 			"\t<0.0,0.0,0.0>,100.0\n" +
 			"\t<0.0,0.0,200.0>,50.0\n" +
+			"\ttexture { TEX_RGB_255_255_255 }\n" +
 			"\tmatrix < 1.0 , 0.0 , 0.0 ,\n" +
 			"\t         0.0 , 0.7071067811865476 , 0.7071067811865475 ,\n" +
 			"\t         0.0 , -0.7071067811865475 , 0.7071067811865476 ,\n" +
-			"\t         250.0 , 0.0 , 0.0 >\n\n" +
-			"\ttexture { TEX_RGB_255_255_255 }\n" +
+			"\t         250.0 , 0.0 , 0.0 >\n" +
 			"}\n";
 
 		Assert.assertEquals( "Cone3D to pov conversion error" , expected , actual );
@@ -781,7 +782,7 @@ public final class TestAbToPovConverter
 		}
 
 		final String expected =
-			"light_source // light\n" +
+			"light_source\n" +
 			"{\n" +
 			"\t<500.0,-500.0,500.0>\n" +
 			"\tcolor <1.0,1.0,1.0>\n" +
