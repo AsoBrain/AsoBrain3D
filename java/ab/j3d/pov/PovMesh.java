@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2006
+ * (C) Copyright Numdata BV 2000-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -48,7 +48,7 @@ public class PovMesh
 	/**
 	 * Collection of all triangles of the mesh.
 	 */
-	private List _triangles = new ArrayList();
+	private List<Triangle> _triangles = new ArrayList<Triangle>();
 
 	/**
 	 * The inside vector of a mesh can be used to make it solid. Which, in turn,
@@ -194,7 +194,7 @@ public class PovMesh
 		/*
 		 * No triangles, no mesh.
 		 */
-		final List triangles = _triangles;
+		final List<Triangle> triangles = _triangles;
 		if ( !triangles.isEmpty() )
 		{
 			out.write( "mesh //" );
@@ -212,23 +212,24 @@ public class PovMesh
 			}
 
 			/*
-			 * Figure out if maybee each triangle is same texture.
+			 * Figure out if maybe each triangle is same texture.
 			 */
 			boolean allTrianglesSame = true;
 			boolean allTrianglesNull = true;
 
-			final PovTexture first = ((Triangle)triangles.get( 0 ))._texture;
+			final PovTexture first = triangles.get( 0 )._texture;
 
 			for ( int i = 1 ; i < triangles.size() ; i++ )
 			{
-				final Triangle   triangle = (Triangle)triangles.get( i );
+				final Triangle   triangle = triangles.get( i );
 				final PovTexture texture  = triangle._texture;
 
 				allTrianglesNull &= ( texture == null );
 				allTrianglesSame &= ( texture != null ) && texture.equals( first );
 			}
 
-			PovTexture main = getTexture();
+			final PovTexture defaultTexture = getTexture();
+			PovTexture main = defaultTexture;
 
 			/*
 			 * All the same textures, but not null,
@@ -238,25 +239,32 @@ public class PovMesh
 			{
 				main = first;
 
-				for ( int i = 0; i < triangles.size(); i++ )
+				for ( final Triangle triangle : triangles )
 				{
-					final Triangle triangle = (Triangle)triangles.get( i );
 					triangle._texture = null;
 				}
 			}
 
-			for ( int i = 0; i < triangles.size(); i++ )
+			for ( final Triangle triangle : triangles )
 			{
-				final Triangle triangle = (Triangle)triangles.get( i );
 				triangle.write( out );
 			}
 
-			writeTransformation( out );
+			setTexture( main );
 
-			if ( main != null )
+			writeModifiers( out );
+
+			/*
+			 * Restore original textures.
+			 */
+			setTexture( defaultTexture );
+
+			if ( allTrianglesSame && !allTrianglesNull )
 			{
-				main.write( out );
-				out.newLine();
+				for ( final Triangle triangle : triangles )
+				{
+					triangle._texture = main;
+				}
 			}
 
 			out.indentOut();
