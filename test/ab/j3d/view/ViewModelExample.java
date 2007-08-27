@@ -21,6 +21,9 @@
 package ab.j3d.view;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Locale;
@@ -93,6 +96,10 @@ public abstract class ViewModelExample
 		final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , viewModel.createViewPanel( Locale.ENGLISH , view.getID() ) );
 		frame.setVisible( true );
 
+		final TextOverlayPainter clicked = new TextOverlayPainter();
+		clicked.setText( "Click on an object to change this text." );
+		view.addOverlayPainter( clicked );
+
 		view.insertControl( new MouseControl()
 			{
 				public EventObject mouseClicked( final ControlInputEvent event )
@@ -109,6 +116,8 @@ public abstract class ViewModelExample
 					}
 
 					System.out.println( sb.toString() );
+
+					clicked.setText( sb.toString() );
 
 					return event;
 				}
@@ -181,5 +190,36 @@ public abstract class ViewModelExample
 		/* bottom */ plane.addFace( new Vector3D[] { lb , lf , rf , rb } , green , false , false ); // Z = -size
 
 		return plane;
+	}
+
+	/**
+	 * Paints a semi-transparent bar with text on it as overlay.
+	 */
+	private static class TextOverlayPainter implements OverlayPainter
+	{
+		private String _text;
+
+		private TextOverlayPainter()
+		{
+			_text = null;
+		}
+
+		public void setText( final String text )
+		{
+			_text = text;
+		}
+
+		public void paint( final ViewModelView view , final Graphics2D g2 )
+		{
+			if ( _text != null )
+			{
+				final FontMetrics metrics = g2.getFontMetrics();
+				final Component component = view.getComponent();
+				g2.setColor( new Color( 0x80000000 , true ) );
+				g2.fillRect( 0 , ( component.getHeight() - metrics.getHeight() ) / 2 , component.getWidth() , 2 * metrics.getHeight() );
+				g2.setColor( Color.WHITE );
+				g2.drawString( _text , 50 + metrics.getLeading() , component.getHeight() / 2 + metrics.getLeading() + metrics.getAscent() );
+			}
+		}
 	}
 }
