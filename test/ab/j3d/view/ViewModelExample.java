@@ -24,10 +24,13 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Locale;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
@@ -37,6 +40,7 @@ import ab.j3d.control.FromToCameraControl;
 import ab.j3d.control.MouseControl;
 import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Object3D;
+import ab.j3d.model.SkyBox3D;
 
 import com.numdata.oss.ui.WindowTools;
 
@@ -122,6 +126,42 @@ public abstract class ViewModelExample
 					return event;
 				}
 			} );
+
+		final Component component = view.getComponent();
+		component.addMouseListener( new MouseAdapter()
+		{
+			public void mousePressed( final MouseEvent e )
+			{
+				if ( SwingUtilities.isRightMouseButton( e ) )
+				{
+					view.setRenderingPolicy( ViewModelView.WIREFRAME );
+					view.update();
+				}
+			}
+
+			public void mouseReleased( final MouseEvent e )
+			{
+				if ( SwingUtilities.isRightMouseButton( e ) )
+				{
+					view.setRenderingPolicy( ViewModelView.SOLID );
+					view.update();
+				}
+			}
+		} );
+
+		viewModel.createNode( "skybox" , createSkyBox() , null , 1.0f );
+	}
+
+	private static SkyBox3D createSkyBox()
+	{
+		final Material north   = new Material( Color.LIGHT_GRAY.getRGB() );
+		final Material east    = new Material( Color.GRAY      .getRGB() );
+		final Material south   = new Material( Color.DARK_GRAY .getRGB() );
+		final Material west    = new Material( Color.GRAY      .getRGB() );
+		final Material ceiling = new Material( 0xffc0e0ff ); // 'sky blue'
+		final Material floor   = new Material( 0xff806040 ); // 'dirt brown'
+
+		return new SkyBox3D( north , east , south , west , ceiling , floor );
 	}
 
 	/**
