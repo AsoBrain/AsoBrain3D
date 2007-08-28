@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2006 Peter S. Heijnen
+ * Copyright (C) 1999-2007 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -74,7 +74,7 @@ public final class Painter
 	 */
 	public static void paintQueue( final Graphics2D g , final RenderQueue renderQueue , final boolean outline , final boolean fill , final boolean applyLighting , final boolean useMaterialColor )
 	{
-		final RenderedPolygon[] polygons = renderQueue.getQueuedPolygons();
+		final RenderedPolygon[] polygons = fill ? renderQueue.getQueuedPolygons() : renderQueue.getUnsortedQueue();
 		paintQueue( g , polygons , outline , fill , applyLighting , useMaterialColor );
 	}
 
@@ -90,11 +90,9 @@ public final class Painter
 	 */
 	public static void paintQueue( final Graphics2D g , final RenderedPolygon[] polygons , final boolean outline , final boolean fill , final boolean applyLighting , final boolean useMaterialColor )
 	{
-		for ( int i = 0 ; i < polygons.length ; i++ )
+		for ( final RenderedPolygon polygon : polygons )
 		{
-			final RenderedPolygon polygon = polygons[ i ];
-
-			paintPolygon( g , polygon , outline , fill , applyLighting , useMaterialColor );
+			paintPolygon( g, polygon, outline, fill, applyLighting, useMaterialColor );
 		}
 	}
 
