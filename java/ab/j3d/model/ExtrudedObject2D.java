@@ -69,6 +69,11 @@ public final class ExtrudedObject2D
 	public final boolean hasBackface;
 
 	/**
+	 * Indicates whether normals are flipped.
+	 */
+	public final boolean flipNormals;
+
+	/**
 	 * Construct extruded object.
 	 *
 	 * @param   shape           Base shape.
@@ -83,13 +88,34 @@ public final class ExtrudedObject2D
 	 */
 	public ExtrudedObject2D( final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material material , final double flatness , final boolean hasBackface )
 	{
+		this( shape , extrusion , transform , material , flatness , hasBackface , false );
+	}
+
+	/**
+	 * Construct extruded object.
+	 *
+	 * @param   shape           Base shape.
+	 * @param   extrusion       Extrusion vector (control-point displacement).
+	 * @param   transform       Transform to apply.
+	 * @param   material        Material to apply.
+	 * @param   flatness        Flatness to use.
+	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
+	 * @param   flipNormals     If <code>true</code>, normals are flipped to
+	 *                          point in the opposite direction.
+	 *
+	 * @see     FlatteningPathIterator
+	 * @see     Shape#getPathIterator( AffineTransform , double )
+	 */
+	public ExtrudedObject2D( final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material material , final double flatness , final boolean hasBackface , final boolean flipNormals )
+	{
 		this.shape       = shape;
 		this.extrusion   = extrusion;
 		this.transform   = transform;
 		this.flatness    = flatness;
 		this.hasBackface = hasBackface;
+		this.flipNormals = flipNormals;
 
-		generate( this , shape , extrusion , transform , material , flatness , hasBackface );
+		generate( this , shape , extrusion , transform , material , flatness , hasBackface , flipNormals );
 	}
 
 	/**
@@ -105,11 +131,29 @@ public final class ExtrudedObject2D
 	 */
 	public static void generate( final Object3D target , final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material material , final double flatness , final boolean hasBackface )
 	{
+		generate( target , shape , extrusion , transform , material , flatness , hasBackface , false );
+	}
+
+	/**
+	 * Generate data from object properties.
+	 *
+	 * @param   target          Target {@link Object3D} to store generated data.
+	 * @param   shape           Base shape.
+	 * @param   extrusion       Extrusion vector (control-point displacement).
+	 * @param   transform       Transform to apply.
+	 * @param   material        Material to apply.
+	 * @param   flatness        Flatness to use.
+	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
+	 * @param   flipNormals     If <code>true</code>, normals are flipped to
+	 *                          point in the opposite direction.
+	 */
+	public static void generate( final Object3D target , final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material material , final double flatness , final boolean hasBackface , final boolean flipNormals )
+	{
 		final double  ex            = extrusion.x;
 		final double  ey            = extrusion.y;
 		final double  ez            = extrusion.z;
 		final boolean hasExtrusion  = !Matrix3D.almostEqual( ex , 0.0 ) || !Matrix3D.almostEqual( ey , 0.0 ) || !Matrix3D.almostEqual( ez , 0.0 );
-		final boolean flipExtrusion = hasExtrusion && !hasBackface && ( ez < 0.0 );
+		final boolean flipExtrusion = flipNormals ^ ( hasExtrusion && !hasBackface && ( ez < 0.0 ) );
 
 		final FlatteningPathIterator pathIterator = new FlatteningPathIterator( shape.getPathIterator( null ) , flatness );
 
