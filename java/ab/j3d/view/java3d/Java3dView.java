@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2006
+ * (C) Copyright Numdata BV 2004-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,6 +35,7 @@ import javax.media.j3d.TransformGroup;
 import javax.media.j3d.View;
 import javax.media.j3d.ViewPlatform;
 import javax.swing.Action;
+import javax.swing.JPopupMenu;
 import javax.vecmath.Matrix3d;
 import javax.vecmath.Vector3d;
 
@@ -231,6 +232,9 @@ final class Java3dView
 	Java3dView( final Java3dModel model, final Java3dUniverse universe , final Object id )
 	{
 		super( model.getUnit() , id );
+
+		/* Use heavyweight popups, since Java3D uses a heavyweight canvas (Canvas3D). */
+		JPopupMenu.setDefaultLightWeightPopupEnabled( false );
 
 		/*
 		 * Create view branch.
