@@ -495,7 +495,7 @@ public abstract class ViewModelView
 	 * @see     #hasOverlayPainters
 	 * @see     #paintOverlay
 	 */
-	public final void removeOverlayPainter( final OverlayPainter painter )
+	public void removeOverlayPainter( final OverlayPainter painter )
 	{
 		_painters.remove( painter );
 	}
