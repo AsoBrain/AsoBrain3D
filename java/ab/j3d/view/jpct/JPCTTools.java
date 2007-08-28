@@ -35,6 +35,7 @@ import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Node3DCollection;
+import ab.j3d.model.SkyBox3D;
 
 /**
  * Utility methods for jPCT support.
@@ -247,5 +248,43 @@ public class JPCTTools
 
 		object3D.setRotationMatrix( rotation );
 		object3D.setTranslationMatrix( translation );
+	}
+
+	/**
+	 * Creates JPCT geometry for the given sky box.
+	 *
+	 * @param   skyBox  Sky box to create geometry for.
+	 *
+	 * @return  Sky box geometry.
+	 */
+	public static Object3D createSkyBox( final SkyBox3D skyBox )
+	{
+		final Object3D result = new Object3D( 12 );
+
+		final int north = getTextureID( skyBox.getNorth() );
+		result.addTriangle( new SimpleVector( -100.0 , 100.0 , -100.0 ) , 0.0f , 0.0f , new SimpleVector( 100.0 , 100.0 ,  100.0 ) , 100.0f , 100.0f , new SimpleVector( -100.0 , 100.0 , 100.0 ) ,   0.0f , 100.0f , north );
+		result.addTriangle( new SimpleVector( -100.0 , 100.0 , -100.0 ) , 0.0f , 0.0f , new SimpleVector( 100.0 , 100.0 , -100.0 ) , 100.0f ,   0.0f , new SimpleVector(  100.0 , 100.0 , 100.0 ) , 100.0f , 100.0f , north );
+
+		final int east = getTextureID( skyBox.getEast() );
+		result.addTriangle( new SimpleVector( 100.0 , 100.0 , -100.0 ) , 0.0f , 0.0f , new SimpleVector( 100.0 , -100.0 ,  100.0 ) , 100.0f , 100.0f , new SimpleVector( 100.0 ,  100.0 , 100.0 ) ,   0.0f , 100.0f , east );
+		result.addTriangle( new SimpleVector( 100.0 , 100.0 , -100.0 ) , 0.0f , 0.0f , new SimpleVector( 100.0 , -100.0 , -100.0 ) , 100.0f ,   0.0f , new SimpleVector( 100.0 , -100.0 , 100.0 ) , 100.0f , 100.0f , east );
+
+		final int south = getTextureID( skyBox.getSouth() );
+		result.addTriangle( new SimpleVector( 100.0 , -100.0 , -100.0 ) , 0.0f , 0.0f , new SimpleVector( -100.0 , -100.0 ,  100.0 ) , 100.0f , 100.0f , new SimpleVector(  100.0 , -100.0 , 100.0 ) ,   0.0f , 100.0f , south );
+		result.addTriangle( new SimpleVector( 100.0 , -100.0 , -100.0 ) , 0.0f , 0.0f , new SimpleVector( -100.0 , -100.0 , -100.0 ) , 100.0f ,   0.0f , new SimpleVector( -100.0 , -100.0 , 100.0 ) , 100.0f , 100.0f , south );
+
+		final int west = getTextureID( skyBox.getWest() );
+		result.addTriangle( new SimpleVector( -100.0 , -100.0 , -100.0 ) , 0.0f , 0.0f , new SimpleVector( -100.0 , 100.0 ,  100.0 ) , 100.0f , 100.0f , new SimpleVector( -100.0 , -100.0 , 100.0 ) ,   0.0f , 100.0f , west );
+		result.addTriangle( new SimpleVector( -100.0 , -100.0 , -100.0 ) , 0.0f , 0.0f , new SimpleVector( -100.0 , 100.0 , -100.0 ) , 100.0f ,   0.0f , new SimpleVector( -100.0 ,  100.0 , 100.0 ) , 100.0f , 100.0f , west );
+
+		final int ceiling = getTextureID( skyBox.getCeiling() );
+		result.addTriangle( new SimpleVector( -100.0 , -100.0 , 100.0 ) , 0.0f , 0.0f , new SimpleVector( -100.0 , 100.0 , 100.0 ) ,   0.0f , 100.0f , new SimpleVector( 100.0 ,  100.0 , 100.0 ) , 100.0f , 100.0f , ceiling );
+		result.addTriangle( new SimpleVector( -100.0 , -100.0 , 100.0 ) , 0.0f , 0.0f , new SimpleVector(  100.0 , 100.0 , 100.0 ) , 100.0f , 100.0f , new SimpleVector( 100.0 , -100.0 , 100.0 ) , 100.0f ,   0.0f , ceiling );
+
+		final int floor = getTextureID( skyBox.getFloor() );
+		result.addTriangle( new SimpleVector( -100.0 , -100.0 , -100.0 ) , 0.0f , 0.0f , new SimpleVector( 100.0 ,  100.0 , -100.0 ) , 100.0f , 100.0f , new SimpleVector( -100.0 , 100.0 , -100.0 ) ,   0.0f , 100.0f , floor );
+		result.addTriangle( new SimpleVector( -100.0 , -100.0 , -100.0 ) , 0.0f , 0.0f , new SimpleVector( 100.0 , -100.0 , -100.0 ) , 100.0f ,   0.0f , new SimpleVector(  100.0 , 100.0 , -100.0 ) , 100.0f , 100.0f , floor );
+
+		return result;
 	}
 }
