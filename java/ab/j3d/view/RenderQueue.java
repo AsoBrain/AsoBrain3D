@@ -345,6 +345,16 @@ public final class RenderQueue
 	}
 
 	/**
+	 * Get unsorted list of polygons in queue.
+	 *
+	 * @return  Sorted list of polygons in queue.
+	 */
+	public RenderedPolygon[] getUnsortedQueue()
+	{
+		return _queue.toArray( new RenderedPolygon[ _queue.size() ] );
+	}
+
+	/**
 	 * Get sorted list of polygons in queue.
 	 *
 	 * @return  Sorted list of polygons in queue.
