@@ -21,10 +21,12 @@ package ab.j3d.view.jpct;
 
 import java.awt.BorderLayout;
 import java.awt.Canvas;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -42,12 +44,30 @@ import com.threed.jpct.World;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.control.ControlInput;
+import ab.j3d.model.Node3D;
+import ab.j3d.model.Node3DCollection;
+import ab.j3d.model.Object3D;
+import ab.j3d.view.OverlayPainter;
 import ab.j3d.view.Projector;
+import ab.j3d.view.RenderQueue;
 import ab.j3d.view.ViewControlInput;
 import ab.j3d.view.ViewModelView;
+import ab.j3d.view.java2d.Painter;
 
 /**
  * jPCT implementation of view model view.
+ *
+ * <p>The view can use hardware acceleration if the lwjgl library is available
+ * and the available hardware supports it. Hardware acceleration is disabled by
+ * default, but may be enabled on construction of the view.
+ *
+ * <p>
+ * The view enables switching between hardware and software rendering. To do
+ * this, a {@link ViewComponent} interface is defined with the functions needed
+ * by the view. Two implementations of are provided. The first,
+ * {@link ViewComponentImpl}, uses either software or hardware rendering
+ * depending on the {@link ViewStrategy} provided at construction. The other,
+ * {@link ViewComponentSwitcher}, implements switching between view components.
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
@@ -63,7 +83,7 @@ public class JPCTView
 	/**
 	 * Component through which a rendering of the view is shown.
 	 */
-	private final ViewComponent _viewComponent;
+	private final ViewComponentSwitcher _viewComponent;
 
 	/**
 	 * Projection policy of this view.
@@ -82,7 +102,7 @@ public class JPCTView
 	/**
 	 * Scene input translator for this View.
 	 */
-	private final ControlInput _controlInput;
+	private final ViewControlInput _controlInput;
 
 	/**
 	 * Model being viewed.
@@ -95,15 +115,442 @@ public class JPCTView
 	private Color _backgroundColor;
 
 	/**
+	 * Color for wireframes.
+	 */
+	private Color _wireframeColor;
+
+	/**
 	 * Whether the view needs to be updated to model changes.
 	 */
 	private boolean _updateNeeded;
 
 	/**
-	 * UI component to present view to user.
+	 * View component that uses the software renderer.
 	 */
-	private class ViewComponent
-		extends JComponent
+	private ViewComponentImpl _softwareView;
+
+	/**
+	 * View component using the software strategy.
+	 */
+	private ViewComponentImpl _hardwareView;
+
+	/**
+	 * Construct new jPCT-based view that uses no hardware acceleration.
+	 *
+	 * @param   model                   Model to create a view of.
+	 * @param   id                      ID of the view.
+	 * @param   backgroundColor         Background color of the view.
+	 */
+	public JPCTView( final JPCTModel model , final Object id , final Color backgroundColor )
+	{
+		this( model , id , backgroundColor , false );
+	}
+
+	/**
+	 * Construct new jPCT-based view that uses no hardware acceleration.
+	 *
+	 * @param   model                   Model to create a view of.
+	 * @param   id                      ID of the view.
+	 * @param   backgroundColor         Background color of the view.
+	 * @param   hardwareAccelerated     <code>true</code> to use hardware
+	 *                                  acceleration (if available);
+	 *                                  otherwise, no hardware acceleration is
+	 *                                  used.
+	 */
+	public JPCTView( final JPCTModel model , final Object id , final Color backgroundColor , final boolean hardwareAccelerated )
+	{
+		super( model.getUnit() , id );
+		_model               = model;
+		_backgroundColor     = backgroundColor;
+		_wireframeColor      = new Color( ~backgroundColor.getRGB() );
+
+		_projectionPolicy = Projector.PERSPECTIVE;
+		_renderingPolicy  = ViewModelView.SOLID;
+
+		Config.glColorDepth    = 24;    // @TODO set this on Linux only
+		Config.useLocking      = true;
+		Config.fadeoutLight    = true;
+
+//		Config.specPow         = 60.0f;
+//		Config.specTerm        = 30.0f;
+//		Config.useFastSpecular = false;
+
+		_viewComponent = createViewComponentSwitcher( hardwareAccelerated );
+		_controlInput  = new ViewControlInput( model , this );
+
+		_updateNeeded = true;
+		startRenderer();
+	}
+
+	/**
+	 * Adds an overlay painter to the view. Using overlay painters disables
+	 * hardware acceleration.
+	 *
+	 * @param   painter     Overlay painter to be added.
+	 */
+	public void addOverlayPainter( final OverlayPainter painter )
+	{
+		super.addOverlayPainter( painter );
+		setHardwareEnabled( false );
+	}
+
+	/**
+	 * Removes an overlay painter from the view. Using overlay painters disables
+	 * hardware acceleration.
+	 *
+	 * @param   painter     Overlay painter to be removed.
+	 */
+	public void removeOverlayPainter( final OverlayPainter painter )
+	{
+		super.removeOverlayPainter( painter );
+		setHardwareEnabled( !hasOverlayPainters() );
+	}
+
+	/**
+	 * Enables or disables hardware acceleration.
+	 *
+	 * @param   hardwareEnabled     <code>true</code> to enable hardware
+	 *                              acceleration; <code>false</code> to disable
+	 *                              hardware acceleration.
+	 */
+	private void setHardwareEnabled( final boolean hardwareEnabled )
+	{
+		final ViewComponentSwitcher switcher = _viewComponent;
+
+		if ( hardwareEnabled && ( _hardwareView != null ) )
+		{
+			switcher.showViewComponent( _hardwareView );
+		}
+		else
+		{
+			switcher.showViewComponent( _softwareView );
+		}
+	}
+
+	/**
+	 * Returns an appropriate view component, based on whether hardware
+	 * acceleration is available.
+	 *
+	 * @return  View component.
+	 */
+	private ViewComponentSwitcher createViewComponentSwitcher( final boolean hardwareAccelerated )
+	{
+		final ViewComponentImpl softwareView = new ViewComponentImpl( new SoftwareViewStrategy() );
+		softwareView.setName( "software" );
+
+		final ViewComponentSwitcher result = new ViewComponentSwitcher();
+		result.addViewComponent( softwareView );
+
+		final ViewComponentImpl hardwareView;
+		if ( hardwareAccelerated )
+		{
+			boolean hardwareSupport = false;
+			try
+			{
+				System.loadLibrary( "lwjgl" );
+				hardwareSupport = true;
+			}
+			catch ( UnsatisfiedLinkError e )
+			{
+				/** Hardware OpenGL renderer is not available. */
+			}
+			catch ( SecurityException e )
+			{
+				/** Hardware OpenGL renderer is not available. */
+			}
+
+			if ( hardwareSupport )
+			{
+				hardwareView = new ViewComponentImpl( new HardwareViewStrategy() );
+				hardwareView.setName( "hardware" );
+				hardwareView.setBackground( _backgroundColor );
+				result.addViewComponent( hardwareView );
+				result.showViewComponent( hardwareView );
+			}
+			else
+			{
+				hardwareView = null;
+			}
+		}
+		else
+		{
+			hardwareView = null;
+		}
+
+		_hardwareView = hardwareView;
+		_softwareView = softwareView;
+
+		return result;
+	}
+
+	/**
+	 * Creates the render thread, running {@link Renderer}, and starts it.
+	 */
+	private void startRenderer()
+	{
+		final Thread renderThread = new Thread( new Renderer() , "JPCTView.renderThread:" + getID() );
+		renderThread.setPriority( Thread.NORM_PRIORITY );
+		renderThread.start();
+	}
+
+	private World getWorld()
+	{
+		return _model.getWorld();
+	}
+
+	public Component getComponent()
+	{
+		return _viewComponent;
+	}
+
+	public void update()
+	{
+		/*
+		 * Renderer will perform an update before the next frame is rendered.
+		 */
+		synchronized ( this )
+		{
+			_updateNeeded = true;
+			notifyAll();
+		}
+	}
+
+	/**
+	 * Updates the camera transformation in jPCT based on the current view
+	 * transform.
+	 *
+	 * <p>NOTE: this method must only be invoked from render thread.
+ 	 */
+	private void updateCamera()
+	{
+		final Matrix3D viewTransform = getViewTransform();
+
+		final Matrix cameraTransform = new Matrix();
+		cameraTransform.setDump( new float[]
+			{
+				(float)viewTransform.xx , (float)-viewTransform.yx , (float)-viewTransform.zx , 0.0f ,
+				(float)viewTransform.xy , (float)-viewTransform.yy , (float)-viewTransform.zy , 0.0f ,
+				(float)viewTransform.xz , (float)-viewTransform.yz , (float)-viewTransform.zz , 0.0f ,
+				(float)viewTransform.xo , (float)-viewTransform.yo , (float)-viewTransform.zo , 1.0f
+			} );
+
+		final World world = getWorld();
+
+		final Camera camera = world.getCamera();
+		camera.setFOV( camera.convertRADAngleIntoFOV( (float)getAperture() ) );
+		camera.setPosition( SimpleVector.ORIGIN );
+		camera.setBack( cameraTransform );
+
+		Config.farPlane = 10.0f / (float)_model.getUnit();
+
+		// Build all objects in the world.
+		world.buildAllObjects();
+
+		final World skyBox = _model.getSkyBox();
+		skyBox.buildAllObjects();
+
+		final Matrix skyTransform = new Matrix();
+		skyTransform.setDump( new float[]
+			{
+				(float)viewTransform.xx , (float)-viewTransform.yx , (float)-viewTransform.zx , 0.0f ,
+				(float)viewTransform.xy , (float)-viewTransform.yy , (float)-viewTransform.zy , 0.0f ,
+				(float)viewTransform.xz , (float)-viewTransform.yz , (float)-viewTransform.zz , 0.0f ,
+				0.0f , 0.0f , 0.0f , 1.0f
+			} );
+
+		final Camera skyCamera = skyBox.getCamera();
+		skyCamera.setFOV( skyCamera.convertRADAngleIntoFOV( (float)getAperture() ) );
+		skyCamera.setBack( skyTransform );
+	}
+
+	public void setProjectionPolicy( final int policy )
+	{
+		_projectionPolicy = policy;
+	}
+
+	public void setRenderingPolicy( final int policy )
+	{
+		if ( _renderingPolicy != policy )
+		{
+			_renderingPolicy = policy;
+		}
+	}
+
+	/**
+	 * Returns the {@link Projector} for this view.
+	 *
+	 * @return  the {@link Projector} for this view
+	 */
+	public Projector getProjector()
+	{
+		return _viewComponent.getProjector();
+	}
+
+	protected ControlInput getControlInput()
+	{
+		return _controlInput;
+	}
+
+	/**
+	 * Render loop for the view.
+	 */
+	private class Renderer
+		implements Runnable
+	{
+		public void run()
+		{
+			while ( true )
+			{
+				/*
+				 * Pause the renderer unless the are changes.
+				 */
+				try
+				{
+					synchronized ( JPCTView.this )
+					{
+						while ( !_updateNeeded )
+						{
+							JPCTView.this.wait();
+						}
+						_updateNeeded = false;
+					}
+				}
+				catch ( InterruptedException e )
+				{
+					break;
+				}
+
+				renderFrame();
+				Thread.yield();
+			}
+		}
+	}
+
+	/**
+	 * Renders the current frame.
+	 *
+	 * <p>NOTE: this method must only be invoked from render thread.
+	 */
+	private void renderFrame()
+	{
+		final ViewComponent viewComponent = _viewComponent;
+		if ( viewComponent != null )
+		{
+			final FrameBuffer frameBuffer = viewComponent.getFrameBuffer();
+
+			if ( frameBuffer != null )
+			{
+				final JPCTModel model = _model;
+
+				final Color background = _backgroundColor;
+				frameBuffer.clear( background );
+
+				switch ( _renderingPolicy )
+				{
+					case ViewModelView.WIREFRAME :
+						{
+							final Matrix3D  viewTransform = getViewTransform();
+							final Projector projector     = getProjector();
+
+							final RenderQueue renderQueue = new RenderQueue();
+
+							final Graphics graphics = frameBuffer.getGraphics();
+
+							final Node3DCollection<Node3D> scene = model.getScene();
+							for ( int i = 0 ; i < scene.size() ; i++ )
+							{
+								final Node3D   node   = scene.getNode( i );
+								final Matrix3D matrix = scene.getMatrix( i );
+								final Matrix3D node2view = matrix.multiply( viewTransform );
+
+								if ( node instanceof Object3D )
+								{
+									final Object3D object3d = (Object3D)node;
+									object3d.outlinePaint = _wireframeColor;
+									renderQueue.enqueueObject( projector , true , node2view , object3d, false );
+								}
+								/* @FIXME Handle Insert3D's here
+								else
+								{
+								} */
+							}
+
+							Painter.paintQueue( (Graphics2D)graphics , renderQueue , true , false , false , false );
+							graphics.dispose();
+
+						}
+						break;
+
+					default:
+						{
+							final World world = getWorld();
+							model.updateWorld();
+
+							updateCamera();
+							world.buildAllObjects();
+
+							final World skyBox = model.getSkyBox();
+							skyBox.renderScene( frameBuffer );
+							skyBox.draw( frameBuffer );
+							frameBuffer.clearZBufferOnly();
+
+							world.renderScene( frameBuffer );
+							world.draw( frameBuffer );
+
+							frameBuffer.update();
+						}
+						break;
+				}
+
+				viewComponent.frameBufferUpdated();
+			}
+		}
+	}
+
+	public Action[] getActions( final Locale locale )
+	{
+		return new Action[ 0 ];
+	}
+
+	/**
+	 * Provides a component to display the view on the screen using jPCT.
+	 */
+	private interface ViewComponent
+	{
+		/**
+		 * Returns the view's projector.
+		 *
+		 * @return  Projector.
+		 */
+		Projector getProjector();
+
+		/**
+		 * Returns the view component.
+		 *
+		 * @return  View component.
+		 */
+		JComponent getComponent();
+
+		/**
+		 * Returns the frame buffer for this view component.
+		 *
+		 * @return  Frame buffer.
+		 */
+		FrameBuffer getFrameBuffer();
+
+		/**
+		 * Notifies the view component that the frame buffer was updated.
+		 */
+		void frameBufferUpdated();
+	}
+
+	/**
+	 * View component that displays the view on the screen, using a method
+	 * defined by a {@link ViewStrategy}.
+	 */
+	private class ViewComponentImpl
+		extends EventForwardingComponent
+		implements ViewComponent
 	{
 		/**
 		 * Insets cache.
@@ -111,40 +558,23 @@ public class JPCTView
 		private Insets _insets;
 
 		/**
-		 * Frame buffer displayed by the component.
+		 * Strategy used by the view component.
 		 */
-		private FrameBuffer _frameBuffer;
-
-		private ViewStrategy _strategy;
+		private final ViewStrategy _strategy;
 
 		/**
 		 * Construct view component.
 		 */
-		private ViewComponent()
+		private ViewComponentImpl( final ViewStrategy strategy )
 		{
-			_strategy    = null;
+			_strategy    = strategy;
 			_insets      = null;
-			_frameBuffer = null;
 
-			final Dimension size = new Dimension( MINIMUM_IMAGE_SIZE, MINIMUM_IMAGE_SIZE );
+			strategy.install( this );
+
+			final Dimension size = new Dimension( MINIMUM_IMAGE_SIZE , MINIMUM_IMAGE_SIZE );
 			setMinimumSize( size );
 			setPreferredSize( size );
-
-//			addMouseListener( new MouseListener);
-		}
-
-		public void setStrategy( final ViewStrategy strategy )
-		{
-			final ViewStrategy oldStrategy = _strategy;
-			if ( oldStrategy != strategy )
-			{
-				if ( oldStrategy != null )
-				{
-					oldStrategy.uninstall( this );
-				}
-				_strategy = strategy;
-				strategy.install( this );
-			}
 		}
 
 		/**
@@ -152,31 +582,41 @@ public class JPCTView
 		 *
 		 * @return  Frame buffer.
 		 */
-		private FrameBuffer getFrameBuffer()
+		public FrameBuffer getFrameBuffer()
 		{
 			FrameBuffer result = null;
 
-			if ( _strategy != null )
+			final ViewStrategy strategy = _strategy;
+			if ( strategy != null )
 			{
+				final FrameBuffer frameBuffer = strategy.getFrameBuffer();
+
+				/*
+				 * Create a new frame buffer if needed, e.g. when resized.
+				 */
 				final Dimension size = getSize();
-
-				result = _frameBuffer;
-
-				if ( ( result == null ) ||
-					 ( result.getOutputWidth()  != size.width  ) ||
-					 ( result.getOutputHeight() != size.height ) )
+				if ( ( frameBuffer == null ) ||
+				     ( frameBuffer.getOutputWidth()  != size.width  ) ||
+				     ( frameBuffer.getOutputHeight() != size.height ) )
 				{
-					if ( result != null )
+					if ( frameBuffer != null )
 					{
-						result.dispose();
+						frameBuffer.dispose();
 					}
 
 					if ( ( size.width > 0 ) && ( size.height > 0 ) )
 					{
-						result = new FrameBuffer( size.width , size.height , FrameBuffer.SAMPLINGMODE_HARDWARE_ONLY );
-						_frameBuffer = result;
-						_strategy.frameBufferReplaced( this , result );
+						result = new FrameBuffer( size.width , size.height , FrameBuffer.SAMPLINGMODE_NORMAL );
+						strategy.frameBufferReplaced( this , result );
 					}
+					else
+					{
+						result = null;
+					}
+				}
+				else
+				{
+					result = frameBuffer;
 				}
 			}
 
@@ -186,12 +626,10 @@ public class JPCTView
 		/**
 		 * Notifies the component that the contents of the frame buffer was
 		 * modified.
-		 *
-		 * @param   frameBuffer     Frame buffer.
 		 */
-		public void frameBufferUpdated( final FrameBuffer frameBuffer )
+		public void frameBufferUpdated()
 		{
-			_strategy.frameBufferUpdated( this , frameBuffer );
+			_strategy.frameBufferUpdated( this );
 		}
 
 		public Projector getProjector()
@@ -232,10 +670,129 @@ public class JPCTView
 		{
 			JPCTView.this.update();
 		}
+
+		public JComponent getComponent()
+		{
+			return this;
+		}
+
+		public String toString()
+		{
+			final Class<?> clazz         = getClass();
+			final Class<?> strategyClass = _strategy.getClass();
+
+			return clazz.getSimpleName() + "[strategy=" + strategyClass.getSimpleName() + "]";
+		}
 	}
 
-	private interface ViewStrategy
+	/**
+	 * View component that provides the ability to switch between view
+	 * components.
+	 */
+	private static class ViewComponentSwitcher
+		extends EventForwardingComponent
+		implements ViewComponent
 	{
+		/**
+		 * Currently displayed view component.
+		 */
+		private ViewComponent _currentView;
+
+		/**
+		 * Constructs a new view component switcher.
+		 */
+		ViewComponentSwitcher()
+		{
+			_currentView = null;
+			setLayout( new CardLayout() );
+		}
+
+		/**
+		 * Adds the given view component to the view switcher.
+		 *
+		 * @param   viewComponent   View component to be added.
+		 */
+		public void addViewComponent( final ViewComponent viewComponent )
+		{
+			final JComponent component = viewComponent.getComponent();
+			add( component , String.valueOf( System.identityHashCode( component ) ) );
+
+			if ( _currentView == null )
+			{
+				_currentView = viewComponent;
+			}
+		}
+
+		/**
+		 * Shows the given view component and hides all others.
+		 *
+		 * @param   viewComponent   View component to be shown.
+		 */
+		public void showViewComponent( final ViewComponent viewComponent )
+		{
+			final ViewComponent oldViewComponent = _currentView;
+			final JComponent    component        = viewComponent.getComponent();
+			if ( !component.isVisible() )
+			{
+				final JComponent oldComponent = oldViewComponent.getComponent();
+
+				_currentView = viewComponent;
+
+				component.setVisible( true );
+				oldComponent.setVisible( false );
+			}
+		}
+
+		public FrameBuffer getFrameBuffer()
+		{
+			return _currentView.getFrameBuffer();
+		}
+
+		public void frameBufferUpdated()
+		{
+			_currentView.frameBufferUpdated();
+		}
+
+		public Projector getProjector()
+		{
+			return _currentView.getProjector();
+		}
+
+		public JComponent getComponent()
+		{
+			return _currentView.getComponent();
+		}
+	}
+
+	/**
+	 * Defines how frame buffer creation and updates are handled, including the
+	 * actual displaying of the frame buffer on a view component.
+	 */
+	private abstract static class ViewStrategy
+	{
+		/**
+		 * Frame buffer displayed by the component.
+		 */
+		private FrameBuffer _frameBuffer;
+
+		/**
+		 * Constructs a view strategy.
+		 */
+		protected ViewStrategy()
+		{
+			_frameBuffer = null;
+		}
+
+		/**
+		 * Returns the frame buffer used by the strategy.
+		 *
+		 * @return  Frame buffer.
+		 */
+		public FrameBuffer getFrameBuffer()
+		{
+			return _frameBuffer;
+		}
+
 		/**
 		 * Performs implementation-specific clean-up and initialization needed
 		 * as a result fo replacing the frame buffer.
@@ -243,36 +800,56 @@ public class JPCTView
 		 * @param   component   View component.
 		 * @param   newBuffer   New frame buffer.
 		 */
-		void frameBufferReplaced( final ViewComponent component , final FrameBuffer newBuffer );
+		public void frameBufferReplaced( final ViewComponent component , final FrameBuffer newBuffer )
+		{
+			_frameBuffer = newBuffer;
+		}
 
 		/**
 		 * Notifies the strategy that the contents of the frame buffer was
-		 * modified.
+		 * modified. Implementing classes should update the display when
+		 * notified of a frame buffer update.
 		 *
 		 * @param   component   View component.
-		 * @param   frameBuffer     Frame buffer.
 		 */
-		void frameBufferUpdated( final ViewComponent component , final FrameBuffer frameBuffer );
+		public abstract void frameBufferUpdated( final ViewComponent component );
 
-		void install( final ViewComponent component );
-
-		void uninstall( final ViewComponent component );
+		/**
+		 * Installs the strategy into the given view component. This may involve
+		 * configuring the view component, e.g. adding child components, setting
+		 * its layout manager, etc.
+		 *
+		 * @param   component   View component.
+		 */
+		public abstract void install( final ViewComponent component );
 	}
 
 	/**
-	 * View component UI implementation for the (lightweight) software renderer.
+	 * View component strategy for the (lightweight) software renderer.
+	 * This strategy supports overlay painters.
 	 */
 	private class SoftwareViewStrategy
-		implements ViewStrategy
+		extends ViewStrategy
 	{
 		public void frameBufferReplaced( final ViewComponent component , final FrameBuffer newBuffer )
 		{
+			super.frameBufferReplaced( component , newBuffer );
 			newBuffer.enableRenderer( IRenderer.RENDERER_SOFTWARE , IRenderer.MODE_OPENGL );
 		}
 
-		public void frameBufferUpdated( final ViewComponent viewComponent , final FrameBuffer frameBuffer )
+		public void frameBufferUpdated( final ViewComponent viewComponent )
 		{
-			final Graphics graphics = viewComponent.getGraphics();
+			final FrameBuffer frameBuffer = getFrameBuffer();
+
+			final Graphics bufferGraphics = frameBuffer.getGraphics();
+			if ( hasOverlayPainters() )
+			{
+				paintOverlay( (Graphics2D)bufferGraphics );
+			}
+			bufferGraphics.dispose();
+
+			final JComponent component = viewComponent.getComponent();
+			final Graphics graphics = component.getGraphics();
 			frameBuffer.display( graphics );
 			graphics.dispose();
 		}
@@ -280,17 +857,14 @@ public class JPCTView
 		public void install( final ViewComponent viewComponent )
 		{
 		}
-
-		public void uninstall( final ViewComponent viewComponent )
-		{
-		}
 	}
 
 	/**
-	 * View component implementation for the (heavyweight) hardware renderer.
+	 * View component strategy for the (heavyweight) hardware renderer.
+	 * This strategy does not support overlay painters.
 	 */
-	private class HardwareViewStrategy
-		implements ViewStrategy
+	private static class HardwareViewStrategy
+		extends ViewStrategy
 	{
 		/**
 		 * Canvas used for hardware-accelerated rendering.
@@ -299,14 +873,17 @@ public class JPCTView
 
 		public void frameBufferReplaced( final ViewComponent component , final FrameBuffer newBuffer )
 		{
+			super.frameBufferReplaced( component , newBuffer );
 			newBuffer.enableRenderer( IRenderer.RENDERER_OPENGL , IRenderer.MODE_OPENGL );
 			setCanvas( component , newBuffer.enableGLCanvasRenderer( IRenderer.MODE_OPENGL ) );
 			newBuffer.disableRenderer( IRenderer.RENDERER_SOFTWARE );
 		}
 
-		public void frameBufferUpdated( final ViewComponent component , final FrameBuffer frameBuffer )
+		public void frameBufferUpdated( final ViewComponent component )
 		{
+			final FrameBuffer frameBuffer = getFrameBuffer();
 			frameBuffer.displayGLOnly();
+
 			final Graphics graphics = _canvas.getGraphics();
 			_canvas.update( graphics );
 			graphics.dispose();
@@ -316,11 +893,13 @@ public class JPCTView
 		 * Sets the component's canvas and configures it to fire mouse events
 		 * to the component's listeners.
 		 *
-		 * @param   component   View component.
-		 * @param   canvas      Canvas to be set.
+		 * @param   viewComponent   View component.
+		 * @param   canvas          Canvas to be set.
 		 */
-		private void setCanvas( final ViewComponent component , final Canvas canvas )
+		private void setCanvas( final ViewComponent viewComponent , final Canvas canvas )
 		{
+			final JComponent component = viewComponent.getComponent();
+
 			component.removeAll();
 			if ( canvas != null )
 			{
@@ -328,13 +907,13 @@ public class JPCTView
 				component.revalidate();
 
 				final MouseListener[] mouseListeners = component.getMouseListeners();
-				for ( MouseListener listener : mouseListeners )
+				for ( final MouseListener listener : mouseListeners )
 				{
 					canvas.addMouseListener( listener );
 				}
 
 				final MouseMotionListener[] mouseMotionListeners = component.getMouseMotionListeners();
-				for ( MouseMotionListener listener : mouseMotionListeners )
+				for ( final MouseMotionListener listener : mouseMotionListeners )
 				{
 					canvas.addMouseMotionListener( listener );
 				}
@@ -342,246 +921,10 @@ public class JPCTView
 			_canvas = canvas;
 		}
 
-		public void install( final ViewComponent component )
+		public void install( final ViewComponent viewComponent )
 		{
+			final JComponent component = viewComponent.getComponent();
 			component.setLayout( new BorderLayout() );
 		}
-
-		public void uninstall( final ViewComponent component )
-		{
-			component.remove( _canvas );
-			component.revalidate();
-		}
-	}
-
-	/**
-	 * Construct new jPCT-based view.
-	 */
-	public JPCTView( final JPCTModel model , final Object id , final Color backgroundColor )
-	{
-		super( model.getUnit() , id );
-		_backgroundColor = backgroundColor;
-
-		_model = model;
-
-		_projectionPolicy = Projector.PERSPECTIVE;
-		_renderingPolicy  = SOLID;
-
-		Config.glColorDepth    = 24;    // @FIXME: set this on Linux only
-		Config.useLocking      = true;
-		Config.fadeoutLight    = true;
-		Config.specPow         = 60.0f;
-		Config.specTerm        = 30.0f;
-		Config.useFastSpecular = false;
-
-		_viewComponent = createViewComponent();
-		_controlInput  = new ViewControlInput( model , this );
-
-		_updateNeeded = true;
-		startRenderer();
-	}
-
-	/**
-	 * Returns an appropriate view component, based on whether hardware
-	 * acceleration is available.
-	 *
-	 * @return  View component.
-	 */
-	private ViewComponent createViewComponent()
-	{
-		boolean useHardware = false;
-		try
-		{
-			System.loadLibrary( "lwjgl" );
-			useHardware = true;
-		}
-		catch ( UnsatisfiedLinkError e )
-		{
-			/** Hardware OpenGL renderer is not available. */
-		}
-		catch ( SecurityException e )
-		{
-			/** Hardware OpenGL renderer is not available. */
-		}
-
-		final ViewComponent result = new ViewComponent();
-		result.setStrategy( useHardware ? new HardwareViewStrategy() : new SoftwareViewStrategy() );
-		return result;
-	}
-
-	private void startRenderer()
-	{
-		final Thread renderThread = new Thread( new Renderer() , "JPCTView.renderThread:" + getID() );
-		renderThread.setPriority( Thread.NORM_PRIORITY );
-		renderThread.start();
-	}
-
-	private World getWorld()
-	{
-		return _model.getWorld();
-	}
-
-	public Component getComponent()
-	{
-		return _viewComponent;
-	}
-
-	public void update()
-	{
-		/*
-		 * Renderer will perform an update before the next frame is rendered.
-		 */
-		synchronized ( this )
-		{
-			_updateNeeded = true;
-			notifyAll();
-		}
-	}
-
-	/**
-	 * Updates the camera.
-	 *
-	 * NOTE: must only be invoked from renderer thread.
- 	 */
-	private void updateCamera()
-	{
-		final Matrix3D viewTransform = getViewTransform();
-
-		final Matrix cameraTransform = new Matrix();
-		cameraTransform.setDump( new float[]
-			{
-				(float)viewTransform.xx , (float)-viewTransform.yx , (float)-viewTransform.zx , 0.0f ,
-				(float)viewTransform.xy , (float)-viewTransform.yy , (float)-viewTransform.zy , 0.0f ,
-				(float)viewTransform.xz , (float)-viewTransform.yz , (float)-viewTransform.zz , 0.0f ,
-				(float)viewTransform.xo , (float)-viewTransform.yo , (float)-viewTransform.zo , 1.0f
-			} );
-
-		final World world = getWorld();
-
-		final Camera camera = world.getCamera();
-		camera.setFOV( camera.convertRADAngleIntoFOV( (float)getAperture() ) );
-		camera.setPosition( SimpleVector.ORIGIN );
-		camera.setBack( cameraTransform );
-
-		Config.farPlane = 10.0f / (float)_model.getUnit();
-
-		// Build all objects in the world.
-		world.buildAllObjects();
-	}
-
-	public void setProjectionPolicy( final int policy )
-	{
-		_projectionPolicy = policy;
-	}
-
-	public void setRenderingPolicy( final int policy )
-	{
-		if ( _renderingPolicy != policy )
-		{
-			_renderingPolicy = policy;
-		}
-	}
-
-	/**
-	 * Returns the {@link Projector} for this view.
-	 *
-	 * @return  the {@link Projector} for this view
-	 */
-	public Projector getProjector()
-	{
-		return _viewComponent.getProjector();
-	}
-
-	protected ControlInput getControlInput()
-	{
-		return _controlInput;
-	}
-
-	/**
-	 * Render loop for the view.
-	 */
-	private class Renderer
-		implements Runnable
-	{
-		public void run()
-		{
-			long nextCheck    = System.currentTimeMillis() + 1000L;
-			int  frameCounter = 0;
-			int  fps;
-
-			final ViewComponent viewComponent = _viewComponent;
-
-			final World world = getWorld();
-
-			updateCamera();
-			while ( true )
-			{
-				/*
-				 * Pause the renderer unless the are changes.
-				 */
-				try
-				{
-					synchronized ( JPCTView.this )
-					{
-						while ( !_updateNeeded )
-						{
-							JPCTView.this.wait();
-						}
-						_updateNeeded = false;
-					}
-				}
-				catch ( InterruptedException e )
-				{
-					break;
-				}
-
-				final FrameBuffer frameBuffer = viewComponent.getFrameBuffer();
-
-				if ( frameBuffer != null )
-				{
-					_model.updateWorld();
-
-					updateCamera();
-					world.buildAllObjects();
-
-					frameBuffer.clear( _backgroundColor );
-
-					world.renderScene( frameBuffer );
-					if ( _renderingPolicy == WIREFRAME )
-					{
-						world.drawWireframe( frameBuffer , Color.BLACK );
-					}
-					else
-					{
-						world.draw( frameBuffer );
-					}
-
-					frameBuffer.update();
-					viewComponent.frameBufferUpdated( frameBuffer );
-
-					frameCounter ++;
-
-					/*
-					 * Calculate frames per second.
- 					 */
-					if ( System.currentTimeMillis() >= nextCheck )
-					{
-						nextCheck = System.currentTimeMillis() + 1000L;
-						fps = frameCounter;
-						frameCounter = 0;
-
-						System.out.print( "fps = " );
-						System.out.println( fps );
-					}
-
-					Thread.yield();
-				}
-			}
-		}
-	}
-
-	public Action[] getActions( final Locale locale )
-	{
-		return new Action[ 0 ];
 	}
 }
