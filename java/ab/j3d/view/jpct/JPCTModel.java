@@ -30,6 +30,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.threed.jpct.Config;
 import com.threed.jpct.SimpleVector;
 import com.threed.jpct.World;
 import com.threed.jpct.util.Light;
@@ -39,6 +40,7 @@ import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
+import ab.j3d.model.SkyBox3D;
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelNode;
 import ab.j3d.view.ViewModelView;
@@ -56,6 +58,11 @@ public class JPCTModel
 	 * World containing the objects represented by this model.
 	 */
 	private final World _world;
+
+	/**
+	 * Seperate world containing the sky box, if any.
+	 */
+	private final World _skyBox;
 
 	/**
 	 * Maps node IDs ({@link Object}) to jPCT objects.
@@ -106,7 +113,12 @@ public class JPCTModel
 		super( unit );
 		_backgroundColor = background;
 
-		_world           = new World();
+		Config.lightMul = 70;
+
+		_world  = new World();
+
+		_skyBox = new World();
+		_skyBox.setAmbientLight( 255 , 255 , 255 );
 
 		_objects         = new HashMap<Object,List<com.threed.jpct.Object3D>>();
 		_lights          = new HashMap<Object,List<Light>>();
@@ -119,16 +131,23 @@ public class JPCTModel
 
 	protected void initializeNode( final ViewModelNode node )
 	{
+		if ( node == null )
+			throw new NullPointerException( "node" );
 		_modifications.add( new Addition( node ) );
 	}
 
 	protected void updateNodeContent( final ViewModelNode node )
 	{
+		if ( node == null )
+			throw new NullPointerException( "node" );
 		_modifications.add( new Update( node ) );
 	}
 
 	public void removeNode( final Object id )
 	{
+		if ( id == null )
+			throw new NullPointerException( "id" );
+
 		final ViewModelNode node = getNode( id );
 		if ( node != null )
 		{
@@ -197,7 +216,7 @@ public class JPCTModel
 				final Matrix3D lightTransform = nodes.getMatrix( i );
 
 				final int   modelIntensity = modelLight.getIntensity();
-				final float viewIntensity  = (float)modelIntensity * 10.0f / 255.0f;
+				final float viewIntensity  = (float)modelIntensity / 255.0f;
 				final float fallOff        = (float)modelLight.getFallOff();
 
 				if ( fallOff < 0.0f )
@@ -207,9 +226,9 @@ public class JPCTModel
 				}
 				else
 				{
-					final Light   viewLight  = addLight();
+					final Light viewLight = addLight();
 					viewLight.setIntensity( viewIntensity , viewIntensity , viewIntensity );
-					viewLight.setAttenuation( fallOff );
+					viewLight.setAttenuation( ( fallOff == 0.0f ) ? -1.0f : fallOff / 10.0f );
 					viewLight.setPosition( new SimpleVector( lightTransform.xo , lightTransform.yo , lightTransform.zo ) );
 					lights.add( viewLight );
 				}
@@ -224,12 +243,30 @@ public class JPCTModel
 				setAmbientLight( ambientLight );
 			}
 		}
+
+		nodes.clear();
+		node3D.collectNodes( nodes , SkyBox3D.class , transform , false );
+
+		if ( nodes.size() > 0 )
+		{
+			final SkyBox3D skyBoxNode = (SkyBox3D)nodes.getNode( 0 );
+			_skyBox.removeAllObjects();
+			_skyBox.addObject( JPCTTools.createSkyBox( skyBoxNode ) );
+		}
 	}
 
 	private void setAmbientLight( final int ambientLight )
 	{
 		_ambientLight = ambientLight;
-		final int worldAmbient = ambientLight / 2;
+
+		/**
+		 * Per-object ambient lighting parameters are not available in jPCT.
+		 * At the time of writing this, TextureSpecs have an ambient
+		 * reflectivity of 0.35f on average. An additional correction (2.2f)
+		 * is added to match Java3D.
+		 */
+		final float typicalAmbientReflectivity = 0.35f * 2.2f;
+		final int worldAmbient = (int)( typicalAmbientReflectivity * (float)ambientLight );
 		_world.setAmbientLight( worldAmbient , worldAmbient , worldAmbient );
 	}
 
@@ -347,6 +384,16 @@ public class JPCTModel
 	}
 
 	/**
+	 * Returns the world representing the sky box.
+	 *
+	 * @return  World of the sky box for this model.
+	 */
+	public World getSkyBox()
+	{
+		return _skyBox;
+	}
+
+	/**
 	 * Applies any updates made to the view model to the world. This method must
 	 * only be called from the renderer thread (which is why this method exists
 	 * in the first place). Modifications to the world cause problems when
@@ -361,9 +408,11 @@ public class JPCTModel
 
 		if ( result )
 		{
-			for ( final Modification modification : _modifications )
+			for ( Iterator<Modification> i = _modifications.iterator(); i.hasNext(); )
 			{
+				final Modification modification = i.next();
 				modification.perform();
+				i.remove();
 			}
 		}
 
