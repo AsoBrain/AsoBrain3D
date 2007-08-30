@@ -88,8 +88,11 @@ public class JOGLTools
 					gl.glEnable( GL.GL_LIGHTING );
 				}
 
-				gl.glPolygonMode( face.isTwoSided() ? GL.GL_FRONT_AND_BACK : GL.GL_FRONT , GL.GL_FILL );
-				fillFace( gl , object3D.getFace( i ) );
+				gl.glPolygonMode( GL.GL_FRONT_AND_BACK, GL.GL_FILL);
+
+				//disable lighting, only temporary because lights need to be fixed
+				gl.glDisable( GL.GL_LIGHTING);
+				drawFace( gl , object3D.getFace( i ) );
 			}
 
 			if ( outline )
@@ -114,9 +117,17 @@ public class JOGLTools
 
 				final float[] argb = color.getRGBComponents( null );
 				gl.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
-				gl.glDisable( GL.GL_LIGHTING ) ;
-				gl.glPolygonMode( GL.GL_FRONT , GL.GL_FILL );
-				drawFace( gl , face );
+
+				// enable backface culling
+				gl.glEnable(GL.GL_CULL_FACE);
+				gl.glCullFace( GL.GL_FRONT);
+
+				// set polygonmode to lines only
+				gl.glPolygonMode(GL.GL_BACK,GL.GL_LINE);
+				drawFace(gl, object3D.getFace( i));
+
+				//disable backface culling
+				gl.glDisable( GL.GL_CULL_FACE);
 			}
 		}
 
@@ -126,56 +137,14 @@ public class JOGLTools
 		gl.glPopMatrix();
 	}
 
+
 	/**
-	 * Draw 3D face (outline) on GL context.
+	 * Draw 3D face on GL context.
 	 *
 	 * @param   gl      GL context.
 	 * @param   face    Face draw.
 	 */
 	private static void drawFace( final GL gl , final Face3D face )
-	{
-		final Object3D object            = face.getObject();
-		final double[] vertexCoordinates = object.getVertexCoordinates();
-
-		final int vertexCount = face.getVertexCount();
-		if ( vertexCount > 1 )
-		{
-			final int[] faceVertexIndices = face.getVertexIndices();
-
-			gl.glBegin( GL.GL_LINES );
-
-			final int viLast = faceVertexIndices[ vertexCount - 1 ] * 3;
-			double v1x = vertexCoordinates[ viLast     ];
-			double v1y = vertexCoordinates[ viLast + 1 ];
-			double v1z = vertexCoordinates[ viLast + 2 ];
-
-			for ( int i = 0 ; i < vertexCount ; i++ )
-			{
-				final int vi2 = faceVertexIndices[ i ] * 3;
-
-				final double v2x = vertexCoordinates[ vi2     ];
-				final double v2y = vertexCoordinates[ vi2 + 1 ];
-				final double v2z = vertexCoordinates[ vi2 + 2 ];
-
-				gl.glVertex3d( v1x, v1y, v1z );
-				gl.glVertex3d( v2x, v2y, v2z );
-
-				v1x = v2x;
-				v1y = v2y;
-				v1z = v2z;
-			}
-
-			gl.glEnd();
-		}
-	}
-
-	/**
-	 * Fill 3D face on GL context.
-	 *
-	 * @param   gl      GL context.
-	 * @param   face    Face draw.
-	 */
-	private static void fillFace( final GL gl , final Face3D face )
 	{
 		final Object3D object            = face.getObject();
 		final double[] vertexCoordinates = object.getVertexCoordinates();
@@ -445,7 +414,6 @@ public class JOGLTools
 	{
 		final float[] argb  = new float[ 4 ];
 		color.getRGBComponents( argb );
-
 		gl.glClearColor( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
 	}
 
