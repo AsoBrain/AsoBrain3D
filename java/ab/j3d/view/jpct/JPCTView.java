@@ -50,6 +50,7 @@ import ab.j3d.model.Object3D;
 import ab.j3d.view.OverlayPainter;
 import ab.j3d.view.Projector;
 import ab.j3d.view.RenderQueue;
+import ab.j3d.view.SwitchRenderingPolicyAction;
 import ab.j3d.view.ViewControlInput;
 import ab.j3d.view.ViewModelView;
 import ab.j3d.view.java2d.Painter;
@@ -509,7 +510,7 @@ public class JPCTView
 
 	public Action[] getActions( final Locale locale )
 	{
-		return new Action[ 0 ];
+		return new Action[] { new SwitchRenderingPolicyAction( locale , this , _renderingPolicy ) };
 	}
 
 	/**
