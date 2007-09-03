@@ -22,7 +22,6 @@ package ab.j3d.view.jogl;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.nio.IntBuffer;
-import java.util.HashMap;
 import java.util.Map;
 import javax.media.opengl.GL;
 
@@ -36,11 +35,12 @@ import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
 
 import com.numdata.oss.TextTools;
+import com.numdata.oss.io.SoftHashMap;
 
 /**
  * Utility methods related to JOGL implementation of view model.
  *
- * @author G.B.M. Rupert
+ * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
 public class JOGLTools
@@ -48,7 +48,7 @@ public class JOGLTools
 	/**
 	 * Texture map cache (maps map name to texture).
 	 */
-	private static final Map<String, Texture> _textureCache = new HashMap();
+	private static final SoftHashMap<String, Texture> _textureCache = new SoftHashMap();
 
 	/**
 	 * Utility/Application class is not supposed to be instantiated.
@@ -69,7 +69,7 @@ public class JOGLTools
 	 * @param outlineColor   Override color to use for outlines.
 	 * @param useAlternative Use alternative vs. regular object colors.
 	 */
-	public static void paintObject3D( final GL gl, final Object3D object3D, final Matrix3D node2gl, final boolean fill, final Color fillColor, final boolean outline, final Color outlineColor, final boolean useAlternative )
+	public static void paintObject3D( final GL gl , final Object3D object3D , final Matrix3D node2gl , final boolean fill , final Color fillColor , final boolean outline , final Color outlineColor , final boolean useAlternative )
 	{
 		/*
 		 * Push the current matrix stack down by one
@@ -167,16 +167,15 @@ public class JOGLTools
 		gl.glPopMatrix();
 	}
 
-
 	/**
 	 * Draw 3D face on GL context.
 	 *
 	 * @param gl   GL context.
 	 * @param face Face draw.
 	 */
-	private static void drawFace( final GL gl, final Face3D face )
+	private static void drawFace( final GL gl , final Face3D face )
 	{
-		final Object3D object = face.getObject();
+		final Object3D object            = face.getObject();
 		final double[] vertexCoordinates = object.getVertexCoordinates();
 
 		final int vertexCount = face.getVertexCount();
@@ -223,18 +222,16 @@ public class JOGLTools
 				final double v3z = vertexCoordinates[ vi3 + 2 ];
 
 				//Determine if face has texture
-				final Texture texture = getColorMapTexture( face );
-				if ( texture != null )
+				if ( !face.getMaterial().colorMap.isEmpty())
 				{
+					final Texture texture = getColorMapTexture( face );
 					final float[] textureU = face.getTextureU();
 					final float[] textureV = face.getTextureV();
 					gl.glEnable( GL.GL_TEXTURE_2D );
 					texture.bind();
 					drawTriangle( gl, v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z, textureU, textureV );
-
 					gl.glDisable( GL.GL_TEXTURE_2D );
-					gl.glDeleteTextures(texture.getTarget(), IntBuffer.allocate( texture.getTextureObject() ) );
-
+					gl.glDeleteTextures( texture.getTarget(), IntBuffer.allocate( texture.getTextureObject() ) );
 				}
 				else
 				{
@@ -266,13 +263,12 @@ public class JOGLTools
 				final double v4z = vertexCoordinates[ vi4 + 2 ];
 
 				//Determine if face has texture
-				final Texture texture = getColorMapTexture( face );
-				if ( texture != null )
+				if ( !face.getMaterial().colorMap.isEmpty())
 				{
+					final Texture texture = getColorMapTexture( face );
 					final float[] textureU = face.getTextureU();
 					final float[] textureV = face.getTextureV();
 					gl.glEnable( GL.GL_TEXTURE_2D );
-
 					texture.bind();
 					drawQuad( gl, v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z, v4x, v4y, v4z, textureU, textureV );
 					gl.glDisable( GL.GL_TEXTURE_2D );
@@ -310,9 +306,9 @@ public class JOGLTools
 						final double v3z = vertexCoordinates[ vi3 + 2 ];
 
 						//Determine if face has texture
-						final Texture texture = getColorMapTexture( face );
-						if ( texture != null )
+						if ( !face.getMaterial().colorMap.isEmpty())
 						{
+							final Texture texture = getColorMapTexture( face );
 							final float[] textureU = face.getTextureU();
 							final float[] textureV = face.getTextureV();
 							gl.glEnable( GL.GL_TEXTURE_2D );
@@ -324,8 +320,6 @@ public class JOGLTools
 						{
 							drawTriangle( gl, v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z );
 						}
-
-
 					}
 				}
 			}
@@ -344,8 +338,8 @@ public class JOGLTools
 	 * @param v2Y Y coordinate of second vertex.
 	 * @param v2Z Z coordinate of second vertex.
 	 */
-	public static void drawLine( final GL gl, final double v1X, final double v1Y, final double v1Z,
-	                             final double v2X, final double v2Y, final double v2Z )
+	public static void drawLine( final GL gl , final double v1X , final double v1Y , final double v1Z ,
+	                             final double v2X , final double v2Y , final double v2Z )
 	{
 		gl.glBegin( GL.GL_LINES );
 		gl.glVertex3d( v1X, v1Y, v1Z );
@@ -353,21 +347,21 @@ public class JOGLTools
 		gl.glEnd();
 	}
 
-		/**
+	/**
 	 * Draw line using GL.
 	 *
-	 * @param gl  GL context.
-	 * @param v1X X coordinate of first vertex.
-	 * @param v1Y Y coordinate of first vertex.
-	 * @param v1Z Z coordinate of first vertex.
-	 * @param v2X X coordinate of second vertex.
-	 * @param v2Y Y coordinate of second vertex.
-	 * @param v2Z Z coordinate of second vertex.
+	 * @param gl       GL context.
+	 * @param v1X      X coordinate of first vertex.
+	 * @param v1Y      Y coordinate of first vertex.
+	 * @param v1Z      Z coordinate of first vertex.
+	 * @param v2X      X coordinate of second vertex.
+	 * @param v2Y      Y coordinate of second vertex.
+	 * @param v2Z      Z coordinate of second vertex.
 	 * @param textureU horizontal coordinate of texture
 	 * @param textureV vertical coordinate of texture
-	 * */
-	public static void drawLine( final GL gl, final double v1X, final double v1Y, final double v1Z,
-	                             final double v2X, final double v2Y, final double v2Z, final float[] textureU, final float[] textureV  )
+	 */
+	public static void drawLine( final GL gl , final double v1X , final double v1Y , final double v1Z ,
+	                             final double v2X , final double v2Y , final double v2Z , final float[] textureU , final float[] textureV )
 	{
 		gl.glBegin( GL.GL_LINES );
 		gl.glVertex3d( v1X, v1Y, v1Z );
@@ -396,11 +390,11 @@ public class JOGLTools
 	 * @param textureU horizontal coordinate of texture
 	 * @param textureV vertical coordinate of texture
 	 */
-	public static void drawQuad( final GL gl, final double v1X, final double v1Y, final double v1Z,
-	                             final double v2X, final double v2Y, final double v2Z,
-	                             final double v3X, final double v3Y, final double v3Z,
-	                             final double v4X, final double v4Y, final double v4Z,
-	                             final float[] textureU, final float[] textureV )
+	public static void drawQuad( final GL gl , final double v1X , final double v1Y , final double v1Z ,
+	                             final double v2X , final double v2Y, final double v2Z ,
+	                             final double v3X , final double v3Y, final double v3Z ,
+	                             final double v4X , final double v4Y, final double v4Z ,
+	                             final float[] textureU , final float[] textureV )
 	{
 		gl.glBegin( GL.GL_QUADS );
 		gl.glVertex3d( v1X, v1Y, v1Z );
@@ -431,10 +425,10 @@ public class JOGLTools
 	 * @param v4Y Y coordinate of fourth vertex.
 	 * @param v4Z Z coordinate of fourth vertex.
 	 */
-	public static void drawQuad( final GL gl, final double v1X, final double v1Y, final double v1Z,
-	                             final double v2X, final double v2Y, final double v2Z,
-	                             final double v3X, final double v3Y, final double v3Z,
-	                             final double v4X, final double v4Y, final double v4Z )
+	public static void drawQuad( final GL gl , final double v1X , final double v1Y , final double v1Z ,
+	                             final double v2X , final double v2Y , final double v2Z ,
+	                             final double v3X , final double v3Y , final double v3Z ,
+	                             final double v4X , final double v4Y , final double v4Z )
 	{
 		gl.glBegin( GL.GL_QUADS );
 		gl.glVertex3d( v1X, v1Y, v1Z );
@@ -458,9 +452,9 @@ public class JOGLTools
 	 * @param v3Y Y coordinate of third vertex.
 	 * @param v3Z Z coordinate of third vertex.
 	 */
-	public static void drawTriangle( final GL gl, final double v1X, final double v1Y, final double v1Z,
-	                                 final double v2X, final double v2Y, final double v2Z,
-	                                 final double v3X, final double v3Y, final double v3Z )
+	public static void drawTriangle( final GL gl , final double v1X , final double v1Y , final double v1Z ,
+	                                 final double v2X , final double v2Y , final double v2Z ,
+	                                 final double v3X , final double v3Y , final double v3Z )
 	{
 		gl.glBegin( GL.GL_TRIANGLES );
 		gl.glVertex3d( v1X, v1Y, v1Z );
@@ -472,22 +466,22 @@ public class JOGLTools
 	/**
 	 * Draw triangle using GL.
 	 *
-	 * @param gl  GL context.
-	 * @param v1X X coordinate of first vertex.
-	 * @param v1Y Y coordinate of first vertex.
-	 * @param v1Z Z coordinate of first vertex.
-	 * @param v2X X coordinate of second vertex.
-	 * @param v2Y Y coordinate of second vertex.
-	 * @param v2Z Z coordinate of second vertex.
-	 * @param v3X X coordinate of third vertex.
-	 * @param v3Y Y coordinate of third vertex.
-	 * @param v3Z Z coordinate of third vertex.
+	 * @param gl       GL context.
+	 * @param v1X      X coordinate of first vertex.
+	 * @param v1Y      Y coordinate of first vertex.
+	 * @param v1Z      Z coordinate of first vertex.
+	 * @param v2X      X coordinate of second vertex.
+	 * @param v2Y      Y coordinate of second vertex.
+	 * @param v2Z      Z coordinate of second vertex.
+	 * @param v3X      X coordinate of third vertex.
+	 * @param v3Y      Y coordinate of third vertex.
+	 * @param v3Z      Z coordinate of third vertex.
 	 * @param textureU horizontal coordinate of texture
 	 * @param textureV vertical coordinate of texture
 	 */
-	public static void drawTriangle( final GL gl, final double v1X, final double v1Y, final double v1Z,
-	                                 final double v2X, final double v2Y, final double v2Z,
-	                                 final double v3X, final double v3Y, final double v3Z, final float[] textureU, final float[] textureV )
+	public static void drawTriangle( final GL gl , final double v1X , final double v1Y , final double v1Z ,
+	                                 final double v2X , final double v2Y , final double v2Z ,
+	                                 final double v3X , final double v3Y , final double v3Z , final float[] textureU , final float[] textureV )
 	{
 		gl.glBegin( GL.GL_TRIANGLES );
 		gl.glVertex3d( v1X, v1Y, v1Z );
@@ -506,7 +500,7 @@ public class JOGLTools
 	 * @param gl    GL context.
 	 * @param color Color to clear canvas with.
 	 */
-	public static void glClearColor( final GL gl, final Color color )
+	public static void glClearColor( final GL gl , final Color color )
 	{
 		final float[] argb = new float[4];
 		color.getRGBComponents( argb );
@@ -519,7 +513,7 @@ public class JOGLTools
 	 * @param gl        GL context.
 	 * @param transform Transformation to multiply with.
 	 */
-	public static void glMultMatrixd( final GL gl, final Matrix3D transform )
+	public static void glMultMatrixd( final GL gl , final Matrix3D transform )
 	{
 		gl.glMultMatrixd( new double[]
 		{
@@ -536,7 +530,7 @@ public class JOGLTools
 	 * @param gl       GL context.
 	 * @param material Material properties.
 	 */
-	public static void setMaterial( final GL gl, final Material material )
+	public static void setMaterial( final GL gl , final Material material )
 	{
 		/* Set color, used when lights are disabled. */
 		gl.glColor4f( material.diffuseColorRed, material.diffuseColorGreen, material.diffuseColorBlue, material.diffuseColorAlpha );
@@ -609,22 +603,16 @@ public class JOGLTools
 			}
 			else
 			{
-				final BufferedImage image = (BufferedImage)MapTools.getImage( name );
-
-				if ( image != null )
+				final BufferedImage bufferedImage = MapTools.loadImage( name );
+				if ( bufferedImage != null )
 				{
-
-					result = TextureIO.newTexture( ( image ), true );
+					result = TextureIO.newTexture( ( bufferedImage ), true );
 					result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST );
 					result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST );
-
-
 				}
-
 				cache.put( name, result );
 			}
 		}
-
 		return result;
 	}
 }
