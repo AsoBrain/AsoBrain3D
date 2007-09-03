@@ -20,7 +20,7 @@
  */
 package ab.j3d;
 
-import java.awt.Image;
+import java.awt.image.BufferedImage;
 
 import com.numdata.oss.TextTools;
 import com.numdata.oss.ui.ImageTools;
@@ -36,7 +36,7 @@ public final class MapTools
 	/**
 	 * Map path prefix from where material map images are loaded.
 	 */
-	public static String imageMapDirectory = "maps";
+	private static String imageMapDirectory = "maps";
 
 	/**
 	 * Map path suffix from where material map images are loaded.
@@ -49,8 +49,19 @@ public final class MapTools
 	 * @return  Map image;
 	 *          <code>null</code> if map has no image or the image could not be loaded.
 	 */
-	public static Image getImage( final String map )
+	public static BufferedImage getImage( final String map )
 	{
 		return TextTools.isNonEmpty( map ) ? ImageTools.getImage( imageMapDirectory + '/' + map + imageMapFilenameSuffix ) : null;
 	}
-}
+
+	public static BufferedImage loadImage( final String map )
+	{
+		return TextTools.isNonEmpty( map ) ? ImageTools.load( imageMapDirectory + '/' + map + imageMapFilenameSuffix ) : null;
+	}
+public static String getImageMapDirectory()
+	{
+		return imageMapDirectory;
+	}public static void setImageMapDirectory( String imageMapDirectory )
+	{
+		MapTools.imageMapDirectory = imageMapDirectory;
+	}}
