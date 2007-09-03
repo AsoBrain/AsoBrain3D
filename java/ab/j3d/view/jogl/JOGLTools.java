@@ -467,8 +467,6 @@ public class JOGLTools
 		gl.glVertex3d( v2X, v2Y, v2Z );
 		gl.glVertex3d( v3X, v3Y, v3Z );
 		gl.glEnd();
-		System.out.println("draw a tg");
-
 	}
 
 	/**
@@ -498,7 +496,6 @@ public class JOGLTools
 		gl.glTexCoord2f( textureU[ 1 ], textureV[ 1 ] );
 		gl.glVertex3d( v3X, v3Y, v3Z );
 		gl.glTexCoord2f( textureU[ 2 ], textureV[ 2 ] );
-		System.out.println("Textured Triagnle");
 		gl.glEnd();
 	}
 
