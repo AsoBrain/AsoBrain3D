@@ -100,7 +100,30 @@ public abstract class ViewModelExample
 		final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , viewModel.createViewPanel( Locale.ENGLISH , view.getID() ) );
 		frame.setVisible( true );
 
+		final Object3D testCube = createCube(0.075 / unit);
+		viewModel.createNode( "banaan" , Matrix3D.getTransform( 190.0 , 0.0 , -315.0 , 0.525 / unit, 0.0 , 0.0 ) , testCube, null , 1.0f );
+/*
 
+		//Image cache test
+		for(int i = 0; i < 2000; i++)
+		{
+			try
+			{
+				Thread.sleep(10);
+				System.out.println("Plaatje " + i);
+				System.out.println( Runtime.getRuntime().freeMemory() + " vrij geheugen" );
+				Material red     = new Material( Color.WHITE    .getRGB() );
+				red.colorMap="test-"+(10000+i);
+				testCube.getFace(0).setMaterial(red);
+				view.update();
+			}
+			catch ( InterruptedException e )
+			{
+				e.printStackTrace();
+			}
+
+		}
+*/
 
 		final TextOverlayPainter clicked = new TextOverlayPainter();
 		clicked.setText( "Click on an object to change this text." );
