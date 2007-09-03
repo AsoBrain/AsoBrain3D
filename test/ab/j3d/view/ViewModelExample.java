@@ -204,13 +204,20 @@ public abstract class ViewModelExample
 		final Material green   = new Material( Color.GREEN  .getRGB() );
 		final Material yellow  = new Material( Color.YELLOW .getRGB() );
 
+
+		final float []  textureU = { 0.0f , 1.0f , 1.0f , 0.0f };
+		final float []  textureV = { 0.0f , 0.0f , 1.0f , 1.0f };
+
+		// Test texture
+		red.colorMap="numdata";
+
 		final Object3D cube = new Object3D();
-		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , red     , false , false ); // Z =  size
-		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , green   , false , false ); // Z = -size
-		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , cyan    , false , false ); // Y = -size
-		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , magenta , false , false ); // Y =  size
-		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , yellow  , false , false ); // X = -size
-		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , blue    , false , false ); // X =  size
+		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , red     , textureU , textureV , 1.0f, false , false ); // Z =  size
+		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , green   , textureU , textureV , 1.0f, false , false ); // Z = -size
+		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , cyan    , textureU , textureV , 1.0f, false , false ); // Y = -size
+		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , magenta , textureU , textureV , 1.0f, false , false ); // Y =  size
+		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , yellow  , textureU , textureV , 1.0f, false , false ); // X = -size
+		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , blue    , textureU , textureV , 1.0f, false , false ); // X =  size
 
 		return cube;
 	}
@@ -225,9 +232,12 @@ public abstract class ViewModelExample
 		final Material red   = new Material( Color.RED  .getRGB() );
 		final Material green = new Material( Color.GREEN.getRGB() );
 
+		final float []  textureU = { 0.0f , 1.0f , 1.0f , 0.0f };
+		final float []  textureV = { 0.0f , 0.0f , 1.0f , 1.0f };
+
 		final Object3D plane = new Object3D();
-		/* top    */ plane.addFace( new Vector3D[] { lf , lb , rb , rf } , red   , false , false ); // Z =  size
-		/* bottom */ plane.addFace( new Vector3D[] { lb , lf , rf , rb } , green , false , false ); // Z = -size
+		/* top    */ plane.addFace( new Vector3D[] { lf , lb , rb , rf } , red   , textureU , textureV , 1.0f, false , false ); // Z =  size
+		/* bottom */ plane.addFace( new Vector3D[] { lb , lf , rf , rb } , green , textureU , textureV , 1.0f, false , false ); // Z = -size
 
 		return plane;
 	}
