@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2006 Peter S. Heijnen
+ * Copyright (C) 1999-2007 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,7 @@ package ab.j3d;
 import java.text.DecimalFormat;
 import java.util.Properties;
 
+import com.numdata.oss.MathTools;
 import com.numdata.oss.PropertyTools;
 
 /**
@@ -123,7 +124,7 @@ public final class Vector3D
 	 */
 	public static boolean areParallel( final Vector3D v1 , final Vector3D v2 )
 	{
-		return Matrix3D.almostEqual( Math.abs( cosAngle( v1 , v2 ) ) , 1.0 );
+		return MathTools.almostEqual( Math.abs( cosAngle( v1 , v2 ) ) , 1.0 );
 	}
 
 	/**
@@ -137,7 +138,7 @@ public final class Vector3D
 	 */
 	public static boolean areSameDirection( final Vector3D v1 , final Vector3D v2 )
 	{
-		return Matrix3D.almostEqual( cosAngle( v1 , v2 ) , 1.0 );
+		return MathTools.almostEqual( cosAngle( v1 , v2 ) , 1.0 );
 	}
 
 	/**
@@ -151,7 +152,7 @@ public final class Vector3D
 	 */
 	public static boolean arePerpendicular( final Vector3D v1 , final Vector3D v2 )
 	{
-		return Matrix3D.almostEqual( dot( v1 , v2 ) , 0.0 );
+		return MathTools.almostEqual( dot( v1 , v2 ) , 0.0 );
 	}
 
 	/**
@@ -248,15 +249,15 @@ public final class Vector3D
 	 * @return  <code>true</code> if the objects are almost equal;
 	 *          <code>false</code> if not.
 	 *
-	 * @see     Matrix3D#almostEqual
+	 * @see   MathTools#almostEqual
 	 */
 	public boolean almostEquals( final Vector3D other )
 	{
 		return ( other != null )
 		       && ( ( other == this )
-		            || ( Matrix3D.almostEqual( x , other.x )
-		                 && Matrix3D.almostEqual( y , other.y )
-		                 && Matrix3D.almostEqual( z , other.z ) ) );
+		            || ( MathTools.almostEqual( x , other.x ) &&
+		                 MathTools.almostEqual( y , other.y ) &&
+		                 MathTools.almostEqual( z , other.z ) ) );
 	}
 
 	/**
@@ -269,13 +270,13 @@ public final class Vector3D
 	 * @return  <code>true</code> if the objects are almost equal;
 	 *          <code>false</code> if not.
 	 *
-	 * @see     Matrix3D#almostEqual
+	 * @see     MathTools#almostEqual
 	 */
 	public boolean almostEquals( final double otherX , final double otherY , final double otherZ )
 	{
-		return Matrix3D.almostEqual( x , otherX )
-		       && Matrix3D.almostEqual( y , otherY )
-		       && Matrix3D.almostEqual( z , otherZ );
+		return MathTools.almostEqual( x , otherX ) &&
+		       MathTools.almostEqual( y , otherY ) &&
+		       MathTools.almostEqual( z , otherZ );
 	}
 
 	/**
@@ -290,9 +291,9 @@ public final class Vector3D
 	 */
 	public boolean equals( final double otherX , final double otherY , final double otherZ )
 	{
-		return ( Double.isNaN( otherX ) || ( otherX == x ) )
-		       && ( Double.isNaN( otherY ) || ( otherY == y ) )
-		       && ( Double.isNaN( otherZ ) || ( otherZ == z ) );
+		return ( Double.isNaN( otherX ) || ( otherX == x ) ) &&
+		       ( Double.isNaN( otherY ) || ( otherY == y ) ) &&
+		       ( Double.isNaN( otherZ ) || ( otherZ == z ) );
 	}
 
 	public boolean equals( final Object other )

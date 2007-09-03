@@ -23,6 +23,7 @@ package ab.j3d;
 import java.text.DecimalFormat;
 
 import com.numdata.oss.ArrayTools;
+import com.numdata.oss.MathTools;
 import com.numdata.oss.TextTools;
 
 /**
@@ -108,11 +109,12 @@ public final class Matrix3D
 	 *
 	 * @return  <code>true</code> is the values are within a +/- 0.001 tolerance
 	 *          of eachother; <code>false</code> otherwise.
+	 *
+	 * @deprecated  Moved to {@link MathTools}
 	 */
 	public static boolean almostEqual( final double value1 , final double value2 )
 	{
-		final double delta = value1 - value2;
-		return ( delta >= -0.001 ) && ( delta <= 0.001 );
+		return MathTools.almostEqual( value1 , value2 );
 	}
 
 	/**
@@ -123,15 +125,24 @@ public final class Matrix3D
 	 * @return  <code>true</code> if the objects are almost equal;
 	 *          <code>false</code> if not.
 	 *
-	 * @see     #almostEqual
+	 * @see     MathTools#almostEqual
 	 */
 	public boolean almostEquals( final Matrix3D other )
 	{
 		return ( other != null )
 		    && ( ( other == this )
-		      || ( almostEqual( xx , other.xx ) && almostEqual( xy , other.xy ) && almostEqual( xz , other.xz ) && almostEqual( xo , other.xo )
-		        && almostEqual( yx , other.yx ) && almostEqual( yy , other.yy ) && almostEqual( yz , other.yz ) && almostEqual( yo , other.yo )
-		        && almostEqual( zx , other.zx ) && almostEqual( zy , other.zy ) && almostEqual( zz , other.zz ) && almostEqual( zo , other.zo ) ) );
+		      || ( MathTools.almostEqual( xx , other.xx ) &&
+		           MathTools.almostEqual( xy , other.xy ) &&
+		           MathTools.almostEqual( xz , other.xz ) &&
+		           MathTools.almostEqual( xo , other.xo ) &&
+		           MathTools.almostEqual( yx , other.yx ) &&
+		           MathTools.almostEqual( yy , other.yy ) &&
+		           MathTools.almostEqual( yz , other.yz ) &&
+		           MathTools.almostEqual( yo , other.yo ) &&
+		           MathTools.almostEqual( zx , other.zx ) &&
+		           MathTools.almostEqual( zy , other.zy ) &&
+		           MathTools.almostEqual( zz , other.zz ) &&
+		           MathTools.almostEqual( zo , other.zo ) ) );
 	}
 
 	public boolean equals( final Object other )
@@ -401,7 +412,7 @@ public final class Matrix3D
 		final double xAxisY;
 		final double xAxisZ;
 
-		if ( almostEqual( zAxisZ , ( zAxisZ < 0.0 ) ? -1.0 : 1.0 ) )
+		if ( MathTools.almostEqual( zAxisZ , ( zAxisZ < 0.0 ) ? -1.0 : 1.0 ) )
 		{
 			xAxisX = rightHanded ?  zAxisZ : -zAxisZ;
 			xAxisY = 0.0;
@@ -783,7 +794,7 @@ public final class Matrix3D
 	{
 		final Matrix3D result;
 
-		if ( almostEqual( thetaRad , 0.0 ) )
+		if ( MathTools.almostEqual( thetaRad , 0.0 ) )
 		{
 			result = this;
 		}
@@ -819,7 +830,7 @@ public final class Matrix3D
 	{
 		final Matrix3D result;
 
-		if ( almostEqual( thetaRad , 0.0 ) )
+		if ( MathTools.almostEqual( thetaRad , 0.0 ) )
 		{
 			result = this;
 		}
@@ -855,7 +866,7 @@ public final class Matrix3D
 	{
 		final Matrix3D result;
 
-		if ( almostEqual( thetaRad , 0.0 ) )
+		if ( MathTools.almostEqual( thetaRad , 0.0 ) )
 		{
 			result = this;
 		}

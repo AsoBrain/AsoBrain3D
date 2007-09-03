@@ -42,6 +42,8 @@ import ab.j3d.model.Transform3D;
 import ab.j3d.view.RenderQueue;
 import ab.j3d.view.RenderedPolygon;
 
+import com.numdata.oss.MathTools;
+
 /**
  * This class can paint a 3D scene directly to a {@link Graphics2D} context.
  *
@@ -53,7 +55,7 @@ public final class Painter
 	/**
 	 * This is used as cache storage for {@link #paintObject}.
 	 */
-	private static double[] _paintVertexCoordinatesCache;
+	private static double[] paintVertexCoordinatesCache;
 
 	/**
 	 * Utility class is not supposed to be instantiated.
@@ -307,8 +309,8 @@ public final class Painter
 			/*
 			 * If the array is to small, create a larger one.
 			 */
-			final double[] vertexCoordinates = object.getVertexCoordinates( object2view , _paintVertexCoordinatesCache );
-			_paintVertexCoordinatesCache = vertexCoordinates;
+			final double[] vertexCoordinates = object.getVertexCoordinates( object2view , paintVertexCoordinatesCache );
+			paintVertexCoordinatesCache = vertexCoordinates;
 
 			int maxVertexCount = 0;
 			for ( int faceIndex = 0; faceIndex < faceCount; faceIndex++ )
@@ -383,7 +385,7 @@ public final class Painter
 		 *
 		 * We can can only see the outline of the cylinder (trapezoid).
 		 */
-		if ( Matrix3D.almostEqual( zz , 0.0 ) )
+		if ( MathTools.almostEqual( zz , 0.0 ) )
 		{
 			// (xz,yz) = direction of cylinder Z-axis in XY plane
 			// (xo,yo,zo) = view coordinate of cylinder bottom centeroid
@@ -443,8 +445,8 @@ public final class Painter
 		 * Viewing along Z-axis. We can see, the bottom and/or top cap and the
 		 * area between the two.
 		 */
-		else if ( Matrix3D.almostEqual( xz , 0.0 )
-		          && Matrix3D.almostEqual( yz , 0.0 ) )
+		else if ( MathTools.almostEqual( xz , 0.0 ) &&
+		          MathTools.almostEqual( yz , 0.0 ) )
 		{
 			final Matrix3D combinedTransform = viewBase.multiply( gTransform );
 
@@ -458,7 +460,7 @@ public final class Painter
 				botRadius = (float)Math.sqrt( dx * dx + dy * dy );
 			}
 
-			final Ellipse2D bot = Matrix3D.almostEqual( (double)botRadius , 0.0 ) ? null : new Ellipse2D.Float( x - botRadius , y - botRadius , 2.0f * botRadius , 2.0f * botRadius );
+			final Ellipse2D bot = MathTools.almostEqual( (double)botRadius , 0.0 ) ? null : new Ellipse2D.Float( x - botRadius , y - botRadius , 2.0f * botRadius , 2.0f * botRadius );
 
 			final float topZ = (float)combinedTransform.transformZ( 0.0 , 0.0 , h );
 			final float topRadius;
@@ -468,7 +470,7 @@ public final class Painter
 				topRadius = (float)Math.sqrt( dx * dx + dy * dy );
 			}
 
-			final Ellipse2D top = Matrix3D.almostEqual( (double)topRadius , 0.0 ) ? null : new Ellipse2D.Float( x - topRadius , y - topRadius , 2.0f * topRadius , 2.0f * topRadius );
+			final Ellipse2D top = MathTools.almostEqual( (double)topRadius , 0.0 ) ? null : new Ellipse2D.Float( x - topRadius , y - topRadius , 2.0f * topRadius , 2.0f * topRadius );
 
 			if ( ( bot != null ) || ( top != null ) )
 			{
@@ -570,8 +572,8 @@ public final class Painter
 		final boolean result;
 
 		final double dx = sphere.dx;
-		if ( Matrix3D.almostEqual( dx , sphere.dy )
-		     && Matrix3D.almostEqual( dx , sphere.dz ) )
+		if ( MathTools.almostEqual( dx , sphere.dy ) &&
+		     MathTools.almostEqual( dx , sphere.dz ) )
 		{
 			final Matrix3D viewBase          = sphere.xform.multiply( sphere2view );
 			final Matrix3D combinedTransform = viewBase.multiply( gTransform );
@@ -588,7 +590,7 @@ public final class Painter
 				r = (float)( 0.5 * dx * Math.sqrt( xx * xx + xy * xy + xz * xz ) );
 			}
 
-			final Ellipse2D shape = Matrix3D.almostEqual( (double)r , 0.0 ) ? null : new Ellipse2D.Float( x - r , y - r , r + r , r + r );
+			final Ellipse2D shape = MathTools.almostEqual( (double)r , 0.0 ) ? null : new Ellipse2D.Float( x - r , y - r , r + r , r + r );
 
 			if ( fillPaint != null )
 			{

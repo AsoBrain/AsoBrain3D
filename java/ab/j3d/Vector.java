@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2005 Peter S. Heijnen
+ * Copyright (C) 1999-2007 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,8 @@
 package ab.j3d;
 
 import java.text.DecimalFormat;
+
+import com.numdata.oss.MathTools;
 
 /**
  * This class represents a 3D vector. This class is not synchornized and all
@@ -82,15 +84,15 @@ public final class Vector
 	 * @return  <code>true</code> if the objects are almost equal;
 	 *          <code>false</code> if not.
 	 *
-	 * @see     Matrix3D#almostEqual
+	 * @see     MathTools#almostEqual
 	 */
 	public boolean almostEquals( final Vector other )
 	{
-		return ( other != null )
-		    && ( ( other == this )
-		      || ( Matrix3D.almostEqual( x , other.x )
-		        && Matrix3D.almostEqual( y , other.y )
-		        && Matrix3D.almostEqual( z , other.z ) ) );
+		return ( other != null ) &&
+		       ( ( other == this ) ||
+		         ( MathTools.almostEqual( x, other.x ) &&
+		           MathTools.almostEqual( y, other.y ) &&
+		           MathTools.almostEqual( z, other.z ) ) );
 	}
 
 	/**

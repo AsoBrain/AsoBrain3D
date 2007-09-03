@@ -27,6 +27,8 @@ import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 
+import com.numdata.oss.MathTools;
+
 /**
  * This class extends {@link Object3D}. The vertices and faces are generated out
  * of a Java 2D simple {@link Shape}. An extrusion vector is used to define the
@@ -152,7 +154,7 @@ public final class ExtrudedObject2D
 		final double  ex            = extrusion.x;
 		final double  ey            = extrusion.y;
 		final double  ez            = extrusion.z;
-		final boolean hasExtrusion  = !Matrix3D.almostEqual( ex , 0.0 ) || !Matrix3D.almostEqual( ey , 0.0 ) || !Matrix3D.almostEqual( ez , 0.0 );
+		final boolean hasExtrusion  = !MathTools.almostEqual( ex , 0.0 ) || !MathTools.almostEqual( ey , 0.0 ) || !MathTools.almostEqual( ez , 0.0 );
 		final boolean flipExtrusion = flipNormals ^ ( hasExtrusion && !hasBackface && ( ez < 0.0 ) );
 
 		final FlatteningPathIterator pathIterator = new FlatteningPathIterator( shape.getPathIterator( null ) , flatness );

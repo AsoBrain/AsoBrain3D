@@ -26,6 +26,8 @@ import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 
+import com.numdata.oss.MathTools;
+
 /**
  * This class provides an implementation of the {@link Abstract3DObjectBuilder}
  * class for creating an {@link Object3D} instance.
@@ -125,7 +127,7 @@ public final class Object3DBuilder
 			 * Based on 'radius', create a list of vertex indices at this point.
 			 */
 			final int[] vertexIndices;
-			if ( Matrix3D.almostEqual( radius , 0.0 ) )
+			if ( MathTools.almostEqual( radius , 0.0 ) )
 			{
 				vertexIndices = new int[] { ( xform == null )
 					? result.getVertexIndex( 0.0 , 0.0 , z )
