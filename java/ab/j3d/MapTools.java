@@ -36,78 +36,56 @@ public final class MapTools
 	/**
 	 * Map path prefix from where material map images are loaded.
 	 */
-	private static String imageMapDirectory = "maps";
+	public static String imageMapDirectory = "maps";
 
 	/**
 	 * Map path suffix from where material map images are loaded.
 	 */
-	private static String imageMapFilenameSuffix = ".jpg";
-
+	public static String imageMapFilenameSuffix = ".jpg";
 
 	/**
-	 * Default constructor
+	 * Utility class is not supposed to be instantiated.
 	 */
 	private MapTools()
 	{
 	}
 
 	/**
-	 * Get <code>Image</code> instance with map image.
-	 * @param   map Image map
+	 * Get {@link BufferedImage} instance with map image.
+	 *
+	 * @param   map     Name of map (<code>null</code> or empty strings allowed).
+	 *
 	 * @return  Map image;
 	 *          <code>null</code> if map has no image or the image could not be loaded.
  	 */
 	public static BufferedImage getImage( final String map )
 	{
-		return TextTools.isNonEmpty( map ) ? ImageTools.getImage( imageMapDirectory + '/' + map + imageMapFilenameSuffix ) : null;
+		return ImageTools.getImage( getPath( map ) );
 	}
 
 	/**
-	 * Get <code>Image</code> instance with map image.
-	 * @param map Image map
-	 * @return Map image;
+	 * Get {@link BufferedImage} instance with map image.
+	 *
+	 * @param   map     Name of map (<code>null</code> or empty strings allowed).
+	 *
+	 * @return  Map image;
 	 *          <code>null</code> if map has no image or the image could not be loaded.
 	 */
 	public static BufferedImage loadImage( final String map )
 	{
-		return TextTools.isNonEmpty( map ) ? ImageTools.load( imageMapDirectory + '/' + map + imageMapFilenameSuffix ) : null;
-	}
-
-
-	/**
-	 * Returns the map path prefix from where material map images are loaded.
-	 * @return Map path suffix from where material map images are loaded.
-	 */
-	public static String getImageMapDirectory()
-	{
-		return imageMapDirectory;
+		return ImageTools.load( getPath( map ) );
 	}
 
 	/**
-	 * Sets the <code>Image</code> path prefix from where material map images are loaded.
-	 * @param mapDirectory Path prefix from where material map images are loaded.
-	 */
-	public static void setImageMapDirectory( final String mapDirectory )
+	 * Get path to map image.
+	 *
+	 * @param   map     Name of map (<code>null</code> or empty strings allowed).
+	 *
+	 * @return  Map image;
+	 *          <code>null</code> if map has no image or the image could not be loaded.
+ 	 */
+	public static String getPath( final String map )
 	{
-		imageMapDirectory = mapDirectory;
-	}
-
-	/**
-	 * Returns the map path suffix from where material map images are loaded.
-	 * @return Map path suffix from where material map images are loaded.
-	 */
-	public static String getImageMapFilenameSuffix()
-	{
-		return imageMapFilenameSuffix;
-	}
-
-
-	/**
-	 * Sets the <code>Image</code> path suffix from where material map images are loaded.
-	 * @param mapFilenameSuffix Path suffix from where material map images are loaded.
-	 */
-	public static void setImageMapFilenameSuffix( final String mapFilenameSuffix )
-	{
-		imageMapFilenameSuffix = mapFilenameSuffix;
+		return TextTools.isNonEmpty( map ) ? imageMapDirectory + '/' + map + imageMapFilenameSuffix : null;
 	}
 }
