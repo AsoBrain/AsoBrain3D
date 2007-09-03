@@ -100,6 +100,8 @@ public abstract class ViewModelExample
 		final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , viewModel.createViewPanel( Locale.ENGLISH , view.getID() ) );
 		frame.setVisible( true );
 
+
+
 		final TextOverlayPainter clicked = new TextOverlayPainter();
 		clicked.setText( "Click on an object to change this text." );
 		view.addOverlayPainter( clicked );
@@ -207,9 +209,6 @@ public abstract class ViewModelExample
 
 		final float []  textureU = { 0.0f , 1.0f , 1.0f , 0.0f };
 		final float []  textureV = { 0.0f , 0.0f , 1.0f , 1.0f };
-
-		// Test texture
-		red.colorMap="numdata";
 
 		final Object3D cube = new Object3D();
 		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , red     , textureU , textureV , 1.0f, false , false ); // Z =  size
