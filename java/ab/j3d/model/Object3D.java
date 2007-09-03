@@ -25,8 +25,6 @@ import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.photoneffect.coldet.JCollisionModel3D;
-
 import ab.j3d.Bounds3D;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
@@ -38,7 +36,6 @@ import ab.j3d.geom.GeometryTools;
 import ab.j3d.geom.Ray3D;
 
 import com.numdata.oss.ArrayTools;
-
 
 /**
  * This class defined a 3D object node in a 3D tree. The 3D object consists of
@@ -394,7 +391,7 @@ public class Object3D
 	 * Test if this object collides with another.
 	 *
 	 * @param   fromOtherToThis     Transformation from other object to this.
-	 * @param   other               Object to test collision with.
+	 * @param   otherObject         Object to test collision with.
 	 *
 	 * @return  <code>true</code> if the objects collide;
 	 *          <code>false</code> otherwise.
@@ -774,7 +771,7 @@ public class Object3D
 	{
 		_vertexNormalsDirty = true;
 
-		CollisionTester collisionTester = _collisionTester;
+		final CollisionTester collisionTester = _collisionTester;
 		if ( collisionTester != null )
 			collisionTester.invalidate();
 
@@ -814,20 +811,5 @@ public class Object3D
 	{
 		_vertexNormals = vertexNormals;
 		_vertexNormalsDirty = false;
-	}
-
-	/**
-	 * This internal method is used to set a transformation to apply to a
-	 * collision model.
-	 *
-	 * @param   collisionModel  Collision model whose transform to set.
-	 * @param   transform       Transformation to apply to model.
-	 */
-	private static void setCollisionModelTransform( final JCollisionModel3D collisionModel, final Matrix3D transform )
-	{
-		collisionModel.setTransform(
-			(float)transform.xx , (float)transform.xy , (float)transform.xz , (float)transform.xo ,
-			(float)transform.yx , (float)transform.yy , (float)transform.yz , (float)transform.yo ,
-			(float)transform.zx , (float)transform.zy , (float)transform.zz , (float)transform.zo );
 	}
 }
