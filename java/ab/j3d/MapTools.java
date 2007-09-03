@@ -41,27 +41,73 @@ public final class MapTools
 	/**
 	 * Map path suffix from where material map images are loaded.
 	 */
-	public static String imageMapFilenameSuffix = ".jpg";
+	private static String imageMapFilenameSuffix = ".jpg";
+
+
+	/**
+	 * Default constructor
+	 */
+	private MapTools()
+	{
+	}
 
 	/**
 	 * Get <code>Image</code> instance with map image.
-	 *
+	 * @param   map Image map
 	 * @return  Map image;
 	 *          <code>null</code> if map has no image or the image could not be loaded.
-	 */
+ 	 */
 	public static BufferedImage getImage( final String map )
 	{
 		return TextTools.isNonEmpty( map ) ? ImageTools.getImage( imageMapDirectory + '/' + map + imageMapFilenameSuffix ) : null;
 	}
 
+	/**
+	 * Get <code>Image</code> instance with map image.
+	 * @param map Image map
+	 * @return Map image;
+	 *          <code>null</code> if map has no image or the image could not be loaded.
+	 */
 	public static BufferedImage loadImage( final String map )
 	{
 		return TextTools.isNonEmpty( map ) ? ImageTools.load( imageMapDirectory + '/' + map + imageMapFilenameSuffix ) : null;
 	}
-public static String getImageMapDirectory()
+
+
+	/**
+	 * Returns the map path prefix from where material map images are loaded.
+	 * @return Map path suffix from where material map images are loaded.
+	 */
+	public static String getImageMapDirectory()
 	{
 		return imageMapDirectory;
-	}public static void setImageMapDirectory( String imageMapDirectory )
+	}
+
+	/**
+	 * Sets the <code>Image</code> path prefix from where material map images are loaded.
+	 * @param mapDirectory Path prefix from where material map images are loaded.
+	 */
+	public static void setImageMapDirectory( final String mapDirectory )
 	{
-		MapTools.imageMapDirectory = imageMapDirectory;
-	}}
+		imageMapDirectory = mapDirectory;
+	}
+
+	/**
+	 * Returns the map path suffix from where material map images are loaded.
+	 * @return Map path suffix from where material map images are loaded.
+	 */
+	public static String getImageMapFilenameSuffix()
+	{
+		return imageMapFilenameSuffix;
+	}
+
+
+	/**
+	 * Sets the <code>Image</code> path suffix from where material map images are loaded.
+	 * @param mapFilenameSuffix Path suffix from where material map images are loaded.
+	 */
+	public static void setImageMapFilenameSuffix( final String mapFilenameSuffix )
+	{
+		imageMapFilenameSuffix = mapFilenameSuffix;
+	}
+}
