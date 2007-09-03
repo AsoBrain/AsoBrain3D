@@ -153,6 +153,8 @@ public class JOGLView
 
 		if ( background != null )
 			_viewComponent.setBackground( background );
+		else
+			_viewComponent.setBackground( Color.BLACK);
 
 		startRenderer();
 	}
@@ -255,7 +257,6 @@ public class JOGLView
 				if ( _viewComponent.isShowing() )
 					_viewComponent.display();
 
-				Thread.yield();
 			}
 		}
 	}
@@ -337,10 +338,6 @@ public class JOGLView
 		/* Clear color buffer. */
 		gl.glClear( GL.GL_COLOR_BUFFER_BIT );
 
-		/* Enable/disable back face culling. */
-		//gl.glEnable( GL.GL_CULL_FACE );
-		//gl.glDisable( GL.GL_CULL_FACE );
-
 		/* Setup view. */
 		gl.glMatrixMode( GL.GL_MODELVIEW );
 		gl.glLoadIdentity();
@@ -363,6 +360,10 @@ public class JOGLView
 		 * Render the view model nodes.
 		 */
 		final Object[] nodeIDs = _model.getNodeIDs();
+
+		/* Initialize first light */
+		int lightNumber = GL.GL_LIGHT0;
+
 		for ( final Object id : nodeIDs )
 		{
 			final ViewModelNode viewModelNode = _model.getNode( id );
@@ -373,38 +374,32 @@ public class JOGLView
 			/*
 			 * Render lights.
 			 */
-			final Node3DCollection<Light3D> lights = node3D.collectNodes( null , Light3D.class , nodeTransform , false );
+			final Node3DCollection<Light3D> lights = node3D.collectNodes( null , Light3D.class , Matrix3D.INIT, false );
 
 			if ( lights != null )
 			{
-				if ( lights.size() > GL.GL_MAX_LIGHTS )
+				if ( lightNumber - GL.GL_LIGHT0 > GL.GL_MAX_LIGHTS )
 					throw new IllegalStateException( "No more than " + GL.GL_MAX_LIGHTS + " lights supported." );
 
-				for ( int i = 0 ; i < lights.size() ; i++ )
+				final Light3D light         = lights.getNode( 0 );
+				final float   viewIntensity = (float)light.getIntensity() / 255.0f;
+
+				if ( light.isAmbient() )
 				{
-					final int lightNumber = GL.GL_LIGHT0 + i;
-
-					final Light3D light         = lights.getNode( i );
-					final float   viewIntensity = (float)light.getIntensity() / 255.0f;
-
-					if ( light.isAmbient() )
-					{
-						gl.glLightfv( lightNumber , GL.GL_AMBIENT , new float[] { viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
-					}
-					else
-					{
-						// @FIXME For now render other lighs as directional lights (no position).
-						gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] { 0.0f , 0.0f , 0.0f , 0.0f } , 0 );
-
-						gl.glLightfv( lightNumber , GL.GL_DIFFUSE  , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
-						gl.glLightfv( lightNumber , GL.GL_SPECULAR , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
-
-						// @FIXME Add fall off for non directional lights (with position).
-						//gl.glLightfv( lightNumber , GL.GL_SPOT_EXPONENT , FloatBuffer.wrap( new float[]{ 128.0f } ) );
-					}
-
-					gl.glEnable( lightNumber );
+					gl.glLightModelfv(GL.GL_LIGHT_MODEL_AMBIENT, new float[]{viewIntensity, viewIntensity, viewIntensity, 1.0f}, 0);
+					gl.glLightfv( lightNumber , GL.GL_AMBIENT , new float[] { viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
 				}
+				else
+				{
+					gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] {(float)nodeTransform.xo , (float)nodeTransform.yo , (float)nodeTransform.zo , 1.0f} , 0 );
+
+					gl.glLightfv( lightNumber , GL.GL_DIFFUSE  , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
+					gl.glLightfv( lightNumber , GL.GL_SPECULAR , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
+					gl.glLightfv( lightNumber , GL.GL_EMISSION , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
+				}
+
+				gl.glEnable( lightNumber );
+				lightNumber++;
 			}
 
 			/*
