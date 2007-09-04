@@ -280,13 +280,14 @@ public class Object3D
 	{
 		final int nrVertices = vertexCoordinates.length;
 
-		final Face3D face = new Face3D( this , null , material , null , null , opacity , smooth , twoSided );
-		face.ensureCapacity( nrVertices );
+		final int[] vertexIndices = new int[ nrVertices ];
+		for ( int i = 0 ; i < vertexCoordinates.length ; i++ )
+		{
+			final Vector3D vertex = vertexCoordinates[ i ];
+			vertexIndices[ i ] = getVertexIndex( vertex.x , vertex.y , vertex.z );
+		}
 
-		for ( int i = 0 ; i < nrVertices ; i++ )
-			face.addVertex( vertexCoordinates[ i ] , ( textureU == null ) ? -1 : textureU[ i ] , ( textureV == null ) ? -1 : textureV[ i ] );
-
-		addFace( face );
+		addFace( new Face3D( this , vertexIndices , material , textureU , textureV , opacity , smooth , twoSided ) );
 	}
 
 	/**
