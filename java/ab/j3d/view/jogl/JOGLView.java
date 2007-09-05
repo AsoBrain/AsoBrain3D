@@ -233,6 +233,11 @@ public class JOGLView
 	{
 		public void run()
 		{
+			//force rendering of first frame on startup
+			while ( !_viewComponent.isShowing() )
+			{
+				_viewComponent.display();
+			}
 			while ( true )
 			{
 				/*
@@ -272,7 +277,9 @@ public class JOGLView
 		gl.glEnable( GL.GL_DEPTH_TEST );
 		gl.glDepthFunc( GL.GL_LEQUAL );
 
-		/* Set line options. */
+		/* Set smoothing. */
+		gl.glEnable( GL.GL_BLEND );
+		gl.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 		gl.glEnable( GL.GL_LINE_SMOOTH );
 
 		/* Initial clear. */
@@ -370,11 +377,10 @@ public class JOGLView
 
 			final Node3D   node3D        = viewModelNode.getNode3D();
 			final Matrix3D nodeTransform = viewModelNode.getTransform();
-
 			/*
 			 * Render lights.
 			 */
-			final Node3DCollection<Light3D> lights = node3D.collectNodes( null , Light3D.class , Matrix3D.INIT, false );
+			final Node3DCollection<Light3D> lights = node3D.collectNodes( null , Light3D.class , nodeTransform, false );
 
 			if ( lights != null )
 			{
@@ -391,7 +397,7 @@ public class JOGLView
 				}
 				else
 				{
-					gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] {(float)nodeTransform.xo , (float)nodeTransform.yo , (float)nodeTransform.zo , 1.0f} , 0 );
+					gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] {-(float)nodeTransform.xo , (float)nodeTransform.yo , -(float)nodeTransform.zo , 0.0f} , 0 );
 
 					gl.glLightfv( lightNumber , GL.GL_DIFFUSE  , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
 					gl.glLightfv( lightNumber , GL.GL_SPECULAR , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
