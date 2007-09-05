@@ -165,9 +165,17 @@ public final class ExtrudedObject2D
 		int lastMoveTo         = -1;
 		int lastExtrudedMoveTo = -1;
 
+		// @TODO Provide better mapping.
+		final UVMap uvMap = new ManhattanUVMap( 0.001 , Vector3D.INIT ); // @FIXME Get actual model units from somewhere.
+
 		while ( !pathIterator.isDone() )
 		{
-			switch( pathIterator.currentSegment( coords ) )
+			final int[] vertexIndices;
+
+			boolean hasBackfaceOverride = hasBackface;
+
+			final int type = pathIterator.currentSegment( coords );
+			switch ( type )
 			{
 				case FlatteningPathIterator.SEG_MOVETO:
 				{
@@ -190,6 +198,8 @@ public final class ExtrudedObject2D
 						lastExtrudedIndex  = target.getVertexIndex( x2 , y2 , z2 );
 						lastExtrudedMoveTo = lastExtrudedIndex;
 					}
+
+					vertexIndices = null;
 					break;
 				}
 
@@ -217,16 +227,19 @@ public final class ExtrudedObject2D
 					{
 						if ( hasExtrusion )
 						{
-							target.addFace(
-								flipExtrusion ? new int[] { vertexIndex , extrudedVertexIndex , lastExtrudedIndex  , lastIndex  }
-								              : new int[] { lastIndex  , lastExtrudedIndex  , extrudedVertexIndex , vertexIndex } ,
-								material , null , null , 1.0f , false , hasBackface );
+							vertexIndices = flipExtrusion ? new int[] { vertexIndex , extrudedVertexIndex , lastExtrudedIndex   , lastIndex   }
+							                              : new int[] { lastIndex   , lastExtrudedIndex   , extrudedVertexIndex , vertexIndex };
 							lastExtrudedIndex = extrudedVertexIndex;
 						}
 						else
 						{
-							target.addFace( new int[]{ lastIndex , vertexIndex } , material , null , null , 1.0f , false , true );
+							vertexIndices = new int[] { lastIndex , vertexIndex };
+							hasBackfaceOverride = true;
 						}
+					}
+					else
+					{
+						vertexIndices = null;
 					}
 
 					lastIndex = vertexIndex;
@@ -239,23 +252,50 @@ public final class ExtrudedObject2D
 					{
 						if ( hasExtrusion )
 						{
-							target.addFace(
-								flipExtrusion ? new int[] { lastMoveTo , lastExtrudedMoveTo , lastExtrudedIndex  , lastIndex  }
-								              : new int[] { lastIndex  , lastExtrudedIndex  , lastExtrudedMoveTo , lastMoveTo } ,
-								material , null , null , 1.0f , false , hasBackface );
-
+							vertexIndices = flipExtrusion ? new int[] { lastMoveTo , lastExtrudedMoveTo , lastExtrudedIndex  , lastIndex  }
+							                              : new int[] { lastIndex  , lastExtrudedIndex  , lastExtrudedMoveTo , lastMoveTo };
 							lastExtrudedIndex = lastExtrudedMoveTo;
 						}
 						else
 						{
-							target.addFace( new int[] { lastIndex , lastMoveTo } , material , null , null , 1.0f , false , true );
+							vertexIndices = new int[] { lastIndex , lastMoveTo };
+							hasBackfaceOverride = true;
 						}
+					}
+					else
+					{
+						vertexIndices = null;
 					}
 
 					lastIndex = lastMoveTo;
 					break;
 				}
+
+				default:
+					vertexIndices = null;
 			}
+
+			if ( vertexIndices != null )
+			{
+				final float[] textureU;
+				final float[] textureV;
+				if ( ( material == null ) || ( material.colorMap == null ) )
+				{
+					textureU = null;
+					textureV = null;
+				}
+				else
+				{
+
+					textureU = new float[ vertexIndices.length ];
+					textureV = new float[ vertexIndices.length ];
+
+					uvMap.generate( material , target.getVertexCoordinates(), vertexIndices , textureU , textureV );
+				}
+
+				target.addFace( vertexIndices , material , textureU , textureV , 1.0f , false , hasBackfaceOverride );
+			}
+
 			pathIterator.next();
 		}
 	}
