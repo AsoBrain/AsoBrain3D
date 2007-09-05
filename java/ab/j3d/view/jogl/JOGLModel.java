@@ -79,10 +79,12 @@ public class JOGLModel
 
 	protected void updateNodeTransform( final ViewModelNode node )
 	{
+		updateViews();
 	}
 
 	protected void updateNodeContent( final ViewModelNode node )
 	{
+		updateViews();
 	}
 
 	public ViewModelView createView( final Object id )
