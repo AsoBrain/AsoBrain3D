@@ -236,7 +236,7 @@ public class JOGLTools
 				final double n3z = face.getVertexNormalZ( 2 );
 
 				//Determine if face has texture
-				if ( !face.getMaterial().colorMap.isEmpty())
+				if (face.getMaterial().colorMap != null)
 				{
 					final Texture texture = getColorMapTexture( face );
 					final float[] textureU = face.getTextureU();
@@ -341,7 +341,7 @@ public class JOGLTools
 						final double n3z = face.getVertexNormalZ( 2 );
 
 						//Determine if face has texture
-						if ( !face.getMaterial().colorMap.isEmpty())
+						if (face.getMaterial().colorMap!= null)
 						{
 							final Texture texture = getColorMapTexture( face );
 							final float[] textureU = face.getTextureU();
