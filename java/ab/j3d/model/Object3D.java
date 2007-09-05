@@ -278,10 +278,10 @@ public class Object3D
 	 */
 	public final void addFace( final Vector3D[] vertexCoordinates , final Material material , final float[] textureU , final float[] textureV , final float opacity , final boolean smooth , final boolean twoSided )
 	{
-		final int nrVertices = vertexCoordinates.length;
-
+		final int   nrVertices    = vertexCoordinates.length;
 		final int[] vertexIndices = new int[ nrVertices ];
-		for ( int i = 0 ; i < vertexCoordinates.length ; i++ )
+
+		for ( int i = 0 ; i < nrVertices ; i++ )
 		{
 			final Vector3D vertex = vertexCoordinates[ i ];
 			vertexIndices[ i ] = getVertexIndex( vertex.x , vertex.y , vertex.z );
