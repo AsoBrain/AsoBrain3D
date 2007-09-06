@@ -165,8 +165,9 @@ public final class ExtrudedObject2D
 		int lastMoveTo         = -1;
 		int lastExtrudedMoveTo = -1;
 
-		// @TODO Provide better mapping.
-		final UVMap uvMap = new ManhattanUVMap( 0.001 , Vector3D.INIT ); // @FIXME Get actual model units from somewhere.
+		final boolean generateTextureCoordinates = ( material != null ) && ( material.colorMap != null );
+
+		final UVMap uvMap = new BoxUVMap( 0.001 , Vector3D.INIT );
 
 		while ( !pathIterator.isDone() )
 		{
@@ -279,18 +280,18 @@ public final class ExtrudedObject2D
 			{
 				final float[] textureU;
 				final float[] textureV;
-				if ( ( material == null ) || ( material.colorMap == null ) )
-				{
-					textureU = null;
-					textureV = null;
-				}
-				else
-				{
 
+				if ( generateTextureCoordinates )
+				{
 					textureU = new float[ vertexIndices.length ];
 					textureV = new float[ vertexIndices.length ];
 
 					uvMap.generate( material , target.getVertexCoordinates(), vertexIndices , textureU , textureV );
+				}
+				else
+				{
+					textureU = null;
+					textureV = null;
 				}
 
 				target.addFace( vertexIndices , material , textureU , textureV , 1.0f , false , hasBackfaceOverride );
