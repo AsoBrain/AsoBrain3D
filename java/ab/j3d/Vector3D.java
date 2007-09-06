@@ -172,6 +172,25 @@ public final class Vector3D
 	/**
 	 * Determine cross product of this vector with another vector.
 	 *
+	 * @param   x1      X-coordinate of first vector operand.
+	 * @param   y1      Y-coordinate of first vector operand.
+	 * @param   z1      Z-coordinate of first vector operand.
+	 * @param   x2      X-coordinate of second vector operand.
+	 * @param   y2      Y-coordinate of second vector operand.
+	 * @param   z2      Z-coordinate of second vector operand.
+	 *
+	 * @return  Resulting vector.
+	 */
+	public static Vector3D cross( final double x1 , final double y1 , final double z1 , final double x2 , final double y2 , final double z2 )
+	{
+		return INIT.set( y1 * z2 - z1 * y2 ,
+		                 z1 * x2 - x1 * z2 ,
+		                 x1 * y2 - y1 * x2 );
+	}
+
+	/**
+	 * Determine cross product of this vector with another vector.
+	 *
 	 * @param   v1      First vector.
 	 * @param   v2      Second vector.
 	 *
@@ -179,9 +198,7 @@ public final class Vector3D
 	 */
 	public static Vector3D cross( final Vector3D v1 , final Vector3D v2 )
 	{
-		return v1.set( v1.y * v2.z - v1.z * v2.y ,
-		               v1.z * v2.x - v1.x * v2.z ,
-		               v1.x * v2.y - v1.y * v2.x );
+		return cross( v1.x , v1.y , v1.z , v2.x , v2.y , v2.z );
 	}
 
 	/**
