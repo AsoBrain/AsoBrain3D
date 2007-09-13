@@ -21,6 +21,7 @@ package ab.j3d.view.jogl;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics2D;
 import java.util.Locale;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
@@ -30,6 +31,8 @@ import javax.media.opengl.GLEventListener;
 import javax.media.opengl.glu.GLU;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
+
+import com.sun.opengl.util.j2d.Overlay;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.control.CameraControl;
@@ -233,11 +236,6 @@ public class JOGLView
 	{
 		public void run()
 		{
-			//force rendering of first frame on startup
-			while ( !_viewComponent.isShowing() )
-			{
-				_viewComponent.display();
-			}
 			while ( true )
 			{
 				/*
@@ -419,6 +417,16 @@ public class JOGLView
 					JOGLTools.paintObject3D( gl , objects.getNode( i ), objects.getMatrix( i ) , fill, null , outline , outlineColor, false );
 				}
 			}
+		}
+
+		//add 2d overlay
+		if(hasOverlayPainters())
+		{
+			final Overlay o = new Overlay(_viewComponent);
+			final Graphics2D g2d = o.createGraphics();
+			paintOverlay( g2d );
+			o.drawAll();
+			g2d.dispose();
 		}
 	}
 }
