@@ -20,6 +20,8 @@
 package ab.j3d.loader;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,13 +30,13 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.numdata.oss.TextTools;
-
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
+
+import com.numdata.oss.TextTools;
 
 /**
  * Loader for Wavefront Object Files (.obj).
@@ -112,12 +114,16 @@ public class ObjLoader
 	public static final Pattern POLYGON_VERTEX_PATTERN  = Pattern.compile( "(\\d+)(/(\\d+)?(/(\\d+))?)?" ); // vertex#[/textureVertex#1[/vertexNormal#]]
 
 	/**
+	 * Materials from OBJ MTL file.
+	 */
+	private static Map<String,Material> objMaterials = new HashMap<String,Material>();
+	/**
 	 * Default materials to use for OBJ files.
 	 */
 	private static final Map<String,Material> DEFAULT_MATERIALS;
 	static
 	{
-		final Map materials = new HashMap();
+		final Map<String,Material> materials = new HashMap<String,Material>();
 
 		/* default material (also used for unknown materials) */
 		materials.put( "default"       , new Material( 0xFFC0C0C0 ) );
@@ -133,7 +139,7 @@ public class ObjLoader
 		materials.put( "white"         , new Material( 0xFFFCFCFC ) );
 
 		/* materials */
-		materials.put( "brass"         , new Material( 0xFFE0E010 ) );
+//		materials.put( "brass"         , new Material( 0xFFE0E010 ) );
 //		materials.put( "glass"         , new Material( 0x20102010 ) );
 //		materials.put( "light"         , new Material( 0x80FFFF20 ) );
 //		materials.put( "metal"         , new Material( 0xFFE0E0F8 ) );
@@ -159,13 +165,13 @@ public class ObjLoader
 	 *
 	 * @throws  IOException if an error occured while loading the OBJ file.
 	 */
-	public static Object3D load( final Matrix3D transform , final Map<String,Material> materials , final BufferedReader objReader )
+	public static Object3D load( final Matrix3D transform , final Map<String,Material> materials , final BufferedReader objReader, final String mtlPath )
 		throws IOException
 	{
 		final Map<String,Material> actualMaterials;
 		if ( materials  != null && !materials .isEmpty() )
 		{
-			actualMaterials = new HashMap( DEFAULT_MATERIALS.size() + materials.size() );
+			actualMaterials = new HashMap<String,Material>( DEFAULT_MATERIALS.size() + materials.size() );
 			actualMaterials.putAll( DEFAULT_MATERIALS );
 			actualMaterials.putAll( materials );
 		}
@@ -187,9 +193,9 @@ public class ObjLoader
 		 */
 //		System.out.println( " - load OBJ data" );
 
-		final List objVertices        = new ArrayList(); // element: Vector3D
-		final List objTextureVertices = new ArrayList(); // element: Vector3D (u,v,w)
-		final List objVertexNormals   = new ArrayList(); // element: Vector3D (i,j,k)
+		final List<Vector3D> objVertices        = new ArrayList<Vector3D>(); // element: Vector3D
+		final List<Vector3D> objTextureVertices = new ArrayList<Vector3D>(); // element: Vector3D (u,v,w)
+		final List<Vector3D>objVertexNormals   = new ArrayList<Vector3D>(); // element: Vector3D (i,j,k)
 
 		double[] abVertexCoordinates = null;
 		double[] abVertexNormals     = null;
@@ -205,6 +211,13 @@ public class ObjLoader
 
 			line = line.replaceAll( "\\s+" , " " );
 			line = line.trim();
+
+			// Some OBJ files have a "\" line serparator --> Create whole lines again.
+			final char backSlash = '\\';
+			while ( line.lastIndexOf( (int)backSlash ) > -1){
+				line = line.replace( "\\" , "" ) + objReader.readLine();
+				System.out.println("Put glue between broken lines  :-) " + line);
+			}
 
 			if ( line.length() > 0 )
 			{
@@ -415,7 +428,7 @@ public class ObjLoader
 
 							while ( objIndex < objVertexCount )
 							{
-								final Vector3D vertex = (Vector3D)objVertices.get( objIndex++ );
+								final Vector3D vertex = objVertices.get( objIndex++ );
 
 								abVertexCoordinates[ abIndex++ ] = vertex.x;
 								abVertexCoordinates[ abIndex++ ] = vertex.y;
@@ -455,7 +468,7 @@ public class ObjLoader
 									abTextureV = new float[ faceVertexCount ];
 								}
 
-								final Vector3D textureVertex = (Vector3D)objTextureVertices.get( objTextureVertexIndex - 1 );
+								final Vector3D textureVertex = objTextureVertices.get( objTextureVertexIndex - 1 );
 								abTextureU[ abFaceVertexIndex ] = (float)textureVertex.x;
 								abTextureV[ abFaceVertexIndex ] = (float)textureVertex.y;
 							}
@@ -474,7 +487,7 @@ public class ObjLoader
 										System.arraycopy( oldNormals , 0 , abVertexNormals , 0 , oldNormals.length );
 								}
 
-								final Vector3D vertexNormal = (Vector3D)objVertexNormals.get( objVertexNormalIndex - 1 );
+								final Vector3D vertexNormal = objVertexNormals.get( objVertexNormalIndex - 1 );
 
 								abVertexNormals[ abVertexIndexTimes3     ] = vertexNormal.x;
 								abVertexNormals[ abVertexIndexTimes3 + 1 ] = vertexNormal.y;
@@ -484,7 +497,7 @@ public class ObjLoader
 							abFaceVertexIndices[ abFaceVertexIndex ] = abVertexIndex;
 						}
 
-						result.addFace( abFaceVertexIndices , abMaterial , abTextureU , abTextureV , 1.0f , true , false );
+						result.addFace( abFaceVertexIndices , abMaterial , abTextureU , abTextureV , 1.0f , true , true );
 					}
 					/*
 					 * g group_name1 group_name2 . . .
@@ -530,7 +543,8 @@ public class ObjLoader
 					{
 						if ( argCount < 1 )
 							throw new IOException( "too few material library arguments in: " + line );
-
+						System.out.println( "Loading material: " + line.substring(7) );
+						loadMaterial(line.substring(7), mtlPath);
 						// mtllib = ArrayTools.remove( tokens , 0 , 0 );
 					}
 					/*
@@ -564,18 +578,20 @@ public class ObjLoader
 					 */
 					else if ( "usemtl".equals( name ) )
 					{
+						actualMaterials.putAll( objMaterials);
 						if ( argCount < 1 )
 							throw new IOException( "malformed 'usemtl' entry: " + line );
 
 						String material = getStringAfter( line , tokens , 1 );
-						material = material.toLowerCase();
+						//Causes an error if Uppercase characters are used int MTL name.
+						//material = material.toLowerCase();
 						material = material.replace( ' ' , '_' );
 
 						abMaterial = actualMaterials.get( material );
 						if ( abMaterial == null )
 						{
 							abMaterial = defaultMaterial;
-							//System.err.println( "'usemtl' references unknown material '" + material + "'" );
+							System.err.println( "'usemtl' references unknown material '" + material + "'" );
 						}
 					}
 //					else
@@ -692,5 +708,107 @@ public class ObjLoader
 	 */
 	private ObjLoader()
 	{
+	}
+
+	/**
+	 * Loads a MTL file with materials used by the OBJ file.
+	 * Materials are stored in objMaterials. 
+	 *
+	 * @param mtlName Name of the MTL file, loaded from the OBJ file. Most times this file has the same name as the OBJ file, e.g. (foo.obj --> foo.mtl)
+	 * @param mtlPath Path where material file exists.
+	 * @throws IOException When material could not be loaded or contains malformed known entries. Unknown entries are ignored, e.g. "Ka foobar" will throw an exception, but "Kgt foobar" won't because Kgt is not a know MTL entry.
+	 */
+	private static void loadMaterial( final String mtlName , final String mtlPath) throws IOException{
+		BufferedReader mtlReader = null;
+		try
+		{
+			final FileReader fr;
+			fr = new FileReader(mtlPath + mtlName);
+			mtlReader = new BufferedReader(fr);
+		}
+		catch ( FileNotFoundException e )
+		{
+			e.printStackTrace();
+		}
+		String line;
+		Material tempMaterial = null;
+		while ( ( line = mtlReader.readLine() ) != null )
+		{
+			final int hash = line.indexOf( (int) '#' );
+			if ( hash >= 0 )
+				line = line.substring( 0 , hash );
+			line = line.replaceAll( "\\s+" , " " );
+			line = line.trim();
+			if ( line.length() > 0 )
+			{
+				final String[] tokens = TextTools.tokenize( line , ' ' );
+				final String   name   = tokens[ 0 ];
+				final int argCount = tokens.length - 1;
+				try
+				{
+					// New Material
+					if ( "newmtl".equals( name ) )
+					{
+						if ( argCount < 1 )
+						    throw new IOException( "Malformed material entry: " + line );
+						tempMaterial = new Material();
+						objMaterials.put( tokens[1] , tempMaterial );
+						tempMaterial.code = name;
+					}
+					// Ambient lightning
+					else if ( "Ka".equals( name ) ) {
+						if ( argCount < 3 )
+						    throw new IOException( "Malformed ambient lightning entry: " + line );
+						tempMaterial.ambientColorRed   = Float.valueOf( tokens[1] );
+						tempMaterial.ambientColorGreen = Float.valueOf( tokens[2] );
+						tempMaterial.ambientColorBlue  = Float.valueOf( tokens[3] );
+					}
+					// Diffuse lightning
+					else if ( "Kd".equals( name ) ) {
+						if ( argCount < 3 )
+						    throw new IOException( "Malformed diffuse lightning entry: " + line );
+						tempMaterial.diffuseColorRed   = Float.valueOf( tokens[1] );
+						tempMaterial.diffuseColorGreen = Float.valueOf( tokens[2] );
+						tempMaterial.diffuseColorBlue  = Float.valueOf( tokens[3] );
+					}
+					// Specular lightning
+					else if ( "Ks".equals( name ) ) {
+						if ( argCount < 3 )
+						    throw new IOException( "Malformed specular lightning entry: " + line );
+						tempMaterial.specularColorRed   = Float.valueOf( tokens[1] );
+						tempMaterial.specularColorGreen = Float.valueOf( tokens[2] );
+						tempMaterial.specularColorBlue  = Float.valueOf( tokens[3] );
+					}
+					// Shininess
+					else if ( "Ns".equals( name ) ) {
+						if ( argCount < 1 )
+						    throw new IOException( "Malformed shininess entry: " + line );
+						final float shineness = Float.parseFloat( tokens[1] );
+						tempMaterial.shininess = (int)shineness;
+					}
+					// Alpha blending
+					else if ( "d".equals( name ) || "Tr".equals( name ) ) {
+						if ( argCount < 1 )
+						    throw new IOException( "Malformed transparency entry: " + line );
+						tempMaterial.diffuseColorAlpha = Float.parseFloat( tokens[1] );
+					}
+					// Texture mapping
+					else if ( "map_Kd".equals( name ) ) {
+						if ( argCount < 1 )
+						    throw new IOException( "Malformed texture entry: " + line );
+						tempMaterial.colorMap = tokens[1];
+					}
+					//Non-recognized, non-# (comemnt) line.
+					//TODO: implement them!
+					else {
+						System.err.println( "### Ignoring MTL line: " + line );
+						System.out.println( "### Above line not supported yet!" );
+					}
+				}catch ( NumberFormatException e )
+				{
+					throw new IOException( "malformed numeric value: " + line );
+				}
+			}
+		}
 	}
 }
