@@ -93,12 +93,12 @@ public class JOGL2dGraphics extends Graphics2D
 	 */
 	public JOGL2dGraphics( final Graphics2D g2d , final GLAutoDrawable gla , final boolean fastFonts)
 	{
-		_g2d = g2d;
-		_font = g2d.getFont();
-		_gla = gla;
+		_g2d   = g2d;
+		_font  = g2d.getFont();
+		_gla   = gla;
 		_color = Color.WHITE;
 		if(!fastFonts)
-			_renderer = new TextRenderer(getFont());
+			_renderer = new TextRenderer( getFont() );
 	}
 
 	/**
@@ -338,7 +338,7 @@ public class JOGL2dGraphics extends Graphics2D
 		final GL gl = GLU.getCurrentGL();
 		_color = c;
 		final float[] argb = _color.getRGBComponents( null );
-		gl.glColor4f( argb[0] , argb[1] , argb[2] , argb[3] );
+		gl.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
 	}
 
 	public void setPaintMode()

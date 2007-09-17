@@ -405,8 +405,8 @@ public class JOGLView
 
 				if ( light.isAmbient() )
 				{
-					gl.glLightModelfv(GL.GL_LIGHT_MODEL_AMBIENT, new float[]{viewIntensity, viewIntensity, viewIntensity, 1.0f}, 0);
-					gl.glLightfv( lightNumber , GL.GL_AMBIENT , new float[] { viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
+					gl.glLightModelfv(GL.GL_LIGHT_MODEL_AMBIENT, new float[] { viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
+					gl.glLightfv( lightNumber , GL.GL_AMBIENT , new float[]  { viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
 				}
 				else
 				{
