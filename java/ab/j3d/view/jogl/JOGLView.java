@@ -102,6 +102,11 @@ public class JOGLView
 	private final double _backClipDistance;
 
 	/**
+	 * Define global overlay for use in the overlay painters.
+	 */
+	private Overlay _overlay = null;
+
+	/**
 	 * Construct new view.
 	 *
 	 * @param   model       Model for which this view is created.
@@ -122,7 +127,7 @@ public class JOGLView
 		_frontClipDistance = 0.1 / unit;
 		_backClipDistance  = 100.0 / unit;
 
-		final GLCanvas glCanvas = new GLCanvas( new GLCapabilities() ); // new GLJPanel( capabilities )
+		final GLCanvas glCanvas = new GLCanvas( new GLCapabilities() );
 		glCanvas.addGLEventListener( new GLEventListener()
 			{
 				public void init( final GLAutoDrawable glAutoDrawable )
@@ -133,6 +138,13 @@ public class JOGLView
 				public void display( final GLAutoDrawable glAutoDrawable )
 				{
 					renderFrame( glAutoDrawable.getGL() );
+					if(hasOverlayPainters())
+					{
+						final Graphics2D g2d = _overlay.createGraphics();
+						final JOGL2dGraphics j2d = new JOGL2dGraphics( g2d , glAutoDrawable, false ); //draw real font
+						paintOverlay( j2d );
+						g2d.dispose();
+					}
 				}
 
 				public void displayChanged( final GLAutoDrawable glAutoDrawable , final boolean b, final boolean b1 )
@@ -271,6 +283,9 @@ public class JOGLView
 	 */
 	private void initGL( final GL gl )
 	{
+		/* Initialize overlay */
+		_overlay = new Overlay(_viewComponent);
+
 		/* Enable depth buffering. */
 		gl.glEnable( GL.GL_DEPTH_TEST );
 		gl.glDepthFunc( GL.GL_LEQUAL );
@@ -310,7 +325,7 @@ public class JOGLView
 		final double far    = _backClipDistance;
 
 		final GLU glu = new GLU();
-		glu.gluPerspective( fov , aspect , near , far);
+		glu.gluPerspective( fov , aspect , near , far );
 	}
 
 	/**
@@ -419,14 +434,6 @@ public class JOGLView
 			}
 		}
 
-		//add 2d overlay
-		if(hasOverlayPainters())
-		{
-			final Overlay o = new Overlay(_viewComponent);
-			final Graphics2D g2d = o.createGraphics();
-			paintOverlay( g2d );
-			o.drawAll();
-			g2d.dispose();
-		}
+
 	}
 }
