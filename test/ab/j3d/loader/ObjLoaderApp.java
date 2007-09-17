@@ -192,7 +192,7 @@ public class ObjLoaderApp
 			final FileReader fr = new FileReader( path );
 			try
 			{
-				final Object3D object3d = ObjLoader.load( transform , materials , new BufferedReader( fr ) );
+				final Object3D object3d = ObjLoader.load( transform , materials , new BufferedReader( fr ), null );
 				final Bounds3D bounds   = object3d.getBounds( null , null );
 				final Vector3D size     = bounds.size();
 				final double   toCM     = 100.0 * unit;
