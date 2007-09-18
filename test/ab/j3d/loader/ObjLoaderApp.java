@@ -178,21 +178,21 @@ public class ObjLoaderApp
 			final double   unit      = Java3dModel.M;
 			final Matrix3D transform = Matrix3D.INIT.rotateX( Math.toRadians( 90.0 ) );
 			final String   path      = "/numdata/3d/obj-from-web/lynnart.net/grand_piano.obj";
-			materials.put(  "strings"      , new Material( 0xFFA0A0A8 ) );
-			materials.put(  "blackkeys"    , new Material( 0xFF101010 ) );
-			materials.put(  "whitekeys"    , new Material( 0xFFF0E8E0 ) );
-			materials.put(  "piano_case_1" , new Material( 0xFF101010 ) );
-			materials.put(  "piano_case_2" , new Material( 0xFF101010 ) );
-			materials.put(  "piano_case3"  , new Material( 0xFF101010 ) );
+			materials.put(  "Strings"      , new Material( 0xFFA0A0A8 ) );
+			materials.put(  "BlackKeys"    , new Material( 0xFF101010 ) );
+			materials.put(  "WhiteKeys"    , new Material( 0xFFF0E8E0 ) );
+			materials.put(  "Piano_Case_1" , new Material( 0xFF101010 ) );
+			materials.put(  "Piano_Case_2" , new Material( 0xFF101010 ) );
+			materials.put(  "Piano_Case3"  , new Material( 0xFF101010 ) );
 			materials.put(  "piano_wheels" , new Material( 0xFF202020 ) );
-			materials.put(  "piano_harp"   , new Material( 0xFF202010 ) );
-			materials.put(  "piano_metal"  , new Material( 0xFF282810 ) );
-			materials.put(  "wood"         , new Material( 0xFF502810 ) );
+			materials.put(  "Piano_Harp"   , new Material( 0xFF202010 ) );
+			materials.put(  "Piano_Metal"  , new Material( 0xFF282810 ) );
+			materials.put(  "Wood"         , new Material( 0xFF502810 ) );
 
 			final FileReader fr = new FileReader( path );
 			try
 			{
-				final Object3D object3d = ObjLoader.load( transform , materials , new BufferedReader( fr ), null );
+				final Object3D object3d = ObjLoader.load( transform , materials , new BufferedReader( fr ) , null );
 				final Bounds3D bounds   = object3d.getBounds( null , null );
 				final Vector3D size     = bounds.size();
 				final double   toCM     = 100.0 * unit;
