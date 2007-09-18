@@ -535,10 +535,8 @@ public class ObjLoader
 						actualMaterials.putAll( objMaterials );
 						if ( argCount < 1 )
 							throw new IOException( "malformed 'usemtl' entry: " + line );
-
 						String material = getStringAfter( line , tokens , 1 );
-						//Causes an error if Uppercase characters are used int MTL name.
-						//material = material.toLowerCase();
+						material = material.toLowerCase();
 						material = material.replace( ' ' , '_' );
 
 						abMaterial = actualMaterials.get( material );
@@ -548,10 +546,12 @@ public class ObjLoader
 							System.err.println( "'usemtl' references unknown material '" + material + "'" );
 						}
 					}
-//					else
-//					{
-//						System.err.println( "unrecognized entry: " + line );
-//					}
+/*
+					else
+					{
+						System.err.println( "unrecognized entry: " + line );
+					}
+*/
 				}
 				catch ( NumberFormatException e )
 				{
@@ -724,8 +724,8 @@ public class ObjLoader
 						if ( argCount < 1 )
 						    throw new IOException( "Malformed material entry: " + line );
 						tempMaterial = new Material();
-						objMaterials.put( tokens[1] , tempMaterial );
-						tempMaterial.code = name;
+						objMaterials.put( ( tokens[ 1 ].toLowerCase() ) , tempMaterial );
+						tempMaterial.code = ( name.toLowerCase() );
 					}
 					// Ambient lightning
 					else if ( "Ka".equals( name ) )
