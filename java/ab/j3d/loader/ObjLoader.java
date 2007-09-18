@@ -545,7 +545,7 @@ public class ObjLoader
 						if ( abMaterial == null )
 						{
 							abMaterial = defaultMaterial;
-							//System.err.println( "'usemtl' references unknown material '" + material + "'" );
+							System.err.println( "'usemtl' references unknown material '" + material + "'" );
 						}
 					}
 //					else
@@ -792,34 +792,33 @@ public class ObjLoader
 	}
 
 	/**
-	 * Reads lines from supplied BufferedReader containing OBJ or MTL files.
+	 * Reads line from supplied BufferedReader containing OBJ or MTL files.
 	 *      Functions :
 	 *      Ignores rest of line after "#",
-	 *      Removes trailing "\" (WaveFront line split) and adds next line to current line ( repeating process for multiple splitted lines ).
+	 *      Removes trailing "\" (WaveFront line split) and adds next line to current line ( repeating process for multiple splitted line ).
 	 *      Removes double or more whitespaces and replaces them with a single whitespace
 	 *
-	 * @param   bufferedReader      The {@linkBufferedReader} containing file to read from.
+	 * @param   bufferedReader      The {@link BufferedReader} containing file to read from.
 	 *
-	 * @return  {@linkString}       String read from the {@linkBufferdReader} or null on EOF.
+	 * @return  {@link String}       String read from the {@link BufferedReader} or null on EOF.
 	 *
-	 * @throws  {@linkIOException}  if line could not be read.
+	 * @throws  {@link IOException}  if line could not be read.
 	 */
 	private static String readLine( final BufferedReader bufferedReader )
 		throws IOException
 	{
 		String line = bufferedReader.readLine();
-		if (line != null)
+		if ( line != null )
 		{
 		final int hash = line.indexOf( (int) '#' );
 			if ( hash >= 0 )
 				line = line.substring( 0 , hash );
-			line = line.replaceAll( "\\s+" , " " );
 			line = line.trim();
-			final char backSlash = '\\';
-			while ( line.lastIndexOf( (int) backSlash ) > -1 && line.indexOf( (int) backSlash ) == ( line.length() -1 ) )
+			while ( line.endsWith( "\\" ) )
 			{
-				line = line.replace( "\\" , "" ) + bufferedReader.readLine();
+				line = line.substring( 0, line.length() -1 ) + bufferedReader.readLine();
 			}
+			line = line.replaceAll( "\\s+" , " " );
 		}
 		return line;
 	}
