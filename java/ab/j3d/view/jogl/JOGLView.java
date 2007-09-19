@@ -141,7 +141,7 @@ public class JOGLView
 					if(hasOverlayPainters())
 					{
 						final Graphics2D g2d = _overlay.createGraphics();
-						final JOGL2dGraphics j2d = new JOGL2dGraphics( g2d , glAutoDrawable, false ); //draw real font
+						final JOGL2dGraphics j2d = new JOGL2dGraphics( g2d , glAutoDrawable, true ); //draw real font
 						paintOverlay( j2d );
 						g2d.dispose();
 					}
