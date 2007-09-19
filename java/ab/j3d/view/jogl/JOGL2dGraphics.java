@@ -199,7 +199,6 @@ public class JOGL2dGraphics extends Graphics2D
 		else{
 			final GL   gl   = GLU.getCurrentGL();
 			final GLUT glut = new GLUT();
-			glBegin2D();
 			gl.glRasterPos2i( x , y );
 			glut.glutBitmapString( GLUT.BITMAP_HELVETICA_12 , str );
 		}
