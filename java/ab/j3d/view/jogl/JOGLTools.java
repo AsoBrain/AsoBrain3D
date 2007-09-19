@@ -688,21 +688,25 @@ public class JOGLTools
 		gl.glColor4f( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , material.diffuseColorAlpha );
 
 		/* Set material properties. */
-		gl.glEnable( GL.GL_COLOR_MATERIAL );
-
+		gl.glMaterialf( GL.GL_FRONT_AND_BACK , GL.GL_SHININESS , (float)material.shininess );
 		gl.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_SPECULAR );
 		gl.glColor3f( material.specularColorRed , material.specularColorGreen , material.specularColorBlue );
-		gl.glMaterialf( GL.GL_FRONT_AND_BACK , GL.GL_SHININESS , (float)material.shininess );
+		gl.glEnable( GL.GL_COLOR_MATERIAL );
+		gl.glDisable( GL.GL_COLOR_MATERIAL );
 
 		gl.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_AMBIENT );
 		gl.glColor3f( material.ambientColorRed , material.ambientColorGreen , material.ambientColorBlue );
+		gl.glEnable( GL.GL_COLOR_MATERIAL );
+		gl.glDisable( GL.GL_COLOR_MATERIAL );
 
 		gl.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_DIFFUSE );
 		gl.glColor4f( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , material.diffuseColorAlpha );
+		gl.glEnable( GL.GL_COLOR_MATERIAL );
+		gl.glDisable( GL.GL_COLOR_MATERIAL );
 
 		gl.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_EMISSION );
 		gl.glColor3f( material.emissiveColorRed , material.emissiveColorGreen , material.emissiveColorBlue );
-
+		gl.glEnable( GL.GL_COLOR_MATERIAL );
 		gl.glDisable( GL.GL_COLOR_MATERIAL );
 	}
 	/**
