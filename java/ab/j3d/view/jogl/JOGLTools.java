@@ -48,7 +48,7 @@ public class JOGLTools
 	/**
 	 * Texture map cache (maps map name to texture).
 	 */
-	private static final SoftHashMap<String, Texture> _textureCache = new SoftHashMap();
+	private static final SoftHashMap<String, Texture> _textureCache = new SoftHashMap<String, Texture>();
 
 	/**
 	 * Utility/Application class is not supposed to be instantiated.
@@ -167,10 +167,10 @@ public class JOGLTools
 	}
 
 	/**
-	 * Draw 3D face on GL context without textures.
+	 * Draw 3D face on GL context without outline.
 	 *
-	 * @param gl        {@link GL} context.
-	 * @param face      Face draw.
+	 * @param gl        {@link GL}  context.
+	 * @param face      {@link Face3D } drawn.
 	 */
 	private static void drawFace( final GL gl , final Face3D face ){
 		drawFace( gl , face , false );
@@ -179,9 +179,9 @@ public class JOGLTools
 	/**
 	 * Draw 3D face on GL context.
 	 *
-	 * @param gl        {@link GL} context.
-	 * @param face      Face draw.
-	 * @param outline   Whether drawing outline or not
+	 * @param gl        {@link GL}  context.
+	 * @param face      {@link Face3D } drawn.
+	 * @param outline   Whether to draw outline or not
 	 */
 	private static void drawFace( final GL gl , final Face3D face , final boolean outline )
 	{
