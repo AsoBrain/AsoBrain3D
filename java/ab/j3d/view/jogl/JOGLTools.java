@@ -117,7 +117,7 @@ public class JOGLTools
 				gl.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_FILL );
 
 
-				drawFace( gl, object3D.getFace( i ) );
+				drawFace( gl , object3D.getFace( i ) );
 			}
 
 			if ( outline )
@@ -152,7 +152,7 @@ public class JOGLTools
 				gl.glPolygonMode( GL.GL_BACK , GL.GL_LINE );
 
 				gl.glDisable( GL.GL_LIGHTING );
-				drawFace( gl , object3D.getFace( i ) );
+				drawFace( gl , object3D.getFace( i ) , outline );
 				gl.glEnable( GL.GL_LIGHTING );
 
 				//disable backface culling
@@ -167,12 +167,23 @@ public class JOGLTools
 	}
 
 	/**
+	 * Draw 3D face on GL context without textures.
+	 *
+	 * @param gl        {@link GL} context.
+	 * @param face      Face draw.
+	 */
+	private static void drawFace( final GL gl , final Face3D face ){
+		drawFace( gl , face , false );
+	}
+
+	/**
 	 * Draw 3D face on GL context.
 	 *
-	 * @param gl   GL context.
-	 * @param face Face draw.
+	 * @param gl        {@link GL} context.
+	 * @param face      Face draw.
+	 * @param outline   Whether drawing outline or not
 	 */
-	private static void drawFace( final GL gl , final Face3D face )
+	private static void drawFace( final GL gl , final Face3D face , final boolean outline )
 	{
 		final Object3D object            = face.getObject();
 		final double[] vertexCoordinates = object.getVertexCoordinates();
@@ -235,8 +246,7 @@ public class JOGLTools
 				final double n3y = face.getVertexNormalY( 2 );
 				final double n3z = face.getVertexNormalZ( 2 );
 
-				//Determine if face has texture
-				if (face.getMaterial().colorMap != null)
+				if ( face.getMaterial().colorMap != null && !outline )
 				{
 					final Texture texture = getColorMapTexture( face );
 					final float[] textureU = face.getTextureU();
@@ -245,7 +255,8 @@ public class JOGLTools
 					texture.bind();
 						drawTriangle( gl , v1x , v1y , v1z , n1x , n1y , n1z , v2x , v2y , v2z , n2x , n2y , n2z , v3x , v3y , v3z , n3x , n3y , n3z , textureU , textureV );
 					gl.glDisable( GL.GL_TEXTURE_2D );
-					gl.glDeleteTextures( texture.getTarget(), IntBuffer.allocate( texture.getTextureObject() ) );
+					//Disabeled, does not work!
+					//gl.glDeleteTextures( texture.getTarget() , IntBuffer.allocate( texture.getTextureObject() ) );
 				}
 				else
 				{
@@ -288,21 +299,20 @@ public class JOGLTools
 				final double n4y = face.getVertexNormalY( 3 );
 				final double n4z = face.getVertexNormalZ( 3 );
 
-				//Determine if face has texture
-				if ( face.getMaterial().colorMap != null )
+				if ( face.getMaterial().colorMap != null && !outline )
 				{
 					final Texture texture = getColorMapTexture( face );
 					final float[] textureU = face.getTextureU();
 					final float[] textureV = face.getTextureV();
 					gl.glEnable( GL.GL_TEXTURE_2D );
 					texture.bind();
-					drawQuad( gl , v1x , v1y , v1z , n1x , n1y , n1z , v2x , v2y , v2z, n2x , n2y , n2z , v3x , v3y , v3z, n3x , n3y , n3z , v4x , v4y , v4z , n4x , n4y , n4z , textureU, textureV );
+					drawQuad( gl , v1x , v1y , v1z , n1x , n1y , n1z , v2x , v2y , v2z , n2x , n2y , n2z , v3x , v3y , v3z , n3x , n3y , n3z , v4x , v4y , v4z , n4x , n4y , n4z , textureU , textureV );
 					gl.glDisable( GL.GL_TEXTURE_2D );
 					texture.disable();
 				}
 				else
 				{
-					drawQuad( gl , v1x , v1y , v1z , n1x , n1y , n1z , v2x , v2y , v2z, n2x , n2y , n2z , v3x , v3y , v3z, n3x , n3y , n3z , v4x , v4y , v4z , n4x , n4y , n4z );
+					drawQuad( gl , v1x , v1y , v1z , n1x , n1y , n1z , v2x , v2y , v2z , n2x , n2y , n2z , v3x , v3y , v3z , n3x , n3y , n3z , v4x , v4y , v4z , n4x , n4y , n4z );
 				}
 			}
 			break;
@@ -340,8 +350,7 @@ public class JOGLTools
 						final double n3y = face.getVertexNormalY( 2 );
 						final double n3z = face.getVertexNormalZ( 2 );
 
-						//Determine if face has texture
-						if (face.getMaterial().colorMap!= null)
+						if ( face.getMaterial().colorMap!= null && !outline )
 						{
 							final Texture texture = getColorMapTexture( face );
 							final float[] textureU = face.getTextureU();
@@ -350,7 +359,7 @@ public class JOGLTools
 							texture.bind();
 							drawTriangle( gl , v1x , v1y , v1z , n1x , n1y , n1z , v2x , v2y , v2z , n2x , n2y , n2z , v3x , v3y , v3z , n3x , n3y , n3z , textureU , textureV );
 							gl.glDisable( GL.GL_TEXTURE_2D );
-							gl.glDeleteTextures( texture.getTarget(), IntBuffer.allocate( texture.getTextureObject() ) );
+							gl.glDeleteTextures( texture.getTarget() , IntBuffer.allocate( texture.getTextureObject() ) );
 						}
 						else
 						{
@@ -423,13 +432,13 @@ public class JOGLTools
 	{
 		gl.glBegin( GL.GL_LINES );
 
+		gl.glTexCoord2f( textureU[ 0 ] , textureV[ 0 ] );
 		gl.glNormal3d( n1X , n1Y , n1Z );
 		gl.glVertex3d( v1X , v1Y , v1Z );
-		gl.glTexCoord2f( textureU[ 0 ] , textureV[ 0 ] );
 
+		gl.glTexCoord2f( textureU[ 1 ] , textureV[ 1 ] );
 		gl.glNormal3d( n2X , n2Y , n2Z );
 		gl.glVertex3d( v2X , v2Y , v2Z );
-		gl.glTexCoord2f( textureU[ 1 ] , textureV[ 1 ] );
 
 		gl.glEnd();
 	}
@@ -477,21 +486,21 @@ public class JOGLTools
 	{
 		gl.glBegin( GL.GL_QUADS );
 
+		gl.glTexCoord2f( textureU[ 0 ] , textureV[ 0 ] );
 		gl.glNormal3d( n1X , n1Y , n1Z );
 		gl.glVertex3d( v1X , v1Y , v1Z );
-		gl.glTexCoord2f( textureU[ 0 ] , textureV[ 0 ] );
 
+		gl.glTexCoord2f( textureU[ 1 ] , textureV[ 1 ] );
 		gl.glNormal3d( n2X , n2Y , n2Z );
 		gl.glVertex3d( v2X , v2Y , v2Z );
-		gl.glTexCoord2f( textureU[ 1 ] , textureV[ 1 ] );
 
+		gl.glTexCoord2f( textureU[ 2 ] , textureV[ 2 ] );
 		gl.glNormal3d( n3X , n3Y , n3Z );
 		gl.glVertex3d( v3X , v3Y , v3Z );
-		gl.glTexCoord2f( textureU[ 2 ] , textureV[ 2 ] );
 
+		gl.glTexCoord2f( textureU[ 3 ] , textureV[ 3 ] );
 		gl.glNormal3d( n4X , n4Y , n4Z );
 		gl.glVertex3d( v4X , v4Y , v4Z );
-		gl.glTexCoord2f( textureU[ 3 ] , textureV[ 3 ] );
 
 		gl.glEnd();
 	}
@@ -630,17 +639,17 @@ public class JOGLTools
 	{
 		gl.glBegin( GL.GL_TRIANGLES );
 
+		gl.glTexCoord2f( textureU[ 0 ] , - textureV[ 0 ] );
 		gl.glNormal3d( n1X , n1Y , n1Z );
 		gl.glVertex3d( v1X , v1Y , v1Z );
-		gl.glTexCoord2f( textureU[ 0 ] , textureV[ 0 ] );
 
+		gl.glTexCoord2f( textureU[ 1 ] , - textureV[ 1 ] );
 		gl.glNormal3d( n2X , n2Y , n2Z );
 		gl.glVertex3d( v2X , v2Y , v2Z );
-		gl.glTexCoord2f( textureU[ 1 ] , textureV[ 1 ] );
 
+		gl.glTexCoord2f( textureU[ 2 ] , - textureV[ 2 ] );
 		gl.glNormal3d( n3X , n3Y , n3Z );
 		gl.glVertex3d( v3X , v3Y , v3Z );
-		gl.glTexCoord2f( textureU[ 2 ] , textureV[ 2 ] );
 
 		gl.glEnd();
 	}
