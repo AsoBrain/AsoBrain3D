@@ -688,36 +688,45 @@ public class JOGLTools
 	/**
 	 * Set GL material properties.
 	 *
-	 * @param gl       GL context.
-	 * @param material Material properties.
+	 * gl.glEnable( GL.GL_COLORMATERIAL ) and
+	 * gl.glDisable( GL.GL_COLORMATERIAL ) after each block is necessary because
+	 * only stating it at the begin and at the end gives problems (all objects
+	 * are white) with certain OpenGL implementations.
+	 *
+	 * @param gl       {@link GL} context.
+	 * @param material {@link Material} properties.
 	 */
 	public static void setMaterial( final GL gl , final Material material )
 	{
 		/* Set color, used when lights are disabled. */
 		gl.glColor4f( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , material.diffuseColorAlpha );
 
-		/* Set material properties. */
+		/* Set shininess and specular color of material. */
 		gl.glMaterialf( GL.GL_FRONT_AND_BACK , GL.GL_SHININESS , (float)material.shininess );
 		gl.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_SPECULAR );
 		gl.glColor3f( material.specularColorRed , material.specularColorGreen , material.specularColorBlue );
 		gl.glEnable( GL.GL_COLOR_MATERIAL );
 		gl.glDisable( GL.GL_COLOR_MATERIAL );
 
+		/* Set ambient color of material. */
 		gl.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_AMBIENT );
 		gl.glColor3f( material.ambientColorRed , material.ambientColorGreen , material.ambientColorBlue );
 		gl.glEnable( GL.GL_COLOR_MATERIAL );
 		gl.glDisable( GL.GL_COLOR_MATERIAL );
 
+		/* Set diffuse color and alpha of material. */
 		gl.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_DIFFUSE );
 		gl.glColor4f( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , material.diffuseColorAlpha );
 		gl.glEnable( GL.GL_COLOR_MATERIAL );
 		gl.glDisable( GL.GL_COLOR_MATERIAL );
 
+		/* Set emissive color of material. */
 		gl.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_EMISSION );
 		gl.glColor3f( material.emissiveColorRed , material.emissiveColorGreen , material.emissiveColorBlue );
 		gl.glEnable( GL.GL_COLOR_MATERIAL );
 		gl.glDisable( GL.GL_COLOR_MATERIAL );
 	}
+
 	/**
 	 * Get {@link Texture} for color map of {@link Face3D}.
 	 *
