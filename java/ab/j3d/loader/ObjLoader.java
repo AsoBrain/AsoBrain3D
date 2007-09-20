@@ -171,7 +171,7 @@ public class ObjLoader
 		Material abMaterial          = defaultMaterial;
 
 		String line;
-		while ( ( line = readLine(objReader) ) != null )
+		while ( ( line = readLine( objReader ) ) != null )
 		{
 			if ( line.length() > 0 )
 			{
@@ -535,8 +535,8 @@ public class ObjLoader
 						actualMaterials.putAll( objMaterials );
 						if ( argCount < 1 )
 							throw new IOException( "malformed 'usemtl' entry: " + line );
+
 						String material = getStringAfter( line , tokens , 1 );
-						material = material.toLowerCase();
 						material = material.replace( ' ' , '_' );
 
 						abMaterial = actualMaterials.get( material );
@@ -709,7 +709,7 @@ public class ObjLoader
 		{
 		String line;
 		Material tempMaterial = null;
-		while ( ( line = readLine(mtlReader) ) != null )
+		while ( ( line = readLine( mtlReader ) ) != null )
 		{
 			if ( line.length() > 0 )
 			{
@@ -724,8 +724,8 @@ public class ObjLoader
 						if ( argCount < 1 )
 						    throw new IOException( "Malformed material entry: " + line );
 						tempMaterial = new Material();
-						objMaterials.put( ( tokens[ 1 ].toLowerCase() ) , tempMaterial );
-						tempMaterial.code = ( name.toLowerCase() );
+						objMaterials.put( ( tokens[ 1 ] ) , tempMaterial );
+						tempMaterial.code = ( tokens[ 1 ] );
 					}
 					// Ambient lightning
 					else if ( "Ka".equals( name ) )
@@ -814,9 +814,9 @@ public class ObjLoader
 			if ( hash >= 0 )
 				line = line.substring( 0 , hash );
 			line = line.trim();
-			while ( line.endsWith( "\\" ) )
+			while ( line.length() > 0 && line.charAt( line.length() - 1 ) == '\\' )
 			{
-				line = line.substring( 0, line.length() -1 ) + bufferedReader.readLine();
+				line = line.substring( 0 , line.length() -1 ) + " " + bufferedReader.readLine();
 			}
 			line = line.replaceAll( "\\s+" , " " );
 		}
