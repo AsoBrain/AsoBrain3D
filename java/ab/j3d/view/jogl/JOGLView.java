@@ -124,7 +124,7 @@ public class JOGLView
 
 		_projectionPolicy  = Projector.PERSPECTIVE;
 		_renderingPolicy   = SOLID;
-		_frontClipDistance = 0.001 / unit;
+		_frontClipDistance = 0.1 / unit;
 		_backClipDistance  = 100.0 / unit;
 
 		final GLCanvas glCanvas = new GLCanvas( new GLCapabilities() );
