@@ -124,7 +124,7 @@ public class JOGLView
 
 		_projectionPolicy  = Projector.PERSPECTIVE;
 		_renderingPolicy   = SOLID;
-		_frontClipDistance = 0.1 / unit;
+		_frontClipDistance = 0.001 / unit;
 		_backClipDistance  = 100.0 / unit;
 
 		final GLCanvas glCanvas = new GLCanvas( new GLCapabilities() );
@@ -138,16 +138,16 @@ public class JOGLView
 				public void display( final GLAutoDrawable glAutoDrawable )
 				{
 					renderFrame( glAutoDrawable.getGL() );
-					if(hasOverlayPainters())
+					if( hasOverlayPainters() )
 					{
 						final Graphics2D g2d = _overlay.createGraphics();
-						final JOGL2dGraphics j2d = new JOGL2dGraphics( g2d , glAutoDrawable, true ); //draw real font
+						final JOGL2dGraphics j2d = new JOGL2dGraphics( g2d , glAutoDrawable , true ); //draw real font
 						paintOverlay( j2d );
 						g2d.dispose();
 					}
 				}
 
-				public void displayChanged( final GLAutoDrawable glAutoDrawable , final boolean b, final boolean b1 )
+				public void displayChanged( final GLAutoDrawable glAutoDrawable , final boolean b , final boolean b1 )
 				{
 
 				}
@@ -169,7 +169,7 @@ public class JOGLView
 		if ( background != null )
 			_viewComponent.setBackground( background );
 		else
-			_viewComponent.setBackground( Color.BLACK);
+			_viewComponent.setBackground( Color.BLACK );
 
 		startRenderer();
 	}
@@ -284,7 +284,7 @@ public class JOGLView
 	private void initGL( final GL gl )
 	{
 		/* Initialize overlay */
-		_overlay = new Overlay(_viewComponent);
+		_overlay = new Overlay( _viewComponent );
 
 		/* Enable depth buffering. */
 		gl.glEnable( GL.GL_DEPTH_TEST );
@@ -393,7 +393,7 @@ public class JOGLView
 			/*
 			 * Render lights.
 			 */
-			final Node3DCollection<Light3D> lights = node3D.collectNodes( null , Light3D.class , nodeTransform, false );
+			final Node3DCollection<Light3D> lights = node3D.collectNodes( null , Light3D.class , nodeTransform , false );
 
 			if ( lights != null )
 			{
@@ -405,12 +405,12 @@ public class JOGLView
 
 				if ( light.isAmbient() )
 				{
-					gl.glLightModelfv(GL.GL_LIGHT_MODEL_AMBIENT, new float[] { viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
+					gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
 					gl.glLightfv( lightNumber , GL.GL_AMBIENT , new float[]  { viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
 				}
 				else
 				{
-					gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] {-(float)nodeTransform.xo , (float)nodeTransform.yo , -(float)nodeTransform.zo , 0.0f} , 0 );
+					gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] { -(float)nodeTransform.xo , (float)nodeTransform.yo , -(float)nodeTransform.zo , 0.0f } , 0 );
 
 					gl.glLightfv( lightNumber , GL.GL_DIFFUSE  , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
 					gl.glLightfv( lightNumber , GL.GL_SPECULAR , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
@@ -429,7 +429,7 @@ public class JOGLView
 			{
 				for ( int i = 0 ; i < objects.size() ; i++ )
 				{
-					JOGLTools.paintObject3D( gl , objects.getNode( i ), objects.getMatrix( i ) , fill, null , outline , outlineColor, false );
+					JOGLTools.paintObject3D( gl , objects.getNode( i ) , objects.getMatrix( i ) , fill , null , outline , outlineColor , false );
 				}
 			}
 		}
