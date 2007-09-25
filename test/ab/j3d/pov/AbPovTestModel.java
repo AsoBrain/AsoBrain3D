@@ -413,7 +413,7 @@ public final class AbPovTestModel
 			final Vector3D extrusion = Vector3D.INIT.set( 0.0 , 100.0 , 100.0 );
 			final Matrix3D transform = Matrix3D.INIT.setTranslation( -400.0 , 0.0 , -250.0 );
 
-			extrudedObject = new ExtrudedObject2D( shape , extrusion , transform , material , 1.0 , true );
+			extrudedObject = new ExtrudedObject2D( shape , extrusion , transform , material , 1.0 , true , false , false );
 		}
 		else
 		{
