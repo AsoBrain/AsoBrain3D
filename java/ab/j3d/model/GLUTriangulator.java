@@ -281,8 +281,8 @@ public class GLUTriangulator
 		private int[] getTriangle( final int vertexIndex )
 		{
 			final int[] vertexBuffer = _vertexBuffer;
-			return _flip ? new int[] { vertexIndex , vertexBuffer[ 1 ] , vertexBuffer[ 0 ] }
-			             : new int[] { vertexBuffer[ 0 ] , vertexBuffer[ 1 ] , vertexIndex };
+			return _flip ? new int[] { vertexBuffer[ 0 ] , vertexBuffer[ 1 ] , vertexIndex }
+			             : new int[] { vertexBuffer[ 1 ] , vertexBuffer[ 0 ] , vertexIndex };
 		}
 
 		/**
