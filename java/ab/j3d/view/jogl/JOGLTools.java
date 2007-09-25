@@ -639,15 +639,15 @@ public class JOGLTools
 	{
 		gl.glBegin( GL.GL_TRIANGLES );
 
-		gl.glTexCoord2f( textureU[ 0 ] , - textureV[ 0 ] );
+		gl.glTexCoord2f( textureU[ 0 ] , textureV[ 0 ] );
 		gl.glNormal3d( n1X , n1Y , n1Z );
 		gl.glVertex3d( v1X , v1Y , v1Z );
 
-		gl.glTexCoord2f( textureU[ 1 ] , - textureV[ 1 ] );
+		gl.glTexCoord2f( textureU[ 1 ] , textureV[ 1 ] );
 		gl.glNormal3d( n2X , n2Y , n2Z );
 		gl.glVertex3d( v2X , v2Y , v2Z );
 
-		gl.glTexCoord2f( textureU[ 2 ] , - textureV[ 2 ] );
+		gl.glTexCoord2f( textureU[ 2 ] , textureV[ 2 ] );
 		gl.glNormal3d( n3X , n3Y , n3Z );
 		gl.glVertex3d( v3X , v3Y , v3Z );
 
