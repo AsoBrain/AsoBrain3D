@@ -43,23 +43,37 @@ public class PlanarUVMap
 	private Matrix3D _transform;
 
 	/**
-	 * Constructs a new UV-map based on the Manhattan-distance from each mapped
-	 * point to the given origin.
+	 * Constructs a new planar UV-map parallel to the XY-plane, with its UV
+	 * origin at the spatial origin.
 	 *
 	 * @param   modelUnits  Size of a model unit in meters.
-	 * @param   origin      Spatial coordinate of the UV-origin.
 	 */
-	public PlanarUVMap( final double modelUnits , final Vector3D origin )
+	public PlanarUVMap( final double modelUnits )
 	{
-		this( modelUnits , origin , Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) );
+		this( modelUnits , Matrix3D.INIT );
 	}
 
 	/**
-	 * Constructs a new UV-map based on the Manhattan-distance from each mapped
-	 * point to the given origin.
+	 * Constructs a new planar UV-map perpendicular to the given normal, with
+	 * its UV origin at the spatial origin.
+	 *
+	 * @param   modelUnits  Size of a model unit in meters.
+	 * @param   normal      Normal vector indicating the orientation of the
+	 *                      plane.
+	 */
+	public PlanarUVMap( final double modelUnits , final Vector3D normal )
+	{
+		this( modelUnits , Vector3D.INIT , normal );
+	}
+
+	/**
+	 * Constructs a new planar UV-map perpendicular to the given normal, with
+	 * its origin at the given position.
 	 *
 	 * @param   modelUnits  Size of a model unit in meters.
 	 * @param   origin      Spatial coordinate of the UV-origin.
+	 * @param   normal      Normal vector indicating the orientation of the
+	 *                      plane.
 	 */
 	public PlanarUVMap( final double modelUnits , final Vector3D origin , final Vector3D normal )
 	{
@@ -67,16 +81,17 @@ public class PlanarUVMap
 	}
 
 	/**
-	 * Constructs a new UV-map based on the Manhattan-distance from each mapped
-	 * point to the given origin.
+	 * Constructs a new planar UV-map parallel to the XY-plane defined by the
+	 * given transformation.
 	 *
 	 * @param   modelUnits  Size of a model unit in meters.
-	 * @param   transform   Transformation applied to the UV-map.
+	 * @param   transform   Transformation of the UV-plane relative to the
+	 *                      XY-plane.
 	 */
 	public PlanarUVMap( final double modelUnits , final Matrix3D transform )
 	{
 		_modelUnits = modelUnits;
-		_transform  = transform.inverse();
+		_transform  = transform;
 	}
 
 	public void generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final float[] textureU , final float[] textureV )
