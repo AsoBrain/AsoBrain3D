@@ -35,33 +35,45 @@ public class GLUTriangulator
 	implements Triangulator
 {
 	/**
-	 * Name of this class.
+	 * Flatness used when flattening input shapes.
 	 */
-	private static final String CLASS_NAME = GLUTriangulator.class.getName();
-
-	// @FIXME comment
 	private double _flatness;
 
-	private boolean _normalFlipping;
+	/**
+	 * Assumed normal of the shapes being triangulated.
+	 */
+	private Vector3D _normal = Vector3D.INIT;
 
 	/**
 	 * Constructs a new triangulator.
 	 *
-	 * @param   flatness    @FIXME comment
+	 * @param   flatness    Maximum distance between original shapes and the
+	 *                      flattened shapes used to approximate them.
 	 */
 	public GLUTriangulator( final double flatness )
 	{
 		_flatness = flatness;
 	}
 
-	public boolean isNormalFlipping()
+	/**
+	 * Returns the normal of the shapes being triangulated. The default value is
+	 * [0, 0, 0].
+	 *
+	 * @return  Normal of triangulated shapes.
+	 */
+	public Vector3D getNormal()
 	{
-		return _normalFlipping;
+		return _normal;
 	}
 
-	public void setNormalFlipping( final boolean normalFlipping )
+	/**
+	 * Sets the normal used of the shapes being triangulated.
+	 *
+	 * @param   normal  Normal to be set.
+	 */
+	public void setNormal( final Vector3D normal )
 	{
-		_normalFlipping = normalFlipping;
+		_normal = normal;
 	}
 
 	/**
@@ -73,11 +85,14 @@ public class GLUTriangulator
 	 */
 	public Triangulation triangulate( final Shape shape )
 	{
-		System.out.println( CLASS_NAME + ".triangulate" );
-		final long start = System.nanoTime();
-
 		final GLU glu = new GLU();
 		final GLUtessellator tessellator = glu.gluNewTess();
+
+		final Vector3D normal = _normal;
+		if ( normal != Vector3D.INIT )
+		{
+			glu.gluTessNormal( tessellator , normal.x , normal.y , normal.z );
+		}
 
 		final TriangulationImpl    triangulation        = new TriangulationImpl();
 		final TriangulationBuilder triangulationBuilder = new TriangulationBuilder( triangulation );
@@ -141,28 +156,59 @@ public class GLUTriangulator
 
 		glu.gluEndPolygon( tessellator );
 
-		final long end = System.nanoTime();
-		System.out.println( " - " + triangulation._vertices.size() + " vertices, " + triangulation._triangles.size() + " triangles in " + ( (double)( ( end - start ) / 100000L ) / 10.0 ) + " ms" );
-
 		return triangulationBuilder.getTriangulation();
 	}
 
-	private class TriangulationBuilder
+	/**
+	 * Builds the list of triangles for a {@link TriangulationImpl} from the
+	 * callbacks it receives from a GLU tessellator.
+	 */
+	private static class TriangulationBuilder
 		extends GLUtessellatorCallbackAdapter
 	{
+		/**
+		 * Triangulation being built.
+		 */
 		private final TriangulationImpl _triangulation;
 
+		/**
+		 * Stores up to two vertex indices gathered from previous events.
+		 * Elements that don't contain a vertex index are set to '-1'.
+		 *
+		 * @see     #addToVertexBuffer(int)
+		 */
 		private final int[] _vertexBuffer;
 
+		/**
+		 * Specifies the type of primitive represented by vertices presented
+		 * between calls to {@link #begin(int)} and {@link #end()}.
+		 */
 		private int _type;
 
+		/**
+		 * Indicates whether triangles should be flipped.
+		 */
+		private boolean _flip;
+
+		/**
+		 * Constructs a new triangulation builder that operates on the given
+		 * triangulation.
+		 *
+		 * @param   triangulation   Triangulation being built.
+		 */
 		TriangulationBuilder( final TriangulationImpl triangulation )
 		{
 			_triangulation = triangulation;
 			_vertexBuffer  = new int[ 2 ];
 			_type          = -1;
+			_flip          = false;
 		}
 
+		/**
+		 * Returns the triangulation.
+		 *
+		 * @return  Triangulation.
+		 */
 		public Triangulation getTriangulation()
 		{
 			return _triangulation;
@@ -171,6 +217,7 @@ public class GLUTriangulator
 		public void begin( final int type )
 		{
 			_type = type;
+			_flip = false;
 
 			final int[] vertexBuffer = _vertexBuffer;
 			vertexBuffer[ 0 ] = -1;
@@ -183,7 +230,11 @@ public class GLUTriangulator
 
 			if ( !addToVertexBuffer( vertexIndex ) )
 			{
-				_triangulation.addTriangle( getTriangle( vertexIndex ) );
+				final int[] triangle = getTriangle( vertexIndex );
+				if ( isTriangle( triangle ) )
+				{
+					_triangulation.addTriangle( triangle );
+				}
 
 				switch ( _type )
 				{
@@ -194,6 +245,7 @@ public class GLUTriangulator
 					case GL_TRIANGLE_STRIP:
 						_vertexBuffer[ 0 ] = _vertexBuffer[ 1 ];
 						_vertexBuffer[ 1 ] = vertexIndex;
+						_flip = !_flip;
 						break;
 
 					case GL_TRIANGLES:
@@ -229,8 +281,31 @@ public class GLUTriangulator
 		private int[] getTriangle( final int vertexIndex )
 		{
 			final int[] vertexBuffer = _vertexBuffer;
-			return _normalFlipping ? new int[] { vertexBuffer[ 0 ] , vertexBuffer[ 1 ] , vertexIndex }
-			                       : new int[] { vertexIndex , vertexBuffer[ 1 ] , vertexBuffer[ 0 ] };
+			return _flip ? new int[] { vertexIndex , vertexBuffer[ 1 ] , vertexBuffer[ 0 ] }
+			             : new int[] { vertexBuffer[ 0 ] , vertexBuffer[ 1 ] , vertexIndex };
+		}
+
+		/**
+		 * Returns whether the given vertex triplet forms a triangle, as opposed
+		 * to a line or point.
+		 *
+		 * @param   triplet     Vertex indices to be evaluated.
+		 *
+		 * @return  <code>true</code> if the vertices represent a triangle;
+		 *          <code>false</code> otherwise.
+		 */
+		private boolean isTriangle( final int[] triplet )
+		{
+			final List<Vector3D> vertices = _triangulation._vertices;
+			final Vector3D vertex0 = vertices.get( triplet[ 0 ] );
+			final Vector3D vertex1 = vertices.get( triplet[ 1 ] );
+			final Vector3D vertex2 = vertices.get( triplet[ 2 ] );
+
+			final Vector3D edge01 = vertex1.minus( vertex0 );
+			final Vector3D edge02 = vertex2.minus( vertex0 );
+
+			// Two edges of a triangle can't be co-linear.
+			return !Vector3D.INIT.equals( Vector3D.cross( edge01 , edge02 ) );
 		}
 
 		/**
@@ -269,10 +344,19 @@ public class GLUTriangulator
 		}
 	}
 
+	/**
+	 * Basic implementation of a triangulation result.
+	 */
 	private static class TriangulationImpl implements Triangulation
 	{
+		/**
+		 * Vertex indices of the triangles that the triangulation consists of.
+		 */
 		private final List<int[]> _triangles;
 
+		/**
+		 * Vertex coordinates used in the triangulation.
+		 */
 		private final List<Vector3D> _vertices;
 
 		/**
