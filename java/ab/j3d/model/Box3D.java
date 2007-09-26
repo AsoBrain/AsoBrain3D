@@ -71,6 +71,30 @@ public final class Box3D
 	 */
 	public Box3D( final Matrix3D xform , final double dx , final double dy , final double dz , final Material mainMaterial , final Material sideMaterial )
 	{
+		this( xform , dx , dy , dz , ( Math.abs( dy ) < Math.abs( dx ) && Math.abs( dy ) < Math.abs( dz ) ) ? mainMaterial : sideMaterial ,
+		                             ( Math.abs( dy ) < Math.abs( dx ) && Math.abs( dy ) < Math.abs( dz ) ) ? mainMaterial : sideMaterial ,
+		                             ( Math.abs( dx ) < Math.abs( dy ) && Math.abs( dx ) < Math.abs( dz ) ) ? mainMaterial : sideMaterial ,
+		                             ( Math.abs( dx ) < Math.abs( dy ) && Math.abs( dx ) < Math.abs( dz ) ) ? mainMaterial : sideMaterial ,
+		                             ( Math.abs( dz ) < Math.abs( dx ) && Math.abs( dz ) < Math.abs( dy ) ) ? mainMaterial : sideMaterial ,
+		                             ( Math.abs( dz ) < Math.abs( dx ) && Math.abs( dz ) < Math.abs( dy ) ) ? mainMaterial : sideMaterial );
+	}
+
+	/**
+	 * Set box properties.
+	 *
+	 * @param   xform           Transformation to apply to all vertices of the box.
+	 * @param   dx              Width of box (x-axis).
+	 * @param   dy              Height of box (y-axis).
+	 * @param   dz              Depth of box (z-axis).
+	 * @param   frontMaterial   Material applied to the front of the box.
+	 * @param   rearMaterial    Material applied to the rear of the box.
+	 * @param   rightMaterial   Material applied to the right of the box.
+	 * @param   leftMaterial    Material applied to the left of the box.
+	 * @param   topMaterial     Material applied to the top of the box.
+	 * @param   bottomMaterial  Material applied to the bottom of the box.
+	 */
+	public Box3D( final Matrix3D xform , final double dx , final double dy , final double dz , final Material frontMaterial , final Material rearMaterial , final Material rightMaterial , final Material leftMaterial , final Material topMaterial , final Material bottomMaterial )
+	{
 		_xform = xform;
 		_dx    = dx;
 		_dy    = dy;
@@ -100,28 +124,29 @@ public final class Box3D
 		final double ay = Math.abs( dy );
 		final double az = Math.abs( dz );
 
-		final boolean flatY = ( ay < ax && ay < az );
 		final boolean flatX = ( ax < ay && ax < az );
 		final boolean flatZ = ( az < ax && az < ay );
 
-		addFaces( FRONT_VERTICES , REAR_VERTICES   , flatY ? mainMaterial : sideMaterial ,  flatZ , xform.xo , xform.xo + _dx , xform.zo , xform.zo + _dz );
-		addFaces( RIGHT_VERTICES , LEFT_VERTICES   , flatX ? mainMaterial : sideMaterial ,  flatZ , xform.yo , xform.yo + _dy , xform.zo , xform.zo + _dz );
-		addFaces( TOP_VERTICES   , BOTTOM_VERTICES , flatZ ? mainMaterial : sideMaterial , !flatX , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy );
+		addFace( FRONT_VERTICES  , frontMaterial  ,  flatZ , xform.xo , xform.xo + _dx , xform.zo , xform.zo + _dz );
+		addFace( REAR_VERTICES   , rearMaterial   ,  flatZ , xform.xo , xform.xo + _dx , xform.zo , xform.zo + _dz );
+		addFace( RIGHT_VERTICES  , rightMaterial  ,  flatZ , xform.yo , xform.yo + _dy , xform.zo , xform.zo + _dz );
+		addFace( LEFT_VERTICES   , leftMaterial   ,  flatZ , xform.yo , xform.yo + _dy , xform.zo , xform.zo + _dz );
+		addFace( TOP_VERTICES    , topMaterial    , !flatX , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy );
+		addFace( BOTTOM_VERTICES , bottomMaterial , !flatX , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy );
 	}
 
 	/**
-	 * Helper method to add two opposite faces.
+	 * Helper method to add a texture mapped face.
 	 *
-	 * @param   frontVertices   Vertices that define the 'front' face.
-	 * @param   rearVertices    Vertices that define the 'rear' face.
-	 * @param   material        Material to use for faces.
+	 * @param   vertices        Vertices that define the face.
+	 * @param   material        Material to use for the face.
 	 * @param   flipUV          <code>true</code> te reverse meaning of u and v.
 	 * @param   modelHor1       Start horizontal model coordinate.
 	 * @param   modelHor2       End horizontal model coordinate.
 	 * @param   modelVer1       Start vertical model coordinate.
 	 * @param   modelVer2       End vertical model coordinate.
 	 */
-	private void addFaces( final int[] frontVertices , final int[] rearVertices , final Material material , final boolean flipUV , final double modelHor1 , final double modelHor2 , final double modelVer1 , final double modelVer2 )
+	private void addFace( final int[] vertices , final Material material , final boolean flipUV , final double modelHor1 , final double modelHor2 , final double modelVer1 , final double modelVer2 )
 	{
 		if ( ( material != null ) && ( material.colorMap != null ) )
 		{
@@ -159,19 +184,14 @@ public final class Box3D
 			final float v1 = (float)( min - adjustment );
 			final float v2 = (float)( max - adjustment );
 
-			final float[] frontU = new float[] { u1 , u1 , u2 , u2 };
-			final float[] frontV = new float[] { v1 , v2 , v2 , v1 };
+			final float[] u = new float[] { u1 , u1 , u2 , u2 };
+			final float[] v = new float[] { v1 , v2 , v2 , v1 };
 
-			final float[] rearU  = new float[] { u2 , u2 , u1 , u1 };
-			final float[] rearV  = frontV;
-
-			addFace( frontVertices , material , frontU , frontV , 1.0f , false , false );
-			addFace( rearVertices  , material , rearU  , rearV  , 1.0f , false , false );
+			addFace( vertices , material , u , v , 1.0f , false , false );
 		}
 		else
 		{
-			addFace( frontVertices , material , null , null , 1.0f , false , false );
-			addFace( rearVertices  , material , null , null , 1.0f , false , false );
+			addFace( vertices , material , null , null , 1.0f , false , false );
 		}
 
 	}
