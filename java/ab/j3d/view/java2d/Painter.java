@@ -26,13 +26,16 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Rectangle2D;
 
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Cylinder3D;
+import ab.j3d.model.ExtrudedObject2D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Insert3D;
 import ab.j3d.model.Node3D;
@@ -303,8 +306,9 @@ public final class Painter
 		     && ( object2view != null )
 		     && ( ( outlinePaint != null ) || ( fillPaint != null ) )
 		     && ( faceCount > 0 )
-		     && ( !( object instanceof Cylinder3D ) || !paintCylinder( g , gTransform , object2view , (Cylinder3D)object , outlinePaint , fillPaint , shadeFactor ) )
-		     && ( !( object instanceof Sphere3D   ) || !paintSphere  ( g , gTransform , object2view , (Sphere3D  )object , outlinePaint , fillPaint , shadeFactor ) ) )
+		     && ( !( object instanceof Cylinder3D       ) || !paintCylinder     ( g , gTransform , object2view , (Cylinder3D      )object , outlinePaint , fillPaint , shadeFactor ) )
+		     && ( !( object instanceof Sphere3D         ) || !paintSphere       ( g , gTransform , object2view , (Sphere3D        )object , outlinePaint , fillPaint , shadeFactor ) )
+		     && ( !( object instanceof ExtrudedObject2D ) || !paintExtrudedShape( g , gTransform , object2view , (ExtrudedObject2D)object , outlinePaint , fillPaint , shadeFactor ) ) )
 		{
 			/*
 			 * If the array is to small, create a larger one.
@@ -359,6 +363,101 @@ public final class Painter
 				paintFace( g , gTransform , face , outlinePaint , faceFillPaint , vertexCoordinates , xs , ys );
 			}
 		}
+	}
+
+	/**
+	 * Paints the given extruded shape using the 2D shape it contains, if
+	 * possible.
+	 *
+	 * @param   g               Graphics context to paint to.
+	 * @param   gTransform      Transformation from view coordinates to graphics
+	 *                          context coordinates.
+	 * @param   object2view     Transformation from object-local coordinates to
+	 *                          view coordinates.
+	 * @param   object          Extruded shape to be painted.
+	 * @param   outlinePaint    Paint to use for the outline, or
+	 *                          <code>null</code> to draw no outline.
+	 * @param   fillPaint       Paint to fill the painted shape with, or
+	 *                          <code>null</code> if the shape mustn't be filled.
+	 * @param   shadeFactor     Shade factor to be applied; currently ignored.
+	 *
+	 * @return  <code>true</code> if the shape was painted; <code>false</code>
+	 *          if the shape should be painted by some other means.
+	 */
+	private static boolean paintExtrudedShape( final Graphics2D g , final Matrix3D gTransform , final Matrix3D object2view , final ExtrudedObject2D object , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
+	{
+		final boolean result;
+
+		final Matrix3D viewBase = object.transform.multiply( object2view );
+		final Shape    shape    = object.shape;
+
+		g.translate( -0.5 , -0.5 ); // Match rounding used in other paint methods.
+
+		if ( MathTools.almostEqual( viewBase.zz , 0.0 ) )
+		{
+			final Rectangle2D bounds = shape.getBounds2D();
+			final double      dz     = object.extrusion.length();
+
+			final Matrix3D object2graphics = viewBase.multiply( gTransform );
+
+			final Vector3D v1 = object2graphics.multiply( bounds.getMinX() , bounds.getMinY() , 0.0 );
+			final Vector3D v2 = object2graphics.multiply( bounds.getMaxX() , bounds.getMaxY() , dz  );
+
+			final double minX = Math.min( v1.x, v2.x );
+			final double minY = Math.min( v1.y, v2.y );
+			final double maxX = Math.max( v1.x, v2.x );
+			final double maxY = Math.max( v1.y, v2.y );
+
+			final Rectangle2D.Double boundsShape = new Rectangle2D.Double( minX , minY , maxX - minX , maxY - minY );
+
+			if ( object.fillPaint != null )
+			{
+				g.setPaint( object.fillPaint );
+				g.fill( boundsShape );
+			}
+
+			if ( object.outlinePaint != null )
+			{
+				g.setPaint( object.outlinePaint );
+				g.draw( boundsShape );
+			}
+
+			result = true;
+		}
+		else if ( MathTools.almostEqual( Math.abs( viewBase.zz ) , 1.0 ) )
+		{
+			final Matrix3D object2graphics = viewBase.multiply( gTransform );
+
+			final AffineTransform viewTransform = new AffineTransform(
+					object2graphics.xx , object2graphics.yx ,
+					object2graphics.xy , object2graphics.yy ,
+					object2graphics.xo , object2graphics.yo );
+
+			final GeneralPath viewShape = new GeneralPath();
+			viewShape.append( shape.getPathIterator( viewTransform ) , false );
+
+			if ( fillPaint != null )
+			{
+				g.setPaint( fillPaint );
+				g.fill( viewShape );
+			}
+
+			if ( outlinePaint != null )
+			{
+				g.setPaint( outlinePaint );
+				g.draw( viewShape );
+			}
+
+			result = true;
+		}
+		else
+		{
+			result = false;
+		}
+
+		g.translate( 0.5 , 0.5 ); // Undo translation applied above.
+
+		return result;
 	}
 
 	private static boolean paintCylinder( final Graphics2D g , final Matrix3D gTransform , final Matrix3D cylinder2view , final Cylinder3D cylinder , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
@@ -511,7 +610,9 @@ public final class Painter
 						paint = fillPaint;
 					}
 					g.setPaint( paint );
-					g.fill( shape1 );
+
+					if ( !shape1.equals( shape2 ) )
+						g.fill( shape1 );
 				}
 				else
 				{
@@ -521,7 +622,8 @@ public final class Painter
 				if ( outlinePaint != null )
 				{
 					g.setPaint( outlinePaint );
-					g.draw( shape1 );
+					if ( !shape1.equals( shape2 ) )
+						g.draw( shape1 );
 				}
 
 				if ( shape2 != null )
