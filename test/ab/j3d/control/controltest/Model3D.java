@@ -23,7 +23,6 @@ import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import ab.j3d.Material;
@@ -91,7 +90,7 @@ public final class Model3D
 	/**
 	 * A {@link Set} with all {@link SceneElement}s in the 3d scene.
 	 */
-	private final Set _elements;
+	private final Set<SceneElement> _elements;
 
 	/**
 	 * Construct new Model3D to represent the given {@link Model} in 3D.
@@ -118,7 +117,7 @@ public final class Model3D
 		_viewModel = new Java3dModel( ViewModel.FOOT , Color.GRAY );
 		ViewModelTools.addLegacyLights( _viewModel );
 
-		_elements = new HashSet();
+		_elements = new HashSet<SceneElement>();
 
 		updateScene();
 	}
@@ -179,14 +178,10 @@ public final class Model3D
 
 		/*** ALLEEN 'EIGEN' NODES REMOVEN (LAZY REMOVE) ****/
 
-		final Set removedElements = new HashSet( _elements );
+		final Set<SceneElement> removedElements = new HashSet<SceneElement>( _elements );
 
-		final Set scene = _model.getScene();
-		for ( Iterator iterator = scene.iterator() ; iterator.hasNext() ; )
+		for ( final SceneElement element : _model.getScene() )
 		{
-			final SceneElement element = (SceneElement) iterator.next();
-
-
 			if ( _elements.contains( element ) )
 			{
 				viewModel.removeNode( element );
@@ -196,11 +191,9 @@ public final class Model3D
 			updateElement( element );
 		}
 
-		for ( Iterator iterator = removedElements.iterator() ; iterator.hasNext() ; )
+		for ( final SceneElement element : removedElements )
 		{
-			final Object id = iterator.next();
-
-			viewModel.removeNode( id );
+			viewModel.removeNode( element );
 		}
 	}
 
@@ -275,7 +268,7 @@ public final class Model3D
 		final double height = wall.getZSize();
 		final double depth  = wall.getYSize();
 
-		return new Box3D( Matrix3D.INIT , width , depth , height , WALL_MATERIAL , WALL_MATERIAL );
+		return new Box3D( Matrix3D.INIT , width , depth , height , 0.001 , WALL_MATERIAL , WALL_MATERIAL );
 	}
 
 	/**
