@@ -20,11 +20,12 @@
  */
 package ab.j3d.control.controltest.model;
 
-import java.util.Set;
-import java.util.HashSet;
-import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * The Model contains a number of {@link SceneElement}s, which can be added and
@@ -75,7 +76,7 @@ public class Model
 	/**
 	 * A {@link Set} containing all {@link SceneElement}s in this model.
 	 */
-	private final Set _scene;
+	private final Set<SceneElement> _scene;
 
 	/**
 	 * The selected TetraHedron (may be null if nothing is selected).
@@ -98,7 +99,7 @@ public class Model
 	 */
 	public Model()
 	{
-		_scene = new HashSet();
+		_scene = new HashSet<SceneElement>();
 
 		_selection = null;
 		_selectedFace = null;
@@ -111,9 +112,9 @@ public class Model
 	 *
 	 * @return  a set with all {@link SceneElement}s in the model
 	 */
-	public Set getScene()
+	public Set<SceneElement> getScene()
 	{
-		return new HashSet( _scene );
+		return Collections.unmodifiableSet( _scene );
 	}
 
 	/**
