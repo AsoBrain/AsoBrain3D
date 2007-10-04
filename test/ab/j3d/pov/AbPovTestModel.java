@@ -146,7 +146,7 @@ public final class AbPovTestModel
 			final Matrix3D translate = Matrix3D.INIT.setTranslation( -200.0 , 0.0 , -250.0 );
 			final Matrix3D transform = rotate.multiply( translate );
 
-			box = new Box3D( transform , 100.0 , 200.0 , 100.0 , material , material );
+			box = new Box3D( transform , 100.0 , 200.0 , 100.0 , 0.001 , material , material );
 		}
 		else
 		{
@@ -178,7 +178,7 @@ public final class AbPovTestModel
 
 			material.diffuseColorAlpha = 0.2f;
 
-			box = new Box3D( transform , 100.0 , 200.0 , 100.0 , material , material );
+			box = new Box3D( transform , 100.0 , 200.0 , 100.0 , 0.001 , material , material );
 		}
 		else
 		{
@@ -208,7 +208,7 @@ public final class AbPovTestModel
 			final Matrix3D translate = Matrix3D.INIT.setTranslation( 200.0 , 0.0 , -250.0 );
 			final Matrix3D transform = rotate.multiply( translate );
 
-			box =  new Box3D( transform , 100.0 , 200.0 , 100.0 , material , material );
+			box =  new Box3D( transform , 100.0 , 200.0 , 100.0 , 0.001 , material , material );
 		}
 		else
 		{
@@ -238,14 +238,18 @@ public final class AbPovTestModel
 			transform = transform.setTranslation( -350.0 , 0.0 , 0.0 );
 
 			final Material mainMaterial = new Material();
-			mainMaterial.code     = "MPXs";
-			mainMaterial.colorMap = "MPXs";
+			mainMaterial.code           = "MPXs";
+			mainMaterial.colorMap       = "MPXs";
+			mainMaterial.colorMapWidth  = 0.2;
+			mainMaterial.colorMapHeight = 0.2;
 
 			final Material sideMaterial = new Material();
-			sideMaterial.code     = "MFCs";
-			sideMaterial.colorMap = "MFCs";
+			sideMaterial.code           = "MFCs";
+			sideMaterial.colorMap       = "MFCs";
+			sideMaterial.colorMapWidth  = 0.2;
+			sideMaterial.colorMapHeight = 0.2;
 
-			box =  new Box3D( transform , 200.0 , 10.0 , 200.0 , mainMaterial , sideMaterial );
+			box =  new Box3D( transform , 200.0 , 10.0 , 200.0 , 0.001 , mainMaterial , sideMaterial );
 		}
 		else
 		{
