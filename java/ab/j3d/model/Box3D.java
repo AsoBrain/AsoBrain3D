@@ -66,17 +66,19 @@ public final class Box3D
 	 * @param   dx              Width of box (x-axis).
 	 * @param   dy              Height of box (y-axis).
 	 * @param   dz              Depth of box (z-axis).
+	 * @param   modelUnit       Model unit scale factor (e.g. {@link ab.j3d.view.ViewModel#MM}).
 	 * @param   mainMaterial    Main material of box.
 	 * @param   sideMaterial    Material for sides of box.
 	 */
-	public Box3D( final Matrix3D xform , final double dx , final double dy , final double dz , final Material mainMaterial , final Material sideMaterial )
+	public Box3D( final Matrix3D xform , final double dx , final double dy , final double dz , final double modelUnit , final Material mainMaterial , final Material sideMaterial )
 	{
-		this( xform , dx , dy , dz , ( Math.abs( dy ) < Math.abs( dx ) && Math.abs( dy ) < Math.abs( dz ) ) ? mainMaterial : sideMaterial ,
-		                             ( Math.abs( dy ) < Math.abs( dx ) && Math.abs( dy ) < Math.abs( dz ) ) ? mainMaterial : sideMaterial ,
-		                             ( Math.abs( dx ) < Math.abs( dy ) && Math.abs( dx ) < Math.abs( dz ) ) ? mainMaterial : sideMaterial ,
-		                             ( Math.abs( dx ) < Math.abs( dy ) && Math.abs( dx ) < Math.abs( dz ) ) ? mainMaterial : sideMaterial ,
-		                             ( Math.abs( dz ) < Math.abs( dx ) && Math.abs( dz ) < Math.abs( dy ) ) ? mainMaterial : sideMaterial ,
-		                             ( Math.abs( dz ) < Math.abs( dx ) && Math.abs( dz ) < Math.abs( dy ) ) ? mainMaterial : sideMaterial );
+		this( xform , dx , dy , dz , modelUnit ,
+			( Math.abs( dy ) < Math.abs( dx ) && Math.abs( dy ) < Math.abs( dz ) ) ? mainMaterial : sideMaterial ,
+			( Math.abs( dy ) < Math.abs( dx ) && Math.abs( dy ) < Math.abs( dz ) ) ? mainMaterial : sideMaterial ,
+			( Math.abs( dx ) < Math.abs( dy ) && Math.abs( dx ) < Math.abs( dz ) ) ? mainMaterial : sideMaterial ,
+			( Math.abs( dx ) < Math.abs( dy ) && Math.abs( dx ) < Math.abs( dz ) ) ? mainMaterial : sideMaterial ,
+			( Math.abs( dz ) < Math.abs( dx ) && Math.abs( dz ) < Math.abs( dy ) ) ? mainMaterial : sideMaterial ,
+			( Math.abs( dz ) < Math.abs( dx ) && Math.abs( dz ) < Math.abs( dy ) ) ? mainMaterial : sideMaterial );
 	}
 
 	/**
@@ -86,6 +88,7 @@ public final class Box3D
 	 * @param   dx              Width of box (x-axis).
 	 * @param   dy              Height of box (y-axis).
 	 * @param   dz              Depth of box (z-axis).
+	 * @param   modelUnit       Model unit scale factor (e.g. {@link ab.j3d.view.ViewModel#MM}).
 	 * @param   frontMaterial   Material applied to the front of the box.
 	 * @param   rearMaterial    Material applied to the rear of the box.
 	 * @param   rightMaterial   Material applied to the right of the box.
@@ -93,7 +96,7 @@ public final class Box3D
 	 * @param   topMaterial     Material applied to the top of the box.
 	 * @param   bottomMaterial  Material applied to the bottom of the box.
 	 */
-	public Box3D( final Matrix3D xform , final double dx , final double dy , final double dz , final Material frontMaterial , final Material rearMaterial , final Material rightMaterial , final Material leftMaterial , final Material topMaterial , final Material bottomMaterial )
+	public Box3D( final Matrix3D xform , final double dx , final double dy , final double dz , final double modelUnit , final Material frontMaterial , final Material rearMaterial , final Material rightMaterial , final Material leftMaterial , final Material topMaterial , final Material bottomMaterial )
 	{
 		_xform = xform;
 		_dx    = dx;
@@ -127,12 +130,12 @@ public final class Box3D
 		final boolean flatX = ( ax < ay && ax < az );
 		final boolean flatZ = ( az < ax && az < ay );
 
-		addFace( FRONT_VERTICES  , frontMaterial  ,  flatZ , xform.xo , xform.xo + _dx , xform.zo , xform.zo + _dz );
-		addFace( REAR_VERTICES   , rearMaterial   ,  flatZ , xform.xo , xform.xo + _dx , xform.zo , xform.zo + _dz );
-		addFace( RIGHT_VERTICES  , rightMaterial  ,  flatZ , xform.yo , xform.yo + _dy , xform.zo , xform.zo + _dz );
-		addFace( LEFT_VERTICES   , leftMaterial   ,  flatZ , xform.yo , xform.yo + _dy , xform.zo , xform.zo + _dz );
-		addFace( TOP_VERTICES    , topMaterial    , !flatX , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy );
-		addFace( BOTTOM_VERTICES , bottomMaterial , !flatX , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy );
+		addFace( FRONT_VERTICES  , frontMaterial  ,  flatZ , xform.xo , xform.xo + _dx , xform.zo , xform.zo + _dz , modelUnit );
+		addFace( REAR_VERTICES   , rearMaterial   ,  flatZ , xform.xo , xform.xo + _dx , xform.zo , xform.zo + _dz , modelUnit );
+		addFace( RIGHT_VERTICES  , rightMaterial  ,  flatZ , xform.yo , xform.yo + _dy , xform.zo , xform.zo + _dz , modelUnit );
+		addFace( LEFT_VERTICES   , leftMaterial   ,  flatZ , xform.yo , xform.yo + _dy , xform.zo , xform.zo + _dz , modelUnit );
+		addFace( TOP_VERTICES    , topMaterial    , !flatX , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy , modelUnit );
+		addFace( BOTTOM_VERTICES , bottomMaterial , !flatX , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy , modelUnit );
 	}
 
 	/**
@@ -145,22 +148,21 @@ public final class Box3D
 	 * @param   modelHor2       End horizontal model coordinate.
 	 * @param   modelVer1       Start vertical model coordinate.
 	 * @param   modelVer2       End vertical model coordinate.
+	 * @param   modelUnit       Model unit scale factor (e.g. {@link ab.j3d.view.ViewModel#MM}).
 	 */
-	private void addFace( final int[] vertices , final Material material , final boolean flipUV , final double modelHor1 , final double modelHor2 , final double modelVer1 , final double modelVer2 )
+	private void addFace( final int[] vertices, final Material material, final boolean flipUV, final double modelHor1, final double modelHor2, final double modelVer1, final double modelVer2 , final double modelUnit )
 	{
 		if ( ( material != null ) && ( material.colorMap != null ) )
 		{
-			final double modelUnit = 0.001;
-
 			double min = ( flipUV ? modelVer1 : modelHor1 );
 			double max = ( flipUV ? modelVer2 : modelHor2 );
 
 			double adjustment = material.colorMapWidth;
 			if ( adjustment > 0.0 )
 			{
-				adjustment *= modelUnit;
-				min /= adjustment;
-				max /= adjustment;
+				adjustment = modelUnit / adjustment;
+				min *= adjustment;
+				max *= adjustment;
 			}
 
 			adjustment = Math.min( Math.floor( min ) , Math.floor( max ) );
@@ -174,9 +176,9 @@ public final class Box3D
 			adjustment = material.colorMapHeight;
 			if ( adjustment > 0.0 )
 			{
-				adjustment *= modelUnit;
-				min /= adjustment;
-				max /= adjustment;
+				adjustment = modelUnit / adjustment;
+				min *= adjustment;
+				max *= adjustment;
 			}
 
 			adjustment = Math.min( Math.floor( min ) , Math.floor( max ) );
