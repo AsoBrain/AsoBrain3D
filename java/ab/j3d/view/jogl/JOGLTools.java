@@ -780,9 +780,9 @@ public class JOGLTools
 				if ( bufferedImage != null )
 				{
 					result = TextureIO.newTexture( ( bufferedImage ) , true );
-					result.setTexParameteri( GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT);
-					result.setTexParameteri( GL.GL_TEXTURE_WRAP_R, GL.GL_REPEAT);
-					result.setTexParameteri( GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT);
+					result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
+					result.setTexParameteri( GL.GL_TEXTURE_WRAP_R , GL.GL_REPEAT );
+					result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
 					result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_NEAREST );
 					result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_NEAREST );
 				}
