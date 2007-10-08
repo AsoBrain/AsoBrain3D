@@ -21,6 +21,7 @@
 package ab.j3d.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import ab.j3d.Matrix3D;
@@ -143,6 +144,16 @@ public class Node3D
 	public final int getChildCount()
 	{
 		return _children.size();
+	}
+
+	/**
+	 * Returns the collection of children of this node.
+	 *
+	 * @return  Children of this node.
+	 */
+	public List<Node3D> getChildren()
+	{
+		return Collections.unmodifiableList( _children );
 	}
 
 	/**
