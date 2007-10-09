@@ -21,7 +21,6 @@ package ab.j3d.view.jogl;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Graphics2D;
 import java.util.Locale;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
@@ -102,11 +101,6 @@ public class JOGLView
 	private final double _backClipDistance;
 
 	/**
-	 * Define global overlay for use in the overlay painters.
-	 */
-	private Overlay _overlay = null;
-
-	/**
 	 * Construct new view.
 	 *
 	 * @param   model       Model for which this view is created.
@@ -130,20 +124,25 @@ public class JOGLView
 		final GLCanvas glCanvas = new GLCanvas( new GLCapabilities() );
 		glCanvas.addGLEventListener( new GLEventListener()
 			{
-				public void init( final GLAutoDrawable glAutoDrawable )
+			/**
+			 * Define JOGL2dGraphics here to enable caching.
+			 */
+			private JOGL2dGraphics _j2d = null;
+
+			public void init( final GLAutoDrawable glAutoDrawable )
 				{
 					initGL( glAutoDrawable.getGL() );
+					final Overlay overlay = new Overlay( glAutoDrawable );
+					_j2d = new JOGL2dGraphics( overlay.createGraphics() , glAutoDrawable );
 				}
 
 				public void display( final GLAutoDrawable glAutoDrawable )
 				{
-					renderFrame( glAutoDrawable.getGL() );
+					renderFrame( glAutoDrawable.getGL() , glAutoDrawable.getWidth() , glAutoDrawable.getHeight() );
+
 					if( hasOverlayPainters() )
 					{
-						final Graphics2D g2d = _overlay.createGraphics();
-						final JOGL2dGraphics j2d = new JOGL2dGraphics( g2d , glAutoDrawable , true ); //draw real font
-						paintOverlay( j2d );
-						g2d.dispose();
+						paintOverlay( _j2d );
 					}
 				}
 
@@ -283,9 +282,6 @@ public class JOGLView
 	 */
 	private void initGL( final GL gl )
 	{
-		/* Initialize overlay */
-		_overlay = new Overlay( _viewComponent );
-
 		/* Enable depth buffering. */
 		gl.glEnable( GL.GL_DEPTH_TEST );
 		gl.glDepthFunc( GL.GL_LEQUAL );
@@ -310,30 +306,36 @@ public class JOGLView
 	 */
 	private void windowReshape( final GL gl , final int x , final int y , final int width , final int height )
 	{
-		/* Setup size of window to draw in. */
-		gl.glViewport( x , y , width , height );
+		final Camera3D camera   = getCamera();
+		final double   fov      = Math.toDegrees( camera.getAperture() );
+		final double   aspect   = 1.0;
+		final double   near     = _frontClipDistance;
+		final double   far      = _backClipDistance;
 
-		/* Setup the projection matrix. */
-		gl.glMatrixMode( GL.GL_PROJECTION );
-		gl.glLoadIdentity();
+		if ( _projectionPolicy != Projector.PARALLEL )
+		{
+			//View is not parallel so let's use perspective view. No support for isometric view yet.
+			/* Setup size of window to draw in. */
+			gl.glViewport( x , y , width , height );
 
-		final Camera3D camera = getCamera();
+			/* Setup the projection matrix. */
+			gl.glMatrixMode( GL.GL_PROJECTION );
+			gl.glLoadIdentity();
 
-		final double fov    = Math.toDegrees( camera.getAperture() );
-		final double aspect = 1.0;
-		final double near   = _frontClipDistance;
-		final double far    = _backClipDistance;
-
-		final GLU glu = new GLU();
-		glu.gluPerspective( fov , aspect , near , far );
+			/* Set the perspective view */
+			final GLU glu = new GLU();
+			glu.gluPerspective( fov , aspect , near , far );
+		}
 	}
 
 	/**
 	 * Render entire scene (called from render loop).
 	 *
-	 * @param   gl  GL context.
+	 * @param   gl      GL context.
+	 * @param   width   Width of GLAutoDrawable
+	 * @param   height  Height of GLAutoDrawable
 	 */
-	private void renderFrame( final GL gl )
+	private void renderFrame( final GL gl , final int width, final int height )
 	{
 		final boolean fill;
 		final boolean outline;
@@ -350,6 +352,20 @@ public class JOGLView
 				case SKETCH    : fill = true;  outline = false; outlineColor = null;        /*useTextures = true;  backfaceCulling = true;  applyLighting = true; */ break;
 				case WIREFRAME : fill = false; outline = true;  outlineColor = Color.RED;   /*useTextures = false; backfaceCulling = false; applyLighting = false;*/ break;
 				default        : fill = false; outline = false; outlineColor = null;        /*useTextures = false; backfaceCulling = false; applyLighting = true; */ break;
+		}
+
+		//check if the projector is parallel here, because the zoomfactor can be changed without resizing the window.
+		if ( _projectionPolicy == Projector.PARALLEL )
+		{
+			final double   near     = _frontClipDistance;
+			final double   far      = _backClipDistance;
+			final Camera3D camera3D = getCamera();
+			final double   scale    = camera3D.getZoomFactor();
+
+			gl.glMatrixMode( GL.GL_PROJECTION );
+			gl.glLoadIdentity();
+			gl.glOrtho( -width / ( 8.0f  ) , width / ( 8.0f ) , -( height * (double)width / (double)height ) / ( 8.0f  ) , ( height * (double)width / (double)height ) / ( 8.0f ) , near , far );
+			gl.glScaled( 1 - scale , 1 - scale , 1 - scale );
 		}
 
 		/* Clear depth buffer. */

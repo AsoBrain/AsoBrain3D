@@ -38,21 +38,24 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.glu.GLU;
 
-import com.sun.opengl.util.GLUT;
 import com.sun.opengl.util.j2d.TextRenderer;
 
 /**
  * This class tries to imitate some functions of the java2d api in OpenGL using JOGL.
  *
  * The following methods are currently implemented:
- * - drawString( final String str , final int x , final int y )
+ *
  * - drawLine( final int x1 , final int y1 , final int x2 , final int y2 )
- * - setStroke( final Stroke s )
- * - setColor( final Color color )
+ * - drawPolygon( final int[] yPoints , final int[] yPoints , final int nPoints )
+ * - drawString( final String str , final int x , final int y )
+ * - fillPolygon( final int[] xPoints , final int[] yPoints , final int nPoints )
+ * - fillRect( final int x , final int y , final int width , final int height )
  * - getColor()
- * - setFont()
  * - getFont()
  * - getFontMetrics()
+ * - setColor( final Color color )
+ * - setFont()
+ * - setStroke( final Stroke s )
  *
  * @author  Jark Reijerink
  * @version $Revision$ $Date$
@@ -65,9 +68,9 @@ public class JOGL2dGraphics extends Graphics2D
 	private Graphics2D _g2d;
 
 	/**
-	 * Variable in which font is stored, will only be used if _renderer != null.
+	 * Variable in which font is stored.
 	 */
-	private Font _font;
+	private Font _font = null;
 
 	/**
 	 * Used for getting the size of the canvas.
@@ -89,16 +92,16 @@ public class JOGL2dGraphics extends Graphics2D
 	 *
 	 * @param g2d           Used to get certain Graphics2D properties
 	 * @param gla           Used to get the size of the canvas
-	 * @param fastFonts     Set to false if you want accurate fonts, set to true if you want fast fonts.
 	 */
-	public JOGL2dGraphics( final Graphics2D g2d , final GLAutoDrawable gla , final boolean fastFonts)
+	public JOGL2dGraphics( final Graphics2D g2d , final GLAutoDrawable gla )
 	{
 		_g2d   = g2d;
-		_font  = g2d.getFont();
+
+		/* get default font and set it */
+		setFont( g2d.getFont() );
+
 		_gla   = gla;
-		_color = Color.WHITE;
-		if(!fastFonts)
-			_renderer = new TextRenderer( getFont() );
+		_color = Color.BLACK;
 	}
 
 	/**
@@ -187,20 +190,19 @@ public class JOGL2dGraphics extends Graphics2D
 	 */
 	public void drawString( final String str , final int x , final int y )
 	{
+		//create renderer if renderer has not been created already.
+		if(	_renderer == null )
+			_renderer =  new TextRenderer( getFont() );
+
 		glBegin2D();
-		if( _renderer !=null)
+		if( _renderer != null )
 		{
+			_renderer.setColor( _color );
 			_renderer.beginRendering( _gla.getWidth() , _gla.getHeight() );
 			// Draw text
 			_renderer.draw( str , x , _gla.getHeight() - y );
 			// Clean up rendering
 			_renderer.endRendering();
-		}
-		else{
-			final GL   gl   = GLU.getCurrentGL();
-			final GLUT glut = new GLUT();
-			gl.glRasterPos2i( x , y );
-			glut.glutBitmapString( GLUT.BITMAP_HELVETICA_12 , str );
 		}
 		glEnd2D();
 	}
@@ -289,8 +291,8 @@ public class JOGL2dGraphics extends Graphics2D
 	{
 		if( s instanceof BasicStroke )
 		{
-			final BasicStroke t = (BasicStroke) s;
-			final GL gl = GLU.getCurrentGL();
+			final BasicStroke t  = (BasicStroke) s;
+			final GL          gl = GLU.getCurrentGL();
 			gl.glLineWidth( t.getLineWidth() );
 		}
 	}
@@ -329,14 +331,14 @@ public class JOGL2dGraphics extends Graphics2D
 	/**
 	 * Sets the color to be used by OpenGL. Alpha is supported.
 	 *
-	 * @param c     Color to be converted
+	 * @param color Color to be used
 	 */
-
-	public void setColor( final Color c )
+	public void setColor( final Color color )
 	{
-		final GL gl = GLU.getCurrentGL();
-		_color = c;
-		final float[] argb = _color.getRGBComponents( null );
+		final GL      gl        = GLU.getCurrentGL();
+		              _color    = color;
+		final float[] argb      = _color.getRGBComponents( null );
+
 		gl.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
 	}
 
@@ -400,7 +402,9 @@ public class JOGL2dGraphics extends Graphics2D
 	 */
 	public void drawLine( final int x1 , final int y1 , final int x2 , final int y2 )
 	{
-		final GL gl = GLU.getCurrentGL();
+		final GL gl = _gla.getGL();
+		gl.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_LINE );
+
 		glBegin2D();
 		gl.glBegin( GL.GL_LINES );
 		gl.glVertex2i( x1 , y1 );
@@ -419,7 +423,8 @@ public class JOGL2dGraphics extends Graphics2D
 	 */
 	public void fillRect( final int x , final int y , final int width , final int height )
 	{
-		final GL gl = GLU.getCurrentGL();
+		final GL gl = _gla.getGL();
+
 		glBegin2D();
 		gl.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_FILL );
 		gl.glBegin( GL.GL_QUADS );
@@ -463,12 +468,48 @@ public class JOGL2dGraphics extends Graphics2D
 	{
 	}
 
+	/**
+	 * JOGL implementation of drawPolygon.
+	 *
+	 * @param xPoints an array of x coordinates.
+	 * @param yPoints an array of y coordinates.
+	 * @param nPoints the total number of points.
+	 */
 	public void drawPolygon( final int[] xPoints , final int[] yPoints , final int nPoints )
 	{
+		final GL gl = _gla.getGL();
+
+		glBegin2D();
+		gl.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_LINE );
+		gl.glBegin( GL.GL_POLYGON );
+
+		for( int i = 0 ; i < nPoints ; i++ )
+			gl.glVertex2i( xPoints[ i ] , yPoints[ i ] );
+
+		gl.glEnd();
+		glEnd2D();
 	}
 
+	/**
+	 * JOGL implementation of drawPolygon.
+	 *
+	 * @param xPoints an array of x coordinates.
+	 * @param yPoints an array of y coordinates.
+	 * @param nPoints the total number of points.
+	 */
 	public void fillPolygon( final int[] xPoints , final int[] yPoints , final int nPoints )
 	{
+		final GL gl = _gla.getGL();
+
+		glBegin2D();
+		gl.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_FILL);
+		gl.glBegin( GL.GL_POLYGON );
+
+		for(int i = 0; i< nPoints; i++)
+			gl.glVertex2i( xPoints[i] , yPoints[i] );
+
+		gl.glEnd();
+		glEnd2D();
 	}
 
 	public void translate( final double tx , final double ty )
