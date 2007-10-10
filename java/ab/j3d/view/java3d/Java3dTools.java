@@ -555,7 +555,7 @@ public final class Java3dTools
 
 //		if ( node instanceof Paneel )
 //		{
-//			System.out.println( subPrefix + "soort         = " + Paneel.enumPaneelSoort[ paneel.getSoort() ] );
+//			System.out.println( subPrefix + "soort         = " + Paneel.enumPaneelSoort[ paneel.getPanelType() ] );
 //		}
 
 		System.out.println( subPrefix );
