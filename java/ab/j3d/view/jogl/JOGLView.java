@@ -430,7 +430,6 @@ public class JOGLView
 
 					gl.glLightfv( lightNumber , GL.GL_DIFFUSE  , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
 					gl.glLightfv( lightNumber , GL.GL_SPECULAR , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
-					gl.glLightfv( lightNumber , GL.GL_EMISSION , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
 				}
 
 				gl.glEnable( lightNumber );
