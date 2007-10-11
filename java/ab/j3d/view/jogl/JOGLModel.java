@@ -40,7 +40,7 @@ public class JOGLModel
 	private final Color _background;
 
 	/**
-	 * Construct new Java 2D view model using {@link ViewModel#MM} units.
+	 * Construct new JOGL view model using {@link ViewModel#MM} units.
 	 */
 	public JOGLModel()
 	{
@@ -48,7 +48,7 @@ public class JOGLModel
 	}
 
 	/**
-	 * Construct new Java 2D view model.
+	 * Construct new JOGL view model.
 	 *
 	 * @param   unit    Unit scale factor (e.g. {@link ViewModel#MM}).
 	 */
@@ -58,7 +58,7 @@ public class JOGLModel
 	}
 
 	/**
-	 * Construct new Java 2D view model.
+	 * Construct new JOGL view model.
 	 *
 	 * @param   unit        Unit scale factor (e.g. {@link ViewModel#MM}).
 	 * @param   background  Background color to use for 3D views. May be
