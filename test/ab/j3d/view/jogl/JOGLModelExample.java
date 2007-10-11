@@ -22,7 +22,7 @@ public class JOGLModelExample
 	extends ViewModelExample
 {
 	/**
-	 * Construct new jPCTModelExample.
+	 * Construct new JOGLModelExample.
 	 */
 	public JOGLModelExample()
 	{
