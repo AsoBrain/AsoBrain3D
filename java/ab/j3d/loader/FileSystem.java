@@ -32,14 +32,15 @@ import com.numdata.oss.ui.explorer.Item;
 public interface FileSystem
 {
 	/**
-	 * Returns an Item[]
+	 * Returns array of Items created from the filesystem.
 	 *
 	 * @return  Array of Items created from the filesystem.
 	 */
 	Item[] getItems();
 
 	/**
-	 * Returns the binary data linked to the {@link Item}. For example, if the Item is an OBJ file, it will return the OBJ file as binary data.
+	 * Returns the binary data linked to the {@link Item}.
+	 * For example, if the Item is an OBJ file, it will return the OBJ file as binary data.
 	 *
 	 * @param   item Item to get binary data for.
 	 *
