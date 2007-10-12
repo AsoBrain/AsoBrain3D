@@ -26,7 +26,7 @@ import com.numdata.oss.ui.explorer.Item;
 
 /**
  * This interface is used to create items from a filesystem for usage in an {@link Explorer} instance.
- * For example, to retrieve the contents of a database or a directory.
+ * For example, retrieve the contents of a database or a directory.
  * Items are stored in an ArrayList at construction of the class.
  *
  * @author Wijnand Wieskamp
