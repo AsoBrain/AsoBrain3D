@@ -29,13 +29,13 @@ import java.util.zip.ZipInputStream;
 
 /**
  * This class loads a specified resource from a zip-archive.
- * <p />
+ * <br /><br />
  * Zip archive can be binary data or a ZipFile object.
  *
  * @author Wijnand Wieskamp
  */
 public class ZipResourceLoader
-implements ResourceLoader
+	implements ResourceLoader
 {
 	/**
 	 * The ZipFile to read the specified resource from.
@@ -48,7 +48,7 @@ implements ResourceLoader
 	private byte[] _compressedData = null;
 
 	/**
-	 * Constructs a ZipResourceLoader based on given {@link ZipFile}
+	 * Constructs a ZipResourceLoader based on given {@link ZipFile}.
 	 *
 	 * @param zipFile The ZipFile object to load resources from.
 	 */
@@ -60,7 +60,7 @@ implements ResourceLoader
 	/**
 	 * Constructs a ZipResourceLoader based on given binary data.
 	 *
-	 * @param binaryData The zip archive as binary data
+	 * @param binaryData The zip archive as binary data.
 	 */
 	public ZipResourceLoader( final byte[] binaryData )
 	{
@@ -73,20 +73,20 @@ implements ResourceLoader
 	 * In this case, a zip archive.
 	 */
 	public InputStream getResource( final String name )
-	throws IOException
+		throws IOException
 	{
 		ZipEntry zipEntry;
 		final ZipFile zipFile = _zipFile;
 		InputStream result = null;
 		if ( zipFile != null )
 		{
-			zipEntry = zipFile.getEntry( name );
-			result = zipFile.getInputStream( zipEntry );
+			zipEntry    = zipFile.getEntry( name );
+			result      = zipFile.getInputStream( zipEntry );
 		}
 		else if ( _compressedData != null )
 		{
 			final ZipInputStream zipInputStream = new ZipInputStream( new ByteArrayInputStream( _compressedData ) );
-			while ( ( zipEntry = zipInputStream.getNextEntry() ) != null )
+			while ( result == null && ( zipEntry = zipInputStream.getNextEntry() ) != null)
 			{
 				if ( name.equals( zipEntry.getName() ) )
 				{
