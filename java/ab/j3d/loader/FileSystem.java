@@ -19,12 +19,15 @@
  */
 package ab.j3d.loader;
 
+import java.util.ArrayList;
+
 import com.numdata.oss.ui.explorer.Explorer;
 import com.numdata.oss.ui.explorer.Item;
 
 /**
- * This interface is used to crea items from a filesystem for usage in an {@link Explorer} instance.
+ * This interface is used to create items from a filesystem for usage in an {@link Explorer} instance.
  * For example, to retrieve the contents of a database or a directory.
+ * Items are stored in an ArrayList at construction of the class.
  *
  * @author Wijnand Wieskamp
  * @version $Revision$ $Date$
@@ -32,11 +35,11 @@ import com.numdata.oss.ui.explorer.Item;
 public interface FileSystem
 {
 	/**
-	 * Returns array of Items created from the filesystem.
+	 * Returns ArrayList containing Items created from the filesystem.
 	 *
-	 * @return  Array of Items created from the filesystem.
+	 * @return  ArrayList of Items created from the filesystem.
 	 */
-	Item[] getItems();
+	ArrayList<Item> getItems();
 
 	/**
 	 * Returns the binary data linked to the {@link Item}.
