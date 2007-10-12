@@ -30,39 +30,40 @@ import com.numdata.oss.io.FileExtensionFilter;
 import com.numdata.oss.ui.explorer.Item;
 
 /**
- * Creates an Item[] of specified files from a specified directory.
- *ArrayList<Item>
- * @author Wijnand Wieskamp
+ * Creates an ArrayList of specified files from a specified directory.
+ *
+ * @author  Wijnand Wieskamp
  * @version $Revision$ $Date$
  */
 public class DiskFileSystem
-	implements FileSystem{
+	implements FileSystem
+{
 
 	/**
-	 * ArrayList of items generated from the targetdirectory in conjuction with the {@link FileExtensionFilter}.
+	 * ArrayList of items generated from the target directory in conjuction with the {@link FileExtensionFilter}.
 	 */
 	private ArrayList<Item> _items;
 
 	/**
-	 * Constructor creates a DiskFileSystem containing files within the targetdirectory.
+	 * Constructor creates a DiskFileSystem containing files within the target directory.
 	 *
 	 * @param   targetDirectory Directory to read from.
 	 *
-	 * @throws  IOException     When directory or file can't be read.
+	 * @throws  IOException when directory or file can't be read.
 	 */
 	public DiskFileSystem( final String targetDirectory )
 		throws IOException
 	{
-		this( targetDirectory, null );
+		this( targetDirectory , null );
 	}
 
 	/**
-	 * Constructor creates a DiskFileSystem containing files within the targetdirectory, filtered by given {@link FileExtensionFilter}.
+	 * Constructor creates a DiskFileSystem containing files within the target directory, filtered by given {@link FileExtensionFilter}.
 	 *
 	 * @param   targetDirectory Directory to read from.
-	 * @param   filter {@link FileExtensionFilter} to apply on targetdirectory
+	 * @param   filter          {@link FileExtensionFilter} to apply on target directory.
 	 *
-	 * @throws  IOException     When directory or file can't be read.
+	 * @throws  IOException when directory or file can't be read.
 	 */
 	public DiskFileSystem( final String targetDirectory , final FileExtensionFilter filter )
 		throws IOException
@@ -80,22 +81,25 @@ public class DiskFileSystem
 				filesInDirectory = directory.listFiles( filter );
 			}
 			_items = new ArrayList<Item>();
+			BufferedImage thumb;
 			for ( final File file : filesInDirectory )
 			{
 				final File thumbnail = new File( file.getAbsolutePath() + "_thumbnail" );
-				BufferedImage thumb = null;
 				if ( thumbnail.exists() && thumbnail.canRead() )
 				{
 					thumb = ImageIO.read( thumbnail );
 				}
-				final Item item = new Item(
-				file.isDirectory() ? Item.DIRECTORY : Item.FILE , file.getName() , null , thumb );
+				else
+				{
+					thumb = null;
+				}
+				final Item item = new Item( file.isDirectory() ? Item.DIRECTORY : Item.FILE , file.getName() , null , thumb );
 				_items.add( item );
 			}
 		}
 		else
 		{
-			throw new IOException( "Can't read from directory \"" + directory +"\"" );
+			throw new IOException( "Can't read from directory \"" + directory +"\"." );
 		}
 	}
 
