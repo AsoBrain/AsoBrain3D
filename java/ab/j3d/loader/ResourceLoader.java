@@ -30,15 +30,14 @@ import java.io.InputStream;
  */
 public interface ResourceLoader
 {
-
 	/**
 	 * Loads a resource from the resource the loader was constructed with.
 	 *
-	 * @param name Name of the resource to be loaded
+	 * @param   name Name of the resource to be loaded.
 	 *
-	 * @return {@link InputStream} containing the resource
+	 * @return  {@link InputStream} containing the resource.
 	 *
-	 * @throws IOException when resource could not be loaded.
+	 * @throws  IOException if resource could not be loaded.
 	 */
 	InputStream getResource( String name )
 		throws IOException;
