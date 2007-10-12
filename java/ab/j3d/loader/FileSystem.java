@@ -27,6 +27,7 @@ import com.numdata.oss.ui.explorer.Item;
  * For example, to retrieve the contents of a database or a directory.
  *
  * @author Wijnand Wieskamp
+ * @version $Revision$ $Date$
  */
 public interface FileSystem
 {

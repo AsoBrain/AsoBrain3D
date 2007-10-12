@@ -33,6 +33,7 @@ import java.util.zip.ZipInputStream;
  * Zip archive can be binary data or a ZipFile object.
  *
  * @author Wijnand Wieskamp
+ * @version $Revision$ $Date$
  */
 public class ZipResourceLoader
 	implements ResourceLoader

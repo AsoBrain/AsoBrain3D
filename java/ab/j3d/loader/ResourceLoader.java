@@ -27,6 +27,7 @@ import java.io.InputStream;
  * zip archive.
  *
  * @author Wijnand Wieskamp
+ * @version $Revision$ $Date$
  */
 public interface ResourceLoader
 {
