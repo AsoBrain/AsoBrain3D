@@ -19,6 +19,8 @@
  */
 package ab.j3d.loader;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 import com.numdata.oss.ui.explorer.Explorer;
@@ -42,13 +44,16 @@ public interface FileSystem
 	ArrayList<Item> getItems();
 
 	/**
-	 * Returns the binary data linked to the {@link Item}.
-	 * For example, if the Item is an OBJ file, it will return the OBJ file as binary data.
+	 * Returns an InputStream containing the data linked to the {@link Item}.
+	 * For example, if the Item is an OBJ file, it will return the OBJ file as InputStream.
 	 *
 	 * @param   item Item to get binary data for.
 	 *
-	 * @return  Bytearray containing the binary data linked to the Item.
+	 * @return  InputStream containing the data linked to the Item.
+	 *
+	 * @throws  IOException when data could not be read.
 	 */
-	byte[] getItemData( Item item );
+	InputStream getItemData( Item item )
+	throws IOException;
 }
 
