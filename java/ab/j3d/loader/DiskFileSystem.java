@@ -51,7 +51,7 @@ public class DiskFileSystem
 	/**
 	 * The directory to read from.
 	 */
-	private String _targetDirectorty;
+	private String _targetDirectory;
 
 	/**
 	 * Constructor creates a DiskFileSystem containing files within the target directory.
@@ -77,8 +77,8 @@ public class DiskFileSystem
 	public DiskFileSystem( final String targetDirectory , final FileExtensionFilter filter )
 		throws IOException
 	{
-		_targetDirectorty = targetDirectory;
-		final File directory = new File( _targetDirectorty );
+		_targetDirectory = targetDirectory;
+		final File directory = new File( _targetDirectory );
 		if ( directory.isDirectory() && directory.canRead() )
 		{
 			final File[] filesInDirectory;
@@ -123,7 +123,7 @@ public class DiskFileSystem
 		throws FileNotFoundException
 	{
 		final FileInputStream result;
-		final File file = new File( _targetDirectorty + item.getName() );
+		final File file = new File( _targetDirectory + item.getName() );
 		if ( file.canRead() && file.isFile() )
 		{
 			result = new FileInputStream( file );
