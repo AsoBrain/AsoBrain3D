@@ -21,16 +21,20 @@ package ab.j3d.loader;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import javax.imageio.ImageIO;
 
 import com.numdata.oss.io.FileExtensionFilter;
 import com.numdata.oss.ui.explorer.Item;
 
 /**
- * Creates an ArrayList of specified files from a specified directory.
+ * Creates an ArrayList of Items from a specified directory.
+ * It's possible to add an {@link FileExtensionFilter} to filter files.
+ *
  *
  * @author  Wijnand Wieskamp
  * @version $Revision$ $Date$
@@ -43,6 +47,11 @@ public class DiskFileSystem
 	 * ArrayList of items generated from the target directory in conjuction with the {@link FileExtensionFilter}.
 	 */
 	private ArrayList<Item> _items;
+
+	/**
+	 * The directory to read from.
+	 */
+	private String _targetDirectorty;
 
 	/**
 	 * Constructor creates a DiskFileSystem containing files within the target directory.
@@ -68,7 +77,8 @@ public class DiskFileSystem
 	public DiskFileSystem( final String targetDirectory , final FileExtensionFilter filter )
 		throws IOException
 	{
-		final File directory = new File( targetDirectory );
+		_targetDirectorty = targetDirectory;
+		final File directory = new File( _targetDirectorty );
 		if ( directory.isDirectory() && directory.canRead() )
 		{
 			final File[] filesInDirectory;
@@ -105,11 +115,23 @@ public class DiskFileSystem
 
 	public ArrayList<Item> getItems()
 	{
-		return (ArrayList<Item>)Collections.unmodifiableList( _items );
+		final ArrayList<Item> result = (ArrayList<Item>)_items.clone();
+		return result;
 	}
 
-	public byte[] getItemData( final Item item )
+	public InputStream getItemData( final Item item )
+		throws FileNotFoundException
 	{
-		return null;
+		final FileInputStream result;
+		final File file = new File( _targetDirectorty + item.getName() );
+		if ( file.canRead() && file.isFile() )
+		{
+			result = new FileInputStream( file );
+		}
+		else
+		{
+			result = null;
+		}
+		return result;
 	}
 }
