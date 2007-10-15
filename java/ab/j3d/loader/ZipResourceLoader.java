@@ -20,6 +20,7 @@
 package ab.j3d.loader;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,10 +44,9 @@ public class ZipResourceLoader
 	 */
 	private ZipFile _zipFile = null;
 
-	/**
-	 * The binary zip-archive.
+	/** The zip file as binary data constructed from ByteArrayInputStream @ constrcutor
 	 */
-	private ByteArrayInputStream _compressedData = null;
+	private byte[] _binaryData = null;
 
 	/**
 	 * Constructs a ZipResourceLoader based on given {@link ZipFile}.
@@ -59,13 +59,23 @@ public class ZipResourceLoader
 	}
 
 	/**
-	 * Constructs a ZipResourceLoader based on given ByteArrayInputStream.
+	 * Constructs a ZipResourceLoader based on given InputStream.
 	 *
-	 * @param byteArrayInputStream The zip archive as ByteArrayInputStream.
+	 * @param inputStream The zip archive as InputStream.
+	 *
+	 * @throws IOException when ByteArrayInputStream could not be read.
 	 */
-	public ZipResourceLoader( final ByteArrayInputStream byteArrayInputStream)
+	public ZipResourceLoader( final InputStream inputStream)
+	throws IOException
 	{
-		_compressedData = byteArrayInputStream;
+		final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		int length;
+		final byte [] buffer = new byte[10240]; //10K
+        while ( ( length = inputStream.read( buffer ) ) > 0 )
+        {
+			bos.write(buffer, 0, length);
+		}
+		_binaryData = bos.toByteArray();
 	}
 
 	/**
@@ -76,6 +86,7 @@ public class ZipResourceLoader
 	public InputStream getResource( final String name )
 		throws IOException
 	{
+		final byte[] binaryData = _binaryData;
 		ZipEntry zipEntry;
 		final ZipFile zipFile = _zipFile;
 		InputStream result = null;
@@ -84,9 +95,9 @@ public class ZipResourceLoader
 			zipEntry    = zipFile.getEntry( name );
 			result      = zipFile.getInputStream( zipEntry );
 		}
-		else if ( _compressedData != null )
+		else if ( binaryData != null && binaryData.length > 0)
 		{
-			final ZipInputStream zipInputStream = new ZipInputStream( _compressedData );
+			final ZipInputStream zipInputStream = new ZipInputStream( new ByteArrayInputStream( binaryData ) );
 			while ( result == null && ( zipEntry = zipInputStream.getNextEntry() ) != null)
 			{
 				if ( name.equals( zipEntry.getName() ) )
