@@ -46,7 +46,7 @@ public class ZipResourceLoader
 	/**
 	 * The binary zip-archive.
 	 */
-	private byte[] _compressedData = null;
+	private ByteArrayInputStream _compressedData = null;
 
 	/**
 	 * Constructs a ZipResourceLoader based on given {@link ZipFile}.
@@ -59,13 +59,13 @@ public class ZipResourceLoader
 	}
 
 	/**
-	 * Constructs a ZipResourceLoader based on given binary data.
+	 * Constructs a ZipResourceLoader based on given ByteArrayInputStream.
 	 *
-	 * @param binaryData The zip archive as binary data.
+	 * @param byteArrayInputStream The zip archive as ByteArrayInputStream.
 	 */
-	public ZipResourceLoader( final byte[] binaryData )
+	public ZipResourceLoader( final ByteArrayInputStream byteArrayInputStream)
 	{
-		_compressedData = binaryData.clone();
+		_compressedData = byteArrayInputStream;
 	}
 
 	/**
@@ -86,7 +86,7 @@ public class ZipResourceLoader
 		}
 		else if ( _compressedData != null )
 		{
-			final ZipInputStream zipInputStream = new ZipInputStream( new ByteArrayInputStream( _compressedData ) );
+			final ZipInputStream zipInputStream = new ZipInputStream( _compressedData );
 			while ( result == null && ( zipEntry = zipInputStream.getNextEntry() ) != null)
 			{
 				if ( name.equals( zipEntry.getName() ) )
