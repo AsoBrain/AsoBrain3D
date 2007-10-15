@@ -25,7 +25,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -39,24 +38,10 @@ import java.util.zip.ZipInputStream;
 public class ZipResourceLoader
 	implements ResourceLoader
 {
-	/**
-	 * The ZipFile to read the specified resource from.
-	 */
-	private ZipFile _zipFile = null;
 
 	/** The zip file as binary data constructed from ByteArrayInputStream @ constrcutor
 	 */
 	private byte[] _binaryData = null;
-
-	/**
-	 * Constructs a ZipResourceLoader based on given {@link ZipFile}.
-	 *
-	 * @param zipFile The ZipFile object to load resources from.
-	 */
-	public ZipResourceLoader( final ZipFile zipFile )
-	{
-		_zipFile = zipFile;
-	}
 
 	/**
 	 * Constructs a ZipResourceLoader based on given InputStream.
@@ -88,14 +73,8 @@ public class ZipResourceLoader
 	{
 		final byte[] binaryData = _binaryData;
 		ZipEntry zipEntry;
-		final ZipFile zipFile = _zipFile;
 		InputStream result = null;
-		if ( zipFile != null )
-		{
-			zipEntry    = zipFile.getEntry( name );
-			result      = zipFile.getInputStream( zipEntry );
-		}
-		else if ( binaryData != null && binaryData.length > 0)
+		if ( binaryData != null && binaryData.length > 0)
 		{
 			final ZipInputStream zipInputStream = new ZipInputStream( new ByteArrayInputStream( binaryData ) );
 			while ( result == null && ( zipEntry = zipInputStream.getNextEntry() ) != null)
