@@ -35,7 +35,6 @@ import com.numdata.oss.ui.explorer.Item;
  * Creates an ArrayList of Items from a specified directory.
  * It's possible to add an {@link FileExtensionFilter} to filter files.
  *
- *
  * @author  Wijnand Wieskamp
  * @version $Revision$ $Date$
  */

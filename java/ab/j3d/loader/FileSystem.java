@@ -54,6 +54,6 @@ public interface FileSystem
 	 * @throws  IOException when data could not be read.
 	 */
 	InputStream getItemData( Item item )
-	throws IOException;
+		throws IOException;
 }
 
