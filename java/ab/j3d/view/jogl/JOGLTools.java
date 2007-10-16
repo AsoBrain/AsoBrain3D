@@ -21,7 +21,6 @@ package ab.j3d.view.jogl;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.nio.IntBuffer;
 import java.util.Map;
 import javax.media.opengl.GL;
 
@@ -253,10 +252,9 @@ public class JOGLTools
 					final float[] textureV = face.getTextureV();
 					gl.glEnable( GL.GL_TEXTURE_2D );
 					texture.bind();
-						drawTriangle( gl , v1x , v1y , v1z , n1x , n1y , n1z , v2x , v2y , v2z , n2x , n2y , n2z , v3x , v3y , v3z , n3x , n3y , n3z , textureU , textureV );
-					gl.glDisable( GL.GL_TEXTURE_2D );
-					//Disabeled, does not work!
-					//gl.glDeleteTextures( texture.getTarget() , IntBuffer.allocate( texture.getTextureObject() ) );
+					drawTriangle( gl , v1x , v1y , v1z , n1x , n1y , n1z , v2x , v2y , v2z , n2x , n2y , n2z , v3x , v3y , v3z , n3x , n3y , n3z , textureU , textureV );
+					gl.glDisable( texture.getTarget() );
+					gl.glDisable( GL.GL_TEXTURE);
 				}
 				else
 				{
@@ -307,6 +305,7 @@ public class JOGLTools
 					gl.glEnable( GL.GL_TEXTURE_2D );
 					texture.bind();
 					drawQuad( gl , v1x , v1y , v1z , n1x , n1y , n1z , v2x , v2y , v2z , n2x , n2y , n2z , v3x , v3y , v3z , n3x , n3y , n3z , v4x , v4y , v4z , n4x , n4y , n4z , textureU , textureV );
+					gl.glDisable( texture.getTarget() );
 					gl.glDisable( GL.GL_TEXTURE_2D );
 					texture.disable();
 				}
@@ -358,8 +357,8 @@ public class JOGLTools
 							gl.glEnable( GL.GL_TEXTURE_2D );
 							texture.bind();
 							drawTriangle( gl , v1x , v1y , v1z , n1x , n1y , n1z , v2x , v2y , v2z , n2x , n2y , n2z , v3x , v3y , v3z , n3x , n3y , n3z , textureU , textureV );
+							gl.glDisable( texture.getTarget() );
 							gl.glDisable( GL.GL_TEXTURE_2D );
-							gl.glDeleteTextures( texture.getTarget() , IntBuffer.allocate( texture.getTextureObject() ) );
 						}
 						else
 						{
@@ -432,11 +431,11 @@ public class JOGLTools
 	{
 		gl.glBegin( GL.GL_LINES );
 
-		gl.glTexCoord2f( textureU[ 0 ] , textureV[ 0 ] );
+		gl.glTexCoord2f( textureU[ 0 ] , -textureV[ 0 ] );
 		gl.glNormal3d( n1X , n1Y , n1Z );
 		gl.glVertex3d( v1X , v1Y , v1Z );
 
-		gl.glTexCoord2f( textureU[ 1 ] , textureV[ 1 ] );
+		gl.glTexCoord2f( textureU[ 1 ] , -textureV[ 1 ] );
 		gl.glNormal3d( n2X , n2Y , n2Z );
 		gl.glVertex3d( v2X , v2Y , v2Z );
 
@@ -486,19 +485,19 @@ public class JOGLTools
 	{
 		gl.glBegin( GL.GL_QUADS );
 
-		gl.glTexCoord2f( textureU[ 0 ] , textureV[ 0 ] );
+		gl.glTexCoord2f( textureU[ 0 ] , -textureV[ 0 ] );
 		gl.glNormal3d( n1X , n1Y , n1Z );
 		gl.glVertex3d( v1X , v1Y , v1Z );
 
-		gl.glTexCoord2f( textureU[ 1 ] , textureV[ 1 ] );
+		gl.glTexCoord2f( textureU[ 1 ] , -textureV[ 1 ] );
 		gl.glNormal3d( n2X , n2Y , n2Z );
 		gl.glVertex3d( v2X , v2Y , v2Z );
 
-		gl.glTexCoord2f( textureU[ 2 ] , textureV[ 2 ] );
+		gl.glTexCoord2f( textureU[ 2 ] , -textureV[ 2 ] );
 		gl.glNormal3d( n3X , n3Y , n3Z );
 		gl.glVertex3d( v3X , v3Y , v3Z );
 
-		gl.glTexCoord2f( textureU[ 3 ] , textureV[ 3 ] );
+		gl.glTexCoord2f( textureU[ 3 ] , -textureV[ 3 ] );
 		gl.glNormal3d( n4X , n4Y , n4Z );
 		gl.glVertex3d( v4X , v4Y , v4Z );
 
@@ -639,15 +638,15 @@ public class JOGLTools
 	{
 		gl.glBegin( GL.GL_TRIANGLES );
 
-		gl.glTexCoord2f( textureU[ 0 ] , textureV[ 0 ] );
+		gl.glTexCoord2f( textureU[ 0 ] , -textureV[ 0 ] );
 		gl.glNormal3d( n1X , n1Y , n1Z );
 		gl.glVertex3d( v1X , v1Y , v1Z );
 
-		gl.glTexCoord2f( textureU[ 1 ] , textureV[ 1 ] );
+		gl.glTexCoord2f( textureU[ 1 ] , -textureV[ 1 ] );
 		gl.glNormal3d( n2X , n2Y , n2Z );
 		gl.glVertex3d( v2X , v2Y , v2Z );
 
-		gl.glTexCoord2f( textureU[ 2 ] , textureV[ 2 ] );
+		gl.glTexCoord2f( textureU[ 2 ] , -textureV[ 2 ] );
 		gl.glNormal3d( n3X , n3Y , n3Z );
 		gl.glVertex3d( v3X , v3Y , v3Z );
 
