@@ -42,6 +42,37 @@ public final class Material
 	public static final String TABLE_NAME = "Materials";
 
 	/**
+	 * SQL create statement (for MySQL).
+	 */
+	public static final String MYSQL_CREATE_STATEMENT =
+		"CREATE TABLE Materials\n"
+		+ "(\n"
+		+ "  ID                 BIGINT(20)           NOT NULL auto_increment,\n"
+		+ "  code               VARCHAR(64)          NOT NULL ,\n"
+		+ "  ambientColorRed    DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
+		+ "  ambientColorGreen  DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
+		+ "  ambientColorBlue   DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
+		+ "  diffuseColorRed    DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
+		+ "  diffuseColorGreen  DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
+		+ "  diffuseColorBlue   DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
+		+ "  diffuseColorAlpha  DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
+		+ "  specularColorRed   DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
+		+ "  specularColorGreen DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
+		+ "  specularColorBlue  DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
+		+ "  specularColorAlpha DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
+		+ "  shininess          INT(3) UNSIGNED      NOT NULL DEFAULT '16' ,\n"
+		+ "  emissiveColorRed   DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
+		+ "  emissiveColorGreen DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
+		+ "  emissiveColorBlue  DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
+		+ "  colorMap           VARCHAR(64)                   DEFAULT NULL ,\n"
+		+ "  colorMapWidth      DECIMAL(8,6)         NOT NULL DEFAULT '0.0',\n"
+		+ "  colorMapHeight     DECIMAL(8,6)         NOT NULL DEFAULT '0.0',\n"
+		+ "  grain              ENUM('true','false') NOT NULL DEFAULT 'false' ,\n"
+		+ "  PRIMARY KEY (ID),\n"
+		+ "  UNIQUE KEY code (code)\n"
+		+ ");";
+
+	/**
 	 * Unique record ID.
 	 */
 	public long ID;
