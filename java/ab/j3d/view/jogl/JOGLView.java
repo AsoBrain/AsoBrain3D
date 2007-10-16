@@ -364,8 +364,8 @@ public class JOGLView
 
 			gl.glMatrixMode( GL.GL_PROJECTION );
 			gl.glLoadIdentity();
-			gl.glOrtho( -width / ( 8.0f  ) , width / ( 8.0f ) , -( height * (double)width / (double)height ) / ( 8.0f  ) , ( height * (double)width / (double)height ) / ( 8.0f ) , near , far );
-			gl.glScaled( 1 - scale , 1 - scale , 1 - scale );
+			gl.glOrtho( -(double)width / 8.0 , (double)width / 8.0 , -( (double)height * (double)width / (double)height ) / 8.0 , ( (double)height * (double)width / (double)height ) / 8.0 , near , far );
+			gl.glScaled( 1.0 - scale , 1.0 - scale , 1.0 - scale );
 		}
 
 		/* Clear depth buffer. */
@@ -400,6 +400,9 @@ public class JOGLView
 		/* Initialize first light */
 		int lightNumber = GL.GL_LIGHT0;
 
+		/* Set Light Model to two sided lighting. */
+		gl.glLightModeli( GL.GL_LIGHT_MODEL_TWO_SIDE , GL.GL_TRUE );
+
 		for ( final Object id : nodeIDs )
 		{
 			final ViewModelNode viewModelNode = _model.getNode( id );
@@ -426,8 +429,7 @@ public class JOGLView
 				}
 				else
 				{
-					gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] { -(float)nodeTransform.xo , (float)nodeTransform.yo , -(float)nodeTransform.zo , 0.0f } , 0 );
-
+					gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] { (float)nodeTransform.xo , (float)nodeTransform.yo , (float)nodeTransform.zo , 0.0f } , 0 );
 					gl.glLightfv( lightNumber , GL.GL_DIFFUSE  , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
 					gl.glLightfv( lightNumber , GL.GL_SPECULAR , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
 				}
