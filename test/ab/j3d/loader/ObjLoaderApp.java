@@ -20,6 +20,7 @@
 package ab.j3d.loader;
 
 import java.awt.Color;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Locale;
 import javax.swing.JFrame;
@@ -57,9 +58,9 @@ public class ObjLoaderApp
 			final double unit           =   JOGLModel.M;
 			final Matrix3D transform    =   Matrix3D.INIT.rotateX( Math.toRadians( 90.0 ) );
 			// Use FileResourceLoadxer
-			final ResourceLoader loader =   new FileResourceLoader( "/home/wijnand/cube/" );
+			//final ResourceLoader loader =   new FileResourceLoader( "/home/wijnand/cube/" );
 			// Or ZipResourceLoader
-			//final ResourceLoader loader =   new ZipResourceLoader( new FileInputStream( "/home/wijnand/cube/penguin.jar" ) );
+			final ResourceLoader loader =   new ZipResourceLoader( new FileInputStream( "/home/wijnand/cube/penguin.jar" ) );
 			final Object3D object3d     =   ObjLoader.load( transform , loader , "penguin.obj" );
 			final Bounds3D bounds       =   object3d.getBounds( null , null );
 			final Vector3D size         =   bounds.size();
