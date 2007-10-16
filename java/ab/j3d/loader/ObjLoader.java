@@ -21,6 +21,9 @@ package ab.j3d.loader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -114,7 +117,7 @@ public class ObjLoader
 	/**
 	 * Materials from OBJ MTL file.
 	 */
-	private static Map<String,Material> objMaterials = new HashMap<String,Material>();
+	private static final Map<String,Material> objMaterials = new HashMap<String,Material>();
 
 	/**
 	 * Default materials to use for OBJ files.
@@ -126,42 +129,24 @@ public class ObjLoader
 	 *
 	 * @param   transform       Transormation to apply to the OBJ (mostly used
 	 *                          to for scaling and axis alignment).
-	 * @param   materials       Maps material names to {@link Material}s.
-	 * @param   objReader       Source from which the OBJ file is read (the
-	 *                          reader will not be closed by this method).
+	 * @param   loader          {@link ResourceLoader} to load OBJ models from.
+	 * @param   objFileName     Name of OBJ modelfile to be loaded.
 	 *
 	 * @return  {@link Object3D} with loaded OBJ file.
 	 *
 	 * @throws  IOException if an error occured while loading the OBJ file.
 	 */
-	public static Object3D load( final Matrix3D transform , final Map<String,Material> materials , final BufferedReader objReader , final BufferedReader mtlReader )
-	throws IOException
+	public static Object3D load( final Matrix3D transform , final ResourceLoader loader , final String objFileName )
+		throws IOException
 	{
-		final Map<String,Material> actualMaterials;
-		if ( materials  != null && !materials .isEmpty() )
-		{
-			actualMaterials = new HashMap<String,Material>( DEFAULT_MATERIALS.size() + materials.size() );
-			actualMaterials.putAll( DEFAULT_MATERIALS );
-			actualMaterials.putAll( materials );
-		}
-		else
-		{
-			actualMaterials = DEFAULT_MATERIALS;
-		}
-
-		final Object3D result = new Object3D();
-
+		final Map<String,Material> actualMaterials = DEFAULT_MATERIALS;
 		final Material defaultMaterial;
-		if ( actualMaterials.containsKey( "default" ) )
-			defaultMaterial = actualMaterials.get( "default" );
-		else
-			defaultMaterial = new Material( 0xFFC0C0C0 );
+		final Object3D result = new Object3D();
+		defaultMaterial = actualMaterials.containsKey( "default" ) ? actualMaterials.get( "default" ) : new Material( 0xFFC0C0C0 );
 
 		/*
 		 * Read OBJ data
 		 */
-//		System.out.println( " - load OBJ data" );
-
 		final List<Vector3D> objVertices        = new ArrayList<Vector3D>(); // element: Vector3D
 		final List<Vector3D> objTextureVertices = new ArrayList<Vector3D>(); // element: Vector3D (u,v,w)
 		final List<Vector3D> objVertexNormals   = new ArrayList<Vector3D>(); // element: Vector3D (i,j,k)
@@ -171,7 +156,8 @@ public class ObjLoader
 		Material abMaterial          = defaultMaterial;
 
 		String line;
-		while ( ( line = readLine( objReader ) ) != null )
+		final BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( loader.getResource( objFileName ) ) );
+		while ( ( line = readLine( bufferedReader ) ) != null )
 		{
 			if ( line.length() > 0 )
 			{
@@ -498,8 +484,7 @@ public class ObjLoader
 						if ( argCount < 1 )
 							throw new IOException( "too few material library arguments in: " + line );
 						//System.out.println( "Loading material: " + line.substring(7) );
-						loadMaterial( mtlReader );
-						// mtllib = ArrayTools.remove( tokens , 0 , 0 );
+						loadMaterial( loader.getResource( line.substring( 7 ) ) );
 					}
 					/*
 					 * o object_name
@@ -538,7 +523,6 @@ public class ObjLoader
 
 						String material = getStringAfter( line , tokens , 1 );
 						material = material.replace( ' ' , '_' );
-
 						abMaterial = actualMaterials.get( material );
 						if ( abMaterial == null )
 						{
@@ -699,23 +683,24 @@ public class ObjLoader
 	 * Loads a MTL file with materials used by the OBJ file.
 	 * Materials are stored in objMaterials.
 	 *
-	 * @param   mtlReader         {@link BufferedReader} containing the MTL file.
+	 *  @param  inputStream The InputStream containing the MTL file.
 	 *
-	 * @throws  IOException when material could not be loaded or contains malformed known entries. Unknown entries are ignored, e.g. "Ka foobar" will throw an exception,
+	 *  @throws  IOException when material could not be loaded or contains malformed known entries. Unknown entries are ignored, e.g. "Ka foobar" will throw an exception,
 	 *                              but "Kgt foobar" won't because Kgt is not a known MTL entry.
 	 */
-	private static void loadMaterial( final BufferedReader mtlReader )
+	private static void loadMaterial( final InputStream inputStream)
 		throws IOException
-		{
+	{
 		String line;
 		Material tempMaterial = null;
-		while ( ( line = readLine( mtlReader ) ) != null )
+		final BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( inputStream ) );
+		while ( ( line = readLine( bufferedReader ) ) != null )
 		{
 			if ( line.length() > 0 )
 			{
-				final String[] tokens = TextTools.tokenize( line , ' ' );
-				final String   name   = tokens[ 0 ];
-				final int argCount = tokens.length - 1;
+				final String[] tokens   = TextTools.tokenize( line , ' ' );
+				final String   name     = tokens[ 0 ];
+				final int argCount      = tokens.length - 1;
 				try
 				{
 					// New Material
@@ -724,8 +709,8 @@ public class ObjLoader
 						if ( argCount < 1 )
 						    throw new IOException( "Malformed material entry: " + line );
 						tempMaterial = new Material();
-						objMaterials.put( ( tokens[ 1 ] ) , tempMaterial );
 						tempMaterial.code = ( tokens[ 1 ] );
+						objMaterials.put( ( tokens[ 1 ] ) , tempMaterial );
 					}
 					// Ambient lightning
 					else if ( "Ka".equals( name ) )
@@ -759,8 +744,8 @@ public class ObjLoader
 					{
 						if ( argCount < 1 )
 						    throw new IOException( "Malformed shininess entry: " + line );
-						final float shineness = Float.parseFloat( tokens[ 1 ] );
-						tempMaterial.shininess = (int) shineness;
+						final float shininess = Float.parseFloat( tokens[ 1 ] );
+						tempMaterial.shininess = (int)shininess;
 					}
 					// Alpha blending
 					else if ( "d".equals( name ) || "Tr".equals( name ) )
@@ -789,6 +774,8 @@ public class ObjLoader
 				}
 			}
 		}
+		bufferedReader.close();
+		inputStream.close();
 	}
 
 	/**
@@ -800,9 +787,9 @@ public class ObjLoader
 	 *
 	 * @param   bufferedReader      The {@link BufferedReader} containing file to read from.
 	 *
-	 * @return  {@link String}       String read from the {@link BufferedReader} or null on EOF.
+	 * @return  Next line read from the {@link BufferedReader} or null on EOF.
 	 *
-	 * @throws  {@link IOException}  if line could not be read.
+	 * @throws  IOException  if next line could not be read.
 	 */
 	private static String readLine( final BufferedReader bufferedReader )
 		throws IOException
@@ -816,7 +803,7 @@ public class ObjLoader
 			line = line.trim();
 			while ( line.length() > 0 && line.charAt( line.length() - 1 ) == '\\' )
 			{
-				line = line.substring( 0 , line.length() -1 ) + " " + bufferedReader.readLine();
+				line = MessageFormat.format( "{0} {1}", line.substring( 0, line.length() - 1 ), bufferedReader.readLine() );
 			}
 			line = line.replaceAll( "\\s+" , " " );
 		}
