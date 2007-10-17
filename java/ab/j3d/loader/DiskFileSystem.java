@@ -118,7 +118,7 @@ public class DiskFileSystem
 		return result;
 	}
 
-	public InputStream getItemData( final Item item )
+	public InputStream getItemData( final Item item , final boolean highQuality )
 		throws FileNotFoundException
 	{
 		final FileInputStream result;
