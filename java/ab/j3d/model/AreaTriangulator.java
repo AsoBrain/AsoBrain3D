@@ -333,7 +333,7 @@ class AreaTriangulator
 
 	private Triangulation triangulate( final List<Area> areas )
 	{
-		System.out.println( CLASS_NAME + ".triangulate" );
+		//System.out.println( CLASS_NAME + ".triangulate" );
 		final long start = System.nanoTime();
 
 		final List<Triangulation> triangulations = new ArrayList<Triangulation>( areas.size() );
@@ -384,7 +384,7 @@ class AreaTriangulator
 		final TriangulationImpl result = new TriangulationImpl( points, triangles );
 
 		final long end = System.nanoTime();
-		System.out.println( " - " + result._points.size() + " vertices, " + result._triangles.size() + " triangles in " + ( (double)( ( end - start ) / 100000L ) / 10.0 ) + " ms" );
+		//System.out.println( " - " + result._points.size() + " vertices, " + result._triangles.size() + " triangles in " + ( (double)( ( end - start ) / 100000L ) / 10.0 ) + " ms" );
 
 		return result;
 	}
