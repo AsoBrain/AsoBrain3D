@@ -36,7 +36,7 @@ public final class MapTools
 	/**
 	 * Map path prefix from where material map images are loaded.
 	 */
-	public static String imageMapDirectory = "maps";
+	public static String imageMapDirectory = "textures";
 
 	/**
 	 * Map path suffix from where material map images are loaded.
