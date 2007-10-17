@@ -59,7 +59,6 @@ public final class Material
 		+ "  specularColorRed   DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
 		+ "  specularColorGreen DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
 		+ "  specularColorBlue  DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
-		+ "  specularColorAlpha DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
 		+ "  shininess          INT(3) UNSIGNED      NOT NULL DEFAULT '16' ,\n"
 		+ "  emissiveColorRed   DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
 		+ "  emissiveColorGreen DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
