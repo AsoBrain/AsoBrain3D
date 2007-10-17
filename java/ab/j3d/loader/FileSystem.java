@@ -47,13 +47,14 @@ public interface FileSystem
 	 * Returns an InputStream containing the data linked to the {@link Item}.
 	 * For example, if the Item is an OBJ file, it will return the OBJ file as InputStream.
 	 *
-	 * @param   item Item to get binary data for.
+	 * @param   item        Item to get binary data for.
+	 * @param   highQuality Wether or not to get a HQ model.
 	 *
 	 * @return  InputStream containing the data linked to the Item.
 	 *
 	 * @throws  IOException when data could not be read.
 	 */
-	InputStream getItemData( Item item )
+	InputStream getItemData( Item item , boolean highQuality )
 		throws IOException;
 }
 
