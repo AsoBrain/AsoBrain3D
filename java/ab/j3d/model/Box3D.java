@@ -139,6 +139,59 @@ public final class Box3D
 	}
 
 	/**
+	 * Set box properties.
+	 *
+	 * @param   xform           Transformation to apply to all vertices of the box.
+	 * @param   dx              Width of box (x-axis).
+	 * @param   dy              Height of box (y-axis).
+	 * @param   dz              Depth of box (z-axis).
+	 * @param   modelUnit       Model unit scale factor (e.g. {@link ab.j3d.view.ViewModel#MM}).
+	 * @param   frontMaterial   Material applied to the front of the box.
+	 * @param   frontFlipUV     Whether the front U and V coordinates are flipped.
+	 * @param   rearMaterial    Material applied to the rear of the box.
+	 * @param   rearFlipUV      Whether the rear U and V coordinates are flipped.
+	 * @param   rightMaterial   Material applied to the right of the box.
+	 * @param   rightFlipUV     Whether the right U and V coordinates are flipped.
+	 * @param   leftMaterial    Material applied to the left of the box.
+	 * @param   leftFlipUV      Whether the left U and V coordinates are flipped.
+	 * @param   topMaterial     Material applied to the top of the box.
+	 * @param   topFlipUV       Whether the top U and V coordinates are flipped.
+	 * @param   bottomMaterial  Material applied to the bottom of the box.
+	 * @param   bottomFlipUV    Whether the bottom U and V coordinates are flipped.
+	 */
+	public Box3D( final Matrix3D xform , final double dx , final double dy , final double dz , final double modelUnit , final Material frontMaterial , final boolean frontFlipUV , final Material rearMaterial , final boolean rearFlipUV , final Material rightMaterial , final boolean rightFlipUV , final Material leftMaterial , final boolean leftFlipUV , final Material topMaterial , final boolean topFlipUV , final Material bottomMaterial , final boolean bottomFlipUV )
+	{
+		_xform = xform;
+		_dx    = dx;
+		_dy    = dy;
+		_dz    = dz;
+
+		/*
+		 * Create vertex coordinates.
+		 */
+		final double[] vertexCoordinates =
+		{
+			0.0 , 0.0 , 0.0 , // 0
+			_dx , 0.0 , 0.0 , // 1
+			_dx , _dy , 0.0 , // 2
+			0.0 , _dy , 0.0 , // 3
+			0.0 , 0.0 , _dz , // 4
+			_dx , 0.0 , _dz , // 5
+			_dx , _dy , _dz , // 6
+			0.0 , _dy , _dz   // 7
+		};
+
+		setVertexCoordinates( xform.transform( vertexCoordinates , vertexCoordinates , 8 ) );
+
+		addFace( FRONT_VERTICES  , frontMaterial  , frontFlipUV  , xform.xo , xform.xo + _dx , xform.zo , xform.zo + _dz , modelUnit );
+		addFace( REAR_VERTICES   , rearMaterial   , rearFlipUV   , xform.xo , xform.xo + _dx , xform.zo , xform.zo + _dz , modelUnit );
+		addFace( RIGHT_VERTICES  , rightMaterial  , rightFlipUV  , xform.yo , xform.yo + _dy , xform.zo , xform.zo + _dz , modelUnit );
+		addFace( LEFT_VERTICES   , leftMaterial   , leftFlipUV   , xform.yo , xform.yo + _dy , xform.zo , xform.zo + _dz , modelUnit );
+		addFace( TOP_VERTICES    , topMaterial    , topFlipUV    , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy , modelUnit );
+		addFace( BOTTOM_VERTICES , bottomMaterial , bottomFlipUV , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy , modelUnit );
+	}
+
+	/**
 	 * Helper method to add a texture mapped face.
 	 *
 	 * @param   vertices        Vertices that define the face.

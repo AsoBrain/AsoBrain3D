@@ -175,7 +175,41 @@ public final class ExtrudedObject2D
 		this.flipNormals = flipNormals;
 		this.caps        = caps;
 
-		generate( this , shape , extrusion , transform , topMaterial , bottomMaterial , sideMaterial , flatness , hasBackface , flipNormals , caps );
+		generate( this , shape , extrusion , transform , topMaterial , false , bottomMaterial , false , sideMaterial , flatness , hasBackface , flipNormals , caps );
+	}
+
+	/**
+	 * Construct extruded object.
+	 *
+	 * @param   shape           Base shape.
+	 * @param   extrusion       Extrusion vector (control-point displacement).
+	 * @param   transform       Transform to apply.
+	 * @param   topMaterial     Material to apply to the top cap.
+	 * @param   topFlipUV       Whether the top U and V coordinates are flipped.
+	 * @param   bottomMaterial  Material to apply to the bottom cap.
+	 * @param   bottomFlipUV    Whether the bottom U and V coordinates are flipped.
+	 * @param   sideMaterial    Material to apply to the extruded sides.
+	 * @param   flatness        Flatness to use.
+	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
+	 * @param   flipNormals     If <code>true</code>, normals are flipped to
+	 *                          point in the opposite direction.
+	 * @param   caps            If <code>true</code>, the top and bottom of the
+	 *                          extruded shape are capped.
+	 *
+	 * @see     FlatteningPathIterator
+	 * @see     Shape#getPathIterator( AffineTransform , double )
+	 */
+	public ExtrudedObject2D( final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material topMaterial , final boolean topFlipUV , final Material bottomMaterial , final boolean bottomFlipUV , final Material sideMaterial , final double flatness , final boolean hasBackface , final boolean flipNormals , final boolean caps )
+	{
+		this.shape       = shape;
+		this.extrusion   = extrusion;
+		this.transform   = transform;
+		this.flatness    = flatness;
+		this.hasBackface = hasBackface;
+		this.flipNormals = flipNormals;
+		this.caps        = caps;
+
+		generate( this , shape , extrusion , transform , topMaterial , topFlipUV , bottomMaterial , bottomFlipUV , sideMaterial , flatness , hasBackface , flipNormals , caps );
 	}
 
 	/**
@@ -191,7 +225,7 @@ public final class ExtrudedObject2D
 	 */
 	public static void generate( final Object3D target , final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material material , final double flatness , final boolean hasBackface )
 	{
-		generate( target , shape , extrusion , transform , material , material , material , flatness , hasBackface , false , false );
+		generate( target , shape , extrusion , transform , material , false , material , false , material , flatness , hasBackface , false , false );
 	}
 
 	/**
@@ -202,7 +236,9 @@ public final class ExtrudedObject2D
 	 * @param   extrusion       Extrusion vector (control-point displacement).
 	 * @param   transform       Transform to apply.
 	 * @param   topMaterial     Material to apply to the top cap.
+	 * @param   topFlipUV       Whether the top U and V coordinates are flipped.
 	 * @param   bottomMaterial  Material to apply to the bottom cap.
+	 * @param   bottomFlipUV    Whether the bottom U and V coordinates are flipped.
 	 * @param   sideMaterial    Material to apply to the extruded sides.
 	 * @param   flatness        Flatness to use.
 	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
@@ -211,7 +247,7 @@ public final class ExtrudedObject2D
 	 * @param   caps            If <code>true</code>, top and bottom caps are
 	 *                          generated.
 	 */
-	private static void generate( final Object3D target , final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material topMaterial , final Material bottomMaterial , final Material sideMaterial , final double flatness , final boolean hasBackface , final boolean flipNormals , final boolean caps )
+	private static void generate( final Object3D target , final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material topMaterial , final boolean topFlipUV , final Material bottomMaterial , final boolean bottomFlipUV , final Material sideMaterial , final double flatness , final boolean hasBackface , final boolean flipNormals , final boolean caps )
 	{
 		final double  ex            = extrusion.x;
 		final double  ey            = extrusion.y;
@@ -373,21 +409,21 @@ public final class ExtrudedObject2D
 			final Vector3D down = Vector3D.INIT.set( 0.0 , 0.0 , -1.0 );
 
 			triangulator.setNormal( down );
-			generateCap( target , shape , transform                   , bottomMaterial , uvMap , triangulator );
+			generateCap( target , shape , transform                   , bottomMaterial , bottomFlipUV , uvMap , triangulator );
 			triangulator.setNormal( up );
-			generateCap( target , shape , transform.plus( extrusion ) , topMaterial    , uvMap , triangulator );
+			generateCap( target , shape , transform.plus( extrusion ) , topMaterial    , topFlipUV    , uvMap , triangulator );
 
 			if ( hasBackface )
 			{
 				triangulator.setNormal( up );
-				generateCap( target , shape , transform                   , bottomMaterial , uvMap , triangulator );
+				generateCap( target , shape , transform                   , bottomMaterial , bottomFlipUV , uvMap , triangulator );
 				triangulator.setNormal( down );
-				generateCap( target , shape , transform.plus( extrusion ) , topMaterial    , uvMap , triangulator );
+				generateCap( target , shape , transform.plus( extrusion ) , topMaterial    , topFlipUV    , uvMap , triangulator );
 			}
 		}
 	}
 
-	private static void generateCap( final Object3D target , final Shape shape , final Matrix3D transform , final Material material , final UVMap uvMap , final Triangulator triangulator )
+	private static void generateCap( final Object3D target, final Shape shape, final Matrix3D transform, final Material material, boolean flipUV, final UVMap uvMap, final Triangulator triangulator )
 	{
 		final Triangulation  triangulation = triangulator.triangulate( shape );
 		final List<Vector3D> vertices      = triangulation.getVertices( transform );
@@ -414,7 +450,7 @@ public final class ExtrudedObject2D
 			{
 				triangleTextureU = new float[ 3 ];
 				triangleTextureV = new float[ 3 ];
-				uvMap.generate( material , target.getVertexCoordinates() , triangleVertices , triangleTextureU , triangleTextureV );
+				uvMap.generate( material , target.getVertexCoordinates() , triangleVertices , flipUV ? triangleTextureV : triangleTextureU , flipUV ? triangleTextureU : triangleTextureV );
 			}
 			target.addFace( triangleVertices , material , triangleTextureU , triangleTextureV , 1.0f , false , false );
 		}
