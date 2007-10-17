@@ -19,9 +19,12 @@
  */
 package ab.j3d.loader;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+
+import com.numdata.oss.TextTools;
 
 /**
  * This class loads a resource from a disk using a FileInputStream and makes it available as InputStream
@@ -34,37 +37,58 @@ public class FileResourceLoader
 	implements ResourceLoader
 {
 	/**
-	 * The path to the file
+	 * Default directory to read from
 	 */
-	private String _path;
+	public static final String DEFAULT_DIRECTORY = "./";
 
 	/**
-	 * Constructs a new FileResourceLoader based on the given path.
-	 *
-	 * @param path The path to the file.
+	 * Directory to read from based on given path in constructor.
 	 */
-	public FileResourceLoader( final String path ){
-		_path = path;
+	private final File _directory;
+
+	/**
+	 * Constructs a new FileResourceLoader based on the given directory.
+	 *
+	 * @param path Path to the directory to search.
+	 *
+	 * @throws FileNotFoundException when path could not be found or is not a directory.
+	 */
+	public FileResourceLoader( final String path )
+		throws FileNotFoundException
+	{
+		final File directory;
+		if( TextTools.isNonEmpty( path ) )
+		{
+			directory = new File( path );
+		}
+		else
+		{
+			directory = new File( DEFAULT_DIRECTORY );
+			System.out.println( "No folder specified, using default folder: \"" + DEFAULT_DIRECTORY + "\"" );
+		}
+		if( directory.canRead() && directory.isDirectory() )
+		{
+			_directory = directory;
+		}
+		else
+		{
+			throw new FileNotFoundException( "Could not open directory \"" + path + "\"" );
+		}
 	}
 
 
 	public InputStream getResource( final String name )
+		throws FileNotFoundException
 	{
-		FileInputStream result;
-		try
+		InputStream result = null;
+		if( _directory != null )
 		{
-			result =  new FileInputStream( _path + name );
-		}
-		catch ( FileNotFoundException e )
-		{/**
- * This class loads a specified resource from a zip-archive.
- * <br /><br />
- * Zip archive can be binary data or a ZipFile object.
- *
- * @author Wijnand Wieskamp
- * @version $Revision$ $Date$
- */
-			result =  null;
+
+			final File returnFile = new File( _directory.getAbsolutePath() + File.separator + name );
+			if ( returnFile.isFile() && returnFile.canRead() )
+			{
+				result = new FileInputStream( returnFile );
+			}
 		}
 		return result;
 	}
