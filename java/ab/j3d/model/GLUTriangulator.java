@@ -31,7 +31,7 @@ import ab.j3d.Vector3D;
  * @author G. Meinders
  * @version $Revision$ $Date$
  */
-public class GLUTriangulator
+class GLUTriangulator
 	implements Triangulator
 {
 	/**
@@ -42,35 +42,32 @@ public class GLUTriangulator
 	/**
 	 * Assumed normal of the shapes being triangulated.
 	 */
-	private Vector3D _normal = Vector3D.INIT;
+	private Vector3D _normal;
 
 	/**
 	 * Constructs a new triangulator.
-	 *
-	 * @param   flatness    Maximum distance between original shapes and the
-	 *                      flattened shapes used to approximate them.
 	 */
-	public GLUTriangulator( final double flatness )
+	GLUTriangulator()
+	{
+		_flatness = 1.0;
+		_normal   = Vector3D.INIT;
+	}
+
+	public double getFlatness()
+	{
+		return _flatness;
+	}
+
+	public void setFlatness( final double flatness )
 	{
 		_flatness = flatness;
 	}
 
-	/**
-	 * Returns the normal of the shapes being triangulated. The default value is
-	 * [0, 0, 0].
-	 *
-	 * @return  Normal of triangulated shapes.
-	 */
 	public Vector3D getNormal()
 	{
 		return _normal;
 	}
 
-	/**
-	 * Sets the normal used of the shapes being triangulated.
-	 *
-	 * @param   normal  Normal to be set.
-	 */
 	public void setNormal( final Vector3D normal )
 	{
 		_normal = normal;

@@ -21,6 +21,8 @@ package ab.j3d.model;
 
 import java.awt.Shape;
 
+import ab.j3d.Vector3D;
+
 /**
  * Triangulates 2-dimensional shapes into triangles.
  *
@@ -29,6 +31,35 @@ import java.awt.Shape;
  */
 public interface Triangulator
 {
+	/**
+	 * Returns the normal of the shapes being triangulated. The default value is
+	 * [0, 0, 0].
+	 *
+	 * @return  Normal of triangulated shapes.
+	 */
+	Vector3D getNormal();
+
+	/**
+	 * Sets the normal used of the shapes being triangulated.
+	 *
+	 * @param   normal  Normal to be set.
+	 */
+	void setNormal( final Vector3D normal );
+
+	/**
+	 * Returns the flatness used when flattening input shapes.
+	 *
+	 * @return  Flatness used when flattening input shapes.
+	 */
+	double getFlatness();
+
+	/**
+	 * Sets the flatness used when flattening input shapes.
+	 *
+	 * @param   flatness    Flatness to be set.
+	 */
+	void setFlatness( final double flatness );
+
 	/**
 	 * Triangulates the given shape and returns the result.
 	 *

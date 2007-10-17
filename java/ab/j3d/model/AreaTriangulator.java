@@ -46,7 +46,7 @@ import com.numdata.oss.MathTools;
  * @author  G. Meinders
  * @version $Revision$ $Date$
  */
-public class AreaTriangulator
+class AreaTriangulator
 	implements Triangulator
 {
 	/**
@@ -94,7 +94,7 @@ public class AreaTriangulator
 	/**
 	 * Construct new area triangulator.
 	 */
-	public AreaTriangulator()
+	AreaTriangulator()
 	{
 		_normalsFlipped        = false;
 		_initialSubdivisionsX  = 1;
@@ -103,6 +103,16 @@ public class AreaTriangulator
 		_iteratedSubdivisionsY = 1;
 		_subdivisionIterations = 0;
 		_flatness              = 1.0;
+	}
+
+	public Vector3D getNormal()
+	{
+		return _normalsFlipped ? Vector3D.INIT.set( 0.0 , 0.0 , -1.0 ) : Vector3D.INIT.set( 0.0 , 0.0 , 1.0 );
+	}
+
+	public void setNormal( final Vector3D normal )
+	{
+		_normalsFlipped = ( normal.z < 0.0 );
 	}
 
 	/**

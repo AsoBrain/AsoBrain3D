@@ -364,7 +364,10 @@ public final class ExtrudedObject2D
 
 		if ( caps )
 		{
-			final GLUTriangulator triangulator = new GLUTriangulator( flatness );
+			final TriangulatorFactory triangulatorFactory = TriangulatorFactory.newInstance();
+			final Triangulator        triangulator        = triangulatorFactory.newTriangulator();
+
+			triangulator.setFlatness( flatness );
 
 			final Vector3D up   = Vector3D.INIT.set( 0.0 , 0.0 , 1.0 );
 			final Vector3D down = Vector3D.INIT.set( 0.0 , 0.0 , -1.0 );
