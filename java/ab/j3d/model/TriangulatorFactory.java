@@ -18,26 +18,35 @@ package ab.j3d.model;
  */
 public class TriangulatorFactory
 {
+	private static boolean neverInstantiated = true;
+
 	public static TriangulatorFactory newInstance()
 	{
-		Class<? extends Triangulator> triangulatorClass = null;
+		Class<? extends Triangulator> triangulatorClass = GLUTriangulator.class;
 
 		try
 		{
-			triangulatorClass = GLUTriangulator.class;
+			triangulatorClass.newInstance();
+			if ( neverInstantiated )
+				System.out.println( "TriangulatorFactory is using 'GLU' triangulator." );
 		}
-		catch ( Error e )
+		catch ( Throwable t )
 		{
 			// @TODO Determine which specific error has to be caught.
 			// Continue with the other candidates.
+			triangulatorClass = null;
 		}
 
 		if ( triangulatorClass == null )
 		{
+			if ( neverInstantiated )
+				System.out.println( "TriangulatorFactory is using 'Area' triangulator." );
 			triangulatorClass = AreaTriangulator.class;
 		}
 
-		return new TriangulatorFactory( triangulatorClass );
+		final TriangulatorFactory result = new TriangulatorFactory( triangulatorClass );
+		neverInstantiated = false;
+		return result;
 	}
 
 	/**
