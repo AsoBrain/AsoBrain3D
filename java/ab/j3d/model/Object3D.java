@@ -766,6 +766,18 @@ public class Object3D
 	}
 
 	/**
+	 * Get transformed vertex normals. Vertex normals are pseudo-normals based
+	 * on average face normals at each vertex.
+	 *
+	 * @return  Transformed vertex normals.
+	 */
+	public final double[] getVertexNormals()
+	{
+		calculateVertexNormals();
+		return _vertexNormals;
+	}
+
+	/**
 	 * Invalidate derived data, because the face has been modified.
 	 */
 	void invalidate()
