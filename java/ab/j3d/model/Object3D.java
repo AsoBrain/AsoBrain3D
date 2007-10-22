@@ -766,10 +766,15 @@ public class Object3D
 	}
 
 	/**
-	 * Get transformed vertex normals. Vertex normals are pseudo-normals based
-	 * on average face normals at each vertex.
+	 * Get transformed vertex normals. By default, vertex normals are
+	 * pseudo-normals based on average face normals at each vertex.
+	 * <dl>
+	 *  <dt>WARNING:</dt>
+	 *  <dd>The returned array is shared, so it should not be altered in any
+	 *      way unless you wish the world to end.</dd>
+	 * </dd>
 	 *
-	 * @return  Transformed vertex normals.
+	 * @return  Vertex normals.
 	 */
 	public final double[] getVertexNormals()
 	{
