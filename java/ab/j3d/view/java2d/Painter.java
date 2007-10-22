@@ -211,9 +211,9 @@ public final class Painter
 	 * @param   node2view               Transformation from node's to view coordinate system.
 	 * @param   node                    Node to paint.
 	 * @param   alternateAppearance     Use alternate appearance.
-	 * @param   fillPaint               Override fill paint.
+	 * @param   fillPaintOverride       Override fill paint.
 	 */
-	public static void paintNode( final Graphics2D g , final Matrix3D gTransform , final Matrix3D node2view , final Node3D node , final boolean alternateAppearance , final Paint fillPaint )
+	public static void paintNode( final Graphics2D g , final Matrix3D gTransform , final Matrix3D node2view , final Node3D node , final boolean alternateAppearance , final Paint fillPaintOverride )
 	{
 		final Matrix3D transform;
 
@@ -233,12 +233,18 @@ public final class Painter
 		}
 
 		if ( node instanceof Object3D )
-			paintObject( g , gTransform , transform , (Object3D)node , alternateAppearance , fillPaint );
+		{
+			final Object3D object       = (Object3D)node;
+			final Paint    outlinePaint =                                                     alternateAppearance ? object.alternateOutlinePaint : object.outlinePaint;
+			final Paint    fillPaint    = ( fillPaintOverride != null ) ? fillPaintOverride : alternateAppearance ? object.alternateFillPaint    : object.fillPaint;
+
+			paintObject( g, gTransform, transform, object, outlinePaint , fillPaint , object.shadeFactor );
+		}
 
 		final int  childCount = node.getChildCount();
 
 		for ( int i = 0 ; i < childCount ; i++ )
-			paintNode( g , gTransform , transform , node.getChild( i ) , alternateAppearance , fillPaint );
+			paintNode( g , gTransform , transform , node.getChild( i ) , alternateAppearance , fillPaintOverride );
 	}
 
 	/**
@@ -295,34 +301,6 @@ public final class Painter
 
 		for ( int i = 0 ; i < childCount ; i++ )
 			paintNode( g , gTransform , transform , node.getChild( i ) , outlinePaint , fillPaint , shadeFactor );
-	}
-
-	/**
-	 * This implementation will use the <code>outlinePaint</code>,
-	 * <code>fillPaint</code>, and <code>shadeFactor</code> to render the object,
-	 * unless the <code>alternateAppearance</code> flag is set, in which case the
-	 * <code>alternateOutlinePaint</code> and <code>alternateFillPaint</code>
-	 * will be used.
-	 *
-	 * @param   g                       Graphics2D context.
-	 * @param   gTransform              Projection transform for Graphics2D context (3D->2D, pan, sale).
-	 * @param   node2view               Transformation from node's to view coordinate system.
-	 * @param   node                    Node to paint.
-	 * @param   alternateAppearance     Use alternate vs. regular appearance.
-	 *
-	 * @see     Object3D#outlinePaint
-	 * @see     Object3D#fillPaint
-	 * @see     Object3D#shadeFactor
-	 * @see     Object3D#alternateOutlinePaint
-	 * @see     Object3D#alternateFillPaint
-	 */
-	private static void paintObject( final Graphics2D g , final Matrix3D gTransform , final Matrix3D node2view , final Object3D node , final boolean alternateAppearance , final Paint fillPaint )
-	{
-		final Paint outlinePaint = alternateAppearance ? node.alternateOutlinePaint : node.outlinePaint;
-
-		final Paint paint = ( fillPaint != null ) ? fillPaint : alternateAppearance ? node.alternateFillPaint : node.fillPaint;
-
-		paintObject( g , gTransform , node2view , node , outlinePaint , paint , node.shadeFactor );
 	}
 
 	private static void paintObject( final Graphics2D g , final Matrix3D gTransform , final Matrix3D object2view , final Object3D object , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
