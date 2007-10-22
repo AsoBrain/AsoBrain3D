@@ -63,20 +63,6 @@ public final class ImageRenderer
 	boolean _abort;
 
 	/**
-	 * Temporary collection with objects (Object3D) to be rendered.
-	 *
-	 * @see     Object3D
-	 */
-	private final Node3DCollection<Object3D> _collectedObjects = new Node3DCollection();
-
-	/**
-	 * Temporary collection with light sources (Light).
-	 *
-	 * @see     Light3D
-	 */
-	private final Node3DCollection<Light3D> _collectedLights = new Node3DCollection();
-
-	/**
 	 * Temporary object with information about a rendered object.
 	 *
 	 * @see     #renderObject
@@ -88,7 +74,7 @@ public final class ImageRenderer
 	 * The key is the specular exponent that was used to calculate the
 	 * phong table.
 	 */
-	private static final Map<Integer,short[][]> _phongTableCache = new HashMap();
+	private static final Map<Integer,short[][]> _phongTableCache = new HashMap<Integer,short[][]>();
 
 	/**
 	 * This hashtable is used to cache maps. The key is the map name,
@@ -98,7 +84,7 @@ public final class ImageRenderer
 	 *  [ 1 ] = int[][] : _pixels
 	 *  [ 2 ] = Boolean : _transparent
 	 */
-	private static final Map<String,Object[]> _mapCache = new HashMap();
+	private static final Map<String,Object[]> _mapCache = new HashMap<String,Object[]>();
 
 	/**
 	 * Construct renderer.
@@ -192,15 +178,13 @@ public final class ImageRenderer
 		 */
 		if ( !_abort  )
 		{
-			_collectedObjects.clear();
-			camera.collectNodes( _collectedObjects , Object3D.class , Matrix3D.INIT , true );
-			if ( !_abort  )
+			final Node3DCollection<Object3D> collectedObjects = camera.collectNodes( null , Object3D.class , Matrix3D.INIT , true );
+			if ( !_abort  && ( collectedObjects != null ) )
 			{
-				_collectedLights.clear();
-				camera.collectNodes( _collectedLights , Light3D.class , Matrix3D.INIT , true );
+				final Node3DCollection<Light3D> lights = camera.collectNodes( null , Light3D.class , Matrix3D.INIT , true );
 
-				for ( i = 0 ; !_abort   && ( i < _collectedObjects.size() ) ; i++ )
-					renderObject( depthBuffer , frameBuffer , width , height , camera , _collectedObjects.getMatrix( i ) , _collectedObjects.getNode( i ) );
+				for ( i = 0 ; !_abort   && ( i < collectedObjects.size() ) ; i++ )
+					renderObject( depthBuffer , frameBuffer , width , height , camera , lights , collectedObjects.getMatrix( i ) , collectedObjects.getNode( i ) );
 			}
 		}
 
@@ -215,14 +199,14 @@ public final class ImageRenderer
 	 * @param   width           Width of rendering image.
 	 * @param   height          Height of rendering image.
 	 */
-	private void renderObject( final int[] depthBuffer , final int[] frameBuffer , final int width , final int height , final Camera3D camera , final Matrix3D cameraXform , final Object3D object )
+	private void renderObject( final int[] depthBuffer , final int[] frameBuffer , final int width , final int height , final Camera3D camera , final Node3DCollection<Light3D> lights , final Matrix3D cameraXform , final Object3D object )
 	{
 		final RenderObject renderObject = _renderObject;
 
 		renderObject.set( object , cameraXform , Math.tan( camera.getAperture() / 2.0 ) , camera.getZoomFactor() , width , height , true );
 		if ( !_abort )
 		{
-			renderObject.setLights( _collectedLights );
+			renderObject.setLights( lights );
 			if ( !_abort )
 			{
 				/*
