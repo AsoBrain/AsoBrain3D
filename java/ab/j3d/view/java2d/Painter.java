@@ -26,12 +26,10 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Shape;
-import java.awt.TexturePaint;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
@@ -193,7 +191,7 @@ public final class Painter
 	 */
 	public static void paintNode( final Graphics2D g , final Matrix3D gTransform , final Matrix3D node2view , final Node3D node , final boolean alternateAppearance )
 	{
-		paintNode( g , gTransform , node2view , node , alternateAppearance , false , null );
+		paintNode( g , gTransform , node2view , node , alternateAppearance , null );
 	}
 
 	/**
@@ -213,9 +211,9 @@ public final class Painter
 	 * @param   node2view               Transformation from node's to view coordinate system.
 	 * @param   node                    Node to paint.
 	 * @param   alternateAppearance     Use alternate appearance.
-	 * @param   fillTranslucent         Whether fronts are filled translucently.
+	 * @param   fillPaint               Override fill paint.
 	 */
-	public static void paintNode( final Graphics2D g , final Matrix3D gTransform , final Matrix3D node2view , final Node3D node , final boolean alternateAppearance , final boolean fillTranslucent , final Color fillColor )
+	public static void paintNode( final Graphics2D g , final Matrix3D gTransform , final Matrix3D node2view , final Node3D node , final boolean alternateAppearance , final Paint fillPaint )
 	{
 		final Matrix3D transform;
 
@@ -235,12 +233,12 @@ public final class Painter
 		}
 
 		if ( node instanceof Object3D )
-			paintObject( g , gTransform , transform , (Object3D)node , alternateAppearance , fillTranslucent , fillColor );
+			paintObject( g , gTransform , transform , (Object3D)node , alternateAppearance , fillPaint );
 
 		final int  childCount = node.getChildCount();
 
 		for ( int i = 0 ; i < childCount ; i++ )
-			paintNode( g , gTransform , transform , node.getChild( i ) , alternateAppearance , fillTranslucent , fillColor );
+			paintNode( g , gTransform , transform , node.getChild( i ) , alternateAppearance , fillPaint );
 	}
 
 	/**
@@ -311,7 +309,6 @@ public final class Painter
 	 * @param   node2view               Transformation from node's to view coordinate system.
 	 * @param   node                    Node to paint.
 	 * @param   alternateAppearance     Use alternate vs. regular appearance.
-	 * @param   fillTranslucent         Whether fronts are filled translucently.
 	 *
 	 * @see     Object3D#outlinePaint
 	 * @see     Object3D#fillPaint
@@ -319,30 +316,13 @@ public final class Painter
 	 * @see     Object3D#alternateOutlinePaint
 	 * @see     Object3D#alternateFillPaint
 	 */
-	private static void paintObject( final Graphics2D g , final Matrix3D gTransform , final Matrix3D node2view , final Object3D node , final boolean alternateAppearance , final boolean fillTranslucent , final Color fillColor )
+	private static void paintObject( final Graphics2D g , final Matrix3D gTransform , final Matrix3D node2view , final Object3D node , final boolean alternateAppearance , final Paint fillPaint )
 	{
 		final Paint outlinePaint = alternateAppearance ? node.alternateOutlinePaint : node.outlinePaint;
 
-		Paint fillPaint = alternateAppearance ? node.alternateFillPaint : node.fillPaint;
-		if ( fillTranslucent )
-		{
-			fillPaint = createTranslucentPaint( ( fillPaint == null ) ? fillColor : fillPaint );
-		}
+		final Paint paint = ( fillPaint != null ) ? fillPaint : alternateAppearance ? node.alternateFillPaint : node.fillPaint;
 
-		paintObject( g , gTransform , node2view , node , outlinePaint , fillPaint , node.shadeFactor );
-	}
-
-	public static Paint createTranslucentPaint( final Paint fillPaint )
-	{
-		final int           patternSize         = 16;
-		final BufferedImage pattern         = new BufferedImage( patternSize , patternSize , BufferedImage.TYPE_INT_ARGB );
-		final Graphics2D    patternGraphics = pattern.createGraphics();
-
-		patternGraphics.setPaint( fillPaint );
-		patternGraphics.drawLine( 0 , patternSize - 1 , patternSize - 1 , 0 );
-		patternGraphics.dispose();
-
-		return new TexturePaint( pattern , new Rectangle2D.Double( 0.0 , 0.0 , (double)patternSize , (double)patternSize ) );
+		paintObject( g , gTransform , node2view , node , outlinePaint , paint , node.shadeFactor );
 	}
 
 	private static void paintObject( final Graphics2D g , final Matrix3D gTransform , final Matrix3D object2view , final Object3D object , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
