@@ -30,6 +30,7 @@ import com.sun.opengl.util.texture.TextureIO;
 import ab.j3d.MapTools;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
+import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
 
@@ -116,7 +117,7 @@ public class JOGLTools
 				gl.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_FILL );
 
 
-				drawFace( gl , object3D.getFace( i ) );
+				drawFace( gl , face , false  );
 			}
 
 			if ( outline )
@@ -151,7 +152,7 @@ public class JOGLTools
 				gl.glPolygonMode( GL.GL_BACK , GL.GL_LINE );
 
 				gl.glDisable( GL.GL_LIGHTING );
-				drawFace( gl , object3D.getFace( i ) , outline );
+				drawFace( gl , face, outline );
 				gl.glEnable( GL.GL_LIGHTING );
 
 				//disable backface culling
@@ -166,16 +167,6 @@ public class JOGLTools
 	}
 
 	/**
-	 * Draw 3D face on GL context without outline.
-	 *
-	 * @param gl        {@link GL}  context.
-	 * @param face      {@link Face3D } drawn.
-	 */
-	private static void drawFace( final GL gl , final Face3D face ){
-		drawFace( gl , face , false );
-	}
-
-	/**
 	 * Draw 3D face on GL context.
 	 *
 	 * @param gl        {@link GL}  context.
@@ -184,473 +175,103 @@ public class JOGLTools
 	 */
 	private static void drawFace( final GL gl , final Face3D face , final boolean outline )
 	{
-		final Object3D object            = face.getObject();
-		final double[] vertexCoordinates = object.getVertexCoordinates();
-
 		final int vertexCount = face.getVertexCount();
-		switch ( vertexCount )
+		if ( vertexCount >= 2 )
 		{
-			case 0:
-			case 1:
+			final Texture texture    = outline ? null : getColorMapTexture( face );
+			final boolean hasTexture = ( texture != null );
+			final float[] textureU   = hasTexture ? face.getTextureU() : null;
+			final float[] textureV   = hasTexture ? face.getTextureV() : null;
+
+			if ( hasTexture )
+			{
+				gl.glEnable( GL.GL_TEXTURE_2D );
+				texture.bind();
+			}
+
+			switch ( vertexCount )
+			{
+				case 2:
+				{
+					gl.glBegin( GL.GL_LINES );
+					setFaceVertex( gl , face , textureU , textureV , 0 );
+					setFaceVertex( gl , face , textureU , textureV , 1 );
+					gl.glEnd();
+				}
 				break;
 
-			case 2:
-			{
-				final int[] faceVertexIndices = face.getVertexIndices();
+				case 3:
+				{
+					gl.glBegin( GL.GL_TRIANGLES );
+					setFaceVertex( gl , face , textureU , textureV , 0 );
+					setFaceVertex( gl , face , textureU , textureV , 1 );
+					setFaceVertex( gl , face , textureU , textureV , 2 );
+					gl.glEnd();
+				}
+				break;
 
-				final int vi1 = faceVertexIndices[ 0 ] * 3;
-				final int vi2 = faceVertexIndices[ 1 ] * 3;
+				case 4:
+				{
+					gl.glBegin( GL.GL_QUADS );
+					setFaceVertex( gl , face , textureU , textureV , 0 );
+					setFaceVertex( gl , face , textureU , textureV , 1 );
+					setFaceVertex( gl , face , textureU , textureV , 2 );
+					setFaceVertex( gl , face , textureU , textureV , 3 );
+					gl.glEnd();
+				}
+				break;
 
-				final double v1x = vertexCoordinates[ vi1 ];
-				final double v1y = vertexCoordinates[ vi1 + 1 ];
-				final double v1z = vertexCoordinates[ vi1 + 2 ];
-				final double n1x = face.getVertexNormalX( 0 );
-				final double n1y = face.getVertexNormalY( 0 );
-				final double n1z = face.getVertexNormalZ( 0 );
-				final double v2x = vertexCoordinates[ vi2 ];
-				final double v2y = vertexCoordinates[ vi2 + 1 ];
-				final double v2z = vertexCoordinates[ vi2 + 2 ];
-				final double n2x = face.getVertexNormalX( 1 );
-				final double n2y = face.getVertexNormalY( 1 );
-				final double n2z = face.getVertexNormalZ( 1 );
+				default:
+				{
+					gl.glBegin( GL.GL_POLYGON );
 
-				drawLine( gl , v1x , v1y , v1z , n1x , n1y , n1z , v2x , v2y , v2z , n2x , n2y , n2z );
+					for ( int i = 0 ; i < vertexCount ; i++ )
+						setFaceVertex( gl , face , textureU , textureV , i );
+
+					gl.glEnd();
+				}
+				break;
 			}
-			break;
 
-			case 3:
+			if ( hasTexture )
 			{
-				final int[] faceVertexIndices = face.getVertexIndices();
-
-				final int vi1 = faceVertexIndices[ 0 ] * 3;
-				final int vi2 = faceVertexIndices[ 1 ] * 3;
-				final int vi3 = faceVertexIndices[ 2 ] * 3;
-
-				final double v1x = vertexCoordinates[ vi1 ];
-				final double v1y = vertexCoordinates[ vi1 + 1 ];
-				final double v1z = vertexCoordinates[ vi1 + 2 ];
-				final double n1x = face.getVertexNormalX( 0 );
-				final double n1y = face.getVertexNormalY( 0 );
-				final double n1z = face.getVertexNormalZ( 0 );
-				final double v2x = vertexCoordinates[ vi2 ];
-				final double v2y = vertexCoordinates[ vi2 + 1 ];
-				final double v2z = vertexCoordinates[ vi2 + 2 ];
-				final double n2x = face.getVertexNormalX( 1 );
-				final double n2y = face.getVertexNormalY( 1 );
-				final double n2z = face.getVertexNormalZ( 1 );
-				final double v3x = vertexCoordinates[ vi3 ];
-				final double v3y = vertexCoordinates[ vi3 + 1 ];
-				final double v3z = vertexCoordinates[ vi3 + 2 ];
-				final double n3x = face.getVertexNormalX( 2 );
-				final double n3y = face.getVertexNormalY( 2 );
-				final double n3z = face.getVertexNormalZ( 2 );
-
-				if ( face.getMaterial().colorMap != null && !outline )
-				{
-					final Texture texture = getColorMapTexture( face );
-					final float[] textureU = face.getTextureU();
-					final float[] textureV = face.getTextureV();
-					gl.glEnable( GL.GL_TEXTURE_2D );
-					texture.bind();
-					drawTriangle( gl , v1x , v1y , v1z , n1x , n1y , n1z , v2x , v2y , v2z , n2x , n2y , n2z , v3x , v3y , v3z , n3x , n3y , n3z , textureU , textureV );
-					gl.glDisable( texture.getTarget() );
-					gl.glDisable( GL.GL_TEXTURE);
-				}
-				else
-				{
-						drawTriangle( gl , v1x , v1y , v1z , n1x , n1y , n1z , v2x , v2y , v2z , n2x , n2y , n2z , v3x , v3y , v3z , n3x , n3y , n3z );
-				}
+				gl.glDisable( texture.getTarget() );
+				gl.glDisable( GL.GL_TEXTURE );
 			}
-			break;
-
-			case 4:
-			{
-				final int[] faceVertexIndices = face.getVertexIndices();
-
-				final int vi1 = faceVertexIndices[ 0 ] * 3;
-				final int vi2 = faceVertexIndices[ 1 ] * 3;
-				final int vi3 = faceVertexIndices[ 2 ] * 3;
-				final int vi4 = faceVertexIndices[ 3 ] * 3;
-
-				final double v1x = vertexCoordinates[ vi1 ];
-				final double v1y = vertexCoordinates[ vi1 + 1 ];
-				final double v1z = vertexCoordinates[ vi1 + 2 ];
-				final double n1x = face.getVertexNormalX( 0 );
-				final double n1y = face.getVertexNormalY( 0 );
-				final double n1z = face.getVertexNormalZ( 0 );
-				final double v2x = vertexCoordinates[ vi2 ];
-				final double v2y = vertexCoordinates[ vi2 + 1 ];
-				final double v2z = vertexCoordinates[ vi2 + 2 ];
-				final double n2x = face.getVertexNormalX( 1 );
-				final double n2y = face.getVertexNormalY( 1 );
-				final double n2z = face.getVertexNormalZ( 1 );
-				final double v3x = vertexCoordinates[ vi3 ];
-				final double v3y = vertexCoordinates[ vi3 + 1 ];
-				final double v3z = vertexCoordinates[ vi3 + 2 ];
-				final double n3x = face.getVertexNormalX( 2 );
-				final double n3y = face.getVertexNormalY( 2 );
-				final double n3z = face.getVertexNormalZ( 2 );
-				final double v4x = vertexCoordinates[ vi4 ];
-				final double v4y = vertexCoordinates[ vi4 + 1 ];
-				final double v4z = vertexCoordinates[ vi4 + 2 ];
-				final double n4x = face.getVertexNormalX( 3 );
-				final double n4y = face.getVertexNormalY( 3 );
-				final double n4z = face.getVertexNormalZ( 3 );
-
-				if ( face.getMaterial().colorMap != null && !outline )
-				{
-					final Texture texture = getColorMapTexture( face );
-					final float[] textureU = face.getTextureU();
-					final float[] textureV = face.getTextureV();
-					gl.glEnable( GL.GL_TEXTURE_2D );
-					texture.bind();
-					drawQuad( gl , v1x , v1y , v1z , n1x , n1y , n1z , v2x , v2y , v2z , n2x , n2y , n2z , v3x , v3y , v3z , n3x , n3y , n3z , v4x , v4y , v4z , n4x , n4y , n4z , textureU , textureV );
-					gl.glDisable( texture.getTarget() );
-					gl.glDisable( GL.GL_TEXTURE_2D );
-					texture.disable();
-				}
-				else
-				{
-					drawQuad( gl , v1x , v1y , v1z , n1x , n1y , n1z , v2x , v2y , v2z , n2x , n2y , n2z , v3x , v3y , v3z , n3x , n3y , n3z , v4x , v4y , v4z , n4x , n4y , n4z );
-				}
-			}
-			break;
-
-			default:
-			{
-				final int[] triangles = face.triangulate();
-				if ( triangles != null )
-				{
-					// Draw the triangles.
-					final int[] faceVertexIndices = face.getVertexIndices();
-
-					for ( int j = 0; j < triangles.length; j = j + 3 )
-					{
-						final int vi1 = faceVertexIndices[ triangles[ j ] ] * 3;
-						final int vi2 = faceVertexIndices[ triangles[ j + 1 ] ] * 3;
-						final int vi3 = faceVertexIndices[ triangles[ j + 2 ] ] * 3;
-
-						final double v1x = vertexCoordinates[ vi1 ];
-						final double v1y = vertexCoordinates[ vi1 + 1 ];
-						final double v1z = vertexCoordinates[ vi1 + 2 ];
-						final double n1x = face.getVertexNormalX( 0 );
-						final double n1y = face.getVertexNormalY( 0 );
-						final double n1z = face.getVertexNormalZ( 0 );
-						final double v2x = vertexCoordinates[ vi2 ];
-						final double v2y = vertexCoordinates[ vi2 + 1 ];
-						final double v2z = vertexCoordinates[ vi2 + 2 ];
-						final double n2x = face.getVertexNormalX( 1 );
-						final double n2y = face.getVertexNormalY( 1 );
-						final double n2z = face.getVertexNormalZ( 1 );
-						final double v3x = vertexCoordinates[ vi3 ];
-						final double v3y = vertexCoordinates[ vi3 + 1 ];
-						final double v3z = vertexCoordinates[ vi3 + 2 ];
-						final double n3x = face.getVertexNormalX( 2 );
-						final double n3y = face.getVertexNormalY( 2 );
-						final double n3z = face.getVertexNormalZ( 2 );
-
-						if ( face.getMaterial().colorMap!= null && !outline )
-						{
-							final Texture texture = getColorMapTexture( face );
-							final float[] textureU = face.getTextureU();
-							final float[] textureV = face.getTextureV();
-							gl.glEnable( GL.GL_TEXTURE_2D );
-							texture.bind();
-							drawTriangle( gl , v1x , v1y , v1z , n1x , n1y , n1z , v2x , v2y , v2z , n2x , n2y , n2z , v3x , v3y , v3z , n3x , n3y , n3z , textureU , textureV );
-							gl.glDisable( texture.getTarget() );
-							gl.glDisable( GL.GL_TEXTURE_2D );
-						}
-						else
-						{
-							drawTriangle( gl , v1x , v1y , v1z , n1x , n1y , n1z , v2x , v2y , v2z , n2x , n2y , n2z , v3x , v3y , v3z , n3x , n3y , n3z );
-						}
-					}
-				}
-			}
-			break;
 		}
 	}
 
 	/**
-	 * Draw line using GL.
+	 * Set vertex properties using GL.
 	 *
-	 * @param gl  GL context.
-	 * @param v1X X coordinate of first vertex.
-	 * @param v1Y Y coordinate of first vertex.
-	 * @param v1Z Z coordinate of first vertex.
-	 * @param n1X X coordinate of first normal.
-	 * @param n1Y Y coordinate of first normal.
-	 * @param n1Z Z coordinate of first normal.
-	 * @param v2X X coordinate of second vertex.
-	 * @param v2Y Y coordinate of second vertex.
-	 * @param v2Z Z coordinate of second vertex.
-	 * @param n2X X coordinate of second normal.
-	 * @param n2Y Y coordinate of second normal.
-	 * @param n2Z Z coordinate of second normal.
+	 * @param   gl                  GL context.
+	 * @param   face                Face whose vertex to set.
+	 * @param   faceVertexIndex     Index of vertex in face.
 	 */
-	public static void drawLine( final GL gl , final double v1X , final double v1Y , final double v1Z ,
-	                             final double n1X , final double n1Y , final double n1Z ,
-	                             final double v2X , final double v2Y , final double v2Z ,
-	                             final double n2X , final double n2Y , final double n2Z )
+	private static void setFaceVertex( final GL gl , final Face3D face , final float[] textureU , final float[] textureV , final int faceVertexIndex )
 	{
-		gl.glBegin( GL.GL_LINES );
+		final Object3D object            = face.getObject();
+		final int[]    faceVertexIndices = face.getVertexIndices();
+		final int      vertexIndex       = faceVertexIndices[ faceVertexIndex ] * 3;
 
-		gl.glNormal3d( n1X , n1Y , n1Z );
-		gl.glVertex3d( v1X , v1Y , v1Z );
+		if ( ( textureU != null ) && ( textureV != null ) )
+		{
+			gl.glTexCoord2f( textureU[ faceVertexIndex ] , textureV[ faceVertexIndex ] );
+		}
 
-		gl.glNormal3d( n2X , n2Y , n2Z );
-		gl.glVertex3d( v2X , v2Y , v2Z );
+		if ( face.isSmooth() )
+		{
+			final double[] vertexNormals = object.getVertexNormals();
+			gl.glNormal3d( vertexNormals[ vertexIndex ] , vertexNormals[ vertexIndex + 1 ] , vertexNormals[ vertexIndex + 2 ] );
+		}
+		else
+		{
+			final Vector3D faceNormal = face.getNormal();
+			gl.glNormal3d( -faceNormal.x , -faceNormal.y , -faceNormal.z );
+		}
 
-		gl.glEnd();
-	}
-
-	/**
-	 * Draw line using GL.
-	 *
-	 * @param gl  GL context.
-	 * @param v1X X coordinate of first vertex.
-	 * @param v1Y Y coordinate of first vertex.
-	 * @param v1Z Z coordinate of first vertex.
-	 * @param n1X X coordinate of first normal.
-	 * @param n1Y Y coordinate of first normal.
-	 * @param n1Z Z coordinate of first normal.
-	 * @param v2X X coordinate of second vertex.
-	 * @param v2Y Y coordinate of second vertex.
-	 * @param v2Z Z coordinate of second vertex.
-	 * @param n2X X coordinate of second normal.
-	 * @param n2Y Y coordinate of second normal.
-	 * @param n2Z Z coordinate of second normal.
-	 * @param textureU horizontal coordinate of texture
-	 * @param textureV vertical coordinate of texture
-	 */
-	public static void drawLine( final GL gl , final double v1X , final double v1Y , final double v1Z ,
-	                             final double  n1X , final double  n1Y , final double n1Z ,
-	                             final double  v2X , final double  v2Y , final double v2Z ,
-	                             final double  n2X , final double  n2Y , final double n2Z ,
-	                             final float[] textureU , final float[] textureV )
-	{
-		gl.glBegin( GL.GL_LINES );
-
-		gl.glTexCoord2f( textureU[ 0 ] , -textureV[ 0 ] );
-		gl.glNormal3d( n1X , n1Y , n1Z );
-		gl.glVertex3d( v1X , v1Y , v1Z );
-
-		gl.glTexCoord2f( textureU[ 1 ] , -textureV[ 1 ] );
-		gl.glNormal3d( n2X , n2Y , n2Z );
-		gl.glVertex3d( v2X , v2Y , v2Z );
-
-		gl.glEnd();
-	}
-
-	/**
-	 * Draw quad using GL.
-	 *
-	 * @param gl  GL context.
-	 * @param v1X X coordinate of first vertex.
-	 * @param v1Y Y coordinate of first vertex.
-	 * @param v1Z Z coordinate of first vertex.
-	 * @param n1X X coordinate of first normal.
-	 * @param n1Y Y coordinate of first normal.
-	 * @param n1Z Z coordinate of first normal.
-	 * @param v2X X coordinate of second vertex.
-	 * @param v2Y Y coordinate of second vertex.
-	 * @param v2Z Z coordinate of second vertex.
-	 * @param n2X X coordinate of second normal.
-	 * @param n2Y Y coordinate of second normal.
-	 * @param n2Z Z coordinate of second normal.
-	 * @param v3X X coordinate of third vertex.
-	 * @param v3Y Y coordinate of third vertex.
-	 * @param v3Z Z coordinate of third vertex.
-	 * @param n3X X coordinate of third normal.
-	 * @param n3Y Y coordinate of third normal.
-	 * @param n3Z Z coordinate of third normal.
-	 * @param v4X X coordinate of fourth vertex.
-	 * @param v4Y Y coordinate of fourth vertex.
-	 * @param v4Z Z coordinate of fourth vertex.
-	 * @param n4X X coordinate of fourth normal.
-	 * @param n4Y Y coordinate of fourth normal.
-	 * @param n4Z Z coordinate of fourth normal.
-	 * @param textureU horizontal coodrinate of texture.
-	 * @param textureV vertical coordinate of texture.
-	 */
-	public static void drawQuad( final GL gl , final double v1X , final double v1Y , final double v1Z ,
-	                             final double  n1X , final double  n1Y , final double n1Z ,
-	                             final double  v2X , final double  v2Y , final double v2Z ,
-	                             final double  n2X , final double  n2Y , final double n2Z ,
-	                             final double  v3X , final double  v3Y , final double v3Z ,
-	                             final double  n3X , final double  n3Y , final double n3Z ,
-	                             final double  v4X , final double  v4Y , final double v4Z ,
-	                             final double  n4X , final double  n4Y , final double n4Z ,
-	                             final float[] textureU , final float[] textureV )
-	{
-		gl.glBegin( GL.GL_QUADS );
-
-		gl.glTexCoord2f( textureU[ 0 ] , -textureV[ 0 ] );
-		gl.glNormal3d( n1X , n1Y , n1Z );
-		gl.glVertex3d( v1X , v1Y , v1Z );
-
-		gl.glTexCoord2f( textureU[ 1 ] , -textureV[ 1 ] );
-		gl.glNormal3d( n2X , n2Y , n2Z );
-		gl.glVertex3d( v2X , v2Y , v2Z );
-
-		gl.glTexCoord2f( textureU[ 2 ] , -textureV[ 2 ] );
-		gl.glNormal3d( n3X , n3Y , n3Z );
-		gl.glVertex3d( v3X , v3Y , v3Z );
-
-		gl.glTexCoord2f( textureU[ 3 ] , -textureV[ 3 ] );
-		gl.glNormal3d( n4X , n4Y , n4Z );
-		gl.glVertex3d( v4X , v4Y , v4Z );
-
-		gl.glEnd();
-	}
-
-	/**
-	 * Draw quad using GL.
-	 *
-	 * @param gl  GL context.
-	 * @param v1X X coordinate of first vertex.
-	 * @param v1Y Y coordinate of first vertex.
-	 * @param v1Z Z coordinate of first vertex.
-	 * @param n1X X coordinate of first normal.
-	 * @param n1Y Y coordinate of first normal.
-	 * @param n1Z Z coordinate of first normal.
-	 * @param v2X X coordinate of second vertex.
-	 * @param v2Y Y coordinate of second vertex.
-	 * @param v2Z Z coordinate of second vertex.
-	 * @param n2X X coordinate of second normal.
-	 * @param n2Y Y coordinate of second normal.
-	 * @param n2Z Z coordinate of second normal.
-	 * @param v3X X coordinate of third vertex.
-	 * @param v3Y Y coordinate of third vertex.
-	 * @param v3Z Z coordinate of third vertex.
-	 * @param n3X X coordinate of third normal.
-	 * @param n3Y Y coordinate of third normal.
-	 * @param n3Z Z coordinate of third normal.
-	 * @param v4X X coordinate of fourth vertex.
-	 * @param v4Y Y coordinate of fourth vertex.
-	 * @param v4Z Z coordinate of fourth vertex.
-	 * @param n4X X coordinate of fourth normal.
-	 * @param n4Y Y coordinate of fourth normal.
-	 * @param n4Z Z coordinate of fourth normal.
-	 */
-	public static void drawQuad( final GL gl , final double v1X , final double v1Y , final double v1Z ,
-	                             final double n1X , final double n1Y , final double n1Z ,
-	                             final double v2X , final double v2Y , final double v2Z ,
-	                             final double n2X , final double n2Y , final double n2Z ,
-	                             final double v3X , final double v3Y , final double v3Z ,
-	                             final double n3X , final double n3Y , final double n3Z ,
-	                             final double v4X , final double v4Y , final double v4Z ,
-	                             final double n4X , final double n4Y , final double n4Z )
-	{
-		gl.glBegin( GL.GL_QUADS );
-
-		gl.glNormal3d( n1X , n1Y , n1Z );
-		gl.glVertex3d( v1X , v1Y , v1Z );
-
-		gl.glNormal3d( n2X , n2Y , n2Z );
-		gl.glVertex3d( v2X , v2Y , v2Z );
-
-		gl.glNormal3d( n3X , n3Y , n3Z );
-		gl.glVertex3d( v3X , v3Y , v3Z );
-
-		gl.glNormal3d( n4X , n4Y , n4Z );
-		gl.glVertex3d( v4X , v4Y , v4Z );
-
-		gl.glEnd();
-	}
-
-	/**
-	 * Draw triangle using GL.
-	 *
-	 * @param gl  GL context.
-	 * @param v1X X coordinate of first vertex.
-	 * @param v1Y Y coordinate of first vertex.
-	 * @param v1Z Z coordinate of first vertex.
-	 * @param n1X X coordinate of first normal.
-	 * @param n1Y Y coordinate of first normal.
-	 * @param n1Z Z coordinate of first normal.
-	 * @param v2X X coordinate of second vertex.
-	 * @param v2Y Y coordinate of second vertex.
-	 * @param v2Z Z coordinate of second vertex.
-	 * @param n2X X coordinate of second normal.
-	 * @param n2Y Y coordinate of second normal.
-	 * @param n2Z Z coordinate of second normal.
-	 * @param v3X X coordinate of third vertex.
-	 * @param v3Y Y coordinate of third vertex.
-	 * @param v3Z Z coordinate of third vertex.
-	 * @param n3X X coordinate of third normal.
-	 * @param n3Y Y coordinate of third normal.
-	 * @param n3Z Z coordinate of third normal.
-	 */
-	public static void drawTriangle( final GL gl , final double v1X , final double v1Y , final double v1Z ,
-	                                 final double n1X , final double n1Y , final double n1Z ,
-	                                 final double v2X , final double v2Y , final double v2Z ,
-	                                 final double n2X , final double n2Y , final double n2Z ,
-	                                 final double v3X , final double v3Y , final double v3Z ,
-	                                 final double n3X , final double n3Y , final double n3Z )
-	{
-		gl.glBegin( GL.GL_TRIANGLES );
-
-		gl.glNormal3d( n1X , n1Y , n1Z );
-		gl.glVertex3d( v1X , v1Y , v1Z );
-
-		gl.glNormal3d( n2X , n2Y , n2Z );
-		gl.glVertex3d( v2X , v2Y , v2Z );
-
-		gl.glNormal3d( n3X , n3Y , n3Z );
-		gl.glVertex3d( v3X , v3Y , v3Z );
-
-		gl.glEnd();
-	}
-
-	/**
-	 * Draw triangle using GL.
-	 *
-	 * @param gl  GL context.
-	 * @param v1X X coordinate of first vertex.
-	 * @param v1Y Y coordinate of first vertex.
-	 * @param v1Z Z coordinate of first vertex.
-	 * @param n1X X coordinate of first normal.
-	 * @param n1Y Y coordinate of first normal.
-	 * @param n1Z Z coordinate of first normal.
-	 * @param v2X X coordinate of second vertex.
-	 * @param v2Y Y coordinate of second vertex.
-	 * @param v2Z Z coordinate of second vertex.
-	 * @param n2X X coordinate of second normal.
-	 * @param n2Y Y coordinate of second normal.
-	 * @param n2Z Z coordinate of second normal.
-	 * @param v3X X coordinate of third vertex.
-	 * @param v3Y Y coordinate of third vertex.
-	 * @param v3Z Z coordinate of third vertex.
-	 * @param n3X X coordinate of third normal.
-	 * @param n3Y Y coordinate of third normal.
-	 * @param n3Z Z coordinate of third normal.
-	 * @param textureU horizontal coordinate of texture.
-	 * @param textureV vertical coordinate of texture.
-	 */
-	public static void drawTriangle( final GL gl , final double v1X , final double v1Y , final double v1Z ,
-	                                 final double n1X , final double n1Y , final double n1Z ,
-	                                 final double v2X , final double v2Y , final double v2Z ,
-	                                 final double n2X , final double n2Y , final double n2Z ,
-	                                 final double v3X , final double v3Y , final double v3Z ,
-	                                 final double n3X , final double n3Y , final double n3Z ,
-	                                 final float[] textureU , final float[] textureV )
-	{
-		gl.glBegin( GL.GL_TRIANGLES );
-
-		gl.glTexCoord2f( textureU[ 0 ] , -textureV[ 0 ] );
-		gl.glNormal3d( n1X , n1Y , n1Z );
-		gl.glVertex3d( v1X , v1Y , v1Z );
-
-		gl.glTexCoord2f( textureU[ 1 ] , -textureV[ 1 ] );
-		gl.glNormal3d( n2X , n2Y , n2Z );
-		gl.glVertex3d( v2X , v2Y , v2Z );
-
-		gl.glTexCoord2f( textureU[ 2 ] , -textureV[ 2 ] );
-		gl.glNormal3d( n3X , n3Y , n3Z );
-		gl.glVertex3d( v3X , v3Y , v3Z );
-
-		gl.glEnd();
+		final double[] vertexCoordinates = object.getVertexCoordinates();
+		gl.glVertex3d( vertexCoordinates[ vertexIndex ] , vertexCoordinates[ vertexIndex + 1 ] , vertexCoordinates[ vertexIndex + 2 ] );
 	}
 
 
@@ -739,10 +360,8 @@ public class JOGLTools
 		final Texture result;
 
 		final Material material = face.getMaterial();
-		final float[] textureU = face.getTextureU();
-		final float[] textureV = face.getTextureV();
 
-		if ( ( textureU != null ) && ( textureV != null ) && ( material != null ) && ( material.colorMap != null ) )
+		if ( ( material != null ) && ( material.colorMap != null ) && ( face.getTextureU() != null ) && ( face .getTextureV() != null ) )
 		{
 			result = getTexture( material.colorMap );
 		}
