@@ -86,11 +86,6 @@ public class JOGLView
 	private final ControlInput _controlInput;
 
 	/**
-	 * Whether the view needs to be updated to model changes.
-	 */
-	private boolean _updateNeeded;
-
-	/**
 	 * Front clipping plane distance in model units.
 	 */
 	private final double _frontClipDistance;
@@ -99,6 +94,11 @@ public class JOGLView
 	 * Back clipping plane distance in model units.
 	 */
 	private final double _backClipDistance;
+
+	/**
+	 * Render thread.
+	 */
+	private RenderThread _renderThread;
 
 	/**
 	 * Construct new view.
@@ -120,6 +120,7 @@ public class JOGLView
 		_renderingPolicy   = SOLID;
 		_frontClipDistance = 0.1 / unit;
 		_backClipDistance  = 100.0 / unit;
+		_renderThread      = null;
 
 		final GLCanvas glCanvas = new GLCanvas( new GLCapabilities() );
 		glCanvas.addGLEventListener( new GLEventListener()
@@ -163,12 +164,9 @@ public class JOGLView
 		_model         = model;
 		_viewComponent = glCanvas;
 		_controlInput  = new ViewControlInput( model , this );
-		_updateNeeded  = true;
 
 		if ( background != null )
 			_viewComponent.setBackground( background );
-		else
-			_viewComponent.setBackground( Color.BLACK );
 
 		startRenderer();
 	}
@@ -180,14 +178,9 @@ public class JOGLView
 
 	public void update()
 	{
-		/*
-		 * Renderer will perform an update before the next frame is rendered.
-		 */
-		synchronized ( this )
-		{
-			_updateNeeded = true;
-			notifyAll();
-		}
+		final RenderThread renderThread = _renderThread;
+		if ( renderThread != null )
+			renderThread.requestUpdate();
 	}
 
 	public void setProjectionPolicy( final int policy )
@@ -233,46 +226,132 @@ public class JOGLView
 	 */
 	private void startRenderer()
 	{
-		final Thread renderThread = new Thread( new Renderer() , "JOGLView.renderThread:" + getID() );
-		renderThread.setDaemon( true );
-		renderThread.setPriority( Thread.NORM_PRIORITY );
-		renderThread.start();
+		RenderThread renderThread = _renderThread;
+		if ( ( renderThread == null ) || !renderThread.isAlive() )
+		{
+			renderThread = new RenderThread();
+			_renderThread = renderThread;
+			renderThread.start();
+		}
+		else
+		{
+			renderThread.notifyAll();
+		}
 	}
 
 	/**
 	 * Render loop for the view.
 	 */
-	private class Renderer
-		implements Runnable
+	private class RenderThread
+		extends Thread
 	{
+		/**
+		 * This thread control flag is set when <code>requestUpdate()</code> is
+		 * called. It is used to trigger the thread loop to start rendering a new
+		 * image. It is also tested at various loop points in the rendering code
+		 * to abort rendering of a previous image, so the next rendering will be
+		 * completed as soon as possible.
+		 *
+		 * @see     #requestUpdate()
+		 */
+		protected boolean _updateRequested;
+
+		/**
+		 * This thread control flag is set when <code>requestTermination()</code>
+		 * is called. It is used as exit condition by the main thread loop.
+		 *
+		 * @see     #requestTermination()
+		 * @see     #isAlive()
+		 * @see     #join()
+		 */
+		private boolean _terminationRequested;
+
+		private RenderThread()
+		{
+			super( "JOGLView.renderThread:" + getID() );
+			setDaemon( true );
+			setPriority( NORM_PRIORITY );
+			_updateRequested = true;
+			_terminationRequested = false;
+		}
+
 		public void run()
 		{
-			while ( true )
+			final GLCanvas viewComponent = _viewComponent;
+
+			while ( !_terminationRequested && viewComponent.isVisible() )
 			{
+				try
+				{
+					if ( _updateRequested )
+					{
+						_updateRequested = false;
+
+						if ( viewComponent.isShowing() )
+						{
+							viewComponent.display();
+						}
+					}
+				}
+				catch ( Throwable t )
+				{
+					System.err.println( "Render exception: " + t );
+					t.printStackTrace( System.err );
+				}
+
 				/*
-				 * Pause the renderer unless there are changes.
+				 * No update needed or an exception occured.
+				 *
+				 * Wait 300ms or wait to be notified.
 				 */
 				try
 				{
-					synchronized ( JOGLView.this )
+					while ( !_updateRequested )
 					{
-						while ( !_updateNeeded )
+						synchronized ( this )
 						{
-							JOGLView.this.wait();
+							wait( 300L );
 						}
-						_updateNeeded = false;
 					}
 				}
-				catch ( InterruptedException e )
+				catch ( InterruptedException e ) { /*ignored*/ }
+			}
+
+			_terminationRequested = false;
+			_updateRequested      = false;
+
+			System.out.println( "Renderer thread died!" );
+		}
+
+		/**
+		 * Request update of rendered image.
+		 */
+		public void requestUpdate()
+		{
+			if ( !_terminationRequested )
+			{
+				_updateRequested = true;
+
+				synchronized ( this )
 				{
-					break;
+					notifyAll();
 				}
-
-				if ( _viewComponent.isShowing() )
-					_viewComponent.display();
-
 			}
 		}
+
+		/**
+		 * Request termination of the render thread.
+		 */
+		public void requestTermination()
+		{
+			_terminationRequested = true;
+
+			synchronized ( this )
+			{
+				notifyAll();
+			}
+		}
+
 	}
 
 	/**
@@ -425,7 +504,7 @@ public class JOGLView
 				if ( light.isAmbient() )
 				{
 					gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
-					gl.glLightfv( lightNumber , GL.GL_AMBIENT , new float[]  { viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
+					gl.glLightfv( lightNumber , GL.GL_AMBIENT , new float[] { viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
 				}
 				else
 				{
