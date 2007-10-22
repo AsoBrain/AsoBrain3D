@@ -300,8 +300,7 @@ public final class RenderObject
 				 *
 				 * We just add this to any existing diffuse reflection value.
 				 */
-				final double ka = material.getDiffuseReflectivity();
-				final double id = (double)intensity * ka;
+				final double id = (double)intensity;
 
 				ds[ targetIndex ] += (int)( id * 256.0 );
 			}
@@ -348,10 +347,9 @@ public final class RenderObject
 					 *
 					 * We just add this to any existing diffuse reflection value.
 					 */
-					final double kd = material.getDiffuseReflectivity();
-					final double id = il * kd * cosLightAngle;
+					final double id = il * cosLightAngle;
 
-					ds[ targetIndex ] += (int)( id * 256.0 * 4.0 );
+					ds[ targetIndex ] += (int)( id * 256.0 );
 
 					/*
 					 * To add specular reflection, we have the following formula:
@@ -374,9 +372,8 @@ public final class RenderObject
 					 * the properties will only be stored if this light is brighter than
 					 * any previous specular light source.
 					 */
-					final double ks = material.getSpecularReflectivity();
-					final double is = il * ks;
-					final int isInt = (int)( is * 256.0 * 8.0 );
+					final double is = il;
+					final int isInt = (int)( is * 256.0 );
 
 					if ( isInt > sfs[ targetIndex ] )
 					{

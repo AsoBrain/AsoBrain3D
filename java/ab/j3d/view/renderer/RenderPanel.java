@@ -122,10 +122,10 @@ public class RenderPanel
 		_modelTransform = modelTransform;
 		_model = model;
 
-		final Light3D ambientLight = new Light3D( 500 , -1.0 ); // 384
+		final Light3D ambientLight = new Light3D( 112 , -1.0 ); // 384
 		world.addChild( ambientLight );
 
-		final Light3D pointLight = new Light3D( 10000 , 30.0 );
+		final Light3D pointLight = new Light3D( 8000 , 30.0 );
 		final Transform3D pointLightTransform = new Transform3D( Matrix3D.getTransform( 0.0 , 0.0 , 0.0 , -750.0 , -2500.0 , 1700.0 ) );
 		world.addChild( pointLightTransform );
 		pointLightTransform.addChild( pointLight );
