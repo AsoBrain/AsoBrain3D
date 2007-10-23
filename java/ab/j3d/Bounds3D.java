@@ -70,6 +70,36 @@ public final class Bounds3D
 	}
 
 	/**
+	 * Test if this bounds contains the specified point.
+	 *
+	 * @param   point   Point to test.
+	 *
+	 * @return  <code>true</code> if this bounds contains the specified point;
+	 *          <code>false</code> if the point is outside these bounds.
+	 */
+	public boolean contains( final Vector3D point )
+	{
+		return contains( point.x , point.y , point.z );
+	}
+
+	/**
+	 * Test if this bounds contains the specified point.
+	 *
+	 * @param   x   X-coordinate of point.
+	 * @param   y   Y-coordinate of point.
+	 * @param   z   Z-coordinate of point.
+	 *
+	 * @return  <code>true</code> if this bounds contains the specified point;
+	 *          <code>false</code> if the point is outside these bounds.
+	 */
+	public boolean contains( final double x , final double y , final double z )
+	{
+		return ( x >= Math.min( v1.x , v2.x ) ) && ( x <= Math.max( v1.x , v2.x ) ) &&
+		       ( y >= Math.min( v1.y , v2.y ) ) && ( y <= Math.max( v1.y , v2.y ) ) &&
+		       ( z >= Math.min( v1.z , v2.z ) ) && ( z <= Math.max( v1.z , v2.z ) );
+	}
+
+	/**
 	 * Compare these bounds to the specified bounds.
 	 *
 	 * @param   otherV1     First vector of bounds to compare with.
