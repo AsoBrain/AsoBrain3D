@@ -109,19 +109,29 @@ public class JOGLTools
 					else
 					{
 						gl.glEnable( GL.GL_CULL_FACE );
-						gl.glCullFace( GL.GL_FRONT );
+						gl.glCullFace( GL.GL_BACK );
 					}
-
 				}
 
 				gl.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_FILL );
-
 
 				drawFace( gl , face , false  );
 			}
 
 			if ( outline )
 			{
+				// set the blend mode
+				gl.glBlendFunc ( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+
+				// enable blending
+				gl.glEnable ( GL.GL_BLEND );
+
+				// set the line width
+				gl.glLineWidth ( 2.0f );
+
+				// change the depth mode
+				gl.glDepthFunc ( GL.GL_LEQUAL );
+
 				final Color color;
 				if ( outlineColor != null )
 				{
@@ -146,17 +156,26 @@ public class JOGLTools
 
 				// enable backface culling
 				gl.glEnable( GL.GL_CULL_FACE );
-				gl.glCullFace( GL.GL_FRONT );
+				gl.glCullFace( GL.GL_BACK );
 
 				// set polygonmode to lines only
-				gl.glPolygonMode( GL.GL_BACK , GL.GL_LINE );
+				gl.glPolygonMode( GL.GL_FRONT , GL.GL_LINE );
+
+				// smooth lines
+				gl.glEnable( GL.GL_LINE_SMOOTH );
 
 				gl.glDisable( GL.GL_LIGHTING );
 				drawFace( gl , face, outline );
 				gl.glEnable( GL.GL_LIGHTING );
 
-				//disable backface culling
+				// disable backface culling
 				gl.glDisable( GL.GL_CULL_FACE );
+
+				// change the depth mode back
+				gl.glDepthFunc( GL.GL_LESS );
+
+				// disable blending
+				gl.glDisable( GL.GL_BLEND );
 			}
 		}
 
@@ -164,6 +183,51 @@ public class JOGLTools
 		 * Pop matrix stack, replace current matrix with one below it on the stack.
 		 */
 		gl.glPopMatrix();
+	}
+
+	/**
+	 * Draw a 3D grid centered around point x,y,z with size dx,dy.
+	 *
+	 * @param gl        {@link GL}  context.
+	 * @param x         X position of the grid.
+	 * @param y         Y position of the grid.
+	 * @param z         Z position of the grid.
+	 * @param dx        Width of the grid.
+	 * @param dy        Height of the grid.
+	 * @param spacing   Spacing between the grid lines.
+	 */
+	public static void drawGrid( final GL gl , final int x , final int y , final int z , final int dx , final int dy , final int spacing )
+	{
+		if( spacing != 0 ) //check if spacing is not null else we'll get an infinite loop.
+		{
+			// set the anti-aliasing options
+			gl.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+			gl.glEnable( GL.GL_BLEND );
+			gl.glEnable( GL.GL_LINE_SMOOTH );
+
+			// set color to black
+			gl.glColor3f( 0.0f , 0.0f , 0.0f );
+
+			//set line width to 1.0f, the smallest possible line in opengl
+			gl.glLineWidth( 1.0f );
+			gl.glDisable( GL.GL_LIGHTING );
+			gl.glBegin( GL.GL_LINES );
+
+			for( int i = -dx / 2 + x ; i <= dx / 2 + x ; i += spacing )
+			{
+				gl.glVertex3i( i , -dy / 2 + y , z );
+				gl.glVertex3i( i ,  dy / 2 + y , z );
+			}
+
+			for( int i = -dy / 2 + y ; i <= dy / 2 + y ; i += spacing )
+			{
+				gl.glVertex3i( -dx / 2 + x , i , z );
+				gl.glVertex3i(  dx / 2 + x , i , z );
+			}
+
+			gl.glEnd();
+			gl.glDisable( GL.GL_BLEND );
+		}
 	}
 
 	/**
@@ -193,19 +257,19 @@ public class JOGLTools
 			{
 				case 2:
 				{
-					gl.glBegin( GL.GL_LINES );
+				/*	gl.glBegin( GL.GL_LINES );
 					setFaceVertex( gl , face , textureU , textureV , 0 );
 					setFaceVertex( gl , face , textureU , textureV , 1 );
-					gl.glEnd();
+					gl.glEnd();*/
 				}
 				break;
 
 				case 3:
 				{
 					gl.glBegin( GL.GL_TRIANGLES );
-					setFaceVertex( gl , face , textureU , textureV , 0 );
-					setFaceVertex( gl , face , textureU , textureV , 1 );
 					setFaceVertex( gl , face , textureU , textureV , 2 );
+					setFaceVertex( gl , face , textureU , textureV , 1 );
+					setFaceVertex( gl , face , textureU , textureV , 0 );
 					gl.glEnd();
 				}
 				break;
@@ -213,10 +277,10 @@ public class JOGLTools
 				case 4:
 				{
 					gl.glBegin( GL.GL_QUADS );
-					setFaceVertex( gl , face , textureU , textureV , 0 );
-					setFaceVertex( gl , face , textureU , textureV , 1 );
-					setFaceVertex( gl , face , textureU , textureV , 2 );
 					setFaceVertex( gl , face , textureU , textureV , 3 );
+					setFaceVertex( gl , face , textureU , textureV , 2 );
+					setFaceVertex( gl , face , textureU , textureV , 1 );
+					setFaceVertex( gl , face , textureU , textureV , 0 );
 					gl.glEnd();
 				}
 				break;
@@ -225,7 +289,7 @@ public class JOGLTools
 				{
 					gl.glBegin( GL.GL_POLYGON );
 
-					for ( int i = 0 ; i < vertexCount ; i++ )
+					for ( int i = vertexCount ; --i >= 0 ; )
 						setFaceVertex( gl , face , textureU , textureV , i );
 
 					gl.glEnd();
@@ -246,6 +310,8 @@ public class JOGLTools
 	 *
 	 * @param   gl                  GL context.
 	 * @param   face                Face whose vertex to set.
+	 * @param   textureU            Horizontal texture coordinate.
+	 * @param   textureV            Vertical texture coordinate.
 	 * @param   faceVertexIndex     Index of vertex in face.
 	 */
 	private static void setFaceVertex( final GL gl , final Face3D face , final float[] textureU , final float[] textureV , final int faceVertexIndex )
@@ -267,7 +333,7 @@ public class JOGLTools
 		else
 		{
 			final Vector3D faceNormal = face.getNormal();
-			gl.glNormal3d( -faceNormal.x , -faceNormal.y , -faceNormal.z );
+			gl.glNormal3d( faceNormal.x , faceNormal.y , faceNormal.z );
 		}
 
 		final double[] vertexCoordinates = object.getVertexCoordinates();
@@ -401,8 +467,8 @@ public class JOGLTools
 					result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
 					result.setTexParameteri( GL.GL_TEXTURE_WRAP_R , GL.GL_REPEAT );
 					result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
-					result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_NEAREST );
-					result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_NEAREST );
+					result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
+					result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR );
 				}
 				cache.put( name , result );
 			}

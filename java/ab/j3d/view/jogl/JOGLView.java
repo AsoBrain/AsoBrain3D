@@ -21,6 +21,7 @@ package ab.j3d.view.jogl;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.util.Locale;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
@@ -101,6 +102,16 @@ public class JOGLView
 	private RenderThread _renderThread;
 
 	/**
+	 * Grid values
+	 */
+	private int _gridX       = 0;
+	private int _gridY       = 0;
+	private int _gridZ       = 0;
+	private int _gridDx      = 0;
+	private int _gridDy      = 0;
+	private int _gridSpacing = 0;
+
+	/**
 	 * Construct new view.
 	 *
 	 * @param   model       Model for which this view is created.
@@ -155,6 +166,8 @@ public class JOGLView
 				public void reshape ( final GLAutoDrawable glAutoDrawable , final int x , final int y , final int width , final int height )
 				{
 					windowReshape( glAutoDrawable.getGL() , x , y , width , height );
+					glCanvas.setMinimumSize( new Dimension( 10 , 10 ) ); //fix for making the joglview smaller
+
 				}
 			} );
 
@@ -351,7 +364,6 @@ public class JOGLView
 				notifyAll();
 			}
 		}
-
 	}
 
 	/**
@@ -363,12 +375,13 @@ public class JOGLView
 	{
 		/* Enable depth buffering. */
 		gl.glEnable( GL.GL_DEPTH_TEST );
-		gl.glDepthFunc( GL.GL_LEQUAL );
+		gl.glDepthFunc( GL.GL_LESS );
 
 		/* Set smoothing. */
-		gl.glEnable( GL.GL_BLEND );
 		gl.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+		gl.glEnable( GL.GL_BLEND );
 		gl.glEnable( GL.GL_LINE_SMOOTH );
+		gl.glHint( GL.GL_LINE_SMOOTH_HINT , GL.GL_FASTEST );
 
 		/* Initial clear. */
 		JOGLTools.glClearColor( gl , _viewComponent.getBackground() );
@@ -404,6 +417,64 @@ public class JOGLView
 			/* Set the perspective view */
 			final GLU glu = new GLU();
 			glu.gluPerspective( fov , aspect , near , far );
+		}
+	}
+
+	/**
+	 * Draws a grid on the view using the specified parameters.
+	 *
+	 * The grid will be centered around the x,y position.
+	 *
+	 * @param x         X position of the grid.
+	 * @param y         Y position of the grid.
+	 * @param z         Z position of the grid.
+	 * @param dx        Width of the grid.
+	 * @param dy        Height of the grid.
+	 * @param spacing   Spacing between the grid lines.
+	 */
+	public void drawGrid( final int x , final int y , final int z , final int dx , final int dy , final int spacing )
+	{
+		_gridX       = x;
+		_gridY       = y;
+		_gridZ       = z;
+		_gridDx      = dx;
+		_gridDy      = dy;
+		_gridSpacing = spacing;
+	}
+
+	/**
+	 * Removes the grid that is being drawn.
+	 *
+	 */
+	public void removeGrid()
+	{
+		_gridX       = 0;
+		_gridY       = 0;
+		_gridZ       = 0;
+		_gridDx      = 0;
+		_gridDy      = 0;
+		_gridSpacing = 0;
+	}
+
+	/**
+	 * If set to true creates standard size grid centered around 0,0.
+	 *
+	 * Not all 3d views implement this method yet.
+	 *
+	 * @param isTrue    If set to true it will draw a grid.
+	 */
+	public final void setGrid( final boolean isTrue )
+	{
+		if( isTrue )
+			drawGrid( 0 , 0 , 0 , 50000 , 50000 , 500 );
+		else
+		{
+			_gridX       = 0;
+			_gridY       = 0;
+			_gridZ       = 0;
+			_gridDx      = 0;
+			_gridDy      = 0;
+			_gridSpacing = 0;
 		}
 	}
 
@@ -529,7 +600,6 @@ public class JOGLView
 				}
 			}
 		}
-
-
+		JOGLTools.drawGrid( gl , _gridX , _gridY , _gridZ , _gridDx , _gridDy , _gridSpacing );
 	}
 }
