@@ -330,10 +330,14 @@ public final class ExtrudedObject2D
 							                              : new int[] { lastIndex   , lastExtrudedIndex   , extrudedVertexIndex , vertexIndex };
 							lastExtrudedIndex = extrudedVertexIndex;
 						}
-						else
+						else if ( !caps )
 						{
 							vertexIndices = new int[] { lastIndex , vertexIndex };
 							hasBackfaceOverride = true;
+						}
+						else
+						{
+							vertexIndices = null;
 						}
 					}
 					else
@@ -355,10 +359,14 @@ public final class ExtrudedObject2D
 							                              : new int[] { lastIndex  , lastExtrudedIndex  , lastExtrudedMoveTo , lastMoveTo };
 							lastExtrudedIndex = lastExtrudedMoveTo;
 						}
-						else
+						else if ( !caps )
 						{
 							vertexIndices = new int[] { lastIndex , lastMoveTo };
 							hasBackfaceOverride = true;
+						}
+						else
+						{
+							vertexIndices = null;
 						}
 					}
 					else
