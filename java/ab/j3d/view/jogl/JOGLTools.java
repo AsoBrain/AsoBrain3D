@@ -250,7 +250,7 @@ public class JOGLTools
 			if ( hasTexture )
 			{
 				gl.glEnable( GL.GL_TEXTURE_2D );
-				texture.bind();
+				gl.glBindTexture(texture.getTarget(), texture.getTextureObject());
 			}
 
 			switch ( vertexCount )
