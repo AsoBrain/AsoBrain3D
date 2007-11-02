@@ -205,9 +205,6 @@ public class JOGLTools
 			gl.glEnable( GL.GL_BLEND );
 			gl.glEnable( GL.GL_LINE_SMOOTH );
 
-			// set color to black
-			gl.glColor3f( 0.0f , 0.0f , 0.0f );
-
 			//set line width to 1.0f, the smallest possible line in opengl
 			gl.glLineWidth( 1.0f );
 			gl.glDisable( GL.GL_LIGHTING );
@@ -215,12 +212,22 @@ public class JOGLTools
 
 			for( int i = -dx / 2 + x ; i <= dx / 2 + x ; i += spacing )
 			{
+				if ( ( ( i - dx ) / spacing ) % 10 == 0 )
+					gl.glColor3f( 0.5f , 0.5f , 0.5f );
+				else
+					gl.glColor3f( 0.75f , 0.75f , 0.75f );
+
 				gl.glVertex3i( i , -dy / 2 + y , z );
 				gl.glVertex3i( i ,  dy / 2 + y , z );
 			}
 
 			for( int i = -dy / 2 + y ; i <= dy / 2 + y ; i += spacing )
 			{
+				if ( ( ( i - dy ) / spacing ) % 10 == 0 )
+					gl.glColor3f( 0.5f , 0.5f , 0.5f );
+				else
+					gl.glColor3f( 0.75f , 0.75f , 0.75f );
+
 				gl.glVertex3i( -dx / 2 + x , i , z );
 				gl.glVertex3i(  dx / 2 + x , i , z );
 			}
