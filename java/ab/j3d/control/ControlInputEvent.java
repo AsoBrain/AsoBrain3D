@@ -103,6 +103,11 @@ public class ControlInputEvent
 	private Ray3D _pointerRay;
 
 	/**
+	 * Serialversion UID.
+	 */
+	private static final long serialVersionUID = 2165278808002714887L;
+
+	/**
 	 * Creates a new mouse control event.
 	 *
 	 * @param   controlInput    The control input on which this event occured.
@@ -434,7 +439,7 @@ public class ControlInputEvent
 	 */
 	public String toFriendlyString()
 	{
-		final StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 
 		final List objectsUnderMouse = _intersections;
 
@@ -478,9 +483,9 @@ public class ControlInputEvent
 		sb.append( objectsUnderMouse.size() );
 		sb.append( " Objects under the mouse: " );
 
-		for ( int i = 0; i < objectsUnderMouse.size(); i++ )
+		for ( final Object underMouse : objectsUnderMouse )
 		{
-			final Face3DIntersection intersection = (Face3DIntersection)objectsUnderMouse.get( i );
+			final Face3DIntersection intersection = (Face3DIntersection)underMouse;
 
 			sb.append( "  Object ID " );
 			sb.append( intersection.getObjectID() );
