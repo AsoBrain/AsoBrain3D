@@ -180,8 +180,6 @@ public class JOGLView
 
 		if ( background != null )
 			_viewComponent.setBackground( background );
-
-		startRenderer();
 	}
 
 	public Component getComponent()
@@ -191,9 +189,7 @@ public class JOGLView
 
 	public void update()
 	{
-		final RenderThread renderThread = _renderThread;
-		if ( renderThread != null )
-			renderThread.requestUpdate();
+		startRenderer();
 	}
 
 	public void setProjectionPolicy( final int policy )
@@ -240,15 +236,18 @@ public class JOGLView
 	private void startRenderer()
 	{
 		RenderThread renderThread = _renderThread;
-		if ( ( renderThread == null ) || !renderThread.isAlive() )
+		if( renderThread == null || !renderThread.isAlive() )
 		{
-			renderThread = new RenderThread();
-			_renderThread = renderThread;
-			renderThread.start();
+			if ( _viewComponent.isShowing() )
+			{
+				renderThread = new RenderThread();
+				_renderThread = renderThread;
+				renderThread.start();
+			}
 		}
 		else
 		{
-			renderThread.notifyAll();
+			renderThread.requestUpdate();
 		}
 	}
 
@@ -288,11 +287,12 @@ public class JOGLView
 			_terminationRequested = false;
 		}
 
+		@Override
 		public void run()
 		{
+			System.out.println( "Render thread started: " + Thread.currentThread().getName() );
 			final GLCanvas viewComponent = _viewComponent;
-
-			while ( !_terminationRequested && viewComponent.isVisible() )
+			while ( !_terminationRequested && viewComponent.isShowing() )
 			{
 				try
 				{
@@ -319,13 +319,10 @@ public class JOGLView
 				 */
 				try
 				{
-					while ( !_updateRequested )
-					{
 						synchronized ( this )
 						{
 							wait( 300L );
 						}
-					}
 				}
 				catch ( InterruptedException e ) { /*ignored*/ }
 			}
@@ -333,7 +330,7 @@ public class JOGLView
 			_terminationRequested = false;
 			_updateRequested      = false;
 
-			System.out.println( "Renderer thread died!" );
+			System.out.println( "Renderer thread died: " + Thread.currentThread().getName() );
 		}
 
 		/**
