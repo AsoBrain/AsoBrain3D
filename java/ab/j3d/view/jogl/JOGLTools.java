@@ -127,7 +127,7 @@ public class JOGLTools
 				gl.glEnable ( GL.GL_BLEND );
 
 				// set the line width
-				gl.glLineWidth ( 2.0f );
+				gl.glLineWidth ( 1.0f );
 
 				// change the depth mode
 				gl.glDepthFunc ( GL.GL_LEQUAL );
@@ -264,10 +264,10 @@ public class JOGLTools
 			{
 				case 2:
 				{
-				/*	gl.glBegin( GL.GL_LINES );
+				gl.glBegin( GL.GL_LINES );
 					setFaceVertex( gl , face , textureU , textureV , 0 );
 					setFaceVertex( gl , face , textureU , textureV , 1 );
-					gl.glEnd();*/
+					gl.glEnd();
 				}
 				break;
 
@@ -307,7 +307,6 @@ public class JOGLTools
 			if ( hasTexture )
 			{
 				gl.glDisable( texture.getTarget() );
-				gl.glDisable( GL.GL_TEXTURE );
 			}
 		}
 	}
@@ -474,8 +473,18 @@ public class JOGLTools
 					result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
 					result.setTexParameteri( GL.GL_TEXTURE_WRAP_R , GL.GL_REPEAT );
 					result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
+
+					/**
+					 * Set generate mipmaps to true, this greatly increases performance and viewing pleasure in big scenes.
+					 * @TODO need to find out if generated mipmaps are faster or if pregenerated mipmaps are faster
+					 */
+					result.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
+
+					/** Set texture magnification to linear to support mipmaps. */
 					result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
-					result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR );
+
+					/** Set texture minification to linear_mipmap)_nearest to support mipmaps */
+					result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
 				}
 				cache.put( name , result );
 			}
