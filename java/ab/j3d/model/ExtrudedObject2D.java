@@ -23,6 +23,9 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.FlatteningPathIterator;
 import java.awt.geom.PathIterator;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import ab.j3d.Material;
@@ -413,54 +416,156 @@ public final class ExtrudedObject2D
 
 			triangulator.setFlatness( flatness );
 
-			final Vector3D up   = Vector3D.INIT.set( 0.0 , 0.0 , 1.0 );
-			final Vector3D down = Vector3D.INIT.set( 0.0 , 0.0 , -1.0 );
+			final Vector3D topNormal    = Vector3D.INIT.set( 0.0 , 0.0 , flipExtrusion ?  1.0 : -1.0 );
+			final Vector3D bottomNormal = Vector3D.INIT.set( 0.0 , 0.0 , flipExtrusion ? -1.0 :  1.0 );
 
-			triangulator.setNormal( down );
+			triangulator.setNormal( bottomNormal );
 			generateCap( target , shape , transform                   , bottomMaterial , bottomFlipUV , uvMap , triangulator );
-			triangulator.setNormal( up );
+			triangulator.setNormal( topNormal );
 			generateCap( target , shape , transform.plus( extrusion ) , topMaterial    , topFlipUV    , uvMap , triangulator );
 
-			if ( hasBackface )
+			if ( hasBackface && hasExtrusion )
 			{
-				triangulator.setNormal( up );
+				triangulator.setNormal( topNormal );
 				generateCap( target , shape , transform                   , bottomMaterial , bottomFlipUV , uvMap , triangulator );
-				triangulator.setNormal( down );
+				triangulator.setNormal( bottomNormal );
 				generateCap( target , shape , transform.plus( extrusion ) , topMaterial    , topFlipUV    , uvMap , triangulator );
 			}
 		}
 	}
 
-	private static void generateCap( final Object3D target, final Shape shape, final Matrix3D transform, final Material material, boolean flipUV, final UVMap uvMap, final Triangulator triangulator )
+	private static void generateCap( final Object3D target , final Shape shape , final Matrix3D transform , final Material material , final boolean flipUV , final UVMap uvMap , final Triangulator triangulator )
 	{
+		// @TODO Triangulation can be performed outside of this method for a performance gain, since the triangulation for top and bottom caps is essentially the same.
 		final Triangulation  triangulation = triangulator.triangulate( shape );
 		final List<Vector3D> vertices      = triangulation.getVertices( transform );
 
-		for ( final int[] triangle : triangulation.getTriangles() )
-		{
-			final int[] triangleVertices = new int[ 3 ];
+		final Collection<int[]> triangles = triangulation.getTriangles();
+		final Collection<int[]> faces     = quadify( vertices , triangles );
 
-			for ( int i = 0 ; i < 3 ; i++ )
+		for ( final int[] face : faces )
+		{
+			final int[] faceVertices = new int[ face.length ];
+
+			for ( int i = 0 ; i < face.length ; i++ )
 			{
-				final int index = triangle[ i ];
+				final int index = face[ i ];
 				final Vector3D vertexCoordinate = vertices.get( index );
-				triangleVertices[ i ] = target.getVertexIndex( vertexCoordinate.x , vertexCoordinate.y , vertexCoordinate.z );
+				faceVertices[ i ] = target.getVertexIndex( vertexCoordinate.x , vertexCoordinate.y , vertexCoordinate.z );
 			}
 
-			final float[] triangleTextureU;
-			final float[] triangleTextureV;
+			final float[] faceTextureU;
+			final float[] faceTextureV;
 			if ( material == null )
 			{
-				triangleTextureU = null;
-				triangleTextureV = null;
+				faceTextureU = null;
+				faceTextureV = null;
 			}
 			else
 			{
-				triangleTextureU = new float[ 3 ];
-				triangleTextureV = new float[ 3 ];
-				uvMap.generate( material , target.getVertexCoordinates() , triangleVertices , flipUV ? triangleTextureV : triangleTextureU , flipUV ? triangleTextureU : triangleTextureV );
+				faceTextureU = new float[ face.length ];
+				faceTextureV = new float[ face.length ];
+				uvMap.generate( material , target.getVertexCoordinates() , faceVertices , flipUV ? faceTextureV : faceTextureU , flipUV ? faceTextureU : faceTextureV );
 			}
-			target.addFace( triangleVertices , material , triangleTextureU , triangleTextureV , 1.0f , false , false );
+
+			target.addFace( faceVertices , material , faceTextureU , faceTextureV , 1.0f , false , false );
 		}
+	}
+
+	/**
+	 * Converts the given triangles into a single quad, if possible. This is a
+	 * temporary measure to overcome the current limitations of the 3D view
+	 * implementations.
+	 *
+	 * @FIXME Remove when face outlines are drawn instead of triangle outlines.
+	 *
+	 * @param   vertices    Vertex coordinates, by vertex index.
+	 * @param   triangles   Triangles to be processed, as vertex index triplets.
+	 *
+	 * @return  A single quad replacing the triangles, if possible;
+	 *          otherwise, the given triangles are returned.
+	 */
+	private static Collection<int[]> quadify( final List<Vector3D> vertices , final Collection<int[]> triangles )
+	{
+		final Collection<int[]> result;
+
+		/*
+		 * Only a pair of triangles can be converted to a quad.
+		 */
+		if ( triangles.size() == 2 )
+		{
+			final Iterator<int[]> iterator = triangles.iterator();
+			final int[] triangle1 = iterator.next();
+			final int[] triangle2 = iterator.next();
+
+			/*
+			 * Find the index of the first point of the line shared by the two
+			 * triangles, for each triangle.
+			 */
+			int offset1 = -1;
+			int offset2 = -1;
+			for ( int i = 0 ; i < 3 ; i++ )
+			{
+				for ( int j = 0 ; j < 3 ; j++ )
+				{
+					if ( ( triangle1[ i ] == triangle2[ ( j + 1 ) % 3 ] ) &&
+						 ( triangle1[ ( i + 1 ) % 3 ] == triangle2[ j ] ) )
+					{
+						offset1 = i;
+						offset2 = j;
+						break;
+					}
+				}
+			}
+
+			if ( ( offset1 == -1 ) || ( offset2 == -1 ) )
+			{
+				result = triangles;
+			}
+			else
+			{
+				/*
+				 * Determine the direction at each corner of the potential quad,
+				 * as either clockwise or counter-clockwise. If all directions
+				 * match, a quad is created.
+				 */
+				final int vertex1 = triangle1[ ( offset1 + 2 ) % 3 ];
+				final int vertex2 = triangle1[ offset1 ];
+				final int vertex3 = triangle2[ ( offset2 + 2 ) % 3 ];
+				final int vertex4 = triangle2[ offset2 ];
+
+				final Vector3D point1 = vertices.get( vertex1 );
+				final Vector3D point2 = vertices.get( vertex2 );
+				final Vector3D point3 = vertices.get( vertex3 );
+				final Vector3D point4 = vertices.get( vertex4 );
+
+				final Vector3D segment12 = point2.minus( point1 );
+				final Vector3D segment23 = point3.minus( point2 );
+				final Vector3D segment34 = point4.minus( point3 );
+				final Vector3D segment41 = point1.minus( point4 );
+
+				final Vector3D cross1 = Vector3D.cross( segment41 , segment12 );
+				final Vector3D cross2 = Vector3D.cross( segment12 , segment23 );
+				final Vector3D cross3 = Vector3D.cross( segment23 , segment34 );
+				final Vector3D cross4 = Vector3D.cross( segment34 , segment41 );
+
+				if ( ( cross1.z == cross2.z ) &&
+				     ( cross2.z == cross3.z ) &&
+				     ( cross3.z == cross4.z ) )
+				{
+					result = Collections.singleton( new int[] { vertex1 , vertex2 , vertex3 , vertex4 } );
+				}
+				else
+				{
+					result = triangles;
+				}
+			}
+		}
+		else
+		{
+			result = triangles;
+		}
+
+		return result;
 	}
 }
