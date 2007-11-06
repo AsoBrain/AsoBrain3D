@@ -84,12 +84,12 @@ public class JOGLTools
 		/*
 		 * Draw the object3d.
 		 */
-		for ( int i = 0; i < object3D.getFaceCount(); i++ )
+		if ( fill )
 		{
-			final Face3D face = object3D.getFace( i );
-
-			if ( fill )
+			for ( int i = 0; i < object3D.getFaceCount(); i++ )
 			{
+				final Face3D face = object3D.getFace( i );
+
 				if ( fillColor != null )
 				{
 					final float[] argb = fillColor.getRGBComponents( null );
@@ -117,66 +117,73 @@ public class JOGLTools
 
 				drawFace( gl , face , false  );
 			}
+		}
 
-			if ( outline )
+		if ( outline )
+		{
+			// set the blend mode
+			gl.glBlendFunc ( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+
+			// enable blending
+			gl.glEnable ( GL.GL_BLEND );
+
+			// set the line width
+			gl.glLineWidth ( 1.0f );
+
+			// change the depth mode
+			gl.glDepthFunc ( GL.GL_LEQUAL );
+
+			// enable backface culling
+			gl.glEnable( GL.GL_CULL_FACE );
+			gl.glCullFace( GL.GL_BACK );
+
+			// set polygonmode to lines only
+			gl.glPolygonMode( GL.GL_FRONT , GL.GL_LINE );
+
+			// smooth lines
+			gl.glEnable( GL.GL_LINE_SMOOTH );
+
+			// disable lighting
+			gl.glDisable( GL.GL_LIGHTING );
+
+			// set color
+			final Color color;
+			if ( outlineColor != null )
 			{
-				// set the blend mode
-				gl.glBlendFunc ( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
-
-				// enable blending
-				gl.glEnable ( GL.GL_BLEND );
-
-				// set the line width
-				gl.glLineWidth ( 1.0f );
-
-				// change the depth mode
-				gl.glDepthFunc ( GL.GL_LEQUAL );
-
-				final Color color;
-				if ( outlineColor != null )
-				{
-					color = outlineColor;
-				}
-				else
-				if ( useAlternative && ( object3D.alternateOutlinePaint instanceof Color ) )
-				{
-					color = (Color)object3D.alternateOutlinePaint;
-				}
-				else if ( object3D.outlinePaint instanceof Color )
-				{
-					color = (Color)object3D.outlinePaint;
-				}
-				else
-				{
-					color = Color.WHITE;
-				}
-
-				final float[] argb = color.getRGBComponents( null );
-				gl.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
-
-				// enable backface culling
-				gl.glEnable( GL.GL_CULL_FACE );
-				gl.glCullFace( GL.GL_BACK );
-
-				// set polygonmode to lines only
-				gl.glPolygonMode( GL.GL_FRONT , GL.GL_LINE );
-
-				// smooth lines
-				gl.glEnable( GL.GL_LINE_SMOOTH );
-
-				gl.glDisable( GL.GL_LIGHTING );
-				drawFace( gl , face, outline );
-				gl.glEnable( GL.GL_LIGHTING );
-
-				// disable backface culling
-				gl.glDisable( GL.GL_CULL_FACE );
-
-				// change the depth mode back
-				gl.glDepthFunc( GL.GL_LESS );
-
-				// disable blending
-				gl.glDisable( GL.GL_BLEND );
+				color = outlineColor;
 			}
+			else
+			if ( useAlternative && ( object3D.alternateOutlinePaint instanceof Color ) )
+			{
+				color = (Color)object3D.alternateOutlinePaint;
+			}
+			else if ( object3D.outlinePaint instanceof Color )
+			{
+				color = (Color)object3D.outlinePaint;
+			}
+			else
+			{
+				color = Color.WHITE;
+			}
+
+			final float[] argb = color.getRGBComponents( null );
+			gl.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
+
+			// draw all faces.
+			for ( int i = 0; i < object3D.getFaceCount(); i++ )
+				drawFace( gl , object3D.getFace( i ) , outline );
+
+			// enable lighting
+			gl.glEnable( GL.GL_LIGHTING );
+
+			// disable backface culling
+			gl.glDisable( GL.GL_CULL_FACE );
+
+			// change the depth mode back
+			gl.glDepthFunc( GL.GL_LESS );
+
+			// disable blending
+			gl.glDisable( GL.GL_BLEND );
 		}
 
 		/*
