@@ -21,6 +21,8 @@ package ab.j3d.view.jogl;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.lang.ref.SoftReference;
+import java.util.HashMap;
 import java.util.Map;
 import javax.media.opengl.GL;
 
@@ -35,7 +37,6 @@ import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
 
 import com.numdata.oss.TextTools;
-import com.numdata.oss.io.SoftHashMap;
 
 /**
  * Utility methods related to JOGL implementation of view model.
@@ -48,7 +49,7 @@ public class JOGLTools
 	/**
 	 * Texture map cache (maps map name to texture).
 	 */
-	private static final SoftHashMap<String, Texture> _textureCache = new SoftHashMap<String, Texture>();
+	private static final Map<String,SoftReference<Texture>> _textureCache = new HashMap<String, SoftReference<Texture>>();
 
 	/**
 	 * Utility/Application class is not supposed to be instantiated.
@@ -88,7 +89,9 @@ public class JOGLTools
 		{
 			for ( int i = 0; i < object3D.getFaceCount(); i++ )
 			{
-				final Face3D face = object3D.getFace( i );
+			final Face3D face = object3D.getFace( i );
+			final Face3D previousFace = ( i > 0 ) ? object3D.getFace( i - 1 ) : null;
+			final Face3D nextFace = ( ( i + 1 ) < object3D.getFaceCount() ) ? object3D.getFace( i + 1 ) : null;
 
 				if ( fillColor != null )
 				{
@@ -100,8 +103,17 @@ public class JOGLTools
 				{
 					gl.glShadeModel( face.isSmooth() ? GL.GL_SMOOTH : GL.GL_FLAT );
 					gl.glEnable( GL.GL_LIGHTING );
+					if( i > 0 && previousFace != null ) // i > 0 : Because first face does not have a previous face!
+					{
+						if ( face.getMaterial() != previousFace.getMaterial() )
+						{
 					setMaterial( gl , face.getMaterial() );
-
+						}
+					}
+					else
+					{
+						setMaterial( gl , face.getMaterial() );
+					}
 					if ( face.isTwoSided() )
 					{
 						gl.glDisable( GL.GL_CULL_FACE );
@@ -114,8 +126,7 @@ public class JOGLTools
 				}
 
 				gl.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_FILL );
-
-				drawFace( gl , face , false  );
+				drawFace( gl , face , false , previousFace , nextFace );
 			}
 		}
 
@@ -171,7 +182,12 @@ public class JOGLTools
 
 			// draw all faces.
 			for ( int i = 0; i < object3D.getFaceCount(); i++ )
-				drawFace( gl , object3D.getFace( i ) , outline );
+			{
+				final Face3D face = object3D.getFace( i );
+				final Face3D previousFace = ( i > 0 ) ? object3D.getFace( i - 1 ) : null;
+				final Face3D nextFace = ( ( i + 1 ) < object3D.getFaceCount() ) ? object3D.getFace( i + 1 ) : null;
+				drawFace( gl , face, outline , previousFace , nextFace );
+			}
 
 			// enable lighting
 			gl.glEnable( GL.GL_LIGHTING );
@@ -250,8 +266,10 @@ public class JOGLTools
 	 * @param gl        {@link GL}  context.
 	 * @param face      {@link Face3D } drawn.
 	 * @param outline   Whether to draw outline or not
+	 * @param previousFace  Previous face.
+	 * @param nextFace      Next face to draw.
 	 */
-	private static void drawFace( final GL gl , final Face3D face , final boolean outline )
+	private static void drawFace( final GL gl , final Face3D face , final boolean outline , final Face3D previousFace , final Face3D nextFace )
 	{
 		final int vertexCount = face.getVertexCount();
 		if ( vertexCount >= 2 )
@@ -260,8 +278,8 @@ public class JOGLTools
 			final boolean hasTexture = ( texture != null );
 			final float[] textureU   = hasTexture ? face.getTextureU() : null;
 			final float[] textureV   = hasTexture ? face.getTextureV() : null;
-
-			if ( hasTexture )
+			// If face has texture, previous face is null or has a different texture: Enable Texturing & Bind texture.
+			if ( hasTexture && ( previousFace == null || (face.getMaterial().colorMap != previousFace.getMaterial().colorMap ) ) )
 			{
 				gl.glEnable( GL.GL_TEXTURE_2D );
 				gl.glBindTexture(texture.getTarget(), texture.getTextureObject());
@@ -310,11 +328,12 @@ public class JOGLTools
 				}
 				break;
 			}
-
-			if ( hasTexture )
-			{
+			// If current face has texture, and next face is not null and does not have the same texture OR next face is null: Disable texture. ("unbind")
+			if ( ( hasTexture ) && ( ( nextFace != null && ( ( face.getMaterial().colorMap != nextFace.getMaterial().colorMap ) ) ) || nextFace == null ) )
 				gl.glDisable( texture.getTarget() );
-			}
+			// If current face has texture, and next face is not null and does not have a texture OR next face is null: Disable texturing!
+			if ( ( hasTexture ) && ( ( nextFace != null && TextTools.isEmpty( nextFace.getMaterial().colorMap ) )                   || nextFace == null ) )
+			gl.glDisable( GL.GL_TEXTURE_2D );
 		}
 	}
 
@@ -466,12 +485,13 @@ public class JOGLTools
 
 		if ( TextTools.isNonEmpty( name ) )
 		{
-			final Map<String, Texture> cache = _textureCache;
-			if ( cache.containsKey( name ) )
+			final Map<String,SoftReference<Texture>> cache = _textureCache;
+			SoftReference<Texture> reference = cache.get( name );
+			if ( reference != null )
 			{
-				result = cache.get( name );
+				result = reference.get();
 			}
-			else
+			if ( ( result == null ) && ( ( reference == null ) || !cache.containsKey( name ) ) )
 			{
 				final BufferedImage bufferedImage = MapTools.loadImage( name );
 				if ( bufferedImage != null )
@@ -493,7 +513,12 @@ public class JOGLTools
 					/** Set texture minification to linear_mipmap)_nearest to support mipmaps */
 					result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
 				}
-				cache.put( name , result );
+				else
+				{
+					System.out.println( "Could not load texture." );
+				}
+				reference = ( result != null ) ? new SoftReference<Texture>( result ) : new SoftReference<Texture> ( null );
+				cache.put( name , reference );
 			}
 		}
 		return result;
