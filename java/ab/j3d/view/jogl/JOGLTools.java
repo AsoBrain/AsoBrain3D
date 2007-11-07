@@ -184,9 +184,7 @@ public class JOGLTools
 			for ( int i = 0; i < object3D.getFaceCount(); i++ )
 			{
 				final Face3D face = object3D.getFace( i );
-				final Face3D previousFace = ( i > 0 ) ? object3D.getFace( i - 1 ) : null;
-				final Face3D nextFace = ( ( i + 1 ) < object3D.getFaceCount() ) ? object3D.getFace( i + 1 ) : null;
-				drawFace( gl , face, outline , previousFace , nextFace );
+				drawFace( gl , face, outline , null , null );
 			}
 
 			// enable lighting
@@ -263,9 +261,9 @@ public class JOGLTools
 	/**
 	 * Draw 3D face on GL context.
 	 *
-	 * @param gl        {@link GL}  context.
-	 * @param face      {@link Face3D } drawn.
-	 * @param outline   Whether to draw outline or not
+	 * @param gl            {@link GL}  context.
+	 * @param face          {@link Face3D } drawn.
+	 * @param outline       Whether to draw outline or not
 	 * @param previousFace  Previous face.
 	 * @param nextFace      Next face to draw.
 	 */
@@ -333,7 +331,7 @@ public class JOGLTools
 				gl.glDisable( texture.getTarget() );
 			// If current face has texture, and next face is not null and does not have a texture OR next face is null: Disable texturing!
 			if ( ( hasTexture ) && ( ( nextFace != null && TextTools.isEmpty( nextFace.getMaterial().colorMap ) )                   || nextFace == null ) )
-			gl.glDisable( GL.GL_TEXTURE_2D );
+				gl.glDisable( GL.GL_TEXTURE_2D );
 		}
 	}
 
