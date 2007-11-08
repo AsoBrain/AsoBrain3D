@@ -20,6 +20,7 @@
 package ab.j3d.view.jogl;
 
 import java.awt.Color;
+import javax.media.opengl.GLContext;
 
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelNode;
@@ -38,6 +39,11 @@ public class JOGLModel
 	 * Background color for the model.
 	 */
 	private final Color _background;
+
+	/**
+	 * JOGL GLContext for this model.
+	 */
+	private GLContext _context = null;
 
 	/**
 	 * Construct new JOGL view model using {@link ViewModel#MM} units.
@@ -96,5 +102,25 @@ public class JOGLModel
 		addView( view );
 
 		return view;
+	}
+
+	/**
+	 * Return the GLContext for this model if set.
+	 *
+	 * @return The GLContext for this model
+	 */
+	public GLContext getContext()
+	{
+		return _context;
+	}
+
+	/**
+	 * Set the GL Context for this model.
+	 *
+	 * @param context GLContext to be set.
+	 */
+	public void setContext( final GLContext context )
+	{
+		_context = context;
 	}
 }
