@@ -274,9 +274,11 @@ public class CollisionTester
 	}
 
 	/**
-	 * Get bound box of this object in the object coordinate system (OCS).
+	 * Get bounding box of this object in the object coordinate system (OCS).
+	 *
+	 * @return  Bounding box of this object in the object coordinate system (OCS).
 	 */
-	public final Bounds3D getOrientedBoundingBox()
+	public Bounds3D getOrientedBoundingBox()
 	{
 		Bounds3D result = _orientedBoundingBox;
 		if ( result == null )
