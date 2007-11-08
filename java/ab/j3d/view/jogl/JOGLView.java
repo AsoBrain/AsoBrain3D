@@ -72,9 +72,9 @@ public class JOGLView
 	/**
 	 * Rendering policy of this view.
 	 *
-	 * @see     #setRenderingPolicy
+	 * @see     ViewModelView#setRenderingPolicy
 	 */
-	private int _renderingPolicy;
+	private RenderingPolicy _renderingPolicy;
 
 	/**
 	 * Component through which a rendering of the view is shown.
@@ -105,10 +105,20 @@ public class JOGLView
 	 * Grid values
 	 */
 	private int _gridX       = 0;
+
+	/** Y offset of grid */
 	private int _gridY       = 0;
+
+	/** Z offset of grid */
 	private int _gridZ       = 0;
+
+	/** Dx size of grid */
 	private int _gridDx      = 0;
+
+	/** Dy size of grid */
 	private int _gridDy      = 0;
+
+	/** Gridspacing, on every value a line is drawn */
 	private int _gridSpacing = 0;
 
 	/**
@@ -128,19 +138,34 @@ public class JOGLView
 		final double unit = model.getUnit();
 
 		_projectionPolicy  = Projector.PERSPECTIVE;
-		_renderingPolicy   = SOLID;
+		_renderingPolicy   = RenderingPolicy.SOLID;
 		_frontClipDistance = 0.1 / unit;
 		_backClipDistance  = 100.0 / unit;
 		_renderThread      = null;
 
-		final GLCanvas glCanvas = new GLCanvas( new GLCapabilities() );
+		/* Use heavyweight popups, since we use a heavyweight canvas */
+		JPopupMenu.setDefaultLightWeightPopupEnabled( false );
+
+		_model         = model;
+		final GLCanvas glCanvas;
+
+		/* See if the model already contains a context. */
+		if( _model.getContext() != null )
+		{
+			glCanvas = new GLCanvas( new     GLCapabilities() , null , _model.getContext(), null );
+		}
+		else
+		{
+			 glCanvas = new GLCanvas( new GLCapabilities() );
+			_model.setContext( glCanvas.getContext() );
+		}
+
 		glCanvas.addGLEventListener( new GLEventListener()
 			{
 			/**
 			 * Define JOGL2dGraphics here to enable caching.
 			 */
 			private JOGL2dGraphics _j2d = null;
-
 			public void init( final GLAutoDrawable glAutoDrawable )
 				{
 					initGL( glAutoDrawable.getGL() );
@@ -171,15 +196,12 @@ public class JOGLView
 				}
 			} );
 
-		/* Use heavyweight popups, since we use a heavyweight canvas */
-		JPopupMenu.setDefaultLightWeightPopupEnabled( false );
-
-		_model         = model;
 		_viewComponent = glCanvas;
-		_controlInput  = new ViewControlInput( model , this );
 
 		if ( background != null )
 			_viewComponent.setBackground( background );
+
+		_controlInput  = new ViewControlInput( model , this );
 	}
 
 	public Component getComponent()
@@ -197,7 +219,7 @@ public class JOGLView
 		_projectionPolicy = policy;
 	}
 
-	public void setRenderingPolicy( final int policy )
+	public void setRenderingPolicy( final RenderingPolicy policy )
 	{
 		_renderingPolicy = policy;
 	}
@@ -401,11 +423,12 @@ public class JOGLView
 		final double   near     = _frontClipDistance;
 		final double   far      = _backClipDistance;
 
+		/* Setup size of window to draw in. */
+		gl.glViewport( x , y , width , height );
+
 		if ( _projectionPolicy != Projector.PARALLEL )
 		{
 			//View is not parallel so let's use perspective view. No support for isometric view yet.
-			/* Setup size of window to draw in. */
-			gl.glViewport( x , y , width , height );
 
 			/* Setup the projection matrix. */
 			gl.glMatrixMode( GL.GL_PROJECTION );
@@ -474,7 +497,6 @@ public class JOGLView
 			_gridSpacing = 0;
 		}
 	}
-
 	/**
 	 * Render entire scene (called from render loop).
 	 *
@@ -491,7 +513,7 @@ public class JOGLView
 //		final boolean backfaceCulling;
 //		final boolean applyLighting;
 
-		final int renderingPolicy = _renderingPolicy;
+		final RenderingPolicy renderingPolicy = _renderingPolicy;
 		switch ( renderingPolicy )
 		{
 				case SOLID     : fill = true;  outline = false; outlineColor = null;        /*useTextures = true;  backfaceCulling = true;  applyLighting = true; */ break;
@@ -507,12 +529,19 @@ public class JOGLView
 			final double   near     = _frontClipDistance;
 			final double   far      = _backClipDistance;
 			final Camera3D camera3D = getCamera();
-			final double   scale    = camera3D.getZoomFactor();
+			final double   scale    = camera3D.getZoomFactor() * getUnit() / getResolution();
 
 			gl.glMatrixMode( GL.GL_PROJECTION );
 			gl.glLoadIdentity();
-			gl.glOrtho( -(double)width / 8.0 , (double)width / 8.0 , -( (double)height * (double)width / (double)height ) / 8.0 , ( (double)height * (double)width / (double)height ) / 8.0 , near , far );
-			gl.glScaled( 1.0 - scale , 1.0 - scale , 1.0 - scale );
+
+			final double left   = -width  / 2.0;
+			final double right  =  width  / 2.0;
+			final double bottom = -height / 2.0;
+			final double top    =  height / 2.0;
+
+			gl.glOrtho( left , right , bottom , top , near , far );
+
+			gl.glScaled( scale , scale ,  scale );
 		}
 
 		/* Clear depth buffer. */
@@ -535,7 +564,11 @@ public class JOGLView
 		final Matrix3D      cameraTransform = cameraControl.getTransform();
 
 		final double aspect = (double)_viewComponent.getWidth() / (double)_viewComponent.getHeight();
-		gl.glScaled( 1.0 , aspect , 1.0 );
+
+		if( _projectionPolicy == Projector.PERSPECTIVE )
+		{
+			gl.glScaled( 1.0 , aspect , 1.0 );
+		}
 
 		JOGLTools.glMultMatrixd( gl , cameraTransform );
 
