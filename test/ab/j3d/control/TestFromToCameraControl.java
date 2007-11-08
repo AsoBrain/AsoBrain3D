@@ -21,7 +21,6 @@ package ab.j3d.control;
 
 import java.awt.Component;
 import java.util.Locale;
-
 import javax.swing.Action;
 
 import junit.framework.TestCase;
@@ -71,7 +70,7 @@ public class TestFromToCameraControl
 				{
 				}
 
-				public void setRenderingPolicy( final int policy )
+				public void setRenderingPolicy( final RenderingPolicy policy )
 				{
 				}
 
