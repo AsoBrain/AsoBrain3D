@@ -72,9 +72,9 @@ final class Java2dView
 	/**
 	 * Rendering policy of this view.
 	 *
-	 * @see     #setRenderingPolicy
+	 * @see     ViewModelView#setRenderingPolicy
 	 */
-	private int _renderingPolicy;
+	private RenderingPolicy _renderingPolicy;
 
 	/**
 	 * Component through which a rendering of the view is shown.
@@ -162,7 +162,7 @@ final class Java2dView
 			final boolean backfaceCulling;
 			final boolean applyLighting;
 
-			final int renderingPolicy = _renderingPolicy;
+			final RenderingPolicy renderingPolicy = _renderingPolicy;
 			switch ( renderingPolicy )
 			{
 					case SOLID     : fill = true;  outline = false; useTextures = true;  backfaceCulling = true;  applyLighting = true;  break;
@@ -179,7 +179,7 @@ final class Java2dView
 			final Graphics2D g2d = (Graphics2D)g.create( insets.left , insets.top , imageWidth , imageHeight );
 			Painter.paintQueue( g2d , renderQueue , outline , fill , applyLighting , useTextures );
 
-			if ( renderingPolicy == SKETCH )
+			if ( renderingPolicy == RenderingPolicy.SKETCH )
 			{
 				g2d.setStroke( SKETCH_STROKE );
 				Painter.paintQueue( g2d , renderQueue , true , false , false , false );
@@ -210,7 +210,7 @@ final class Java2dView
 		_model = model;
 
 		_projectionPolicy = Projector.PERSPECTIVE;
-		_renderingPolicy  = SOLID;
+		_renderingPolicy  = RenderingPolicy.SOLID;
 
 		/*
 		 * Create view component.
@@ -246,7 +246,7 @@ final class Java2dView
 		_projectionPolicy = policy;
 	}
 
-	public void setRenderingPolicy( final int policy )
+	public void setRenderingPolicy( final RenderingPolicy policy )
 	{
 		_renderingPolicy = policy;
 	}

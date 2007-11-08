@@ -159,7 +159,7 @@ public abstract class ViewModelExample
 			{
 				if ( SwingUtilities.isRightMouseButton( e ) )
 				{
-					view.setRenderingPolicy( ViewModelView.WIREFRAME );
+					view.setRenderingPolicy( ViewModelView.RenderingPolicy.WIREFRAME );
 					view.update();
 				}
 			}
@@ -168,7 +168,7 @@ public abstract class ViewModelExample
 			{
 				if ( SwingUtilities.isRightMouseButton( e ) )
 				{
-					view.setRenderingPolicy( ViewModelView.SOLID );
+					view.setRenderingPolicy( ViewModelView.RenderingPolicy.SOLID );
 					view.update();
 				}
 			}

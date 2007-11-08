@@ -96,9 +96,9 @@ public class JPCTView
 	/**
 	 * Rendering policy of this view.
 	 *
-	 * @see     #setRenderingPolicy
+	 * @see     ViewModelView#setRenderingPolicy
 	 */
-	private int _renderingPolicy;
+	private RenderingPolicy _renderingPolicy;
 
 	/**
 	 * Scene input translator for this View.
@@ -166,7 +166,7 @@ public class JPCTView
 		_wireframeColor      = new Color( ~backgroundColor.getRGB() );
 
 		_projectionPolicy = Projector.PERSPECTIVE;
-		_renderingPolicy  = ViewModelView.SOLID;
+		_renderingPolicy  = RenderingPolicy.SOLID;
 
 		Config.glColorDepth    = 24;    // @TODO set this on Linux only
 		Config.useLocking      = true;
@@ -369,7 +369,7 @@ public class JPCTView
 		_projectionPolicy = policy;
 	}
 
-	public void setRenderingPolicy( final int policy )
+	public void setRenderingPolicy( final RenderingPolicy policy )
 	{
 		if ( _renderingPolicy != policy )
 		{
@@ -448,7 +448,7 @@ public class JPCTView
 
 				switch ( _renderingPolicy )
 				{
-					case ViewModelView.WIREFRAME :
+					case WIREFRAME :
 						{
 							final Matrix3D  viewTransform = getViewTransform();
 							final Projector projector     = getProjector();

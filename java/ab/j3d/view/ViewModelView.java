@@ -47,67 +47,60 @@ import com.numdata.oss.event.EventDispatcher;
  */
 public abstract class ViewModelView
 {
-	/**
-	 * Rendering policy: solid.
-	 * <p />
-	 * This should result in a photorealistic rendering of the scene, taking the
-	 * physical properties of the scene into account as much as possible.
-	 * <p />
-	 * Example implementation: ray-tracing / per-pixel shading and texture mapping.
-	 *
-	 * @see     #setRenderingPolicy
-	 */
-	public static final int SOLID = 0;
-
-	/**
-	 * Rendering policy: schematic.
-	 * <p />
-	 * This should clarify the structure and design of the scene. This is
-	 * generally a form that should allow manipulation of (large) objects in a
-	 * scene and could be used to provide dimension information.
-	 * <p />
-	 * Example implementation: flat shading / functional color coding.
-	 *
-	 * @see     #setRenderingPolicy
-	 */
-	public static final int SCHEMATIC = 1;
-
-	/**
-	 * Rendering policy: schematic.
-	 * <p />
-	 * A non-photorealistic rendering method that give a good idea of what is
-	 * intended by the scene, but does not require much detail.
-	 * <p />
-	 * Example implementation: pencil sketch / cartoon rendering / silhouette.
-	 *
-	 * @see     #setRenderingPolicy
-	 */
-	public static final int SKETCH = 2;
-
-	/**
-	 * Rendering policy: wireframe.
-	 * <p />
-	 * Technical rendering including only edges, points, or iconic
-	 * representations of elements in a scene. This is the classical rendering
-	 * method in CAD software. This provides a quick overview and insight to
-	 * the complexity of a scene.
-	 * <p />
-	 * Example implementation: pencil sketch / cartoon rendering / silhouette.
-	 *
-	 * @see     #setRenderingPolicy
-	 */
-	public static final int WIREFRAME = 3;
-
-	/**
-	 * Rendering policies.
-	 */
-	public static final String[] enumRenderingPolicy =
+	/** RenderingPolicy */
+	public enum RenderingPolicy
 	{
-		"SOLID" ,
-		"SCHEMATIC" ,
-		"SKETCH" ,
-		"WIREFRAME" ,
-	};
+		/**
+		 * Rendering policy: solid.
+		 * <p />
+		 * This should result in a photorealistic rendering of the scene, taking the
+		 * physical properties of the scene into account as much as possible.
+		 * <p />
+		 * Example implementation: ray-tracing / per-pixel shading and texture mapping.
+		 *
+		 * @see     ViewModelView#setRenderingPolicy
+		 */
+		SOLID ,
+
+		/**
+		 * Rendering policy: schematic.
+		 * <p />
+		 * This should clarify the structure and design of the scene. This is
+		 * generally a form that should allow manipulation of (large) objects in a
+		 * scene and could be used to provide dimension information.
+		 * <p />
+		 * Example implementation: flat shading / functional color coding.
+		 *
+		 * @see     ViewModelView#setRenderingPolicy
+		 */
+		SCHEMATIC ,
+
+		/**
+		 * Rendering policy: sketch.
+		 * <p />
+		 * A non-photorealistic rendering method that give a good idea of what is
+		 * intended by the scene, but does not require much detail.
+		 * <p />
+		 * Example implementation: pencil sketch / cartoon rendering / silhouette.
+		 *
+		 * @see    ViewModelView#setRenderingPolicy
+		 */
+		SKETCH ,
+
+		/**
+		 * Rendering policy: wireframe.
+		 * <p />
+		 * Technical rendering including only edges, points, or iconic
+		 * representations of elements in a scene. This is the classical rendering
+		 * method in CAD software. This provides a quick overview and insight to
+		 * the complexity of a scene.
+		 * <p />
+		 * Example implementation: pencil sketch / cartoon rendering / silhouette.
+		 *
+		 * @see     ViewModelView#setRenderingPolicy
+		 */
+		WIREFRAME
+	}
 
 	/**
 	 * Scale factor from pixels to radians to make a full circle by moving the
@@ -329,7 +322,7 @@ public abstract class ViewModelView
 	}
 
 	/**
-	 * Get graphical reprsentation of view as AWT component.
+	 * Get graphical representation of view as AWT component.
 	 *
 	 * @return  Component that represents this view.
 	 */
@@ -389,10 +382,10 @@ public abstract class ViewModelView
 	 * Set rendering policy of this view.
 	 *
 	 * @param   policy      Projection policy of this view
-	 *                      ({@link #SOLID}, {@link #SCHEMATIC},
-	 *                      {@link #SKETCH}, or {@link #WIREFRAME}).
+	 *                      ({@link RenderingPolicy#SOLID}, {@link RenderingPolicy#SCHEMATIC},
+	 *                      {@link RenderingPolicy#SKETCH}, or {@link RenderingPolicy#WIREFRAME}).
 	 */
-	public abstract void setRenderingPolicy( final int policy );
+	public abstract void setRenderingPolicy( final RenderingPolicy policy );
 
 	/**
 	 * Returns the {@link Projector} for this View.

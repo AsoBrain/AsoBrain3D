@@ -382,8 +382,12 @@ public abstract class ViewModel
 		if ( node == null )
 			throw new IllegalArgumentException( "ID '" + id + "' does not refer to a known view model node" );
 
-		node.setTransform( transform );
-		updateNodeTransform( node );
+		if( !transform.equals( node.getTransform() ) || true)
+		{
+			node.setTransform( transform );
+			updateNodeTransform( node );
+		}
+
 	}
 
 	/**
@@ -519,14 +523,14 @@ public abstract class ViewModel
 	 *
 	 * @param   id                      Application-assigned ID for the new view.
 	 * @param   renderingPolicy         Desired rendering policy for view
-	 *                                  ({@link ViewModelView#SOLID},
-	 *                                  {@link ViewModelView#SCHEMATIC},
-	 *                                  {@link ViewModelView#SKETCH}, or
-	 *                                  {@link ViewModelView#WIREFRAME}).
+	 *                                  ({@link ViewModelView.RenderingPolicy#SOLID},
+	 *                                   {@link ViewModelView.RenderingPolicy#SCHEMATIC},
+	 *                                   {@link ViewModelView.RenderingPolicy#SKETCH}, or
+	 *                                   {@link ViewModelView.RenderingPolicy#WIREFRAME}).
 	 * @param   projectionPolicy        Desired projection policy for view
 	 *                                  ({@link Projector#PERSPECTIVE},
-	 *                                  {@link Projector#PARALLEL}, or
-	 *                                  {@link Projector#ISOMETRIC}).
+	 *                                   {@link Projector#PARALLEL}, or
+	 *                                   {@link Projector#ISOMETRIC}).
 	 * @param   estimatedSceneBounds    Estimated bounding box of scene.
 	 * @param   viewDirection           Direction from which to view the scene.
 	 *
@@ -534,14 +538,14 @@ public abstract class ViewModel
 	 *
 	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public final ViewModelView createView( final Object id , final int renderingPolicy , final int projectionPolicy , final Bounds3D estimatedSceneBounds , final Vector3D viewDirection )
+	public final ViewModelView createView( final Object id , final ViewModelView.RenderingPolicy renderingPolicy , final int projectionPolicy , final Bounds3D estimatedSceneBounds , final Vector3D viewDirection )
 	{
 		final ViewModelView view = createView( id );
 
 		final double   sceneSize = Vector3D.distanceBetween( estimatedSceneBounds.v1 , estimatedSceneBounds.v2 );
 		final Vector3D center    = estimatedSceneBounds.center();
 
-		if ( ( renderingPolicy != ViewModelView.SOLID ) || ( projectionPolicy != Projector.PERSPECTIVE ) )
+		if ( ( renderingPolicy != ViewModelView.RenderingPolicy.SOLID ) || ( projectionPolicy != Projector.PERSPECTIVE ) )
 		{
 			final double x = -center.x + viewDirection.x * sceneSize;
 			final double y = -center.y + viewDirection.y * sceneSize;

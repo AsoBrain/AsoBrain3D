@@ -45,8 +45,8 @@ public class TestViewModelView
 
 		final List<String> expectedKeys = new ArrayList();
 
-		for ( final String policy : ViewModelView.enumRenderingPolicy )
-			expectedKeys.add( policy );
+		for ( final ViewModelView.RenderingPolicy policy : ViewModelView.RenderingPolicy.values() )
+			expectedKeys.add( policy.name() );
 
 		ResourceBundleTester.testBundles( ViewModelView.class , locales , false , expectedKeys , false , true , false );
 	}

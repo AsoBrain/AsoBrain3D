@@ -331,7 +331,7 @@ final class Java3dView
 		tg.setTransform( transform3d );
 	}
 
-	public void setRenderingPolicy( final int policy )
+	public void setRenderingPolicy( final RenderingPolicy policy )
 	{
 		/* @FIXME how can we implement such a feature? I think this really requires different geometry! Maybe something with 'alternate appearance' helps a little? */
 	}

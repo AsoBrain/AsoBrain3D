@@ -45,16 +45,16 @@ public class SwitchRenderingPolicyAction
 	 * @param   view            The view this action belongs to.
 	 * @param   currentPolicy   Current rendering policy of the view.
 	 */
-	public SwitchRenderingPolicyAction( final Locale locale , final ViewModelView view , final int currentPolicy )
+	public SwitchRenderingPolicyAction( final Locale locale , final ViewModelView view , final ViewModelView.RenderingPolicy currentPolicy )
 	{
-		super( ResourceBundleTools.getBundle( ViewModelView.class , locale ) , ViewModelView.enumRenderingPolicy , currentPolicy );
 
+		super( ResourceBundleTools.getBundle( ViewModelView.class , locale ) , currentPolicy );
 		_view = view;
 	}
 
 	public void run()
 	{
-		_view.setRenderingPolicy( getSelectedIndex() );
+		_view.setRenderingPolicy( (ViewModelView.RenderingPolicy)getSelectedValue() );
 		_view.update();
 	}
 }
