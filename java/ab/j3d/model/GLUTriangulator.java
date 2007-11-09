@@ -85,6 +85,22 @@ class GLUTriangulator
 		final GLU glu = new GLU();
 		final GLUtessellator tessellator = glu.gluNewTess();
 
+		final PathIterator iterator = shape.getPathIterator( null, _flatness );
+
+		switch ( iterator.getWindingRule() )
+		{
+			case PathIterator.WIND_EVEN_ODD:
+				glu.gluTessProperty( tessellator , GLU_TESS_WINDING_RULE , (double)GLU_TESS_WINDING_ODD );
+				break;
+
+			case PathIterator.WIND_NON_ZERO:
+				glu.gluTessProperty( tessellator , GLU_TESS_WINDING_RULE , (double)GLU_TESS_WINDING_NONZERO );
+				break;
+
+			default:
+				throw new AssertionError( "Illegal winding rule: " + iterator.getWindingRule() );
+		}
+
 		final Vector3D normal = _normal;
 		if ( normal != Vector3D.INIT )
 		{
@@ -98,8 +114,6 @@ class GLUTriangulator
 		glu.gluTessCallback( tessellator , GLU_TESS_VERTEX , triangulationBuilder );
 		glu.gluTessCallback( tessellator , GLU_TESS_END    , triangulationBuilder );
 		glu.gluTessCallback( tessellator , GLU_TESS_ERROR  , triangulationBuilder );
-
-		final PathIterator iterator = shape.getPathIterator( null, _flatness );
 
 		glu.gluBeginPolygon( tessellator );
 
