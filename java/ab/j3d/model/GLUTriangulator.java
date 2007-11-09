@@ -110,10 +110,11 @@ class GLUTriangulator
 		final TriangulationImpl    triangulation        = new TriangulationImpl();
 		final TriangulationBuilder triangulationBuilder = new TriangulationBuilder( triangulation );
 
-		glu.gluTessCallback( tessellator , GLU_TESS_BEGIN  , triangulationBuilder );
-		glu.gluTessCallback( tessellator , GLU_TESS_VERTEX , triangulationBuilder );
-		glu.gluTessCallback( tessellator , GLU_TESS_END    , triangulationBuilder );
-		glu.gluTessCallback( tessellator , GLU_TESS_ERROR  , triangulationBuilder );
+		glu.gluTessCallback( tessellator , GLU_TESS_BEGIN   , triangulationBuilder );
+		glu.gluTessCallback( tessellator , GLU_TESS_VERTEX  , triangulationBuilder );
+		glu.gluTessCallback( tessellator , GLU_TESS_END     , triangulationBuilder );
+		glu.gluTessCallback( tessellator , GLU_TESS_ERROR   , triangulationBuilder );
+		glu.gluTessCallback( tessellator , GLU_TESS_COMBINE , triangulationBuilder );
 
 		glu.gluBeginPolygon( tessellator );
 
@@ -270,6 +271,17 @@ class GLUTriangulator
 			}
 		}
 
+		public void combine( final double[] coords , final Object[] vertexData , final float[] weight , final Object[] output )
+		{
+			if (                                  !vertexData[ 0 ].equals( vertexData[ 1 ] )   ||
+			     ( ( vertexData[ 1 ] != null ) && !vertexData[ 0 ].equals( vertexData[ 1 ] ) ) ||
+			     ( ( vertexData[ 2 ] != null ) && !vertexData[ 0 ].equals( vertexData[ 2 ] ) ) )
+			{
+				final int combinedIndex = _triangulation.addVertex( Vector3D.INIT.set( coords[ 0 ], coords[ 1 ], coords[ 2 ] ) );
+				output[ 0 ] = Integer.valueOf( combinedIndex );
+			}
+		}
+
 		public void end()
 		{
 			_type = -1;
@@ -278,7 +290,18 @@ class GLUTriangulator
 		public void error( final int errorCode )
 		{
 			final GLU glu = new GLU();
-			throw new RuntimeException( glu.gluErrorString( errorCode ) );
+
+			String errorString;
+			try
+			{
+				errorString = glu.gluErrorString( errorCode );
+			}
+			catch ( Exception e )
+			{
+				errorString = "unknown error: " + errorCode;
+			}
+
+			throw new RuntimeException( errorString );
 		}
 
 		/**
@@ -388,8 +411,13 @@ class GLUTriangulator
 		 */
 		public int addVertex( final Vector3D vertex )
 		{
-			_vertices.add( vertex );
-			return _vertices.size() - 1;
+			int result = _vertices.indexOf( vertex );
+			if ( result == -1 )
+			{
+				_vertices.add( vertex );
+				result = _vertices.size() - 1;
+			}
+			return result;
 		}
 
 		/**
