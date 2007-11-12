@@ -22,7 +22,10 @@ package ab.j3d.view.jogl;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.lang.ref.SoftReference;
+import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Map;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCanvas;
@@ -33,6 +36,7 @@ import javax.swing.Action;
 import javax.swing.JPopupMenu;
 
 import com.sun.opengl.util.j2d.Overlay;
+import com.sun.opengl.util.texture.Texture;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.control.CameraControl;
@@ -122,19 +126,30 @@ public class JOGLView
 	private int _gridSpacing = 0;
 
 	/**
+	 * Used for FPS measuring.
+	 */
+	private ArrayList<Long> timers = new ArrayList<Long>();
+
+	/**
+	 * Texture cache
+	 */
+	private Map<String, SoftReference<Texture>> _textureCache;
+
+	/**
 	 * Construct new view.
 	 *
-	 * @param   model       Model for which this view is created.
-	 * @param   background  Background color to use for 3D views. May be
-	 *                      <code>null</code>, in which case the default
-	 *                      background color of the current look and feel is
-	 *                      used.
-	 * @param   id          Application-assigned ID of this view.
+	 * @param   model           Model for which this view is created.
+	 * @param   background      Background color to use for 3D views. May be
+	 *                          <code>null</code>, in which case the default
+	 *                          background color of the current look and feel is
+	 *                          used.
+	 * @param   id              Application-assigned ID of this view.
+	 * @param   textureCache    Texture cache.
 	 */
-	public JOGLView( final JOGLModel model , final Color background , final Object id )
+	public JOGLView( final JOGLModel model , final Color background , final Object id , final Map<String, SoftReference<Texture>> textureCache )
 	{
 		super( model.getUnit() , id );
-
+		_textureCache = textureCache;
 		final double unit = model.getUnit();
 
 		_projectionPolicy  = Projector.PERSPECTIVE;
@@ -166,20 +181,40 @@ public class JOGLView
 			 * Define JOGL2dGraphics here to enable caching.
 			 */
 			private JOGL2dGraphics _j2d = null;
+
+			/**
+			 * GLWrapper handeling GL calls.
+			 */
+			private GLWrapper _glWrapper = null;
+
 			public void init( final GLAutoDrawable glAutoDrawable )
 				{
-					initGL( glAutoDrawable.getGL() );
+					_glWrapper = new GLWrapper( glAutoDrawable.getGL() );
+					initGL( _glWrapper );
 					final Overlay overlay = new Overlay( glAutoDrawable );
 					_j2d = new JOGL2dGraphics( overlay.createGraphics() , glAutoDrawable );
 				}
 
 				public void display( final GLAutoDrawable glAutoDrawable )
 				{
-					renderFrame( glAutoDrawable.getGL() , glAutoDrawable.getWidth() , glAutoDrawable.getHeight() );
+					final long timer1 = System.nanoTime();
+					renderFrame( _glWrapper , glAutoDrawable.getWidth() , glAutoDrawable.getHeight() );
 
 					if( hasOverlayPainters() )
 					{
 						paintOverlay( _j2d );
+					}
+					final long timer2 = System.nanoTime();
+					timers.add( Long.valueOf( ( timer2 - timer1 ) ) );
+					if ( timers.size() == 100 )
+					{
+						long totalTime = 0L;
+						for ( final Long timer : timers )
+						{
+							totalTime = totalTime + timer;
+						}
+						System.out.println( "FPS: " + 1000000000.0 / (double)( totalTime / 100L ) );
+						timers = new ArrayList<Long>();
 					}
 				}
 
@@ -190,7 +225,7 @@ public class JOGLView
 
 				public void reshape ( final GLAutoDrawable glAutoDrawable , final int x , final int y , final int width , final int height )
 				{
-					windowReshape( glAutoDrawable.getGL() , x , y , width , height );
+					windowReshape( _glWrapper , x , y , width , height );
 					glCanvas.setMinimumSize( new Dimension( 10 , 10 ) ); //fix for making the joglview smaller
 
 				}
@@ -312,7 +347,8 @@ public class JOGLView
 		@Override
 		public void run()
 		{
-			System.out.println( "Render thread started: " + Thread.currentThread().getName() );
+			final Thread thread1 = Thread.currentThread();
+			System.out.println( "Render thread started: " + thread1.getName() );
 			final GLCanvas viewComponent = _viewComponent;
 			while ( !_terminationRequested && viewComponent.isShowing() )
 			{
@@ -352,7 +388,8 @@ public class JOGLView
 			_terminationRequested = false;
 			_updateRequested      = false;
 
-			System.out.println( "Renderer thread died: " + Thread.currentThread().getName() );
+			final Thread thread = Thread.currentThread();
+			System.out.println( "Renderer thread died: " + thread.getName() );
 		}
 
 		/**
@@ -388,34 +425,35 @@ public class JOGLView
 	/**
 	 * Initialize GL context. Called once during initialization.
 	 *
-	 * @param   gl  GL context.
+	 * @param   glWrapper  GLWrapper.
 	 */
-	private void initGL( final GL gl )
+	private void initGL( final GLWrapper glWrapper )
 	{
 		/* Enable depth buffering. */
+		final GL gl = glWrapper.getgl();
 		gl.glEnable( GL.GL_DEPTH_TEST );
-		gl.glDepthFunc( GL.GL_LESS );
+		glWrapper.glDepthFunc( GL.GL_LESS );
 
 		/* Set smoothing. */
-		gl.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
-		gl.glEnable( GL.GL_BLEND );
-		gl.glEnable( GL.GL_LINE_SMOOTH );
+		glWrapper.setBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+		glWrapper.setBlend( true );
+		glWrapper.setSmooth( true );
 		gl.glHint( GL.GL_LINE_SMOOTH_HINT , GL.GL_FASTEST );
 
 		/* Initial clear. */
-		JOGLTools.glClearColor( gl , _viewComponent.getBackground() );
+		JOGLTools.glClearColor( glWrapper , _viewComponent.getBackground() );
 	}
 
 	/**
 	 * Called whenever the GL canvas is resized.
 	 *
-	 * @param   gl      GL context.
-	 * @param   x       X offset.
-	 * @param   y       Y offset.
-	 * @param   width   Width of canvas.
-	 * @param   height  Height of canvas.
+	 * @param   glWrapper   GLWrapper.
+	 * @param   x           X offset.
+	 * @param   y           Y offset.
+	 * @param   width       Width of canvas.
+	 * @param   height      Height of canvas.
 	 */
-	private void windowReshape( final GL gl , final int x , final int y , final int width , final int height )
+	private void windowReshape( final GLWrapper glWrapper , final int x , final int y , final int width , final int height )
 	{
 		final Camera3D camera   = getCamera();
 		final double   fov      = Math.toDegrees( camera.getAperture() );
@@ -424,6 +462,7 @@ public class JOGLView
 		final double   far      = _backClipDistance;
 
 		/* Setup size of window to draw in. */
+		final GL gl = glWrapper.getgl();
 		gl.glViewport( x , y , width , height );
 
 		if ( _projectionPolicy != Projector.PARALLEL )
@@ -500,11 +539,11 @@ public class JOGLView
 	/**
 	 * Render entire scene (called from render loop).
 	 *
-	 * @param   gl      GL context.
-	 * @param   width   Width of GLAutoDrawable
-	 * @param   height  Height of GLAutoDrawable
+	 * @param   glWrapper   GLWrapper.
+	 * @param   width       Width of GLAutoDrawable
+	 * @param   height      Height of GLAutoDrawable
 	 */
-	private void renderFrame( final GL gl , final int width, final int height )
+	private void renderFrame( final GLWrapper glWrapper , final int width, final int height )
 	{
 		final boolean fill;
 		final boolean outline;
@@ -513,6 +552,7 @@ public class JOGLView
 //		final boolean backfaceCulling;
 //		final boolean applyLighting;
 
+		final GL gl = glWrapper.getgl();
 		final RenderingPolicy renderingPolicy = _renderingPolicy;
 		switch ( renderingPolicy )
 		{
@@ -534,10 +574,10 @@ public class JOGLView
 			gl.glMatrixMode( GL.GL_PROJECTION );
 			gl.glLoadIdentity();
 
-			final double left   = -width  / 2.0;
-			final double right  =  width  / 2.0;
-			final double bottom = -height / 2.0;
-			final double top    =  height / 2.0;
+			final double left   = (double)-width    / 2.0;
+			final double right  = (double)width     / 2.0;
+			final double bottom = (double)-height   / 2.0;
+			final double top    = (double)height    / 2.0;
 
 			gl.glOrtho( left , right , bottom , top , near , far );
 
@@ -555,7 +595,7 @@ public class JOGLView
 		gl.glLoadIdentity();
 
 		/* Clear first. */
-		JOGLTools.glClearColor( gl , _viewComponent.getBackground() );
+		JOGLTools.glClearColor( glWrapper , _viewComponent.getBackground() );
 
 		/*
 		 * Setup the camera.
@@ -570,7 +610,7 @@ public class JOGLView
 			gl.glScaled( 1.0 , aspect , 1.0 );
 		}
 
-		JOGLTools.glMultMatrixd( gl , cameraTransform );
+		JOGLTools.glMultMatrixd( glWrapper , cameraTransform );
 
 		/*
 		 * Render the view model nodes.
@@ -626,10 +666,10 @@ public class JOGLView
 			{
 				for ( int i = 0 ; i < objects.size() ; i++ )
 				{
-					JOGLTools.paintObject3D( gl , objects.getNode( i ) , objects.getMatrix( i ) , fill , null , outline , outlineColor , false );
+					JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , fill , null , outline , outlineColor , false, _textureCache  );
 				}
 			}
 		}
-		JOGLTools.drawGrid( gl , _gridX , _gridY , _gridZ , _gridDx , _gridDy , _gridSpacing );
+		JOGLTools.drawGrid( glWrapper , _gridX , _gridY , _gridZ , _gridDx , _gridDy , _gridSpacing );
 	}
 }
