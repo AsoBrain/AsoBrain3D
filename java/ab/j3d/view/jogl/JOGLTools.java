@@ -22,7 +22,6 @@ package ab.j3d.view.jogl;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.lang.ref.SoftReference;
-import java.util.HashMap;
 import java.util.Map;
 import javax.media.opengl.GL;
 
@@ -46,10 +45,6 @@ import com.numdata.oss.TextTools;
  */
 public class JOGLTools
 {
-	/**
-	 * Texture map cache (maps map name to texture).
-	 */
-	private static final Map<String,SoftReference<Texture>> _textureCache = new HashMap<String, SoftReference<Texture>>();
 
 	/**
 	 * Utility/Application class is not supposed to be instantiated.
@@ -61,101 +56,88 @@ public class JOGLTools
 	/**
 	 * Paint 3D object on GL context.
 	 *
-	 * @param gl             GL context.
-	 * @param object3D       Object to draw.
-	 * @param node2gl        Transformation from node to current GL transform.
-	 * @param fill           Fill polygons.
-	 * @param fillColor      Override color to use for filling.
-	 * @param outline        Draw polygon outlines.
-	 * @param outlineColor   Override color to use for outlines.
-	 * @param useAlternative Use alternative vs. regular object colors.
+	 * @param glWrapper         GLWrapper
+	 * @param object3D          Object to draw.
+	 * @param node2gl           Transformation from node to current GL transform.
+	 * @param fill              Fill polygons.
+	 * @param fillColor         Override color to use for filling.
+	 * @param outline           Draw polygon outlines.
+	 * @param outlineColor      Override color to use for outlines.
+	 * @param useAlternative    Use alternative vs. regular object colors.
 	 */
-	public static void paintObject3D( final GL gl , final Object3D object3D , final Matrix3D node2gl , final boolean fill , final Color fillColor , final boolean outline , final Color outlineColor , final boolean useAlternative )
+	public static void paintObject3D( final GLWrapper glWrapper , final Object3D object3D , final Matrix3D node2gl , final boolean fill , final Color fillColor , final boolean outline , final Color outlineColor , final boolean useAlternative , final Map<String,SoftReference<Texture>> textureCache )
 	{
 		/*
 		 * Push the current matrix stack down by one
 		 */
-		gl.glPushMatrix();
+		glWrapper.glPushMatrix();
 
 		/*
 		 * Set the object transform
 		 */
-		glMultMatrixd( gl , node2gl );
+		glMultMatrixd( glWrapper , node2gl );
 
 		/*
 		 * Draw the object3d.
 		 */
 		if ( fill )
 		{
+			glWrapper.setPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_FILL );
 			for ( int i = 0; i < object3D.getFaceCount(); i++ )
 			{
 			final Face3D face = object3D.getFace( i );
-			final Face3D previousFace = ( i > 0 ) ? object3D.getFace( i - 1 ) : null;
-			final Face3D nextFace = ( ( i + 1 ) < object3D.getFaceCount() ) ? object3D.getFace( i + 1 ) : null;
-
 				if ( fillColor != null )
 				{
 					final float[] argb = fillColor.getRGBComponents( null );
-					gl.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
-					gl.glDisable( GL.GL_LIGHTING );
+					glWrapper.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
+					glWrapper.setLightning( false );
 				}
 				else
 				{
-					gl.glShadeModel( face.isSmooth() ? GL.GL_SMOOTH : GL.GL_FLAT );
-					gl.glEnable( GL.GL_LIGHTING );
-					if( i > 0 && previousFace != null ) // i > 0 : Because first face does not have a previous face!
-					{
-						if ( face.getMaterial() != previousFace.getMaterial() )
-						{
-					setMaterial( gl , face.getMaterial() );
-						}
-					}
-					else
-					{
-						setMaterial( gl , face.getMaterial() );
-					}
+					glWrapper.setLightning( true );
+					glWrapper.setShadeModel( ( face.isSmooth() ? GL.GL_SMOOTH : GL.GL_FLAT ) );
+					setMaterial( glWrapper , face.getMaterial() );
 					if ( face.isTwoSided() )
 					{
-						gl.glDisable( GL.GL_CULL_FACE );
+						glWrapper.setCullFace( false );
 					}
 					else
 					{
-						gl.glEnable( GL.GL_CULL_FACE );
-						gl.glCullFace( GL.GL_BACK );
+						glWrapper.setCullFace( true );
+						glWrapper.setCullFaceMode( GL.GL_BACK );
 					}
 				}
-
-				gl.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_FILL );
-				drawFace( gl , face , false , previousFace , nextFace );
+				drawFace( glWrapper , face , false , textureCache );
 			}
+
 		}
 
 		if ( outline )
 		{
 			// set the blend mode
-			gl.glBlendFunc ( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+			glWrapper.setBlendFunc(GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 
 			// enable blending
-			gl.glEnable ( GL.GL_BLEND );
+			glWrapper.setBlend( true );
 
 			// set the line width
-			gl.glLineWidth ( 1.0f );
+			glWrapper.glLineWidth ( 1.0f );
 
 			// change the depth mode
-			gl.glDepthFunc ( GL.GL_LEQUAL );
+			glWrapper.glDepthFunc ( GL.GL_LEQUAL );
 
 			// enable backface culling
-			gl.glEnable( GL.GL_CULL_FACE );
-			gl.glCullFace( GL.GL_BACK );
+			glWrapper.setCullFace( true );
+			glWrapper.setCullFaceMode( GL.GL_BACK );
 
 			// set polygonmode to lines only
-			gl.glPolygonMode( GL.GL_FRONT , GL.GL_LINE );
+			glWrapper.setPolygonMode( GL.GL_FRONT , GL.GL_LINE );
 
 			// smooth lines
-			gl.glEnable( GL.GL_LINE_SMOOTH );
+			glWrapper.setSmooth( true );
 
 			// disable lighting
-			gl.glDisable( GL.GL_LIGHTING );
+			glWrapper.setLightning( false );
 
 			// set color
 			final Color color;
@@ -177,39 +159,38 @@ public class JOGLTools
 				color = Color.WHITE;
 			}
 
-			final float[] argb = color.getRGBComponents( null );
-			gl.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
+			final float[] rgba = color.getRGBComponents( null );
+			glWrapper.glColor4f( rgba );
 
 			// draw all faces.
 			for ( int i = 0; i < object3D.getFaceCount(); i++ )
 			{
 				final Face3D face = object3D.getFace( i );
-				drawFace( gl , face, outline , null , null );
+				drawFace( glWrapper , face, outline , textureCache);
 			}
 
 			// enable lighting
-			gl.glEnable( GL.GL_LIGHTING );
+			glWrapper.setLightning( true );
 
 			// disable backface culling
-			gl.glDisable( GL.GL_CULL_FACE );
+			glWrapper.setCullFace( false );
 
 			// change the depth mode back
-			gl.glDepthFunc( GL.GL_LESS );
+			glWrapper.glDepthFunc( GL.GL_LESS );
 
 			// disable blending
-			gl.glDisable( GL.GL_BLEND );
+			glWrapper.setBlend( false );
 		}
 
 		/*
 		 * Pop matrix stack, replace current matrix with one below it on the stack.
 		 */
-		gl.glPopMatrix();
+		glWrapper.glPopMatrix();
 	}
 
 	/**
 	 * Draw a 3D grid centered around point x,y,z with size dx,dy.
 	 *
-	 * @param gl        {@link GL}  context.
 	 * @param x         X position of the grid.
 	 * @param y         Y position of the grid.
 	 * @param z         Z position of the grid.
@@ -217,26 +198,28 @@ public class JOGLTools
 	 * @param dy        Height of the grid.
 	 * @param spacing   Spacing between the grid lines.
 	 */
-	public static void drawGrid( final GL gl , final int x , final int y , final int z , final int dx , final int dy , final int spacing )
+	public static void drawGrid( final GLWrapper glWrapper , final int x , final int y , final int z , final int dx , final int dy , final int spacing )
 	{
 		if( spacing != 0 ) //check if spacing is not null else we'll get an infinite loop.
 		{
+			final GL gl = glWrapper.getgl();
 			// set the anti-aliasing options
-			gl.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
-			gl.glEnable( GL.GL_BLEND );
-			gl.glEnable( GL.GL_LINE_SMOOTH );
+			glWrapper.setBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+			glWrapper.setBlend( true );
+			glWrapper.setSmooth( true );
 
 			//set line width to 1.0f, the smallest possible line in opengl
-			gl.glLineWidth( 1.0f );
-			gl.glDisable( GL.GL_LIGHTING );
-			gl.glBegin( GL.GL_LINES );
+			glWrapper.glLineWidth( 1.0f );
+			glWrapper.setLightning( false );
+			glWrapper.glBegin( GL.GL_LINES );
 
 			for( int i = -dx / 2 + x ; i <= dx / 2 + x ; i += spacing )
 			{
 				if ( ( ( i - dx ) / spacing ) % 10 == 0 )
-					gl.glColor3f( 0.5f , 0.5f , 0.5f );
+					glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
 				else
-					gl.glColor3f( 0.75f , 0.75f , 0.75f );
+					glWrapper.glColor3f( 0.75f , 0.75f , 0.75f );
+
 
 				gl.glVertex3i( i , -dy / 2 + y , z );
 				gl.glVertex3i( i ,  dy / 2 + y , z );
@@ -245,106 +228,98 @@ public class JOGLTools
 			for( int i = -dy / 2 + y ; i <= dy / 2 + y ; i += spacing )
 			{
 				if ( ( ( i - dy ) / spacing ) % 10 == 0 )
-					gl.glColor3f( 0.5f , 0.5f , 0.5f );
+					glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
 				else
-					gl.glColor3f( 0.75f , 0.75f , 0.75f );
+					glWrapper.glColor3f( 0.75f , 0.75f , 0.75f );
 
 				gl.glVertex3i( -dx / 2 + x , i , z );
 				gl.glVertex3i(  dx / 2 + x , i , z );
 			}
 
-			gl.glEnd();
-			gl.glDisable( GL.GL_BLEND );
+			glWrapper.glEnd();
+			glWrapper.setBlend( false );
 		}
 	}
 
 	/**
 	 * Draw 3D face on GL context.
 	 *
-	 * @param gl            {@link GL}  context.
 	 * @param face          {@link Face3D } drawn.
 	 * @param outline       Whether to draw outline or not
-	 * @param previousFace  Previous face.
-	 * @param nextFace      Next face to draw.
 	 */
-	private static void drawFace( final GL gl , final Face3D face , final boolean outline , final Face3D previousFace , final Face3D nextFace )
+	private static void drawFace( final GLWrapper glWrapper , final Face3D face , final boolean outline, final Map<String, SoftReference<Texture>> textureCache  )
 	{
 		final int vertexCount = face.getVertexCount();
 		if ( vertexCount >= 2 )
 		{
-			final Texture texture    = outline ? null : getColorMapTexture( face );
+			final Texture texture    = outline ? null : getColorMapTexture( face , textureCache);
 			final boolean hasTexture = ( texture != null );
 			final float[] textureU   = hasTexture ? face.getTextureU() : null;
 			final float[] textureV   = hasTexture ? face.getTextureV() : null;
-			// If face has texture, previous face is null or has a different texture: Enable Texturing & Bind texture.
-			if ( hasTexture && ( previousFace == null || (face.getMaterial().colorMap != previousFace.getMaterial().colorMap ) ) )
+			if( hasTexture )
 			{
-				gl.glEnable( GL.GL_TEXTURE_2D );
-				gl.glBindTexture(texture.getTarget(), texture.getTextureObject());
+				glWrapper.setTexture2D( true );
+				glWrapper.setBindTexture( texture.getTarget(), texture.getTextureObject()) ;
 			}
 
 			switch ( vertexCount )
 			{
 				case 2:
 				{
-				gl.glBegin( GL.GL_LINES );
-					setFaceVertex( gl , face , textureU , textureV , 0 );
-					setFaceVertex( gl , face , textureU , textureV , 1 );
-					gl.glEnd();
+				glWrapper.glBegin( GL.GL_LINES );
+					setFaceVertex( glWrapper , face , textureU , textureV , 0 );
+					setFaceVertex( glWrapper , face , textureU , textureV , 1 );
+				glWrapper.glEnd(  );
 				}
 				break;
 
 				case 3:
 				{
-					gl.glBegin( GL.GL_TRIANGLES );
-					setFaceVertex( gl , face , textureU , textureV , 2 );
-					setFaceVertex( gl , face , textureU , textureV , 1 );
-					setFaceVertex( gl , face , textureU , textureV , 0 );
-					gl.glEnd();
+				glWrapper.glBegin( GL.GL_TRIANGLES );
+					setFaceVertex( glWrapper , face , textureU , textureV , 2 );
+					setFaceVertex( glWrapper , face , textureU , textureV , 1 );
+					setFaceVertex( glWrapper , face , textureU , textureV , 0 );
+				glWrapper.glEnd(  );
 				}
 				break;
 
 				case 4:
 				{
-					gl.glBegin( GL.GL_QUADS );
-					setFaceVertex( gl , face , textureU , textureV , 3 );
-					setFaceVertex( gl , face , textureU , textureV , 2 );
-					setFaceVertex( gl , face , textureU , textureV , 1 );
-					setFaceVertex( gl , face , textureU , textureV , 0 );
-					gl.glEnd();
+				glWrapper.glBegin( GL.GL_QUADS );
+					setFaceVertex( glWrapper , face , textureU , textureV , 3 );
+					setFaceVertex( glWrapper , face , textureU , textureV , 2 );
+					setFaceVertex( glWrapper , face , textureU , textureV , 1 );
+					setFaceVertex( glWrapper , face , textureU , textureV , 0 );
+				glWrapper.glEnd(  );
 				}
 				break;
 
 				default:
 				{
-					gl.glBegin( GL.GL_POLYGON );
-
+				glWrapper.glBegin( GL.GL_POLYGON );
 					for ( int i = vertexCount ; --i >= 0 ; )
-						setFaceVertex( gl , face , textureU , textureV , i );
-
-					gl.glEnd();
+						setFaceVertex( glWrapper , face , textureU , textureV , i );
+				glWrapper.glEnd(  );
 				}
 				break;
 			}
-			// If current face has texture, and next face is not null and does not have the same texture OR next face is null: Disable texture. ("unbind")
-			if ( ( hasTexture ) && ( ( nextFace != null && ( ( face.getMaterial().colorMap != nextFace.getMaterial().colorMap ) ) ) || nextFace == null ) )
-				gl.glDisable( texture.getTarget() );
-			// If current face has texture, and next face is not null and does not have a texture OR next face is null: Disable texturing!
-			if ( ( hasTexture ) && ( ( nextFace != null && TextTools.isEmpty( nextFace.getMaterial().colorMap ) )                   || nextFace == null ) )
-				gl.glDisable( GL.GL_TEXTURE_2D );
+			if( hasTexture )
+			{
+				glWrapper.setDisableTexture( texture.getTarget() );
+				glWrapper.setTexture2D( false );
+			}
 		}
 	}
 
 	/**
 	 * Set vertex properties using GL.
 	 *
-	 * @param   gl                  GL context.
 	 * @param   face                Face whose vertex to set.
 	 * @param   textureU            Horizontal texture coordinate.
 	 * @param   textureV            Vertical texture coordinate.
 	 * @param   faceVertexIndex     Index of vertex in face.
 	 */
-	private static void setFaceVertex( final GL gl , final Face3D face , final float[] textureU , final float[] textureV , final int faceVertexIndex )
+	private static void setFaceVertex( final GLWrapper glWrapper , final Face3D face , final float[] textureU , final float[] textureV , final int faceVertexIndex )
 	{
 		final Object3D object            = face.getObject();
 		final int[]    faceVertexIndices = face.getVertexIndices();
@@ -352,47 +327,45 @@ public class JOGLTools
 
 		if ( ( textureU != null ) && ( textureV != null ) )
 		{
-			gl.glTexCoord2f( textureU[ faceVertexIndex ] , textureV[ faceVertexIndex ] );
+			glWrapper.glTexCoord2f( textureU[ faceVertexIndex ] , textureV[ faceVertexIndex ] );
 		}
 
 		if ( face.isSmooth() )
 		{
 			final double[] vertexNormals = object.getVertexNormals();
-			gl.glNormal3d( vertexNormals[ vertexIndex ] , vertexNormals[ vertexIndex + 1 ] , vertexNormals[ vertexIndex + 2 ] );
+			glWrapper.glNormal3d( vertexNormals[ vertexIndex ] , vertexNormals[ vertexIndex + 1 ] , vertexNormals[ vertexIndex + 2 ] );
 		}
 		else
 		{
 			final Vector3D faceNormal = face.getNormal();
-			gl.glNormal3d( faceNormal.x , faceNormal.y , faceNormal.z );
+			glWrapper.glNormal3d( faceNormal.x , faceNormal.y , faceNormal.z );
 		}
 
 		final double[] vertexCoordinates = object.getVertexCoordinates();
-		gl.glVertex3d( vertexCoordinates[ vertexIndex ] , vertexCoordinates[ vertexIndex + 1 ] , vertexCoordinates[ vertexIndex + 2 ] );
+		glWrapper.glVertex3d( vertexCoordinates[ vertexIndex ] , vertexCoordinates[ vertexIndex + 1 ] , vertexCoordinates[ vertexIndex + 2 ] );
 	}
 
 
 	/**
 	 * Clear GL canvas.
 	 *
-	 * @param gl    GL context.
 	 * @param color Color to clear canvas with.
 	 */
-	public static void glClearColor( final GL gl , final Color color )
+	public static void glClearColor( final GLWrapper glWrapper , final Color color )
 	{
 		final float[] argb = new float[4];
 		color.getRGBComponents( argb );
-		gl.glClearColor( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
+		glWrapper.glClearColor( argb[0] , argb[1] , argb[2] , argb[3] );
 	}
 
 	/**
 	 * Multiply current GL transform with the specific 3D transformation matrix.
 	 *
-	 * @param gl        GL context.
 	 * @param transform Transformation to multiply with.
 	 */
-	public static void glMultMatrixd( final GL gl , final Matrix3D transform )
+	public static void glMultMatrixd( final GLWrapper glWrapper , final Matrix3D transform )
 	{
-		gl.glMultMatrixd( new double[]
+		glWrapper.glMultMatrixd( new double[]
 		{
 			transform.xx , transform.yx , transform.zx , 0.0 ,
 			transform.xy , transform.yy , transform.zy , 0.0 ,
@@ -409,38 +382,37 @@ public class JOGLTools
 	 * only stating it at the begin and at the end gives problems (all objects
 	 * are white) with certain OpenGL implementations.
 	 *
-	 * @param gl       {@link GL} context.
 	 * @param material {@link Material} properties.
 	 */
-	public static void setMaterial( final GL gl , final Material material )
+	public static void setMaterial( final GLWrapper glWrapper , final Material material )
 	{
 		/* Set color, used when lights are disabled. */
-		gl.glColor4f( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , material.diffuseColorAlpha );
+		glWrapper.glColor4f( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , material.diffuseColorAlpha );
 
 		/* Set shininess and specular color of material. */
-		gl.glMaterialf( GL.GL_FRONT_AND_BACK , GL.GL_SHININESS , (float)material.shininess );
-		gl.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_SPECULAR );
-		gl.glColor3f( material.specularColorRed , material.specularColorGreen , material.specularColorBlue );
-		gl.glEnable( GL.GL_COLOR_MATERIAL );
-		gl.glDisable( GL.GL_COLOR_MATERIAL );
+		glWrapper.glMaterialf( GL.GL_FRONT_AND_BACK , GL.GL_SHININESS , (float)material.shininess );
+		glWrapper.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_SPECULAR );
+		glWrapper.glColor3f( material.specularColorRed , material.specularColorGreen , material.specularColorBlue );
+		glWrapper.setColorMaterial( true );
+		glWrapper.setColorMaterial( false );
 
 		/* Set ambient color of material. */
-		gl.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_AMBIENT );
-		gl.glColor3f( material.ambientColorRed , material.ambientColorGreen , material.ambientColorBlue );
-		gl.glEnable( GL.GL_COLOR_MATERIAL );
-		gl.glDisable( GL.GL_COLOR_MATERIAL );
+		glWrapper.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_AMBIENT );
+		glWrapper.glColor3f( material.ambientColorRed , material.ambientColorGreen , material.ambientColorBlue );
+		glWrapper.setColorMaterial( true );
+		glWrapper.setColorMaterial( false );
 
 		/* Set diffuse color and alpha of material. */
-		gl.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_DIFFUSE );
-		gl.glColor4f( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , material.diffuseColorAlpha );
-		gl.glEnable( GL.GL_COLOR_MATERIAL );
-		gl.glDisable( GL.GL_COLOR_MATERIAL );
+		glWrapper.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_DIFFUSE );
+		glWrapper.glColor4f( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , material.diffuseColorAlpha );
+		glWrapper.setColorMaterial( true );
+		glWrapper.setColorMaterial( false );
 
 		/* Set emissive color of material. */
-		gl.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_EMISSION );
-		gl.glColor3f( material.emissiveColorRed , material.emissiveColorGreen , material.emissiveColorBlue );
-		gl.glEnable( GL.GL_COLOR_MATERIAL );
-		gl.glDisable( GL.GL_COLOR_MATERIAL );
+		glWrapper.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_EMISSION );
+		glWrapper.glColor3f( material.emissiveColorRed , material.emissiveColorGreen , material.emissiveColorBlue );
+		glWrapper.setColorMaterial( true );
+		glWrapper.setColorMaterial( false );
 	}
 
 	/**
@@ -451,7 +423,7 @@ public class JOGLTools
 	 * @return Color map texture; <code>null</code> if face has no color map or no
 	 *         texture coordinates.
 	 */
-	public static Texture getColorMapTexture( final Face3D face )
+	public static Texture getColorMapTexture( final Face3D face, final Map<String, SoftReference<Texture>> textureCache  )
 	{
 		final Texture result;
 
@@ -459,41 +431,44 @@ public class JOGLTools
 
 		if ( ( material != null ) && ( material.colorMap != null ) && ( face.getTextureU() != null ) && ( face .getTextureV() != null ) )
 		{
-			result = getTexture( material.colorMap );
+			result = getTexture( material.colorMap , textureCache );
 		}
 		else
 		{
+			System.out.println( " WTF " );
 			result = null;
 		}
-
 		return result;
 	}
 
 	/**
 	 * Get {@link Texture} for the specified map.
 	 *
-	 * @param name Name of texture map to get.
+	 * @param name          Name of texture map to get.
+	 * @param textureCache  Texturecache
 	 *
 	 * @return Texture for the specified name; <code>null</code> if the name was
 	 *         empty or no map by the given name was found.
 	 */
-	public static Texture getTexture( final String name )
+
+	//@FIXME Texture caching not working propably 
+	public static Texture getTexture( final String name, final Map<String, SoftReference<Texture>> textureCache  )
 	{
 		Texture result = null;
 
 		if ( TextTools.isNonEmpty( name ) )
 		{
-			final Map<String,SoftReference<Texture>> cache = _textureCache;
-			SoftReference<Texture> reference = cache.get( name );
+			SoftReference<Texture> reference = textureCache.get( name );
 			if ( reference != null )
 			{
 				result = reference.get();
 			}
-			if ( ( result == null ) && ( ( reference == null ) || !cache.containsKey( name ) ) )
+			if ( ( result == null ) || ( !textureCache.containsKey( name ) ) )
 			{
 				final BufferedImage bufferedImage = MapTools.loadImage( name );
 				if ( bufferedImage != null )
 				{
+					System.out.println( "Loading Texture: " + name );
 					result = TextureIO.newTexture( ( bufferedImage ) , true );
 					result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
 					result.setTexParameteri( GL.GL_TEXTURE_WRAP_R , GL.GL_REPEAT );
@@ -515,8 +490,17 @@ public class JOGLTools
 				{
 					System.out.println( "Could not load texture." );
 				}
+				System.out.println( "Before : " + textureCache );
+				System.out.println( textureCache.get(name) );
+				if (textureCache.get(name) != null)
+					System.out.println(	textureCache.get(name).get() );
 				reference = ( result != null ) ? new SoftReference<Texture>( result ) : new SoftReference<Texture> ( null );
-				cache.put( name , reference );
+				System.out.println( "Putting: " + name + " " + reference + " " + reference.get()  );
+				textureCache.put( name , reference );
+								System.out.println( "After : " + textureCache );
+				System.out.println( textureCache.get(name) );
+				if (textureCache.get(name) != null)
+					System.out.println(	textureCache.get(name).get() );
 			}
 		}
 		return result;
