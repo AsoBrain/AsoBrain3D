@@ -20,7 +20,11 @@
 package ab.j3d.view.jogl;
 
 import java.awt.Color;
+import java.lang.ref.SoftReference;
+import java.util.Map;
 import javax.media.opengl.GLContext;
+
+import com.sun.opengl.util.texture.Texture;
 
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelNode;
@@ -46,11 +50,16 @@ public class JOGLModel
 	private GLContext _context = null;
 
 	/**
+	 * Texture cache
+	 */
+	private Map<String, SoftReference<Texture>> _textureCache;
+
+	/**
 	 * Construct new JOGL view model using {@link ViewModel#MM} units.
 	 */
 	public JOGLModel()
 	{
-		this( MM , null );
+		this( MM , null , null );
 	}
 
 	/**
@@ -60,11 +69,11 @@ public class JOGLModel
 	 */
 	public JOGLModel( final double unit )
 	{
-		this( unit , null );
+		this( unit , null , null );
 	}
 
 	/**
-	 * Construct new JOGL view model.
+	 * Construct new JOGL view model
 	 *
 	 * @param   unit        Unit scale factor (e.g. {@link ViewModel#MM}).
 	 * @param   background  Background color to use for 3D views. May be
@@ -74,8 +83,23 @@ public class JOGLModel
 	 */
 	public JOGLModel( final double unit , final Color background )
 	{
-		super( unit );
+		this ( unit , background , null);
+	}
 
+	/**
+	 * Construct new JOGL view model.
+	 *
+	 * @param   unit            Unit scale factor (e.g. {@link ViewModel#MM}).
+	 * @param   background      Background color to use for 3D views. May be
+	 *                          <code>null</code>, in which case the default
+	 *                          background color of the current look and feel is
+	 *                          used.
+	 * @param   textureCache    Texture cache
+	 */
+	public JOGLModel( final double unit , final Color background , final Map<String, SoftReference<Texture>> textureCache )
+	{
+		super( unit );
+		_textureCache = textureCache;
 		_background = background;
 	}
 
@@ -97,8 +121,7 @@ public class JOGLModel
 	{
 		if ( id == null )
 			throw new NullPointerException( "id" );
-
-		final JOGLView view = new JOGLView( this , _background , id );
+		final JOGLView view = new JOGLView( this , _background , id , _textureCache );
 		addView( view );
 
 		return view;
