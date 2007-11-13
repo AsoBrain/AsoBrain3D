@@ -21,6 +21,7 @@ package ab.j3d.view.jogl;
 
 import java.awt.Color;
 import java.lang.ref.SoftReference;
+import java.util.HashMap;
 import java.util.Map;
 import javax.media.opengl.GLContext;
 
@@ -52,14 +53,14 @@ public class JOGLModel
 	/**
 	 * Texture cache
 	 */
-	private Map<String, SoftReference<Texture>> _textureCache;
+	private Map<String,SoftReference<Texture>> _textureCache = new HashMap<String,SoftReference<Texture>>();
 
 	/**
 	 * Construct new JOGL view model using {@link ViewModel#MM} units.
 	 */
 	public JOGLModel()
 	{
-		this( MM , null , null );
+		this( MM , null );
 	}
 
 	/**
@@ -69,21 +70,7 @@ public class JOGLModel
 	 */
 	public JOGLModel( final double unit )
 	{
-		this( unit , null , null );
-	}
-
-	/**
-	 * Construct new JOGL view model
-	 *
-	 * @param   unit        Unit scale factor (e.g. {@link ViewModel#MM}).
-	 * @param   background  Background color to use for 3D views. May be
-	 *                      <code>null</code>, in which case the default
-	 *                      background color of the current look and feel is
-	 *                      used.
-	 */
-	public JOGLModel( final double unit , final Color background )
-	{
-		this ( unit , background , null);
+		this( unit , null );
 	}
 
 	/**
@@ -94,12 +81,10 @@ public class JOGLModel
 	 *                          <code>null</code>, in which case the default
 	 *                          background color of the current look and feel is
 	 *                          used.
-	 * @param   textureCache    Texture cache
 	 */
-	public JOGLModel( final double unit , final Color background , final Map<String, SoftReference<Texture>> textureCache )
+	public JOGLModel( final double unit , final Color background )
 	{
 		super( unit );
-		_textureCache = textureCache;
 		_background = background;
 	}
 
