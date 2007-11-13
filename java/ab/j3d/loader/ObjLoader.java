@@ -38,6 +38,7 @@ import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
 
 import com.numdata.oss.TextTools;
+import com.numdata.oss.ui.ImageTools;
 
 /**
  * Loader for Wavefront Object Files (.obj).
@@ -139,6 +140,7 @@ public class ObjLoader
 	public static Object3D load( final Matrix3D transform , final ResourceLoader loader , final String objFileName )
 		throws IOException
 	{
+		ImageTools.disableMissingImageWarnings();
 		final Map<String,Material> actualMaterials = DEFAULT_MATERIALS;
 		final Material defaultMaterial;
 		final Object3D result = new Object3D();
@@ -483,7 +485,6 @@ public class ObjLoader
 					{
 						if ( argCount < 1 )
 							throw new IOException( "too few material library arguments in: " + line );
-						//System.out.println( "Loading material: " + line.substring(7) );
 						loadMaterial( loader.getResource( line.substring( 7 ) ) );
 					}
 					/*
@@ -759,7 +760,7 @@ public class ObjLoader
 					{
 						if ( argCount < 1 )
 						    throw new IOException( "Malformed texture entry: " + line );
-						tempMaterial.colorMap = tokens[ 1 ];
+						tempMaterial.colorMap = (tokens[ 1 ].substring( 0 , tokens[1].length() - 4));
 					}
 					//Non-recognized, non-# (comment) line.
 					//TODO: implement them!
