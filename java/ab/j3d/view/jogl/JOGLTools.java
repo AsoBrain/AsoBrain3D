@@ -435,7 +435,6 @@ public class JOGLTools
 		}
 		else
 		{
-			System.out.println( " WTF " );
 			result = null;
 		}
 		return result;
@@ -451,7 +450,6 @@ public class JOGLTools
 	 *         empty or no map by the given name was found.
 	 */
 
-	//@FIXME Texture caching not working propably 
 	public static Texture getTexture( final String name, final Map<String, SoftReference<Texture>> textureCache  )
 	{
 		Texture result = null;
@@ -490,17 +488,8 @@ public class JOGLTools
 				{
 					System.out.println( "Could not load texture." );
 				}
-				System.out.println( "Before : " + textureCache );
-				System.out.println( textureCache.get(name) );
-				if (textureCache.get(name) != null)
-					System.out.println(	textureCache.get(name).get() );
 				reference = ( result != null ) ? new SoftReference<Texture>( result ) : new SoftReference<Texture> ( null );
-				System.out.println( "Putting: " + name + " " + reference + " " + reference.get()  );
 				textureCache.put( name , reference );
-								System.out.println( "After : " + textureCache );
-				System.out.println( textureCache.get(name) );
-				if (textureCache.get(name) != null)
-					System.out.println(	textureCache.get(name).get() );
 			}
 		}
 		return result;
