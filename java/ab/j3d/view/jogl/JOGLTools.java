@@ -56,7 +56,7 @@ public class JOGLTools
 	/**
 	 * Paint 3D object on GL context.
 	 *
-	 * @param glWrapper         GLWrapper
+	 * @param glWrapper         GLWrapper.
 	 * @param object3D          Object to draw.
 	 * @param node2gl           Transformation from node to current GL transform.
 	 * @param fill              Fill polygons.
@@ -64,6 +64,7 @@ public class JOGLTools
 	 * @param outline           Draw polygon outlines.
 	 * @param outlineColor      Override color to use for outlines.
 	 * @param useAlternative    Use alternative vs. regular object colors.
+	 * @param textureCache      Texture cache.
 	 */
 	public static void paintObject3D( final GLWrapper glWrapper , final Object3D object3D , final Matrix3D node2gl , final boolean fill , final Color fillColor , final boolean outline , final Color outlineColor , final boolean useAlternative , final Map<String,SoftReference<Texture>> textureCache )
 	{
@@ -191,6 +192,7 @@ public class JOGLTools
 	/**
 	 * Draw a 3D grid centered around point x,y,z with size dx,dy.
 	 *
+	 * @param glWrapper GLWrapper.
 	 * @param x         X position of the grid.
 	 * @param y         Y position of the grid.
 	 * @param z         Z position of the grid.
@@ -244,8 +246,10 @@ public class JOGLTools
 	/**
 	 * Draw 3D face on GL context.
 	 *
+	 * @param glWrapper     GLWrapper.
 	 * @param face          {@link Face3D } drawn.
 	 * @param outline       Whether to draw outline or not
+	 * @param textureCache  Texture cache.
 	 */
 	private static void drawFace( final GLWrapper glWrapper , final Face3D face , final boolean outline, final Map<String, SoftReference<Texture>> textureCache  )
 	{
@@ -314,6 +318,7 @@ public class JOGLTools
 	/**
 	 * Set vertex properties using GL.
 	 *
+	 * @param glWrapper             GLWrapper.
 	 * @param   face                Face whose vertex to set.
 	 * @param   textureU            Horizontal texture coordinate.
 	 * @param   textureV            Vertical texture coordinate.
@@ -349,7 +354,8 @@ public class JOGLTools
 	/**
 	 * Clear GL canvas.
 	 *
-	 * @param color Color to clear canvas with.
+	 * @param glWrapper GLWrapper.
+	 * @param color     Color to clear canvas with.
 	 */
 	public static void glClearColor( final GLWrapper glWrapper , final Color color )
 	{
@@ -361,6 +367,7 @@ public class JOGLTools
 	/**
 	 * Multiply current GL transform with the specific 3D transformation matrix.
 	 *
+	 * @param glWrapper GLWrapper.
 	 * @param transform Transformation to multiply with.
 	 */
 	public static void glMultMatrixd( final GLWrapper glWrapper , final Matrix3D transform )
@@ -382,7 +389,8 @@ public class JOGLTools
 	 * only stating it at the begin and at the end gives problems (all objects
 	 * are white) with certain OpenGL implementations.
 	 *
-	 * @param material {@link Material} properties.
+	 * @param glWrapper GLWrapper.
+	 * @param material  {@link Material} properties.
 	 */
 	public static void setMaterial( final GLWrapper glWrapper , final Material material )
 	{
@@ -418,7 +426,8 @@ public class JOGLTools
 	/**
 	 * Get {@link Texture} for color map of {@link Face3D}.
 	 *
-	 * @param face Face whose color map texture to return.
+	 * @param face          Face whose color map texture to return.
+	 * @param textureCache  Texture cache.
 	 *
 	 * @return Color map texture; <code>null</code> if face has no color map or no
 	 *         texture coordinates.
