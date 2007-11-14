@@ -379,21 +379,21 @@ public class CollisionTester
 		final double separationZ = 0.5 * ( box2.v1.z + box2.v2.z - box1.v1.z - box1.v2.z );
 
 		return
-		/* Test 1 X axis */ !( Math.abs( separationX ) > extents1X + Vector3D.dot( extents2X , extents2Y , extents2Z , absXX , absXY , absXZ ) ) &&
-		/* Test 1 Y axis */ !( Math.abs( separationY ) > extents1Y + Vector3D.dot( extents2X , extents2Y , extents2Z , absYX , absYY , absYZ ) ) &&
-		/* Test 1 Z axis */ !( Math.abs( separationZ ) > extents1Z + Vector3D.dot( extents2X , extents2Y , extents2Z , absZX , absZY , absZZ ) ) &&
-		/* Test 2 X axis */ !( Math.abs( Vector3D.dot( from2to1.xx , from2to1.yx , from2to1.zx , separationX , separationY , separationZ ) ) > Vector3D.dot( extents1X , extents1Y , extents1Z , absXX , absYX , absZX ) + extents2X ) &&
-		/* Test 2 Y axis */ !( Math.abs( Vector3D.dot( from2to1.xy , from2to1.yy , from2to1.zy , separationX , separationY , separationZ ) ) > Vector3D.dot( extents1X , extents1Y , extents1Z , absXY , absYY , absZY ) + extents2Y ) &&
-		/* Test 2 Z axis */ !( Math.abs( Vector3D.dot( from2to1.xz , from2to1.yz , from2to1.zz , separationX , separationY , separationZ ) ) > Vector3D.dot( extents1X , extents1Y , extents1Z , absXZ , absYZ , absZZ ) + extents2Z ) &&
-		/* Test 3 case 1 */ !( Math.abs( separationZ * from2to1.yx - separationY * from2to1.zx ) > extents1Y * absZX + extents1Z * absYX + extents2Y * absXZ + extents2Z * absXY ) &&
-		/* Test 3 case 2 */ !( Math.abs( separationZ * from2to1.yy - separationY * from2to1.zy ) > extents1Y * absZY + extents1Z * absYY + extents2X * absXZ + extents2Z * absXX ) &&
-		/* Test 3 case 3 */ !( Math.abs( separationZ * from2to1.yz - separationY * from2to1.zz ) > extents1Y * absZZ + extents1Z * absYZ + extents2X * absXY + extents2Y * absXX ) &&
-		/* Test 3 case 4 */ !( Math.abs( separationX * from2to1.zx - separationZ * from2to1.xx ) > extents1X * absZX + extents1Z * absXX + extents2Y * absYZ + extents2Z * absYY ) &&
-		/* Test 3 case 5 */ !( Math.abs( separationX * from2to1.zy - separationZ * from2to1.xy ) > extents1X * absZY + extents1Z * absXY + extents2X * absYZ + extents2Z * absYX ) &&
-		/* Test 3 case 6 */ !( Math.abs( separationX * from2to1.zz - separationZ * from2to1.xz ) > extents1X * absZZ + extents1Z * absXZ + extents2X * absYY + extents2Y * absYX ) &&
-		/* Test 3 case 7 */ !( Math.abs( separationY * from2to1.xx - separationX * from2to1.yx ) > extents1X * absYX + extents1Y * absXX + extents2Y * absZZ + extents2Z * absZY ) &&
-		/* Test 3 case 8 */ !( Math.abs( separationY * from2to1.xy - separationX * from2to1.yy ) > extents1X * absYY + extents1Y * absXY + extents2X * absZZ + extents2Z * absZX ) &&
-		/* Test 3 case 9 */ !( Math.abs( separationY * from2to1.xz - separationX * from2to1.yz ) > extents1X * absYZ + extents1Y * absXZ + extents2X * absZY + extents2Y * absZX );
+		/* Test 1 X axis */ !( Math.abs( separationX ) > extents1X + Vector3D.dot( extents2X , extents2Y , extents2Z , absXX , absYX , absZX ) ) &&
+		/* Test 1 Y axis */ !( Math.abs( separationY ) > extents1Y + Vector3D.dot( extents2X , extents2Y , extents2Z , absXY , absYY , absZY ) ) &&
+		/* Test 1 Z axis */ !( Math.abs( separationZ ) > extents1Z + Vector3D.dot( extents2X , extents2Y , extents2Z , absXZ , absYZ , absZZ ) ) &&
+		/* Test 2 X axis */ !( Math.abs( Vector3D.dot( from2to1.xx , from2to1.xy , from2to1.xz , separationX , separationY , separationZ ) ) > Vector3D.dot( extents1X , extents1Y , extents1Z , absXX , absXY , absXZ ) + extents2X ) &&
+		/* Test 2 Y axis */ !( Math.abs( Vector3D.dot( from2to1.yx , from2to1.yy , from2to1.yz , separationX , separationY , separationZ ) ) > Vector3D.dot( extents1X , extents1Y , extents1Z , absYX , absYY , absYZ ) + extents2Y ) &&
+		/* Test 2 Z axis */ !( Math.abs( Vector3D.dot( from2to1.zx , from2to1.zy , from2to1.zz , separationX , separationY , separationZ ) ) > Vector3D.dot( extents1X , extents1Y , extents1Z , absZX , absZY , absZZ ) + extents2Z ) &&
+		/* Test 3 case 1 */ !( Math.abs( separationZ * from2to1.xy - separationY * from2to1.xz ) > extents1Y * absXZ + extents1Z * absXY + extents2Y * absZX + extents2Z * absYX ) &&
+		/* Test 3 case 2 */ !( Math.abs( separationZ * from2to1.yy - separationY * from2to1.yz ) > extents1Y * absYZ + extents1Z * absYY + extents2X * absZX + extents2Z * absXX ) &&
+		/* Test 3 case 3 */ !( Math.abs( separationZ * from2to1.zy - separationY * from2to1.zz ) > extents1Y * absZZ + extents1Z * absZY + extents2X * absYX + extents2Y * absXX ) &&
+		/* Test 3 case 4 */ !( Math.abs( separationX * from2to1.xz - separationZ * from2to1.xx ) > extents1X * absXZ + extents1Z * absXX + extents2Y * absZY + extents2Z * absYY ) &&
+		/* Test 3 case 5 */ !( Math.abs( separationX * from2to1.yz - separationZ * from2to1.yx ) > extents1X * absYZ + extents1Z * absYX + extents2X * absZY + extents2Z * absXY ) &&
+		/* Test 3 case 6 */ !( Math.abs( separationX * from2to1.zz - separationZ * from2to1.zx ) > extents1X * absZZ + extents1Z * absZX + extents2X * absYY + extents2Y * absXY ) &&
+		/* Test 3 case 7 */ !( Math.abs( separationY * from2to1.xx - separationX * from2to1.xy ) > extents1X * absXY + extents1Y * absXX + extents2Y * absZZ + extents2Z * absYZ ) &&
+		/* Test 3 case 8 */ !( Math.abs( separationY * from2to1.yx - separationX * from2to1.yy ) > extents1X * absYY + extents1Y * absYX + extents2X * absZZ + extents2Z * absXZ ) &&
+		/* Test 3 case 9 */ !( Math.abs( separationY * from2to1.zx - separationX * from2to1.zy ) > extents1X * absZY + extents1Y * absZX + extents2X * absYZ + extents2Y * absXZ );
 		/* No separating axi => we have intersection */
 	}
 
