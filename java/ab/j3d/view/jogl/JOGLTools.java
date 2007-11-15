@@ -97,7 +97,9 @@ public class JOGLTools
 				{
 					glWrapper.setLightning( true );
 					glWrapper.setShadeModel( ( face.isSmooth() ? GL.GL_SMOOTH : GL.GL_FLAT ) );
-					setMaterial( glWrapper , face.getMaterial() );
+					final Material material = face.getMaterial();
+					if ( material != null )
+						setMaterial( glWrapper , face.getMaterial() );
 					if ( face.isTwoSided() )
 					{
 						glWrapper.setCullFace( false );
