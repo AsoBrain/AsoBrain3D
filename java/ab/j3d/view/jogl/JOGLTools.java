@@ -173,11 +173,16 @@ public class JOGLTools
 			{
 				final Material temp = face.getMaterial();
 				face.setMaterial( materialOverride );
-				drawFace( glWrapper , face , false , textureCache , hasLighting  );
+				if( face.getMaterial().colorMap.isEmpty() )
+					drawFace( glWrapper , face , false , null , hasLighting );
+				else
+					drawFace( glWrapper , face , true , textureCache , hasLighting  );
 				face.setMaterial( temp );
 			}
+			else if( face.getMaterial() != null && !useAlternate && useTextures)
+				drawFace( glWrapper , face , true , textureCache , hasLighting );
 			else if( face.getMaterial() != null )
-				drawFace( glWrapper , face , true , null , hasLighting );
+				drawFace( glWrapper , face , false , null , hasLighting );
 		}
 
 		/*
@@ -275,7 +280,7 @@ public class JOGLTools
 		final int vertexCount = face.getVertexCount();
 		if ( vertexCount >= 2 )
 		{
-			final Texture texture    = useTexture ? null : getColorMapTexture( face , textureCache);
+			final Texture texture    = !useTexture ? null : getColorMapTexture( face , textureCache);
 			final boolean hasTexture = ( texture != null ); //if a texture has been loaded
 			final float[] textureU   = hasTexture ? face.getTextureU() : null;
 			final float[] textureV   = hasTexture ? face.getTextureV() : null;
