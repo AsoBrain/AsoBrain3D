@@ -211,6 +211,80 @@ public final class Bounds3D
 	}
 
 	/**
+	 * Calculate joined bounds of this bounding object and the specified point.
+	 *
+	 * @param   point   Point to join in bounds.
+	 *
+	 * @return  Joined bounds.
+	 */
+	public Bounds3D join( final Vector3D point )
+	{
+		return join( this , point.x , point.y , point.z );
+	}
+
+	/**
+	 * Calculate joined bounds of this bounding object and the specified point.
+	 *
+	 * @param   x   X coordinate of point.
+	 * @param   y   Y coordinate of point.
+	 * @param   z   Z coordinate of point.
+	 *
+	 * @return  Joined bounds.
+	 */
+	public Bounds3D join( final double x , final double y , final double z )
+	{
+		return join( this , x , y , z );
+	}
+
+	/**
+	 * Calculate joined bounds of a bounding object and a point.
+	 *
+	 * @param   bounds  Bounding object to join.
+	 * @param   point   Point to join in bounds.
+	 *
+	 * @return  Joined bounds.
+	 */
+	public static Bounds3D join( final Bounds3D bounds , final Vector3D point )
+	{
+		return join( bounds , point.x , point.y , point.z );
+	}
+
+	/**
+	 * Calculate joined bounds of a bounding object and a point.
+	 *
+	 * @param   bounds  Bounding object to join.
+	 * @param   x       X coordinate of point.
+	 * @param   y       Y coordinate of point.
+	 * @param   z       Z coordinate of point.
+	 *
+	 * @return  Joined bounds.
+	 */
+	public static Bounds3D join( final Bounds3D bounds , final double x , final double y , final double z )
+	{
+		final Vector3D v1 = bounds.v1;
+		final Vector3D v2 = bounds.v2;
+
+		return bounds.set( Math.min( x , Math.min( v1.x , v2.x ) ) ,
+		                   Math.min( y , Math.min( v1.y , v2.y ) ) ,
+		                   Math.min( z , Math.min( v1.z , v2.z ) ) ,
+		                   Math.max( x , Math.max( v1.x , v2.x ) ) ,
+		                   Math.max( y , Math.max( v1.y , v2.y ) ) ,
+		                   Math.max( z , Math.max( v1.z , v2.z ) ) );
+	}
+
+	/**
+	 * Calculate joined bounds of this and other bounding object.
+	 *
+	 * @param   other   Bounds to join with.
+	 *
+	 * @return  Joined bounds.
+	 */
+	public Bounds3D join( final Bounds3D other )
+	{
+		return join ( this , other );
+	}
+
+	/**
 	 * Calculate joined bounds of the two specified bounding objects.
 	 *
 	 * @param   bounds1     First object for join.
