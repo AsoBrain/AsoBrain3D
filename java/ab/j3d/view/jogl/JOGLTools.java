@@ -20,6 +20,7 @@
 package ab.j3d.view.jogl;
 
 import java.awt.Color;
+import java.awt.Paint;
 import java.awt.image.BufferedImage;
 import java.lang.ref.SoftReference;
 import java.util.Map;
@@ -59,14 +60,14 @@ public class JOGLTools
 	 * @param glWrapper         GLWrapper.
 	 * @param object3D          Object to draw.
 	 * @param node2gl           Transformation from node to current GL transform.
-	 * @param fill              Fill polygons.
-	 * @param fillColor         Override color to use for filling.
-	 * @param outline           Draw polygon outlines.
-	 * @param outlineColor      Override color to use for outlines.
-	 * @param useAlternative    Use alternative vs. regular object colors.
+	 * @param useTextures       Use textures on this object3D.
+	 * @param useAlternate      Use alternative color to paint this object3D.
+	 * @param hasLighting       Specify material lighting properties.
 	 * @param textureCache      Texture cache.
+	 * @param fill              Fill polygons.
+	 * @param materialOverride  Material to use instead of actual materials.
 	 */
-	public static void paintObject3D( final GLWrapper glWrapper , final Object3D object3D , final Matrix3D node2gl , final boolean fill , final Color fillColor , final boolean outline , final Color outlineColor , final boolean useAlternative , final Map<String,SoftReference<Texture>> textureCache )
+	public static void paintObject3D( final GLWrapper glWrapper , final Object3D object3D , final Matrix3D node2gl , final boolean useTextures , final boolean useAlternate , final boolean hasLighting , final Map<String, SoftReference<Texture>> textureCache , final boolean fill , final Material materialOverride )
 	{
 		/*
 		 * Push the current matrix stack down by one
@@ -78,111 +79,105 @@ public class JOGLTools
 		 */
 		glMultMatrixd( glWrapper , node2gl );
 
-		/*
-		 * Draw the object3d.
-		 */
+		final Paint paint;
+		final Paint alternatePaint;
+
 		if ( fill )
 		{
 			glWrapper.setPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_FILL );
-			for ( int i = 0; i < object3D.getFaceCount(); i++ )
-			{
-			final Face3D face = object3D.getFace( i );
-				if ( fillColor != null )
-				{
-					final float[] argb = fillColor.getRGBComponents( null );
-					glWrapper.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
-					glWrapper.setLightning( false );
-				}
-				else
-				{
-					glWrapper.setLightning( true );
-					glWrapper.setShadeModel( ( face.isSmooth() ? GL.GL_SMOOTH : GL.GL_FLAT ) );
-					final Material material = face.getMaterial();
-					if ( material != null )
-						setMaterial( glWrapper , face.getMaterial() );
-					if ( face.isTwoSided() )
-					{
-						glWrapper.setCullFace( false );
-					}
-					else
-					{
-						glWrapper.setCullFace( true );
-						glWrapper.setCullFaceMode( GL.GL_BACK );
-					}
-				}
-				drawFace( glWrapper , face , false , textureCache );
-			}
-
+			paint          = object3D.fillPaint;
+			alternatePaint = object3D.alternateFillPaint;
+		}
+		else
+		{
+			glWrapper.setPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_LINE );
+			paint          = object3D.outlinePaint;
+			alternatePaint = object3D.alternateOutlinePaint;
 		}
 
-		if ( outline )
+		Material material = materialOverride;
+
+		if ( useAlternate && material != null )
 		{
-			// set the blend mode
-			glWrapper.setBlendFunc(GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
-
-			// enable blending
-			glWrapper.setBlend( true );
-
-			// set the line width
-			glWrapper.glLineWidth ( 1.0f );
-
-			// change the depth mode
-			glWrapper.glDepthFunc ( GL.GL_LEQUAL );
-
-			// enable backface culling
-			glWrapper.setCullFace( true );
-			glWrapper.setCullFaceMode( GL.GL_BACK );
-
-			// set polygonmode to lines only
-			glWrapper.setPolygonMode( GL.GL_FRONT , GL.GL_LINE );
-
-			// smooth lines
-			glWrapper.setSmooth( true );
-
-			// disable lighting
-			glWrapper.setLightning( false );
-
-			// set color
-			final Color color;
-			if ( outlineColor != null )
+			final float[] argb;
+			if( alternatePaint instanceof Color )
 			{
-				color = outlineColor;
-			}
-			else
-			if ( useAlternative && ( object3D.alternateOutlinePaint instanceof Color ) )
-			{
-				color = (Color)object3D.alternateOutlinePaint;
-			}
-			else if ( object3D.outlinePaint instanceof Color )
-			{
-				color = (Color)object3D.outlinePaint;
+				argb = ((Color)alternatePaint).getRGBComponents( null );
 			}
 			else
 			{
-				color = Color.WHITE;
+				System.out.println( "AlternatePaint is not a Color" );
+				argb = Color.BLUE.getRGBComponents( null );
 			}
 
-			final float[] rgba = color.getRGBComponents( null );
-			glWrapper.glColor4f( rgba );
+			glWrapper.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
 
-			// draw all faces.
-			for ( int i = 0; i < object3D.getFaceCount(); i++ )
+			if( hasLighting )
 			{
-				final Face3D face = object3D.getFace( i );
-				drawFace( glWrapper , face, outline , textureCache);
+				material = new Material( ((Color)alternatePaint).getRGB() );
+			}
+		}
+		else if( !useTextures && material == null )
+		{
+			final float[] argb;
+
+			if( paint instanceof Color )
+			{
+				argb = ((Color)paint).getRGBComponents( null );
+			}
+			else
+			{
+				System.out.println( "Paint is not a Color" );
+				argb = Color.RED.getRGBComponents( null );
 			}
 
-			// enable lighting
-			glWrapper.setLightning( true );
+			glWrapper.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
+			if( hasLighting )
+			{
+				material = new Material( ((Color)paint).getRGB() );
+			}
+		}
+		else if( materialOverride != null )
+		{
+			glWrapper.glColor4f( materialOverride.diffuseColorRed , materialOverride.diffuseColorGreen , materialOverride.diffuseColorBlue , materialOverride.diffuseColorAlpha );
+		}
 
-			// disable backface culling
-			glWrapper.setCullFace( false );
+		for ( int i = 0 ; i < object3D.getFaceCount() ; i++ )
+		{
+			final Face3D face = object3D.getFace( i );
 
-			// change the depth mode back
-			glWrapper.glDepthFunc( GL.GL_LESS );
+			if( face.isTwoSided() )
+			{
+				glWrapper.setCullFace( false );
+			}
+			else
+			{
+				glWrapper.setCullFace( true );
+				glWrapper.setCullFaceMode( GL.GL_BACK );
+			}
+			if( hasLighting )
+			{
+				glWrapper.setShadeModel( ( face.isSmooth() ? GL.GL_SMOOTH : GL.GL_FLAT ) );
 
-			// disable blending
-			glWrapper.setBlend( false );
+				if( material != null )
+				{
+					setMaterial( glWrapper , material );
+				}
+				else if( face.getMaterial() != null )
+				{
+					setMaterial( glWrapper , face.getMaterial() );
+				}
+			}
+
+			if( materialOverride != null )
+			{
+				final Material temp = face.getMaterial();
+				face.setMaterial( materialOverride );
+				drawFace( glWrapper , face , false , textureCache , hasLighting  );
+				face.setMaterial( temp );
+			}
+			else if( face.getMaterial() != null )
+				drawFace( glWrapper , face , true , null , hasLighting );
 		}
 
 		/*
@@ -207,41 +202,62 @@ public class JOGLTools
 		if( spacing != 0 ) //check if spacing is not null else we'll get an infinite loop.
 		{
 			final GL gl = glWrapper.getgl();
-			// set the anti-aliasing options
+
 			glWrapper.setBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 			glWrapper.setBlend( true );
 			glWrapper.setSmooth( true );
 
-			//set line width to 1.0f, the smallest possible line in opengl
 			glWrapper.glLineWidth( 1.0f );
-			glWrapper.setLightning( false );
+			glWrapper.setLighting( false );
 			glWrapper.glBegin( GL.GL_LINES );
 
 			for( int i = -dx / 2 + x ; i <= dx / 2 + x ; i += spacing )
 			{
 				if ( ( ( i - dx ) / spacing ) % 10 == 0 )
-					glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
+				{
+					gl.glEnd();
+					glWrapper.glLineWidth( 2.0f );
+					gl.glBegin( GL.GL_LINES );
+										glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
+					gl.glVertex3i( i , -dy / 2 + y , z );
+					gl.glVertex3i( i ,  dy / 2 + y , z );
+					gl.glEnd();
+					glWrapper.glLineWidth( 1.0f );
+					gl.glBegin( GL.GL_LINES );
+				}
 				else
+				{
 					glWrapper.glColor3f( 0.75f , 0.75f , 0.75f );
-
-
-				gl.glVertex3i( i , -dy / 2 + y , z );
-				gl.glVertex3i( i ,  dy / 2 + y , z );
+					gl.glVertex3i( i , -dy / 2 + y , z );
+					gl.glVertex3i( i ,  dy / 2 + y , z );
+				}
 			}
 
 			for( int i = -dy / 2 + y ; i <= dy / 2 + y ; i += spacing )
 			{
 				if ( ( ( i - dy ) / spacing ) % 10 == 0 )
-					glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
-				else
-					glWrapper.glColor3f( 0.75f , 0.75f , 0.75f );
+				{
+					gl.glEnd();
+					glWrapper.glLineWidth( 2.0f );
 
-				gl.glVertex3i( -dx / 2 + x , i , z );
-				gl.glVertex3i(  dx / 2 + x , i , z );
+					gl.glBegin( GL.GL_LINES );
+										glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
+					gl.glVertex3i( -dx / 2 + x , i , z );
+					gl.glVertex3i(  dx / 2 + x , i , z );
+					gl.glEnd();
+					glWrapper.glLineWidth( 1.0f );
+					gl.glBegin( GL.GL_LINES );
+				}
+				else
+				{
+					gl.glVertex3i( -dx / 2 + x , i , z );
+					gl.glVertex3i(  dx / 2 + x , i , z );
+					glWrapper.glColor3f( 0.75f , 0.75f , 0.75f );
+				}
 			}
 
 			glWrapper.glEnd();
-			glWrapper.setBlend( false );
+			glWrapper.setLighting( true );
 		}
 	}
 
@@ -250,16 +266,17 @@ public class JOGLTools
 	 *
 	 * @param glWrapper     GLWrapper.
 	 * @param face          {@link Face3D } drawn.
-	 * @param outline       Whether to draw outline or not
+	 * @param useTexture    Whether to draw outline or not
 	 * @param textureCache  Texture cache.
+	 * @param hasLighting   Whether lighting is applied or not.
 	 */
-	private static void drawFace( final GLWrapper glWrapper , final Face3D face , final boolean outline, final Map<String, SoftReference<Texture>> textureCache  )
+	private static void drawFace( final GLWrapper glWrapper , final Face3D face , final boolean useTexture, final Map<String, SoftReference<Texture>> textureCache , final boolean hasLighting )
 	{
 		final int vertexCount = face.getVertexCount();
 		if ( vertexCount >= 2 )
 		{
-			final Texture texture    = outline ? null : getColorMapTexture( face , textureCache);
-			final boolean hasTexture = ( texture != null );
+			final Texture texture    = useTexture ? null : getColorMapTexture( face , textureCache);
+			final boolean hasTexture = ( texture != null ); //if a texture has been loaded
 			final float[] textureU   = hasTexture ? face.getTextureU() : null;
 			final float[] textureV   = hasTexture ? face.getTextureV() : null;
 			if( hasTexture )
@@ -272,9 +289,9 @@ public class JOGLTools
 			{
 				case 2:
 				{
-				glWrapper.glBegin( GL.GL_LINES );
-					setFaceVertex( glWrapper , face , textureU , textureV , 0 );
-					setFaceVertex( glWrapper , face , textureU , textureV , 1 );
+                glWrapper.glBegin( GL.GL_LINES );
+					setFaceVertex( glWrapper , face , textureU , textureV , 0 , hasLighting );
+					setFaceVertex( glWrapper , face , textureU , textureV , 1 , hasLighting );
 				glWrapper.glEnd(  );
 				}
 				break;
@@ -282,9 +299,9 @@ public class JOGLTools
 				case 3:
 				{
 				glWrapper.glBegin( GL.GL_TRIANGLES );
-					setFaceVertex( glWrapper , face , textureU , textureV , 2 );
-					setFaceVertex( glWrapper , face , textureU , textureV , 1 );
-					setFaceVertex( glWrapper , face , textureU , textureV , 0 );
+					setFaceVertex( glWrapper , face , textureU , textureV , 2 , hasLighting );
+					setFaceVertex( glWrapper , face , textureU , textureV , 1 , hasLighting );
+					setFaceVertex( glWrapper , face , textureU , textureV , 0 , hasLighting );
 				glWrapper.glEnd(  );
 				}
 				break;
@@ -292,10 +309,10 @@ public class JOGLTools
 				case 4:
 				{
 				glWrapper.glBegin( GL.GL_QUADS );
-					setFaceVertex( glWrapper , face , textureU , textureV , 3 );
-					setFaceVertex( glWrapper , face , textureU , textureV , 2 );
-					setFaceVertex( glWrapper , face , textureU , textureV , 1 );
-					setFaceVertex( glWrapper , face , textureU , textureV , 0 );
+					setFaceVertex( glWrapper , face , textureU , textureV , 3 , hasLighting );
+					setFaceVertex( glWrapper , face , textureU , textureV , 2 , hasLighting );
+					setFaceVertex( glWrapper , face , textureU , textureV , 1 , hasLighting );
+					setFaceVertex( glWrapper , face , textureU , textureV , 0 , hasLighting );
 				glWrapper.glEnd(  );
 				}
 				break;
@@ -304,7 +321,7 @@ public class JOGLTools
 				{
 				glWrapper.glBegin( GL.GL_POLYGON );
 					for ( int i = vertexCount ; --i >= 0 ; )
-						setFaceVertex( glWrapper , face , textureU , textureV , i );
+						setFaceVertex( glWrapper , face , textureU , textureV , i , hasLighting );
 				glWrapper.glEnd(  );
 				}
 				break;
@@ -320,13 +337,14 @@ public class JOGLTools
 	/**
 	 * Set vertex properties using GL.
 	 *
-	 * @param glWrapper             GLWrapper.
+	 * @param   glWrapper           GLWrapper.
 	 * @param   face                Face whose vertex to set.
 	 * @param   textureU            Horizontal texture coordinate.
 	 * @param   textureV            Vertical texture coordinate.
 	 * @param   faceVertexIndex     Index of vertex in face.
+	 * @param   hasLighting         Specifies whether lighting is used or not
 	 */
-	private static void setFaceVertex( final GLWrapper glWrapper , final Face3D face , final float[] textureU , final float[] textureV , final int faceVertexIndex )
+	private static void setFaceVertex( final GLWrapper glWrapper , final Face3D face , final float[] textureU , final float[] textureV , final int faceVertexIndex , final boolean hasLighting )
 	{
 		final Object3D object            = face.getObject();
 		final int[]    faceVertexIndices = face.getVertexIndices();
@@ -337,12 +355,12 @@ public class JOGLTools
 			glWrapper.glTexCoord2f( textureU[ faceVertexIndex ] , textureV[ faceVertexIndex ] );
 		}
 
-		if ( face.isSmooth() )
+		if ( face.isSmooth() && hasLighting)
 		{
 			final double[] vertexNormals = object.getVertexNormals();
 			glWrapper.glNormal3d( vertexNormals[ vertexIndex ] , vertexNormals[ vertexIndex + 1 ] , vertexNormals[ vertexIndex + 2 ] );
 		}
-		else
+		else if( hasLighting )
 		{
 			final Vector3D faceNormal = face.getNormal();
 			glWrapper.glNormal3d( faceNormal.x , faceNormal.y , faceNormal.z );
