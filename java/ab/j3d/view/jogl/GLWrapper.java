@@ -66,7 +66,7 @@ public class GLWrapper
 		_gl.glPushMatrix();
 	}
 
-	public  void setLightning( final boolean enable ) // 420
+	public  void setLighting( final boolean enable ) // 420
 	{
 		final byte lighting = enable ? ENABLED : DISABLED;
 		if ( lighting != _gl_LIGHTING )
