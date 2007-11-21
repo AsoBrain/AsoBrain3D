@@ -44,6 +44,11 @@ public final class ViewModelNode
 	private Matrix3D _transform;
 
 	/**
+	 * Use alternate color.
+	 */
+	private boolean _alternate = false;
+
+	/**
 	 * Root in the 3D scene associated with this node.
 	 */
 	private Node3D _node3D;
@@ -171,5 +176,25 @@ public final class ViewModelNode
 	public void setOpacity( final float opacity )
 	{
 		_opacity = opacity;
+	}
+
+	/**
+	 * Returns true if an alternate color is to be used.
+	 *
+	 * @return true if an alternate color is to be used.
+	 */
+	public boolean isAlternate()
+	{
+		return _alternate;
+	}
+
+	/**
+	 * If set to true draws an alternate color.
+	 *
+	 * @param alternate whether to use an alternate color or not.
+	 */
+	public void setAlternate( final boolean alternate )
+	{
+		_alternate = alternate;
 	}
 }
