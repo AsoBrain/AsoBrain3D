@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * (C) Copyright Numdata BV 2005-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -87,6 +87,9 @@ public final class Face3DIntersection
 	 */
 	public Face3DIntersection( final Object objectID , final Matrix3D object2world , final Face3D face , final Ray3D ray , final Vector3D intersectionPoint )
 	{
+		if ( objectID == null )
+			throw new NullPointerException( "objectID" );
+
 		if ( object2world == null )
 			throw new NullPointerException( "object2world" );
 
