@@ -19,9 +19,14 @@
  */
 package ab.j3d.view;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import ab.j3d.Matrix3D;
 import ab.j3d.control.ComponentControlInput;
 import ab.j3d.control.ControlInput;
+import ab.j3d.geom.Ray3D;
+import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
@@ -62,19 +67,6 @@ public class ViewControlInput
 	}
 
 	/**
-	 * Returns the ID for an {@link Object3D}, as stored in the
-	 * {@link ViewModel}.
-	 *
-	 * @param   object  {@link Object3D} for which to return the ID.
-	 *
-	 * @return  ID of <code>object</code>
-	 */
-	protected Object getIDForObject( final Object3D object )
-	{
-		return _model.getID( object );
-	}
-
-	/**
 	 * Returns the {@link Projector} for the {@link ViewModelView}.
 	 *
 	 * @return  The {@link Projector} for the {@link ViewModelView}.
@@ -84,24 +76,27 @@ public class ViewControlInput
 		return _view.getProjector();
 	}
 
-	/**
-	 * Returns a {@link Node3DCollection} with all objects in the
-	 * {@link ViewModel}.
-	 *
-	 * @return  a {@link Node3DCollection} with all objects in the
-	 *          {@link ViewModel}.
-	 */
-	protected Node3DCollection<Object3D> getScene()
+	public List<Face3DIntersection> getIntersections( final Ray3D ray )
 	{
-		final Node3DCollection<Object3D> result = new Node3DCollection<Object3D>();
+		final List<Face3DIntersection> result = new LinkedList();
 
-		for ( final Object id : _model.getNodeIDs() )
+		for ( final Object nodeID : _model.getNodeIDs() )
 		{
-			final ViewModelNode node = _model.getNode( id );
-			final Matrix3D node2model = node.getTransform();
-			final Node3D node3D = node.getNode3D();
+			final ViewModelNode viewModelNode = _model.getNode( nodeID );
+			final Node3D        node3D        = _model.getNode3D( nodeID );
 
-			node3D.collectNodes( result , Object3D.class , node2model , false );
+			final Matrix3D node2model = viewModelNode.getTransform();
+
+			final Node3DCollection<Object3D> subGraphNodes = new Node3DCollection<Object3D>();
+			node3D.collectNodes( subGraphNodes , Object3D.class , node2model , false );
+
+			for ( int i = 0 ; i < subGraphNodes.size() ; i++ )
+			{
+				final Object3D object       = subGraphNodes.getNode( i );
+				final Matrix3D object2world = subGraphNodes.getMatrix( i );
+
+				object.getIntersectionsWithRay( result , true , nodeID , object2world , ray );
+			}
 		}
 
 		return result;

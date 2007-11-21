@@ -21,14 +21,11 @@ package ab.j3d.control;
 
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
-import java.util.LinkedList;
 import java.util.List;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.geom.Ray3D;
 import ab.j3d.model.Face3DIntersection;
-import ab.j3d.model.Node3DCollection;
-import ab.j3d.model.Object3D;
 import ab.j3d.view.Projector;
 
 import com.numdata.oss.event.EventDispatcher;
@@ -149,15 +146,6 @@ public abstract class ControlInput
 	}
 
 	/**
-	 * Returns the ID for an {@link Object3D}.
-	 *
-	 * @param   object  The object for which to return the ID.
-	 *
-	 * @return  The ID for <code>object</code>.
-	 */
-	protected abstract Object getIDForObject( Object3D object );
-
-	/**
 	 * Returns a List of {@link Face3DIntersection}s, which hold information
 	 * about the objects that are intersected by the specified ray.
 	 *
@@ -167,21 +155,7 @@ public abstract class ControlInput
 	 *
 	 * @throws  NullPointerException if <code>ray</code> is <code>null</code>.
 	 */
-	public List<Face3DIntersection> getIntersections( final Ray3D ray )
-	{
-		final List<Face3DIntersection> result = new LinkedList();
-
-		final Node3DCollection<Object3D> scene = getScene();
-		for ( int i = 0 ; i < scene.size() ; i++ )
-		{
-			final Object3D object       = scene.getNode( i );
-			final Matrix3D object2world = scene.getMatrix( i );
-
-			object.getIntersectionsWithRay( result , true , getIDForObject( object ) , object2world , ray );
-		}
-
-		return result;
-	}
+	protected abstract List<Face3DIntersection> getIntersections( final Ray3D ray );
 
 	/**
 	 * Get {@link Projector} that was used to project the 3D scene onto the
@@ -190,18 +164,6 @@ public abstract class ControlInput
 	 * @return  {@link Projector} used project the 3D scene onto the 2D image.
 	 */
 	protected abstract Projector getProjector();
-
-	/**
-	 * Returns a {@link Node3DCollection} with all {@link Object3D}s in the
-	 * scene. Implementing classes should only put objects that need to be
-	 * tested for intersection in this collection. The transform matrices in
-	 * the {@link Node3DCollection} should hold the matrix for transforming the
-	 * object to world coordinates. If the scene is empty, an empty
-	 * {@link Node3DCollection} should be returned.
-	 *
-	 * @return  A {@link Node3DCollection} containing the objects in the scene.
-	 */
-	protected abstract Node3DCollection<Object3D> getScene();
 
 	/**
 	 * Returns the current view transform for this scene. The view transform

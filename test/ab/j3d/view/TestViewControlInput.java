@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2007
+ * (C) Copyright Numdata BV 2007-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,42 +17,46 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.control;
+package ab.j3d.view;
 
 import java.awt.Color;
+import java.awt.event.MouseEvent;
 import java.util.EventObject;
 import java.util.List;
+import javax.swing.JPanel;
 
 import junit.framework.TestCase;
 
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
+import ab.j3d.control.ComponentControlInput;
+import ab.j3d.control.ControlInput;
+import ab.j3d.control.ControlInputEvent;
 import ab.j3d.geom.BasicRay3D;
 import ab.j3d.model.Face3DIntersection;
-import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
-import ab.j3d.view.Projector;
-import ab.j3d.view.ViewModel;
+import ab.j3d.view.java2d.Java2dModel;
 
 import com.numdata.oss.event.EventDispatcher;
 import com.numdata.oss.event.EventFilter;
 
 /**
- * This class tests the {@link ControlInput} class.
+ * This class tests the {@link ViewControlInput} class.
  *
- * @see     ControlInput
+ * @see     ViewControlInput
  *
+ * @author  G.B.M. Rupert
  * @author  Mart Slot
  * @version $Revision$ $Date$
  */
-public class TestControlInput
+public class TestViewControlInput
 	extends TestCase
 {
 	/**
 	 * Name of this class.
 	 */
-	private static final String CLASS_NAME = TestControlInput.class.getName();
+	private static final String CLASS_NAME = TestViewControlInput.class.getName();
 
 	/**
 	 * Creates a new Object3D in a plane shape, with a top and a bottom face.
@@ -61,7 +65,7 @@ public class TestControlInput
 	 *
 	 * @return  The plane object
 	 */
-	public static Object3D createPlane( final Object tag , final double size )
+	public static Object3D createPlane( final double size )
 	{
 		final double halfSize = size / 2.0;
 		final Vector3D lf = Vector3D.INIT.set( -halfSize , -halfSize , 0.0 );
@@ -73,7 +77,6 @@ public class TestControlInput
 		final Material green = new Material( Color.GREEN.getRGB() );
 
 		final Object3D result = new Object3D();
-		result.setTag( tag );
 
 		/* top    */result.addFace( new Vector3D[]{ lf , lb , rb , rf } , red   , false , false ); // Z =  size
 		/* bottom */result.addFace( new Vector3D[]{ lb , lf , rf , rb } , green , false , false ); // Z = -size
@@ -91,17 +94,16 @@ public class TestControlInput
 	{
 		System.out.println( CLASS_NAME + ".testGetIntersections()" );
 
-		List<Face3DIntersection> selection;
-
-		final ControlTestInput input = new ControlTestInput();
-
-		final Object3D plane1 = createPlane( "Plane 1" , 100.0 );
-		final Object3D plane2 = createPlane( "Plane 2" , 100.0 );
-		final Object3D plane3 = createPlane( "Plane 3" , 100.0 );
-		final Object3D plane4 = createPlane( "Plane 4" , 100.0 );
-		final Object3D plane5 = createPlane( "Plane 5" , 100.0 );
-		final Object3D plane6 = createPlane( "Plane 6" , 100.0 );
-		final Object3D plane7 = createPlane( "Plane 7" , 100.0 );
+		/*
+		 * Create test scene.
+		 */
+		final Object3D plane1 = createPlane( 100.0 );
+		final Object3D plane2 = createPlane( 100.0 );
+		final Object3D plane3 = createPlane( 100.0 );
+		final Object3D plane4 = createPlane( 100.0 );
+		final Object3D plane5 = createPlane( 100.0 );
+		final Object3D plane6 = createPlane( 100.0 );
+		final Object3D plane7 = createPlane( 100.0 );
 
 		final Matrix3D transform1 = Matrix3D.getTransform(  90.0 ,  0.0 , 0.0 ,    0.0 ,   0.0 , 0.0 );
 		final Matrix3D transform2 = Matrix3D.getTransform(  90.0 ,  0.0 , 0.0 ,   10.0 ,  -1.0 , 0.0 );
@@ -111,14 +113,21 @@ public class TestControlInput
 		final Matrix3D transform6 = Matrix3D.getTransform(  90.0 ,  0.0 , 0.0 ,  150.0 ,   0.0 , 0.0 );
 		final Matrix3D transform7 = Matrix3D.getTransform(   0.0 , 90.0 , 0.0 ,  150.0 ,   0.0 , 0.0 );
 
-		final Node3DCollection<Object3D> scene = input.getScene();
-		scene.add( transform1 , plane1 );
-		scene.add( transform2 , plane2 );
-		scene.add( transform3 , plane3 );
-		scene.add( transform4 , plane4 );
-		scene.add( transform5 , plane5 );
-		scene.add( transform6 , plane6 );
-		scene.add( transform7 , plane7 );
+		final Java2dModel model = new Java2dModel( ViewModel.MM );
+		model.createNode( "Plane 1" , transform1 , plane1 , null , 0.0f );
+		model.createNode( "Plane 2" , transform2 , plane2 , null , 0.0f );
+		model.createNode( "Plane 3" , transform3 , plane3 , null , 0.0f );
+		model.createNode( "Plane 4" , transform4 , plane4 , null , 0.0f );
+		model.createNode( "Plane 5" , transform5 , plane5 , null , 0.0f );
+		model.createNode( "Plane 6" , transform6 , plane6 , null , 0.0f );
+		model.createNode( "Plane 7" , transform7 , plane7 , null , 0.0f );
+
+		/*
+		 * Perform tests.
+		 */
+		final ViewControlTestInput input = new ViewControlTestInput( model , model.createView( "view" ) );
+
+		List<Face3DIntersection> selection;
 
 		selection = input.getIntersections( new BasicRay3D( -45.0 , -500.0 , 0.0 , 0.0 , 1.0 , 0.0, true ) );
 		assertEquals( "Incorrect number of intersected faces;" , 2 , selection.size() );
@@ -166,27 +175,125 @@ public class TestControlInput
 	}
 
 	/**
+	 * Test the {@link ComponentControlInput#mousePressed} method.
+	 *
+	 * @throws Exception if the test fails.
+	 */
+	public void testMousePressed()
+		throws Exception
+	{
+		System.out.println( CLASS_NAME + ".testMousePressed()" );
+
+		/*
+		 * Create test scene.
+		 */
+		final Object3D plane1 = createPlane( 100.0 );
+		final Object3D plane2 = createPlane( 100.0 );
+
+		final Matrix3D transform1 = Matrix3D.getTransform( 90.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0   );
+		final Matrix3D transform2 = Matrix3D.getTransform( 0.0  , 0.0 , 0.0 , 0.0 , 0.0 , -75.0 );
+
+		final Java2dModel model = new Java2dModel( ViewModel.MM );
+		model.createNode( "Plane 1" , transform1 , plane1 , null , 0.0f );
+		model.createNode( "Plane 2" , transform2 , plane2 , null , 0.0f );
+
+		/*
+		 * Perform tests.
+		 */
+		final ViewControlTestInput input = new ViewControlTestInput( model , model.createView( "view" ) );
+
+		int modifiers = MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.SHIFT_DOWN_MASK;
+		MouseEvent e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_PRESSED , 0L , modifiers , 0 , 0 , 1 , false , MouseEvent.BUTTON1 );
+		input.mousePressed( e );
+
+		assertTrue("The last event is not a MouseControlEvent", input.getLastEvent() instanceof ControlInputEvent );
+		ControlInputEvent event = (ControlInputEvent)input.getLastEvent();
+
+		assertEquals( "The mouse button is not 1" , MouseEvent.BUTTON1 , event.getMouseButton() );
+		assertEquals( "The event type should be MOUSE_PRESSED" , MouseEvent.MOUSE_PRESSED , event.getID() );
+		final int lastNumber = event.getSequenceNumber();
+
+
+		modifiers = MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.CTRL_DOWN_MASK;
+		e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_PRESSED , 0L , modifiers , 50 , 50 , 1 , false , MouseEvent.BUTTON2 );
+		input.mousePressed( e );
+
+		assertTrue( "The last event is not a MouseControlEvent" , input.getLastEvent() instanceof ControlInputEvent );
+		event = (ControlInputEvent)input.getLastEvent();
+
+		assertEquals( "The mouse button is not 2" , MouseEvent.BUTTON2 , event.getMouseButton() );
+		assertEquals( "The event type should be MOUSE_PRESSED" , MouseEvent.MOUSE_PRESSED , event.getID() );
+		assertEquals( "The event number has changed" , lastNumber , event.getSequenceNumber() );
+	}
+
+	/**
+	 * Test the {@link ComponentControlInput#mouseReleased} method.
+	 *
+	 * @throws Exception if the test fails.
+	 */
+	public void testMouseReleased()
+		throws Exception
+	{
+		System.out.println( CLASS_NAME + ".testMouseReleased()" );
+
+		/*
+		 * Create test scene.
+		 */
+		final Object3D plane1 = createPlane( 100.0 );
+		final Object3D plane2 = createPlane( 100.0 );
+
+		final Matrix3D transform1 = Matrix3D.getTransform( 90.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0   );
+		final Matrix3D transform2 = Matrix3D.getTransform( 0.0  , 0.0 , 0.0 , 0.0 , 0.0 , -75.0 );
+
+		final Java2dModel model = new Java2dModel( ViewModel.MM );
+		model.createNode( "Plane 1" , transform1 , plane1 , null , 0.0f );
+		model.createNode( "Plane 2" , transform2 , plane2 , null , 0.0f );
+
+		/*
+		 * Perform tests.
+		 */
+		final ViewControlTestInput input = new ViewControlTestInput( model , model.createView( "view" ) );
+
+		int modifiers = MouseEvent.SHIFT_DOWN_MASK;
+		MouseEvent e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_RELEASED , 0L , modifiers , 0 , 0 , 1 , false , MouseEvent.BUTTON1 );
+		input.mouseReleased( e );
+
+		assertTrue("The last event is not a MouseControlEvent" , input.getLastEvent() instanceof ControlInputEvent );
+		ControlInputEvent event = (ControlInputEvent)input.getLastEvent();
+
+		assertEquals( "The mouse button is not 1" , MouseEvent.BUTTON1 , event.getMouseButton() );
+		assertEquals( "The event type should be MOUSE_RELEASED" , MouseEvent.MOUSE_RELEASED , event.getID() );
+		final int lastNumber = event.getSequenceNumber();
+
+		modifiers = MouseEvent.CTRL_DOWN_MASK;
+		e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_RELEASED , 0L , modifiers , 0 , 0 , 1 , false , MouseEvent.BUTTON3 );
+		input.mouseReleased( e );
+
+		assertTrue( "The last event is not a MouseControlEvent" , input.getLastEvent() instanceof ControlInputEvent );
+		event = (ControlInputEvent)input.getLastEvent();
+
+		assertEquals( "The mouse button is not 3" , MouseEvent.BUTTON3 , event.getMouseButton() );
+		assertEquals( "The event type should be MOUSE_RELEASED" , MouseEvent.MOUSE_RELEASED , event.getID() );
+		assertEquals( "The event number has not increased" , lastNumber + 1 , event.getSequenceNumber() );
+	}
+
+	/**
 	 * This inner class implements {@link ControlInput} for testing.
 	 */
-	public static class ControlTestInput
-		extends ControlInput
+	public static class ViewControlTestInput
+		extends ViewControlInput
 	{
-		/**
-		  Static scene;
-		 */
-		private final Node3DCollection<Object3D> _scene;
-
 		/**
 		 * Last event that was handled.
 		 */
 		private EventObject _lastEvent;
 
 		/**
-		 * Create {@link ControlTestInput} with default scene.
+		 * Create view control input used in tests.
 		 */
-		public ControlTestInput()
+		public ViewControlTestInput( final ViewModel viewModel , final ViewModelView view )
 		{
-			_scene = new Node3DCollection();
+			super( viewModel , view );
 
 			_lastEvent = null;
 			final EventDispatcher eventQueue = getEventDispatcher();
@@ -200,11 +307,6 @@ public class TestControlInput
 				} );
 		}
 
-		protected Object getIDForObject( final Object3D object )
-		{
-			return object.getTag();
-		}
-
 		protected Projector getProjector()
 		{
 			return Projector.createInstance( Projector.PERSPECTIVE , 100 , 100 , 1.0 , ViewModel.M , 10.0 , 1000.0 , Math.toRadians( 45.0 ) , 1.0 );
@@ -213,11 +315,6 @@ public class TestControlInput
 		protected Matrix3D getViewTransform()
 		{
 			return Matrix3D.INIT.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , -1.0 , 0.0 , -500.0 );
-		}
-
-		protected Node3DCollection<Object3D> getScene()
-		{
-			return _scene;
 		}
 
 		/**
