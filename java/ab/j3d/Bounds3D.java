@@ -20,6 +20,10 @@
  */
 package ab.j3d;
 
+import java.util.Properties;
+
+import com.numdata.oss.PropertyTools;
+
 /**
  * This class represents rectangular 3D bounds (specified by two vectors).
  *
@@ -57,6 +61,52 @@ public final class Bounds3D
 	{
 		this.v1 = ( v1 == null ) ? Vector3D.INIT : v1;
 		this.v2 = ( v2 == null ) ? Vector3D.INIT : v2;
+	}
+
+	/**
+	 * Get <code>Bounds3D</code> property with the specified name from a
+	 * {@link Properties} object.
+	 *
+	 * @param   properties  Properties to get bounds from.
+	 * @param   name        Property name.
+	 *
+	 * @return  <code>Bounds3D</code> object;
+	 *          <code>null</code> if property value is absent/invalid.
+	 */
+	public static Bounds3D getProperty( final Properties properties , final String name )
+	{
+		return getProperty( properties , name , null );
+	}
+
+	/**
+	 * Get <code>Bounds3D</code> property with the specified name from a
+	 * {@link Properties} object.
+	 *
+	 * @param   properties      Properties to get bounds from.
+	 * @param   name            Property name.
+	 * @param   defaultValue    Value to use if property value is absent/invalid.
+	 *
+	 * @return  <code>Bounds3D</code> object;
+	 *          <code>defaultValue</code> if property value is absent/invalid.
+	 */
+	public static Bounds3D getProperty( final Properties properties , final String name , final Bounds3D defaultValue )
+	{
+		Bounds3D result = defaultValue;
+
+		final String stringValue = PropertyTools.getString( properties , name , null );
+		if ( stringValue != null )
+		{
+			try
+			{
+				result = fromString( stringValue );
+			}
+			catch ( Exception e )
+			{
+				/* ignore errors => return default */
+			}
+		}
+
+		return result;
 	}
 
 	/**
