@@ -21,9 +21,11 @@
 package ab.j3d;
 
 import java.text.DecimalFormat;
+import java.util.Properties;
 
 import com.numdata.oss.ArrayTools;
 import com.numdata.oss.MathTools;
+import com.numdata.oss.PropertyTools;
 import com.numdata.oss.TextTools;
 
 /**
@@ -98,6 +100,52 @@ public final class Matrix3D
 		zy = nzy;
 		zz = nzz;
 		zo = nzo;
+	}
+
+	/**
+	 * Get <code>Matrix3D</code> property with the specified name from a
+	 * {@link Properties} object.
+	 *
+	 * @param   properties  Properties to get matrix from.
+	 * @param   name        Property name.
+	 *
+	 * @return  <code>Matrix3D</code> object;
+	 *          <code>null</code> if property value is absent/invalid.
+	 */
+	public static Matrix3D getProperty( final Properties properties , final String name )
+	{
+		return getProperty( properties , name , null );
+	}
+
+	/**
+	 * Get <code>Matrix3D</code> property with the specified name from a
+	 * {@link Properties} object.
+	 *
+	 * @param   properties      Properties to get matrix from.
+	 * @param   name            Property name.
+	 * @param   defaultValue    Value to use if property value is absent/invalid.
+	 *
+	 * @return  <code>Matrix3D</code> object;
+	 *          <code>defaultValue</code> if property value is absent/invalid.
+	 */
+	public static Matrix3D getProperty( final Properties properties , final String name , final Matrix3D defaultValue )
+	{
+		Matrix3D result = defaultValue;
+
+		final String stringValue = PropertyTools.getString( properties , name , null );
+		if ( stringValue != null )
+		{
+			try
+			{
+				result = fromString( stringValue );
+			}
+			catch ( Exception e )
+			{
+				/* ignore errors => return default */
+			}
+		}
+
+		return result;
 	}
 
 	/**
