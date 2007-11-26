@@ -300,4 +300,34 @@ public class GLWrapper
 	{
 		return _gl;
 	}
+
+	/**
+	 * resets all cached gl values to UNDEFINED or null. 
+	 */
+	public void reset()
+	{
+		_gl_LIGHTING            = UNDEFINED;
+		_gl_CULL_FACE           = UNDEFINED;
+		_gl_TEXTURE_2D          = UNDEFINED;
+		_gl_BLEND               = UNDEFINED;
+		_gl_SMOOTH              = UNDEFINED;
+		_gl_COLOR_MATERIAL      = UNDEFINED;
+		_gl_SHADE_MODEL         = (int)UNDEFINED;
+		_gl_CULL_FACE_MODE      = (int)UNDEFINED;
+		_gl_POLYGON_MODE_MODE   = (int)UNDEFINED;
+		_gl_POLYGON_MODE_FACE   = (int)UNDEFINED;
+		_gl_BLEND_FUNC_SFACTOR  = (int)UNDEFINED;
+		_gl_BLEND_FUNC_DFACTOR  = (int)UNDEFINED;
+		_gl_BIND_TEXTURE_TARGET = (int)UNDEFINED;
+		_gl_BIND_TEXTURE_OBJECT = (int)UNDEFINED;
+		_gl_MATERIALF_FACE      = (int)UNDEFINED;
+		_gl_MATERIALF_PNAME     = (int)UNDEFINED;
+		_gl_COLOR_MATERIAL_FACE = (int)UNDEFINED;
+		_gl_COLOR_MATERIAL_MODE = (int)UNDEFINED;
+		_gl_DEPTHFUNC           = (int)UNDEFINED;
+		_gl_MATERIALF_PARAM     = (float)UNDEFINED;
+		_gl_LINE_WIDTH          = (float)UNDEFINED;
+		_mult_MATRIXD_DOUBLES   = null;
+	}
+
 }
