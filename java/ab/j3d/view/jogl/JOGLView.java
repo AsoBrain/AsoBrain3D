@@ -203,6 +203,7 @@ public class JOGLView
 					{
 						paintOverlay( _j2d );
 					}
+					_glWrapper.reset();
 				}
 
 				public void displayChanged( final GLAutoDrawable glAutoDrawable , final boolean b , final boolean b1 )
