@@ -256,7 +256,7 @@ public final class ExtrudedObject2D
 		final double  ey            = extrusion.y;
 		final double  ez            = extrusion.z;
 		final boolean hasExtrusion  = !MathTools.almostEqual( ex , 0.0 ) || !MathTools.almostEqual( ey , 0.0 ) || !MathTools.almostEqual( ez , 0.0 );
-		final boolean flipExtrusion = flipNormals ^ ( hasExtrusion && !hasBackface && ( ez < 0.0 ) );
+		final boolean flipExtrusion = flipNormals ^ ( ez < 0.0 );
 
 		final PathIterator pathIterator = shape.getPathIterator( null , flatness );
 
@@ -416,8 +416,8 @@ public final class ExtrudedObject2D
 
 			triangulator.setFlatness( flatness );
 
-			final Vector3D topNormal    = Vector3D.INIT.set( 0.0 , 0.0 , flipExtrusion ?  1.0 : -1.0 );
-			final Vector3D bottomNormal = Vector3D.INIT.set( 0.0 , 0.0 , flipExtrusion ? -1.0 :  1.0 );
+			final Vector3D topNormal    = Vector3D.INIT.set( 0.0 , 0.0 , flipExtrusion ? -1.0 :  1.0 );
+			final Vector3D bottomNormal = Vector3D.INIT.set( 0.0 , 0.0 , flipExtrusion ?  1.0 : -1.0 );
 
 			triangulator.setNormal( bottomNormal );
 			generateCap( target , shape , transform                   , bottomMaterial , bottomFlipUV , uvMap , triangulator );
