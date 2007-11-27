@@ -97,7 +97,7 @@ public class JOGLTools
 
 		Material material = materialOverride;
 
-		if ( useAlternate && material != null )
+		if ( useAlternate && material == null )
 		{
 			final float[] argb;
 			if( alternatePaint instanceof Color )
