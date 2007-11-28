@@ -82,6 +82,11 @@ public final class Java2dModel
 		updateViews();
 	}
 
+	public void updateOverlay()
+	{
+		updateViews();
+	}
+
 	protected void updateNodeContent( final ViewModelNode node )
 	{
 		updateViews();

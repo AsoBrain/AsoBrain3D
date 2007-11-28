@@ -39,6 +39,7 @@ import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 import ab.j3d.pov.ViewModelToPovAction;
+import ab.j3d.view.control.ViewModelNodeControl;
 
 import com.numdata.oss.ArrayTools;
 import com.numdata.oss.ui.ActionTools;
@@ -79,12 +80,12 @@ public abstract class ViewModel
 	/**
 	 * List of nodes (element type: {@link ViewModelNode}).
 	 */
-	private final List<ViewModelNode> _nodes = new ArrayList();
+	private final List<ViewModelNode> _nodes = new ArrayList<ViewModelNode>();
 
 	/**
 	 * List of views (element type: {@link ViewModelView}).
 	 */
-	private final List<ViewModelView> _views = new ArrayList();
+	private final List<ViewModelView> _views = new ArrayList<ViewModelView>();
 
 	/**
 	 * Scale factor for meters (metric system).
@@ -382,7 +383,7 @@ public abstract class ViewModel
 		if ( node == null )
 			throw new IllegalArgumentException( "ID '" + id + "' does not refer to a known view model node" );
 
-		if( !transform.equals( node.getTransform() ) || true)
+		if( !transform.equals( node.getTransform() ) )
 		{
 			node.setTransform( transform );
 			updateNodeTransform( node );
@@ -425,6 +426,13 @@ public abstract class ViewModel
 	 * @param   node    Node being updated (never <code>null</code>).
 	 */
 	protected abstract void updateNodeTransform( ViewModelNode node );
+
+	/**
+	 * This method updates the overlay. Its implemententation depends largely on
+	 * the view model implementation, which typically re-renders the unaltered
+	 * 3D background scene and calls all {@link OverlayPainter}s again.
+	 */
+	public abstract void updateOverlay();
 
 	/**
 	 * This method updates the contents in the view for the specified node. Its
@@ -515,7 +523,13 @@ public abstract class ViewModel
 			throw new NullPointerException( "view" );
 
 		if ( !_views.contains( view ) )
+		{
+			final ViewModelNodeControl viewModelNodeControl = new ViewModelNodeControl( this );
+			view.appendControl( viewModelNodeControl );
+			view.addOverlayPainter( viewModelNodeControl );
+
 			_views.add( view );
+		}
 	}
 
 	/**

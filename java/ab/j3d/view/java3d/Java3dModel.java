@@ -148,6 +148,11 @@ public final class Java3dModel
 		nodeTransform.setTransform( Java3dTools.convertMatrix3DToTransform3D( transform ) );
 	}
 
+	public void updateOverlay()
+	{
+		updateViews();
+	}
+
 	protected void updateNodeContent( final ViewModelNode node )
 	{
 		final Object         id               = node.getID();

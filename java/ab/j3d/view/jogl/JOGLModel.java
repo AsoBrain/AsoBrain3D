@@ -97,6 +97,11 @@ public class JOGLModel
 		updateViews();
 	}
 
+	public void updateOverlay()
+	{
+		updateViews();
+	}
+
 	protected void updateNodeContent( final ViewModelNode node )
 	{
 		updateViews();

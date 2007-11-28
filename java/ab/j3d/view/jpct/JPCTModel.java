@@ -314,6 +314,11 @@ public class JPCTModel
 		updateNodeContent( node );
 	}
 
+	public void updateOverlay()
+	{
+		updateViews();
+	}
+
 	private void updateNodeContentsImpl( final ViewModelNode node )
 	{
 		// @TODO implement a more efficient update method
