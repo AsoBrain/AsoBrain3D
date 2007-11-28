@@ -25,6 +25,7 @@ import java.awt.Dimension;
 import java.lang.ref.SoftReference;
 import java.util.Locale;
 import java.util.Map;
+import javax.media.opengl.DebugGL;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCanvas;
@@ -180,7 +181,7 @@ public class JOGLView
 			/**
 			 * Define JOGL2dGraphics here to enable caching.
 			 */
-			private JOGL2dGraphics _j2d = null;
+			private JOGLGraphics2D _j2d = null;
 
 			/**
 			 * GLWrapper handeling GL calls.
@@ -189,10 +190,11 @@ public class JOGLView
 
 			public void init( final GLAutoDrawable glAutoDrawable )
 				{
+					glAutoDrawable.setGL( new DebugGL( glAutoDrawable.getGL() ) );
 					_glWrapper = new GLWrapper( glAutoDrawable.getGL() );
 					initGL( _glWrapper );
 					final Overlay overlay = new Overlay( glAutoDrawable );
-					_j2d = new JOGL2dGraphics( overlay.createGraphics() , glAutoDrawable );
+					_j2d = new JOGLGraphics2D( overlay.createGraphics() , glAutoDrawable );
 				}
 
 				public void display( final GLAutoDrawable glAutoDrawable )
@@ -322,6 +324,9 @@ public class JOGLView
 		 */
 		private boolean _terminationRequested;
 
+		/**
+		 * Construct render thread.
+		 */
 		private RenderThread()
 		{
 			super( "JOGLView.renderThread:" + getID() );
@@ -331,11 +336,10 @@ public class JOGLView
 			_terminationRequested = false;
 		}
 
-		@Override
 		public void run()
 		{
-			final Thread thread1 = Thread.currentThread();
-			System.out.println( "Render thread started: " + thread1.getName() );
+			System.out.println( "Render thread started: " + Thread.currentThread() );
+
 			final GLCanvas viewComponent = _viewComponent;
 			while ( !_terminationRequested && viewComponent.isShowing() )
 			{
@@ -364,10 +368,10 @@ public class JOGLView
 				 */
 				try
 				{
-						synchronized ( this )
-						{
-							wait( 300L );
-						}
+					synchronized ( this )
+					{
+						wait( 300L );
+					}
 				}
 				catch ( InterruptedException e ) { /*ignored*/ }
 			}
@@ -375,8 +379,7 @@ public class JOGLView
 			_terminationRequested = false;
 			_updateRequested      = false;
 
-			final Thread thread = Thread.currentThread();
-			System.out.println( "Renderer thread died: " + thread.getName() );
+			System.out.println( "Renderer thread died: " + Thread.currentThread() );
 		}
 
 		/**
@@ -417,21 +420,22 @@ public class JOGLView
 	private void initGL( final GLWrapper glWrapper )
 	{
 		/* Enable depth buffering. */
-		final GL gl = glWrapper.getgl();
+		final GL gl = glWrapper.getGL();
 		gl.glEnable( GL.GL_DEPTH_TEST );
 		gl.glDepthMask( true );
 		glWrapper.glDepthFunc( GL.GL_LESS );
 
 		/* Set smoothing. */
-		glWrapper.setBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+		glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 		glWrapper.setBlend( true );
 		gl.glEnable( GL.GL_LINE_SMOOTH ); //enable smooth lines
 		gl.glHint( GL.GL_LINE_SMOOTH_HINT , GL.GL_NICEST );
 		gl.glEnable( GL.GL_POLYGON_SMOOTH ); //enable smooth polygons
 		gl.glHint( GL.GL_POLYGON_SMOOTH_HINT , GL.GL_NICEST );
+		gl.glShadeModel( GL.GL_SMOOTH );
 
 		/* Initial clear. */
-		JOGLTools.glClearColor( glWrapper , _viewComponent.getBackground() );
+		glWrapper.glClearColor( _viewComponent.getBackground() );
 	}
 
 	/**
@@ -452,7 +456,7 @@ public class JOGLView
 		final double   far      = _backClipDistance;
 
 		/* Setup size of window to draw in. */
-		final GL gl = glWrapper.getgl();
+		final GL gl = glWrapper.getGL();
 		gl.glViewport( x , y , width , height );
 
 		if ( _projectionPolicy != Projector.PARALLEL )
@@ -536,7 +540,7 @@ public class JOGLView
 	 */
 	private void renderFrame( final GLWrapper glWrapper , final int width, final int height )
 	{
-		final GL gl = glWrapper.getgl();
+		final GL gl = glWrapper.getGL();
 
 		//check if the projector is parallel here, because the zoomfactor can be changed without resizing the window.
 		if ( _projectionPolicy == Projector.PARALLEL )
@@ -568,7 +572,7 @@ public class JOGLView
 		gl.glLoadIdentity();
 
 		/* Clear first. */
-		JOGLTools.glClearColor( glWrapper , _viewComponent.getBackground() );
+		glWrapper.glClearColor( _viewComponent.getBackground() );
 
 		/*
 		 * Setup the camera.
@@ -584,7 +588,7 @@ public class JOGLView
 			gl.glEnable( GL.GL_NORMALIZE ); //normalize lighting normals after scaling
 		}
 
-		JOGLTools.glMultMatrixd( glWrapper , cameraTransform );
+		glWrapper.glMultMatrixd( cameraTransform );
 
 		/*
 		 * Render the view model nodes.
@@ -597,13 +601,15 @@ public class JOGLView
 		/* Set Light Model to two sided lighting. */
 		gl.glLightModeli( GL.GL_LIGHT_MODEL_TWO_SIDE , GL.GL_TRUE );
 
+		/* Set local view point */
+		gl.glLightModeli( GL.GL_LIGHT_MODEL_LOCAL_VIEWER , GL.GL_TRUE );
 		for ( final Object id : nodeIDs )
 		{
 			final ViewModelNode viewModelNode = _model.getNode( id );
 			final Node3D   node3D        = viewModelNode.getNode3D();
 			final Matrix3D nodeTransform = viewModelNode.getTransform();
 
-			/*
+			/*meinders
 			 * Render lights.
 			 */
 			final Node3DCollection<Light3D> lights = node3D.collectNodes( null , Light3D.class , nodeTransform , false );
@@ -619,17 +625,22 @@ public class JOGLView
 				if ( light.isAmbient() )
 				{
 					gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
-					gl.glLightfv( lightNumber , GL.GL_AMBIENT , new float[] { viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
+
 				}
 				else
 				{
-					gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] { (float)nodeTransform.xo , (float)nodeTransform.yo , (float)nodeTransform.zo , 0.0f } , 0 );
+					gl.glLightfv( lightNumber , GL.GL_AMBIENT , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
+					gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] { (float)nodeTransform.xo , (float)nodeTransform.yo , (float)nodeTransform.zo , 1.0f } , 0 );
 					gl.glLightfv( lightNumber , GL.GL_DIFFUSE  , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
 					gl.glLightfv( lightNumber , GL.GL_SPECULAR , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
+					gl.glLightf( lightNumber , GL.GL_CONSTANT_ATTENUATION, 1.0f );
+					gl.glLightf( lightNumber , GL.GL_LINEAR_ATTENUATION, 0.0000f );
+					gl.glLightf( lightNumber , GL.GL_QUADRATIC_ATTENUATION, 0.000000000001f );
+					gl.glEnable( lightNumber );
+				lightNumber++;
 				}
 
-				gl.glEnable( lightNumber );
-				lightNumber++;
+
 			}
 
 			/*
@@ -642,19 +653,18 @@ public class JOGLView
 				{
 					case SCHEMATIC:
 						gl.glEnable( GL.GL_POLYGON_OFFSET_FILL );
+						glWrapper.setLighting( false );
 						gl.glPolygonOffset( 1.0f , 1.0f );
 
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
-							glWrapper.setLighting( false );
 							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , _textureCache , true , viewModelNode.getMaterialOverride() );
 						}
 
 						gl.glDisable( GL.GL_POLYGON_OFFSET_FILL );
-
+						gl.glLineWidth( 1.0f );
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
-							glWrapper.setLighting( false );
 							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , _textureCache , false , viewModelNode.getMaterialOverride() );
 						}
 						break;
