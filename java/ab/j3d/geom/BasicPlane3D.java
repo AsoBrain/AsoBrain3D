@@ -75,6 +75,18 @@ public class BasicPlane3D
 	}
 
 	/**
+	 * Construct plane from {@link Matrix3D}.
+	 *
+	 * @param   planeTransform  Matrix to construct plane from.
+	 * @param   twoSided        Plane is two-sided.
+	 *
+	 * @throws  NullPointerException if <code>planeTransform</code> is <code>null</code>.
+	 */
+	public BasicPlane3D( final Matrix3D planeTransform , final boolean twoSided )
+	{
+		this( planeTransform.xz , planeTransform.yz , planeTransform.zz , Vector3D.dot( planeTransform.xz , planeTransform.yz , planeTransform.zz , planeTransform.xo , planeTransform.yo , planeTransform.zo ) , twoSided );
+	}
+	/**
 	 * Construct transformed plane.
 	 *
 	 * @param   transform   Optional transformation to plane.
