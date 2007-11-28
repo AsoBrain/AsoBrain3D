@@ -388,7 +388,27 @@ public abstract class ViewModel
 			node.setTransform( transform );
 			updateNodeTransform( node );
 		}
+	}
 
+	/**
+	 * Set use of alternative appearances for a specified part (sub tree) of the view tree.
+	 *
+	 * @param   id          Application-assigned ID of view model node.
+	 * @param   alternate   Whether to use an alternate color or not.
+	 *
+	 * @throws  NullPointerException if an argument is <code>null</code>.
+	 */
+	public final void setNodeAlternate( final Object id , final boolean alternate )
+	{
+		final ViewModelNode node = getNode( id );
+		if ( node == null )
+			throw new IllegalArgumentException( "ID '" + id + "' does not refer to a known view model node" );
+
+		if( alternate != node.isAlternate() )
+		{
+			node.setAlternate( alternate );
+			updateViews();
+		}
 	}
 
 	/**
