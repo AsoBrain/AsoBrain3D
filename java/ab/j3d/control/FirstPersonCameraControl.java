@@ -138,7 +138,7 @@ public final class FirstPersonCameraControl
 	/**
 	 * Construct new first person camera control looking from the specified point
 	 * to the other specified point. The primary up vector is the Z+ axis, the
-	 * seconary is the Y+ axis.
+	 * secondary is the Y+ axis.
 	 *
 	 * @param   view    View to be controlled.
 	 * @param   from    Initial point to look from.
