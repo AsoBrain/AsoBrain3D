@@ -93,7 +93,7 @@ public class ControlInputEvent
 	 * A list of {@link Face3DIntersection}s of all objects beneath the mouse pointer
 	 * in the 3D world.
 	 */
-	private List _intersections;
+	private List<Face3DIntersection> _intersections;
 
 	/**
 	 * Ray from pointer into view volume (WCS). Calculated on-demand.
@@ -214,16 +214,16 @@ public class ControlInputEvent
 	 *
 	 * @return  The faces beneath the mouse
 	 */
-	public List getIntersections()
+	public List<Face3DIntersection> getIntersections()
 	{
-		List intersections = _intersections;
+		List<Face3DIntersection> intersections = _intersections;
 		if ( intersections == null )
 		{
 			intersections = _controlInput.getIntersections( getPointerRay() );
 			_intersections = intersections;
 		}
 
-		return new ArrayList( intersections );
+		return new ArrayList<Face3DIntersection>( intersections );
 	}
 
 	/**
