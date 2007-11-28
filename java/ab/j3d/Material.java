@@ -279,9 +279,9 @@ public final class Material
 
 		ID                 = -1L;
 		code               = null;
-		ambientColorRed    = 0.2f * red;
-		ambientColorGreen  = 0.2f * green;
-		ambientColorBlue   = 0.2f * blue;
+		ambientColorRed    = red;
+		ambientColorGreen  = green;
+		ambientColorBlue   = blue;
 		diffuseColorRed    = red;
 		diffuseColorGreen  = green;
 		diffuseColorBlue   = blue;
