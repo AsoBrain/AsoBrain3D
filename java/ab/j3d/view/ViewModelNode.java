@@ -19,9 +19,15 @@
  */
 package ab.j3d.view;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.Action;
+
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.model.Node3D;
+import ab.j3d.view.control.planar.PlanarControl;
 
 /**
  * Node in view model.
@@ -56,12 +62,24 @@ public final class ViewModelNode
 	/**
 	 * Material to use instead of actual materials.
 	 */
-	protected Material _materialOverride;
+	private Material _materialOverride;
 
 	/**
 	 * Extra opacity (0.0=translucent, 1.0=opaque/unchanged).
 	 */
-	protected float _opacity;
+	private float _opacity;
+
+	/**
+	 * Context actions.
+	 */
+	private final List<Action> _contextActions = new ArrayList<Action>();
+
+	/**
+	 * Planar controls.
+	 */
+	private final List<PlanarControl> _planarControls = new ArrayList<PlanarControl>();
+
+//	private final List<ViewModelNodeActionListener> _viewModelNodeActionListeners = new ArrayList();
 
 	/**
 	 * Construct new view model node. The <code>materialOverride</code> and
@@ -108,7 +126,7 @@ public final class ViewModelNode
 	 *
 	 * @param   transform   Transform to set.
 	 */
-	public void setTransform( final Matrix3D transform )
+	void setTransform( final Matrix3D transform )
 	{
 		if ( transform == null )
 			throw new NullPointerException( "transform" );
@@ -197,4 +215,127 @@ public final class ViewModelNode
 	{
 		_alternate = alternate;
 	}
+
+	/**
+	 * Returns true if this object is clickable.
+	 * @return true if object is clickable.
+	 */
+	public boolean isClickable()
+	{
+		return hasContextActions() || hasPlanarControls() /*|| hasViewModelNodeActionListeners()*/;
+	}
+
+	/**
+	 * Add a context action.
+	 *
+	 * @param   action  Context action to add.
+	 */
+	public void addContextAction( final Action action )
+	{
+		_contextActions.add( action );
+	}
+
+	/**
+	 * Clear all context actions.
+	 */
+	public void clearContextActions()
+	{
+		_contextActions.clear();
+	}
+
+	/**
+	 * Returns all the contextActions that apply to this viewModelNode as a {@link List }.
+	 *
+	 * @return all contextActions
+	 */
+	public List<Action> getContextActions()
+	{
+		return Collections.unmodifiableList( _contextActions );
+	}
+
+	/**
+	 * Test if this node has any context actions.
+	 *
+	 * @return  <code>true</code> if any context actions were added;
+	 *          <code>false</code> otherwise.
+	 */
+	private boolean hasContextActions()
+	{
+		return !_contextActions.isEmpty();
+	}
+
+	/**
+	 * Remove context action.
+	 *
+	 * @param   action  Context action to remove.
+	 */
+	public void removeContextAction( final Action action )
+	{
+		_contextActions.remove( action );
+	}
+
+	/**
+	 * Add a planar control.
+	 *
+	 * @param   planarControl   Planar control to add.
+	 */
+	public void addPlanarControl( final PlanarControl planarControl )
+	{
+		_planarControls.add( planarControl );
+	}
+
+	/**
+	 * Clear all planar controls.
+	 */
+	public void clearPlanarControls()
+	{
+		_planarControls.clear();
+	}
+
+	/**
+	 * Returns all the planarControls that apply to this viewModelNode as a
+	 * {@link List }.
+	 *
+	 * @return all planarControls
+	 */
+	public List<PlanarControl> getPlanarControls()
+	{
+		return Collections.unmodifiableList( _planarControls );
+	}
+
+	/**
+	 * Test if this node has any planar controls.
+	 *
+	 * @return  <code>true</code> if any planar controls were added;
+	 *          <code>false</code> otherwise.
+	 */
+	private boolean hasPlanarControls()
+	{
+		return !_planarControls.isEmpty();
+	}
+
+	/**
+	 * Remove planar control.
+	 *
+	 * @param   control  Planar control to remove.
+	 */
+	public void removePlanarControl( final PlanarControl control )
+	{
+		_planarControls.remove( control );
+	}
+
+//	private boolean hasViewModelNodeActionListeners()
+//	{
+//		return !_viewModelNodeActionListeners.isEmpty();
+//	}
+//
+//	public List<ViewModelNodeActionListener> getViewModelNodeActionListeners()
+//	{
+//		return Collections.unmodifiableList( _viewModelNodeActionListeners );
+//	}
+//
+//	public void addViewModelNodeActionListener( final ViewModelNodeActionListener viewModelNodeActionListener )
+//	{
+//		_viewModelNodeActionListeners.add( viewModelNodeActionListener );
+//	}
 }
