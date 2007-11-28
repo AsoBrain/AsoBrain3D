@@ -126,6 +126,13 @@ public class Object3D
 	public Paint alternateFillPaint;
 
 	/**
+	 * Bounding box of object in the local coordinate system.
+	 *
+	 * @see     #getOrientedBoundingBox()
+	 */
+	private Bounds3D _orientedBoundingBox;
+
+	/**
 	 * Construct base object. Additional properties need to be set to make the
 	 * object usable.
 	 */
@@ -141,6 +148,8 @@ public class Object3D
 		shadeFactor           = 0.5f;
 		alternateOutlinePaint = Color.BLUE;
 		alternateFillPaint    = Color.WHITE;
+
+		_orientedBoundingBox  = null;
 	}
 
 	/**
@@ -420,6 +429,23 @@ public class Object3D
 	}
 
 	/**
+	 * Get bounding box of this object in the object coordinate system (OCS).
+	 *
+	 * @return  Bounding box of this object in the object coordinate system (OCS).
+	 */
+	public Bounds3D getOrientedBoundingBox()
+	{
+		Bounds3D result = _orientedBoundingBox;
+		if ( result == null )
+		{
+			result = getBounds( null , null );
+			_orientedBoundingBox = result;
+		}
+
+		return result;
+	}
+
+	/**
 	 * Get outer bounds (bounding box) of the object. Optionally, an existing
 	 * bounding box can be specified. The resulting bounds contains all vertices
 	 * within the object and the existing bounding box (if any).
@@ -618,7 +644,7 @@ public class Object3D
 		final Matrix3D world2object = object2world.inverse();
 		final Ray3D    ocsRay       = new BasicRay3D( world2object , ray );
 
-		final List<Face3DIntersection> result = ( dest != null ) ? dest : new ArrayList();
+		final List<Face3DIntersection> result = ( dest != null ) ? dest : new ArrayList<Face3DIntersection>();
 
 		final int faceCount = getFaceCount();
 		for ( int i = 0 ; i < faceCount ; i++ )
@@ -787,7 +813,8 @@ public class Object3D
 	 */
 	void invalidate()
 	{
-		_vertexNormalsDirty = true;
+		_orientedBoundingBox = null;
+		_vertexNormalsDirty  = true;
 
 		final CollisionTester collisionTester = _collisionTester;
 		if ( collisionTester != null )
