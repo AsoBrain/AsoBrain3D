@@ -77,20 +77,20 @@ public class JOGLTools
 		/*
 		 * Set the object transform
 		 */
-		glMultMatrixd( glWrapper , node2gl );
+		glWrapper.glMultMatrixd( node2gl );
 
 		final Paint paint;
 		final Paint alternatePaint;
 
 		if ( fill )
 		{
-			glWrapper.setPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_FILL );
+			glWrapper.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_FILL );
 			paint          = object3D.fillPaint;
 			alternatePaint = object3D.alternateFillPaint;
 		}
 		else
 		{
-			glWrapper.setPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_LINE );
+			glWrapper.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_LINE );
 			paint          = object3D.outlinePaint;
 			alternatePaint = object3D.alternateOutlinePaint;
 		}
@@ -153,12 +153,12 @@ public class JOGLTools
 			else
 			{
 				glWrapper.setCullFace( true );
-				glWrapper.setCullFaceMode( GL.GL_BACK );
+				glWrapper.glCullFace( GL.GL_BACK );
 			}
 			if( hasLighting )
 			{
-				glWrapper.setShadeModel( ( face.isSmooth() ? GL.GL_SMOOTH : GL.GL_FLAT ) );
-
+				//glWrapper.setShadeModel( ( face.isSmooth() ? GL.GL_SMOOTH : GL.GL_FLAT ) );
+				glWrapper.glShadeModel( GL.GL_SMOOTH );
 				if( material != null )
 				{
 					setMaterial( glWrapper , material );
@@ -206,11 +206,11 @@ public class JOGLTools
 	{
 		if( spacing != 0 ) //check if spacing is not null else we'll get an infinite loop.
 		{
-			final GL gl = glWrapper.getgl();
+			final GL gl = glWrapper.getGL();
 
-			glWrapper.setBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+			glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 			glWrapper.setBlend( true );
-			glWrapper.setSmooth( true );
+			glWrapper.setLineSmooth( true );
 
 			glWrapper.glLineWidth( 1.0f );
 			glWrapper.setLighting( false );
@@ -287,7 +287,7 @@ public class JOGLTools
 			if( hasTexture )
 			{
 				glWrapper.setTexture2D( true );
-				glWrapper.setBindTexture( texture.getTarget(), texture.getTextureObject()) ;
+				glWrapper.glBindTexture( texture.getTarget(), texture.getTextureObject()) ;
 			}
 
 			switch ( vertexCount )
@@ -333,7 +333,7 @@ public class JOGLTools
 			}
 			if( hasTexture )
 			{
-				glWrapper.setDisableTexture( texture.getTarget() );
+				glWrapper.glDisable( texture.getTarget() );
 				glWrapper.setTexture2D( false );
 			}
 		}
@@ -373,37 +373,6 @@ public class JOGLTools
 
 		final double[] vertexCoordinates = object.getVertexCoordinates();
 		glWrapper.glVertex3d( vertexCoordinates[ vertexIndex ] , vertexCoordinates[ vertexIndex + 1 ] , vertexCoordinates[ vertexIndex + 2 ] );
-	}
-
-
-	/**
-	 * Clear GL canvas.
-	 *
-	 * @param glWrapper GLWrapper.
-	 * @param color     Color to clear canvas with.
-	 */
-	public static void glClearColor( final GLWrapper glWrapper , final Color color )
-	{
-		final float[] argb = new float[4];
-		color.getRGBComponents( argb );
-		glWrapper.glClearColor( argb[0] , argb[1] , argb[2] , argb[3] );
-	}
-
-	/**
-	 * Multiply current GL transform with the specific 3D transformation matrix.
-	 *
-	 * @param glWrapper GLWrapper.
-	 * @param transform Transformation to multiply with.
-	 */
-	public static void glMultMatrixd( final GLWrapper glWrapper , final Matrix3D transform )
-	{
-		glWrapper.glMultMatrixd( new double[]
-		{
-			transform.xx , transform.yx , transform.zx , 0.0 ,
-			transform.xy , transform.yy , transform.zy , 0.0 ,
-			transform.xz , transform.yz , transform.zz , 0.0 ,
-			transform.xo , transform.yo , transform.zo , 1.0
-		} , 0 );
 	}
 
 	/**
