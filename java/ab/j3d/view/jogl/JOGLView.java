@@ -531,6 +531,7 @@ public class JOGLView
 			_gridSpacing = 0;
 		}
 	}
+
 	/**
 	 * Render entire scene (called from render loop).
 	 *
@@ -609,7 +610,7 @@ public class JOGLView
 			final Node3D   node3D        = viewModelNode.getNode3D();
 			final Matrix3D nodeTransform = viewModelNode.getTransform();
 
-			/*meinders
+			/*
 			 * Render lights.
 			 */
 			final Node3DCollection<Light3D> lights = node3D.collectNodes( null , Light3D.class , nodeTransform , false );
@@ -633,11 +634,8 @@ public class JOGLView
 					gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] { (float)nodeTransform.xo , (float)nodeTransform.yo , (float)nodeTransform.zo , 1.0f } , 0 );
 					gl.glLightfv( lightNumber , GL.GL_DIFFUSE  , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
 					gl.glLightfv( lightNumber , GL.GL_SPECULAR , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
-					gl.glLightf( lightNumber , GL.GL_CONSTANT_ATTENUATION, 1.0f );
-					gl.glLightf( lightNumber , GL.GL_LINEAR_ATTENUATION, 0.0000f );
-					gl.glLightf( lightNumber , GL.GL_QUADRATIC_ATTENUATION, 0.000000000001f );
 					gl.glEnable( lightNumber );
-				lightNumber++;
+					lightNumber++;
 				}
 
 
@@ -679,7 +677,7 @@ public class JOGLView
 							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , true , _textureCache , true  , viewModelNode.getMaterialOverride() );
 						}
 
-						gl.glDisable(GL.GL_POLYGON_OFFSET_FILL);
+						gl.glDisable( GL.GL_POLYGON_OFFSET_FILL );
 
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
