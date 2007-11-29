@@ -19,6 +19,7 @@
  */
 package ab.j3d.control;
 
+import java.awt.Component;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -133,6 +134,16 @@ public class ControlInputEvent
 
 		_pointerRay    = null;
 		_intersections = null;
+	}
+
+	/**
+	 * Get {@link Component} from which the input event was received.
+	 *
+	 * @return  {@link Component} from which the input event was received.
+	 */
+	public Component getSourceComponent()
+	{
+		return (Component)_inputEvent.getSource();
 	}
 
 	/**
@@ -441,7 +452,7 @@ public class ControlInputEvent
 	{
 		final StringBuilder sb = new StringBuilder();
 
-		final List objectsUnderMouse = _intersections;
+		final List<Face3DIntersection> objectsUnderMouse = _intersections;
 
 		sb.append( "ControlEvent\nType: " );
 		switch ( getID() )
