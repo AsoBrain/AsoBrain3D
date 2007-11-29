@@ -157,8 +157,6 @@ public class JOGLTools
 			}
 			if( hasLighting )
 			{
-				//glWrapper.setShadeModel( ( face.isSmooth() ? GL.GL_SMOOTH : GL.GL_FLAT ) );
-				glWrapper.glShadeModel( GL.GL_SMOOTH );
 				if( material != null )
 				{
 					setMaterial( glWrapper , material );
