@@ -104,7 +104,7 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    0.2\n" +
+			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
@@ -120,7 +120,7 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    0.2\n" +
+			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
@@ -136,7 +136,7 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    0.2\n" +
+			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
@@ -152,7 +152,7 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    0.2\n" +
+			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
@@ -168,7 +168,7 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    0.2\n" +
+			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
@@ -184,7 +184,7 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    0.2\n" +
+			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
@@ -200,7 +200,7 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    0.2\n" +
+			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
@@ -216,7 +216,7 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    0.2\n" +
+			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
@@ -232,7 +232,7 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    rgb <0.0,0.0,0.2>\n" +
+			"\t\t\tambient    rgb <0.0,0.0,1.0>\n" +
 			"\t\t\tdiffuse    0.11\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
@@ -249,7 +249,7 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    rgb <0.0,0.2,0.0>\n" +
+			"\t\t\tambient    rgb <0.0,1.0,0.0>\n" +
 			"\t\t\tdiffuse    0.59\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
@@ -265,7 +265,7 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    rgb <0.2,0.0,0.0>\n" +
+			"\t\t\tambient    rgb <1.0,0.0,0.0>\n" +
 			"\t\t\tdiffuse    0.3\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
@@ -281,7 +281,7 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    rgb <0.2,0.0,0.2>\n" +
+			"\t\t\tambient    rgb <1.0,0.0,1.0>\n" +
 			"\t\t\tdiffuse    0.41\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
@@ -297,7 +297,7 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    rgb <0.2,0.13725,0.13725>\n" +
+			"\t\t\tambient    rgb <1.0,0.68627,0.68627>\n" +
 			"\t\t\tdiffuse    0.78039\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
@@ -313,13 +313,15 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    0.2\n" +
+			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n";
-
+		System.out.println( "expected = " + expected );
+		System.out.println( " = "  );
+		System.out.println( "actual = " + actual );
 		Assert.assertEquals( "Declaration generation error" , expected , actual );
 	}
 
