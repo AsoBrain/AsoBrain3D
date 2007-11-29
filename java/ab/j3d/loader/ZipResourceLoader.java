@@ -79,7 +79,6 @@ public class ZipResourceLoader
 			final ZipInputStream zipInputStream = new ZipInputStream( new ByteArrayInputStream( binaryData ) );
 			while ( result == null && ( zipEntry = zipInputStream.getNextEntry() ) != null)
 			{
-				System.out.println( "zipEntry.getName() = " + zipEntry.getName() );
 				if ( name.equals( zipEntry.getName() ) )
 				{
 					result = zipInputStream;
@@ -88,7 +87,6 @@ public class ZipResourceLoader
 		}
 		if ( result == null )
 			throw new FileNotFoundException( "File \"" + name + "\" not found in specified archive." );
-		System.out.println( "Returning from zipresource : " + name );
 		return result;
 	}
 }
