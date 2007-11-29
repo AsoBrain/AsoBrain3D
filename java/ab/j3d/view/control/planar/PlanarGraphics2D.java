@@ -580,11 +580,12 @@ public class PlanarGraphics2D
 
 	public void drawString( final String str , final float x , final float y )
 	{
-		notImplemented();
+		final Point2D point2d = plane2image( x , y );
+		_g2d.drawString( str , (float)point2d.getX() , (float)point2d.getY() );
 	}
 
 	public void drawString( final String str , final int x , final int y )
 	{
-		notImplemented();
+		drawString( str , (float)x , (float)y );
 	}
 }
