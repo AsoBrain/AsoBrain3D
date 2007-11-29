@@ -59,7 +59,7 @@ public class FileResourceLoader
 		final File directory;
 		if( TextTools.isNonEmpty( path ) )
 		{
-			directory = new File( path );
+			directory = new File( path + File.separator);
 		}
 		else
 		{
