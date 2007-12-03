@@ -24,7 +24,8 @@ import javax.swing.JPopupMenu;
 import ab.j3d.control.ControlInputEvent;
 
 /**
- * @FIXME Need comment
+ * This class is used to create a {@link JPopupMenu} with a {@link ControlInputEvent}
+ * attached to it.
  *
  * @author  Jark Reijerink
  * @version $Revision$ $Date$
