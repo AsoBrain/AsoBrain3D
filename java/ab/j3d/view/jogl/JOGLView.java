@@ -195,6 +195,7 @@ public class JOGLView
 					initGL( _glWrapper );
 					final Overlay overlay = new Overlay( glAutoDrawable );
 					_j2d = new JOGLGraphics2D( overlay.createGraphics() , glAutoDrawable );
+					glCanvas.setMinimumSize( new Dimension( 0 , 0 ) ); //resize workaround
 				}
 
 				public void display( final GLAutoDrawable glAutoDrawable )
@@ -216,7 +217,7 @@ public class JOGLView
 				public void reshape ( final GLAutoDrawable glAutoDrawable , final int x , final int y , final int width , final int height )
 				{
 					windowReshape( _glWrapper , x , y , width , height );
-					glCanvas.setMinimumSize( new Dimension( 10 , 10 ) ); //fix for making the joglview smaller
+
 				}
 			} );
 
