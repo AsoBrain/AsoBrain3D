@@ -22,10 +22,10 @@ import java.util.EventObject;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
-import com.numdata.oss.PropertyTools;
-
 import ab.j3d.Matrix3D;
 import ab.j3d.view.ViewModelView;
+
+import com.numdata.oss.PropertyTools;
 
 /**
  * This class implements a camera control based on a 'from' and 'to' point. The
@@ -50,6 +50,9 @@ import ab.j3d.view.ViewModelView;
 public final class OrbitCameraControl
 	extends CameraControl
 {
+	private double _originX;
+	private double _originY;
+	private double _originZ;
 	private double _rotationX;
 	private double _rotationY;
 	private double _rotationZ;
@@ -96,10 +99,29 @@ public final class OrbitCameraControl
 	}
 
 	/**
-	 * Create orbit camera control with the specified rotation and translation
-	 * parameters.
+	 * Create orbit camera control with the specified rotation and translation parameters.
+	 *
+	 * @param   view        View to be controlled.
+	 * @param   rx          Initial rotation around X axis.
+	 * @param   ry          Initial rotation around Y axis.
+	 * @param   rz          Initial rotation around Z axis.
+	 * @param   x           Initial translation along X axis.
+	 * @param   y           Initial translation along Y axis.
+	 * @param   z           Initial translation along Z axis.
+	 */
+	public OrbitCameraControl( final ViewModelView view , final double rx , final double ry , final double rz , final double x , final double y , final double z )
+	{
+		this( view , 0.0 , 0.0 , 0.0 , rx , ry , rz , x , y , z );
+	}
+
+	/**
+	 * Create orbit camera control with the specified origin, rotation and
+	 * translation parameters.
 	 *
 	 * @param   view    View to be controlled.
+	 * @param   ox      Initial X-position of origin.
+	 * @param   oy      Initial Y-position of origin.
+	 * @param   oz      Initial Z-position of origin.
 	 * @param   rx      Initial rotation around X axis.
 	 * @param   ry      Initial rotation around Y axis.
 	 * @param   rz      Initial rotation around Z axis.
@@ -107,10 +129,13 @@ public final class OrbitCameraControl
 	 * @param   y       Initial translation along Y axis.
 	 * @param   z       Initial translation along Z axis.
 	 */
-	public OrbitCameraControl( final ViewModelView view , final double rx , final double ry , final double rz , final double x , final double y , final double z )
+	public OrbitCameraControl( final ViewModelView view , final double ox , final double oy , final double oz , final double rx , final double ry , final double rz , final double x , final double y , final double z )
 	{
 		super( view );
 
+		_originX               = 0.0;
+		_originY               = 0.0;
+		_originZ               = 0.0;
 		_dragStartRotationX    = 0.0;
 		_dragStartRotationY    = 0.0;
 //		_dragStartRotationZ    = 0.0;
@@ -118,31 +143,45 @@ public final class OrbitCameraControl
 		_dragStartTranslationY = 0.0;
 		_dragStartTranslationZ = 0.0;
 
-		_savedSettings = new double[] { _rotationX = rx , _rotationY = ry , _rotationZ = rz , _translationX = x , _translationY = y , _translationZ = z };
+		_savedSettings = new double[] { _originX = ox , _originY = oy , _originZ = oz , _rotationX = rx , _rotationY = ry , _rotationZ = rz , _translationX = x , _translationY = y , _translationZ = z };
 		updateTransform();
 	}
 
 	private void updateTransform()
 	{
-		setTransform( Matrix3D.getTransform( _rotationX , _rotationY , _rotationZ , _translationX , _translationY , _translationZ ) );
+		final Matrix3D originTransform = Matrix3D.INIT.setTranslation( _originX, _originY, _originZ );
+
+		setTransform( originTransform.multiply( Matrix3D.getTransform( _rotationX , _rotationY , _rotationZ , _translationX , _translationY , _translationZ ) ) );
 	}
 
 	public void save()
 	{
 		final double[] saved = _savedSettings;
-		saved[ 0 ] = _rotationX;
-		saved[ 1 ] = _rotationY;
-		saved[ 2 ] = _rotationZ;
-		saved[ 3 ] = _translationX;
-		saved[ 4 ] = _translationY;
-		saved[ 5 ] = _translationZ;
-//		System.out.println( "saved = " + ArrayTools.toString( saved ) );
+		saved[ 0 ] = _originX;
+		saved[ 1 ] = _originY;
+		saved[ 2 ] = _originZ;
+		saved[ 3 ] = _rotationX;
+		saved[ 4 ] = _rotationY;
+		saved[ 5 ] = _rotationZ;
+		saved[ 6 ] = _translationX;
+		saved[ 7 ] = _translationY;
+		saved[ 8 ] = _translationZ;
 	}
 
 	public void restore()
 	{
 		final double[] saved = _savedSettings;
-		setTransform( Matrix3D.getTransform( _rotationX = saved[ 0 ] , _rotationY = saved[ 1 ] , _rotationZ = saved[ 2 ] , _translationX = saved[ 3 ] , _translationY = saved[ 4 ] , _translationZ = saved[ 5 ] ) );
+		_originX      = saved[ 0 ];
+		_originY      = saved[ 1 ];
+		_originZ      = saved[ 2 ];
+		_rotationX    = saved[ 3 ];
+		_rotationY    = saved[ 4 ];
+		_rotationZ    = saved[ 5 ];
+		_translationX = saved[ 6 ];
+		_translationY = saved[ 7 ];
+		_translationZ = saved[ 8 ];
+
+		updateTransform();
 	}
 
 	public void saveSettings( final Properties settings )
@@ -150,6 +189,9 @@ public final class OrbitCameraControl
 		if ( settings == null )
 			throw new NullPointerException( "settings" );
 
+		settings.setProperty( "ox" , String.valueOf( _originX      ) );
+		settings.setProperty( "oy" , String.valueOf( _originY      ) );
+		settings.setProperty( "oz" , String.valueOf( _originZ      ) );
 		settings.setProperty( "rx" , String.valueOf( _rotationX    ) );
 		settings.setProperty( "ry" , String.valueOf( _rotationY    ) );
 		settings.setProperty( "rz" , String.valueOf( _rotationZ    ) );
@@ -162,6 +204,9 @@ public final class OrbitCameraControl
 	{
 		try
 		{
+			final double ox = PropertyTools.getDouble( settings , "ox" );
+			final double oy = PropertyTools.getDouble( settings , "oy" );
+			final double oz = PropertyTools.getDouble( settings , "oz" );
 			final double rx = PropertyTools.getDouble( settings , "rx" );
 			final double ry = PropertyTools.getDouble( settings , "ry" );
 			final double rz = PropertyTools.getDouble( settings , "rz" );
@@ -170,12 +215,15 @@ public final class OrbitCameraControl
 			final double z  = PropertyTools.getDouble( settings , "z"  );
 
 			final double[] saved = _savedSettings;
-			saved[ 0 ] = rx;
-			saved[ 1 ] = ry;
-			saved[ 2 ] = rz;
-			saved[ 3 ] = x;
-			saved[ 4 ] = y;
-			saved[ 5 ] = z;
+			saved[ 0 ] = ox;
+			saved[ 1 ] = oy;
+			saved[ 2 ] = oz;
+			saved[ 3 ] = rx;
+			saved[ 4 ] = ry;
+			saved[ 5 ] = rz;
+			saved[ 6 ] = x;
+			saved[ 7 ] = y;
+			saved[ 8 ] = z;
 			restore();
 		}
 		catch ( NoSuchElementException e )
