@@ -58,7 +58,7 @@ public interface PlanarControl
 	double getPlaneHeight();
 
 	/**
-	 * Test if plane is two-sided. A two-sided plane can it be controlled from
+	 * Test if plane is two-sided. A two-sided plane can be controlled from
 	 * both sides.
 	 *
 	 * @return  <code>true</code> if the plane is two-sided;
