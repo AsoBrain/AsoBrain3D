@@ -20,7 +20,10 @@
  */
 package ab.j3d;
 
+import java.awt.image.BufferedImage;
 import java.io.Serializable;
+
+import com.numdata.oss.TextTools;
 
 /**
  * This class defines a material to be using in a 3D environment.
@@ -28,7 +31,7 @@ import java.io.Serializable;
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public final class Material
+public class Material
 	implements Serializable
 {
 	/**
@@ -344,6 +347,20 @@ public final class Material
 		this.colorMapWidth      = colorMapWidth;
 		this.colorMapHeight     = colorMapHeight;
 		this.grain              = grain;
+	}
+
+	/**
+	 * Get {@link BufferedImage} instance with color map image.
+	 *
+	 * @param   useCache        Use caching of image data if available.
+	 *
+	 * @return  Color map image;
+	 *          <code>null</code> if no color map was defined or could be loaded.
+ 	 */
+	public BufferedImage getColorMapImage( final boolean useCache )
+	{
+		final String map = colorMap;
+		return TextTools.isNonEmpty( map ) ? useCache ? MapTools.getImage( map ) : MapTools.loadImage( map ) : null;
 	}
 
 	/**
