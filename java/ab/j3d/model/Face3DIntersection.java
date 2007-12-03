@@ -40,7 +40,7 @@ import ab.j3d.geom.Ray3D;
  * @version $Revision$ $Date$
  */
 public final class Face3DIntersection
-	implements Comparable
+	implements Comparable<Face3DIntersection>
 {
 	/**
 	 * ID of intersected object.
@@ -82,7 +82,7 @@ public final class Face3DIntersection
 	 * @param   objectID            ID of intersected object.
 	 * @param   object2world        Transforms object to world coordinates.
 	 * @param   face                The {@link Face3D} that was intersected.
-	 * @param   ray                 Ray that intersected the face.
+	 * @param   ray                 {@link Ray3D} that intersected the face.
 	 * @param   intersectionPoint   Intersection point.
 	 */
 	public Face3DIntersection( final Object objectID , final Matrix3D object2world , final Face3D face , final Ray3D ray , final Vector3D intersectionPoint )
@@ -113,10 +113,10 @@ public final class Face3DIntersection
 	/**
 	 * This methods implements insertion-sort by intersection distance.
 	 *
-	 * @param   result          Sorted list of
-	 * @param   intersection
+	 * @param   result          Sorted list of {@link Face3DIntersection}'s.
+	 * @param   intersection    {@link Face3DIntersection} that needs to be added to the list.
 	 */
-	public static void addSortedByDistance( final List result , final Face3DIntersection intersection )
+	public static void addSortedByDistance( final List<Face3DIntersection> result , final Face3DIntersection intersection )
 	{
 		final double distance = intersection.getDistance();
 
@@ -132,7 +132,7 @@ public final class Face3DIntersection
 			{
 				insertionIndex = ( max + min ) / 2;
 
-				final Face3DIntersection other = (Face3DIntersection)result.get( insertionIndex );
+				final Face3DIntersection other = result.get( insertionIndex );
 
 				if ( distance <= other.getDistance() )
 					max = insertionIndex - 1;
@@ -144,9 +144,9 @@ public final class Face3DIntersection
 		result.add( insertionIndex , intersection );
 	}
 
-	public int compareTo( final Object o )
+	public int compareTo( final Face3DIntersection face3DIntersection )
 	{
-		final double delta = getDistance() - ((Face3DIntersection)o).getDistance();
+		final double delta = getDistance() - face3DIntersection.getDistance();
 		return ( delta < 0.0 ) ? -1 : ( delta == 0.0 ) ? 0 : 1;
 	}
 
@@ -220,7 +220,7 @@ public final class Face3DIntersection
 	/**
 	 * Get ray that intersected the face.
 	 *
-	 * @return  Ray that intersected the face.
+	 * @return  {@link Ray3D} that intersected the face.
 	 */
 	public Ray3D getRay()
 	{
