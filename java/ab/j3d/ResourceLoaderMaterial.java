@@ -61,9 +61,8 @@ import ab.j3d.loader.ResourceLoader;
 /**
  * Material which loads its texture from a resourceloader.
  *
- * @author $
- * @version $
- *
+ * @author Wijnand Wieskamp
+ * @version $Revision$
  */
 public class ResourceLoaderMaterial
 	extends Material
