@@ -40,6 +40,11 @@ import ab.j3d.view.control.planar.PlanarControl;
 public final class ViewModelNode
 {
 	/**
+	 * List of listeners to notify about node events.
+	 */
+	private final ViewModel _listeners;
+
+	/**
 	 * Application-assigned ID of this node.
 	 */
 	private final Object _id;
@@ -86,19 +91,21 @@ public final class ViewModelNode
 	 * <code>opacity</code> values can be used to provide extra hints for
 	 * rendering objects.
 	 *
+	 * @param   listener            Listeners to notify about node events.
 	 * @param   id                  Application-assigned ID of this node.
 	 * @param   transform           Initial transform (<code>null</code> => identity).
 	 * @param   node3D              Root in the 3D scene.
 	 * @param   materialOverride    Material to use instead of actual materials.
 	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).
 	 */
-	public ViewModelNode( final Object id , final Matrix3D transform , final Node3D node3D , final Material materialOverride , final float opacity )
+	public ViewModelNode( final ViewModel listener , final Object id , final Matrix3D transform , final Node3D node3D , final Material materialOverride , final float opacity )
 	{
-		_id              = id;
-		_node3D          = node3D;
+		_listeners        = listener;
+		_id               = id;
+		_node3D           = node3D;
 		_materialOverride = materialOverride;
-		_opacity         = opacity;
-		_transform       = ( transform != null ) ? transform : Matrix3D.INIT;
+		_opacity          = opacity;
+		_transform        = ( transform != null ) ? transform : Matrix3D.INIT;
 	}
 
 	/**
@@ -131,7 +138,11 @@ public final class ViewModelNode
 		if ( transform == null )
 			throw new NullPointerException( "transform" );
 
-		_transform = transform;
+		if( !transform.equals( _transform ) )
+		{
+			_transform = transform;
+			fireTransformUpdated();
+		}
 	}
 
 	/**
@@ -173,7 +184,11 @@ public final class ViewModelNode
 	 */
 	public void setMaterialOverride( final Material material )
 	{
-		_materialOverride = material;
+		if ( material != _materialOverride )
+		{
+			_materialOverride = material;
+			fireRenderingPropertiesUpdated();
+		}
 	}
 
 	/**
@@ -193,7 +208,11 @@ public final class ViewModelNode
 	 */
 	public void setOpacity( final float opacity )
 	{
-		_opacity = opacity;
+		if ( opacity != _opacity )
+		{
+			_opacity = opacity;
+			fireRenderingPropertiesUpdated();
+		}
 	}
 
 	/**
@@ -213,7 +232,11 @@ public final class ViewModelNode
 	 */
 	public void setAlternate( final boolean alternate )
 	{
-		_alternate = alternate;
+		if ( alternate != _alternate )
+		{
+			_alternate = alternate;
+			fireRenderingPropertiesUpdated();
+		}
 	}
 
 	/**
@@ -338,4 +361,29 @@ public final class ViewModelNode
 //	{
 //		_viewModelNodeActionListeners.add( viewModelNodeActionListener );
 //	}
+
+	/**
+	 * Send event about updated node rendering properties to all registered
+	 * listeners.
+	 */
+	public void fireRenderingPropertiesUpdated()
+	{
+		_listeners.updateViews();
+	}
+
+	/**
+	 * Send event about updated node transform to all registered listeners.
+	 */
+	public void fireTransformUpdated()
+	{
+		_listeners.updateNodeTransform( this );
+	}
+
+	/**
+	 * Send event about updated node content to all registered listeners.
+	 */
+	public void fireContentUpdated()
+	{
+		_listeners.updateNodeContent( this );
+	}
 }
