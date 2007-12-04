@@ -36,12 +36,12 @@ public final class MapTools
 	/**
 	 * Map path prefix from where material map images are loaded.
 	 */
-	public static String imageMapDirectory = "textures";
+	public static final String IMAGE_MAP_DIRECTORY = ".";
 
 	/**
 	 * Map path suffix from where material map images are loaded.
 	 */
-	public static String imageMapFilenameSuffix = ".jpg";
+	public static final  String IMAGE_MAP_FILENAME_SUFFIX = ".jpg";
 
 	/**
 	 * Utility class is not supposed to be instantiated.
@@ -52,6 +52,9 @@ public final class MapTools
 
 	/**
 	 * Get {@link BufferedImage} instance with map image.
+	 * Image will be stored in a cache. Please do
+	 * not use this method for loading images that are rarely used (use the
+	 * {@link #getImage(String)} for that purpose).
 	 *
 	 * @param   map     Name of map (<code>null</code> or empty strings allowed).
 	 *
@@ -65,6 +68,7 @@ public final class MapTools
 
 	/**
 	 * Get {@link BufferedImage} instance with map image.
+	 * Image wil NOT be cached, use the {@link #getImage(String)} method for that purpose.
 	 *
 	 * @param   map     Name of map (<code>null</code> or empty strings allowed).
 	 *
@@ -86,6 +90,7 @@ public final class MapTools
  	 */
 	public static String getPath( final String map )
 	{
-		return TextTools.isNonEmpty( map ) ? imageMapDirectory + '/' + map + imageMapFilenameSuffix : null;
+		return TextTools.isNonEmpty( map ) ? IMAGE_MAP_DIRECTORY + '/' + map + IMAGE_MAP_FILENAME_SUFFIX
+		       : null;
 	}
 }
