@@ -29,7 +29,6 @@ import javax.media.opengl.GL;
 import com.sun.opengl.util.texture.Texture;
 import com.sun.opengl.util.texture.TextureIO;
 
-import ab.j3d.MapTools;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
@@ -432,7 +431,7 @@ public class JOGLTools
 
 		if ( ( material != null ) && ( material.colorMap != null ) && ( face.getTextureU() != null ) && ( face .getTextureV() != null ) )
 		{
-			result = getTexture( material.colorMap , textureCache );
+			result = getTexture( material , textureCache );
 		}
 		else
 		{
@@ -444,30 +443,30 @@ public class JOGLTools
 	/**
 	 * Get {@link Texture} for the specified map.
 	 *
-	 * @param name          Name of texture map to get.
+	 * @param material      Material to get texture for.
 	 * @param textureCache  Texturecache
 	 *
 	 * @return Texture for the specified name; <code>null</code> if the name was
 	 *         empty or no map by the given name was found.
 	 */
 
-	public static Texture getTexture( final String name, final Map<String, SoftReference<Texture>> textureCache  )
+	public static Texture getTexture( final Material material , final Map<String , SoftReference<Texture>> textureCache  )
 	{
 		Texture result = null;
 
-		if ( TextTools.isNonEmpty( name ) )
+		if ( TextTools.isNonEmpty( material.colorMap ) )
 		{
-			SoftReference<Texture> reference = textureCache.get( name );
+			SoftReference<Texture> reference = textureCache.get( material.colorMap );
 			if ( reference != null )
 			{
 				result = reference.get();
 			}
-			if ( ( result == null ) || ( !textureCache.containsKey( name ) ) )
+			if ( ( result == null ) || ( !textureCache.containsKey( material.colorMap ) ) )
 			{
-				final BufferedImage bufferedImage = MapTools.loadImage( name );
+				final BufferedImage bufferedImage = material.getColorMapImage( false );
 				if ( bufferedImage != null )
 				{
-					System.out.println( "Loading Texture: " + name );
+					System.out.println( "Loading Texture: " + material.colorMap );
 					result = TextureIO.newTexture( ( bufferedImage ) , true );
 					result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
 					result.setTexParameteri( GL.GL_TEXTURE_WRAP_R , GL.GL_REPEAT );
@@ -490,7 +489,7 @@ public class JOGLTools
 					System.out.println( "Could not load texture." );
 				}
 				reference = ( result != null ) ? new SoftReference<Texture>( result ) : new SoftReference<Texture> ( null );
-				textureCache.put( name , reference );
+				textureCache.put( material.colorMap , reference );
 			}
 		}
 		return result;
