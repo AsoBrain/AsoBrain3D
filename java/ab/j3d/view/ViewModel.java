@@ -277,7 +277,10 @@ public abstract class ViewModel
 			throw new NullPointerException( "node" );
 
 		if ( !_nodes.contains( node ) )
+		{
 			_nodes.add( node );
+			updateViews();
+		}
 	}
 
 	/**
@@ -310,22 +313,21 @@ public abstract class ViewModel
 	 * @param   materialOverride    Material to use instead of actual materials.
 	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).);
 	 *
-	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
+	 * @throws  NullPointerException if <code>id</code> or <code>node3D</code> is <code>null</code>.
 	 */
 	public final void createNode( final Object id , final Matrix3D transform , final Node3D node3D , final Material materialOverride , final float opacity )
 	{
 		if ( id == null )
 			throw new NullPointerException( "id" );
 
+		if ( node3D == null )
+			throw new NullPointerException( "node3D" );
+
 		removeNode( id );
 
-		if ( node3D != null )
-		{
-			final ViewModelNode node = new ViewModelNode( id , transform , node3D , materialOverride , opacity );
-			initializeNode( node );
-			addNode( node );
-			updateNodeContent( node );
-		}
+		final ViewModelNode node = new ViewModelNode( this , id , transform , node3D , materialOverride , opacity );
+		initializeNode( node );
+		addNode( node );
 	}
 
 	/**
@@ -353,8 +355,8 @@ public abstract class ViewModel
 	public void removeNode( final Object id )
 	{
 		final ViewModelNode node = getNode( id );
-		if ( node != null )
-			_nodes.remove( node );
+		if ( _nodes.remove( node ) )
+			updateViews();
 	}
 
 	/**
@@ -383,11 +385,7 @@ public abstract class ViewModel
 		if ( node == null )
 			throw new IllegalArgumentException( "ID '" + id + "' does not refer to a known view model node" );
 
-		if( !transform.equals( node.getTransform() ) )
-		{
-			node.setTransform( transform );
-			updateNodeTransform( node );
-		}
+		node.setTransform( transform );
 	}
 
 	/**
@@ -404,11 +402,7 @@ public abstract class ViewModel
 		if ( node == null )
 			throw new IllegalArgumentException( "ID '" + id + "' does not refer to a known view model node" );
 
-		if( alternate != node.isAlternate() )
-		{
-			node.setAlternate( alternate );
-			updateViews();
-		}
+		node.setAlternate( alternate );
 	}
 
 	/**
@@ -424,7 +418,7 @@ public abstract class ViewModel
 		if ( node == null )
 			throw new IllegalArgumentException( "ID '" + id + "' does not refer to a known view model node" );
 
-		updateNodeContent( node );
+		node.fireContentUpdated();
 	}
 
 	/**
