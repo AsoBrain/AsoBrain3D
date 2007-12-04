@@ -36,12 +36,12 @@ public final class MapTools
 	/**
 	 * Map path prefix from where material map images are loaded.
 	 */
-	public static final String IMAGE_MAP_DIRECTORY = ".";
+	public static String imageMapDirectory = "textures";
 
 	/**
 	 * Map path suffix from where material map images are loaded.
 	 */
-	public static final  String IMAGE_MAP_FILENAME_SUFFIX = ".jpg";
+	public static String imageMapFilenameSuffix = ".jpg";
 
 	/**
 	 * Utility class is not supposed to be instantiated.
@@ -90,7 +90,6 @@ public final class MapTools
  	 */
 	public static String getPath( final String map )
 	{
-		return TextTools.isNonEmpty( map ) ? IMAGE_MAP_DIRECTORY + '/' + map + IMAGE_MAP_FILENAME_SUFFIX
-		       : null;
+		return TextTools.isNonEmpty( map ) ? imageMapDirectory + '/' + map + imageMapFilenameSuffix : null;
 	}
 }
