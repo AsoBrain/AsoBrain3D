@@ -55,6 +55,5 @@ public class SwitchRenderingPolicyAction
 	public void run()
 	{
 		_view.setRenderingPolicy( (ViewModelView.RenderingPolicy)getSelectedValue() );
-		_view.update();
 	}
 }

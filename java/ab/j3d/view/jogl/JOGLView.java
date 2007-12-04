@@ -241,12 +241,20 @@ public class JOGLView
 
 	public void setProjectionPolicy( final int policy )
 	{
-		_projectionPolicy = policy;
+		if ( policy != _projectionPolicy )
+		{
+			_projectionPolicy = policy;
+			update();
+		}
 	}
 
 	public void setRenderingPolicy( final RenderingPolicy policy )
 	{
-		_renderingPolicy = policy;
+		if ( policy != _renderingPolicy )
+		{
+			_renderingPolicy = policy;
+			update();
+		}
 	}
 
 	public Projector getProjector()
