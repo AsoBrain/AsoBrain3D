@@ -144,7 +144,7 @@ public abstract class ViewModelView
 	 * A {@link List} of {@link OverlayPainter}s that are to paint over this
 	 * view after rendering is completed.
 	 */
-	private final List<OverlayPainter> _painters = new ArrayList();
+	private final List<OverlayPainter> _painters = new ArrayList<OverlayPainter>();
 
 	/**
 	 * Construct new view.
@@ -366,7 +366,7 @@ public abstract class ViewModelView
 	 * Update contents of view. This may be the result of changes to the 3D
 	 * scene or view transform.
 	 */
-	public abstract void update();
+	protected abstract void update();
 
 	/**
 	 * Set projection policy of this view.
