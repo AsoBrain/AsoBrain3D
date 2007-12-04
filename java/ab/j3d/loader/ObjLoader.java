@@ -21,7 +21,6 @@ package ab.j3d.loader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -31,8 +30,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ab.j3d.Material;
 import ab.j3d.Matrix3D;
+import ab.j3d.ResourceLoaderMaterial;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
@@ -118,12 +117,12 @@ public class ObjLoader
 	/**
 	 * Materials from OBJ MTL file.
 	 */
-	private static final Map<String,Material> objMaterials = new HashMap<String,Material>();
+	private static final Map<String,ResourceLoaderMaterial> objMaterials = new HashMap<String,ResourceLoaderMaterial>();
 
 	/**
 	 * Default materials to use for OBJ files.
 	 */
-	private static final Map<String,Material> DEFAULT_MATERIALS;
+	private static final Map<String,ResourceLoaderMaterial> DEFAULT_MATERIALS;
 
 	/**
 	 * Load the specified OBJ file.
@@ -141,10 +140,10 @@ public class ObjLoader
 		throws IOException
 	{
 		ImageTools.disableMissingImageWarnings();
-		final Map<String,Material> actualMaterials = DEFAULT_MATERIALS;
-		final Material defaultMaterial;
+		final Map<String,ResourceLoaderMaterial> actualMaterials = DEFAULT_MATERIALS;
+		final ResourceLoaderMaterial defaultMaterial;
 		final Object3D result = new Object3D();
-		defaultMaterial = actualMaterials.containsKey( "default" ) ? actualMaterials.get( "default" ) : new Material( 0xFFC0C0C0 );
+		defaultMaterial = actualMaterials.containsKey( "default" ) ? actualMaterials.get( "default" ) : new ResourceLoaderMaterial( 0xFFC0C0C0 );
 
 		/*
 		 * Read OBJ data
@@ -155,7 +154,7 @@ public class ObjLoader
 
 		double[] abVertexCoordinates = null;
 		double[] abVertexNormals     = null;
-		Material abMaterial          = defaultMaterial;
+		ResourceLoaderMaterial abMaterial          = defaultMaterial;
 
 		String line;
 		final BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( loader.getResource( objFileName ) ) );
@@ -485,7 +484,7 @@ public class ObjLoader
 					{
 						if ( argCount < 1 )
 							throw new IOException( "too few material library arguments in: " + line );
-						loadMaterial( loader.getResource( line.substring( 7 ) ) );
+						loadMaterial( loader , line.substring( 7 ) );
 					}
 					/*
 					 * o object_name
@@ -610,20 +609,20 @@ public class ObjLoader
 
 	static
 	{
-		final Map<String,Material> materials = new HashMap<String,Material>();
+		final Map<String,ResourceLoaderMaterial> materials = new HashMap<String,ResourceLoaderMaterial>();
 
 		/* default material (also used for unknown materials) */
-		materials.put( "default"       , new Material( 0xFFC0C0C0 ) );
+		materials.put( "default"       , new ResourceLoaderMaterial( 0xFFC0C0C0 ) );
 
 		/* basic colors */
-		materials.put( "black"         , new Material( 0xFF000000 ) );
-		materials.put( "blue"          , new Material( 0xFF0000FF ) );
-		materials.put( "green"         , new Material( 0xFF00FF00 ) );
-		materials.put( "cyan"          , new Material( 0xFF00FFFF ) );
-		materials.put( "red"           , new Material( 0xFFFF0000 ) );
-		materials.put( "magenta"       , new Material( 0xFFFF00FF ) );
-		materials.put( "yellow"        , new Material( 0xFFFFFF00 ) );
-		materials.put( "white"         , new Material( 0xFFFCFCFC ) );
+		materials.put( "black"         , new ResourceLoaderMaterial( 0xFF000000 ) );
+		materials.put( "blue"          , new ResourceLoaderMaterial( 0xFF0000FF ) );
+		materials.put( "green"         , new ResourceLoaderMaterial( 0xFF00FF00 ) );
+		materials.put( "cyan"          , new ResourceLoaderMaterial( 0xFF00FFFF ) );
+		materials.put( "red"           , new ResourceLoaderMaterial( 0xFFFF0000 ) );
+		materials.put( "magenta"       , new ResourceLoaderMaterial( 0xFFFF00FF ) );
+		materials.put( "yellow"        , new ResourceLoaderMaterial( 0xFFFFFF00 ) );
+		materials.put( "white"         , new ResourceLoaderMaterial( 0xFFFCFCFC ) );
 
 		/* materials */
 //		materials.put( "brass"         , new Material( 0xFFE0E010 ) );
@@ -684,17 +683,18 @@ public class ObjLoader
 	 * Loads a MTL file with materials used by the OBJ file.
 	 * Materials are stored in objMaterials.
 	 *
-	 *  @param  inputStream The InputStream containing the MTL file.
+	 *  @param  loader          Resource loader to load textures from.
+	 *  @param  materialName    Name of the the MTL file.
 	 *
 	 *  @throws  IOException when material could not be loaded or contains malformed known entries. Unknown entries are ignored, e.g. "Ka foobar" will throw an exception,
 	 *                              but "Kgt foobar" won't because Kgt is not a known MTL entry.
 	 */
-	private static void loadMaterial( final InputStream inputStream)
+	private static void loadMaterial( final ResourceLoader loader, final String materialName )
 		throws IOException
 	{
 		String line;
-		Material tempMaterial = null;
-		final BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( inputStream ) );
+		ResourceLoaderMaterial tempMaterial = null;
+		final BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( loader.getResource( materialName ) ) );
 		while ( ( line = readLine( bufferedReader ) ) != null )
 		{
 			if ( line.length() > 0 )
@@ -709,7 +709,7 @@ public class ObjLoader
 					{
 						if ( argCount < 1 )
 						    throw new IOException( "Malformed material entry: " + line );
-						tempMaterial = new Material();
+						tempMaterial = new ResourceLoaderMaterial( loader );
 						tempMaterial.code = ( tokens[ 1 ] );
 						objMaterials.put( ( tokens[ 1 ] ) , tempMaterial );
 					}
@@ -760,10 +760,10 @@ public class ObjLoader
 					{
 						if ( argCount < 1 )
 						    throw new IOException( "Malformed texture entry: " + line );
-						tempMaterial.colorMap = (tokens[ 1 ].substring( 0 , tokens[1].length() - 4));
+						tempMaterial.colorMap = ( tokens[ 1 ] ); //.substring( 0 , tokens[1].length() - 4));
 					}
 					//Non-recognized, non-# (comment) line.
-					//TODO: implement them!
+					//TODO: implement them!Resourc
 					else
 					{
 						//System.err.println( "### Ignoring MTL line: " + line );
@@ -776,7 +776,6 @@ public class ObjLoader
 			}
 		}
 		bufferedReader.close();
-		inputStream.close();
 	}
 
 	/**
