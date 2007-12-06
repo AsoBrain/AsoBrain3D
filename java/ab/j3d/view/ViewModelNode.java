@@ -133,7 +133,7 @@ public final class ViewModelNode
 	 *
 	 * @param   transform   Transform to set.
 	 */
-	void setTransform( final Matrix3D transform )
+	public void setTransform( final Matrix3D transform )
 	{
 		if ( transform == null )
 			throw new NullPointerException( "transform" );
@@ -255,7 +255,8 @@ public final class ViewModelNode
 	 */
 	public void addContextAction( final Action action )
 	{
-		_contextActions.add( action );
+		if( !_contextActions.contains( action ) )
+			_contextActions.add( action );
 	}
 
 	/**
