@@ -93,7 +93,7 @@ public class ViewModelNodeControl
 					final List<Action> actions = viewModelNode.getContextActions();
 					if ( !actions.isEmpty() )
 					{
-						final JPopupMenu popup = new ViewModelNodePopupMenu( event , viewModelNode, intersection );
+						final JPopupMenu popup = new ViewModelNodePopupMenu( event , viewModelNode , intersection );
 
 						for ( final Action action : actions )
 							popup.add( action );
