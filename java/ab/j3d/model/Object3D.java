@@ -138,7 +138,7 @@ public class Object3D
 	 */
 	public Object3D()
 	{
-		_faces                = new ArrayList();
+		_faces                = new ArrayList<Face3D>();
 		_vertexCoordinates    = null;
 		_vertexNormals        = null;
 		_vertexNormalsDirty   = true;
