@@ -48,7 +48,7 @@ public final class Face3DIntersection
 	private final Object _objectID;
 
 	/**
-	 * Transforms object to world coordinates.
+	 * Transforms object3D to world coordinates.
 	 */
 	private final Matrix3D _object2world;
 
@@ -198,9 +198,10 @@ public final class Face3DIntersection
 	}
 
 	/**
-	 * Get transformation matrix that transforms object to world coordinates.
+	 * Get transformation matrix from the {@link Object3D} that was intersected with.
+	 * This matrix transforms object3D to world coordinates.
 	 *
-	 * @return  Transformation matrix from object to world coordinates.
+	 * @return  Transformation matrix from {@link Object3D} to world coordinates.
 	 */
 	public Matrix3D getObject2world()
 	{
