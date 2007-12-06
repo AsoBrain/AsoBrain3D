@@ -42,13 +42,13 @@ public class ViewModelNodePopupMenu
 
 	/**
 	 * ViewModelNode on which this {@link ViewModelNodePopupMenu} was triggered.
-	 * If this variable is null it was not triggered on a {@link ViewModelNode}.
+	 * If this variable is <code>null</code> it was not triggered on a {@link ViewModelNode}.
 	 */
 	private final ViewModelNode _viewModelNode;
 
 	/**
 	 * {@link Face3DIntersection} on which this {@link ViewModelNodePopupMenu} was triggered.
-	 * If this variable is null it was not triggered on a {@link ViewModelNode}.
+	 * If this variable is <code>null</code> it was not triggered on a {@link ViewModelNode}.
 	 */
 	private final Face3DIntersection _face3DIntersection;
 
@@ -61,40 +61,39 @@ public class ViewModelNodePopupMenu
 	}
 
 	/**
-	 * Constructs a {@link ViewModelNodePopupMenu} with the specified
-	 * {@link ControlInputEvent}.
+	 * Create a {@link ViewModelNodePopupMenu} with the specified
+	 * properties.
 	 *
-	 * @param controlInputEvent     the {@link ControlInputEvent} that was triggered
-	 * @param viewModelNode         {@link ViewModelNode} on which was clicked, can be null
-	 * @param face3DIntersection    {@link Face3DIntersection} on which was clicked, can be null
+	 * @param controlInputEvent     {@link ControlInputEvent} that was triggered (can be <code>null</code>).
+	 * @param viewModelNode         {@link ViewModelNode} on which was clicked (can be <code>null</code>).
+	 * @param face3DIntersection    {@link Face3DIntersection} on which was clicked (can be <code>null</code>).
 	 */
-	public ViewModelNodePopupMenu( final ControlInputEvent controlInputEvent, final ViewModelNode viewModelNode, final Face3DIntersection face3DIntersection )
+	public ViewModelNodePopupMenu( final ControlInputEvent controlInputEvent , final ViewModelNode viewModelNode , final Face3DIntersection face3DIntersection )
 	{
-		this( null , controlInputEvent , viewModelNode, face3DIntersection );
+		this( null , controlInputEvent , viewModelNode , face3DIntersection );
 	}
 
 	/**
-	 * Constructs a {@link ViewModelNodePopupMenu} with the specified title.
+	 * Create a {@link ViewModelNodePopupMenu} with the specified properties.
 	 *
-	 * @param label the string that a UI may use to display as a title for the
+	 * @param label String that a UI may use to display as a title for the
 	 *              popup menu.
 	 */
 	public ViewModelNodePopupMenu( final String label )
 	{
-		this( label , null , null, null );
+		this( label , null , null , null );
 	}
 
 	/**
-	 * Constructs a {@link ViewModelNodePopupMenu} with the specified title and
-	 * {@link ControlInputEvent}.
+	 * Create a {@link ViewModelNodePopupMenu} with the specified properties.
 	 *
-	 * @param label                 the string that a UI may use to display as a
+	 * @param label                 The string that a UI may use to display as a
 	 *                              title for the popup menu.
-	 * @param controlInputEvent     the {@link ControlInputEvent} that was triggered.
-	 * @param viewModelNode         {@link ViewModelNode} on which was clicked, can be null
-	 * @param face3DIntersection    {@link Face3DIntersection} on which was clicked, can be null
+	 * @param controlInputEvent     {@link ControlInputEvent} that was triggered (can be <code>null</code>).
+	 * @param viewModelNode         {@link ViewModelNode} on which was clicked (can be <code>null</code>).
+	 * @param face3DIntersection    {@link Face3DIntersection} on which was clicked (can be <code>null</code>).
 	 */
-	public ViewModelNodePopupMenu( final String label, final ControlInputEvent controlInputEvent, final ViewModelNode viewModelNode, final Face3DIntersection face3DIntersection )
+	public ViewModelNodePopupMenu( final String label , final ControlInputEvent controlInputEvent , final ViewModelNode viewModelNode , final Face3DIntersection face3DIntersection )
 	{
 		super( label );
 		_viewModelNode      = viewModelNode;
@@ -104,7 +103,7 @@ public class ViewModelNodePopupMenu
 
 	/**
 	 * Returns the {@link ControlInputEvent} on which this {@link ViewModelNodePopupMenu}
-	 * was triggered.
+	 * was triggered. May return <code>null</code>.
 	 *
 	 * @return {@link ControlInputEvent} on which this {@link ViewModelNodePopupMenu} was triggered.
 	 */
@@ -115,7 +114,7 @@ public class ViewModelNodePopupMenu
 
 	/**
 	 * Returns the {@link ViewModelNode} on which this {@link ViewModelNodePopupMenu}
-	 * was triggered.
+	 * was triggered. May return <code>null</code>.
 	 *
 	 * @return {@link ViewModelNode} on which this {@link ViewModelNodePopupMenu} was triggered.
 	 */
@@ -126,7 +125,7 @@ public class ViewModelNodePopupMenu
 
 	/**
 	 * Returns the {@link Face3DIntersection} on which this {@link ViewModelNodePopupMenu}
-	 * was triggered.
+	 * was triggered. May return <code>null</code>.
 	 *
 	 * @return {@link ViewModelNode} on which this {@link ViewModelNodePopupMenu} was triggered.
 	 */
