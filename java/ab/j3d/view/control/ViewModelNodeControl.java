@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2006
+ * (C) Copyright Numdata BV 2004-2007
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -52,7 +52,7 @@ import ab.j3d.view.control.planar.PlanarGraphics2D;
  */
 public class ViewModelNodeControl
 	extends MouseControl
-	implements OverlayPainter
+		implements OverlayPainter
 {
 	/**
 	 * View model that contains all view nodes.
@@ -93,7 +93,8 @@ public class ViewModelNodeControl
 					final List<Action> actions = viewModelNode.getContextActions();
 					if ( !actions.isEmpty() )
 					{
-						final JPopupMenu popup = new JPopupMenu();
+						final JPopupMenu popup = new ViewModelNodePopupMenu( event , viewModelNode, intersection );
+
 						for ( final Action action : actions )
 							popup.add( action );
 
