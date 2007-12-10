@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.ResourceLoaderMaterial;
 import ab.j3d.Vector3D;
@@ -117,12 +118,12 @@ public class ObjLoader
 	/**
 	 * Materials from OBJ MTL file.
 	 */
-	private static final Map<String,ResourceLoaderMaterial> objMaterials = new HashMap<String,ResourceLoaderMaterial>();
+	private static final Map<String,Material> objMaterials = new HashMap<String,Material>();
 
 	/**
 	 * Default materials to use for OBJ files.
 	 */
-	private static final Map<String,ResourceLoaderMaterial> DEFAULT_MATERIALS;
+	private static final Map<String,Material> DEFAULT_MATERIALS;
 
 	/**
 	 * Load the specified OBJ file.
@@ -140,10 +141,10 @@ public class ObjLoader
 		throws IOException
 	{
 		ImageTools.disableMissingImageWarnings();
-		final Map<String,ResourceLoaderMaterial> actualMaterials = DEFAULT_MATERIALS;
-		final ResourceLoaderMaterial defaultMaterial;
+		final Map<String,Material> actualMaterials = DEFAULT_MATERIALS;
+		final Material defaultMaterial;
 		final Object3D result = new Object3D();
-		defaultMaterial = actualMaterials.containsKey( "default" ) ? actualMaterials.get( "default" ) : new ResourceLoaderMaterial( 0xFFC0C0C0 );
+		defaultMaterial = actualMaterials.containsKey( "default" ) ? actualMaterials.get( "default" ) : new Material( 0xFFC0C0C0 );
 
 		/*
 		 * Read OBJ data
@@ -154,7 +155,7 @@ public class ObjLoader
 
 		double[] abVertexCoordinates = null;
 		double[] abVertexNormals     = null;
-		ResourceLoaderMaterial abMaterial          = defaultMaterial;
+		Material abMaterial          = defaultMaterial;
 
 		String line;
 		final BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( loader.getResource( objFileName ) ) );
@@ -609,20 +610,20 @@ public class ObjLoader
 
 	static
 	{
-		final Map<String,ResourceLoaderMaterial> materials = new HashMap<String,ResourceLoaderMaterial>();
+		final Map<String,Material> materials = new HashMap<String,Material>();
 
 		/* default material (also used for unknown materials) */
-		materials.put( "default"       , new ResourceLoaderMaterial( 0xFFC0C0C0 ) );
+		materials.put( "default"       , new Material( 0xFFC0C0C0 ) );
 
 		/* basic colors */
-		materials.put( "black"         , new ResourceLoaderMaterial( 0xFF000000 ) );
-		materials.put( "blue"          , new ResourceLoaderMaterial( 0xFF0000FF ) );
-		materials.put( "green"         , new ResourceLoaderMaterial( 0xFF00FF00 ) );
-		materials.put( "cyan"          , new ResourceLoaderMaterial( 0xFF00FFFF ) );
-		materials.put( "red"           , new ResourceLoaderMaterial( 0xFFFF0000 ) );
-		materials.put( "magenta"       , new ResourceLoaderMaterial( 0xFFFF00FF ) );
-		materials.put( "yellow"        , new ResourceLoaderMaterial( 0xFFFFFF00 ) );
-		materials.put( "white"         , new ResourceLoaderMaterial( 0xFFFCFCFC ) );
+		materials.put( "black"         , new Material( 0xFF000000 ) );
+		materials.put( "blue"          , new Material( 0xFF0000FF ) );
+		materials.put( "green"         , new Material( 0xFF00FF00 ) );
+		materials.put( "cyan"          , new Material( 0xFF00FFFF ) );
+		materials.put( "red"           , new Material( 0xFFFF0000 ) );
+		materials.put( "magenta"       , new Material( 0xFFFF00FF ) );
+		materials.put( "yellow"        , new Material( 0xFFFFFF00 ) );
+		materials.put( "white"         , new Material( 0xFFFCFCFC ) );
 
 		/* materials */
 //		materials.put( "brass"         , new Material( 0xFFE0E010 ) );
