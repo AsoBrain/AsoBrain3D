@@ -253,7 +253,6 @@ public class PovScene
 				, "-D"                      /* Don't show preview */
 				, "+A"                      /* Turn on anti-aliasing */
 				, "+GA"                     /* Turn on all debug, fatal, render, statistic, and warning text to the console */
-				, "+UA"                     /* Turn off background. */
 			};
 
 			final Runtime runtime = Runtime.getRuntime();
