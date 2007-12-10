@@ -29,14 +29,14 @@ import ab.j3d.view.ViewModelNode;
 import ab.j3d.view.ViewModelView;
 
 /**
- * This class implements {@link PlanarControl} to control borders/corners of the
- * drag plane.
+ * This class implements {@link SubPlaneControl} to control borders/corners of
+ * the drag plane.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public abstract class PlanarBorderControl
-	extends AbstractPlanarControl
+public abstract class SubPlaneBorderControl
+	extends AbstractSubPlaneControl
 {
 	/**
 	 * Size of border to distinguish manipulation areas.
@@ -65,9 +65,9 @@ public abstract class PlanarBorderControl
 	private ManipulationMode _manipulationMode;
 
 	/**
-	 * Construct behavior.
+	 * Construct control.
 	 */
-	protected PlanarBorderControl()
+	protected SubPlaneBorderControl()
 	{
 		_manipulationMode = ManipulationMode.NONE;
 		_borderSize = 100.0;

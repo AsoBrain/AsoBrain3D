@@ -40,8 +40,8 @@ import ab.j3d.view.Projector;
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelNode;
 import ab.j3d.view.ViewModelView;
-import ab.j3d.view.control.planar.PlanarControl;
 import ab.j3d.view.control.planar.PlanarGraphics2D;
+import ab.j3d.view.control.planar.SubPlaneControl;
 
 /**
  * This class implements default controls for {@link ViewModelNode}s. It is
@@ -52,7 +52,7 @@ import ab.j3d.view.control.planar.PlanarGraphics2D;
  */
 public class ViewModelNodeControl
 	extends MouseControl
-		implements OverlayPainter
+	implements OverlayPainter
 {
 	/**
 	 * View model that contains all view nodes.
@@ -67,7 +67,7 @@ public class ViewModelNodeControl
 	/**
 	 * Currently active drag behavior.
 	 */
-	private PlanarControl _activePlanarControl = null;
+	private SubPlaneControl _activePlanarControl = null;
 
 	/**
 	 * Construct control that implements common view node behavior.
@@ -118,7 +118,7 @@ public class ViewModelNodeControl
 			final ViewModelNode viewModelNode = _viewModel.getNode( intersection.getObjectID() );
 			if ( viewModelNode != null )
 			{
-				for ( final PlanarControl planarControl : viewModelNode.getPlanarControls() )
+				for ( final SubPlaneControl planarControl : viewModelNode.getPlanarControls() )
 				{
 					final Point2D dragPoint = getPlanarDragPoint( viewModelNode , planarControl, event.getPointerRay() , true );
 					if ( dragPoint != null )
@@ -146,7 +146,7 @@ public class ViewModelNodeControl
 	public void mouseDragged( final ControlInputEvent event )
 	{
 		final ViewModelNode activeNode          = _activeNode;
-		final PlanarControl activePlanarControl = _activePlanarControl;
+		final SubPlaneControl activePlanarControl = _activePlanarControl;
 
 		if ( ( activeNode != null ) && ( activePlanarControl != null ) )
 		{
@@ -162,7 +162,7 @@ public class ViewModelNodeControl
 	public void mouseReleased( final ControlInputEvent event )
 	{
 		final ViewModelNode activeNode          = _activeNode;
-		final PlanarControl activePlanarControl = _activePlanarControl;
+		final SubPlaneControl activePlanarControl = _activePlanarControl;
 
 		if ( ( activeNode != null ) && ( activePlanarControl != null ) )
 		{
@@ -181,7 +181,7 @@ public class ViewModelNodeControl
 	public void paint( final ViewModelView view , final Graphics2D g2d )
 	{
 		final ViewModelNode dragNode      = _activeNode;
-		final PlanarControl planarControl = _activePlanarControl;
+		final SubPlaneControl planarControl = _activePlanarControl;
 
 		if ( ( dragNode != null ) && ( planarControl != null ) )
 		{
@@ -198,10 +198,10 @@ public class ViewModelNodeControl
 	}
 
 	/**
-	 * Get point on 2D drag plane defined by a node's {@link PlanarControl}.
+	 * Get point on 2D drag plane defined by a node's {@link SubPlaneControl}.
 	 *
 	 * @param   viewModelNode       Node whose behavior is used.
-	 * @param   planarControl        {@link PlanarControl} that defined the drag behavior.
+	 * @param   planarControl        {@link SubPlaneControl} that defined the drag behavior.
 	 * @param   pointerRayWCS       Pointer ray to determine drag point.
 	 * @param   mustBeWithinBounds  If set, only return point if it falls within
 	 *                              the drag bounds.
@@ -209,7 +209,7 @@ public class ViewModelNodeControl
 	 * @return  Point on 2D drag plane;
 	 *          <code>null</code> if no drag point was found.
 	 */
-	public static Point2D getPlanarDragPoint( final ViewModelNode viewModelNode , final PlanarControl planarControl, final Ray3D pointerRayWCS , final boolean mustBeWithinBounds )
+	public static Point2D getPlanarDragPoint( final ViewModelNode viewModelNode , final SubPlaneControl planarControl, final Ray3D pointerRayWCS , final boolean mustBeWithinBounds )
 	{
 		Point2D result = null;
 

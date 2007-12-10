@@ -27,44 +27,21 @@ import ab.j3d.view.ViewModelNode;
 import ab.j3d.view.ViewModelView;
 
 /**
- * This interface defines control behavior for a plane relative to a
- * {@link ViewModelNode}.
+ * This interface defines control behavior for a {@link ViewModelNode} relative
+ * to a plane.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public interface PlanarControl
+public interface PlaneControl
 {
 	/**
-	 * Get transformation that defines the coordinate system of the drag plane
-	 * relative to a {@link ViewModelNode}.
+	 * Get transformation that defines the coordinate system of the
+	 * {@link ViewModelNode} relative to the drag plane.
 	 *
-	 * @return  Drag plan transformation.
+	 * @return  Drag plane transformation.
 	 */
-	Matrix3D getPlane2Node();
-
-	/**
-	 * Get width of drag plane.
-	 *
-	 * @return  Width of drag plane.
-	 */
-	double getPlaneWidth();
-
-	/**
-	 * Get height of drag plane.
-	 *
-	 * @return  Width of drag plane.
-	 */
-	double getPlaneHeight();
-
-	/**
-	 * Test if plane is two-sided. A two-sided plane can be controlled from
-	 * both sides.
-	 *
-	 * @return  <code>true</code> if the plane is two-sided;
-	 *          <code>false</code> otherwise.
-	 */
-	boolean isPlaneTwoSided();
+	Matrix3D getNode2Plane();
 
 	/**
 	 * Drag start event.
@@ -97,11 +74,18 @@ public interface PlanarControl
 	void mouseReleased( ControlInputEvent event , ViewModelNode viewModelNode , double x , double y );
 
 	/**
-	 * Called after a view has been rendered, after which the painters can paint
-	 * whatever they wish on the view component.
+	 * This method can paint on the plane using 2D coordinates relative to the
+	 * plane. It is called like a regular {@link ab.j3d.view.OverlayPainter}
+	 * whenever this control is active.
+	 * <dl>
+	 *  <dt>IMPORTANT:</dt>
+	 *  <dd>This graphics context uses the plane as 2D context, not the rendered
+	 *      image. If rendering in image coordinates is needed, a normal
+	 *      {@link ab.j3d.view.OverlayPainter} should be used.</dd>
+	 * </dl>
 	 *
 	 * @param   view    {@link ViewModelView} which has rendered the scene.
-	 * @param   g2d     {@link Graphics2D} object which can do the painting.
+	 * @param   g2d     {@link Graphics2D} object which can do the 2D painting.
 	 */
 	void paint( final ViewModelView view , final Graphics2D g2d );
 }

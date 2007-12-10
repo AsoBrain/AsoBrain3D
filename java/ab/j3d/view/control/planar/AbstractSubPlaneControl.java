@@ -29,13 +29,13 @@ import ab.j3d.view.ViewModelNode;
 import com.numdata.oss.MathTools;
 
 /**
- * This class prevent some basic functionality of a {@link PlanarControl}.
+ * This class provides some basic functionality of a {@link SubPlaneControl}.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public abstract class AbstractPlanarControl
-	implements PlanarControl
+public abstract class AbstractSubPlaneControl
+	implements SubPlaneControl
 {
 	/**
 	 * Start X coordinate of drag operation.
@@ -63,9 +63,9 @@ public abstract class AbstractPlanarControl
 	private boolean _active;
 
 	/**
-	 * Construct new AbstractDragBehavior.
+	 * Construct new control.
 	 */
-	protected AbstractPlanarControl()
+	protected AbstractSubPlaneControl()
 	{
 		_startX = Double.NaN;
 		_startY = Double.NaN;
