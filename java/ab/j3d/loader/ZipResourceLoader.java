@@ -39,33 +39,33 @@ public class ZipResourceLoader
 	implements ResourceLoader
 {
 
-	/** The zip file as binary data constructed from ByteArrayInputStream @ constrcutor
+	/** The zip file as binary data constructed from {@link InputStream} @ constructor
 	 */
 	private byte[] _binaryData = null;
 
 	/**
-	 * Constructs a ZipResourceLoader based on given InputStream.
+	 * Constructs a {@link ZipResourceLoader } based on given {@link InputStream }.
 	 *
-	 * @param inputStream The zip archive as InputStream.
+	 * @param inputStream The zip archive as {@link InputStream}.
 	 *
-	 * @throws IOException when ByteArrayInputStream could not be read.
+	 * @throws IOException when {@link InputStream } could not be read.
 	 */
-	public ZipResourceLoader( final InputStream inputStream)
-	throws IOException
+	public ZipResourceLoader( final InputStream inputStream )
+		throws IOException
 	{
 		final ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		int length;
 		final byte [] buffer = new byte[10240]; //10K
         while ( ( length = inputStream.read( buffer ) ) > 0 )
         {
-			bos.write(buffer, 0, length);
+			bos.write( buffer , 0 , length );
 		}
 		_binaryData = bos.toByteArray();
 	}
 
 	/**
 	 * {@inheritDoc}
-	 *
+	 * <P>
 	 * In this case, a zip archive.
 	 */
 	public InputStream getResource( final String name )
