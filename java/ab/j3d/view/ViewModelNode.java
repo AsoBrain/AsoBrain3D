@@ -24,10 +24,13 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 
+import ab.j3d.Bounds3D;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.model.Node3D;
-import ab.j3d.view.control.planar.PlanarControl;
+import ab.j3d.model.Node3DCollection;
+import ab.j3d.model.Object3D;
+import ab.j3d.view.control.planar.SubPlaneControl;
 
 /**
  * Node in view model.
@@ -80,9 +83,16 @@ public final class ViewModelNode
 	private final List<Action> _contextActions = new ArrayList<Action>();
 
 	/**
-	 * Planar controls.
+	 * Cached {@link Bounds3D} containing the combined bounds of all the
+	 * {@link Object3D}'s this {@link ViewModelNode} contains bounds3d.
+	 * Will set to <code>null</code> if the content or the transform is changed.
 	 */
-	private final List<PlanarControl> _planarControls = new ArrayList<PlanarControl>();
+	private Bounds3D _cachedBounds3d = null;
+
+	/**
+	 * List of {@link SubPlaneControl}'s attached to this Node.
+	 */
+	private final List<SubPlaneControl> _subPlaneControls = new ArrayList<SubPlaneControl>();
 
 //	private final List<ViewModelNodeActionListener> _viewModelNodeActionListeners = new ArrayList();
 
@@ -116,6 +126,41 @@ public final class ViewModelNode
 	public final Object getID()
 	{
 		return _id;
+	}
+
+	/**
+	 * Returns the combined bounds of all the {@link ab.j3d.model.Object3D}'s this
+	 * {@link ViewModelNode} contains.
+	 * <br /><br />
+	 * May return <code>null</code> if this {@link ViewModelNode} doesn't
+	 * contains any {@link Object3D}'s.
+	 *
+	 * @return combined bounds of all the {@link ab.j3d.model.Object3D}'s this
+	 * {@link ViewModelNode} contains.
+	 */
+	public final Bounds3D getBounds()
+	{
+		Bounds3D result = _cachedBounds3d;
+		if( _cachedBounds3d == null)
+		{
+			final Node3DCollection<Object3D> object3DNode3DCollection;
+			final Node3D node3D = getNode3D();
+
+			object3DNode3DCollection = node3D.collectNodes( null , Object3D.class , Matrix3D.INIT , false );
+
+			if ( object3DNode3DCollection != null )
+			{
+				for ( int i = 0 ; i < object3DNode3DCollection.size() ; i++ )
+				{
+					final Object3D object3d = object3DNode3DCollection.getNode( i );
+
+					result = object3d.getBounds( object3DNode3DCollection.getMatrix( i ) , result );
+				}
+				object3DNode3DCollection.clear();
+			}
+			_cachedBounds3d = result;
+		}
+		return result;
 	}
 
 	/**
@@ -303,9 +348,9 @@ public final class ViewModelNode
 	 *
 	 * @param   planarControl   Planar control to add.
 	 */
-	public void addPlanarControl( final PlanarControl planarControl )
+	public void addPlanarControl( final SubPlaneControl planarControl )
 	{
-		_planarControls.add( planarControl );
+		_subPlaneControls.add( planarControl );
 	}
 
 	/**
@@ -313,7 +358,7 @@ public final class ViewModelNode
 	 */
 	public void clearPlanarControls()
 	{
-		_planarControls.clear();
+		_subPlaneControls.clear();
 	}
 
 	/**
@@ -322,9 +367,9 @@ public final class ViewModelNode
 	 *
 	 * @return all planarControls
 	 */
-	public List<PlanarControl> getPlanarControls()
+	public List<SubPlaneControl> getPlanarControls()
 	{
-		return Collections.unmodifiableList( _planarControls );
+		return Collections.unmodifiableList( _subPlaneControls );
 	}
 
 	/**
@@ -335,7 +380,7 @@ public final class ViewModelNode
 	 */
 	private boolean hasPlanarControls()
 	{
-		return !_planarControls.isEmpty();
+		return !_subPlaneControls.isEmpty();
 	}
 
 	/**
@@ -343,9 +388,9 @@ public final class ViewModelNode
 	 *
 	 * @param   control  Planar control to remove.
 	 */
-	public void removePlanarControl( final PlanarControl control )
+	public void removePlanarControl( final SubPlaneControl control )
 	{
-		_planarControls.remove( control );
+		_subPlaneControls.remove( control );
 	}
 
 //	private boolean hasViewModelNodeActionListeners()
@@ -377,6 +422,8 @@ public final class ViewModelNode
 	 */
 	public void fireTransformUpdated()
 	{
+		//reset bounds
+		_cachedBounds3d = null;
 		_listeners.updateNodeTransform( this );
 	}
 
@@ -385,6 +432,8 @@ public final class ViewModelNode
 	 */
 	public void fireContentUpdated()
 	{
+		//reset bounds
+		_cachedBounds3d = null;
 		_listeners.updateNodeContent( this );
 	}
 }
