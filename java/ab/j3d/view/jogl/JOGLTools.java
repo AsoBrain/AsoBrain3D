@@ -354,7 +354,7 @@ public class JOGLTools
 
 		if ( ( textureU != null ) && ( textureV != null ) )
 		{
-			glWrapper.glTexCoord2f( textureU[ faceVertexIndex ] , textureV[ faceVertexIndex ] );
+			glWrapper.glTexCoord2f( textureU[ faceVertexIndex ] , -textureV[ faceVertexIndex ] );
 		}
 
 		if ( face.isSmooth() && hasLighting)
