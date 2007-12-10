@@ -3,7 +3,7 @@
  * ====================================================================
  * Numdata Open Source Software License, Version 1.0
  *
- * Copyright (c) 2006-2006 Numdata BV.  All rights reserved.
+ * Copyright (c) 2007-2007 Numdata BV.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -61,7 +61,7 @@ import ab.j3d.loader.ResourceLoader;
 /**
  * Material which loads its texture from a resourceloader.
  *
- * @author Wijnand Wieskamp
+ * @author  Wijnand Wieskamp
  * @version $Revision$
  */
 public class ResourceLoaderMaterial
@@ -112,18 +112,18 @@ public class ResourceLoaderMaterial
 		if ( resourceloader != null )
 		{
 			final Map<String,SoftReference<BufferedImage>> textureCache = _textureCache;
-			if ( useCache && textureCache.containsKey( super.colorMap ) && textureCache
-			.get( super.colorMap ) != null )
+			final SoftReference<BufferedImage> bufferedImageSoftReference = textureCache.get( super.colorMap );
+			if ( useCache && textureCache.containsKey( super.colorMap ) && bufferedImageSoftReference != null )
 			{
-				result = textureCache.get( super.colorMap ).get();
+				result = bufferedImageSoftReference.get();
 			}
 			else
 			{
 
 				try
 				{
-					final InputStream is = resourceloader.getResource( super.colorMap );
-					result = ImageIO.read( is );
+					final InputStream inputStream = resourceloader.getResource( super.colorMap );
+					result = ImageIO.read( inputStream );
 					textureCache.put( super.colorMap , new SoftReference<BufferedImage>( result ) );
 
 				}
