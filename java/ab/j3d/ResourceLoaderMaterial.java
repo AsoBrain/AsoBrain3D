@@ -111,21 +111,19 @@ public class ResourceLoaderMaterial
 		final ResourceLoader resourceloader = _resourceloader;
 		if ( resourceloader != null )
 		{
-			final Map<String,SoftReference<BufferedImage>> textureCache = _textureCache;
-			final SoftReference<BufferedImage> bufferedImageSoftReference = textureCache.get( super.colorMap );
-			if ( useCache && textureCache.containsKey( super.colorMap ) && bufferedImageSoftReference != null )
+			final Map<String,SoftReference<BufferedImage>> textureCache               = _textureCache;
+			final SoftReference<BufferedImage>             bufferedImageSoftReference = textureCache.get( super.colorMap );
+			if ( useCache && bufferedImageSoftReference != null )
 			{
 				result = bufferedImageSoftReference.get();
 			}
 			else
 			{
-
 				try
 				{
 					final InputStream inputStream = resourceloader.getResource( super.colorMap );
 					result = ImageIO.read( inputStream );
 					textureCache.put( super.colorMap , new SoftReference<BufferedImage>( result ) );
-
 				}
 				catch ( IOException e )
 				{
