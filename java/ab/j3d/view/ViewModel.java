@@ -372,56 +372,6 @@ public abstract class ViewModel
 	}
 
 	/**
-	 * Set the transform for a specified part (sub tree) of the view tree.
-	 *
-	 * @param   id          Application-assigned ID of view model node.
-	 * @param   transform   Transform to set.
-	 *
-	 * @throws  NullPointerException if an argument is <code>null</code>.
-	 */
-	public final void setNodeTransform( final Object id , final Matrix3D transform )
-	{
-		final ViewModelNode node = getNode( id );
-		if ( node == null )
-			throw new IllegalArgumentException( "ID '" + id + "' does not refer to a known view model node" );
-
-		node.setTransform( transform );
-	}
-
-	/**
-	 * Set use of alternative appearances for a specified part (sub tree) of the view tree.
-	 *
-	 * @param   id          Application-assigned ID of view model node.
-	 * @param   alternate   Whether to use an alternate color or not.
-	 *
-	 * @throws  NullPointerException if an argument is <code>null</code>.
-	 */
-	public final void setNodeAlternate( final Object id , final boolean alternate )
-	{
-		final ViewModelNode node = getNode( id );
-		if ( node == null )
-			throw new IllegalArgumentException( "ID '" + id + "' does not refer to a known view model node" );
-
-		node.setAlternate( alternate );
-	}
-
-	/**
-	 * Update a specified part (sub tree) of the view tree.
-	 *
-	 * @param   id      Application-assigned ID of view model node.
-	 *
-	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
-	 */
-	public final void updateNode( final Object id )
-	{
-		final ViewModelNode node = getNode( id );
-		if ( node == null )
-			throw new IllegalArgumentException( "ID '" + id + "' does not refer to a known view model node" );
-
-		node.fireContentUpdated();
-	}
-
-	/**
 	 * This method initializes the contents in the view for the specified node.
 	 * Its implemententation depends largely on the view model implementation,
 	 * which typically sets up resources in the underlying render engine for the

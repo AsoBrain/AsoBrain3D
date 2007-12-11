@@ -30,6 +30,7 @@ import ab.j3d.Matrix3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
+import ab.j3d.view.control.planar.PlaneControl;
 import ab.j3d.view.control.planar.SubPlaneControl;
 
 /**
@@ -93,6 +94,11 @@ public final class ViewModelNode
 	 * List of {@link SubPlaneControl}'s attached to this Node.
 	 */
 	private final List<SubPlaneControl> _subPlaneControls = new ArrayList<SubPlaneControl>();
+
+	/**
+	 * {@link PlaneControl}
+	 */
+	private PlaneControl _planeControl = null;
 
 //	private final List<ViewModelNodeActionListener> _viewModelNodeActionListeners = new ArrayList();
 
@@ -435,5 +441,15 @@ public final class ViewModelNode
 		//reset bounds
 		_cachedBounds3d = null;
 		_listeners.updateNodeContent( this );
+	}
+
+	public PlaneControl getPlaneControl()
+	{
+		return _planeControl;
+	}
+
+	public void setPlaneControl( PlaneControl planeControl )
+	{
+		_planeControl = planeControl;
 	}
 }

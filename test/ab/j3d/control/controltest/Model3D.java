@@ -38,6 +38,7 @@ import ab.j3d.model.Box3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
 import ab.j3d.view.ViewModel;
+import ab.j3d.view.ViewModelNode;
 import ab.j3d.view.ViewModelTools;
 import ab.j3d.view.ViewModelView;
 import ab.j3d.view.java3d.Java3dModel;
@@ -343,14 +344,17 @@ public final class Model3D
 			}
 
 			setMaterialOfAllFaces( oldObject3D , material );
-			viewModel.updateNode( oldSelection );
+
+			final ViewModelNode viewModelNode = viewModel.getNode( oldSelection );
+			viewModelNode.fireContentUpdated();
 		}
 
 		if ( newSelection != null )
 		{
 			final Object3D newObject3D = (Object3D)viewModel.getNode3D( newSelection );
 			setMaterialOfAllFaces( newObject3D , SELECTION_MATERIAL );
-			viewModel.updateNode( newSelection );
+			final ViewModelNode viewModelNode = viewModel.getNode( newSelection );
+			viewModelNode.fireContentUpdated();
 		}
 	}
 
@@ -389,10 +393,16 @@ public final class Model3D
 		}
 
 		if ( oldHedron != null )
-			viewModel.updateNode( oldHedron );
+		{
+			final ViewModelNode viewModelNode = viewModel.getNode( oldHedron );
+			viewModelNode.fireContentUpdated();
+		}
 
 		if ( ( newHedron != null ) && ( newHedron != oldHedron ) )
-			viewModel.updateNode( newHedron );
+		{
+			final ViewModelNode viewModelNode = viewModel.getNode( newHedron );
+			viewModelNode.fireContentUpdated();
+		}
 	}
 
 	/**
