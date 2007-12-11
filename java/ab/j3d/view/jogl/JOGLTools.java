@@ -98,42 +98,41 @@ public class JOGLTools
 
 		if ( useAlternate && material == null )
 		{
-			final float[] argb;
+			final Color color;
 			if( alternatePaint instanceof Color )
 			{
-				argb = ((Color)alternatePaint).getRGBComponents( null );
+				color = (Color)alternatePaint;
 			}
 			else
 			{
-				System.out.println( "AlternatePaint is not a Color" );
-				argb = Color.BLUE.getRGBComponents( null );
+				System.err.println( "AlternatePaint is not a Color" );
+				color = Color.BLUE;
 			}
-
+			final float[] argb = color.getRGBComponents( null );
 			glWrapper.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
 
 			if( hasLighting )
 			{
-				material = new Material( ((Color)alternatePaint).getRGB() );
+				material = new Material( color.getRGB() );
 			}
 		}
 		else if( !useTextures && material == null )
 		{
-			final float[] argb;
-
+			final Color color;
 			if( paint instanceof Color )
 			{
-				argb = ((Color)paint).getRGBComponents( null );
+					color = (Color)paint;
 			}
 			else
 			{
-				System.out.println( "Paint is not a Color" );
-				argb = Color.RED.getRGBComponents( null );
+				System.err.println( "Paint is not a Color" );
+				color = Color.RED;
 			}
-
+			final float[] argb = color.getRGBComponents( null );
 			glWrapper.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
 			if( hasLighting )
 			{
-				material = new Material( ((Color)paint).getRGB() );
+				material = new Material( color.getRGB() );
 			}
 		}
 		else if( materialOverride != null )
