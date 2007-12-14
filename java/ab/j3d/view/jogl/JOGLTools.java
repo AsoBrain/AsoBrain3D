@@ -21,6 +21,9 @@ package ab.j3d.view.jogl;
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.PathIterator;
 import java.awt.image.BufferedImage;
 import java.lang.ref.SoftReference;
 import java.util.Map;
@@ -32,6 +35,7 @@ import com.sun.opengl.util.texture.TextureIO;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
+import ab.j3d.model.ExtrudedObject2D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
 
@@ -140,51 +144,146 @@ public class JOGLTools
 			glWrapper.glColor4f( materialOverride.diffuseColorRed , materialOverride.diffuseColorGreen , materialOverride.diffuseColorBlue , materialOverride.diffuseColorAlpha );
 		}
 
-		for ( int i = 0 ; i < object3D.getFaceCount() ; i++ )
+		if ( !fill && object3D instanceof ExtrudedObject2D )
 		{
-			final Face3D face = object3D.getFace( i );
+			// @FIXME Drawing outlines like this is only needed while Face3D doesn't support convex faces.
+			// (A single Face3D could then be used for a convex shape, and the proper outline would be drawn automatically.)
 
-			if( face.isTwoSided() )
-			{
-				glWrapper.setCullFace( false );
-			}
-			else
-			{
-				glWrapper.setCullFace( true );
-				glWrapper.glCullFace( GL.GL_BACK );
-			}
-			if( hasLighting )
-			{
-				if( material != null )
-				{
-					setMaterial( glWrapper , material );
-				}
-				else if( face.getMaterial() != null )
-				{
-					setMaterial( glWrapper , face.getMaterial() );
-				}
-			}
+			final ExtrudedObject2D extruded  = (ExtrudedObject2D)object3D;
+			final Shape            shape     = extruded.shape;
+			final Vector3D         extrusion = extruded.extrusion;
 
-			if( materialOverride != null )
+			glWrapper.glPushMatrix();
+			glWrapper.glMultMatrixd( extruded.transform );
+
+			/* Draw the bottom outline of the extruded shape. */
+			drawShape( glWrapper , shape , extruded.flatness );
+
+			/* Draw the top outline of the extruded shape. */
+			glWrapper.glMultMatrixd( Matrix3D.getTransform( 0.0 , 0.0 , 0.0 , extrusion.x , extrusion.y , extrusion.z ) );
+			drawShape( glWrapper , shape , extruded.flatness );
+
+			glWrapper.glPopMatrix();
+		}
+		else
+		{
+			for ( int i = 0 ; i < object3D.getFaceCount() ; i++ )
 			{
-				final Material temp = face.getMaterial();
-				face.setMaterial( materialOverride );
-				if( face.getMaterial().colorMap.isEmpty() )
-					drawFace( glWrapper , face , false , null , hasLighting );
+				final Face3D face = object3D.getFace( i );
+
+				if( face.isTwoSided() )
+				{
+					glWrapper.setCullFace( false );
+				}
 				else
-					drawFace( glWrapper , face , true , textureCache , hasLighting  );
-				face.setMaterial( temp );
+				{
+					glWrapper.setCullFace( true );
+					glWrapper.glCullFace( GL.GL_BACK );
+				}
+				if( hasLighting )
+				{
+					if( material != null )
+					{
+						setMaterial( glWrapper , material );
+					}
+					else if( face.getMaterial() != null )
+					{
+						setMaterial( glWrapper , face.getMaterial() );
+					}
+				}
+
+				if( materialOverride != null )
+				{
+					final Material temp = face.getMaterial();
+					face.setMaterial( materialOverride );
+					if( face.getMaterial().colorMap.isEmpty() )
+						drawFace( glWrapper , face , false , null , hasLighting );
+					else
+						drawFace( glWrapper , face , true , textureCache , hasLighting  );
+					face.setMaterial( temp );
+				}
+				else if( face.getMaterial() != null && !useAlternate && useTextures)
+					drawFace( glWrapper , face , true , textureCache , hasLighting );
+				else if( face.getMaterial() != null )
+					drawFace( glWrapper , face , false , null , hasLighting );
 			}
-			else if( face.getMaterial() != null && !useAlternate && useTextures)
-				drawFace( glWrapper , face , true , textureCache , hasLighting );
-			else if( face.getMaterial() != null )
-				drawFace( glWrapper , face , false , null , hasLighting );
 		}
 
 		/*
 		 * Pop matrix stack, replace current matrix with one below it on the stack.
 		 */
 		glWrapper.glPopMatrix();
+	}
+
+	/**
+	 * Draws the outline of the given shape.
+	 *
+	 * @param   glWrapper   GL wrapper.
+	 * @param   shape       Shape to be drawn.
+	 * @param   flatness    Flatness used to interpolate the shape's curves.
+	 *
+	 * @see     Shape#getPathIterator(AffineTransform, double)
+	 */
+	private static void drawShape( final GLWrapper glWrapper , final Shape shape , final double flatness )
+	{
+		glWrapper.glBegin( GL.GL_LINE_STRIP );
+
+		boolean isFirst = true;
+		double  startX  = 0.0;
+		double  startY  = 0.0;
+
+		final double[] coords = new double[ 6 ];
+		for ( final PathIterator pathIterator = shape.getPathIterator( null , flatness ) ; !pathIterator.isDone() ; pathIterator.next() )
+		{
+			final double x;
+			final double y;
+
+			final int type = pathIterator.currentSegment( coords );
+			switch ( type )
+			{
+				case PathIterator.SEG_MOVETO:
+					if ( !isFirst )
+					{
+						/* Start a new line strip. */
+						glWrapper.glEnd();
+						glWrapper.glBegin( GL.GL_LINE_STRIP );
+					}
+					else
+					{
+						isFirst = false;
+					}
+
+					x = coords[ 0 ];
+					y = coords[ 1 ];
+					startX = x;
+					startY = y;
+					break;
+
+				case PathIterator.SEG_CLOSE:
+					x = startX;
+					y = startY;
+					break;
+				case PathIterator.SEG_LINETO:
+					x = coords[ 0 ];
+					y = coords[ 1 ];
+					break;
+				case PathIterator.SEG_QUADTO: // reduce to line
+					x = coords[ 2 ];
+					y = coords[ 3 ];
+					break;
+				case PathIterator.SEG_CUBICTO: // reduce to line
+					x = coords[ 4 ];
+					y = coords[ 5 ];
+					break;
+
+				default:
+					throw new AssertionError( "unknown type: " + type );
+			}
+
+			glWrapper.glVertex3d( x , y , 0.0 );
+		}
+
+		glWrapper.glEnd();
 	}
 
 	/**
