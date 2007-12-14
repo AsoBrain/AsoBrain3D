@@ -146,8 +146,8 @@ public class JOGLTools
 
 		if ( !fill && object3D instanceof ExtrudedObject2D )
 		{
-			// @FIXME Drawing outlines like this is only needed while Face3D doesn't support convex faces.
-			// (A single Face3D could then be used for a convex shape, and the proper outline would be drawn automatically.)
+			// @FIXME Drawing outlines like this is only needed while Face3D doesn't support concave faces.
+			// (A single Face3D could then be used for a concave shape, and the proper outline would be drawn automatically.)
 
 			final ExtrudedObject2D extruded  = (ExtrudedObject2D)object3D;
 			final Shape            shape     = extruded.shape;
