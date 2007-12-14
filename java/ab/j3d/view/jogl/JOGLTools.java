@@ -159,6 +159,9 @@ public class JOGLTools
 			/* Draw the bottom outline of the extruded shape. */
 			drawShape( glWrapper , shape , extruded.flatness );
 
+			/* Draw the sides of the extruded shape. */
+			drawExtrusionLines( glWrapper , shape , extrusion );
+
 			/* Draw the top outline of the extruded shape. */
 			glWrapper.glMultMatrixd( Matrix3D.getTransform( 0.0 , 0.0 , 0.0 , extrusion.x , extrusion.y , extrusion.z ) );
 			drawShape( glWrapper , shape , extruded.flatness );
@@ -213,6 +216,49 @@ public class JOGLTools
 		 * Pop matrix stack, replace current matrix with one below it on the stack.
 		 */
 		glWrapper.glPopMatrix();
+	}
+
+	private static void drawExtrusionLines( final GLWrapper glWrapper , final Shape shape , final Vector3D extrusion )
+	{
+		glWrapper.glBegin( GL.GL_LINES );
+
+		final double[] coords = new double[ 6 ];
+		for ( final PathIterator pathIterator = shape.getPathIterator( null ) ; !pathIterator.isDone() ; pathIterator.next() )
+		{
+			final double x;
+			final double y;
+
+			final int type = pathIterator.currentSegment( coords );
+			switch ( type )
+			{
+				case PathIterator.SEG_MOVETO:
+					x = coords[ 0 ];
+					y = coords[ 1 ];
+					break;
+				case PathIterator.SEG_CLOSE:
+					continue;
+				case PathIterator.SEG_LINETO:
+					x = coords[ 0 ];
+					y = coords[ 1 ];
+					break;
+				case PathIterator.SEG_QUADTO: // reduce to line
+					x = coords[ 2 ];
+					y = coords[ 3 ];
+					break;
+				case PathIterator.SEG_CUBICTO: // reduce to line
+					x = coords[ 4 ];
+					y = coords[ 5 ];
+					break;
+
+				default:
+					throw new AssertionError( "unknown type: " + type );
+			}
+
+			glWrapper.glVertex3d( x , y , 0.0 );
+			glWrapper.glVertex3d( x + extrusion.x , y + extrusion.y , extrusion.z );
+		}
+
+		glWrapper.glEnd();
 	}
 
 	/**
