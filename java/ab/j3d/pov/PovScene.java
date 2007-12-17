@@ -211,11 +211,12 @@ public class PovScene
 	 * @param   height          The height of the rendered image.
 	 * @param   progressModel   Progressbar model.
 	 * @param   log             Log to write console output to.
+	 * @param   background      Wether or not to draw a background.
 	 *
 	 * @return  Rendered image;
 	 *          <code>null</code> if the pov scene could not be rendered.
 	 */
-	public BufferedImage render( final int width , final int height , final BoundedRangeModel progressModel , final PrintWriter log )
+	public BufferedImage render( final int width , final int height , final BoundedRangeModel progressModel , final PrintWriter log , final boolean background )
 	{
 		if ( progressModel != null )
 		{
@@ -253,6 +254,8 @@ public class PovScene
 				, "-D"                      /* Don't show preview */
 				, "+A"                      /* Turn on anti-aliasing */
 				, "+GA"                     /* Turn on all debug, fatal, render, statistic, and warning text to the console */
+				, (background)?"+UA":""
+
 			};
 
 			final Runtime runtime = Runtime.getRuntime();
@@ -272,6 +275,7 @@ public class PovScene
 					}
 					catch ( IOException e )
 					{
+						e.printStackTrace();
 					}
 
 					/* start progress monitor of POV-Ray console */
@@ -293,7 +297,7 @@ public class PovScene
 											log.flush();
 										}
 
-										if ( ( progressModel != null ) && ( line.indexOf(  " Rendering line " ) >= 0 ) )
+										if ( ( progressModel != null ) && ( line.contains( " Rendering line " ) ) )
 										{
 											String temp = line.substring( line.indexOf( " Rendering line " ) + 16 );
 											final int end = temp.indexOf( (int)' ' );
@@ -381,6 +385,8 @@ public class PovScene
 	 * Saves the current scene as a .pov file.
 	 *
 	 * @param   file    File to write.
+	 *
+	 * @return  True if the file was succesfully written.
 	 */
 	public boolean write( final File file )
 	{
@@ -486,10 +492,8 @@ public class PovScene
 	protected void writeCameras( final IndentingWriter out , final PovGeometry[] geometry )
 		throws IOException
 	{
-		for ( int i = 0 ; i < geometry.length ; i++ )
+		for ( final PovGeometry geom : geometry )
 		{
-			final PovGeometry geom = geometry[ i ];
-
 			if ( geom instanceof PovCamera )
 			{
 				geom.write( out );
@@ -501,9 +505,8 @@ public class PovScene
 	protected void writeLights( final IndentingWriter out , final PovGeometry[] geometry )
 		throws IOException
 	{
-		for ( int i = 0 ; i < geometry.length ; i++ )
+		for ( final PovGeometry geom : geometry )
 		{
-			final PovGeometry geom = geometry[ i ];
 			if ( geom instanceof PovLight )
 			{
 				geom.write( out );
@@ -535,9 +538,8 @@ public class PovScene
 			out.writeln( " * Texture definitions" );
 			out.writeln( " */" );
 
-			for ( int i = 0 ; i < textureKeys.length ; i++ )
+			for ( final Object key : textureKeys )
 			{
-				final Object     key     = textureKeys[ i ];
 				final PovTexture texture = (PovTexture)textures.get( key );
 
 				texture.declare( out );
@@ -568,9 +570,8 @@ public class PovScene
 			out.writeln( " * Declared geometry" );
 			out.writeln( " */" );
 
-			for ( int i = 0 ; i < declaredKeys.length ; i++ )
+			for ( final String name : declaredKeys )
 			{
-				final String      name = declaredKeys[ i ];
 				final PovGeometry geom = (PovGeometry)declaredShapes.get( name );
 
 				out.write( "#declare " );
@@ -597,11 +598,9 @@ public class PovScene
 			out.writeln( " */" );
 
 			//System.out.print( "Writing geometry : " );
-			for ( int i = 0 ; i < geometry.length ; i++ )
+			for ( final PovGeometry geom : geometry )
 			{
-				final PovGeometry geom = geometry[ i ];
-
-				if ( !( geom instanceof PovLight  )
+				if ( !( geom instanceof PovLight )
 				     && !( geom instanceof PovCamera ) )
 				{
 					geom.write( out );
