@@ -85,6 +85,11 @@ public final class ViewModelToPovAction
 	private final String _textureDirectory;
 
 	/**
+	 * SerialVersionUID
+	 */
+	private static final long serialVersionUID = 3750555513179329632L;
+
+	/**
 	 * The {@link ImagePanel} is constructed and added to the view. When the
 	 * user clicks on the view, the panel is set invisible and the view component
 	 * is set visible (the original view is visible again).
@@ -198,7 +203,7 @@ public final class ViewModelToPovAction
 			/*
 			 * Render the povscene to an image and place the image on the image panel.
 			 */
-			image = scene.render( viewWidth , viewHeight , progressModel , logWriter );
+			image = scene.render( viewWidth , viewHeight , progressModel , logWriter , true );
 		}
 		finally
 		{
