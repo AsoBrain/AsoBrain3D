@@ -50,7 +50,7 @@ import com.numdata.oss.log.ClassLogger;
  * @FIXME   Improve geometry declaration (could be done in one class)
  *
  * @author  Sjoerd Bouwman
- * @version $Revision$ ($Date$, $Author$)
+ * @version $Revision$ $Date$
  */
 public class PovScene
 {
@@ -62,19 +62,19 @@ public class PovScene
 	/**
 	 * All main branches of geometry in the scene.
 	 */
-	private List _geometry = new ArrayList();
+	private List<PovGeometry> _geometry = new ArrayList<PovGeometry>();
 
 	/**
 	 * All globally defined textures in the scene.
 	 * These textures will be declared on top of the pov source
 	 * like : #declare TEX_name = texture { definition }
 	 */
-	private Map _textures = new HashMap();
+	private Map<String,PovTexture> _textures = new HashMap<String,PovTexture>();
 
 	/**
 	 * Declared or predefined shapes in the scene.
 	 */
-	private Map _declaredShapes = new HashMap();
+	private Map<String,PovGeometry> _declaredShapes = new HashMap<String,PovGeometry>();
 
 	/**
 	 * Ambient light in the scene.
@@ -160,7 +160,7 @@ public class PovScene
 	 */
 	public PovTexture getTexture( final String code )
 	{
-		return (PovTexture)_textures.get( code );
+		return _textures.get( code );
 	}
 
 	/**
@@ -445,7 +445,7 @@ public class PovScene
 		/*
 		 * Make sure, all geometry is sorted alfabetically.
 		 */
-		final PovGeometry[] geometry = (PovGeometry[])_geometry.toArray( new PovGeometry[ _geometry.size() ] );
+		final PovGeometry[] geometry = _geometry.toArray( new PovGeometry[ _geometry.size() ] );
 		Arrays.sort( geometry );
 
 		//System.out.println( "WRITING POV FILE" );
@@ -524,12 +524,12 @@ public class PovScene
 	protected void writeTextureDefs( final IndentingWriter out )
 		throws IOException
 	{
-		final Map textures = _textures;
+		final Map<String,PovTexture> textures = _textures;
 
 		if ( !textures.isEmpty() )
 		{
-			final Set      textureKeySet = textures.keySet();
-			final Object[] textureKeys   = textureKeySet.toArray();
+			final Set<String> textureKeySet = textures.keySet();
+			final Object[]    textureKeys   = textureKeySet.toArray();
 
 			Arrays.sort( textureKeys );
 
@@ -539,7 +539,7 @@ public class PovScene
 
 			for ( final Object key : textureKeys )
 			{
-				final PovTexture texture = (PovTexture)textures.get( key );
+				final PovTexture texture = textures.get( key );
 
 				texture.declare( out );
 				out.newLine();
@@ -557,12 +557,12 @@ public class PovScene
 	protected void writeDeclaredShapes( final IndentingWriter out )
 		throws IOException
 	{
-		final Map declaredShapes = _declaredShapes;
+		final Map<String,PovGeometry> declaredShapes = _declaredShapes;
 
 		if ( !declaredShapes.isEmpty() )
 		{
-			final Set      declaredKeySet = declaredShapes.keySet();
-			final String[] declaredKeys   = (String[])declaredKeySet.toArray( new String[ declaredKeySet.size() ] );
+			final Set<String> declaredKeySet = declaredShapes.keySet();
+			final String[]    declaredKeys   = declaredKeySet.toArray( new String[ declaredKeySet.size() ] );
 			Arrays.sort( declaredKeys );
 
 			out.writeln( "/*" );
@@ -571,7 +571,7 @@ public class PovScene
 
 			for ( final String name : declaredKeys )
 			{
-				final PovGeometry geom = (PovGeometry)declaredShapes.get( name );
+				final PovGeometry geom = declaredShapes.get( name );
 
 				out.write( "#declare " );
 				out.write( name );
