@@ -67,6 +67,14 @@ public interface SubPlaneControl
 	boolean isPlaneTwoSided();
 
 	/**
+	 * Test if the control is enabled. 
+	 *
+	 * @return  <code>true</code> if the control is enabled;
+	 *          <code>false</code> otherwise.
+	 */
+	boolean isEnabled();
+
+	/**
 	 * Drag start event.
 	 *
 	 * @param   event           Event from control.

@@ -74,6 +74,11 @@ public abstract class AbstractSubPlaneControl
 		_active = false;
 	}
 
+	public boolean isEnabled()
+	{
+		return true;
+	}
+
 	public void mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final double x , final double y )
 	{
 		_startX = x;
