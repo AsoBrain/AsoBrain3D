@@ -103,7 +103,7 @@ public class JOGLTools
 		if ( useAlternate && material == null )
 		{
 			final Color color;
-			if( alternatePaint instanceof Color )
+			if ( alternatePaint instanceof Color )
 			{
 				color = (Color)alternatePaint;
 			}
@@ -115,15 +115,15 @@ public class JOGLTools
 			final float[] argb = color.getRGBComponents( null );
 			glWrapper.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
 
-			if( hasLighting )
+			if ( hasLighting )
 			{
 				material = new Material( color.getRGB() );
 			}
 		}
-		else if( !useTextures && material == null )
+		else if ( !useTextures && material == null )
 		{
 			final Color color;
-			if( paint instanceof Color )
+			if ( paint instanceof Color )
 			{
 					color = (Color)paint;
 			}
@@ -134,12 +134,12 @@ public class JOGLTools
 			}
 			final float[] argb = color.getRGBComponents( null );
 			glWrapper.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
-			if( hasLighting )
+			if ( hasLighting )
 			{
 				material = new Material( color.getRGB() );
 			}
 		}
-		else if( materialOverride != null )
+		else if ( materialOverride != null )
 		{
 			glWrapper.glColor4f( materialOverride.diffuseColorRed , materialOverride.diffuseColorGreen , materialOverride.diffuseColorBlue , materialOverride.diffuseColorAlpha );
 		}
@@ -174,7 +174,7 @@ public class JOGLTools
 			{
 				final Face3D face = object3D.getFace( i );
 
-				if( face.isTwoSided() )
+				if ( face.isTwoSided() )
 				{
 					glWrapper.setCullFace( false );
 				}
@@ -183,32 +183,40 @@ public class JOGLTools
 					glWrapper.setCullFace( true );
 					glWrapper.glCullFace( GL.GL_BACK );
 				}
-				if( hasLighting )
+				if ( hasLighting )
 				{
-					if( material != null )
+					if ( material != null )
 					{
 						setMaterial( glWrapper , material );
 					}
-					else if( face.getMaterial() != null )
+					else if ( face.getMaterial() != null )
 					{
 						setMaterial( glWrapper , face.getMaterial() );
 					}
 				}
 
-				if( materialOverride != null )
+				if ( materialOverride != null )
 				{
 					final Material temp = face.getMaterial();
 					face.setMaterial( materialOverride );
-					if( face.getMaterial().colorMap.isEmpty() )
+					if ( TextTools.isEmpty( materialOverride.colorMap ) )
+					{
 						drawFace( glWrapper , face , false , null , hasLighting );
+					}
 					else
+					{
 						drawFace( glWrapper , face , true , textureCache , hasLighting  );
+					}
 					face.setMaterial( temp );
 				}
-				else if( face.getMaterial() != null && !useAlternate && useTextures)
+				else if ( face.getMaterial() != null && !useAlternate && useTextures)
+				{
 					drawFace( glWrapper , face , true , textureCache , hasLighting );
-				else if( face.getMaterial() != null )
+				}
+				else if ( face.getMaterial() != null )
+				{
 					drawFace( glWrapper , face , false , null , hasLighting );
+				}
 			}
 		}
 
@@ -345,7 +353,7 @@ public class JOGLTools
 	 */
 	public static void drawGrid( final GLWrapper glWrapper , final int x , final int y , final int z , final int dx , final int dy , final int spacing )
 	{
-		if( spacing != 0 ) //check if spacing is not null else we'll get an infinite loop.
+		if ( spacing != 0 ) //check if spacing is not null else we'll get an infinite loop.
 		{
 			final GL gl = glWrapper.getGL();
 
@@ -425,7 +433,7 @@ public class JOGLTools
 			final boolean hasTexture = ( texture != null ); //if a texture has been loaded
 			final float[] textureU   = hasTexture ? face.getTextureU() : null;
 			final float[] textureV   = hasTexture ? face.getTextureV() : null;
-			if( hasTexture )
+			if ( hasTexture )
 			{
 				glWrapper.setTexture2D( true );
 				glWrapper.glBindTexture( texture.getTarget(), texture.getTextureObject()) ;
@@ -472,7 +480,7 @@ public class JOGLTools
 				}
 				break;
 			}
-			if( hasTexture )
+			if ( hasTexture )
 			{
 				glWrapper.glDisable( texture.getTarget() );
 				glWrapper.setTexture2D( false );
@@ -506,7 +514,7 @@ public class JOGLTools
 			final double[] vertexNormals = object.getVertexNormals();
 			glWrapper.glNormal3d( vertexNormals[ vertexIndex ] , vertexNormals[ vertexIndex + 1 ] , vertexNormals[ vertexIndex + 2 ] );
 		}
-		else if( hasLighting )
+		else if ( hasLighting )
 		{
 			final Vector3D faceNormal = face.getNormal();
 			glWrapper.glNormal3d( faceNormal.x , faceNormal.y , faceNormal.z );
