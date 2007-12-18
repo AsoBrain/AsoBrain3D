@@ -118,20 +118,23 @@ public class ViewModelNodeControl
 			final ViewModelNode viewModelNode = _viewModel.getNode( intersection.getObjectID() );
 			if ( viewModelNode != null )
 			{
-				for ( final SubPlaneControl planarControl : viewModelNode.getPlanarControls() )
+				for ( final SubPlaneControl subPlaneControl : viewModelNode.getPlanarControls() )
 				{
-					final Point2D dragPoint = getPlanarDragPoint( viewModelNode , planarControl, event.getPointerRay() , true );
-					if ( dragPoint != null )
+					if ( subPlaneControl.isEnabled() )
 					{
-						_activeNode          = viewModelNode;
-						_activePlanarControl = planarControl;
+						final Point2D dragPoint = getPlanarDragPoint( viewModelNode , subPlaneControl, event.getPointerRay() , true );
+						if ( dragPoint != null )
+						{
+							_activeNode          = viewModelNode;
+							_activePlanarControl = subPlaneControl;
 
-						planarControl.mousePressed( event , viewModelNode , dragPoint.getX() , dragPoint.getY() );
-						_viewModel.updateOverlay();
+							subPlaneControl.mousePressed( event , viewModelNode , dragPoint.getX() , dragPoint.getY() );
+							_viewModel.updateOverlay();
 
-						startCapture( event );
-						result = null;
-						break;
+							startCapture( event );
+							result = null;
+							break;
+						}
 					}
 				}
 			}
