@@ -439,7 +439,7 @@ public class ObjLoader
 							abFaceVertexIndices[ abFaceVertexIndex ] = abVertexIndex;
 						}
 
-						result.addFace( abFaceVertexIndices , abMaterial , abTextureU , abTextureV , 1.0f , true , false );
+						result.addFace( abFaceVertexIndices , abMaterial , abTextureU , abTextureV , 1.0f , true , true );
 					}
 					/*
 					 * g group_name1 group_name2 . . .
@@ -748,6 +748,8 @@ public class ObjLoader
 						    throw new IOException( "Malformed shininess entry: " + line );
 						final float shininess = Float.parseFloat( tokens[ 1 ] );
 						tempMaterial.shininess = (int)shininess;
+						System.out.println( "tempMaterial.shininess = " + tempMaterial.shininess );
+						System.out.println( "shininess = " + shininess );
 					}
 					// Alpha blending
 					else if ( "d".equals( name ) || "Tr".equals( name ) )
@@ -757,11 +759,13 @@ public class ObjLoader
 						tempMaterial.diffuseColorAlpha = Float.parseFloat( tokens[ 1 ] );
 					}
 					// Texture mapping
-					else if ( "map_Kd".equals( name ) )
+					else if ( "map_Kd".equals( name ) || "map_Ka".equals( name ) || "bump".equals( name ) )
 					{
 						if ( argCount < 1 )
 						    throw new IOException( "Malformed texture entry: " + line );
-						tempMaterial.colorMap = ( tokens[ 1 ] ); //.substring( 0 , tokens[1].length() - 4));
+						tempMaterial.colorMap = ( tokens[ 1 ] );
+						
+						//.substring( 0 , tokens[1].length() - 4));
 					}
 					//Non-recognized, non-# (comment) line.
 					//TODO: implement them!Resourc
