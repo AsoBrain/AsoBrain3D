@@ -28,6 +28,10 @@ import ab.j3d.Matrix3D;
  * This class encapsulates a {@link GL} context, and provides method to cache
  * several {@link GL} settings to prevent calling the {@link GL} context too
  * often.
+ *
+ * @author  Jark Reijerink
+ * @author  Wijnand Wieskamp
+ * @version $Revision$ $Date$
  */
 public class GLWrapper
 {
