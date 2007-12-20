@@ -205,11 +205,11 @@ public class JOGLTools
 					}
 					else
 					{
-						drawFace( glWrapper , face , true , textureCache , hasLighting  );
+						drawFace( glWrapper , face , true , textureCache , hasLighting );
 					}
 					face.setMaterial( temp );
 				}
-				else if ( face.getMaterial() != null && !useAlternate && useTextures)
+				else if ( face.getMaterial() != null && !useAlternate && useTextures )
 				{
 					drawFace( glWrapper , face , true , textureCache , hasLighting );
 				}
