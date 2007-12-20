@@ -39,7 +39,8 @@ public class ZipResourceLoader
 	implements ResourceLoader
 {
 
-	/** The zip file as binary data constructed from {@link InputStream} @ constructor
+	/**
+	 *  The zip file as binary data constructed from {@link InputStream} @ constructor.
 	 */
 	private byte[] _binaryData = null;
 
