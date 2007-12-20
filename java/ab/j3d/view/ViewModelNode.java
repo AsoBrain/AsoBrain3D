@@ -147,7 +147,7 @@ public final class ViewModelNode
 	public final Bounds3D getBounds()
 	{
 		Bounds3D result = _cachedBounds3d;
-		if( _cachedBounds3d == null)
+		if ( _cachedBounds3d == null )
 		{
 			final Node3DCollection<Object3D> object3DNode3DCollection;
 			final Node3D node3D = getNode3D();
@@ -189,7 +189,7 @@ public final class ViewModelNode
 		if ( transform == null )
 			throw new NullPointerException( "transform" );
 
-		if( !transform.equals( _transform ) )
+		if ( !transform.equals( _transform ) )
 		{
 			_transform = transform;
 			fireTransformUpdated();
@@ -306,7 +306,7 @@ public final class ViewModelNode
 	 */
 	public void addContextAction( final Action action )
 	{
-		if( !_contextActions.contains( action ) )
+		if ( !_contextActions.contains( action ) )
 			_contextActions.add( action );
 	}
 

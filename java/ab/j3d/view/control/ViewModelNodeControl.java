@@ -212,7 +212,7 @@ public class ViewModelNodeControl
 	 * @return  Point on 2D drag plane;
 	 *          <code>null</code> if no drag point was found.
 	 */
-	public static Point2D getPlanarDragPoint( final ViewModelNode viewModelNode , final SubPlaneControl planarControl, final Ray3D pointerRayWCS , final boolean mustBeWithinBounds )
+	public static Point2D getPlanarDragPoint( final ViewModelNode viewModelNode , final SubPlaneControl planarControl , final Ray3D pointerRayWCS , final boolean mustBeWithinBounds )
 	{
 		Point2D result = null;
 
