@@ -365,14 +365,14 @@ public class JOGLTools
 			glWrapper.setLighting( false );
 			glWrapper.glBegin( GL.GL_LINES );
 
-			for( int i = -dx / 2 + x ; i <= dx / 2 + x ; i += spacing )
+			for ( int i = -dx / 2 + x ; i <= dx / 2 + x ; i += spacing )
 			{
 				if ( ( ( i - dx ) / spacing ) % 10 == 0 )
 				{
 					gl.glEnd();
 					glWrapper.glLineWidth( 2.0f );
 					gl.glBegin( GL.GL_LINES );
-										glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
+					glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
 					gl.glVertex3i( i , -dy / 2 + y , z );
 					gl.glVertex3i( i ,  dy / 2 + y , z );
 					gl.glEnd();
@@ -387,7 +387,7 @@ public class JOGLTools
 				}
 			}
 
-			for( int i = -dy / 2 + y ; i <= dy / 2 + y ; i += spacing )
+			for ( int i = -dy / 2 + y ; i <= dy / 2 + y ; i += spacing )
 			{
 				if ( ( ( i - dy ) / spacing ) % 10 == 0 )
 				{
@@ -395,7 +395,7 @@ public class JOGLTools
 					glWrapper.glLineWidth( 2.0f );
 
 					gl.glBegin( GL.GL_LINES );
-										glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
+					glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
 					gl.glVertex3i( -dx / 2 + x , i , z );
 					gl.glVertex3i(  dx / 2 + x , i , z );
 					gl.glEnd();
@@ -424,12 +424,12 @@ public class JOGLTools
 	 * @param textureCache  Texture cache.
 	 * @param hasLighting   Whether lighting is applied or not.
 	 */
-	private static void drawFace( final GLWrapper glWrapper , final Face3D face , final boolean useTexture, final Map<String, SoftReference<Texture>> textureCache , final boolean hasLighting )
+	private static void drawFace( final GLWrapper glWrapper , final Face3D face , final boolean useTexture , final Map<String, SoftReference<Texture>> textureCache , final boolean hasLighting )
 	{
 		final int vertexCount = face.getVertexCount();
 		if ( vertexCount >= 2 )
 		{
-			final Texture texture    = !useTexture ? null : getColorMapTexture( face , textureCache);
+			final Texture texture    = !useTexture ? null : getColorMapTexture( face , textureCache );
 			final boolean hasTexture = ( texture != null ); //if a texture has been loaded
 			final float[] textureU   = hasTexture ? face.getTextureU() : null;
 			final float[] textureV   = hasTexture ? face.getTextureV() : null;
@@ -575,7 +575,7 @@ public class JOGLTools
 	 * @return Color map texture; <code>null</code> if face has no color map or no
 	 *         texture coordinates.
 	 */
-	public static Texture getColorMapTexture( final Face3D face, final Map<String, SoftReference<Texture>> textureCache  )
+	public static Texture getColorMapTexture( final Face3D face , final Map<String,SoftReference<Texture>> textureCache  )
 	{
 		final Texture result;
 
