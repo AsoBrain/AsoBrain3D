@@ -46,16 +46,16 @@ public class ZipResourceLoader
 	/**
 	 * Constructs a {@link ZipResourceLoader } based on given {@link InputStream }.
 	 *
-	 * @param inputStream The zip archive as {@link InputStream}.
+	 * @param inputStream   The zip archive as {@link InputStream}.
 	 *
-	 * @throws IOException when {@link InputStream } could not be read.
+	 * @throws IOException  when {@link InputStream } could not be read.
 	 */
 	public ZipResourceLoader( final InputStream inputStream )
 		throws IOException
 	{
 		final ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		int length;
-		final byte [] buffer = new byte[10240]; //10K
+		final byte [] buffer = new byte[ 10240 ];
         while ( ( length = inputStream.read( buffer ) ) > 0 )
         {
 			bos.write( buffer , 0 , length );
@@ -74,10 +74,10 @@ public class ZipResourceLoader
 		final byte[] binaryData = _binaryData;
 		ZipEntry zipEntry;
 		InputStream result = null;
-		if ( binaryData != null && binaryData.length > 0)
+		if ( binaryData != null && binaryData.length > 0 )
 		{
 			final ZipInputStream zipInputStream = new ZipInputStream( new ByteArrayInputStream( binaryData ) );
-			while ( result == null && ( zipEntry = zipInputStream.getNextEntry() ) != null)
+			while ( result == null && ( zipEntry = zipInputStream.getNextEntry() ) != null )
 			{
 				if ( name.equals( zipEntry.getName() ) )
 				{
