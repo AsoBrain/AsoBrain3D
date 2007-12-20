@@ -417,7 +417,7 @@ public class JOGLGraphics2D
 
 			final double[] coordinates = new double[ 2 ];
 
-			final PathIterator pathIterator = shape.getPathIterator( getTransform() , 5.0 );
+			final PathIterator pathIterator = shape.getPathIterator( getTransform() , 1.0 );
 			while ( !pathIterator.isDone() )
 			{
 				switch ( pathIterator.currentSegment( coordinates ) )
