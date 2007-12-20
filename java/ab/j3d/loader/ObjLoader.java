@@ -38,7 +38,6 @@ import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
 
 import com.numdata.oss.TextTools;
-import com.numdata.oss.ui.ImageTools;
 
 /**
  * Loader for Wavefront Object Files (.obj).
@@ -140,10 +139,13 @@ public class ObjLoader
 	public static Object3D load( final Matrix3D transform , final ResourceLoader loader , final String objFileName )
 		throws IOException
 	{
-		ImageTools.disableMissingImageWarnings();
 		final Map<String,Material> actualMaterials = DEFAULT_MATERIALS;
 		final Material defaultMaterial;
 		final Object3D result = new Object3D();
+
+		/*
+		 * Read
+		 */
 		defaultMaterial = actualMaterials.containsKey( "default" ) ? actualMaterials.get( "default" ) : new Material( 0xFFC0C0C0 );
 
 		/*
@@ -764,11 +766,10 @@ public class ObjLoader
 						if ( argCount < 1 )
 						    throw new IOException( "Malformed texture entry: " + line );
 						tempMaterial.colorMap = ( tokens[ 1 ] );
-						
-						//.substring( 0 , tokens[1].length() - 4));
 					}
 					//Non-recognized, non-# (comment) line.
-					//TODO: implement them!Resourc
+					//@TODO: Implement following MTL Lines:
+
 					else
 					{
 						//System.err.println( "### Ignoring MTL line: " + line );
@@ -808,7 +809,7 @@ public class ObjLoader
 			line = line.trim();
 			while ( line.length() > 0 && line.charAt( line.length() - 1 ) == '\\' )
 			{
-				line = MessageFormat.format( "{0} {1}", line.substring( 0, line.length() - 1 ), bufferedReader.readLine() );
+				line = MessageFormat.format( "{0} {1}", line.substring( 0, line.length() - 1 ) , bufferedReader.readLine() );
 			}
 			line = line.replaceAll( "\\s+" , " " );
 		}
