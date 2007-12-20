@@ -595,13 +595,13 @@ public class JOGLTools
 	/**
 	 * Get {@link Texture} for the specified map.
 	 *
-	 * @param   material      Material to get texture for.
-	 * @param   textureCache  Texturecache
+	 * @param   material      {@link Material} to get texture for.
+	 * @param   textureCache  Map containing the {@link SoftReference}s to the cached textures.
 	 *
 	 * @return  Texture for the specified name; <code>null</code> if the name was
 	 *          empty or no map by the given name was found.
 	 */
-	public static Texture getTexture( final Material material , final Map<String,SoftReference<Texture>> textureCache  )
+	public static Texture getTexture( final Material material , final Map<String,SoftReference<Texture>> textureCache )
 	{
 		Texture result = null;
 
