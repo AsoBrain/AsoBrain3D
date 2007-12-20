@@ -166,14 +166,14 @@ public class JOGLView
 		capabilities.setNumSamples( 4 );
 
 		/* See if the model already contains a context. */
-		if( _model.getContext() != null )
+		if ( model.getContext() != null )
 		{
-			glCanvas = new GLCanvas( capabilities , null , _model.getContext() , null );
+			glCanvas = new GLCanvas( capabilities , null , model.getContext() , null );
 		}
 		else
 		{
 			glCanvas = new GLCanvas( capabilities , null , null , null );
-			_model.setContext( glCanvas.getContext() );
+			model.setContext( glCanvas.getContext() );
 		}
 
 		glCanvas.addGLEventListener( new GLEventListener()
@@ -202,7 +202,7 @@ public class JOGLView
 				{
 					renderFrame( _glWrapper , glAutoDrawable.getWidth() , glAutoDrawable.getHeight() );
 
-					if( hasOverlayPainters() )
+					if ( hasOverlayPainters() )
 					{
 						paintOverlay( _j2d );
 					}
@@ -291,11 +291,11 @@ public class JOGLView
 	private void startRenderer()
 	{
 		RenderThread renderThread = _renderThread;
-		if( renderThread == null || !renderThread.isAlive() )
+		if ( renderThread == null || !renderThread.isAlive() )
 		{
 			if ( _viewComponent.isShowing() )
 			{
-				renderThread = new RenderThread();
+				renderThread  = new RenderThread();
 				_renderThread = renderThread;
 				renderThread.start();
 			}
@@ -528,7 +528,7 @@ public class JOGLView
 	 */
 	public final void setGrid( final boolean isTrue )
 	{
-		if( isTrue )
+		if ( isTrue )
 			drawGrid( 0 , 0 , -35 , 50000 , 50000 , 500 );
 		else
 		{
@@ -592,7 +592,7 @@ public class JOGLView
 
 		final double aspect = (double)_viewComponent.getWidth() / (double)_viewComponent.getHeight();
 
-		if( _projectionPolicy == Projector.PERSPECTIVE )
+		if ( _projectionPolicy == Projector.PERSPECTIVE )
 		{
 			gl.glScaled( 1.0 , aspect , 1.0 );
 			gl.glEnable( GL.GL_NORMALIZE ); //normalize lighting normals after scaling
@@ -656,6 +656,7 @@ public class JOGLView
 			final Node3DCollection<Object3D> objects = node3D.collectNodes( null , Object3D.class , nodeTransform , false );
 			if ( objects != null )
 			{
+				final Map<String, SoftReference<Texture>> textureCache = _textureCache;
 				switch ( _renderingPolicy )
 				{
 					case SCHEMATIC:
@@ -665,14 +666,14 @@ public class JOGLView
 
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , _textureCache , true , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , textureCache, true , viewModelNode.getMaterialOverride() );
 						}
 
 						gl.glDisable( GL.GL_POLYGON_OFFSET_FILL );
 						gl.glLineWidth( 1.0f );
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , _textureCache , false , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , textureCache, false , viewModelNode.getMaterialOverride() );
 						}
 						break;
 					case SKETCH:
@@ -683,7 +684,7 @@ public class JOGLView
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
 							glWrapper.setLighting( true );
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , true , _textureCache , true  , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , true , textureCache, true  , viewModelNode.getMaterialOverride() );
 						}
 
 						gl.glDisable( GL.GL_POLYGON_OFFSET_FILL );
@@ -691,7 +692,7 @@ public class JOGLView
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
 							glWrapper.setLighting( false );
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , _textureCache , false , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , textureCache, false , viewModelNode.getMaterialOverride() );
 						}
 
 						gl.glLineWidth( 1.0f );
@@ -700,14 +701,14 @@ public class JOGLView
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
 							glWrapper.setLighting( true );
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , true , viewModelNode.isAlternate() , true , _textureCache , true , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , true , viewModelNode.isAlternate() , true , textureCache, true , viewModelNode.getMaterialOverride() );
 						}
 						break;
 					case WIREFRAME:
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
 							glWrapper.setLighting( false );
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , _textureCache ,false , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , textureCache,false , viewModelNode.getMaterialOverride() );
 						}
 						break;
 				}
