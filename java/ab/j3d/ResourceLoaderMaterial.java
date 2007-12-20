@@ -68,7 +68,7 @@ public class ResourceLoaderMaterial
 	extends Material
 {
 	/**
-	 * Resourceloader to use.
+	 * {@link ResourceLoader} to use.
 	 */
 	private ResourceLoader _resourceloader;
 
@@ -83,7 +83,7 @@ public class ResourceLoaderMaterial
 	private static final long serialVersionUID = -4730962090640159465L;
 
 	/**
-	 * Constructs a new ResourceLoaderMaterial with given {@link ResourceLoader}
+	 * Constructs a new {@link ResourceLoaderMaterial} with given {@link ResourceLoader}
 	 *
 	 * @param resourceLoader     {@link ResourceLoader} to use.
 	 */
@@ -93,7 +93,7 @@ public class ResourceLoaderMaterial
 	}
 
 	/**
-	 * Construct ResourceLoaderMaterial for ARGB value.
+	 * Construct {@link ResourceLoaderMaterial} for ARGB value.
 	 *
 	 * @param   argb    ARGB color specification.
 	 *
