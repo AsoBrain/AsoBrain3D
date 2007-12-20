@@ -319,9 +319,7 @@ public final class TestAbToPovConverter
 			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n";
-		System.out.println( "expected = " + expected );
-		System.out.println( " = "  );
-		System.out.println( "actual = " + actual );
+
 		Assert.assertEquals( "Declaration generation error" , expected , actual );
 	}
 
