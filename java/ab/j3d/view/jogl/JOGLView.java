@@ -23,6 +23,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.lang.ref.SoftReference;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 import java.util.Locale;
 import java.util.Map;
 import javax.media.opengl.DebugGL;
@@ -129,6 +132,12 @@ public class JOGLView
 	 * Texture cache
 	 */
 	private Map<String, SoftReference<Texture>> _textureCache;
+
+	/**
+	 * Maximum number of lights possible. Standard value is 8 because all
+	 * OpenGL implementations have atleast this number of lights.
+	 */
+	private int _maxLights = 8;
 
 	/**
 	 * Construct new view.
@@ -445,6 +454,15 @@ public class JOGLView
 
 		/* Initial clear. */
 		glWrapper.glClearColor( _viewComponent.getBackground() );
+
+		/* Find out the maximum number of lights possible. */
+
+		final ByteBuffer byteBuffer = ByteBuffer.allocateDirect( 4 );
+		byteBuffer.order( ByteOrder.LITTLE_ENDIAN );
+		final IntBuffer intBuffer = byteBuffer.asIntBuffer();
+		gl.glGetIntegerv( GL.GL_MAX_LIGHTS, intBuffer );
+		intBuffer.position( 0 );
+		_maxLights = intBuffer.get();
 	}
 
 	/**
@@ -613,11 +631,22 @@ public class JOGLView
 
 		/* Set local view point */
 		gl.glLightModeli( GL.GL_LIGHT_MODEL_LOCAL_VIEWER , GL.GL_TRUE );
+
+		//disable all lights
+		//@FIXME is there a better way to do this?
+
+		for( int i = 0 ; i < _maxLights ; i++ )
+		{
+			glWrapper.glDisable( GL.GL_LIGHT0 + i );
+		}
+		gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
+
+		//draw lights
 		for ( final Object id : nodeIDs )
 		{
 			final ViewModelNode viewModelNode = _model.getNode( id );
-			final Node3D   node3D        = viewModelNode.getNode3D();
-			final Matrix3D nodeTransform = viewModelNode.getTransform();
+			final Node3D        node3D        = viewModelNode.getNode3D();
+			final Matrix3D      nodeTransform = viewModelNode.getTransform();
 
 			/*
 			 * Render lights.
@@ -626,8 +655,8 @@ public class JOGLView
 
 			if ( lights != null )
 			{
-				if ( lightNumber - GL.GL_LIGHT0 > GL.GL_MAX_LIGHTS )
-					throw new IllegalStateException( "No more than " + GL.GL_MAX_LIGHTS + " lights supported." );
+				if ( lightNumber - GL.GL_LIGHT0 > _maxLights )
+					throw new IllegalStateException( "No more than " + _maxLights + " lights supported." );
 
 				final Light3D light         = lights.getNode( 0 );
 				final float   viewIntensity = (float)light.getIntensity() / 255.0f;
@@ -635,20 +664,25 @@ public class JOGLView
 				if ( light.isAmbient() )
 				{
 					gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
-
 				}
 				else
 				{
-					gl.glLightfv( lightNumber , GL.GL_AMBIENT , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
+					gl.glLightfv( lightNumber , GL.GL_AMBIENT  , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
 					gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] { (float)nodeTransform.xo , (float)nodeTransform.yo , (float)nodeTransform.zo , 1.0f } , 0 );
 					gl.glLightfv( lightNumber , GL.GL_DIFFUSE  , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
 					gl.glLightfv( lightNumber , GL.GL_SPECULAR , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
-					gl.glEnable( lightNumber );
+					glWrapper.glEnable( lightNumber );
 					lightNumber++;
 				}
-
-
 			}
+		}
+
+		//draw objects
+		for ( final Object id : nodeIDs )
+		{
+			final ViewModelNode viewModelNode = _model.getNode( id );
+			final Node3D        node3D        = viewModelNode.getNode3D();
+			final Matrix3D      nodeTransform = viewModelNode.getTransform();
 
 			/*
 			 * Render objects.
@@ -660,34 +694,34 @@ public class JOGLView
 				switch ( _renderingPolicy )
 				{
 					case SCHEMATIC:
-						gl.glEnable( GL.GL_POLYGON_OFFSET_FILL );
-						glWrapper.setLighting( false );
+						glWrapper.glEnable( GL.GL_POLYGON_OFFSET_FILL );
+						glWrapper.glDisable( GL.GL_LIGHTING );
 						gl.glPolygonOffset( 1.0f , 1.0f );
 
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , textureCache, true , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , _textureCache , true , viewModelNode.getMaterialOverride() );
 						}
 
-						gl.glDisable( GL.GL_POLYGON_OFFSET_FILL );
+						glWrapper.glDisable( GL.GL_POLYGON_OFFSET_FILL );
 						gl.glLineWidth( 1.0f );
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , textureCache, false , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , _textureCache , false , viewModelNode.getMaterialOverride() );
 						}
 						break;
 					case SKETCH:
-						gl.glEnable( GL.GL_POLYGON_OFFSET_FILL );
+						glWrapper.glEnable( GL.GL_POLYGON_OFFSET_FILL );
 						gl.glPolygonOffset( 1.0f , 1.0f );
 						gl.glLineWidth( 2.0f );
 
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
 							glWrapper.setLighting( true );
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , true , textureCache, true  , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , true , textureCache , true  , viewModelNode.getMaterialOverride() );
 						}
 
-						gl.glDisable( GL.GL_POLYGON_OFFSET_FILL );
+						glWrapper.glDisable( GL.GL_POLYGON_OFFSET_FILL );
 
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
@@ -700,15 +734,15 @@ public class JOGLView
 					case SOLID:
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
-							glWrapper.setLighting( true );
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , true , viewModelNode.isAlternate() , true , textureCache, true , viewModelNode.getMaterialOverride() );
+							glWrapper.glEnable( GL.GL_LIGHTING );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , true , viewModelNode.isAlternate() , true , _textureCache , true , viewModelNode.getMaterialOverride() );
 						}
 						break;
 					case WIREFRAME:
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
-							glWrapper.setLighting( false );
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , textureCache,false , viewModelNode.getMaterialOverride() );
+							glWrapper.glDisable( GL.GL_LIGHTING );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , _textureCache ,false , viewModelNode.getMaterialOverride() );
 						}
 						break;
 				}
