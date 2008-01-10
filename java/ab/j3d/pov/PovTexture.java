@@ -339,7 +339,7 @@ public class PovTexture
 	public PovTexture( final String textureDirectory , final Material material )
 	{
 		this( getNameForMaterial( material ) ,
-		      ( material.colorMap == null ) ? new PovVector( new Color( material.getARGB() ) ) : null , null ,
+		      new PovVector( new Color( material.getARGB() ) ) , null ,
 		      ( material.colorMap != null ) ? ( textureDirectory != null ) ? textureDirectory + '/' + material.colorMap : material.colorMap : null );
 
 		setAmbient( new PovVector( (double)material.ambientColorRed, (double)material.ambientColorGreen, (double)material.ambientColorBlue ) );
@@ -426,6 +426,18 @@ public class PovTexture
 	public static String getTextureCode( final String code )
 	{
 		return !code.startsWith( "TEX_" ) ? "TEX_" + code : code;
+	}
+
+	/**
+	 * Gets the name of a pigment with specified pigment code.
+	 *
+	 * @param   code    Unique code of the pigment.
+	 *
+	 * @return  Name of the pigment for the specified code.
+	 */
+	public static String getPigmentCode ( final String code )
+	{
+		return !code.startsWith( "PIG_" ) ? "PIG_" + code : code;
 	}
 
 	/**
@@ -685,6 +697,62 @@ public class PovTexture
 		out.indentOut();
 	}
 
+	/**
+	 * When the scene is writing to a scene, it can call
+	 * this method to have the pigments  be declared, so it
+	 * only has to be specified once. When actually using
+	 * the pigments , only the reference code has to be printed.
+	 * This not only saves filesize, it also improves readability.
+	 *
+	 * @param   out     IndentingWriter to use for writing.
+	 *
+	 * @throws  IOException when writing failed.
+	 */
+	public void declarePigments( final IndentingWriter out )
+		throws IOException
+	{
+		out.write( "#declare " );
+		out.write( getPigmentCode( _name ) + "RGB" );
+		out.write( " =" );
+		out.newLine();
+		out.indentIn();
+		_declared = true;
+		writeColorPigment( out );
+		out.indentOut();
+		out.write( "#declare " );
+		out.write( getPigmentCode( _name ) + "IMG" );
+		out.write( " =" );
+		out.newLine();
+		out.indentIn();
+		_declared = true;
+		writeTexturePigment( out );
+		out.indentOut();
+	}
+
+	/**
+	 * When the scene is writing to a scene, it can call
+	 * this method to have the pigment map be declared, so it
+	 * only has to be specified once. When actually using
+	 * this pigment map, only the reference code has to be printed.
+	 * This not only saves filesize, it also improves readability.
+	 *
+	 * @param   out     IndentingWriter to use for writing.
+	 *
+	 * @throws  IOException when writing failed.
+	 */
+	public void declarePigmentMap( final IndentingWriter out )
+		throws IOException
+	{
+		out.write( "#declare " );
+		out.write( getTextureCode( _name ) );
+		out.write( " =" );
+		out.newLine();
+		out.indentIn();
+		_declared = true;
+		writePigmentMap( out );
+		out.indentOut();
+	}
+
 	public void write( final IndentingWriter out )
 		throws IOException
 	{
@@ -831,6 +899,195 @@ public class PovTexture
 
 		out.indentOut();
 		out.writeln( "}" );
+	}
+
+	/**
+	 * This helper method writes the actual pigment map including all its
+	 * properties to the specified destination.
+	 *
+	 * @param   out     IndentingWriter to use for writing.
+	 *
+	 * @throws  IOException when writing failed.
+	 */
+	private void writePigmentMap( final IndentingWriter out )
+		throws IOException
+	{
+		out.writeln( "texture" );
+		out.writeln( "{" );
+		out.indentIn();
+
+		out.writeln( "pigment" );
+		out.writeln( "{" );
+		out.indentIn();
+
+		out.writeln( "average" );
+		out.writeln( "pigment_map" );
+		out.writeln( "{" );
+		out.indentIn();
+
+		out.writeln( "[ 1.0 " + getPigmentCode( _name ) + "RGB ]" );
+		out.writeln( "[ 1.0 " + getPigmentCode( _name ) + "IMG ]" );
+
+
+		out.indentOut();
+		out.writeln( "}" );
+
+		out.indentOut();
+		out.writeln( "}" );
+
+		out.writeln( "finish" );
+		out.writeln( "{" );
+		out.indentIn();
+
+		final PovVector ambient = getAmbient();
+		if ( ambient != null )
+		{
+			out.write( "ambient    " );
+			if ( ( ambient.getX() != ambient.getY() ) || ( ambient.getY() != ambient.getZ() ) )
+			{
+				out.write( "rgb " );
+				ambient.write( out );
+			}
+			else
+			{
+				out.write( format( ambient.getX() ) );
+			}
+			out.newLine();
+		}
+
+		final double diffuse = getDiffuse();
+		if ( diffuse > 0.0 )
+		{
+			out.write( "diffuse    " );
+			out.writeln( format( diffuse ) );
+		}
+
+		final double phong = getPhong();
+		if ( phong > 0.0 )
+		{
+			out.write( "phong      " );
+			out.writeln( format( phong ) );
+		}
+
+		final double phongSize = getPhongSize();
+		if ( phongSize > 0.0 )
+		{
+			out.write( "phong_size " );
+			out.writeln( format( phongSize ) );
+		}
+
+		final double specular = getSpecular();
+		if ( specular > 0.0 )
+		{
+			out.write( "specular   " );
+			out.writeln( format( specular ) );
+		}
+
+		final boolean metallic = isMetallic();
+		if ( metallic )
+		{
+			out.writeln( "metallic" );
+		}
+
+		final double reflection = getReflection();
+		if ( reflection > 0.0 )
+		{
+			out.write( "reflection " );
+			out.writeln( format( reflection ) );
+		}
+
+		out.indentOut();
+		out.writeln( "}" );
+
+		final PovVector scale = getScale();
+		if ( scale != null )
+		{
+			out.write( "scale " );
+			scale.write( out );
+			out.newLine();
+		}
+
+		out.indentOut();
+		out.writeln( "}" );
+	}
+
+
+	/**
+	 * This helper method writes the actual texture including all its
+	 * properties to the specified destination.
+	 *
+	 * @param   out     IndentingWriter to use for writing.
+	 *
+	 * @throws  IOException when writing failed.
+	 */
+	private void writeTexturePigment ( final IndentingWriter out )
+		throws IOException
+	{
+		out.writeln( "pigment" );
+		out.writeln( "{" );
+		out.indentIn();
+
+		final String imageMap = _imageMap;
+		if ( imageMap != null )
+		{
+			final String imageMapType = _imageMapType;
+			//String imageMapType = map.substring( map.lastIndexOf( (int)'.' ) + 1 );
+
+			out.write( "image_map  { " );
+			out.write( imageMapType );
+			out.write( " \"" );
+			out.write( imageMap );
+			out.write( "\" }" );
+			out.newLine();
+		}
+
+		final double filter = getFilter();
+		if ( filter > 0.0 )
+		{
+			out.write( "filter     " );
+			out.write( format( filter ) );
+			out.newLine();
+		}
+
+		out.indentOut();
+		out.writeln( "}" );
+		out.newLine();
+	}
+
+		/**
+	 * This helper method writes the actual texture including all its
+	 * properties to the specified destination.
+	 *
+	 * @param   out     IndentingWriter to use for writing.
+	 *
+	 * @throws  IOException when writing failed.
+	 */
+	private void writeColorPigment ( final IndentingWriter out )
+		throws IOException
+	{
+		out.writeln( "pigment" );
+		out.writeln( "{" );
+		out.indentIn();
+
+		final PovVector rgb = _rgb;
+		if ( rgb != null )
+		{
+			out.write( "color      rgb " );
+			rgb.write( out );
+			out.newLine();
+		}
+
+		final double filter = getFilter();
+		if ( filter > 0.0 )
+		{
+			out.write( "filter     " );
+			out.write( format( filter ) );
+			out.newLine();
+		}
+
+		out.indentOut();
+		out.writeln( "}" );
+		out.newLine();
 	}
 
 	public final boolean equals( final Object other )
