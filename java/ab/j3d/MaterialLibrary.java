@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2007 Peter S. Heijnen
+ * Copyright (C) 1999-2008 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,8 @@
  */
 package ab.j3d;
 
+import java.io.IOException;
+
 /**
  * This interface is used to retrieve materials from a library. A typical
  * implementation of this interface would generate the material data or retrieve
@@ -31,6 +33,14 @@ package ab.j3d;
 public interface MaterialLibrary
 {
 	/**
+	 * Get all available material codes from the library.
+	 *
+	 * @return  List of material codes;
+	 *          <code>null</code> if an error occured.
+	 */
+	String[] getMaterialCodes();
+
+	/**
 	 * Get material from the library for the specified code.
 	 *
 	 * @param   code    Material code.
@@ -39,4 +49,14 @@ public interface MaterialLibrary
 	 *          <code>null</code> if an error occured (unknown material).
 	 */
 	Material getMaterial( String code );
+
+	/**
+	 * This method is used to store a material.
+	 *
+	 * @param   material    Material to store.
+	 *
+	 * @throws  IOException if an error occured.
+	 */
+	void storeMaterial( Material material )
+		throws IOException;
 }
