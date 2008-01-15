@@ -687,14 +687,22 @@ public class PovTexture
 	public void declare( final IndentingWriter out )
 		throws IOException
 	{
-		out.write( "#declare " );
-		out.write( getTextureCode( _name ) );
-		out.write( " =" );
-		out.newLine();
-		out.indentIn();
-		_declared = true;
-		writeTexture( out );
-		out.indentOut();
+		if ( hasImageMap() )
+		{
+			declarePigments( out );
+			declarePigmentMap( out );
+		}
+		else
+		{
+			out.write( "#declare " );
+			out.write( getTextureCode( _name ) );
+			out.write( " =" );
+			out.newLine();
+			out.indentIn();
+			_declared = true;
+			writeTexture( out );
+			out.indentOut();
+		}
 	}
 
 	/**
