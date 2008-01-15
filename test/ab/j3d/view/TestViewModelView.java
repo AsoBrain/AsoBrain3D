@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2007-2007 - All Rights Reserved
+ * (C) Copyright Numdata BV 2007-2008 - All Rights Reserved
  *
  * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV. Please contact Numdata BV
@@ -43,7 +43,7 @@ public class TestViewModelView
 
 		final Locale[] locales = { new Locale( "nl" , "NL" ) , Locale.US , Locale.GERMANY };
 
-		final List<String> expectedKeys = new ArrayList();
+		final List<String> expectedKeys = new ArrayList<String>();
 
 		for ( final ViewModelView.RenderingPolicy policy : ViewModelView.RenderingPolicy.values() )
 			expectedKeys.add( policy.name() );
