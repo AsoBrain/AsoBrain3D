@@ -687,7 +687,7 @@ public class PovTexture
 	public void declare( final IndentingWriter out )
 		throws IOException
 	{
-		if ( hasImageMap() )
+		if ( hasImageMap() && !( _rgb.getX() == 1.0 && _rgb.getY() == 1.0 && _rgb.getZ() == 1.0 ) )
 		{
 			declarePigments( out );
 			declarePigmentMap( out );
@@ -720,7 +720,7 @@ public class PovTexture
 		throws IOException
 	{
 		out.write( "#declare " );
-		out.write( getPigmentCode( _name ) + "RGB" );
+		out.write( getPigmentCode( _name ) + "_RGB" );
 		out.write( " =" );
 		out.newLine();
 		out.indentIn();
@@ -728,7 +728,7 @@ public class PovTexture
 		writeColorPigment( out );
 		out.indentOut();
 		out.write( "#declare " );
-		out.write( getPigmentCode( _name ) + "IMG" );
+		out.write( getPigmentCode( _name ) + "_IMG" );
 		out.write( " =" );
 		out.newLine();
 		out.indentIn();
@@ -801,7 +801,7 @@ public class PovTexture
 		out.indentIn();
 
 		final PovVector rgb = _rgb;
-		if ( rgb != null )
+		if ( rgb != null && ( !( _rgb.getX() == 1.0 && _rgb.getY() == 1.0 && _rgb.getZ() == 1.0 && hasImageMap() ) || !hasImageMap() ) )
 		{
 			out.write( "color      rgb " );
 			rgb.write( out );
@@ -933,8 +933,8 @@ public class PovTexture
 		out.writeln( "{" );
 		out.indentIn();
 
-		out.writeln( "[ 1.0 " + getPigmentCode( _name ) + "RGB ]" );
-		out.writeln( "[ 1.0 " + getPigmentCode( _name ) + "IMG ]" );
+		out.writeln( "[ 1.0 " + getPigmentCode( _name ) + "_RGB ]" );
+		out.writeln( "[ 1.0 " + getPigmentCode( _name ) + "_IMG ]" );
 
 
 		out.indentOut();
@@ -1080,7 +1080,7 @@ public class PovTexture
 		final PovVector rgb = _rgb;
 		if ( rgb != null )
 		{
-			out.write( "color      rgb " );
+			out.write( "color rgb " );
 			rgb.write( out );
 			out.newLine();
 		}
