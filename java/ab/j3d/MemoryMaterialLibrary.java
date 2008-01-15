@@ -47,12 +47,12 @@ public class MemoryMaterialLibrary
 	{
 	}
 
-	public final Material getMaterial( final String code )
+	public Material getMaterial( final String code )
 	{
 		return _materials.get( code );
 	}
 
-	public final String[] getMaterialCodes()
+	public String[] getMaterialCodes()
 	{
 		final Set<String> codeSet = _materials.keySet();
 
@@ -61,7 +61,7 @@ public class MemoryMaterialLibrary
 		return result;
 	}
 
-	public final void storeMaterial( final Material material )
+	public void storeMaterial( final Material material )
 		throws IOException
 	{
 		final Map<String, Material> materials = _materials;
