@@ -20,7 +20,6 @@
  */
 package ab.j3d;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,7 +61,6 @@ public class MemoryMaterialLibrary
 	}
 
 	public void storeMaterial( final Material material )
-		throws IOException
 	{
 		final Map<String, Material> materials = _materials;
 
