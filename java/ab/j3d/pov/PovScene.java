@@ -541,13 +541,7 @@ public class PovScene
 			{
 				final PovTexture texture = textures.get( key );
 
-				if ( ! texture.hasImageMap() )
-					texture.declare( out );
-				else
-				{
-					texture.declarePigments( out );
-					texture.declarePigmentMap( out );
-				}
+				texture.declare( out );
 				out.newLine();
 			}
 		}
