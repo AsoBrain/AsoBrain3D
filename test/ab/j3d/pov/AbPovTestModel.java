@@ -70,16 +70,17 @@ public final class AbPovTestModel
 		/*
 		 * Fill model with objects from the testmodel.
 		 */
-		viewModel.createNode( "camera"    , null , getCamera3D()           , null , 1.0f );
-		viewModel.createNode( "redbox"    , null , getRedXRotatedBox3D()   , null , 1.0f );
-		viewModel.createNode( "greenbox"  , null , getGreenYRotatedBox3D() , null , 1.0f );
-		viewModel.createNode( "bluebox"   , null , getBlueZRotatedBox3D()  , null , 1.0f );
-		viewModel.createNode( "panel"     , null , getTexturedBox3D()      , null , 1.0f );
-		viewModel.createNode( "sphere"    , null , getSphere3D()           , null , 1.0f );
-		viewModel.createNode( "cylinder"  , null , getCylinder3D()         , null , 1.0f );
-		viewModel.createNode( "cone"      , null , getCone3D()             , null , 1.0f );
-		viewModel.createNode( "extruded"  , null , getExtrudedObject2D()   , null , 1.0f );
-		viewModel.createNode( "colorcube" , null , getColorCube()          , null , 1.0f );
+		viewModel.createNode( "camera"              , null , getCamera3D()              , null , 1.0f );
+		viewModel.createNode( "redbox"              , null , getRedXRotatedBox3D()      , null , 1.0f );
+		viewModel.createNode( "greenbox"            , null , getGreenYRotatedBox3D()    , null , 1.0f );
+		viewModel.createNode( "bluebox"             , null , getBlueZRotatedBox3D()     , null , 1.0f );
+		viewModel.createNode( "panel"               , null , getTexturedBox3D()         , null , 1.0f );
+		viewModel.createNode( "sphere"              , null , getSphere3D()              , null , 1.0f );
+		viewModel.createNode( "cylinder"            , null , getCylinder3D()            , null , 1.0f );
+		viewModel.createNode( "cone"                , null , getCone3D()                , null , 1.0f );
+		viewModel.createNode( "extruded"            , null , getExtrudedObject2D()      , null , 1.0f );
+		viewModel.createNode( "colorcube"           , null , getColorCube()             , null , 1.0f );
+		viewModel.createNode( "texturedcolorcube"   , null , getTexturedColorCube()     , null , 1.0f );
 
 		/*
 		 * Create view.
@@ -376,6 +377,56 @@ public final class AbPovTestModel
 			final Material backMaterial   = new Material(); backMaterial  .colorMap = "CUBE_BACK";
 			final Material leftMaterial   = new Material(); leftMaterial  .colorMap = "CUBE_LEFT";
 			final Material rightMaterial  = new Material(); rightMaterial .colorMap = "CUBE_RIGHT";
+
+			final float[] textureU = { 0.5f , 0.5f , 0.0f , 0.0f };
+			final float[] textureV = { 0.0f , 0.5f , 0.5f , 0.0f };
+
+			cube = new Object3D();
+			cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , topMaterial    , textureU , textureV , 1.0f , false, false );
+			cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , bottomMaterial , textureU , textureV , 1.0f , false, false );
+			cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , frontMaterial  , textureU , textureV , 1.0f , false, false );
+			cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , backMaterial   , textureU , textureV , 1.0f , false, false );
+			cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , leftMaterial   , textureU , textureV , 1.0f , false, false );
+			cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , rightMaterial  , textureU , textureV , 1.0f , false, false );
+		}
+		else
+		{
+			cube = (Object3D)node;
+		}
+
+		return cube;
+	}
+
+	/**
+	 * This method constructs a cube with a different color per face and a different colormap per face.
+	 * The width, height and depth of the cube are all 200 mm (-100 to 100).
+	 *
+	 * @see Object3D
+	 *
+	 * @return The constructed {@link Object3D}.
+	 */
+	public Object3D getTexturedColorCube()
+	{
+		final Node3D node = _viewModel.getNode3D( "texturedcolorcube" );
+		final Object3D cube;
+
+		if ( node == null )
+		{
+			final Vector3D lfb = Vector3D.INIT.set( -100.0 , -100.0 , -100.0 );
+			final Vector3D rfb = Vector3D.INIT.set(  100.0 , -100.0 , -100.0 );
+			final Vector3D rbb = Vector3D.INIT.set(  100.0 ,  100.0 , -100.0 );
+			final Vector3D lbb = Vector3D.INIT.set( -100.0 ,  100.0 , -100.0 );
+			final Vector3D lft = Vector3D.INIT.set( -100.0 , -100.0 ,  100.0 );
+			final Vector3D rft = Vector3D.INIT.set(  100.0 , -100.0 ,  100.0 );
+			final Vector3D rbt = Vector3D.INIT.set(  100.0 ,  100.0 ,  100.0 );
+			final Vector3D lbt = Vector3D.INIT.set( -100.0 ,  100.0 ,  100.0 );
+
+			final Material topMaterial    = new Material(); topMaterial   .colorMap = "CUBE_TOP_TEXTURE_AND_COLOR";       topMaterial.diffuseColorRed     = 1.0f; topMaterial.diffuseColorGreen       = 0.0f; topMaterial.diffuseColorBlue        = 0.0f;
+			final Material bottomMaterial = new Material(); bottomMaterial.colorMap = "CUBE_BOTTOM_TEXTURE_AND_COLOR";    bottomMaterial.diffuseColorRed  = 0.0f; bottomMaterial.diffuseColorGreen    = 1.0f; bottomMaterial.diffuseColorBlue     = 0.0f;
+			final Material frontMaterial  = new Material(); frontMaterial .colorMap = "CUBE_FRONT_TEXTURE_AND_COLOR";     frontMaterial.diffuseColorRed   = 0.0f; frontMaterial.diffuseColorGreen     = 0.0f; frontMaterial.diffuseColorBlue      = 1.0f;
+			final Material backMaterial   = new Material(); backMaterial  .colorMap = "CUBE_BACK_TEXTURE_AND_COLOR";      backMaterial.diffuseColorRed    = 1.0f; backMaterial.diffuseColorGreen      = 1.0f; backMaterial.diffuseColorBlue       = 0.0f;
+			final Material leftMaterial   = new Material(); leftMaterial  .colorMap = "CUBE_LEFT_TEXTURE_AND_COLOR";      leftMaterial.diffuseColorRed    = 0.0f; leftMaterial.diffuseColorGreen      = 1.0f; leftMaterial.diffuseColorBlue       = 1.0f;
+			final Material rightMaterial  = new Material(); rightMaterial .colorMap = "CUBE_RIGHT_TEXTURE_AND_COLOR";     rightMaterial.diffuseColorRed   = 1.0f; rightMaterial.diffuseColorGreen     = 0.0f; rightMaterial.diffuseColorBlue      = 1.0f;
 
 			final float[] textureU = { 0.5f , 0.5f , 0.0f , 0.0f };
 			final float[] textureV = { 0.0f , 0.5f , 0.5f , 0.0f };
