@@ -111,6 +111,39 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t}\n\n" +
 
+			"#declare PIG_CUBE_BACK_TEXTURE_AND_COLOR_RGB =\n" +
+			"\tpigment\n" +
+			"\t{\n" +
+			"\t\tcolor rgb <1.0,1.0,0.0>\n" +
+			"\t}\n\n" +
+
+			"#declare PIG_CUBE_BACK_TEXTURE_AND_COLOR_IMG =\n" +
+			"\tpigment\n" +
+			"\t{\n" +
+			"\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_BACK_TEXTURE_AND_COLOR\" }\n" +
+			"\t}\n\n" +
+
+			"#declare TEX_CUBE_BACK_TEXTURE_AND_COLOR =\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\taverage\n" +
+			"\t\t\tpigment_map\n" +
+			"\t\t\t{\n" +
+			"\t\t\t\t[ 1.0 PIG_CUBE_BACK_TEXTURE_AND_COLOR_RGB ]\n" +
+			"\t\t\t\t[ 1.0 PIG_CUBE_BACK_TEXTURE_AND_COLOR_IMG ]\n" +
+			"\t\t\t}\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tambient    1.0\n" +
+			"\t\t\tdiffuse    0.89\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
+
 			"#declare TEX_CUBE_BOTTOM =\n" +
 			"\ttexture\n" +
 			"\t{\n" +
@@ -122,6 +155,39 @@ public final class TestAbToPovConverter
 			"\t\t{\n" +
 			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
+
+			"#declare PIG_CUBE_BOTTOM_TEXTURE_AND_COLOR_RGB =\n" +
+			"\tpigment\n" +
+			"\t{\n" +
+			"\t\tcolor rgb <0.0,1.0,0.0>\n" +
+			"\t}\n\n" +
+
+			"#declare PIG_CUBE_BOTTOM_TEXTURE_AND_COLOR_IMG =\n" +
+			"\tpigment\n" +
+			"\t{\n" +
+			"\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_BOTTOM_TEXTURE_AND_COLOR\" }\n" +
+			"\t}\n\n" +
+
+			"#declare TEX_CUBE_BOTTOM_TEXTURE_AND_COLOR =\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\taverage\n" +
+			"\t\t\tpigment_map\n" +
+			"\t\t\t{\n" +
+			"\t\t\t\t[ 1.0 PIG_CUBE_BOTTOM_TEXTURE_AND_COLOR_RGB ]\n" +
+			"\t\t\t\t[ 1.0 PIG_CUBE_BOTTOM_TEXTURE_AND_COLOR_IMG ]\n" +
+			"\t\t\t}\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tambient    1.0\n" +
+			"\t\t\tdiffuse    0.59\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
@@ -143,6 +209,39 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t}\n\n" +
 
+			"#declare PIG_CUBE_FRONT_TEXTURE_AND_COLOR_RGB =\n" +
+			"\tpigment\n" +
+			"\t{\n" +
+			"\t\tcolor rgb <0.0,0.0,1.0>\n" +
+			"\t}\n\n" +
+
+			"#declare PIG_CUBE_FRONT_TEXTURE_AND_COLOR_IMG =\n" +
+			"\tpigment\n" +
+			"\t{\n" +
+			"\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_FRONT_TEXTURE_AND_COLOR\" }\n" +
+			"\t}\n\n" +
+
+			"#declare TEX_CUBE_FRONT_TEXTURE_AND_COLOR =\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\taverage\n" +
+			"\t\t\tpigment_map\n" +
+			"\t\t\t{\n" +
+			"\t\t\t\t[ 1.0 PIG_CUBE_FRONT_TEXTURE_AND_COLOR_RGB ]\n" +
+			"\t\t\t\t[ 1.0 PIG_CUBE_FRONT_TEXTURE_AND_COLOR_IMG ]\n" +
+			"\t\t\t}\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tambient    1.0\n" +
+			"\t\t\tdiffuse    0.11\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
+
 			"#declare TEX_CUBE_LEFT =\n" +
 			"\ttexture\n" +
 			"\t{\n" +
@@ -154,6 +253,39 @@ public final class TestAbToPovConverter
 			"\t\t{\n" +
 			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
+
+			"#declare PIG_CUBE_LEFT_TEXTURE_AND_COLOR_RGB =\n" +
+			"\tpigment\n" +
+			"\t{\n" +
+			"\t\tcolor rgb <0.0,1.0,1.0>\n" +
+			"\t}\n\n" +
+
+			"#declare PIG_CUBE_LEFT_TEXTURE_AND_COLOR_IMG =\n" +
+			"\tpigment\n" +
+			"\t{\n" +
+			"\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_LEFT_TEXTURE_AND_COLOR\" }\n" +
+			"\t}\n\n" +
+
+			"#declare TEX_CUBE_LEFT_TEXTURE_AND_COLOR =\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\taverage\n" +
+			"\t\t\tpigment_map\n" +
+			"\t\t\t{\n" +
+			"\t\t\t\t[ 1.0 PIG_CUBE_LEFT_TEXTURE_AND_COLOR_RGB ]\n" +
+			"\t\t\t\t[ 1.0 PIG_CUBE_LEFT_TEXTURE_AND_COLOR_IMG ]\n" +
+			"\t\t\t}\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tambient    1.0\n" +
+			"\t\t\tdiffuse    0.7\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
@@ -175,6 +307,39 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t}\n\n" +
 
+			"#declare PIG_CUBE_RIGHT_TEXTURE_AND_COLOR_RGB =\n" +
+			"\tpigment\n" +
+			"\t{\n" +
+			"\t\tcolor rgb <1.0,0.0,1.0>\n" +
+			"\t}\n\n" +
+
+			"#declare PIG_CUBE_RIGHT_TEXTURE_AND_COLOR_IMG =\n" +
+			"\tpigment\n" +
+			"\t{\n" +
+			"\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_RIGHT_TEXTURE_AND_COLOR\" }\n" +
+			"\t}\n\n" +
+
+			"#declare TEX_CUBE_RIGHT_TEXTURE_AND_COLOR =\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\taverage\n" +
+			"\t\t\tpigment_map\n" +
+			"\t\t\t{\n" +
+			"\t\t\t\t[ 1.0 PIG_CUBE_RIGHT_TEXTURE_AND_COLOR_RGB ]\n" +
+			"\t\t\t\t[ 1.0 PIG_CUBE_RIGHT_TEXTURE_AND_COLOR_IMG ]\n" +
+			"\t\t\t}\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tambient    1.0\n" +
+			"\t\t\tdiffuse    0.41\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
+
 			"#declare TEX_CUBE_TOP =\n" +
 			"\ttexture\n" +
 			"\t{\n" +
@@ -186,6 +351,39 @@ public final class TestAbToPovConverter
 			"\t\t{\n" +
 			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 16.0\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
+
+			"#declare PIG_CUBE_TOP_TEXTURE_AND_COLOR_RGB =\n" +
+			"\tpigment\n" +
+			"\t{\n" +
+			"\t\tcolor rgb <1.0,0.0,0.0>\n" +
+			"\t}\n\n" +
+
+			"#declare PIG_CUBE_TOP_TEXTURE_AND_COLOR_IMG =\n" +
+			"\tpigment\n" +
+			"\t{\n" +
+			"\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_TOP_TEXTURE_AND_COLOR\" }\n" +
+			"\t}\n\n" +
+
+			"#declare TEX_CUBE_TOP_TEXTURE_AND_COLOR =\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\taverage\n" +
+			"\t\t\tpigment_map\n" +
+			"\t\t\t{\n" +
+			"\t\t\t\t[ 1.0 PIG_CUBE_TOP_TEXTURE_AND_COLOR_RGB ]\n" +
+			"\t\t\t\t[ 1.0 PIG_CUBE_TOP_TEXTURE_AND_COLOR_IMG ]\n" +
+			"\t\t\t}\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tambient    1.0\n" +
+			"\t\t\tdiffuse    0.3\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
@@ -700,6 +898,72 @@ public final class TestAbToPovConverter
 			"\t\ttexture { TEX_CUBE_BACK }\n" +
 			"\t\ttexture { TEX_CUBE_LEFT }\n" +
 			"\t\ttexture { TEX_CUBE_RIGHT }\n" +
+			"\t}\n" +
+			"\tface_indices\n" +
+			"\t{\n" +
+			"\t\t12,\n" +
+			"\t\t<0,1,2>,0 , <0,2,3>,0 , <4,5,6>,1 , <4,6,7>,1 , <5,0,3>,2 , <5,3,6>,2 ,\n" +
+			"\t\t<7,2,1>,3 , <7,1,4>,3 , <4,1,0>,4 , <4,0,5>,4 , <6,3,2>,5 , <6,2,7>,5\n" +
+			"\t}\n" +
+			"\tuv_indices\n" +
+			"\t{\n" +
+			"\t\t12,\n" +
+			"\t\t<0,1,2> , <0,2,3> , <0,1,2> , <0,2,3> , <0,1,2> , <0,2,3> ,\n" +
+			"\t\t<0,1,2> , <0,2,3> , <0,1,2> , <0,2,3> , <0,1,2> , <0,2,3>\n" +
+			"\t}\n" +
+			"\tuv_mapping\n" +
+			"}\n";
+
+		Assert.assertEquals( "ColorCube3D to pov conversion error" , expected , actual );
+	}
+
+	/**
+	 * This method tests the conversion of an {@link Object3D} (a colored cube
+	 * with a different texture per face) to a {@link PovMesh2}.
+	 *
+	 * @throws IOException When there was a problem writing to the
+	 * {@link IndentingWriter}.
+	 */
+	public static void testTexturedColorCubeToPov()
+		throws IOException
+	{
+		final String actual;
+		{
+			final AbPovTestModel   testModel       = new AbPovTestModel();
+			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
+			final PovGeometry      mesh            = converter.convertObject3D( Matrix3D.INIT, testModel.getTexturedColorCube() );
+			final StringWriter     stringWriter    = new StringWriter();
+			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
+
+			mesh.write( indentingWriter );
+			actual = stringWriter.toString();
+		}
+
+		final String expected =
+			"mesh2\n" +
+			"{\n" +
+			"\tvertex_vectors\n" +
+			"\t{\n" +
+			"\t\t8,\n" +
+			"\t\t<-100.0,-100.0,100.0> , <-100.0,100.0,100.0> , <100.0,100.0,100.0> ,\n" +
+			"\t\t<100.0,-100.0,100.0> , <-100.0,100.0,-100.0> , <-100.0,-100.0,-100.0> ,\n" +
+			"\t\t<100.0,-100.0,-100.0> , <100.0,100.0,-100.0>\n" +
+			"\t}\n" +
+			"\tuv_vectors\n" +
+			"\t{\n" +
+			"\t\t4,\n" +
+			"\t\t<0.5,0.0> , <0.5,0.5> , <0.0,0.5> ,\n" +
+			"\t\t<0.0,0.0>\n" +
+			"\t}\n" +
+			"\ttexture_list\n" +
+			"\t{\n" +
+			"\t\t6,\n" +
+			"\t\ttexture { TEX_CUBE_TOP_TEXTURE_AND_COLOR }\n" +
+			"\t\ttexture { TEX_CUBE_BOTTOM_TEXTURE_AND_COLOR }\n" +
+			"\t\ttexture { TEX_CUBE_FRONT_TEXTURE_AND_COLOR }\n" +
+			"\t\ttexture { TEX_CUBE_BACK_TEXTURE_AND_COLOR }\n" +
+			"\t\ttexture { TEX_CUBE_LEFT_TEXTURE_AND_COLOR }\n" +
+			"\t\ttexture { TEX_CUBE_RIGHT_TEXTURE_AND_COLOR }\n" +
 			"\t}\n" +
 			"\tface_indices\n" +
 			"\t{\n" +
