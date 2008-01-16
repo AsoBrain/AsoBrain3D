@@ -50,27 +50,39 @@ public class GLWrapper
 	 */
 	private GL _gl;
 
-	/** Cached state of {@link GL#GL_BLEND}.                     */ private TriState _blendState            = TriState.UNDEFINED;
-	/** Cached state of {@link GL#GL_COLOR_MATERIAL}.            */ private TriState _colorMaterialState    = TriState.UNDEFINED;
-	/** Cached state of {@link GL#GL_CULL_FACE}.                 */ private TriState _cullFaceState         = TriState.UNDEFINED;
-	/** Cached state of {@link GL#GL_LIGHTING}.                  */ private TriState _lightingState         = TriState.UNDEFINED;
-	/** Cached state of {@link GL#GL_SMOOTH}.                    */ private TriState _lineSmoothState       = TriState.UNDEFINED;
-	/** Cached state of {@link GL#GL_TEXTURE_2D}.                */ private TriState _texture2dState        = TriState.UNDEFINED;
-	/** Cached state of {@link GL#glBindTexture(int, int)}.      */ private int      _boundTextureTarget    = -1;
-	/** Cached state of {@link GL#glBindTexture(int, int)}.      */ private int      _boundTextureObject    = -1;
-	/** Cached state of {@link GL#glBlendFunc(int, int)}.        */ private int      _blendFuncSfactor      = -1;
-	/** Cached state of {@link GL#glBlendFunc(int, int)}.        */ private int      _blendFuncDfactor      = -1;
-	/** Cached state of {@link GL#glColorMaterial(int, int)}.    */ private int      _colorMaterialFace     = -1;
-	/** Cached state of {@link GL#glColorMaterial(int, int)}.    */ private int      _colorMaterialMode     = -1;
-	/** Cached state of {@link GL#glCullFace(int)}.              */ private int      _cullFace              = -1;
-	/** Cached state of {@link GL#glDepthFunc(int)}.             */ private int      _depthFunc             = -1;
-	/** Cached state of {@link GL#glLineWidth(float)}.           */ private float    _lineWidth             = -1;
-	/** Cached state of {@link GL#glMaterialf(int, int, float)}. */ private int      _materialFace          = -1;
-	/** Cached state of {@link GL#glMaterialf(int, int, float)}. */ private int      _materialPname         = -1;
-	/** Cached state of {@link GL#glMaterialf(int, int, float)}. */ private float    _materialParam         = -1;
-	/** Cached state of {@link GL#glPolygonOffset(float, float)} */ private float    _polygonOffsetFactor   = -1;
-	/** Cached state of {@link GL#glPolygonOffset(float, float)} */ private float    _polygonOffsetUnits    = -1;
-	/** Cached state of {@link GL#glShadeModel(int)}.            */ private int      _shadeModel            = -1;
+	/** Cached state of {@link GL#GL_BLEND}.                             */     private         TriState _blendState             = TriState.UNDEFINED;
+	/** Cached state of {@link GL#GL_COLOR_MATERIAL}.                    */     private         TriState _colorMaterialState     = TriState.UNDEFINED;
+	/** Cached state of {@link GL#GL_CULL_FACE}.                         */     private         TriState _cullFaceState          = TriState.UNDEFINED;
+	/** Cached state of {@link GL#GL_LIGHTING}.                          */     private         TriState _lightingState          = TriState.UNDEFINED;
+	/** Cached state of {@link GL#GL_SMOOTH}.                            */     private         TriState _lineSmoothState        = TriState.UNDEFINED;
+	/** Cached state of {@link GL#GL_TEXTURE_2D}.                        */     private         TriState _texture2dState         = TriState.UNDEFINED;
+	/** Cached state of {@link GL#glBindTexture(int, int)}.              */     private         int      _boundTextureTarget     = -1;
+	/** Cached state of {@link GL#glBindTexture(int, int)}.              */     private         int      _boundTextureObject     = -1;
+	/** Cached state of {@link GL#glBlendFunc(int, int)}.                */     private         int      _blendFuncSfactor       = -1;
+	/** Cached state of {@link GL#glBlendFunc(int, int)}.                */     private         int      _blendFuncDfactor       = -1;
+	/** Cached state of {@link GL#glColorMaterial(int, int)}.            */     private         int      _colorMaterialFace      = -1;
+	/** Cached state of {@link GL#glColorMaterial(int, int)}.            */     private         int      _colorMaterialMode      = -1;
+	/** Cached state of {@link GL#glCullFace(int)}.                      */     private         int      _cullFace               = -1;
+	/** Cached state of {@link GL#glDepthFunc(int)}.                     */     private         int      _depthFunc              = -1;
+	/** Cached state of {@link GL#glLineWidth(float)}.                   */     private         float    _lineWidth              = -1;
+	/** Cached state of {@link GL#glMaterialf(int, int, float)}.         */     private         int      _materialFace           = -1;
+	/** Cached state of {@link GL#glMaterialf(int, int, float)}.         */     private         int      _materialPname          = -1;
+	/** Cached state of {@link GL#glMaterialf(int, int, float)}.         */     private         float    _materialParam          = -1;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private int      _materialAmbientFace            = -1;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private float[]  _materialAmbientParams          = null;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private int      _materialAmbientI               = -1;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private int      _materialDiffuseFace            = -1;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private float[]  _materialDiffuseParams          = null;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private int      _materialDiffuseI               = -1;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private int      _materialSpecularFace           = -1;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private float[]  _materialSpecularParams         = null;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private int      _materialSpecularI              = -1;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private int      _materialEmissionFace           = -1;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private float[]  _materialEmissionParams         = null;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private int      _materialEmissionI              = -1;
+	/** Cached state of {@link GL#glPolygonOffset(float, float)}         */     private         float    _polygonOffsetFactor    = -1;
+	/** Cached state of {@link GL#glPolygonOffset(float, float)}         */     private         float    _polygonOffsetUnits     = -1;
+	/** Cached state of {@link GL#glShadeModel(int)}.                    */     private         int      _shadeModel             = -1;
 
 	/**
 	 * Wrapper for the JOGL {@link GL} class.
@@ -99,25 +111,33 @@ public class GLWrapper
 	 */
 	public void reset()
 	{
-		_lightingState      = TriState.UNDEFINED;
-		_cullFaceState      = TriState.UNDEFINED;
-		_texture2dState     = TriState.UNDEFINED;
-		_blendState         = TriState.UNDEFINED;
-		_lineSmoothState    = TriState.UNDEFINED;
-		_colorMaterialState = TriState.UNDEFINED;
-		_shadeModel         = -1;
-		_cullFace           = -1;
-		_blendFuncSfactor   = -1;
-		_blendFuncDfactor   = -1;
-		_boundTextureTarget = -1;
-		_boundTextureObject = -1;
-		_materialFace       = -1;
-		_materialPname      = -1;
-		_colorMaterialFace  = -1;
-		_colorMaterialMode  = -1;
-		_depthFunc          = -1;
-		_materialParam      = -1.0f;
-		_lineWidth          = -1.0f;
+		_lightingState         = TriState.UNDEFINED;
+		_cullFaceState         = TriState.UNDEFINED;
+		_texture2dState        = TriState.UNDEFINED;
+		_blendState            = TriState.UNDEFINED;
+		_lineSmoothState       = TriState.UNDEFINED;
+		_colorMaterialState    = TriState.UNDEFINED;
+		_shadeModel            = -1;
+		_cullFace              = -1;
+		_blendFuncSfactor      = -1;
+		_blendFuncDfactor      = -1;
+		_boundTextureTarget    = -1;
+		_boundTextureObject    = -1;
+		_materialFace          = -1;
+		_materialPname         = -1;
+		_colorMaterialFace     = -1;
+		_colorMaterialMode     = -1;
+		_depthFunc             = -1;
+		_materialParam         = -1.0f;
+		_lineWidth             = -1.0f;
+		_materialAmbientI      = -1;
+		_materialAmbientParams = null;
+		_materialDiffuseI      = -1;
+		_materialDiffuseParams = null;
+		_materialSpecularI      = -1;
+		_materialSpecularParams = null;
+		_materialEmissionI      = -1;
+		_materialEmissionParams = null;
 	}
 
 	/**
@@ -403,7 +423,6 @@ public class GLWrapper
 	 *
 	 * @param face  Specifies which face or faces are being updated. Must be one
 	 *              of {@link GL#GL_FRONT}, {@link GL#GL_BACK}, or {@link GL#GL_FRONT_AND_BACK}.
-	 *
 	 * @param pname Specifies the single-valued material parameter of the face
 	 *              or faces that is being updated. Must be {@link GL#GL_SHININESS}.
 	 * @param param Specifies the value that parameter GL_SHININESS will be set to.
@@ -419,6 +438,69 @@ public class GLWrapper
 			_materialFace  = face;
 			_materialPname = pname;
 			_materialParam = param;
+		}
+	}
+
+	/**
+	 * Specify material parameters for the lighting model.<br />
+	 * See <a href="http://www.opengl.org/documentation/specs/man_pages/hardcopy/GL/html/gl/material.html">http://www.opengl.org/documentation/specs/man_pages/hardcopy/GL/html/gl/material.html<a>.
+	 *
+	 * @param face      Specifies which face or faces are being updated. Must be one
+	 *                  of {@link GL#GL_FRONT}, {@link GL#GL_BACK}, or {@link GL#GL_FRONT_AND_BACK}.
+	 * @param pname     Specifies the material parameter of the face or faces
+	 *                  that is being updated. Must be one of {@link GL#GL_AMBIENT}, {@link GL#GL_DIFFUSE},
+	 *                  {@link GL#GL_SPECULAR}, {@link GL#GL_EMISSION}, {@link GL#GL_SHININESS},
+	 *                  {@link GL#GL_AMBIENT_AND_DIFFUSE}, or {@link GL#GL_COLOR_INDEXES}.
+	 * @param params    Specifies a pointer to the value or values that pname will be set to.
+	 *
+	 * @param i         Specifies a pointer to the value or values that pname will be set to.
+	 *
+	 * @see GL#glMaterialfv(int, int, float[] , int)
+	 */
+	public void glMaterialfv( final int face , final int pname , final float[] params , final int i )
+	{
+		//four types of pnames will be cached: GL_AMBIENT, GL_DIFFUSE, GL_SPECULAR, GL_EMISSION
+		switch( pname )
+		{
+			case GL.GL_AMBIENT:
+				if ( face != _materialAmbientFace || params != _materialAmbientParams || i != _materialAmbientI )
+				{
+					_gl.glMaterialfv( face , pname , params , i );
+					_materialAmbientFace   = face;
+					_materialAmbientParams = params.clone();
+					_materialAmbientI      = i;
+				}
+				break;
+			case GL.GL_DIFFUSE:
+				if ( face != _materialDiffuseFace || params != _materialDiffuseParams || face != _materialDiffuseI )
+				{
+					_gl.glMaterialfv( face , pname , params , i );
+					_materialDiffuseFace   = face;
+					_materialDiffuseParams = params.clone();
+					_materialDiffuseI      = i;
+				}
+				break;
+			case GL.GL_SPECULAR:
+				if ( face != _materialSpecularFace || params != _materialSpecularParams || face != _materialSpecularI )
+				{
+					_gl.glMaterialfv( face , pname , params , i );
+					_materialSpecularFace   = face;
+					_materialSpecularParams = params.clone();
+					_materialSpecularI      = i;
+				}
+				break;
+			case GL.GL_EMISSION:
+				if ( face != _materialEmissionFace || params != _materialEmissionParams || face != _materialEmissionI )
+				{
+					_gl.glMaterialfv( face , pname , params , i );
+					_materialEmissionFace   = face;
+					_materialEmissionParams = params.clone();
+					_materialEmissionI      = i;
+				}
+				break;
+			default:
+				_gl.glMaterialfv( face , pname , params , i );
+				break;
 		}
 	}
 
