@@ -226,6 +226,13 @@ public class JOGLTools
 		glWrapper.glPopMatrix();
 	}
 
+	/**
+	 * Draw the sides of the extruded shape.
+	 *
+	 * @param glWrapper     {@link GLWrapper} to use.
+	 * @param shape         Base shape.
+	 * @param extrusion     Extrusion vector (control-point displacement). This is a displacement relative to the shape being extruded.
+	 */
 	private static void drawExtrusionLines( final GLWrapper glWrapper , final Shape shape , final Vector3D extrusion )
 	{
 		glWrapper.glBegin( GL.GL_LINES );
@@ -527,12 +534,7 @@ public class JOGLTools
 	/**
 	 * Set GL material properties.
 	 *
-	 * gl.glEnable( GL.GL_COLORMATERIAL ) and
-	 * gl.glDisable( GL.GL_COLORMATERIAL ) after each block is necessary because
-	 * only stating it at the begin and at the end gives problems (all objects
-	 * are white) with certain OpenGL implementations.
-	 *
-	 * @param glWrapper GLWrapper.
+	 * @param glWrapper {@link GLWrapper}.
 	 * @param material  {@link Material} properties.
 	 */
 	public static void setMaterial( final GLWrapper glWrapper , final Material material )
@@ -540,30 +542,18 @@ public class JOGLTools
 		/* Set color, used when lights are disabled. */
 		glWrapper.glColor4f( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , material.diffuseColorAlpha );
 
-		/* Set shininess and specular color of material. */
-		glWrapper.glMaterialf( GL.GL_FRONT_AND_BACK , GL.GL_SHININESS , (float)material.shininess );
-		glWrapper.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_SPECULAR );
-		glWrapper.glColor3f( material.specularColorRed , material.specularColorGreen , material.specularColorBlue );
-		glWrapper.setColorMaterial( true );
-		glWrapper.setColorMaterial( false );
-
 		/* Set ambient color of material. */
-		glWrapper.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_AMBIENT );
-		glWrapper.glColor3f( material.ambientColorRed , material.ambientColorGreen , material.ambientColorBlue );
-		glWrapper.setColorMaterial( true );
-		glWrapper.setColorMaterial( false );
+		glWrapper.glMaterialfv( GL.GL_FRONT , GL.GL_AMBIENT , new float[] { material.ambientColorRed , material.ambientColorGreen , material.ambientColorBlue , 1.0f } , 0 );
 
 		/* Set diffuse color and alpha of material. */
-		glWrapper.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_DIFFUSE );
-		glWrapper.glColor4f( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , material.diffuseColorAlpha );
-		glWrapper.setColorMaterial( true );
-		glWrapper.setColorMaterial( false );
+		glWrapper.glMaterialfv( GL.GL_FRONT , GL.GL_DIFFUSE , new float[] { material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , material.diffuseColorAlpha } , 0 );
+
+		/* Set shininess and specular color of material. */
+		glWrapper.glMaterialfv( GL.GL_FRONT , GL.GL_SPECULAR , new float[] { material.specularColorRed , material.specularColorGreen , material.specularColorBlue , 1.0f } , 0 );
+		glWrapper.glMaterialf( GL.GL_FRONT  , GL.GL_SHININESS , (float)material.shininess );
 
 		/* Set emissive color of material. */
-		glWrapper.glColorMaterial( GL.GL_FRONT_AND_BACK , GL.GL_EMISSION );
-		glWrapper.glColor3f( material.emissiveColorRed , material.emissiveColorGreen , material.emissiveColorBlue );
-		glWrapper.setColorMaterial( true );
-		glWrapper.setColorMaterial( false );
+		glWrapper.glMaterialfv( GL.GL_FRONT , GL.GL_EMISSION , new float[] { material.emissiveColorRed , material.emissiveColorGreen , material.emissiveColorBlue , 1.0f } , 0 );
 	}
 
 	/**
