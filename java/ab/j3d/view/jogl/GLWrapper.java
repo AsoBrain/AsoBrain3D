@@ -64,10 +64,10 @@ public class GLWrapper
 	/** Cached state of {@link GL#glColorMaterial(int, int)}.            */     private         int      _colorMaterialMode      = -1;
 	/** Cached state of {@link GL#glCullFace(int)}.                      */     private         int      _cullFace               = -1;
 	/** Cached state of {@link GL#glDepthFunc(int)}.                     */     private         int      _depthFunc              = -1;
-	/** Cached state of {@link GL#glLineWidth(float)}.                   */     private         float    _lineWidth              = -1;
+	/** Cached state of {@link GL#glLineWidth(float)}.                   */     private         float    _lineWidth              = -1.0F;
 	/** Cached state of {@link GL#glMaterialf(int, int, float)}.         */     private         int      _materialFace           = -1;
 	/** Cached state of {@link GL#glMaterialf(int, int, float)}.         */     private         int      _materialPname          = -1;
-	/** Cached state of {@link GL#glMaterialf(int, int, float)}.         */     private         float    _materialParam          = -1;
+	/** Cached state of {@link GL#glMaterialf(int, int, float)}.         */     private         float    _materialParam          = -1.0F;
 	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private int      _materialAmbientFace            = -1;
 	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private float[]  _materialAmbientParams          = null;
 	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private int      _materialAmbientI               = -1;
@@ -80,8 +80,8 @@ public class GLWrapper
 	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private int      _materialEmissionFace           = -1;
 	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private float[]  _materialEmissionParams         = null;
 	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private int      _materialEmissionI              = -1;
-	/** Cached state of {@link GL#glPolygonOffset(float, float)}         */     private         float    _polygonOffsetFactor    = -1;
-	/** Cached state of {@link GL#glPolygonOffset(float, float)}         */     private         float    _polygonOffsetUnits     = -1;
+	/** Cached state of {@link GL#glPolygonOffset(float, float)}         */     private         float    _polygonOffsetFactor    = -1.0F;
+	/** Cached state of {@link GL#glPolygonOffset(float, float)}         */     private         float    _polygonOffsetUnits     = -1.0F;
 	/** Cached state of {@link GL#glShadeModel(int)}.                    */     private         int      _shadeModel             = -1;
 
 	/**
@@ -460,12 +460,13 @@ public class GLWrapper
 	public void glMaterialfv( final int face , final int pname , final float[] params , final int i )
 	{
 		//four types of pnames will be cached: GL_AMBIENT, GL_DIFFUSE, GL_SPECULAR, GL_EMISSION
+		final GL gl = _gl;
 		switch( pname )
 		{
 			case GL.GL_AMBIENT:
 				if ( face != _materialAmbientFace || params != _materialAmbientParams || i != _materialAmbientI )
 				{
-					_gl.glMaterialfv( face , pname , params , i );
+					gl.glMaterialfv( face , pname , params , i );
 					_materialAmbientFace   = face;
 					_materialAmbientParams = params.clone();
 					_materialAmbientI      = i;
@@ -474,7 +475,7 @@ public class GLWrapper
 			case GL.GL_DIFFUSE:
 				if ( face != _materialDiffuseFace || params != _materialDiffuseParams || face != _materialDiffuseI )
 				{
-					_gl.glMaterialfv( face , pname , params , i );
+					gl.glMaterialfv( face , pname , params , i );
 					_materialDiffuseFace   = face;
 					_materialDiffuseParams = params.clone();
 					_materialDiffuseI      = i;
@@ -483,7 +484,7 @@ public class GLWrapper
 			case GL.GL_SPECULAR:
 				if ( face != _materialSpecularFace || params != _materialSpecularParams || face != _materialSpecularI )
 				{
-					_gl.glMaterialfv( face , pname , params , i );
+					gl.glMaterialfv( face , pname , params , i );
 					_materialSpecularFace   = face;
 					_materialSpecularParams = params.clone();
 					_materialSpecularI      = i;
@@ -492,14 +493,14 @@ public class GLWrapper
 			case GL.GL_EMISSION:
 				if ( face != _materialEmissionFace || params != _materialEmissionParams || face != _materialEmissionI )
 				{
-					_gl.glMaterialfv( face , pname , params , i );
+					gl.glMaterialfv( face , pname , params , i );
 					_materialEmissionFace   = face;
 					_materialEmissionParams = params.clone();
 					_materialEmissionI      = i;
 				}
 				break;
 			default:
-				_gl.glMaterialfv( face , pname , params , i );
+				gl.glMaterialfv( face , pname , params , i );
 				break;
 		}
 	}
