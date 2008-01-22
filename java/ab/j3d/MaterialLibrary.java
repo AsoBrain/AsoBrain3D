@@ -55,7 +55,8 @@ public interface MaterialLibrary
 	 *
 	 * @param   material    Material to store.
 	 *
-	 * @throws  IOException if an error occured.
+	 * @throws  NullPointerException if <code>material</code> is <code>null</code>.
+	 * @throws  IOException the material could not be stored.
 	 */
 	void storeMaterial( Material material )
 		throws IOException;
