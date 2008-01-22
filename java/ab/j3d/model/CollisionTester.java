@@ -379,6 +379,9 @@ public class CollisionTester
 	 * Perform precise collision detection using the
 	 * <A href='http://coldet.sourceforge.net/'>ColDet</A> library.
 	 *
+	 * <p>FIXME: ColDet doesn't consider containment a collision.
+	 * It can't, because it operates on polygon soups, not solids.
+	 *
 	 * @param   fromOtherToThis     Transformation from other object to this.
 	 * @param   other               Object to test collision with.
 	 *
