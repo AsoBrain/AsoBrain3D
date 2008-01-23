@@ -598,9 +598,10 @@ public class JOGLTools
 		if ( TextTools.isNonEmpty( material.colorMap ) )
 		{
 			SoftReference<Texture> reference = textureCache.get( material.colorMap );
-			if ( reference != null )
+			if ( !textureCache.containsKey( material.colorMap ) )
 			{
-				result = reference.get();
+				if ( reference != null )
+					result = reference.get();
 				if ( result == null )
 				{
 					final BufferedImage bufferedImage = material.getColorMapImage( false );
