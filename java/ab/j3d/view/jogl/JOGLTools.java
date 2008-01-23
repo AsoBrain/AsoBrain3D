@@ -601,36 +601,31 @@ public class JOGLTools
 			if ( reference != null )
 			{
 				result = reference.get();
-			}
-			if ( ( result == null ) || ( !textureCache.containsKey( material.colorMap ) ) )
-			{
-				final BufferedImage bufferedImage = material.getColorMapImage( false );
-				if ( bufferedImage != null )
+				if ( result == null )
 				{
-					System.out.println( "Loading Texture: " + material.colorMap );
-					result = TextureIO.newTexture( ( bufferedImage ) , true );
-					result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
-					result.setTexParameteri( GL.GL_TEXTURE_WRAP_R , GL.GL_REPEAT );
-					result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
+					final BufferedImage bufferedImage = material.getColorMapImage( false );
+					if ( bufferedImage != null )
+					{
+						result = TextureIO.newTexture( ( bufferedImage ) , true );
+						result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
+						result.setTexParameteri( GL.GL_TEXTURE_WRAP_R , GL.GL_REPEAT );
+						result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
 
-					/**
-					 * Set generate mipmaps to true, this greatly increases performance and viewing pleasure in big scenes.
-					 * @TODO need to find out if generated mipmaps are faster or if pregenerated mipmaps are faster
-					 */
-					result.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
+						/**
+						 * Set generate mipmaps to true, this greatly increases performance and viewing pleasure in big scenes.
+						 * @TODO need to find out if generated mipmaps are faster or if pregenerated mipmaps are faster
+						 */
+						result.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
 
-					/** Set texture magnification to linear to support mipmaps. */
-					result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
+						/** Set texture magnification to linear to support mipmaps. */
+						result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
 
-					/** Set texture minification to linear_mipmap)_nearest to support mipmaps */
-					result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
+						/** Set texture minification to linear_mipmap)_nearest to support mipmaps */
+						result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
+					}
+					reference = ( result != null ) ? new SoftReference<Texture>( result ) : null ;
+					textureCache.put( material.colorMap , reference );
 				}
-				else
-				{
-					System.out.println( "Could not load texture." );
-				}
-				reference = ( result != null ) ? new SoftReference<Texture>( result ) : new SoftReference<Texture> ( null );
-				textureCache.put( material.colorMap , reference );
 			}
 		}
 		return result;
