@@ -26,9 +26,12 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 import java.awt.image.BufferedImage;
 import java.lang.ref.SoftReference;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.Map;
 import javax.media.opengl.GL;
 
+import com.sun.opengl.util.BufferUtil;
 import com.sun.opengl.util.texture.Texture;
 import com.sun.opengl.util.texture.TextureIO;
 
@@ -628,6 +631,152 @@ public class JOGLTools
 					textureCache.put( material.colorMap , reference );
 				}
 			}
+		}
+		return result;
+	}
+
+	/**
+	 * Loads a shader and returns an int which specifies the shader's location on
+	 * the graphics card. If the shader couldn't be compiled an error will be
+	 * shown in the console.
+	 *
+	 * @param gl            OpenGL context.
+	 * @param shader        Shader to compile
+	 * @param shaderType    Type of shader.
+	 *
+	 * @return Returns the shader, returns 0 when the shader couldn't compile.
+	 */
+	public static int compileAndLoadShader( final GL gl , final String[] shader , int shaderType )
+	{
+		final int   shaderId      = gl.glCreateShaderObjectARB( shaderType );
+		final int[] lengths       = new int[ shader.length ];
+		final int[] compileShader = new int[ 1 ];
+		      int   result        = 0;
+
+		for( int i = 0 ; i < shader.length ; i++)
+			lengths[ i ] = shader[ i ].length();
+		gl.glShaderSourceARB( shaderId , shader.length , shader , lengths , 0 );
+		gl.glCompileShaderARB( shaderId );
+
+		gl.glGetShaderiv( shaderId , GL.GL_COMPILE_STATUS , compileShader , 0 );
+
+		if ( compileShader[ 0 ] == GL.GL_TRUE )
+		{
+			result = shaderId;
+		}
+		else
+		{
+			final IntBuffer len = BufferUtil.newIntBuffer( 1 );
+			gl.glGetShaderiv( shaderId , GL.GL_INFO_LOG_LENGTH , len );
+			final int infoLen = len.get();
+
+			if( infoLen > 1 )
+			{
+				len.flip();
+				final ByteBuffer infoLogBuf = BufferUtil.newByteBuffer( infoLen );
+				gl.glGetShaderInfoLog(  shaderId , infoLen , len , infoLogBuf );
+
+				final int actualWidth = len.get();
+				final StringBuilder sBuf = new StringBuilder( actualWidth );
+
+				for ( int i = 0 ; i < actualWidth ; i++ )
+				{
+					sBuf.append( (char) infoLogBuf.get() );
+				}
+
+				System.err.println( sBuf.toString() );
+
+			}
+			else
+			{
+				System.err.println( "ERROR: But no info returned from info log" );
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Creats and loads a shader program. It also tries to attach the specified
+	 * shaders to the program, these shaders must be compiled already. If the
+	 * shader program couldn't be loaded an error is shown in the console.
+	 *
+	 * @param gl        OpenGL context.
+	 * @param shaders   Shaders to link and use.
+	 *
+	 * @return Returns the shader program, will return 0 when the program
+	 *                 couldn't be loaded.
+	 */
+	public static int loadProgram( final GL gl , final int[] shaders )
+	{
+		final int shaderProgramId = gl.glCreateProgramObjectARB();
+
+		// link shaders
+		for( final int shader : shaders )
+		{
+			gl.glAttachObjectARB( shaderProgramId , shader );
+		}
+
+		gl.glLinkProgramARB(shaderProgramId);
+		final int[] linkStatus = new int[ 1 ];
+
+		gl.glGetObjectParameterivARB( shaderProgramId , GL.GL_OBJECT_LINK_STATUS_ARB , linkStatus , 0 );
+
+		if ( linkStatus[ 0 ] == GL.GL_FALSE )
+		{
+			final IntBuffer len = BufferUtil.newIntBuffer( 1 );
+			gl.glGetObjectParameterivARB( shaderProgramId , GL.GL_OBJECT_INFO_LOG_LENGTH_ARB , len );
+			final int infoLen = len.get(); // this value includes the null, where actualWidth does not
+
+			if( infoLen > 1 )
+			{
+				len.flip();
+				final ByteBuffer infoLogBuf = BufferUtil.newByteBuffer( infoLen );
+				gl.glGetInfoLogARB( shaderProgramId , infoLen , len , infoLogBuf );
+
+				final int actualWidth = len.get();
+				final StringBuilder sBuf = new StringBuilder( actualWidth );
+
+				for ( int i = 0 ; i < actualWidth ; i++ )
+				{
+					sBuf.append( (char) infoLogBuf.get() );
+				}
+
+				System.err.println( sBuf.toString() );
+
+			}
+			else
+			{
+				System.err.println( "ERROR: But no info returned from info log" );
+			}
+		}
+		return shaderProgramId;
+	}
+
+	/**
+	 * Compiles both shaders and attaches them to a newly created shader program.
+	 *
+	 * @param gl                OpenGL context.
+	 * @param fragmentShader    Fragment shader to use.
+	 * @param vertexShader      Vertes shader to use.
+	 *
+	 * @return  Returns the shader program, fill
+	 */
+	public static int loadShaders( final GL gl , final String[] fragmentShader , final String[] vertexShader )
+	{
+		final int fragShader;
+		final int vertShader;
+		final int result;
+
+		fragShader = compileAndLoadShader( gl , fragmentShader , GL.GL_FRAGMENT_SHADER_ARB );
+		vertShader = compileAndLoadShader( gl , vertexShader , GL.GL_VERTEX_SHADER_ARB );
+
+		if( fragShader != 0 && vertShader != 0 )
+		{
+			result = loadProgram( gl , new int[]{ fragShader , vertShader } );
+		}
+		else
+		{
+			result = 0;
 		}
 		return result;
 	}

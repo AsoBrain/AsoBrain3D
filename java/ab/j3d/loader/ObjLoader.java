@@ -441,7 +441,7 @@ public class ObjLoader
 							abFaceVertexIndices[ abFaceVertexIndex ] = abVertexIndex;
 						}
 
-						result.addFace( abFaceVertexIndices , abMaterial , abTextureU , abTextureV , 1.0f , true , true );
+						result.addFace( abFaceVertexIndices , abMaterial , abTextureU , abTextureV , 1.0f , true , false );
 					}
 					/*
 					 * g group_name1 group_name2 . . .
