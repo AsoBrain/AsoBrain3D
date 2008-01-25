@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -646,7 +646,7 @@ public class JOGLTools
 	 *
 	 * @return Returns the shader, returns 0 when the shader couldn't compile.
 	 */
-	public static int compileAndLoadShader( final GL gl , final String[] shader , int shaderType )
+	public static int compileAndLoadShader( final GL gl , final String[] shader , final int shaderType )
 	{
 		final int   shaderId      = gl.glCreateShaderObjectARB( shaderType );
 		final int[] lengths       = new int[ shader.length ];
