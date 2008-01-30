@@ -28,7 +28,7 @@ import junit.framework.TestCase;
  * @see     Matrix3D
  *
  * @author  Peter S. Heijnen
- * @version $Revision $ $Date$
+ * @version $Revision$ $Date$
  */
 public class TestMatrix3D
 	extends TestCase
