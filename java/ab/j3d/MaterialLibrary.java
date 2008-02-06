@@ -42,6 +42,11 @@ public interface MaterialLibrary
 
 	/**
 	 * Get material from the library for the specified code.
+	 * <dl>
+	 *  <dt>IMPORTANT:</dt>
+	 *  <dd>For efficiency, implementations of this method may return a shared
+	 *   {@link Material} instance. Modification may corrupt the library.</dd>
+	 * </dl>
 	 *
 	 * @param   code    Material code.
 	 *
@@ -52,6 +57,11 @@ public interface MaterialLibrary
 
 	/**
 	 * This method is used to store a material.
+	 * <dl>
+	 *  <dt>IMPORTANT:</dt>
+	 *  <dd>For efficiency, implementations may store and share the
+	 *   {@link Material} instance. Modification may corrupt the library.</dd>
+	 * </dl>
 	 *
 	 * @param   material    Material to store.
 	 *
