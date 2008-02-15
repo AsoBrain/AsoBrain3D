@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2007
+ * (C) Copyright Numdata BV 2004-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -38,7 +38,6 @@ import ab.j3d.control.OrbitCameraControl;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
-import ab.j3d.pov.ViewModelToPovAction;
 import ab.j3d.view.control.ViewModelNodeControl;
 
 import com.numdata.oss.ArrayTools;
@@ -585,8 +584,6 @@ public abstract class ViewModel
 
 		for ( final Action action : view.getActions( locale ) )
 			actions = (Action[])ArrayTools.append( actions , action );
-
-		actions = (Action[])ArrayTools.append( actions , new ViewModelToPovAction( locale , this , view , result , BorderLayout.SOUTH , "SODA_BaseComponents/images/textures" ) );
 
 		final JToolBar toolbar = ActionTools.createToolbar( null , actions );
 		if ( toolbar != null )
