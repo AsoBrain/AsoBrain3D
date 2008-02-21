@@ -1082,7 +1082,7 @@ public final class TestAbToPovConverter
 	private static String getTexturesDirectory()
 	{
 		final String testDirectory = getTestDirectory();
-		return testDirectory + "/textures";
+		return testDirectory + "/decors";
 	}
 
 	/**
