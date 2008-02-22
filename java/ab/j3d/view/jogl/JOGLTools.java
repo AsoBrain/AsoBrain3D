@@ -75,16 +75,6 @@ public class JOGLTools
 	 */
 	public static void paintObject3D( final GLWrapper glWrapper , final Object3D object3D , final Matrix3D node2gl , final boolean useTextures , final boolean useAlternate , final boolean hasLighting , final Map<String, SoftReference<Texture>> textureCache , final boolean fill , final Material materialOverride )
 	{
-		/*
-		 * Push the current matrix stack down by one
-		 */
-		glWrapper.glPushMatrix();
-
-		/*
-		 * Set the object transform
-		 */
-		glWrapper.glMultMatrixd( node2gl );
-
 		final Paint paint;
 		final Paint alternatePaint;
 
@@ -112,8 +102,7 @@ public class JOGLTools
 			}
 			else
 			{
-				System.err.println( "AlternatePaint is not a Color" );
-				color = Color.BLUE;
+				return;
 			}
 			final float[] argb = color.getRGBComponents( null );
 			glWrapper.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
@@ -132,8 +121,7 @@ public class JOGLTools
 			}
 			else
 			{
-				System.err.println( "Paint is not a Color" );
-				color = Color.RED;
+				return;
 			}
 			final float[] argb = color.getRGBComponents( null );
 			glWrapper.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
@@ -146,6 +134,17 @@ public class JOGLTools
 		{
 			glWrapper.glColor4f( materialOverride.diffuseColorRed , materialOverride.diffuseColorGreen , materialOverride.diffuseColorBlue , materialOverride.diffuseColorAlpha );
 		}
+
+		/*
+		 * Push the current matrix stack down by one
+		 */
+		glWrapper.glPushMatrix();
+
+		/*
+		 * Set the object transform
+		 */
+		glWrapper.glMultMatrixd( node2gl );
+
 
 		if ( !fill && object3D instanceof ExtrudedObject2D )
 		{
