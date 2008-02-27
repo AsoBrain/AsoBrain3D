@@ -21,7 +21,6 @@
 package ab.j3d.view.java2d;
 
 import java.awt.Color;
-import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.RenderingHints;
@@ -525,13 +524,13 @@ public final class Painter
 
 			if ( fillPaint != null )
 			{
-				if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ) )
-				{
-					final float highlightX = ( 1.0f - goldenRatio ) * x1 + goldenRatio * x4;
-					final float highlightY = ( 1.0f - goldenRatio ) * y1 + goldenRatio * y4;
-					g.setPaint( new GradientPaint( highlightX , highlightY , (Color)fillPaint , x1 , y1 , (Color)outlinePaint , true ) );
-				}
-				else
+//				if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ) )
+//				{
+//					final float highlightX = ( 1.0f - goldenRatio ) * x1 + goldenRatio * x4;
+//					final float highlightY = ( 1.0f - goldenRatio ) * y1 + goldenRatio * y4;
+//					g.setPaint( new GradientPaint( highlightX , highlightY , (Color)fillPaint , x1 , y1 , (Color)outlinePaint , true ) );
+//				}
+//				else
 				{
 					g.setPaint( fillPaint );
 				}
@@ -605,13 +604,13 @@ public final class Painter
 				final Paint paint;
 				if ( fillPaint != null )
 				{
-					if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ))
-					{
-						final float r = Math.max( topRadius , botRadius );
-						final float highlight = ( goldenRatio - 0.5f ) * r;
-						paint = new GradientPaint( x + highlight , y - highlight , (Color)fillPaint , x -r , y + r , (Color)outlinePaint , true );
-					}
-					else
+//					if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ))
+//					{
+//						final float r = Math.max( topRadius , botRadius );
+//						final float highlight = ( goldenRatio - 0.5f ) * r;
+//						paint = new GradientPaint( x + highlight , y - highlight , (Color)fillPaint , x -r , y + r , (Color)outlinePaint , true );
+//					}
+//					else
 					{
 						paint = fillPaint;
 					}
@@ -703,14 +702,14 @@ public final class Painter
 			if ( fillPaint != null )
 			{
 				final Paint paint;
-				if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ))
-				{
-					final float goldenRatio = 0.6180339f;
-					final float highlight   = ( goldenRatio - 0.5f ) * r;
-
-					paint = new GradientPaint( x + highlight , y - highlight , (Color)fillPaint , x -r , y + r , (Color)outlinePaint , true );
-				}
-				else
+//				if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ))
+//				{
+//					final float goldenRatio = 0.6180339f;
+//					final float highlight   = ( goldenRatio - 0.5f ) * r;
+//
+//					paint = new GradientPaint( x + highlight , y - highlight , (Color)fillPaint , x -r , y + r , (Color)outlinePaint , true );
+//				}
+//				else
 				{
 					paint = fillPaint;
 				}
