@@ -184,7 +184,7 @@ public abstract class ViewModel
 
 		for ( final ViewModelNode node : _nodes )
 		{
-			if ( id == node.getID() )
+			if ( id.equals( node.getID() ) )
 			{
 				result = node;
 				break;
@@ -426,7 +426,7 @@ public abstract class ViewModel
 
 		for ( final ViewModelView view : _views )
 		{
-			if ( id == view.getID() )
+			if ( id.equals( view.getID() ) )
 			{
 				result = view;
 				break;
