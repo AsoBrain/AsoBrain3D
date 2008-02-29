@@ -443,14 +443,15 @@ public class JOGLView
 		gl.glDepthMask( true );
 		glWrapper.glDepthFunc( GL.GL_LESS );
 
-		/* Set smoothing. */
-		glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
-		glWrapper.setBlend( true );
-		gl.glEnable( GL.GL_LINE_SMOOTH ); //enable smooth lines
-		gl.glHint( GL.GL_LINE_SMOOTH_HINT , GL.GL_NICEST );
-		gl.glEnable( GL.GL_POLYGON_SMOOTH ); //enable smooth polygons
-		gl.glHint( GL.GL_POLYGON_SMOOTH_HINT , GL.GL_NICEST );
-		gl.glShadeModel( GL.GL_SMOOTH );
+// @FIXME Disable explicit smoothing options for now. This causes extremely slow rendering on some machines. Should we set smoothing based on hardware capabilities?
+//		/* Set smoothing. */
+//		glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+//		glWrapper.setBlend( true );
+//		gl.glEnable( GL.GL_LINE_SMOOTH ); //enable smooth lines
+//		gl.glHint( GL.GL_LINE_SMOOTH_HINT , GL.GL_NICEST );
+//		gl.glEnable( GL.GL_POLYGON_SMOOTH ); //enable smooth polygons
+//		gl.glHint( GL.GL_POLYGON_SMOOTH_HINT , GL.GL_NICEST );
+//		gl.glShadeModel( GL.GL_SMOOTH );
 
 		/* Initial clear. */
 		glWrapper.glClearColor( _viewComponent.getBackground() );
