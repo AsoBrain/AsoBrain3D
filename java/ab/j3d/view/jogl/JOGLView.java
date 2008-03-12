@@ -208,7 +208,14 @@ public class JOGLView
 					System.out.println( "Vendor:     " + gl.glGetString( GL.GL_VENDOR                   ) );
 					System.out.println( "Extensions: " + gl.glGetString( GL.GL_EXTENSIONS               ) );
 					System.out.println( "Renderer:   " + gl.glGetString( GL.GL_RENDERER                 ) );
-					System.out.println( "Shaders:    " + gl.glGetString( GL.GL_SHADING_LANGUAGE_VERSION ) );
+					try
+					{
+						System.out.println( "Shaders:    " + gl.glGetString( GL.GL_SHADING_LANGUAGE_VERSION ) );
+					}
+					catch ( Exception e )
+					{
+						System.out.println( "Shaders:    n/a" );
+					}
 					System.out.println();
 
 					glAutoDrawable.setGL( new DebugGL( gl ) );
