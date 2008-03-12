@@ -201,7 +201,7 @@ public class JOGLView
 				{
 					final GL gl = glAutoDrawable.getGL();
 
-					System.out.println( "" );
+					System.out.println();
 					System.out.println( " About OpenGL:" );
 					System.out.println( "---------------" );
 					System.out.println( "Version:    " + gl.glGetString( GL.GL_VERSION                  ) );
@@ -209,7 +209,7 @@ public class JOGLView
 					System.out.println( "Extensions: " + gl.glGetString( GL.GL_EXTENSIONS               ) );
 					System.out.println( "Renderer:   " + gl.glGetString( GL.GL_RENDERER                 ) );
 					System.out.println( "Shaders:    " + gl.glGetString( GL.GL_SHADING_LANGUAGE_VERSION ) );
-					System.out.println( "" );
+					System.out.println();
 
 					glAutoDrawable.setGL( new DebugGL( gl ) );
 					_glWrapper = new GLWrapper( gl );
