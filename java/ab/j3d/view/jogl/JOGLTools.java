@@ -438,7 +438,7 @@ public class JOGLTools
 		final int vertexCount = face.getVertexCount();
 		if ( vertexCount >= 2 )
 		{
-			final Texture texture    = !useTexture ? null : getColorMapTexture( face , textureCache );
+			final Texture texture    = !useTexture ? null : getColorMapTexture( glWrapper.getGL() , face , textureCache );
 			final boolean hasTexture = ( texture != null ); //if a texture has been loaded
 			final float[] textureU   = hasTexture ? face.getTextureU() : null;
 			final float[] textureV   = hasTexture ? face.getTextureV() : null;
@@ -561,13 +561,14 @@ public class JOGLTools
 	/**
 	 * Get {@link Texture} for color map of {@link Face3D}.
 	 *
-	 * @param face          Face whose color map texture to return.
-	 * @param textureCache  Texture cache.
+	 * @param   gl              OpenGL context.
+	 * @param   face            Face whose color map texture to return.
+	 * @param   textureCache    Texture cache.
 	 *
 	 * @return Color map texture; <code>null</code> if face has no color map or no
 	 *         texture coordinates.
 	 */
-	public static Texture getColorMapTexture( final Face3D face , final Map<String,SoftReference<Texture>> textureCache  )
+	public static Texture getColorMapTexture( final GL gl , final Face3D face , final Map<String,SoftReference<Texture>> textureCache  )
 	{
 		final Texture result;
 
@@ -575,7 +576,7 @@ public class JOGLTools
 
 		if ( ( material != null ) && ( material.colorMap != null ) && ( face.getTextureU() != null ) && ( face .getTextureV() != null ) )
 		{
-			result = getTexture( material , textureCache );
+			result = getTexture( gl , material , textureCache );
 		}
 		else
 		{
@@ -587,13 +588,14 @@ public class JOGLTools
 	/**
 	 * Get {@link Texture} for the specified map.
 	 *
-	 * @param   material      {@link Material} to get texture for.
-	 * @param   textureCache  Map containing the {@link SoftReference}s to the cached textures.
+	 * @param   gl              OpenGL context.
+	 * @param   material        {@link Material} to get texture for.
+	 * @param   textureCache    Map containing the {@link SoftReference}s to the cached textures.
 	 *
 	 * @return  Texture for the specified name; <code>null</code> if the name was
 	 *          empty or no map by the given name was found.
 	 */
-	public static Texture getTexture( final Material material , final Map<String,SoftReference<Texture>> textureCache )
+	public static Texture getTexture( final GL gl , final Material material , final Map<String,SoftReference<Texture>> textureCache )
 	{
 		Texture result = null;
 
@@ -609,22 +611,30 @@ public class JOGLTools
 					final BufferedImage bufferedImage = material.getColorMapImage( false );
 					if ( bufferedImage != null )
 					{
-						result = TextureIO.newTexture( ( bufferedImage ) , true );
+						final boolean autoMipmapGeneration = ( ( gl.isExtensionAvailable( "GL_VERSION_1_4"          ) )
+						                                    || ( gl.isExtensionAvailable( "GL_SGIS_generate_mipmap" ) ) ); // @TODO Also check Power Of Two??
+
+						System.out.println( "MipMap: " + ( autoMipmapGeneration ? "enabled" : "disabled" ) );
+
+						result = TextureIO.newTexture( ( bufferedImage ) , autoMipmapGeneration );
 						result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
 						result.setTexParameteri( GL.GL_TEXTURE_WRAP_R , GL.GL_REPEAT );
 						result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
 
-						/**
-						 * Set generate mipmaps to true, this greatly increases performance and viewing pleasure in big scenes.
-						 * @TODO need to find out if generated mipmaps are faster or if pregenerated mipmaps are faster
-						 */
-						result.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
+						if ( autoMipmapGeneration )
+						{
+							/**
+							 * Set generate mipmaps to true, this greatly increases performance and viewing pleasure in big scenes.
+							 * @TODO need to find out if generated mipmaps are faster or if pregenerated mipmaps are faster
+							 */
+							result.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
 
-						/** Set texture magnification to linear to support mipmaps. */
-						result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
+							/** Set texture magnification to linear to support mipmaps. */
+							result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
 
-						/** Set texture minification to linear_mipmap)_nearest to support mipmaps */
-						result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
+							/** Set texture minification to linear_mipmap)_nearest to support mipmaps */
+							result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
+						}
 					}
 					reference = ( result != null ) ? new SoftReference<Texture>( result ) : null ;
 					textureCache.put( material.colorMap , reference );
