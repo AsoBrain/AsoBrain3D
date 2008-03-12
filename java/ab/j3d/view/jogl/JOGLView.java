@@ -199,8 +199,20 @@ public class JOGLView
 
 			public void init( final GLAutoDrawable glAutoDrawable )
 				{
-					glAutoDrawable.setGL( new DebugGL( glAutoDrawable.getGL() ) );
-					_glWrapper = new GLWrapper( glAutoDrawable.getGL() );
+					final GL gl = glAutoDrawable.getGL();
+
+					System.out.println( "" );
+					System.out.println( " About OpenGL:" );
+					System.out.println( "---------------" );
+					System.out.println( "Version:    " + gl.glGetString( GL.GL_VERSION                  ) );
+					System.out.println( "Vendor:     " + gl.glGetString( GL.GL_VENDOR                   ) );
+					System.out.println( "Extensions: " + gl.glGetString( GL.GL_EXTENSIONS               ) );
+					System.out.println( "Renderer:   " + gl.glGetString( GL.GL_RENDERER                 ) );
+					System.out.println( "Shaders:    " + gl.glGetString( GL.GL_SHADING_LANGUAGE_VERSION ) );
+					System.out.println( "" );
+
+					glAutoDrawable.setGL( new DebugGL( gl ) );
+					_glWrapper = new GLWrapper( gl );
 					initGL( _glWrapper );
 					final Overlay overlay = new Overlay( glAutoDrawable );
 					_j2d = new JOGLGraphics2D( overlay.createGraphics() , glAutoDrawable );
