@@ -3120,4 +3120,34 @@ public final class Polyline2D
 
 		return result;
 	}
+
+	public boolean equals( final Object obj )
+	{
+		boolean result = false;
+
+		if ( obj == this )
+		{
+			result = true;
+		}
+		else if ( obj instanceof Polyline2D )
+		{
+			final Polyline2D other = (Polyline2D)obj;
+
+			if ( getPointCount() == other.getPointCount() )
+			{
+				result = true;
+
+				for ( int i = 0 ; result && i < _points.size() ; i++ )
+				{
+					final PolyPoint2D thisPoint  = getPoint( i );
+					final PolyPoint2D otherPoint = other.getPoint( i );
+
+					if ( !thisPoint.equals( otherPoint ) )
+						result = false;
+				}
+			}
+		}
+
+		return result;
+	}
 }
