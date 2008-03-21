@@ -398,15 +398,18 @@ public final class Painter
 
 		g.translate( -0.5 , -0.5 ); // Match rounding used in other paint methods.
 
-		if ( MathTools.almostEqual( viewBase.zz , 0.0 ) )
+		if ( ( object.extrusion.x != 0.0 ) || ( object.extrusion.y != 0.0 ) )
+		{
+			result = false;
+		}
+		else if ( MathTools.almostEqual( viewBase.zz , 0.0 ) )
 		{
 			final Rectangle2D bounds = shape.getBounds2D();
-			final double      dz     = object.extrusion.length();
 
 			final Matrix3D object2graphics = viewBase.multiply( gTransform );
 
 			final Vector3D v1 = object2graphics.multiply( bounds.getMinX() , bounds.getMinY() , 0.0 );
-			final Vector3D v2 = object2graphics.multiply( bounds.getMaxX() , bounds.getMaxY() , dz  );
+			final Vector3D v2 = object2graphics.multiply( bounds.getMaxX() , bounds.getMaxY() , object.extrusion.z  );
 
 			final double minX = Math.min( v1.x, v2.x );
 			final double minY = Math.min( v1.y, v2.y );
