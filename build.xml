@@ -12,9 +12,9 @@
     <delete dir="lib"/>
   </target>
 
-  <target name="compile" depends="compile-java" description="Compile everything"/>
+  <target name="compile" depends="compile-java,compile-tests" description="Compile everything"/>
 
-  <target name="dist" depends="dist-java" description="Generate distribution files"/>
+  <target name="dist" depends="compile,dist-java" description="Generate distribution files"/>
 
   <target name="init">
     <tstamp/>
