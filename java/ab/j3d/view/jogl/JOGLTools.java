@@ -30,6 +30,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Map;
 import javax.media.opengl.GL;
+import javax.media.opengl.GLException;
 
 import com.sun.opengl.util.BufferUtil;
 import com.sun.opengl.util.texture.Texture;
@@ -617,23 +618,48 @@ public class JOGLTools
 						System.out.println( "MipMap: " + ( autoMipmapGeneration ? "enabled" : "disabled" ) );
 
 						result = TextureIO.newTexture( ( bufferedImage ) , autoMipmapGeneration );
-						result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
-						result.setTexParameteri( GL.GL_TEXTURE_WRAP_R , GL.GL_REPEAT );
-						result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
+
+						try
+						{
+							result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
+							result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
+							result.setTexParameteri( GL.GL_TEXTURE_WRAP_R , GL.GL_REPEAT );
+						}
+						catch ( GLException e )
+						{
+							/*
+							 * If setting texture parameters fails, it's no
+							 * severe problem. Catch any exception so the view
+							 * doesn't crash.
+							 */
+							e.printStackTrace();
+						}
 
 						if ( autoMipmapGeneration )
 						{
-							/**
-							 * Set generate mipmaps to true, this greatly increases performance and viewing pleasure in big scenes.
-							 * @TODO need to find out if generated mipmaps are faster or if pregenerated mipmaps are faster
-							 */
-							result.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
+							try
+							{
+								/**
+								 * Set generate mipmaps to true, this greatly increases performance and viewing pleasure in big scenes.
+								 * @TODO need to find out if generated mipmaps are faster or if pregenerated mipmaps are faster
+								 */
+								result.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
 
-							/** Set texture magnification to linear to support mipmaps. */
-							result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
+								/** Set texture magnification to linear to support mipmaps. */
+								result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
 
-							/** Set texture minification to linear_mipmap)_nearest to support mipmaps */
-							result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
+								/** Set texture minification to linear_mipmap)_nearest to support mipmaps */
+								result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
+							}
+							catch ( GLException e )
+							{
+								/*
+								 * If setting texture parameters fails, it's no
+								 * severe problem. Catch any exception so the view
+								 * doesn't crash.
+								 */
+								e.printStackTrace();
+							}
 						}
 					}
 					reference = ( result != null ) ? new SoftReference<Texture>( result ) : null ;
