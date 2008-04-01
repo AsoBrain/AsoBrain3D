@@ -45,7 +45,7 @@ import ab.j3d.view.ViewModelView;
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public final class FromToCameraControl
+public class FromToCameraControl
 	extends CameraControl
 {
 	/**
