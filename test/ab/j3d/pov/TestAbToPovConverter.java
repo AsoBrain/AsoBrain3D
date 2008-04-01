@@ -1086,9 +1086,12 @@ public final class TestAbToPovConverter
 	}
 
 	/**
-	 * Write the whole testscene to a POV-Ray file.
+	 * Write the whole test scene to a POV-Ray file.
+	 *
+	 * @throws  IOException if the scene could not be written.
 	 */
 	public static void writeToFile()
+		throws IOException
 	{
 		final AbPovTestModel testModel = new AbPovTestModel();
 		final ViewModel      viewModel = testModel.getModel();
