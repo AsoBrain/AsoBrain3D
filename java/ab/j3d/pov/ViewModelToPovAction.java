@@ -29,6 +29,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -203,7 +204,14 @@ public final class ViewModelToPovAction
 			/*
 			 * Render the povscene to an image and place the image on the image panel.
 			 */
-			image = scene.render( viewWidth , viewHeight , progressModel , logWriter , true );
+			try
+			{
+				image = scene.render( null , viewWidth , viewHeight , progressModel , logWriter , true );
+			}
+			catch ( IOException e )
+			{
+				System.err.println( e );
+			}
 		}
 		finally
 		{
