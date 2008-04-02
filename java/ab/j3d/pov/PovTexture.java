@@ -339,11 +339,11 @@ public class PovTexture
 	public PovTexture( final String textureDirectory , final Material material )
 	{
 		this( getNameForMaterial( material ) ,
-		      new PovVector( new Color( material.getARGB() ) ) , null ,
+		      new PovVector( (double)material.diffuseColorRed , (double)material.diffuseColorGreen, (double)material.diffuseColorBlue ) , null ,
 		      ( material.colorMap != null ) ? ( textureDirectory != null ) ? textureDirectory + '/' + material.colorMap : material.colorMap : null );
 
-		setAmbient( new PovVector( (double)material.ambientColorRed, (double)material.ambientColorGreen, (double)material.ambientColorBlue ) );
-		setDiffuse( material.getDiffuseReflectivity() );
+		setAmbient( new PovVector( (double)( material.ambientColorRed / material.diffuseColorRed ) , (double)( material.ambientColorGreen / material.diffuseColorGreen ) , (double)( material.ambientColorBlue / material.diffuseColorBlue ) ) );
+		setDiffuse( 1.0 );
 		setFilter( 1.0 - (double)material.diffuseColorAlpha );
 		setPhong( material.getSpecularReflectivity() );
 		setPhongSize( (double)material.shininess );
