@@ -61,70 +61,82 @@ public final class PovLight
 	private boolean _castShadows;
 
 	/**
-	 * Light is a spot light.
+	 * Indicates whether the light is a spotlight, i.e. a light which casts a
+	 * cone of light that is bright in the center and falls of to darkness in a
+	 * soft fringe effect at the edge.
 	 */
-	public boolean _spotlight;
+	private boolean _spotlight;
 
 	/**
-	 * Target point of the spot ligt.
+	 * Spotlight parameter, which tells the spotlight to point at a particular 3D
+	 * coordinate. A line from the location of the spotlight to the 'pointAt'
+	 * coordinate forms the center line of the cone of light.
 	 */
 	private PovVector _pointAt;
 
 	/**
-	 * Fall-off distance.
+	 * Spotlight parameter, which specifies the overall size of the cone of
+	 * light. This is the point where the light falls off to zero intensity. The
+	 * float value you specify is the angle, in degrees, between the edge of the
+	 * cone and center line.
 	 */
 	private double _falloff;
 
 	/**
-	 * Spot light parameter.
-	 *
-	 * @FIXME need description
+	 * Spotlight parameter, which specifies the size of the "hot-spot" at the
+	 * center of the cone of light. The "hot-spot" is a brighter cone of light
+	 * inside the spotlight cone and has the same center line. The radius value
+	 * specifies the angle, in degrees, between the edge of this bright, inner
+	 * cone and the center line. The light inside the inner cone is of uniform
+	 * intensity. The light between the inner and outer cones tapers off to
+	 * zero.
 	 */
-	private double _hotspot;
+	private double _radius;
 
 	/**
-	 * Spot light parameter.
-	 *
-	 * @FIXME need description
+	 * The tightness of a spotlight specifies an additional exponential
+	 * softening of the edges. A value other than 0, will affect light within
+	 * the radius cone as well as light in the falloff cone. The intensity of
+	 * light at an angle from the center line is given by: <code>intensity *
+	 * cos(angle)tightness</code>. The default value for tightness is 0. Lower
+	 * tightness values will make the spotlight brighter, making the spot wider
+	 * and the edges sharper. Higher values will dim the spotlight, making the
+	 * spot tighter and the edges softer. Values from 0 to 100 are acceptable.
 	 */
 	private double _tightness;
 
 	/**
-	 * Adaptive parameter of spotlight.
-	 */
-	private double _adaptive;
-
-	/**
-	 * Light parameter.
-	 *
-	 * @FIXME need description
+	 * Area light parameter that, when enabled, causes the positions of point
+	 * lights in the array to be randomly jittered to eliminate any shadow
+	 * banding that may occur. The jittering is completely random from render to
+	 * render and should not be used when generating animations.
 	 */
 	private boolean _jitter;
 
 	/**
 	 * Light is an area light to soften shadows.
 	 */
-	public boolean _arealight;
+	private boolean _arealight;
 
 	/**
 	 * Horizontal range vector of area array.
 	 */
-	public PovVector _areaHorSize;
+	private PovVector _areaHorSize;
 
 	/**
 	 * Vertical range vector of  area array.
 	 */
-	public PovVector _areaVerSize;
+	private PovVector _areaVerSize;
 
 	/**
 	 * Number of horizontal lights.
 	 */
-	public double _areaHorCount;
+	private int _areaHorCount;
 
 	/**
 	 * Number of vertical lights.
 	 */
-	public double _areaVerCount;
+	private int _areaVerCount;
 
 	/**
 	 * Distance at which the light reaches its specified intensity.
@@ -153,18 +165,19 @@ public final class PovLight
 		_location     = new PovVector( x , y , z );
 		_color        = color;
 		_castShadows  = castShadows;
+
 		_spotlight    = false;
 		_pointAt      = new PovVector( 0.0 , 0.0 , 0.0 );
-		_falloff      = 200000.0;
-		_hotspot      = -1.0;
-		_tightness    = 1.0;
-		_adaptive     = 1.0;
-		_jitter       = false;
+		_radius       = 30.0;
+		_falloff      = 45.0;
+		_tightness    =  0.0;
+
 		_arealight    = false;
 		_areaHorSize  = null;
 		_areaVerSize  = null;
-		_areaHorCount = 1.0;
-		_areaVerCount = 1.0;
+		_areaHorCount = 1;
+		_areaVerCount = 1;
+		_jitter       = false;
 	}
 
 	/**
@@ -175,7 +188,7 @@ public final class PovLight
 	 * @param   verSize     Vertical range vector of  area array.
 	 * @param   verCount    Number of vertical lights.
 	 */
-	public void makeArea( final PovVector horSize , final double horCount , final PovVector verSize , final double verCount )
+	public void makeArea( final PovVector horSize , final int horCount , final PovVector verSize , final int verCount )
 	{
 		_arealight    = true;
 		_areaHorSize  = horSize;
@@ -185,32 +198,96 @@ public final class PovLight
 	}
 
 	/**
-	 * Same as above constructor, but now jitter can be set also.
-	 *
-	 * @param   horSize     Horizontal range vector of area array.
-	 * @param   horCount    Number of horizontal lights.
-	 * @param   verSize     Vertical range vector of  area array.
-	 * @param   verCount    Number of vertical lights.
+	 * Returns whether the positions of point lights that make up an area light
+	 * are randomly jittered to eliminate any shadow banding that may occur.
+
+	 * @return  <code>true</code> if jittering is enabled;
+	 *          <code>false</code> otherwise.
 	 */
-	public void makeArea( final PovVector horSize , final double horCount , final PovVector verSize , final double verCount , final boolean jitter )
+	public boolean isJitter()
 	{
-		makeArea( horSize , horCount , verSize , verCount );
+		return _jitter;
+	}
+
+	/**
+	 * Sets whether the positions of point lights that make up an area light are
+	 * randomly jittered to eliminate any shadow banding that may occur. The
+	 * jittering is completely random from render to render and should not be
+	 * used when generating animations.
+
+	 * @param   jitter  <code>true</code> to enabled jittering;
+	 *                  <code>false</code> otherwise.
+	 */
+	public void setJitter( final boolean jitter )
+	{
 		_jitter = jitter;
 	}
 
 	/**
-	 * Make the light a spot light.
+	 * Convenience method to set common spotlight properties.
 	 *
 	 * @param   target      Target point of the spot.
-	 * @param   falloff     Fall-off distance.
-	 * @param   adaptive    Adaptive parameter of spotlight.
+	 * @param   radius      Angle between the center line and the outer edge of
+	 *                      the light's "hot-spot", in degrees.
+	 * @param   falloff     Angle between the center line and the outer edge of
+	 *                      the cone of light, in degrees.
+	 *
+	 * @throws  NullPointerException if target is <code>null</code>.
+	 * @throws  IllegalArgumentException if <code>radius</code> or
+	 *          <code>falloff</code> is outside of the valid range from 0.0 to
+	 *          180.0 (inclusive), or if <code>falloff < radius</code>.
 	 */
-	public void makeSpot( final PovVector target , final double falloff , final double adaptive )
+	public void makeSpot( final PovVector target , final double radius , final double falloff )
 	{
+		if ( target == null )
+			throw new NullPointerException( "target" );
+		if ( ( radius < 0.0 ) || ( radius > 180.0 ) )
+			throw new IllegalArgumentException( "radius" );
+		if ( ( falloff < radius ) || ( falloff > 180.0 ) )
+			throw new IllegalArgumentException( "falloff" );
+
 		_spotlight = true;
 		_pointAt   = target;
 		_falloff   = falloff;
-		_adaptive  = adaptive;
+		_radius    = radius;
+	}
+
+	/**
+	 * Returns the the tightness of a spotlight, which specifies an additional
+	 * exponential softening of the edges.
+	 *
+	 * @return  Tightness of the spotlight.
+	 */
+	public double getTightness()
+	{
+		return _tightness;
+	}
+
+	/**
+	 * Sets the the tightness of a spotlight, which specifies an additional
+	 * exponential softening of the edges. If the light isn't a spotlight, this
+	 * parameter has no effect.
+	 *
+	 * <p>
+	 * A value other than 0, will affect light within the radius cone as well as
+	 * light in the falloff cone. The intensity of light at an angle from the
+	 * center line is given by: <code>intensity * cos(angle)tightness</code>.
+	 * The default value for tightness is 0. Lower tightness values will make
+	 * the spotlight brighter, making the spot wider and the edges sharper.
+	 * Higher values will dim the spotlight, making the spot tighter and the
+	 * edges softer. Values from 0 to 100 are acceptable.
+	 *
+	 * @param   tightness   Tightness of the spotlight.
+	 *
+	 * @throws  IllegalArgumentException if the given tightness falls outside of
+	 *          the allowed range from 0 to 100 (inclusive).
+	 */
+	public void setTightness( final double tightness )
+	{
+		if ( ( tightness < 0.0 ) || ( tightness > 100.0 ) )
+			throw new IllegalArgumentException( "tightness" );
+
+		_tightness = tightness;
 	}
 
 	public void write( final IndentingWriter out )
@@ -247,27 +324,26 @@ public final class PovLight
 			_pointAt.write( out );
 			out.newLine();
 
-			if ( _hotspot != -1.0 )
+			if ( _radius != 30.0 )
 			{
-				out.write( "hotspot " );
-				out.write( format( _hotspot ) );
+				out.write( "radius " );
+				out.write( format( _radius ) );
 				out.newLine();
 			}
 
-			if ( _falloff != -1.0 )
+			if ( _falloff != 45.0 )
 			{
 				out.write( "falloff " );
 				out.write( format( _falloff ) );
 				out.newLine();
 			}
 
-			out.write( "adaptive " );
-			out.write( format( _adaptive ) );
-			out.newLine();
-
-			out.write( "tightness " );
-			out.write( format( _tightness ) );
-			out.newLine();
+			if ( _tightness != 0.0 )
+			{
+				out.write( "tightness " );
+				out.write( format( _tightness ) );
+				out.newLine();
+			}
 
 			if ( _jitter )
 			{
@@ -279,11 +355,11 @@ public final class PovLight
 		{
 			out.write( "area_light " );
 			_areaHorSize.write( out );
-			out.write( ", " );
+			out.write( " , " );
 			_areaVerSize.write( out );
-			out.write( ", " );
+			out.write( " , " );
 			out.write( format( _areaHorCount ) );
-			out.write( ", " );
+			out.write( " , " );
 			out.write( format( _areaVerCount ) );
 			out.newLine();
 
