@@ -27,9 +27,9 @@ import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -201,12 +201,24 @@ public final class ViewModelToPovAction
 			final PovScene scene = converter.convert( _viewModel.getScene() );
 			scene.add( AbToPovConverter.convertCamera3D( cameraTransform , camera , aspectRatio ) );
 
+			scene.removeLights();
+			{
+				final PovLight povLight = new PovLight( "light" , 5000.0 , -10000.0 , 5000.0 , new PovVector( 0.7 , 0.7 , 0.7 ) , true );
+				povLight.makeArea( new PovVector( 2000.0 , 0.0 , 0.0 ) , 3 , new PovVector( 0.0 , 0.0 , 2000.0 ) , 3 );
+				povLight.setJitter( true );
+				povLight.makeSpot( new PovVector( 0.0 , 0.0 , 0.0 ) , 10.0 , 15.0 );
+				scene.add( povLight );
+			}
+
+			scene.setRadiosity( true );
+			scene.setBackground( new PovVector( 0.5 , 0.5 , 0.5 ) );
+
 			/*
 			 * Render the povscene to an image and place the image on the image panel.
 			 */
 			try
 			{
-				image = scene.render( null , viewWidth , viewHeight , progressModel , logWriter , true );
+				image = scene.render( null , viewWidth , viewHeight , progressModel , logWriter , false );
 			}
 			catch ( IOException e )
 			{
