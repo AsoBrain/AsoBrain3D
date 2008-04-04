@@ -34,6 +34,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -78,6 +79,11 @@ public class PovScene
 	private Map<String,PovGeometry> _declaredShapes = new HashMap<String,PovGeometry>();
 
 	/**
+	 * Background color of the scene.
+	 */
+	private PovVector _background = new PovVector( Color.BLACK );
+
+	/**
 	 * Ambient light in the scene.
 	 */
 	private PovVector _ambientLight = new PovVector( Color.BLACK );
@@ -86,6 +92,20 @@ public class PovScene
 	 * Assumed gamma level.
 	 */
 	private double _assumedGamma = 2.2;
+
+	/**
+	 * Indicates whether radiosity is enabled.
+	 */
+	private boolean _radiosity = false;
+
+	/**
+	 * Changes the intensity of radiosity effects. A value of <code>0.0</code>
+	 * would be the same as without radiosity. The default value,
+	 * <code>1.0</code> should work correctly in most cases. If effects are too
+	 * strong you can reduce this. Larger values lead to quite strange results
+	 * in most cases.
+	 */
+	private double _radiosityBrightness = 1.0;
 
 	/**
 	 * Get indenting writer from the specified writer. If the specified writer
@@ -165,6 +185,26 @@ public class PovScene
 	}
 
 	/**
+	 * Returns the background color of the scene.
+	 *
+	 * @return  Background color.
+	 */
+	public PovVector getBackground()
+	{
+		return _background;
+	}
+
+	/**
+	 * Sets the background color of the scene.
+	 *
+	 * @param   background  Background color to be set.
+	 */
+	public void setBackground( final PovVector background )
+	{
+		_background = background;
+	}
+
+	/**
 	 * Returns the scene's ambient light intensity.
 	 *
 	 * @return  Ambient light.
@@ -202,6 +242,61 @@ public class PovScene
 	public final void setAssumedGamma( final double assumedGamma )
 	{
 		_assumedGamma = assumedGamma;
+	}
+
+	/**
+	 * Returns whether radiosity is enabled.
+	 *
+	 * @return  <code>true</code> if radiosity is enabled;
+	 *          <code>false</code> otherwise.
+	 */
+	public boolean isRadiosity()
+	{
+		return _radiosity;
+	}
+
+	/**
+	 * Sets whether radiosity is enabled.
+	 *
+	 * @param   radiosity   <code>true</code> to enable radiosity;
+	 *                      <code>false</code> to disable radiosity.
+	 */
+	public void setRadiosity( final boolean radiosity )
+	{
+		_radiosity = radiosity;
+	}
+
+	/**
+	 * Returns the value that specifies the intensity of radiosity effects.
+	 *
+	 * @return  Brightness of radiosity effects.
+	 */
+	public double getRadiosityBrightness()
+	{
+		return _radiosityBrightness;
+	}
+
+	/**
+	 * Sets the value that specifies the intensity of radiosity effects.
+	 *
+	 * <p>
+	 * A value of <code>0.0</code> would be the same as without radiosity. The
+	 * default value, <code>1.0</code> should work correctly in most cases. If
+	 * effects are too strong you can reduce this. Larger values lead to quite
+	 * strange results in most cases.
+
+	 * @param   radiosityBrightness     Brightness to be set.
+	 *
+	 * @throws  IllegalArgumentException if <code>radiosityBrightness < 0.0</code>.
+	 */
+	public void setRadiosityBrightness( final double radiosityBrightness )
+	{
+		if ( radiosityBrightness < 0.0 )
+		{
+			throw new IllegalArgumentException( "radiosityBrightness" );
+		}
+
+		_radiosityBrightness = radiosityBrightness;
 	}
 
 	/**
@@ -494,12 +589,13 @@ public class PovScene
 		//System.out.println( "WRITING POV FILE" );
 
 		writeFileHeader( iw );
+		writeAtmosphericEffects( iw );
 		writeGlobalSettings( iw );
-		writeCameras( iw, geometry );
-		writeLights( iw, geometry );
+		writeCameras( iw , geometry );
+		writeLights( iw , geometry );
 		writeTextureDefs( iw );
 		writeDeclaredShapes( iw );
-		writeGeometry( iw, geometry );
+		writeGeometry( iw , geometry );
 	}
 
 	protected static void writeFileHeader( final IndentingWriter out )
@@ -513,18 +609,48 @@ public class PovScene
 		out.newLine();
 	}
 
+	protected void writeAtmosphericEffects( final IndentingWriter out )
+		throws IOException
+	{
+		if ( _background != null )
+		{
+			out.writeln( "background" );
+			out.writeln( "{" );
+			out.indentIn();
+			out.write( "rgb " );
+			_background.write( out );
+			out.newLine();
+			out.indentOut();
+			out.writeln( "}" );
+		}
+	}
+
 	protected void writeGlobalSettings( final IndentingWriter out )
 		throws IOException
 	{
 		out.writeln( "global_settings" );
 		out.writeln( "{" );
 		out.indentIn();
+
 		out.write( "ambient_light rgb " );
 		_ambientLight.write( out );
 		out.newLine();
 		out.write( "assumed_gamma " );
-		out.write( PovObject.format( getAssumedGamma() ) );
-		out.newLine();
+		out.writeln( PovObject.format( getAssumedGamma() ) );
+
+		if ( _radiosity )
+		{
+			out.writeln( "radiosity" );
+			out.writeln( "{" );
+			out.indentIn();
+
+			out.write( "brightness " );
+			out.writeln( String.valueOf( _radiosityBrightness ) );
+
+			out.indentOut();
+			out.writeln( "}" );
+		}
+
 		out.indentOut();
 		out.writeln( "}" );
 
@@ -572,7 +698,7 @@ public class PovScene
 		if ( !textures.isEmpty() )
 		{
 			final Set<String> textureKeySet = textures.keySet();
-			final Object[]    textureKeys   = textureKeySet.toArray();
+			final String[]    textureKeys   = textureKeySet.toArray( new String[ textureKeySet.size() ] );
 
 			Arrays.sort( textureKeys );
 
@@ -580,7 +706,7 @@ public class PovScene
 			out.writeln( " * Texture definitions" );
 			out.writeln( " */" );
 
-			for ( final Object key : textureKeys )
+			for ( final String key : textureKeys )
 			{
 				final PovTexture texture = textures.get( key );
 
@@ -642,14 +768,29 @@ public class PovScene
 			//System.out.print( "Writing geometry : " );
 			for ( final PovGeometry geom : geometry )
 			{
-				if ( !( geom instanceof PovLight )
-				     && !( geom instanceof PovCamera ) )
+				if ( !( geom instanceof PovLight  ) &&
+				     !( geom instanceof PovCamera ) )
 				{
 					geom.write( out );
 					out.newLine();
 				}
 			}
 			//System.out.println( "" );
+		}
+	}
+
+	/**
+	 * Removes all lights from the scene.
+	 */
+	public void removeLights()
+	{
+		for ( final Iterator<PovGeometry> i = _geometry.iterator() ; i.hasNext() ; )
+		{
+			final PovGeometry geometry = i.next();
+			if ( geometry instanceof PovLight )
+			{
+				i.remove();
+			}
 		}
 	}
 }
