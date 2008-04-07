@@ -22,6 +22,7 @@ package ab.j3d.view;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import javax.swing.Action;
@@ -138,9 +139,30 @@ public abstract class ViewModel
 	protected final double _unit;
 
 	/**
+	 * Shared listener for node updates.
+	 */
+	private final ViewModelNodeUpdateListener _viewModelNodeUpdateListener = new ViewModelNodeUpdateListener()
+		{
+			public void contentsUpdated( final ViewModelNodeUpdateEvent event )
+			{
+				updateNodeContent( (ViewModelNode)event.getSource() );
+			}
+
+			public void renderingPropertiesUpdated( final ViewModelNodeUpdateEvent event )
+			{
+				updateViews();
+			}
+
+			public void transformUpdated( final ViewModelNodeUpdateEvent event )
+			{
+				updateNodeTransform( (ViewModelNode)event.getSource() );
+			}
+		};
+
+	/**
 	 * Shared control / overlay painter for view nodes.
 	 */
-	private final ViewModelNodeControl _viewModelNodeControl;
+	private final ViewModelNodeControl _viewModelNodeControl = new ViewModelNodeControl( this );
 
 	/**
 	 * Construct new view model.
@@ -149,8 +171,7 @@ public abstract class ViewModel
 	 */
 	protected ViewModel( final double unit )
 	{
-		_unit                 = unit;
-		_viewModelNodeControl = new ViewModelNodeControl( this );
+		_unit = unit;
 	}
 
 	/**
@@ -180,6 +201,16 @@ public abstract class ViewModel
 		}
 
 		return result;
+	}
+
+	/**
+	 * Get all nodes in the model.
+	 *
+	 * @return  Unmodifiable list of nodes in the model.
+	 */
+	public final List<ViewModelNode> getNodes()
+	{
+		return Collections.unmodifiableList( _nodes );
 	}
 
 	/**
@@ -266,6 +297,7 @@ public abstract class ViewModel
 		if ( !_nodes.contains( node ) )
 		{
 			_nodes.add( node );
+			node.addViewModelNodeUpdateListener( _viewModelNodeUpdateListener );
 			updateViews();
 		}
 	}
@@ -312,7 +344,7 @@ public abstract class ViewModel
 
 		removeNode( id );
 
-		final ViewModelNode node = new ViewModelNode( this , id , transform , node3D , materialOverride , opacity );
+		final ViewModelNode node = new ViewModelNode( id , transform , node3D , materialOverride , opacity );
 		initializeNode( node );
 		addNode( node );
 	}
@@ -342,8 +374,12 @@ public abstract class ViewModel
 	public void removeNode( final Object id )
 	{
 		final ViewModelNode node = getNode( id );
-		if ( _nodes.remove( node ) )
+		if ( node != null )
+		{
+			node.removeViewModelNodeUpdateListener( _viewModelNodeUpdateListener );
+			_nodes.remove( node );
 			updateViews();
+		}
 	}
 
 	/**
