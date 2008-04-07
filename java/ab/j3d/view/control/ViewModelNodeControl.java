@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2007
+ * (C) Copyright Numdata BV 2004-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -44,10 +44,12 @@ import ab.j3d.view.control.planar.PlanarGraphics2D;
 import ab.j3d.view.control.planar.SubPlaneControl;
 
 /**
- * This class implements default controls for {@link ViewModelNode}s. It is
- * automatically attached to all {@link ViewModelView}s by {@link ViewModel}.
+ * This class implements the default control and overlay painter for
+ * {@link ViewModelNode}s. It is automatically attached to all
+ * {@link ViewModelView}s by {@link ViewModel}.
  *
  * @author  Jark Reijerink
+ * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
 public class ViewModelNodeControl
@@ -65,9 +67,9 @@ public class ViewModelNodeControl
 	private ViewModelNode _activeNode = null;
 
 	/**
-	 * Currently active drag behavior.
+	 * Currently active sub-plane control.
 	 */
-	private SubPlaneControl _activePlanarControl = null;
+	private SubPlaneControl _activeSubPlaneControl = null;
 
 	/**
 	 * Construct control that implements common view node behavior.
@@ -115,20 +117,20 @@ public class ViewModelNodeControl
 
 		for( final Face3DIntersection intersection : event.getIntersections() )
 		{
-			final ViewModelNode viewModelNode = _viewModel.getNode( intersection.getObjectID() );
-			if ( viewModelNode != null )
+			final ViewModelNode node = _viewModel.getNode( intersection.getObjectID() );
+			if ( node != null )
 			{
-				for ( final SubPlaneControl subPlaneControl : viewModelNode.getPlanarControls() )
+				for ( final SubPlaneControl subPlaneControl : node.getSubPlaneControls() )
 				{
 					if ( subPlaneControl.isEnabled() )
 					{
-						final Point2D dragPoint = getPlanarDragPoint( viewModelNode , subPlaneControl, event.getPointerRay() , true );
+						final Point2D dragPoint = getSubPlaneDragPoint( node , subPlaneControl, event.getPointerRay() , true );
 						if ( dragPoint != null )
 						{
-							_activeNode          = viewModelNode;
-							_activePlanarControl = subPlaneControl;
+							_activeNode            = node;
+							_activeSubPlaneControl = subPlaneControl;
 
-							subPlaneControl.mousePressed( event , viewModelNode , dragPoint.getX() , dragPoint.getY() );
+							subPlaneControl.mousePressed( event , node , dragPoint.getX() , dragPoint.getY() );
 							_viewModel.updateOverlay();
 
 							startCapture( event );
@@ -148,15 +150,15 @@ public class ViewModelNodeControl
 
 	public void mouseDragged( final ControlInputEvent event )
 	{
-		final ViewModelNode activeNode          = _activeNode;
-		final SubPlaneControl activePlanarControl = _activePlanarControl;
+		final ViewModelNode   activeNode            = _activeNode;
+		final SubPlaneControl activeSubPlaneControl = _activeSubPlaneControl;
 
-		if ( ( activeNode != null ) && ( activePlanarControl != null ) )
+		if ( ( activeNode != null ) && ( activeSubPlaneControl != null ) )
 		{
-			final Point2D dragPoint = getPlanarDragPoint( activeNode , activePlanarControl, event.getPointerRay() , false );
+			final Point2D dragPoint = getSubPlaneDragPoint( activeNode , activeSubPlaneControl, event.getPointerRay() , false );
 			if ( dragPoint != null )
 			{
-				activePlanarControl.mouseDragged( event , activeNode , dragPoint.getX() , dragPoint.getY() );
+				activeSubPlaneControl.mouseDragged( event , activeNode , dragPoint.getX() , dragPoint.getY() );
 				_viewModel.updateOverlay();
 			}
 		}
@@ -164,39 +166,39 @@ public class ViewModelNodeControl
 
 	public void mouseReleased( final ControlInputEvent event )
 	{
-		final ViewModelNode activeNode          = _activeNode;
-		final SubPlaneControl activePlanarControl = _activePlanarControl;
+		final ViewModelNode   activeNode            = _activeNode;
+		final SubPlaneControl activeSubPlaneControl = _activeSubPlaneControl;
 
-		if ( ( activeNode != null ) && ( activePlanarControl != null ) )
+		if ( ( activeNode != null ) && ( activeSubPlaneControl != null ) )
 		{
-			final Point2D dragPoint = getPlanarDragPoint( activeNode , activePlanarControl, event.getPointerRay() , false );
+			final Point2D dragPoint = getSubPlaneDragPoint( activeNode , activeSubPlaneControl, event.getPointerRay() , false );
 			if ( dragPoint != null )
 			{
-				activePlanarControl.mouseReleased( event , activeNode , dragPoint.getX() , dragPoint.getY() );
+				activeSubPlaneControl.mouseReleased( event , activeNode , dragPoint.getX() , dragPoint.getY() );
 				_viewModel.updateOverlay();
 			}
 		}
 
-		_activeNode          = null;
-		_activePlanarControl = null;
+		_activeNode            = null;
+		_activeSubPlaneControl = null;
 	}
 
 	public void paint( final ViewModelView view , final Graphics2D g2d )
 	{
-		final ViewModelNode dragNode      = _activeNode;
-		final SubPlaneControl planarControl = _activePlanarControl;
+		final ViewModelNode   activeNode            = _activeNode;
+		final SubPlaneControl activeSubPlaneControl = _activeSubPlaneControl;
 
-		if ( ( dragNode != null ) && ( planarControl != null ) )
+		if ( ( activeNode != null ) && ( activeSubPlaneControl != null ) )
 		{
-			final Matrix3D  node2wcs   = dragNode.getTransform();
-			final Matrix3D  plane2node = planarControl.getPlane2Node();
+			final Matrix3D  node2wcs   = activeNode.getTransform();
+			final Matrix3D  plane2node = activeSubPlaneControl.getPlane2Node();
 			final Matrix3D  plane2wcs  = plane2node.multiply( node2wcs );
 			final Matrix3D  wcs2view   = view.getViewTransform();
 			final Matrix3D  plane2view = plane2wcs.multiply( wcs2view );
 			final Projector projector  = view.getProjector();
 
 			final PlanarGraphics2D planarGraphics2D = new PlanarGraphics2D( g2d , plane2view , projector );
-			planarControl.paint( view , planarGraphics2D );
+			activeSubPlaneControl.paint( view , planarGraphics2D );
 		}
 	}
 
@@ -204,7 +206,7 @@ public class ViewModelNodeControl
 	 * Get point on 2D drag plane defined by a node's {@link SubPlaneControl}.
 	 *
 	 * @param   viewModelNode       Node whose behavior is used.
-	 * @param   planarControl        {@link SubPlaneControl} that defined the drag behavior.
+	 * @param   subPlaneControl     {@link SubPlaneControl} that defined the drag behavior.
 	 * @param   pointerRayWCS       Pointer ray to determine drag point.
 	 * @param   mustBeWithinBounds  If set, only return point if it falls within
 	 *                              the drag bounds.
@@ -212,14 +214,14 @@ public class ViewModelNodeControl
 	 * @return  Point on 2D drag plane;
 	 *          <code>null</code> if no drag point was found.
 	 */
-	public static Point2D getPlanarDragPoint( final ViewModelNode viewModelNode , final SubPlaneControl planarControl , final Ray3D pointerRayWCS , final boolean mustBeWithinBounds )
+	public static Point2D getSubPlaneDragPoint( final ViewModelNode viewModelNode , final SubPlaneControl subPlaneControl , final Ray3D pointerRayWCS , final boolean mustBeWithinBounds )
 	{
 		Point2D result = null;
 
-		final Matrix3D     plane2node   = planarControl.getPlane2Node();
+		final Matrix3D     plane2node   = subPlaneControl.getPlane2Node();
 		final Matrix3D     node2wcs     = viewModelNode.getTransform();
 		final Matrix3D     plane2wcs    = plane2node.multiply( node2wcs );
-		final BasicPlane3D dragPlaneWCS = new BasicPlane3D( plane2wcs , planarControl.isPlaneTwoSided() );
+		final BasicPlane3D dragPlaneWCS = new BasicPlane3D( plane2wcs , subPlaneControl.isPlaneTwoSided() );
 
 		final Vector3D intersectPointWCS = GeometryTools.getIntersectionBetweenRayAndPlane( dragPlaneWCS , pointerRayWCS );
 		if( intersectPointWCS != null )
@@ -229,7 +231,7 @@ public class ViewModelNodeControl
 			final double dragX = intersectionPointPlane.x;
 			final double dragY = intersectionPointPlane.y;
 
-			if ( !mustBeWithinBounds || ( ( dragX >= 0.0 ) && ( dragY >= 0.0 ) && ( dragX <= planarControl.getPlaneWidth() ) && ( dragY <= planarControl.getPlaneHeight() ) ) )
+			if ( !mustBeWithinBounds || ( ( dragX >= 0.0 ) && ( dragY >= 0.0 ) && ( dragX <= subPlaneControl.getPlaneWidth() ) && ( dragY <= subPlaneControl.getPlaneHeight() ) ) )
 			{
 				result = new Point2D.Double( dragX, dragY );
 			}
