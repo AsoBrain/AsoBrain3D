@@ -44,6 +44,14 @@ public interface PlaneControl
 	Matrix3D getNode2Plane();
 
 	/**
+	 * Test if the control is enabled.
+	 *
+	 * @return  <code>true</code> if the control is enabled;
+	 *          <code>false</code> otherwise.
+	 */
+	boolean isEnabled();
+
+	/**
 	 * Drag start event.
 	 *
 	 * @param   event           Event from control.
