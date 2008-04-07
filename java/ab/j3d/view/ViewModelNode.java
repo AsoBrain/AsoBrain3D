@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2007
+ * (C) Copyright Numdata BV 2004-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,11 +43,6 @@ import ab.j3d.view.control.planar.SubPlaneControl;
  */
 public final class ViewModelNode
 {
-	/**
-	 * List of listeners to notify about node events.
-	 */
-	private final ViewModel _listeners;
-
 	/**
 	 * Application-assigned ID of this node.
 	 */
@@ -100,23 +95,24 @@ public final class ViewModelNode
 	 */
 	private PlaneControl _planeControl = null;
 
-//	private final List<ViewModelNodeActionListener> _viewModelNodeActionListeners = new ArrayList();
+	/**
+	 * List of listeners to notify about node events.
+	 */
+	private final List<ViewModelNodeUpdateListener> _viewModelNodeUpdateListeners = new ArrayList<ViewModelNodeUpdateListener>();
 
 	/**
 	 * Construct new view model node. The <code>materialOverride</code> and
 	 * <code>opacity</code> values can be used to provide extra hints for
 	 * rendering objects.
 	 *
-	 * @param   listener            Listeners to notify about node events.
 	 * @param   id                  Application-assigned ID of this node.
 	 * @param   transform           Initial transform (<code>null</code> => identity).
 	 * @param   node3D              Root in the 3D scene.
 	 * @param   materialOverride    Material to use instead of actual materials.
 	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).
 	 */
-	public ViewModelNode( final ViewModel listener , final Object id , final Matrix3D transform , final Node3D node3D , final Material materialOverride , final float opacity )
+	public ViewModelNode( final Object id , final Matrix3D transform , final Node3D node3D , final Material materialOverride , final float opacity )
 	{
-		_listeners        = listener;
 		_id               = id;
 		_node3D           = node3D;
 		_materialOverride = materialOverride;
@@ -147,7 +143,7 @@ public final class ViewModelNode
 	public final Bounds3D getBounds()
 	{
 		Bounds3D result = _cachedBounds3d;
-		if ( _cachedBounds3d == null )
+		if ( result == null )
 		{
 			final Node3DCollection<Object3D> object3DNode3DCollection;
 			final Node3D node3D = getNode3D();
@@ -296,7 +292,7 @@ public final class ViewModelNode
 	 */
 	public boolean isClickable()
 	{
-		return hasContextActions() || hasPlanarControls() /*|| hasViewModelNodeActionListeners()*/;
+		return hasContextActions() || hasSubPlaneControls() /*|| hasViewModelNodeActionListeners()*/;
 	}
 
 	/**
@@ -350,69 +346,79 @@ public final class ViewModelNode
 	}
 
 	/**
-	 * Add a planar control.
+	 * Add a sub-plane control.
 	 *
-	 * @param   planarControl   Planar control to add.
+	 * @param   subPlaneControl     Sub-plane control to add.
 	 */
-	public void addPlanarControl( final SubPlaneControl planarControl )
+	public void addSubPlaneControl( final SubPlaneControl subPlaneControl )
 	{
-		_subPlaneControls.add( planarControl );
+		_subPlaneControls.add( subPlaneControl );
 	}
 
 	/**
-	 * Clear all planar controls.
+	 * Clear all sub-plane controls.
 	 */
-	public void clearPlanarControls()
+	public void clearSubPlaneControls()
 	{
 		_subPlaneControls.clear();
 	}
 
 	/**
-	 * Returns all the planarControls that apply to this viewModelNode as a
-	 * {@link List }.
+	 * Returns all the sub-plane controls.
 	 *
-	 * @return all planarControls
+	 * @return  Sub-plane controls.
 	 */
-	public List<SubPlaneControl> getPlanarControls()
+	public List<SubPlaneControl> getSubPlaneControls()
 	{
 		return Collections.unmodifiableList( _subPlaneControls );
 	}
 
 	/**
-	 * Test if this node has any planar controls.
+	 * Test if this node has any sub-plane controls.
 	 *
-	 * @return  <code>true</code> if any planar controls were added;
+	 * @return  <code>true</code> if any sub-plane control is added;
 	 *          <code>false</code> otherwise.
 	 */
-	private boolean hasPlanarControls()
+	private boolean hasSubPlaneControls()
 	{
 		return !_subPlaneControls.isEmpty();
 	}
 
 	/**
-	 * Remove planar control.
+	 * Remove sub-plane control.
 	 *
-	 * @param   control  Planar control to remove.
+	 * @param   subPlaneControl     Sub-plane control to remove.
 	 */
-	public void removePlanarControl( final SubPlaneControl control )
+	public void removeSubPlaneControl( final SubPlaneControl subPlaneControl )
 	{
-		_subPlaneControls.remove( control );
+		_subPlaneControls.remove( subPlaneControl );
 	}
 
-//	private boolean hasViewModelNodeActionListeners()
-//	{
-//		return !_viewModelNodeActionListeners.isEmpty();
-//	}
-//
-//	public List<ViewModelNodeActionListener> getViewModelNodeActionListeners()
-//	{
-//		return Collections.unmodifiableList( _viewModelNodeActionListeners );
-//	}
-//
-//	public void addViewModelNodeActionListener( final ViewModelNodeActionListener viewModelNodeActionListener )
-//	{
-//		_viewModelNodeActionListeners.add( viewModelNodeActionListener );
-//	}
+	/**
+	 * Add listener for events about updated to this node.
+	 *
+	 * @param   listener    Listener to add.
+	 */
+	public void addViewModelNodeUpdateListener( final ViewModelNodeUpdateListener listener )
+	{
+		if ( listener == null )
+			throw new NullPointerException();
+
+		if ( _viewModelNodeUpdateListeners.contains( listener ) )
+			throw new IllegalArgumentException( "already registered" );
+
+		_viewModelNodeUpdateListeners.add( listener );
+	}
+
+	/**
+	 * Remove listener for events about updated to this node.
+	 *
+	 * @param   listener    Listener to remove.
+	 */
+	public void removeViewModelNodeUpdateListener( final ViewModelNodeUpdateListener listener )
+	{
+		_viewModelNodeUpdateListeners.remove( listener );
+	}
 
 	/**
 	 * Send event about updated node rendering properties to all registered
@@ -420,7 +426,16 @@ public final class ViewModelNode
 	 */
 	public void fireRenderingPropertiesUpdated()
 	{
-		_listeners.updateViews();
+		final List<ViewModelNodeUpdateListener> listeners = _viewModelNodeUpdateListeners;
+		if ( !listeners.isEmpty() )
+		{
+			final ViewModelNodeUpdateEvent event = new ViewModelNodeUpdateEvent( this , ViewModelNodeUpdateEvent.RENDERING_PROPERTIES_UPDATED );
+
+			for ( final ViewModelNodeUpdateListener listener : listeners )
+			{
+				listener.renderingPropertiesUpdated( event );
+			}
+		}
 	}
 
 	/**
@@ -430,7 +445,17 @@ public final class ViewModelNode
 	{
 		//reset bounds
 		_cachedBounds3d = null;
-		_listeners.updateNodeTransform( this );
+
+		final List<ViewModelNodeUpdateListener> listeners = _viewModelNodeUpdateListeners;
+		if ( !listeners.isEmpty() )
+		{
+			final ViewModelNodeUpdateEvent event = new ViewModelNodeUpdateEvent( this , ViewModelNodeUpdateEvent.TRANSFORM_UPDATED );
+
+			for ( final ViewModelNodeUpdateListener listener : listeners )
+			{
+				listener.transformUpdated( event );
+			}
+		}
 	}
 
 	/**
@@ -440,15 +465,37 @@ public final class ViewModelNode
 	{
 		//reset bounds
 		_cachedBounds3d = null;
-		_listeners.updateNodeContent( this );
+
+		final List<ViewModelNodeUpdateListener> listeners = _viewModelNodeUpdateListeners;
+		if ( !listeners.isEmpty() )
+		{
+			final ViewModelNodeUpdateEvent event = new ViewModelNodeUpdateEvent( this , ViewModelNodeUpdateEvent.CONTENT_UPDATED );
+
+			for ( final ViewModelNodeUpdateListener listener : listeners )
+			{
+				listener.contentsUpdated( event );
+			}
+		}
 	}
 
+	/**
+	 * Get plane control.
+	 *
+	 * @return  Plane control;
+	 *          <code>null</code> if no plane control is set.
+	 */
 	public PlaneControl getPlaneControl()
 	{
 		return _planeControl;
 	}
 
-	public void setPlaneControl( PlaneControl planeControl )
+	/**
+	 * Set plane control.
+	 *
+	 * @param   planeControl    Plane control to set or <code>null</code> to
+	 *                          disable plane control.
+	 */
+	public void setPlaneControl( final PlaneControl planeControl )
 	{
 		_planeControl = planeControl;
 	}
