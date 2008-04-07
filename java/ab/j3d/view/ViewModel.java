@@ -138,20 +138,9 @@ public abstract class ViewModel
 	protected final double _unit;
 
 	/**
-	 * Binary Space Partitioning Tree ({@link BSPTree}) of this model.
-	 * <p />
-	 * The tree is only calculated when the scene changes (indicated by
-	 * the {@link #_bspTreeDirty} field).
+	 * Shared control / overlay painter for view nodes.
 	 */
-	private final BSPTree _bspTree;
-
-	/**
-	 * This internal flag is set to indicate that the scene is
-	 * changed, so the {@link BSPTree} needs to be re-calculated.
-	 *
-	 * @see #updateViews
-	 */
-	private boolean _bspTreeDirty;
+	private final ViewModelNodeControl _viewModelNodeControl;
 
 	/**
 	 * Construct new view model.
@@ -160,9 +149,8 @@ public abstract class ViewModel
 	 */
 	protected ViewModel( final double unit )
 	{
-		_unit         = unit;
-		_bspTree      = new BSPTree();
-		_bspTreeDirty = true;
+		_unit                 = unit;
+		_viewModelNodeControl = new ViewModelNodeControl( this );
 	}
 
 	/**
@@ -487,7 +475,7 @@ public abstract class ViewModel
 
 		if ( !_views.contains( view ) )
 		{
-			final ViewModelNodeControl viewModelNodeControl = new ViewModelNodeControl( this );
+			final ViewModelNodeControl viewModelNodeControl = _viewModelNodeControl;
 			view.appendControl( viewModelNodeControl );
 			view.addOverlayPainter( viewModelNodeControl );
 
@@ -618,7 +606,12 @@ public abstract class ViewModel
 	{
 		final ViewModelView view = getView( id );
 		if ( view != null )
+		{
+			final ViewModelNodeControl viewModelNodeControl = _viewModelNodeControl;
+			view.removeControl( viewModelNodeControl );
+			view.removeOverlayPainter( viewModelNodeControl );
 			_views.remove( view );
+		}
 	}
 
 	/**
@@ -635,13 +628,9 @@ public abstract class ViewModel
 
 	/**
 	 * Update all views.
-	 * <p />
-	 * Before updating all views, the {@link #_bspTreeDirty} flag is set <code>true</code>.
 	 */
-	public final void updateViews()
+	public void updateViews()
 	{
-		_bspTreeDirty = true;
-
 		for ( final ViewModelView view : _views )
 		{
 			view.update();
@@ -676,29 +665,5 @@ public abstract class ViewModel
 	public double getUnit()
 	{
 		return _unit;
-	}
-
-	/**
-	 * Binary Space Partitioning Tree ({@link BSPTree}) of this model.
-	 * <p />
-	 * The tree is only calculated when the scene changes (indicated by
-	 * the {@link #_bspTreeDirty} field).
-	 *
-	 * @return  The Binary Space Partitioning Tree of this model.
-	 */
-	public BSPTree getBspTree()
-	{
-		final BSPTree result = _bspTree;
-
-		if ( _bspTreeDirty )
-		{
-			result.reset();
-			result.addScene( getScene() );
-			result.build();
-
-			_bspTreeDirty = false;
-		}
-
-		return result;
 	}
 }
