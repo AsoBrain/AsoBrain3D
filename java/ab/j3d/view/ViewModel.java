@@ -303,10 +303,9 @@ public abstract class ViewModel
 	}
 
 	/**
-	 * Create a new node (sub tree) in the view tree. The specified
-	 * {@link Node3D} is converted into view and then added to the view
-	 * tree. If an existing node exists with the same ID, then the existing
-	 * node will be removed before creating the new node.
+	 * Create a new node (sub tree) in the view tree. If an existing node exists
+	 * with the same ID, then the existing node will be removed before creating
+	 * the new node.
 	 *
 	 * @param   id                  Application-assigned ID of view model node.
 	 * @param   node3D              Root in the 3D scene to create a view model node for.
@@ -322,9 +321,8 @@ public abstract class ViewModel
 
 	/**
 	 * Create a new node (sub tree) in the view tree with the specified initial
-	 * transform. The specified {@link Node3D} is converted into view and then
-	 * added to the view tree. If an existing node exists with the same ID, then
-	 * the existing node will be removed before creating the new node.
+	 * transform. If an existing node exists with the same ID, then the
+	 * existing node will be removed before creating the new node.
 	 *
 	 * @param   id                  Application-assigned ID of view model node.
 	 * @param   transform           Initial transform (<code>null</code> => identity).
@@ -332,9 +330,11 @@ public abstract class ViewModel
 	 * @param   materialOverride    Material to use instead of actual materials.
 	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).);
 	 *
+	 * @return  Node that was created.
+	 *
 	 * @throws  NullPointerException if <code>id</code> or <code>node3D</code> is <code>null</code>.
 	 */
-	public final void createNode( final Object id , final Matrix3D transform , final Node3D node3D , final Material materialOverride , final float opacity )
+	public final ViewModelNode createNode( final Object id , final Matrix3D transform , final Node3D node3D , final Material materialOverride , final float opacity )
 	{
 		if ( id == null )
 			throw new NullPointerException( "id" );
@@ -347,6 +347,7 @@ public abstract class ViewModel
 		final ViewModelNode node = new ViewModelNode( id , transform , node3D , materialOverride , opacity );
 		initializeNode( node );
 		addNode( node );
+		return node;
 	}
 
 	/**
