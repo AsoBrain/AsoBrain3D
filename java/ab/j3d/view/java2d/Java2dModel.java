@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2006
+ * (C) Copyright Numdata BV 2004-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,7 @@ package ab.j3d.view.java2d;
 
 import java.awt.Color;
 
+import ab.j3d.view.BSPTree;
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelNode;
 import ab.j3d.view.ViewModelView;
@@ -38,6 +39,22 @@ public final class Java2dModel
 	 * Background color for the model.
 	 */
 	private final Color _background;
+
+	/**
+	 * Binary Space Partitioning Tree ({@link BSPTree}) of this model.
+	 * <p />
+	 * The tree is only calculated when the scene changes (indicated by
+	 * the {@link #_bspTreeDirty} field).
+	 */
+	private final BSPTree _bspTree;
+
+	/**
+	 * This internal flag is set to indicate that the scene is
+	 * changed, so the {@link BSPTree} needs to be re-calculated.
+	 *
+	 * @see #updateViews
+	 */
+	private boolean _bspTreeDirty;
 
 	/**
 	 * Construct new Java 2D view model using {@link ViewModel#MM} units.
@@ -69,7 +86,10 @@ public final class Java2dModel
 	public Java2dModel( final double unit , final Color background )
 	{
 		super( unit );
-		_background = background;
+
+		_background   = background;
+		_bspTree      = new BSPTree();
+		_bspTreeDirty = true;
 	}
 
 	protected void initializeNode( final ViewModelNode node )
@@ -92,6 +112,12 @@ public final class Java2dModel
 		updateViews();
 	}
 
+	public void updateViews()
+	{
+		_bspTreeDirty = true;
+		super.updateViews();
+	}
+
 	public ViewModelView createView( final Object id )
 	{
 		final Java2dView view = new Java2dView( this , _background , id );
@@ -99,4 +125,27 @@ public final class Java2dModel
 		return view;
 	}
 
+	/**
+	 * Binary Space Partitioning Tree ({@link BSPTree}) of this model.
+	 * <p />
+	 * The tree is only calculated when the scene changes (indicated by
+	 * the {@link #_bspTreeDirty} field).
+	 *
+	 * @return  The Binary Space Partitioning Tree of this model.
+	 */
+	public BSPTree getBspTree()
+	{
+		final BSPTree result = _bspTree;
+
+		if ( _bspTreeDirty )
+		{
+			result.reset();
+			result.addScene( getScene() );
+			result.build();
+
+			_bspTreeDirty = false;
+		}
+
+		return result;
+	}
 }
