@@ -21,7 +21,6 @@ package ab.j3d.view.control;
 
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Point2D;
 import java.util.EventObject;
 import java.util.List;
 import javax.swing.Action;
@@ -33,7 +32,7 @@ import ab.j3d.control.ControlInputEvent;
 import ab.j3d.control.MouseControl;
 import ab.j3d.geom.BasicPlane3D;
 import ab.j3d.geom.GeometryTools;
-import ab.j3d.geom.Ray3D;
+import ab.j3d.geom.Plane3D;
 import ab.j3d.model.Face3DIntersection;
 import ab.j3d.view.OverlayPainter;
 import ab.j3d.view.Projector;
@@ -41,6 +40,7 @@ import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelNode;
 import ab.j3d.view.ViewModelView;
 import ab.j3d.view.control.planar.PlanarGraphics2D;
+import ab.j3d.view.control.planar.PlaneControl;
 import ab.j3d.view.control.planar.SubPlaneControl;
 
 /**
@@ -65,6 +65,16 @@ public class ViewModelNodeControl
 	 * Currently node being controlled.
 	 */
 	private ViewModelNode _activeNode = null;
+
+	/**
+	 * Drag plane in WCS for active control.
+	 */
+	private Plane3D _activeDragPlaneWCS = null;
+
+	/**
+	 * Currently active plane control
+	 */
+	private PlaneControl _activePlaneControl = null;
 
 	/**
 	 * Currently active sub-plane control.
@@ -115,27 +125,60 @@ public class ViewModelNodeControl
 	{
 		EventObject result = event;
 
+		final ViewModel viewModel = _viewModel;
+
 		for( final Face3DIntersection intersection : event.getIntersections() )
 		{
-			final ViewModelNode node = _viewModel.getNode( intersection.getObjectID() );
+			final ViewModelNode node = viewModel.getNode( intersection.getObjectID() );
 			if ( node != null )
 			{
-				for ( final SubPlaneControl subPlaneControl : node.getSubPlaneControls() )
+				final PlaneControl planeControl = node.getPlaneControl();
+				if ( ( planeControl != null ) && planeControl.isEnabled() )
 				{
-					if ( subPlaneControl.isEnabled() )
+					final Vector3D wcsPoint     = intersection.getIntersectionPoint();
+					final Matrix3D plane2wcs    = planeControl.getPlane2Wcs();
+					final Plane3D  dragPlaneWCS = new BasicPlane3D( plane2wcs.setTranslation( wcsPoint ) , planeControl.isPlaneTwoSided() );
+
+					_activeNode         = node;
+					_activeDragPlaneWCS = dragPlaneWCS;
+					_activePlaneControl = planeControl;
+
+					planeControl.mousePressed( event , node , wcsPoint );
+					viewModel.updateOverlay();
+
+					startCapture( event );
+					result = null;
+				}
+				else
+				{
+					for ( final SubPlaneControl subPlaneControl : node.getSubPlaneControls() )
 					{
-						final Point2D dragPoint = getSubPlaneDragPoint( node , subPlaneControl, event.getPointerRay() , true );
-						if ( dragPoint != null )
+						if ( subPlaneControl.isEnabled() )
 						{
-							_activeNode            = node;
-							_activeSubPlaneControl = subPlaneControl;
+							final Matrix3D     plane2node   = subPlaneControl.getPlane2Node();
+							final Matrix3D     node2wcs     = node.getTransform();
+							final Matrix3D     plane2wcs    = plane2node.multiply( node2wcs );
+							final BasicPlane3D dragPlaneWCS = new BasicPlane3D( plane2wcs , subPlaneControl.isPlaneTwoSided() );
 
-							subPlaneControl.mousePressed( event , node , dragPoint.getX() , dragPoint.getY() );
-							_viewModel.updateOverlay();
+							final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( dragPlaneWCS , event.getPointerRay() );
+							if ( wcsPoint != null )
+							{
+								final Vector3D planePoint = plane2wcs.inverseMultiply( wcsPoint );
 
-							startCapture( event );
-							result = null;
-							break;
+								if ( ( planePoint.x >= 0.0 ) && ( planePoint.y >= 0.0 ) && ( planePoint.x <= subPlaneControl.getPlaneWidth() ) && ( planePoint.y <= subPlaneControl.getPlaneHeight() ) )
+								{
+									_activeNode            = node;
+									_activeDragPlaneWCS    = dragPlaneWCS;
+									_activeSubPlaneControl = subPlaneControl;
+
+									subPlaneControl.mousePressed( event , node , planePoint.x , planePoint.y );
+									viewModel.updateOverlay();
+
+									startCapture( event );
+									result = null;
+									break;
+								}
+							}
 						}
 					}
 				}
@@ -150,93 +193,109 @@ public class ViewModelNodeControl
 
 	public void mouseDragged( final ControlInputEvent event )
 	{
+		final ViewModel       viewModel             = _viewModel;
 		final ViewModelNode   activeNode            = _activeNode;
+		final Plane3D         activeDragPlaneWCS    = _activeDragPlaneWCS;
+		final PlaneControl    activePlaneControl    = _activePlaneControl;
 		final SubPlaneControl activeSubPlaneControl = _activeSubPlaneControl;
 
-		if ( ( activeNode != null ) && ( activeSubPlaneControl != null ) )
+		if ( ( activeNode != null ) && ( activeDragPlaneWCS != null ) )
 		{
-			final Point2D dragPoint = getSubPlaneDragPoint( activeNode , activeSubPlaneControl, event.getPointerRay() , false );
-			if ( dragPoint != null )
+			if ( activePlaneControl != null )
 			{
-				activeSubPlaneControl.mouseDragged( event , activeNode , dragPoint.getX() , dragPoint.getY() );
-				_viewModel.updateOverlay();
+				final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( activeDragPlaneWCS , event.getPointerRay() );
+				if ( wcsPoint != null )
+				{
+					activePlaneControl.mouseDragged( event , activeNode , wcsPoint );
+					viewModel.updateOverlay();
+				}
+			}
+
+			if ( activeSubPlaneControl != null )
+			{
+				final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( activeDragPlaneWCS , event.getPointerRay() );
+				if ( wcsPoint != null )
+				{
+					final Matrix3D plane2node = activeSubPlaneControl.getPlane2Node();
+					final Matrix3D node2wcs   = activeNode.getTransform();
+					final Matrix3D plane2wcs  = plane2node.multiply( node2wcs );
+					final Vector3D planePoint = plane2wcs.inverseMultiply( wcsPoint );
+
+					activeSubPlaneControl.mouseDragged( event , activeNode , planePoint.x , planePoint.y );
+					viewModel.updateOverlay();
+				}
 			}
 		}
 	}
 
 	public void mouseReleased( final ControlInputEvent event )
 	{
+		final ViewModel       viewModel             = _viewModel;
 		final ViewModelNode   activeNode            = _activeNode;
+		final Plane3D         activeDragPlaneWCS    = _activeDragPlaneWCS;
+		final PlaneControl    activePlaneControl    = _activePlaneControl;
 		final SubPlaneControl activeSubPlaneControl = _activeSubPlaneControl;
 
-		if ( ( activeNode != null ) && ( activeSubPlaneControl != null ) )
+		if ( ( activeNode != null ) && ( activeDragPlaneWCS != null ) )
 		{
-			final Point2D dragPoint = getSubPlaneDragPoint( activeNode , activeSubPlaneControl, event.getPointerRay() , false );
-			if ( dragPoint != null )
+			if ( activePlaneControl != null )
 			{
-				activeSubPlaneControl.mouseReleased( event , activeNode , dragPoint.getX() , dragPoint.getY() );
-				_viewModel.updateOverlay();
+				final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( activeDragPlaneWCS , event.getPointerRay() );
+				if ( wcsPoint != null )
+				{
+					activePlaneControl.mouseReleased( event , activeNode , wcsPoint );
+					viewModel.updateOverlay();
+				}
+			}
+
+			if ( activeSubPlaneControl != null )
+			{
+				final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( activeDragPlaneWCS , event.getPointerRay() );
+				if ( wcsPoint != null )
+				{
+					final Matrix3D plane2node = activeSubPlaneControl.getPlane2Node();
+					final Matrix3D node2wcs   = activeNode.getTransform();
+					final Matrix3D plane2wcs  = plane2node.multiply( node2wcs );
+					final Vector3D planePoint = plane2wcs.inverseMultiply( wcsPoint );
+
+					activeSubPlaneControl.mouseReleased( event , activeNode , planePoint.x , planePoint.y );
+					viewModel.updateOverlay();
+				}
 			}
 		}
 
 		_activeNode            = null;
+		_activeDragPlaneWCS    = null;
+		_activePlaneControl    = null;
 		_activeSubPlaneControl = null;
 	}
 
 	public void paint( final ViewModelView view , final Graphics2D g2d )
 	{
 		final ViewModelNode   activeNode            = _activeNode;
+		final PlaneControl    activePlaneControl    = _activePlaneControl;
 		final SubPlaneControl activeSubPlaneControl = _activeSubPlaneControl;
 
-		if ( ( activeNode != null ) && ( activeSubPlaneControl != null ) )
+		if ( activeNode != null )
 		{
-			final Matrix3D  node2wcs   = activeNode.getTransform();
-			final Matrix3D  plane2node = activeSubPlaneControl.getPlane2Node();
-			final Matrix3D  plane2wcs  = plane2node.multiply( node2wcs );
-			final Matrix3D  wcs2view   = view.getViewTransform();
-			final Matrix3D  plane2view = plane2wcs.multiply( wcs2view );
-			final Projector projector  = view.getProjector();
-
-			final PlanarGraphics2D planarGraphics2D = new PlanarGraphics2D( g2d , plane2view , projector );
-			activeSubPlaneControl.paint( view , planarGraphics2D );
-		}
-	}
-
-	/**
-	 * Get point on 2D drag plane defined by a node's {@link SubPlaneControl}.
-	 *
-	 * @param   viewModelNode       Node whose behavior is used.
-	 * @param   subPlaneControl     {@link SubPlaneControl} that defined the drag behavior.
-	 * @param   pointerRayWCS       Pointer ray to determine drag point.
-	 * @param   mustBeWithinBounds  If set, only return point if it falls within
-	 *                              the drag bounds.
-	 *
-	 * @return  Point on 2D drag plane;
-	 *          <code>null</code> if no drag point was found.
-	 */
-	public static Point2D getSubPlaneDragPoint( final ViewModelNode viewModelNode , final SubPlaneControl subPlaneControl , final Ray3D pointerRayWCS , final boolean mustBeWithinBounds )
-	{
-		Point2D result = null;
-
-		final Matrix3D     plane2node   = subPlaneControl.getPlane2Node();
-		final Matrix3D     node2wcs     = viewModelNode.getTransform();
-		final Matrix3D     plane2wcs    = plane2node.multiply( node2wcs );
-		final BasicPlane3D dragPlaneWCS = new BasicPlane3D( plane2wcs , subPlaneControl.isPlaneTwoSided() );
-
-		final Vector3D intersectPointWCS = GeometryTools.getIntersectionBetweenRayAndPlane( dragPlaneWCS , pointerRayWCS );
-		if( intersectPointWCS != null )
-		{
-			final Vector3D intersectionPointPlane = plane2wcs.inverseMultiply( intersectPointWCS );
-
-			final double dragX = intersectionPointPlane.x;
-			final double dragY = intersectionPointPlane.y;
-
-			if ( !mustBeWithinBounds || ( ( dragX >= 0.0 ) && ( dragY >= 0.0 ) && ( dragX <= subPlaneControl.getPlaneWidth() ) && ( dragY <= subPlaneControl.getPlaneHeight() ) ) )
+			if ( activePlaneControl != null )
 			{
-				result = new Point2D.Double( dragX, dragY );
+				activePlaneControl.paint( view , g2d );
+			}
+
+			if ( activeSubPlaneControl != null )
+			{
+				final Matrix3D  node2wcs   = activeNode.getTransform();
+				final Matrix3D  plane2node = activeSubPlaneControl.getPlane2Node();
+				final Matrix3D  plane2wcs  = plane2node.multiply( node2wcs );
+				final Matrix3D  wcs2view   = view.getViewTransform();
+				final Matrix3D  plane2view = plane2wcs.multiply( wcs2view );
+				final Projector projector  = view.getProjector();
+
+				final PlanarGraphics2D planarGraphics2D = new PlanarGraphics2D( g2d , plane2view , projector );
+				activeSubPlaneControl.paint( view , planarGraphics2D );
+				planarGraphics2D.dispose();
 			}
 		}
-
-		return result;
 	}
 }
