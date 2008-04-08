@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,13 +19,10 @@
  */
 package ab.j3d.view.control.planar;
 
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
-
+import ab.j3d.Matrix3D;
+import ab.j3d.Vector3D;
 import ab.j3d.control.ControlInputEvent;
 import ab.j3d.view.ViewModelNode;
-
-import com.numdata.oss.MathTools;
 
 /**
  * This class provides some basic functionality of a {@link PlaneControl}.
@@ -37,40 +34,39 @@ public abstract class AbstractPlaneControl
 	implements PlaneControl
 {
 	/**
-	 * Start X coordinate of drag operation.
-	 */
-	private double _startX;
-
-	/**
-	 * Start Y coordinate of drag operation.
-	 */
-	private double _startY;
-
-	/**
-	 * End X coordinate of drag operation.
-	 */
-	private double _endX;
-
-	/**
-	 * End Y coordinate of drag operation.
-	 */
-	private double _endY;
-
-	/**
 	 * Flag to indicate that this behavior is 'active'.
 	 */
 	private boolean _active;
+
+	/**
+	 * Start point of drag operation in WCS.
+	 */
+	private Vector3D _wcsStart;
+
+	/**
+	 * End point of drag operation in WCS.
+	 */
+	private Vector3D _wcsEnd;
 
 	/**
 	 * Construct new control.
 	 */
 	protected AbstractPlaneControl()
 	{
-		_startX = Double.NaN;
-		_startY = Double.NaN;
-		_endX   = Double.NaN;
-		_endY   = Double.NaN;
-		_active = false;
+		_active   = false;
+		_wcsStart = null;
+		_wcsEnd   = null;
+	}
+
+	/**
+	 * Test if this control is active. Meaning that is currently being used.
+	 *
+	 * @return  <code>true</code> if this control is active;
+	 *          <code>false</code> otherwise.
+	 */
+	public boolean isActive()
+	{
+		return _active;
 	}
 
 	public boolean isEnabled()
@@ -78,172 +74,64 @@ public abstract class AbstractPlaneControl
 		return true;
 	}
 
-	public void mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final double x , final double y )
+	public void mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsStart )
 	{
-		_startX = x;
-		_startY = y;
-		_endX   = x;
-		_endY   = y;
-		_active = true;
+		_wcsStart = wcsStart;
+		_wcsEnd   = null;
+		_active   = true;
 	}
 
-	public void mouseDragged( final ControlInputEvent event , final ViewModelNode viewModelNode , final double x , final double y )
+	public void mouseDragged( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsEnd )
 	{
-		_endX = x;
-		_endY = y;
+		_wcsEnd = wcsEnd;
+
 	}
 
-	public void mouseReleased( final ControlInputEvent event , final ViewModelNode viewModelNode , final double x , final double y )
+	public void mouseReleased( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsEnd )
 	{
-		_endX   = x;
-		_endY   = y;
+		_wcsEnd = wcsEnd;
 		_active = false;
 	}
 
 	/**
-	 * Get start point of drag operation.
+	 * Get start point of drag operation in the world coordinate system (WCS).
 	 *
-	 * @return  Start point of drag operation.
+	 * @return  Start point of drag operation in WCS.
 	 */
-	public Point2D getStart()
+	public Vector3D getWcsStart()
 	{
-		return new Point2D.Double( _startX , _startY );
+		return _wcsStart;
 	}
 
 	/**
-	 * Get start X coordinate of drag operation.
+	 * Get end point of drag operation in the world coordinate system (WCS).
 	 *
-	 * @return  Start X coordinate of drag operation.
+	 * @return  End point of drag operation in WCS.
 	 */
-	public double getStartX()
+	public Vector3D getWcsEnd()
 	{
-		return _startX;
+		return _wcsEnd;
 	}
 
 	/**
-	 * Get start Y coordinate of drag operation.
+	 * Get movement of drag operation in the world coordinate system (WCS).
 	 *
-	 * @return  Start Y coordinate of drag operation.
+	 * @return  Movement of drag operation in WCS.
 	 */
-	public double getStartY()
+	public Vector3D getWcsDelta()
 	{
-		return _startY;
+		return _wcsEnd.minus( _wcsStart );
 	}
 
 	/**
-	 * Get end point of drag operation.
+	 * Get movement of drag operation on plane. This is always a 2D movement
+	 * (the Z component of the result is always 0).
 	 *
-	 * @return  End point of drag operation.
+	 * @return  Movement of drag operation on plane.
 	 */
-	public Point2D getEnd()
+	public Vector3D getPlaneDelta()
 	{
-		return new Point2D.Double( _endX , _endY );
-	}
-
-	/**
-	 * Get end X coordinate of drag operation.
-	 *
-	 * @return  End X coordinate of drag operation.
-	 */
-	public double getEndX()
-	{
-		return _endX;
-	}
-
-	/**
-	 * Get end Y coordinate of drag operation.
-	 *
-	 * @return  End Y coordinate of drag operation.
-	 */
-	public double getEndY()
-	{
-		return _endY;
-	}
-
-	/**
-	 * Get movement of drag operation.
-	 *
-	 * @return  Movement of drag operation.
-	 */
-	public Point2D getDelta()
-	{
-		return new Point2D.Double( getDeltaX() , getDeltaY() );
-	}
-
-	/**
-	 * Get movement along X axis of drag operation.
-	 *
-	 * @return  Movement along X axis of drag operation.
-	 */
-	public double getDeltaX()
-	{
-		return _endX - _startX;
-	}
-
-	/**
-	 * Get movement along Y axis of drag operation.
-	 *
-	 * @return  Movement along Y axis of drag operation.
-	 */
-	public double getDeltaY()
-	{
-		return _endX - _startX;
-	}
-
-	/**
-	 * Get line that represents the drag movement on the drag plane from the
-	 * drag start point to the drag end point.
-	 *
-	 * @return  Line that represents the drag movement.
-	 */
-	public Line2D getLine2D()
-	{
-		return new Line2D.Double( _startX , _startY , _endX , _endY );
-	}
-
-	/**
-	 * Get direction from start to end point of drag movement.
-	 *
-	 * @return  Direction from start to end point of drag movement.
-	 */
-	public Point2D getDirection()
-	{
-		final double distance = getDistance();
-		return Double.isNaN( distance ) ? null : new Point2D.Double( getDeltaX() / distance , getDeltaY() / distance );
-	}
-
-	/**
-	 * Get distance between the start and end point of drag movement.
-	 *
-	 * @return  Distance between the start and end point of drag movement.
-	 */
-	public double getDistance()
-	{
-		final double result;
-
-		final double dx = getDeltaX();
-		final double dy = getDeltaY();
-
-		if ( !MathTools.almostEqual( dx , 0.0 ) && !MathTools.almostEqual( dx , 0.0 ) )
-		{
-			result = Math.sqrt( dx * dx + dy * dy );
-		}
-		else
-		{
-			result = Double.NaN;
-		}
-
-		return result;
-	}
-
-	/**
-	 * Test if this behavior is active. Meaning that is currently being used.
-	 *
-	 * @return  <code>true</code> if this behavior is active;
-	 *          <code>false</code> otherwise.
-	 */
-	public boolean isActive()
-	{
-		return _active;
+		final Matrix3D plane2wcs = getPlane2Wcs();
+		return plane2wcs.inverseMultiply( getWcsDelta() );
 	}
 }
