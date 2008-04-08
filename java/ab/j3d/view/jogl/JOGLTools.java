@@ -353,19 +353,20 @@ public class JOGLTools
 	/**
 	 * Draw a 3D grid centered around point x,y,z with size dx,dy.
 	 *
-	 * @param glWrapper GLWrapper.
-	 * @param x         X position of the grid.
-	 * @param y         Y position of the grid.
-	 * @param z         Z position of the grid.
-	 * @param dx        Width of the grid.
-	 * @param dy        Height of the grid.
-	 * @param spacing   Spacing between the grid lines.
+	 * @param   glWrapper   GL context wrapper.
+	 * @param   grid2world  Transforms grid to world coordinates.
+	 * @param   dx          Width of the grid.
+	 * @param   dy          Height of the grid.
+	 * @param   spacing     Spacing between the grid lines.
 	 */
-	public static void drawGrid( final GLWrapper glWrapper , final int x , final int y , final int z , final int dx , final int dy , final int spacing )
+	public static void drawGrid( final GLWrapper glWrapper , final Matrix3D grid2world , final int dx , final int dy , final int spacing )
 	{
-		if ( spacing != 0 ) //check if spacing is not null else we'll get an infinite loop.
+		if ( ( grid2world != null ) && ( dx > 0 ) && ( dy > 0 ) && ( spacing != 0 ) ) // argument sanity
 		{
 			final GL gl = glWrapper.getGL();
+
+			glWrapper.glPushMatrix();
+			glWrapper.glMultMatrixd( grid2world );
 
 			glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 			glWrapper.setBlend( true );
@@ -375,7 +376,7 @@ public class JOGLTools
 			glWrapper.setLighting( false );
 			glWrapper.glBegin( GL.GL_LINES );
 
-			for ( int i = -dx / 2 + x ; i <= dx / 2 + x ; i += spacing )
+			for ( int i = -dx / 2 ; i <= dx / 2 ; i += spacing )
 			{
 				if ( ( ( i - dx ) / spacing ) % 10 == 0 )
 				{
@@ -383,8 +384,8 @@ public class JOGLTools
 					glWrapper.glLineWidth( 2.0f );
 					gl.glBegin( GL.GL_LINES );
 					glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
-					gl.glVertex3i( i , -dy / 2 + y , z );
-					gl.glVertex3i( i ,  dy / 2 + y , z );
+					gl.glVertex3i( i , -dy / 2 , 0 );
+					gl.glVertex3i( i ,  dy / 2 , 0 );
 					gl.glEnd();
 					glWrapper.glLineWidth( 1.0f );
 					gl.glBegin( GL.GL_LINES );
@@ -392,12 +393,12 @@ public class JOGLTools
 				else
 				{
 					glWrapper.glColor3f( 0.75f , 0.75f , 0.75f );
-					gl.glVertex3i( i , -dy / 2 + y , z );
-					gl.glVertex3i( i ,  dy / 2 + y , z );
+					gl.glVertex3i( i , -dy / 2 , 0 );
+					gl.glVertex3i( i ,  dy / 2 , 0 );
 				}
 			}
 
-			for ( int i = -dy / 2 + y ; i <= dy / 2 + y ; i += spacing )
+			for ( int i = -dy / 2 ; i <= dy / 2 ; i += spacing )
 			{
 				if ( ( ( i - dy ) / spacing ) % 10 == 0 )
 				{
@@ -406,22 +407,24 @@ public class JOGLTools
 
 					gl.glBegin( GL.GL_LINES );
 					glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
-					gl.glVertex3i( -dx / 2 + x , i , z );
-					gl.glVertex3i(  dx / 2 + x , i , z );
+					gl.glVertex3i( -dx / 2 , i , 0 );
+					gl.glVertex3i(  dx / 2 , i , 0 );
 					gl.glEnd();
 					glWrapper.glLineWidth( 1.0f );
 					gl.glBegin( GL.GL_LINES );
 				}
 				else
 				{
-					gl.glVertex3i( -dx / 2 + x , i , z );
-					gl.glVertex3i(  dx / 2 + x , i , z );
+					gl.glVertex3i( -dx / 2 , i , 0 );
+					gl.glVertex3i(  dx / 2 , i , 0 );
 					glWrapper.glColor3f( 0.75f , 0.75f , 0.75f );
 				}
 			}
 
 			glWrapper.glEnd();
 			glWrapper.setLighting( true );
+
+			glWrapper.glPopMatrix();
 		}
 	}
 
