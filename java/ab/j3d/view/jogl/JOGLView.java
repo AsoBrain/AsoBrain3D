@@ -26,6 +26,7 @@ import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import javax.media.opengl.DebugGL;
@@ -109,23 +110,23 @@ public class JOGLView
 	private RenderThread _renderThread;
 
 	/**
-	 * Grid values
+	 * Grid transform.
 	 */
-	private int _gridX       = 0;
+	private Matrix3D _grid2world = null;
 
-	/** Y offset of grid */
-	private int _gridY       = 0;
+	/**
+	 * Dx size of grid
+	 */
+	private int _gridDx = 0;
 
-	/** Z offset of grid */
-	private int _gridZ       = 0;
+	/**
+	 * Dy size of grid
+	 */
+	private int _gridDy = 0;
 
-	/** Dx size of grid */
-	private int _gridDx      = 0;
-
-	/** Dy size of grid */
-	private int _gridDy      = 0;
-
-	/** Gridspacing, on every value a line is drawn */
+	/**
+	 * Gridspacing, on every value a line is drawn
+	 */
 	private int _gridSpacing = 0;
 
 	/**
@@ -153,8 +154,9 @@ public class JOGLView
 	public JOGLView( final JOGLModel model , final Color background , final Object id , final Map<String, SoftReference<Texture>> textureCache )
 	{
 		super( model.getUnit() , id );
-		_textureCache      = textureCache;
-		final double unit  = model.getUnit();
+		final double unit = model.getUnit();
+
+		_model = model;
 
 		_projectionPolicy  = Projector.PERSPECTIVE;
 		_renderingPolicy   = RenderingPolicy.SOLID;
@@ -162,10 +164,11 @@ public class JOGLView
 		_backClipDistance  = 100.0 / unit;
 		_renderThread      = null;
 
+		_textureCache      = textureCache;
+
 		/* Use heavyweight popups, since we use a heavyweight canvas */
 		JPopupMenu.setDefaultLightWeightPopupEnabled( false );
 
-		_model             = model;
 		final GLCanvas glCanvas;
 
 
@@ -219,8 +222,9 @@ public class JOGLView
 					System.out.println();
 
 					glAutoDrawable.setGL( new DebugGL( gl ) );
-					_glWrapper = new GLWrapper( gl );
-					initGL( _glWrapper );
+					final GLWrapper glWrapper = new GLWrapper( gl );
+					_glWrapper = glWrapper;
+					initGL( glWrapper );
 					final Overlay overlay = new Overlay( glAutoDrawable );
 					_j2d = new JOGLGraphics2D( overlay.createGraphics() , glAutoDrawable );
 					glCanvas.setMinimumSize( new Dimension( 0 , 0 ) ); //resize workaround
@@ -228,13 +232,16 @@ public class JOGLView
 
 				public void display( final GLAutoDrawable glAutoDrawable )
 				{
-					renderFrame( _glWrapper , glAutoDrawable.getWidth() , glAutoDrawable.getHeight() );
+					final GLWrapper glWrapper = _glWrapper;
+
+				renderFrame( glWrapper , glAutoDrawable.getWidth() , glAutoDrawable.getHeight() );
 
 					if ( hasOverlayPainters() )
 					{
 						paintOverlay( _j2d );
 					}
-					_glWrapper.reset();
+
+					glWrapper.reset();
 				}
 
 				public void displayChanged( final GLAutoDrawable glAutoDrawable , final boolean b , final boolean b1 )
@@ -524,20 +531,14 @@ public class JOGLView
 	/**
 	 * Draws a grid on the view using the specified parameters.
 	 *
-	 * The grid will be centered around the x,y position.
-	 *
-	 * @param x         X position of the grid.
-	 * @param y         Y position of the grid.
-	 * @param z         Z position of the grid.
-	 * @param dx        Width of the grid.
-	 * @param dy        Height of the grid.
-	 * @param spacing   Spacing between the grid lines.
+	 * @param   grid2world  Transforms grid to world coordinates.
+	 * @param   dx          Width of the grid.
+	 * @param   dy          Height of the grid.
+	 * @param   spacing     Spacing between the grid lines.
 	 */
-	public void drawGrid( final int x , final int y , final int z , final int dx , final int dy , final int spacing )
+	public void drawGrid( final Matrix3D grid2world , final int dx , final int dy , final int spacing )
 	{
-		_gridX       = x;
-		_gridY       = y;
-		_gridZ       = z;
+		_grid2world  = grid2world;
 		_gridDx      = dx;
 		_gridDy      = dy;
 		_gridSpacing = spacing;
@@ -545,38 +546,10 @@ public class JOGLView
 
 	/**
 	 * Removes the grid that is being drawn.
-	 *
 	 */
 	public void removeGrid()
 	{
-		_gridX       = 0;
-		_gridY       = 0;
-		_gridZ       = 0;
-		_gridDx      = 0;
-		_gridDy      = 0;
-		_gridSpacing = 0;
-	}
-
-	/**
-	 * If set to true creates standard size grid centered around 0,0.
-	 *
-	 * Not all 3d views implement this method yet.
-	 *
-	 * @param isTrue    If set to true it will draw a grid.
-	 */
-	public final void setGrid( final boolean isTrue )
-	{
-		if ( isTrue )
-			drawGrid( 0 , 0 , -35 , 50000 , 50000 , 500 );
-		else
-		{
-			_gridX       = 0;
-			_gridY       = 0;
-			_gridZ       = 0;
-			_gridDx      = 0;
-			_gridDy      = 0;
-			_gridSpacing = 0;
-		}
+		drawGrid( null , 0 , 0 , 0 );
 	}
 
 	/**
@@ -641,7 +614,7 @@ public class JOGLView
 		/*
 		 * Render the view model nodes.
 		 */
-		final Object[] nodeIDs = _model.getNodeIDs();
+		final List<ViewModelNode> nodes = _model.getNodes();
 
 		/* Initialize first light */
 		int lightNumber = GL.GL_LIGHT0;
@@ -662,11 +635,10 @@ public class JOGLView
 		gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
 
 		//draw lights
-		for ( final Object id : nodeIDs )
+		for ( final ViewModelNode viewModelNode : nodes )
 		{
-			final ViewModelNode viewModelNode = _model.getNode( id );
-			final Node3D        node3D        = viewModelNode.getNode3D();
-			final Matrix3D      nodeTransform = viewModelNode.getTransform();
+			final Node3D   node3D        = viewModelNode.getNode3D();
+			final Matrix3D nodeTransform = viewModelNode.getTransform();
 
 			/*
 			 * Render lights.
@@ -698,11 +670,10 @@ public class JOGLView
 		}
 
 		//draw objects
-		for ( final Object id : nodeIDs )
+		for ( final ViewModelNode viewModelNode : nodes )
 		{
-			final ViewModelNode viewModelNode = _model.getNode( id );
-			final Node3D        node3D        = viewModelNode.getNode3D();
-			final Matrix3D      nodeTransform = viewModelNode.getTransform();
+			final Node3D   node3D        = viewModelNode.getNode3D();
+			final Matrix3D nodeTransform = viewModelNode.getTransform();
 
 			/*
 			 * Render objects.
@@ -768,6 +739,6 @@ public class JOGLView
 				}
 			}
 		}
-		JOGLTools.drawGrid( glWrapper , _gridX , _gridY , _gridZ , _gridDx , _gridDy , _gridSpacing );
+		JOGLTools.drawGrid( glWrapper , _grid2world , _gridDx , _gridDy , _gridSpacing );
 	}
 }
