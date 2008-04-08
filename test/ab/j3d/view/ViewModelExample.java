@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2004-2007 Numdata BV
+ * Copyright (C) 2004-2008 Numdata BV
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -41,6 +41,8 @@ import ab.j3d.control.MouseControl;
 import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Object3D;
 import ab.j3d.model.SkyBox3D;
+import ab.j3d.view.control.planar.PlaneControl;
+import ab.j3d.view.control.planar.PlaneMoveControl;
 
 import com.numdata.oss.ui.WindowTools;
 
@@ -50,7 +52,7 @@ import com.numdata.oss.ui.WindowTools;
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public abstract class ViewModelExample
+public class ViewModelExample
 {
 	/**
 	 * Construct example application.
@@ -78,19 +80,22 @@ public abstract class ViewModelExample
 
 		final Object3D cube = createCube( 0.1 / unit );
 		cube.setTag( "Cube 1" );
-		viewModel.createNode( "cube" , Matrix3D.INIT , cube , null , 1.0f );
+		final ViewModelNode cubeNode = viewModel.createNode( "cube" , Matrix3D.INIT , cube , null , 1.0f );
+		cubeNode.setPlaneControl( createPlaneControl( cubeNode.getTransform() ) );
 
 		final Object3D cubeLeft = createCube( 0.075 / unit );
 		cubeLeft.setTag( "Cube left");
-		viewModel.createNode( "cubeLeft" , Matrix3D.getTransform( 0.0 , 225.0 , 90.0 , -0.250 / unit , 0.050 / unit , 0.0 ) , cubeLeft , null , 1.0f );
+		final ViewModelNode cubeLeftNode = viewModel.createNode( "cubeLeft" , Matrix3D.getTransform( 0.0 , 225.0 , 90.0 , -0.250 / unit , 0.050 / unit , 0.0 ) , cubeLeft , null , 1.0f );
+		cubeLeftNode.setPlaneControl( createPlaneControl( cubeLeftNode.getTransform() ) );
 
 		final Object3D cubeRight = createCube( 0.050 / unit );
 		cubeRight.setTag( "Cube right");
-		viewModel.createNode( "cubeRight" , Matrix3D.getTransform( 90.0 , 0.0 , 315.0 , 0.225 / unit , 0.0 , 0.0 ) , cubeRight , null , 1.0f );
+		final ViewModelNode cubeRightNode = viewModel.createNode( "cubeRight" , Matrix3D.getTransform( 90.0 , 0.0 , 315.0 , 0.225 / unit , 0.0 , 0.0 ) , cubeRight , null , 1.0f );
+		cubeRightNode.setPlaneControl( createPlaneControl( cubeRightNode.getTransform() ) );
 
 		ViewModelTools.addLegacyLights( viewModel );
 
-		final Vector3D  viewFrom = Vector3D.INIT.set( 0.0 , -1.0 / unit , 0.0 );
+		final Vector3D  viewFrom = Vector3D.polarToCartesian( 1.5 / unit , -0.2 * Math.PI , 0.4 * Math.PI );
 		final Vector3D  viewAt   = Vector3D.INIT;
 
 		final ViewModelView view = viewModel.createView( "view" );
@@ -101,7 +106,8 @@ public abstract class ViewModelExample
 		frame.setVisible( true );
 
 		final Object3D testCube = createCube(0.075 / unit);
-		viewModel.createNode( "banaan" , Matrix3D.getTransform( 190.0 , 0.0 , -315.0 , 0.525 / unit, 0.0 , 0.0 ) , testCube, null , 1.0f );
+		final ViewModelNode testCubeNode = viewModel.createNode( "banaan" , Matrix3D.getTransform( 190.0 , 0.0 , -315.0 , 0.525 / unit , 0.0 , 0.0 ) , testCube , null , 1.0f );
+		testCubeNode.setPlaneControl( createPlaneControl( testCubeNode.getTransform() ) );
 /*
 
 		//Image cache test
@@ -148,6 +154,7 @@ public abstract class ViewModelExample
 
 					clicked.setText( sb.toString() );
 
+					view.update();
 					return event;
 				}
 			} );
@@ -211,14 +218,17 @@ public abstract class ViewModelExample
 	 */
 	public static Object3D createCube( final double size )
 	{
-		final Vector3D lfb = Vector3D.INIT.set( -size , -size , -size );
-		final Vector3D rfb = Vector3D.INIT.set(  size , -size , -size );
-		final Vector3D rbb = Vector3D.INIT.set(  size ,  size , -size );
-		final Vector3D lbb = Vector3D.INIT.set( -size ,  size , -size );
-		final Vector3D lft = Vector3D.INIT.set( -size , -size ,  size );
-		final Vector3D rft = Vector3D.INIT.set(  size , -size ,  size );
-		final Vector3D rbt = Vector3D.INIT.set(  size ,  size ,  size );
-		final Vector3D lbt = Vector3D.INIT.set( -size ,  size ,  size );
+		final double min = -size;
+		final double max =  size;
+
+		final Vector3D lfb = Vector3D.INIT.set( min , min , min );
+		final Vector3D rfb = Vector3D.INIT.set( max , min , min );
+		final Vector3D rbb = Vector3D.INIT.set( max , max , min );
+		final Vector3D lbb = Vector3D.INIT.set( min , max , min );
+		final Vector3D lft = Vector3D.INIT.set( min , min , max );
+		final Vector3D rft = Vector3D.INIT.set( max , min , max );
+		final Vector3D rbt = Vector3D.INIT.set( max , max , max );
+		final Vector3D lbt = Vector3D.INIT.set( min , max , max );
 
 		final Material red     = new Material( Color.RED    .getRGB() );
 		final Material magenta = new Material( Color.MAGENTA.getRGB() );
@@ -232,40 +242,50 @@ public abstract class ViewModelExample
 		final float []  textureV = { 0.0f , 0.0f , 1.0f , 1.0f };
 
 		final Object3D cube = new Object3D();
-		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , red     , textureU , textureV , 1.0f, false , false ); // Z =  size
-		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , green   , textureU , textureV , 1.0f, false , false ); // Z = -size
-		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , cyan    , textureU , textureV , 1.0f, false , false ); // Y = -size
-		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , magenta , textureU , textureV , 1.0f, false , false ); // Y =  size
-		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , yellow  , textureU , textureV , 1.0f, false , false ); // X = -size
-		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , blue    , textureU , textureV , 1.0f, false , false ); // X =  size
+		cube.fillPaint = Color.BLUE;
+		cube.outlinePaint = Color.BLACK;
+		cube.alternateFillPaint = Color.GREEN;
+		cube.alternateOutlinePaint = Color.BLACK;
+		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , red     , textureU , textureV , 1.0f , false , false ); // Z =  size
+		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , green   , textureU , textureV , 1.0f , false , false ); // Z = -size
+		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , cyan    , textureU , textureV , 1.0f , false , false ); // Y = -size
+		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , magenta , textureU , textureV , 1.0f , false , false ); // Y =  size
+		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , yellow  , textureU , textureV , 1.0f , false , false ); // X = -size
+		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , blue    , textureU , textureV , 1.0f , false , false ); // X =  size
 
 		return cube;
 	}
 
-	public static Object3D createPlane( final double size )
+	/**
+	 * Create plane control.
+	 *
+	 * @param   plane2wcs   Transformation from drag plane to WCS.
+	 *
+	 * @return  Plane control.
+	 */
+	protected PlaneControl createPlaneControl( final Matrix3D plane2wcs )
 	{
-		final Vector3D lf = Vector3D.INIT.set( -size , -size , 0.0 );
-		final Vector3D rf = Vector3D.INIT.set(  size , -size , 0.0 );
-		final Vector3D rb = Vector3D.INIT.set(  size ,  size , 0.0 );
-		final Vector3D lb = Vector3D.INIT.set( -size ,  size , 0.0 );
+		return new PlaneMoveControl( plane2wcs , true )
+			{
+				public void mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsPoint )
+				{
+					super.mousePressed( event , viewModelNode , wcsPoint );
+					viewModelNode.setAlternate( true );
+				}
 
-		final Material red   = new Material( Color.RED  .getRGB() );
-		final Material green = new Material( Color.GREEN.getRGB() );
-
-		final float []  textureU = { 0.0f , 1.0f , 1.0f , 0.0f };
-		final float []  textureV = { 0.0f , 0.0f , 1.0f , 1.0f };
-
-		final Object3D plane = new Object3D();
-		/* top    */ plane.addFace( new Vector3D[] { lf , lb , rb , rf } , red   , textureU , textureV , 1.0f, false , false ); // Z =  size
-		/* bottom */ plane.addFace( new Vector3D[] { lb , lf , rf , rb } , green , textureU , textureV , 1.0f, false , false ); // Z = -size
-
-		return plane;
+				public void mouseReleased( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsPoint )
+				{
+					super.mouseReleased( event , viewModelNode , wcsPoint );
+					viewModelNode.setAlternate( false );
+				}
+			};
 	}
 
 	/**
 	 * Paints a semi-transparent bar with text on it as overlay.
 	 */
-	private static class TextOverlayPainter implements OverlayPainter
+	private static class TextOverlayPainter
+		implements OverlayPainter
 	{
 		private String _text;
 
@@ -285,10 +305,11 @@ public abstract class ViewModelExample
 			{
 				final FontMetrics metrics = g2.getFontMetrics();
 				final Component component = view.getComponent();
+				final int y = component.getHeight() * 3 / 4;
 				g2.setColor( new Color( 0x80000000 , true ) );
-				g2.fillRect( 0 , ( component.getHeight() - metrics.getHeight() ) / 2 , component.getWidth() , 2 * metrics.getHeight() );
+				g2.fillRect( 0 , y - metrics.getHeight() / 2 , component.getWidth() , 2 * metrics.getHeight() );
 				g2.setColor( Color.WHITE );
-				g2.drawString( _text , 50 + metrics.getLeading() , component.getHeight() / 2 + metrics.getLeading() + metrics.getAscent() );
+				g2.drawString( _text , 50 + metrics.getLeading() , y + metrics.getLeading() + metrics.getAscent() );
 			}
 		}
 	}
