@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,12 +19,11 @@
  */
 package ab.j3d.view.control.planar;
 
-import java.awt.Graphics2D;
-
 import ab.j3d.Matrix3D;
+import ab.j3d.Vector3D;
 import ab.j3d.control.ControlInputEvent;
+import ab.j3d.view.OverlayPainter;
 import ab.j3d.view.ViewModelNode;
-import ab.j3d.view.ViewModelView;
 
 /**
  * This interface defines control behavior for a {@link ViewModelNode} relative
@@ -34,14 +33,24 @@ import ab.j3d.view.ViewModelView;
  * @version $Revision$ $Date$
  */
 public interface PlaneControl
+	extends OverlayPainter
 {
 	/**
-	 * Get transformation that defines the coordinate system of the
-	 * {@link ViewModelNode} relative to the drag plane.
+	 * Get transformation for the drag plane relative to the world coordinate
+	 * system (WCS).
 	 *
-	 * @return  Drag plane transformation.
+	 * @return  Transformation from drag plane to WCS.
 	 */
-	Matrix3D getNode2Plane();
+	Matrix3D getPlane2Wcs();
+
+	/**
+	 * Test if plane is two-sided. A two-sided plane can be controlled from
+	 * both sides.
+	 *
+	 * @return  <code>true</code> if the plane is two-sided;
+	 *          <code>false</code> otherwise.
+	 */
+	boolean isPlaneTwoSided();
 
 	/**
 	 * Test if the control is enabled.
@@ -56,44 +65,25 @@ public interface PlaneControl
 	 *
 	 * @param   event           Event from control.
 	 * @param   viewModelNode   Node whose plane is controlled.
-	 * @param   x               X coordinate on plane.
-	 * @param   y               Y coordinate on plane.
+	 * @param   wcsPoint        Drag point in WCS.
 	 */
-	void mousePressed( ControlInputEvent event , ViewModelNode viewModelNode , double x , double y );
+	void mousePressed( ControlInputEvent event , ViewModelNode viewModelNode , Vector3D wcsPoint );
 
 	/**
 	 * Drag event.
 	 *
 	 * @param   event           Event from control.
 	 * @param   viewModelNode   Node whose plane is controlled.
-	 * @param   x               X coordinate on plane.
-	 * @param   y               Y coordinate on plane.
+	 * @param   wcsEnd        Drag point in WCS.
 	 */
-	void mouseDragged( ControlInputEvent event , ViewModelNode viewModelNode , double x , double y );
+	void mouseDragged( ControlInputEvent event , ViewModelNode viewModelNode , Vector3D wcsEnd );
 
 	/**
 	 * Drag end event.
 	 *
 	 * @param   event           Event from control.
 	 * @param   viewModelNode   Node whose plane is controlled.
-	 * @param   x               X coordinate on plane.
-	 * @param   y               Y coordinate on plane.
+	 * @param   wcsPoint        Drag point in WCS.
 	 */
-	void mouseReleased( ControlInputEvent event , ViewModelNode viewModelNode , double x , double y );
-
-	/**
-	 * This method can paint on the plane using 2D coordinates relative to the
-	 * plane. It is called like a regular {@link ab.j3d.view.OverlayPainter}
-	 * whenever this control is active.
-	 * <dl>
-	 *  <dt>IMPORTANT:</dt>
-	 *  <dd>This graphics context uses the plane as 2D context, not the rendered
-	 *      image. If rendering in image coordinates is needed, a normal
-	 *      {@link ab.j3d.view.OverlayPainter} should be used.</dd>
-	 * </dl>
-	 *
-	 * @param   view    {@link ViewModelView} which has rendered the scene.
-	 * @param   g2d     {@link Graphics2D} object which can do the 2D painting.
-	 */
-	void paint( final ViewModelView view , final Graphics2D g2d );
+	void mouseReleased( ControlInputEvent event , ViewModelNode viewModelNode , Vector3D wcsPoint );
 }
