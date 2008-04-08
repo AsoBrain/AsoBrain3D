@@ -19,8 +19,16 @@
  */
 package ab.j3d.view.jogl;
 
+import ab.j3d.Matrix3D;
+import ab.j3d.Vector3D;
+import ab.j3d.control.ControlInputEvent;
+import ab.j3d.view.ViewControlInput;
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelExample;
+import ab.j3d.view.ViewModelNode;
+import ab.j3d.view.ViewModelView;
+import ab.j3d.view.control.planar.PlaneControl;
+import ab.j3d.view.control.planar.PlaneMoveControl;
 
 /**
  * Example program for the JOGL view model implementation.
@@ -32,11 +40,62 @@ public class JOGLModelExample
 	extends ViewModelExample
 {
 	/**
+	 * Size of grid.
+	 */
+	private static final int GRID_SIZE = 10000;
+
+	/**
+	 * Spacing of grid.
+	 */
+	private static final int GRID_SPACING = 100;
+
+	/**
 	 * Construct new JOGLModelExample.
 	 */
 	public JOGLModelExample()
 	{
-		super( new JOGLModel( ViewModel.MM ) );
+		super( new JOGLModel( ViewModel.MM )
+			{
+				public ViewModelView createView( final Object id )
+				{
+					final JOGLView result = (JOGLView)super.createView( id );
+					result.drawGrid( Matrix3D.INIT , GRID_SIZE , GRID_SIZE , GRID_SPACING );
+					return result;
+				}
+			} );
+
+	}
+
+	protected PlaneControl createPlaneControl( final Matrix3D plane2wcs )
+	{
+		return new PlaneMoveControl( plane2wcs , true )
+			{
+				public void mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsPoint )
+				{
+					super.mousePressed( event , viewModelNode , wcsPoint );
+
+					viewModelNode.setAlternate( true );
+
+					final ViewControlInput controlInput = (ViewControlInput)event.getSource();
+					final JOGLView view = (JOGLView)controlInput.getView();
+
+					final Matrix3D plane2wcs = getPlane2Wcs();
+					final Matrix3D node2world = viewModelNode.getTransform();
+					view.drawGrid( plane2wcs.setTranslation( node2world.xo , node2world.yo , node2world.zo ) , GRID_SIZE , GRID_SIZE , GRID_SPACING );
+				}
+
+				public void mouseReleased( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsPoint )
+				{
+					super.mouseReleased( event , viewModelNode , wcsPoint );
+
+					viewModelNode.setAlternate( false );
+
+					final ViewControlInput controlInput = (ViewControlInput)event.getSource();
+
+					final JOGLView view = (JOGLView)controlInput.getView();
+					view.drawGrid( Matrix3D.INIT , GRID_SIZE , GRID_SIZE , GRID_SPACING );
+				}
+			};
 	}
 
 	/**
