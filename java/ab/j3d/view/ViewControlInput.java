@@ -78,7 +78,7 @@ public class ViewControlInput
 
 	public List<Face3DIntersection> getIntersections( final Ray3D ray )
 	{
-		final List<Face3DIntersection> result = new LinkedList();
+		final List<Face3DIntersection> result = new LinkedList<Face3DIntersection>();
 
 		for ( final Object nodeID : _model.getNodeIDs() )
 		{
@@ -100,6 +100,16 @@ public class ViewControlInput
 		}
 
 		return result;
+	}
+
+	/**
+	 * Get {@link ViewModelView} being monitored for input events.
+	 *
+	 * @return  {@link ViewModelView} being monitored for input events.
+	 */
+	public ViewModelView getView()
+	{
+		return _view;
 	}
 
 	/**
