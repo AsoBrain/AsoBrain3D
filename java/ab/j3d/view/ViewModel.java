@@ -303,9 +303,8 @@ public abstract class ViewModel
 	}
 
 	/**
-	 * Create a new node (sub tree) in the view tree. If an existing node exists
-	 * with the same ID, then the existing node will be removed before creating
-	 * the new node.
+	 * Create a new node (sub tree) in the view tree. If a node with the same ID
+	 * already exists, that node will be removed before creating the new node.
 	 *
 	 * @param   id                  Application-assigned ID of view model node.
 	 * @param   node3D              Root in the 3D scene to create a view model node for.
