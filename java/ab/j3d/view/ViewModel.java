@@ -320,8 +320,8 @@ public abstract class ViewModel
 
 	/**
 	 * Create a new node (sub tree) in the view tree with the specified initial
-	 * transform. If an existing node exists with the same ID, then the
-	 * existing node will be removed before creating the new node.
+	 * transform. If a node with the same ID already exists, that node will be
+	 * removed before creating the new node.
 	 *
 	 * @param   id                  Application-assigned ID of view model node.
 	 * @param   transform           Initial transform (<code>null</code> => identity).
