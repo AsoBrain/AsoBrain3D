@@ -25,6 +25,8 @@ import java.util.Locale;
 
 import junit.framework.TestCase;
 
+import ab.j3d.view.ViewModelView.RenderingPolicy;
+
 import com.numdata.oss.junit.ResourceBundleTester;
 
 /**
@@ -55,7 +57,7 @@ public class TestViewModelView
 
 		final List<String> expectedKeys = new ArrayList<String>();
 
-		for ( final ViewModelView.RenderingPolicy policy : ViewModelView.RenderingPolicy.values() )
+		for ( final RenderingPolicy policy : RenderingPolicy.values() )
 			expectedKeys.add( policy.name() );
 
 		ResourceBundleTester.testBundles( ViewModelView.class , locales , false , expectedKeys , false , true , false );
