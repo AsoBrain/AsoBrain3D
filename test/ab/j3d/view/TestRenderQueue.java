@@ -27,6 +27,7 @@ import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Object3D;
+import static ab.j3d.view.Projector.ProjectionPolicy;
 
 import com.numdata.oss.junit.ArrayTester;
 
@@ -122,7 +123,7 @@ public final class TestRenderQueue
 		final double      frontClipDistance = -0.1 / viewUnit;
 		final double      backClipDistance  = -100.0 / viewUnit;
 		final double      imageResolution   = 0.0254 / 90.0; // getToolkit().getScreenResolution();
-		final Projector   projector         = Projector.createInstance( Projector.PERSPECTIVE , 800 , 600 , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
+		final Projector   projector         = Projector.createInstance( ProjectionPolicy.PERSPECTIVE , 800 , 600 , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
 
 		if ( "h1".equals( tag ) )
 		{

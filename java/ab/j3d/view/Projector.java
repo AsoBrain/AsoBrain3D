@@ -41,28 +41,31 @@ import com.numdata.oss.ArrayTools;
 public abstract class Projector
 {
 	/**
-	 * Projection policy: perspective.
-	 *
-	 * @see     #createInstance
-	 * @see     PerspectiveProjector
+	 * Projection policy.
 	 */
-	public static final int PERSPECTIVE = 0;
+	public enum ProjectionPolicy
+	{
+		/**
+		 * Projection policy: perspective.
+		 *
+		 * @see     PerspectiveProjector
+		 */
+		PERSPECTIVE ,
 
-	/**
-	 * Projection policy: parallel.
-	 *
-	 * @see     #createInstance
-	 * @see     ParallelProjector
-	 */
-	public static final int PARALLEL = 1;
+		/**
+		 * Projection policy: parallel.
+		 *
+		 * @see     ParallelProjector
+		 */
+		PARALLEL ,
 
-	/**
-	 * Projection policy: isometric.
-	 *
-	 * @see     #createInstance
-	 * @see     IsometricProjector
-	 */
-	public static final int ISOMETRIC = 2;
+		/**
+		 * Projection policy: isometric.
+		 *
+		 * @see     IsometricProjector
+		 */
+		ISOMETRIC ,
+	}
 
 	/**
 	 * Image width in pixels.
@@ -166,7 +169,7 @@ public abstract class Projector
 	 * @throws  IllegalArgumentException if no projector could be created for
 	 *          the specified properties.
 	 */
-	public static Projector createInstance( final int projectionPolicy , final int imageWidth , final int imageHeight , final double imageResolution , final double viewUnit , final double frontClipDistance , final double backClipDistance , final double fieldOfView , final double zoomFactor )
+	public static Projector createInstance( final ProjectionPolicy projectionPolicy , final int imageWidth , final int imageHeight , final double imageResolution , final double viewUnit , final double frontClipDistance , final double backClipDistance , final double fieldOfView , final double zoomFactor )
 	{
 		final Projector result;
 

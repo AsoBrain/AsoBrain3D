@@ -36,6 +36,7 @@ import ab.j3d.control.ControlInputEvent;
 import ab.j3d.geom.BasicRay3D;
 import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Object3D;
+import static ab.j3d.view.Projector.ProjectionPolicy;
 import ab.j3d.view.java2d.Java2dModel;
 
 import com.numdata.oss.event.EventDispatcher;
@@ -309,7 +310,7 @@ public class TestViewControlInput
 
 		protected Projector getProjector()
 		{
-			return Projector.createInstance( Projector.PERSPECTIVE , 100 , 100 , 1.0 , ViewModel.M , 10.0 , 1000.0 , Math.toRadians( 45.0 ) , 1.0 );
+			return Projector.createInstance( ProjectionPolicy.PERSPECTIVE , 100 , 100 , 1.0 , ViewModel.M , 10.0 , 1000.0 , Math.toRadians( 45.0 ) , 1.0 );
 		}
 
 		protected Matrix3D getViewTransform()

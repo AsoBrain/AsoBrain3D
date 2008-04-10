@@ -39,6 +39,8 @@ import ab.j3d.control.OrbitCameraControl;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
+import ab.j3d.view.Projector.ProjectionPolicy;
+import ab.j3d.view.ViewModelView.RenderingPolicy;
 import ab.j3d.view.control.ViewModelNodeControl;
 
 import com.numdata.oss.ArrayTools;
@@ -523,15 +525,8 @@ public abstract class ViewModel
 	 * Create a new view for this model.
 	 *
 	 * @param   id                      Application-assigned ID for the new view.
-	 * @param   renderingPolicy         Desired rendering policy for view
-	 *                                  ({@link ViewModelView.RenderingPolicy#SOLID},
-	 *                                   {@link ViewModelView.RenderingPolicy#SCHEMATIC},
-	 *                                   {@link ViewModelView.RenderingPolicy#SKETCH}, or
-	 *                                   {@link ViewModelView.RenderingPolicy#WIREFRAME}).
-	 * @param   projectionPolicy        Desired projection policy for view
-	 *                                  ({@link Projector#PERSPECTIVE},
-	 *                                   {@link Projector#PARALLEL}, or
-	 *                                   {@link Projector#ISOMETRIC}).
+	 * @param   renderingPolicy         Desired rendering policy for view.
+	 * @param   projectionPolicy        Desired projection policy for view.
 	 * @param   estimatedSceneBounds    Estimated bounding box of scene.
 	 * @param   viewDirection           Direction from which to view the scene.
 	 *
@@ -539,14 +534,14 @@ public abstract class ViewModel
 	 *
 	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public final ViewModelView createView( final Object id , final ViewModelView.RenderingPolicy renderingPolicy , final int projectionPolicy , final Bounds3D estimatedSceneBounds , final Vector3D viewDirection )
+	public final ViewModelView createView( final Object id , final RenderingPolicy renderingPolicy , final ProjectionPolicy projectionPolicy , final Bounds3D estimatedSceneBounds , final Vector3D viewDirection )
 	{
 		final ViewModelView view = createView( id );
 
 		final double   sceneSize = Vector3D.distanceBetween( estimatedSceneBounds.v1 , estimatedSceneBounds.v2 );
 		final Vector3D center    = estimatedSceneBounds.center();
 
-		if ( ( renderingPolicy != ViewModelView.RenderingPolicy.SOLID ) || ( projectionPolicy != Projector.PERSPECTIVE ) )
+		if ( ( renderingPolicy != RenderingPolicy.SOLID ) || ( projectionPolicy != ProjectionPolicy.PERSPECTIVE ) )
 		{
 			final double x = -center.x + viewDirection.x * sceneSize;
 			final double y = -center.y + viewDirection.y * sceneSize;

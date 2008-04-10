@@ -26,7 +26,7 @@ import ab.j3d.control.CameraControl;
 import ab.j3d.control.Control;
 import ab.j3d.control.FromToCameraControl;
 import ab.j3d.model.Camera3D;
-import ab.j3d.view.Projector;
+import static ab.j3d.view.Projector.ProjectionPolicy;
 import ab.j3d.view.ViewModelView;
 
 /**
@@ -131,13 +131,13 @@ public class View3D
 	{
 		if ( PERSPECTIVE_PROJECTION == projection )
 		{
-			_view.setProjectionPolicy( Projector.PERSPECTIVE );
+			_view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
 		}
 		else if ( PARALLEL_PROJECTION == projection )
 		{
 			final Camera3D camera = _view.getCamera();
 
-			_view.setProjectionPolicy( Projector.PARALLEL );
+			_view.setProjectionPolicy( ProjectionPolicy.PARALLEL );
 			camera.setZoomFactor( 0.004 );
 		}
 		else
