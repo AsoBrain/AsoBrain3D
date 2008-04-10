@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2007
+ * (C) Copyright Numdata BV 2006-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -51,7 +51,10 @@ public class GeometryTools
 	 * @param   ray         Ray to get intersection from.
 	 *
 	 * @return  A {@link Vector3D} with the location where the line shot from
-	 *          the mouse pointer intersects with a given plane.
+	 *          the mouse pointer intersects with a given plane;
+	 *          <code>null</code> if no intersection exists (ray parallel to
+	 *          polygon, from negative side of one-sided polygon, outside range
+	 *          of half-ray, or outside polygon).
 	 *
 	 * @throws  NullPointerException if a required input argument is <code>null</code>.
 	 */
@@ -86,7 +89,10 @@ public class GeometryTools
 	 * @param   plane   Plane to get intersection from.
 	 * @param   ray     Ray to get intersection from.
 	 *
-	 * @return  Intersection-point between ray and plane.
+	 * @return  Intersection-point between ray and plane;
+	 *          <code>null</code> if no intersection exists (ray parallel to
+	 *          plane, from negative side of one-sided plane, or outside range
+	 *          of half-ray).
 	 *
 	 * @throws  NullPointerException if a required input argument is <code>null</code>.
 	 */
@@ -117,7 +123,10 @@ public class GeometryTools
 	 * @param   rayOrigin       Origin of ray.
 	 * @param   rayDirection    Direction of ray.
 	 *
-	 * @return  Intersection-point between ray and plane.
+	 * @return  Intersection-point between ray and plane;
+	 *          <code>null</code> if no intersection exists (ray parallel to
+	 *          plane, from negative side of one-sided plane, or outside range
+	 *          of half-ray).
 	 *
 	 * @throws  NullPointerException if a required input argument is <code>null</code>.
 	 */
