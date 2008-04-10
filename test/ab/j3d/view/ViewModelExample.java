@@ -41,6 +41,7 @@ import ab.j3d.control.MouseControl;
 import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Object3D;
 import ab.j3d.model.SkyBox3D;
+import ab.j3d.view.ViewModelView.RenderingPolicy;
 import ab.j3d.view.control.planar.PlaneControl;
 import ab.j3d.view.control.planar.PlaneMoveControl;
 
@@ -162,11 +163,14 @@ public class ViewModelExample
 		final Component component = view.getComponent();
 		component.addMouseListener( new MouseAdapter()
 		{
+			private RenderingPolicy _oldRenderingPolicy = null;
+
 			public void mousePressed( final MouseEvent e )
 			{
 				if ( SwingUtilities.isRightMouseButton( e ) )
 				{
-					view.setRenderingPolicy( ViewModelView.RenderingPolicy.WIREFRAME );
+					_oldRenderingPolicy = view.getRenderingPolicy();
+					view.setRenderingPolicy( RenderingPolicy.WIREFRAME );
 				}
 			}
 
@@ -174,7 +178,7 @@ public class ViewModelExample
 			{
 				if ( SwingUtilities.isRightMouseButton( e ) )
 				{
-					view.setRenderingPolicy( ViewModelView.RenderingPolicy.SOLID );
+					view.setRenderingPolicy( _oldRenderingPolicy );
 				}
 			}
 		} );
