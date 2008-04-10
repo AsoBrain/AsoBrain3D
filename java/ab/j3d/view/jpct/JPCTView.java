@@ -87,20 +87,6 @@ public class JPCTView
 	private final ViewComponentSwitcher _viewComponent;
 
 	/**
-	 * Projection policy of this view.
-	 *
-	 * @see     #setProjectionPolicy
-	 */
-	private int _projectionPolicy;
-
-	/**
-	 * Rendering policy of this view.
-	 *
-	 * @see     ViewModelView#setRenderingPolicy
-	 */
-	private RenderingPolicy _renderingPolicy;
-
-	/**
 	 * Scene input translator for this View.
 	 */
 	private final ViewControlInput _controlInput;
@@ -164,9 +150,6 @@ public class JPCTView
 		_model               = model;
 		_backgroundColor     = backgroundColor;
 		_wireframeColor      = new Color( ~backgroundColor.getRGB() );
-
-		_projectionPolicy = Projector.PERSPECTIVE;
-		_renderingPolicy  = RenderingPolicy.SOLID;
 
 		Config.glColorDepth    = 24;    // @TODO set this on Linux only
 		Config.useLocking      = true;
@@ -364,24 +347,6 @@ public class JPCTView
 		skyCamera.setBack( skyTransform );
 	}
 
-	public void setProjectionPolicy( final int policy )
-	{
-		if ( policy != _projectionPolicy )
-		{
-			_projectionPolicy = policy;
-			update();
-		}
-	}
-
-	public void setRenderingPolicy( final RenderingPolicy policy )
-	{
-		if ( policy != _renderingPolicy )
-		{
-			_renderingPolicy = policy;
-			update();
-		}
-	}
-
 	/**
 	 * Returns the {@link Projector} for this view.
 	 *
@@ -451,7 +416,7 @@ public class JPCTView
 				final Color background = _backgroundColor;
 				frameBuffer.clear( background );
 
-				switch ( _renderingPolicy )
+				switch ( getRenderingPolicy() )
 				{
 					case WIREFRAME :
 						{
@@ -515,7 +480,7 @@ public class JPCTView
 
 	public Action[] getActions( final Locale locale )
 	{
-		return new Action[] { new SwitchRenderingPolicyAction( locale , this , _renderingPolicy ) };
+		return new Action[] { new SwitchRenderingPolicyAction( locale , this , getRenderingPolicy() ) };
 	}
 
 	/**
@@ -647,13 +612,12 @@ public class JPCTView
 
 			final double      viewUnit          = getUnit();
 
-			final int         projectionPolicy  = _projectionPolicy;
 			final double      fieldOfView       = getAperture();
 			final double      zoomFactor        = getZoomFactor();
 			final double      frontClipDistance =  -0.1 / viewUnit;
 			final double      backClipDistance  = -100.0 / viewUnit;
 
-			return Projector.createInstance( projectionPolicy , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
+			return Projector.createInstance( getProjectionPolicy(), imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
 		}
 
 		public Dimension getFrameSize()

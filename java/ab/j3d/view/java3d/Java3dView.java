@@ -42,6 +42,7 @@ import javax.vecmath.Vector3d;
 import ab.j3d.Matrix3D;
 import ab.j3d.control.ControlInput;
 import ab.j3d.view.Projector;
+import ab.j3d.view.Projector.ProjectionPolicy;
 import ab.j3d.view.ViewControlInput;
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelView;
@@ -263,24 +264,30 @@ final class Java3dView
 		return _canvas;
 	}
 
-	public void setProjectionPolicy( final int policy )
+	public void setProjectionPolicy( final ProjectionPolicy policy )
 	{
-		final View view = _view;
-
-		switch ( policy )
+		if ( policy != getProjectionPolicy() )
 		{
-			case Projector.PERSPECTIVE :
-				view.setProjectionPolicy( View.PERSPECTIVE_PROJECTION );
-				break;
+			final View view = _view;
 
-			case Projector.ISOMETRIC :
-			case Projector.PARALLEL :
-				view.setProjectionPolicy( View.PARALLEL_PROJECTION );
-				break;
+			switch ( policy )
+			{
+				case PERSPECTIVE :
+					view.setProjectionPolicy( View.PERSPECTIVE_PROJECTION );
+					break;
 
-			default :
-				throw new IllegalArgumentException( "Invalid projection policy: " + policy );
+				case ISOMETRIC :
+				case PARALLEL :
+					view.setProjectionPolicy( View.PARALLEL_PROJECTION );
+					break;
+
+				default :
+					throw new IllegalArgumentException( "Invalid projection policy: " + policy );
+			}
 		}
+
+		super.setProjectionPolicy( policy );
+
 	}
 
 	public void update()
@@ -331,11 +338,6 @@ final class Java3dView
 		tg.setTransform( transform3d );
 	}
 
-	public void setRenderingPolicy( final RenderingPolicy policy )
-	{
-		/* @FIXME how can we implement such a feature? I think this really requires different geometry! Maybe something with 'alternate appearance' helps a little? */
-	}
-
 	/**
 	 * Returns the {@link Projector} for this view.
 	 *
@@ -346,8 +348,6 @@ final class Java3dView
 		final View view = _view;
 		final Canvas3D canvas = _canvas;
 
-		final int policy = view.getProjectionPolicy() == View.PARALLEL_PROJECTION ? Projector.PARALLEL : Projector.PERSPECTIVE;
-
 		final int    width      = canvas.getWidth();
 		final int    height     = canvas.getHeight();
 		final double resolution = getResolution();
@@ -357,7 +357,7 @@ final class Java3dView
 		final double aperture   = getAperture();
 		final double zoomFactor = getZoomFactor();
 
-		return Projector.createInstance( policy , width , height , resolution , unit , frontClip , backClip , aperture , zoomFactor );
+		return Projector.createInstance( getProjectionPolicy() , width , height , resolution , unit , frontClip , backClip , aperture , zoomFactor );
 	}
 
 	protected ControlInput getControlInput()

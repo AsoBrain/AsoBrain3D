@@ -51,6 +51,7 @@ import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 import ab.j3d.view.Projector;
+import ab.j3d.view.Projector.ProjectionPolicy;
 import ab.j3d.view.SwitchRenderingPolicyAction;
 import ab.j3d.view.ViewControlInput;
 import ab.j3d.view.ViewModelNode;
@@ -69,20 +70,6 @@ public class JOGLView
 	 * Model being viewed.
 	 */
 	private JOGLModel _model;
-
-	/**
-	 * Projection policy of this view.
-	 *
-	 * @see     #setProjectionPolicy
-	 */
-	private int _projectionPolicy;
-
-	/**
-	 * Rendering policy of this view.
-	 *
-	 * @see     ViewModelView#setRenderingPolicy
-	 */
-	private RenderingPolicy _renderingPolicy;
 
 	/**
 	 * Component through which a rendering of the view is shown.
@@ -151,15 +138,13 @@ public class JOGLView
 	 * @param   id              Application-assigned ID of this view.
 	 * @param   textureCache    Texture cache.
 	 */
-	public JOGLView( final JOGLModel model , final Color background , final Object id , final Map<String, SoftReference<Texture>> textureCache )
+	public JOGLView( final JOGLModel model , final Color background , final Object id , final Map<String,SoftReference<Texture>> textureCache )
 	{
 		super( model.getUnit() , id );
 		final double unit = model.getUnit();
 
 		_model = model;
 
-		_projectionPolicy  = Projector.PERSPECTIVE;
-		_renderingPolicy   = RenderingPolicy.SOLID;
 		_frontClipDistance = 0.1 / unit;
 		_backClipDistance  = 100.0 / unit;
 		_renderThread      = null;
@@ -274,24 +259,6 @@ public class JOGLView
 		startRenderer();
 	}
 
-	public void setProjectionPolicy( final int policy )
-	{
-		if ( policy != _projectionPolicy )
-		{
-			_projectionPolicy = policy;
-			update();
-		}
-	}
-
-	public void setRenderingPolicy( final RenderingPolicy policy )
-	{
-		if ( policy != _renderingPolicy )
-		{
-			_renderingPolicy = policy;
-			update();
-		}
-	}
-
 	public Projector getProjector()
 	{
 		final GLCanvas viewComponent     = _viewComponent;
@@ -301,13 +268,12 @@ public class JOGLView
 
 		final double   viewUnit          = getUnit();
 
-		final int      projectionPolicy  = _projectionPolicy;
 		final double   fieldOfView       = getAperture();
 		final double   zoomFactor        = getZoomFactor();
 		final double   frontClipDistance = _frontClipDistance;
 		final double   backClipDistance  = _backClipDistance;
 
-		return Projector.createInstance( projectionPolicy , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
+		return Projector.createInstance( getProjectionPolicy() , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
 	}
 
 	protected ControlInput getControlInput()
@@ -317,7 +283,7 @@ public class JOGLView
 
 	public Action[] getActions( final Locale locale )
 	{
-		return new Action[] { new SwitchRenderingPolicyAction( locale , this , _renderingPolicy ) };
+		return new Action[] { new SwitchRenderingPolicyAction( locale , this , getRenderingPolicy() ) };
 	}
 
 	/**
@@ -513,7 +479,7 @@ public class JOGLView
 		final GL gl = glWrapper.getGL();
 		gl.glViewport( x , y , width , height );
 
-		if ( _projectionPolicy != Projector.PARALLEL )
+		if ( getProjectionPolicy() != ProjectionPolicy.PARALLEL )
 		{
 			//View is not parallel so let's use perspective view. No support for isometric view yet.
 
@@ -564,7 +530,7 @@ public class JOGLView
 		final GL gl = glWrapper.getGL();
 
 		//check if the projector is parallel here, because the zoomfactor can be changed without resizing the window.
-		if ( _projectionPolicy == Projector.PARALLEL )
+		if ( getProjectionPolicy() == ProjectionPolicy.PARALLEL )
 		{
 			final double   near     = _frontClipDistance;
 			final double   far      = _backClipDistance;
@@ -603,7 +569,7 @@ public class JOGLView
 
 		final double aspect = (double)_viewComponent.getWidth() / (double)_viewComponent.getHeight();
 
-		if ( _projectionPolicy == Projector.PERSPECTIVE )
+		if ( getProjectionPolicy() == ProjectionPolicy.PERSPECTIVE )
 		{
 			gl.glScaled( 1.0 , aspect , 1.0 );
 			gl.glEnable( GL.GL_NORMALIZE ); //normalize lighting normals after scaling
@@ -682,7 +648,7 @@ public class JOGLView
 			if ( objects != null )
 			{
 				final Map<String, SoftReference<Texture>> textureCache = _textureCache;
-				switch ( _renderingPolicy )
+				switch ( getRenderingPolicy() )
 				{
 					case SCHEMATIC:
 						glWrapper.glEnable( GL.GL_POLYGON_OFFSET_FILL );

@@ -33,6 +33,7 @@ import ab.j3d.control.Control;
 import ab.j3d.control.ControlInput;
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Transform3D;
+import ab.j3d.view.Projector.ProjectionPolicy;
 
 import com.numdata.oss.event.EventDispatcher;
 
@@ -47,7 +48,9 @@ import com.numdata.oss.event.EventDispatcher;
  */
 public abstract class ViewModelView
 {
-	/** RenderingPolicy */
+	/**
+	 * Rendering policy.
+	 */
 	public enum RenderingPolicy
 	{
 		/**
@@ -126,6 +129,16 @@ public abstract class ViewModelView
 	private double _resolution;
 
 	/**
+	 * Projection policy of this view.
+	 */
+	private ProjectionPolicy _projectionPolicy;
+
+	/**
+	 * Rendering policy of this view.
+	 */
+	private RenderingPolicy _renderingPolicy;
+
+	/**
 	 * Transformation of view.
 	 */
 	private Transform3D _transform;
@@ -157,6 +170,10 @@ public abstract class ViewModelView
 		_unit = unit;
 
 		_resolution = 0.0;
+
+		_projectionPolicy = ProjectionPolicy.PERSPECTIVE;
+
+		_renderingPolicy = RenderingPolicy.SOLID;
 
 		final Camera3D camera = new Camera3D();
 		camera.setTag( id );
@@ -369,23 +386,52 @@ public abstract class ViewModelView
 	protected abstract void update();
 
 	/**
+	 * Get projection policy of this view.
+	 *
+	 * @return  Projection policy.
+	 */
+	public ProjectionPolicy getProjectionPolicy()
+	{
+		return _projectionPolicy;
+	}
+
+	/**
 	 * Set projection policy of this view.
 	 *
-	 * @param   policy      Projection policy of this view
-	 *                      ({@link Projector#PERSPECTIVE},
-	 *                      {@link Projector#ISOMETRIC}, or
-	 *                      {@link Projector#PARALLEL}).
+	 * @param   policy  Projection policy.
 	 */
-	public abstract void setProjectionPolicy( final int policy );
+	public void setProjectionPolicy( final ProjectionPolicy policy )
+	{
+		if ( policy != _projectionPolicy )
+		{
+			_projectionPolicy = policy;
+			update();
+		}
+	}
+
+	/**
+	 * Get rendering policy of this view.
+	 *
+	 * @return  Projection policy.
+	 */
+	public RenderingPolicy getRenderingPolicy()
+	{
+		return _renderingPolicy;
+	}
 
 	/**
 	 * Set rendering policy of this view.
 	 *
-	 * @param   policy      Projection policy of this view
-	 *                      ({@link RenderingPolicy#SOLID}, {@link RenderingPolicy#SCHEMATIC},
-	 *                      {@link RenderingPolicy#SKETCH}, or {@link RenderingPolicy#WIREFRAME}).
+	 * @param   policy  Rendering policy.
 	 */
-	public abstract void setRenderingPolicy( final RenderingPolicy policy );
+	public void setRenderingPolicy( final RenderingPolicy policy )
+	{
+		if ( policy != _renderingPolicy )
+		{
+			_renderingPolicy = policy;
+			update();
+		}
+	}
 
 	/**
 	 * Returns the {@link Projector} for this View.

@@ -63,20 +63,6 @@ final class Java2dView
 	private final Java2dModel _model;
 
 	/**
-	 * Projection policy of this view.
-	 *
-	 * @see     #setProjectionPolicy
-	 */
-	private int _projectionPolicy;
-
-	/**
-	 * Rendering policy of this view.
-	 *
-	 * @see     ViewModelView#setRenderingPolicy
-	 */
-	private RenderingPolicy _renderingPolicy;
-
-	/**
 	 * Component through which a rendering of the view is shown.
 	 */
 	private final ViewComponent _viewComponent;
@@ -131,13 +117,12 @@ final class Java2dView
 
 			final double      viewUnit          = getUnit();
 
-			final int         projectionPolicy  = _projectionPolicy;
 			final double      fieldOfView       = getAperture();
 			final double      zoomFactor        = getZoomFactor();
 			final double      frontClipDistance =   -0.1 / viewUnit;
 			final double      backClipDistance  = -100.0 / viewUnit;
 
-			return Projector.createInstance( projectionPolicy , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
+			return Projector.createInstance( getProjectionPolicy() , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
 		}
 
 		public void paintComponent( final Graphics g )
@@ -162,7 +147,7 @@ final class Java2dView
 			final boolean backfaceCulling;
 			final boolean applyLighting;
 
-			final RenderingPolicy renderingPolicy = _renderingPolicy;
+			final RenderingPolicy renderingPolicy = getRenderingPolicy();
 			switch ( renderingPolicy )
 			{
 					case SOLID     : fill = true;  outline = false; useTextures = true;  backfaceCulling = true;  applyLighting = true;  break;
@@ -209,9 +194,6 @@ final class Java2dView
 
 		_model = model;
 
-		_projectionPolicy = Projector.PERSPECTIVE;
-		_renderingPolicy  = RenderingPolicy.SOLID;
-
 		/*
 		 * Create view component.
 		 */
@@ -241,24 +223,6 @@ final class Java2dView
 		_viewComponent.repaint();
 	}
 
-	public void setProjectionPolicy( final int policy )
-	{
-		if ( policy != _projectionPolicy )
-		{
-			_projectionPolicy = policy;
-			update();
-		}
-	}
-
-	public void setRenderingPolicy( final RenderingPolicy policy )
-	{
-		if ( policy != _renderingPolicy )
-		{
-			_renderingPolicy = policy;
-			update();
-		}
-	}
-
 	/**
 	 * Returns the {@link Projector} for this view.
 	 *
@@ -276,6 +240,6 @@ final class Java2dView
 
 	public Action[] getActions( final Locale locale )
 	{
-		return new Action[] { new SwitchRenderingPolicyAction( locale , this , _renderingPolicy ) };
+		return new Action[] { new SwitchRenderingPolicyAction( locale , this , getRenderingPolicy() ) };
 	}
 }
