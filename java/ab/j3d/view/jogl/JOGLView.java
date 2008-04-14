@@ -97,24 +97,29 @@ public class JOGLView
 	private RenderThread _renderThread;
 
 	/**
-	 * Grid transform.
+	 * Transforms grid to world coordinates.
 	 */
 	private Matrix3D _grid2world = null;
 
 	/**
-	 * Dx size of grid
+	 * Number of cells in grid.
 	 */
-	private int _gridDx = 0;
+	private int _gridCellCount = 0;
 
 	/**
-	 * Dy size of grid
+	 * Size of each grid cell.
 	 */
-	private int _gridDy = 0;
+	private int _gridCellSize = 0;
 
 	/**
-	 * Gridspacing, on every value a line is drawn
+	 * If set, hightlight X=0 and Y=0 grid axes.
 	 */
-	private int _gridSpacing = 0;
+	private boolean _gridHighlightAxes = false;
+
+	/**
+	 * Interval to use for highlighting grid lines.
+	 */
+	private int _gridHighlightInterval = 0;
 
 	/**
 	 * Texture cache
@@ -497,17 +502,19 @@ public class JOGLView
 	/**
 	 * Draws a grid on the view using the specified parameters.
 	 *
-	 * @param   grid2world  Transforms grid to world coordinates.
-	 * @param   dx          Width of the grid.
-	 * @param   dy          Height of the grid.
-	 * @param   spacing     Spacing between the grid lines.
+	 * @param   grid2world          Transforms grid to world coordinates.
+	 * @param   cellCount           Number of cells in grid.
+	 * @param   cellSize            Size of each cell.
+	 * @param   hightlightAxes      If set, hightlight X=0 and Y=0 axes.
+	 * @param   highlightInterval   Interval to use for highlighting grid lines.
 	 */
-	public void drawGrid( final Matrix3D grid2world , final int dx , final int dy , final int spacing )
+	public void drawGrid( final Matrix3D grid2world , final int cellCount , final int cellSize , final boolean hightlightAxes , final int highlightInterval )
 	{
-		_grid2world  = grid2world;
-		_gridDx      = dx;
-		_gridDy      = dy;
-		_gridSpacing = spacing;
+		_grid2world            = grid2world;
+		_gridCellCount         = cellCount;
+		_gridCellSize          = cellSize;
+		_gridHighlightAxes     = hightlightAxes;
+		_gridHighlightInterval = highlightInterval;
 	}
 
 	/**
@@ -515,7 +522,7 @@ public class JOGLView
 	 */
 	public void removeGrid()
 	{
-		drawGrid( null , 0 , 0 , 0 );
+		drawGrid( null , 0 , 0 , false , 0 );
 	}
 
 	/**
@@ -705,6 +712,7 @@ public class JOGLView
 				}
 			}
 		}
-		JOGLTools.drawGrid( glWrapper , _grid2world , _gridDx , _gridDy , _gridSpacing );
+		_gridHighlightInterval = 10;
+		JOGLTools.drawGrid( glWrapper , _grid2world , _gridCellCount , _gridCellSize , _gridHighlightAxes , _gridHighlightInterval );
 	}
 }

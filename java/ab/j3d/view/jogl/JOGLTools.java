@@ -353,15 +353,16 @@ public class JOGLTools
 	/**
 	 * Draw a 3D grid centered around point x,y,z with size dx,dy.
 	 *
-	 * @param   glWrapper   GL context wrapper.
-	 * @param   grid2world  Transforms grid to world coordinates.
-	 * @param   dx          Width of the grid.
-	 * @param   dy          Height of the grid.
-	 * @param   spacing     Spacing between the grid lines.
+	 * @param   glWrapper           GL context wrapper.
+	 * @param   grid2world          Transforms grid to world coordinates.
+	 * @param   cellCount           Number of cells in grid.
+	 * @param   cellSize            Size of each cell.
+	 * @param   hightlightAxes      If set, hightlight X=0 and Y=0 axes.
+	 * @param   highlightInterval   Interval to use for highlighting grid lines.
 	 */
-	public static void drawGrid( final GLWrapper glWrapper , final Matrix3D grid2world , final int dx , final int dy , final int spacing )
+	public static void drawGrid( final GLWrapper glWrapper , final Matrix3D grid2world , final int cellCount , final int cellSize , final boolean hightlightAxes , final int highlightInterval )
 	{
-		if ( ( grid2world != null ) && ( dx > 0 ) && ( dy > 0 ) && ( spacing != 0 ) ) // argument sanity
+		if ( ( grid2world != null ) && ( cellCount > 0 ) && ( cellSize > 0 ) ) // argument sanity
 		{
 			final GL gl = glWrapper.getGL();
 
@@ -372,58 +373,72 @@ public class JOGLTools
 			glWrapper.setBlend( true );
 			glWrapper.setLineSmooth( true );
 
-			glWrapper.glLineWidth( 1.0f );
 			glWrapper.setLighting( false );
-			glWrapper.glBegin( GL.GL_LINES );
 
-			for ( int i = -dx / 2 ; i <= dx / 2 ; i += spacing )
+			final int limit = cellCount * cellSize;
+
+			if ( hightlightAxes )
 			{
-				if ( ( ( i - dx ) / spacing ) % 10 == 0 )
-				{
-					gl.glEnd();
-					glWrapper.glLineWidth( 2.0f );
-					gl.glBegin( GL.GL_LINES );
-					glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
-					gl.glVertex3i( i , -dy / 2 , 0 );
-					gl.glVertex3i( i ,  dy / 2 , 0 );
-					gl.glEnd();
-					glWrapper.glLineWidth( 1.0f );
-					gl.glBegin( GL.GL_LINES );
-				}
-				else
-				{
-					glWrapper.glColor3f( 0.75f , 0.75f , 0.75f );
-					gl.glVertex3i( i , -dy / 2 , 0 );
-					gl.glVertex3i( i ,  dy / 2 , 0 );
-				}
+				glWrapper.glLineWidth( 2.5f );
+				glWrapper.glColor3f( 0.1f , 0.1f , 0.1f );
+				gl.glBegin( GL.GL_LINES );
+
+				gl.glVertex3i(      0 , -limit , 0 );
+				gl.glVertex3i(      0 ,  limit , 0 );
+				gl.glVertex3i( -limit ,      0 , 0 );
+				gl.glVertex3i(  limit ,      0 , 0 );
+
+				gl.glEnd();
 			}
 
-			for ( int i = -dy / 2 ; i <= dy / 2 ; i += spacing )
+			if ( ( highlightInterval > 1 ) && ( highlightInterval <= cellCount ) )
 			{
-				if ( ( ( i - dy ) / spacing ) % 10 == 0 )
-				{
-					gl.glEnd();
-					glWrapper.glLineWidth( 2.0f );
+				glWrapper.glLineWidth( 1.5f );
+				glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
+				gl.glBegin( GL.GL_LINES );
 
-					gl.glBegin( GL.GL_LINES );
-					glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
-					gl.glVertex3i( -dx / 2 , i , 0 );
-					gl.glVertex3i(  dx / 2 , i , 0 );
-					gl.glEnd();
-					glWrapper.glLineWidth( 1.0f );
-					gl.glBegin( GL.GL_LINES );
-				}
-				else
+				for ( int step = highlightInterval ; step <= cellCount ; step += highlightInterval )
 				{
-					gl.glVertex3i( -dx / 2 , i , 0 );
-					gl.glVertex3i(  dx / 2 , i , 0 );
-					glWrapper.glColor3f( 0.75f , 0.75f , 0.75f );
+					final int position = step * cellSize;
+
+					gl.glVertex3i( -position , -limit , 0 );
+					gl.glVertex3i( -position ,  limit , 0 );
+					gl.glVertex3i(  position , -limit , 0 );
+					gl.glVertex3i(  position ,  limit , 0 );
+					gl.glVertex3i( -limit , -position , 0 );
+					gl.glVertex3i(  limit , -position , 0 );
+					gl.glVertex3i( -limit ,  position , 0 );
+					gl.glVertex3i(  limit ,  position , 0 );
+				}
+
+				gl.glEnd();
+			}
+
+			glWrapper.glLineWidth( 1.0f );
+			glWrapper.glColor3f( 0.75f , 0.75f , 0.75f );
+			glWrapper.glBegin( GL.GL_LINES );
+
+			for ( int step = hightlightAxes ? 1 : 0 ; step <= cellCount ; step++ )
+			{
+				final int position = step * cellSize;
+
+				if ( ( highlightInterval < 2 ) || ( step % highlightInterval != 0 ) )
+				{
+					gl.glVertex3i( -position , -limit , 0 );
+					gl.glVertex3i( -position ,  limit , 0 );
+					gl.glVertex3i(  position , -limit , 0 );
+					gl.glVertex3i(  position ,  limit , 0 );
+					gl.glVertex3i( -limit , -position , 0 );
+					gl.glVertex3i(  limit , -position , 0 );
+					gl.glVertex3i( -limit ,  position , 0 );
+					gl.glVertex3i(  limit ,  position , 0 );
+
 				}
 			}
 
 			glWrapper.glEnd();
-			glWrapper.setLighting( true );
 
+			glWrapper.setLighting( true );
 			glWrapper.glPopMatrix();
 		}
 	}
@@ -793,9 +808,9 @@ public class JOGLTools
 	/**
 	 * Compiles both shaders and attaches them to a newly created shader program.
 	 *
-	 * @param gl                OpenGL context.
-	 * @param fragmentShader    Fragment shader to use.
-	 * @param vertexShader      Vertes shader to use.
+	 * @param   gl              OpenGL context.
+	 * @param   fragmentShader  Fragment shader to use.
+	 * @param   vertexShader    Vertes shader to use.
 	 *
 	 * @return  Returns the shader program, fill
 	 */

@@ -40,14 +40,19 @@ public class JOGLModelExample
 	extends ViewModelExample
 {
 	/**
-	 * Size of grid.
+	 * Number of cells in grid.
 	 */
-	private static final int GRID_SIZE = 10000;
+	private static final int GRID_CELL_COUNT = 100;
 
 	/**
-	 * Spacing of grid.
+	 * Size of each grid cell.
 	 */
-	private static final int GRID_SPACING = 100;
+	private static final int GRID_CELL_SIZE = 100;
+
+	/**
+	 * Interval to use for highlighting grid lines.
+	 */
+	private static final int GRID_HIGHLIGHT_INTERVAL = 10;
 
 	/**
 	 * Construct new JOGLModelExample.
@@ -59,7 +64,7 @@ public class JOGLModelExample
 				public ViewModelView createView( final Object id )
 				{
 					final JOGLView result = (JOGLView)super.createView( id );
-					result.drawGrid( Matrix3D.INIT , GRID_SIZE , GRID_SIZE , GRID_SPACING );
+					result.drawGrid( Matrix3D.INIT , GRID_CELL_COUNT , GRID_CELL_SIZE , true , GRID_HIGHLIGHT_INTERVAL );
 					return result;
 				}
 			} );
@@ -81,7 +86,7 @@ public class JOGLModelExample
 
 					final Matrix3D plane2wcs = getPlane2Wcs();
 					final Matrix3D node2world = viewModelNode.getTransform();
-					view.drawGrid( plane2wcs.setTranslation( node2world.xo , node2world.yo , node2world.zo ) , GRID_SIZE , GRID_SIZE , GRID_SPACING );
+					view.drawGrid( plane2wcs.setTranslation( node2world.xo , node2world.yo , node2world.zo ) , GRID_CELL_COUNT , GRID_CELL_SIZE , true , GRID_HIGHLIGHT_INTERVAL );
 				}
 
 				public void mouseReleased( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsPoint )
@@ -93,7 +98,7 @@ public class JOGLModelExample
 					final ViewControlInput controlInput = (ViewControlInput)event.getSource();
 
 					final JOGLView view = (JOGLView)controlInput.getView();
-					view.drawGrid( Matrix3D.INIT , GRID_SIZE , GRID_SIZE , GRID_SPACING );
+					view.drawGrid( Matrix3D.INIT , GRID_CELL_COUNT , GRID_CELL_SIZE , true , GRID_HIGHLIGHT_INTERVAL );
 				}
 			};
 	}
