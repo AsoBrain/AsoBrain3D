@@ -21,6 +21,8 @@ package ab.j3d.view;
 
 import java.util.Locale;
 
+import ab.j3d.view.ViewModelView.RenderingPolicy;
+
 import com.numdata.oss.ResourceBundleTools;
 import com.numdata.oss.ui.ChoiceAction;
 
@@ -45,7 +47,7 @@ public class SwitchRenderingPolicyAction
 	 * @param   view            The view this action belongs to.
 	 * @param   currentPolicy   Current rendering policy of the view.
 	 */
-	public SwitchRenderingPolicyAction( final Locale locale , final ViewModelView view , final ViewModelView.RenderingPolicy currentPolicy )
+	public SwitchRenderingPolicyAction( final Locale locale , final ViewModelView view , final RenderingPolicy currentPolicy )
 	{
 
 		super( ResourceBundleTools.getBundle( ViewModelView.class , locale ) , currentPolicy );
@@ -54,6 +56,6 @@ public class SwitchRenderingPolicyAction
 
 	public void run()
 	{
-		_view.setRenderingPolicy( (ViewModelView.RenderingPolicy)getSelectedValue() );
+		_view.setRenderingPolicy( (RenderingPolicy)getSelectedValue() );
 	}
 }
