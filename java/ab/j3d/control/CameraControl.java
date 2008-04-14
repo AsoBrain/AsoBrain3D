@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2006
+ * (C) Copyright Numdata BV 2004-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,11 +26,11 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import javax.swing.Action;
 
-import com.numdata.oss.ResourceBundleTools;
-import com.numdata.oss.ui.BasicAction;
-
 import ab.j3d.Matrix3D;
 import ab.j3d.view.ViewModelView;
+
+import com.numdata.oss.ResourceBundleTools;
+import com.numdata.oss.ui.BasicAction;
 
 /**
  * This abstract class defined a control(ler) for a view in the view model.
@@ -146,42 +146,6 @@ public abstract class CameraControl
 		startCapture( event );
 		return null;
 	}
-
-	public void mouseDragged( final ControlInputEvent event )
-	{
-		if ( event.isMouseButton1Down() )
-			mouseDragButton1( event );
-
-		if ( event.isMouseButton2Down() )
-			mouseDragButton2( event );
-
-		if ( event.isMouseButton3Down() )
-			mouseDragButton3( event );
-	}
-
-	/**
-	 * Handle drag operation with left mouse button. This method is called by
-	 * the <code>dragTo()</code> method.
-	 *
-	 * @param   event   Drag event.
-	 */
-	protected abstract void mouseDragButton1( final ControlInputEvent event );
-
-	/**
-	 * Handle drag operation with middle mouse button. This method is called by
-	 * the <code>dragTo()</code> method.
-	 *
-	 * @param   event   Drag event.
-	 */
-	protected abstract void mouseDragButton2( final ControlInputEvent event );
-
-	/**
-	 * Handle drag operation with right mouse button. This method is called by
-	 * the <code>dragTo()</code> method.
-	 *
-	 * @param   event   Drag event.
-	 */
-	protected abstract void mouseDragButton3( final ControlInputEvent event );
 
 	/**
 	 * Save current camera control settings. The saved settings can be restored
