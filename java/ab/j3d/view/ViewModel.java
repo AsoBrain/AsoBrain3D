@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import javax.swing.Action;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
@@ -43,7 +43,6 @@ import ab.j3d.view.Projector.ProjectionPolicy;
 import ab.j3d.view.ViewModelView.RenderingPolicy;
 import ab.j3d.view.control.ViewModelNodeControl;
 
-import com.numdata.oss.ArrayTools;
 import com.numdata.oss.ui.ActionTools;
 
 /**
@@ -592,22 +591,25 @@ public abstract class ViewModel
 		if ( view == null )
 			throw new IllegalArgumentException( String.valueOf( id ) );
 
-		final JPanel result = new JPanel( new BorderLayout() );
-		result.add( view.getComponent() , BorderLayout.CENTER );
+		final String label = view.getLabel();
 
-		Action[] actions = new Action[ 0 ];
+		final JToolBar toolbar = new JToolBar( label );
+		if ( label != null )
+		{
+			toolbar.add( new JLabel( view.getLabel() + ": " ) );
+		}
 
 		final CameraControl cameraControl = view.getCameraControl();
 		if ( cameraControl != null )
-			actions = (Action[])ArrayTools.addAll( actions , cameraControl.getActions( locale ) );
+		{
+			ActionTools.addToToolBar( toolbar , cameraControl.getActions( locale ) );
+		}
 
-		for ( final Action action : view.getActions( locale ) )
-			actions = (Action[])ArrayTools.append( actions , action );
+		ActionTools.addToToolBar( toolbar , view.getActions( locale ) );
 
-		final JToolBar toolbar = ActionTools.createToolbar( null , actions );
-		if ( toolbar != null )
-			result.add( toolbar , BorderLayout.NORTH );
-
+		final JPanel result = new JPanel( new BorderLayout() );
+		result.add( view.getComponent() , BorderLayout.CENTER );
+		result.add( toolbar , BorderLayout.NORTH );
 		return result;
 	}
 
