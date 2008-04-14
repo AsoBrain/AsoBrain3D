@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2007
+ * (C) Copyright Numdata BV 2006-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -107,7 +107,7 @@ public class MouseControl
 	 * Releasing this capture is normally not needed, since it will
 	 * automatically be stopped when the event sequence is completed.
 	 *
-	 * @param   event   Scene input event whose sequence to capture.
+	 * @param   event   Control input event whose sequence to capture.
 	 *
 	 * @see     #stopCapture
 	 */
@@ -123,7 +123,7 @@ public class MouseControl
 	/**
 	 * Stop capture of an event sequence.
 	 *
-	 * @param   event   Scene input event used to stop capture.
+	 * @param   event   Control input event used to stop capture.
 	 */
 	protected void stopCapture( final ControlInputEvent event )
 	{
@@ -139,7 +139,7 @@ public class MouseControl
 	 * specified event is part of a captured sequence. It will also stop the
 	 * capture automatically if a captured event sequence was terminated.
 	 *
-	 * @param   controlInputEvent     Scene input event to test against capture.
+	 * @param   controlInputEvent     Control input event to test against capture.
 	 *
 	 * @return  <code>true</code> if capture is valid and active;
 	 *          <code>false</code> if no capture is active.
@@ -163,7 +163,7 @@ public class MouseControl
 	 * This method is not called during captured event sequences. Starting
 	 * captures within this method does not seem to be a good idea either.
 	 *
-	 * @param   event   Scene input event.
+	 * @param   event   Control input event.
 	 *
 	 * @return  Filtered event (may be same or modified);
 	 *          <code>null</code> to discard event completely.
@@ -179,7 +179,7 @@ public class MouseControl
 	 * This method is called when one of the mouse buttons is pressed while no
 	 * mouse event sequence capture has been started yet.
 	 *
-	 * @param   event   Scene input event.
+	 * @param   event   Control input event.
 	 *
 	 * @return  Filtered event (may be same or modified);
 	 *          <code>null</code> to discard event completely (e.g. because
@@ -196,7 +196,7 @@ public class MouseControl
 	 * This method is called when the mouse is dragged during a captured mouse
 	 * event sequence.
 	 *
-	 * @param   event   Scene input event.
+	 * @param   event   Control input event.
 	 *
 	 * @see     MouseEvent#MOUSE_DRAGGED
 	 */
@@ -208,7 +208,7 @@ public class MouseControl
 	 * This method is called when the mouse is released during a captured mouse
 	 * event sequence. The event sequence will be terminated after this event.
 	 *
-	 * @param   event   Scene input event.
+	 * @param   event   Control input event.
 	 *
 	 * @see     MouseEvent#MOUSE_RELEASED
 	 */

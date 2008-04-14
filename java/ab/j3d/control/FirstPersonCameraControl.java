@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,9 +18,9 @@
  */
 package ab.j3d.control;
 
+import java.awt.event.KeyEvent;
 import java.util.EventObject;
 import java.util.Properties;
-import java.awt.event.KeyEvent;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
@@ -49,7 +49,7 @@ import ab.j3d.view.ViewModelView;
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public final class FirstPersonCameraControl
+public class FirstPersonCameraControl
 	extends CameraControl
 {
 	/**
@@ -88,13 +88,6 @@ public final class FirstPersonCameraControl
 	 * @see     #restore()
 	 */
 	private Vector3D _savedTo;
-
-	/**
-	 * View transform when dragging started.
-	 * <p />
-	 * This is used as temporary state variable for dragging operations.
-	 */
-	private Matrix3D _dragStartTransform = Matrix3D.INIT;
 
 	/**
 	 * Point from where was being looked when dragging started.
@@ -335,9 +328,9 @@ public final class FirstPersonCameraControl
 
 		final double stepSize = getStepSize();
 
-		final Vector3D movement = xAxis.multiply( xSteps * stepSize )
-		                   .plus( yAxis.multiply( ySteps * stepSize ) )
-		                   .plus( upPrimary.multiply( zSteps * stepSize ) );
+		Vector3D movement = xAxis.multiply( xSteps * stepSize );
+		movement = movement.plus( yAxis.multiply( ySteps * stepSize ) );
+		movement = movement.plus( upPrimary.multiply( zSteps * stepSize ) );
 
 		setFrom( from.plus( movement ) );
 		setTo( to.plus( movement ) );
@@ -345,64 +338,84 @@ public final class FirstPersonCameraControl
 
 	public void handleKey( final int keyCode )
 	{
+		final Vector3D from = _from;
+		final Vector3D to   = _to;
+
 		switch ( keyCode )
 		{
 			case KeyEvent.VK_LEFT :
-				moveSteps( _from , _to , getTransform() , -1.0 ,  0.0 ,  0.0 );
+				moveSteps( from, to, getTransform() , -1.0 ,  0.0 ,  0.0 );
 				break;
 
 			case KeyEvent.VK_RIGHT :
-				moveSteps( _from , _to , getTransform() ,  1.0 ,  0.0 ,  0.0 );
+				moveSteps( from, to, getTransform() ,  1.0 ,  0.0 ,  0.0 );
 				break;
 
 			case KeyEvent.VK_UP :
-				moveSteps( _from , _to , getTransform() ,  0.0 ,  1.0 ,  0.0 );
+				moveSteps( from, to, getTransform() ,  0.0 ,  1.0 ,  0.0 );
 				break;
 
 			case KeyEvent.VK_DOWN :
-				moveSteps( _from , _to , getTransform() ,  0.0 , -1.0 ,  0.0 );
+				moveSteps( from, to, getTransform() ,  0.0 , -1.0 ,  0.0 );
 				break;
 
 			case KeyEvent.VK_PAGE_DOWN :
-				moveSteps( _from , _to , getTransform() ,  0.0 ,  0.0 , -0.5 );
+				moveSteps( from, to, getTransform() ,  0.0 ,  0.0 , -0.5 );
 				break;
 
 			case KeyEvent.VK_PAGE_UP :
-				moveSteps( _from , _to , getTransform() ,  0.0 ,  0.0 ,  0.5 );
+				moveSteps( from, to, getTransform() ,  0.0 ,  0.0 ,  0.5 );
 				break;
 		}
 	}
 
 	public EventObject mousePressed( final ControlInputEvent event )
 	{
-		_dragStartTransform = getTransform();
-		_dragStartFrom      = _from;
-		_dragStartTo        = _to;
+		_dragStartFrom = _from;
+		_dragStartTo   = _to;
 
 		return super.mousePressed( event );
 	}
 
-	protected void mouseDragButton1( final ControlInputEvent event )
+	public void mouseDragged( final ControlInputEvent event )
+	{
+		switch ( event.getMouseButtonDown() )
+		{
+			case 1 :
+				dragToAroundFrom( event );
+				break;
+
+			case 2 :
+				dragFromAroundTo( event );
+				break;
+
+			case 3 :
+				zoom( event );
+				break;
+		}
+	}
+
+	protected void dragToAroundFrom( final ControlInputEvent event )
 	{
 		final Vector3D upPrimary = _upPrimary;
-		final Vector3D from      = _dragStartTo;
-		final Vector3D to        = _dragStartFrom;
-		final double   distance  = to.distanceTo( from );
+		final Vector3D from      = _dragStartFrom;
+		final Vector3D to        = _dragStartTo;
+		final double   distance  = from.distanceTo( to );
 
 		final double   toRadians = _view.getPixelsToRadiansFactor();
 		final double   deltaX    = -toRadians * (double)event.getDragDeltaX();
 		final double   deltaY    = -(double)event.getDragDeltaY();
 
-		final Matrix3D rotation  = Matrix3D.getRotationTransform( to , upPrimary , deltaX );
+		final Matrix3D rotation  = Matrix3D.getRotationTransform( from , upPrimary , deltaX );
 		final Vector3D elevation = upPrimary.multiply( distance * deltaY / 100.0 );
 
-		Vector3D newFrom = from;
-		newFrom = rotation.multiply( newFrom );
-		newFrom = newFrom.plus( elevation );
-		setTo( newFrom );
+		Vector3D newto = to;
+		newto = rotation.multiply( newto );
+		newto = newto.plus( elevation );
+		setTo( newto );
 	}
 
-	protected void mouseDragButton2( final ControlInputEvent event )
+	protected void dragFromAroundTo( final ControlInputEvent event )
 	{
 		final Vector3D upPrimary = _upPrimary;
 		final Vector3D from      = _dragStartFrom;
@@ -422,7 +435,7 @@ public final class FirstPersonCameraControl
 		setFrom( newFrom );
 	}
 
-	protected void mouseDragButton3( final ControlInputEvent event )
+	protected void zoom( final ControlInputEvent event )
 	{
 		final Vector3D from = _dragStartFrom;
 		final Vector3D to   = _dragStartTo;
@@ -436,11 +449,4 @@ public final class FirstPersonCameraControl
 		newFrom = newFrom.plus( to.multiply( 1.0 - zoom ) );
 		setFrom( newFrom );
 	}
-
-//	protected void mouseDragButton3( final ControlInputEvent event )
-//	{
-//		moveSteps( _dragStartFrom , _dragStartTo , _dragStartTransform ,
-//		           (double)event.getDragDeltaX() / -10.0 ,
-//		           (double)event.getDragDeltaY() /  10.0 );
-//	}
 }

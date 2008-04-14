@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-200
+ * (C) Copyright Numdata BV 2006-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -40,7 +40,7 @@ import com.numdata.oss.PropertyTools;
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public final class PanAndZoomCameraControl
+public class PanAndZoomCameraControl
 	extends CameraControl
 {
 	/**
@@ -141,7 +141,22 @@ public final class PanAndZoomCameraControl
 		return super.mousePressed( event );
 	}
 
-	protected void mouseDragButton1( final ControlInputEvent event )
+	public void mouseDragged( final ControlInputEvent event )
+	{
+		switch ( event.getMouseButtonDown() )
+		{
+			case 1 :
+			case 2 :
+				pan( event );
+				break;
+
+			case 3 :
+				zoom( event );
+				break;
+		}
+	}
+
+	protected void pan( final ControlInputEvent event )
 	{
 		final ViewModelView view          = _view;
 		final Matrix3D      viewTransform = _dragStartViewTransform;
@@ -154,12 +169,7 @@ public final class PanAndZoomCameraControl
 		view.setViewTransform( viewTransform.plus( dx , dy , 0.0 ) );
 	}
 
-	protected void mouseDragButton2( final ControlInputEvent event )
-	{
-		mouseDragButton1( event );
-	}
-
-	protected void mouseDragButton3( final ControlInputEvent event )
+	protected void zoom( final ControlInputEvent event )
 	{
 		final ViewModelView view   = _view;
 		final Camera3D      camera = view.getCamera();
@@ -169,7 +179,7 @@ public final class PanAndZoomCameraControl
 		final double sensitivity   = 150.0; /* should this be configurable? */
 		final double adjustment    = 1.0 + (double)Math.abs( deltaY ) / sensitivity;
 
-		camera.setZoomFactor( ( deltaY < 0 ) ? oldZoomFactor / adjustment : oldZoomFactor * adjustment );
+		camera.setZoomFactor( ( deltaY > 0 ) ? oldZoomFactor / adjustment : oldZoomFactor * adjustment );
 
 		final Component viewComponent = view.getComponent();
 		viewComponent.repaint( 0 , 0 , 1 , 1 );

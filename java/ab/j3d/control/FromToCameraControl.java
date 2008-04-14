@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2006
+ * (C) Copyright Numdata BV 2004-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -325,7 +325,25 @@ public class FromToCameraControl
 		return super.mousePressed( event );
 	}
 
-	protected void mouseDragButton1( final ControlInputEvent event )
+	public void mouseDragged( final ControlInputEvent event )
+	{
+		switch ( event.getMouseButtonDown() )
+		{
+			case 1 :
+				rotateFromAroundTo( event );
+				break;
+
+			case 2 :
+				move( event );
+				break;
+
+			case 3 :
+				zoom( event );
+				break;
+		}
+	}
+
+	protected void rotateFromAroundTo( final ControlInputEvent event )
 	{
 		final Vector3D upPrimary = _upPrimary;
 		final Vector3D from      = _dragStartFrom;
@@ -345,7 +363,7 @@ public class FromToCameraControl
 		setFrom( newFrom );
 	}
 
-	protected void mouseDragButton2( final ControlInputEvent event )
+	protected void move( final ControlInputEvent event )
 	{
 		final Vector3D upPrimary = _upPrimary;
 		final Vector3D from      = _dragStartFrom;
@@ -365,7 +383,7 @@ public class FromToCameraControl
 		setFrom( newFrom );
 	}
 
-	protected void mouseDragButton3( final ControlInputEvent event )
+	protected void zoom( final ControlInputEvent event )
 	{
 		final Vector3D from = _dragStartFrom;
 		final Vector3D to   = _dragStartTo;

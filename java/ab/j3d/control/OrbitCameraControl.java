@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2006
+ * (C) Copyright Numdata BV 2004-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,6 +18,7 @@
  */
 package ab.j3d.control;
 
+import java.awt.event.MouseEvent;
 import java.util.EventObject;
 import java.util.NoSuchElementException;
 import java.util.Properties;
@@ -47,7 +48,7 @@ import com.numdata.oss.PropertyTools;
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public final class OrbitCameraControl
+public class OrbitCameraControl
 	extends CameraControl
 {
 	private double _originX;
@@ -248,7 +249,25 @@ public final class OrbitCameraControl
 		return super.mousePressed( event );
 	}
 
-	protected void mouseDragButton1( final ControlInputEvent event )
+	public void mouseDragged( final ControlInputEvent event )
+	{
+		switch ( event.getMouseButtonDown() )
+		{
+			case MouseEvent.BUTTON1 :
+				rotate( event );
+				break;
+
+			case MouseEvent.BUTTON2 :
+				pan( event );
+				break;
+
+			case MouseEvent.BUTTON3 :
+				zoom( event );
+				break;
+		}
+	}
+
+	protected void rotate( final ControlInputEvent event )
 	{
 		final double toDegrees = Math.toDegrees( _view.getPixelsToRadiansFactor() );
 
@@ -258,7 +277,7 @@ public final class OrbitCameraControl
 		updateTransform();
 	}
 
-	protected void mouseDragButton2( final ControlInputEvent event )
+	protected void pan( final ControlInputEvent event )
 	{
 		final double toUnits = _view.getPixelsToUnitsFactor();
 
@@ -268,7 +287,7 @@ public final class OrbitCameraControl
 		updateTransform();
 	}
 
-	protected void mouseDragButton3( final ControlInputEvent event )
+	protected void zoom( final ControlInputEvent event )
 	{
 		final double toUnits = _view.getPixelsToUnitsFactor();
 
