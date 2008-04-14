@@ -25,6 +25,7 @@ import java.io.IOException;
 import ab.j3d.Material;
 
 import com.numdata.oss.io.IndentingWriter;
+import com.numdata.oss.MathTools;
 
 /**
  * Pov Texture / material definition.
@@ -342,8 +343,13 @@ public class PovTexture
 		      new PovVector( (double)material.diffuseColorRed , (double)material.diffuseColorGreen, (double)material.diffuseColorBlue ) , null ,
 		      ( material.colorMap != null ) ? ( textureDirectory != null ) ? textureDirectory + '/' + material.colorMap : material.colorMap : null );
 
-		setAmbient( new PovVector( (double)( material.ambientColorRed / material.diffuseColorRed ) , (double)( material.ambientColorGreen / material.diffuseColorGreen ) , (double)( material.ambientColorBlue / material.diffuseColorBlue ) ) );
-		setDiffuse( 1.0 );
+		final double diffuseReflectivity = material.getDiffuseReflectivity();
+		if ( MathTools.significantlyGreaterThan( diffuseReflectivity , 0.0 ) )
+		{
+			setAmbient( new PovVector( (double)material.ambientColorRed / diffuseReflectivity , (double)material.ambientColorGreen / diffuseReflectivity , (double)material.ambientColorBlue / diffuseReflectivity ) );
+			setDiffuse( 1.0 );
+		}
+
 		setFilter( 1.0 - (double)material.diffuseColorAlpha );
 		setPhong( material.getSpecularReflectivity() );
 		setPhongSize( (double)material.shininess );
@@ -643,6 +649,19 @@ public class PovTexture
 	}
 
 	/**
+	 * Check if this texture is white according to its RGB values.
+	 *
+	 * @return  <code>true</code> if this texture has RGB values and those
+	 *          values are set to white (red, green, and blue set to 1.0);
+	 *          <code>false</code> otherwise.
+	 */
+	public final boolean isWhite()
+	{
+		final PovVector rgb = _rgb;
+		return ( ( rgb != null ) && ( rgb.getX() == 1.0 ) && ( rgb.getY() == 1.0 ) && ( rgb.getZ() == 1.0 ) );
+	}
+
+	/**
 	 * Checks if this texture is a texture map.
 	 *
 	 * @return  true if this is a texturemap.
@@ -687,7 +706,7 @@ public class PovTexture
 	public void declare( final IndentingWriter out )
 		throws IOException
 	{
-		if ( hasImageMap() && !( _rgb.getX() == 1.0 && _rgb.getY() == 1.0 && _rgb.getZ() == 1.0 ) )
+		if ( hasImageMap() && ( _rgb != null ) && !isWhite() )
 		{
 			declarePigments( out );
 			declarePigmentMap( out );
@@ -801,7 +820,7 @@ public class PovTexture
 		out.indentIn();
 
 		final PovVector rgb = _rgb;
-		if ( rgb != null && ( !( _rgb.getX() == 1.0 && _rgb.getY() == 1.0 && _rgb.getZ() == 1.0 && hasImageMap() ) || !hasImageMap() ) )
+		if ( ( rgb != null ) && !( isWhite() && hasImageMap() ) )
 		{
 			out.write( "color      rgb " );
 			rgb.write( out );
@@ -933,9 +952,9 @@ public class PovTexture
 		out.writeln( "{" );
 		out.indentIn();
 
-		out.writeln( "[ 1.0 " + getPigmentCode( _name ) + "_RGB ]" );
-		out.writeln( "[ 1.0 " + getPigmentCode( _name ) + "_IMG ]" );
-
+		final String pigmentCode = getPigmentCode( _name );
+		out.writeln( "[ 1.0 " + pigmentCode + "_RGB ]" );
+		out.writeln( "[ 1.0 " + pigmentCode + "_IMG ]" );
 
 		out.indentOut();
 		out.writeln( "}" );
