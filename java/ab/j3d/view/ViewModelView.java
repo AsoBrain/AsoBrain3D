@@ -160,6 +160,11 @@ public abstract class ViewModelView
 	private final List<OverlayPainter> _painters = new ArrayList<OverlayPainter>();
 
 	/**
+	 * Label of this view (<code>null</code> if none).
+	 */
+	private String _label;
+
+	/**
 	 * Construct new view.
 	 *
 	 * @param   unit    Unit scale (meters per unit).
@@ -174,6 +179,8 @@ public abstract class ViewModelView
 		_projectionPolicy = ProjectionPolicy.PERSPECTIVE;
 
 		_renderingPolicy = RenderingPolicy.SOLID;
+
+		_label = null;
 
 		final Camera3D camera = new Camera3D();
 		camera.setTag( id );
@@ -579,4 +586,25 @@ public abstract class ViewModelView
 	 * @return  Actions of the view.
 	 */
 	public abstract Action[] getActions( final Locale locale );
+
+	/**
+	 * Get label of view.
+	 *
+	 * @return  Label of view;
+	 *          <code>null</code> if label has no label.
+	 */
+	public String getLabel()
+	{
+		return _label;
+	}
+
+	/**
+	 * Set label of view.
+	 *
+	 * @param   label   Label of view (<code>null</code> to remove label).
+	 */
+	public void setLabel( final String label )
+	{
+		_label = label;
+	}
 }
