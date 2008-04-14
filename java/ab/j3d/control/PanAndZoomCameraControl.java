@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2006
+ * (C) Copyright Numdata BV 2006-200
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,11 +23,11 @@ import java.util.EventObject;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
-import com.numdata.oss.PropertyTools;
-
 import ab.j3d.Matrix3D;
 import ab.j3d.model.Camera3D;
 import ab.j3d.view.ViewModelView;
+
+import com.numdata.oss.PropertyTools;
 
 /**
  * This class implements a camera control that allows only camera panning and
@@ -89,7 +89,7 @@ public final class PanAndZoomCameraControl
 		final Camera3D camera = _view.getCamera();
 
 		final Object[] saved = _savedSettings;
-		camera.setZoomFactor( ((Double)saved[ 1 ]).doubleValue() );
+		camera.setZoomFactor( (Double)saved[ 1 ] );
 		setTransform( (Matrix3D)saved[ 0 ] );
 	}
 
@@ -151,7 +151,7 @@ public final class PanAndZoomCameraControl
 		final double dx =  toUnits * (double)event.getDragDeltaX();
 		final double dy = -toUnits * (double)event.getDragDeltaY();
 
-		view.setViewTransform( viewTransform.setTranslation( _dragStartViewTransform.multiply( dx , dy , 0.0 ) ) );
+		view.setViewTransform( viewTransform.plus( dx , dy , 0.0 ) );
 	}
 
 	protected void mouseDragButton2( final ControlInputEvent event )
