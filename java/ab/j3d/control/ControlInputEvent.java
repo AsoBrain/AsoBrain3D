@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2007
+ * (C) Copyright Numdata BV 2005-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -269,6 +269,22 @@ public class ControlInputEvent
 	{
 		final InputEvent inputEvent = _inputEvent;
 		return ( inputEvent instanceof MouseEvent ) ? ((MouseEvent)inputEvent).getButton() : MouseEvent.NOBUTTON;
+	}
+
+	/**
+	 * Get button, if any, that is currently down. If multiple mouse buttons
+	 * are down, the first one is returned.
+	 *
+	 * @return  Button that is down (<code>1</code> = first);
+	 *          <code>0</code> if no button is down.
+	 */
+	public int getMouseButtonDown()
+	{
+		final int modifiers = _inputEvent.getModifiersEx();
+
+		return ( ( modifiers & InputEvent.BUTTON1_DOWN_MASK ) != 0 ) ? 1 :
+		       ( ( modifiers & InputEvent.BUTTON2_DOWN_MASK ) != 0 ) ? 2 :
+		       ( ( modifiers & InputEvent.BUTTON3_DOWN_MASK ) != 0 ) ? 3 : 0;
 	}
 
 	/**
