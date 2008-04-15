@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2007
+ * (C) Copyright Numdata BV 2004-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,7 @@ package ab.j3d.view;
 
 import java.awt.Component;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.List;
@@ -106,12 +107,13 @@ public abstract class ViewModelView
 	}
 
 	/**
-	 * Scale factor from pixels to radians to make a full circle by moving the
-	 * mouse cursor 250 pixels (in no particular direction).
+	 * Default scale factor from pixels to radians. By default, this set to make
+	 * a full circle by moving the mouse cursor 250 pixels (in no particular
+	 * direction).
 	 *
 	 * @see     #getPixelsToRadiansFactor()
 	 */
-	public static final double FULL_CIRCLE_PER_250_PIXELS = ( 2.0 *  Math.PI ) / 250.0;
+	public static final double DEFAULT_PIXELS_TO_RADIANS_FACTOR = ( 2.0 *  Math.PI ) / 250.0;
 
 	/**
 	 * Unit scale factor in meters per unit. This scale factor, when multiplied,
@@ -165,6 +167,37 @@ public abstract class ViewModelView
 	private String _label;
 
 	/**
+	 * Grid enabled/disabled flag.
+	 */
+	private boolean _gridEnabled;
+
+	/**
+	 * Transforms grid to world coordinates.
+	 */
+	private Matrix3D _grid2wcs;
+
+	/**
+	 * Bounds of grid in cell units.
+	 */
+	private Rectangle _gridBounds;
+
+	/**
+	 * Size of each grid cell in world units.
+	 */
+	private int _gridCellSize;
+
+	/**
+	 * If set, highlight X/Y grid axes.
+	 */
+	private boolean _gridHighlightAxes;
+
+	/**
+	 * Interval for highlighted grid lines. Less or equal to zero if
+	 * highlighting is disabled.
+	 */
+	private int _gridHighlightInterval;
+
+	/**
 	 * Construct new view.
 	 *
 	 * @param   unit    Unit scale (meters per unit).
@@ -191,6 +224,13 @@ public abstract class ViewModelView
 		_transform = transform;
 
 		_cameraControl = null;
+
+		_gridEnabled           = false;
+		_grid2wcs              = Matrix3D.INIT;
+		_gridBounds            = new Rectangle( -100 , -100 , 200 , 200 );
+		_gridCellSize          = (int)Math.round( 1.0 / unit );
+		_gridHighlightAxes     = true;
+		_gridHighlightInterval = 10;
 	}
 
 	/**
@@ -234,7 +274,7 @@ public abstract class ViewModelView
 	 */
 	public double getPixelsToRadiansFactor()
 	{
-		return FULL_CIRCLE_PER_250_PIXELS;
+		return DEFAULT_PIXELS_TO_RADIANS_FACTOR;
 	}
 
 	/**
@@ -585,7 +625,11 @@ public abstract class ViewModelView
 	 *
 	 * @return  Actions of the view.
 	 */
-	public abstract Action[] getActions( final Locale locale );
+	public Action[] getActions( final Locale locale )
+	{
+		return new Action[] { new SwitchRenderingPolicyAction( locale , this , getRenderingPolicy() ) , new ToggleGridAction( locale , this ) };
+	}
+
 
 	/**
 	 * Get label of view.
@@ -606,5 +650,129 @@ public abstract class ViewModelView
 	public void setLabel( final String label )
 	{
 		_label = label;
+	}
+
+	/**
+	 * Get grid enabled option.
+	 *
+	 * @return  <code>true</code> if grid is enabled;
+	 *          <code>false</code> if grid is disabled.
+	 */
+	public boolean isGridEnabled()
+	{
+		return _gridEnabled;
+	}
+
+	/**
+	 * Get grid enabled option.
+	 *
+	 * @param   enabled     Grid enabled.
+	 */
+	public void setGridEnabled( final boolean enabled )
+	{
+		_gridEnabled = enabled;
+	}
+
+	/**
+	 * Get tranform from grid to world coordinates.
+	 *
+	 * @return  Transform from grid to world coordinates.
+	 */
+	public Matrix3D getGrid2wcs()
+	{
+		return _grid2wcs;
+	}
+
+	/**
+	 * Set tranform from grid to world coordinates.
+	 *
+	 * @param   grid2wcs    Transforms grid to world coordinates.
+	 */
+	public void setGrid2wcs( final Matrix3D grid2wcs )
+	{
+		_grid2wcs = grid2wcs;
+	}
+
+	/**
+	 * Get bounds of grid in cell units.
+	 *
+	 * @return  Bounds of grid in cell units.
+	 */
+	public Rectangle getGridBounds()
+	{
+		return _gridBounds;
+	}
+
+	/**
+	 * Set bounds of grid in cell units.
+	 *
+	 * @param   bounds  Bounds of grid in cell units.
+	 */
+	public void setGridBounds( final Rectangle bounds )
+	{
+		_gridBounds = bounds;
+	}
+
+	/**
+	 * Get size of each grid cell in world units.
+	 *
+	 * @return  Size of each grid cell in world units.
+	 */
+	public int getGridCellSize()
+	{
+		return _gridCellSize;
+	}
+
+	/**
+	 * Size of each grid cell in world units.
+	 *
+	 * @param   cellSize    Size of each grid cell in world units.
+	 */
+	public void setGridCellSize( final int cellSize )
+	{
+		_gridCellSize = cellSize;
+	}
+
+	/**
+	 * Get X/Y grid axes highlight option.
+	 *
+	 * @return  <code>true</code> if X/Y grid axes are highlighted;
+	 *          <code>false</code> otherwise.
+	 */
+	public boolean isGridHighlightAxes()
+	{
+		return _gridHighlightAxes;
+	}
+
+	/**
+	 * Set X/Y grid axes highlight option.
+	 *
+	 * @param   highlightAxes   If set, highlight X/Y grid axes.
+	 */
+	public void setGridHighlightAxes( final boolean highlightAxes )
+	{
+		_gridHighlightAxes = highlightAxes;
+	}
+
+	/**
+	 * Get interval for highlighted grid lines.
+	 *
+	 * @return  Interval for highlighted grid lines;
+	 *          <= 0 if disabled.
+	 */
+	public int getGridHighlightInterval()
+	{
+		return _gridHighlightInterval;
+	}
+
+	/**
+	 * Set interval for highlighted grid lines.
+	 *
+	 * @param   highlightInterval   Interval for highlighted grid lines
+	 *                              (<= 0 to disable).
+	 */
+	public void setGridHighlightInterval( final int highlightInterval )
+	{
+		_gridHighlightInterval = highlightInterval;
 	}
 }
