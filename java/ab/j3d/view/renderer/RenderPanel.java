@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2006 Peter S. Heijnen
+ * Copyright (C) 1999-2008 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -136,7 +136,7 @@ public class RenderPanel
 		world.addChild( cameraTransform );
 		_camera = camera;
 
-		_renderControl = new RenderControl( this , 50.0 , Math.toDegrees( ViewModelView.FULL_CIRCLE_PER_250_PIXELS ) );
+		_renderControl = new RenderControl( this , 50.0 , Math.toDegrees( ViewModelView.DEFAULT_PIXELS_TO_RADIANS_FACTOR ) );
 
 		/*
 		 * Initialize render/control variables.
