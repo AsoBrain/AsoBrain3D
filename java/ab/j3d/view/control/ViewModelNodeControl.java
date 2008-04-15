@@ -43,6 +43,8 @@ import ab.j3d.view.control.planar.PlanarGraphics2D;
 import ab.j3d.view.control.planar.PlaneControl;
 import ab.j3d.view.control.planar.SubPlaneControl;
 
+import com.numdata.oss.MathTools;
+
 /**
  * This class implements the default control and overlay painter for
  * {@link ViewModelNode}s. It is automatically attached to all
@@ -139,17 +141,24 @@ public class ViewModelNodeControl
 					final Matrix3D controlPlane2wcs = planeControl.getPlane2Wcs();
 					final Matrix3D plane2wcs        = controlPlane2wcs.setTranslation( wcsPoint );
 
-					_node         = node;
-					_plane2wcs    = plane2wcs;
-					_planeControl = planeControl;
+					final Ray3D    pointerRay       = event.getPointerRay();
+					final Vector3D pointerDirection = pointerRay.getDirection();
 
-					planeControl.mousePressed( event , node , wcsPoint );
-					viewModel.updateOverlay();
+					if ( !MathTools.almostEqual( Vector3D.dot( pointerDirection.x , pointerDirection.y , pointerDirection.z , plane2wcs.xz , plane2wcs.yz , plane2wcs.zz ) , 0.0 ) &&
+					     planeControl.mousePressed( event , node , wcsPoint ) )
+					{
+						_node         = node;
+						_plane2wcs    = plane2wcs;
+						_planeControl = planeControl;
 
-					startCapture( event );
-					result = null;
+						viewModel.updateOverlay();
+
+						startCapture( event );
+						result = null;
+					}
 				}
-				else
+
+				if ( result != null )
 				{
 					for ( final SubPlaneControl subPlaneControl : node.getSubPlaneControls() )
 					{
@@ -166,16 +175,18 @@ public class ViewModelNodeControl
 
 								if ( ( planePoint.x >= 0.0 ) && ( planePoint.y >= 0.0 ) && ( planePoint.x <= subPlaneControl.getPlaneWidth() ) && ( planePoint.y <= subPlaneControl.getPlaneHeight() ) )
 								{
-									_node            = node;
-									_plane2wcs       = plane2wcs;
-									_subPlaneControl = subPlaneControl;
+									if ( subPlaneControl.mousePressed( event , node , planePoint.x , planePoint.y ) )
+									{
+										_node            = node;
+										_plane2wcs       = plane2wcs;
+										_subPlaneControl = subPlaneControl;
 
-									subPlaneControl.mousePressed( event , node , planePoint.x , planePoint.y );
-									viewModel.updateOverlay();
+										viewModel.updateOverlay();
 
-									startCapture( event );
-									result = null;
-									break;
+										startCapture( event );
+										result = null;
+										break;
+									}
 								}
 							}
 						}
