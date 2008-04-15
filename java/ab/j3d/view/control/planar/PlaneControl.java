@@ -66,8 +66,11 @@ public interface PlaneControl
 	 * @param   event           Event from control.
 	 * @param   viewModelNode   Node whose plane is controlled.
 	 * @param   wcsPoint        Drag point in WCS.
+	 *
+	 * @return  <code>true</code> if a drag operation is started;
+	 *          <code>false</code> otherwise>
 	 */
-	void mousePressed( ControlInputEvent event , ViewModelNode viewModelNode , Vector3D wcsPoint );
+	boolean mousePressed( ControlInputEvent event , ViewModelNode viewModelNode , Vector3D wcsPoint );
 
 	/**
 	 * Drag event.

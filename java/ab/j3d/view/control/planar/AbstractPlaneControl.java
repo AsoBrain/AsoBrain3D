@@ -74,11 +74,13 @@ public abstract class AbstractPlaneControl
 		return true;
 	}
 
-	public void mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsStart )
+	public boolean mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsStart )
 	{
 		_wcsStart = wcsStart;
 		_wcsEnd   = null;
 		_active   = true;
+
+		return isActive();
 	}
 
 	public void mouseDragged( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsEnd )

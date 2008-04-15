@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -67,7 +67,7 @@ public interface SubPlaneControl
 	boolean isPlaneTwoSided();
 
 	/**
-	 * Test if the control is enabled. 
+	 * Test if the control is enabled.
 	 *
 	 * @return  <code>true</code> if the control is enabled;
 	 *          <code>false</code> otherwise.
@@ -81,8 +81,11 @@ public interface SubPlaneControl
 	 * @param   viewModelNode   Node whose plane is controlled.
 	 * @param   x               X coordinate on plane.
 	 * @param   y               Y coordinate on plane.
+	 *
+	 * @return  <code>true</code> if a drag operation is started;
+	 *          <code>false</code> otherwise>
 	 */
-	void mousePressed( ControlInputEvent event , ViewModelNode viewModelNode , double x , double y );
+	boolean mousePressed( ControlInputEvent event , ViewModelNode viewModelNode , double x , double y );
 
 	/**
 	 * Drag event.

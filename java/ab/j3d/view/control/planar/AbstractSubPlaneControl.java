@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -79,13 +79,15 @@ public abstract class AbstractSubPlaneControl
 		return true;
 	}
 
-	public void mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final double x , final double y )
+	public boolean mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final double x , final double y )
 	{
 		_startX = x;
 		_startY = y;
 		_endX   = x;
 		_endY   = y;
 		_active = true;
+
+		return isActive();
 	}
 
 	public void mouseDragged( final ControlInputEvent event , final ViewModelNode viewModelNode , final double x , final double y )

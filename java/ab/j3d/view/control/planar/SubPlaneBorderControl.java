@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -73,25 +73,28 @@ public abstract class SubPlaneBorderControl
 		_borderSize = 100.0;
 	}
 
-	public void mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final double x , final double y )
+	public boolean mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final double x , final double y )
 	{
-		super.mousePressed( event , viewModelNode , x , y );
+		final boolean result = super.mousePressed( event, viewModelNode, x, y );
 
-		final double min  = _borderSize;
-		final double maxX = getPlaneWidth() - min;
-		final double maxY = getPlaneHeight() - min;
+		if ( result )
+		{
+			final double min  = _borderSize;
+			final double maxX = getPlaneWidth() - min;
+			final double maxY = getPlaneHeight() - min;
 
-		final ManipulationMode manipulationMode = ( x < min  ) ? ( y < min  ) ? ManipulationMode.BOTTOM_LEFT :
-		                                             ( y > maxY ) ? ManipulationMode.TOP_LEFT :
-		                                                            ManipulationMode.LEFT :
-		                              ( x > maxX ) ? ( y < min  ) ? ManipulationMode.BOTTOM_RIGHT :
-		                                             ( y > maxY ) ? ManipulationMode.TOP_RIGHT :
-		                                                            ManipulationMode.RIGHT :
-		                                             ( y < min  ) ? ManipulationMode.BOTTOM :
-		                                             ( y > maxY ) ? ManipulationMode.TOP :
-		                                                            ManipulationMode.NONE;
+			_manipulationMode = ( x < min  ) ? ( y < min  ) ? ManipulationMode.BOTTOM_LEFT :
+			                                   ( y > maxY ) ? ManipulationMode.TOP_LEFT :
+			                                                  ManipulationMode.LEFT :
+			                    ( x > maxX ) ? ( y < min  ) ? ManipulationMode.BOTTOM_RIGHT :
+			                                   ( y > maxY ) ? ManipulationMode.TOP_RIGHT :
+			                                                  ManipulationMode.RIGHT :
+			                                   ( y < min  ) ? ManipulationMode.BOTTOM :
+			                                   ( y > maxY ) ? ManipulationMode.TOP :
+			                                                  ManipulationMode.NONE;
+		}
 
-		_manipulationMode = manipulationMode;
+		return result;
 	}
 
 	/**
