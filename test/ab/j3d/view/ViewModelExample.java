@@ -45,6 +45,7 @@ import ab.j3d.view.ViewModelView.RenderingPolicy;
 import ab.j3d.view.control.planar.PlaneControl;
 import ab.j3d.view.control.planar.PlaneMoveControl;
 
+import com.numdata.oss.TextTools;
 import com.numdata.oss.ui.WindowTools;
 
 /**
@@ -102,6 +103,7 @@ public class ViewModelExample
 		final ViewModelView view = viewModel.createView( "view" );
 		view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
 //		view.setProjectionPolicy( Projector.PARALLEL );
+		view.setGridEnabled( true );
 
 		final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , viewModel.createViewPanel( Locale.ENGLISH , view.getID() ) );
 		frame.setVisible( true );
@@ -163,6 +165,9 @@ public class ViewModelExample
 		final Component component = view.getComponent();
 		component.addMouseListener( new MouseAdapter()
 		{
+			/**
+			 * Saved rendering policy setting.
+			 */
 			private RenderingPolicy _oldRenderingPolicy = null;
 
 			public void mousePressed( final MouseEvent e )
@@ -186,7 +191,12 @@ public class ViewModelExample
 		viewModel.createNode( "skybox" , createSkyBox() , null , 1.0f );
 	}
 
-	private static SkyBox3D createSkyBox()
+	/**
+	 * Create sky box for examples.
+	 *
+	 * @return  Sky box object.
+	 */
+	public static SkyBox3D createSkyBox()
 	{
 		final Material north   = new Material( Color.LIGHT_GRAY.getRGB() );
 		final Material east    = new Material( Color.GRAY      .getRGB() );
@@ -261,25 +271,44 @@ public class ViewModelExample
 	}
 
 	/**
-	 * Create plane control.
+	 * Create a control for a node that highlights the node and shows a grid.
 	 *
 	 * @param   plane2wcs   Transformation from drag plane to WCS.
 	 *
 	 * @return  Plane control.
 	 */
-	protected PlaneControl createPlaneControl( final Matrix3D plane2wcs )
+	public static PlaneControl createPlaneControl( final Matrix3D plane2wcs )
 	{
 		return new PlaneMoveControl( plane2wcs , true )
 			{
-				public void mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsPoint )
+				public boolean mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsPoint )
 				{
-					super.mousePressed( event , viewModelNode , wcsPoint );
-					viewModelNode.setAlternate( true );
+					final boolean result = super.mousePressed( event , viewModelNode , wcsPoint );
+
+					if ( result )
+					{
+						final ViewControlInput controlInput = (ViewControlInput)event.getSource();
+						final ViewModelView    view         = controlInput.getView();
+
+						final Matrix3D plane2wcs  = getPlane2Wcs();
+						final Matrix3D node2world = viewModelNode.getTransform();
+						final Matrix3D grid2wcs   = plane2wcs.setTranslation( node2world.xo , node2world.yo , node2world.zo );
+
+						view.setGrid2wcs( grid2wcs );
+						viewModelNode.setAlternate( true );
+					}
+
+					return result;
 				}
 
 				public void mouseReleased( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsPoint )
 				{
 					super.mouseReleased( event , viewModelNode , wcsPoint );
+
+					final ViewControlInput controlInput = (ViewControlInput)event.getSource();
+					final ViewModelView    view         = controlInput.getView();
+
+					view.setGrid2wcs( Matrix3D.INIT );
 					viewModelNode.setAlternate( false );
 				}
 			};
@@ -291,13 +320,24 @@ public class ViewModelExample
 	private static class TextOverlayPainter
 		implements OverlayPainter
 	{
+		/**
+		 * Text.
+		 */
 		private String _text;
 
+		/**
+		 * Construct overlay painter.
+		 */
 		private TextOverlayPainter()
 		{
 			_text = null;
 		}
 
+		/**
+		 * Set text.
+		 *
+		 * @param   text    Text to paint.
+		 */
 		public void setText( final String text )
 		{
 			_text = text;
@@ -305,7 +345,7 @@ public class ViewModelExample
 
 		public void paint( final ViewModelView view , final Graphics2D g2 )
 		{
-			if ( _text != null )
+			if ( TextTools.isNonEmpty( _text ) )
 			{
 				final FontMetrics metrics = g2.getFontMetrics();
 				final Component component = view.getComponent();
