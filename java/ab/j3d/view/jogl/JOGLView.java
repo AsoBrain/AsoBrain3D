@@ -187,23 +187,35 @@ public class JOGLView
 					final GLWrapper glWrapper = new GLWrapper( gl );
 					_glWrapper = glWrapper;
 					initGL( glWrapper );
-					final Overlay overlay = new Overlay( glAutoDrawable );
-					_j2d = new JOGLGraphics2D( overlay.createGraphics() , glAutoDrawable );
 					glCanvas.setMinimumSize( new Dimension( 0 , 0 ) ); //resize workaround
 				}
 
 				public void display( final GLAutoDrawable glAutoDrawable )
 				{
-					final GLWrapper glWrapper = _glWrapper;
+					final int width  = glAutoDrawable.getWidth();
+					final int height = glAutoDrawable.getHeight();
 
-				renderFrame( glWrapper , glAutoDrawable.getWidth() , glAutoDrawable.getHeight() );
-
-					if ( hasOverlayPainters() )
+					if ( ( width > 0 ) && ( height > 0 ) )
 					{
-						paintOverlay( _j2d );
-					}
+						final GLWrapper glWrapper = _glWrapper;
 
-					glWrapper.reset();
+						renderFrame( glWrapper , width , height );
+
+						if ( hasOverlayPainters() )
+						{
+							JOGLGraphics2D j2d = _j2d;
+							if ( j2d == null )
+							{
+								final Overlay overlay = new Overlay( glAutoDrawable );
+								j2d = new JOGLGraphics2D( overlay.createGraphics() , glAutoDrawable );
+								_j2d = j2d;
+							}
+
+							paintOverlay( j2d );
+						}
+
+						glWrapper.reset();
+					}
 				}
 
 				public void displayChanged( final GLAutoDrawable glAutoDrawable , final boolean b , final boolean b1 )
