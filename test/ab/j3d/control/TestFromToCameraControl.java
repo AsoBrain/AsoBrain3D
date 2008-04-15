@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2006
+ * (C) Copyright Numdata BV 2004-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,6 @@
 package ab.j3d.control;
 
 import java.awt.Component;
-import java.util.Locale;
-import javax.swing.Action;
 
 import junit.framework.TestCase;
 
@@ -66,14 +64,6 @@ public class TestFromToCameraControl
 				{
 				}
 
-				public void setProjectionPolicy( final int policy )
-				{
-				}
-
-				public void setRenderingPolicy( final RenderingPolicy policy )
-				{
-				}
-
 				public Projector getProjector()
 				{
 					return null;
@@ -82,11 +72,6 @@ public class TestFromToCameraControl
 				protected ControlInput getControlInput()
 				{
 					return null;
-				}
-
-				public Action[] getActions( final Locale locale )
-				{
-					return new Action[ 0 ];
 				}
 		} );
 
