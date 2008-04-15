@@ -21,6 +21,7 @@ package ab.j3d.view.jogl;
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
@@ -355,14 +356,14 @@ public class JOGLTools
 	 *
 	 * @param   glWrapper           GL context wrapper.
 	 * @param   grid2world          Transforms grid to world coordinates.
-	 * @param   cellCount           Number of cells in grid.
+	 * @param   gridBounds          Bounds of grid.
 	 * @param   cellSize            Size of each cell.
 	 * @param   hightlightAxes      If set, hightlight X=0 and Y=0 axes.
 	 * @param   highlightInterval   Interval to use for highlighting grid lines.
 	 */
-	public static void drawGrid( final GLWrapper glWrapper , final Matrix3D grid2world , final int cellCount , final int cellSize , final boolean hightlightAxes , final int highlightInterval )
+	public static void drawGrid( final GLWrapper glWrapper , final Matrix3D grid2world , final Rectangle gridBounds , final int cellSize , final boolean hightlightAxes , final int highlightInterval )
 	{
-		if ( ( grid2world != null ) && ( cellCount > 0 ) && ( cellSize > 0 ) ) // argument sanity
+		if ( ( grid2world != null ) && ( gridBounds != null ) && ( gridBounds.width >= 0 ) && ( gridBounds.height >= 0 ) && ( cellSize >= 0 ) ) // argument sanity
 		{
 			final GL gl = glWrapper.getGL();
 
@@ -374,65 +375,101 @@ public class JOGLTools
 			glWrapper.setLineSmooth( true );
 
 			glWrapper.setLighting( false );
+//
+			final int minCellX = gridBounds.x;
+			final int maxCellX = minCellX + gridBounds.width;
+			final int minCellY = gridBounds.y;
+			final int maxCellY = minCellY + gridBounds.height;
 
-			final int limit = cellCount * cellSize;
+			final int minX = minCellX * cellSize;
+			final int maxX = maxCellX * cellSize;
+			final int minY = minCellY * cellSize;
+			final int maxY = maxCellY * cellSize;
 
 			if ( hightlightAxes )
 			{
-				glWrapper.glLineWidth( 2.5f );
-				glWrapper.glColor3f( 0.1f , 0.1f , 0.1f );
-				gl.glBegin( GL.GL_LINES );
+				final boolean hasXaxis = ( minCellY <= 0 ) && ( maxCellY >= 0 );
+				final boolean hasYaxis = ( minCellX <= 0 ) && ( maxCellX >= 0 );
 
-				gl.glVertex3i(      0 , -limit , 0 );
-				gl.glVertex3i(      0 ,  limit , 0 );
-				gl.glVertex3i( -limit ,      0 , 0 );
-				gl.glVertex3i(  limit ,      0 , 0 );
-
-				gl.glEnd();
-			}
-
-			if ( ( highlightInterval > 1 ) && ( highlightInterval <= cellCount ) )
-			{
-				glWrapper.glLineWidth( 1.5f );
-				glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
-				gl.glBegin( GL.GL_LINES );
-
-				for ( int step = highlightInterval ; step <= cellCount ; step += highlightInterval )
+				if ( ( hasXaxis || hasYaxis ) )
 				{
-					final int position = step * cellSize;
+					glWrapper.glLineWidth( 2.5f );
+					glWrapper.glColor3f( 0.1f , 0.1f , 0.1f );
+					gl.glBegin( GL.GL_LINES );
 
-					gl.glVertex3i( -position , -limit , 0 );
-					gl.glVertex3i( -position ,  limit , 0 );
-					gl.glVertex3i(  position , -limit , 0 );
-					gl.glVertex3i(  position ,  limit , 0 );
-					gl.glVertex3i( -limit , -position , 0 );
-					gl.glVertex3i(  limit , -position , 0 );
-					gl.glVertex3i( -limit ,  position , 0 );
-					gl.glVertex3i(  limit ,  position , 0 );
+					if ( hasXaxis )
+					{
+						gl.glVertex3i( minX , 0 , 0 );
+						gl.glVertex3i( maxX , 0 , 0 );
+					}
+
+					if ( hasYaxis )
+					{
+						gl.glVertex3i( 0 , minY , 0 );
+						gl.glVertex3i( 0 , maxY , 0 );
+					}
+
+					gl.glEnd();
 				}
-
-				gl.glEnd();
 			}
 
+			if ( highlightInterval > 1 )
+			{
+				final int highlightMinX = minCellX - minCellX % highlightInterval;
+				final int highLightMaxX = maxCellX - maxCellX % highlightInterval;
+				final int highlightMinY = minCellX - minCellX % highlightInterval;
+				final int highLightMaxY = maxCellX - maxCellX % highlightInterval;
+
+				final boolean hasHighlightX = ( highLightMaxX >= highlightMinX ) && ( !hightlightAxes || ( highlightMinX < 0 ) || ( highLightMaxX > 0 ) );
+				final boolean hasHighlightY = ( highLightMaxY >= highlightMinY ) && ( !hightlightAxes || ( highlightMinY < 0 ) || ( highLightMaxY > 0 ) );
+
+				if ( hasHighlightX || hasHighlightY )
+				{
+					glWrapper.glLineWidth( 1.5f );
+					glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
+					gl.glBegin( GL.GL_LINES );
+
+					for ( int x = highlightMinX ; x <= highLightMaxX ; x += highlightInterval )
+					{
+						if ( !hightlightAxes || ( x != 0 ) )
+						{
+							gl.glVertex3i( x * cellSize , minY, 0 );
+							gl.glVertex3i( x * cellSize , maxY, 0 );
+						}
+					}
+
+					for ( int y = highlightMinY ; y <= highLightMaxY ; y += highlightInterval )
+					{
+						if ( !hightlightAxes || ( y != 0 ) )
+						{
+							gl.glVertex3i( minX, y * cellSize , 0 );
+							gl.glVertex3i( maxX, y * cellSize , 0 );
+						}
+					}
+
+					gl.glEnd();
+				}
+			}
+//
 			glWrapper.glLineWidth( 1.0f );
 			glWrapper.glColor3f( 0.75f , 0.75f , 0.75f );
 			glWrapper.glBegin( GL.GL_LINES );
 
-			for ( int step = hightlightAxes ? 1 : 0 ; step <= cellCount ; step++ )
+			for ( int x = minCellX ; x <= maxCellX ; x++ )
 			{
-				final int position = step * cellSize;
-
-				if ( ( highlightInterval < 2 ) || ( step % highlightInterval != 0 ) )
+				if ( ( !hightlightAxes || ( x != 0 ) ) && ( ( highlightInterval <= 1 ) || ( x % highlightInterval != 0 ) ) )
 				{
-					gl.glVertex3i( -position , -limit , 0 );
-					gl.glVertex3i( -position ,  limit , 0 );
-					gl.glVertex3i(  position , -limit , 0 );
-					gl.glVertex3i(  position ,  limit , 0 );
-					gl.glVertex3i( -limit , -position , 0 );
-					gl.glVertex3i(  limit , -position , 0 );
-					gl.glVertex3i( -limit ,  position , 0 );
-					gl.glVertex3i(  limit ,  position , 0 );
+					gl.glVertex3i( x * cellSize , minY, 0 );
+					gl.glVertex3i( x * cellSize , maxY, 0 );
+				}
+			}
 
+			for ( int y = minCellY ; y <= maxCellY ; y++ )
+			{
+				if ( ( !hightlightAxes || ( y != 0 ) ) && ( ( highlightInterval <= 1 ) || ( y % highlightInterval != 0 ) ) )
+				{
+					gl.glVertex3i( minX , y * cellSize , 0 );
+					gl.glVertex3i( maxX , y * cellSize , 0 );
 				}
 			}
 
