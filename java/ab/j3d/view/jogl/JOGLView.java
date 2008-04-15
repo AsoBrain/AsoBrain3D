@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import javax.media.opengl.DebugGL;
 import javax.media.opengl.GL;
@@ -36,7 +35,6 @@ import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.glu.GLU;
-import javax.swing.Action;
 import javax.swing.JPopupMenu;
 
 import com.sun.opengl.util.j2d.Overlay;
@@ -52,7 +50,6 @@ import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 import ab.j3d.view.Projector;
 import ab.j3d.view.Projector.ProjectionPolicy;
-import ab.j3d.view.SwitchRenderingPolicyAction;
 import ab.j3d.view.ViewControlInput;
 import ab.j3d.view.ViewModelNode;
 import ab.j3d.view.ViewModelView;
@@ -95,31 +92,6 @@ public class JOGLView
 	 * Render thread.
 	 */
 	private RenderThread _renderThread;
-
-	/**
-	 * Transforms grid to world coordinates.
-	 */
-	private Matrix3D _grid2world = null;
-
-	/**
-	 * Number of cells in grid.
-	 */
-	private int _gridCellCount = 0;
-
-	/**
-	 * Size of each grid cell.
-	 */
-	private int _gridCellSize = 0;
-
-	/**
-	 * If set, hightlight X=0 and Y=0 grid axes.
-	 */
-	private boolean _gridHighlightAxes = false;
-
-	/**
-	 * Interval to use for highlighting grid lines.
-	 */
-	private int _gridHighlightInterval = 0;
 
 	/**
 	 * Texture cache
@@ -284,11 +256,6 @@ public class JOGLView
 	protected ControlInput getControlInput()
 	{
 		return _controlInput;
-	}
-
-	public Action[] getActions( final Locale locale )
-	{
-		return new Action[] { new SwitchRenderingPolicyAction( locale , this , getRenderingPolicy() ) };
 	}
 
 	/**
@@ -500,32 +467,6 @@ public class JOGLView
 	}
 
 	/**
-	 * Draws a grid on the view using the specified parameters.
-	 *
-	 * @param   grid2world          Transforms grid to world coordinates.
-	 * @param   cellCount           Number of cells in grid.
-	 * @param   cellSize            Size of each cell.
-	 * @param   hightlightAxes      If set, hightlight X=0 and Y=0 axes.
-	 * @param   highlightInterval   Interval to use for highlighting grid lines.
-	 */
-	public void drawGrid( final Matrix3D grid2world , final int cellCount , final int cellSize , final boolean hightlightAxes , final int highlightInterval )
-	{
-		_grid2world            = grid2world;
-		_gridCellCount         = cellCount;
-		_gridCellSize          = cellSize;
-		_gridHighlightAxes     = hightlightAxes;
-		_gridHighlightInterval = highlightInterval;
-	}
-
-	/**
-	 * Removes the grid that is being drawn.
-	 */
-	public void removeGrid()
-	{
-		drawGrid( null , 0 , 0 , false , 0 );
-	}
-
-	/**
 	 * Render entire scene (called from render loop).
 	 *
 	 * @param   glWrapper   GLWrapper.
@@ -699,7 +640,7 @@ public class JOGLView
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
 							glWrapper.glEnable( GL.GL_LIGHTING );
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , true , viewModelNode.isAlternate() , true , _textureCache , true , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , true , false , true , _textureCache , true , viewModelNode.getMaterialOverride() );
 						}
 						break;
 					case WIREFRAME:
@@ -712,7 +653,11 @@ public class JOGLView
 				}
 			}
 		}
-		_gridHighlightInterval = 10;
-		JOGLTools.drawGrid( glWrapper , _grid2world , _gridCellCount , _gridCellSize , _gridHighlightAxes , _gridHighlightInterval );
+
+		if ( isGridEnabled() )
+		{
+			JOGLTools.drawGrid( glWrapper , getGrid2wcs(), getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
+		}
 	}
+
 }
