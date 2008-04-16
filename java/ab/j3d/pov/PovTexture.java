@@ -431,7 +431,8 @@ public class PovTexture
 	 */
 	public static String getTextureCode( final String code )
 	{
-		return !code.startsWith( "TEX_" ) ? "TEX_" + code : code;
+		final String fixed = code.replaceAll( "[/\\-:]" , "_" );
+		return !code.startsWith( "TEX_" ) ? "TEX_" + fixed : fixed;
 	}
 
 	/**
@@ -443,7 +444,8 @@ public class PovTexture
 	 */
 	public static String getPigmentCode ( final String code )
 	{
-		return !code.startsWith( "PIG_" ) ? "PIG_" + code : code;
+		final String fixed = code.replaceAll( "[/\\-:]" , "_" );
+		return !code.startsWith( "PIG_" ) ? "PIG_" + fixed : fixed;
 	}
 
 	/**
