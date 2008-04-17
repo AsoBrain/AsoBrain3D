@@ -47,37 +47,34 @@ public class Material
 	/**
 	 * SQL create statement (for MySQL).
 	 */
-	public static final String MYSQL_CREATE_STATEMENT =
-		"CREATE TABLE Materials\n"
-		+ "(\n"
-		+ "  ID                 BIGINT(20)           NOT NULL auto_increment,\n"
-		+ "  code               VARCHAR(64)          NOT NULL ,\n"
-		+ "  ambientColorRed    DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
-		+ "  ambientColorGreen  DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
-		+ "  ambientColorBlue   DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
-		+ "  diffuseColorRed    DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
-		+ "  diffuseColorGreen  DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
-		+ "  diffuseColorBlue   DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
-		+ "  diffuseColorAlpha  DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
-		+ "  specularColorRed   DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
-		+ "  specularColorGreen DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
-		+ "  specularColorBlue  DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
-		+ "  shininess          INT(3) UNSIGNED      NOT NULL DEFAULT '16' ,\n"
-		+ "  emissiveColorRed   DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
-		+ "  emissiveColorGreen DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
-		+ "  emissiveColorBlue  DECIMAL(8,6)         NOT NULL DEFAULT '0.0' ,\n"
-		+ "  colorMap           VARCHAR(64)                   DEFAULT NULL ,\n"
-		+ "  colorMapWidth      DECIMAL(8,6)         NOT NULL DEFAULT '0.0',\n"
-		+ "  colorMapHeight     DECIMAL(8,6)         NOT NULL DEFAULT '0.0',\n"
-		+ "  grain              ENUM('true','false') NOT NULL DEFAULT 'false' ,\n"
-		+ "  PRIMARY KEY (ID),\n"
-		+ "  UNIQUE KEY code (code)\n"
-		+ ");";
+	public static final String MYSQL_CREATE_STATEMENT = "CREATE TABLE Materials\n" +
+		"(\n" +
+		"  ID                 INT NOT NULL AUTO_INCREMENT PRIMARY KEY,\n" +
+		"  code               VARCHAR(64) NOT NULL UNIQUE KEY,\n" +
+		"  ambientColorRed    FLOAT NOT NULL,\n" +
+		"  ambientColorGreen  FLOAT NOT NULL,\n" +
+		"  ambientColorBlue   FLOAT NOT NULL,\n" +
+		"  diffuseColorRed    FLOAT NOT NULL,\n" +
+		"  diffuseColorGreen  FLOAT NOT NULL,\n" +
+		"  diffuseColorBlue   FLOAT NOT NULL,\n" +
+		"  diffuseColorAlpha  FLOAT NOT NULL,\n" +
+		"  specularColorRed   FLOAT NOT NULL,\n" +
+		"  specularColorGreen FLOAT NOT NULL,\n" +
+		"  specularColorBlue  FLOAT NOT NULL,\n" +
+		"  shininess          INT NOT NULL DEFAULT '16' ,\n" +
+		"  emissiveColorRed   FLOAT NOT NULL,\n" +
+		"  emissiveColorGreen FLOAT NOT NULL,\n" +
+		"  emissiveColorBlue  FLOAT NOT NULL,\n" +
+		"  colorMap           VARCHAR(64)  ,\n" +
+		"  colorMapWidth      DOUBLE NOT NULL,\n" +
+		"  colorMapHeight     DOUBLE NOT NULL,\n" +
+		"  grain              BOOLEAN NOT NULL\n" +
+		");";
 
 	/**
 	 * Unique record ID.
 	 */
-	public long ID;
+	public int ID;
 
 	/**
 	 * Code that uniquely identifies the texture (it should be used instead
@@ -239,7 +236,7 @@ public class Material
 	 */
 	public Material( final Material original )
 	{
-		ID                 = -1L;
+		ID                 = -1;
 		code               = original.code;
 		ambientColorRed    = original.ambientColorRed;
 		ambientColorGreen  = original.ambientColorGreen;
@@ -280,7 +277,7 @@ public class Material
 		final float green = (float)iGreen / 255.0f;
 		final float blue  = (float)iBlue  / 255.0f;
 
-		ID                 = -1L;
+		ID                 = -1;
 		code               = null;
 		ambientColorRed    = red;
 		ambientColorGreen  = green;
@@ -327,7 +324,7 @@ public class Material
 	 */
 	public Material( final String code , final float ambientColorRed , final float ambientColorGreen , final float ambientColorBlue , final float diffuseColorRed , final float diffuseColorGreen , final float diffuseColorBlue , final float diffuseColorAlpha , final float specularColorRed , final float specularColorGreen , final float specularColorBlue , final int shininess , final float emissiveColorRed , final float emissiveColorGreen , final float emissiveColorBlue , final String colorMap , final double colorMapWidth , final double colorMapHeight , final boolean grain )
 	{
-		ID                      = -1L;
+		ID                      = -1;
 		this.code               = code;
 		this.ambientColorRed    = ambientColorRed;
 		this.ambientColorGreen  = ambientColorGreen;
