@@ -64,7 +64,7 @@ public class MemoryMaterialLibrary
 	{
 		final Map<String, Material> materials = _materials;
 
-		if ( material.ID >= 0L )
+		if ( material.ID >= 0 )
 		{
 			for ( final Material existing : materials.values() )
 			{
@@ -77,13 +77,13 @@ public class MemoryMaterialLibrary
 		}
 		else
 		{
-			long maxID = -1L;
+			int maxID = -1;
 			for ( final Material existing : materials.values() )
 			{
 				maxID = Math.max( maxID , existing.ID );
 			}
 
-			material.ID = maxID + 1L;
+			material.ID = maxID + 1;
 		}
 
 		materials.put( material.code , material );
