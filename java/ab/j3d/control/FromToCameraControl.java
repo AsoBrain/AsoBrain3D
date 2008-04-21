@@ -194,6 +194,16 @@ public class FromToCameraControl
 	}
 
 	/**
+	 * Get point being looked from.
+	 *
+	 * @return  Point being looked from.
+	 */
+	public Vector3D getFrom()
+	{
+		return _from;
+	}
+
+	/**
 	 * Set the point to look from.
 	 *
 	 * @param   from    New point to look from.
@@ -211,6 +221,16 @@ public class FromToCameraControl
 			_from = from;
 			setTransform( Matrix3D.getFromToTransform( from , _to , _upPrimary , _upSecondary ) );
 		}
+	}
+
+	/**
+	 * Get point being looked at.
+	 *
+	 * @return  Point being looked at.
+	 */
+	public Vector3D getTo()
+	{
+		return _to;
 	}
 
 	/**
