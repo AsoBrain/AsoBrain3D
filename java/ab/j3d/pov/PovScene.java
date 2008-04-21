@@ -108,6 +108,27 @@ public class PovScene
 	private double _radiosityBrightness = 1.0;
 
 	/**
+	 * This value mainly affects the structures of the shadows. Values larger
+	 * than the default of <code>1.8</code> do not have much effects, they make
+	 * the shadows even flatter. Extremely low values can lead to very good
+	 * results, but the rendering time can become very long.
+	 */
+	private double _radiosityErrorBound = 1.8;
+
+	/**
+	 * Fraction of the image width which sets the minimum radius of reuse for
+	 * each sample point (actually, it is the fraction of the distance from the
+	 * eye but the two are roughly equal). The theory is that you do not want to
+	 * calculate values for every pixel into every crevice everywhere in the
+	 * scene, it will take too long. If this value is too low, (which it should
+	 * be in theory) rendering gets slow, and inside corners can get a little
+	 * grainy. If it is set too high, you do not get the natural darkening of
+	 * illumination near inside edges, since it reuses.
+	 * The default value is <code>0.015</code>.
+	 */
+	private double _radiosityMinimumReuse = 0.015;
+
+	/**
 	 * Get indenting writer from the specified writer. If the specified writer
 	 * is already an {@link IndentingWriter}, it will be returned as-is.
 	 *
@@ -300,6 +321,69 @@ public class PovScene
 	}
 
 	/**
+	 * Returns the value of the 'error_bound' setting for radiosity effects.
+	 *
+	 * @return  Error bound for radiosity effects.
+	 */
+	public double getRadiosityErrorBound()
+	{
+		return _radiosityErrorBound;
+	}
+
+	/**
+	 * Sets the value of the 'error_bound' setting for radiosity effects.
+	 *
+	 * <p>This value mainly affects the structures of the shadows. Values larger
+	 * than the default of <code>1.8</code> do not have much effects, they make
+	 * the shadows even flatter. Extremely low values can lead to very good
+	 * results, but the rendering time can become very long.
+	 *
+	 * @param   radiosityErrorBound     Error bound to be set.
+	 *
+	 * @throws  IllegalArgumentException if <code>radiosityErrorBound <= 0.0</code>.
+	 */
+	public void setRadiosityErrorBound( final double radiosityErrorBound )
+	{
+		if ( radiosityErrorBound <= 0.0 )
+		{
+			throw new IllegalArgumentException( "radiosityErrorBound" );
+		}
+
+		_radiosityErrorBound = radiosityErrorBound;
+	}
+
+	/**
+	 * Returns the fraction of the image width which sets the minimum radius of
+	 * reuse for each sample point (actually, it is the fraction of the distance
+	 * from the eye but the two are roughly equal).
+	 *
+	 * @return  Minimum reuse for radiosity effects.
+	 */
+	public double getRadiosityMinimumReuse()
+	{
+		return _radiosityMinimumReuse;
+	}
+
+	/**
+	 * Sets the fraction of the image width which sets the minimum radius of
+	 * reuse for each sample point (actually, it is the fraction of the distance
+	 * from the eye but the two are roughly equal).
+	 *
+	 * <p>The theory is that you do not want to calculate values for every pixel
+	 * into every crevice everywhere in the scene, it will take too long. If
+	 * this value is too low, (which it should be in theory) rendering gets
+	 * slow, and inside corners can get a little grainy. If it is set too high,
+	 * you do not get the natural darkening of illumination near inside edges,
+	 * since it reuses. The default value is <code>0.015</code>.
+	 *
+	 * @param   radiosityMinimumReuse   Minimum reuse for radiosity effects.
+	 */
+	public void setRadiosityMinimumReuse( final double radiosityMinimumReuse )
+	{
+		_radiosityMinimumReuse = radiosityMinimumReuse;
+	}
+
+	/**
 	 * Renders the scene to an image with the specified size and returns the
 	 * resulting image.
 	 *
@@ -392,8 +476,8 @@ public class PovScene
 		command.add( "+H" + height );              /* Image height */
 		command.add( "-D" );                       /* Don't show preview */
 		command.add( "+Q9" );                      /* Quality (default=9) */
-		command.add( "+A" );                       /* Turn on anti-aliasing */
-		command.add( "+AM2" );
+		command.add( "+A0.2" );                    /* Turn on anti-aliasing */
+		command.add( "+AM1" );
 		command.add( "+R3" );
 		command.add( "+GA" );                      /* Turn on all debug, fatal, render, statistic, and warning text to the console */
 		command.add( background ? "-UA" : "+UA" ); /* Turn on/off alpha channel output */
@@ -644,8 +728,25 @@ public class PovScene
 			out.writeln( "{" );
 			out.indentIn();
 
-			out.write( "brightness " );
-			out.writeln( String.valueOf( _radiosityBrightness ) );
+			if ( _radiosityBrightness != 1.0 )
+			{
+				out.write( "brightness " );
+				out.writeln( String.valueOf( _radiosityBrightness ) );
+			}
+
+			if ( _radiosityErrorBound != 1.8 )
+			{
+				out.write( "error_bound " );
+				out.writeln( String.valueOf( _radiosityErrorBound ) );
+			}
+
+			if ( _radiosityMinimumReuse != 0.015 )
+			{
+				out.write( "minimum_reuse " );
+				out.writeln( String.valueOf( _radiosityMinimumReuse ) );
+			}
+
+			out.writeln( "pretrace_end 0.2" );
 
 			out.indentOut();
 			out.writeln( "}" );
