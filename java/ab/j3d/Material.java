@@ -47,28 +47,29 @@ public class Material
 	/**
 	 * SQL create statement (for MySQL).
 	 */
-	public static final String MYSQL_CREATE_STATEMENT = "CREATE TABLE Materials\n" +
-		"(\n" +
-		"  ID                 INT NOT NULL AUTO_INCREMENT PRIMARY KEY,\n" +
-		"  code               VARCHAR(64) NOT NULL UNIQUE KEY,\n" +
-		"  ambientColorRed    FLOAT NOT NULL,\n" +
-		"  ambientColorGreen  FLOAT NOT NULL,\n" +
-		"  ambientColorBlue   FLOAT NOT NULL,\n" +
-		"  diffuseColorRed    FLOAT NOT NULL,\n" +
-		"  diffuseColorGreen  FLOAT NOT NULL,\n" +
-		"  diffuseColorBlue   FLOAT NOT NULL,\n" +
-		"  diffuseColorAlpha  FLOAT NOT NULL,\n" +
-		"  specularColorRed   FLOAT NOT NULL,\n" +
-		"  specularColorGreen FLOAT NOT NULL,\n" +
-		"  specularColorBlue  FLOAT NOT NULL,\n" +
-		"  shininess          INT NOT NULL DEFAULT '16' ,\n" +
-		"  emissiveColorRed   FLOAT NOT NULL,\n" +
-		"  emissiveColorGreen FLOAT NOT NULL,\n" +
-		"  emissiveColorBlue  FLOAT NOT NULL,\n" +
-		"  colorMap           VARCHAR(64)  ,\n" +
-		"  colorMapWidth      DOUBLE NOT NULL,\n" +
-		"  colorMapHeight     DOUBLE NOT NULL,\n" +
-		"  grain              BOOLEAN NOT NULL\n" +
+	public static final String MYSQL_CREATE_STATEMENT = "CREATE TABLE `Materials` (\n" +
+		"  `ID` int(11) NOT NULL auto_increment,\n" +
+		"  `code` varchar(64) NOT NULL,\n" +
+		"  `ambientColorRed` float NOT NULL,\n" +
+		"  `ambientColorGreen` float NOT NULL,\n" +
+		"  `ambientColorBlue` float NOT NULL,\n" +
+		"  `diffuseColorRed` float NOT NULL,\n" +
+		"  `diffuseColorGreen` float NOT NULL,\n" +
+		"  `diffuseColorBlue` float NOT NULL,\n" +
+		"  `diffuseColorAlpha` float NOT NULL,\n" +
+		"  `specularColorRed` float NOT NULL,\n" +
+		"  `specularColorGreen` float NOT NULL,\n" +
+		"  `specularColorBlue` float NOT NULL,\n" +
+		"  `shininess` int(11) NOT NULL,\n" +
+		"  `emissiveColorRed` float NOT NULL,\n" +
+		"  `emissiveColorGreen` float NOT NULL,\n" +
+		"  `emissiveColorBlue` float NOT NULL,\n" +
+		"  `colorMap` varchar(64) default NULL,\n" +
+		"  `colorMapWidth` double NOT NULL,\n" +
+		"  `colorMapHeight` double NOT NULL,\n" +
+		"  `grain` tinyint(1) NOT NULL,\n" +
+		"  PRIMARY KEY  (`ID`),\n" +
+		"  UNIQUE KEY `code` (`code`)\n" +
 		");";
 
 	/**
