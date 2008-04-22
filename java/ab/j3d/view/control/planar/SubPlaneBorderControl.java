@@ -75,7 +75,7 @@ public abstract class SubPlaneBorderControl
 
 	public boolean mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final double x , final double y )
 	{
-		final boolean result = super.mousePressed( event, viewModelNode, x, y );
+		final boolean result = super.mousePressed( event , viewModelNode , x , y );
 
 		if ( result )
 		{
