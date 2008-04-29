@@ -24,8 +24,8 @@ import java.io.IOException;
 
 import ab.j3d.Material;
 
-import com.numdata.oss.io.IndentingWriter;
 import com.numdata.oss.MathTools;
+import com.numdata.oss.io.IndentingWriter;
 
 /**
  * Pov Texture / material definition.
@@ -139,9 +139,15 @@ public class PovTexture
 	private boolean _metallic;
 
 	/**
-	 * Filter factor (transparency).
+	 * Specifies the amount of filtered transparency of a substance.
 	 */
 	private double _filter;
+
+	/**
+	 * Specifies the amount of non-filtered light that is transmitted through a
+	 * surface.
+	 */
+	private double _transmit;
 
 	/**
 	 * Phong highlight amount.
@@ -262,6 +268,7 @@ public class PovTexture
 		_specular     = 0.0;
 		_reflection   = 0.0;
 		_filter       = 0.0;
+		_transmit     = 0.0;
 		_scale        = null;
 		_metallic     = false;
 	}
@@ -350,7 +357,7 @@ public class PovTexture
 			setDiffuse( 1.0 );
 		}
 
-		setFilter( 1.0 - (double)material.diffuseColorAlpha );
+		setTransmit( 1.0 - (double)material.diffuseColorAlpha );
 		setPhong( material.getSpecularReflectivity() );
 		setPhongSize( (double)material.shininess );
 	}
@@ -571,9 +578,9 @@ public class PovTexture
 	}
 
 	/**
-	 * Get filter factor (transparency).
+	 * Returns the amount of filtered transparency of a substance.
 	 *
-	 * @return  Filter factor (transparency).
+	 * @return  Amount of filtered transparency.
 	 */
 	public final double getFilter()
 	{
@@ -581,13 +588,48 @@ public class PovTexture
 	}
 
 	/**
-	 * Set filter factor (transparency).
+	 * Sets the amount of filtered transparency of a substance. Some real-world
+	 * examples of filtered transparency are stained glass windows or tinted
+	 * cellophane. The light passing through such objects is tinted by the
+	 * appropriate color as the material selectively absorbs some frequencies of
+	 * light while allowing others to pass through. The color of the object is
+	 * subtracted from the light passing through so this is called subtractive
+	 * transparency.
 	 *
-	 * @param   filter  Filter factor (transparency).
+	 * @param   filter  Filtered transparency, typically between 0.0 (opaque)
+	 *                  and 1.0 (transparent).
 	 */
 	public final void setFilter( final double filter )
 	{
 		_filter = filter;
+	}
+
+	/**
+	 * Returns the amount of non-filtered light that is transmitted through a
+	 * surface.
+	 *
+	 * @return  Amount of non-filtered light that is transmitted through a
+	 *          surface.
+	 */
+	public double getTransmit()
+	{
+		return _transmit;
+	}
+
+	/**
+	 * Sets the amount of non-filtered light that is transmitted through a
+	 * surface. Some real-world examples of non-filtered transparency are thin
+	 * see-through cloth, fine mesh netting and dust on a surface. In these
+	 * examples, all frequencies of light are allowed to pass through tiny holes
+	 * in the surface. Although the amount of light passing through is
+	 * diminished, the color of the light passing through is unchanged.
+	 *
+	 * @param   transmit    Amount of non-filtered light, typically between 0.0
+	 *                      (opaque) and 1.0 (transparent).
+	 */
+	public void setTransmit( final double transmit )
+	{
+		_transmit = transmit;
 	}
 
 	/**
@@ -844,10 +886,18 @@ public class PovTexture
 		}
 
 		final double filter = getFilter();
-		if ( filter > 0.0 )
+		if ( filter != 0.0 )
 		{
 			out.write( "filter     " );
 			out.write( format( filter ) );
+			out.newLine();
+		}
+
+		final double transmit = getTransmit();
+		if ( transmit != 0.0 )
+		{
+			out.write( "transmit   " );
+			out.write( format( transmit ) );
 			out.newLine();
 		}
 
@@ -1071,10 +1121,18 @@ public class PovTexture
 		}
 
 		final double filter = getFilter();
-		if ( filter > 0.0 )
+		if ( filter != 0.0 )
 		{
 			out.write( "filter     " );
 			out.write( format( filter ) );
+			out.newLine();
+		}
+
+		final double transmit = getTransmit();
+		if ( transmit != 0.0 )
+		{
+			out.write( "transmit   " );
+			out.write( format( transmit ) );
 			out.newLine();
 		}
 
@@ -1107,10 +1165,18 @@ public class PovTexture
 		}
 
 		final double filter = getFilter();
-		if ( filter > 0.0 )
+		if ( filter != 0.0 )
 		{
 			out.write( "filter     " );
 			out.write( format( filter ) );
+			out.newLine();
+		}
+
+		final double transmit = getTransmit();
+		if ( transmit != 0.0 )
+		{
+			out.write( "transmit   " );
+			out.write( format( transmit ) );
 			out.newLine();
 		}
 
