@@ -659,26 +659,51 @@ public class JOGLTools
 		{
 			SoftReference<Texture> reference = textureCache.get( material.colorMap );
 			if ( reference != null )
-					result = reference.get();
-			if ( !textureCache.containsKey( material.colorMap ) )
+				result = reference.get();
+
+			if ( result == null )
 			{
-				if ( result == null )
+				final BufferedImage bufferedImage = material.getColorMapImage( false );
+				if ( bufferedImage != null )
 				{
-					final BufferedImage bufferedImage = material.getColorMapImage( false );
-					if ( bufferedImage != null )
+					final boolean autoMipmapGeneration = ( gl.isExtensionAvailable( "GL_VERSION_1_4"          ) ||
+					                                       gl.isExtensionAvailable( "GL_SGIS_generate_mipmap" ) );
+
+					System.out.println( "MipMap: " + ( autoMipmapGeneration ? "enabled" : "disabled" ) );
+
+					result = TextureIO.newTexture( ( bufferedImage ) , autoMipmapGeneration );
+
+					try
 					{
-						final boolean autoMipmapGeneration = ( ( gl.isExtensionAvailable( "GL_VERSION_1_4"          ) )
-						                                    || ( gl.isExtensionAvailable( "GL_SGIS_generate_mipmap" ) ) ); // @TODO Also check Power Of Two??
+						result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
+						result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
+						result.setTexParameteri( GL.GL_TEXTURE_WRAP_R , GL.GL_REPEAT );
+					}
+					catch ( GLException e )
+					{
+						/*
+						 * If setting texture parameters fails, it's no
+						 * severe problem. Catch any exception so the view
+						 * doesn't crash.
+						 */
+						e.printStackTrace();
+					}
 
-						System.out.println( "MipMap: " + ( autoMipmapGeneration ? "enabled" : "disabled" ) );
-
-						result = TextureIO.newTexture( ( bufferedImage ) , autoMipmapGeneration );
-
+					if ( autoMipmapGeneration )
+					{
 						try
 						{
-							result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
-							result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
-							result.setTexParameteri( GL.GL_TEXTURE_WRAP_R , GL.GL_REPEAT );
+							/**
+							 * Set generate mipmaps to true, this greatly increases performance and viewing pleasure in big scenes.
+							 * @TODO need to find out if generated mipmaps are faster or if pregenerated mipmaps are faster
+							 */
+							result.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
+
+							/** Set texture magnification to linear to support mipmaps. */
+							result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
+
+							/** Set texture minification to linear_mipmap)_nearest to support mipmaps */
+							result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
 						}
 						catch ( GLException e )
 						{
@@ -689,37 +714,10 @@ public class JOGLTools
 							 */
 							e.printStackTrace();
 						}
-
-						if ( autoMipmapGeneration )
-						{
-							try
-							{
-								/**
-								 * Set generate mipmaps to true, this greatly increases performance and viewing pleasure in big scenes.
-								 * @TODO need to find out if generated mipmaps are faster or if pregenerated mipmaps are faster
-								 */
-								result.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
-
-								/** Set texture magnification to linear to support mipmaps. */
-								result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
-
-								/** Set texture minification to linear_mipmap)_nearest to support mipmaps */
-								result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
-							}
-							catch ( GLException e )
-							{
-								/*
-								 * If setting texture parameters fails, it's no
-								 * severe problem. Catch any exception so the view
-								 * doesn't crash.
-								 */
-								e.printStackTrace();
-							}
-						}
 					}
-					reference = ( result != null ) ? new SoftReference<Texture>( result ) : null ;
-					textureCache.put( material.colorMap , reference );
 				}
+				reference = ( result != null ) ? new SoftReference<Texture>( result ) : null ;
+				textureCache.put( material.colorMap , reference );
 			}
 		}
 		return result;
