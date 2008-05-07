@@ -44,7 +44,9 @@ import ab.j3d.model.ExtrudedObject2D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
 
+import com.numdata.oss.MathTools;
 import com.numdata.oss.TextTools;
+import com.numdata.oss.ui.ImageTools;
 
 /**
  * Utility methods related to JOGL implementation of view model.
@@ -671,23 +673,17 @@ public class JOGLTools
 
 					System.out.println( "MipMap: " + ( autoMipmapGeneration ? "enabled" : "disabled" ) );
 
-					result = TextureIO.newTexture( ( bufferedImage ) , autoMipmapGeneration );
+					if ( !gl.isExtensionAvailable( "GL_ARB_texture_non_power_of_two" ) )
+					{
+						result = TextureIO.newTexture( createPowerOfTwoSizedInstance( bufferedImage ) , autoMipmapGeneration );
+					}
+					else
+					{
+						result = TextureIO.newTexture( bufferedImage , autoMipmapGeneration );
+					}
 
-					try
-					{
-						result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
-						result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
-						result.setTexParameteri( GL.GL_TEXTURE_WRAP_R , GL.GL_REPEAT );
-					}
-					catch ( GLException e )
-					{
-						/*
-						 * If setting texture parameters fails, it's no
-						 * severe problem. Catch any exception so the view
-						 * doesn't crash.
-						 */
-						e.printStackTrace();
-					}
+					result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
+					result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
 
 					if ( autoMipmapGeneration )
 					{
@@ -721,6 +717,23 @@ public class JOGLTools
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Scales the given image such that the result has dimensions that are
+	 * powers of two.
+	 *
+	 * @param   image   Image to be scaled, if necessary.
+	 *
+	 * @return  Power-of-two-sized image. If the given image is already
+	 *          power-of-two-sized, that same image is returned.
+	 */
+	private static BufferedImage createPowerOfTwoSizedInstance( final BufferedImage image )
+	{
+		final int scaledWidth  = MathTools.nearestPowerOfTwo( image.getWidth() );
+		final int scaledHeight = MathTools.nearestPowerOfTwo( image.getHeight() );
+
+		return ImageTools.createScaledInstance( image , scaledWidth , scaledHeight , false );
 	}
 
 	/**
