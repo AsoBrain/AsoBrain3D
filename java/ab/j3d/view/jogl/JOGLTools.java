@@ -503,7 +503,7 @@ public class JOGLTools
 			if ( hasTexture )
 			{
 				glWrapper.setTexture2D( true );
-				glWrapper.glBindTexture( texture.getTarget(), texture.getTextureObject()) ;
+				texture.bind();
 			}
 
 			switch ( vertexCount )
@@ -660,10 +660,19 @@ public class JOGLTools
 		if ( TextTools.isNonEmpty( material.colorMap ) )
 		{
 			SoftReference<Texture> reference = textureCache.get( material.colorMap );
-			if ( reference != null )
-				result = reference.get();
 
-			if ( result == null )
+			final boolean loadTexture;
+			if ( reference == null )
+			{
+				loadTexture = !textureCache.containsKey( material.colorMap );
+			}
+			else
+			{
+				result      = reference.get();
+				loadTexture = ( result == null );
+			}
+
+			if ( loadTexture )
 			{
 				final BufferedImage bufferedImage = material.getColorMapImage( false );
 				if ( bufferedImage != null )
@@ -673,14 +682,7 @@ public class JOGLTools
 
 					System.out.println( "MipMap: " + ( autoMipmapGeneration ? "enabled" : "disabled" ) );
 
-					if ( !gl.isExtensionAvailable( "GL_ARB_texture_non_power_of_two" ) )
-					{
-						result = TextureIO.newTexture( createPowerOfTwoSizedInstance( bufferedImage ) , autoMipmapGeneration );
-					}
-					else
-					{
-						result = TextureIO.newTexture( bufferedImage , autoMipmapGeneration );
-					}
+					result = TextureIO.newTexture( createCompatibleTextureImage( bufferedImage , gl ) , autoMipmapGeneration );
 
 					result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
 					result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
@@ -716,22 +718,40 @@ public class JOGLTools
 				textureCache.put( material.colorMap , reference );
 			}
 		}
+
 		return result;
 	}
 
 	/**
-	 * Scales the given image such that the result has dimensions that are
-	 * powers of two.
+	 * Scales the given image, if necessary, such that it is compatible with the
+	 * given GL context. The aspect ratio of the image may not be preserved.
 	 *
 	 * @param   image   Image to be scaled, if necessary.
+	 * @param   gl      GL context.
 	 *
-	 * @return  Power-of-two-sized image. If the given image is already
-	 *          power-of-two-sized, that same image is returned.
+	 * @return  Compatible texture image. If the given image already meets all
+	 *          requirements, that same image is returned.
 	 */
-	private static BufferedImage createPowerOfTwoSizedInstance( final BufferedImage image )
+	private static BufferedImage createCompatibleTextureImage( final BufferedImage image , final GL gl )
 	{
-		final int scaledWidth  = MathTools.nearestPowerOfTwo( image.getWidth() );
-		final int scaledHeight = MathTools.nearestPowerOfTwo( image.getHeight() );
+		/*
+		 * Textures must not exceed the maximum size.
+		 */
+		final int[] maxTextureSizeBuffer = new int[ 1 ];
+		gl.glGetIntegerv( GL.GL_MAX_TEXTURE_SIZE , maxTextureSizeBuffer, 0 );
+		final int maximumTextureSize = maxTextureSizeBuffer[ 0 ];
+
+		int scaledWidth  = Math.min( maximumTextureSize , image.getWidth()  );
+		int scaledHeight = Math.min( maximumTextureSize , image.getHeight() );
+
+		/*
+		 * Texture sizes may need to be powers of two.
+		 */
+		if ( !gl.isExtensionAvailable( "GL_ARB_texture_non_power_of_two" ) )
+		{
+			scaledWidth  = MathTools.nearestPowerOfTwo( scaledWidth  );
+			scaledHeight = MathTools.nearestPowerOfTwo( scaledHeight );
+		}
 
 		return ImageTools.createScaledInstance( image , scaledWidth , scaledHeight , false );
 	}
