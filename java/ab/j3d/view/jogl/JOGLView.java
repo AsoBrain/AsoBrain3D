@@ -592,6 +592,9 @@ public class JOGLView
 					glWrapper.glEnable( lightNumber );
 					lightNumber++;
 				}
+
+				if ( gl.isExtensionAvailable("GL_VERSION_1_2") )
+					gl.glLightModeli( GL.GL_LIGHT_MODEL_COLOR_CONTROL , GL.GL_SEPARATE_SPECULAR_COLOR );
 			}
 		}
 
