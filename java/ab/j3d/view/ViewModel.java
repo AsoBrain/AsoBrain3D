@@ -25,15 +25,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JToolBar;
 
 import ab.j3d.Bounds3D;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
-import ab.j3d.control.CameraControl;
 import ab.j3d.control.FromToCameraControl;
 import ab.j3d.control.OrbitCameraControl;
 import ab.j3d.model.Node3D;
@@ -42,8 +39,6 @@ import ab.j3d.model.Object3D;
 import ab.j3d.view.Projector.ProjectionPolicy;
 import ab.j3d.view.ViewModelView.RenderingPolicy;
 import ab.j3d.view.control.ViewModelNodeControl;
-
-import com.numdata.oss.ui.ActionTools;
 
 /**
  * The view model provides a high level interface between an application and a
@@ -591,25 +586,9 @@ public abstract class ViewModel
 		if ( view == null )
 			throw new IllegalArgumentException( String.valueOf( id ) );
 
-		final String label = view.getLabel();
-
-		final JToolBar toolbar = new JToolBar( label );
-		if ( label != null )
-		{
-			toolbar.add( new JLabel( view.getLabel() + ": " ) );
-		}
-
-		final CameraControl cameraControl = view.getCameraControl();
-		if ( cameraControl != null )
-		{
-			ActionTools.addToToolBar( toolbar , cameraControl.getActions( locale ) );
-		}
-
-		ActionTools.addToToolBar( toolbar , view.getActions( locale ) );
-
 		final JPanel result = new JPanel( new BorderLayout() );
 		result.add( view.getComponent() , BorderLayout.CENTER );
-		result.add( toolbar , BorderLayout.NORTH );
+		result.add( view.createToolBar( locale ) , BorderLayout.SOUTH );
 		return result;
 	}
 
