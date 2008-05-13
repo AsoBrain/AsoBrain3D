@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import javax.swing.Action;
+import javax.swing.JLabel;
+import javax.swing.JToolBar;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.control.CameraControl;
@@ -37,6 +39,7 @@ import ab.j3d.model.Transform3D;
 import ab.j3d.view.Projector.ProjectionPolicy;
 
 import com.numdata.oss.event.EventDispatcher;
+import com.numdata.oss.ui.ActionTools;
 
 /**
  * This class defines a view in the view model.
@@ -234,6 +237,36 @@ public abstract class ViewModelView
 	}
 
 	/**
+	 * Create tool bar to control this view.
+	 *
+	 * @param   locale  Preferred locale for internationalization.
+	 *
+	 * @return  Tool bar.
+	 */
+	public JToolBar createToolBar( final Locale locale )
+	{
+		final String label = getLabel();
+
+		final JToolBar toolbar = new JToolBar( label );
+
+		if ( label != null )
+		{
+			toolbar.add( new JLabel( getLabel() + ": " ) );
+		}
+
+		final CameraControl cameraControl = getCameraControl();
+		if ( cameraControl != null )
+		{
+			ActionTools.addToToolBar( toolbar , cameraControl.getActions( locale ) );
+		}
+
+		ActionTools.addToToolBar( toolbar , getActions( locale ) );
+
+		return toolbar;
+	}
+
+
+	/**
 	 * Get application-assigned ID of this view.
 	 *
 	 * @return  Application-assigned ID of this view.
@@ -347,7 +380,6 @@ public abstract class ViewModelView
 				appendControl( cameraControl );
 		}
 	}
-
 
 	/**
 	 * Get view transform (tranforms model coordinates to view coordinates).
