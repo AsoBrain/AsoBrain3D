@@ -20,6 +20,7 @@
 package ab.j3d.loader;
 
 import java.awt.Color;
+import java.awt.BorderLayout;
 import java.io.IOException;
 import java.util.Locale;
 import javax.swing.JFrame;
@@ -62,26 +63,32 @@ public class ObjLoaderApp
 			//final ResourceLoader loader =   new ZipResourceLoader( fileLoader.getResource( "penguin.jar" ) );
 
 			//Or load from directory
-			final ResourceLoader loader =   new FileResourceLoader( "/home/wijnand/cube/" );
+			final ResourceLoader loader = new FileResourceLoader( "/home/wijnand/cube/" );
 
-			final Object3D object3d     =   ObjLoader.load( transform , loader , "penguin.obj" );
-			final Bounds3D bounds       =   object3d.getBounds( null , null );
-			final Vector3D size         =   bounds.size();
-			final double toCM           =   100.0 * unit;
-			final ViewModel viewModel   =   new JOGLModel( unit, Color.WHITE );
-			final Vector3D viewFrom     =   Vector3D.INIT.set( 0.0 , bounds.v1.y - 3.0 / unit , bounds.v2.z / 2.0 + 1.2 / unit );
-			final Vector3D viewAt       =   Vector3D.INIT.set( 0.0, 0.0 , bounds.v2.z / 2.0 );
-			final ViewModelView view    =   viewModel.createView( "view" );
+			final Object3D object3d = ObjLoader.load( transform , loader , "penguin.obj" );
+			final Bounds3D bounds   = object3d.getBounds( null , null );
+			final Vector3D size     = bounds.size();
+			final double   toCM     = 100.0 * unit;
 
+			final Vector3D viewFrom = Vector3D.INIT.set( 0.0 , bounds.v1.y - 3.0 / unit , bounds.v2.z / 2.0 + 1.2 / unit );
+			final Vector3D viewAt   = Vector3D.INIT.set( 0.0 , 0.0 , bounds.v2.z / 2.0 );
+
+			final ViewModel viewModel = new JOGLModel( unit , Color.WHITE );
 			ViewModelTools.addLegacyLights( viewModel );
-			viewModel.createNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d , null , 1.0f );
-			view.setCameraControl( new FromToCameraControl( view, viewFrom, viewAt ) );
 
-			final JPanel viewPanel  =   viewModel.createViewPanel( new Locale( "nl" ), "view" );
-			final JFrame frame      =   WindowTools.createFrame( viewModel.getClass() + " example", 800, 600, viewPanel );
+			viewModel.createNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d , null , 1.0f );
+
+			final ViewModelView view = viewModel.createView( "view" );
+			view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
+
+			final JPanel viewPanel = new JPanel( new BorderLayout() );
+			viewPanel.add( view.getComponent() , BorderLayout.CENTER );
+			viewPanel.add( view.createToolBar( new Locale( "nl" ) ) , BorderLayout.SOUTH );
+
+			final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , viewPanel );
 			frame.setVisible( true );
 
-					System.out.println( "object size = " + Math.round( toCM * size.x ) + " x " + Math.round( toCM * size.y ) + " x " + Math.round( toCM * size.z ) + " cm" );
+			System.out.println( "object size = " + Math.round( toCM * size.x ) + " x " + Math.round( toCM * size.y ) + " x " + Math.round( toCM * size.z ) + " cm" );
 		}
 		catch ( IOException e )
 		{

@@ -20,6 +20,7 @@
  */
 package ab.j3d.view;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.FontMetrics;
@@ -30,6 +31,7 @@ import java.util.EventObject;
 import java.util.List;
 import java.util.Locale;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import ab.j3d.Material;
@@ -105,7 +107,11 @@ public class ViewModelExample
 //		view.setProjectionPolicy( Projector.PARALLEL );
 		view.setGridEnabled( true );
 
-		final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , viewModel.createViewPanel( Locale.ENGLISH , view.getID() ) );
+		final JPanel viewPanel = new JPanel( new BorderLayout() );
+		viewPanel.add( view.getComponent() , BorderLayout.CENTER );
+		viewPanel.add( view.createToolBar( Locale.ENGLISH ) , BorderLayout.NORTH );
+
+		final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , viewPanel );
 		frame.setVisible( true );
 
 		final Object3D testCube = createCube(0.075 / unit);

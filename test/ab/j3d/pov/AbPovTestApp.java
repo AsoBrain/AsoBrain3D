@@ -19,8 +19,10 @@
  */
 package ab.j3d.pov;
 
+import java.awt.BorderLayout;
 import java.util.Locale;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import ab.j3d.Vector3D;
 import ab.j3d.control.FromToCameraControl;
@@ -99,7 +101,11 @@ final class AbPovTestApp
 		final ViewModelView view = viewModel.createView( "view" );
 		view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
 
-		final JFrame frame = WindowTools.createFrame( "Testscene" , 800 , 600 , viewModel.createViewPanel( Locale.ENGLISH , "view" ) );
+		final JPanel viewPanel = new JPanel( new BorderLayout() );
+		viewPanel.add( view.getComponent() , BorderLayout.CENTER );
+		viewPanel.add( view.createToolBar( Locale.ENGLISH ) , BorderLayout.SOUTH );
+
+		final JFrame frame = WindowTools.createFrame( "Testscene" , 800 , 600 , viewPanel );
 
 		frame.setVisible( true );
 	}

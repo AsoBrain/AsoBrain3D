@@ -20,6 +20,7 @@
 package ab.j3d.loader;
 
 import java.awt.Color;
+import java.awt.BorderLayout;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
@@ -89,19 +90,22 @@ public class Max3DSLoaderApp
 			final Vector3D size     = bounds.size();
 			final double   toCM     = 100.0 * unit;
 
+			final Vector3D viewFrom = Vector3D.INIT.set( 0.0 , bounds.v1.y - 3.0 / unit , bounds.v2.z / 2.0 + 1.2 / unit );
+			final Vector3D viewAt   = Vector3D.INIT.set( 0.0 , 0.0 , bounds.v2.z / 2.0 );
+
 			System.out.println( "object size = " + Math.round( toCM * size.x ) + " x " + Math.round( toCM * size.y ) + " x " + Math.round( toCM * size.z ) + " cm" );
 
 			final ViewModel viewModel = new Java3dModel( unit , Color.lightGray ); // new Color( 51 , 77 , 102 ) );
 			ViewModelTools.addLegacyLights( viewModel );
-			viewModel.createNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d , null , 1.0f );
 
-			final Vector3D  viewFrom = Vector3D.INIT.set( 0.0 , bounds.v1.y - 3.0 / unit , bounds.v2.z / 2.0 + 1.2 / unit );
-			final Vector3D  viewAt   = Vector3D.INIT.set( 0.0 , 0.0 , bounds.v2.z / 2.0 );
+			viewModel.createNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d , null , 1.0f );
 
 			final ViewModelView view = viewModel.createView( "view" );
 			view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
 
-			final JPanel viewPanel = viewModel.createViewPanel( new Locale( "nl" ), "view" );
+			final JPanel viewPanel = new JPanel( new BorderLayout() );
+			viewPanel.add( view.getComponent() , BorderLayout.CENTER );
+			viewPanel.add( view.createToolBar( new Locale( "nl" ) ) , BorderLayout.SOUTH );
 
 			final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , viewPanel );
 			frame.setVisible( true );
