@@ -137,8 +137,8 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    1.0\n" +
-			"\t\t\tdiffuse    0.89\n" +
+			"\t\t\tambient    1.1236\n" +
+			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
@@ -186,8 +186,8 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    1.0\n" +
-			"\t\t\tdiffuse    0.59\n" +
+			"\t\t\tambient    1.69492\n" +
+			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
@@ -235,8 +235,8 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    1.0\n" +
-			"\t\t\tdiffuse    0.11\n" +
+			"\t\t\tambient    9.09091\n" +
+			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
@@ -284,8 +284,8 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    1.0\n" +
-			"\t\t\tdiffuse    0.7\n" +
+			"\t\t\tambient    1.42857\n" +
+			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
@@ -333,8 +333,8 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    1.0\n" +
-			"\t\t\tdiffuse    0.41\n" +
+			"\t\t\tambient    2.43902\n" +
+			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
@@ -382,8 +382,8 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    1.0\n" +
-			"\t\t\tdiffuse    0.3\n" +
+			"\t\t\tambient    3.33333\n" +
+			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
@@ -430,8 +430,8 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    rgb <0.0,0.0,1.0>\n" +
-			"\t\t\tdiffuse    0.11\n" +
+			"\t\t\tambient    rgb <0.0,0.0,9.09091>\n" +
+			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
@@ -443,12 +443,12 @@ public final class TestAbToPovConverter
 			"\t\tpigment\n" +
 			"\t\t{\n" +
 			"\t\t\tcolor      rgb <0.0,1.0,0.0>\n" +
-			"\t\t\tfilter     0.8\n" +
+			"\t\t\ttransmit   0.8\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    rgb <0.0,1.0,0.0>\n" +
-			"\t\t\tdiffuse    0.59\n" +
+			"\t\t\tambient    rgb <0.0,1.69492,0.0>\n" +
+			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
@@ -463,8 +463,8 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    rgb <1.0,0.0,0.0>\n" +
-			"\t\t\tdiffuse    0.3\n" +
+			"\t\t\tambient    rgb <3.33333,0.0,0.0>\n" +
+			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
@@ -479,8 +479,8 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    rgb <1.0,0.0,1.0>\n" +
-			"\t\t\tdiffuse    0.41\n" +
+			"\t\t\tambient    rgb <2.43902,0.0,2.43902>\n" +
+			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
@@ -495,8 +495,8 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    rgb <1.0,0.68627,0.68627>\n" +
-			"\t\t\tdiffuse    0.78039\n" +
+			"\t\t\tambient    rgb <1.28141,0.8794,0.8794>\n" +
+			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 16.0\n" +
 			"\t\t}\n" +
