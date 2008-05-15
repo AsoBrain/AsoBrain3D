@@ -1731,7 +1731,7 @@ public final class Polyline2D
 				 * If we already entered once, and we are about to again, error.
 				 */
 				if ( entered && ( (l1pos == OUTSIDE && c1pos == INSIDE) || ( i2 != null && !corner ) ) )
-					throw new RuntimeException( "Path may only intersect convex poly once. We only support unairy result sets." );
+					throw new RuntimeException( "Path may only intersect convex poly once. We only support unary result sets: convex = " + convex + ", path = '" + path + '\'' );
 
 				/*
 				 * If we have two intersections and endpoint is inside (but not on edge)
