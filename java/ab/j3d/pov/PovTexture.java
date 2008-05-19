@@ -24,7 +24,6 @@ import java.io.IOException;
 
 import ab.j3d.Material;
 
-import com.numdata.oss.MathTools;
 import com.numdata.oss.io.IndentingWriter;
 
 /**
@@ -347,19 +346,26 @@ public class PovTexture
 	public PovTexture( final String textureDirectory , final Material material )
 	{
 		this( getNameForMaterial( material ) ,
-		      new PovVector( (double)material.diffuseColorRed , (double)material.diffuseColorGreen, (double)material.diffuseColorBlue ) , null ,
+		      new PovVector( Math.max( (double)material.diffuseColorRed   , 0.001 ) ,
+		                     Math.max( (double)material.diffuseColorGreen , 0.001 ) ,
+		                     Math.max( (double)material.diffuseColorBlue  , 0.001 ) ) , null ,
 		      ( material.colorMap != null ) ? ( textureDirectory != null ) ? textureDirectory + '/' + material.colorMap : material.colorMap : null );
 
-		final double diffuseReflectivity = material.getDiffuseReflectivity();
-		if ( MathTools.significantlyGreaterThan( diffuseReflectivity , 0.0 ) )
-		{
-			setAmbient( new PovVector( (double)material.ambientColorRed / diffuseReflectivity , (double)material.ambientColorGreen / diffuseReflectivity , (double)material.ambientColorBlue / diffuseReflectivity ) );
-			setDiffuse( 1.0 );
-		}
+		final double ambientRed   = (double)material.ambientColorRed   / Math.max( (double)material.diffuseColorRed   , 0.001 );
+		final double ambientGreen = (double)material.ambientColorGreen / Math.max( (double)material.diffuseColorGreen , 0.001 );
+		final double ambientBlue  = (double)material.ambientColorBlue  / Math.max( (double)material.diffuseColorBlue  , 0.001 );
+		setAmbient( new PovVector( ambientRed , ambientGreen, ambientBlue ) );
 
+		setDiffuse( 1.0 );
 		setTransmit( 1.0 - (double)material.diffuseColorAlpha );
 		setPhong( material.getSpecularReflectivity() );
-		setPhongSize( (double)material.shininess );
+
+		/*
+		 * In POV, phong size has a typical range of 0..250. However, the range
+		 * of Material.shininess is defined as 1..128. As such, the shininess is
+		 * multiplied by 0.5 for a closer approximation.
+		 */
+		setPhongSize( 0.5 * (double)material.shininess );
 	}
 
 	/**
