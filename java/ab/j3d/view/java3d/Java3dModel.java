@@ -64,7 +64,7 @@ public final class Java3dModel
 	 * Map node ID ({@link Object}) to Java 3D content graph object
 	 * ({@link BranchGroup}).
 	 */
-	private final Map<Object,BranchGroup> _nodeContentMap = new HashMap();
+	private final Map<Object,BranchGroup> _nodeContentMap = new HashMap<Object,BranchGroup>();
 
 	/**
 	 * Construct new Java 3D model using {@link ViewModel#MM} units
@@ -137,6 +137,8 @@ public final class Java3dModel
 		nodeRoot.addChild( nodeTransform );
 
 		_contentGraph.addChild( nodeRoot );
+
+		updateNodeContent( node );
 	}
 
 	protected void updateNodeTransform( final ViewModelNode node )
