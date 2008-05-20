@@ -359,13 +359,7 @@ public class PovTexture
 		setDiffuse( 1.0 );
 		setTransmit( 1.0 - (double)material.diffuseColorAlpha );
 		setPhong( material.getSpecularReflectivity() );
-
-		/*
-		 * In POV, phong size has a typical range of 0..250. However, the range
-		 * of Material.shininess is defined as 1..128. As such, the shininess is
-		 * multiplied by 0.5 for a closer approximation.
-		 */
-		setPhongSize( 0.5 * (double)material.shininess );
+		setPhongSize( 0.25 * (double)material.shininess );
 	}
 
 	/**
@@ -756,22 +750,14 @@ public class PovTexture
 	public void declare( final IndentingWriter out )
 		throws IOException
 	{
-		if ( hasImageMap() && ( _rgb != null ) && !isWhite() )
-		{
-			declarePigments( out );
-			declarePigmentMap( out );
-		}
-		else
-		{
-			out.write( "#declare " );
-			out.write( getTextureCode( _name ) );
-			out.write( " =" );
-			out.newLine();
-			out.indentIn();
-			_declared = true;
-			writeTexture( out );
-			out.indentOut();
-		}
+		out.write( "#declare " );
+		out.write( getTextureCode( _name ) );
+		out.write( " =" );
+		out.newLine();
+		out.indentIn();
+		_declared = true;
+		writeTexture( out );
+		out.indentOut();
 	}
 
 	/**
@@ -870,16 +856,9 @@ public class PovTexture
 		out.indentIn();
 
 		final PovVector rgb = _rgb;
-		if ( ( rgb != null ) && !( isWhite() && hasImageMap() ) )
+		if ( hasImageMap() )
 		{
-			out.write( "color      rgb " );
-			rgb.write( out );
-			out.newLine();
-		}
-
-		final String imageMap = _imageMap;
-		if ( imageMap != null )
-		{
+			final String imageMap     = _imageMap;
 			final String imageMapType = _imageMapType;
 			//String imageMapType = map.substring( map.lastIndexOf( (int)'.' ) + 1 );
 
@@ -888,6 +867,12 @@ public class PovTexture
 			out.write( " \"" );
 			out.write( imageMap );
 			out.write( "\" }" );
+			out.newLine();
+		}
+		else
+		{
+			out.write( "color      rgb " );
+			rgb.write( out );
 			out.newLine();
 		}
 
@@ -935,6 +920,46 @@ public class PovTexture
 		{
 			out.write( "diffuse    " );
 			out.writeln( format( diffuse ) );
+		}
+
+		if ( hasImageMap() && !isWhite() )
+		{
+			/*
+			 * Add another texture layer to adjust the texture color.
+			 */
+			out.indentOut();
+			out.writeln( "}" );
+
+			final PovVector scale = getScale();
+			if ( scale != null )
+			{
+				out.write( "scale " );
+				scale.write( out );
+				out.newLine();
+			}
+
+			out.indentOut();
+			out.writeln( "}" );
+
+			out.writeln( "texture" );
+			out.writeln( "{" );
+			out.indentIn();
+
+			out.writeln( "pigment" );
+			out.writeln( "{" );
+			out.indentIn();
+
+			out.write( "color      rgb " );
+			rgb.write( out );
+			out.write( " filter 1.0" );
+			out.newLine();
+
+			out.indentOut();
+			out.writeln( "}" );
+
+			out.writeln( "finish" );
+			out.writeln( "{" );
+			out.indentIn();
 		}
 
 		final double phong = getPhong();
