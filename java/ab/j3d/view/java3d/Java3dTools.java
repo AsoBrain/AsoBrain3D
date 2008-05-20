@@ -24,11 +24,11 @@ import java.awt.Canvas;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Transparency;
-import java.awt.GraphicsConfiguration;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ComponentColorModel;
@@ -95,7 +95,7 @@ public final class Java3dTools
 	/**
 	 * Texture map cache (maps map name to texture).
 	 */
-	private final Map<String,Texture> _textureCache = new HashMap();
+	private final Map<String,Texture> _textureCache = new HashMap<String,Texture>();
 
 	/**
 	 * Singleton {@link Java3dTools} instance.
@@ -336,11 +336,11 @@ public final class Java3dTools
 	{
 		final Material j3dMaterial = new Material();
 		j3dMaterial.setLightingEnable( true );
-		j3dMaterial.setAmbientColor  ( abMaterial.ambientColorRed , abMaterial.ambientColorGreen , abMaterial.ambientColorBlue );
+		j3dMaterial.setAmbientColor  ( abMaterial.ambientColorRed  , abMaterial.ambientColorGreen  , abMaterial.ambientColorBlue  );
 		j3dMaterial.setEmissiveColor ( abMaterial.emissiveColorRed , abMaterial.emissiveColorGreen , abMaterial.emissiveColorBlue );
-		j3dMaterial.setDiffuseColor  ( abMaterial.diffuseColorRed , abMaterial.diffuseColorGreen , abMaterial.diffuseColorBlue );
+		j3dMaterial.setDiffuseColor  ( abMaterial.diffuseColorRed  , abMaterial.diffuseColorGreen  , abMaterial.diffuseColorBlue  );
 		j3dMaterial.setSpecularColor ( abMaterial.specularColorRed , abMaterial.specularColorGreen , abMaterial.specularColorBlue );
-		j3dMaterial.setShininess     ( abMaterial.shininess );
+		j3dMaterial.setShininess     ( (float)abMaterial.shininess );
 
 		final Appearance appearance = new Appearance();
 		appearance.setCapability( Appearance.ALLOW_TEXTURE_READ );
