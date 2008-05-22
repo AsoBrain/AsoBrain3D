@@ -66,7 +66,20 @@ import ab.j3d.view.jogl.JOGLModel;
 public class ViewComparison
 	implements Runnable
 {
+	/**
+	 * Whether to include a POV view.
+	 */
 	private static final boolean INCLUDE_POV_VIEW = true;
+
+	/**
+	 * Fall-off distance for lights in the scene.
+	 */
+	private static final double FALL_OFF = 1700.0;
+
+	/**
+	 * Whether to render specular highlights.
+	 */
+	private static final boolean SPECULAR_HIGHLIGHTS = true;
 
 	/**
 	 * Run application.
@@ -202,6 +215,8 @@ public class ViewComparison
 		{
 			_cameraLocation = Vector3D.INIT.set( 500.0 , -500.0 , 500.0 );
 			_cameraTarget   = Vector3D.INIT.plus( 0.0 , 150.0 , 40.0 );
+//			_cameraLocation = Vector3D.INIT.set( 4000.0 , 1500.0 , 4000.0 );
+//			_cameraTarget   = Vector3D.INIT.plus( 0.0 , 1500.0 , 40.0 );
 		}
 
 		public void setCameraLocation( final Vector3D cameraLocation )
@@ -232,7 +247,17 @@ public class ViewComparison
 			final Material shinier   = new Material( 0xffff8000 ); shinier  .code = "shinier";
 			final Material textured  = new Material( 0xffffffff ); textured .code = "textured";
 			final Material textured2 = new Material( 0xff0080ff ); textured2.code = "textured2";
-			final Material textured3 = new Material( 0xffff0000 ); textured2.code = "textured3";
+			final Material textured3 = new Material( 0xffff0000 ); textured3.code = "textured3";
+
+			if ( !SPECULAR_HIGHLIGHTS )
+			{
+				solid    .specularColorRed = 0.0f; solid    .specularColorGreen = 0.0f; solid    .specularColorBlue = 0.0f;
+				shiny    .specularColorRed = 0.0f; shiny    .specularColorGreen = 0.0f; shiny    .specularColorBlue = 0.0f;
+				shinier  .specularColorRed = 0.0f; shinier  .specularColorGreen = 0.0f; shinier  .specularColorBlue = 0.0f;
+				textured .specularColorRed = 0.0f; textured .specularColorGreen = 0.0f; textured .specularColorBlue = 0.0f;
+				textured2.specularColorRed = 0.0f; textured2.specularColorGreen = 0.0f; textured2.specularColorBlue = 0.0f;
+				textured3.specularColorRed = 0.0f; textured3.specularColorGreen = 0.0f; textured3.specularColorBlue = 0.0f;
+			}
 
 			shiny.shininess = 64;
 			shinier.shininess = 128;
@@ -286,13 +311,23 @@ public class ViewComparison
 				z += 100.0;
 			}
 
+			/*
+			 * Test light fall-off
+			 */
+			for ( int i = 0 ; i < 50 ; i++ )
+			{
+				target.createNode( "distant-sphere-a-" + i , new Sphere3D( Matrix3D.INIT.plus( -100.0 , 500.0 + (double)i * 100.0 , 0.0 ) , 40.0 , 40.0 , 40.0 , 16 , 16 , solid    , true ) , null , 1.0f );
+				target.createNode( "distant-sphere-b-" + i , new Sphere3D( Matrix3D.INIT.plus(    0.0 , 500.0 + (double)i * 100.0 , 0.0 ) , 40.0 , 40.0 , 40.0 , 16 , 16 , shiny    , true ) , null , 1.0f );
+				target.createNode( "distant-sphere-c-" + i , new Sphere3D( Matrix3D.INIT.plus(  100.0 , 500.0 + (double)i * 100.0 , 0.0 ) , 40.0 , 40.0 , 40.0 , 16 , 16 , textured , true ) , null , 1.0f );
+			}
+
 			createLights( target );
 		}
 
 		protected void createLights( final ViewModel target )
 		{
 			target.createNode( "ambient-1" , Matrix3D.INIT , new Light3D( 128 , -1.0 ) , null , 1.0f );
-			target.createNode( "light-1" , Matrix3D.INIT.plus(  1000.0 ,  -1000.0 ,  1000.0 ) , new Light3D( 250 , 0.0 ) , null , 1.0f );
+			target.createNode( "light-1" , Matrix3D.INIT.plus(  1000.0 ,  -1000.0 ,  1000.0 ) , new Light3D( 150 , FALL_OFF ) , null , 1.0f );
 		}
 	}
 
@@ -301,7 +336,7 @@ public class ViewComparison
 	{
 		protected void createLights( final ViewModel target )
 		{
-			target.createNode( "light-1" , Matrix3D.INIT.plus(  1000.0 ,  -1000.0 ,  1000.0 ) , new Light3D( 250 , 0.0 ) , null , 1.0f );
+			target.createNode( "light-1" , Matrix3D.INIT.plus(  1000.0 ,  -1000.0 ,  1000.0 ) , new Light3D( 150 , FALL_OFF ) , null , 1.0f );
 		}
 	}
 
