@@ -289,7 +289,7 @@ public final class AbToPovConverter
 		if ( fallOff > 0.0001 )
 		{
 			result.setFadeDistance( fallOff );
-			result.setFadePower( PovLight.FADE_LINEAR );
+			result.setFadePower( PovLight.FADE_QUADRATIC );
 		}
 		else
 		{
