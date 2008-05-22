@@ -589,6 +589,25 @@ public class JOGLView
 					gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] { (float)nodeTransform.xo , (float)nodeTransform.yo , (float)nodeTransform.zo , 1.0f } , 0 );
 					gl.glLightfv( lightNumber , GL.GL_DIFFUSE  , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
 					gl.glLightfv( lightNumber , GL.GL_SPECULAR , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
+
+					final float fallOff = (float)light.getFallOff();
+					if ( fallOff > 0.0f )
+					{
+						/*
+						 * intensity = 1 / ( c + l * d + q * d^2 )
+						 * constant + quadratic * distance ^ 2 )
+						 */
+						gl.glLightfv( lightNumber , GL.GL_CONSTANT_ATTENUATION  , new float[] { 0.5f } , 0 );
+						gl.glLightfv( lightNumber , GL.GL_LINEAR_ATTENUATION    , new float[] { 0.0f } , 0 );
+						gl.glLightfv( lightNumber , GL.GL_QUADRATIC_ATTENUATION , new float[] { 0.5f / ( fallOff * fallOff ) } , 0 );
+					}
+					else
+					{
+						gl.glLightfv( lightNumber , GL.GL_CONSTANT_ATTENUATION  , new float[] { 1.0f } , 0 );
+						gl.glLightfv( lightNumber , GL.GL_LINEAR_ATTENUATION    , new float[] { 0.0f } , 0 );
+						gl.glLightfv( lightNumber , GL.GL_QUADRATIC_ATTENUATION , new float[] { 0.0f } , 0 );
+					}
+
 					glWrapper.glEnable( lightNumber );
 					lightNumber++;
 				}
