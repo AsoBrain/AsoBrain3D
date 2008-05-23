@@ -107,20 +107,8 @@ public final class TestAbToPovConverter
 			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
-			"\t}\n\n" +
-
-			"#declare PIG_CUBE_BACK_TEXTURE_AND_COLOR_RGB =\n" +
-			"\tpigment\n" +
-			"\t{\n" +
-			"\t\tcolor rgb <1.0,1.0,0.0>\n" +
-			"\t}\n\n" +
-
-			"#declare PIG_CUBE_BACK_TEXTURE_AND_COLOR_IMG =\n" +
-			"\tpigment\n" +
-			"\t{\n" +
-			"\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_BACK_TEXTURE_AND_COLOR\" }\n" +
 			"\t}\n\n" +
 
 			"#declare TEX_CUBE_BACK_TEXTURE_AND_COLOR =\n" +
@@ -128,19 +116,24 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\taverage\n" +
-			"\t\t\tpigment_map\n" +
-			"\t\t\t{\n" +
-			"\t\t\t\t[ 1.0 PIG_CUBE_BACK_TEXTURE_AND_COLOR_RGB ]\n" +
-			"\t\t\t\t[ 1.0 PIG_CUBE_BACK_TEXTURE_AND_COLOR_IMG ]\n" +
-			"\t\t\t}\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_BACK_TEXTURE_AND_COLOR\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    1.1236\n" +
+			"\t\t\tambient    rgb <1.0,1.0,1000.0>\n" +
 			"\t\t\tdiffuse    1.0\n" +
+			"\t\t}\n" +
+			"\t}\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\tcolor      rgb <1.0,1.0,0.001> filter 1.0\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -156,20 +149,8 @@ public final class TestAbToPovConverter
 			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
-			"\t}\n\n" +
-
-			"#declare PIG_CUBE_BOTTOM_TEXTURE_AND_COLOR_RGB =\n" +
-			"\tpigment\n" +
-			"\t{\n" +
-			"\t\tcolor rgb <0.0,1.0,0.0>\n" +
-			"\t}\n\n" +
-
-			"#declare PIG_CUBE_BOTTOM_TEXTURE_AND_COLOR_IMG =\n" +
-			"\tpigment\n" +
-			"\t{\n" +
-			"\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_BOTTOM_TEXTURE_AND_COLOR\" }\n" +
 			"\t}\n\n" +
 
 			"#declare TEX_CUBE_BOTTOM_TEXTURE_AND_COLOR =\n" +
@@ -177,19 +158,24 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\taverage\n" +
-			"\t\t\tpigment_map\n" +
-			"\t\t\t{\n" +
-			"\t\t\t\t[ 1.0 PIG_CUBE_BOTTOM_TEXTURE_AND_COLOR_RGB ]\n" +
-			"\t\t\t\t[ 1.0 PIG_CUBE_BOTTOM_TEXTURE_AND_COLOR_IMG ]\n" +
-			"\t\t\t}\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_BOTTOM_TEXTURE_AND_COLOR\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    1.69492\n" +
+			"\t\t\tambient    rgb <1000.0,1.0,1000.0>\n" +
 			"\t\t\tdiffuse    1.0\n" +
+			"\t\t}\n" +
+			"\t}\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\tcolor      rgb <0.001,1.0,0.001> filter 1.0\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -205,20 +191,8 @@ public final class TestAbToPovConverter
 			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
-			"\t}\n\n" +
-
-			"#declare PIG_CUBE_FRONT_TEXTURE_AND_COLOR_RGB =\n" +
-			"\tpigment\n" +
-			"\t{\n" +
-			"\t\tcolor rgb <0.0,0.0,1.0>\n" +
-			"\t}\n\n" +
-
-			"#declare PIG_CUBE_FRONT_TEXTURE_AND_COLOR_IMG =\n" +
-			"\tpigment\n" +
-			"\t{\n" +
-			"\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_FRONT_TEXTURE_AND_COLOR\" }\n" +
 			"\t}\n\n" +
 
 			"#declare TEX_CUBE_FRONT_TEXTURE_AND_COLOR =\n" +
@@ -226,19 +200,24 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\taverage\n" +
-			"\t\t\tpigment_map\n" +
-			"\t\t\t{\n" +
-			"\t\t\t\t[ 1.0 PIG_CUBE_FRONT_TEXTURE_AND_COLOR_RGB ]\n" +
-			"\t\t\t\t[ 1.0 PIG_CUBE_FRONT_TEXTURE_AND_COLOR_IMG ]\n" +
-			"\t\t\t}\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_FRONT_TEXTURE_AND_COLOR\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    9.09091\n" +
+			"\t\t\tambient    rgb <1000.0,1000.0,1.0>\n" +
 			"\t\t\tdiffuse    1.0\n" +
+			"\t\t}\n" +
+			"\t}\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\tcolor      rgb <0.001,0.001,1.0> filter 1.0\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -254,20 +233,8 @@ public final class TestAbToPovConverter
 			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
-			"\t}\n\n" +
-
-			"#declare PIG_CUBE_LEFT_TEXTURE_AND_COLOR_RGB =\n" +
-			"\tpigment\n" +
-			"\t{\n" +
-			"\t\tcolor rgb <0.0,1.0,1.0>\n" +
-			"\t}\n\n" +
-
-			"#declare PIG_CUBE_LEFT_TEXTURE_AND_COLOR_IMG =\n" +
-			"\tpigment\n" +
-			"\t{\n" +
-			"\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_LEFT_TEXTURE_AND_COLOR\" }\n" +
 			"\t}\n\n" +
 
 			"#declare TEX_CUBE_LEFT_TEXTURE_AND_COLOR =\n" +
@@ -275,19 +242,24 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\taverage\n" +
-			"\t\t\tpigment_map\n" +
-			"\t\t\t{\n" +
-			"\t\t\t\t[ 1.0 PIG_CUBE_LEFT_TEXTURE_AND_COLOR_RGB ]\n" +
-			"\t\t\t\t[ 1.0 PIG_CUBE_LEFT_TEXTURE_AND_COLOR_IMG ]\n" +
-			"\t\t\t}\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_LEFT_TEXTURE_AND_COLOR\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    1.42857\n" +
+			"\t\t\tambient    rgb <1000.0,1.0,1.0>\n" +
 			"\t\t\tdiffuse    1.0\n" +
+			"\t\t}\n" +
+			"\t}\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\tcolor      rgb <0.001,1.0,1.0> filter 1.0\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -303,20 +275,8 @@ public final class TestAbToPovConverter
 			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
-			"\t}\n\n" +
-
-			"#declare PIG_CUBE_RIGHT_TEXTURE_AND_COLOR_RGB =\n" +
-			"\tpigment\n" +
-			"\t{\n" +
-			"\t\tcolor rgb <1.0,0.0,1.0>\n" +
-			"\t}\n\n" +
-
-			"#declare PIG_CUBE_RIGHT_TEXTURE_AND_COLOR_IMG =\n" +
-			"\tpigment\n" +
-			"\t{\n" +
-			"\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_RIGHT_TEXTURE_AND_COLOR\" }\n" +
 			"\t}\n\n" +
 
 			"#declare TEX_CUBE_RIGHT_TEXTURE_AND_COLOR =\n" +
@@ -324,19 +284,24 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\taverage\n" +
-			"\t\t\tpigment_map\n" +
-			"\t\t\t{\n" +
-			"\t\t\t\t[ 1.0 PIG_CUBE_RIGHT_TEXTURE_AND_COLOR_RGB ]\n" +
-			"\t\t\t\t[ 1.0 PIG_CUBE_RIGHT_TEXTURE_AND_COLOR_IMG ]\n" +
-			"\t\t\t}\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_RIGHT_TEXTURE_AND_COLOR\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    2.43902\n" +
+			"\t\t\tambient    rgb <1.0,1000.0,1.0>\n" +
 			"\t\t\tdiffuse    1.0\n" +
+			"\t\t}\n" +
+			"\t}\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\tcolor      rgb <1.0,0.001,1.0> filter 1.0\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -352,20 +317,8 @@ public final class TestAbToPovConverter
 			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
-			"\t}\n\n" +
-
-			"#declare PIG_CUBE_TOP_TEXTURE_AND_COLOR_RGB =\n" +
-			"\tpigment\n" +
-			"\t{\n" +
-			"\t\tcolor rgb <1.0,0.0,0.0>\n" +
-			"\t}\n\n" +
-
-			"#declare PIG_CUBE_TOP_TEXTURE_AND_COLOR_IMG =\n" +
-			"\tpigment\n" +
-			"\t{\n" +
-			"\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_TOP_TEXTURE_AND_COLOR\" }\n" +
 			"\t}\n\n" +
 
 			"#declare TEX_CUBE_TOP_TEXTURE_AND_COLOR =\n" +
@@ -373,19 +326,24 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\taverage\n" +
-			"\t\t\tpigment_map\n" +
-			"\t\t\t{\n" +
-			"\t\t\t\t[ 1.0 PIG_CUBE_TOP_TEXTURE_AND_COLOR_RGB ]\n" +
-			"\t\t\t\t[ 1.0 PIG_CUBE_TOP_TEXTURE_AND_COLOR_IMG ]\n" +
-			"\t\t\t}\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "/CUBE_TOP_TEXTURE_AND_COLOR\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    3.33333\n" +
+			"\t\t\tambient    rgb <1.0,1000.0,1000.0>\n" +
 			"\t\t\tdiffuse    1.0\n" +
+			"\t\t}\n" +
+			"\t}\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\tcolor      rgb <1.0,0.001,0.001> filter 1.0\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -401,7 +359,7 @@ public final class TestAbToPovConverter
 			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -417,7 +375,7 @@ public final class TestAbToPovConverter
 			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -426,14 +384,14 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\tcolor      rgb <0.0,0.0,1.0>\n" +
+			"\t\t\tcolor      rgb <0.001,0.001,1.0>\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    rgb <0.0,0.0,9.09091>\n" +
+			"\t\t\tambient    rgb <0.0,0.0,1.0>\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -442,15 +400,15 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\tcolor      rgb <0.0,1.0,0.0>\n" +
+			"\t\t\tcolor      rgb <0.001,1.0,0.001>\n" +
 			"\t\t\ttransmit   0.8\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    rgb <0.0,1.69492,0.0>\n" +
+			"\t\t\tambient    rgb <0.0,1.0,0.0>\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -459,14 +417,14 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\tcolor      rgb <1.0,0.0,0.0>\n" +
+			"\t\t\tcolor      rgb <1.0,0.001,0.001>\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    rgb <3.33333,0.0,0.0>\n" +
+			"\t\t\tambient    rgb <1.0,0.0,0.0>\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -475,14 +433,14 @@ public final class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\tcolor      rgb <1.0,0.0,1.0>\n" +
+			"\t\t\tcolor      rgb <1.0,0.001,1.0>\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    rgb <2.43902,0.0,2.43902>\n" +
+			"\t\t\tambient    rgb <1.0,0.0,1.0>\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -495,10 +453,10 @@ public final class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    rgb <1.28141,0.8794,0.8794>\n" +
+			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
@@ -514,7 +472,7 @@ public final class TestAbToPovConverter
 			"\t\t\tambient    1.0\n" +
 			"\t\t\tdiffuse    1.0\n" +
 			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 16.0\n" +
+			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n";
 
@@ -1053,7 +1011,7 @@ public final class TestAbToPovConverter
 			"\t<500.0,-500.0,500.0>\n" +
 			"\tcolor <1.0,1.0,1.0>\n" +
 			"\tfade_distance 100.0\n" +
-			"\tfade_power 1\n" +
+			"\tfade_power 2\n" +
 			"}\n";
 		Assert.assertEquals( "Light3D to pov conversion error" , expected , actual );
 	}
