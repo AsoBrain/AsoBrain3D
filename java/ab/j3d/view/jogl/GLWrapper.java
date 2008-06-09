@@ -667,15 +667,30 @@ public class GLWrapper
 	 * The initial value of the current normal is the unit vector, (0, 0, 1).<br />
 	 * See <a href="http://www.opengl.org/documentation/specs/man_pages/hardcopy/GL/html/gl/normal.html">http://www.opengl.org/documentation/specs/man_pages/hardcopy/GL/html/gl/normal.html<a>.
 	 *
-	 * @param nx   Specify the x coordinate of the new normal.
-	 * @param ny   Specify the y coordinate of the new normal.
-	 * @param nz   Specify the z coordinate of the new normal.
+	 * @param   nx  Specify the x coordinate of the new normal.
+	 * @param   ny  Specify the y coordinate of the new normal.
+	 * @param   nz  Specify the z coordinate of the new normal.
 	 *
 	 * @see GL#glNormal3d(double, double, double)
 	 */
-	public  void glNormal3d(  final double nx , final double ny , final double nz )
+	public void glNormal3d( final double nx , final double ny , final double nz )
 	{
 		_gl.glNormal3d( nx , ny , nz );
+	}
+
+	/**
+	 * Set the current normal vector.
+	 * The initial value of the current normal is the unit vector, (0, 0, 1).<br />
+	 * See <a href="http://www.opengl.org/documentation/specs/man_pages/hardcopy/GL/html/gl/normal.html">http://www.opengl.org/documentation/specs/man_pages/hardcopy/GL/html/gl/normal.html<a>.
+	 *
+	 * @param   coordinates     Array containing normal vector coordinates.
+	 * @param   offset          Index of the first coordinate of the normal.
+	 *
+	 * @see GL#glNormal3dv(double[], int)
+	 */
+	public void glNormal3dv( final double[] coordinates , final int offset )
+	{
+		_gl.glNormal3dv( coordinates , offset );
 	}
 
 	/**
@@ -733,8 +748,9 @@ public class GLWrapper
 	}
 
 	/**
-	 * Specify a vertex.<br />
-	 * See <a href="http://www.opengl.org/documentation/specs/man_pages/hardcopy/GL/html/gl/vertex.html">http://www.opengl.org/documentation/specs/man_pages/hardcopy/GL/html/gl/vertex.html<a>.
+	 * Specify a vertex.
+	 *
+	 * <p>See <a href="http://www.opengl.org/documentation/specs/man_pages/hardcopy/GL/html/gl/vertex.html">http://www.opengl.org/documentation/specs/man_pages/hardcopy/GL/html/gl/vertex.html<a>.
 	 *
 	 * @param x     X coordinate.
 	 * @param y     Y coordinate.
@@ -745,6 +761,21 @@ public class GLWrapper
 	public  void glVertex3d( final double x , final double y , final double z )
 	{
 		_gl.glVertex3d( x , y , z );
+	}
+
+	/**
+	 * Specify a vertex.
+	 *
+	 * <p>See <a href="http://www.opengl.org/documentation/specs/man_pages/hardcopy/GL/html/gl/vertex.html">http://www.opengl.org/documentation/specs/man_pages/hardcopy/GL/html/gl/vertex.html<a>.
+	 *
+	 * @param   coordinates     Array containing vertex coordinates.
+	 * @param   offset          Index of the first coordinate of the vertex.
+	 *
+	 * @see GL#glVertex3dv(double[], int)
+	 */
+	public  void glVertex3dv( final double[] coordinates , final int offset )
+	{
+		_gl.glVertex3dv( coordinates , offset );
 	}
 
 	/**
