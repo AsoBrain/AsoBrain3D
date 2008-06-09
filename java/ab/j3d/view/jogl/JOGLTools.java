@@ -646,14 +646,14 @@ public class JOGLTools
 					break;
 				}
 
-				gl.glActiveTexture( GL.GL_TEXTURE0 );
-				gl.glDisable( GL.GL_TEXTURE_CUBE_MAP );
-				gl.glActiveTexture( GL.GL_TEXTURE1 );
+				gl.glActiveTexture( GL.GL_TEXTURE3 );
 				gl.glDisable( GL.GL_TEXTURE_2D );
 				gl.glActiveTexture( GL.GL_TEXTURE2 );
 				gl.glDisable( GL.GL_TEXTURE_2D );
-				gl.glActiveTexture( GL.GL_TEXTURE3 );
+				gl.glActiveTexture( GL.GL_TEXTURE1 );
 				gl.glDisable( GL.GL_TEXTURE_2D );
+				gl.glActiveTexture( GL.GL_TEXTURE0 );
+				gl.glDisable( GL.GL_TEXTURE_CUBE_MAP );
 			}
 			else
 			{
