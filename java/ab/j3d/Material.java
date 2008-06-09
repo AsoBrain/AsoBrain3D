@@ -67,6 +67,9 @@ public class Material
 		"  `colorMap` varchar(64) default NULL,\n" +
 		"  `colorMapWidth` double NOT NULL,\n" +
 		"  `colorMapHeight` double NOT NULL,\n" +
+		"  `bumpMap` varchar(64) default NULL,\n" +
+		"  `bumpMapWidth` double NOT NULL,\n" +
+		"  `bumpMapHeight` double NOT NULL,\n" +
 		"  `grain` tinyint(1) NOT NULL,\n" +
 		"  PRIMARY KEY  (`ID`),\n" +
 		"  UNIQUE KEY `code` (`code`)\n" +
@@ -215,6 +218,29 @@ public class Material
 	public double colorMapHeight;
 
 	/**
+	 * Name of bump map to use. This map specifies a height offset at each
+	 * pixel, used to create the illusion of highly detailed geometry that
+	 * includes bumps, scratches and so on. The map should be in grayscale and
+	 * should have no transparency.
+	 * Set to <code>null</code> if no bump map is used.
+	 */
+	public String bumpMap;
+
+	/**
+	 * Width of bump map in meters. This can be used if the map has this
+	 * physical dimension, in which case it can be correctly scaled in a virtual
+	 * environment. Set to 0 if undetermined.
+	 */
+	public double bumpMapWidth;
+
+	/**
+	 * Height of bump map in meters. This can be used if the map has this
+	 * physical dimension, in which case it can be correctly scaled in a virtual
+	 * environment. Set to 0 if undetermined.
+	 */
+	public double bumpMapHeight;
+
+	/**
 	 * Flag to indicate that this material's texture has a 'grain'. If so,
 	 * it is important how the material is oriented.
 	 */
@@ -256,6 +282,9 @@ public class Material
 		colorMap           = original.colorMap;
 		colorMapWidth      = original.colorMapWidth;
 		colorMapHeight     = original.colorMapHeight;
+		bumpMap            = original.bumpMap;
+		bumpMapWidth       = original.bumpMapWidth;
+		bumpMapHeight      = original.bumpMapHeight;
 		grain              = original.grain;
 	}
 
@@ -297,6 +326,9 @@ public class Material
 		colorMap           = null;
 		colorMapWidth      = 0.0;
 		colorMapHeight     = 0.0;
+		bumpMap            = null;
+		bumpMapWidth       = 0.0;
+		bumpMapHeight      = 0.0;
 		grain              = false;
 	}
 
@@ -358,6 +390,20 @@ public class Material
 	public BufferedImage getColorMapImage( final boolean useCache )
 	{
 		final String map = colorMap;
+		return TextTools.isNonEmpty( map ) ? useCache ? MapTools.getImage( map ) : MapTools.loadImage( map ) : null;
+	}
+
+	/**
+	 * Get {@link BufferedImage} instance with bump map image.
+	 *
+	 * @param   useCache        Use caching of image data if available.
+	 *
+	 * @return  Bump map image;
+	 *          <code>null</code> if no color map was defined or could be loaded.
+ 	 */
+	public BufferedImage getBumpMapImage( final boolean useCache )
+	{
+		final String map = bumpMap;
 		return TextTools.isNonEmpty( map ) ? useCache ? MapTools.getImage( map ) : MapTools.loadImage( map ) : null;
 	}
 
