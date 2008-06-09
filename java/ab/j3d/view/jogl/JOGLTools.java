@@ -37,6 +37,7 @@ import com.sun.opengl.util.BufferUtil;
 import com.sun.opengl.util.texture.Texture;
 import com.sun.opengl.util.texture.TextureIO;
 
+import ab.j3d.MapTools;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
@@ -56,6 +57,11 @@ import com.numdata.oss.ui.ImageTools;
  */
 public class JOGLTools
 {
+	/**
+	 * Texture cache key for the normalization cube map, used for DOT3 bump
+	 * mapping.
+	 */
+	private static final String NORMALIZATION_CUBE_MAP = "__normalizationCubeMap";
 
 	/**
 	 * Utility/Application class is not supposed to be instantiated.
@@ -67,18 +73,40 @@ public class JOGLTools
 	/**
 	 * Paint 3D object on GL context.
 	 *
-	 * @param glWrapper         GLWrapper.
-	 * @param object3D          Object to draw.
-	 * @param node2gl           Transformation from node to current GL transform.
-	 * @param useTextures       Use textures on this object3D.
-	 * @param useAlternate      Use alternative color to paint this object3D.
-	 * @param hasLighting       Specify material lighting properties.
-	 * @param textureCache      Texture cache.
-	 * @param fill              Fill polygons.
-	 * @param materialOverride  Material to use instead of actual materials.
+	 * @param   glWrapper           GLWrapper.
+	 * @param   object3D            Object to draw.
+	 * @param   node2gl             Transformation from node to current GL transform.
+	 * @param   useTextures         Use textures on this object3D.
+	 * @param   useBump             Whether to use bump mapping or not.
+	 * @param   useAlternate        Use alternative color to paint this object3D.
+	 * @param   hasLighting         Specify material lighting properties.
+	 * @param   textureCache        Texture cache.
+	 * @param   fill                Fill polygons.
+	 * @param   materialOverride    Material to use instead of actual materials.
 	 */
-	public static void paintObject3D( final GLWrapper glWrapper , final Object3D object3D , final Matrix3D node2gl , final boolean useTextures , final boolean useAlternate , final boolean hasLighting , final Map<String, SoftReference<Texture>> textureCache , final boolean fill , final Material materialOverride )
+	public static void paintObject3D( final GLWrapper glWrapper , final Object3D object3D , final Matrix3D node2gl , final boolean useTextures , final boolean useBump , final boolean useAlternate , final boolean hasLighting , final Map<String, SoftReference<Texture>> textureCache , final boolean fill , final Material materialOverride )
 	{
+		paintObject3D( glWrapper , object3D , node2gl , useTextures , useBump , useAlternate , hasLighting ? Vector3D.INIT : null , textureCache , fill , materialOverride );
+	}
+
+	/**
+	 * Paint 3D object on GL context.
+	 *
+	 * @param   glWrapper           GLWrapper.
+	 * @param   object3D            Object to draw.
+	 * @param   node2gl             Transformation from node to current GL transform.
+	 * @param   useTextures         Use textures on this object3D.
+	 * @param   useBump             Whether to use bump mapping or not.
+	 * @param   useAlternate        Use alternative color to paint this object3D.
+	 * @param   lightPosition       Position of the dominant light source, if any.
+	 * @param   textureCache        Texture cache.
+	 * @param   fill                Fill polygons.
+	 * @param   materialOverride    Material to use instead of actual materials.
+	 */
+	public static void paintObject3D( final GLWrapper glWrapper , final Object3D object3D , final Matrix3D node2gl , final boolean useTextures , final boolean useBump , final boolean useAlternate , final Vector3D lightPosition , final Map<String, SoftReference<Texture>> textureCache , final boolean fill , final Material materialOverride )
+	{
+		final boolean hasLighting = ( lightPosition != null );
+
 		final Paint paint;
 		final Paint alternatePaint;
 
@@ -121,7 +149,7 @@ public class JOGLTools
 			final Color color;
 			if ( paint instanceof Color )
 			{
-					color = (Color)paint;
+				color = (Color)paint;
 			}
 			else
 			{
@@ -148,7 +176,6 @@ public class JOGLTools
 		 * Set the object transform
 		 */
 		glWrapper.glMultMatrixd( node2gl );
-
 
 		if ( !fill && object3D instanceof ExtrudedObject2D )
 		{
@@ -207,21 +234,21 @@ public class JOGLTools
 					face.setMaterial( materialOverride );
 					if ( TextTools.isEmpty( materialOverride.colorMap ) )
 					{
-						drawFace( glWrapper , face , false , null , hasLighting );
+						drawFace( glWrapper , face , false , false , null , lightPosition );
 					}
 					else
 					{
-						drawFace( glWrapper , face , true , textureCache , hasLighting );
+						drawFace( glWrapper , face , true , useBump , textureCache , lightPosition );
 					}
 					face.setMaterial( temp );
 				}
 				else if ( face.getMaterial() != null && !useAlternate && useTextures )
 				{
-					drawFace( glWrapper , face , true , textureCache , hasLighting );
+					drawFace( glWrapper , face , true , useBump , textureCache , lightPosition );
 				}
 				else if ( face.getMaterial() != null )
 				{
-					drawFace( glWrapper , face , false , null , hasLighting );
+					drawFace( glWrapper , face , false , false , null , lightPosition );
 				}
 			}
 		}
@@ -377,7 +404,7 @@ public class JOGLTools
 			glWrapper.setLineSmooth( true );
 
 			glWrapper.setLighting( false );
-//
+
 			final int minCellX = gridBounds.x;
 			final int maxCellX = minCellX + gridBounds.width;
 			final int minCellY = gridBounds.y;
@@ -485,72 +512,204 @@ public class JOGLTools
 	/**
 	 * Draw 3D face on GL context.
 	 *
-	 * @param glWrapper     GLWrapper.
-	 * @param face          {@link Face3D } drawn.
-	 * @param useTexture    Whether to draw outline or not
-	 * @param textureCache  Texture cache.
-	 * @param hasLighting   Whether lighting is applied or not.
+	 * @param   glWrapper       GLWrapper.
+	 * @param   face            {@link Face3D } drawn.
+	 * @param   useTexture      Whether to draw outline or not.
+	 * @param   useBump         Whether to use bump mapping or not.
+	 * @param   textureCache    Texture cache.
+	 * @param   lightPosition   Whether lighting is applied or not.
 	 */
-	private static void drawFace( final GLWrapper glWrapper , final Face3D face , final boolean useTexture , final Map<String, SoftReference<Texture>> textureCache , final boolean hasLighting )
+	private static void drawFace( final GLWrapper glWrapper , final Face3D face , final boolean useTexture , final boolean useBump , final Map<String, SoftReference<Texture>> textureCache , final Vector3D lightPosition )
 	{
+		final boolean hasLighting = ( lightPosition != null );
+
 		final int vertexCount = face.getVertexCount();
 		if ( vertexCount >= 2 )
 		{
-			final Texture texture    = !useTexture ? null : getColorMapTexture( glWrapper.getGL() , face , textureCache );
-			final boolean hasTexture = ( texture != null ); //if a texture has been loaded
-			final float[] textureU   = hasTexture ? face.getTextureU() : null;
-			final float[] textureV   = hasTexture ? face.getTextureV() : null;
-			if ( hasTexture )
+			final GL gl = glWrapper.getGL();
+
+			final Texture texture    = !useTexture ? null : getColorMapTexture( gl , face , textureCache );
+			final Texture bumpMap    = !useBump    ? null : getBumpMapTexture ( gl , face , textureCache );
+			final boolean hasTexture = ( texture != null );
+			final boolean hasBump    = ( bumpMap != null );
+			final float[] textureU   = ( hasTexture || hasBump ) ? face.getTextureU() : null;
+			final float[] textureV   = ( hasTexture || hasBump ) ? face.getTextureV() : null;
+
+			if ( hasBump )
 			{
-				glWrapper.setTexture2D( true );
-				texture.bind();
+				final SoftReference<Texture> normalizationCubeMapReference = textureCache.get( NORMALIZATION_CUBE_MAP );
+				Texture normalizationCubeMap = ( normalizationCubeMapReference == null ) ? null : normalizationCubeMapReference.get();
+				if ( normalizationCubeMap == null )
+				{
+					normalizationCubeMap = createNormalizationCubeMap( gl );
+					textureCache.put( NORMALIZATION_CUBE_MAP , new SoftReference<Texture>( normalizationCubeMap ) );
+				}
+
+				/*
+				 * Set The First Texture Unit To Normalize Our Vector From The
+				 * Surface To The Light. Set The Texture Environment Of The First
+				 * Texture Unit To Replace It With The Sampled Value Of The
+				 * Normalization Cube Map.
+				 */
+				gl.glActiveTexture( GL.GL_TEXTURE0 );
+				gl.glEnable( GL.GL_TEXTURE_CUBE_MAP );
+				gl.glBindTexture( GL.GL_TEXTURE_CUBE_MAP , normalizationCubeMap.getTextureObject() );
+				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE );
+				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_REPLACE );
+				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_TEXTURE );
+
+				/*
+				 * Set The Second Unit To The Bump Map. Set The Texture Environment
+				 * Of The Second Texture Unit To Perform A Dot3 Operation With The
+				 * Value Of The Previous Texture Unit (The Normalized Vector Form
+				 * The Surface To The Light) And The Sampled Texture Value (The
+				 * Normalized Normal Vector Of Our Bump Map).
+				 */
+				gl.glActiveTexture( GL.GL_TEXTURE1 );
+				gl.glEnable( GL.GL_TEXTURE_2D );
+				gl.glBindTexture( GL.GL_TEXTURE_2D , bumpMap.getTextureObject() );
+				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE  );
+				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_DOT3_RGB );
+				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_PREVIOUS );
+				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE1_RGB      , GL.GL_TEXTURE  );
+
+				/*
+				 * The third unit is used to apply the diffuse color of the
+				 * material.
+				 */
+				gl.glActiveTexture( GL.GL_TEXTURE2 );
+				gl.glEnable( GL.GL_TEXTURE_2D );
+				gl.glBindTexture( GL.GL_TEXTURE_2D , bumpMap.getTextureObject() );
+				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE       );
+				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_MODULATE      );
+				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_PRIMARY_COLOR );
+
+				if ( hasTexture )
+				{
+					/*
+					 * Set The Fourth Texture Unit To Our Texture. Set The Texture
+					 * Environment Of The Third Texture Unit To Modulate (Multiply) The
+					 * Result Of Our Dot3 Operation With The Texture Value.
+					 */
+					gl.glActiveTexture( GL.GL_TEXTURE3 );
+					gl.glEnable( GL.GL_TEXTURE_2D );
+					gl.glBindTexture( GL.GL_TEXTURE_2D , texture.getTextureObject() );
+					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_MODULATE );
+				}
+
+				final Material material = face.getMaterial();
+				final double bumpScaleX = hasTexture ? ( material.colorMapWidth  / material.bumpMapWidth  ) : ( 1.0 / material.bumpMapWidth  );
+				final double bumpScaleY = hasTexture ? ( material.colorMapHeight / material.bumpMapHeight ) : ( 1.0 / material.bumpMapHeight );
+
+				/*
+				 * Render the face.
+				 */
+				switch ( vertexCount )
+				{
+					case 2:
+					{
+						glWrapper.glBegin( GL.GL_LINES );
+						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 0 , lightPosition );
+						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 1 , lightPosition );
+						glWrapper.glEnd();
+					}
+					break;
+
+					case 3:
+					{
+						glWrapper.glBegin( GL.GL_TRIANGLES );
+						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 2 , lightPosition );
+						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 1 , lightPosition );
+						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 0 , lightPosition );
+						glWrapper.glEnd();
+					}
+					break;
+
+					case 4:
+					{
+						glWrapper.glBegin( GL.GL_QUADS );
+						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 3 , lightPosition );
+						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 2 , lightPosition );
+						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 1 , lightPosition );
+						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 0 , lightPosition );
+						glWrapper.glEnd();
+					}
+					break;
+
+					default:
+					{
+						glWrapper.glBegin( GL.GL_POLYGON );
+						for ( int i = vertexCount ; --i >= 0 ; )
+							setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , i , lightPosition );
+						glWrapper.glEnd();
+					}
+					break;
+				}
+
+				gl.glActiveTexture( GL.GL_TEXTURE0 );
+				gl.glDisable( GL.GL_TEXTURE_CUBE_MAP );
+				gl.glActiveTexture( GL.GL_TEXTURE1 );
+				gl.glDisable( GL.GL_TEXTURE_2D );
+				gl.glActiveTexture( GL.GL_TEXTURE2 );
+				gl.glDisable( GL.GL_TEXTURE_2D );
+				gl.glActiveTexture( GL.GL_TEXTURE3 );
+				gl.glDisable( GL.GL_TEXTURE_2D );
 			}
-
-			switch ( vertexCount )
+			else
 			{
-				case 2:
+				if ( hasTexture )
 				{
-                glWrapper.glBegin( GL.GL_LINES );
-					setFaceVertex( glWrapper , face , textureU , textureV , 0 , hasLighting );
-					setFaceVertex( glWrapper , face , textureU , textureV , 1 , hasLighting );
-				glWrapper.glEnd(  );
+					glWrapper.setTexture2D( true );
+					texture.bind();
 				}
-				break;
 
-				case 3:
+				switch ( vertexCount )
 				{
-				glWrapper.glBegin( GL.GL_TRIANGLES );
-					setFaceVertex( glWrapper , face , textureU , textureV , 2 , hasLighting );
-					setFaceVertex( glWrapper , face , textureU , textureV , 1 , hasLighting );
-					setFaceVertex( glWrapper , face , textureU , textureV , 0 , hasLighting );
-				glWrapper.glEnd(  );
-				}
-				break;
+					case 2:
+					{
+						glWrapper.glBegin( GL.GL_LINES );
+						setFaceVertex( glWrapper , face , textureU , textureV , 0 , hasLighting );
+						setFaceVertex( glWrapper , face , textureU , textureV , 1 , hasLighting );
+						glWrapper.glEnd();
+					}
+					break;
 
-				case 4:
-				{
-				glWrapper.glBegin( GL.GL_QUADS );
-					setFaceVertex( glWrapper , face , textureU , textureV , 3 , hasLighting );
-					setFaceVertex( glWrapper , face , textureU , textureV , 2 , hasLighting );
-					setFaceVertex( glWrapper , face , textureU , textureV , 1 , hasLighting );
-					setFaceVertex( glWrapper , face , textureU , textureV , 0 , hasLighting );
-				glWrapper.glEnd(  );
-				}
-				break;
+					case 3:
+					{
+						glWrapper.glBegin( GL.GL_TRIANGLES );
+						setFaceVertex( glWrapper , face , textureU , textureV , 2 , hasLighting );
+						setFaceVertex( glWrapper , face , textureU , textureV , 1 , hasLighting );
+						setFaceVertex( glWrapper , face , textureU , textureV , 0 , hasLighting );
+						glWrapper.glEnd();
+					}
+					break;
 
-				default:
-				{
-				glWrapper.glBegin( GL.GL_POLYGON );
-					for ( int i = vertexCount ; --i >= 0 ; )
-						setFaceVertex( glWrapper , face , textureU , textureV , i , hasLighting );
-				glWrapper.glEnd(  );
+					case 4:
+					{
+						glWrapper.glBegin( GL.GL_QUADS );
+						setFaceVertex( glWrapper , face , textureU , textureV , 3 , hasLighting );
+						setFaceVertex( glWrapper , face , textureU , textureV , 2 , hasLighting );
+						setFaceVertex( glWrapper , face , textureU , textureV , 1 , hasLighting );
+						setFaceVertex( glWrapper , face , textureU , textureV , 0 , hasLighting );
+						glWrapper.glEnd();
+					}
+					break;
+
+					default:
+					{
+						glWrapper.glBegin( GL.GL_POLYGON );
+						for ( int i = vertexCount ; --i >= 0 ; )
+							setFaceVertex( glWrapper , face , textureU , textureV , i , hasLighting );
+						glWrapper.glEnd();
+					}
+					break;
 				}
-				break;
-			}
-			if ( hasTexture )
-			{
-				glWrapper.glDisable( texture.getTarget() );
-				glWrapper.setTexture2D( false );
+
+				if ( hasTexture )
+				{
+					glWrapper.glDisable( texture.getTarget() );
+					glWrapper.setTexture2D( false );
+				}
 			}
 		}
 	}
@@ -579,7 +738,7 @@ public class JOGLTools
 		if ( face.isSmooth() && hasLighting)
 		{
 			final double[] vertexNormals = object.getVertexNormals();
-			glWrapper.glNormal3d( vertexNormals[ vertexIndex ] , vertexNormals[ vertexIndex + 1 ] , vertexNormals[ vertexIndex + 2 ] );
+			glWrapper.glNormal3dv( vertexNormals , vertexIndex );
 		}
 		else if ( hasLighting )
 		{
@@ -588,7 +747,52 @@ public class JOGLTools
 		}
 
 		final double[] vertexCoordinates = object.getVertexCoordinates();
-		glWrapper.glVertex3d( vertexCoordinates[ vertexIndex ] , vertexCoordinates[ vertexIndex + 1 ] , vertexCoordinates[ vertexIndex + 2 ] );
+		glWrapper.glVertex3dv( vertexCoordinates , vertexIndex );
+	}
+
+	/**
+	 * Set vertex properties using GL for a face with a bump map applied.
+	 *
+	 * @param   glWrapper           GLWrapper.
+	 * @param   face                Face whose vertex to set.
+	 * @param   textureU            Horizontal texture coordinate.
+	 * @param   textureV            Vertical texture coordinate.
+	 * @param   faceVertexIndex     Index of vertex in face.
+	 * @param   lightPosition       Light source position.
+	 */
+	private static void setBumpedFaceVertex( final GLWrapper glWrapper , final Face3D face , final float[] textureU , final float[] textureV , final double bumpScaleX , final double bumpScaleY , final int faceVertexIndex , final Vector3D lightPosition )
+	{
+		final Object3D object            = face.getObject();
+		final int[]    faceVertexIndices = face.getVertexIndices();
+		final int      vertexIndex       = faceVertexIndices[ faceVertexIndex ] * 3;
+
+		final double[] vertexCoordinates = object.getVertexCoordinates();
+
+		final double relativeLightX = lightPosition.x + vertexCoordinates[ vertexIndex     ];
+		final double relativeLightY = lightPosition.y + vertexCoordinates[ vertexIndex + 1 ];
+		final double relativeLightZ = lightPosition.z + vertexCoordinates[ vertexIndex + 2 ];
+
+		final GL gl = glWrapper.getGL();
+
+		gl.glMultiTexCoord3d( GL.GL_TEXTURE0 , relativeLightX , relativeLightY , relativeLightZ );
+		if ( ( textureU != null ) && ( textureV != null ) )
+		{
+			gl.glMultiTexCoord2f( GL.GL_TEXTURE1 , (float)bumpScaleX * textureU[ faceVertexIndex ] , (float)bumpScaleY * -textureV[ faceVertexIndex ] );
+			gl.glMultiTexCoord2f( GL.GL_TEXTURE3 , textureU[ faceVertexIndex ] , -textureV[ faceVertexIndex ] );
+		}
+
+		if ( face.isSmooth() )
+		{
+			final double[] vertexNormals = object.getVertexNormals();
+			gl.glNormal3dv( vertexNormals , vertexIndex );
+		}
+		else
+		{
+			final Vector3D faceNormal = face.getNormal();
+			gl.glNormal3d( faceNormal.x , faceNormal.y , faceNormal.z );
+		}
+
+		gl.glVertex3dv( vertexCoordinates , vertexIndex );
 	}
 
 	/**
@@ -644,6 +848,100 @@ public class JOGLTools
 	}
 
 	/**
+	 * Get {@link Texture} for bump map of {@link Face3D}.
+	 *
+	 * @param   gl              OpenGL context.
+	 * @param   face            Face whose color map texture to return.
+	 * @param   textureCache    Texture cache.
+	 *
+	 * @return Color map texture; <code>null</code> if face has no color map or no
+	 *         texture coordinates.
+	 */
+	public static Texture getBumpMapTexture( final GL gl , final Face3D face , final Map<String,SoftReference<Texture>> textureCache )
+	{
+		final Texture result;
+
+		final Material material = face.getMaterial();
+
+		if ( ( material != null ) && ( material.bumpMap != null ) && ( face.getTextureU() != null ) && ( face .getTextureV() != null ) )
+		{
+			Texture result11 = null;
+
+			if ( TextTools.isNonEmpty( material.bumpMap ) )
+			{
+				SoftReference<Texture> reference = textureCache.get( material.bumpMap );
+
+				final boolean loadTexture;
+				if ( reference == null )
+				{
+					loadTexture = !textureCache.containsKey( material.bumpMap );
+				}
+				else
+				{
+					result11 = reference.get();
+					loadTexture = ( result11 == null );
+				}
+
+				if ( loadTexture )
+				{
+					BufferedImage bufferedImage = MapTools.loadImage( material.bumpMap );
+					if ( bufferedImage != null )
+					{
+						bufferedImage = createNormalMapFromBumpMap( bufferedImage );
+
+						final boolean autoMipmapGeneration = ( gl.isExtensionAvailable( "GL_VERSION_1_4"          ) ||
+						                                       gl.isExtensionAvailable( "GL_SGIS_generate_mipmap" ) );
+
+						System.out.println( "MipMap: " + ( autoMipmapGeneration ? "enabled" : "disabled" ) );
+
+						result11 = TextureIO.newTexture( createCompatibleTextureImage( bufferedImage , gl ) , autoMipmapGeneration );
+
+						result11.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
+						result11.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
+
+						if ( autoMipmapGeneration )
+						{
+							try
+							{
+								/**
+								 * Set generate mipmaps to true, this greatly increases performance and viewing pleasure in big scenes.
+								 * @TODO need to find out if generated mipmaps are faster or if pregenerated mipmaps are faster
+								 */
+								result11.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
+
+								/** Set texture magnification to linear to support mipmaps. */
+								result11.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
+
+								/** Set texture minification to linear_mipmap)_nearest to support mipmaps */
+								result11.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
+							}
+							catch ( GLException e )
+							{
+								/*
+								 * If setting texture parameters fails, it's no
+								 * severe problem. Catch any exception so the view
+								 * doesn't crash.
+								 */
+								e.printStackTrace();
+							}
+						}
+					}
+					reference = ( result11 != null ) ? new SoftReference<Texture>( result11 ) : null ;
+					textureCache.put( material.bumpMap, reference );
+				}
+			}
+
+			result = result11;
+		}
+		else
+		{
+			result = null;
+		}
+
+		return result;
+	}
+
+	/**
 	 * Get {@link Texture} for the specified map.
 	 *
 	 * @param   gl              OpenGL context.
@@ -655,16 +953,31 @@ public class JOGLTools
 	 */
 	public static Texture getTexture( final GL gl , final Material material , final Map<String,SoftReference<Texture>> textureCache )
 	{
+		return getTexture( gl , material.colorMap , textureCache );
+	}
+
+	/**
+	 * Get {@link Texture} for the specified map.
+	 *
+	 * @param   gl              OpenGL context.
+	 * @param   map             Name of the texture map.
+	 * @param   textureCache    Map containing the {@link SoftReference}s to the cached textures.
+	 *
+	 * @return  Texture for the specified name; <code>null</code> if the name was
+	 *          empty or no map by the given name was found.
+	 */
+	public static Texture getTexture( final GL gl , final String map , final Map<String,SoftReference<Texture>> textureCache )
+	{
 		Texture result = null;
 
-		if ( TextTools.isNonEmpty( material.colorMap ) )
+		if ( TextTools.isNonEmpty( map ) )
 		{
-			SoftReference<Texture> reference = textureCache.get( material.colorMap );
+			SoftReference<Texture> reference = textureCache.get( map );
 
 			final boolean loadTexture;
 			if ( reference == null )
 			{
-				loadTexture = !textureCache.containsKey( material.colorMap );
+				loadTexture = !textureCache.containsKey( map );
 			}
 			else
 			{
@@ -674,7 +987,7 @@ public class JOGLTools
 
 			if ( loadTexture )
 			{
-				final BufferedImage bufferedImage = material.getColorMapImage( false );
+				final BufferedImage bufferedImage = MapTools.loadImage( map );
 				if ( bufferedImage != null )
 				{
 					final boolean autoMipmapGeneration = ( gl.isExtensionAvailable( "GL_VERSION_1_4"          ) ||
@@ -715,7 +1028,7 @@ public class JOGLTools
 					}
 				}
 				reference = ( result != null ) ? new SoftReference<Texture>( result ) : null ;
-				textureCache.put( material.colorMap , reference );
+				textureCache.put( map, reference );
 			}
 		}
 
@@ -899,6 +1212,204 @@ public class JOGLTools
 		{
 			result = 0;
 		}
+		return result;
+	}
+
+	/**
+	 * Creates a normal map from the given bump map.
+	 *
+	 * @param   bumpMap     Bump map.
+	 *
+	 * @return  Normal map.
+	 */
+	private static BufferedImage createNormalMapFromBumpMap( final BufferedImage bumpMap )
+	{
+		final int width  = bumpMap.getWidth()  - 2;
+		final int height = bumpMap.getHeight() - 2;
+
+		final BufferedImage result = new BufferedImage( width , height , BufferedImage.TYPE_INT_RGB );
+
+		for ( int y = 1 ; y <= height ; y++ )
+		{
+			for ( int x = 1 ; x <= width ; x++ )
+			{
+				final int corner1 = bumpMap.getRGB( x - 1 , y - 1 );
+				final int corner2 = bumpMap.getRGB( x + 1 , y - 1 );
+				final int corner3 = bumpMap.getRGB( x - 1 , y + 1 );
+				final int corner4 = bumpMap.getRGB( x + 1 , y + 1 );
+				final int edgeX1  = bumpMap.getRGB( x - 1 , y     );
+				final int edgeX2  = bumpMap.getRGB( x + 1 , y     );
+				final int edgeY1  = bumpMap.getRGB( x     , y + 1 );
+				final int edgeY2  = bumpMap.getRGB( x     , y - 1 );
+
+				/*
+				 * Apply sobel operation in x and y directions to determine the
+				 * approximate normal vector.
+				 */
+				int sobelX = ( ( corner1 & 0xff ) + ( edgeX1 & 0xff ) * 2 + ( corner3 & 0xff ) -
+				               ( corner2 & 0xff ) - ( edgeX2 & 0xff ) * 2 - ( corner4 & 0xff ) ) / 8;
+
+				int sobelY = ( ( corner3 & 0xff ) + ( edgeY1 & 0xff ) * 2 + ( corner4 & 0xff ) -
+				               ( corner1 & 0xff ) - ( edgeY2 & 0xff ) * 2 - ( corner2 & 0xff ) ) / 8;
+
+				/*
+				 * Amplify the bumpiness by a factor of 2.
+				 */
+				sobelX = Math.max( -0x80 , Math.min( 0x7f , sobelX * 2 ) );
+				sobelY = Math.max( -0x80 , Math.min( 0x7f , sobelY * 2 ) );
+
+				final int z = (int)Math.sqrt( (double)( 0xff * 0xff - sobelX * sobelX - sobelY * sobelY ) ) / 2 + 0x80;
+
+				sobelX = sobelX + 0x80;
+				sobelY = sobelY + 0x80;
+				result.setRGB( x - 1 , y - 1 , sobelX << 16 | sobelY << 8 | z );
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Creates a normalization cube map, used to perform DOT3 bump mapping. For
+	 * each 3D texture coordinate, the value of the map represents the
+	 * normalized vector from the origin in the direction of the coordinate.
+	 *
+	 * @param   gl  GL context.
+	 *
+	 * @return  Normalization cube map.
+	 */
+	private static Texture createNormalizationCubeMap( final GL gl )
+	{
+		final Texture result = TextureIO.newTexture( GL.GL_TEXTURE_CUBE_MAP );
+		gl.glBindTexture( GL.GL_TEXTURE_CUBE_MAP , result.getTextureObject() );
+
+		final int   size     = 128;
+		final double offset   = 0.5;
+		final double halfSize = (double)size / 2.0;
+
+		/*
+		 * Create the six sides of the cube map.
+		 */
+		final ByteBuffer data = ByteBuffer.allocate( size * size * 3 );
+		for ( int j = 0; j < size; j++ )
+		{
+			for ( int i = 0; i < size; i++ )
+			{
+				final double x = halfSize;
+				final double y = ( (double)j + offset - halfSize );
+				final double z = -( (double)i + offset - halfSize );
+
+				// scale to [0..1]
+				final Vector3D normalized = Vector3D.normalize( x , y , z );
+				data.put( (byte)( ( normalized.x + 1.0 ) * 255.0 / 2.0 ) );
+				data.put( (byte)( ( normalized.y + 1.0 ) * 255.0 / 2.0 ) );
+				data.put( (byte)( ( normalized.z + 1.0 ) * 255.0 / 2.0 ) );
+			}
+		}
+		data.rewind();
+		gl.glTexImage2D( GL.GL_TEXTURE_CUBE_MAP_POSITIVE_X , 0 , GL.GL_RGB8 , size , size , 0 , GL.GL_RGB , GL.GL_UNSIGNED_BYTE , data );
+
+		data.rewind();
+		for ( int j = 0; j < size; j++ )
+		{
+			for ( int i = 0; i < size; i++ )
+			{
+				final double x = -halfSize;
+				final double y = (double)j + offset - halfSize;
+				final double z = (double)i + offset - halfSize;
+
+				// scale to [0..1]
+				final Vector3D normalized = Vector3D.normalize( x , y , z );
+				data.put( (byte)( ( normalized.x + 1.0 ) * 255.0 / 2.0 ) );
+				data.put( (byte)( ( normalized.y + 1.0 ) * 255.0 / 2.0 ) );
+				data.put( (byte)( ( normalized.z + 1.0 ) * 255.0 / 2.0 ) );
+			}
+		}
+		data.rewind();
+		gl.glTexImage2D( GL.GL_TEXTURE_CUBE_MAP_NEGATIVE_X , 0 , GL.GL_RGB8 , size , size , 0 , GL.GL_RGB , GL.GL_UNSIGNED_BYTE , data );
+
+		data.rewind();
+		for ( int j = 0; j < size; j++ )
+		{
+			for ( int i = 0; i < size; i++ )
+			{
+				final double x = (double)i + offset - halfSize;
+				final double y = -halfSize;
+				final double z = (double)j + offset - halfSize;
+
+				// scale to [0..1]
+				final Vector3D normalized = Vector3D.normalize( x , y , z );
+				data.put( (byte)( ( normalized.x + 1.0 ) * 255.0 / 2.0 ) );
+				data.put( (byte)( ( normalized.y + 1.0 ) * 255.0 / 2.0 ) );
+				data.put( (byte)( ( normalized.z + 1.0 ) * 255.0 / 2.0 ) );
+			}
+		}
+		data.rewind();
+		gl.glTexImage2D( GL.GL_TEXTURE_CUBE_MAP_POSITIVE_Y , 0 , GL.GL_RGB8 , size , size , 0 , GL.GL_RGB , GL.GL_UNSIGNED_BYTE , data );
+
+		data.rewind();
+		for ( int j = 0; j < size; j++ )
+		{
+			for ( int i = 0; i < size; i++ )
+			{
+				final double x =  ( (double)i + offset - halfSize );
+				final double y = halfSize;
+				final double z = -( (double)j + offset - halfSize );
+
+				// scale to [0..1]
+				final Vector3D normalized = Vector3D.normalize( x , y , z );
+				data.put( (byte)( ( normalized.x + 1.0 ) * 255.0 / 2.0 ) );
+				data.put( (byte)( ( normalized.y + 1.0 ) * 255.0 / 2.0 ) );
+				data.put( (byte)( ( normalized.z + 1.0 ) * 255.0 / 2.0 ) );
+			}
+		}
+		data.rewind();
+		gl.glTexImage2D( GL.GL_TEXTURE_CUBE_MAP_NEGATIVE_Y , 0 , GL.GL_RGB8 , size , size , 0 , GL.GL_RGB , GL.GL_UNSIGNED_BYTE , data );
+
+		data.rewind();
+		for ( int j = 0; j < size; j++ )
+		{
+			for ( int i = 0; i < size; i++ )
+			{
+				final double x = (double)i + offset - halfSize;
+				final double y = (double)j + offset - halfSize;
+				final double z = halfSize;
+
+				// scale to [0..1]
+				final Vector3D normalized = Vector3D.normalize( x , y , z );
+				data.put( (byte)( ( normalized.x + 1.0 ) * 255.0 / 2.0 ) );
+				data.put( (byte)( ( normalized.y + 1.0 ) * 255.0 / 2.0 ) );
+				data.put( (byte)( ( normalized.z + 1.0 ) * 255.0 / 2.0 ) );
+			}
+		}
+		data.rewind();
+		gl.glTexImage2D( GL.GL_TEXTURE_CUBE_MAP_POSITIVE_Z , 0 , GL.GL_RGB8 , size , size , 0 , GL.GL_RGB , GL.GL_UNSIGNED_BYTE , data );
+
+		data.rewind();
+		for ( int j = 0; j < size; j++ )
+		{
+			for ( int i = 0; i < size; i++ )
+			{
+				final double x = -( (double)i + offset - halfSize );
+				final double y =  ( (double)j + offset - halfSize );
+				final double z = -halfSize;
+
+				// scale to [0..1]
+				final Vector3D normalized = Vector3D.normalize( x , y , z );
+				data.put( (byte)( ( normalized.x + 1.0 ) * 255.0 / 2.0 ) );
+				data.put( (byte)( ( normalized.y + 1.0 ) * 255.0 / 2.0 ) );
+				data.put( (byte)( ( normalized.z + 1.0 ) * 255.0 / 2.0 ) );
+			}
+		}
+		data.rewind();
+		gl.glTexImage2D( GL.GL_TEXTURE_CUBE_MAP_NEGATIVE_Z , 0 , GL.GL_RGB8 , size , size , 0 , GL.GL_RGB , GL.GL_UNSIGNED_BYTE , data );
+
+		gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR        );
+		gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR        );
+		gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_S     , GL.GL_CLAMP_TO_EDGE );
+		gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_T     , GL.GL_CLAMP_TO_EDGE );
+		gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_R     , GL.GL_CLAMP_TO_EDGE );
+
 		return result;
 	}
 }

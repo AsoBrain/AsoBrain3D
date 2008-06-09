@@ -41,6 +41,7 @@ import com.sun.opengl.util.j2d.Overlay;
 import com.sun.opengl.util.texture.Texture;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.Vector3D;
 import ab.j3d.control.CameraControl;
 import ab.j3d.control.ControlInput;
 import ab.j3d.model.Camera3D;
@@ -561,6 +562,9 @@ public class JOGLView
 		gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
 
 		//draw lights
+		Vector3D dominantLightPosition  = null;
+		float    dominantLightIntensity = 0.0f;
+
 		for ( final ViewModelNode viewModelNode : nodes )
 		{
 			final Node3D   node3D        = viewModelNode.getNode3D();
@@ -614,8 +618,23 @@ public class JOGLView
 
 				if ( gl.isExtensionAvailable("GL_VERSION_1_2") )
 					gl.glLightModeli( GL.GL_LIGHT_MODEL_COLOR_CONTROL , GL.GL_SEPARATE_SPECULAR_COLOR );
+
+				/**
+				 * Determine dominant light position, used for bump mapping.
+				 * This method can be rather inaccurate, especially if the most
+				 * intense light is far away from a bump mapped object.
+				 */
+				if ( ( dominantLightPosition  == null ) ||
+				     ( dominantLightIntensity <  viewIntensity ) )
+				{
+					final Matrix3D lightTransform = lights.getMatrix( 0 );
+					dominantLightPosition  = Vector3D.INIT.set( lightTransform.xo , lightTransform.yo , lightTransform.zo );
+					dominantLightIntensity = viewIntensity;
+				}
 			}
 		}
+
+		final boolean bumpMappingSupported = gl.isExtensionAvailable( "GL_VERSION_1_3" );
 
 		//draw objects
 		for ( final ViewModelNode viewModelNode : nodes )
@@ -639,14 +658,14 @@ public class JOGLView
 
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , _textureCache , true , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , false , viewModelNode.isAlternate() , false , _textureCache , true , viewModelNode.getMaterialOverride() );
 						}
 
 						glWrapper.glDisable( GL.GL_POLYGON_OFFSET_FILL );
 						gl.glLineWidth( 1.0f );
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , _textureCache , false , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , false , viewModelNode.isAlternate() , false , _textureCache , false , viewModelNode.getMaterialOverride() );
 						}
 						break;
 					case SKETCH:
@@ -657,7 +676,7 @@ public class JOGLView
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
 							glWrapper.setLighting( true );
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , true , textureCache , true  , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , false , viewModelNode.isAlternate() , true , textureCache , true  , viewModelNode.getMaterialOverride() );
 						}
 
 						glWrapper.glDisable( GL.GL_POLYGON_OFFSET_FILL );
@@ -665,7 +684,7 @@ public class JOGLView
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
 							glWrapper.setLighting( false );
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , textureCache, false , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , false , viewModelNode.isAlternate() , false , textureCache, false , viewModelNode.getMaterialOverride() );
 						}
 
 						gl.glLineWidth( 1.0f );
@@ -674,14 +693,14 @@ public class JOGLView
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
 							glWrapper.glEnable( GL.GL_LIGHTING );
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , true , false , true , _textureCache , true , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , true , bumpMappingSupported , false , dominantLightPosition , _textureCache , true , viewModelNode.getMaterialOverride() );
 						}
 						break;
 					case WIREFRAME:
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
 							glWrapper.glDisable( GL.GL_LIGHTING );
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , viewModelNode.isAlternate() , false , _textureCache ,false , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , false , viewModelNode.isAlternate() , false , _textureCache ,false , viewModelNode.getMaterialOverride() );
 						}
 						break;
 				}
@@ -693,5 +712,4 @@ public class JOGLView
 			JOGLTools.drawGrid( glWrapper , getGrid2wcs(), getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
 		}
 	}
-
 }
