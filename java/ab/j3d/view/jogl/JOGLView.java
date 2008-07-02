@@ -165,7 +165,7 @@ public class JOGLView
 
 			public void init( final GLAutoDrawable glAutoDrawable )
 				{
-					final GL gl = glAutoDrawable.getGL();
+					final GL gl = new DebugGL( glAutoDrawable.getGL() );
 
 					System.out.println();
 					System.out.println( " About OpenGL:" );
@@ -184,7 +184,7 @@ public class JOGLView
 					}
 					System.out.println();
 
-					glAutoDrawable.setGL( new DebugGL( gl ) );
+					glAutoDrawable.setGL( gl );
 					final GLWrapper glWrapper = new GLWrapper( gl );
 					_glWrapper = glWrapper;
 					initGL( glWrapper );
