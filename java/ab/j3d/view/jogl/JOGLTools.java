@@ -250,6 +250,10 @@ public class JOGLTools
 				{
 					drawFace( glWrapper , face , false , false , null , lightPosition );
 				}
+				else if ( !useTextures && face.getMaterial() == null )
+				{
+					drawFace( glWrapper , face , false , false , null , null );
+				}
 			}
 		}
 
