@@ -307,7 +307,7 @@ public abstract class ViewModel
 	 * @param   materialOverride    Material to use instead of actual materials.
 	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).);
 	 *
-	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
+	 * @throws  NullPointerException if <code>id</code> or <code>node3D<code> is <code>null</code>
 	 */
 	public final void createNode( final Object id , final Node3D node3D , final Material materialOverride , final float opacity )
 	{
