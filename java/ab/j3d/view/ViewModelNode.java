@@ -131,6 +131,49 @@ public final class ViewModelNode
 	}
 
 	/**
+	 * Test if this node collides with another.
+	 *
+	 * @param   otherNode   Node to test collision with.
+	 *
+	 * @return  <code>true</code> if the nodes collide;
+	 *          <code>false</code> otherwise.
+	 */
+	public boolean collidesWith( final ViewModelNode otherNode )
+	{
+		boolean result = false;
+
+		if ( ( otherNode != null ) && ( this != otherNode ) )
+		{
+			final Node3DCollection<Object3D> objects1 = _node3D.collectNodes( null , Object3D.class , getTransform() , false );
+			if ( objects1 != null )
+			{
+				final Node3DCollection<Object3D> objects2 = otherNode._node3D.collectNodes( null , Object3D.class , otherNode.getTransform() , false );
+				if ( objects2 != null )
+				{
+					for ( int i = 0 ; !result && ( i < objects1.size() ) ; i++ )
+					{
+						final Object3D object1      = objects1.getNode( i );
+						final Matrix3D object1ToWcs = objects1.getMatrix( i );
+						final Matrix3D wcsToObject1 = object1ToWcs.inverse();
+
+						for ( int j = 0 ; !result && ( j < objects2.size() ) ; j++ )
+						{
+							final Object3D object2      = objects2.getNode( j );
+							final Matrix3D object2ToWcs = objects2.getMatrix( j );
+
+							final Matrix3D node2ToNode1 = object2ToWcs.multiply( wcsToObject1 );
+
+							result = object1.collidesWith( node2ToNode1 ,  object2 );
+						}
+					}
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/**
 	 * Returns the combined bounds of all the {@link ab.j3d.model.Object3D}'s this
 	 * {@link ViewModelNode} contains.
 	 * <br /><br />
