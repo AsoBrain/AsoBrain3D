@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2007 Peter S. Heijnen
+ * Copyright (C) 1999-2008 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -203,7 +203,7 @@ public final class Box3D
 	 * @param   modelVer2       End vertical model coordinate.
 	 * @param   modelUnit       Model unit scale factor (e.g. {@link ab.j3d.view.ViewModel#MM}).
 	 */
-	private void addFace( final int[] vertices, final Material material, final boolean flipUV, final double modelHor1, final double modelHor2, final double modelVer1, final double modelVer2 , final double modelUnit )
+	private void addFace( final int[] vertices , final Material material , final boolean flipUV , final double modelHor1 , final double modelHor2 , final double modelVer1 , final double modelVer2 , final double modelUnit )
 	{
 		if ( ( material != null ) && ( material.colorMap != null ) )
 		{

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2001-2007
+ * (C) Copyright Numdata BV 2001-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -416,7 +416,7 @@ public final class Polyline2D
 		final PolyPoint2D next  = ( endIndex < maxIndex ) ? getPoint( endIndex + 1 ) : isClosed ? getPoint( 1 ) : null;
 
 		/*
-		 * Determine lenght and direction of segment (ignore 0-length segments).
+		 * Determine length and direction of segment (ignore 0-length segments).
 		 */
 		double x = end.x - start.x;
 		double y = end.y - start.y;
