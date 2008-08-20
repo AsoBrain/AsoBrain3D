@@ -624,8 +624,8 @@ public class JOGLView
 				 * This method can be rather inaccurate, especially if the most
 				 * intense light is far away from a bump mapped object.
 				 */
-				if ( ( dominantLightPosition  == null ) ||
-				     ( dominantLightIntensity <  viewIntensity ) )
+				if ( ( light.getFallOff() >= 0.0 ) &&
+				     ( ( dominantLightPosition == null ) || ( dominantLightIntensity < viewIntensity ) ) )
 				{
 					final Matrix3D lightTransform = lights.getMatrix( 0 );
 					dominantLightPosition  = Vector3D.INIT.set( lightTransform.xo , lightTransform.yo , lightTransform.zo );
@@ -693,7 +693,8 @@ public class JOGLView
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
 							glWrapper.glEnable( GL.GL_LIGHTING );
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , true , bumpMappingSupported , false , dominantLightPosition , _textureCache , true , viewModelNode.getMaterialOverride() );
+							final Matrix3D objectTransform = objects.getMatrix( i );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objectTransform, true , bumpMappingSupported , false , objectTransform.inverseMultiply( dominantLightPosition ) , _textureCache , true , viewModelNode.getMaterialOverride() );
 						}
 						break;
 					case WIREFRAME:
