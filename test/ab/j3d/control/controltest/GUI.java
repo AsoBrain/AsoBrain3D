@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * (C) Copyright Numdata BV 2005-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -77,7 +77,7 @@ public class GUI
 		final Container contentPane = new JPanel( new BorderLayout() );
 		contentPane.add( verticalSplit , BorderLayout.CENTER );
 
-		final JFrame frame = WindowTools.createFrame( "ControlTest", -300 , -100 , contentPane );
+		final JFrame frame = WindowTools.createFrame( "ControlTest" , -300 , -100 , contentPane );
 		frame.setVisible( true );
 
 		topSplit.setDividerLocation( 0.5 );

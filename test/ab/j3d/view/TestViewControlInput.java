@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -207,7 +207,7 @@ public class TestViewControlInput
 		MouseEvent e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_PRESSED , 0L , modifiers , 0 , 0 , 1 , false , MouseEvent.BUTTON1 );
 		input.mousePressed( e );
 
-		assertTrue("The last event is not a MouseControlEvent", input.getLastEvent() instanceof ControlInputEvent );
+		assertTrue("The last event is not a MouseControlEvent" , input.getLastEvent() instanceof ControlInputEvent );
 		ControlInputEvent event = (ControlInputEvent)input.getLastEvent();
 
 		assertEquals( "The mouse button is not 1" , MouseEvent.BUTTON1 , event.getMouseButton() );
