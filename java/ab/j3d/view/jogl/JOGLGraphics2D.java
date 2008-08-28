@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -429,7 +429,7 @@ public class JOGLGraphics2D
 						gl.glBegin( GL.GL_POLYGON );
 						startX = coordinates[ 0 ];
 						startY = coordinates[ 1 ];
-						gl.glVertex2d( startX, startY );
+						gl.glVertex2d( startX , startY );
 						started = true;
 						break;
 
@@ -662,7 +662,7 @@ public class JOGLGraphics2D
 		notImplemented();
 	}
 
-	public void drawString( final AttributedCharacterIterator iterator, final int x, final int y )
+	public void drawString( final AttributedCharacterIterator iterator , final int x , final int y )
 	{
 		notImplemented();
 	}

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -80,9 +80,9 @@ public class GLWrapper
 	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private int      _materialEmissionFace           = -1;
 	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private float[]  _materialEmissionParams         = null;
 	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */     private int      _materialEmissionI              = -1;
-	/** Cached state of {@link GL#glPolygonOffset(float, float)}         */     private         float    _polygonOffsetFactor    = -1.0F;
-	/** Cached state of {@link GL#glPolygonOffset(float, float)}         */     private         float    _polygonOffsetUnits     = -1.0F;
-	/** Cached state of {@link GL#glShadeModel(int)}.                    */     private         int      _shadeModel             = -1;
+	/** Cached state of {@link GL#glPolygonOffset(float, float)}         */     private float    _polygonOffsetFactor            = -1.0F;
+	/** Cached state of {@link GL#glPolygonOffset(float, float)}         */     private float    _polygonOffsetUnits             = -1.0F;
+	/** Cached state of {@link GL#glShadeModel(int)}.                    */     private int      _shadeModel                     = -1;
 
 	/**
 	 * Wrapper for the JOGL {@link GL} class.
@@ -793,7 +793,7 @@ public class GLWrapper
 	{
 		if ( ( factor != _polygonOffsetFactor ) || ( units != _polygonOffsetUnits ) )
 		{
-			_gl.glPolygonOffset( factor, units );
+			_gl.glPolygonOffset( factor , units );
 
 			_polygonOffsetFactor = factor;
 			_polygonOffsetUnits  = units;

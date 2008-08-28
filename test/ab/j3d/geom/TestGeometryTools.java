@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2007
+ * (C) Copyright Numdata BV 2006-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -62,7 +62,7 @@ public final class TestGeometryTools
 			private Test( final Polygon3D polygon , final double rayOriginX , final double rayOriginY , final double rayOriginZ , final double rayDirectionX , final double rayDirectionY , final double rayDirectionZ , final Vector3D expected )
 			{
 				_polygon      = polygon;
-				_ray          = new BasicRay3D( rayOriginX , rayOriginY , rayOriginZ , rayDirectionX , rayDirectionY , rayDirectionZ, true );
+				_ray          = new BasicRay3D( rayOriginX , rayOriginY , rayOriginZ , rayDirectionX , rayDirectionY , rayDirectionZ , true );
 				_expected     = expected;
 			}
 		}
@@ -137,7 +137,7 @@ public final class TestGeometryTools
 
 			final Vector3D result = GeometryTools.getIntersectionBetweenRayAndPolygon( test._polygon , test._ray );
 
-			assertEquals( description, test._expected, result );
+			assertEquals( description , test._expected , result );
 		}
 	}
 
@@ -293,7 +293,7 @@ public final class TestGeometryTools
 					throw e;
 				}
 
-				assertEquals( description + " threw wrong exception", expectedException, e.getClass() );
+				assertEquals( description + " threw wrong exception" , expectedException , e.getClass() );
 			}
 		}
 	}
@@ -402,7 +402,7 @@ public final class TestGeometryTools
 			final double    _z;
 			final boolean   _expected;
 
-			private Test( final Polygon3D polygon , final double x, final double y, final double z, final boolean expected )
+			private Test( final Polygon3D polygon , final double x , final double y , final double z , final boolean expected )
 			{
 				_polygon  = polygon;
 				_x        = x;
@@ -561,7 +561,7 @@ public final class TestGeometryTools
 			final String description = "Test #" + ( i + 1 );
 
 			final boolean result = GeometryTools.isPointInsidePolygon( test._polygon , test._x , test._y , test._z );
-			assertEquals( description, test._expected, result );
+			assertEquals( description , test._expected , result );
 		}
 	}
 }

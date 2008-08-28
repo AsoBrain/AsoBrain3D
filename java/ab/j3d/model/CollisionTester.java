@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2007-2007 Peter S. Heijnen
+ * Copyright (C) 2007-2008 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -144,9 +144,9 @@ public class CollisionTester
 		{
 			synchronized ( other )
 			{
-				return testBoundingSphere( fromOtherToThis, other ) &&
-				       testOrientedBoundingBox( fromOtherToThis, other ) &&
-				       testColdet( fromOtherToThis, other );
+				return testBoundingSphere( fromOtherToThis , other ) &&
+				       testOrientedBoundingBox( fromOtherToThis , other ) &&
+				       testColdet( fromOtherToThis , other );
 			}
 		}
 	}

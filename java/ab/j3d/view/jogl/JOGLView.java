@@ -438,7 +438,7 @@ public class JOGLView
 		final ByteBuffer byteBuffer = ByteBuffer.allocateDirect( 4 );
 		byteBuffer.order( ByteOrder.LITTLE_ENDIAN );
 		final IntBuffer intBuffer = byteBuffer.asIntBuffer();
-		gl.glGetIntegerv( GL.GL_MAX_LIGHTS, intBuffer );
+		gl.glGetIntegerv( GL.GL_MAX_LIGHTS , intBuffer );
 		intBuffer.position( 0 );
 		_maxLights = intBuffer.get();
 	}
@@ -486,7 +486,7 @@ public class JOGLView
 	 * @param   width       Width of GLAutoDrawable
 	 * @param   height      Height of GLAutoDrawable
 	 */
-	private void renderFrame( final GLWrapper glWrapper , final int width, final int height )
+	private void renderFrame( final GLWrapper glWrapper , final int width , final int height )
 	{
 		final GL gl = glWrapper.getGL();
 
@@ -648,7 +648,7 @@ public class JOGLView
 			final Node3DCollection<Object3D> objects = node3D.collectNodes( null , Object3D.class , nodeTransform , false );
 			if ( objects != null )
 			{
-				final Map<String, SoftReference<Texture>> textureCache = _textureCache;
+				final Map<String,SoftReference<Texture>> textureCache = _textureCache;
 				switch ( getRenderingPolicy() )
 				{
 					case SCHEMATIC:
@@ -684,7 +684,7 @@ public class JOGLView
 						for ( int i = 0 ; i < objects.size() ; i++ )
 						{
 							glWrapper.setLighting( false );
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , false , viewModelNode.isAlternate() , false , textureCache, false , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , false , viewModelNode.isAlternate() , false , textureCache , false , viewModelNode.getMaterialOverride() );
 						}
 
 						gl.glLineWidth( 1.0f );
@@ -694,7 +694,7 @@ public class JOGLView
 						{
 							glWrapper.glEnable( GL.GL_LIGHTING );
 							final Matrix3D objectTransform = objects.getMatrix( i );
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objectTransform, true , bumpMappingSupported , false , objectTransform.inverseMultiply( dominantLightPosition ) , _textureCache , true , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objectTransform , true , bumpMappingSupported , false , objectTransform.inverseMultiply( dominantLightPosition ) , _textureCache , true , viewModelNode.getMaterialOverride() );
 						}
 						break;
 					case WIREFRAME:
@@ -710,7 +710,7 @@ public class JOGLView
 
 		if ( isGridEnabled() )
 		{
-			JOGLTools.drawGrid( glWrapper , getGrid2wcs(), getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
+			JOGLTools.drawGrid( glWrapper , getGrid2wcs() , getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
 		}
 	}
 }

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2007
+ * (C) Copyright Numdata BV 2005-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -649,7 +649,7 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovMesh2         mesh            = converter.convertObject3D( Matrix3D.INIT, testModel.getTexturedBox3D() );
+			final PovMesh2         mesh            = converter.convertObject3D( Matrix3D.INIT , testModel.getTexturedBox3D() );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
@@ -823,7 +823,7 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovGeometry      mesh            = converter.convertObject3D( Matrix3D.INIT, testModel.getColorCube() );
+			final PovGeometry      mesh            = converter.convertObject3D( Matrix3D.INIT , testModel.getColorCube() );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
@@ -889,7 +889,7 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovGeometry      mesh            = converter.convertObject3D( Matrix3D.INIT, testModel.getTexturedColorCube() );
+			final PovGeometry      mesh            = converter.convertObject3D( Matrix3D.INIT , testModel.getTexturedColorCube() );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
@@ -955,7 +955,7 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovGeometry      mesh            = converter.convertObject3D( Matrix3D.INIT, testModel.getExtrudedObject2D() );
+			final PovGeometry      mesh            = converter.convertObject3D( Matrix3D.INIT , testModel.getExtrudedObject2D() );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2007
+ * (C) Copyright Numdata BV 2006-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -692,7 +692,7 @@ public class ObjLoader
 	 *  @throws  IOException when material could not be loaded or contains malformed known entries. Unknown entries are ignored, e.g. "Ka foobar" will throw an exception,
 	 *                              but "Kgt foobar" won't because Kgt is not a known MTL entry.
 	 */
-	private static void loadMaterial( final ResourceLoader loader, final String materialName )
+	private static void loadMaterial( final ResourceLoader loader , final String materialName )
 		throws IOException
 	{
 		String line;
@@ -809,7 +809,7 @@ public class ObjLoader
 			line = line.trim();
 			while ( line.length() > 0 && line.charAt( line.length() - 1 ) == '\\' )
 			{
-				line = MessageFormat.format( "{0} {1}", line.substring( 0, line.length() - 1 ) , bufferedReader.readLine() );
+				line = MessageFormat.format( "{0} {1}" , line.substring( 0 , line.length() - 1 ) , bufferedReader.readLine() );
 			}
 			line = line.replaceAll( "\\s+" , " " );
 		}

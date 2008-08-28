@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2007
+ * (C) Copyright Numdata BV 2005-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -157,7 +157,7 @@ public final class AbToPovConverter
 //			}
 			else if ( node instanceof Object3D )
 			{
-				scene.add( convertObject3D( transform, (Object3D)node ) );
+				scene.add( convertObject3D( transform , (Object3D)node ) );
 			}
 		}
 

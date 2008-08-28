@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2007
+ * (C) Copyright Numdata BV 2004-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -57,7 +57,7 @@ public class ViewModelNodePopupMenu
 	 */
 	public ViewModelNodePopupMenu()
 	{
-		this( null , null, null );
+		this( null , null , null );
 	}
 
 	/**

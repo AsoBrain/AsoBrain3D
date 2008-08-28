@@ -84,7 +84,7 @@ public class JOGLTools
 	 * @param   fill                Fill polygons.
 	 * @param   materialOverride    Material to use instead of actual materials.
 	 */
-	public static void paintObject3D( final GLWrapper glWrapper , final Object3D object3D , final Matrix3D node2gl , final boolean useTextures , final boolean useBump , final boolean useAlternate , final boolean hasLighting , final Map<String, SoftReference<Texture>> textureCache , final boolean fill , final Material materialOverride )
+	public static void paintObject3D( final GLWrapper glWrapper , final Object3D object3D , final Matrix3D node2gl , final boolean useTextures , final boolean useBump , final boolean useAlternate , final boolean hasLighting , final Map<String,SoftReference<Texture>> textureCache , final boolean fill , final Material materialOverride )
 	{
 		paintObject3D( glWrapper , object3D , node2gl , useTextures , useBump , useAlternate , hasLighting ? Vector3D.INIT : null , textureCache , fill , materialOverride );
 	}
@@ -103,7 +103,7 @@ public class JOGLTools
 	 * @param   fill                Fill polygons.
 	 * @param   materialOverride    Material to use instead of actual materials.
 	 */
-	public static void paintObject3D( final GLWrapper glWrapper , final Object3D object3D , final Matrix3D node2gl , final boolean useTextures , final boolean useBump , final boolean useAlternate , final Vector3D lightPosition , final Map<String, SoftReference<Texture>> textureCache , final boolean fill , final Material materialOverride )
+	public static void paintObject3D( final GLWrapper glWrapper , final Object3D object3D , final Matrix3D node2gl , final boolean useTextures , final boolean useBump , final boolean useAlternate , final Vector3D lightPosition , final Map<String,SoftReference<Texture>> textureCache , final boolean fill , final Material materialOverride )
 	{
 		final boolean hasLighting = ( lightPosition != null );
 
@@ -320,7 +320,7 @@ public class JOGLTools
 	 * @param   shape       Shape to be drawn.
 	 * @param   flatness    Flatness used to interpolate the shape's curves.
 	 *
-	 * @see     Shape#getPathIterator(AffineTransform, double)
+	 * @see     Shape#getPathIterator(AffineTransform,double)
 	 */
 	private static void drawShape( final GLWrapper glWrapper , final Shape shape , final double flatness )
 	{
@@ -466,8 +466,8 @@ public class JOGLTools
 					{
 						if ( !hightlightAxes || ( x != 0 ) )
 						{
-							gl.glVertex3i( x * cellSize , minY, 0 );
-							gl.glVertex3i( x * cellSize , maxY, 0 );
+							gl.glVertex3i( x * cellSize , minY , 0 );
+							gl.glVertex3i( x * cellSize , maxY , 0 );
 						}
 					}
 
@@ -475,8 +475,8 @@ public class JOGLTools
 					{
 						if ( !hightlightAxes || ( y != 0 ) )
 						{
-							gl.glVertex3i( minX, y * cellSize , 0 );
-							gl.glVertex3i( maxX, y * cellSize , 0 );
+							gl.glVertex3i( minX , y * cellSize , 0 );
+							gl.glVertex3i( maxX , y * cellSize , 0 );
 						}
 					}
 
@@ -492,8 +492,8 @@ public class JOGLTools
 			{
 				if ( ( !hightlightAxes || ( x != 0 ) ) && ( ( highlightInterval <= 1 ) || ( x % highlightInterval != 0 ) ) )
 				{
-					gl.glVertex3i( x * cellSize , minY, 0 );
-					gl.glVertex3i( x * cellSize , maxY, 0 );
+					gl.glVertex3i( x * cellSize , minY , 0 );
+					gl.glVertex3i( x * cellSize , maxY , 0 );
 				}
 			}
 
@@ -523,7 +523,7 @@ public class JOGLTools
 	 * @param   textureCache    Texture cache.
 	 * @param   lightPosition   Whether lighting is applied or not.
 	 */
-	private static void drawFace( final GLWrapper glWrapper , final Face3D face , final boolean useTexture , final boolean useBump , final Map<String, SoftReference<Texture>> textureCache , final Vector3D lightPosition )
+	private static void drawFace( final GLWrapper glWrapper , final Face3D face , final boolean useTexture , final boolean useBump , final Map<String,SoftReference<Texture>> textureCache , final Vector3D lightPosition )
 	{
 		final boolean hasLighting = ( lightPosition != null );
 
@@ -931,7 +931,7 @@ public class JOGLTools
 						}
 					}
 					reference = ( result11 != null ) ? new SoftReference<Texture>( result11 ) : null ;
-					textureCache.put( material.bumpMap, reference );
+					textureCache.put( material.bumpMap , reference );
 				}
 			}
 
@@ -1032,7 +1032,7 @@ public class JOGLTools
 					}
 				}
 				reference = ( result != null ) ? new SoftReference<Texture>( result ) : null ;
-				textureCache.put( map, reference );
+				textureCache.put( map , reference );
 			}
 		}
 
@@ -1055,7 +1055,7 @@ public class JOGLTools
 		 * Textures must not exceed the maximum size.
 		 */
 		final int[] maxTextureSizeBuffer = new int[ 1 ];
-		gl.glGetIntegerv( GL.GL_MAX_TEXTURE_SIZE , maxTextureSizeBuffer, 0 );
+		gl.glGetIntegerv( GL.GL_MAX_TEXTURE_SIZE , maxTextureSizeBuffer , 0 );
 		final int maximumTextureSize = maxTextureSizeBuffer[ 0 ];
 
 		int scaledWidth  = Math.min( maximumTextureSize , image.getWidth()  );

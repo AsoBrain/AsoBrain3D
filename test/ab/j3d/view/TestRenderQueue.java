@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2007
+ * (C) Copyright Numdata BV 2005-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -72,15 +72,15 @@ public final class TestRenderQueue
 
 		System.out.println( " - Testing planes h1 and h2" );
 		renderQueue.clearQueue();
-		addPlane( renderQueue, "h2" );
-		addPlane( renderQueue, "h1" );
+		addPlane( renderQueue , "h2" );
+		addPlane( renderQueue , "h1" );
 		assertQueuedTags( new Object[] { "h1" , "h2" } , renderQueue );
 
 
 		System.out.println( " - Testing planes h1 and h2" );
 		renderQueue.clearQueue();
-		addPlane( renderQueue, "h1" );
-		addPlane( renderQueue, "h2" );
+		addPlane( renderQueue , "h1" );
+		addPlane( renderQueue , "h2" );
 		assertQueuedTags( new Object[] { "h1" , "h2" } , renderQueue );
 
 		// @FIXME following tests fail due to incomplete implementation
@@ -88,27 +88,27 @@ public final class TestRenderQueue
 
 		System.out.println( " - Testing planes d1 and d2" );
 		renderQueue.clearQueue();
-		addPlane( renderQueue, "d1" );
-		addPlane( renderQueue, "d2" );
+		addPlane( renderQueue , "d1" );
+		addPlane( renderQueue , "d2" );
 		assertQueuedTags( new Object[] { "d2" , "d1" } , renderQueue );
 
 		System.out.println( " - Testing planes d1 and d2" );
 		renderQueue.clearQueue();
-		addPlane( renderQueue, "d2" );
-		addPlane( renderQueue, "d1" );
+		addPlane( renderQueue , "d2" );
+		addPlane( renderQueue , "d1" );
 		assertQueuedTags( new Object[] { "d2" , "d1" } , renderQueue );
 
 		System.out.println( " - Testing planes h1 and v1" );
 		renderQueue.clearQueue();
-		addPlane( renderQueue, "h1" );
-		addPlane( renderQueue, "v1" );
+		addPlane( renderQueue , "h1" );
+		addPlane( renderQueue , "v1" );
 		assertQueuedTags( new Object[] { "v1" , "h1" , "v1" } , renderQueue );
 
 		System.out.println( " - Testing planes h1, h2 and v1" );
 		renderQueue.clearQueue();
-		addPlane( renderQueue, "h1" );
-		addPlane( renderQueue, "h2" );
-		addPlane( renderQueue, "v1" );
+		addPlane( renderQueue , "h1" );
+		addPlane( renderQueue , "h2" );
+		addPlane( renderQueue , "v1" );
 		assertQueuedTags( new Object[] { "v1" , "h1" , "v1" , "h2" , "v1" } , renderQueue );
 	}
 
@@ -165,9 +165,9 @@ public final class TestRenderQueue
 			fail( "don't know how to create object" );
 		}
 
-		final Matrix3D viewTransform = Matrix3D.getFromToTransform( Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 ), Vector3D.INIT, Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ), Vector3D.INIT.set( 0.0 , 1.0 , 0.0 ) );
+		final Matrix3D viewTransform = Matrix3D.getFromToTransform( Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 ) , Vector3D.INIT , Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) , Vector3D.INIT.set( 0.0 , 1.0 , 0.0 ) );
 		transform = transform.multiply( viewTransform );
-		renderQueue.enqueueObject( projector , true, transform, object, false );
+		renderQueue.enqueueObject( projector , true , transform , object , false );
 	}
 
 	private static Object3D createPlane( final String tag , final double size )
@@ -182,8 +182,8 @@ public final class TestRenderQueue
 
 		final Object3D plane = new Object3D();
 		plane.setTag( tag );
-		/* top    */ plane.addFace( new Vector3D[] { lf , lb , rb , rf } , red   , false, false ); // Z =  size
-		/* bottom */ plane.addFace( new Vector3D[] { lb , lf , rf , rb } , green , false, false ); // Z = -size
+		/* top    */ plane.addFace( new Vector3D[] { lf , lb , rb , rf } , red   , false , false ); // Z =  size
+		/* bottom */ plane.addFace( new Vector3D[] { lb , lf , rf , rb } , green , false , false ); // Z = -size
 
 		return plane;
 	}

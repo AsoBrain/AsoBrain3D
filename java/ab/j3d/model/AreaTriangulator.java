@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -154,7 +154,7 @@ class AreaTriangulator
 		}
 		else
 		{
-			subdivideImpl( area , initialSubdivisionsX , initialSubdivisionsY , subdivisionsX, subdivisionsY , iterations , result );
+			subdivideImpl( area , initialSubdivisionsX , initialSubdivisionsY , subdivisionsX , subdivisionsY , iterations , result );
 		}
 
 		return result;
@@ -381,7 +381,7 @@ class AreaTriangulator
 			}
 		}
 
-		final TriangulationImpl result = new TriangulationImpl( points, triangles );
+		final TriangulationImpl result = new TriangulationImpl( points , triangles );
 
 		final long end = System.nanoTime();
 		//System.out.println( " - " + result._points.size() + " vertices, " + result._triangles.size() + " triangles in " + ( (double)( ( end - start ) / 100000L ) / 10.0 ) + " ms" );
@@ -438,7 +438,7 @@ class AreaTriangulator
 			{
 				final double[] lastPoint = points.get( points.size() - 1 );
 
-				if ( !equalPoint( movedToX, movedToY, lastPoint[ 0 ], lastPoint[ 1 ] ) )
+				if ( !equalPoint( movedToX , movedToY , lastPoint[ 0 ] , lastPoint[ 1 ] ) )
 				{
 					lines.add( new int[] { lastPointIndex , movedToIndex } );
 				}
@@ -606,7 +606,7 @@ class AreaTriangulator
 			final double[] p2 = points.get( triangle[ 1 ] );
 			final double[] p3 = points.get( triangle[ 2 ] );
 
-			final boolean partOfArea = !flattenedShape.contains( pointWithinTriangle( p1[ 0 ], p1[ 1 ], p2[ 0 ], p2[ 1 ], p3[ 0 ], p3[ 1 ] ) );
+			final boolean partOfArea = !flattenedShape.contains( pointWithinTriangle( p1[ 0 ] , p1[ 1 ] , p2[ 0 ] , p2[ 1 ] , p3[ 0 ] , p3[ 1 ] ) );
 
 			if ( partOfArea )
 			{

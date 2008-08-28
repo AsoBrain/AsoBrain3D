@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2007
+ * (C) Copyright Numdata BV 2006-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -125,9 +125,9 @@ public class BasicPlane3D
 			final double refZ = normal.z * distance;
 
 			transformedNormal   = transform.rotate( normal );
-			transformedDistance = transformedNormal.x * transform.transformX( refX, refY, refZ )
-			                    + transformedNormal.y * transform.transformY( refX, refY, refZ )
-			                    + transformedNormal.z * transform.transformZ( refX, refY, refZ );
+			transformedDistance = transformedNormal.x * transform.transformX( refX , refY , refZ )
+			                    + transformedNormal.y * transform.transformY( refX , refY , refZ )
+			                    + transformedNormal.z * transform.transformZ( refX , refY , refZ );
 		}
 		else
 		{

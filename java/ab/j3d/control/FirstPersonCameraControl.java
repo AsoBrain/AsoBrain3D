@@ -319,7 +319,7 @@ public class FirstPersonCameraControl
 		return _from.distanceTo( _to ) / 10.0;
 	}
 
-	private void moveSteps( final Vector3D from, final Vector3D to, final Matrix3D transform, final double xSteps, final double ySteps , final double zSteps )
+	private void moveSteps( final Vector3D from , final Vector3D to , final Matrix3D transform , final double xSteps , final double ySteps , final double zSteps )
 	{
 		final Vector3D upPrimary = _upPrimary;
 		final Vector3D zAxis     = Vector3D.INIT.set( transform.zx , transform.zy , transform.zz );
@@ -344,27 +344,27 @@ public class FirstPersonCameraControl
 		switch ( keyCode )
 		{
 			case KeyEvent.VK_LEFT :
-				moveSteps( from, to, getTransform() , -1.0 ,  0.0 ,  0.0 );
+				moveSteps( from , to , getTransform() , -1.0 ,  0.0 ,  0.0 );
 				break;
 
 			case KeyEvent.VK_RIGHT :
-				moveSteps( from, to, getTransform() ,  1.0 ,  0.0 ,  0.0 );
+				moveSteps( from , to , getTransform() ,  1.0 ,  0.0 ,  0.0 );
 				break;
 
 			case KeyEvent.VK_UP :
-				moveSteps( from, to, getTransform() ,  0.0 ,  1.0 ,  0.0 );
+				moveSteps( from , to , getTransform() ,  0.0 ,  1.0 ,  0.0 );
 				break;
 
 			case KeyEvent.VK_DOWN :
-				moveSteps( from, to, getTransform() ,  0.0 , -1.0 ,  0.0 );
+				moveSteps( from , to , getTransform() ,  0.0 , -1.0 ,  0.0 );
 				break;
 
 			case KeyEvent.VK_PAGE_DOWN :
-				moveSteps( from, to, getTransform() ,  0.0 ,  0.0 , -0.5 );
+				moveSteps( from , to , getTransform() ,  0.0 ,  0.0 , -0.5 );
 				break;
 
 			case KeyEvent.VK_PAGE_UP :
-				moveSteps( from, to, getTransform() ,  0.0 ,  0.0 ,  0.5 );
+				moveSteps( from , to , getTransform() ,  0.0 ,  0.0 ,  0.5 );
 				break;
 		}
 	}

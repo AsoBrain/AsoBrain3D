@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2006
+ * (C) Copyright Numdata BV 2000-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -48,7 +48,7 @@ public class PovDeclared
 	 * @param   reference   Name of the shape to reference.
 	 * @param   texture     New texture for the shape.
 	 */
-	public PovDeclared( final String reference, final PovTexture texture )
+	public PovDeclared( final String reference , final PovTexture texture )
 	{
 		super( getDeclaredName( reference ) , texture );
 	}

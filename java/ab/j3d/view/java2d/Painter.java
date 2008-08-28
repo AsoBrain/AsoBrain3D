@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2007 Peter S. Heijnen
+ * Copyright (C) 1999-2008 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -96,7 +96,7 @@ public final class Painter
 	{
 		for ( final RenderedPolygon polygon : polygons )
 		{
-			paintPolygon( g, polygon, outline, fill, applyLighting, useMaterialColor );
+			paintPolygon( g , polygon , outline , fill , applyLighting , useMaterialColor );
 		}
 	}
 
@@ -237,7 +237,7 @@ public final class Painter
 			final Paint    outlinePaint =                                                     alternateAppearance ? object.alternateOutlinePaint : object.outlinePaint;
 			final Paint    fillPaint    = ( fillPaintOverride != null ) ? fillPaintOverride : alternateAppearance ? object.alternateFillPaint    : object.fillPaint;
 
-			paintObject( g, gTransform, transform, object, outlinePaint , fillPaint , object.shadeFactor );
+			paintObject( g , gTransform , transform , object , outlinePaint , fillPaint , object.shadeFactor );
 		}
 
 		final int  childCount = node.getChildCount();
@@ -411,10 +411,10 @@ public final class Painter
 			final Vector3D v1 = object2graphics.multiply( bounds.getMinX() , bounds.getMinY() , 0.0 );
 			final Vector3D v2 = object2graphics.multiply( bounds.getMaxX() , bounds.getMaxY() , object.extrusion.z  );
 
-			final double minX = Math.min( v1.x, v2.x );
-			final double minY = Math.min( v1.y, v2.y );
-			final double maxX = Math.max( v1.x, v2.x );
-			final double maxY = Math.max( v1.y, v2.y );
+			final double minX = Math.min( v1.x , v2.x );
+			final double minY = Math.min( v1.y , v2.y );
+			final double maxX = Math.max( v1.x , v2.x );
+			final double maxY = Math.max( v1.y , v2.y );
 
 			final Rectangle2D.Double boundsShape = new Rectangle2D.Double( minX , minY , maxX - minX , maxY - minY );
 

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -490,7 +490,7 @@ public class PlanarGraphics2D
 		fill( new Ellipse2D.Double( (double)x , (double)y , (double)width , (double)height ) );
 	}
 
-	public void drawPolygon( final int[] xPoints, final int[] yPoints, final int nPoints )
+	public void drawPolygon( final int[] xPoints , final int[] yPoints , final int nPoints )
 	{
 		final int[] imageX = new int[ nPoints ];
 		final int[] imageY = new int[ nPoints ];
@@ -506,7 +506,7 @@ public class PlanarGraphics2D
 		_g2d.drawPolygon( imageX , imageY , nPoints );
 	}
 
-	public void fillPolygon( final int[] xPoints, final int[] yPoints, final int nPoints )
+	public void fillPolygon( final int[] xPoints , final int[] yPoints , final int nPoints )
 	{
 		final int[] imageX = new int[ nPoints ];
 		final int[] imageY = new int[ nPoints ];
@@ -522,7 +522,7 @@ public class PlanarGraphics2D
 		_g2d.fillPolygon( imageX , imageY , nPoints );
 	}
 
-	public void drawPolyline( final int[] xPoints, final int[] yPoints, final int nPoints )
+	public void drawPolyline( final int[] xPoints , final int[] yPoints , final int nPoints )
 	{
 		final int[] imageX = new int[ nPoints ];
 		final int[] imageY = new int[ nPoints ];
@@ -573,7 +573,7 @@ public class PlanarGraphics2D
 		notImplemented();
 	}
 
-	public void drawString( final AttributedCharacterIterator iterator, final int x, final int y )
+	public void drawString( final AttributedCharacterIterator iterator , final int x , final int y )
 	{
 		notImplemented();
 	}

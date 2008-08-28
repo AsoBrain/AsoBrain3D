@@ -228,7 +228,7 @@ final class Java3dView
 	 *
 	 * @see     Java3dUniverse#createView
 	 */
-	Java3dView( final Java3dModel model, final Java3dUniverse universe , final Object id )
+	Java3dView( final Java3dModel model , final Java3dUniverse universe , final Object id )
 	{
 		super( model.getUnit() , id );
 

@@ -746,7 +746,7 @@ public final class Polyline2D
 					if ( !(p2i && p4i) ) { maxY -= verticalStep; p2 = null; p4 = null; }
 				}
 
-				result = new Bounds2D( minX, minY, maxX - minX, maxY - minY );
+				result = new Bounds2D( minX , minY , maxX - minX , maxY - minY );
 				_encloseCache = result;
 			}
 		}
@@ -1544,7 +1544,7 @@ public final class Polyline2D
 		 * (There is also a case, where all points are equal. Return one point only).
 		 */
 		PolyPoint2D p1Close       = iPoints[0];
-		double      p1CloseLength = PolyPoint2D.getLength( p1, p1Close );
+		double      p1CloseLength = PolyPoint2D.getLength( p1 , p1Close );
 		PolyPoint2D p2Close       = iPoints[0];
 		double      p2CloseLength = PolyPoint2D.getLength( p2 , p1Close );
 		PolyPoint2D p;
@@ -1810,11 +1810,11 @@ public final class Polyline2D
 		{
 			result = new Polyline2D();
 
-			result.addImpl( start.x, start.y, 0.0 ); // intersection point
+			result.addImpl( start.x , start.y , 0.0 ); // intersection point
 
 			final PolyPoint2D end = sect[ 1 ];
 			if ( end != null )
-				result.addImpl( end.x, end.y, 0.0 ); // intersecting line
+				result.addImpl( end.x , end.y , 0.0 ); // intersecting line
 		}
 		else
 		{
@@ -3037,7 +3037,7 @@ public final class Polyline2D
 		for ( int i = 0 ; i < nrPoints ; i++ )
 		{
 			final PolyPoint2D p = getPoint( nrPoints - i - 1 );
-			result.addImpl( new PolyPoint2D( p.x, p.x, p.bulge ) );
+			result.addImpl( new PolyPoint2D( p.x , p.x , p.bulge ) );
 		}
 
 		return result;

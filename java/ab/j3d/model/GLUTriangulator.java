@@ -95,7 +95,7 @@ class GLUTriangulator
 		final GLU glu = new GLU();
 		final GLUtessellator tessellator = glu.gluNewTess();
 
-		final PathIterator iterator = shape.getPathIterator( null, _flatness );
+		final PathIterator iterator = shape.getPathIterator( null , _flatness );
 
 		switch ( iterator.getWindingRule() )
 		{

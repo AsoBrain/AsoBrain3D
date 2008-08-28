@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2007 Peter S. Heijnen
+ * Copyright (C) 1999-2008 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -90,9 +90,9 @@ public final class Vector
 	{
 		return ( other != null ) &&
 		       ( ( other == this ) ||
-		         ( MathTools.almostEqual( x, other.x ) &&
-		           MathTools.almostEqual( y, other.y ) &&
-		           MathTools.almostEqual( z, other.z ) ) );
+		         ( MathTools.almostEqual( x , other.x ) &&
+		           MathTools.almostEqual( y , other.y ) &&
+		           MathTools.almostEqual( z , other.z ) ) );
 	}
 
 	/**

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2007
+ * (C) Copyright Numdata BV 2004-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -58,9 +58,9 @@ public abstract class ViewModelNodeContextAction
 	 * @param   bundle      Resource bundle to get settings from.
 	 * @param   key         Resource key to use (also used as action command).
 	 */
-	protected ViewModelNodeContextAction( final ResourceBundle bundle, final String key )
+	protected ViewModelNodeContextAction( final ResourceBundle bundle , final String key )
 	{
-		super( bundle, key );
+		super( bundle , key );
 	}
 
 	/**
@@ -83,7 +83,7 @@ public abstract class ViewModelNodeContextAction
 			}
 			else
 			{
-				run( null , null, null );
+				run( null , null , null );
 			}
 		}
 		catch ( Throwable problem )
@@ -105,6 +105,6 @@ public abstract class ViewModelNodeContextAction
 	 * @param viewModelNode          {@link ViewModelNode} on which was clicked, can be null.
 	 * @param face3DIntersection     {@link Face3DIntersection} that was found, can be null.
 	 */
-	protected abstract void run( final ControlInputEvent controlInputEvent, final ViewModelNode viewModelNode, Face3DIntersection face3DIntersection );
+	protected abstract void run( final ControlInputEvent controlInputEvent , final ViewModelNode viewModelNode , Face3DIntersection face3DIntersection );
 }
 

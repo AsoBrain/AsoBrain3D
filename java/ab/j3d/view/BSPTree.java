@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2007
+ * (C) Copyright Numdata BV 2006-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -288,7 +288,7 @@ public class BSPTree
 			y = polygon._viewY[ j ];
 			z = polygon._viewZ[ j ];
 
-			final Vector3D translated = model2view.multiply( Vector3D.INIT.set( x, y, z ) );
+			final Vector3D translated = model2view.multiply( Vector3D.INIT.set( x , y , z ) );
 
 			viewCoordinates[ j * 3     ] = translated.x;
 			viewCoordinates[ j * 3 + 1 ] = translated.y;
@@ -407,7 +407,7 @@ public class BSPTree
 		{
 			if ( poly != partitionPolygon )
 			{
-				switch ( RenderQueue.compare( poly, partitionPlane ) )
+				switch ( RenderQueue.compare( poly , partitionPlane ) )
 				{
 					case RenderQueue.COPLANAR:
 					{
@@ -429,7 +429,7 @@ public class BSPTree
 
 					case RenderQueue.INTERSECTING:
 					{
-						final RenderedPolygon[] splitted = _renderQueue.clip( poly, partitionPlane );
+						final RenderedPolygon[] splitted = _renderQueue.clip( poly , partitionPlane );
 						backList.add( splitted[ 0 ] );
 						frontList.add( splitted[ 1 ] );
 						break;

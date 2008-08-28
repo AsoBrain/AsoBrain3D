@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2007
+ * (C) Copyright Numdata BV 2005-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -835,7 +835,7 @@ public final class PovMesh2
 		}
 	}
 
-	private static void writeElementSeparator( final IndentingWriter out, final int elementsPerLine, final int elementIndex )
+	private static void writeElementSeparator( final IndentingWriter out , final int elementsPerLine , final int elementIndex )
 		throws IOException
 	{
 		if ( elementIndex > 0 )

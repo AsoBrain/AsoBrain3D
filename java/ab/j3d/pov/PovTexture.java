@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2007
+ * (C) Copyright Numdata BV 2000-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -315,7 +315,7 @@ public class PovTexture
 	 * @param   textureDirectory    Directory containing POV-textures.
 	 * @param   imageMap                 Filename of map to use.
 	 */
-	public PovTexture( final String name, final String textureDirectory , final String imageMap )
+	public PovTexture( final String name , final String textureDirectory , final String imageMap )
 	{
 		this( name , null , null , ( ( imageMap != null ) && ( textureDirectory != null ) ) ? textureDirectory + imageMap
 		                           : imageMap );
@@ -354,7 +354,7 @@ public class PovTexture
 		final double ambientRed   = (double)material.ambientColorRed   / Math.max( (double)material.diffuseColorRed   , 0.001 );
 		final double ambientGreen = (double)material.ambientColorGreen / Math.max( (double)material.diffuseColorGreen , 0.001 );
 		final double ambientBlue  = (double)material.ambientColorBlue  / Math.max( (double)material.diffuseColorBlue  , 0.001 );
-		setAmbient( new PovVector( ambientRed , ambientGreen, ambientBlue ) );
+		setAmbient( new PovVector( ambientRed , ambientGreen , ambientBlue ) );
 
 		setDiffuse( 1.0 );
 		setTransmit( 1.0 - (double)material.diffuseColorAlpha );
