@@ -214,11 +214,12 @@ public class ViewModelNodeControl
 			if ( planeControl != null )
 			{
 				final Vector3D wcsPoint = getPointerOnPlaneInWcs( plane2wcs , planeControl.isPlaneTwoSided() , event.getPointerRay() );
-				if ( wcsPoint != null )
-				{
-					planeControl.mouseDragged( event , node , wcsPoint );
-					viewModel.updateOverlay();
-				}
+				/**
+				 * The wcsPoint can be null, this is done to accomplish elevation.
+				 * Be sure to handle it in the planeControl's mouseDragged method.
+				 */
+				planeControl.mouseDragged( event , node , wcsPoint );
+				viewModel.updateOverlay();
 			}
 
 			if ( subPlaneControl != null )
