@@ -59,6 +59,11 @@ public final class ViewModelNode
 	private boolean _alternate = false;
 
 	/**
+	 * Wether or not the node is collidable.
+	 */
+	private boolean _collidable = false;
+
+	/**
 	 * Root in the 3D scene associated with this node.
 	 */
 	private Node3D _node3D;
@@ -118,6 +123,7 @@ public final class ViewModelNode
 		_materialOverride = materialOverride;
 		_opacity          = opacity;
 		_transform        = ( transform != null ) ? transform : Matrix3D.INIT;
+		_collidable       = true;
 	}
 
 	/**
@@ -142,7 +148,7 @@ public final class ViewModelNode
 	{
 		boolean result = false;
 
-		if ( ( otherNode != null ) && ( this != otherNode ) )
+		if ( ( otherNode != null ) && ( this != otherNode ) && this.isCollidable() && otherNode.isCollidable() )
 		{
 			final Node3DCollection<Object3D> objects1 = _node3D.collectNodes( null , Object3D.class , getTransform() , false );
 			if ( objects1 != null )
@@ -171,6 +177,27 @@ public final class ViewModelNode
 		}
 
 		return result;
+	}
+
+	/**
+	 * Wether or not the node is collidable.
+	 *
+	 * @return  <code>true</code> if the node is collidable;
+	 *          <code>false</code> if not.
+	 */
+	public boolean isCollidable()
+	{
+		return _collidable;
+	}
+
+	/**
+	 * Set wether or not the node is collidable.
+	 *
+	 * @param   collidable  Wether or not the node is collidable.
+	 */
+	public void setCollidable( final boolean collidable )
+	{
+		_collidable = collidable;
 	}
 
 	/**
