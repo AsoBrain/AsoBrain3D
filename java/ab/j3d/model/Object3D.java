@@ -857,14 +857,4 @@ public class Object3D
 		_vertexNormals = vertexNormals;
 		_vertexNormalsDirty = false;
 	}
-
-	/**
-	 * Set alternate outline paint.
-	 *
-	 * @param   newAlternateOutlinePaint   Alternate outline paint.
-	 */
-	public void setAlternateOutlinePaint( final Paint newAlternateOutlinePaint )
-	{
-		alternateOutlinePaint = newAlternateOutlinePaint;
-	}
 }
