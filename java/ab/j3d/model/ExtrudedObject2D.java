@@ -178,7 +178,7 @@ public final class ExtrudedObject2D
 		this.flipNormals = flipNormals;
 		this.caps        = caps;
 
-		generate( this , shape , extrusion , transform , topMaterial , false , bottomMaterial , false , sideMaterial , flatness , hasBackface , flipNormals , caps );
+		generate( this , shape , extrusion , transform , topMaterial , false , bottomMaterial , false , sideMaterial , false , flatness , hasBackface , flipNormals , caps );
 	}
 
 	/**
@@ -192,6 +192,7 @@ public final class ExtrudedObject2D
 	 * @param   bottomMaterial  Material to apply to the bottom cap.
 	 * @param   bottomFlipUV    Whether the bottom U and V coordinates are flipped.
 	 * @param   sideMaterial    Material to apply to the extruded sides.
+	 * @param   sideFlipUV      Whether the side U and V coordinates are flipped.
 	 * @param   flatness        Flatness to use.
 	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
 	 * @param   flipNormals     If <code>true</code>, normals are flipped to
@@ -202,7 +203,7 @@ public final class ExtrudedObject2D
 	 * @see     FlatteningPathIterator
 	 * @see     Shape#getPathIterator( AffineTransform , double )
 	 */
-	public ExtrudedObject2D( final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material topMaterial , final boolean topFlipUV , final Material bottomMaterial , final boolean bottomFlipUV , final Material sideMaterial , final double flatness , final boolean hasBackface , final boolean flipNormals , final boolean caps )
+	public ExtrudedObject2D( final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material topMaterial , final boolean topFlipUV , final Material bottomMaterial , final boolean bottomFlipUV , final Material sideMaterial , final boolean sideFlipUV , final double flatness , final boolean hasBackface , final boolean flipNormals , final boolean caps )
 	{
 		this.shape       = shape;
 		this.extrusion   = extrusion;
@@ -212,7 +213,7 @@ public final class ExtrudedObject2D
 		this.flipNormals = flipNormals;
 		this.caps        = caps;
 
-		generate( this , shape , extrusion , transform , topMaterial , topFlipUV , bottomMaterial , bottomFlipUV , sideMaterial , flatness , hasBackface , flipNormals , caps );
+		generate( this , shape , extrusion , transform , topMaterial , topFlipUV , bottomMaterial , bottomFlipUV , sideMaterial , sideFlipUV , flatness , hasBackface , flipNormals , caps );
 	}
 
 	/**
@@ -228,7 +229,7 @@ public final class ExtrudedObject2D
 	 */
 	public static void generate( final Object3D target , final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material material , final double flatness , final boolean hasBackface )
 	{
-		generate( target , shape , extrusion , transform , material , false , material , false , material , flatness , hasBackface , false , false );
+		generate( target , shape , extrusion , transform , material , false , material , false , material , false , flatness , hasBackface , false , false );
 	}
 
 	/**
@@ -243,6 +244,7 @@ public final class ExtrudedObject2D
 	 * @param   bottomMaterial  Material to apply to the bottom cap.
 	 * @param   bottomFlipUV    Whether the bottom U and V coordinates are flipped.
 	 * @param   sideMaterial    Material to apply to the extruded sides.
+	 * @param   sideFlipUV      Whether the side U and V coordinates are flipped.
 	 * @param   flatness        Flatness to use.
 	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
 	 * @param   flipNormals     If <code>true</code>, normals are flipped to
@@ -250,7 +252,7 @@ public final class ExtrudedObject2D
 	 * @param   caps            If <code>true</code>, top and bottom caps are
 	 *                          generated.
 	 */
-	private static void generate( final Object3D target , final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material topMaterial , final boolean topFlipUV , final Material bottomMaterial , final boolean bottomFlipUV , final Material sideMaterial , final double flatness , final boolean hasBackface , final boolean flipNormals , final boolean caps )
+	private static void generate( final Object3D target , final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material topMaterial , final boolean topFlipUV , final Material bottomMaterial , final boolean bottomFlipUV , final Material sideMaterial , final boolean sideFlipUV , final double flatness , final boolean hasBackface , final boolean flipNormals , final boolean caps )
 	{
 		final double  ex            = extrusion.x;
 		final double  ey            = extrusion.y;
@@ -403,7 +405,14 @@ public final class ExtrudedObject2D
 					textureV = null;
 				}
 
-				target.addFace( vertexIndices , sideMaterial , textureU , textureV , 1.0f , false , hasBackfaceOverride );
+				if ( sideFlipUV )
+				{
+					target.addFace( vertexIndices , sideMaterial , textureV , textureU , 1.0f , false , hasBackfaceOverride );
+				}
+				else
+				{
+					target.addFace( vertexIndices , sideMaterial , textureU , textureV , 1.0f , false , hasBackfaceOverride );
+				}
 			}
 
 			pathIterator.next();
