@@ -104,6 +104,11 @@ public class FirstPersonCameraControl
 	private Vector3D _dragStartTo = Vector3D.INIT;
 
 	/**
+	 * Used for calculating the movement of the camera in the Y-direction.
+	 */
+	private double _previousY = 0.0;
+
+	/**
 	 * Construct default first person view. This creates a view from (1,0,0) to
 	 * the origin along the Y+ axis.
 	 *
@@ -371,6 +376,7 @@ public class FirstPersonCameraControl
 
 	public EventObject mousePressed( final ControlInputEvent event )
 	{
+		_previousY = (double)event.getY();
 		_dragStartFrom = _from;
 		_dragStartTo   = _to;
 
@@ -393,6 +399,11 @@ public class FirstPersonCameraControl
 				zoom( event );
 				break;
 		}
+	}
+
+	public void mouseReleased( final ControlInputEvent event )
+	{
+		_previousY = 0.0;
 	}
 
 	protected void dragToAroundFrom( final ControlInputEvent event )
@@ -449,4 +460,26 @@ public class FirstPersonCameraControl
 		newFrom = newFrom.plus( to.multiply( 1.0 - zoom ) );
 		setFrom( newFrom );
 	}
+
+	protected void move( final ControlInputEvent event )
+	{
+		final double previousY = _previousY;
+
+		final Matrix3D transform = getTransform();
+
+		final Vector3D upPrimary = _upPrimary;
+		final Vector3D zAxis     = Vector3D.INIT.set( transform.zx , transform.zy , transform.zz );
+		final Vector3D xAxis     = Vector3D.cross( upPrimary , zAxis );
+		final Vector3D yAxis     = Vector3D.cross( upPrimary , xAxis );
+
+		final double y = (double)event.getY();
+		final double value = y - previousY;
+		_previousY = y;
+
+		final Vector3D movement = Vector3D.INIT.plus( yAxis.multiply( value * -100.0 ) );
+
+		setFrom( _from.plus( movement ) );
+		setTo( _to.plus( movement ) );
+	}
+
 }
