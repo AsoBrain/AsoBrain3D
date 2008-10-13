@@ -650,17 +650,6 @@ public final class Matrix3D
 	}
 
 	/**
-	 * Test is this matrix causes mirroring in the XY plane.
-	 *
-	 * @return  <code>true</code> if this matrix causes mirroring in the XY plane.
-	 *          <code>false</code> if no mirroring occurs (normal transformation).
-	 */
-	public boolean isMirrorXY()
-	{
-		return ( xx * ( yy - yx ) + yx * ( xx - xy ) ) < 0.0;
-	}
-
-	/**
 	 * Translate the transform by the specified vector.
 	 *
 	 * @param   vector  Vector specifying the translation.
