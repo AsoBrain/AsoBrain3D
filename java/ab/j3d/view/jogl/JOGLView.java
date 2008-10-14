@@ -694,7 +694,7 @@ public class JOGLView
 						{
 							glWrapper.glEnable( GL.GL_LIGHTING );
 							final Matrix3D objectTransform = objects.getMatrix( i );
-							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objectTransform , true , bumpMappingSupported , false , (dominantLightPosition != null) ? objectTransform.inverseMultiply( dominantLightPosition ) : null , _textureCache , true , viewModelNode.getMaterialOverride() );
+							JOGLTools.paintObject3D( glWrapper , objects.getNode( i ) , objectTransform , true , bumpMappingSupported , false , ( dominantLightPosition != null ) ? objectTransform.inverseMultiply( dominantLightPosition ) : null , _textureCache , true , viewModelNode.getMaterialOverride() );
 						}
 						break;
 					case WIREFRAME:
