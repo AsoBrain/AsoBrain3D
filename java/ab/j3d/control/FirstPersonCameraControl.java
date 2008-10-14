@@ -458,7 +458,8 @@ public class FirstPersonCameraControl
 		final Vector3D xAxis     = Vector3D.cross( upPrimary , zAxis );
 		final Vector3D yAxis     = Vector3D.cross( upPrimary , xAxis );
 
-		final Vector3D movement = Vector3D.INIT.plus( yAxis.multiply( (double)event.getDragDeltaY() * -100.0 ) );
+		final Vector3D xMovement = Vector3D.INIT.plus( xAxis.multiply( (double)event.getDragDeltaX() * 50.0 ) );
+		final Vector3D movement  = xMovement.plus( yAxis.multiply( (double)event.getDragDeltaY() * -100.0 ) );
 
 		setFrom( _dragStartFrom.plus( movement ) );
 		setTo( _dragStartTo.plus( movement ) );
