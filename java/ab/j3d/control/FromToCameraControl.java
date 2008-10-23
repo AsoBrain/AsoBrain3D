@@ -350,7 +350,10 @@ public class FromToCameraControl
 		switch ( event.getMouseButtonDown() )
 		{
 			case 1 :
-				rotateFromAroundTo( event );
+				if ( event.isShiftDown() )
+					rotateToAroundFrom( event );
+				else
+					rotateFromAroundTo( event );
 				break;
 
 			case 2 :
@@ -381,6 +384,26 @@ public class FromToCameraControl
 		newFrom = rotation.multiply( newFrom );
 		newFrom = newFrom.plus( elevation );
 		setFrom( newFrom );
+	}
+
+	protected void rotateToAroundFrom( final ControlInputEvent event )
+	{
+		final Vector3D upPrimary = _upPrimary;
+		final Vector3D from      = _dragStartFrom;
+		final Vector3D to        = _dragStartTo;
+		final double   distance  = from.distanceTo( to );
+
+		final double   toRadians = _view.getPixelsToRadiansFactor();
+		final double   deltaX    = -toRadians * (double)event.getDragDeltaX();
+		final double   deltaY    = -(double)event.getDragDeltaY();
+
+		final Matrix3D rotation  = Matrix3D.getRotationTransform( from , upPrimary , deltaX );
+		final Vector3D elevation = upPrimary.multiply( distance * deltaY / 100.0 );
+
+		Vector3D newto = to;
+		newto = rotation.multiply( newto );
+		newto = newto.plus( elevation );
+		setTo( newto );
 	}
 
 	protected void move( final ControlInputEvent event )
