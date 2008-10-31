@@ -577,7 +577,7 @@ public class JOGLView
 
 			if ( lights != null )
 			{
-				if ( lightNumber - GL.GL_LIGHT0 > _maxLights )
+				if ( lightNumber - GL.GL_LIGHT0 >= _maxLights )
 					throw new IllegalStateException( "No more than " + _maxLights + " lights supported." );
 
 				final Light3D light         = lights.getNode( 0 );
