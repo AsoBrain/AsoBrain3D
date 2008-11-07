@@ -26,6 +26,7 @@ import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.media.opengl.DebugGL;
@@ -127,7 +128,7 @@ public class JOGLView
 		_backClipDistance  = 100.0 / unit;
 		_renderThread      = null;
 
-		_textureCache      = textureCache;
+		_textureCache      = new HashMap<String, SoftReference<Texture>>();
 
 		/* Use heavyweight popups, since we use a heavyweight canvas */
 		JPopupMenu.setDefaultLightWeightPopupEnabled( false );
