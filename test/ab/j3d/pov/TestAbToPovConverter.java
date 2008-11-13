@@ -493,9 +493,8 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel testModel = new AbPovTestModel();
 			final ViewModel      model     = testModel.getModel();
-			final Object[]       ids       = model.getViewIDs();
 
-			final ViewModelView view          = model.getView( ids[ 0 ] );
+			final ViewModelView view          = testModel.getView();
 			final Matrix3D      viewTransform = view.getViewTransform();
 			final Component     viewComponent = view.getComponent();
 			final double        aspectRatio   = (double)viewComponent.getWidth() / (double)viewComponent.getHeight();
@@ -509,7 +508,7 @@ public final class TestAbToPovConverter
 		}
 
 		final String expected =
-			"camera // view\n" +
+			"camera\n" +
 			"{\n" +
 			"\tright  <1.33,0.0,0.0>\n" +
 			"\tangle  45.0\n" +
@@ -1054,8 +1053,8 @@ public final class TestAbToPovConverter
 		final AbPovTestModel testModel = new AbPovTestModel();
 		final ViewModel      viewModel = testModel.getModel();
 
-		final Object[]      viewIDs       = viewModel.getViewIDs();
-		final ViewModelView view          = viewModel.getView( viewIDs[ 0 ] );
+		//final Object[]      viewIDs       = viewModel.getViewIDs();
+		final ViewModelView view          = testModel.getView();
 		final Matrix3D      viewTransform = view.getViewTransform();
 		final Component     viewComponent = view.getComponent();
 		final double        aspectRatio   = (double)viewComponent.getWidth() / (double)viewComponent.getHeight();

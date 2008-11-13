@@ -127,13 +127,11 @@ public final class Model3D
 	 * Creates a {@link ViewModelView} that displays the 3d scene. The id object
 	 * is used to identify the view, and should be unique for each view.
 	 *
-	 * @param   id      The ID object used to register the view.
-	 *
 	 * @return  A {@link ViewModelView} that displays the 3D scene.
 	 */
-	public ViewModelView createView( final Object id )
+	public ViewModelView createView()
 	{
-		return _viewModel.createView( id );
+		return _viewModel.createView();
 	}
 
 	/**

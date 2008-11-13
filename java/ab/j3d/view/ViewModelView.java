@@ -204,9 +204,8 @@ public abstract class ViewModelView
 	 * Construct new view.
 	 *
 	 * @param   unit    Unit scale (meters per unit).
-	 * @param   id      Application-assigned ID of this view.
 	 */
-	protected ViewModelView( final double unit , final Object id )
+	protected ViewModelView( final double unit )
 	{
 		_unit = unit;
 
@@ -219,7 +218,6 @@ public abstract class ViewModelView
 		_label = null;
 
 		final Camera3D camera = new Camera3D();
-		camera.setTag( id );
 		_camera = camera;
 
 		final Transform3D transform = new Transform3D();
@@ -263,17 +261,6 @@ public abstract class ViewModelView
 		ActionTools.addToToolBar( toolbar , getActions( locale ) );
 
 		return toolbar;
-	}
-
-
-	/**
-	 * Get application-assigned ID of this view.
-	 *
-	 * @return  Application-assigned ID of this view.
-	 */
-	public final Object getID()
-	{
-		return _camera.getTag();
 	}
 
 	/**

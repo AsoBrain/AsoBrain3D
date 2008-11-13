@@ -114,12 +114,11 @@ public class JOGLView
 	 *                          <code>null</code>, in which case the default
 	 *                          background color of the current look and feel is
 	 *                          used.
-	 * @param   id              Application-assigned ID of this view.
 	 * @param   textureCache    Texture cache.
 	 */
-	public JOGLView( final JOGLModel model , final Color background , final Object id , final Map<String,SoftReference<Texture>> textureCache )
+	public JOGLView( final JOGLModel model , final Color background , final Map<String,SoftReference<Texture>> textureCache )
 	{
-		super( model.getUnit() , id );
+		super( model.getUnit() );
 		final double unit = model.getUnit();
 
 		_model = model;
@@ -325,7 +324,7 @@ public class JOGLView
 		 */
 		private RenderThread()
 		{
-			super( "JOGLView.renderThread:" + getID() );
+			super( "JOGLView.renderThread:" );
 			setDaemon( true );
 			setPriority( NORM_PRIORITY );
 			_updateRequested = true;

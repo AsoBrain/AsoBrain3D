@@ -224,13 +224,12 @@ final class Java3dView
 	 *
 	 * @param   model       {@link Java3dModel} for which this class is a view.
 	 * @param   universe    Java3D universe for which the view is created.
-	 * @param   id          Application-assigned ID of this view.
 	 *
 	 * @see     Java3dUniverse#createView
 	 */
-	Java3dView( final Java3dModel model , final Java3dUniverse universe , final Object id )
+	Java3dView( final Java3dModel model , final Java3dUniverse universe )
 	{
-		super( model.getUnit() , id );
+		super( model.getUnit() );
 
 		/* Use heavyweight popups, since Java3D uses a heavyweight canvas (Canvas3D). */
 		JPopupMenu.setDefaultLightWeightPopupEnabled( false );

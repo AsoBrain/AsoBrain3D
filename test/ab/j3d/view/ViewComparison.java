@@ -115,11 +115,12 @@ public class ViewComparison
 			layoutPanel.setLayout( new GridLayout( 0 , 1 ) );
 
 			final Collection<ViewModel> models = createViewModels();
+			ViewModelView view = null;
 			for ( final ViewModel model : models )
 			{
 				scene.createModel( model );
 
-				final ViewModelView view = model.createView( "view" );
+				view = model.createView();
 				scene.configureView( view );
 
 				final Component component = view.getComponent();
@@ -130,7 +131,7 @@ public class ViewComparison
 			{
 				final Iterator<ViewModel> modelIterator = models.iterator();
 				final ViewModel           povModel      = modelIterator.next();
-				final ViewModelView       povView       = povModel.getView( "view" );
+				final ViewModelView       povView       = view;
 
 				final JLabel povComponent = new JLabel();
 				layoutPanel.add( povComponent );

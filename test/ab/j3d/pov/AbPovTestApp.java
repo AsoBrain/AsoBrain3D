@@ -98,7 +98,7 @@ final class AbPovTestApp
 		final Vector3D viewFrom = Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 );
 		final Vector3D viewAt   = Vector3D.INIT;
 
-		final ViewModelView view = viewModel.createView( "view" );
+		final ViewModelView view = viewModel.createView();
 		view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
 
 		final JPanel viewPanel = new JPanel( new BorderLayout() );

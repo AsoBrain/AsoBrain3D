@@ -118,9 +118,9 @@ public final class Java2dModel
 		super.updateViews();
 	}
 
-	public ViewModelView createView( final Object id )
+	public ViewModelView createView()
 	{
-		final Java2dView view = new Java2dView( this , _background , id );
+		final Java2dView view = new Java2dView( this , _background );
 		addView( view );
 		return view;
 	}

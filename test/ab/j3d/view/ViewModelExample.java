@@ -102,7 +102,7 @@ public class ViewModelExample
 		final Vector3D  viewFrom = Vector3D.polarToCartesian( 1.5 / unit , -0.2 * Math.PI , 0.4 * Math.PI );
 		final Vector3D  viewAt   = Vector3D.INIT;
 
-		final ViewModelView view = viewModel.createView( "view" );
+		final ViewModelView view = viewModel.createView();
 		view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
 //		view.setProjectionPolicy( Projector.PARALLEL );
 		view.setGridEnabled( true );

@@ -19,8 +19,8 @@
  */
 package ab.j3d.loader;
 
-import java.awt.Color;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
@@ -100,7 +100,7 @@ public class Max3DSLoaderApp
 
 			viewModel.createNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d , null , 1.0f );
 
-			final ViewModelView view = viewModel.createView( "view" );
+			final ViewModelView view = viewModel.createView();
 			view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
 
 			final JPanel viewPanel = new JPanel( new BorderLayout() );

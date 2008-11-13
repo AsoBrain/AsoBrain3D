@@ -245,12 +245,9 @@ public final class Java3dModel
 		return (TransformGroup)nodeRoot.getChild( 0 );
 	}
 
-	public ViewModelView createView( final Object id )
+	public ViewModelView createView()
 	{
-		if ( id == null )
-			throw new NullPointerException( "id" );
-
-		final Java3dView view = new Java3dView( this , _universe , id );
+		final Java3dView view = new Java3dView( this , _universe );
 		addView( view );
 		return view;
 	}

@@ -101,7 +101,7 @@ public class View3D
 	 */
 	public View3D( final Model3D model , final int viewType , final int perspective)
 	{
-		_view = model.createView( this );
+		_view = model.createView();
 		_cameraControl = new FromToCameraControl( _view , 100.0 );
 		_view.setCameraControl( _cameraControl );
 

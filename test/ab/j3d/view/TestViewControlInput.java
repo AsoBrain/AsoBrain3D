@@ -126,7 +126,7 @@ public class TestViewControlInput
 		/*
 		 * Perform tests.
 		 */
-		final ViewControlTestInput input = new ViewControlTestInput( model , model.createView( "view" ) );
+		final ViewControlTestInput input = new ViewControlTestInput( model , model.createView() );
 
 		List<Face3DIntersection> selection;
 
@@ -201,7 +201,7 @@ public class TestViewControlInput
 		/*
 		 * Perform tests.
 		 */
-		final ViewControlTestInput input = new ViewControlTestInput( model , model.createView( "view" ) );
+		final ViewControlTestInput input = new ViewControlTestInput( model , model.createView() );
 
 		int modifiers = MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.SHIFT_DOWN_MASK;
 		MouseEvent e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_PRESSED , 0L , modifiers , 0 , 0 , 1 , false , MouseEvent.BUTTON1 );
@@ -253,7 +253,7 @@ public class TestViewControlInput
 		/*
 		 * Perform tests.
 		 */
-		final ViewControlTestInput input = new ViewControlTestInput( model , model.createView( "view" ) );
+		final ViewControlTestInput input = new ViewControlTestInput( model , model.createView() );
 
 		int modifiers = MouseEvent.SHIFT_DOWN_MASK;
 		MouseEvent e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_RELEASED , 0L , modifiers , 0 , 0 , 1 , false , MouseEvent.BUTTON1 );

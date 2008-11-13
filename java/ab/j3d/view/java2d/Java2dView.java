@@ -183,11 +183,10 @@ final class Java2dView
 	 *                      <code>null</code>, in which case the default
 	 *                      background color of the current look and feel is
 	 *                      used.
-	 * @param   id          Application-assigned ID of this view.
 	 */
-	Java2dView( final Java2dModel model , final Color background , final Object id )
+	Java2dView( final Java2dModel model , final Color background )
 	{
-		super( model.getUnit() , id );
+		super( model.getUnit() );
 
 		_model = model;
 

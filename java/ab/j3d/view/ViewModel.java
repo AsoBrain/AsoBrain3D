@@ -428,72 +428,6 @@ public abstract class ViewModel
 	protected abstract void updateNodeContent( ViewModelNode node );
 
 	/**
-	 * Get view view by ID. This method is only supposed to be used internally.
-	 *
-	 * @param   id      Application-assigned ID of view model view.
-	 *
-	 * @return  View with the specified ID;
-	 *          <code>null</code> if no view with the specified ID was found.
-	 *
-	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
-	 */
-	public final ViewModelView getView( final Object id )
-	{
-		if ( id == null )
-			throw new NullPointerException( "id" );
-
-		ViewModelView result = null;
-
-		for ( final ViewModelView view : _views )
-		{
-			if ( id.equals( view.getID() ) )
-			{
-				result = view;
-				break;
-			}
-		}
-
-		return result;
-	}
-
-	/**
-	 * Get view component for the specified view node.
-	 *
-	 * @param   id      Application-assigned ID of view.
-	 *
-	 * @return  Component with graphical representation of view;
-	 *          <code>null</code> if the requested view was not found.
-	 *
-	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
-	 */
-	public final Component getViewComponent( final Object id )
-	{
-		final ViewModelView view = getView( id );
-		return ( view != null ) ? view.getComponent() : null;
-	}
-
-	/**
-	 * Get ID's of all views for the model.
-	 *
-	 * @return  Array containing ID's of all views for the model.
-	 */
-	public final Object[] getViewIDs()
-	{
-		final Object[] result;
-
-		final List<ViewModelView> views = _views;
-
-		result = new Object[ views.size() ];
-		for ( int i = 0 ; i < result.length ; i++ )
-		{
-			final ViewModelView view = views.get( i );
-			result[ i ] = view.getID();
-		}
-
-		return result;
-	}
-
-	/**
 	 * Add view model view. This method is only supposed to be used internally.
 	 *
 	 * @param   view    View to add.
@@ -530,7 +464,7 @@ public abstract class ViewModel
 	 */
 	public final ViewModelView createView( final Object id , final RenderingPolicy renderingPolicy , final ProjectionPolicy projectionPolicy , final Bounds3D estimatedSceneBounds , final Vector3D viewDirection )
 	{
-		final ViewModelView view = createView( id );
+		final ViewModelView view = createView();
 
 		final double   sceneSize = Vector3D.distanceBetween( estimatedSceneBounds.v1 , estimatedSceneBounds.v2 );
 		final Vector3D center    = estimatedSceneBounds.center();
@@ -561,30 +495,24 @@ public abstract class ViewModel
 	/**
 	 * Create a new view for this model.
 	 *
-	 * @param   id  Application-assigned ID for the new view.
-	 *
 	 * @return  View that was created.
-	 *
-	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public abstract ViewModelView createView( final Object id );
+	public abstract ViewModelView createView();
 
 	/**
 	 * Create view panel for the specified view.
 	 *
 	 * @param   locale      Locale for internationalized user interface.
-	 * @param   id          Application-assigned ID of existing view.
+	 * @param   view        View model view to create view panel for.
 	 *
 	 * @return  Panel containing view.
 	 *
-	 * @throws  IllegalArgumentException if no view with the specified <code>id</code> was found.
-	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
+	 * @throws  NullPointerException if <code>view</code> is <code>null</code>.
 	 */
-	public final JPanel createViewPanel( final Locale locale , final Object id )
+	public final JPanel createViewPanel( final Locale locale , final ViewModelView view )
 	{
-		final ViewModelView view = getView( id );
 		if ( view == null )
-			throw new IllegalArgumentException( String.valueOf( id ) );
+			throw new NullPointerException( "View is null" );
 
 		final JPanel result = new JPanel( new BorderLayout() );
 		result.add( view.getComponent() , BorderLayout.CENTER );
@@ -593,30 +521,29 @@ public abstract class ViewModel
 	}
 
 	/**
-	 * Test if view model contains a view with the specified ID.
+	 * Test if view model contains a view model view.
 	 *
-	 * @param   id      Application-assigned ID of view model view.
+	 * @param   view    view model view to test for.
 	 *
 	 * @return  <code>true</code> if a view with the specified ID was found;
 	 *          <code>false</code> if the model contains no such view.
 	 *
-	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
+	 * @throws  NullPointerException if <code>view</code> is <code>null</code>.
 	 */
-	public final boolean hasView( final Object id )
+	public final boolean hasView( final ViewModelView view )
 	{
-		return ( getView( id ) != null );
+		return ( _views.contains( view ) );
 	}
 
 	/**
 	 * Remove view model view.
 	 *
-	 * @param   id      Application-assigned ID for a view model view.
+	 * @param   view   view model view to remove.
 	 *
-	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
+	 * @throws  NullPointerException if <code>view</code> is <code>null</code>.
 	 */
-	public final void removeView( final Object id )
+	public final void removeView( final ViewModelView view )
 	{
-		final ViewModelView view = getView( id );
 		if ( view != null )
 		{
 			final ViewModelNodeControl viewModelNodeControl = _viewModelNodeControl;
@@ -628,14 +555,17 @@ public abstract class ViewModel
 
 	/**
 	 * Remove all view model views from this model.
-	 *
-	 * @see     #removeView
-	 * @see     #getViewIDs
 	 */
 	public final void removeAllViews()
 	{
-		for ( final Object id : getViewIDs() )
-			removeView( id );
+		for ( final ViewModelView view : _views )
+		{
+			final ViewModelNodeControl viewModelNodeControl = _viewModelNodeControl;
+			view.removeControl( viewModelNodeControl );
+			view.removeOverlayPainter( viewModelNodeControl );
+		}
+
+		_views.clear();
 	}
 
 	/**

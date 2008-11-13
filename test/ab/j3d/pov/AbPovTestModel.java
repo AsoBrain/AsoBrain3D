@@ -58,6 +58,11 @@ public final class AbPovTestModel
 	private final Java2dModel _viewModel = new Java2dModel();
 
 	/**
+	 * The used model.
+	 */
+	private final ViewModelView view;
+
+	/**
 	 * Construct new {@link AbPovTestModel}.
 	 */
 	public AbPovTestModel() {
@@ -88,8 +93,18 @@ public final class AbPovTestModel
 		final Vector3D viewFrom = Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 );
 		final Vector3D viewAt   = Vector3D.INIT;
 
-		final ViewModelView view = viewModel.createView( "view" );
+		view = viewModel.createView();
 		view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
+	}
+
+	/**
+	 * Get a reference to the used model.
+	 *
+	 * @return The test model.
+	 */
+	public ViewModelView getView()
+	{
+		return view;
 	}
 
 	/**
