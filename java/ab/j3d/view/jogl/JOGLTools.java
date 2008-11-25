@@ -1048,6 +1048,9 @@ public class JOGLTools
 	 *
 	 * @return  Compatible texture image. If the given image already meets all
 	 *          requirements, that same image is returned.
+	 *
+	 * @throws  IllegalStateException if the given GL context specifies a
+	 *          non-positive maximum texture size.
 	 */
 	private static BufferedImage createCompatibleTextureImage( final BufferedImage image , final GL gl )
 	{
@@ -1057,6 +1060,11 @@ public class JOGLTools
 		final int[] maxTextureSizeBuffer = new int[ 1 ];
 		gl.glGetIntegerv( GL.GL_MAX_TEXTURE_SIZE , maxTextureSizeBuffer , 0 );
 		final int maximumTextureSize = maxTextureSizeBuffer[ 0 ];
+
+		if ( maximumTextureSize <= 0 )
+		{
+			throw new IllegalStateException( "maximumTextureSize <= 0" );
+		}
 
 		int scaledWidth  = Math.min( maximumTextureSize , image.getWidth()  );
 		int scaledHeight = Math.min( maximumTextureSize , image.getHeight() );
