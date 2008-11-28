@@ -1055,16 +1055,12 @@ public class JOGLTools
 	private static BufferedImage createCompatibleTextureImage( final BufferedImage image , final GL gl )
 	{
 		/*
-		 * Textures must not exceed the maximum size.
+		 * Textures must not exceed the maximum size. According to the OpenGL
+		 * specification, this must be at least 64.
 		 */
 		final int[] maxTextureSizeBuffer = new int[ 1 ];
 		gl.glGetIntegerv( GL.GL_MAX_TEXTURE_SIZE , maxTextureSizeBuffer , 0 );
-		final int maximumTextureSize = maxTextureSizeBuffer[ 0 ];
-
-		if ( maximumTextureSize <= 0 )
-		{
-			throw new IllegalStateException( "maximumTextureSize <= 0" );
-		}
+		final int maximumTextureSize = Math.max( 64 , maxTextureSizeBuffer[ 0 ] );
 
 		int scaledWidth  = Math.min( maximumTextureSize , image.getWidth()  );
 		int scaledHeight = Math.min( maximumTextureSize , image.getHeight() );
