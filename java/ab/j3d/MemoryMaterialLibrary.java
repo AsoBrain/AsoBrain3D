@@ -20,10 +20,10 @@
  */
 package ab.j3d;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * This class provides a simple in-memory material library.
@@ -46,18 +46,14 @@ public class MemoryMaterialLibrary
 	{
 	}
 
-	public Material getMaterial( final String code )
+	public Material getMaterialByCode( final String code )
 	{
 		return _materials.get( code );
 	}
 
-	public String[] getMaterialCodes()
+	public List<Material> getMaterials()
 	{
-		final Set<String> codeSet = _materials.keySet();
-
-		final String[] result = codeSet.toArray( new String[ _materials.size() ] );
-		Arrays.sort( result );
-		return result;
+		return new ArrayList<Material>( _materials.values() );
 	}
 
 	public void storeMaterial( final Material material )
