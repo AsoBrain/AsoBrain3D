@@ -21,11 +21,10 @@
 package ab.j3d;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
- * This interface is used to retrieve materials from a library. A typical
- * implementation of this interface would generate the material data or retrieve
- * it from some data source (a database for example).
+ * This interface is used to retrieve materials from a library.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
@@ -33,15 +32,7 @@ import java.io.IOException;
 public interface MaterialLibrary
 {
 	/**
-	 * Get all available material codes from the library.
-	 *
-	 * @return  List of material codes;
-	 *          <code>null</code> if an error occured.
-	 */
-	String[] getMaterialCodes();
-
-	/**
-	 * Get material from the library for the specified code.
+	 * Get material with the specified code from the library.
 	 * <dl>
 	 *  <dt>IMPORTANT:</dt>
 	 *  <dd>For efficiency, implementations of this method may return a shared
@@ -51,9 +42,28 @@ public interface MaterialLibrary
 	 * @param   code    Material code.
 	 *
 	 * @return  Material instance;
-	 *          <code>null</code> if an error occured (unknown material).
+	 *          <code>null</code> if no matching material was found.
+	 *
+	 * @throws  NullPointerException if the argument is <code>null</code>.
+	 * @throws  IOException if an error occured while accesing the library.
 	 */
-	Material getMaterial( String code );
+	Material getMaterialByCode( String code )
+		throws IOException;
+
+	/**
+	 * Get all materials from the library.
+	 * <dl>
+	 *  <dt>IMPORTANT:</dt>
+	 *  <dd>For efficiency, implementations of this method may return shared
+	 *   {@link Material} instances. Modification may corrupt the library.</dd>
+	 * </dl>
+	 *
+	 * @return  Materials.
+	 *
+	 * @throws  IOException if an error occured while accesing the library.
+	 */
+	List<Material> getMaterials()
+		throws IOException;
 
 	/**
 	 * This method is used to store a material.
@@ -65,8 +75,8 @@ public interface MaterialLibrary
 	 *
 	 * @param   material    Material to store.
 	 *
-	 * @throws  NullPointerException if <code>material</code> is <code>null</code>.
-	 * @throws  IOException the material could not be stored.
+	 * @throws  NullPointerException if the argument is <code>null</code>.
+	 * @throws  IOException if an error occured while accesing the library.
 	 */
 	void storeMaterial( Material material )
 		throws IOException;
