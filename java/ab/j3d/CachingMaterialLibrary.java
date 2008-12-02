@@ -21,10 +21,10 @@ package ab.j3d;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.numdata.oss.Cache;
 import com.numdata.oss.TextTools;
 
 
@@ -43,14 +43,14 @@ public class CachingMaterialLibrary
 	private final MaterialLibrary _library;
 
 	/**
-	 * Board article cache.
+	 * Cache of materials by code.
 	 */
-	private final Map<String,Material> _cache = new HashMap<String,Material>();
+	private final Map<String,Material> _cache;
 
 	/**
-	 * This flag indicates if cache contains all available board articles.
+	 * Total number of materials; <code>-1</code> if unknown.
 	 */
-	private boolean _haveAll = false;
+	private int _materialCount = -1;
 
 	/**
 	 * Construct library.
@@ -60,6 +60,7 @@ public class CachingMaterialLibrary
 	public CachingMaterialLibrary( final MaterialLibrary library )
 	{
 		_library = library;
+		_cache = new Cache<String,Material>();
 	}
 
 	public final Material getMaterialByCode( final String code )
@@ -75,7 +76,7 @@ public class CachingMaterialLibrary
 			final Map<String,Material> cache = _cache;
 
 			result = cache.get( code );
-			if ( ( result == null ) && !_haveAll && !cache.containsKey( code ) )
+			if ( ( result == null ) && !isCacheComplete() && !cache.containsKey( code ) )
 			{
 				result = _library.getMaterialByCode( code );
 				cache.put( code , result );
@@ -85,6 +86,17 @@ public class CachingMaterialLibrary
 		return result;
 	}
 
+	/**
+	 * Returns whether the cache for this library contains all materials.
+	 *
+	 * @return  <code>true</code> if all materials are cached;
+	 *          <code>false</code> otherwise.
+	 */
+	private boolean isCacheComplete()
+	{
+		return ( _materialCount >= 0 ) && ( _materialCount == _cache.size() );
+	}
+
 	public List<Material> getMaterials()
 		throws IOException
 	{
@@ -92,7 +104,7 @@ public class CachingMaterialLibrary
 
 		final Map<String, Material> cache = _cache;
 
-		if ( _haveAll )
+		if ( isCacheComplete() )
 		{
 			result = new ArrayList<Material>( cache.size() );
 			for ( final Material material : cache.values() )
@@ -104,7 +116,7 @@ public class CachingMaterialLibrary
 			}
 		}
 
-		if ( ( result == null ) || !_haveAll )
+		if ( ( result == null ) || !isCacheComplete() )
 		{
 			result = _library.getMaterials();
 
@@ -114,8 +126,6 @@ public class CachingMaterialLibrary
 			{
 				cache.put( material.code , material );
 			}
-
-			_haveAll = true;
 		}
 
 		return result;
