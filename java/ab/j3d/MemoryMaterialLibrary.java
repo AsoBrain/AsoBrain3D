@@ -48,6 +48,9 @@ public class MemoryMaterialLibrary
 
 	public Material getMaterialByCode( final String code )
 	{
+		if ( code == null )
+			throw new NullPointerException( "code" );
+
 		return _materials.get( code );
 	}
 
@@ -58,6 +61,9 @@ public class MemoryMaterialLibrary
 
 	public void storeMaterial( final Material material )
 	{
+		if ( material == null )
+			throw new NullPointerException( "material" );
+
 		final Map<String, Material> materials = _materials;
 
 		if ( material.ID >= 0 )
