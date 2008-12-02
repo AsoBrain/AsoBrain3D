@@ -20,6 +20,8 @@
  */
 package ab.j3d;
 
+import java.io.IOException;
+
 import junit.framework.TestCase;
 
 import com.numdata.oss.db.HsqlDbServices;
@@ -167,6 +169,40 @@ public class TestMaterialLibrary
 		{
 			/* Success! */
 		}
+
+		/*
+		 * Test code and ID modifications.
+		 */
+		firstMaterial.ID = -1;
+		try
+		{
+			library.storeMaterial( firstMaterial );
+			fail( "storeMaterial() test #11 - expected exception due to key constraint" );
+		}
+		catch ( IOException e )
+		{
+			/* Success! */
+		}
+		firstMaterial.ID = firstID;
+
+		secondMaterial.code = "other-second";
+		library.storeMaterial( secondMaterial );
+		assertEquals( "storeMaterial() test #12" , secondID , secondMaterial.ID );
+		secondMaterial.code = "second";
+		library.storeMaterial( secondMaterial );
+
+		thirdMaterial.code = "second";
+		try
+		{
+			library.storeMaterial( thirdMaterial );
+			fail( "storeMaterial() test #13 - expected exception due to key constraint" );
+		}
+		catch ( IOException e )
+		{
+			/* Success! */
+		}
+		thirdMaterial.code = "third";
+		library.storeMaterial( thirdMaterial );
 
 		System.out.println( " - getMaterialByCode()" );
 
