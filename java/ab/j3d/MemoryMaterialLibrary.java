@@ -20,6 +20,7 @@
  */
 package ab.j3d;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,20 +61,34 @@ public class MemoryMaterialLibrary
 	}
 
 	public void storeMaterial( final Material material )
+		throws IOException
 	{
 		if ( material == null )
 			throw new NullPointerException( "material" );
 
-		final Map<String, Material> materials = _materials;
+		final Map<String,Material> materials = _materials;
 
 		if ( material.ID >= 0 )
 		{
-			for ( final Material existing : materials.values() )
+			final Material materialWithSameCode = materials.get( material.code );
+
+			if ( materialWithSameCode != null )
 			{
-				if ( material.ID == existing.ID )
+				if ( materialWithSameCode.ID != material.ID )
 				{
-					materials.remove( existing.code );
-					break;
+					throw new IOException( "Duplicate material code: " + material.code );
+				}
+				// Otherwise, the 'materialWithSameCode' will be replaced by the call to 'put' below.
+			}
+			else
+			{
+				for ( final Material existing : materials.values() )
+				{
+					if ( material.ID == existing.ID )
+					{
+						materials.remove( existing.code );
+						break;
+					}
 				}
 			}
 		}
@@ -82,6 +97,11 @@ public class MemoryMaterialLibrary
 			int maxID = -1;
 			for ( final Material existing : materials.values() )
 			{
+				if ( material.code.equalsIgnoreCase( existing.code ) )
+				{
+					throw new IOException( "Duplicate material code: " + material.code );
+				}
+
 				maxID = Math.max( maxID , existing.ID );
 			}
 
