@@ -87,7 +87,11 @@ public class MouseControl
 
 					break;
 
-				case KeyEvent.KEY_PRESSED :
+				case MouseEvent.MOUSE_WHEEL :
+					result = mouseWheelMoved( controlInputEvent );
+					break;
+
+			case KeyEvent.KEY_PRESSED :
 					final int keyCode = controlInputEvent.getKeyCode();
 					handleKey( keyCode );
 					break;
@@ -171,6 +175,21 @@ public class MouseControl
 	 * @see     MouseEvent#MOUSE_CLICKED
 	 */
 	public EventObject mouseClicked( final ControlInputEvent event )
+	{
+		return event;
+	}
+
+	/**
+	 * This method is called when the mouse wheel is moved.
+	 *
+	 * @param   event   Control input event.
+	 *
+	 * @return  Filtered event (may be same or modified);
+	 *          <code>null</code> to discard event completely.
+	 *
+	 * @see     MouseEvent#MOUSE_WHEEL
+	 */
+	public EventObject mouseWheelMoved( final ControlInputEvent event )
 	{
 		return event;
 	}

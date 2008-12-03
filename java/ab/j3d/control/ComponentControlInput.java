@@ -25,6 +25,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 
 /**
  * This class extends {@link ControlInput} by listening to events from a
@@ -36,7 +38,7 @@ import java.awt.event.MouseMotionListener;
  */
 public abstract class ComponentControlInput
 	extends ControlInput
-	implements KeyListener , MouseListener , MouseMotionListener
+	implements KeyListener , MouseListener , MouseMotionListener, MouseWheelListener
 {
 	/**
 	 * Construct new component control input.
@@ -51,10 +53,11 @@ public abstract class ComponentControlInput
 		component.addKeyListener( this );
 		component.addMouseListener( this );
 		component.addMouseMotionListener( this );
+		component.addMouseWheelListener( this );
 	}
 
 	/**
-	 * Simply oass {@link KeyEvent} on to {@link #dispatchControlInputEvent}.
+	 * Simply pass {@link KeyEvent} on to {@link #dispatchControlInputEvent}.
 	 *
 	 * @param   event   {@link KeyEvent} that was dispatched
 	 */
@@ -64,7 +67,7 @@ public abstract class ComponentControlInput
 	}
 
 	/**
-	 * Simply oass {@link KeyEvent} on to {@link #dispatchControlInputEvent}.
+	 * Simply pass {@link KeyEvent} on to {@link #dispatchControlInputEvent}.
 	 *
 	 * @param   event   {@link KeyEvent} that was dispatched
 	 */
@@ -74,7 +77,7 @@ public abstract class ComponentControlInput
 	}
 
 	/**
-	 * Simply oass {@link KeyEvent} on to {@link #dispatchControlInputEvent}.
+	 * Simply pass {@link KeyEvent} on to {@link #dispatchControlInputEvent}.
 	 *
 	 * @param   event   {@link KeyEvent} that was dispatched
 	 */
@@ -84,7 +87,7 @@ public abstract class ComponentControlInput
 	}
 
 	/**
-	 * Simply oass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
+	 * Simply pass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
@@ -94,7 +97,7 @@ public abstract class ComponentControlInput
 	}
 
 	/**
-	 * Simply oass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
+	 * Simply pass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
@@ -104,7 +107,7 @@ public abstract class ComponentControlInput
 	}
 
 	/**
-	 * Simply oass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
+	 * Simply pass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
@@ -114,7 +117,7 @@ public abstract class ComponentControlInput
 	}
 
 	/**
-	 * Simply oass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
+	 * Simply pass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
@@ -124,7 +127,7 @@ public abstract class ComponentControlInput
 	}
 
 	/**
-	 * Simply oass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
+	 * Simply pass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
@@ -134,7 +137,7 @@ public abstract class ComponentControlInput
 	}
 
 	/**
-	 * Simply oass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
+	 * Simply pass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
@@ -144,11 +147,21 @@ public abstract class ComponentControlInput
 	}
 
 	/**
-	 * Simply oass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
+	 * Simply pass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
 	public void mouseReleased( final MouseEvent event )
+	{
+		dispatchControlInputEvent( event );
+	}
+
+	/**
+	 * Simply pass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
+	 *
+	 * @param   event   {@link MouseEvent} that was dispatched
+	 */
+	public void mouseWheelMoved( final MouseWheelEvent event )
 	{
 		dispatchControlInputEvent( event );
 	}
