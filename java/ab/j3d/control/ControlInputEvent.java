@@ -154,8 +154,8 @@ public class ControlInputEvent
 	 */
 	public int getClickCount()
 	{
-		final InputEvent inputEvent = _inputEvent;
-		return ( inputEvent instanceof MouseEvent ) ? ((MouseEvent)inputEvent).getClickCount() : -1;
+		final MouseEvent mouseEvent = getMouseEvent();
+		return ( mouseEvent != null ) ? mouseEvent.getClickCount() : -1;
 	}
 
 	/**
@@ -259,6 +259,17 @@ public class ControlInputEvent
 	}
 
 	/**
+	 * Get mouse event, if available.
+	 *
+	 * @return  {@link MouseEvent};
+	 *          <code>null</code> if no {@link MouseEvent} is available.
+	 */
+	public MouseEvent getMouseEvent()
+	{
+		return ( _inputEvent instanceof MouseEvent ) ? (MouseEvent)_inputEvent : null;
+	}
+
+	/**
 	 * Get button, if any, that changed state.
 	 *
 	 * @return  Button that changed state ({@link MouseEvent#NOBUTTON},
@@ -267,8 +278,8 @@ public class ControlInputEvent
 	 */
 	public int getMouseButton()
 	{
-		final InputEvent inputEvent = _inputEvent;
-		return ( inputEvent instanceof MouseEvent ) ? ((MouseEvent)inputEvent).getButton() : MouseEvent.NOBUTTON;
+		final MouseEvent mouseEvent = getMouseEvent();
+		return ( mouseEvent != null ) ? mouseEvent.getButton() : MouseEvent.NOBUTTON;
 	}
 
 	/**
@@ -310,9 +321,11 @@ public class ControlInputEvent
 	public Ray3D getPointerRay()
 	{
 		Ray3D result = _pointerRay;
-		if ( ( result == null ) && ( _inputEvent instanceof MouseEvent ) )
+
+		final MouseEvent mouseEvent = getMouseEvent();
+
+		if ( ( result == null ) && ( mouseEvent != null ) )
 		{
-			final MouseEvent   mouseEvent   = (MouseEvent)_inputEvent;
 			final Projector    projector    = getProjector();
 			final Matrix3D     world2view   = getViewTransform();
 			final Matrix3D     view2world   = world2view.inverse();
@@ -365,8 +378,8 @@ public class ControlInputEvent
 	 */
 	public int getX()
 	{
-		final InputEvent inputEvent = _inputEvent;
-		return ( inputEvent instanceof MouseEvent ) ? ((MouseEvent)inputEvent).getX() : -1;
+		final MouseEvent mouseEvent = getMouseEvent();
+		return ( mouseEvent != null ) ? mouseEvent.getX() : -1;
 	}
 
 	/**
@@ -377,8 +390,8 @@ public class ControlInputEvent
 	 */
 	public int getY()
 	{
-		final InputEvent inputEvent = _inputEvent;
-		return ( inputEvent instanceof MouseEvent ) ? ((MouseEvent)inputEvent).getY() : -1;
+		final MouseEvent mouseEvent = getMouseEvent();
+		return ( mouseEvent != null ) ? mouseEvent.getY() : -1;
 	}
 
 	/**
@@ -489,6 +502,9 @@ public class ControlInputEvent
 				sb.append( "MOUSE_MOVED" );
 				break;
 
+			case MouseEvent.MOUSE_WHEEL :
+				sb.append( "MOUSE_WHEEL" );
+				break;
 
 			default :
 				sb.append( "???" );
