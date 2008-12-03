@@ -18,16 +18,18 @@
 
   <target name="init">
     <tstamp/>
-    <available property="api.jogl"        type="file" file="${jogl.home}/lib/jogl.jar"/>
-    <available property="api.numdata.oss" type="file" file="${numdata.oss.home}/lib/numdata-oss.jar"/>
+    <available property="api.hsqldb"                     type="file" file="${hsqldb.home}/lib/hsqldb.jar"/>
+    <available property="api.jogl"                       type="file" file="${jogl.home}/lib/jogl.jar"/>
+    <available property="api.numdata.oss"                type="file" file="${numdata.oss.home}/lib/numdata-oss.jar"/>
   </target>
 
   <target name="api-check" depends="init" description="Pre-compilation initialization">
     <mkdir dir="classes/test"/>
     <javac srcdir="test" destdir="classes/test" includes="apicheck/ApiCheck.java"/>
     <java classname="apicheck.ApiCheck" classpath="classes/test" classpathref="java.classpath" failonerror="yes"/>
-    <fail unless="api.jogl"        message="Please check 'JOGL' library presence and 'build.properties' file."/>
-    <fail unless="api.numdata.oss" message="Please check 'Numdata Open Source Software Library' presence and 'build.properties' file."/>
+    <fail unless="api.hsqldb"                     message="Please check 'hsqldb' library presence and 'build.properties' file."/>
+    <fail unless="api.jogl"                       message="Please check 'JOGL' library presence and 'build.properties' file."/>
+    <fail unless="api.numdata.oss"                message="Please check 'Numdata Open Source Software Library' presence and 'build.properties' file."/>
   </target>
 
   <path id="java.classpath">
@@ -53,6 +55,8 @@
   <path id="test.classpath">
     <pathelement location="classes/test"/>
     <path refid="java.classpath"/>
+    <pathelement location="${hsqldb.home}/lib/hsqldb.jar"/>
+    <pathelement location="${numdata.oss.home}/classes/test"/>
   </path>
 
   <target name="compile-tests" depends="compile-java" description="Compile unit tests">
