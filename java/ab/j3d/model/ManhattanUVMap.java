@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -36,8 +36,14 @@ import ab.j3d.Vector3D;
 public class ManhattanUVMap
 	implements UVMap
 {
+	/**
+	 * Size of a model unit in meters.
+	 */
 	private final double _modelUnits;
 
+	/**
+	 * Starting point for distance calculations.
+	 */
 	private final Vector3D _origin;
 
 	/**
@@ -53,7 +59,7 @@ public class ManhattanUVMap
 		_origin     = origin;
 	}
 
-	public void generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final float[] textureU , final float[] textureV )
+	public void generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final boolean flipTexture , final float[] textureU , final float[] textureV )
 	{
 		final double scaleX = _modelUnits / material.colorMapWidth;
 		final double scaleY = _modelUnits / material.colorMapHeight;
@@ -68,8 +74,8 @@ public class ManhattanUVMap
 			final double y = vertexCoordinates[ base + 1 ] - origin.y;
 			final double z = vertexCoordinates[ base + 2 ] - origin.z;
 
-			textureU[ i ] = (float)( scaleX * ( x + y ) );
-			textureV[ i ] = (float)( scaleY * z );
+			textureU[ i ] = (float)( scaleX * ( flipTexture ? z : ( x + y ) ) );
+			textureV[ i ] = (float)( scaleY * ( flipTexture ? ( x + y ) : z ) );
 		}
 	}
 }

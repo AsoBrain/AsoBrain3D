@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -94,7 +94,7 @@ public class PlanarUVMap
 		_transform  = transform;
 	}
 
-	public void generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final float[] textureU , final float[] textureV )
+	public void generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final boolean flipTexture , final float[] textureU , final float[] textureV )
 	{
 		final double scaleU = _modelUnits / material.colorMapWidth;
 		final double scaleV = _modelUnits / material.colorMapHeight;
@@ -106,8 +106,8 @@ public class PlanarUVMap
 			final double x = _transform.transformX( vertexCoordinates[ base ] , vertexCoordinates[ base + 1 ] , vertexCoordinates[ base + 2 ] );
 			final double y = _transform.transformY( vertexCoordinates[ base ] , vertexCoordinates[ base + 1 ] , vertexCoordinates[ base + 2 ] );
 
-			textureU[ i ] = (float)( scaleU * x );
-			textureV[ i ] = (float)( scaleV * y );
+			textureU[ i ] = (float)( scaleU * ( flipTexture ? y : x ) );
+			textureV[ i ] = (float)( scaleV * ( flipTexture ? x : y ) );
 		}
 	}
 }

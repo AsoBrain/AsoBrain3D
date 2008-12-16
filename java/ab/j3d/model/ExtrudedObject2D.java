@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2007
+ * (C) Copyright Numdata BV 2004-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -184,26 +184,26 @@ public final class ExtrudedObject2D
 	/**
 	 * Construct extruded object.
 	 *
-	 * @param   shape           Base shape.
-	 * @param   extrusion       Extrusion vector (control-point displacement).
-	 * @param   transform       Transform to apply.
-	 * @param   topMaterial     Material to apply to the top cap.
-	 * @param   topFlipUV       Whether the top U and V coordinates are flipped.
-	 * @param   bottomMaterial  Material to apply to the bottom cap.
-	 * @param   bottomFlipUV    Whether the bottom U and V coordinates are flipped.
-	 * @param   sideMaterial    Material to apply to the extruded sides.
-	 * @param   sideFlipUV      Whether the side U and V coordinates are flipped.
-	 * @param   flatness        Flatness to use.
-	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
-	 * @param   flipNormals     If <code>true</code>, normals are flipped to
-	 *                          point in the opposite direction.
-	 * @param   caps            If <code>true</code>, the top and bottom of the
-	 *                          extruded shape are capped.
+	 * @param   shape               Base shape.
+	 * @param   extrusion           Extrusion vector (control-point displacement).
+	 * @param   transform           Transform to apply.
+	 * @param   topMaterial         Material to apply to the top cap.
+	 * @param   topFlipTexture      Whether the top texture direction is flipped.
+	 * @param   bottomMaterial      Material to apply to the bottom cap.
+	 * @param   bottomFlipTexture   Whether the bottom texture direction is flipped.
+	 * @param   sideMaterial        Material to apply to the extruded sides.
+	 * @param   sideFlipTexture     Whether the side texture direction is flipped.
+	 * @param   flatness            Flatness to use.
+	 * @param   hasBackface         Flag to indicate if extruded faces have a backface.
+	 * @param   flipNormals         If  <code>true</code>, normals are flipped to
+	 *                              point in the opposite direction.
+	 * @param   caps                If <code>true</code>, the top and bottom of the
+	 *                              extruded shape are capped.
 	 *
 	 * @see     FlatteningPathIterator
 	 * @see     Shape#getPathIterator( AffineTransform , double )
 	 */
-	public ExtrudedObject2D( final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material topMaterial , final boolean topFlipUV , final Material bottomMaterial , final boolean bottomFlipUV , final Material sideMaterial , final boolean sideFlipUV , final double flatness , final boolean hasBackface , final boolean flipNormals , final boolean caps )
+	public ExtrudedObject2D( final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material topMaterial , final boolean topFlipTexture , final Material bottomMaterial , final boolean bottomFlipTexture , final Material sideMaterial , final boolean sideFlipTexture , final double flatness , final boolean hasBackface , final boolean flipNormals , final boolean caps )
 	{
 		this.shape       = shape;
 		this.extrusion   = extrusion;
@@ -213,7 +213,7 @@ public final class ExtrudedObject2D
 		this.flipNormals = flipNormals;
 		this.caps        = caps;
 
-		generate( this , shape , extrusion , transform , topMaterial , topFlipUV , bottomMaterial , bottomFlipUV , sideMaterial , sideFlipUV , flatness , hasBackface , flipNormals , caps );
+		generate( this , shape , extrusion , transform , topMaterial , topFlipTexture , bottomMaterial , bottomFlipTexture , sideMaterial , sideFlipTexture , flatness , hasBackface , flipNormals , caps );
 	}
 
 	/**
@@ -235,24 +235,24 @@ public final class ExtrudedObject2D
 	/**
 	 * Generate data from object properties.
 	 *
-	 * @param   target          Target {@link Object3D} to store generated data.
-	 * @param   shape           Base shape.
-	 * @param   extrusion       Extrusion vector (control-point displacement).
-	 * @param   transform       Transform to apply.
-	 * @param   topMaterial     Material to apply to the top cap.
-	 * @param   topFlipUV       Whether the top U and V coordinates are flipped.
-	 * @param   bottomMaterial  Material to apply to the bottom cap.
-	 * @param   bottomFlipUV    Whether the bottom U and V coordinates are flipped.
-	 * @param   sideMaterial    Material to apply to the extruded sides.
-	 * @param   sideFlipUV      Whether the side U and V coordinates are flipped.
-	 * @param   flatness        Flatness to use.
-	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
-	 * @param   flipNormals     If <code>true</code>, normals are flipped to
-	 *                          point in the opposite direction.
-	 * @param   caps            If <code>true</code>, top and bottom caps are
-	 *                          generated.
+	 * @param   target              Target {@link Object3D} to store generated data.
+	 * @param   shape               Base shape.
+	 * @param   extrusion           Extrusion vector (control-point displacement).
+	 * @param   transform           Transform to apply.
+	 * @param   topMaterial         Material to apply to the top cap.
+	 * @param   topFlipTexture      Whether the top texture direction is flipped.
+	 * @param   bottomMaterial      Material to apply to the bottom cap.
+	 * @param   bottomFlipTexture   Whether the bottom texture direction is flipped.
+	 * @param   sideMaterial        Material to apply to the extruded sides.
+	 * @param   sideFlipTexture     Whether the side texture direction is flipped.
+	 * @param   flatness            Flatness to use.
+	 * @param   hasBackface         Flag to indicate if extruded faces have a backface.
+	 * @param   flipNormals         If <code>true</code>, normals are flipped to
+	 *                              point in the opposite direction.
+	 * @param   caps                If <code>true</code>, top and bottom caps are
+	 *                              generated.
 	 */
-	private static void generate( final Object3D target , final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material topMaterial , final boolean topFlipUV , final Material bottomMaterial , final boolean bottomFlipUV , final Material sideMaterial , final boolean sideFlipUV , final double flatness , final boolean hasBackface , final boolean flipNormals , final boolean caps )
+	private static void generate( final Object3D target , final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material topMaterial , final boolean topFlipTexture , final Material bottomMaterial , final boolean bottomFlipTexture , final Material sideMaterial , final boolean sideFlipTexture , final double flatness , final boolean hasBackface , final boolean flipNormals , final boolean caps )
 	{
 		final double  ex            = extrusion.x;
 		final double  ey            = extrusion.y;
@@ -397,7 +397,7 @@ public final class ExtrudedObject2D
 					textureU = new float[ vertexIndices.length ];
 					textureV = new float[ vertexIndices.length ];
 
-					uvMap.generate( sideMaterial , target.getVertexCoordinates(), vertexIndices , textureU , textureV );
+					uvMap.generate( sideMaterial , target.getVertexCoordinates() , vertexIndices , sideFlipTexture , textureU , textureV );
 				}
 				else
 				{
@@ -405,14 +405,7 @@ public final class ExtrudedObject2D
 					textureV = null;
 				}
 
-				if ( sideFlipUV )
-				{
-					target.addFace( vertexIndices , sideMaterial , textureV , textureU , 1.0f , false , hasBackfaceOverride );
-				}
-				else
-				{
-					target.addFace( vertexIndices , sideMaterial , textureU , textureV , 1.0f , false , hasBackfaceOverride );
-				}
+				target.addFace( vertexIndices , sideMaterial , textureU , textureV , 1.0f , false , hasBackfaceOverride );
 			}
 
 			pathIterator.next();
@@ -429,21 +422,21 @@ public final class ExtrudedObject2D
 			final Vector3D bottomNormal = Vector3D.INIT.set( 0.0 , 0.0 , flipExtrusion ?  1.0 : -1.0 );
 
 			triangulator.setNormal( bottomNormal );
-			generateCap( target , shape , transform                   , bottomMaterial , bottomFlipUV , uvMap , triangulator );
+			generateCap( target , shape , transform , bottomMaterial , bottomFlipTexture , uvMap , triangulator );
 			triangulator.setNormal( topNormal );
-			generateCap( target , shape , transform.plus( extrusion ) , topMaterial    , topFlipUV    , uvMap , triangulator );
+			generateCap( target , shape , transform.plus( extrusion ) , topMaterial , topFlipTexture , uvMap , triangulator );
 
 			if ( hasBackface && hasExtrusion )
 			{
 				triangulator.setNormal( topNormal );
-				generateCap( target , shape , transform                   , bottomMaterial , bottomFlipUV , uvMap , triangulator );
+				generateCap( target , shape , transform , bottomMaterial , bottomFlipTexture , uvMap , triangulator );
 				triangulator.setNormal( bottomNormal );
-				generateCap( target , shape , transform.plus( extrusion ) , topMaterial    , topFlipUV    , uvMap , triangulator );
+				generateCap( target , shape , transform.plus( extrusion ) , topMaterial , topFlipTexture , uvMap , triangulator );
 			}
 		}
 	}
 
-	private static void generateCap( final Object3D target , final Shape shape , final Matrix3D transform , final Material material , final boolean flipUV , final UVMap uvMap , final Triangulator triangulator )
+	private static void generateCap( final Object3D target , final Shape shape , final Matrix3D transform , final Material material , final boolean flipTexture , final UVMap uvMap , final Triangulator triangulator )
 	{
 		// @TODO Triangulation can be performed outside of this method for a performance gain, since the triangulation for top and bottom caps is essentially the same.
 		final Triangulation  triangulation = triangulator.triangulate( shape );
@@ -474,7 +467,7 @@ public final class ExtrudedObject2D
 			{
 				faceTextureU = new float[ face.length ];
 				faceTextureV = new float[ face.length ];
-				uvMap.generate( material , target.getVertexCoordinates() , faceVertices , flipUV ? faceTextureV : faceTextureU , flipUV ? faceTextureU : faceTextureV );
+				uvMap.generate( material , target.getVertexCoordinates() , faceVertices , flipTexture , faceTextureU , faceTextureV );
 			}
 
 			target.addFace( faceVertices , material , faceTextureU , faceTextureV , 1.0f , false , false );

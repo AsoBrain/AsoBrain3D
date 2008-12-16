@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -140,11 +140,11 @@ public class BoxUVMap
 		_transform = translated;
 	}
 
-	public void generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final float[] textureU , final float[] textureV )
+	public void generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final boolean flipTexture , final float[] textureU , final float[] textureV )
 	{
 		if ( vertexIndices.length < 3 )
 		{
-			_topMap.generate( material , vertexCoordinates , vertexIndices , textureU , textureV );
+			_topMap.generate( material , vertexCoordinates , vertexIndices , flipTexture , textureU , textureV );
 		}
 		else
 		{
@@ -173,27 +173,27 @@ public class BoxUVMap
 
 			if ( MathTools.greaterOrAlmostEqual( normal.x , threshold ) )
 			{
-				_rightMap.generate( material , vertexCoordinates , vertexIndices , textureU , textureV );
+				_rightMap.generate( material , vertexCoordinates , vertexIndices , flipTexture , textureU , textureV );
 			}
 			else if ( MathTools.lessOrAlmostEqual( normal.x , -threshold ) )
 			{
-				_leftMap.generate( material , vertexCoordinates , vertexIndices , textureU , textureV );
+				_leftMap.generate( material , vertexCoordinates , vertexIndices , flipTexture , textureU , textureV );
 			}
 			else if ( MathTools.greaterOrAlmostEqual( normal.y , threshold ) )
 			{
-				_backMap.generate( material , vertexCoordinates , vertexIndices , textureU , textureV );
+				_backMap.generate( material , vertexCoordinates , vertexIndices , flipTexture , textureU , textureV );
 			}
 			else if ( MathTools.lessOrAlmostEqual( normal.y , -threshold ) )
 			{
-				_frontMap.generate( material , vertexCoordinates , vertexIndices , textureU , textureV );
+				_frontMap.generate( material , vertexCoordinates , vertexIndices , flipTexture , textureU , textureV );
 			}
 			else if ( MathTools.greaterOrAlmostEqual( normal.z , threshold ) )
 			{
-				_topMap.generate( material , vertexCoordinates , vertexIndices , textureU , textureV );
+				_topMap.generate( material , vertexCoordinates , vertexIndices , flipTexture , textureU , textureV );
 			}
 			else
 			{
-				_bottomMap.generate( material , vertexCoordinates , vertexIndices , textureU , textureV );
+				_bottomMap.generate( material , vertexCoordinates , vertexIndices , flipTexture , textureU , textureV );
 			}
 		}
 	}

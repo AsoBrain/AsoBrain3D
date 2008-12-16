@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -38,8 +38,9 @@ public interface UVMap
 	 *                              index corresponds to three elements of
 	 *                              <code>vertexCoordinates</code>, representing
 	 *                              the x, y and z-coordinates of the vertex.
+	 * @param   flipTexture         Flip texture direction.
 	 * @param   textureU            Texture u-coordinates to be set.
 	 * @param   textureV            Texture v-coordinates to be set.
 	 */
-	void generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final float[] textureU , final float[] textureV );
+	void generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , boolean flipTexture , final float[] textureU , final float[] textureV );
 }
