@@ -452,7 +452,6 @@ public abstract class ViewModel
 	/**
 	 * Create a new view for this model.
 	 *
-	 * @param   id                      Application-assigned ID for the new view.
 	 * @param   renderingPolicy         Desired rendering policy for view.
 	 * @param   projectionPolicy        Desired projection policy for view.
 	 * @param   estimatedSceneBounds    Estimated bounding box of scene.
@@ -462,7 +461,7 @@ public abstract class ViewModel
 	 *
 	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public final ViewModelView createView( final Object id , final RenderingPolicy renderingPolicy , final ProjectionPolicy projectionPolicy , final Bounds3D estimatedSceneBounds , final Vector3D viewDirection )
+	public final ViewModelView createView( final RenderingPolicy renderingPolicy , final ProjectionPolicy projectionPolicy , final Bounds3D estimatedSceneBounds , final Vector3D viewDirection )
 	{
 		final ViewModelView view = createView();
 
