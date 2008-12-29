@@ -120,6 +120,16 @@ public final class Bounds3D
 	}
 
 	/**
+	 * Get volume contained within these bounds.
+	 *
+	 * @return  Volume contained within these bounds.
+	 */
+	public double volume()
+	{
+		return Math.abs( v2.x - v1.x ) * Math.abs( v2.y - v1.y ) * Math.abs( v2.z - v1.z );
+	}
+
+	/**
 	 * Test if this bounds contains the specified point.
 	 *
 	 * @param   point   Point to test.
