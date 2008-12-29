@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2008
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,8 +21,7 @@ package ab.j3d;
 
 /**
  * This class can be used to calculate a bounding box around a collection of
- * points. The initial bounds, which can only be expanded, can also be
- * specified.
+ * points.
  *
  * @see     Bounds3D
  *
@@ -32,118 +31,85 @@ package ab.j3d;
 public final class Bounds3DBuilder
 {
 	/**
-	 * Minimum X value sofar. If no initial bounds are specified, this is
-	 * intialized to {@link Double.POSITIVE_INFINITY}.
+	 * Number of points that were added.
+	 */
+	private int _count;
+
+	/**
+	 * Minimum X value sofar.
 	 */
 	private double _minX;
 
 	/**
-	 * Minimum Y value sofar. If no initial bounds are specified, this is
-	 * intialized to {@link Double.POSITIVE_INFINITY}.
+	 * Minimum Y value sofar.
 	 */
 	private double _minY;
 
 	/**
-	 * Minimum Z value sofar. If no initial bounds are specified, this is
-	 * intialized to {@link Double.POSITIVE_INFINITY}.
+	 * Minimum Z value sofar.
 	 */
 	private double _minZ;
 
 	/**
-	 * Maximum X value sofar. If no initial bounds are specified, this is
-	 * intialized to {@link Double.NEGATIVE_INFINITY}.
+	 * Maximum X value sofar.
 	 */
 	private double _maxX;
 
 	/**
-	 * Maximum Y value sofar. If no initial bounds are specified, this is
-	 * intialized to {@link Double.NEGATIVE_INFINITY}.
+	 * Maximum Y value sofar.
 	 */
 	private double _maxY;
 
 	/**
-	 * Maximum Z value sofar. If no initial bounds are specified, this is
-	 * intialized to {@link Double.NEGATIVE_INFINITY}.
+	 * Maximum Z value sofar.
 	 */
 	private double _maxZ;
 
 	/**
-	 * Temporary result value. This is set to the initial bounds by the
-	 * constructor if initial bounds were specified; otherwise, it will be
-	 * set to {@link Bounds3D#INIT} initially. After that, it will be set to
-	 * any non-<code>null</code> value returned by the {@link #getBounds()}
-	 * method.
+	 * Summarized X values.
 	 */
-	private Bounds3D _result;
+	private double _sumX;
 
 	/**
-	 * Construct new {@link Bounds3D} builder without initial bounds.
+	 * Summarized Y values.
+	 */
+	private double _sumY;
+
+	/**
+	 * Summarized Z values.
+	 */
+	private double _sumZ;
+
+	/**
+	 * Cached average point.
+	 */
+	private Vector3D _average;
+
+	/**
+	 * Cached bounds.
+	 */
+	private Bounds3D _bounds;
+
+	/**
+	 * Construct new {@link Bounds3D} builder.
 	 */
 	public Bounds3DBuilder()
 	{
-		this( null );
-	}
+		final double min = Double.POSITIVE_INFINITY;
+		final double max = Double.NEGATIVE_INFINITY;
 
-	/**
-	 * Construct new {@link Bounds3D} builder with the specified intial bounds.
-	 *
-	 * @param   initialBounds   Initial bounds to use (<code>null</code> => none).
-	 */
-	public Bounds3DBuilder( final Bounds3D initialBounds )
-	{
-		if ( initialBounds != null )
-		{
-			final Vector3D v1 = initialBounds.v1;
-			final Vector3D v2 = initialBounds.v2;
-
-			_minX   = Math.min( v1.x , v2.x );
-			_minY   = Math.min( v1.y , v2.y );
-			_minZ   = Math.min( v1.z , v2.z );
-			_maxX   = Math.max( v1.x , v2.x );
-			_maxY   = Math.max( v1.y , v2.y );
-			_maxZ   = Math.max( v1.z , v2.z );
-			_result = initialBounds;
-		}
-		else
-		{
-			final double min = Double.POSITIVE_INFINITY;
-			final double max = Double.NEGATIVE_INFINITY;
-
-			_minX   = min;
-			_minY   = min;
-			_minZ   = min;
-			_maxX   = max;
-			_maxY   = max;
-			_maxZ   = max;
-			_result = Bounds3D.INIT;
-		}
-	}
-
-	/**
-	 * Get resulting bounding box from this builder. If no initial bounds were
-	 * specified and no points were added to this builder, then this method
-	 * will return <code>null</code> to indicate that no bounding box could be
-	 * calculated.
-	 *
-	 * @return  Bounding box as {@link Bounds3D} instance;
-	 *          <code>null</code> if no bounding box could be determined.
-	 */
-	public Bounds3D getBounds()
-	{
-		Bounds3D result;
-
-		if ( ( _minX <= _maxX ) && ( _minY <= _maxY ) && ( _minZ <= _maxZ ) )
-		{
-			result = _result;
-			result = result.set( result.v1.set( _minX , _minY , _minZ ) , result.v2.set( _maxX , _maxY , _maxZ ) );
-			_result = result;
-		}
-		else
-		{
-			result = null;
-		}
-
-		return result;
+		_count   = 0;
+		_minX   = min;
+		_minY   = min;
+		_minZ   = min;
+		_maxX   = max;
+		_maxY   = max;
+		_maxZ   = max;
+		_sumX    = 0.0;
+		_sumY    = 0.0;
+		_sumZ    = 0.0;
+		_average = Vector3D.INIT;
+		_bounds  = Bounds3D.INIT;
 	}
 
 	/**
@@ -167,11 +133,67 @@ public final class Bounds3DBuilder
 	 */
 	public void addPoint( final double x , final double y , final double z )
 	{
+		_count++;
 		if ( x < _minX ) _minX = x;
 		if ( y < _minY ) _minY = y;
 		if ( z < _minZ ) _minZ = z;
 		if ( x > _maxX ) _maxX = x;
 		if ( y > _maxY ) _maxY = y;
 		if ( z > _maxZ ) _maxZ = z;
+		_sumX += x;
+		_sumY += y;
+		_sumZ += z;
+	}
+
+	/**
+	 * Get average point from this builder. If no points were added, this method
+	 * returns {@link Vector3D#INIT}.
+	 *
+	 * @return  Average point.
+	 */
+	public Vector3D getAveragePoint()
+	{
+		final Vector3D result;
+
+		if ( _count > 0 )
+		{
+			final double count = (double)_count;
+			result = _average.set( _sumX / count , _sumY / count, _sumZ / count );
+		}
+		else
+		{
+			result = Vector3D.INIT;
+		}
+
+		_average = result;
+
+		return result;
+	}
+
+	/**
+	 * Get resulting bounding box from this builder. If no initial bounds were
+	 * specified and no points were added to this builder, then this method
+	 * will return <code>null</code> to indicate that no bounding box could be
+	 * calculated.
+	 *
+	 * @return  Bounding box as {@link Bounds3D} instance;
+	 *          <code>null</code> if no bounding box could be determined.
+	 */
+	public Bounds3D getBounds()
+	{
+		Bounds3D result;
+
+		if ( _count > 0 )
+		{
+			result = _bounds;
+			result = result.set( result.v1.set( _minX , _minY , _minZ ) , result.v2.set( _maxX , _maxY , _maxZ ) );
+			_bounds = result;
+		}
+		else
+		{
+			result = null;
+		}
+
+		return result;
 	}
 }
