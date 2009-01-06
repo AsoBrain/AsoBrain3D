@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2008
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,7 @@ import java.awt.image.BufferedImage;
 import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.List;
 import java.util.Map;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLException;
@@ -43,7 +44,12 @@ import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.model.ExtrudedObject2D;
 import ab.j3d.model.Face3D;
+import ab.j3d.model.Light3D;
+import ab.j3d.model.Node3D;
+import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
+import ab.j3d.view.ViewModelNode;
+import ab.j3d.view.ViewModelView;
 
 import com.numdata.oss.MathTools;
 import com.numdata.oss.TextTools;
@@ -62,6 +68,12 @@ public class JOGLTools
 	 * mapping.
 	 */
 	private static final String NORMALIZATION_CUBE_MAP = "__normalizationCubeMap";
+
+	/**
+	 * Maximum number of lights possible. Standard value is 8 because all
+	 * OpenGL implementations have atleast this number of lights.
+	 */
+	private static final int MAX_LIGHTS = 8;
 
 	/**
 	 * Utility/Application class is not supposed to be instantiated.
@@ -1419,5 +1431,220 @@ public class JOGLTools
 		gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_R     , GL.GL_CLAMP_TO_EDGE );
 
 		return result;
+	}
+
+	/**
+	 * Render the whole scene on a GL context.
+	 *
+	 * @param   glWrapper           {@link GLWrapper} to use.
+	 * @param   nodes               List of {@link ViewModelNode}'s in the scene.
+	 * @param   textureCache        Map containing {@link Texture}s used in the scene.
+	 * @param   view                {@link ViewModelView} to render.
+	 * @param   backgroundColor     Backgroundcolor to use.
+	 */
+	public static void renderScene( final GLWrapper glWrapper , final List<ViewModelNode> nodes , final Map<String,SoftReference<Texture>> textureCache , final ViewModelView view , final Color backgroundColor )
+	{
+		renderScene( glWrapper , nodes , textureCache , backgroundColor , view.getRenderingPolicy() , view.isGridEnabled() , view.getGrid2wcs() , view.getGridBounds() , view.getGridCellSize() , view.isGridHighlightAxes() , view.getGridHighlightInterval() );
+	}
+
+	/**
+	 * Render the whole scene on a GL context.
+	 *
+	 * @param   glWrapper               {@link GLWrapper} to use.
+	 * @param   nodes                   List of {@link ViewModelNode}'s in the scene.
+	 * @param   textureCache            Map containing {@link Texture}s used in the scene.
+	 * @param   backgroundColor         Backgroundcolor to use.
+	 * @param   renderingPolicy         {@link ViewModelView.RenderingPolicy} to use.
+	 * @param   gridIsEnabled           <code>true</code> if the grid must be rendered,
+	 *                                  <code>false</code> otherwise.
+	 * @param   grid2wcs                Transforms grid to world coordinates.
+	 * @param   gridBounds              Bounds of grid.
+	 * @param   gridCellSize            Size of each cell.
+	 * @param   gridHighlightAxes       If set, hightlight X=0 and Y=0 axes.
+	 * @param   gridHighlightInterval   Interval to use for highlighting grid lines.
+	 */
+	public static void renderScene( final GLWrapper glWrapper , final List<ViewModelNode> nodes , final Map<String,SoftReference<Texture>> textureCache , final Color backgroundColor , final ViewModelView.RenderingPolicy renderingPolicy ,
+									final boolean gridIsEnabled , final Matrix3D grid2wcs , final Rectangle gridBounds , final int gridCellSize , final boolean gridHighlightAxes , final int gridHighlightInterval )
+	{
+		final GL gl = glWrapper.getGL();
+
+		/**
+		 * Clear first.
+		 */
+		glWrapper.glClearColor( backgroundColor );
+
+		gl.glClear( GL.GL_COLOR_BUFFER_BIT );
+		gl.glClear( GL.GL_DEPTH_BUFFER_BIT );
+
+		/*
+		 * Render the view model nodes.
+		 */
+//		final List<ViewModelNode> nodes = allNodes;
+
+		/* Initialize first light */
+		int lightNumber = GL.GL_LIGHT0;
+
+		/* Set Light Model to two sided lighting. */
+		gl.glLightModeli( GL.GL_LIGHT_MODEL_TWO_SIDE , GL.GL_TRUE );
+
+		/* Set local view point */
+		gl.glLightModeli( GL.GL_LIGHT_MODEL_LOCAL_VIEWER , GL.GL_TRUE );
+
+		for( int i = 0 ; i < MAX_LIGHTS; i++ )
+		{
+			glWrapper.glDisable( GL.GL_LIGHT0 + i );
+		}
+		gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
+
+		//draw lights
+		Vector3D dominantLightPosition  = null;
+		float    dominantLightIntensity = 0.0f;
+
+		for ( final ViewModelNode viewModelNode : nodes )
+		{
+			final Node3D node3D        = viewModelNode.getNode3D();
+			final Matrix3D nodeTransform = viewModelNode.getTransform();
+
+			/*
+			 * Render lights.
+			 */
+			final Node3DCollection<Light3D> lights = node3D.collectNodes( null , Light3D.class , nodeTransform , false );
+
+			if ( lights != null )
+			{
+				if ( lightNumber - GL.GL_LIGHT0 >= MAX_LIGHTS )
+					throw new IllegalStateException( "No more than " + MAX_LIGHTS + " lights supported." );
+
+				final Light3D light         = lights.getNode( 0 );
+				final float   viewIntensity = (float)light.getIntensity() / 255.0f;
+
+				if ( light.isAmbient() )
+				{
+					gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
+				}
+				else
+				{
+					gl.glLightfv( lightNumber , GL.GL_AMBIENT  , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
+					gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] { (float)nodeTransform.xo , (float)nodeTransform.yo , (float)nodeTransform.zo , 1.0f } , 0 );
+					gl.glLightfv( lightNumber , GL.GL_DIFFUSE  , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
+					gl.glLightfv( lightNumber , GL.GL_SPECULAR , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
+
+					final float fallOff = (float)light.getFallOff();
+					if ( fallOff > 0.0f )
+					{
+						/*
+						 * intensity = 1 / ( c + l * d + q * d^2 )
+						 * constant + quadratic * distance ^ 2 )
+						 */
+						gl.glLightfv( lightNumber , GL.GL_CONSTANT_ATTENUATION  , new float[] { 0.5f } , 0 );
+						gl.glLightfv( lightNumber , GL.GL_LINEAR_ATTENUATION    , new float[] { 0.0f } , 0 );
+						gl.glLightfv( lightNumber , GL.GL_QUADRATIC_ATTENUATION , new float[] { 0.5f / ( fallOff * fallOff ) } , 0 );
+					}
+					else
+					{
+						gl.glLightfv( lightNumber , GL.GL_CONSTANT_ATTENUATION  , new float[] { 1.0f } , 0 );
+						gl.glLightfv( lightNumber , GL.GL_LINEAR_ATTENUATION    , new float[] { 0.0f } , 0 );
+						gl.glLightfv( lightNumber , GL.GL_QUADRATIC_ATTENUATION , new float[] { 0.0f } , 0 );
+					}
+
+					glWrapper.glEnable( lightNumber );
+					lightNumber++;
+				}
+
+				if ( gl.isExtensionAvailable("GL_VERSION_1_2") )
+					gl.glLightModeli( GL.GL_LIGHT_MODEL_COLOR_CONTROL , GL.GL_SEPARATE_SPECULAR_COLOR );
+
+				/**
+				 * Determine dominant light position, used for bump mapping.
+				 * This method can be rather inaccurate, especially if the most
+				 * intense light is far away from a bump mapped object.
+				 */
+				if ( ( light.getFallOff() >= 0.0 ) &&
+				     ( ( dominantLightPosition == null ) || ( dominantLightIntensity < viewIntensity ) ) )
+				{
+					final Matrix3D lightTransform = lights.getMatrix( 0 );
+					dominantLightPosition  = Vector3D.INIT.set( lightTransform.xo , lightTransform.yo , lightTransform.zo );
+					dominantLightIntensity = viewIntensity;
+				}
+			}
+		}
+
+		final boolean bumpMappingSupported = gl.isExtensionAvailable( "GL_VERSION_1_3" );
+
+		//draw objects
+		for ( final ViewModelNode viewModelNode : nodes )
+		{
+			final Node3D   node3D        = viewModelNode.getNode3D();
+			final Matrix3D nodeTransform = viewModelNode.getTransform();
+
+			/*
+			 * Render objects.
+			 */
+			final Node3DCollection<Object3D> objects = node3D.collectNodes( null , Object3D.class , nodeTransform , false );
+			if ( objects != null )
+			{
+				switch ( renderingPolicy )
+				{
+					case SCHEMATIC:
+						glWrapper.glEnable( GL.GL_POLYGON_OFFSET_FILL );
+						glWrapper.glDisable( GL.GL_LIGHTING );
+						gl.glPolygonOffset( 1.0f , 1.0f );
+
+						for ( int i = 0 ; i < objects.size() ; i++ )
+						{
+							paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , false , viewModelNode.isAlternate() , false , textureCache , true , viewModelNode.getMaterialOverride() );
+						}
+
+						glWrapper.glDisable( GL.GL_POLYGON_OFFSET_FILL );
+						gl.glLineWidth( 1.0f );
+						for ( int i = 0 ; i < objects.size() ; i++ )
+						{
+							paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , false , viewModelNode.isAlternate() , false , textureCache , false , viewModelNode.getMaterialOverride() );
+						}
+						break;
+					case SKETCH:
+						glWrapper.glEnable( GL.GL_POLYGON_OFFSET_FILL );
+						gl.glPolygonOffset( 1.0f , 1.0f );
+						gl.glLineWidth( 2.0f );
+
+						for ( int i = 0 ; i < objects.size() ; i++ )
+						{
+							glWrapper.setLighting( true );
+							paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , false , viewModelNode.isAlternate() , true , textureCache , true  , viewModelNode.getMaterialOverride() );
+						}
+
+						glWrapper.glDisable( GL.GL_POLYGON_OFFSET_FILL );
+
+						for ( int i = 0 ; i < objects.size() ; i++ )
+						{
+							glWrapper.setLighting( false );
+							paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , false , viewModelNode.isAlternate() , false , textureCache , false , viewModelNode.getMaterialOverride() );
+						}
+
+						gl.glLineWidth( 1.0f );
+						break;
+					case SOLID:
+						for ( int i = 0 ; i < objects.size() ; i++ )
+						{
+							glWrapper.glEnable( GL.GL_LIGHTING );
+							final Matrix3D objectTransform = objects.getMatrix( i );
+							paintObject3D( glWrapper , objects.getNode( i ) , objectTransform , true , bumpMappingSupported , false , ( dominantLightPosition != null ) ? objectTransform.inverseMultiply( dominantLightPosition ) : null , textureCache , true , viewModelNode.getMaterialOverride() );
+						}
+						break;
+					case WIREFRAME:
+						for ( int i = 0 ; i < objects.size() ; i++ )
+						{
+							glWrapper.glDisable( GL.GL_LIGHTING );
+							paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , false , viewModelNode.isAlternate() , false , textureCache ,false , viewModelNode.getMaterialOverride() );
+						}
+						break;
+				}
+			}
+		}
+
+		if ( gridIsEnabled )
+		{
+			drawGrid( glWrapper , grid2wcs , gridBounds , gridCellSize , gridHighlightAxes , gridHighlightInterval );
+		}
 	}
 }
