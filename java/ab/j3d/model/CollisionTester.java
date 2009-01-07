@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2007-2008 Peter S. Heijnen
+ * Copyright (C) 2007-2009 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,13 +20,10 @@
  */
 package ab.j3d.model;
 
-import java.util.List;
-
-import com.photoneffect.coldet.JCollisionModel3D;
-
 import ab.j3d.Bounds3D;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
+import ab.j3d.coldet.CollisionObject;
 
 /**
  * This class performs collision tests on behalf of a {@link Object3D}.
@@ -58,22 +55,24 @@ public class CollisionTester
 	private Vector3D _centerPoint;
 
 	/**
-	 * Collision model.
+	 * Collision object.
 	 *
-	 * @see     #getCollisionModel()
+	 * @see     #getCollisionObject()
 	 */
-	private JCollisionModel3D _collisionModel;
+	private CollisionObject _collisionObject;
 
 	/**
 	 * Construct collision tester for the specified object.
+	 *
+	 * @param   owner   Object to create collision tester for.
 	 */
 	CollisionTester( final Object3D owner )
 	{
 		_owner = owner;
 
 		_boundingSphereRadius = Double.NaN;
-		_centerPoint          = null;
-		_collisionModel       = null;
+		_centerPoint = null;
+		_collisionObject = null;
 	}
 
 	/**
@@ -82,8 +81,8 @@ public class CollisionTester
 	void invalidate()
 	{
 		_boundingSphereRadius = Double.NaN;
-		_centerPoint          = null;
-		_collisionModel       = null;
+		_centerPoint = null;
+		_collisionObject = null;
 	}
 
 	/**
@@ -91,7 +90,7 @@ public class CollisionTester
 	 * collide with itself.
 	 *
 	 * @param   subTree1    First scene (sub)graph to test.
-	 * @param   subTree1    Second scene (sub)graph to test.
+	 * @param   subTree2    Second scene (sub)graph to test.
 	 *
 	 * @return  <code>true</code> if the two graphs collide;
 	 *          <code>false</code> otherwise.
@@ -188,6 +187,8 @@ public class CollisionTester
 	/**
 	 * Get center point of object. Currently, this is the center of the
 	 * bounding box of the object.
+	 *
+	 * @return  Center point of object.
 	 */
 	public final Vector3D getCenterPoint()
 	{
@@ -204,61 +205,19 @@ public class CollisionTester
 	}
 
 	/**
-	 * This method returns a collision model for this object that can be used
-	 * for exact collision tests. This is a heavy model and has a considerable
-	 * cost, so it should only be used as narrow phase test.
+	 * This method returns a collision object for this object that can be used
+	 * for exact collision tests. This is a heavy object and has a considerable
+	 * cost, so it should only be used for narrow phase tests.
 	 *
-	 * @return  Collision model.
+	 * @return  Collision object.
 	 */
-	private JCollisionModel3D getCollisionModel()
+	private CollisionObject getCollisionObject()
 	{
-		JCollisionModel3D result = _collisionModel;
+		CollisionObject result = _collisionObject;
 		if ( result == null )
 		{
-			final double[]     vertexCoordinates = _owner._vertexCoordinates;
-			final List<Face3D> faces             = _owner._faces;
-
-			int nrTriangles = 0;
-
-			for ( final Face3D face : faces )
-			{
-				final int[] triangles = face.triangulate();
-				if ( triangles != null )
-					nrTriangles += triangles.length / 3;
-			}
-
-			result = new JCollisionModel3D( nrTriangles );
-
-			for ( final Face3D face : faces )
-			{
-				final int[] triangles = face.triangulate();
-				if ( triangles != null )
-				{
-					final int[] vertexIndices = face.getVertexIndices();
-
-					for ( int triangleIndex = 0 ; triangleIndex < triangles.length ; triangleIndex += 3 )
-					{
-						final int vi1 = vertexIndices[ triangles[ triangleIndex     ] ] * 3;
-						final int vi2 = vertexIndices[ triangles[ triangleIndex + 1 ] ] * 3;
-						final int vi3 = vertexIndices[ triangles[ triangleIndex + 2 ] ] * 3;
-
-						result.addTriangle(
-							(float)vertexCoordinates[ vi1     ] ,
-							(float)vertexCoordinates[ vi1 + 1 ] ,
-							(float)vertexCoordinates[ vi1 + 2 ] ,
-							(float)vertexCoordinates[ vi2     ] ,
-							(float)vertexCoordinates[ vi2 + 1 ] ,
-							(float)vertexCoordinates[ vi2 + 2 ] ,
-							(float)vertexCoordinates[ vi3     ] ,
-							(float)vertexCoordinates[ vi3 + 1 ] ,
-							(float)vertexCoordinates[ vi3 + 2 ] );
-					}
-				}
-			}
-
-			result.initEnd();
-
-			_collisionModel = result;
+			result = new CollisionObject( _owner );
+			_collisionObject = result;
 		}
 
 		return result;
@@ -310,7 +269,7 @@ public class CollisionTester
 	 * @return  <code>true</code> if the objects intersect;
 	 *          <code>false</code> otherwise.
 	 */
-	private boolean testOrientedBoundingBox( final Matrix3D fromOtherToThis , final CollisionTester other )
+	public boolean testOrientedBoundingBox( final Matrix3D fromOtherToThis , final CollisionTester other )
 	{
 		return testOrientedBoundingBox( _owner.getOrientedBoundingBox() , fromOtherToThis , other._owner.getOrientedBoundingBox() );
 	}
@@ -328,7 +287,7 @@ public class CollisionTester
 	 * @return  <code>true</code> if the bounding boxes intersect;
 	 *          <code>false</code> otherwise.
 	 */
-	static boolean testOrientedBoundingBox( final Bounds3D box1 , final Matrix3D from2to1 , final Bounds3D box2 )
+	public static boolean testOrientedBoundingBox( final Bounds3D box1 , final Matrix3D from2to1 , final Bounds3D box2 )
 	{
 		final double absXX = Math.abs( from2to1.xx );
 		final double absXY = Math.abs( from2to1.xy );
@@ -377,10 +336,10 @@ public class CollisionTester
 
 	/**
 	 * Perform precise collision detection using the
-	 * <A href='http://coldet.sourceforge.net/'>ColDet</A> library.
+	 * {@link CollisionObject} class.
 	 *
-	 * <p>FIXME: ColDet doesn't consider containment a collision.
-	 * It can't, because it operates on polygon soups, not solids.
+	 * <p>FIXME: {@link CollisionObject} doesn't consider containment a
+	 * collision. It can't, because it operates on triangle intersections.
 	 *
 	 * @param   fromOtherToThis     Transformation from other object to this.
 	 * @param   other               Object to test collision with.
@@ -390,32 +349,7 @@ public class CollisionTester
 	 */
 	private boolean testColdet( final Matrix3D fromOtherToThis , final CollisionTester other )
 	{
-		return testColdet( getCollisionModel() , fromOtherToThis , other.getCollisionModel() );
-	}
-
-	/**
-	 * Perform precise collision detection using the
-	 * <A href='http://coldet.sourceforge.net/'>ColDet</A> library.
-	 *
-	 * @param   model1      Collision model #1.
-	 * @param   from2to1    Transformation from model #2 to model #1.
-	 * @param   model2      Collision model #2.
-	 *
-	 * @return  <code>true</code> if the models intersect;
-	 *          <code>false</code> otherwise.
-	 */
-	private static boolean testColdet( final JCollisionModel3D model1 , final Matrix3D from2to1 , final JCollisionModel3D model2 )
-	{
-		model1.setTransform(
-			1.0f , 0.0f , 0.0f , 0.0f ,
-			0.0f , 1.0f , 0.0f , 0.0f ,
-			0.0f , 0.0f , 1.0f , 0.0f );
-
-		model2.setTransform(
-			(float)from2to1.xx , (float)from2to1.xy , (float)from2to1.xz , (float)from2to1.xo ,
-			(float)from2to1.yx , (float)from2to1.yy , (float)from2to1.yz , (float)from2to1.yo ,
-			(float)from2to1.zx , (float)from2to1.zy , (float)from2to1.zz , (float)from2to1.zo );
-
-		return model1.collidesWith( model2 );
+		final CollisionObject collisionObject = getCollisionObject();
+		return collisionObject.collidesWith( other.getCollisionObject() , fromOtherToThis );
 	}
 }
