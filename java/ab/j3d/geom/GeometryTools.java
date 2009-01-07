@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2008
+ * (C) Copyright Numdata BV 2006-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,11 @@
  */
 package ab.j3d.geom;
 
+import java.awt.geom.Point2D;
+
 import ab.j3d.Vector3D;
+
+import com.numdata.oss.MathTools;
 
 /**
  * This class contains utility methods to solve common geometric problems.
@@ -34,6 +38,187 @@ public class GeometryTools
 	 */
 	private GeometryTools()
 	{
+	}
+
+	/**
+	 * Get intersection of two line segments.
+	 *
+	 * @param   p1      Start point of line segment 1.
+	 * @param   p2      End point of line segment 1
+	 * @param   p3      Start point of line segment 2.
+	 * @param   p4      End point of line segment 2
+	 *
+	 * @return  Points describing the intersection (1 or 2 points);
+	 *          <code>null</code> if no intersection was found.
+	 */
+	public static Point2D[] getIntersectionBetweenLineSegments( final Point2D p1 , final Point2D p2 , final Point2D p3 , final Point2D p4 )
+	{
+		return getIntersectionBetweenLineSegments( p1.getX() , p1.getY() , p2.getX() , p2.getY() , p3.getX() , p3.getY() , p4.getX() , p4.getY() );
+	}
+
+	/**
+	 * Get intersection of two line segments.
+	 *
+	 * This uses the following algorithm:
+	 *
+	 *    "Intersection point of two lines (2 dimension)"
+	 *    Author: Paul Bourke (april 1989)
+	 *    http://astronomy.swin.edu.au/pbourke/geometry/lineline2d/
+	 *
+	 * @param   x1      Start point of line segment 1.
+	 * @param   y1      Start point of line segment 1
+	 * @param   x2      End point of line segment 1
+	 * @param   y2      End point of line segment 1
+	 * @param   x3      Start point of line segment 2.
+	 * @param   y3      Start point of line segment 2
+	 * @param   x4      End point of line segment 2
+	 * @param   y4      End point of line segment 2
+	 *
+	 * @return  Points describing the intersection (1 or 2 points);
+	 *          <code>null</code> if no intersection was found.
+	 */
+	public static Point2D[] getIntersectionBetweenLineSegments( final double x1 , final double y1 , final double x2 , final double y2 , final double x3 , final double y3 , final double x4 , final double y4 )
+	{
+		Point2D[] result = null;
+
+		final double n1 = ( x4 - x3 ) * ( y1 - y3 ) - ( y4 - y3 ) * ( x1 - x3 );
+		final double d  = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 );
+
+		if ( MathTools.almostEqual( d , 0.0 , 0.00001 ) ) /* lines are parallel */
+		{
+			if ( MathTools.almostEqual( n1 , 0.0 , 0.00001 ) ) /* they are coincident */
+			{
+				double sx1;
+				double sx2;
+				boolean isPositive;
+
+				if ( x1 <= x2 ) { sx1 = x1; sx2 = x2; isPositive = true; }
+				           else { sx1 = x2; sx2 = x1; isPositive = false; }
+
+				if ( x3 <= x4 )
+				{
+					if ( x3 > sx1 ) sx1 = x3;
+					if ( x4 < sx2 ) sx2 = x4;
+				}
+				else
+				{
+					if ( x4 > sx1 ) sx1 = x4;
+					if ( x3 < sx2 ) sx2 = x3;
+				}
+
+				if ( sx1 <= sx2 )
+				{
+					double sy1;
+					double sy2;
+
+					if ( y1 <= y2 ) { sy1 = y1; sy2 = y2; }
+					           else { sy1 = y2; sy2 = y1; isPositive = !isPositive; }
+
+					if ( y3 <= y4 )
+					{
+						if ( y3 > sy1 ) sy1 = y3;
+						if ( y4 < sy2 ) sy2 = y4;
+					}
+					else
+					{
+						if ( y4 > sy1 ) sy1 = y4;
+						if ( y3 < sy2 ) sy2 = y3;
+					}
+
+					if ( sy1 <= sy2 )
+					{
+						/*
+						 * Return the intersection.
+						 */
+						if ( MathTools.almostEqual( sx1 , sx2 , 0.00001 ) && MathTools.almostEqual( sy1 , sy2 , 0.00001 ) )
+						{
+							result = new Point2D[] { new Point2D.Double( sx1 , sy1 ) };
+						}
+						else if ( isPositive )
+						{
+							result = new Point2D[] { new Point2D.Double( sx1 , sy1 ) , new Point2D.Double( sx2 , sy2 ) };
+						}
+						else
+						{
+							result = new Point2D[] { new Point2D.Double( sx1 , sy2 ) , new Point2D.Double( sx2 , sy1 ) };
+						}
+					}
+				}
+			}
+		}
+		else /* lines intersect at some point */
+		{
+			/*
+			 * Test if intersection point is within both line segments
+			 */
+			final double ua = n1 / d;
+			if ( ( ua >= -0.00001 ) && ( ua <= 1.00001 ) ) // float round error fix
+			{
+
+				final double n2 = ( x2 - x1 ) * ( y1 - y3 ) - ( y2 - y1 ) * ( x1 - x3 );
+				final double ub = n2 / d;
+
+				if ( ( ub >= -0.00001 ) && ( ub <= 1.00001 ) ) // float round error fix
+				{
+					final double x = x1 + ua * ( x2 - x1 );
+					final double y = y1 + ua * ( y2 - y1 );
+
+					result = new Point2D[] { new Point2D.Double( x , y ) };
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Get intersection of two lines.
+	 *
+	 * @param   p1      First point on line 1.
+	 * @param   p2      Second point on line 1
+	 * @param   p3      First point on line 2.
+	 * @param   p4      Second point on line 2
+	 *
+	 * @return  Point of intersection;
+	 *          <code>null</code> if no intersection exists (parallel lines).
+	 */
+	public static Point2D getIntersectionBetweenLines( final Point2D p1 , final Point2D p2 , final Point2D p3 , final Point2D p4 )
+	{
+		return getIntersectionBetweenLines( p1.getX() , p1.getY() , p2.getX() , p2.getY() , p3.getX() , p3.getY() , p4.getX() , p4.getY() );
+	}
+
+	/**
+	 * Get intersection of two lines.
+	 *
+	 * @param   x1      First point on line 1.
+	 * @param   y1      First point on line 1
+	 * @param   x2      Second point on line 1
+	 * @param   y2      Second point on line 1
+	 * @param   x3      First point on line 2.
+	 * @param   y3      First point on line 2
+	 * @param   x4      Second point on line 2
+	 * @param   y4      Second point on line 2
+	 *
+	 * @return  Point of intersection;
+	 *          <code>null</code> if no intersection exists (parallel lines).
+	 */
+	public static Point2D getIntersectionBetweenLines( final double x1 , final double y1 , final double x2 , final double y2 , final double x3 , final double y3 , final double x4 , final double y4 )
+	{
+		Point2D result = null;
+
+		final double d = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 );
+		if ( !MathTools.almostEqual( d , 0.0 , 0.00001 ) ) /* are not parallel, so they intersect at some point */
+		{
+			final double n1 = ( x4 - x3 ) * ( y1 - y3 ) - ( y4 - y3 ) * ( x1 - x3 );
+			final double ua = n1 / d;
+
+			final double x = x1 + ua * ( x2 - x1 );
+			final double y = y1 + ua * ( y2 - y1 );
+
+			result = new Point2D.Double( x , y );
+		}
+
+		return result;
 	}
 
 	/**
@@ -122,6 +307,7 @@ public class GeometryTools
 	 * @param   twoSidedPlane   Consider both sides of plane in intersection test.
 	 * @param   rayOrigin       Origin of ray.
 	 * @param   rayDirection    Direction of ray.
+	 * @param   halfRay         Wether the ray is infinite or not.
 	 *
 	 * @return  Intersection-point between ray and plane;
 	 *          <code>null</code> if no intersection exists (ray parallel to
@@ -289,5 +475,51 @@ public class GeometryTools
 		}
 
 		return result;
+	}
+
+	/**
+	 * Get closest point on a line to another point.
+	 *
+	 * This uses the following algorithm:
+	 * <pre>
+	 *   "Minimum Distance between a Point and a Line"
+	 *   Author: Paul Bourke (october 1988)
+	 *   http://local.wasp.uwa.edu.au/~pbourke/geometry/pointline/
+	 * </pre>
+	 * The equation of a line defined through two points P1 (x1,y1) and
+	 * P2 (x2,y2) is: P = P1 + u (P2 - P1).
+	 * <p>
+	 * The point P3 (x3,y3) is closest to the line at the tangent to the line
+	 * which passes through P3, that is, the dot product of the tangent and
+	 * line is 0, thus (P3 - P) dot (P2 - P1) = 0
+	 * <p>
+	 * Substituting the equation of the line gives
+	 * <pre>
+	 *   [ P3 - P1 - u(P2 - P1) ] dot ( P2 - P1 ) = 0
+	 * </pre>
+	 * Solving this gives the value of u
+	 * <pre>
+	 *       ( x3 - x1 ) ( x2 - x1 ) + ( y3 - y1 ) ( y2 - y1 )
+	 *   u = -------------------------------------------------
+	 *                        || P2 - P1 || ^ 2
+	 * </pre>
+	 *
+	 * @param   p               Point to find closest point to.
+	 * @param   p1              First point of line to find point on.
+	 * @param   p2              Second point of line to find point on.
+	 * @param   segmentOnly     If set, only return result if the point is on
+	 *                          the line segment.
+	 *
+	 * @return  Point on line closest to the given point;
+	 *          <code>null</code> if point lies outside the line segment.
+	 */
+	public static Vector3D getClosestPointOnLine( final Vector3D p , final Vector3D p1 , final Vector3D p2 , final boolean segmentOnly )
+	{
+		final double dx = p2.x - p1.x;
+		final double dy = p2.y - p1.y;
+		final double dz = p2.z - p1.z;
+		final double u  = ( ( p.x - p1.x ) * dx + ( p.y - p1.y ) * dy + ( p.z - p1.z ) * dz ) / ( dx * dx + dy * dy + dz * dz );
+
+		return ( !segmentOnly || ( ( u >= 0.00001 ) && u <= 1.00001 ) ) ? p1.plus( u * dx, u * dy , p.z ) : null;
 	}
 }
