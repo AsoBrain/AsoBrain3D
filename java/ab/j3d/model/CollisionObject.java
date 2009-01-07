@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.coldet;
+package ab.j3d.model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +26,7 @@ import ab.j3d.Bounds3D;
 import ab.j3d.Bounds3DBuilder;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
-import ab.j3d.model.CollisionTester;
-import ab.j3d.model.Face3D;
-import ab.j3d.model.Object3D;
+import ab.j3d.geom.TriTriMoeler;
 
 /**
  * This object can be used to test for collisions between polygon soups.

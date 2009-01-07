@@ -2,7 +2,7 @@
  *   Copyright (C) 2000 Amir Geva
  *
  *   ColDet - 3D Collision Detection Library for Java
- *   Copyright (C) 2008 Numdata BV
+ *   Copyright (C) 2008-2009 Numdata BV
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -19,7 +19,7 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA  02111-1307, USA.
  */
-package ab.j3d.coldet;
+package ab.j3d.geom;
 
 import ab.j3d.Vector3D;
 
@@ -44,7 +44,7 @@ public class TriTriMoeler
 	 * result    : returns 1 if the triangles intersect, otherwise 0
 	 *
 	 */
-	static boolean testTriangleTriangle( final Vector3D v0 , final Vector3D v1 , final Vector3D v2 , final Vector3D u0 , final Vector3D u1 , final Vector3D u2 )
+	public static boolean testTriangleTriangle( final Vector3D v0 , final Vector3D v1 , final Vector3D v2 , final Vector3D u0 , final Vector3D u1 , final Vector3D u2 )
 	{
 		/* compute plane equation of triangle(V0,V1,V2) */
 		Vector3D e1 = v1.minus( v0 );
@@ -154,7 +154,7 @@ public class TriTriMoeler
 		       ( Math.max( isect2[ 0 ], isect2[ 1 ] ) >= Math.min( isect1[ 0 ], isect1[ 1 ] ) );
 	}
 
-	static double[] computeIntervals( final double vv0, final double vv1, final double vv2, final double d0, final double d1, final double d2, final double d0d1, final double d0d2 )
+	private static double[] computeIntervals( final double vv0, final double vv1, final double vv2, final double d0, final double d1, final double d2, final double d0d1, final double d0d2 )
 	{
 		final double[] result;
 
@@ -195,7 +195,7 @@ public class TriTriMoeler
 		return result;
 	}
 
-	static boolean testCoplanarTriangleTriangle( final Vector3D n, final Vector3D v0, final Vector3D v1, final Vector3D v2, final Vector3D u0, final Vector3D u1, final Vector3D u2 )
+	private static boolean testCoplanarTriangleTriangle( final Vector3D n, final Vector3D v0, final Vector3D v1, final Vector3D v2, final Vector3D u0, final Vector3D u1, final Vector3D u2 )
 	{
 		final int i0;
 		final int i1;
@@ -229,8 +229,7 @@ public class TriTriMoeler
 		       testTrianglePoint( u0, v0, v1, v2, i0, i1 );
 	}
 
-
-	static boolean testTriangleEdge( final Vector3D v0, final Vector3D v1, final Vector3D u0, final Vector3D u1, final Vector3D u2, final int i0, final int i1 )
+	private static boolean testTriangleEdge( final Vector3D v0, final Vector3D v1, final Vector3D u0, final Vector3D u1, final Vector3D u2, final int i0, final int i1 )
 	{
 		final double ax = get( v1, i0 ) - get( v0, i0 );
 		final double ay = get( v1, i1 ) - get( v0, i1 );
@@ -243,7 +242,7 @@ public class TriTriMoeler
 	/* this edge to edge test is based on Franlin Antonio's gem:
 	   "Faster Line Segment Intersection", in Graphics Gems III,
 	   pp. 199-202 */
-	static boolean testEdgeEdge( final Vector3D v0, final Vector3D u0, final Vector3D u1, final double ax, final double ay, final int i0, final int i1 )
+	private static boolean testEdgeEdge( final Vector3D v0, final Vector3D u0, final Vector3D u1, final double ax, final double ay, final int i0, final int i1 )
 	{
 		final double bx = get( u0, i0 ) - get( u1, i0 );
 		final double by = get( u0, i1 ) - get( u1, i1 );
@@ -272,7 +271,7 @@ public class TriTriMoeler
 		return result;
 	}
 
-	static boolean testTrianglePoint( final Vector3D v0, final Vector3D u0, final Vector3D u1, final Vector3D u2, final int i0, final int i1 )
+	private static boolean testTrianglePoint( final Vector3D v0, final Vector3D u0, final Vector3D u1, final Vector3D u2, final int i0, final int i1 )
 	{
 		/* is T1 completly inside T2? */
 		/* check if V0 is inside tri(U0,U1,U2) */
@@ -294,7 +293,7 @@ public class TriTriMoeler
 		return ( ( d0 * d1 > 0.0 ) && ( d0 * d2 > 0.0 ) );
 	}
 
-	static double get( final Vector3D vector , final int i )
+	private static double get( final Vector3D vector , final int i )
 	{
 		switch ( i )
 		{

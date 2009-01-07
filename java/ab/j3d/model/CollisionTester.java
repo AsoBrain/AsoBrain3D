@@ -23,7 +23,6 @@ package ab.j3d.model;
 import ab.j3d.Bounds3D;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
-import ab.j3d.coldet.CollisionObject;
 
 /**
  * This class performs collision tests on behalf of a {@link Object3D}.
