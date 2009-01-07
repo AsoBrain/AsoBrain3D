@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2001-2008
+ * (C) Copyright Numdata BV 2001-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,8 +21,11 @@ package ab.j3d;
 
 import java.awt.Shape;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
+
+import ab.j3d.geom.GeometryTools;
 
 /**
  * This class describes a polyline in 2D.
@@ -1098,7 +1101,7 @@ public final class Polyline2D
 
 					//System.out.println( "Shape 2 : " + other1 + " , " + other2 );
 
-					is = getIntersectionLine_Line( this1.x , this1.y , this2.x , this2.y , other1.x , other1.y , other2.x , other2.y , is );
+					is = getIntersectionLine_Line( this1 , this2 , other1 , other2 , is );
 
 					if ( is != null ) // found an intersection
 					{
@@ -1472,7 +1475,7 @@ public final class Polyline2D
 		{
 			p4 = convex.getPoint( --i );
 
-			sect = getIntersectionLine_Line( p1.x , p1.y , p2.x , p2.y , p3.x , p3.y , p4.x , p4.y , sect );
+			sect = getIntersectionLine_Line( p1 , p2 , p3 , p4 , sect );
 			if ( sect != null )
 			{
 				if ( sect[0] != null )
@@ -1667,7 +1670,7 @@ public final class Polyline2D
 			while( --j >= 0 )
 			{
 				c2 = convex.getPoint( j );
-				is = getIntersectionLine_Line( l1.x , l1.y , c1.x , c1.y , l2.x , l2.y , c2.x , c2.y , is );
+				is = getIntersectionLine_Line( l1 , c1 , l2 , c2 , is );
 
 				/*
 				 * If this is the first intersection found,
@@ -1803,18 +1806,16 @@ public final class Polyline2D
 	{
 		final Polyline2D result;
 
-		final PolyPoint2D[] sect  = getIntersectionLine_Line( p1.x , p1.y , p2.x , p2.y , p3.x , p3.y , p4.x , p4.y , null );
-		final PolyPoint2D   start = sect[ 0 ];
-
-		if ( ( sect != null ) && ( start != null ) )
+		final Point2D[] intersection = GeometryTools.getIntersectionBetweenLineSegments( p1 , p2 , p3 , p4 );
+		if ( intersection != null )
 		{
-			result = new Polyline2D();
+			result = new Polyline2D( intersection.length );
+			result.addStartPoint( intersection[ 0 ].getX() , intersection[ 0 ].getY() );
 
-			result.addImpl( start.x , start.y , 0.0 ); // intersection point
-
-			final PolyPoint2D end = sect[ 1 ];
-			if ( end != null )
-				result.addImpl( end.x , end.y , 0.0 ); // intersecting line
+			if ( intersection.length > 1 ) /* intersecting line */
+			{
+				result.addLineSegment( intersection[ 1 ].getX() , intersection[ 1 ].getY() );
+			}
 		}
 		else
 		{
@@ -1827,127 +1828,32 @@ public final class Polyline2D
 	/**
 	 * Get intersection of two line segments.
 	 *
-	 * This uses the following algorithm:
-	 *
-	 *    "Intersection point of two lines (2 dimension)"
-	 *    Author: Paul Bourke (april 1989)
-	 *    http://astronomy.swin.edu.au/pbourke/geometry/lineline2d/
-	 *
-	 * @param   x1      Start point of line 1.
-	 * @param   y1      Start point of line 1
-	 * @param   x2      End point of line 1
-	 * @param   y2      End point of line 1
-	 * @param   x3      Start point of line 2.
-	 * @param   y3      Start point of line 2
-	 * @param   x4      End point of line 2
-	 * @param   y4      End point of line 2
+	 * @param   p1      First point of line 1
+	 * @param   p2      Second point of line 1
+	 * @param   p3      First point of line 2
+	 * @param   p4      Second point of line 2
 	 * @param   cache   Cached array of polyline so we don't have to create one.
 	 *
 	 * @return  Array of points describing the intersection between the two
 	 *          (can be 0..2 points).
 	 */
-	private static PolyPoint2D[] getIntersectionLine_Line( final double x1 , final double y1 , final double x2 , final double y2 , final double x3 , final double y3 , final double x4 , final double y4 , PolyPoint2D[] cache )
+	public static PolyPoint2D[] getIntersectionLine_Line( final PolyPoint2D p1 , final PolyPoint2D p2 , final PolyPoint2D p3 , final PolyPoint2D p4 , PolyPoint2D[] cache )
 	{
-		if ( cache == null || cache.length < 2 )
-			cache = new PolyPoint2D[2];
+		final PolyPoint2D[] result;
 
-		final double n1 = ( x4 - x3 ) * ( y1 - y3 ) - ( y4 - y3 ) * ( x1 - x3 );
-		final double d  = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 );
-
-		if ( d == 0 ) /* lines are parallel */
+		final Point2D[] intersection = GeometryTools.getIntersectionBetweenLineSegments( p1 , p2 , p3 , p4 );
+		if ( intersection != null )
 		{
-			if ( n1 == 0 ) /* they are coincident */
-			{
-				double sx1;
-				double sx2;
-				boolean isPositive;
-
-				if ( x1 <= x2 ) { sx1 = x1; sx2 = x2; isPositive = true; }
-				           else { sx1 = x2; sx2 = x1; isPositive = false; }
-
-				if ( x3 <= x4 )
-				{
-					if ( x3 > sx1 ) sx1 = x3;
-					if ( x4 < sx2 ) sx2 = x4;
-				}
-				else
-				{
-					if ( x4 > sx1 ) sx1 = x4;
-					if ( x3 < sx2 ) sx2 = x3;
-				}
-
-				if ( sx1 > sx2 )
-					return null;
-
-				double sy1;
-				double sy2;
-
-				if ( y1 <= y2 ) { sy1 = y1; sy2 = y2; }
-				           else { sy1 = y2; sy2 = y1; isPositive = !isPositive;	 }
-
-				if ( y3 <= y4 )
-				{
-					if ( y3 > sy1 ) sy1 = y3;
-					if ( y4 < sy2 ) sy2 = y4;
-				}
-				else
-				{
-					if ( y4 > sy1 ) sy1 = y4;
-					if ( y3 < sy2 ) sy2 = y3;
-				}
-
-				if ( sy1 > sy2 )
-					return null;
-
-				/*
-				 * Return the intersection.
-				 */
-				if ( sx1 == sx2 && sy1 == sy2 )
-				{
-					cache[0] = new PolyPoint2D( sx1 , sy1 , 0.0 );
-					cache[1] = null;
-				}
-				else if ( isPositive )
-				{
-					cache[0] = new PolyPoint2D( sx1 , sy1 , 0.0 );
-					cache[1] = new PolyPoint2D( sx2 , sy2 , 0.0 );
-				}
-				else
-				{
-					cache[0] = new PolyPoint2D( sx1 , sy2 , 0.0 );
-					cache[1] = new PolyPoint2D( sx2 , sy1 , 0.0 );
-				}
-
-				return cache;
-			}
-			else /* they are non-coincident */
-			{
-				return null;
-			}
+			result = ( ( cache != null ) && ( cache.length == 2 ) ) ? cache : new PolyPoint2D[ 2 ];
+			result[ 0 ] = new PolyPoint2D( intersection[ 0 ].getX() , intersection[ 0 ].getY() , 0.0 );
+			result[ 1 ] = ( intersection.length > 1 ) ? new PolyPoint2D( intersection[ 1 ].getX() , intersection[ 1 ].getY() , 0.0 ) : null;
 		}
-		else /* lines intersect at some point */
+		else
 		{
-			/*
-			 * Test if intersection point is within both line segments
-			 */
-			final double ua = n1 / d;
-			if ( ua < -0.00001 || ua > 1.00001 ) return null; // float round error fix
-
-			final double n2 = ( x2 - x1 ) * ( y1 - y3 ) - ( y2 - y1 ) * ( x1 - x3 );
-			final double ub = n2 / d;
-			if ( ub < -0.00001 || ub > 1.00001 ) return null;
-
-			final double x = x1 + ua * (x2-x1);
-			final double y = y1 + ua * (y2-y1);
-
-			cache[0] = new PolyPoint2D( x , y , 0.0 );
-			cache[1] = null;
-			/*
-			 * We have an intersection point!
-			 */
-			return cache;
+			result = null;
 		}
 
+		return result;
 	}
 
 	/**
@@ -2515,108 +2421,23 @@ public final class Polyline2D
 	 */
 	private static boolean isIntersectingLine_Line( final Polyline2D line1 , final Polyline2D line2 )
 	{
-		final PolyPoint2D p1 = line1.getPoint( 0 );
-		final PolyPoint2D p2 = line1.getPoint( 1 );
-		final PolyPoint2D p3 = line2.getPoint( 0 );
-		final PolyPoint2D p4 = line2.getPoint( 1 );
-
-		return isIntersectingLine_Line( p1.x , p1.y , p2.x , p2.y , p3.x , p3.y , p4.x , p4.y );
+		return isIntersectingLine_Line( line1.getPoint( 0 ) , line1.getPoint( 1 ) , line2.getPoint( 0 ) , line2.getPoint( 1 ) );
 	}
 
 	/**
 	 * Test intersection between two line segments.
 	 *
-	 * This uses the following algorithm:
+	 * @param   p1      Start point of line segment 1.
+	 * @param   p2      End point of line segment 1
+	 * @param   p3      Start point of line segment 2.
+	 * @param   p4      End point of line segment 2
 	 *
-	 *    "Intersection point of two lines (2 dimension)"
-	 *    Author: Paul Bourke (april 1989)
-	 *    http://astronomy.swin.edu.au/pbourke/geometry/lineline2d/
-	 *
-	 * @param   x1      Start point of line 1.
-	 * @param   y1      Start point of line 1.
-	 * @param   x2      End point of line 1.
-	 * @param   y2      End point of line 1.
-	 * @param   x3      Start point of line 2.
-	 * @param   y3      Start point of line 2.
-	 * @param   x4      End point of line 2.
-	 * @param   y4      End point of line 2.
-	 *
-	 * @return  true if shapes are intersecting, otherwise false.
+	 * @return  <code>true</code> if lines intersect;
+	 *          <code>false</code> otherwise.
 	 */
-	private static boolean isIntersectingLine_Line( final double x1 , final double y1 , final double x2 , final double y2 , final double x3 , final double y3 , final double x4 , final double y4 )
+	private static boolean isIntersectingLine_Line( final Point2D p1 , final Point2D p2 , final Point2D p3 , final Point2D p4 )
 	{
-		final double n1 = ( x4 - x3 ) * ( y1 - y3 ) - ( y4 - y3 ) * ( x1 - x3 );
-		final double d  = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 );
-
-		if ( d == 0 ) /* lines are parallel */
-		{
-			if ( n1 == 0 ) /* they are coincident */
-			{
-				double sx1;
-				double sx2;
-
-				if ( x1 <= x2 ) { sx1 = x1; sx2 = x2; }
-				           else { sx1 = x2; sx2 = x1; }
-
-				if ( x3 <= x4 )
-				{
-					if ( x3 > sx1 ) sx1 = x3;
-					if ( x4 < sx2 ) sx2 = x4;
-				}
-				else
-				{
-					if ( x4 > sx1 ) sx1 = x4;
-					if ( x3 < sx2 ) sx2 = x3;
-				}
-
-				if ( sx1 > sx2 )
-					return false;
-
-				double sy1;
-				double sy2;
-
-				if ( y1 <= y2 ) { sy1 = y1; sy2 = y2; }
-				           else { sy1 = y2; sy2 = y1; }
-
-				if ( y3 < y4 )
-				{
-					if ( y3 > sy1 ) sy1 = y3;
-					if ( y4 < sy2 ) sy2 = y4;
-				}
-				else
-				{
-					if ( y4 > sy1 ) sy1 = y4;
-					if ( y3 < sy2 ) sy2 = y3;
-				}
-
-				if ( sy1 > sy2 )
-					return false;
-
-				return true;
-			}
-			else /* they are non-coincident */
-			{
-				return false;
-			}
-		}
-		else /* lines intersect at some point */
-		{
-			/*
-			 * Test if intersection point is within both line segments
-			 */
-			final double ua = n1 / d;
-			if ( ua < 0.0 || ua > 1.0 ) return false;
-
-			final double n2 = ( x2 - x1 ) * ( y1 - y3 ) - ( y2 - y1 ) * ( x1 - x3 );
-			final double ub = n2 / d;
-			if ( ub < 0.0 || ub > 1.0 ) return false;
-
-			/*
-			 * We have an intersection point!
-			 */
-			return true;
-		}
-
+		return ( GeometryTools.getIntersectionBetweenLineSegments( p1 , p2 , p3 , p4 ) != null );
 	}
 
 	/**
@@ -2676,7 +2497,7 @@ public final class Polyline2D
 		{
 			p4 = path.getPoint( --i );
 
-			if ( isIntersectingLine_Line( p1.x , p1.y , p2.x , p2.y , p3.x , p3.y , p4.x , p4.y ) )
+			if ( isIntersectingLine_Line( p1 , p2 , p3 , p4 ) )
 				return true;
 
 			p3 = p4;
@@ -2695,41 +2516,31 @@ public final class Polyline2D
 	 */
 	private static boolean isIntersectingPath_Path( final Polyline2D path1 , final Polyline2D path2 )
 	{
-		PolyPoint2D p;
-		double x1;
-		double y1;
-		double x2;
-		double y2;
-		double x3;
-		double y3;
-		double x4;
-		double y4;
+		PolyPoint2D p1;
+		PolyPoint2D p2;
+		PolyPoint2D p3;
+		PolyPoint2D p4;
 
-		int i = path1.getPointCount();
-		p  = path1.getPoint( --i );
-		x2 = p.x;
-		y2 = p.y;
+		int i1 = path1.getPointCount();
+		p2 = path1.getPoint( --i1 );
 
-		while ( --i >= 0 )
+		while ( --i1 >= 0 )
 		{
-			p = path1.getPoint( i );
-			x1 = x2; x2 = p.x;
-			y1 = y2; y2 = p.y;
+			p1 = p2;
+			p2 = path1.getPoint( i1 );
 
+			int i2 = path2.getPointCount();
+			p4 = path2.getPoint( --i2 );
 
-			int j = path2.getPointCount();
-			p  = path2.getPoint( --j );
-			x4 = p.x;
-			y4 = p.y;
-
-			while ( --j >= 0 )
+			while ( --i2 >= 0 )
 			{
-				p = path2.getPoint( j );
-				x3 = x4; x4 = p.x;
-				y3 = y4; y4 = p.y;
+				p3 = p4;
+				p4 = path2.getPoint( i2 );
 
-				if ( isIntersectingLine_Line( x1 , y1 , x2 , y2 , x3 , y3 , x4 , y4 ) )
+				if ( isIntersectingLine_Line( p1 , p2 , p3 , p4 ) )
+				{
 					return true;
+				}
 			}
 		}
 
