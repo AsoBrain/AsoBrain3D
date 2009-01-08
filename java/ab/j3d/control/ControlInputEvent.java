@@ -137,6 +137,16 @@ public class ControlInputEvent
 	}
 
 	/**
+	 * The {@link ControlInput} this event came from.
+	 *
+	 * @return  {@link ControlInput} this event came from.
+	 */
+	public ControlInput getSource()
+	{
+		return (ControlInput)super.getSource();
+	}
+
+	/**
 	 * Get {@link Component} from which the input event was received.
 	 *
 	 * @return  {@link Component} from which the input event was received.
@@ -299,6 +309,17 @@ public class ControlInputEvent
 	}
 
 	/**
+	 * Get key event, if available.
+	 *
+	 * @return  {@link KeyEvent};
+	 *          <code>null</code> if no {@link KeyEvent} is available.
+	 */
+	public KeyEvent getKeyEvent()
+	{
+		return ( _inputEvent instanceof KeyEvent ) ? (KeyEvent)_inputEvent : null;
+	}
+
+	/**
 	 * Get key code, if any, that caused the event.
 	 *
 	 * @return  Key code.
@@ -307,8 +328,8 @@ public class ControlInputEvent
 	 */
 	public int getKeyCode()
 	{
-		final InputEvent inputEvent = _inputEvent;
-		return ( inputEvent instanceof KeyEvent ) ? ((KeyEvent)inputEvent).getKeyCode() : KeyEvent.VK_UNDEFINED;
+		final KeyEvent keEvent = getKeyEvent();
+		return ( keEvent  != null ) ? keEvent.getKeyCode() : KeyEvent.VK_UNDEFINED;
 	}
 
 	/**
