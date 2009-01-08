@@ -63,6 +63,10 @@ public class MouseControl
 
 			switch ( controlInputEvent.getID() )
 			{
+				case MouseEvent.MOUSE_MOVED :
+					result = mouseMoved( controlInputEvent );
+					break;
+
 				case MouseEvent.MOUSE_PRESSED :
 					if ( !captured )
 						result = mousePressed( controlInputEvent );
@@ -150,14 +154,16 @@ public class MouseControl
 	 */
 	protected boolean updateCaptureState( final ControlInputEvent controlInputEvent )
 	{
-		final int capturedEvent = _capturedSequenceNumber;
+		final int     capturedEvent  = _capturedSequenceNumber;
+		final boolean captureStarted = ( capturedEvent >= 0 );
+		final boolean captureActive  = ( capturedEvent == controlInputEvent.getSequenceNumber() );
 
-		final boolean result = ( capturedEvent == controlInputEvent.getSequenceNumber() );
-
-		if ( !result && ( capturedEvent >= 0 ) )
+		if ( captureStarted && !captureActive )
+		{
 			stopCapture( controlInputEvent );
+		}
 
-		return result;
+		return captureActive;
 	}
 
 	/**
@@ -207,6 +213,19 @@ public class MouseControl
 	 * @see     MouseEvent#MOUSE_PRESSED
 	 */
 	public EventObject mousePressed( final ControlInputEvent event )
+	{
+		return event;
+	}
+
+	/**
+	 * This method is called when the mouse is moved during a captured mouse
+	 * event sequence.
+	 *
+	 * @param   event   Control input event.
+	 *
+	 * @see     MouseEvent#MOUSE_MOVED
+	 */
+	public EventObject mouseMoved( final ControlInputEvent event )
 	{
 		return event;
 	}
