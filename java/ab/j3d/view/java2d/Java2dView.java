@@ -55,14 +55,14 @@ final class Java2dView
 	private static final int MINIMUM_IMAGE_SIZE = 150;
 
 	/**
-	 * Model for which this view was created.
-	 */
-	private final Java2dModel _model;
-
-	/**
 	 * Component through which a rendering of the view is shown.
 	 */
 	private final ViewComponent _viewComponent;
+
+	/**
+	 * Insets cache.
+	 */
+	private Insets _insetsCache = null;
 
 	/**
 	 * The SceneInputTranslator for this View.
@@ -81,18 +81,13 @@ final class Java2dView
 		extends JComponent
 	{
 		/**
-		 * Insets cache.
-		 */
-		private Insets _insets;
-
-		/**
 		 * Construct view component.
 		 */
 		private ViewComponent()
 		{
 			setDoubleBuffered( true );
 
-			_insets = null;
+			_insetsCache = null;
 		}
 
 		public Dimension getMinimumSize()
@@ -105,23 +100,6 @@ final class Java2dView
 			return new Dimension( MINIMUM_IMAGE_SIZE , MINIMUM_IMAGE_SIZE );
 		}
 
-		public Projector getProjector ()
-		{
-			final Insets      insets            = getInsets( _insets );
-			final int         imageWidth        = getWidth() - insets.left - insets.right;
-			final int         imageHeight       = getHeight() - insets.top - insets.bottom;
-			final double      imageResolution   = getResolution();
-
-			final double      viewUnit          = getUnit();
-
-			final double      fieldOfView       = getAperture();
-			final double      zoomFactor        = getZoomFactor();
-			final double      frontClipDistance =   -0.1 / viewUnit;
-			final double      backClipDistance  = -100.0 / viewUnit;
-
-			return Projector.createInstance( getProjectionPolicy() , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
-		}
-
 		public void paintComponent( final Graphics g )
 		{
 			if ( isOpaque() )
@@ -130,11 +108,12 @@ final class Java2dView
 				g.fillRect( 0 , 0 , getWidth() , getHeight() );
 			}
 
-			final BSPTree   bspTree    = _model.getBspTree();
-			final Projector projector  = getProjector();
-			final Matrix3D  model2view = getViewTransform();
+			final Java2dModel model      = getModel();
+			final BSPTree     bspTree    = model.getBspTree();
+			final Projector   projector  = getProjector();
+			final Matrix3D    model2view = getViewTransform();
 
-			final Insets insets      = getInsets( _insets );
+			final Insets insets      = getInsets( _insetsCache );
 			final int    imageWidth  = getWidth()  - insets.left - insets.right;
 			final int    imageHeight = getHeight() - insets.top  - insets.bottom;
 
@@ -171,7 +150,7 @@ final class Java2dView
 
 			g2d.dispose();
 
-			_insets = insets;
+			_insetsCache = insets;
 		}
 	}
 
@@ -186,9 +165,7 @@ final class Java2dView
 	 */
 	Java2dView( final Java2dModel model , final Color background )
 	{
-		super( model.getUnit() );
-
-		_model = model;
+		super( model );
 
 		/*
 		 * Create view component.
@@ -209,6 +186,11 @@ final class Java2dView
 		_controlInput = new ViewControlInput( model , this );
 	}
 
+	public Java2dModel getModel()
+	{
+		return (Java2dModel)super.getModel();
+	}
+
 	public Component getComponent()
 	{
 		return _viewComponent;
@@ -226,7 +208,21 @@ final class Java2dView
 	 */
 	public Projector getProjector()
 	{
-		return _viewComponent.getProjector();
+		final ViewComponent viewComponent     = _viewComponent;
+		final Insets        insets            = viewComponent.getInsets( _insetsCache );
+		final int           imageWidth        = viewComponent.getWidth() - insets.left - insets.right;
+		final int           imageHeight       = viewComponent.getHeight() - insets.top - insets.bottom;
+		final double        imageResolution   = getResolution();
+
+		final Java2dModel   model             = getModel();
+		final double        viewUnit          = model.getUnit();
+
+		final double        fieldOfView       = getAperture();
+		final double        zoomFactor        = getZoomFactor();
+		final double        frontClipDistance = -0.1 / viewUnit;
+		final double        backClipDistance  = -100.0 / viewUnit;
+
+		return Projector.createInstance( getProjectionPolicy() , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
 	}
 
 	protected ControlInput getControlInput()

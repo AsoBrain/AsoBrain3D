@@ -53,7 +53,7 @@ public class TestFromToCameraControl
 	{
 		System.out.println( CLASS_NAME + ".testConstructor()" );
 
-		final FromToCameraControl fromToCameraControl = new FromToCameraControl( new ViewModelView( 1.0 )
+		final FromToCameraControl fromToCameraControl = new FromToCameraControl( new ViewModelView( null )
 			{
 				public Component getComponent()
 				{

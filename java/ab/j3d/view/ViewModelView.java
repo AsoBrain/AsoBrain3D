@@ -119,10 +119,9 @@ public abstract class ViewModelView
 	public static final double DEFAULT_PIXELS_TO_RADIANS_FACTOR = ( 2.0 *  Math.PI ) / 250.0;
 
 	/**
-	 * Unit scale factor in meters per unit. This scale factor, when multiplied,
-	 * converts design units to meters.
+	 * Model being viewed.
 	 */
-	private final double _unit;
+	private ViewModel _model;
 
 	/**
 	 * Resolution of image in meters per pixel. If is set to <code>0.0</code>,
@@ -203,11 +202,11 @@ public abstract class ViewModelView
 	/**
 	 * Construct new view.
 	 *
-	 * @param   unit    Unit scale (meters per unit).
+	 * @param   model   Model being viewed.
 	 */
-	protected ViewModelView( final double unit )
+	protected ViewModelView( final ViewModel model )
 	{
-		_unit = unit;
+		_model = model;
 
 		_resolution = 0.0;
 
@@ -229,7 +228,7 @@ public abstract class ViewModelView
 		_gridEnabled           = false;
 		_grid2wcs              = Matrix3D.INIT;
 		_gridBounds            = new Rectangle( -100 , -100 , 200 , 200 );
-		_gridCellSize          = (int)Math.round( 1.0 / unit );
+		_gridCellSize          = (int)Math.round( 1.0 / model.getUnit() );
 		_gridHighlightAxes     = true;
 		_gridHighlightInterval = 10;
 	}
@@ -264,6 +263,16 @@ public abstract class ViewModelView
 	}
 
 	/**
+	 * Get model being viewed.
+	 *
+	 * @return  Model being viewed.
+	 */
+	public ViewModel getModel()
+	{
+		return _model;
+	}
+
+	/**
 	 * Get camera from where the view is created.
 	 *
 	 * @return  Camera from where the view is created (never <code>null</code>).
@@ -281,7 +290,8 @@ public abstract class ViewModelView
 	 */
 	public double getUnit()
 	{
-		return _unit;
+		final ViewModel model = getModel();
+		return model.getUnit();
 	}
 
 	/**
@@ -303,13 +313,14 @@ public abstract class ViewModelView
 	 *
 	 * @return  Scale factor from pixels to view units.
 	 *
-	 * @see     #getUnit
+	 * @see     ViewModel#getUnit
 	 * @see     #getProjector
 	 * @see     Projector#getView2pixels
 	 */
 	public double getPixelsToUnitsFactor()
 	{
-		return getResolution() / ( getZoomFactor() * getUnit() );
+		final ViewModel model = getModel();
+		return getResolution() / ( getZoomFactor() * model.getUnit() );
 	}
 
 	/**

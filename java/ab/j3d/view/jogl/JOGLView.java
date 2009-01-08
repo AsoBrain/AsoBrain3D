@@ -47,6 +47,7 @@ import ab.j3d.view.Projector;
 import ab.j3d.view.Projector.ProjectionPolicy;
 import ab.j3d.view.ViewControlInput;
 import ab.j3d.view.ViewModelView;
+import ab.j3d.view.ViewModel;
 
 /**
  * JOGL implementation of view model view.
@@ -57,11 +58,6 @@ import ab.j3d.view.ViewModelView;
 public class JOGLView
 	extends ViewModelView
 {
-	/**
-	 * Model being viewed.
-	 */
-	private final JOGLModel _model;
-
 	/**
 	 * Component through which a rendering of the view is shown.
 	 */
@@ -104,10 +100,8 @@ public class JOGLView
 	 */
 	public JOGLView( final JOGLModel model , final Color background , final Map<String,SoftReference<Texture>> textureCache )
 	{
-		super( model.getUnit() );
+		super( model );
 		final double unit = model.getUnit();
-
-		_model = model;
 
 		_frontClipDistance = 0.1 / unit;
 		_backClipDistance  = 100.0 / unit;
@@ -255,17 +249,18 @@ public class JOGLView
 
 	public Projector getProjector()
 	{
-		final GLCanvas viewComponent     = _viewComponent;
-		final int      imageWidth        = viewComponent.getWidth();
-		final int      imageHeight       = viewComponent.getHeight();
-		final double   imageResolution   = getResolution();
+		final GLCanvas  viewComponent     = _viewComponent;
+		final int       imageWidth        = viewComponent.getWidth();
+		final int       imageHeight       = viewComponent.getHeight();
+		final double    imageResolution   = getResolution();
 
-		final double   viewUnit          = getUnit();
+		final ViewModel model             = getModel();
+		final double    viewUnit          = model.getUnit();
 
-		final double   fieldOfView       = getAperture();
-		final double   zoomFactor        = getZoomFactor();
-		final double   frontClipDistance = _frontClipDistance;
-		final double   backClipDistance  = _backClipDistance;
+		final double    fieldOfView       = getAperture();
+		final double    zoomFactor        = getZoomFactor();
+		final double    frontClipDistance = _frontClipDistance;
+		final double    backClipDistance  = _backClipDistance;
 
 		return Projector.createInstance( getProjectionPolicy() , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
 	}
@@ -483,15 +478,16 @@ public class JOGLView
 	 */
 	private void renderFrame( final GLWrapper glWrapper , final int width , final int height )
 	{
+		final ViewModel model = getModel();
 		final GL gl = glWrapper.getGL();
 
 		//check if the projector is parallel here, because the zoomfactor can be changed without resizing the window.
 		if ( getProjectionPolicy() == ProjectionPolicy.PARALLEL )
 		{
-			final double   near     = _frontClipDistance;
-			final double   far      = _backClipDistance;
-			final Camera3D camera3D = getCamera();
-			final double   scale    = camera3D.getZoomFactor() * getUnit() / getResolution();
+			final Camera3D  camera3D = getCamera();
+			final double    near     = _frontClipDistance;
+			final double    far      = _backClipDistance;
+			final double    scale    = camera3D.getZoomFactor() * model.getUnit() / getResolution();
 
 			gl.glMatrixMode( GL.GL_PROJECTION );
 			gl.glLoadIdentity();
@@ -530,6 +526,6 @@ public class JOGLView
 
 		glWrapper.glMultMatrixd( cameraTransform );
 
-		JOGLTools.renderScene( glWrapper , _model.getNodes() , _textureCache , this , _viewComponent.getBackground() );
+		JOGLTools.renderScene( glWrapper , model.getNodes() , _textureCache , this , _viewComponent.getBackground() );
 	}
 }

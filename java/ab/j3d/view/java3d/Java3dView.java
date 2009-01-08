@@ -77,7 +77,7 @@ final class Java3dView
 	 *
 	 * @see     Java3dUniverse#createView
 	 */
-	private final View _view;
+	private final View _java3dView;
 
 	/**
 	 * Canvas with on-screen representation of this view.
@@ -144,15 +144,15 @@ final class Java3dView
 		 */
 		public void paint( final Graphics g )
 		{
-			final View     view            = _view;
+			final View     java3dView      = _java3dView;
 			final double   aperture        = getAperture();
 			final double   imageResolution = getResolution();
 			final double   zoomFactor      = getZoomFactor();
 
-			view.setFieldOfView( aperture );
+			java3dView.setFieldOfView( aperture );
 
 			final double scale = ( JAVA3D_RESOLUTION / imageResolution ) * zoomFactor;
-			view.setScreenScale( scale );
+			java3dView.setScreenScale( scale );
 
 			super.paint( g );
 		}
@@ -229,7 +229,7 @@ final class Java3dView
 	 */
 	Java3dView( final Java3dModel model , final Java3dUniverse universe )
 	{
-		super( model.getUnit() );
+		super( model );
 
 		/* Use heavyweight popups, since Java3D uses a heavyweight canvas (Canvas3D). */
 		JPopupMenu.setDefaultLightWeightPopupEnabled( false );
@@ -237,16 +237,16 @@ final class Java3dView
 		/*
 		 * Create view branch.
 		 */
-		final TransformGroup tg     = new TransformGroup();
-		final Canvas3D       canvas = new ViewComponent();
-		final View           view   = universe.createView( tg , canvas );
+		final TransformGroup tg         = new TransformGroup();
+		final Canvas3D       canvas     = new ViewComponent();
+		final View           java3dView = universe.createView( tg , canvas );
 
-		view.setScreenScalePolicy( View.SCALE_EXPLICIT );
-		view.setWindowResizePolicy( View.VIRTUAL_WORLD );
+		java3dView.setScreenScalePolicy( View.SCALE_EXPLICIT );
+		java3dView.setWindowResizePolicy( View.VIRTUAL_WORLD );
 
-		_tg     = tg;
+		_tg = tg;
 		_canvas = canvas;
-		_view   = view;
+		_java3dView = java3dView;
 
 		/*
 		 * Update view to initial transform.
@@ -265,17 +265,17 @@ final class Java3dView
 	{
 		if ( policy != getProjectionPolicy() )
 		{
-			final View view = _view;
+			final View java3dView = _java3dView;
 
 			switch ( policy )
 			{
 				case PERSPECTIVE :
-					view.setProjectionPolicy( View.PERSPECTIVE_PROJECTION );
+					java3dView.setProjectionPolicy( View.PERSPECTIVE_PROJECTION );
 					break;
 
 				case ISOMETRIC :
 				case PARALLEL :
-					view.setProjectionPolicy( View.PARALLEL_PROJECTION );
+					java3dView.setProjectionPolicy( View.PARALLEL_PROJECTION );
 					break;
 
 				default :
@@ -289,8 +289,9 @@ final class Java3dView
 
 	public void update()
 	{
-		final Matrix3D viewTransform = getViewTransform();
-		final double   unit          = getUnit();
+		final Matrix3D  viewTransform = getViewTransform();
+		final ViewModel model         = getModel();
+		final double    unit          = model.getUnit();
 
 		/*
 		 * Determine rotation and translation. If a unit is set, use it to
@@ -342,17 +343,20 @@ final class Java3dView
 	 */
 	public Projector getProjector()
 	{
-		final View view = _view;
-		final Canvas3D canvas = _canvas;
+		final View java3dview = _java3dView;
 
-		final int    width      = canvas.getWidth();
-		final int    height     = canvas.getHeight();
-		final double resolution = getResolution();
-		final double unit       = getUnit();
-		final double frontClip  = view.getFrontClipDistance() / unit;
-		final double backClip   = view.getBackClipDistance()  / unit;
-		final double aperture   = getAperture();
-		final double zoomFactor = getZoomFactor();
+		final Canvas3D  canvas     = _canvas;
+		final int       width      = canvas.getWidth();
+		final int       height     = canvas.getHeight();
+		final double    resolution = getResolution();
+
+		final ViewModel model      = getModel();
+		final double    unit       = model.getUnit();
+
+		final double    frontClip  = java3dview.getFrontClipDistance() / unit;
+		final double    backClip   = java3dview.getBackClipDistance() / unit;
+		final double    aperture   = getAperture();
+		final double    zoomFactor = getZoomFactor();
 
 		return Projector.createInstance( getProjectionPolicy() , width , height , resolution , unit , frontClip , backClip , aperture , zoomFactor );
 	}
