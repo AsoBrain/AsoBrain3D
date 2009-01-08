@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2008
+ * (C) Copyright Numdata BV 2004-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -361,7 +361,7 @@ public abstract class ViewModelView
 		if ( oldCameraControl != cameraControl )
 		{
 			if ( oldCameraControl != null )
-				removeControl( cameraControl );
+				removeControl( oldCameraControl );
 
 			if ( cameraControl != null )
 				appendControl( cameraControl );
