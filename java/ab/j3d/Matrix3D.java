@@ -551,6 +551,36 @@ public final class Matrix3D
 	}
 
 	/**
+	 * Returns a transformation matrix that uniformly scales coordinates by the
+	 * given factor.
+	 *
+	 * @param   scale   Scaling factor.
+	 *
+	 * @return  Scaling matrix with the given factor.
+	 */
+	public static Matrix3D getScaleTransform( final double scale )
+	{
+		return getScaleTransform( scale , scale , scale );
+	}
+
+	/**
+	 * Returns a transformation matrix that non-uniformly scales coordinates by
+	 * the factor given for each axis.
+	 *
+	 * @param   x   Scaling factor for the x-axis.
+	 * @param   y   Scaling factor for the y-axis.
+	 * @param   z   Scaling factor for the z-axis.
+	 *
+	 * @return  Scaling matrix with the given factor.
+	 */
+	public static Matrix3D getScaleTransform( final double x , final double y , final double z )
+	{
+		return INIT.set(   x , 0.0 , 0.0 , 0.0 ,
+		                 0.0 ,   y , 0.0 , 0.0 ,
+		                 0.0 , 0.0 ,   z , 0.0 );
+	}
+
+	/**
 	 * Construct inverse matrix.
 	 * <pre>
 	 *       | xx xy xz xo |
