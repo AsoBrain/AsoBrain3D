@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2008
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -669,6 +669,9 @@ public class JOGLGraphics2D
 
 	public void drawString( final String str , final int x , final int y )
 	{
+		final GL gl = _gla.getGL();
+		gl.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_FILL );
+
 		//create renderer if renderer has not been created already.
 		if ( _renderer == null )
 		    _renderer = new TextRenderer( getFont() );
