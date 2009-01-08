@@ -749,9 +749,16 @@ public class ObjLoader
 						if ( argCount < 1 )
 						    throw new IOException( "Malformed shininess entry: " + line );
 						final float shininess = Float.parseFloat( tokens[ 1 ] );
-						tempMaterial.shininess = (int)shininess;
-						System.out.println( "tempMaterial.shininess = " + tempMaterial.shininess );
-						System.out.println( "shininess = " + shininess );
+						// value range is from 0 to 1000
+						if ( shininess > 1000.0f )
+						{
+							// set material shininess to max
+							tempMaterial.shininess = 128;
+						}
+						else
+						{
+							tempMaterial.shininess = (int)( shininess * 128.0f / 1000.0f );
+						}
 					}
 					// Alpha blending
 					else if ( "d".equals( name ) || "Tr".equals( name ) )
