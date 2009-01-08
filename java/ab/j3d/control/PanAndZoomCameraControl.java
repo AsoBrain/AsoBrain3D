@@ -19,6 +19,7 @@
 package ab.j3d.control;
 
 import java.awt.Component;
+import java.awt.event.MouseWheelEvent;
 import java.util.EventObject;
 import java.util.NoSuchElementException;
 import java.util.Properties;
@@ -146,14 +147,20 @@ public class PanAndZoomCameraControl
 		switch ( event.getMouseButtonDown() )
 		{
 			case 1 :
-			case 2 :
-				pan( event );
-				break;
-
-			case 3 :
 				zoom( event );
 				break;
+			case 2 :
+			case 3 :
+				pan( event );
+				break;
 		}
+	}
+
+	public EventObject mouseWheelMoved( final ControlInputEvent event )
+	{
+		final MouseWheelEvent mouseWheelEvent = (MouseWheelEvent)event.getMouseEvent();
+		zoom( -mouseWheelEvent.getWheelRotation() );
+		return null;
 	}
 
 	protected void pan( final ControlInputEvent event )
@@ -180,6 +187,28 @@ public class PanAndZoomCameraControl
 		final double adjustment    = 1.0 + (double)Math.abs( deltaY ) / sensitivity;
 
 		camera.setZoomFactor( ( deltaY > 0 ) ? oldZoomFactor / adjustment : oldZoomFactor * adjustment );
+
+		final Component viewComponent = view.getComponent();
+		viewComponent.repaint( 0 , 0 , 1 , 1 );
+	}
+
+	protected void zoom( final int amount )
+	{
+		final double sensitivity = 0.1;
+
+		double factor = 0.0;
+		for ( int i = 0 ; i < Math.abs( amount ) ; i++ )
+		{
+			factor = ( 1.0 - sensitivity ) * factor + sensitivity;
+		}
+
+		factor += 1.0;
+
+		final ViewModelView view   = _view;
+		final Camera3D      camera = view.getCamera();
+		factor = ( amount >= 0 ) ? camera.getZoomFactor() * factor
+		                         : camera.getZoomFactor() / factor;
+		camera.setZoomFactor( factor );
 
 		final Component viewComponent = view.getComponent();
 		viewComponent.repaint( 0 , 0 , 1 , 1 );
