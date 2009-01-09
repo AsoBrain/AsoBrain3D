@@ -278,7 +278,11 @@ public class FromToCameraControl2
 
 	public void mouseDragged( final ControlInputEvent event )
 	{
-		if ( event.isMouseButton3Down() )
+		if ( event.isMouseButton2Down() )
+		{
+			dragFromAroundTo( event );
+		}
+		else if ( event.isMouseButton3Down() )
 		{
 			if ( event.isControlDown() )
 			{
