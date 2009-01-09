@@ -324,7 +324,7 @@ public class GeometryTools
 		                         + planeNormalY * rayDirection.y
 		                         + planeNormalZ * rayDirection.z;
 
-		if ( twoSidedPlane ? ( denominator != 0.0 ) : ( denominator < 0.0 ) ) /* line parallel to plane */
+		if ( twoSidedPlane ? !MathTools.almostEqual( denominator , 0.0 , 0.000001 ) : MathTools.significantlyLessThan( denominator , 0.0 , 0.000001 ) ) /* line parallel to plane */
 		{
 			final double numerator = planeDistance - planeNormalX * rayOrigin.x
 			                                       - planeNormalY * rayOrigin.y
