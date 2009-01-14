@@ -288,6 +288,15 @@ public class CollisionTester
 	 */
 	public static boolean testOrientedBoundingBox( final Bounds3D box1 , final Matrix3D from2to1 , final Bounds3D box2 )
 	{
+		if ( box1 == null )
+			throw new NullPointerException( "box1" );
+
+		if ( from2to1 == null )
+			throw new NullPointerException( "from2to1" );
+
+		if ( box2 == null )
+			throw new NullPointerException( "box2" );
+
 		final double absXX = Math.abs( from2to1.xx );
 		final double absXY = Math.abs( from2to1.xy );
 		final double absXZ = Math.abs( from2to1.xz );
