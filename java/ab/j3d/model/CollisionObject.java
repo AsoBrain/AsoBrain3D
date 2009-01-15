@@ -178,15 +178,26 @@ public class CollisionObject
 	 *
 	 * @return  <code>true</code> if a collision was found;
 	 *          <code>false</code> if no collision was found.
+	 *
+	 * @throws  NullPointerException if any parameter is <code>null</code>.
 	 */
 	public boolean collidesWith( final CollisionObject other , final Matrix3D other2this , final Matrix3D this2other )
 	{
+		if ( other == null )
+			throw new NullPointerException( "other" );
+
+		if ( other2this == null )
+			throw new NullPointerException( "other2this" );
+
+		if ( this2other == null )
+			throw new NullPointerException( "this2other" );
+
 		final boolean result;
 
 		final Bounds3D bounds1 = _bounds;
 		final Bounds3D bounds2 = other._bounds;
 
-		if ( CollisionTester.testOrientedBoundingBox( bounds1 , other2this , bounds2 ) )
+//		if ( CollisionTester.testOrientedBoundingBox( bounds1 , other2this , bounds2 ) )
 		{
 			if ( !split() )
 			{
@@ -222,10 +233,10 @@ public class CollisionObject
 				         other._child2.collidesWith( this, this2other, other2this );
 			}
 		}
-		else
-		{
-			result = false;
-		}
+//		else
+//		{
+//			result = false;
+//		}
 
 		return result;
 	}
@@ -399,6 +410,5 @@ public class CollisionObject
 			this.v3 = v3;
 			center = v1.set( v1.x + v2.x + v3.x / 3.0, v1.y + v2.y + v3.y / 3.0, v1.z + v2.z + v3.z / 3.0 );
 		}
-
 	}
 }
