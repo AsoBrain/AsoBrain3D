@@ -599,6 +599,9 @@ public abstract class ViewModelView
 	 */
 	public void addOverlayPainter( final OverlayPainter painter )
 	{
+		if ( painter == null )
+			throw new NullPointerException( "painter" );
+
 		_painters.add( painter );
 	}
 
