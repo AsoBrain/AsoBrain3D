@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2008
+ * (C) Copyright Numdata BV 2004-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,25 +19,15 @@
  */
 package ab.j3d.view;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
-import javax.swing.JPanel;
 
-import ab.j3d.Bounds3D;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.control.FromToCameraControl;
-import ab.j3d.control.OrbitCameraControl;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
-import ab.j3d.model.Object3D;
-import ab.j3d.view.Projector.ProjectionPolicy;
-import ab.j3d.view.ViewModelView.RenderingPolicy;
 import ab.j3d.view.control.ViewModelNodeControl;
 
 /**
@@ -230,39 +220,6 @@ public abstract class ViewModel
 	}
 
 	/**
-	 * Returns the ID object for a {@link Node3D}. If the node is not part of
-	 * this model, <code>null</code> is returned. <p>
-	 * Note that the top most parent of the given node is the node for which the
-	 * id is returned. This is because only these nodes have an id. This means
-	 * two {@link Object3D}s can have the same id, because of the way the
-	 * application has created the model.
-	 *
-	 * @param   node    The {@link Node3D} for which the id is required
-	 *
-	 * @return  The ID of the given node
-	 */
-	public final Object getID( final Node3D node )
-	{
-		Object result = null;
-
-		Node3D topNode = node;
-		while ( topNode.getParent() != null )
-			topNode = topNode.getParent();
-
-		for ( final ViewModelNode modelNode : _nodes )
-		{
-			if ( modelNode.getNode3D() == topNode )
-			{
-				result = modelNode.getID();
-				if ( result != null )
-					break;
-			}
-		}
-
-		return result;
-	}
-
-	/**
 	 * Get root 3D scene node for the specified node.
 	 *
 	 * @param   id      Application-assigned ID of node.
@@ -307,11 +264,13 @@ public abstract class ViewModel
 	 * @param   materialOverride    Material to use instead of actual materials.
 	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).);
 	 *
+	 * @return  Node that was created.
+	 *
 	 * @throws  NullPointerException if <code>id</code> or <code>node3D<code> is <code>null</code>
 	 */
-	public final void createNode( final Object id , final Node3D node3D , final Material materialOverride , final float opacity )
+	public final ViewModelNode createNode( final Object id , final Node3D node3D , final Material materialOverride , final float opacity )
 	{
-		createNode( id , null , node3D , materialOverride , opacity );
+		return createNode( id , null , node3D , materialOverride , opacity );
 	}
 
 	/**
@@ -452,72 +411,9 @@ public abstract class ViewModel
 	/**
 	 * Create a new view for this model.
 	 *
-	 * @param   renderingPolicy         Desired rendering policy for view.
-	 * @param   projectionPolicy        Desired projection policy for view.
-	 * @param   estimatedSceneBounds    Estimated bounding box of scene.
-	 * @param   viewDirection           Direction from which to view the scene.
-	 *
-	 * @return  View that was created.
-	 *
-	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
-	 */
-	public final ViewModelView createView( final RenderingPolicy renderingPolicy , final ProjectionPolicy projectionPolicy , final Bounds3D estimatedSceneBounds , final Vector3D viewDirection )
-	{
-		final ViewModelView view = createView();
-
-		final double   sceneSize = Vector3D.distanceBetween( estimatedSceneBounds.v1 , estimatedSceneBounds.v2 );
-		final Vector3D center    = estimatedSceneBounds.center();
-
-		if ( ( renderingPolicy != RenderingPolicy.SOLID ) || ( projectionPolicy != ProjectionPolicy.PERSPECTIVE ) )
-		{
-			final double x = -center.x + viewDirection.x * sceneSize;
-			final double y = -center.y + viewDirection.y * sceneSize;
-			final double z = -center.z + viewDirection.z * sceneSize;
-
-			final double rx = Math.toDegrees( Math.atan2( -viewDirection.y , -viewDirection.z ) );
-			final double ry = Math.toDegrees( Math.atan2( -viewDirection.x , -viewDirection.z ) );
-
-			view.setCameraControl( new OrbitCameraControl( view , rx , ry , 0.0 , x , y , z ) );
-		}
-		else
-		{
-			final Vector3D from = center.minus( viewDirection.multiply( sceneSize * 2.0 ) );
-			view.setCameraControl( new FromToCameraControl( view , from , center ) );
-		}
-
-		view.setRenderingPolicy( renderingPolicy );
-		view.setProjectionPolicy( projectionPolicy );
-
-		return view;
-	}
-
-	/**
-	 * Create a new view for this model.
-	 *
 	 * @return  View that was created.
 	 */
 	public abstract ViewModelView createView();
-
-	/**
-	 * Create view panel for the specified view.
-	 *
-	 * @param   locale      Locale for internationalized user interface.
-	 * @param   view        View model view to create view panel for.
-	 *
-	 * @return  Panel containing view.
-	 *
-	 * @throws  NullPointerException if <code>view</code> is <code>null</code>.
-	 */
-	public final JPanel createViewPanel( final Locale locale , final ViewModelView view )
-	{
-		if ( view == null )
-			throw new NullPointerException( "View is null" );
-
-		final JPanel result = new JPanel( new BorderLayout() );
-		result.add( view.getComponent() , BorderLayout.CENTER );
-		result.add( view.createToolBar( locale ) , BorderLayout.SOUTH );
-		return result;
-	}
 
 	/**
 	 * Test if view model contains a view model view.
