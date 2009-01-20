@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2008
+ * (C) Copyright Numdata BV 2006-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
 
+import ab.j3d.view.ViewModelView;
+
 import com.numdata.oss.event.EventDispatcher;
 
 /**
@@ -32,7 +34,7 @@ import com.numdata.oss.event.EventDispatcher;
  * @version $Revision$ $Date$
  */
 public class MouseControl
-	implements Control
+	extends AbstractControl
 {
 	/**
 	 * Number of event sequence being captured. Set to <code>-1</code> if no
@@ -40,68 +42,64 @@ public class MouseControl
 	 */
 	private int _capturedSequenceNumber = -1;
 
-	/**
-	 * This method only filters {@link ControlInputEvent}s and redirects specific
-	 * {@link MouseEvent}-related events to the various member methods.
-	 *
-	 * @param   event   Event to be filtered.
-	 *
-	 * @return  Filtered event (may be same or modified);
-	 *          <code>null</code> to discard event completely.
-	 */
-	public EventObject filterEvent( final EventObject event )
+	protected EventObject filterMouseEvent( final ControlInputEvent event , final ViewModelView view , final MouseEvent mouseEvent )
 	{
-		EventObject result = event;
+		final boolean captured = updateCaptureState( event );
 
-		if ( event instanceof ControlInputEvent )
+		EventObject result = captured ? null : event;
+
+		switch ( event.getID() )
 		{
-			final ControlInputEvent controlInputEvent = (ControlInputEvent)event;
+			case MouseEvent.MOUSE_MOVED :
+				result = mouseMoved( event );
+				break;
 
-			final boolean captured = updateCaptureState( controlInputEvent );
+			case MouseEvent.MOUSE_PRESSED :
+				if ( !captured )
+				{
+					result = mousePressed( event );
+				}
+				break;
 
-			result = captured ? null : event;
+			case MouseEvent.MOUSE_DRAGGED :
+				if ( captured )
+				{
+					mouseDragged( event );
+				}
+				break;
 
-			switch ( controlInputEvent.getID() )
-			{
-				case MouseEvent.MOUSE_MOVED :
-					result = mouseMoved( controlInputEvent );
-					break;
+			case MouseEvent.MOUSE_RELEASED :
+				if ( captured && !event.isMouseButtonDown() )
+				{
+					mouseReleased( event );
+					stopCapture( event );
+				}
+				break;
 
-				case MouseEvent.MOUSE_PRESSED :
-					if ( !captured )
-						result = mousePressed( controlInputEvent );
-					break;
+			case MouseEvent.MOUSE_CLICKED :
+				if ( !captured )
+				{
+					result = mouseClicked( event );
+				}
+				break;
 
-				case MouseEvent.MOUSE_DRAGGED :
-					if ( captured )
-						mouseDragged( controlInputEvent );
-					break;
+			case MouseEvent.MOUSE_WHEEL :
+				result = mouseWheelMoved( event );
+				break;
+		}
 
-				case MouseEvent.MOUSE_RELEASED :
-					if ( captured && !controlInputEvent.isMouseButtonDown() )
-					{
-						mouseReleased( controlInputEvent );
-						stopCapture( controlInputEvent );
-					}
-					break;
+		return result;
+	}
 
-				case MouseEvent.MOUSE_CLICKED :
-					if ( !captured )
-						result = mouseClicked( controlInputEvent );
+	protected EventObject filterKeyEvent( final ControlInputEvent event , final ViewModelView view , final KeyEvent keyEvent )
+	{
+		final EventObject result = updateCaptureState( event ) ? null : event;
 
-					break;
-
-				case MouseEvent.MOUSE_WHEEL :
-					result = mouseWheelMoved( controlInputEvent );
-					break;
-
+		switch ( event.getID() )
+		{
 			case KeyEvent.KEY_PRESSED :
-					final int keyCode = controlInputEvent.getKeyCode();
-					handleKey( keyCode );
-					break;
-
-				case KeyEvent.KEY_RELEASED :
-			}
+				handleKeyPress( event.getKeyCode() );
+				break;
 		}
 
 		return result;
@@ -223,6 +221,9 @@ public class MouseControl
 	 *
 	 * @param   event   Control input event.
 	 *
+	 * @return  Filtered event (may be same or modified);
+	 *          <code>null</code> to discard event completely.
+	 *
 	 * @see     MouseEvent#MOUSE_MOVED
 	 */
 	public EventObject mouseMoved( final ControlInputEvent event )
@@ -261,7 +262,7 @@ public class MouseControl
 	 *
 	 * @see     KeyEvent#getKeyCode
 	 */
-	public void handleKey( final int keyCode )
+	public void handleKeyPress( final int keyCode )
 	{
 	}
 }
