@@ -443,7 +443,11 @@ public abstract class Projector
 
 			final double distance = Math.sqrt( viewX * viewX + viewY * viewY + eyeDistance * eyeDistance );
 
-			return new BasicRay3D( transform , viewX , viewY , -eyeDistance , viewX / distance , viewY / distance , -eyeDistance / distance , true );
+			final double directionX = viewX / distance;
+			final double directionY = viewY / distance;
+			final double directionZ = -eyeDistance / distance;
+
+			return new BasicRay3D( transform , viewX - eyeDistance * directionX , viewY - eyeDistance * directionY , -eyeDistance - eyeDistance * directionZ , directionX , directionY , directionZ , true );
 		}
 
 		public int[] project( final double[] source , final int[] dest , final int pointCount )
