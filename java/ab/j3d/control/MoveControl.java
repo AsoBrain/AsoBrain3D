@@ -90,12 +90,6 @@ public abstract class MoveControl
 	 */
 	private Vector3D _wcsStart = null;
 
-	/**
-	 * Test if this control is currently enabled.
-	 *
-	 * @return  <code>true</code> if control is enabled;
-	 *          <code>false</code> if control is disabled.
-	 */
 	public boolean isEnabled()
 	{
 		return ( getPlane2wcs() != null );
