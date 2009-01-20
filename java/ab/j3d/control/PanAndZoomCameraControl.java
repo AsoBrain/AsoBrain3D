@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2008
+ * (C) Copyright Numdata BV 2006-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -146,10 +146,10 @@ public class PanAndZoomCameraControl
 	{
 		switch ( event.getMouseButtonDown() )
 		{
-			case 1 :
+			case 2 :
 				zoom( event );
 				break;
-			case 2 :
+
 			case 3 :
 				pan( event );
 				break;
