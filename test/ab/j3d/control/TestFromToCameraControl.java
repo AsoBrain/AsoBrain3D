@@ -26,6 +26,7 @@ import junit.framework.TestCase;
 import ab.j3d.Matrix3D;
 import ab.j3d.view.Projector;
 import ab.j3d.view.ViewModelView;
+import ab.j3d.view.java2d.Java2dModel;
 
 /**
  * This class tests the {@link FromToCameraControl} class.
@@ -53,7 +54,7 @@ public class TestFromToCameraControl
 	{
 		System.out.println( CLASS_NAME + ".testConstructor()" );
 
-		final FromToCameraControl fromToCameraControl = new FromToCameraControl( new ViewModelView( null )
+		final FromToCameraControl fromToCameraControl = new FromToCameraControl( new ViewModelView( new Java2dModel() )
 			{
 				public Component getComponent()
 				{
