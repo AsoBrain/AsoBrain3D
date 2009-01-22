@@ -34,6 +34,11 @@ public class MouseControl
 	implements Control
 {
 	/**
+	 * Event dispatcher that is used for capture.
+	 */
+	private EventDispatcher _capturedDispatcher = null;
+
+	/**
 	 * Number of event sequence being captured. Set to <code>-1</code> if no
 	 * capture is active.
 	 */
@@ -61,9 +66,10 @@ public class MouseControl
 			/*
 			 * Stop capture if event is out of sequence.
 			 */
-			if ( ( _capturedSequence >= 0 ) && ( _capturedSequence != controlInputEvent.getSequenceNumber() ) )
+			if ( ( _capturedDispatcher != controlInputEvent.getEventDispatcher() ) ||
+			     ( ( _capturedSequence >= 0 ) && ( _capturedSequence != controlInputEvent.getSequenceNumber() ) ) )
 			{
-				stopCapture( controlInputEvent );
+				stopCapture();
 			}
 
 			/*
@@ -146,24 +152,26 @@ public class MouseControl
 	{
 		final EventDispatcher eventDispatcher = event.getEventDispatcher();
 		if ( !eventDispatcher.hasFocus( this ) )
+		{
 			eventDispatcher.requestFocus( this );
+		}
 
+		_capturedDispatcher = eventDispatcher;
 		_capturedSequence = event.getSequenceNumber();
 	}
 
 	/**
 	 * Stop capture of an event sequence.
-	 *
-	 * @param   event   Control input event used to stop capture.
 	 */
-	protected void stopCapture( final ControlInputEvent event )
+	protected void stopCapture()
 	{
-		final EventDispatcher eventDispatcher = event.getEventDispatcher();
-		if ( eventDispatcher.hasFocus( this ) )
+		final EventDispatcher eventDispatcher = _capturedDispatcher;
+		if ( ( eventDispatcher != null ) && eventDispatcher.hasFocus( this ) )
 		{
 			eventDispatcher.releaseFocus();
 		}
 
+		_capturedDispatcher = null;
 		_capturedSequence = -1;
 	}
 
@@ -175,7 +183,7 @@ public class MouseControl
 	 */
 	protected boolean isCaptured()
 	{
-		return ( _capturedSequence >= 0 );
+		return ( ( _capturedDispatcher != null ) && ( _capturedSequence >= 0 ) );
 	}
 
 	/**
@@ -274,7 +282,7 @@ public class MouseControl
 		{
 			if ( !event.isMouseButtonDown() )
 			{
-				stopCapture( event );
+				stopCapture();
 			}
 
 			result = null;
