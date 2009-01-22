@@ -156,6 +156,7 @@ public abstract class MoveControl
 
 	public EventObject mouseReleased( final ControlInputEvent event )
 	{
+		final EventObject result;
 
 		if ( _manipulationMode != ManipulationMode.NONE )
 		{
@@ -163,12 +164,15 @@ public abstract class MoveControl
 
 			dragTo( event , target );
 			dragEnd( target );
-
-			_manipulationMode = ManipulationMode.NONE;
-			_manipulatedNode = null;
+			dragStop();
+			result = null;
+		}
+		else
+		{
+			result = super.mouseReleased( event );
 		}
 
-		return super.mouseReleased( event );
+		return result;
 	}
 
 	/**
@@ -238,4 +242,14 @@ public abstract class MoveControl
 	 * @param   target      Target object.
 	 */
 	protected abstract void dragEnd( final Object target );
+
+	/**
+	 * Stop dragging.
+	 */
+	protected void dragStop()
+	{
+		_manipulationMode = ManipulationMode.NONE;
+		_manipulatedNode = null;
+		stopCapture();
+	}
 }
