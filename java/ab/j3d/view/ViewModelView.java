@@ -206,6 +206,9 @@ public abstract class ViewModelView
 	 */
 	protected ViewModelView( final ViewModel model )
 	{
+		if ( model == null )
+			throw new NullPointerException( "model" );
+
 		_model = model;
 
 		_resolution = 0.0;
