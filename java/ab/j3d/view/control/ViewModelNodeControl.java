@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2008
+ * (C) Copyright Numdata BV 2004-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -74,7 +74,7 @@ public class ViewModelNodeControl
 	private Matrix3D _plane2wcs = null;
 
 	/**
-	 * Currently active plane control
+	 * Currently active plane control.
 	 */
 	private PlaneControl _planeControl = null;
 
@@ -201,68 +201,76 @@ public class ViewModelNodeControl
 		return result;
 	}
 
-	public void mouseDragged( final ControlInputEvent event )
+	public EventObject mouseDragged( final ControlInputEvent event )
 	{
-		final ViewModel       viewModel       = _viewModel;
-		final ViewModelNode   node            = _node;
-		final Matrix3D        plane2wcs       = _plane2wcs;
-		final PlaneControl    planeControl    = _planeControl;
-		final SubPlaneControl subPlaneControl = _subPlaneControl;
-
-		if ( ( node != null ) && ( plane2wcs != null ) )
+		if ( isCaptured() )
 		{
-			if ( planeControl != null )
-			{
-				final Vector3D wcsPoint = getPointerOnPlaneInWcs( plane2wcs , planeControl.isPlaneTwoSided() , event.getPointerRay() );
-				/**
-				 * The wcsPoint can be null, this is done to accomplish elevation.
-				 * Be sure to handle it in the planeControl's mouseDragged method.
-				 */
-				planeControl.mouseDragged( event , node , wcsPoint );
-				viewModel.updateOverlay();
-			}
+			final ViewModel       viewModel       = _viewModel;
+			final ViewModelNode   node            = _node;
+			final Matrix3D        plane2wcs       = _plane2wcs;
+			final PlaneControl    planeControl    = _planeControl;
+			final SubPlaneControl subPlaneControl = _subPlaneControl;
 
-			if ( subPlaneControl != null )
+			if ( ( node != null ) && ( plane2wcs != null ) )
 			{
-				final Vector3D wcsPoint = getPointerOnPlaneInWcs( plane2wcs , subPlaneControl.isPlaneTwoSided() , event.getPointerRay() );
-				if ( wcsPoint != null )
+				if ( planeControl != null )
 				{
-					final Vector3D planePoint = plane2wcs.inverseMultiply( wcsPoint );
-					subPlaneControl.mouseDragged( event , node , planePoint.x , planePoint.y );
+					final Vector3D wcsPoint = getPointerOnPlaneInWcs( plane2wcs , planeControl.isPlaneTwoSided() , event.getPointerRay() );
+					/**
+					 * The wcsPoint can be null, this is done to accomplish elevation.
+					 * Be sure to handle it in the planeControl's mouseDragged method.
+					 */
+					planeControl.mouseDragged( event , node , wcsPoint );
 					viewModel.updateOverlay();
+				}
+
+				if ( subPlaneControl != null )
+				{
+					final Vector3D wcsPoint = getPointerOnPlaneInWcs( plane2wcs , subPlaneControl.isPlaneTwoSided() , event.getPointerRay() );
+					if ( wcsPoint != null )
+					{
+						final Vector3D planePoint = plane2wcs.inverseMultiply( wcsPoint );
+						subPlaneControl.mouseDragged( event , node , planePoint.x , planePoint.y );
+						viewModel.updateOverlay();
+					}
 				}
 			}
 		}
+
+		return super.mouseDragged( event );
 	}
 
-	public void mouseReleased( final ControlInputEvent event )
+	public EventObject mouseReleased( final ControlInputEvent event )
 	{
-		final ViewModel       viewModel       = _viewModel;
-		final ViewModelNode   node            = _node;
-		final Matrix3D        plane2wcs       = _plane2wcs;
-		final PlaneControl    planeControl    = _planeControl;
-		final SubPlaneControl subPlaneControl = _subPlaneControl;
-
-		if ( ( node != null ) && ( plane2wcs != null ) )
+		if ( isCaptured() && !event.isMouseButtonDown() )
 		{
-			if ( planeControl != null )
-			{
-				final Vector3D wcsPoint = getPointerOnPlaneInWcs( plane2wcs , planeControl.isPlaneTwoSided() , event.getPointerRay() );
-				if ( wcsPoint != null )
-				{
-					planeControl.mouseReleased( event , node , wcsPoint );
-					viewModel.updateOverlay();
-				}
-			}
+			final ViewModel       viewModel       = _viewModel;
+			final ViewModelNode   node            = _node;
+			final Matrix3D        plane2wcs       = _plane2wcs;
+			final PlaneControl    planeControl    = _planeControl;
+			final SubPlaneControl subPlaneControl = _subPlaneControl;
 
-			if ( subPlaneControl != null )
+			if ( ( node != null ) && ( plane2wcs != null ) )
 			{
-				final Vector3D wcsPoint = getPointerOnPlaneInWcs( plane2wcs , subPlaneControl.isPlaneTwoSided() , event.getPointerRay() );
-				if ( wcsPoint != null )
+				if ( planeControl != null )
 				{
-					final Vector3D planePoint = plane2wcs.inverseMultiply( wcsPoint );
-					subPlaneControl.mouseReleased( event , node , planePoint.x , planePoint.y );
-					viewModel.updateOverlay();
+					final Vector3D wcsPoint = getPointerOnPlaneInWcs( plane2wcs , planeControl.isPlaneTwoSided() , event.getPointerRay() );
+					if ( wcsPoint != null )
+					{
+						planeControl.mouseReleased( event , node , wcsPoint );
+						viewModel.updateOverlay();
+					}
+				}
+
+				if ( subPlaneControl != null )
+				{
+					final Vector3D wcsPoint = getPointerOnPlaneInWcs( plane2wcs , subPlaneControl.isPlaneTwoSided() , event.getPointerRay() );
+					if ( wcsPoint != null )
+					{
+						final Vector3D planePoint = plane2wcs.inverseMultiply( wcsPoint );
+						subPlaneControl.mouseReleased( event , node , planePoint.x , planePoint.y );
+						viewModel.updateOverlay();
+					}
 				}
 			}
 		}
@@ -271,6 +279,8 @@ public class ViewModelNodeControl
 		_plane2wcs       = null;
 		_planeControl    = null;
 		_subPlaneControl = null;
+
+		return super.mouseReleased( event );
 	}
 
 	public void paint( final ViewModelView view , final Graphics2D g2d )

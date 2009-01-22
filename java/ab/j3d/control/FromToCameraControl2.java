@@ -27,7 +27,25 @@ import ab.j3d.Vector3D;
 import ab.j3d.view.ViewModelView;
 
 /**
- * FIXME javadoc
+ * This class implements a camera control based on a 'from' and 'to' point. The
+ * control behavior of the {@link CameraControl} class is extended as
+ * follows:
+ * <dl>
+ *  <dt>Dragging with the right mouse button.</dt>
+ *  <dd>Pan.</dd>
+ *
+ *  <dt>Dragging with the right mouse button while pressing CTRL.</dt>
+ *  <dd>Rotate 'from' point around 'to' point.</dd>
+ *
+ *  <dt>Dragging with the middle mouse button.</dt>
+ *  <dd>Rotate 'from' point around 'to' point.</dd>
+ *
+ *  <dt>Mouse wheel.</dt>
+ *  <dd>Moves the 'from' point away from or towards the 'to' point.
+ *
+ *  <dt>Mouse wheel while pressing CTRL.</dt>
+ *  <dd>Moves both the 'to' and 'from' point in the current view direction.
+ * </dl>
  *
  * @author  G. Meinders
  * @version $Revision$ $Date$
@@ -157,16 +175,31 @@ public class FromToCameraControl2
 		save();
 	}
 
+	/**
+	 * Get point to look at.
+	 *
+	 * @return  Point to look at.
+	 */
 	public Vector3D getTo()
 	{
 		return _to;
 	}
 
+	/**
+	 * Get point to look from.
+	 *
+	 * @return  Point to look from.
+	 */
 	public Vector3D getFrom()
 	{
 		return _from;
 	}
 
+	/**
+	 * Get up-vector (must be normalized).
+	 *
+	 * @return  Up-vector (must be normalized).
+	 */
 	public Vector3D getUp()
 	{
 		return _up;
@@ -276,23 +309,28 @@ public class FromToCameraControl2
 		return result;
 	}
 
-	public void mouseDragged( final ControlInputEvent event )
+	public EventObject mouseDragged( final ControlInputEvent event )
 	{
-		if ( event.isMouseButton2Down() )
+		if ( isCaptured() )
 		{
-			dragFromAroundTo( event );
-		}
-		else if ( event.isMouseButton3Down() )
-		{
-			if ( event.isControlDown() )
+			if ( event.isMouseButton2Down() )
 			{
 				dragFromAroundTo( event );
 			}
-			else
+			else if ( event.isMouseButton3Down() )
 			{
-				move( event );
+				if ( event.isControlDown() )
+				{
+					dragFromAroundTo( event );
+				}
+				else
+				{
+					pan( event );
+				}
 			}
 		}
+
+		return super.mouseDragged( event );
 	}
 
 	public EventObject mouseWheelMoved( final ControlInputEvent event )
@@ -302,6 +340,11 @@ public class FromToCameraControl2
 		return null;
 	}
 
+	/**
+	 * Moved the 'from' point around the 'to' point.
+	 *
+	 * @param   event   Drag event.
+	 */
 	protected void dragFromAroundTo( final ControlInputEvent event )
 	{
 		final Vector3D from     = _dragStartFrom;
@@ -335,9 +378,9 @@ public class FromToCameraControl2
 	 * Moves the camera position towards the current position of the target
 	 * point.
 	 *
-	 * @param amount        Number of steps to zoom; positive to zoom in,
+	 * @param   amount      Number of steps to zoom; positive to zoom in,
 	 *                      negative to zoom out.
-	 * @param moveTarget    Whether to move the target point, such that the
+	 * @param   moveTarget  Whether to move the target point, such that the
 	 *                      distance to the target remains constant.
 	 */
 	public void zoom( final int amount , final boolean moveTarget )
@@ -363,7 +406,12 @@ public class FromToCameraControl2
 		look( from.plus( displacement ) , moveTarget ? to.plus( displacement ) : to , _up );
 	}
 
-	protected void move( final ControlInputEvent event )
+	/**
+	 * Pan by dragging.
+	 *
+	 * @param   event   Drag event.
+	 */
+	protected void pan( final ControlInputEvent event )
 	{
 		final Vector3D from  = _dragStartFrom;
 		final Vector3D to    = _dragStartTo;

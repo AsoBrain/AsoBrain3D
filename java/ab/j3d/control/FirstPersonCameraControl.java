@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2008
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -313,12 +313,138 @@ public class FirstPersonCameraControl
 		}
 	}
 
-
+	/**
+	 * Get size of steps.
+	 *
+	 * @return  Size of steps.
+	 */
 	private double getStepSize()
 	{
 		return _from.distanceTo( _to ) / 10.0;
 	}
 
+	public EventObject filterEvent( final EventObject event )
+	{
+		final EventObject result;
+
+		if ( ( event instanceof ControlInputEvent ) && isEnabled() )
+		{
+			final ControlInputEvent controlInputEvent = (ControlInputEvent)event;
+
+			final KeyEvent keyEvent = controlInputEvent.getKeyEvent();
+			if ( ( keyEvent != null ) && ( keyEvent.getID() == KeyEvent.KEY_TYPED ) )
+			{
+				result = handleKeyTyped( controlInputEvent );
+			}
+			else
+			{
+				result = super.filterEvent( controlInputEvent );
+			}
+		}
+		else
+		{
+			result = super.filterEvent( event );
+		}
+
+		return result;
+	}
+
+	/**
+	 * Handle key.
+	 *
+	 * @param   event   Key event.
+	 *
+	 * @return  Filtered event (may be same or modified);
+	 *          <code>null</code> to discard event completely.
+	 */
+	protected EventObject handleKeyTyped( final ControlInputEvent event )
+	{
+		EventObject result = event;
+
+		if ( event.getID() == KeyEvent.KEY_PRESSED )
+		{
+			final int      keyCode = event.getKeyCode();
+			final Vector3D from    = _from;
+			final Vector3D to      = _to;
+
+			switch ( keyCode )
+			{
+				case KeyEvent.VK_LEFT :
+					moveSteps( from , to , getTransform() , -1.0 ,  0.0 ,  0.0 );
+					result = null;
+					break;
+
+				case KeyEvent.VK_RIGHT :
+					moveSteps( from , to , getTransform() ,  1.0 ,  0.0 ,  0.0 );
+					result = null;
+					break;
+
+				case KeyEvent.VK_UP :
+					moveSteps( from , to , getTransform() ,  0.0 ,  1.0 ,  0.0 );
+					result = null;
+					break;
+
+				case KeyEvent.VK_DOWN :
+					moveSteps( from , to , getTransform() ,  0.0 , -1.0 ,  0.0 );
+					result = null;
+					break;
+
+				case KeyEvent.VK_PAGE_DOWN :
+					moveSteps( from , to , getTransform() ,  0.0 ,  0.0 , -0.5 );
+					result = null;
+					break;
+
+				case KeyEvent.VK_PAGE_UP :
+					moveSteps( from , to , getTransform() ,  0.0 ,  0.0 ,  0.5 );
+					result = null;
+					break;
+			}
+		}
+
+		return result;
+	}
+
+	public EventObject mousePressed( final ControlInputEvent event )
+	{
+		_dragStartFrom = _from;
+		_dragStartTo   = _to;
+
+		return super.mousePressed( event );
+	}
+
+	public EventObject mouseDragged( final ControlInputEvent event )
+	{
+		if ( isCaptured() )
+		{
+			switch ( event.getMouseButtonDown() )
+			{
+				case 1 :
+					dragToAroundFrom( event );
+					break;
+
+				case 2 :
+					dragFromAroundTo( event );
+					break;
+
+				case 3 :
+					zoom( event );
+					break;
+			}
+		}
+
+		return super.mouseDragged( event );
+	}
+
+	/**
+	 * Move the specified number of steps in any direction.
+	 *
+	 * @param   from        From point.
+	 * @param   to          To point.
+	 * @param   transform   Current view transform.
+	 * @param   xSteps      Steps in X-direction.
+	 * @param   ySteps      Steps in Y-direction.
+	 * @param   zSteps      Steps in Z-direction.
+	 */
 	private void moveSteps( final Vector3D from , final Vector3D to , final Matrix3D transform , final double xSteps , final double ySteps , final double zSteps )
 	{
 		final Vector3D upPrimary = _upPrimary;
@@ -336,65 +462,12 @@ public class FirstPersonCameraControl
 		setTo( to.plus( movement ) );
 	}
 
-	public void handleKey( final int keyCode )
-	{
-		final Vector3D from = _from;
-		final Vector3D to   = _to;
-
-		switch ( keyCode )
-		{
-			case KeyEvent.VK_LEFT :
-				moveSteps( from , to , getTransform() , -1.0 ,  0.0 ,  0.0 );
-				break;
-
-			case KeyEvent.VK_RIGHT :
-				moveSteps( from , to , getTransform() ,  1.0 ,  0.0 ,  0.0 );
-				break;
-
-			case KeyEvent.VK_UP :
-				moveSteps( from , to , getTransform() ,  0.0 ,  1.0 ,  0.0 );
-				break;
-
-			case KeyEvent.VK_DOWN :
-				moveSteps( from , to , getTransform() ,  0.0 , -1.0 ,  0.0 );
-				break;
-
-			case KeyEvent.VK_PAGE_DOWN :
-				moveSteps( from , to , getTransform() ,  0.0 ,  0.0 , -0.5 );
-				break;
-
-			case KeyEvent.VK_PAGE_UP :
-				moveSteps( from , to , getTransform() ,  0.0 ,  0.0 ,  0.5 );
-				break;
-		}
-	}
-
-	public EventObject mousePressed( final ControlInputEvent event )
-	{
-		_dragStartFrom = _from;
-		_dragStartTo   = _to;
-
-		return super.mousePressed( event );
-	}
-
-	public void mouseDragged( final ControlInputEvent event )
-	{
-		switch ( event.getMouseButtonDown() )
-		{
-			case 1 :
-				dragToAroundFrom( event );
-				break;
-
-			case 2 :
-				dragFromAroundTo( event );
-				break;
-
-			case 3 :
-				zoom( event );
-				break;
-		}
-	}
-
+	/**
+	 * Drag the 'to' point around the 'from' point. This provides the ability
+	 * to change the rotation or elevation.
+	 *
+	 * @param   event   Drag event.
+	 */
 	protected void dragToAroundFrom( final ControlInputEvent event )
 	{
 		final Vector3D upPrimary = _upPrimary;
@@ -415,6 +488,12 @@ public class FirstPersonCameraControl
 		setTo( newto );
 	}
 
+	/**
+	 * Drag the 'from' point around the 'to' point. This provides the ability
+	 * to change the rotation or elevation.
+	 *
+	 * @param   event   Drag event.
+	 */
 	protected void dragFromAroundTo( final ControlInputEvent event )
 	{
 		final Vector3D upPrimary = _upPrimary;
@@ -435,6 +514,11 @@ public class FirstPersonCameraControl
 		setFrom( newFrom );
 	}
 
+	/**
+	 * Zoom by moving the 'from' point away from or towards the 'to' point.
+	 *
+	 * @param   event   Drag event.
+	 */
 	protected void zoom( final ControlInputEvent event )
 	{
 		final Vector3D from = _dragStartFrom;
@@ -450,6 +534,11 @@ public class FirstPersonCameraControl
 		setFrom( newFrom );
 	}
 
+	/**
+	 * Move along the plane.
+	 *
+	 * @param   event   Drag event.
+	 */
 	protected void move( final ControlInputEvent event )
 	{
 		final Matrix3D transform = getTransform();

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * (C) Copyright Numdata BV 2005-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -82,10 +82,10 @@ public class MoveControl
 		{
 			final TetraHedron selectedHedron = (TetraHedron)selection;
 
-			final List intersections = event.getIntersections();
+			final List<Face3DIntersection> intersections = event.getIntersections();
 			if ( !intersections.isEmpty() )
 			{
-				final Face3DIntersection intersection = (Face3DIntersection)intersections.get( 0 );
+				final Face3DIntersection intersection = intersections.get( 0 );
 				if ( selectedHedron == intersection.getObjectID() )
 				{
 					_dragger = new PlaneMovementDragger( Matrix3D.INIT , FLOOR_PLANE , event.getViewTransform() , event.getProjector() , intersection );
@@ -98,18 +98,23 @@ public class MoveControl
 		return result;
 	}
 
-	public void mouseDragged( final ControlInputEvent event )
+	public EventObject mouseDragged( final ControlInputEvent event )
 	{
-		final SceneElement selection = _model.getSelection();
-		if ( selection instanceof TetraHedron )
+		if ( isCaptured() )
 		{
-			final TetraHedron selectedHedron = (TetraHedron)selection;
+			final SceneElement selection = _model.getSelection();
+			if ( selection instanceof TetraHedron )
+			{
+				final TetraHedron selectedHedron = (TetraHedron)selection;
 
-			final PlaneMovementDragger dragger = _dragger;
-			dragger.dragTo( event.getX() , event.getY() );
-			final Vector3D newPosition = dragger.getModelEnd();
+				final PlaneMovementDragger dragger = _dragger;
+				dragger.dragTo( event.getX() , event.getY() );
+				final Vector3D newPosition = dragger.getModelEnd();
 
-			selectedHedron.setLocation( newPosition.x , newPosition.y );
+				selectedHedron.setLocation( newPosition.x , newPosition.y );
+			}
 		}
+
+		return super.mouseDragged( event );
 	}
 }

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2008
+ * (C) Copyright Numdata BV 2004-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -345,27 +345,37 @@ public class FromToCameraControl
 		return super.mousePressed( event );
 	}
 
-	public void mouseDragged( final ControlInputEvent event )
+	public EventObject mouseDragged( final ControlInputEvent event )
 	{
-		switch ( event.getMouseButtonDown() )
+		if ( isCaptured() )
 		{
-			case 1 :
-				if ( event.isShiftDown() )
-					rotateToAroundFrom( event );
-				else
-					rotateFromAroundTo( event );
-				break;
+			switch ( event.getMouseButtonDown() )
+			{
+				case 1 :
+					if ( event.isShiftDown() )
+						rotateToAroundFrom( event );
+					else
+						rotateFromAroundTo( event );
+					break;
 
-			case 2 :
-				move( event );
-				break;
+				case 2 :
+					move( event );
+					break;
 
-			case 3 :
-				zoom( event );
-				break;
+				case 3 :
+					zoom( event );
+					break;
+			}
 		}
+
+		return super.mouseDragged( event );
 	}
 
+	/**
+	 * Rotate the 'from' point around the 'to' point.
+	 *
+	 * @param   event   Drag event.
+	 */
 	protected void rotateFromAroundTo( final ControlInputEvent event )
 	{
 		final Vector3D upPrimary = _upPrimary;
@@ -386,6 +396,11 @@ public class FromToCameraControl
 		setFrom( newFrom );
 	}
 
+	/**
+	 * Rotate the 'to' point around the 'from' point.
+	 *
+	 * @param   event   Drag event.
+	 */
 	protected void rotateToAroundFrom( final ControlInputEvent event )
 	{
 		final Vector3D upPrimary = _upPrimary;
@@ -406,6 +421,11 @@ public class FromToCameraControl
 		setTo( newto );
 	}
 
+	/**
+	 * Move from point along plane.
+	 *
+	 * @param   event   Drag event.
+	 */
 	protected void move( final ControlInputEvent event )
 	{
 		final Vector3D upPrimary = _upPrimary;
@@ -426,6 +446,11 @@ public class FromToCameraControl
 		setFrom( newFrom );
 	}
 
+	/**
+	 * Zoom by dragging.
+	 *
+	 * @param   event   Drag event.
+	 */
 	protected void zoom( final ControlInputEvent event )
 	{
 		final Vector3D from = _dragStartFrom;

@@ -144,7 +144,53 @@ public abstract class MoveControl
 		return result;
 	}
 
-	public void mouseDragged( final ControlInputEvent event )
+	public EventObject mouseDragged( final ControlInputEvent event )
+	{
+		if ( _manipulationMode != ManipulationMode.NONE )
+		{
+			dragTo( event , _manipulatedNode.getID() );
+		}
+
+		return super.mouseDragged( event );
+	}
+
+	public EventObject mouseReleased( final ControlInputEvent event )
+	{
+
+		if ( _manipulationMode != ManipulationMode.NONE )
+		{
+			final Object target = _manipulatedNode.getID();
+
+			dragTo( event , target );
+			dragEnd( target );
+
+			_manipulationMode = ManipulationMode.NONE;
+			_manipulatedNode = null;
+		}
+
+		return super.mouseReleased( event );
+	}
+
+	/**
+	 * Start drag operation.
+	 *
+	 * @param   event       Event from control.
+	 * @param   target      Target object.
+	 *
+	 * @return  Manipulation mode to use.
+	 */
+	protected abstract ManipulationMode dragStart( final ControlInputEvent event , final Object target );
+
+	/**
+	 * Handle dragging. This is always called before the {@link #dragEnd} method.
+	 * <p />
+	 * The default implementation uses the current manipulation mode to call one
+	 * of the specific manipulation methods.
+	 *
+	 * @param   event       Event from control.
+	 * @param   target      Target object.
+	 */
+	protected void dragTo( final ControlInputEvent event , final Object target )
 	{
 		if ( _manipulationMode != ManipulationMode.NONE )
 		{
@@ -153,7 +199,6 @@ public abstract class MoveControl
 			final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( new BasicPlane3D( dragPlane2wcs , false ) , event.getPointerRay() );
 			if ( wcsPoint != null )
 			{
-				final Object   target     = _manipulatedNode.getID();
 				final Vector3D wcsDelta   = wcsPoint.minus( _wcsStart );
 				final Vector3D planeDelta = dragPlane2wcs.inverseRotate( wcsDelta );
 
@@ -170,28 +215,6 @@ public abstract class MoveControl
 			}
 		}
 	}
-
-	public void mouseReleased( final ControlInputEvent event )
-	{
-		if ( _manipulationMode != ManipulationMode.NONE )
-		{
-			mouseDragged( event );
-			dragEnd( _manipulatedNode.getID() );
-
-			_manipulationMode = ManipulationMode.NONE;
-			_manipulatedNode = null;
-		}
-	}
-
-	/**
-	 * Start drag operation.
-	 *
-	 * @param   event       Event from control.
-	 * @param   target      Target object.
-	 *
-	 * @return  Manipulation mode to use.
-	 */
-	protected abstract ManipulationMode dragStart( final ControlInputEvent event , final Object target );
 
 	/**
 	 * Move target object.

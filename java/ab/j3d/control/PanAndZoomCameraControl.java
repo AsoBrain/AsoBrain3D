@@ -142,18 +142,23 @@ public class PanAndZoomCameraControl
 		return super.mousePressed( event );
 	}
 
-	public void mouseDragged( final ControlInputEvent event )
+	public EventObject mouseDragged( final ControlInputEvent event )
 	{
-		switch ( event.getMouseButtonDown() )
+		if ( isCaptured() )
 		{
-			case 2 :
-				zoom( event );
-				break;
+			switch ( event.getMouseButtonDown() )
+			{
+				case 2 :
+					zoom( event );
+					break;
 
-			case 3 :
-				pan( event );
-				break;
+				case 3 :
+					pan( event );
+					break;
+			}
 		}
+
+		return super.mouseDragged( event );
 	}
 
 	public EventObject mouseWheelMoved( final ControlInputEvent event )
@@ -163,6 +168,11 @@ public class PanAndZoomCameraControl
 		return null;
 	}
 
+	/**
+	 * Handle panning by dragging.
+	 *
+	 * @param   event   Mouse event.
+	 */
 	protected void pan( final ControlInputEvent event )
 	{
 		final ViewModelView view          = _view;
@@ -176,6 +186,11 @@ public class PanAndZoomCameraControl
 		view.setViewTransform( viewTransform.plus( dx , dy , 0.0 ) );
 	}
 
+	/**
+	 * Handle zoom by dragging.
+	 *
+	 * @param   event   Mouse event.
+	 */
 	protected void zoom( final ControlInputEvent event )
 	{
 		final ViewModelView view   = _view;
@@ -192,12 +207,17 @@ public class PanAndZoomCameraControl
 		viewComponent.repaint( 0 , 0 , 1 , 1 );
 	}
 
-	protected void zoom( final int amount )
+	/**
+	 * Zoom with the specified amount of stpes.
+	 *
+	 * @param   steps   Amount of steps to zoom.
+	 */
+	protected void zoom( final int steps )
 	{
 		final double sensitivity = 0.1;
 
 		double factor = 0.0;
-		for ( int i = 0 ; i < Math.abs( amount ) ; i++ )
+		for ( int i = 0 ; i < Math.abs( steps ) ; i++ )
 		{
 			factor = ( 1.0 - sensitivity ) * factor + sensitivity;
 		}
@@ -206,7 +226,7 @@ public class PanAndZoomCameraControl
 
 		final ViewModelView view   = _view;
 		final Camera3D      camera = view.getCamera();
-		factor = ( amount >= 0 ) ? camera.getZoomFactor() * factor
+		factor = ( steps >= 0 ) ? camera.getZoomFactor() * factor
 		                         : camera.getZoomFactor() / factor;
 		camera.setZoomFactor( factor );
 

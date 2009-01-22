@@ -19,11 +19,8 @@
  */
 package ab.j3d.control;
 
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
-
-import ab.j3d.view.ViewModelView;
 
 import com.numdata.oss.event.EventDispatcher;
 
@@ -34,19 +31,63 @@ import com.numdata.oss.event.EventDispatcher;
  * @version $Revision$ $Date$
  */
 public class MouseControl
-	extends AbstractControl
+	implements Control
 {
 	/**
 	 * Number of event sequence being captured. Set to <code>-1</code> if no
 	 * capture is active.
 	 */
-	private int _capturedSequenceNumber = -1;
+	private int _capturedSequence = -1;
 
-	protected EventObject filterMouseEvent( final ControlInputEvent event , final ViewModelView view , final MouseEvent mouseEvent )
+	/**
+	 * Test if this control is currently enabled.
+	 *
+	 * @return  <code>true</code> if control is enabled;
+	 *          <code>false</code> if control is disabled.
+	 */
+	public boolean isEnabled()
 	{
-		final boolean captured = updateCaptureState( event );
+		return true;
+	}
 
-		EventObject result = captured ? null : event;
+	public EventObject filterEvent( final EventObject event )
+	{
+		EventObject result = event;
+
+		if ( event instanceof ControlInputEvent )
+		{
+			final ControlInputEvent controlInputEvent = (ControlInputEvent)event;
+
+			/*
+			 * Stop capture if event is out of sequence.
+			 */
+			if ( ( _capturedSequence >= 0 ) && ( _capturedSequence != controlInputEvent.getSequenceNumber() ) )
+			{
+				stopCapture( controlInputEvent );
+			}
+
+			/*
+			 * Filter mouse events if the control is enabled.
+			 */
+			if ( isEnabled() && ( controlInputEvent.getMouseEvent() != null ) )
+			{
+				result = filterMouseEvent( controlInputEvent );
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Filter mouse event. This is only called if contol is enabled.
+	 *
+	 * @param   event   Event from {@link ControlInput}.
+	 *
+	 * @return  Filtered event.
+	 */
+	protected EventObject filterMouseEvent( final ControlInputEvent event )
+	{
+		final EventObject result;
 
 		switch ( event.getID() )
 		{
@@ -55,51 +96,35 @@ public class MouseControl
 				break;
 
 			case MouseEvent.MOUSE_PRESSED :
-				if ( !captured )
-				{
-					result = mousePressed( event );
-				}
+				result = mousePressed( event );
 				break;
 
 			case MouseEvent.MOUSE_DRAGGED :
-				if ( captured )
-				{
-					mouseDragged( event );
-				}
+				result = mouseDragged( event );
 				break;
 
 			case MouseEvent.MOUSE_RELEASED :
-				if ( captured && !event.isMouseButtonDown() )
-				{
-					mouseReleased( event );
-					stopCapture( event );
-				}
+				result = mouseReleased( event );
 				break;
 
 			case MouseEvent.MOUSE_CLICKED :
-				if ( !captured )
-				{
-					result = mouseClicked( event );
-				}
+				result = mouseClicked( event );
 				break;
 
 			case MouseEvent.MOUSE_WHEEL :
 				result = mouseWheelMoved( event );
 				break;
-		}
 
-		return result;
-	}
-
-	protected EventObject filterKeyEvent( final ControlInputEvent event , final ViewModelView view , final KeyEvent keyEvent )
-	{
-		final EventObject result = updateCaptureState( event ) ? null : event;
-
-		switch ( event.getID() )
-		{
-			case KeyEvent.KEY_PRESSED :
-				handleKeyPress( event.getKeyCode() );
+			case MouseEvent.MOUSE_ENTERED :
+				result = mouseEntered( event );
 				break;
+
+			case MouseEvent.MOUSE_EXITED :
+				result = mouseExited( event );
+				break;
+
+			default :
+				result = event;
 		}
 
 		return result;
@@ -123,7 +148,7 @@ public class MouseControl
 		if ( !eventDispatcher.hasFocus( this ) )
 			eventDispatcher.requestFocus( this );
 
-		_capturedSequenceNumber = event.getSequenceNumber();
+		_capturedSequence = event.getSequenceNumber();
 	}
 
 	/**
@@ -135,41 +160,27 @@ public class MouseControl
 	{
 		final EventDispatcher eventDispatcher = event.getEventDispatcher();
 		if ( eventDispatcher.hasFocus( this ) )
+		{
 			eventDispatcher.releaseFocus();
+		}
 
-		_capturedSequenceNumber = -1;
+		_capturedSequence = -1;
 	}
 
 	/**
-	 * This method is called by the {@link #filterEvent} method to test if the
-	 * specified event is part of a captured sequence. It will also stop the
-	 * capture automatically if a captured event sequence was terminated.
+	 * Test if a captured event sequence is currently active.
 	 *
-	 * @param   controlInputEvent     Control input event to test against capture.
-	 *
-	 * @return  <code>true</code> if capture is valid and active;
+	 * @return  <code>true</code> if capture is active;
 	 *          <code>false</code> if no capture is active.
 	 */
-	protected boolean updateCaptureState( final ControlInputEvent controlInputEvent )
+	protected boolean isCaptured()
 	{
-		final int     capturedEvent  = _capturedSequenceNumber;
-		final boolean captureStarted = ( capturedEvent >= 0 );
-		final boolean captureActive  = ( capturedEvent == controlInputEvent.getSequenceNumber() );
-
-		if ( captureStarted && !captureActive )
-		{
-			stopCapture( controlInputEvent );
-		}
-
-		return captureActive;
+		return ( _capturedSequence >= 0 );
 	}
 
 	/**
 	 * This method is called when one of the mouse buttons is pressed and
 	 * released.
-	 * <p>
-	 * This method is not called during captured event sequences. Starting
-	 * captures within this method does not seem to be a good idea either.
 	 *
 	 * @param   event   Control input event.
 	 *
@@ -180,7 +191,7 @@ public class MouseControl
 	 */
 	public EventObject mouseClicked( final ControlInputEvent event )
 	{
-		return event;
+		return isCaptured() ? null : event;
 	}
 
 	/**
@@ -199,25 +210,7 @@ public class MouseControl
 	}
 
 	/**
-	 * This method is called when one of the mouse buttons is pressed while no
-	 * mouse event sequence capture has been started yet.
-	 *
-	 * @param   event   Control input event.
-	 *
-	 * @return  Filtered event (may be same or modified);
-	 *          <code>null</code> to discard event completely (e.g. because
-	 *          a capture was started).
-	 *
-	 * @see     MouseEvent#MOUSE_PRESSED
-	 */
-	public EventObject mousePressed( final ControlInputEvent event )
-	{
-		return event;
-	}
-
-	/**
-	 * This method is called when the mouse is moved during a captured mouse
-	 * event sequence.
+	 * This method is called when the mouse is moved.
 	 *
 	 * @param   event   Control input event.
 	 *
@@ -232,37 +225,95 @@ public class MouseControl
 	}
 
 	/**
-	 * This method is called when the mouse is dragged during a captured mouse
-	 * event sequence.
+	 * This method is called when one of the mouse buttons is pressed.
 	 *
 	 * @param   event   Control input event.
+	 *
+	 * @return  Filtered event (may be same or modified);
+	 *          <code>null</code> to discard event completely (e.g. because
+	 *          a capture was started).
+	 *
+	 * @see     MouseEvent#MOUSE_PRESSED
+	 */
+	public EventObject mousePressed( final ControlInputEvent event )
+	{
+		return isCaptured() ? null : event;
+	}
+
+	/**
+	 * This method is called when the mouse is dragged.
+	 *
+	 * @param   event   Control input event.
+	 *
+	 * @return  Filtered event (may be same or modified);
+	 *          <code>null</code> to discard event completely.
 	 *
 	 * @see     MouseEvent#MOUSE_DRAGGED
 	 */
-	public void mouseDragged( final ControlInputEvent event )
+	public EventObject mouseDragged( final ControlInputEvent event )
 	{
+		return isCaptured() ? null : event;
 	}
 
 	/**
-	 * This method is called when the mouse is released during a captured mouse
-	 * event sequence. The event sequence will be terminated after this event.
+	 * This method is called when the mouse is released. Any captured event
+	 * sequence will be terminated after this event.
 	 *
 	 * @param   event   Control input event.
 	 *
+	 * @return  Filtered event (may be same or modified);
+	 *          <code>null</code> to discard event completely.
+	 *
 	 * @see     MouseEvent#MOUSE_RELEASED
 	 */
-	public void mouseReleased( final ControlInputEvent event )
+	public EventObject mouseReleased( final ControlInputEvent event )
 	{
+		final ControlInputEvent result;
+
+		if ( isCaptured() )
+		{
+			if ( !event.isMouseButtonDown() )
+			{
+				stopCapture( event );
+			}
+
+			result = null;
+		}
+		else
+		{
+			result = event;
+		}
+
+		return result;
 	}
 
 	/**
-	 * This method is called when a key on the keyboard must be handled.
+	 * This method is called when the mouse is enters a component.
 	 *
-	 * @param   keyCode     Key code to handle.
+	 * @param   event   Control input event.
 	 *
-	 * @see     KeyEvent#getKeyCode
+	 * @return  Filtered event (may be same or modified);
+	 *          <code>null</code> to discard event completely.
+	 *
+	 * @see     MouseEvent#MOUSE_ENTERED
 	 */
-	public void handleKeyPress( final int keyCode )
+	public EventObject mouseEntered( final ControlInputEvent event )
 	{
+		return event;
+	}
+
+	/**
+	 * This method is called when the mouse is exits a component.
+	 *
+	 * @param   event   Control input event.
+	 *
+	 * @return  Filtered event (may be same or modified);
+	 *          <code>null</code> to discard event completely.
+	 *
+	 * @see     MouseEvent#MOUSE_EXITED
+	 */
+	public EventObject mouseExited( final ControlInputEvent event )
+	{
+		return event;
 	}
 }

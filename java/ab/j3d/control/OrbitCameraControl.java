@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2008
+ * (C) Copyright Numdata BV 2004-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -249,22 +249,27 @@ public class OrbitCameraControl
 		return super.mousePressed( event );
 	}
 
-	public void mouseDragged( final ControlInputEvent event )
+	public EventObject mouseDragged( final ControlInputEvent event )
 	{
-		switch ( event.getMouseButtonDown() )
+		if ( isCaptured() )
 		{
-			case MouseEvent.BUTTON1 :
-				rotate( event );
-				break;
+			switch ( event.getMouseButtonDown() )
+			{
+				case MouseEvent.BUTTON1 :
+					rotate( event );
+					break;
 
-			case MouseEvent.BUTTON2 :
-				pan( event );
-				break;
+				case MouseEvent.BUTTON2 :
+					pan( event );
+					break;
 
-			case MouseEvent.BUTTON3 :
-				zoom( event );
-				break;
+				case MouseEvent.BUTTON3 :
+					zoom( event );
+					break;
+			}
 		}
+
+		return super.mouseDragged( event );
 	}
 
 	protected void rotate( final ControlInputEvent event )
