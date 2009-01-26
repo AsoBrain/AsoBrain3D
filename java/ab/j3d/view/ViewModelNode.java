@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2008
+ * (C) Copyright Numdata BV 2004-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,6 +25,7 @@ import java.util.List;
 import javax.swing.Action;
 
 import ab.j3d.Bounds3D;
+import ab.j3d.Bounds3DBuilder;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.model.Node3D;
@@ -84,9 +85,12 @@ public final class ViewModelNode
 	private final List<Action> _contextActions = new ArrayList<Action>();
 
 	/**
-	 * Cached {@link Bounds3D} containing the combined bounds of all the
-	 * {@link Object3D}'s this {@link ViewModelNode} contains bounds3d.
-	 * Will set to <code>null</code> if the content or the transform is changed.
+	 * Cached collection of nodes the content of this node.
+	 */
+	private Node3DCollection<Object3D> _cachedContent = null;
+
+	/**
+	 * Cached node oriented {@link Bounds3D} for all contents of this node.
 	 */
 	private Bounds3D _cachedBounds3d = null;
 
@@ -96,7 +100,7 @@ public final class ViewModelNode
 	private final List<SubPlaneControl> _subPlaneControls = new ArrayList<SubPlaneControl>();
 
 	/**
-	 * {@link PlaneControl}
+	 * Supported {@link PlaneControl} of this node.
 	 */
 	private PlaneControl _planeControl = null;
 
@@ -139,38 +143,39 @@ public final class ViewModelNode
 	/**
 	 * Test if this node collides with another.
 	 *
-	 * @param   otherNode   Node to test collision with.
+	 * @param   thatNode    Node to test collision with.
 	 *
 	 * @return  <code>true</code> if the nodes collide;
 	 *          <code>false</code> otherwise.
 	 */
-	public boolean collidesWith( final ViewModelNode otherNode )
+	public boolean collidesWith( final ViewModelNode thatNode )
 	{
 		boolean result = false;
 
-		if ( ( otherNode != null ) && ( this != otherNode ) && this.isCollidable() && otherNode.isCollidable() )
+		if ( ( thatNode != null ) && ( this != thatNode ) && isCollidable() && thatNode.isCollidable() )
 		{
-			final Node3DCollection<Object3D> objects1 = _node3D.collectNodes( null , Object3D.class , getTransform() , false );
-			if ( objects1 != null )
+			final Node3DCollection<Object3D> thisContent = getContent();
+			final Node3DCollection<Object3D> thatContent = thatNode.getContent();
+
+			if ( ( thisContent.size() > 0 ) && ( thatContent.size() > 0 ) )
 			{
-				final Node3DCollection<Object3D> objects2 = otherNode._node3D.collectNodes( null , Object3D.class , otherNode.getTransform() , false );
-				if ( objects2 != null )
+				final Matrix3D thisNode2World    = getTransform();
+				final Matrix3D thatNode2World    = thatNode.getTransform();
+				final Matrix3D thatNode2ThisNode = thatNode2World.multiply( thisNode2World.inverse() );
+
+				for ( int i = 0 ; !result && ( i < thisContent.size() ) ; i++ )
 				{
-					for ( int i = 0 ; !result && ( i < objects1.size() ) ; i++ )
+					final Object3D thisObject          = thisContent.getNode( i );
+					final Matrix3D thisObject2ThisNode = thisContent.getMatrix( i );
+					final Matrix3D thatNode2ThisObject = thatNode2ThisNode.multiply( thisObject2ThisNode.inverse() );
+
+					for ( int j = 0 ; !result && ( j < thatContent.size() ) ; j++ )
 					{
-						final Object3D object1      = objects1.getNode( i );
-						final Matrix3D object1ToWcs = objects1.getMatrix( i );
-						final Matrix3D wcsToObject1 = object1ToWcs.inverse();
+						final Object3D thatObject            = thatContent.getNode( j );
+						final Matrix3D thatObject2ThatNode   = thatContent.getMatrix( j );
+						final Matrix3D thatObject2ThisObject = thatObject2ThatNode.multiply( thatNode2ThisObject );
 
-						for ( int j = 0 ; !result && ( j < objects2.size() ) ; j++ )
-						{
-							final Object3D object2      = objects2.getNode( j );
-							final Matrix3D object2ToWcs = objects2.getMatrix( j );
-
-							final Matrix3D node2ToNode1 = object2ToWcs.multiply( wcsToObject1 );
-
-							result = object1.collidesWith( node2ToNode1 ,  object2 );
-						}
+						result = thisObject.collidesWith( thatObject2ThisObject , thatObject );
 					}
 				}
 			}
@@ -215,23 +220,49 @@ public final class ViewModelNode
 		Bounds3D result = _cachedBounds3d;
 		if ( result == null )
 		{
-			final Node3DCollection<Object3D> object3DNode3DCollection;
-			final Node3D node3D = getNode3D();
-
-			object3DNode3DCollection = node3D.collectNodes( null , Object3D.class , Matrix3D.INIT , false );
-
-			if ( object3DNode3DCollection != null )
+			final Node3DCollection<Object3D> content = getContent();
+			if ( content.size() > 0 )
 			{
-				for ( int i = 0 ; i < object3DNode3DCollection.size() ; i++ )
-				{
-					final Object3D object3d = object3DNode3DCollection.getNode( i );
+				final Bounds3DBuilder builder = new Bounds3DBuilder();
 
-					result = object3d.getBounds( object3DNode3DCollection.getMatrix( i ) , result );
+				for ( int i = 0 ; i < content.size() ; i++ )
+				{
+					final Object3D object3d    = content.getNode( i );
+					final Matrix3D object2node = content.getMatrix( i );
+
+					object3d.addBounds( builder , object2node );
 				}
-				object3DNode3DCollection.clear();
+
+				result = builder.getBounds();
+				_cachedBounds3d = result;
 			}
-			_cachedBounds3d = result;
 		}
+		return result;
+	}
+
+	/**
+	 * Get collection of nodes with the content of this node. The returned
+	 * collection is cached, so please make no alterations to it.
+	 *
+	 * @return  Content of this node (never <code>null</code>).
+	 */
+	public final Node3DCollection<Object3D> getContent()
+	{
+		Node3DCollection<Object3D> result = _cachedContent;
+
+		if ( result == null )
+		{
+			result = new Node3DCollection<Object3D>();
+
+			final Node3D root = getNode3D();
+			if ( root != null )
+			{
+				root.collectNodes( result , Object3D.class , Matrix3D.INIT , false );
+			}
+
+			_cachedContent = result;
+		}
+
 		return result;
 	}
 
@@ -373,7 +404,9 @@ public final class ViewModelNode
 	public void addContextAction( final Action action )
 	{
 		if ( !_contextActions.contains( action ) )
+		{
 			_contextActions.add( action );
+		}
 	}
 
 	/**
@@ -533,7 +566,8 @@ public final class ViewModelNode
 	 */
 	public void fireContentUpdated()
 	{
-		//reset bounds
+		//reset bounds and content
+		_cachedContent = null;
 		_cachedBounds3d = null;
 
 		final List<ViewModelNodeUpdateListener> listeners = _viewModelNodeUpdateListeners;
