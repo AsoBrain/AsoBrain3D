@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2004-2008 Numdata BV
+ * Copyright (C) 2004-2009 Numdata BV
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,7 +43,6 @@ import ab.j3d.control.MouseControl;
 import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Object3D;
 import ab.j3d.model.SkyBox3D;
-import ab.j3d.view.ViewModelView.RenderingPolicy;
 import ab.j3d.view.control.planar.PlaneControl;
 import ab.j3d.view.control.planar.PlaneMoveControl;
 
@@ -262,10 +261,10 @@ public class ViewModelExample
 		final float []  textureV = { 0.0f , 0.0f , 1.0f , 1.0f };
 
 		final Object3D cube = new Object3D();
-		cube.fillPaint = Color.BLUE;
-		cube.outlinePaint = Color.BLACK;
-		cube.alternateFillPaint = Color.GREEN;
-		cube.alternateOutlinePaint = Color.BLACK;
+		cube.fillColor = Color.BLUE;
+		cube.outlineColor = Color.BLACK;
+		cube.alternateFillColor = Color.GREEN;
+		cube.alternateOutlineColor = Color.BLACK;
 		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , red     , textureU , textureV , 1.0f , false , false ); // Z =  size
 		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , green   , textureU , textureV , 1.0f , false , false ); // Z = -size
 		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , cyan    , textureU , textureV , 1.0f , false , false ); // Y = -size

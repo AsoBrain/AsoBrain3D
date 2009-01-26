@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2007
+ * (C) Copyright Numdata BV 2005-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -53,10 +53,10 @@ public final class RenderedPolygon
 	/**
 	 * Use alternate vs. regular appearance for face.
 	 *
-	 * @see     Object3D#fillPaint
-	 * @see     Object3D#outlinePaint
-	 * @see     Object3D#alternateFillPaint
-	 * @see     Object3D#alternateOutlinePaint
+	 * @see     Object3D#fillColor
+	 * @see     Object3D#outlineColor
+	 * @see     Object3D#alternateFillColor
+	 * @see     Object3D#alternateOutlineColor
 	 */
 	public boolean _alternateAppearance;
 
@@ -417,7 +417,7 @@ public final class RenderedPolygon
 	 */
 	public String toFriendlyString()
 	{
-		final StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 
 		sb.append(   "Object: "               ); sb.append( _object );
 		sb.append( "\nMaterial: "             ); sb.append( ( _material == null ? "null" : _material.code ) );

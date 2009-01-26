@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2007 Peter S. Heijnen
+ * Copyright (C) 1999-2009 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,11 +21,11 @@
 package ab.j3d.model;
 
 import java.awt.Color;
-import java.awt.Paint;
 import java.util.ArrayList;
 import java.util.List;
 
 import ab.j3d.Bounds3D;
+import ab.j3d.Bounds3DBuilder;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.PolyPoint2D;
@@ -86,19 +86,19 @@ public class Object3D
 	 * Outline color to use when this object is painted using Java 2D. If this
 	 * is set to <code>null</code>, the object outline will not be painted.
 	 *
-	 * @see     #fillPaint
-	 * @see     #alternateOutlinePaint
+	 * @see     #fillColor
+	 * @see     #alternateOutlineColor
 	 */
-	public Paint outlinePaint;
+	public Color outlineColor;
 
 	/**
 	 * Fill color to use when this object is painted using Java 2D. If this is
 	 * set to <code>null</code>, the object faces will not be filled.
 	 *
-	 * @see     #outlinePaint
-	 * @see     #alternateFillPaint
+	 * @see     #outlineColor
+	 * @see     #alternateFillColor
 	 */
-	public Paint fillPaint;
+	public Color fillColor;
 
 	/**
 	 * Amount of shading that may be applied (0=none, 1=extreme) when this
@@ -111,19 +111,19 @@ public class Object3D
 	 * If this is set to <code>null</code>, the object outline will not be
 	 * painted.
 	 *
-	 * @see     #alternateFillPaint
-	 * @see     #outlinePaint
+	 * @see     #alternateFillColor
+	 * @see     #outlineColor
 	 */
-	public Paint alternateOutlinePaint;
+	public Color alternateOutlineColor;
 
 	/**
 	 * Alternate fill color to use when this object is painted using Java 2D.
 	 * If this is set to <code>null</code>, the object faces will not be filled.
 	 *
-	 * @see     #alternateOutlinePaint
-	 * @see     #fillPaint
+	 * @see     #alternateOutlineColor
+	 * @see     #fillColor
 	 */
-	public Paint alternateFillPaint;
+	public Color alternateFillColor;
 
 	/**
 	 * Bounding box of object in the local coordinate system.
@@ -143,11 +143,11 @@ public class Object3D
 		_vertexNormals        = null;
 		_vertexNormalsDirty   = true;
 
-		outlinePaint          = Color.BLACK;
-		fillPaint             = Color.WHITE;
+		outlineColor = Color.BLACK;
+		fillColor = Color.WHITE;
 		shadeFactor           = 0.5f;
-		alternateOutlinePaint = Color.BLUE;
-		alternateFillPaint    = Color.WHITE;
+		alternateOutlineColor = Color.BLUE;
+		alternateFillColor = Color.WHITE;
 
 		_orientedBoundingBox  = null;
 	}
@@ -438,102 +438,60 @@ public class Object3D
 		Bounds3D result = _orientedBoundingBox;
 		if ( result == null )
 		{
-			result = getBounds( null , null );
-			_orientedBoundingBox = result;
+			final int vertexCount = getVertexCount();
+			if ( vertexCount > 0 )
+			{
+				final double[] vertexCoordinates = getVertexCoordinates();
+
+				final Bounds3DBuilder builder = new Bounds3DBuilder();
+
+				int i = 0;
+				for ( int vertex = 0 ; vertex < vertexCount ; vertex++ )
+				{
+					final double x = vertexCoordinates[ i++ ];
+					final double y = vertexCoordinates[ i++ ];
+					final double z = vertexCoordinates[ i++ ];
+
+					builder.addPoint( x , y , z );
+				}
+
+				result = builder.getBounds();
+				_orientedBoundingBox = result;
+			}
 		}
 
 		return result;
 	}
 
 	/**
-	 * Get outer bounds (bounding box) of the object. Optionally, an existing
-	 * bounding box can be specified. The resulting bounds contains all vertices
-	 * within the object and the existing bounding box (if any).
+	 * Add bounds of this object to a {@link Bounds3DBuilder}. Optionally.
 	 *
-	 * @param   xform       Transform to apply to vertex coordinates.
-	 * @param   bounds      Existing bounding box to use.
-	 *
-	 * @return  Combined bounding box of this object and the existing bounding box (if any).
+	 * @param   bounds3DBuilder     Builder to add bounds to.
+	 * @param   xform               Transform to apply to vertex coordinates.
 	 */
-	public final Bounds3D getBounds( final Matrix3D xform , final Bounds3D bounds )
+	public void addBounds( final Bounds3DBuilder bounds3DBuilder , final Matrix3D xform )
 	{
-		Bounds3D result = bounds;
-
-		final int vertexCount = getVertexCount();
-		if ( vertexCount > 0 )
+		if ( ( xform != null ) && ( xform != Matrix3D.INIT ) && ( !Matrix3D.INIT.equals( xform ) ) )
 		{
-			final boolean isXform = ( xform != null ) && ( xform != Matrix3D.INIT ) && ( !Matrix3D.INIT.equals( xform ) );
-
-			double x1;
-			double y1;
-			double z1;
-			double x2;
-			double y2;
-			double z2;
-
-			if ( result != null )
-			{
-				x1 = bounds.v1.x;
-				y1 = bounds.v1.y;
-				z1 = bounds.v1.z;
-				x2 = bounds.v2.x;
-				y2 = bounds.v2.y;
-				z2 = bounds.v2.z;
-			}
-			else
-			{
-				x1 = Double.POSITIVE_INFINITY;
-				y1 = Double.POSITIVE_INFINITY;
-				z1 = Double.POSITIVE_INFINITY;
-				x2 = Double.NEGATIVE_INFINITY;
-				y2 = Double.NEGATIVE_INFINITY;
-				z2 = Double.NEGATIVE_INFINITY;
-				result = Bounds3D.INIT;
-			}
-
-			double x;
-			double y;
-			double z;
-			double tx;
-			double ty;
-
-			final double[] vertexCoordinates = _vertexCoordinates;
+			final int      vertexCount       = getVertexCount();
+			final double[] vertexCoordinates = getVertexCoordinates();
 
 			int i = 0;
 			for ( int vertex = 0 ; vertex < vertexCount ; vertex++ )
 			{
-				x = vertexCoordinates[ i++ ];
-				y = vertexCoordinates[ i++ ];
-				z = vertexCoordinates[ i++ ];
+				final double x = vertexCoordinates[ i++ ];
+				final double y = vertexCoordinates[ i++ ];
+				final double z = vertexCoordinates[ i++ ];
 
-				if ( isXform )
-				{
-					tx = xform.transformX( x , y , z );
-					ty = xform.transformY( x , y , z );
-					z  = xform.transformZ( x , y , z );
-					x  = tx;
-					y  = ty;
-				}
-
-				if ( x < x1 ) x1 = x;
-				if ( y < y1 ) y1 = y;
-				if ( z < z1 ) z1 = z;
-				if ( x > x2 ) x2 = x;
-				if ( y > y2 ) y2 = y;
-				if ( z > z2 ) z2 = z;
-			}
-
-			if ( x1 > x2 || y1 > y2 || z1 > z2 )
-			{
-				result = null;
-			}
-			else
-			{
-				result = result.set( result.v1.set( x1 , y1 , z1 ) , result.v2.set( x2 , y2 , z2 ) );
+				bounds3DBuilder.addPoint( xform.transformX( x , y , z ) , xform.transformY( x , y , z ) , xform.transformZ( x , y , z ) );
 			}
 		}
-
-		return result;
+		else
+		{
+			final Bounds3D orientedBoundingBox = getOrientedBoundingBox();
+			bounds3DBuilder.addPoint( orientedBoundingBox.v1 );
+			bounds3DBuilder.addPoint( orientedBoundingBox.v2 );
+		}
 	}
 
 	/**

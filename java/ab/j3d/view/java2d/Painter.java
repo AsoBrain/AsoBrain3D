@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2008 Peter S. Heijnen
+ * Copyright (C) 1999-2009 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -121,7 +121,7 @@ public final class Painter
 
 			if ( polygon._alternateAppearance )
 			{
-				fillPaint = polygon._object.alternateFillPaint;
+				fillPaint = polygon._object.alternateFillColor;
 			}
 			else if ( useMaterialColor && ( material != null ) && ( material.colorMap == null ) )
 			{
@@ -129,7 +129,7 @@ public final class Painter
 			}
 			else
 			{
-				fillPaint = polygon._object.fillPaint;
+				fillPaint = polygon._object.fillColor;
 			}
 
 			if ( fill && applyLighting && ( polygon._object.shadeFactor > 0.01f ) && ( fillPaint instanceof Color ) )
@@ -156,14 +156,14 @@ public final class Painter
 
 		if ( outline || ( fillPaint == null ) )
 		{
-			final Paint outlinePaint;
+			final Color outlineColor;
 
-			outlinePaint = ( fillPaint != null )        ? Color.DARK_GRAY
-			             : polygon._alternateAppearance ? polygon._object.alternateOutlinePaint
-			                                            : polygon._object.outlinePaint;
+			outlineColor = ( fillPaint != null )        ? Color.DARK_GRAY
+			             : polygon._alternateAppearance ? polygon._object.alternateOutlineColor
+			                                            : polygon._object.outlineColor;
 
 			g.setRenderingHint( RenderingHints.KEY_ANTIALIASING , RenderingHints.VALUE_ANTIALIAS_ON );
-			g.setPaint( outlinePaint );
+			g.setPaint( outlineColor );
 			g.draw( polygon );
 		}
 
@@ -173,7 +173,7 @@ public final class Painter
 	/**
 	 * Paint 2D representation of 3D objects at this node and its child nodes
 	 * using rendering hints defined for this object. See the other
-	 * {@link #paintNode(Graphics2D,Matrix3D,Matrix3D,Node3D,Paint,Paint,float)}
+	 * {@link #paintNode(Graphics2D,Matrix3D,Matrix3D,Node3D,Color,Paint,float)}
 	 * method in this class for a more elaborate
 	 * description of this process.
 	 * <p />
@@ -196,7 +196,7 @@ public final class Painter
 	/**
 	 * Paint 2D representation of 3D objects at this node and its child nodes
 	 * using rendering hints defined for this object. See the other
-	 * {@link #paintNode(Graphics2D,Matrix3D,Matrix3D,Node3D,Paint,Paint,float)}
+	 * {@link #paintNode(Graphics2D,Matrix3D,Matrix3D,Node3D,Color,Paint,float)}
 	 * method in this class for a more elaborate
 	 * description of this process.
 	 * <p />
@@ -234,16 +234,18 @@ public final class Painter
 		if ( node instanceof Object3D )
 		{
 			final Object3D object       = (Object3D)node;
-			final Paint    outlinePaint =                                                     alternateAppearance ? object.alternateOutlinePaint : object.outlinePaint;
-			final Paint    fillPaint    = ( fillPaintOverride != null ) ? fillPaintOverride : alternateAppearance ? object.alternateFillPaint    : object.fillPaint;
+			final Color    outlineColor =                                                     alternateAppearance ? object.alternateOutlineColor : object.outlineColor;
+			final Paint    fillColor    = ( fillPaintOverride != null ) ? fillPaintOverride : alternateAppearance ? object.alternateFillColor    : object.fillColor;
 
-			paintObject( g , gTransform , transform , object , outlinePaint , fillPaint , object.shadeFactor );
+			paintObject( g , gTransform , transform , object , outlineColor , fillColor , object.shadeFactor );
 		}
 
 		final int  childCount = node.getChildCount();
 
 		for ( int i = 0 ; i < childCount ; i++ )
+		{
 			paintNode( g , gTransform , transform , node.getChild( i ) , alternateAppearance , fillPaintOverride );
+		}
 	}
 
 	/**
@@ -251,7 +253,7 @@ public final class Painter
 	 * transformed using the <code>node2view</code> argument. By default, the
 	 * object is painted by drawing the outlines of its 'visible' faces.
 	 * <p />
-	 * The rendering settings are determined by the <code>outlinePaint</code>,
+	 * The rendering settings are determined by the <code>outlineColor</code>,
 	 * <code>fillPaint</code>, and <code>shadeFactor</code> arguments. The
 	 * colors may be set to <code>null</code> to disable drawing of the
 	 * outline or inside of faces respectively. The <code>shadeFactor</code> is
@@ -270,11 +272,11 @@ public final class Painter
 	 * @param   gTransform      Projection transform for Graphics2D context (3D->2D, pan, sale).
 	 * @param   node2view       Transformation from node's to view coordinate system.
 	 * @param   node            Node to paint.
-	 * @param   outlinePaint    Paint to use for face outlines (<code>null</code> to disable drawing).
+	 * @param   outlineColor    Paint to use for face outlines (<code>null</code> to disable drawing).
 	 * @param   fillPaint       Paint to use for filling faces (<code>null</code> to disable drawing).
 	 * @param   shadeFactor     Amount of shading that may be applied (0=none, 1=extreme).
 	 */
-	public static void paintNode( final Graphics2D g , final Matrix3D gTransform , final Matrix3D node2view , final Node3D node , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
+	public static void paintNode( final Graphics2D g , final Matrix3D gTransform , final Matrix3D node2view , final Node3D node , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
 	{
 		final Matrix3D transform;
 
@@ -294,26 +296,28 @@ public final class Painter
 		}
 
 		if ( node instanceof Object3D )
-			paintObject( g , gTransform , transform , (Object3D)node , outlinePaint , fillPaint , shadeFactor );
+		{
+			paintObject( g , gTransform , transform , (Object3D)node , outlineColor , fillPaint , shadeFactor );
+		}
 
 		final int  childCount = node.getChildCount();
 
 		for ( int i = 0 ; i < childCount ; i++ )
-			paintNode( g , gTransform , transform , node.getChild( i ) , outlinePaint , fillPaint , shadeFactor );
+			paintNode( g , gTransform , transform , node.getChild( i ) , outlineColor , fillPaint , shadeFactor );
 	}
 
-	private static void paintObject( final Graphics2D g , final Matrix3D gTransform , final Matrix3D object2view , final Object3D object , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
+	private static void paintObject( final Graphics2D g , final Matrix3D gTransform , final Matrix3D object2view , final Object3D object , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
 	{
 		final int faceCount = object.getFaceCount();
 
 		if ( ( g != null )
 		     && ( gTransform != null )
 		     && ( object2view != null )
-		     && ( ( outlinePaint != null ) || ( fillPaint != null ) )
+		     && ( ( outlineColor != null ) || ( fillPaint != null ) )
 		     && ( faceCount > 0 )
-		     && ( !( object instanceof Cylinder3D       ) || !paintCylinder     ( g , gTransform , object2view , (Cylinder3D      )object , outlinePaint , fillPaint , shadeFactor ) )
-		     && ( !( object instanceof Sphere3D         ) || !paintSphere       ( g , gTransform , object2view , (Sphere3D        )object , outlinePaint , fillPaint , shadeFactor ) )
-		     && ( !( object instanceof ExtrudedObject2D ) || !paintExtrudedShape( g , gTransform , object2view , (ExtrudedObject2D)object , outlinePaint , fillPaint , shadeFactor ) ) )
+		     && ( !( object instanceof Cylinder3D       ) || !paintCylinder     ( g , gTransform , object2view , (Cylinder3D      )object , outlineColor , fillPaint , shadeFactor ) )
+		     && ( !( object instanceof Sphere3D         ) || !paintSphere       ( g , gTransform , object2view , (Sphere3D        )object , outlineColor , fillPaint , shadeFactor ) )
+		     && ( !( object instanceof ExtrudedObject2D ) || !paintExtrudedShape( g , gTransform , object2view , (ExtrudedObject2D)object , outlineColor , fillPaint , shadeFactor ) ) )
 		{
 			/*
 			 * If the array is to small, create a larger one.
@@ -365,7 +369,7 @@ public final class Painter
 					faceFillPaint = fillPaint;
 				}
 
-				paintFace( g , gTransform , face , outlinePaint , faceFillPaint , vertexCoordinates , xs , ys );
+				paintFace( g , gTransform , face , outlineColor , faceFillPaint , vertexCoordinates , xs , ys );
 			}
 		}
 	}
@@ -380,7 +384,7 @@ public final class Painter
 	 * @param   object2view     Transformation from object-local coordinates to
 	 *                          view coordinates.
 	 * @param   object          Extruded shape to be painted.
-	 * @param   outlinePaint    Paint to use for the outline, or
+	 * @param   outlineColor    Paint to use for the outline, or
 	 *                          <code>null</code> to draw no outline.
 	 * @param   fillPaint       Paint to fill the painted shape with, or
 	 *                          <code>null</code> if the shape mustn't be filled.
@@ -389,7 +393,7 @@ public final class Painter
 	 * @return  <code>true</code> if the shape was painted; <code>false</code>
 	 *          if the shape should be painted by some other means.
 	 */
-	private static boolean paintExtrudedShape( final Graphics2D g , final Matrix3D gTransform , final Matrix3D object2view , final ExtrudedObject2D object , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
+	private static boolean paintExtrudedShape( final Graphics2D g , final Matrix3D gTransform , final Matrix3D object2view , final ExtrudedObject2D object , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
 	{
 		final boolean result;
 
@@ -424,9 +428,9 @@ public final class Painter
 				g.fill( boundsShape );
 			}
 
-			if ( outlinePaint != null )
+			if ( outlineColor != null )
 			{
-				g.setPaint( outlinePaint );
+				g.setPaint( outlineColor );
 				g.draw( boundsShape );
 			}
 
@@ -450,9 +454,9 @@ public final class Painter
 				g.fill( viewShape );
 			}
 
-			if ( outlinePaint != null )
+			if ( outlineColor != null )
 			{
-				g.setPaint( outlinePaint );
+				g.setPaint( outlineColor );
 				g.draw( viewShape );
 			}
 
@@ -468,7 +472,7 @@ public final class Painter
 		return result;
 	}
 
-	private static boolean paintCylinder( final Graphics2D g , final Matrix3D gTransform , final Matrix3D cylinder2view , final Cylinder3D cylinder , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
+	private static boolean paintCylinder( final Graphics2D g , final Matrix3D gTransform , final Matrix3D cylinder2view , final Cylinder3D cylinder , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
 	{
 		final boolean result;
 
@@ -527,11 +531,11 @@ public final class Painter
 
 			if ( fillPaint != null )
 			{
-//				if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ) )
+//				if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlineColor instanceof Color ) )
 //				{
 //					final float highlightX = ( 1.0f - goldenRatio ) * x1 + goldenRatio * x4;
 //					final float highlightY = ( 1.0f - goldenRatio ) * y1 + goldenRatio * y4;
-//					g.setPaint( new GradientPaint( highlightX , highlightY , (Color)fillPaint , x1 , y1 , (Color)outlinePaint , true ) );
+//					g.setPaint( new GradientPaint( highlightX , highlightY , (Color)fillPaint , x1 , y1 , (Color)outlineColor , true ) );
 //				}
 //				else
 				{
@@ -540,9 +544,9 @@ public final class Painter
 				g.fill( path );
 			}
 
-			if ( outlinePaint != null )
+			if ( outlineColor != null )
 			{
-				g.setPaint( outlinePaint );
+				g.setPaint( outlineColor );
 				g.draw( path );
 			}
 
@@ -607,11 +611,11 @@ public final class Painter
 				final Paint paint;
 				if ( fillPaint != null )
 				{
-//					if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ))
+//					if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlineColor instanceof Color ))
 //					{
 //						final float r = Math.max( topRadius , botRadius );
 //						final float highlight = ( goldenRatio - 0.5f ) * r;
-//						paint = new GradientPaint( x + highlight , y - highlight , (Color)fillPaint , x -r , y + r , (Color)outlinePaint , true );
+//						paint = new GradientPaint( x + highlight , y - highlight , (Color)fillPaint , x -r , y + r , (Color)outlineColor , true );
 //					}
 //					else
 					{
@@ -627,9 +631,9 @@ public final class Painter
 					paint = null;
 				}
 
-				if ( outlinePaint != null )
+				if ( outlineColor != null )
 				{
-					g.setPaint( outlinePaint );
+					g.setPaint( outlineColor );
 					if ( !shape1.equals( shape2 ) )
 						g.draw( shape1 );
 				}
@@ -642,9 +646,9 @@ public final class Painter
 						g.fill( shape2 );
 					}
 
-					if ( outlinePaint != null )
+					if ( outlineColor != null )
 					{
-						g.setPaint( outlinePaint );
+						g.setPaint( outlineColor );
 						g.draw( shape2 );
 					}
 				}
@@ -677,7 +681,7 @@ public final class Painter
 		return result;
 	}
 
-	private static boolean paintSphere( final Graphics2D g , final Matrix3D gTransform , final Matrix3D sphere2view , final Sphere3D sphere , final Paint outlinePaint , final Paint fillPaint , final float shadeFactor )
+	private static boolean paintSphere( final Graphics2D g , final Matrix3D gTransform , final Matrix3D sphere2view , final Sphere3D sphere , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
 	{
 		final boolean result;
 
@@ -705,12 +709,12 @@ public final class Painter
 			if ( fillPaint != null )
 			{
 				final Paint paint;
-//				if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlinePaint instanceof Color ))
+//				if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlineColor instanceof Color ))
 //				{
 //					final float goldenRatio = 0.6180339f;
 //					final float highlight   = ( goldenRatio - 0.5f ) * r;
 //
-//					paint = new GradientPaint( x + highlight , y - highlight , (Color)fillPaint , x -r , y + r , (Color)outlinePaint , true );
+//					paint = new GradientPaint( x + highlight , y - highlight , (Color)fillPaint , x -r , y + r , (Color)outlineColor , true );
 //				}
 //				else
 				{
@@ -721,9 +725,9 @@ public final class Painter
 				g.fill( shape );
 			}
 
-			if ( outlinePaint != null )
+			if ( outlineColor != null )
 			{
-				g.setPaint( outlinePaint );
+				g.setPaint( outlineColor );
 				g.draw( shape );
 			}
 
@@ -745,7 +749,7 @@ public final class Painter
 	 * @param   g                   Graphics2D context.
 	 * @param   gTransform          Projection transform for Graphics2D context (3D->2D, pan, sale).
 	 * @param   face                Face to paint.
-	 * @param   outlinePaint        Paint to use for face outlines (<code>null</code> to disable drawing).
+	 * @param   outlineColor        Paint to use for face outlines (<code>null</code> to disable drawing).
 	 * @param   fillPaint           Paint to use for filling faces (<code>null</code> to disable drawing).
 	 * @param   vertexCoordinates   Coordinates of vertices (after view transform is applied).
 	 * @param   xs                  Temporary storage for 2D coordinates.
@@ -753,12 +757,12 @@ public final class Painter
 	 *
 	 * @see     #paintNode
 	 */
-	private static void paintFace( final Graphics2D g , final Matrix3D gTransform , final Face3D face , final Paint outlinePaint , final Paint fillPaint , final double[] vertexCoordinates , final int[] xs , final int[] ys )
+	private static void paintFace( final Graphics2D g , final Matrix3D gTransform , final Face3D face , final Color outlineColor , final Paint fillPaint , final double[] vertexCoordinates , final int[] xs , final int[] ys )
 	{
 		final int   vertexCount   = face.getVertexCount();
 		final int[] vertexIndices = face.getVertexIndices();
 
-		if ( ( vertexCount > 0 ) && ( ( outlinePaint != null ) || ( fillPaint != null ) ) )
+		if ( ( vertexCount > 0 ) && ( ( outlineColor != null ) || ( fillPaint != null ) ) )
 		{
 			boolean show = true;
 			for ( int p = 0 ; p < vertexCount ; p++ )
@@ -798,7 +802,7 @@ public final class Painter
 
 					if ( vertexCount < 3 ) /* point or line */
 					{
-						if ( outlinePaint == null )
+						if ( outlineColor == null )
 							g.drawLine( xs[ 0 ] , ys[ 0 ] , xs[ vertexCount - 1 ] , ys[ vertexCount - 1 ] );
 					}
 					else
@@ -807,9 +811,9 @@ public final class Painter
 					}
 				}
 
-				if ( outlinePaint != null )
+				if ( outlineColor != null )
 				{
-					g.setPaint( outlinePaint );
+					g.setPaint( outlineColor );
 					if ( vertexCount < 3 ) /* point or line */
 						g.drawLine( xs[ 0 ] , ys[ 0 ] , xs[ vertexCount - 1 ] , ys[ vertexCount - 1 ] );
 					else
