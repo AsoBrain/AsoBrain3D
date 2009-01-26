@@ -19,17 +19,10 @@
  */
 package ab.j3d.view.jogl;
 
-import java.awt.Color;
-import java.awt.Paint;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.PathIterator;
 import java.awt.image.BufferedImage;
 import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.List;
 import java.util.Map;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLException;
@@ -42,14 +35,6 @@ import ab.j3d.MapTools;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
-import ab.j3d.model.ExtrudedObject2D;
-import ab.j3d.model.Face3D;
-import ab.j3d.model.Light3D;
-import ab.j3d.model.Node3D;
-import ab.j3d.model.Node3DCollection;
-import ab.j3d.model.Object3D;
-import ab.j3d.view.ViewModelNode;
-import ab.j3d.view.ViewModelView;
 
 import com.numdata.oss.MathTools;
 import com.numdata.oss.TextTools;
@@ -67,13 +52,13 @@ public class JOGLTools
 	 * Texture cache key for the normalization cube map, used for DOT3 bump
 	 * mapping.
 	 */
-	private static final String NORMALIZATION_CUBE_MAP = "__normalizationCubeMap";
+	public static final String NORMALIZATION_CUBE_MAP = "__normalizationCubeMap";
 
 	/**
 	 * Maximum number of lights possible. Standard value is 8 because all
 	 * OpenGL implementations have atleast this number of lights.
 	 */
-	private static final int MAX_LIGHTS = 8;
+	public static final int MAX_LIGHTS = 8;
 
 	/**
 	 * Utility/Application class is not supposed to be instantiated.
@@ -83,776 +68,37 @@ public class JOGLTools
 	}
 
 	/**
-	 * Paint 3D object on GL context.
+	 * Multiply current GL transform with the specific 3D transformation matrix.
 	 *
-	 * @param   glWrapper           GLWrapper.
-	 * @param   object3D            Object to draw.
-	 * @param   node2gl             Transformation from node to current GL transform.
-	 * @param   useTextures         Use textures on this object3D.
-	 * @param   useBump             Whether to use bump mapping or not.
-	 * @param   useAlternate        Use alternative color to paint this object3D.
-	 * @param   hasLighting         Specify material lighting properties.
-	 * @param   textureCache        Texture cache.
-	 * @param   fill                Fill polygons.
-	 * @param   materialOverride    Material to use instead of actual materials.
+	 * @param   gl          GL context.
+	 * @param   transform   Transformation to multiply with.
 	 */
-	public static void paintObject3D( final GLWrapper glWrapper , final Object3D object3D , final Matrix3D node2gl , final boolean useTextures , final boolean useBump , final boolean useAlternate , final boolean hasLighting , final Map<String,SoftReference<Texture>> textureCache , final boolean fill , final Material materialOverride )
+	public static void glMultMatrixd( final GL gl , final Matrix3D transform )
 	{
-		paintObject3D( glWrapper , object3D , node2gl , useTextures , useBump , useAlternate , hasLighting ? Vector3D.INIT : null , textureCache , fill , materialOverride );
+		gl.glMultMatrixd( new double[]
+			{
+				transform.xx , transform.yx , transform.zx , 0.0 ,
+				transform.xy , transform.yy , transform.zy , 0.0 ,
+				transform.xz , transform.yz , transform.zz , 0.0 ,
+				transform.xo , transform.yo , transform.zo , 1.0
+			} , 0 );
 	}
 
 	/**
-	 * Paint 3D object on GL context.
-	 *
-	 * @param   glWrapper           GLWrapper.
-	 * @param   object3D            Object to draw.
-	 * @param   node2gl             Transformation from node to current GL transform.
-	 * @param   useTextures         Use textures on this object3D.
-	 * @param   useBump             Whether to use bump mapping or not.
-	 * @param   useAlternate        Use alternative color to paint this object3D.
-	 * @param   lightPosition       Position of the dominant light source, if any.
-	 * @param   textureCache        Texture cache.
-	 * @param   fill                Fill polygons.
-	 * @param   materialOverride    Material to use instead of actual materials.
-	 */
-	public static void paintObject3D( final GLWrapper glWrapper , final Object3D object3D , final Matrix3D node2gl , final boolean useTextures , final boolean useBump , final boolean useAlternate , final Vector3D lightPosition , final Map<String,SoftReference<Texture>> textureCache , final boolean fill , final Material materialOverride )
-	{
-		final boolean hasLighting = ( lightPosition != null );
-
-		final Paint paint;
-		final Paint alternatePaint;
-
-		if ( fill )
-		{
-			glWrapper.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_FILL );
-			paint          = object3D.fillPaint;
-			alternatePaint = object3D.alternateFillPaint;
-		}
-		else
-		{
-			glWrapper.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_LINE );
-			paint          = object3D.outlinePaint;
-			alternatePaint = object3D.alternateOutlinePaint;
-		}
-
-		Material material = materialOverride;
-
-		if ( useAlternate && material == null )
-		{
-			final Color color;
-			if ( alternatePaint instanceof Color )
-			{
-				color = (Color)alternatePaint;
-			}
-			else
-			{
-				return;
-			}
-			final float[] argb = color.getRGBComponents( null );
-			glWrapper.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
-
-			if ( hasLighting )
-			{
-				material = new Material( color.getRGB() );
-			}
-		}
-		else if ( !useTextures && material == null )
-		{
-			final Color color;
-			if ( paint instanceof Color )
-			{
-				color = (Color)paint;
-			}
-			else
-			{
-				return;
-			}
-			final float[] argb = color.getRGBComponents( null );
-			glWrapper.glColor4f( argb[ 0 ] , argb[ 1 ] , argb[ 2 ] , argb[ 3 ] );
-			if ( hasLighting )
-			{
-				material = new Material( color.getRGB() );
-			}
-		}
-		else if ( materialOverride != null )
-		{
-			glWrapper.glColor4f( materialOverride.diffuseColorRed , materialOverride.diffuseColorGreen , materialOverride.diffuseColorBlue , materialOverride.diffuseColorAlpha );
-		}
-
-		/*
-		 * Push the current matrix stack down by one
-		 */
-		glWrapper.glPushMatrix();
-
-		/*
-		 * Set the object transform
-		 */
-		glWrapper.glMultMatrixd( node2gl );
-
-		if ( !fill && object3D instanceof ExtrudedObject2D )
-		{
-			// @FIXME Drawing outlines like this is only needed while Face3D doesn't support concave faces.
-			// (A single Face3D could then be used for a concave shape, and the proper outline would be drawn automatically.)
-
-			final ExtrudedObject2D extruded  = (ExtrudedObject2D)object3D;
-			final Shape            shape     = extruded.shape;
-			final Vector3D         extrusion = extruded.extrusion;
-
-			glWrapper.glPushMatrix();
-			glWrapper.glMultMatrixd( extruded.transform );
-
-			/* Draw the bottom outline of the extruded shape. */
-			drawShape( glWrapper , shape , extruded.flatness );
-
-			/* Draw the sides of the extruded shape. */
-			drawExtrusionLines( glWrapper , shape , extrusion );
-
-			/* Draw the top outline of the extruded shape. */
-			glWrapper.glMultMatrixd( Matrix3D.getTransform( 0.0 , 0.0 , 0.0 , extrusion.x , extrusion.y , extrusion.z ) );
-			drawShape( glWrapper , shape , extruded.flatness );
-
-			glWrapper.glPopMatrix();
-		}
-		else
-		{
-			for ( int i = 0 ; i < object3D.getFaceCount() ; i++ )
-			{
-				final Face3D face = object3D.getFace( i );
-
-				if ( face.isTwoSided() )
-				{
-					glWrapper.setCullFace( false );
-				}
-				else
-				{
-					glWrapper.setCullFace( true );
-					glWrapper.glCullFace( GL.GL_BACK );
-				}
-				if ( hasLighting )
-				{
-					if ( material != null )
-					{
-						setMaterial( glWrapper , material );
-					}
-					else if ( face.getMaterial() != null )
-					{
-						setMaterial( glWrapper , face.getMaterial() );
-					}
-				}
-
-				if ( materialOverride != null )
-				{
-					final Material temp = face.getMaterial();
-					face.setMaterial( materialOverride );
-					if ( TextTools.isEmpty( materialOverride.colorMap ) )
-					{
-						drawFace( glWrapper , face , false , false , null , lightPosition );
-					}
-					else
-					{
-						drawFace( glWrapper , face , true , useBump , textureCache , lightPosition );
-					}
-					face.setMaterial( temp );
-				}
-				else if ( face.getMaterial() != null && !useAlternate && useTextures )
-				{
-					drawFace( glWrapper , face , true , useBump , textureCache , lightPosition );
-				}
-				else if ( face.getMaterial() != null )
-				{
-					drawFace( glWrapper , face , false , false , null , lightPosition );
-				}
-				else if ( !useTextures && face.getMaterial() == null )
-				{
-					drawFace( glWrapper , face , false , false , null , null );
-				}
-			}
-		}
-
-		/*
-		 * Pop matrix stack, replace current matrix with one below it on the stack.
-		 */
-		glWrapper.glPopMatrix();
-	}
-
-	/**
-	 * Draw the sides of the extruded shape.
-	 *
-	 * @param glWrapper     {@link GLWrapper} to use.
-	 * @param shape         Base shape.
-	 * @param extrusion     Extrusion vector (control-point displacement). This is a displacement relative to the shape being extruded.
-	 */
-	private static void drawExtrusionLines( final GLWrapper glWrapper , final Shape shape , final Vector3D extrusion )
-	{
-		glWrapper.glBegin( GL.GL_LINES );
-
-		final double[] coords = new double[ 6 ];
-		for ( final PathIterator pathIterator = shape.getPathIterator( null ) ; !pathIterator.isDone() ; pathIterator.next() )
-		{
-			final double x;
-			final double y;
-
-			final int type = pathIterator.currentSegment( coords );
-			switch ( type )
-			{
-				case PathIterator.SEG_MOVETO:
-					x = coords[ 0 ];
-					y = coords[ 1 ];
-					break;
-				case PathIterator.SEG_CLOSE:
-					continue;
-				case PathIterator.SEG_LINETO:
-					x = coords[ 0 ];
-					y = coords[ 1 ];
-					break;
-				case PathIterator.SEG_QUADTO: // reduce to line
-					x = coords[ 2 ];
-					y = coords[ 3 ];
-					break;
-				case PathIterator.SEG_CUBICTO: // reduce to line
-					x = coords[ 4 ];
-					y = coords[ 5 ];
-					break;
-
-				default:
-					throw new AssertionError( "unknown type: " + type );
-			}
-
-			glWrapper.glVertex3d( x , y , 0.0 );
-			glWrapper.glVertex3d( x + extrusion.x , y + extrusion.y , extrusion.z );
-		}
-
-		glWrapper.glEnd();
-	}
-
-	/**
-	 * Draws the outline of the given shape.
-	 *
-	 * @param   glWrapper   GL wrapper.
-	 * @param   shape       Shape to be drawn.
-	 * @param   flatness    Flatness used to interpolate the shape's curves.
-	 *
-	 * @see     Shape#getPathIterator(AffineTransform,double)
-	 */
-	private static void drawShape( final GLWrapper glWrapper , final Shape shape , final double flatness )
-	{
-		glWrapper.glBegin( GL.GL_LINE_STRIP );
-
-		boolean isFirst = true;
-		double  startX  = 0.0;
-		double  startY  = 0.0;
-
-		final double[] coords = new double[ 6 ];
-		for ( final PathIterator pathIterator = shape.getPathIterator( null , flatness ) ; !pathIterator.isDone() ; pathIterator.next() )
-		{
-			final double x;
-			final double y;
-
-			final int type = pathIterator.currentSegment( coords );
-			switch ( type )
-			{
-				case PathIterator.SEG_MOVETO:
-					if ( !isFirst )
-					{
-						/* Start a new line strip. */
-						glWrapper.glEnd();
-						glWrapper.glBegin( GL.GL_LINE_STRIP );
-					}
-					else
-					{
-						isFirst = false;
-					}
-
-					x = coords[ 0 ];
-					y = coords[ 1 ];
-					startX = x;
-					startY = y;
-					break;
-
-				case PathIterator.SEG_CLOSE:
-					x = startX;
-					y = startY;
-					break;
-				case PathIterator.SEG_LINETO:
-					x = coords[ 0 ];
-					y = coords[ 1 ];
-					break;
-				case PathIterator.SEG_QUADTO: // reduce to line
-					x = coords[ 2 ];
-					y = coords[ 3 ];
-					break;
-				case PathIterator.SEG_CUBICTO: // reduce to line
-					x = coords[ 4 ];
-					y = coords[ 5 ];
-					break;
-
-				default:
-					throw new AssertionError( "unknown type: " + type );
-			}
-
-			glWrapper.glVertex3d( x , y , 0.0 );
-		}
-
-		glWrapper.glEnd();
-	}
-
-	/**
-	 * Draw a 3D grid centered around point x,y,z with size dx,dy.
-	 *
-	 * @param   glWrapper           GL context wrapper.
-	 * @param   grid2world          Transforms grid to world coordinates.
-	 * @param   gridBounds          Bounds of grid.
-	 * @param   cellSize            Size of each cell.
-	 * @param   hightlightAxes      If set, hightlight X=0 and Y=0 axes.
-	 * @param   highlightInterval   Interval to use for highlighting grid lines.
-	 */
-	public static void drawGrid( final GLWrapper glWrapper , final Matrix3D grid2world , final Rectangle gridBounds , final int cellSize , final boolean hightlightAxes , final int highlightInterval )
-	{
-		if ( ( grid2world != null ) && ( gridBounds != null ) && ( gridBounds.width >= 0 ) && ( gridBounds.height >= 0 ) && ( cellSize >= 0 ) ) // argument sanity
-		{
-			final GL gl = glWrapper.getGL();
-
-			glWrapper.glPushMatrix();
-			glWrapper.glMultMatrixd( grid2world );
-
-			glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
-			glWrapper.setBlend( true );
-			glWrapper.setLineSmooth( true );
-
-			glWrapper.setLighting( false );
-
-			final int minCellX = gridBounds.x;
-			final int maxCellX = minCellX + gridBounds.width;
-			final int minCellY = gridBounds.y;
-			final int maxCellY = minCellY + gridBounds.height;
-
-			final int minX = minCellX * cellSize;
-			final int maxX = maxCellX * cellSize;
-			final int minY = minCellY * cellSize;
-			final int maxY = maxCellY * cellSize;
-
-			if ( hightlightAxes )
-			{
-				final boolean hasXaxis = ( minCellY <= 0 ) && ( maxCellY >= 0 );
-				final boolean hasYaxis = ( minCellX <= 0 ) && ( maxCellX >= 0 );
-
-				if ( ( hasXaxis || hasYaxis ) )
-				{
-					glWrapper.glLineWidth( 2.5f );
-					glWrapper.glColor3f( 0.1f , 0.1f , 0.1f );
-					gl.glBegin( GL.GL_LINES );
-
-					if ( hasXaxis )
-					{
-						gl.glVertex3i( minX , 0 , 0 );
-						gl.glVertex3i( maxX , 0 , 0 );
-					}
-
-					if ( hasYaxis )
-					{
-						gl.glVertex3i( 0 , minY , 0 );
-						gl.glVertex3i( 0 , maxY , 0 );
-					}
-
-					gl.glEnd();
-				}
-			}
-
-			if ( highlightInterval > 1 )
-			{
-				final int highlightMinX = minCellX - minCellX % highlightInterval;
-				final int highLightMaxX = maxCellX - maxCellX % highlightInterval;
-				final int highlightMinY = minCellX - minCellX % highlightInterval;
-				final int highLightMaxY = maxCellX - maxCellX % highlightInterval;
-
-				final boolean hasHighlightX = ( highLightMaxX >= highlightMinX ) && ( !hightlightAxes || ( highlightMinX < 0 ) || ( highLightMaxX > 0 ) );
-				final boolean hasHighlightY = ( highLightMaxY >= highlightMinY ) && ( !hightlightAxes || ( highlightMinY < 0 ) || ( highLightMaxY > 0 ) );
-
-				if ( hasHighlightX || hasHighlightY )
-				{
-					glWrapper.glLineWidth( 1.5f );
-					glWrapper.glColor3f( 0.5f , 0.5f , 0.5f );
-					gl.glBegin( GL.GL_LINES );
-
-					for ( int x = highlightMinX ; x <= highLightMaxX ; x += highlightInterval )
-					{
-						if ( !hightlightAxes || ( x != 0 ) )
-						{
-							gl.glVertex3i( x * cellSize , minY , 0 );
-							gl.glVertex3i( x * cellSize , maxY , 0 );
-						}
-					}
-
-					for ( int y = highlightMinY ; y <= highLightMaxY ; y += highlightInterval )
-					{
-						if ( !hightlightAxes || ( y != 0 ) )
-						{
-							gl.glVertex3i( minX , y * cellSize , 0 );
-							gl.glVertex3i( maxX , y * cellSize , 0 );
-						}
-					}
-
-					gl.glEnd();
-				}
-			}
-//
-			glWrapper.glLineWidth( 1.0f );
-			glWrapper.glColor3f( 0.75f , 0.75f , 0.75f );
-			glWrapper.glBegin( GL.GL_LINES );
-
-			for ( int x = minCellX ; x <= maxCellX ; x++ )
-			{
-				if ( ( !hightlightAxes || ( x != 0 ) ) && ( ( highlightInterval <= 1 ) || ( x % highlightInterval != 0 ) ) )
-				{
-					gl.glVertex3i( x * cellSize , minY , 0 );
-					gl.glVertex3i( x * cellSize , maxY , 0 );
-				}
-			}
-
-			for ( int y = minCellY ; y <= maxCellY ; y++ )
-			{
-				if ( ( !hightlightAxes || ( y != 0 ) ) && ( ( highlightInterval <= 1 ) || ( y % highlightInterval != 0 ) ) )
-				{
-					gl.glVertex3i( minX , y * cellSize , 0 );
-					gl.glVertex3i( maxX , y * cellSize , 0 );
-				}
-			}
-
-			glWrapper.glEnd();
-
-			glWrapper.setLighting( true );
-			glWrapper.glPopMatrix();
-		}
-	}
-
-	/**
-	 * Draw 3D face on GL context.
-	 *
-	 * @param   glWrapper       GLWrapper.
-	 * @param   face            {@link Face3D } drawn.
-	 * @param   useTexture      Whether to draw outline or not.
-	 * @param   useBump         Whether to use bump mapping or not.
-	 * @param   textureCache    Texture cache.
-	 * @param   lightPosition   Whether lighting is applied or not.
-	 */
-	private static void drawFace( final GLWrapper glWrapper , final Face3D face , final boolean useTexture , final boolean useBump , final Map<String,SoftReference<Texture>> textureCache , final Vector3D lightPosition )
-	{
-		final boolean hasLighting = ( lightPosition != null );
-
-		final int vertexCount = face.getVertexCount();
-		if ( vertexCount >= 2 )
-		{
-			final GL gl = glWrapper.getGL();
-
-			final Texture texture    = !useTexture ? null : getColorMapTexture( gl , face , textureCache );
-			final Texture bumpMap    = !useBump    ? null : getBumpMapTexture ( gl , face , textureCache );
-			final boolean hasTexture = ( texture != null );
-			final boolean hasBump    = ( bumpMap != null );
-			final float[] textureU   = ( hasTexture || hasBump ) ? face.getTextureU() : null;
-			final float[] textureV   = ( hasTexture || hasBump ) ? face.getTextureV() : null;
-
-			if ( hasBump )
-			{
-				final SoftReference<Texture> normalizationCubeMapReference = textureCache.get( NORMALIZATION_CUBE_MAP );
-				Texture normalizationCubeMap = ( normalizationCubeMapReference == null ) ? null : normalizationCubeMapReference.get();
-				if ( normalizationCubeMap == null )
-				{
-					normalizationCubeMap = createNormalizationCubeMap( gl );
-					textureCache.put( NORMALIZATION_CUBE_MAP , new SoftReference<Texture>( normalizationCubeMap ) );
-				}
-
-				/*
-				 * Set The First Texture Unit To Normalize Our Vector From The
-				 * Surface To The Light. Set The Texture Environment Of The First
-				 * Texture Unit To Replace It With The Sampled Value Of The
-				 * Normalization Cube Map.
-				 */
-				gl.glActiveTexture( GL.GL_TEXTURE0 );
-				gl.glEnable( GL.GL_TEXTURE_CUBE_MAP );
-				gl.glBindTexture( GL.GL_TEXTURE_CUBE_MAP , normalizationCubeMap.getTextureObject() );
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE );
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_REPLACE );
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_TEXTURE );
-
-				/*
-				 * Set The Second Unit To The Bump Map. Set The Texture Environment
-				 * Of The Second Texture Unit To Perform A Dot3 Operation With The
-				 * Value Of The Previous Texture Unit (The Normalized Vector Form
-				 * The Surface To The Light) And The Sampled Texture Value (The
-				 * Normalized Normal Vector Of Our Bump Map).
-				 */
-				gl.glActiveTexture( GL.GL_TEXTURE1 );
-				gl.glEnable( GL.GL_TEXTURE_2D );
-				gl.glBindTexture( GL.GL_TEXTURE_2D , bumpMap.getTextureObject() );
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE  );
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_DOT3_RGB );
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_PREVIOUS );
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE1_RGB      , GL.GL_TEXTURE  );
-
-				/*
-				 * The third unit is used to apply the diffuse color of the
-				 * material.
-				 */
-				gl.glActiveTexture( GL.GL_TEXTURE2 );
-				gl.glEnable( GL.GL_TEXTURE_2D );
-				gl.glBindTexture( GL.GL_TEXTURE_2D , bumpMap.getTextureObject() );
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE       );
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_MODULATE      );
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_PRIMARY_COLOR );
-
-				if ( hasTexture )
-				{
-					/*
-					 * Set The Fourth Texture Unit To Our Texture. Set The Texture
-					 * Environment Of The Third Texture Unit To Modulate (Multiply) The
-					 * Result Of Our Dot3 Operation With The Texture Value.
-					 */
-					gl.glActiveTexture( GL.GL_TEXTURE3 );
-					gl.glEnable( GL.GL_TEXTURE_2D );
-					gl.glBindTexture( GL.GL_TEXTURE_2D , texture.getTextureObject() );
-					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_MODULATE );
-				}
-
-				final Material material = face.getMaterial();
-				final double bumpScaleX = hasTexture ? ( material.colorMapWidth  / material.bumpMapWidth  ) : ( 1.0 / material.bumpMapWidth  );
-				final double bumpScaleY = hasTexture ? ( material.colorMapHeight / material.bumpMapHeight ) : ( 1.0 / material.bumpMapHeight );
-
-				/*
-				 * Render the face.
-				 */
-				switch ( vertexCount )
-				{
-					case 2:
-					{
-						glWrapper.glBegin( GL.GL_LINES );
-						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 0 , lightPosition );
-						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 1 , lightPosition );
-						glWrapper.glEnd();
-					}
-					break;
-
-					case 3:
-					{
-						glWrapper.glBegin( GL.GL_TRIANGLES );
-						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 2 , lightPosition );
-						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 1 , lightPosition );
-						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 0 , lightPosition );
-						glWrapper.glEnd();
-					}
-					break;
-
-					case 4:
-					{
-						glWrapper.glBegin( GL.GL_QUADS );
-						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 3 , lightPosition );
-						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 2 , lightPosition );
-						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 1 , lightPosition );
-						setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , 0 , lightPosition );
-						glWrapper.glEnd();
-					}
-					break;
-
-					default:
-					{
-						glWrapper.glBegin( GL.GL_POLYGON );
-						for ( int i = vertexCount ; --i >= 0 ; )
-							setBumpedFaceVertex( glWrapper , face , textureU , textureV , bumpScaleX , bumpScaleY , i , lightPosition );
-						glWrapper.glEnd();
-					}
-					break;
-				}
-
-				gl.glActiveTexture( GL.GL_TEXTURE3 );
-				gl.glDisable( GL.GL_TEXTURE_2D );
-				gl.glActiveTexture( GL.GL_TEXTURE2 );
-				gl.glDisable( GL.GL_TEXTURE_2D );
-				gl.glActiveTexture( GL.GL_TEXTURE1 );
-				gl.glDisable( GL.GL_TEXTURE_2D );
-				gl.glActiveTexture( GL.GL_TEXTURE0 );
-				gl.glDisable( GL.GL_TEXTURE_CUBE_MAP );
-			}
-			else
-			{
-				if ( hasTexture )
-				{
-					glWrapper.setTexture2D( true );
-					texture.bind();
-				}
-
-				switch ( vertexCount )
-				{
-					case 2:
-					{
-						glWrapper.glBegin( GL.GL_LINES );
-						setFaceVertex( glWrapper , face , textureU , textureV , 0 , hasLighting );
-						setFaceVertex( glWrapper , face , textureU , textureV , 1 , hasLighting );
-						glWrapper.glEnd();
-					}
-					break;
-
-					case 3:
-					{
-						glWrapper.glBegin( GL.GL_TRIANGLES );
-						setFaceVertex( glWrapper , face , textureU , textureV , 2 , hasLighting );
-						setFaceVertex( glWrapper , face , textureU , textureV , 1 , hasLighting );
-						setFaceVertex( glWrapper , face , textureU , textureV , 0 , hasLighting );
-						glWrapper.glEnd();
-					}
-					break;
-
-					case 4:
-					{
-						glWrapper.glBegin( GL.GL_QUADS );
-						setFaceVertex( glWrapper , face , textureU , textureV , 3 , hasLighting );
-						setFaceVertex( glWrapper , face , textureU , textureV , 2 , hasLighting );
-						setFaceVertex( glWrapper , face , textureU , textureV , 1 , hasLighting );
-						setFaceVertex( glWrapper , face , textureU , textureV , 0 , hasLighting );
-						glWrapper.glEnd();
-					}
-					break;
-
-					default:
-					{
-						glWrapper.glBegin( GL.GL_POLYGON );
-						for ( int i = vertexCount ; --i >= 0 ; )
-							setFaceVertex( glWrapper , face , textureU , textureV , i , hasLighting );
-						glWrapper.glEnd();
-					}
-					break;
-				}
-
-				if ( hasTexture )
-				{
-					glWrapper.glDisable( texture.getTarget() );
-					glWrapper.setTexture2D( false );
-				}
-			}
-		}
-	}
-
-	/**
-	 * Set vertex properties using GL.
-	 *
-	 * @param   glWrapper           GLWrapper.
-	 * @param   face                Face whose vertex to set.
-	 * @param   textureU            Horizontal texture coordinate.
-	 * @param   textureV            Vertical texture coordinate.
-	 * @param   faceVertexIndex     Index of vertex in face.
-	 * @param   hasLighting         Specifies whether lighting is used or not
-	 */
-	private static void setFaceVertex( final GLWrapper glWrapper , final Face3D face , final float[] textureU , final float[] textureV , final int faceVertexIndex , final boolean hasLighting )
-	{
-		final Object3D object            = face.getObject();
-		final int[]    faceVertexIndices = face.getVertexIndices();
-		final int      vertexIndex       = faceVertexIndices[ faceVertexIndex ] * 3;
-
-		if ( ( textureU != null ) && ( textureV != null ) )
-		{
-			glWrapper.glTexCoord2f( textureU[ faceVertexIndex ] , -textureV[ faceVertexIndex ] );
-		}
-
-		if ( face.isSmooth() && hasLighting)
-		{
-			final double[] vertexNormals = object.getVertexNormals();
-			glWrapper.glNormal3dv( vertexNormals , vertexIndex );
-		}
-		else if ( hasLighting )
-		{
-			final Vector3D faceNormal = face.getNormal();
-			glWrapper.glNormal3d( faceNormal.x , faceNormal.y , faceNormal.z );
-		}
-
-		final double[] vertexCoordinates = object.getVertexCoordinates();
-		glWrapper.glVertex3dv( vertexCoordinates , vertexIndex );
-	}
-
-	/**
-	 * Set vertex properties using GL for a face with a bump map applied.
-	 *
-	 * @param   glWrapper           GLWrapper.
-	 * @param   face                Face whose vertex to set.
-	 * @param   textureU            Horizontal texture coordinate.
-	 * @param   textureV            Vertical texture coordinate.
-	 * @param   faceVertexIndex     Index of vertex in face.
-	 * @param   lightPosition       Light source position.
-	 */
-	private static void setBumpedFaceVertex( final GLWrapper glWrapper , final Face3D face , final float[] textureU , final float[] textureV , final double bumpScaleX , final double bumpScaleY , final int faceVertexIndex , final Vector3D lightPosition )
-	{
-		final Object3D object            = face.getObject();
-		final int[]    faceVertexIndices = face.getVertexIndices();
-		final int      vertexIndex       = faceVertexIndices[ faceVertexIndex ] * 3;
-
-		final double[] vertexCoordinates = object.getVertexCoordinates();
-
-		final double relativeLightX = lightPosition.x + vertexCoordinates[ vertexIndex     ];
-		final double relativeLightY = lightPosition.y + vertexCoordinates[ vertexIndex + 1 ];
-		final double relativeLightZ = lightPosition.z + vertexCoordinates[ vertexIndex + 2 ];
-
-		final GL gl = glWrapper.getGL();
-
-		gl.glMultiTexCoord3d( GL.GL_TEXTURE0 , relativeLightX , relativeLightY , relativeLightZ );
-		if ( ( textureU != null ) && ( textureV != null ) )
-		{
-			gl.glMultiTexCoord2f( GL.GL_TEXTURE1 , (float)bumpScaleX * textureU[ faceVertexIndex ] , (float)bumpScaleY * -textureV[ faceVertexIndex ] );
-			gl.glMultiTexCoord2f( GL.GL_TEXTURE3 , textureU[ faceVertexIndex ] , -textureV[ faceVertexIndex ] );
-		}
-
-		if ( face.isSmooth() )
-		{
-			final double[] vertexNormals = object.getVertexNormals();
-			gl.glNormal3dv( vertexNormals , vertexIndex );
-		}
-		else
-		{
-			final Vector3D faceNormal = face.getNormal();
-			gl.glNormal3d( faceNormal.x , faceNormal.y , faceNormal.z );
-		}
-
-		gl.glVertex3dv( vertexCoordinates , vertexIndex );
-	}
-
-	/**
-	 * Set GL material properties.
-	 *
-	 * @param glWrapper {@link GLWrapper}.
-	 * @param material  {@link Material} properties.
-	 */
-	public static void setMaterial( final GLWrapper glWrapper , final Material material )
-	{
-		/* Set color, used when lights are disabled. */
-		glWrapper.glColor4f( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , material.diffuseColorAlpha );
-
-		/* Set ambient color of material. */
-		glWrapper.glMaterialfv( GL.GL_FRONT , GL.GL_AMBIENT , new float[] { material.ambientColorRed , material.ambientColorGreen , material.ambientColorBlue , 1.0f } , 0 );
-
-		/* Set diffuse color and alpha of material. */
-		glWrapper.glMaterialfv( GL.GL_FRONT , GL.GL_DIFFUSE , new float[] { material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , material.diffuseColorAlpha } , 0 );
-
-		/* Set shininess and specular color of material. */
-		glWrapper.glMaterialfv( GL.GL_FRONT , GL.GL_SPECULAR , new float[] { material.specularColorRed , material.specularColorGreen , material.specularColorBlue , 1.0f } , 0 );
-		glWrapper.glMaterialf( GL.GL_FRONT  , GL.GL_SHININESS , (float)material.shininess );
-
-		/* Set emissive color of material. */
-		glWrapper.glMaterialfv( GL.GL_FRONT , GL.GL_EMISSION , new float[] { material.emissiveColorRed , material.emissiveColorGreen , material.emissiveColorBlue , 1.0f } , 0 );
-	}
-
-	/**
-	 * Get {@link Texture} for color map of {@link Face3D}.
+	 * Get {@link Texture} for color map of {@link Material}.
 	 *
 	 * @param   gl              OpenGL context.
-	 * @param   face            Face whose color map texture to return.
+	 * @param   material        Material to get color map texture from.
 	 * @param   textureCache    Texture cache.
 	 *
 	 * @return Color map texture; <code>null</code> if face has no color map or no
 	 *         texture coordinates.
 	 */
-	public static Texture getColorMapTexture( final GL gl , final Face3D face , final Map<String,SoftReference<Texture>> textureCache  )
+	public static Texture getColorMapTexture( final GL gl , final Material material , final Map<String,SoftReference<Texture>> textureCache  )
 	{
 		final Texture result;
 
-		final Material material = face.getMaterial();
-
-		if ( ( material != null ) && ( material.colorMap != null ) && ( face.getTextureU() != null ) && ( face .getTextureV() != null ) )
+		if ( ( material != null ) && ( material.colorMap != null ) )
 		{
 			result = getTexture( gl , material , textureCache );
 		}
@@ -864,94 +110,81 @@ public class JOGLTools
 	}
 
 	/**
-	 * Get {@link Texture} for bump map of {@link Face3D}.
+	 * Get {@link Texture} for bump map of {@link Material}.
 	 *
 	 * @param   gl              OpenGL context.
-	 * @param   face            Face whose color map texture to return.
+	 * @param   material        MAterial to get bump map texture from.
 	 * @param   textureCache    Texture cache.
 	 *
 	 * @return Color map texture; <code>null</code> if face has no color map or no
 	 *         texture coordinates.
 	 */
-	public static Texture getBumpMapTexture( final GL gl , final Face3D face , final Map<String,SoftReference<Texture>> textureCache )
+	public static Texture getBumpMapTexture( final GL gl , final Material material , final Map<String,SoftReference<Texture>> textureCache )
 	{
-		final Texture result;
+		Texture result = null;
 
-		final Material material = face.getMaterial();
-
-		if ( ( material != null ) && ( material.bumpMap != null ) && ( face.getTextureU() != null ) && ( face .getTextureV() != null ) )
+		if ( ( material != null ) && TextTools.isNonEmpty( material.bumpMap ) )
 		{
-			Texture result11 = null;
+			SoftReference<Texture> reference = textureCache.get( material.bumpMap );
 
-			if ( TextTools.isNonEmpty( material.bumpMap ) )
+			final boolean loadTexture;
+			if ( reference == null )
 			{
-				SoftReference<Texture> reference = textureCache.get( material.bumpMap );
-
-				final boolean loadTexture;
-				if ( reference == null )
-				{
-					loadTexture = !textureCache.containsKey( material.bumpMap );
-				}
-				else
-				{
-					result11 = reference.get();
-					loadTexture = ( result11 == null );
-				}
-
-				if ( loadTexture )
-				{
-					BufferedImage bufferedImage = MapTools.loadImage( material.bumpMap );
-					if ( bufferedImage != null )
-					{
-						bufferedImage = createNormalMapFromBumpMap( bufferedImage );
-
-						final boolean autoMipmapGeneration = ( gl.isExtensionAvailable( "GL_VERSION_1_4"          ) ||
-						                                       gl.isExtensionAvailable( "GL_SGIS_generate_mipmap" ) );
-
-						System.out.println( "MipMap: " + ( autoMipmapGeneration ? "enabled" : "disabled" ) );
-
-						result11 = TextureIO.newTexture( createCompatibleTextureImage( bufferedImage , gl ) , autoMipmapGeneration );
-
-						result11.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
-						result11.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
-
-						if ( autoMipmapGeneration )
-						{
-							try
-							{
-								/**
-								 * Set generate mipmaps to true, this greatly increases performance and viewing pleasure in big scenes.
-								 * @TODO need to find out if generated mipmaps are faster or if pregenerated mipmaps are faster
-								 */
-								result11.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
-
-								/** Set texture magnification to linear to support mipmaps. */
-								result11.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
-
-								/** Set texture minification to linear_mipmap)_nearest to support mipmaps */
-								result11.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
-							}
-							catch ( GLException e )
-							{
-								/*
-								 * If setting texture parameters fails, it's no
-								 * severe problem. Catch any exception so the view
-								 * doesn't crash.
-								 */
-								e.printStackTrace();
-							}
-						}
-					}
-					reference = ( result11 != null ) ? new SoftReference<Texture>( result11 ) : null ;
-					textureCache.put( material.bumpMap , reference );
-				}
+				loadTexture = !textureCache.containsKey( material.bumpMap );
+			}
+			else
+			{
+				result = reference.get();
+				loadTexture = ( result == null );
 			}
 
-			result = result11;
-		}
-		else
-		{
-			result = null;
+			if ( loadTexture )
+			{
+				BufferedImage bufferedImage = MapTools.loadImage( material.bumpMap );
+				if ( bufferedImage != null )
+				{
+					bufferedImage = createNormalMapFromBumpMap( bufferedImage );
+
+					final boolean autoMipmapGeneration = ( gl.isExtensionAvailable( "GL_VERSION_1_4"          ) ||
+					                                       gl.isExtensionAvailable( "GL_SGIS_generate_mipmap" ) );
+
+					System.out.println( "MipMap: " + ( autoMipmapGeneration ? "enabled" : "disabled" ) );
+
+					result = TextureIO.newTexture( createCompatibleTextureImage( bufferedImage , gl ) , autoMipmapGeneration );
+
+					result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
+					result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
+
+					if ( autoMipmapGeneration )
+					{
+						try
+						{
+							/**
+							 * Set generate mipmaps to true, this greatly increases performance and viewing pleasure in big scenes.
+							 * @TODO need to find out if generated mipmaps are faster or if pregenerated mipmaps are faster
+							 */
+							result.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
+
+							/** Set texture magnification to linear to support mipmaps. */
+							result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
+
+							/** Set texture minification to linear_mipmap)_nearest to support mipmaps */
+							result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
+						}
+						catch ( GLException e )
+						{
+							/*
+							 * If setting texture parameters fails, it's no
+							 * severe problem. Catch any exception so the view
+							 * doesn't crash.
+							 */
+							e.printStackTrace();
+						}
+					}
+				}
+				reference = ( result != null ) ? new SoftReference<Texture>( result ) : null ;
+				textureCache.put( material.bumpMap , reference );
+			}
 		}
 
 		return result;
@@ -1064,7 +297,7 @@ public class JOGLTools
 	 * @throws  IllegalStateException if the given GL context specifies a
 	 *          non-positive maximum texture size.
 	 */
-	private static BufferedImage createCompatibleTextureImage( final BufferedImage image , final GL gl )
+	public static BufferedImage createCompatibleTextureImage( final BufferedImage image , final GL gl )
 	{
 		/*
 		 * Textures must not exceed the maximum size. According to the OpenGL
@@ -1242,7 +475,7 @@ public class JOGLTools
 	 *
 	 * @return  Normal map.
 	 */
-	private static BufferedImage createNormalMapFromBumpMap( final BufferedImage bumpMap )
+	public static BufferedImage createNormalMapFromBumpMap( final BufferedImage bumpMap )
 	{
 		final int width  = bumpMap.getWidth()  - 2;
 		final int height = bumpMap.getHeight() - 2;
@@ -1298,7 +531,7 @@ public class JOGLTools
 	 *
 	 * @return  Normalization cube map.
 	 */
-	private static Texture createNormalizationCubeMap( final GL gl )
+	public static Texture createNormalizationCubeMap( final GL gl )
 	{
 		final Texture result = TextureIO.newTexture( GL.GL_TEXTURE_CUBE_MAP );
 		gl.glBindTexture( GL.GL_TEXTURE_CUBE_MAP , result.getTextureObject() );
@@ -1431,220 +664,5 @@ public class JOGLTools
 		gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_R     , GL.GL_CLAMP_TO_EDGE );
 
 		return result;
-	}
-
-	/**
-	 * Render the whole scene on a GL context.
-	 *
-	 * @param   glWrapper           {@link GLWrapper} to use.
-	 * @param   nodes               List of {@link ViewModelNode}'s in the scene.
-	 * @param   textureCache        Map containing {@link Texture}s used in the scene.
-	 * @param   view                {@link ViewModelView} to render.
-	 * @param   backgroundColor     Backgroundcolor to use.
-	 */
-	public static void renderScene( final GLWrapper glWrapper , final List<ViewModelNode> nodes , final Map<String,SoftReference<Texture>> textureCache , final ViewModelView view , final Color backgroundColor )
-	{
-		renderScene( glWrapper , nodes , textureCache , backgroundColor , view.getRenderingPolicy() , view.isGridEnabled() , view.getGrid2wcs() , view.getGridBounds() , view.getGridCellSize() , view.isGridHighlightAxes() , view.getGridHighlightInterval() );
-	}
-
-	/**
-	 * Render the whole scene on a GL context.
-	 *
-	 * @param   glWrapper               {@link GLWrapper} to use.
-	 * @param   nodes                   List of {@link ViewModelNode}'s in the scene.
-	 * @param   textureCache            Map containing {@link Texture}s used in the scene.
-	 * @param   backgroundColor         Backgroundcolor to use.
-	 * @param   renderingPolicy         {@link ViewModelView.RenderingPolicy} to use.
-	 * @param   gridIsEnabled           <code>true</code> if the grid must be rendered,
-	 *                                  <code>false</code> otherwise.
-	 * @param   grid2wcs                Transforms grid to world coordinates.
-	 * @param   gridBounds              Bounds of grid.
-	 * @param   gridCellSize            Size of each cell.
-	 * @param   gridHighlightAxes       If set, hightlight X=0 and Y=0 axes.
-	 * @param   gridHighlightInterval   Interval to use for highlighting grid lines.
-	 */
-	public static void renderScene( final GLWrapper glWrapper , final List<ViewModelNode> nodes , final Map<String,SoftReference<Texture>> textureCache , final Color backgroundColor , final ViewModelView.RenderingPolicy renderingPolicy ,
-									final boolean gridIsEnabled , final Matrix3D grid2wcs , final Rectangle gridBounds , final int gridCellSize , final boolean gridHighlightAxes , final int gridHighlightInterval )
-	{
-		final GL gl = glWrapper.getGL();
-
-		/**
-		 * Clear first.
-		 */
-		glWrapper.glClearColor( backgroundColor );
-
-		gl.glClear( GL.GL_COLOR_BUFFER_BIT );
-		gl.glClear( GL.GL_DEPTH_BUFFER_BIT );
-
-		/*
-		 * Render the view model nodes.
-		 */
-//		final List<ViewModelNode> nodes = allNodes;
-
-		/* Initialize first light */
-		int lightNumber = GL.GL_LIGHT0;
-
-		/* Set Light Model to two sided lighting. */
-		gl.glLightModeli( GL.GL_LIGHT_MODEL_TWO_SIDE , GL.GL_TRUE );
-
-		/* Set local view point */
-		gl.glLightModeli( GL.GL_LIGHT_MODEL_LOCAL_VIEWER , GL.GL_TRUE );
-
-		for( int i = 0 ; i < MAX_LIGHTS; i++ )
-		{
-			glWrapper.glDisable( GL.GL_LIGHT0 + i );
-		}
-		gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
-
-		//draw lights
-		Vector3D dominantLightPosition  = null;
-		float    dominantLightIntensity = 0.0f;
-
-		for ( final ViewModelNode viewModelNode : nodes )
-		{
-			final Node3D node3D        = viewModelNode.getNode3D();
-			final Matrix3D nodeTransform = viewModelNode.getTransform();
-
-			/*
-			 * Render lights.
-			 */
-			final Node3DCollection<Light3D> lights = node3D.collectNodes( null , Light3D.class , nodeTransform , false );
-
-			if ( lights != null )
-			{
-				if ( lightNumber - GL.GL_LIGHT0 >= MAX_LIGHTS )
-					throw new IllegalStateException( "No more than " + MAX_LIGHTS + " lights supported." );
-
-				final Light3D light         = lights.getNode( 0 );
-				final float   viewIntensity = (float)light.getIntensity() / 255.0f;
-
-				if ( light.isAmbient() )
-				{
-					gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
-				}
-				else
-				{
-					gl.glLightfv( lightNumber , GL.GL_AMBIENT  , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
-					gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] { (float)nodeTransform.xo , (float)nodeTransform.yo , (float)nodeTransform.zo , 1.0f } , 0 );
-					gl.glLightfv( lightNumber , GL.GL_DIFFUSE  , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
-					gl.glLightfv( lightNumber , GL.GL_SPECULAR , new float[] {  viewIntensity , viewIntensity , viewIntensity , 1.0f } , 0 );
-
-					final float fallOff = (float)light.getFallOff();
-					if ( fallOff > 0.0f )
-					{
-						/*
-						 * intensity = 1 / ( c + l * d + q * d^2 )
-						 * constant + quadratic * distance ^ 2 )
-						 */
-						gl.glLightfv( lightNumber , GL.GL_CONSTANT_ATTENUATION  , new float[] { 0.5f } , 0 );
-						gl.glLightfv( lightNumber , GL.GL_LINEAR_ATTENUATION    , new float[] { 0.0f } , 0 );
-						gl.glLightfv( lightNumber , GL.GL_QUADRATIC_ATTENUATION , new float[] { 0.5f / ( fallOff * fallOff ) } , 0 );
-					}
-					else
-					{
-						gl.glLightfv( lightNumber , GL.GL_CONSTANT_ATTENUATION  , new float[] { 1.0f } , 0 );
-						gl.glLightfv( lightNumber , GL.GL_LINEAR_ATTENUATION    , new float[] { 0.0f } , 0 );
-						gl.glLightfv( lightNumber , GL.GL_QUADRATIC_ATTENUATION , new float[] { 0.0f } , 0 );
-					}
-
-					glWrapper.glEnable( lightNumber );
-					lightNumber++;
-				}
-
-				if ( gl.isExtensionAvailable("GL_VERSION_1_2") )
-					gl.glLightModeli( GL.GL_LIGHT_MODEL_COLOR_CONTROL , GL.GL_SEPARATE_SPECULAR_COLOR );
-
-				/**
-				 * Determine dominant light position, used for bump mapping.
-				 * This method can be rather inaccurate, especially if the most
-				 * intense light is far away from a bump mapped object.
-				 */
-				if ( ( light.getFallOff() >= 0.0 ) &&
-				     ( ( dominantLightPosition == null ) || ( dominantLightIntensity < viewIntensity ) ) )
-				{
-					final Matrix3D lightTransform = lights.getMatrix( 0 );
-					dominantLightPosition  = Vector3D.INIT.set( lightTransform.xo , lightTransform.yo , lightTransform.zo );
-					dominantLightIntensity = viewIntensity;
-				}
-			}
-		}
-
-		final boolean bumpMappingSupported = gl.isExtensionAvailable( "GL_VERSION_1_3" );
-
-		//draw objects
-		for ( final ViewModelNode viewModelNode : nodes )
-		{
-			final Node3D   node3D        = viewModelNode.getNode3D();
-			final Matrix3D nodeTransform = viewModelNode.getTransform();
-
-			/*
-			 * Render objects.
-			 */
-			final Node3DCollection<Object3D> objects = node3D.collectNodes( null , Object3D.class , nodeTransform , false );
-			if ( objects != null )
-			{
-				switch ( renderingPolicy )
-				{
-					case SCHEMATIC:
-						glWrapper.glEnable( GL.GL_POLYGON_OFFSET_FILL );
-						glWrapper.glDisable( GL.GL_LIGHTING );
-						gl.glPolygonOffset( 1.0f , 1.0f );
-
-						for ( int i = 0 ; i < objects.size() ; i++ )
-						{
-							paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , false , viewModelNode.isAlternate() , false , textureCache , true , viewModelNode.getMaterialOverride() );
-						}
-
-						glWrapper.glDisable( GL.GL_POLYGON_OFFSET_FILL );
-						gl.glLineWidth( 1.0f );
-						for ( int i = 0 ; i < objects.size() ; i++ )
-						{
-							paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , false , viewModelNode.isAlternate() , false , textureCache , false , viewModelNode.getMaterialOverride() );
-						}
-						break;
-					case SKETCH:
-						glWrapper.glEnable( GL.GL_POLYGON_OFFSET_FILL );
-						gl.glPolygonOffset( 1.0f , 1.0f );
-						gl.glLineWidth( 2.0f );
-
-						for ( int i = 0 ; i < objects.size() ; i++ )
-						{
-							glWrapper.setLighting( true );
-							paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , false , viewModelNode.isAlternate() , true , textureCache , true  , viewModelNode.getMaterialOverride() );
-						}
-
-						glWrapper.glDisable( GL.GL_POLYGON_OFFSET_FILL );
-
-						for ( int i = 0 ; i < objects.size() ; i++ )
-						{
-							glWrapper.setLighting( false );
-							paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , false , viewModelNode.isAlternate() , false , textureCache , false , viewModelNode.getMaterialOverride() );
-						}
-
-						gl.glLineWidth( 1.0f );
-						break;
-					case SOLID:
-						for ( int i = 0 ; i < objects.size() ; i++ )
-						{
-							glWrapper.glEnable( GL.GL_LIGHTING );
-							final Matrix3D objectTransform = objects.getMatrix( i );
-							paintObject3D( glWrapper , objects.getNode( i ) , objectTransform , true , bumpMappingSupported , false , ( dominantLightPosition != null ) ? objectTransform.inverseMultiply( dominantLightPosition ) : null , textureCache , true , viewModelNode.getMaterialOverride() );
-						}
-						break;
-					case WIREFRAME:
-						for ( int i = 0 ; i < objects.size() ; i++ )
-						{
-							glWrapper.glDisable( GL.GL_LIGHTING );
-							paintObject3D( glWrapper , objects.getNode( i ) , objects.getMatrix( i ) , false , false , viewModelNode.isAlternate() , false , textureCache ,false , viewModelNode.getMaterialOverride() );
-						}
-						break;
-				}
-			}
-		}
-
-		if ( gridIsEnabled )
-		{
-			drawGrid( glWrapper , grid2wcs , gridBounds , gridCellSize , gridHighlightAxes , gridHighlightInterval );
-		}
 	}
 }
