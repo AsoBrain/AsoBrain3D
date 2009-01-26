@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,12 +20,7 @@
 package ab.j3d.view.jogl;
 
 import java.awt.Color;
-import java.lang.ref.SoftReference;
-import java.util.HashMap;
-import java.util.Map;
 import javax.media.opengl.GLContext;
-
-import com.sun.opengl.util.texture.Texture;
 
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelNode;
@@ -49,11 +44,6 @@ public class JOGLModel
 	 * JOGL GLContext for this model.
 	 */
 	private GLContext _context = null;
-
-	/**
-	 * Texture cache
-	 */
-	private Map<String,SoftReference<Texture>> _textureCache = new HashMap<String,SoftReference<Texture>>();
 
 	/**
 	 * Construct new JOGL view model using {@link ViewModel#MM} units.
@@ -109,7 +99,7 @@ public class JOGLModel
 
 	public ViewModelView createView()
 	{
-		final JOGLView view = new JOGLView( this , _background , _textureCache );
+		final JOGLView view = new JOGLView( this , _background );
 		addView( view );
 
 		return view;
