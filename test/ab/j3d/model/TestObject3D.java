@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2007 Peter S. Heijnen
+ * Copyright (C) 1999-2009 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -154,10 +154,10 @@ public final class TestObject3D
 		final Matrix3D transform1 = Matrix3D.getTransform(  90.0 ,  0.0 , 0.0 ,    0.0 ,   0.0 , 0.0 );
 		final Matrix3D transform2 = Matrix3D.getTransform(   0.0 , 90.0 , 0.0 ,  150.0 ,   0.0 , 0.0 );
 
-		List selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , new BasicRay3D( 0.0 , 0.0 , -500.0 , 0.0 , 0.0 , 1.0 , true ) );
+		List<Face3DIntersection> selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , Matrix3D.INIT , new BasicRay3D( 0.0 , 0.0 , -500.0 , 0.0 , 0.0 , 1.0 , true ) );
 		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
 
-		Face3DIntersection intersection      = (Face3DIntersection)selection.get( 0 );
+		Face3DIntersection intersection      = selection.get( 0 );
 		Object             tag1              = intersection.getObjectID();
 		Vector3D           intersectionPoint = intersection.getIntersectionPoint();
 		Matrix3D           object2world      = intersection.getObject2world();
@@ -170,7 +170,7 @@ public final class TestObject3D
 		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , new BasicRay3D( -25.0 , -500.0 , -25.0 , 0.0 , 1.0 , 0.0 , true ) );
 		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
 
-		intersection      = (Face3DIntersection)selection.get( 0 );
+		intersection      = selection.get( 0 );
 		tag1              = intersection.getObjectID();
 		intersectionPoint = intersection.getIntersectionPoint();
 		object2world       = intersection.getObject2world();
@@ -183,12 +183,14 @@ public final class TestObject3D
 
 		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , new BasicRay3D( -25.0 , -50.0 , 25.0 , Math.sqrt( 0.5 ) , Math.sqrt( 0.5 ) , 0.0 , true ) );
 		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
-		tag1 = ( (Face3DIntersection)selection.get( 0 ) ).getObjectID();
+		intersection = selection.get( 0 );
+		tag1 = intersection.getObjectID();
 		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
 
 		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , new BasicRay3D( 50.0 , -500.0 , 50.0 , 0.0 , 1.0 , 0.0 , true ) );
 		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
-		tag1 = ( (Face3DIntersection)selection.get( 0) ).getObjectID();
+		intersection = selection.get( 0 );
+		tag1 = intersection.getObjectID();
 		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
 
 		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform1 , new BasicRay3D( 50.1 , -500.0 , 0.0 , 0.0 , 1.0 , 0.0 , true ) );
@@ -199,7 +201,8 @@ public final class TestObject3D
 
 		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , new BasicRay3D( 150.0 , -50.0 , 0.0 , 1.0 , 0.0 , 0.0 , true ) );
 		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
-		tag1 = ( (Face3DIntersection)selection.get( 0 ) ).getObjectID();
+		intersection = selection.get( 0 );
+		tag1 = intersection.getObjectID();
 		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
 
 		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , new BasicRay3D( 150.1 , 0.0 , -500.0 , 0.0 , 0.0 , 1.0 , true ) );
@@ -210,12 +213,14 @@ public final class TestObject3D
 
 		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , new BasicRay3D( 100.0 , 0.0 , 25.0 , 1.0 , 0.0 , 0.0 , true ) );
 		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
-		tag1 = ( (Face3DIntersection)selection.get( 0 ) ).getObjectID();
+		intersection = selection.get( 0 );
+		tag1 = intersection.getObjectID();
 		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
 
 		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null , false , "Plane" , transform2 , new BasicRay3D( -500.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , true ) );
 		assertEquals( "Incorrect number of intersections;" , 1 , selection.size() );
-		tag1 = ( (Face3DIntersection)selection.get( 0 ) ).getObjectID();
+		intersection = selection.get( 0 );
+		tag1 = intersection.getObjectID();
 		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
 	}
 
