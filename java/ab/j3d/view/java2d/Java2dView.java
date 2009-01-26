@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2008
+ * (C) Copyright Numdata BV 2004-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,6 +34,7 @@ import ab.j3d.control.ControlInput;
 import ab.j3d.view.BSPTree;
 import ab.j3d.view.Projector;
 import ab.j3d.view.RenderedPolygon;
+import ab.j3d.view.RenderingPolicy;
 import ab.j3d.view.ViewControlInput;
 import ab.j3d.view.ViewModelView;
 

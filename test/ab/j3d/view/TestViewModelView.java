@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2008
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,7 @@ import java.util.Locale;
 
 import junit.framework.TestCase;
 
-import ab.j3d.view.ViewModelView.RenderingPolicy;
+import ab.j3d.view.RenderingPolicy;
 
 import com.numdata.oss.junit.ResourceBundleTester;
 
