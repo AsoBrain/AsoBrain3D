@@ -24,6 +24,8 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import javax.swing.Action;
@@ -52,63 +54,6 @@ import com.numdata.oss.ui.ActionTools;
  */
 public abstract class ViewModelView
 {
-	/**
-	 * Rendering policy.
-	 */
-	public enum RenderingPolicy
-	{
-		/**
-		 * Rendering policy: solid.
-		 * <p />
-		 * This should result in a photorealistic rendering of the scene, taking the
-		 * physical properties of the scene into account as much as possible.
-		 * <p />
-		 * Example implementation: ray-tracing / per-pixel shading and texture mapping.
-		 *
-		 * @see     ViewModelView#setRenderingPolicy
-		 */
-		SOLID ,
-
-		/**
-		 * Rendering policy: schematic.
-		 * <p />
-		 * This should clarify the structure and design of the scene. This is
-		 * generally a form that should allow manipulation of (large) objects in a
-		 * scene and could be used to provide dimension information.
-		 * <p />
-		 * Example implementation: flat shading / functional color coding.
-		 *
-		 * @see     ViewModelView#setRenderingPolicy
-		 */
-		SCHEMATIC ,
-
-		/**
-		 * Rendering policy: sketch.
-		 * <p />
-		 * A non-photorealistic rendering method that give a good idea of what is
-		 * intended by the scene, but does not require much detail.
-		 * <p />
-		 * Example implementation: pencil sketch / cartoon rendering / silhouette.
-		 *
-		 * @see    ViewModelView#setRenderingPolicy
-		 */
-		SKETCH ,
-
-		/**
-		 * Rendering policy: wireframe.
-		 * <p />
-		 * Technical rendering including only edges, points, or iconic
-		 * representations of elements in a scene. This is the classical rendering
-		 * method in CAD software. This provides a quick overview and insight to
-		 * the complexity of a scene.
-		 * <p />
-		 * Example implementation: pencil sketch / cartoon rendering / silhouette.
-		 *
-		 * @see     ViewModelView#setRenderingPolicy
-		 */
-		WIREFRAME
-	}
-
 	/**
 	 * Default scale factor from pixels to radians. By default, this set to make
 	 * a full circle by moving the mouse cursor 250 pixels (in no particular
@@ -167,6 +112,11 @@ public abstract class ViewModelView
 	 * Label of this view (<code>null</code> if none).
 	 */
 	private String _label;
+
+	/**
+	 * Render style filters.
+	 */
+	private final List<RenderStyleFilter> _renderStyleFilters = new ArrayList<RenderStyleFilter>();
 
 	/**
 	 * Grid enabled/disabled flag.
@@ -234,6 +184,8 @@ public abstract class ViewModelView
 		_gridCellSize          = (int)Math.round( 1.0 / model.getUnit() );
 		_gridHighlightAxes     = true;
 		_gridHighlightInterval = 10;
+
+		appendRenderStyleFilter( new ViewModelViewStyleFilter() );
 	}
 
 	/**
@@ -511,6 +463,29 @@ public abstract class ViewModelView
 			_renderingPolicy = policy;
 			update();
 		}
+	}
+
+	/**
+	 * Get render style filters for this view.
+	 *
+	 * @return  Render style filters.
+	 */
+	public Collection<RenderStyleFilter> getRenderStyleFilters()
+	{
+		return Collections.unmodifiableList( _renderStyleFilters );
+	}
+
+	/**
+	 * Add render style filters to this view.
+	 *
+	 * @param   styleFilter     Render style filter to add.
+	 */
+	public void appendRenderStyleFilter( final RenderStyleFilter styleFilter )
+	{
+		if ( styleFilter == null )
+			throw new NullPointerException( "styleFilter" );
+
+		_renderStyleFilters.add( styleFilter );
 	}
 
 	/**
