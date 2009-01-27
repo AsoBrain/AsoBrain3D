@@ -55,16 +55,16 @@ import ab.j3d.Vector3D;
 import com.numdata.oss.MathTools;
 
 /**
- * Test {@link Triangle3D} class.
+ * Test {@link BasicTriangle3D} class.
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public class TestTriangle3D
+public class TestBasicTriangle3D
 	extends TestCase
 {
 	/**
-	 * Tests the {@link Triangle3D#calculatePerimeter} and {@link Triangle3D#calculateArea} methods.
+	 * Tests the {@link BasicTriangle3D#calculatePerimeter} and {@link BasicTriangle3D#calculateArea} methods.
 	 */
 	public void testTriangleMath()
 	{
@@ -111,10 +111,10 @@ public class TestTriangle3D
 		{
 			final String desc = "Test #" + ( testNr++ ) + ": ";
 
-			final double actualPerimeter = Triangle3D.calculatePerimeter( test._p1 , test._p2 , test._p3 );
+			final double actualPerimeter = BasicTriangle3D.calculatePerimeter( test._p1 , test._p2 , test._p3 );
 			assertTrue( desc + "Invalid perimeter calculated. Expected: " + test._expectedPerimeter + " Actual: " + actualPerimeter , MathTools.almostEqual( test._expectedPerimeter , actualPerimeter ) );
 
-			final double actualArea = Triangle3D.calculateArea( test._p1 , test._p2 , test._p3 );
+			final double actualArea = BasicTriangle3D.calculateArea( test._p1 , test._p2 , test._p3 );
 			assertTrue( desc + "Invalid area calculated. Expected: " + test._expectedArea + " Actual: " + actualArea , MathTools.almostEqual( test._expectedArea , actualArea ) );
 		}
 	}
