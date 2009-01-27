@@ -20,6 +20,7 @@
 package ab.j3d.view;
 
 import java.awt.Color;
+import java.util.Collection;
 
 import ab.j3d.Material;
 
@@ -137,6 +138,26 @@ public class RenderStyle
 		_vertexSize = 1.0f;
 		_vertexLightingEnabled = false;
 		_backfaceCullingEnabled = true;
+	}
+
+	/**
+	 * Apply filters to this style.
+	 *
+	 * @param   styleFilters    Style filters to apply.
+	 * @param   context         Context object (never <code>null</code>).
+	 *
+	 * @return  Filtered style.
+	 */
+	public RenderStyle applyFilters( final Collection<RenderStyleFilter> styleFilters , final Object context )
+	{
+		RenderStyle result = this;
+
+		for ( final RenderStyleFilter filter : styleFilters )
+		{
+			result = filter.applyFilter( result , context );
+		}
+
+		return result;
 	}
 
 	/**

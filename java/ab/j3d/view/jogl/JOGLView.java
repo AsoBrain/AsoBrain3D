@@ -45,7 +45,6 @@ import ab.j3d.view.Projector;
 import ab.j3d.view.Projector.ProjectionPolicy;
 import ab.j3d.view.RenderStyle;
 import ab.j3d.view.RenderStyleFilter;
-import ab.j3d.view.Renderer;
 import ab.j3d.view.ViewControlInput;
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelView;
@@ -439,9 +438,9 @@ public class JOGLView
 				final ViewModel model    = getModel();
 				final Camera3D  camera3D = getCamera();
 				final double    left     = -0.5 * (double)width;
-				final double    right    = 0.5 * (double)width;
+				final double    right    =  0.5 * (double)width;
 				final double    bottom   = -0.5 * (double)height;
-				final double    top      = 0.5 * (double)height;
+				final double    top      =  0.5 * (double)height;
 				final double    near     = _frontClipDistance;
 				final double    far      = _backClipDistance;
 				final double    scale    = camera3D.getZoomFactor() * model.getUnit() / getResolution();
@@ -479,8 +478,9 @@ public class JOGLView
 		final ViewModel model = getModel();
 
 		/* Setup initial style and apply style filters to this view. */
+		final RenderStyle defaultStyle = new RenderStyle();
 		final Collection<RenderStyleFilter> styleFilters = getRenderStyleFilters();
-		final RenderStyle viewStyle = Renderer.applyStyle( styleFilters , new RenderStyle() , this );
+		final RenderStyle viewStyle = defaultStyle.applyFilters( styleFilters , this );
 
 		/* Apply view transform. */
 		gl.glMatrixMode( GL.GL_MODELVIEW );
