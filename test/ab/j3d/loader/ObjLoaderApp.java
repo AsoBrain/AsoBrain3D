@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2007
+ * (C) Copyright Numdata BV 2006-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -55,18 +55,18 @@ public class ObjLoaderApp
 	{
 		try
 		{
-			final double unit           =   JOGLModel.M;
-			final Matrix3D transform    =   Matrix3D.INIT.rotateX( Math.toRadians( 90.0 ) );
+			final double   unit      = JOGLModel.MM;
+			final Matrix3D transform = Matrix3D.INIT.rotateX( Math.toRadians( 90.0 ) );
 
 			//Load from jar file...
 			//final ResourceLoader fileLoader =   new FileResourceLoader( "/home/wijnand/cube/" );
 			//final ResourceLoader loader =   new ZipResourceLoader( fileLoader.getResource( "penguin.jar" ) );
 
 			//Or load from directory
-			final ResourceLoader loader = new FileResourceLoader( "/home/wijnand/cube/" );
+			final ResourceLoader loader = new FileResourceLoader( "/home/meinders/obj/" );
 
-			final Object3D object3d = ObjLoader.load( transform , loader , "penguin.obj" );
-			final Bounds3D bounds   = object3d.getBounds( null , null );
+			final Object3D object3d = ObjLoader.load( transform , loader , "door2c.obj" );
+			final Bounds3D bounds   = object3d.getOrientedBoundingBox();
 			final Vector3D size     = bounds.size();
 			final double   toCM     = 100.0 * unit;
 
