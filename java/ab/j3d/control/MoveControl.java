@@ -107,7 +107,7 @@ public abstract class MoveControl
 	{
 		EventObject result = event;
 
-		if ( isEnabled() )
+		if ( isEnabled() && event.isMouseButton1Down() )
 		{
 			final ViewControlInput viewControlInput = (ViewControlInput)event.getSource();
 			final ViewModelView    view             = viewControlInput.getView();
