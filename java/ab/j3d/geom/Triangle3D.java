@@ -64,4 +64,11 @@ public interface Triangle3D
 	 * @return  Area of this triangle.
 	 */
 	double getArea();
+
+	/**
+	 * Get average point of triangle.
+	 *
+	 * @return  Average point of triangle.
+	 */
+	Vector3D getAveragePoint();
 }
