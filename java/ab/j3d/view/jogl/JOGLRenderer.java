@@ -185,7 +185,7 @@ public class JOGLRenderer
 
 		/* Clear depth and color buffer. */
 		final float[] backgroundRGB = _backgroundColor.getRGBColorComponents( null );
-		gl.glClearColor( backgroundRGB[ 0 ] , backgroundRGB[ 1 ] , backgroundRGB[ 2 ] , backgroundRGB[ 3 ] );
+		gl.glClearColor( backgroundRGB[ 0 ] , backgroundRGB[ 1 ] , backgroundRGB[ 2 ] , 1.0f );
 		gl.glClear( GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT );
 
 		/* Set backface culling. */
@@ -557,6 +557,7 @@ public class JOGLRenderer
 		if ( vertexCount >= 2 )
 		{
 			final Color   color           = style.getStrokeColor();
+			final float   width           = style.getStrokeWidth();
 			final boolean backfaceCulling = style.isBackfaceCullingEnabled() && !face.isTwoSided();
 			final boolean hasLighting     = style.isStrokeLightingEnabled() && ( _lightPositionRelativeToObject != null );
 
@@ -564,6 +565,7 @@ public class JOGLRenderer
 			glWrapper.setPolygonMode( GL.GL_LINE );
 			glWrapper.setPolygonOffsetFill( true );
 			glWrapper.glPolygonOffset( 1.0f , 2.0f );
+			glWrapper.glLineWidth( width );
 			glWrapper.setCullFace( backfaceCulling );
 			glWrapper.setLighting( hasLighting );
 			setColor( color );
@@ -975,7 +977,7 @@ public class JOGLRenderer
 
 				if ( ( hasXaxis || hasYaxis ) )
 				{
-					gl.glLineWidth( 2.5f );
+					glWrapper.glLineWidth( 2.5f );
 					glWrapper.setColor( 0.1f , 0.1f , 0.1f , 1.0f );
 					gl.glBegin( GL.GL_LINES );
 
@@ -1007,7 +1009,7 @@ public class JOGLRenderer
 
 				if ( hasHighlightX || hasHighlightY )
 				{
-					gl.glLineWidth( 1.5f );
+					glWrapper.glLineWidth( 1.5f );
 					glWrapper.setColor( 0.5f , 0.5f , 0.5f , 1.0f );
 					gl.glBegin( GL.GL_LINES );
 
@@ -1033,7 +1035,7 @@ public class JOGLRenderer
 				}
 			}
 //
-			gl.glLineWidth( 1.0f );
+			glWrapper.glLineWidth( 1.0f );
 			glWrapper.setColor( 0.75f , 0.75f , 0.75f , 1.0f );
 			gl.glBegin( GL.GL_LINES );
 
