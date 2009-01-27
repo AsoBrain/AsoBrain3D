@@ -109,7 +109,7 @@ public class Renderer
 			final Matrix3D node2world = node.getTransform();
 			final Node3DCollection<Object3D> content = node.getContent();
 
-			final RenderStyle nodeStyle  = applyStyle( styleFilters , sceneStyle , node );
+			final RenderStyle nodeStyle = sceneStyle.applyFilters( styleFilters , node );
 
 			for ( int i = 0 ; i < content.size() ; i++ )
 			{
@@ -118,7 +118,7 @@ public class Renderer
 				final Object3D object       = content.getNode( i );
 				final int      faceCount    = object.getFaceCount();
 
-				final RenderStyle objectStyle = applyStyle( styleFilters , nodeStyle , object );
+				final RenderStyle objectStyle = nodeStyle.applyFilters( styleFilters , object );
 
 				boolean anyMaterialEnabled = false;
 				boolean anyFillEnabled     = false;
@@ -132,7 +132,7 @@ public class Renderer
 
 				for ( int j = 0 ; j < faceCount; j++ )
 				{
-					final RenderStyle faceStyle = applyStyle( styleFilters , objectStyle , object.getFace( j ) );
+					final RenderStyle faceStyle = objectStyle.applyFilters( styleFilters , object.getFace( j ) );
 
 					anyMaterialEnabled |= faceStyle.isMaterialEnabled();
 					anyFillEnabled     |= faceStyle.isFillEnabled();
@@ -148,8 +148,6 @@ public class Renderer
 
 					if ( anyMaterialEnabled )
 					{
-						renderMaterialBegin( object2world , object );
-
 						for ( int j = 0 ; j < faceCount; j++ )
 						{
 							final RenderStyle faceStyle = faceStyles[ j ];
@@ -158,14 +156,10 @@ public class Renderer
 								renderMaterialFace( object.getFace( j ), faceStyle );
 							}
 						}
-
-						renderMaterialEnd();
 					}
 
 					if ( anyFillEnabled )
 					{
-						renderFillBegin( object2world , object );
-
 						for ( int j = 0 ; j < faceCount; j++ )
 						{
 							final RenderStyle faceStyle = faceStyles[ j ];
@@ -174,14 +168,10 @@ public class Renderer
 								renderFilledFace( object.getFace( j ), faceStyle );
 							}
 						}
-
-						renderFillEnd();
 					}
 
 					if ( anyStrokeEnabled )
 					{
-						renderStrokesBegin( object2world , object );
-
 						for ( int j = 0 ; j < faceCount; j++ )
 						{
 							final RenderStyle faceStyle = faceStyles[ j ];
@@ -190,14 +180,10 @@ public class Renderer
 								renderStrokedFace( object.getFace( j ), faceStyle );
 							}
 						}
-
-						renderStrokesEnd();
 					}
 
 					if ( anyVertexEnabled )
 					{
-						renderVerticesBegin( object2world , object );
-
 						for ( int j = 0 ; j < faceCount; j++ )
 						{
 							final RenderStyle faceStyle = faceStyles[ j ];
@@ -206,8 +192,6 @@ public class Renderer
 								renderFaceVertices( faceStyle , object2world , object.getFace( j ) );
 							}
 						}
-
-						renderVerticesEnd();
 					}
 
 					renderObjectEnd();
@@ -217,10 +201,6 @@ public class Renderer
 	}
 
 	protected void renderObjectBegin( final Matrix3D object2world , final Object3D object , final RenderStyle objectStyle )
-	{
-	}
-
-	protected void renderMaterialBegin( final Matrix3D object2world , final Object3D object )
 	{
 	}
 
@@ -235,26 +215,10 @@ public class Renderer
 		}
 	}
 
-	protected void renderMaterialEnd()
-	{
-	}
-
-	protected void renderFillBegin( final Matrix3D object2world , final Object3D object )
-	{
-	}
-
 	protected void renderFilledFace( final Face3D face, final RenderStyle style )
 	{
 		final Color   color           = style.getFillColor();
 		final boolean lightingEnabled = style.isFillLightingEnabled();
-	}
-
-	protected void renderFillEnd()
-	{
-	}
-
-	protected void renderStrokesBegin( final Matrix3D object2world , final Object3D object )
-	{
 	}
 
 	protected void renderStrokedFace( final Face3D face, final RenderStyle style )
@@ -264,14 +228,6 @@ public class Renderer
 		final boolean lightingEnabled = style.isStrokeLightingEnabled();
 	}
 
-	protected void renderStrokesEnd()
-	{
-	}
-
-	protected void renderVerticesBegin( final Matrix3D object2world , final Object3D object )
-	{
-	}
-
 	protected void renderFaceVertices( final RenderStyle style , final Matrix3D object2world , final Face3D face )
 	{
 		final Color   color           = style.getVertexColor();
@@ -279,32 +235,8 @@ public class Renderer
 		final float   size            = style.getVertexSize();
 	}
 
-	protected void renderVerticesEnd()
-	{
-	}
-
 	protected void renderObjectEnd()
 	{
 	}
 
-	/**
-	 * Apply filters to existing style.
-	 *
-	 * @param   styleFilters    Style filters to apply.
-	 * @param   baseStyle       Base style to apply filters to (never <code>null</code>).
-	 * @param   context         Context object (never <code>null</code>).
-	 *
-	 * @return  Filtered style.
-	 */
-	public static RenderStyle applyStyle( final Collection<RenderStyleFilter> styleFilters , final RenderStyle baseStyle , final Object context )
-	{
-		RenderStyle result = baseStyle;
-
-		for ( final RenderStyleFilter filter : styleFilters )
-		{
-			result = filter.applyFilter( result , context );
-		}
-
-		return result;
-	}
 }
