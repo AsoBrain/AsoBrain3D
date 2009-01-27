@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2008-2008
+ * (C) Copyright Numdata BV 2008-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,7 +26,9 @@ import ab.j3d.Bounds3D;
 import ab.j3d.Bounds3DBuilder;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
+import ab.j3d.geom.BasicTriangle3D;
 import ab.j3d.geom.TriTriMoeler;
+import ab.j3d.geom.Triangle3D;
 
 /**
  * This object can be used to test for collisions between polygon soups.
@@ -42,7 +44,17 @@ public class CollisionObject
 	/**
 	 * Triangles at this node.
 	 */
-	private List<Triangle> _triangles;
+	private List<Triangle3D> _triangles;
+
+	/**
+	 * Start offset in '_triangles'.
+	 */
+	private int _trianglesOffset;
+
+	/**
+	 * Number of triangles.
+	 */
+	private int _trianglesCount;
 
 	/**
 	 * Bounding box of for this node that contains all triangles at this node.
@@ -93,7 +105,7 @@ public class CollisionObject
 			}
 		}
 
-		final List<Triangle> triangles = new ArrayList<Triangle>( nrTriangles );
+		final List<Triangle3D> triangles = new ArrayList<Triangle3D>( nrTriangles );
 		final Bounds3DBuilder boundsBuilder = new Bounds3DBuilder();
 
 		for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
@@ -121,12 +133,14 @@ public class CollisionObject
 					final Vector3D p2 = Vector3D.INIT.set( vertexCoordinates[ vi2 ] , vertexCoordinates[ vi2 + 1 ] , vertexCoordinates[ vi2 + 2 ] );
 					final Vector3D p3 = Vector3D.INIT.set( vertexCoordinates[ vi3 ] , vertexCoordinates[ vi3 + 1 ] , vertexCoordinates[ vi3 + 2 ] );
 
-					triangles.add( new Triangle( p1 , p2 , p3 ) );
+					triangles.add( new BasicTriangle3D( p1 , p2 , p3 , true ) );
 				}
 			}
 		}
 
 		_triangles = triangles;
+		_trianglesOffset = 0;
+		_trianglesCount = triangles.size();
 		_bounds = boundsBuilder.getBounds();
 		_splitPoint = ( nrTriangles > 1 ) ? boundsBuilder.getAveragePoint() : null;
 		_child1 = null;
@@ -136,21 +150,39 @@ public class CollisionObject
 	/**
 	 * Construct a new node.
 	 *
-	 * @param   triangles   Triangles assigned to this node.
+	 * @param   triangles           Triangles.
+	 * @param   trianglesOffset     Offset in <code>triangles</code>.
+	 * @param   trianglesCount      Number of triangles at this node.
+	 *
+	 * @throws  IllegalArgumentException if <code>trianglesCount</code> is <code>0</code>.
+	 * @throws  IndexOutOfBoundsException if a invalid range is specified.
 	 */
-	public CollisionObject( final List<Triangle> triangles )
+	public CollisionObject( final List<Triangle3D> triangles , final int trianglesOffset , final int trianglesCount )
 	{
+		if ( trianglesCount <= 0 )
+			throw new IllegalArgumentException();
+
+		if ( trianglesOffset < triangles.size() )
+			throw new IndexOutOfBoundsException( String.valueOf( trianglesOffset ) );
+
+		if ( trianglesOffset + trianglesCount >= triangles.size() )
+			throw new IndexOutOfBoundsException( String.valueOf( trianglesOffset + trianglesCount ) );
+
 		final Bounds3DBuilder boundsBuilder = new Bounds3DBuilder();
-		for ( final Triangle triangle : triangles )
+
+		for ( int i = 0 ; i < trianglesCount ; i++ )
 		{
-			boundsBuilder.addPoint( triangle.v1 );
-			boundsBuilder.addPoint( triangle.v2 );
-			boundsBuilder.addPoint( triangle.v3 );
+			final Triangle3D triangle = triangles.get( trianglesOffset + i );
+			boundsBuilder.addPoint( triangle.getP1() );
+			boundsBuilder.addPoint( triangle.getP2() );
+			boundsBuilder.addPoint( triangle.getP3() );
 		}
 
 		_triangles = triangles;
+		_trianglesOffset = trianglesOffset;
+		_trianglesCount = trianglesCount;
 		_bounds = boundsBuilder.getBounds();
-		_splitPoint = ( triangles.size() > 1 ) ? boundsBuilder.getAveragePoint() : null;
+		_splitPoint = ( trianglesCount > 1 ) ? boundsBuilder.getAveragePoint() : null;
 		_child1 = null;
 		_child2 = null;
 	}
@@ -197,7 +229,7 @@ public class CollisionObject
 		final Bounds3D bounds1 = _bounds;
 		final Bounds3D bounds2 = other._bounds;
 
-//		if ( CollisionTester.testOrientedBoundingBox( bounds1 , other2this , bounds2 ) )
+		if ( ( bounds1 != null ) && ( bounds2 != null ) && CollisionTester.testOrientedBoundingBox( bounds1 , other2this , bounds2 ) )
 		{
 			if ( !split() )
 			{
@@ -207,7 +239,7 @@ public class CollisionObject
 					 * Make sure 'triangles1' has more elements than 'triangles2' to
 					 * minimize the number of iterations in the outer loop.
 					 */
-					if ( _triangles.size() > other._triangles.size() )
+					if ( _trianglesCount > other._trianglesCount )
 					{
 						result = testTriangleTriangleCollision( other, other2this );
 					}
@@ -218,25 +250,25 @@ public class CollisionObject
 				}
 				else
 				{
-					result = other._child1.collidesWith( this, this2other, other2this ) ||
-					         other._child2.collidesWith( this, this2other, other2this );
+					result = other._child1.collidesWith( this , this2other , other2this ) ||
+					         other._child2.collidesWith( this , this2other , other2this );
 				}
 			}
 			else if ( ( bounds1.volume() > bounds2.volume() ) || !other.split() )
 			{
-				result = _child1.collidesWith( other, other2this, this2other ) ||
-				         _child2.collidesWith( other, other2this, this2other );
+				result = _child1.collidesWith( other , other2this , this2other ) ||
+				         _child2.collidesWith( other , other2this , this2other );
 			}
 			else
 			{
-				result = other._child1.collidesWith( this, this2other, other2this ) ||
-				         other._child2.collidesWith( this, this2other, other2this );
+				result = other._child1.collidesWith( this , this2other , other2this ) ||
+				         other._child2.collidesWith( this , this2other , other2this );
 			}
 		}
-//		else
-//		{
-//			result = false;
-//		}
+		else
+		{
+			result = false;
+		}
 
 		return result;
 	}
@@ -254,15 +286,27 @@ public class CollisionObject
 	{
 		boolean result = false;
 
-		for ( final Triangle triangle2 : other._triangles )
-		{
-			final Vector3D v1 = other2this.multiply( triangle2.v1 );
-			final Vector3D v2 = other2this.multiply( triangle2.v2 );
-			final Vector3D v3 = other2this.multiply( triangle2.v3 );
+		final List<Triangle3D> thisTriangles = _triangles;
+		final int thisStart = _trianglesOffset;
+		final int thisEnd = thisStart + _trianglesCount;
 
-			for ( final Triangle triangle1 : _triangles )
+		final List<Triangle3D> otherTriangles = other._triangles;
+		final int otherStart = other._trianglesOffset;
+		final int otherEnd = otherStart + other._trianglesCount;
+
+		for ( int otherIndex = otherStart ; otherIndex < otherEnd ; otherIndex++ )
+		{
+			final Triangle3D otherTriangle = otherTriangles.get( otherIndex );
+
+			final Vector3D otherP1 = other2this.multiply( otherTriangle.getP1() );
+			final Vector3D otherP2 = other2this.multiply( otherTriangle.getP2() );
+			final Vector3D otherP3 = other2this.multiply( otherTriangle.getP3() );
+
+			for ( int thisIndex = thisStart ; thisIndex < thisEnd ; thisIndex++ )
 			{
-				if ( TriTriMoeler.testTriangleTriangle( v1 , v2 , v3 , triangle1.v1, triangle1.v2, triangle1.v3 ) )
+				final Triangle3D thisTriangle = thisTriangles.get( otherIndex );
+
+				if ( TriTriMoeler.testTriangleTriangle( otherP1 , otherP2 , otherP3 , thisTriangle.getP1() , thisTriangle.getP2() , thisTriangle.getP3() ) )
 				{
 					result = true;
 					break;
@@ -297,94 +341,68 @@ public class CollisionObject
 		{
 			_splitPoint = null;
 
-			final List<Triangle> triangles = _triangles;
-			final int nrTriangles = triangles.size();
+			final List<Triangle3D> triangles = _triangles;
+			final int trianglesOffset = _trianglesOffset;
+			final int trianglesCount = _trianglesCount;
 
 			int countX = 0;
 			int countY = 0;
 			int countZ = 0;
 
-			for ( final Triangle triangle : triangles )
+			for ( int i = 0 ; i < trianglesCount ; i++ )
 			{
-				if ( triangle.center.x < splitPoint.x )
+				final Triangle3D triangle = triangles.get( trianglesOffset + i );
+
+				final Vector3D p = triangle.getAveragePoint();
+
+				if ( p.x < splitPoint.x )
+				{
 					countX++;
+				}
 
-				if ( triangle.center.y < splitPoint.y )
+				if ( p.y < splitPoint.y )
+				{
 					countY++;
+				}
 
-				if ( triangle.center.z < splitPoint.z )
+				if ( p.z < splitPoint.z )
+				{
 					countZ++;
+				}
 			}
 
 			/*
 			 * Only split if we don't end up with empty branches.
 			 */
-			if ( ( ( countX > 0 ) && ( countX < nrTriangles ) ) ||
-				 ( ( countY > 0 ) && ( countY < nrTriangles ) ) ||
-				 ( ( countZ > 0 ) && ( countZ < nrTriangles ) ) )
+			if ( ( ( countX > 0 ) && ( countX < trianglesCount ) ) ||
+				 ( ( countY > 0 ) && ( countY < trianglesCount ) ) ||
+				 ( ( countZ > 0 ) && ( countZ < trianglesCount ) ) )
 			{
-				final int balance  = nrTriangles / 2;
-				final int balanceX = Math.abs( countX - balance );
-				final int balanceY = Math.abs( countY - balance );
-				final int balanceZ = Math.abs( countZ - balance );
+				final int halfSize = trianglesCount / 2;
+				final int balanceX = Math.abs( countX - halfSize );
+				final int balanceY = Math.abs( countY - halfSize );
+				final int balanceZ = Math.abs( countZ - halfSize );
 
-				final List<Triangle> triangles1;
-				final List<Triangle> triangles2;
+				final int countLeft;
 
 				if ( ( balanceX <= balanceY ) && ( balanceX <= balanceZ ) ) /* X is most balanced */
 				{
-					triangles1 = new ArrayList<Triangle>( countX );
-					triangles2 = new ArrayList<Triangle>( nrTriangles - countX );
-
-					for ( final Triangle triangle : triangles )
-					{
-						if ( triangle.center.x < splitPoint.x )
-						{
-							triangles1.add( triangle );
-						}
-						else
-						{
-							triangles2.add( triangle );
-						}
-					}
+					splitTrianglesOnX( splitPoint.x );
+					countLeft = countX;
 				}
 				else if ( balanceY <= balanceZ ) /* Y is most balanced */
 				{
-					triangles1 = new ArrayList<Triangle>( countY );
-					triangles2 = new ArrayList<Triangle>( nrTriangles - countY );
-
-					for ( final Triangle triangle : triangles )
-					{
-						if ( triangle.center.y < splitPoint.y )
-						{
-							triangles1.add( triangle );
-						}
-						else
-						{
-							triangles2.add( triangle );
-						}
-					}
+					splitTrianglesOnY( splitPoint.y );
+					countLeft = countY;
 				}
 				else /* Z is most balanced */
 				{
-					triangles1 = new ArrayList<Triangle>( countZ );
-					triangles2 = new ArrayList<Triangle>( nrTriangles - countZ );
-
-					for ( final Triangle triangle : triangles )
-					{
-						if ( triangle.center.z < splitPoint.z )
-						{
-							triangles1.add( triangle );
-						}
-						else
-						{
-							triangles2.add( triangle );
-						}
-					}
+					splitTrianglesOnZ( splitPoint.z );
+					countLeft = countZ;
 				}
 
-				_child1 = new CollisionObject( triangles1 );
-				_child2 = new CollisionObject( triangles2 );
+				_child1 = new CollisionObject( triangles , trianglesOffset , countLeft );
+				_child2 = new CollisionObject( triangles , trianglesOffset + countLeft , trianglesCount - countLeft );
 				result = true;
 			}
 			else
@@ -396,19 +414,156 @@ public class CollisionObject
 		return result;
 	}
 
-	private static class Triangle
+	/**
+	 * Used by {@link #split()} to split the triangle list on X coordinate.
+	 *
+	 * @param   splitX  X coordinate to split on.
+	 */
+	private void splitTrianglesOnX( final double splitX )
 	{
-		Vector3D v1;
-		Vector3D v2;
-		Vector3D v3;
-		Vector3D center;
+		final List<Triangle3D> triangles = _triangles;
 
-		Triangle( final Vector3D v1 , final Vector3D v2 , final Vector3D v3 )
+		int leftIndex = _trianglesOffset;
+		int rightIndex = leftIndex + _trianglesCount - 1;
+
+		outerLoop: while ( leftIndex < rightIndex )
 		{
-			this.v1 = v1;
-			this.v2 = v2;
-			this.v3 = v3;
-			center = v1.set( v1.x + v2.x + v3.x / 3.0, v1.y + v2.y + v3.y / 3.0, v1.z + v2.z + v3.z / 3.0 );
+			/*
+			 * Find element on left side that should be on the right side.
+			 */
+			Triangle3D rightElement;
+			while ( true )
+			{
+				rightElement = triangles.get( leftIndex );
+
+				final boolean isLeft = ( rightElement.getAveragePoint().x < splitX );
+				if ( !isLeft )
+					break;
+
+				if ( ++leftIndex >= rightIndex )
+					break outerLoop;
+			}
+
+			/*
+			 * Find element on right side that should be on the left side.
+			 */
+			Triangle3D leftElement;
+			while ( true )
+			{
+				leftElement = triangles.get( rightIndex );
+
+				final boolean isLeft = ( leftElement.getAveragePoint().x < splitX );
+				if ( isLeft )
+					break;
+
+				if ( leftIndex >= --rightIndex )
+					break outerLoop;
+			}
+
+			triangles.set( leftIndex++ , leftElement );
+			triangles.set( rightIndex-- , rightElement );
+		}
+	}
+
+	/**
+	 * Used by {@link #split()} to split the triangle list on Y coordinate.
+	 *
+	 * @param   splitY  Y coordinate to split on.
+	 */
+	private void splitTrianglesOnY( final double splitY )
+	{
+		final List<Triangle3D> triangles = _triangles;
+
+		int leftIndex = _trianglesOffset;
+		int rightIndex = leftIndex + _trianglesCount - 1;
+
+		outerLoop: while ( leftIndex < rightIndex )
+		{
+			/*
+			 * Find element on left side that should be on the right side.
+			 */
+			Triangle3D rightElement;
+			while ( true )
+			{
+				rightElement = triangles.get( leftIndex );
+
+				final boolean isLeft = ( rightElement.getAveragePoint().y < splitY );
+				if ( !isLeft )
+					break;
+
+				if ( ++leftIndex >= rightIndex )
+					break outerLoop;
+			}
+
+			/*
+			 * Find element on right side that should be on the left side.
+			 */
+			Triangle3D leftElement;
+			while ( true )
+			{
+				leftElement = triangles.get( rightIndex );
+
+				final boolean isLeft = ( leftElement.getAveragePoint().y < splitY );
+				if ( isLeft )
+					break;
+
+				if ( leftIndex >= --rightIndex )
+					break outerLoop;
+			}
+
+			triangles.set( leftIndex++ , leftElement );
+			triangles.set( rightIndex-- , rightElement );
+		}
+	}
+
+	/**
+	 * Used by {@link #split()} to split the triangle list on Z coordinate.
+	 *
+	 * @param   splitZ  Z coordinate to split on.
+	 */
+	private void splitTrianglesOnZ( final double splitZ )
+	{
+		final List<Triangle3D> triangles = _triangles;
+
+		int leftIndex = _trianglesOffset;
+		int rightIndex = leftIndex + _trianglesCount - 1;
+
+		outerLoop: while ( leftIndex < rightIndex )
+		{
+			/*
+			 * Find element on left side that should be on the right side.
+			 */
+			Triangle3D rightElement;
+			while ( true )
+			{
+				rightElement = triangles.get( leftIndex );
+
+				final boolean isLeft = ( rightElement.getAveragePoint().z < splitZ );
+				if ( !isLeft )
+					break;
+
+				if ( ++leftIndex >= rightIndex )
+					break outerLoop;
+			}
+
+			/*
+			 * Find element on right side that should be on the left side.
+			 */
+			Triangle3D leftElement;
+			while ( true )
+			{
+				leftElement = triangles.get( rightIndex );
+
+				final boolean isLeft = ( leftElement.getAveragePoint().z < splitZ );
+				if ( isLeft )
+					break;
+
+				if ( leftIndex >= --rightIndex )
+					break outerLoop;
+			}
+
+			triangles.set( leftIndex++ , leftElement );
+			triangles.set( rightIndex-- , rightElement );
 		}
 	}
 }
