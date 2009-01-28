@@ -542,7 +542,7 @@ public class JOGLRenderer
 			final GLWrapper glWrapper = _glWrapper;
 			glWrapper.setPolygonMode( GL.GL_FILL );
 			glWrapper.setPolygonOffsetFill( true );
-			glWrapper.glPolygonOffset( 1.0f , 1.0f );
+			glWrapper.glPolygonOffset( 0.0f , -1.0f );
 			glWrapper.setCullFace( backfaceCulling );
 			glWrapper.setLighting( hasLighting );
 			setColor( color );
@@ -564,7 +564,7 @@ public class JOGLRenderer
 			final GLWrapper glWrapper = _glWrapper;
 			glWrapper.setPolygonMode( GL.GL_LINE );
 			glWrapper.setPolygonOffsetFill( true );
-			glWrapper.glPolygonOffset( 1.0f , 2.0f );
+			glWrapper.glPolygonOffset( 0.0f , -2.0f );
 			glWrapper.glLineWidth( width );
 			glWrapper.setCullFace( backfaceCulling );
 			glWrapper.setLighting( hasLighting );
@@ -622,7 +622,7 @@ public class JOGLRenderer
 			final GLWrapper glWrapper = _glWrapper;
 			glWrapper.setPolygonMode( GL.GL_POINT );
 			glWrapper.setPolygonOffsetFill( true );
-			glWrapper.glPolygonOffset( 1.0f , 2.0f );
+			glWrapper.glPolygonOffset( 0.0f , -2.0f );
 			glWrapper.setCullFace( backfaceCulling );
 			glWrapper.setLighting( hasLighting );
 
