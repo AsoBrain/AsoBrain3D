@@ -179,7 +179,8 @@ public class JOGLRenderer
 	public void renderScene( final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
 	{
 		final GL gl = _gl;
-		_glWrapper = new GLWrapper( gl );
+		final GLWrapper glWrapper = new GLWrapper( gl );
+		_glWrapper = glWrapper;
 		_maxLights = JOGLTools.MAX_LIGHTS;
 
 		/* Clear depth and color buffer. */
@@ -198,6 +199,13 @@ public class JOGLRenderer
 		{
 			drawGrid( _grid2wcs , _gridBounds , _gridCellSize , _gridHighlightAxes , _gridHighlightInterval );
 		}
+
+		glWrapper.setBlend( false );
+		glWrapper.setPolygonMode( GL.GL_FILL );
+		glWrapper.setPolygonOffsetFill( false );
+		glWrapper.setLighting( false );
+		glWrapper.setLineSmooth( false );
+		glWrapper.setCullFace( false );
 	}
 
 	protected void renderLights( final List<ContentNode> nodes )
@@ -315,13 +323,20 @@ public class JOGLRenderer
 			final Vector3D lightPosition   = _lightPositionRelativeToObject;
 			final boolean  hasLighting     = style.isMaterialLightingEnabled() && ( lightPosition != null );
 			final boolean  backfaceCulling = style.isBackfaceCullingEnabled() && !face.isTwoSided();
+			final float    extraAlpha      = style.getMaterialAlpha();
+			final boolean  blend           = ( extraAlpha < 0.99f ) || ( material.diffuseColorAlpha < 0.99f );
 
 			final GLWrapper glWrapper = _glWrapper;
+			if ( blend )
+			{
+				glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+			}
+			glWrapper.setBlend( blend );
 			glWrapper.setPolygonMode( GL.GL_FILL );
 			glWrapper.setPolygonOffsetFill( false );
 			glWrapper.setCullFace( backfaceCulling );
 			glWrapper.setLighting( hasLighting );
-			setMaterial( material );
+			setMaterial( material , extraAlpha );
 			final GL gl = _gl;
 
 			final boolean hasUV      = ( face.getTextureU() != null ) && ( face.getTextureV() != null );
@@ -536,10 +551,17 @@ public class JOGLRenderer
 		if ( vertexCount >= 2 )
 		{
 			final Color   color           = style.getFillColor();
+			final int     alpha           = color.getAlpha();
+			final boolean blend           = ( alpha < 255 );
 			final boolean backfaceCulling = style.isBackfaceCullingEnabled() && !face.isTwoSided();
 			final boolean hasLighting     = style.isFillLightingEnabled() && ( _lightPositionRelativeToObject != null );
 
 			final GLWrapper glWrapper = _glWrapper;
+			if ( blend )
+			{
+				glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+			}
+			glWrapper.setBlend( blend );
 			glWrapper.setPolygonMode( GL.GL_FILL );
 			glWrapper.setPolygonOffsetFill( true );
 			glWrapper.glPolygonOffset( 0.0f , -1.0f );
@@ -562,6 +584,7 @@ public class JOGLRenderer
 			final boolean hasLighting     = style.isStrokeLightingEnabled() && ( _lightPositionRelativeToObject != null );
 
 			final GLWrapper glWrapper = _glWrapper;
+			glWrapper.setBlend( false );
 			glWrapper.setPolygonMode( GL.GL_LINE );
 			glWrapper.setPolygonOffsetFill( true );
 			glWrapper.glPolygonOffset( 0.0f , -2.0f );
@@ -620,6 +643,7 @@ public class JOGLRenderer
 			final boolean hasLighting     = style.isVertexLightingEnabled() && ( _lightPositionRelativeToObject != null );
 
 			final GLWrapper glWrapper = _glWrapper;
+			glWrapper.setBlend( false  );
 			glWrapper.setPolygonMode( GL.GL_POINT );
 			glWrapper.setPolygonOffsetFill( true );
 			glWrapper.glPolygonOffset( 0.0f , -2.0f );
@@ -705,26 +729,29 @@ public class JOGLRenderer
 
 		final GLWrapper glWrapper = _glWrapper;
 		glWrapper.setColor( red , green , blue , alpha );
-		glWrapper.setMaterialAmbient( red , green , blue , 1.0f );
+		glWrapper.setMaterialAmbient( red , green , blue , alpha );
 		glWrapper.setMaterialDiffuse( red , green , blue , alpha );
-		glWrapper.setMaterialSpecular( 1.0f , 1.0f , 1.0f , 1.0f );
+		glWrapper.setMaterialSpecular( 1.0f , 1.0f , 1.0f , alpha );
 		glWrapper.setMaterialShininess( 16.0f );
-		glWrapper.setMaterialEmission( 0.0f , 0.0f , 0.0f , 1.0f );
+		glWrapper.setMaterialEmission( 0.0f , 0.0f , 0.0f , alpha );
 	}
 
 	/**
 	 * Set GL material properties.
 	 *
-	 * @param   material  {@link Material} properties.
+	 * @param   material    {@link Material} properties.
+	 * @param   extraAlpha  Extra alpha multiplier.
 	 */
-	public void setMaterial( final Material material )
+	public void setMaterial( final Material material , final float extraAlpha )
 	{
+		final float alpha = extraAlpha * material.diffuseColorAlpha;
+
 		final GLWrapper glWrapper = _glWrapper;
-		glWrapper.setColor( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , material.diffuseColorAlpha );
-		glWrapper.setMaterialAmbient( material.ambientColorRed , material.ambientColorGreen , material.ambientColorBlue , 1.0f );
-		glWrapper.setMaterialDiffuse( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , material.diffuseColorAlpha );
-		glWrapper.setMaterialSpecular(  material.specularColorRed , material.specularColorGreen , material.specularColorBlue , 1.0f );
-		glWrapper.setMaterialEmission( material.emissiveColorRed , material.emissiveColorGreen , material.emissiveColorBlue , 1.0f );
+		glWrapper.setColor( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , alpha );
+		glWrapper.setMaterialAmbient( material.ambientColorRed , material.ambientColorGreen , material.ambientColorBlue , alpha );
+		glWrapper.setMaterialDiffuse( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , alpha );
+		glWrapper.setMaterialSpecular(  material.specularColorRed , material.specularColorGreen , material.specularColorBlue , alpha );
+		glWrapper.setMaterialEmission( material.emissiveColorRed , material.emissiveColorGreen , material.emissiveColorBlue , alpha );
 		glWrapper.setMaterialShininess( (float)material.shininess );
 	}
 
@@ -956,8 +983,8 @@ public class JOGLRenderer
 
 			glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 			glWrapper.setBlend( true );
-			gl.glEnable( GL.GL_LINE_SMOOTH );
-
+			glWrapper.setPolygonMode( GL.GL_FILL );
+			glWrapper.setLineSmooth( true );
 			glWrapper.setLighting( false );
 
 			final int minCellX = gridBounds.x;
