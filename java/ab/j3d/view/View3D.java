@@ -194,11 +194,10 @@ public abstract class View3D
 	 */
 	public void dispose()
 	{
-		for ( final ViewOverlay overlay : _overlays )
+		for ( final ViewOverlay overlay : new ArrayList<ViewOverlay>( _overlays ) )
 		{
 			removeOverlay( overlay );
 		}
-		_overlays.clear();
 
 		_renderStyleFilters.clear();
 
