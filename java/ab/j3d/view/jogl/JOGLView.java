@@ -31,6 +31,7 @@ import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLDrawableFactory;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLPbuffer;
+import javax.media.opengl.DebugGL;
 import javax.media.opengl.glu.GLU;
 import javax.swing.JPopupMenu;
 
@@ -95,7 +96,7 @@ public class JOGLView
 	/**
 	 * Whether {@link #init(GLAutoDrawable)} as been called at least once.
 	 */
-	private boolean _firstInit = false;
+	private static boolean _firstInit = false;
 
 	/**
 	 * Construct new view.
@@ -342,8 +343,8 @@ public class JOGLView
 	 */
 	public void init( final GLAutoDrawable glAutoDrawable )
 	{
-		final GL gl = /*new DebugGL*/( glAutoDrawable.getGL() );
-		/*glAutoDrawable.setGL( gl );*/
+		final GL gl = new DebugGL( glAutoDrawable.getGL() );
+		glAutoDrawable.setGL( gl );
 
 		if ( !_firstInit )
 		{
@@ -352,10 +353,10 @@ public class JOGLView
 			System.out.println();
 			System.out.println( " About OpenGL:" );
 			System.out.println( "---------------" );
-			System.out.println( "Version:    " + gl.glGetString( GL.GL_VERSION                  ) );
-			System.out.println( "Vendor:     " + gl.glGetString( GL.GL_VENDOR                   ) );
-			System.out.println( "Extensions: " + gl.glGetString( GL.GL_EXTENSIONS               ) );
-			System.out.println( "Renderer:   " + gl.glGetString( GL.GL_RENDERER                 ) );
+			System.out.println( "Version:    " + gl.glGetString( GL.GL_VERSION ) );
+			System.out.println( "Vendor:     " + gl.glGetString( GL.GL_VENDOR ) );
+			System.out.println( "Extensions: " + gl.glGetString( GL.GL_EXTENSIONS ) );
+			System.out.println( "Renderer:   " + gl.glGetString( GL.GL_RENDERER ) );
 			try
 			{
 				System.out.println( "Shaders:    " + gl.glGetString( GL.GL_SHADING_LANGUAGE_VERSION ) );
@@ -401,8 +402,7 @@ public class JOGLView
 	 */
 	public void reshape( final GLAutoDrawable glAutoDrawable , final int x , final int y , final int width , final int height )
 	{
-		final GL gl = /*new DebugGL*/( glAutoDrawable.getGL() );
-		/*glAutoDrawable.setGL( gl );*/
+		final GL gl = glAutoDrawable.getGL();
 
 		final Camera3D camera = getCamera();
 		final double   fov    = Math.toDegrees( camera.getAperture() );
@@ -432,8 +432,7 @@ public class JOGLView
 
 	public void display( final GLAutoDrawable glAutoDrawable )
 	{
-		final GL gl = /*new DebugGL*/( glAutoDrawable.getGL() );
-		/*glAutoDrawable.setGL( gl );*/
+		final GL gl = glAutoDrawable.getGL();
 
 		final int width  = glAutoDrawable.getWidth();
 		final int height = glAutoDrawable.getHeight();
