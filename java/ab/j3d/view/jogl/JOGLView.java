@@ -22,9 +22,7 @@ package ab.j3d.view.jogl;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.lang.ref.SoftReference;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
@@ -70,12 +68,12 @@ public class JOGLView
 	private final ControlInput _controlInput;
 
 	/**
-	 * Front clipping plane distance in model units.
+	 * Front clipping plane distance in view units.
 	 */
 	private final double _frontClipDistance;
 
 	/**
-	 * Back clipping plane distance in model units.
+	 * Back clipping plane distance in view units.
 	 */
 	private final double _backClipDistance;
 
@@ -90,9 +88,9 @@ public class JOGLView
 	private RenderThread _renderThread;
 
 	/**
-	 * Texture cache.
+	 * Whether {@link #init(GLAutoDrawable)} as been called at least once.
 	 */
-	private Map<String, SoftReference<Texture>> _textureCache;
+	private boolean _firstInit = false;
 
 	/**
 	 * Construct new view.
@@ -112,13 +110,10 @@ public class JOGLView
 		_backClipDistance  = 100.0 / unit;
 		_renderThread      = null;
 
-		_textureCache      = new HashMap<String, SoftReference<Texture>>();
-
 		/* Use heavyweight popups, since we use a heavyweight canvas */
 		JPopupMenu.setDefaultLightWeightPopupEnabled( false );
 
 		final GLCanvas glCanvas;
-
 
 		final GLCapabilities capabilities   = new GLCapabilities();
 		capabilities.setSampleBuffers( true );
@@ -126,15 +121,9 @@ public class JOGLView
 		capabilities.setNumSamples( 4 );
 
 		/* See if the model already contains a context. */
-		if ( model.getContext() != null )
-		{
-			glCanvas = new GLCanvas( capabilities , null , model.getContext() , null );
-		}
-		else
-		{
-			glCanvas = new GLCanvas( capabilities , null , null , null );
-			model.setContext( glCanvas.getContext() );
-		}
+		glCanvas = new GLCanvas( capabilities , null , model.getContext() , null );
+		model.setContext( glCanvas.getContext() );
+
 		glCanvas.setMinimumSize( new Dimension( 0 , 0 ) ); //resize workaround
 		glCanvas.addGLEventListener( this );
 		_viewComponent = glCanvas;
@@ -342,22 +331,27 @@ public class JOGLView
 		final GL gl = /*new DebugGL*/( glAutoDrawable.getGL() );
 		/*glAutoDrawable.setGL( gl );*/
 
-		System.out.println();
-		System.out.println( " About OpenGL:" );
-		System.out.println( "---------------" );
-		System.out.println( "Version:    " + gl.glGetString( GL.GL_VERSION                  ) );
-		System.out.println( "Vendor:     " + gl.glGetString( GL.GL_VENDOR                   ) );
-		System.out.println( "Extensions: " + gl.glGetString( GL.GL_EXTENSIONS               ) );
-		System.out.println( "Renderer:   " + gl.glGetString( GL.GL_RENDERER                 ) );
-		try
+		if ( !_firstInit )
 		{
-			System.out.println( "Shaders:    " + gl.glGetString( GL.GL_SHADING_LANGUAGE_VERSION ) );
+			_firstInit = true;
+
+			System.out.println();
+			System.out.println( " About OpenGL:" );
+			System.out.println( "---------------" );
+			System.out.println( "Version:    " + gl.glGetString( GL.GL_VERSION                  ) );
+			System.out.println( "Vendor:     " + gl.glGetString( GL.GL_VENDOR                   ) );
+			System.out.println( "Extensions: " + gl.glGetString( GL.GL_EXTENSIONS               ) );
+			System.out.println( "Renderer:   " + gl.glGetString( GL.GL_RENDERER                 ) );
+			try
+			{
+				System.out.println( "Shaders:    " + gl.glGetString( GL.GL_SHADING_LANGUAGE_VERSION ) );
+			}
+			catch ( Exception e )
+			{
+				System.out.println( "Shaders:    n/a" );
+			}
+			System.out.println();
 		}
-		catch ( Exception e )
-		{
-			System.out.println( "Shaders:    n/a" );
-		}
-		System.out.println();
 
 		/* Enable depth buffering. */
 		gl.glEnable( GL.GL_DEPTH_TEST );
@@ -488,7 +482,8 @@ public class JOGLView
 		JOGLTools.glMultMatrixd( gl , getViewTransform() );
 
 		/* Render scene. */
-		final JOGLRenderer renderer = new JOGLRenderer( gl , _textureCache , _viewComponent.getBackground() , isGridEnabled() , getGrid2wcs() , getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
+		final Map<String,Texture> textureCache = ( (JOGLModel)model ).getTextureCache();
+		final JOGLRenderer renderer = new JOGLRenderer( gl , textureCache , _viewComponent.getBackground() , isGridEnabled() , getGrid2wcs() , getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
 		renderer.renderScene( model.getNodes() , styleFilters , viewStyle );
 	}
 }
