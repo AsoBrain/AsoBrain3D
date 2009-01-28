@@ -316,9 +316,9 @@ public class Material
 		diffuseColorGreen  = green;
 		diffuseColorBlue   = blue;
 		diffuseColorAlpha  = alpha;
-		specularColorRed   = 1.0f;
-		specularColorGreen = 1.0f;
-		specularColorBlue  = 1.0f;
+		specularColorRed   = 0.0f;
+		specularColorGreen = 0.0f;
+		specularColorBlue  = 0.0f;
 		shininess          = 16;
 		emissiveColorRed   = 0.0f;
 		emissiveColorGreen = 0.0f;
