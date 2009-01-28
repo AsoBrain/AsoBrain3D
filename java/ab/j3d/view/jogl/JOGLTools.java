@@ -511,7 +511,7 @@ public class JOGLTools
 	public static Texture createNormalizationCubeMap( final GL gl )
 	{
 		final Texture result = TextureIO.newTexture( GL.GL_TEXTURE_CUBE_MAP );
-		gl.glBindTexture( GL.GL_TEXTURE_CUBE_MAP , result.getTextureObject() );
+		result.bind();
 
 		final int   size     = 128;
 		final double offset   = 0.5;

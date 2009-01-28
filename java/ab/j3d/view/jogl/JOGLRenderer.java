@@ -348,8 +348,8 @@ public class JOGLRenderer
 				 * Normalization Cube Map.
 				 */
 				gl.glActiveTexture( GL.GL_TEXTURE0 );
-				gl.glEnable( GL.GL_TEXTURE_CUBE_MAP );
-				gl.glBindTexture( GL.GL_TEXTURE_CUBE_MAP , normalizationCubeMap.getTextureObject() );
+				normalizationCubeMap.enable();
+				normalizationCubeMap.bind();
 				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE );
 				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_REPLACE );
 				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_TEXTURE );
@@ -362,8 +362,8 @@ public class JOGLRenderer
 				 * Normalized Normal Vector Of Our Bump Map).
 				 */
 				gl.glActiveTexture( GL.GL_TEXTURE1 );
-				gl.glEnable( GL.GL_TEXTURE_2D );
-				gl.glBindTexture( GL.GL_TEXTURE_2D , bumpMap.getTextureObject() );
+				bumpMap.enable();
+				bumpMap.bind();
 				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE  );
 				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_DOT3_RGB );
 				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_PREVIOUS );
@@ -374,8 +374,8 @@ public class JOGLRenderer
 				 * material.
 				 */
 				gl.glActiveTexture( GL.GL_TEXTURE2 );
-				gl.glEnable( GL.GL_TEXTURE_2D );
-				gl.glBindTexture( GL.GL_TEXTURE_2D , bumpMap.getTextureObject() );
+				bumpMap.enable();
+				bumpMap.bind();
 				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE       );
 				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_MODULATE      );
 				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_PRIMARY_COLOR );
@@ -391,8 +391,8 @@ public class JOGLRenderer
 					 * Result Of Our Dot3 Operation With The Texture Value.
 					 */
 					gl.glActiveTexture( GL.GL_TEXTURE3 );
-					gl.glEnable( GL.GL_TEXTURE_2D );
-					gl.glBindTexture( GL.GL_TEXTURE_2D , texture.getTextureObject() );
+					texture.enable();
+					texture.bind();
 					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_MODULATE );
 
 					/*
@@ -455,21 +455,24 @@ public class JOGLRenderer
 						break;
 				}
 
-				gl.glActiveTexture( GL.GL_TEXTURE3 );
-				gl.glDisable( GL.GL_TEXTURE_2D );
+				if ( hasTexture )
+				{
+					gl.glActiveTexture( GL.GL_TEXTURE3 );
+					texture.disable();
+				}
 				gl.glActiveTexture( GL.GL_TEXTURE2 );
-				gl.glDisable( GL.GL_TEXTURE_2D );
+				bumpMap.disable();
 				gl.glActiveTexture( GL.GL_TEXTURE1 );
-				gl.glDisable( GL.GL_TEXTURE_2D );
+				bumpMap.disable();
 				gl.glActiveTexture( GL.GL_TEXTURE0 );
-				gl.glDisable( GL.GL_TEXTURE_CUBE_MAP );
+				normalizationCubeMap.disable();
 			}
 			else if ( hasTexture )
 			{
 				final float[] textureU = face.getTextureU();
 				final float[] textureV = face.getTextureV();
 
-				gl.glEnable( GL.GL_TEXTURE_2D );
+				texture.enable();
 				texture.bind();
 
 				switch ( vertexCount )
@@ -517,8 +520,7 @@ public class JOGLRenderer
 						break;
 				}
 
-				gl.glDisable( texture.getTarget() );
-				gl.glDisable( GL.GL_TEXTURE_2D );
+				texture.disable();
 			}
 			else
 			{
