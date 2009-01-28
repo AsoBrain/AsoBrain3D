@@ -335,7 +335,7 @@ public class Scene
 		if ( node != null )
 		{
 			node.removeContentNodeUpdateListener( _contentNodeUpdateListener );
-			_contentNodes.remove( node );
+			_contentNodes.remove( id );
 			_bspTreeDirty = true;
 
 			fireContentNodeRemoved( node );
