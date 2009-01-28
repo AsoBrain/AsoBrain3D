@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2007 Peter S. Heijnen
+ * Copyright (C) 1999-2009 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import ab.j3d.Bounds3D;
+import ab.j3d.Bounds3DBuilder;
 import ab.j3d.Matrix3D;
 
 /**
@@ -68,7 +70,7 @@ public class Node3D
 	public Node3D()
 	{
 		_parent   = null;
-		_children = new ArrayList();
+		_children = new ArrayList<Node3D>();
 		_tag      = null;
 	}
 
@@ -170,8 +172,14 @@ public class Node3D
 
 		if ( node != null )
 		{
-			for ( Node3D ancestor = getParent() ; !result && ( ancestor != null ) ; ancestor = ancestor.getParent() )
+			for ( Node3D ancestor = getParent() ; ancestor != null ; ancestor = ancestor.getParent() )
+			{
 				result = ( node == ancestor );
+				if ( result )
+				{
+					break;
+				}
+			}
 		}
 
 		return result;
@@ -230,7 +238,9 @@ public class Node3D
 	{
 		final Node3D oldParent = node._parent;
 		if ( ( oldParent != null ) && ( oldParent != this ) )
+		{
 			oldParent.removeChild( node );
+		}
 
 		node._parent = this;
 	}
@@ -246,7 +256,9 @@ public class Node3D
 	public final void removeChild( final Node3D node )
 	{
 		if ( ( node != null ) && _children.remove( node ) && ( node._parent == this ) )
+		{
 			node._parent = null;
+		}
 	}
 
 	/**
@@ -257,9 +269,46 @@ public class Node3D
 	public final void removeAllChildren()
 	{
 		final List<Node3D> children = _children;
+
 		while ( !children.isEmpty() )
+		{
 			removeChild( children.get( children.size() - 1 ) );
+		}
 	}
+
+	/**
+	 * Calculate combined of bounds all objects starting at this node.
+	 *
+	 * @param   xform   Transformation to apply to this node.
+	 *
+	 * @return  Calculated bounds;
+	 *          <code>null</code> if bounds could not be determined.
+	 */
+	public final Bounds3D calculateBounds( final Matrix3D xform )
+	{
+		final Bounds3D result;
+
+		final Node3DCollection<Object3D> nodes = collectNodes( null , Object3D.class , xform , false );
+		if ( nodes != null )
+		{
+			final Bounds3DBuilder builder = new Bounds3DBuilder();
+
+			for ( int i = 0 ; i < nodes.size() ; i++ )
+			{
+				final Object3D object3d = nodes.getNode( i );
+				object3d.addBounds( builder , nodes.getMatrix( i ) );
+			}
+
+			result = builder.getBounds();
+		}
+		else
+		{
+			result = null;
+		}
+
+		return result;
+	}
+
 
 	/**
 	 * This method collects nodes of a specific time from the scene graph.
@@ -304,7 +353,9 @@ public class Node3D
 			if ( nodeClass.isInstance( this ) )
 			{
 				if ( result == null )
+				{
 					result = new Node3DCollection<T>();
+				}
 
 				result.add( transform , (T)this );
 			}
