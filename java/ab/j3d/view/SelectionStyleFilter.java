@@ -19,8 +19,6 @@
  */
 package ab.j3d.view;
 
-import java.awt.Color;
-
 import ab.j3d.model.ContentNode;
 
 /**
@@ -33,45 +31,40 @@ public abstract class SelectionStyleFilter
 	implements RenderStyleFilter
 {
 	/**
-	 * Color to blend fill color with for selected objects.
-	 */
-	private Color _selectionFillColor;
-
-	/**
-	 * Create filter with default settings.
+	 * Create filter.
 	 */
 	protected SelectionStyleFilter()
 	{
-		this( new Color( 0x400000FF , true ) );
-	}
-
-	/**
-	 * Create filter.
-	 *
-	 * @param   color   Color to blend fill color with for selected objects.
-	 */
-	protected SelectionStyleFilter( final Color color )
-	{
-		_selectionFillColor = color;
 	}
 
 	public RenderStyle applyFilter( final RenderStyle style , final Object context )
 	{
-		return isSelected( context ) ? applySelectionStyle( style ) : style;
+		RenderStyle result = style;
+
+		if ( context instanceof ContentNode )
+		{
+			if ( isNodeSelected( (ContentNode)context ) )
+			{
+				result = applySelectionStyle( style );
+			}
+			else if ( hasSelection() )
+			{
+				result = applyUnselectedStyle( style );
+			}
+		}
+
+		return result;
 	}
 
 	/**
-	 * Test if the specified context is selected.
+	 * Test if there is an active selection. If this is <code>true</code>,
+	 * {@link #applyUnselectedStyle(RenderStyle)} will be called for any
+	 * unselected {@link ContentNode}.
 	 *
-	 * @param   context     Context to test.
-	 *
-	 * @return  <code>true</code> if the object is selected;
-	 *          <code>false</code> otherwise.
+	 * @return  <code>true</code> if there is an active selection;
+	 *          <code>false</code> otherwise (unselected style not applied).
 	 */
-	protected boolean isSelected( final Object context )
-	{
-		return ( context instanceof ContentNode ) && isNodeSelected( (ContentNode)context );
-	}
+	protected abstract boolean hasSelection();
 
 	/**
 	 * Test if a {@link ContentNode} is selected.
@@ -84,17 +77,28 @@ public abstract class SelectionStyleFilter
 	protected abstract boolean isNodeSelected( final ContentNode node );
 
 	/**
-	 * Apply style for selection to existing style.
+	 * Apply style for selected nodes.
 	 *
 	 * @param   style   Style to filter.
 	 *
 	 * @return  Filtered style.
 	 */
-	protected RenderStyle applySelectionStyle( final RenderStyle style )
-	{
-		final RenderStyle result = style.clone();
-		result.setFillEnabled( true );
-		result.setFillColor( RenderStyle.blendColors( result.getFillColor() , _selectionFillColor ) );
-		return result;
-	}
+	protected abstract RenderStyle applySelectionStyle( final RenderStyle style );
+
+	/**
+	 * Apply style for unselected nodes.
+	 *
+	 * @param   style   Style to filter.
+	 *
+	 * @return  Filtered style.
+	 */
+
+	/**
+	 * Apply style for unselected nodes.
+	 *
+	 * @param   style   Style to filter.
+	 *
+	 * @return  Filtered style.
+	 */
+	protected abstract RenderStyle applyUnselectedStyle( final RenderStyle style );
 }
