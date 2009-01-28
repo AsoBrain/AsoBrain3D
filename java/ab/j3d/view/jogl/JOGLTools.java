@@ -20,7 +20,6 @@
 package ab.j3d.view.jogl;
 
 import java.awt.image.BufferedImage;
-import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Map;
@@ -94,7 +93,7 @@ public class JOGLTools
 	 * @return Color map texture; <code>null</code> if face has no color map or no
 	 *         texture coordinates.
 	 */
-	public static Texture getColorMapTexture( final GL gl , final Material material , final Map<String,SoftReference<Texture>> textureCache  )
+	public static Texture getColorMapTexture( final GL gl , final Material material , final Map<String,Texture> textureCache  )
 	{
 		final Texture result;
 
@@ -119,26 +118,15 @@ public class JOGLTools
 	 * @return Color map texture; <code>null</code> if face has no color map or no
 	 *         texture coordinates.
 	 */
-	public static Texture getBumpMapTexture( final GL gl , final Material material , final Map<String,SoftReference<Texture>> textureCache )
+	public static Texture getBumpMapTexture( final GL gl , final Material material , final Map<String,Texture> textureCache )
 	{
 		Texture result = null;
 
 		if ( ( material != null ) && TextTools.isNonEmpty( material.bumpMap ) )
 		{
-			SoftReference<Texture> reference = textureCache.get( material.bumpMap );
+			result = textureCache.get( material.bumpMap );
 
-			final boolean loadTexture;
-			if ( reference == null )
-			{
-				loadTexture = !textureCache.containsKey( material.bumpMap );
-			}
-			else
-			{
-				result = reference.get();
-				loadTexture = ( result == null );
-			}
-
-			if ( loadTexture )
+			if ( result == null )
 			{
 				BufferedImage bufferedImage = MapTools.loadImage( material.bumpMap );
 				if ( bufferedImage != null )
@@ -182,8 +170,8 @@ public class JOGLTools
 						}
 					}
 				}
-				reference = ( result != null ) ? new SoftReference<Texture>( result ) : null ;
-				textureCache.put( material.bumpMap , reference );
+
+				textureCache.put( material.bumpMap , result );
 			}
 		}
 
@@ -195,12 +183,12 @@ public class JOGLTools
 	 *
 	 * @param   gl              OpenGL context.
 	 * @param   material        {@link Material} to get texture for.
-	 * @param   textureCache    Map containing the {@link SoftReference}s to the cached textures.
+	 * @param   textureCache    Map containing the cached textures.
 	 *
 	 * @return  Texture for the specified name; <code>null</code> if the name was
 	 *          empty or no map by the given name was found.
 	 */
-	public static Texture getTexture( final GL gl , final Material material , final Map<String,SoftReference<Texture>> textureCache )
+	public static Texture getTexture( final GL gl , final Material material , final Map<String,Texture> textureCache )
 	{
 		return getTexture( gl , material.colorMap , textureCache );
 	}
@@ -210,31 +198,20 @@ public class JOGLTools
 	 *
 	 * @param   gl              OpenGL context.
 	 * @param   map             Name of the texture map.
-	 * @param   textureCache    Map containing the {@link SoftReference}s to the cached textures.
+	 * @param   textureCache    Map containing the cached textures.
 	 *
 	 * @return  Texture for the specified name; <code>null</code> if the name was
 	 *          empty or no map by the given name was found.
 	 */
-	public static Texture getTexture( final GL gl , final String map , final Map<String,SoftReference<Texture>> textureCache )
+	public static Texture getTexture( final GL gl , final String map , final Map<String,Texture> textureCache )
 	{
 		Texture result = null;
 
 		if ( TextTools.isNonEmpty( map ) )
 		{
-			SoftReference<Texture> reference = textureCache.get( map );
+			result = textureCache.get( map );
 
-			final boolean loadTexture;
-			if ( reference == null )
-			{
-				loadTexture = !textureCache.containsKey( map );
-			}
-			else
-			{
-				result      = reference.get();
-				loadTexture = ( result == null );
-			}
-
-			if ( loadTexture )
+			if ( result == null )
 			{
 				final BufferedImage bufferedImage = MapTools.loadImage( map );
 				if ( bufferedImage != null )
@@ -276,8 +253,8 @@ public class JOGLTools
 						}
 					}
 				}
-				reference = ( result != null ) ? new SoftReference<Texture>( result ) : null ;
-				textureCache.put( map , reference );
+
+				textureCache.put( map , result );
 			}
 		}
 

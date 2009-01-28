@@ -24,7 +24,6 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
-import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +60,7 @@ public class JOGLRenderer
 	/**
 	 * Texture cache.
 	 */
-	private final Map<String,SoftReference<Texture>> _textureCache;
+	private final Map<String,Texture> _textureCache;
 
 	/**
 	 * Wrapper for OpenGL pipeline.
@@ -152,7 +151,7 @@ public class JOGLRenderer
 	 * @param   gridHighlightAxes       If set, hightlight X=0 and Y=0 axes.
 	 * @param   gridHighlightInterval   Interval to use for highlighting grid lines.
 	 */
-	public JOGLRenderer( final GL gl , final Map<String,SoftReference<Texture>> textureCache , final Color backgroundColor , final boolean gridIsEnabled , final Matrix3D grid2wcs , final Rectangle gridBounds , final int gridCellSize , final boolean gridHighlightAxes , final int gridHighlightInterval )
+	public JOGLRenderer( final GL gl , final Map<String,Texture> textureCache , final Color backgroundColor , final boolean gridIsEnabled , final Matrix3D grid2wcs , final Rectangle gridBounds , final int gridCellSize , final boolean gridHighlightAxes , final int gridHighlightInterval )
 	{
 		_gl = gl;
 		_textureCache = textureCache;
@@ -335,12 +334,11 @@ public class JOGLRenderer
 				final float[] textureU = face.getTextureU();
 				final float[] textureV = face.getTextureV();
 
-				final SoftReference<Texture> normalizationCubeMapReference = _textureCache.get( JOGLTools.NORMALIZATION_CUBE_MAP );
-				Texture normalizationCubeMap = ( normalizationCubeMapReference != null ) ? normalizationCubeMapReference.get() : null;
+				Texture normalizationCubeMap = _textureCache.get( JOGLTools.NORMALIZATION_CUBE_MAP );
 				if ( normalizationCubeMap == null )
 				{
 					normalizationCubeMap = JOGLTools.createNormalizationCubeMap( gl );
-					_textureCache.put( JOGLTools.NORMALIZATION_CUBE_MAP , new SoftReference<Texture>( normalizationCubeMap ) );
+					_textureCache.put( JOGLTools.NORMALIZATION_CUBE_MAP , normalizationCubeMap );
 				}
 
 				/*
