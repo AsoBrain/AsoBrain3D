@@ -204,15 +204,23 @@ public abstract class Projector
 	 * @param   frontClipDistance   Front clipping plane distance in view units.
 	 * @param   backClipDistance    Back clipping plane distance in view units.
 	 * @param   zoomFactor          Linear zoom factor.
+	 *
+	 * @throws  IllegalArgumentException if <code>frontClipDistance</code> is
+	 *          negative, zero or not less than <code>backClipDistance</code>.
 	 */
 	protected Projector( final int imageWidth , final int imageHeight , final double imageResolution , final double viewUnit , final double frontClipDistance , final double backClipDistance , final double zoomFactor )
 	{
+		if ( frontClipDistance <= 0.0 )
+			throw new IllegalArgumentException( "frontClipDistance <= 0.0: " + frontClipDistance );
+		if ( frontClipDistance >= backClipDistance )
+			throw new IllegalArgumentException( "frontClipDistance >= backClipDistance: " + frontClipDistance + " >= " + backClipDistance );
+
 		_viewUnit          = viewUnit;
 		_imageWidth        = imageWidth;
 		_imageHeight       = imageHeight;
 		_imageResolution   = imageResolution;
-		_frontClipDistance = -Math.abs( frontClipDistance );
-		_backClipDistance  = -Math.abs( backClipDistance );
+		_frontClipDistance = frontClipDistance;
+		_backClipDistance  = backClipDistance;
 		_zoomFactor        = zoomFactor;
 
 		final double view2pixels = zoomFactor * viewUnit / imageResolution;
@@ -401,7 +409,7 @@ public abstract class Projector
 	 * *          image plate
 	 * </pre>
 	 */
-	public static final class PerspectiveProjector
+	static final class PerspectiveProjector
 		extends Projector
 	{
 		/**
@@ -421,7 +429,7 @@ public abstract class Projector
 		 * @param   fieldOfView         Camera's field of view in radians.
 		 * @param   zoomFactor          Linear zoom factor.
 		 */
-		public PerspectiveProjector( final int imageWidth , final int imageHeight , final double imageResolution , final double viewUnit , final double frontClipDistance , final double backClipDistance , final double fieldOfView , final double zoomFactor )
+		PerspectiveProjector( final int imageWidth , final int imageHeight , final double imageResolution , final double viewUnit , final double frontClipDistance , final double backClipDistance , final double fieldOfView , final double zoomFactor )
 		{
 			super( imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , zoomFactor );
 
@@ -492,24 +500,24 @@ public abstract class Projector
 
 		public boolean inViewVolume( final double x , final double y , final double z )
 		{
-//			final boolean result;
-//
-//			if ( ( z >= _backClipDistance ) && ( z <= _frontClipDistance ) )
-//			{
-				return true;
+			final boolean result;
+
+			if ( ( z >= _frontClipDistance ) && ( z <= _backClipDistance ) )
+			{
+				result = true;
 //				final double f      = 1.0 - z / _eyeDistance;
 //				final double limitX = _limitX * f;
 //				final double limitY = _limitY * f;
 //
 //				result = ( x >= -limitX ) && ( x <= limitX )
 //				      && ( y >= -limitY ) && ( y <= limitY );
-//			}
-//			else /* outside front/back clipping plane */
-//			{
-//				result = false;
-//			}
-//
-//			return result;
+			}
+			else /* outside front/back clipping plane */
+			{
+				result = false;
+			}
+
+			return result;
 		}
 
 		public Point2D viewToImage( final double viewX , final double viewY , final double viewZ )
@@ -535,7 +543,7 @@ public abstract class Projector
 	 * coordinates. Depth information (Z) is ignored completely. It only scales,
 	 * translates, and flips the Y axis direction.
 	 */
-	public static class ParallelProjector
+	static class ParallelProjector
 		extends Projector
 	{
 		/**
@@ -554,7 +562,7 @@ public abstract class Projector
 		 * @param   backClipDistance    Back clipping plane distance in view units.
 		 * @param   zoomFactor          Linear zoom factor.
 		 */
-		public ParallelProjector( final int imageWidth , final int imageHeight , final double imageResolution , final double viewUnit , final double frontClipDistance , final double backClipDistance , final double zoomFactor )
+		ParallelProjector( final int imageWidth , final int imageHeight , final double imageResolution , final double viewUnit , final double frontClipDistance , final double backClipDistance , final double zoomFactor )
 		{
 			super( imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , zoomFactor );
 		}
@@ -604,7 +612,7 @@ public abstract class Projector
 		{
 			return ( x >= -_limitX ) && ( x <= _limitX )
 			    && ( y >= -_limitY ) && ( y <= _limitY )
-			    && ( z >= _backClipDistance ) && ( z <= _frontClipDistance );
+			    && ( z >= _frontClipDistance ) && ( z <= _backClipDistance );
 		}
 
 		public Point2D viewToImage( final double viewX , final double viewY , final double viewZ )
@@ -627,7 +635,7 @@ public abstract class Projector
 	 * view Z-axis onto the rendered X- and Y-axis by using the displacing
 	 * points by the half Z-value 30 degrees relative to the X-axis (top-right).
 	 */
-	public static class IsometricProjector
+	static class IsometricProjector
 		extends Projector
 	{
 		/**
@@ -658,7 +666,7 @@ public abstract class Projector
 		 * @param   backClipDistance    Back clipping plane distance in view units.
 		 * @param   zoomFactor          Linear zoom factor.
 		 */
-		public IsometricProjector( final int imageWidth , final int imageHeight , final double imageResolution , final double viewUnit , final double frontClipDistance , final double backClipDistance , final double zoomFactor )
+		IsometricProjector( final int imageWidth , final int imageHeight , final double imageResolution , final double viewUnit , final double frontClipDistance , final double backClipDistance , final double zoomFactor )
 		{
 			super( imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , zoomFactor );
 
@@ -730,7 +738,7 @@ public abstract class Projector
 		{
 			double tmp;
 
-			return ( z >= _backClipDistance ) && ( z <= _frontClipDistance )
+			return ( z >= _frontClipDistance ) && ( z <= _backClipDistance )
 			    && ( ( tmp = ( x - z * _xComponentOfZ     ) ) >= -_limitX ) && ( tmp <= _limitX )
 			    && ( ( tmp = (     z * _yComponentOfZ - y ) ) >= -_limitY ) && ( tmp <= _limitY );
 		}
