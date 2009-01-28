@@ -17,43 +17,34 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view;
+package ab.j3d.view.jogl;
 
-import java.util.Locale;
-
-import com.numdata.oss.ResourceBundleTools;
-import com.numdata.oss.ui.ChoiceAction;
+import ab.j3d.view.RenderEngineExample;
 
 /**
- * This action switches the rendering policy of a {@link View3D}.
+ * Example program for the JOGL render engine implementation.
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public class SwitchRenderingPolicyAction
-	extends ChoiceAction
+public class JOGLEngineExample
+	extends RenderEngineExample
 {
 	/**
-	 * The {@link View3D} this action belongs to.
+	 * Construct new JOGLModelExample.
 	 */
-	final View3D _view;
-
-	/**
-	 * Construct a new action to switch the rendering policy of a view.
-	 *
-	 * @param   locale          Preferred locale for internationalization.
-	 * @param   view            The view this action belongs to.
-	 * @param   currentPolicy   Current rendering policy of the view.
-	 */
-	public SwitchRenderingPolicyAction( final Locale locale , final View3D view , final RenderingPolicy currentPolicy )
+	public JOGLEngineExample()
 	{
-
-		super( ResourceBundleTools.getBundle( View3D.class , locale ) , currentPolicy );
-		_view = view;
+		super( new JOGLEngine() );
 	}
 
-	public void run()
+	/**
+	 * Run application.
+	 *
+	 * @param args Command-line arguments.
+	 */
+	public static void main( final String[] args )
 	{
-		_view.setRenderingPolicy( (RenderingPolicy)getSelectedValue() );
+		new JOGLEngineExample();
 	}
 }

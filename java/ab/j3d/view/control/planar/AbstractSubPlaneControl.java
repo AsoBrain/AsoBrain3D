@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2008
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import ab.j3d.control.ControlInputEvent;
-import ab.j3d.view.ViewModelNode;
+import ab.j3d.model.ContentNode;
 
 import com.numdata.oss.MathTools;
 
@@ -79,7 +79,7 @@ public abstract class AbstractSubPlaneControl
 		return true;
 	}
 
-	public boolean mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final double x , final double y )
+	public boolean mousePressed( final ControlInputEvent event , final ContentNode contentNode , final double x , final double y )
 	{
 		_startX = x;
 		_startY = y;
@@ -90,13 +90,13 @@ public abstract class AbstractSubPlaneControl
 		return isActive();
 	}
 
-	public void mouseDragged( final ControlInputEvent event , final ViewModelNode viewModelNode , final double x , final double y )
+	public void mouseDragged( final ControlInputEvent event , final ContentNode contentNode , final double x , final double y )
 	{
 		_endX = x;
 		_endY = y;
 	}
 
-	public void mouseReleased( final ControlInputEvent event , final ViewModelNode viewModelNode , final double x , final double y )
+	public void mouseReleased( final ControlInputEvent event , final ContentNode contentNode , final double x , final double y )
 	{
 		_endX   = x;
 		_endY   = y;

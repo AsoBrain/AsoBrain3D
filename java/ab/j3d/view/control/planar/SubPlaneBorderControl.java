@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2008
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,8 +25,8 @@ import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 
 import ab.j3d.control.ControlInputEvent;
-import ab.j3d.view.ViewModelNode;
-import ab.j3d.view.ViewModelView;
+import ab.j3d.model.ContentNode;
+import ab.j3d.view.View3D;
 
 /**
  * This class implements {@link SubPlaneControl} to control borders/corners of
@@ -73,9 +73,9 @@ public abstract class SubPlaneBorderControl
 		_borderSize = 100.0;
 	}
 
-	public boolean mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final double x , final double y )
+	public boolean mousePressed( final ControlInputEvent event , final ContentNode contentNode , final double x , final double y )
 	{
-		final boolean result = super.mousePressed( event , viewModelNode , x , y );
+		final boolean result = super.mousePressed( event , contentNode , x , y );
 
 		if ( result )
 		{
@@ -141,7 +141,7 @@ public abstract class SubPlaneBorderControl
 		return result;
 	}
 
-	public void paint( final ViewModelView view , final Graphics2D g2d )
+	public void paint( final View3D view , final Graphics2D g2d )
 	{
 		if ( isActive() )
 		{

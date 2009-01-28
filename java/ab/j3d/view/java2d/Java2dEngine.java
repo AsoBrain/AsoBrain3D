@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2008
+ * (C) Copyright Numdata BV 2004-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,35 +17,51 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view.jogl;
+package ab.j3d.view.java2d;
 
-import ab.j3d.view.ViewModel;
-import ab.j3d.view.ViewModelExample;
+import java.awt.Color;
+
+import ab.j3d.model.Scene;
+import ab.j3d.view.RenderEngine;
+import ab.j3d.view.View3D;
 
 /**
- * Example program for the JOGL view model implementation.
+ * Java 2D render engine implementation.
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public class JOGLModelExample
-	extends ViewModelExample
+public final class Java2dEngine
+	implements RenderEngine
 {
 	/**
-	 * Construct new JOGLModelExample.
+	 * Background color for the model.
 	 */
-	public JOGLModelExample()
+	private final Color _background;
+
+	/**
+	 * Construct new Java 2D render engine.
+	 */
+	public Java2dEngine()
 	{
-		super( new JOGLModel( ViewModel.MM ) );
+		this( null );
 	}
 
 	/**
-	 * Run application.
+	 * Construct new Java 2D render engine.
 	 *
-	 * @param args Command-line arguments.
+	 * @param   background  Background color to use for 3D views. May be
+	 *                      <code>null</code>, in which case the default
+	 *                      background color of the current look and feel is
+	 *                      used.
 	 */
-	public static void main( final String[] args )
+	public Java2dEngine( final Color background )
 	{
-		new JOGLModelExample();
+		_background   = background;
+	}
+
+	public View3D createView( final Scene scene )
+	{
+		return new Java2dView( scene , _background );
 	}
 }

@@ -24,7 +24,7 @@ import java.util.Properties;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
-import ab.j3d.view.ViewModelView;
+import ab.j3d.view.View3D;
 
 /**
  * This class implements a camera control based on a 'from' and 'to' point. The
@@ -119,7 +119,7 @@ public class FromToCameraControl2
 	 *
 	 * @param   view    View to be controlled.
 	 */
-	public FromToCameraControl2( final ViewModelView view )
+	public FromToCameraControl2( final View3D view )
 	{
 		this( view , 1.0 );
 	}
@@ -133,7 +133,7 @@ public class FromToCameraControl2
 	 *
 	 * @throws  IllegalArgumentException if the distance is (almost) 0.
 	 */
-	public FromToCameraControl2( final ViewModelView view , final double distance )
+	public FromToCameraControl2( final View3D view , final double distance )
 	{
 		this( view , Vector3D.INIT.set( 0.0 , -distance , 0.0 ) , Vector3D.INIT );
 	}
@@ -150,7 +150,7 @@ public class FromToCameraControl2
 	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
 	 * @throws  IllegalArgumentException if the from and two points are too close.
 	 */
-	public FromToCameraControl2( final ViewModelView view , final Vector3D from , final Vector3D to )
+	public FromToCameraControl2( final View3D view , final Vector3D from , final Vector3D to )
 	{
 		this( view , from , to , Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) );
 	}
@@ -168,7 +168,7 @@ public class FromToCameraControl2
 	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
 	 * @throws  IllegalArgumentException if the from and two points are too close.
 	 */
-	public FromToCameraControl2( final ViewModelView view , final Vector3D from , final Vector3D to , final Vector3D up )
+	public FromToCameraControl2( final View3D view , final Vector3D from , final Vector3D to , final Vector3D up )
 	{
 		super( view );
 		look( from , to , up );

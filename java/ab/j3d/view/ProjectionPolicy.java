@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2006
+ * (C) Copyright Numdata BV 2005-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,25 +19,32 @@
  */
 package ab.j3d.view;
 
-import java.awt.Graphics2D;
-
 /**
- * An {@link OverlayPainter} is allowed to paint over an allready rendered view.
- * The method {@link #paint} is called after the view has been rendered, after
- * which the painters can paint whatever they wish on the view component. An
- * example of this is a bounding box that is drawn around a selected object.
+ * Projection policy.
  *
- * @author  Mart Slot
+ * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public interface OverlayPainter
+public enum ProjectionPolicy
 {
 	/**
-	 * Called after a view has been rendered, after which the painters can paint
-	 * whatever they wish on the view component.
+	 * Projection policy: perspective.
 	 *
-	 * @param   view    {@link ViewModelView} which has rendered the scene.
-	 * @param   g2d     {@link Graphics2D} object which can do the painting.
+	 * @see     Projector.PerspectiveProjector
 	 */
-	void paint( final ViewModelView view , final Graphics2D g2d );
+	PERSPECTIVE ,
+
+	/**
+	 * Projection policy: parallel.
+	 *
+	 * @see     Projector.ParallelProjector
+	 */
+	PARALLEL ,
+
+	/**
+	 * Projection policy: isometric.
+	 *
+	 * @see     Projector.IsometricProjector
+	 */
+	ISOMETRIC ,
 }

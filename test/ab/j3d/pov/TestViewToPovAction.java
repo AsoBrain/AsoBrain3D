@@ -1,7 +1,6 @@
 /* $Id$
  * ====================================================================
- * AsoBrain 3D Toolkit
- * Copyright (C) 2004-2006 Numdata BV
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,37 +17,40 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view.java2d;
+package ab.j3d.pov;
 
-import ab.j3d.view.ViewModelExample;
-import ab.j3d.view.ViewModelView;
-import ab.j3d.view.ViewModel;
+import java.util.Locale;
+
+import junit.framework.TestCase;
+
+import com.numdata.oss.junit.ResourceBundleTester;
 
 /**
- * Example program for the Java 2D view model implementation.
+ * This class tests the {@link ViewToPovAction} class.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public final class Java2dModelExample
-	extends ViewModelExample
+public class TestViewToPovAction
+	extends TestCase
 {
 	/**
-	 * Construct application.
+	 * Name of this class.
 	 */
-	private Java2dModelExample()
-	{
-		super( new Java2dModel( ViewModel.METER ) );
-	}
+	private static final String CLASS_NAME = TestViewToPovAction.class.getName();
 
 	/**
-	 * Run application.
+	 * Test resource bundles for class.
 	 *
-	 * @param args Command-line arguments.
+	 * @throws  Exception if the test fails.
 	 */
-	public static void main( final String[] args )
+	public void testResources()
+		throws Exception
 	{
-		new Java2dModelExample();
-	}
+		System.out.println( CLASS_NAME + ".testResources()" );
 
+		final Locale[] locales = { new Locale( "nl" , "NL" ) , Locale.US , Locale.GERMANY };
+
+		ResourceBundleTester.testBundles( ViewToPovAction.class , locales , false , null , true , true , false );
+	}
 }

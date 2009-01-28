@@ -30,25 +30,26 @@ import javax.swing.JComponent;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
-import ab.j3d.control.ControlInput;
+import ab.j3d.model.Scene;
 import ab.j3d.view.BSPTree;
+import ab.j3d.view.control.DefaultViewControl;
 import ab.j3d.view.Projector;
 import ab.j3d.view.RenderedPolygon;
 import ab.j3d.view.RenderingPolicy;
+import ab.j3d.view.View3D;
 import ab.j3d.view.ViewControlInput;
-import ab.j3d.view.ViewModelView;
 
 /**
- * Java 2D implementation of view model view.
+ * Java 2D view implementation.
  *
- * @see     Java2dModel
- * @see     ViewModelView
+ * @see     Java2dEngine
+ * @see     View3D
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-final class Java2dView
-	extends ViewModelView
+public final class Java2dView
+	extends View3D
 {
 	/**
 	 * Practical minimum size of images in dialog.
@@ -68,7 +69,7 @@ final class Java2dView
 	/**
 	 * The SceneInputTranslator for this View.
 	 */
-	private final ControlInput _controlInput;
+	private final ViewControlInput _controlInput;
 
 	/**
 	 * Stroke to use for sketched rendering.
@@ -109,8 +110,8 @@ final class Java2dView
 				g.fillRect( 0 , 0 , getWidth() , getHeight() );
 			}
 
-			final Java2dModel model      = getModel();
-			final BSPTree     bspTree    = model.getBspTree();
+			final Scene       scene      = getScene();
+			final BSPTree     bspTree    = scene.getBspTree();
 			final Projector   projector  = getProjector();
 			final Matrix3D    model2view = getViewTransform();
 
@@ -158,15 +159,15 @@ final class Java2dView
 	/**
 	 * Construct new view.
 	 *
-	 * @param   model       Model for which this view is created.
+	 * @param   scene       Scene to view.
 	 * @param   background  Background color to use for 3D views. May be
 	 *                      <code>null</code>, in which case the default
 	 *                      background color of the current look and feel is
 	 *                      used.
 	 */
-	Java2dView( final Java2dModel model , final Color background )
+	public Java2dView( final Scene scene , final Color background )
 	{
-		super( model );
+		super( scene );
 
 		/*
 		 * Create view component.
@@ -179,17 +180,13 @@ final class Java2dView
 		}
 		_viewComponent = viewComponent;
 
-		/*
-		 * Update view to initial transform.
-		 */
+		_controlInput = new ViewControlInput( this );
+
+		final DefaultViewControl defaultViewControl = new DefaultViewControl();
+		appendControl( defaultViewControl );
+		addOverlay( defaultViewControl );
+
 		update();
-
-		_controlInput = new ViewControlInput( model , this );
-	}
-
-	public Java2dModel getModel()
-	{
-		return (Java2dModel)super.getModel();
 	}
 
 	public Component getComponent()
@@ -215,8 +212,8 @@ final class Java2dView
 		final int           imageHeight       = viewComponent.getHeight() - insets.top - insets.bottom;
 		final double        imageResolution   = getResolution();
 
-		final Java2dModel   model             = getModel();
-		final double        viewUnit          = model.getUnit();
+		final Scene         scene             = getScene();
+		final double        viewUnit          = scene.getUnit();
 
 		final double        fieldOfView       = getAperture();
 		final double        zoomFactor        = getZoomFactor();
@@ -226,7 +223,7 @@ final class Java2dView
 		return Projector.createInstance( getProjectionPolicy() , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
 	}
 
-	protected ControlInput getControlInput()
+	protected ViewControlInput getControlInput()
 	{
 		return _controlInput;
 	}

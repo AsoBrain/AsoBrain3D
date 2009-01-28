@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2008-2008
+ * (C) Copyright Numdata BV 2009-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,38 +17,45 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view;
+package ab.j3d.model;
 
 import java.util.EventListener;
 
 /**
- * Listener for {@link ViewModelNodeUpdateEvent}s from a {@link ViewModelNode}.
+ * Listener for {@link SceneUpdateEvent}s from a {@link Scene}.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public interface ViewModelNodeUpdateListener
+public interface SceneUpdateListener
 	extends EventListener
 {
 	/**
-	 * Called to notify the listener that a node's rendering properties were
-	 * updated.
+	 * Called to notify the listener that a content node was added to the scene.
 	 *
-	 * @param   event   Event from {@link ViewModelNode}.
+	 * @param   event   Event from {@link Scene}.
 	 */
-	void renderingPropertiesUpdated( ViewModelNodeUpdateEvent event );
+	void contentNodeAdded( SceneUpdateEvent event );
 
 	/**
-	 * Called to notify the listener that a node's transform was updated.
+	 * Called to notify the listener that a content node was removed from the
+	 * scene.
 	 *
-	 * @param   event   Event from {@link ViewModelNode}.
+	 * @param   event   Event from {@link Scene}.
 	 */
-	void transformUpdated( ViewModelNodeUpdateEvent event );
+	void contentNodeRemoved( SceneUpdateEvent event );
 
 	/**
-	 * Called to notify the listener that a node's contents were updated.
+	 * Called to notify the listener that a content node's content was updated.
 	 *
-	 * @param   event   Event from {@link ViewModelNode}.
+	 * @param   event   Event from {@link Scene}.
 	 */
-	void contentsUpdated( ViewModelNodeUpdateEvent event );
+	void contentNodeContentUpdated( SceneUpdateEvent event );
+
+	/**
+	 * Called to notify the listener that a content node's property was changed.
+	 *
+	 * @param   event   Event from {@link Scene}.
+	 */
+	void contentNodePropertyChanged( SceneUpdateEvent event );
 }

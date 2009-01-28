@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2008-2008
+ * (C) Copyright Numdata BV 2008-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,7 +31,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -49,16 +48,17 @@ import ab.j3d.control.FromToCameraControl;
 import ab.j3d.model.Box3D;
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Light3D;
+import ab.j3d.model.Scene;
 import ab.j3d.model.Sphere3D;
 import ab.j3d.pov.AbToPovConverter;
 import ab.j3d.pov.PovScene;
 import ab.j3d.pov.PovVector;
-import ab.j3d.view.java3d.Java3dModel;
-import ab.j3d.view.jogl.JOGLModel;
+import ab.j3d.view.java3d.Java3dEngine;
+import ab.j3d.view.jogl.JOGLEngine;
 
 /**
- * Shows a 3D scene using the various view models in several lighting modes, for
- * comparison purposes.
+ * Shows a 3D scene using the various render engines in several lighting modes,
+ * for comparison purposes.
  *
  * @author  G. Meinders
  * @version $Revision$ $Date$
@@ -93,10 +93,10 @@ public class ViewComparison
 
 	public void run()
 	{
-		final ArrayList<Scene> scenes = new ArrayList<Scene>();
-		scenes.add( new DefaultScene() );
-		scenes.add( new DiffuseOnlyScene() );
-		scenes.add( new AmbientOnlyScene() );
+		final ArrayList<Template> templates = new ArrayList<Template>();
+		templates.add( new DefaultTemplate() );
+		templates.add( new DiffuseOnlyTemplate() );
+		templates.add( new AmbientOnlyTemplate() );
 
 		final JFrame frame = new JFrame( "AB3D View Comparison Tool" );
 		frame.setLayout( new GridLayout( 1 , 0 ) );
@@ -109,19 +109,20 @@ public class ViewComparison
 			}
 		} );
 
-		for ( final Scene scene : scenes )
+		for ( final Template template : templates )
 		{
 			final JPanel layoutPanel = new JPanel();
 			layoutPanel.setLayout( new GridLayout( 0 , 1 ) );
 
-			final Collection<ViewModel> models = createViewModels();
-			ViewModelView view = null;
-			for ( final ViewModel model : models )
-			{
-				scene.createModel( model );
+			final Scene scene = new Scene( Scene.MM );
+			template.createModel( scene );
 
-				view = model.createView();
-				scene.configureView( view );
+			final Collection<RenderEngine> renderEngines = createRenderEngines( scene );
+			View3D view = null;
+			for ( final RenderEngine model : renderEngines )
+			{
+				view = model.createView( scene );
+				template.configureView( view );
 
 				final Component component = view.getComponent();
 				layoutPanel.add( component );
@@ -129,9 +130,7 @@ public class ViewComparison
 
 			if ( INCLUDE_POV_VIEW )
 			{
-				final Iterator<ViewModel> modelIterator = models.iterator();
-				final ViewModel           povModel      = modelIterator.next();
-				final ViewModelView       povView       = view;
+				final View3D povView = view;
 
 				final JLabel povComponent = new JLabel();
 				layoutPanel.add( povComponent );
@@ -150,17 +149,18 @@ public class ViewComparison
 							if ( ( size.width > 0 ) && ( size.height > 0 ) )
 							{
 								final Camera3D camera          = povView.getCamera();
+								final Scene    scene           = povView.getScene();
 								final Matrix3D viewTransform   = povView.getViewTransform();
 								final Matrix3D cameraTransform = viewTransform.inverse();
 								final double   aspectRatio     = (double)size.width / (double)size.height;
 
 								final AbToPovConverter converter = new AbToPovConverter( MapTools.imageMapDirectory );
-								final PovScene scene = converter.convert( povModel.getScene() );
-								scene.add( AbToPovConverter.convertCamera3D( cameraTransform , camera , aspectRatio ) );
+								final PovScene povScene = converter.convert( scene.getContent() );
+								povScene.add( AbToPovConverter.convertCamera3D( cameraTransform , camera , aspectRatio ) );
 
-								scene.setBackground( new PovVector( Color.GRAY ) );
+								povScene.setBackground( new PovVector( Color.GRAY ) );
 
-								publish( scene.render( null , size.width , size.height , null , new PrintWriter( System.err ) , true ) );
+								publish( povScene.render( null , size.width , size.height , null , new PrintWriter( System.err ) , true ) );
 							}
 							Thread.sleep( 1000L );
 						}
@@ -198,21 +198,21 @@ public class ViewComparison
 		frame.setVisible( true );
 	}
 
-	private static Collection<ViewModel> createViewModels()
+	private static Collection<RenderEngine> createRenderEngines( final Scene scene )
 	{
-		final Collection<ViewModel> models = new ArrayList<ViewModel>();
-		models.add( new JOGLModel  ( ViewModel.MM , Color.GRAY ) );
-		models.add( new Java3dModel( ViewModel.MM , Color.GRAY ) );
+		final Collection<RenderEngine> models = new ArrayList<RenderEngine>();
+		models.add( new JOGLEngine( Color.GRAY ) );
+		models.add( new Java3dEngine( scene , Color.GRAY ) );
 		return models;
 	}
 
-	private abstract static class Scene
+	private abstract static class Template
 	{
 		private Vector3D _cameraLocation;
 
 		private Vector3D _cameraTarget;
 
-		protected Scene()
+		protected Template()
 		{
 			_cameraLocation = Vector3D.INIT.set( 500.0 , -500.0 , 500.0 );
 			_cameraTarget   = Vector3D.INIT.plus( 0.0 , 150.0 , 40.0 );
@@ -230,18 +230,18 @@ public class ViewComparison
 			_cameraTarget = cameraTarget;
 		}
 
-		public void configureView( final ViewModelView target )
+		public void configureView( final View3D target )
 		{
 			target.setCameraControl( new FromToCameraControl( target , _cameraLocation , _cameraTarget ) );
 		}
 
-		public abstract void createModel( final ViewModel target );
+		public abstract void createModel( final Scene target );
 	}
 
-	private static class DefaultScene
-		extends Scene
+	private static class DefaultTemplate
+		extends Template
 	{
-		public void createModel( final ViewModel target )
+		public void createModel( final Scene target )
 		{
 			final Material solid     = new Material( 0xffff8000 ); solid    .code = "solid";
 			final Material shiny     = new Material( 0xffff8000 ); shiny    .code = "shiny";
@@ -272,19 +272,19 @@ public class ViewComparison
 			/*
 			 * Test basic specular highlights, smoothing and texturing.
 			 */
-			target.createNode( "sphere-1" , new Sphere3D( Matrix3D.INIT.plus( -100.0 , -100.0 , 40.0 ) , 80.0 , 80.1 , 80.2 , 16 , 16 , solid     , false ) , null , 1.0f );
-			target.createNode( "sphere-2" , new Sphere3D( Matrix3D.INIT.plus(    0.0 , -100.0 , 40.0 ) , 80.0 , 80.1 , 80.2 , 16 , 16 , solid     , true  ) , null , 1.0f );
-			target.createNode( "sphere-3" , new Sphere3D( Matrix3D.INIT.plus(  100.0 , -100.0 , 40.0 ) , 80.0 , 80.0 , 80.0 , 16 , 16 , textured  , true  ) , null , 1.0f );
-			target.createNode( "sphere-4" , new Sphere3D( Matrix3D.INIT.plus( -100.0 ,    0.0 , 40.0 ) , 80.0 , 80.0 , 80.0 , 16 , 16 , solid     , true  ) , null , 1.0f );
-			target.createNode( "sphere-5" , new Sphere3D( Matrix3D.INIT.plus(    0.0 ,    0.0 , 40.0 ) , 80.0 , 80.0 , 80.0 , 16 , 16 , shiny     , true  ) , null , 1.0f );
-			target.createNode( "sphere-6" , new Sphere3D( Matrix3D.INIT.plus(  100.0 ,    0.0 , 40.0 ) , 80.0 , 80.0 , 80.0 , 16 , 16 , shinier   , true  ) , null , 1.0f );
-			target.createNode( "box-1"    , new Box3D   ( Matrix3D.INIT.plus( -140.0 ,   60.0 ,  0.0 ) , 80.0 , 80.0 , 80.0 , ViewModel.MM , solid , solid ) , null , 1.0f );
+			target.addContentNode( "sphere-1" , Matrix3D.INIT.plus( -100.0 , -100.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.1 , 80.2 , 16 , 16 , solid     , false ) , null , 1.0f );
+			target.addContentNode( "sphere-2" , Matrix3D.INIT.plus(    0.0 , -100.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.1 , 80.2 , 16 , 16 , solid     , true  ) , null , 1.0f );
+			target.addContentNode( "sphere-3" , Matrix3D.INIT.plus(  100.0 , -100.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , textured  , true  ) , null , 1.0f );
+			target.addContentNode( "sphere-4" , Matrix3D.INIT.plus( -100.0 ,    0.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , solid     , true  ) , null , 1.0f );
+			target.addContentNode( "sphere-5" , Matrix3D.INIT.plus(    0.0 ,    0.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , shiny     , true  ) , null , 1.0f );
+			target.addContentNode( "sphere-6" , Matrix3D.INIT.plus(  100.0 ,    0.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , shinier   , true  ) , null , 1.0f );
+			target.addContentNode( "box-1"    , Matrix3D.INIT.plus( -140.0 ,   60.0 ,  0.0 ) , new Box3D   ( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , Scene.MM , solid , solid ) , null , 1.0f );
 
 			/*
 			 * Test advanced texturing. (i.e. with non-white diffuse color)
 			 */
-			target.createNode( "sphere-7" , new Sphere3D( Matrix3D.INIT.plus(    0.0 ,  100.0 , 40.0 ) , 80.0 , 80.0 , 80.0 , 16 , 16 , textured2 , true  ) , null , 1.0f );
-			target.createNode( "sphere-8" , new Sphere3D( Matrix3D.INIT.plus(  100.0 ,  100.0 , 40.0 ) , 80.0 , 80.0 , 80.0 , 16 , 16 , textured3 , true  ) , null , 1.0f );
+			target.addContentNode( "sphere-7" , Matrix3D.INIT.plus(    0.0 ,  100.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , textured2 , true  ) , null , 1.0f );
+			target.addContentNode( "sphere-8" , Matrix3D.INIT.plus(  100.0 ,  100.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , textured3 , true  ) , null , 1.0f );
 
 			/*
 			 * Test combinations of diffuse and ambient colors.
@@ -304,7 +304,7 @@ public class ViewComparison
 
 					final double x = (double)( i % 3 ) * 100.0 - 100.0;
 					final double y = (double)( i / 3 ) * 100.0 + 200.0;
-					target.createNode( "ambient-sphere-" + j , new Sphere3D( Matrix3D.INIT.plus( x , y , z ) , 40.0 , 40.0 , 40.0 , 16 , 16 , material , true ) , null , 1.0f );
+					target.addContentNode( "ambient-sphere-" + j , Matrix3D.INIT.plus( x , y , z ) , new Sphere3D( Matrix3D.INIT , 40.0 , 40.0 , 40.0 , 16 , 16 , material , true ) , null , 1.0f );
 
 					i++;
 					j++;
@@ -317,36 +317,36 @@ public class ViewComparison
 			 */
 			for ( int i = 0 ; i < 50 ; i++ )
 			{
-				target.createNode( "distant-sphere-a-" + i , new Sphere3D( Matrix3D.INIT.plus( -100.0 , 500.0 + (double)i * 100.0 , 0.0 ) , 40.0 , 40.0 , 40.0 , 16 , 16 , solid    , true ) , null , 1.0f );
-				target.createNode( "distant-sphere-b-" + i , new Sphere3D( Matrix3D.INIT.plus(    0.0 , 500.0 + (double)i * 100.0 , 0.0 ) , 40.0 , 40.0 , 40.0 , 16 , 16 , shiny    , true ) , null , 1.0f );
-				target.createNode( "distant-sphere-c-" + i , new Sphere3D( Matrix3D.INIT.plus(  100.0 , 500.0 + (double)i * 100.0 , 0.0 ) , 40.0 , 40.0 , 40.0 , 16 , 16 , textured , true ) , null , 1.0f );
+				target.addContentNode( "distant-sphere-a-" + i , Matrix3D.INIT.plus( -100.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( Matrix3D.INIT , 40.0 , 40.0 , 40.0 , 16 , 16 , solid    , true ) , null , 1.0f );
+				target.addContentNode( "distant-sphere-b-" + i , Matrix3D.INIT.plus(    0.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( Matrix3D.INIT , 40.0 , 40.0 , 40.0 , 16 , 16 , shiny    , true ) , null , 1.0f );
+				target.addContentNode( "distant-sphere-c-" + i , Matrix3D.INIT.plus(  100.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( Matrix3D.INIT , 40.0 , 40.0 , 40.0 , 16 , 16 , textured , true ) , null , 1.0f );
 			}
 
 			createLights( target );
 		}
 
-		protected void createLights( final ViewModel target )
+		protected void createLights( final Scene target )
 		{
-			target.createNode( "ambient-1" , Matrix3D.INIT , new Light3D( 128 , -1.0 ) , null , 1.0f );
-			target.createNode( "light-1" , Matrix3D.INIT.plus(  1000.0 ,  -1000.0 ,  1000.0 ) , new Light3D( 150 , FALL_OFF ) , null , 1.0f );
+			target.addContentNode( "ambient-1" , Matrix3D.INIT , new Light3D( 128 , -1.0 ) , null , 1.0f );
+			target.addContentNode( "light-1" , Matrix3D.INIT.plus(  1000.0 ,  -1000.0 ,  1000.0 ) , new Light3D( 150 , FALL_OFF ) , null , 1.0f );
 		}
 	}
 
-	private static class DiffuseOnlyScene
-		extends DefaultScene
+	private static class DiffuseOnlyTemplate
+		extends DefaultTemplate
 	{
-		protected void createLights( final ViewModel target )
+		protected void createLights( final Scene target )
 		{
-			target.createNode( "light-1" , Matrix3D.INIT.plus(  1000.0 ,  -1000.0 ,  1000.0 ) , new Light3D( 150 , FALL_OFF ) , null , 1.0f );
+			target.addContentNode( "light-1" , Matrix3D.INIT.plus(  1000.0 ,  -1000.0 ,  1000.0 ) , new Light3D( 150 , FALL_OFF ) , null , 1.0f );
 		}
 	}
 
-	private static class AmbientOnlyScene
-		extends DefaultScene
+	private static class AmbientOnlyTemplate
+		extends DefaultTemplate
 	{
-		protected void createLights( final ViewModel target )
+		protected void createLights( final Scene target )
 		{
-			target.createNode( "ambient-1" , Matrix3D.INIT , new Light3D( 128 , -1.0 ) , null , 1.0f );
+			target.addContentNode( "ambient-1" , Matrix3D.INIT , new Light3D( 128 , -1.0 ) , null , 1.0f );
 		}
 	}
 }

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2008
+ * (C) Copyright Numdata BV 2004-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,9 +24,10 @@ import java.awt.Component;
 import junit.framework.TestCase;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.model.Scene;
 import ab.j3d.view.Projector;
-import ab.j3d.view.ViewModelView;
-import ab.j3d.view.java2d.Java2dModel;
+import ab.j3d.view.ViewControlInput;
+import ab.j3d.view.View3D;
 
 /**
  * This class tests the {@link FromToCameraControl} class.
@@ -54,7 +55,7 @@ public class TestFromToCameraControl
 	{
 		System.out.println( CLASS_NAME + ".testConstructor()" );
 
-		final FromToCameraControl fromToCameraControl = new FromToCameraControl( new ViewModelView( new Java2dModel() )
+		final FromToCameraControl fromToCameraControl = new FromToCameraControl( new View3D( new Scene( Scene.MM ) )
 			{
 				public Component getComponent()
 				{
@@ -70,7 +71,7 @@ public class TestFromToCameraControl
 					return null;
 				}
 
-				protected ControlInput getControlInput()
+				protected ViewControlInput getControlInput()
 				{
 					return null;
 				}

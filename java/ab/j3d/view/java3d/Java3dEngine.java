@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2007
+ * (C) Copyright Numdata BV 2004-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,23 +33,31 @@ import javax.vecmath.Point3d;
 
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
+import ab.j3d.model.ContentNode;
 import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
-import ab.j3d.view.ViewModel;
-import ab.j3d.view.ViewModelNode;
-import ab.j3d.view.ViewModelView;
+import ab.j3d.model.Scene;
+import ab.j3d.model.SceneUpdateEvent;
+import ab.j3d.model.SceneUpdateListener;
+import ab.j3d.view.RenderEngine;
+import ab.j3d.view.View3D;
 
 /**
- * View model implementation for Java 3D.
+ * Java 3D render engine implementation.
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public final class Java3dModel
-	extends ViewModel
+public final class Java3dEngine
+	implements RenderEngine , SceneUpdateListener
 {
+	/**
+	 * 3D scene.
+	 */
+	private Scene _scene;
+
 	/**
 	 * Java 3D universe containing scene.
 	 */
@@ -67,39 +75,38 @@ public final class Java3dModel
 	private final Map<Object,BranchGroup> _nodeContentMap = new HashMap<Object,BranchGroup>();
 
 	/**
-	 * Construct new Java 3D model using {@link ViewModel#MM} units
-	 * and a dark blueish background.
+	 * Construct new Java 3D model.
+	 *
+	 * @param   scene   3D Scene to view.
 	 */
-	public Java3dModel()
+	public Java3dEngine( final Scene scene )
 	{
-		this( MM , new Color( 51 , 77 , 102 ) );
+		this( scene , new Color( 51 , 77 , 102 ) );
 	}
 
 	/**
 	 * Construct new Java 3D model.
 	 *
-	 * @param   unit        Unit scale factor (e.g. {@link ViewModel#MM}).
+	 * @param   scene       3D Scene to view.
 	 * @param   background  Background color to use for 3D views.
 	 */
-	public Java3dModel( final double unit , final Color background )
+	public Java3dEngine( final Scene scene , final Color background )
 	{
-		this( new Java3dUniverse( unit , background ) );
+		if ( scene == null )
+			throw new NullPointerException( "scene" );
+
+		scene.addSceneUpdateListener( this );
+		_scene = scene;
+
+		final Java3dUniverse universe = new Java3dUniverse( scene.getUnit() , background );
+		_universe = universe;
+
+		_contentGraph = Java3dTools.createDynamicScene( universe.getContent() );
 	}
 
 	/**
-	 * Construct new Java 3D model.
-	 *
-	 * @param   j3dUniverse Java 3D universe.
-	 */
-	public Java3dModel( final Java3dUniverse j3dUniverse )
-	{
-		super( j3dUniverse.getUnit() );
-
-		_universe     = j3dUniverse;
-		_contentGraph = Java3dTools.createDynamicScene( _universe.getContent() );
-	}
-
-	/**
+	 * Called to notify the listener that a content node was added to the scene.
+	 * <p>
 	 * Setup the Java 3D side of a view node.
 	 * <p />
 	 * This adds the following part to the Java 3D content graph:
@@ -115,12 +122,11 @@ public final class Java3dModel
 	 *    (BG) content branch group (re-created on updates)</b>
 	 * </pre>
 	 *
-	 * @param   node    View node being set up.
-	 *
-	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
+	 * @param   event   Event from {@link Scene}.
 	 */
-	protected void initializeNode( final ViewModelNode node )
+	public void contentNodeAdded( final SceneUpdateEvent event )
 	{
+		final ContentNode node = event.getNode();
 		final Object id = node.getID();
 
 		final BranchGroup nodeRoot = new BranchGroup();
@@ -141,21 +147,33 @@ public final class Java3dModel
 		updateNodeContent( node );
 	}
 
-	protected void updateNodeTransform( final ViewModelNode node )
+	public void contentNodeRemoved( final SceneUpdateEvent event )
 	{
-		final Object         id            = node.getID();
-		final Matrix3D       transform     = node.getTransform();
+		final ContentNode node = event.getNode();
+
+		final BranchGroup nodeRoot = getJava3dNode( node.getID() );
+		if ( nodeRoot != null )
+		{
+			_contentGraph.removeChild( nodeRoot );
+		}
+	}
+
+	public void contentNodeContentUpdated( final SceneUpdateEvent event )
+	{
+		updateNodeContent( event.getNode() );
+	}
+
+	public void contentNodePropertyChanged( final SceneUpdateEvent event )
+	{
+		final ContentNode node = event.getNode();
+		final Object id = node.getID();
+		final Matrix3D transform = node.getTransform();
 		final TransformGroup nodeTransform = getJava3dTransform( id );
 
 		nodeTransform.setTransform( Java3dTools.convertMatrix3DToTransform3D( transform ) );
 	}
 
-	public void updateOverlay()
-	{
-		updateViews();
-	}
-
-	protected void updateNodeContent( final ViewModelNode node )
+	private void updateNodeContent( final ContentNode node )
 	{
 		final Object         id               = node.getID();
 		final TransformGroup nodeTransform    = getJava3dTransform( id );
@@ -222,15 +240,6 @@ public final class Java3dModel
 		}
 	}
 
-	public void removeNode( final Object id )
-	{
-		final BranchGroup nodeRoot = getJava3dNode( id );
-		if ( nodeRoot != null )
-			_contentGraph.removeChild( nodeRoot );
-
-		super.removeNode( id );
-	}
-
 	public BranchGroup getJava3dNode( final Object id )
 	{
 		if ( id == null )
@@ -245,11 +254,12 @@ public final class Java3dModel
 		return (TransformGroup)nodeRoot.getChild( 0 );
 	}
 
-	public ViewModelView createView()
+	public View3D createView( final Scene scene )
 	{
-		final Java3dView view = new Java3dView( this , _universe );
-		addView( view );
-		return view;
+		if ( scene != _scene )
+			throw new IllegalArgumentException( "Java 3D only supports one scene" );
+
+		return new Java3dView( scene , _universe );
 	}
 
 	/**

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2008
+ * (C) Copyright Numdata BV 2005-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,7 @@ import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Object3D;
-import static ab.j3d.view.Projector.ProjectionPolicy;
+import ab.j3d.model.Scene;
 
 import com.numdata.oss.junit.ArrayTester;
 
@@ -76,7 +76,6 @@ public final class TestRenderQueue
 		addPlane( renderQueue , "h1" );
 		assertQueuedTags( new Object[] { "h1" , "h2" } , renderQueue );
 
-
 		System.out.println( " - Testing planes h1 and h2" );
 		renderQueue.clearQueue();
 		addPlane( renderQueue , "h1" );
@@ -117,11 +116,11 @@ public final class TestRenderQueue
 		Object3D object = null;
 		Matrix3D transform = null;
 
-		final double      viewUnit          = ViewModel.MM;
+		final double      viewUnit          = Scene.MM;
 		final double      fieldOfView       = Math.toRadians( 45.0 );
 		final double      zoomFactor        = 1.0;
-		final double      frontClipDistance = -0.1 / viewUnit;
-		final double      backClipDistance  = -100.0 / viewUnit;
+		final double      frontClipDistance = 0.1 / viewUnit;
+		final double      backClipDistance  = 100.0 / viewUnit;
 		final double      imageResolution   = 0.0254 / 90.0; // getToolkit().getScreenResolution();
 		final Projector   projector         = Projector.createInstance( ProjectionPolicy.PERSPECTIVE , 800 , 600 , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
 

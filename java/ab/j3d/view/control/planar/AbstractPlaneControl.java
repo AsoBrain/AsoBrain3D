@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2008
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +19,14 @@
  */
 package ab.j3d.view.control.planar;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.control.ControlInputEvent;
-import ab.j3d.view.ViewModelNode;
+import ab.j3d.model.ContentNode;
+import ab.j3d.view.View3D;
 
 /**
  * This class provides some basic functionality of a {@link PlaneControl}.
@@ -47,6 +51,11 @@ public abstract class AbstractPlaneControl
 	 * End point of drag operation in WCS.
 	 */
 	private Vector3D _wcsEnd;
+
+	/**
+	 * List of registered views.
+	 */
+	private List<View3D> _views = new ArrayList<View3D>();
 
 	/**
 	 * Construct new control.
@@ -74,7 +83,28 @@ public abstract class AbstractPlaneControl
 		return true;
 	}
 
-	public boolean mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsStart )
+	public void addView( final View3D view )
+	{
+		_views.add( view );
+	}
+
+	public void removeView( final View3D view )
+	{
+		_views.remove( view );
+	}
+
+	/**
+	 * Update all views.
+	 */
+	protected void updateViews()
+	{
+		for ( final View3D view : _views )
+		{
+			view.update();
+		}
+	}
+
+	public boolean mousePressed( final ControlInputEvent event , final ContentNode contentNode , final Vector3D wcsStart )
 	{
 		_wcsStart = wcsStart;
 		_wcsEnd   = null;
@@ -83,13 +113,13 @@ public abstract class AbstractPlaneControl
 		return isActive();
 	}
 
-	public void mouseDragged( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsEnd )
+	public void mouseDragged( final ControlInputEvent event , final ContentNode contentNode , final Vector3D wcsEnd )
 	{
 		_wcsEnd = wcsEnd;
 
 	}
 
-	public void mouseReleased( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsEnd )
+	public void mouseReleased( final ControlInputEvent event , final ContentNode contentNode , final Vector3D wcsEnd )
 	{
 		_wcsEnd = wcsEnd;
 		_active = false;

@@ -34,6 +34,7 @@ import com.sun.opengl.util.texture.Texture;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
+import ab.j3d.model.ContentNode;
 import ab.j3d.model.ExtrudedObject2D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Light3D;
@@ -41,7 +42,6 @@ import ab.j3d.model.Object3D;
 import ab.j3d.view.RenderStyle;
 import ab.j3d.view.RenderStyleFilter;
 import ab.j3d.view.Renderer;
-import ab.j3d.view.ViewModelNode;
 
 /**
  * Implements {@link Renderer} for JOGL.
@@ -176,7 +176,7 @@ public class JOGLRenderer
 		_lightPositionRelativeToObject = null;
 	}
 
-	public void renderScene( final List<ViewModelNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
+	public void renderScene( final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
 	{
 		final GL gl = _gl;
 		_glWrapper = new GLWrapper( gl );
@@ -200,7 +200,7 @@ public class JOGLRenderer
 		}
 	}
 
-	protected void renderLights( final List<ViewModelNode> nodes )
+	protected void renderLights( final List<ContentNode> nodes )
 	{
 		final GL gl = _gl;
 

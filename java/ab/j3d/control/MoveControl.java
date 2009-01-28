@@ -27,10 +27,10 @@ import ab.j3d.geom.BasicPlane3D;
 import ab.j3d.geom.GeometryTools;
 import ab.j3d.geom.Ray3D;
 import ab.j3d.model.Face3DIntersection;
+import ab.j3d.model.Scene;
+import ab.j3d.model.ContentNode;
 import ab.j3d.view.ViewControlInput;
-import ab.j3d.view.ViewModel;
-import ab.j3d.view.ViewModelNode;
-import ab.j3d.view.ViewModelView;
+import ab.j3d.view.View3D;
 
 import com.numdata.oss.MathTools;
 
@@ -77,7 +77,7 @@ public abstract class MoveControl
 	/**
 	 * Manipulated node.
 	 */
-	private ViewModelNode _manipulatedNode = null;
+	private ContentNode _manipulatedNode = null;
 
 	/**
 	 * Plane used for dragging operation. This is the control plane translated
@@ -110,12 +110,12 @@ public abstract class MoveControl
 		if ( isEnabled() && event.isMouseButton1Down() )
 		{
 			final ViewControlInput viewControlInput = (ViewControlInput)event.getSource();
-			final ViewModelView    view             = viewControlInput.getView();
-			final ViewModel        viewModel        = view.getModel();
+			final View3D           view             = viewControlInput.getView();
+			final Scene            scene            = view.getScene();
 
 			for( final Face3DIntersection intersection : event.getIntersections() )
 			{
-				final ViewModelNode node = viewModel.getNode( intersection.getObjectID() );
+				final ContentNode node = scene.getContentNode( intersection.getObjectID() );
 				if ( node != null )
 				{
 					final Object   target           = node.getID();

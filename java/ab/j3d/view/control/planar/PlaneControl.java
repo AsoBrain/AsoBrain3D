@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2008
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,18 +22,18 @@ package ab.j3d.view.control.planar;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.control.ControlInputEvent;
-import ab.j3d.view.OverlayPainter;
-import ab.j3d.view.ViewModelNode;
+import ab.j3d.view.ViewOverlay;
+import ab.j3d.model.ContentNode;
 
 /**
- * This interface defines control behavior for a {@link ViewModelNode} relative
+ * This interface defines control behavior for a {@link ContentNode} relative
  * to a plane.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
 public interface PlaneControl
-	extends OverlayPainter
+	extends ViewOverlay
 {
 	/**
 	 * Get transformation for the drag plane relative to the world coordinate
@@ -64,29 +64,29 @@ public interface PlaneControl
 	 * Drag start event.
 	 *
 	 * @param   event           Event from control.
-	 * @param   viewModelNode   Node whose plane is controlled.
+	 * @param   contentNode     Node whose plane is controlled.
 	 * @param   wcsPoint        Drag point in WCS.
 	 *
 	 * @return  <code>true</code> if a drag operation is started;
 	 *          <code>false</code> otherwise>
 	 */
-	boolean mousePressed( ControlInputEvent event , ViewModelNode viewModelNode , Vector3D wcsPoint );
+	boolean mousePressed( ControlInputEvent event , ContentNode contentNode , Vector3D wcsPoint );
 
 	/**
 	 * Drag event.
 	 *
 	 * @param   event           Event from control.
-	 * @param   viewModelNode   Node whose plane is controlled.
-	 * @param   wcsEnd        Drag point in WCS.
+	 * @param   contentNode     Node whose plane is controlled.
+	 * @param   wcsEnd          Drag point in WCS.
 	 */
-	void mouseDragged( ControlInputEvent event , ViewModelNode viewModelNode , Vector3D wcsEnd );
+	void mouseDragged( ControlInputEvent event , ContentNode contentNode , Vector3D wcsEnd );
 
 	/**
 	 * Drag end event.
 	 *
 	 * @param   event           Event from control.
-	 * @param   viewModelNode   Node whose plane is controlled.
+	 * @param   contentNode     Node whose plane is controlled.
 	 * @param   wcsPoint        Drag point in WCS.
 	 */
-	void mouseReleased( ControlInputEvent event , ViewModelNode viewModelNode , Vector3D wcsPoint );
+	void mouseReleased( ControlInputEvent event , ContentNode contentNode , Vector3D wcsPoint );
 }

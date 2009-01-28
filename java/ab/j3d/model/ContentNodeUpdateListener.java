@@ -17,58 +17,38 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view;
+package ab.j3d.model;
 
-import java.awt.event.ActionEvent;
-import java.util.Locale;
-
-import com.numdata.oss.ResourceBundleTools;
-import com.numdata.oss.ui.ToggleAction;
+import java.util.EventListener;
 
 /**
- * This action toggles the grid on/off.
+ * Listener for {@link ContentNodeUpdateEvent}s from a {@link ContentNode}.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public class ToggleGridAction
-	extends ToggleAction
+public interface ContentNodeUpdateListener
+	extends EventListener
 {
 	/**
-	 * The {@link View3D} this action belongs to.
+	 * Called to notify the listener that a node's rendering properties were
+	 * updated.
+	 *
+	 * @param   event   Event from {@link ContentNode}.
 	 */
-	private View3D _view;
+	void renderingPropertiesUpdated( ContentNodeUpdateEvent event );
 
 	/**
-	 * Create action.
+	 * Called to notify the listener that a node's transform was updated.
 	 *
-	 * @param   locale  Preferred locale for internationalization.
-	 * @param   view    View to create action for.
+	 * @param   event   Event from {@link ContentNode}.
 	 */
-	public ToggleGridAction( final Locale locale , final View3D view )
-	{
-		super( ResourceBundleTools.getBundle( ToggleGridAction.class , locale ) , "toggleGrid" );
-		_view = view;
-	}
+	void transformUpdated( ContentNodeUpdateEvent event );
 
-	public void actionPerformed( final ActionEvent e )
-	{
-		setValue( !getValue() );
-	}
-
-	public boolean getValue()
-	{
-		final View3D view = _view;
-		return view.isGridEnabled();
-	}
-
-	public void setValue( final boolean value )
-	{
-		final View3D view = _view;
-		if ( value != view.isGridEnabled() )
-		{
-			view.setGridEnabled( value );
-			view.update();
-		}
-	}
+	/**
+	 * Called to notify the listener that a node's contents were updated.
+	 *
+	 * @param   event   Event from {@link ContentNode}.
+	 */
+	void contentsUpdated( ContentNodeUpdateEvent event );
 }

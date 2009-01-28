@@ -26,26 +26,26 @@ import javax.media.opengl.GLContext;
 
 import com.sun.opengl.util.texture.Texture;
 
-import ab.j3d.view.ViewModel;
-import ab.j3d.view.ViewModelNode;
-import ab.j3d.view.ViewModelView;
+import ab.j3d.model.Scene;
+import ab.j3d.view.RenderEngine;
+import ab.j3d.view.View3D;
 
 /**
- * View model implementation for JOGL.
+ * JOGL render engine implementation.
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public class JOGLModel
-	extends ViewModel
+public class JOGLEngine
+	implements RenderEngine
 {
 	/**
-	 * Background color for the model.
+	 * Background color for views.
 	 */
 	private final Color _background;
 
 	/**
-	 * JOGL GLContext for this model.
+	 * Shared OpenGL rendering context.
 	 */
 	private GLContext _context = null;
 
@@ -55,64 +55,30 @@ public class JOGLModel
 	private final Map<String,Texture> _textureCache;
 
 	/**
-	 * Construct new JOGL view model using {@link ViewModel#MM} units.
+	 * Construct new JOGL render engine.
 	 */
-	public JOGLModel()
+	public JOGLEngine()
 	{
-		this( MM , null );
+		this( null );
 	}
 
 	/**
-	 * Construct new JOGL view model.
+	 * Construct new JOGL render engine.
 	 *
-	 * @param   unit    Unit scale factor (e.g. {@link ViewModel#MM}).
+	 * @param   background  Background color to use for 3D views. May be
+	 *                      <code>null</code>, in which case the default
+	 *                      background color of the current look and feel is
+	 *                      used.
 	 */
-	public JOGLModel( final double unit )
+	public JOGLEngine( final Color background )
 	{
-		this( unit , null );
-	}
-
-	/**
-	 * Construct new JOGL view model.
-	 *
-	 * @param   unit            Unit scale factor (e.g. {@link ViewModel#MM}).
-	 * @param   background      Background color to use for 3D views. May be
-	 *                          <code>null</code>, in which case the default
-	 *                          background color of the current look and feel is
-	 *                          used.
-	 */
-	public JOGLModel( final double unit , final Color background )
-	{
-		super( unit );
-		_background   = background;
+		_background = background;
 		_textureCache = new HashMap<String,Texture>();
 	}
 
-	protected void initializeNode( final ViewModelNode node )
+	public View3D createView( final Scene scene )
 	{
-	}
-
-	protected void updateNodeTransform( final ViewModelNode node )
-	{
-		updateViews();
-	}
-
-	public void updateOverlay()
-	{
-		updateViews();
-	}
-
-	protected void updateNodeContent( final ViewModelNode node )
-	{
-		updateViews();
-	}
-
-	public ViewModelView createView()
-	{
-		final JOGLView view = new JOGLView( this , _background );
-		addView( view );
-
-		return view;
+		return new JOGLView( this , scene , _background );
 	}
 
 	/**
@@ -120,7 +86,7 @@ public class JOGLModel
 	 *
 	 * @return The GLContext for this model
 	 */
-	public GLContext getContext()
+	GLContext getContext()
 	{
 		return _context;
 	}
@@ -130,7 +96,7 @@ public class JOGLModel
 	 *
 	 * @param context GLContext to be set.
 	 */
-	public void setContext( final GLContext context )
+	void setContext( final GLContext context )
 	{
 		_context = context;
 	}
@@ -140,7 +106,7 @@ public class JOGLModel
 	 *
 	 * @return  Texture cache.
 	 */
-	public Map<String,Texture> getTextureCache()
+	Map<String,Texture> getTextureCache()
 	{
 		return _textureCache;
 	}

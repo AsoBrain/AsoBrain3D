@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2008-2008
+ * (C) Copyright Numdata BV 2008-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,8 +24,8 @@ import java.awt.Graphics2D;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.control.ControlInputEvent;
-import ab.j3d.view.ViewModelNode;
-import ab.j3d.view.ViewModelView;
+import ab.j3d.model.ContentNode;
+import ab.j3d.view.View3D;
 
 /**
  * This implementation of {@link PlaneControl} moves the selected node on a
@@ -101,11 +101,11 @@ public class PlaneMoveControl
 		return _manipulationMode;
 	}
 
-	public boolean mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsStart )
+	public boolean mousePressed( final ControlInputEvent event , final ContentNode contentNode , final Vector3D wcsStart )
 	{
 		final ManipulationMode manipulationMode;
 
-		if ( super.mousePressed( event , viewModelNode , wcsStart ) )
+		if ( super.mousePressed( event , contentNode , wcsStart ) )
 		{
 			manipulationMode = event.isControlDown() ? ManipulationMode.ROTATE : ManipulationMode.MOVE;
 		}
@@ -114,50 +114,50 @@ public class PlaneMoveControl
 			manipulationMode = ManipulationMode.NONE;
 		}
 
-		_startTransform = viewModelNode.getTransform();
+		_startTransform = contentNode.getTransform();
 		_manipulationMode = manipulationMode;
 
 		return ( manipulationMode != ManipulationMode.NONE );
 	}
 
-	public void mouseDragged( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsPoint )
+	public void mouseDragged( final ControlInputEvent event , final ContentNode contentNode , final Vector3D wcsPoint )
 	{
-		super.mouseDragged( event , viewModelNode , wcsPoint );
+		super.mouseDragged( event , contentNode , wcsPoint );
 
-		drag( viewModelNode , event );
+		drag( contentNode , event );
 	}
 
-	public void mouseReleased( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsPoint )
+	public void mouseReleased( final ControlInputEvent event , final ContentNode contentNode , final Vector3D wcsPoint )
 	{
-		super.mouseReleased( event , viewModelNode , wcsPoint );
-		drag( viewModelNode , event );
+		super.mouseReleased( event , contentNode , wcsPoint );
+		drag( contentNode , event );
 	}
 
-	public void paint( final ViewModelView view , final Graphics2D g2d )
+	public void paintOverlay( final View3D view , final Graphics2D g2d )
 	{
 	}
 
 	/**
 	 * Perform drag operation.
 	 *
-	 * @param   viewModelNode   Node that is being controlled.
+	 * @param   contentNode     Node that is being controlled.
 	 * @param   event           Event from control.
 	 */
-	protected void drag( final ViewModelNode viewModelNode , final ControlInputEvent event )
+	protected void drag( final ContentNode contentNode , final ControlInputEvent event )
 	{
 		switch ( getManipulationMode() )
 		{
 			case MOVE :
-				viewModelNode.setTransform( _startTransform.setTranslation( getNodeEnd() ) );
+				contentNode.setTransform( _startTransform.setTranslation( getNodeEnd() ) );
 				break;
 
 			case ROTATE :
-				final double toDegrees         = Math.toDegrees( ViewModelView.DEFAULT_PIXELS_TO_RADIANS_FACTOR );
+				final double toDegrees         = Math.toDegrees( View3D.DEFAULT_PIXELS_TO_RADIANS_FACTOR );
 				final double verticalDegrees   = -toDegrees * (double)event.getDragDeltaY();
 				final double horizontalDegrees =  toDegrees * (double)event.getDragDeltaX();
 
 				final Matrix3D rotation = Matrix3D.getTransform( 0.0 , 0.0 , verticalDegrees - horizontalDegrees , 0.0 , 0.0 , 0.0 );
-				viewModelNode.setTransform( rotation.multiply( _startTransform ) );
+				contentNode.setTransform( rotation.multiply( _startTransform ) );
 				break;
 		}
 	}

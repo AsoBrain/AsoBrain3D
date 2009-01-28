@@ -1,7 +1,6 @@
 /* $Id$
  * ====================================================================
- * AsoBrain 3D Toolkit
- * Copyright (C) 2004-2006 Numdata BV
+ * (C) Copyright Numdata BV 2008-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,38 +17,60 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view.java3d;
+package ab.j3d.model;
 
-import java.awt.Color;
-
-import ab.j3d.view.ViewModel;
-import ab.j3d.view.ViewModelExample;
+import java.util.EventObject;
 
 /**
- * Example program for the Java 3D view model implementation.
+ * Event fired by {@link ContentNode}.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public final class Java3dModelExample
-	extends ViewModelExample
+public class ContentNodeUpdateEvent
+	extends EventObject
 {
 	/**
-	 * Construct application.
+	 * ID for event to indicate an update to a node's rendering properties.
 	 */
-	private Java3dModelExample()
+	public static final int RENDERING_PROPERTIES_UPDATED = 0;
+
+	/**
+	 * ID for event to indicate an update to a node's contents.
+	 */
+	public static final int TRANSFORM_UPDATED = 1;
+
+	/**
+	 * ID for event to indicate an update to a node's contents.
+	 */
+	public static final int CONTENT_UPDATED = 2;
+
+	/**
+	 * Event ID.
+	 */
+	private final int _id;
+
+	private static final long serialVersionUID = -2324880479966704631L;
+
+	/**
+	 * Construct event.
+	 *
+	 * @param   node    Origin of event.
+	 * @param   id      Event ID.
+	 */
+	public ContentNodeUpdateEvent( final ContentNode node , final int id )
 	{
-		super( new Java3dModel( ViewModel.MM , Color.BLACK ) );
+		super( node );
+		_id = id;
 	}
 
 	/**
-	 * Run application.
+	 * Get event ID.
 	 *
-	 * @param args Command-line arguments.
+	 * @return  Event ID.
 	 */
-	public static void main( final String[] args )
+	public int getId()
 	{
-		new Java3dModelExample();
+		return _id;
 	}
-
 }

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2008
+ * (C) Copyright Numdata BV 2004-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -38,28 +38,29 @@ import javax.vecmath.Matrix3d;
 import javax.vecmath.Vector3d;
 
 import ab.j3d.Matrix3D;
-import ab.j3d.control.ControlInput;
+import ab.j3d.model.Scene;
+import ab.j3d.view.control.DefaultViewControl;
+import ab.j3d.view.ProjectionPolicy;
 import ab.j3d.view.Projector;
-import ab.j3d.view.Projector.ProjectionPolicy;
+import ab.j3d.view.View3D;
 import ab.j3d.view.ViewControlInput;
-import ab.j3d.view.ViewModel;
-import ab.j3d.view.ViewModelView;
+import ab.j3d.view.ViewOverlay;
 
 /**
- * Java 3D implementation of view model view.
+ * Java 3D view implementation.
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
 final class Java3dView
-	extends ViewModelView
+	extends View3D
 {
 	/**
 	 * The hardcoded resolution (meters per pixel) used by Java 3D.
 	 *
 	 * @see     javax.media.j3d.Screen3D#METERS_PER_PIXEL
 	 */
-	private static final double JAVA3D_RESOLUTION = ViewModel.INCH / 90.0;
+	private static final double JAVA3D_RESOLUTION = Scene.INCH / 90.0;
 
 	/**
 	 * Transform group in view branch.
@@ -104,12 +105,12 @@ final class Java3dView
 	/**
 	 * The SceneInputTranslator for this View.
 	 */
-	private final ControlInput _controlInput;
+	private final ViewControlInput _controlInput;
 
 	/**
 	 * The component that displays the rendered scene. This class subclasses
 	 * {@link Canvas3D}, but it overrides some functions to allow
-	 * {@link ab.j3d.view.OverlayPainter}s to paint on top of the rendered
+	 * {@link ViewOverlay}s to paint on top of the rendered
 	 * scene.
 	 */
 	private final class ViewComponent
@@ -159,14 +160,14 @@ final class Java3dView
 
 		/**
 		 * Called after the rendering has been completed. This method makes sure
-		 * {@link ab.j3d.view.OverlayPainter}s get to paint over the rendered
+		 * {@link ViewOverlay}s get to paint over the rendered
 		 * scene.
 		 */
 		public void postRender()
 		{
 			BufferedImage overlayBufferImage = null;
 
-			if ( hasOverlayPainters() )
+			if ( hasOverlay() )
 			{
 				if ( _overlayDoubleBuffered )
 				{
@@ -222,14 +223,14 @@ final class Java3dView
 	/**
 	 * Construct view node using Java3D for rendering.
 	 *
-	 * @param   model       {@link Java3dModel} for which this class is a view.
+	 * @param   scene       Scene to view.
 	 * @param   universe    Java3D universe for which the view is created.
 	 *
 	 * @see     Java3dUniverse#createView
 	 */
-	Java3dView( final Java3dModel model , final Java3dUniverse universe )
+	Java3dView( final Scene scene , final Java3dUniverse universe )
 	{
-		super( model );
+		super( scene );
 
 		/* Use heavyweight popups, since Java3D uses a heavyweight canvas (Canvas3D). */
 		JPopupMenu.setDefaultLightWeightPopupEnabled( false );
@@ -248,12 +249,13 @@ final class Java3dView
 		_canvas = canvas;
 		_java3dView = java3dView;
 
-		/*
-		 * Update view to initial transform.
-		 */
-		update();
+		_controlInput = new ViewControlInput( this );
 
-		_controlInput = new ViewControlInput( model , this );
+		final DefaultViewControl defaultViewControl = new DefaultViewControl();
+		appendControl( defaultViewControl );
+		addOverlay( defaultViewControl );
+
+		update();
 	}
 
 	public Component getComponent()
@@ -290,8 +292,8 @@ final class Java3dView
 	public void update()
 	{
 		final Matrix3D  viewTransform = getViewTransform();
-		final ViewModel model         = getModel();
-		final double    unit          = model.getUnit();
+		final Scene     scene         = getScene();
+		final double    unit          = scene.getUnit();
 
 		/*
 		 * Determine rotation and translation. If a unit is set, use it to
@@ -350,8 +352,8 @@ final class Java3dView
 		final int       height     = canvas.getHeight();
 		final double    resolution = getResolution();
 
-		final ViewModel model      = getModel();
-		final double    unit       = model.getUnit();
+		final Scene     scene      = getScene();
+		final double    unit       = scene.getUnit();
 
 		final double    frontClip  = java3dview.getFrontClipDistance() / unit;
 		final double    backClip   = java3dview.getBackClipDistance() / unit;
@@ -361,7 +363,7 @@ final class Java3dView
 		return Projector.createInstance( getProjectionPolicy() , width , height , resolution , unit , frontClip , backClip , aperture , zoomFactor );
 	}
 
-	protected ControlInput getControlInput()
+	protected ViewControlInput getControlInput()
 	{
 		return _controlInput;
 	}

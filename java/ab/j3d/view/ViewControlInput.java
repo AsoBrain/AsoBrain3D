@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2007
+ * (C) Copyright Numdata BV 2005-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,57 +19,63 @@
  */
 package ab.j3d.view;
 
+import java.awt.Component;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.LinkedList;
 import java.util.List;
 
 import ab.j3d.Matrix3D;
-import ab.j3d.control.ComponentControlInput;
 import ab.j3d.control.ControlInput;
 import ab.j3d.geom.Ray3D;
+import ab.j3d.model.ContentNode;
 import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
+import ab.j3d.model.Scene;
 
 /**
  * The ViewInputTranslator subclasses {@link ControlInput} to provide
- * an InputTranslator for a {@link ViewModelView}.
+ * an {@link ControlInput} for a {@link View3D}.
  *
  * @author  Mart Slot
  * @version $Revision$ $Date$
  */
 public class ViewControlInput
-	extends ComponentControlInput
+	extends ControlInput
+	implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener
 {
 	/**
-	 * {@link ViewModel} with the scene contents.
+	 * {@link View3D} whose input events to monitor.
 	 */
-	private final ViewModel _model;
-
-	/**
-	 * {@link ViewModelView} whose input events to monitor.
-	 */
-	private final ViewModelView _view;
+	private final View3D _view;
 
 	/**
 	 * Construct new ViewInputTranslator.
 	 *
-	 *
-	 * @param   model   {@link ViewModel} with the scene contents.
-	 * @param   view    {@link ViewModelView} whose input events to monitor.
+	 * @param   view    {@link View3D} whose input events to monitor.
 	 */
-	public ViewControlInput( final ViewModel model , final ViewModelView view )
+	public ViewControlInput( final View3D view )
 	{
-		super( view.getComponent() );
-
-		_model = model;
 		_view  = view;
+
+		final Component component = view.getComponent();
+		component.addKeyListener( this );
+		component.addMouseListener( this );
+		component.addMouseMotionListener( this );
+		component.addMouseWheelListener( this );
 	}
 
 	/**
-	 * Returns the {@link Projector} for the {@link ViewModelView}.
+	 * Returns the {@link Projector} for the {@link View3D}.
 	 *
-	 * @return  The {@link Projector} for the {@link ViewModelView}.
+	 * @return  The {@link Projector} for the {@link View3D}.
 	 */
 	protected Projector getProjector()
 	{
@@ -80,12 +86,14 @@ public class ViewControlInput
 	{
 		final List<Face3DIntersection> result = new LinkedList<Face3DIntersection>();
 
-		for ( final Object nodeID : _model.getNodeIDs() )
-		{
-			final ViewModelNode viewModelNode = _model.getNode( nodeID );
-			final Node3D        node3D        = _model.getNode3D( nodeID );
+		final Scene scene = _view.getScene();
 
-			final Matrix3D node2model = viewModelNode.getTransform();
+		for ( final Object nodeID : scene.getContentNodeIDs() )
+		{
+			final ContentNode node = scene.getContentNode( nodeID );
+			final Node3D        node3D = node.getNode3D();
+
+			final Matrix3D node2model = node.getTransform();
 
 			final Node3DCollection<Object3D> subGraphNodes = new Node3DCollection<Object3D>();
 			node3D.collectNodes( subGraphNodes , Object3D.class , node2model , false );
@@ -103,22 +111,132 @@ public class ViewControlInput
 	}
 
 	/**
-	 * Get {@link ViewModelView} being monitored for input events.
+	 * Get {@link View3D} being monitored for input events.
 	 *
-	 * @return  {@link ViewModelView} being monitored for input events.
+	 * @return  {@link View3D} being monitored for input events.
 	 */
-	public ViewModelView getView()
+	public View3D getView()
 	{
 		return _view;
 	}
 
 	/**
-	 * Returns the current view transform for the {@link ViewModelView}.
+	 * Returns the current view transform for the {@link View3D}.
 	 *
-	 * @return  the view transform for the {@link ViewModelView}.
+	 * @return  the view transform for the {@link View3D}.
 	 */
 	protected Matrix3D getViewTransform()
 	{
 		return _view.getViewTransform();
+	}
+
+	/**
+	 * Simply pass {@link KeyEvent} on to {@link #dispatchControlInputEvent}.
+	 *
+	 * @param   event   {@link KeyEvent} that was dispatched
+	 */
+	public void keyPressed( final KeyEvent event )
+	{
+		dispatchControlInputEvent( event );
+	}
+
+	/**
+	 * Simply pass {@link KeyEvent} on to {@link #dispatchControlInputEvent}.
+	 *
+	 * @param   event   {@link KeyEvent} that was dispatched
+	 */
+	public void keyReleased( final KeyEvent event )
+	{
+		dispatchControlInputEvent( event );
+	}
+
+	/**
+	 * Simply pass {@link KeyEvent} on to {@link #dispatchControlInputEvent}.
+	 *
+	 * @param   event   {@link KeyEvent} that was dispatched
+	 */
+	public void keyTyped( final KeyEvent event )
+	{
+		dispatchControlInputEvent( event );
+	}
+
+	/**
+	 * Simply pass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
+	 *
+	 * @param   event   {@link MouseEvent} that was dispatched
+	 */
+	public void mouseClicked( final MouseEvent event )
+	{
+		dispatchControlInputEvent( event );
+	}
+
+	/**
+	 * Simply pass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
+	 *
+	 * @param   event   {@link MouseEvent} that was dispatched
+	 */
+	public void mouseDragged( final MouseEvent event )
+	{
+		dispatchControlInputEvent( event );
+	}
+
+	/**
+	 * Simply pass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
+	 *
+	 * @param   event   {@link MouseEvent} that was dispatched
+	 */
+	public void mouseEntered( final MouseEvent event )
+	{
+		dispatchControlInputEvent( event );
+	}
+
+	/**
+	 * Simply pass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
+	 *
+	 * @param   event   {@link MouseEvent} that was dispatched
+	 */
+	public void mouseExited( final MouseEvent event )
+	{
+		dispatchControlInputEvent( event );
+	}
+
+	/**
+	 * Simply pass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
+	 *
+	 * @param   event   {@link MouseEvent} that was dispatched
+	 */
+	public void mouseMoved( final MouseEvent event )
+	{
+		dispatchControlInputEvent( event );
+	}
+
+	/**
+	 * Simply pass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
+	 *
+	 * @param   event   {@link MouseEvent} that was dispatched
+	 */
+	public void mousePressed( final MouseEvent event )
+	{
+		dispatchControlInputEvent( event );
+	}
+
+	/**
+	 * Simply pass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
+	 *
+	 * @param   event   {@link MouseEvent} that was dispatched
+	 */
+	public void mouseReleased( final MouseEvent event )
+	{
+		dispatchControlInputEvent( event );
+	}
+
+	/**
+	 * Simply pass {@link MouseEvent} on to {@link #dispatchControlInputEvent}.
+	 *
+	 * @param   event   {@link MouseEvent} that was dispatched
+	 */
+	public void mouseWheelMoved( final MouseWheelEvent event )
+	{
+		dispatchControlInputEvent( event );
 	}
 }

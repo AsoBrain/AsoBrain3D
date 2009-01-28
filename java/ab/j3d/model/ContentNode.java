@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view;
+package ab.j3d.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,21 +28,16 @@ import ab.j3d.Bounds3D;
 import ab.j3d.Bounds3DBuilder;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.model.Node3D;
-import ab.j3d.model.Node3DCollection;
-import ab.j3d.model.Object3D;
 import ab.j3d.view.control.planar.PlaneControl;
 import ab.j3d.view.control.planar.SubPlaneControl;
 
 /**
- * Node in view model.
- *
- * @see     ViewModel
+ * Content node in {@link Scene}.
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public final class ViewModelNode
+public final class ContentNode
 {
 	/**
 	 * Application-assigned ID of this node.
@@ -107,10 +102,10 @@ public final class ViewModelNode
 	/**
 	 * List of listeners to notify about node events.
 	 */
-	private final List<ViewModelNodeUpdateListener> _viewModelNodeUpdateListeners = new ArrayList<ViewModelNodeUpdateListener>();
+	private final List<ContentNodeUpdateListener> _contentNodeUpdateListeners = new ArrayList<ContentNodeUpdateListener>();
 
 	/**
-	 * Construct new view model node. The <code>materialOverride</code> and
+	 * Construct new content node. The <code>materialOverride</code> and
 	 * <code>opacity</code> values can be used to provide extra hints for
 	 * rendering objects.
 	 *
@@ -120,7 +115,7 @@ public final class ViewModelNode
 	 * @param   materialOverride    Material to use instead of actual materials.
 	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).
 	 */
-	public ViewModelNode( final Object id , final Matrix3D transform , final Node3D node3D , final Material materialOverride , final float opacity )
+	public ContentNode( final Object id , final Matrix3D transform , final Node3D node3D , final Material materialOverride , final float opacity )
 	{
 		_id               = id;
 		_node3D           = node3D;
@@ -148,7 +143,7 @@ public final class ViewModelNode
 	 * @return  <code>true</code> if the nodes collide;
 	 *          <code>false</code> otherwise.
 	 */
-	public boolean collidesWith( final ViewModelNode thatNode )
+	public boolean collidesWith( final ContentNode thatNode )
 	{
 		boolean result = false;
 
@@ -207,13 +202,13 @@ public final class ViewModelNode
 
 	/**
 	 * Returns the combined bounds of all the {@link ab.j3d.model.Object3D}'s this
-	 * {@link ViewModelNode} contains.
+	 * {@link ContentNode} contains.
 	 * <br /><br />
-	 * May return <code>null</code> if this {@link ViewModelNode} doesn't
+	 * May return <code>null</code> if this {@link ContentNode} doesn't
 	 * contains any {@link Object3D}'s.
 	 *
 	 * @return combined bounds of all the {@link ab.j3d.model.Object3D}'s this
-	 * {@link ViewModelNode} contains.
+	 * {@link ContentNode} contains.
 	 */
 	public final Bounds3D getBounds()
 	{
@@ -311,6 +306,7 @@ public final class ViewModelNode
 	public void setNode3D( final Node3D node3D )
 	{
 		_node3D = node3D;
+		fireContentUpdated();
 	}
 
 	/**
@@ -393,7 +389,7 @@ public final class ViewModelNode
 	 */
 	public boolean isClickable()
 	{
-		return hasContextActions() || hasSubPlaneControls() /*|| hasViewModelNodeActionListeners()*/;
+		return hasContextActions() || hasSubPlaneControls() /*|| hasContentNodeUpdateListeners()*/;
 	}
 
 	/**
@@ -418,9 +414,9 @@ public final class ViewModelNode
 	}
 
 	/**
-	 * Returns all the contextActions that apply to this viewModelNode as a {@link List }.
+	 * Returns all the context actions that apply to this node.
 	 *
-	 * @return all contextActions
+	 * @return  Context actions.
 	 */
 	public List<Action> getContextActions()
 	{
@@ -502,15 +498,15 @@ public final class ViewModelNode
 	 *
 	 * @param   listener    Listener to add.
 	 */
-	public void addViewModelNodeUpdateListener( final ViewModelNodeUpdateListener listener )
+	public void addContentNodeUpdateListener( final ContentNodeUpdateListener listener )
 	{
 		if ( listener == null )
 			throw new NullPointerException();
 
-		if ( _viewModelNodeUpdateListeners.contains( listener ) )
+		if ( _contentNodeUpdateListeners.contains( listener ) )
 			throw new IllegalArgumentException( "already registered" );
 
-		_viewModelNodeUpdateListeners.add( listener );
+		_contentNodeUpdateListeners.add( listener );
 	}
 
 	/**
@@ -518,9 +514,9 @@ public final class ViewModelNode
 	 *
 	 * @param   listener    Listener to remove.
 	 */
-	public void removeViewModelNodeUpdateListener( final ViewModelNodeUpdateListener listener )
+	public void removeContentNodeUpdateListener( final ContentNodeUpdateListener listener )
 	{
-		_viewModelNodeUpdateListeners.remove( listener );
+		_contentNodeUpdateListeners.remove( listener );
 	}
 
 	/**
@@ -529,12 +525,12 @@ public final class ViewModelNode
 	 */
 	public void fireRenderingPropertiesUpdated()
 	{
-		final List<ViewModelNodeUpdateListener> listeners = _viewModelNodeUpdateListeners;
+		final List<ContentNodeUpdateListener> listeners = _contentNodeUpdateListeners;
 		if ( !listeners.isEmpty() )
 		{
-			final ViewModelNodeUpdateEvent event = new ViewModelNodeUpdateEvent( this , ViewModelNodeUpdateEvent.RENDERING_PROPERTIES_UPDATED );
+			final ContentNodeUpdateEvent event = new ContentNodeUpdateEvent( this , ContentNodeUpdateEvent.RENDERING_PROPERTIES_UPDATED );
 
-			for ( final ViewModelNodeUpdateListener listener : listeners )
+			for ( final ContentNodeUpdateListener listener : listeners )
 			{
 				listener.renderingPropertiesUpdated( event );
 			}
@@ -549,12 +545,12 @@ public final class ViewModelNode
 		//reset bounds
 		_cachedBounds3d = null;
 
-		final List<ViewModelNodeUpdateListener> listeners = _viewModelNodeUpdateListeners;
+		final List<ContentNodeUpdateListener> listeners = _contentNodeUpdateListeners;
 		if ( !listeners.isEmpty() )
 		{
-			final ViewModelNodeUpdateEvent event = new ViewModelNodeUpdateEvent( this , ViewModelNodeUpdateEvent.TRANSFORM_UPDATED );
+			final ContentNodeUpdateEvent event = new ContentNodeUpdateEvent( this , ContentNodeUpdateEvent.TRANSFORM_UPDATED );
 
-			for ( final ViewModelNodeUpdateListener listener : listeners )
+			for ( final ContentNodeUpdateListener listener : listeners )
 			{
 				listener.transformUpdated( event );
 			}
@@ -570,12 +566,12 @@ public final class ViewModelNode
 		_cachedContent = null;
 		_cachedBounds3d = null;
 
-		final List<ViewModelNodeUpdateListener> listeners = _viewModelNodeUpdateListeners;
+		final List<ContentNodeUpdateListener> listeners = _contentNodeUpdateListeners;
 		if ( !listeners.isEmpty() )
 		{
-			final ViewModelNodeUpdateEvent event = new ViewModelNodeUpdateEvent( this , ViewModelNodeUpdateEvent.CONTENT_UPDATED );
+			final ContentNodeUpdateEvent event = new ContentNodeUpdateEvent( this , ContentNodeUpdateEvent.CONTENT_UPDATED );
 
-			for ( final ViewModelNodeUpdateListener listener : listeners )
+			for ( final ContentNodeUpdateListener listener : listeners )
 			{
 				listener.contentsUpdated( event );
 			}

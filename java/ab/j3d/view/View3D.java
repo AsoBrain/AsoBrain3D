@@ -37,22 +37,22 @@ import ab.j3d.control.CameraControl;
 import ab.j3d.control.Control;
 import ab.j3d.control.ControlInput;
 import ab.j3d.model.Camera3D;
+import ab.j3d.model.Scene;
+import ab.j3d.model.SceneUpdateEvent;
+import ab.j3d.model.SceneUpdateListener;
 import ab.j3d.model.Transform3D;
-import ab.j3d.view.Projector.ProjectionPolicy;
 
 import com.numdata.oss.event.EventDispatcher;
 import com.numdata.oss.ui.ActionTools;
 
 /**
- * This class defines a view in the view model.
- *
- * @see     ViewModel
- * @see     CameraControl
+ * This class defines a 3D view of a {@link Scene}.
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public abstract class ViewModelView
+public abstract class View3D
+	implements SceneUpdateListener
 {
 	/**
 	 * Default scale factor from pixels to radians. By default, this set to make
@@ -64,9 +64,9 @@ public abstract class ViewModelView
 	public static final double DEFAULT_PIXELS_TO_RADIANS_FACTOR = ( 2.0 *  Math.PI ) / 250.0;
 
 	/**
-	 * Model being viewed.
+	 * Scene being viewed.
 	 */
-	private ViewModel _model;
+	private Scene _scene;
 
 	/**
 	 * Resolution of image in meters per pixel. If is set to <code>0.0</code>,
@@ -103,10 +103,10 @@ public abstract class ViewModelView
 	private CameraControl _cameraControl;
 
 	/**
-	 * A {@link List} of {@link OverlayPainter}s that are to paint over this
+	 * A {@link List} of {@link ViewOverlay}s that are to paint over this
 	 * view after rendering is completed.
 	 */
-	private final List<OverlayPainter> _painters = new ArrayList<OverlayPainter>();
+	private final List<ViewOverlay> _overlays = new ArrayList<ViewOverlay>();
 
 	/**
 	 * Label of this view (<code>null</code> if none).
@@ -152,14 +152,15 @@ public abstract class ViewModelView
 	/**
 	 * Construct new view.
 	 *
-	 * @param   model   Model being viewed.
+	 * @param   scene   Scene to view.
 	 */
-	protected ViewModelView( final ViewModel model )
+	protected View3D( final Scene scene )
 	{
-		if ( model == null )
-			throw new NullPointerException( "model" );
+		if ( scene == null )
+			throw new NullPointerException( "scene" );
 
-		_model = model;
+		scene.addSceneUpdateListener( this );
+		_scene = scene;
 
 		_resolution = 0.0;
 
@@ -181,11 +182,29 @@ public abstract class ViewModelView
 		_gridEnabled           = false;
 		_grid2wcs              = Matrix3D.INIT;
 		_gridBounds            = new Rectangle( -100 , -100 , 200 , 200 );
-		_gridCellSize          = (int)Math.round( 1.0 / model.getUnit() );
+		_gridCellSize          = (int)Math.round( 1.0 / scene.getUnit() );
 		_gridHighlightAxes     = true;
 		_gridHighlightInterval = 10;
 
-		appendRenderStyleFilter( new ViewModelViewStyleFilter() );
+		appendRenderStyleFilter( new ViewStyleFilter() );
+	}
+
+	/**
+	 * Dispose this view. This releases resources used by this view.
+	 */
+	public void dispose()
+	{
+		for ( final ViewOverlay overlay : _overlays )
+		{
+			removeOverlay( overlay );
+		}
+		_overlays.clear();
+
+		_renderStyleFilters.clear();
+
+		_transform = null;
+		_cameraControl = null;
+		_label = null;
 	}
 
 	/**
@@ -218,13 +237,13 @@ public abstract class ViewModelView
 	}
 
 	/**
-	 * Get model being viewed.
+	 * Get scene being viewed.
 	 *
-	 * @return  Model being viewed.
+	 * @return  View being viewed.
 	 */
-	public ViewModel getModel()
+	public Scene getScene()
 	{
-		return _model;
+		return _scene;
 	}
 
 	/**
@@ -235,18 +254,6 @@ public abstract class ViewModelView
 	public Camera3D getCamera()
 	{
 		return _camera;
-	}
-
-	/**
-	 * Get unit scale factor in meters per unit. This scale factor, when
-	 * multiplied, converts design units to meters.
-	 *
-	 * @return  Unit scale (meters per unit).
-	 */
-	public double getUnit()
-	{
-		final ViewModel model = getModel();
-		return model.getUnit();
 	}
 
 	/**
@@ -268,14 +275,14 @@ public abstract class ViewModelView
 	 *
 	 * @return  Scale factor from pixels to view units.
 	 *
-	 * @see     ViewModel#getUnit
+	 * @see     Scene#getUnit
 	 * @see     #getProjector
 	 * @see     Projector#getView2pixels
 	 */
 	public double getPixelsToUnitsFactor()
 	{
-		final ViewModel model = getModel();
-		return getResolution() / ( getZoomFactor() * model.getUnit() );
+		final Scene scene = getScene();
+		return getResolution() / ( getZoomFactor() * scene.getUnit() );
 	}
 
 	/**
@@ -391,7 +398,7 @@ public abstract class ViewModelView
 			final Component component = getComponent();
 			final Toolkit   toolkit   = ( component != null ) ? component.getToolkit() : Toolkit.getDefaultToolkit();
 
-			result = ViewModel.INCH / (double)toolkit.getScreenResolution();
+			result = Scene.INCH / (double)toolkit.getScreenResolution();
 		}
 
 		return result;
@@ -415,7 +422,7 @@ public abstract class ViewModelView
 	 * Update contents of view. This may be the result of changes to the 3D
 	 * scene or view transform.
 	 */
-	protected abstract void update();
+	public abstract void update();
 
 	/**
 	 * Get projection policy of this view.
@@ -496,13 +503,13 @@ public abstract class ViewModelView
 	public abstract Projector getProjector();
 
 	/**
-	 * Returns the {@link ControlInput}, if this class has one. If it
+	 * Returns the {@link ViewControlInput}, if this class has one. If it
 	 * does not, <code>null</code> is returned.
 	 *
 	 * @return  The {@link ControlInput} for this view;
 	 *          <code>null</code> if this view has none.
 	 */
-	protected abstract ControlInput getControlInput();
+	protected abstract ViewControlInput getControlInput();
 
 	/**
 	 * Adds a {@link Control} to the end of the control chain of this view.
@@ -566,67 +573,85 @@ public abstract class ViewModelView
 	}
 
 	/**
-	 * Adds an {@link OverlayPainter} to the list of painters. The painter that
-	 * is added first will get the first turn in painting.
+	 * Adds an {@link ViewOverlay} to this view. The overlay that is added
+	 * first, will get the first turn in painting.
 	 *
-	 * @param   painter     {@link OverlayPainter} to add.
+	 * @param   overlay     {@link ViewOverlay} to add.
 
-	 * @see     #removeOverlayPainter
-	 * @see     #hasOverlayPainters
+	 * @see     #removeOverlay
+	 * @see     #hasOverlay
 	 * @see     #paintOverlay
 	 */
-	public void addOverlayPainter( final OverlayPainter painter )
+	public void addOverlay( final ViewOverlay overlay )
 	{
-		if ( painter == null )
-			throw new NullPointerException( "painter" );
+		if ( overlay == null )
+			throw new NullPointerException( "overlay" );
 
-		_painters.add( painter );
+		final List<ViewOverlay> overlays = _overlays;
+		if ( overlays.contains( overlay ) )
+			throw new IllegalArgumentException();
+
+		overlay.addView( this );
+
+		overlays.add( overlay );
 	}
 
 	/**
-	 * Removes an {@link OverlayPainter} from the list of painters.
+	 * Removes an {@link ViewOverlay} from this view.
 	 *
-	 * @param   painter     {@link OverlayPainter} to remove.
+	 * @param   overlay     {@link ViewOverlay} to remove.
 
-	 * @see     #addOverlayPainter
-	 * @see     #hasOverlayPainters
+	 * @see     #addOverlay
+	 * @see     #hasOverlay
 	 * @see     #paintOverlay
 	 */
-	public void removeOverlayPainter( final OverlayPainter painter )
+	public void removeOverlay( final ViewOverlay overlay )
 	{
-		_painters.remove( painter );
+		if ( overlay == null )
+			throw new NullPointerException( "overlay" );
+
+		final List<ViewOverlay> overlays = _overlays;
+		if ( !overlays.remove( overlay ) )
+			throw new IllegalArgumentException();
+
+		overlay.removeView( this );
 	}
 
 	/**
-	 * Returns wether or not this view has registered {@link OverlayPainter}.
+	 * Returns wether or not this view has registered {@link ViewOverlay}.
 	 *
-	 * @return  wether or not this view has registered {@link OverlayPainter}.
+	 * @return  wether or not this view has registered {@link ViewOverlay}.
 	 *
-	 * @see     #addOverlayPainter
-	 * @see     #removeOverlayPainter
+	 * @see     #addOverlay
+	 * @see     #removeOverlay
 	 * @see     #paintOverlay
 	 */
-	protected final boolean hasOverlayPainters()
+	protected final boolean hasOverlay()
 	{
-		return !_painters.isEmpty();
+		return !_overlays.isEmpty();
 	}
 
 	/**
-	 * Iterates through all registered {@link OverlayPainter}s, and for each of
-	 * them calls the {@link OverlayPainter#paint} method. This method should
+	 * Iterates through all registered {@link ViewOverlay}s, and for each of
+	 * them calls the {@link ViewOverlay#paintOverlay} method. This method should
 	 * only be called by the view after rendering of the 3d scene has been
 	 * completed.
 	 *
 	 * @param   g2d     {@link Graphics2D} object the painters can use to paint.
 
-	 * @see     #addOverlayPainter
-	 * @see     #hasOverlayPainters
-	 * @see     #removeOverlayPainter
+	 * @see     #addOverlay
+	 * @see     #hasOverlay
+	 * @see     #removeOverlay
 	 */
 	protected final void paintOverlay( final Graphics2D g2d )
 	{
-		for ( final OverlayPainter painter : _painters )
-			painter.paint( this , g2d );
+		if ( g2d == null )
+			throw new NullPointerException( "g2d" );
+
+		for ( final ViewOverlay overlay : _overlays )
+		{
+			overlay.paintOverlay( this , g2d );
+		}
 	}
 
 	/**
@@ -785,5 +810,25 @@ public abstract class ViewModelView
 	public void setGridHighlightInterval( final int highlightInterval )
 	{
 		_gridHighlightInterval = highlightInterval;
+	}
+
+	public void contentNodeAdded( final SceneUpdateEvent event )
+	{
+		update();
+	}
+
+	public void contentNodeContentUpdated( final SceneUpdateEvent event )
+	{
+		update();
+	}
+
+	public void contentNodePropertyChanged( final SceneUpdateEvent event )
+	{
+		update();
+	}
+
+	public void contentNodeRemoved( final SceneUpdateEvent event )
+	{
+		update();
 	}
 }

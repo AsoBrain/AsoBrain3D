@@ -40,7 +40,7 @@ import com.numdata.oss.TextTools;
 import com.numdata.oss.ui.ImageTools;
 
 /**
- * Utility methods related to JOGL implementation of view model.
+ * Utility methods for JOGL.
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$

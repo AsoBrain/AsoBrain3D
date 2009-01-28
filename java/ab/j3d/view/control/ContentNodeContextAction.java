@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2008
+ * (C) Copyright Numdata BV 2004-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,23 +24,21 @@ import java.awt.event.ActionEvent;
 import java.util.ResourceBundle;
 
 import ab.j3d.control.ControlInputEvent;
+import ab.j3d.model.ContentNode;
 import ab.j3d.model.Face3DIntersection;
-import ab.j3d.view.ViewModelNode;
 
 import com.numdata.oss.ui.BasicAction;
 import com.numdata.oss.ui.WindowTools;
 
 /**
- * ViewModelNodeContextAction class.
- *
- * If this action is called via an {@link ViewModelNodePopupMenu}, then the
- * {@link ControlInputEvent}, {@link ViewModelNode} and the {@link Face3DIntersection}
- * will be passed onto the run method.
+ * This class defines an action for a {@link ContentNode}. This action includes
+ * information about the pointer intersection in a 3D view when the action was
+ * triggered from there.
  *
  * @author  Jark Reijerink
  * @version $Revision$ $Date$
  */
-public abstract class ViewModelNodeContextAction
+public abstract class ContentNodeContextAction
 	extends BasicAction
 {
 	/**
@@ -58,7 +56,7 @@ public abstract class ViewModelNodeContextAction
 	 * @param   bundle      Resource bundle to get settings from.
 	 * @param   key         Resource key to use (also used as action command).
 	 */
-	protected ViewModelNodeContextAction( final ResourceBundle bundle , final String key )
+	protected ContentNodeContextAction( final ResourceBundle bundle , final String key )
 	{
 		super( bundle , key );
 	}
@@ -66,7 +64,7 @@ public abstract class ViewModelNodeContextAction
 	/**
 	 * {@inheritDoc}
 	 * <br /><br />
-	 * Checks if the topLevelComponent is a {@link ViewModelNodePopupMenu}, if so
+	 * Checks if the topLevelComponent is a {@link ContentNodeContextMenu}, if so
 	 * it passes the parameters to the run method.
 	 */
 	public void actionPerformed( final ActionEvent event )
@@ -75,11 +73,14 @@ public abstract class ViewModelNodeContextAction
 		{
 			Component topLevelComponent = (Component)event.getSource() ;
 			while ( ( topLevelComponent != null ) && ( topLevelComponent.getParent() != null ) )
-				topLevelComponent = topLevelComponent.getParent();
-			if( topLevelComponent instanceof ViewModelNodePopupMenu )
 			{
-				final ViewModelNodePopupMenu viewModelNodePopupMenu = (ViewModelNodePopupMenu)topLevelComponent;
-				run( viewModelNodePopupMenu.getControlInputEvent() , viewModelNodePopupMenu.getViewModelNode() , viewModelNodePopupMenu.getFace3DIntersection() );
+				topLevelComponent = topLevelComponent.getParent();
+			}
+
+			if( topLevelComponent instanceof ContentNodeContextMenu )
+			{
+				final ContentNodeContextMenu contentNodeContextMenu = (ContentNodeContextMenu)topLevelComponent;
+				run( contentNodeContextMenu.getControlInputEvent() , contentNodeContextMenu.getContentNode() , contentNodeContextMenu.getFace3DIntersection() );
 			}
 			else
 			{
@@ -101,10 +102,10 @@ public abstract class ViewModelNodeContextAction
 	 * Run method for use with a {@link ControlInputEvent}.
 	 * Parameters may be null.
 	 *
-	 * @param controlInputEvent      {@link ControlInputEvent} that was used, can be null.
-	 * @param viewModelNode          {@link ViewModelNode} on which was clicked, can be null.
-	 * @param face3DIntersection     {@link Face3DIntersection} that was found, can be null.
+	 * @param   controlInputEvent   {@link ControlInputEvent} that was used, can be null.
+	 * @param   contentNode         {@link ContentNode} on which was clicked, can be null.
+	 * @param   face3DIntersection  {@link Face3DIntersection} that was found, can be null.
 	 */
-	protected abstract void run( final ControlInputEvent controlInputEvent , final ViewModelNode viewModelNode , Face3DIntersection face3DIntersection );
+	protected abstract void run( final ControlInputEvent controlInputEvent , final ContentNode contentNode , Face3DIntersection face3DIntersection );
 }
 

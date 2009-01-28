@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2008
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,14 +30,13 @@ import junit.framework.TestCase;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
-import ab.j3d.control.ComponentControlInput;
 import ab.j3d.control.ControlInput;
 import ab.j3d.control.ControlInputEvent;
 import ab.j3d.geom.BasicRay3D;
 import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Object3D;
-import static ab.j3d.view.Projector.ProjectionPolicy;
-import ab.j3d.view.java2d.Java2dModel;
+import ab.j3d.model.Scene;
+import ab.j3d.view.java2d.Java2dView;
 
 import com.numdata.oss.event.EventDispatcher;
 import com.numdata.oss.event.EventFilter;
@@ -86,7 +85,7 @@ public class TestViewControlInput
 	}
 
 	/**
-	 * Test the {@link ControlInput#getIntersections} method.
+	 * Test the {@link ViewControlInput#getIntersections} method.
 	 *
 	 * @throws  Exception if the test fails.
 	 */
@@ -114,19 +113,19 @@ public class TestViewControlInput
 		final Matrix3D transform6 = Matrix3D.getTransform(  90.0 ,  0.0 , 0.0 ,  150.0 ,   0.0 , 0.0 );
 		final Matrix3D transform7 = Matrix3D.getTransform(   0.0 , 90.0 , 0.0 ,  150.0 ,   0.0 , 0.0 );
 
-		final Java2dModel model = new Java2dModel( ViewModel.MM );
-		model.createNode( "Plane 1" , transform1 , plane1 , null , 0.0f );
-		model.createNode( "Plane 2" , transform2 , plane2 , null , 0.0f );
-		model.createNode( "Plane 3" , transform3 , plane3 , null , 0.0f );
-		model.createNode( "Plane 4" , transform4 , plane4 , null , 0.0f );
-		model.createNode( "Plane 5" , transform5 , plane5 , null , 0.0f );
-		model.createNode( "Plane 6" , transform6 , plane6 , null , 0.0f );
-		model.createNode( "Plane 7" , transform7 , plane7 , null , 0.0f );
+		final Scene scene = new Scene( Scene.MM );
+		scene.addContentNode( "Plane 1" , transform1 , plane1 , null , 0.0f );
+		scene.addContentNode( "Plane 2" , transform2 , plane2 , null , 0.0f );
+		scene.addContentNode( "Plane 3" , transform3 , plane3 , null , 0.0f );
+		scene.addContentNode( "Plane 4" , transform4 , plane4 , null , 0.0f );
+		scene.addContentNode( "Plane 5" , transform5 , plane5 , null , 0.0f );
+		scene.addContentNode( "Plane 6" , transform6 , plane6 , null , 0.0f );
+		scene.addContentNode( "Plane 7" , transform7 , plane7 , null , 0.0f );
 
 		/*
 		 * Perform tests.
 		 */
-		final ViewControlTestInput input = new ViewControlTestInput( model , model.createView() );
+		final ViewControlTestInput input = new ViewControlTestInput( new Java2dView( scene , null ) );
 
 		List<Face3DIntersection> selection;
 
@@ -176,7 +175,7 @@ public class TestViewControlInput
 	}
 
 	/**
-	 * Test the {@link ComponentControlInput#mousePressed} method.
+	 * Test the {@link ViewControlInput#mousePressed} method.
 	 *
 	 * @throws Exception if the test fails.
 	 */
@@ -194,14 +193,14 @@ public class TestViewControlInput
 		final Matrix3D transform1 = Matrix3D.getTransform( 90.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0   );
 		final Matrix3D transform2 = Matrix3D.getTransform( 0.0  , 0.0 , 0.0 , 0.0 , 0.0 , -75.0 );
 
-		final Java2dModel model = new Java2dModel( ViewModel.MM );
-		model.createNode( "Plane 1" , transform1 , plane1 , null , 0.0f );
-		model.createNode( "Plane 2" , transform2 , plane2 , null , 0.0f );
+		final Scene scene = new Scene( Scene.MM );
+		scene.addContentNode( "Plane 1" , transform1 , plane1 , null , 0.0f );
+		scene.addContentNode( "Plane 2" , transform2 , plane2 , null , 0.0f );
 
 		/*
 		 * Perform tests.
 		 */
-		final ViewControlTestInput input = new ViewControlTestInput( model , model.createView() );
+		final ViewControlTestInput input = new ViewControlTestInput( new Java2dView( scene , null ) );
 
 		int modifiers = MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.SHIFT_DOWN_MASK;
 		MouseEvent e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_PRESSED , 0L , modifiers , 0 , 0 , 1 , false , MouseEvent.BUTTON1 );
@@ -228,7 +227,7 @@ public class TestViewControlInput
 	}
 
 	/**
-	 * Test the {@link ComponentControlInput#mouseReleased} method.
+	 * Test the {@link ViewControlInput#mouseReleased} method.
 	 *
 	 * @throws Exception if the test fails.
 	 */
@@ -246,14 +245,14 @@ public class TestViewControlInput
 		final Matrix3D transform1 = Matrix3D.getTransform( 90.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0   );
 		final Matrix3D transform2 = Matrix3D.getTransform( 0.0  , 0.0 , 0.0 , 0.0 , 0.0 , -75.0 );
 
-		final Java2dModel model = new Java2dModel( ViewModel.MM );
-		model.createNode( "Plane 1" , transform1 , plane1 , null , 0.0f );
-		model.createNode( "Plane 2" , transform2 , plane2 , null , 0.0f );
+		final Scene scene = new Scene( Scene.MM );
+		scene.addContentNode( "Plane 1" , transform1 , plane1 , null , 0.0f );
+		scene.addContentNode( "Plane 2" , transform2 , plane2 , null , 0.0f );
 
 		/*
 		 * Perform tests.
 		 */
-		final ViewControlTestInput input = new ViewControlTestInput( model , model.createView() );
+		final ViewControlTestInput input = new ViewControlTestInput( new Java2dView( scene , null ) );
 
 		int modifiers = MouseEvent.SHIFT_DOWN_MASK;
 		MouseEvent e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_RELEASED , 0L , modifiers , 0 , 0 , 1 , false , MouseEvent.BUTTON1 );
@@ -291,10 +290,12 @@ public class TestViewControlInput
 
 		/**
 		 * Create view control input used in tests.
+		 *
+		 * @param   view    {@link View3D} whose input events to monitor.
 		 */
-		public ViewControlTestInput( final ViewModel viewModel , final ViewModelView view )
+		public ViewControlTestInput( final View3D view )
 		{
-			super( viewModel , view );
+			super( view );
 
 			_lastEvent = null;
 			final EventDispatcher eventQueue = getEventDispatcher();
@@ -310,7 +311,7 @@ public class TestViewControlInput
 
 		protected Projector getProjector()
 		{
-			return Projector.createInstance( ProjectionPolicy.PERSPECTIVE , 100 , 100 , 1.0 , ViewModel.M , 10.0 , 1000.0 , Math.toRadians( 45.0 ) , 1.0 );
+			return Projector.createInstance( ProjectionPolicy.PERSPECTIVE , 100 , 100 , 1.0 , Scene.M , 10.0 , 1000.0 , Math.toRadians( 45.0 ) , 1.0 );
 		}
 
 		protected Matrix3D getViewTransform()

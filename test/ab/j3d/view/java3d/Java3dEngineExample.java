@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 2004-2009 Numdata BV
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,43 +18,38 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view;
+package ab.j3d.view.java3d;
 
-import java.util.Locale;
+import java.awt.Color;
 
-import com.numdata.oss.ResourceBundleTools;
-import com.numdata.oss.ui.ChoiceAction;
+import ab.j3d.model.Scene;
+import ab.j3d.view.RenderEngineExample;
 
 /**
- * This action switches the rendering policy of a {@link View3D}.
+ * Example program for the Java 3D render engine implementation.
  *
- * @author  G.B.M. Rupert
+ * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public class SwitchRenderingPolicyAction
-	extends ChoiceAction
+public final class Java3dEngineExample
+	extends RenderEngineExample
 {
 	/**
-	 * The {@link View3D} this action belongs to.
+	 * Construct application.
 	 */
-	final View3D _view;
+	private Java3dEngineExample()
+	{
+		super( new Java3dEngine( new Scene( Scene.MM ) , Color.BLACK ) );
+	}
 
 	/**
-	 * Construct a new action to switch the rendering policy of a view.
+	 * Run application.
 	 *
-	 * @param   locale          Preferred locale for internationalization.
-	 * @param   view            The view this action belongs to.
-	 * @param   currentPolicy   Current rendering policy of the view.
+	 * @param args Command-line arguments.
 	 */
-	public SwitchRenderingPolicyAction( final Locale locale , final View3D view , final RenderingPolicy currentPolicy )
+	public static void main( final String[] args )
 	{
-
-		super( ResourceBundleTools.getBundle( View3D.class , locale ) , currentPolicy );
-		_view = view;
+		new Java3dEngineExample();
 	}
 
-	public void run()
-	{
-		_view.setRenderingPolicy( (RenderingPolicy)getSelectedValue() );
-	}
 }

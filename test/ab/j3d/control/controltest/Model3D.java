@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2007
+ * (C) Copyright Numdata BV 2005-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,18 +35,16 @@ import ab.j3d.control.controltest.model.SceneElement;
 import ab.j3d.control.controltest.model.TetraHedron;
 import ab.j3d.control.controltest.model.Wall;
 import ab.j3d.model.Box3D;
+import ab.j3d.model.ContentNode;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
-import ab.j3d.view.ViewModel;
-import ab.j3d.view.ViewModelNode;
-import ab.j3d.view.ViewModelTools;
-import ab.j3d.view.ViewModelView;
-import ab.j3d.view.java3d.Java3dModel;
+import ab.j3d.model.Scene;
+import ab.j3d.view.RenderEngine;
+import ab.j3d.view.View3D;
+import ab.j3d.view.java3d.Java3dEngine;
 
 /**
- * The {@link Model3D} creates a 3d representation of a {@link Model}. It uses a
- * {@link ViewModel} to hold the 3D scene. To display this 3d scene, the method
- * {@link #createView} creates a {@link ViewModelView} for the ViewModel.
+ * The {@link Model3D} creates a 3d representation of a {@link Model}.
  *
  * @author  Mart Slot
  * @version $Revision$ $Date$
@@ -84,9 +82,14 @@ public final class Model3D
 	private final Model _model;
 
 	/**
-	 * The {@link ViewModel} that holds the 3D scene.
+	 * 3D scene.
 	 */
-	private final ViewModel _viewModel;
+	private final Scene _scene;
+
+	/**
+	 * Render engine for 3D scene.
+	 */
+	private final RenderEngine _renderEngine;
 
 	/**
 	 * A {@link Set} with all {@link SceneElement}s in the 3d scene.
@@ -115,8 +118,11 @@ public final class Model3D
 		model.addPropertyChangeListener( Model.FACE_SELECTION_CHANGED   , propertyListener );
 		_model = model;
 
-		_viewModel = new Java3dModel( ViewModel.FOOT , Color.GRAY );
-		ViewModelTools.addLegacyLights( _viewModel );
+		final Scene scene = new Scene( Scene.FOOT );
+		Scene.addLegacyLights( scene );
+		_scene = scene;
+
+		_renderEngine = new Java3dEngine( scene, Color.GRAY );
 
 		_elements = new HashSet<SceneElement>();
 
@@ -124,14 +130,14 @@ public final class Model3D
 	}
 
 	/**
-	 * Creates a {@link ViewModelView} that displays the 3d scene. The id object
+	 * Creates a {@link ab.j3d.view.View3D} that displays the 3d scene. The id object
 	 * is used to identify the view, and should be unique for each view.
 	 *
-	 * @return  A {@link ViewModelView} that displays the 3D scene.
+	 * @return  A {@link View3D} that displays the 3D scene.
 	 */
-	public ViewModelView createView()
+	public View3D createView()
 	{
-		return _viewModel.createView();
+		return _renderEngine.createView( _scene );
 	}
 
 	/**
@@ -173,7 +179,7 @@ public final class Model3D
 	 */
 	private void updateScene()
 	{
-		final ViewModel viewModel = _viewModel;
+		final Scene scene = _scene;
 
 		/*** ALLEEN 'EIGEN' NODES REMOVEN (LAZY REMOVE) ****/
 
@@ -183,7 +189,7 @@ public final class Model3D
 		{
 			if ( _elements.contains( element ) )
 			{
-				viewModel.removeNode( element );
+				scene.removeContentNode( element );
 				removedElements.remove( element );
 			}
 
@@ -192,7 +198,7 @@ public final class Model3D
 
 		for ( final SceneElement element : removedElements )
 		{
-			viewModel.removeNode( element );
+			scene.removeContentNode( element );
 		}
 	}
 
@@ -225,7 +231,7 @@ public final class Model3D
 			setMaterialOfAllFaces( element3D , SELECTION_MATERIAL );
 		}
 
-		_viewModel.createNode( element , transform , element3D , null , 1.0f);
+		_scene.addContentNode( element , transform , element3D , null , 1.0f);
 		_elements.add( element );
 	}
 
@@ -321,11 +327,13 @@ public final class Model3D
 	 */
 	private void updateSelection( final SceneElement oldSelection , final SceneElement newSelection )
 	{
-		final ViewModel viewModel = _viewModel;
+		final Scene scene = _scene;
 
 		if ( oldSelection != null )
 		{
-			final Object3D oldObject3D = (Object3D)viewModel.getNode3D( oldSelection );
+			final ContentNode oldNode = scene.getContentNode( oldSelection );
+			final Object3D oldObject3D = ( oldNode != null ) ? (Object3D)oldNode.getNode3D() : null;
+
 			Material material = null;
 
 			if ( oldSelection instanceof Floor )
@@ -343,16 +351,18 @@ public final class Model3D
 
 			setMaterialOfAllFaces( oldObject3D , material );
 
-			final ViewModelNode viewModelNode = viewModel.getNode( oldSelection );
-			viewModelNode.fireContentUpdated();
+			final ContentNode contentNode = scene.getContentNode( oldSelection );
+			contentNode.fireContentUpdated();
 		}
 
 		if ( newSelection != null )
 		{
-			final Object3D newObject3D = (Object3D)viewModel.getNode3D( newSelection );
+			final ContentNode newNode = scene.getContentNode( newSelection );
+			final Object3D newObject3D = ( newNode != null ) ? (Object3D)newNode.getNode3D() : null;
+
 			setMaterialOfAllFaces( newObject3D , SELECTION_MATERIAL );
-			final ViewModelNode viewModelNode = viewModel.getNode( newSelection );
-			viewModelNode.fireContentUpdated();
+			final ContentNode contentNode = scene.getContentNode( newSelection );
+			contentNode.fireContentUpdated();
 		}
 	}
 
@@ -367,15 +377,15 @@ public final class Model3D
 	 */
 	private void updateFaceSelection( final PaintableTriangle oldFace , final PaintableTriangle newFace )
 	{
-		final ViewModel viewModel = _viewModel;
+		final Scene scene = _scene;
 
 		TetraHedron oldHedron = null;
 		if ( oldFace != null )
 		{
 			oldHedron = oldFace.getTetraHedron();
 
-			final Object3D hedron3D = (Object3D)viewModel.getNode3D( oldHedron );
-
+			final ContentNode hedronNode = scene.getContentNode( oldHedron );
+			final Object3D hedron3D = ( hedronNode != null ) ? (Object3D)hedronNode.getNode3D() : null;
 			setMaterialOfAllFaces( hedron3D , SELECTION_MATERIAL );
 		}
 
@@ -384,22 +394,26 @@ public final class Model3D
 		{
 			newHedron = newFace.getTetraHedron();
 
-			final Object3D hedron3D = (Object3D)viewModel.getNode3D( newHedron );
-			final Face3D   face     = hedron3D.getFace( newFace.getFaceNumber() );
+			final ContentNode hedronNode = scene.getContentNode( newHedron );
+			if ( hedronNode != null )
+			{
+				final Object3D hedron3D = (Object3D)hedronNode.getNode3D();
 
-			face.setMaterial( FACE_SELECTION_MATERIAL );
+				final Face3D face = hedron3D.getFace( newFace.getFaceNumber() );
+				face.setMaterial( FACE_SELECTION_MATERIAL );
+			}
 		}
 
 		if ( oldHedron != null )
 		{
-			final ViewModelNode viewModelNode = viewModel.getNode( oldHedron );
-			viewModelNode.fireContentUpdated();
+			final ContentNode contentNode = scene.getContentNode( oldHedron );
+			contentNode.fireContentUpdated();
 		}
 
 		if ( ( newHedron != null ) && ( newHedron != oldHedron ) )
 		{
-			final ViewModelNode viewModelNode = viewModel.getNode( newHedron );
-			viewModelNode.fireContentUpdated();
+			final ContentNode contentNode = scene.getContentNode( newHedron );
+			contentNode.fireContentUpdated();
 		}
 	}
 

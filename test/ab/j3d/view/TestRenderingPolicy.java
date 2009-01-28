@@ -19,29 +19,27 @@
  */
 package ab.j3d.view;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import junit.framework.TestCase;
 
-import ab.j3d.view.RenderingPolicy;
-
+import com.numdata.oss.junit.EnumTester;
 import com.numdata.oss.junit.ResourceBundleTester;
 
 /**
- * This class tests the {@link ViewModelView} class.
+ * This class tests the {@link RenderingPolicy} class.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public class TestViewModelView
+public class TestRenderingPolicy
 	extends TestCase
 {
 	/**
 	 * Name of this class.
 	 */
-	private static final String CLASS_NAME = TestViewModelView.class.getName();
+	private static final String CLASS_NAME = TestRenderingPolicy.class.getName();
 
 	/**
 	 * Test resource bundles for class.
@@ -55,11 +53,7 @@ public class TestViewModelView
 
 		final Locale[] locales = { new Locale( "nl" , "NL" ) , Locale.US , Locale.GERMANY };
 
-		final List<String> expectedKeys = new ArrayList<String>();
-
-		for ( final RenderingPolicy policy : RenderingPolicy.values() )
-			expectedKeys.add( policy.name() );
-
-		ResourceBundleTester.testBundles( ViewModelView.class , locales , false , expectedKeys , false , true , false );
+		final List<String> expectedKeys = EnumTester.getEnumConstantList( RenderingPolicy.class );
+		ResourceBundleTester.testBundles( RenderingPolicy.class , locales , false , expectedKeys , false , true , false );
 	}
 }

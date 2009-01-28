@@ -42,6 +42,8 @@ import ab.j3d.control.FromToCameraControl;
 import ab.j3d.control.MouseControl;
 import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Object3D;
+import ab.j3d.model.Scene;
+import ab.j3d.model.ContentNode;
 import ab.j3d.model.SkyBox3D;
 import ab.j3d.view.control.planar.PlaneControl;
 import ab.j3d.view.control.planar.PlaneMoveControl;
@@ -50,58 +52,59 @@ import com.numdata.oss.TextTools;
 import com.numdata.oss.ui.WindowTools;
 
 /**
- * Base implementation for view model examples.
+ * Base implementation for render engine examples.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public class ViewModelExample
+public abstract class RenderEngineExample
 {
 	/**
 	 * Construct example application.
 	 *
-	 * @param   viewModel   View model used to create example.
+	 * @param   renderEngine   Render engine used to create example.
 	 */
-	protected ViewModelExample( final ViewModel viewModel )
+	protected RenderEngineExample( final RenderEngine renderEngine )
 	{
-		final double unit = viewModel.getUnit();
+		final double unit = Scene.MM;
+
+		final Scene scene = new Scene( unit );
+		Scene.addLegacyLights( scene );
 
 //		final Object3D plane1 = createPlane( 0.2 / unit );
 //		plane1.setTag( "Plane 1" );
 //		Matrix3D transform1 = Matrix3D.getTransform( 225, 0, 90, 0.0 , 0.175 / unit , 0.02 / unit );
-//		viewModel.createNode( "plane1" , transform1 , plane1 , null , 1.0f );
+//		scene.addContentNode( "plane1" , transform1 , plane1 , null , 1.0f );
 //
 //		final Object3D plane2 = createPlane( 0.150 / unit );
 //		plane2.setTag( "Plane 2" );
 //		Matrix3D transform2 = Matrix3D.getTransform( 0, 225, 90, -0.250 / unit , 0.050 / unit , 0);
-//		viewModel.createNode( "plane2" , transform2 , plane2 , null , 1.0f );
+//		scene.addContentNode( "plane2" , transform2 , plane2 , null , 1.0f );
 //
 //		final Object3D plane3 = createPlane( 0.100 / unit );
 //		plane3.setTag( "Plane 3" );
 //		Matrix3D transform3 = Matrix3D.getTransform( 90, 0, 315, 0.225 / unit , 0, 0);
-//		viewModel.createNode( "plane3" , transform3 , plane3 , null , 1.0f );
+//		scene.addContentNode( "plane3" , transform3 , plane3 , null , 1.0f );
 
 		final Object3D cube = createCube( 0.1 / unit );
 		cube.setTag( "Cube 1" );
-		final ViewModelNode cubeNode = viewModel.createNode( "cube" , Matrix3D.INIT , cube , null , 1.0f );
+		final ContentNode cubeNode = scene.addContentNode( "cube" , Matrix3D.INIT , cube , null , 1.0f );
 		cubeNode.setPlaneControl( createPlaneControl( cubeNode.getTransform() ) );
 
 		final Object3D cubeLeft = createCube( 0.075 / unit );
 		cubeLeft.setTag( "Cube left");
-		final ViewModelNode cubeLeftNode = viewModel.createNode( "cubeLeft" , Matrix3D.getTransform( 0.0 , 225.0 , 90.0 , -0.250 / unit , 0.050 / unit , 0.0 ) , cubeLeft , null , 1.0f );
+		final ContentNode cubeLeftNode = scene.addContentNode( "cubeLeft" , Matrix3D.getTransform( 0.0 , 225.0 , 90.0 , -0.250 / unit , 0.050 / unit , 0.0 ) , cubeLeft , null , 1.0f );
 		cubeLeftNode.setPlaneControl( createPlaneControl( cubeLeftNode.getTransform() ) );
 
 		final Object3D cubeRight = createCube( 0.050 / unit );
 		cubeRight.setTag( "Cube right");
-		final ViewModelNode cubeRightNode = viewModel.createNode( "cubeRight" , Matrix3D.getTransform( 90.0 , 0.0 , 315.0 , 0.225 / unit , 0.0 , 0.0 ) , cubeRight , null , 1.0f );
+		final ContentNode cubeRightNode = scene.addContentNode( "cubeRight" , Matrix3D.getTransform( 90.0 , 0.0 , 315.0 , 0.225 / unit , 0.0 , 0.0 ) , cubeRight , null , 1.0f );
 		cubeRightNode.setPlaneControl( createPlaneControl( cubeRightNode.getTransform() ) );
 
-		ViewModelTools.addLegacyLights( viewModel );
+		final Vector3D viewFrom = Vector3D.polarToCartesian( 1.5 / unit , -0.2 * Math.PI , 0.4 * Math.PI );
+		final Vector3D viewAt   = Vector3D.INIT;
 
-		final Vector3D  viewFrom = Vector3D.polarToCartesian( 1.5 / unit , -0.2 * Math.PI , 0.4 * Math.PI );
-		final Vector3D  viewAt   = Vector3D.INIT;
-
-		final ViewModelView view = viewModel.createView();
+		final View3D view = renderEngine.createView( scene );
 		view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
 //		view.setProjectionPolicy( Projector.PARALLEL );
 		view.setGridEnabled( true );
@@ -110,11 +113,11 @@ public class ViewModelExample
 		viewPanel.add( view.getComponent() , BorderLayout.CENTER );
 		viewPanel.add( view.createToolBar( Locale.ENGLISH ) , BorderLayout.NORTH );
 
-		final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , viewPanel );
+		final JFrame frame = WindowTools.createFrame( renderEngine.getClass() + " example" , 800 , 600 , viewPanel );
 		frame.setVisible( true );
 
 		final Object3D testCube = createCube(0.075 / unit);
-		final ViewModelNode testCubeNode = viewModel.createNode( "banaan" , Matrix3D.getTransform( 190.0 , 0.0 , -315.0 , 0.525 / unit , 0.0 , 0.0 ) , testCube , null , 1.0f );
+		final ContentNode testCubeNode = scene.addContentNode( "banaan" , Matrix3D.getTransform( 190.0 , 0.0 , -315.0 , 0.525 / unit , 0.0 , 0.0 ) , testCube , null , 1.0f );
 		testCubeNode.setPlaneControl( createPlaneControl( testCubeNode.getTransform() ) );
 /*
 
@@ -139,9 +142,9 @@ public class ViewModelExample
 		}
 */
 
-		final TextOverlayPainter clicked = new TextOverlayPainter();
+		final TextOverlay clicked = new TextOverlay();
 		clicked.setText( "Click on an object to change this text." );
-		view.addOverlayPainter( clicked );
+		view.addOverlay( clicked );
 
 		view.insertControl( new MouseControl()
 			{
@@ -193,7 +196,7 @@ public class ViewModelExample
 			}
 		} );
 
-		viewModel.createNode( "skybox" , createSkyBox() , null , 1.0f );
+		scene.addContentNode( "skybox" , Matrix3D.INIT , createSkyBox() , null , 1.0f );
 	}
 
 	/**
@@ -286,35 +289,35 @@ public class ViewModelExample
 	{
 		return new PlaneMoveControl( plane2wcs , true )
 			{
-				public boolean mousePressed( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsPoint )
+				public boolean mousePressed( final ControlInputEvent event , final ContentNode contentNode , final Vector3D wcsPoint )
 				{
-					final boolean result = super.mousePressed( event , viewModelNode , wcsPoint );
+					final boolean result = super.mousePressed( event , contentNode , wcsPoint );
 
 					if ( result )
 					{
 						final ViewControlInput controlInput = (ViewControlInput)event.getSource();
-						final ViewModelView    view         = controlInput.getView();
+						final View3D view = controlInput.getView();
 
 						final Matrix3D plane2wcs  = getPlane2Wcs();
-						final Matrix3D node2world = viewModelNode.getTransform();
+						final Matrix3D node2world = contentNode.getTransform();
 						final Matrix3D grid2wcs   = plane2wcs.setTranslation( node2world.xo , node2world.yo , node2world.zo );
 
 						view.setGrid2wcs( grid2wcs );
-						viewModelNode.setAlternate( true );
+						contentNode.setAlternate( true );
 					}
 
 					return result;
 				}
 
-				public void mouseReleased( final ControlInputEvent event , final ViewModelNode viewModelNode , final Vector3D wcsPoint )
+				public void mouseReleased( final ControlInputEvent event , final ContentNode contentNode , final Vector3D wcsPoint )
 				{
-					super.mouseReleased( event , viewModelNode , wcsPoint );
+					super.mouseReleased( event , contentNode , wcsPoint );
 
 					final ViewControlInput controlInput = (ViewControlInput)event.getSource();
-					final ViewModelView    view         = controlInput.getView();
+					final View3D view = controlInput.getView();
 
 					view.setGrid2wcs( Matrix3D.INIT );
-					viewModelNode.setAlternate( false );
+					contentNode.setAlternate( false );
 				}
 			};
 	}
@@ -322,8 +325,8 @@ public class ViewModelExample
 	/**
 	 * Paints a semi-transparent bar with text on it as overlay.
 	 */
-	private static class TextOverlayPainter
-		implements OverlayPainter
+	private static class TextOverlay
+		implements ViewOverlay
 	{
 		/**
 		 * Text.
@@ -333,7 +336,7 @@ public class ViewModelExample
 		/**
 		 * Construct overlay painter.
 		 */
-		private TextOverlayPainter()
+		private TextOverlay()
 		{
 			_text = null;
 		}
@@ -348,7 +351,15 @@ public class ViewModelExample
 			_text = text;
 		}
 
-		public void paint( final ViewModelView view , final Graphics2D g2 )
+		public void addView( final View3D view )
+		{
+		}
+
+		public void removeView( final View3D view )
+		{
+		}
+
+		public void paintOverlay( final View3D view , final Graphics2D g2 )
 		{
 			if ( TextTools.isNonEmpty( _text ) )
 			{

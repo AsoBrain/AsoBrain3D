@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2008 Peter S. Heijnen
+ * Copyright (C) 1999-2009 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -66,7 +66,7 @@ public final class Box3D
 	 * @param   dx              Width of box (x-axis).
 	 * @param   dy              Height of box (y-axis).
 	 * @param   dz              Depth of box (z-axis).
-	 * @param   modelUnit       Model unit scale factor (e.g. {@link ab.j3d.view.ViewModel#MM}).
+	 * @param   modelUnit       Model unit scale factor (e.g. {@link Scene#MM}).
 	 * @param   mainMaterial    Main material of box.
 	 * @param   sideMaterial    Material for sides of box.
 	 */
@@ -88,7 +88,7 @@ public final class Box3D
 	 * @param   dx              Width of box (x-axis).
 	 * @param   dy              Height of box (y-axis).
 	 * @param   dz              Depth of box (z-axis).
-	 * @param   modelUnit       Model unit scale factor (e.g. {@link ab.j3d.view.ViewModel#MM}).
+	 * @param   modelUnit       Model unit scale factor (e.g. {@link Scene#MM}).
 	 * @param   frontMaterial   Material applied to the front of the box.
 	 * @param   rearMaterial    Material applied to the rear of the box.
 	 * @param   rightMaterial   Material applied to the right of the box.
@@ -145,7 +145,7 @@ public final class Box3D
 	 * @param   dx              Width of box (x-axis).
 	 * @param   dy              Height of box (y-axis).
 	 * @param   dz              Depth of box (z-axis).
-	 * @param   modelUnit       Model unit scale factor (e.g. {@link ab.j3d.view.ViewModel#MM}).
+	 * @param   modelUnit       Model unit scale factor (e.g. {@link Scene#MM}).
 	 * @param   frontMaterial   Material applied to the front of the box.
 	 * @param   frontFlipUV     Whether the front U and V coordinates are flipped.
 	 * @param   rearMaterial    Material applied to the rear of the box.
@@ -201,7 +201,7 @@ public final class Box3D
 	 * @param   modelHor2       End horizontal model coordinate.
 	 * @param   modelVer1       Start vertical model coordinate.
 	 * @param   modelVer2       End vertical model coordinate.
-	 * @param   modelUnit       Model unit scale factor (e.g. {@link ab.j3d.view.ViewModel#MM}).
+	 * @param   modelUnit       Model unit scale factor (e.g. {@link Scene#MM}).
 	 */
 	private void addFace( final int[] vertices , final Material material , final boolean flipUV , final double modelHor1 , final double modelHor2 , final double modelVer1 , final double modelVer2 , final double modelUnit )
 	{

@@ -21,6 +21,7 @@ package ab.j3d.view;
 
 import java.awt.Color;
 
+import ab.j3d.model.ContentNode;
 import ab.j3d.model.Object3D;
 
 /**
@@ -29,18 +30,18 @@ import ab.j3d.model.Object3D;
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public class ViewModelViewStyleFilter
+public class ViewStyleFilter
 	implements RenderStyleFilter
 {
 	/**
 	 * Last seen node.
 	 */
-	private ViewModelNode _node;
+	private ContentNode _node;
 
 	/**
 	 * Construct filter.
 	 */
-	public ViewModelViewStyleFilter()
+	public ViewStyleFilter()
 	{
 		_node = null;
 	}
@@ -49,17 +50,17 @@ public class ViewModelViewStyleFilter
 	{
 		RenderStyle result = style;
 
-		if ( context instanceof ViewModelView )
+		if ( context instanceof View3D )
 		{
-			result = createStyle( ((ViewModelView)context).getRenderingPolicy() );
+			result = createStyle( ((View3D)context).getRenderingPolicy() );
 		}
-		else if ( context instanceof ViewModelNode )
+		else if ( context instanceof ContentNode )
 		{
-			_node = (ViewModelNode)context;
+			_node = (ContentNode)context;
 		}
 		else if ( context instanceof Object3D )
 		{
-			final ViewModelNode node      = _node;
+			final ContentNode node      = _node;
 			final boolean       alternate = node.isAlternate();
 			final Object3D      object3D  = (Object3D)context;
 

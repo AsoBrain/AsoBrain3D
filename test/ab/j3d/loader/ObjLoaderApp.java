@@ -31,10 +31,10 @@ import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.control.FromToCameraControl;
 import ab.j3d.model.Object3D;
-import ab.j3d.view.ViewModel;
-import ab.j3d.view.ViewModelTools;
-import ab.j3d.view.ViewModelView;
-import ab.j3d.view.jogl.JOGLModel;
+import ab.j3d.model.Scene;
+import ab.j3d.view.RenderEngine;
+import ab.j3d.view.View3D;
+import ab.j3d.view.jogl.JOGLEngine;
 
 import com.numdata.oss.ui.WindowTools;
 
@@ -55,7 +55,7 @@ public class ObjLoaderApp
 	{
 		try
 		{
-			final double   unit      = JOGLModel.MM;
+			final double   unit      = Scene.MM;
 			final Matrix3D transform = Matrix3D.INIT.rotateX( Math.toRadians( 90.0 ) );
 
 			//Load from jar file...
@@ -73,19 +73,20 @@ public class ObjLoaderApp
 			final Vector3D viewFrom = Vector3D.INIT.set( 0.0 , bounds.v1.y - 3.0 / unit , bounds.v2.z / 2.0 + 1.2 / unit );
 			final Vector3D viewAt   = Vector3D.INIT.set( 0.0 , 0.0 , bounds.v2.z / 2.0 );
 
-			final ViewModel viewModel = new JOGLModel( unit , Color.WHITE );
-			ViewModelTools.addLegacyLights( viewModel );
+			final Scene scene = new Scene( unit );
+			Scene.addLegacyLights( scene );
+			scene.addContentNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d , null , 1.0f );
 
-			viewModel.createNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d , null , 1.0f );
+			final RenderEngine renderEngine = new JOGLEngine( Color.WHITE );
 
-			final ViewModelView view = viewModel.createView();
+			final View3D view = renderEngine.createView( scene );
 			view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
 
 			final JPanel viewPanel = new JPanel( new BorderLayout() );
 			viewPanel.add( view.getComponent() , BorderLayout.CENTER );
 			viewPanel.add( view.createToolBar( new Locale( "nl" ) ) , BorderLayout.SOUTH );
 
-			final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , viewPanel );
+			final JFrame frame = WindowTools.createFrame( renderEngine.getClass() + " example" , 800 , 600 , viewPanel );
 			frame.setVisible( true );
 
 			System.out.println( "object size = " + Math.round( toCM * size.x ) + " x " + Math.round( toCM * size.y ) + " x " + Math.round( toCM * size.z ) + " cm" );

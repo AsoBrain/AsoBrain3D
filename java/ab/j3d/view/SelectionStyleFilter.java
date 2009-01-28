@@ -21,6 +21,8 @@ package ab.j3d.view;
 
 import java.awt.Color;
 
+import ab.j3d.model.ContentNode;
+
 /**
  * Style filter to visualize selection.
  *
@@ -68,18 +70,18 @@ public abstract class SelectionStyleFilter
 	 */
 	protected boolean isSelected( final Object context )
 	{
-		return ( context instanceof ViewModelNode ) && isNodeSelected( (ViewModelNode)context );
+		return ( context instanceof ContentNode ) && isNodeSelected( (ContentNode)context );
 	}
 
 	/**
-	 * Test if a {@link ViewModelNode} is selected.
+	 * Test if a {@link ContentNode} is selected.
 	 *
 	 * @param   node    Node to test.
 	 *
 	 * @return  <code>true</code> if selected;
 	 *          <code>false</code> otherwise.
 	 */
-	protected abstract boolean isNodeSelected( final ViewModelNode node );
+	protected abstract boolean isNodeSelected( final ContentNode node );
 
 	/**
 	 * Apply style for selection to existing style.

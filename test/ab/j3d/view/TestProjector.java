@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * (C) Copyright Numdata BV 2005-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,7 @@ package ab.j3d.view;
 import junit.framework.TestCase;
 
 import ab.j3d.Vector3D;
-import ab.j3d.view.Projector.ProjectionPolicy;
+import ab.j3d.model.Scene;
 
 /**
  * This class tests the {@link Projector} class.
@@ -51,7 +51,7 @@ public class TestProjector
 
 		System.out.println( " - PerspectiveProjector" );
 
-		Projector projector = Projector.createInstance( ProjectionPolicy.PERSPECTIVE , 100 , 100 , 1.0 , ViewModel.M , 0.1 , 1000.0 , Math.toRadians( 45.0 ) , 1.0);
+		Projector projector = Projector.createInstance( ProjectionPolicy.PERSPECTIVE , 100 , 100 , 1.0 , Scene.M , 0.1 , 1000.0 , Math.toRadians( 45.0 ) , 1.0);
 
 		Vector3D screen = Vector3D.INIT.set( 0.0 , 100.0 , 100.0 );
 		Vector3D world = projector.imageToView( screen.x , screen.y , screen.z );
@@ -85,7 +85,7 @@ public class TestProjector
 
 		System.out.println( " - ParallelProjector" );
 
-		projector = Projector.createInstance( ProjectionPolicy.PARALLEL , 100 , 100 , 1.0 , ViewModel.M , 0.1 , 1000.0 , Math.toRadians( 45.0 ) , 1.0);
+		projector = Projector.createInstance( ProjectionPolicy.PARALLEL , 100 , 100 , 1.0 , Scene.M , 0.1 , 1000.0 , Math.toRadians( 45.0 ) , 1.0);
 
 		screen = Vector3D.INIT.set( 0.0 , 0.0 , 100.0 );
 		world = projector.imageToView( screen.x , screen.y , screen.z );

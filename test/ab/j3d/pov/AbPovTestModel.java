@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2008
+ * (C) Copyright Numdata BV 2005-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,18 +29,19 @@ import ab.j3d.Vector3D;
 import ab.j3d.control.FromToCameraControl;
 import ab.j3d.model.Box3D;
 import ab.j3d.model.Camera3D;
+import ab.j3d.model.ContentNode;
 import ab.j3d.model.Cylinder3D;
 import ab.j3d.model.ExtrudedObject2D;
 import ab.j3d.model.Light3D;
-import ab.j3d.model.Node3D;
 import ab.j3d.model.Object3D;
+import ab.j3d.model.Scene;
 import ab.j3d.model.Sphere3D;
-import ab.j3d.view.ViewModel;
-import ab.j3d.view.ViewModelView;
-import ab.j3d.view.java2d.Java2dModel;
+import ab.j3d.view.View3D;
+import ab.j3d.view.java2d.Java2dEngine;
+import ab.j3d.view.java2d.Java2dView;
 
 /**
- * This class constructs a testmodel ({@link Java2dModel}) for testing the
+ * This class constructs a testmodel ({@link Java2dEngine}) for testing the
  * {@link AbToPovConverter}. The model is used by both the test and test
  * application.
  *
@@ -53,39 +54,35 @@ import ab.j3d.view.java2d.Java2dModel;
 public final class AbPovTestModel
 {
 	/**
-	 * The used model.
+	 * The used scene.
 	 */
-	private final Java2dModel _viewModel = new Java2dModel();
+	private final Scene _scene = new Scene( Scene.MM );
 
 	/**
 	 * The used model.
 	 */
-	private final ViewModelView view;
+	private final View3D _view;
 
 	/**
 	 * Construct new {@link AbPovTestModel}.
 	 */
-	public AbPovTestModel() {
-
+	public AbPovTestModel()
+	{
 		/*
-		 * Create model.
+		 * Fill scene with objects from the testmodel.
 		 */
-		final Java2dModel viewModel = _viewModel;
-
-		/*
-		 * Fill model with objects from the testmodel.
-		 */
-		viewModel.createNode( "camera"              , null , getCamera3D()              , null , 1.0f );
-		viewModel.createNode( "redbox"              , null , getRedXRotatedBox3D()      , null , 1.0f );
-		viewModel.createNode( "greenbox"            , null , getGreenYRotatedBox3D()    , null , 1.0f );
-		viewModel.createNode( "bluebox"             , null , getBlueZRotatedBox3D()     , null , 1.0f );
-		viewModel.createNode( "panel"               , null , getTexturedBox3D()         , null , 1.0f );
-		viewModel.createNode( "sphere"              , null , getSphere3D()              , null , 1.0f );
-		viewModel.createNode( "cylinder"            , null , getCylinder3D()            , null , 1.0f );
-		viewModel.createNode( "cone"                , null , getCone3D()                , null , 1.0f );
-		viewModel.createNode( "extruded"            , null , getExtrudedObject2D()      , null , 1.0f );
-		viewModel.createNode( "colorcube"           , null , getColorCube()             , null , 1.0f );
-		viewModel.createNode( "texturedcolorcube"   , null , getTexturedColorCube()     , null , 1.0f );
+		final Scene scene = _scene;
+		scene.addContentNode( "camera"            , Matrix3D.INIT , getCamera3D()              , null , 1.0f );
+		scene.addContentNode( "redbox"            , Matrix3D.INIT , getRedXRotatedBox3D()      , null , 1.0f );
+		scene.addContentNode( "greenbox"          , Matrix3D.INIT , getGreenYRotatedBox3D()    , null , 1.0f );
+		scene.addContentNode( "bluebox"           , Matrix3D.INIT , getBlueZRotatedBox3D()     , null , 1.0f );
+		scene.addContentNode( "panel"             , Matrix3D.INIT , getTexturedBox3D()         , null , 1.0f );
+		scene.addContentNode( "sphere"            , Matrix3D.INIT , getSphere3D()              , null , 1.0f );
+		scene.addContentNode( "cylinder"          , Matrix3D.INIT , getCylinder3D()            , null , 1.0f );
+		scene.addContentNode( "cone"              , Matrix3D.INIT , getCone3D()                , null , 1.0f );
+		scene.addContentNode( "extruded"          , Matrix3D.INIT , getExtrudedObject2D()      , null , 1.0f );
+		scene.addContentNode( "colorcube"         , Matrix3D.INIT , getColorCube()             , null , 1.0f );
+		scene.addContentNode( "texturedcolorcube" , Matrix3D.INIT , getTexturedColorCube()     , null , 1.0f );
 
 		/*
 		 * Create view.
@@ -93,8 +90,19 @@ public final class AbPovTestModel
 		final Vector3D viewFrom = Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 );
 		final Vector3D viewAt   = Vector3D.INIT;
 
-		view = viewModel.createView();
+		final View3D view = new Java2dView( scene , null );
 		view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
+		_view = view;
+	}
+
+	/**
+	 * Get a reference to the used scene.
+	 *
+	 * @return The test scene.
+	 */
+	public Scene getScene()
+	{
+		return _scene;
 	}
 
 	/**
@@ -102,19 +110,9 @@ public final class AbPovTestModel
 	 *
 	 * @return The test model.
 	 */
-	public ViewModelView getView()
+	public View3D getView()
 	{
-		return view;
-	}
-
-	/**
-	 * Get a reference to the used model.
-	 *
-	 * @return The test model.
-	 */
-	public ViewModel getModel()
-	{
-		return _viewModel;
+		return _view;
 	}
 
 	/**
@@ -127,19 +125,19 @@ public final class AbPovTestModel
 	 */
 	public Camera3D getCamera3D()
 	{
-		final Node3D node = _viewModel.getNode3D( "camera" );
-		final Camera3D camera;
+		final Camera3D camera3D;
 
+		final ContentNode node = _scene.getContentNode( "camera" );
 		if ( node == null )
 		{
-			camera =  new Camera3D( 1.0 , 45.0 );
+			camera3D = new Camera3D( 1.0, 45.0 );
 		}
 		else
 		{
-			camera = (Camera3D)node;
+			camera3D = (Camera3D)node.getNode3D();
 		}
 
-		return camera;
+		return camera3D;
 	}
 
 	/**
@@ -152,12 +150,13 @@ public final class AbPovTestModel
 	 */
 	public Box3D getRedXRotatedBox3D()
 	{
-		final Node3D node = _viewModel.getNode3D( "redbox" );
 		final Box3D box;
 
+		final ContentNode node = _scene.getContentNode( "redbox" );
 		if ( node == null )
 		{
-			final Material material  = new Material( Color.RED.getRGB() );
+			final Color color = Color.RED;
+			final Material material  = createMaterialWithColor( color );
 			final Matrix3D rotate    = Matrix3D.INIT.rotateX( Math.toRadians( 10.0 ) );
 			final Matrix3D translate = Matrix3D.INIT.setTranslation( -200.0 , 0.0 , -250.0 );
 			final Matrix3D transform = rotate.multiply( translate );
@@ -166,7 +165,7 @@ public final class AbPovTestModel
 		}
 		else
 		{
-			box = (Box3D)node;
+			box = (Box3D)node.getNode3D();
 		}
 
 		return box;
@@ -182,12 +181,12 @@ public final class AbPovTestModel
 	 */
 	public Box3D getGreenYRotatedBox3D()
 	{
-		final Node3D node = _viewModel.getNode3D( "greenbox" );
 		final Box3D box;
 
+		final ContentNode node = _scene.getContentNode( "greenbox" );
 		if ( node == null )
 		{
-			final Material material  = new Material( Color.GREEN.getRGB() );
+			final Material material  = createMaterialWithColor( Color.GREEN );
 			final Matrix3D rotate    = Matrix3D.INIT.rotateY( Math.toRadians( 10.0 ) );
 			final Matrix3D translate = Matrix3D.INIT.setTranslation( -50.0 , 0.0 , -250.0 );
 			final Matrix3D transform = rotate.multiply( translate );
@@ -198,7 +197,7 @@ public final class AbPovTestModel
 		}
 		else
 		{
-			box = (Box3D)node;
+			box = (Box3D)node.getNode3D();
 		}
 
 		return box;
@@ -214,12 +213,12 @@ public final class AbPovTestModel
 	 */
 	public Box3D getBlueZRotatedBox3D()
 	{
-		final Node3D node = _viewModel.getNode3D( "bluebox" );
 		final Box3D box;
 
+		final ContentNode node = _scene.getContentNode( "bluebox" );
 		if ( node == null )
 		{
-			final Material material  = new Material( Color.BLUE.getRGB() );
+			final Material material  = createMaterialWithColor( Color.BLUE );
 			final Matrix3D rotate    = Matrix3D.INIT.rotateZ( Math.toRadians( 10.0 ) );
 			final Matrix3D translate = Matrix3D.INIT.setTranslation( 200.0 , 0.0 , -250.0 );
 			final Matrix3D transform = rotate.multiply( translate );
@@ -228,7 +227,7 @@ public final class AbPovTestModel
 		}
 		else
 		{
-			box = (Box3D)node;
+			box = (Box3D)node.getNode3D();
 		}
 
 		return box;
@@ -245,31 +244,27 @@ public final class AbPovTestModel
 	 */
 	public Box3D getTexturedBox3D()
 	{
-		final Node3D node = _viewModel.getNode3D( "texturedbox" );
 		final Box3D box;
 
+		final ContentNode node = _scene.getContentNode( "texturedbox" );
 		if ( node == null )
 		{
 			Matrix3D transform = Matrix3D.INIT.rotateZ( Math.toRadians( 45.0 ) );
 			transform = transform.setTranslation( -350.0 , 0.0 , 0.0 );
 
-			final Material mainMaterial = new Material();
-			mainMaterial.code           = "MPXs";
-			mainMaterial.colorMap       = "MPXs";
-			mainMaterial.colorMapWidth  = 0.2;
+			final Material mainMaterial = createMaterialWithColorMap( "MPXs" );
+			mainMaterial.colorMapWidth = 0.2;
 			mainMaterial.colorMapHeight = 0.2;
 
-			final Material sideMaterial = new Material();
-			sideMaterial.code           = "MFCs";
-			sideMaterial.colorMap       = "MFCs";
-			sideMaterial.colorMapWidth  = 0.2;
+			final Material sideMaterial = createMaterialWithColorMap( "MFCs" );
+			sideMaterial.colorMapWidth = 0.2;
 			sideMaterial.colorMapHeight = 0.2;
 
 			box =  new Box3D( transform , 200.0 , 10.0 , 200.0 , 0.001 , mainMaterial , sideMaterial );
 		}
 		else
 		{
-			box = (Box3D)node;
+			box = (Box3D)node.getNode3D();
 		}
 
 		return box;
@@ -285,19 +280,19 @@ public final class AbPovTestModel
 	 */
 	public Sphere3D getSphere3D()
 	{
-		final Node3D node = _viewModel.getNode3D( "sphere" );
+		final ContentNode node = _scene.getContentNode( "sphere" );
 		final Sphere3D sphere;
 
 		if ( node == null )
 		{
-			final Material material  = new Material( Color.BLUE.getRGB() );
+			final Material material  = createMaterialWithColor( Color.BLUE );
 			final Matrix3D transform = Matrix3D.INIT.setTranslation( 0.0 , 300.0 , -200.0 );
 
 			sphere = new Sphere3D( transform , 100.0 , 100.0 , 100.0 , 20 , 20 , material , false );
 		}
 		else
 		{
-			sphere = (Sphere3D)node;
+			sphere = (Sphere3D)node.getNode3D();
 		}
 
 		return sphere;
@@ -314,19 +309,19 @@ public final class AbPovTestModel
 	 */
 	public Cylinder3D getCylinder3D()
 	{
-		final Node3D node = _viewModel.getNode3D( "cylinder" );
+		final ContentNode node = _scene.getContentNode( "cylinder" );
 		final Cylinder3D cylinder;
 
 		if ( node == null )
 		{
-			final Material material  = new Material( Color.MAGENTA.getRGB() );
+			final Material material  = createMaterialWithColor( Color.MAGENTA );
 			final Matrix3D transform = Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 150.0 );
 
 			cylinder = new Cylinder3D( transform , 50.0 , 50.0 , 100.0 , 100 , material , true , true );
 		}
 		else
 		{
-			cylinder = (Cylinder3D)node;
+			cylinder = (Cylinder3D)node.getNode3D();
 		}
 
 		return cylinder;
@@ -343,12 +338,12 @@ public final class AbPovTestModel
 	 */
 	public Cylinder3D getCone3D()
 	{
-		final Node3D node = _viewModel.getNode3D( "cone" );
+		final ContentNode node = _scene.getContentNode( "cone" );
 		final Cylinder3D cone;
 
 		if ( node == null )
 		{
-			final Material material  = new Material( Color.WHITE.getRGB() );
+			final Material material  = createMaterialWithColor( Color.WHITE );
 			final Matrix3D rotate    = Matrix3D.INIT.rotateX( Math.toRadians( 45.0 ) );
 			final Matrix3D transform = rotate.setTranslation( 250.0 , 0.0 , 0.0 );
 
@@ -356,7 +351,7 @@ public final class AbPovTestModel
 		}
 		else
 		{
-			cone = (Cylinder3D)node;
+			cone = (Cylinder3D)node.getNode3D();
 		}
 
 		return cone;
@@ -372,7 +367,7 @@ public final class AbPovTestModel
 	 */
 	public Object3D getColorCube()
 	{
-		final Node3D node = _viewModel.getNode3D( "colorcube" );
+		final ContentNode node = _scene.getContentNode( "colorcube" );
 		final Object3D cube;
 
 		if ( node == null )
@@ -386,12 +381,12 @@ public final class AbPovTestModel
 			final Vector3D rbt = Vector3D.INIT.set(  100.0 ,  100.0 ,  100.0 );
 			final Vector3D lbt = Vector3D.INIT.set( -100.0 ,  100.0 ,  100.0 );
 
-			final Material topMaterial    = new Material(); topMaterial   .colorMap = "CUBE_TOP";
-			final Material bottomMaterial = new Material(); bottomMaterial.colorMap = "CUBE_BOTTOM";
-			final Material frontMaterial  = new Material(); frontMaterial .colorMap = "CUBE_FRONT";
-			final Material backMaterial   = new Material(); backMaterial  .colorMap = "CUBE_BACK";
-			final Material leftMaterial   = new Material(); leftMaterial  .colorMap = "CUBE_LEFT";
-			final Material rightMaterial  = new Material(); rightMaterial .colorMap = "CUBE_RIGHT";
+			final Material topMaterial    = createMaterialWithColorMap( "CUBE_TOP" );
+			final Material bottomMaterial = createMaterialWithColorMap( "CUBE_BOTTOM" );
+			final Material frontMaterial  = createMaterialWithColorMap( "CUBE_FRONT" );
+			final Material backMaterial   = createMaterialWithColorMap( "CUBE_BACK" );
+			final Material leftMaterial   = createMaterialWithColorMap( "CUBE_LEFT" );
+			final Material rightMaterial  = createMaterialWithColorMap( "CUBE_RIGHT" );
 
 			final float[] textureU = { 0.5f , 0.5f , 0.0f , 0.0f };
 			final float[] textureV = { 0.0f , 0.5f , 0.5f , 0.0f };
@@ -406,7 +401,7 @@ public final class AbPovTestModel
 		}
 		else
 		{
-			cube = (Object3D)node;
+			cube = (Object3D)node.getNode3D();
 		}
 
 		return cube;
@@ -422,7 +417,7 @@ public final class AbPovTestModel
 	 */
 	public Object3D getTexturedColorCube()
 	{
-		final Node3D node = _viewModel.getNode3D( "texturedcolorcube" );
+		final ContentNode node = _scene.getContentNode( "texturedcolorcube" );
 		final Object3D cube;
 
 		if ( node == null )
@@ -436,12 +431,12 @@ public final class AbPovTestModel
 			final Vector3D rbt = Vector3D.INIT.set(  100.0 ,  100.0 ,  100.0 );
 			final Vector3D lbt = Vector3D.INIT.set( -100.0 ,  100.0 ,  100.0 );
 
-			final Material topMaterial    = new Material(); topMaterial   .colorMap = "CUBE_TOP_TEXTURE_AND_COLOR";       topMaterial.diffuseColorRed     = 1.0f; topMaterial.diffuseColorGreen       = 0.0f; topMaterial.diffuseColorBlue        = 0.0f;
-			final Material bottomMaterial = new Material(); bottomMaterial.colorMap = "CUBE_BOTTOM_TEXTURE_AND_COLOR";    bottomMaterial.diffuseColorRed  = 0.0f; bottomMaterial.diffuseColorGreen    = 1.0f; bottomMaterial.diffuseColorBlue     = 0.0f;
-			final Material frontMaterial  = new Material(); frontMaterial .colorMap = "CUBE_FRONT_TEXTURE_AND_COLOR";     frontMaterial.diffuseColorRed   = 0.0f; frontMaterial.diffuseColorGreen     = 0.0f; frontMaterial.diffuseColorBlue      = 1.0f;
-			final Material backMaterial   = new Material(); backMaterial  .colorMap = "CUBE_BACK_TEXTURE_AND_COLOR";      backMaterial.diffuseColorRed    = 1.0f; backMaterial.diffuseColorGreen      = 1.0f; backMaterial.diffuseColorBlue       = 0.0f;
-			final Material leftMaterial   = new Material(); leftMaterial  .colorMap = "CUBE_LEFT_TEXTURE_AND_COLOR";      leftMaterial.diffuseColorRed    = 0.0f; leftMaterial.diffuseColorGreen      = 1.0f; leftMaterial.diffuseColorBlue       = 1.0f;
-			final Material rightMaterial  = new Material(); rightMaterial .colorMap = "CUBE_RIGHT_TEXTURE_AND_COLOR";     rightMaterial.diffuseColorRed   = 1.0f; rightMaterial.diffuseColorGreen     = 0.0f; rightMaterial.diffuseColorBlue      = 1.0f;
+			final Material topMaterial    = createMaterialWithColorMap( "CUBE_TOP_TEXTURE_AND_COLOR" );    topMaterial.diffuseColorRed     = 1.0f; topMaterial.diffuseColorGreen       = 0.0f; topMaterial.diffuseColorBlue        = 0.0f;
+			final Material bottomMaterial = createMaterialWithColorMap( "CUBE_BOTTOM_TEXTURE_AND_COLOR" ); bottomMaterial.diffuseColorRed  = 0.0f; bottomMaterial.diffuseColorGreen    = 1.0f; bottomMaterial.diffuseColorBlue     = 0.0f;
+			final Material frontMaterial  = createMaterialWithColorMap( "CUBE_FRONT_TEXTURE_AND_COLOR" );  frontMaterial.diffuseColorRed   = 0.0f; frontMaterial.diffuseColorGreen     = 0.0f; frontMaterial.diffuseColorBlue      = 1.0f;
+			final Material backMaterial   = createMaterialWithColorMap( "CUBE_BACK_TEXTURE_AND_COLOR" );   backMaterial.diffuseColorRed    = 1.0f; backMaterial.diffuseColorGreen      = 1.0f; backMaterial.diffuseColorBlue       = 0.0f;
+			final Material leftMaterial   = createMaterialWithColorMap( "CUBE_LEFT_TEXTURE_AND_COLOR" );   leftMaterial.diffuseColorRed    = 0.0f; leftMaterial.diffuseColorGreen      = 1.0f; leftMaterial.diffuseColorBlue       = 1.0f;
+			final Material rightMaterial  = createMaterialWithColorMap( "CUBE_RIGHT_TEXTURE_AND_COLOR" );  rightMaterial.diffuseColorRed   = 1.0f; rightMaterial.diffuseColorGreen     = 0.0f; rightMaterial.diffuseColorBlue      = 1.0f;
 
 			final float[] textureU = { 0.5f , 0.5f , 0.0f , 0.0f };
 			final float[] textureV = { 0.0f , 0.5f , 0.5f , 0.0f };
@@ -456,7 +451,7 @@ public final class AbPovTestModel
 		}
 		else
 		{
-			cube = (Object3D)node;
+			cube = (Object3D)node.getNode3D();
 		}
 
 		return cube;
@@ -473,12 +468,12 @@ public final class AbPovTestModel
 	 */
 	public ExtrudedObject2D getExtrudedObject2D()
 	{
-		final Node3D node = _viewModel.getNode3D( "extruded" );
 		final ExtrudedObject2D extrudedObject;
 
+		final ContentNode node = _scene.getContentNode( "extruded" );
 		if ( node == null )
 		{
-			final Material material  = new Material( Color.PINK.getRGB() );
+			final Material material  = createMaterialWithColor( Color.PINK );
 			final Shape    shape     = new Rectangle2D.Double( 0.0 , 0.0 , 100.0 , 100.0 );
 			final Vector3D extrusion = Vector3D.INIT.set( 0.0 , 100.0 , 100.0 );
 			final Matrix3D transform = Matrix3D.INIT.setTranslation( -400.0 , 0.0 , -250.0 );
@@ -487,7 +482,7 @@ public final class AbPovTestModel
 		}
 		else
 		{
-			extrudedObject = (ExtrudedObject2D)node;
+			extrudedObject = (ExtrudedObject2D)node.getNode3D();
 		}
 
 		return extrudedObject;
@@ -503,7 +498,7 @@ public final class AbPovTestModel
 	 */
 	public Light3D getLight3D()
 	{
-		final Node3D node = _viewModel.getNode3D( "light" );
+		final ContentNode node = _scene.getContentNode( "light" );
 		final Light3D light;
 
 		if ( node == null )
@@ -512,9 +507,45 @@ public final class AbPovTestModel
 		}
 		else
 		{
-			light = (Light3D)node;
+			light = (Light3D)node.getNode3D();
 		}
 
 		return light;
+	}
+
+	/**
+	 * Create material for solid color.
+	 *
+	 * @param   color   Color.
+	 *
+	 * @return  {@link Material}.
+	 */
+	private static Material createMaterialWithColor( final Color color )
+	{
+		final Material result = new Material( color.getRGB() );
+		result.specularColorRed = 1.0f;
+		result.specularColorGreen = 1.0f;
+		result.specularColorBlue = 1.0f;
+		result.shininess = 16;
+		return result;
+	}
+
+	/**
+	 * Create material with color map.
+	 *
+	 * @param   colorMap    Color map name.
+	 *
+	 * @return  {@link Material}.
+	 */
+	private static Material createMaterialWithColorMap( final String colorMap )
+	{
+		final Material result = new Material();
+		result.code = colorMap;
+		result.specularColorRed = 1.0f;
+		result.specularColorGreen = 1.0f;
+		result.specularColorBlue = 1.0f;
+		result.shininess = 16;
+		result.colorMap = colorMap;
+		return result;
 	}
 }

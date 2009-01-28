@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * (C) Copyright Numdata BV 2005-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,11 +24,13 @@ import java.util.Locale;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.control.FromToCameraControl;
-import ab.j3d.view.ViewModelTools;
-import ab.j3d.view.ViewModelView;
-import ab.j3d.view.java3d.Java3dModel;
+import ab.j3d.model.Scene;
+import ab.j3d.view.RenderEngine;
+import ab.j3d.view.View3D;
+import ab.j3d.view.java3d.Java3dEngine;
 
 import com.numdata.oss.ui.ImageTools;
 import com.numdata.oss.ui.WindowTools;
@@ -56,7 +58,7 @@ final class AbPovTestApp
 	/**
 	 * An object of type {@link AbPovTestModel} is constructed, the objects are
 	 * retrieved and a view is created and added to a frame. The
-	 * {@link Java3dModel} is used here.
+	 * {@link Java3dEngine} is used here.
 	 *
 	 * @param args Command-line arguments.
 	 */
@@ -73,24 +75,27 @@ final class AbPovTestApp
 		final AbPovTestModel testModel = new AbPovTestModel();
 
 		/*
-		 * Create Java3D-model.
+		 * Create scene.
+		 *
+		 * Fill the scene with objects from the testmodel.
 		 */
-		final Java3dModel viewModel = new Java3dModel();
-		ViewModelTools.addLegacyLights( viewModel );
+		final Scene scene = new Scene( Scene.MM );
+		Scene.addLegacyLights( scene );
+		scene.addContentNode( "camera"    , Matrix3D.INIT , testModel.getCamera3D()           , null , 1.0f );
+		scene.addContentNode( "redbox"    , Matrix3D.INIT , testModel.getRedXRotatedBox3D()   , null , 1.0f );
+		scene.addContentNode( "greenbox"  , Matrix3D.INIT , testModel.getGreenYRotatedBox3D() , null , 1.0f );
+		scene.addContentNode( "bluebox"   , Matrix3D.INIT , testModel.getBlueZRotatedBox3D()  , null , 1.0f );
+		scene.addContentNode( "panel"     , Matrix3D.INIT , testModel.getTexturedBox3D()      , null , 1.0f );
+		scene.addContentNode( "sphere"    , Matrix3D.INIT , testModel.getSphere3D()           , null , 1.0f );
+		scene.addContentNode( "cylinder"  , Matrix3D.INIT , testModel.getCylinder3D()         , null , 1.0f );
+		scene.addContentNode( "cone"      , Matrix3D.INIT , testModel.getCone3D()             , null , 1.0f );
+		scene.addContentNode( "extruded"  , Matrix3D.INIT , testModel.getExtrudedObject2D()   , null , 1.0f );
+		scene.addContentNode( "colorcube" , Matrix3D.INIT , testModel.getColorCube()          , null , 1.0f );
 
 		/*
-		 * Fill the Java3D-model with objects from the testmodel.
+		 * Create Java3D-engine.
 		 */
-		viewModel.createNode( "camera"    , null , testModel.getCamera3D()           , null , 1.0f );
-		viewModel.createNode( "redbox"    , null , testModel.getRedXRotatedBox3D()   , null , 1.0f );
-		viewModel.createNode( "greenbox"  , null , testModel.getGreenYRotatedBox3D() , null , 1.0f );
-		viewModel.createNode( "bluebox"   , null , testModel.getBlueZRotatedBox3D()  , null , 1.0f );
-		viewModel.createNode( "panel"     , null , testModel.getTexturedBox3D()      , null , 1.0f );
-		viewModel.createNode( "sphere"    , null , testModel.getSphere3D()           , null , 1.0f );
-		viewModel.createNode( "cylinder"  , null , testModel.getCylinder3D()         , null , 1.0f );
-		viewModel.createNode( "cone"      , null , testModel.getCone3D()             , null , 1.0f );
-		viewModel.createNode( "extruded"  , null , testModel.getExtrudedObject2D()   , null , 1.0f );
-		viewModel.createNode( "colorcube" , null , testModel.getColorCube()          , null , 1.0f );
+		final RenderEngine renderEngine = new Java3dEngine( scene );
 
 		/*
 		 * Create and display view.
@@ -98,7 +103,7 @@ final class AbPovTestApp
 		final Vector3D viewFrom = Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 );
 		final Vector3D viewAt   = Vector3D.INIT;
 
-		final ViewModelView view = viewModel.createView();
+		final View3D view = renderEngine.createView( scene );
 		view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
 
 		final JPanel viewPanel = new JPanel( new BorderLayout() );
@@ -106,7 +111,6 @@ final class AbPovTestApp
 		viewPanel.add( view.createToolBar( Locale.ENGLISH ) , BorderLayout.SOUTH );
 
 		final JFrame frame = WindowTools.createFrame( "Testscene" , 800 , 600 , viewPanel );
-
 		frame.setVisible( true );
 	}
 }

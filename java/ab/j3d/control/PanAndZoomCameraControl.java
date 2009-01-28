@@ -26,7 +26,7 @@ import java.util.Properties;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.model.Camera3D;
-import ab.j3d.view.ViewModelView;
+import ab.j3d.view.View3D;
 
 import com.numdata.oss.PropertyTools;
 
@@ -35,7 +35,7 @@ import com.numdata.oss.PropertyTools;
  * zooming.
  * <p />
  * Panning is achieved by modifying the translational compnents of the view
- * matrix ({@link ViewModelView#setViewTransform}, while the zoom effect is
+ * matrix ({@link View3D#setViewTransform}, while the zoom effect is
  * achieved by manipulating the camera ({@link Camera3D#setZoomFactor}.
  *
  * @author  Peter S. Heijnen
@@ -67,7 +67,7 @@ public class PanAndZoomCameraControl
 	 *
 	 * @param   view    View to be controlled.
 	 */
-	public PanAndZoomCameraControl( final ViewModelView view )
+	public PanAndZoomCameraControl( final View3D view )
 	{
 		super( view );
 
@@ -76,7 +76,7 @@ public class PanAndZoomCameraControl
 
 	public void save()
 	{
-		final ViewModelView view          = _view;
+		final View3D view          = _view;
 		final Matrix3D      viewTransform = view.getViewTransform();
 		final double        zoomFactor    = view.getZoomFactor();
 
@@ -99,7 +99,7 @@ public class PanAndZoomCameraControl
 		if ( settings == null )
 			throw new NullPointerException( "settings" );
 
-		final ViewModelView view          = _view;
+		final View3D view          = _view;
 		final Matrix3D      viewTransform = view.getViewTransform();
 		final double        zoomFactor    = view.getZoomFactor();
 
@@ -132,7 +132,7 @@ public class PanAndZoomCameraControl
 
 	public EventObject mousePressed( final ControlInputEvent event )
 	{
-		final ViewModelView view          = _view;
+		final View3D view          = _view;
 		final Matrix3D      viewTransform = view.getViewTransform();
 		final double        zoomFactor    = view.getZoomFactor();
 
@@ -175,7 +175,7 @@ public class PanAndZoomCameraControl
 	 */
 	protected void pan( final ControlInputEvent event )
 	{
-		final ViewModelView view          = _view;
+		final View3D view          = _view;
 		final Matrix3D      viewTransform = _dragStartViewTransform;
 
 		final double toUnits = view.getPixelsToUnitsFactor();
@@ -193,7 +193,7 @@ public class PanAndZoomCameraControl
 	 */
 	protected void zoom( final ControlInputEvent event )
 	{
-		final ViewModelView view   = _view;
+		final View3D view   = _view;
 		final Camera3D      camera = view.getCamera();
 
 		final double oldZoomFactor = _dragStartZoomFactor;
@@ -224,7 +224,7 @@ public class PanAndZoomCameraControl
 
 		factor += 1.0;
 
-		final ViewModelView view   = _view;
+		final View3D view   = _view;
 		final Camera3D      camera = view.getCamera();
 		factor = ( steps >= 0 ) ? camera.getZoomFactor() * factor
 		                         : camera.getZoomFactor() / factor;

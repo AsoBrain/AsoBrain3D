@@ -37,35 +37,40 @@ import javax.swing.JPopupMenu;
 import com.sun.opengl.util.j2d.Overlay;
 import com.sun.opengl.util.texture.Texture;
 
-import ab.j3d.control.ControlInput;
 import ab.j3d.model.Camera3D;
+import ab.j3d.model.Scene;
+import ab.j3d.view.control.DefaultViewControl;
+import ab.j3d.view.ProjectionPolicy;
 import ab.j3d.view.Projector;
-import ab.j3d.view.Projector.ProjectionPolicy;
 import ab.j3d.view.RenderStyle;
 import ab.j3d.view.RenderStyleFilter;
+import ab.j3d.view.View3D;
 import ab.j3d.view.ViewControlInput;
-import ab.j3d.view.ViewModel;
-import ab.j3d.view.ViewModelView;
 
 /**
- * JOGL implementation of view model view.
+ * JOGL view implementation.
  *
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
 public class JOGLView
-	extends ViewModelView
+	extends View3D
 	implements GLEventListener
 {
 	/**
+	 * Engine that created this view.
+	 */
+	private final JOGLEngine _joglEngine;
+
+	/**
 	 * Component through which a rendering of the view is shown.
 	 */
-	private final GLCanvas _viewComponent;
+	private final GLCanvas _glCanvas;
 
 	/**
 	 * Scene input translator for this View.
 	 */
-	private final ControlInput _controlInput;
+	private final ViewControlInput _controlInput;
 
 	/**
 	 * Front clipping plane distance in view units.
@@ -95,16 +100,19 @@ public class JOGLView
 	/**
 	 * Construct new view.
 	 *
-	 * @param   model           Model for which this view is created.
-	 * @param   background      Background color to use for 3D views. May be
-	 *                          <code>null</code>, in which case the default
-	 *                          background color of the current look and feel is
-	 *                          used.
+	 * @param   joglEngine  Engine that created this view.
+	 * @param   scene       Scene to view.
+	 * @param   background  Background color to use for 3D views. May be
+	 *                      <code>null</code>, in which case the default
+	 *                      background color of the current look and feel is
 	 */
-	public JOGLView( final JOGLModel model , final Color background )
+	public JOGLView( final JOGLEngine joglEngine , final Scene scene , final Color background )
 	{
-		super( model );
-		final double unit = model.getUnit();
+		super( scene );
+
+		_joglEngine = joglEngine;
+
+		final double unit  = scene.getUnit();
 
 		_frontClipDistance = 0.1 / unit;
 		_backClipDistance  = 100.0 / unit;
@@ -121,17 +129,23 @@ public class JOGLView
 		capabilities.setNumSamples( 4 );
 
 		/* See if the model already contains a context. */
-		glCanvas = new GLCanvas( capabilities , null , model.getContext() , null );
-		model.setContext( glCanvas.getContext() );
+		glCanvas = new GLCanvas( capabilities , null , joglEngine.getContext() , null );
+		joglEngine.setContext( glCanvas.getContext() );
 
 		glCanvas.setMinimumSize( new Dimension( 0 , 0 ) ); //resize workaround
 		glCanvas.addGLEventListener( this );
-		_viewComponent = glCanvas;
+		_glCanvas = glCanvas;
 
 		if ( background != null )
-			_viewComponent.setBackground( background );
+			_glCanvas.setBackground( background );
 
-		_controlInput = new ViewControlInput( model , this );
+		_controlInput = new ViewControlInput( this );
+
+		final DefaultViewControl defaultViewControl = new DefaultViewControl();
+		appendControl( defaultViewControl );
+		addOverlay( defaultViewControl );
+
+		update();
 	}
 
 	/**
@@ -146,7 +160,7 @@ public class JOGLView
 		final GLDrawableFactory factory = GLDrawableFactory.getFactory();
 		if ( factory.canCreateGLPbuffer() )
 		{
-			buffer = factory.createGLPbuffer( _viewComponent.getChosenGLCapabilities() , null , _viewComponent.getWidth() , _viewComponent.getHeight() , _viewComponent.getContext() );
+			buffer = factory.createGLPbuffer( _glCanvas.getChosenGLCapabilities() , null , _glCanvas.getWidth() , _glCanvas.getHeight() , _glCanvas.getContext() );
 		}
 
 		return buffer;
@@ -154,7 +168,7 @@ public class JOGLView
 
 	public Component getComponent()
 	{
-		return _viewComponent;
+		return _glCanvas;
 	}
 
 	public void update()
@@ -164,13 +178,13 @@ public class JOGLView
 
 	public Projector getProjector()
 	{
-		final GLCanvas  viewComponent     = _viewComponent;
+		final GLCanvas  viewComponent     = _glCanvas;
 		final int       imageWidth        = viewComponent.getWidth();
 		final int       imageHeight       = viewComponent.getHeight();
 		final double    imageResolution   = getResolution();
 
-		final ViewModel model             = getModel();
-		final double    viewUnit          = model.getUnit();
+		final Scene     scene             = getScene();
+		final double    viewUnit          = scene.getUnit();
 
 		final double    fieldOfView       = getAperture();
 		final double    zoomFactor        = getZoomFactor();
@@ -180,7 +194,7 @@ public class JOGLView
 		return Projector.createInstance( getProjectionPolicy() , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
 	}
 
-	protected ControlInput getControlInput()
+	protected ViewControlInput getControlInput()
 	{
 		return _controlInput;
 	}
@@ -193,7 +207,7 @@ public class JOGLView
 		RenderThread renderThread = _renderThread;
 		if ( renderThread == null || !renderThread.isAlive() )
 		{
-			if ( _viewComponent.isShowing() )
+			if ( _glCanvas.isShowing() )
 			{
 				renderThread  = new RenderThread();
 				_renderThread = renderThread;
@@ -249,7 +263,7 @@ public class JOGLView
 		{
 			System.out.println( "Render thread started: " + Thread.currentThread() );
 
-			final GLCanvas viewComponent = _viewComponent;
+			final GLCanvas viewComponent = _glCanvas;
 			while ( !_terminationRequested && viewComponent.isShowing() )
 			{
 				try
@@ -429,15 +443,15 @@ public class JOGLView
 			// apply parallel projection here, because the zoomfactor can be changed without resizing the window.
 			if ( getProjectionPolicy() == ProjectionPolicy.PARALLEL )
 			{
-				final ViewModel model    = getModel();
-				final Camera3D  camera3D = getCamera();
-				final double    left     = -0.5 * (double)width;
-				final double    right    =  0.5 * (double)width;
-				final double    bottom   = -0.5 * (double)height;
-				final double    top      =  0.5 * (double)height;
-				final double    near     = _frontClipDistance;
-				final double    far      = _backClipDistance;
-				final double    scale    = camera3D.getZoomFactor() * model.getUnit() / getResolution();
+				final Scene    scene    = getScene();
+				final Camera3D camera3D = getCamera();
+				final double   left     = -0.5 * (double)width;
+				final double   right    = +0.5 * (double)width;
+				final double   bottom   = -0.5 * (double)height;
+				final double   top      = +0.5 * (double)height;
+				final double   near     = _frontClipDistance;
+				final double   far      = _backClipDistance;
+				final double   scale    = camera3D.getZoomFactor() * scene.getUnit() / getResolution();
 
 				gl.glMatrixMode( GL.GL_PROJECTION );
 				gl.glLoadIdentity();
@@ -447,7 +461,7 @@ public class JOGLView
 
 			renderScene( gl );
 
-			if ( hasOverlayPainters() )
+			if ( hasOverlay() )
 			{
 				JOGLGraphics2D j2d = _j2d;
 				if ( j2d == null )
@@ -469,7 +483,7 @@ public class JOGLView
 	 */
 	private void renderScene( final GL gl )
 	{
-		final ViewModel model = getModel();
+		final Scene scene = getScene();
 
 		/* Setup initial style and apply style filters to this view. */
 		final RenderStyle defaultStyle = new RenderStyle();
@@ -482,8 +496,8 @@ public class JOGLView
 		JOGLTools.glMultMatrixd( gl , getViewTransform() );
 
 		/* Render scene. */
-		final Map<String,Texture> textureCache = ( (JOGLModel)model ).getTextureCache();
-		final JOGLRenderer renderer = new JOGLRenderer( gl , textureCache , _viewComponent.getBackground() , isGridEnabled() , getGrid2wcs() , getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
-		renderer.renderScene( model.getNodes() , styleFilters , viewStyle );
+		final Map<String,Texture> textureCache = _joglEngine.getTextureCache();
+		final JOGLRenderer renderer = new JOGLRenderer( gl , textureCache , _glCanvas.getBackground() , isGridEnabled() , getGrid2wcs() , getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
+		renderer.renderScene( scene.getContentNodes() , styleFilters , viewStyle );
 	}
 }

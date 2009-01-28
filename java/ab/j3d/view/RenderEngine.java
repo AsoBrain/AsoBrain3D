@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2008
+ * (C) Copyright Numdata BV 2009-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,40 +17,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.pov;
+package ab.j3d.view;
 
-import java.util.Locale;
-
-import junit.framework.TestCase;
-
-import com.numdata.oss.junit.ResourceBundleTester;
+import ab.j3d.model.Scene;
 
 /**
- * This class tests the {@link ViewModelToPovAction} class.
+ * This class provides functionality to create {@link Scene} views.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public class TestViewModelToPovAction
-	extends TestCase
+public interface RenderEngine
 {
 	/**
-	 * Name of this class.
-	 */
-	private static final String CLASS_NAME = TestViewModelToPovAction.class.getName();
-
-	/**
-	 * Test resource bundles for class.
+	 * Create a new view for the specified scene. Please call
+	 * {@link View3D#dispose()} if you no longer use the created view.
 	 *
-	 * @throws  Exception if the test fails.
+	 * @param   scene   Scene to view.
+	 *
+	 * @return  View that was created.
 	 */
-	public void testResources()
-		throws Exception
-	{
-		System.out.println( CLASS_NAME + ".testResources()" );
-
-		final Locale[] locales = { new Locale( "nl" , "NL" ) , Locale.US , Locale.GERMANY };
-
-		ResourceBundleTester.testBundles( ViewModelToPovAction.class , locales , false , null , true , true , false );
-	}
+	View3D createView( Scene scene );
 }

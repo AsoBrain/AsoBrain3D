@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2008-2008
+ * (C) Copyright Numdata BV 2009-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,51 +17,66 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view;
+package ab.j3d.model;
 
 import java.util.EventObject;
 
 /**
- * Event fired by {@link ViewModelNode}.
+ * Event fired by {@link Scene}.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public class ViewModelNodeUpdateEvent
+public class SceneUpdateEvent
 	extends EventObject
 {
 	/**
-	 * ID for event to indicate an update to a node's rendering properties.
+	 * ID for event to indicate that a node was updated.
 	 */
-	public static final int RENDERING_PROPERTIES_UPDATED = 0;
+	public static final int CONTENT_NODE_ADDED = 0;
 
 	/**
-	 * ID for event to indicate an update to a node's contents.
+	 * ID for event to indicate that a node was updated.
 	 */
-	public static final int TRANSFORM_UPDATED = 1;
+	public static final int CONTENT_NODE_REMOVED = 1;
 
 	/**
-	 * ID for event to indicate an update to a node's contents.
+	 * ID for event to indicate that a node's content was updated.
 	 */
-	public static final int CONTENT_UPDATED = 2;
+	public static final int CONTENT_NODE_CONTENT_UPDATED = 2;
+
+	/**
+	 * ID for event to indicate that a node property has changed.
+	 */
+	public static final int CONTENT_NODE_PROPERTY_CHANGED = 3;
+
+	/**
+	 * Serialized data version.
+	 */
+	private static final long serialVersionUID = -2324880479966704631L;
 
 	/**
 	 * Event ID.
 	 */
 	private final int _id;
 
-	private static final long serialVersionUID = -2324880479966704631L;
+	/**
+	 * Related node.
+	 */
+	private ContentNode _node;
 
 	/**
 	 * Construct event.
 	 *
-	 * @param   viewModelNode   Origin of event.
-	 * @param   id              Event ID.
+	 * @param   scene   Origin of event.
+	 * @param   id      Event ID.
+	 * @param   node    Related node.
 	 */
-	public ViewModelNodeUpdateEvent( final ViewModelNode viewModelNode , final int id )
+	public SceneUpdateEvent( final Scene scene , final int id , final ContentNode node )
 	{
-		super( viewModelNode );
+		super( scene );
 		_id = id;
+		_node = node;
 	}
 
 	/**
@@ -72,5 +87,15 @@ public class ViewModelNodeUpdateEvent
 	public int getId()
 	{
 		return _id;
+	}
+
+	/**
+	 * Get related node.
+	 *
+	 * @return  Related node.
+	 */
+	public ContentNode getNode()
+	{
+		return _node;
 	}
 }

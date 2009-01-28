@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2007
+ * (C) Copyright Numdata BV 2006-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -40,8 +40,9 @@ import javax.swing.JProgressBar;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.model.Camera3D;
-import ab.j3d.view.ViewModel;
-import ab.j3d.view.ViewModelView;
+import ab.j3d.model.Scene;
+import ab.j3d.view.RenderEngine;
+import ab.j3d.view.View3D;
 
 import com.numdata.oss.ResourceBundleTools;
 import com.numdata.oss.ui.BasicAction;
@@ -49,7 +50,7 @@ import com.numdata.oss.ui.ImagePanel;
 import com.numdata.oss.ui.WindowTools;
 
 /**
- * This action converts the given {@link ViewModel} to a POV-Ray image using
+ * This action converts the given {@link View3D} to a POV-Ray image using
  * the {@link AbToPovConverter} and this image is then painted on an
  * {@link ImagePanel}. This panel is added to the view and set visible when
  * needed.
@@ -57,7 +58,7 @@ import com.numdata.oss.ui.WindowTools;
  * @author  Rob Veneberg
  * @version $Revision$ $Date$
  */
-public final class ViewModelToPovAction
+public final class ViewToPovAction
 	extends BasicAction
 {
 	/**
@@ -66,14 +67,9 @@ public final class ViewModelToPovAction
 	private final ResourceBundle _res;
 
 	/**
-	 * The {@link ViewModel} that this action uses.
+	 * The {@link View3D} this action belongs to.
 	 */
-	private final ViewModel _viewModel;
-
-	/**
-	 * The {@link ViewModelView} this action belongs to.
-	 */
-	private final ViewModelView _view;
+	private final View3D _view;
 
 	/**
 	 * The {@link ImagePanel} used to draw the rendered POV-Ray image.
@@ -86,7 +82,7 @@ public final class ViewModelToPovAction
 	private final String _textureDirectory;
 
 	/**
-	 * SerialVersionUID
+	 * SerialVersionUID.
 	 */
 	private static final long serialVersionUID = 3750555513179329632L;
 
@@ -96,16 +92,15 @@ public final class ViewModelToPovAction
 	 * is set visible (the original view is visible again).
 	 *
 	 * @param   locale              Needed to retrieve the correct resource bundle.
-	 * @param   viewModel           View model that this action uses.
 	 * @param   view                View this action belongs to.
 	 * @param   viewContainer       Container that holds the view components.
 	 * @param   constraints         Layout constraints for the image panel.
 	 * @param   textureDirectory    Directory containing the POV-Ray textures.
 	 */
-	public ViewModelToPovAction( final Locale locale , final ViewModel viewModel , final ViewModelView view , final JPanel viewContainer , final Object constraints , final String textureDirectory )
+	public ViewToPovAction( final Locale locale , final View3D view , final JPanel viewContainer , final Object constraints , final String textureDirectory )
 	{
-		super( ResourceBundleTools.getBundle( ViewModelToPovAction.class , locale ) , "pov" );
-		_res = ResourceBundleTools.getBundle( ViewModelToPovAction.class , locale );
+		super( ResourceBundleTools.getBundle( ViewToPovAction.class , locale ) , "pov" );
+		_res = ResourceBundleTools.getBundle( ViewToPovAction.class , locale );
 
 		final Component viewComponent = view.getComponent();
 
@@ -120,7 +115,6 @@ public final class ViewModelToPovAction
 
 		viewContainer.add(  imagePanel , constraints );
 
-		_viewModel        = viewModel;
 		_view             = view;
 		_imagePanel       = imagePanel;
 		_textureDirectory = textureDirectory;
@@ -141,7 +135,7 @@ public final class ViewModelToPovAction
 	}
 
 	/**
-	 * The {@link ViewModel} is converted to a {@link PovScene}, the scene is
+	 * The {@link RenderEngine} is converted to a {@link PovScene}, the scene is
 	 * rendered with POV-Ray, and the resulting image is placed onto the
 	 * image panel.
 	 */
@@ -152,7 +146,7 @@ public final class ViewModelToPovAction
 		/*
 		 * Get view properties.
 		 */
-		final ViewModelView view          = _view;
+		final View3D view          = _view;
 		final Component     viewComponent = view.getComponent();
 		final Window        viewWindow    = WindowTools.getWindow( viewComponent );
 
@@ -189,6 +183,7 @@ public final class ViewModelToPovAction
 			/*
 			 * Convert view properties to camera properties.
 			 */
+			final Scene    scene           = view.getScene();
 			final Camera3D camera          = view.getCamera();
 			final Matrix3D viewTransform   = view.getViewTransform();
 			final Matrix3D cameraTransform = viewTransform.inverse();
@@ -198,15 +193,15 @@ public final class ViewModelToPovAction
 			 * Convert scene to POV-Ray.
 			 */
 			final AbToPovConverter converter = new AbToPovConverter( _textureDirectory );
-			final PovScene scene = converter.convert( _viewModel.getScene() );
-			scene.add( AbToPovConverter.convertCamera3D( cameraTransform , camera , aspectRatio ) );
+			final PovScene povScene = converter.convert( scene.getContent() );
+			povScene.add( AbToPovConverter.convertCamera3D( cameraTransform , camera , aspectRatio ) );
 
 			/*
 			 * Render the povscene to an image and place the image on the image panel.
 			 */
 			try
 			{
-				image = scene.render( null , viewWidth , viewHeight , progressModel , logWriter , false );
+				image = povScene.render( null , viewWidth , viewHeight , progressModel , logWriter , false );
 			}
 			catch ( IOException e )
 			{

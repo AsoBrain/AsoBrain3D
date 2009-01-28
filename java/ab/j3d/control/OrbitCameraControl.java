@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
 import java.util.Properties;
 
 import ab.j3d.Matrix3D;
-import ab.j3d.view.ViewModelView;
+import ab.j3d.view.View3D;
 
 import com.numdata.oss.PropertyTools;
 
@@ -82,7 +82,7 @@ public class OrbitCameraControl
 	 *
 	 * @param   view    View to be controlled.
 	 */
-	public OrbitCameraControl( final ViewModelView view )
+	public OrbitCameraControl( final View3D view )
 	{
 		this( view , 1.0 );
 	}
@@ -94,7 +94,7 @@ public class OrbitCameraControl
 	 * @param   view        View to be controlled.
 	 * @param   distance    Distance from origin.
 	 */
-	public OrbitCameraControl( final ViewModelView view , final double distance )
+	public OrbitCameraControl( final View3D view , final double distance )
 	{
 		this( view , 0.0 , 0.0 , 0.0 , 0.0 , -distance , 0.0 );
 	}
@@ -110,7 +110,7 @@ public class OrbitCameraControl
 	 * @param   y           Initial translation along Y axis.
 	 * @param   z           Initial translation along Z axis.
 	 */
-	public OrbitCameraControl( final ViewModelView view , final double rx , final double ry , final double rz , final double x , final double y , final double z )
+	public OrbitCameraControl( final View3D view , final double rx , final double ry , final double rz , final double x , final double y , final double z )
 	{
 		this( view , 0.0 , 0.0 , 0.0 , rx , ry , rz , x , y , z );
 	}
@@ -130,7 +130,7 @@ public class OrbitCameraControl
 	 * @param   y       Initial translation along Y axis.
 	 * @param   z       Initial translation along Z axis.
 	 */
-	public OrbitCameraControl( final ViewModelView view , final double ox , final double oy , final double oz , final double rx , final double ry , final double rz , final double x , final double y , final double z )
+	public OrbitCameraControl( final View3D view , final double ox , final double oy , final double oz , final double rx , final double ry , final double rz , final double x , final double y , final double z )
 	{
 		super( view );
 

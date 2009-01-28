@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2006
+ * (C) Copyright Numdata BV 2006-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,10 +32,10 @@ import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.control.FromToCameraControl;
 import ab.j3d.model.Node3D;
-import ab.j3d.view.ViewModel;
-import ab.j3d.view.ViewModelTools;
-import ab.j3d.view.ViewModelView;
-import ab.j3d.view.java3d.Java3dModel;
+import ab.j3d.model.Scene;
+import ab.j3d.view.RenderEngine;
+import ab.j3d.view.View3D;
+import ab.j3d.view.java3d.Java3dEngine;
 
 import com.numdata.oss.ui.WindowTools;
 
@@ -56,8 +56,8 @@ public class Max3DSLoaderApp
 	{
 		try
 		{
-//			final double   unit      = Java3dModel.FOOT;
-			final double   unit      = Java3dModel.INCH;
+//			final double   unit      = Scene.FOOT;
+			final double   unit      = Scene.INCH;
 
 			final Matrix3D transform = Matrix3D.INIT; // .rotateX( Math.toRadians( 90.0 ) );
 
@@ -95,19 +95,20 @@ public class Max3DSLoaderApp
 
 			System.out.println( "object size = " + Math.round( toCM * size.x ) + " x " + Math.round( toCM * size.y ) + " x " + Math.round( toCM * size.z ) + " cm" );
 
-			final ViewModel viewModel = new Java3dModel( unit , Color.lightGray ); // new Color( 51 , 77 , 102 ) );
-			ViewModelTools.addLegacyLights( viewModel );
+			final Scene scene = new Scene( unit );
+			Scene.addLegacyLights( scene );
+			scene.addContentNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d , null , 1.0f );
 
-			viewModel.createNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d , null , 1.0f );
+			final RenderEngine renderEngine = new Java3dEngine( scene , Color.lightGray ); // new Color( 51 , 77 , 102 ) );
 
-			final ViewModelView view = viewModel.createView();
+			final View3D view = renderEngine.createView( scene );
 			view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
 
 			final JPanel viewPanel = new JPanel( new BorderLayout() );
 			viewPanel.add( view.getComponent() , BorderLayout.CENTER );
 			viewPanel.add( view.createToolBar( new Locale( "nl" ) ) , BorderLayout.SOUTH );
 
-			final JFrame frame = WindowTools.createFrame( viewModel.getClass() + " example" , 800 , 600 , viewPanel );
+			final JFrame frame = WindowTools.createFrame( renderEngine.getClass() + " example" , 800 , 600 , viewPanel );
 			frame.setVisible( true );
 		}
 		catch ( IOException e )

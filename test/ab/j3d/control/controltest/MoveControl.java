@@ -36,7 +36,7 @@ import ab.j3d.model.Face3DIntersection;
 
 /**
  * The {@link MoveControl} extends {@link Control} to handle events from a
- * {@link ab.j3d.view.ViewModelView}. It moves {@link TetraHedron}s when the
+ * {@link ab.j3d.view.View3D}. It moves {@link TetraHedron}s when the
  * user drags the mouse while one is selected.
  *
  * @author  Mart Slot

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2008
+ * (C) Copyright Numdata BV 2005-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,9 +34,9 @@ import ab.j3d.model.Camera3D;
 import ab.j3d.model.Cylinder3D;
 import ab.j3d.model.ExtrudedObject2D;
 import ab.j3d.model.Object3D;
+import ab.j3d.model.Scene;
 import ab.j3d.model.Sphere3D;
-import ab.j3d.view.ViewModel;
-import ab.j3d.view.ViewModelView;
+import ab.j3d.view.View3D;
 
 import com.numdata.oss.io.IndentingWriter;
 import com.numdata.oss.ui.ImageTools;
@@ -70,13 +70,13 @@ public final class TestAbToPovConverter
 		final String actual;
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
-			final ViewModel        viewModel       = testModel.getModel();
+			final Scene            scene           = testModel.getScene();
 			final AbToPovConverter converter       = new AbToPovConverter( texturesDirectory );
-			final PovScene         scene           = converter.convert( viewModel.getScene() );
+			final PovScene         povScene        = converter.convert( scene.getContent() );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
-			scene.write( indentingWriter );
+			povScene.write( indentingWriter );
 
 			final String povScript = stringWriter.toString();
 
@@ -492,9 +492,8 @@ public final class TestAbToPovConverter
 		final String actual;
 		{
 			final AbPovTestModel testModel = new AbPovTestModel();
-			final ViewModel      model     = testModel.getModel();
 
-			final ViewModelView view          = testModel.getView();
+			final View3D view          = testModel.getView();
 			final Matrix3D      viewTransform = view.getViewTransform();
 			final Component     viewComponent = view.getComponent();
 			final double        aspectRatio   = (double)viewComponent.getWidth() / (double)viewComponent.getHeight();
@@ -1051,17 +1050,16 @@ public final class TestAbToPovConverter
 		throws IOException
 	{
 		final AbPovTestModel testModel = new AbPovTestModel();
-		final ViewModel      viewModel = testModel.getModel();
+		final Scene scene     = testModel.getScene();
 
-		//final Object[]      viewIDs       = viewModel.getViewIDs();
-		final ViewModelView view          = testModel.getView();
+		final View3D view          = testModel.getView();
 		final Matrix3D      viewTransform = view.getViewTransform();
 		final Component     viewComponent = view.getComponent();
 		final double        aspectRatio   = (double)viewComponent.getWidth() / (double)viewComponent.getHeight();
 
 		final AbToPovConverter converter = new AbToPovConverter( getTexturesDirectory() );
-		final PovScene scene = converter.convert( viewModel.getScene() );
-		scene.add( AbToPovConverter.convertCamera3D( viewTransform.inverse(), view.getCamera(), aspectRatio ) );
-		scene.write( new File( "test.pov" ) );
+		final PovScene povScene = converter.convert( scene.getContent() );
+		povScene.add( AbToPovConverter.convertCamera3D( viewTransform.inverse(), view.getCamera(), aspectRatio ) );
+		povScene.write( new File( "test.pov" ) );
 	}
 }

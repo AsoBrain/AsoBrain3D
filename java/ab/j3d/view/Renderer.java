@@ -25,6 +25,7 @@ import java.util.List;
 
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
+import ab.j3d.model.ContentNode;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3D;
@@ -54,7 +55,7 @@ public class Renderer
 	 * @param   styleFilters    Style filters to apply.
 	 * @param   sceneStyle      Render style to use as base for scene.
 	 */
-	public void renderScene( final List<ViewModelNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
+	public void renderScene( final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
 	{
 		renderLights( nodes );
 		renderObjects( nodes , styleFilters, sceneStyle );
@@ -63,11 +64,11 @@ public class Renderer
 	/**
 	 * Render lights.
 	 */
-	protected void renderLights( final List<ViewModelNode> nodes )
+	protected void renderLights( final List<ContentNode> nodes )
 	{
 		Node3DCollection<Light3D> tmpLights = null;
 
-		for ( final ViewModelNode node : nodes )
+		for ( final ContentNode node : nodes )
 		{
 			final Matrix3D nodeTransform = node.getTransform();
 
@@ -100,11 +101,11 @@ public class Renderer
 	 * @param   styleFilters    Style filters to apply.
 	 * @param   sceneStyle      Render style to use as base for scene.
 	 */
-	protected void renderObjects( final List<ViewModelNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
+	protected void renderObjects( final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
 	{
 		RenderStyle[] faceStyles = null;
 
-		for ( final ViewModelNode node : nodes )
+		for ( final ContentNode node : nodes )
 		{
 			final Matrix3D node2world = node.getTransform();
 			final Node3DCollection<Object3D> content = node.getContent();

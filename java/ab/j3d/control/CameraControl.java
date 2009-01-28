@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2008
+ * (C) Copyright Numdata BV 2004-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,13 +27,13 @@ import java.util.ResourceBundle;
 import javax.swing.Action;
 
 import ab.j3d.Matrix3D;
-import ab.j3d.view.ViewModelView;
+import ab.j3d.view.View3D;
 
 import com.numdata.oss.ResourceBundleTools;
 import com.numdata.oss.ui.BasicAction;
 
 /**
- * This abstract class defined a control(ler) for a view in the view model.
+ * This abstract class defined a control(ler) for a 3D view.
  * <p />
  * The basic function of a camera control is providing a view transform (this is
  * available as a bound '<code>transform</code>' property, so property change
@@ -63,14 +63,14 @@ public abstract class CameraControl
 	/**
 	 * View being controlled.
 	 */
-	protected final ViewModelView _view;
+	protected final View3D _view;
 
 	/**
 	 * Construct camera control.
 	 *
 	 * @param   view    View to be controlled.
 	 */
-	protected CameraControl( final ViewModelView view )
+	protected CameraControl( final View3D view )
 	{
 		_view = view;
 	}
