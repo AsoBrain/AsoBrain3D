@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2008
+ * (C) Copyright Numdata BV 2000-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -518,9 +518,9 @@ public class PovTexture
 	}
 
 	/**
-	 * Get specular reflectivity factor.
+	 * Get reflectivity factor of specular highlight.
 	 *
-	 * @return  Specular reflectivity factor.
+	 * @return  Specular highlight reflectivity factor.
 	 */
 	public final double getSpecular()
 	{
@@ -528,9 +528,13 @@ public class PovTexture
 	}
 
 	/**
-	 * Set specular reflectivity factor.
+	 * Set reflectivity factor of specular highlight.
 	 *
-	 * @param   specular    Specular reflectivity factor.
+	 * <p>
+	 * This value is used to create highlights only. For mirror-like specular
+	 * reflection, use {@link #setReflection} instead.
+	 *
+	 * @param   specular    Specular highlight reflectivity factor.
 	 */
 	public final void setSpecular( final double specular )
 	{
@@ -538,7 +542,7 @@ public class PovTexture
 	}
 
 	/**
-	 * Get reflection factor.
+	 * Get specular reflection factor.
 	 *
 	 * @return  Reflection factor.
 	 */
@@ -548,7 +552,11 @@ public class PovTexture
 	}
 
 	/**
-	 * Set reflection factor.
+	 * Set specular reflection factor.
+	 *
+	 * <p>
+	 * This value is used to produce mirror-like reflections. For specular
+	 * highlights, use {@link #setSpecular} instead.
 	 *
 	 * @param   reflection  Reflection factor.
 	 */
@@ -967,13 +975,13 @@ public class PovTexture
 		{
 			out.write( "phong      " );
 			out.writeln( format( phong ) );
-		}
 
-		final double phongSize = getPhongSize();
-		if ( phongSize > 0.0 )
-		{
-			out.write( "phong_size " );
-			out.writeln( format( phongSize ) );
+			final double phongSize = getPhongSize();
+			if ( phongSize > 0.0 )
+			{
+				out.write( "phong_size " );
+				out.writeln( format( phongSize ) );
+			}
 		}
 
 		final double specular = getSpecular();
