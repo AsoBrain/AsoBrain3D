@@ -48,7 +48,7 @@ public class SwitchRenderingPolicyAction
 	public SwitchRenderingPolicyAction( final Locale locale , final View3D view , final RenderingPolicy currentPolicy )
 	{
 
-		super( ResourceBundleTools.getBundle( View3D.class , locale ) , currentPolicy );
+		super( ResourceBundleTools.getBundle( RenderingPolicy.class , locale ) , currentPolicy );
 		_view = view;
 	}
 
