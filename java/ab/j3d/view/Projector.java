@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2007
+ * (C) Copyright Numdata BV 2005-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -41,33 +41,6 @@ import com.numdata.oss.ArrayTools;
 public abstract class Projector
 {
 	/**
-	 * Projection policy.
-	 */
-	public enum ProjectionPolicy
-	{
-		/**
-		 * Projection policy: perspective.
-		 *
-		 * @see     PerspectiveProjector
-		 */
-		PERSPECTIVE ,
-
-		/**
-		 * Projection policy: parallel.
-		 *
-		 * @see     ParallelProjector
-		 */
-		PARALLEL ,
-
-		/**
-		 * Projection policy: isometric.
-		 *
-		 * @see     IsometricProjector
-		 */
-		ISOMETRIC ,
-	}
-
-	/**
 	 * Image width in pixels.
 	 */
 	protected final int _imageWidth;
@@ -83,7 +56,7 @@ public abstract class Projector
 	protected final double _imageResolution;
 
 	/**
-	 * View unit in meters per unit (e.g. {@link ViewModel#MM}).
+	 * View unit in meters per unit (e.g. {@link ab.j3d.model.Scene#MM}).
 	 */
 	protected final double _viewUnit;
 
@@ -158,7 +131,7 @@ public abstract class Projector
 	 * @param   imageWidth          Image width in pixels.
 	 * @param   imageHeight         Image height in pixels.
 	 * @param   imageResolution     Image resolution in meters per pixel.
-	 * @param   viewUnit            Unit scale factor (e.g. {@link ViewModel#MM}).
+	 * @param   viewUnit            Unit scale factor (e.g. {@link ab.j3d.model.Scene#MM}).
 	 * @param   frontClipDistance   Front clipping plane distance in view units.
 	 * @param   backClipDistance    Back clipping plane distance in view units.
 	 * @param   fieldOfView         Camera's field of view in radians.
@@ -200,7 +173,7 @@ public abstract class Projector
 	 * @param   imageWidth          Image width in pixels.
 	 * @param   imageHeight         Image height in pixels.
 	 * @param   imageResolution     Image resolution in meters per pixel.
-	 * @param   viewUnit            Unit scale factor (e.g. {@link ViewModel#MM}).
+	 * @param   viewUnit            Unit scale factor (e.g. {@link ab.j3d.model.Scene#MM}).
 	 * @param   frontClipDistance   Front clipping plane distance in view units.
 	 * @param   backClipDistance    Back clipping plane distance in view units.
 	 * @param   zoomFactor          Linear zoom factor.
@@ -252,19 +225,21 @@ public abstract class Projector
 		final int vertexCount = face.getVertexCount();
 		if ( vertexCount > 0 )
 		{
-			result = true;
-
-			final int[] vertexIndices = face.getVertexIndices();
-			for ( int vertex = 0 ; vertex < vertexCount ; vertex++ )
-			{
-				final int vertexIndex = vertexIndices[ vertex ] * 3;
-
-				if ( !inViewVolume( vertexCoordinates[ vertexIndex  ] , vertexCoordinates[ vertexIndex + 1 ] , vertexCoordinates[ vertexIndex + 2 ] ) )
-				{
-					result = false;
-					break;
-				}
-			}
+//			final int[] vertexIndices = face.getVertexIndices();
+//			for ( int vertex = 0 ; vertex < vertexCount ; vertex++ )
+//			{
+//				final int vertexIndex = vertexIndices[ vertex ] * 3;
+//
+//				final double x = vertexCoordinates[ vertexIndex ];
+//				final double y = vertexCoordinates[ vertexIndex + 1 ];
+//				final double z = vertexCoordinates[ vertexIndex + 2 ];
+//
+//				if ( inViewVolume( x , y , z ) )
+//				{
+					result = true;
+//					break;
+//				}
+//			}
 		}
 
 		return result;
@@ -423,7 +398,7 @@ public abstract class Projector
 		 * @param   imageWidth          Image width in pixels.
 		 * @param   imageHeight         Image height in pixels.
 		 * @param   imageResolution     Image resolution in meters per pixel.
-		 * @param   viewUnit            Unit scale factor (e.g. {@link ViewModel#MM}).
+		 * @param   viewUnit            Unit scale factor (e.g. {@link ab.j3d.model.Scene#MM}).
 		 * @param   frontClipDistance   Front clipping plane distance in view units.
 		 * @param   backClipDistance    Back clipping plane distance in view units.
 		 * @param   fieldOfView         Camera's field of view in radians.
@@ -661,7 +636,7 @@ public abstract class Projector
 		 * @param   imageWidth          Image width in pixels.
 		 * @param   imageHeight         Image height in pixels.
 		 * @param   imageResolution     Image resolution in meters per pixel.
-		 * @param   viewUnit            Unit scale factor (e.g. {@link ViewModel#MM}).
+		 * @param   viewUnit            Unit scale factor (e.g. {@link ab.j3d.model.Scene#MM}).
 		 * @param   frontClipDistance   Front clipping plane distance in view units.
 		 * @param   backClipDistance    Back clipping plane distance in view units.
 		 * @param   zoomFactor          Linear zoom factor.
