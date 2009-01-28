@@ -60,13 +60,27 @@ public class ViewStyleFilter
 		}
 		else if ( context instanceof Object3D )
 		{
-			final ContentNode node      = _node;
-			final boolean       alternate = node.isAlternate();
-			final Object3D      object3D  = (Object3D)context;
+			final boolean noFillColor = ( result.getFillColor() == null );
+			final boolean noStrokeColor = ( result.getStrokeColor() == null );
 
-			result = result.clone();
-			result.setFillColor( alternate ? object3D.alternateFillColor : object3D.fillColor );
-			result.setStrokeColor( alternate ? object3D.alternateOutlineColor : object3D.outlineColor );
+			if ( noFillColor || noStrokeColor )
+			{
+				final ContentNode node      = _node;
+				final boolean       alternate = node.isAlternate();
+				final Object3D      object3D  = (Object3D)context;
+
+				result = result.clone();
+
+				if ( noFillColor )
+				{
+					result.setFillColor( alternate ? object3D.alternateFillColor : object3D.fillColor );
+				}
+
+				if ( noStrokeColor )
+				{
+					result.setStrokeColor( alternate ? object3D.alternateOutlineColor : object3D.outlineColor );
+				}
+			}
 		}
 
 		return result;
