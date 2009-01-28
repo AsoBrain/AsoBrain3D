@@ -20,7 +20,11 @@
 package ab.j3d.view.jogl;
 
 import java.awt.Color;
+import java.util.HashMap;
+import java.util.Map;
 import javax.media.opengl.GLContext;
+
+import com.sun.opengl.util.texture.Texture;
 
 import ab.j3d.view.ViewModel;
 import ab.j3d.view.ViewModelNode;
@@ -44,6 +48,11 @@ public class JOGLModel
 	 * JOGL GLContext for this model.
 	 */
 	private GLContext _context = null;
+
+	/**
+	 * Texture cache.
+	 */
+	private final Map<String,Texture> _textureCache;
 
 	/**
 	 * Construct new JOGL view model using {@link ViewModel#MM} units.
@@ -75,7 +84,8 @@ public class JOGLModel
 	public JOGLModel( final double unit , final Color background )
 	{
 		super( unit );
-		_background = background;
+		_background   = background;
+		_textureCache = new HashMap<String,Texture>();
 	}
 
 	protected void initializeNode( final ViewModelNode node )
@@ -123,5 +133,15 @@ public class JOGLModel
 	public void setContext( final GLContext context )
 	{
 		_context = context;
+	}
+
+	/**
+	 * Returns the model's texture cache.
+	 *
+	 * @return  Texture cache.
+	 */
+	public Map<String,Texture> getTextureCache()
+	{
+		return _textureCache;
 	}
 }
