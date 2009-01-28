@@ -195,7 +195,7 @@ public class RenderStyle
 		return result;
 	}
 
-	protected RenderStyle clone()
+	public RenderStyle clone()
 	{
 		try
 		{
