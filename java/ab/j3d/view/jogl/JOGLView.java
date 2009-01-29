@@ -21,9 +21,11 @@ package ab.j3d.view.jogl;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.util.Collection;
 import java.util.Map;
+import javax.media.opengl.DebugGL;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCanvas;
@@ -31,22 +33,20 @@ import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLDrawableFactory;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLPbuffer;
-import javax.media.opengl.DebugGL;
 import javax.media.opengl.glu.GLU;
 import javax.swing.JPopupMenu;
 
-import com.sun.opengl.util.j2d.Overlay;
 import com.sun.opengl.util.texture.Texture;
 
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Scene;
-import ab.j3d.view.control.DefaultViewControl;
 import ab.j3d.view.ProjectionPolicy;
 import ab.j3d.view.Projector;
 import ab.j3d.view.RenderStyle;
 import ab.j3d.view.RenderStyleFilter;
 import ab.j3d.view.View3D;
 import ab.j3d.view.ViewControlInput;
+import ab.j3d.view.control.DefaultViewControl;
 
 /**
  * JOGL view implementation.
@@ -82,11 +82,6 @@ public class JOGLView
 	 * Back clipping plane distance in view units.
 	 */
 	private final double _backClipDistance;
-
-	/**
-	 * Define JOGL2dGraphics here to allow reuse.
-	 */
-	private JOGLGraphics2D _j2d = null;
 
 	/**
 	 * Render thread.
@@ -147,6 +142,21 @@ public class JOGLView
 		addOverlay( defaultViewControl );
 
 		update();
+	}
+
+	public void dispose()
+	{
+		super.dispose();
+
+		final GLCanvas glCanvas = _glCanvas;
+		if ( glCanvas != null )
+		{
+			final Container parent = glCanvas.getParent();
+			if ( parent != null )
+			{
+				parent.remove( glCanvas );
+			}
+		}
 	}
 
 	/**
@@ -262,7 +272,7 @@ public class JOGLView
 
 		public void run()
 		{
-			System.out.println( "Render thread started: " + Thread.currentThread() );
+//			System.out.println( "Render thread started: " + Thread.currentThread() );
 
 			final GLCanvas viewComponent = _glCanvas;
 			while ( !_terminationRequested && viewComponent.isShowing() )
@@ -303,7 +313,7 @@ public class JOGLView
 			_terminationRequested = false;
 			_updateRequested      = false;
 
-			System.out.println( "Renderer thread died: " + Thread.currentThread() );
+//			System.out.println( "Renderer thread died: " + Thread.currentThread() );
 		}
 
 		/**
@@ -357,6 +367,8 @@ public class JOGLView
 			System.out.println( "Vendor:     " + gl.glGetString( GL.GL_VENDOR ) );
 			System.out.println( "Extensions: " + gl.glGetString( GL.GL_EXTENSIONS ) );
 			System.out.println( "Renderer:   " + gl.glGetString( GL.GL_RENDERER ) );
+			System.out.println( "AutoMipMap: " + ( JOGLTools.hasAutoMipMapGenerationSupport( gl ) ? "enabled" : "disabled" ) );
+
 			try
 			{
 				System.out.println( "Shaders:    " + gl.glGetString( GL.GL_SHADING_LANGUAGE_VERSION ) );
@@ -462,15 +474,9 @@ public class JOGLView
 
 			if ( hasOverlay() )
 			{
-				JOGLGraphics2D j2d = _j2d;
-				if ( j2d == null )
-				{
-					final Overlay overlay = new Overlay( glAutoDrawable );
-					j2d = new JOGLGraphics2D( overlay.createGraphics() , glAutoDrawable );
-					_j2d = j2d;
-				}
-
-				paintOverlay( j2d );
+				final JOGLGraphics2D joglGraphics2D = new JOGLGraphics2D( glAutoDrawable );
+				paintOverlay( joglGraphics2D );
+				joglGraphics2D.dispose();
 			}
 		}
 	}
