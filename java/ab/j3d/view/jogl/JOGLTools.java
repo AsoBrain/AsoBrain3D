@@ -133,10 +133,7 @@ public class JOGLTools
 				{
 					bufferedImage = createNormalMapFromBumpMap( bufferedImage );
 
-					final boolean autoMipmapGeneration = ( gl.isExtensionAvailable( "GL_VERSION_1_4"          ) ||
-					                                       gl.isExtensionAvailable( "GL_SGIS_generate_mipmap" ) );
-
-					System.out.println( "MipMap: " + ( autoMipmapGeneration ? "enabled" : "disabled" ) );
+					final boolean autoMipmapGeneration = hasAutoMipMapGenerationSupport( gl );
 
 					result = TextureIO.newTexture( createCompatibleTextureImage( bufferedImage , gl ) , autoMipmapGeneration );
 
@@ -179,6 +176,19 @@ public class JOGLTools
 	}
 
 	/**
+	 * Test if OpenGL supports auto-generated mipmaps.
+	 *
+	 * @param   gl  OpenGL pipeline.
+	 *
+	 * @return  <code>true</code> if OpenGL supports auto-generated mipmaps;
+	 *          <code>false</code> otherwise.
+	 */
+	public static boolean hasAutoMipMapGenerationSupport( final GL gl )
+	{
+		return ( gl.isExtensionAvailable( "GL_VERSION_1_4" ) || gl.isExtensionAvailable( "GL_SGIS_generate_mipmap" ) );
+	}
+
+	/**
 	 * Get {@link Texture} for the specified map.
 	 *
 	 * @param   gl              OpenGL context.
@@ -216,10 +226,7 @@ public class JOGLTools
 				final BufferedImage bufferedImage = MapTools.loadImage( map );
 				if ( bufferedImage != null )
 				{
-					final boolean autoMipmapGeneration = ( gl.isExtensionAvailable( "GL_VERSION_1_4"          ) ||
-					                                       gl.isExtensionAvailable( "GL_SGIS_generate_mipmap" ) );
-
-					System.out.println( "MipMap: " + ( autoMipmapGeneration ? "enabled" : "disabled" ) );
+					final boolean autoMipmapGeneration = hasAutoMipMapGenerationSupport( gl );
 
 					result = TextureIO.newTexture( createCompatibleTextureImage( bufferedImage , gl ) , autoMipmapGeneration );
 
