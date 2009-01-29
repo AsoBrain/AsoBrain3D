@@ -37,6 +37,7 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
+import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.PathIterator;
@@ -49,6 +50,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.renderable.RenderableImage;
 import java.nio.DoubleBuffer;
 import java.text.AttributedCharacterIterator;
+import java.util.Collections;
 import java.util.Map;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
@@ -65,9 +67,9 @@ public class JOGLGraphics2D
 	extends Graphics2D
 {
 	/**
-	 * Graphics2D object, needed for fonts
+	 * Default font render context.
 	 */
-	private Graphics2D _g2d;
+	private static final FontRenderContext DEFAULT_FONT_RENDER_CONTEXT = new FontRenderContext( null , false , false );
 
 	/**
 	 * Used for getting the size of the canvas.
@@ -80,14 +82,52 @@ public class JOGLGraphics2D
 	private TextRenderer _renderer = null;
 
 	/**
+	 * Current clip shape.
+	 */
+	private Shape _clip = null;
+
+	/**
+	 * Current transform.
+	 */
+	private AffineTransform _transform = null;
+
+	/**
+	 * Current background.
+	 */
+	private Color _background = null;
+
+	/**
+	 * Current paint.
+	 */
+	private Paint _paint = null;
+
+	/**
+	 * Current stroke.
+	 */
+	private Stroke _stroke = null;
+
+	/**
+	 * Current composite.
+	 */
+	private Composite _composite = null;
+
+	/**
+	 * Current font.
+	 */
+	private Font _font = null;
+
+	/**
+	 * Rendering hints.
+	 */
+	private final RenderingHints _renderingHints = new RenderingHints( Collections.<RenderingHints.Key,Object>emptyMap() );
+
+	/**
 	 * Construct new JOGL2dGraphics.
 	 *
-	 * @param   g2d     Used to get certain Graphics2D properties
 	 * @param   gla     Used to get the size of the canvas
 	 */
-	public JOGLGraphics2D( final Graphics2D g2d , final GLAutoDrawable gla )
+	public JOGLGraphics2D( final GLAutoDrawable gla )
 	{
-		_g2d = g2d;
 		_gla = gla;
 	}
 
@@ -163,72 +203,39 @@ public class JOGLGraphics2D
 
 	public void dispose()
 	{
+		_gla = null;
+		_renderer = null;
 	}
 
 	public GraphicsConfiguration getDeviceConfiguration()
 	{
-		return _g2d.getDeviceConfiguration();
+		return notImplemented();
 	}
 
 	public Object getRenderingHint( final RenderingHints.Key hintKey )
 	{
-		return _g2d.getRenderingHint( hintKey );
+		return _renderingHints.get( hintKey );
 	}
 
 	public RenderingHints getRenderingHints()
 	{
-		return _g2d.getRenderingHints();
+		return _renderingHints;
 	}
 
-	public void addRenderingHints( final Map<?, ?> hints )
+	public void addRenderingHints( final Map<?,?> hints )
 	{
-		_g2d.addRenderingHints( hints );
+		_renderingHints.putAll( hints );
 	}
 
 	public void setRenderingHint( final RenderingHints.Key hintKey , final Object hintValue )
 	{
-		_g2d.setRenderingHint( hintKey , hintValue );
+		_renderingHints.put( hintKey , hintValue  );
 	}
 
 	public void setRenderingHints( final Map<?,?> hints )
 	{
-		_g2d.setRenderingHints( hints );
-	}
-
-	public Shape getClip()
-	{
-		return notImplemented();
-	}
-
-	public void setClip( final Shape clip )
-	{
-		notImplemented();
-	}
-
-	public void clip( final Shape s )
-	{
-		notImplemented();
-	}
-
-	public Rectangle getClipBounds()
-	{
-		return notImplemented();
-	}
-
-	public void setClip( final int x , final int y , final int width , final int height )
-	{
-		notImplemented();
-	}
-
-	public void clipRect( final int x , final int y , final int width , final int height )
-	{
-		notImplemented();
-	}
-
-	public boolean hit( final Rectangle rectangle , final Shape shape , final boolean onStroke )
-	{
-		notImplemented();
-		return false;
+		_renderingHints.clear();
+		_renderingHints.putAll( hints );
 	}
 
 	public void copyArea( final int x , final int y , final int width , final int height , final int dx , final int dy )
@@ -238,127 +245,144 @@ public class JOGLGraphics2D
 
 	public Color getBackground()
 	{
-		return _g2d.getBackground();
+		return _background;
 	}
 
 	public void setBackground( final Color color )
 	{
-		_g2d.setBackground( color );
+		_background = color;
 	}
 
 	public Color getColor()
 	{
-		return _g2d.getColor();
+		final Paint p = getPaint();
+		return ( p instanceof Color ) ? (Color)p : null;
 	}
 
 	public void setColor( final Color c )
 	{
-		_g2d.setColor( c );
-	}
-
-	public Composite getComposite()
-	{
-		return _g2d.getComposite();
-	}
-
-	public void setComposite( final Composite composite )
-	{
-		_g2d.setComposite( composite );
-	}
-
-	public Font getFont()
-	{
-		return _g2d.getFont();
-	}
-
-	public void setFont( final Font font )
-	{
-		_g2d.setFont( font );
-	}
-
-	public FontMetrics getFontMetrics( final Font font )
-	{
-		return _g2d.getFontMetrics( font );
-	}
-
-	public FontRenderContext getFontRenderContext()
-	{
-		return _g2d.getFontRenderContext();
+		setPaint( c );
 	}
 
 	public Paint getPaint()
 	{
-		return _g2d.getPaint();
+		return _paint;
 	}
 
 	public void setPaint( final Paint paint )
 	{
-		_g2d.setPaint( paint );
+		_paint = paint;
 	}
 
 	public Stroke getStroke()
 	{
-		return _g2d.getStroke();
+		return _stroke;
 	}
 
 	public void setStroke( final Stroke stroke )
 	{
-		_g2d.setStroke( stroke );
+		_stroke = stroke;
 	}
 
 	public void setPaintMode()
 	{
-		_g2d.setPaintMode();
+		notImplemented();
 	}
 
 	public void setXORMode( final Color color )
 	{
-		_g2d.setXORMode( color );
+		notImplemented();
+	}
+
+	public Shape getClip()
+	{
+		return _clip;
+	}
+
+	public void setClip( final Shape clip )
+	{
+		_clip = clip;
+	}
+
+	public void clip( final Shape clip )
+	{
+		if ( clip != null )
+		{
+			final Shape previousClip = _clip;
+			if ( previousClip != null )
+			{
+				final Area area = new Area( previousClip );
+				area.intersect( new Area( clip ) );
+				setClip( area );
+			}
+			else
+			{
+				setClip( clip );
+			}
+		}
+	}
+
+	public Rectangle getClipBounds()
+	{
+		final Shape clip = getClip();
+		return ( clip == null ) ? null : clip.getBounds();
+	}
+
+	public void clipRect( final int x , final int y , final int width , final int height )
+	{
+		clip( new Rectangle2D.Float( (float)x , (float)y , (float)width , (float)height ) );
+	}
+
+	public void setClip( final int x , final int y , final int width , final int height )
+	{
+		setClip( new Rectangle2D.Float( (float)x , (float)y , (float)width , (float)height ) );
 	}
 
 	public AffineTransform getTransform()
 	{
-		return null;
+		return _transform;
 	}
 
-	public void setTransform( final AffineTransform tx )
+	public void setTransform( final AffineTransform transform )
 	{
-		notImplemented();
+		_transform = transform;
+	}
+
+	public void translate( final int x , final int y )
+	{
+		translate( (double)x , (double)y );
+	}
+
+	public void translate( final double tx, final double ty )
+	{
+		transform( AffineTransform.getTranslateInstance( tx , ty ) );
 	}
 
 	public void rotate( final double theta )
 	{
-		notImplemented();
+		transform( AffineTransform.getRotateInstance( theta ) );
 	}
 
-	public void rotate( final double theta , final double x , final double y )
+	public void rotate( final double theta, final double x, final double y )
 	{
-		notImplemented();
+		transform( AffineTransform.getRotateInstance( theta , x , y ) );
 	}
 
-	public void scale( final double sx , final double sy )
+	public void scale( final double sx, final double sy )
 	{
-		notImplemented();
+		transform( AffineTransform.getScaleInstance( sx , sy ) );
 	}
 
 	public void shear( final double shx , final double shy )
 	{
-		notImplemented();
+		transform( AffineTransform.getShearInstance( shx , shy ) );
 	}
 
 	public void transform( final AffineTransform tx )
 	{
-		notImplemented();
-	}
-
-	public void translate( final double tx , final double ty )
-	{
-		notImplemented();
-	}
-
-	public void translate( final int x, final int y )
-	{
-		notImplemented();
+		final AffineTransform transform = new AffineTransform( getTransform() );
+		transform.concatenate( tx );
+		setTransform( transform );
 	}
 
 	public void draw( final Shape shape )
@@ -379,6 +403,36 @@ public class JOGLGraphics2D
 		gl.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_FILL);
 		drawFillImpl( gl , shape );
 		glEnd2D();
+	}
+
+	public Composite getComposite()
+	{
+		return _composite;
+	}
+
+	public void setComposite( final Composite composite )
+	{
+		_composite = composite;
+	}
+
+	public Font getFont()
+	{
+		return _font;
+	}
+
+	public void setFont( final Font font )
+	{
+		_font = font;
+	}
+
+	public FontMetrics getFontMetrics( final Font font )
+	{
+		return new FontMetrics( font ) {};
+	}
+
+	public FontRenderContext getFontRenderContext()
+	{
+		return DEFAULT_FONT_RENDER_CONTEXT;
 	}
 
 	/**
@@ -460,15 +514,109 @@ public class JOGLGraphics2D
 		}
 	}
 
-	/**
-	 * Draws a line from x1,y1 to x2,y2. Line width can be changed by using
-	 * a BasicStroke in setStroke.
-	 *
-	 * @param x1    x coordinate of point 1
-	 * @param y1    x coordinate of point 1
-	 * @param x2    x coordinate of point 2
-	 * @param y2    y coordinate of point 2
-	 */
+	public void drawArc( final int x , final int y , final int width , final int height , final int startAngle , final int arcAngle )
+	{
+		draw( new Arc2D.Float( (float)x , (float)y , (float)width , (float)height , (float)startAngle , (float)arcAngle , Arc2D.OPEN ) );
+	}
+
+	public void fillArc( final int x , final int y , final int width , final int height , final int startAngle , final int arcAngle )
+	{
+		fill( new Arc2D.Float( (float)x , (float)y , (float)width , (float)height , (float)startAngle , (float)arcAngle , Arc2D.OPEN ) );
+	}
+
+	public void drawGlyphVector( final GlyphVector glyphVector , final float x , final float y )
+	{
+		fill( glyphVector.getOutline( x , y ) );
+	}
+
+	public void drawImage( final BufferedImage image , final BufferedImageOp op , final int x , final int y )
+	{
+		BufferedImage result = op.createCompatibleDestImage( image , image.getColorModel() );
+		result = op.filter( image , result );
+		drawImage( result , x , y , null );
+	}
+
+	public boolean drawImage( final Image image , final int x , final int y , final ImageObserver observer )
+	{
+		return drawImage( image , x , y , null , observer );
+	}
+
+	public boolean drawImage( final Image image , final int x , final int y , final int width , final int height , final ImageObserver observer )
+	{
+		return drawImage( image , x , y , width , height , null , observer );
+	}
+
+	public boolean drawImage( final Image image , final int x , final int y , final Color bgcolor , final ImageObserver observer )
+	{
+		return drawImage( image , x , y , image.getWidth( observer ) , image.getHeight( observer ) , bgcolor , observer );
+	}
+
+	public boolean drawImage( final Image image , final int x , final int y , final int width , final int height , final Color bgcolor , final ImageObserver observer )
+	{
+		final boolean result;
+		if ( ( width > 0 ) && ( height > 0 ) )
+		{
+			final Paint oldPaint = getPaint();
+			setPaint( bgcolor );
+			fillRect( x, y, x + width - 1 - x + 1, y + height - 1 - y + 1 );
+			setPaint( oldPaint );
+
+			final AffineTransform transform = AffineTransform.getTranslateInstance( (double)x , (double)y );
+			transform.scale( (double)width / (double)image.getWidth( observer ) , (double)height / (double)image.getHeight( observer ) );
+			result = drawImage( image, transform , observer );
+		}
+		else
+		{
+			result = true;
+		}
+
+		return result;
+	}
+
+	public boolean drawImage( final Image image , final int dx1 , final int dy1 , final int dx2 , final int dy2 , final int sx1 , final int sy1 , final int sx2 , final int sy2 , final ImageObserver observer )
+	{
+		return drawImage( image , dx1 , dy1 , dx2 , dy2 , sx1 , sy1 , sx2 , sy2 , null , observer );
+	}
+
+	public boolean drawImage( final Image image , final int dx1 , final int dy1 , final int dx2 , final int dy2 , final int sx1 , final int sy1 , final int sx2 , final int sy2 , final Color bgcolor , final ImageObserver observer )
+	{
+		final boolean result;
+
+		if ( ( dx2 >= dx1 ) && ( dy2 >= dy1 ) && ( sx2 >= sx1 ) && ( sy2 >= sy1 ) )
+		{
+			final Paint oldPaint = getPaint();
+			setPaint( bgcolor );
+			fillRect( dx1, dy1, dx2 - dx1 + 1, dy2 - dy1 + 1 );
+			setPaint( oldPaint );
+
+			final double dwidth  = (double)( dx2 - dx1 + 1 );
+			final double dheight = (double)( dy2 - dy1 + 1 );
+			final double swidth  = (double)( sx2 - sx1 + 1 );
+			final double sheight = (double)( sy2 - sy1 + 1 );
+
+			final double scalex = dwidth / swidth;
+			final double scaley = dheight / sheight;
+			final double transx = (double)dx1 - (double)sx1 * scalex;
+			final double transy = (double)dy1 - (double)sy1 * scaley;
+
+			final AffineTransform transform = AffineTransform.getTranslateInstance( transx , transy );
+			transform.scale( scalex , scaley );
+			result = drawImage( image , transform , observer );
+		}
+		else
+		{
+			result = true;
+		}
+
+		return result;
+	}
+
+	public boolean drawImage( final Image img , final AffineTransform xform , final ImageObserver obs )
+	{
+		notImplemented();
+		return false;
+	}
+
 	public void drawLine( final int x1 , final int y1 , final int x2 , final int y2 )
 	{
 		final GL gl = _gla.getGL();
@@ -480,6 +628,16 @@ public class JOGLGraphics2D
 		gl.glVertex2i( x2 , y2 );
 		gl.glEnd();
 		glEnd2D();
+	}
+
+	public void drawOval( final int x, final int y, final int width, final int height )
+	{
+		draw( new Ellipse2D.Float( (float)x , (float)y , (float)width , (float)height ) );
+	}
+
+	public void fillOval( final int x , final int y , final int width , final int height )
+	{
+		fill( new Ellipse2D.Float( (float)x , (float)y , (float)width , (float)height ) );
 	}
 
 	public void drawPolyline( final int[] xPoints , final int[] yPoints , final int nPoints )
@@ -530,78 +688,6 @@ public class JOGLGraphics2D
 		glEnd2D();
 	}
 
-	public void drawArc( final int x , final int y , final int width , final int height , final int startAngle , final int arcAngle )
-	{
-		draw( new Arc2D.Double( (double)x , (double)y , (double)width , (double)height , (double)startAngle , (double)arcAngle , Arc2D.OPEN ) );
-	}
-
-	public void fillArc( final int x , final int y , final int width , final int height , final int startAngle , final int arcAngle )
-	{
-		fill( new Arc2D.Double( (double)x , (double)y , (double)width , (double)height , (double)startAngle , (double)arcAngle , Arc2D.OPEN ) );
-	}
-
-	public void drawGlyphVector( final GlyphVector g , final float x, final float y )
-	{
-		notImplemented();
-	}
-
-	public void drawImage( final BufferedImage img , final BufferedImageOp op , final int x , final int y )
-	{
-		notImplemented();
-	}
-
-	public boolean drawImage( final Image img , final int dx1 , final int dy1 , final int dx2 , final int dy2 , final int sx1 , final int sy1 , final int sx2 , final int sy2 , final ImageObserver observer )
-	{
-		notImplemented();
-		return false;
-	}
-
-	public boolean drawImage( final Image img , final int dx1 , final int dy1 , final int dx2 , final int dy2 , final int sx1 , final int sy1 , final int sx2 , final int sy2 , final Color bgcolor , final ImageObserver observer )
-	{
-		notImplemented();
-		return false;
-	}
-
-	public boolean drawImage( final Image img , final int x , final int y , final Color bgcolor , final ImageObserver observer )
-	{
-		notImplemented();
-		return false;
-	}
-
-	public boolean drawImage( final Image img , final int x , final int y , final ImageObserver observer )
-	{
-		notImplemented();
-		return false;
-	}
-
-	public boolean drawImage( final Image img , final int x , final int y , final int width , final int height , final Color bgcolor , final ImageObserver observer )
-	{
-		notImplemented();
-		return false;
-	}
-
-	public boolean drawImage( final Image img , final int x , final int y , final int width , final int height , final ImageObserver observer )
-	{
-		notImplemented();
-		return false;
-	}
-
-	public boolean drawImage( final Image img , final AffineTransform xform , final ImageObserver obs )
-	{
-		notImplemented();
-		return false;
-	}
-
-	public void drawOval( final int x , final int y , final int width , final int height )
-	{
-		draw( new Ellipse2D.Double( (double)x , (double)y , (double)width , (double)height ) );
-	}
-
-	public void fillOval( final int x , final int y , final int width , final int height )
-	{
-		fill( new Ellipse2D.Double( (double)x , (double)y , (double)width , (double)height ) );
-	}
-
 	public void drawRect( final int x , final int y , final int width , final int height )
 	{
 		final GL gl = _gla.getGL();
@@ -634,12 +720,15 @@ public class JOGLGraphics2D
 
 	public void clearRect( final int x , final int y , final int width , final int height )
 	{
-		notImplemented();
+		final Paint oldPaint = getPaint();
+		setPaint( getBackground() );
+		fillRect( x , y , width , height );
+		setPaint( oldPaint );
 	}
 
-	public void drawRenderableImage( final RenderableImage img , final AffineTransform xform )
+	public void drawRenderableImage( final RenderableImage image , final AffineTransform transform )
 	{
-		notImplemented();
+		drawRenderedImage( image.createDefaultRendering() , transform );
 	}
 
 	public void drawRenderedImage( final RenderedImage img , final AffineTransform xform )
@@ -649,43 +738,79 @@ public class JOGLGraphics2D
 
 	public void drawRoundRect( final int x , final int y , final int width , final int height , final int arcWidth , final int arcHeight )
 	{
-		draw( new RoundRectangle2D.Double( (double)x , (double)y , (double)width , (double)height , (double)arcWidth , (double)arcHeight ) );
+		draw( new RoundRectangle2D.Float( (float)x , (float)y , (float)width , (float)height , (float)arcWidth , (float)arcHeight ) );
 	}
 
 	public void fillRoundRect( final int x , final int y , final int width , final int height , final int arcWidth , final int arcHeight )
 	{
-		fill( new RoundRectangle2D.Double( (double)x , (double)y , (double)width , (double)height , (double)arcWidth , (double)arcHeight ) );
-	}
-
-	public void drawString( final AttributedCharacterIterator iterator , final float x , final float y )
-	{
-		notImplemented();
-	}
-
-	public void drawString( final AttributedCharacterIterator iterator , final int x , final int y )
-	{
-		notImplemented();
+		fill( new RoundRectangle2D.Float( (float)x , (float)y , (float)width , (float)height , (float)arcWidth , (float)arcHeight ) );
 	}
 
 	public void drawString( final String str , final int x , final int y )
 	{
-		final GL gl = _gla.getGL();
+		final GLAutoDrawable gla = _gla;
+		final GL gl = gla.getGL();
 		gl.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_FILL );
 
 		//create renderer if renderer has not been created already.
-		if ( _renderer == null )
-		    _renderer = new TextRenderer( getFont() );
+		TextRenderer renderer = _renderer;
+		if ( renderer == null )
+		{
+		    renderer = new TextRenderer( getFont() );
+			_renderer = renderer;
+		}
 
-		_renderer.setColor( getColor() );
-		_renderer.beginRendering( _gla.getWidth() , _gla.getHeight() );
+		renderer.setColor( getColor() );
+		renderer.beginRendering( gla.getWidth() , gla.getHeight() );
 		// Draw text
-		_renderer.draw( str , x , _gla.getHeight() - y );
+		renderer.draw( str , x , gla.getHeight() - y );
 		// Clean up rendering
-		_renderer.endRendering();
+		renderer.endRendering();
 	}
 
 	public void drawString( final String str , final float x , final float y )
 	{
 		drawString( str , (int) x , (int) y );
+	}
+
+	public void drawString( final AttributedCharacterIterator iterator , final int x , final int y )
+	{
+		drawString( iterator , (float)x , (float)y );
+	}
+
+	public void drawString( final AttributedCharacterIterator iterator , final float x , final float y )
+	{
+		final StringBuilder sb = new StringBuilder();
+
+		for ( char c = iterator.first() ; c != AttributedCharacterIterator.DONE ; c = iterator.next() )
+		{
+			sb.append( c );
+		}
+
+		drawString( sb.toString() , x , y );
+	}
+
+	public boolean hit( final Rectangle rectangle , final Shape shape , final boolean onStroke )
+	{
+		Shape testedShape = shape;
+
+		if ( onStroke )
+		{
+			final Stroke stroke = getStroke();
+			testedShape = stroke.createStrokedShape( testedShape );
+		}
+
+		final AffineTransform transform = getTransform();
+		testedShape = transform.createTransformedShape( testedShape );
+
+		final Area area = new Area( testedShape );
+
+		final Shape clip = getClip();
+		if ( clip != null )
+		{
+			area.intersect( new Area( clip ) );
+		}
+
+		return area.intersects( (double)rectangle.x , (double)rectangle.y , (double)rectangle.width , (double)rectangle.height );
 	}
 }
