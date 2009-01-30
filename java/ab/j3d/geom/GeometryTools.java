@@ -21,6 +21,7 @@ package ab.j3d.geom;
 
 import java.awt.geom.Point2D;
 
+import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 
 import com.numdata.oss.MathTools;
@@ -256,6 +257,35 @@ public class GeometryTools
 		}
 
 		return result;
+	}
+
+	/**
+	 * Returns the intersection point between a ray and a plane. The point is
+	 * returned as a {@link Vector3D}; however, if any of the following
+	 * conditions is met, no intersection exists, and <code>null</code> will be
+	 * returned:
+	 * <ol>
+	 *  <li>The ray is parallel to the plane;</li>
+	 *  <li>The ray does not point in the plane's direction.</li>
+	 * </ol>
+	 * For an explanation of the math used here, see this sites:
+	 * <a href='http://astronomy.swin.edu.au/~pbourke/geometry/planeline/'>http://astronomy.swin.edu.au/~pbourke/geometry/planeline/</a> and
+	 * <A href='http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm'>http://www.siggraph.org/education/materials/HyperGraph/raytrace/rayplane_intersection.htm</a>.
+	 *
+	 * @param   planeTransform  Matrix to defined the plane from.
+	 * @param   twoSidedPlane   Consider both sides of plane in intersection test.
+	 * @param   ray             Ray to get intersection from.
+	 *
+	 * @return  Intersection-point between ray and plane;
+	 *          <code>null</code> if no intersection exists (ray parallel to
+	 *          plane, from negative side of one-sided plane, or outside range
+	 *          of half-ray).
+	 *
+	 * @throws  NullPointerException if a required input argument is <code>null</code>.
+	 */
+	public static Vector3D getIntersectionBetweenRayAndPlane( final Matrix3D planeTransform , final boolean twoSidedPlane , final Ray3D ray )
+	{
+		return getIntersectionBetweenRayAndPlane( planeTransform.xz , planeTransform.yz , planeTransform.zz , Vector3D.dot( planeTransform.xz , planeTransform.yz , planeTransform.zz , planeTransform.xo , planeTransform.yo , planeTransform.zo ) , twoSidedPlane , ray.getOrigin() , ray.getDirection() , ray.isHalfRay() );
 	}
 
 	/**
