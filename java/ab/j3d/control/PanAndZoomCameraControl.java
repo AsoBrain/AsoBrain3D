@@ -18,14 +18,15 @@
  */
 package ab.j3d.control;
 
-import java.awt.Component;
 import java.awt.event.MouseWheelEvent;
 import java.util.EventObject;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.Vector3D;
 import ab.j3d.model.Camera3D;
+import ab.j3d.view.Projector;
 import ab.j3d.view.View3D;
 
 import com.numdata.oss.PropertyTools;
@@ -58,9 +59,9 @@ public class PanAndZoomCameraControl
 	private Matrix3D _dragStartViewTransform = Matrix3D.INIT;
 
 	/**
-	 * Zoom factor at start of drag operation.
+	 * Projector used when dragging started.
 	 */
-	private double _dragStartZoomFactor = 1.0;
+	private Projector _dragStartProjector = null;
 
 	/**
 	 * Create pan and zoom camera control.
@@ -76,9 +77,9 @@ public class PanAndZoomCameraControl
 
 	public void save()
 	{
-		final View3D view          = _view;
-		final Matrix3D      viewTransform = view.getViewTransform();
-		final double        zoomFactor    = view.getZoomFactor();
+		final View3D view = _view;
+		final Matrix3D viewTransform = view.getViewTransform();
+		final double zoomFactor = view.getZoomFactor();
 
 		final Object[] saved = _savedSettings;
 		saved[ 0 ] = viewTransform;
@@ -132,12 +133,10 @@ public class PanAndZoomCameraControl
 
 	public EventObject mousePressed( final ControlInputEvent event )
 	{
-		final View3D view          = _view;
-		final Matrix3D      viewTransform = view.getViewTransform();
-		final double        zoomFactor    = view.getZoomFactor();
+		final View3D view = _view;
 
-		_dragStartViewTransform = viewTransform;
-		_dragStartZoomFactor    = zoomFactor;
+		_dragStartProjector = view.getProjector();
+		_dragStartViewTransform = view.getViewTransform();
 
 		return super.mousePressed( event );
 	}
@@ -149,7 +148,7 @@ public class PanAndZoomCameraControl
 			switch ( event.getMouseButtonDown() )
 			{
 				case 2 :
-					zoom( event );
+					zoomDrag( event );
 					break;
 
 				case 3 :
@@ -163,8 +162,7 @@ public class PanAndZoomCameraControl
 
 	public EventObject mouseWheelMoved( final ControlInputEvent event )
 	{
-		final MouseWheelEvent mouseWheelEvent = (MouseWheelEvent)event.getMouseEvent();
-		zoom( -mouseWheelEvent.getWheelRotation() );
+		zoomWheel( event );
 		return null;
 	}
 
@@ -175,8 +173,8 @@ public class PanAndZoomCameraControl
 	 */
 	protected void pan( final ControlInputEvent event )
 	{
-		final View3D view          = _view;
-		final Matrix3D      viewTransform = _dragStartViewTransform;
+		final View3D view = _view;
+		final Matrix3D viewTransform = _dragStartViewTransform;
 
 		final double toUnits = view.getPixelsToUnitsFactor();
 
@@ -191,29 +189,46 @@ public class PanAndZoomCameraControl
 	 *
 	 * @param   event   Mouse event.
 	 */
-	protected void zoom( final ControlInputEvent event )
+	protected void zoomDrag( final ControlInputEvent event )
 	{
-		final View3D view   = _view;
-		final Camera3D      camera = view.getCamera();
+		final View3D view = _view;
+		final Camera3D camera = view.getCamera();
+		final double zoomToX = (double)event.getDragStartX();
+		final double zoomToY = (double)event.getDragStartY();
 
-		final double oldZoomFactor = _dragStartZoomFactor;
 		final int    deltaY        = event.getDragDeltaY();
 		final double sensitivity   = 150.0; /* should this be configurable? */
 		final double adjustment    = 1.0 + (double)Math.abs( deltaY ) / sensitivity;
 
-		camera.setZoomFactor( ( deltaY > 0 ) ? oldZoomFactor / adjustment : oldZoomFactor * adjustment );
+		final Projector oldProjector     = _dragStartProjector;
+		final Vector3D  oldViewPosition  = oldProjector.imageToView( zoomToX , zoomToY , 0.0 );
+		final Matrix3D  oldViewTransform = _dragStartViewTransform;
 
-		final Component viewComponent = view.getComponent();
-		viewComponent.repaint( 0 , 0 , 1 , 1 );
+		camera.setZoomFactor( ( deltaY > 0 ) ? oldProjector.getZoomFactor() / adjustment : oldProjector.getZoomFactor() * adjustment );
+
+		final Projector newProjector     = view.getProjector();
+		final Vector3D  newViewPosition  = newProjector.imageToView( zoomToX , zoomToY , 0.0 );
+		final Matrix3D  newViewTransform = oldViewTransform.plus( newViewPosition.minus( oldViewPosition ) );
+
+		view.setViewTransform( newViewTransform );
+		view.update();
 	}
 
 	/**
-	 * Zoom with the specified amount of stpes.
+	 * Handle zoom by turning wheel.
 	 *
-	 * @param   steps   Amount of steps to zoom.
+	 * @param   event   Mouse event.
 	 */
-	protected void zoom( final int steps )
+	protected void zoomWheel( final ControlInputEvent event )
 	{
+		final View3D view = _view;
+		final Camera3D camera = view.getCamera();
+		final double zoomToX = (double)event.getX();
+		final double zoomToY = (double)event.getY();
+
+		final MouseWheelEvent mouseWheelEvent = (MouseWheelEvent)event.getMouseEvent();
+		final int steps = mouseWheelEvent.getWheelRotation();
+
 		final double sensitivity = 0.1;
 
 		double factor = 0.0;
@@ -221,16 +236,19 @@ public class PanAndZoomCameraControl
 		{
 			factor = ( 1.0 - sensitivity ) * factor + sensitivity;
 		}
-
 		factor += 1.0;
 
-		final View3D view   = _view;
-		final Camera3D      camera = view.getCamera();
-		factor = ( steps >= 0 ) ? camera.getZoomFactor() * factor
-		                         : camera.getZoomFactor() / factor;
-		camera.setZoomFactor( factor );
+		final Projector oldProjector     = view.getProjector();
+		final Vector3D  oldViewPosition  = oldProjector.imageToView( zoomToX , zoomToY , 0.0 );
+		final Matrix3D  oldViewTransform = view.getViewTransform();
 
-		final Component viewComponent = view.getComponent();
-		viewComponent.repaint( 0 , 0 , 1 , 1 );
+		camera.setZoomFactor( ( steps > 0 ) ? oldProjector.getZoomFactor() / factor : oldProjector.getZoomFactor() * factor );
+
+		final Projector newProjector     = view.getProjector();
+		final Vector3D  newViewPosition  = newProjector.imageToView( zoomToX , zoomToY , 0.0 );
+		final Matrix3D  newViewTransform = oldViewTransform.plus( newViewPosition.minus( oldViewPosition ) );
+
+		view.setViewTransform( newViewTransform );
+		view.update();
 	}
 }
