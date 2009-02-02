@@ -302,6 +302,76 @@ public abstract class Projector
 	public abstract int[] project( final double[] source , final int[] dest , final int pointCount );
 
 	/**
+	 * Get image width in pixels.
+	 *
+	 * @return  Image width in pixels.
+	 */
+	public int getImageWidth()
+	{
+		return _imageWidth;
+	}
+
+	/**
+	 * Get image height in pixels.
+	 *
+	 * @return  Image height in pixels.
+	 */
+	public int getImageHeight()
+	{
+		return _imageHeight;
+	}
+
+	/**
+	 * Get image resolution in meters per pixel.
+	 *
+	 * @return  Image resolution in meters per pixel.
+	 */
+	public double getImageResolution()
+	{
+		return _imageResolution;
+	}
+
+	/**
+	 * Get view unit in meters per unit.
+	 *
+	 * @return  View unit in meters per unit (e.g. {@link ab.j3d.model.Scene#MM}).
+	 */
+	public double getViewUnit()
+	{
+		return _viewUnit;
+	}
+
+	/**
+	 * Get front clipping plane distance in view units.
+	 *
+	 * @return  Front clipping plane distance in view units.
+	 */
+	public double getFrontClipDistance()
+	{
+		return _frontClipDistance;
+	}
+
+	/**
+	 * Get back clipping plane distance in view units.
+	 *
+	 * @return  Back clipping plane distance in view units.
+	 */
+	public double getBackClipDistance()
+	{
+		return _backClipDistance;
+	}
+
+	/**
+	 * Get linear zoom factor.
+	 *
+	 * @return  Linear zoom factor.
+	 */
+	public double getZoomFactor()
+	{
+		return _zoomFactor;
+	}
+
+	/**
 	 * Get multiplicative scale factor from view coordinates to image
 	 * coordinates (pixels).
 	 *
