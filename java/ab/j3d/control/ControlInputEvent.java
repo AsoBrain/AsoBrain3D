@@ -248,27 +248,6 @@ public class ControlInputEvent
 	}
 
 	/**
-	 * Returns the intersection point between the pointer ray and a plane. The
-	 * point is returned as a {@link Vector3D}; however, if any of the following
-	 * conditions is met, no intersection exists, and <code>null</code> will be
-	 * returned:
-	 * <ol>
-	 *  <li>The ray is parallel to the plane;</li>
-	 *  <li>The ray does not point in the plane's direction.</li>
-	 * </ol>
-	 *
-	 * @param   plane   Plane to get intersection from.
-	 *
-	 * @return  Intersection-point between pointer ray and plane.
-	 *
-	 * @throws  NullPointerException if <code>plane</code> is <code>null</code>.
-	 */
-	public Vector3D getIntersectionWithPlane( final Plane3D plane )
-	{
-		return GeometryTools.getIntersectionBetweenRayAndPlane( plane , getPointerRay() );
-	}
-
-	/**
 	 * Get mouse event, if available.
 	 *
 	 * @return  {@link MouseEvent};
