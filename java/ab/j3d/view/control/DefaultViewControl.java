@@ -31,7 +31,6 @@ import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.control.ControlInputEvent;
 import ab.j3d.control.MouseControl;
-import ab.j3d.geom.BasicPlane3D;
 import ab.j3d.geom.GeometryTools;
 import ab.j3d.geom.Ray3D;
 import ab.j3d.model.ContentNode;
@@ -178,7 +177,7 @@ public class DefaultViewControl
 								final Matrix3D node2wcs   = node.getTransform();
 								final Matrix3D plane2wcs  = plane2node.multiply( node2wcs );
 
-								final Vector3D wcsPoint = getPointerOnPlaneInWcs( plane2wcs , subPlaneControl.isPlaneTwoSided() , event.getPointerRay() );
+								final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( plane2wcs , subPlaneControl.isPlaneTwoSided() , event.getPointerRay() );
 								if ( wcsPoint != null )
 								{
 									final Vector3D planePoint = plane2wcs.inverseMultiply( wcsPoint );
@@ -225,7 +224,7 @@ public class DefaultViewControl
 			{
 				if ( planeControl != null )
 				{
-					final Vector3D wcsPoint = getPointerOnPlaneInWcs( plane2wcs , planeControl.isPlaneTwoSided() , event.getPointerRay() );
+					final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( plane2wcs , planeControl.isPlaneTwoSided() , event.getPointerRay() );
 					/**
 					 * The wcsPoint can be null, this is done to accomplish elevation.
 					 * Be sure to handle it in the planeControl's mouseDragged method.
@@ -236,7 +235,7 @@ public class DefaultViewControl
 
 				if ( subPlaneControl != null )
 				{
-					final Vector3D wcsPoint = getPointerOnPlaneInWcs( plane2wcs , subPlaneControl.isPlaneTwoSided() , event.getPointerRay() );
+					final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( plane2wcs , subPlaneControl.isPlaneTwoSided() , event.getPointerRay() );
 					if ( wcsPoint != null )
 					{
 						final Vector3D planePoint = plane2wcs.inverseMultiply( wcsPoint );
@@ -263,7 +262,7 @@ public class DefaultViewControl
 			{
 				if ( planeControl != null )
 				{
-					final Vector3D wcsPoint = getPointerOnPlaneInWcs( plane2wcs , planeControl.isPlaneTwoSided() , event.getPointerRay() );
+					final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( plane2wcs , planeControl.isPlaneTwoSided() , event.getPointerRay() );
 					if ( wcsPoint != null )
 					{
 						planeControl.mouseReleased( event , node , wcsPoint );
@@ -273,7 +272,7 @@ public class DefaultViewControl
 
 				if ( subPlaneControl != null )
 				{
-					final Vector3D wcsPoint = getPointerOnPlaneInWcs( plane2wcs , subPlaneControl.isPlaneTwoSided() , event.getPointerRay() );
+					final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( plane2wcs , subPlaneControl.isPlaneTwoSided() , event.getPointerRay() );
 					if ( wcsPoint != null )
 					{
 						final Vector3D planePoint = plane2wcs.inverseMultiply( wcsPoint );
@@ -344,21 +343,6 @@ public class DefaultViewControl
 				planarGraphics2D.dispose();
 			}
 		}
-	}
-
-	/**
-	 * Determine point in WCS where a plane and pointer ray intersect.
-	 *
-	 * @param   plane2wcs       Transformation from plane to WCS.
-	 * @param   twoSidedPlane   Plane is two-sided.
-	 * @param   pointerRay      Pointer ray in WCS.
-	 *
-	 * @return  Intersection point in WCS;
-	 *
-	 */
-	protected static Vector3D getPointerOnPlaneInWcs( final Matrix3D plane2wcs , final boolean twoSidedPlane , final Ray3D pointerRay )
-	{
-		return GeometryTools.getIntersectionBetweenRayAndPlane( new BasicPlane3D( plane2wcs , twoSidedPlane ) , pointerRay );
 	}
 
 }
