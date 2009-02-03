@@ -19,11 +19,9 @@
  */
 package ab.j3d.view;
 
-import java.awt.Color;
 import java.util.Collection;
 import java.util.List;
 
-import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.model.ContentNode;
 import ab.j3d.model.Face3D;
@@ -37,14 +35,13 @@ import ab.j3d.model.Object3D;
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
- * @noinspection JavaDoc,UnusedDeclaration
  */
-public class Renderer
+public abstract class Renderer
 {
 	/**
 	 * Construct renderer.
 	 */
-	public Renderer()
+	protected Renderer()
 	{
 	}
 
@@ -90,9 +87,7 @@ public class Renderer
 		}
 	}
 
-	protected void renderLight( final Matrix3D light2world , final Light3D light )
-	{
-	}
+	protected abstract void renderLight( final Matrix3D light2world , final Light3D light );
 
 	/*
 	 * Render objects in scene.
@@ -201,43 +196,16 @@ public class Renderer
 		}
 	}
 
-	protected void renderObjectBegin( final Matrix3D object2world , final Object3D object , final RenderStyle objectStyle )
-	{
-	}
+	protected abstract void renderObjectBegin( final Matrix3D object2world , final Object3D object , final RenderStyle objectStyle );
 
-	protected void renderMaterialFace( final Face3D face, final RenderStyle style )
-	{
-		final Material materialOverride = style.getMaterialOverride();
+	protected abstract void renderMaterialFace( final Face3D face , final RenderStyle style );
 
-		final Material material = ( materialOverride != null ) ? materialOverride: face.getMaterial();
-		if ( material != null )
-		{
-			final boolean lightingEnabled = style.isMaterialLightingEnabled();
-		}
-	}
+	protected abstract void renderFilledFace( final Face3D face, final RenderStyle style );
 
-	protected void renderFilledFace( final Face3D face, final RenderStyle style )
-	{
-		final Color   color           = style.getFillColor();
-		final boolean lightingEnabled = style.isFillLightingEnabled();
-	}
+	protected abstract void renderStrokedFace( final Face3D face, final RenderStyle style );
 
-	protected void renderStrokedFace( final Face3D face, final RenderStyle style )
-	{
-		final Color   color           = style.getStrokeColor();
-		final float   width           = style.getStrokeWidth();
-		final boolean lightingEnabled = style.isStrokeLightingEnabled();
-	}
+	protected abstract void renderFaceVertices( final RenderStyle style , final Matrix3D object2world , final Face3D face );
 
-	protected void renderFaceVertices( final RenderStyle style , final Matrix3D object2world , final Face3D face )
-	{
-		final Color   color           = style.getVertexColor();
-		final boolean lightingEnabled = style.isVertexLightingEnabled();
-		final float   size            = style.getVertexSize();
-	}
-
-	protected void renderObjectEnd()
-	{
-	}
+	protected abstract void renderObjectEnd();
 
 }
