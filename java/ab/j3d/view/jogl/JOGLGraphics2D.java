@@ -128,7 +128,8 @@ public class JOGLGraphics2D
 	 */
 	public JOGLGraphics2D( final GLAutoDrawable gla )
 	{
-		_gla = gla;
+		_gla  = gla;
+		_font = new Font( Font.SANS_SERIF , Font.PLAIN , 12 );
 	}
 
 	/**
