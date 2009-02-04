@@ -34,14 +34,60 @@ import com.numdata.oss.PropertyTools;
  */
 public final class Vector3D
 {
-	/** X component of 3D vector. */ public final double x;
-	/** Y component of 3D vector. */ public final double y;
-	/** Z component of 3D vector. */ public final double z;
+	/**
+	 * Zero-vector.
+	 */
+	public static final Vector3D ZERO = new Vector3D( 0.0 , 0.0 , 0.0 );
+
+	/**
+	 * Positive X-axis direction vector.
+	 */
+	public static final Vector3D POSITIVE_X_AXIS = new Vector3D( 1.0 , 0.0 , 0.0 );
+
+	/**
+	 * Negative X-axis direction vector.
+	 */
+	public static final Vector3D NEGATIVE_X_AXIS = new Vector3D( -1.0 , 0.0 , 0.0 );
+
+	/**
+	 * Positive Y-axis direction vector.
+	 */
+	public static final Vector3D POSITIVE_Y_AXIS = new Vector3D( 0.0 , 1.0 , 0.0 );
+
+	/**
+	 * Negative Y-axis direction vector.
+	 */
+	public static final Vector3D NEGATIVE_Y_AXIS = new Vector3D( 0.0 , -1.0 , 0.0 );
+
+	/**
+	 * Positive Z-axis direction vector.
+	 */
+	public static final Vector3D POSITIVE_Z_AXIS = new Vector3D( 0.0 , 0.0 , 1.0 );
+
+	/**
+	 * Negative Z-axis direction vector.
+	 */
+	public static final Vector3D NEGATIVE_Z_AXIS = new Vector3D( 0.0 , 0.0 , -1.0 );
+
+	/**
+	 * X component of 3D vector.
+	 */
+	public final double x;
+
+	/**
+	 * Y component of 3D vector.
+	 */
+	public final double y;
+
+	/**
+	 * Z component of 3D vector.
+	 */
+	public final double z;
 
 	/**
 	 * Initial value of a vector (0-vector).
 	 */
-	public static final Vector3D INIT = new Vector3D( 0.0 , 0.0 , 0.0 );
+	public static final Vector3D INIT = ZERO;
 
 	/**
 	 * Construct new vector.
@@ -50,7 +96,7 @@ public final class Vector3D
 	 * @param   ny  Y-coordinate of vector.
 	 * @param   nz  Z-coordinate of vector.
 	 */
-	private Vector3D( final double nx , final double ny , final double nz )
+	public Vector3D( final double nx , final double ny , final double nz )
 	{
 		x = nx;
 		y = ny;
@@ -94,7 +140,7 @@ public final class Vector3D
 			{
 				result = fromString( stringValue );
 			}
-			catch ( Exception e ) {}
+			catch ( Exception e ) { /* ignore */ }
 		}
 
 		return result;
@@ -183,7 +229,7 @@ public final class Vector3D
 	 */
 	public static Vector3D cross( final double x1 , final double y1 , final double z1 , final double x2 , final double y2 , final double z2 )
 	{
-		return INIT.set( y1 * z2 - z1 * y2 ,
+		return ZERO.set( y1 * z2 - z1 * y2 ,
 		                 z1 * x2 - x1 * z2 ,
 		                 x1 * y2 - y1 * x2 );
 	}
@@ -374,7 +420,7 @@ public final class Vector3D
 		final double y = Double.parseDouble( value.substring( comma1 + 1 , comma2 ) );
 		final double z = Double.parseDouble( value.substring( comma2 + 1 ) );
 
-		return INIT.set( x , y , z );
+		return ZERO.set( x , y , z );
 	}
 
 	/**
@@ -389,6 +435,10 @@ public final class Vector3D
 
 	/**
 	 * Calculate length of vector.
+	 *
+	 * @param   x   X-component of vector.
+	 * @param   y   Y-component of vector.
+	 * @param   z   Z-component of vector.
 	 *
 	 * @return  Length of vector.
 	 */
@@ -460,7 +510,7 @@ public final class Vector3D
 	public static Vector3D normalize( final double x , final double y , final double z )
 	{
 		final double l = length( x , y , z );
-		return ( l == 0.0 ) ? INIT : new Vector3D( x / l , y / l , z / l );
+		return ( l == 0.0 ) ? ZERO : new Vector3D( x / l , y / l , z / l );
 	}
 
 	/**
@@ -502,11 +552,11 @@ public final class Vector3D
 	{
 		final Vector3D result;
 
-		if ( INIT.equals( nx , ny , nz ) )
+		if ( ZERO.equals( nx , ny , nz ) )
 		{
-			result = INIT;
+			result = ZERO;
 		}
-		else if ( ( this != INIT ) && equals( nx , ny , nz ) )
+		else if ( ( this != ZERO ) && equals( nx , ny , nz ) )
 		{
 			result = this;
 		}
