@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2007
+ * (C) Copyright Numdata BV 2005-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,7 @@ import java.util.List;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
+import ab.j3d.geom.Polygon3D;
 import ab.j3d.geom.Ray3D;
 
 /**
@@ -53,9 +54,14 @@ public final class Face3DIntersection
 	private final Matrix3D _object2world;
 
 	/**
-	 * The {@link Face3D} that was intersected.
+	 * Object that was tested.
 	 */
-	private final Face3D _face;
+	private Object3D _object;
+
+	/**
+	 * The {@link Polygon3D} that was intersected.
+	 */
+	private final Polygon3D _polygon;
 
 	/**
 	 * Intersection point in world coordinates.
@@ -81,11 +87,12 @@ public final class Face3DIntersection
 	 *
 	 * @param   objectID            ID of intersected object.
 	 * @param   object2world        Transforms object to world coordinates.
-	 * @param   face                The {@link Face3D} that was intersected.
+	 * @param   object              Object that was intersected.
+	 * @param   polygon             The {@link Polygon3D} that was intersected.
 	 * @param   ray                 {@link Ray3D} that intersected the face.
 	 * @param   intersectionPoint   Intersection point.
 	 */
-	public Face3DIntersection( final Object objectID , final Matrix3D object2world , final Face3D face , final Ray3D ray , final Vector3D intersectionPoint )
+	public Face3DIntersection( final Object objectID , final Matrix3D object2world , final Object3D object , final Polygon3D polygon , final Ray3D ray , final Vector3D intersectionPoint )
 	{
 		if ( objectID == null )
 			throw new NullPointerException( "objectID" );
@@ -93,7 +100,10 @@ public final class Face3DIntersection
 		if ( object2world == null )
 			throw new NullPointerException( "object2world" );
 
-		if ( face == null )
+		if ( object == null )
+			throw new NullPointerException( "object" );
+
+		if ( polygon == null )
 			throw new NullPointerException( "face" );
 
 		if ( ray == null )
@@ -104,7 +114,8 @@ public final class Face3DIntersection
 
 		_objectID          = objectID;
 		_object2world      = object2world;
-		_face              = face;
+		_object            = object;
+		_polygon = polygon;
 		_ray               = ray;
 		_intersectionPoint = intersectionPoint;
 		_distance          = Double.NaN;
@@ -168,13 +179,13 @@ public final class Face3DIntersection
 	}
 
 	/**
-	 * Get the {@link Face3D} that was intersected.
+	 * Get the {@link Polygon3D} that was intersected.
 	 *
-	 * @return  {@link Face3D} that was intersected.
+	 * @return  {@link Polygon3D} that was intersected.
 	 */
-	public Face3D getFace()
+	public Polygon3D getPolygon()
 	{
-		return _face;
+		return _polygon;
 	}
 
 	/**
@@ -194,7 +205,7 @@ public final class Face3DIntersection
 	 */
 	public Object3D getObject()
 	{
-		return _face.getObject();
+		return _object;
 	}
 
 	/**

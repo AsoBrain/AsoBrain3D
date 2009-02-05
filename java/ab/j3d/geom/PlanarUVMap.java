@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2008
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.model;
+package ab.j3d.geom;
+
+import java.awt.geom.Point2D;
 
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
@@ -33,12 +35,7 @@ public class PlanarUVMap
 	implements UVMap
 {
 	/**
-	 * Size of a model unit in meters.
-	 */
-	private final double _modelUnits;
-
-	/**
-	 * Transformation from spatial to UV coordinates.
+	 * Transformation from model units to UV coordinates.
 	 */
 	private Matrix3D _transform;
 
@@ -84,30 +81,41 @@ public class PlanarUVMap
 	 * Constructs a new planar UV-map parallel to the XY-plane defined by the
 	 * given transformation.
 	 *
-	 * @param   modelUnits  Size of a model unit in meters.
-	 * @param   transform   Transformation of the UV-plane relative to the
-	 *                      XY-plane.
+	 * @param   modelUnits      Size of a model unit in meters.
+	 * @param   planeTransform  Transformation of the UV-plane relative to the XY-plane.
 	 */
-	public PlanarUVMap( final double modelUnits , final Matrix3D transform )
+	public PlanarUVMap( final double modelUnits , final Matrix3D planeTransform )
 	{
-		_modelUnits = modelUnits;
-		_transform  = transform;
+		_transform = planeTransform.scale( modelUnits );
 	}
 
 	public void generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final boolean flipTexture , final float[] textureU , final float[] textureV )
 	{
-		final double scaleU = _modelUnits / material.colorMapWidth;
-		final double scaleV = _modelUnits / material.colorMapHeight;
+		final Matrix3D transform = _transform;
 
 		for ( int i = 0 ; i < vertexIndices.length ; i++ )
 		{
 			final int base = vertexIndices[ i ] * 3;
 
-			final double x = _transform.transformX( vertexCoordinates[ base ] , vertexCoordinates[ base + 1 ] , vertexCoordinates[ base + 2 ] );
-			final double y = _transform.transformY( vertexCoordinates[ base ] , vertexCoordinates[ base + 1 ] , vertexCoordinates[ base + 2 ] );
+			final double x = vertexCoordinates[ base ];
+			final double y = vertexCoordinates[ base + 1 ];
+			final double z = vertexCoordinates[ base + 2 ];
 
-			textureU[ i ] = (float)( scaleU * ( flipTexture ? y : x ) );
-			textureV[ i ] = (float)( scaleV * ( flipTexture ? x : y ) );
+			final float u = (float)transform.transformX( x , y , z );
+			final float v = (float)transform.transformY( x , y , z );
+
+			textureU[ i ] = flipTexture ? v : u;
+			textureV[ i ] = flipTexture ? u : v;
 		}
+	}
+
+	public Point2D.Float generate( final Material material , final Vector3D point , final Vector3D normal , final boolean flipTexture )
+	{
+		final Matrix3D transform = _transform;
+
+		final float u = (float)transform.transformX( point );
+		final float v = (float)transform.transformY( point );
+
+		return flipTexture ? new Point2D.Float( v , u ) : new Point2D.Float( u , v );
 	}
 }

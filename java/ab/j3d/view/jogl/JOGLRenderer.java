@@ -37,6 +37,7 @@ import ab.j3d.Vector3D;
 import ab.j3d.model.ContentNode;
 import ab.j3d.model.ExtrudedObject2D;
 import ab.j3d.model.Face3D;
+import ab.j3d.model.Face3D.Vertex;
 import ab.j3d.model.Light3D;
 import ab.j3d.model.Object3D;
 import ab.j3d.view.RenderStyle;
@@ -315,18 +316,37 @@ public class JOGLRenderer
 
 	protected void renderMaterialFace( final Face3D face , final RenderStyle style )
 	{
-		final int      vertexCount = face.getVertexCount();
-		final Material material    = ( style.getMaterialOverride() != null ) ? style.getMaterialOverride() : face.getMaterial();
+		final List<Vertex> vertices = face.vertices;
+		final int vertexCount = vertices.size();
+		final Material material = ( style.getMaterialOverride() != null ) ? style.getMaterialOverride() : face.material;
 
 		if ( ( material != null ) && ( vertexCount >= 2 ) )
 		{
-			final Vector3D lightPosition   = _lightPositionRelativeToObject;
-			final boolean  hasLighting     = style.isMaterialLightingEnabled() && ( lightPosition != null );
-			final boolean  backfaceCulling = style.isBackfaceCullingEnabled() && !face.isTwoSided();
-			final float    extraAlpha      = style.getMaterialAlpha();
-			final boolean  blend           = ( extraAlpha < 0.99f ) || ( material.diffuseColorAlpha < 0.99f );
-
+			final GL gl = _gl;
 			final GLWrapper glWrapper = _glWrapper;
+			final Map<String,Texture> textureCache = _textureCache;
+
+			final Vector3D lightPosition    = _lightPositionRelativeToObject;
+			final boolean  hasLighting      = style.isMaterialLightingEnabled() && ( lightPosition != null );
+			final boolean  backfaceCulling  = style.isBackfaceCullingEnabled() && !face.isTwoSided();
+			final float    extraAlpha       = style.getMaterialAlpha();
+			final boolean  blend            = ( extraAlpha < 0.99f ) || ( material.diffuseColorAlpha < 0.99f );
+			final boolean  setVertexNormals = hasLighting && face.smooth;
+
+			/*
+			 * Get textures.
+			 */
+			final Texture colorMap = JOGLTools.getColorMapTexture( gl , material , textureCache );
+			final boolean hasColorMap = ( colorMap != null );
+
+			final Texture bumpMap = hasLighting ? JOGLTools.getBumpMapTexture( gl , material , textureCache ) : null;
+			final boolean hasBumpMap = ( bumpMap != null );
+
+			final Texture normalizationCubeMap = hasBumpMap ? JOGLTools.getNormalizationCubeMap( gl , textureCache ) : null;
+
+			/*
+			 * Set render/material properties.
+			 */
 			if ( blend )
 			{
 				glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
@@ -337,25 +357,12 @@ public class JOGLRenderer
 			glWrapper.setCullFace( backfaceCulling );
 			glWrapper.setLighting( hasLighting );
 			setMaterial( material , extraAlpha );
-			final GL gl = _gl;
 
-			final boolean hasUV      = ( face.getTextureU() != null ) && ( face.getTextureV() != null );
-			final Texture texture    = hasUV ? JOGLTools.getColorMapTexture( gl , material , _textureCache ) : null;
-			final boolean hasTexture = ( texture != null );
-			final Texture bumpMap    = ( hasLighting && hasUV ) ? JOGLTools.getBumpMapTexture( gl , material , _textureCache ) : null;
-
-			if ( bumpMap != null )
+			/*
+			 * Enable bump map.
+			 */
+			if ( hasBumpMap )
 			{
-				final float[] textureU = face.getTextureU();
-				final float[] textureV = face.getTextureV();
-
-				Texture normalizationCubeMap = _textureCache.get( JOGLTools.NORMALIZATION_CUBE_MAP );
-				if ( normalizationCubeMap == null )
-				{
-					normalizationCubeMap = JOGLTools.createNormalizationCubeMap( gl );
-					_textureCache.put( JOGLTools.NORMALIZATION_CUBE_MAP , normalizationCubeMap );
-				}
-
 				/*
 				 * Set The First Texture Unit To Normalize Our Vector From The
 				 * Surface To The Light. Set The Texture Environment Of The First
@@ -395,168 +402,117 @@ public class JOGLRenderer
 				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_MODULATE      );
 				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_PRIMARY_COLOR );
 
-				final double bumpScaleX;
-				final double bumpScaleY;
-
-				if ( hasTexture )
-				{
-					/*
-					 * Set The Fourth Texture Unit To Our Texture. Set The Texture
-					 * Environment Of The Third Texture Unit To Modulate (Multiply) The
-					 * Result Of Our Dot3 Operation With The Texture Value.
-					 */
-					gl.glActiveTexture( GL.GL_TEXTURE3 );
-					texture.enable();
-					texture.bind();
-					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_MODULATE );
-
-					/*
-					 * Scale bump map based on color map size.
-					 */
-					bumpScaleX = material.colorMapWidth  / material.bumpMapWidth;
-					bumpScaleY = material.colorMapHeight / material.bumpMapHeight;
-				}
-				else
-				{
-					bumpScaleX = 1.0 / material.bumpMapWidth;
-					bumpScaleY = 1.0 / material.bumpMapHeight;
-				}
-
 				/*
-				 * Render the face.
+				 * Set The Fourth Texture Unit To Our Texture. Set The Texture
+				 * Environment Of The Third Texture Unit To Modulate (Multiply) The
+				 * Result Of Our Dot3 Operation With The Texture Value.
 				 */
-				switch ( vertexCount )
-				{
-					case 0 :
-						break;
-
-					case 1 :
-						gl.glBegin( GL.GL_POINTS );
-						setBumpedFaceVertex( face , textureU , textureV , bumpScaleX , bumpScaleY , 0 , lightPosition );
-						gl.glEnd();
-						break;
-
-					case 2:
-						gl.glBegin( GL.GL_LINES );
-						setBumpedFaceVertex( face , textureU , textureV , bumpScaleX , bumpScaleY , 0 , lightPosition );
-						setBumpedFaceVertex( face , textureU , textureV , bumpScaleX , bumpScaleY , 1 , lightPosition );
-						gl.glEnd();
-						break;
-
-					case 3:
-						gl.glBegin( GL.GL_TRIANGLES );
-						setBumpedFaceVertex( face , textureU , textureV , bumpScaleX , bumpScaleY , 2 , lightPosition );
-						setBumpedFaceVertex( face , textureU , textureV , bumpScaleX , bumpScaleY , 1 , lightPosition );
-						setBumpedFaceVertex( face , textureU , textureV , bumpScaleX , bumpScaleY , 0 , lightPosition );
-						gl.glEnd();
-						break;
-
-					case 4:
-						gl.glBegin( GL.GL_QUADS );
-						setBumpedFaceVertex( face , textureU , textureV , bumpScaleX , bumpScaleY , 3 , lightPosition );
-						setBumpedFaceVertex( face , textureU , textureV , bumpScaleX , bumpScaleY , 2 , lightPosition );
-						setBumpedFaceVertex( face , textureU , textureV , bumpScaleX , bumpScaleY , 1 , lightPosition );
-						setBumpedFaceVertex( face , textureU , textureV , bumpScaleX , bumpScaleY , 0 , lightPosition );
-						gl.glEnd();
-						break;
-
-					default:
-						gl.glBegin( GL.GL_POLYGON );
-						for ( int i = vertexCount ; --i >= 0 ; )
-						{
-							setBumpedFaceVertex( face , textureU , textureV , bumpScaleX , bumpScaleY , i , lightPosition );
-						}
-						gl.glEnd();
-						break;
-				}
-
-				if ( hasTexture )
+				if ( hasColorMap )
 				{
 					gl.glActiveTexture( GL.GL_TEXTURE3 );
-					texture.disable();
+					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_MODULATE );
 				}
+			}
+
+			/*
+			 * Enable color map.
+			 */
+			if ( hasColorMap )
+			{
+				colorMap.enable();
+				colorMap.bind();
+			}
+
+			/*
+			 * Render face.
+			 */
+			gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS :
+			            ( vertexCount == 2 ) ? GL.GL_LINES :
+			            ( vertexCount == 3 ) ? GL.GL_TRIANGLES :
+			            ( vertexCount == 4 ) ? GL.GL_QUADS : GL.GL_POLYGON );
+
+			if ( !setVertexNormals )
+			{
+				final Vector3D normal = face.getNormal();
+				gl.glNormal3d( normal.x , normal.y , normal.z );
+			}
+
+			for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
+			{
+				final Vertex vertex = vertices.get( vertexIndex );
+				final Vector3D point = vertex.point;
+
+				if ( hasBumpMap )
+				{
+					gl.glMultiTexCoord3d( GL.GL_TEXTURE0 , lightPosition.x + point.x , lightPosition.y + point.y , lightPosition.z + point.z );
+					gl.glMultiTexCoord2f( GL.GL_TEXTURE1 , vertex.colorMapU , vertex.colorMapV );
+
+					if ( hasColorMap )
+					{
+						gl.glMultiTexCoord2f( GL.GL_TEXTURE3 , vertex.colorMapU , vertex.colorMapV );
+					}
+				}
+				else if ( hasColorMap )
+				{
+					gl.glTexCoord2f( vertex.colorMapU, vertex.colorMapV );
+				}
+
+				if ( setVertexNormals )
+				{
+					final Vector3D vertexNormal = face.getVertexNormal( vertexIndex );
+					gl.glNormal3d( vertexNormal.x , vertexNormal.y , vertexNormal.z );
+				}
+
+				gl.glVertex3d( point.x , point.y , point.z );
+			}
+
+			gl.glEnd();
+
+			/*
+			 * Disable color map.
+			 */
+			if ( hasColorMap )
+			{
+				colorMap.disable();
+			}
+
+			/*
+			 * Disable bump map.
+			 */
+			if ( hasBumpMap )
+			{
 				gl.glActiveTexture( GL.GL_TEXTURE2 );
 				bumpMap.disable();
+
 				gl.glActiveTexture( GL.GL_TEXTURE1 );
 				bumpMap.disable();
+
 				gl.glActiveTexture( GL.GL_TEXTURE0 );
 				normalizationCubeMap.disable();
 			}
-			else if ( hasTexture )
-			{
-				final float[] textureU = face.getTextureU();
-				final float[] textureV = face.getTextureV();
-
-				texture.enable();
-				texture.bind();
-
-				switch ( vertexCount )
-				{
-					case 0 :
-						break;
-
-					case 1 :
-						gl.glBegin( GL.GL_POINTS );
-						setFaceVertex( face , 0 , hasLighting );
-						gl.glEnd();
-						break;
-
-					case 2:
-						gl.glBegin( GL.GL_LINES );
-						setFaceVertex( face , textureU , textureV , 0 , hasLighting );
-						setFaceVertex( face , textureU , textureV , 1 , hasLighting );
-						gl.glEnd();
-						break;
-
-					case 3:
-						gl.glBegin( GL.GL_TRIANGLES );
-						setFaceVertex( face , textureU , textureV , 2 , hasLighting );
-						setFaceVertex( face , textureU , textureV , 1 , hasLighting );
-						setFaceVertex( face , textureU , textureV , 0 , hasLighting );
-						gl.glEnd();
-						break;
-
-					case 4:
-						gl.glBegin( GL.GL_QUADS );
-						setFaceVertex( face , textureU , textureV , 3 , hasLighting );
-						setFaceVertex( face , textureU , textureV , 2 , hasLighting );
-						setFaceVertex( face , textureU , textureV , 1 , hasLighting );
-						setFaceVertex( face , textureU , textureV , 0 , hasLighting );
-						gl.glEnd();
-						break;
-
-					default:
-						gl.glBegin( GL.GL_POLYGON );
-						for ( int i = vertexCount ; --i >= 0 ; )
-						{
-							setFaceVertex( face , textureU , textureV , i , hasLighting );
-						}
-						gl.glEnd();
-						break;
-				}
-
-				texture.disable();
-			}
-			else
-			{
-				drawFaceWithoutTexture( face , hasLighting );
-			}
-
 		}
 	}
 
 	protected void renderFilledFace( final Face3D face , final RenderStyle style )
 	{
-		final int vertexCount = face.getVertexCount();
+		final List<Vertex> vertices = face.vertices;
+		final int vertexCount = vertices.size();
+
 		if ( vertexCount >= 2 )
 		{
+			final GL gl = _gl;
+			final GLWrapper glWrapper = _glWrapper;
+
 			final Color   color           = style.getFillColor();
 			final int     alpha           = color.getAlpha();
 			final boolean blend           = ( alpha < 255 );
 			final boolean backfaceCulling = style.isBackfaceCullingEnabled() && !face.isTwoSided();
 			final boolean hasLighting     = style.isFillLightingEnabled() && ( _lightPositionRelativeToObject != null );
+			final boolean setVertexNormals = hasLighting && face.smooth;
 
-			final GLWrapper glWrapper = _glWrapper;
+			/*
+			 * Set render/material properties.
+			 */
 			if ( blend )
 			{
 				glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
@@ -569,20 +525,53 @@ public class JOGLRenderer
 			glWrapper.setLighting( hasLighting );
 			setColor( color );
 
-			drawFaceWithoutTexture( face , hasLighting );
+			/*
+			 * Render face.
+			 */
+			gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS :
+			            ( vertexCount == 2 ) ? GL.GL_LINES :
+			            ( vertexCount == 3 ) ? GL.GL_TRIANGLES :
+			            ( vertexCount == 4 ) ? GL.GL_QUADS : GL.GL_POLYGON );
+
+			if ( !setVertexNormals )
+			{
+				final Vector3D normal = face.getNormal();
+				gl.glNormal3d( normal.x , normal.y , normal.z );
+			}
+
+			for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
+			{
+				final Vertex vertex = vertices.get( vertexIndex );
+
+				if ( setVertexNormals )
+				{
+					final Vector3D normal = face.getVertexNormal( vertexIndex );
+					gl.glNormal3d( normal.x , normal.y , normal.z );
+				}
+
+				gl.glVertex3d( vertex.point.x , vertex.point.y , vertex.point.z );
+			}
+
+			gl.glEnd();
 		}
 	}
 
 	protected void renderStrokedFace( final Face3D face , final RenderStyle style )
 	{
-		final int vertexCount = face.getVertexCount();
+		final List<Vertex> vertices = face.vertices;
+		final int vertexCount = vertices.size();
+
 		if ( vertexCount >= 2 )
 		{
-			final Color   color           = style.getStrokeColor();
-			final float   width           = style.getStrokeWidth();
-			final boolean backfaceCulling = style.isBackfaceCullingEnabled() && !face.isTwoSided();
-			final boolean hasLighting     = style.isStrokeLightingEnabled() && ( _lightPositionRelativeToObject != null );
+			final Color   color            = style.getStrokeColor();
+			final float   width            = style.getStrokeWidth();
+			final boolean backfaceCulling  = style.isBackfaceCullingEnabled() && !face.isTwoSided();
+			final boolean hasLighting      = style.isStrokeLightingEnabled() && ( _lightPositionRelativeToObject != null );
+			final boolean setVertexNormals = hasLighting && face.smooth;
 
+			/*
+			 * Set render/material properties.
+			 */
 			final GLWrapper glWrapper = _glWrapper;
 			glWrapper.setBlend( false );
 			glWrapper.setPolygonMode( GL.GL_LINE );
@@ -592,7 +581,11 @@ public class JOGLRenderer
 			glWrapper.setCullFace( backfaceCulling );
 			glWrapper.setLighting( hasLighting );
 			setColor( color );
+			final GL gl = _gl;
 
+			/*
+			 * Render face.
+			 */
 			// @FIXME Drawing outlines like this is only needed while Face3D doesn't support concave faces.
 			// (A single Face3D could then be used for a concave shape, and the proper outline would be drawn automatically.)
 			final Object3D object3D = face.getObject();
@@ -604,7 +597,6 @@ public class JOGLRenderer
 					final Shape            shape     = extruded.shape;
 					final Vector3D         extrusion = extruded.extrusion;
 
-					final GL gl = _gl;
 					gl.glPushMatrix();
 					JOGLTools.glMultMatrixd( gl , extruded.transform );
 
@@ -628,89 +620,91 @@ public class JOGLRenderer
 			}
 			else
 			{
-				drawFaceWithoutTexture( face , hasLighting );
+				gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS :
+				            ( vertexCount == 2 ) ? GL.GL_LINES :
+				            ( vertexCount == 3 ) ? GL.GL_TRIANGLES :
+				            ( vertexCount == 4 ) ? GL.GL_QUADS : GL.GL_POLYGON );
+
+				if ( !setVertexNormals )
+				{
+					final Vector3D normal = face.getNormal();
+					gl.glNormal3d( normal.x , normal.y , normal.z );
+				}
+
+				for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
+				{
+					final Vertex vertex = vertices.get( vertexIndex );
+					final Vector3D point = vertex.point;
+
+					if ( setVertexNormals )
+					{
+						final Vector3D normal = face.getVertexNormal( vertexIndex );
+						gl.glNormal3d( normal.x , normal.y , normal.z );
+					}
+
+					gl.glVertex3d( point.x , point.y , point.z );
+				}
+
+				gl.glEnd();
 			}
 		}
 	}
 
 	protected void renderFaceVertices( final RenderStyle style , final Matrix3D object2world , final Face3D face )
 	{
-		final int vertexCount = face.getVertexCount();
+		final List<Vertex> vertices = face.vertices;
+		final int vertexCount = vertices.size();
+
 		if ( vertexCount > 0 )
 		{
-			final Color   color           = style.getVertexColor();
-			final boolean backfaceCulling = style.isBackfaceCullingEnabled() && !face.isTwoSided();
-			final boolean hasLighting     = style.isVertexLightingEnabled() && ( _lightPositionRelativeToObject != null );
-
+			final GL gl = _gl;
 			final GLWrapper glWrapper = _glWrapper;
+
+			final Color   color            = style.getVertexColor();
+			final boolean backfaceCulling  = style.isBackfaceCullingEnabled() && !face.isTwoSided();
+			final boolean hasLighting      = style.isVertexLightingEnabled() && ( _lightPositionRelativeToObject != null );
+			final boolean setVertexNormals = hasLighting && face.smooth;
+
+			/*
+			 * Set render/material properties.
+			 */
 			glWrapper.setBlend( false  );
 			glWrapper.setPolygonMode( GL.GL_POINT );
 			glWrapper.setPolygonOffsetFill( true );
 			glWrapper.glPolygonOffset( 0.0f , -2.0f );
 			glWrapper.setCullFace( backfaceCulling );
 			glWrapper.setLighting( hasLighting );
-
 			setColor( color );
 
-			drawFaceWithoutTexture( face , hasLighting );
-		}
-	}
+			/*
+			 * Render face.
+			 */
+			gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS :
+			            ( vertexCount == 2 ) ? GL.GL_LINES :
+			            ( vertexCount == 3 ) ? GL.GL_TRIANGLES :
+			            ( vertexCount == 4 ) ? GL.GL_QUADS : GL.GL_POLYGON );
 
-	/**
-	 * Draw a 3D face through OpenGL using a {@link Color}. This is simpler to
-	 * draw since we won't have anything to do with textures here.
-	 *
-	 * @param   face            Face to draw.
-	 * @param   setNormals     If set, enable lighting (generate normals).
-	 */
-	private void drawFaceWithoutTexture( final Face3D face , final boolean setNormals )
-	{
-		final GL gl = _gl;
+			if ( !setVertexNormals )
+			{
+				final Vector3D normal = face.getNormal();
+				gl.glNormal3d( normal.x , normal.y , normal.z );
+			}
 
-		final int vertexCount = face.getVertexCount();
-		switch ( vertexCount )
-		{
-			case 0 :
-				break;
+			for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
+			{
+				final Vertex vertex = vertices.get( vertexIndex );
+				final Vector3D point = vertex.point;
 
-			case 1 :
-				gl.glBegin( GL.GL_POINTS );
-				setFaceVertex( face , 0 , setNormals );
-				gl.glEnd();
-				break;
-
-			case 2 :
-				gl.glBegin( GL.GL_LINES );
-				setFaceVertex( face , 0 , setNormals );
-				setFaceVertex( face , 1 , setNormals );
-				gl.glEnd();
-				break;
-
-			case 3:
-				gl.glBegin( GL.GL_TRIANGLES );
-				setFaceVertex( face , 2 , setNormals );
-				setFaceVertex( face , 1 , setNormals );
-				setFaceVertex( face , 0 , setNormals );
-				gl.glEnd();
-				break;
-
-			case 4:
-				gl.glBegin( GL.GL_QUADS );
-				setFaceVertex( face , 3 , setNormals );
-				setFaceVertex( face , 2 , setNormals );
-				setFaceVertex( face , 1 , setNormals );
-				setFaceVertex( face , 0 , setNormals );
-				gl.glEnd();
-				break;
-
-			default:
-				gl.glBegin( GL.GL_POLYGON );
-				for ( int i = vertexCount ; --i >= 0 ; )
+				if ( setVertexNormals )
 				{
-					setFaceVertex( face , i , setNormals );
+					final Vector3D normal = face.getVertexNormal( vertexIndex );
+					gl.glNormal3d( normal.x , normal.y , normal.z );
 				}
-				gl.glEnd();
-				break;
+
+				gl.glVertex3d( point.x , point.y , point.z );
+			}
+
+			gl.glEnd();
 		}
 	}
 
@@ -753,91 +747,6 @@ public class JOGLRenderer
 		glWrapper.setMaterialSpecular(  material.specularColorRed , material.specularColorGreen , material.specularColorBlue , alpha );
 		glWrapper.setMaterialEmission( material.emissiveColorRed , material.emissiveColorGreen , material.emissiveColorBlue , alpha );
 		glWrapper.setMaterialShininess( (float)material.shininess );
-	}
-
-	/**
-	 * Set vertex properties using GL.
-	 *
-	 * @param   face                Face whose vertex to set.
-	 * @param   faceVertexIndex     Index of vertex in face.
-	 * @param   setNormals          Specifies whether normals are set or not.
-	 */
-	private void setFaceVertex( final Face3D face , final int faceVertexIndex , final boolean setNormals )
-	{
-		final GL gl = _gl;
-
-		final Object3D object            = face.getObject();
-		final int[]    faceVertexIndices = face.getVertexIndices();
-		final int      vertexIndex       = faceVertexIndices[ faceVertexIndex ] * 3;
-
-		if ( setNormals )
-		{
-			if ( face.isSmooth() )
-			{
-				gl.glNormal3dv( object.getVertexNormals() , vertexIndex );
-			}
-			else
-			{
-				final Vector3D faceNormal = face.getNormal();
-				gl.glNormal3d( faceNormal.x , faceNormal.y , faceNormal.z );
-			}
-		}
-
-		gl.glVertex3dv( object.getVertexCoordinates() , vertexIndex );
-	}
-
-	/**
-	 * Set vertex properties using GL.
-	 *
-	 * @param   face                Face whose vertex to set.
-	 * @param   textureU            Horizontal texture coordinate.
-	 * @param   textureV            Vertical texture coordinate.
-	 * @param   faceVertexIndex     Index of vertex in face.
-	 * @param   hasLighting         Specifies whether lighting is used or not
-	 */
-	private void setFaceVertex( final Face3D face , final float[] textureU , final float[] textureV , final int faceVertexIndex , final boolean hasLighting )
-	{
-		if ( ( textureU != null ) && ( textureV != null ) )
-		{
-			_gl.glTexCoord2f( textureU[ faceVertexIndex ] , -textureV[ faceVertexIndex ] );
-		}
-
-		setFaceVertex( face , faceVertexIndex , hasLighting );
-	}
-
-	/**
-	 * Set vertex properties using GL for a face with a bump map applied.
-	 *
-	 * @param   face                Face whose vertex to set.
-	 * @param   textureU            Horizontal texture coordinate.
-	 * @param   textureV            Vertical texture coordinate.
-	 * @param   bumpScaleX          Multiply U coordinates with this for bump X.
-	 * @param   bumpScaleY          Multiply V coordinates with this for bump Y.
-	 * @param   faceVertexIndex     Index of vertex in face.
-	 * @param   lightPosition       Light source position.
-	 */
-	private void setBumpedFaceVertex( final Face3D face , final float[] textureU , final float[] textureV , final double bumpScaleX , final double bumpScaleY , final int faceVertexIndex , final Vector3D lightPosition )
-	{
-		final Object3D object            = face.getObject();
-		final int[]    faceVertexIndices = face.getVertexIndices();
-		final int      vertexIndex       = faceVertexIndices[ faceVertexIndex ] * 3;
-
-		final double[] vertexCoordinates = object.getVertexCoordinates();
-
-		final double relativeLightX = lightPosition.x + vertexCoordinates[ vertexIndex     ];
-		final double relativeLightY = lightPosition.y + vertexCoordinates[ vertexIndex + 1 ];
-		final double relativeLightZ = lightPosition.z + vertexCoordinates[ vertexIndex + 2 ];
-
-		final GL gl = _gl;
-		gl.glMultiTexCoord3d( GL.GL_TEXTURE0 , relativeLightX , relativeLightY , relativeLightZ );
-
-		if ( ( textureU != null ) && ( textureV != null ) )
-		{
-			gl.glMultiTexCoord2f( GL.GL_TEXTURE1 , (float)bumpScaleX * textureU[ faceVertexIndex ] , (float)bumpScaleY * -textureV[ faceVertexIndex ] );
-			gl.glMultiTexCoord2f( GL.GL_TEXTURE3 , textureU[ faceVertexIndex ] , -textureV[ faceVertexIndex ] );
-		}
-
-		setFaceVertex( face , faceVertexIndex , true );
 	}
 
 	/**

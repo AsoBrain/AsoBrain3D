@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2008
+ * (C) Copyright Numdata BV 2006-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,8 +34,9 @@ import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.ResourceLoaderMaterial;
 import ab.j3d.Vector3D;
-import ab.j3d.model.Face3D;
+import ab.j3d.geom.Abstract3DObjectBuilder;
 import ab.j3d.model.Object3D;
+import ab.j3d.model.Object3DBuilder;
 
 import com.numdata.oss.TextTools;
 
@@ -139,25 +140,46 @@ public class ObjLoader
 	public static Object3D load( final Matrix3D transform , final ResourceLoader loader , final String objFileName )
 		throws IOException
 	{
-		final Map<String,Material> actualMaterials = DEFAULT_MATERIALS;
-		final Material defaultMaterial;
-		final Object3D result = new Object3D();
+		final Object3DBuilder builder = new Object3DBuilder();
+		final String objectName = load( builder, transform, loader, objFileName );
+		final Object3D result = builder.getObject3D();
+		result.setTag( objectName );
+		return result;
+	}
 
-		/*
-		 * Read
-		 */
-		defaultMaterial = actualMaterials.containsKey( "default" ) ? actualMaterials.get( "default" ) : new Material( 0xFFC0C0C0 );
+	/**
+	 * Load the specified OBJ file.
+	 *
+	 * @param   builder         Builder of resulting 3D object.
+	 * @param   transform       Transormation to apply to the OBJ (mostly used
+	 *                          to for scaling and axis alignment).
+	 * @param   loader          {@link ResourceLoader} to load OBJ models from.
+	 * @param   objFileName     Name of OBJ modelfile to be loaded.
+	 *
+	 * @return  Object name defined in OBJ file.
+	 *
+	 * @throws  IOException if an error occured while loading the OBJ file.
+	 */
+	public static String load( final Abstract3DObjectBuilder builder , final Matrix3D transform , final ResourceLoader loader , final String objFileName )
+		throws IOException
+	{
+		if ( loader == null )
+			throw new NullPointerException( "loader" );
+
+		final Map<String,Material> actualMaterials = DEFAULT_MATERIALS;
+		final Material defaultMaterial = actualMaterials.containsKey( "default" ) ? actualMaterials.get( "default" ) : new Material( 0xFFC0C0C0 );
 
 		/*
 		 * Read OBJ data
 		 */
-		final List<Vector3D> objVertices        = new ArrayList<Vector3D>(); // element: Vector3D
-		final List<Vector3D> objTextureVertices = new ArrayList<Vector3D>(); // element: Vector3D (u,v,w)
-		final List<Vector3D> objVertexNormals   = new ArrayList<Vector3D>(); // element: Vector3D (i,j,k)
+		final List<Vector3D> vertices        = new ArrayList<Vector3D>(); // element: Vector3D
+		final List<Vector3D> textureVertices = new ArrayList<Vector3D>(); // element: Vector3D (u,v,w)
+		final List<Vector3D> vertexNormals   = new ArrayList<Vector3D>(); // element: Vector3D (i,j,k)
+		final List<ObjFace>  faces           = new ArrayList<ObjFace>();
 
-		double[] abVertexCoordinates = null;
-		double[] abVertexNormals     = null;
-		Material abMaterial          = defaultMaterial;
+		Material material = defaultMaterial;
+
+		String objectName = null;
 
 		String line;
 		final BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( loader.getResource( objFileName ) ) );
@@ -201,7 +223,7 @@ public class ObjLoader
 						final double z = Double.parseDouble( tokens[ 3 ] );
 //						final double w = ( argCount >= 4 ) ? Double.parseDouble( tokens[ 4 ] ) : 1.0;
 
-						objVertices.add( transform.multiply( x , y , z ) );
+						vertices.add( transform.multiply( x , y , z ) );
 					}
 					/*
 					 * vt u v w
@@ -233,7 +255,7 @@ public class ObjLoader
 						final double v = Double.parseDouble( tokens[ 2 ] );
 						final double w = ( argCount >= 3 ) ? Double.parseDouble( tokens[ 3 ] ) : 0.0;
 
-						objTextureVertices.add( Vector3D.INIT.set( u , v , w ) );
+						textureVertices.add( Vector3D.INIT.set( u , v , w ) );
 					}
 					/*
 					 * vn i j k
@@ -260,7 +282,7 @@ public class ObjLoader
 						final double j = Double.parseDouble( tokens[ 2 ] );
 						final double k = Double.parseDouble( tokens[ 3 ] );
 
-						objVertexNormals.add( transform.rotate( i , j , k ) );
+						vertexNormals.add( transform.rotate( i , j , k ) );
 					}
 					/*
 					 * p  v1 v2 v3 . . .
@@ -340,48 +362,18 @@ public class ObjLoader
 					 *     References to fo in existing .obj files will still be read,
 					 *     however, they will be written out as f when the file is saved.
 					 */
-					else if ( "p".equals( name )
-					          || "l".equals( name )
-					          || "f".equals( name ) )
+					else if ( "p".equals( name ) ||
+					          "l".equals( name ) ||
+					          "f".equals( name ) )
 					{
 						if ( argCount < 1 )
 							throw new IOException( "too few face arguments in: " + line );
 
-						final int   objVertexCount            = objVertices.size();
-						final int   abVertexCoordinatesLength = objVertexCount * 3;
-						final int[] abFaceVertexIndices       = new int[ argCount ];
+						final int objVertexCount = vertices.size();
+						if ( objVertexCount < 1 )
+							throw new IOException( "vertex used before vertex declaration" );
 
-						if ( ( abVertexCoordinates == null ) || ( abVertexCoordinates.length < abVertexCoordinatesLength ) )
-						{
-							if ( objVertexCount < 1 )
-								throw new IOException( "vertex used before vertex declaration" );
-
-							final double[] oldCoords = abVertexCoordinates;
-							abVertexCoordinates = new double[ abVertexCoordinatesLength ];
-
-							int objIndex = 0;
-							int abIndex  = 0;
-
-							if ( oldCoords != null )
-							{
-								abIndex  = oldCoords.length;
-								objIndex = abIndex / 3;
-
-								System.arraycopy( oldCoords , 0 , abVertexCoordinates , 0 , abIndex );
-							}
-
-							while ( objIndex < objVertexCount )
-							{
-								final Vector3D vertex = objVertices.get( objIndex++ );
-
-								abVertexCoordinates[ abIndex++ ] = vertex.x;
-								abVertexCoordinates[ abIndex++ ] = vertex.y;
-								abVertexCoordinates[ abIndex++ ] = vertex.z;
-							}
-						}
-
-						float[] abTextureU = null;
-						float[] abTextureV = null;
+						final List<ObjFaceVertex> faceVertices = new ArrayList<ObjFaceVertex>( argCount - 1 );
 
 						for ( int argIndex = 1 ; argIndex <= argCount ; argIndex++ )
 						{
@@ -391,57 +383,14 @@ public class ObjLoader
 							if ( !matcher.matches() )
 								throw new IOException( "malformed face argument in: " + line );
 
-							final int objVertexIndex        = Integer.parseInt( matcher.group( 1 ) );
-							final int objTextureVertexIndex = ( matcher.group( 3 ) != null ) ? Integer.parseInt( matcher.group( 3 ) ) : 0;
-							final int objVertexNormalIndex  = ( matcher.group( 5 ) != null ) ? Integer.parseInt( matcher.group( 5 ) ) : 0;
+							final int vertexIndex        = Integer.parseInt( matcher.group( 1 ) ) - 1;
+							final int textureVertexIndex = ( matcher.group( 3 ) != null ) ? Integer.parseInt( matcher.group( 3 ) ) - 1 : -1;
+							final int vertexNormalIndex  = ( matcher.group( 5 ) != null ) ? Integer.parseInt( matcher.group( 5 ) ) - 1 : -1;
 
-							final int abFaceVertexIndex   = argCount - argIndex;
-							final int abVertexIndex       = objVertexIndex - 1;
-							final int abVertexIndexTimes3 = abVertexIndex * 3;
-
-							if ( abVertexIndexTimes3 >= abVertexCoordinatesLength )
-								throw new IOException( "face references non-existing vertex (vertex=" + objVertexIndex + ", abVertexCoordinates=" + ( abVertexCoordinates.length / 3 ) + ", objVertices=" + objVertices.size() + ")" );
-
-							if ( objTextureVertexIndex > 0 )
-							{
-								if ( abTextureU == null )
-								{
-									final int faceVertexCount = abFaceVertexIndices.length;
-
-									abTextureU = new float[ faceVertexCount ];
-									abTextureV = new float[ faceVertexCount ];
-								}
-
-								final Vector3D textureVertex = objTextureVertices.get( objTextureVertexIndex - 1 );
-								abTextureU[ abFaceVertexIndex ] = (float)textureVertex.x;
-								abTextureV[ abFaceVertexIndex ] = (float)textureVertex.y;
-							}
-
-							if ( objVertexNormalIndex > 0 )
-							{
-								if ( ( abVertexNormals == null ) || ( abVertexNormals.length < abVertexCoordinatesLength ) )
-								{
-									if ( objVertexNormals.isEmpty() )
-										throw new IOException( "vertex normal used before normal declaration" );
-
-									final double[] oldNormals = abVertexNormals;
-									abVertexNormals = new double[ abVertexCoordinatesLength ];
-
-									if ( oldNormals != null )
-										System.arraycopy( oldNormals , 0 , abVertexNormals , 0 , oldNormals.length );
-								}
-
-								final Vector3D vertexNormal = objVertexNormals.get( objVertexNormalIndex - 1 );
-
-								abVertexNormals[ abVertexIndexTimes3     ] = vertexNormal.x;
-								abVertexNormals[ abVertexIndexTimes3 + 1 ] = vertexNormal.y;
-								abVertexNormals[ abVertexIndexTimes3 + 2 ] = vertexNormal.z;
-							}
-
-							abFaceVertexIndices[ abFaceVertexIndex ] = abVertexIndex;
+							faceVertices.add( new ObjFaceVertex( vertexIndex , textureVertexIndex , vertexNormalIndex ) );
 						}
 
-						result.addFace( abFaceVertexIndices , abMaterial , abTextureU , abTextureV , 1.0f , true , false );
+						faces.add( new ObjFace( faceVertices , material ) );
 					}
 					/*
 					 * g group_name1 group_name2 . . .
@@ -502,8 +451,7 @@ public class ObjLoader
 					 */
 					else if ( "o".equals( name ) ) // object name (e.g. "o complete_lavalamp.lwo")
 					{
-						final String objectName = getStringAfter( line , tokens , 1 );
-						result.setTag( objectName );
+						objectName = getStringAfter( line , tokens , 1 );
 					}
 					/*
 					 * usemtl material_name
@@ -524,13 +472,13 @@ public class ObjLoader
 						if ( argCount < 1 )
 							throw new IOException( "malformed 'usemtl' entry: " + line );
 
-						String material = getStringAfter( line , tokens , 1 );
-						material = material.replace( ' ' , '_' );
-						abMaterial = actualMaterials.get( material );
-						if ( abMaterial == null )
+						String materialName = getStringAfter( line , tokens , 1 );
+						materialName = materialName.replace( ' ' , '_' );
+						material = actualMaterials.get( materialName );
+						if ( materialName == null )
 						{
-							abMaterial = defaultMaterial;
-							System.err.println( "'usemtl' references unknown material '" + material + "'" );
+							material = defaultMaterial;
+							System.err.println( "'usemtl' references unknown material '" + materialName + "'" );
 						}
 					}
 /*
@@ -549,65 +497,96 @@ public class ObjLoader
 
 //		System.out.println( " - OBJ file loaded succesfully" );
 
-		result.setVertexCoordinates( abVertexCoordinates );
-
-		if ( abVertexNormals != null )
+		final double[] abVertexCoordinates = new double[ vertices.size() * 3 ];
+		for ( int objIndex = 0 , abIndex = 0 ; objIndex < vertices.size() ; objIndex++ , abIndex += 3 )
 		{
-			/*
-			 * If we have vertex normals, consider every face to be 'smooth'
-			 * when all its vertices have normals, but not all of them are the
-			 * same.
-			 */
-			for ( int faceIndex = 0 ; faceIndex < result.getFaceCount() ; faceIndex++ )
+			final Vector3D point = vertices.get( objIndex );
+			abVertexCoordinates[ abIndex ] = point.x;
+			abVertexCoordinates[ abIndex + 1 ] = point.y;
+			abVertexCoordinates[ abIndex + 2 ] = point.z;
+		}
+
+		builder.setVertexCoordinates( abVertexCoordinates );
+
+		List<Vector3D> assignedVertexNormals = null;
+
+		for ( final ObjFace objFace : faces )
+		{
+			final List<ObjFaceVertex> faceVertices = objFace._vertices;
+			final int faceVertexCount = faceVertices.size();
+
+			final int[] vertexIndices = new int[faceVertexCount];
+			float[] textureU = null;
+			float[] textureV = null;
+			boolean smooth = false;
+			Vector3D fixedVertexNormal = null;
+
+			for ( int faceVertexIndex = 0 ; faceVertexIndex < faceVertexCount ; faceVertexIndex++ )
 			{
-				final Face3D face          = result.getFace( faceIndex );
-				final int[]  vertexIndices = face.getVertexIndices();
-				final int    vertexCount   = face.getVertexCount();
+				final ObjFaceVertex objFaceVertex = faceVertices.get( faceVertexCount - faceVertexIndex - 1 );
 
-				if ( vertexCount > 2 )
+				final int vertexIndex = objFaceVertex._vertexIndex;
+				if ( vertexIndex >= vertices.size() )
+					throw new IOException( "out-of-bounds vertex (" + vertexIndex + " >= " + vertices.size() + ")" );
+
+				vertexIndices[ faceVertexIndex ] = vertexIndex;
+
+				final int textureVertexIndex = objFaceVertex._textureVertexIndex;
+				if ( textureVertexIndex >= 0 )
 				{
-					boolean haveAll  = ( vertexCount > 2 );
-					boolean allSame  = true;
-					double  firstVNX = 0.0;
-					double  firstVNY = 0.0;
-					double  firstVNZ = 0.0;
+					if ( textureVertexIndex >= textureVertices.size() )
+						throw new IOException( "out-of-bounds texture vertex (" + textureVertexIndex + " >= " + textureVertices.size() + ")" );
 
-					for ( int faceVertexIndex = 0 ; haveAll && ( faceVertexIndex < vertexCount ) ; faceVertexIndex++ )
+					if ( textureU == null )
 					{
-						final int vi = vertexIndices[ faceVertexIndex ] * 3;
+						textureU = new float[ faceVertexCount ];
+						textureV = new float[ faceVertexCount ];
+					}
 
-						final double vnx = abVertexNormals[ vi     ];
-						final double vny = abVertexNormals[ vi + 1 ];
-						final double vnz = abVertexNormals[ vi + 2 ];
+					final Vector3D textureVertex = textureVertices.get( textureVertexIndex );
+					textureU[ faceVertexIndex ] = (float)textureVertex.x;
+					textureV[ faceVertexIndex ] = (float)textureVertex.y;
+				}
 
-						haveAll = ( vnx != 0.0 ) && ( vny != 0.0 ) && ( vnz != 0.0 );
-						if ( haveAll )
+				final int vertexNormalIndex = objFaceVertex._vertexNormalIndex;
+				if ( vertexNormalIndex >= 0 )
+				{
+					if ( vertexNormalIndex >= vertexNormals.size() )
+						throw new IOException( "out-of-bounds vertex normal (" + vertexNormalIndex + " >= " + vertexNormals.size() + ")" );
+
+					final Vector3D vertexNormal = vertexNormals.get( vertexNormalIndex );
+
+					if ( assignedVertexNormals == null )
+					{
+						assignedVertexNormals = new ArrayList<Vector3D>( vertices.size() );
+						for ( int i = vertices.size() ; --i >= 0 ; )
 						{
-							if ( faceVertexIndex == 0 )
-							{
-								firstVNX = vnx;
-								firstVNY = vny;
-								firstVNZ = vnz;
-							}
-							else
-							{
-								allSame &= ( ( vnx == firstVNX ) && ( vny == firstVNY ) && ( vnz == firstVNZ ) );
-							}
+							assignedVertexNormals.add( Vector3D.ZERO );
 						}
 					}
 
-					face.setSmooth( haveAll && !allSame );
-				}
-				else
-				{
-					face.setSmooth( false );
+					assignedVertexNormals.set( vertexIndex , vertexNormal );
+
+					if ( fixedVertexNormal == null )
+					{
+						fixedVertexNormal = vertexNormal;
+					}
+					else
+					{
+						smooth |= !fixedVertexNormal.equals( vertexNormal );
+					}
 				}
 			}
 
-			result.setVertexNormals( abVertexNormals );
+			builder.addFace( vertexIndices , objFace._material , textureU , textureV , smooth , false );
 		}
 
-		return result;
+		if ( assignedVertexNormals != null )
+		{
+			builder.setVertexNormals( assignedVertexNormals );
+		}
+
+		return objectName;
 	}
 
 	static
@@ -821,5 +800,67 @@ public class ObjLoader
 			line = line.replaceAll( "\\s+" , " " );
 		}
 		return line;
+	}
+
+	/**
+	 * This class is used to represent a face in an OBJ file.
+	 */
+	private static class ObjFace
+	{
+		/**
+		 * Vertices in face.
+		 */
+		private final List<ObjFaceVertex> _vertices;
+
+		/**
+		 * Material of face.
+		 */
+		private final Material _material;
+
+		/**
+		 * Construct face.
+		 * @param   vertices    Vertices in face.
+		 * @param   material    Material of face.
+		 */
+		private ObjFace( final List<ObjFaceVertex> vertices, final Material material )
+		{
+			_vertices = vertices;
+			_material= material;
+		}
+	}
+
+	/**
+	 * This class is used to represent a vertex of a face in an OBJ file.
+	 */
+	private static class ObjFaceVertex
+	{
+		/**
+		 * Index of vertex (0=first).
+		 */
+		private final int _vertexIndex;
+
+		/**
+		 * Index of texture vertex (0=first, -1=undefined).
+		 */
+		private final int _textureVertexIndex;
+
+		/**
+		 * Index of vertex normal (0=first, -1=undefined).
+		 */
+		private final int _vertexNormalIndex;
+
+		/**
+		 * Construct vertex.
+		 *
+		 * @param   vertexIndex         Index of vertex (0=first).
+		 * @param   textureVertexIndex  Index of texture vertex (0=first, -1=undefined).
+		 * @param   vertexNormalIndex   Index of vertex normal (0=first, -1=undefined).
+		 */
+		private ObjFaceVertex( final int vertexIndex, final int textureVertexIndex, final int vertexNormalIndex )
+		{
+			_vertexIndex = vertexIndex;
+			_textureVertexIndex = textureVertexIndex;
+			_vertexNormalIndex = vertexNormalIndex;
+		}
 	}
 }

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2008
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.model;
+package ab.j3d.geom;
 
 import java.awt.Shape;
 import java.awt.geom.Area;
@@ -49,11 +49,6 @@ import com.numdata.oss.MathTools;
 class AreaTriangulator
 	implements Triangulator
 {
-	/**
-	 * Name of this class.
-	 */
-	private static final String CLASS_NAME = AreaTriangulator.class.getName();
-
 	/**
 	 * Indicates whether the normals of created triangles should be flipped.
 	 */
@@ -334,7 +329,7 @@ class AreaTriangulator
 	private Triangulation triangulate( final List<Area> areas )
 	{
 		//System.out.println( CLASS_NAME + ".triangulate" );
-		final long start = System.nanoTime();
+//		final long start = System.nanoTime();
 
 		final List<Triangulation> triangulations = new ArrayList<Triangulation>( areas.size() );
 
@@ -383,7 +378,7 @@ class AreaTriangulator
 
 		final TriangulationImpl result = new TriangulationImpl( points , triangles );
 
-		final long end = System.nanoTime();
+//		final long end = System.nanoTime();
 		//System.out.println( " - " + result._points.size() + " vertices, " + result._triangles.size() + " triangles in " + ( (double)( ( end - start ) / 100000L ) / 10.0 ) + " ms" );
 
 		return result;

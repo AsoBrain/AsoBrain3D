@@ -38,6 +38,7 @@ import ab.j3d.model.Box3D;
 import ab.j3d.model.ContentNode;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Object3D;
+import ab.j3d.model.Object3DBuilder;
 import ab.j3d.model.Scene;
 import ab.j3d.view.RenderEngine;
 import ab.j3d.view.View3D;
@@ -231,7 +232,7 @@ public final class Model3D
 			setMaterialOfAllFaces( element3D , SELECTION_MATERIAL );
 		}
 
-		_scene.addContentNode( element , transform , element3D , null , 1.0f);
+		_scene.addContentNode( element , transform , element3D );
 		_elements.add( element );
 	}
 
@@ -247,17 +248,12 @@ public final class Model3D
 		final double halfX = floor.getXSize() / 2.0;
 		final double halfY = floor.getYSize() / 2.0;
 
-		final Vector3D[] floorCoords = new Vector3D[]
-		{
-			Vector3D.INIT.set( -halfX , -halfY , 0.0 ) ,
-			Vector3D.INIT.set( -halfX ,  halfY , 0.0 ) ,
-			Vector3D.INIT.set(  halfX ,  halfY , 0.0 ) ,
-			Vector3D.INIT.set(  halfX , -halfY , 0.0 ) ,
-		};
-
-		final Object3D result = new Object3D();
-		result.addFace( floorCoords , FLOOR_MATERIAL , false , true );
-		return result;
+		final Object3DBuilder builder = new Object3DBuilder();
+		builder.addQuad( Vector3D.INIT.set( -halfX , -halfY , 0.0 ) ,
+		                 Vector3D.INIT.set( -halfX ,  halfY , 0.0 ) ,
+		                 Vector3D.INIT.set(  halfX ,  halfY , 0.0 ) ,
+		                 Vector3D.INIT.set(  halfX , -halfY , 0.0 ) , FLOOR_MATERIAL , true );
+		return builder.getObject3D();
 	}
 
 	/**
@@ -298,20 +294,16 @@ public final class Model3D
 		final double depth1    = height / Math.tan( Math.toRadians( 51.0 ) );
 		final double depth2    = depth  - depth1;
 
-		result.setVertexCoordinates( new double[]
-			{
-				/* 0 */ -halfWidth , -depth2 ,    0.0 ,
-				/* 1 */  halfWidth , -depth2 ,    0.0 ,
-				/* 2 */        0.0 ,  depth1 ,    0.0 ,
-				/* 3 */        0.0 ,     0.0 , height ,
-			} );
+		final Vector3D v0 = Vector3D.INIT.set( -halfWidth , -depth2 ,    0.0 );
+		final Vector3D v1 = Vector3D.INIT.set(  halfWidth , -depth2 ,    0.0 );
+		final Vector3D v2 = Vector3D.INIT.set(        0.0 ,  depth1 ,    0.0 );
+		final Vector3D v3 = Vector3D.INIT.set(        0.0 ,     0.0 , height );
 
-
-		/* Bottom */ result.addFace( new int[] { 2 , 0 , 1 } , material , false );
-		/* Back   */ result.addFace( new int[] { 3 , 1 , 0 } , material , false );
-		/* Left   */ result.addFace( new int[] { 3 , 0 , 2 } , material , false );
-		/* Right  */ result.addFace( new int[] { 3 , 2 , 1 } , material , false );
-
+		final Object3DBuilder builder = new Object3DBuilder();
+		/* Bottom */ builder.addTriangle( v2 , v0 , v1 , material , false );
+		/* Back   */ builder.addTriangle( v3 , v1 , v0 , material , false );
+		/* Left   */ builder.addTriangle( v3 , v0 , v2 , material , false );
+		/* Right  */ builder.addTriangle( v3 , v2 , v1 , material , false );
 		return result;
 	}
 
@@ -400,7 +392,7 @@ public final class Model3D
 				final Object3D hedron3D = (Object3D)hedronNode.getNode3D();
 
 				final Face3D face = hedron3D.getFace( newFace.getFaceNumber() );
-				face.setMaterial( FACE_SELECTION_MATERIAL );
+				face.material = FACE_SELECTION_MATERIAL;
 			}
 		}
 
@@ -428,7 +420,7 @@ public final class Model3D
 		for ( int i = 0 ; i < object.getFaceCount() ; i++ )
 		{
 			final Face3D face = object.getFace( i );
-			face.setMaterial( material );
+			face.material = material;
 		}
 	}
 }

@@ -29,8 +29,7 @@ import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.geom.BasicRay3D;
-
-import com.numdata.oss.junit.ArrayTester;
+import ab.j3d.model.Face3D.Vertex;
 
 /**
  * This class tests the {@link Object3D} class.
@@ -73,7 +72,12 @@ public final class TestObject3D
 		assertEquals( "[post] totalVertexCount" , 4 , object.getVertexCount() );
 
 		final Face3D face = object.getFace( 0 );
-	    ArrayTester.assertEquals( "face.vertexIndices" , "expected" , "vertexIndices" , new int[] { 0 , 1 , 2 , 3 } , face.getVertexIndices() );
+	    final List<Vertex> vertices = face.vertices;
+		assertEquals( "face.vertices.length" , 4 , vertices.size() );
+		assertEquals( "face.vertices[0].vertexCoordinateIndex" , 0 , vertices.get( 0 ).vertexCoordinateIndex );
+		assertEquals( "face.vertices[1].vertexCoordinateIndex" , 1 , vertices.get( 1 ).vertexCoordinateIndex );
+		assertEquals( "face.vertices[2].vertexCoordinateIndex" , 2 , vertices.get( 2 ).vertexCoordinateIndex );
+		assertEquals( "face.vertices[3].vertexCoordinateIndex" , 3 , vertices.get( 3 ).vertexCoordinateIndex );
 	}
 
 	/**
@@ -92,39 +96,38 @@ public final class TestObject3D
 		final Vector3D rbt = Vector3D.INIT.set(  1.0 ,  1.0 ,  1.0 );
 		final Vector3D lbt = Vector3D.INIT.set( -1.0 ,  1.0 ,  1.0 );
 
-		final Object3D cube = new Object3D();
-		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , false , false );
-		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , null , false , false );
-		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , null , false , false );
-		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , null , false , false );
-		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , false , false );
-		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , false , false );
+		final Object3DBuilder builder = new Object3DBuilder();
+		/* top    */ builder.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , false , false );
+		/* bottom */ builder.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , null , false , false );
+		/* front  */ builder.addFace( new Vector3D[] { lfb , lft , rft , rfb } , null , false , false );
+		/* back   */ builder.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , null , false , false );
+		/* left   */ builder.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , false , false );
+		/* right  */ builder.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , false , false );
+		final Object3D cube = builder.getObject3D();
 
-		final double[] faceNormals = cube.getFaceNormals( null , null );
+		assertEquals( "Normal(top).x"    ,  0.0 , cube.getFace( 0 ).normal.x , 0.001 );
+		assertEquals( "Normal(top).y"    ,  0.0 , cube.getFace( 0 ).normal.y , 0.001 );
+		assertEquals( "Normal(top).z"    ,  1.0 , cube.getFace( 0 ).normal.z , 0.001 );
 
-		assertEquals( "Normal(top).x"    ,  0.0 , faceNormals[  0 ] , 0.001 );
-		assertEquals( "Normal(top).y"    ,  0.0 , faceNormals[  1 ] , 0.001 );
-		assertEquals( "Normal(top).z"    ,  1.0 , faceNormals[  2 ] , 0.001 );
+		assertEquals( "Normal(bottom).x" ,  0.0 , cube.getFace( 1 ).normal.x , 0.001 );
+		assertEquals( "Normal(bottom).y" ,  0.0 , cube.getFace( 1 ).normal.y , 0.001 );
+		assertEquals( "Normal(bottom).z" , -1.0 , cube.getFace( 1 ).normal.z , 0.001 );
 
-		assertEquals( "Normal(bottom).x" ,  0.0 , faceNormals[  3 ] , 0.001 );
-		assertEquals( "Normal(bottom).y" ,  0.0 , faceNormals[  4 ] , 0.001 );
-		assertEquals( "Normal(bottom).z" , -1.0 , faceNormals[  5 ] , 0.001 );
+		assertEquals( "Normal(front).x"  ,  0.0 , cube.getFace( 2 ).normal.x , 0.001 );
+		assertEquals( "Normal(front).y"  , -1.0 , cube.getFace( 2 ).normal.y , 0.001 );
+		assertEquals( "Normal(front).z"  ,  0.0 , cube.getFace( 2 ).normal.z , 0.001 );
 
-		assertEquals( "Normal(front).x"  ,  0.0 , faceNormals[  6 ] , 0.001 );
-		assertEquals( "Normal(front).y"  , -1.0 , faceNormals[  7 ] , 0.001 );
-		assertEquals( "Normal(front).z"  ,  0.0 , faceNormals[  8 ] , 0.001 );
+		assertEquals( "Normal(back).x"   ,  0.0 , cube.getFace( 3 ).normal.x , 0.001 );
+		assertEquals( "Normal(back).y"   ,  1.0 , cube.getFace( 3 ).normal.y , 0.001 );
+		assertEquals( "Normal(back).z"   ,  0.0 , cube.getFace( 3 ).normal.z , 0.001 );
 
-		assertEquals( "Normal(back).x"   ,  0.0 , faceNormals[  9 ] , 0.001 );
-		assertEquals( "Normal(back).y"   ,  1.0 , faceNormals[ 10 ] , 0.001 );
-		assertEquals( "Normal(back).z"   ,  0.0 , faceNormals[ 11 ] , 0.001 );
+		assertEquals( "Normal(left).x"   , -1.0 , cube.getFace( 4 ).normal.x , 0.001 );
+		assertEquals( "Normal(left).y"   ,  0.0 , cube.getFace( 4 ).normal.y , 0.001 );
+		assertEquals( "Normal(left).z"   ,  0.0 , cube.getFace( 4 ).normal.z , 0.001 );
 
-		assertEquals( "Normal(left).x"   , -1.0 , faceNormals[ 12 ] , 0.001 );
-		assertEquals( "Normal(left).y"   ,  0.0 , faceNormals[ 13 ] , 0.001 );
-		assertEquals( "Normal(left).z"   ,  0.0 , faceNormals[ 14 ] , 0.001 );
-
-		assertEquals( "Normal(right).x"  ,  1.0 , faceNormals[ 15 ] , 0.001 );
-		assertEquals( "Normal(right).y"  ,  0.0 , faceNormals[ 16 ] , 0.001 );
-		assertEquals( "Normal(right).z"  ,  0.0 , faceNormals[ 17 ] , 0.001 );
+		assertEquals( "Normal(right).x"  ,  1.0 , cube.getFace( 5 ).normal.x , 0.001 );
+		assertEquals( "Normal(right).y"  ,  0.0 , cube.getFace( 5 ).normal.y , 0.001 );
+		assertEquals( "Normal(right).z"  ,  0.0 , cube.getFace( 5 ).normal.z , 0.001 );
 	}
 
 	/**

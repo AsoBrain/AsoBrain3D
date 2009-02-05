@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2007
+ * (C) Copyright Numdata BV 2004-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,13 +20,13 @@
 package ab.j3d.model;
 
 import java.awt.geom.Ellipse2D;
+import java.util.List;
 
-import ab.j3d.Abstract3DObjectBuilder;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
-
-import com.numdata.oss.MathTools;
+import ab.j3d.geom.Abstract3DObjectBuilder;
+import ab.j3d.geom.UVMap;
 
 /**
  * This class provides an implementation of the {@link Abstract3DObjectBuilder}
@@ -40,7 +40,7 @@ import com.numdata.oss.MathTools;
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public final class Object3DBuilder
+public class Object3DBuilder
 	extends Abstract3DObjectBuilder
 {
 	/**
@@ -57,28 +57,165 @@ public final class Object3DBuilder
 	}
 
 	/**
+	 * Construct builder.
+	 *
+	 * @param   target  Target object.
+	 */
+	Object3DBuilder( final Object3D target )
+	{
+		_target = target;
+	}
+
+	/**
 	 * Get {@link Node3D} that was built.
 	 *
 	 * @return  The {@link Node3D} that was built.
 	 */
-	public Node3D getObject3D()
+	public Object3D getObject3D()
 	{
 		return _target;
 	}
 
+	public int getVertexIndex( final Vector3D point )
+	{
+		return _target.getVertexIndex( point.x , point.y , point.z );
+	}
+
+	/**
+	 * Get vertex index for a point with the specified coordinates. If the vertex
+	 * is not defined yet, a new vertex is added and its index is returned.
+	 *
+	 * @param   x   X component of vertex coordinates.
+	 * @param   y   Y component of vertex coordinates.
+	 * @param   z   Z component of vertex coordinates.
+	 *
+	 * @return  The index of the vertex.
+	 */
+	private int getVertexIndex( final double x , final double y , final double z )
+	{
+		return _target.getVertexIndex( x , y , z  );
+	}
+
+	public void setVertexCoordinates( final double[] vertexCoordinates )
+	{
+		_target.setVertexCoordinates( vertexCoordinates );
+	}
+
+	public void setVertexCoordinates( final List<Vector3D> vertexPoints )
+	{
+		final int vertexCount = vertexPoints.size();
+		final double[] doubles = new double[ vertexCount * 3 ];
+		int i = 0;
+		int j = 0;
+		while ( i < vertexCount )
+		{
+			final Vector3D point = vertexPoints.get( i++ );
+			doubles[ j++ ] = point.x;
+			doubles[ j++ ] = point.y;
+			doubles[ j++ ] = point.z;
+		}
+		setVertexCoordinates( doubles );
+	}
+
+	public void setVertexNormals( final double[] vertexNormals )
+	{
+		_target.setVertexNormals( vertexNormals );
+	}
+
+	public void setVertexNormals( final List<Vector3D> vertexNormals )
+	{
+		final int vertexCount = vertexNormals.size();
+		final double[] doubles = new double[ vertexCount * 3 ];
+		int i = 0;
+		int j = 0;
+		while ( i < vertexCount )
+		{
+			final Vector3D normal = vertexNormals.get( i++ );
+			doubles[ j++ ] = normal.x;
+			doubles[ j++ ] = normal.y;
+			doubles[ j++ ] = normal.z;
+		}
+		setVertexNormals( doubles );
+	}
+
+	public void addFace( final Vector3D[] points , final Material material , final boolean smooth , final boolean twoSided )
+	{
+		addFace( points , material , null , null , smooth , twoSided );
+	}
+
+	public void addFace( final int[] vertexIndices , final Material material , final boolean smooth , final boolean twoSided )
+	{
+		addFace( vertexIndices , material , null , null , smooth , twoSided );
+	}
+
+	public void addFace( final Vector3D[] points , final Material material , final UVMap uvMap , final boolean flipTexture , final boolean smooth , final boolean twoSided )
+	{
+		final int[] vertexIndices = new int[points.length];
+
+		for ( int i = 0 ; i < points.length; i++ )
+		{
+			final Vector3D vertex = points[ i ];
+			vertexIndices[ i ] = getVertexIndex( vertex.x , vertex.y , vertex.z );
+		}
+
+		addFace( vertexIndices , material , uvMap , flipTexture , smooth , twoSided );
+	}
+
+	public void addFace( final int[] vertexIndices , final Material material , final UVMap uvMap , final boolean flipTexture , final boolean smooth , final boolean twoSided )
+	{
+		final float[] textureU = new float[ vertexIndices.length ];
+		final float[] textureV = new float[ vertexIndices.length ];
+		uvMap.generate( material , _target._vertexCoordinates , vertexIndices , flipTexture , textureU , textureV );
+
+		addFace( vertexIndices , material , textureU , textureV , smooth , twoSided );
+	}
+
+	public void addFace( final Vector3D[] points , final Material material , final float[] textureU , final float[] textureV , final boolean smooth , final boolean twoSided )
+	{
+		final int   vertexCount   = points.length;
+		final int[] vertexIndices = new int[ vertexCount ];
+
+		for ( int i = 0 ; i < vertexCount ; i++ )
+		{
+			final Vector3D vertex = points[ i ];
+			vertexIndices[ i ] = getVertexIndex( vertex.x , vertex.y , vertex.z );
+		}
+
+		addFace( vertexIndices , material , textureU , textureV , smooth , twoSided );
+	}
+
+	public void addFace( final int[] vertexIndices , final Material material , final float[] textureU , final float[] textureV , final boolean smooth , final boolean twoSided )
+	{
+		_target.addFace( new Face3D( _target , vertexIndices , material , textureU , textureV , smooth , twoSided ) );
+	}
+
 	public void addLine( final Vector3D point1 , final Vector3D point2 , final int stroke , final Material material )
 	{
-		_target.addFace( new Vector3D[] { point1 , point2 } , material , false , true );
+		addFace( new Vector3D[] { point1 , point2 } , material , false , true );
 	}
 
 	public void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Material material , final boolean hasBackface )
 	{
-		_target.addFace( new Vector3D[] { point1 , point2 , point3 } , material , false , hasBackface );
+		addFace( new Vector3D[] { point1 , point2 , point3 } , material , false , hasBackface );
+	}
+
+	public void addTriangle( final Vector3D point1 , final float colorMapU1 , final float colorMapV1 , final Vector3D point2 , final float colorMapU2 , final float colorMapV2 , final Vector3D point3 , final float colorMapU3 , final float colorMapV3 , final Material material , final boolean hasBackface )
+	{
+		addFace( new Vector3D[] { point1 , point2 , point3 } , material ,
+		         new float[] { colorMapU1 , colorMapU2 , colorMapU3 } ,
+		         new float[] { colorMapV1 , colorMapV2 , colorMapV3 } , false , hasBackface );
 	}
 
 	public void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final Material material , final boolean hasBackface )
 	{
-		_target.addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , material , false , hasBackface );
+		addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , material , false , hasBackface );
+	}
+
+	public void addQuad( final Vector3D point1 , final float colorMapU1 , final float colorMapV1 , final Vector3D point2 , final float colorMapU2 , final float colorMapV2 , final Vector3D point3 , final float colorMapU3 , final float colorMapV3 , final Vector3D point4 , final float colorMapU4 , final float colorMapV4 , final Material material , final boolean hasBackface )
+	{
+		addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , material ,
+		         new float[] { colorMapU1 , colorMapU2 , colorMapU3 , colorMapU4 } ,
+		         new float[] { colorMapV1 , colorMapV2 , colorMapV3 , colorMapV4 } , false , hasBackface );
 	}
 
 	public void addCircle( final Vector3D centerPoint , final double radius , final Vector3D normal , final Vector3D extrusion , final int stroke , final Material material , final boolean fill )
@@ -86,116 +223,11 @@ public final class Object3DBuilder
 		final Matrix3D  base      = Matrix3D.getPlaneTransform( centerPoint , normal , true );
 		final Ellipse2D ellipse2d = new Ellipse2D.Double( -radius , -radius , radius * 2.0 , radius * 2.0 );
 
-		ExtrudedObject2D.generate( _target , ellipse2d , extrusion , base , material , radius * 0.02 , true );
+		ExtrudedObject2D.generateExtrudedShape( _target , ellipse2d , extrusion , base , material , radius * 0.02 , true );
 	}
 
 	public void addText( final String text , final Vector3D origin , final double height , final double rotationAngle , final double obliqueAngle , final Vector3D extrusion , final Material material )
 	{
 	}
 
-	/**
-	 * This constructor can be used to create a 3D object that is constructed
-	 * using a 2D outline which is rotated around the Y-axis. If requested,
-	 * the ends will be closed (if not done so already).
-	 *
-	 * The 'detail' parameter is used to specify the number of segments used
-	 * to rotate around the Z-axis (minimum: 3).
-	 *
-	 * NOTE: To construct an outer surface, use increasing values for Z!
-	 *
-	 * @param   xform               Transform to apply to points.
-	 * @param   radii               X coordinates of 2D outline.
-	 * @param   zCoordinates        Z coordinates of 2D outline.
-	 * @param   detail              Number of segments around the Y-axis.
-	 * @param   material            Material to apply to faces.
-	 * @param   smoothCircumference Set 'smooth' flag for circumference faces.
-	 * @param   closeEnds           Close ends of shape (make solid).
-	 *
-	 * @return  Generated {@link Object3D}.
-	 */
-	public static Object3D constructRotatedObject( final Matrix3D xform , final double[] radii , final double[] zCoordinates , final int detail , final Material material , final boolean smoothCircumference , final boolean closeEnds )
-	{
-		final Object3D result = new Object3D();
-		int[] prevVertexIndices = null;
-
-		for ( int i = 0 ; i < radii.length ; i++ )
-		{
-			final double radius = radii[ i ];
-			final double z      = zCoordinates[ i ];
-
-			/*
-			 * Based on 'radius', create a list of vertex indices at this point.
-			 */
-			final int[] vertexIndices;
-			if ( MathTools.almostEqual( radius , 0.0 ) )
-			{
-				vertexIndices = new int[] { ( xform == null )
-					? result.getVertexIndex( 0.0 , 0.0 , z )
-					: result.getVertexIndex( xform.transformX( 0.0 , 0.0 , z ) , xform.transformY( 0.0 , 0.0 , z ) , xform.transformZ( 0.0 , 0.0 , z ) ) };
-			}
-			else
-			{
-				vertexIndices = new int[ detail ];
-
-				final double stepSize = 2.0 * Math.PI / (double)detail;
-				for ( int step = 0 ; step < detail ; step++ )
-				{
-					final double angle = (double)step * stepSize;
-					final double x     =  Math.sin( angle ) * radius;
-					final double y     = -Math.cos( angle ) * radius;
-
-					vertexIndices[ step ] = ( xform == null )
-						? result.getVertexIndex( x , y , z )
-						: result.getVertexIndex( xform.transformX( x , y , z ) , xform.transformY( x , y , z ) , xform.transformZ( x , y , z ) );
-				}
-
-				if ( closeEnds )
-				{
-					if ( i == 0 )
-					{
-						result.addFace( vertexIndices , material , false );
-					}
-					else if ( i == radii.length - 1 )
-					{
-						final int[] reversed = new int[ detail ];
-						for ( int step = 0 ; step < detail ; step++ )
-							reversed[ step ] = vertexIndices[ detail - 1 - step ];
-
-						result.addFace( reversed , material , false );
-					}
-				}
-			}
-
-			/*
-			 * Construct faces between this and the previous 'row'.
-			 */
-			if ( prevVertexIndices != null )
-			{
-				if ( vertexIndices.length > 1 )
-				{
-					if ( prevVertexIndices.length > 1 )
-					{
-						for ( int step = 0 ; step < detail ; step++ )
-						{
-							final int nextStep = ( step + 1 ) % detail;
-							result.addFace( new int[] { prevVertexIndices[ step ] , vertexIndices[ step ] , vertexIndices[ nextStep ] , prevVertexIndices[ nextStep ] } , material , smoothCircumference );
-						}
-					}
-					else
-					{
-						for ( int step = 0 ; step < detail ; step++ )
-							result.addFace( new int[] { prevVertexIndices[ 0 ] , vertexIndices[ step ] , vertexIndices[ ( step + 1 ) % detail ] } , material , smoothCircumference );
-					}
-				}
-				else if ( prevVertexIndices.length > 1 )
-				{
-					for ( int step = 0 ; step < detail ; step++ )
-						result.addFace( new int[] { prevVertexIndices[ step ] , vertexIndices[ 0 ] , prevVertexIndices[ ( step + 1 ) % detail ] } , material , smoothCircumference );
-				}
-			}
-			prevVertexIndices = vertexIndices;
-		}
-
-		return result;
-	}
 }

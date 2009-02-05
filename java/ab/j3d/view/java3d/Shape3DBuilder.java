@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2007 Peter S. Heijnen
+ * Copyright (C) 1999-2009 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,8 +34,11 @@ import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
+import ab.j3d.model.Face3D.Vertex;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
+
+import com.numdata.oss.AugmentedList;
 
 /**
  * This object builds {@link Shape3D} objects based on data from
@@ -242,7 +245,8 @@ public class Shape3DBuilder
 
 		void addFace( final Matrix3D object2view , final Face3D face )
 		{
-			final int vertexCount = face.getVertexCount();
+			final AugmentedList<Face3D.Vertex> vertices = face.vertices;
+			final int vertexCount = vertices.size();
 			if ( vertexCount >= 2 )
 			{
 				final Appearance appearance = _appearance;
@@ -262,25 +266,25 @@ public class Shape3DBuilder
 					}
 
 					final int coordinateIndex = lineCount * 2;
-					lineArray.setCoordinate( coordinateIndex     , getVertexCoordinate( object2view , face , 0 ) );
-					lineArray.setCoordinate( coordinateIndex + 1 , getVertexCoordinate( object2view , face , 1 ) );
+					lineArray.setCoordinate( coordinateIndex     , getVertexCoordinate( object2view , vertices.get( 0 ) ) );
+					lineArray.setCoordinate( coordinateIndex + 1 , getVertexCoordinate( object2view , vertices.get( 1 ) ) );
 
 					_lineArray = lineArray;
 					_lineCount = lineCount + 1;
 				}
 				else // vertexCount > 2
 				{
-					final float[] faceU = face.getTextureU();
-					final float[] faceV = face.getTextureV();
-					final boolean hasUV = ( _material == face.getMaterial() ) && ( faceU != null ) && ( faceV != null ) && ( appearance.getTexture() != null );
+					Vertex vertex = vertices.get( 0 );
 
-					final Point3d    vertexCoord0  = getVertexCoordinate( object2view , face , 0 );
-					final Vector3f   vertexNormal0 = getVertexNormal( object2view , face , 0 );
-					final TexCoord2f textureCoord0 = hasUV ? new TexCoord2f( faceU[ 0 ] , faceV[ 0 ] ) : null;
+					final Point3d       vertexCoord0  = getVertexCoordinate( object2view , vertex );
+					final TexCoord2f    textureCoord0 = new TexCoord2f( vertex.colorMapU , vertex.colorMapV );
+					final Vector3f      vertexNormal0 = getVertexNormal( object2view , face , 0 );
 
-					Point3d    vertexCoord1  = getVertexCoordinate( object2view , face , 1 );
+					vertex = vertices.get( 1 );
+
+					Point3d    vertexCoord1  = getVertexCoordinate( object2view , vertex );
+					TexCoord2f textureCoord1 = new TexCoord2f( vertex.colorMapU , vertex.colorMapV );
 					Vector3f   vertexNormal1 = getVertexNormal( object2view , face , 1 );
-					TexCoord2f textureCoord1 = hasUV ? new TexCoord2f( faceU[ 1 ] , faceV[ 1 ] ) : null;
 
 					if ( vertexCount > 3 ) // more than 3 vertices => add quads
 					{
@@ -292,20 +296,21 @@ public class Shape3DBuilder
 							if ( quadCount == 0 )
 								throw new IllegalStateException( "should have called prepareFace()!" );
 
-							quadArray = new QuadArray( 4 * quadCount , QuadArray.COORDINATES | QuadArray.NORMALS | ( hasUV ? QuadArray.TEXTURE_COORDINATE_2 : 0 ) );
+							quadArray = new QuadArray( 4 * quadCount , QuadArray.COORDINATES | QuadArray.NORMALS | QuadArray.TEXTURE_COORDINATE_2 );
 							quadCount = 0;
 						}
 
-						for ( int vertex3 = 3 ; vertex3 < vertexCount ; vertex3 += 2 )
+						for ( int vertexIndex3 = 3 ; vertexIndex3 < vertexCount ; vertexIndex3 += 2 )
 						{
-							final int        vertex2       = vertex3 - 1;
-							final Point3d    vertexCoord2  = getVertexCoordinate( object2view , face , vertex2 );
-							final Vector3f   vertexNormal2 = getVertexNormal( object2view , face , vertex2 );
-							final TexCoord2f textureCoord2 = hasUV ? new TexCoord2f( faceU[ vertex2 ] ,  faceV[ vertex2 ] ) : null;
+							vertex = vertices.get( vertexIndex3 - 1 );
+							final Point3d    vertexCoord2  = getVertexCoordinate( object2view , vertex );
+							final TexCoord2f textureCoord2 = new TexCoord2f( vertex.colorMapU , vertex.colorMapV );
+							final Vector3f   vertexNormal2 = getVertexNormal( object2view , face , vertexIndex3 - 1 );
 
-							final Point3d    vertexCoord3  = getVertexCoordinate( object2view , face , vertex3 );
-							final Vector3f   vertexNormal3 = getVertexNormal( object2view , face , vertex3 );
-							final TexCoord2f textureCoord3 = hasUV ? new TexCoord2f( faceU[ vertex3 ] , faceV[ vertex3 ] ) : null;
+							vertex = vertices.get( vertexIndex3 );
+							final Point3d    vertexCoord3  = getVertexCoordinate( object2view , vertex );
+							final TexCoord2f textureCoord3 = new TexCoord2f( vertex.colorMapU , vertex.colorMapV );
+							final Vector3f   vertexNormal3 = getVertexNormal( object2view , face , vertexIndex3 );
 
 							final int coordinateIndex = quadCount * 4;
 
@@ -314,18 +319,15 @@ public class Shape3DBuilder
 							quadArray.setCoordinate( coordinateIndex + 2 , vertexCoord1 );
 							quadArray.setCoordinate( coordinateIndex + 3 , vertexCoord0 );
 
+							quadArray.setTextureCoordinate( 0 , coordinateIndex     , textureCoord3 );
+							quadArray.setTextureCoordinate( 0 , coordinateIndex + 1 , textureCoord2 );
+							quadArray.setTextureCoordinate( 0 , coordinateIndex + 2 , textureCoord1 );
+							quadArray.setTextureCoordinate( 0 , coordinateIndex + 3 , textureCoord0 );
+
 							quadArray.setNormal( coordinateIndex     , vertexNormal3 );
 							quadArray.setNormal( coordinateIndex + 1 , vertexNormal2 );
 							quadArray.setNormal( coordinateIndex + 2 , vertexNormal1 );
 							quadArray.setNormal( coordinateIndex + 3 , vertexNormal0 );
-
-							if ( hasUV )
-							{
-								quadArray.setTextureCoordinate( 0 , coordinateIndex     , textureCoord3 );
-								quadArray.setTextureCoordinate( 0 , coordinateIndex + 1 , textureCoord2 );
-								quadArray.setTextureCoordinate( 0 , coordinateIndex + 2 , textureCoord1 );
-								quadArray.setTextureCoordinate( 0 , coordinateIndex + 3 , textureCoord0 );
-							}
 
 							vertexCoord1  = vertexCoord3;
 							vertexNormal1 = vertexNormal3;
@@ -348,14 +350,14 @@ public class Shape3DBuilder
 							if ( triangleCount == 0 )
 								throw new IllegalStateException( "should have called prepareFace()!" );
 
-							triangleArray = new TriangleArray( 3 * triangleCount , TriangleArray.COORDINATES | TriangleArray.NORMALS | ( hasUV ? TriangleArray.TEXTURE_COORDINATE_2 : 0 ) );
+							triangleArray = new TriangleArray( 3 * triangleCount , TriangleArray.COORDINATES | TriangleArray.NORMALS | TriangleArray.TEXTURE_COORDINATE_2 );
 							triangleCount = 0;
 						}
 
-						final int        vertexIndex2  = vertexCount - 1;
-						final Point3d    vertexCoord2  = getVertexCoordinate( object2view , face , vertexIndex2 );
-						final Vector3f   vertexNormal2 = getVertexNormal( object2view , face , vertexIndex2 );
-						final TexCoord2f textureCoord2 = hasUV ? new TexCoord2f( faceU[ vertexIndex2 ] , faceV[ vertexIndex2 ] ) : null;
+						vertex = vertices.get( vertexCount - 1 );
+						final Point3d    vertexCoord2  = getVertexCoordinate( object2view , vertex );
+						final Vector3f   vertexNormal2 = getVertexNormal( object2view , face , vertexCount - 1 );
+						final TexCoord2f textureCoord2 = new TexCoord2f( vertex.colorMapU , vertex.colorMapV );
 
 						final int coordinateIndex = triangleCount * 3;
 
@@ -363,16 +365,13 @@ public class Shape3DBuilder
 						triangleArray.setCoordinate( coordinateIndex + 1 , vertexCoord1 );
 						triangleArray.setCoordinate( coordinateIndex + 2 , vertexCoord0 );
 
+						triangleArray.setTextureCoordinate( 0 , coordinateIndex     , textureCoord2 );
+						triangleArray.setTextureCoordinate( 0 , coordinateIndex + 1 , textureCoord1 );
+						triangleArray.setTextureCoordinate( 0 , coordinateIndex + 2 , textureCoord0 );
+
 						triangleArray.setNormal( coordinateIndex     , vertexNormal2 );
 						triangleArray.setNormal( coordinateIndex + 1 , vertexNormal1 );
 						triangleArray.setNormal( coordinateIndex + 2 , vertexNormal0 );
-
-						if ( hasUV )
-						{
-							triangleArray.setTextureCoordinate( 0 , coordinateIndex     , textureCoord2 );
-							triangleArray.setTextureCoordinate( 0 , coordinateIndex + 1 , textureCoord1 );
-							triangleArray.setTextureCoordinate( 0 , coordinateIndex + 2 , textureCoord0 );
-						}
 
 						_triangleArray = triangleArray;
 						_triangleCount = triangleCount + 1;
@@ -405,38 +404,17 @@ public class Shape3DBuilder
 			_quadCount     = 0;
 		}
 
-		private static Point3d getVertexCoordinate( final Matrix3D xform , final Face3D face , final int vertexIndex )
+		private static Point3d getVertexCoordinate( final Matrix3D xform , final Face3D.Vertex vertex )
 		{
-			final double x = face.getX( vertexIndex );
-			final double y = face.getY( vertexIndex );
-			final double z = face.getZ( vertexIndex );
-
-			return new Point3d( xform.transformX( x , y , z ) , xform.transformY( x , y , z ) , xform.transformZ( x , y , z ) );
+			final Vector3D point = vertex.point;
+			return new Point3d( xform.transformX( point ) , xform.transformY( point ) , xform.transformZ( point ) );
 		}
 
 		private static Vector3f getVertexNormal( final Matrix3D object2view , final Face3D face , final int vertexIndex )
 		{
-			final boolean smooth = face.isSmooth();
-
-			final double x;
-			final double y;
-			final double z;
-
-			if ( smooth )
-			{
-				x = face.getVertexNormalX( vertexIndex );
-				y = face.getVertexNormalY( vertexIndex );
-				z = face.getVertexNormalZ( vertexIndex );
-			}
-			else
-			{
-				final Vector3D faceNormal = face.getNormal();
-				x = faceNormal.x;
-				y = faceNormal.y;
-				z = faceNormal.z;
-			}
-
-			return new Vector3f( (float)object2view.rotateX( x , y , z ) , (float)object2view.rotateY( x , y , z ) , (float)object2view.rotateZ( x , y , z ) );
+			final Vector3D normal = face.smooth ? face.getVertexNormal( vertexIndex ) : face.getNormal();
+			final Vector3D rotatedNormal = object2view.rotate( normal );
+			return new Vector3f( (float)rotatedNormal.x , (float)rotatedNormal.y , (float)rotatedNormal.z );
 		}
 	}
 
@@ -456,17 +434,16 @@ public class Shape3DBuilder
 	 * correct storage requirements, so no collection classes are needed.
 	 *
 	 * @param   face                Face to prepare for.
-	 * @param   materialOverride     Texture to use instead of actual face material.
-	 * @param   extraOpacity        Extra face opacity (0.0=translucent, 1.0=opaque).
+	 * @param   materialOverride    Texture to use instead of actual face material.
+	 * @param   opacity             Extra face opacity (0.0=translucent, 1.0=opaque).
 	 *
 	 * @see     #addFace
 	 */
-	public void prepareFace( final Face3D face , final Material materialOverride , final float extraOpacity )
+	public void prepareFace( final Face3D face , final Material materialOverride , final float opacity )
 	{
-		final Material material = ( materialOverride != null ) ? materialOverride : face.getMaterial();
+		final Material material = ( materialOverride != null ) ? materialOverride : face.material;
 		if ( material != null )
 		{
-			final float   opacity     = extraOpacity * face.getOpacity();
 			final boolean hasBackface = face.isTwoSided();
 
 			final AppearanceGroup group = getGroup( material , opacity , hasBackface );
@@ -481,18 +458,17 @@ public class Shape3DBuilder
 	 *
 	 * @param   object2view         Transform to apply to vertex coordinates.
 	 * @param   face                Face to add.
-	 * @param   materialOverride     Texture to use instead of actual face material.
-	 * @param   extraOpacity        Extra face opacity (0.0=translucent, 1.0=opaque).
+	 * @param   materialOverride    Texture to use instead of actual face material.
+	 * @param   opacity             Extra face opacity (0.0=translucent, 1.0=opaque).
 	 *
 	 * @see     #prepareFace
 	 * @see     #buildShapes
 	 */
-	public void addFace( final Matrix3D object2view , final Face3D face , final Material materialOverride , final float extraOpacity )
+	public void addFace( final Matrix3D object2view , final Face3D face , final Material materialOverride , final float opacity )
 	{
-		final Material material = ( materialOverride != null ) ? materialOverride : face.getMaterial();
+		final Material material = ( materialOverride != null ) ? materialOverride : face.material;
 		if ( material != null )
 		{
-			final float   opacity     = extraOpacity * face.getOpacity();
 			final boolean hasBackface = face.isTwoSided();
 
 			final AppearanceGroup group = getGroup( material , opacity , hasBackface );

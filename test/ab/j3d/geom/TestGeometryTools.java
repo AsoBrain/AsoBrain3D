@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2008
+ * (C) Copyright Numdata BV 2006-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,8 @@ package ab.j3d.geom;
 
 import junit.framework.TestCase;
 
+import ab.j3d.Bounds3D;
+import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.junit.Vector3DTester;
 
@@ -39,6 +41,94 @@ public final class TestGeometryTools
 	 * Name of this class.
 	 */
 	private static final String CLASS_NAME = TestGeometryTools.class.getName();
+
+	/**
+	 * Test the {@link GeometryTools#testOrientedBoundingBoxIntersection} method.
+	 */
+	public void testTestOrientedBoundingBoxIntersection()
+	{
+		System.out.println( CLASS_NAME + ".testTestOrientedBoundingBoxIntersection()" );
+
+		{
+			final Bounds3D first  = Bounds3D.fromString( "18.0,0.0,54.75;44.85,56.5,278.723625994732" );
+			final Bounds3D second = Bounds3D.fromString( "0.0,0.0,0.0;500.0,764.0,18.0" );
+			final Matrix3D secondToFirst = Matrix3D.INIT.set(
+				0.0 , 0.0 , 1.0 ,  0.0 ,
+				1.0 , 0.0 , 0.0 ,  0.0 ,
+				0.0 , 1.0 , 0.0 , 18.0 );
+			assertTrue( "Expected collision" , GeometryTools.testOrientedBoundingBoxIntersection( first , secondToFirst , second ) );
+		}
+
+		{
+			final Bounds3D first  = Bounds3D.fromString( "18.0,0.0,54.75;44.85,56.5,278.723625994732" );
+			final Bounds3D second = Bounds3D.fromString( "0.0,0.0,0.0;578.0,779.0,18.0" );
+			final Matrix3D secondToFirst = Matrix3D.INIT.set(
+				1.0 ,  0.0 ,  0.0 ,   11.0 ,
+				0.0 ,  0.0 , -1.0 ,    0.0 ,
+				0.0 ,  1.0 ,  0.0 ,   10.5 );
+			assertTrue( "Expected collision" , GeometryTools.testOrientedBoundingBoxIntersection( first , secondToFirst , second ) );
+		}
+
+		{
+			final Bounds3D first  = Bounds3D.fromString( "309.791845703125,0.0,54.75;336.641845703125,56.5,278.723625994732" );
+			final Bounds3D second = Bounds3D.fromString( "0.0,0.0,0.0;151.85658264160156,480.0,18.0" );
+			final Matrix3D secondToFirst = Matrix3D.INIT.set(
+				1.0 ,  0.0 ,  0.0 ,  184.3 ,
+				0.0 ,  1.0 ,  0.0 ,    0.0 ,
+				0.0 ,  0.0 ,  1.0 ,  195.5 );
+			assertTrue( "Expected collision" , GeometryTools.testOrientedBoundingBoxIntersection( first , secondToFirst , second ) );
+		}
+
+		{
+			final Bounds3D first  = Bounds3D.fromString( "309.791845703125,0.0,54.75;336.641845703125,56.5,278.723625994732" );
+			final Bounds3D second = Bounds3D.fromString( "0.0,0.0,0.0;151.85658264160156,480.0,18.0" );
+			final Matrix3D secondToFirst = Matrix3D.INIT.set(
+				1.0 ,  0.0 ,  0.0 ,  184.3 ,
+				0.0 ,  1.0 ,  0.0 ,    0.0 ,
+				0.0 ,  0.0 ,  1.0 ,  195.5 );
+			assertTrue( "Expected collision" , GeometryTools.testOrientedBoundingBoxIntersection( first , secondToFirst , second ) );
+		}
+
+		{
+			final Bounds3D first  = Bounds3D.fromString( "309.791845703125,0.0,54.75;336.641845703125,56.5,278.723625994732" );
+			final Bounds3D second = Bounds3D.fromString( "0.0,0.0,0.0;480.0,373.0,18.0" );
+			final Matrix3D secondToFirst = Matrix3D.INIT.set(
+				0.0 ,  0.0 ,  1.0 ,  336.6 ,
+				1.0 ,  0.0 ,  0.0 ,    0.0 ,
+				0.0 ,  1.0 ,  0.0 ,   18.0 );
+			assertTrue( "Expected collision" , GeometryTools.testOrientedBoundingBoxIntersection( first , secondToFirst , second ) );
+		}
+
+		{
+			final Bounds3D first  = Bounds3D.fromString( "309.791845703125,0.0,54.75;336.641845703125,56.5,278.723625994732" );
+			final Bounds3D second = Bounds3D.fromString( "0.0,0.0,0.0;578.0,779.0,18.0" );
+			final Matrix3D secondToFirst = Matrix3D.INIT.set(
+				1.0 ,  0.0 ,  0.0 ,   11.0 ,
+				0.0 ,  0.0 , -1.0 ,    0.0 ,
+				0.0 ,  1.0 ,  0.0 ,   10.5 );
+			assertTrue( "Expected collision" , GeometryTools.testOrientedBoundingBoxIntersection( first , secondToFirst , second ) );
+		}
+
+		{
+			final Bounds3D first  = Bounds3D.fromString( "555.15,0.0,54.75;582.0,56.5,278.723625994732" );
+			final Bounds3D second = Bounds3D.fromString( "0.0,0.0,0.0;578.0,779.0,18.0" );
+			final Matrix3D secondToFirst = Matrix3D.INIT.set(
+				1.0 ,  0.0 ,  0.0 ,   11.0 ,
+				0.0 ,  0.0 , -1.0 ,    0.0 ,
+				0.0 ,  1.0 ,  0.0 ,   10.5 );
+			assertTrue( "Expected collision" , GeometryTools.testOrientedBoundingBoxIntersection( first , secondToFirst , second ) );
+		}
+
+		{
+			final Bounds3D first  = Bounds3D.fromString( "555.15,0.0,54.75;582.0,56.5,278.723625994732" );
+			final Bounds3D second = Bounds3D.fromString( "0.0,0.0,0.0;500.0,764.0,18.0" );
+			final Matrix3D secondToFirst = Matrix3D.INIT.set(
+				0.0 ,  0.0 ,  1.0 ,  582.0 ,
+				1.0 ,  0.0 ,  0.0 ,    0.0 ,
+				0.0 ,  1.0 ,  0.0 ,   18.0 );
+			assertTrue( "Expected collision" , GeometryTools.testOrientedBoundingBoxIntersection( first , secondToFirst , second ) );
+		}
+	}
 
 	/**
 	 * Test the {@link GeometryTools#getIntersectionBetweenRayAndPolygon} method.

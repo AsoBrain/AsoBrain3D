@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2008
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,9 +17,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.model;
+package ab.j3d.geom;
+
+import java.awt.geom.Point2D;
 
 import ab.j3d.Material;
+import ab.j3d.Vector3D;
 
 /**
  * Defines a mapping from spatial coordinates to texture coordinates.
@@ -41,6 +44,20 @@ public interface UVMap
 	 * @param   flipTexture         Flip texture direction.
 	 * @param   textureU            Texture u-coordinates to be set.
 	 * @param   textureV            Texture v-coordinates to be set.
+	 *
+	 * @deprecated Use of textureU/V is discouraged.
 	 */
-	void generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , boolean flipTexture , final float[] textureU , final float[] textureV );
+	void generate( Material material , double[] vertexCoordinates , int[] vertexIndices , boolean flipTexture , float[] textureU , float[] textureV );
+
+	/**
+	 * Generate 2D point on texture for the given 3D point.
+	 *
+	 * @param   material            Material used to define texture scale.
+	 * @param   point               Point.
+	 * @param   normal              Normal of face to map texture on.
+	 * @param   flipTexture         Flip texture direction.
+	 *
+	 * @return  Texture coordinates.
+	 */
+	Point2D.Float generate( Material material , Vector3D point , Vector3D normal , boolean flipTexture );
 }

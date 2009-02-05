@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2008
+ * (C) Copyright Numdata BV 2006-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -53,7 +53,7 @@ public class BSPTree
 		private BSPTreeNode()
 		{
 			_partitionPlane = null;
-			_nodePolygons   = new ArrayList();
+			_nodePolygons   = new ArrayList<RenderedPolygon>();
 			_front          = null;
 			_back           = null;
 		}
@@ -167,7 +167,7 @@ public class BSPTree
 	public void reset()
 	{
 		_root                 = new BSPTreeNode();
-		_polygons             = new ArrayList();
+		_polygons             = new ArrayList<RenderedPolygon>();
 		_tmpVertexCoordinates = null;
 		_tmpFaceNormals       = null;
 	}
@@ -200,29 +200,29 @@ public class BSPTree
 		final int faceCount = object.getFaceCount();
 		for ( int i = 0 ; i < faceCount ; i++ )
 		{
-			final Face3D   face              = object.getFace( i );
 			final double[] vertexCoordinates = ( _tmpVertexCoordinates = object.getVertexCoordinates( object2model ,_tmpVertexCoordinates ) );
 			final double[] faceNormals       = ( _tmpFaceNormals = object.getFaceNormals( object2model , _tmpFaceNormals ) );
 
-			addPolygon( face , vertexCoordinates , faceNormals , false );
+			addPolygon( object , i , vertexCoordinates , faceNormals , false );
 		}
 	}
 
 	/**
 	 * Add a polygon to the tree ( Note: the tree is not rebuild! ).
 	 *
-	 * @param   face                    Face to get polygon properties from.
+	 * @param   object                  Object to get face from.
+	 * @param   faceIndex               Index of object's face.
 	 * @param   objectModelCoordinates  Vertex coordinates of object in model space.
 	 * @param   faceModelNormals        Normals of object faces in model space.
 	 * @param   alternateAppearance     Use alternate vs. regular object appearance.
 	 */
-	public void addPolygon( final Face3D face , final double[] objectModelCoordinates , final double[] faceModelNormals , final boolean alternateAppearance )
+	public void addPolygon( final Object3D object , final int faceIndex , final double[] objectModelCoordinates , final double[] faceModelNormals , final boolean alternateAppearance )
 	{
-		final Object3D object                    = face.getObject();
-		final int[]    dummyProjectedCoordinates = new int[ object.getVertexCount() * 2 ];
+		final Face3D face = object.getFace( faceIndex );
+		final int[] dummyProjectedCoordinates = new int[ object.getVertexCount() * 2 ];
 
 		final RenderedPolygon polygon = new RenderedPolygon( face.getVertexCount() );
-		polygon.initialize( face , objectModelCoordinates , dummyProjectedCoordinates , faceModelNormals , alternateAppearance );
+		polygon.initialize( object , faceIndex , objectModelCoordinates , dummyProjectedCoordinates , faceModelNormals , alternateAppearance );
 
 		_polygons.add( polygon );
 	}
@@ -243,7 +243,7 @@ public class BSPTree
 		final List<RenderedPolygon> queue = new ArrayList<RenderedPolygon>();
 		getSortedPolygons( viewPoint , _root , queue , backToFront );
 
-		final List<RenderedPolygon> result = new ArrayList();
+		final List<RenderedPolygon> result = new ArrayList<RenderedPolygon>();
 		for ( final RenderedPolygon polygon : queue )
 		{
 			final RenderedPolygon renderedPolygon = getRenderedPolygon( polygon , model2view , projector , backfaceCulling );
@@ -397,8 +397,8 @@ public class BSPTree
 	{
 		final RenderedPolygon       partitionPolygon = getPartitionPlane( polygons );
 		final RenderedPolygon       partitionPlane   = partitionPolygon;
-		final List<RenderedPolygon> frontList        = new ArrayList();
-		final List<RenderedPolygon> backList         = new ArrayList();
+		final List<RenderedPolygon> frontList        = new ArrayList<RenderedPolygon>();
+		final List<RenderedPolygon> backList         = new ArrayList<RenderedPolygon>();
 
 		root.setPartitionPlane( partitionPlane );
 		root.addPolygon( partitionPolygon );

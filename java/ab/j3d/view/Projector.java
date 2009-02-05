@@ -216,7 +216,6 @@ public abstract class Projector
 	 *          outside the view volume.
 	 *
 	 * @see     #inViewVolume(double, double, double)
-	 * @see     Face3D#getVertexIndices
 	 */
 	public final boolean inViewVolume( final Face3D face , final double[] vertexCoordinates )
 	{

@@ -69,7 +69,7 @@ public class JOGLTools
 	/**
 	 * Multiply current GL transform with the specific 3D transformation matrix.
 	 *
-	 * @param   gl          GL context.
+	 * @param   gl          OpenGL pipeline.
 	 * @param   transform   Transformation to multiply with.
 	 */
 	public static void glMultMatrixd( final GL gl , final Matrix3D transform )
@@ -86,7 +86,7 @@ public class JOGLTools
 	/**
 	 * Get {@link Texture} for color map of {@link Material}.
 	 *
-	 * @param   gl              OpenGL context.
+	 * @param   gl              OpenGL pipeline.
 	 * @param   material        Material to get color map texture from.
 	 * @param   textureCache    Texture cache.
 	 *
@@ -111,7 +111,7 @@ public class JOGLTools
 	/**
 	 * Get {@link Texture} for bump map of {@link Material}.
 	 *
-	 * @param   gl              OpenGL context.
+	 * @param   gl              OpenGL pipeline.
 	 * @param   material        MAterial to get bump map texture from.
 	 * @param   textureCache    Texture cache.
 	 *
@@ -191,7 +191,7 @@ public class JOGLTools
 	/**
 	 * Get {@link Texture} for the specified map.
 	 *
-	 * @param   gl              OpenGL context.
+	 * @param   gl              OpenGL pipeline.
 	 * @param   material        {@link Material} to get texture for.
 	 * @param   textureCache    Map containing the cached textures.
 	 *
@@ -206,7 +206,7 @@ public class JOGLTools
 	/**
 	 * Get {@link Texture} for the specified map.
 	 *
-	 * @param   gl              OpenGL context.
+	 * @param   gl              OpenGL pipeline.
 	 * @param   map             Name of the texture map.
 	 * @param   textureCache    Map containing the cached textures.
 	 *
@@ -270,15 +270,15 @@ public class JOGLTools
 
 	/**
 	 * Scales the given image, if necessary, such that it is compatible with the
-	 * given GL context. The aspect ratio of the image may not be preserved.
+	 * given OpenGL pipeline. The aspect ratio of the image may not be preserved.
 	 *
 	 * @param   image   Image to be scaled, if necessary.
-	 * @param   gl      GL context.
+	 * @param   gl      OpenGL pipeline.
 	 *
 	 * @return  Compatible texture image. If the given image already meets all
 	 *          requirements, that same image is returned.
 	 *
-	 * @throws  IllegalStateException if the given GL context specifies a
+	 * @throws  IllegalStateException if the given OpenGL pipeline specifies a
 	 *          non-positive maximum texture size.
 	 */
 	public static BufferedImage createCompatibleTextureImage( final BufferedImage image , final GL gl )
@@ -311,7 +311,7 @@ public class JOGLTools
 	 * the graphics card. If the shader couldn't be compiled an error will be
 	 * shown in the console.
 	 *
-	 * @param gl            OpenGL context.
+	 * @param gl            OpenGL pipeline.
 	 * @param shader        Shader to compile
 	 * @param shaderType    Type of shader.
 	 *
@@ -371,7 +371,7 @@ public class JOGLTools
 	 * shaders to the program, these shaders must be compiled already. If the
 	 * shader program couldn't be loaded an error is shown in the console.
 	 *
-	 * @param gl        OpenGL context.
+	 * @param gl        OpenGL pipeline.
 	 * @param shaders   Shaders to link and use.
 	 *
 	 * @return Returns the shader program, will return 0 when the program
@@ -426,7 +426,7 @@ public class JOGLTools
 	/**
 	 * Compiles both shaders and attaches them to a newly created shader program.
 	 *
-	 * @param   gl              OpenGL context.
+	 * @param   gl              OpenGL pipeline.
 	 * @param   fragmentShader  Fragment shader to use.
 	 * @param   vertexShader    Vertes shader to use.
 	 *
@@ -507,11 +507,32 @@ public class JOGLTools
 	}
 
 	/**
+	 * Get normalization cube map, used to perform DOT3 bump mapping. For each
+	 * 3D texture coordinate, the value of the map represents the normalized
+	 * vector from the origin in the direction of the coordinate.
+	 *
+	 * @param   gl              OpenGL pipeline.
+	 * @param   textureCache    Texture cache.
+	 *
+	 * @return  Normalization cube map.
+	 */
+	public static Texture getNormalizationCubeMap( final GL gl , final Map<String,Texture> textureCache )
+	{
+		Texture result = textureCache.get( NORMALIZATION_CUBE_MAP );
+		if ( result == null )
+		{
+			result = createNormalizationCubeMap( gl );
+			textureCache.put( NORMALIZATION_CUBE_MAP , result );
+		}
+		return result;
+	}
+
+	/**
 	 * Creates a normalization cube map, used to perform DOT3 bump mapping. For
 	 * each 3D texture coordinate, the value of the map represents the
 	 * normalized vector from the origin in the direction of the coordinate.
 	 *
-	 * @param   gl  GL context.
+	 * @param   gl  OpenGL pipeline.
 	 *
 	 * @return  Normalization cube map.
 	 */

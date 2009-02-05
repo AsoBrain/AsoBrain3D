@@ -34,7 +34,7 @@ import ab.j3d.Vector3D;
  * @author  Peter S. Heijnen (Java Port)
  * @version 1.1
  */
-public class TriTriMoeler
+class TriTriMoeler
 {
 	/**
 	 * Test intersection between to triangles in 3D.
@@ -44,7 +44,7 @@ public class TriTriMoeler
 	 * result    : returns 1 if the triangles intersect, otherwise 0
 	 *
 	 */
-	public static boolean testTriangleTriangle( final Vector3D v0 , final Vector3D v1 , final Vector3D v2 , final Vector3D u0 , final Vector3D u1 , final Vector3D u2 )
+	static boolean testTriangleTriangle( final Vector3D v0 , final Vector3D v1 , final Vector3D v2 , final Vector3D u0 , final Vector3D u1 , final Vector3D u2 )
 	{
 		/* compute plane equation of triangle(V0,V1,V2) */
 		Vector3D e1 = v1.minus( v0 );

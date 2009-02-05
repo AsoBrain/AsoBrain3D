@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2007 Peter S. Heijnen
+ * Copyright (C) 1999-2009 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -148,7 +148,6 @@ public final class Cylinder3D
 			vertexCoordinates[ v/*++*/ ] = height;
 		}
 
-		clear();
 		setVertexCoordinates( xform.transform( vertexCoordinates , vertexCoordinates , vertexCount ) );
 
 		/*
@@ -169,7 +168,7 @@ public final class Cylinder3D
 				textureV     [ i ] = (float)( 0.5 - 0.5 * Math.cos( rad ) );
 			}
 
-			addFace( vertexIndices , material , textureU , textureV , 1.0f , smoothCaps , false );
+			addFace( vertexIndices , material , textureU , textureV , smoothCaps , false );
 		}
 
 		/*
@@ -206,7 +205,7 @@ public final class Cylinder3D
 					textureU      = new float[] {   u2 ,   u1 ,            u1 ,            u2 };
 				}
 
-				addFace( vertexIndices , material , textureU , textureV , 1.0f , smoothCircumference , false );
+				addFace( vertexIndices , material , textureU , textureV , smoothCircumference , false );
 			}
 		}
 
@@ -230,7 +229,7 @@ public final class Cylinder3D
 				textureV     [ i ] = (float)( 0.5 - 0.5 * Math.cos( rad ) );
 			}
 
-			addFace( vertexIndices , material , textureU , textureV , 1.0f , smoothCaps , false );
+			addFace( vertexIndices , material , textureU , textureV , smoothCaps , false );
 		}
 	}
 }

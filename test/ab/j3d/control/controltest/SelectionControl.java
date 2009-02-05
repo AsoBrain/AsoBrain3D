@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * (C) Copyright Numdata BV 2005-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -75,10 +75,10 @@ public class SelectionControl
 
 		final Model model = _model;
 
-		final List intersections = event.getIntersections();
-		if ( ! intersections.isEmpty() )
+		final List<Face3DIntersection> intersections = event.getIntersections();
+		if ( !intersections.isEmpty() )
 		{
-			final Face3DIntersection intersection = (Face3DIntersection)intersections.get( 0 );
+			final Face3DIntersection intersection = intersections.get( 0 );
 			final Object id = intersection.getObjectID();
 
 			if ( id instanceof SceneElement && ! ( id instanceof Floor ) )
@@ -91,9 +91,14 @@ public class SelectionControl
 						final TetraHedron hedron = (TetraHedron)id;
 
 						final Object3D object = intersection.getObject();
-						final int faceIndex = object.getFaceIndex( intersection.getFace() );
-
-						_model.setSelectedFace( hedron.getFace( faceIndex ) );
+						for ( int faceIndex = 0 ; faceIndex < object.getFaceCount() ; faceIndex++ )
+						{
+							if ( intersection.getPolygon() == object.getFace( faceIndex ) )
+							{
+								_model.setSelectedFace( hedron.getFace( faceIndex ) );
+								break;
+							}
+						}
 					}
 				}
 				else

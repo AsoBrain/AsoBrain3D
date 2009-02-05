@@ -28,12 +28,14 @@ import ab.j3d.Bounds3D;
 import ab.j3d.Bounds3DBuilder;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
-import ab.j3d.PolyPoint2D;
-import ab.j3d.Polyline2D;
 import ab.j3d.Vector3D;
 import ab.j3d.geom.BasicRay3D;
+import ab.j3d.geom.BasicTriangle3D;
+import ab.j3d.geom.CollisionNode;
 import ab.j3d.geom.GeometryTools;
 import ab.j3d.geom.Ray3D;
+import ab.j3d.geom.Triangle3D;
+import ab.j3d.model.Face3D.Vertex;
 
 import com.numdata.oss.ArrayTools;
 
@@ -77,10 +79,8 @@ public class Object3D
 
 	/**
 	 * Helper for collision tests.
-	 *
-	 * @see     CollisionTester
 	 */
-	private CollisionTester _collisionTester = null;
+	private CollisionNode _collisionNode = null;
 
 	/**
 	 * Outline color to use when this object is painted using Java 2D. If this
@@ -153,6 +153,22 @@ public class Object3D
 	}
 
 	/**
+	 * Transform this object.
+	 *
+	 * @param   transform   Transformation to apply.
+	 */
+	public void getTransformedInstance( final Matrix3D transform )
+	{
+		final Object3D result = new Object3D();
+		result._vertexCoordinates = transform.transform( _vertexCoordinates , null , _vertexCoordinates.length / 3 );
+		result.outlineColor = outlineColor;
+		result.fillColor = fillColor;
+		result.alternateFillColor = alternateFillColor;
+		result.alternateOutlineColor = alternateOutlineColor;
+		result.shadeFactor = shadeFactor;
+	}
+
+	/**
 	 * Add a face to this object.
 	 *
 	 * @param   face    Face to add.
@@ -160,8 +176,6 @@ public class Object3D
 	protected final void addFace( final Face3D face )
 	{
 		_faces.add( face );
-
-		face.invalidate();
 		_vertexNormalsDirty = true;
 	}
 
@@ -175,7 +189,7 @@ public class Object3D
 	 */
 	public final void addFace( final int[] vertexIndices , final Material material , final boolean smooth )
 	{
-		addFace( vertexIndices , material , null , null , 1.0f , smooth , false );
+		addFace( vertexIndices , material , null , null , smooth , false );
 	}
 
 	/**
@@ -186,79 +200,12 @@ public class Object3D
 	 * @param   material        Material to apply to the face.
 	 * @param   textureU        Horizontal texture coordinates (<code>null</code> = none).
 	 * @param   textureV        Vertical texture coordinates (<code>null</code> = none).
-	 * @param   opacity         Opacity of face (0=transparent, 1=opaque).
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	public final void addFace( final int[] vertexIndices , final Material material , final float[] textureU , final float[] textureV , final float opacity , final boolean smooth , final boolean twoSided )
+	public final void addFace( final int[] vertexIndices, final Material material , final float[] textureU , final float[] textureV , final boolean smooth , final boolean twoSided )
 	{
-		addFace( new Face3D( this , vertexIndices , material , textureU , textureV , opacity , smooth , twoSided ) );
-	}
-
-	/**
-	 * Add face based on a 2D shape to this object.
-	 *
-	 * @param   base            Location/orientation of face.
-	 * @param   shape           Shape of face relative to the base.
-	 * @param   reversePath If  set, the returned path will be reversed.
-	 * @param   flipUV          Swap texture coordinates to rotate 90 degrees.
-	 * @param   material        Material to apply to the face.
-	 * @param   opacity         Opacity of face (0=transparent, 1=opaque).
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   twoSided        Face is two-sided.
-	 */
-	public final void addFace( final Matrix3D base , final Polyline2D shape , final boolean reversePath , final boolean flipUV , final Material material , final float opacity , final boolean smooth , final boolean twoSided )
-	{
-		final int nrVertices = shape.getPointCount() + ( shape.isClosed() ? -1 : 0 );
-
-		final Face3D face = new Face3D( this , null , material , null , null , opacity , smooth , twoSided );
-		face.ensureCapacity( nrVertices );
-
-		if ( ( nrVertices > 2 ) && ( material != null ) && ( material.colorMap != null ) )
-		{
-			final double txBase = -base.xo * base.xx - base.yo * base.yx - base.zo * base.zx;
-			final double tyBase = -base.xo * base.xy - base.yo * base.yy - base.zo * base.zy;
-
-			final double[] vertU = new double[ nrVertices ];
-			final double[] vertV = new double[ nrVertices ];
-
-			double floorU = Double.POSITIVE_INFINITY;
-			double floorV = Double.POSITIVE_INFINITY;
-
-			final double modelUnit = 0.001;
-			final double scaleU    = ( material.colorMapWidth  > 0.0 ) ? modelUnit / material.colorMapWidth  : 1.0;
-			final double scaleV    = ( material.colorMapHeight > 0.0 ) ? modelUnit / material.colorMapHeight : 1.0;
-
-			for ( int i = 0 ; i < nrVertices ; i++ )
-			{
-				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
-
-				final double u = scaleU * ( flipUV ? ( tyBase + point.y ) : ( txBase + point.x ) );
-				final double v = scaleV * ( flipUV ? ( txBase + point.x ) : ( tyBase + point.y ) );
-
-				if ( u < floorU ) floorU = Math.floor( u );
-				if ( v < floorV ) floorV = Math.floor( v );
-
-				vertU[ i ] = u;
-				vertV[ i ] = v;
-			}
-
-			for ( int i = 0 ; i < nrVertices ; i++ )
-			{
-				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
-				face.addVertex( base.multiply( point.x , point.y , 0.0 ) , (float)( vertU[ i ] - floorU ) , (float)( vertV[ i ] - floorV ) );
-			}
-		}
-		else
-		{
-			for ( int i = 0 ; i < nrVertices ; i++ )
-			{
-				final PolyPoint2D point = shape.getPoint( reversePath ? nrVertices - 1 - i : i );
-				face.addVertex( base.multiply( point.x , point.y , 0.0 ) , 0.0f , 0.0f );
-			}
-		}
-
-		addFace( face );
+		addFace( new Face3D( this , vertexIndices , material , textureU , textureV , smooth , twoSided ) );
 	}
 
 	/**
@@ -271,7 +218,7 @@ public class Object3D
 	 */
 	public final void addFace( final Vector3D[] vertexCoordinates , final Material material , final boolean smooth , final boolean twoSided )
 	{
-		addFace( vertexCoordinates , material , null , null , 1.0f , smooth , twoSided );
+		addFace( vertexCoordinates , material , null , null , smooth , twoSided );
 	}
 
 	/**
@@ -281,11 +228,10 @@ public class Object3D
 	 * @param   material            Material to apply to the face.
 	 * @param   textureU            Horizontal texture coordinates (<code>null</code> = none).
 	 * @param   textureV            Vertical texture coordinates (<code>null</code> = none).
-	 * @param   opacity             Opacity of face (0=transparent, 1=opaque).
 	 * @param   smooth              Face is smooth/curved vs. flat.
 	 * @param   twoSided            Face is two-sided.
 	 */
-	public final void addFace( final Vector3D[] vertexCoordinates , final Material material , final float[] textureU , final float[] textureV , final float opacity , final boolean smooth , final boolean twoSided )
+	public final void addFace( final Vector3D[] vertexCoordinates , final Material material , final float[] textureU , final float[] textureV , final boolean smooth , final boolean twoSided )
 	{
 		final int   nrVertices    = vertexCoordinates.length;
 		final int[] vertexIndices = new int[ nrVertices ];
@@ -296,7 +242,7 @@ public class Object3D
 			vertexIndices[ i ] = getVertexIndex( vertex.x , vertex.y , vertex.z );
 		}
 
-		addFace( new Face3D( this , vertexIndices , material , textureU , textureV , opacity , smooth , twoSided ) );
+		addFace( new Face3D( this , vertexIndices , material , textureU , textureV , smooth , twoSided ) );
 	}
 
 	/**
@@ -344,15 +290,13 @@ public class Object3D
 					 */
 					for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
 					{
-						final Face3D face              = faces.get( faceIndex );
-						final int    faceVertexCount   = face.getVertexCount();
-						final int[]  faceVertexIndices = face.getVertexIndices();
+						final Face3D face = faces.get( faceIndex );
+						final List<Vertex> vertices = face.vertices;
 
-						for ( int faceVertex = faceVertexCount ; --faceVertex >= 0 ; )
+						for ( final Vertex vertex : vertices )
 						{
-							if ( faceVertexIndices[ faceVertex ] == vertexIndex )
+							if ( vertex.vertexCoordinateIndex == vertexIndex )
 							{
-								face.calculateCross();
 								vnx += face._crossX;
 								vny += face._crossY;
 								vnz += face._crossZ;
@@ -384,46 +328,140 @@ public class Object3D
 	}
 
 	/**
-	 * Clear all data.
-	 * <p />
-	 * This removes all faces and vertices, essentially reverting to the state
-	 * after calling the default constructor. However, internal cache/buffers
-	 * are preserved to reduce memory fragmentation.
+	 * Test collision between two scene (sub)graphs. Note that an object can
+	 * collide with itself.
+	 *
+	 * @param   subTree1    First scene (sub)graph to test.
+	 * @param   subTree2    Second scene (sub)graph to test.
+	 *
+	 * @return  <code>true</code> if the two graphs collide;
+	 *          <code>false</code> otherwise.
 	 */
-	public final void clear()
+	public static boolean testCollision( final Node3D subTree1 , final Node3D subTree2 )
 	{
-		_faces.clear();
-		_vertexCoordinates = null;
-		invalidate();
+		boolean result = false;
+
+		if ( ( subTree1 != null ) && ( subTree2 != null ) )
+		{
+			final Node3DCollection<Object3D> objects1 = subTree1.collectNodes( null , Object3D.class , Matrix3D.INIT , false );
+			if ( objects1 != null )
+			{
+				final Node3DCollection<Object3D> objects2  = subTree2.collectNodes( null , Object3D.class , Matrix3D.INIT , false );
+				if ( objects2 != null )
+				{
+					for ( int i = 0 ; !result && ( i < objects1.size() ) ; i++ )
+					{
+						final Object3D object1      = objects1.getNode( i );
+						final Matrix3D object1ToWcs = objects1.getMatrix( i );
+						final Matrix3D wcsToObject1 = object1ToWcs.inverse();
+
+						for ( int j = 0 ; !result && ( j < objects2.size() ) ; j++ )
+						{
+							final Object3D object2      = objects2.getNode( j );
+							final Matrix3D object2ToWcs = objects2.getMatrix( j );
+
+							result = object1.collidesWith( object2ToWcs.multiply( wcsToObject1 ) , object2 );
+						}
+					}
+				}
+			}
+		}
+
+		return result;
 	}
 
 	/**
 	 * Test if this object collides with another.
 	 *
 	 * @param   fromOtherToThis     Transformation from other object to this.
-	 * @param   otherObject         Object to test collision with.
+	 * @param   other         Object to test collision with.
 	 *
 	 * @return  <code>true</code> if the objects collide;
 	 *          <code>false</code> otherwise.
 	 */
-	public boolean collidesWith( final Matrix3D fromOtherToThis , final Object3D otherObject )
+	public boolean collidesWith( final Matrix3D fromOtherToThis , final Object3D other )
 	{
-		final CollisionTester collisionTester = getCollisionTester();
-		return collisionTester.testCollision( fromOtherToThis , otherObject.getCollisionTester()  );
+		final boolean result;
+
+		final Bounds3D thisOrientedBoundingBox  = getOrientedBoundingBox();
+		final Bounds3D otherOrientedBoundingBox = other.getOrientedBoundingBox();
+
+		if ( GeometryTools.testOrientedBoundingBoxIntersection( thisOrientedBoundingBox , fromOtherToThis , otherOrientedBoundingBox ) )
+		{
+			final CollisionNode thisCollisionNode = getCollisionNode();
+			final CollisionNode otherCollisionNode = other.getCollisionNode();
+
+			result = thisCollisionNode.collidesWith( otherCollisionNode, fromOtherToThis );
+		}
+		else
+		{
+			result = false;
+		}
+
+		return result;
 	}
 
 	/**
-	 * Get helper to perform collision tests.
+	 * Get helper for collision tests.
 	 *
-	 * @return  A {@link CollisionTester} for this object.
+	 * @return  Helper for collision tests.
 	 */
-	private CollisionTester getCollisionTester()
+	private CollisionNode getCollisionNode()
 	{
-		CollisionTester result = _collisionTester;
+		CollisionNode result = _collisionNode;
 		if ( result == null )
 		{
-			result = new CollisionTester( this );
-			_collisionTester = result;
+			final double[] vertexCoordinates = getVertexCoordinates();
+
+			int nrTriangles = 0;
+
+			for ( final Face3D face : _faces )
+			{
+				final int[] triangles = face.triangulate();
+				if ( triangles != null )
+				{
+					nrTriangles += triangles.length / 3;
+				}
+			}
+
+			final List<Triangle3D> triangles = new ArrayList<Triangle3D>( nrTriangles );
+
+			final Bounds3DBuilder boundsBuilder = new Bounds3DBuilder();
+
+			for ( final Face3D face : _faces )
+			{
+				final int[] faceTriangles = face.triangulate();
+				if ( faceTriangles != null )
+				{
+					final List<Vertex> vertices = face.vertices;
+					for ( final Vertex vertex : vertices )
+					{
+						final int i = vertex.vertexCoordinateIndex * 3;
+						boundsBuilder.addPoint( vertexCoordinates[ i ] , vertexCoordinates[ i + 1 ] , vertexCoordinates[ i + 2 ] );
+					}
+
+					for ( int triangleIndex = 0 ; triangleIndex < faceTriangles.length ; triangleIndex += 3 )
+					{
+						final Vertex v1 = vertices.get( faceTriangles[ triangleIndex     ] );
+						final Vertex v2 = vertices.get( faceTriangles[ triangleIndex + 1 ] );
+						final Vertex v3 = vertices.get( faceTriangles[ triangleIndex + 2 ] );
+
+						final int vi1 = v1.vertexCoordinateIndex * 3;
+						final int vi2 = v2.vertexCoordinateIndex * 3;
+						final int vi3 = v3.vertexCoordinateIndex * 3;
+
+						final Vector3D p1 = Vector3D.INIT.set( vertexCoordinates[ vi1 ] , vertexCoordinates[ vi1 + 1 ] , vertexCoordinates[ vi1 + 2 ] );
+						final Vector3D p2 = Vector3D.INIT.set( vertexCoordinates[ vi2 ] , vertexCoordinates[ vi2 + 1 ] , vertexCoordinates[ vi2 + 2 ] );
+						final Vector3D p3 = Vector3D.INIT.set( vertexCoordinates[ vi3 ] , vertexCoordinates[ vi3 + 1 ] , vertexCoordinates[ vi3 + 2 ] );
+
+						triangles.add( new BasicTriangle3D( p1 , p2 , p3 , true ) );
+					}
+				}
+			}
+
+			result = new CollisionNode( triangles , 0 , triangles.size() );
+
+			_collisionNode = result;
 		}
 		return result;
 	}
@@ -517,36 +555,6 @@ public class Object3D
 	}
 
 	/**
-	 * Get index of the specified face.
-	 *
-	 * @param   face    Face to get index of (may be <code>null</code>).
-	 *
-	 * @return  Index of face;
-	 *          -1 if the face is not part of this object.
-	 */
-	public final int getFaceIndex( final Face3D face )
-	{
-		int result = -1;
-
-		if ( ( face != null ) && ( face.getObject() == this ) )
-		{
-			final List<Face3D> faces = _faces;
-
-			for ( int i = 0 ; i < faces.size() ; i++ )
-			{
-				if ( face == faces.get( i ) )
-				{
-					result = i;
-					break;
-				}
-
-			}
-		}
-
-		return result;
-	}
-
-	/**
 	 * Get transformed face normals.
 	 *
 	 * @param   transform   Transformation to apply to normals (only the
@@ -614,7 +622,7 @@ public class Object3D
 			{
 				final Vector3D wcsPoint = object2world.multiply( ocsPoint );
 
-				final Face3DIntersection intersection = new Face3DIntersection( objectID , object2world , face , ray , wcsPoint );
+				final Face3DIntersection intersection = new Face3DIntersection( objectID , object2world , this , face , ray , wcsPoint );
 				if ( sortResult )
 					Face3DIntersection.addSortedByDistance( result , intersection );
 				else
@@ -772,20 +780,8 @@ public class Object3D
 	void invalidate()
 	{
 		_orientedBoundingBox = null;
-		_vertexNormalsDirty  = true;
-
-		final CollisionTester collisionTester = _collisionTester;
-		if ( collisionTester != null )
-			collisionTester.invalidate();
-
-		final List<Face3D> faces     = _faces;
-		final int          faceCount = faces.size();
-
-		for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
-		{
-			final Face3D face = faces.get( faceIndex );
-			face.invalidate();
-		}
+		_vertexNormalsDirty = true;
+		_collisionNode = null;
 	}
 
 	/**

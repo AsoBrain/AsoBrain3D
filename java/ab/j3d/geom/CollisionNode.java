@@ -17,18 +17,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.model;
+package ab.j3d.geom;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ab.j3d.Bounds3D;
 import ab.j3d.Bounds3DBuilder;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
-import ab.j3d.geom.BasicTriangle3D;
-import ab.j3d.geom.TriTriMoeler;
-import ab.j3d.geom.Triangle3D;
 
 /**
  * This object can be used to test for collisions between polygon soups.
@@ -39,7 +35,7 @@ import ab.j3d.geom.Triangle3D;
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public class CollisionObject
+public class CollisionNode
 {
 	/**
 	 * Triangles at this node.
@@ -75,77 +71,12 @@ public class CollisionObject
 	/**
 	 * If this node was split, this contains the first sub-tree node.
 	 */
-	private CollisionObject _child1;
+	private CollisionNode _child1;
 
 	/**
 	 * If this node was split, this contains the second sub-tree node.
 	 */
-	private CollisionObject _child2;
-
-	/**
-	 * Create the root collision node for a 3D object.
-	 *
-	 * @param   object3d    Object3D to create collision model for.
-	 */
-	public CollisionObject( final Object3D object3d )
-	{
-		final double[] vertexCoordinates = object3d.getVertexCoordinates();
-		final int      faceCount         = object3d.getFaceCount();
-
-		int nrTriangles = 0;
-
-		for ( int i = 0 ; i < faceCount ; i++ )
-		{
-			final Face3D face = object3d.getFace( i );
-
-			final int[] triangles = face.triangulate();
-			if ( triangles != null )
-			{
-				nrTriangles += triangles.length / 3;
-			}
-		}
-
-		final List<Triangle3D> triangles = new ArrayList<Triangle3D>( nrTriangles );
-		final Bounds3DBuilder boundsBuilder = new Bounds3DBuilder();
-
-		for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
-		{
-			final Face3D face = object3d.getFace( faceIndex );
-
-			final int[] faceTriangles = face.triangulate();
-			if ( faceTriangles != null )
-			{
-				final int[] vertexIndices = face.getVertexIndices();
-
-				for ( final int vertexIndex : vertexIndices )
-				{
-					final int i = vertexIndex * 3;
-					boundsBuilder.addPoint( vertexCoordinates[ i ] , vertexCoordinates[ i + 1 ] , vertexCoordinates[ i + 2 ] );
-				}
-
-				for ( int triangleIndex = 0 ; triangleIndex < faceTriangles.length ; triangleIndex += 3 )
-				{
-					final int vi1 = vertexIndices[ faceTriangles[ triangleIndex     ] ] * 3;
-					final int vi2 = vertexIndices[ faceTriangles[ triangleIndex + 1 ] ] * 3;
-					final int vi3 = vertexIndices[ faceTriangles[ triangleIndex + 2 ] ] * 3;
-
-					final Vector3D p1 = Vector3D.INIT.set( vertexCoordinates[ vi1 ] , vertexCoordinates[ vi1 + 1 ] , vertexCoordinates[ vi1 + 2 ] );
-					final Vector3D p2 = Vector3D.INIT.set( vertexCoordinates[ vi2 ] , vertexCoordinates[ vi2 + 1 ] , vertexCoordinates[ vi2 + 2 ] );
-					final Vector3D p3 = Vector3D.INIT.set( vertexCoordinates[ vi3 ] , vertexCoordinates[ vi3 + 1 ] , vertexCoordinates[ vi3 + 2 ] );
-
-					triangles.add( new BasicTriangle3D( p1 , p2 , p3 , true ) );
-				}
-			}
-		}
-
-		_triangles = triangles;
-		_trianglesOffset = 0;
-		_trianglesCount = triangles.size();
-		_bounds = boundsBuilder.getBounds();
-		_splitPoint = ( nrTriangles > 1 ) ? boundsBuilder.getAveragePoint() : null;
-		_child1 = null;
-		_child2 = null;
-	}
+	private CollisionNode _child2;
 
 	/**
 	 * Construct a new node.
@@ -157,7 +88,7 @@ public class CollisionObject
 	 * @throws  IllegalArgumentException if <code>trianglesCount</code> is <code>0</code>.
 	 * @throws  IndexOutOfBoundsException if a invalid range is specified.
 	 */
-	public CollisionObject( final List<Triangle3D> triangles , final int trianglesOffset , final int trianglesCount )
+	public CollisionNode( final List<Triangle3D> triangles , final int trianglesOffset , final int trianglesCount )
 	{
 		if ( trianglesCount <= 0 )
 			throw new IllegalArgumentException();
@@ -196,7 +127,7 @@ public class CollisionObject
 	 * @return  <code>true</code> if a collision was found;
 	 *          <code>false</code> if no collision was found.
 	 */
-	public boolean collidesWith( final CollisionObject other , final Matrix3D other2this )
+	public boolean collidesWith( final CollisionNode other , final Matrix3D other2this )
 	{
 		return collidesWith( other , other2this , other2this.inverse() );
 	}
@@ -213,7 +144,7 @@ public class CollisionObject
 	 *
 	 * @throws  NullPointerException if any parameter is <code>null</code>.
 	 */
-	public boolean collidesWith( final CollisionObject other , final Matrix3D other2this , final Matrix3D this2other )
+	public boolean collidesWith( final CollisionNode other , final Matrix3D other2this , final Matrix3D this2other )
 	{
 		if ( other == null )
 			throw new NullPointerException( "other" );
@@ -229,7 +160,7 @@ public class CollisionObject
 		final Bounds3D bounds1 = _bounds;
 		final Bounds3D bounds2 = other._bounds;
 
-		if ( ( bounds1 != null ) && ( bounds2 != null ) && CollisionTester.testOrientedBoundingBox( bounds1 , other2this , bounds2 ) )
+		if ( ( bounds1 != null ) && ( bounds2 != null ) && GeometryTools.testOrientedBoundingBoxIntersection( bounds1 , other2this , bounds2 ) )
 		{
 			if ( !split() )
 			{
@@ -282,7 +213,7 @@ public class CollisionObject
 	 * @return  <code>true</code> if a collision was found;
 	 *          <code>false</code> if no collision was found.
 	 */
-	private boolean testTriangleTriangleCollision( final CollisionObject other , final Matrix3D other2this )
+	private boolean testTriangleTriangleCollision( final CollisionNode other , final Matrix3D other2this )
 	{
 		boolean result = false;
 
@@ -306,7 +237,7 @@ public class CollisionObject
 			{
 				final Triangle3D thisTriangle = thisTriangles.get( otherIndex );
 
-				if ( TriTriMoeler.testTriangleTriangle( otherP1 , otherP2 , otherP3 , thisTriangle.getP1() , thisTriangle.getP2() , thisTriangle.getP3() ) )
+				if ( GeometryTools.testTriangleTriangleIntersection( otherP1 , otherP2 , otherP3 , thisTriangle.getP1() , thisTriangle.getP2() , thisTriangle.getP3() ) )
 				{
 					result = true;
 					break;
@@ -401,8 +332,8 @@ public class CollisionObject
 					countLeft = countZ;
 				}
 
-				_child1 = new CollisionObject( triangles , trianglesOffset , countLeft );
-				_child2 = new CollisionObject( triangles , trianglesOffset + countLeft , trianglesCount - countLeft );
+				_child1 = new CollisionNode( triangles , trianglesOffset , countLeft );
+				_child2 = new CollisionNode( triangles , trianglesOffset + countLeft , trianglesCount - countLeft );
 				result = true;
 			}
 			else

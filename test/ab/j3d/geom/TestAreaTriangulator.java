@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2008
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,22 +17,22 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.model;
+package ab.j3d.geom;
 
 import junit.framework.TestCase;
 
 /**
- * Unit test for the {@link GLUTriangulator}.
+ * Unit test for the {@link AreaTriangulator}.
  *
  * @author  G. Meinders
  * @version $Revision$ $Date$
  */
-public class TestGLUTriangulator
+public class TestAreaTriangulator
 	extends TestCase
 {
 	public void testTriangulation()
 	{
-		final GLUTriangulator triangulator = new GLUTriangulator();
+		final AreaTriangulator triangulator = new AreaTriangulator();
 		TriangulatorTester.testExtremeShapes( triangulator );
 	}
 }

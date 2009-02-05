@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2006 Peter S. Heijnen
+ * Copyright (C) 1999-2009 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -95,7 +95,7 @@ public final class Sphere3D
 	 * @param   material    Material of sphere.
 	 * @param   smooth      Smooth surface.
 	 */
-	public void generate( final int p , final int q , final Material material , final boolean smooth )
+	private void generate( final int p , final int q , final Material material , final boolean smooth )
 	{
 		final int      vertexCount       = p * ( q - 1 ) + 2;
 		final double[] vertexCoordinates = new double[ vertexCount * 3 ];
@@ -131,7 +131,6 @@ public final class Sphere3D
 		vertexCoordinates[ v++ ] = 0.0;
 		vertexCoordinates[ v   ] = dz / 2.0;
 
-		clear();
 		setVertexCoordinates( xform.transform( vertexCoordinates , vertexCoordinates , vertexCount ) );
 
 		/*
@@ -182,7 +181,7 @@ public final class Sphere3D
 					textureV      = new float[] { vBottom , vBottom ,     vTop       };
 				}
 
-				addFace( vertexIndices , material , textureU , textureV , 1.0f , smooth , false );
+				addFace( vertexIndices , material , textureU , textureV , smooth , false );
 			}
 		}
 	}

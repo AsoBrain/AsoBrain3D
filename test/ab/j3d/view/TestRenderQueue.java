@@ -27,6 +27,7 @@ import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Object3D;
+import ab.j3d.model.Object3DBuilder;
 import ab.j3d.model.Scene;
 
 import com.numdata.oss.junit.ArrayTester;
@@ -179,11 +180,11 @@ public final class TestRenderQueue
 		final Material red   = new Material( Color.RED  .getRGB() );
 		final Material green = new Material( Color.GREEN.getRGB() );
 
-		final Object3D plane = new Object3D();
-		plane.setTag( tag );
-		/* top    */ plane.addFace( new Vector3D[] { lf , lb , rb , rf } , red   , false , false ); // Z =  size
-		/* bottom */ plane.addFace( new Vector3D[] { lb , lf , rf , rb } , green , false , false ); // Z = -size
-
-		return plane;
+		final Object3DBuilder builder = new Object3DBuilder();
+		/* top    */ builder.addQuad( lf , lb , rb , rf , red   , false ); // Z =  size
+		/* bottom */ builder.addQuad( lb , lf , rf , rb , green , false ); // Z = -size
+		final Object3D result = builder.getObject3D();
+		result.setTag( tag );
+		return result;
 	}
 }

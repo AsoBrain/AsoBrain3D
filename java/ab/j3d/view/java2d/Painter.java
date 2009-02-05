@@ -29,6 +29,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
@@ -36,6 +37,7 @@ import ab.j3d.Vector3D;
 import ab.j3d.model.Cylinder3D;
 import ab.j3d.model.ExtrudedObject2D;
 import ab.j3d.model.Face3D;
+import ab.j3d.model.Face3D.Vertex;
 import ab.j3d.model.Insert3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Object3D;
@@ -329,7 +331,7 @@ public final class Painter
 			for ( int faceIndex = 0; faceIndex < faceCount; faceIndex++ )
 			{
 				final Face3D face = object.getFace( faceIndex );
-				maxVertexCount = Math.max( maxVertexCount , face.getVertexCount() );
+				maxVertexCount = Math.max( maxVertexCount , face.vertices.size() );
 			}
 
 			final int[] xs = new int[ maxVertexCount ];
@@ -347,7 +349,7 @@ public final class Painter
 				final Face3D face = object.getFace( faceIndex );
 
 				final Paint faceFillPaint;
-				if ( ( rgb != null ) && ( face.getVertexCount() > 2 ) )
+				if ( ( rgb != null ) && ( face.vertices.size() > 2 ) )
 				{
 					/*
 					 * The <code>shadeFactor</code> is used to modify the fill color based on
@@ -357,7 +359,7 @@ public final class Painter
 					 * completely disables the effect (always 100%); whilst <code>1.0</code>
 					 * makes faces perpendicular to the Z-axis black (0%).
 					 */
-					final Vector3D faceNormal = face.getNormal();
+					final Vector3D faceNormal = face.normal;
 
 					final float transformedNormalZ = (float)object2view.rotateZ( faceNormal.x , faceNormal.y , faceNormal.z );
 					final float factor = Math.min( 1.0f , ( 1.0f - shadeFactor ) + shadeFactor * Math.abs( transformedNormalZ ) );
@@ -759,15 +761,16 @@ public final class Painter
 	 */
 	private static void paintFace( final Graphics2D g , final Matrix3D gTransform , final Face3D face , final Color outlineColor , final Paint fillPaint , final double[] vertexCoordinates , final int[] xs , final int[] ys )
 	{
-		final int   vertexCount   = face.getVertexCount();
-		final int[] vertexIndices = face.getVertexIndices();
+		final List<Vertex> vertices = face.vertices;
+		final int vertexCount = vertices.size();
 
 		if ( ( vertexCount > 0 ) && ( ( outlineColor != null ) || ( fillPaint != null ) ) )
 		{
 			boolean show = true;
 			for ( int p = 0 ; p < vertexCount ; p++ )
 			{
-				final int vi = vertexIndices[ p ] * 3;
+				final Vertex vertex = vertices.get( p );
+				final int vi = vertex.vertexCoordinateIndex * 3;
 
 				final double x  = vertexCoordinates[ vi ];
 				final double y  = vertexCoordinates[ vi + 1 ];
@@ -803,7 +806,9 @@ public final class Painter
 					if ( vertexCount < 3 ) /* point or line */
 					{
 						if ( outlineColor == null )
+						{
 							g.drawLine( xs[ 0 ] , ys[ 0 ] , xs[ vertexCount - 1 ] , ys[ vertexCount - 1 ] );
+						}
 					}
 					else
 					{
@@ -815,9 +820,13 @@ public final class Painter
 				{
 					g.setPaint( outlineColor );
 					if ( vertexCount < 3 ) /* point or line */
+					{
 						g.drawLine( xs[ 0 ] , ys[ 0 ] , xs[ vertexCount - 1 ] , ys[ vertexCount - 1 ] );
+					}
 					else
+					{
 						g.drawPolygon( xs , ys , vertexCount );
+					}
 				}
 			}
 		}

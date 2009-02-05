@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2007
+ * (C) Copyright Numdata BV 2006-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,6 +35,7 @@ import ab.j3d.Matrix3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Object3D;
+import ab.j3d.model.Object3DBuilder;
 import ab.j3d.model.Transform3D;
 
 import com.numdata.oss.TextTools;
@@ -42,7 +43,7 @@ import com.numdata.oss.TextTools;
 /**
  * Loader for 3D Studio or 3D Studio MAX (<code>.3DS</colorMap>) files.
  * <p>
- * A <code>.3DS</code> file consists of chunks, each startin with an ID and the
+ * A <code>.3DS</code> file consists of chunks, each starting with an ID and the
  * chunk length. This allows easy skipping of unrecognized chunks.
  * <dl>
  *  <dt>NOTE:</dt>
@@ -82,7 +83,7 @@ public final class Max3DSLoader
 	/**
 	 * 3D object currently being constructed.
 	 */
-	private Object3D _object;
+	private Object3DBuilder _object3DBuilder;
 
 	/**
 	 * Texture for material currently being contructed/used.
@@ -199,10 +200,10 @@ public final class Max3DSLoader
 	 */
 	private Max3DSLoader( final Node3D root , final URL supplementURL )
 	{
-		_root          = root;
+		_root = root;
 		_supplementURL = supplementURL;
-		_object        = null;
-		_material      = null;
+		_object3DBuilder = null;
+		_material = null;
 		_textureCoords = null;
 	}
 
@@ -272,16 +273,16 @@ public final class Max3DSLoader
 					final String objectName = readString( in );
 					// System.out.println( " - START: object: " + objectName );
 
-					_object        = null;
-					_material      = null;
+					_object3DBuilder = null;
+					_material = null;
 					_textureCoords = null;
 
 					if ( ( objectName.length() > 0 ) && ( objectName.charAt( 0 ) != '$' ) ) // ignore hidden objects
 					{
-						final Object3D object = new Object3D();
-						object.setTag( objectName );
-
-						_object   = object;
+						final Object3DBuilder builder = new Object3DBuilder();
+						_object3DBuilder = builder;
+						final Object3D object3d = builder.getObject3D();
+						object3d.setTag( objectName );
 						_material = new Material( 0xFFC0C0C0 );
 
 						readChunk( in );
@@ -309,7 +310,7 @@ public final class Max3DSLoader
 					for ( int i = 0 ; i < vertexCoordinates.length ; i++ )
 						vertexCoordinates[ i ] = (double)readFloat( in );
 
-					_object.setVertexCoordinates( vertexCoordinates );
+					_object3DBuilder.setVertexCoordinates( vertexCoordinates );
 				}
 				break;
 
@@ -324,7 +325,7 @@ public final class Max3DSLoader
 					 */
 					final int faceCount = readShort( in );
 
-					final Object3D object        = _object;
+					final Object3DBuilder builder = _object3DBuilder;
 					final Material material      = _material;
 					final float[]  textureCoords = _textureCoords;
 
@@ -357,10 +358,10 @@ public final class Max3DSLoader
 						}
 
 						final boolean hasBackface = true; // ( material.opacity < 0.99f );
-						object.addFace( new int[] { vertexIndex3 , vertexIndex2 , vertexIndex1 } , material , tu , tv , 1.0f , false , hasBackface );
+						_object3DBuilder.addFace( new int[] { vertexIndex3 , vertexIndex2 , vertexIndex1 } , material , tu , tv , false , hasBackface );
 					}
 
-					_root.addChild( object );
+					_root.addChild( builder.getObject3D() );
 				}
 				break;
 
@@ -378,11 +379,12 @@ public final class Max3DSLoader
 					for ( int i = 0 ; i < faceCount ; i++ )
 						/*final int dummy =*/ readShort( in );
 
-					final Object3D object = _object;
+					final Object3DBuilder builder = _object3DBuilder;
+					final Object3D object = builder.getObject3D();
 					for ( int i = 0 ; i < object.getFaceCount() ; i++ )
 					{
 						final Face3D face = object.getFace( i );
-						face.setMaterial( material );
+						face.material = material;
 					}
 
 					_material = material;
@@ -391,8 +393,9 @@ public final class Max3DSLoader
 
 			case 0x4140 : // OBJECT_TEX_VERTS - 2D Texture coordinates - only valid with planar mapping
 				{
+					final Object3D object = _object3DBuilder.getObject3D();
 					final int faceVertexCount = readShort( in );
-					final int vertexCount     = _object.getVertexCount();
+					final int vertexCount     = object.getVertexCount();
 
 					if ( faceVertexCount != vertexCount )
 						throw new IOException( "Number of texture vertices != #model vertices (" + faceVertexCount + " != " + vertexCount + ')' );
@@ -427,7 +430,7 @@ public final class Max3DSLoader
 					 * at a time, specifying vertex normals and texture coordinates
 					 * (if present).
 					 */
-					final Object3D object    = _object;
+					final Object3D object    = _object3DBuilder.getObject3D();
 					final int      faceCount = object.getFaceCount();
 
 					for ( int i = 0 ; i < faceCount ; i++ )
@@ -437,7 +440,7 @@ public final class Max3DSLoader
 						if ( groupBitMask != 0 )
 						{
 							final Face3D face = object.getFace( i );
-							face.setSmooth( true );
+							face.smooth = true;
 						}
 					}
 				}
@@ -590,8 +593,8 @@ public final class Max3DSLoader
 
 			case 0xB000 : // HIERARCHY - Start of the instance tree
 				{
-					_object        = null;
-					_material      = null;
+					_object3DBuilder = null;
+					_material = null;
 					_textureCoords = null;
 					// System.out.println( "### HIERARCHY" );
 					readChunk( in );

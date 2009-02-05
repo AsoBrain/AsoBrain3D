@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -58,12 +58,12 @@ public class SkyBox3D
 	 */
 	public SkyBox3D( final String name )
 	{
-		this( new Material( name + "-north"   , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-north"   , 0.0 , 0.0 , false ) ,
-		      new Material( name + "-east"    , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-east"    , 0.0 , 0.0 , false ) ,
-		      new Material( name + "-south"   , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-south"   , 0.0 , 0.0 , false ) ,
-		      new Material( name + "-west"    , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-west"    , 0.0 , 0.0 , false ) ,
-		      new Material( name + "-ceiling" , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-ceiling" , 0.0 , 0.0 , false ) ,
-		      new Material( name + "-floor"   , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-floor"   , 0.0 , 0.0 , false ) );
+		this( new Material( name + "-north"   , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-north"   , 0.0f , 0.0f , false ) ,
+		      new Material( name + "-east"    , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-east"    , 0.0f , 0.0f , false ) ,
+		      new Material( name + "-south"   , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-south"   , 0.0f , 0.0f , false ) ,
+		      new Material( name + "-west"    , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-west"    , 0.0f , 0.0f , false ) ,
+		      new Material( name + "-ceiling" , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-ceiling" , 0.0f , 0.0f , false ) ,
+		      new Material( name + "-floor"   , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-floor"   , 0.0f , 0.0f , false ) );
 	}
 
 	/**

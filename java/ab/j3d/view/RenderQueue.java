@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2007
+ * (C) Copyright Numdata BV 2005-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -254,7 +254,7 @@ public final class RenderQueue
 			if ( projector.inViewVolume( face , vertexCoordinates ) )
 			{
 				final RenderedPolygon polygon = allocatePolygon( face.getVertexCount() );
-				polygon.initialize( face , vertexCoordinates , projectedCoordinates , faceNormals , alternateAppearance );
+				polygon.initialize( object , faceIndex , vertexCoordinates , projectedCoordinates , faceNormals , alternateAppearance );
 
 				//@FIXME: Debugging variable. Should be removed when the renderqueue works properly.
 				polygon._name = String.valueOf( object.getTag() );

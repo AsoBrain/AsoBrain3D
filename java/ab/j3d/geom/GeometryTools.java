@@ -21,6 +21,7 @@ package ab.j3d.geom;
 
 import java.awt.geom.Point2D;
 
+import ab.j3d.Bounds3D;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 
@@ -39,6 +40,111 @@ public class GeometryTools
 	 */
 	private GeometryTools()
 	{
+	}
+
+	/**
+	 * Test bounding sphere intersection.
+	 *
+	 * @param   center1     Center of sphere #1.
+	 * @param   radius1     Radius of sphere #2.
+	 * @param   from2to1    Transformation from sphere #2 to sphere #1.
+	 * @param   center2     Center of sphere #2.
+	 * @param   radius2     Radius of sphere #2.
+	 *
+	 * @return  <code>true</code> if the bounding spheres intersect;
+	 *          <code>false</code> otherwise.
+	 */
+	public static boolean testSphereIntersection( final Vector3D center1 , final double radius1 , final Matrix3D from2to1 , final Vector3D center2 , final double radius2 )
+	{
+		final double maxDistance = radius1 + radius2;
+
+		final double dx = from2to1.transformX( center2 ) - center1.x;
+		final double dy = from2to1.transformY( center2 ) - center1.y;
+		final double dz = from2to1.transformZ( center2 ) - center1.z;
+
+		return ( dx * dx + dy * dy + dz * dz ) < ( maxDistance * maxDistance );
+	}
+
+	/**
+	 * Test oriented bounding box intersection.
+	 *
+	 * Borrowed code from <A href='http://channel9.msdn.com/ShowPost.aspx?PostID=276041'>XNA Oriented Bounding Box Intersection Test</A>,
+	 * which was based on <A href='http://www.cs.unc.edu/~geom/theses/gottschalk/main.pdf'>Collision Queries using Oriented Boxes</A> by Stefan Gottschalk.
+	 *
+	 * @param   box1        Oriented bounding box #1.
+	 * @param   from2to1    Transformation from box #2 to box #1.
+	 * @param   box2        Oriented bounding box #2.
+	 *
+	 * @return  <code>true</code> if the bounding boxes intersect;
+	 *          <code>false</code> otherwise.
+	 */
+	public static boolean testOrientedBoundingBoxIntersection( final Bounds3D box1 , final Matrix3D from2to1 , final Bounds3D box2 )
+	{
+		if ( box1 == null )
+			throw new NullPointerException( "box1" );
+
+		if ( from2to1 == null )
+			throw new NullPointerException( "from2to1" );
+
+		if ( box2 == null )
+			throw new NullPointerException( "box2" );
+
+		final double absXX = Math.abs( from2to1.xx );
+		final double absXY = Math.abs( from2to1.xy );
+		final double absXZ = Math.abs( from2to1.xz );
+		final double absYX = Math.abs( from2to1.yx );
+		final double absYY = Math.abs( from2to1.yy );
+		final double absYZ = Math.abs( from2to1.yz );
+		final double absZX = Math.abs( from2to1.zx );
+		final double absZY = Math.abs( from2to1.zy );
+		final double absZZ = Math.abs( from2to1.zz );
+
+		final double extents1X   = 0.5 * ( box1.v2.x - box1.v1.x );
+		final double extents1Y   = 0.5 * ( box1.v2.y - box1.v1.y );
+		final double extents1Z   = 0.5 * ( box1.v2.z - box1.v1.z );
+
+		final double extents2X   = 0.5 * ( box2.v2.x - box2.v1.x );
+		final double extents2Y   = 0.5 * ( box2.v2.y - box2.v1.y );
+		final double extents2Z   = 0.5 * ( box2.v2.z - box2.v1.z );
+
+		final double centerOtherX = 0.5 * ( box2.v1.x + box2.v2.x );
+		final double centerOtherY = 0.5 * ( box2.v1.y + box2.v2.y );
+		final double centerOtherZ = 0.5 * ( box2.v1.z + box2.v2.z );
+
+		final double separationX = from2to1.transformX( centerOtherX , centerOtherY , centerOtherZ ) - 0.5 * ( box1.v1.x + box1.v2.x );
+		final double separationY = from2to1.transformY( centerOtherX , centerOtherY , centerOtherZ ) - 0.5 * ( box1.v1.y + box1.v2.y );
+		final double separationZ = from2to1.transformZ( centerOtherX , centerOtherY , centerOtherZ ) - 0.5 * ( box1.v1.z + box1.v2.z );
+
+		return
+		/* Test 1 X axis */ !( Math.abs( separationX ) > extents1X + Vector3D.dot( extents2X , extents2Y , extents2Z , absXX , absXY , absXZ ) ) &&
+		/* Test 1 Y axis */ !( Math.abs( separationY ) > extents1Y + Vector3D.dot( extents2X , extents2Y , extents2Z , absYX , absYY , absYZ ) ) &&
+		/* Test 1 Z axis */ !( Math.abs( separationZ ) > extents1Z + Vector3D.dot( extents2X , extents2Y , extents2Z , absZX , absZY , absZZ ) ) &&
+		/* Test 2 X axis */ !( Math.abs( Vector3D.dot( from2to1.xx , from2to1.yx , from2to1.zx , separationX , separationY , separationZ ) ) > Vector3D.dot( extents1X , extents1Y , extents1Z , absXX , absYX , absZX ) + extents2X ) &&
+		/* Test 2 Y axis */ !( Math.abs( Vector3D.dot( from2to1.xy , from2to1.yy , from2to1.zy , separationX , separationY , separationZ ) ) > Vector3D.dot( extents1X , extents1Y , extents1Z , absXY , absYY , absZY ) + extents2Y ) &&
+		/* Test 2 Z axis */ !( Math.abs( Vector3D.dot( from2to1.xz , from2to1.yz , from2to1.zz , separationX , separationY , separationZ ) ) > Vector3D.dot( extents1X , extents1Y , extents1Z , absXZ , absYZ , absZZ ) + extents2Z ) &&
+		/* Test 3 case 1 */ !( Math.abs( separationZ * from2to1.yx - separationY * from2to1.zx ) > extents1Y * absZX + extents1Z * absYX + extents2Y * absXZ + extents2Z * absXY ) &&
+		/* Test 3 case 2 */ !( Math.abs( separationZ * from2to1.yy - separationY * from2to1.zy ) > extents1Y * absZY + extents1Z * absYY + extents2X * absXZ + extents2Z * absXX ) &&
+		/* Test 3 case 3 */ !( Math.abs( separationZ * from2to1.yz - separationY * from2to1.zz ) > extents1Y * absZZ + extents1Z * absYZ + extents2X * absXY + extents2Y * absXX ) &&
+		/* Test 3 case 4 */ !( Math.abs( separationX * from2to1.zx - separationZ * from2to1.xx ) > extents1X * absZX + extents1Z * absXX + extents2Y * absYZ + extents2Z * absYY ) &&
+		/* Test 3 case 5 */ !( Math.abs( separationX * from2to1.zy - separationZ * from2to1.xy ) > extents1X * absZY + extents1Z * absXY + extents2X * absYZ + extents2Z * absYX ) &&
+		/* Test 3 case 6 */ !( Math.abs( separationX * from2to1.zz - separationZ * from2to1.xz ) > extents1X * absZZ + extents1Z * absXZ + extents2X * absYY + extents2Y * absYX ) &&
+		/* Test 3 case 7 */ !( Math.abs( separationY * from2to1.xx - separationX * from2to1.yx ) > extents1X * absYX + extents1Y * absXX + extents2Y * absZZ + extents2Z * absZY ) &&
+		/* Test 3 case 8 */ !( Math.abs( separationY * from2to1.xy - separationX * from2to1.yy ) > extents1X * absYY + extents1Y * absXY + extents2X * absZZ + extents2Z * absZX ) &&
+		/* Test 3 case 9 */ !( Math.abs( separationY * from2to1.xz - separationX * from2to1.yz ) > extents1X * absYZ + extents1Y * absXZ + extents2X * absZY + extents2Y * absZX );
+		/* No separating axes => we have intersection */
+	}
+
+	/**
+	 * Test intersection between to triangles in 3D.
+	 *
+	 * parameters: vertices of triangle 1: V0,V1,V2
+	 *             vertices of triangle 2: U0,U1,U2
+	 * result    : returns 1 if the triangles intersect, otherwise 0
+	 *
+	 */
+	public static boolean testTriangleTriangleIntersection( final Vector3D v0 , final Vector3D v1 , final Vector3D v2 , final Vector3D u0 , final Vector3D u1 , final Vector3D u2 )
+	{
+		return TriTriMoeler.testTriangleTriangle( v0 , v1 , v2 , u0 , u1 , u2 );
 	}
 
 	/**
@@ -381,6 +487,21 @@ public class GeometryTools
 	}
 
 	/**
+	 * Get normal vector of plane defined by the specified set of points. The
+	 * normal will point 'outwards' if the points are specified in clockwise
+	 * ordering.
+	 *
+	 * @param   points  List of points to get normal from.
+	 *
+	 * @return  Plane normal vector;
+	 *          <code>null</code> if no plane normal could be determined.
+	 */
+	public static Vector3D getPlaneNormal( final Vector3D... points )
+	{
+		return ( points.length > 3 ) ? getPlaneNormal( points[ 0 ] , points[ 1 ] , points[ 2 ] ) : null;
+	}
+
+	/**
 	 * Get normal vector of plane on which the triangle with the specified three
 	 * points is defined. The normal will point 'outwards' if the points are
 	 * specified in clockwise ordering.
@@ -389,19 +510,28 @@ public class GeometryTools
 	 * @param   p2  Second point of triangle.
 	 * @param   p3  Third point of triangle.
 	 *
-	 * @return  Normal vector.
+	 * @return  Plane normal vector;
+	 *          <code>null</code> if no plane normal could be determined.
 	 *
 	 * @see     Plane3D#getNormal
 	 * @see     Plane3D#isTwoSided
 	 */
 	public static Vector3D getPlaneNormal( final Vector3D p1 , final Vector3D p2 , final Vector3D p3 )
 	{
-		final Vector3D u = p1.minus( p2 );
-		final Vector3D v = p3.minus( p2 );
+		final double ux = p1.x - p2.x;
+		final double uy = p1.y - p2.y;
+		final double uz = p1.z - p2.z;
 
-		final Vector3D cross = Vector3D.cross( u , v );
+		final double vx = p3.x - p2.x;
+		final double vy = p3.y - p2.y;
+		final double vz = p3.z - p2.z;
 
-		return cross.normalize();
+		final double crossX = uy * vz - uz * vy;
+		final double crossY = uz * vx - ux * vz;
+		final double crossZ = ux * vy - uy * vx;
+
+		final double l = Vector3D.length( crossX, crossY, crossZ );
+		return ( l == 0.0 ) ? null : ( l == 1.0 ) ? new Vector3D( crossX , crossY , crossZ ) : new Vector3D( crossX / l , crossY / l , crossZ / l );
 	}
 
 	/**

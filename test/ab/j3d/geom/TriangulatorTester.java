@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2008
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,15 +17,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.model;
+package ab.j3d.geom;
 
 import java.awt.geom.GeneralPath;
 import java.util.Collection;
 
-import static junit.framework.Assert.*;
+import junit.framework.Assert;
 
 /**
- * Provides tools for testing a {@link Triangulator}
+ * Provides tools for testing a {@link Triangulator}.
  *
  * @author  G. Meinders
  * @version $Revision$ $Date$
@@ -39,7 +39,7 @@ public class TriangulatorTester
 
 			final Triangulation     triangulation = triangulator.triangulate( emptyPath );
 			final Collection<int[]> triangles     = triangulation.getTriangles();
-			assertTrue( "Expected no triangles." , triangles.isEmpty() );
+			Assert.assertTrue( "Expected no triangles." , triangles.isEmpty() );
 		}
 
 		{
@@ -48,7 +48,7 @@ public class TriangulatorTester
 
 			final Triangulation     triangulation = triangulator.triangulate( point );
 			final Collection<int[]> triangles     = triangulation.getTriangles();
-			assertTrue( "Expected no triangles." , triangles.isEmpty() );
+			Assert.assertTrue( "Expected no triangles." , triangles.isEmpty() );
 		}
 
 		{
@@ -56,9 +56,9 @@ public class TriangulatorTester
 			point.moveTo( 10.0 , 10.0 );
 			point.closePath();
 
-			final Triangulation     triangulation = triangulator.triangulate( point );
+			final Triangulation triangulation = triangulator.triangulate( point );
 			final Collection<int[]> triangles     = triangulation.getTriangles();
-			assertTrue( "Expected no triangles." , triangles.isEmpty() );
+			Assert.assertTrue( "Expected no triangles." , triangles.isEmpty() );
 		}
 
 		{
@@ -68,7 +68,7 @@ public class TriangulatorTester
 
 			final Triangulation     triangulation = triangulator.triangulate( line );
 			final Collection<int[]> triangles     = triangulation.getTriangles();
-			assertTrue( "Expected no triangles." , triangles.isEmpty() );
+			Assert.assertTrue( "Expected no triangles." , triangles.isEmpty() );
 		}
 
 		{
@@ -80,23 +80,7 @@ public class TriangulatorTester
 
 			final Triangulation     triangulation = triangulator.triangulate( clockwise );
 			final Collection<int[]> triangles     = triangulation.getTriangles();
-			assertFalse( "Expected triangles." , triangles.isEmpty() );
-		}
-
-		{
-			final GeneralPath clockwise = new GeneralPath();
-			clockwise.moveTo( 10.0 , 10.0 );
-			clockwise.lineTo( 20.0 , 30.0 );
-			clockwise.lineTo( 15.0 , 5.0 );
-			clockwise.closePath();
-			clockwise.moveTo( 110.0 , 10.0 );
-			clockwise.lineTo( 120.0 , 30.0 );
-			clockwise.lineTo( 115.0 , 5.0 );
-			clockwise.closePath();
-
-			final Triangulation     triangulation = triangulator.triangulate( clockwise );
-			final Collection<int[]> triangles     = triangulation.getTriangles();
-			assertFalse( "Expected triangles." , triangles.isEmpty() );
+			Assert.assertFalse( "Expected triangles." , triangles.isEmpty() );
 		}
 
 		{
@@ -108,16 +92,32 @@ public class TriangulatorTester
 			clockwise.moveTo( 110.0 , 10.0 );
 			clockwise.lineTo( 120.0 , 30.0 );
 			clockwise.lineTo( 115.0 , 5.0 );
+			clockwise.closePath();
 
 			final Triangulation     triangulation = triangulator.triangulate( clockwise );
 			final Collection<int[]> triangles     = triangulation.getTriangles();
-			assertFalse( "Expected triangles." , triangles.isEmpty() );
+			Assert.assertFalse( "Expected triangles." , triangles.isEmpty() );
+		}
+
+		{
+			final GeneralPath clockwise = new GeneralPath();
+			clockwise.moveTo( 10.0 , 10.0 );
+			clockwise.lineTo( 20.0 , 30.0 );
+			clockwise.lineTo( 15.0 , 5.0 );
+			clockwise.closePath();
+			clockwise.moveTo( 110.0 , 10.0 );
+			clockwise.lineTo( 120.0 , 30.0 );
+			clockwise.lineTo( 115.0 , 5.0 );
+
+			final Triangulation     triangulation = triangulator.triangulate( clockwise );
+			final Collection<int[]> triangles     = triangulation.getTriangles();
+			Assert.assertFalse( "Expected triangles." , triangles.isEmpty() );
 		}
 
 		try
 		{
 			triangulator.triangulate( null );
-			fail( "Expected 'NullPointerException'." );
+			Assert.fail( "Expected 'NullPointerException'." );
 		}
 		catch ( NullPointerException e )
 		{
