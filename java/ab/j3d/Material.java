@@ -252,7 +252,29 @@ public class Material
 	 */
 	public Material()
 	{
-		this( -1 ); /* opaque white */
+		ID                 = -1;
+		code               = null;
+		ambientColorRed    = 1.0f;
+		ambientColorGreen  = 1.0f;
+		ambientColorBlue   = 1.0f;
+		diffuseColorRed    = 1.0f;
+		diffuseColorGreen  = 1.0f;
+		diffuseColorBlue   = 1.0f;
+		diffuseColorAlpha  = 1.0f;
+		specularColorRed   = 1.0f;
+		specularColorGreen = 1.0f;
+		specularColorBlue  = 1.0f;
+		shininess          = 16;
+		emissiveColorRed   = 0.0f;
+		emissiveColorGreen = 0.0f;
+		emissiveColorBlue  = 0.0f;
+		colorMap           = null;
+		colorMapWidth      = 0.0f;
+		colorMapHeight     = 0.0f;
+		bumpMap            = null;
+		bumpMapWidth       = 0.0f;
+		bumpMapHeight      = 0.0f;
+		grain              = false;
 	}
 
 	/**
@@ -298,39 +320,9 @@ public class Material
 	 */
 	public Material( final int argb )
 	{
-		final int iAlpha = ( ( argb >> 24 ) & 0xFF );
-		final int iRed   = ( ( argb >> 16 ) & 0xFF );
-		final int iGreen = ( ( argb >>  8 ) & 0xFF );
-		final int iBlue  = (   argb         & 0xFF );
-
-		final float alpha = ( ( iAlpha > 0 ) && ( iAlpha < 255 ) ) ? ( (float)iAlpha / 255.0f ) : 1.0f;
-		final float red   = (float)iRed   / 255.0f;
-		final float green = (float)iGreen / 255.0f;
-		final float blue  = (float)iBlue  / 255.0f;
-
-		ID                 = -1;
-		code               = null;
-		ambientColorRed    = red;
-		ambientColorGreen  = green;
-		ambientColorBlue   = blue;
-		diffuseColorRed    = red;
-		diffuseColorGreen  = green;
-		diffuseColorBlue   = blue;
-		diffuseColorAlpha  = alpha;
-		specularColorRed   = 0.0f;
-		specularColorGreen = 0.0f;
-		specularColorBlue  = 0.0f;
-		shininess          = 16;
-		emissiveColorRed   = 0.0f;
-		emissiveColorGreen = 0.0f;
-		emissiveColorBlue  = 0.0f;
-		colorMap           = null;
-		colorMapWidth      = 0.0f;
-		colorMapHeight     = 0.0f;
-		bumpMap            = null;
-		bumpMapWidth       = 0.0f;
-		bumpMapHeight      = 0.0f;
-		grain              = false;
+		this();
+		setAmbientColor( argb );
+		setDiffuseColor( argb );
 	}
 
 	/**
@@ -488,6 +480,24 @@ public class Material
 	}
 
 	/**
+	 * Set ambient reflection color.
+	 * <p>
+	 * This determines the amount of reflected light from ambient sources
+	 * (normally just 1). This value may range from almost 0 for objects
+	 * that absorb most ambient light to near 1 for objects that are highly
+	 * reflective. Typical values range from 0.1 to 0.2 for dull surfaces
+	 * and 0,7 to 0,8 for bright surfaces.
+	 *
+	 * @param   rgb     Ambient reflection color.
+	 */
+	public void setAmbientColor( final int rgb )
+	{
+		ambientColorRed   = (float)( ( rgb >> 16 ) & 0xFF ) / 255.0f;
+		ambientColorGreen = (float)( ( rgb >>  8 ) & 0xFF ) / 255.0f;
+		ambientColorBlue  = (float)(   rgb         & 0xFF ) / 255.0f;
+	}
+
+	/**
 	 * Set diffuse reflection color and opacity.
 	 * <p>
 	 * This determines the amount of reflected light from diffuse sources.
@@ -505,6 +515,26 @@ public class Material
 		diffuseColorGreen = components[ 1 ];
 		diffuseColorBlue  = components[ 2 ];
 		diffuseColorAlpha = components[ 3 ];
+	}
+
+	/**
+	 * Set diffuse reflection color and opacity.
+	 * <p>
+	 * This determines the amount of reflected light from diffuse sources.
+	 * This value may range from almost 0 for objects that absorb most
+	 * diffuse light to near 1 for objects that are highly reflective.
+	 * Typical values range from 0.1 to 0.2 for dull surfaces and 0.7 to
+	 * 0.8 for bright surfaces.
+	 *
+	 * @param   argb    Diffuse reflection color and opacity.
+	 */
+	public void setDiffuseColor( final int argb )
+	{
+		final int iAlpha =         ( ( argb >> 24 ) & 0xFF );
+		diffuseColorRed   = (float)( ( argb >> 16 ) & 0xFF ) / 255.0f;
+		diffuseColorGreen = (float)( ( argb >>  8 ) & 0xFF ) / 255.0f;
+		diffuseColorBlue  = (float)(   argb         & 0xFF ) / 255.0f;
+		diffuseColorAlpha = ( iAlpha < 255 ) ? ( (float)iAlpha / 255.0f ) : 1.0f;
 	}
 
 	/**
@@ -526,6 +556,23 @@ public class Material
 
 
 	/**
+	 * Set specular reflection color.
+	 * <p>
+	 * Specular reflection is total or near total reflection of incoming
+	 * light in a concentrated region. It can be used to create highlights
+	 * on shiny surfaces.
+	 *
+	 * @param   rgb     Specular reflection color.
+	 */
+	public void setSpecularColor( final int rgb )
+	{
+		specularColorRed   = (float)( ( rgb >> 16 ) & 0xFF ) / 255.0f;
+		specularColorGreen = (float)( ( rgb >>  8 ) & 0xFF ) / 255.0f;
+		specularColorBlue  = (float)(   rgb         & 0xFF ) / 255.0f;
+	}
+
+
+	/**
 	 * Set emissive color.
 	 * <p>
 	 * This determines the amount of light emitted by this material.
@@ -539,5 +586,20 @@ public class Material
 		emissiveColorRed   = components[ 0 ];
 		emissiveColorGreen = components[ 1 ];
 		emissiveColorBlue  = components[ 2 ];
+	}
+
+	/**
+	 * Set emissive color.
+	 * <p>
+	 * This determines the amount of light emitted by this material.
+	 * Note that this automatically implies a light source.
+	 *
+	 * @param   rgb     Emissive color.
+	 */
+	public void setEmissiveColor( final int rgb )
+	{
+		emissiveColorRed   = (float)( ( rgb >> 16 ) & 0xFF ) / 255.0f;
+		emissiveColorGreen = (float)( ( rgb >>  8 ) & 0xFF ) / 255.0f;
+		emissiveColorBlue  = (float)(   rgb         & 0xFF ) / 255.0f;
 	}
 }
