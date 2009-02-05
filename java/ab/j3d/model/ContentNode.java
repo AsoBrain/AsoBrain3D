@@ -109,18 +109,16 @@ public final class ContentNode
 	 * <code>opacity</code> values can be used to provide extra hints for
 	 * rendering objects.
 	 *
-	 * @param   id                  Application-assigned ID of this node.
-	 * @param   transform           Initial transform (<code>null</code> => identity).
-	 * @param   node3D              Root in the 3D scene.
-	 * @param   materialOverride    Material to use instead of actual materials.
-	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).
+	 * @param   id          Application-assigned ID of this node.
+	 * @param   transform   Initial transform (<code>null</code> => identity).
+	 * @param   node3D      Root in the 3D scene.
 	 */
-	public ContentNode( final Object id , final Matrix3D transform , final Node3D node3D , final Material materialOverride , final float opacity )
+	public ContentNode( final Object id , final Matrix3D transform , final Node3D node3D )
 	{
 		_id               = id;
 		_node3D           = node3D;
-		_materialOverride = materialOverride;
-		_opacity          = opacity;
+		_materialOverride = null;
+		_opacity          = 1.0f;
 		_transform        = ( transform != null ) ? transform : Matrix3D.INIT;
 		_collidable       = true;
 	}

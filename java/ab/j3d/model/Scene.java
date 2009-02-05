@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.view.BSPTree;
 
@@ -163,12 +162,12 @@ public class Scene
 		if ( scene == null )
 			throw new NullPointerException( "scene" );
 
-		scene.addContentNode( "legacy-ambient-1" , Matrix3D.INIT , new Light3D( 10 , -1.0 ) , null , 1.0f );
+		scene.addContentNode( "legacy-ambient-1" , Matrix3D.INIT , new Light3D( 10 , -1.0 ) );
 
 		/* A distance of over 100000 units from the origin should be sufficient to mimic a directional light. */
-		scene.addContentNode( "legacy-light-1" , Matrix3D.INIT.plus(  60000.0 ,  100000.0 ,  100000.0 ) , new Light3D( 255 , 300000.0 ) , null , 1.0f );
-		scene.addContentNode( "legacy-light-2" , Matrix3D.INIT.plus( -60000.0 , -100000.0 , - 20000.0 ) , new Light3D( 230 , 300000.0 ) , null , 1.0f );
-		scene.addContentNode( "legacy-light-3" , Matrix3D.INIT.plus( 100000.0 ,  -50000.0 , -100000.0 ) , new Light3D( 208 , 300000.0 ) , null , 1.0f );
+		scene.addContentNode( "legacy-light-1" , Matrix3D.INIT.plus(  60000.0 ,  100000.0 ,  100000.0 ), new Light3D( 255 , 300000.0 ) );
+		scene.addContentNode( "legacy-light-2" , Matrix3D.INIT.plus( -60000.0 , -100000.0 , - 20000.0 ), new Light3D( 230 , 300000.0 ) );
+		scene.addContentNode( "legacy-light-3" , Matrix3D.INIT.plus( 100000.0 ,  -50000.0 , -100000.0 ) , new Light3D( 208 , 300000.0 ) );
 	}
 
 	/**
@@ -266,35 +265,15 @@ public class Scene
 	 * Add a new content node. If a content node with the same ID already
 	 * exists, that node will be removed before adding the new content node.
 	 *
-	 * @param   id                  ID of content node.
-	 * @param   node3D              Root in the 3D scene to create a content node for.
-	 * @param   materialOverride    Material to use instead of actual materials.
-	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).);
-	 *
-	 * @return  Content node that was added.
-	 *
-	 * @throws  NullPointerException if <code>id</code> or <code>node3D<code> is <code>null</code>
-	 */
-	public final ContentNode addContentNode( final Object id , final Node3D node3D , final Material materialOverride , final float opacity )
-	{
-		return addContentNode( id , Matrix3D.INIT , node3D , materialOverride , opacity );
-	}
-
-	/**
-	 * Add a new content node. If a content node with the same ID already
-	 * exists, that node will be removed before adding the new content node.
-	 *
-	 * @param   id                  ID of content node.
-	 * @param   transform           Initial transform (<code>null</code> => identity).
-	 * @param   node3D              Root in the 3D scene to create a content node for.
-	 * @param   materialOverride    Material to use instead of actual materials.
-	 * @param   opacity             Extra opacity (0.0=translucent, 1.0=opaque).);
+	 * @param   id          ID of content node.
+	 * @param   transform   Initial transform (<code>null</code> => identity).
+	 * @param   node3D      Root in the 3D scene to create a content node for.
 	 *
 	 * @return  Content node that was added.
 	 *
 	 * @throws  NullPointerException if <code>id</code> or <code>node3D</code> is <code>null</code>.
 	 */
-	public final ContentNode addContentNode( final Object id , final Matrix3D transform , final Node3D node3D , final Material materialOverride , final float opacity )
+	public final ContentNode addContentNode( final Object id , final Matrix3D transform , final Node3D node3D )
 	{
 		if ( id == null )
 			throw new NullPointerException( "id" );
@@ -302,9 +281,7 @@ public class Scene
 		if ( node3D == null )
 			throw new NullPointerException( "node3D" );
 
-		final ContentNode result = new ContentNode( id , transform , node3D , materialOverride , opacity );
-		addContentNode( result );
-		return result;
+		return addContentNode( new ContentNode( id , transform , node3D ) );
 	}
 
 	/**

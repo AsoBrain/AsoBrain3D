@@ -114,13 +114,13 @@ public class TestViewControlInput
 		final Matrix3D transform7 = Matrix3D.getTransform(   0.0 , 90.0 , 0.0 ,  150.0 ,   0.0 , 0.0 );
 
 		final Scene scene = new Scene( Scene.MM );
-		scene.addContentNode( "Plane 1" , transform1 , plane1 , null , 0.0f );
-		scene.addContentNode( "Plane 2" , transform2 , plane2 , null , 0.0f );
-		scene.addContentNode( "Plane 3" , transform3 , plane3 , null , 0.0f );
-		scene.addContentNode( "Plane 4" , transform4 , plane4 , null , 0.0f );
-		scene.addContentNode( "Plane 5" , transform5 , plane5 , null , 0.0f );
-		scene.addContentNode( "Plane 6" , transform6 , plane6 , null , 0.0f );
-		scene.addContentNode( "Plane 7" , transform7 , plane7 , null , 0.0f );
+		scene.addContentNode( "Plane 1" , transform1 , plane1 );
+		scene.addContentNode( "Plane 2" , transform2 , plane2 );
+		scene.addContentNode( "Plane 3" , transform3 , plane3 );
+		scene.addContentNode( "Plane 4" , transform4 , plane4 );
+		scene.addContentNode( "Plane 5" , transform5 , plane5 );
+		scene.addContentNode( "Plane 6" , transform6 , plane6 );
+		scene.addContentNode( "Plane 7" , transform7 , plane7 );
 
 		/*
 		 * Perform tests.
@@ -194,8 +194,8 @@ public class TestViewControlInput
 		final Matrix3D transform2 = Matrix3D.getTransform( 0.0  , 0.0 , 0.0 , 0.0 , 0.0 , -75.0 );
 
 		final Scene scene = new Scene( Scene.MM );
-		scene.addContentNode( "Plane 1" , transform1 , plane1 , null , 0.0f );
-		scene.addContentNode( "Plane 2" , transform2 , plane2 , null , 0.0f );
+		scene.addContentNode( "Plane 1" , transform1 , plane1 );
+		scene.addContentNode( "Plane 2" , transform2 , plane2 );
 
 		/*
 		 * Perform tests.
@@ -246,8 +246,8 @@ public class TestViewControlInput
 		final Matrix3D transform2 = Matrix3D.getTransform( 0.0  , 0.0 , 0.0 , 0.0 , 0.0 , -75.0 );
 
 		final Scene scene = new Scene( Scene.MM );
-		scene.addContentNode( "Plane 1" , transform1 , plane1 , null , 0.0f );
-		scene.addContentNode( "Plane 2" , transform2 , plane2 , null , 0.0f );
+		scene.addContentNode( "Plane 1" , transform1 , plane1 );
+		scene.addContentNode( "Plane 2" , transform2 , plane2 );
 
 		/*
 		 * Perform tests.

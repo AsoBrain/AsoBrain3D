@@ -97,7 +97,7 @@ public class Max3DSLoaderApp
 
 			final Scene scene = new Scene( unit );
 			Scene.addLegacyLights( scene );
-			scene.addContentNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d , null , 1.0f );
+			scene.addContentNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d );
 
 			final RenderEngine renderEngine = new Java3dEngine( scene , Color.lightGray ); // new Color( 51 , 77 , 102 ) );
 

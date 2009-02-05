@@ -40,10 +40,10 @@ import ab.j3d.Vector3D;
 import ab.j3d.control.ControlInputEvent;
 import ab.j3d.control.FromToCameraControl;
 import ab.j3d.control.MouseControl;
+import ab.j3d.model.ContentNode;
 import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Object3D;
 import ab.j3d.model.Scene;
-import ab.j3d.model.ContentNode;
 import ab.j3d.model.SkyBox3D;
 import ab.j3d.view.control.planar.PlaneControl;
 import ab.j3d.view.control.planar.PlaneMoveControl;
@@ -88,17 +88,17 @@ public abstract class RenderEngineExample
 
 		final Object3D cube = createCube( 0.1 / unit );
 		cube.setTag( "Cube 1" );
-		final ContentNode cubeNode = scene.addContentNode( "cube" , Matrix3D.INIT , cube , null , 1.0f );
+		final ContentNode cubeNode = scene.addContentNode( "cube" , Matrix3D.INIT , cube );
 		cubeNode.setPlaneControl( createPlaneControl( cubeNode.getTransform() ) );
 
 		final Object3D cubeLeft = createCube( 0.075 / unit );
 		cubeLeft.setTag( "Cube left");
-		final ContentNode cubeLeftNode = scene.addContentNode( "cubeLeft" , Matrix3D.getTransform( 0.0 , 225.0 , 90.0 , -0.250 / unit , 0.050 / unit , 0.0 ) , cubeLeft , null , 1.0f );
+		final ContentNode cubeLeftNode = scene.addContentNode( "cubeLeft" , Matrix3D.getTransform( 0.0 , 225.0 , 90.0 , -0.250 / unit , 0.050 / unit , 0.0 ) , cubeLeft );
 		cubeLeftNode.setPlaneControl( createPlaneControl( cubeLeftNode.getTransform() ) );
 
 		final Object3D cubeRight = createCube( 0.050 / unit );
 		cubeRight.setTag( "Cube right");
-		final ContentNode cubeRightNode = scene.addContentNode( "cubeRight" , Matrix3D.getTransform( 90.0 , 0.0 , 315.0 , 0.225 / unit , 0.0 , 0.0 ) , cubeRight , null , 1.0f );
+		final ContentNode cubeRightNode = scene.addContentNode( "cubeRight" , Matrix3D.getTransform( 90.0 , 0.0 , 315.0 , 0.225 / unit , 0.0 , 0.0 ) , cubeRight );
 		cubeRightNode.setPlaneControl( createPlaneControl( cubeRightNode.getTransform() ) );
 
 		final Vector3D viewFrom = Vector3D.polarToCartesian( 1.5 / unit , -0.2 * Math.PI , 0.4 * Math.PI );
@@ -117,7 +117,7 @@ public abstract class RenderEngineExample
 		frame.setVisible( true );
 
 		final Object3D testCube = createCube(0.075 / unit);
-		final ContentNode testCubeNode = scene.addContentNode( "banaan" , Matrix3D.getTransform( 190.0 , 0.0 , -315.0 , 0.525 / unit , 0.0 , 0.0 ) , testCube , null , 1.0f );
+		final ContentNode testCubeNode = scene.addContentNode( "banaan" , Matrix3D.getTransform( 190.0 , 0.0 , -315.0 , 0.525 / unit , 0.0 , 0.0 ) , testCube );
 		testCubeNode.setPlaneControl( createPlaneControl( testCubeNode.getTransform() ) );
 /*
 
@@ -196,7 +196,7 @@ public abstract class RenderEngineExample
 			}
 		} );
 
-		scene.addContentNode( "skybox" , Matrix3D.INIT , createSkyBox() , null , 1.0f );
+		scene.addContentNode( "skybox" , Matrix3D.INIT , createSkyBox() );
 	}
 
 	/**
@@ -268,12 +268,12 @@ public abstract class RenderEngineExample
 		cube.outlineColor = Color.BLACK;
 		cube.alternateFillColor = Color.GREEN;
 		cube.alternateOutlineColor = Color.BLACK;
-		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , red     , textureU , textureV , 1.0f , false , false ); // Z =  size
-		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , green   , textureU , textureV , 1.0f , false , false ); // Z = -size
-		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , cyan    , textureU , textureV , 1.0f , false , false ); // Y = -size
-		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , magenta , textureU , textureV , 1.0f , false , false ); // Y =  size
-		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , yellow  , textureU , textureV , 1.0f , false , false ); // X = -size
-		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , blue    , textureU , textureV , 1.0f , false , false ); // X =  size
+		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , red     , textureU , textureV , false , false ); // Z =  size
+		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , green   , textureU , textureV , false , false ); // Z = -size
+		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , cyan    , textureU , textureV , false , false ); // Y = -size
+		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , magenta , textureU , textureV , false , false ); // Y =  size
+		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , yellow  , textureU , textureV , false , false ); // X = -size
+		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , blue    , textureU , textureV , false , false ); // X =  size
 
 		return cube;
 	}

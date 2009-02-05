@@ -242,11 +242,11 @@ public final class Box3D
 			final float[] u = new float[] { u1 , u1 , u2 , u2 };
 			final float[] v = new float[] { v1 , v2 , v2 , v1 };
 
-			addFace( vertices , material , u , v , 1.0f , false , false );
+			addFace( vertices , material , u , v , false , false );
 		}
 		else
 		{
-			addFace( vertices , material , null , null , 1.0f , false , false );
+			addFace( vertices , material , null , null , false , false );
 		}
 
 	}

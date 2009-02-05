@@ -272,19 +272,19 @@ public class ViewComparison
 			/*
 			 * Test basic specular highlights, smoothing and texturing.
 			 */
-			target.addContentNode( "sphere-1" , Matrix3D.INIT.plus( -100.0 , -100.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.1 , 80.2 , 16 , 16 , solid     , false ) , null , 1.0f );
-			target.addContentNode( "sphere-2" , Matrix3D.INIT.plus(    0.0 , -100.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.1 , 80.2 , 16 , 16 , solid     , true  ) , null , 1.0f );
-			target.addContentNode( "sphere-3" , Matrix3D.INIT.plus(  100.0 , -100.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , textured  , true  ) , null , 1.0f );
-			target.addContentNode( "sphere-4" , Matrix3D.INIT.plus( -100.0 ,    0.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , solid     , true  ) , null , 1.0f );
-			target.addContentNode( "sphere-5" , Matrix3D.INIT.plus(    0.0 ,    0.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , shiny     , true  ) , null , 1.0f );
-			target.addContentNode( "sphere-6" , Matrix3D.INIT.plus(  100.0 ,    0.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , shinier   , true  ) , null , 1.0f );
-			target.addContentNode( "box-1"    , Matrix3D.INIT.plus( -140.0 ,   60.0 ,  0.0 ) , new Box3D   ( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , Scene.MM , solid , solid ) , null , 1.0f );
+			target.addContentNode( "sphere-1" , Matrix3D.INIT.plus( -100.0 , -100.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.1 , 80.2 , 16 , 16 , solid     , false ) );
+			target.addContentNode( "sphere-2" , Matrix3D.INIT.plus(    0.0 , -100.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.1 , 80.2 , 16 , 16 , solid     , true  ) );
+			target.addContentNode( "sphere-3" , Matrix3D.INIT.plus(  100.0 , -100.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , textured  , true  ) );
+			target.addContentNode( "sphere-4" , Matrix3D.INIT.plus( -100.0 ,    0.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , solid     , true  ) );
+			target.addContentNode( "sphere-5" , Matrix3D.INIT.plus(    0.0 ,    0.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , shiny     , true  ) );
+			target.addContentNode( "sphere-6" , Matrix3D.INIT.plus(  100.0 ,    0.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , shinier   , true  ) );
+			target.addContentNode( "box-1"    , Matrix3D.INIT.plus( -140.0 ,   60.0 ,  0.0 ) , new Box3D   ( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , Scene.MM , solid , solid ) );
 
 			/*
 			 * Test advanced texturing. (i.e. with non-white diffuse color)
 			 */
-			target.addContentNode( "sphere-7" , Matrix3D.INIT.plus(    0.0 ,  100.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , textured2 , true  ) , null , 1.0f );
-			target.addContentNode( "sphere-8" , Matrix3D.INIT.plus(  100.0 ,  100.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , textured3 , true  ) , null , 1.0f );
+			target.addContentNode( "sphere-7" , Matrix3D.INIT.plus(    0.0 ,  100.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , textured2 , true  ) );
+			target.addContentNode( "sphere-8" , Matrix3D.INIT.plus(  100.0 ,  100.0 , 40.0 ) , new Sphere3D( Matrix3D.INIT , 80.0 , 80.0 , 80.0 , 16 , 16 , textured3 , true  ) );
 
 			/*
 			 * Test combinations of diffuse and ambient colors.
@@ -304,7 +304,7 @@ public class ViewComparison
 
 					final double x = (double)( i % 3 ) * 100.0 - 100.0;
 					final double y = (double)( i / 3 ) * 100.0 + 200.0;
-					target.addContentNode( "ambient-sphere-" + j , Matrix3D.INIT.plus( x , y , z ) , new Sphere3D( Matrix3D.INIT , 40.0 , 40.0 , 40.0 , 16 , 16 , material , true ) , null , 1.0f );
+					target.addContentNode( "ambient-sphere-" + j , Matrix3D.INIT.plus( x , y , z ) , new Sphere3D( Matrix3D.INIT , 40.0 , 40.0 , 40.0 , 16 , 16 , material , true ) );
 
 					i++;
 					j++;
@@ -317,9 +317,9 @@ public class ViewComparison
 			 */
 			for ( int i = 0 ; i < 50 ; i++ )
 			{
-				target.addContentNode( "distant-sphere-a-" + i , Matrix3D.INIT.plus( -100.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( Matrix3D.INIT , 40.0 , 40.0 , 40.0 , 16 , 16 , solid    , true ) , null , 1.0f );
-				target.addContentNode( "distant-sphere-b-" + i , Matrix3D.INIT.plus(    0.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( Matrix3D.INIT , 40.0 , 40.0 , 40.0 , 16 , 16 , shiny    , true ) , null , 1.0f );
-				target.addContentNode( "distant-sphere-c-" + i , Matrix3D.INIT.plus(  100.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( Matrix3D.INIT , 40.0 , 40.0 , 40.0 , 16 , 16 , textured , true ) , null , 1.0f );
+				target.addContentNode( "distant-sphere-a-" + i , Matrix3D.INIT.plus( -100.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( Matrix3D.INIT , 40.0 , 40.0 , 40.0 , 16 , 16 , solid    , true ) );
+				target.addContentNode( "distant-sphere-b-" + i , Matrix3D.INIT.plus(    0.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( Matrix3D.INIT , 40.0 , 40.0 , 40.0 , 16 , 16 , shiny    , true ) );
+				target.addContentNode( "distant-sphere-c-" + i , Matrix3D.INIT.plus(  100.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( Matrix3D.INIT , 40.0 , 40.0 , 40.0 , 16 , 16 , textured , true ) );
 			}
 
 			createLights( target );
@@ -327,8 +327,8 @@ public class ViewComparison
 
 		protected void createLights( final Scene target )
 		{
-			target.addContentNode( "ambient-1" , Matrix3D.INIT , new Light3D( 128 , -1.0 ) , null , 1.0f );
-			target.addContentNode( "light-1" , Matrix3D.INIT.plus(  1000.0 ,  -1000.0 ,  1000.0 ) , new Light3D( 150 , FALL_OFF ) , null , 1.0f );
+			target.addContentNode( "ambient-1" , Matrix3D.INIT , new Light3D( 128 , -1.0 ) );
+			target.addContentNode( "light-1" , Matrix3D.INIT.plus(  1000.0 ,  -1000.0 ,  1000.0 ) , new Light3D( 150 , FALL_OFF ) );
 		}
 	}
 
@@ -337,7 +337,7 @@ public class ViewComparison
 	{
 		protected void createLights( final Scene target )
 		{
-			target.addContentNode( "light-1" , Matrix3D.INIT.plus(  1000.0 ,  -1000.0 ,  1000.0 ) , new Light3D( 150 , FALL_OFF ) , null , 1.0f );
+			target.addContentNode( "light-1" , Matrix3D.INIT.plus(  1000.0 ,  -1000.0 ,  1000.0 ) , new Light3D( 150 , FALL_OFF ) );
 		}
 	}
 
@@ -346,7 +346,7 @@ public class ViewComparison
 	{
 		protected void createLights( final Scene target )
 		{
-			target.addContentNode( "ambient-1" , Matrix3D.INIT , new Light3D( 128 , -1.0 ) , null , 1.0f );
+			target.addContentNode( "ambient-1" , Matrix3D.INIT , new Light3D( 128 , -1.0 ) );
 		}
 	}
 }
