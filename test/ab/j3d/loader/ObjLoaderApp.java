@@ -63,7 +63,7 @@ public class ObjLoaderApp
 			//final ResourceLoader loader =   new ZipResourceLoader( fileLoader.getResource( "penguin.jar" ) );
 
 			//Or load from directory
-			final ResourceLoader loader = new FileResourceLoader( "/home/meinders/obj/" );
+			final ResourceLoader loader = new FileResourceLoader( System.getProperty( "user.home" ) + "/soda/Ivenza_LayoutPlugin/objects/" );
 
 			final Object3D object3d = ObjLoader.load( transform , loader , "door2c.obj" );
 			final Bounds3D bounds   = object3d.getOrientedBoundingBox();
@@ -75,7 +75,7 @@ public class ObjLoaderApp
 
 			final Scene scene = new Scene( unit );
 			Scene.addLegacyLights( scene );
-			scene.addContentNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d , null , 1.0f );
+			scene.addContentNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d );
 
 			final RenderEngine renderEngine = new JOGLEngine( Color.WHITE );
 
