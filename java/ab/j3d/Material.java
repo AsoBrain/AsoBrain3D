@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2007 Peter S. Heijnen
+ * Copyright (C) 1999-2009 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -65,11 +65,11 @@ public class Material
 		"  `emissiveColorGreen` float NOT NULL,\n" +
 		"  `emissiveColorBlue` float NOT NULL,\n" +
 		"  `colorMap` varchar(64) default NULL,\n" +
-		"  `colorMapWidth` double NOT NULL,\n" +
-		"  `colorMapHeight` double NOT NULL,\n" +
+		"  `colorMapWidth` float NOT NULL,\n" +
+		"  `colorMapHeight` float NOT NULL,\n" +
 		"  `bumpMap` varchar(64) default NULL,\n" +
-		"  `bumpMapWidth` double NOT NULL,\n" +
-		"  `bumpMapHeight` double NOT NULL,\n" +
+		"  `bumpMapWidth` float NOT NULL,\n" +
+		"  `bumpMapHeight` float NOT NULL,\n" +
 		"  `grain` tinyint(1) NOT NULL,\n" +
 		"  PRIMARY KEY  (`ID`),\n" +
 		"  UNIQUE KEY `code` (`code`)\n" +
@@ -208,14 +208,14 @@ public class Material
 	 * physical dimension, in which case it can be correctly scaled in a virtual
 	 * environment. Set to 0 if undetermined.
 	 */
-	public double colorMapWidth;
+	public float colorMapWidth;
 
 	/**
 	 * Height of color map in meters. This can be used if the map has this
 	 * physical dimension, in which case it can be correctly scaled in a virtual
 	 * environment. Set to 0 if undetermined.
 	 */
-	public double colorMapHeight;
+	public float colorMapHeight;
 
 	/**
 	 * Name of bump map to use. This map specifies a height offset at each
@@ -231,14 +231,14 @@ public class Material
 	 * physical dimension, in which case it can be correctly scaled in a virtual
 	 * environment. Set to 0 if undetermined.
 	 */
-	public double bumpMapWidth;
+	public float bumpMapWidth;
 
 	/**
 	 * Height of bump map in meters. This can be used if the map has this
 	 * physical dimension, in which case it can be correctly scaled in a virtual
 	 * environment. Set to 0 if undetermined.
 	 */
-	public double bumpMapHeight;
+	public float bumpMapHeight;
 
 	/**
 	 * Flag to indicate that this material's texture has a 'grain'. If so,
@@ -324,11 +324,11 @@ public class Material
 		emissiveColorGreen = 0.0f;
 		emissiveColorBlue  = 0.0f;
 		colorMap           = null;
-		colorMapWidth      = 0.0;
-		colorMapHeight     = 0.0;
+		colorMapWidth      = 0.0f;
+		colorMapHeight     = 0.0f;
 		bumpMap            = null;
-		bumpMapWidth       = 0.0;
-		bumpMapHeight      = 0.0;
+		bumpMapWidth       = 0.0f;
+		bumpMapHeight      = 0.0f;
 		grain              = false;
 	}
 
@@ -355,7 +355,7 @@ public class Material
 	 * @param   colorMapHeight      Height of texture color map in meters (<code>0</code> => undetermined).
 	 * @param   grain               Flag to indicate that material has a 'grain'.
 	 */
-	public Material( final String code , final float ambientColorRed , final float ambientColorGreen , final float ambientColorBlue , final float diffuseColorRed , final float diffuseColorGreen , final float diffuseColorBlue , final float diffuseColorAlpha , final float specularColorRed , final float specularColorGreen , final float specularColorBlue , final int shininess , final float emissiveColorRed , final float emissiveColorGreen , final float emissiveColorBlue , final String colorMap , final double colorMapWidth , final double colorMapHeight , final boolean grain )
+	public Material( final String code , final float ambientColorRed , final float ambientColorGreen , final float ambientColorBlue , final float diffuseColorRed , final float diffuseColorGreen , final float diffuseColorBlue , final float diffuseColorAlpha , final float specularColorRed , final float specularColorGreen , final float specularColorBlue , final int shininess , final float emissiveColorRed , final float emissiveColorGreen , final float emissiveColorBlue , final String colorMap , final float colorMapWidth , final float colorMapHeight , final boolean grain )
 	{
 		ID                      = -1;
 		this.code               = code;
@@ -376,6 +376,9 @@ public class Material
 		this.colorMap           = colorMap;
 		this.colorMapWidth      = colorMapWidth;
 		this.colorMapHeight     = colorMapHeight;
+		bumpMap                 = null;
+		bumpMapWidth            = 0.0f;
+		bumpMapHeight           = 0.0f;
 		this.grain              = grain;
 	}
 
@@ -426,9 +429,9 @@ public class Material
 	 *
 	 * @return  Combined ambient reflectivity.
 	 */
-	public double getAmbientReflectivity()
+	public float getAmbientReflectivity()
 	{
-		return 0.3 * (double)ambientColorRed  + 0.59 * (double)ambientColorGreen  + 0.11 * (double)ambientColorBlue;
+		return 0.3f * ambientColorRed + 0.59f * ambientColorGreen + 0.11f * ambientColorBlue;
 	}
 
 	/**
@@ -437,9 +440,9 @@ public class Material
 	 *
 	 * @return  Combined diffuse reflectivity.
 	 */
-	public double getDiffuseReflectivity()
+	public float getDiffuseReflectivity()
 	{
-		return 0.3 * (double)diffuseColorRed  + 0.59 * (double)diffuseColorGreen  + 0.11 * (double)diffuseColorBlue;
+		return 0.3f * diffuseColorRed + 0.59f * diffuseColorGreen + 0.11f * diffuseColorBlue;
 	}
 
 	/**
@@ -448,9 +451,9 @@ public class Material
 	 *
 	 * @return  Combined specular reflectivity.
 	 */
-	public double getSpecularReflectivity()
+	public float getSpecularReflectivity()
 	{
-		return 0.3 * (double)specularColorRed + 0.59 * (double)specularColorGreen + 0.11 * (double)specularColorBlue;
+		return 0.3f * specularColorRed + 0.59f * specularColorGreen + 0.11f * specularColorBlue;
 	}
 
 	/**
@@ -459,8 +462,8 @@ public class Material
 	 *
 	 * @return  Combined emission.
 	 */
-	public double getEmission()
+	public float getEmission()
 	{
-		return 0.3 * (double)emissiveColorRed + 0.59 * (double)emissiveColorGreen + 0.11 * (double)emissiveColorBlue;
+		return 0.3f * emissiveColorRed + 0.59f * emissiveColorGreen + 0.11f * emissiveColorBlue;
 	}
 }

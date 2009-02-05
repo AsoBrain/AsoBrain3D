@@ -72,17 +72,17 @@ public final class AbPovTestModel
 		 * Fill scene with objects from the testmodel.
 		 */
 		final Scene scene = _scene;
-		scene.addContentNode( "camera"            , Matrix3D.INIT , getCamera3D()              , null , 1.0f );
-		scene.addContentNode( "redbox"            , Matrix3D.INIT , getRedXRotatedBox3D()      , null , 1.0f );
-		scene.addContentNode( "greenbox"          , Matrix3D.INIT , getGreenYRotatedBox3D()    , null , 1.0f );
-		scene.addContentNode( "bluebox"           , Matrix3D.INIT , getBlueZRotatedBox3D()     , null , 1.0f );
-		scene.addContentNode( "panel"             , Matrix3D.INIT , getTexturedBox3D()         , null , 1.0f );
-		scene.addContentNode( "sphere"            , Matrix3D.INIT , getSphere3D()              , null , 1.0f );
-		scene.addContentNode( "cylinder"          , Matrix3D.INIT , getCylinder3D()            , null , 1.0f );
-		scene.addContentNode( "cone"              , Matrix3D.INIT , getCone3D()                , null , 1.0f );
-		scene.addContentNode( "extruded"          , Matrix3D.INIT , getExtrudedObject2D()      , null , 1.0f );
-		scene.addContentNode( "colorcube"         , Matrix3D.INIT , getColorCube()             , null , 1.0f );
-		scene.addContentNode( "texturedcolorcube" , Matrix3D.INIT , getTexturedColorCube()     , null , 1.0f );
+		scene.addContentNode( "camera"            , Matrix3D.INIT , getCamera3D() );
+		scene.addContentNode( "redbox"            , Matrix3D.INIT , getRedXRotatedBox3D() );
+		scene.addContentNode( "greenbox"          , Matrix3D.INIT , getGreenYRotatedBox3D() );
+		scene.addContentNode( "bluebox"           , Matrix3D.INIT , getBlueZRotatedBox3D() );
+		scene.addContentNode( "panel"             , Matrix3D.INIT , getTexturedBox3D() );
+		scene.addContentNode( "sphere"            , Matrix3D.INIT , getSphere3D() );
+		scene.addContentNode( "cylinder"          , Matrix3D.INIT , getCylinder3D() );
+		scene.addContentNode( "cone"              , Matrix3D.INIT , getCone3D() );
+		scene.addContentNode( "extruded"          , Matrix3D.INIT , getExtrudedObject2D() );
+		scene.addContentNode( "colorcube"         , Matrix3D.INIT , getColorCube() );
+		scene.addContentNode( "texturedcolorcube" , Matrix3D.INIT , getTexturedColorCube() );
 
 		/*
 		 * Create view.
@@ -253,12 +253,12 @@ public final class AbPovTestModel
 			transform = transform.setTranslation( -350.0 , 0.0 , 0.0 );
 
 			final Material mainMaterial = createMaterialWithColorMap( "MPXs" );
-			mainMaterial.colorMapWidth = 0.2;
-			mainMaterial.colorMapHeight = 0.2;
+			mainMaterial.colorMapWidth = 0.2f;
+			mainMaterial.colorMapHeight = 0.2f;
 
 			final Material sideMaterial = createMaterialWithColorMap( "MFCs" );
-			sideMaterial.colorMapWidth = 0.2;
-			sideMaterial.colorMapHeight = 0.2;
+			sideMaterial.colorMapWidth = 0.2f;
+			sideMaterial.colorMapHeight = 0.2f;
 
 			box =  new Box3D( transform , 200.0 , 10.0 , 200.0 , 0.001 , mainMaterial , sideMaterial );
 		}
@@ -392,12 +392,12 @@ public final class AbPovTestModel
 			final float[] textureV = { 0.0f , 0.5f , 0.5f , 0.0f };
 
 			cube = new Object3D();
-			cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , topMaterial    , textureU , textureV , 1.0f , false , false );
-			cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , bottomMaterial , textureU , textureV , 1.0f , false , false );
-			cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , frontMaterial  , textureU , textureV , 1.0f , false , false );
-			cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , backMaterial   , textureU , textureV , 1.0f , false , false );
-			cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , leftMaterial   , textureU , textureV , 1.0f , false , false );
-			cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , rightMaterial  , textureU , textureV , 1.0f , false , false );
+			cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , topMaterial    , textureU , textureV , false , false );
+			cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , bottomMaterial , textureU , textureV , false , false );
+			cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , frontMaterial  , textureU , textureV , false , false );
+			cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , backMaterial   , textureU , textureV , false , false );
+			cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , leftMaterial   , textureU , textureV , false , false );
+			cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , rightMaterial  , textureU , textureV , false , false );
 		}
 		else
 		{
@@ -442,12 +442,12 @@ public final class AbPovTestModel
 			final float[] textureV = { 0.0f , 0.5f , 0.5f , 0.0f };
 
 			cube = new Object3D();
-			cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , topMaterial    , textureU , textureV , 1.0f , false , false );
-			cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , bottomMaterial , textureU , textureV , 1.0f , false , false );
-			cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , frontMaterial  , textureU , textureV , 1.0f , false , false );
-			cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , backMaterial   , textureU , textureV , 1.0f , false , false );
-			cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , leftMaterial   , textureU , textureV , 1.0f , false , false );
-			cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , rightMaterial  , textureU , textureV , 1.0f , false , false );
+			cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , topMaterial    , textureU , textureV , false , false );
+			cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , bottomMaterial , textureU , textureV , false , false );
+			cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , frontMaterial  , textureU , textureV , false , false );
+			cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , backMaterial   , textureU , textureV , false , false );
+			cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , leftMaterial   , textureU , textureV , false , false );
+			cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , rightMaterial  , textureU , textureV , false , false );
 		}
 		else
 		{
