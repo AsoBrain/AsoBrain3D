@@ -20,6 +20,7 @@
  */
 package ab.j3d;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
 
@@ -465,5 +466,78 @@ public class Material
 	public float getEmission()
 	{
 		return 0.3f * emissiveColorRed + 0.59f * emissiveColorGreen + 0.11f * emissiveColorBlue;
+	}
+
+	/**
+	 * Set ambient reflection color.
+	 * <p>
+	 * This determines the amount of reflected light from ambient sources
+	 * (normally just 1). This value may range from almost 0 for objects
+	 * that absorb most ambient light to near 1 for objects that are highly
+	 * reflective. Typical values range from 0.1 to 0.2 for dull surfaces
+	 * and 0,7 to 0,8 for bright surfaces.
+	 *
+	 * @param   color   Ambient reflection color.
+	 */
+	public void setAmbientColor( final Color color )
+	{
+		final float[] components = color.getColorComponents( null );
+		ambientColorRed   = components[ 0 ];
+		ambientColorGreen = components[ 1 ];
+		ambientColorBlue  = components[ 2 ];
+	}
+
+	/**
+	 * Set diffuse reflection color and opacity.
+	 * <p>
+	 * This determines the amount of reflected light from diffuse sources.
+	 * This value may range from almost 0 for objects that absorb most
+	 * diffuse light to near 1 for objects that are highly reflective.
+	 * Typical values range from 0.1 to 0.2 for dull surfaces and 0.7 to
+	 * 0.8 for bright surfaces.
+	 *
+	 * @param   color   Diffuse reflection color and opacity.
+	 */
+	public void setDiffuseColor( final Color color )
+	{
+		final float[] components = color.getRGBComponents( null );
+		diffuseColorRed   = components[ 0 ];
+		diffuseColorGreen = components[ 1 ];
+		diffuseColorBlue  = components[ 2 ];
+		diffuseColorAlpha = components[ 3 ];
+	}
+
+	/**
+	 * Set specular reflection color.
+	 * <p>
+	 * Specular reflection is total or near total reflection of incoming
+	 * light in a concentrated region. It can be used to create highlights
+	 * on shiny surfaces.
+	 *
+	 * @param   color   Specular reflection color.
+	 */
+	public void setSpecularColor( final Color color )
+	{
+		final float[] components = color.getColorComponents( null );
+		specularColorRed   = components[ 0 ];
+		specularColorGreen = components[ 1 ];
+		specularColorBlue  = components[ 2 ];
+	}
+
+
+	/**
+	 * Set emissive color.
+	 * <p>
+	 * This determines the amount of light emitted by this material.
+	 * Note that this automatically implies a light source.
+	 *
+	 * @param   color   Emissive color.
+	 */
+	public void setEmissiveColor( final Color color )
+	{
+		final float[] components = color.getColorComponents( null );
+		emissiveColorRed   = components[ 0 ];
+		emissiveColorGreen = components[ 1 ];
+		emissiveColorBlue  = components[ 2 ];
 	}
 }
