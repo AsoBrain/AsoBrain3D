@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2007 Peter S. Heijnen
+ * Copyright (C) 1999-2009 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -82,9 +82,9 @@ public final class Matrix3D
 	 * @param   nzz     Z quotient for Z component.
 	 * @param   nzo     Translation of Z component.
 	 */
-	private Matrix3D( final double nxx, final double nxy , final double nxz , final double nxo ,
-	                  final double nyx, final double nyy , final double nyz , final double nyo ,
-	                  final double nzx, final double nzy , final double nzz , final double nzo )
+	private Matrix3D( final double nxx , final double nxy , final double nxz , final double nxo ,
+	                  final double nyx , final double nyy , final double nyz , final double nyo ,
+	                  final double nzx , final double nzy , final double nzz , final double nzo )
 	{
 		xx = nxx;
 		xy = nxy;
@@ -992,6 +992,32 @@ public final class Matrix3D
 		       : new Matrix3D( lxx , lxy , lxz , lxo ,
 		                       lyx , lyy , lyz , lyo ,
 		                       lzx , lzy , lzz , lzo );
+	}
+
+	/**
+	 * Uniformly scale this matrix by the given factor.
+	 *
+	 * @param   scale   Scaling factor.
+	 *
+	 * @return  This matrix scaled  with the given factor.
+	 */
+	public Matrix3D scale( final double scale )
+	{
+		return scale( scale , scale , scale );
+	}
+
+	/**
+	 * Scale this matrix by the given factors.
+	 *
+	 * @param   x   Scaling factor for the x-axis.
+	 * @param   y   Scaling factor for the y-axis.
+	 * @param   z   Scaling factor for the z-axis.
+	 *
+	 * @return  This matrix scaled  with the given factors.
+	 */
+	public Matrix3D scale( final double x , final double y , final double z )
+	{
+		return ( ( x != 1.0 ) || ( y != 1.0 ) || ( z != 1.0 ) ) ? set( x * xx, x * xy, x * xz, x * xo, y * yx, y * yy, y * yz, y * yo, z * zx, z * zy, z * zz, z * zo ) : this;
 	}
 
 	/**
