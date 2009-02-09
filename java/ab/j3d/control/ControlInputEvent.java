@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2008
+ * (C) Copyright Numdata BV 2005-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,14 +23,10 @@ import java.awt.Component;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 
 import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.geom.GeometryTools;
-import ab.j3d.geom.Plane3D;
 import ab.j3d.geom.Ray3D;
 import ab.j3d.model.Face3DIntersection;
 import ab.j3d.view.Projector;
@@ -237,14 +233,14 @@ public class ControlInputEvent
 	 */
 	public List<Face3DIntersection> getIntersections()
 	{
-		List<Face3DIntersection> intersections = _intersections;
-		if ( intersections == null )
+		List<Face3DIntersection> result = _intersections;
+		if ( result == null )
 		{
-			intersections = _controlInput.getIntersections( getPointerRay() );
-			_intersections = intersections;
+			result = _controlInput.getIntersections( getPointerRay() );
+			_intersections = result;
 		}
 
-		return new ArrayList<Face3DIntersection>( intersections );
+		return result;
 	}
 
 	/**
