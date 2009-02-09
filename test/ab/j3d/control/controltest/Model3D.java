@@ -269,7 +269,8 @@ public final class Model3D
 		final double height = wall.getZSize();
 		final double depth  = wall.getYSize();
 
-		return new Box3D( Matrix3D.INIT , width , depth , height , 0.001 , WALL_MATERIAL , WALL_MATERIAL );
+		final Material material = WALL_MATERIAL;
+		return new Box3D( Matrix3D.INIT , width , depth , height , 0.001 , material , material , material , material , material , material );
 	}
 
 	/**
