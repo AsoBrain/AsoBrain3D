@@ -126,7 +126,7 @@ public final class Face3D
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	Face3D( final Object3D object , final int[] vertexIndices , final Material material , final float[] textureU , final float[] textureV , final boolean smooth , final boolean twoSided )
+	public Face3D( final Object3D object , final int[] vertexIndices , final Material material , final float[] textureU , final float[] textureV , final boolean smooth , final boolean twoSided )
 	{
 		if ( object == null )
 			throw new NullPointerException( "object" );
