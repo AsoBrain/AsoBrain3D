@@ -21,7 +21,6 @@
 package ab.j3d.model;
 
 import ab.j3d.Material;
-import ab.j3d.Matrix3D;
 
 /**
  * This class defines a 3D cylinder with optionally different radi for the caps. Using
@@ -33,11 +32,6 @@ import ab.j3d.Matrix3D;
 public final class Cylinder3D
 	extends Object3D
 {
-	/**
-	 * Transformation applied to all vertices of the box.
-	 */
-	public final Matrix3D xform;
-
 	/**
 	 * Height of cylinder (z-axis).
 	 */
@@ -57,25 +51,6 @@ public final class Cylinder3D
 	 * Constructor for cylinder object. Radius of top or bottom may be set to 0 to create
 	 * a cone.
 	 *
-	 * @param   xform               Transform to apply to the cylinder's vertices.
-	 * @param   radiusBottom        Radius at bottom (z=0).
-	 * @param   radiusTop           Radius at top (z=height).
-	 * @param   height              Height of cylinder (z-axis).
-	 * @param   numEdges            Number of edges to approximate circle (minimum: 3).
-	 * @param   material            Material of cylinder.
-	 * @param   smoothCircumference Apply smoothing to circumference of cylinder.
-	 * @param   smoothCaps          Apply smoothing to caps of cylinder.
-	 */
-	public Cylinder3D( final Matrix3D xform , final double radiusBottom , final double radiusTop , final double height , final int numEdges , final Material material , final boolean smoothCircumference , final boolean smoothCaps )
-	{
-		this( xform , radiusBottom , radiusTop , height , numEdges , material , smoothCircumference , smoothCaps , true , true );
-	}
-
-	/**
-	 * Constructor for cylinder object. Radius of top or bottom may be set to 0 to create
-	 * a cone.
-	 *
-	 * @param   xform               Transform to apply to the cylinder's vertices.
 	 * @param   radiusBottom        Radius at bottom (z=0).
 	 * @param   radiusTop           Radius at top (z=height).
 	 * @param   height              Height of cylinder (z-axis).
@@ -86,7 +61,7 @@ public final class Cylinder3D
 	 * @param   hasTopCap           Whether the cylinder is capped at the top.
 	 * @param   hasBottomCap        Whether the cylinder is capped at the bottom.
 	 */
-	public Cylinder3D( final Matrix3D xform , final double radiusBottom , final double radiusTop , final double height , final int numEdges , final Material material , final boolean smoothCircumference , final boolean smoothCaps , final boolean hasTopCap , final boolean hasBottomCap )
+	public Cylinder3D( final double radiusBottom , final double radiusTop , final double height , final int numEdges , final Material material , final boolean smoothCircumference , final boolean smoothCaps , final boolean hasTopCap , final boolean hasBottomCap )
 	{
 		if ( radiusBottom < 0.0 || radiusTop < 0.0 || height < 0.0 || numEdges < 3 )
 			throw new IllegalArgumentException( "inacceptable arguments to Cylinder constructor (height=" + height + ", material=" + material + ')' );
@@ -94,7 +69,6 @@ public final class Cylinder3D
 		if ( radiusBottom == 0.0 && radiusTop == 0.0 )
 			throw new IllegalArgumentException( "radius of bottom or top of cylinder must be non-zero" );
 
-		this.xform        = xform;
 		this.radiusTop    = radiusTop;
 		this.radiusBottom = radiusBottom;
 		this.height       = height;
@@ -148,7 +122,7 @@ public final class Cylinder3D
 			vertexCoordinates[ v/*++*/ ] = height;
 		}
 
-		setVertexCoordinates( xform.transform( vertexCoordinates , vertexCoordinates , vertexCount ) );
+		setVertexCoordinates( vertexCoordinates );
 
 		/*
 		 * Bottom face (if it exists).
@@ -168,7 +142,7 @@ public final class Cylinder3D
 				textureV     [ i ] = (float)( 0.5 - 0.5 * Math.cos( rad ) );
 			}
 
-			addFace( vertexIndices , material , textureU , textureV , smoothCaps , false );
+			addFace( new Face3D( this , vertexIndices , material , textureU , textureV , smoothCaps , false ) );
 		}
 
 		/*
@@ -205,7 +179,7 @@ public final class Cylinder3D
 					textureU      = new float[] {   u2 ,   u1 ,            u1 ,            u2 };
 				}
 
-				addFace( vertexIndices , material , textureU , textureV , smoothCircumference , false );
+				addFace( new Face3D( this , vertexIndices , material , textureU , textureV , smoothCircumference , false ) );
 			}
 		}
 
@@ -229,7 +203,7 @@ public final class Cylinder3D
 				textureV     [ i ] = (float)( 0.5 - 0.5 * Math.cos( rad ) );
 			}
 
-			addFace( vertexIndices , material , textureU , textureV , smoothCaps , false );
+			addFace( new Face3D( this , vertexIndices , material , textureU , textureV , smoothCaps , false ) );
 		}
 	}
 }

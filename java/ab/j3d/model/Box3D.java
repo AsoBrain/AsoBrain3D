@@ -22,6 +22,7 @@ package ab.j3d.model;
 
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
+import ab.j3d.Vector3D;
 
 /**
  * This class defines a 3D box.
@@ -58,28 +59,6 @@ public final class Box3D
 	 * Depth of box (z-axis).
 	 */
 	private final double _dz;
-
-	/**
-	 * Set box properties.
-	 *
-	 * @param   xform           Transformation to apply to all vertices of the box.
-	 * @param   dx              Width of box (x-axis).
-	 * @param   dy              Height of box (y-axis).
-	 * @param   dz              Depth of box (z-axis).
-	 * @param   modelUnit       Model unit scale factor (e.g. {@link Scene#MM}).
-	 * @param   mainMaterial    Main material of box.
-	 * @param   sideMaterial    Material for sides of box.
-	 */
-	public Box3D( final Matrix3D xform , final double dx , final double dy , final double dz , final double modelUnit , final Material mainMaterial , final Material sideMaterial )
-	{
-		this( xform , dx , dy , dz , modelUnit ,
-			( Math.abs( dy ) < Math.abs( dx ) && Math.abs( dy ) < Math.abs( dz ) ) ? mainMaterial : sideMaterial ,
-			( Math.abs( dy ) < Math.abs( dx ) && Math.abs( dy ) < Math.abs( dz ) ) ? mainMaterial : sideMaterial ,
-			( Math.abs( dx ) < Math.abs( dy ) && Math.abs( dx ) < Math.abs( dz ) ) ? mainMaterial : sideMaterial ,
-			( Math.abs( dx ) < Math.abs( dy ) && Math.abs( dx ) < Math.abs( dz ) ) ? mainMaterial : sideMaterial ,
-			( Math.abs( dz ) < Math.abs( dx ) && Math.abs( dz ) < Math.abs( dy ) ) ? mainMaterial : sideMaterial ,
-			( Math.abs( dz ) < Math.abs( dx ) && Math.abs( dz ) < Math.abs( dy ) ) ? mainMaterial : sideMaterial );
-	}
 
 	/**
 	 * Set box properties.
@@ -171,14 +150,14 @@ public final class Box3D
 		 */
 		final double[] vertexCoordinates =
 		{
-			0.0 , 0.0 , 0.0 , // 0
-			_dx , 0.0 , 0.0 , // 1
-			_dx , _dy , 0.0 , // 2
-			0.0 , _dy , 0.0 , // 3
-			0.0 , 0.0 , _dz , // 4
-			_dx , 0.0 , _dz , // 5
-			_dx , _dy , _dz , // 6
-			0.0 , _dy , _dz   // 7
+			0.0 , 0.0 , 0.0 , // 0        7------6
+			_dx , 0.0 , 0.0 , // 1       /:     /|
+			_dx , _dy , 0.0 , // 2      4------5 |
+			0.0 , _dy , 0.0 , // 3      | :    | |
+			0.0 , 0.0 , _dz , // 4      | :    | |
+			_dx , 0.0 , _dz , // 5      | 3....|.2
+			_dx , _dy , _dz , // 6      |.     |/
+			0.0 , _dy , _dz   // 7      0------1
 		};
 
 		setVertexCoordinates( xform.transform( vertexCoordinates , vertexCoordinates , 8 ) );
@@ -189,6 +168,91 @@ public final class Box3D
 		addFace( LEFT_VERTICES   , leftMaterial   , leftFlipUV   , xform.yo , xform.yo + _dy , xform.zo , xform.zo + _dz , modelUnit );
 		addFace( TOP_VERTICES    , topMaterial    , topFlipUV    , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy , modelUnit );
 		addFace( BOTTOM_VERTICES , bottomMaterial , bottomFlipUV , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy , modelUnit );
+	}
+
+	void calculateVertexNormals()
+	{
+		if ( _vertexNormalsDirty )
+		{
+			final double[] vertexNormals = new double[ 24 ];
+			_vertexNormals = vertexNormals;
+
+			final double[] coords = _vertexCoordinates;
+
+			double n0x = coords[  0 ] - coords[ 18 ];
+			double n0y = coords[  1 ] - coords[ 19 ];
+			double n0z = coords[  2 ] - coords[ 20 ];
+			double n1x = coords[  3 ] - coords[ 21 ];
+			double n1y = coords[  4 ] - coords[ 22 ];
+			double n1z = coords[  5 ] - coords[ 23 ];
+			double n2x = coords[  6 ] - coords[ 12 ];
+			double n2y = coords[  7 ] - coords[ 13 ];
+			double n2z = coords[  8 ] - coords[ 14 ];
+			double n3x = coords[  9 ] - coords[ 15 ];
+			double n3y = coords[ 10 ] - coords[ 16 ];
+			double n3z = coords[ 11 ] - coords[ 17 ];
+
+			final double dist06 = Vector3D.length( n0x , n0y , n0z );
+			if ( dist06 > 0.0 )
+			{
+				n0x /= dist06;
+				n0y /= dist06;
+				n0z /= dist06;
+				vertexNormals[  0 ] =  n0x;
+				vertexNormals[  1 ] =  n0y;
+				vertexNormals[  2 ] =  n0z;
+				vertexNormals[ 18 ] = -n0x;
+				vertexNormals[ 19 ] = -n0y;
+				vertexNormals[ 20 ] = -n0z;
+			}
+
+			final double dist17 = Vector3D.length( n1x , n1y , n1z );
+			if ( dist17 > 0.0 )
+			{
+				n1x /= dist17;
+				n1y /= dist17;
+				n1z /= dist17;
+				vertexNormals[  3 ] =  n1x;
+				vertexNormals[  4 ] =  n1y;
+				vertexNormals[  5 ] =  n1z;
+				vertexNormals[ 21 ] = -n1x;
+				vertexNormals[ 22 ] = -n1y;
+				vertexNormals[ 23 ] = -n1z;
+			}
+
+			final double dist24 = Vector3D.length( n2x , n2y , n2z );
+			if ( dist24 > 0.0 )
+			{
+				n2x /= dist24;
+				n2y /= dist24;
+				n2z /= dist24;
+				vertexNormals[  6 ] =  n2x;
+				vertexNormals[  7 ] =  n2y;
+				vertexNormals[  8 ] =  n2z;
+				vertexNormals[ 12 ] = -n2x;
+				vertexNormals[ 13 ] = -n2y;
+				vertexNormals[ 14 ] = -n2z;
+			}
+
+			final double dist35 = Vector3D.length( n3x , n3y , n3z );
+			if ( dist35 > 0.0 )
+			{
+				n3x /= dist35;
+				n3y /= dist35;
+				n3z /= dist35;
+				vertexNormals[  9 ] =  n3x;
+				vertexNormals[ 10 ] =  n3y;
+				vertexNormals[ 11 ] =  n3z;
+				vertexNormals[ 15 ] = -n3x;
+				vertexNormals[ 16 ] = -n3y;
+				vertexNormals[ 17 ] = -n3z;
+			}
+
+			_vertexNormals = vertexNormals;
+			_vertexNormalsDirty = false;
+		}
+
+		super.calculateVertexNormals();
 	}
 
 	/**
@@ -242,11 +306,11 @@ public final class Box3D
 			final float[] u = new float[] { u1 , u1 , u2 , u2 };
 			final float[] v = new float[] { v1 , v2 , v2 , v1 };
 
-			addFace( vertices , material , u , v , false , false );
+			addFace( new Face3D( this , vertices , material , u , v , false , false ) );
 		}
 		else
 		{
-			addFace( vertices , material , null , null , false , false );
+			addFace( new Face3D( this , vertices , material , null , null , false , false ) );
 		}
 
 	}

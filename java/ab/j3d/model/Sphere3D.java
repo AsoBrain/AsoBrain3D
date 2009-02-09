@@ -21,7 +21,6 @@
 package ab.j3d.model;
 
 import ab.j3d.Material;
-import ab.j3d.Matrix3D;
 
 /**
  * This class defines a 3D sphere.
@@ -33,105 +32,70 @@ public final class Sphere3D
 	extends Object3D
 {
 	/**
-	 * Transformation applied to all vertices of the box.
+	 * Radius of sphere.
 	 */
-	public final Matrix3D xform;
-
-	/**
-	 * Width of sphere/egg (x-axis).
-	 */
-	public final double dx;
-
-	/**
-	 * Height of sphere/egg (y-axis).
-	 */
-	public final double dy;
-
-	/**
-	 * Depth of sphere/egg (z-axis).
-	 */
-	public final double dz;
+	public final double radius;
 
 	/**
 	 * Constructor for sphere.
 	 *
-	 * @param   xform       Transformation to apply to the object's vertices.
-	 * @param   dx          Width of sphere (x-axis).
-	 * @param   dy          Height of sphere (y-axis).
-	 * @param   dz          Depth of sphere (z-axis).
-	 * @param   p           Number of faces around Y-axis to approximate the sphere.
-	 * @param   q           Number of faces around X/Z-axis to approximate the sphere.
-	 * @param   material    Material of sphere.
-	 * @param   smooth      Smooth surface.
-	 */
-	public Sphere3D( final Matrix3D xform , final double dx , final double dy , final double dz , final int p , final int q , final Material material , final boolean smooth )
-	{
-		this.xform =  xform;
-		this.dx    = dx;
-		this.dy    = dy;
-		this.dz    = dz;
-
-		generate( p , q , ( material == null ) ? new Material() : material , smooth );
-	}
-
-	/**
-	 * Constructor for sphere.
-	 *
-	 * @param   xform       Transformation to apply to the object's vertices.
 	 * @param   radius      Radius of sphere.
 	 * @param   p           Number of faces around Y-axis to approximate the sphere.
 	 * @param   q           Number of faces around X/Z-axis to approximate the sphere.
-	 */
-	public Sphere3D( final Matrix3D xform , final double radius , final int p , final int q )
-	{
-		this( xform , radius * 2.0 , radius * 2.0 , radius * 2.0 , p , q , null , false );
-	}
-
-	/**
-	 * Generate Object3D properties.
-	 *
-	 * @param   p           Number of faces around Y-axis to approximate the sphere.
-	 * @param   q           Number of faces around X/Z-axis to approximate the sphere.
 	 * @param   material    Material of sphere.
-	 * @param   smooth      Smooth surface.
 	 */
-	private void generate( final int p , final int q , final Material material , final boolean smooth )
+	public Sphere3D( final double radius , final int p , final int q , final Material material )
 	{
+		this.radius = radius;
+
 		final int      vertexCount       = p * ( q - 1 ) + 2;
 		final double[] vertexCoordinates = new double[ vertexCount * 3 ];
+		final double[] vertexNormals     = new double[ vertexCount * 3 ];
 
 		/*
 		 * Generate vertices.
 		 */
 		int v = 0;
+		int n = 0;
 
 		vertexCoordinates[ v++ ] = 0.0;
 		vertexCoordinates[ v++ ] = 0.0;
-		vertexCoordinates[ v++ ] = dz / -2.0;
+		vertexCoordinates[ v++ ] = -radius;
+		vertexNormals[ n++ ] = 0.0;
+		vertexNormals[ n++ ] = 0.0;
+		vertexNormals[ n++ ] = -1.0;
 
 		for ( int qc = 1 ; qc < q ; qc++ )
 		{
-			final double qa = (double)qc * Math.PI / (double)q;
-
-			final double radiusX =  0.5 * dx * Math.sin( qa );
-			final double radiusY =  0.5 * dy * Math.sin( qa );
-			final double circleZ = -0.5 * dz * Math.cos( qa );
+			final double qrad = (double)qc * Math.PI / (double)q;
+			final double sinq = Math.sin( qrad );
+			final double cosq = Math.cos( qrad );
 
 			for ( int pc = 0 ; pc < p ; pc++ )
 			{
-				final double pa = (double)pc * 2.0 * Math.PI / (double)p;
+				final double prad = (double)pc * 2.0 * Math.PI / (double)p;
+				final double normalX =  sinq * Math.sin( prad );
+				final double normalY = -sinq * Math.cos( prad );
+				final double normalZ = -cosq;
 
-				vertexCoordinates[ v++ ] =  radiusX * Math.sin( pa );
-				vertexCoordinates[ v++ ] = -radiusY * Math.cos( pa );
-				vertexCoordinates[ v++ ] = circleZ;
+				vertexCoordinates[ v++ ] = radius * normalX;
+				vertexCoordinates[ v++ ] = radius * normalY;
+				vertexCoordinates[ v++ ] = radius * normalZ;
+				vertexNormals[ n++ ] = normalX;
+				vertexNormals[ n++ ] = normalY;
+				vertexNormals[ n++ ] = normalZ;
 			}
 		}
 
 		vertexCoordinates[ v++ ] = 0.0;
 		vertexCoordinates[ v++ ] = 0.0;
-		vertexCoordinates[ v   ] = dz / 2.0;
+		vertexCoordinates[ v   ] = radius;
+		vertexNormals[ n++ ] = 0.0;
+		vertexNormals[ n++ ] = 0.0;
+		vertexNormals[ n   ] = 1.0;
 
-		setVertexCoordinates( xform.transform( vertexCoordinates , vertexCoordinates , vertexCount ) );
+		setVertexCoordinates( vertexCoordinates );
+		setVertexNormals( vertexNormals );
 
 		/*
 		 * Define faces
@@ -142,9 +106,9 @@ public final class Sphere3D
 		final float scaleU = 1.0f / (float)p;
 		final float scaleV = 1.0f / (float)q;
 
-		for ( int qc = 0 ; qc < q ; qc++ )
+		for ( int qc = 0 ; qc < q; qc++ )
 		{
-			for ( int pc = 0 ; pc < p ; pc++ )
+			for ( int pc = 0 ; pc < p; pc++ )
 			{
 				final int p1 = ( qc - 1 ) * p +     pc             + 1;
 				final int p2 = ( qc - 1 ) * p + ( ( pc + 1 ) % p ) + 1;
@@ -181,7 +145,7 @@ public final class Sphere3D
 					textureV      = new float[] { vBottom , vBottom ,     vTop       };
 				}
 
-				addFace( vertexIndices , material , textureU , textureV , smooth , false );
+				_faces.add( new Face3D( this , vertexIndices , material , textureU , textureV , true , false ) );
 			}
 		}
 	}
