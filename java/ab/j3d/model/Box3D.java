@@ -63,6 +63,25 @@ public final class Box3D
 	/**
 	 * Set box properties.
 	 *
+	 * @param   dx              Width of box (x-axis).
+	 * @param   dy              Height of box (y-axis).
+	 * @param   dz              Depth of box (z-axis).
+	 * @param   modelUnit       Model unit scale factor (e.g. {@link Scene#MM}).
+	 * @param   frontMaterial   Material applied to the front of the box.
+	 * @param   rearMaterial    Material applied to the rear of the box.
+	 * @param   rightMaterial   Material applied to the right of the box.
+	 * @param   leftMaterial    Material applied to the left of the box.
+	 * @param   topMaterial     Material applied to the top of the box.
+	 * @param   bottomMaterial  Material applied to the bottom of the box.
+	 */
+	public Box3D( final double dx , final double dy , final double dz , final double modelUnit , final Material frontMaterial , final Material rearMaterial , final Material rightMaterial , final Material leftMaterial , final Material topMaterial , final Material bottomMaterial )
+	{
+		this( Matrix3D.INIT , dx , dy , dz , modelUnit , frontMaterial , rearMaterial , rightMaterial , leftMaterial , topMaterial , bottomMaterial );
+	}
+
+	/**
+	 * Set box properties.
+	 *
 	 * @param   xform           Transformation to apply to all vertices of the box.
 	 * @param   dx              Width of box (x-axis).
 	 * @param   dy              Height of box (y-axis).
@@ -115,6 +134,31 @@ public final class Box3D
 		addFace( LEFT_VERTICES   , leftMaterial   ,  flatZ , xform.yo , xform.yo + _dy , xform.zo , xform.zo + _dz , modelUnit );
 		addFace( TOP_VERTICES    , topMaterial    , !flatX , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy , modelUnit );
 		addFace( BOTTOM_VERTICES , bottomMaterial , !flatX , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy , modelUnit );
+	}
+
+	/**
+	 * Set box properties.
+	 *
+	 * @param   dx              Width of box (x-axis).
+	 * @param   dy              Height of box (y-axis).
+	 * @param   dz              Depth of box (z-axis).
+	 * @param   modelUnit       Model unit scale factor (e.g. {@link Scene#MM}).
+	 * @param   frontMaterial   Material applied to the front of the box.
+	 * @param   frontFlipUV     Whether the front U and V coordinates are flipped.
+	 * @param   rearMaterial    Material applied to the rear of the box.
+	 * @param   rearFlipUV      Whether the rear U and V coordinates are flipped.
+	 * @param   rightMaterial   Material applied to the right of the box.
+	 * @param   rightFlipUV     Whether the right U and V coordinates are flipped.
+	 * @param   leftMaterial    Material applied to the left of the box.
+	 * @param   leftFlipUV      Whether the left U and V coordinates are flipped.
+	 * @param   topMaterial     Material applied to the top of the box.
+	 * @param   topFlipUV       Whether the top U and V coordinates are flipped.
+	 * @param   bottomMaterial  Material applied to the bottom of the box.
+	 * @param   bottomFlipUV    Whether the bottom U and V coordinates are flipped.
+	 */
+	public Box3D( final double dx , final double dy , final double dz , final double modelUnit , final Material frontMaterial , final boolean frontFlipUV , final Material rearMaterial , final boolean rearFlipUV , final Material rightMaterial , final boolean rightFlipUV , final Material leftMaterial , final boolean leftFlipUV , final Material topMaterial , final boolean topFlipUV , final Material bottomMaterial , final boolean bottomFlipUV )
+	{
+		this( Matrix3D.INIT , dx , dy , dz , modelUnit , frontMaterial , frontFlipUV , rearMaterial , rearFlipUV , rightMaterial , rightFlipUV , leftMaterial , leftFlipUV , topMaterial , topFlipUV , bottomMaterial , bottomFlipUV );
 	}
 
 	/**
