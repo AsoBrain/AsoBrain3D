@@ -217,8 +217,8 @@ public final class Java2dView
 
 		final double        fieldOfView       = getAperture();
 		final double        zoomFactor        = getZoomFactor();
-		final double        frontClipDistance = -0.1 / viewUnit;
-		final double        backClipDistance  = -100.0 / viewUnit;
+		final double        frontClipDistance = 0.1 / viewUnit;
+		final double        backClipDistance  = 100.0 / viewUnit;
 
 		return Projector.createInstance( getProjectionPolicy() , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
 	}
