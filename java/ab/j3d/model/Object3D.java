@@ -26,7 +26,6 @@ import java.util.List;
 
 import ab.j3d.Bounds3D;
 import ab.j3d.Bounds3DBuilder;
-import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.geom.BasicRay3D;
@@ -180,72 +179,6 @@ public class Object3D
 	}
 
 	/**
-	 * Add face to this object.
-	 *
-	 * @param   vertexIndices   Vertex indices of added face. These indices refer
-	 *                          to vertices previously defined in this object.
-	 * @param   material        Material to apply to the face.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 */
-	public final void addFace( final int[] vertexIndices , final Material material , final boolean smooth )
-	{
-		addFace( vertexIndices , material , null , null , smooth , false );
-	}
-
-	/**
-	 * Add face to this object.
-	 *
-	 * @param   vertexIndices   Vertex indices of added face. These indices refer
-	 *                          to vertices previously defined in this object.
-	 * @param   material        Material to apply to the face.
-	 * @param   textureU        Horizontal texture coordinates (<code>null</code> = none).
-	 * @param   textureV        Vertical texture coordinates (<code>null</code> = none).
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   twoSided        Face is two-sided.
-	 */
-	public final void addFace( final int[] vertexIndices, final Material material , final float[] textureU , final float[] textureV , final boolean smooth , final boolean twoSided )
-	{
-		addFace( new Face3D( this , vertexIndices , material , textureU , textureV , smooth , twoSided ) );
-	}
-
-	/**
-	 * Add face to this object.
-	 *
-	 * @param   vertexCoordinates   Vertex coordinates that define the face.
-	 * @param   material            Material to apply to the face.
-	 * @param   smooth              Face is smooth/curved vs. flat.
-	 * @param   twoSided            Face is two-sided.
-	 */
-	public final void addFace( final Vector3D[] vertexCoordinates , final Material material , final boolean smooth , final boolean twoSided )
-	{
-		addFace( vertexCoordinates , material , null , null , smooth , twoSided );
-	}
-
-	/**
-	 * Add face to this object.
-	 *
-	 * @param   vertexCoordinates   Vertex coordinates that define the face.
-	 * @param   material            Material to apply to the face.
-	 * @param   textureU            Horizontal texture coordinates (<code>null</code> = none).
-	 * @param   textureV            Vertical texture coordinates (<code>null</code> = none).
-	 * @param   smooth              Face is smooth/curved vs. flat.
-	 * @param   twoSided            Face is two-sided.
-	 */
-	public final void addFace( final Vector3D[] vertexCoordinates , final Material material , final float[] textureU , final float[] textureV , final boolean smooth , final boolean twoSided )
-	{
-		final int   nrVertices    = vertexCoordinates.length;
-		final int[] vertexIndices = new int[ nrVertices ];
-
-		for ( int i = 0 ; i < nrVertices ; i++ )
-		{
-			final Vector3D vertex = vertexCoordinates[ i ];
-			vertexIndices[ i ] = getVertexIndex( vertex.x , vertex.y , vertex.z );
-		}
-
-		addFace( new Face3D( this , vertexIndices , material , textureU , textureV , smooth , twoSided ) );
-	}
-
-	/**
 	 * The following text is from http://nate.scuzzy.net/normals/normals.html.
 	 *
 	 * There is no way to calculate a true vertex normal since a vertex is just
@@ -276,50 +209,47 @@ public class Object3D
 				final List<Face3D> faces       = _faces;
 				final int          faceCount   = faces.size();
 
-				final double[] vertexNormals = (double[])ArrayTools.ensureLength( _vertexNormals , double.class , -1 , vertexCount * 3 );
+				_vertexNormals = null;
+				final double[] vertexNormals = new double[ vertexCount * 3 ];
 				_vertexNormals = vertexNormals;
 
+				/*
+				 * Sum unnormalized normals of faces that use this vertex.
+				 */
+				for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
+				{
+					final Face3D face = faces.get( faceIndex );
+
+					for ( final Vertex vertex : face.vertices )
+					{
+						final int i = vertex.vertexCoordinateIndex * 3;
+						vertexNormals[ i     ] = face._crossX;
+						vertexNormals[ i + 1 ] = face._crossY;
+						vertexNormals[ i + 2 ] = face._crossZ;
+					}
+				}
+
+				/*
+				 * Now normalize the normals.
+				 */
 				for ( int vertexIndex = 0 ; vertexIndex < vertexCount ; vertexIndex++ )
 				{
-					double vnx = 0.0;
-					double vny = 0.0;
-					double vnz = 0.0;
+					final int i = vertexIndex * 3;
+					final double x = vertexNormals[ i     ];
+					final double y = vertexNormals[ i + 1 ];
+					final double z = vertexNormals[ i + 2 ];
 
-					/*
-					 * Sum unnormalized normals of faces that use this vertex.
-					 */
-					for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
+					if ( ( x != 0.0 ) || ( y != 0.0 ) || ( z != 0.0 ) )
 					{
-						final Face3D face = faces.get( faceIndex );
-						final List<Vertex> vertices = face.vertices;
-
-						for ( final Vertex vertex : vertices )
+						double norm = x * x + y * y + z * z;
+						if ( norm != 1.0 )
 						{
-							if ( vertex.vertexCoordinateIndex == vertexIndex )
-							{
-								vnx += face._crossX;
-								vny += face._crossY;
-								vnz += face._crossZ;
-								break;
-							}
+							norm = 1.0 / Math.sqrt( norm );
+							vertexNormals[ i     ] = norm * x;
+							vertexNormals[ i + 1 ] = norm * y;
+							vertexNormals[ i + 2 ] = norm * z;
 						}
 					}
-
-					/*
-					 * Normalize vertex normal.
-					 */
-					if ( ( vnx != 0.0 ) || ( vny != 0.0 ) || ( vnz != 0.0 ) )
-					{
-						final double l = Math.sqrt( vnx * vnx + vny * vny + vnz * vnz );
-						vnx /= l;
-						vny /= l;
-						vnz /= l;
-					}
-
-					final int ni = vertexIndex * 3;
-					vertexNormals[ ni     ] = vnx;
-					vertexNormals[ ni + 1 ] = vny;
-					vertexNormals[ ni + 2 ] = vnz;
 				}
 
 				_vertexNormalsDirty = false;
