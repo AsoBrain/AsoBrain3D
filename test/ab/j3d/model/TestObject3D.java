@@ -29,7 +29,6 @@ import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.geom.BasicRay3D;
-import ab.j3d.model.Face3D.Vertex;
 
 /**
  * This class tests the {@link Object3D} class.
@@ -46,39 +45,6 @@ public final class TestObject3D
 	 * Name of this class.
 	 */
 	private static final String CLASS_NAME = TestObject3D.class.getName();
-
-	/**
-	 * Test {@link Object3D#addFace( Vector3D[] , Material , boolean, boolean )}
-	 * method.
-	 */
-	public static void testAddFace()
-    {
-		System.out.println( CLASS_NAME + ".testAddFace" );
-
-		final Vector3D[] vertexCoordinates =
-		{
-			Vector3D.INIT.set( 0.0 , 0.0 , 0.0 ),
-			Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ),
-			Vector3D.INIT.set( 1.0 , 0.0 , 1.0 ),
-			Vector3D.INIT.set( 1.0 , 0.0 , 0.0 ),
-		};
-
-		final Object3D object = new Object3D();
-		assertEquals( "[pre] faceCount" , 0 , object.getFaceCount() );
-		assertEquals( "[pre] totalVertexCount" , 0 , object.getVertexCount() );
-
-		object.addFace( vertexCoordinates , null , false , false );
-		assertEquals( "[post] faceCount" , 1 , object.getFaceCount() );
-		assertEquals( "[post] totalVertexCount" , 4 , object.getVertexCount() );
-
-		final Face3D face = object.getFace( 0 );
-	    final List<Vertex> vertices = face.vertices;
-		assertEquals( "face.vertices.length" , 4 , vertices.size() );
-		assertEquals( "face.vertices[0].vertexCoordinateIndex" , 0 , vertices.get( 0 ).vertexCoordinateIndex );
-		assertEquals( "face.vertices[1].vertexCoordinateIndex" , 1 , vertices.get( 1 ).vertexCoordinateIndex );
-		assertEquals( "face.vertices[2].vertexCoordinateIndex" , 2 , vertices.get( 2 ).vertexCoordinateIndex );
-		assertEquals( "face.vertices[3].vertexCoordinateIndex" , 3 , vertices.get( 3 ).vertexCoordinateIndex );
-	}
 
 	/**
 	 * Test {@link Object3D#getFaceNormals} method.
@@ -149,10 +115,11 @@ public final class TestObject3D
 		final Material red   = new Material( Color.RED  .getRGB() );
 		final Material green = new Material( Color.GREEN.getRGB() );
 
-		final Object3D twoSidedPlaneOnZ0 = new Object3D();
+		final Object3DBuilder builder = new Object3DBuilder();
+		builder.addFace( new Vector3D[] { lf , lb , rb , rf } , red   , false , false ); // Z =  size
+		builder.addFace( new Vector3D[] { lb , lf , rf , rb } , green , false , false ); // Z = -size
+		final Object3D twoSidedPlaneOnZ0 = builder.getObject3D();
 		twoSidedPlaneOnZ0.setTag( "Plane" );
-		twoSidedPlaneOnZ0.addFace( new Vector3D[] { lf , lb , rb , rf } , red   , false , false ); // Z =  size
-		twoSidedPlaneOnZ0.addFace( new Vector3D[] { lb , lf , rf , rb } , green , false , false ); // Z = -size
 
 		final Matrix3D transform1 = Matrix3D.getTransform(  90.0 ,  0.0 , 0.0 ,    0.0 ,   0.0 , 0.0 );
 		final Matrix3D transform2 = Matrix3D.getTransform(   0.0 , 90.0 , 0.0 ,  150.0 ,   0.0 , 0.0 );
@@ -269,13 +236,14 @@ public final class TestObject3D
 		final Vector3D rbt = Vector3D.INIT.set(  1.0 ,  1.0 ,  1.0 );
 		final Vector3D lbt = Vector3D.INIT.set( -1.0 ,  1.0 ,  1.0 );
 
-		final Object3D cube = new Object3D();
-		/* top    */ cube.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , false , false );
-		/* bottom */ cube.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , null , false , false );
-		/* front  */ cube.addFace( new Vector3D[] { lfb , lft , rft , rfb } , null , false , false );
-		/* back   */ cube.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , null , false , false );
-		/* left   */ cube.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , false , false );
-		/* right  */ cube.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , false , false );
+		final Object3DBuilder builder = new Object3DBuilder();
+		/* top    */ builder.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , false , false );
+		/* bottom */ builder.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , null , false , false );
+		/* front  */ builder.addFace( new Vector3D[] { lfb , lft , rft , rfb } , null , false , false );
+		/* back   */ builder.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , null , false , false );
+		/* left   */ builder.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , false , false );
+		/* right  */ builder.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , false , false );
+		final Object3D cube = builder.getObject3D();
 
 		final double e = Math.sqrt( 3.0 ) / 3.0;
 
