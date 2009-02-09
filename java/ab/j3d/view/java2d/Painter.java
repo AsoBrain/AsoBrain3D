@@ -478,7 +478,7 @@ public final class Painter
 	{
 		final boolean result;
 
-		final Matrix3D viewBase = cylinder.xform.multiply( cylinder2view );
+		final Matrix3D viewBase = cylinder2view;
 		final double   h        = cylinder.height;
 		final double   rBottom  = cylinder.radiusBottom;
 		final double   rTop     = cylinder.radiusTop;
@@ -687,59 +687,51 @@ public final class Painter
 	{
 		final boolean result;
 
-		final double dx = sphere.dx;
-		if ( MathTools.almostEqual( dx , sphere.dy ) &&
-		     MathTools.almostEqual( dx , sphere.dz ) )
+		final double radius = sphere.radius;
+
+		final Matrix3D viewBase          = sphere2view;
+		final Matrix3D combinedTransform = viewBase.multiply( gTransform );
+
+		final float x = (float)combinedTransform.xo;
+		final float y = (float)combinedTransform.yo;
+
+		final float r;
 		{
-			final Matrix3D viewBase          = sphere.xform.multiply( sphere2view );
-			final Matrix3D combinedTransform = viewBase.multiply( gTransform );
+			final double xx = combinedTransform.xx;
+			final double xy = combinedTransform.xy;
+			final double xz = combinedTransform.xz;
 
-			final float x = (float)combinedTransform.xo;
-			final float y = (float)combinedTransform.yo;
+			r = (float)( radius * Math.sqrt( xx * xx + xy * xy + xz * xz ) );
+		}
 
-			final float r;
-			{
-				final double xx = combinedTransform.xx;
-				final double xy = combinedTransform.xy;
-				final double xz = combinedTransform.xz;
+		final Ellipse2D shape = MathTools.almostEqual( (double)r , 0.0 ) ? null : new Ellipse2D.Float( x - r , y - r , r + r , r + r );
 
-				r = (float)( 0.5 * dx * Math.sqrt( xx * xx + xy * xy + xz * xz ) );
-			}
-
-			final Ellipse2D shape = MathTools.almostEqual( (double)r , 0.0 ) ? null : new Ellipse2D.Float( x - r , y - r , r + r , r + r );
-
-			if ( fillPaint != null )
-			{
-				final Paint paint;
-//				if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlineColor instanceof Color ))
-//				{
-//					final float goldenRatio = 0.6180339f;
-//					final float highlight   = ( goldenRatio - 0.5f ) * r;
+		if ( fillPaint != null )
+		{
+			final Paint paint;
+//			if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlineColor instanceof Color ))
+//			{
+//				final float goldenRatio = 0.6180339f;
+//				final float highlight   = ( goldenRatio - 0.5f ) * r;
 //
-//					paint = new GradientPaint( x + highlight , y - highlight , (Color)fillPaint , x -r , y + r , (Color)outlineColor , true );
-//				}
-//				else
-				{
-					paint = fillPaint;
-				}
-
-				g.setPaint( paint );
-				g.fill( shape );
-			}
-
-			if ( outlineColor != null )
+//				paint = new GradientPaint( x + highlight , y - highlight , (Color)fillPaint , x -r , y + r , (Color)outlineColor , true );
+//			}
+//			else
 			{
-				g.setPaint( outlineColor );
-				g.draw( shape );
+				paint = fillPaint;
 			}
 
-			result = true;
+			g.setPaint( paint );
+			g.fill( shape );
 		}
-		else
+
+		if ( outlineColor != null )
 		{
-			// Not painted, paint fully.
-			result = false;
+			g.setPaint( outlineColor );
+			g.draw( shape );
 		}
+
+		result = true;
 
 		return result;
 	}

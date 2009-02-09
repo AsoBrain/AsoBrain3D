@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2008
+ * (C) Copyright Numdata BV 2006-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -60,8 +60,9 @@ public class TestFace3D
 
 			private Test( final Vector3D[] vertices , final double distance )
 			{
-				final Object3D object = new Object3D();
-				object.addFace( vertices , null , false , false );
+				final Object3DBuilder builder = new Object3DBuilder();
+				builder.addFace( vertices , null , false , false );
+				final Object3D object = builder.getObject3D();
 
 				_face     = object.getFace( 0 );
 				_expected = distance;
@@ -152,8 +153,9 @@ public class TestFace3D
 
 			private Test( final Vector3D[] vertices , final double normalX , final double normalY , final double normalZ )
 			{
-				final Object3D object = new Object3D();
-				object.addFace( vertices , null , false , false );
+				final Object3DBuilder builder = new Object3DBuilder();
+				builder.addFace( vertices , null , false , false );
+				final Object3D object = builder.getObject3D();
 
 				_face     = object.getFace( 0 );
 				_expected = Vector3D.INIT.set( normalX , normalY , normalZ );

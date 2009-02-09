@@ -711,7 +711,7 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovGeometry      sphere          = converter.convertSphere3D( Matrix3D.INIT , testModel.getSphere3D() );
+			final PovGeometry      sphere          = converter.convertSphere3D( Matrix3D.INIT.setTranslation( 0.0 , 300.0 , -200.0 ) , testModel.getSphere3D() );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
@@ -747,7 +747,7 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovGeometry      cylinder        = converter.convertCylinder3D( Matrix3D.INIT , testModel.getCylinder3D() );
+			final PovGeometry      cylinder        = converter.convertCylinder3D( Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 150.0 ) , testModel.getCylinder3D() );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
@@ -784,7 +784,7 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovGeometry      cylinder        = converter.convertCylinder3D( Matrix3D.INIT , testModel.getCone3D() );
+			final PovGeometry      cylinder        = converter.convertCylinder3D( Matrix3D.getTransform( 45.0 , 0.0 , 0.0 , 250.0 , 0.0 , 0.0 ) , testModel.getCone3D() );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
