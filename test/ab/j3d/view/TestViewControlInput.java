@@ -35,6 +35,7 @@ import ab.j3d.control.ControlInputEvent;
 import ab.j3d.geom.BasicRay3D;
 import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Object3D;
+import ab.j3d.model.Object3DBuilder;
 import ab.j3d.model.Scene;
 import ab.j3d.view.java2d.Java2dView;
 
@@ -76,12 +77,10 @@ public class TestViewControlInput
 		final Material red   = new Material( Color.RED  .getRGB() );
 		final Material green = new Material( Color.GREEN.getRGB() );
 
-		final Object3D result = new Object3D();
-
-		/* top    */result.addFace( new Vector3D[]{ lf , lb , rb , rf } , red   , false , false ); // Z =  size
-		/* bottom */result.addFace( new Vector3D[]{ lb , lf , rf , rb } , green , false , false ); // Z = -size
-
-		return result;
+		final Object3DBuilder builder = new Object3DBuilder();
+		/* top    */builder.addFace( new Vector3D[]{ lf , lb , rb , rf } , red   , false , false ); // Z =  size
+		/* bottom */builder.addFace( new Vector3D[]{ lb , lf , rf , rb } , green , false , false ); // Z = -size
+		return builder.getObject3D();
 	}
 
 	/**
