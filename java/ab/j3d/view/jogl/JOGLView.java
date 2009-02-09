@@ -108,10 +108,8 @@ public class JOGLView
 
 		_joglEngine = joglEngine;
 
-		final double unit  = scene.getUnit();
-
-		_frontClipDistance = 0.1 / unit;
-		_backClipDistance  = 100.0 / unit;
+		_frontClipDistance = 0.001;
+		_backClipDistance  = 100.0;
 		_renderThread      = null;
 
 		/* Use heavyweight popups, since we use a heavyweight canvas */
