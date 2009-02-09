@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2007 Peter S. Heijnen
+ * Copyright (C) 1999-2009 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -618,9 +618,26 @@ public final class Vector3D
 	 */
 	public static Vector3D cartesianToPolar( final double x , final double y , final double z )
 	{
-		final double radius = length( x , y , z );
+		final Vector3D result;
 
-		return ( radius == 0.0 ) ? INIT : new Vector3D( radius , Math.atan2( y , x ) , Math.atan2( Math.sqrt( x * x + y * y ) , z ) );
+		final double xSquared = x * x;
+		final double ySquared = y * y;
+		final double zSquared = z * z;
+
+		if ( ( xSquared == 0.0 ) && ( ySquared == 0.0 ) && ( zSquared == 0.0 ) )
+		{
+			result = ZERO;
+		}
+		else
+		{
+			final double radius  = Math.sqrt( xSquared + ySquared + zSquared );
+			final double azimuth = Math.atan2( y, x );
+			final double zenith  = Math.atan2( Math.sqrt( xSquared + ySquared ) , z );
+
+			result = new Vector3D( radius, azimuth, zenith );
+		}
+
+		return result;
 	}
 
 	/**
