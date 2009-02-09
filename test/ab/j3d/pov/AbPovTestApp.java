@@ -86,9 +86,9 @@ final class AbPovTestApp
 		scene.addContentNode( "greenbox"  , Matrix3D.INIT , testModel.getGreenYRotatedBox3D() );
 		scene.addContentNode( "bluebox"   , Matrix3D.INIT , testModel.getBlueZRotatedBox3D() );
 		scene.addContentNode( "panel"     , Matrix3D.INIT , testModel.getTexturedBox3D() );
-		scene.addContentNode( "sphere"    , Matrix3D.INIT , testModel.getSphere3D() );
-		scene.addContentNode( "cylinder"  , Matrix3D.INIT , testModel.getCylinder3D() );
-		scene.addContentNode( "cone"      , Matrix3D.INIT , testModel.getCone3D() );
+		scene.addContentNode( "sphere"    , Matrix3D.getTransform(  0.0 , 0.0 , 0.0 ,   0.0 , 300.0 , -200.0 ) , testModel.getSphere3D() );
+		scene.addContentNode( "cylinder"  , Matrix3D.getTransform(  0.0 , 0.0 , 0.0 ,   0.0 ,   0.0 ,  150.0 ) , testModel.getCylinder3D() );
+		scene.addContentNode( "cone"      , Matrix3D.getTransform( 45.0 , 0.0 , 0.0 , 250.0 ,   0.0 ,    0.0 ) , testModel.getCone3D() );
 		scene.addContentNode( "extruded"  , Matrix3D.INIT , testModel.getExtrudedObject2D() );
 		scene.addContentNode( "colorcube" , Matrix3D.INIT , testModel.getColorCube() );
 

@@ -261,7 +261,7 @@ public final class AbToPovConverter
 			final PovTexture texture = convertMaterialToPovTexture( anyFace.material );
 
 			result = new PovCylinder( name , 0.0 , 0.0 , 0.0 , cylinder.height , cylinder.radiusBottom , cylinder.radiusTop , texture );
-			result.setTransform( new PovMatrix( cylinder.xform.multiply( transform ) ) );
+			result.setTransform( new PovMatrix( transform ) );
 		}
 
 		return result;
@@ -437,7 +437,7 @@ public final class AbToPovConverter
 	{
 		final PovGeometry result;
 
-		if ( ( sphere.dx != sphere.dy ) || ( sphere.dy != sphere.dz ) || containsMultipleMaterialsOrMaps( sphere ) )
+		if ( containsMultipleMaterialsOrMaps( sphere ) )
 		{
 			result = convertObject3D( transform , sphere );
 		}
@@ -446,8 +446,8 @@ public final class AbToPovConverter
 			final Face3D     face    = sphere.getFace( 0 );
 			final PovTexture texture = convertMaterialToPovTexture( face.material );
 
-			result = new PovSphere( ( sphere.getTag() != null ) ? String.valueOf( sphere.getTag() ) : null , Vector3D.INIT , sphere.dx / 2.0 , texture );
-			result.setTransform( new PovMatrix( sphere.xform.multiply( transform ) ) );
+			result = new PovSphere( ( sphere.getTag() != null ) ? String.valueOf( sphere.getTag() ) : null , Vector3D.INIT , sphere.radius , texture );
+			result.setTransform( new PovMatrix( transform ) );
 		}
 		return result;
 	}
