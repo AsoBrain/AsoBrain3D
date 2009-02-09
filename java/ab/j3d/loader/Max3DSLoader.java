@@ -367,7 +367,7 @@ public final class Max3DSLoader
 
 			case 0x4130 : // OBJECT_MAT_GROUP - Materials used by object - associates material with the object.
 				{
-					// System.out.println( "    > material group" );
+					 System.out.println( "    > material group" );
 
 					final String materialName = readString( in );
 					final int    faceCount    = readShort( in );
@@ -376,14 +376,13 @@ public final class Max3DSLoader
 					if ( material == null )
 						throw new IOException( "can't find referenced material: " + materialName );
 
-					for ( int i = 0 ; i < faceCount ; i++ )
-						/*final int dummy =*/ readShort( in );
-
 					final Object3DBuilder builder = _object3DBuilder;
 					final Object3D object = builder.getObject3D();
-					for ( int i = 0 ; i < object.getFaceCount() ; i++ )
+
+					for ( int i = 0 ; i < faceCount ; i++ )
 					{
-						final Face3D face = object.getFace( i );
+						final int faceIndex = readShort( in );
+						final Face3D face = object.getFace( faceIndex );
 						face.material = material;
 					}
 
