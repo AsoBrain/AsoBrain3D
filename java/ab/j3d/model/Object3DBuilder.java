@@ -28,6 +28,8 @@ import ab.j3d.Vector3D;
 import ab.j3d.geom.Abstract3DObjectBuilder;
 import ab.j3d.geom.UVMap;
 
+import com.numdata.oss.ArrayTools;
+
 /**
  * This class provides an implementation of the {@link Abstract3DObjectBuilder}
  * class for creating an {@link Object3D} instance.
@@ -78,7 +80,18 @@ public class Object3DBuilder
 
 	public int getVertexIndex( final Vector3D point )
 	{
-		return _target.getVertexIndex( point.x , point.y , point.z );
+		return getVertexIndex( point.x , point.y , point.z );
+	}
+
+	/**
+	 * Get number of vertices in object.
+	 *
+	 * @return  Number of vertices.
+	 */
+	public int getVertexCount()
+	{
+		final double[] vertexCoordinates = _target._vertexCoordinates;
+		return ( vertexCoordinates == null ) ? 0 : vertexCoordinates.length / 3;
 	}
 
 	/**
@@ -93,7 +106,30 @@ public class Object3DBuilder
 	 */
 	private int getVertexIndex( final double x , final double y , final double z )
 	{
-		return _target.getVertexIndex( x , y , z  );
+		final int vertexCount = getVertexCount();
+		final double[] vertexCoordinates = _target._vertexCoordinates;
+
+		int index = vertexCount * 3;
+		while ( ( index -= 3 ) >= 0 )
+		{
+			if ( ( x == vertexCoordinates[ index     ] ) &&
+			     ( y == vertexCoordinates[ index + 1 ] ) &&
+			     ( z == vertexCoordinates[ index + 2 ] ) )
+				break;
+		}
+
+		if ( index < 0 )
+		{
+			index = vertexCount * 3;
+			final double[] newCoords = (double[])ArrayTools.ensureLength( vertexCoordinates , double.class , -1 , index + 3 );
+			newCoords[ index     ] = x;
+			newCoords[ index + 1 ] = y;
+			newCoords[ index + 2 ] = z;
+
+			_target._vertexCoordinates = newCoords;
+		}
+
+		return index / 3;
 	}
 
 	public void setVertexCoordinates( final double[] vertexCoordinates )

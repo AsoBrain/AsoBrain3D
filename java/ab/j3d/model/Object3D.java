@@ -36,8 +36,6 @@ import ab.j3d.geom.Ray3D;
 import ab.j3d.geom.Triangle3D;
 import ab.j3d.model.Face3D.Vertex;
 
-import com.numdata.oss.ArrayTools;
-
 /**
  * This class defined a 3D object node in a 3D tree. The 3D object consists of
  * vertices, edges, and faces.
@@ -152,22 +150,6 @@ public class Object3D
 	}
 
 	/**
-	 * Transform this object.
-	 *
-	 * @param   transform   Transformation to apply.
-	 */
-	public void getTransformedInstance( final Matrix3D transform )
-	{
-		final Object3D result = new Object3D();
-		result._vertexCoordinates = transform.transform( _vertexCoordinates , null , _vertexCoordinates.length / 3 );
-		result.outlineColor = outlineColor;
-		result.fillColor = fillColor;
-		result.alternateFillColor = alternateFillColor;
-		result.alternateOutlineColor = alternateOutlineColor;
-		result.shadeFactor = shadeFactor;
-	}
-
-	/**
 	 * Add a face to this object.
 	 *
 	 * @param   face    Face to add.
@@ -175,7 +157,6 @@ public class Object3D
 	protected final void addFace( final Face3D face )
 	{
 		_faces.add( face );
-		_vertexNormalsDirty = true;
 	}
 
 	/**
@@ -344,7 +325,7 @@ public class Object3D
 		CollisionNode result = _collisionNode;
 		if ( result == null )
 		{
-			final double[] vertexCoordinates = getVertexCoordinates();
+			final double[] vertexCoordinates = _vertexCoordinates;
 
 			int nrTriangles = 0;
 
@@ -412,7 +393,7 @@ public class Object3D
 			final int vertexCount = getVertexCount();
 			if ( vertexCount > 0 )
 			{
-				final double[] vertexCoordinates = getVertexCoordinates();
+				final double[] vertexCoordinates = _vertexCoordinates;
 
 				final Bounds3DBuilder builder = new Bounds3DBuilder();
 
@@ -445,7 +426,7 @@ public class Object3D
 		if ( ( xform != null ) && ( xform != Matrix3D.INIT ) && ( !Matrix3D.INIT.equals( xform ) ) )
 		{
 			final int      vertexCount       = getVertexCount();
-			final double[] vertexCoordinates = getVertexCoordinates();
+			final double[] vertexCoordinates = _vertexCoordinates;
 
 			int i = 0;
 			for ( int vertex = 0 ; vertex < vertexCount ; vertex++ )
@@ -488,36 +469,6 @@ public class Object3D
 	}
 
 	/**
-	 * Get transformed face normals.
-	 *
-	 * @param   transform   Transformation to apply to normals (only the
-	 *                      rotational part of the transformation is applied).
-	 * @param   dest        Target array for result to allow reuse of buffers.
-	 *
-	 * @return  Transformed face normals.
-	 */
-	public final double[] getFaceNormals( final Matrix3D transform , final double[] dest )
-	{
-		final List<Face3D> faces        = _faces;
-		final int          faceCount    = faces.size();
-		final int          resultLength = faceCount * 3;
-		final double[]     result       = (double[])ArrayTools.ensureLength( dest , double.class , -1 , resultLength );
-
-		int resultIndex = 0;
-		for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
-		{
-			final Face3D   face       = faces.get( faceIndex );
-			final Vector3D faceNormal = face.getNormal();
-
-			result[ resultIndex++ ] = faceNormal.x;
-			result[ resultIndex++ ] = faceNormal.y;
-			result[ resultIndex++ ] = faceNormal.z;
-		}
-
-		return ( transform != null ) ? transform.rotate( result , result , faceCount ) : result;
-	}
-
-	/**
 	 * Find intersections between this object and the specified ray. The ray
 	 * starts at <code>rayOrigin</code> and points in <code>rayDirection</code>.
 	 * The intersections are returned as a {@link List} containing
@@ -553,7 +504,7 @@ public class Object3D
 			final Vector3D ocsPoint = GeometryTools.getIntersectionBetweenRayAndPolygon( face , ocsRay );
 			if ( ocsPoint != null )
 			{
-				final Vector3D wcsPoint = object2world.multiply( ocsPoint );
+				final Vector3D wcsPoint = object2world.transform( ocsPoint );
 
 				final Face3DIntersection intersection = new Face3DIntersection( objectID , object2world , this , face , ray , wcsPoint );
 				if ( sortResult )
@@ -577,35 +528,6 @@ public class Object3D
 	}
 
 	/**
-	 * Get transformed vertex coordinates.
-	 *
-	 * @param   transform   Transformation to apply to vertex coordinates.
-	 * @param   dest        Target array for result to allow reuse of buffers.
-	 *
-	 * @return  Transformed vertex coordinates.
-	 */
-	public final double[] getVertexCoordinates( final Matrix3D transform , final double[] dest )
-	{
-		final double[] result;
-
-		final double[] vertexCoordinates = _vertexCoordinates;
-		final int      vertexCount       = getVertexCount();
-
-		if ( ( transform != null ) && ( transform != Matrix3D.INIT ) )
-		{
-			result = transform.transform( vertexCoordinates , dest , vertexCount );
-		}
-		else
-		{
-			final int resultLength = vertexCount * 3;
-			result = ( ( dest != null ) && ( dest.length >= resultLength ) ) ? dest : new double[ resultLength ];
-			System.arraycopy( vertexCoordinates , 0 , result , 0 , resultLength );
-		}
-
-		return result;
-	}
-
-	/**
 	 * Get number of vertices in the model. Vertices are shared amongst faces to
 	 * reduce the number of transformations required (vertices have an average
 	 * usage count that approaches 3, so the gain is significant).
@@ -615,79 +537,6 @@ public class Object3D
 	public final int getVertexCount()
 	{
 		return ( _vertexCoordinates == null ) ? 0 : _vertexCoordinates.length / 3;
-	}
-
-	/**
-	 * Get vertex index for a point with the specified coordinates. If the vertex
-	 * is not defined yet, a new vertex is added and its index is returned.
-	 *
-	 * @param   x   X component of vertex coordinates.
-	 * @param   y   Y component of vertex coordinates.
-	 * @param   z   Z component of vertex coordinates.
-	 *
-	 * @return  The index of the vertex.
-	 */
-	public final int getVertexIndex( final double x , final double y , final double z )
-	{
-		final double[] vertexCoordinates = getVertexCoordinates();
-		final int      vertexCount       = getVertexCount();
-
-		int index = vertexCount * 3;
-		while ( ( index -= 3 ) >= 0 )
-		{
-			if ( ( x == vertexCoordinates[ index     ] )
-			     && ( y == vertexCoordinates[ index + 1 ] )
-			     && ( z == vertexCoordinates[ index + 2 ] ) )
-				break;
-		}
-
-		if ( index < 0 )
-		{
-			index = vertexCount * 3;
-			final double[] newCoords = (double[])ArrayTools.ensureLength( vertexCoordinates , double.class , -1 , index + 3 );
-			newCoords[ index     ] = x;
-			newCoords[ index + 1 ] = y;
-			newCoords[ index + 2 ] = z;
-
-			_vertexCoordinates = newCoords;
-
-			_vertexNormalsDirty = true;
-		}
-
-		return index / 3;
-	}
-
-	/**
-	 * Get transformed vertex normals. Vertex normals are pseudo-normals based
-	 * on average face normals at each vertex.
-	 *
-	 * @param   transform   Transformation to apply to normals (only the
-	 *                      rotational part of the transformation is applied).
-	 * @param   dest        Target array for result to allow reuse of buffers.
-	 *
-	 * @return  Transformed vertex normals.
-	 */
-	public final double[] getVertexNormals( final Matrix3D transform , final double[] dest )
-	{
-		final double[] result;
-
-		calculateVertexNormals();
-
-		final int      vertexCount   = getVertexCount();
-		final double[] vertexNormals = _vertexNormals;
-
-		if ( ( transform != null ) && ( transform != Matrix3D.INIT ) )
-		{
-			result = transform.rotate( vertexNormals , dest , vertexCount );
-		}
-		else
-		{
-			final int resultLength = vertexCount * 3;
-			result = ( ( dest != null ) && ( dest.length >= resultLength ) ) ? dest : new double[ resultLength ];
-			System.arraycopy( vertexNormals , 0 , result , 0 , resultLength );
-		}
-
-		return result;
 	}
 
 	/**
@@ -726,7 +575,7 @@ public class Object3D
 	 *
 	 * @throws  IllegalStateException if faces have been added to the object.
 	 */
-	public final void setVertexCoordinates( final double[] vertexCoordinates )
+	final void setVertexCoordinates( final double[] vertexCoordinates )
 	{
 		_vertexCoordinates = vertexCoordinates;
 
@@ -739,7 +588,7 @@ public class Object3D
 	 *
 	 * @param   vertexNormals   Vertex normals (one triplet per vertex).
 	 */
-	public final void setVertexNormals( final double[] vertexNormals )
+	final void setVertexNormals( final double[] vertexNormals )
 	{
 		_vertexNormals = vertexNormals;
 		_vertexNormalsDirty = false;
