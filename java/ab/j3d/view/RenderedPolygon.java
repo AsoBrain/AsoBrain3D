@@ -19,10 +19,12 @@
  */
 package ab.j3d.view;
 
+import java.awt.Point;
 import java.awt.Polygon;
 import java.util.List;
 
 import ab.j3d.Material;
+import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Face3D.Vertex;
@@ -42,6 +44,11 @@ public final class RenderedPolygon
 	 * Object for which the polygon was defined.
 	 */
 	public Object3D _object;
+
+	/**
+	 * Face for which the polygon was defined.
+	 */
+	public Face3D _face;
 
 	/**
 	 * Material applied to this face. Taken from {@link Face3D#material}.
@@ -129,32 +136,32 @@ public final class RenderedPolygon
 	/**
 	* The smallest of all the x values of this polygon.
 	*/
-	public int _minX;
+	public int _minImageX;
 
 	/**
 	* The largest of all the x values of this polygon.
 	*/
-	public int _maxX;
+	public int _maxImageX;
 
 	/**
 	* The smallest of all the y values of this polygon.
 	*/
-	public int _minY;
+	public int _minImageY;
 
 	/**
 	* The largest of all the y values of this polygon.
 	*/
-	public int _maxY;
+	public int _maxImageY;
 
 	/**
 	 * The smallest of all the z values of this polygon.
 	 */
-	public double _minZ;
+	public double _minViewZ;
 
 	/**
 	 * The largest of all the z values of this polygon.
 	 */
-	public double _maxZ;
+	public double _maxViewZ;
 
 	/**
 	 * Debugging variable. Not for other uses. Should be removed once
@@ -192,23 +199,29 @@ public final class RenderedPolygon
 		super( projectedX , projectedY , 0 );
 
 		_object              = null;
+		_face                = null;
 		_vertexCount         = vertexCount;
-		_projectedX          = projectedX;
-		_projectedY          = projectedY;
-		_viewX               = new double[ vertexCount ];
-		_viewY               = new double[ vertexCount ];
-		_viewZ               = new double[ vertexCount ];
-		_planeNormalX        = 0.0;
-		_planeNormalY        = 0.0;
-		_planeNormalZ        = 1.0;
-		_planeConstant       = 0.0;
-		_minX                = 0;
-		_maxX                = 0;
-		_minY                = 0;
-		_maxY                = 0;
-		_minZ                = 0.0;
-		_maxZ                = 0.0;
-		_material            = null;
+
+		_viewX = new double[ vertexCount ];
+		_viewY = new double[ vertexCount ];
+		_viewZ = new double[ vertexCount ];
+
+		_projectedX = projectedX;
+		_projectedY = projectedY;
+
+		_planeNormalX  = 0.0;
+		_planeNormalY  = 0.0;
+		_planeNormalZ  = 1.0;
+		_planeConstant = 0.0;
+
+		_minImageX = 0;
+		_maxImageX = 0;
+		_minImageY = 0;
+		_maxImageY = 0;
+		_minViewZ = 0.0;
+		_maxViewZ = 0.0;
+
+		_material = null;
 		_alternateAppearance = false;
 
 		xpoints = projectedX;
@@ -219,26 +232,20 @@ public final class RenderedPolygon
 	/**
 	 * Initialize polygon with face properties.
 	 *
-	 * @param   object                          Object to get face from.
-	 * @param   faceIndex                       Index of object's face.
-	 * @param   objectViewCoordinates           Vertex coordinates of object in view space.
-	 * @param   objectProjectedCoordindates     Projected points on image plate (pixels).
-	 * @param   faceViewNormals                 Normals of object faces in view space.
-	 * @param   alternateAppearance             Use alternate vs. regular object appearance.
-	 *
-	 * @see     Face3D
-	 * @see     Object3D#getVertexCoordinates
-	 * @see     Object3D#getFaceNormals
+	 * @param   object2view             Transforms object to view coordinates.
+	 * @param   projector               Projects view coordinates on image plate (pixels).
+	 * @param   object                  Object to get face from.
+	 * @param   face                    Face to initialize polygon with.
+	 * @param   alternateAppearance     Use alternate vs. regular object appearance.
 	 */
-	public void initialize( final Object3D object , final int faceIndex , final double[] objectViewCoordinates , final int[] objectProjectedCoordindates , final double[] faceViewNormals , final boolean alternateAppearance )
+	public void initialize( final Matrix3D object2view , final Projector projector , final Object3D object , final Face3D face , final boolean alternateAppearance )
 	{
-		final Face3D   face         = object.getFace( faceIndex );
-		final int      pointCount   = _vertexCount;
-		final int[]    projectedX   = _projectedX;
-		final int[]    projectedY   = _projectedY;
-		final double[] viewX        = _viewX;
-		final double[] viewY        = _viewY;
-		final double[] viewZ        = _viewZ;
+		final int      pointCount = _vertexCount;
+		final int[]    projectedX = _projectedX;
+		final int[]    projectedY = _projectedY;
+		final double[] viewX      = _viewX;
+		final double[] viewY      = _viewY;
+		final double[] viewZ      = _viewZ;
 
 		if ( ( xpoints != projectedX ) || ( ypoints != projectedY ) || ( npoints != pointCount ) )
 			throw new IllegalStateException();
@@ -247,83 +254,64 @@ public final class RenderedPolygon
 		if ( vertices.size() != pointCount )
 			throw new IllegalArgumentException();
 
-		int    minX = Integer.MAX_VALUE;
-		int    maxX = Integer.MIN_VALUE;
-		int    minY = Integer.MAX_VALUE;
-		int    maxY = Integer.MIN_VALUE;
-		double minZ = Double.POSITIVE_INFINITY;
-		double maxZ = Double.NEGATIVE_INFINITY;
+		int    minImageX = Integer.MAX_VALUE;
+		int    maxImageX = Integer.MIN_VALUE;
+		int    minImageY = Integer.MAX_VALUE;
+		int    maxImageY = Integer.MIN_VALUE;
+		double minViewZ = Double.POSITIVE_INFINITY;
+		double maxViewZ = Double.NEGATIVE_INFINITY;
+
+		final Point projectedPoint = new Point();
 
 		for ( int vertexIndex = 0 ; vertexIndex < pointCount ; vertexIndex++ )
 		{
-			final int vertexCoordinateIndex  = vertices.get( vertexIndex ).vertexCoordinateIndex;
-			final int vertexCoordinateIndex2 = vertexCoordinateIndex * 2;
-			final int vertexCoordinateIndex3 = vertexCoordinateIndex * 3;
+			final Vertex vertex = vertices.get( vertexIndex );
+			final Vector3D oPoint = vertex.point;
 
-			final int projX = objectProjectedCoordindates[ vertexCoordinateIndex2 ];
-			final int projY = objectProjectedCoordindates[ vertexCoordinateIndex2 + 1 ];
-			projectedX[ vertexIndex ] = projX;
-			projectedY[ vertexIndex ] = projY;
+			final double x = object2view.transformX( oPoint );
+			final double y = object2view.transformY( oPoint );
+			final double z = object2view.transformZ( oPoint );
 
-			final double x = objectViewCoordinates[ vertexCoordinateIndex3 ];
-			final double y = objectViewCoordinates[ vertexCoordinateIndex3 + 1 ];
-			final double z = objectViewCoordinates[ vertexCoordinateIndex3 + 2 ];
 			viewX[ vertexIndex ] = x;
 			viewY[ vertexIndex ] = y;
 			viewZ[ vertexIndex ] = z;
 
-			minX = projX < minX ? projX : minX;
-			maxX = projX > maxX ? projX : maxX;
-			minY = projY < minY ? projY : minY;
-			maxY = projY > maxY ? projY : maxY;
-			minZ = z     < minZ ? z     : minZ;
-			maxZ = z     > maxZ ? z     : maxZ;
+			minViewZ = z < minViewZ ? z : minViewZ;
+			maxViewZ = z > maxViewZ ? z : maxViewZ;
+
+			if ( projector != null )
+			{
+				projector.project( projectedPoint , x , y , z );
+				final int projX = projectedPoint.x;
+				final int projY = projectedPoint.y;
+
+				projectedX[ vertexIndex ] = projX;
+				projectedY[ vertexIndex ] = projY;
+
+				minImageX = projX < minImageX ? projX : minImageX;
+				maxImageX = projX > maxImageX ? projX : maxImageX;
+				minImageY = projY < minImageY ? projY : minImageY;
+				maxImageY = projY > maxImageY ? projY : maxImageY;
+			}
 		}
 
-		_minX = minX;
-		_maxX = maxX;
-		_minY = minY;
-		_maxY = maxY;
-		_minZ = minZ;
-		_maxZ = maxZ;
-
-		final double planeNormalX;
-		final double planeNormalY;
-		final double planeNormalZ;
-		final double planeConstant;
-
-		final double x0 = viewX[ 0 ];
-		final double y0 = viewY[ 0 ];
-		final double z0 = viewZ[ 0 ];
-
-		if ( faceViewNormals != null )
-		{
-			final int faceIndex3 = faceIndex * 3;
-			planeNormalX = faceViewNormals[ faceIndex3 ];
-			planeNormalY = faceViewNormals[ faceIndex3 + 1 ];
-			planeNormalZ = faceViewNormals[ faceIndex3 + 2 ];
-		}
-		else
-		{
-			final double x1 = viewX[ 1 ];
-			final double y1 = viewY[ 1 ];
-			final double z1 = viewZ[ 1 ];
-			final double x2 = viewX[ 2 ];
-			final double y2 = viewY[ 2 ];
-			final double z2 = viewZ[ 2 ];
-
-			planeNormalX = ( y0 - y1 ) * ( z2 - z1 ) - ( z0 - z1 ) * ( y2 - y1 );
-			planeNormalY = ( z0 - z1 ) * ( x2 - x1 ) - ( x0 - x1 ) * ( z2 - z1 );
-			planeNormalZ = ( x0 - x1 ) * ( y2 - y1 ) - ( y0 - y1 ) * ( x2 - x1 );
-		}
-
-		planeConstant = planeNormalX * x0 + planeNormalY * y0 + planeNormalZ * z0;
+		final double planeNormalX = object2view.rotateX( face.normal );
+		final double planeNormalY = object2view.rotateY( face.normal );
+		final double planeNormalZ = object2view.rotateZ( face.normal );
+		final double planeConstant = planeNormalX * viewX[ 0 ] + planeNormalY * viewY[ 0 ] + planeNormalZ * viewZ[ 0 ];
 
 		_object              = object;
+		_face                = face;
 		_planeNormalX        = planeNormalX;
 		_planeNormalY        = planeNormalY;
 		_planeNormalZ        = planeNormalZ;
 		_planeConstant       = planeConstant;
+		_minImageX           = minImageX;
+		_maxImageX           = maxImageX;
+		_minImageY           = minImageY;
+		_maxImageY           = maxImageY;
+		_minViewZ            = minViewZ;
+		_maxViewZ            = maxViewZ;
 		_material            = face.material;
 		_alternateAppearance = alternateAppearance;
 	}
@@ -335,30 +323,32 @@ public final class RenderedPolygon
 	{
 		invalidate();
 		_object   = null;
+		_face     = null;
 		_material = null;
 	}
 
 	/**
+	 * Test if polygon is in view volume.
+	 *
+	 * @param   imageWidth      Width of image.
+	 * @param   imageHeight     Height of image.
+	 *
+	 * @return  <code>true</code> if polygon is (possibly) in view volume;
+	 *          <code>false</code> if polygon is (surely) outside view volume.
+	 */
+	public boolean inViewVolume( final int imageWidth , final int imageHeight )
+	{
+		return ( _minImageX < imageWidth ) && ( _maxImageX >= 0 ) && ( _minImageY < imageHeight ) && ( _maxImageY >= 0 );
+	}
+
+	/**
 	 * Test if this is a back face.
-	 * <p />
+	 * <p>
 	 * A backface is identified by a negative Z component of the face normal.
-	 * This is derived as follows:
-	 * <pre>
-	 * (x1,y1,z1) = first vertex of face
-	 * (x2,y2,z2) = second point of face
-	 * (x3,y3,z3) = third point of face
-	 * </pre>
-	 * We can derive the face normal <code>(a,b,c)</code> from these points
-	 * by taking the cross product between the two edges defined between them:
-	 * <pre>
-	 * a = ( y1 - y2 ) * ( z3 - z2 ) - ( z1 - z2 ) * ( y3 - y2 )
-	 * b = ( z1 - z2 ) * ( x3 - x2 ) - ( x1 - x2 ) * ( z3 - z2 )
-	 * c = ( x1 - x2 ) * ( y3 - y2 ) - ( y1 - y2 ) * ( x3 - x2 )
-	 * </pre>
-	 * Since we are only interested in the Z component of the normal
-	 * (<code>c</code>), we can simply use the projected 2D points of the
-	 * face. This has the advantage of properly handling depth deformation due
-	 * to (perspective) projection.
+	 * <p>
+	 * Since we are only interested in the Z component of the normal, we can
+	 * simply use the projected 2D points of the face. This has the advantage of
+	 * properly handling depth deformation due to (perspective) projection.
 	 *
 	 * @return  <code>true</code> if this is a backface;
 	 *          <code>false</code> if this is not a (back)face.
@@ -367,17 +357,20 @@ public final class RenderedPolygon
 	{
 		final boolean result;
 
-		if ( _vertexCount < 3 ) /* a void, point, or line can not be culled */
+		if ( _vertexCount < 3 ) /* a void, point, or line can not be a face, so no backface either */
 		{
 			result = false;
 		}
 		else
 		{
-			final int x2 = _projectedX[ 1 ];
-			final int y2 = _projectedY[ 1 ];
+			final int[] projectedX = _projectedX;
+			final int[] projectedY = _projectedY;
 
-			result = ( ( _projectedX[ 0 ] - x2 ) * ( _projectedY[ 2 ] - y2 )
-			        >= ( _projectedY[ 0 ] - y2 ) * ( _projectedX[ 2 ] - x2 ) );
+			final int x2 = projectedX[ 1 ];
+			final int y2 = projectedY[ 1 ];
+
+			result = ( ( projectedX[ 0 ] - x2 ) * ( projectedY[ 2 ] - y2 )
+			        >= ( projectedY[ 0 ] - y2 ) * ( projectedX[ 2 ] - x2 ) );
 		}
 
 		return result;
@@ -421,6 +414,7 @@ public final class RenderedPolygon
 		final StringBuilder sb = new StringBuilder();
 
 		sb.append(   "Object: "               ); sb.append( _object );
+		sb.append( "\nFace: "                 ); sb.append( _face );
 		sb.append( "\nMaterial: "             ); sb.append( ( _material == null ? "null" : _material.code ) );
 		sb.append( "\nAlternate appearance: " ); sb.append( _alternateAppearance );
 		sb.append( "\nNormal: "               ); sb.append( Vector3D.toFriendlyString( Vector3D.INIT.set( _planeNormalX , _planeNormalY , _planeNormalZ ) ) );
@@ -445,9 +439,9 @@ public final class RenderedPolygon
 		}
 
 		sb.append( "\nMinimum Z: " );
-		sb.append( _minZ );
+		sb.append( _minViewZ );
 		sb.append( "\nMaximum Z: " );
-		sb.append( _maxZ );
+		sb.append( _maxViewZ );
 
 		sb.append( '\n' );
 
