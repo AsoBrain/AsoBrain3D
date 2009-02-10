@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2008
+ * (C) Copyright Numdata BV 2007-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,7 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.Image;
 import java.awt.Paint;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
@@ -111,9 +112,12 @@ public class PlanarGraphics2D
 	 *
 	 * @return  Image coordinates.
 	 */
-	private Point2D plane2image( final double x , final double y )
+	private Point plane2image( final double x , final double y )
 	{
-		return _projector.viewToImage( _plane2view.multiply( x , y , 0.0 ) );
+		final Point result = new Point();
+		final Matrix3D plane2view = _plane2view;
+		_projector.project( result , plane2view.transformX( x , y , 0.0 ) , plane2view.transformY( x , y , 0.0 ) , plane2view.transformZ( x , y , 0.0 ) );
+		return result;
 	}
 
 	/**
