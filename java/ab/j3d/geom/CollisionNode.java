@@ -90,13 +90,13 @@ public class CollisionNode
 	 */
 	public CollisionNode( final List<Triangle3D> triangles , final int trianglesOffset , final int trianglesCount )
 	{
-		if ( trianglesCount <= 0 )
-			throw new IllegalArgumentException();
-
-		if ( trianglesOffset < triangles.size() )
+		if ( trianglesOffset < 0 )
 			throw new IndexOutOfBoundsException( String.valueOf( trianglesOffset ) );
 
-		if ( trianglesOffset + trianglesCount >= triangles.size() )
+		if ( trianglesCount <= 0 )
+			throw new IllegalArgumentException( String.valueOf( trianglesCount ) );
+
+		if ( trianglesOffset + trianglesCount > triangles.size() )
 			throw new IndexOutOfBoundsException( String.valueOf( trianglesOffset + trianglesCount ) );
 
 		final Bounds3DBuilder boundsBuilder = new Bounds3DBuilder();
@@ -229,9 +229,9 @@ public class CollisionNode
 		{
 			final Triangle3D otherTriangle = otherTriangles.get( otherIndex );
 
-			final Vector3D otherP1 = other2this.multiply( otherTriangle.getP1() );
-			final Vector3D otherP2 = other2this.multiply( otherTriangle.getP2() );
-			final Vector3D otherP3 = other2this.multiply( otherTriangle.getP3() );
+			final Vector3D otherP1 = other2this.transform( otherTriangle.getP1() );
+			final Vector3D otherP2 = other2this.transform( otherTriangle.getP2() );
+			final Vector3D otherP3 = other2this.transform( otherTriangle.getP3() );
 
 			for ( int thisIndex = thisStart ; thisIndex < thisEnd ; thisIndex++ )
 			{
