@@ -34,6 +34,7 @@ import ab.j3d.control.controltest.model.PaintableTriangle;
 import ab.j3d.control.controltest.model.SceneElement;
 import ab.j3d.control.controltest.model.TetraHedron;
 import ab.j3d.control.controltest.model.Wall;
+import ab.j3d.geom.BoxUVMap;
 import ab.j3d.model.Box3D;
 import ab.j3d.model.ContentNode;
 import ab.j3d.model.Face3D;
@@ -270,7 +271,7 @@ public final class Model3D
 		final double depth  = wall.getYSize();
 
 		final Material material = WALL_MATERIAL;
-		return new Box3D( Matrix3D.INIT , width , depth , height , 0.001 , material , material , material , material , material , material );
+		return new Box3D( width , depth , height , new BoxUVMap( Scene.MM ) , material );
 	}
 
 	/**

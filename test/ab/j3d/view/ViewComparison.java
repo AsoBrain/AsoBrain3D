@@ -45,6 +45,7 @@ import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.control.FromToCameraControl;
+import ab.j3d.geom.BoxUVMap;
 import ab.j3d.model.Box3D;
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Light3D;
@@ -278,7 +279,7 @@ public class ViewComparison
 			target.addContentNode( "sphere-4" , Matrix3D.INIT.plus( -100.0 ,    0.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , solid    ) );
 			target.addContentNode( "sphere-5" , Matrix3D.INIT.plus(    0.0 ,    0.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , shiny    ) );
 			target.addContentNode( "sphere-6" , Matrix3D.INIT.plus(  100.0 ,    0.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , shinier  ) );
-			target.addContentNode( "box-1"    , Matrix3D.INIT.plus( -140.0 ,   60.0 ,  0.0 ) , new Box3D   ( 80.0 , 80.0 , 80.0 , Scene.MM , solid , solid , solid , solid , solid , solid ) );
+			target.addContentNode( "box-1"    , Matrix3D.INIT.plus( -140.0 ,   60.0 ,  0.0 ) , new Box3D   ( 80.0 , 80.0 , 80.0 , new BoxUVMap( Scene.MM ) , solid ) );
 
 			/*
 			 * Test advanced texturing. (i.e. with non-white diffuse color)
