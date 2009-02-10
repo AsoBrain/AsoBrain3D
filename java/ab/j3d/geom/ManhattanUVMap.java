@@ -63,6 +63,9 @@ public class ManhattanUVMap
 	{
 		final Matrix3D transform = _transform;
 
+		final float scaleU = ( material.colorMapWidth  > 0.0f ) ? 1.0f / material.colorMapWidth  : 1.0f;
+		final float scaleV = ( material.colorMapHeight > 0.0f ) ? 1.0f / material.colorMapHeight : 1.0f;
+
 		for ( int i = 0 ; i < vertexIndices.length ; i++ )
 		{
 			final int base = vertexIndices[ i ] * 3;
@@ -71,11 +74,11 @@ public class ManhattanUVMap
 			final double y = vertexCoordinates[ base + 1 ];
 			final double z = vertexCoordinates[ base + 2 ];
 
-			final float u = (float)transform.transformX( x , y , z );
-			final float v = (float)transform.transformY( x , y , z );
+			final float tx = (float)transform.transformX( x , y , z );
+			final float ty = (float)transform.transformY( x , y , z );
 
-			textureU[ i ] = flipTexture ? v : u;
-			textureV[ i ] = flipTexture ? u : v;
+			textureU[ i ] = flipTexture ? scaleU * ty : scaleV * tx;
+			textureV[ i ] = flipTexture ? scaleU * tx : scaleV * ty;
 		}
 	}
 
@@ -83,9 +86,12 @@ public class ManhattanUVMap
 	{
 		final Matrix3D transform = _transform;
 
-		final float u = (float)transform.transformX( point );
-		final float v = (float)transform.transformY( point );
+		final float scaleU = ( material.colorMapWidth  > 0.0f ) ? 1.0f / material.colorMapWidth  : 1.0f;
+		final float scaleV = ( material.colorMapHeight > 0.0f ) ? 1.0f / material.colorMapHeight : 1.0f;
 
-		return flipTexture ? new Point2D.Float( v , u ) : new Point2D.Float( u , v );
+		final float tx = (float)transform.transformX( point );
+		final float ty = (float)transform.transformY( point );
+
+		return flipTexture ? new Point2D.Float( scaleU * ty , scaleV * tx ) : new Point2D.Float( scaleU * tx , scaleV * ty );
 	}
 }

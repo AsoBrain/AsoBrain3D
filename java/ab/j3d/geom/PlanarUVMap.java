@@ -37,7 +37,7 @@ public class PlanarUVMap
 	/**
 	 * Transformation from model units to UV coordinates.
 	 */
-	private Matrix3D _transform;
+	private Matrix3D _plane2wcs;
 
 	/**
 	 * Constructs a new planar UV-map parallel to the XY-plane, with its UV
@@ -81,41 +81,47 @@ public class PlanarUVMap
 	 * Constructs a new planar UV-map parallel to the XY-plane defined by the
 	 * given transformation.
 	 *
-	 * @param   modelUnits      Size of a model unit in meters.
-	 * @param   planeTransform  Transformation of the UV-plane relative to the XY-plane.
+	 * @param   modelUnits  Size of a model unit in meters.
+	 * @param   plane2wcs   Transform plane to world coordinates.
 	 */
-	public PlanarUVMap( final double modelUnits , final Matrix3D planeTransform )
+	public PlanarUVMap( final double modelUnits , final Matrix3D plane2wcs )
 	{
-		_transform = planeTransform.scale( modelUnits );
+		_plane2wcs = plane2wcs.scale( modelUnits );
 	}
 
-	public void generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final boolean flipTexture , final float[] textureU , final float[] textureV )
+	public void generate( final Material material , final double[] wcsVertexCoordinates , final int[] vertexIndices , final boolean flipTexture , final float[] textureU , final float[] textureV )
 	{
-		final Matrix3D transform = _transform;
+		final Matrix3D plane2wcs = _plane2wcs;
+
+		final float scaleU = ( material.colorMapWidth  > 0.0f ) ? 1.0f / material.colorMapWidth  : 1.0f;
+		final float scaleV = ( material.colorMapHeight > 0.0f ) ? 1.0f / material.colorMapHeight : 1.0f;
 
 		for ( int i = 0 ; i < vertexIndices.length ; i++ )
 		{
 			final int base = vertexIndices[ i ] * 3;
 
-			final double x = vertexCoordinates[ base ];
-			final double y = vertexCoordinates[ base + 1 ];
-			final double z = vertexCoordinates[ base + 2 ];
+			final double wcsX = wcsVertexCoordinates[ base ];
+			final double wcsY = wcsVertexCoordinates[ base + 1 ];
+			final double wcsZ = wcsVertexCoordinates[ base + 2 ];
 
-			final float u = (float)transform.transformX( x , y , z );
-			final float v = (float)transform.transformY( x , y , z );
+			final float tx = (float)plane2wcs.inverseTransformX( wcsX , wcsY , wcsZ );
+			final float ty = (float)plane2wcs.inverseTransformY( wcsX , wcsY , wcsZ );
 
-			textureU[ i ] = flipTexture ? v : u;
-			textureV[ i ] = flipTexture ? u : v;
+			textureU[ i ] = flipTexture ? ty * scaleU : tx * scaleV;
+			textureV[ i ] = flipTexture ? tx * scaleU : ty * scaleV;
 		}
 	}
 
-	public Point2D.Float generate( final Material material , final Vector3D point , final Vector3D normal , final boolean flipTexture )
+	public Point2D.Float generate( final Material material , final Vector3D wcsPoint , final Vector3D normal , final boolean flipTexture )
 	{
-		final Matrix3D transform = _transform;
+		final Matrix3D plane2wcs = _plane2wcs;
 
-		final float u = (float)transform.transformX( point );
-		final float v = (float)transform.transformY( point );
+		final float scaleU = ( material.colorMapWidth  > 0.0f ) ? 1.0f / material.colorMapWidth  : 1.0f;
+		final float scaleV = ( material.colorMapHeight > 0.0f ) ? 1.0f / material.colorMapHeight : 1.0f;
 
-		return flipTexture ? new Point2D.Float( v , u ) : new Point2D.Float( u , v );
+		final float tx = (float)plane2wcs.inverseTransformX( wcsPoint );
+		final float ty = (float)plane2wcs.inverseTransformY( wcsPoint );
+
+		return flipTexture ? new Point2D.Float( ty * scaleU , tx * scaleV ) : new Point2D.Float( tx * scaleU , ty * scaleV );
 	}
 }
