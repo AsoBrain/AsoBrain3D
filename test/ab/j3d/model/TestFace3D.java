@@ -216,4 +216,54 @@ public class TestFace3D
 			Vector3DTester.assertEquals( description , expected , actual , 0.0001 );
 		}
 	}
+
+	/**
+	 * Test {@link Face3D#normal} field.
+	 */
+	public static void testNormal()
+	{
+		System.out.println( CLASS_NAME + ".testNormal" );
+
+		final Vector3D lfb = Vector3D.INIT.set( -1.0 , -1.0 , -1.0 );
+		final Vector3D rfb = Vector3D.INIT.set(  1.0 , -1.0 , -1.0 );
+		final Vector3D rbb = Vector3D.INIT.set(  1.0 ,  1.0 , -1.0 );
+		final Vector3D lbb = Vector3D.INIT.set( -1.0 ,  1.0 , -1.0 );
+		final Vector3D lft = Vector3D.INIT.set( -1.0 , -1.0 ,  1.0 );
+		final Vector3D rft = Vector3D.INIT.set(  1.0 , -1.0 ,  1.0 );
+		final Vector3D rbt = Vector3D.INIT.set(  1.0 ,  1.0 ,  1.0 );
+		final Vector3D lbt = Vector3D.INIT.set( -1.0 ,  1.0 ,  1.0 );
+
+		final Object3DBuilder builder = new Object3DBuilder();
+		/* top    */ builder.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , false , false );
+		/* bottom */ builder.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , null , false , false );
+		/* front  */ builder.addFace( new Vector3D[] { lfb , lft , rft , rfb } , null , false , false );
+		/* back   */ builder.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , null , false , false );
+		/* left   */ builder.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , false , false );
+		/* right  */ builder.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , false , false );
+		final Object3D cube = builder.getObject3D();
+
+		assertEquals( "Normal(top).x"    ,  0.0 , cube.getFace( 0 ).normal.x , 0.001 );
+		assertEquals( "Normal(top).y"    ,  0.0 , cube.getFace( 0 ).normal.y , 0.001 );
+		assertEquals( "Normal(top).z"    ,  1.0 , cube.getFace( 0 ).normal.z , 0.001 );
+
+		assertEquals( "Normal(bottom).x" ,  0.0 , cube.getFace( 1 ).normal.x , 0.001 );
+		assertEquals( "Normal(bottom).y" ,  0.0 , cube.getFace( 1 ).normal.y , 0.001 );
+		assertEquals( "Normal(bottom).z" , -1.0 , cube.getFace( 1 ).normal.z , 0.001 );
+
+		assertEquals( "Normal(front).x"  ,  0.0 , cube.getFace( 2 ).normal.x , 0.001 );
+		assertEquals( "Normal(front).y"  , -1.0 , cube.getFace( 2 ).normal.y , 0.001 );
+		assertEquals( "Normal(front).z"  ,  0.0 , cube.getFace( 2 ).normal.z , 0.001 );
+
+		assertEquals( "Normal(back).x"   ,  0.0 , cube.getFace( 3 ).normal.x , 0.001 );
+		assertEquals( "Normal(back).y"   ,  1.0 , cube.getFace( 3 ).normal.y , 0.001 );
+		assertEquals( "Normal(back).z"   ,  0.0 , cube.getFace( 3 ).normal.z , 0.001 );
+
+		assertEquals( "Normal(left).x"   , -1.0 , cube.getFace( 4 ).normal.x , 0.001 );
+		assertEquals( "Normal(left).y"   ,  0.0 , cube.getFace( 4 ).normal.y , 0.001 );
+		assertEquals( "Normal(left).z"   ,  0.0 , cube.getFace( 4 ).normal.z , 0.001 );
+
+		assertEquals( "Normal(right).x"  ,  1.0 , cube.getFace( 5 ).normal.x , 0.001 );
+		assertEquals( "Normal(right).y"  ,  0.0 , cube.getFace( 5 ).normal.y , 0.001 );
+		assertEquals( "Normal(right).z"  ,  0.0 , cube.getFace( 5 ).normal.z , 0.001 );
+	}
 }

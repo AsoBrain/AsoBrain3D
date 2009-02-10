@@ -138,25 +138,13 @@ public class BSPTree
 	private RenderQueue _renderQueue;
 
 	/**
-	 * Temporary/shared storage area for {@link #addObject3D}.
-	 */
-	private double[] _tmpVertexCoordinates;
-
-	/**
-	 * Temporary/shared storage area for {@link #addObject3D}.
-	 */
-	private double[] _tmpFaceNormals;
-
-	/**
 	 * Construct a new Binary Space Partitioning Tree.
 	 */
 	public BSPTree()
 	{
-		_root                 = null;
-		_polygons             = null;
-		_renderQueue          = new RenderQueue();
-		_tmpVertexCoordinates = null;
-		_tmpFaceNormals       = null;
+		_root = null;
+		_polygons = null;
+		_renderQueue = new RenderQueue();
 
 		reset();
 	}
@@ -166,10 +154,8 @@ public class BSPTree
 	 */
 	public void reset()
 	{
-		_root                 = new BSPTreeNode();
-		_polygons             = new ArrayList<RenderedPolygon>();
-		_tmpVertexCoordinates = null;
-		_tmpFaceNormals       = null;
+		_root = new BSPTreeNode();
+		_polygons = new ArrayList<RenderedPolygon>();
 	}
 
 	/**
@@ -185,7 +171,9 @@ public class BSPTree
 			final Matrix3D object2world = nodes.getMatrix( i );
 
 			if ( object instanceof Object3D )
+			{
 				addObject3D( (Object3D)object , object2world );
+			}
 		}
 	}
 
@@ -198,32 +186,26 @@ public class BSPTree
 	public void addObject3D( final Object3D object , final Matrix3D object2model )
 	{
 		final int faceCount = object.getFaceCount();
+
 		for ( int i = 0 ; i < faceCount ; i++ )
 		{
-			final double[] vertexCoordinates = ( _tmpVertexCoordinates = object.getVertexCoordinates( object2model ,_tmpVertexCoordinates ) );
-			final double[] faceNormals       = ( _tmpFaceNormals = object.getFaceNormals( object2model , _tmpFaceNormals ) );
-
-			addPolygon( object , i , vertexCoordinates , faceNormals , false );
+			addPolygon( object2model , object , i , false );
 		}
 	}
 
 	/**
 	 * Add a polygon to the tree ( Note: the tree is not rebuild! ).
 	 *
+	 * @param   object2model            Transforms object to model coordinates.
 	 * @param   object                  Object to get face from.
 	 * @param   faceIndex               Index of object's face.
-	 * @param   objectModelCoordinates  Vertex coordinates of object in model space.
-	 * @param   faceModelNormals        Normals of object faces in model space.
 	 * @param   alternateAppearance     Use alternate vs. regular object appearance.
 	 */
-	public void addPolygon( final Object3D object , final int faceIndex , final double[] objectModelCoordinates , final double[] faceModelNormals , final boolean alternateAppearance )
+	public void addPolygon( final Matrix3D object2model , final Object3D object , final int faceIndex , final boolean alternateAppearance )
 	{
 		final Face3D face = object.getFace( faceIndex );
-		final int[] dummyProjectedCoordinates = new int[ object.getVertexCount() * 2 ];
-
 		final RenderedPolygon polygon = new RenderedPolygon( face.getVertexCount() );
-		polygon.initialize( object , faceIndex , objectModelCoordinates , dummyProjectedCoordinates , faceModelNormals , alternateAppearance );
-
+		polygon.initialize( object2model , null , object , face , alternateAppearance );
 		_polygons.add( polygon );
 	}
 
@@ -280,7 +262,7 @@ public class BSPTree
 		final int      vertexCount          = polygon._vertexCount;
 		final double[] viewCoordinates      = new double[ vertexCount * 3 ];
 		final int[]    projectedCoordinates = new int[ vertexCount * 2 ];
-		final Vector3D viewNormal           = model2view.multiply( Vector3D.INIT.set( polygon._planeNormalX , polygon._planeNormalY , polygon._planeNormalZ ) );
+		final Vector3D viewNormal           = model2view.transform( Vector3D.INIT.set( polygon._planeNormalX , polygon._planeNormalY , polygon._planeNormalZ ) );
 
 		for ( int j = 0 ; j < vertexCount ; j++ )
 		{
@@ -288,7 +270,7 @@ public class BSPTree
 			y = polygon._viewY[ j ];
 			z = polygon._viewZ[ j ];
 
-			final Vector3D translated = model2view.multiply( Vector3D.INIT.set( x , y , z ) );
+			final Vector3D translated = model2view.transform( Vector3D.INIT.set( x , y , z ) );
 
 			viewCoordinates[ j * 3     ] = translated.x;
 			viewCoordinates[ j * 3 + 1 ] = translated.y;
@@ -329,12 +311,12 @@ public class BSPTree
 				maxZ = z     > maxZ ? z     : maxZ;
 			}
 
-			result._minX = minX;
-			result._maxX = maxX;
-			result._minY = minY;
-			result._maxY = maxY;
-			result._minZ = minZ;
-			result._maxZ = maxZ;
+			result._minImageX = minX;
+			result._maxImageX = maxX;
+			result._minImageY = minY;
+			result._maxImageY = maxY;
+			result._minViewZ = minZ;
+			result._maxViewZ = maxZ;
 
 			final double x0 = result._viewX[ 0 ];
 			final double y0 = result._viewY[ 0 ];

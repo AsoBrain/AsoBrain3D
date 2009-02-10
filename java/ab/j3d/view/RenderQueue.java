@@ -240,27 +240,28 @@ public final class RenderQueue
 	 */
 	public void enqueueObject( final Projector projector , final boolean backfaceCulling , final Matrix3D object2view , final Object3D object , final boolean alternateAppearance )
 	{
-		final int      faceCount            = object.getFaceCount();
-		final int      vertexCount          = object.getVertexCount();
-		final double[] vertexCoordinates    = ( _tmpVertexCoordinates    = object.getVertexCoordinates( object2view , _tmpVertexCoordinates ) );
-		final int[]    projectedCoordinates = ( _tmpProjectedCoordinates = projector.project( vertexCoordinates , _tmpProjectedCoordinates , vertexCount ) );
-		final double[] faceNormals          = ( _tmpFaceNormals          = object.getFaceNormals( object2view , _tmpFaceNormals     ) );
-//		final double[] vertexNormals        = ( _tmpVertexNormals        = object.getVertexNormals( object2view , _tmpVertexNormals ) );
+		final int imageWidth  = projector.getImageWidth();
+		final int imageHeight = projector.getImageHeight();
 
+		final int faceCount = object.getFaceCount();
 		for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
 		{
 			final Face3D face = object.getFace( faceIndex );
 
-			if ( projector.inViewVolume( face , vertexCoordinates ) )
-			{
-				final RenderedPolygon polygon = allocatePolygon( face.getVertexCount() );
-				polygon.initialize( object , faceIndex , vertexCoordinates , projectedCoordinates , faceNormals , alternateAppearance );
+			final RenderedPolygon polygon = allocatePolygon( face.getVertexCount() );
+			polygon.initialize( object2view , projector , object , face , alternateAppearance );
 
+			if ( polygon.inViewVolume( imageWidth, imageHeight ) && // View volume culling
+			     ( !backfaceCulling || face.isTwoSided() || !polygon.isBackface() ) ) // Backface removal
+			{
 				//@FIXME: Debugging variable. Should be removed when the renderqueue works properly.
 				polygon._name = String.valueOf( object.getTag() );
 
-				if ( !backfaceCulling || face.isTwoSided() || !polygon.isBackface() ) // Perform backface removal
-					enqueuePolygon( polygon );
+				enqueuePolygon( polygon );
+			}
+			else
+			{
+				releasePolygon( polygon );
 			}
 		}
 	}
@@ -280,11 +281,11 @@ public final class RenderQueue
 			stop = true;
 		}
 
-		final double z = polygon._minZ;
+		final double z = polygon._minViewZ;
 		for ( int pointer = 0 ; pointer < _queue.size() && !stop ; pointer++ )
 		{
 			final RenderedPolygon other = _queue.get( pointer );
-			final double otherZ = other._minZ;
+			final double otherZ = other._minViewZ;
 
 			if ( otherZ > z )
 			{
@@ -322,11 +323,11 @@ public final class RenderQueue
 				stop = true;
 			}
 
-			final double z = polygon._minZ;
+			final double z = polygon._minViewZ;
 			for ( int pointer = 0 ; pointer < result.size() && !stop ; pointer++ )
 			{
 				final RenderedPolygon other = result.get( pointer );
-				final double otherZ = other._minZ;
+				final double otherZ = other._minViewZ;
 
 				if ( otherZ > z )
 				{
@@ -491,11 +492,11 @@ public final class RenderQueue
 				 * direction or y direction. If there is no overlap, there is no
 				 * need for any sorting and the next polygon can be tested.
 				 */
-				if ( other._minZ < polygon._maxZ )
+				if ( other._minViewZ < polygon._maxViewZ )
 				{
-					if ( other._minX < polygon._maxX && other._maxX > polygon._minX )
+					if ( other._minImageX < polygon._maxImageX && other._maxImageX > polygon._minImageX )
 					{
-						if ( other._minY < polygon._maxY && other._maxY > polygon._minY )
+						if ( other._minImageY < polygon._maxImageY && other._maxImageY > polygon._minImageY )
 						{
 							/**
 							 * If there is an overlap, the two polygons are
@@ -565,7 +566,7 @@ public final class RenderQueue
 								final RenderedPolygon[] clipped = clip( polygon , other );
 								final RenderedPolygon clip;
 
-								if ( clipped[ 0 ]._minZ == polygon._minZ )
+								if ( clipped[ 0 ]._minViewZ == polygon._minViewZ )
 								{
 									polygon = clipped[ 0 ];
 									clip = clipped[ 1 ];
@@ -576,7 +577,7 @@ public final class RenderQueue
 									clip = clipped[ 0 ];
 								}
 
-								final double z = clip._minZ;
+								final double z = clip._minViewZ;
 								boolean stop = false;
 								int pointer;
 								for ( pointer = 0 ; pointer < tempQueue.size() && !stop ; pointer++ )
@@ -584,7 +585,7 @@ public final class RenderQueue
 									if ( tempQueue.get( pointer ) != null )
 									{
 										final RenderedPolygon rp = tempQueue.get( pointer );
-										if ( rp._minZ > z )
+										if ( rp._minViewZ > z )
 										{
 											tempQueue.add( pointer , clip );
 											stop = true;
@@ -883,12 +884,12 @@ public final class RenderQueue
 			minY = projY   < minY ? projY   : minY;
 			maxY = projY   > maxY ? projY   : maxY;
 		}
-		front._minZ                = minZ;
-		front._maxZ                = maxZ;
-		front._minX                = minX;
-		front._maxX                = maxX;
-		front._minY                = minY;
-		front._maxY                = maxY;
+		front._minViewZ = minZ;
+		front._maxViewZ = maxZ;
+		front._minImageX = minX;
+		front._maxImageX = maxX;
+		front._minImageY = minY;
+		front._maxImageY = maxY;
 		front._alternateAppearance = polygon._alternateAppearance;
 		front._object              = polygon._object;
 		front._planeConstant       = polygon._planeConstant;
@@ -924,12 +925,12 @@ public final class RenderQueue
 			minY = projY   < minY ? projY   : minY;
 			maxY = projY   > maxY ? projY   : maxY;
 		}
-		back._minZ                = minZ;
-		back._maxZ                = maxZ;
-		back._minX                = minX;
-		back._maxX                = maxX;
-		back._minY                = minY;
-		back._maxY                = maxY;
+		back._minViewZ = minZ;
+		back._maxViewZ = maxZ;
+		back._minImageX = minX;
+		back._maxImageX = maxX;
+		back._minImageY = minY;
+		back._maxImageY = maxY;
 		back._alternateAppearance = polygon._alternateAppearance;
 		back._object              = polygon._object;
 		back._planeConstant       = polygon._planeConstant;

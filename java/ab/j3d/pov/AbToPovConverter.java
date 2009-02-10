@@ -171,22 +171,21 @@ public final class AbToPovConverter
 	/**
 	 * This method constructs a {@link PovBox} from a {@link Box3D} object.
 	 *
-	 * @param   transform   Transform to apply to node.
+	 * @param   box2wcs     Transform to apply to node.
 	 * @param   box         The {@link Box3D} to be converted.
 	 *
 	 * @return  The resulting {@link PovGeometry} object.
 	 */
-	public PovGeometry convertBox3D( final Matrix3D transform , final Box3D box )
+	public PovGeometry convertBox3D( final Matrix3D box2wcs , final Box3D box )
 	{
 		final PovGeometry result;
 
 		if ( containsMultipleMaterialsOrMaps( box ) )
 		{
-			result = convertObject3D( transform , box );
+			result = convertObject3D( box2wcs , box );
 		}
 		else
 		{
-			final Matrix3D boxTransform = box.getTransform();
 			final Face3D   anyFace      = box.getFace( 0 );
 
 			final String     name    = ( box.getTag() != null ) ? String.valueOf( box.getTag() ) : null;
@@ -195,7 +194,7 @@ public final class AbToPovConverter
 			final PovTexture texture = convertMaterialToPovTexture( anyFace.material );
 
 			result = new PovBox( name , v1 , v2 , texture );
-			result.setTransform( new PovMatrix( boxTransform.multiply( transform ) ) );
+			result.setTransform( new PovMatrix( box2wcs ) );
 		}
 
 		return result;
@@ -338,7 +337,7 @@ public final class AbToPovConverter
 		for ( int vertexCoordinateIndex = 0 ; vertexCoordinateIndex < vertexCoordinateCount ; vertexCoordinateIndex++ )
 		{
 			final int vi3 = vertexCoordinateIndex * 3;
-			vertexVectors.add( new PovVector( transform.multiply( vertexCoordinates[ vi3 ] , vertexCoordinates[ vi3 + 1 ] , vertexCoordinates[ vi3 + 2 ] ) ) );
+			vertexVectors.add( new PovVector( transform.transform( vertexCoordinates[ vi3 ] , vertexCoordinates[ vi3 + 1 ] , vertexCoordinates[ vi3 + 2 ] ) ) );
 		}
 
 		result.setVertexVectors( vertexVectors );

@@ -47,56 +47,6 @@ public final class TestObject3D
 	private static final String CLASS_NAME = TestObject3D.class.getName();
 
 	/**
-	 * Test {@link Object3D#getFaceNormals} method.
-	 */
-	public static void testGetFaceNormals()
-	{
-		System.out.println( CLASS_NAME + ".testGetFaceNormals" );
-
-		final Vector3D lfb = Vector3D.INIT.set( -1.0 , -1.0 , -1.0 );
-		final Vector3D rfb = Vector3D.INIT.set(  1.0 , -1.0 , -1.0 );
-		final Vector3D rbb = Vector3D.INIT.set(  1.0 ,  1.0 , -1.0 );
-		final Vector3D lbb = Vector3D.INIT.set( -1.0 ,  1.0 , -1.0 );
-		final Vector3D lft = Vector3D.INIT.set( -1.0 , -1.0 ,  1.0 );
-		final Vector3D rft = Vector3D.INIT.set(  1.0 , -1.0 ,  1.0 );
-		final Vector3D rbt = Vector3D.INIT.set(  1.0 ,  1.0 ,  1.0 );
-		final Vector3D lbt = Vector3D.INIT.set( -1.0 ,  1.0 ,  1.0 );
-
-		final Object3DBuilder builder = new Object3DBuilder();
-		/* top    */ builder.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , false , false );
-		/* bottom */ builder.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , null , false , false );
-		/* front  */ builder.addFace( new Vector3D[] { lfb , lft , rft , rfb } , null , false , false );
-		/* back   */ builder.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , null , false , false );
-		/* left   */ builder.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , false , false );
-		/* right  */ builder.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , false , false );
-		final Object3D cube = builder.getObject3D();
-
-		assertEquals( "Normal(top).x"    ,  0.0 , cube.getFace( 0 ).normal.x , 0.001 );
-		assertEquals( "Normal(top).y"    ,  0.0 , cube.getFace( 0 ).normal.y , 0.001 );
-		assertEquals( "Normal(top).z"    ,  1.0 , cube.getFace( 0 ).normal.z , 0.001 );
-
-		assertEquals( "Normal(bottom).x" ,  0.0 , cube.getFace( 1 ).normal.x , 0.001 );
-		assertEquals( "Normal(bottom).y" ,  0.0 , cube.getFace( 1 ).normal.y , 0.001 );
-		assertEquals( "Normal(bottom).z" , -1.0 , cube.getFace( 1 ).normal.z , 0.001 );
-
-		assertEquals( "Normal(front).x"  ,  0.0 , cube.getFace( 2 ).normal.x , 0.001 );
-		assertEquals( "Normal(front).y"  , -1.0 , cube.getFace( 2 ).normal.y , 0.001 );
-		assertEquals( "Normal(front).z"  ,  0.0 , cube.getFace( 2 ).normal.z , 0.001 );
-
-		assertEquals( "Normal(back).x"   ,  0.0 , cube.getFace( 3 ).normal.x , 0.001 );
-		assertEquals( "Normal(back).y"   ,  1.0 , cube.getFace( 3 ).normal.y , 0.001 );
-		assertEquals( "Normal(back).z"   ,  0.0 , cube.getFace( 3 ).normal.z , 0.001 );
-
-		assertEquals( "Normal(left).x"   , -1.0 , cube.getFace( 4 ).normal.x , 0.001 );
-		assertEquals( "Normal(left).y"   ,  0.0 , cube.getFace( 4 ).normal.y , 0.001 );
-		assertEquals( "Normal(left).z"   ,  0.0 , cube.getFace( 4 ).normal.z , 0.001 );
-
-		assertEquals( "Normal(right).x"  ,  1.0 , cube.getFace( 5 ).normal.x , 0.001 );
-		assertEquals( "Normal(right).y"  ,  0.0 , cube.getFace( 5 ).normal.y , 0.001 );
-		assertEquals( "Normal(right).z"  ,  0.0 , cube.getFace( 5 ).normal.z , 0.001 );
-	}
-
-	/**
 	 * Test the {@link Object3D#getIntersectionsWithRay} method.
 	 *
 	 * @throws  Exception if the test fails.
@@ -131,7 +81,7 @@ public final class TestObject3D
 		Object             tag1              = intersection.getObjectID();
 		Vector3D           intersectionPoint = intersection.getIntersectionPoint();
 		Matrix3D           object2world      = intersection.getObject2world();
-		Vector3D           local             = object2world.inverseMultiply( intersectionPoint );
+		Vector3D           local             = object2world.inverseTransform( intersectionPoint );
 
 		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
 		assertTrue( "The object was not intersected at the right place" , local.almostEquals( 0.0 , 0.0 , 0.0 ) );
@@ -144,7 +94,7 @@ public final class TestObject3D
 		tag1              = intersection.getObjectID();
 		intersectionPoint = intersection.getIntersectionPoint();
 		object2world       = intersection.getObject2world();
-		local             = object2world.inverseMultiply( intersectionPoint );
+		local             = object2world.inverseTransform( intersectionPoint );
 
 		assertEquals( "The wrong object was intersected" , "Plane" , tag1);
 		assertTrue( "The object was not intersected at the right place" , intersectionPoint.almostEquals( -25.0 , 0.0 , -25.0 ) );
@@ -195,33 +145,7 @@ public final class TestObject3D
 	}
 
 	/**
-	 * Test {@link Object3D#getVertexIndex(double, double, double)} method.
-	 */
-	public static void testGetVertexIndex()
-	{
-		System.out.println( CLASS_NAME + ".testGetVertexIndex" );
-
-		final Object3D obj3d = new Object3D();
-		assertEquals( "[pre] totalVertexCount" , 0 , obj3d.getVertexCount() );
-
-		assertEquals( "test1 - vertexIndex"      , 0 , obj3d.getVertexIndex( 0.0 , 0.0 , 0.0 ) );
-		assertEquals( "test1 - totalVertexCount" , 1 , obj3d.getVertexCount() );
-
-		assertEquals( "test2 - vertexIndex"      , 0 , obj3d.getVertexIndex( 0.0 , 0.0 , 0.0 ) );
-		assertEquals( "test2 - totalVertexCount" , 1 , obj3d.getVertexCount() );
-
-		assertEquals( "test3 - vertexIndex"      , 1 , obj3d.getVertexIndex( 1.0 , 0.0 , 0.0 ) );
-		assertEquals( "test3 - totalVertexCount" , 2 , obj3d.getVertexCount() );
-
-		assertEquals( "test4 - vertexIndex"      , 2 , obj3d.getVertexIndex( 0.0 , 1.0 , 0.0 ) );
-		assertEquals( "test4 - totalVertexCount" , 3 , obj3d.getVertexCount() );
-
-		assertEquals( "test5 - vertexIndex"      , 3 , obj3d.getVertexIndex( 0.0 , 0.0 , 1.0 ) );
-		assertEquals( "test5 - totalVertexCount" , 4 , obj3d.getVertexCount() );
-	}
-
-	/**
-	 * Test {@link Object3D#getVertexNormals} method.
+	 * Test {@link Object3D#getVertexNormals()} method.
 	 */
 	public static void testGetVertexNormals()
 	{
@@ -247,7 +171,7 @@ public final class TestObject3D
 
 		final double e = Math.sqrt( 3.0 ) / 3.0;
 
-		final double[] vertexNormals = cube.getVertexNormals( null , null );
+		final double[] vertexNormals = cube.getVertexNormals();
 
 		assertEquals( "lft.x" , -e , vertexNormals[  0 ] , 0.001 );
 		assertEquals( "lft.y" , -e , vertexNormals[  1 ] , 0.001 );

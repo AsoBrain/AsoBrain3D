@@ -57,11 +57,6 @@ import com.numdata.oss.MathTools;
 public final class Painter
 {
 	/**
-	 * This is used as cache storage for {@link #paintObject}.
-	 */
-	private static double[] paintVertexCoordinatesCache;
-
-	/**
 	 * Utility class is not supposed to be instantiated.
 	 */
 	private Painter()
@@ -324,9 +319,6 @@ public final class Painter
 			/*
 			 * If the array is to small, create a larger one.
 			 */
-			final double[] vertexCoordinates = object.getVertexCoordinates( object2view , paintVertexCoordinatesCache );
-			paintVertexCoordinatesCache = vertexCoordinates;
-
 			int maxVertexCount = 0;
 			for ( int faceIndex = 0; faceIndex < faceCount; faceIndex++ )
 			{
@@ -371,7 +363,7 @@ public final class Painter
 					faceFillPaint = fillPaint;
 				}
 
-				paintFace( g , gTransform , face , outlineColor , faceFillPaint , vertexCoordinates , xs , ys );
+				paintFace( g , gTransform , object2view , face , outlineColor , faceFillPaint , xs , ys );
 			}
 		}
 	}
@@ -414,8 +406,8 @@ public final class Painter
 
 			final Matrix3D object2graphics = viewBase.multiply( gTransform );
 
-			final Vector3D v1 = object2graphics.multiply( bounds.getMinX() , bounds.getMinY() , 0.0 );
-			final Vector3D v2 = object2graphics.multiply( bounds.getMaxX() , bounds.getMaxY() , object.extrusion.z  );
+			final Vector3D v1 = object2graphics.transform( bounds.getMinX() , bounds.getMinY() , 0.0 );
+			final Vector3D v2 = object2graphics.transform( bounds.getMaxX() , bounds.getMaxY() , object.extrusion.z  );
 
 			final double minX = Math.min( v1.x , v2.x );
 			final double minY = Math.min( v1.y , v2.y );
@@ -742,16 +734,16 @@ public final class Painter
 	 *
 	 * @param   g                   Graphics2D context.
 	 * @param   gTransform          Projection transform for Graphics2D context (3D->2D, pan, sale).
+	 * @param   object2view         Transforms object to view coordinates.
 	 * @param   face                Face to paint.
 	 * @param   outlineColor        Paint to use for face outlines (<code>null</code> to disable drawing).
 	 * @param   fillPaint           Paint to use for filling faces (<code>null</code> to disable drawing).
-	 * @param   vertexCoordinates   Coordinates of vertices (after view transform is applied).
 	 * @param   xs                  Temporary storage for 2D coordinates.
 	 * @param   ys                  Temporary storage for 2D coordinates.
 	 *
 	 * @see     #paintNode
 	 */
-	private static void paintFace( final Graphics2D g , final Matrix3D gTransform , final Face3D face , final Color outlineColor , final Paint fillPaint , final double[] vertexCoordinates , final int[] xs , final int[] ys )
+	private static void paintFace( final Graphics2D g , final Matrix3D gTransform , final Matrix3D object2view , final Face3D face , final Color outlineColor , final Paint fillPaint , final int[] xs , final int[] ys )
 	{
 		final List<Vertex> vertices = face.vertices;
 		final int vertexCount = vertices.size();
@@ -762,11 +754,10 @@ public final class Painter
 			for ( int p = 0 ; p < vertexCount ; p++ )
 			{
 				final Vertex vertex = vertices.get( p );
-				final int vi = vertex.vertexCoordinateIndex * 3;
 
-				final double x  = vertexCoordinates[ vi ];
-				final double y  = vertexCoordinates[ vi + 1 ];
-				final double z  = vertexCoordinates[ vi + 2 ];
+				final double x  = object2view.transformX( vertex.point );
+				final double y  = object2view.transformY( vertex.point );
+				final double z  = object2view.transformZ( vertex.point );
 
 				final int ix = (int)gTransform.transformX( x , y , z );
 				final int iy = (int)gTransform.transformY( x , y , z );
