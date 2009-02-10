@@ -728,7 +728,7 @@ class AreaTriangulator
 
 			for ( final double[] point : _points )
 			{
-				result.add( transform.multiply( Vector3D.INIT.set( point[ 0 ] , point[ 1 ] , 0.0 ) ) );
+				result.add( transform.transform( Vector3D.INIT.set( point[ 0 ] , point[ 1 ] , 0.0 ) ) );
 			}
 
 			return result;

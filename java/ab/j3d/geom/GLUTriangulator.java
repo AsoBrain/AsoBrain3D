@@ -459,7 +459,7 @@ class GLUTriangulator
 				result = new ArrayList<Vector3D>( _vertices.size() );
 				for ( final Vector3D vertex : _vertices )
 				{
-					result.add( transform.multiply( vertex ) );
+					result.add( transform.transform( vertex ) );
 				}
 			}
 

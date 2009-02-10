@@ -180,7 +180,7 @@ public class DefaultViewControl
 								final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( plane2wcs , subPlaneControl.isPlaneTwoSided() , event.getPointerRay() );
 								if ( wcsPoint != null )
 								{
-									final Vector3D planePoint = plane2wcs.inverseMultiply( wcsPoint );
+									final Vector3D planePoint = plane2wcs.inverseTransform( wcsPoint );
 
 									if ( ( planePoint.x >= 0.0 ) && ( planePoint.y >= 0.0 ) && ( planePoint.x <= subPlaneControl.getPlaneWidth() ) && ( planePoint.y <= subPlaneControl.getPlaneHeight() ) )
 									{
@@ -238,7 +238,7 @@ public class DefaultViewControl
 					final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( plane2wcs , subPlaneControl.isPlaneTwoSided() , event.getPointerRay() );
 					if ( wcsPoint != null )
 					{
-						final Vector3D planePoint = plane2wcs.inverseMultiply( wcsPoint );
+						final Vector3D planePoint = plane2wcs.inverseTransform( wcsPoint );
 						subPlaneControl.mouseDragged( event , node , planePoint.x , planePoint.y );
 						updateViews();
 					}
@@ -275,7 +275,7 @@ public class DefaultViewControl
 					final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( plane2wcs , subPlaneControl.isPlaneTwoSided() , event.getPointerRay() );
 					if ( wcsPoint != null )
 					{
-						final Vector3D planePoint = plane2wcs.inverseMultiply( wcsPoint );
+						final Vector3D planePoint = plane2wcs.inverseTransform( wcsPoint );
 						subPlaneControl.mouseReleased( event , node , planePoint.x , planePoint.y );
 						updateViews();
 					}

@@ -164,6 +164,6 @@ public abstract class AbstractPlaneControl
 	public Vector3D getPlaneDelta()
 	{
 		final Matrix3D plane2wcs = getPlane2Wcs();
-		return plane2wcs.inverseMultiply( getWcsDelta() );
+		return plane2wcs.inverseTransform( getWcsDelta() );
 	}
 }

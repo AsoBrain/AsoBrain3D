@@ -164,7 +164,7 @@ public class Mesh3D
 			final Vector3D ocsPoint = GeometryTools.getIntersectionBetweenRayAndPolygon( face , ocsRay );
 			if ( ocsPoint != null )
 			{
-				final Vector3D wcsPoint = object2world.multiply( ocsPoint );
+				final Vector3D wcsPoint = object2world.transform( ocsPoint );
 
 				final Face3DIntersection intersection = new Face3DIntersection( objectID , object2world , object , face , ray , wcsPoint );
 				if ( sortResult )

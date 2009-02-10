@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Peter S. Heijnen
+ * Copyright (C) 1999-2009 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -422,7 +422,7 @@ public class TestMatrix3D
 			final Vector3D   expected = Vector3D.INIT.set( test[ 2 ][ 0 ] , test[ 2 ][ 1 ] , test[ 2 ][ 2 ] );
 
 			final Matrix3D matrix = INIT.rotateX( Math.toRadians( deg ) );
-			final Vector3D actual = matrix.multiply( vector );
+			final Vector3D actual = matrix.transform( vector );
 
 			if ( !expected.almostEquals( actual ) )
 			{
@@ -490,7 +490,7 @@ public class TestMatrix3D
 			final Vector3D   expected = Vector3D.INIT.set( test[ 2 ][ 0 ] , test[ 2 ][ 1 ] , test[ 2 ][ 2 ] );
 
 			final Matrix3D matrix = INIT.rotateY( Math.toRadians( deg ) );
-			final Vector3D actual = matrix.multiply( vector );
+			final Vector3D actual = matrix.transform( vector );
 
 			if ( !expected.almostEquals( actual ) )
 			{
@@ -558,7 +558,7 @@ public class TestMatrix3D
 			final Vector3D   expected = Vector3D.INIT.set( test[ 2 ][ 0 ] , test[ 2 ][ 1 ] , test[ 2 ][ 2 ] );
 
 			final Matrix3D matrix = INIT.rotateZ( Math.toRadians( deg ) );
-			final Vector3D actual = matrix.multiply( vector );
+			final Vector3D actual = matrix.transform( vector );
 
 			if ( !expected.almostEquals( actual ) )
 			{

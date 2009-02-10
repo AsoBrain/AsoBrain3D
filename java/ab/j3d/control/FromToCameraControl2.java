@@ -357,18 +357,18 @@ public class FromToCameraControl2
 
 		final Vector3D orientationAxis = Vector3D.INIT.set( 0.0 , 0.0 , 1.0 );
 		final Matrix3D orientation     = Matrix3D.getRotationTransform( Vector3D.INIT , orientationAxis , deltaX );
-		final Vector3D orientedUp      = orientation.multiply( up );
+		final Vector3D orientedUp      = orientation.transform( up );
 
 		Vector3D delta = from.minus( to );
-		delta = orientation.multiply( delta );
+		delta = orientation.transform( delta );
 
 		Vector3D elevationAxis = Vector3D.cross( delta , orientedUp );
 		elevationAxis = elevationAxis.normalize();
 
 		final Matrix3D elevation = Matrix3D.getRotationTransform( Vector3D.INIT , elevationAxis , deltaY );
-		final Vector3D newUp  = elevation.multiply( orientedUp );
+		final Vector3D newUp  = elevation.transform( orientedUp );
 
-		Vector3D newFrom = elevation.multiply( delta );
+		Vector3D newFrom = elevation.transform( delta );
 		newFrom = newFrom.plus( to );
 
 		look( newFrom , to , newUp );

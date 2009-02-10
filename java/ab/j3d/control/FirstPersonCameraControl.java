@@ -483,7 +483,7 @@ public class FirstPersonCameraControl
 		final Vector3D elevation = upPrimary.multiply( distance * deltaY / 100.0 );
 
 		Vector3D newto = to;
-		newto = rotation.multiply( newto );
+		newto = rotation.transform( newto );
 		newto = newto.plus( elevation );
 		setTo( newto );
 	}
@@ -509,7 +509,7 @@ public class FirstPersonCameraControl
 		final Vector3D elevation = upPrimary.multiply( distance * deltaY / 100.0 );
 
 		Vector3D newFrom = from;
-		newFrom = rotation.multiply( newFrom );
+		newFrom = rotation.transform( newFrom );
 		newFrom = newFrom.plus( elevation );
 		setFrom( newFrom );
 	}

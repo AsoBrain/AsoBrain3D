@@ -304,7 +304,7 @@ public class JOGLRenderer
 
 	protected void renderObjectBegin( final Matrix3D object2world , final Object3D object , final RenderStyle objectStyle )
 	{
-		_lightPositionRelativeToObject = ( _dominantLightPosition != null ) ? object2world.inverseMultiply( _dominantLightPosition ) : null;
+		_lightPositionRelativeToObject = ( _dominantLightPosition != null ) ? object2world.inverseTransform( _dominantLightPosition ) : null;
 		_gl.glPushMatrix();
 		JOGLTools.glMultMatrixd( _gl , object2world );
 	}

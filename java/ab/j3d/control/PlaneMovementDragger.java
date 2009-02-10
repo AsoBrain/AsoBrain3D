@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2006
+ * (C) Copyright Numdata BV 2006-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -129,7 +129,7 @@ public class PlaneMovementDragger
 		final Matrix3D object2world         = intersection.getObject2world();
 		final Matrix3D view2world           = world2view.inverse();
 
-		final Vector3D wcsObjectOrigin      = object2world.multiply( Vector3D.INIT );
+		final Vector3D wcsObjectOrigin      = object2world.transform( Vector3D.INIT );
 		final Vector3D wcsIntersectionPoint = intersection.getIntersectionPoint();
 
 		_view2world     = view2world;
@@ -180,7 +180,7 @@ public class PlaneMovementDragger
 		Vector3D result = _modelEnd;
 		if ( result == null )
 		{
-			result = _model2world.inverseMultiply( _wcsEnd );
+			result = _model2world.inverseTransform( _wcsEnd );
 			_modelEnd = result;
 		}
 
@@ -218,7 +218,7 @@ public class PlaneMovementDragger
 		Vector3D result = _modelStart;
 		if ( result == null )
 		{
-			result = _model2world.inverseMultiply( _wcsStart );
+			result = _model2world.inverseTransform( _wcsStart );
 			_modelStart = result;
 		}
 

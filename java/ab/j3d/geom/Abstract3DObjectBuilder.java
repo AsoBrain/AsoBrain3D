@@ -27,6 +27,7 @@ import java.util.List;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
+import ab.j3d.model.Scene;
 
 import com.numdata.oss.MathTools;
 
@@ -576,7 +577,7 @@ public abstract class Abstract3DObjectBuilder
 			final int[] vertexIndices;
 			if ( MathTools.almostEqual( radius , 0.0 ) )
 			{
-				final Vector3D point = ( xform != null ) ? xform.multiply( 0.0 , 0.0 , z ) : Vector3D.INIT.set( 0.0 , 0.0 , z );
+				final Vector3D point = ( xform != null ) ? xform.transform( 0.0 , 0.0 , z ) : Vector3D.INIT.set( 0.0 , 0.0 , z );
 				vertexIndices = new int[] { getVertexIndex( point ) };
 			}
 			else
@@ -590,7 +591,7 @@ public abstract class Abstract3DObjectBuilder
 					final double x     =  Math.sin( angle ) * radius;
 					final double y     = -Math.cos( angle ) * radius;
 
-					final Vector3D point = ( xform != null ) ? xform.multiply( x , y , z ) : Vector3D.INIT.set( x , y , z );
+					final Vector3D point = ( xform != null ) ? xform.transform( x , y , z ) : Vector3D.INIT.set( x , y , z );
 					vertexIndices[ step ] = getVertexIndex( point );
 				}
 
@@ -675,7 +676,7 @@ public abstract class Abstract3DObjectBuilder
 		final boolean hasExtrusion  = !MathTools.almostEqual( ex , 0.0 ) || !MathTools.almostEqual( ey , 0.0 ) || !MathTools.almostEqual( ez , 0.0 );
 		final boolean flipExtrusion = flipNormals ^ ( ez < 0.0 );
 
-		final UVMap uvMap = new BoxUVMap( 0.001 ); // @FIXME Retrieve model units instead of assuming millimeters.
+		final UVMap uvMap = new BoxUVMap( Scene.MM , transform ); // @FIXME Retrieve model units instead of assuming millimeters.
 
 		if ( !caps || hasExtrusion )
 		{
@@ -698,12 +699,12 @@ public abstract class Abstract3DObjectBuilder
 						final double shapeX = coords[ 0 ];
 						final double shapeY = coords[ 1 ];
 
-						lastPoint = transform.multiply( shapeX , shapeY , 0.0 );
+						lastPoint = transform.transform( shapeX , shapeY , 0.0 );
 						moveToPoint = lastPoint;
 
 						if ( hasExtrusion )
 						{
-							lastExtrudedPoint = transform.multiply( shapeX + ex , shapeY + ey , ez );
+							lastExtrudedPoint = transform.transform( shapeX + ex , shapeY + ey , ez );
 							moveToExtrudedPoint = lastExtrudedPoint;
 						}
 						break;
@@ -714,13 +715,13 @@ public abstract class Abstract3DObjectBuilder
 						final double shapeX = coords[ 0 ];
 						final double shapeY = coords[ 1 ];
 
-						final Vector3D point = transform.multiply( shapeX , shapeY , 0.0 );
+						final Vector3D point = transform.transform( shapeX , shapeY , 0.0 );
 
 						if ( ( lastPoint != null ) && !lastPoint.equals( point ) )
 						{
 							if ( hasExtrusion )
 							{
-								final Vector3D extrudedPoint = transform.multiply( shapeX + ex , shapeY + ey , ez );
+								final Vector3D extrudedPoint = transform.transform( shapeX + ex , shapeY + ey , ez );
 
 								if ( flipExtrusion )
 								{
@@ -839,9 +840,9 @@ public abstract class Abstract3DObjectBuilder
 
 		for ( final int[] triangle : triangulation.getTriangles() )
 		{
-			points[ 0 ] = vertices.get( triangle[ 0 ] );
+			points[ 2 ] = vertices.get( triangle[ 0 ] );
 			points[ 1 ] = vertices.get( triangle[ 1 ] );
-			points[ 2 ] = vertices.get( triangle[ 2 ] );
+			points[ 0 ] = vertices.get( triangle[ 2 ] );
 
 			addFace( points , material , uvMap , flipTexture , false , twoSided );
 		}

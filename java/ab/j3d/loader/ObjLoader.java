@@ -223,7 +223,7 @@ public class ObjLoader
 						final double z = Double.parseDouble( tokens[ 3 ] );
 //						final double w = ( argCount >= 4 ) ? Double.parseDouble( tokens[ 4 ] ) : 1.0;
 
-						vertices.add( transform.multiply( x , y , z ) );
+						vertices.add( transform.transform( x , y , z ) );
 					}
 					/*
 					 * vt u v w

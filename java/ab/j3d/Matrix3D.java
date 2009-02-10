@@ -604,82 +604,6 @@ public final class Matrix3D
 	}
 
 	/**
-	 * Transform a vector using the inverse of this transform.
-	 *
-	 * @param   vector  Vector to transform.
-	 *
-	 * @return  Resulting vector.
-	 */
-	public Vector3D inverseMultiply( final Vector3D vector )
-	{
-		final double tx = vector.x - xo;
-		final double ty = vector.y - yo;
-		final double tz = vector.z - zo;
-
-		return vector.set( tx * xx + ty * yx + tz * zx ,
-		                   tx * xy + ty * yy + tz * zy ,
-		                   tx * xz + ty * yz + tz * zz );
-	}
-
-	/**
-	 * Transform a vector using the inverse of this transform.
-	 *
-	 * @param   x       X-value of vector.
-	 * @param   y       Y-value of vector.
-	 * @param   z       Z-value of vector.
-	 *
-	 * @return  Resulting vector.
-	 */
-	public Vector3D inverseMultiply( final double x , final double y , final double z )
-	{
-		final double tz = z - zo;
-		final double ty = y - yo;
-		final double tx = x - xo;
-
-		return Vector3D.INIT.set( tx * xx + ty * yx + tz * zx ,
-		                          tx * xy + ty * yy + tz * zy ,
-		                          tx * xz + ty * yz + tz * zz );
-	}
-
-	/**
-	 * Rotate a (directional) vector using the inverse of this transform. This
-	 * multiplies the vector with the inverse of this matrix, excluding the
-	 * translational components.
-	 *
-	 * @param   vector  Directional vector to rotate.
-	 *
-	 * @return  Rotated vector.
-	 */
-	public Vector3D inverseRotate( final Vector3D vector )
-	{
-		final double x = vector.x;
-		final double y = vector.y;
-		final double z = vector.z;
-
-		return vector.set( x * xx + y * yx + z * zx ,
-		                   x * xy + y * yy + z * zy ,
-		                   x * xz + y * yz + z * zz );
-	}
-
-	/**
-	 * Rotate a vector using the inverse of this transform. This multiplies the
-	 * vector with the inverse of this matrix, excluding the translational
-	 * components.
-	 *
-	 * @param   x       X component of directional vector to rotate.
-	 * @param   y       Y component of directional vector to rotate.
-	 * @param   z       Z component of directional vector to rotate.
-	 *
-	 * @return  Rotated vector.
-	 */
-	public Vector3D inverseRotate( final double x , final double y , final double z )
-	{
-		return Vector3D.INIT.set( x * xx + y * yx + z * zx ,
-		                          x * xy + y * yy + z * zy ,
-		                          x * xz + y * yz + z * zz );
-	}
-
-	/**
 	 * Translate the transform by the specified vector.
 	 *
 	 * @param   vector  Vector specifying the translation.
@@ -708,69 +632,151 @@ public final class Matrix3D
 	}
 
 	/**
-	 * Transform a box using this transform.
+	 * Execute matrix multiplication between this and another matrix.
 	 *
-	 * @param   box     Box to transform.
-	 *
-	 * @return  Resulting box.
-	 */
-	public Bounds3D multiply( final Bounds3D box )
-	{
-		return box.set( multiply( box.v1 ) , multiply( box.v2 ) );
-	}
-
-	/**
-	 * Execute matrix multiplication between two matrices and set the
-	 * result in this transform.
-	 *
-	 * @param   other   Transform to multiply with.
+	 * @param   other   Matrix to multiply with.
 	 *
 	 * @return  Resulting matrix.
 	 */
 	public Matrix3D multiply( final Matrix3D other )
 	{
-		return set( /* xx */ xx * other.xx + yx * other.xy + zx * other.xz ,
-		            /* xy */ xy * other.xx + yy * other.xy + zy * other.xz ,
-		            /* xz */ xz * other.xx + yz * other.xy + zz * other.xz ,
-		            /* xo */ xo * other.xx + yo * other.xy + zo * other.xz + other.xo ,
-		            /* yx */ xx * other.yx + yx * other.yy + zx * other.yz ,
-		            /* yy */ xy * other.yx + yy * other.yy + zy * other.yz ,
-		            /* yz */ xz * other.yx + yz * other.yy + zz * other.yz ,
-		            /* yo */ xo * other.yx + yo * other.yy + zo * other.yz + other.yo ,
-		            /* zx */ xx * other.zx + yx * other.zy + zx * other.zz ,
-		            /* zy */ xy * other.zx + yy * other.zy + zy * other.zz ,
-		            /* zz */ xz * other.zx + yz * other.zy + zz * other.zz ,
-		            /* zo */ xo * other.zx + yo * other.zy + zo * other.zz + other.zo );
+		return multiply( this , other );
 	}
 
 	/**
-	 * Transform a vector using this transform.
+	 * Execute matrix multiplication between two matrices.
 	 *
-	 * @param   vector  Vector to transform.
+	 * @param   m1  First matrix.
+	 * @param   m2  Second matrix.
 	 *
-	 * @return  Resulting vector.
+	 * @return  Resulting matrix.
 	 */
-	public Vector3D multiply( final Vector3D vector )
+	public static Matrix3D multiply( final Matrix3D m1 , final Matrix3D m2 )
 	{
-		return vector.set( vector.x * xx + vector.y * xy + vector.z * xz + xo ,
-		                   vector.x * yx + vector.y * yy + vector.z * yz + yo ,
-		                   vector.x * zx + vector.y * zy + vector.z * zz + zo );
+		return multiply( m1.xx , m1.xy , m1.xz , m1.xo ,
+		                 m1.yx , m1.yy , m1.yz , m1.yo ,
+		                 m1.zx , m1.zy , m1.zz , m1.zo ,
+		                 m2.xx , m2.xy , m2.xz , m2.xo ,
+		                 m2.yx , m2.yy , m2.yz , m2.yo ,
+		                 m2.zx , m2.zy , m2.zz , m2.zo );
 	}
 
 	/**
-	 * Transform a vector using this transform.
+	 * Execute matrix multiplication between two matrices.
 	 *
-	 * @param   x       X-value of vector.
-	 * @param   y       Y-value of vector.
-	 * @param   z       Z-value of vector.
+	 * @param   xx1     X quotient for X component of first matrix.
+	 * @param   xy1     Y quotient for X component of first matrix.
+	 * @param   xz1     Z quotient for X component of first matrix.
+	 * @param   xo1     Translation of X component of first matrix.
+	 * @param   yx1     X quotient for Y component of first matrix.
+	 * @param   yy1     Y quotient for Y component of first matrix.
+	 * @param   yz1     Z quotient for Y component of first matrix.
+	 * @param   yo1     Translation of Y component of first matrix.
+	 * @param   zx1     X quotient for Z component of first matrix.
+	 * @param   zy1     Y quotient for Z component of first matrix.
+	 * @param   zz1     Z quotient for Z component of first matrix.
+	 * @param   zo1     Translation of Z component of first matrix.
+	 * @param   m2      Second matrix.
 	 *
-	 * @return  Resulting vector.
+	 * @return  Resulting matrix.
 	 */
-	public Vector3D multiply( final double x , final double y , final double z )
+	public static Matrix3D multiply(
+		final double xx1 , final double xy1 , final double xz1 , final double xo1 ,
+		final double yx1 , final double yy1 , final double yz1 , final double yo1 ,
+		final double zx1 , final double zy1 , final double zz1 , final double zo1 ,
+	    final Matrix3D m2 )
 	{
-		return Vector3D.INIT.set( x * xx + y * xy + z * xz + xo ,
-		                          x * yx + y * yy + z * yz + yo ,
-		                          x * zx + y * zy + z * zz + zo );
+		return multiply( xx1 , xy1 , xz1 , xo1,
+		                 yx1 , yy1 , yz1 , yo1 ,
+		                 zx1 , zy1 , zz1 , zo1 ,
+		                 m2.xx , m2.xy , m2.xz , m2.xo ,
+		                 m2.yx , m2.yy , m2.yz , m2.yo ,
+		                 m2.zx , m2.zy , m2.zz , m2.zo );
+	}
+
+	/**
+	 * Execute matrix multiplication between two matrices.
+	 *
+	 * @param   m1      First matrix.
+	 * @param   xx2     X quotient for X component of second matrix.
+	 * @param   xy2     Y quotient for X component of second matrix.
+	 * @param   xz2     Z quotient for X component of second matrix.
+	 * @param   xo2     Translation of X component of second matrix.
+	 * @param   yx2     X quotient for Y component of second matrix.
+	 * @param   yy2     Y quotient for Y component of second matrix.
+	 * @param   yz2     Z quotient for Y component of second matrix.
+	 * @param   yo2     Translation of Y component of second matrix.
+	 * @param   zx2     X quotient for Z component of second matrix.
+	 * @param   zy2     Y quotient for Z component of second matrix.
+	 * @param   zz2     Z quotient for Z component of second matrix.
+	 * @param   zo2     Translation of Z component of second matrix.
+	 *
+	 * @return  Resulting matrix.
+	 */
+	public static Matrix3D multiply(
+	    final Matrix3D m1 ,
+		final double xx2 , final double xy2 , final double xz2 , final double xo2 ,
+		final double yx2 , final double yy2 , final double yz2 , final double yo2 ,
+		final double zx2 , final double zy2 , final double zz2 , final double zo2 )
+	{
+		return multiply( m1.xx , m1.xy , m1.xz , m1.xo ,
+		                 m1.yx , m1.yy , m1.yz , m1.yo ,
+		                 m1.zx , m1.zy , m1.zz , m1.zo ,
+		                 xx2 , xy2 , xz2 , xo2,
+		                 yx2 , yy2 , yz2 , yo2 ,
+		                 zx2 , zy2 , zz2 , zo2 );
+	}
+
+	/**
+	 * Execute matrix multiplication between two matrices.
+	 *
+	 * @param   xx1     X quotient for X component of first matrix.
+	 * @param   xy1     Y quotient for X component of first matrix.
+	 * @param   xz1     Z quotient for X component of first matrix.
+	 * @param   xo1     Translation of X component of first matrix.
+	 * @param   yx1     X quotient for Y component of first matrix.
+	 * @param   yy1     Y quotient for Y component of first matrix.
+	 * @param   yz1     Z quotient for Y component of first matrix.
+	 * @param   yo1     Translation of Y component of first matrix.
+	 * @param   zx1     X quotient for Z component of first matrix.
+	 * @param   zy1     Y quotient for Z component of first matrix.
+	 * @param   zz1     Z quotient for Z component of first matrix.
+	 * @param   zo1     Translation of Z component of first matrix.
+	 * @param   xx2     X quotient for X component of second matrix.
+	 * @param   xy2     Y quotient for X component of second matrix.
+	 * @param   xz2     Z quotient for X component of second matrix.
+	 * @param   xo2     Translation of X component of second matrix.
+	 * @param   yx2     X quotient for Y component of second matrix.
+	 * @param   yy2     Y quotient for Y component of second matrix.
+	 * @param   yz2     Z quotient for Y component of second matrix.
+	 * @param   yo2     Translation of Y component of second matrix.
+	 * @param   zx2     X quotient for Z component of second matrix.
+	 * @param   zy2     Y quotient for Z component of second matrix.
+	 * @param   zz2     Z quotient for Z component of second matrix.
+	 * @param   zo2     Translation of Z component of second matrix.
+	 *
+	 * @return  Resulting matrix.
+	 */
+	public static Matrix3D multiply(
+		final double xx1 , final double xy1 , final double xz1 , final double xo1 ,
+		final double yx1 , final double yy1 , final double yz1 , final double yo1 ,
+		final double zx1 , final double zy1 , final double zz1 , final double zo1 ,
+		final double xx2 , final double xy2 , final double xz2 , final double xo2 ,
+		final double yx2 , final double yy2 , final double yz2 , final double yo2 ,
+		final double zx2 , final double zy2 , final double zz2 , final double zo2 )
+	{
+		return INIT.set( xx1 * xx2 + yx1 * xy2 + zx1 * xz2 ,
+		                 xy1 * xx2 + yy1 * xy2 + zy1 * xz2 ,
+		                 xz1 * xx2 + yz1 * xy2 + zz1 * xz2 ,
+		                 xo1 * xx2 + yo1 * xy2 + zo1 * xz2 + xo2 ,
+		                 xx1 * yx2 + yx1 * yy2 + zx1 * yz2 ,
+		                 xy1 * yx2 + yy1 * yy2 + zy1 * yz2 ,
+		                 xz1 * yx2 + yz1 * yy2 + zz1 * yz2 ,
+		                 xo1 * yx2 + yo1 * yy2 + zo1 * yz2 + yo2 ,
+		                 xx1 * zx2 + yx1 * zy2 + zx1 * zz2 ,
+		                 xy1 * zx2 + yy1 * zy2 + zy1 * zz2 ,
+		                 xz1 * zx2 + yz1 * zy2 + zz1 * zz2 ,
+		                 xo1 * zx2 + yo1 * zy2 + zo1 * zz2 + zo2 );
 	}
 
 	/**
@@ -1140,139 +1146,33 @@ public final class Matrix3D
 	}
 
 	/**
-	 * Rotate a (directional) vector using this transform. This multiplies the
-	 * vector with this matrix, excluding the translational components.
+	 * Transform a vector using this transform.
 	 *
-	 * @param   vector  Directional vector to rotate.
+	 * @param   vector  Vector to transform.
 	 *
-	 * @return  Rotated vector.
+	 * @return  Resulting vector.
 	 */
-	public Vector3D rotate( final Vector3D vector )
+	public Vector3D transform( final Vector3D vector )
 	{
-		return rotate( vector.x , vector.y , vector.z );
+		return vector.set( vector.x * xx + vector.y * xy + vector.z * xz + xo ,
+		                   vector.x * yx + vector.y * yy + vector.z * yz + yo ,
+		                   vector.x * zx + vector.y * zy + vector.z * zz + zo );
 	}
 
 	/**
-	 * Rotate a vector using this transform. This multiplies the vector with
-	 * this matrix, excluding the translational components.
+	 * Transform a vector using this transform.
 	 *
-	 * @param   x       X component of directional vector to rotate.
-	 * @param   y       Y component of directional vector to rotate.
-	 * @param   z       Z component of directional vector to rotate.
+	 * @param   x       X-value of vector.
+	 * @param   y       Y-value of vector.
+	 * @param   z       Z-value of vector.
 	 *
-	 * @return  Rotated vector.
+	 * @return  Resulting vector.
 	 */
-	public Vector3D rotate( final double x , final double y , final double z )
+	public Vector3D transform( final double x , final double y , final double z )
 	{
-		return Vector3D.INIT.set( x * xx + y * xy + z * xz ,
-		                          x * yx + y * yy + z * yz ,
-		                          x * zx + y * zy + z * zz );
-	}
-
-	/**
-	 * This function performs just the rotational part of of the transform on a
-	 * set of vectors. Vectors are supplied using float arrays with a triplet for
-	 * each vector.
-	 *
-	 * @param   source          Source array.
-	 * @param   dest            Destination array (may be <code>null</code> or too small to create new).
-	 * @param   vectorCount     Number of vertices.
-	 *
-	 * @return  Array to which the transformed coordinates were written
-	 *          (may be different from the <code>dest</code> argument).
-	 *
-	 * @see     #multiply(double, double, double)
-	 * @see     #multiply(Vector3D)
-	 * @see     ArrayTools#ensureLength
-	 */
-	public double[] rotate( final double[] source , final double[] dest , final int vectorCount )
-	{
-		double[] result = dest;
-
-		if ( ( source != dest ) || ( this != INIT ) )
-		{
-			final int resultLength = vectorCount * 3;
-			result = (double[])ArrayTools.ensureLength( dest , double.class , -1 , resultLength );
-
-			final double lxx = xx;
-			final double lxy = xy;
-			final double lxz = xz;
-			final double lyx = yx;
-			final double lyy = yy;
-			final double lyz = yz;
-			final double lzx = zx;
-			final double lzy = zy;
-			final double lzz = zz;
-
-			if ( ( lxx == 1.0 ) && ( lxy == 0.0 ) && ( lxz == 0.0 )
-			  && ( lyx == 0.0 ) && ( lyy == 1.0 ) && ( lyz == 0.0 )
-			  && ( lzx == 0.0 ) && ( lzy == 0.0 ) && ( lzz == 1.0 ) )
-			{
-				if ( source != result )
-					System.arraycopy( source , 0 , result , 0 , resultLength );
-			}
-			else
-			{
-				double x;
-				double y;
-				double z;
-
-				for ( int resultIndex = 0 ; resultIndex < resultLength ; resultIndex += 3 )
-				{
-					x = source[ resultIndex     ];
-					y = source[ resultIndex + 1 ];
-					z = source[ resultIndex + 2 ];
-
-					result[ resultIndex     ] = x * lxx + y * lxy + z * lxz;
-					result[ resultIndex + 1 ] = x * lyx + y * lyy + z * lyz;
-					result[ resultIndex + 2 ] = x * lzx + y * lzy + z * lzz;
-				}
-			}
-		}
-
-		return result;
-	}
-
-	/**
-	 * Rotate a vector to X-coordinate using this rotate.
-	 *
-	 * @param   x       X-coordinate of vector.
-	 * @param   y       Y-coordinate of vector.
-	 * @param   z       Z-coordinate of vector.
-	 *
-	 * @return  Resulting X coordinate.
-	 */
-	public double rotateX( final double x , final double y , final double z )
-	{
-		return x * xx + y * xy + z * xz;
-	}
-
-	/**
-	 * Rotate a vector to Y-coordinate using this rotate.
-	 *
-	 * @param   x       X-coordinate of vector.
-	 * @param   y       Y-coordinate of vector.
-	 * @param   z       Z-coordinate of vector.
-	 *
-	 * @return  Resulting Y coordinate.
-	 */
-	public double rotateY( final double x , final double y , final double z )
-	{
-		return x * yx + y * yy + z * yz;
-	}
-
-	/**
-	 * Rotate a vector to Z-coordinate using this rotate.
-	 *
-	 * @param   x       X-coordinate of vector.
-	 * @param   y       Y-coordinate of vector.
-	 * @param   z       Z-coordinate of vector.
-	 *
-	 * @return  Resulting Z coordinate.
-	 */
-	public double rotateZ( final double x , final double y , final double z )
-	{
-		return x * zx + y * zy + z * zz;
+		return new Vector3D( x * xx + y * xy + z * xz + xo ,
+		                     x * yx + y * yy + z * yz + yo ,
+		                     x * zx + y * zy + z * zz + zo );
 	}
 
 	/**
@@ -1286,8 +1186,8 @@ public final class Matrix3D
 	 * @return  Array to which the transformed coordinates were written
 	 *          (may be different from the <code>dest</code> argument).
 	 *
-	 * @see     #multiply(double, double, double)
-	 * @see     #multiply(Vector3D)
+	 * @see     #transform(double, double, double)
+	 * @see     #transform(Vector3D)
 	 * @see     ArrayTools#ensureLength
 	 */
 	public double[] transform( final double[] source , final double[] dest , final int pointCount )
@@ -1435,5 +1335,343 @@ public final class Matrix3D
 	public double transformZ( final double x , final double y , final double z )
 	{
 		return x * zx + y * zy + z * zz + zo;
+	}
+
+	/**
+	 * Transform a box using this transform.
+	 *
+	 * @param   box     Box to transform.
+	 *
+	 * @return  Resulting box.
+	 */
+	public Bounds3D transform( final Bounds3D box )
+	{
+		return box.set( transform( box.v1 ) , transform( box.v2 ) );
+	}
+
+	/**
+	 * Transform a vector using the inverse of this transform.
+	 *
+	 * @param   vector  Vector to transform.
+	 *
+	 * @return  Resulting vector.
+	 */
+	public Vector3D inverseTransform( final Vector3D vector )
+	{
+		final double tx = vector.x - xo;
+		final double ty = vector.y - yo;
+		final double tz = vector.z - zo;
+
+		return vector.set( tx * xx + ty * yx + tz * zx ,
+		                   tx * xy + ty * yy + tz * zy ,
+		                   tx * xz + ty * yz + tz * zz );
+	}
+
+	/**
+	 * Transform a vector using the inverse of this transform.
+	 *
+	 * @param   x       X-value of vector.
+	 * @param   y       Y-value of vector.
+	 * @param   z       Z-value of vector.
+	 *
+	 * @return  Resulting vector.
+	 */
+	public Vector3D inverseTransform( final double x , final double y , final double z )
+	{
+		final double tz = z - zo;
+		final double ty = y - yo;
+		final double tx = x - xo;
+
+		return new Vector3D( tx * xx + ty * yx + tz * zx ,
+		                     tx * xy + ty * yy + tz * zy ,
+		                     tx * xz + ty * yz + tz * zz );
+	}
+
+	/**
+	 * Inverse transform a vector to X-coordinate using this transform.
+	 *
+	 * @param   vector  Vector to transform.
+	 *
+	 * @return  Resulting X coordinate.
+	 */
+	public double inverseTransformX( final Vector3D vector )
+	{
+		return inverseTransformX( vector.x , vector.y , vector.z );
+	}
+
+	/**
+	 * Inverse transform a vector to X-coordinate using this transform.
+	 *
+	 * @param   x       X-coordinate of vector.
+	 * @param   y       Y-coordinate of vector.
+	 * @param   z       Z-coordinate of vector.
+	 *
+	 * @return  Resulting X coordinate.
+	 */
+	public double inverseTransformX( final double x , final double y , final double z )
+	{
+		return ( x - xo ) * xx + ( y - yo ) * yx + ( z - zo ) * zx;
+	}
+
+	/**
+	 * Inverse transform a vector to Y-coordinate using this transform.
+	 *
+	 * @param   vector  Vector to transform.
+	 *
+	 * @return  Resulting Y coordinate.
+	 */
+	public double inverseTransformY( final Vector3D vector )
+	{
+		return inverseTransformY( vector.x , vector.y , vector.z );
+	}
+
+	/**
+	 * Inverse transform a vector to Y-coordinate using this transform.
+	 *
+	 * @param   x       X-coordinate of vector.
+	 * @param   y       Y-coordinate of vector.
+	 * @param   z       Z-coordinate of vector.
+	 *
+	 * @return  Resulting Y coordinate.
+	 */
+	public double inverseTransformY( final double x , final double y , final double z )
+	{
+		return ( x - xo ) * xy + ( y - yo ) * yy + ( z - zo ) * zy;
+	}
+
+	/**
+	 * Inverse transform a vector to Z-coordinate using this transform.
+	 *
+	 * @param   vector  Vector to transform.
+	 *
+	 * @return  Resulting Z coordinate.
+	 */
+	public double inverseTransformZ( final Vector3D vector )
+	{
+		return inverseTransformZ( vector.x , vector.y , vector.z );
+	}
+
+	/**
+	 * Inverse transform a vector to Z-coordinate using this transform.
+	 *
+	 * @param   x       X-coordinate of vector.
+	 * @param   y       Y-coordinate of vector.
+	 * @param   z       Z-coordinate of vector.
+	 *
+	 * @return  Resulting Z coordinate.
+	 */
+	public double inverseTransformZ( final double x , final double y , final double z )
+	{
+		return ( x - xo ) * xz + ( y - yo ) * yz + ( z - zo ) * zz;
+	}
+
+	/**
+	 * Rotate a (directional) vector using this transform. This multiplies the
+	 * vector with this matrix, excluding the translational components.
+	 *
+	 * @param   vector  Directional vector to rotate.
+	 *
+	 * @return  Rotated vector.
+	 */
+	public Vector3D rotate( final Vector3D vector )
+	{
+		return rotate( vector.x , vector.y , vector.z );
+	}
+
+	/**
+	 * Rotate a vector using this transform. This multiplies the vector with
+	 * this matrix, excluding the translational components.
+	 *
+	 * @param   x       X component of directional vector to rotate.
+	 * @param   y       Y component of directional vector to rotate.
+	 * @param   z       Z component of directional vector to rotate.
+	 *
+	 * @return  Rotated vector.
+	 */
+	public Vector3D rotate( final double x , final double y , final double z )
+	{
+		return new Vector3D( x * xx + y * xy + z * xz ,
+		                     x * yx + y * yy + z * yz ,
+		                     x * zx + y * zy + z * zz );
+	}
+
+	/**
+	 * This function performs just the rotational part of of the transform on a
+	 * set of vectors. Vectors are supplied using float arrays with a triplet for
+	 * each vector.
+	 *
+	 * @param   source          Source array.
+	 * @param   dest            Destination array (may be <code>null</code> or too small to create new).
+	 * @param   vectorCount     Number of vertices.
+	 *
+	 * @return  Array to which the transformed coordinates were written
+	 *          (may be different from the <code>dest</code> argument).
+	 *
+	 * @see     #transform(double, double, double)
+	 * @see     #transform(Vector3D)
+	 * @see     ArrayTools#ensureLength
+	 */
+	public double[] rotate( final double[] source , final double[] dest , final int vectorCount )
+	{
+		double[] result = dest;
+
+		if ( ( source != dest ) || ( this != INIT ) )
+		{
+			final int resultLength = vectorCount * 3;
+			result = (double[])ArrayTools.ensureLength( dest , double.class , -1 , resultLength );
+
+			final double lxx = xx;
+			final double lxy = xy;
+			final double lxz = xz;
+			final double lyx = yx;
+			final double lyy = yy;
+			final double lyz = yz;
+			final double lzx = zx;
+			final double lzy = zy;
+			final double lzz = zz;
+
+			if ( ( lxx == 1.0 ) && ( lxy == 0.0 ) && ( lxz == 0.0 )
+			  && ( lyx == 0.0 ) && ( lyy == 1.0 ) && ( lyz == 0.0 )
+			  && ( lzx == 0.0 ) && ( lzy == 0.0 ) && ( lzz == 1.0 ) )
+			{
+				if ( source != result )
+					System.arraycopy( source , 0 , result , 0 , resultLength );
+			}
+			else
+			{
+				double x;
+				double y;
+				double z;
+
+				for ( int resultIndex = 0 ; resultIndex < resultLength ; resultIndex += 3 )
+				{
+					x = source[ resultIndex     ];
+					y = source[ resultIndex + 1 ];
+					z = source[ resultIndex + 2 ];
+
+					result[ resultIndex     ] = x * lxx + y * lxy + z * lxz;
+					result[ resultIndex + 1 ] = x * lyx + y * lyy + z * lyz;
+					result[ resultIndex + 2 ] = x * lzx + y * lzy + z * lzz;
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Rotate a vector to X-coordinate using this rotate.
+	 *
+	 * @param   vector  Directional vector to rotate.
+	 *
+	 * @return  Resulting X coordinate.
+	 */
+	public double rotateX( final Vector3D vector )
+	{
+		return rotateX( vector.x , vector.y , vector.z );
+	}
+
+	/**
+	 * Rotate a vector to X-coordinate using this rotate.
+	 *
+	 * @param   x       X-coordinate of vector.
+	 * @param   y       Y-coordinate of vector.
+	 * @param   z       Z-coordinate of vector.
+	 *
+	 * @return  Resulting X coordinate.
+	 */
+	public double rotateX( final double x , final double y , final double z )
+	{
+		return x * xx + y * xy + z * xz;
+	}
+
+	/**
+	 * Rotate a vector to Y-coordinate using this rotate.
+	 *
+	 * @param   vector  Directional vector to rotate.
+	 *
+	 * @return  Resulting Y coordinate.
+	 */
+	public double rotateY( final Vector3D vector )
+	{
+		return rotateY( vector.x , vector.y , vector.z );
+	}
+
+	/**
+	 * Rotate a vector to Y-coordinate using this rotate.
+	 *
+	 * @param   x       X-coordinate of vector.
+	 * @param   y       Y-coordinate of vector.
+	 * @param   z       Z-coordinate of vector.
+	 *
+	 * @return  Resulting Y coordinate.
+	 */
+	public double rotateY( final double x , final double y , final double z )
+	{
+		return x * yx + y * yy + z * yz;
+	}
+
+	/**
+	 * Rotate a vector to Z-coordinate using this rotate.
+	 *
+	 * @param   vector  Directional vector to rotate.
+	 *
+	 * @return  Resulting Z coordinate.
+	 */
+	public double rotateZ( final Vector3D vector )
+	{
+		return rotateZ( vector.x , vector.y , vector.z );
+	}
+
+	/**
+	 * Rotate a vector to Z-coordinate using this rotate.
+	 *
+	 * @param   x       X-coordinate of vector.
+	 * @param   y       Y-coordinate of vector.
+	 * @param   z       Z-coordinate of vector.
+	 *
+	 * @return  Resulting Z coordinate.
+	 */
+	public double rotateZ( final double x , final double y , final double z )
+	{
+		return x * zx + y * zy + z * zz;
+	}
+
+	/**
+	 * Rotate a (directional) vector using the inverse of this transform. This
+	 * multiplies the vector with the inverse of this matrix, excluding the
+	 * translational components.
+	 *
+	 * @param   vector  Directional vector to rotate.
+	 *
+	 * @return  Rotated vector.
+	 */
+	public Vector3D inverseRotate( final Vector3D vector )
+	{
+		final double x = vector.x;
+		final double y = vector.y;
+		final double z = vector.z;
+
+		return vector.set( x * xx + y * yx + z * zx ,
+		                   x * xy + y * yy + z * zy ,
+		                   x * xz + y * yz + z * zz );
+	}
+
+	/**
+	 * Rotate a vector using the inverse of this transform. This multiplies the
+	 * vector with the inverse of this matrix, excluding the translational
+	 * components.
+	 *
+	 * @param   x       X component of directional vector to rotate.
+	 * @param   y       Y component of directional vector to rotate.
+	 * @param   z       Z component of directional vector to rotate.
+	 *
+	 * @return  Rotated vector.
+	 */
+	public Vector3D inverseRotate( final double x , final double y , final double z )
+	{
+		return new Vector3D( x * xx + y * yx + z * zx ,
+		                     x * xy + y * yy + z * zy ,
+		                     x * xz + y * yz + z * zz );
 	}
 }

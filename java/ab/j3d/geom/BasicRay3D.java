@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2006
+ * (C) Copyright Numdata BV 2006-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -89,7 +89,7 @@ public class BasicRay3D
 	{
 		if ( ( transform != null ) && ( transform != Matrix3D.INIT ) )
 		{
-			_origin    = transform.multiply( originX , originY , originZ );
+			_origin    = transform.transform( originX , originY , originZ );
 			_direction = transform.rotate( directionX , directionY , directionZ );
 		}
 		else
@@ -136,7 +136,7 @@ public class BasicRay3D
 
 		if ( ( transform != null ) && ( transform != Matrix3D.INIT ) )
 		{
-			_origin    = transform.multiply( origin );
+			_origin    = transform.transform( origin );
 			_direction = transform.rotate( direction );
 		}
 		else
