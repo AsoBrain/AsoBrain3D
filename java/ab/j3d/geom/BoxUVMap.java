@@ -34,40 +34,27 @@ import ab.j3d.Vector3D;
 public class BoxUVMap
 	implements UVMap
 {
-	/**
-	 * UV map used to map the sides.
-	 */
-	private UVMap _leftMap;
+	/** Left map index.   */ public static final int LEFT   = 0;
+	/** Right map index.  */ public static final int RIGHT  = 1;
+	/** Front map index.  */ public static final int FRONT  = 2;
+	/** Back map index.   */ public static final int BACK   = 3;
+	/** Bottom map index. */ public static final int BOTTOM = 4;
+	/** Top map index.    */ public static final int TOP    = 5;
 
 	/**
-	 * UV map used to map the sides.
+	 * Transforms box to world coordinates.
 	 */
-	private UVMap _rightMap;
+	private Matrix3D _box2wcs;
 
 	/**
-	 * UV map used to map the front and rear.
+	 * UV maps used to map the sides.
 	 */
-	private UVMap _frontMap;
+	private UVMap[] _maps;
 
 	/**
-	 * UV map used to map the front and rear.
+	 * Texture flipping for each map.
 	 */
-	private UVMap _backMap;
-
-	/**
-	 * UV map used to map the top and bottom.
-	 */
-	private UVMap _topMap;
-
-	/**
-	 * UV map used to map the top and bottom.
-	 */
-	private UVMap _bottomMap;
-
-	/**
-	 * Rotation applied to the box.
-	 */
-	private Matrix3D _rotation;
+	private boolean[] _flips;
 
 	/**
 	 * Construct new UV-map that applies a uniform box mapping.
@@ -76,7 +63,7 @@ public class BoxUVMap
 	 */
 	public BoxUVMap( final double modelUnits )
 	{
-		this( modelUnits , Vector3D.INIT , Matrix3D.INIT );
+		this( modelUnits , Matrix3D.INIT );
 	}
 
 	/**
@@ -88,54 +75,86 @@ public class BoxUVMap
 	 */
 	public BoxUVMap( final double modelUnits , final Vector3D origin )
 	{
-		this( modelUnits , origin , Matrix3D.INIT );
+		this( modelUnits , Matrix3D.INIT.setTranslation( origin ) );
 	}
 
 	/**
 	 * Construct new UV-map that applies a uniform box mapping with the
-	 * UV-origin located at the given spatial coordinates.
+	 * specified box coordinate system.
 	 *
 	 * @param   modelUnits  Size of a model unit in meters.
-	 * @param   origin      Location of the UV-origin in spatial coordinates.
-	 * @param   rotation    Rotation transform applied to the box.
+	 * @param   box2wcs   Transforms spatial to box coordinates.
 	 */
-	public BoxUVMap( final double modelUnits , final Vector3D origin , final Matrix3D rotation )
+	public BoxUVMap( final double modelUnits , final Matrix3D box2wcs )
 	{
-		final Matrix3D translated = rotation.setTranslation( origin );
+		this( modelUnits , box2wcs, false , false , false , false , false , false );
+	}
 
-		_leftMap = new PlanarUVMap( modelUnits , translated.multiply(
-			0.0 , -1.0 ,  0.0 , 0.0 ,
-			0.0 ,  0.0 ,  1.0 , 0.0 ,
-			0.0 ,  0.0 ,  0.0 , 0.0 ) );
+	/**
+	 * Construct new UV-map that applies a uniform box mapping with the
+	 * specified box coordinate system.
+	 *
+	 * @param   modelUnits  Size of a model unit in meters.
+	 * @param   box2wcs     Transforms box to world coordinates.
+	 * @param   flipLeft    Flip left texture direction.
+	 * @param   flipRight   Flip right texture direction.
+	 * @param   flipFront   Flip front texture direction.
+	 * @param   flipBack    Flip right texture direction.
+	 * @param   flipTop     Flip top texture direction.
+	 * @param   flipBottom  Flip bottom texture direction.
+	 */
+	public BoxUVMap( final double modelUnits , final Matrix3D box2wcs , final boolean flipLeft , final boolean flipRight , final boolean flipFront , final boolean flipBack , final boolean flipTop , final boolean flipBottom )
+	{
+		final UVMap[] maps = new UVMap[ 6 ];
+		final boolean[] flips = new boolean[ 6 ];
 
-		_rightMap = new PlanarUVMap( modelUnits , translated.multiply(
-			0.0 , 1.0 , 0.0 , 0.0 ,
-			0.0 , 0.0 , 1.0 , 0.0 ,
-			0.0 , 0.0 , 0.0 , 0.0 ) );
+		maps[ LEFT ] = new PlanarUVMap( modelUnits , Matrix3D.INIT.set(
+			-box2wcs.xy ,  box2wcs.xz , -box2wcs.xx , box2wcs.xo ,    // [  0 ,  0 , -1 ]
+			-box2wcs.yy ,  box2wcs.yz , -box2wcs.yx , box2wcs.yo ,    // [ -1 ,  0 ,  0 ] * box2wcs
+			-box2wcs.zy ,  box2wcs.zz , -box2wcs.zx , box2wcs.zo ) ); // [  0 ,  1 ,  0 ]
 
-		_frontMap = new PlanarUVMap( modelUnits , translated.multiply(
-			1.0 , 0.0 , 0.0 , 0.0 ,
-			0.0 , 0.0 , 1.0 , 0.0 ,
-			0.0 , 0.0 , 0.0 , 0.0 ) );
+		flips[ LEFT ] = flipLeft;
 
-		_backMap = new PlanarUVMap( modelUnits , translated.multiply(
-			-1.0 , 0.0 , 0.0 , 0.0 ,
-			 0.0 , 0.0 , 1.0 , 0.0 ,
-			 0.0 , 0.0 , 0.0 , 0.0 ) );
+		maps[ RIGHT ] = new PlanarUVMap( modelUnits , Matrix3D.INIT.set(
+			 box2wcs.xy ,  box2wcs.xz ,  box2wcs.xx , box2wcs.xo ,    // [ 0 ,  0 ,  1 ]
+			 box2wcs.yy ,  box2wcs.yz ,  box2wcs.yx , box2wcs.yo ,    // [ 1 ,  0 ,  0 ] * box2wcs
+			 box2wcs.zy ,  box2wcs.zz ,  box2wcs.zx , box2wcs.zo ) ); // [ 0 ,  1 ,  0 ]
 
-		_topMap = new PlanarUVMap( modelUnits , translated );
+		flips[ RIGHT ] = flipRight;
 
-		_bottomMap = new PlanarUVMap( modelUnits , translated.multiply(
-			1.0 ,  0.0 , 0.0 , 0.0 ,
-			0.0 , -1.0 , 0.0 , 0.0 ,
-			0.0 ,  0.0 , 0.0 , 0.0 ) );
+		maps[ FRONT ] = new PlanarUVMap( modelUnits , Matrix3D.INIT.set(
+			 box2wcs.xx ,  box2wcs.xz , -box2wcs.xy , box2wcs.xo ,    // [ 1 ,  0 ,  0 ]
+			 box2wcs.yx ,  box2wcs.yz , -box2wcs.yy , box2wcs.yo ,    // [ 0 ,  0 , -1 ] * box2wcs
+			 box2wcs.zx ,  box2wcs.zz , -box2wcs.zy , box2wcs.zo ) ); // [ 0 ,  1 ,  0 ]
 
-		_rotation = rotation;
+		flips[ FRONT ] = flipFront;
+
+		maps[ BACK ] = new PlanarUVMap( modelUnits , Matrix3D.INIT.set(
+			-box2wcs.xx ,  box2wcs.xz ,  box2wcs.xy , box2wcs.xo ,    // [ -1 ,  0 ,  0 ]
+			-box2wcs.yx ,  box2wcs.yz ,  box2wcs.yy , box2wcs.yo ,    // [  0 ,  0 ,  1 ] * box2wcs
+			-box2wcs.zx ,  box2wcs.zz ,  box2wcs.zy , box2wcs.zo ) ); // [  0 ,  1 ,  0 ]
+
+		flips[ BACK ] = flipBack;
+
+		maps[ BOTTOM ] = new PlanarUVMap( modelUnits , Matrix3D.INIT.set(
+			-box2wcs.xx ,  box2wcs.xy , -box2wcs.xz , box2wcs.xo ,    // [ -1 ,  0 ,  0 ]
+			-box2wcs.yx ,  box2wcs.yy , -box2wcs.yz , box2wcs.yo ,    // [  0 ,  1 ,  0 ] * box2wcs
+			-box2wcs.zx ,  box2wcs.zy , -box2wcs.zz , box2wcs.zo ) ); // [  0 ,  0 , -1 ]
+
+		flips[ BOTTOM ] = flipBottom;
+
+		maps[ TOP ] = new PlanarUVMap( modelUnits , box2wcs );
+
+		flips[ TOP ] = flipTop;
+
+		_box2wcs = box2wcs;
+		_maps = maps;
+		_flips = flips;
 	}
 
 	public void generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final boolean flipTexture , final float[] textureU , final float[] textureV )
 	{
-		final UVMap map;
+		final int map;
 
 		/*
 		 * Try to determine the face normal and use it to choose the target map.
@@ -161,16 +180,16 @@ public class BoxUVMap
 		}
 		else
 		{
-			map = _topMap;
+			map = 0;
 		}
 
-		map.generate( material , vertexCoordinates , vertexIndices , flipTexture , textureU , textureV );
+		_maps[ map ].generate( material , vertexCoordinates , vertexIndices , _flips[ map ] ^ flipTexture , textureU , textureV );
 	}
 
-	public Point2D.Float generate( final Material material , final Vector3D point , final Vector3D normal , final boolean flipTexture )
+	public Point2D.Float generate( final Material material , final Vector3D wcsPoint , final Vector3D normal , final boolean flipTexture )
 	{
-		final UVMap map = getTargetMap( normal );
-		return map.generate( material , point , normal , flipTexture );
+		final int map = getTargetMap( normal );
+		return _maps[ map ].generate( material , wcsPoint , normal , _flips[ map ] ^ flipTexture );
 	}
 
 	/**
@@ -181,20 +200,20 @@ public class BoxUVMap
 	 *
 	 * @return  Target map.
 	 */
-	private UVMap getTargetMap( final Vector3D normal )
+	private int getTargetMap( final Vector3D normal )
 	{
-		final Vector3D rotatedNormal = _rotation.inverseRotate( normal );
+		final Vector3D boxNormal = _box2wcs.inverseRotate( normal );
 
-		final boolean negX = ( rotatedNormal.x < 0.0 );
-		final boolean negY = ( rotatedNormal.y < 0.0 );
-		final boolean negZ = ( rotatedNormal.z < 0.0 );
-		final double  absX = negX ? -rotatedNormal.x : rotatedNormal.x;
-		final double  absY = negY ? -rotatedNormal.y : rotatedNormal.y;
-		final double  absZ = negZ ? -rotatedNormal.z : rotatedNormal.z;
+		final boolean negX = ( boxNormal.x < 0.0 );
+		final boolean negY = ( boxNormal.y < 0.0 );
+		final boolean negZ = ( boxNormal.z < 0.0 );
+		final double  absX = negX ? -boxNormal.x : boxNormal.x;
+		final double  absY = negY ? -boxNormal.y : boxNormal.y;
+		final double  absZ = negZ ? -boxNormal.z : boxNormal.z;
 
-		return ( absZ >= absX ) ? ( absZ >= absY ) ? negZ ? _bottomMap : _topMap
-		                                           : negY ? _frontMap : _backMap
-		                        : ( absX >= absY ) ? negX ? _leftMap : _rightMap
-		                                           : negY ? _frontMap : _backMap;
+		return ( absZ >= absX ) ? ( absZ >= absY ) ? negZ ? BOTTOM : TOP
+		                                           : negY ? FRONT : BACK
+		                        : ( absX >= absY ) ? negX ? LEFT : RIGHT
+		                                           : negY ? FRONT : BACK;
 	}
 }
