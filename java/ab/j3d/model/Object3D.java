@@ -220,12 +220,15 @@ public class Object3D
 				{
 					final Face3D face = faces.get( faceIndex );
 
-					for ( final Vertex vertex : face.vertices )
+					if ( face.smooth )
 					{
-						final int i = vertex.vertexCoordinateIndex * 3;
-						vertexNormals[ i     ] = face._crossX;
-						vertexNormals[ i + 1 ] = face._crossY;
-						vertexNormals[ i + 2 ] = face._crossZ;
+						for ( final Vertex vertex : face.vertices )
+						{
+							final int i = vertex.vertexCoordinateIndex * 3;
+							vertexNormals[ i     ] += face._crossX;
+							vertexNormals[ i + 1 ] += face._crossY;
+							vertexNormals[ i + 2 ] += face._crossZ;
+						}
 					}
 				}
 
