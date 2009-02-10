@@ -21,8 +21,8 @@
 package ab.j3d.model;
 
 import ab.j3d.Material;
-import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
+import ab.j3d.geom.UVMap;
 
 /**
  * This class defines a 3D box.
@@ -39,11 +39,6 @@ public final class Box3D
 	/** Vertices for left face.   */ private static final int[] LEFT_VERTICES   = { 3 , 7 , 4 , 0 };
 	/** Vertices for top face.    */ private static final int[] TOP_VERTICES    = { 4 , 7 , 6 , 5 };
 	/** Vertices for bottom face. */ private static final int[] BOTTOM_VERTICES = { 1 , 2 , 3 , 0 };
-
-	/**
-	 * Transformation applied to all vertices of the box.
-	 */
-	private final Matrix3D _xform;
 
 	/**
 	 * Width of box (x-axis).
@@ -66,74 +61,12 @@ public final class Box3D
 	 * @param   dx              Width of box (x-axis).
 	 * @param   dy              Height of box (y-axis).
 	 * @param   dz              Depth of box (z-axis).
-	 * @param   modelUnit       Model unit scale factor (e.g. {@link Scene#MM}).
-	 * @param   frontMaterial   Material applied to the front of the box.
-	 * @param   rearMaterial    Material applied to the rear of the box.
-	 * @param   rightMaterial   Material applied to the right of the box.
-	 * @param   leftMaterial    Material applied to the left of the box.
-	 * @param   topMaterial     Material applied to the top of the box.
-	 * @param   bottomMaterial  Material applied to the bottom of the box.
+	 * @param   uvMap           UV mapping to use.
+	 * @param   material        Material applied to all sides of the box.
 	 */
-	public Box3D( final double dx , final double dy , final double dz , final double modelUnit , final Material frontMaterial , final Material rearMaterial , final Material rightMaterial , final Material leftMaterial , final Material topMaterial , final Material bottomMaterial )
+	public Box3D( final double dx , final double dy , final double dz , final UVMap uvMap , final Material material  )
 	{
-		this( Matrix3D.INIT , dx , dy , dz , modelUnit , frontMaterial , rearMaterial , rightMaterial , leftMaterial , topMaterial , bottomMaterial );
-	}
-
-	/**
-	 * Set box properties.
-	 *
-	 * @param   xform           Transformation to apply to all vertices of the box.
-	 * @param   dx              Width of box (x-axis).
-	 * @param   dy              Height of box (y-axis).
-	 * @param   dz              Depth of box (z-axis).
-	 * @param   modelUnit       Model unit scale factor (e.g. {@link Scene#MM}).
-	 * @param   frontMaterial   Material applied to the front of the box.
-	 * @param   rearMaterial    Material applied to the rear of the box.
-	 * @param   rightMaterial   Material applied to the right of the box.
-	 * @param   leftMaterial    Material applied to the left of the box.
-	 * @param   topMaterial     Material applied to the top of the box.
-	 * @param   bottomMaterial  Material applied to the bottom of the box.
-	 */
-	public Box3D( final Matrix3D xform , final double dx , final double dy , final double dz , final double modelUnit , final Material frontMaterial , final Material rearMaterial , final Material rightMaterial , final Material leftMaterial , final Material topMaterial , final Material bottomMaterial )
-	{
-		_xform = xform;
-		_dx    = dx;
-		_dy    = dy;
-		_dz    = dz;
-
-		/*
-		 * Create vertex coordinates.
-		 */
-		final double[] vertexCoordinates =
-		{
-			0.0 , 0.0 , 0.0 , // 0
-			_dx , 0.0 , 0.0 , // 1
-			_dx , _dy , 0.0 , // 2
-			0.0 , _dy , 0.0 , // 3
-			0.0 , 0.0 , _dz , // 4
-			_dx , 0.0 , _dz , // 5
-			_dx , _dy , _dz , // 6
-			0.0 , _dy , _dz   // 7
-		};
-
-		setVertexCoordinates( xform.transform( vertexCoordinates , vertexCoordinates , 8 ) );
-
-		/*
-		 * Determine flat side.
-		 */
-		final double ax = Math.abs( dx );
-		final double ay = Math.abs( dy );
-		final double az = Math.abs( dz );
-
-		final boolean flatX = ( ax < ay && ax < az );
-		final boolean flatZ = ( az < ax && az < ay );
-
-		addFace( FRONT_VERTICES  , frontMaterial  ,  flatZ , xform.xo , xform.xo + _dx , xform.zo , xform.zo + _dz , modelUnit );
-		addFace( REAR_VERTICES   , rearMaterial   ,  flatZ , xform.xo , xform.xo + _dx , xform.zo , xform.zo + _dz , modelUnit );
-		addFace( RIGHT_VERTICES  , rightMaterial  ,  flatZ , xform.yo , xform.yo + _dy , xform.zo , xform.zo + _dz , modelUnit );
-		addFace( LEFT_VERTICES   , leftMaterial   ,  flatZ , xform.yo , xform.yo + _dy , xform.zo , xform.zo + _dz , modelUnit );
-		addFace( TOP_VERTICES    , topMaterial    , !flatX , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy , modelUnit );
-		addFace( BOTTOM_VERTICES , bottomMaterial , !flatX , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy , modelUnit );
+		this( dx , dy , dz , uvMap , material , material , material , material , material , material );
 	}
 
 	/**
@@ -142,161 +75,61 @@ public final class Box3D
 	 * @param   dx              Width of box (x-axis).
 	 * @param   dy              Height of box (y-axis).
 	 * @param   dz              Depth of box (z-axis).
-	 * @param   modelUnit       Model unit scale factor (e.g. {@link Scene#MM}).
+	 * @param   uvMap           UV mapping to use.
 	 * @param   frontMaterial   Material applied to the front of the box.
-	 * @param   frontFlipUV     Whether the front U and V coordinates are flipped.
 	 * @param   rearMaterial    Material applied to the rear of the box.
-	 * @param   rearFlipUV      Whether the rear U and V coordinates are flipped.
 	 * @param   rightMaterial   Material applied to the right of the box.
-	 * @param   rightFlipUV     Whether the right U and V coordinates are flipped.
 	 * @param   leftMaterial    Material applied to the left of the box.
-	 * @param   leftFlipUV      Whether the left U and V coordinates are flipped.
 	 * @param   topMaterial     Material applied to the top of the box.
-	 * @param   topFlipUV       Whether the top U and V coordinates are flipped.
 	 * @param   bottomMaterial  Material applied to the bottom of the box.
-	 * @param   bottomFlipUV    Whether the bottom U and V coordinates are flipped.
 	 */
-	public Box3D( final double dx , final double dy , final double dz , final double modelUnit , final Material frontMaterial , final boolean frontFlipUV , final Material rearMaterial , final boolean rearFlipUV , final Material rightMaterial , final boolean rightFlipUV , final Material leftMaterial , final boolean leftFlipUV , final Material topMaterial , final boolean topFlipUV , final Material bottomMaterial , final boolean bottomFlipUV )
+	public Box3D( final double dx , final double dy , final double dz , final UVMap uvMap , final Material frontMaterial , final Material rearMaterial , final Material rightMaterial , final Material leftMaterial , final Material topMaterial , final Material bottomMaterial )
 	{
-		this( Matrix3D.INIT , dx , dy , dz , modelUnit , frontMaterial , frontFlipUV , rearMaterial , rearFlipUV , rightMaterial , rightFlipUV , leftMaterial , leftFlipUV , topMaterial , topFlipUV , bottomMaterial , bottomFlipUV );
-	}
+		final double size = Vector3D.length( dx, dy, dz );
+		if ( size <= 0.0 )
+			throw new IllegalArgumentException( dx + " x " + dy + " x " + dz );
 
-	/**
-	 * Set box properties.
-	 *
-	 * @param   xform           Transformation to apply to all vertices of the box.
-	 * @param   dx              Width of box (x-axis).
-	 * @param   dy              Height of box (y-axis).
-	 * @param   dz              Depth of box (z-axis).
-	 * @param   modelUnit       Model unit scale factor (e.g. {@link Scene#MM}).
-	 * @param   frontMaterial   Material applied to the front of the box.
-	 * @param   frontFlipUV     Whether the front U and V coordinates are flipped.
-	 * @param   rearMaterial    Material applied to the rear of the box.
-	 * @param   rearFlipUV      Whether the rear U and V coordinates are flipped.
-	 * @param   rightMaterial   Material applied to the right of the box.
-	 * @param   rightFlipUV     Whether the right U and V coordinates are flipped.
-	 * @param   leftMaterial    Material applied to the left of the box.
-	 * @param   leftFlipUV      Whether the left U and V coordinates are flipped.
-	 * @param   topMaterial     Material applied to the top of the box.
-	 * @param   topFlipUV       Whether the top U and V coordinates are flipped.
-	 * @param   bottomMaterial  Material applied to the bottom of the box.
-	 * @param   bottomFlipUV    Whether the bottom U and V coordinates are flipped.
-	 */
-	public Box3D( final Matrix3D xform , final double dx , final double dy , final double dz , final double modelUnit , final Material frontMaterial , final boolean frontFlipUV , final Material rearMaterial , final boolean rearFlipUV , final Material rightMaterial , final boolean rightFlipUV , final Material leftMaterial , final boolean leftFlipUV , final Material topMaterial , final boolean topFlipUV , final Material bottomMaterial , final boolean bottomFlipUV )
-	{
-		_xform = xform;
-		_dx    = dx;
-		_dy    = dy;
-		_dz    = dz;
+		_dx = dx;
+		_dy = dy;
+		_dz = dz;
+
+		final double nx = dx / size;
+		final double ny = dy / size;
+		final double nz = dz / size;
 
 		/*
-		 * Create vertex coordinates.
+		 * Create vertex coordinates and normals.
 		 */
-		final double[] vertexCoordinates =
+		setVertexCoordinates( new double[]
 		{
 			0.0 , 0.0 , 0.0 , // 0        7------6
-			_dx , 0.0 , 0.0 , // 1       /:     /|
-			_dx , _dy , 0.0 , // 2      4------5 |
-			0.0 , _dy , 0.0 , // 3      | :    | |
-			0.0 , 0.0 , _dz , // 4      | :    | |
-			_dx , 0.0 , _dz , // 5      | 3....|.2
-			_dx , _dy , _dz , // 6      |.     |/
-			0.0 , _dy , _dz   // 7      0------1
-		};
+			 dx , 0.0 , 0.0 , // 1       /:     /|
+			 dx ,  dy , 0.0 , // 2      4------5 |
+			0.0 ,  dy , 0.0 , // 3      | :    | |
+			0.0 , 0.0 ,  dz , // 4      | :    | |
+			 dx , 0.0 ,  dz , // 5      | 3....|.2
+			 dx ,  dy ,  dz , // 6      |.     |/
+			0.0 ,  dy ,  dz   // 7      0------1
+		} );
 
-		setVertexCoordinates( xform.transform( vertexCoordinates , vertexCoordinates , 8 ) );
-
-		addFace( FRONT_VERTICES  , frontMaterial  , frontFlipUV  , xform.xo , xform.xo + _dx , xform.zo , xform.zo + _dz , modelUnit );
-		addFace( REAR_VERTICES   , rearMaterial   , rearFlipUV   , xform.xo , xform.xo + _dx , xform.zo , xform.zo + _dz , modelUnit );
-		addFace( RIGHT_VERTICES  , rightMaterial  , rightFlipUV  , xform.yo , xform.yo + _dy , xform.zo , xform.zo + _dz , modelUnit );
-		addFace( LEFT_VERTICES   , leftMaterial   , leftFlipUV   , xform.yo , xform.yo + _dy , xform.zo , xform.zo + _dz , modelUnit );
-		addFace( TOP_VERTICES    , topMaterial    , topFlipUV    , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy , modelUnit );
-		addFace( BOTTOM_VERTICES , bottomMaterial , bottomFlipUV , xform.xo , xform.xo + _dx , xform.yo , xform.yo + _dy , modelUnit );
-	}
-
-	void calculateVertexNormals()
-	{
-		if ( _vertexNormalsDirty )
+		setVertexNormals( new double[]
 		{
-			final double[] vertexNormals = new double[ 24 ];
-			_vertexNormals = vertexNormals;
+			/* 0 */ -nx , -ny , -nz ,
+			/* 1 */  nx , -ny , -nz ,
+			/* 2 */  nx ,  ny , -nz ,
+			/* 3 */ -nx ,  ny , -nz ,
+			/* 4 */ -nx , -ny ,  nz ,
+			/* 5 */  nx , -ny ,  nz ,
+			/* 6 */  nx ,  ny ,  nz ,
+			/* 7 */ -nx ,  ny ,  nz
+		} );
 
-			final double[] coords = _vertexCoordinates;
-
-			double n0x = coords[  0 ] - coords[ 18 ];
-			double n0y = coords[  1 ] - coords[ 19 ];
-			double n0z = coords[  2 ] - coords[ 20 ];
-			double n1x = coords[  3 ] - coords[ 21 ];
-			double n1y = coords[  4 ] - coords[ 22 ];
-			double n1z = coords[  5 ] - coords[ 23 ];
-			double n2x = coords[  6 ] - coords[ 12 ];
-			double n2y = coords[  7 ] - coords[ 13 ];
-			double n2z = coords[  8 ] - coords[ 14 ];
-			double n3x = coords[  9 ] - coords[ 15 ];
-			double n3y = coords[ 10 ] - coords[ 16 ];
-			double n3z = coords[ 11 ] - coords[ 17 ];
-
-			final double dist06 = Vector3D.length( n0x , n0y , n0z );
-			if ( dist06 > 0.0 )
-			{
-				n0x /= dist06;
-				n0y /= dist06;
-				n0z /= dist06;
-				vertexNormals[  0 ] =  n0x;
-				vertexNormals[  1 ] =  n0y;
-				vertexNormals[  2 ] =  n0z;
-				vertexNormals[ 18 ] = -n0x;
-				vertexNormals[ 19 ] = -n0y;
-				vertexNormals[ 20 ] = -n0z;
-			}
-
-			final double dist17 = Vector3D.length( n1x , n1y , n1z );
-			if ( dist17 > 0.0 )
-			{
-				n1x /= dist17;
-				n1y /= dist17;
-				n1z /= dist17;
-				vertexNormals[  3 ] =  n1x;
-				vertexNormals[  4 ] =  n1y;
-				vertexNormals[  5 ] =  n1z;
-				vertexNormals[ 21 ] = -n1x;
-				vertexNormals[ 22 ] = -n1y;
-				vertexNormals[ 23 ] = -n1z;
-			}
-
-			final double dist24 = Vector3D.length( n2x , n2y , n2z );
-			if ( dist24 > 0.0 )
-			{
-				n2x /= dist24;
-				n2y /= dist24;
-				n2z /= dist24;
-				vertexNormals[  6 ] =  n2x;
-				vertexNormals[  7 ] =  n2y;
-				vertexNormals[  8 ] =  n2z;
-				vertexNormals[ 12 ] = -n2x;
-				vertexNormals[ 13 ] = -n2y;
-				vertexNormals[ 14 ] = -n2z;
-			}
-
-			final double dist35 = Vector3D.length( n3x , n3y , n3z );
-			if ( dist35 > 0.0 )
-			{
-				n3x /= dist35;
-				n3y /= dist35;
-				n3z /= dist35;
-				vertexNormals[  9 ] =  n3x;
-				vertexNormals[ 10 ] =  n3y;
-				vertexNormals[ 11 ] =  n3z;
-				vertexNormals[ 15 ] = -n3x;
-				vertexNormals[ 16 ] = -n3y;
-				vertexNormals[ 17 ] = -n3z;
-			}
-
-			_vertexNormals = vertexNormals;
-			_vertexNormalsDirty = false;
-		}
-
-		super.calculateVertexNormals();
+		addFace( FRONT_VERTICES  , frontMaterial  , uvMap );
+		addFace( REAR_VERTICES   , rearMaterial   , uvMap );
+		addFace( RIGHT_VERTICES  , rightMaterial  , uvMap );
+		addFace( LEFT_VERTICES   , leftMaterial   , uvMap );
+		addFace( TOP_VERTICES    , topMaterial    , uvMap );
+		addFace( BOTTOM_VERTICES , bottomMaterial , uvMap );
 	}
 
 	/**
@@ -304,53 +137,16 @@ public final class Box3D
 	 *
 	 * @param   vertices        Vertices that define the face.
 	 * @param   material        Material to use for the face.
-	 * @param   flipUV          <code>true</code> te reverse meaning of u and v.
-	 * @param   modelHor1       Start horizontal model coordinate.
-	 * @param   modelHor2       End horizontal model coordinate.
-	 * @param   modelVer1       Start vertical model coordinate.
-	 * @param   modelVer2       End vertical model coordinate.
-	 * @param   modelUnit       Model unit scale factor (e.g. {@link Scene#MM}).
+	 * @param   uvMap           UV map to use.
 	 */
-	private void addFace( final int[] vertices , final Material material , final boolean flipUV , final double modelHor1 , final double modelHor2 , final double modelVer1 , final double modelVer2 , final double modelUnit )
+	private void addFace( final int[] vertices , final Material material , final UVMap uvMap )
 	{
 		if ( ( material != null ) && ( material.colorMap != null ) )
 		{
-			double min = ( flipUV ? modelVer1 : modelHor1 );
-			double max = ( flipUV ? modelVer2 : modelHor2 );
-
-			double adjustment = material.colorMapWidth;
-			if ( adjustment > 0.0 )
-			{
-				adjustment = modelUnit / adjustment;
-				min *= adjustment;
-				max *= adjustment;
-			}
-
-			adjustment = Math.min( Math.floor( min ) , Math.floor( max ) );
-
-			final float u1 = (float)( min - adjustment );
-			final float u2 = (float)( max - adjustment );
-
-			min = ( flipUV ? modelHor1 : modelVer1 );
-			max = ( flipUV ? modelHor2 : modelVer2 );
-
-			adjustment = material.colorMapHeight;
-			if ( adjustment > 0.0 )
-			{
-				adjustment = modelUnit / adjustment;
-				min *= adjustment;
-				max *= adjustment;
-			}
-
-			adjustment = Math.min( Math.floor( min ) , Math.floor( max ) );
-
-			final float v1 = (float)( min - adjustment );
-			final float v2 = (float)( max - adjustment );
-
-			final float[] u = new float[] { u1 , u1 , u2 , u2 };
-			final float[] v = new float[] { v1 , v2 , v2 , v1 };
-
-			addFace( new Face3D( this , vertices , material , u , v , false , false ) );
+			final float[] textureU = new float[ vertices.length ];
+			final float[] textureV = new float[ vertices.length ];
+			uvMap.generate( material , _vertexCoordinates , vertices , false , textureU , textureV );
+			addFace( new Face3D( this , vertices , material , textureU , textureV , false , false ) );
 		}
 		else
 		{
@@ -389,13 +185,4 @@ public final class Box3D
 		return _dz;
 	}
 
-	/**
-	 * Get transformation applied to all vertices of the box.
-	 *
-	 * @return  Transformation applied to all vertices of the box.
-	 */
-	public Matrix3D getTransform()
-	{
-		return _xform;
-	}
 }
