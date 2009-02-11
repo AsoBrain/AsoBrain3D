@@ -69,9 +69,16 @@ public class Node3D
 	 */
 	public Node3D()
 	{
-		_parent   = null;
+		_parent = null;
 		_children = new ArrayList<Node3D>();
-		_tag      = null;
+		_tag = null;
+	}
+
+	/**
+	 * Invalidate any cached data in this node.
+	 */
+	protected void invalidateCache()
+	{
 	}
 
 	/**
@@ -204,24 +211,22 @@ public class Node3D
 	 *
 	 * @param   node    Node to add as a child.
 	 *
-	 * @return  Node that was added (same as node argument).
-	 *
 	 * @see     #removeChild
 	 * @see     #getParent
 	 */
-	public final Node3D addChild( final Node3D node )
+	public final void addChild( final Node3D node )
 	{
-		if ( node != null )
-		{
-			final List<Node3D> children = _children;
-			if ( !children.contains( node ) )
-			{
-				children.add( node );
-				setParentOfChild( node );
-			}
-		}
+		if ( node == null )
+			throw new NullPointerException( "node" );
 
-		return node;
+		final List<Node3D> children = _children;
+		if ( children.contains( node ) )
+			throw new IllegalArgumentException( node.toString() );
+
+		children.add( node );
+		setParentOfChild( node );
+
+		invalidateCache();
 	}
 
 	/**
@@ -255,10 +260,18 @@ public class Node3D
 	 */
 	public final void removeChild( final Node3D node )
 	{
-		if ( ( node != null ) && _children.remove( node ) && ( node._parent == this ) )
+		if ( node == null )
+			throw new NullPointerException( "node" );
+
+		if ( !_children.remove( node ) )
+			throw new IllegalArgumentException( node.toString() );
+
+		if ( node._parent == this )
 		{
 			node._parent = null;
 		}
+
+		invalidateCache();
 	}
 
 	/**
@@ -269,11 +282,16 @@ public class Node3D
 	public final void removeAllChildren()
 	{
 		final List<Node3D> children = _children;
-
 		while ( !children.isEmpty() )
 		{
-			removeChild( children.get( children.size() - 1 ) );
+			final Node3D node = children.remove( children.size() - 1 );
+			if ( node._parent == this )
+			{
+				node._parent = null;
+			}
 		}
+
+		invalidateCache();
 	}
 
 	/**
