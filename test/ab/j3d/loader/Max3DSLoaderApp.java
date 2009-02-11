@@ -35,7 +35,7 @@ import ab.j3d.model.Node3D;
 import ab.j3d.model.Scene;
 import ab.j3d.view.RenderEngine;
 import ab.j3d.view.View3D;
-import ab.j3d.view.java3d.Java3dEngine;
+import ab.j3d.view.jogl.JOGLEngine;
 
 import com.numdata.oss.ui.WindowTools;
 
@@ -62,7 +62,7 @@ public class Max3DSLoaderApp
 			final Matrix3D transform = Matrix3D.INIT; // .rotateX( Math.toRadians( 90.0 ) );
 
 //			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/fishtank/fishtank.3ds";
-			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/flower01_s/flower01.3ds";
+//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/flower01_s/flower01.3ds";
 //			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/vtr/vtr.3ds";
 //			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/man1/man1.3ds"; // standing straight
 //			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/man2/man2.3ds"; // sitting + lifted arms
@@ -81,7 +81,7 @@ public class Max3DSLoaderApp
 //			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/woman7/woman7.3ds"; // kneeling + accepting
 //			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/woman8/woman8.3ds"; // stair walking + reaching
 //			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/woman9/woman1.3ds"; // full nudity
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/tricycle/trecic3.3ds";
+			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/tricycle/trecic3.3ds";
 
 
 			final Node3D object3d = Max3DSLoader.load( transform , new File( path ) );
@@ -99,7 +99,7 @@ public class Max3DSLoaderApp
 			Scene.addLegacyLights( scene );
 			scene.addContentNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d );
 
-			final RenderEngine renderEngine = new Java3dEngine( scene , Color.lightGray ); // new Color( 51 , 77 , 102 ) );
+			final RenderEngine renderEngine = new JOGLEngine( Color.lightGray ); // new Color( 51 , 77 , 102 ) );
 
 			final View3D view = renderEngine.createView( scene );
 			view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
