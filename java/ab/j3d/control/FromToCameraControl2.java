@@ -18,6 +18,7 @@
  */
 package ab.j3d.control;
 
+import java.awt.event.InputEvent;
 import java.awt.event.MouseWheelEvent;
 import java.util.EventObject;
 import java.util.Properties;
@@ -234,7 +235,7 @@ public class FromToCameraControl2
 		_from = from;
 		_to   = to;
 		_up   = up;
-		setTransform( Matrix3D.getFromToTransform( from , to , up , Vector3D.INIT ) );
+		setScene2View( Matrix3D.getFromToTransform( from , to , up , Vector3D.INIT ) );
 	}
 
 	public void save()
@@ -293,17 +294,17 @@ public class FromToCameraControl2
 	{
 		final EventObject result;
 
-		if ( event.isMouseButton1Down() )
-		{
-			result = event;
-		}
-		else
+		if ( isSupportedEvent( event ) )
 		{
 			_dragStartFrom = _from;
 			_dragStartTo   = _to;
 			_dragStartUp   = _up;
 
 			result = super.mousePressed( event );
+		}
+		else
+		{
+			result = event;
 		}
 
 		return result;
@@ -313,24 +314,33 @@ public class FromToCameraControl2
 	{
 		if ( isCaptured() )
 		{
-			if ( event.isMouseButton2Down() )
+			if ( isDragFromAroundToEvent( event ) )
 			{
 				dragFromAroundTo( event );
 			}
-			else if ( event.isMouseButton3Down() )
+			else if ( isPanEvent( event ) )
 			{
-				if ( event.isControlDown() )
-				{
-					dragFromAroundTo( event );
-				}
-				else
-				{
-					pan( event );
-				}
+				pan( event );
 			}
 		}
 
 		return super.mouseDragged( event );
+	}
+
+	public boolean isSupportedEvent( final ControlInputEvent event )
+	{
+		return isDragFromAroundToEvent( event ) || isPanEvent( event );
+	}
+
+	public boolean isDragFromAroundToEvent( final ControlInputEvent event )
+	{
+		return ( event.getSupportedModifiers() == ( InputEvent.BUTTON3_DOWN_MASK | InputEvent.CTRL_DOWN_MASK ) )
+		    || ( event.getSupportedModifiers() == InputEvent.BUTTON2_DOWN_MASK );
+	}
+
+	public boolean isPanEvent( final ControlInputEvent event )
+	{
+		return ( event.getSupportedModifiers() == InputEvent.BUTTON3_DOWN_MASK );
 	}
 
 	public EventObject mouseWheelMoved( final ControlInputEvent event )
