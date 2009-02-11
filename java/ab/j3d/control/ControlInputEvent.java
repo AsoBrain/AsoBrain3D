@@ -54,6 +54,20 @@ public class ControlInputEvent
 	extends EventObject
 {
 	/**
+	 * This is a mask for the {@link InputEvent#getModifiersEx()} result to
+	 * filter out only known modifiers.
+	 */
+	public static final int SUPPORTED_MODIFIERS =
+		InputEvent.SHIFT_DOWN_MASK |
+		InputEvent.CTRL_DOWN_MASK |
+		InputEvent.META_DOWN_MASK |
+		InputEvent.ALT_DOWN_MASK |
+		InputEvent.BUTTON1_DOWN_MASK |
+		InputEvent.BUTTON2_DOWN_MASK |
+		InputEvent.BUTTON3_DOWN_MASK |
+		InputEvent.ALT_GRAPH_DOWN_MASK;
+
+	/**
 	 * Scene input translator that caused this event. The translator may be
 	 * used to request additional information on-demand.
 	 */
@@ -244,6 +258,28 @@ public class ControlInputEvent
 	}
 
 	/**
+	 * Get input event.
+	 *
+	 * @return  {@link InputEvent} (never <code>null</code>).
+	 */
+	public InputEvent getInputEvent()
+	{
+		return _inputEvent;
+	}
+
+	/**
+	 * Get supported modifiers. This returns only the supported bits (see
+	 * {@link #SUPPORTED_MODIFIERS} from {@link InputEvent#getModifiersEx()}.
+	 * This allows testing by equality to easily rule out any unwanted modifiers.
+	 *
+	 * @return  Supported modifiers from input event.
+	 */
+	public int getSupportedModifiers()
+	{
+		return ( _inputEvent.getModifiersEx() & SUPPORTED_MODIFIERS );
+	}
+
+	/**
 	 * Get mouse event, if available.
 	 *
 	 * @return  {@link MouseEvent};
@@ -323,7 +359,7 @@ public class ControlInputEvent
 		if ( ( result == null ) && ( mouseEvent != null ) )
 		{
 			final Projector    projector    = getProjector();
-			final Matrix3D     world2view   = getViewTransform();
+			final Matrix3D     world2view   = getScene2View();
 			final Matrix3D     view2world   = world2view.inverse();
 
 			result = projector.getPointerRay( view2world , (double)mouseEvent.getX() , (double)mouseEvent.getY() );
@@ -357,13 +393,23 @@ public class ControlInputEvent
 	}
 
 	/**
-	 * Get transformation matrix to transform world to view coordinates.
+	 * Get view transform.
 	 *
-	 * @return  Transfrom from world to view coordinates.
+	 * @return  Transform from scene to view coordinates.
 	 */
-	public Matrix3D getViewTransform()
+	public Matrix3D getScene2View()
 	{
-		return _controlInput.getViewTransform();
+		return _controlInput.getScene2View();
+	}
+
+	/**
+	 * Get view transform.
+	 *
+	 * @return  Transform from view to scene coordinates.
+	 */
+	public Matrix3D getView2Scene()
+	{
+		return _controlInput.getView2Scene();
 	}
 
 	/**
