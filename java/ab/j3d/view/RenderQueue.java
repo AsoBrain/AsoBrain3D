@@ -109,21 +109,6 @@ public final class RenderQueue
 	private final Node3DCollection<Object3D> _tmpNodeCollection;
 
 	/**
-	 * Temporary/shared storage area for {@link #enqueueObject}.
-	 */
-	private double[] _tmpVertexCoordinates;
-
-	/**
-	 * Temporary/shared storage area for {@link #enqueueObject}.
-	 */
-	private int[] _tmpProjectedCoordinates;
-
-	/**
-	 * Temporary/shared storage area for {@link #enqueueObject}.
-	 */
-	private double[] _tmpFaceNormals;
-
-	/**
 	 * Temporary storage for clipping variables.
 	 */
 	private double[] _frontX;
@@ -181,9 +166,6 @@ public final class RenderQueue
 		_queue                   = new ArrayList<RenderedPolygon>( 64 );
 		_freeLists               = new AugmentedArrayList<List<RenderedPolygon>>( 4 );
 		_tmpNodeCollection       = new Node3DCollection<Object3D>();
-		_tmpVertexCoordinates    = null;
-		_tmpProjectedCoordinates = null;
-		_tmpFaceNormals          = null;
 		_frontX                  = null;
 		_frontY                  = null;
 		_frontZ                  = null;
@@ -311,7 +293,7 @@ public final class RenderQueue
 	 */
 	public static List<RenderedPolygon> sortPolygonList( final List<RenderedPolygon> tempQueue )
 	{
-		final List<RenderedPolygon> result = new ArrayList( tempQueue.size() );
+		final List<RenderedPolygon> result = new ArrayList<RenderedPolygon>( tempQueue.size() );
 
 		for ( final RenderedPolygon polygon : tempQueue )
 		{
@@ -402,8 +384,8 @@ public final class RenderQueue
 	 */
 	public List<RenderedPolygon> sortQueue( final List<RenderedPolygon> queue )
 	{
-		final ArrayList<RenderedPolygon> result = new ArrayList( queue.size() + ( queue.size() / 3 ) );
-		final ArrayList<RenderedPolygon> tempQueue = new ArrayList( queue );
+		final ArrayList<RenderedPolygon> result = new ArrayList<RenderedPolygon>( queue.size() + ( queue.size() / 3 ) );
+		final ArrayList<RenderedPolygon> tempQueue = new ArrayList<RenderedPolygon>( queue );
 
 		int i = 0;
 		while ( i < tempQueue.size() )
@@ -416,7 +398,7 @@ public final class RenderQueue
 //					out.writeln( "Ordering polygon " + p._name );
 //					out.writeln( "{" );
 //					out.indentIn();
-					order( p , tempQueue , result , new ArrayList( 5 ) );
+					order( p , tempQueue , result , new ArrayList<RenderedPolygon>( 5 ) );
 //					out.indentOut();
 //					out.writeln( "}" );
 					break;
