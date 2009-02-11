@@ -313,9 +313,18 @@ public class TestViewControlInput
 			return Projector.createInstance( ProjectionPolicy.PERSPECTIVE , 100 , 100 , 1.0 , Scene.M , 10.0 , 1000.0 , Math.toRadians( 45.0 ) , 1.0 );
 		}
 
-		protected Matrix3D getViewTransform()
+		protected Matrix3D getScene2View()
 		{
-			return Matrix3D.INIT.set( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , -1.0 , 0.0 , -500.0 );
+			return Matrix3D.INIT.set( 1.0 ,  0.0 , 0.0 ,    0.0 ,
+			                          0.0 ,  0.0 , 1.0 ,    0.0 ,
+			                          0.0 , -1.0 , 0.0 , -500.0 );
+		}
+
+		protected Matrix3D getView2Scene()
+		{
+			return Matrix3D.INIT.set( 1.0 , 0.0 ,  0.0 ,    0.0 ,
+			                          0.0 , 0.0 , -1.0 , -500.0 ,
+			                          0.0 , 1.0 ,  0.0 ,    0.0 );
 		}
 
 		/**

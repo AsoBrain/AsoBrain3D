@@ -152,7 +152,7 @@ public class OrbitCameraControl
 	{
 		final Matrix3D originTransform = Matrix3D.INIT.setTranslation( _originX , _originY , _originZ );
 
-		setTransform( originTransform.multiply( Matrix3D.getTransform( _rotationX , _rotationY , _rotationZ , _translationX , _translationY , _translationZ ) ) );
+		setScene2View( originTransform.multiply( Matrix3D.getTransform( _rotationX , _rotationY , _rotationZ , _translationX , _translationY , _translationZ ) ) );
 	}
 
 	public void save()

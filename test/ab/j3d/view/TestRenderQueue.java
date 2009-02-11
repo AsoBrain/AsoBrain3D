@@ -165,9 +165,8 @@ public final class TestRenderQueue
 			fail( "don't know how to create object" );
 		}
 
-		final Matrix3D viewTransform = Matrix3D.getFromToTransform( Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 ) , Vector3D.INIT , Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) , Vector3D.INIT.set( 0.0 , 1.0 , 0.0 ) );
-		transform = transform.multiply( viewTransform );
-		renderQueue.enqueueObject( projector , true , transform , object , false );
+		final Matrix3D scene2view = Matrix3D.getFromToTransform( Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 ) , Vector3D.INIT , Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) , Vector3D.INIT.set( 0.0 , 1.0 , 0.0 ) );
+		renderQueue.enqueueObject( projector , true , transform.multiply( scene2view ) , object , false );
 	}
 
 	private static Object3D createPlane( final String tag , final double size )

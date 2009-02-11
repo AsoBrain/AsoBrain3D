@@ -31,7 +31,6 @@ import javax.media.j3d.TransformGroup;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 
-import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.model.ContentNode;
 import ab.j3d.model.Light3D;
@@ -175,15 +174,13 @@ public final class Java3dEngine
 
 	private void updateNodeContent( final ContentNode node )
 	{
-		final Object         id               = node.getID();
-		final TransformGroup nodeTransform    = getJava3dTransform( id );
-		final Matrix3D       transform        = node.getTransform();
-		final Node3D         node3D           = node.getNode3D();
-		final Material       materialOverride = node.getMaterialOverride();
-		final float          opacity          = node.getOpacity();
+		final Object         id            = node.getID();
+		final TransformGroup nodeTransform = getJava3dTransform( id );
+		final Matrix3D       transform     = node.getTransform();
+		final Node3D         node3D        = node.getNode3D();
 
 		final Node3DCollection<Object3D> objects = node3D.collectNodes( null , Object3D.class , Matrix3D.INIT , false );
-		final BranchGroup bg = Shape3DBuilder.createBranchGroup( objects , materialOverride , opacity );
+		final BranchGroup bg = Shape3DBuilder.createBranchGroup( objects );
 
 		final Node3DCollection<Light3D> lights = node3D.collectNodes( null , Light3D.class , Matrix3D.INIT , false );
 		addLights( bg , lights , transform );
@@ -194,9 +191,13 @@ public final class Java3dEngine
 		nodeTransform.setTransform( Java3dTools.convertMatrix3DToTransform3D( transform ) );
 
 		if ( nodeTransform.numChildren() == 0 )
+		{
 			nodeTransform.addChild( bg );
+		}
 		else
+		{
 			nodeTransform.setChild( bg , 0 );
+		}
 	}
 
 	private static void addLights( final BranchGroup bg , final Node3DCollection<Light3D> lights , final Matrix3D transform )

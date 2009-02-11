@@ -36,7 +36,7 @@ import com.numdata.oss.PropertyTools;
  * zooming.
  * <p />
  * Panning is achieved by modifying the translational compnents of the view
- * matrix ({@link View3D#setViewTransform}, while the zoom effect is
+ * matrix ({@link View3D#setScene2View}, while the zoom effect is
  * achieved by manipulating the camera ({@link Camera3D#setZoomFactor}.
  *
  * @author  Peter S. Heijnen
@@ -56,7 +56,7 @@ public class PanAndZoomCameraControl
 	/**
 	 * View transform at start of drag operation.
 	 */
-	private Matrix3D _dragStartViewTransform = Matrix3D.INIT;
+	private Matrix3D _dragStartScene2View = Matrix3D.INIT;
 
 	/**
 	 * Projector used when dragging started.
@@ -72,17 +72,17 @@ public class PanAndZoomCameraControl
 	{
 		super( view );
 
-		_savedSettings = new Object[] { view.getViewTransform() , new Double( view.getZoomFactor() ) };
+		_savedSettings = new Object[] { view.getScene2View() , new Double( view.getZoomFactor() ) };
 	}
 
 	public void save()
 	{
-		final View3D view = _view;
-		final Matrix3D viewTransform = view.getViewTransform();
-		final double zoomFactor = view.getZoomFactor();
+		final View3D   view       = _view;
+		final Matrix3D scene2view = view.getScene2View();
+		final double   zoomFactor = view.getZoomFactor();
 
 		final Object[] saved = _savedSettings;
-		saved[ 0 ] = viewTransform;
+		saved[ 0 ] = scene2view;
 		saved[ 1 ] = new Double( zoomFactor );
 	}
 
@@ -92,7 +92,7 @@ public class PanAndZoomCameraControl
 
 		final Object[] saved = _savedSettings;
 		camera.setZoomFactor( (Double)saved[ 1 ] );
-		setTransform( (Matrix3D)saved[ 0 ] );
+		setScene2View( (Matrix3D)saved[ 0 ] );
 	}
 
 	public void saveSettings( final Properties settings )
@@ -100,11 +100,11 @@ public class PanAndZoomCameraControl
 		if ( settings == null )
 			throw new NullPointerException( "settings" );
 
-		final View3D view          = _view;
-		final Matrix3D      viewTransform = view.getViewTransform();
-		final double        zoomFactor    = view.getZoomFactor();
+		final View3D view = _view;
+		final Matrix3D scene2view = view.getScene2View();
+		final double zoomFactor = view.getZoomFactor();
 
-		settings.setProperty( "viewTransform" , viewTransform.toString() );
+		settings.setProperty( "scene2view" , scene2view.toString() );
 		settings.setProperty( "zoomFactor"    , String.valueOf( zoomFactor ) );
 	}
 
@@ -112,11 +112,11 @@ public class PanAndZoomCameraControl
 	{
 		try
 		{
-			final Matrix3D viewTransform = Matrix3D.fromString( PropertyTools.getString( settings , "viewTransform" ) );
+			final Matrix3D scene2view = Matrix3D.fromString( PropertyTools.getString( settings , "scene2view" ) );
 			final double   zoomFactor    = PropertyTools.getDouble( settings , "zoomFactor" );
 
 			final Object[] saved = _savedSettings;
-			saved[ 0 ] = viewTransform;
+			saved[ 0 ] = scene2view;
 			saved[ 1 ] = new Double( zoomFactor );
 
 			restore();
@@ -136,7 +136,7 @@ public class PanAndZoomCameraControl
 		final View3D view = _view;
 
 		_dragStartProjector = view.getProjector();
-		_dragStartViewTransform = view.getViewTransform();
+		_dragStartScene2View = view.getScene2View();
 
 		return super.mousePressed( event );
 	}
@@ -174,14 +174,14 @@ public class PanAndZoomCameraControl
 	protected void pan( final ControlInputEvent event )
 	{
 		final View3D view = _view;
-		final Matrix3D viewTransform = _dragStartViewTransform;
+		final Matrix3D scene2view = _dragStartScene2View;
 
 		final double toUnits = view.getPixelsToUnitsFactor();
 
 		final double dx =  toUnits * (double)event.getDragDeltaX();
 		final double dy = -toUnits * (double)event.getDragDeltaY();
 
-		view.setViewTransform( viewTransform.plus( dx , dy , 0.0 ) );
+		view.setScene2View( scene2view.plus( dx , dy , 0.0 ) );
 	}
 
 	/**
@@ -200,17 +200,17 @@ public class PanAndZoomCameraControl
 		final double sensitivity   = 150.0; /* should this be configurable? */
 		final double adjustment    = 1.0 + (double)Math.abs( deltaY ) / sensitivity;
 
-		final Projector oldProjector     = _dragStartProjector;
-		final Vector3D  oldViewPosition  = oldProjector.imageToView( zoomToX , zoomToY , 0.0 );
-		final Matrix3D  oldViewTransform = _dragStartViewTransform;
+		final Projector oldProjector    = _dragStartProjector;
+		final Vector3D  oldViewPosition = oldProjector.imageToView( zoomToX , zoomToY , 0.0 );
+		final Matrix3D  oldScene2View   = _dragStartScene2View;
 
 		camera.setZoomFactor( ( deltaY > 0 ) ? oldProjector.getZoomFactor() / adjustment : oldProjector.getZoomFactor() * adjustment );
 
-		final Projector newProjector     = view.getProjector();
-		final Vector3D  newViewPosition  = newProjector.imageToView( zoomToX , zoomToY , 0.0 );
-		final Matrix3D  newViewTransform = oldViewTransform.plus( newViewPosition.minus( oldViewPosition ) );
+		final Projector newProjector    = view.getProjector();
+		final Vector3D  newViewPosition = newProjector.imageToView( zoomToX , zoomToY , 0.0 );
+		final Matrix3D  newScene2View   = oldScene2View.plus( newViewPosition.minus( oldViewPosition ) );
 
-		view.setViewTransform( newViewTransform );
+		view.setScene2View( newScene2View );
 		view.update();
 	}
 
@@ -238,17 +238,17 @@ public class PanAndZoomCameraControl
 		}
 		factor += 1.0;
 
-		final Projector oldProjector     = view.getProjector();
-		final Vector3D  oldViewPosition  = oldProjector.imageToView( zoomToX , zoomToY , 0.0 );
-		final Matrix3D  oldViewTransform = view.getViewTransform();
+		final Projector oldProjector    = view.getProjector();
+		final Vector3D  oldViewPosition = oldProjector.imageToView( zoomToX , zoomToY , 0.0 );
+		final Matrix3D  oldScene2View   = view.getScene2View();
 
 		camera.setZoomFactor( ( steps > 0 ) ? oldProjector.getZoomFactor() / factor : oldProjector.getZoomFactor() * factor );
 
-		final Projector newProjector     = view.getProjector();
-		final Vector3D  newViewPosition  = newProjector.imageToView( zoomToX , zoomToY , 0.0 );
-		final Matrix3D  newViewTransform = oldViewTransform.plus( newViewPosition.minus( oldViewPosition ) );
+		final Projector newProjector    = view.getProjector();
+		final Vector3D  newViewPosition = newProjector.imageToView( zoomToX , zoomToY , 0.0 );
+		final Matrix3D  newScene2View   = oldScene2View.plus( newViewPosition.minus( oldViewPosition ) );
 
-		view.setViewTransform( newViewTransform );
+		view.setScene2View( newScene2View );
 		view.update();
 	}
 }

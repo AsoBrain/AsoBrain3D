@@ -323,7 +323,7 @@ public class DefaultViewControl
 		{
 			if ( planeControl != null )
 			{
-				final Matrix3D  wcs2view   = view.getViewTransform();
+				final Matrix3D  wcs2view   = view.getScene2View();
 				final Matrix3D  plane2view = plane2wcs.multiply( wcs2view );
 				final Projector projector  = view.getProjector();
 
@@ -334,7 +334,7 @@ public class DefaultViewControl
 
 			if ( subPlaneControl != null )
 			{
-				final Matrix3D  wcs2view   = view.getViewTransform();
+				final Matrix3D  wcs2view   = view.getScene2View();
 				final Matrix3D  plane2view = plane2wcs.multiply( wcs2view );
 				final Projector projector  = view.getProjector();
 

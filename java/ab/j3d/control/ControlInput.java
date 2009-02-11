@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2007
+ * (C) Copyright Numdata BV 2005-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -166,10 +166,16 @@ public abstract class ControlInput
 	protected abstract Projector getProjector();
 
 	/**
-	 * Returns the current view transform for this scene. The view transform
-	 * transforms world to view coordinates.
+	 * Get view transform.
 	 *
-	 * @return  View transform for this scene.
+	 * @return  Transform from scene to view coordinates.
 	 */
-	protected abstract Matrix3D getViewTransform();
+	protected abstract Matrix3D getScene2View();
+
+	/**
+	 * Get view transform.
+	 *
+	 * @return  Transform from view to scene coordinates.
+	 */
+	protected abstract Matrix3D getView2Scene();
 }

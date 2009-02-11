@@ -108,8 +108,8 @@ public class JOGLView
 
 		_joglEngine = joglEngine;
 
-		_frontClipDistance = 0.001;
-		_backClipDistance  = 100.0;
+		_frontClipDistance = 0.001 / scene.getUnit();
+		_backClipDistance  = 100.0 / scene.getUnit();
 		_renderThread      = null;
 
 		/* Use heavyweight popups, since we use a heavyweight canvas */
@@ -496,7 +496,7 @@ public class JOGLView
 		/* Apply view transform. */
 		gl.glMatrixMode( GL.GL_MODELVIEW );
 		gl.glLoadIdentity();
-		JOGLTools.glMultMatrixd( gl , getViewTransform() );
+		JOGLTools.glMultMatrixd( gl , getScene2View() );
 
 		/* Render scene. */
 		final Map<String,Texture> textureCache = _joglEngine.getTextureCache();

@@ -175,7 +175,7 @@ public class FromToCameraControl
 		_savedFrom   = from;
 		_savedTo     = to;
 
-		setTransform( Matrix3D.getFromToTransform( from , to , upPrimary , upSecondary ) );
+		setScene2View( Matrix3D.getFromToTransform( from , to , upPrimary , upSecondary ) );
 	}
 
 	/**
@@ -219,7 +219,7 @@ public class FromToCameraControl
 		if ( !from.equals( _from ) )
 		{
 			_from = from;
-			setTransform( Matrix3D.getFromToTransform( from , _to , _upPrimary , _upSecondary ) );
+			setScene2View( Matrix3D.getFromToTransform( from , _to , _upPrimary , _upSecondary ) );
 		}
 	}
 
@@ -246,7 +246,7 @@ public class FromToCameraControl
 		if ( !to.equals( _to ) )
 		{
 			_to = to;
-			setTransform( Matrix3D.getFromToTransform( _from , to , _upPrimary , _upSecondary ) );
+			setScene2View( Matrix3D.getFromToTransform( _from , to , _upPrimary , _upSecondary ) );
 		}
 	}
 
@@ -338,7 +338,7 @@ public class FromToCameraControl
 
 	public EventObject mousePressed( final ControlInputEvent event )
 	{
-		_dragStartTransform = getTransform();
+		_dragStartTransform = getScene2View();
 		_dragStartFrom      = _from;
 		_dragStartTo        = _to;
 

@@ -129,9 +129,10 @@ public class ViewComparison
 				layoutPanel.add( component );
 			}
 
-			if ( INCLUDE_POV_VIEW )
+			if ( ( view != null ) && INCLUDE_POV_VIEW )
 			{
-				final View3D povView = view;
+				final Camera3D camera     = view.getCamera();
+				final Matrix3D view2scene = view.getView2Scene();
 
 				final JLabel povComponent = new JLabel();
 				layoutPanel.add( povComponent );
@@ -149,15 +150,11 @@ public class ViewComparison
 							final Dimension size = povComponent.getSize();
 							if ( ( size.width > 0 ) && ( size.height > 0 ) )
 							{
-								final Camera3D camera          = povView.getCamera();
-								final Scene    scene           = povView.getScene();
-								final Matrix3D viewTransform   = povView.getViewTransform();
-								final Matrix3D cameraTransform = viewTransform.inverse();
-								final double   aspectRatio     = (double)size.width / (double)size.height;
+								final double   aspectRatio = (double)size.width / (double)size.height;
 
 								final AbToPovConverter converter = new AbToPovConverter( MapTools.imageMapDirectory );
 								final PovScene povScene = converter.convert( scene.getContent() );
-								povScene.add( AbToPovConverter.convertCamera3D( cameraTransform , camera , aspectRatio ) );
+								povScene.add( AbToPovConverter.convertCamera3D( view2scene , camera , aspectRatio ) );
 
 								povScene.setBackground( new PovVector( Color.GRAY ) );
 

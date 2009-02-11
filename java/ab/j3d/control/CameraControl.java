@@ -107,9 +107,9 @@ public abstract class CameraControl
 	 *
 	 * @return  View transform.
 	 */
-	public Matrix3D getTransform()
+	public Matrix3D getScene2View()
 	{
-		return _view.getViewTransform();
+		return _view.getScene2View();
 	}
 
 	/**
@@ -117,9 +117,9 @@ public abstract class CameraControl
 	 *
 	 * @param   transform   View transform.
 	 */
-	protected void setTransform( final Matrix3D transform )
+	protected void setScene2View( final Matrix3D transform )
 	{
-		_view.setViewTransform( transform );
+		_view.setScene2View( transform );
 	}
 
 	public EventObject mouseClicked( final ControlInputEvent event )

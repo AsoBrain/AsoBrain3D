@@ -172,7 +172,7 @@ public class FirstPersonCameraControl
 		_savedFrom   = from;
 		_savedTo     = to;
 
-		setTransform( Matrix3D.getFromToTransform( from , to , upPrimary , upSecondary ) );
+		setScene2View( Matrix3D.getFromToTransform( from , to , upPrimary , upSecondary ) );
 	}
 
 	/**
@@ -206,7 +206,7 @@ public class FirstPersonCameraControl
 		if ( !from.equals( _from ) )
 		{
 			_from = from;
-			setTransform( Matrix3D.getFromToTransform( from , _to , _upPrimary , _upSecondary ) );
+			setScene2View( Matrix3D.getFromToTransform( from , _to , _upPrimary , _upSecondary ) );
 		}
 	}
 
@@ -223,7 +223,7 @@ public class FirstPersonCameraControl
 		if ( !to.equals( _to ) )
 		{
 			_to = to;
-			setTransform( Matrix3D.getFromToTransform( _from , to , _upPrimary , _upSecondary ) );
+			setScene2View( Matrix3D.getFromToTransform( _from , to , _upPrimary , _upSecondary ) );
 		}
 	}
 
@@ -370,32 +370,32 @@ public class FirstPersonCameraControl
 			switch ( keyCode )
 			{
 				case KeyEvent.VK_LEFT :
-					moveSteps( from , to , getTransform() , -1.0 ,  0.0 ,  0.0 );
+					moveSteps( from , to , getScene2View() , -1.0 ,  0.0 ,  0.0 );
 					result = null;
 					break;
 
 				case KeyEvent.VK_RIGHT :
-					moveSteps( from , to , getTransform() ,  1.0 ,  0.0 ,  0.0 );
+					moveSteps( from , to , getScene2View() ,  1.0 ,  0.0 ,  0.0 );
 					result = null;
 					break;
 
 				case KeyEvent.VK_UP :
-					moveSteps( from , to , getTransform() ,  0.0 ,  1.0 ,  0.0 );
+					moveSteps( from , to , getScene2View() ,  0.0 ,  1.0 ,  0.0 );
 					result = null;
 					break;
 
 				case KeyEvent.VK_DOWN :
-					moveSteps( from , to , getTransform() ,  0.0 , -1.0 ,  0.0 );
+					moveSteps( from , to , getScene2View() ,  0.0 , -1.0 ,  0.0 );
 					result = null;
 					break;
 
 				case KeyEvent.VK_PAGE_DOWN :
-					moveSteps( from , to , getTransform() ,  0.0 ,  0.0 , -0.5 );
+					moveSteps( from , to , getScene2View() ,  0.0 ,  0.0 , -0.5 );
 					result = null;
 					break;
 
 				case KeyEvent.VK_PAGE_UP :
-					moveSteps( from , to , getTransform() ,  0.0 ,  0.0 ,  0.5 );
+					moveSteps( from , to , getScene2View() ,  0.0 ,  0.0 ,  0.5 );
 					result = null;
 					break;
 			}
@@ -541,7 +541,7 @@ public class FirstPersonCameraControl
 	 */
 	protected void move( final ControlInputEvent event )
 	{
-		final Matrix3D transform = getTransform();
+		final Matrix3D transform = getScene2View();
 		final Vector3D upPrimary = _upPrimary;
 		final Vector3D zAxis     = Vector3D.INIT.set( transform.zx , transform.zy , transform.zz );
 		final Vector3D xAxis     = Vector3D.cross( upPrimary , zAxis );

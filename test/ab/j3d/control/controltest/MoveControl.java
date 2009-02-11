@@ -88,7 +88,7 @@ public class MoveControl
 				final Face3DIntersection intersection = intersections.get( 0 );
 				if ( selectedHedron == intersection.getObjectID() )
 				{
-					_dragger = new PlaneMovementDragger( Matrix3D.INIT , FLOOR_PLANE , event.getViewTransform() , event.getProjector() , intersection );
+					_dragger = new PlaneMovementDragger( Matrix3D.INIT , FLOOR_PLANE , event.getScene2View() , event.getProjector() , intersection );
 					startCapture( event );
 					result = null;
 				}

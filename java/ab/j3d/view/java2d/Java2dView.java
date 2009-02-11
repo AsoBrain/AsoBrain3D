@@ -113,7 +113,7 @@ public final class Java2dView
 			final Scene       scene      = getScene();
 			final BSPTree     bspTree    = scene.getBspTree();
 			final Projector   projector  = getProjector();
-			final Matrix3D    model2view = getViewTransform();
+			final Matrix3D    model2view = getScene2View();
 
 			final Insets insets      = getInsets( _insetsCache );
 			final int    imageWidth  = getWidth()  - insets.left - insets.right;
@@ -135,7 +135,7 @@ public final class Java2dView
 					default        : fill = false; outline = false; useTextures = false; backfaceCulling = false; applyLighting = true;  break;
 			}
 
-			final Matrix3D view2model = getInverseViewTransform();
+			final Matrix3D view2model = getView2Scene();
 			final Vector3D viewPoint  = Vector3D.INIT.set( view2model.xo , view2model.yo , view2model.zo );
 			final RenderedPolygon[] renderQueue = bspTree.getRenderQueue( viewPoint , projector , model2view , backfaceCulling , true );
 

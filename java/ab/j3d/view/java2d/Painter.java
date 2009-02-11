@@ -180,14 +180,14 @@ public final class Painter
 	 * objects.
 	 *
 	 * @param   g                       Graphics2D context.
-	 * @param   gTransform              Projection transform for Graphics2D context (3D->2D, pan, sale).
+	 * @param   view2image              Projection transform for Graphics2D context (3D->2D, pan, sale).
 	 * @param   node2view               Transformation from node's to view coordinate system.
 	 * @param   node                    Node to paint.
 	 * @param   alternateAppearance     Use alternate appearance.
 	 */
-	public static void paintNode( final Graphics2D g , final Matrix3D gTransform , final Matrix3D node2view , final Node3D node , final boolean alternateAppearance )
+	public static void paintNode( final Graphics2D g , final Matrix3D view2image , final Matrix3D node2view , final Node3D node , final boolean alternateAppearance )
 	{
-		paintNode( g , gTransform , node2view , node , alternateAppearance , null );
+		paintNode( g , view2image , node2view , node , alternateAppearance , null );
 	}
 
 	/**
@@ -203,13 +203,13 @@ public final class Painter
 	 * objects.
 	 *
 	 * @param   g                       Graphics2D context.
-	 * @param   gTransform              Projection transform for Graphics2D context (3D->2D, pan, sale).
+	 * @param   view2image              Projection transform for Graphics2D context (3D->2D, pan, sale).
 	 * @param   node2view               Transformation from node's to view coordinate system.
 	 * @param   node                    Node to paint.
 	 * @param   alternateAppearance     Use alternate appearance.
 	 * @param   fillPaintOverride       Override fill paint.
 	 */
-	public static void paintNode( final Graphics2D g , final Matrix3D gTransform , final Matrix3D node2view , final Node3D node , final boolean alternateAppearance , final Paint fillPaintOverride )
+	public static void paintNode( final Graphics2D g , final Matrix3D view2image , final Matrix3D node2view , final Node3D node , final boolean alternateAppearance , final Paint fillPaintOverride )
 	{
 		final Matrix3D transform;
 
@@ -234,14 +234,14 @@ public final class Painter
 			final Color    outlineColor =                                                     alternateAppearance ? object.alternateOutlineColor : object.outlineColor;
 			final Paint    fillColor    = ( fillPaintOverride != null ) ? fillPaintOverride : alternateAppearance ? object.alternateFillColor    : object.fillColor;
 
-			paintObject( g , gTransform , transform , object , outlineColor , fillColor , object.shadeFactor );
+			paintObject( g , view2image , transform , object , outlineColor , fillColor , object.shadeFactor );
 		}
 
 		final int  childCount = node.getChildCount();
 
 		for ( int i = 0 ; i < childCount ; i++ )
 		{
-			paintNode( g , gTransform , transform , node.getChild( i ) , alternateAppearance , fillPaintOverride );
+			paintNode( g , view2image , transform , node.getChild( i ) , alternateAppearance , fillPaintOverride );
 		}
 	}
 
@@ -262,18 +262,18 @@ public final class Painter
 	 * (0%). The outline color is not influenced by the <code>shadeFactor</code>.
 	 * <p />
 	 * Objects are painted on the specified graphics context after being
-	 * transformed again by gTransform. This may be used to pan/scale the object on the
+	 * transformed again by view2image. This may be used to pan/scale the object on the
 	 * graphics context (NOTE: IT MAY NOT ROTATE THE OBJECT!).
 	 *
 	 * @param   g               Graphics2D context.
-	 * @param   gTransform      Projection transform for Graphics2D context (3D->2D, pan, sale).
+	 * @param   view2image      Projection transform for Graphics2D context (3D->2D, pan, sale).
 	 * @param   node2view       Transformation from node's to view coordinate system.
 	 * @param   node            Node to paint.
 	 * @param   outlineColor    Paint to use for face outlines (<code>null</code> to disable drawing).
 	 * @param   fillPaint       Paint to use for filling faces (<code>null</code> to disable drawing).
 	 * @param   shadeFactor     Amount of shading that may be applied (0=none, 1=extreme).
 	 */
-	public static void paintNode( final Graphics2D g , final Matrix3D gTransform , final Matrix3D node2view , final Node3D node , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
+	public static void paintNode( final Graphics2D g , final Matrix3D view2image , final Matrix3D node2view , final Node3D node , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
 	{
 		final Matrix3D transform;
 
@@ -294,27 +294,27 @@ public final class Painter
 
 		if ( node instanceof Object3D )
 		{
-			paintObject( g , gTransform , transform , (Object3D)node , outlineColor , fillPaint , shadeFactor );
+			paintObject( g , view2image , transform , (Object3D)node , outlineColor , fillPaint , shadeFactor );
 		}
 
 		final int  childCount = node.getChildCount();
 
 		for ( int i = 0 ; i < childCount ; i++ )
-			paintNode( g , gTransform , transform , node.getChild( i ) , outlineColor , fillPaint , shadeFactor );
+			paintNode( g , view2image , transform , node.getChild( i ) , outlineColor , fillPaint , shadeFactor );
 	}
 
-	private static void paintObject( final Graphics2D g , final Matrix3D gTransform , final Matrix3D object2view , final Object3D object , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
+	private static void paintObject( final Graphics2D g , final Matrix3D view2image , final Matrix3D object2view , final Object3D object , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
 	{
 		final int faceCount = object.getFaceCount();
 
 		if ( ( g != null )
-		     && ( gTransform != null )
+		     && ( view2image != null )
 		     && ( object2view != null )
 		     && ( ( outlineColor != null ) || ( fillPaint != null ) )
 		     && ( faceCount > 0 )
-		     && ( !( object instanceof Cylinder3D       ) || !paintCylinder     ( g , gTransform , object2view , (Cylinder3D      )object , outlineColor , fillPaint , shadeFactor ) )
-		     && ( !( object instanceof Sphere3D         ) || !paintSphere       ( g , gTransform , object2view , (Sphere3D        )object , outlineColor , fillPaint , shadeFactor ) )
-		     && ( !( object instanceof ExtrudedObject2D ) || !paintExtrudedShape( g , gTransform , object2view , (ExtrudedObject2D)object , outlineColor , fillPaint , shadeFactor ) ) )
+		     && ( !( object instanceof Cylinder3D       ) || !paintCylinder     ( g , view2image , object2view , (Cylinder3D      )object , outlineColor , fillPaint , shadeFactor ) )
+		     && ( !( object instanceof Sphere3D         ) || !paintSphere       ( g , view2image , object2view , (Sphere3D        )object , outlineColor , fillPaint , shadeFactor ) )
+		     && ( !( object instanceof ExtrudedObject2D ) || !paintExtrudedShape( g , view2image , object2view , (ExtrudedObject2D)object , outlineColor , fillPaint , shadeFactor ) ) )
 		{
 			/*
 			 * If the array is to small, create a larger one.
@@ -363,7 +363,7 @@ public final class Painter
 					faceFillPaint = fillPaint;
 				}
 
-				paintFace( g , gTransform , object2view , face , outlineColor , faceFillPaint , xs , ys );
+				paintFace( g , view2image , object2view , face , outlineColor , faceFillPaint , xs , ys );
 			}
 		}
 	}
@@ -373,7 +373,7 @@ public final class Painter
 	 * possible.
 	 *
 	 * @param   g               Graphics context to paint to.
-	 * @param   gTransform      Transformation from view coordinates to graphics
+	 * @param   view2image      Transformation from view coordinates to graphics
 	 *                          context coordinates.
 	 * @param   object2view     Transformation from object-local coordinates to
 	 *                          view coordinates.
@@ -387,11 +387,11 @@ public final class Painter
 	 * @return  <code>true</code> if the shape was painted; <code>false</code>
 	 *          if the shape should be painted by some other means.
 	 */
-	private static boolean paintExtrudedShape( final Graphics2D g , final Matrix3D gTransform , final Matrix3D object2view , final ExtrudedObject2D object , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
+	private static boolean paintExtrudedShape( final Graphics2D g , final Matrix3D view2image , final Matrix3D object2view , final ExtrudedObject2D object , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
 	{
 		final boolean result;
 
-		final Matrix3D viewBase = object.transform.multiply( object2view );
+		final Matrix3D scene2view = object.transform.multiply( object2view );
 		final Shape    shape    = object.shape;
 
 		g.translate( -0.5 , -0.5 ); // Match rounding used in other paint methods.
@@ -400,11 +400,11 @@ public final class Painter
 		{
 			result = false;
 		}
-		else if ( MathTools.almostEqual( viewBase.zz , 0.0 ) )
+		else if ( MathTools.almostEqual( scene2view.zz , 0.0 ) )
 		{
 			final Rectangle2D bounds = shape.getBounds2D();
 
-			final Matrix3D object2graphics = viewBase.multiply( gTransform );
+			final Matrix3D object2graphics = scene2view.multiply( view2image );
 
 			final Vector3D v1 = object2graphics.transform( bounds.getMinX() , bounds.getMinY() , 0.0 );
 			final Vector3D v2 = object2graphics.transform( bounds.getMaxX() , bounds.getMaxY() , object.extrusion.z  );
@@ -430,17 +430,17 @@ public final class Painter
 
 			result = true;
 		}
-		else if ( MathTools.almostEqual( Math.abs( viewBase.zz ) , 1.0 ) )
+		else if ( MathTools.almostEqual( Math.abs( scene2view.zz ) , 1.0 ) )
 		{
-			final Matrix3D object2graphics = viewBase.multiply( gTransform );
+			final Matrix3D object2graphics = scene2view.multiply( view2image );
 
-			final AffineTransform viewTransform = new AffineTransform(
+			final AffineTransform object2graphics2D = new AffineTransform(
 					object2graphics.xx , object2graphics.yx ,
 					object2graphics.xy , object2graphics.yy ,
 					object2graphics.xo , object2graphics.yo );
 
 			final GeneralPath viewShape = new GeneralPath();
-			viewShape.append( shape.getPathIterator( viewTransform ) , false );
+			viewShape.append( shape.getPathIterator( object2graphics2D ) , false );
 
 			if ( fillPaint != null )
 			{
@@ -466,7 +466,7 @@ public final class Painter
 		return result;
 	}
 
-	private static boolean paintCylinder( final Graphics2D g , final Matrix3D gTransform , final Matrix3D cylinder2view , final Cylinder3D cylinder , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
+	private static boolean paintCylinder( final Graphics2D g , final Matrix3D view2image , final Matrix3D cylinder2view , final Cylinder3D cylinder , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
 	{
 		final boolean result;
 
@@ -507,14 +507,14 @@ public final class Painter
 			/*
 			 * Project and draw trapezoid.
 			 */
-			final float x1 = (float)gTransform.transformX( p1x , p1y , zo );
-			final float y1 = (float)gTransform.transformY( p1x , p1y , zo );
-			final float x2 = (float)gTransform.transformX( p2x , p2y , zo );
-			final float y2 = (float)gTransform.transformY( p2x , p2y , zo );
-			final float x3 = (float)gTransform.transformX( p3x , p3y , zo );
-			final float y3 = (float)gTransform.transformY( p3x , p3y , zo );
-			final float x4 = (float)gTransform.transformX( p4x , p4y , zo );
-			final float y4 = (float)gTransform.transformY( p4x , p4y , zo );
+			final float x1 = (float)view2image.transformX( p1x , p1y , zo );
+			final float y1 = (float)view2image.transformY( p1x , p1y , zo );
+			final float x2 = (float)view2image.transformX( p2x , p2y , zo );
+			final float y2 = (float)view2image.transformY( p2x , p2y , zo );
+			final float x3 = (float)view2image.transformX( p3x , p3y , zo );
+			final float y3 = (float)view2image.transformY( p3x , p3y , zo );
+			final float x4 = (float)view2image.transformX( p4x , p4y , zo );
+			final float y4 = (float)view2image.transformY( p4x , p4y , zo );
 
 			final GeneralPath path = new GeneralPath( GeneralPath.WIND_EVEN_ODD , 5 );
 			path.moveTo( x1 , y1 );
@@ -553,7 +553,7 @@ public final class Painter
 		else if ( MathTools.almostEqual( xz , 0.0 ) &&
 		          MathTools.almostEqual( yz , 0.0 ) )
 		{
-			final Matrix3D combinedTransform = viewBase.multiply( gTransform );
+			final Matrix3D combinedTransform = viewBase.multiply( view2image );
 
 			final float x         = (float)combinedTransform.xo;
 			final float y         = (float)combinedTransform.yo;
@@ -675,14 +675,14 @@ public final class Painter
 		return result;
 	}
 
-	private static boolean paintSphere( final Graphics2D g , final Matrix3D gTransform , final Matrix3D sphere2view , final Sphere3D sphere , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
+	private static boolean paintSphere( final Graphics2D g , final Matrix3D view2image , final Matrix3D sphere2view , final Sphere3D sphere , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
 	{
 		final boolean result;
 
 		final double radius = sphere.radius;
 
 		final Matrix3D viewBase          = sphere2view;
-		final Matrix3D combinedTransform = viewBase.multiply( gTransform );
+		final Matrix3D combinedTransform = viewBase.multiply( view2image );
 
 		final float x = (float)combinedTransform.xo;
 		final float y = (float)combinedTransform.yo;
@@ -732,18 +732,18 @@ public final class Painter
 	/**
 	 * Paint 2D representation of this 3D face.
 	 *
-	 * @param   g                   Graphics2D context.
-	 * @param   gTransform          Projection transform for Graphics2D context (3D->2D, pan, sale).
-	 * @param   object2view         Transforms object to view coordinates.
-	 * @param   face                Face to paint.
-	 * @param   outlineColor        Paint to use for face outlines (<code>null</code> to disable drawing).
-	 * @param   fillPaint           Paint to use for filling faces (<code>null</code> to disable drawing).
-	 * @param   xs                  Temporary storage for 2D coordinates.
-	 * @param   ys                  Temporary storage for 2D coordinates.
+	 * @param   g               Graphics2D context.
+	 * @param   view2image      Projection transform for Graphics2D context (3D->2D, pan, sale).
+	 * @param   object2view     Transforms object to view coordinates.
+	 * @param   face            Face to paint.
+	 * @param   outlineColor    Paint to use for face outlines (<code>null</code> to disable drawing).
+	 * @param   fillPaint       Paint to use for filling faces (<code>null</code> to disable drawing).
+	 * @param   xs              Temporary storage for 2D coordinates.
+	 * @param   ys              Temporary storage for 2D coordinates.
 	 *
 	 * @see     #paintNode
 	 */
-	private static void paintFace( final Graphics2D g , final Matrix3D gTransform , final Matrix3D object2view , final Face3D face , final Color outlineColor , final Paint fillPaint , final int[] xs , final int[] ys )
+	private static void paintFace( final Graphics2D g , final Matrix3D view2image , final Matrix3D object2view , final Face3D face , final Color outlineColor , final Paint fillPaint , final int[] xs , final int[] ys )
 	{
 		final List<Vertex> vertices = face.vertices;
 		final int vertexCount = vertices.size();
@@ -759,8 +759,8 @@ public final class Painter
 				final double y  = object2view.transformY( vertex.point );
 				final double z  = object2view.transformZ( vertex.point );
 
-				final int ix = (int)gTransform.transformX( x , y , z );
-				final int iy = (int)gTransform.transformY( x , y , z );
+				final int ix = (int)view2image.transformX( x , y , z );
+				final int iy = (int)view2image.transformY( x , y , z );
 
 				/*
 				 * Perform backface removal if we have 3 points, so we can calculate the normal.

@@ -82,7 +82,7 @@ public class TestFromToCameraControl
 			  0.0 ,  0.0 ,  1.0 ,  0.0 ,
 			  0.0 , -1.0 ,  0.0 , -1.0 );
 
-		final Matrix3D actual = fromToCameraControl.getTransform();
+		final Matrix3D actual = fromToCameraControl.getScene2View();
 
 		assertTrue( "Initial transform failed!\nExpected:" + expected.toFriendlyString() + "\nActual:" + actual.toFriendlyString()
 		          , expected.almostEquals( actual ) );

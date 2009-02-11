@@ -493,13 +493,14 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel testModel = new AbPovTestModel();
 
-			final View3D view          = testModel.getView();
-			final Matrix3D      viewTransform = view.getViewTransform();
-			final Component     viewComponent = view.getComponent();
-			final double        aspectRatio   = (double)viewComponent.getWidth() / (double)viewComponent.getHeight();
+			final View3D    view          = testModel.getView();
+			final Matrix3D  view2scene    = view.getView2Scene();
+			final Component viewComponent = view.getComponent();
+			final double    aspectRatio   = (double)viewComponent.getWidth() / (double)viewComponent.getHeight();
 
-			final PovCamera       camera          = AbToPovConverter.convertCamera3D( viewTransform.inverse() , view.getCamera() , aspectRatio );
-			final StringWriter    stringWriter    = new StringWriter();
+			final PovCamera camera = AbToPovConverter.convertCamera3D( view2scene , view.getCamera() , aspectRatio );
+
+			final StringWriter stringWriter = new StringWriter();
 			final IndentingWriter indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
 			camera.write( indentingWriter );
@@ -1050,16 +1051,16 @@ public final class TestAbToPovConverter
 		throws IOException
 	{
 		final AbPovTestModel testModel = new AbPovTestModel();
-		final Scene scene     = testModel.getScene();
+		final Scene          scene     = testModel.getScene();
 
-		final View3D view          = testModel.getView();
-		final Matrix3D      viewTransform = view.getViewTransform();
-		final Component     viewComponent = view.getComponent();
-		final double        aspectRatio   = (double)viewComponent.getWidth() / (double)viewComponent.getHeight();
+		final View3D    view          = testModel.getView();
+		final Matrix3D  view2scene    = view.getView2Scene();
+		final Component viewComponent = view.getComponent();
+		final double    aspectRatio   = (double)viewComponent.getWidth() / (double)viewComponent.getHeight();
 
 		final AbToPovConverter converter = new AbToPovConverter( getTexturesDirectory() );
 		final PovScene povScene = converter.convert( scene.getContent() );
-		povScene.add( AbToPovConverter.convertCamera3D( viewTransform.inverse(), view.getCamera(), aspectRatio ) );
+		povScene.add( AbToPovConverter.convertCamera3D( view2scene , view.getCamera() , aspectRatio ) );
 		povScene.write( new File( "test.pov" ) );
 	}
 }

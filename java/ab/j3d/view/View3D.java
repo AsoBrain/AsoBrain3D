@@ -341,37 +341,53 @@ public abstract class View3D
 	}
 
 	/**
-	 * Get view transform (tranforms model coordinates to view coordinates).
+	 * Get view transform.
 	 *
-	 * @return  View transform.
+	 * @return  Scene to view transform.
 	 */
-	public final Matrix3D getViewTransform()
+	public final Matrix3D getScene2View()
 	{
 		return _transform.getInverseTransform();
 	}
 
 	/**
-	 * Get inverse view transform (tranforms view coordinates to model coordinates).
+	 * Set view transform.
 	 *
-	 * @return  Inverse view transform.
+	 * @param   scene2view  Scene to view transform.
+	 *
+	 * @throws  NullPointerException if <code>transform</code> is <code>null</code>.
 	 */
-	public final Matrix3D getInverseViewTransform()
+	public final void setScene2View( final Matrix3D scene2view )
+	{
+		if ( !scene2view.equals( getScene2View() ) )
+		{
+			_transform.setTransform( scene2view.inverse() );
+			update();
+		}
+	}
+
+	/**
+	 * Get view transform.
+	 *
+	 * @return  View to scene transform.
+	 */
+	public final Matrix3D getView2Scene()
 	{
 		return _transform.getTransform();
 	}
 
 	/**
-	 * Set view transform (tranforms model coordinates to view coordinates).
+	 * Set view transform.
 	 *
-	 * @param   transform   View transform.
+	 * @param   view2scene  Scene to view transform.
 	 *
 	 * @throws  NullPointerException if <code>transform</code> is <code>null</code>.
 	 */
-	public final void setViewTransform( final Matrix3D transform )
+	public final void setView2scene( final Matrix3D view2scene )
 	{
-		if ( !transform.equals( getViewTransform() ) )
+		if ( !view2scene.equals( getView2Scene() ) )
 		{
-			_transform.setInverseTransform( transform );
+			_transform.setTransform( view2scene );
 			update();
 		}
 	}

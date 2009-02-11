@@ -39,12 +39,12 @@ import javax.vecmath.Vector3d;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.model.Scene;
-import ab.j3d.view.control.DefaultViewControl;
 import ab.j3d.view.ProjectionPolicy;
 import ab.j3d.view.Projector;
 import ab.j3d.view.View3D;
 import ab.j3d.view.ViewControlInput;
 import ab.j3d.view.ViewOverlay;
+import ab.j3d.view.control.DefaultViewControl;
 
 /**
  * Java 3D view implementation.
@@ -291,17 +291,17 @@ final class Java3dView
 
 	public void update()
 	{
-		final Matrix3D  viewTransform = getViewTransform();
-		final Scene     scene         = getScene();
-		final double    unit          = scene.getUnit();
+		final Matrix3D  scene2view = getScene2View();
+		final Scene     scene      = getScene();
+		final double    unit       = scene.getUnit();
 
 		/*
 		 * Determine rotation and translation. If a unit is set, use it to
 		 * scale the translation.
 		 */
-		double xo = viewTransform.xo;
-		double yo = viewTransform.yo;
-		double zo = viewTransform.zo;
+		double xo = scene2view.xo;
+		double yo = scene2view.yo;
+		double zo = scene2view.zo;
 
 		if ( ( unit > 0.0 ) && ( unit != 1.0 ) )
 		{
@@ -322,17 +322,17 @@ final class Java3dView
 		final Transform3D    transform3d = _transform3d;
 		final TransformGroup tg          = _tg;
 
-		translation.x = - xo * ( rotation.m00 = viewTransform.xx )
-		                - yo * ( rotation.m01 = viewTransform.yx )
-		                - zo * ( rotation.m02 = viewTransform.zx );
+		translation.x = - xo * ( rotation.m00 = scene2view.xx )
+		                - yo * ( rotation.m01 = scene2view.yx )
+		                - zo * ( rotation.m02 = scene2view.zx );
 
-		translation.y = - xo * ( rotation.m10 = viewTransform.xy )
-		                - yo * ( rotation.m11 = viewTransform.yy )
-		                - zo * ( rotation.m12 = viewTransform.zy );
+		translation.y = - xo * ( rotation.m10 = scene2view.xy )
+		                - yo * ( rotation.m11 = scene2view.yy )
+		                - zo * ( rotation.m12 = scene2view.zy );
 
-		translation.z = - xo * ( rotation.m20 = viewTransform.xz )
-		                - yo * ( rotation.m21 = viewTransform.yz )
-		                - zo * ( rotation.m22 = viewTransform.zz );
+		translation.z = - xo * ( rotation.m20 = scene2view.xz )
+		                - yo * ( rotation.m21 = scene2view.yz )
+		                - zo * ( rotation.m22 = scene2view.zz );
 
 		transform3d.set( rotation , translation , 1.0 );
 		tg.setTransform( transform3d );

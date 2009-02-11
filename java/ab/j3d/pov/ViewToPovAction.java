@@ -183,18 +183,17 @@ public final class ViewToPovAction
 			/*
 			 * Convert view properties to camera properties.
 			 */
-			final Scene    scene           = view.getScene();
-			final Camera3D camera          = view.getCamera();
-			final Matrix3D viewTransform   = view.getViewTransform();
-			final Matrix3D cameraTransform = viewTransform.inverse();
-			final double   aspectRatio     = (double)viewWidth / (double)viewHeight;
+			final Scene    scene       = view.getScene();
+			final Camera3D camera      = view.getCamera();
+			final Matrix3D view2scene  = view.getView2Scene();
+			final double   aspectRatio = (double)viewWidth / (double)viewHeight;
 
 			/*
 			 * Convert scene to POV-Ray.
 			 */
 			final AbToPovConverter converter = new AbToPovConverter( _textureDirectory );
 			final PovScene povScene = converter.convert( scene.getContent() );
-			povScene.add( AbToPovConverter.convertCamera3D( cameraTransform , camera , aspectRatio ) );
+			povScene.add( AbToPovConverter.convertCamera3D( view2scene , camera , aspectRatio ) );
 
 			/*
 			 * Render the povscene to an image and place the image on the image panel.

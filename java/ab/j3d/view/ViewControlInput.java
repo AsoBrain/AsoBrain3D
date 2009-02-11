@@ -125,9 +125,19 @@ public class ViewControlInput
 	 *
 	 * @return  the view transform for the {@link View3D}.
 	 */
-	protected Matrix3D getViewTransform()
+	protected Matrix3D getScene2View()
 	{
-		return _view.getViewTransform();
+		return _view.getScene2View();
+	}
+
+	/**
+	 * Returns the current view transform for the {@link View3D}.
+	 *
+	 * @return  the view transform for the {@link View3D}.
+	 */
+	protected Matrix3D getView2Scene()
+	{
+		return _view.getView2Scene();
 	}
 
 	/**
