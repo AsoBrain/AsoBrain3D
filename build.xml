@@ -43,7 +43,7 @@
     <mkdir dir="classes"/>
     <javac srcdir="java" destdir="classes" classpathref="java.classpath" source="1.5"/>
     <copy todir="classes">
-      <fileset dir="java" includes="**/*.properties"/>
+      <fileset dir="java" excludes="**/*.java" />
     </copy>
   </target>
 
