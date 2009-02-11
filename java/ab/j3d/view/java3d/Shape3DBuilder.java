@@ -81,13 +81,11 @@ public class Shape3DBuilder
 	 * converting {@link Object3D} instances in a
 	 * {@link Node3DCollection} using this builder.
 	 *
-	 * @param   nodes               Collection of nodes to create the branch group from.
-	 * @param   materialOverride    Material to use instead of actual object material.
-	 * @param   extraOpacity        Extra object opacity (0.0=translucent, 1.0=opaque).
+	 * @param   nodes   Collection of nodes to create the branch group from.
 	 *
 	 * @return  {@link BranchGroup} containing the created content graph.
 	 */
-	public static BranchGroup createBranchGroup( final Node3DCollection<Object3D> nodes , final Material materialOverride , final float extraOpacity )
+	public static BranchGroup createBranchGroup( final Node3DCollection<Object3D> nodes )
 	{
 		final BranchGroup result = new BranchGroup();
 		result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
@@ -103,7 +101,7 @@ public class Shape3DBuilder
 				final int      faceCount = object3d.getFaceCount();
 
 				for ( int j = 0 ; j < faceCount ; j++ )
-					shapeBuilder.prepareFace( object3d.getFace( j ) , materialOverride , extraOpacity );
+					shapeBuilder.prepareFace( object3d.getFace( j ) );
 			}
 
 			for ( int i = 0 ; i < nodes.size() ; i++ )
@@ -113,7 +111,7 @@ public class Shape3DBuilder
 				final int      faceCount = object3d.getFaceCount();
 
 				for ( int j = 0 ; j < faceCount ; j++ )
-					shapeBuilder.addFace( xform , object3d.getFace( j ) , materialOverride , extraOpacity );
+					shapeBuilder.addFace( xform , object3d.getFace( j ) );
 			}
 
 			shapeBuilder.buildShapes( result );
@@ -126,24 +124,22 @@ public class Shape3DBuilder
 	 * Create a Java 3D {@link BranchGroup} containing a content graph by
 	 * converting an {@link Object3D} instance using this builder.
 	 *
-	 * @param   xform               Transform to apply to vertices.
-	 * @param   object3d            Object3D to convert.
-	 * @param   materialOverride    Material to use instead of actual object material.
-	 * @param   extraOpacity        Extra object opacity (0.0=translucent, 1.0=opaque).
+	 * @param   xform       Transform to apply to vertices.
+	 * @param   object3d    Object3D to convert.
 	 *
 	 * @return  {@link BranchGroup} containing the created content graph.
 	 */
-	public static BranchGroup createBranchGroup( final Matrix3D xform , final Object3D object3d , final Material materialOverride , final float extraOpacity )
+	public static BranchGroup createBranchGroup( final Matrix3D xform , final Object3D object3d )
 	{
 		final Shape3DBuilder shapeBuilder = new Shape3DBuilder();
 
 		final int faceCount = object3d.getFaceCount();
 
 		for ( int j = 0 ; j < faceCount ; j++ )
-			shapeBuilder.prepareFace( object3d.getFace( j ) , materialOverride , extraOpacity );
+			shapeBuilder.prepareFace( object3d.getFace( j ) );
 
 		for ( int j = 0 ; j < faceCount ; j++ )
-			shapeBuilder.addFace( xform , object3d.getFace( j ) , materialOverride , extraOpacity );
+			shapeBuilder.addFace( xform , object3d.getFace( j ) );
 
 		final BranchGroup result = new BranchGroup();
 		result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
@@ -197,11 +193,12 @@ public class Shape3DBuilder
 	 * After completion, steps 2 to 4 may be repeated to create more shapes.
 	 * Notice that this is probably not worthwhile, since no other data than the
 	 * object itself is reused.
+	 *
+	 * @noinspection JavaDoc
 	 */
 	private static class AppearanceGroup
 	{
 		private Material      _material;
-		private int           _alpha;
 		private boolean       _hasBackface;
 		private Appearance    _appearance;
 		private int           _lineCount;
@@ -212,10 +209,9 @@ public class Shape3DBuilder
 		private QuadArray     _quadArray;
 
 
-		AppearanceGroup( final Material material , final int alpha , final boolean hasBackface , final Appearance appearance )
+		AppearanceGroup( final Material material , final boolean hasBackface , final Appearance appearance )
 		{
 			_material      = material;
-			_alpha         = alpha;
 			_hasBackface   = hasBackface;
 			_appearance    = appearance;
 			_lineCount     = 0;
@@ -245,12 +241,10 @@ public class Shape3DBuilder
 
 		void addFace( final Matrix3D object2view , final Face3D face )
 		{
-			final AugmentedList<Face3D.Vertex> vertices = face.vertices;
+			final AugmentedList<Vertex> vertices = face.vertices;
 			final int vertexCount = vertices.size();
 			if ( vertexCount >= 2 )
 			{
-				final Appearance appearance = _appearance;
-
 				if ( vertexCount == 2 )
 				{
 					LineArray lineArray = _lineArray;
@@ -404,7 +398,7 @@ public class Shape3DBuilder
 			_quadCount     = 0;
 		}
 
-		private static Point3d getVertexCoordinate( final Matrix3D xform , final Face3D.Vertex vertex )
+		private static Point3d getVertexCoordinate( final Matrix3D xform , final Vertex vertex )
 		{
 			final Vector3D point = vertex.point;
 			return new Point3d( xform.transformX( point ) , xform.transformY( point ) , xform.transformZ( point ) );
@@ -433,20 +427,18 @@ public class Shape3DBuilder
 	 * Prepare for building the specified face. This is used to determine the
 	 * correct storage requirements, so no collection classes are needed.
 	 *
-	 * @param   face                Face to prepare for.
-	 * @param   materialOverride    Texture to use instead of actual face material.
-	 * @param   opacity             Extra face opacity (0.0=translucent, 1.0=opaque).
+	 * @param   face    Face to prepare for.
 	 *
 	 * @see     #addFace
 	 */
-	public void prepareFace( final Face3D face , final Material materialOverride , final float opacity )
+	public void prepareFace( final Face3D face )
 	{
-		final Material material = ( materialOverride != null ) ? materialOverride : face.material;
+		final Material material = face.material;
 		if ( material != null )
 		{
 			final boolean hasBackface = face.isTwoSided();
 
-			final AppearanceGroup group = getGroup( material , opacity , hasBackface );
+			final AppearanceGroup group = getGroup( material , hasBackface );
 			group.prepareFace( face.getVertexCount() );
 		}
 	}
@@ -456,22 +448,20 @@ public class Shape3DBuilder
 	 * previously announced using {@link #prepareFace}. This will take
 	 * care of the the line/triangle/quad geometry conversions.
 	 *
-	 * @param   object2view         Transform to apply to vertex coordinates.
-	 * @param   face                Face to add.
-	 * @param   materialOverride    Texture to use instead of actual face material.
-	 * @param   opacity             Extra face opacity (0.0=translucent, 1.0=opaque).
+	 * @param   object2view     Transform to apply to vertex coordinates.
+	 * @param   face            Face to add.
 	 *
 	 * @see     #prepareFace
 	 * @see     #buildShapes
 	 */
-	public void addFace( final Matrix3D object2view , final Face3D face , final Material materialOverride , final float opacity )
+	public void addFace( final Matrix3D object2view , final Face3D face )
 	{
-		final Material material = ( materialOverride != null ) ? materialOverride : face.material;
+		final Material material = face.material;
 		if ( material != null )
 		{
 			final boolean hasBackface = face.isTwoSided();
 
-			final AppearanceGroup group = getGroup( material , opacity , hasBackface );
+			final AppearanceGroup group = getGroup( material , hasBackface );
 			group.addFace( object2view , face );
 		}
 	}
@@ -494,18 +484,25 @@ public class Shape3DBuilder
 			_appearanceGroups[ i ].buildShapes( result );
 	}
 
-	private AppearanceGroup getGroup( final Material material , final float opacity , final boolean hasBackface )
+	/**
+	 * Get {@link AppearanceGroup} for specified material and culling mode.
+	 *
+	 * @param   material        Material to get {@link AppearanceGroup} for.
+	 * @param   hasBackface     Culling mode to get {@link AppearanceGroup} for.
+	 *
+	 * @return  {@link AppearanceGroup}.
+	 */
+	private AppearanceGroup getGroup( final Material material , final boolean hasBackface )
 	{
 		AppearanceGroup result = null;
 
-		final int            alpha  = Math.max( 0 , Math.min( Math.round( opacity * 255.0f ) , 255 ) );
 		final AppearanceGroup[] groups = _appearanceGroups;
-		final int            count  = _appearanceGroupCount;
+		final int count = _appearanceGroupCount;
 
 		for ( int i = 0 ; i < count ; i++ )
 		{
 			final AppearanceGroup group = groups[ i ];
-			if ( ( group._material == material ) && ( group._alpha == alpha ) && ( group._hasBackface == hasBackface ) )
+			if ( ( group._material == material ) && ( group._hasBackface == hasBackface ) )
 			{
 				result = group;
 				break;
@@ -530,9 +527,9 @@ public class Shape3DBuilder
 			}
 
 			final Java3dTools tools      = Java3dTools.getInstance();
-			final Appearance  appearance = tools.getAppearance( material , opacity , hasBackface );
+			final Appearance  appearance = tools.getAppearance( material , 1.0f , hasBackface );
 
-			result = new AppearanceGroup( material , alpha , hasBackface , appearance );
+			result = new AppearanceGroup( material , hasBackface , appearance );
 			newGroups[ count ] = result;
 
 			_appearanceGroups     = newGroups;

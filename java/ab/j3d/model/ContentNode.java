@@ -26,7 +26,6 @@ import javax.swing.Action;
 
 import ab.j3d.Bounds3D;
 import ab.j3d.Bounds3DBuilder;
-import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.view.control.planar.PlaneControl;
 import ab.j3d.view.control.planar.SubPlaneControl;
@@ -55,24 +54,9 @@ public final class ContentNode
 	private boolean _alternate = false;
 
 	/**
-	 * Wether or not the node is collidable.
-	 */
-	private boolean _collidable = false;
-
-	/**
 	 * Root in the 3D scene associated with this node.
 	 */
 	private Node3D _node3D;
-
-	/**
-	 * Material to use instead of actual materials.
-	 */
-	private Material _materialOverride;
-
-	/**
-	 * Extra opacity (0.0=translucent, 1.0=opaque/unchanged).
-	 */
-	private float _opacity;
 
 	/**
 	 * Context actions.
@@ -115,12 +99,9 @@ public final class ContentNode
 	 */
 	public ContentNode( final Object id , final Matrix3D transform , final Node3D node3D )
 	{
-		_id               = id;
-		_node3D           = node3D;
-		_materialOverride = null;
-		_opacity          = 1.0f;
-		_transform        = ( transform != null ) ? transform : Matrix3D.INIT;
-		_collidable       = true;
+		_id = id;
+		_node3D = node3D;
+		_transform = ( transform != null ) ? transform : Matrix3D.INIT;
 	}
 
 	/**
@@ -145,7 +126,7 @@ public final class ContentNode
 	{
 		boolean result = false;
 
-		if ( ( thatNode != null ) && ( this != thatNode ) && isCollidable() && thatNode.isCollidable() )
+		if ( ( thatNode != null ) && ( this != thatNode ) )
 		{
 			final Node3DCollection<Object3D> thisContent = getContent();
 			final Node3DCollection<Object3D> thatContent = thatNode.getContent();
@@ -175,27 +156,6 @@ public final class ContentNode
 		}
 
 		return result;
-	}
-
-	/**
-	 * Wether or not the node is collidable.
-	 *
-	 * @return  <code>true</code> if the node is collidable;
-	 *          <code>false</code> if not.
-	 */
-	public boolean isCollidable()
-	{
-		return _collidable;
-	}
-
-	/**
-	 * Set wether or not the node is collidable.
-	 *
-	 * @param   collidable  Wether or not the node is collidable.
-	 */
-	public void setCollidable( final boolean collidable )
-	{
-		_collidable = collidable;
 	}
 
 	/**
@@ -294,67 +254,6 @@ public final class ContentNode
 	public final Node3D getNode3D()
 	{
 		return _node3D;
-	}
-
-	/**
-	 * Set root in the 3D scene associated with this node.
-	 *
-	 * @param   node3D  Root in the 3D scene associated with this node.
-	 */
-	public void setNode3D( final Node3D node3D )
-	{
-		_node3D = node3D;
-		fireContentUpdated();
-	}
-
-	/**
-	 * Get material to override actual materials.
-	 *
-	 * @return  Material to use instead of actual materials;
-	 *          <code>null</code> to use only actual materials.
-	 */
-	public Material getMaterialOverride()
-	{
-		return _materialOverride;
-	}
-
-	/**
-	 * Set material to override actual materials.
-	 *
-	 * @param   material    Material to use instead of actual materials;
-	 *                      <code>null</code> to use only actual materials.
-	 */
-	public void setMaterialOverride( final Material material )
-	{
-		if ( material != _materialOverride )
-		{
-			_materialOverride = material;
-			fireRenderingPropertiesUpdated();
-		}
-	}
-
-	/**
-	 * Get extra opacity, multiplied with existing opacity values.
-	 *
-	 * @return  Extra opacity (0.0=translucent, 1.0=opaque/unchanged).
-	 */
-	public float getOpacity()
-	{
-		return _opacity;
-	}
-
-	/**
-	 * Set extra opacity, multiplied with existing opacity values.
-	 *
-	 * @param   opacity     Extra opacity (0.0=translucent, 1.0=opaque/unchanged).
-	 */
-	public void setOpacity( final float opacity )
-	{
-		if ( opacity != _opacity )
-		{
-			_opacity = opacity;
-			fireRenderingPropertiesUpdated();
-		}
 	}
 
 	/**
