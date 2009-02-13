@@ -102,6 +102,11 @@ public final class RenderedPolygon
 	public final double[] _viewZ;
 
 	/**
+	 * Flag to indicate that the polygon is back facing.
+	 */
+	public boolean _backface;
+
+	/**
 	 * X component of face's plane normal in view space.
 	 * <p />
 	 * Any point (x,y,z,) on the face's plane satifies the plane equation:
@@ -213,6 +218,7 @@ public final class RenderedPolygon
 		_planeNormalY  = 0.0;
 		_planeNormalZ  = 1.0;
 		_planeConstant = 0.0;
+		_backface      = false;
 
 		_minImageX = 0;
 		_maxImageX = 0;
@@ -295,10 +301,11 @@ public final class RenderedPolygon
 			}
 		}
 
-		final double planeNormalX = object2view.rotateX( face.normal );
-		final double planeNormalY = object2view.rotateY( face.normal );
-		final double planeNormalZ = object2view.rotateZ( face.normal );
-		final double planeConstant = planeNormalX * viewX[ 0 ] + planeNormalY * viewY[ 0 ] + planeNormalZ * viewZ[ 0 ];
+		final double  planeNormalX  = object2view.rotateX( face.normal );
+		final double  planeNormalY  = object2view.rotateY( face.normal );
+		final double  planeNormalZ  = object2view.rotateZ( face.normal );
+		final double  planeConstant = planeNormalX * viewX[ 0 ] + planeNormalY * viewY[ 0 ] + planeNormalZ * viewZ[ 0 ];
+		final boolean backface      = ( projector instanceof Projector.PerspectiveProjector ) ? ( planeConstant <= 0.0 ) : ( planeNormalZ <= 0.0 );
 
 		_object              = object;
 		_face                = face;
@@ -306,6 +313,7 @@ public final class RenderedPolygon
 		_planeNormalY        = planeNormalY;
 		_planeNormalZ        = planeNormalZ;
 		_planeConstant       = planeConstant;
+		_backface            = backface;
 		_minImageX           = minImageX;
 		_maxImageX           = maxImageX;
 		_minImageY           = minImageY;
@@ -343,37 +351,13 @@ public final class RenderedPolygon
 
 	/**
 	 * Test if this is a back face.
-	 * <p>
-	 * A backface is identified by a negative Z component of the face normal.
-	 * <p>
-	 * Since we are only interested in the Z component of the normal, we can
-	 * simply use the projected 2D points of the face. This has the advantage of
-	 * properly handling depth deformation due to (perspective) projection.
 	 *
 	 * @return  <code>true</code> if this is a backface;
 	 *          <code>false</code> if this is not a (back)face.
 	 */
 	public boolean isBackface()
 	{
-		final boolean result;
-
-		if ( _vertexCount < 3 ) /* a void, point, or line can not be a face, so no backface either */
-		{
-			result = false;
-		}
-		else
-		{
-			final int[] projectedX = _projectedX;
-			final int[] projectedY = _projectedY;
-
-			final int x2 = projectedX[ 1 ];
-			final int y2 = projectedY[ 1 ];
-
-			result = ( ( projectedX[ 0 ] - x2 ) * ( projectedY[ 2 ] - y2 )
-			        >= ( projectedY[ 0 ] - y2 ) * ( projectedX[ 2 ] - x2 ) );
-		}
-
-		return result;
+		return _backface;
 	}
 
 	/**
@@ -413,12 +397,13 @@ public final class RenderedPolygon
 	{
 		final StringBuilder sb = new StringBuilder();
 
-		sb.append(   "Object: "               ); sb.append( _object );
+		sb.append(   "Object: "               ); sb.append( _object.getTag() );
 		sb.append( "\nFace: "                 ); sb.append( _face );
 		sb.append( "\nMaterial: "             ); sb.append( ( _material == null ? "null" : _material.code ) );
 		sb.append( "\nAlternate appearance: " ); sb.append( _alternateAppearance );
 		sb.append( "\nNormal: "               ); sb.append( Vector3D.toFriendlyString( Vector3D.INIT.set( _planeNormalX , _planeNormalY , _planeNormalZ ) ) );
 		sb.append( "\nPlane constant: "       ); sb.append( _planeConstant );
+		sb.append( "\nBackface: "             ); sb.append( _backface );
 
 		sb.append( "\nCoordinates:" );
 		for ( int i = 0; i < _vertexCount; i++ )

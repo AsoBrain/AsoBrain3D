@@ -322,16 +322,18 @@ public class BSPTree
 			final double y0 = result._viewY[ 0 ];
 			final double z0 = result._viewZ[ 0 ];
 
-			final double planeNormalX = viewNormal.x;
-			final double planeNormalY = viewNormal.y;
-			final double planeNormalZ = viewNormal.z;
-			final double planeConstant = planeNormalX * x0 + planeNormalY * y0 + planeNormalZ * z0;
+			final double  planeNormalX  = viewNormal.x;
+			final double  planeNormalY  = viewNormal.y;
+			final double  planeNormalZ  = viewNormal.z;
+			final double  planeConstant = planeNormalX * x0 + planeNormalY * y0 + planeNormalZ * z0;
+			final boolean backface      = ( projector instanceof Projector.PerspectiveProjector ) ? ( planeConstant <= 0.0 ) : ( planeNormalZ <= 0.0 );
 
 			result._object              = polygon._object;
 			result._planeNormalX        = planeNormalX;
 			result._planeNormalY        = planeNormalY;
 			result._planeNormalZ        = planeNormalZ;
 			result._planeConstant       = planeConstant;
+			result._backface            = backface;
 			result._material            = polygon._material;
 			result._alternateAppearance = polygon._alternateAppearance;
 		}
