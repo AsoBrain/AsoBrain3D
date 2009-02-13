@@ -22,32 +22,30 @@ package ab.j3d.loader.max3ds;
 import java.awt.geom.Point2D;
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import ab.j3d.Matrix3D;
-import ab.j3d.Vector3f;
+import ab.j3d.Vector3D;
 
 /**
  * Type   : {@link #OBJ_TRIMESH}.
  * Parent : {@link #NAMED_OBJECT}
  *
- * @noinspection JavaDoc
+ * @noinspection JavaDoc,PublicField,InstanceVariableMayNotBeInitialized
  */
 class TriangleMeshChunk
 	extends Chunk
 {
-	Vector3f[] _vertices = null;
+	List<Vector3D> _vertices;
 
-	Point2D.Float[] _textureCoordinates = null;
+	Point2D.Float[] _textureCoordinates;
 
-	Matrix3D _rotation = null;
+	byte _color;
 
-	Vector3f _origin = null;
+	FacesChunk _faces;
 
-	byte _color = (byte)0;
-
-	FacesChunk _faces = null;
-
-	Matrix3D _transform = null;
+	Matrix3D _transform;
 
 	TriangleMeshChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException
@@ -61,11 +59,11 @@ class TriangleMeshChunk
 		switch ( chunkType )
 		{
 			case VERTEX_LIST:
-				readVertices( dataInput );
+				readVertexCoordinates( dataInput );
 				break;
 
 			case TEXT_COORDS:
-				readTexCoords( dataInput );
+				readTextureCoordinates( dataInput );
 				break;
 
 			case COORD_SYS:
@@ -140,32 +138,30 @@ class TriangleMeshChunk
 		final double rotationXZ = (double)dataInput.readFloat();
 		final double rotationYZ = (double)dataInput.readFloat();
 		final double rotationZZ = (double)dataInput.readFloat();
-		final float  originX    = dataInput.readFloat();
-		final float  originY    = dataInput.readFloat();
-		final float  originZ    = dataInput.readFloat();
+		final double originX    = (double)dataInput.readFloat();
+		final double originY    = (double)dataInput.readFloat();
+		final double originZ    = (double)dataInput.readFloat();
 
-		_rotation = Matrix3D.INIT.set( rotationXX , rotationXY , rotationXZ , 0.0 ,
-		                               rotationYX , rotationYY , rotationYZ , 0.0 ,
-		                               rotationZX , rotationZY , rotationZZ , 0.0 );
-
-		_origin = new Vector3f( originX , originY , originZ );
-
-		_transform = _rotation.plus( (double)originX , (double)originY , (double)originZ );
+		_transform = Matrix3D.INIT.set( rotationXX , rotationXY , rotationXZ , originX ,
+		                                rotationYX , rotationYY , rotationYZ , originY ,
+		                                rotationZX , rotationZY , rotationZZ , originZ );
 	}
 
-	private void readVertices( final DataInput dataInput )
+	private void readVertexCoordinates( final DataInput dataInput )
 		throws IOException
 	{
-		final Vector3f[] vertices = new Vector3f[ dataInput.readUnsignedShort() ];
-		for ( int i = 0; i < vertices.length; i++ )
+		final int numberOfVertices = dataInput.readUnsignedShort();
+
+		final List<Vector3D> vertices = new ArrayList<Vector3D>( numberOfVertices );
+		for ( int i = 0 ; i < numberOfVertices ; i++ )
 		{
-			vertices[ i ] = new Vector3f( dataInput.readFloat() , dataInput.readFloat() , dataInput.readFloat() );
+			vertices.add( new Vector3D( (double)dataInput.readFloat() , (double)dataInput.readFloat() , (double)dataInput.readFloat() ) );
 		}
 
 		_vertices = vertices;
 	}
 
-	private void readTexCoords( final DataInput dataInput )
+	private void readTextureCoordinates( final DataInput dataInput )
 		throws IOException
 	{
 		final Point2D.Float[] textureCoordinates = new Point2D.Float[ dataInput.readUnsignedShort() ];
