@@ -67,7 +67,6 @@ import javax.vecmath.Tuple3f;
 import javax.vecmath.Tuple3i;
 import javax.vecmath.Vector3f;
 
-import ab.j3d.MapTools;
 import ab.j3d.Matrix3D;
 
 import com.numdata.oss.TextTools;
@@ -346,7 +345,7 @@ public final class Java3dTools
 		appearance.setCapability( Appearance.ALLOW_TEXTURE_READ );
 		appearance.setMaterial( j3dMaterial );
 
-		final Texture texture = getTexture( abMaterial.colorMap );
+		final Texture texture = getColorMapTexture( abMaterial );
 		if ( texture != null )
 		{
 			appearance.setTexture( texture );
@@ -381,35 +380,35 @@ public final class Java3dTools
 	}
 
 	/**
-	 * Get {@link Texture} for the specified map.
+	 * Get {@link Texture} for color map of the specified material.
 	 *
-	 * @param   name    Name of texture map to get.
+	 * @param   material    Material to get color map texture for.
 	 *
 	 * @return  Texture for the specified name;
 	 *          <code>null</code> if the name was empty or no map by the
 	 *          given name was found.
 	 */
-	public Texture getTexture( final String name )
+	public Texture getColorMapTexture( final ab.j3d.Material material )
 	{
 		Texture result = null;
 
-		if ( TextTools.isNonEmpty( name ) )
+		if ( ( material != null ) && TextTools.isNonEmpty( material.colorMap ) )
 		{
 			final Map<String,Texture> cache = _textureCache;
-			if ( cache.containsKey( name ) )
+			if ( cache.containsKey( material.colorMap ) )
 			{
-				result = cache.get( name );
+				result = cache.get( material.colorMap );
 			}
 			else
 			{
-				final Image image = MapTools.getImage( name );
+				final Image image = material.getColorMapImage( false );
 				if ( image != null )
 				{
 					result = loadTexture( image );
 					result.setCapability( Texture.ALLOW_SIZE_READ );
 				}
 
-				cache.put( name , result );
+				cache.put( material.colorMap , result );
 			}
 		}
 
@@ -424,7 +423,7 @@ public final class Java3dTools
 	 * @return  Texture2D instance for image;
 	 *          <code>null</code> if a problem occured.
 	 *
-	 * @see     #getTexture
+	 * @see     #getColorMapTexture
 	 */
 	public static Texture2D loadTexture( final Image image )
 	{
