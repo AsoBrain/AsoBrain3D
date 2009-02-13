@@ -547,6 +547,11 @@ public class Mesh3D
 		public float colorMapV;
 
 		/**
+		 * Vertex normal. This overrides {@link SharedVertex#getNormal()}.
+		 */
+		private Vector3D _normal;
+
+		/**
 		 * Construct vertex.
 		 *
 		 * @param   sharedVertex    Shared vertex properties.
@@ -568,6 +573,7 @@ public class Mesh3D
 			_sharedVertex = sharedVertex;
 			this.colorMapU = colorMapU;
 			this.colorMapV = colorMapV;
+			_normal = null;
 		}
 
 		/**
@@ -581,26 +587,36 @@ public class Mesh3D
 			_sharedVertex = sharedVertex;
 			colorMapU = colorMapPoint.x;
 			colorMapV = colorMapPoint.y;
+			_normal = null;
 		}
 
 		/**
-		 * Get vertex normal.
+		 * Get vertex normal. This returns the normal set through
+		 * {@link #setNormal(Vector3D)}; or, if no normal was set, the
+		 * normal from {@link SharedVertex#getNormal()}.
 		 *
 		 * @return  Vertex normal.
+		 *
+		 * @see     #setNormal(Vector3D)
+		 * @see     SharedVertex#getNormal()
 		 */
 		public Vector3D getNormal()
 		{
-			return _sharedVertex.getNormal();
+			return ( _normal != null ) ? _normal : _sharedVertex.getNormal();
 		}
 
 		/**
-		 * Set vertex normal.
+		 * Set vertex normal. If set to <code>null</code> (which is the default),
+		 * the {@link SharedVertex#getNormal()} value will be used.
 		 *
 		 * @param   normal  Vertex normal.
+		 *
+		 * @see     #getNormal()
+		 * @see     SharedVertex#getNormal()
 		 */
 		public void setNormal( final Vector3D normal )
 		{
-			_sharedVertex.setNormal( normal );
+			_normal = normal;
 		}
 
 		/**

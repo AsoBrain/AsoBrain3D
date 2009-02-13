@@ -19,6 +19,8 @@
  */
 package ab.j3d.model;
 
+import java.awt.geom.Point2D;
+
 import ab.j3d.Material;
 import ab.j3d.Vector3D;
 import ab.j3d.geom.Polygon3D;
@@ -121,12 +123,12 @@ public final class Face3D
 	 * @param   object          Object to which this face belongs.
 	 * @param   vertexIndices   Indices in {@link Object3D#_vertexCoordinates}.
 	 * @param   material        Material to apply to the face.
-	 * @param   textureU        Array for horizontal texture coordinates.
-	 * @param   textureV        Array for vertical texture coordinates.
+	 * @param   texturePoints   Texture coordinates for each vertex (optional).
+	 * @param   vertexNormals   Normal for each vertex (optional).
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	public Face3D( final Object3D object , final int[] vertexIndices , final Material material , final float[] textureU , final float[] textureV , final boolean smooth , final boolean twoSided )
+	public Face3D( final Object3D object , final int[] vertexIndices , final Material material , final Point2D.Float[] texturePoints , final Vector3D[] vertexNormals , final boolean smooth , final boolean twoSided )
 	{
 		if ( object == null )
 			throw new NullPointerException( "object" );
@@ -139,8 +141,18 @@ public final class Face3D
 		for ( int vertexIndex = 0 ; vertexIndex < vertexCount; vertexIndex++ )
 		{
 			final Vertex vertex = new Vertex( vertexCoordinates , vertexIndices[ vertexIndex ] );
-			vertex.colorMapU = ( textureU != null ) ? textureU[ vertexIndex ] : 0.0f;
-			vertex.colorMapV = ( textureV != null ) ? textureV[ vertexIndex ] : 0.0f;
+			if ( texturePoints != null )
+			{
+				final Point2D.Float texturePoint = texturePoints[ vertexIndex ];
+				vertex.colorMapU = texturePoint.x;
+				vertex.colorMapV = texturePoint.y;
+			}
+
+			if ( vertexNormals != null )
+			{
+				vertex.normal = vertexNormals[ vertexIndex ];
+			}
+
 			vertices.add( vertex );
 		}
 
