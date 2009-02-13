@@ -28,8 +28,6 @@ import java.io.IOException;
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
- *
- * @noinspection JavaDoc
  */
 abstract class Chunk
 {
@@ -154,15 +152,35 @@ abstract class Chunk
 	protected static final int KEY_FALLOFF_TRACK    = 0xB028;
 	protected static final int NODE_ID              = 0xB030;
 
+	/**
+	 * Construct chunk from data input.
+	 *
+	 * @param   dataInput           Data input source.
+	 * @param   chunkType           This chunk's type.
+	 * @param   remainingChunkBytes Remaining number of unread bytes in this chunk.
+	 *
+	 * @throws  IOException if a read error occured.
+	 */
 	protected Chunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException
 	{
+//		System.out.println( this + "() - type=0x" + Integer.toHexString( chunkType ) + ", remainingChunkBytes=" + remainingChunkBytes );
 		processChunk( dataInput , chunkType , remainingChunkBytes );
 	}
 
+	/**
+	 * Read chunk data and process its sub chunks.
+	 *
+	 * @param   dataInput           Data input source.
+	 * @param   chunkType           This chunk's type.
+	 * @param   remainingChunkBytes Remaining number of unread bytes in this chunk.
+	 *
+	 * @throws  IOException if a read error occured.
+	 */
 	protected void processChunk( final DataInput dataInput, final int chunkType , final int remainingChunkBytes )
 		throws IOException
 	{
+//		System.out.println( "  Chunk.processChunk( ... , chunkType=0x" + Integer.toHexString( chunkType ) + " , remainingChunkBytes=" + remainingChunkBytes + " )" );
 		int todo = remainingChunkBytes;
 		while ( todo > 0 )
 		{
@@ -174,19 +192,37 @@ abstract class Chunk
 				throw new IOException( "Header length doesn't match up: End ID#:" + Integer.toHexString( childType ) + " len left to read=" + todo + " parentID#=" + Integer.toHexString( chunkType ) );
 			}
 
+//			System.out.println( "    processChildChunk( ... , chunkType=0x" + Integer.toHexString( childType ) + " , remainingChunkBytes=" + ( childSize - 6 ) + " )" );
 			processChildChunk( dataInput , childType , childSize - 6 );
 
 			todo -= childSize;
 		}
 	}
 
+	/**
+	 * Process a child chunk.
+	 *
+	 * @param   dataInput           Data input source.
+	 * @param   chunkType           Child's chunk type.
+	 * @param   remainingChunkBytes Remaining number of unread bytes in child chunk.
+	 *
+	 * @throws  IOException if a read error occured.
+	 */
 	protected abstract void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException;
 
-	protected static void skipFully( final DataInput dataInput , final int length )
+	/**
+	 * Skip number of data bytes.
+	 *
+	 * @param   dataInput       Data input source.
+	 * @param   numberOfBytes   Number of bytes to skip.
+	 *
+	 * @throws  IOException if a read error occured.
+	 */
+	protected static void skipFully( final DataInput dataInput , final int numberOfBytes )
 		throws IOException
 	{
-		int remainder = length;
+		int remainder = numberOfBytes;
 		while ( remainder > 0 )
 		{
 			final int skipped = dataInput.skipBytes( remainder );
@@ -197,6 +233,16 @@ abstract class Chunk
 		}
 	}
 
+	/**
+	 * Read 0-terminated string with variable data length The number of bytes
+	 * read is the length of the returned string + 1.
+	 *
+	 * @param   dataInput   Data input source.
+	 *
+	 * @return  String that was read.
+	 *
+	 * @throws  IOException if a read error occured.
+	 */
 	protected static String readCString( final DataInput dataInput )
 		throws IOException
 	{
@@ -210,12 +256,23 @@ abstract class Chunk
 		return sb.toString();
 	}
 
-	protected static String readCString( final DataInput dataInput , final int byteLen )
+	/**
+	 * Read 0-terminated string with fixed data length. The number of bytes read
+	 * is always <code>numberOfBytes</code>.
+	 *
+	 * @param   dataInput       Data input source.
+	 * @param   numberOfBytes   Number of bytes to read.
+	 *
+	 * @return  String that was read.
+	 *
+	 * @throws  IOException if a read error occured.
+	 */
+	protected static String readCString( final DataInput dataInput , final int numberOfBytes )
 		throws IOException
 	{
-		final byte[] bytes = new byte[byteLen];
+		final byte[] bytes = new byte[ numberOfBytes ];
 		dataInput.readFully( bytes );
 
-		return new String( bytes , 0 , byteLen - 1 );
+		return new String( bytes , 0 , numberOfBytes - 1 );
 	}
 }
