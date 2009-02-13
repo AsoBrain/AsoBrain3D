@@ -34,19 +34,19 @@ import ab.j3d.Vector3f;
 class LightChunk
 	extends Chunk
 {
-	Vector3f _location = null;
+	Vector3f _location;
 
-	Color _lightColor = null;
+	Color _lightColor;
 
-	float _outerRange = 0.0f;
+	float _outerRange;
 
-	float _innerRange = 0.0f;
+	float _innerRange;
 
-	float _multiplier = 1.0f;
+	float _multiplier;
 
-	SpotLightChunk _spotLightChunk = null;
+	SpotLightChunk _spotLightChunk;
 
-	boolean _attenuateOn = false;
+	boolean _attenuateOn;
 
 	LightChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException

@@ -27,20 +27,20 @@ import java.io.IOException;
  * Type   : {@link #LAYERED_FOG_OPT}
  * Parent : {@link #EDIT_3DS}
  *
- * @noinspection JavaDoc
+ * @noinspection JavaDoc,PublicField,InstanceVariableMayNotBeInitialized
  */
 class LayeredFogChunk
 	extends Chunk
 {
-	float _nearZ = 0.0f;
+	float _nearZ;
 
-	float _farZ = 0.0f;
+	float _farZ;
 
-	float _density = 0.0f;
+	float _density;
 
-	int _type = 0;
+	int _type;
 
-	Color _fogColor = null;
+	Color _fogColor;
 
 	LayeredFogChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException

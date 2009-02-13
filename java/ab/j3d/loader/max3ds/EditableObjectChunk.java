@@ -31,49 +31,60 @@ import ab.j3d.Vector3f;
  * Type   : {@link #EDIT_3DS}
  * Parent : {@link #MAIN_3DS}
  *
- * @noinspection JavaDoc
+ * @noinspection JavaDoc,PublicField,InstanceVariableMayNotBeInitialized
  */
 class EditableObjectChunk
 	extends Chunk
 {
-	final Map<String,MaterialChunk> _materials = new HashMap<String,MaterialChunk>();
+	Map<String,MaterialChunk> _materials;
 
-	final Map<String,TriangleMeshChunk> _meshes = new HashMap<String,TriangleMeshChunk>();
+	Map<String,TriangleMeshChunk> _meshes;
 
-	final Map<String,LightChunk> _lights = new HashMap<String,LightChunk>();
+	Map<String,LightChunk> _lights;
 
-	final Map<String,CameraChunk> _cameras = new HashMap<String,CameraChunk>();
+	Map<String,CameraChunk> _cameras;
 
-	float _masterScale = 0.0f;
+	float _masterScale;
 
-	float _shadowMapRange = 0.0f;
+	float _shadowMapRange;
 
-	float _rayTraceBias = 0.0f;
+	float _rayTraceBias;
 
-	Vector3f _oConstPlanes = null;
+	Vector3f _oConstPlanes;
 
-	Color _ambientColor = null;
+	Color _ambientColor;
 
-	Color _backgroundColor = null;
+	Color _backgroundColor;
 
-	String _backgroundBigMap = null;
+	String _backgroundBigMap;
 
-	boolean _useBackgroundColor = false;
+	boolean _useBackgroundColor;
 
-	float _shadowBias = 0.0f;
+	float _shadowBias;
 
-	short _shadowMapSize = (short)0;
+	short _shadowMapSize;
 
-	LayeredFogChunk _fogOptions = null;
+	LayeredFogChunk _fogOptions;
 
-	FogChunk _fog = null;
+	FogChunk _fog;
 
-	DistanceQueueChunk _distanceQueue = null;
+	DistanceQueueChunk _distanceQueue;
 
 	EditableObjectChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException
 	{
 		super( dataInput , chunkType , remainingChunkBytes );
+	}
+
+	protected void processChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+		throws IOException
+	{
+		_materials = new HashMap<String,MaterialChunk>();
+		_meshes = new HashMap<String,TriangleMeshChunk>();
+		_lights = new HashMap<String,LightChunk>();
+		_cameras = new HashMap<String,CameraChunk>();
+
+		super.processChunk( dataInput , chunkType , remainingChunkBytes );
 	}
 
 	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )

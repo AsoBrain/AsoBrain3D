@@ -30,24 +30,26 @@ import java.io.IOException;
  *          {@link #CLR_FLOAT_GAMA}.
  * Parent : any
  *
- * @noinspection JavaDoc
+ * @noinspection JavaDoc,PublicField,InstanceVariableMayNotBeInitialized
  */
 class ColorChunk
 	extends Chunk
 {
-	Color _color = null;
+	Color _color;
 
-	Color _gamaColor = null;
+	Color _gamaColor;
 
 	ColorChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException
 	{
 		super( dataInput , chunkType , remainingChunkBytes );
+//		System.out.println( "  Read: color=" + _color + ", gamaColor=" + _gamaColor );
 	}
 
 	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException
 	{
+//		System.out.println( "ColorChunk.processChildChunk( " + chunkType + " )" );
 		switch ( chunkType )
 		{
 			case COLOR_BYTE :
@@ -67,6 +69,7 @@ class ColorChunk
 				break;
 
 			default : // Ignore unknown chunks
+				System.out.println( "Skipped unknown color chunk 0x" + Integer.toHexString( chunkType ) );
 				skipFully( dataInput , remainingChunkBytes );
 		}
 	}

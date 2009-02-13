@@ -27,22 +27,22 @@ import java.io.IOException;
  * Type:   {@link #FOG_FLAG}
  * Parent: {@link #EDIT_3DS}
  *
- * @noinspection JavaDoc
+ * @noinspection JavaDoc,PublicField,InstanceVariableMayNotBeInitialized
  */
 class FogChunk
 	extends Chunk
 {
-	float _nearPlane = 0.0f;
+	float _nearPlane;
 
-	float _nearDensity = 0.0f;
+	float _nearDensity;
 
-	float _farPlane = 0.0f;
+	float _farPlane;
 
-	float _farDensity = 0.0f;
+	float _farDensity;
 
-	boolean _useBackGround = false;
+	boolean _useBackGround;
 
-	Color _background = null;
+	Color _background;
 
 	FogChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException

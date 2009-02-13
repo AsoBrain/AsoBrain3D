@@ -27,12 +27,12 @@ import java.io.IOException;
  *          {@link #PRCT_FLT_FRMT}
  * Parent : any
  *
- * @noinspection JavaDoc
+ * @noinspection JavaDoc,PublicField,InstanceVariableMayNotBeInitialized
  */
 class PercentageChunk
 	extends Chunk
 {
-	float _percentage = 0.0f;
+	float _percentage;
 
 	PercentageChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException

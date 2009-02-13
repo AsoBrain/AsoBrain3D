@@ -26,14 +26,14 @@ import java.io.IOException;
  * Type   : {@link #NAMED_OBJECT}
  * Parent : {@link #EDIT_3DS}
  *
- * @noinspection JavaDoc
+ * @noinspection JavaDoc,PublicField,InstanceVariableMayNotBeInitialized
  */
 class NamedObjectChunk
 	extends Chunk
 {
-	String name = null;
+	String name;
 
-	Chunk _content = null;
+	Chunk _content;
 
 	NamedObjectChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException

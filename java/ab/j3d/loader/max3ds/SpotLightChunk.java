@@ -28,32 +28,32 @@ import ab.j3d.Vector3f;
  * Type   : {@link #LIGHT_SPOTLIGHT}
  * Parent : {@link #LIGHT_OBJ}
  *
- * @noinspection JavaDoc
+ * @noinspection JavaDoc,PublicField,InstanceVariableMayNotBeInitialized
  */
 class SpotLightChunk
 	extends Chunk
 {
-	Vector3f _target = null;
+	Vector3f _target;
 
-	float _hotSpot = 0.0f;
+	float _hotSpot;
 
-	float _fallOff = 0.0f;
+	float _fallOff;
 
-	boolean _shadowed = false;
+	boolean _shadowed;
 
-	float _roll = 0.0f;
+	float _roll;
 
-	short _shadowSize = (short)0;
+	short _shadowSize;
 
-	float _bias = 0.0f;
+	float _bias;
 
-	float _shadowFilter = 0.0f;
+	float _shadowFilter;
 
-	float _shadowBias = 0.0f;
+	float _shadowBias;
 
-	boolean _seeCone = false;
+	boolean _seeCone;
 
-	boolean _spotOvershoot = false;
+	boolean _spotOvershoot;
 
 	SpotLightChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException

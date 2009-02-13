@@ -38,31 +38,38 @@ import ab.j3d.Vector3f;
  *          {@link #KEY_SPOT_OBJECT}
  * Parent : {@link #KEYFRAMES} ({@link KeyFramesChunk})
  * </pre>
- * @noinspection JavaDoc
+ * @noinspection JavaDoc,PublicField,InstanceVariableMayNotBeInitialized
  */
 class KeyFrameChunk
 	extends Chunk
 {
-	String _name = null;
+	String _name;
 
-	short _parent = (short)0;
+	short _parent;
 
-	short _id = (short)0;
+	short _id;
 
-	Vector3f _pivot = null;
+	Vector3f _pivot;
 
-	final ArrayList<Frame> _track = new ArrayList<Frame>();
+	ArrayList<Frame> _track;
 
-	float _morphSmoothAngle = 0.0f;
+	float _morphSmoothAngle;
 
-	Vector3f _boundingBoxMin = null;
+	Vector3f _boundingBoxMin;
 
-	Vector3f _boundingBoxMax = null;
+	Vector3f _boundingBoxMax;
 
 	KeyFrameChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException
 	{
 		super( dataInput , chunkType , remainingChunkBytes );
+	}
+
+	protected void processChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+		throws IOException
+	{
+		_track = new ArrayList<Frame>();
+		super.processChunk( dataInput , chunkType , remainingChunkBytes );
 	}
 
 	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )

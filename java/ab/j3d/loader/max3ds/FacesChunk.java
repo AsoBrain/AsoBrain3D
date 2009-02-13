@@ -28,20 +28,20 @@ import java.util.List;
  * Type   : {@link #FACES_ARRAY}
  * Parent : {@link #OBJ_TRIMESH}
  *
- * @noinspection JavaDoc
+ * @noinspection JavaDoc,PublicField,InstanceVariableMayNotBeInitialized
  */
 class FacesChunk
 	extends Chunk
 {
-	int _numberOfFaces = 0;
+	int _numberOfFaces;
 
-	int[][] _faces = null;
+	int[][] _faces;
 
-	int[] _smoothingGroups = null;
+	int[] _smoothingGroups;
 
-	final List<String> _materialNames = new ArrayList<String>();
+	List<String> _materialNames;
 
-	final List<int[]> _materialIndices = new ArrayList<int[]>();
+	List<int[]> _materialIndices;
 
 	FacesChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException
@@ -62,6 +62,8 @@ class FacesChunk
 			/*short flag =*/ dataInput.readShort();
 		}
 
+		_materialNames = new ArrayList<String>();
+		_materialIndices = new ArrayList<int[]>();
 		_numberOfFaces = numberOfFaces;
 		_faces = faces;
 

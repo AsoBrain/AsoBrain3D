@@ -29,22 +29,22 @@ import java.io.IOException;
  *          {@link #MAT_TEX2MAP}
  * Parent : {@link #MAT_BLOCK}
  *
- * @noinspection JavaDoc
+ * @noinspection JavaDoc,PublicField,InstanceVariableMayNotBeInitialized
  */
 class TextureMapChunk
 	extends Chunk
 {
-	String _name = null;
+	String _name;
 
-	int _flags = 0;
+	int _flags;
 
-	float _blur = 0.0f;
+	float _blur;
 
-	float _bumpPercentage = 0.0f;
+	float _bumpPercentage;
 
-	float _vScale = 0.0f;
+	float _vScale;
 
-	float _uScale = 0.0f;
+	float _uScale;
 
 	TextureMapChunk( final DataInput dataInput , final int chunkType , final int chunkSize )
 		throws IOException

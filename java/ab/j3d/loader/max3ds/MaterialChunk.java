@@ -28,22 +28,22 @@ import ab.j3d.Material;
  * Type   : {@link #MAT_BLOCK}
  * Parent : {@link #EDIT_3DS}
  *
- * @noinspection JavaDoc
+ * @noinspection JavaDoc,PublicField,InstanceVariableMayNotBeInitialized
  */
 class MaterialChunk
 	extends Chunk
 {
-	String _name = null;
+	String _name;
 
-	Material _material = null;
+	Material _material;
 
-	TextureMapChunk _textureMapOne = null;
+	TextureMapChunk _textureMapOne;
 
-	TextureMapChunk _textureMapTwo = null;
+	TextureMapChunk _textureMapTwo;
 
-	TextureMapChunk _reflectionMap = null;
+	TextureMapChunk _reflectionMap;
 
-	TextureMapChunk _bumpMap = null;
+	TextureMapChunk _bumpMap;
 
 	MaterialChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException
@@ -51,10 +51,19 @@ class MaterialChunk
 		super( dataInput , chunkType , remainingChunkBytes );
 	}
 
+	protected void processChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+		throws IOException
+	{
+		_material = new Material();
+
+		super.processChunk( dataInput , chunkType , remainingChunkBytes );
+	}
+
 	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException
 	{
 		final Material material = _material;
+
 		final ColorChunk colorChunk;
 
 		switch ( chunkType )

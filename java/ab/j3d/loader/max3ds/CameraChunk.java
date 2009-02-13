@@ -28,22 +28,22 @@ import ab.j3d.Vector3f;
  * Type   : {@link #CAMERA_FLAG}
  * Parent : {@link #NAMED_OBJECT}
  *
- * @noinspection JavaDoc
+ * @noinspection JavaDoc,PublicField,InstanceVariableMayNotBeInitialized
  */
 class CameraChunk
 	extends Chunk
 {
-	Vector3f _position = null;
+	Vector3f _position;
 
-	Vector3f _targetLocation = null;
+	Vector3f _targetLocation;
 
-	float _bankAngle = 0.0f;
+	float _bankAngle;
 
-	float _focus = 0.0f;
+	float _focus;
 
-	float _near = 0.0f;
+	float _near;
 
-	float _far = 0.0f;
+	float _far;
 
 	CameraChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException

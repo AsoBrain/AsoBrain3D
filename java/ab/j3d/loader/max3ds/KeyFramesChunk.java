@@ -4,12 +4,14 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Type:   {@link #KEYFRAMES}
  * Parent: {@link #MAIN_3DS}
  *
- * @noinspection JavaDoc
+ * @noinspection JavaDoc,PublicField,InstanceVariableMayNotBeInitialized
  */
 class KeyFramesChunk
 	extends Chunk
@@ -20,17 +22,26 @@ class KeyFramesChunk
 
 	int _end = 0;
 
-	HashMap<String,KeyFrameChunk> _objectKeyframes = new HashMap<String,KeyFrameChunk>();
+	Map<String,KeyFrameChunk> _objectKeyframes;
 
-	ArrayList<KeyFrameChunk> _cameraKeyframes = new ArrayList<KeyFrameChunk>();
+	List<KeyFrameChunk> _cameraKeyframes;
 
-	ArrayList<KeyFrameChunk> _lightKeyframes = new ArrayList<KeyFrameChunk>();
-
+	List<KeyFrameChunk> _lightKeyframes;
 
 	KeyFramesChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
 		throws IOException
 	{
 		super( dataInput , chunkType , remainingChunkBytes );
+	}
+
+	protected void processChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+		throws IOException
+	{
+		_objectKeyframes = new HashMap<String,KeyFrameChunk>();
+		_cameraKeyframes = new ArrayList<KeyFrameChunk>();
+		_lightKeyframes = new ArrayList<KeyFrameChunk>();
+
+		super.processChunk( dataInput , chunkType , remainingChunkBytes );
 	}
 
 	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
