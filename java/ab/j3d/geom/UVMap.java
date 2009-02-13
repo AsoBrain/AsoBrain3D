@@ -33,7 +33,7 @@ import ab.j3d.Vector3D;
 public interface UVMap
 {
 	/**
-	 * Generates texture coordinates for the given face.
+	 * Generates texture coordinates for the given vertices.
 	 *
 	 * @param   material            Material used to define texture scale.
 	 * @param   vertexCoordinates   Vertex coordinates, as xyz-triplets.
@@ -42,12 +42,10 @@ public interface UVMap
 	 *                              <code>vertexCoordinates</code>, representing
 	 *                              the x, y and z-coordinates of the vertex.
 	 * @param   flipTexture         Flip texture direction.
-	 * @param   textureU            Texture u-coordinates to be set.
-	 * @param   textureV            Texture v-coordinates to be set.
 	 *
-	 * @deprecated Use of textureU/V is discouraged.
+	 * @return  Texture coordinates for each vertex.
 	 */
-	void generate( Material material , double[] vertexCoordinates , int[] vertexIndices , boolean flipTexture , float[] textureU , float[] textureV );
+	Point2D.Float[] generate( Material material , double[] vertexCoordinates , int[] vertexIndices , boolean flipTexture );
 
 	/**
 	 * Generate 2D point on texture for the given 3D point.

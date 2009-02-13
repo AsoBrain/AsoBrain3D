@@ -152,14 +152,32 @@ public class BoxUVMap
 		_flips = flips;
 	}
 
-	public void generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final boolean flipTexture , final float[] textureU , final float[] textureV )
+	public Point2D.Float[] generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final boolean flipTexture )
 	{
-		final int map;
+		final int map = getTargetMap( vertexCoordinates , vertexIndices );
+		return _maps[ map ].generate( material , vertexCoordinates , vertexIndices , _flips[ map ] ^ flipTexture );
+	}
 
-		/*
-		 * Try to determine the face normal and use it to choose the target map.
-		 * Note that this assumes that the given indices represent a single face.
-		 */
+	public Point2D.Float generate( final Material material , final Vector3D wcsPoint , final Vector3D normal , final boolean flipTexture )
+	{
+		final int map = getTargetMap( normal );
+		return _maps[ map ].generate( material , wcsPoint , normal , _flips[ map ] ^ flipTexture );
+	}
+
+	/**
+	 * Try to determine the face normal and use it to choose the target map.
+	 *
+	 * Note that this assumes that the given indices represent a single face.
+	 *
+	 * @param   vertexCoordinates   Vertex coordinates, as xyz-triplets.
+	 * @param   vertexIndices       Indices for all vertices in the face.
+	 *
+	 * @return  Target map.
+	 */
+	public int getTargetMap( final double[] vertexCoordinates , final int[] vertexIndices )
+	{
+		final int result;
+
 		if ( vertexIndices.length >= 3 )
 		{
 			final int base1 = vertexIndices[ 0 ] * 3;
@@ -170,7 +188,7 @@ public class BoxUVMap
 			final double yo = vertexCoordinates[ base2 + 1 ];
 			final double zo = vertexCoordinates[ base2 + 2 ];
 
-			map = getTargetMap( Vector3D.cross(
+			result = getTargetMap( Vector3D.cross(
 				vertexCoordinates[ base1     ] - xo ,
 				vertexCoordinates[ base1 + 1 ] - yo ,
 				vertexCoordinates[ base1 + 2 ] - zo ,
@@ -180,16 +198,10 @@ public class BoxUVMap
 		}
 		else
 		{
-			map = 0;
+			result = 0;
 		}
 
-		_maps[ map ].generate( material , vertexCoordinates , vertexIndices , _flips[ map ] ^ flipTexture , textureU , textureV );
-	}
-
-	public Point2D.Float generate( final Material material , final Vector3D wcsPoint , final Vector3D normal , final boolean flipTexture )
-	{
-		final int map = getTargetMap( normal );
-		return _maps[ map ].generate( material , wcsPoint , normal , _flips[ map ] ^ flipTexture );
+		return result;
 	}
 
 	/**

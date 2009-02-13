@@ -20,6 +20,8 @@
  */
 package ab.j3d.model;
 
+import java.awt.geom.Point2D;
+
 import ab.j3d.Material;
 
 /**
@@ -122,30 +124,27 @@ public final class Sphere3D
 				final float vBottom = (float)( q -   qc       ) * scaleV;
 				final float vTop    = (float)( q - ( qc + 1 ) ) * scaleV;
 
-				final int[]   vertexIndices;
-				final float[] textureU;
-				final float[] textureV;
+				final int[] vertexIndices;
+
+				final Point2D.Float[] texturePoints;
 
 				if ( qc == 0 )
 				{
-					vertexIndices = new int[]   {     0             , p3    , p4     };
-				    textureU      = new float[] {     uCenter       , uLeft , uRight };
-					textureV      = new float[] {     vBottom       , vTop  , vTop   };
+					vertexIndices = new int[] { 0 , p3 , p4 };
+					texturePoints = new Point2D.Float[] { new Point2D.Float( uCenter , vBottom ) , new Point2D.Float( uLeft , vTop ) , new Point2D.Float( uRight , vTop ) };
 				}
 				else if ( qc < lastQ )
 				{
-					vertexIndices = new int[]   { p2      , p1      , p3    , p4     };
-					textureU      = new float[] { uRight  , uLeft   , uLeft , uRight };
-					textureV      = new float[] { vBottom , vBottom , vTop  , vTop   };
+					vertexIndices = new int[] { p2 , p1 , p3 , p4 };
+					texturePoints = new Point2D.Float[] { new Point2D.Float( uRight , vBottom ) , new Point2D.Float( uLeft , vBottom ) , new Point2D.Float( uLeft , vTop ) , new Point2D.Float( uRight , vTop ) };
 				}
 				else // qc == lastQ
 				{
-					vertexIndices = new int[]   { p2      , p1      ,     lastV      };
-					textureU      = new float[] { uRight  , uLeft   ,     uCenter    };
-					textureV      = new float[] { vBottom , vBottom ,     vTop       };
+					vertexIndices = new int[] { p2 , p1 , lastV };
+					texturePoints = new Point2D.Float[] { new Point2D.Float( uRight , vBottom ) , new Point2D.Float( uLeft , vBottom ) , new Point2D.Float( uCenter , vTop ) };
 				}
 
-				_faces.add( new Face3D( this , vertexIndices , material , textureU , textureV , true , false ) );
+				_faces.add( new Face3D( this , vertexIndices , material , texturePoints , null , true , false ) );
 			}
 		}
 	}

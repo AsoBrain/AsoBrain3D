@@ -89,8 +89,10 @@ public class PlanarUVMap
 		_plane2wcs = plane2wcs.scale( modelUnits );
 	}
 
-	public void generate( final Material material , final double[] wcsVertexCoordinates , final int[] vertexIndices , final boolean flipTexture , final float[] textureU , final float[] textureV )
+	public Point2D.Float[] generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final boolean flipTexture )
 	{
+		final Point2D.Float[] result = new Point2D.Float[ vertexIndices.length ];
+
 		final Matrix3D plane2wcs = _plane2wcs;
 
 		final float scaleU = ( material.colorMapWidth  > 0.0f ) ? 1.0f / material.colorMapWidth  : 1.0f;
@@ -100,16 +102,17 @@ public class PlanarUVMap
 		{
 			final int base = vertexIndices[ i ] * 3;
 
-			final double wcsX = wcsVertexCoordinates[ base ];
-			final double wcsY = wcsVertexCoordinates[ base + 1 ];
-			final double wcsZ = wcsVertexCoordinates[ base + 2 ];
+			final double wcsX = vertexCoordinates[ base ];
+			final double wcsY = vertexCoordinates[ base + 1 ];
+			final double wcsZ = vertexCoordinates[ base + 2 ];
 
 			final float tx = (float)plane2wcs.inverseTransformX( wcsX , wcsY , wcsZ );
 			final float ty = (float)plane2wcs.inverseTransformY( wcsX , wcsY , wcsZ );
 
-			textureU[ i ] = flipTexture ? ty * scaleU : tx * scaleV;
-			textureV[ i ] = flipTexture ? tx * scaleU : ty * scaleV;
+			result[ i ] = flipTexture ? new Point2D.Float( ty * scaleU , tx * scaleV ) : new Point2D.Float( tx * scaleU , ty * scaleV );
 		}
+
+		return result;
 	}
 
 	public Point2D.Float generate( final Material material , final Vector3D wcsPoint , final Vector3D normal , final boolean flipTexture )

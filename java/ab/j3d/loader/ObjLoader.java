@@ -19,6 +19,7 @@
  */
 package ab.j3d.loader;
 
+import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -34,6 +35,7 @@ import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.ResourceLoaderMaterial;
 import ab.j3d.Vector3D;
+import ab.j3d.Vector3f;
 import ab.j3d.geom.Abstract3DObjectBuilder;
 import ab.j3d.model.Object3D;
 import ab.j3d.model.Object3DBuilder;
@@ -172,10 +174,10 @@ public class ObjLoader
 		/*
 		 * Read OBJ data
 		 */
-		final List<Vector3D> vertices        = new ArrayList<Vector3D>(); // element: Vector3D
-		final List<Vector3D> textureVertices = new ArrayList<Vector3D>(); // element: Vector3D (u,v,w)
-		final List<Vector3D> vertexNormals   = new ArrayList<Vector3D>(); // element: Vector3D (i,j,k)
-		final List<ObjFace>  faces           = new ArrayList<ObjFace>();
+		final List<Vector3D> vertices = new ArrayList<Vector3D>();
+		final List<Point2D.Float> textureVertices = new ArrayList<Point2D.Float>();
+		final List<Vector3D> vertexNormals = new ArrayList<Vector3D>();
+		final List<ObjFace> faces = new ArrayList<ObjFace>();
 
 		Material material = defaultMaterial;
 
@@ -251,11 +253,11 @@ public class ObjLoader
 						if ( argCount < 2 )
 							throw new IOException( "malformed texture vertex entry: " + line );
 
-						final double u = Double.parseDouble( tokens[ 1 ] );
-						final double v = Double.parseDouble( tokens[ 2 ] );
-						final double w = ( argCount >= 3 ) ? Double.parseDouble( tokens[ 3 ] ) : 0.0;
+						final float u = Float.parseFloat( tokens[ 1 ] );
+						final float v = Float.parseFloat( tokens[ 2 ] );
+						final float w = ( argCount >= 3 ) ? Float.parseFloat( tokens[ 3 ] ) : 0.0f;
 
-						textureVertices.add( Vector3D.INIT.set( u , v , w ) );
+						textureVertices.add( new Vector3f( u , v , w ) );
 					}
 					/*
 					 * vn i j k
@@ -516,8 +518,7 @@ public class ObjLoader
 			final int faceVertexCount = faceVertices.size();
 
 			final int[] vertexIndices = new int[faceVertexCount];
-			float[] textureU = null;
-			float[] textureV = null;
+			Point2D.Float[] texturePoints = null;
 			boolean smooth = false;
 			Vector3D fixedVertexNormal = null;
 
@@ -537,15 +538,12 @@ public class ObjLoader
 					if ( textureVertexIndex >= textureVertices.size() )
 						throw new IOException( "out-of-bounds texture vertex (" + textureVertexIndex + " >= " + textureVertices.size() + ")" );
 
-					if ( textureU == null )
+					if ( texturePoints == null )
 					{
-						textureU = new float[ faceVertexCount ];
-						textureV = new float[ faceVertexCount ];
+						texturePoints = new Point2D.Float[ faceVertexCount ];
 					}
 
-					final Vector3D textureVertex = textureVertices.get( textureVertexIndex );
-					textureU[ faceVertexIndex ] = (float)textureVertex.x;
-					textureV[ faceVertexIndex ] = (float)textureVertex.y;
+					texturePoints[ faceVertexIndex ] = textureVertices.get( textureVertexIndex );
 				}
 
 				final int vertexNormalIndex = objFaceVertex._vertexNormalIndex;
@@ -578,7 +576,7 @@ public class ObjLoader
 				}
 			}
 
-			builder.addFace( vertexIndices , objFace._material , textureU , textureV , smooth , false );
+			builder.addFace( vertexIndices , objFace._material , texturePoints , null , smooth , false );
 		}
 
 		if ( assignedVertexNormals != null )

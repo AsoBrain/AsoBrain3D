@@ -20,6 +20,8 @@
  */
 package ab.j3d.model;
 
+import java.awt.geom.Point2D;
+
 import ab.j3d.Material;
 
 /**
@@ -129,20 +131,18 @@ public final class Cylinder3D
 		 */
 		if ( hasBottom && hasBottomCap )
 		{
-			final int[]   vertexIndices = new int[ numEdges ];
-			final float[] textureU      = new float[ numEdges ];
-			final float[] textureV      = new float[ numEdges ];
+			final int[] vertexIndices = new int[ numEdges ];
+			final Point2D.Float[] texturePoints = new Point2D.Float[ numEdges ];
 
 			for ( int i = 0 ; i < numEdges ; i++ )
 			{
 				final double rad = (double)i * radStep;
 
 				vertexIndices[ i ] = i;
-				textureU     [ i ] = (float)( 0.5 + 0.5 * Math.sin( rad ) );
-				textureV     [ i ] = (float)( 0.5 - 0.5 * Math.cos( rad ) );
+				texturePoints[ i ] = new Point2D.Float( (float)( 0.5 + 0.5 * Math.sin( rad ) ) , (float)( 0.5 - 0.5 * Math.cos( rad ) ) );
 			}
 
-			addFace( new Face3D( this , vertexIndices , material , textureU , textureV , smoothCaps , false ) );
+			addFace( new Face3D( this , vertexIndices , material , texturePoints , null , smoothCaps , false ) );
 		}
 
 		/*
@@ -150,10 +150,6 @@ public final class Cylinder3D
 		 */
 		if ( hasTop || hasBottom )
 		{
-			final float[] textureV =    !hasTop ? new float[] { 0.0f , 0.0f , 1.0f        } :
-			                         !hasBottom ? new float[] {        0.0f , 1.0f , 1.0f } :
-			                                      new float[] { 0.0f , 0.0f , 1.0f , 1.0f };
-
 			for ( int i1 = 0 ; i1 < numEdges ; i1++ )
 			{
 				final int   i2 = ( i1 + 1 ) % numEdges;
@@ -161,25 +157,25 @@ public final class Cylinder3D
 				final float u2 = (float)( i1 + 1 ) / (float)numEdges;
 
 				final int[] vertexIndices;
-				final float[] textureU;
+				final Point2D.Float[] texturePoints;
 
 				if ( !hasTop )
 				{
-					vertexIndices = new int[]   {   i2 ,   i1 , numEdges };
-					textureU      = new float[] {   u2 ,   u1 ,     0.5f };
+					vertexIndices = new int[]{i2 , i1 , numEdges};
+					texturePoints = new Point2D.Float[] { new Point2D.Float( u2 , 0.0f ) , new Point2D.Float( u1 , 0.0f ) , new Point2D.Float( 0.5f , 1.0f ) };
 				}
 				else if ( !hasBottom )
 				{
-					vertexIndices = new int[]   {    0 , 1 + i1 , 1 + i2 };
-					textureU      = new float[] { 0.5f ,     u1 ,     u2 };
+					vertexIndices = new int[] { 0 , 1 + i1 , 1 + i2 };
+					texturePoints = new Point2D.Float[] { new Point2D.Float( 0.5f , 0.0f ) , new Point2D.Float( u1 , 1.0f ) , new Point2D.Float( u2 , 1.0f ) };
 				}
 				else
 				{
-					vertexIndices = new int[]   {   i2 ,   i1 , numEdges + i1 , numEdges + i2 };
-					textureU      = new float[] {   u2 ,   u1 ,            u1 ,            u2 };
+					vertexIndices = new int[] { i2 , i1 , numEdges + i1 , numEdges + i2 };
+					texturePoints = new Point2D.Float[] { new Point2D.Float( u2 , 0.0f ) , new Point2D.Float( u1 , 0.0f ) , new Point2D.Float( u1 , 1.0f ) , new Point2D.Float( u2 , 1.0f ) };
 				}
 
-				addFace( new Face3D( this , vertexIndices , material , textureU , textureV , smoothCircumference , false ) );
+				addFace( new Face3D( this , vertexIndices , material , texturePoints , null , smoothCircumference , false ) );
 			}
 		}
 
@@ -188,9 +184,8 @@ public final class Cylinder3D
 		 */
 		if ( hasTop && hasTopCap )
 		{
-			final int[]   vertexIndices = new int[ numEdges ];
-			final float[] textureU      = new float[ numEdges ];
-			final float[] textureV      = new float[ numEdges ];
+			final int[] vertexIndices = new int[ numEdges ];
+			final Point2D.Float[] texturePoints = new Point2D.Float[ numEdges ];
 
 			final int lastVertex = ( hasBottom ? numEdges : 1 ) + numEdges - 1;
 
@@ -199,11 +194,10 @@ public final class Cylinder3D
 				final double rad = (double)i * radStep;
 
 				vertexIndices[ i ] = lastVertex - i;
-				textureU     [ i ] = (float)( 0.5 + 0.5 * Math.sin( rad ) );
-				textureV     [ i ] = (float)( 0.5 - 0.5 * Math.cos( rad ) );
+				texturePoints[ i ] = new Point2D.Float( (float)( 0.5 + 0.5 * Math.sin( rad ) ) , (float)( 0.5 - 0.5 * Math.cos( rad ) ) );
 			}
 
-			addFace( new Face3D( this , vertexIndices , material , textureU , textureV , smoothCaps , false ) );
+			addFace( new Face3D( this , vertexIndices , material , texturePoints , null , smoothCaps , false ) );
 		}
 	}
 }

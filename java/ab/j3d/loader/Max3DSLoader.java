@@ -20,6 +20,7 @@
 package ab.j3d.loader;
 
 import java.awt.Color;
+import java.awt.geom.Point2D;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -93,7 +94,7 @@ public final class Max3DSLoader
 	/**
 	 * Temporary texture coordinates array.
 	 */
-	private float[] _textureCoords;
+	private Point2D.Float[] _textureCoords;
 
 	/**
 	 * Load a scene graph from the contents of a 3D Studio or 3D Studio MAX
@@ -325,9 +326,9 @@ public final class Max3DSLoader
 					 */
 					final int faceCount = readShort( in );
 
-					final Object3DBuilder builder = _object3DBuilder;
-					final Material material      = _material;
-					final float[]  textureCoords = _textureCoords;
+					final Object3DBuilder builder       = _object3DBuilder;
+					final Material        material      = _material;
+					final Point2D.Float[] textureCoords = _textureCoords;
 
 					for ( int i = 0 ; i < faceCount ; i++ )
 					{
@@ -336,29 +337,19 @@ public final class Max3DSLoader
 						final int vertexIndex3 = readShort( in );
 						/*nal int flags       */ readShort( in );
 
-						final float[] tu;
-						final float[] tv;
+						final Point2D.Float[] texturePoints;
 
 						if ( textureCoords != null )
 						{
-							final float u1 = textureCoords[ vertexIndex1 * 2     ];
-							final float v1 = textureCoords[ vertexIndex1 * 2 + 1 ];
-							final float u2 = textureCoords[ vertexIndex2 * 2     ];
-							final float v2 = textureCoords[ vertexIndex2 * 2 + 1 ];
-							final float u3 = textureCoords[ vertexIndex3 * 2     ];
-							final float v3 = textureCoords[ vertexIndex3 * 2 + 1 ];
-
-							tu = new float[] { u3 , u2 , u1 };
-							tv = new float[] { v3 , v2 , v1 };
+							texturePoints = new Point2D.Float[] { textureCoords[ vertexIndex3 ] , textureCoords[ vertexIndex2 ] , textureCoords[ vertexIndex1 ] };
 						}
 						else
 						{
-							tu = null;
-							tv = null;
+							texturePoints = null;
 						}
 
 						final boolean hasBackface = true; // ( material.opacity < 0.99f );
-						_object3DBuilder.addFace( new int[] { vertexIndex3 , vertexIndex2 , vertexIndex1 } , material , tu , tv , false , hasBackface );
+						_object3DBuilder.addFace( new int[] { vertexIndex3 , vertexIndex2 , vertexIndex1 } , material , texturePoints , null , false , hasBackface );
 					}
 
 					_root.addChild( builder.getObject3D() );
@@ -399,21 +390,11 @@ public final class Max3DSLoader
 					if ( faceVertexCount != vertexCount )
 						throw new IOException( "Number of texture vertices != #model vertices (" + faceVertexCount + " != " + vertexCount + ')' );
 
-					final Material material = _material;
-					final boolean  hasUV    = ( material.colorMap != null );
-
-					final float[] textureCoords = hasUV ? new float[ faceVertexCount * 2 ] : null;
+					final Point2D.Float[] textureCoords = new Point2D.Float[ faceVertexCount ];
 
 					for ( int i = 0 ; i < faceVertexCount ; i++ )
 					{
-						final float uf = readFloat( in );
-						final float vf = readFloat( in );
-
-						if ( hasUV )
-						{
-							textureCoords[ i * 2     ] = uf;
-							textureCoords[ i * 2 + 1 ] = vf;
-						}
+						textureCoords[ i ] = new Point2D.Float( readFloat( in ) , readFloat( in ) );
 					}
 
 					_textureCoords = textureCoords;

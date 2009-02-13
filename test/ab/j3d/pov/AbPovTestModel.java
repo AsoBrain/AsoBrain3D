@@ -21,6 +21,7 @@ package ab.j3d.pov;
 
 import java.awt.Color;
 import java.awt.Shape;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 import ab.j3d.Material;
@@ -368,16 +369,15 @@ public final class AbPovTestModel
 			final Material leftMaterial   = createMaterialWithColorMap( "CUBE_LEFT" );
 			final Material rightMaterial  = createMaterialWithColorMap( "CUBE_RIGHT" );
 
-			final float[] textureU = { 0.5f , 0.5f , 0.0f , 0.0f };
-			final float[] textureV = { 0.0f , 0.5f , 0.5f , 0.0f };
+			final Point2D.Float[] texturePoints = { new Point2D.Float( 0.5f , 0.0f ) , new Point2D.Float( 0.5f , 0.5f ) , new Point2D.Float( 0.0f , 0.5f ) , new Point2D.Float( 0.0f , 0.0f ) };
 
 			final Object3DBuilder builder = new Object3DBuilder();
-			builder.addFace( new Vector3D[] { lft , lbt , rbt , rft } , topMaterial    , textureU , textureV , false , false );
-			builder.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , bottomMaterial , textureU , textureV , false , false );
-			builder.addFace( new Vector3D[] { lfb , lft , rft , rfb } , frontMaterial  , textureU , textureV , false , false );
-			builder.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , backMaterial   , textureU , textureV , false , false );
-			builder.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , leftMaterial   , textureU , textureV , false , false );
-			builder.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , rightMaterial  , textureU , textureV , false , false );
+			builder.addFace( new Vector3D[] { lft , lbt , rbt , rft } , topMaterial    , texturePoints , null , false , false );
+			builder.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , bottomMaterial , texturePoints , null , false , false );
+			builder.addFace( new Vector3D[] { lfb , lft , rft , rfb } , frontMaterial  , texturePoints , null , false , false );
+			builder.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , backMaterial   , texturePoints , null , false , false );
+			builder.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , leftMaterial   , texturePoints , null , false , false );
+			builder.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , rightMaterial  , texturePoints , null , false , false );
 			cube = builder.getObject3D();
 		}
 		else
@@ -419,16 +419,15 @@ public final class AbPovTestModel
 			final Material leftMaterial   = createMaterialWithColorMap( "CUBE_LEFT_TEXTURE_AND_COLOR" );   leftMaterial.diffuseColorRed    = 0.0f; leftMaterial.diffuseColorGreen      = 1.0f; leftMaterial.diffuseColorBlue       = 1.0f;
 			final Material rightMaterial  = createMaterialWithColorMap( "CUBE_RIGHT_TEXTURE_AND_COLOR" );  rightMaterial.diffuseColorRed   = 1.0f; rightMaterial.diffuseColorGreen     = 0.0f; rightMaterial.diffuseColorBlue      = 1.0f;
 
-			final float[] textureU = { 0.5f , 0.5f , 0.0f , 0.0f };
-			final float[] textureV = { 0.0f , 0.5f , 0.5f , 0.0f };
+			final Point2D.Float[] texturePoints = { new Point2D.Float( 0.5f , 0.0f ) , new Point2D.Float( 0.5f , 0.5f ) , new Point2D.Float( 0.0f , 0.5f ) , new Point2D.Float( 0.0f , 0.0f ) };
 
 			final Object3DBuilder builder = new Object3DBuilder();
-			builder.addFace( new Vector3D[] { lft , lbt , rbt , rft } , topMaterial    , textureU , textureV , false , false );
-			builder.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , bottomMaterial , textureU , textureV , false , false );
-			builder.addFace( new Vector3D[] { lfb , lft , rft , rfb } , frontMaterial  , textureU , textureV , false , false );
-			builder.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , backMaterial   , textureU , textureV , false , false );
-			builder.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , leftMaterial   , textureU , textureV , false , false );
-			builder.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , rightMaterial  , textureU , textureV , false , false );
+			builder.addFace( new Vector3D[] { lft , lbt , rbt , rft } , topMaterial    , texturePoints , null , false , false );
+			builder.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , bottomMaterial , texturePoints , null , false , false );
+			builder.addFace( new Vector3D[] { lfb , lft , rft , rfb } , frontMaterial  , texturePoints , null , false , false );
+			builder.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , backMaterial   , texturePoints , null , false , false );
+			builder.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , leftMaterial   , texturePoints , null , false , false );
+			builder.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , rightMaterial  , texturePoints , null , false , false );
 			result = builder.getObject3D();
 		}
 		else

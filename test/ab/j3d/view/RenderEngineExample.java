@@ -27,6 +27,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Point2D;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Locale;
@@ -261,16 +262,15 @@ public abstract class RenderEngineExample
 		final Material green   = new Material( Color.GREEN  .getRGB() );
 		final Material yellow  = new Material( Color.YELLOW .getRGB() );
 
-		final float []  textureU = { 0.0f , 1.0f , 1.0f , 0.0f };
-		final float []  textureV = { 0.0f , 0.0f , 1.0f , 1.0f };
+		final Point2D.Float[] texturePoints = { new Point2D.Float( 0.0f , 0.0f ) , new Point2D.Float( 1.0f , 0.0f ) , new Point2D.Float( 1.0f , 1.0f ) , new Point2D.Float( 0.0f , 1.0f ) };
 
 		final Object3DBuilder builder = new Object3DBuilder();
-		/* top    */ builder.addFace( new Vector3D[] { lft , lbt , rbt , rft } , red     , textureU , textureV , false , false ); // Z =  size
-		/* bottom */ builder.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , green   , textureU , textureV , false , false ); // Z = -size
-		/* front  */ builder.addFace( new Vector3D[] { lfb , lft , rft , rfb } , cyan    , textureU , textureV , false , false ); // Y = -size
-		/* back   */ builder.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , magenta , textureU , textureV , false , false ); // Y =  size
-		/* left   */ builder.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , yellow  , textureU , textureV , false , false ); // X = -size
-		/* right  */ builder.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , blue    , textureU , textureV , false , false ); // X =  size
+		/* top    */ builder.addFace( new Vector3D[] { lft , lbt , rbt , rft } , red     , texturePoints , null , false , false ); // Z =  size
+		/* bottom */ builder.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , green   , texturePoints , null , false , false ); // Z = -size
+		/* front  */ builder.addFace( new Vector3D[] { lfb , lft , rft , rfb } , cyan    , texturePoints , null , false , false ); // Y = -size
+		/* back   */ builder.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , magenta , texturePoints , null , false , false ); // Y =  size
+		/* left   */ builder.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , yellow  , texturePoints , null , false , false ); // X = -size
+		/* right  */ builder.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , blue    , texturePoints , null , false , false ); // X =  size
 		final Object3D cube = builder.getObject3D();
 		cube.fillColor = Color.BLUE;
 		cube.outlineColor = Color.BLACK;

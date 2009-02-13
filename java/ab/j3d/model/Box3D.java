@@ -141,18 +141,7 @@ public final class Box3D
 	 */
 	private void addFace( final int[] vertices , final Material material , final UVMap uvMap )
 	{
-		if ( ( material != null ) && ( material.colorMap != null ) )
-		{
-			final float[] textureU = new float[ vertices.length ];
-			final float[] textureV = new float[ vertices.length ];
-			uvMap.generate( material , _vertexCoordinates , vertices , false , textureU , textureV );
-			addFace( new Face3D( this , vertices , material , textureU , textureV , false , false ) );
-		}
-		else
-		{
-			addFace( new Face3D( this , vertices , material , null , null , false , false ) );
-		}
-
+		addFace( new Face3D( this , vertices , material , ( uvMap != null ) ? uvMap.generate( material , _vertexCoordinates , vertices , false ) : null , null , false , false ) );
 	}
 
 	/**
