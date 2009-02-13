@@ -641,34 +641,32 @@ public final class RenderQueue
 	{
 		boolean  behind      = false;
 		boolean  inFront     = false;
-		final double   d           = other._planeConstant;
+
 		final int      vertexCount = polygon._vertexCount;
 		final double[] xCoords     = polygon._viewX;
 		final double[] yCoords     = polygon._viewY;
 		final double[] zCoords     = polygon._viewZ;
 
-		for ( int vertex = 0 ; !( behind && inFront ) && ( vertex < vertexCount ) ; vertex++ )
-		{
-			/**
-			 * The plane constant of a plane is the result of the equation
-			 * N . P = x, where N is the plane normal and P is any point on the
-			 * plane. Substituting P for another point in the 3d world, for
-			 * example a vertex of another polygon, can indicate wether this
-			 * vertex is in front ( x < constant) or behind ( x > constant) the
-			 * plane.
-			 */
-			final double x = xCoords[ vertex ];
-			final double y = yCoords[ vertex ];
-			final double z = zCoords[ vertex ];
-			final double dot = Vector3D.dot( other._planeNormalX , other._planeNormalY , other._planeNormalZ , x , y , z );
+		final double  planeNormalX  = other._planeNormalX;
+		final double  planeNormalY  = other._planeNormalY;
+		final double  planeNormalZ  = other._planeNormalZ;
+		final double  planeDistance = other._planeConstant;
+		final boolean backface      = other._backface;
 
-			behind  = behind  || ( d > ( dot + 0.001 ) );
-			inFront = inFront || ( d < ( dot - 0.001 ) );
+		for ( int vertex = 0 ; vertex < vertexCount ; vertex++ )
+		{
+			final double distanceToPlane = Vector3D.dot( planeNormalX , planeNormalY , planeNormalZ , xCoords[ vertex ] , yCoords[ vertex ] , zCoords[ vertex ] ) - planeDistance;
+			behind  = behind  || ( distanceToPlane < -0.001 );
+			inFront = inFront || ( distanceToPlane >  0.001 );
+
+			if ( behind && inFront )
+			{
+				break;
+			}
 		}
 
-		return behind
-		       ? inFront ? INTERSECTING : BEHIND
-		       : inFront ? IN_FRONT : COPLANAR;
+		return behind ? inFront ? INTERSECTING : backface ? IN_FRONT : BEHIND
+		              : inFront ?                backface ? BEHIND   : IN_FRONT : COPLANAR;
 	}
 
 	/**
@@ -677,17 +675,14 @@ public final class RenderQueue
 	 * @param   plane   Plane to compare point with.
 	 * @param   point   Point to compare with the plane.
 	 *
-	 * @return  Relation of point to plane ( {@link #IN_FRONT}, {@link #BEHIND} or {@link #COPLANAR} ).
+	 * @return  Relation of point to plane ({@link #IN_FRONT}, {@link #BEHIND},
+	 *          or {@link #COPLANAR} ).
 	 */
 	public static int compare( final RenderedPolygon plane , final Vector3D point )
 	{
-		final double  dot           = Vector3D.dot( plane._planeNormalX , plane._planeNormalY , plane._planeNormalZ , point.x , point.y , point.z );
-		final double  planeDistance = plane._planeConstant;
-
-		final boolean behind  = planeDistance > ( dot + 0.001 );
-		final boolean inFront = planeDistance < ( dot - 0.001 );
-
-		return inFront ? IN_FRONT : behind ? BEHIND : COPLANAR;
+		final double distanceToPlane = Vector3D.dot( plane._planeNormalX , plane._planeNormalY , plane._planeNormalZ , point.x , point.y , point.z ) - plane._planeConstant;
+		return ( distanceToPlane >  0.001 ) ? IN_FRONT :
+		       ( distanceToPlane < -0.001 ) ? BEHIND : COPLANAR;
 	}
 
 	/**
@@ -878,6 +873,7 @@ public final class RenderQueue
 		front._planeNormalX        = polygon._planeNormalX;
 		front._planeNormalY        = polygon._planeNormalY;
 		front._planeNormalZ        = polygon._planeNormalZ;
+		front._backface            = polygon._backface;
 		front._material            = polygon._material;
 		front._name                = polygon._name + "_front";
 
@@ -919,6 +915,7 @@ public final class RenderQueue
 		back._planeNormalX        = polygon._planeNormalX;
 		back._planeNormalY        = polygon._planeNormalY;
 		back._planeNormalZ        = polygon._planeNormalZ;
+		back._backface            = polygon._backface;
 		back._material            = polygon._material;
 		back._name                = polygon._name + "_back";
 
