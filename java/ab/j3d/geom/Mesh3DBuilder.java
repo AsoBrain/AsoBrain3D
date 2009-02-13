@@ -19,14 +19,13 @@
  */
 package ab.j3d.geom;
 
-import java.awt.geom.Ellipse2D;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import ab.j3d.Material;
-import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.geom.Mesh3D.Face;
 import ab.j3d.geom.Mesh3D.SharedVertex;
@@ -191,19 +190,6 @@ public final class Mesh3DBuilder
 		}
 	}
 
-	/**
-	 * Add face to this object.
-	 *
-	 * @param   vertices    Vertices of face.
-	 * @param   material    Material to apply to the face.
-	 * @param   smooth      Face is smooth/curved vs. flat.
-	 * @param   twoSided    Face is two-sided.
-	 */
-	private void addFace( final List<Vertex> vertices , final Material material , final boolean smooth , final boolean twoSided )
-	{
-		_faces.add( new Face( vertices , material , smooth , twoSided ) );
-	}
-
 	public final void addFace( final Vector3D[] points , final Material material , final boolean smooth , final boolean twoSided )
 	{
 		final List<Vertex> vertices = new ArrayList<Vertex>( points.length );
@@ -212,7 +198,7 @@ public final class Mesh3DBuilder
 			vertices.add( new Vertex( getSharedVertex( point ) ) );
 		}
 
-		addFace( vertices , material , smooth , twoSided );
+		_faces.add( new Face( vertices , material , smooth , twoSided ) );
 	}
 
 	public final void addFace( final int[] vertexIndices , final Material material , final boolean smooth , final boolean twoSided )
@@ -223,20 +209,7 @@ public final class Mesh3DBuilder
 			vertices.add( new Vertex( _sharedVertices.get( vertexIndex ) ) );
 		}
 
-		addFace( vertices , material , smooth , twoSided );
-	}
-
-	public void addFace( final Vector3D[] points , final Material material , final UVMap uvMap , final boolean flipTexture , final boolean smooth , final boolean twoSided )
-	{
-		final List<Vertex> vertices = new ArrayList<Vertex>( points.length );
-
-		final Vector3D normal = GeometryTools.getPlaneNormal( points );
-		for ( final Vector3D point : points )
-		{
-			vertices.add( new Vertex( getSharedVertex( point ) , uvMap.generate( material , point , normal , flipTexture ) ) );
-		}
-
-		addFace( vertices , material , smooth , twoSided );
+		_faces.add( new Face( vertices , material , smooth , twoSided ) );
 	}
 
 	public void addFace( final int[] vertexIndices , final Material material , final UVMap uvMap , final boolean flipTexture , final boolean smooth , final boolean twoSided )
@@ -266,103 +239,68 @@ public final class Mesh3DBuilder
 			vertices.add( new Vertex( sharedVertex , uvMap.generate( material , point , normal , flipTexture ) ) );
 		}
 
-		addFace( vertices , material , smooth , twoSided );
+		_faces.add( new Face( vertices , material , smooth , twoSided ) );
 	}
 
-	public final void addFace( final int[] vertexIndices , final Material material , final float[] textureU , final float[] textureV , final boolean smooth , final boolean twoSided )
+	public void addFace( final Vector3D[] points , final Material material , final Point2D.Float[] texturePoints , final Vector3D[] vertexNormals , final boolean smooth , final boolean twoSided )
 	{
-		if ( ( textureU != null ) && ( textureV != null ) )
-		{
-			final ArrayList<SharedVertex> sharedVertices = _sharedVertices;
-			final List<Vertex> vertices = new ArrayList<Vertex>( vertexIndices.length );
+		final int vertexCount = points.length;
 
-			for ( int i = 0 ; i < vertexIndices.length ; i++ )
+		final List<Vertex> vertices = new ArrayList<Vertex>( vertexCount );
+
+		for ( int i = 0 ; i < vertexCount; i++ )
+		{
+			final Vertex vertex = new Vertex( getSharedVertex( points[ i ] ) );
+
+			if ( texturePoints != null )
 			{
-				vertices.add( new Vertex( sharedVertices.get( vertexIndices[ i ] ) , textureU[ i ] , textureV[ i ] ) );
+				final Point2D.Float texturePoint = texturePoints[ i ];
+				vertex.colorMapU = texturePoint.x;
+				vertex.colorMapV = texturePoint.y;
 			}
 
-			addFace( vertices , material , smooth , twoSided );
-		}
-		else
-		{
-			addFace( vertexIndices , material , smooth , twoSided );
-		}
-	}
-
-	public final void addFace( final Vector3D[] points , final Material material , final float[] textureU , final float[] textureV , final boolean smooth , final boolean twoSided )
-	{
-		if ( ( textureU != null ) && ( textureV != null ) )
-		{
-			final List<Vertex> vertices = new ArrayList<Vertex>( points.length );
-
-			for ( int i = 0 ; i < points.length ; i++ )
+			if ( vertexNormals != null )
 			{
-				vertices.add( new Vertex( getSharedVertex( points[ i ] ) , textureU[ i ] , textureV[ i ] ) );
+				vertex.setNormal( vertexNormals[ i ] );
 			}
 
-			addFace( vertices , material , smooth , twoSided );
+			vertices.add( vertex );
 		}
-		else
+
+		_faces.add( new Face( vertices , material , smooth , twoSided ) );
+	}
+
+	public void addFace( final int[] vertexIndices , final Material material , final Point2D.Float[] texturePoints , final Vector3D[] vertexNormals , final boolean smooth , final boolean twoSided )
+	{
+		final int vertexCount = vertexIndices.length;
+		final ArrayList<SharedVertex> sharedVertices = _sharedVertices;
+
+		final List<Vertex> vertices = new ArrayList<Vertex>( vertexCount );
+
+		for ( int i = 0 ; i < vertexCount; i++ )
 		{
-			addFace( points , material , smooth , twoSided );
+			final Vertex vertex = new Vertex( sharedVertices.get( vertexIndices[ i ] ) );
+
+			if ( texturePoints != null )
+			{
+				final Point2D.Float texturePoint = texturePoints[ i ];
+				vertex.colorMapU = texturePoint.x;
+				vertex.colorMapV = texturePoint.y;
+			}
+
+			if ( vertexNormals != null )
+			{
+				vertex.setNormal( vertexNormals[ i ] );
+			}
+
+			vertices.add( vertex );
 		}
-	}
 
-	public void addLine( final Vector3D point1 , final Vector3D point2 , final int stroke , final Material material )
-	{
-		final List<Vertex> vertices = new ArrayList<Vertex>( 3 );
-		vertices.add( new Vertex( getSharedVertex( point1 ) ) );
-		vertices.add( new Vertex( getSharedVertex( point2 ) ) );
-		addFace( vertices , material , false , true );
-	}
-
-	public void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Material material , final boolean hasBackface )
-	{
-		final List<Vertex> vertices = new ArrayList<Vertex>( 3 );
-		vertices.add( new Vertex( getSharedVertex( point1 ) ) );
-		vertices.add( new Vertex( getSharedVertex( point2 ) ) );
-		vertices.add( new Vertex( getSharedVertex( point3 ) ) );
-		addFace( vertices , material , false , hasBackface );
-	}
-
-	public void addTriangle( final Vector3D point1 , final float colorMapU1 , final float colorMapV1 , final Vector3D point2 , final float colorMapU2 , final float colorMapV2 , final Vector3D point3 , final float colorMapU3 , final float colorMapV3 , final Material material , final boolean hasBackface )
-	{
-		final List<Vertex> vertices = new ArrayList<Vertex>( 3 );
-		vertices.add( new Vertex( getSharedVertex( point1 ) , colorMapU1 , colorMapV1 ) );
-		vertices.add( new Vertex( getSharedVertex( point2 ) , colorMapU2 , colorMapV2 ) );
-		vertices.add( new Vertex( getSharedVertex( point3 ) , colorMapU3 , colorMapV3 ) );
-		addFace( vertices , material , false , hasBackface );
-	}
-
-	public void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final Material material , final boolean hasBackface )
-	{
-		final List<Vertex> vertices = new ArrayList<Vertex>( 4 );
-		vertices.add( new Vertex( getSharedVertex( point1 ) ) );
-		vertices.add( new Vertex( getSharedVertex( point2 ) ) );
-		vertices.add( new Vertex( getSharedVertex( point3 ) ) );
-		vertices.add( new Vertex( getSharedVertex( point4 ) ) );
-		addFace( vertices , material , false , hasBackface );
-	}
-
-	public void addQuad( final Vector3D point1 , final float colorMapU1 , final float colorMapV1 , final Vector3D point2 , final float colorMapU2 , final float colorMapV2 ,final Vector3D point3 , final float colorMapU3 , final float colorMapV3 , final Vector3D point4 , final float colorMapU4 , final float colorMapV4 , final Material material , final boolean hasBackface )
-	{
-		final List<Vertex> vertices = new ArrayList<Vertex>( 4 );
-		vertices.add( new Vertex( getSharedVertex( point1 ) , colorMapU1 , colorMapV1 ) );
-		vertices.add( new Vertex( getSharedVertex( point2 ) , colorMapU2 , colorMapV2 ) );
-		vertices.add( new Vertex( getSharedVertex( point3 ) , colorMapU3 , colorMapV3 ) );
-		vertices.add( new Vertex( getSharedVertex( point4 ) , colorMapU4 , colorMapV4 ) );
-		addFace( vertices , material, false, hasBackface );
-	}
-
-	public void addCircle( final Vector3D centerPoint , final double radius , final Vector3D normal , final Vector3D extrusion , final int stroke , final Material material , final boolean fill )
-	{
-		final Matrix3D  base      = Matrix3D.getPlaneTransform( centerPoint , normal , true );
-		final Ellipse2D ellipse2d = new Ellipse2D.Double( -radius , -radius , radius * 2.0 , radius * 2.0 );
-
-		addExtrudedShape( ellipse2d , radius * 0.02 , extrusion , base , material , false , material , false , material , false , true , false , false );
+		_faces.add( new Face( vertices , material , smooth , twoSided ) );
 	}
 
 	public void addText( final String text , final Vector3D origin , final double height , final double rotationAngle , final double obliqueAngle , final Vector3D extrusion , final Material material )
 	{
+		throw new AssertionError( "not implemented" );
 	}
 }

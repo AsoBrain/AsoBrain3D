@@ -20,8 +20,10 @@
 package ab.j3d.geom;
 
 import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.FlatteningPathIterator;
 import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
 import java.util.List;
 
 import ab.j3d.Material;
@@ -61,8 +63,6 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   point   Point to get vertex index of.
 	 *
 	 * @return  Vertex index.
-	 *
-	 * @deprecated We should not used indexed geometry here.
 	 */
 	public abstract int getVertexIndex( Vector3D point );
 
@@ -232,7 +232,13 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   material        Material specification to use for shading.
 	 * @param   fill            Create filled shape vs. create wireframe.
 	 */
-	public abstract void addCircle( Vector3D centerPoint , double radius , Vector3D normal , Vector3D extrusion , int stroke , Material material , boolean fill );
+	public void addCircle( final Vector3D centerPoint , final double radius , final Vector3D normal , final Vector3D extrusion , final int stroke , final Material material , final boolean fill )
+	{
+		final Matrix3D  base      = Matrix3D.getPlaneTransform( centerPoint , normal , true );
+		final Ellipse2D ellipse2d = new Ellipse2D.Double( -radius , -radius , radius * 2.0 , radius * 2.0 );
+
+		addExtrudedShape( ellipse2d , radius * 0.02 , extrusion , base , material , false , material, false , material, false , true , false , fill );
+	}
 
 	/**
 	 * Add line primitive.
@@ -245,7 +251,10 @@ public abstract class Abstract3DObjectBuilder
 	 *                      <code>-1</code> otherwise).
 	 * @param   material    Material specification to use for shading.
 	 */
-	public abstract void addLine( Vector3D point1 , Vector3D point2 , int stroke , Material material );
+	public void addLine( final Vector3D point1 , final Vector3D point2 , final int stroke , final Material material )
+	{
+		addFace( new Vector3D[] { point1 , point2 } , material , false , true );
+	}
 
 	/**
 	 * Add line.
@@ -283,7 +292,10 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	public abstract void addFace( Vector3D[] points , Material material , boolean smooth , boolean twoSided );
+	public void addFace( final Vector3D[] points , final Material material , final boolean smooth , final boolean twoSided )
+	{
+		addFace( points , material , (Point2D.Float[])null , null , smooth , twoSided );
+	}
 
 	/**
 	 * Add face without texture.
@@ -293,7 +305,10 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	public abstract void addFace( int[] vertexIndices , Material material , boolean smooth , boolean twoSided );
+	public void addFace( final int[] vertexIndices , final Material material , final boolean smooth , final boolean twoSided )
+	{
+		addFace( vertexIndices , material , (Point2D.Float[])null , null , smooth , twoSided );
+	}
 
 	/**
 	 * Add face with texture.
@@ -305,7 +320,16 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	public abstract void addFace( Vector3D[] points , Material material , UVMap uvMap , boolean flipTexture , boolean smooth , boolean twoSided );
+	public void addFace( final Vector3D[] points , final Material material , final UVMap uvMap , final boolean flipTexture , final boolean smooth , final boolean twoSided )
+	{
+		final int[] vertexIndices = new int[ points.length ];
+		for ( int i = 0 ; i < points.length ; i++ )
+		{
+			vertexIndices[ i ] = getVertexIndex( points[ i ] );
+		}
+
+		addFace( vertexIndices , material , uvMap , flipTexture , smooth , twoSided );
+	}
 
 	/**
 	 * Add face with texture.
@@ -322,30 +346,26 @@ public abstract class Abstract3DObjectBuilder
 	/**
 	 * Add face.
 	 *
-	 * @param   points      Points for vertices that define the face.
-	 * @param   material    Material to apply to the face.
-	 * @param   textureU    Horizontal texture coordinates (<code>null</code> = none).
-	 * @param   textureV    Vertical texture coordinates (<code>null</code> = none).
-	 * @param   smooth      Face is smooth/curved vs. flat.
-	 * @param   twoSided    Face is two-sided.
-	 *
-	 * @deprecated  Use of textureU/V arguments is discouraged.
+	 * @param   points          Points for vertices that define the face.
+	 * @param   material        Material to apply to the face.
+	 * @param   texturePoints   Texture coordiantes for each vertex.
+	 * @param   vertexNormals   Normal for each vertex.
+	 * @param   smooth          Face is smooth/curved vs. flat.
+	 * @param   twoSided        Face is two-sided.
 	 */
-	public abstract void addFace( Vector3D[] points , Material material , float[] textureU , float[] textureV , boolean smooth , boolean twoSided );
+	public abstract void addFace( Vector3D[] points , Material material , Point2D.Float[] texturePoints , Vector3D[] vertexNormals , boolean smooth , boolean twoSided );
 
 	/**
 	 * Add face.
 	 *
 	 * @param   vertexIndices   Vertex indices of added face.
 	 * @param   material        Material to apply to the face.
-	 * @param   textureU        Horizontal texture coordinates (<code>null</code> = none).
-	 * @param   textureV        Vertical texture coordinates (<code>null</code> = none).
+	 * @param   texturePoints   Texture coordiantes for each vertex.
+	 * @param   vertexNormals   Normal for each vertex.
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
-	 *
-	 * @deprecated  Use of textureU/V arguments is discouraged.
 	 */
-	public abstract void addFace( int[] vertexIndices , Material material , float[] textureU , float[] textureV , boolean smooth , boolean twoSided );
+	public abstract void addFace( final int[] vertexIndices , Material material , Point2D.Float[] texturePoints , Vector3D[] vertexNormals , boolean smooth , boolean twoSided );
 
 	/**
 	 * Add quad primitive.
@@ -357,27 +377,30 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   material        Material specification to use for shading.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public abstract void addQuad( Vector3D point1 , Vector3D point2 , Vector3D point3 , Vector3D point4 , Material material , boolean hasBackface );
+	public void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final Material material , final boolean hasBackface )
+	{
+		addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , material , false , hasBackface );
+	}
+
 
 	/**
 	 * Add textured quad.
 	 *
-	 * @param   point1      First vertex coordinates.
-	 * @param   colorMapU1  First vertex color map U coordinate.
-	 * @param   colorMapV1  First vertex color map V coordinate.
-	 * @param   point2      Second vertex coordinates.
-	 * @param   colorMapU2  Second vertex color map U coordinate.
-	 * @param   colorMapV2  Second vertex color map V coordinate.
-	 * @param   point3      Third vertex coordinates.
-	 * @param   colorMapU3  Thrid vertex color map U coordinate.
-	 * @param   colorMapV3  Thrid vertex color map V coordinate.
-	 * @param   point4      Fourth vertex coordinates.
-	 * @param   colorMapU4  First vertex color map U coordinate.
-	 * @param   colorMapV4  First vertex color map V coordinate.
-	 * @param   material    Material specification to use for shading.
-	 * @param   hasBackface Flag to indicate if face has a backface.
+	 * @param   point1          First vertex coordinates.
+	 * @param   texturePoint1   First vertex texture coordinates.
+	 * @param   point2          Second vertex coordinates.
+	 * @param   texturePoint2   Second vertex texture coordinates.
+	 * @param   point3          Third vertex coordinates.
+	 * @param   texturePoint3   Third vertex texture coordinates.
+	 * @param   point4          Fourth vertex coordinates.
+	 * @param   texturePoint4   Fourth vertex texture coordinates.
+	 * @param   material        Material specification to use for shading.
+	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public abstract void addQuad( Vector3D point1 , float colorMapU1 , float colorMapV1 , Vector3D point2 , float colorMapU2 , float colorMapV2 , Vector3D point3 , float colorMapU3 , float colorMapV3 , Vector3D point4 , float colorMapU4 , float colorMapV4 , Material material , boolean hasBackface );
+	public void addQuad( final Vector3D point1 , final Point2D.Float texturePoint1 , final Vector3D point2 , final Point2D.Float texturePoint2 , final Vector3D point3 , final Point2D.Float texturePoint3 , final Vector3D point4 , final Point2D.Float texturePoint4 , final Material material , final boolean hasBackface )
+	{
+		addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , material , new Point2D.Float[] { texturePoint1 , texturePoint2 , texturePoint3 , texturePoint4 } , null , false , hasBackface );
+	}
 
 	/**
 	 * Add quad with optional extrusion.
@@ -470,18 +493,27 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   material        Material specification to use for shading.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public abstract void addTriangle( Vector3D point1 , Vector3D point2 , Vector3D point3 , Material material , boolean hasBackface );
+	public void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Material material , final boolean hasBackface )
+	{
+		addFace( new Vector3D[] { point1 , point2 , point3 } , material , false , hasBackface );
+	}
 
 	/**
 	 * Add triangle primitive.
 	 *
 	 * @param   point1          First vertex coordinates.
+	 * @param   texturePoint1   First vertex texture coordinates.
 	 * @param   point2          Second vertex coordinates.
+	 * @param   texturePoint2   Second vertex texture coordinates.
 	 * @param   point3          Third vertex coordinates.
+	 * @param   texturePoint3   Third vertex texture coordinates.
 	 * @param   material        Material specification to use for shading.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public abstract void addTriangle( Vector3D point1 , float colorMapU1 , float colorMapV1 , Vector3D point2 , float colorMapU2 , float colorMapV2 , Vector3D point3 , float colorMapU3 , float colorMapV3 , Material material , boolean hasBackface );
+	public void addTriangle( final Vector3D point1 , final Point2D.Float texturePoint1 , final Vector3D point2 , final Point2D.Float texturePoint2 , final Vector3D point3 , final Point2D.Float texturePoint3 , final Material material , final boolean hasBackface )
+	{
+		addFace( new Vector3D[] { point1 , point2 , point3 } , material , new Point2D.Float[] { texturePoint1 , texturePoint2 , texturePoint3 } , null , false , hasBackface );
+	}
 
 	/**
 	 * Add triangle with optional extrusion.

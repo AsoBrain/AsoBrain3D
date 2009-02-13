@@ -19,11 +19,10 @@
  */
 package ab.j3d.model;
 
-import java.awt.geom.Ellipse2D;
+import java.awt.geom.Point2D;
 import java.util.List;
 
 import ab.j3d.Material;
-import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.geom.Abstract3DObjectBuilder;
 import ab.j3d.geom.UVMap;
@@ -174,39 +173,12 @@ public class Object3DBuilder
 		setVertexNormals( doubles );
 	}
 
-	public void addFace( final Vector3D[] points , final Material material , final boolean smooth , final boolean twoSided )
-	{
-		addFace( points , material , null , null , smooth , twoSided );
-	}
-
-	public void addFace( final int[] vertexIndices , final Material material , final boolean smooth , final boolean twoSided )
-	{
-		addFace( vertexIndices , material , null , null , smooth , twoSided );
-	}
-
-	public void addFace( final Vector3D[] points , final Material material , final UVMap uvMap , final boolean flipTexture , final boolean smooth , final boolean twoSided )
-	{
-		final int[] vertexIndices = new int[points.length];
-
-		for ( int i = 0 ; i < points.length; i++ )
-		{
-			final Vector3D vertex = points[ i ];
-			vertexIndices[ i ] = getVertexIndex( vertex.x , vertex.y , vertex.z );
-		}
-
-		addFace( vertexIndices , material , uvMap , flipTexture , smooth , twoSided );
-	}
-
 	public void addFace( final int[] vertexIndices , final Material material , final UVMap uvMap , final boolean flipTexture , final boolean smooth , final boolean twoSided )
 	{
-		final float[] textureU = new float[ vertexIndices.length ];
-		final float[] textureV = new float[ vertexIndices.length ];
-		uvMap.generate( material , _target._vertexCoordinates , vertexIndices , flipTexture , textureU , textureV );
-
-		addFace( vertexIndices , material , textureU , textureV , smooth , twoSided );
+		addFace( vertexIndices , material , uvMap.generate( material , _target._vertexCoordinates , vertexIndices , flipTexture ) , null , smooth , twoSided );
 	}
 
-	public void addFace( final Vector3D[] points , final Material material , final float[] textureU , final float[] textureV , final boolean smooth , final boolean twoSided )
+	public void addFace( final Vector3D[] points , final Material material , final Point2D.Float[] texturePoints , final Vector3D[] vertexNormals , final boolean smooth , final boolean twoSided )
 	{
 		final int   vertexCount   = points.length;
 		final int[] vertexIndices = new int[ vertexCount ];
@@ -217,53 +189,16 @@ public class Object3DBuilder
 			vertexIndices[ i ] = getVertexIndex( vertex.x , vertex.y , vertex.z );
 		}
 
-		addFace( vertexIndices , material , textureU , textureV , smooth , twoSided );
+		addFace( vertexIndices , material , texturePoints , vertexNormals , smooth , twoSided );
 	}
 
-	public void addFace( final int[] vertexIndices , final Material material , final float[] textureU , final float[] textureV , final boolean smooth , final boolean twoSided )
+	public void addFace( final int[] vertexIndices , final Material material , final Point2D.Float[] texturePoints , final Vector3D[] vertexNormals , final boolean smooth , final boolean twoSided )
 	{
-		_target.addFace( new Face3D( _target , vertexIndices , material , textureU , textureV , smooth , twoSided ) );
-	}
-
-	public void addLine( final Vector3D point1 , final Vector3D point2 , final int stroke , final Material material )
-	{
-		addFace( new Vector3D[] { point1 , point2 } , material , false , true );
-	}
-
-	public void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Material material , final boolean hasBackface )
-	{
-		addFace( new Vector3D[] { point1 , point2 , point3 } , material , false , hasBackface );
-	}
-
-	public void addTriangle( final Vector3D point1 , final float colorMapU1 , final float colorMapV1 , final Vector3D point2 , final float colorMapU2 , final float colorMapV2 , final Vector3D point3 , final float colorMapU3 , final float colorMapV3 , final Material material , final boolean hasBackface )
-	{
-		addFace( new Vector3D[] { point1 , point2 , point3 } , material ,
-		         new float[] { colorMapU1 , colorMapU2 , colorMapU3 } ,
-		         new float[] { colorMapV1 , colorMapV2 , colorMapV3 } , false , hasBackface );
-	}
-
-	public void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final Material material , final boolean hasBackface )
-	{
-		addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , material , false , hasBackface );
-	}
-
-	public void addQuad( final Vector3D point1 , final float colorMapU1 , final float colorMapV1 , final Vector3D point2 , final float colorMapU2 , final float colorMapV2 , final Vector3D point3 , final float colorMapU3 , final float colorMapV3 , final Vector3D point4 , final float colorMapU4 , final float colorMapV4 , final Material material , final boolean hasBackface )
-	{
-		addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , material ,
-		         new float[] { colorMapU1 , colorMapU2 , colorMapU3 , colorMapU4 } ,
-		         new float[] { colorMapV1 , colorMapV2 , colorMapV3 , colorMapV4 } , false , hasBackface );
-	}
-
-	public void addCircle( final Vector3D centerPoint , final double radius , final Vector3D normal , final Vector3D extrusion , final int stroke , final Material material , final boolean fill )
-	{
-		final Matrix3D  base      = Matrix3D.getPlaneTransform( centerPoint , normal , true );
-		final Ellipse2D ellipse2d = new Ellipse2D.Double( -radius , -radius , radius * 2.0 , radius * 2.0 );
-
-		ExtrudedObject2D.generateExtrudedShape( _target , ellipse2d , extrusion , base , material , radius * 0.02 , true );
+		_target.addFace( new Face3D( _target , vertexIndices , material , texturePoints , vertexNormals , smooth , twoSided ) );
 	}
 
 	public void addText( final String text , final Vector3D origin , final double height , final double rotationAngle , final double obliqueAngle , final Vector3D extrusion , final Material material )
 	{
+		throw new AssertionError( "not implemented" );
 	}
-
 }
