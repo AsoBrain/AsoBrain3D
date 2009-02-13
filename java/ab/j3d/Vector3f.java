@@ -20,6 +20,9 @@
  */
 package ab.j3d;
 
+import java.awt.geom.Point2D;
+import static java.lang.Float.floatToIntBits;
+import static java.lang.Float.parseFloat;
 import java.text.DecimalFormat;
 import java.util.Properties;
 
@@ -33,6 +36,7 @@ import com.numdata.oss.PropertyTools;
  * @version $Revision$ ($Date$, $Author$)
  */
 public final class Vector3f
+	extends Point2D.Float
 {
 	/**
 	 * Zero-vector.
@@ -70,19 +74,14 @@ public final class Vector3f
 	public static final Vector3f NEGATIVE_Z_AXIS = new Vector3f( 0.0f , 0.0f , -1.0f );
 
 	/**
-	 * X component of 3D vector.
-	 */
-	public float x;
-
-	/**
-	 * Y component of 3D vector.
-	 */
-	public float y;
-
-	/**
 	 * Z component of 3D vector.
 	 */
 	public float z;
+
+	/**
+	 * Serialized data version.
+	 */
+	private static final long serialVersionUID = 3198558829683527053L;
 
 	/**
 	 * Construct new vector.
@@ -93,8 +92,7 @@ public final class Vector3f
 	 */
 	public Vector3f( final float nx , final float ny , final float nz )
 	{
-		x = nx;
-		y = ny;
+		super( nx , ny );
 		z = nz;
 	}
 
@@ -433,7 +431,7 @@ public final class Vector3f
 
 	public int hashCode()
 	{
-		return Float.floatToIntBits( x ) ^ Float.floatToIntBits( y ) ^ Float.floatToIntBits( z );
+		return floatToIntBits( x ) ^ floatToIntBits( y ) ^ floatToIntBits( z );
 	}
 
 	/**
@@ -459,14 +457,14 @@ public final class Vector3f
 		if ( comma1 < 1 )
 			throw new IllegalArgumentException( "comma1" );
 
-		final float x = Float.parseFloat( value.substring( 0 , comma1 ) );
+		final float x = parseFloat( value.substring( 0 , comma1 ) );
 
 		final int comma2 = value.indexOf( (int)',' , comma1 + 1 );
 		if ( comma2 < 1 )
 			throw new IllegalArgumentException( "comma2" );
 
-		final float y = Float.parseFloat( value.substring( comma1 + 1 , comma2 ) );
-		final float z = Float.parseFloat( value.substring( comma2 + 1 ) );
+		final float y = parseFloat( value.substring( comma1 + 1 , comma2 ) );
+		final float z = parseFloat( value.substring( comma2 + 1 ) );
 
 		return new Vector3f( x , y , z );
 	}
