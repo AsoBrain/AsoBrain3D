@@ -235,7 +235,7 @@ public class CollisionNode
 
 			for ( int thisIndex = thisStart ; thisIndex < thisEnd ; thisIndex++ )
 			{
-				final Triangle3D thisTriangle = thisTriangles.get( otherIndex );
+				final Triangle3D thisTriangle = thisTriangles.get( thisIndex );
 
 				if ( GeometryTools.testTriangleTriangleIntersection( otherP1 , otherP2 , otherP3 , thisTriangle.getP1() , thisTriangle.getP2() , thisTriangle.getP3() ) )
 				{
