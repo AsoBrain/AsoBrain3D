@@ -511,6 +511,20 @@ public abstract class View3D
 	}
 
 	/**
+	 * Remove render style filters from this view.
+	 *
+	 * @param   styleFilter     Render style filter to remove.
+	 */
+	public void removeRenderStyleFilter( final RenderStyleFilter styleFilter )
+	{
+		if ( styleFilter == null )
+			throw new NullPointerException( "styleFilter" );
+
+		if ( !_renderStyleFilters.remove( styleFilter ) )
+			throw new IllegalArgumentException();
+	}
+
+	/**
 	 * Returns the {@link Projector} for this View.
 	 *
 	 * @return  the {@link Projector} for this view
