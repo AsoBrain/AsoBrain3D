@@ -124,6 +124,21 @@ public final class ContentNode
 	 */
 	public boolean collidesWith( final ContentNode thatNode )
 	{
+		return collidesWith( getTransform() , thatNode );
+	}
+
+	/**
+	 * Test if this node would collide with another with the specified
+	 * transform.
+	 *
+	 * @param   thisNode2World  Transformation to apply to this node.
+	 * @param   thatNode        Node to test collision with.
+	 *
+	 * @return  <code>true</code> if the nodes collide;
+	 *          <code>false</code> otherwise.
+	 */
+	public boolean collidesWith( final Matrix3D thisNode2World , final ContentNode thatNode )
+	{
 		boolean result = false;
 
 		if ( ( thatNode != null ) && ( this != thatNode ) )
@@ -133,7 +148,6 @@ public final class ContentNode
 
 			if ( ( thisContent.size() > 0 ) && ( thatContent.size() > 0 ) )
 			{
-				final Matrix3D thisNode2World    = getTransform();
 				final Matrix3D thatNode2World    = thatNode.getTransform();
 				final Matrix3D thatNode2ThisNode = thatNode2World.multiply( thisNode2World.inverse() );
 
