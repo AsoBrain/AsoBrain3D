@@ -472,7 +472,7 @@ public abstract class Projector
 	 * *          image plate
 	 * </pre>
 	 */
-	static final class PerspectiveProjector
+	public static final class PerspectiveProjector
 		extends Projector
 	{
 		/**
@@ -590,6 +590,15 @@ public abstract class Projector
 			return result;
 		}
 
+		/**
+		 * Returns the eye distance.
+		 *
+		 * @return  Distance from the screen to the user's eye(s).
+		 */
+		public double getEyeDistance()
+		{
+			return _eyeDistance;
+		}
 	}
 
 	/**
