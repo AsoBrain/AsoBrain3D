@@ -130,6 +130,11 @@ public class JOGLGraphics2D
 	{
 		_gla  = gla;
 		_font = new Font( Font.SANS_SERIF , Font.PLAIN , 12 );
+
+		/* Enable blending to support transparency. */
+		final GL gl = gla.getGL();
+		gl.glEnable( GL.GL_BLEND );
+		gl.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 	}
 
 	/**
