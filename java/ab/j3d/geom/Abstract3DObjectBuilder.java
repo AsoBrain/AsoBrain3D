@@ -237,7 +237,8 @@ public abstract class Abstract3DObjectBuilder
 		final Matrix3D  base      = Matrix3D.getPlaneTransform( centerPoint , normal , true );
 		final Ellipse2D ellipse2d = new Ellipse2D.Double( -radius , -radius , radius * 2.0 , radius * 2.0 );
 
-		addExtrudedShape( ellipse2d , radius * 0.02 , extrusion , base , material , false , material, false , material, false , true , false , fill );
+		final UVMap uvMap = new BoxUVMap( Scene.MM , base ); // @FIXME Retrieve model units instead of assuming millimeters.
+		addExtrudedShape( ellipse2d , radius * 0.02 , extrusion , base , uvMap , material , false , material , false , material , false , true , false , fill );
 	}
 
 	/**
@@ -687,6 +688,7 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   shape               Shape to add.
 	 * @param   extrusion           Extrusion vector (control-point displacement).
 	 * @param   transform           Transform to apply.
+	 * @param   uvMap               Provides UV coordinates.
 	 * @param   topMaterial         Material to apply to the top cap.
 	 * @param   topFlipTexture      Whether the top texture direction is flipped.
 	 * @param   bottomMaterial      Material to apply to the bottom cap.
@@ -700,15 +702,13 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   caps                If <code>true</code>, top and bottom caps are
 	 *                              generated.
 	 */
-	public void addExtrudedShape( final Shape shape , final double flatness , final Vector3D extrusion , final Matrix3D transform , final Material topMaterial , final boolean topFlipTexture , final Material bottomMaterial , final boolean bottomFlipTexture , final Material sideMaterial , final boolean sideFlipTexture , final boolean hasBackface , final boolean flipNormals , final boolean caps )
+	public void addExtrudedShape( final Shape shape , final double flatness , final Vector3D extrusion , final Matrix3D transform , final UVMap uvMap , final Material topMaterial , final boolean topFlipTexture , final Material bottomMaterial , final boolean bottomFlipTexture , final Material sideMaterial , final boolean sideFlipTexture , final boolean hasBackface , final boolean flipNormals , final boolean caps )
 	{
 		final double  ex            = extrusion.x;
 		final double  ey            = extrusion.y;
 		final double  ez            = extrusion.z;
 		final boolean hasExtrusion  = !MathTools.almostEqual( ex , 0.0 ) || !MathTools.almostEqual( ey , 0.0 ) || !MathTools.almostEqual( ez , 0.0 );
 		final boolean flipExtrusion = flipNormals ^ ( ez < 0.0 );
-
-		final UVMap uvMap = new BoxUVMap( Scene.MM , transform ); // @FIXME Retrieve model units instead of assuming millimeters.
 
 		if ( !caps || hasExtrusion )
 		{
