@@ -89,6 +89,11 @@ public class JOGLView
 	private RenderThread _renderThread;
 
 	/**
+	 * JOGL renderer.
+	 */
+	private JOGLRenderer _renderer;
+
+	/**
 	 * Whether {@link #init(GLAutoDrawable)} as been called at least once.
 	 */
 	private static boolean _firstInit = false;
@@ -106,18 +111,18 @@ public class JOGLView
 	{
 		super( scene );
 
-		_joglEngine = joglEngine;
-
-		_frontClipDistance = 0.001 / scene.getUnit();
+		_joglEngine        = joglEngine;
+		_frontClipDistance =   0.1 / scene.getUnit();
 		_backClipDistance  = 100.0 / scene.getUnit();
 		_renderThread      = null;
+		_renderer          = null;
 
 		/* Use heavyweight popups, since we use a heavyweight canvas */
 		JPopupMenu.setDefaultLightWeightPopupEnabled( false );
 
 		final GLCanvas glCanvas;
 
-		final GLCapabilities capabilities   = new GLCapabilities();
+		final GLCapabilities capabilities = new GLCapabilities();
 		capabilities.setSampleBuffers( true );
 		/* set multisampling to 4, most graphic cards support this, if they don't support multisampling it will silently fail */
 		capabilities.setNumSamples( 4 );
@@ -145,6 +150,8 @@ public class JOGLView
 	public void dispose()
 	{
 		super.dispose();
+
+		_renderer = null;
 
 		final GLCanvas glCanvas = _glCanvas;
 		if ( glCanvas != null )
@@ -412,32 +419,6 @@ public class JOGLView
 	 */
 	public void reshape( final GLAutoDrawable glAutoDrawable , final int x , final int y , final int width , final int height )
 	{
-		final GL gl = glAutoDrawable.getGL();
-
-		final Camera3D camera = getCamera();
-		final double   fov    = Math.toDegrees( camera.getAperture() );
-		final double   aspect = (double)width / (double)height;
-		final double   near   = _frontClipDistance;
-		final double   far    = _backClipDistance;
-
-		/* Setup size of window to draw in. */
-		gl.glViewport( x , y , width , height );
-
-		if ( getProjectionPolicy() != ProjectionPolicy.PARALLEL )
-		{
-			//View is not parallel so let's use perspective view. No support for isometric view yet.
-
-			/* Setup the projection matrix. */
-			gl.glMatrixMode( GL.GL_PROJECTION );
-			gl.glLoadIdentity();
-
-			/* Set the perspective view */
-			final GLU glu = new GLU();
-			glu.gluPerspective( fov , 1.0 , near , far );
-			gl.glHint( GL.GL_PERSPECTIVE_CORRECTION_HINT , GL.GL_NICEST ); // nice perspective calculations
-
-			gl.glScaled( 1.0 , aspect , 1.0 );
-		}
 	}
 
 	public void display( final GLAutoDrawable glAutoDrawable )
@@ -449,8 +430,11 @@ public class JOGLView
 
 		if ( ( width > 0 ) && ( height > 0 ) )
 		{
-			// apply parallel projection here, because the zoomfactor can be changed without resizing the window.
-			if ( getProjectionPolicy() == ProjectionPolicy.PARALLEL )
+			final Camera3D camera = getCamera();
+			final double   aspect = (double)width / (double)height;
+
+			final ProjectionPolicy projectionPolicy = getProjectionPolicy();
+			if ( projectionPolicy == ProjectionPolicy.PARALLEL )
 			{
 				final Scene    scene    = getScene();
 				final Camera3D camera3D = getCamera();
@@ -466,6 +450,28 @@ public class JOGLView
 				gl.glLoadIdentity();
 				gl.glOrtho( left , right , bottom , top , near , far );
 				gl.glScaled( scale , scale ,  scale );
+			}
+			else if ( projectionPolicy == ProjectionPolicy.PERSPECTIVE )
+			{
+				final double fov  = Math.toDegrees( camera.getAperture() );
+				final Projector.PerspectiveProjector projector = (Projector.PerspectiveProjector)getProjector();
+				final double eyeDistance = projector.getEyeDistance();
+				final double near =  0.25 * eyeDistance;//_frontClipDistance;
+				final double far  = 10000.0;//_backClipDistance;
+
+				/* Setup the projection matrix. */
+				gl.glMatrixMode( GL.GL_PROJECTION );
+				gl.glLoadIdentity();
+
+				final GLU glu = new GLU();
+				glu.gluPerspective( fov , 1.0 , near , far );
+				gl.glHint( GL.GL_PERSPECTIVE_CORRECTION_HINT , GL.GL_NICEST );
+
+				gl.glScaled( 1.0 , aspect , 1.0 );
+			}
+			else
+			{
+				throw new AssertionError( "Not implemented: " + projectionPolicy );
 			}
 
 			renderScene( gl );
@@ -499,8 +505,15 @@ public class JOGLView
 		JOGLTools.glMultMatrixd( gl , getScene2View() );
 
 		/* Render scene. */
-		final Map<String,Texture> textureCache = _joglEngine.getTextureCache();
-		final JOGLRenderer renderer = new JOGLRenderer( gl , textureCache , _glCanvas.getBackground() , isGridEnabled() , getGrid2wcs() , getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
+		JOGLRenderer renderer = _renderer;
+		if ( renderer == null )
+		{
+			final Map<String,Texture> textureCache = _joglEngine.getTextureCache();
+			renderer = new JOGLRenderer( gl , textureCache , _glCanvas.getBackground() , isGridEnabled() , getGrid2wcs() , getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
+			_renderer = renderer;
+		}
+
+		renderer.setGridEnabled( isGridEnabled() );
 		renderer.renderScene( scene.getContentNodes() , styleFilters , viewStyle );
 	}
 }
