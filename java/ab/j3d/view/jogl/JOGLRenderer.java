@@ -24,12 +24,20 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.media.opengl.GL;
+import javax.media.opengl.GLException;
 
 import com.sun.opengl.util.texture.Texture;
+import com.sun.opengl.util.texture.TextureCoords;
+import com.sun.opengl.util.texture.TextureData;
+import com.sun.opengl.util.texture.TextureIO;
 
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
@@ -43,6 +51,8 @@ import ab.j3d.model.Object3D;
 import ab.j3d.view.RenderStyle;
 import ab.j3d.view.RenderStyleFilter;
 import ab.j3d.view.Renderer;
+
+import com.numdata.oss.TextTools;
 
 /**
  * Implements {@link Renderer} for JOGL.
@@ -69,9 +79,16 @@ public class JOGLRenderer
 	private GLWrapper _glWrapper;
 
 	/**
+	 * Counting variable with index of JOGL light.
+	 *
+	 * @see     #renderLight
+	 */
+	private int _lightIndex = 0;
+
+	/**
 	 * Maximum number of lights allowed in this scene.
 	 */
-	private int _maxLights;
+	private int _maxLights = 0;
 
 	/**
 	 * Background color of image.
@@ -110,13 +127,6 @@ public class JOGLRenderer
 	private int _gridHighlightInterval;
 
 	/**
-	 * Counting variable with index of JOGL light.
-	 *
-	 * @see     #renderLight
-	 */
-	private int _lightIndex;
-
-	/**
 	 * Combined ambient light intensity. Set to 0 durig init and set to final
 	 * value after all lights are processed.
 	 */
@@ -137,6 +147,65 @@ public class JOGLRenderer
 	 * dominant light source relative to the object.
 	 */
 	private Vector3D _lightPositionRelativeToObject;
+
+	/**
+	 * Renders objects without color maps and without lighting.
+	 */
+	private ShaderProgram _unlit = null;
+
+	/**
+	 * Renders objects without color maps.
+	 */
+	private ShaderProgram _colored = null;
+
+	/**
+	 * Renders objects with color maps.
+	 */
+	private ShaderProgram _textured = null;
+
+	/**
+	 * Keeps track of loaded shader objects, so they can be deleted when the
+	 * renderer is disposed of.
+	 */
+	private final List<Shader> _shaders;
+
+	/**
+	 * Currently active shader program.
+	 */
+	private ShaderProgram _activeShader = null;
+
+	/**
+	 * Used to create a composite image from the layers resulting from rendering
+	 * with depth peeling.
+	 */
+	private ShaderProgram _blend = null;
+
+	/**
+	 * Textures used as color buffers when using depth peeling.
+	 */
+	private final Texture[] _colorBuffers;
+
+	/**
+	 * Textures used as depth buffers when using depth peeling.
+	 */
+	private final Texture[] _depthBuffers;
+
+	/**
+	 * Specifies which objects should be rendered during the current rendering
+	 * pass when performing multi-pass rendering.
+	 */
+	private MultiPassRenderMode _renderMode = MultiPassRenderMode.ALL;
+
+	/**
+	 * Specifies which objects should be rendered during the current rendering
+	 * pass when performing multi-pass rendering.
+	 */
+	private enum MultiPassRenderMode
+	{
+		ALL ,
+		OPAQUE_ONLY ,
+		TRANSPARENT_ONLY
+	}
 
 	/**
 	 * Construct new JOGL renderer.
@@ -167,14 +236,422 @@ public class JOGLRenderer
 		_gridHighlightInterval = gridHighlightInterval;
 
 		_glWrapper = null;
-		_maxLights = 0;
 
-		_lightIndex = 0;
 		_ambientLightIntensity = 0.0f;
 		_dominantLightIntensity = 0.0f;
 		_dominantLightPosition = null;
 
 		_lightPositionRelativeToObject = null;
+
+		/*
+		 * Check for required extensions.
+		 */
+		final boolean opengl12 = gl.isExtensionAvailable( "GL_VERSION_1_2" );
+		final boolean opengl13 = gl.isExtensionAvailable( "GL_VERSION_1_3" );
+		final boolean opengl14 = gl.isExtensionAvailable( "GL_VERSION_1_4" );
+		final boolean opengl15 = gl.isExtensionAvailable( "GL_VERSION_1_5" );
+		final boolean opengl20 = gl.isExtensionAvailable( "GL_VERSION_2_0" );
+
+		final boolean vertexShaderSupported;
+		final boolean fragmentShaderSupported;
+		final boolean shaderObjectsSupported;
+		final boolean drawBuffersSupported;
+		if ( opengl20 )
+		{
+			vertexShaderSupported   = true;
+			fragmentShaderSupported = true;
+			shaderObjectsSupported  = true;
+			drawBuffersSupported    = true;
+		}
+		else
+		{
+			// TODO: extensions for these features
+			vertexShaderSupported   = false; //gl.isExtensionAvailable( "GL_ARB_vertex_shader"   );
+			fragmentShaderSupported = false; //gl.isExtensionAvailable( "GL_ARB_fragment_shader" );
+			shaderObjectsSupported  = false; //gl.isExtensionAvailable( "GL_ARB_shader_objects"  );
+			drawBuffersSupported    = false; //gl.isExtensionAvailable( "GL_ARB_draw_buffers"    );
+
+			// NOTE: For shaders written in low-level assembly langauge, the
+			// following extensions would be needed:
+			//  - GL_ARB_fragment_program
+			//  - GL_ARB_vertex_program
+		}
+
+		final boolean multiTextureSupported = opengl13 || gl.isExtensionAvailable( "GL_ARB_multitexture" );
+
+		final boolean occlusionQuerySupported;
+		final boolean shadowFuncsSupported;
+		if ( opengl15 )
+		{
+			occlusionQuerySupported = true;
+			shadowFuncsSupported    = true;
+		}
+		else
+		{
+			// TODO: Support occlusion query extension.
+			occlusionQuerySupported = false; //gl.isExtensionAvailable( "GL_ARB_occlusion_query" );
+			shadowFuncsSupported    = gl.isExtensionAvailable( "GL_EXT_shadow_funcs" );
+		}
+
+		final boolean depthTextureSupported;
+		final boolean shadowSupported;
+		final boolean blendFuncSeperateSupported;
+		if ( opengl14 )
+		{
+			depthTextureSupported      = true;
+			shadowSupported            = true;
+			blendFuncSeperateSupported = true;
+		}
+		else
+		{
+			depthTextureSupported      = gl.isExtensionAvailable( "GL_ARB_depth_texture"       );
+			shadowSupported            = gl.isExtensionAvailable( "GL_ARB_shadow"              );
+			blendFuncSeperateSupported = gl.isExtensionAvailable( "GL_EXT_blend_func_separate" );
+		}
+
+		final boolean textureRectangleSupported = gl.isExtensionAvailable( "GL_ARB_texture_rectangle" );
+
+		boolean edgeClampSupported = opengl12;
+		if ( !edgeClampSupported )
+		{
+			edgeClampSupported = gl.isExtensionAvailable( "GL_SGIS_texture_edge_clamp" );
+			if ( !edgeClampSupported )
+			{
+				/*
+				 * spec claims it is GL_SGIS_texture_edge_clamp, reality shows
+				 * it is GL_EXT_texture_edge_clamp on Nvidia.
+				 */
+				edgeClampSupported = gl.isExtensionAvailable( "GL_EXT_texture_edge_clamp" );
+			}
+		}
+
+		final int[] colorBits = new int[ 4 ];
+		gl.glGetIntegerv( GL.GL_RED_BITS   , colorBits , 0 );
+		gl.glGetIntegerv( GL.GL_GREEN_BITS , colorBits , 1 );
+		gl.glGetIntegerv( GL.GL_BLUE_BITS  , colorBits , 2 );
+		gl.glGetIntegerv( GL.GL_ALPHA_BITS , colorBits , 3 );
+		final int[] depthBits = new int[ 1 ];
+		gl.glGetIntegerv( GL.GL_DEPTH_BITS , depthBits , 0 );
+		final boolean atLeast8AlphaBits = ( colorBits[ 3 ] >= 8 );
+
+		final boolean frameBufferObjectsSupported = gl.isExtensionAvailable( "GL_EXT_framebuffer_object" );
+
+		final boolean shaderSupported =
+				vertexShaderSupported &&
+				fragmentShaderSupported &&
+				shaderObjectsSupported;
+
+		// Limits the number of passes that could be combined using a
+		// multi-layer depth-peeling algorithm.
+		final int[] maxDrawBuffers = new int[ 1 ];
+		if ( drawBuffersSupported )
+		{
+			gl.glGetIntegerv( GL.GL_MAX_DRAW_BUFFERS , maxDrawBuffers , 0 );
+		}
+
+		// Limits the complexity of shaders we can use.
+		final int[] maxVaryingFloats = new int[ 1 ];
+		if ( shaderSupported )
+		{
+			gl.glGetIntegerv( GL.GL_MAX_VARYING_FLOATS , maxVaryingFloats , 0 );
+		}
+
+		final boolean depthPeelingSupported =
+				depthTextureSupported       &&
+				shadowSupported             &&
+				shadowFuncsSupported        &&
+				shaderSupported             &&
+				occlusionQuerySupported     &&
+				multiTextureSupported       &&
+				textureRectangleSupported   &&
+				frameBufferObjectsSupported;
+
+		final boolean shaderEnabled       = shaderSupported;
+		final boolean lightingEnabled     = true;
+
+		// TODO: Depth peeling isn't very reliable yet, so it's disabled.
+		// It's very slow on some systems and completely broken on others.
+		final boolean depthPeelingEnabled = false && shaderEnabled && depthPeelingSupported;
+
+		System.out.println( " OpenGL capabilities" );
+		System.out.println( "---------------------" );
+		System.out.println( "GL_EXT_framebuffer_object:  " + gl.isExtensionAvailable( "GL_EXT_framebuffer_object" ) );
+		System.out.println( "GL_VERSION_2_0:             " + opengl20 );
+		System.out.println( "GL_ARB_vertex_shader:       " + gl.isExtensionAvailable( "GL_ARB_vertex_shader" ) );
+		System.out.println( "GL_ARB_fragment_shader:     " + gl.isExtensionAvailable( "GL_ARB_fragment_shader" ) );
+		System.out.println( "GL_ARB_shader_objects:      " + gl.isExtensionAvailable( "GL_ARB_shader_objects" ) );
+		System.out.println( "GL_ARB_draw_buffers:        " + gl.isExtensionAvailable( "GL_ARB_draw_buffers" ) );
+		System.out.println( "GL_VERSION_1_5:             " + opengl15 );
+		System.out.println( "GL_ARB_occlusion_query:     " + gl.isExtensionAvailable( "GL_ARB_occlusion_query" ) );
+		System.out.println( "GL_EXT_shadow_funcs:        " + gl.isExtensionAvailable( "GL_EXT_shadow_funcs" ) );
+		System.out.println( "GL_VERSION_1_4:             " + opengl14 );
+		System.out.println( "GL_ARB_depth_texture:       " + gl.isExtensionAvailable( "GL_ARB_depth_texture" ) );
+		System.out.println( "GL_ARB_shadow:              " + gl.isExtensionAvailable( "GL_ARB_shadow" ) );
+		System.out.println( "GL_EXT_blend_func_separate: " + gl.isExtensionAvailable( "GL_EXT_blend_func_separate" ) );
+		System.out.println( "GL_VERSION_1_3:             " + opengl13 );
+		System.out.println( "GL_ARB_multitexture:        " + gl.isExtensionAvailable( "GL_ARB_multitexture" ) );
+		System.out.println( "GL_VERSION_1_2:             " + opengl12 );
+		System.out.println( "GL_ARB_texture_rectangle:   " + gl.isExtensionAvailable( "GL_ARB_texture_rectangle" ) );
+		System.out.println( "GL_SGIS_texture_edge_clamp: " + gl.isExtensionAvailable( "GL_SGIS_texture_edge_clamp" ) );
+		System.out.println( "GL_EXT_texture_edge_clamp:  " + gl.isExtensionAvailable( "GL_EXT_texture_edge_clamp" ) );
+		System.out.println( "GL_RED_BITS:                " + colorBits[ 0 ] );
+		System.out.println( "GL_GREEN_BITS:              " + colorBits[ 1 ] );
+		System.out.println( "GL_BLUE_BITS:               " + colorBits[ 2 ] );
+		System.out.println( "GL_ALPHA_BITS:              " + colorBits[ 3 ] );
+		System.out.println( "GL_DEPTH_BITS:              " + depthBits[ 0 ] );
+		System.out.println( "GL_MAX_DRAW_BUFFERS:        " + maxDrawBuffers[ 0 ] );
+		System.out.println( "GL_MAX_VARYING_FLOATS:      " + maxVaryingFloats[ 0 ] );
+
+		_shaders = ( shaderEnabled || depthPeelingEnabled ) ? new ArrayList<Shader>() : Collections.<Shader>emptyList();
+
+		Texture[] depthBuffers = null;
+		Texture[] colorBuffers = null;
+
+		if ( shaderEnabled )
+		{
+			try
+			{
+				/*
+				 * Load vertex and fragment shaders.
+				 */
+				final VertexShader   lightingVertex       = loadShader( VertexShader  .class , "lighting-vertex.glsl" );
+				final FragmentShader lightingFragment     = loadShader( FragmentShader.class , "lighting-fragment.glsl" );
+				final VertexShader   materialVertex       = loadShader( VertexShader  .class , "material-vertex.glsl" );
+				final FragmentShader materialFragment     = loadShader( FragmentShader.class , "material-fragment.glsl" );
+
+				/*
+				 * Build shader programs for various rendering modes.
+				 */
+				final ShaderProgram unlit    = new ShaderProgram( "unlit"  );
+				final ShaderProgram colored  = new ShaderProgram( "colored"  );
+				final ShaderProgram textured = new ShaderProgram( "textured" );
+
+				unlit.attach( createVertexShaderMain  ( "color" , null ) );
+				unlit.attach( createFragmentShaderMain( "color" , null , depthPeelingEnabled ) );
+				unlit.attach( materialVertex );
+				unlit.attach( materialFragment );
+
+				final String lightingFunction = lightingEnabled ? "lighting" : null;
+
+				colored.attach( createVertexShaderMain  ( "color" , lightingFunction ) );
+				colored.attach( createFragmentShaderMain( "color" , lightingFunction , depthPeelingEnabled ) );
+				colored.attach( materialVertex );
+				colored.attach( materialFragment );
+				if ( lightingEnabled )
+				{
+					colored.attach( lightingVertex );
+					colored.attach( lightingFragment );
+				}
+
+				textured.attach( createVertexShaderMain  ( "texture" , lightingFunction ) );
+				textured.attach( createFragmentShaderMain( "texture" , lightingFunction , depthPeelingEnabled ) );
+				textured.attach( materialVertex );
+				textured.attach( materialFragment );
+				if ( lightingEnabled )
+				{
+					textured.attach( lightingVertex );
+					textured.attach( lightingFragment );
+				}
+
+				if ( depthPeelingEnabled )
+				{
+					final FragmentShader depthPeelingFragment = loadShader( FragmentShader.class , "depth-peeling-fragment.glsl" );
+					unlit.attach( depthPeelingFragment );
+					colored.attach( depthPeelingFragment );
+					textured.attach( depthPeelingFragment );
+				}
+
+				unlit.link();
+				colored.link();
+				textured.link();
+
+				_unlit    = unlit;
+				_colored  = colored;
+				_textured = textured;
+
+				if ( depthPeelingEnabled )
+				{
+					final FragmentShader blendFragment = loadShader( FragmentShader.class , "blend-fragment.glsl" );
+
+					final ShaderProgram blend = new ShaderProgram( "blend" );
+					blend.attach( blendFragment );
+					_blend = blend;
+
+					colorBuffers = new Texture[ 3 ];
+					depthBuffers = new Texture[ 3 ];
+				}
+			}
+			catch ( IOException e )
+			{
+				e.printStackTrace();
+			}
+		}
+
+		_depthBuffers = depthBuffers;
+		_colorBuffers = colorBuffers;
+	}
+
+	/**
+	 * Creates a vertex shader providing the main method for rendering with the
+	 * specified settings.
+	 *
+	 * @param   colorFunction       Name of the color function, defined in
+	 *                              another vertex shader.
+	 * @param   lightingFunction    Name of the lighting function, defined
+	 *                              in another vertex shader;
+	 *                              <code>null</code> to use no lighting.
+	 *
+	 * @return  Created vertex shader.
+	 */
+	private static VertexShader createVertexShaderMain( final String colorFunction , final String lightingFunction )
+	{
+		final StringBuilder source = new StringBuilder();
+
+		source.append( "void " );
+		source.append( colorFunction );
+		source.append( "();" );
+
+		if ( lightingFunction != null )
+		{
+			source.append( "void " );
+			source.append( lightingFunction );
+			source.append( "();" );
+		}
+
+		source.append( "void main()" );
+		source.append( "{" );
+		source.append( "gl_Position = ftransform();" );
+		source.append( colorFunction );
+		source.append( "();" );
+		if ( lightingFunction != null )
+		{
+			source.append( lightingFunction );
+			source.append( "();" );
+		}
+		source.append( "}" );
+
+		final VertexShader result = new VertexShader();
+		result.setSource( source.toString() );
+		return result;
+	}
+
+	/**
+	 * Creates a fragment shader providing the main method for rendering with
+	 * the specified settings.
+	 *
+	 * @param   colorFunction           Name of the color function, defined in
+	 *                                  another fragment shader.
+	 * @param   lightingFunction        Name of the lighting function, defined
+	 *                                  in another fragment shader;
+	 *                                  <code>null</code> to use no lighting.
+	 * @param   depthPeelingEnabled     Whether depth peeling is enabled.
+	 *
+	 * @return  Created vertex shader.
+	 */
+	private static FragmentShader createFragmentShaderMain( final String colorFunction , final String lightingFunction , final boolean depthPeelingEnabled )
+	{
+		final StringBuilder source = new StringBuilder();
+
+		if ( depthPeelingEnabled )
+		{
+			source.append( "void depthPeeling();" );
+		}
+
+		source.append( "vec4 " );
+		source.append( colorFunction );
+		source.append( "();" );
+
+		if ( lightingFunction != null )
+		{
+			source.append( "vec4 " );
+			source.append( lightingFunction );
+			source.append( "( in vec4 color );" );
+		}
+
+		source.append( "void main()" );
+		source.append( "{" );
+		if ( depthPeelingEnabled )
+		{
+			source.append( "depthPeeling();" );
+		}
+		source.append( "gl_FragColor = " );
+		if ( lightingFunction != null )
+		{
+			source.append( lightingFunction );
+			source.append( "( " );
+			source.append( colorFunction );
+			source.append( "() );" );
+		}
+		else
+		{
+			source.append( colorFunction );
+			source.append( "();" );
+		}
+		source.append( "}" );
+
+		final FragmentShader result = new FragmentShader();
+		result.setSource( source.toString() );
+		return result;
+	}
+
+	/**
+	 * Sets whether the grid should be rendered.
+	 *
+	 * @param   gridEnabled     <code>true</code> to enable the grid;
+	 *                          <code>false</code> otherwise.
+	 */
+	public void setGridEnabled( final boolean gridEnabled )
+	{
+		_gridEnabled = gridEnabled;
+	}
+
+	/**
+	 * Loads a shader of the specified type.
+	 *
+	 * @param   shaderClass     Type of shader.
+	 * @param   name            Name of the resource to be loaded.
+	 *
+	 * @return  Loaded shader.
+	 *
+	 * @throws  IOException if an I/O error occurs.
+	 * @throws  GLException if compilation of the shader fails.
+	 */
+	private <T extends Shader> T loadShader( final Class<T> shaderClass , final String name )
+		throws IOException
+	{
+		final T result;
+		try
+		{
+			result = shaderClass.newInstance();
+			_shaders.add( result );
+		}
+		catch ( Exception e )
+		{
+			final AssertionError error = new AssertionError( "Failed to construct shader of type '" + shaderClass.getName() + "'" );
+			error.initCause( e );
+			throw error;
+		}
+
+		final Class<?>    clazz  = getClass();
+		final InputStream source = clazz.getResourceAsStream( name );
+
+		result.setSource( TextTools.loadText( source ) );
+		return result;
+	}
+
+	/**
+	 * Releases any resources used by the renderer.
+	 */
+	public void dispose()
+	{
+		_colored.dispose();
+		_textured.dispose();
+		_blend.dispose();
+
+		for ( final Shader shader : _shaders )
+		{
+			shader.dispose();
+		}
 	}
 
 	public void renderScene( final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
@@ -182,31 +659,573 @@ public class JOGLRenderer
 		final GL gl = _gl;
 		final GLWrapper glWrapper = new GLWrapper( gl );
 		_glWrapper = glWrapper;
-		_maxLights = JOGLTools.MAX_LIGHTS;
 
 		/* Clear depth and color buffer. */
 		final float[] backgroundRGB = _backgroundColor.getRGBColorComponents( null );
 		gl.glClearColor( backgroundRGB[ 0 ] , backgroundRGB[ 1 ] , backgroundRGB[ 2 ] , 1.0f );
+		gl.glClearDepth( 1.0 );
 		gl.glClear( GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT );
 
 		/* Set backface culling. */
-		gl.glCullFace( GL.GL_BACK );
+		glWrapper.setCullFace( true );
+		glWrapper.glCullFace( GL.GL_BACK );
 
-		/* Let super render scene. */
-		super.renderScene( nodes , styleFilters , sceneStyle );
+		/*
+		 * Get viewport bounds.
+		 */
+		final int[] viewport = new int[ 4 ];
+		gl.glGetIntegerv( GL.GL_VIEWPORT , viewport , 0 );
+		final int width = viewport[ 2 ];
+		final int height = viewport[ 3 ];
 
-		/* Finish up. */
+		/*
+		 * Build shader programs and set uniform variables (i.e. parameters).
+		 */
+		final boolean depthPeelingEnabled = ( _blend != null );
+
+		// Renders objects with specified material color, without lighting.
+		final ShaderProgram unlit = _unlit;
+		if ( unlit != null )
+		{
+			unlit.enable();
+			if ( depthPeelingEnabled )
+			{
+				// Texture unit 0 is reserved for color maps. (see below)
+				// Texture unit 1 is reserved for future use. (bump mapping)
+				unlit.setUniform( "depthNear"   , 2 );
+				unlit.setUniform( "depthOpaque" , 3 );
+				unlit.setUniform( "width"       , (float)width );
+				unlit.setUniform( "height"      , (float)height );
+			}
+			unlit.disable();
+			unlit.validate();
+		}
+
+		// Renders objects with specified material color.
+		final ShaderProgram colored = _colored;
+		if ( colored != null )
+		{
+			colored.enable();
+			if ( depthPeelingEnabled )
+			{
+				// Texture unit 0 is reserved for color maps. (see below)
+				// Texture unit 1 is reserved for future use. (bump mapping)
+				colored.setUniform( "depthNear"   , 2 );
+				colored.setUniform( "depthOpaque" , 3 );
+				colored.setUniform( "width"       , (float)width );
+				colored.setUniform( "height"      , (float)height );
+			}
+			colored.disable();
+			colored.validate();
+		}
+
+		// Renders objects with color map.
+		final ShaderProgram textured = _textured;
+		if ( textured != null )
+		{
+			textured.enable();
+			textured.setUniform( "colorMap" , 0 );
+			if ( depthPeelingEnabled )
+			{
+				// Texture unit 1 is reserved for future use. (bump mapping)
+				textured.setUniform( "depthNear"   , 2 );
+				textured.setUniform( "depthOpaque" , 3 );
+				textured.setUniform( "width"       , (float)width );
+				textured.setUniform( "height"      , (float)height );
+			}
+			textured.disable();
+			textured.validate();
+		}
+
+		if ( depthPeelingEnabled )
+		{
+			renderSceneWithDepthPeeling( width , height , nodes , styleFilters , sceneStyle );
+		}
+		else
+		{
+			renderSceneWithoutDepthPeeling( nodes , styleFilters , sceneStyle );
+		}
+
+		useShader( null );
+	}
+
+	/**
+	 * Render the scene using depth peeling to render transparent faces.
+	 *
+	 * @param   width           Width of the framebuffer, in pixels.
+	 * @param   height          Height of the framebuffer, in pixels.
+	 * @param   nodes           Nodes in the scene.
+	 * @param   styleFilters    Style filters to apply.
+	 * @param   sceneStyle      Render style to use as base for scene.
+	 */
+	private void renderSceneWithDepthPeeling( final int width , final int height , final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
+	{
+		final GL gl = _gl;
+		final GLWrapper glWrapper = _glWrapper;
+
+		/*
+		 * Configure light parameters.
+		 */
+		_lightIndex = 0;
+		_maxLights  = getMaxLights();
+		renderLights( nodes );
+
+		/*
+		 * Create frame buffer object to render to textures.
+		 */
+		final int[] frameBuffer = new int[ 1 ];
+		gl.glGenFramebuffersEXT( 1 , frameBuffer , 0 );
+		gl.glBindFramebufferEXT( GL.GL_FRAMEBUFFER_EXT , frameBuffer[ 0 ] );
+
+		/*
+		 * Create color and depth buffers, or re-use existing ones.
+		 */
+		final Texture[] colorBuffers = getColorBuffers( width , height );
+		final Texture[] depthBuffers = getDepthBuffers( width , height );
+
+		final Texture composite = colorBuffers[ 0 ];
+		final Texture layer     = colorBuffers[ 1 ];
+		final Texture opaque    = colorBuffers[ 2 ];
+
+		/*
+		 * Clear first color buffer, on which rendered layers are composited.
+		 */
+		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT , GL.GL_COLOR_ATTACHMENT0_EXT , composite.getTarget() , composite.getTextureObject() , 0 );
+		gl.glClearColor( 0.0f , 0.0f , 0.0f , 0.0f );
+		gl.glClear( GL.GL_COLOR_BUFFER_BIT );
+
+		/*
+		 * Initialize near and far depth buffers.
+		 */
+		// Near depth buffer starts at 0.0 (near clipping plane).
+		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT , GL.GL_DEPTH_ATTACHMENT_EXT , depthBuffers[ 1 ].getTarget() , depthBuffers[ 1 ].getTextureObject() , 0 );
+		gl.glClearDepth( 0.0 );
+		gl.glClear( GL.GL_DEPTH_BUFFER_BIT );
+
+		// Far depth buffer starts at 1.0 (far clipping plane).
+		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT , GL.GL_DEPTH_ATTACHMENT_EXT , depthBuffers[ 0 ].getTarget() , depthBuffers[ 0 ].getTextureObject() , 0 );
+		gl.glClearDepth( 1.0 );
+		gl.glClear( GL.GL_DEPTH_BUFFER_BIT );
+
+		/*
+		 * Render opaque objects first, to a seperate depth and color buffer.
+		 * The depth buffer is re-used while rendering transparent objects,
+		 * skipping any objects that are fully occluded.
+		 */
+		gl.glEnable( GL.GL_DEPTH_TEST );
+		gl.glDepthFunc( GL.GL_LEQUAL );
+		glWrapper.setBlend( false );
+		glWrapper.setLighting( true );
+
+		final Texture depthOpaque = depthBuffers[ 2 ];
+		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT , GL.GL_COLOR_ATTACHMENT0_EXT , opaque.getTarget()      , opaque.getTextureObject()      , 0 );
+		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT , GL.GL_DEPTH_ATTACHMENT_EXT  , depthOpaque.getTarget() , depthOpaque.getTextureObject() , 0 );
+
+		gl.glClearColor( 0.0f , 0.0f , 0.0f , 0.0f );
+		gl.glClear( GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT );
+
+		gl.glActiveTexture( GL.GL_TEXTURE2 );
+		depthBuffers[ 1 ].enable();
+		depthBuffers[ 1 ].bind();
+		gl.glActiveTexture( GL.GL_TEXTURE3 );
+		depthBuffers[ 0 ].enable();
+		depthBuffers[ 0 ].bind();
+		gl.glActiveTexture( GL.GL_TEXTURE0 );
+
+		_renderMode = MultiPassRenderMode.OPAQUE_ONLY;
+		renderObjects( nodes , styleFilters , sceneStyle );
+
+		gl.glActiveTexture( GL.GL_TEXTURE3 );
+		depthOpaque.enable();
+		depthOpaque.bind();
+		gl.glActiveTexture( GL.GL_TEXTURE0 );
+
+		/*
+		 * Render transparent objects in multiple passes using depth peeling.
+		 */
+		final int maximumPasses = 4;
+		int pass;
+		for ( pass = 0 ; pass < maximumPasses ; pass++ )
+		{
+			/*
+			 * Read from and write to far ('normal') depth buffer.
+			 * Read from near depth buffer, used by the depth peeling shader to
+			 * skip previous layers.
+			 */
+			final Texture depthFar  = depthBuffers[   pass       % 2 ];
+			final Texture depthNear = depthBuffers[ ( pass + 1 ) % 2 ];
+			gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT , GL.GL_COLOR_ATTACHMENT0_EXT , layer.getTarget()    , layer.getTextureObject()    , 0 );
+			gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT , GL.GL_DEPTH_ATTACHMENT_EXT  , depthFar.getTarget() , depthFar.getTextureObject() , 0 );
+			gl.glClearColor( 0.0f , 0.0f , 0.0f , 0.0f );
+			gl.glClear( GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT );
+
+			gl.glActiveTexture( GL.GL_TEXTURE2 );
+			depthNear.enable();
+			depthNear.bind();
+			gl.glActiveTexture( GL.GL_TEXTURE0 );
+
+			/*
+			 * Render scene, keeping track of the number of samples rendered.
+			 * Depth peeling is finished when no more samples are rendered.
+			 */
+			final OcclusionQuery occlusionQuery = new OcclusionQuery();
+
+			_renderMode = MultiPassRenderMode.TRANSPARENT_ONLY;
+			renderObjects( nodes , styleFilters , sceneStyle );
+
+			final int sampleCount = occlusionQuery.getSampleCount();
+			if ( sampleCount == 0 )
+			{
+				break;
+			}
+
+			/*
+			 * Blend this layer with the result.
+			 */
+			blend( composite , layer );
+		}
+
+		/*
+		 * Clear depth buffers for second opaque rendering pass.
+		 */
+		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT , GL.GL_DEPTH_ATTACHMENT_EXT , depthBuffers[ 0 ].getTarget() , depthBuffers[ 0 ].getTextureObject() , 0 );
+		gl.glClearDepth( 0.0 );
+		gl.glClear( GL.GL_DEPTH_BUFFER_BIT );
+		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT , GL.GL_DEPTH_ATTACHMENT_EXT , depthBuffers[ 1 ].getTarget() , depthBuffers[ 1 ].getTextureObject() , 0 );
+		gl.glClear( GL.GL_DEPTH_BUFFER_BIT );
+		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT , GL.GL_DEPTH_ATTACHMENT_EXT , depthOpaque.getTarget() , depthOpaque.getTextureObject() , 0 );
+		gl.glClearDepth( 1.0 );
+		gl.glClear( GL.GL_DEPTH_BUFFER_BIT );
+
+		/*
+		 * Delete the frame buffer object used to render to textures;
+		 * from here on, we render to the default frame buffer.
+		 */
+		gl.glBindFramebufferEXT( GL.GL_FRAMEBUFFER_EXT , 0 );
+		gl.glDeleteFramebuffersEXT( 1 , frameBuffer , 0 );
+
+		/*
+		 * Render the grid and opaque objects.
+		 */
+		if ( _gridEnabled )
+		{
+			useShader( _unlit );
+			drawGrid( _grid2wcs , _gridBounds , _gridCellSize , _gridHighlightAxes , _gridHighlightInterval );
+		}
+
+		_renderMode = MultiPassRenderMode.OPAQUE_ONLY;
+		renderObjects( nodes , styleFilters , sceneStyle );
+		useShader( null );
+
+		/*
+		 * Render the depth-peeled composite image to the screen.
+		 */
+		gl.glDisable( GL.GL_DEPTH_TEST );
+		glWrapper.setLighting( false );
+		glWrapper.setBlend( true );
+		glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+
+		gl.glActiveTexture( GL.GL_TEXTURE3 );
+		depthOpaque.disable();
+		gl.glActiveTexture( GL.GL_TEXTURE2 );
+		depthBuffers[ 0 ].disable();
+		gl.glActiveTexture( GL.GL_TEXTURE0 );
+
+		renderToViewport( composite );
+
+		displayTextures( colorBuffers , -1.0 , true  );
+		displayTextures( depthBuffers ,  1.0 , false );
+
+		System.out.println( "Rendered " + width + " x " + height + " pixels in " + pass + " depth peeling pass(es) and 2 opaque passes" );
+	}
+
+	/**
+	 * Render the scene using blending to render transparent faces.
+	 *
+	 * @param   nodes           Nodes in the scene.
+	 * @param   styleFilters    Style filters to apply.
+	 * @param   sceneStyle      Render style to use as base for scene.
+	 */
+	private void renderSceneWithoutDepthPeeling( final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
+	{
 		if ( _gridEnabled )
 		{
 			drawGrid( _grid2wcs , _gridBounds , _gridCellSize , _gridHighlightAxes , _gridHighlightInterval );
 		}
 
-		glWrapper.setBlend( false );
-		glWrapper.setPolygonMode( GL.GL_FILL );
-		glWrapper.setPolygonOffsetFill( false );
+		_renderMode = MultiPassRenderMode.ALL;
+		super.renderScene( nodes , styleFilters , sceneStyle );
+	}
+
+	/**
+	 * Returns textures of the given size to be used as color buffers. The
+	 * number of color buffers is determined by the size of the
+	 * {@link #_colorBuffers} array, which is used to cache color buffers.
+	 *
+	 * @param   width   Width of each color buffer, in pixels.
+	 * @param   height  Height of each color buffer, in pixels.
+	 *
+	 * @return  Textures of the given size for use as color buffers.
+	 */
+	private Texture[] getColorBuffers( final int width , final int height )
+	{
+		final Texture[] result = _colorBuffers;
+		for ( int i = 0 ; i < result.length ; i++ )
+		{
+			if ( ( result[ i ] == null ) ||
+			     ( result[ i ].getWidth()  != width  ) ||
+			     ( result[ i ].getHeight() != height ) )
+			{
+				final TextureData textureData = new TextureData( GL.GL_RGBA8 , width , height , 0 , GL.GL_RGBA , GL.GL_UNSIGNED_BYTE , false , false , false , null , null );
+				result[ i ] = TextureIO.newTexture( textureData );
+				result[ i ].setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_NEAREST       );
+				result[ i ].setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_NEAREST       );
+				result[ i ].setTexParameteri( GL.GL_TEXTURE_WRAP_S     , GL.GL_CLAMP_TO_EDGE );
+				result[ i ].setTexParameteri( GL.GL_TEXTURE_WRAP_T     , GL.GL_CLAMP_TO_EDGE );
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Returns textures of the given size to be used as depth buffers. The
+	 * number of depth buffers is determined by the size of the
+	 * {@link #_depthBuffers} array, which is used to cache depth buffers.
+	 *
+	 * @param   width   Width of each depth buffer, in pixels.
+	 * @param   height  Height of each depth buffer, in pixels.
+	 *
+	 * @return  Textures of the given size for use as depth buffers.
+	 */
+	private Texture[] getDepthBuffers( final int width , final int height )
+	{
+		final Texture[] result = _depthBuffers;
+		for ( int i = 0 ; i < result.length ; i++ )
+		{
+			if ( ( result[ i ] == null ) ||
+			     ( result[ i ].getWidth()  != width  ) ||
+			     ( result[ i ].getHeight() != height ) )
+			{
+				final TextureData textureData = new TextureData( GL.GL_DEPTH_COMPONENT32 , width , height , 0 , GL.GL_DEPTH_COMPONENT , GL.GL_FLOAT , false , false , false , null , null );
+				result[ i ] = TextureIO.newTexture( textureData );
+				result[ i ].setTexParameteri( GL.GL_TEXTURE_MIN_FILTER   , GL.GL_NEAREST       );
+				result[ i ].setTexParameteri( GL.GL_TEXTURE_MAG_FILTER   , GL.GL_NEAREST       );
+				result[ i ].setTexParameteri( GL.GL_TEXTURE_WRAP_S       , GL.GL_CLAMP_TO_EDGE );
+				result[ i ].setTexParameteri( GL.GL_TEXTURE_WRAP_T       , GL.GL_CLAMP_TO_EDGE );
+				result[ i ].setTexParameteri( GL.GL_TEXTURE_COMPARE_MODE , GL.GL_NONE );
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Returns the maximum number of lights supported by the OpenGL
+	 * implementation.
+	 *
+	 * @return  Maximum number of lights.
+	 */
+	private int getMaxLights()
+	{
+		final int[] maxLights = new int[ 1 ];
+		_gl.glGetIntegerv( GL.GL_MAX_LIGHTS , maxLights, 0 );
+		return maxLights[ 0 ];
+	}
+
+	/**
+	 * Renders the contents of the given texture to the viewport.
+	 *
+	 * @param   texture     Texture to be rendered.
+	 */
+	private void renderToViewport( final Texture texture )
+	{
+		final GL        gl        = _gl;
+		final GLWrapper glWrapper = _glWrapper;
+
+		texture.enable();
+		texture.bind();
+		toViewportSpace();
+
+		final TextureCoords textureCoords = texture.getImageTexCoords();
+
+		final float left   = textureCoords.left();
+		final float bottom = textureCoords.bottom();
+		final float right  = textureCoords.right();
+		final float top    = textureCoords.top();
+
+		glWrapper.setColor( 1.0f , 1.0f , 1.0f , 1.0f );
+		gl.glBegin( GL.GL_QUADS );
+		gl.glMultiTexCoord2f( GL.GL_TEXTURE0 , left , bottom );
+		gl.glVertex2d( -1.0 , -1.0 );
+		gl.glMultiTexCoord2f( GL.GL_TEXTURE0 , right , bottom );
+		gl.glVertex2d(  1.0 , -1.0 );
+		gl.glMultiTexCoord2f( GL.GL_TEXTURE0 , right , top );
+		gl.glVertex2d(  1.0 ,  1.0 );
+		gl.glMultiTexCoord2f( GL.GL_TEXTURE0 , left , top );
+		gl.glVertex2d( -1.0 ,  1.0 );
+		gl.glEnd();
+
+		fromViewportSpace();
+		texture.disable();
+	}
+
+	/**
+	 * Blend the given layer with the composite, such that the layer appears
+	 * behind the current content of the composite.
+	 *
+	 * <p>
+	 * <em>This operation has the side effect of replacing the active
+	 * framebuffer's first color attachment ('GL_COLOR_ATTACHMENT0_EXT').</em>
+	 */
+	private void blend( final Texture composite , final Texture layer )
+	{
+		final GL gl = _gl;
+		final GLWrapper glWrapper = _glWrapper;
+
+		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT , GL.GL_COLOR_ATTACHMENT0_EXT , composite.getTarget() , composite.getTextureObject() , 0 );
+
+		gl.glDisable( GL.GL_DEPTH_TEST );
 		glWrapper.setLighting( false );
-		glWrapper.setLineSmooth( false );
-		glWrapper.setCullFace( false );
+
+		gl.glActiveTexture( GL.GL_TEXTURE1 );
+		layer.enable();
+		layer.bind();
+		gl.glActiveTexture( GL.GL_TEXTURE0 );
+
+		final ShaderProgram previousShader = _activeShader;
+		final ShaderProgram blend = _blend;
+		useShader( blend );
+		blend.setUniform( "front" , 0 );
+		blend.setUniform( "back"  , 1 );
+
+		renderToViewport( composite );
+
+		gl.glActiveTexture( GL.GL_TEXTURE1 );
+		layer.disable();
+		gl.glActiveTexture( GL.GL_TEXTURE0 );
+
+		gl.glEnable( GL.GL_DEPTH_TEST );
+		glWrapper.setLighting( true );
+
+		useShader( previousShader );
+	}
+
+	/**
+	 * Changes the projection and model-view transforms to viewport coordinates,
+	 * ranging from -1 to 1. The current transforms are preserved and can be
+	 * restored using {@link #fromViewportSpace()}.
+	 */
+	private void toViewportSpace()
+	{
+		final GL gl = _gl;
+		gl.glMatrixMode( GL.GL_PROJECTION );
+		gl.glPushMatrix();
+		gl.glLoadIdentity();
+		gl.glMatrixMode( GL.GL_MODELVIEW );
+		gl.glPushMatrix();
+		gl.glLoadIdentity();
+	}
+
+	/**
+	 * Restores the projection and model-view transforms that were replaced by
+	 * a previous call to {@link #toViewportSpace()}.
+	 */
+	private void fromViewportSpace()
+	{
+		final GL gl = _gl;
+		gl.glMatrixMode( GL.GL_MODELVIEW );
+		gl.glPopMatrix();
+		gl.glMatrixMode( GL.GL_PROJECTION );
+		gl.glPopMatrix();
+		gl.glMatrixMode( GL.GL_MODELVIEW );
+	}
+
+	/**
+	 * Renders small previews of the given textures on the screen, for debugging
+	 * purposes.
+	 *
+	 * @param   textures    Texture to be rendered.
+	 * @param   x           Horizontal position; <code>-1.0</code> for the left
+	 *                      side of the screen, <code>1.0</code> for the right.
+	 * @param   blend       Whether the texture should be alpha-blended.
+	 */
+	private void displayTextures( final Texture[] textures , final double x , final boolean blend )
+	{
+		final GL        gl        = _gl;
+		final GLWrapper glWrapper = _glWrapper;
+
+		/*
+		 * Render one of the buffers to a small rectangle on screen.
+		 */
+		toViewportSpace();
+
+		gl.glPushAttrib( GL.GL_ALL_ATTRIB_BITS );
+		glWrapper.setLighting( false );
+		glWrapper.setBlend( blend );
+		if ( blend )
+		{
+			glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+		}
+
+		for ( int i = 0 ; i < textures.length ; i++ )
+		{
+			final Texture texture = textures[ i ];
+
+			gl.glActiveTexture( GL.GL_TEXTURE0 );
+			texture.enable();
+			texture.bind();
+
+			final double minX = x * 0.75 - 0.2;
+			final double maxX = minX + 0.4;
+			final double minY = -0.95 + 0.5 * (double)i;
+			final double maxY = minY + 0.4;
+
+			final TextureCoords textureCoords = texture.getImageTexCoords();
+
+			final float left   = textureCoords.left();
+			final float bottom = textureCoords.bottom();
+			final float right  = textureCoords.right();
+			final float top    = textureCoords.top();
+
+			glWrapper.setColor( 1.0f , 1.0f , 1.0f , 1.0f );
+			gl.glBegin( GL.GL_QUADS );
+			gl.glMultiTexCoord2f( GL.GL_TEXTURE0 , left , bottom );
+			gl.glVertex2d( minX , minY );
+			gl.glMultiTexCoord2f( GL.GL_TEXTURE0 , right , bottom );
+			gl.glVertex2d( maxX , minY );
+			gl.glMultiTexCoord2f( GL.GL_TEXTURE0 , right , top );
+			gl.glVertex2d( maxX , maxY );
+			gl.glMultiTexCoord2f( GL.GL_TEXTURE0 , left , top );
+			gl.glVertex2d( minX , maxY );
+			gl.glEnd();
+		}
+		gl.glPopAttrib();
+
+		fromViewportSpace();
+	}
+
+	/**
+	 * Enables the given shader program, replacing the current one.
+	 *
+	 * @param   shader  Shader program to be used; <code>null</code> to enable
+	 *                  OpenGL's fixed functionality.
+	 */
+	private void useShader( final ShaderProgram shader )
+	{
+		final ShaderProgram activeShader = _activeShader;
+		if ( activeShader != shader )
+		{
+			_activeShader = shader;
+
+			if ( activeShader != null )
+			{
+				activeShader.disable();
+			}
+
+			if ( shader != null )
+			{
+				shader.enable();
+			}
+		}
 	}
 
 	protected void renderLights( final List<ContentNode> nodes )
@@ -214,6 +1233,7 @@ public class JOGLRenderer
 		final GL gl = _gl;
 
 		_lightIndex = 0;
+		_maxLights  = getMaxLights();
 		_ambientLightIntensity = 0.0f;
 		_dominantLightPosition = null;
 		_dominantLightIntensity = 0.0f;
@@ -231,9 +1251,14 @@ public class JOGLRenderer
 		}
 
 		/* Disable all lights */
-		for( int lightIndex = 0 ; lightIndex < _maxLights ; lightIndex++ )
+		for( int i = 0 ; i < _maxLights ; i++ )
 		{
-			gl.glDisable( GL.GL_LIGHT0 + lightIndex );
+			final int light = GL.GL_LIGHT0 + i;
+			gl.glDisable( light );
+			gl.glLightfv( light , GL.GL_POSITION , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
+			gl.glLightfv( light , GL.GL_AMBIENT  , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
+			gl.glLightfv( light , GL.GL_DIFFUSE  , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
+			gl.glLightfv( light , GL.GL_SPECULAR , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
 		}
 
 		/* Let super render lights */
@@ -241,7 +1266,7 @@ public class JOGLRenderer
 
 		/* Set combined ambient light intensity. */
 		final float ambientLightIntensity = _ambientLightIntensity;
-		gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[]{ambientLightIntensity , ambientLightIntensity , ambientLightIntensity , 1.0f} , 0 );
+		gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { ambientLightIntensity , ambientLightIntensity , ambientLightIntensity , 1.0f } , 0 );
 	}
 
 	protected void renderLight( final Matrix3D light2world , final Light3D light )
@@ -316,179 +1341,197 @@ public class JOGLRenderer
 
 	protected void renderMaterialFace( final Face3D face , final RenderStyle style )
 	{
-		final List<Vertex> vertices = face.vertices;
-		final int vertexCount = vertices.size();
-		final Material material = ( style.getMaterialOverride() != null ) ? style.getMaterialOverride() : face.material;
+		final int      vertexCount = face.getVertexCount();
+		final Material material    = ( style.getMaterialOverride() != null ) ? style.getMaterialOverride() : face.material;
 
 		if ( ( material != null ) && ( vertexCount >= 2 ) )
 		{
-			final GL gl = _gl;
+			final GL        gl        = _gl;
 			final GLWrapper glWrapper = _glWrapper;
-			final Map<String,Texture> textureCache = _textureCache;
 
-			final Vector3D lightPosition    = _lightPositionRelativeToObject;
-			final boolean  hasLighting      = style.isMaterialLightingEnabled() && ( lightPosition != null );
-			final boolean  backfaceCulling  = style.isBackfaceCullingEnabled() && !face.isTwoSided();
-			final float    extraAlpha       = style.getMaterialAlpha();
-			final boolean  blend            = ( extraAlpha < 0.99f ) || ( material.diffuseColorAlpha < 0.99f );
-			final boolean  setVertexNormals = hasLighting && face.smooth;
+			final MultiPassRenderMode renderMode   = _renderMode;
 
-			/*
-			 * Get textures.
-			 */
-			final Texture colorMap = JOGLTools.getColorMapTexture( gl , material , textureCache );
-			final boolean hasColorMap = ( colorMap != null );
+			final float   extraAlpha    = style.getMaterialAlpha();
+			final float   combinedAlpha = material.diffuseColorAlpha * extraAlpha;
+			final boolean blend         = ( renderMode == MultiPassRenderMode.ALL ) && ( combinedAlpha < 0.99f );
 
-			final Texture bumpMap = hasLighting ? JOGLTools.getBumpMapTexture( gl , material , textureCache ) : null;
-			final boolean hasBumpMap = ( bumpMap != null );
-
-			final Texture normalizationCubeMap = hasBumpMap ? JOGLTools.getNormalizationCubeMap( gl , textureCache ) : null;
-
-			/*
-			 * Set render/material properties.
-			 */
-			if ( blend )
+			if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || ( combinedAlpha >= 1.0f ) ) &&
+			     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || ( combinedAlpha <  1.0f ) ) )
 			{
-				glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
-			}
-			glWrapper.setBlend( blend );
-			glWrapper.setPolygonMode( GL.GL_FILL );
-			glWrapper.setPolygonOffsetFill( false );
-			glWrapper.setCullFace( backfaceCulling );
-			glWrapper.setLighting( hasLighting );
-			setMaterial( material , extraAlpha );
+				final Map<String,Texture> textureCache = _textureCache;
 
-			/*
-			 * Enable bump map.
-			 */
-			if ( hasBumpMap )
-			{
+				final Vector3D lightPosition    = _lightPositionRelativeToObject;
+				final boolean  hasLighting      = style.isMaterialLightingEnabled() && ( lightPosition != null );
+				final boolean  backfaceCulling  = style.isBackfaceCullingEnabled()  && !face.isTwoSided();
+				final boolean  setVertexNormals = hasLighting                       && face.smooth;
+
 				/*
-				 * Set The First Texture Unit To Normalize Our Vector From The
-				 * Surface To The Light. Set The Texture Environment Of The First
-				 * Texture Unit To Replace It With The Sampled Value Of The
-				 * Normalization Cube Map.
+				 * Get textures.
 				 */
-				gl.glActiveTexture( GL.GL_TEXTURE0 );
-				normalizationCubeMap.enable();
-				normalizationCubeMap.bind();
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE );
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_REPLACE );
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_TEXTURE );
+				final Texture colorMap    = JOGLTools.getColorMapTexture( gl , material , textureCache );
+				final Texture bumpMap     = hasLighting ? JOGLTools.getBumpMapTexture( gl , material , textureCache ) : null;
+				final boolean hasColorMap = ( colorMap != null );
+				final boolean hasBumpMap  = ( bumpMap  != null );
+
+				final Texture normalizationCubeMap = hasBumpMap ? JOGLTools.getNormalizationCubeMap( gl , textureCache ) : null;
 
 				/*
-				 * Set The Second Unit To The Bump Map. Set The Texture Environment
-				 * Of The Second Texture Unit To Perform A Dot3 Operation With The
-				 * Value Of The Previous Texture Unit (The Normalized Vector Form
-				 * The Surface To The Light) And The Sampled Texture Value (The
-				 * Normalized Normal Vector Of Our Bump Map).
+				 * Set render/material properties.
 				 */
-				gl.glActiveTexture( GL.GL_TEXTURE1 );
-				bumpMap.enable();
-				bumpMap.bind();
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE  );
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_DOT3_RGB );
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_PREVIOUS );
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE1_RGB      , GL.GL_TEXTURE  );
+				if ( blend )
+				{
+					glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+				}
+				glWrapper.setBlend( blend );
+				glWrapper.setCullFace( backfaceCulling );
+				glWrapper.setLighting( hasLighting );
+				setMaterial( material , extraAlpha );
 
 				/*
-				 * The third unit is used to apply the diffuse color of the
-				 * material.
+				 * Enable bump map.
 				 */
-				gl.glActiveTexture( GL.GL_TEXTURE2 );
-				bumpMap.enable();
-				bumpMap.bind();
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE       );
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_MODULATE      );
-				gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_PRIMARY_COLOR );
+				if ( hasBumpMap )
+				{
+					gl.glActiveTexture( GL.GL_TEXTURE1 );
+					bumpMap.enable();
+					bumpMap.bind();
+					gl.glActiveTexture( GL.GL_TEXTURE0 );
+				}
+				else if ( false ) // DOT3 bump mapping; disabled
+				{
+					/*
+					 * Set The First Texture Unit To Normalize Our Vector From The
+					 * Surface To The Light. Set The Texture Environment Of The First
+					 * Texture Unit To Replace It With The Sampled Value Of The
+					 * Normalization Cube Map.
+					 */
+					gl.glActiveTexture( GL.GL_TEXTURE0 );
+					normalizationCubeMap.enable();
+					normalizationCubeMap.bind();
+					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE );
+					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_REPLACE );
+					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_TEXTURE );
+
+					/*
+					 * Set The Second Unit To The Bump Map. Set The Texture Environment
+					 * Of The Second Texture Unit To Perform A Dot3 Operation With The
+					 * Value Of The Previous Texture Unit (The Normalized Vector Form
+					 * The Surface To The Light) And The Sampled Texture Value (The
+					 * Normalized Normal Vector Of Our Bump Map).
+					 */
+					gl.glActiveTexture( GL.GL_TEXTURE1 );
+					bumpMap.enable();
+					bumpMap.bind();
+					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE  );
+					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_DOT3_RGB );
+					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_PREVIOUS );
+					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE1_RGB      , GL.GL_TEXTURE  );
+
+					/*
+					 * The third unit is used to apply the diffuse color of the
+					 * material.
+					 */
+					gl.glActiveTexture( GL.GL_TEXTURE2 );
+					bumpMap.enable();
+					bumpMap.bind();
+					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE       );
+					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_MODULATE      );
+					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_PRIMARY_COLOR );
+
+					/*
+					 * Set The Fourth Texture Unit To Our Texture. Set The Texture
+					 * Environment Of The Third Texture Unit To Modulate (Multiply) The
+					 * Result Of Our Dot3 Operation With The Texture Value.
+					 */
+					if ( hasColorMap )
+					{
+						gl.glActiveTexture( GL.GL_TEXTURE3 );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_MODULATE );
+					}
+				}
 
 				/*
-				 * Set The Fourth Texture Unit To Our Texture. Set The Texture
-				 * Environment Of The Third Texture Unit To Modulate (Multiply) The
-				 * Result Of Our Dot3 Operation With The Texture Value.
+				 * Enable color map.
 				 */
 				if ( hasColorMap )
 				{
-					gl.glActiveTexture( GL.GL_TEXTURE3 );
-					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_MODULATE );
+					useShader( _textured );
+					colorMap.enable();
+					colorMap.bind();
 				}
-			}
+				else
+				{
+					useShader( _colored );
+				}
 
-			/*
-			 * Enable color map.
-			 */
-			if ( hasColorMap )
-			{
-				colorMap.enable();
-				colorMap.bind();
-			}
+				/*
+				 * Render face.
+				 */
+				gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS :
+				            ( vertexCount == 2 ) ? GL.GL_LINES :
+				            ( vertexCount == 3 ) ? GL.GL_TRIANGLES :
+				            ( vertexCount == 4 ) ? GL.GL_QUADS : GL.GL_POLYGON );
 
-			/*
-			 * Render face.
-			 */
-			gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS :
-			            ( vertexCount == 2 ) ? GL.GL_LINES :
-			            ( vertexCount == 3 ) ? GL.GL_TRIANGLES :
-			            ( vertexCount == 4 ) ? GL.GL_QUADS : GL.GL_POLYGON );
+				if ( !setVertexNormals )
+				{
+					final Vector3D normal = face.getNormal();
+					gl.glNormal3d( normal.x , normal.y , normal.z );
+				}
 
-			if ( !setVertexNormals )
-			{
-				final Vector3D normal = face.getNormal();
-				gl.glNormal3d( normal.x , normal.y , normal.z );
-			}
+				final List<Vertex> vertices = face.vertices;
+				for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
+				{
+					final Vertex vertex = vertices.get( vertexIndex );
+					final Vector3D point = vertex.point;
 
-			for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
-			{
-				final Vertex vertex = vertices.get( vertexIndex );
-				final Vector3D point = vertex.point;
+					if ( hasBumpMap )
+					{
+						gl.glMultiTexCoord3d( GL.GL_TEXTURE0 , lightPosition.x + point.x , lightPosition.y + point.y , lightPosition.z + point.z );
+						gl.glMultiTexCoord2f( GL.GL_TEXTURE1 , vertex.colorMapU , vertex.colorMapV );
 
+						if ( hasColorMap )
+						{
+							gl.glMultiTexCoord2f( GL.GL_TEXTURE3 , vertex.colorMapU , vertex.colorMapV );
+						}
+					}
+					else if ( hasColorMap )
+					{
+						gl.glTexCoord2f( vertex.colorMapU, vertex.colorMapV );
+					}
+
+					if ( setVertexNormals )
+					{
+						final Vector3D vertexNormal = face.getVertexNormal( vertexIndex );
+						gl.glNormal3d( vertexNormal.x , vertexNormal.y , vertexNormal.z );
+					}
+
+					gl.glVertex3d( point.x , point.y , point.z );
+				}
+
+				gl.glEnd();
+
+				/*
+				 * Disable color map.
+				 */
+				if ( hasColorMap )
+				{
+					colorMap.disable();
+				}
+
+				/*
+				 * Disable bump map.
+				 */
 				if ( hasBumpMap )
 				{
-					gl.glMultiTexCoord3d( GL.GL_TEXTURE0 , lightPosition.x + point.x , lightPosition.y + point.y , lightPosition.z + point.z );
-					gl.glMultiTexCoord2f( GL.GL_TEXTURE1 , vertex.colorMapU , vertex.colorMapV );
+					gl.glActiveTexture( GL.GL_TEXTURE2 );
+					bumpMap.disable();
 
-					if ( hasColorMap )
-					{
-						gl.glMultiTexCoord2f( GL.GL_TEXTURE3 , vertex.colorMapU , vertex.colorMapV );
-					}
+					gl.glActiveTexture( GL.GL_TEXTURE1 );
+					bumpMap.disable();
+
+					gl.glActiveTexture( GL.GL_TEXTURE0 );
+					normalizationCubeMap.disable();
 				}
-				else if ( hasColorMap )
-				{
-					gl.glTexCoord2f( vertex.colorMapU, vertex.colorMapV );
-				}
-
-				if ( setVertexNormals )
-				{
-					final Vector3D vertexNormal = face.getVertexNormal( vertexIndex );
-					gl.glNormal3d( vertexNormal.x , vertexNormal.y , vertexNormal.z );
-				}
-
-				gl.glVertex3d( point.x , point.y , point.z );
-			}
-
-			gl.glEnd();
-
-			/*
-			 * Disable color map.
-			 */
-			if ( hasColorMap )
-			{
-				colorMap.disable();
-			}
-
-			/*
-			 * Disable bump map.
-			 */
-			if ( hasBumpMap )
-			{
-				gl.glActiveTexture( GL.GL_TEXTURE2 );
-				bumpMap.disable();
-
-				gl.glActiveTexture( GL.GL_TEXTURE1 );
-				bumpMap.disable();
-
-				gl.glActiveTexture( GL.GL_TEXTURE0 );
-				normalizationCubeMap.disable();
 			}
 		}
 	}
@@ -500,59 +1543,68 @@ public class JOGLRenderer
 
 		if ( vertexCount >= 2 )
 		{
+			final MultiPassRenderMode renderMode = _renderMode;
+
 			final GL gl = _gl;
 			final GLWrapper glWrapper = _glWrapper;
 
 			final Color   color           = style.getFillColor();
 			final int     alpha           = color.getAlpha();
-			final boolean blend           = ( alpha < 255 );
+			final boolean blend           = ( renderMode == MultiPassRenderMode.ALL ) && ( alpha < 255 );
 			final boolean backfaceCulling = style.isBackfaceCullingEnabled() && !face.isTwoSided();
 			final boolean hasLighting     = style.isFillLightingEnabled() && ( _lightPositionRelativeToObject != null );
 			final boolean setVertexNormals = hasLighting && face.smooth;
 
-			/*
-			 * Set render/material properties.
-			 */
-			if ( blend )
+			if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || ( alpha == 255 ) ) &&
+			     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || ( alpha <  255 ) ) )
 			{
-				glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
-			}
-			glWrapper.setBlend( blend );
-			glWrapper.setPolygonMode( GL.GL_FILL );
-			glWrapper.setPolygonOffsetFill( true );
-			glWrapper.glPolygonOffset( 0.0f , -1.0f );
-			glWrapper.setCullFace( backfaceCulling );
-			glWrapper.setLighting( hasLighting );
-			setColor( color );
-
-			/*
-			 * Render face.
-			 */
-			gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS :
-			            ( vertexCount == 2 ) ? GL.GL_LINES :
-			            ( vertexCount == 3 ) ? GL.GL_TRIANGLES :
-			            ( vertexCount == 4 ) ? GL.GL_QUADS : GL.GL_POLYGON );
-
-			if ( !setVertexNormals )
-			{
-				final Vector3D normal = face.getNormal();
-				gl.glNormal3d( normal.x , normal.y , normal.z );
-			}
-
-			for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
-			{
-				final Vertex vertex = vertices.get( vertexIndex );
-
-				if ( setVertexNormals )
+				/*
+				 * Set render/material properties.
+				 */
+				if ( blend )
 				{
-					final Vector3D normal = face.getVertexNormal( vertexIndex );
+					glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+				}
+				glWrapper.setBlend( blend );
+				glWrapper.setPolygonMode( GL.GL_FILL );
+				glWrapper.setPolygonOffsetFill( true );
+				glWrapper.glPolygonOffset( 0.0f , -1.0f );
+				glWrapper.setCullFace( backfaceCulling );
+				glWrapper.setLighting( hasLighting );
+				setColor( color );
+				useShader( hasLighting ? _colored : _unlit );
+
+				/*
+				 * Render face.
+				 */
+				gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS :
+				            ( vertexCount == 2 ) ? GL.GL_LINES :
+				            ( vertexCount == 3 ) ? GL.GL_TRIANGLES :
+				            ( vertexCount == 4 ) ? GL.GL_QUADS : GL.GL_POLYGON );
+
+				if ( !setVertexNormals )
+				{
+					final Vector3D normal = face.getNormal();
 					gl.glNormal3d( normal.x , normal.y , normal.z );
 				}
 
-				gl.glVertex3d( vertex.point.x , vertex.point.y , vertex.point.z );
-			}
+				for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
+				{
+					final Vertex vertex = vertices.get( vertexIndex );
 
-			gl.glEnd();
+					if ( setVertexNormals )
+					{
+						final Vector3D normal = face.getVertexNormal( vertexIndex );
+						gl.glNormal3d( normal.x , normal.y , normal.z );
+					}
+
+					gl.glVertex3d( vertex.point.x , vertex.point.y , vertex.point.z );
+				}
+
+				gl.glEnd();
+
+				glWrapper.setPolygonOffsetFill( false );
+			}
 		}
 	}
 
@@ -581,6 +1633,8 @@ public class JOGLRenderer
 			glWrapper.setCullFace( backfaceCulling );
 			glWrapper.setLighting( hasLighting );
 			setColor( color );
+			useShader( hasLighting ? _colored : _unlit );
+
 			final GL gl = _gl;
 
 			/*
@@ -647,6 +1701,9 @@ public class JOGLRenderer
 
 				gl.glEnd();
 			}
+
+			glWrapper.setPolygonMode( GL.GL_FILL );
+			glWrapper.setPolygonOffsetFill( false );
 		}
 	}
 
@@ -705,6 +1762,9 @@ public class JOGLRenderer
 			}
 
 			gl.glEnd();
+
+			glWrapper.setPolygonMode( GL.GL_FILL );
+			glWrapper.setPolygonOffsetFill( false );
 		}
 	}
 
@@ -892,7 +1952,6 @@ public class JOGLRenderer
 
 			glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 			glWrapper.setBlend( true );
-			glWrapper.setPolygonMode( GL.GL_FILL );
 			glWrapper.setLineSmooth( true );
 			glWrapper.setLighting( false );
 
@@ -970,7 +2029,7 @@ public class JOGLRenderer
 					gl.glEnd();
 				}
 			}
-//
+
 			glWrapper.glLineWidth( 1.0f );
 			glWrapper.setColor( 0.75f , 0.75f , 0.75f , 1.0f );
 			gl.glBegin( GL.GL_LINES );
