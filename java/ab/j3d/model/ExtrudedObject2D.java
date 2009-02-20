@@ -26,6 +26,8 @@ import java.awt.geom.FlatteningPathIterator;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
+import ab.j3d.geom.BoxUVMap;
+import ab.j3d.geom.UVMap;
 
 /**
  * This class extends {@link Object3D}. The vertices and faces are generated out
@@ -126,6 +128,29 @@ public final class ExtrudedObject2D
 	 * @param   shape           Base shape.
 	 * @param   extrusion       Extrusion vector (control-point displacement).
 	 * @param   transform       Transform to apply.
+	 * @param   uvMap           Provides UV coordinates.
+	 * @param   topMaterial     Material to apply to the top cap.
+	 * @param   bottomMaterial  Material to apply to the bottom cap.
+	 * @param   sideMaterial    Material to apply to the extruded sides.
+	 * @param   flatness        Flatness to use.
+	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
+	 * @param   flipNormals     If <code>true</code>, normals are flipped to
+	 *                          point in the opposite direction.
+	 *
+	 * @see     FlatteningPathIterator
+	 * @see     Shape#getPathIterator( AffineTransform , double )
+	 */
+	public ExtrudedObject2D( final Shape shape , final Vector3D extrusion , final Matrix3D transform , final UVMap uvMap , final Material topMaterial , final Material bottomMaterial , final Material sideMaterial , final double flatness , final boolean hasBackface , final boolean flipNormals )
+	{
+		this( shape , extrusion , transform , uvMap , topMaterial , bottomMaterial , sideMaterial , flatness , hasBackface , flipNormals , false );
+	}
+
+	/**
+	 * Construct extruded object.
+	 *
+	 * @param   shape           Base shape.
+	 * @param   extrusion       Extrusion vector (control-point displacement).
+	 * @param   transform       Transform to apply.
 	 * @param   material        Material to apply to the extruded shape.
 	 * @param   flatness        Flatness to use.
 	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
@@ -140,6 +165,29 @@ public final class ExtrudedObject2D
 	public ExtrudedObject2D( final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material material , final double flatness , final boolean hasBackface , final boolean flipNormals , final boolean caps )
 	{
 		this( shape , extrusion , transform , material , material , material , flatness , hasBackface , flipNormals , caps );
+	}
+
+	/**
+	 * Construct extruded object.
+	 *
+	 * @param   shape           Base shape.
+	 * @param   extrusion       Extrusion vector (control-point displacement).
+	 * @param   transform       Transform to apply.
+	 * @param   uvMap           Provides UV coordinates.
+	 * @param   material        Material to apply to the extruded shape.
+	 * @param   flatness        Flatness to use.
+	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
+	 * @param   flipNormals     If <code>true</code>, normals are flipped to
+	 *                          point in the opposite direction.
+	 * @param   caps            If <code>true</code>, the top and bottom of the
+	 *                          extruded shape are capped.
+	 *
+	 * @see     FlatteningPathIterator
+	 * @see     Shape#getPathIterator( AffineTransform , double )
+	 */
+	public ExtrudedObject2D( final Shape shape , final Vector3D extrusion , final Matrix3D transform , final UVMap uvMap , final Material material , final double flatness , final boolean hasBackface , final boolean flipNormals , final boolean caps )
+	{
+		this( shape , extrusion , transform , uvMap , material , material , material , flatness , hasBackface , flipNormals , caps );
 	}
 
 	/**
@@ -163,6 +211,32 @@ public final class ExtrudedObject2D
 	 */
 	public ExtrudedObject2D( final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material topMaterial , final Material bottomMaterial , final Material sideMaterial , final double flatness , final boolean hasBackface , final boolean flipNormals , final boolean caps )
 	{
+		this( shape , extrusion , transform , new BoxUVMap( Scene.MM , transform ) , topMaterial , bottomMaterial , sideMaterial , flatness , hasBackface , flipNormals , caps );
+		// @FIXME Retrieve model units instead of assuming millimeters for UV map.
+	}
+
+	/**
+	 * Construct extruded object.
+	 *
+	 * @param   shape           Base shape.
+	 * @param   extrusion       Extrusion vector (control-point displacement).
+	 * @param   transform       Transform to apply.
+	 * @param   uvMap           Provides UV coordinates.
+	 * @param   topMaterial     Material to apply to the top cap.
+	 * @param   bottomMaterial  Material to apply to the bottom cap.
+	 * @param   sideMaterial    Material to apply to the extruded sides.
+	 * @param   flatness        Flatness to use.
+	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
+	 * @param   flipNormals     If <code>true</code>, normals are flipped to
+	 *                          point in the opposite direction.
+	 * @param   caps            If <code>true</code>, the top and bottom of the
+	 *                          extruded shape are capped.
+	 *
+	 * @see     FlatteningPathIterator
+	 * @see     Shape#getPathIterator( AffineTransform , double )
+	 */
+	public ExtrudedObject2D( final Shape shape , final Vector3D extrusion , final Matrix3D transform , final UVMap uvMap , final Material topMaterial , final Material bottomMaterial , final Material sideMaterial , final double flatness , final boolean hasBackface , final boolean flipNormals , final boolean caps )
+	{
 		this.shape       = shape;
 		this.extrusion   = extrusion;
 		this.transform   = transform;
@@ -172,7 +246,7 @@ public final class ExtrudedObject2D
 		this.caps        = caps;
 
 		final Object3DBuilder builder = new Object3DBuilder( this );
-		builder.addExtrudedShape( shape , flatness , extrusion , transform , topMaterial , false , bottomMaterial , false , sideMaterial , false , hasBackface , flipNormals , caps );
+		builder.addExtrudedShape( shape , flatness , extrusion , transform , uvMap , topMaterial , false , bottomMaterial , false , sideMaterial , false , hasBackface , flipNormals , caps );
 	}
 
 	/**
@@ -207,8 +281,10 @@ public final class ExtrudedObject2D
 		this.flipNormals = flipNormals;
 		this.caps        = caps;
 
+		final UVMap uvMap = new BoxUVMap( Scene.MM , transform ); // @FIXME Retrieve model units instead of assuming millimeters.
+
 		final Object3DBuilder builder = new Object3DBuilder( this );
-		builder.addExtrudedShape( shape , flatness , extrusion , transform , topMaterial , topFlipTexture , bottomMaterial , bottomFlipTexture , sideMaterial , sideFlipTexture , hasBackface , flipNormals , caps );
+		builder.addExtrudedShape( shape , flatness , extrusion , transform , uvMap , topMaterial , topFlipTexture , bottomMaterial , bottomFlipTexture , sideMaterial , sideFlipTexture , hasBackface , flipNormals , caps );
 	}
 
 	/**
@@ -224,7 +300,9 @@ public final class ExtrudedObject2D
 	 */
 	public static void generateExtrudedShape( final Object3D target , final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material material , final double flatness , final boolean hasBackface )
 	{
+		final UVMap uvMap = new BoxUVMap( Scene.MM , transform ); // @FIXME Retrieve model units instead of assuming millimeters.
+
 		final Object3DBuilder builder = new Object3DBuilder( target );
-		builder.addExtrudedShape( shape , flatness , extrusion , transform , material , false , material , false , material , false , hasBackface , false , false );
+		builder.addExtrudedShape( shape , flatness , extrusion , transform , uvMap , material , false , material , false , material , false , hasBackface , false , false );
 	}
 }
