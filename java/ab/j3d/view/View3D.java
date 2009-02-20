@@ -292,7 +292,7 @@ public abstract class View3D
 	 *
 	 * @see     Camera3D#getAperture
 	 */
-	public final double getAperture()
+	public double getAperture()
 	{
 		return _camera.getAperture();
 	}
@@ -305,7 +305,7 @@ public abstract class View3D
 	 *
 	 * @see     Camera3D#getZoomFactor
 	 */
-	public final double getZoomFactor()
+	public double getZoomFactor()
 	{
 		return _camera.getZoomFactor();
 	}
@@ -315,7 +315,7 @@ public abstract class View3D
 	 *
 	 * @return  Control for this view.
 	 */
-	public final CameraControl getCameraControl()
+	public CameraControl getCameraControl()
 	{
 		return _cameraControl;
 	}
@@ -325,7 +325,7 @@ public abstract class View3D
 	 *
 	 * @param   cameraControl     Control for this view.
 	 */
-	public final void setCameraControl( final CameraControl cameraControl )
+	public void setCameraControl( final CameraControl cameraControl )
 	{
 		final CameraControl oldCameraControl = getCameraControl();
 		_cameraControl = cameraControl;
@@ -345,7 +345,7 @@ public abstract class View3D
 	 *
 	 * @return  Scene to view transform.
 	 */
-	public final Matrix3D getScene2View()
+	public Matrix3D getScene2View()
 	{
 		return _transform.getInverseTransform();
 	}
@@ -357,7 +357,7 @@ public abstract class View3D
 	 *
 	 * @throws  NullPointerException if <code>transform</code> is <code>null</code>.
 	 */
-	public final void setScene2View( final Matrix3D scene2view )
+	public void setScene2View( final Matrix3D scene2view )
 	{
 		if ( !scene2view.equals( getScene2View() ) )
 		{
@@ -371,7 +371,7 @@ public abstract class View3D
 	 *
 	 * @return  View to scene transform.
 	 */
-	public final Matrix3D getView2Scene()
+	public Matrix3D getView2Scene()
 	{
 		return _transform.getTransform();
 	}
@@ -383,7 +383,7 @@ public abstract class View3D
 	 *
 	 * @throws  NullPointerException if <code>transform</code> is <code>null</code>.
 	 */
-	public final void setView2scene( final Matrix3D view2scene )
+	public void setView2scene( final Matrix3D view2scene )
 	{
 		if ( !view2scene.equals( getView2Scene() ) )
 		{
@@ -551,7 +551,7 @@ public abstract class View3D
 	 *
 	 * @param   control     The {@link Control} to add
 	 */
-	public final void appendControl( final Control control )
+	public void appendControl( final Control control )
 	{
 		final ControlInput controlInput = getControlInput();
 		if ( controlInput != null )
@@ -571,7 +571,7 @@ public abstract class View3D
 	 *
 	 * @param   control     The {@link Control} to add.
 	 */
-	public final void insertControl( final Control control )
+	public void insertControl( final Control control )
 	{
 		final ControlInput controlInput = getControlInput();
 		if ( controlInput != null )
@@ -591,7 +591,7 @@ public abstract class View3D
 	 *
 	 * @param   control     The Control to remove
 	 */
-	public final void removeControl( final Control control )
+	public void removeControl( final Control control )
 	{
 		final ControlInput controlInput = getControlInput();
 		if ( controlInput != null )
@@ -655,7 +655,7 @@ public abstract class View3D
 	 * @see     #removeOverlay
 	 * @see     #paintOverlay
 	 */
-	protected final boolean hasOverlay()
+	protected boolean hasOverlay()
 	{
 		return !_overlays.isEmpty();
 	}
@@ -672,7 +672,7 @@ public abstract class View3D
 	 * @see     #hasOverlay
 	 * @see     #removeOverlay
 	 */
-	protected final void paintOverlay( final Graphics2D g2d )
+	protected void paintOverlay( final Graphics2D g2d )
 	{
 		if ( g2d == null )
 			throw new NullPointerException( "g2d" );
