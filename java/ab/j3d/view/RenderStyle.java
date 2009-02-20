@@ -163,33 +163,33 @@ public class RenderStyle
 	/**
 	 * Blend two colors.
 	 *
-	 * @param   src     Source color.
-	 * @param   add     Added color (covers source color).
+	 * @param   src     Incoming color, blended with the destination color.
+	 * @param   dst     Destination color.
 	 *
 	 * @return  Blended color.
 	 */
-	public static Color blendColors( final Color src , final Color add )
+	public static Color blendColors( final Color src , final Color dst )
 	{
 		final Color result;
 
-		if ( ( src != null ) && ( add.getAlpha() < 255 ) )
+		if ( ( dst != null ) && ( src.getAlpha() < 255 ) )
 		{
 			final float[] srcRGBA = src.getRGBComponents( null );
-			final float[] addRGBA = add.getRGBComponents( null );
+			final float[] dstRGBA = dst.getRGBComponents( null );
 
-			final float addRatio = addRGBA[ 3 ];
-			final float srcRatio = srcRGBA[ 3 ] * ( 1.0f - addRatio );
+			final float srcRatio = srcRGBA[ 3 ];
+			final float dstRatio = dstRGBA[ 3 ] * ( 1.0f - srcRatio );
 
-			final float alpha = srcRatio + addRatio;
-			final float red   = ( srcRatio * srcRGBA[ 0 ] + addRatio * addRGBA[ 0 ] ) / alpha;
-			final float green = ( srcRatio * srcRGBA[ 1 ] + addRatio * addRGBA[ 1 ] ) / alpha;
-			final float blue  = ( srcRatio * srcRGBA[ 2 ] + addRatio * addRGBA[ 2 ] ) / alpha;
+			final float alpha = dstRatio + srcRatio;
+			final float red   = ( dstRatio * dstRGBA[ 0 ] + srcRatio * srcRGBA[ 0 ] ) / alpha;
+			final float green = ( dstRatio * dstRGBA[ 1 ] + srcRatio * srcRGBA[ 1 ] ) / alpha;
+			final float blue  = ( dstRatio * dstRGBA[ 2 ] + srcRatio * srcRGBA[ 2 ] ) / alpha;
 
 			result = new Color( red, green, blue, alpha );
 		}
 		else
 		{
-			result = add;
+			result = src;
 		}
 
 		return result;
