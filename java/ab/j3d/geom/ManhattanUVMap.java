@@ -65,8 +65,19 @@ public class ManhattanUVMap
 
 		final Matrix3D transform = _transform;
 
-		final float scaleU = ( material.colorMapWidth  > 0.0f ) ? 1.0f / material.colorMapWidth  : 1.0f;
-		final float scaleV = ( material.colorMapHeight > 0.0f ) ? 1.0f / material.colorMapHeight : 1.0f;
+		final float scaleU;
+		final float scaleV;
+
+		if ( ( material != null ) && ( material.colorMapWidth > 0.0f ) && ( material.colorMapHeight > 0.0f ) )
+		{
+			scaleU = 1.0f / material.colorMapWidth;
+			scaleV = 1.0f / material.colorMapHeight;
+		}
+		else
+		{
+			scaleU = 1.0f;
+			scaleV = 1.0f;
+		}
 
 		for ( int i = 0 ; i < vertexIndices.length ; i++ )
 		{
@@ -89,8 +100,19 @@ public class ManhattanUVMap
 	{
 		final Matrix3D transform = _transform;
 
-		final float scaleU = ( material.colorMapWidth  > 0.0f ) ? 1.0f / material.colorMapWidth  : 1.0f;
-		final float scaleV = ( material.colorMapHeight > 0.0f ) ? 1.0f / material.colorMapHeight : 1.0f;
+		final float scaleU;
+		final float scaleV;
+
+		if ( ( material != null ) && ( material.colorMapWidth > 0.0f ) && ( material.colorMapHeight > 0.0f ) )
+		{
+			scaleU = 1.0f / material.colorMapWidth;
+			scaleV = 1.0f / material.colorMapHeight;
+		}
+		else
+		{
+			scaleU = 1.0f;
+			scaleV = 1.0f;
+		}
 
 		final float tx = (float)transform.transformX( point );
 		final float ty = (float)transform.transformY( point );
