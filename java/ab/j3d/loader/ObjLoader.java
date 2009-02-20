@@ -21,7 +21,9 @@ package ab.j3d.loader;
 
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -184,7 +186,11 @@ public class ObjLoader
 		String objectName = null;
 
 		String line;
-		final BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( loader.getResource( objFileName ) ) );
+		final InputStream inputStream = loader.getResource( objFileName );
+		if ( inputStream == null )
+			throw new FileNotFoundException( objFileName );
+
+		final BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( inputStream ) );
 		while ( ( line = readLine( bufferedReader ) ) != null )
 		{
 			if ( line.length() > 0 )
