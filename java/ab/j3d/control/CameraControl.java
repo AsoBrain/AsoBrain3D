@@ -124,9 +124,10 @@ public abstract class CameraControl
 
 	public EventObject mouseClicked( final ControlInputEvent event )
 	{
-		if ( event.getClickCount() == 2 )
+		final MouseEvent mouseEvent = (MouseEvent)event.getInputEvent();
+		if ( mouseEvent.getClickCount() == 2 )
 		{
-			switch ( event.getMouseButton() )
+			switch ( mouseEvent.getButton() )
 			{
 				case MouseEvent.BUTTON1 : /* button #1 - restore saved state */
 					restore();

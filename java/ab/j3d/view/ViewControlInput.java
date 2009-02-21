@@ -20,6 +20,7 @@
 package ab.j3d.view;
 
 import java.awt.Component;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -31,7 +32,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import ab.j3d.Matrix3D;
-import ab.j3d.control.ControlInput;
+import ab.j3d.control.Control;
+import ab.j3d.control.ControlInputEvent;
 import ab.j3d.geom.Ray3D;
 import ab.j3d.model.ContentNode;
 import ab.j3d.model.Face3DIntersection;
@@ -40,15 +42,17 @@ import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 import ab.j3d.model.Scene;
 
+import com.numdata.oss.event.EventDispatcher;
+
 /**
- * The ViewInputTranslator subclasses {@link ControlInput} to provide
- * an {@link ControlInput} for a {@link View3D}.
+ * The <code>ViewControlInput</code> ckass receives input events for a
+ * {@link View3D}, converts them to {@link ControlInputEvent}s, and dispatches
+ * them to a local {@link EventDispatcher}.
  *
  * @author  Mart Slot
  * @version $Revision$ $Date$
  */
 public class ViewControlInput
-	extends ControlInput
 	implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener
 {
 	/**
@@ -57,19 +61,124 @@ public class ViewControlInput
 	private final View3D _view;
 
 	/**
+	 * X coordinate of pointer when drag operation was started. This is stored
+	 * when a {@link MouseEvent#MOUSE_PRESSED} event is received.
+	 */
+	protected int _dragStartX;
+
+	/**
+	 * X coordinate of pointer when drag operation was started. This is stored
+	 * when a {@link MouseEvent#MOUSE_PRESSED} event is received.
+	 */
+	protected int _dragStartY;
+
+	/**
+	 * The {@link EventDispatcher} that dispatches the
+	 * {@link java.util.EventObject}s to registered {@link Control}s.
+	 */
+	private EventDispatcher _eventDispatcher;
+
+	/**
+	 * The number of the current series of events. This number is increased
+	 * after a {@link MouseEvent#MOUSE_RELEASED} event with no mouse buttons
+	 * down.
+	 */
+	private int _eventNumber;
+
+	/**
+	 * Wether or not the mouse has been dragged since the last mouse press
+	 * event.
+	 */
+	private boolean _wasDragged;
+
+	/**
 	 * Construct new ViewInputTranslator.
 	 *
 	 * @param   view    {@link View3D} whose input events to monitor.
 	 */
 	public ViewControlInput( final View3D view )
 	{
-		_view  = view;
+		if ( view == null )
+			throw new NullPointerException( "view" );
+
+		_view = view;
+
+		_dragStartX      = 0;
+		_dragStartY      = 0;
+		_eventDispatcher = new EventDispatcher();
+		_eventNumber     = 0;
+		_wasDragged      = false;
 
 		final Component component = view.getComponent();
-		component.addKeyListener( this );
-		component.addMouseListener( this );
-		component.addMouseMotionListener( this );
-		component.addMouseWheelListener( this );
+		if ( component != null )
+		{
+			component.addKeyListener( this );
+			component.addMouseListener( this );
+			component.addMouseMotionListener( this );
+			component.addMouseWheelListener( this );
+		}
+	}
+
+	/**
+	 * Creates a {@link ControlInputEvent} for a specific {@link InputEvent}.
+	 *
+	 * @param   inputEvent  {@link InputEvent} to create a
+	 *                      {@link ControlInputEvent} for.
+	 *
+	 * @return  A {@link ControlInputEvent} for the specified {@link InputEvent}
+	 *
+	 * @see     #_eventNumber
+	 * @see     #_wasDragged
+	 */
+	protected ControlInputEvent createControlnputEvent( final InputEvent inputEvent )
+	{
+		boolean wasDragged = _wasDragged;
+
+		final int eventID = inputEvent.getID();
+		if ( eventID == MouseEvent.MOUSE_PRESSED )
+		{
+			_dragStartX = ((MouseEvent)inputEvent).getX();
+			_dragStartY = ((MouseEvent)inputEvent).getY();
+		}
+		else if ( eventID == MouseEvent.MOUSE_DRAGGED )
+		{
+			wasDragged = true;
+		}
+
+		final ControlInputEvent result = new ControlInputEvent( this , inputEvent , _eventNumber , wasDragged , _dragStartX , _dragStartY );
+
+		if ( ( eventID == MouseEvent.MOUSE_RELEASED ) && !result.isMouseButtonDown() )
+		{
+			_eventNumber++;
+			wasDragged = false;
+		}
+
+		_wasDragged = wasDragged;
+
+		return result;
+	}
+
+	/**
+	 * This method takes an {@link InputEvent}, converts it to a
+	 * {@link ControlInputEvent}, and dispatches it on the local
+	 * {@link EventDispatcher}.
+	 *
+	 * @param   inputEvent  Input event to dispatch.
+	 */
+	public void dispatchControlInputEvent( final InputEvent inputEvent )
+	{
+		_eventDispatcher.dispatch( createControlnputEvent( inputEvent ) );
+	}
+
+	/**
+	 * Returns the {@link EventDispatcher} that dispatches the
+	 * {@link java.util.EventObject}s to registered {@link Control}s.
+	 *
+	 * @return  This translators {@link EventDispatcher}.
+	 */
+	public EventDispatcher getEventDispatcher()
+	{
+		return _eventDispatcher;
 	}
 
 	/**
@@ -77,11 +186,21 @@ public class ViewControlInput
 	 *
 	 * @return  The {@link Projector} for the {@link View3D}.
 	 */
-	protected Projector getProjector()
+	public Projector getProjector()
 	{
 		return _view.getProjector();
 	}
 
+	/**
+	 * Returns a List of {@link Face3DIntersection}s, which hold information
+	 * about the objects that are intersected by the specified ray.
+	 *
+	 * @param   ray     Ray to get intersections for.
+	 *
+	 * @return  A list of {@link Face3DIntersection}s, ordered from near to far.
+	 *
+	 * @throws  NullPointerException if <code>ray</code> is <code>null</code>.
+	 */
 	public List<Face3DIntersection> getIntersections( final Ray3D ray )
 	{
 		final List<Face3DIntersection> result = new LinkedList<Face3DIntersection>();
@@ -125,7 +244,7 @@ public class ViewControlInput
 	 *
 	 * @return  the view transform for the {@link View3D}.
 	 */
-	protected Matrix3D getScene2View()
+	public Matrix3D getScene2View()
 	{
 		return _view.getScene2View();
 	}
@@ -135,7 +254,7 @@ public class ViewControlInput
 	 *
 	 * @return  the view transform for the {@link View3D}.
 	 */
-	protected Matrix3D getView2Scene()
+	public Matrix3D getView2Scene()
 	{
 		return _view.getView2Scene();
 	}

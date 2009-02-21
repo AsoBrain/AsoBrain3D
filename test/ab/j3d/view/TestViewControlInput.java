@@ -30,7 +30,6 @@ import junit.framework.TestCase;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
-import ab.j3d.control.ControlInput;
 import ab.j3d.control.ControlInputEvent;
 import ab.j3d.geom.BasicRay3D;
 import ab.j3d.model.Face3DIntersection;
@@ -207,11 +206,9 @@ public class TestViewControlInput
 
 		assertTrue("The last event is not a MouseControlEvent" , input.getLastEvent() instanceof ControlInputEvent );
 		ControlInputEvent event = (ControlInputEvent)input.getLastEvent();
+		assertSame( "Should get event back" , e , event.getInputEvent() );
 
-		assertEquals( "The mouse button is not 1" , MouseEvent.BUTTON1 , event.getMouseButton() );
-		assertEquals( "The event type should be MOUSE_PRESSED" , MouseEvent.MOUSE_PRESSED , event.getID() );
 		final int lastNumber = event.getSequenceNumber();
-
 
 		modifiers = MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.CTRL_DOWN_MASK;
 		e = new MouseEvent( new JPanel() , MouseEvent.MOUSE_PRESSED , 0L , modifiers , 50 , 50 , 1 , false , MouseEvent.BUTTON2 );
@@ -220,8 +217,8 @@ public class TestViewControlInput
 		assertTrue( "The last event is not a MouseControlEvent" , input.getLastEvent() instanceof ControlInputEvent );
 		event = (ControlInputEvent)input.getLastEvent();
 
-		assertEquals( "The mouse button is not 2" , MouseEvent.BUTTON2 , event.getMouseButton() );
-		assertEquals( "The event type should be MOUSE_PRESSED" , MouseEvent.MOUSE_PRESSED , event.getID() );
+		assertSame( "Should get event back" , e , event.getInputEvent() );
+
 		assertEquals( "The event number has changed" , lastNumber , event.getSequenceNumber() );
 	}
 
@@ -260,8 +257,7 @@ public class TestViewControlInput
 		assertTrue("The last event is not a MouseControlEvent" , input.getLastEvent() instanceof ControlInputEvent );
 		ControlInputEvent event = (ControlInputEvent)input.getLastEvent();
 
-		assertEquals( "The mouse button is not 1" , MouseEvent.BUTTON1 , event.getMouseButton() );
-		assertEquals( "The event type should be MOUSE_RELEASED" , MouseEvent.MOUSE_RELEASED , event.getID() );
+		assertSame( "Should get event back" , e , event.getInputEvent() );
 		final int lastNumber = event.getSequenceNumber();
 
 		modifiers = MouseEvent.CTRL_DOWN_MASK;
@@ -271,13 +267,12 @@ public class TestViewControlInput
 		assertTrue( "The last event is not a MouseControlEvent" , input.getLastEvent() instanceof ControlInputEvent );
 		event = (ControlInputEvent)input.getLastEvent();
 
-		assertEquals( "The mouse button is not 3" , MouseEvent.BUTTON3 , event.getMouseButton() );
-		assertEquals( "The event type should be MOUSE_RELEASED" , MouseEvent.MOUSE_RELEASED , event.getID() );
+		assertSame( "Should get event back" , e , event.getInputEvent() );
 		assertEquals( "The event number has not increased" , lastNumber + 1 , event.getSequenceNumber() );
 	}
 
 	/**
-	 * This inner class implements {@link ControlInput} for testing.
+	 * This inner class implements {@link ViewControlInput} for testing.
 	 */
 	public static class ViewControlTestInput
 		extends ViewControlInput
@@ -308,19 +303,19 @@ public class TestViewControlInput
 				} );
 		}
 
-		protected Projector getProjector()
+		public Projector getProjector()
 		{
 			return Projector.createInstance( ProjectionPolicy.PERSPECTIVE , 100 , 100 , 1.0 , Scene.M , 10.0 , 1000.0 , Math.toRadians( 45.0 ) , 1.0 );
 		}
 
-		protected Matrix3D getScene2View()
+		public Matrix3D getScene2View()
 		{
 			return Matrix3D.INIT.set( 1.0 ,  0.0 , 0.0 ,    0.0 ,
 			                          0.0 ,  0.0 , 1.0 ,    0.0 ,
 			                          0.0 , -1.0 , 0.0 , -500.0 );
 		}
 
-		protected Matrix3D getView2Scene()
+		public Matrix3D getView2Scene()
 		{
 			return Matrix3D.INIT.set( 1.0 , 0.0 ,  0.0 ,    0.0 ,
 			                          0.0 , 0.0 , -1.0 , -500.0 ,

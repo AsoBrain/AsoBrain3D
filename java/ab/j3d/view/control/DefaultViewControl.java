@@ -36,14 +36,14 @@ import ab.j3d.geom.Ray3D;
 import ab.j3d.model.ContentNode;
 import ab.j3d.model.Face3DIntersection;
 import ab.j3d.model.Scene;
+import ab.j3d.view.Projector;
+import ab.j3d.view.RenderEngine;
+import ab.j3d.view.View3D;
+import ab.j3d.view.ViewControlInput;
+import ab.j3d.view.ViewOverlay;
 import ab.j3d.view.control.planar.PlanarGraphics2D;
 import ab.j3d.view.control.planar.PlaneControl;
 import ab.j3d.view.control.planar.SubPlaneControl;
-import ab.j3d.view.View3D;
-import ab.j3d.view.RenderEngine;
-import ab.j3d.view.ViewOverlay;
-import ab.j3d.view.ViewControlInput;
-import ab.j3d.view.Projector;
 
 import com.numdata.oss.MathTools;
 
@@ -96,9 +96,10 @@ public class DefaultViewControl
 	{
 		EventObject result = event;
 
-		if ( ( event.getMouseButton() == MouseEvent.BUTTON3 ) && ( event.getSource() instanceof ViewControlInput ) )
+		final MouseEvent mouseEvent = (MouseEvent)event.getInputEvent();
+		if ( mouseEvent.getButton() == MouseEvent.BUTTON3 )
 		{
-			final ViewControlInput viewControlInput = (ViewControlInput)event.getSource();
+			final ViewControlInput viewControlInput = event.getSource();
 			final View3D view = viewControlInput.getView();
 			final Scene scene = view.getScene();
 
@@ -132,80 +133,77 @@ public class DefaultViewControl
 	{
 		EventObject result = event;
 
-		if ( event.getSource() instanceof ViewControlInput )
+		final ViewControlInput viewControlInput = event.getSource();
+		final View3D view = viewControlInput.getView();
+		final Scene scene = view.getScene();
+
+		for( final Face3DIntersection intersection : event.getIntersections() )
 		{
-			final ViewControlInput viewControlInput = (ViewControlInput)event.getSource();
-			final View3D view = viewControlInput.getView();
-			final Scene scene = view.getScene();
-
-			for( final Face3DIntersection intersection : event.getIntersections() )
+			final ContentNode node = scene.getContentNode( intersection.getObjectID() );
+			if ( node != null )
 			{
-				final ContentNode node = scene.getContentNode( intersection.getObjectID() );
-				if ( node != null )
+				final PlaneControl planeControl = node.getPlaneControl();
+				if ( ( planeControl != null ) && planeControl.isEnabled() )
 				{
-					final PlaneControl planeControl = node.getPlaneControl();
-					if ( ( planeControl != null ) && planeControl.isEnabled() )
+					final Vector3D wcsPoint         = intersection.getIntersectionPoint();
+					final Matrix3D controlPlane2wcs = planeControl.getPlane2Wcs();
+					final Matrix3D plane2wcs        = controlPlane2wcs.setTranslation( wcsPoint );
+
+					final Ray3D    pointerRay       = event.getPointerRay();
+					final Vector3D pointerDirection = pointerRay.getDirection();
+
+					if ( !MathTools.almostEqual( Vector3D.dot( pointerDirection.x , pointerDirection.y , pointerDirection.z , plane2wcs.xz , plane2wcs.yz , plane2wcs.zz ) , 0.0 ) &&
+						 planeControl.mousePressed( event , node , wcsPoint ) )
 					{
-						final Vector3D wcsPoint         = intersection.getIntersectionPoint();
-						final Matrix3D controlPlane2wcs = planeControl.getPlane2Wcs();
-						final Matrix3D plane2wcs        = controlPlane2wcs.setTranslation( wcsPoint );
+						_node         = node;
+						_plane2wcs    = plane2wcs;
+						_planeControl = planeControl;
 
-						final Ray3D    pointerRay       = event.getPointerRay();
-						final Vector3D pointerDirection = pointerRay.getDirection();
+						updateViews();
 
-						if ( !MathTools.almostEqual( Vector3D.dot( pointerDirection.x , pointerDirection.y , pointerDirection.z , plane2wcs.xz , plane2wcs.yz , plane2wcs.zz ) , 0.0 ) &&
-							 planeControl.mousePressed( event , node , wcsPoint ) )
-						{
-							_node         = node;
-							_plane2wcs    = plane2wcs;
-							_planeControl = planeControl;
-
-							updateViews();
-
-							startCapture( event );
-							result = null;
-						}
+						startCapture( event );
+						result = null;
 					}
+				}
 
-					if ( result != null )
+				if ( result != null )
+				{
+					for ( final SubPlaneControl subPlaneControl : node.getSubPlaneControls() )
 					{
-						for ( final SubPlaneControl subPlaneControl : node.getSubPlaneControls() )
+						if ( subPlaneControl.isEnabled() )
 						{
-							if ( subPlaneControl.isEnabled() )
+							final Matrix3D plane2node = subPlaneControl.getPlane2Node();
+							final Matrix3D node2wcs   = node.getTransform();
+							final Matrix3D plane2wcs  = plane2node.multiply( node2wcs );
+
+							final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( plane2wcs , subPlaneControl.isPlaneTwoSided() , event.getPointerRay() );
+							if ( wcsPoint != null )
 							{
-								final Matrix3D plane2node = subPlaneControl.getPlane2Node();
-								final Matrix3D node2wcs   = node.getTransform();
-								final Matrix3D plane2wcs  = plane2node.multiply( node2wcs );
+								final Vector3D planePoint = plane2wcs.inverseTransform( wcsPoint );
 
-								final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( plane2wcs , subPlaneControl.isPlaneTwoSided() , event.getPointerRay() );
-								if ( wcsPoint != null )
+								if ( ( planePoint.x >= 0.0 ) && ( planePoint.y >= 0.0 ) && ( planePoint.x <= subPlaneControl.getPlaneWidth() ) && ( planePoint.y <= subPlaneControl.getPlaneHeight() ) )
 								{
-									final Vector3D planePoint = plane2wcs.inverseTransform( wcsPoint );
-
-									if ( ( planePoint.x >= 0.0 ) && ( planePoint.y >= 0.0 ) && ( planePoint.x <= subPlaneControl.getPlaneWidth() ) && ( planePoint.y <= subPlaneControl.getPlaneHeight() ) )
+									if ( subPlaneControl.mousePressed( event , node , planePoint.x , planePoint.y ) )
 									{
-										if ( subPlaneControl.mousePressed( event , node , planePoint.x , planePoint.y ) )
-										{
-											_node            = node;
-											_plane2wcs       = plane2wcs;
-											_subPlaneControl = subPlaneControl;
+										_node            = node;
+										_plane2wcs       = plane2wcs;
+										_subPlaneControl = subPlaneControl;
 
-											updateViews();
+										updateViews();
 
-											startCapture( event );
-											result = null;
-											break;
-										}
+										startCapture( event );
+										result = null;
+										break;
 									}
 								}
 							}
 						}
 					}
 				}
-
-				if ( result == null )
-					break;
 			}
+
+			if ( result == null )
+				break;
 		}
 
 		return result;

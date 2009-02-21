@@ -18,6 +18,7 @@
  */
 package ab.j3d.control;
 
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.EventObject;
 import java.util.Properties;
@@ -331,7 +332,7 @@ public class FirstPersonCameraControl
 		{
 			final ControlInputEvent controlInputEvent = (ControlInputEvent)event;
 
-			final KeyEvent keyEvent = controlInputEvent.getKeyEvent();
+			final InputEvent keyEvent = controlInputEvent.getInputEvent();
 			if ( ( keyEvent != null ) && ( keyEvent.getID() == KeyEvent.KEY_TYPED ) )
 			{
 				result = handleKeyTyped( controlInputEvent );
@@ -363,7 +364,8 @@ public class FirstPersonCameraControl
 
 		if ( event.getID() == KeyEvent.KEY_PRESSED )
 		{
-			final int      keyCode = event.getKeyCode();
+			final KeyEvent keyEvent = (KeyEvent)event.getInputEvent();
+			final int      keyCode = keyEvent.getKeyCode();
 			final Vector3D from    = _from;
 			final Vector3D to      = _to;
 
@@ -416,19 +418,20 @@ public class FirstPersonCameraControl
 	{
 		if ( isCaptured() )
 		{
-			switch ( event.getMouseButtonDown() )
+			if ( event.isMouseButton2Down() )
 			{
-				case 1 :
-					dragToAroundFrom( event );
-					break;
-
-				case 2 :
+				if ( event.isControlDown() )
+				{
 					dragFromAroundTo( event );
-					break;
-
-				case 3 :
-					zoom( event );
-					break;
+				}
+				else
+				{
+					dragToAroundFrom( event );
+				}
+			}
+			else if ( event.isMouseButton3Down() )
+			{
+				zoom( event );
 			}
 		}
 

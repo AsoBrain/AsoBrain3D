@@ -349,22 +349,24 @@ public class FromToCameraControl
 	{
 		if ( isCaptured() )
 		{
-			switch ( event.getMouseButtonDown() )
+			if ( event.isMouseButton1Down() )
 			{
-				case 1 :
-					if ( event.isShiftDown() )
-						rotateToAroundFrom( event );
-					else
-						rotateFromAroundTo( event );
-					break;
-
-				case 2 :
-					move( event );
-					break;
-
-				case 3 :
-					zoom( event );
-					break;
+				if ( event.isControlDown() )
+				{
+					rotateToAroundFrom( event );
+				}
+				else
+				{
+					rotateFromAroundTo( event );
+				}
+			}
+			else if ( event.isMouseButton2Down() )
+			{
+				move( event );
+			}
+			else if ( event.isMouseButton3Down() )
+			{
+				zoom( event );
 			}
 		}
 

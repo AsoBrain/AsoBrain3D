@@ -22,6 +22,8 @@ package ab.j3d.control;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
 
+import ab.j3d.view.ViewControlInput;
+
 import com.numdata.oss.event.EventDispatcher;
 
 /**
@@ -87,7 +89,7 @@ public class MouseControl
 	/**
 	 * Filter mouse event. This is only called if contol is enabled.
 	 *
-	 * @param   event   Event from {@link ControlInput}.
+	 * @param   event   Event from {@link ViewControlInput}.
 	 *
 	 * @return  Filtered event.
 	 */

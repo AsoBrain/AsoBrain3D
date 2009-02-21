@@ -322,6 +322,10 @@ public class FromToCameraControl2
 			{
 				pan( event );
 			}
+			else if ( isZoomEvent( event ) )
+			{
+				zoom( event );
+			}
 		}
 
 		return super.mouseDragged( event );
@@ -329,18 +333,23 @@ public class FromToCameraControl2
 
 	public boolean isSupportedEvent( final ControlInputEvent event )
 	{
-		return isDragFromAroundToEvent( event ) || isPanEvent( event );
+		return isDragFromAroundToEvent( event ) || isPanEvent( event ) || isZoomEvent( event );
 	}
 
-	public boolean isDragFromAroundToEvent( final ControlInputEvent event )
+	protected boolean isDragFromAroundToEvent( final ControlInputEvent event )
 	{
 		return ( event.getSupportedModifiers() == ( InputEvent.BUTTON3_DOWN_MASK | InputEvent.CTRL_DOWN_MASK ) )
 		    || ( event.getSupportedModifiers() == InputEvent.BUTTON2_DOWN_MASK );
 	}
 
-	public boolean isPanEvent( final ControlInputEvent event )
+	protected boolean isPanEvent( final ControlInputEvent event )
 	{
 		return ( event.getSupportedModifiers() == InputEvent.BUTTON3_DOWN_MASK );
+	}
+
+	protected boolean isZoomEvent( final ControlInputEvent event )
+	{
+		return false;
 	}
 
 	public EventObject mouseWheelMoved( final ControlInputEvent event )
@@ -414,6 +423,26 @@ public class FromToCameraControl2
 		final Vector3D displacement = delta.multiply( factor );
 
 		look( from.plus( displacement ) , moveTarget ? to.plus( displacement ) : to , _up );
+	}
+
+	/**
+	 * Zoom by dragging.
+	 *
+	 * @param   event   Drag event.
+	 */
+	protected void zoom( final ControlInputEvent event )
+	{
+		final Vector3D from = _dragStartFrom;
+		final Vector3D to   = _dragStartTo;
+
+		final double deltaY = (double)event.getDragDeltaY();
+
+		final double zoom = Math.max( 0.1 , 1.0 + deltaY / 100.0 );
+
+		Vector3D newFrom = from;
+		newFrom = newFrom.multiply( zoom );
+		newFrom = newFrom.plus( to.multiply( 1.0 - zoom ) );
+		look( newFrom , to , _up );
 	}
 
 	/**

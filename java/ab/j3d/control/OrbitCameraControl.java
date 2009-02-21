@@ -18,7 +18,6 @@
  */
 package ab.j3d.control;
 
-import java.awt.event.MouseEvent;
 import java.util.EventObject;
 import java.util.NoSuchElementException;
 import java.util.Properties;
@@ -253,19 +252,17 @@ public class OrbitCameraControl
 	{
 		if ( isCaptured() )
 		{
-			switch ( event.getMouseButtonDown() )
+			if ( event.isMouseButton1Down() )
 			{
-				case MouseEvent.BUTTON1 :
-					rotate( event );
-					break;
-
-				case MouseEvent.BUTTON2 :
-					pan( event );
-					break;
-
-				case MouseEvent.BUTTON3 :
-					zoom( event );
-					break;
+				rotate( event );
+			}
+			else if ( event.isMouseButton2Down() )
+			{
+				pan( event );
+			}
+			else if ( event.isMouseButton3Down() )
+			{
+				zoom( event );
 			}
 		}
 

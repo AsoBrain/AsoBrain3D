@@ -145,15 +145,13 @@ public class PanAndZoomCameraControl
 	{
 		if ( isCaptured() )
 		{
-			switch ( event.getMouseButtonDown() )
+			if ( event.isMouseButton2Down() )
 			{
-				case 2 :
-					zoomDrag( event );
-					break;
-
-				case 3 :
-					pan( event );
-					break;
+				zoomDrag( event );
+			}
+			else if ( event.isMouseButton3Down() )
+			{
+				pan( event );
 			}
 		}
 

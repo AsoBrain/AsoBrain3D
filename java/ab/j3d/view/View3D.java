@@ -35,7 +35,6 @@ import javax.swing.JToolBar;
 import ab.j3d.Matrix3D;
 import ab.j3d.control.CameraControl;
 import ab.j3d.control.Control;
-import ab.j3d.control.ControlInput;
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Scene;
 import ab.j3d.model.SceneUpdateEvent;
@@ -535,7 +534,7 @@ public abstract class View3D
 	 * Returns the {@link ViewControlInput}, if this class has one. If it
 	 * does not, <code>null</code> is returned.
 	 *
-	 * @return  The {@link ControlInput} for this view;
+	 * @return  The {@link ViewControlInput} for this view;
 	 *          <code>null</code> if this view has none.
 	 */
 	protected abstract ViewControlInput getControlInput();
@@ -553,7 +552,7 @@ public abstract class View3D
 	 */
 	public void appendControl( final Control control )
 	{
-		final ControlInput controlInput = getControlInput();
+		final ViewControlInput controlInput = getControlInput();
 		if ( controlInput != null )
 		{
 			final EventDispatcher eventQueue = controlInput.getEventDispatcher();
@@ -573,7 +572,7 @@ public abstract class View3D
 	 */
 	public void insertControl( final Control control )
 	{
-		final ControlInput controlInput = getControlInput();
+		final ViewControlInput controlInput = getControlInput();
 		if ( controlInput != null )
 		{
 			final EventDispatcher eventQueue = controlInput.getEventDispatcher();
@@ -593,7 +592,7 @@ public abstract class View3D
 	 */
 	public void removeControl( final Control control )
 	{
-		final ControlInput controlInput = getControlInput();
+		final ViewControlInput controlInput = getControlInput();
 		if ( controlInput != null )
 		{
 			final EventDispatcher eventQueue = controlInput.getEventDispatcher();

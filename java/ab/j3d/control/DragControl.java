@@ -90,7 +90,7 @@ public abstract class DragControl
 
 		if ( isEnabled() && event.isMouseButton1Down() )
 		{
-			final ViewControlInput viewControlInput = (ViewControlInput)event.getSource();
+			final ViewControlInput viewControlInput = event.getSource();
 			final View3D           view             = viewControlInput.getView();
 			final Scene            scene            = view.getScene();
 

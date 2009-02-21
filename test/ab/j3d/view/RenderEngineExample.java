@@ -297,7 +297,7 @@ public abstract class RenderEngineExample
 
 					if ( result )
 					{
-						final ViewControlInput controlInput = (ViewControlInput)event.getSource();
+						final ViewControlInput controlInput = event.getSource();
 						final View3D view = controlInput.getView();
 
 						final Matrix3D plane2wcs  = getPlane2Wcs();
@@ -315,7 +315,7 @@ public abstract class RenderEngineExample
 				{
 					super.mouseReleased( event , contentNode , wcsPoint );
 
-					final ViewControlInput controlInput = (ViewControlInput)event.getSource();
+					final ViewControlInput controlInput = event.getSource();
 					final View3D view = controlInput.getView();
 
 					view.setGrid2wcs( Matrix3D.INIT );
