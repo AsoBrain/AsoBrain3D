@@ -12,6 +12,8 @@
     <delete dir="lib"/>
   </target>
 
+  <target name="distclean" depends="clean" description="Remove all temporary files"/>
+
   <target name="compile" depends="compile-java,compile-tests" description="Compile everything"/>
 
   <target name="dist" depends="compile,dist-java" description="Generate distribution files"/>
