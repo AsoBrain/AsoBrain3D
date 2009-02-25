@@ -25,7 +25,7 @@ public class FrameCounter
 	/**
 	 * Value of {@link System#nanoTime()} when the current second started.
 	 */
-	private long _start   = 0L;
+	private long _start = 0L;
 
 	/**
 	 * Number of frames rendered so far during the current second.
@@ -71,10 +71,12 @@ public class FrameCounter
 	 */
 	private void update()
 	{
-		if ( TimeUnit.NANOSECONDS.toSeconds( System.nanoTime() - _start ) > 0L )
+		final int secondsPassed = (int)TimeUnit.NANOSECONDS.toSeconds( System.nanoTime() - _start );
+		if ( secondsPassed > 0 )
 		{
-			_start += TimeUnit.SECONDS.toNanos( 1L );
-			_value = _counter;
+			_start += TimeUnit.SECONDS.toNanos( (long)secondsPassed );
+			_value = _counter / secondsPassed;
+			_counter = 0;
 		}
 	}
 }
