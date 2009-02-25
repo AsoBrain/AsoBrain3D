@@ -69,8 +69,11 @@ public class Shader
 
 	/**
 	 * Sets the source code of the shader, replacing any previously set code.
+	 * The source code is automatically compiled.
 	 *
 	 * @param   source  Source code of the shader.
+	 *
+	 * @throws  GLException if compilation of the source code fails.
 	 */
 	public void setSource( final String... source )
 	{
@@ -90,6 +93,8 @@ public class Shader
 
 	/**
 	 * Compiles the shader.
+	 *
+	 * @throws  GLException if compilation fails.
 	 */
 	private void compile()
 	{
