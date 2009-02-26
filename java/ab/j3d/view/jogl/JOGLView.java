@@ -454,10 +454,8 @@ public class JOGLView
 			else if ( projectionPolicy == ProjectionPolicy.PERSPECTIVE )
 			{
 				final double fov  = Math.toDegrees( camera.getAperture() );
-				final Projector.PerspectiveProjector projector = (Projector.PerspectiveProjector)getProjector();
-				final double eyeDistance = projector.getEyeDistance();
-				final double near =  0.25 * eyeDistance;//_frontClipDistance;
-				final double far  = 10000.0;//_backClipDistance;
+				final double near = _frontClipDistance;
+				final double far  = _backClipDistance;
 
 				/* Setup the projection matrix. */
 				gl.glMatrixMode( GL.GL_PROJECTION );
