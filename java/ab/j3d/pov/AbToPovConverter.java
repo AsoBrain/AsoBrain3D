@@ -19,7 +19,6 @@
  */
 package ab.j3d.pov;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +34,7 @@ import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
+import ab.j3d.model.Scene;
 import ab.j3d.model.Sphere3D;
 
 /**
@@ -109,16 +109,15 @@ public final class AbToPovConverter
 	 * multiple textures and extruded objects are converted as
 	 * {@link Object3D}'s.
 	 *
-	 * @param   nodes   Nodes that need to be converted.
+	 * @param   scene   Scene containing the nodes.
 	 *
 	 * @return  The resulting {@link PovScene} object.
 	 */
-	public PovScene convert( final Node3DCollection<Node3D> nodes )
+	public PovScene convert( final Scene scene )
 	{
-		final PovScene scene = _scene;
+		final PovScene povScene = _scene;
 
-		int ambient = 0;
-
+		final Node3DCollection<Node3D> nodes = scene.getContent();
 		for ( int i = 0 ; i < nodes.size() ; i++ )
 		{
 			final Node3D   node      = nodes.getNode( i );
@@ -130,27 +129,19 @@ public final class AbToPovConverter
 			}
 			else if ( node instanceof Light3D )
 			{
-				final Light3D light = (Light3D)node;
-				if ( light.isAmbient() )
-				{
-					ambient += light.getIntensity();
-				}
-				else
-				{
-					scene.add( convertLight3D( transform , light ) );
-				}
+				povScene.add( convertLight3D( transform , (Light3D)node ) );
 			}
 			else if ( node instanceof Box3D )
 			{
-				scene.add( convertBox3D( transform , (Box3D)node ) );
+				povScene.add( convertBox3D( transform , (Box3D)node ) );
 			}
 			else if ( node instanceof Cylinder3D )
 			{
-				scene.add( convertCylinder3D( transform , (Cylinder3D)node ) );
+				povScene.add( convertCylinder3D( transform , (Cylinder3D)node ) );
 			}
 			else if ( node instanceof Sphere3D )
 			{
-				scene.add( convertSphere3D( transform , (Sphere3D)node ) );
+				povScene.add( convertSphere3D( transform , (Sphere3D)node ) );
 			}
 //			else if ( node instanceof ExtrudedObject2D ) // not optimized support available
 //			{
@@ -158,14 +149,13 @@ public final class AbToPovConverter
 //			}
 			else if ( node instanceof Object3D )
 			{
-				scene.add( convertObject3D( transform , (Object3D)node ) );
+				povScene.add( convertObject3D( transform , (Object3D)node ) );
 			}
 		}
 
-		final double povAmbient = (double)ambient / 255.0;
-		scene.setAmbientLight( new PovVector( povAmbient , povAmbient , povAmbient ) );
+		povScene.setAmbientLight( new PovVector( (double)scene.getAmbientRed() , (double)scene.getAmbientGreen() , (double)scene.getAmbientBlue() ) );
 
-		return scene;
+		return povScene;
 	}
 
 	/**
@@ -277,22 +267,34 @@ public final class AbToPovConverter
 	 */
 	public static PovLight convertLight3D( final Matrix3D transform , final Light3D light )
 	{
-		if ( light.isAmbient() )
-			throw new IllegalArgumentException( "ambient lights can't be created, only set as global property" );
+		final String    name   = ( light.getTag() != null ) ? String.valueOf( light.getTag() ) : null;
 
-		final String    name    = ( light.getTag() != null ) ? String.valueOf( light.getTag() ) : null;
-		final PovVector color   = new PovVector( Color.WHITE , (double)light.getIntensity() / 255.0 );
-		final double    fallOff = light.getFallOff();
+		/*
+		 * NOTE: The light intensity has to be halved for attenuated POV lights,
+		 * because POV defines attenuation with respect to the full light
+		 * intensity, while 'Light3D' specifies the distance to half light
+		 * intensity.
+		 */
+		final PovLight result;
 
-		final PovLight result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
-
-		if ( fallOff > 0.0001 )
+		if ( light.getQuadraticAttenuation() > 0.0f )
 		{
-			result.setFadeDistance( fallOff );
+			final PovVector color  = new PovVector( 0.5 * (double)light.getDiffuseRed() , 0.5 * (double)light.getDiffuseGreen() , 0.5 * (double)light.getDiffuseBlue() );
+			result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
+			result.setFadeDistance( (double)light.getHalfIntensityDistance() );
 			result.setFadePower( PovLight.FADE_QUADRATIC );
+		}
+		else if ( light.getLinearAttenuation() > 0.0f )
+		{
+			final PovVector color  = new PovVector( 0.5 * (double)light.getDiffuseRed() , 0.5 * (double)light.getDiffuseGreen() , 0.5 * (double)light.getDiffuseBlue() );
+			result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
+			result.setFadeDistance( (double)light.getHalfIntensityDistance() );
+			result.setFadePower( PovLight.FADE_LINEAR );
 		}
 		else
 		{
+			final PovVector color  = new PovVector( (double)light.getDiffuseRed() , (double)light.getDiffuseGreen() , (double)light.getDiffuseBlue() );
+			result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
 			result.setFadePower( PovLight.FADE_NONE );
 		}
 
