@@ -54,12 +54,6 @@ public class JOGLTools
 	public static final String NORMALIZATION_CUBE_MAP = "__normalizationCubeMap";
 
 	/**
-	 * Maximum number of lights possible. Standard value is 8 because all
-	 * OpenGL implementations have atleast this number of lights.
-	 */
-	public static final int MAX_LIGHTS = 8;
-
-	/**
 	 * Utility/Application class is not supposed to be instantiated.
 	 */
 	private JOGLTools()
@@ -221,7 +215,7 @@ public class JOGLTools
 		{
 			result = textureCache.get( map );
 
-			if ( result == null )
+			if ( result == null && !textureCache.containsKey( map ) )
 			{
 				final BufferedImage bufferedImage = MapTools.loadImage( map );
 				if ( bufferedImage != null )
@@ -243,10 +237,10 @@ public class JOGLTools
 							 */
 							result.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
 
-							/** Set texture magnification to linear to support mipmaps. */
+							/** Set texture magnification to GL_LINEAR to support mipmaps. */
 							result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
 
-							/** Set texture minification to linear_mipmap)_nearest to support mipmaps */
+							/** Set texture minification to GL_LINEAR_MIPMAP_NEAREST to support mipmaps. */
 							result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
 						}
 						catch ( GLException e )
@@ -260,9 +254,8 @@ public class JOGLTools
 						}
 					}
 				}
-
-				textureCache.put( map , result );
 			}
+			textureCache.put( map , result );
 		}
 
 		return result;
