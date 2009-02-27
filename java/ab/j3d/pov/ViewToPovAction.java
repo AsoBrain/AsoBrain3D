@@ -192,7 +192,7 @@ public final class ViewToPovAction
 			 * Convert scene to POV-Ray.
 			 */
 			final AbToPovConverter converter = new AbToPovConverter( _textureDirectory );
-			final PovScene povScene = converter.convert( scene.getContent() );
+			final PovScene povScene = converter.convert( scene );
 			povScene.add( AbToPovConverter.convertCamera3D( view2scene , camera , aspectRatio ) );
 
 			/*

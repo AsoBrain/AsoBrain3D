@@ -859,4 +859,9 @@ public abstract class View3D
 	{
 		update();
 	}
+
+	public void ambientLightChanged( final SceneUpdateEvent event )
+	{
+		update();
+	}
 }

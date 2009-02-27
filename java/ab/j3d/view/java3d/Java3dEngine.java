@@ -25,7 +25,6 @@ import java.util.Map;
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
-import javax.media.j3d.Light;
 import javax.media.j3d.PointLight;
 import javax.media.j3d.TransformGroup;
 import javax.vecmath.Color3f;
@@ -66,6 +65,11 @@ public final class Java3dEngine
 	 * Content branch graph of the Java 3D scene.
 	 */
 	private final BranchGroup _contentGraph;
+
+	/**
+	 * The ambient light source in the scene.
+	 */
+	private AmbientLight _ambientLight = null;
 
 	/**
 	 * Map node ID ({@link Object}) to Java 3D content graph object
@@ -172,6 +176,22 @@ public final class Java3dEngine
 		nodeTransform.setTransform( Java3dTools.convertMatrix3DToTransform3D( transform ) );
 	}
 
+	public void ambientLightChanged( final SceneUpdateEvent event )
+	{
+		AmbientLight ambientLight = _ambientLight;
+		if ( ambientLight == null )
+		{
+			ambientLight = new AmbientLight();
+			ambientLight.setInfluencingBounds( getWorldBounds() );
+
+			_ambientLight = ambientLight;
+			_contentGraph.addChild( ambientLight );
+		}
+
+		final Scene scene = _scene;
+		ambientLight.setColor( new Color3f( scene.getAmbientRed(), scene.getAmbientGreen(), scene.getAmbientBlue() ) );
+	}
+
 	private void updateNodeContent( final ContentNode node )
 	{
 		final Object         id            = node.getID();
@@ -204,41 +224,41 @@ public final class Java3dEngine
 	{
 		if ( ( lights != null ) && ( lights.size() > 0 ) )
 		{
-			final BoundingSphere worldBounds = new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 10000.0 ); // @TODO How to determine the 'correct' world bounds.
+			final BoundingSphere worldBounds = getWorldBounds();
 
 			for ( int i = 0 ; i < lights.size() ; i++ )
 			{
 				final Light3D modelLight = lights.getNode( i );
-				final float   fallOff    = (float)modelLight.getFallOff();
-				final float   intensity  = (float)modelLight.getIntensity() / 255.0f;
 
-				final Light viewLight;
-				if ( fallOff < 0.0f )
+				final PointLight pointLight = new PointLight();
+				pointLight.setPosition( (float)transform.xo , (float)transform.yo , (float)transform.zo );
+				pointLight.setColor( new Color3f( modelLight.getDiffuseRed() , modelLight.getDiffuseGreen() , modelLight.getDiffuseBlue() ) );
+				pointLight.setAttenuation( modelLight.getConstantAttenuation() , modelLight.getLinearAttenuation() , modelLight.getQuadraticAttenuation() );
+
+				final float halfIntensityDistance = modelLight.getHalfIntensityDistance();
+				if ( halfIntensityDistance > 0.0f )
 				{
-					viewLight = new AmbientLight();
-					viewLight.setInfluencingBounds( worldBounds );
+					pointLight.setInfluencingBounds( new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , (double)halfIntensityDistance * 10.0 ) );
 				}
-				else
+				else if ( halfIntensityDistance == 0.0f )
 				{
-					final PointLight pointLight = new PointLight();
-					if ( fallOff > 0.0f )
-					{
-						pointLight.setInfluencingBounds( new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , (double)fallOff * 10.0 ) );
-						pointLight.setAttenuation( 1.0f , 0.0f , 0.1f / ( fallOff * fallOff ) );
-					}
-					else if ( fallOff == 0.0f )
-					{
-						pointLight.setInfluencingBounds( worldBounds );
-					}
-					pointLight.setPosition( (float)transform.xo , (float)transform.yo , (float)transform.zo );
-
-					viewLight = pointLight;
+					pointLight.setInfluencingBounds( worldBounds );
 				}
-				viewLight.setColor( new Color3f( intensity , intensity , intensity ) );
 
-				bg.addChild( viewLight );
+				bg.addChild( pointLight );
 			}
 		}
+	}
+
+	/**
+	 * Returns bounds large enough to encompass the entire scene.
+	 * @TODO How to determine the 'correct' world bounds.
+	 *
+	 * @return  World bounds.
+	 */
+	private static BoundingSphere getWorldBounds()
+	{
+		return new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 10000.0 );
 	}
 
 	public BranchGroup getJava3dNode( final Object id )

@@ -72,7 +72,7 @@ public final class TestAbToPovConverter
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final Scene            scene           = testModel.getScene();
 			final AbToPovConverter converter       = new AbToPovConverter( texturesDirectory );
-			final PovScene         povScene        = converter.convert( scene.getContent() );
+			final PovScene         povScene        = converter.convert( scene );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
@@ -1059,7 +1059,7 @@ public final class TestAbToPovConverter
 		final double    aspectRatio   = (double)viewComponent.getWidth() / (double)viewComponent.getHeight();
 
 		final AbToPovConverter converter = new AbToPovConverter( getTexturesDirectory() );
-		final PovScene povScene = converter.convert( scene.getContent() );
+		final PovScene povScene = converter.convert( scene );
 		povScene.add( AbToPovConverter.convertCamera3D( view2scene , view.getCamera() , aspectRatio ) );
 		povScene.write( new File( "test.pov" ) );
 	}

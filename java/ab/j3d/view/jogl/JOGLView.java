@@ -512,6 +512,6 @@ public class JOGLView
 		}
 
 		renderer.setGridEnabled( isGridEnabled() );
-		renderer.renderScene( scene.getContentNodes() , styleFilters , viewStyle );
+		renderer.renderScene( scene , styleFilters , viewStyle );
 	}
 }

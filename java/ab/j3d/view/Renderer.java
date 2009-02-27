@@ -29,6 +29,7 @@ import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
+import ab.j3d.model.Scene;
 
 /**
  * This provides a possible base class for renderers.
@@ -48,11 +49,23 @@ public abstract class Renderer
 	/**
 	 * Render a scene.
 	 *
+	 * @param   scene           Scene to be rendered.
+	 * @param   styleFilters    Style filters to apply.
+	 * @param   sceneStyle      Render style to use as base for scene.
+	 */
+	public void renderScene( final Scene scene , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
+	{
+		renderContentNodes( scene.getContentNodes() , styleFilters , sceneStyle );
+	}
+
+	/**
+	 * Render the content nodes of a scene.
+	 *
 	 * @param   nodes           Nodes in the scene.
 	 * @param   styleFilters    Style filters to apply.
 	 * @param   sceneStyle      Render style to use as base for scene.
 	 */
-	public void renderScene( final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
+	public void renderContentNodes( final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
 	{
 		renderLights( nodes );
 		renderObjects( nodes , styleFilters, sceneStyle );

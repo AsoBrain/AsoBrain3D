@@ -43,11 +43,14 @@ import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.model.ContentNode;
+import ab.j3d.model.DirectionalLight3D;
 import ab.j3d.model.ExtrudedObject2D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Face3D.Vertex;
 import ab.j3d.model.Light3D;
 import ab.j3d.model.Object3D;
+import ab.j3d.model.Scene;
+import ab.j3d.model.SpotLight3D;
 import ab.j3d.view.RenderStyle;
 import ab.j3d.view.RenderStyleFilter;
 import ab.j3d.view.Renderer;
@@ -63,6 +66,11 @@ import com.numdata.oss.TextTools;
 public class JOGLRenderer
 	extends Renderer
 {
+	/**
+	 * If enabled, objects are drawn with lines for face and vertex normals.
+	 */
+	private static final boolean DRAW_NORMALS = false;
+
 	/**
 	 * OpenGL pipeline.
 	 */
@@ -125,12 +133,6 @@ public class JOGLRenderer
 	 * highlighting is disabled.
 	 */
 	private int _gridHighlightInterval;
-
-	/**
-	 * Combined ambient light intensity. Set to 0 durig init and set to final
-	 * value after all lights are processed.
-	 */
-	private float _ambientLightIntensity;
 
 	/**
 	 * Position of most dominant light in the scene.
@@ -237,7 +239,6 @@ public class JOGLRenderer
 
 		_glWrapper = null;
 
-		_ambientLightIntensity = 0.0f;
 		_dominantLightIntensity = 0.0f;
 		_dominantLightPosition = null;
 
@@ -654,7 +655,13 @@ public class JOGLRenderer
 		}
 	}
 
-	public void renderScene( final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
+	public void renderScene( final Scene scene , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
+	{
+		_gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { scene.getAmbientRed() , scene.getAmbientGreen() , scene.getAmbientBlue() , 1.0f } , 0 );
+		super.renderScene( scene , styleFilters , sceneStyle );
+	}
+
+	public void renderContentNodes( final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
 	{
 		final GL gl = _gl;
 		final GLWrapper glWrapper = new GLWrapper( gl );
@@ -954,7 +961,7 @@ public class JOGLRenderer
 		}
 
 		_renderMode = MultiPassRenderMode.ALL;
-		super.renderScene( nodes , styleFilters , sceneStyle );
+		super.renderContentNodes( nodes , styleFilters , sceneStyle );
 	}
 
 	/**
@@ -1234,7 +1241,6 @@ public class JOGLRenderer
 
 		_lightIndex = 0;
 		_maxLights  = getMaxLights();
-		_ambientLightIntensity = 0.0f;
 		_dominantLightPosition = null;
 		_dominantLightIntensity = 0.0f;
 
@@ -1256,71 +1262,67 @@ public class JOGLRenderer
 			final int light = GL.GL_LIGHT0 + i;
 			gl.glDisable( light );
 			gl.glLightfv( light , GL.GL_POSITION , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
-			gl.glLightfv( light , GL.GL_AMBIENT  , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
 			gl.glLightfv( light , GL.GL_DIFFUSE  , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
 			gl.glLightfv( light , GL.GL_SPECULAR , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
+			gl.glLightfv( light , GL.GL_AMBIENT  , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
 		}
 
 		/* Let super render lights */
 		super.renderLights( nodes );
-
-		/* Set combined ambient light intensity. */
-		final float ambientLightIntensity = _ambientLightIntensity;
-		gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { ambientLightIntensity , ambientLightIntensity , ambientLightIntensity , 1.0f } , 0 );
 	}
 
 	protected void renderLight( final Matrix3D light2world , final Light3D light )
 	{
 		final GL gl = _gl;
 
-		final float lightIntensity = (float)light.getIntensity() / 255.0f;
-
-		if ( light.isAmbient() )
+		final int lightIndex = _lightIndex++;
+		if ( lightIndex >= _maxLights )
 		{
-			_ambientLightIntensity += lightIntensity;
+			throw new IllegalStateException( "No more than " + _maxLights + " lights supported." );
+		}
+
+		final int lightNumber = GL.GL_LIGHT0 + lightIndex;
+
+		gl.glLightfv( lightNumber , GL.GL_AMBIENT  , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
+		gl.glLightfv( lightNumber , GL.GL_DIFFUSE  , new float[] { light.getDiffuseRed()  , light.getDiffuseGreen()  , light.getDiffuseBlue()  , 1.0f } , 0 );
+		gl.glLightfv( lightNumber , GL.GL_SPECULAR , new float[] { light.getSpecularRed() , light.getSpecularGreen() , light.getSpecularBlue() , 1.0f } , 0 );
+
+		if ( light instanceof DirectionalLight3D )
+		{
+			final DirectionalLight3D directional = (DirectionalLight3D)light;
+			final Vector3D direction = directional.getDirection();
+			gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] { -(float)direction.x , -(float)direction.y , -(float)direction.z , 0.0f } , 0 );
 		}
 		else
 		{
-			final int lightIndex = _lightIndex++;
-			if ( lightIndex >= _maxLights )
+			if ( light instanceof SpotLight3D )
 			{
-				throw new IllegalStateException( "No more than " + _maxLights + " lights supported." );
-			}
-
-			final int lightNumber = GL.GL_LIGHT0 + lightIndex;
-
-			gl.glLightfv( lightNumber , GL.GL_AMBIENT  , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
-			gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] { (float)light2world.xo , (float)light2world.yo , (float)light2world.zo , 1.0f } , 0 );
-			gl.glLightfv( lightNumber , GL.GL_DIFFUSE  , new float[] {  lightIntensity , lightIntensity , lightIntensity , 1.0f } , 0 );
-			gl.glLightfv( lightNumber , GL.GL_SPECULAR , new float[] {  lightIntensity , lightIntensity , lightIntensity , 1.0f } , 0 );
-
-			final float fallOff = (float)light.getFallOff();
-			if ( fallOff > 0.0f )
-			{
-				/*
-				 * intensity = 1 / ( c + l * d + q * d^2 )
-				 * constant + quadratic * distance ^ 2 )
-				 */
-				gl.glLightfv( lightNumber , GL.GL_CONSTANT_ATTENUATION  , new float[] { 0.5f } , 0 );
-				gl.glLightfv( lightNumber , GL.GL_LINEAR_ATTENUATION    , new float[] { 0.0f } , 0 );
-				gl.glLightfv( lightNumber , GL.GL_QUADRATIC_ATTENUATION , new float[] { 0.5f / ( fallOff * fallOff ) } , 0 );
+				final SpotLight3D spot = (SpotLight3D)light;
+				final Vector3D direction = spot.getDirection();
+				gl.glLightfv( lightNumber , GL.GL_POSITION       , new float[] { (float)light2world.xo , (float)light2world.yo , (float)light2world.zo , 1.0f } , 0 );
+				gl.glLightfv( lightNumber , GL.GL_SPOT_DIRECTION , new float[] { (float)direction.x    , (float)direction.y    , (float)direction.z           } , 0 );
+				gl.glLightf ( lightNumber , GL.GL_SPOT_CUTOFF    , spot.getSpreadAngle() );
+				gl.glLightf ( lightNumber , GL.GL_SPOT_EXPONENT  , spot.getConcentration() );
 			}
 			else
 			{
-				gl.glLightfv( lightNumber , GL.GL_CONSTANT_ATTENUATION  , new float[] { 1.0f } , 0 );
-				gl.glLightfv( lightNumber , GL.GL_LINEAR_ATTENUATION    , new float[] { 0.0f } , 0 );
-				gl.glLightfv( lightNumber , GL.GL_QUADRATIC_ATTENUATION , new float[] { 0.0f } , 0 );
+				gl.glLightfv( lightNumber , GL.GL_POSITION , new float[] { (float)light2world.xo , (float)light2world.yo , (float)light2world.zo , 1.0f } , 0 );
 			}
 
-			gl.glEnable( lightNumber );
+			gl.glLightf( lightNumber , GL.GL_CONSTANT_ATTENUATION  , light.getConstantAttenuation()  );
+			gl.glLightf( lightNumber , GL.GL_LINEAR_ATTENUATION    , light.getLinearAttenuation()    );
+			gl.glLightf( lightNumber , GL.GL_QUADRATIC_ATTENUATION , light.getQuadraticAttenuation() );
 		}
+
+		gl.glEnable( lightNumber );
 
 		/**
 		 * Determine dominant light position, used for bump mapping.
 		 * This method can be rather inaccurate, especially if the most
 		 * intense light is far away from a bump mapped object.
 		 */
-		if ( ( light.getFallOff() >= 0.0 ) && ( ( _dominantLightPosition == null ) || ( _dominantLightIntensity < lightIntensity ) ) )
+		final float lightIntensity = light.getIntensity();
+		if ( ( _dominantLightPosition == null ) || ( _dominantLightIntensity < lightIntensity ) )
 		{
 			_dominantLightPosition = Vector3D.INIT.set( light2world.xo , light2world.yo , light2world.zo );
 			_dominantLightIntensity = lightIntensity;
@@ -1531,6 +1533,23 @@ public class JOGLRenderer
 
 					gl.glActiveTexture( GL.GL_TEXTURE0 );
 					normalizationCubeMap.disable();
+				}
+
+				if ( DRAW_NORMALS )
+				{
+					for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
+					{
+						final Vertex vertex = vertices.get( vertexIndex );
+						final Vector3D point = vertex.point;
+
+						Vector3D normal = face.smooth ? face.getVertexNormal( vertexIndex ) : face.getNormal();
+						normal = point.plus( normal.multiply( 100.0 ) );
+
+						gl.glBegin( GL.GL_LINES );
+						gl.glVertex3d( point.x , point.y , point.z );
+						gl.glVertex3d( normal.x , normal.y , normal.z );
+						gl.glEnd();
+					}
 				}
 			}
 		}
