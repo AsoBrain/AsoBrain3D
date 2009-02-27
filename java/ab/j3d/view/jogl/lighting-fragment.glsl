@@ -82,5 +82,5 @@ vec4 lighting( in vec4 color )
 		}
 	}
 
-	return vec4( gl_FrontLightModelProduct.sceneColor.rgb + result , color.a );
+	return vec4( color.rgb * gl_FrontLightModelProduct.sceneColor.rgb + result.rgb , color.a );
 }
