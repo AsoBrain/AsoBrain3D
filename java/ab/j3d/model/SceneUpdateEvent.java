@@ -51,9 +51,14 @@ public class SceneUpdateEvent
 	public static final int CONTENT_NODE_PROPERTY_CHANGED = 3;
 
 	/**
+	 * ID for event to indicate that the scene's ambient light has changed.
+	 */
+	public static final int AMBIENT_LIGHT_CHANGED = 4;
+
+	/**
 	 * Serialized data version.
 	 */
-	private static final long serialVersionUID = -2324880479966704631L;
+	private static final long serialVersionUID = -6457043864762971513L;
 
 	/**
 	 * Event ID.

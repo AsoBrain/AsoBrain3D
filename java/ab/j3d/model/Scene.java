@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import ab.j3d.Matrix3D;
+import ab.j3d.Vector3D;
 import ab.j3d.view.BSPTree;
 
 /**
@@ -87,6 +88,21 @@ public class Scene
 	 * converts design units to meters.
 	 */
 	protected final double _unit;
+
+	/**
+	 * Light intensity of the ambient light in the scene (red component).
+	 */
+	private float _ambientColorRed = 0.0f;
+
+	/**
+	 * Light intensity of the ambient light in the scene (green component).
+	 */
+	private float _ambientColorGreen = 0.0f;
+
+	/**
+	 * Light intensity of the ambient light in the scene (blue component).
+	 */
+	private float _ambientColorBlue = 0.0f;
 
 	/**
 	 * Content nodes.
@@ -162,12 +178,19 @@ public class Scene
 		if ( scene == null )
 			throw new NullPointerException( "scene" );
 
-		scene.addContentNode( "legacy-ambient-1" , Matrix3D.INIT , new Light3D( 10 , -1.0 ) );
+		scene.setAmbient( 0.2f , 0.2f , 0.2f );
 
-		/* A distance of over 100000 units from the origin should be sufficient to mimic a directional light. */
-		scene.addContentNode( "legacy-light-1" , Matrix3D.INIT.plus(  60000.0 ,  100000.0 ,  100000.0 ), new Light3D( 255 , 300000.0 ) );
-		scene.addContentNode( "legacy-light-2" , Matrix3D.INIT.plus( -60000.0 , -100000.0 , - 20000.0 ), new Light3D( 230 , 300000.0 ) );
-		scene.addContentNode( "legacy-light-3" , Matrix3D.INIT.plus( 100000.0 ,  -50000.0 , -100000.0 ) , new Light3D( 208 , 300000.0 ) );
+		final DirectionalLight3D directional1 = new DirectionalLight3D( Vector3D.normalize( -0.8 ,  1.0 , -0.6 ) );
+		final DirectionalLight3D directional2 = new DirectionalLight3D( Vector3D.normalize(  1.0 , -1.0 ,  0.4 ) );
+		final DirectionalLight3D directional3 = new DirectionalLight3D( Vector3D.normalize( -2.0 ,  0.0 , -1.0 ) );
+
+		directional1.setIntensity( 1.0f );
+		directional2.setIntensity( 0.5f );
+		directional3.setIntensity( 0.5f );
+
+		scene.addContentNode( "legacy-light-1" , Matrix3D.INIT , directional1 );
+		scene.addContentNode( "legacy-light-2" , Matrix3D.INIT , directional2 );
+		scene.addContentNode( "legacy-light-3" , Matrix3D.INIT , directional3 );
 	}
 
 	/**
@@ -364,6 +387,62 @@ public class Scene
 	}
 
 	/**
+	 * Returns the light intensity of the ambient light in the scene for the
+	 * red color component.
+	 *
+	 * <p>For a definition of light intensity, see {@link Light3D}.
+	 *
+	 * @return  Ambient light intensity. (red)
+	 */
+	public float getAmbientRed()
+	{
+		return _ambientColorRed;
+	}
+
+	/**
+	 * Returns the light intensity of the ambient light in the scene for the
+	 * red color component.
+	 *
+	 * @return  Ambient light intensity. (green)
+	 */
+	public float getAmbientGreen()
+	{
+		return _ambientColorGreen;
+	}
+
+	/**
+	 * Returns the light intensity of the ambient light in the scene for the
+	 * blue color component.
+	 *
+	 * @return  Ambient light intensity. (blue)
+	 */
+	public float getAmbientBlue()
+	{
+		return _ambientColorBlue;
+	}
+
+	/**
+	 * Sets the light intensity of the ambient light in the scene.
+	 *
+	 * @param   redIntensity    Intensity of the red color component.
+	 * @param   greenIntensity  Intensity of the green color component.
+	 * @param   blueIntensity   Intensity of the blue color component.
+	 */
+	public void setAmbient( final float redIntensity , final float greenIntensity , final float blueIntensity )
+	{
+		if ( ( _ambientColorRed   != redIntensity   ) ||
+		     ( _ambientColorGreen != greenIntensity ) ||
+		     ( _ambientColorBlue  != blueIntensity  ) )
+		{
+			_ambientColorRed   = redIntensity;
+			_ambientColorGreen = greenIntensity;
+			_ambientColorBlue  = blueIntensity;
+
+			fireAmbientLightChanged();
+		}
+	}
+
+	/**
 	 * Add listener for events about updated to this scene.
 	 *
 	 * @param   listener    Listener to add.
@@ -467,6 +546,24 @@ public class Scene
 			for ( final SceneUpdateListener listener : listeners )
 			{
 				listener.contentNodePropertyChanged( event );
+			}
+		}
+	}
+
+	/**
+	 * Send event about a change in the scene's ambient light intensity to all
+	 * registered listeners.
+	 */
+	public void fireAmbientLightChanged()
+	{
+		final List<SceneUpdateListener> listeners = _sceneUpdateListeners;
+		if ( !listeners.isEmpty() )
+		{
+			final SceneUpdateEvent event = new SceneUpdateEvent( this , SceneUpdateEvent.AMBIENT_LIGHT_CHANGED , null );
+
+			for ( final SceneUpdateListener listener : listeners )
+			{
+				listener.ambientLightChanged( event );
 			}
 		}
 	}

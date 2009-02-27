@@ -58,4 +58,11 @@ public interface SceneUpdateListener
 	 * @param   event   Event from {@link Scene}.
 	 */
 	void contentNodePropertyChanged( SceneUpdateEvent event );
+
+	/**
+	 * Notifies the listener that the ambient light in the scene has changed.
+	 *
+	 * @param   event   Event from the scene.
+	 */
+	void ambientLightChanged( SceneUpdateEvent event );
 }
