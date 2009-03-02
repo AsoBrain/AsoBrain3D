@@ -525,6 +525,7 @@ public class ObjLoader
 
 			final int[] vertexIndices = new int[faceVertexCount];
 			Point2D.Float[] texturePoints = null;
+			Vector3D[] faceVertexNormals = null;
 			boolean smooth = false;
 			Vector3D fixedVertexNormal = null;
 
@@ -560,6 +561,11 @@ public class ObjLoader
 
 					final Vector3D vertexNormal = vertexNormals.get( vertexNormalIndex );
 
+					if ( faceVertexNormals == null )
+					{
+						faceVertexNormals = new Vector3D[ faceVertexCount ];
+					}
+
 					if ( assignedVertexNormals == null )
 					{
 						assignedVertexNormals = new ArrayList<Vector3D>( vertices.size() );
@@ -579,10 +585,12 @@ public class ObjLoader
 					{
 						smooth |= !fixedVertexNormal.equals( vertexNormal );
 					}
+
+					faceVertexNormals[ faceVertexIndex ] = vertexNormal;
 				}
 			}
 
-			builder.addFace( vertexIndices , objFace._material , texturePoints , null , smooth , false );
+			builder.addFace( vertexIndices , objFace._material , texturePoints , faceVertexNormals , smooth , false );
 		}
 
 		if ( assignedVertexNormals != null )
