@@ -54,7 +54,6 @@ import ab.j3d.model.Sphere3D;
 import ab.j3d.pov.AbToPovConverter;
 import ab.j3d.pov.PovScene;
 import ab.j3d.pov.PovVector;
-import ab.j3d.view.java3d.Java3dEngine;
 import ab.j3d.view.jogl.JOGLEngine;
 
 /**
@@ -153,7 +152,7 @@ public class ViewComparison
 								final double   aspectRatio = (double)size.width / (double)size.height;
 
 								final AbToPovConverter converter = new AbToPovConverter( MapTools.imageMapDirectory );
-								final PovScene povScene = converter.convert( scene.getContent() );
+								final PovScene povScene = converter.convert( scene );
 								povScene.add( AbToPovConverter.convertCamera3D( view2scene , camera , aspectRatio ) );
 
 								povScene.setBackground( new PovVector( Color.GRAY ) );
@@ -200,7 +199,7 @@ public class ViewComparison
 	{
 		final Collection<RenderEngine> models = new ArrayList<RenderEngine>();
 		models.add( new JOGLEngine( Color.GRAY ) );
-		models.add( new Java3dEngine( scene , Color.GRAY ) );
+//		models.add( new Java3dEngine( scene , Color.GRAY ) );
 		return models;
 	}
 
@@ -325,7 +324,7 @@ public class ViewComparison
 
 		protected void createLights( final Scene target )
 		{
-			target.addContentNode( "ambient-1" , Matrix3D.INIT , new Light3D( 128 , -1.0 ) );
+			target.setAmbient( 0.5f , 0.5f , 0.5f );
 			target.addContentNode( "light-1" , Matrix3D.INIT.plus(  1000.0 ,  -1000.0 ,  1000.0 ) , new Light3D( 150 , FALL_OFF ) );
 		}
 	}
@@ -344,7 +343,7 @@ public class ViewComparison
 	{
 		protected void createLights( final Scene target )
 		{
-			target.addContentNode( "ambient-1" , Matrix3D.INIT , new Light3D( 128 , -1.0 ) );
+			target.setAmbient( 0.5f , 0.5f , 0.5f );
 		}
 	}
 }
