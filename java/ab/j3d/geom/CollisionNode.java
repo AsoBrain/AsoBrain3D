@@ -272,69 +272,75 @@ public class CollisionNode
 		{
 			_splitPoint = null;
 
-			final List<Triangle3D> triangles = _triangles;
-			final int trianglesOffset = _trianglesOffset;
 			final int trianglesCount = _trianglesCount;
-
-			int countX = 0;
-			int countY = 0;
-			int countZ = 0;
-
-			for ( int i = 0 ; i < trianglesCount ; i++ )
+			if ( trianglesCount > 1 )
 			{
-				final Triangle3D triangle = triangles.get( trianglesOffset + i );
+				final List<Triangle3D> triangles = _triangles;
+				final int trianglesOffset = _trianglesOffset;
 
-				final Vector3D p = triangle.getAveragePoint();
+				int countX = 0;
+				int countY = 0;
+				int countZ = 0;
 
-				if ( p.x < splitPoint.x )
+				for ( int i = 0 ; i < trianglesCount ; i++ )
 				{
-					countX++;
+					final Triangle3D triangle = triangles.get( trianglesOffset + i );
+
+					final Vector3D p = triangle.getAveragePoint();
+
+					if ( p.x < splitPoint.x )
+					{
+						countX++;
+					}
+
+					if ( p.y < splitPoint.y )
+					{
+						countY++;
+					}
+
+					if ( p.z < splitPoint.z )
+					{
+						countZ++;
+					}
 				}
 
-				if ( p.y < splitPoint.y )
+				/*
+				 * Only split if we don't end up with empty branches.
+				 */
+				if ( ( ( countX > 0 ) && ( countX < trianglesCount ) ) ||
+				     ( ( countY > 0 ) && ( countY < trianglesCount ) ) ||
+				     ( ( countZ > 0 ) && ( countZ < trianglesCount ) ) )
 				{
-					countY++;
-				}
+					final int balanceX = Math.abs( countX * 2 - trianglesCount );
+					final int balanceY = Math.abs( countY * 2 - trianglesCount );
+					final int balanceZ = Math.abs( countZ * 2 - trianglesCount );
 
-				if ( p.z < splitPoint.z )
+					final int countLeft;
+
+					if ( ( balanceX <= balanceY ) && ( balanceX <= balanceZ ) ) /* X is most balanced */
+					{
+						splitTrianglesOnX( splitPoint.x );
+						countLeft = countX;
+					}
+					else if ( balanceY <= balanceZ ) /* Y is most balanced */
+					{
+						splitTrianglesOnY( splitPoint.y );
+						countLeft = countY;
+					}
+					else /* Z is most balanced */
+					{
+						splitTrianglesOnZ( splitPoint.z );
+						countLeft = countZ;
+					}
+
+					_child1 = new CollisionNode( triangles , trianglesOffset , countLeft );
+					_child2 = new CollisionNode( triangles , trianglesOffset + countLeft , trianglesCount - countLeft );
+					result = true;
+				}
+				else
 				{
-					countZ++;
+					result = false;
 				}
-			}
-
-			/*
-			 * Only split if we don't end up with empty branches.
-			 */
-			if ( ( ( countX > 0 ) && ( countX < trianglesCount ) ) ||
-				 ( ( countY > 0 ) && ( countY < trianglesCount ) ) ||
-				 ( ( countZ > 0 ) && ( countZ < trianglesCount ) ) )
-			{
-				final int halfSize = trianglesCount / 2;
-				final int balanceX = Math.abs( countX - halfSize );
-				final int balanceY = Math.abs( countY - halfSize );
-				final int balanceZ = Math.abs( countZ - halfSize );
-
-				final int countLeft;
-
-				if ( ( balanceX <= balanceY ) && ( balanceX <= balanceZ ) ) /* X is most balanced */
-				{
-					splitTrianglesOnX( splitPoint.x );
-					countLeft = countX;
-				}
-				else if ( balanceY <= balanceZ ) /* Y is most balanced */
-				{
-					splitTrianglesOnY( splitPoint.y );
-					countLeft = countY;
-				}
-				else /* Z is most balanced */
-				{
-					splitTrianglesOnZ( splitPoint.z );
-					countLeft = countZ;
-				}
-
-				_child1 = new CollisionNode( triangles , trianglesOffset , countLeft );
-				_child2 = new CollisionNode( triangles , trianglesOffset + countLeft , trianglesCount - countLeft );
-				result = true;
 			}
 			else
 			{
