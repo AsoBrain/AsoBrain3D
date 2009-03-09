@@ -292,13 +292,13 @@ public final class AbToPovConverter
 		{
 			final SpotLight3D spotLight3D = (SpotLight3D)light;
 			// Set concentration to 100.0 max
-			final double conc  = (double)spotLight3D.getConcentration() / 128.0 * 100.0;
+			final double tightness  = (double)spotLight3D.getConcentration() / 128.0 * 100.0;
 			final double angle = (double)spotLight3D.getSpreadAngle();
 			final PovVector color  = new PovVector( (double)light.getDiffuseRed() , (double)light.getDiffuseGreen() , (double)light.getDiffuseBlue() );
 			result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
 			final PovVector target  = new PovVector( spotLight3D.getDirection() );
 			result.makeSpot( target , 0.0 , angle );
-			result.setTightness( conc / 128.0 * 100.0 );
+			result.setTightness( tightness );
 		}
 		else
 		{
