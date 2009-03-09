@@ -28,6 +28,7 @@ import ab.j3d.Vector3D;
 import ab.j3d.model.Box3D;
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Cylinder3D;
+import ab.j3d.model.DirectionalLight3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Face3D.Vertex;
 import ab.j3d.model.Light3D;
@@ -36,6 +37,7 @@ import ab.j3d.model.Node3DCollection;
 import ab.j3d.model.Object3D;
 import ab.j3d.model.Scene;
 import ab.j3d.model.Sphere3D;
+import ab.j3d.model.SpotLight3D;
 
 /**
  * This class can be used to convert a 3D scene from <code>ab.j3d.model</code>
@@ -277,25 +279,49 @@ public final class AbToPovConverter
 		 */
 		final PovLight result;
 
-		if ( light.getQuadraticAttenuation() > 0.0f )
+		if ( light instanceof DirectionalLight3D )
 		{
-			final PovVector color  = new PovVector( 0.5 * (double)light.getDiffuseRed() , 0.5 * (double)light.getDiffuseGreen() , 0.5 * (double)light.getDiffuseBlue() );
+			final DirectionalLight3D directionalLight3D = (DirectionalLight3D)light;
+			final PovVector color  = new PovVector( (double)light.getDiffuseRed() , (double)light.getDiffuseGreen() , (double)light.getDiffuseBlue() );
 			result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
-			result.setFadeDistance( (double)light.getHalfIntensityDistance() );
-			result.setFadePower( PovLight.FADE_QUADRATIC );
+			final PovVector direction  = new PovVector( directionalLight3D.getDirection() );
+
+			result.makeParallel( direction );
 		}
-		else if ( light.getLinearAttenuation() > 0.0f )
+		else if ( light instanceof SpotLight3D )
 		{
-			final PovVector color  = new PovVector( 0.5 * (double)light.getDiffuseRed() , 0.5 * (double)light.getDiffuseGreen() , 0.5 * (double)light.getDiffuseBlue() );
+			final SpotLight3D spotLight3D = (SpotLight3D)light;
+			// Set concentration to 100.0 max
+			final double conc  = (double)spotLight3D.getConcentration() / 128.0 * 100.0;
+			final double angle = (double)spotLight3D.getSpreadAngle();
+			final PovVector color  = new PovVector( (double)light.getDiffuseRed() , (double)light.getDiffuseGreen() , (double)light.getDiffuseBlue() );
 			result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
-			result.setFadeDistance( (double)light.getHalfIntensityDistance() );
-			result.setFadePower( PovLight.FADE_LINEAR );
+			final PovVector target  = new PovVector( spotLight3D.getDirection() );
+			result.makeSpot( target , 0.0 , angle );
+			result.setTightness( conc / 128.0 * 100.0 );
 		}
 		else
 		{
-			final PovVector color  = new PovVector( (double)light.getDiffuseRed() , (double)light.getDiffuseGreen() , (double)light.getDiffuseBlue() );
-			result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
-			result.setFadePower( PovLight.FADE_NONE );
+			if ( light.getQuadraticAttenuation() > 0.0f )
+			{
+				final PovVector color  = new PovVector( 0.5 * (double)light.getDiffuseRed() , 0.5 * (double)light.getDiffuseGreen() , 0.5 * (double)light.getDiffuseBlue() );
+				result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
+				result.setFadeDistance( (double)light.getHalfIntensityDistance() );
+				result.setFadePower( PovLight.FADE_QUADRATIC );
+			}
+			else if ( light.getLinearAttenuation() > 0.0f )
+			{
+				final PovVector color  = new PovVector( 0.5 * (double)light.getDiffuseRed() , 0.5 * (double)light.getDiffuseGreen() , 0.5 * (double)light.getDiffuseBlue() );
+				result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
+				result.setFadeDistance( (double)light.getHalfIntensityDistance() );
+				result.setFadePower( PovLight.FADE_LINEAR );
+			}
+			else
+			{
+				final PovVector color  = new PovVector( (double)light.getDiffuseRed() , (double)light.getDiffuseGreen() , (double)light.getDiffuseBlue() );
+				result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
+				result.setFadePower( PovLight.FADE_NONE );
+			}
 		}
 
 		return result;

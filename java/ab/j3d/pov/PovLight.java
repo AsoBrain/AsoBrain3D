@@ -119,6 +119,11 @@ public final class PovLight
 	private boolean _arealight;
 
 	/**
+	 * Light is an parallel light.
+	 */
+	private boolean _parallellight;
+
+	/**
 	 * Horizontal range vector of area array.
 	 */
 	private PovVector _areaHorSize;
@@ -162,22 +167,23 @@ public final class PovLight
 	{
 		super( name );
 
-		_location     = new PovVector( x , y , z );
-		_color        = color;
-		_castShadows  = castShadows;
+		_location      = new PovVector( x , y , z );
+		_color         = color;
+		_castShadows   = castShadows;
 
-		_spotlight    = false;
-		_pointAt      = new PovVector( 0.0 , 0.0 , 0.0 );
-		_radius       = 30.0;
-		_falloff      = 45.0;
-		_tightness    =  0.0;
+		_spotlight     = false;
+		_pointAt       = new PovVector( 0.0 , 0.0 , 0.0 );
+		_radius        = 30.0;
+		_falloff       = 45.0;
+		_tightness     =  0.0;
 
-		_arealight    = false;
-		_areaHorSize  = null;
-		_areaVerSize  = null;
-		_areaHorCount = 1;
-		_areaVerCount = 1;
-		_jitter       = false;
+		_arealight     = false;
+		_parallellight = false;
+		_areaHorSize   = null;
+		_areaVerSize   = null;
+		_areaHorCount  = 1;
+		_areaVerCount  = 1;
+		_jitter        = false;
 	}
 
 	/**
@@ -250,6 +256,22 @@ public final class PovLight
 		_pointAt   = target;
 		_falloff   = falloff;
 		_radius    = radius;
+	}
+
+	/**
+	 * Make this light a parallel light.
+	 *
+	 * @param   target      Target point of the spot.
+	 *
+	 * @throws  NullPointerException if target is <code>null</code>.
+	 */
+	public void makeParallel( final PovVector target )
+	{
+		if ( target == null )
+			throw new NullPointerException( "target" );
+
+		_parallellight  = true;
+		_pointAt        = target;
 	}
 
 	/**
@@ -367,6 +389,14 @@ public final class PovLight
 			{
 				out.writeln( "jitter" );
 			}
+		}
+
+		if ( _parallellight )
+		{
+			out.write( "parallel " );
+			out.write( "point_at " );
+			_pointAt.write( out );
+			out.newLine();
 		}
 
 		if ( _fadePower != FADE_NONE )
