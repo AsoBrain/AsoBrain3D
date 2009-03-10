@@ -960,7 +960,9 @@ public class JOGLRenderer
 			drawGrid( _grid2wcs , _gridBounds , _gridCellSize , _gridHighlightAxes , _gridHighlightInterval );
 		}
 
-		_renderMode = MultiPassRenderMode.ALL;
+		_renderMode = MultiPassRenderMode.OPAQUE_ONLY;
+		super.renderContentNodes( nodes , styleFilters , sceneStyle );
+		_renderMode = MultiPassRenderMode.TRANSPARENT_ONLY;
 		super.renderContentNodes( nodes , styleFilters , sceneStyle );
 	}
 
@@ -1355,7 +1357,7 @@ public class JOGLRenderer
 
 			final float   extraAlpha    = style.getMaterialAlpha();
 			final float   combinedAlpha = material.diffuseColorAlpha * extraAlpha;
-			final boolean blend         = ( renderMode == MultiPassRenderMode.ALL ) && ( combinedAlpha < 0.99f );
+			final boolean blend         = ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && ( combinedAlpha < 0.99f );
 
 			if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || ( combinedAlpha >= 1.0f ) ) &&
 			     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || ( combinedAlpha <  1.0f ) ) )
@@ -1382,6 +1384,10 @@ public class JOGLRenderer
 				 */
 				if ( blend )
 				{
+					if ( combinedAlpha < 0.25f )
+					{
+						gl.glDepthMask( false );
+					}
 					glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 				}
 				glWrapper.setBlend( blend );
@@ -1535,6 +1541,14 @@ public class JOGLRenderer
 					normalizationCubeMap.disable();
 				}
 
+				if ( blend )
+				{
+					if ( combinedAlpha < 0.25f )
+					{
+						gl.glDepthMask( true );
+					}
+				}
+
 				if ( DRAW_NORMALS )
 				{
 					for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
@@ -1582,6 +1596,10 @@ public class JOGLRenderer
 				 */
 				if ( blend )
 				{
+					if ( alpha < 64 )
+					{
+						gl.glDepthMask( false );
+					}
 					glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 				}
 				glWrapper.setBlend( blend );
@@ -1622,6 +1640,13 @@ public class JOGLRenderer
 
 				gl.glEnd();
 
+				if ( blend )
+				{
+					if ( alpha < 64 )
+					{
+						gl.glDepthMask( true );
+					}
+				}
 				glWrapper.setPolygonOffsetFill( false );
 			}
 		}
