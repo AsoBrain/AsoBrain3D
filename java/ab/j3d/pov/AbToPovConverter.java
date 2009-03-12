@@ -302,26 +302,31 @@ public final class AbToPovConverter
 		}
 		else
 		{
-			if ( light.getQuadraticAttenuation() > 0.0f )
+			if ( light.getQuadraticAttenuation() > 0.0f || light.getLinearAttenuation() > 0.0f )
 			{
 				final PovVector color  = new PovVector( 0.5 * (double)light.getDiffuseRed() , 0.5 * (double)light.getDiffuseGreen() , 0.5 * (double)light.getDiffuseBlue() );
 				result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
-				result.setFadeDistance( (double)light.getHalfIntensityDistance() );
-				result.setFadePower( PovLight.FADE_QUADRATIC );
-			}
-			else if ( light.getLinearAttenuation() > 0.0f )
-			{
-				final PovVector color  = new PovVector( 0.5 * (double)light.getDiffuseRed() , 0.5 * (double)light.getDiffuseGreen() , 0.5 * (double)light.getDiffuseBlue() );
-				result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
-				result.setFadeDistance( (double)light.getHalfIntensityDistance() );
-				result.setFadePower( PovLight.FADE_LINEAR );
 			}
 			else
 			{
 				final PovVector color  = new PovVector( (double)light.getDiffuseRed() , (double)light.getDiffuseGreen() , (double)light.getDiffuseBlue() );
 				result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
-				result.setFadePower( PovLight.FADE_NONE );
 			}
+		}
+
+		if ( light.getQuadraticAttenuation() > 0.0f )
+		{
+			result.setFadeDistance( (double)light.getHalfIntensityDistance() );
+			result.setFadePower( PovLight.FADE_QUADRATIC );
+		}
+		else if ( light.getLinearAttenuation() > 0.0f )
+		{
+			result.setFadeDistance( (double)light.getHalfIntensityDistance() );
+			result.setFadePower( PovLight.FADE_LINEAR );
+		}
+		else
+		{
+			result.setFadePower( PovLight.FADE_NONE );
 		}
 
 		return result;
