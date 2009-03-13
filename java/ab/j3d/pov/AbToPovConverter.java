@@ -269,64 +269,51 @@ public final class AbToPovConverter
 	 */
 	public static PovLight convertLight3D( final Matrix3D transform , final Light3D light )
 	{
-		final String    name   = ( light.getTag() != null ) ? String.valueOf( light.getTag() ) : null;
+		final String name = ( light.getTag() != null ) ? String.valueOf( light.getTag() ) : null;
 
-		/*
-		 * NOTE: The light intensity has to be halved for attenuated POV lights,
-		 * because POV defines attenuation with respect to the full light
-		 * intensity, while 'Light3D' specifies the distance to half light
-		 * intensity.
-		 */
-		final PovLight result;
+		final PovVector color = new PovVector( (double)light.getDiffuseRed() , (double)light.getDiffuseGreen() , (double)light.getDiffuseBlue() );
+		final PovLight result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
 
 		if ( light instanceof DirectionalLight3D )
 		{
-			final DirectionalLight3D directionalLight3D = (DirectionalLight3D)light;
-			final PovVector color  = new PovVector( (double)light.getDiffuseRed() , (double)light.getDiffuseGreen() , (double)light.getDiffuseBlue() );
-			result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
-			final PovVector direction  = new PovVector( directionalLight3D.getDirection() );
+			/*
+			 * NOTE: Directional lights are not attenuated.
+			 */
+			final DirectionalLight3D directionalLight = (DirectionalLight3D)light;
+			final Vector3D pointAt = transform.transform( directionalLight.getDirection() );
 
-			result.makeParallel( direction );
-		}
-		else if ( light instanceof SpotLight3D )
-		{
-			final SpotLight3D spotLight3D = (SpotLight3D)light;
-			// Set concentration to 100.0 max
-			final double tightness  = (double)spotLight3D.getConcentration() / 128.0 * 100.0;
-			final double angle = (double)spotLight3D.getSpreadAngle();
-			final PovVector color  = new PovVector( (double)light.getDiffuseRed() , (double)light.getDiffuseGreen() , (double)light.getDiffuseBlue() );
-			result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
-			final PovVector target  = new PovVector( spotLight3D.getDirection() );
-			result.makeSpot( target , 0.0 , angle );
-			result.setTightness( tightness );
+			result.setPointAt( new PovVector( pointAt ) );
+			result.setParallel( true );
 		}
 		else
 		{
-			if ( light.getQuadraticAttenuation() > 0.0f || light.getLinearAttenuation() > 0.0f )
+			if ( light instanceof SpotLight3D )
 			{
-				final PovVector color  = new PovVector( 0.5 * (double)light.getDiffuseRed() , 0.5 * (double)light.getDiffuseGreen() , 0.5 * (double)light.getDiffuseBlue() );
-				result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
+				final SpotLight3D spotLight = (SpotLight3D)light;
+				final Vector3D pointAt = transform.transform( spotLight.getDirection() );
+
+				result.setSpotlight( true );
+				result.setPointAt( new PovVector( pointAt ) );
+				result.setFallOff( (double)spotLight.getSpreadAngle() );
+				result.setRadius( (double)spotLight.getSpreadAngle() );
+				result.setTightness( (double)spotLight.getConcentration() / 128.0 * 100.0 );
+			}
+			// else: regular point light
+
+			if ( light.getQuadraticAttenuation() > 0.0f )
+			{
+				result.setFadeDistance( (double)light.getFullIntensityDistance() );
+				result.setFadePower( PovLight.FADE_QUADRATIC );
+			}
+			else if ( light.getLinearAttenuation() > 0.0f )
+			{
+				result.setFadeDistance( (double)light.getFullIntensityDistance() );
+				result.setFadePower( PovLight.FADE_LINEAR );
 			}
 			else
 			{
-				final PovVector color  = new PovVector( (double)light.getDiffuseRed() , (double)light.getDiffuseGreen() , (double)light.getDiffuseBlue() );
-				result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
+				result.setFadePower( PovLight.FADE_NONE );
 			}
-		}
-
-		if ( light.getQuadraticAttenuation() > 0.0f )
-		{
-			result.setFadeDistance( (double)light.getHalfIntensityDistance() );
-			result.setFadePower( PovLight.FADE_QUADRATIC );
-		}
-		else if ( light.getLinearAttenuation() > 0.0f )
-		{
-			result.setFadeDistance( (double)light.getHalfIntensityDistance() );
-			result.setFadePower( PovLight.FADE_LINEAR );
-		}
-		else
-		{
-			result.setFadePower( PovLight.FADE_NONE );
 		}
 
 		return result;
