@@ -1300,7 +1300,7 @@ public class JOGLRenderer
 			if ( light instanceof SpotLight3D )
 			{
 				final SpotLight3D spot = (SpotLight3D)light;
-				final Vector3D direction = spot.getDirection();
+				final Vector3D direction = light2world.rotate( spot.getDirection() );
 				gl.glLightfv( lightNumber , GL.GL_POSITION       , new float[] { (float)light2world.xo , (float)light2world.yo , (float)light2world.zo , 1.0f } , 0 );
 				gl.glLightfv( lightNumber , GL.GL_SPOT_DIRECTION , new float[] { (float)direction.x    , (float)direction.y    , (float)direction.z           } , 0 );
 				gl.glLightf ( lightNumber , GL.GL_SPOT_CUTOFF    , spot.getSpreadAngle() );
