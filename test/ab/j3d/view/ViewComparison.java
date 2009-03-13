@@ -51,6 +51,7 @@ import ab.j3d.model.Camera3D;
 import ab.j3d.model.Light3D;
 import ab.j3d.model.Scene;
 import ab.j3d.model.Sphere3D;
+import ab.j3d.model.SpotLight3D;
 import ab.j3d.pov.AbToPovConverter;
 import ab.j3d.pov.PovScene;
 import ab.j3d.pov.PovVector;
@@ -325,7 +326,21 @@ public class ViewComparison
 		protected void createLights( final Scene target )
 		{
 			target.setAmbient( 0.5f , 0.5f , 0.5f );
-			target.addContentNode( "light-1" , Matrix3D.INIT.plus(  1000.0 ,  -1000.0 ,  1000.0 ) , new Light3D( 150 , FALL_OFF ) );
+			createDiffuseLights( target );
+		}
+
+		protected void createDiffuseLights( final Scene target )
+		{
+			final Light3D pointLight = new Light3D();
+			pointLight.setIntensity( 0.5f );
+			pointLight.setFallOff( FALL_OFF );
+			target.addContentNode( "light-1" , Matrix3D.INIT.plus(  1000.0 ,  -1000.0 ,  1000.0 ) , pointLight );
+
+			final SpotLight3D spotLight = new SpotLight3D( Vector3D.normalize( 1.0 , 1.0 , -1.0 ) , 10.0f );
+			spotLight.setIntensity( 2.0f );
+			spotLight.setFallOff( FALL_OFF );
+			spotLight.setConcentration( 32.0f );
+			target.addContentNode( "light-2" , Matrix3D.getTransform( 0.0 , 0.0 , 10.0 , -1000.0 ,  -1000.0 ,  1000.0 ) , spotLight );
 		}
 	}
 
@@ -334,7 +349,7 @@ public class ViewComparison
 	{
 		protected void createLights( final Scene target )
 		{
-			target.addContentNode( "light-1" , Matrix3D.INIT.plus(  1000.0 ,  -1000.0 ,  1000.0 ) , new Light3D( 150 , FALL_OFF ) );
+			createDiffuseLights( target );
 		}
 	}
 
