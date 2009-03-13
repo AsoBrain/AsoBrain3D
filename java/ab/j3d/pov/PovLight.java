@@ -68,9 +68,10 @@ public final class PovLight
 	private boolean _spotlight;
 
 	/**
-	 * Spotlight parameter, which tells the spotlight to point at a particular 3D
-	 * coordinate. A line from the location of the spotlight to the 'pointAt'
-	 * coordinate forms the center line of the cone of light.
+	 * Spotlight and parallel light parameter, which tells the light to point at
+	 * a particular 3D coordinate. For spotlights, a line from the location of
+	 * the spotlight to the 'pointAt' coordinate forms the center line of the
+	 * cone of light.
 	 */
 	private PovVector _pointAt;
 
@@ -80,7 +81,7 @@ public final class PovLight
 	 * float value you specify is the angle, in degrees, between the edge of the
 	 * cone and center line.
 	 */
-	private double _falloff;
+	private double _fallOff;
 
 	/**
 	 * Spotlight parameter, which specifies the size of the "hot-spot" at the
@@ -119,9 +120,10 @@ public final class PovLight
 	private boolean _arealight;
 
 	/**
-	 * Light is an parallel light.
+	 * Parallel lights are useful for simulating very distant light sources,
+	 * such as sunlight. As the name suggests, it makes the light rays parallel.
 	 */
-	private boolean _parallellight;
+	private boolean _parallel;
 
 	/**
 	 * Horizontal range vector of area array.
@@ -174,11 +176,11 @@ public final class PovLight
 		_spotlight     = false;
 		_pointAt       = new PovVector( 0.0 , 0.0 , 0.0 );
 		_radius        = 30.0;
-		_falloff       = 45.0;
+		_fallOff       = 45.0;
 		_tightness     =  0.0;
 
 		_arealight     = false;
-		_parallellight = false;
+		_parallel      = false;
 		_areaHorSize   = null;
 		_areaVerSize   = null;
 		_areaHorCount  = 1;
@@ -230,48 +232,111 @@ public final class PovLight
 	}
 
 	/**
-	 * Convenience method to set common spotlight properties.
+	 * Returns whether the light is a spotlight, i.e. a light which casts a cone
+	 * of light that is bright in the center and falls of to darkness in a soft
+	 * fringe effect at the edge.
 	 *
-	 * @param   target      Target point of the spot.
-	 * @param   radius      Angle between the center line and the outer edge of
-	 *                      the light's "hot-spot", in degrees.
-	 * @param   falloff     Angle between the center line and the outer edge of
-	 *                      the cone of light, in degrees.
-	 *
-	 * @throws  NullPointerException if target is <code>null</code>.
-	 * @throws  IllegalArgumentException if <code>radius</code> or
-	 *          <code>falloff</code> is outside of the valid range from 0.0 to
-	 *          180.0 (inclusive), or if <code>falloff < radius</code>.
+	 * @return  <code>true</code> if the light is a spotlight;
+	 *          <code>false</code> otherwise.
 	 */
-	public void makeSpot( final PovVector target , final double radius , final double falloff )
+	public boolean isSpotlight()
 	{
-		if ( target == null )
-			throw new NullPointerException( "target" );
-		if ( ( radius < 0.0 ) || ( radius > 180.0 ) )
-			throw new IllegalArgumentException( "radius" );
-		if ( ( falloff < radius ) || ( falloff > 180.0 ) )
-			throw new IllegalArgumentException( "falloff" );
-
-		_spotlight = true;
-		_pointAt   = target;
-		_falloff   = falloff;
-		_radius    = radius;
+		return _spotlight;
 	}
 
 	/**
-	 * Make this light a parallel light.
+	 * Sets whether the light is a spotlight, i.e. a light which casts a cone of
+	 * light that is bright in the center and falls of to darkness in a soft
+	 * fringe effect at the edge.
 	 *
-	 * @param   target      Target point of the spot.
-	 *
-	 * @throws  NullPointerException if target is <code>null</code>.
+	 * @param   spotlight   <code>true</code> to make the light a spotlight;
+	 *                      <code>false</code> otherwise.
 	 */
-	public void makeParallel( final PovVector target )
+	public void setSpotlight( final boolean spotlight )
 	{
-		if ( target == null )
-			throw new NullPointerException( "target" );
+		_spotlight = spotlight;
+	}
 
-		_parallellight  = true;
-		_pointAt        = target;
+	/**
+	 * Returns the 3D coordinate that the spotlight or parallel light points at.
+	 * For spotlights, a line from the location of the spotlight to the
+	 * 'pointAt' coordinate forms the center line of the cone of light.
+	 *
+	 * @return  Coordinate that the light points at.
+	 */
+	public PovVector getPointAt()
+	{
+		return _pointAt;
+	}
+
+	/**
+	 * Sets the 3D coordinate that the spotlight or parallel light points at.
+	 * For spotlights, a line from the location of the spotlight to the
+	 * 'pointAt' coordinate forms the center line of the cone of light.
+	 *
+	 * @param   pointAt     Coordinate to point at.
+	 */
+	public void setPointAt( final PovVector pointAt )
+	{
+		_pointAt = pointAt;
+	}
+
+	/**
+	 * Returns the overall size of the cone of light. This is the point where
+	 * the light falls off to zero intensity. The float value you specify is the
+	 * angle, in degrees, between the edge of the cone and center line.
+	 *
+	 * @return  Angle between the edge of the cone and the center line of the
+	 *          spotlight, in degrees.
+	 */
+	public double getFallOff()
+	{
+		return _fallOff;
+	}
+
+	/**
+	 * Sets the overall size of the cone of light. This is the point where
+	 * the light falls off to zero intensity. The float value you specify is the
+	 * angle, in degrees, between the edge of the cone and center line.
+	 *
+	 * @param   fallOff     Angle between the edge of the cone and the center
+	 *                      line of the spotlight, in degrees.
+	 */
+	public void setFallOff( final double fallOff )
+	{
+		_fallOff = fallOff;
+	}
+
+	/**
+	 * Returns the size of the "hot-spot" at the center of the cone of light.
+	 * The "hot-spot" is a brighter cone of light inside the spotlight cone and
+	 * has the same center line. The radius value specifies the angle, in
+	 * degrees, between the edge of this bright, inner cone and the center line.
+	 * The light inside the inner cone is of uniform intensity. The light
+	 * between the inner and outer cones tapers off to zero.
+	 *
+	 * @return  Angle between the bright inner cone and the center line of the
+	 *          spotlight, in degrees.
+	 */
+	public double getRadius()
+	{
+		return _radius;
+	}
+
+	/**
+	 * Returns the size of the "hot-spot" at the center of the cone of light.
+	 * The "hot-spot" is a brighter cone of light inside the spotlight cone and
+	 * has the same center line. The radius value specifies the angle, in
+	 * degrees, between the edge of this bright, inner cone and the center line.
+	 * The light inside the inner cone is of uniform intensity. The light
+	 * between the inner and outer cones tapers off to zero.
+	 *
+	 * @param   radius  Angle between the bright inner cone and the center line
+	 *                  of the spotlight, in degrees.
+	 */
+	public void setRadius( final double radius )
+	{
+		_radius = radius;
 	}
 
 	/**
@@ -310,6 +375,32 @@ public final class PovLight
 			throw new IllegalArgumentException( "tightness" );
 
 		_tightness = tightness;
+	}
+
+	/**
+	 * Returns whether the light is a parallel light. Parallel lights are useful
+	 * for simulating very distant light sources, such as sunlight. As the name
+	 * suggests, it makes the light rays parallel.
+	 *
+	 * @return  <code>true</code> if the light emits parallel light rays;
+	 *          <code>false</code> otherwise.
+	 */
+	public boolean isParallel()
+	{
+		return _parallel;
+	}
+
+	/**
+	 * Sets whether the light is a parallel light. Parallel lights are useful
+	 * for simulating very distant light sources, such as sunlight. As the name
+	 * suggests, it makes the light rays parallel.
+	 *
+	 * @param   parallel    <code>true</code> to make the light rays parallel;
+	 *                      <code>false</code> otherwise.
+	 */
+	public void setParallel( final boolean parallel )
+	{
+		_parallel = parallel;
 	}
 
 	public void write( final IndentingWriter out )
@@ -353,10 +444,10 @@ public final class PovLight
 				out.newLine();
 			}
 
-			if ( _falloff != 45.0 )
+			if ( _fallOff != 45.0 )
 			{
 				out.write( "falloff " );
-				out.write( format( _falloff ) );
+				out.write( format( _fallOff ) );
 				out.newLine();
 			}
 
@@ -391,7 +482,7 @@ public final class PovLight
 			}
 		}
 
-		if ( _parallellight )
+		if ( _parallel )
 		{
 			out.write( "parallel " );
 			out.write( "point_at " );
@@ -442,7 +533,7 @@ public final class PovLight
 	}
 
 	/**
-	 * Indicates the falloff rate of the light.
+	 * Indicates the fall-off rate of the light.
 	 *
 	 * @return  One of: {@link #FADE_NONE}, {@link #FADE_LINEAR},
 	 *          {@link #FADE_QUADRATIC}.
@@ -453,7 +544,7 @@ public final class PovLight
 	}
 
 	/**
-	 * Sets the falloff rate of the light.
+	 * Sets the fall-off rate of the light.
 	 *
 	 * @param   fadePower   One of: {@link #FADE_NONE}, {@link #FADE_LINEAR},
 	 *                      {@link #FADE_QUADRATIC}.
