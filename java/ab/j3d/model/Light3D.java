@@ -317,12 +317,36 @@ public class Light3D
 	 */
 	public float getHalfIntensityDistance()
 	{
+		return getDistanceByIntensity( 0.5f );
+	}
+
+	/**
+	 * Returns the distance where the light reaches its specified intensity,
+	 * i.e. where the light attenuation equals <code>1.0</code>. For lights with
+	 * only constant attenuation, this method always returns <code>0.0</code>.
+	 *
+	 * @return  Distance at which the light has half its specified intensity.
+	 */
+	public float getFullIntensityDistance()
+	{
+		return getDistanceByIntensity( 1.0f );
+	}
+
+	/**
+	 * Returns the distance where the light attenuation equals the specified
+	 * intensity, relative to the light's specified intensity. For lights with
+	 * only constant attenuation, this method always returns <code>0.0</code>.
+	 *
+	 * @return  Distance at which the specified light intensity is reached.
+	 */
+	private float getDistanceByIntensity( final float intensity )
+	{
 		final float q = _quadraticAttenuation;
 		final float l = _linearAttenuation;
-		final float c = _constantAttenuation - 2.0f;
+		final float c = _constantAttenuation - ( 1.0f / intensity );
 
 		/*
-		 * Solve 'd' in the equation 'c + ld + qd^2 = 2.0', yielding the
+		 * Solve 'd' in the equation 'qd^2 + ld + c = 0.0', yielding the
 		 * distance where the light reaches half its specified intensity.
 		 */
 		final float result;
