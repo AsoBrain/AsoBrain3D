@@ -337,7 +337,7 @@ public class JOGLRenderer
 
 		final boolean frameBufferObjectsSupported = gl.isExtensionAvailable( "GL_EXT_framebuffer_object" );
 
-		final boolean shaderSupported =
+		final boolean shaderSupported = false &&
 				vertexShaderSupported &&
 				fragmentShaderSupported &&
 				shaderObjectsSupported;
