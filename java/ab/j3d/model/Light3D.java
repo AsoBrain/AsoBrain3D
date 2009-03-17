@@ -337,17 +337,21 @@ public class Light3D
 	 * intensity, relative to the light's specified intensity. For lights with
 	 * only constant attenuation, this method always returns <code>0.0</code>.
 	 *
+	 * @param   relativeIntensity   Relative light intensity, e.g.
+	 *                              <code>1.0</code> for the specified intensity
+	 *                              of this light.
+	 *
 	 * @return  Distance at which the specified light intensity is reached.
 	 */
-	private float getDistanceByIntensity( final float intensity )
+	private float getDistanceByIntensity( final float relativeIntensity )
 	{
 		final float q = _quadraticAttenuation;
 		final float l = _linearAttenuation;
-		final float c = _constantAttenuation - ( 1.0f / intensity );
+		final float c = _constantAttenuation - ( 1.0f / relativeIntensity );
 
 		/*
 		 * Solve 'd' in the equation 'qd^2 + ld + c = 0.0', yielding the
-		 * distance where the light reaches half its specified intensity.
+		 * distance where the light reaches the specified relative intensity.
 		 */
 		final float result;
 		if ( q == 0.0f )
@@ -420,7 +424,7 @@ public class Light3D
 	 * <p>
 	 * When set to <code>0.0</code>, the light will not be attenuated.
 	 *
-	 * @return  Fall-off distance.
+	 * @param   fallOff     Fall-off distance to be set.
 	 */
 	public void setFallOff( final double fallOff )
 	{
@@ -430,7 +434,7 @@ public class Light3D
 		}
 		else if ( fallOff == 0.0 )
 		{
-			setAttenuation( 0.0f , 0.0f , 0.0f );
+			setAttenuation( 1.0f , 0.0f , 0.0f );
 		}
 		else
 		{
