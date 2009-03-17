@@ -161,12 +161,12 @@ public final class TestObject3D
 		final Vector3D lbt = Vector3D.INIT.set( -1.0 ,  1.0 ,  1.0 );
 
 		final Object3DBuilder builder = new Object3DBuilder();
-		/* top    */ builder.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , false , false );
-		/* bottom */ builder.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , null , false , false );
-		/* front  */ builder.addFace( new Vector3D[] { lfb , lft , rft , rfb } , null , false , false );
-		/* back   */ builder.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , null , false , false );
-		/* left   */ builder.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , false , false );
-		/* right  */ builder.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , false , false );
+		/* top    */ builder.addFace( new Vector3D[] { lft , lbt , rbt , rft } , null , true , false );
+		/* bottom */ builder.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , null , true , false );
+		/* front  */ builder.addFace( new Vector3D[] { lfb , lft , rft , rfb } , null , true , false );
+		/* back   */ builder.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , null , true , false );
+		/* left   */ builder.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , null , true , false );
+		/* right  */ builder.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , true , false );
 		final Object3D cube = builder.getObject3D();
 
 		final double e = Math.sqrt( 3.0 ) / 3.0;
