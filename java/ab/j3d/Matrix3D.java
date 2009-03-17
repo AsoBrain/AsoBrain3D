@@ -31,7 +31,8 @@ import com.numdata.oss.TextTools;
 /**
  * This class is used to represent a 3D transformation matrix (although
  * it may also be used for 2D transformations).
- * <p />
+ *
+ * <p>
  * The matrix is organized as follows:
  * <pre>
  * | xx xy xz xo |
@@ -282,9 +283,9 @@ public final class Matrix3D
 	 * and a translation vector. Starting with the identity matrix, rotation is
 	 * performed (Z,X,Y order), than the translation is set.
 	 *
-	 * @param   rx      Rotation angle around X axis (degrees).
-	 * @param   ry      Rotation angle around Y axis (degrees).
-	 * @param   rz      Rotation angle around Z axis (degrees).
+	 * @param   rx      Rotation angle around X axis (degrees, <strong>clockwise</strong>).
+	 * @param   ry      Rotation angle around Y axis (degrees, counter-clockwise).
+	 * @param   rz      Rotation angle around Z axis (degrees, counter-clockwise).
 	 * @param   tx      X component of translation vector.
 	 * @param   ty      Y component of translation vector.
 	 * @param   tz      Z component of translation vector.
@@ -293,6 +294,7 @@ public final class Matrix3D
 	 */
 	public static Matrix3D getTransform( final double rx , final double ry , final double rz , final double tx , final double ty , final double tz )
 	{
+		// FIXME: rx should be counter-clockwise!
 		final double radX = Math.toRadians( rx );
 		final double radY = Math.toRadians( ry );
 		final double radZ = Math.toRadians( rz );
@@ -324,7 +326,8 @@ public final class Matrix3D
 	/**
 	 * Get transformation matrix based on the specified 'from' and 'to' points.
 	 * The result can be used to convert world coordinates to view coordinates.
-	 * <p />
+	 *
+	 * <p>
 	 * An up-vector must be specified to determine the correct view orientation.
 	 * Note that both a primary and a secondary up-vector is needed; the primary
 	 * up-vector is used when possible, the secondary up-vector is used when the
@@ -410,12 +413,14 @@ public final class Matrix3D
 	/**
 	 * Calculate transform for a plane that passes through <code>origin</code>
 	 * and has the specified <code>normal</code> vector.
-	 * <p />
+	 *
+	 * <p>
 	 * The main purpose for this method is creating a suitable 3D transformation
 	 * for a 2D plane whose Z-axis points 'out' of the plane; the orientation of
 	 * the X/Y-axes on the plane is inheritently undeterminate, but this function
 	 * tries to find reasonable defaults.
-	 * <p />
+	 *
+	 * <p>
 	 * A 0-vector multiplied with the resulting transform will match the
 	 * <code>origin</code>.
 	 *
@@ -489,7 +494,8 @@ public final class Matrix3D
 	 * Get transformation matrix for a rotation about an arbitrary axis. The
 	 * rotation is axis is specified by a pivot point and rotation axis
 	 * direction. The rotation angle is specified in radians.
-	 * <p />
+	 *
+	 * <p>
 	 * Also read <a href='http://www.cprogramming.com/tutorial/3d/rotation.html'>Rotation About an Arbitrary Axis</a>
 	 * (written by: Confuted, with a cameo by Silvercord (Charles Thibualt)).
 	 *
@@ -508,7 +514,8 @@ public final class Matrix3D
 	 * Get transformation matrix for a rotation about an arbitrary axis. The
 	 * rotation is axis is specified by a pivot point and rotation axis
 	 * direction. The rotation angle is specified in radians.
-	 * <p />
+	 *
+	 * <p>
 	 * Read <a href='http://www.mlahanas.de/Math/orientation.htm'>We consider the problem of the coordinate transformation about a rotation axis.</a>
 	 * (written by Michael Lahanas) for a simple explanation of the problem and
 	 * solution.
@@ -849,8 +856,9 @@ public final class Matrix3D
 	}
 
 	/**
-	 * Rotate about the X-axis in anti-clockwise direction.
-	 * <p />
+	 * Rotate about the X-axis in counter-clockwise direction.
+	 *
+	 * <p>
 	 * The returned matrix is the current matrix multiplied by the following
 	 * transformation matrix:
 	 * <pre>
@@ -885,8 +893,9 @@ public final class Matrix3D
 	}
 
 	/**
-	 * Rotate about the Y-axis in anti-clockwise direction.
-	 * <p />
+	 * Rotate about the Y-axis in counter-clockwise direction.
+	 *
+	 * <p>
 	 * The returned matrix is the current matrix multiplied by the following
 	 * transformation matrix:
 	 * <pre>
@@ -921,8 +930,9 @@ public final class Matrix3D
 	}
 
 	/**
-	 * Rotate about the Z-axis in anti-clockwise direction.
-	 * <p />
+	 * Rotate about the Z-axis in counter-clockwise direction.
+	 *
+	 * <p>
 	 * The returned matrix is the current matrix multiplied by the following
 	 * transformation matrix:
 	 * <pre>
@@ -949,8 +959,8 @@ public final class Matrix3D
 			final double sin = Math.sin( thetaRad );
 
 			result = set( cos * xx - sin * yx , cos * xy - sin * yy , cos * xz - sin * yz , cos * xo - sin * yo ,
-				          sin * xx + cos * yx , sin * xy + cos * yy , sin * xz + cos * yz , sin * xo + cos * yo ,
-				          zx , zy , zz , zo                   );
+			              sin * xx + cos * yx , sin * xy + cos * yy , sin * xz + cos * yz , sin * xo + cos * yo ,
+			              zx , zy , zz , zo );
 		}
 
 		return result;
