@@ -144,15 +144,7 @@ public class GLWrapper
 		final Boolean blend = Boolean.valueOf( enable );
 		if ( blend != _blendState )
 		{
-			if ( enable )
-			{
-				_gl.glEnable( GL.GL_BLEND );
-			}
-			else
-			{
-				_gl.glDisable( GL.GL_BLEND );
-			}
-
+			setEnabled( GL.GL_BLEND , enable );
 			_blendState = blend;
 		}
 	}
@@ -167,15 +159,7 @@ public class GLWrapper
 		final Boolean colormaterial = Boolean.valueOf( enable );
 		if ( colormaterial!= _colorMaterialState )
 		{
-			if ( enable )
-			{
-				_gl.glEnable( GL.GL_COLOR_MATERIAL );
-			}
-			else
-			{
-				_gl.glDisable( GL.GL_COLOR_MATERIAL );
-			}
-
+			setEnabled( GL.GL_COLOR_MATERIAL , enable );
 			_colorMaterialState = colormaterial;
 		}
 	}
@@ -189,15 +173,7 @@ public class GLWrapper
 	{
 		if ( cullFace != _cullFaceState )
 		{
-			if ( cullFace )
-			{
-				_gl.glEnable( GL.GL_CULL_FACE );
-			}
-			else
-			{
-				_gl.glDisable( GL.GL_CULL_FACE );
-			}
-
+			setEnabled( GL.GL_CULL_FACE , cullFace );
 			_cullFaceState = cullFace;
 		}
 	}
@@ -212,15 +188,7 @@ public class GLWrapper
 		final Boolean lighting = Boolean.valueOf( enable );
 		if ( lighting != _lightingState )
 		{
-			if ( enable )
-			{
-				_gl.glEnable( GL.GL_LIGHTING );
-			}
-			else
-			{
-				_gl.glDisable( GL.GL_LIGHTING );
-			}
-
+			setEnabled( GL.GL_LIGHTING , enable );
 			_lightingState = lighting;
 		}
 	}
@@ -235,15 +203,7 @@ public class GLWrapper
 		final Boolean lineSmooth = Boolean.valueOf( enable );
 		if ( lineSmooth!= _lineSmoothState )
 		{
-			if ( enable )
-			{
-				_gl.glEnable( GL.GL_LINE_SMOOTH );
-			}
-			else
-			{
-				_gl.glDisable( GL.GL_LINE_SMOOTH );
-			}
-
+			setEnabled( GL.GL_LINE_SMOOTH , enable );
 			_lineSmoothState = lineSmooth;
 		}
 	}
@@ -258,15 +218,7 @@ public class GLWrapper
 		final Boolean polygonOffsetFill = Boolean.valueOf( enable );
 		if ( polygonOffsetFill!= _polygonOffsetFillState )
 		{
-			if ( enable )
-			{
-				_gl.glEnable( GL.GL_POLYGON_OFFSET_FILL );
-			}
-			else
-			{
-				_gl.glDisable( GL.GL_POLYGON_OFFSET_FILL );
-			}
-
+			setEnabled( GL.GL_POLYGON_OFFSET_FILL , enable );
 			_polygonOffsetFillState = polygonOffsetFill;
 		}
 	}
