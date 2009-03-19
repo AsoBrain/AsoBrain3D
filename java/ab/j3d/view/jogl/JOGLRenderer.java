@@ -337,7 +337,7 @@ public class JOGLRenderer
 
 		final boolean frameBufferObjectsSupported = gl.isExtensionAvailable( "GL_EXT_framebuffer_object" );
 
-		final boolean shaderSupported = false &&
+		final boolean shaderSupported =
 				vertexShaderSupported &&
 				fragmentShaderSupported &&
 				shaderObjectsSupported;
@@ -1338,6 +1338,79 @@ public class JOGLRenderer
 		JOGLTools.glMultMatrixd( _gl , object2world );
 	}
 
+	protected void renderObject( final Object3D object , final RenderStyle objectStyle , final Collection<RenderStyleFilter> styleFilters , final Matrix3D object2world )
+	{
+		boolean anyMaterialEnabled = false;
+		boolean anyFillEnabled     = false;
+		boolean anyStrokeEnabled   = false;
+		boolean anyVertexEnabled   = false;
+
+		final int faceCount = object.getFaceCount();
+		final RenderStyle[] faceStyles = new RenderStyle[ faceCount ];
+
+		for ( int j = 0 ; j < faceCount; j++ )
+		{
+			final RenderStyle faceStyle = objectStyle.applyFilters( styleFilters , object.getFace( j ) );
+
+			anyMaterialEnabled |= faceStyle.isMaterialEnabled();
+			anyFillEnabled     |= faceStyle.isFillEnabled();
+			anyStrokeEnabled   |= faceStyle.isStrokeEnabled();
+			anyVertexEnabled   |= faceStyle.isVertexEnabled();
+
+			faceStyles[ j ] = faceStyle;
+		}
+
+		if ( anyMaterialEnabled || anyFillEnabled || anyStrokeEnabled || anyVertexEnabled )
+		{
+			if ( anyMaterialEnabled )
+			{
+				for ( int j = 0 ; j < faceCount; j++ )
+				{
+					final RenderStyle faceStyle = faceStyles[ j ];
+					if ( faceStyle.isMaterialEnabled() )
+					{
+						renderMaterialFace( object.getFace( j ), faceStyle );
+					}
+				}
+			}
+			else if ( anyFillEnabled )
+			{
+				for ( int j = 0 ; j < faceCount; j++ )
+				{
+					final RenderStyle faceStyle = faceStyles[ j ];
+					if ( faceStyle.isFillEnabled() )
+					{
+						renderFilledFace( object.getFace( j ), faceStyle );
+					}
+				}
+			}
+
+			if ( anyStrokeEnabled )
+			{
+				for ( int j = 0 ; j < faceCount; j++ )
+				{
+					final RenderStyle faceStyle = faceStyles[ j ];
+					if ( faceStyle.isStrokeEnabled() )
+					{
+						renderStrokedFace( object.getFace( j ), faceStyle );
+					}
+				}
+			}
+
+			if ( anyVertexEnabled )
+			{
+				for ( int j = 0 ; j < faceCount; j++ )
+				{
+					final RenderStyle faceStyle = faceStyles[ j ];
+					if ( faceStyle.isVertexEnabled() )
+					{
+						renderFaceVertices( faceStyle , object2world , object.getFace( j ) );
+					}
+				}
+			}
+		}
+	}
+
 	protected void renderObjectEnd()
 	{
 		_gl.glPopMatrix();
@@ -1393,7 +1466,7 @@ public class JOGLRenderer
 				glWrapper.setBlend( blend );
 				glWrapper.setCullFace( backfaceCulling );
 				glWrapper.setLighting( hasLighting );
-				setMaterial( material , extraAlpha );
+				setMaterial( material , style , extraAlpha );
 
 				/*
 				 * Enable bump map.
@@ -1817,7 +1890,7 @@ public class JOGLRenderer
 	 *
 	 * @param   color   Color to set.
 	 */
-	public void setColor( final Color color )
+	private void setColor( final Color color )
 	{
 		final float[] rgba  = color.getRGBComponents( null );
 		final float   red   = rgba[ 0 ];
@@ -1825,6 +1898,19 @@ public class JOGLRenderer
 		final float   blue  = rgba[ 2 ];
 		final float   alpha = rgba[ 3 ];
 
+		setColor( red , green , blue , alpha );
+	}
+
+	/**
+	 * Sets the current color and material to the given color.
+	 *
+	 * @param   red     Red component.
+	 * @param   green   Green component.
+	 * @param   blue    Blue component.
+	 * @param   alpha   Alpha component.
+	 */
+	private void setColor( final float red , final float green , final float blue , final float alpha )
+	{
 		final GLWrapper glWrapper = _glWrapper;
 		glWrapper.setColor( red , green , blue , alpha );
 		glWrapper.setMaterialAmbient( red , green , blue , alpha );
@@ -1838,17 +1924,41 @@ public class JOGLRenderer
 	 * Set GL material properties.
 	 *
 	 * @param   material    {@link Material} properties.
+	 * @param   style       Render style to be applied.
 	 * @param   extraAlpha  Extra alpha multiplier.
 	 */
-	public void setMaterial( final Material material , final float extraAlpha )
+	public void setMaterial( final Material material , final RenderStyle style , final float extraAlpha )
 	{
-		final float alpha = extraAlpha * material.diffuseColorAlpha;
+		final float red;
+		final float green;
+		final float blue;
+		final float alpha;
+
+		if ( style.isFillEnabled() )
+		{
+			final Color materialDiffuse = new Color( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , extraAlpha * material.diffuseColorAlpha );
+			final Color diffuse = RenderStyle.blendColors( style.getFillColor() , materialDiffuse );
+			final float[] diffuseComponents = diffuse.getRGBComponents( null );
+
+			red   = diffuseComponents[ 0 ];
+			green = diffuseComponents[ 1 ];
+			blue  = diffuseComponents[ 2 ];
+			alpha = diffuseComponents[ 3 ];
+		}
+		else
+		{
+			red   = material.diffuseColorRed;
+			green = material.diffuseColorGreen;
+			blue  = material.diffuseColorBlue;
+			alpha = material.diffuseColorAlpha * extraAlpha;
+		}
 
 		final GLWrapper glWrapper = _glWrapper;
-		glWrapper.setColor( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , alpha );
+
+		glWrapper.setColor( red , green , blue , alpha );
 		glWrapper.setMaterialAmbient( material.ambientColorRed , material.ambientColorGreen , material.ambientColorBlue , alpha );
-		glWrapper.setMaterialDiffuse( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , alpha );
-		glWrapper.setMaterialSpecular(  material.specularColorRed , material.specularColorGreen , material.specularColorBlue , alpha );
+		glWrapper.setMaterialDiffuse( red , green , blue , alpha );
+		glWrapper.setMaterialSpecular( material.specularColorRed , material.specularColorGreen , material.specularColorBlue , alpha );
 		glWrapper.setMaterialEmission( material.emissiveColorRed , material.emissiveColorGreen , material.emissiveColorBlue , alpha );
 		glWrapper.setMaterialShininess( (float)material.shininess );
 	}
@@ -2017,7 +2127,7 @@ public class JOGLRenderer
 				if ( ( hasXaxis || hasYaxis ) )
 				{
 					glWrapper.glLineWidth( 2.5f );
-					glWrapper.setColor( 0.1f , 0.1f , 0.1f , 1.0f );
+					setColor( 0.1f , 0.1f , 0.1f , 1.0f );
 					gl.glBegin( GL.GL_LINES );
 
 					if ( hasXaxis )
@@ -2049,7 +2159,7 @@ public class JOGLRenderer
 				if ( hasHighlightX || hasHighlightY )
 				{
 					glWrapper.glLineWidth( 1.5f );
-					glWrapper.setColor( 0.5f , 0.5f , 0.5f , 1.0f );
+					setColor( 0.5f , 0.5f , 0.5f , 1.0f );
 					gl.glBegin( GL.GL_LINES );
 
 					for ( int x = highlightMinX ; x <= highLightMaxX ; x += highlightInterval )
@@ -2075,7 +2185,7 @@ public class JOGLRenderer
 			}
 
 			glWrapper.glLineWidth( 1.0f );
-			glWrapper.setColor( 0.75f , 0.75f , 0.75f , 1.0f );
+			setColor( 0.75f , 0.75f , 0.75f , 1.0f );
 			gl.glBegin( GL.GL_LINES );
 
 			for ( int x = minCellX ; x <= maxCellX ; x++ )

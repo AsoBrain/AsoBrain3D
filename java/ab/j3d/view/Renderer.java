@@ -24,7 +24,6 @@ import java.util.List;
 
 import ab.j3d.Matrix3D;
 import ab.j3d.model.ContentNode;
-import ab.j3d.model.Face3D;
 import ab.j3d.model.Light3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Node3DCollection;
@@ -111,8 +110,6 @@ public abstract class Renderer
 	 */
 	protected void renderObjects( final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
 	{
-		RenderStyle[] faceStyles = null;
-
 		for ( final ContentNode node : nodes )
 		{
 			final Matrix3D node2world = node.getTransform();
@@ -129,80 +126,10 @@ public abstract class Renderer
 
 				final RenderStyle objectStyle = nodeStyle.applyFilters( styleFilters , object );
 
-				boolean anyMaterialEnabled = false;
-				boolean anyFillEnabled     = false;
-				boolean anyStrokeEnabled   = false;
-				boolean anyVertexEnabled   = false;
-
-				if ( ( faceStyles == null ) || ( faceCount >= faceStyles.length ) )
-				{
-					faceStyles = new RenderStyle[ faceCount ];
-				}
-
-				for ( int j = 0 ; j < faceCount; j++ )
-				{
-					final RenderStyle faceStyle = objectStyle.applyFilters( styleFilters , object.getFace( j ) );
-
-					anyMaterialEnabled |= faceStyle.isMaterialEnabled();
-					anyFillEnabled     |= faceStyle.isFillEnabled();
-					anyStrokeEnabled   |= faceStyle.isStrokeEnabled();
-					anyVertexEnabled   |= faceStyle.isVertexEnabled();
-
-					faceStyles[ j ] = faceStyle;
-				}
-
-				if ( anyMaterialEnabled || anyFillEnabled || anyStrokeEnabled || anyVertexEnabled )
+				if ( faceCount > 0 )
 				{
 					renderObjectBegin( object2world , object , objectStyle );
-
-					if ( anyMaterialEnabled )
-					{
-						for ( int j = 0 ; j < faceCount; j++ )
-						{
-							final RenderStyle faceStyle = faceStyles[ j ];
-							if ( faceStyle.isMaterialEnabled() )
-							{
-								renderMaterialFace( object.getFace( j ), faceStyle );
-							}
-						}
-					}
-
-					if ( anyFillEnabled )
-					{
-						for ( int j = 0 ; j < faceCount; j++ )
-						{
-							final RenderStyle faceStyle = faceStyles[ j ];
-							if ( faceStyle.isFillEnabled() )
-							{
-								renderFilledFace( object.getFace( j ), faceStyle );
-							}
-						}
-					}
-
-					if ( anyStrokeEnabled )
-					{
-						for ( int j = 0 ; j < faceCount; j++ )
-						{
-							final RenderStyle faceStyle = faceStyles[ j ];
-							if ( faceStyle.isStrokeEnabled() )
-							{
-								renderStrokedFace( object.getFace( j ), faceStyle );
-							}
-						}
-					}
-
-					if ( anyVertexEnabled )
-					{
-						for ( int j = 0 ; j < faceCount; j++ )
-						{
-							final RenderStyle faceStyle = faceStyles[ j ];
-							if ( faceStyle.isVertexEnabled() )
-							{
-								renderFaceVertices( faceStyle , object2world , object.getFace( j ) );
-							}
-						}
-					}
-
+					renderObject( object , objectStyle , styleFilters , object2world );
 					renderObjectEnd();
 				}
 			}
@@ -211,13 +138,7 @@ public abstract class Renderer
 
 	protected abstract void renderObjectBegin( final Matrix3D object2world , final Object3D object , final RenderStyle objectStyle );
 
-	protected abstract void renderMaterialFace( final Face3D face , final RenderStyle style );
-
-	protected abstract void renderFilledFace( final Face3D face, final RenderStyle style );
-
-	protected abstract void renderStrokedFace( final Face3D face, final RenderStyle style );
-
-	protected abstract void renderFaceVertices( final RenderStyle style , final Matrix3D object2world , final Face3D face );
+	protected abstract void renderObject( Object3D object, RenderStyle objectStyle, Collection<RenderStyleFilter> styleFilters, Matrix3D object2world );
 
 	protected abstract void renderObjectEnd();
 
