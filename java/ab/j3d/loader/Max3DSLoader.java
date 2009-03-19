@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,7 +80,7 @@ public final class Max3DSLoader
 	 * Maps material names ({@link String}) to {@link Material} objects
 	 * representing the materials in the <code>.3DS</code> file.
 	 */
-	private final Map<String,Material> _materials = new HashMap();
+	private final Map<String,Material> _materials = new HashMap<String,Material>();
 
 	/**
 	 * 3D object currently being constructed.
@@ -126,7 +127,8 @@ public final class Max3DSLoader
 					directory = canonicalFile.getParentFile();
 				}
 
-				supplementURL = directory.toURL();
+				final URI fileURI = directory.toURI();
+				supplementURL = fileURI.toURL();
 			}
 			catch ( IOException e )
 			{
@@ -548,6 +550,7 @@ public final class Max3DSLoader
 					 */
 					/*    int    chnunkID    */ readShort( in );
 					/*    int    chunkLength */ readLong( in );
+					in.skip( 8 );
 					final String materialName = readString( in );
 //					System.out.println( "    > texture map: " + materialName );
 
@@ -711,7 +714,7 @@ public final class Max3DSLoader
 	private static String readString( final InputStream in )
 		throws IOException
 	{
-		final StringBuffer result = new StringBuffer();
+		final StringBuilder result = new StringBuilder();
 
 		for ( int ch = readChar( in ) ; ch != 0 ; ch = readChar( in ) )
 			result.append( (char)ch );
