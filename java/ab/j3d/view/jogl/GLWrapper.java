@@ -37,42 +37,41 @@ public class GLWrapper
 	 */
 	private GL _gl;
 
-	/** Cached state of {@link GL#GL_BLEND}.                             */ private Boolean _blendState             = null;
-	/** Cached state of {@link GL#GL_COLOR_MATERIAL}.                    */ private Boolean _colorMaterialState     = null;
-	/** Cached state of {@link GL#GL_CULL_FACE}.                         */ private Boolean _cullFaceState          = null;
-	/** Cached state of {@link GL#GL_LIGHTING}.                          */ private Boolean _lightingState          = null;
-	/** Cached state of {@link GL#GL_LINE_SMOOTH}.                       */ private Boolean _lineSmoothState        = null;
-	/** Cached state of {@link GL#GL_POLYGON_OFFSET_FILL}.               */ private Boolean _polygonOffsetFillState = null;
-	/** Cached state of {@link GL#glBlendFunc(int, int)}.                */ private int     _blendFuncSfactor       = -1;
-	/** Cached state of {@link GL#glBlendFunc(int, int)}.                */ private int     _blendFuncDfactor       = -1;
-	/** Cached state of {@link GL#glColor4f(float, float, float,float)}. */ private float   _color4fR               = -1.0f;
-	/** Cached state of {@link GL#glColor4f(float, float, float,float)}. */ private float   _color4fG               = -1.0f;
-	/** Cached state of {@link GL#glColor4f(float, float, float,float)}. */ private float   _color4fB               = -1.0f;
-	/** Cached state of {@link GL#glColor4f(float, float, float,float)}. */ private float   _color4fA               = -1.0f;
-	/** Cached state of {@link GL#glCullFace(int)}.                      */ private int     _cullFace               = -1;
-	/** Cached state of {@link GL#glLineWidth(float)}.                   */ private float   _lineWidth              = -1.0F;
-	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialAmbientR       = -1.0f;
-	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialAmbientG       = -1.0f;
-	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialAmbientB       = -1.0f;
-	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialAmbientA       = -1.0f;
-	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialDiffuseR       = -1.0f;
-	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialDiffuseG       = -1.0f;
-	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialDiffuseB       = -1.0f;
-	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialDiffuseA       = -1.0f;
-	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialSpecularR      = -1.0f;
-	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialSpecularG      = -1.0f;
-	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialSpecularB      = -1.0f;
-	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialSpecularA      = -1.0f;
-	/** Cached state of {@link GL#glMaterialf(int, int, float)}.         */ private float   _materialShininess      = -1.0f;
-	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialEmissionR      = -1.0f;
-	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialEmissionG      = -1.0f;
-	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialEmissionB      = -1.0f;
-	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialEmissionA      = -1.0f;
-	/** Cached state of {@link GL#glPolygonMode(int, int)}.              */ private int     _polygonModeMode        = -1;
-	/** Cached state of {@link GL#glPolygonOffset(float, float)}.        */ private float   _polygonOffsetFactor    = -1.0F;
-	/** Cached state of {@link GL#glPolygonOffset(float, float)}.        */ private float   _polygonOffsetUnits     = -1.0F;
-	/** Cached state of {@link GL#glShadeModel(int)}.                    */ private int     _shadeModel             = -1;
-
+	/** Cached state of {@link GL#GL_BLEND}.                             */ private boolean _blendState             = false;
+	/** Cached state of {@link GL#GL_COLOR_MATERIAL}.                    */ private boolean _colorMaterialState     = false;
+	/** Cached state of {@link GL#GL_CULL_FACE}.                         */ private boolean _cullFaceState          = false;
+	/** Cached state of {@link GL#GL_LIGHTING}.                          */ private boolean _lightingState          = false;
+	/** Cached state of {@link GL#GL_LINE_SMOOTH}.                       */ private boolean _lineSmoothState        = false;
+	/** Cached state of {@link GL#GL_POLYGON_OFFSET_FILL}.               */ private boolean _polygonOffsetFillState = false;
+	/** Cached state of {@link GL#glBlendFunc(int, int)}.                */ private int     _blendFuncSfactor       = GL.GL_ONE;
+	/** Cached state of {@link GL#glBlendFunc(int, int)}.                */ private int     _blendFuncDfactor       = GL.GL_ZERO;
+	/** Cached state of {@link GL#glColor4f(float, float, float,float)}. */ private float   _color4fR               = 1.0f;
+	/** Cached state of {@link GL#glColor4f(float, float, float,float)}. */ private float   _color4fG               = 1.0f;
+	/** Cached state of {@link GL#glColor4f(float, float, float,float)}. */ private float   _color4fB               = 1.0f;
+	/** Cached state of {@link GL#glColor4f(float, float, float,float)}. */ private float   _color4fA               = 1.0f;
+	/** Cached state of {@link GL#glCullFace(int)}.                      */ private int     _cullFace               = GL.GL_BACK;
+	/** Cached state of {@link GL#glLineWidth(float)}.                   */ private float   _lineWidth              = 1.0f;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialAmbientR       = 0.2f;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialAmbientG       = 0.2f;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialAmbientB       = 0.2f;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialAmbientA       = 1.0f;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialDiffuseR       = 0.8f;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialDiffuseG       = 0.8f;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialDiffuseB       = 0.8f;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialDiffuseA       = 1.0f;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialSpecularR      = 0.0f;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialSpecularG      = 0.0f;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialSpecularB      = 0.0f;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialSpecularA      = 1.0f;
+	/** Cached state of {@link GL#glMaterialf(int, int, float)}.         */ private float   _materialShininess      = 0.0f;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialEmissionR      = 0.0f;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialEmissionG      = 0.0f;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialEmissionB      = 0.0f;
+	/** Cached state of {@link GL#glMaterialfv(int, int, float[], int)}. */ private float   _materialEmissionA      = 1.0f;
+	/** Cached state of {@link GL#glPolygonMode(int, int)}.              */ private int     _polygonModeMode        = GL.GL_FILL;
+	/** Cached state of {@link GL#glPolygonOffset(float, float)}.        */ private float   _polygonOffsetFactor    = 0.0f;
+	/** Cached state of {@link GL#glPolygonOffset(float, float)}.        */ private float   _polygonOffsetUnits     = 0.0f;
+	/** Cached state of {@link GL#glShadeModel(int)}.                    */ private int     _shadeModel             = GL.GL_SMOOTH;
 
 	/**
 	 * Wrapper for the JOGL {@link GL} class.
@@ -84,6 +83,55 @@ public class GLWrapper
 	public GLWrapper( final GL gl )
 	{
 		_gl = gl;
+		resetAll();
+	}
+
+	/**
+	 * Resets all OpenGL parameters that are cached by the wrapper to the values
+	 * that the wrapper specifies. This ensures there are no inconsistencies
+	 * between the wrapper and the OpenGL context.
+	 */
+	private void resetAll()
+	{
+		final GL gl = _gl;
+		setEnabled( GL.GL_BLEND , _blendState );
+		setEnabled( GL.GL_COLOR_MATERIAL , _colorMaterialState );
+		setEnabled( GL.GL_CULL_FACE , _cullFaceState );
+		setEnabled( GL.GL_LIGHTING , _lightingState );
+		setEnabled( GL.GL_LINE_SMOOTH , _lineSmoothState );
+		setEnabled( GL.GL_POLYGON_OFFSET_FILL , _polygonOffsetFillState );
+		gl.glBlendFunc( _blendFuncSfactor , _blendFuncDfactor );
+		gl.glColor4f( _color4fR , _color4fG , _color4fB , _color4fA );
+		gl.glCullFace( _cullFace );
+		gl.glLineWidth( _lineWidth );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK , GL.GL_AMBIENT , new float[] { _materialAmbientR , _materialAmbientG , _materialAmbientB , _materialAmbientA } , 0 );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK , GL.GL_DIFFUSE , new float[] { _materialDiffuseR , _materialDiffuseG , _materialDiffuseB , _materialDiffuseA } , 0 );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK , GL.GL_SPECULAR , new float[] { _materialSpecularR , _materialSpecularG , _materialSpecularB , _materialSpecularA } , 0 );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK , GL.GL_EMISSION , new float[] { _materialEmissionR , _materialEmissionG , _materialEmissionB , _materialEmissionA } , 0 );
+		gl.glMaterialf( GL.GL_FRONT_AND_BACK , GL.GL_SHININESS , _materialShininess );
+		gl.glPolygonMode( GL.GL_FRONT_AND_BACK , _polygonModeMode );
+		gl.glPolygonOffset( _polygonOffsetFactor , _polygonOffsetUnits );
+		gl.glShadeModel( _shadeModel );
+	}
+
+	/**
+	 * Enables or disables the given parameter, using {@link GL#glEnable} or
+	 * {@link GL#glDisable}.
+	 *
+	 * @param   parameter   Parameter to be enabled or disabled.
+	 * @param   enable      <code>true</code> to enable the parameter;
+	 *                      <code>false</code> to disable it.
+	 */
+	private void setEnabled( final int parameter , final boolean enable )
+	{
+		if ( enable )
+		{
+			_gl.glEnable( parameter );
+		}
+		else
+		{
+			_gl.glDisable( parameter );
+		}
 	}
 
 	/**
@@ -135,14 +183,13 @@ public class GLWrapper
 	/**
 	 * Enable or disable {@link GL#GL_CULL_FACE}.
 	 *
-	 * @param enable Enables {@link GL#GL_CULL_FACE} if set to true.
+	 * @param   cullFace    Enables {@link GL#GL_CULL_FACE} if set to true.
 	 */
-	public void setCullFace( final boolean enable )
+	public void setCullFace( final boolean cullFace )
 	{
-		final Boolean cullFace = Boolean.valueOf( enable );
 		if ( cullFace != _cullFaceState )
 		{
-			if ( enable )
+			if ( cullFace )
 			{
 				_gl.glEnable( GL.GL_CULL_FACE );
 			}
@@ -220,7 +267,7 @@ public class GLWrapper
 				_gl.glDisable( GL.GL_POLYGON_OFFSET_FILL );
 			}
 
-			_lineSmoothState = polygonOffsetFill;
+			_polygonOffsetFillState = polygonOffsetFill;
 		}
 	}
 
@@ -308,7 +355,7 @@ public class GLWrapper
 	{
 		if ( ( r != _materialAmbientR ) || ( g != _materialAmbientG ) || ( b != _materialAmbientB ) || ( a != _materialAmbientA ) )
 		{
-			_gl.glMaterialfv( GL.GL_FRONT , GL.GL_AMBIENT , new float[] { r , g , b , a } , 0 );
+			_gl.glMaterialfv( GL.GL_FRONT_AND_BACK , GL.GL_AMBIENT , new float[] { r , g , b , a } , 0 );
 			_materialAmbientR = r;
 			_materialAmbientG = g;
 			_materialAmbientB = b;
@@ -331,7 +378,7 @@ public class GLWrapper
 	{
 		if ( ( r != _materialDiffuseR ) || ( g != _materialDiffuseG ) || ( b != _materialDiffuseB ) || ( a != _materialDiffuseA ) )
 		{
-			_gl.glMaterialfv( GL.GL_FRONT , GL.GL_DIFFUSE , new float[] { r , g , b , a } , 0 );
+			_gl.glMaterialfv( GL.GL_FRONT_AND_BACK , GL.GL_DIFFUSE , new float[] { r , g , b , a } , 0 );
 			_materialDiffuseR = r;
 			_materialDiffuseG = g;
 			_materialDiffuseB = b;
@@ -354,7 +401,7 @@ public class GLWrapper
 	{
 		if ( ( r != _materialSpecularR ) || ( g != _materialSpecularG ) || ( b != _materialSpecularB ) || ( a != _materialSpecularA ) )
 		{
-			_gl.glMaterialfv( GL.GL_FRONT , GL.GL_SPECULAR , new float[] { r , g , b , a } , 0 );
+			_gl.glMaterialfv( GL.GL_FRONT_AND_BACK , GL.GL_SPECULAR , new float[] { r , g , b , a } , 0 );
 			_materialSpecularR = r;
 			_materialSpecularG = g;
 			_materialSpecularB = b;
@@ -394,7 +441,7 @@ public class GLWrapper
 	{
 		if ( ( r != _materialEmissionR ) || ( g != _materialEmissionG ) || ( b != _materialEmissionB ) || ( a != _materialEmissionA ) )
 		{
-			_gl.glMaterialfv( GL.GL_FRONT , GL.GL_EMISSION , new float[] { r , g , b , a } , 0 );
+			_gl.glMaterialfv( GL.GL_FRONT_AND_BACK , GL.GL_EMISSION , new float[] { r , g , b , a } , 0 );
 			_materialEmissionR = r;
 			_materialEmissionG = g;
 			_materialEmissionB = b;
