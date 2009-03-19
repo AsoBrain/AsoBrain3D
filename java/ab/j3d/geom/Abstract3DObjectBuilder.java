@@ -295,7 +295,7 @@ public abstract class Abstract3DObjectBuilder
 	 */
 	public void addFace( final Vector3D[] points , final Material material , final boolean smooth , final boolean twoSided )
 	{
-		addFace( points , material , (Point2D.Float[])null , null , smooth , twoSided );
+		addFace( points , material , null , null , smooth , twoSided );
 	}
 
 	/**
@@ -308,7 +308,7 @@ public abstract class Abstract3DObjectBuilder
 	 */
 	public void addFace( final int[] vertexIndices , final Material material , final boolean smooth , final boolean twoSided )
 	{
-		addFace( vertexIndices , material , (Point2D.Float[])null , null , smooth , twoSided );
+		addFace( vertexIndices , material , null , null , smooth , twoSided );
 	}
 
 	/**
@@ -383,6 +383,21 @@ public abstract class Abstract3DObjectBuilder
 		addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , material , false , hasBackface );
 	}
 
+	/**
+	 * Add quad primitive.
+	 *
+	 * @param   point1          First vertex coordinates.
+	 * @param   point2          Second vertex coordinates.
+	 * @param   point3          Third vertex coordinates.
+	 * @param   point4          Fourth vertex coordinates.
+	 * @param   material        Material specification to use for shading.
+	 * @param   uvMap           UV-map used to generate texture coordinates.
+	 * @param   hasBackface     Flag to indicate if face has a backface.
+	 */
+	public void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final Material material , final UVMap uvMap , final boolean hasBackface )
+	{
+		addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , material , uvMap , false , false , hasBackface );
+	}
 
 	/**
 	 * Add textured quad.
