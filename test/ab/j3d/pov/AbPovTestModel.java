@@ -274,7 +274,7 @@ public final class AbPovTestModel
 		if ( node == null )
 		{
 			final Material material  = createMaterialWithColor( Color.BLUE );
-			result = new Sphere3D( 100.0 , 20 , 20 , material );
+			result = new Sphere3D( 50.0 , 20 , 20 , material );
 		}
 		else
 		{
