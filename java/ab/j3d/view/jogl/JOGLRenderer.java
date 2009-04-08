@@ -635,6 +635,10 @@ public class JOGLRenderer
 
 		final Class<?>    clazz  = getClass();
 		final InputStream source = clazz.getResourceAsStream( name );
+		if ( source == null )
+		{
+			throw new IOException( "Failed to load shader: " + name );
+		}
 
 		result.setSource( TextTools.loadText( source ) );
 		return result;
