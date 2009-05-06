@@ -51,6 +51,6 @@ public class TestViewToPovAction
 
 		final Locale[] locales = { new Locale( "nl" , "NL" ) , Locale.US , Locale.GERMANY };
 
-		ResourceBundleTester.testBundles( ViewToPovAction.class , locales , false , null , true , true , false );
+		ResourceBundleTester.testBundles( ViewToPovAction.class , true , locales , false , null , true , true , false );
 	}
 }

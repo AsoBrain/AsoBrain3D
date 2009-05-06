@@ -69,6 +69,6 @@ public class TestCameraControl
 			}
 		}
 
-		ResourceBundleTester.testBundles( CameraControl.class , locales , false , expectedKeys , false , true , false );
+		ResourceBundleTester.testBundles( CameraControl.class , true , locales , false , expectedKeys , false , true , false );
 	}
 }

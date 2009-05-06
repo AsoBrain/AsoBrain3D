@@ -54,6 +54,6 @@ public class TestRenderingPolicy
 		final Locale[] locales = { new Locale( "nl" , "NL" ) , Locale.US , Locale.GERMANY };
 
 		final List<String> expectedKeys = EnumTester.getEnumConstantList( RenderingPolicy.class );
-		ResourceBundleTester.testBundles( RenderingPolicy.class , locales , false , expectedKeys , false , true , false );
+		ResourceBundleTester.testBundles( RenderingPolicy.class , true , locales , false , expectedKeys , false , true , false );
 	}
 }
