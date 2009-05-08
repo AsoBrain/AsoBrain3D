@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.media.opengl.GL;
+import javax.media.opengl.GLContext;
 import javax.media.opengl.GLException;
 
 import com.sun.opengl.util.texture.Texture;
@@ -247,169 +248,23 @@ public class JOGLRenderer
 		/*
 		 * Check for required extensions.
 		 */
-		final boolean opengl12 = gl.isExtensionAvailable( "GL_VERSION_1_2" );
-		final boolean opengl13 = gl.isExtensionAvailable( "GL_VERSION_1_3" );
-		final boolean opengl14 = gl.isExtensionAvailable( "GL_VERSION_1_4" );
-		final boolean opengl15 = gl.isExtensionAvailable( "GL_VERSION_1_5" );
-		final boolean opengl20 = gl.isExtensionAvailable( "GL_VERSION_2_0" );
+		final JOGLCapabilities capabilities = new JOGLCapabilities( GLContext.getCurrent() );
+		capabilities.determineCapabilities();
 
-		final boolean vertexShaderSupported;
-		final boolean fragmentShaderSupported;
-		final boolean shaderObjectsSupported;
-		final boolean drawBuffersSupported;
-		if ( opengl20 )
-		{
-			vertexShaderSupported   = true;
-			fragmentShaderSupported = true;
-			shaderObjectsSupported  = true;
-			drawBuffersSupported    = true;
-		}
-		else
-		{
-			// TODO: extensions for these features
-			vertexShaderSupported   = false; //gl.isExtensionAvailable( "GL_ARB_vertex_shader"   );
-			fragmentShaderSupported = false; //gl.isExtensionAvailable( "GL_ARB_fragment_shader" );
-			shaderObjectsSupported  = false; //gl.isExtensionAvailable( "GL_ARB_shader_objects"  );
-			drawBuffersSupported    = false; //gl.isExtensionAvailable( "GL_ARB_draw_buffers"    );
-
-			// NOTE: For shaders written in low-level assembly langauge, the
-			// following extensions would be needed:
-			//  - GL_ARB_fragment_program
-			//  - GL_ARB_vertex_program
-		}
-
-		final boolean multiTextureSupported = opengl13 || gl.isExtensionAvailable( "GL_ARB_multitexture" );
-
-		final boolean occlusionQuerySupported;
-		final boolean shadowFuncsSupported;
-		if ( opengl15 )
-		{
-			occlusionQuerySupported = true;
-			shadowFuncsSupported    = true;
-		}
-		else
-		{
-			// TODO: Support occlusion query extension.
-			occlusionQuerySupported = false; //gl.isExtensionAvailable( "GL_ARB_occlusion_query" );
-			shadowFuncsSupported    = gl.isExtensionAvailable( "GL_EXT_shadow_funcs" );
-		}
-
-		final boolean depthTextureSupported;
-		final boolean shadowSupported;
-		final boolean blendFuncSeperateSupported;
-		if ( opengl14 )
-		{
-			depthTextureSupported      = true;
-			shadowSupported            = true;
-			blendFuncSeperateSupported = true;
-		}
-		else
-		{
-			depthTextureSupported      = gl.isExtensionAvailable( "GL_ARB_depth_texture"       );
-			shadowSupported            = gl.isExtensionAvailable( "GL_ARB_shadow"              );
-			blendFuncSeperateSupported = gl.isExtensionAvailable( "GL_EXT_blend_func_separate" );
-		}
-
-		final boolean textureRectangleSupported = gl.isExtensionAvailable( "GL_ARB_texture_rectangle" );
-
-		boolean edgeClampSupported = opengl12;
-		if ( !edgeClampSupported )
-		{
-			edgeClampSupported = gl.isExtensionAvailable( "GL_SGIS_texture_edge_clamp" );
-			if ( !edgeClampSupported )
-			{
-				/*
-				 * spec claims it is GL_SGIS_texture_edge_clamp, reality shows
-				 * it is GL_EXT_texture_edge_clamp on Nvidia.
-				 */
-				edgeClampSupported = gl.isExtensionAvailable( "GL_EXT_texture_edge_clamp" );
-			}
-		}
-
-		final int[] colorBits = new int[ 4 ];
-		gl.glGetIntegerv( GL.GL_RED_BITS   , colorBits , 0 );
-		gl.glGetIntegerv( GL.GL_GREEN_BITS , colorBits , 1 );
-		gl.glGetIntegerv( GL.GL_BLUE_BITS  , colorBits , 2 );
-		gl.glGetIntegerv( GL.GL_ALPHA_BITS , colorBits , 3 );
-		final int[] depthBits = new int[ 1 ];
-		gl.glGetIntegerv( GL.GL_DEPTH_BITS , depthBits , 0 );
-		final boolean atLeast8AlphaBits = ( colorBits[ 3 ] >= 8 );
-
-		final boolean frameBufferObjectsSupported = gl.isExtensionAvailable( "GL_EXT_framebuffer_object" );
-
-		final boolean shaderSupported =
-				vertexShaderSupported &&
-				fragmentShaderSupported &&
-				shaderObjectsSupported;
-
-		// Limits the number of passes that could be combined using a
-		// multi-layer depth-peeling algorithm.
-		final int[] maxDrawBuffers = new int[ 1 ];
-		if ( drawBuffersSupported )
-		{
-			gl.glGetIntegerv( GL.GL_MAX_DRAW_BUFFERS , maxDrawBuffers , 0 );
-		}
-
-		// Limits the complexity of shaders we can use.
-		final int[] maxVaryingFloats = new int[ 1 ];
-		if ( shaderSupported )
-		{
-			gl.glGetIntegerv( GL.GL_MAX_VARYING_FLOATS , maxVaryingFloats , 0 );
-		}
-
-		final boolean depthPeelingSupported =
-				depthTextureSupported       &&
-				shadowSupported             &&
-				shadowFuncsSupported        &&
-				shaderSupported             &&
-				occlusionQuerySupported     &&
-				multiTextureSupported       &&
-				textureRectangleSupported   &&
-				frameBufferObjectsSupported;
-
-		final boolean shaderEnabled       = shaderSupported;
-		final boolean lightingEnabled     = true;
-
-		// TODO: Depth peeling isn't very reliable yet, so it's disabled.
-		// It's very slow on some systems and completely broken on others.
-		final boolean depthPeelingEnabled = false && shaderEnabled && depthPeelingSupported;
-
-		System.out.println( " OpenGL capabilities" );
-		System.out.println( "---------------------" );
-		System.out.println( "GL_EXT_framebuffer_object:  " + gl.isExtensionAvailable( "GL_EXT_framebuffer_object" ) );
-		System.out.println( "GL_VERSION_2_0:             " + opengl20 );
-		System.out.println( "GL_ARB_vertex_shader:       " + gl.isExtensionAvailable( "GL_ARB_vertex_shader" ) );
-		System.out.println( "GL_ARB_fragment_shader:     " + gl.isExtensionAvailable( "GL_ARB_fragment_shader" ) );
-		System.out.println( "GL_ARB_shader_objects:      " + gl.isExtensionAvailable( "GL_ARB_shader_objects" ) );
-		System.out.println( "GL_ARB_draw_buffers:        " + gl.isExtensionAvailable( "GL_ARB_draw_buffers" ) );
-		System.out.println( "GL_VERSION_1_5:             " + opengl15 );
-		System.out.println( "GL_ARB_occlusion_query:     " + gl.isExtensionAvailable( "GL_ARB_occlusion_query" ) );
-		System.out.println( "GL_EXT_shadow_funcs:        " + gl.isExtensionAvailable( "GL_EXT_shadow_funcs" ) );
-		System.out.println( "GL_VERSION_1_4:             " + opengl14 );
-		System.out.println( "GL_ARB_depth_texture:       " + gl.isExtensionAvailable( "GL_ARB_depth_texture" ) );
-		System.out.println( "GL_ARB_shadow:              " + gl.isExtensionAvailable( "GL_ARB_shadow" ) );
-		System.out.println( "GL_EXT_blend_func_separate: " + gl.isExtensionAvailable( "GL_EXT_blend_func_separate" ) );
-		System.out.println( "GL_VERSION_1_3:             " + opengl13 );
-		System.out.println( "GL_ARB_multitexture:        " + gl.isExtensionAvailable( "GL_ARB_multitexture" ) );
-		System.out.println( "GL_VERSION_1_2:             " + opengl12 );
-		System.out.println( "GL_ARB_texture_rectangle:   " + gl.isExtensionAvailable( "GL_ARB_texture_rectangle" ) );
-		System.out.println( "GL_SGIS_texture_edge_clamp: " + gl.isExtensionAvailable( "GL_SGIS_texture_edge_clamp" ) );
-		System.out.println( "GL_EXT_texture_edge_clamp:  " + gl.isExtensionAvailable( "GL_EXT_texture_edge_clamp" ) );
-		System.out.println( "GL_RED_BITS:                " + colorBits[ 0 ] );
-		System.out.println( "GL_GREEN_BITS:              " + colorBits[ 1 ] );
-		System.out.println( "GL_BLUE_BITS:               " + colorBits[ 2 ] );
-		System.out.println( "GL_ALPHA_BITS:              " + colorBits[ 3 ] );
-		System.out.println( "GL_DEPTH_BITS:              " + depthBits[ 0 ] );
-		System.out.println( "GL_MAX_DRAW_BUFFERS:        " + maxDrawBuffers[ 0 ] );
-		System.out.println( "GL_MAX_VARYING_FLOATS:      " + maxVaryingFloats[ 0 ] );
-
-		_shaders = ( shaderEnabled || depthPeelingEnabled ) ? new ArrayList<Shader>() : Collections.<Shader>emptyList();
+		final boolean shaderEnabled = capabilities.isShaderSupported();
 
 		Texture[] depthBuffers = null;
 		Texture[] colorBuffers = null;
 
 		if ( shaderEnabled )
 		{
+			_shaders = new ArrayList<Shader>();
+
+			// TODO: Depth peeling isn't very reliable yet, so it's disabled.
+			// It's very slow on some systems and completely broken on others.
+			final boolean depthPeelingEnabled = false && capabilities.isDepthPeelingSupported();
+			final boolean lightingEnabled     = true;
+
 			try
 			{
 				/*
@@ -491,9 +346,23 @@ public class JOGLRenderer
 				e.printStackTrace();
 			}
 		}
+		else
+		{
+			_shaders = Collections.emptyList();
+		}
 
 		_depthBuffers = depthBuffers;
 		_colorBuffers = colorBuffers;
+	}
+
+	/**
+	 * Returns whether the renderer is using shaders.
+	 *
+	 * @return  <code>true</code> if shaders are enabled.
+	 */
+	public boolean isShadersEnabled()
+	{
+		return !_shaders.isEmpty();
 	}
 
 	/**

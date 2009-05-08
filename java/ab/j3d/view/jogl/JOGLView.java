@@ -360,30 +360,6 @@ public class JOGLView
 		final GL gl = new DebugGL( glAutoDrawable.getGL() );
 		glAutoDrawable.setGL( gl );
 
-		if ( !_firstInit )
-		{
-			_firstInit = true;
-
-			System.out.println();
-			System.out.println( " About OpenGL:" );
-			System.out.println( "---------------" );
-			System.out.println( "Version:    " + gl.glGetString( GL.GL_VERSION ) );
-			System.out.println( "Vendor:     " + gl.glGetString( GL.GL_VENDOR ) );
-			System.out.println( "Extensions: " + gl.glGetString( GL.GL_EXTENSIONS ) );
-			System.out.println( "Renderer:   " + gl.glGetString( GL.GL_RENDERER ) );
-			System.out.println( "AutoMipMap: " + ( JOGLTools.hasAutoMipMapGenerationSupport( gl ) ? "enabled" : "disabled" ) );
-
-			try
-			{
-				System.out.println( "Shaders:    " + gl.glGetString( GL.GL_SHADING_LANGUAGE_VERSION ) );
-			}
-			catch ( Exception e )
-			{
-				System.out.println( "Shaders:    n/a" );
-			}
-			System.out.println();
-		}
-
 		/* Enable depth buffering. */
 		gl.glEnable( GL.GL_DEPTH_TEST );
 		gl.glDepthMask( true );
@@ -405,19 +381,15 @@ public class JOGLView
 
 	public void displayChanged( final GLAutoDrawable glAutoDrawable , final boolean b , final boolean b1 )
 	{
+		/* Not implemented in reference implementation. */
 	}
 
-	/**
-	 * Called whenever the GL canvas is resized.
-	 *
-	 * @param   glAutoDrawable  Target for performing OpenGL rendering.
-	 * @param   x               X offset.
-	 * @param   y               Y offset.
-	 * @param   width           Width of canvas.
-	 * @param   height          Height of canvas.
-	 */
 	public void reshape( final GLAutoDrawable glAutoDrawable , final int x , final int y , final int width , final int height )
 	{
+		if ( _renderThread != null )
+		{
+			_renderThread.requestUpdate();
+		}
 	}
 
 	public void display( final GLAutoDrawable glAutoDrawable )
