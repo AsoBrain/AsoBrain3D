@@ -286,10 +286,9 @@ public class JOGLView
 				{
 					if ( _updateRequested )
 					{
-						_updateRequested = false;
-
 						if ( viewComponent.isShowing() )
 						{
+							_updateRequested = false;
 							viewComponent.display();
 						}
 					}
