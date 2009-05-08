@@ -485,16 +485,10 @@ public class JOGLRenderer
 			catch ( IOException e )
 			{
 				e.printStackTrace();
-				_unlit    = null;
-				_colored  = null;
-				_textured = null;
 			}
 			catch ( GLException e )
 			{
 				e.printStackTrace();
-				_unlit    = null;
-				_colored  = null;
-				_textured = null;
 			}
 		}
 
