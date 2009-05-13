@@ -262,7 +262,7 @@ public class BSPTree
 		final int      vertexCount          = polygon._vertexCount;
 		final double[] viewCoordinates      = new double[ vertexCount * 3 ];
 		final int[]    projectedCoordinates = new int[ vertexCount * 2 ];
-		final Vector3D viewNormal           = model2view.transform( Vector3D.INIT.set( polygon._planeNormalX , polygon._planeNormalY , polygon._planeNormalZ ) );
+		final Vector3D viewNormal           = model2view.rotate( polygon._planeNormalX , polygon._planeNormalY , polygon._planeNormalZ );
 
 		for ( int j = 0 ; j < vertexCount ; j++ )
 		{
@@ -270,7 +270,7 @@ public class BSPTree
 			y = polygon._viewY[ j ];
 			z = polygon._viewZ[ j ];
 
-			final Vector3D translated = model2view.transform( Vector3D.INIT.set( x , y , z ) );
+			final Vector3D translated = model2view.transform( x , y , z );
 
 			viewCoordinates[ j * 3     ] = translated.x;
 			viewCoordinates[ j * 3 + 1 ] = translated.y;
