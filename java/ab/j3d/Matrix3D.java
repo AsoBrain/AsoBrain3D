@@ -1119,37 +1119,38 @@ public final class Matrix3D
 	public static String toFriendlyString( final Matrix3D m , final String prefix , final String infix )
 	{
 		final StringBuffer sb = new StringBuffer();
-		final DecimalFormat df = new DecimalFormat( "0.0" );
+		final DecimalFormat df1 = new DecimalFormat( "0.0" );
+		final DecimalFormat df2 = new DecimalFormat( "0.00" );
 
 		sb.append( prefix );
 		sb.append( "[ " );
-		TextTools.appendFixed( sb , df.format( m.xx ) , 4 , true , ' ' );
+		TextTools.appendFixed( sb , df2.format( m.xx ) , 5 , true , ' ' );
 		sb.append( " , " );
-		TextTools.appendFixed( sb , df.format( m.xy ) , 4 , true , ' ' );
+		TextTools.appendFixed( sb , df2.format( m.xy ) , 5 , true , ' ' );
 		sb.append( " , " );
-		TextTools.appendFixed( sb , df.format( m.xz ) , 4 , true , ' ' );
+		TextTools.appendFixed( sb , df2.format( m.xz ) , 5 , true , ' ' );
 		sb.append( " , " );
-		TextTools.appendFixed( sb , df.format( m.xo ) , 6 , true , ' ' );
+		TextTools.appendFixed( sb , df1.format( m.xo ) , 7 , true , ' ' );
 		sb.append( " ]" );
 		sb.append( infix );
 		sb.append( "[ " );
-		TextTools.appendFixed( sb , df.format( m.yx ) , 4 , true , ' ' );
+		TextTools.appendFixed( sb , df2.format( m.yx ) , 5 , true , ' ' );
 		sb.append( " , " );
-		TextTools.appendFixed( sb , df.format( m.yy ) , 4 , true , ' ' );
+		TextTools.appendFixed( sb , df2.format( m.yy ) , 5 , true , ' ' );
 		sb.append( " , " );
-		TextTools.appendFixed( sb , df.format( m.yz ) , 4 , true , ' ' );
+		TextTools.appendFixed( sb , df2.format( m.yz ) , 5 , true , ' ' );
 		sb.append( " , " );
-		TextTools.appendFixed( sb , df.format( m.yo ) , 6 , true , ' ' );
+		TextTools.appendFixed( sb , df1.format( m.yo ) , 7 , true , ' ' );
 		sb.append( " ]" );
 		sb.append( infix );
 		sb.append( "[ " );
-		TextTools.appendFixed( sb , df.format( m.zx ) , 4 , true , ' ' );
+		TextTools.appendFixed( sb , df2.format( m.zx ) , 5 , true , ' ' );
 		sb.append( " , " );
-		TextTools.appendFixed( sb , df.format( m.zy ) , 4 , true , ' ' );
+		TextTools.appendFixed( sb , df2.format( m.zy ) , 5 , true , ' ' );
 		sb.append( " , " );
-		TextTools.appendFixed( sb , df.format( m.zz ) , 4 , true , ' ' );
+		TextTools.appendFixed( sb , df2.format( m.zz ) , 5 , true , ' ' );
 		sb.append( " , " );
-		TextTools.appendFixed( sb , df.format( m.zo ) , 6 , true , ' ' );
+		TextTools.appendFixed( sb , df1.format( m.zo ) , 7 , true , ' ' );
 		sb.append( " ]" );
 
 		return sb.toString();
