@@ -75,6 +75,17 @@ public class PanAndZoomCameraControl
 		_savedSettings = new Object[] { view.getScene2View() , new Double( view.getZoomFactor() ) };
 	}
 
+	/**
+	 * Moves the camera such that it looks at the specified center point.
+	 *
+	 * @param   center  Point to center the view on.
+	 */
+	public void setCenter( final Vector3D center )
+	{
+		final Matrix3D transform = getScene2View();
+		setScene2View( transform.minus( transform.xo + center.x , transform.yo + center.y , transform.zo + center.z ) );
+	}
+
 	public void save()
 	{
 		final View3D   view       = _view;
