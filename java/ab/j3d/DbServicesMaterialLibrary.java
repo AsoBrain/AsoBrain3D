@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * Copyright (C) 2003-2008 Numdata BV
+ * Copyright (C) 2003-2009 Numdata BV
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -101,7 +101,7 @@ public class DbServicesMaterialLibrary
 		try
 		{
 			final DbServices db = getDB();
-			return db.retrieveList( null , Material.class , null , null );
+			return db.retrieveList( null , Material.class , null );
 		}
 		catch ( SQLException e )
 		{
