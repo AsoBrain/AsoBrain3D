@@ -430,14 +430,14 @@ public class JOGLView
 				final double   right    = +0.5 * (double)width;
 				final double   bottom   = -0.5 * (double)height;
 				final double   top      = +0.5 * (double)height;
-				final double   near     = _frontClipDistance;
-				final double   far      = _backClipDistance;
 				final double   scale    = camera3D.getZoomFactor() * scene.getUnit() / getResolution();
+				final double   near     = _frontClipDistance * scale;
+				final double   far      = _backClipDistance  * scale;
 
 				gl.glMatrixMode( GL.GL_PROJECTION );
 				gl.glLoadIdentity();
 				gl.glOrtho( left , right , bottom , top , near , far );
-				gl.glScaled( scale , scale ,  scale );
+				gl.glScaled( scale , scale , scale );
 			}
 			else if ( projectionPolicy == ProjectionPolicy.PERSPECTIVE )
 			{
