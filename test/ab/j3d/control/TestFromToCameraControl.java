@@ -26,8 +26,8 @@ import junit.framework.TestCase;
 import ab.j3d.Matrix3D;
 import ab.j3d.model.Scene;
 import ab.j3d.view.Projector;
-import ab.j3d.view.ViewControlInput;
 import ab.j3d.view.View3D;
+import ab.j3d.view.ViewControlInput;
 
 /**
  * This class tests the {@link FromToCameraControl} class.
@@ -75,7 +75,25 @@ public class TestFromToCameraControl
 				{
 					return null;
 				}
-		} );
+
+				public double getFrontClipDistance()
+				{
+					return 0.0;
+				}
+
+				public void setFrontClipDistance( final double front )
+				{
+				}
+
+				public double getBackClipDistance()
+				{
+					return 0.0;
+				}
+
+				public void setBackClipDistance( final double back )
+				{
+				}
+			} );
 
 		final Matrix3D expected = Matrix3D.INIT.set(
 			  1.0 ,  0.0 ,  0.0 ,  0.0 ,

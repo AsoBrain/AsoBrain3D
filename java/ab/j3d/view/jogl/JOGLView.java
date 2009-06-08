@@ -76,12 +76,12 @@ public class JOGLView
 	/**
 	 * Front clipping plane distance in view units.
 	 */
-	private final double _frontClipDistance;
+	private double _frontClipDistance;
 
 	/**
 	 * Back clipping plane distance in view units.
 	 */
-	private final double _backClipDistance;
+	private double _backClipDistance;
 
 	/**
 	 * Render thread.
@@ -92,11 +92,6 @@ public class JOGLView
 	 * JOGL renderer.
 	 */
 	private JOGLRenderer _renderer;
-
-	/**
-	 * Whether {@link #init(GLAutoDrawable)} as been called at least once.
-	 */
-	private static boolean _firstInit = false;
 
 	/**
 	 * Construct new view.
@@ -144,6 +139,28 @@ public class JOGLView
 		appendControl( defaultViewControl );
 		addOverlay( defaultViewControl );
 
+		update();
+	}
+
+	public double getFrontClipDistance()
+	{
+		return _frontClipDistance;
+	}
+
+	public void setFrontClipDistance( final double frontClipDistance )
+	{
+		_frontClipDistance = frontClipDistance;
+		update();
+	}
+
+	public double getBackClipDistance()
+	{
+		return _backClipDistance;
+	}
+
+	public void setBackClipDistance( final double backClipDistance )
+	{
+		_backClipDistance = backClipDistance;
 		update();
 	}
 

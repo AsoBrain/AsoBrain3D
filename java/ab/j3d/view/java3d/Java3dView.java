@@ -258,6 +258,26 @@ final class Java3dView
 		update();
 	}
 
+	public double getFrontClipDistance()
+	{
+		return _java3dView.getFrontClipDistance();
+	}
+
+	public void setFrontClipDistance( final double front )
+	{
+		_java3dView.setFrontClipDistance( front );
+	}
+
+	public double getBackClipDistance()
+	{
+		return _java3dView.getBackClipDistance();
+	}
+
+	public void setBackClipDistance( final double back )
+	{
+		_java3dView.setBackClipDistance( back );
+	}
+
 	public Component getComponent()
 	{
 		return _canvas;

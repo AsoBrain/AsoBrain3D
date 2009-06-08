@@ -310,6 +310,62 @@ public abstract class View3D
 	}
 
 	/**
+	 * Returns the distance between the camera and the front clipping plane,
+	 * in view units. The distance is measured the viewing direction. Any
+	 * objects closer to the camera than the front clipping plane are invisible.
+	 *
+	 * <p>For perspective projections, this distance should always be positive.
+	 * Parallel projections may have a zero or negative clipping distance,
+	 * though some view implementations may not support it.
+	 *
+	 * @return  Distance from the camera to the front clipping plane,
+	 *          in view units.
+	 */
+	public abstract double getFrontClipDistance();
+
+	/**
+	 * Sets the distance between the camera and the front clipping plane,
+	 * in view units. The distance is measured in the viewing direction. Any
+	 * objects closer to the camera than the front clipping plane are invisible.
+	 *
+	 * <p>For perspective projections, this distance should always be positive.
+	 * Parallel projections may have a zero or negative clipping distance,
+	 * though some view implementations may not support it.
+	 *
+	 * @param   front   Distance from the camera to the front clipping plane,
+	 *                  in view units.
+	 */
+	public abstract void setFrontClipDistance( final double front );
+
+	/**
+	 * Returns the distance between the camera and the back clipping plane,
+	 * in view units. The distance is measured in the viewing direction. Any
+	 * objects further away from the camera than the back clipping plane are
+	 * invisible.
+	 *
+	 * <p>This value must be greater than the front clipping plane distance,
+	 * given by {@link #getFrontClipDistance()}.
+	 *
+	 * @return  Distance from the camera to the back clipping plane,
+	 *          in view units.
+	 */
+	public abstract double getBackClipDistance();
+
+	/**
+	 * Returns the distance between the camera and the back clipping plane,
+	 * in view units. The distance is measured in the viewing direction. Any
+	 * objects further away from the camera than the back clipping plane are
+	 * invisible.
+	 *
+	 * <p>This value must be greater than the front clipping plane distance,
+	 * given by {@link #getFrontClipDistance()}.
+	 *
+	 * @param   back    Distance from the camera to the back clipping plane,
+	 *                  in view units.
+	 */
+	public abstract void setBackClipDistance( final double back );
+
+	/**
 	 * Get control for this view.
 	 *
 	 * @return  Control for this view.

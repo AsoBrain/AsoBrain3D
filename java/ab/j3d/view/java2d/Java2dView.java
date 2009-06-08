@@ -32,12 +32,12 @@ import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.model.Scene;
 import ab.j3d.view.BSPTree;
-import ab.j3d.view.control.DefaultViewControl;
 import ab.j3d.view.Projector;
 import ab.j3d.view.RenderedPolygon;
 import ab.j3d.view.RenderingPolicy;
 import ab.j3d.view.View3D;
 import ab.j3d.view.ViewControlInput;
+import ab.j3d.view.control.DefaultViewControl;
 
 /**
  * Java 2D view implementation.
@@ -70,6 +70,16 @@ public final class Java2dView
 	 * The SceneInputTranslator for this View.
 	 */
 	private final ViewControlInput _controlInput;
+
+	/**
+	 * Front clipping plane distance in view units.
+	 */
+	private double _frontClipDistance;
+
+	/**
+	 * Back clipping plane distance in view units.
+	 */
+	private double _backClipDistance;
 
 	/**
 	 * Stroke to use for sketched rendering.
@@ -189,6 +199,28 @@ public final class Java2dView
 		update();
 	}
 
+	public double getFrontClipDistance()
+	{
+		return _frontClipDistance;
+	}
+
+	public void setFrontClipDistance( final double frontClipDistance )
+	{
+		_frontClipDistance = frontClipDistance;
+		update();
+	}
+
+	public double getBackClipDistance()
+	{
+		return _backClipDistance;
+	}
+
+	public void setBackClipDistance( final double backClipDistance )
+	{
+		_backClipDistance = backClipDistance;
+		update();
+	}
+
 	public Component getComponent()
 	{
 		return _viewComponent;
@@ -217,8 +249,8 @@ public final class Java2dView
 
 		final double        fieldOfView       = getAperture();
 		final double        zoomFactor        = getZoomFactor();
-		final double        frontClipDistance = 0.1 / viewUnit;
-		final double        backClipDistance  = 100.0 / viewUnit;
+		final double        frontClipDistance = _frontClipDistance;
+		final double        backClipDistance  = _backClipDistance;
 
 		return Projector.createInstance( getProjectionPolicy() , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
 	}
