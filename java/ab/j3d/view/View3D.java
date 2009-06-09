@@ -311,7 +311,7 @@ public abstract class View3D
 
 	/**
 	 * Returns the distance between the camera and the front clipping plane,
-	 * in view units. The distance is measured the viewing direction. Any
+	 * in view units. The distance is measured in the viewing direction. Any
 	 * objects closer to the camera than the front clipping plane are invisible.
 	 *
 	 * <p>For perspective projections, this distance should always be positive.
