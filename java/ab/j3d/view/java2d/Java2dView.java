@@ -179,6 +179,9 @@ public final class Java2dView
 	{
 		super( scene );
 
+		_frontClipDistance = 0.1;
+		_backClipDistance = 100.0;
+
 		/*
 		 * Create view component.
 		 */
