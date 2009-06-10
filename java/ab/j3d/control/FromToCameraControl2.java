@@ -207,7 +207,10 @@ public class FromToCameraControl2
 	}
 
 	/**
-	 * Set view to look 'from' one point 'to' another point.
+	 * Set view to look 'from' one point 'to' another point. The up-vector is
+	 * set to the normal vector orthogonal to the viewing direction in the plane
+	 * defined by the viewing direction and either the positive Z-axis or the
+	 * positive Y-axis (if the viewing direction and Z-axis coincide).
 	 *
 	 * @param   from    Point to look from.
 	 * @param   to      Point to look at.
@@ -217,11 +220,19 @@ public class FromToCameraControl2
 	 */
 	public void look( final Vector3D from , final Vector3D to )
 	{
-		look( from , to , Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) );
+		final Vector3D viewingDirection = to.minus( from );
+		final boolean isZAxis = viewingDirection.almostEquals( Vector3D.POSITIVE_Z_AXIS ) || viewingDirection.almostEquals( Vector3D.NEGATIVE_Z_AXIS );
+
+		final Vector3D reference = !isZAxis ? Vector3D.POSITIVE_Z_AXIS : Vector3D.POSITIVE_Y_AXIS;
+		final Vector3D normal    = Vector3D.cross( viewingDirection , reference );
+		final Vector3D up        = Vector3D.cross( normal , viewingDirection );
+
+		look( from , to , up.normalize() );
 	}
 
 	/**
-	 * Set view to look 'from' one point 'to' another point.
+	 * Set view to look 'from' one point 'to' another point. The up-vector
+	 * should be orthogonal to the viewing direction.
 	 *
 	 * @param   from    Point to look from.
 	 * @param   to      Point to look at.
