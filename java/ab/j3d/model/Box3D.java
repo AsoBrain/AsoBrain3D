@@ -56,13 +56,18 @@ public final class Box3D
 	private final double _dz;
 
 	/**
-	 * Set box properties.
+	 * Constructs a new box with the specified dimensions and the given material
+	 * on all sides, mapped according to the given UV map. At least one of the
+	 * box's dimensions must be non-zero.
 	 *
 	 * @param   dx              Width of box (x-axis).
 	 * @param   dy              Height of box (y-axis).
 	 * @param   dz              Depth of box (z-axis).
 	 * @param   uvMap           UV mapping to use.
 	 * @param   material        Material applied to all sides of the box.
+	 *
+	 * @throws  IllegalArgumentException if <code>dx</code>, <code>dy</code> and
+	 *          <code>dz</code> are all zero.
 	 */
 	public Box3D( final double dx , final double dy , final double dz , final UVMap uvMap , final Material material  )
 	{
@@ -70,7 +75,9 @@ public final class Box3D
 	}
 
 	/**
-	 * Set box properties.
+	 * Constructs a new box with the specified dimensions and the given
+	 * materials on their respective sides, mapped according to the given UV
+	 * map. At least one of the box's dimensions must be non-zero.
 	 *
 	 * @param   dx              Width of box (x-axis).
 	 * @param   dy              Height of box (y-axis).
@@ -82,6 +89,9 @@ public final class Box3D
 	 * @param   leftMaterial    Material applied to the left of the box.
 	 * @param   topMaterial     Material applied to the top of the box.
 	 * @param   bottomMaterial  Material applied to the bottom of the box.
+	 *
+	 * @throws  IllegalArgumentException if <code>dx</code>, <code>dy</code> and
+	 *          <code>dz</code> are all zero.
 	 */
 	public Box3D( final double dx , final double dy , final double dz , final UVMap uvMap , final Material frontMaterial , final Material rearMaterial , final Material rightMaterial , final Material leftMaterial , final Material topMaterial , final Material bottomMaterial )
 	{
