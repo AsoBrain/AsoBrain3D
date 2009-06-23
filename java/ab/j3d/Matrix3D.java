@@ -150,23 +150,6 @@ public final class Matrix3D
 	}
 
 	/**
-	 * Test if the specified values are 'almost' equal (the difference between
-	 * them approaches the value 0).
-	 *
-	 * @param   value1      First value to compare.
-	 * @param   value2      Second value to compare.
-	 *
-	 * @return  <code>true</code> is the values are within a +/- 0.001 tolerance
-	 *          of eachother; <code>false</code> otherwise.
-	 *
-	 * @deprecated  Moved to {@link MathTools}
-	 */
-	public static boolean almostEqual( final double value1 , final double value2 )
-	{
-		return MathTools.almostEqual( value1 , value2 );
-	}
-
-	/**
 	 * Compare this matrix to another matrix.
 	 *
 	 * @param   other   Matrix to compare with.
