@@ -484,7 +484,9 @@ public final class AbPovTestModel
 		final ContentNode node = _scene.getContentNode( "light" );
 		if ( node == null )
 		{
-			result = new Light3D( 255 , 100.0 );
+			result = new Light3D();
+			final float fallOffDistance = 100.0f;
+			result.setAttenuation( 0.0f , 0.0f , 1.0f / ( fallOffDistance * fallOffDistance ) );
 		}
 		else
 		{
