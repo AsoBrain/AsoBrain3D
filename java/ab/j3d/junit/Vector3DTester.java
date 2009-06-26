@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,15 +25,12 @@ import junit.framework.AssertionFailedError;
 import ab.j3d.Vector3D;
 
 /**
- * JUnit unit tool class to help with testing <code>Vector3D</code> objects.
- *
- * @see     Vector3D
+ * JUnit unit tool class to help with testing {@link Vector3D} objects.
  *
  * @author  H.B.J. te Lintelo
  * @version $Revision$ $Date$
  */
 public final class Vector3DTester
-	extends Assert
 {
 	/**
 	 * Utility class is not supposed to be instantiated.
@@ -59,7 +56,7 @@ public final class Vector3DTester
 		AssertionFailedError errorX = null;
 		try
 		{
-			assertEquals( actualPrefix + "Incorrect 'x' value." , expected.x , actual.x , delta );
+			Assert.assertEquals( actualPrefix + "Incorrect 'x' value." , expected.x , actual.x , delta );
 		}
 		catch ( AssertionFailedError e )
 		{
@@ -69,7 +66,7 @@ public final class Vector3DTester
 		AssertionFailedError errorY = null;
 		try
 		{
-			assertEquals( actualPrefix + "Incorrect 'y' value." , expected.y , actual.y , delta );
+			Assert.assertEquals( actualPrefix + "Incorrect 'y' value." , expected.y , actual.y , delta );
 		}
 		catch ( AssertionFailedError e )
 		{
@@ -79,7 +76,7 @@ public final class Vector3DTester
 		AssertionFailedError errorZ = null;
 		try
 		{
-			assertEquals( actualPrefix + "Incorrect 'z' value." , expected.z , actual.z , delta );
+			Assert.assertEquals( actualPrefix + "Incorrect 'z' value." , expected.z , actual.z , delta );
 		}
 		catch ( AssertionFailedError e )
 		{
@@ -89,7 +86,7 @@ public final class Vector3DTester
 		if ( ( ( errorX != null ) && ( ( errorY != null ) || ( errorZ != null ) ) )
 		                          || ( ( errorY != null ) && ( errorZ != null ) ) )
 		{
-			assertEquals( messagePrefix , expected , actual );
+			Assert.assertEquals( messagePrefix , expected , actual );
 		}
 		else if ( errorX != null ) throw errorX;
 		else if ( errorY != null ) throw errorY;
