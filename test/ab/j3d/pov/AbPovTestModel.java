@@ -369,15 +369,13 @@ public final class AbPovTestModel
 			final Material leftMaterial   = createMaterialWithColorMap( "CUBE_LEFT" );
 			final Material rightMaterial  = createMaterialWithColorMap( "CUBE_RIGHT" );
 
-			final Point2D.Float[] texturePoints = { new Point2D.Float( 0.5f , 0.0f ) , new Point2D.Float( 0.5f , 0.5f ) , new Point2D.Float( 0.0f , 0.5f ) , new Point2D.Float( 0.0f , 0.0f ) };
-
 			final Object3DBuilder builder = new Object3DBuilder();
-			builder.addFace( new Vector3D[] { lft , lbt , rbt , rft } , topMaterial    , texturePoints , null , false , false );
-			builder.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , bottomMaterial , texturePoints , null , false , false );
-			builder.addFace( new Vector3D[] { lfb , lft , rft , rfb } , frontMaterial  , texturePoints , null , false , false );
-			builder.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , backMaterial   , texturePoints , null , false , false );
-			builder.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , leftMaterial   , texturePoints , null , false , false );
-			builder.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , rightMaterial  , texturePoints , null , false , false );
+			builder.addFace( new Vector3D[] { lft , lbt , rbt , rft } , topMaterial    , null , null , false , false );
+			builder.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , bottomMaterial , null , null , false , false );
+			builder.addFace( new Vector3D[] { lfb , lft , rft , rfb } , frontMaterial  , null , null , false , false );
+			builder.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , backMaterial   , null , null , false , false );
+			builder.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , leftMaterial   , null , null , false , false );
+			builder.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , rightMaterial  , null , null , false , false );
 			cube = builder.getObject3D();
 		}
 		else
