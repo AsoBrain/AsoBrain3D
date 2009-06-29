@@ -35,7 +35,12 @@ public class PlanarUVMap
 	implements UVMap
 {
 	/**
-	 * Transformation from model units to UV coordinates.
+	 * Converts model units to meters.
+	 */
+	private double _modelUnits;
+
+	/**
+	 * Transforms plane coordinates to model coordinates in model units.
 	 */
 	private Matrix3D _plane2wcs;
 
@@ -86,7 +91,8 @@ public class PlanarUVMap
 	 */
 	public PlanarUVMap( final double modelUnits , final Matrix3D plane2wcs )
 	{
-		_plane2wcs = plane2wcs.scale( modelUnits );
+		_modelUnits = modelUnits;
+		_plane2wcs = plane2wcs;
 	}
 
 	public Point2D.Float[] generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final boolean flipTexture )
@@ -100,8 +106,9 @@ public class PlanarUVMap
 
 		if ( ( material != null ) && ( material.colorMapWidth > 0.0f ) && ( material.colorMapHeight > 0.0f ) )
 		{
-			scaleU = 1.0f / material.colorMapWidth;
-			scaleV = 1.0f / material.colorMapHeight;
+			final float modelUnits = (float)_modelUnits;
+			scaleU = modelUnits / material.colorMapWidth;
+			scaleV = modelUnits / material.colorMapHeight;
 		}
 		else
 		{
@@ -135,8 +142,9 @@ public class PlanarUVMap
 
 		if ( ( material != null ) && ( material.colorMapWidth > 0.0f ) && ( material.colorMapHeight > 0.0f ) )
 		{
-			scaleU = 1.0f / material.colorMapWidth;
-			scaleV = 1.0f / material.colorMapHeight;
+			final float modelUnits = (float)_modelUnits;
+			scaleU = modelUnits / material.colorMapWidth;
+			scaleV = modelUnits / material.colorMapHeight;
 		}
 		else
 		{
