@@ -112,12 +112,12 @@ public class ViewStyleFilter
 
 			case SKETCH:
 				result = new RenderStyle();
-				result.setMaterialEnabled( false );
+				result.setMaterialEnabled( true );
 				result.setFillEnabled( true );
 				result.setFillColor( Color.WHITE );
 				result.setStrokeEnabled( true );
 				result.setStrokeColor( Color.BLACK );
-				result.setStrokeWidth( 2.0f );
+				result.setStrokeWidth( 2.5f );
 				break;
 
 			case SOLID:
@@ -129,7 +129,7 @@ public class ViewStyleFilter
 				result.setMaterialEnabled( false );
 				result.setStrokeEnabled( true );
 				result.setStrokeColor( Color.BLACK );
-				result.setStrokeWidth( 1.0f );
+				result.setStrokeWidth( 1.5f );
 				result.setBackfaceCullingEnabled( false );
 				break;
 
