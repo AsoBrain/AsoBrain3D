@@ -1020,6 +1020,16 @@ public final class Matrix3D
 	}
 
 	/**
+	 * Get translation vector from this transform.
+	 *
+	 * @return  TRanslation vector.
+	 */
+	public Vector3D getTranslation()
+	{
+		return Vector3D.INIT.set( xo , yo , zo );
+	}
+
+	/**
 	 * Set translation of a transform to the specified vector.
 	 *
 	 * @param   vector  Vector to use.
