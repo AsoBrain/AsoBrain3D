@@ -139,7 +139,7 @@ public final class Max3DSLoader
 				/* ignore errors related to getting the supplemental directory */
 			}
 
-			return load( transform , /*supplementURL ,*/ in );
+			return load( transform , supplementURL , in );
 		}
 		finally
 		{
@@ -162,12 +162,12 @@ public final class Max3DSLoader
 	 *
 	 * @throws  IOException if an error occured while loading the file.
 	 */
-	public static Node3D load( final Matrix3D transform , final InputStream in )
+	public static Node3D load( final Matrix3D transform , final URL supplementURL , final InputStream in )
 		throws IOException
 	{
 		final Node3D result = ( transform == null || Matrix3D.INIT.equals( transform ) ) ? new Transform3D( transform ) : new Node3D();
 
-		final Max3DSLoader loader = new Max3DSLoader( result , null );
+		final Max3DSLoader loader = new Max3DSLoader( result , supplementURL );
 		while ( true )
 		{
 			final int chunkID;
@@ -204,7 +204,7 @@ public final class Max3DSLoader
 	private Max3DSLoader( final Node3D root , final URL supplementURL )
 	{
 		_root = root;
-//		_supplementURL = supplementURL;
+		_supplementURL = supplementURL;
 		_object3DBuilder = null;
 		_material = null;
 		_textureCoords = null;
