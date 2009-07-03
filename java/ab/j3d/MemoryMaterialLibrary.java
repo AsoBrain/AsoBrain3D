@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2008-2008 Peter S. Heijnen
+ * Copyright (C) 2008-2009 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -48,6 +48,7 @@ public class MemoryMaterialLibrary
 	}
 
 	public Material getMaterialByCode( final String code )
+		throws IOException
 	{
 		if ( code == null )
 			throw new NullPointerException( "code" );
@@ -56,6 +57,7 @@ public class MemoryMaterialLibrary
 	}
 
 	public List<Material> getMaterials()
+		throws IOException
 	{
 		return new ArrayList<Material>( _materials.values() );
 	}
