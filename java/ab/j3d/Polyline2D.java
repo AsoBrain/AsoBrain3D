@@ -1587,20 +1587,20 @@ public final class Polyline2D
 	 * This is a simplified method of getIntersectionConvex_Convex.
 	 *
 	 * There is only one stage (of which only one cycle):
-	 * Walk thrue all segments of the path. Find all intersection points
+	 * Walk through all segments of the path. Find all intersection points
 	 * of that segment with the convex poly. Now apply the same algorithm
 	 * as with two convex polys (inside/outside algorithm), only now
 	 * we can directly add the found segments to the result poly.
-	 *
-	 * Since we do not support polylines consisting of multiple loose
-	 * parts, we throw a RunTimeException when the path intersects
-	 * the convex more than one time. So the path may only enter/exit the
-	 * convex once.
 	 *
 	 * @param   convex      Polyline that is guaranteed convex.
 	 * @param   path        Polyline that is a path.
 	 *
 	 * @return  Intersecting area of the two convex polylines.
+	 *
+	 * @throws  RuntimeException is the result would consist of multiple
+	 *          sub-paths (which is not supported). This happens when the path
+	 *          intersects the convex more than once. The path may only
+	 *          enter/exit the convex once.
 	 *
 	 * @see     #getIntersectionConvex_Convex
 	 */
@@ -1622,8 +1622,9 @@ public final class Polyline2D
 		/*
 		 * Gather all line peaces of the path that intersect with the convex.
 		 */
-		int i = path.getPointCount();
-		int j;
+		final int pathLength = path.getPointCount();
+		int ni =0;
+		int nj;
 
 		/*
 		 * l1/l2 = last point on path/convex
@@ -1637,7 +1638,7 @@ public final class Polyline2D
 		PolyPoint2D i1;
 		PolyPoint2D i2;
 		PolyPoint2D[] is = null;
-		l1 = path.getPoint( --i );
+		l1 = path.getPoint( ni++ );
 
 		/*
 		 * First we want to know if the startpoint of the path is on the convex.
@@ -1648,28 +1649,32 @@ public final class Polyline2D
 		 * Optimalisation to check if the path is entirely inside/outside the convex.
 		 * Also to check if result consists of multiple loose parts.
 		 */
-		boolean entered = l1pos == INSIDE;
+		boolean entered = ( l1pos == INSIDE );
 
 		/*
 		 * If we start inside, add the fist point.
 		 */
 		if ( l1pos == INSIDE )
-			result.addStartPoint( l1.x , l1.y );
-
-		while( --i >= 0 )
 		{
-			c1 = path.getPoint( i );
+			result.addStartPoint( l1.x , l1.y );
+		}
+
+		final int convexPathLength = convex.getPointCount();
+
+		while ( ni < pathLength )
+		{
+			c1 = path.getPoint( ni++ );
 			c1pos = UNKNOWN;
 
-			j = convex.getPointCount();
-			l2 = convex.getPoint( --j );
-			i1 = i2 = null;	// clear intersections.
+			nj = 0;
+			l2 = convex.getPoint( nj++ );
+			i1 = i2 = null; // clear intersections.
 
 			//System.out.println( "Segment : " + l1 + " , " + c1 );
 
-			while( --j >= 0 )
+			while ( nj < convexPathLength )
 			{
-				c2 = convex.getPoint( j );
+				c2 = convex.getPoint( nj++ );
 				is = getIntersectionLine_Line( l1 , c1 , l2 , c2 , is );
 
 				/*
@@ -1679,25 +1684,31 @@ public final class Polyline2D
 				 */
 				if ( is != null ) // found an intersection
 				{
-					//System.out.println( "Intersection: " + is[0] );
+					//System.out.println( "Intersection: " + is[ 0 ] );
 
-					if ( i1 == null || i1.almostEquals( is[0] ) ) // found first intersection (or duplicate).
+					if ( ( i1 == null ) || i1.almostEquals( is[ 0 ] ) ) // found first intersection (or duplicate).
 					{
-						i1 = is[0];
-						i2 = is[1];
+						i1 = is[ 0 ];
+						i2 = is[ 1 ];
 					}
-					else			   // found second intersection (may not be a line).
+					else // found second intersection (may not be a line).
 					{
-						if ( is[1] != null )
+						if ( is[ 1 ] != null )
+						{
 							throw new RuntimeException( "Don't know how to handle" );
-						i2 = is[0];
+						}
+						i2 = is[ 0 ];
 					}
 
-					if ( c2.almostEquals( is[0] ) )
+					if ( c2.almostEquals( is[ 0 ] ) )
+					{
 						corner = true;
+					}
 
-					if ( i1 != null && i2 != null )
+					if ( ( i1 != null ) && ( i2 != null ) )
+					{
 						break;
+					}
 				}
 
 				/*
@@ -1714,14 +1725,20 @@ public final class Polyline2D
 			if ( i1 != null ) // 1 or 2 intersections
 			{
 				if ( i2 == null && !corner ) // 1 true intersection
+				{
 					c1pos = -l1pos;
+				}
 
 				if ( c1.almostEquals( i1 ) || c1.almostEquals( i2 ) )
+				{
 					c1pos = INSIDE;
+				}
 			}
 
 			if ( c1pos == UNKNOWN )
+			{
 				c1pos = isIntersectingConvex_Point( convex , c1 ) ? INSIDE : OUTSIDE;
+			}
 
 			//System.out.println( "l1 pos = " + l1pos + " , c1pos = " + c1pos );
 
@@ -1734,14 +1751,18 @@ public final class Polyline2D
 				 * If we already entered once, and we are about to again, error.
 				 */
 				if ( entered && ( (l1pos == OUTSIDE && c1pos == INSIDE) || ( i2 != null && !corner ) ) )
+				{
 					throw new RuntimeException( "Path may only intersect convex poly once. We only support unary result sets: convex = " + convex + ", path = '" + path + '\'' );
+				}
 
 				/*
 				 * If we have two intersections and endpoint is inside (but not on edge)
 				 * we have an error.
 				 */
 				if ( i2 != null && c1pos == INSIDE && !c1.almostEquals( i2 ) && !corner )
+				{
 					throw new RuntimeException( "Linesegment cannot have two intersections and end in convex shape" );
+				}
 
 				/*
 				 * If first intersection is not starting point, add point
@@ -1750,7 +1771,9 @@ public final class Polyline2D
 				if ( !i1.almostEquals( l1 ) && ( i2 != null || c1pos == INSIDE ) || l1pos == INSIDE )
 				{
 					if ( ( result.getPointCount() == 0 ) || !i1.almostEquals( result.getPoint( result.getPointCount() - 1 ) ) )
+					{
 						result.addImpl( i1.x , i1.y , 0.0 );
+					}
 				}
 			}
 
@@ -1759,20 +1782,26 @@ public final class Polyline2D
 			 * (in this case, we are always exiting again).
 			 */
 			if ( i2 != null && !i2.almostEquals( c1 ) )
+			{
 				result.addImpl( i2.x , i2.y , 0.0 );
+			}
 
 			/*
 			 * If endpoint is inside, add the point.
 			 */
 			if ( c1pos == INSIDE && !c1.almostEquals( i1 ) )
+			{
 				result.addImpl( c1.x , c1.y , 0.0 );
+			}
 
 			/*
 			 * If one of the points are inside or we have 2 intersections
 			 * we must have been inside.
 			 */
 			if ( c1pos == INSIDE || l1pos == INSIDE || i2 != null )
+			{
 				entered = true;
+			}
 
 			/*
 			 * Shift
@@ -1784,10 +1813,7 @@ public final class Polyline2D
 		/*
 		 * If we never entered the convext, there is no intersection.
 		 */
-		if ( !entered )
-			return null;
-
-		return result;
+		return !entered ? null : result;
 	}
 
 	/**
