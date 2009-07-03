@@ -414,7 +414,7 @@ public final class AbToPovConverter
 				final Vertex vertex0 = vertices.get( 0 );
 				final int v1  = vertex0.vertexCoordinateIndex;
 				final int vn1 = smooth ? v1 : 0;
-				final int uv1 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)( vertex0.colorMapU * material.colorMapWidth ) , (double)( vertex0.colorMapV * material.colorMapHeight ) , 0.0 ) ) : -1;
+				final int uv1 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertex0.colorMapU , (double)vertex0.colorMapV , 0.0 ) ) : -1;
 
 				int v2;
 				int vn2;
@@ -423,7 +423,7 @@ public final class AbToPovConverter
 				final Vertex vertex1 = vertices.get( 1 );
 				int v3  = vertex1.vertexCoordinateIndex;
 				int vn3 = smooth ? v3 : 0;
-				int uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)( vertex1.colorMapU * material.colorMapWidth ) , (double)( vertex1.colorMapV * material.colorMapHeight ) , 0.0 ) ) : -1;
+				int uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertex1.colorMapU , (double)vertex1.colorMapV , 0.0 ) ) : -1;
 
 				for ( int j = 2 ; j < vertexCount ; j++ )
 				{
@@ -434,7 +434,7 @@ public final class AbToPovConverter
 					final Vertex vertexJ = vertices.get( j );
 					v3  = vertexJ.vertexCoordinateIndex;
 					vn3 = smooth ? v3 : 0;
-					uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)( vertexJ.colorMapU * material.colorMapWidth ) , (double)( vertexJ.colorMapV * material.colorMapHeight ) , 0.0 ) ) : -1;
+					uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertexJ.colorMapU , (double)vertexJ.colorMapV , 0.0 ) ) : -1;
 
 					result.addTriangle( v1 , uv1 , vn1 , v2 , uv2 , vn2 , v3 , uv3 , vn3 , textureIndex );
 				}
