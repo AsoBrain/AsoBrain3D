@@ -20,7 +20,6 @@
 package ab.j3d.loader;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
@@ -99,7 +98,7 @@ public class Max3DSLoaderApp
 			Scene.addLegacyLights( scene );
 			scene.addContentNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d );
 
-			final RenderEngine renderEngine = new JOGLEngine( Color.lightGray ); // new Color( 51 , 77 , 102 ) );
+			final RenderEngine renderEngine = new JOGLEngine(); // new Color( 51 , 77 , 102 ) );
 
 			final View3D view = renderEngine.createView( scene );
 			view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );

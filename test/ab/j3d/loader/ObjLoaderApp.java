@@ -20,7 +20,6 @@
 package ab.j3d.loader;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.io.IOException;
 import java.util.Locale;
 import javax.swing.JFrame;
@@ -77,7 +76,7 @@ public class ObjLoaderApp
 			Scene.addLegacyLights( scene );
 			scene.addContentNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d );
 
-			final RenderEngine renderEngine = new JOGLEngine( Color.WHITE );
+			final RenderEngine renderEngine = new JOGLEngine();
 
 			final View3D view = renderEngine.createView( scene );
 			view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );

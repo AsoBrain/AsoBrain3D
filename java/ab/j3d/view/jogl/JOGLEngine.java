@@ -19,7 +19,6 @@
  */
 package ab.j3d.view.jogl;
 
-import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 import javax.media.opengl.GLContext;
@@ -40,11 +39,6 @@ public class JOGLEngine
 	implements RenderEngine
 {
 	/**
-	 * Background color for views.
-	 */
-	private final Color _background;
-
-	/**
 	 * Shared OpenGL rendering context.
 	 */
 	private GLContext _context = null;
@@ -59,26 +53,12 @@ public class JOGLEngine
 	 */
 	public JOGLEngine()
 	{
-		this( null );
-	}
-
-	/**
-	 * Construct new JOGL render engine.
-	 *
-	 * @param   background  Background color to use for 3D views. May be
-	 *                      <code>null</code>, in which case the default
-	 *                      background color of the current look and feel is
-	 *                      used.
-	 */
-	public JOGLEngine( final Color background )
-	{
-		_background = background;
 		_textureCache = new HashMap<String,Texture>();
 	}
 
 	public View3D createView( final Scene scene )
 	{
-		return new JOGLView( this , scene , _background );
+		return new JOGLView( this , scene );
 	}
 
 	/**

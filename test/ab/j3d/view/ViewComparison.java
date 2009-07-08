@@ -199,7 +199,7 @@ public class ViewComparison
 	private static Collection<RenderEngine> createRenderEngines( final Scene scene )
 	{
 		final Collection<RenderEngine> models = new ArrayList<RenderEngine>();
-		models.add( new JOGLEngine( Color.GRAY ) );
+		models.add( new JOGLEngine() );
 //		models.add( new Java3dEngine( scene , Color.GRAY ) );
 		return models;
 	}
