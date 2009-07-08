@@ -98,11 +98,8 @@ public class JOGLView
 	 *
 	 * @param   joglEngine  Engine that created this view.
 	 * @param   scene       Scene to view.
-	 * @param   background  Background color to use for 3D views. May be
-	 *                      <code>null</code>, in which case the default
-	 *                      background color of the current look and feel is
 	 */
-	public JOGLView( final JOGLEngine joglEngine , final Scene scene , final Color background )
+	public JOGLView( final JOGLEngine joglEngine , final Scene scene )
 	{
 		super( scene );
 
@@ -129,9 +126,6 @@ public class JOGLView
 		glCanvas.setMinimumSize( new Dimension( 0 , 0 ) ); //resize workaround
 		glCanvas.addGLEventListener( this );
 		_glCanvas = glCanvas;
-
-		if ( background != null )
-			_glCanvas.setBackground( background );
 
 		_controlInput = new ViewControlInput( this );
 
@@ -162,6 +156,17 @@ public class JOGLView
 	{
 		_backClipDistance = backClipDistance;
 		update();
+	}
+
+	/**
+	 * Set background color of 3D view.
+	 *
+	 * @param   color   Background color to use for 3D view, may be
+	 *                  <code>null</code> to use default.
+	 */
+	public void setBackground( final Color color )
+	{
+		_glCanvas.setBackground( color );
 	}
 
 	public void dispose()
@@ -271,16 +276,6 @@ public class JOGLView
 		protected boolean _updateRequested;
 
 		/**
-		 * This thread control flag is set when <code>requestTermination()</code>
-		 * is called. It is used as exit condition by the main thread loop.
-		 *
-		 * @see     #requestTermination()
-		 * @see     #isAlive()
-		 * @see     #join()
-		 */
-		private boolean _terminationRequested;
-
-		/**
 		 * Construct render thread.
 		 */
 		private RenderThread()
@@ -289,7 +284,6 @@ public class JOGLView
 			setDaemon( true );
 			setPriority( NORM_PRIORITY );
 			_updateRequested = true;
-			_terminationRequested = false;
 		}
 
 		public void run()
@@ -297,7 +291,7 @@ public class JOGLView
 //			System.out.println( "Render thread started: " + Thread.currentThread() );
 
 			final GLCanvas viewComponent = _glCanvas;
-			while ( !_terminationRequested && viewComponent.isShowing() )
+			while ( viewComponent.isShowing() )
 			{
 				try
 				{
@@ -331,7 +325,6 @@ public class JOGLView
 				catch ( InterruptedException e ) { /*ignored*/ }
 			}
 
-			_terminationRequested = false;
 			_updateRequested      = false;
 
 //			System.out.println( "Renderer thread died: " + Thread.currentThread() );
@@ -342,23 +335,7 @@ public class JOGLView
 		 */
 		public void requestUpdate()
 		{
-			if ( !_terminationRequested )
-			{
-				_updateRequested = true;
-
-				synchronized ( this )
-				{
-					notifyAll();
-				}
-			}
-		}
-
-		/**
-		 * Request termination of the render thread.
-		 */
-		public void requestTermination()
-		{
-			_terminationRequested = true;
+			_updateRequested = true;
 
 			synchronized ( this )
 			{
