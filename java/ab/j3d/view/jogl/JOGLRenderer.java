@@ -258,7 +258,7 @@ public class JOGLRenderer
 
 		if ( shaderEnabled )
 		{
-			_shaders = new ArrayList<Shader>();
+			final ArrayList<Shader> shaders = new ArrayList<Shader>();
 
 			// TODO: Depth peeling isn't very reliable yet, so it's disabled.
 			// It's very slow on some systems and completely broken on others.
@@ -270,39 +270,73 @@ public class JOGLRenderer
 				/*
 				 * Load vertex and fragment shaders.
 				 */
-				final VertexShader   lightingVertex       = loadShader( VertexShader  .class , "lighting-vertex.glsl" );
-				final FragmentShader lightingFragment     = loadShader( FragmentShader.class , "lighting-fragment.glsl" );
-				final VertexShader   materialVertex       = loadShader( VertexShader  .class , "material-vertex.glsl" );
-				final FragmentShader materialFragment     = loadShader( FragmentShader.class , "material-fragment.glsl" );
+				final VertexShader lightingVertex = loadShader( VertexShader.class , "lighting-vertex.glsl" );
+				shaders.add( lightingVertex );
+
+				final FragmentShader lightingFragment = loadShader( FragmentShader.class , "lighting-fragment.glsl" );
+				shaders.add( lightingFragment );
+
+				final VertexShader materialVertex = loadShader( VertexShader.class , "material-vertex.glsl" );
+				shaders.add( materialVertex );
+
+				final FragmentShader materialFragment = loadShader( FragmentShader.class , "material-fragment.glsl" );
+				shaders.add( materialFragment );
+
+				final FragmentShader depthPeelingFragment;
+				if ( depthPeelingEnabled )
+				{
+					depthPeelingFragment = loadShader( FragmentShader.class , "depth-peeling-fragment.glsl" );
+					shaders.add( depthPeelingFragment );
+				}
+				else
+				{
+					depthPeelingFragment = null;
+				}
 
 				/*
 				 * Build shader programs for various rendering modes.
 				 */
-				final ShaderProgram unlit    = new ShaderProgram( "unlit"  );
-				final ShaderProgram colored  = new ShaderProgram( "colored"  );
-				final ShaderProgram textured = new ShaderProgram( "textured" );
-
+				final ShaderProgram unlit = new ShaderProgram( "unlit" );
 				unlit.attach( createVertexShaderMain  ( "color" , null ) );
 				unlit.attach( createFragmentShaderMain( "color" , null , depthPeelingEnabled ) );
 				unlit.attach( materialVertex );
 				unlit.attach( materialFragment );
 
-				final String lightingFunction = lightingEnabled ? "lighting" : null;
+				if ( depthPeelingEnabled )
+				{
+					unlit.attach( depthPeelingFragment );
+				}
 
+				unlit.link();
+				_unlit = unlit;
+
+				final ShaderProgram colored  = new ShaderProgram( "colored"  );
+				final String lightingFunction = lightingEnabled ? "lighting" : null;
 				colored.attach( createVertexShaderMain  ( "color" , lightingFunction ) );
 				colored.attach( createFragmentShaderMain( "color" , lightingFunction , depthPeelingEnabled ) );
 				colored.attach( materialVertex );
 				colored.attach( materialFragment );
+
 				if ( lightingEnabled )
 				{
 					colored.attach( lightingVertex );
 					colored.attach( lightingFragment );
 				}
 
+				if ( depthPeelingEnabled )
+				{
+					colored.attach( depthPeelingFragment );
+				}
+
+				colored.link();
+				_colored = colored;
+
+				final ShaderProgram textured = new ShaderProgram( "textured" );
 				textured.attach( createVertexShaderMain  ( "texture" , lightingFunction ) );
 				textured.attach( createFragmentShaderMain( "texture" , lightingFunction , depthPeelingEnabled ) );
 				textured.attach( materialVertex );
 				textured.attach( materialFragment );
+
 				if ( lightingEnabled )
 				{
 					textured.attach( lightingVertex );
@@ -311,23 +345,16 @@ public class JOGLRenderer
 
 				if ( depthPeelingEnabled )
 				{
-					final FragmentShader depthPeelingFragment = loadShader( FragmentShader.class , "depth-peeling-fragment.glsl" );
-					unlit.attach( depthPeelingFragment );
-					colored.attach( depthPeelingFragment );
 					textured.attach( depthPeelingFragment );
 				}
 
-				unlit.link();
-				colored.link();
 				textured.link();
-
-				_unlit    = unlit;
-				_colored  = colored;
 				_textured = textured;
 
 				if ( depthPeelingEnabled )
 				{
 					final FragmentShader blendFragment = loadShader( FragmentShader.class , "blend-fragment.glsl" );
+					shaders.add( blendFragment );
 
 					final ShaderProgram blend = new ShaderProgram( "blend" );
 					blend.attach( blendFragment );
@@ -345,6 +372,8 @@ public class JOGLRenderer
 			{
 				e.printStackTrace();
 			}
+
+			_shaders = shaders;
 		}
 		else
 		{
@@ -490,14 +519,13 @@ public class JOGLRenderer
 	 * @throws  IOException if an I/O error occurs.
 	 * @throws  GLException if compilation of the shader fails.
 	 */
-	private <T extends Shader> T loadShader( final Class<T> shaderClass , final String name )
+	private static <T extends Shader> T loadShader( final Class<T> shaderClass , final String name )
 		throws IOException
 	{
 		final T result;
 		try
 		{
 			result = shaderClass.newInstance();
-			_shaders.add( result );
 		}
 		catch ( Exception e )
 		{
@@ -506,7 +534,7 @@ public class JOGLRenderer
 			throw error;
 		}
 
-		final Class<?>    clazz  = getClass();
+		final Class<?>    clazz  = JOGLRenderer.class;
 		final InputStream source = clazz.getResourceAsStream( name );
 		if ( source == null )
 		{
@@ -961,6 +989,9 @@ public class JOGLRenderer
 	 * <p>
 	 * <em>This operation has the side effect of replacing the active
 	 * framebuffer's first color attachment ('GL_COLOR_ATTACHMENT0_EXT').</em>
+	 * 
+	 * @param   composite   Composite to blend layer with.
+	 * @param   layer       Layer to put behind the composite.
 	 */
 	private void blend( final Texture composite , final Texture layer )
 	{
