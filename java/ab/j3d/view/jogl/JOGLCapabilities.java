@@ -25,11 +25,9 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 import javax.media.opengl.GL;
-import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLContext;
 import javax.media.opengl.GLException;
 import javax.media.opengl.Threading;
-import javax.swing.JFrame;
 
 import com.sun.opengl.util.texture.Texture;
 
@@ -45,33 +43,16 @@ import ab.j3d.Matrix3D;
 public class JOGLCapabilities
 {
 	/**
-	 * Run application.
-	 *
-	 * @param args Command-line arguments.
-	 */
-	public static void main( final String[] args )
-	{
-		final JOGLCapabilities capabilities = new JOGLCapabilities();
-		try
-		{
-			capabilities.determineCapabilities();
-		}
-		finally
-		{
-			capabilities.dispose();
-		}
-	}
-
-	/**
 	 * OpenGL context to be used.
 	 */
 	private final GLContext _context;
 
 	/**
-	 * Invisible frame used to create a realized {@link GLCanvas} if no OpenGL
-	 * context is provided in the constructor.
+	 * Flag to indicate that capabilities were determined by the
+	 * {@link #determineCapabilities} method. This is done to prevent
+	 * multiple (expensive) capability probes.
 	 */
-	private final JFrame _frame;
+	private boolean _capabilitiesDetermined = false;
 
 	/** GLSL vertex/pixel shaders.             */ private boolean _shaderObjects     = false;
 	/** GLSL vertex/pixel shaders (extension). */ private boolean _shaderObjectsARB  = false;
@@ -101,23 +82,6 @@ public class JOGLCapabilities
 	/** Shading language version.              */ private String _shadingLanguageVersion = null;
 
 	/**
-	 * Constructs a JOGL capabilities instance for the OpenGL context of a newly
-	 * created {@link GLCanvas}. The created resources should be disposed of by
-	 * calling {@link #dispose()}.
-	 */
-	public JOGLCapabilities()
-	{
-		final GLCanvas canvas = new GLCanvas();
-
-		final JFrame frame = new JFrame();
-		frame.add( canvas );
-		frame.pack();
-
-		_context = canvas.getContext();
-		_frame = frame;
-	}
-
-	/**
 	 * Constructs a JOGL capabilities instance for the given OpenGL context.
 	 *
 	 * @param   context     OpenGL context to be used.
@@ -130,7 +94,6 @@ public class JOGLCapabilities
 		}
 
 		_context = context;
-		_frame   = null;
 	}
 
 	/**
@@ -138,23 +101,15 @@ public class JOGLCapabilities
 	 *
 	 * @throws  GLException if an OpenGL call fails.
 	 */
-	public void determineCapabilities()
+	private void determineCapabilities()
 		throws GLException
 	{
-		final Probe probe = new CapabilitiesProbe();
-		probe.invokeAndWait();
-	}
-
-	/**
-	 * Disposes the resources created by the object. Only applicable if the
-	 * no-arg constructor was used.
-	 */
-	public void dispose()
-	{
-		if ( _frame != null )
+		if ( !_capabilitiesDetermined )
 		{
-			_context.destroy();
-			_frame.dispose();
+			_capabilitiesDetermined = true;
+
+			final Probe probe = new CapabilitiesProbe();
+			probe.invokeAndWait();
 		}
 	}
 
@@ -167,6 +122,8 @@ public class JOGLCapabilities
 	 */
 	public boolean isShaderSupported()
 	{
+		determineCapabilities();
+
 		return _shaderObjects;
 	}
 
@@ -213,6 +170,8 @@ public class JOGLCapabilities
 	 */
 	public void printSummary( final PrintStream out )
 	{
+		determineCapabilities();
+
 		out.println();
 		out.println( " About OpenGL:" );
 		out.println( "---------------" );
@@ -332,15 +291,17 @@ public class JOGLCapabilities
 	 * Check the OpenGL context for various capabilities.
 	 */
 	private class JOGLRendererShadersProbe
-		extends Probe
+		extends CapabilitiesProbe
 	{
 		private boolean _result = false;
 
 		protected void run( final GL gl )
 		{
+			super.run( gl );
+
 			if ( isShaderSupported() )
 			{
-				final JOGLRenderer renderer = new JOGLRenderer( _context.getGL() , new HashMap<String,Texture>() , Color.BLACK , false , Matrix3D.INIT , new Rectangle( 0 , 0 , 10 , 10 ) , 1 , false , 10 );
+				final JOGLRenderer renderer = new JOGLRenderer( JOGLCapabilities.this , _context.getGL() , new HashMap<String,Texture>() , Color.BLACK , false , Matrix3D.INIT , new Rectangle( 0 , 0 , 10 , 10 ) , 1 , false , 10 );
 				_result = renderer.isShadersEnabled();
 			}
 		}

@@ -32,7 +32,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.media.opengl.GL;
-import javax.media.opengl.GLContext;
 import javax.media.opengl.GLException;
 
 import com.sun.opengl.util.texture.Texture;
@@ -213,6 +212,7 @@ public class JOGLRenderer
 	/**
 	 * Construct new JOGL renderer.
 	 *
+	 * @param   capabilities            Provides information about OpenGL capabilities.
 	 * @param   gl                      GL pipeline.
 	 * @param   textureCache            Map containing {@link Texture}s used in the scene.
 	 * @param   backgroundColor         Backgroundcolor to use.
@@ -224,7 +224,7 @@ public class JOGLRenderer
 	 * @param   gridHighlightAxes       If set, hightlight X=0 and Y=0 axes.
 	 * @param   gridHighlightInterval   Interval to use for highlighting grid lines.
 	 */
-	public JOGLRenderer( final GL gl , final Map<String,Texture> textureCache , final Color backgroundColor , final boolean gridIsEnabled , final Matrix3D grid2wcs , final Rectangle gridBounds , final int gridCellSize , final boolean gridHighlightAxes , final int gridHighlightInterval )
+	public JOGLRenderer( final JOGLCapabilities capabilities , final GL gl , final Map<String,Texture> textureCache , final Color backgroundColor , final boolean gridIsEnabled , final Matrix3D grid2wcs , final Rectangle gridBounds , final int gridCellSize , final boolean gridHighlightAxes , final int gridHighlightInterval )
 	{
 		_gl = gl;
 		_textureCache = textureCache;
@@ -248,9 +248,6 @@ public class JOGLRenderer
 		/*
 		 * Check for required extensions.
 		 */
-		final JOGLCapabilities capabilities = new JOGLCapabilities( GLContext.getCurrent() );
-		capabilities.determineCapabilities();
-
 		final boolean shaderEnabled = capabilities.isShaderSupported();
 
 		Texture[] depthBuffers = null;
@@ -989,7 +986,7 @@ public class JOGLRenderer
 	 * <p>
 	 * <em>This operation has the side effect of replacing the active
 	 * framebuffer's first color attachment ('GL_COLOR_ATTACHMENT0_EXT').</em>
-	 * 
+	 *
 	 * @param   composite   Composite to blend layer with.
 	 * @param   layer       Layer to put behind the composite.
 	 */

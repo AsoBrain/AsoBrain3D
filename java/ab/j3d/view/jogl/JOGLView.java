@@ -69,6 +69,11 @@ public class JOGLView
 	private final GLCanvas _glCanvas;
 
 	/**
+	 * Provides information about OpenGL capabilities.
+	 */
+	private JOGLCapabilities _capabilities;
+
+	/**
 	 * Scene input translator for this View.
 	 */
 	private final ViewControlInput _controlInput;
@@ -121,6 +126,7 @@ public class JOGLView
 
 		/* See if the model already contains a context. */
 		glCanvas = new GLCanvas( capabilities , null , joglEngine.getContext() , null );
+		_capabilities = new JOGLCapabilities( glCanvas.getContext() );
 		joglEngine.setContext( glCanvas.getContext() );
 
 		glCanvas.setMinimumSize( new Dimension( 0 , 0 ) ); //resize workaround
@@ -472,7 +478,7 @@ public class JOGLView
 		if ( renderer == null )
 		{
 			final Map<String,Texture> textureCache = _joglEngine.getTextureCache();
-			renderer = new JOGLRenderer( gl , textureCache , _glCanvas.getBackground() , isGridEnabled() , getGrid2wcs() , getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
+			renderer = new JOGLRenderer( _capabilities , gl , textureCache , _glCanvas.getBackground() , isGridEnabled() , getGrid2wcs() , getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
 			_renderer = renderer;
 		}
 
