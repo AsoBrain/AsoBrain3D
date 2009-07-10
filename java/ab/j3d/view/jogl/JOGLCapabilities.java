@@ -179,12 +179,11 @@ public class JOGLCapabilities
 		out.println( "Vendor:     " + _vendor );
 		out.println( "Extensions: " + _extensions );
 		out.println( "Renderer:   " + _renderer );
-		out.print  ( "Shaders:    " );
-		out.println( ( _shadingLanguageVersion == null ) ? "none" : _shadingLanguageVersion );
+		out.print  ( "Shaders:    " + ( ( _shadingLanguageVersion == null ) ? "none" : _shadingLanguageVersion ) );
 		out.println();
 
-		out.println( " OpenGL extensions:" );
-		out.println( "--------------------" );
+		out.println( " OpenGL capabilities:" );
+		out.println( "----------------------" );
 		out.println( "shaderObjects     = " + ( _shaderObjects     ? "yes" : _shaderObjectsARB  ? "extension (ARB)" : "no" ) );
 		out.println( "framebufferObject = " + ( _framebufferObject ? "yes" : "no" ) );
 		out.println( "drawBuffers       = " + ( _drawBuffers       ? "yes" : _drawBuffersARB    ? "extension (ARB)" : "no" ) );
@@ -291,14 +290,12 @@ public class JOGLCapabilities
 	 * Check the OpenGL context for various capabilities.
 	 */
 	private class JOGLRendererShadersProbe
-		extends CapabilitiesProbe
+		extends Probe
 	{
 		private boolean _result = false;
 
 		protected void run( final GL gl )
 		{
-			super.run( gl );
-
 			if ( isShaderSupported() )
 			{
 				final JOGLRenderer renderer = new JOGLRenderer( JOGLCapabilities.this , _context.getGL() , new HashMap<String,Texture>() , Color.BLACK , false , Matrix3D.INIT , new Rectangle( 0 , 0 , 10 , 10 ) , 1 , false , 10 );
@@ -394,6 +391,12 @@ public class JOGLCapabilities
 		{
 			if ( Threading.isOpenGLThread() )
 			{
+				final GLContext context = _context;
+				if ( context.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT )
+				{
+					throw new GLException( "GLContext.makeCurrent failed" );
+				}
+
 				run( _context.getGL() );
 			}
 			else
