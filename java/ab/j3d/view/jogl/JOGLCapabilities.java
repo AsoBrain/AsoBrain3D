@@ -179,7 +179,7 @@ public class JOGLCapabilities
 		out.println( "Vendor:     " + _vendor );
 		out.println( "Extensions: " + _extensions );
 		out.println( "Renderer:   " + _renderer );
-		out.print  ( "Shaders:    " + ( ( _shadingLanguageVersion == null ) ? "none" : _shadingLanguageVersion ) );
+		out.println( "Shaders:    " + ( ( _shadingLanguageVersion == null ) ? "none" : _shadingLanguageVersion ) );
 		out.println();
 
 		out.println( " OpenGL capabilities:" );
