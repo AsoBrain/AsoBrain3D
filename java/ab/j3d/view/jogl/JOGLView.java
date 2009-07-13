@@ -164,12 +164,6 @@ public class JOGLView
 		update();
 	}
 
-	/**
-	 * Set background color of 3D view.
-	 *
-	 * @param   color   Background color to use for 3D view, may be
-	 *                  <code>null</code> to use default.
-	 */
 	public void setBackground( final Color color )
 	{
 		_glCanvas.setBackground( color );

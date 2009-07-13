@@ -19,6 +19,7 @@
  */
 package ab.j3d.control;
 
+import java.awt.Color;
 import java.awt.Component;
 
 import junit.framework.TestCase;
@@ -57,6 +58,10 @@ public class TestFromToCameraControl
 
 		final FromToCameraControl fromToCameraControl = new FromToCameraControl( new View3D( new Scene( Scene.MM ) )
 			{
+				public void setBackground( final Color background )
+				{
+				}
+
 				public Component getComponent()
 				{
 					return null;

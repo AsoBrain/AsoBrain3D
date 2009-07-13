@@ -19,6 +19,7 @@
  */
 package ab.j3d.view;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -233,6 +234,14 @@ public abstract class View3D
 
 		return toolbar;
 	}
+
+	/**
+	 * Sets the background color of the view.
+	 *
+	 * @param   background  Background color to be set; may be <code>null</code>
+	 *                      for the default background color.
+	 */
+	public abstract void setBackground( final Color background );
 
 	/**
 	 * Get scene being viewed.

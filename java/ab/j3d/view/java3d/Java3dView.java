@@ -258,6 +258,11 @@ final class Java3dView
 		update();
 	}
 
+	public void setBackground( final Color background )
+	{
+		_canvas.setBackground( background );
+	}
+
 	public double getFrontClipDistance()
 	{
 		return _java3dView.getFrontClipDistance();

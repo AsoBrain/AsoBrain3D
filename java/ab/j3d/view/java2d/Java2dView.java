@@ -202,6 +202,11 @@ public final class Java2dView
 		update();
 	}
 
+	public void setBackground( final Color background )
+	{
+		_viewComponent.setBackground( background );
+	}
+
 	public double getFrontClipDistance()
 	{
 		return _frontClipDistance;
