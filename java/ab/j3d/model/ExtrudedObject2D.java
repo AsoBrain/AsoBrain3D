@@ -211,7 +211,7 @@ public final class ExtrudedObject2D
 	 */
 	public ExtrudedObject2D( final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material topMaterial , final Material bottomMaterial , final Material sideMaterial , final double flatness , final boolean hasBackface , final boolean flipNormals , final boolean caps )
 	{
-		this( shape , extrusion , transform , new BoxUVMap( Scene.MM , transform ) , topMaterial , bottomMaterial , sideMaterial , flatness , hasBackface , flipNormals , caps );
+		this( shape , extrusion , transform , new BoxUVMap( Scene.MM , Matrix3D.INIT ) , topMaterial , bottomMaterial , sideMaterial , flatness , hasBackface , flipNormals , caps );
 		// @FIXME Retrieve model units instead of assuming millimeters for UV map.
 	}
 
@@ -281,7 +281,7 @@ public final class ExtrudedObject2D
 		this.flipNormals = flipNormals;
 		this.caps        = caps;
 
-		final UVMap uvMap = new BoxUVMap( Scene.MM , transform ); // @FIXME Retrieve model units instead of assuming millimeters.
+		final UVMap uvMap = new BoxUVMap( Scene.MM , Matrix3D.INIT ); // @FIXME Retrieve model units instead of assuming millimeters.
 
 		final Object3DBuilder builder = new Object3DBuilder( this );
 		builder.addExtrudedShape( shape , flatness , extrusion , transform , uvMap , topMaterial , topFlipTexture , bottomMaterial , bottomFlipTexture , sideMaterial , sideFlipTexture , hasBackface , flipNormals , caps );
@@ -300,7 +300,7 @@ public final class ExtrudedObject2D
 	 */
 	public static void generateExtrudedShape( final Object3D target , final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material material , final double flatness , final boolean hasBackface )
 	{
-		final UVMap uvMap = new BoxUVMap( Scene.MM , transform ); // @FIXME Retrieve model units instead of assuming millimeters.
+		final UVMap uvMap = new BoxUVMap( Scene.MM , Matrix3D.INIT ); // @FIXME Retrieve model units instead of assuming millimeters.
 
 		final Object3DBuilder builder = new Object3DBuilder( target );
 		builder.addExtrudedShape( shape , flatness , extrusion , transform , uvMap , material , false , material , false , material , false , hasBackface , false , false );
