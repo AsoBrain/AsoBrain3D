@@ -35,9 +35,16 @@ public class PlanarUVMap
 	implements UVMap
 {
 	/**
-	 * Converts model units to meters.
+	 * Scale applied to model coordinates when calculating the texture
+	 * U-coordinates.
 	 */
-	private double _modelUnits;
+	private float _scaleU;
+
+	/**
+	 * Scale applied to model coordinates when calculating the texture
+	 * V-coordinates.
+	 */
+	private float _scaleV;
 
 	/**
 	 * Transforms plane coordinates to model coordinates in model units.
@@ -48,50 +55,75 @@ public class PlanarUVMap
 	 * Constructs a new planar UV-map parallel to the XY-plane, with its UV
 	 * origin at the spatial origin.
 	 *
-	 * @param   modelUnits  Size of a model unit in meters.
+	 * @param   scale   Scale of the UV-map.
 	 */
-	public PlanarUVMap( final double modelUnits )
+	public PlanarUVMap( final double scale )
 	{
-		this( modelUnits , Matrix3D.INIT );
+		this( scale , Matrix3D.INIT );
 	}
 
 	/**
 	 * Constructs a new planar UV-map perpendicular to the given normal, with
 	 * its UV origin at the spatial origin.
 	 *
-	 * @param   modelUnits  Size of a model unit in meters.
-	 * @param   normal      Normal vector indicating the orientation of the
-	 *                      plane.
+	 * @param   scale   Scale of the UV-map.
+	 * @param   normal  Normal vector indicating the orientation of the
+	 *                  plane.
 	 */
-	public PlanarUVMap( final double modelUnits , final Vector3D normal )
+	public PlanarUVMap( final double scale , final Vector3D normal )
 	{
-		this( modelUnits , Vector3D.INIT , normal );
+		this( scale , Vector3D.INIT , normal );
 	}
 
 	/**
 	 * Constructs a new planar UV-map perpendicular to the given normal, with
 	 * its origin at the given position.
 	 *
-	 * @param   modelUnits  Size of a model unit in meters.
-	 * @param   origin      Spatial coordinate of the UV-origin.
-	 * @param   normal      Normal vector indicating the orientation of the
-	 *                      plane.
+	 * @param   scale   Scale of the UV-map.
+	 * @param   origin  Spatial coordinate of the UV-origin.
+	 * @param   normal  Normal vector indicating the orientation of the
+	 *                  plane.
 	 */
-	public PlanarUVMap( final double modelUnits , final Vector3D origin , final Vector3D normal )
+	public PlanarUVMap( final double scale , final Vector3D origin , final Vector3D normal )
 	{
-		this( modelUnits , Matrix3D.getPlaneTransform( origin , normal , true ) );
+		this( scale , Matrix3D.getPlaneTransform( origin , normal , true ) );
 	}
 
 	/**
 	 * Constructs a new planar UV-map parallel to the XY-plane defined by the
 	 * given transformation.
 	 *
-	 * @param   modelUnits  Size of a model unit in meters.
+	 * @param   scale       Scale of the UV-map.
 	 * @param   plane2wcs   Transform plane to world coordinates.
 	 */
-	public PlanarUVMap( final double modelUnits , final Matrix3D plane2wcs )
+	public PlanarUVMap( final double scale , final Matrix3D plane2wcs )
 	{
-		_modelUnits = modelUnits;
+		this( (float)scale , (float)scale , plane2wcs );
+	}
+
+	/**
+	 * Constructs a new planar UV-map parallel to the XY-plane.
+	 *
+	 * @param   scaleU      Scale of the UV-map in the U-direction.
+	 * @param   scaleV      Scale of the UV-map in the V-direction.
+	 */
+	public PlanarUVMap( final float scaleU , final float scaleV )
+	{
+		this( scaleU , scaleV , Matrix3D.INIT );
+	}
+
+	/**
+	 * Constructs a new planar UV-map parallel to the XY-plane defined by the
+	 * given transformation.
+	 *
+	 * @param   scaleU      Scale of the UV-map in the U-direction.
+	 * @param   scaleV      Scale of the UV-map in the V-direction.
+	 * @param   plane2wcs   Transform plane to world coordinates.
+	 */
+	public PlanarUVMap( final float scaleU , final float scaleV , final Matrix3D plane2wcs )
+	{
+		_scaleU = scaleU;
+		_scaleV = scaleV;
 		_plane2wcs = plane2wcs;
 	}
 
@@ -106,14 +138,13 @@ public class PlanarUVMap
 
 		if ( ( material != null ) && ( material.colorMapWidth > 0.0f ) && ( material.colorMapHeight > 0.0f ) )
 		{
-			final float modelUnits = (float)_modelUnits;
-			scaleU = modelUnits / material.colorMapWidth;
-			scaleV = modelUnits / material.colorMapHeight;
+			scaleU = _scaleU / material.colorMapWidth;
+			scaleV = _scaleV / material.colorMapHeight;
 		}
 		else
 		{
-			scaleU = 1.0f;
-			scaleV = 1.0f;
+			scaleU = _scaleU;
+			scaleV = _scaleV;
 		}
 
 		for ( int i = 0 ; i < vertexIndices.length ; i++ )
@@ -142,14 +173,13 @@ public class PlanarUVMap
 
 		if ( ( material != null ) && ( material.colorMapWidth > 0.0f ) && ( material.colorMapHeight > 0.0f ) )
 		{
-			final float modelUnits = (float)_modelUnits;
-			scaleU = modelUnits / material.colorMapWidth;
-			scaleV = modelUnits / material.colorMapHeight;
+			scaleU = _scaleU / material.colorMapWidth;
+			scaleV = _scaleV / material.colorMapHeight;
 		}
 		else
 		{
-			scaleU = 1.0f;
-			scaleV = 1.0f;
+			scaleU = _scaleU;
+			scaleV = _scaleV;
 		}
 
 		final float tx = (float)plane2wcs.inverseTransformX( wcsPoint );
