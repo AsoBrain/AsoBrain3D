@@ -49,7 +49,7 @@ public class BoxUVMap
 	/**
 	 * UV maps used to map the sides.
 	 */
-	private UVMap[] _maps;
+	private PlanarUVMap[] _maps;
 
 	/**
 	 * Texture flipping for each map.
@@ -105,7 +105,7 @@ public class BoxUVMap
 	 */
 	public BoxUVMap( final double modelUnits , final Matrix3D box2wcs , final boolean flipLeft , final boolean flipRight , final boolean flipFront , final boolean flipBack , final boolean flipTop , final boolean flipBottom )
 	{
-		final UVMap[] maps = new UVMap[ 6 ];
+		final PlanarUVMap[] maps = new PlanarUVMap[ 6 ];
 		final boolean[] flips = new boolean[ 6 ];
 
 		maps[ LEFT ] = new PlanarUVMap( modelUnits , Matrix3D.INIT.set(
@@ -152,6 +152,22 @@ public class BoxUVMap
 		_flips = flips;
 	}
 
+	/**
+	 * Returns the planar UV-map for one of the sides of the box.
+	 *
+	 * @param   side    Side to get the UV-map for. See constants.
+	 *
+	 * @return  Planar UV-map for the specified side.
+	 */
+	public PlanarUVMap getSide( final int side )
+	{
+		if ( ( side < 0 ) || ( side >= _maps.length ) )
+		{
+			throw new IllegalArgumentException( "side: " + side );
+		}
+		return _maps[ side ];
+	}
+
 	public Point2D.Float[] generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final boolean flipTexture )
 	{
 		final int map = getTargetMap( vertexCoordinates , vertexIndices );
@@ -174,7 +190,7 @@ public class BoxUVMap
 	 *
 	 * @return  Target map.
 	 */
-	public int getTargetMap( final double[] vertexCoordinates , final int[] vertexIndices )
+	private int getTargetMap( final double[] vertexCoordinates , final int[] vertexIndices )
 	{
 		final int result;
 

@@ -127,6 +127,68 @@ public class PlanarUVMap
 		_plane2wcs = plane2wcs;
 	}
 
+	/**
+	 * Returns the scale of the UV-map in the U-direction.
+	 *
+	 * @return  Scale of the UV-map in the U-direction.
+	 */
+	public float getScaleU()
+	{
+		return _scaleU;
+	}
+
+	/**
+	 * Sets the scale of the UV-map in the U-direction.
+	 *
+	 * @param   scaleU  Scale of the UV-map in the U-direction.
+	 */
+	public void setScaleU( final float scaleU )
+	{
+		_scaleU = scaleU;
+	}
+
+	/**
+	 * Returns the scale of the UV-map in the V-direction.
+	 *
+	 * @return  Scale of the UV-map in the V-direction.
+	 */
+	public float getScaleV()
+	{
+		return _scaleV;
+	}
+
+	/**
+	 * Sets the scale of the UV-map in the V-direction.
+	 *
+	 * @param   scaleV  Scale of the UV-map in the V-direction.
+	 */
+	public void setScaleV( final float scaleV )
+	{
+		_scaleV = scaleV;
+	}
+
+	/**
+	 * Returns the matrix that transforms plane coordinates to model
+	 * coordinates. No scaling is performed by the matrix.
+	 *
+	 * @return  Plane to world coordinate transformation matrix.
+	 */
+	public Matrix3D getPlane2wcs()
+	{
+		return _plane2wcs;
+	}
+
+	/**
+	 * Sets the matrix that transforms plane coordinates to model coordinates.
+	 * No scaling is performed by the matrix.
+	 *
+	 * @param   plane2wcs   Plane to world coordinate transformation matrix.
+	 */
+	public void setPlane2wcs( final Matrix3D plane2wcs )
+	{
+		_plane2wcs = plane2wcs;
+	}
+
 	public Point2D.Float[] generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final boolean flipTexture )
 	{
 		final Point2D.Float[] result = new Point2D.Float[ vertexIndices.length ];
