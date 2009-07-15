@@ -1439,15 +1439,18 @@ public class JOGLRenderer
 				/*
 				 * Enable color map.
 				 */
+				final TextureCoords colorMapCoords;
 				if ( hasColorMap )
 				{
 					useShader( _textured );
 					colorMap.enable();
 					colorMap.bind();
+					colorMapCoords = colorMap.getImageTexCoords();
 				}
 				else
 				{
 					useShader( _colored );
+					colorMapCoords = null;
 				}
 
 				/*
@@ -1482,7 +1485,9 @@ public class JOGLRenderer
 					}
 					else if ( hasColorMap )
 					{
-						gl.glTexCoord2f( vertex.colorMapU, vertex.colorMapV );
+						final float u = colorMapCoords.left()   + vertex.colorMapU * ( colorMapCoords.right() - colorMapCoords.left() );
+						final float v = colorMapCoords.bottom() + vertex.colorMapV * ( colorMapCoords.top() - colorMapCoords.bottom() );
+						gl.glTexCoord2f( u , v );
 					}
 
 					if ( setVertexNormals )
