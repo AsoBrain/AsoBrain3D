@@ -85,7 +85,7 @@ public class PanAndZoomCameraControl
 	{
 		final Matrix3D transform = getScene2View();
 		final Vector3D centerOnPlane = transform.rotate( center );
-		setScene2View( transform.minus( transform.xo + centerOnPlane.x , transform.yo + centerOnPlane.y , 0.0 ) );
+		setScene2View( transform.setTranslation( -centerOnPlane.x , -centerOnPlane.y , transform.zo ) );
 	}
 
 	public void save()
