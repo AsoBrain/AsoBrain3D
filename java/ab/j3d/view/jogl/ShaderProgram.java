@@ -194,6 +194,7 @@ public class ShaderProgram
 	public void enable()
 	{
 		link();
+		_gl.glEnable( GL.GL_VERTEX_PROGRAM_TWO_SIDE );
 		_gl.glUseProgram( _program );
 	}
 
