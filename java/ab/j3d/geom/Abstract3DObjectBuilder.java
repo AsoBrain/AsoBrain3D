@@ -238,7 +238,15 @@ public abstract class Abstract3DObjectBuilder
 		final Ellipse2D ellipse2d = new Ellipse2D.Double( -radius , -radius , radius * 2.0 , radius * 2.0 );
 
 		final UVMap uvMap = new BoxUVMap( Scene.MM , base ); // @FIXME Retrieve model units instead of assuming millimeters.
-		addExtrudedShape( ellipse2d , radius * 0.02 , extrusion , base , uvMap , material , false , material , false , material , false , true , false , fill );
+
+		if ( fill )
+		{
+			addExtrudedShape( ellipse2d , radius * 0.02 , extrusion , base , material , uvMap , false , material , uvMap , false , material , uvMap , false , true , false );
+		}
+		else
+		{
+			addExtrudedShape( ellipse2d , radius * 0.02 , extrusion , base , material , uvMap , false , true , false , true );
+		}
 	}
 
 	/**
@@ -400,6 +408,23 @@ public abstract class Abstract3DObjectBuilder
 	}
 
 	/**
+	 * Add quad primitive.
+	 *
+	 * @param   point1          First vertex coordinates.
+	 * @param   point2          Second vertex coordinates.
+	 * @param   point3          Third vertex coordinates.
+	 * @param   point4          Fourth vertex coordinates.
+	 * @param   material        Material specification to use for shading.
+	 * @param   uvMap           UV-map used to generate texture coordinates.
+	 * @param   smooth          Face is smooth/curved vs. flat.
+	 * @param   hasBackface     Flag to indicate if face has a backface.
+	 */
+	public void addQuad( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Vector3D point4 , final Material material , final UVMap uvMap , final boolean smooth , final boolean hasBackface )
+	{
+		addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , material , uvMap , false , smooth , hasBackface );
+	}
+
+	/**
 	 * Add textured quad.
 	 *
 	 * @param   point1          First vertex coordinates.
@@ -512,6 +537,37 @@ public abstract class Abstract3DObjectBuilder
 	public void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Material material , final boolean hasBackface )
 	{
 		addFace( new Vector3D[] { point1 , point2 , point3 } , material , false , hasBackface );
+	}
+
+	/**
+	 * Add triangle primitive.
+	 *
+	 * @param   point1          First vertex coordinates.
+	 * @param   point2          Second vertex coordinates.
+	 * @param   point3          Third vertex coordinates.
+	 * @param   material        Material specification to use for shading.
+	 * @param   uvMap           UV-map used to generate texture coordinates.
+	 * @param   hasBackface     Flag to indicate if face has a backface.
+	 */
+	public void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Material material , final UVMap uvMap , final boolean hasBackface )
+	{
+		addFace( new Vector3D[] { point1 , point2 , point3 } , material , uvMap , false , false , hasBackface );
+	}
+
+	/**
+	 * Add triangle primitive.
+	 *
+	 * @param   point1          First vertex coordinates.
+	 * @param   point2          Second vertex coordinates.
+	 * @param   point3          Third vertex coordinates.
+	 * @param   material        Material specification to use for shading.
+	 * @param   uvMap           UV-map used to generate texture coordinates.
+	 * @param   smooth          Face is smooth/curved vs. flat.
+	 * @param   hasBackface     Flag to indicate if face has a backface.
+	 */
+	public void addTriangle( final Vector3D point1 , final Vector3D point2 , final Vector3D point3 , final Material material , final UVMap uvMap , final boolean smooth , final boolean hasBackface )
+	{
+		addFace( new Vector3D[] { point1 , point2 , point3 } , material , uvMap , false , smooth , hasBackface );
 	}
 
 	/**
@@ -698,26 +754,26 @@ public abstract class Abstract3DObjectBuilder
 	}
 
 	/**
-	 * Add extruded shape.
+	 * Add extruded shape with caps.
 	 *
 	 * @param   shape               Shape to add.
 	 * @param   extrusion           Extrusion vector (control-point displacement).
 	 * @param   transform           Transform to apply.
-	 * @param   uvMap               Provides UV coordinates.
 	 * @param   topMaterial         Material to apply to the top cap.
+	 * @param   topMap              Provides UV coordinates for top cap.
 	 * @param   topFlipTexture      Whether the top texture direction is flipped.
 	 * @param   bottomMaterial      Material to apply to the bottom cap.
+	 * @param   bottomMap           Provides UV coordinates for bottom cap.
 	 * @param   bottomFlipTexture   Whether the bottom texture direction is flipped.
 	 * @param   sideMaterial        Material to apply to the extruded sides.
+	 * @param   sideMap             Provides UV coordinates for extruded sides.
 	 * @param   sideFlipTexture     Whether the side texture direction is flipped.
 	 * @param   flatness            Flatness to use.
 	 * @param   hasBackface         Flag to indicate if extruded faces have a backface.
 	 * @param   flipNormals         If <code>true</code>, normals are flipped to
 	 *                              point in the opposite direction.
-	 * @param   caps                If <code>true</code>, top and bottom caps are
-	 *                              generated.
 	 */
-	public void addExtrudedShape( final Shape shape , final double flatness , final Vector3D extrusion , final Matrix3D transform , final UVMap uvMap , final Material topMaterial , final boolean topFlipTexture , final Material bottomMaterial , final boolean bottomFlipTexture , final Material sideMaterial , final boolean sideFlipTexture , final boolean hasBackface , final boolean flipNormals , final boolean caps )
+	public void addExtrudedShape( final Shape shape , final double flatness , final Vector3D extrusion , final Matrix3D transform , final Material topMaterial , final UVMap topMap , final boolean topFlipTexture , final Material bottomMaterial , final UVMap bottomMap , final boolean bottomFlipTexture , final Material sideMaterial , final UVMap sideMap , final boolean sideFlipTexture , final boolean hasBackface , final boolean flipNormals )
 	{
 		final double  ex            = extrusion.x;
 		final double  ey            = extrusion.y;
@@ -725,122 +781,146 @@ public abstract class Abstract3DObjectBuilder
 		final boolean hasExtrusion  = !MathTools.almostEqual( ex , 0.0 ) || !MathTools.almostEqual( ey , 0.0 ) || !MathTools.almostEqual( ez , 0.0 );
 		final boolean flipExtrusion = flipNormals ^ ( ez < 0.0 );
 
-		if ( !caps || hasExtrusion )
+		if ( hasExtrusion && ( sideMaterial != null ) )
 		{
-			final PathIterator pathIterator = shape.getPathIterator( null , flatness );
-
-			final double[] coords = new double[ 6 ];
-
-			Vector3D lastPoint           = null;
-			Vector3D lastExtrudedPoint   = null;
-			Vector3D moveToPoint         = null;
-			Vector3D moveToExtrudedPoint = null;
-
-			while ( !pathIterator.isDone() )
-			{
-				final int type = pathIterator.currentSegment( coords );
-				switch ( type )
-				{
-					case FlatteningPathIterator.SEG_MOVETO:
-					{
-						final double shapeX = coords[ 0 ];
-						final double shapeY = coords[ 1 ];
-
-						lastPoint = transform.transform( shapeX , shapeY , 0.0 );
-						moveToPoint = lastPoint;
-
-						if ( hasExtrusion )
-						{
-							lastExtrudedPoint = transform.transform( shapeX + ex , shapeY + ey , ez );
-							moveToExtrudedPoint = lastExtrudedPoint;
-						}
-						break;
-					}
-
-					case FlatteningPathIterator.SEG_LINETO:
-					{
-						final double shapeX = coords[ 0 ];
-						final double shapeY = coords[ 1 ];
-
-						final Vector3D point = transform.transform( shapeX , shapeY , 0.0 );
-
-						if ( ( lastPoint != null ) && !lastPoint.equals( point ) )
-						{
-							if ( hasExtrusion )
-							{
-								final Vector3D extrudedPoint = transform.transform( shapeX + ex , shapeY + ey , ez );
-
-								if ( flipExtrusion )
-								{
-									addFace( new Vector3D[] { point , extrudedPoint , lastExtrudedPoint , lastPoint} , sideMaterial , uvMap , sideFlipTexture , false , hasBackface );
-								}
-								else
-								{
-									addFace( new Vector3D[] { lastPoint , lastExtrudedPoint , extrudedPoint , point } , sideMaterial , uvMap , sideFlipTexture , false , hasBackface );
-								}
-
-								lastExtrudedPoint = extrudedPoint;
-							}
-							else /*if ( !caps )*/
-							{
-								addFace( new Vector3D[] { lastPoint , point } , sideMaterial , uvMap , sideFlipTexture , false , true );
-							}
-
-							lastPoint = point;
-						}
-						break;
-					}
-
-					case FlatteningPathIterator.SEG_CLOSE:
-					{
-						if ( !lastPoint.equals( moveToPoint ) )
-						{
-							if ( hasExtrusion )
-							{
-								if ( flipExtrusion )
-								{
-									addFace( new Vector3D[] { moveToPoint , moveToExtrudedPoint , lastExtrudedPoint , lastPoint } , sideMaterial , uvMap , sideFlipTexture , false , hasBackface );
-								}
-								else
-								{
-									addFace( new Vector3D[] { lastPoint , lastExtrudedPoint , moveToExtrudedPoint , moveToPoint } , sideMaterial , uvMap , sideFlipTexture , false , hasBackface );
-								}
-								lastExtrudedPoint = moveToExtrudedPoint;
-							}
-							else /*if ( !caps )*/
-							{
-								addFace( new Vector3D[] { lastPoint , moveToPoint } , sideMaterial , uvMap , sideFlipTexture , false , true );
-							}
-						}
-
-						lastPoint = moveToPoint;
-						break;
-					}
-				}
-
-				pathIterator.next();
-			}
+			addExtrudedShape( shape , flatness , extrusion , transform , sideMaterial , sideMap , sideFlipTexture , hasBackface , flipNormals , false );
 		}
 
-		if ( caps )
+		final TriangulatorFactory triangulatorFactory = TriangulatorFactory.newInstance();
+		final Triangulator        triangulator        = triangulatorFactory.newTriangulator();
+
+		triangulator.setFlatness( flatness );
+
+		final Vector3D topNormal    = Vector3D.INIT.set( 0.0 , 0.0 , flipExtrusion ? -1.0 :  1.0 );
+		final Vector3D bottomNormal = Vector3D.INIT.set( 0.0 , 0.0 , flipExtrusion ?  1.0 : -1.0 );
+
+		triangulator.setNormal( topNormal );
+		addTriangulatedShape( transform.plus( extrusion ) , shape , triangulator , topMaterial , topMap , topFlipTexture , hasBackface );
+
+		if ( hasExtrusion )
 		{
-			final TriangulatorFactory triangulatorFactory = TriangulatorFactory.newInstance();
-			final Triangulator        triangulator        = triangulatorFactory.newTriangulator();
-
-			triangulator.setFlatness( flatness );
-
-			final Vector3D topNormal    = Vector3D.INIT.set( 0.0 , 0.0 , flipExtrusion ? -1.0 :  1.0 );
-			final Vector3D bottomNormal = Vector3D.INIT.set( 0.0 , 0.0 , flipExtrusion ?  1.0 : -1.0 );
-
+			// @TODO Should not triangulate twice for a performance gain, since the triangulation for top and bottom caps is essentially the same.
 			triangulator.setNormal( bottomNormal );
-			addTriangulatedShape( transform , shape , triangulator , bottomMaterial , uvMap , bottomFlipTexture , hasBackface );
+			addTriangulatedShape( transform , shape , triangulator , bottomMaterial , bottomMap , bottomFlipTexture , hasBackface );
+		}
+	}
 
-			if ( hasExtrusion )
+	/**
+	 * Add extruded shape without caps.
+	 *
+	 * @param   shape           Shape to add.
+	 * @param   extrusion       Extrusion vector (control-point displacement).
+	 * @param   transform       Transform to apply.
+	 * @param   uvMap           Provides UV coordinates.
+	 * @param   material        Material to apply to the extruded sides.
+	 * @param   flipTexture     Whether the side texture direction is flipped.
+	 * @param   flatness        Flatness to use.
+	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
+	 * @param   flipNormals     If <code>true</code>, normals are flipped to
+	 *                          point in the opposite direction.
+	 * @param   smooth          Shape is smooth.
+	 */
+	public void addExtrudedShape( final Shape shape , final double flatness , final Vector3D extrusion , final Matrix3D transform , final Material material , final UVMap uvMap , final boolean flipTexture , final boolean hasBackface , final boolean flipNormals , final boolean smooth )
+	{
+		final double  ex            = extrusion.x;
+		final double  ey            = extrusion.y;
+		final double  ez            = extrusion.z;
+
+		final boolean hasExtrusion  = !MathTools.almostEqual( ex , 0.0 ) || !MathTools.almostEqual( ey , 0.0 ) || !MathTools.almostEqual( ez , 0.0 );
+		final boolean flipExtrusion = flipNormals ^ ( ez < 0.0 );
+
+		final PathIterator pathIterator = shape.getPathIterator( null , flatness );
+
+		final double[] coords = new double[ 6 ];
+
+		Vector3D lastPoint           = null;
+		Vector3D lastExtrudedPoint   = null;
+		Vector3D moveToPoint         = null;
+		Vector3D moveToExtrudedPoint = null;
+
+		while ( !pathIterator.isDone() )
+		{
+			final int type = pathIterator.currentSegment( coords );
+			switch ( type )
 			{
-				// @TODO Should not triangulate twice for a performance gain, since the triangulation for top and bottom caps is essentially the same.
-				triangulator.setNormal( topNormal );
-				addTriangulatedShape( transform.plus( extrusion ) , shape , triangulator , topMaterial , uvMap , topFlipTexture , hasBackface );
+				case FlatteningPathIterator.SEG_MOVETO:
+				{
+					final double shapeX = coords[ 0 ];
+					final double shapeY = coords[ 1 ];
+
+					lastPoint = transform.transform( shapeX , shapeY , 0.0 );
+					moveToPoint = lastPoint;
+
+					if ( hasExtrusion )
+					{
+						lastExtrudedPoint = transform.transform( shapeX + ex , shapeY + ey , ez );
+						moveToExtrudedPoint = lastExtrudedPoint;
+					}
+					break;
+				}
+
+				case FlatteningPathIterator.SEG_LINETO:
+				{
+					final double shapeX = coords[ 0 ];
+					final double shapeY = coords[ 1 ];
+
+					final Vector3D point = transform.transform( shapeX , shapeY , 0.0 );
+
+					if ( ( lastPoint != null ) && !lastPoint.equals( point ) )
+					{
+						if ( hasExtrusion )
+						{
+							final Vector3D extrudedPoint = transform.transform( shapeX + ex , shapeY + ey , ez );
+
+							if ( flipExtrusion )
+							{
+								addFace( new Vector3D[] { point , extrudedPoint , lastExtrudedPoint , lastPoint} , material , uvMap , flipTexture , smooth , hasBackface );
+							}
+							else
+							{
+								addFace( new Vector3D[] { lastPoint , lastExtrudedPoint , extrudedPoint , point } , material , uvMap , flipTexture , smooth , hasBackface );
+							}
+
+							lastExtrudedPoint = extrudedPoint;
+						}
+						else /*if ( !caps )*/
+						{
+							addFace( new Vector3D[] { lastPoint , point } , material , uvMap , flipTexture , false , true );
+						}
+
+						lastPoint = point;
+					}
+					break;
+				}
+
+				case FlatteningPathIterator.SEG_CLOSE:
+				{
+					if ( !lastPoint.equals( moveToPoint ) )
+					{
+						if ( hasExtrusion )
+						{
+							if ( flipExtrusion )
+							{
+								addFace( new Vector3D[] { moveToPoint , moveToExtrudedPoint , lastExtrudedPoint , lastPoint } , material , uvMap , flipTexture , smooth , hasBackface );
+							}
+							else
+							{
+								addFace( new Vector3D[] { lastPoint , lastExtrudedPoint , moveToExtrudedPoint , moveToPoint } , material , uvMap , flipTexture , smooth , hasBackface );
+							}
+							lastExtrudedPoint = moveToExtrudedPoint;
+						}
+						else /*if ( !caps )*/
+						{
+							addFace( new Vector3D[] { lastPoint , moveToPoint } , material , uvMap , flipTexture , false , true );
+						}
+					}
+
+					lastPoint = moveToPoint;
+					break;
+				}
 			}
+
+			pathIterator.next();
 		}
 	}
 
@@ -883,15 +963,20 @@ public abstract class Abstract3DObjectBuilder
 		final Triangulation triangulation = triangulator.triangulate( shape );
 		final List<Vector3D> vertices = triangulation.getVertices( transform );
 
-		final Vector3D[] points = new Vector3D[ 3 ];
+		final int[] vertexIndices = new int[ vertices.size() ];
+		for ( int i = 0 ; i < vertexIndices.length ; i++ )
+		{
+			vertexIndices[ i ] = getVertexIndex( vertices.get( i ) );
+		}
+
+		final int[] triangleVertexIndices = new int[ 3 ];
 
 		for ( final int[] triangle : triangulation.getTriangles() )
 		{
-			points[ 2 ] = vertices.get( triangle[ 0 ] );
-			points[ 1 ] = vertices.get( triangle[ 1 ] );
-			points[ 0 ] = vertices.get( triangle[ 2 ] );
-
-			addFace( points , material , uvMap , flipTexture , false , twoSided );
+			triangleVertexIndices[ 0 ] = vertexIndices[ triangle[ 0 ] ];
+			triangleVertexIndices[ 1 ] = vertexIndices[ triangle[ 1 ] ];
+			triangleVertexIndices[ 2 ] = vertexIndices[ triangle[ 2 ] ];
+			addFace( triangleVertexIndices , material , uvMap , flipTexture , false , twoSided );
 		}
 	}
 }
