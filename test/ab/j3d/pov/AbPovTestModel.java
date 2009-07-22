@@ -33,7 +33,6 @@ import ab.j3d.model.Box3D;
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.ContentNode;
 import ab.j3d.model.Cylinder3D;
-import ab.j3d.model.ExtrudedObject2D;
 import ab.j3d.model.Light3D;
 import ab.j3d.model.Object3D;
 import ab.j3d.model.Object3DBuilder;
@@ -441,13 +440,11 @@ public final class AbPovTestModel
 	 * a width and height of 100 mm and all extruded vertices are placed 100
 	 * back (y) and 100 up (z).
 	 *
-	 * @see ExtrudedObject2D
-	 *
-	 * @return The constructed {@link ExtrudedObject2D}.
+	 * @return The constructed extruded object.
 	 */
-	public ExtrudedObject2D getExtrudedObject2D()
+	public Object3D getExtrudedObject2D()
 	{
-		final ExtrudedObject2D result;
+		final Object3D result;
 
 		final ContentNode node = _scene.getContentNode( "extruded" );
 		if ( node == null )
@@ -457,11 +454,13 @@ public final class AbPovTestModel
 			final Vector3D extrusion = Vector3D.INIT.set( 0.0 , 100.0 , 100.0 );
 			final Matrix3D transform = Matrix3D.INIT.setTranslation( -400.0 , 0.0 , -250.0 );
 
-			result = new ExtrudedObject2D( shape , extrusion , transform , material , 1.0 , true , false , false );
+			final Object3DBuilder builder = new Object3DBuilder();
+			builder.addExtrudedShape( shape , 1.0 , extrusion , transform , material , new BoxUVMap( Scene.MM , Matrix3D.INIT ) , false , true , false , false );
+			result = builder.getObject3D();
 		}
 		else
 		{
-			result = (ExtrudedObject2D)node.getNode3D();
+			result = (Object3D)node.getNode3D();
 		}
 
 		return result;
