@@ -95,6 +95,35 @@ public final class Box3D
 	 */
 	public Box3D( final double dx , final double dy , final double dz , final UVMap uvMap , final Material frontMaterial , final Material rearMaterial , final Material rightMaterial , final Material leftMaterial , final Material topMaterial , final Material bottomMaterial )
 	{
+		this( dx , dy , dz , frontMaterial , uvMap , rearMaterial , uvMap , rightMaterial , uvMap , leftMaterial , uvMap , topMaterial , uvMap , bottomMaterial , uvMap );
+	}
+
+	/**
+	 * Constructs a new box with the specified dimensions and the given
+	 * materials on their respective sides, mapped according to the given UV
+	 * map. At least one of the box's dimensions must be non-zero.
+	 *
+	 * @param   dx              Width of box (x-axis).
+	 * @param   dy              Height of box (y-axis).
+	 * @param   dz              Depth of box (z-axis).
+	 * @param   frontMaterial   Material applied to the front of the box.
+	 * @param   frontMap        UV-mapping to use for the front of the box.
+	 * @param   rearMaterial    Material applied to the rear of the box.
+	 * @param   rearMap         UV-mapping to use for the rear of the box.
+	 * @param   rightMaterial   Material applied to the right of the box.
+	 * @param   rightMap        UV-mapping to use for the right of the box.
+	 * @param   leftMaterial    Material applied to the left of the box.
+	 * @param   leftMap         UV-mapping to use for the left of the box.
+	 * @param   topMaterial     Material applied to the top of the box.
+	 * @param   topMap          UV-mapping to use for the top of the box.
+	 * @param   bottomMaterial  Material applied to the bottom of the box.
+	 * @param   bottomMap       UV-mapping to use for the bottom of the box.
+	 *
+	 * @throws  IllegalArgumentException if <code>dx</code>, <code>dy</code> and
+	 *          <code>dz</code> are all zero.
+	 */
+	public Box3D( final double dx , final double dy , final double dz , final Material frontMaterial , final UVMap frontMap , final Material rearMaterial , final UVMap rearMap , final Material rightMaterial , final UVMap rightMap , final Material leftMaterial , final UVMap leftMap , final Material topMaterial , final UVMap topMap , final Material bottomMaterial , final UVMap bottomMap )
+	{
 		final double size = Vector3D.length( dx, dy, dz );
 		if ( size <= 0.0 )
 			throw new IllegalArgumentException( dx + " x " + dy + " x " + dz );
@@ -134,12 +163,12 @@ public final class Box3D
 			/* 7 */ -nx ,  ny ,  nz
 		} );
 
-		addFace( FRONT_VERTICES  , frontMaterial  , uvMap );
-		addFace( REAR_VERTICES   , rearMaterial   , uvMap );
-		addFace( RIGHT_VERTICES  , rightMaterial  , uvMap );
-		addFace( LEFT_VERTICES   , leftMaterial   , uvMap );
-		addFace( TOP_VERTICES    , topMaterial    , uvMap );
-		addFace( BOTTOM_VERTICES , bottomMaterial , uvMap );
+		addFace( FRONT_VERTICES  , frontMaterial  , frontMap  );
+		addFace( REAR_VERTICES   , rearMaterial   , rearMap   );
+		addFace( RIGHT_VERTICES  , rightMaterial  , rightMap  );
+		addFace( LEFT_VERTICES   , leftMaterial   , leftMap   );
+		addFace( TOP_VERTICES    , topMaterial    , topMap    );
+		addFace( BOTTOM_VERTICES , bottomMaterial , bottomMap );
 	}
 
 	/**
