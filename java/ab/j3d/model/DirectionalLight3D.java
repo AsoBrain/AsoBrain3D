@@ -40,10 +40,25 @@ public class DirectionalLight3D
 	/**
 	 * Constructs a new directional light with an intensity of <code>1.0</code>,
 	 * pointing in the given direction.
+	 *
+	 * @param   direction   Direction of the light.
 	 */
 	public DirectionalLight3D( final Vector3D direction )
 	{
 		setDirection( direction );
+	}
+
+	/**
+	 * Constructs a new directional light with a given intensity, pointing
+	 * in the given direction.
+	 *
+	 * @param   direction   Direction of the light.
+	 * @param   intensity   Light intensity.
+	 */
+	public DirectionalLight3D( final Vector3D direction , final float intensity )
+	{
+		setDirection( direction );
+		setIntensity( intensity );
 	}
 
 	/**
