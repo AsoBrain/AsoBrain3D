@@ -246,7 +246,14 @@ public final class ExtrudedObject2D
 		this.caps        = caps;
 
 		final Object3DBuilder builder = new Object3DBuilder( this );
-		builder.addExtrudedShape( shape , flatness , extrusion , transform , uvMap , topMaterial , false , bottomMaterial , false , sideMaterial , false , hasBackface , flipNormals , caps );
+		if ( caps )
+		{
+			builder.addExtrudedShape( shape , flatness , extrusion , transform , topMaterial , uvMap , false , bottomMaterial , uvMap , false , sideMaterial , uvMap , false , hasBackface , flipNormals );
+		}
+		else
+		{
+			builder.addExtrudedShape( shape , flatness , extrusion , transform , sideMaterial , uvMap , false , hasBackface , flipNormals , false );
+		}
 	}
 
 	/**
@@ -284,7 +291,14 @@ public final class ExtrudedObject2D
 		final UVMap uvMap = new BoxUVMap( Scene.MM , Matrix3D.INIT ); // @FIXME Retrieve model units instead of assuming millimeters.
 
 		final Object3DBuilder builder = new Object3DBuilder( this );
-		builder.addExtrudedShape( shape , flatness , extrusion , transform , uvMap , topMaterial , topFlipTexture , bottomMaterial , bottomFlipTexture , sideMaterial , sideFlipTexture , hasBackface , flipNormals , caps );
+		if ( caps )
+		{
+			builder.addExtrudedShape( shape , flatness , extrusion , transform , topMaterial , uvMap , topFlipTexture , bottomMaterial , uvMap , bottomFlipTexture , sideMaterial , uvMap , sideFlipTexture , hasBackface , flipNormals );
+		}
+		else
+		{
+			builder.addExtrudedShape( shape , flatness , extrusion , transform , sideMaterial , uvMap , sideFlipTexture , hasBackface , flipNormals , false );
+		}
 	}
 
 	/**
@@ -303,6 +317,6 @@ public final class ExtrudedObject2D
 		final UVMap uvMap = new BoxUVMap( Scene.MM , Matrix3D.INIT ); // @FIXME Retrieve model units instead of assuming millimeters.
 
 		final Object3DBuilder builder = new Object3DBuilder( target );
-		builder.addExtrudedShape( shape , flatness , extrusion , transform , uvMap , material , false , material , false , material , false , hasBackface , false , false );
+		builder.addExtrudedShape( shape , flatness , extrusion , transform , material , uvMap , false , material , uvMap , false , material , uvMap , false , hasBackface , false );
 	}
 }
