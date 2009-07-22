@@ -76,14 +76,16 @@ public class PanAndZoomCameraControl
 	}
 
 	/**
-	 * Moves the camera such that it looks at the specified center point.
+	 * Moves the camera such that it looks at the specified center point, when
+	 * projected on the current view plane.
 	 *
 	 * @param   center  Point to center the view on.
 	 */
 	public void setCenter( final Vector3D center )
 	{
 		final Matrix3D transform = getScene2View();
-		setScene2View( transform.minus( transform.xo + center.x , transform.yo + center.y , transform.zo + center.z ) );
+		final Vector3D centerOnPlane = transform.rotate( center );
+		setScene2View( transform.minus( transform.xo + centerOnPlane.x , transform.yo + centerOnPlane.y , 0.0 ) );
 	}
 
 	public void save()
