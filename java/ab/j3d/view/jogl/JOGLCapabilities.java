@@ -114,17 +114,27 @@ public class JOGLCapabilities
 	}
 
 	/**
-	 * Returns whether GLSL shader objects are supported. Currently only the
-	 * shaders introduced in OpenGL 2.0 are supported. The ARB extensions
-	 * for shader objects are not supported.
+	 * Returns whether GLSL shader objects are supported using the OpenGL core
+	 * API. Shaders were added to the core in OpenGL 2.0.
 	 *
-	 * @return  <code>true</code> if support is GLSL shaders is available.
+	 * @return  <code>true</code> if support of GLSL shaders is available.
 	 */
 	public boolean isShaderSupported()
 	{
 		determineCapabilities();
-
 		return _shaderObjects;
+	}
+
+	/**
+	 * Returns whether GLSL shader objects are supported using the ARB
+	 * extension, which was written for OpenGL version 1.4.
+	 *
+	 * @return  <code>true</code> if support of GLSL shaders is available.
+	 */
+	public boolean isShaderSupportedARB()
+	{
+		determineCapabilities();
+		return _shaderObjectsARB;
 	}
 
 	/**
@@ -184,18 +194,18 @@ public class JOGLCapabilities
 
 		out.println( " OpenGL capabilities:" );
 		out.println( "----------------------" );
-		out.println( "shaderObjects     = " + ( _shaderObjects     ? "yes" : _shaderObjectsARB  ? "extension (ARB)" : "no" ) );
-		out.println( "framebufferObject = " + ( _framebufferObject ? "yes" : "no" ) );
-		out.println( "drawBuffers       = " + ( _drawBuffers       ? "yes" : _drawBuffersARB    ? "extension (ARB)" : "no" ) );
-		out.println( "occlusionQuery    = " + ( _occlusionQuery    ? "yes" : _occlusionQueryARB ? "extension (ARB)" : "no" ) );
-		out.println( "shadowFuncs       = " + ( _shadowFuncs       ? "yes" : "no" ) );
-		out.println( "depthTexture      = " + ( _depthTexture      ? "yes" : "no" ) );
-		out.println( "shadow            = " + ( _shadow            ? "yes" : "no" ) );
-		out.println( "textureRectangle  = " + ( _textureRectangle  ? "yes" : "no" ) );
-		out.println( "multitexture      = " + ( _multitexture      ? "yes" : "no" ) );
-		out.println( "generateMipmap    = " + ( _generateMipmap    ? "yes" : "no" ) );
-		out.println( "blendFuncSeperate = " + ( _blendFuncSeperate ? "yes" : "no" ) );
-		out.println( "edgeClamp         = " + ( _edgeClamp         ? "yes" : "no" ) );
+		out.println( "shaderObjects     = " + ( _shaderObjects     ? "yes (core)" : _shaderObjectsARB  ? "yes (ARB)" : "no" ) );
+		out.println( "framebufferObject = " + ( _framebufferObject ? "yes"        : "no" ) );
+		out.println( "drawBuffers       = " + ( _drawBuffers       ? "yes (core)" : _drawBuffersARB    ? "yes (ARB)" : "no" ) );
+		out.println( "occlusionQuery    = " + ( _occlusionQuery    ? "yes (core)" : _occlusionQueryARB ? "yes (ARB)" : "no" ) );
+		out.println( "shadowFuncs       = " + ( _shadowFuncs       ? "yes"        : "no" ) );
+		out.println( "depthTexture      = " + ( _depthTexture      ? "yes"        : "no" ) );
+		out.println( "shadow            = " + ( _shadow            ? "yes"        : "no" ) );
+		out.println( "textureRectangle  = " + ( _textureRectangle  ? "yes"        : "no" ) );
+		out.println( "multitexture      = " + ( _multitexture      ? "yes"        : "no" ) );
+		out.println( "generateMipmap    = " + ( _generateMipmap    ? "yes"        : "no" ) );
+		out.println( "blendFuncSeperate = " + ( _blendFuncSeperate ? "yes"        : "no" ) );
+		out.println( "edgeClamp         = " + ( _edgeClamp         ? "yes"        : "no" ) );
 	}
 
 	/**
@@ -254,7 +264,7 @@ public class JOGLCapabilities
 			gl.glGetIntegerv( GL.GL_DEPTH_BITS , depthBits , 0 );
 			final boolean atLeast8AlphaBits = ( colorBits[ 3 ] >= 8 );
 
-			final boolean shaderSupported = _shaderObjects;
+			final boolean shaderObjects = _shaderObjects;
 
 			// Limits the number of passes that could be combined using a
 			// multi-layer depth-peeling algorithm.
@@ -266,7 +276,7 @@ public class JOGLCapabilities
 
 			// Limits the complexity of shaders we can use.
 			final int[] maxVaryingFloats = new int[ 1 ];
-			if ( _shaderObjects )
+			if ( shaderObjects )
 			{
 				gl.glGetIntegerv( GL.GL_MAX_VARYING_FLOATS , maxVaryingFloats , 0 );
 			}
@@ -387,6 +397,10 @@ public class JOGLCapabilities
 			}
 		}
 
+		/**
+		 * Runs the probe on the OpenGL thread. This method blocks until the
+		 * probe is completed.
+		 */
 		public void invokeAndWait()
 		{
 			if ( Threading.isOpenGLThread() )
