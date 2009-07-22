@@ -151,6 +151,11 @@ public class JOGLRenderer
 	private Vector3D _lightPositionRelativeToObject;
 
 	/**
+	 * GLSL shader implementation to be used, if any.
+	 */
+	private final ShaderImplementation _shaderImplementation;
+
+	/**
 	 * Renders objects without color maps and without lighting.
 	 */
 	private ShaderProgram _unlit = null;
@@ -245,44 +250,53 @@ public class JOGLRenderer
 
 		_lightPositionRelativeToObject = null;
 
-		/*
-		 * Check for required extensions.
-		 */
-		final boolean shaderEnabled = capabilities.isShaderSupported();
+		final ShaderImplementation shaderImplementation;
+		if ( capabilities.isShaderSupported() )
+		{
+			shaderImplementation = new CoreShaderImplementation();
+		}
+		else if ( capabilities.isShaderSupportedARB() )
+		{
+			shaderImplementation = new ARBShaderImplementation();
+		}
+		else
+		{
+			shaderImplementation = null;
+		}
+		_shaderImplementation = shaderImplementation;
 
 		Texture[] depthBuffers = null;
 		Texture[] colorBuffers = null;
 
-		if ( shaderEnabled )
+		if ( shaderImplementation != null )
 		{
-			final ArrayList<Shader> shaders = new ArrayList<Shader>();
-
 			// TODO: Depth peeling isn't very reliable yet, so it's disabled.
 			// It's very slow on some systems and completely broken on others.
 			final boolean depthPeelingEnabled = false && capabilities.isDepthPeelingSupported();
 			final boolean lightingEnabled     = true;
 
+			final List<Shader> shaders = new ArrayList<Shader>();
 			try
 			{
 				/*
 				 * Load vertex and fragment shaders.
 				 */
-				final VertexShader lightingVertex = loadShader( VertexShader.class , "lighting-vertex.glsl" );
+				final Shader lightingVertex = loadShader( Shader.Type.VERTEX , "lighting-vertex.glsl" );
 				shaders.add( lightingVertex );
 
-				final FragmentShader lightingFragment = loadShader( FragmentShader.class , "lighting-fragment.glsl" );
+				final Shader lightingFragment = loadShader( Shader.Type.FRAGMENT , "lighting-fragment.glsl" );
 				shaders.add( lightingFragment );
 
-				final VertexShader materialVertex = loadShader( VertexShader.class , "material-vertex.glsl" );
+				final Shader materialVertex = loadShader( Shader.Type.VERTEX , "material-vertex.glsl" );
 				shaders.add( materialVertex );
 
-				final FragmentShader materialFragment = loadShader( FragmentShader.class , "material-fragment.glsl" );
+				final Shader materialFragment = loadShader( Shader.Type.FRAGMENT , "material-fragment.glsl" );
 				shaders.add( materialFragment );
 
-				final FragmentShader depthPeelingFragment;
+				final Shader depthPeelingFragment;
 				if ( depthPeelingEnabled )
 				{
-					depthPeelingFragment = loadShader( FragmentShader.class , "depth-peeling-fragment.glsl" );
+					depthPeelingFragment = loadShader( Shader.Type.FRAGMENT , "depth-peeling-fragment.glsl" );
 					shaders.add( depthPeelingFragment );
 				}
 				else
@@ -293,7 +307,7 @@ public class JOGLRenderer
 				/*
 				 * Build shader programs for various rendering modes.
 				 */
-				final ShaderProgram unlit = new ShaderProgram( "unlit" );
+				final ShaderProgram unlit = shaderImplementation.createProgram( "unlit" );
 				unlit.attach( createVertexShaderMain  ( "color" , null ) );
 				unlit.attach( createFragmentShaderMain( "color" , null , depthPeelingEnabled ) );
 				unlit.attach( materialVertex );
@@ -307,7 +321,7 @@ public class JOGLRenderer
 				unlit.link();
 				_unlit = unlit;
 
-				final ShaderProgram colored  = new ShaderProgram( "colored"  );
+				final ShaderProgram colored  = shaderImplementation.createProgram( "colored"  );
 				final String lightingFunction = lightingEnabled ? "lighting" : null;
 				colored.attach( createVertexShaderMain  ( "color" , lightingFunction ) );
 				colored.attach( createFragmentShaderMain( "color" , lightingFunction , depthPeelingEnabled ) );
@@ -328,7 +342,7 @@ public class JOGLRenderer
 				colored.link();
 				_colored = colored;
 
-				final ShaderProgram textured = new ShaderProgram( "textured" );
+				final ShaderProgram textured = shaderImplementation.createProgram( "textured" );
 				textured.attach( createVertexShaderMain  ( "texture" , lightingFunction ) );
 				textured.attach( createFragmentShaderMain( "texture" , lightingFunction , depthPeelingEnabled ) );
 				textured.attach( materialVertex );
@@ -350,10 +364,10 @@ public class JOGLRenderer
 
 				if ( depthPeelingEnabled )
 				{
-					final FragmentShader blendFragment = loadShader( FragmentShader.class , "blend-fragment.glsl" );
+					final Shader blendFragment = loadShader( Shader.Type.FRAGMENT , "blend-fragment.glsl" );
 					shaders.add( blendFragment );
 
-					final ShaderProgram blend = new ShaderProgram( "blend" );
+					final ShaderProgram blend = shaderImplementation.createProgram( "blend" );
 					blend.attach( blendFragment );
 					_blend = blend;
 
@@ -388,7 +402,7 @@ public class JOGLRenderer
 	 */
 	public boolean isShadersEnabled()
 	{
-		return !_shaders.isEmpty();
+		return ( _shaderImplementation != null );
 	}
 
 	/**
@@ -403,7 +417,7 @@ public class JOGLRenderer
 	 *
 	 * @return  Created vertex shader.
 	 */
-	private static VertexShader createVertexShaderMain( final String colorFunction , final String lightingFunction )
+	private Shader createVertexShaderMain( final String colorFunction , final String lightingFunction )
 	{
 		final StringBuilder source = new StringBuilder();
 
@@ -430,7 +444,7 @@ public class JOGLRenderer
 		}
 		source.append( "}" );
 
-		final VertexShader result = new VertexShader();
+		final Shader result = _shaderImplementation.createShader( Shader.Type.VERTEX );
 		result.setSource( source.toString() );
 		return result;
 	}
@@ -448,7 +462,7 @@ public class JOGLRenderer
 	 *
 	 * @return  Created vertex shader.
 	 */
-	private static FragmentShader createFragmentShaderMain( final String colorFunction , final String lightingFunction , final boolean depthPeelingEnabled )
+	private Shader createFragmentShaderMain( final String colorFunction , final String lightingFunction , final boolean depthPeelingEnabled )
 	{
 		final StringBuilder source = new StringBuilder();
 
@@ -489,7 +503,7 @@ public class JOGLRenderer
 		}
 		source.append( "}" );
 
-		final FragmentShader result = new FragmentShader();
+		final Shader result = _shaderImplementation.createShader( Shader.Type.FRAGMENT );
 		result.setSource( source.toString() );
 		return result;
 	}
@@ -508,28 +522,18 @@ public class JOGLRenderer
 	/**
 	 * Loads a shader of the specified type.
 	 *
-	 * @param   shaderClass     Type of shader.
-	 * @param   name            Name of the resource to be loaded.
+	 * @param   shaderType  Type of shader.
+	 * @param   name        Name of the resource to be loaded.
 	 *
 	 * @return  Loaded shader.
 	 *
 	 * @throws  IOException if an I/O error occurs.
 	 * @throws  GLException if compilation of the shader fails.
 	 */
-	private static <T extends Shader> T loadShader( final Class<T> shaderClass , final String name )
+	private Shader loadShader( final Shader.Type shaderType , final String name )
 		throws IOException
 	{
-		final T result;
-		try
-		{
-			result = shaderClass.newInstance();
-		}
-		catch ( Exception e )
-		{
-			final AssertionError error = new AssertionError( "Failed to construct shader of type '" + shaderClass.getName() + "'" );
-			error.initCause( e );
-			throw error;
-		}
+		final Shader result = _shaderImplementation.createShader( shaderType );
 
 		final Class<?>    clazz  = JOGLRenderer.class;
 		final InputStream source = clazz.getResourceAsStream( name );
