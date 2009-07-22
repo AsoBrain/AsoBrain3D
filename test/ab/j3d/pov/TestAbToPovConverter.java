@@ -32,7 +32,6 @@ import ab.j3d.Matrix3D;
 import ab.j3d.model.Box3D;
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Cylinder3D;
-import ab.j3d.model.ExtrudedObject2D;
 import ab.j3d.model.Object3D;
 import ab.j3d.model.Scene;
 import ab.j3d.model.Sphere3D;
@@ -928,7 +927,7 @@ public final class TestAbToPovConverter
 	}
 
 	/**
-	 * This method tests the conversion of an {@link ExtrudedObject2D} to
+	 * This method tests the conversion of an extruded {@link Shape} to
 	 * a {@link PovMesh2}.
 	 *
 	 * @throws IOException When there was a problem writing to the
