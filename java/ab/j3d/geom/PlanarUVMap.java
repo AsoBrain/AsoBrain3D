@@ -183,9 +183,16 @@ public class PlanarUVMap
 	 * No scaling is performed by the matrix.
 	 *
 	 * @param   plane2wcs   Plane to world coordinate transformation matrix.
+	 *
+	 * @throws  NullPointerException if any parameter is <code>null</code>.
 	 */
 	public void setPlane2wcs( final Matrix3D plane2wcs )
 	{
+		if ( plane2wcs == null )
+		{
+			throw new NullPointerException( "plane2wcs" );
+		}
+
 		_plane2wcs = plane2wcs;
 	}
 
