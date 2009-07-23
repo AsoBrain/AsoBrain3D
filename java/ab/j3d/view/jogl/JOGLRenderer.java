@@ -217,8 +217,11 @@ public class JOGLRenderer
 	/**
 	 * Construct new JOGL renderer.
 	 *
-	 * @param   capabilities            Provides information about OpenGL capabilities.
 	 * @param   gl                      GL pipeline.
+	 * @param   configuration           Specifies which OpenGL capabilities
+	 *                                  should be used, if available.
+	 * @param   capabilities            Provides information about OpenGL
+	 *                                  capabilities.
 	 * @param   textureCache            Map containing {@link Texture}s used in the scene.
 	 * @param   backgroundColor         Backgroundcolor to use.
 	 * @param   gridIsEnabled           <code>true</code> if the grid must be rendered,
@@ -229,7 +232,7 @@ public class JOGLRenderer
 	 * @param   gridHighlightAxes       If set, hightlight X=0 and Y=0 axes.
 	 * @param   gridHighlightInterval   Interval to use for highlighting grid lines.
 	 */
-	public JOGLRenderer( final JOGLCapabilities capabilities , final GL gl , final Map<String,Texture> textureCache , final Color backgroundColor , final boolean gridIsEnabled , final Matrix3D grid2wcs , final Rectangle gridBounds , final int gridCellSize , final boolean gridHighlightAxes , final int gridHighlightInterval )
+	public JOGLRenderer( final GL gl , final JOGLConfiguration configuration , final JOGLCapabilities capabilities , final Map<String,Texture> textureCache , final Color backgroundColor , final boolean gridIsEnabled , final Matrix3D grid2wcs , final Rectangle gridBounds , final int gridCellSize , final boolean gridHighlightAxes , final int gridHighlightInterval )
 	{
 		_gl = gl;
 		_textureCache = textureCache;
@@ -250,19 +253,21 @@ public class JOGLRenderer
 
 		_lightPositionRelativeToObject = null;
 
-		final ShaderImplementation shaderImplementation;
-		if ( capabilities.isShaderSupported() )
+		ShaderImplementation shaderImplementation = null;
+
+		if ( configuration.isPerPixelLightingEnabled() ||
+		     configuration.isDepthPeelingEnabled() )
 		{
-			shaderImplementation = new CoreShaderImplementation();
+			if ( capabilities.isShaderSupported() )
+			{
+				shaderImplementation = new CoreShaderImplementation();
+			}
+			else if ( capabilities.isShaderSupportedARB() )
+			{
+				shaderImplementation = new ARBShaderImplementation();
+			}
 		}
-		else if ( capabilities.isShaderSupportedARB() )
-		{
-			shaderImplementation = new ARBShaderImplementation();
-		}
-		else
-		{
-			shaderImplementation = null;
-		}
+
 		_shaderImplementation = shaderImplementation;
 
 		Texture[] depthBuffers = null;
@@ -270,10 +275,8 @@ public class JOGLRenderer
 
 		if ( shaderImplementation != null )
 		{
-			// TODO: Depth peeling isn't very reliable yet, so it's disabled.
-			// It's very slow on some systems and completely broken on others.
-			final boolean depthPeelingEnabled = false && capabilities.isDepthPeelingSupported();
-			final boolean lightingEnabled     = true;
+			final boolean lightingEnabled     = configuration.isPerPixelLightingEnabled();
+			final boolean depthPeelingEnabled = configuration.isDepthPeelingEnabled() && capabilities.isDepthPeelingSupported();
 
 			final List<Shader> shaders = new ArrayList<Shader>();
 			try
@@ -403,6 +406,16 @@ public class JOGLRenderer
 	public boolean isShadersEnabled()
 	{
 		return ( _shaderImplementation != null );
+	}
+
+	/**
+	 * Returns whether the renderer is using depth peeling.
+	 *
+	 * @return  <code>true</code> if depth peeling is enabled.
+	 */
+	private boolean isDepthPeelingEnabled()
+	{
+		return ( _depthBuffers != null );
 	}
 
 	/**
@@ -588,13 +601,13 @@ public class JOGLRenderer
 		 */
 		final int[] viewport = new int[ 4 ];
 		gl.glGetIntegerv( GL.GL_VIEWPORT , viewport , 0 );
-		final int width = viewport[ 2 ];
+		final int width  = viewport[ 2 ];
 		final int height = viewport[ 3 ];
 
 		/*
 		 * Build shader programs and set uniform variables (i.e. parameters).
 		 */
-		final boolean depthPeelingEnabled = ( _blend != null );
+		final boolean depthPeelingEnabled = isDepthPeelingEnabled();
 
 		// Renders objects with specified material color, without lighting.
 		final ShaderProgram unlit = _unlit;
@@ -846,10 +859,10 @@ public class JOGLRenderer
 
 		renderToViewport( composite );
 
-		displayTextures( colorBuffers , -1.0 , true  );
-		displayTextures( depthBuffers ,  1.0 , false );
+//		displayTextures( colorBuffers , -1.0 , true  );
+//		displayTextures( depthBuffers ,  1.0 , false );
 
-		System.out.println( "Rendered " + width + " x " + height + " pixels in " + pass + " depth peeling pass(es) and 2 opaque passes" );
+//		System.out.println( "Rendered " + width + " x " + height + " pixels in " + ( pass + 1 ) + " depth peeling pass(es) and 2 opaque passes" );
 	}
 
 	/**
@@ -892,7 +905,13 @@ public class JOGLRenderer
 			     ( result[ i ].getHeight() != height ) )
 			{
 				final TextureData textureData = new TextureData( GL.GL_RGBA8 , width , height , 0 , GL.GL_RGBA , GL.GL_UNSIGNED_BYTE , false , false , false , null , null );
-				result[ i ] = TextureIO.newTexture( textureData );
+
+				/*
+				 * Force 'GL_TEXTURE_2D' target.
+				 */
+				result[ i ] = TextureIO.newTexture( GL.GL_TEXTURE_2D );
+				result[ i ].updateImage( textureData , GL.GL_TEXTURE_2D );
+
 				result[ i ].setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_NEAREST       );
 				result[ i ].setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_NEAREST       );
 				result[ i ].setTexParameteri( GL.GL_TEXTURE_WRAP_S     , GL.GL_CLAMP_TO_EDGE );
@@ -922,7 +941,8 @@ public class JOGLRenderer
 			     ( result[ i ].getHeight() != height ) )
 			{
 				final TextureData textureData = new TextureData( GL.GL_DEPTH_COMPONENT32 , width , height , 0 , GL.GL_DEPTH_COMPONENT , GL.GL_FLOAT , false , false , false , null , null );
-				result[ i ] = TextureIO.newTexture( textureData );
+				result[ i ] = TextureIO.newTexture( GL.GL_TEXTURE_2D );
+				result[ i ].updateImage( textureData , GL.GL_TEXTURE_2D );
 				result[ i ].setTexParameteri( GL.GL_TEXTURE_MIN_FILTER   , GL.GL_NEAREST       );
 				result[ i ].setTexParameteri( GL.GL_TEXTURE_MAG_FILTER   , GL.GL_NEAREST       );
 				result[ i ].setTexParameteri( GL.GL_TEXTURE_WRAP_S       , GL.GL_CLAMP_TO_EDGE );
@@ -1339,7 +1359,8 @@ public class JOGLRenderer
 
 			final float   extraAlpha    = style.getMaterialAlpha();
 			final float   combinedAlpha = material.diffuseColorAlpha * extraAlpha;
-			final boolean blend         = ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && ( combinedAlpha < 0.99f );
+			final boolean blend         = !isDepthPeelingEnabled() &&
+			                              ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && ( combinedAlpha < 0.99f );
 
 			if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || ( combinedAlpha >= 1.0f ) ) &&
 			     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || ( combinedAlpha <  1.0f ) ) )
@@ -1570,7 +1591,8 @@ public class JOGLRenderer
 
 			final Color   color           = style.getFillColor();
 			final int     alpha           = color.getAlpha();
-			final boolean blend           = ( renderMode == MultiPassRenderMode.ALL ) && ( alpha < 255 );
+			final boolean blend           = !isDepthPeelingEnabled() &&
+			                              ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && ( alpha < 255 );
 			final boolean backfaceCulling = style.isBackfaceCullingEnabled() && !face.isTwoSided();
 			final boolean hasLighting     = style.isFillLightingEnabled() && ( _lightPositionRelativeToObject != null );
 			final boolean setVertexNormals = hasLighting && face.smooth;

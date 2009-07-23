@@ -69,6 +69,11 @@ public class JOGLView
 	private final GLCanvas _glCanvas;
 
 	/**
+	 * Specifies which OpenGL capabilities should be used, if available.
+	 */
+	private JOGLConfiguration _configuration;
+
+	/**
 	 * Provides information about OpenGL capabilities.
 	 */
 	private JOGLCapabilities _capabilities;
@@ -126,7 +131,10 @@ public class JOGLView
 
 		/* See if the model already contains a context. */
 		glCanvas = new GLCanvas( capabilities , null , joglEngine.getContext() , null );
+
+		_configuration = new JOGLConfiguration();
 		_capabilities = new JOGLCapabilities( glCanvas.getContext() );
+
 		joglEngine.setContext( glCanvas.getContext() );
 
 		glCanvas.setMinimumSize( new Dimension( 0 , 0 ) ); //resize workaround
@@ -140,6 +148,16 @@ public class JOGLView
 		addOverlay( defaultViewControl );
 
 		update();
+	}
+
+	public JOGLConfiguration getConfiguration()
+	{
+		return _configuration;
+	}
+
+	public JOGLCapabilities getCapabilities()
+	{
+		return _capabilities;
 	}
 
 	public double getFrontClipDistance()
@@ -472,7 +490,7 @@ public class JOGLView
 		if ( renderer == null )
 		{
 			final Map<String,Texture> textureCache = _joglEngine.getTextureCache();
-			renderer = new JOGLRenderer( _capabilities , gl , textureCache , _glCanvas.getBackground() , isGridEnabled() , getGrid2wcs() , getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
+			renderer = new JOGLRenderer( gl , _configuration , _capabilities , textureCache , _glCanvas.getBackground() , isGridEnabled() , getGrid2wcs() , getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
 			_renderer = renderer;
 		}
 

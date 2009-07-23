@@ -69,6 +69,8 @@ public class JOGLCapabilities
 	/** Depth/shadow texture support.          */ private boolean _shadow            = false;
 
 	/** Rectangular textures.                  */ private boolean _textureRectangle  = false;
+	/** Non-power-of-two textures.             */ private boolean _nonPowerOfTwo     = false;
+	/** Non-power-of-two textures (extension). */ private boolean _nonPowerOfTwoARB  = false;
 	/** Multi-texturing.                       */ private boolean _multitexture      = false;
 	/** Auto-generated mipmaps.                */ private boolean _generateMipmap    = false;
 	/** Seperate blending for color and alpha. */ private boolean _blendFuncSeperate = false;
@@ -122,7 +124,7 @@ public class JOGLCapabilities
 	public boolean isShaderSupported()
 	{
 		determineCapabilities();
-		return _shaderObjects;
+		return _shaderObjects && ( _shadingLanguageVersion != null );
 	}
 
 	/**
@@ -134,7 +136,7 @@ public class JOGLCapabilities
 	public boolean isShaderSupportedARB()
 	{
 		determineCapabilities();
-		return _shaderObjectsARB;
+		return _shaderObjectsARB && ( _shadingLanguageVersion != null );
 	}
 
 	/**
@@ -155,7 +157,8 @@ public class JOGLCapabilities
 		       _occlusionQuery     &&
 		       _multitexture       &&
 		       _textureRectangle   &&
-		       _framebufferObject;
+		       _framebufferObject  &&
+		       _nonPowerOfTwoARB;
 	}
 
 	/**
@@ -206,6 +209,9 @@ public class JOGLCapabilities
 		out.println( "generateMipmap    = " + ( _generateMipmap    ? "yes"        : "no" ) );
 		out.println( "blendFuncSeperate = " + ( _blendFuncSeperate ? "yes"        : "no" ) );
 		out.println( "edgeClamp         = " + ( _edgeClamp         ? "yes"        : "no" ) );
+		out.println( "nonPowerOfTwo     = " + ( _nonPowerOfTwo     ?
+		                                        _nonPowerOfTwoARB  ? "yes (core,ARB)" : "yes (core)" :
+		                                        _nonPowerOfTwoARB  ? "yes (ARB)"      : "no" ) );
 	}
 
 	/**
@@ -223,6 +229,10 @@ public class JOGLCapabilities
 			final boolean opengl20 = gl.isExtensionAvailable( "GL_VERSION_2_0" );
 
 			_textureRectangle  = gl.isExtensionAvailable( "GL_ARB_texture_rectangle" );
+
+			_nonPowerOfTwo     = opengl20;
+			_nonPowerOfTwoARB  = gl.isExtensionAvailable( "GL_ARB_texture_non_power_of_two" );
+
 			_framebufferObject = gl.isExtensionAvailable( "GL_EXT_framebuffer_object" );
 
 			_shaderObjects    = opengl20;
@@ -240,6 +250,7 @@ public class JOGLCapabilities
 
 			_occlusionQuery    = opengl15;
 			_occlusionQueryARB = gl.isExtensionAvailable( "GL_ARB_occlusion_query" );
+
 			_shadowFuncs       = opengl15 || gl.isExtensionAvailable( "GL_EXT_shadow_funcs" );
 			_depthTexture      = opengl14 || gl.isExtensionAvailable( "GL_ARB_depth_texture" );
 			_shadow            = opengl14 || gl.isExtensionAvailable( "GL_ARB_shadow" );
@@ -260,40 +271,60 @@ public class JOGLCapabilities
 			gl.glGetIntegerv( GL.GL_GREEN_BITS , colorBits , 1 );
 			gl.glGetIntegerv( GL.GL_BLUE_BITS  , colorBits , 2 );
 			gl.glGetIntegerv( GL.GL_ALPHA_BITS , colorBits , 3 );
-			final int[] depthBits = new int[ 1 ];
-			gl.glGetIntegerv( GL.GL_DEPTH_BITS , depthBits , 0 );
-			final boolean atLeast8AlphaBits = ( colorBits[ 3 ] >= 8 );
+			final int depthBits = getInteger( gl , GL.GL_DEPTH_BITS );
+			System.out.println( "depthBits = " + depthBits );
 
-			final boolean shaderObjects = _shaderObjects;
+			final boolean atLeast8AlphaBits = ( colorBits[ 3 ] >= 8 );
 
 			// Limits the number of passes that could be combined using a
 			// multi-layer depth-peeling algorithm.
-			final int[] maxDrawBuffers = new int[ 1 ];
 			if ( _drawBuffers )
 			{
-				gl.glGetIntegerv( GL.GL_MAX_DRAW_BUFFERS , maxDrawBuffers , 0 );
+				getInteger( gl , GL.GL_MAX_DRAW_BUFFERS );
 			}
 
 			// Limits the complexity of shaders we can use.
-			final int[] maxVaryingFloats = new int[ 1 ];
-			if ( shaderObjects )
+			if ( _shaderObjects )
 			{
-				gl.glGetIntegerv( GL.GL_MAX_VARYING_FLOATS , maxVaryingFloats , 0 );
+				getInteger( gl , GL.GL_MAX_VARYING_FLOATS );
+				getInteger( gl, GL.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS );
+				getInteger( gl, GL.GL_MAX_TEXTURE_IMAGE_UNITS );
+				getInteger( gl, GL.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS );
+				_shadingLanguageVersion = gl.glGetString( GL.GL_SHADING_LANGUAGE_VERSION );
+			}
+			else if ( _shaderObjectsARB )
+			{
+				getInteger( gl , GL.GL_MAX_VARYING_FLOATS_ARB );
+				getInteger( gl, GL.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB );
+				getInteger( gl, GL.GL_MAX_TEXTURE_IMAGE_UNITS_ARB );
+				getInteger( gl, GL.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS_ARB );
+				_shadingLanguageVersion = gl.glGetString( GL.GL_SHADING_LANGUAGE_VERSION_ARB );
 			}
 
 			_version    = gl.glGetString( GL.GL_VERSION );
 			_vendor     = gl.glGetString( GL.GL_VENDOR );
 			_extensions = gl.glGetString( GL.GL_EXTENSIONS );
 			_renderer   = gl.glGetString( GL.GL_RENDERER );
-			try
-			{
-				_shadingLanguageVersion = gl.glGetString( GL.GL_SHADING_LANGUAGE_VERSION );
-			}
-			catch ( GLException e )
-			{
-				_shadingLanguageVersion = null;
-			}
 		}
+	}
+
+	/**
+	 * Returns the value of the given OpenGL parameter. Retrieving an
+	 * <code>int</code> value with <code>glGetInteger</code> requires an array.
+	 * This method wraps the process of creating and reading from the array.
+	 *
+	 * @param   gl          OpenGL pipeline.
+	 * @param   parameter   Parameter to get. See {@link GL} constants.
+	 *
+	 * @return  Value of the parameter.
+	 *
+	 * @throws  GLException if an OpenGL-specific exception occurs.
+	 */
+	private static int getInteger( final GL gl , final int parameter )
+	{
+		final int[] result = new int[ 1 ];
+		gl.glGetIntegerv( parameter , result , 0 );
+		return result[ 0 ];
 	}
 
 	/**
@@ -308,7 +339,8 @@ public class JOGLCapabilities
 		{
 			if ( isShaderSupported() )
 			{
-				final JOGLRenderer renderer = new JOGLRenderer( JOGLCapabilities.this , _context.getGL() , new HashMap<String,Texture>() , Color.BLACK , false , Matrix3D.INIT , new Rectangle( 0 , 0 , 10 , 10 ) , 1 , false , 10 );
+				final JOGLConfiguration configuration = new JOGLConfiguration();
+				final JOGLRenderer renderer = new JOGLRenderer( _context.getGL() , configuration , JOGLCapabilities.this , new HashMap<String,Texture>() , Color.BLACK , false , Matrix3D.INIT , new Rectangle( 0 , 0 , 10 , 10 ) , 1 , false , 10 );
 				_result = renderer.isShadersEnabled();
 			}
 		}
@@ -339,32 +371,61 @@ public class JOGLCapabilities
 		 */
 		protected abstract void run( final GL gl );
 
-		public void run()
+		public final void run()
 		{
 			try
 			{
-				final GLContext context = _context;
-				if ( context.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT )
-				{
-					throw new GLException( "GLContext.makeCurrent failed" );
-				}
-
-				try
-				{
-					run( context.getGL() );
-				}
-				catch ( Throwable t )
-				{
-					_throwable = t;
-				}
-				finally
-				{
-					context.release();
-				}
+				makeContextCurrentAndRun();
 			}
 			finally
 			{
 				_semaphore.release();
+			}
+		}
+
+		/**
+		 * Makes the OpenGL context current on the calling thread, calls
+		 * {@link #run(GL)} and then releases the OpenGL context.
+		 */
+		private void makeContextCurrentAndRun()
+		{
+			final GLContext context = _context;
+			final GLContext current = GLContext.getCurrent();
+
+			if ( context != current )
+			{
+				System.out.println( "Making context current..." );
+				if ( context.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT )
+				{
+					throw new GLException( "GLContext.makeCurrent failed" );
+				}
+			}
+
+			try
+			{
+				run( context.getGL() );
+				_throwable = null;
+			}
+			catch ( Throwable t )
+			{
+				_throwable = t;
+			}
+			finally
+			{
+				if ( context != current )
+				{
+					System.out.println( "Releasing context..." );
+					context.release();
+
+					if ( current != null )
+					{
+						System.out.println( "Making previous context current..." );
+						if ( current.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT )
+						{
+							throw new GLException( "GLContext.makeCurrent failed (to restore old context)" );
+						}
+					}
+				}
 			}
 		}
 
@@ -374,7 +435,7 @@ public class JOGLCapabilities
 		 *
 		 * @throws  InterruptedException if the current thread is interrupted.
 		 */
-		public void waitFor()
+		public final void waitFor()
 			throws InterruptedException
 		{
 			_semaphore.acquire();
@@ -401,17 +462,11 @@ public class JOGLCapabilities
 		 * Runs the probe on the OpenGL thread. This method blocks until the
 		 * probe is completed.
 		 */
-		public void invokeAndWait()
+		public final void invokeAndWait()
 		{
 			if ( Threading.isOpenGLThread() )
 			{
-				final GLContext context = _context;
-				if ( context.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT )
-				{
-					throw new GLException( "GLContext.makeCurrent failed" );
-				}
-
-				run( _context.getGL() );
+				makeContextCurrentAndRun();
 			}
 			else
 			{
