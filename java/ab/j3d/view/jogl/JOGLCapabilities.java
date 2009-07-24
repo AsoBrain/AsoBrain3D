@@ -284,17 +284,17 @@ public class JOGLCapabilities
 			if ( _shaderObjects )
 			{
 				getInteger( gl , GL.GL_MAX_VARYING_FLOATS );
-				getInteger( gl, GL.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS );
-				getInteger( gl, GL.GL_MAX_TEXTURE_IMAGE_UNITS );
-				getInteger( gl, GL.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS );
+				getInteger( gl , GL.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS );
+				getInteger( gl , GL.GL_MAX_TEXTURE_IMAGE_UNITS );
+				getInteger( gl , GL.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS );
 				_shadingLanguageVersion = gl.glGetString( GL.GL_SHADING_LANGUAGE_VERSION );
 			}
 			else if ( _shaderObjectsARB )
 			{
 				getInteger( gl , GL.GL_MAX_VARYING_FLOATS_ARB );
-				getInteger( gl, GL.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB );
-				getInteger( gl, GL.GL_MAX_TEXTURE_IMAGE_UNITS_ARB );
-				getInteger( gl, GL.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS_ARB );
+				getInteger( gl , GL.GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS_ARB );
+				getInteger( gl , GL.GL_MAX_TEXTURE_IMAGE_UNITS_ARB );
+				getInteger( gl , GL.GL_MAX_FRAGMENT_UNIFORM_COMPONENTS_ARB );
 				_shadingLanguageVersion = gl.glGetString( GL.GL_SHADING_LANGUAGE_VERSION_ARB );
 			}
 
