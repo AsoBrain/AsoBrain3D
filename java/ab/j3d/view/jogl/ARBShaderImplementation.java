@@ -21,8 +21,8 @@
 package ab.j3d.view.jogl;
 
 /**
- * Provides OpenGL Shading Language (GLSL) shaders using the core API, available
- * in OpenGL 2.0 and above.
+ * Provides OpenGL Shading Language (GLSL) shaders using the ARB extension.
+ * As such, it may be supported on OpenGL versions 1.4 and above.
  *
  * @author  G. Meinders
  * @version $Revision$ $Date$

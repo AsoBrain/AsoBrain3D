@@ -37,11 +37,6 @@ public class ARBShader
 	implements Shader
 {
 	/**
-	 * OpenGL pipeline.
-	 */
-	protected final GL _gl;
-
-	/**
 	 * Shader object.
 	 */
 	protected final int _shader;
@@ -59,7 +54,6 @@ public class ARBShader
 		}
 
 		final GL gl = GLU.getCurrentGL();
-		_gl = gl;
 
 		final int shader;
 		switch ( shaderType )

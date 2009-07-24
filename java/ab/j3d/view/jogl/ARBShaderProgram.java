@@ -28,7 +28,9 @@ import javax.media.opengl.glu.GLU;
 import ab.j3d.Vector3D;
 
 /**
- * Represents an OpenGL Shading Language (GLSL) shader program.
+ * Represents an OpenGL Shading Language (GLSL) shader program. This
+ * implementation uses the ARB extension for GLSL. As such, it may be supported
+ * on OpenGL versions 1.4 and above.
  *
  * @author  G. Meinders
  * @version $Revision$ $Date$

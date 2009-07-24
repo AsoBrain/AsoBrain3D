@@ -28,7 +28,8 @@ import javax.media.opengl.glu.GLU;
 import ab.j3d.Vector3D;
 
 /**
- * Represents an OpenGL Shading Language (GLSL) shader program.
+ * Represents an OpenGL Shading Language (GLSL) shader program. This
+ * implementation uses the core API, available in OpenGL 2.0 and above.
  *
  * @author  G. Meinders
  * @version $Revision$ $Date$
@@ -40,11 +41,6 @@ public class CoreShaderProgram
 	 * Name of the program, intended for traceability; not used by OpenGL.
 	 */
 	private final String _name;
-
-	/**
-	 * OpenGL pipeline.
-	 */
-	private final GL _gl;
 
 	/**
 	 * Shader program object.
@@ -67,7 +63,6 @@ public class CoreShaderProgram
 		_linked  = false;
 
 		final GL gl = GLU.getCurrentGL();
-		_gl = gl;
 
 		_program = gl.glCreateProgram();
 	}
@@ -79,13 +74,15 @@ public class CoreShaderProgram
 
 	public void attach( final Shader shader )
 	{
-		_gl.glAttachShader( _program , shader.getShaderObject() );
+		final GL gl = GLU.getCurrentGL();
+		gl.glAttachShader( _program , shader.getShaderObject() );
 		_linked = false;
 	}
 
 	public void detach( final Shader shader )
 	{
-		_gl.glDetachShader( _program , shader.getShaderObject() );
+		final GL gl = GLU.getCurrentGL();
+		gl.glDetachShader( _program , shader.getShaderObject() );
 		_linked = false;
 	}
 
@@ -93,7 +90,7 @@ public class CoreShaderProgram
 	{
 		if ( !_linked )
 		{
-			final GL gl = _gl;
+			final GL gl = GLU.getCurrentGL();
 			final int program = _program;
 
 			/*
@@ -116,7 +113,7 @@ public class CoreShaderProgram
 
 	public void validate()
 	{
-		final GL gl = _gl;
+		final GL gl = GLU.getCurrentGL();
 		final int program = _program;
 
 		gl.glValidateProgram( program );
@@ -133,8 +130,9 @@ public class CoreShaderProgram
 
 	public String getInfoLog()
 	{
+		final GL gl = GLU.getCurrentGL();
 		final int[] infoLogLength = new int[ 1 ];
-		_gl.glGetProgramiv( _program, GL.GL_INFO_LOG_LENGTH , infoLogLength , 0 );
+		gl.glGetProgramiv( _program, GL.GL_INFO_LOG_LENGTH , infoLogLength , 0 );
 
 		final String infoLog;
 		if( infoLogLength[ 0 ] == 0 )
@@ -144,7 +142,7 @@ public class CoreShaderProgram
 		else
 		{
 			final byte[] infoLogBytes = new byte[ infoLogLength[ 0 ] ];
-			_gl.glGetProgramInfoLog( _program, infoLogLength[ 0 ] , infoLogLength , 0 , infoLogBytes , 0 );
+			gl.glGetProgramInfoLog( _program, infoLogLength[ 0 ] , infoLogLength , 0 , infoLogBytes , 0 );
 			infoLog = new String( infoLogBytes , 0 , infoLogLength[ 0 ] , Charset.forName( "iso-8859-1" ) );
 		}
 		return infoLog;
@@ -152,48 +150,54 @@ public class CoreShaderProgram
 
 	public void enable()
 	{
+		final GL gl = GLU.getCurrentGL();
 		link();
-		_gl.glEnable( GL.GL_VERTEX_PROGRAM_TWO_SIDE );
-		_gl.glUseProgram( _program );
+		gl.glEnable( GL.GL_VERTEX_PROGRAM_TWO_SIDE );
+		gl.glUseProgram( _program );
 	}
 
 	public void disable()
 	{
-		_gl.glUseProgram( 0 );
+		final GL gl = GLU.getCurrentGL();
+		gl.glUseProgram( 0 );
 	}
 
 	public void dispose()
 	{
-		_gl.glDeleteProgram( _program );
+		final GL gl = GLU.getCurrentGL();
+		gl.glDeleteProgram( _program );
 	}
 
 	public void setUniform( final String identifier , final float value )
 	{
-		final int variable = _gl.glGetUniformLocation( _program , identifier );
+		final GL gl = GLU.getCurrentGL();
+		final int variable = gl.glGetUniformLocation( _program , identifier );
 		if ( variable == -1 )
 		{
 			throw new IllegalArgumentException( "Not a uniform variable: " + identifier );
 		}
-		_gl.glUniform1f( variable , value );
+		gl.glUniform1f( variable , value );
 	}
 
 	public void setUniform( final String identifier , final int value )
 	{
-		final int variable = _gl.glGetUniformLocation( _program , identifier );
+		final GL gl = GLU.getCurrentGL();
+		final int variable = gl.glGetUniformLocation( _program , identifier );
 		if ( variable == -1 )
 		{
 			throw new IllegalArgumentException( "Not a uniform variable: " + identifier );
 		}
-		_gl.glUniform1i( variable , value );
+		gl.glUniform1i( variable , value );
 	}
 
 	public void setUniform( final String identifier , final Vector3D value )
 	{
-		final int variable = _gl.glGetUniformLocation( _program , identifier );
+		final GL gl = GLU.getCurrentGL();
+		final int variable = gl.glGetUniformLocation( _program , identifier );
 		if ( variable == -1 )
 		{
 			throw new IllegalArgumentException( "Not a uniform variable: " + identifier );
 		}
-		_gl.glUniform3f( variable , (float)value.x , (float)value.y , (float)value.z );
+		gl.glUniform3f( variable , (float)value.x , (float)value.y , (float)value.z );
 	}
 }

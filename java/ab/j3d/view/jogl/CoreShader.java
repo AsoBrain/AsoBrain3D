@@ -26,7 +26,8 @@ import javax.media.opengl.GLException;
 import javax.media.opengl.glu.GLU;
 
 /**
- * Represents an OpenGL Shading Language (GLSL) shader object.
+ * Represents an OpenGL Shading Language (GLSL) shader object. This
+ * implementation uses the core API, available in OpenGL 2.0 and above.
  *
  * @author  G. Meinders
  * @version $Revision$ $Date$
@@ -34,11 +35,6 @@ import javax.media.opengl.glu.GLU;
 public class CoreShader
 	implements Shader
 {
-	/**
-	 * OpenGL pipeline.
-	 */
-	protected final GL _gl;
-
 	/**
 	 * Shader object.
 	 */
@@ -57,7 +53,6 @@ public class CoreShader
 		}
 
 		final GL gl = GLU.getCurrentGL();
-		_gl = gl;
 
 		final int shader;
 		switch ( shaderType )
