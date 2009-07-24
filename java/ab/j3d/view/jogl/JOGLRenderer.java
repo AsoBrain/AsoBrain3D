@@ -153,7 +153,7 @@ public class JOGLRenderer
 	/**
 	 * GLSL shader implementation to be used, if any.
 	 */
-	private final ShaderImplementation _shaderImplementation;
+	private ShaderImplementation _shaderImplementation;
 
 	/**
 	 * Renders objects without color maps and without lighting.
@@ -381,10 +381,12 @@ public class JOGLRenderer
 			catch ( IOException e )
 			{
 				e.printStackTrace();
+				disableShaders();
 			}
 			catch ( GLException e )
 			{
 				e.printStackTrace();
+				disableShaders();
 			}
 
 			_shaders = shaders;
@@ -409,13 +411,22 @@ public class JOGLRenderer
 	}
 
 	/**
+	 * Permanently disables shaders, e.g. because of an error while compiling
+	 * or linking a shader program. As a result, depth peeling is also disabled.
+	 */
+	private void disableShaders()
+	{
+		_shaderImplementation = null;
+	}
+
+	/**
 	 * Returns whether the renderer is using depth peeling.
 	 *
 	 * @return  <code>true</code> if depth peeling is enabled.
 	 */
 	private boolean isDepthPeelingEnabled()
 	{
-		return ( _depthBuffers != null );
+		return isShadersEnabled() && ( _depthBuffers != null );
 	}
 
 	/**
@@ -1149,19 +1160,29 @@ public class JOGLRenderer
 	 */
 	private void useShader( final ShaderProgram shader )
 	{
-		final ShaderProgram activeShader = _activeShader;
-		if ( activeShader != shader )
+		if ( isShadersEnabled() )
 		{
-			_activeShader = shader;
-
-			if ( activeShader != null )
+			final ShaderProgram activeShader = _activeShader;
+			if ( activeShader != shader )
 			{
-				activeShader.disable();
-			}
+				_activeShader = shader;
 
-			if ( shader != null )
-			{
-				shader.enable();
+				try
+				{
+					if ( activeShader != null )
+					{
+						activeShader.disable();
+					}
+
+					if ( shader != null )
+					{
+						shader.enable();
+					}
+				}
+				catch ( GLException e )
+				{
+					disableShaders();
+				}
 			}
 		}
 	}
