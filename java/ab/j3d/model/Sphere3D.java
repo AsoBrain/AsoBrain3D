@@ -48,6 +48,23 @@ public final class Sphere3D
 	 */
 	public Sphere3D( final double radius , final int p , final int q , final Material material )
 	{
+		this( radius , p , q , material , false );
+	}
+
+	/**
+	 * Constructor for sphere.
+	 *
+	 * @param   radius          Radius of sphere.
+	 * @param   p               Number of faces around Y-axis to approximate
+	 *                          the sphere.
+	 * @param   q               Number of faces around X/Z-axis to approximate
+	 *                          the sphere.
+	 * @param   material        Material of sphere.
+	 * @param   flipNormals     <code>true</code> to flip the faces/normals of
+	 *                          the sphere, turning it inside-out.
+	 */
+	public Sphere3D( final double radius , final int p , final int q , final Material material , final boolean flipNormals )
+	{
 		this.radius = radius;
 
 		final int      vertexCount       = p * ( q - 1 ) + 2;
@@ -96,6 +113,14 @@ public final class Sphere3D
 		vertexNormals[ n++ ] = 0.0;
 		vertexNormals[ n   ] = 1.0;
 
+		if ( flipNormals )
+		{
+			for ( int i = 0 ; i < vertexNormals.length ; i++ )
+			{
+				vertexNormals[ i ] = -vertexNormals[ i ];
+			}
+		}
+
 		setVertexCoordinates( vertexCoordinates );
 		setVertexNormals( vertexNormals );
 
@@ -130,18 +155,24 @@ public final class Sphere3D
 
 				if ( qc == 0 )
 				{
-					vertexIndices = new int[] { 0 , p3 , p4 };
-					texturePoints = new Point2D.Float[] { new Point2D.Float( uCenter , vBottom ) , new Point2D.Float( uLeft , vTop ) , new Point2D.Float( uRight , vTop ) };
+					vertexIndices = flipNormals ? new int[] { 0 , p4 , p3 } :
+					                              new int[] { 0 , p3 , p4 };
+					texturePoints = flipNormals ? new Point2D.Float[] { new Point2D.Float( uCenter , vBottom ) , new Point2D.Float( uRight , vTop ) , new Point2D.Float( uLeft  , vTop ) } :
+					                              new Point2D.Float[] { new Point2D.Float( uCenter , vBottom ) , new Point2D.Float( uLeft  , vTop ) , new Point2D.Float( uRight , vTop ) };
 				}
 				else if ( qc < lastQ )
 				{
-					vertexIndices = new int[] { p2 , p1 , p3 , p4 };
-					texturePoints = new Point2D.Float[] { new Point2D.Float( uRight , vBottom ) , new Point2D.Float( uLeft , vBottom ) , new Point2D.Float( uLeft , vTop ) , new Point2D.Float( uRight , vTop ) };
+					vertexIndices = flipNormals ? new int[] { p2 , p4 , p3 , p1 } :
+					                              new int[] { p2 , p1 , p3 , p4 };
+					texturePoints = flipNormals ? new Point2D.Float[] { new Point2D.Float( uRight , vBottom ) , new Point2D.Float( uRight , vTop    ) , new Point2D.Float( uLeft , vTop ) , new Point2D.Float( uLeft  , vBottom ) } :
+					                              new Point2D.Float[] { new Point2D.Float( uRight , vBottom ) , new Point2D.Float( uLeft  , vBottom ) , new Point2D.Float( uLeft , vTop ) , new Point2D.Float( uRight , vTop    ) };
 				}
 				else // qc == lastQ
 				{
-					vertexIndices = new int[] { p2 , p1 , lastV };
-					texturePoints = new Point2D.Float[] { new Point2D.Float( uRight , vBottom ) , new Point2D.Float( uLeft , vBottom ) , new Point2D.Float( uCenter , vTop ) };
+					vertexIndices = flipNormals ? new int[] { p1 , p2 , lastV } :
+					                              new int[] { p2 , p1 , lastV };
+					texturePoints = flipNormals ? new Point2D.Float[] { new Point2D.Float( uLeft  , vBottom ) , new Point2D.Float( uRight , vBottom ) , new Point2D.Float( uCenter , vTop ) } :
+					                              new Point2D.Float[] { new Point2D.Float( uRight , vBottom ) , new Point2D.Float( uLeft  , vBottom ) , new Point2D.Float( uCenter , vTop ) };
 				}
 
 				_faces.add( new Face3D( this , vertexIndices , material , texturePoints , null , true , false ) );
