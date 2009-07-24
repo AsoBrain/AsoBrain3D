@@ -271,10 +271,7 @@ public class JOGLCapabilities
 			gl.glGetIntegerv( GL.GL_GREEN_BITS , colorBits , 1 );
 			gl.glGetIntegerv( GL.GL_BLUE_BITS  , colorBits , 2 );
 			gl.glGetIntegerv( GL.GL_ALPHA_BITS , colorBits , 3 );
-			final int depthBits = getInteger( gl , GL.GL_DEPTH_BITS );
-			System.out.println( "depthBits = " + depthBits );
-
-			final boolean atLeast8AlphaBits = ( colorBits[ 3 ] >= 8 );
+			getInteger( gl , GL.GL_DEPTH_BITS );
 
 			// Limits the number of passes that could be combined using a
 			// multi-layer depth-peeling algorithm.
