@@ -20,6 +20,8 @@
  */
 package ab.j3d;
 
+import java.awt.geom.Point2D;
+import static java.lang.Double.*;
 import java.text.DecimalFormat;
 import java.util.Properties;
 
@@ -33,6 +35,7 @@ import com.numdata.oss.PropertyTools;
  * @version $Revision$ ($Date$, $Author$)
  */
 public final class Vector3D
+	extends Point2D
 {
 	/**
 	 * Zero-vector.
@@ -101,6 +104,24 @@ public final class Vector3D
 		x = nx;
 		y = ny;
 		z = nz;
+	}
+
+	public double getX()
+	{
+		return x;
+	}
+
+	public double getY()
+	{
+		return y;
+	}
+
+	public void setLocation( final double nx , final double ny )
+	{
+		if ( x != nx || y != ny )
+		{
+			throw new IllegalStateException( getClass() + " is immutable" );
+		}
 	}
 
 	/**
@@ -382,9 +403,9 @@ public final class Vector3D
 	 */
 	public boolean equals( final double otherX , final double otherY , final double otherZ )
 	{
-		return ( Double.isNaN( otherX ) || ( otherX == x ) ) &&
-		       ( Double.isNaN( otherY ) || ( otherY == y ) ) &&
-		       ( Double.isNaN( otherZ ) || ( otherZ == z ) );
+		return ( isNaN( otherX ) || ( otherX == x ) ) &&
+		       ( isNaN( otherY ) || ( otherY == y ) ) &&
+		       ( isNaN( otherZ ) || ( otherZ == z ) );
 	}
 
 	public boolean equals( final Object other )
@@ -411,9 +432,9 @@ public final class Vector3D
 	public int hashCode()
 	{
 		long l;
-		return (int)( ( l = Double.doubleToLongBits( x ) ) ^ ( l >>> 32 )
-		              ^ ( l = Double.doubleToLongBits( y ) ) ^ ( l >>> 32 )
-		              ^ ( l = Double.doubleToLongBits( z ) ) ^ ( l >>> 32 ) );
+		return (int)( ( l = doubleToLongBits( x ) ) ^ ( l >>> 32 ) ^
+		              ( l = doubleToLongBits( y ) ) ^ ( l >>> 32 ) ^
+		              ( l = doubleToLongBits( z ) ) ^ ( l >>> 32 ) );
 	}
 
 	/**
@@ -439,14 +460,14 @@ public final class Vector3D
 		if ( comma1 < 1 )
 			throw new IllegalArgumentException( "comma1" );
 
-		final double x = Double.parseDouble( value.substring( 0 , comma1 ) );
+		final double x = parseDouble( value.substring( 0 , comma1 ) );
 
 		final int comma2 = value.indexOf( (int)',' , comma1 + 1 );
 		if ( comma2 < 1 )
 			throw new IllegalArgumentException( "comma2" );
 
-		final double y = Double.parseDouble( value.substring( comma1 + 1 , comma2 ) );
-		final double z = Double.parseDouble( value.substring( comma2 + 1 ) );
+		final double y = parseDouble( value.substring( comma1 + 1 , comma2 ) );
+		final double z = parseDouble( value.substring( comma2 + 1 ) );
 
 		return ZERO.set( x , y , z );
 	}
@@ -590,9 +611,7 @@ public final class Vector3D
 		}
 		else
 		{
-			result = new Vector3D( Double.isNaN( nx ) ? x : nx ,
-			                       Double.isNaN( ny ) ? y : ny ,
-			                       Double.isNaN( nz ) ? z : nz );
+			result = new Vector3D( isNaN( nx ) ? x : nx , isNaN( ny ) ? y : ny , isNaN( nz ) ? z : nz );
 		}
 
 		return result;
