@@ -22,6 +22,7 @@ package ab.j3d;
 import java.awt.Shape;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -121,14 +122,14 @@ public final class Polyline2D
 	 * Cache for line's bounds. This value will reset when points
 	 * are added/removed.
 	 */
-	private Bounds2D _boundsCache;
+	private Rectangle2D _boundsCache;
 
 	/**
 	 * Cache for enclosed rectangel of a convex shape.
 	 *
 	 * @see     #getEnclosedRectangle
 	 */
-	private Bounds2D _encloseCache;
+	private Rectangle2D _encloseCache;
 
 	/**
 	 * Constructor for polyline.
@@ -587,12 +588,12 @@ public final class Polyline2D
 	/**
 	 * Get bounding box of polyline.
 	 *
-	 * @return  Bounds2D with bounding box for polyline;
+	 * @return  {@link Rectangle2D} with bounding box for polyline;
 	 *          <code>null</code> if the poyline has no bounds (it's void).
 	 */
-	public Bounds2D getBounds()
+	public Rectangle2D getBounds()
 	{
-		Bounds2D result = _boundsCache;
+		Rectangle2D result = _boundsCache;
 		if ( result == null )
 		{
 			int pointIndex = getPointCount();
@@ -613,7 +614,7 @@ public final class Polyline2D
 					if ( p.y > maxY ) maxY = p.y;
 				}
 
-				result = new Bounds2D( minX , minY , maxX , maxY );
+				result = new Rectangle2D.Double( minX , minY , maxX - minX , maxY - minY );
 				_boundsCache = result;
 			}
 		}
@@ -628,7 +629,7 @@ public final class Polyline2D
 	 */
 	public double getWidth()
 	{
-		final Bounds2D bounds = getBounds();
+		final Rectangle2D bounds = getBounds();
 		return ( bounds == null ) ? 0.0 : bounds.getWidth();
 	}
 
@@ -639,7 +640,7 @@ public final class Polyline2D
 	 */
 	public double getHeight()
 	{
-		final Bounds2D bounds = getBounds();
+		final Rectangle2D bounds = getBounds();
 		return ( bounds == null ) ? 0.0 : bounds.getHeight();
 	}
 
@@ -653,9 +654,9 @@ public final class Polyline2D
 	 *
 	 * THIS IS ONLY VALID FOR POLYLINES DEFINING A 'CONVEX' SHAPE.
 	 *
-	 * @return  Bounds2D that is enclosed by this polyline.
+	 * @return  Rectangle2D that is enclosed by this polyline.
 	 */
-	public Bounds2D getEnclosedRectangle()
+	public Rectangle2D getEnclosedRectangle()
 	{
 		/*
 		 * Only for convex shapes.
@@ -663,22 +664,22 @@ public final class Polyline2D
 		if ( getType() != CONVEX )
 			throw new RuntimeException( "Polyline2D.getEnclosedRectangle() is for convex shapes only!" );
 
-		Bounds2D result = _encloseCache;
+		Rectangle2D result = _encloseCache;
 		if ( result == null )
 		{
 			/*
 			 * Get bounds.
 			 */
-			final Bounds2D bounds = getBounds();
+			final Rectangle2D bounds = getBounds();
 			if ( bounds != null )
 			{
 				/*
 				 * Define starting points.
 				 */
-				double minX = bounds.minX;
-				double minY = bounds.minY;
-				double maxX = bounds.maxX;
-				double maxY = bounds.maxY;
+				double minX = bounds.getMinX();
+				double minY = bounds.getMinY();
+				double maxX = bounds.getMaxX();
+				double maxY = bounds.getMaxY();
 
 				/*
 				 * Amount to move when line is not in shape.
@@ -707,9 +708,11 @@ public final class Polyline2D
 					/*
 					 * Check if we missed it.
 					 */
-					if ( minX > bounds.maxX || maxX < bounds.minX ||
-						 minY > bounds.maxY || maxY < bounds.minY )
+					if ( ( minX > bounds.getMaxX() ) || ( maxX < bounds.getMinX() ) ||
+					     ( minY > bounds.getMaxY() ) || ( maxY < bounds.getMinY() ) )
+					{
 						throw new RuntimeException( "No enclosed rectangle can be found" );
+					}
 
 					/*
 					 * If point has changed, create new point and check intersection.
@@ -749,7 +752,7 @@ public final class Polyline2D
 					if ( !(p2i && p4i) ) { maxY -= verticalStep; p2 = null; p4 = null; }
 				}
 
-				result = new Bounds2D( minX , minY , maxX - minX , maxY - minY );
+				result = new Rectangle2D.Double( minX , minY , maxX - minX , maxY - minY );
 				_encloseCache = result;
 			}
 		}
@@ -809,16 +812,16 @@ public final class Polyline2D
 
 						case PATH:
 							{
-								final Bounds2D thisBounds  = getBounds();
-								final Bounds2D otherBounds = other.getBounds();
+								final Rectangle2D thisBounds  = getBounds();
+								final Rectangle2D otherBounds = other.getBounds();
 								result = thisBounds.intersects( otherBounds ) ? getIntersectionPath_Line( other , getPoint( 0 ) , getPoint( 1 ) ) : null;
 							}
 							break;
 
 						case CONVEX:
 							{
-								final Bounds2D thisBounds  = getBounds();
-								final Bounds2D otherBounds = other.getBounds();
+								final Rectangle2D thisBounds  = getBounds();
+								final Rectangle2D otherBounds = other.getBounds();
 								result = thisBounds.intersects( otherBounds ) ? getIntersectionConvex_Line( other , this ) : null;
 							}
 							break;
@@ -841,24 +844,24 @@ public final class Polyline2D
 
 						case LINE:
 							{
-								final Bounds2D thisBounds  = getBounds();
-								final Bounds2D otherBounds = other.getBounds();
+								final Rectangle2D thisBounds  = getBounds();
+								final Rectangle2D otherBounds = other.getBounds();
 								result = thisBounds.intersects( otherBounds ) ? getIntersectionPath_Line( this , other.getPoint( 0 ) , other.getPoint( 1 ) ) : null;
 							}
 							break;
 
 						case CONVEX:
 							{
-								final Bounds2D thisBounds  = getBounds();
-								final Bounds2D otherBounds = other.getBounds();
+								final Rectangle2D thisBounds  = getBounds();
+								final Rectangle2D otherBounds = other.getBounds();
 								result = thisBounds.intersects( otherBounds ) ? getIntersectionConvex_Path( other , this ) : null;
 							}
 							break;
 
 						case PATH:
 							{
-								final Bounds2D thisBounds  = getBounds();
-								final Bounds2D otherBounds = other.getBounds();
+								final Rectangle2D thisBounds  = getBounds();
+								final Rectangle2D otherBounds = other.getBounds();
 								result = thisBounds.intersects( otherBounds ) ? getIntersectionPath_Path( this , other ) : null;
 							}
 							break;
@@ -881,24 +884,24 @@ public final class Polyline2D
 
 						case LINE:
 							{
-								final Bounds2D thisBounds  = getBounds();
-								final Bounds2D otherBounds = other.getBounds();
+								final Rectangle2D thisBounds  = getBounds();
+								final Rectangle2D otherBounds = other.getBounds();
 								result = thisBounds.intersects( otherBounds ) ? getIntersectionConvex_Line( this , other ) : null;
 							}
 							break;
 
 						case CONVEX:
 							{
-								final Bounds2D thisBounds  = getBounds();
-								final Bounds2D otherBounds = other.getBounds();
+								final Rectangle2D thisBounds  = getBounds();
+								final Rectangle2D otherBounds = other.getBounds();
 								result = thisBounds.intersects( otherBounds ) ? getIntersectionConvex_Convex( this , other ) : null;
 							}
 							break;
 
 						case PATH:
 							{
-								final Bounds2D thisBounds  = getBounds();
-								final Bounds2D otherBounds = other.getBounds();
+								final Rectangle2D thisBounds  = getBounds();
+								final Rectangle2D otherBounds = other.getBounds();
 								result = thisBounds.intersects( otherBounds ) ? getIntersectionConvex_Path( this , other ) : null;
 							}
 							break;
