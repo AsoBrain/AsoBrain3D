@@ -505,16 +505,7 @@ public class ObjLoader
 
 //		System.out.println( " - OBJ file loaded succesfully" );
 
-		final double[] abVertexCoordinates = new double[ vertices.size() * 3 ];
-		for ( int objIndex = 0 , abIndex = 0 ; objIndex < vertices.size() ; objIndex++ , abIndex += 3 )
-		{
-			final Vector3D point = vertices.get( objIndex );
-			abVertexCoordinates[ abIndex ] = point.x;
-			abVertexCoordinates[ abIndex + 1 ] = point.y;
-			abVertexCoordinates[ abIndex + 2 ] = point.z;
-		}
-
-		builder.setVertexCoordinates( abVertexCoordinates );
+		builder.setVertexCoordinates( vertices );
 
 		List<Vector3D> assignedVertexNormals = null;
 

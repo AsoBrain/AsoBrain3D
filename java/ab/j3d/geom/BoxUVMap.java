@@ -20,6 +20,7 @@
 package ab.j3d.geom;
 
 import java.awt.geom.Point2D;
+import java.util.List;
 
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
@@ -174,6 +175,12 @@ public class BoxUVMap
 		return _maps[ map ].generate( material , vertexCoordinates , vertexIndices , _flips[ map ] ^ flipTexture );
 	}
 
+	public Point2D.Float[] generate( final Material material , final List<Vector3D> vertexCoordinates , final int[] vertexIndices , final boolean flipTexture )
+	{
+		final int map = getTargetMap( vertexCoordinates , vertexIndices );
+		return _maps[ map ].generate( material , vertexCoordinates , vertexIndices , _flips[ map ] ^ flipTexture );
+	}
+
 	public Point2D.Float generate( final Material material , final Vector3D wcsPoint , final Vector3D normal , final boolean flipTexture )
 	{
 		final int map = getTargetMap( normal );
@@ -211,6 +218,36 @@ public class BoxUVMap
 				vertexCoordinates[ base3     ] - xo,
 				vertexCoordinates[ base3 + 1 ] - yo,
 				vertexCoordinates[ base3 + 2 ] - zo ) );
+		}
+		else
+		{
+			result = 0;
+		}
+
+		return result;
+	}
+
+	/**
+	 * Try to determine the face normal and use it to choose the target map.
+	 *
+	 * Note that this assumes that the given indices represent a single face.
+	 *
+	 * @param   vertexCoordinates   Vertex coordinates, as xyz-triplets.
+	 * @param   vertexIndices       Indices for all vertices in the face.
+	 *
+	 * @return  Target map.
+	 */
+	private int getTargetMap( final List<Vector3D> vertexCoordinates , final int[] vertexIndices )
+	{
+		final int result;
+
+		if ( vertexIndices.length >= 3 )
+		{
+			final Vector3D p0 = vertexCoordinates.get( vertexIndices[ 0 ] );
+			final Vector3D p1 = vertexCoordinates.get( vertexIndices[ 1 ] );
+			final Vector3D p2 = vertexCoordinates.get( vertexIndices[ 2 ] );
+
+			result = getTargetMap( Vector3D.cross( p0.x - p1.x , p0.y - p1.y , p0.z - p1.z , p2.x - p1.x , p2.y - p1.y , p2.z - p1.z ) );
 		}
 		else
 		{

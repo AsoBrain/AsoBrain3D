@@ -30,8 +30,6 @@ import ab.j3d.Vector3D;
 import ab.j3d.geom.Abstract3DObjectBuilder;
 import ab.j3d.geom.UVMap;
 
-import com.numdata.oss.ArrayTools;
-
 /**
  * This class provides an implementation of the {@link Abstract3DObjectBuilder}
  * class for creating an {@link Object3D} instance.
@@ -82,7 +80,14 @@ public class Object3DBuilder
 
 	public int getVertexIndex( @NotNull final Vector3D point )
 	{
-		return getVertexIndex( point.x , point.y , point.z );
+		final List<Vector3D> vertexCoordinates = _target._vertexCoordinates;
+		int result = vertexCoordinates.indexOf( point );
+		if ( result < 0 )
+		{
+			result = vertexCoordinates.size();
+			vertexCoordinates.add( point );
+		}
+		return result;
 	}
 
 	/**
@@ -92,67 +97,12 @@ public class Object3DBuilder
 	 */
 	public int getVertexCount()
 	{
-		final double[] vertexCoordinates = _target._vertexCoordinates;
-		return ( vertexCoordinates == null ) ? 0 : vertexCoordinates.length / 3;
+		return _target._vertexCoordinates.size();
 	}
 
-	/**
-	 * Get vertex index for a point with the specified coordinates. If the vertex
-	 * is not defined yet, a new vertex is added and its index is returned.
-	 *
-	 * @param   x   X component of vertex coordinates.
-	 * @param   y   Y component of vertex coordinates.
-	 * @param   z   Z component of vertex coordinates.
-	 *
-	 * @return  The index of the vertex.
-	 */
-	private int getVertexIndex( final double x , final double y , final double z )
-	{
-		final int vertexCount = getVertexCount();
-		final double[] vertexCoordinates = _target._vertexCoordinates;
-
-		int index = vertexCount * 3;
-		while ( ( index -= 3 ) >= 0 )
-		{
-			if ( ( x == vertexCoordinates[ index     ] ) &&
-			     ( y == vertexCoordinates[ index + 1 ] ) &&
-			     ( z == vertexCoordinates[ index + 2 ] ) )
-				break;
-		}
-
-		if ( index < 0 )
-		{
-			index = vertexCount * 3;
-			final double[] newCoords = (double[])ArrayTools.ensureLength( vertexCoordinates , double.class , -1 , index + 3 );
-			newCoords[ index     ] = x;
-			newCoords[ index + 1 ] = y;
-			newCoords[ index + 2 ] = z;
-
-			_target._vertexCoordinates = newCoords;
-		}
-
-		return index / 3;
-	}
-
-	public void setVertexCoordinates( @NotNull final double[] vertexCoordinates )
+	public void setVertexCoordinates( @NotNull final List<Vector3D> vertexCoordinates )
 	{
 		_target.setVertexCoordinates( vertexCoordinates );
-	}
-
-	public void setVertexCoordinates( @NotNull final List<Vector3D> vertexPoints )
-	{
-		final int vertexCount = vertexPoints.size();
-		final double[] doubles = new double[ vertexCount * 3 ];
-		int i = 0;
-		int j = 0;
-		while ( i < vertexCount )
-		{
-			final Vector3D point = vertexPoints.get( i++ );
-			doubles[ j++ ] = point.x;
-			doubles[ j++ ] = point.y;
-			doubles[ j++ ] = point.z;
-		}
-		setVertexCoordinates( doubles );
 	}
 
 	public void setVertexNormals( @NotNull final double[] vertexNormals )
@@ -188,8 +138,7 @@ public class Object3DBuilder
 
 		for ( int i = 0 ; i < vertexCount ; i++ )
 		{
-			final Vector3D vertex = points[ i ];
-			vertexIndices[ i ] = getVertexIndex( vertex.x , vertex.y , vertex.z );
+			vertexIndices[ i ] = getVertexIndex( points[ i ] );
 		}
 
 		addFace( vertexIndices , material , texturePoints , vertexNormals , smooth , twoSided );

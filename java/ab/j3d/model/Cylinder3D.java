@@ -21,6 +21,8 @@
 package ab.j3d.model;
 
 import java.awt.geom.Point2D;
+import java.util.Arrays;
+import java.util.List;
 
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
@@ -91,30 +93,26 @@ public final class Cylinder3D
 		/*
 		 * Setup properties of cylinder.
 		 */
-		final boolean  hasBottom         = ( radiusBottom > 0.0 );
-		final boolean  hasTop            = ( radiusTop    > 0.0 );
-		final int      vertexCount       = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
-		final double[] vertexCoordinates = new double[ vertexCount * 3 ];
+		final boolean    hasBottom         = ( radiusBottom > 0.0 );
+		final boolean    hasTop            = ( radiusTop    > 0.0 );
+		final int        vertexCount       = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
+		final Vector3D[] vertexCoordinates = new Vector3D[ vertexCount ];
 
 		final double radStep = 2.0 * Math.PI / (double)numEdges;
 
 		/*
 		 * Generate vertices.
 		 */
-		final int topCoordinatesOffset = hasBottom ? numEdges * 3 : 3;
+		final int topCoordinatesOffset = hasBottom ? numEdges : 1;
 
 		if ( !hasBottom )
 		{
-			vertexCoordinates[ 0 ] = 0.0;
-			vertexCoordinates[ 1 ] = 0.0;
-			vertexCoordinates[ 2 ] = 0.0;
+			vertexCoordinates[ 0 ] = Vector3D.ZERO;
 		}
 
 		if ( !hasBottom )
 		{
-			vertexCoordinates[ topCoordinatesOffset     ] = 0.0;
-			vertexCoordinates[ topCoordinatesOffset + 1 ] = 0.0;
-			vertexCoordinates[ topCoordinatesOffset + 2 ] = height;
+			vertexCoordinates[ topCoordinatesOffset ] = new Vector3D( 0.0 , 0.0 , height );
 		}
 
 		for ( int i = 0 ; i < numEdges ; i++ )
@@ -123,25 +121,18 @@ public final class Cylinder3D
 			final double x   =  Math.sin( rad ) * radiusBottom;
 			final double y   = -Math.cos( rad ) * radiusBottom;
 
-			int v = i * 3;
-
 			if ( hasBottom )
 			{
-				vertexCoordinates[ v     ] = x;
-				vertexCoordinates[ v + 1 ] = y;
-				vertexCoordinates[ v + 2 ] = 0.0;
+				vertexCoordinates[ i ] = new Vector3D( x , y , 0.0 );
 			}
 
 			if ( hasTop )
 			{
-				v += topCoordinatesOffset;
-				vertexCoordinates[ v     ] = x;
-				vertexCoordinates[ v + 1 ] = y;
-				vertexCoordinates[ v + 2 ] = height;
+				vertexCoordinates[ i + topCoordinatesOffset ] = new Vector3D( x , y , height );
 			}
 		}
 
-		setVertexCoordinates( vertexCoordinates );
+		setVertexCoordinates( Arrays.asList( vertexCoordinates ) );
 
 		/*
 		 * Bottom face (if it exists).
@@ -254,10 +245,12 @@ public final class Cylinder3D
 		/*
 		 * Setup properties of cylinder.
 		 */
-		final boolean  hasBottom         = ( radiusBottom > 0.0 );
-		final boolean  hasTop            = ( radiusTop    > 0.0 );
-		final int      vertexCount       = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
-		final double[] vertexCoordinates = new double[ vertexCount * 3 ];
+		final boolean hasBottom = ( radiusBottom > 0.0 );
+		final boolean hasTop    = ( radiusTop > 0.0 );
+
+		final int vertexCount = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
+		final Vector3D[] vertexCoordinatesArray = new Vector3D[ vertexCount ];
+		final List<Vector3D> vertexCoordinates = Arrays.asList( vertexCoordinatesArray );
 
 		final double radStep = 2.0 * Math.PI / (double)numEdges;
 
@@ -269,20 +262,16 @@ public final class Cylinder3D
 		/*
 		 * Generate vertices.
 		 */
-		final int topCoordinatesOffset = hasBottom ? numEdges * 3 : 3;
+		final int topCoordinatesOffset = hasBottom ? numEdges : 1;
 
 		if ( !hasBottom )
 		{
-			vertexCoordinates[ 0 ] = base.xo;
-			vertexCoordinates[ 1 ] = base.yo;
-			vertexCoordinates[ 2 ] = base.zo;
+			vertexCoordinatesArray[ 0 ] = base.getTranslation();
 		}
 
 		if ( !hasBottom )
 		{
-			vertexCoordinates[ topCoordinatesOffset     ] = base.xo + height * base.xz;
-			vertexCoordinates[ topCoordinatesOffset + 1 ] = base.yo + height * base.yz;
-			vertexCoordinates[ topCoordinatesOffset + 2 ] = base.zo + height * base.zz;
+			vertexCoordinatesArray[ topCoordinatesOffset ] = base.transform( 0.0 , 0.0 , height );
 		}
 
 		for ( int i = 0 ; i < numEdges ; i++ )
@@ -290,20 +279,15 @@ public final class Cylinder3D
 			final double rad = (double)i * radStep;
 			final double x   = Math.sin( rad ) * radiusBottom;
 			final double y   = -Math.cos( rad ) * radiusBottom;
-			final int    v   = i * 3;
 
 			if ( hasBottom )
 			{
-				vertexCoordinates[ v     ] = base.transformX( x , y , 0.0 );
-				vertexCoordinates[ v + 1 ] = base.transformY( x , y , 0.0 );
-				vertexCoordinates[ v + 2 ] = base.transformZ( x , y , 0.0 );
+				vertexCoordinatesArray[ i ] = base.transform( x , y , 0.0 );
 			}
 
 			if ( hasTop )
 			{
-				vertexCoordinates[ topCoordinatesOffset + v     ] = base.transformX( x , y , height );
-				vertexCoordinates[ topCoordinatesOffset + v + 1 ] = base.transformY( x , y , height );
-				vertexCoordinates[ topCoordinatesOffset + v + 2 ] = base.transformZ( x , y , height );
+				vertexCoordinatesArray[ topCoordinatesOffset + i ] = base.transform( x , y , height );
 			}
 		}
 
@@ -327,30 +311,27 @@ public final class Cylinder3D
 		/*
 		 * Circumference.
 		 */
-		if ( hasTop || hasBottom )
+		for ( int i1 = 0 ; i1 < numEdges ; i1++ )
 		{
-			for ( int i1 = 0 ; i1 < numEdges ; i1++ )
+			final int   i2 = ( i1 + 1 ) % numEdges;
+
+			final int[] vertexIndices;
+
+			if ( !hasTop )
 			{
-				final int   i2 = ( i1 + 1 ) % numEdges;
-
-				final int[] vertexIndices;
-
-				if ( !hasTop )
-				{
-					vertexIndices = flipNormals ? new int[] { numEdges , i1 , i2 } : new int[] { i2 , i1 , numEdges };
-				}
-				else if ( !hasBottom )
-				{
-					vertexIndices = flipNormals ? new int[] { 1 + i2 , 1 + i1 , 0 } : new int[] { 0 , 1 + i1 , 1 + i2 };
-				}
-				else
-				{
-					vertexIndices = flipNormals ? new int[] { numEdges + i2 , numEdges + i1 , i1 , i2 } : new int[] { i2 , i1 , numEdges + i1 , numEdges + i2 };
-				}
-
-				final Point2D.Float[] texturePoints = sideMap.generate( sideMaterial , vertexCoordinates , vertexIndices , false );
-				addFace( new Face3D( this , vertexIndices , sideMaterial , texturePoints , null , smoothCircumference , false ) );
+				vertexIndices = flipNormals ? new int[] { numEdges , i1 , i2 } : new int[] { i2 , i1 , numEdges };
 			}
+			else if ( !hasBottom )
+			{
+				vertexIndices = flipNormals ? new int[] { 1 + i2 , 1 + i1 , 0 } : new int[] { 0 , 1 + i1 , 1 + i2 };
+			}
+			else
+			{
+				vertexIndices = flipNormals ? new int[] { numEdges + i2 , numEdges + i1 , i1 , i2 } : new int[] { i2 , i1 , numEdges + i1 , numEdges + i2 };
+			}
+
+			final Point2D.Float[] texturePoints = sideMap.generate( sideMaterial , vertexCoordinates , vertexIndices , false );
+			addFace( new Face3D( this , vertexIndices , sideMaterial , texturePoints , null , smoothCircumference , false ) );
 		}
 
 		/*

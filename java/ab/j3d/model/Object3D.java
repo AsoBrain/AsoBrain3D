@@ -22,6 +22,7 @@ package ab.j3d.model;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import ab.j3d.Bounds3D;
@@ -35,6 +36,8 @@ import ab.j3d.geom.GeometryTools;
 import ab.j3d.geom.Ray3D;
 import ab.j3d.geom.Triangle3D;
 import ab.j3d.model.Face3D.Vertex;
+
+import com.numdata.oss.HashList;
 
 /**
  * This class defined a 3D object node in a 3D tree. The 3D object consists of
@@ -56,7 +59,7 @@ public class Object3D
 	 * Coordinates of vertex coordinates in object. Vertex coordinates are
 	 * stored in an array of doubles with a triplet for each vertex.
 	 */
-	double[] _vertexCoordinates;
+	final List<Vector3D> _vertexCoordinates;
 
 	/**
 	 * Array of floats with normals of each face of the model. Normals are
@@ -136,7 +139,7 @@ public class Object3D
 	public Object3D()
 	{
 		_faces                = new ArrayList<Face3D>();
-		_vertexCoordinates    = null;
+		_vertexCoordinates    = new HashList<Vector3D>();
 		_vertexNormals        = null;
 		_vertexNormalsDirty   = true;
 
@@ -325,7 +328,7 @@ public class Object3D
 		CollisionNode result = _collisionNode;
 		if ( result == null )
 		{
-			final double[] vertexCoordinates = _vertexCoordinates;
+			final List<Vector3D> vertexCoordinates = _vertexCoordinates;
 
 			int nrTriangles = 0;
 
@@ -350,8 +353,7 @@ public class Object3D
 					final List<Vertex> vertices = face.vertices;
 					for ( final Vertex vertex : vertices )
 					{
-						final int i = vertex.vertexCoordinateIndex * 3;
-						boundsBuilder.addPoint( vertexCoordinates[ i ] , vertexCoordinates[ i + 1 ] , vertexCoordinates[ i + 2 ] );
+						boundsBuilder.addPoint( vertexCoordinates.get( vertex.vertexCoordinateIndex ) );
 					}
 
 					for ( int triangleIndex = 0 ; triangleIndex < faceTriangles.length ; triangleIndex += 3 )
@@ -360,13 +362,9 @@ public class Object3D
 						final Vertex v2 = vertices.get( faceTriangles[ triangleIndex + 1 ] );
 						final Vertex v3 = vertices.get( faceTriangles[ triangleIndex + 2 ] );
 
-						final int vi1 = v1.vertexCoordinateIndex * 3;
-						final int vi2 = v2.vertexCoordinateIndex * 3;
-						final int vi3 = v3.vertexCoordinateIndex * 3;
-
-						final Vector3D p1 = Vector3D.INIT.set( vertexCoordinates[ vi1 ] , vertexCoordinates[ vi1 + 1 ] , vertexCoordinates[ vi1 + 2 ] );
-						final Vector3D p2 = Vector3D.INIT.set( vertexCoordinates[ vi2 ] , vertexCoordinates[ vi2 + 1 ] , vertexCoordinates[ vi2 + 2 ] );
-						final Vector3D p3 = Vector3D.INIT.set( vertexCoordinates[ vi3 ] , vertexCoordinates[ vi3 + 1 ] , vertexCoordinates[ vi3 + 2 ] );
+						final Vector3D p1 = vertexCoordinates.get( v1.vertexCoordinateIndex );
+						final Vector3D p2 = vertexCoordinates.get( v2.vertexCoordinateIndex );
+						final Vector3D p3 = vertexCoordinates.get( v3.vertexCoordinateIndex );
 
 						triangles.add( new BasicTriangle3D( p1 , p2 , p3 , true ) );
 					}
@@ -390,21 +388,14 @@ public class Object3D
 		Bounds3D result = _orientedBoundingBox;
 		if ( result == null )
 		{
-			final int vertexCount = getVertexCount();
-			if ( vertexCount > 0 )
+			final List<Vector3D> vertexCoordinates = _vertexCoordinates;
+			if ( !vertexCoordinates.isEmpty() )
 			{
-				final double[] vertexCoordinates = _vertexCoordinates;
-
 				final Bounds3DBuilder builder = new Bounds3DBuilder();
 
-				int i = 0;
-				for ( int vertex = 0 ; vertex < vertexCount ; vertex++ )
+				for ( final Vector3D point : vertexCoordinates )
 				{
-					final double x = vertexCoordinates[ i++ ];
-					final double y = vertexCoordinates[ i++ ];
-					final double z = vertexCoordinates[ i++ ];
-
-					builder.addPoint( x , y , z );
+					builder.addPoint( point );
 				}
 
 				result = builder.getBounds();
@@ -425,17 +416,9 @@ public class Object3D
 	{
 		if ( ( xform != null ) && ( xform != Matrix3D.INIT ) && ( !Matrix3D.INIT.equals( xform ) ) )
 		{
-			final int      vertexCount       = getVertexCount();
-			final double[] vertexCoordinates = _vertexCoordinates;
-
-			int i = 0;
-			for ( int vertex = 0 ; vertex < vertexCount ; vertex++ )
+			for ( final Vector3D point : _vertexCoordinates )
 			{
-				final double x = vertexCoordinates[ i++ ];
-				final double y = vertexCoordinates[ i++ ];
-				final double z = vertexCoordinates[ i++ ];
-
-				bounds3DBuilder.addPoint( xform.transformX( x , y , z ) , xform.transformY( x , y , z ) , xform.transformZ( x , y , z ) );
+				bounds3DBuilder.addPoint( xform.transformX( point ) , xform.transformY( point ) , xform.transformZ( point ) );
 			}
 		}
 		else
@@ -522,9 +505,9 @@ public class Object3D
 	 *
 	 * @return  Point coordinates (one triplet per vertex).
 	 */
-	public final double[] getVertexCoordinates()
+	public final List<Vector3D> getVertexCoordinates()
 	{
-		return _vertexCoordinates;
+		return Collections.unmodifiableList( _vertexCoordinates );
 	}
 
 	/**
@@ -536,7 +519,7 @@ public class Object3D
 	 */
 	public final int getVertexCount()
 	{
-		return ( _vertexCoordinates == null ) ? 0 : _vertexCoordinates.length / 3;
+		return _vertexCoordinates.size();
 	}
 
 	/**
@@ -575,10 +558,10 @@ public class Object3D
 	 *
 	 * @throws  IllegalStateException if faces have been added to the object.
 	 */
-	final void setVertexCoordinates( final double[] vertexCoordinates )
+	final void setVertexCoordinates( final List<Vector3D> vertexCoordinates )
 	{
-		_vertexCoordinates = vertexCoordinates;
-
+		_vertexCoordinates.clear();
+		_vertexCoordinates.addAll( vertexCoordinates );
 		invalidate();
 	}
 

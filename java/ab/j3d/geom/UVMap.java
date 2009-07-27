@@ -20,6 +20,7 @@
 package ab.j3d.geom;
 
 import java.awt.geom.Point2D;
+import java.util.List;
 
 import ab.j3d.Material;
 import ab.j3d.Vector3D;
@@ -46,6 +47,18 @@ public interface UVMap
 	 * @return  Texture coordinates for each vertex.
 	 */
 	Point2D.Float[] generate( Material material , double[] vertexCoordinates , int[] vertexIndices , boolean flipTexture );
+
+	/**
+	 * Generates texture coordinates for the given vertices.
+	 *
+	 * @param   material            Material used to define texture scale.
+	 * @param   vertexCoordinates   Vertex coordinates.
+	 * @param   vertexIndices       Indices for all vertices in the face.
+	 * @param   flipTexture         Flip texture direction.
+	 *
+	 * @return  Texture coordinates for each vertex.
+	 */
+	Point2D.Float[] generate( Material material , List<Vector3D> vertexCoordinates , int[] vertexIndices , boolean flipTexture );
 
 	/**
 	 * Generate 2D point on texture for the given 3D point.

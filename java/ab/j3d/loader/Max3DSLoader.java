@@ -29,11 +29,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
+import ab.j3d.Vector3D;
 import ab.j3d.model.Face3D;
 import ab.j3d.model.Node3D;
 import ab.j3d.model.Object3D;
@@ -309,9 +311,11 @@ public final class Max3DSLoader
 					// System.out.println( "    > point coordinates array" );
 					final int vertexCount = readShort( in );
 
-					final double[] vertexCoordinates = new double[ vertexCount * 3 ];
-					for ( int i = 0 ; i < vertexCoordinates.length ; i++ )
-						vertexCoordinates[ i ] = (double)readFloat( in );
+					final ArrayList<Vector3D> vertexCoordinates = new ArrayList<Vector3D>( vertexCount );
+					for ( int i = 0 ; i < vertexCount ; i++ )
+					{
+						vertexCoordinates.add( new Vector3D( (double)readFloat( in ) , (double)readFloat( in ) , (double)readFloat( in ) ) );
+					}
 
 					_object3DBuilder.setVertexCoordinates( vertexCoordinates );
 				}

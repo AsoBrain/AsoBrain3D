@@ -20,6 +20,8 @@
  */
 package ab.j3d.model;
 
+import java.util.Arrays;
+
 import ab.j3d.Material;
 import ab.j3d.Vector3D;
 import ab.j3d.geom.UVMap;
@@ -139,17 +141,15 @@ public final class Box3D
 		/*
 		 * Create vertex coordinates and normals.
 		 */
-		setVertexCoordinates( new double[]
-		{
-			0.0 , 0.0 , 0.0 , // 0        7------6
-			 dx , 0.0 , 0.0 , // 1       /:     /|
-			 dx ,  dy , 0.0 , // 2      4------5 |
-			0.0 ,  dy , 0.0 , // 3      | :    | |
-			0.0 , 0.0 ,  dz , // 4      | :    | |
-			 dx , 0.0 ,  dz , // 5      | 3....|.2
-			 dx ,  dy ,  dz , // 6      |.     |/
-			0.0 ,  dy ,  dz   // 7      0------1
-		} );
+		setVertexCoordinates( Arrays.asList(
+			new Vector3D( 0.0 , 0.0 , 0.0 ) ,    // 0        7------6
+			new Vector3D(  dx , 0.0 , 0.0 ) ,    // 1       /:     /|
+			new Vector3D(  dx ,  dy , 0.0 ) ,    // 2      4------5 |
+			new Vector3D( 0.0 ,  dy , 0.0 ) ,    // 3      | :    | |
+			new Vector3D( 0.0 , 0.0 ,  dz ) ,    // 4      | :    | |
+			new Vector3D(  dx , 0.0 ,  dz ) ,    // 5      | 3....|.2
+			new Vector3D(  dx ,  dy ,  dz ) ,    // 6      |.     |/
+			new Vector3D( 0.0 ,  dy ,  dz ) ) ); // 7      0------1
 
 		setVertexNormals( new double[]
 		{

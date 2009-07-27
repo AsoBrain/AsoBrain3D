@@ -150,15 +150,6 @@ public abstract class Abstract3DObjectBuilder
 	 * no faces have been added yet, since the object integrity is otherwise
 	 * lost.
 	 *
-	 * @param   vertexPoints    Vertex points (one triplet per vertex).
-	 */
-	public abstract void setVertexCoordinates( @NotNull double[] vertexPoints );
-
-	/**
-	 * Set coordinates of all vertices in this object. This is only allowed when
-	 * no faces have been added yet, since the object integrity is otherwise
-	 * lost.
-	 *
 	 * @param   vertexPoints    Vertex points.
 	 */
 	public abstract void setVertexCoordinates( @NotNull List<Vector3D> vertexPoints );

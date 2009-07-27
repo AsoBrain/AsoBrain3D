@@ -20,6 +20,7 @@
 package ab.j3d.model;
 
 import java.awt.geom.Point2D;
+import java.util.List;
 
 import ab.j3d.Material;
 import ab.j3d.Vector3D;
@@ -133,7 +134,7 @@ public final class Face3D
 		if ( object == null )
 			throw new NullPointerException( "object" );
 
-		final double[] vertexCoordinates = object._vertexCoordinates;
+		final List<Vector3D> vertexCoordinates = object._vertexCoordinates;
 		final int vertexCount = vertexIndices.length;
 
 		final AugmentedList<Vertex> vertices = new AugmentedArrayList<Vertex>( vertexCount );
@@ -158,20 +159,17 @@ public final class Face3D
 
 		if ( vertexCount >= 3 )
 		{
-			int i = vertices.get( 1 ).vertexCoordinateIndex * 3;
-			final double x0 = vertexCoordinates[ i ];
-			final double y0 = vertexCoordinates[ i + 1 ];
-			final double z0 = vertexCoordinates[ i + 2 ];
+			final Vector3D p0 = vertexCoordinates.get( vertices.get( 0 ).vertexCoordinateIndex );
+			final Vector3D p1 = vertexCoordinates.get( vertices.get( 1 ).vertexCoordinateIndex );
+			final Vector3D p2 = vertexCoordinates.get( vertices.get( 2 ).vertexCoordinateIndex );
 
-			i = vertices.get( 0 ).vertexCoordinateIndex * 3;
-			final double u1 = vertexCoordinates[ i ] - x0;
-			final double u2 = vertexCoordinates[ i + 1 ] - y0;
-			final double u3 = vertexCoordinates[ i + 2 ] - z0;
+			final double u1 = p0.x - p1.x;
+			final double u2 = p0.y - p1.y;
+			final double u3 = p0.z - p1.z;
 
-			i = vertices.get( 2 ).vertexCoordinateIndex * 3;
-			final double v1 = vertexCoordinates[ i ] - x0;
-			final double v2 = vertexCoordinates[ i + 1 ] - y0;
-			final double v3 = vertexCoordinates[ i + 2 ] - z0;
+			final double v1 = p2.x - p1.x;
+			final double v2 = p2.y - p1.y;
+			final double v3 = p2.z - p1.z;
 
 			final double crossX = u2 * v3 - u3 * v2;
 			final double crossY = u3 * v1 - u1 * v3;
@@ -179,7 +177,7 @@ public final class Face3D
 
 			final double l = Math.sqrt( crossX * crossX + crossY * crossY + crossZ * crossZ );
 			final Vector3D n = ( l > 0.0 ) ? Vector3D.INIT.set( crossX / l, crossY / l, crossZ / l ) : NO_NORMAL;
-			final double d = ( l > 0.0 ) ? Vector3D.dot( n.x , n.y , n.z , x0 , y0 , z0 ) : 0.0;
+			final double d = ( l > 0.0 ) ? Vector3D.dot( n.x , n.y , n.z , p1.x , p1.y , p1.z ) : 0.0;
 
 			_crossX = crossX;
 			_crossY = crossY;
@@ -367,10 +365,9 @@ public final class Face3D
 		 * @param   vertexCoordinates       Vertex coordinates.
 		 * @param   vertexCoordinateIndex   Index of vertex coordinates.
 		 */
-		public Vertex( final double[] vertexCoordinates , final int vertexCoordinateIndex )
+		public Vertex( final List<Vector3D> vertexCoordinates , final int vertexCoordinateIndex )
 		{
-			final int i = vertexCoordinateIndex * 3;
-			point = Vector3D.INIT.set( vertexCoordinates[ i ] , vertexCoordinates[ i + 1 ] , vertexCoordinates[ i + 2 ] );
+			point = vertexCoordinates.get( vertexCoordinateIndex );
 			this.vertexCoordinateIndex = vertexCoordinateIndex;
 			normal = null;
 		}

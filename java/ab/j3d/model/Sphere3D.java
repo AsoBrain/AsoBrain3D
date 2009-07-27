@@ -21,8 +21,11 @@
 package ab.j3d.model;
 
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
 
 import ab.j3d.Material;
+import ab.j3d.Vector3D;
 
 /**
  * This class defines a 3D sphere.
@@ -68,18 +71,15 @@ public final class Sphere3D
 		this.radius = radius;
 
 		final int      vertexCount       = p * ( q - 1 ) + 2;
-		final double[] vertexCoordinates = new double[ vertexCount * 3 ];
+		final List<Vector3D> vertexCoordinates = new ArrayList<Vector3D>( vertexCount );
 		final double[] vertexNormals     = new double[ vertexCount * 3 ];
 
 		/*
 		 * Generate vertices.
 		 */
-		int v = 0;
 		int n = 0;
 
-		vertexCoordinates[ v++ ] = 0.0;
-		vertexCoordinates[ v++ ] = 0.0;
-		vertexCoordinates[ v++ ] = -radius;
+		vertexCoordinates.add( new Vector3D( 0.0 , 0.0 , -radius ) );
 		vertexNormals[ n++ ] = 0.0;
 		vertexNormals[ n++ ] = 0.0;
 		vertexNormals[ n++ ] = -1.0;
@@ -97,18 +97,14 @@ public final class Sphere3D
 				final double normalY = -sinq * Math.cos( prad );
 				final double normalZ = -cosq;
 
-				vertexCoordinates[ v++ ] = radius * normalX;
-				vertexCoordinates[ v++ ] = radius * normalY;
-				vertexCoordinates[ v++ ] = radius * normalZ;
+				vertexCoordinates.add( new Vector3D( radius * normalX , radius * normalY , radius * normalZ ) );
 				vertexNormals[ n++ ] = normalX;
 				vertexNormals[ n++ ] = normalY;
 				vertexNormals[ n++ ] = normalZ;
 			}
 		}
 
-		vertexCoordinates[ v++ ] = 0.0;
-		vertexCoordinates[ v++ ] = 0.0;
-		vertexCoordinates[ v   ] = radius;
+		vertexCoordinates.add( new Vector3D( 0.0 , 0.0 , radius ) );
 		vertexNormals[ n++ ] = 0.0;
 		vertexNormals[ n++ ] = 0.0;
 		vertexNormals[ n   ] = 1.0;

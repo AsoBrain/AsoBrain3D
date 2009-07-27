@@ -20,6 +20,7 @@
 package ab.j3d.geom;
 
 import java.awt.geom.Point2D;
+import java.util.List;
 
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
@@ -226,6 +227,39 @@ public class PlanarUVMap
 
 			final float tx = (float)plane2wcs.inverseTransformX( wcsX , wcsY , wcsZ );
 			final float ty = (float)plane2wcs.inverseTransformY( wcsX , wcsY , wcsZ );
+
+			result[ i ] = flipTexture ? new Point2D.Float( ty * scaleU , tx * scaleV ) : new Point2D.Float( tx * scaleU , ty * scaleV );
+		}
+
+		return result;
+	}
+
+	public Point2D.Float[] generate( final Material material , final List<Vector3D> vertexCoordinates , final int[] vertexIndices , final boolean flipTexture )
+	{
+		final Point2D.Float[] result = new Point2D.Float[ vertexIndices.length ];
+
+		final Matrix3D plane2wcs = _plane2wcs;
+
+		final float scaleU;
+		final float scaleV;
+
+		if ( ( material != null ) && ( material.colorMapWidth > 0.0f ) && ( material.colorMapHeight > 0.0f ) )
+		{
+			scaleU = _scaleU / material.colorMapWidth;
+			scaleV = _scaleV / material.colorMapHeight;
+		}
+		else
+		{
+			scaleU = _scaleU;
+			scaleV = _scaleV;
+		}
+
+		for ( int i = 0 ; i < vertexIndices.length ; i++ )
+		{
+			final Vector3D vertex = vertexCoordinates.get( vertexIndices[ i ] );
+
+			final float tx = (float)plane2wcs.inverseTransformX( vertex );
+			final float ty = (float)plane2wcs.inverseTransformY( vertex );
 
 			result[ i ] = flipTexture ? new Point2D.Float( ty * scaleU , tx * scaleV ) : new Point2D.Float( tx * scaleU , ty * scaleV );
 		}

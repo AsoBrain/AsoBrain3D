@@ -349,15 +349,13 @@ public final class AbToPovConverter
 	{
 		final PovMesh2 result = new PovMesh2( ( object.getTag() != null ) ? String.valueOf( object.getTag() ) : null );
 
-		final int      faceCount             = object.getFaceCount();
-		final int      vertexCoordinateCount = object.getVertexCount();
-		final double[] vertexCoordinates     = object.getVertexCoordinates();
+		final int            faceCount         = object.getFaceCount();
+		final List<Vector3D> vertexCoordinates = object.getVertexCoordinates();
 
-		final List<PovVector> vertexVectors = new ArrayList<PovVector>( vertexCoordinateCount );
-		for ( int vertexCoordinateIndex = 0 ; vertexCoordinateIndex < vertexCoordinateCount ; vertexCoordinateIndex++ )
+		final List<PovVector> vertexVectors = new ArrayList<PovVector>( vertexCoordinates.size() );
+		for ( final Vector3D point : vertexCoordinates )
 		{
-			final int vi3 = vertexCoordinateIndex * 3;
-			vertexVectors.add( new PovVector( transform.transform( vertexCoordinates[ vi3 ] , vertexCoordinates[ vi3 + 1 ] , vertexCoordinates[ vi3 + 2 ] ) ) );
+			vertexVectors.add( new PovVector( transform.transform( point ) ) );
 		}
 
 		result.setVertexVectors( vertexVectors );
@@ -385,8 +383,8 @@ public final class AbToPovConverter
 				{
 					vertexNormals = object.getVertexNormals();
 
-					final List<PovVector> normalVectors = new ArrayList<PovVector>( vertexCoordinateCount );
-					for ( int vertexCoordinateIndex = 0 ; vertexCoordinateIndex < vertexCoordinateCount ; vertexCoordinateIndex++ )
+					final List<PovVector> normalVectors = new ArrayList<PovVector>( vertexCoordinates.size() );
+					for ( int vertexCoordinateIndex = 0 ; vertexCoordinateIndex < vertexCoordinates.size() ; vertexCoordinateIndex++ )
 					{
 						final int vi3 = vertexCoordinateIndex * 3;
 						final double nx = vertexNormals[ vi3 ];

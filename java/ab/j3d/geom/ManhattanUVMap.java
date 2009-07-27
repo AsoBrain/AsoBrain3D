@@ -20,6 +20,7 @@
 package ab.j3d.geom;
 
 import java.awt.geom.Point2D;
+import java.util.List;
 
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
@@ -89,6 +90,39 @@ public class ManhattanUVMap
 
 			final float tx = (float)transform.transformX( x , y , z );
 			final float ty = (float)transform.transformY( x , y , z );
+
+			result[ i ] = flipTexture ? new Point2D.Float( scaleU * ty , scaleV * tx ) : new Point2D.Float( scaleU * tx , scaleV * ty );
+		}
+
+		return result;
+	}
+
+	public Point2D.Float[] generate( final Material material , final List<Vector3D> vertexCoordinates , final int[] vertexIndices , final boolean flipTexture )
+	{
+		final Point2D.Float[] result = new Point2D.Float[ vertexIndices.length ];
+
+		final Matrix3D transform = _transform;
+
+		final float scaleU;
+		final float scaleV;
+
+		if ( ( material != null ) && ( material.colorMapWidth > 0.0f ) && ( material.colorMapHeight > 0.0f ) )
+		{
+			scaleU = 1.0f / material.colorMapWidth;
+			scaleV = 1.0f / material.colorMapHeight;
+		}
+		else
+		{
+			scaleU = 1.0f;
+			scaleV = 1.0f;
+		}
+
+		for ( int i = 0 ; i < vertexIndices.length ; i++ )
+		{
+			final Vector3D vertex = vertexCoordinates.get( vertexIndices[ i ] );
+
+			final float tx = (float)transform.transformX( vertex );
+			final float ty = (float)transform.transformY( vertex );
 
 			result[ i ] = flipTexture ? new Point2D.Float( scaleU * ty , scaleV * tx ) : new Point2D.Float( scaleU * tx , scaleV * ty );
 		}
