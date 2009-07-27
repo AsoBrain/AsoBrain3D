@@ -22,11 +22,14 @@ package ab.j3d.geom;
 import java.awt.Polygon;
 import java.awt.Shape;
 import java.awt.geom.Arc2D;
+import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.FlatteningPathIterator;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
+import java.awt.geom.QuadCurve2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
@@ -103,7 +106,7 @@ public abstract class Abstract3DObjectBuilder
 		CCW_CONVEX ,
 
 		/**
-		 * Open path.
+		 * Open path (possibly with curves).
 		 */
 		OPEN_PATH ,
 
@@ -302,8 +305,11 @@ public abstract class Abstract3DObjectBuilder
 	 */
 	public void addCircle( @NotNull final Vector3D centerPoint , final double radius , @NotNull final Vector3D normal , @Nullable final Vector3D extrusion , @Nullable final Material material , final boolean fill )
 	{
-		final Matrix3D  base      = Matrix3D.getPlaneTransform( centerPoint , normal , true );
-		final Ellipse2D ellipse2d = new Ellipse2D.Double( -radius , -radius , radius * 2.0 , radius * 2.0 );
+		final Matrix3D base = Matrix3D.getPlaneTransform( centerPoint , normal , true );
+
+		final float diameter = (float)radius * 2.0f;
+		final float origin = (float)-radius;
+		final Ellipse2D ellipse2d = new Ellipse2D.Float( origin, origin, diameter, diameter );
 
 		final UVMap uvMap = new BoxUVMap( Scene.MM , base ); // @FIXME Retrieve model units instead of assuming millimeters.
 
@@ -1008,10 +1014,10 @@ public abstract class Abstract3DObjectBuilder
 
 		final double[] coords = new double[ 6 ];
 
-		Vector3D lastPoint           = null;
-		Vector3D lastExtrudedPoint   = null;
-		Vector3D moveToPoint         = null;
-		Vector3D moveToExtrudedPoint = null;
+		int lastPoint           = -1;
+		int lastExtrudedPoint   = -1;
+		int moveToPoint         = -1;
+		int moveToExtrudedPoint = -1;
 
 		while ( !pathIterator.isDone() )
 		{
@@ -1023,12 +1029,12 @@ public abstract class Abstract3DObjectBuilder
 					final double shapeX = coords[ 0 ];
 					final double shapeY = coords[ 1 ];
 
-					lastPoint = transform.transform( shapeX , shapeY , 0.0 );
+					lastPoint = getVertexIndex( transform.transform( shapeX , shapeY , 0.0 ) );
 					moveToPoint = lastPoint;
 
 					if ( hasExtrusion )
 					{
-						lastExtrudedPoint = transform.transform( shapeX + ex , shapeY + ey , ez );
+						lastExtrudedPoint = getVertexIndex( transform.transform( shapeX + ex , shapeY + ey , ez ) );
 						moveToExtrudedPoint = lastExtrudedPoint;
 					}
 					break;
@@ -1039,28 +1045,28 @@ public abstract class Abstract3DObjectBuilder
 					final double shapeX = coords[ 0 ];
 					final double shapeY = coords[ 1 ];
 
-					final Vector3D point = transform.transform( shapeX , shapeY , 0.0 );
+					final int point = getVertexIndex( transform.transform( shapeX , shapeY , 0.0 ) );
 
-					if ( ( lastPoint != null ) && !lastPoint.equals( point ) )
+					if ( ( lastPoint >= 0 ) && ( lastPoint != point ) )
 					{
 						if ( hasExtrusion )
 						{
-							final Vector3D extrudedPoint = transform.transform( shapeX + ex , shapeY + ey , ez );
+							final int extrudedPoint = getVertexIndex( transform.transform( shapeX + ex , shapeY + ey , ez ) );
 
 							if ( flipExtrusion )
 							{
-								addFace( new Vector3D[] { point , extrudedPoint , lastExtrudedPoint , lastPoint} , material , uvMap , flipTexture , smooth , hasBackface );
+								addFace( new int[] { point , extrudedPoint , lastExtrudedPoint , lastPoint} , material , uvMap , flipTexture , smooth , hasBackface );
 							}
 							else
 							{
-								addFace( new Vector3D[] { lastPoint , lastExtrudedPoint , extrudedPoint , point } , material , uvMap , flipTexture , smooth , hasBackface );
+								addFace( new int[] { lastPoint , lastExtrudedPoint , extrudedPoint , point } , material , uvMap , flipTexture , smooth , hasBackface );
 							}
 
 							lastExtrudedPoint = extrudedPoint;
 						}
 						else /*if ( !caps )*/
 						{
-							addFace( new Vector3D[] { lastPoint , point } , material , uvMap , flipTexture , false , true );
+							addFace( new int[] { lastPoint , point } , material , uvMap , flipTexture , false , true );
 						}
 
 						lastPoint = point;
@@ -1070,23 +1076,23 @@ public abstract class Abstract3DObjectBuilder
 
 				case FlatteningPathIterator.SEG_CLOSE:
 				{
-					if ( ( lastPoint != null ) && !lastPoint.equals( moveToPoint ) )
+					if ( ( lastPoint >= 0 ) && ( lastPoint != moveToPoint ) )
 					{
 						if ( hasExtrusion )
 						{
 							if ( flipExtrusion )
 							{
-								addFace( new Vector3D[] { moveToPoint , moveToExtrudedPoint , lastExtrudedPoint , lastPoint } , material , uvMap , flipTexture , smooth , hasBackface );
+								addFace( new int[] { moveToPoint , moveToExtrudedPoint , lastExtrudedPoint , lastPoint } , material , uvMap , flipTexture , smooth , hasBackface );
 							}
 							else
 							{
-								addFace( new Vector3D[] { lastPoint , lastExtrudedPoint , moveToExtrudedPoint , moveToPoint } , material , uvMap , flipTexture , smooth , hasBackface );
+								addFace( new int[] { lastPoint , lastExtrudedPoint , moveToExtrudedPoint , moveToPoint } , material , uvMap , flipTexture , smooth , hasBackface );
 							}
 							lastExtrudedPoint = moveToExtrudedPoint;
 						}
 						else /*if ( !caps )*/
 						{
-							addFace( new Vector3D[] { lastPoint , moveToPoint } , material , uvMap , flipTexture , false , true );
+							addFace( new int[] { lastPoint , moveToPoint } , material , uvMap , flipTexture , false , true );
 						}
 					}
 
@@ -1169,6 +1175,84 @@ public abstract class Abstract3DObjectBuilder
 				addFace( triangleVertexIndices , material , uvMap , flipTexture , false , twoSided );
 			}
 		}
+	}
+
+	/**
+	 * Flatten shape.
+	 *
+	 * @param   shape       {@link Shape} to flatten.
+	 * @param   flatness    Flatness to apply (<code>-1</code> for normal path).
+	 *
+	 * @return  <code>true</code> if the specified <code>shape</code> contains
+	 *          at least one curve (potentially, that is).
+	 *
+	 * @throws  NullPointerException if a parameter is <code>null</code>.
+	 */
+	public static Shape flatten( @NotNull final Shape shape , final double flatness )
+	{
+		final Shape result;
+
+		if ( containsCurves( shape ) )
+		{
+			final PathIterator it = shape.getPathIterator( null , flatness );
+			final Path2D.Float path = new Path2D.Float( it.getWindingRule() );
+			path.append( it , false );
+			result = path;
+		}
+		else
+		{
+			result = shape;
+		}
+
+		return result;
+	}
+
+	/**
+	 * Determine if {@link Shape} contains any curves.
+	 *
+	 * @param   shape   {@link Shape} to test.
+	 *
+	 * @return  <code>true</code> if the specified <code>shape</code> contains
+	 *          at least one curve (potentially, that is).
+	 *
+	 * @throws  NullPointerException if a parameter is <code>null</code>.
+	 */
+	public static boolean containsCurves( @NotNull final Shape shape )
+	{
+		boolean result;
+
+		if ( ( shape instanceof Line2D ) ||
+		     ( shape instanceof Polygon ) ||
+		     ( shape instanceof Rectangle2D ) )
+		{
+			result = false;
+		}
+		else if ( ( shape instanceof Arc2D ) ||
+		          ( shape instanceof CubicCurve2D ) ||
+		          ( shape instanceof Ellipse2D ) ||
+		          ( shape instanceof QuadCurve2D ) ||
+		          ( shape instanceof RoundRectangle2D ) )
+		{
+			result = true;
+		}
+		else
+		{
+			result = false;
+
+			final float[] coords = new float[ 6 ];
+			outer: for ( PathIterator i = shape.getPathIterator( null ) ; !i.isDone() ; i.next() )
+			{
+				switch ( i.currentSegment( coords ) )
+				{
+					case PathIterator.SEG_CUBICTO :
+					case PathIterator.SEG_QUADTO :
+						result = true;
+						break outer;
+				}
+			}
+		}
+
+		return result;
 	}
 
 	/**
@@ -1276,16 +1360,16 @@ public abstract class Abstract3DObjectBuilder
 		boolean curved           = false; /* encountered curved segments */
 		boolean multipleSubPaths = false; /* encountered multiple subpaths */
 
-		final double[] coords = new double[ 6 ];
+		final float[] coords = new float[ 6 ];
 
-		double moveX = 0.0;
-		double moveY = 0.0;
-		double previousX = 0.0;
-		double previousY = 0.0;
-		double currentX = 0.0;
-		double currentY = 0.0;
-		double firstX = 0.0;
-		double firstY = 0.0;
+		float moveX = 0.0f;
+		float moveY = 0.0f;
+		float previousX = 0.0f;
+		float previousY = 0.0f;
+		float currentX = 0.0f;
+		float currentY = 0.0f;
+		float firstX = 0.0f;
+		float firstY = 0.0f;
 
 		for ( ; !multipleSubPaths && !pathIterator.isDone() ; pathIterator.next() )
 		{
@@ -1303,15 +1387,15 @@ public abstract class Abstract3DObjectBuilder
 
 				case PathIterator.SEG_LINETO :
 				{
-					final double nextX = coords[ 0 ];
-					final double nextY = coords[ 1 ];
+					final float nextX = coords[ 0 ];
+					final float nextY = coords[ 1 ];
 //					System.out.println( "SEG_LINETO : " + nextX + " , " + nextY );
 
 					if ( ( nextX != currentX ) || ( nextY != currentY ) )
 					{
-						final double normal = Vector3D.crossZ( nextX - currentX , nextY - currentY , previousX - currentX , previousY - currentY );
-						positiveNormals |= ( normal > 0.0 );
-						negativeNormals |= ( normal < 0.0 );
+						final float normal = ( nextX - currentX ) * ( previousY - currentY ) - ( nextY - currentY ) * ( previousX - currentX );
+						positiveNormals |= ( normal > 0.0f );
+						negativeNormals |= ( normal < 0.0f );
 
 						if ( numberOfSegments == 0 )
 						{
@@ -1331,8 +1415,8 @@ public abstract class Abstract3DObjectBuilder
 
 				case PathIterator.SEG_QUADTO :
 				{
-					final double nextX = coords[ 2 ];
-					final double nextY = coords[ 3 ];
+					final float nextX = coords[ 2 ];
+					final float nextY = coords[ 3 ];
 //					System.out.println( "SEG_QUADTO : " + nextX + " , " + nextY + " , CP: " + coords[ 0 ] + " , " + coords[ 1 ] );
 
 					if ( ( nextX       != currentX ) || ( nextY       != currentY ) ||
@@ -1356,8 +1440,8 @@ public abstract class Abstract3DObjectBuilder
 
 				case PathIterator.SEG_CUBICTO :
 				{
-					final double nextX = coords[ 4 ];
-					final double nextY = coords[ 5 ];
+					final float nextX = coords[ 4 ];
+					final float nextY = coords[ 5 ];
 //					System.out.println( "SEG_CUBICTO : " + nextX + " , " + nextY + " , CP1: " + coords[ 0 ] + " , " + coords[ 1 ] + " , CP2: " + coords[ 2 ] + " , " + coords[ 3 ] );
 
 					if ( ( nextX       != currentX ) || ( nextY       != currentY ) ||
@@ -1383,15 +1467,15 @@ public abstract class Abstract3DObjectBuilder
 				case PathIterator.SEG_CLOSE :
 				{
 //					System.out.println( "SEG_CLOSE" );
-					double normal = Vector3D.crossZ( firstX - moveX , firstY - moveY , previousX - moveX , previousY - moveY );
-					positiveNormals |= ( normal > 0.0 );
-					negativeNormals |= ( normal < 0.0 );
+					float normal = ( firstX - moveX ) * ( previousY - moveY ) - ( firstY - moveY ) * ( previousX - moveX );
+					positiveNormals |= ( normal > 0.0f );
+					negativeNormals |= ( normal < 0.0f );
 
 					if ( ( moveX != currentX ) || ( moveY != currentY ) )
 					{
-						normal = Vector3D.crossZ( moveX - currentX , moveY - currentY , previousX - currentX , previousY - currentY );
-						positiveNormals |= ( normal > 0.0 );
-						negativeNormals |= ( normal < 0.0 );
+						normal = ( moveX - currentX ) * ( previousY - currentY ) - ( moveY - currentY ) * ( previousX - currentX );
+						positiveNormals |= ( normal > 0.0f );
+						negativeNormals |= ( normal < 0.0f );
 
 						previousX = currentX;
 						previousY = currentY;
