@@ -22,6 +22,9 @@ package ab.j3d.model;
 import java.awt.geom.Point2D;
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import ab.j3d.Material;
 import ab.j3d.Vector3D;
 import ab.j3d.geom.Abstract3DObjectBuilder;
@@ -77,7 +80,7 @@ public class Object3DBuilder
 		return _target;
 	}
 
-	public int getVertexIndex( final Vector3D point )
+	public int getVertexIndex( @NotNull final Vector3D point )
 	{
 		return getVertexIndex( point.x , point.y , point.z );
 	}
@@ -131,12 +134,12 @@ public class Object3DBuilder
 		return index / 3;
 	}
 
-	public void setVertexCoordinates( final double[] vertexCoordinates )
+	public void setVertexCoordinates( @NotNull final double[] vertexCoordinates )
 	{
 		_target.setVertexCoordinates( vertexCoordinates );
 	}
 
-	public void setVertexCoordinates( final List<Vector3D> vertexPoints )
+	public void setVertexCoordinates( @NotNull final List<Vector3D> vertexPoints )
 	{
 		final int vertexCount = vertexPoints.size();
 		final double[] doubles = new double[ vertexCount * 3 ];
@@ -152,12 +155,12 @@ public class Object3DBuilder
 		setVertexCoordinates( doubles );
 	}
 
-	public void setVertexNormals( final double[] vertexNormals )
+	public void setVertexNormals( @NotNull final double[] vertexNormals )
 	{
 		_target.setVertexNormals( vertexNormals );
 	}
 
-	public void setVertexNormals( final List<Vector3D> vertexNormals )
+	public void setVertexNormals( @NotNull final List<Vector3D> vertexNormals )
 	{
 		final int vertexCount = vertexNormals.size();
 		final double[] doubles = new double[ vertexCount * 3 ];
@@ -173,12 +176,12 @@ public class Object3DBuilder
 		setVertexNormals( doubles );
 	}
 
-	public void addFace( final int[] vertexIndices , final Material material , final UVMap uvMap , final boolean flipTexture , final boolean smooth , final boolean twoSided )
+	public void addFace( @NotNull final int[] vertexIndices , @Nullable final Material material , @Nullable final UVMap uvMap , final boolean flipTexture , final boolean smooth , final boolean twoSided )
 	{
-		addFace( vertexIndices , material , uvMap.generate( material , _target._vertexCoordinates , vertexIndices , flipTexture ) , null , smooth , twoSided );
+		addFace( vertexIndices , material , ( uvMap != null ) ? uvMap.generate( material , _target._vertexCoordinates , vertexIndices , flipTexture ) : null , null , smooth , twoSided );
 	}
 
-	public void addFace( final Vector3D[] points , final Material material , final Point2D.Float[] texturePoints , final Vector3D[] vertexNormals , final boolean smooth , final boolean twoSided )
+	public void addFace( @NotNull final Vector3D[] points , @Nullable final Material material , @Nullable final Point2D.Float[] texturePoints , @Nullable final Vector3D[] vertexNormals , final boolean smooth , final boolean twoSided )
 	{
 		final int   vertexCount   = points.length;
 		final int[] vertexIndices = new int[ vertexCount ];
@@ -192,12 +195,12 @@ public class Object3DBuilder
 		addFace( vertexIndices , material , texturePoints , vertexNormals , smooth , twoSided );
 	}
 
-	public void addFace( final int[] vertexIndices , final Material material , final Point2D.Float[] texturePoints , final Vector3D[] vertexNormals , final boolean smooth , final boolean twoSided )
+	public void addFace( @NotNull final int[] vertexIndices , @Nullable final Material material , @Nullable final Point2D.Float[] texturePoints , @Nullable final Vector3D[] vertexNormals , final boolean smooth , final boolean twoSided )
 	{
 		_target.addFace( new Face3D( _target , vertexIndices , material , texturePoints , vertexNormals , smooth , twoSided ) );
 	}
 
-	public void addText( final String text , final Vector3D origin , final double height , final double rotationAngle , final double obliqueAngle , final Vector3D extrusion , final Material material )
+	public void addText( @NotNull final String text , @NotNull final Vector3D origin , final double height , final double rotationAngle , final double obliqueAngle , @Nullable final Vector3D extrusion , @Nullable final Material material )
 	{
 		throw new AssertionError( "not implemented" );
 	}

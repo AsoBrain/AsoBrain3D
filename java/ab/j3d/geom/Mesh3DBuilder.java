@@ -25,6 +25,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.sun.istack.internal.Nullable;
+import org.jetbrains.annotations.NotNull;
+
 import ab.j3d.Material;
 import ab.j3d.Vector3D;
 import ab.j3d.geom.Mesh3D.Face;
@@ -78,7 +81,7 @@ public final class Mesh3DBuilder
 		return new Mesh3D( _faces );
 	}
 
-	public int getVertexIndex( final Vector3D point )
+	public int getVertexIndex( @NotNull final Vector3D point )
 	{
 		final int result;
 
@@ -127,7 +130,7 @@ public final class Mesh3DBuilder
 		return _sharedVertices.get( getVertexIndex( point ) );
 	}
 
-	public void setVertexCoordinates( final double[] vertexPoints )
+	public void setVertexCoordinates( @NotNull final double[] vertexPoints )
 	{
 		if ( !_faces.isEmpty() )
 			throw new IllegalStateException( "can't set coordinates after faces were added" );
@@ -145,7 +148,7 @@ public final class Mesh3DBuilder
 		}
 	}
 
-	public void setVertexCoordinates( final List<Vector3D> vertexPoints )
+	public void setVertexCoordinates( @NotNull final List<Vector3D> vertexPoints )
 	{
 		if ( !_faces.isEmpty() )
 			throw new IllegalStateException( "can't set coordinates after faces were added" );
@@ -163,7 +166,7 @@ public final class Mesh3DBuilder
 		}
 	}
 
-	public final void setVertexNormals( final double[] vertexNormals )
+	public final void setVertexNormals( @NotNull final double[] vertexNormals )
 	{
 		final ArrayList<SharedVertex> sharedVertices = _sharedVertices;
 		if ( vertexNormals.length / 3 > sharedVertices.size() )
@@ -176,7 +179,7 @@ public final class Mesh3DBuilder
 		}
 	}
 
-	public final void setVertexNormals( final List<Vector3D> vertexNormals )
+	public final void setVertexNormals( @NotNull final List<Vector3D> vertexNormals )
 	{
 		final ArrayList<SharedVertex> sharedVertices = _sharedVertices;
 		if ( vertexNormals.size() > sharedVertices.size() )
@@ -190,7 +193,7 @@ public final class Mesh3DBuilder
 		}
 	}
 
-	public final void addFace( final Vector3D[] points , final Material material , final boolean smooth , final boolean twoSided )
+	public final void addFace( @NotNull final Vector3D[] points , @Nullable final Material material , final boolean smooth , final boolean twoSided )
 	{
 		final List<Vertex> vertices = new ArrayList<Vertex>( points.length );
 		for ( final Vector3D point : points )
@@ -201,7 +204,7 @@ public final class Mesh3DBuilder
 		_faces.add( new Face( vertices , material , smooth , twoSided ) );
 	}
 
-	public final void addFace( final int[] vertexIndices , final Material material , final boolean smooth , final boolean twoSided )
+	public final void addFace( @NotNull final int[] vertexIndices , @Nullable final Material material , final boolean smooth , final boolean twoSided )
 	{
 		final List<Vertex> vertices = new ArrayList<Vertex>( vertexIndices.length );
 		for ( final int vertexIndex : vertexIndices )
@@ -212,7 +215,7 @@ public final class Mesh3DBuilder
 		_faces.add( new Face( vertices , material , smooth , twoSided ) );
 	}
 
-	public void addFace( final int[] vertexIndices , final Material material , final UVMap uvMap , final boolean flipTexture , final boolean smooth , final boolean twoSided )
+	public void addFace( @NotNull final int[] vertexIndices , @Nullable final Material material , @Nullable final UVMap uvMap , final boolean flipTexture , final boolean smooth , final boolean twoSided )
 	{
 		final ArrayList<SharedVertex> sharedVertices = _sharedVertices;
 
@@ -236,13 +239,13 @@ public final class Mesh3DBuilder
 			final SharedVertex sharedVertex = sharedVertices.get( vertexIndex );
 			final Vector3D point = sharedVertex.point;
 
-			vertices.add( new Vertex( sharedVertex , uvMap.generate( material , point , normal , flipTexture ) ) );
+			vertices.add( ( uvMap != null ) ? new Vertex( sharedVertex , uvMap.generate( material , point , normal , flipTexture ) ) : new Vertex(  sharedVertex ) );
 		}
 
 		_faces.add( new Face( vertices , material , smooth , twoSided ) );
 	}
 
-	public void addFace( final Vector3D[] points , final Material material , final Point2D.Float[] texturePoints , final Vector3D[] vertexNormals , final boolean smooth , final boolean twoSided )
+	public void addFace( @NotNull final Vector3D[] points , @Nullable final Material material , @Nullable final Point2D.Float[] texturePoints , @Nullable final Vector3D[] vertexNormals , final boolean smooth , final boolean twoSided )
 	{
 		final int vertexCount = points.length;
 
@@ -270,7 +273,7 @@ public final class Mesh3DBuilder
 		_faces.add( new Face( vertices , material , smooth , twoSided ) );
 	}
 
-	public void addFace( final int[] vertexIndices , final Material material , final Point2D.Float[] texturePoints , final Vector3D[] vertexNormals , final boolean smooth , final boolean twoSided )
+	public void addFace( @NotNull final int[] vertexIndices , @Nullable final Material material , @Nullable final Point2D.Float[] texturePoints , @Nullable final Vector3D[] vertexNormals , final boolean smooth , final boolean twoSided )
 	{
 		final int vertexCount = vertexIndices.length;
 		final ArrayList<SharedVertex> sharedVertices = _sharedVertices;
@@ -299,7 +302,7 @@ public final class Mesh3DBuilder
 		_faces.add( new Face( vertices , material , smooth , twoSided ) );
 	}
 
-	public void addText( final String text , final Vector3D origin , final double height , final double rotationAngle , final double obliqueAngle , final Vector3D extrusion , final Material material )
+	public void addText( @NotNull final String text , @NotNull final Vector3D origin , final double height , final double rotationAngle , final double obliqueAngle , final Vector3D extrusion , final Material material )
 	{
 		throw new AssertionError( "not implemented" );
 	}
