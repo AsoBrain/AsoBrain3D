@@ -470,7 +470,7 @@ public final class Painter
 	{
 		final boolean result;
 
-		final Matrix3D viewBase = cylinder2view;
+		final Matrix3D viewBase = cylinder.base.multiply( cylinder2view );
 		final double   h        = cylinder.height;
 		final double   rBottom  = cylinder.radiusBottom;
 		final double   rTop     = cylinder.radiusTop;
@@ -482,7 +482,7 @@ public final class Painter
 		final double yo = viewBase.yo;
 		final double zo = viewBase.zo;
 
-		final float goldenRatio = 0.6180339f;
+//		final float goldenRatio = 0.6180339f;
 
 		/*
 		 * The cylinder's center axis (Z-axis) is is parallel on the view plane
