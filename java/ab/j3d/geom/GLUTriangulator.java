@@ -34,6 +34,8 @@ import javax.media.opengl.glu.GLUtessellatorCallbackAdapter;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 
+import com.numdata.oss.HashList;
+
 /**
  * Implements the {@link Triangulator} interface using the tesselator provided
  * by GLU.
@@ -409,7 +411,7 @@ class GLUTriangulator
 		TriangulationImpl()
 		{
 			_triangles = new ArrayList<int[]>();
-			_vertices  = new ArrayList<Vector3D>();
+			_vertices  = new HashList<Vector3D>();
 		}
 
 		/**
