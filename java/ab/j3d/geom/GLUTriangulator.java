@@ -85,13 +85,6 @@ class GLUTriangulator
 		_normal = normal;
 	}
 
-	/**
-	 * Triangulates the given shape.
-	 *
-	 * @param   shape   Shape to be triangulated.
-	 *
-	 * @return  Triangulation result.
-	 */
 	public Triangulation triangulate( final Shape shape )
 	{
 		final GLU glu = new GLU();
@@ -130,31 +123,82 @@ class GLUTriangulator
 
 		glu.gluBeginPolygon( tessellator );
 
-		final double[] coords       = new double[ 6 ];
-		final double[] vertexCoords = new double[ 3 ];
+		createContour( triangulation, glu , tessellator , false , iterator );
 
-		boolean insideContour = false;
-		while ( !iterator.isDone() )
+		glu.gluEndPolygon( tessellator );
+
+		return triangulationBuilder.getTriangulation();
+	}
+
+	public Triangulation triangulate( final Shape positive , final Iterable<Shape> negative )
+	{
+		final TriangulationImpl    triangulation        = new TriangulationImpl();
+		final TriangulationBuilder triangulationBuilder = new TriangulationBuilder( triangulation );
+
+		final Vector3D normal = _normal;
+		if ( normal == null )
 		{
-			final int type = iterator.currentSegment( coords );
+			throw new IllegalStateException( "must have normal" );
+		}
+
+		final GLU glu = new GLU();
+
+		final GLUtessellator tessellator = glu.gluNewTess();
+		glu.gluTessProperty( tessellator , GLU_TESS_WINDING_RULE , (double)GLU_TESS_WINDING_ODD );
+		glu.gluTessCallback( tessellator , GLU_TESS_BEGIN   , triangulationBuilder );
+		glu.gluTessCallback( tessellator , GLU_TESS_VERTEX  , triangulationBuilder );
+		glu.gluTessCallback( tessellator , GLU_TESS_END     , triangulationBuilder );
+		glu.gluTessCallback( tessellator , GLU_TESS_ERROR   , triangulationBuilder );
+		glu.gluTessCallback( tessellator , GLU_TESS_COMBINE , triangulationBuilder );
+
+		glu.gluBeginPolygon( tessellator );
+
+		glu.gluTessNormal( tessellator , -normal.x , -normal.y , -normal.z );
+		boolean contourStarted = createContour( triangulation , glu , tessellator , false , positive.getPathIterator( null , _flatness ) );
+
+		glu.gluTessNormal( tessellator , normal.x , normal.y , normal.z );
+		for ( final Shape shape : negative )
+		{
+			contourStarted = createContour( triangulation , glu , tessellator , contourStarted , shape.getPathIterator( null , _flatness ) );
+		}
+
+		glu.gluEndPolygon( tessellator );
+
+		return triangulationBuilder.getTriangulation();
+	}
+
+	/**
+	 * Create a contour from a {@link PathIterator}. The iterator is only
+	 * allowed to produce line segments.
+	 *
+	 * @param   glu                 Provides access to the OpenGL Utility Library (GLU).
+	 * @param   tessellator         Tesselator to use.
+	 * @param   contourWasStarted   Was a contour started by previous call.
+	 * @param   triangulation       Target triangulation.
+	 * @param   pathIterator        Path iterator to create contour from.
+	 *
+	 * @return  <code>true</code> if a contour was started;
+	 *          <code>false</code> if no contour was started.
+	 */
+	private static boolean createContour( final TriangulationImpl triangulation , final GLU glu , final GLUtessellator tessellator , final boolean contourWasStarted , final PathIterator pathIterator )
+	{
+		final double[] coords = new double[ 6 ];
+		final double[] moveCoords = new double[ 6 ];
+
+		boolean contourStarted = contourWasStarted;
+		boolean moved = true;
+
+		while ( !pathIterator.isDone() )
+		{
+			final int type = pathIterator.currentSegment( coords );
 
 			switch ( type )
 			{
 				case PathIterator.SEG_MOVETO:
 				{
-					if ( insideContour )
-					{
-						glu.gluTessEndContour( tessellator );
-						glu.gluTessBeginContour( tessellator );
-					}
-
-					insideContour = true;
-
-					final int vertexIndex = triangulation.addVertex( Vector3D.INIT.set( coords[ 0 ] , coords[ 1 ] , 0.0 ) );
-					vertexCoords[ 0 ] = coords[ 0 ];
-					vertexCoords[ 1 ] = coords[ 1 ];
-					// vertexCoords[ 2 ] = 0.0; (implicitly zero)
-					glu.gluTessVertex( tessellator , vertexCoords , 0 , Integer.valueOf( vertexIndex ) );
+					moveCoords[ 0 ] = coords[ 0 ];
+					moveCoords[ 1 ] = coords[ 1 ];
+					moved = true;
 					break;
 				}
 
@@ -163,11 +207,24 @@ class GLUTriangulator
 
 				case PathIterator.SEG_LINETO:
 				{
+					if ( moved )
+					{
+						if ( contourStarted )
+						{
+							glu.gluTessEndContour( tessellator );
+							glu.gluTessBeginContour( tessellator );
+						}
+
+						final int vertexIndex = triangulation.addVertex( Vector3D.INIT.set( moveCoords[ 0 ] , moveCoords[ 1 ] , 0.0 ) );
+						glu.gluTessVertex( tessellator , moveCoords , 0 , Integer.valueOf( vertexIndex ) );
+
+						contourStarted = true;
+						moved = false;
+					}
+
 					final int vertexIndex = triangulation.addVertex( Vector3D.INIT.set( coords[ 0 ] , coords[ 1 ] , 0.0 ) );
-					vertexCoords[ 0 ] = coords[ 0 ];
-					vertexCoords[ 1 ] = coords[ 1 ];
-					// vertexCoords[ 2 ] = 0.0; (implicitly zero)
-					glu.gluTessVertex( tessellator , vertexCoords , 0 , Integer.valueOf( vertexIndex ) );
+					coords[ 2 ] = 0.0;
+					glu.gluTessVertex( tessellator , coords , 0 , Integer.valueOf( vertexIndex ) );
 					break;
 				}
 
@@ -175,13 +232,12 @@ class GLUTriangulator
 					throw new AssertionError( "Unexpected segment type for flattened path: " + type );
 			}
 
-			iterator.next();
+			pathIterator.next();
 		}
 
-		glu.gluEndPolygon( tessellator );
-
-		return triangulationBuilder.getTriangulation();
+		return contourStarted;
 	}
+
 
 	/**
 	 * Builds the list of triangles for a {@link TriangulationImpl} from the

@@ -68,4 +68,16 @@ public interface Triangulator
 	 * @return  Triangulation result.
 	 */
 	Triangulation triangulate( final Shape shape );
+
+	/**
+	 * Triangulates a combination of <code>positive</code> and
+	 * <code>negative</code> shapes. The resulst is the difference between the
+	 * two.
+	 *
+	 * @param   positive    Positive geometry.
+	 * @param   negative    Negative geometry.
+	 *
+	 * @return  Triangulation result.
+	 */
+	Triangulation triangulate( Shape positive , Iterable<Shape> negative );
 }
