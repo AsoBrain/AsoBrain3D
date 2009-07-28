@@ -400,7 +400,7 @@ class AreaTriangulator
 		return triangulate( subdivide( area , _initialSubdivisionsX , _initialSubdivisionsY , _iteratedSubdivisionsX , _iteratedSubdivisionsY , _subdivisionIterations ) );
 	}
 
-	public Triangulation triangulate( final Shape positive , final Iterable<Shape> negative )
+	public Triangulation triangulate( final Shape positive , final Iterable<? extends Shape> negative )
 	{
 		final Area combinedArea = new Area( positive );
 		for ( final Shape shape : negative )

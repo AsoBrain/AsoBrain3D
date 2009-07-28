@@ -1148,23 +1148,63 @@ public abstract class Abstract3DObjectBuilder
 		else
 		{
 			final Triangulation triangulation = triangulator.triangulate( shape );
-			final List<Vector3D> vertices = triangulation.getVertices( transform );
+			addTriangulation( transform , triangulation , material , uvMap , flipTexture , twoSided );
+		}
+	}
 
-			final int[] vertexIndices = new int[ vertices.size() ];
-			for ( int i = 0 ; i < vertexIndices.length ; i++ )
-			{
-				vertexIndices[ i ] = getVertexIndex( vertices.get( i ) );
-			}
+	/**
+	 * Add triangulated shape.
+	 *
+	 * @param   transform       Transform from 2D to 3D coordinates.
+	 * @param   positive        Positive geometry.
+	 * @param   negative        Negative geometry.
+	 * @param   shapeNormal     Normal to use for shape.
+	 * @param   flatness        Flatness used to approximate curves.
+	 * @param   material        Material to apply to the bottom cap.
+	 * @param   uvMap           UV-map used to generate texture coordinates.
+	 * @param   flipTexture     Whether the bottom texture direction is flipped.
+	 * @param   twoSided        Resulting face will be two-sided (has backface).
+	 */
+	public void addFilledShape2D( @NotNull final Matrix3D transform , @NotNull final Shape positive , @NotNull final Iterable<? extends Shape> negative , @NotNull final Vector3D shapeNormal , final double flatness , @Nullable final Material material , @Nullable final UVMap uvMap , final boolean flipTexture , final boolean twoSided )
+	{
+		final TriangulatorFactory triangulatorFactory = TriangulatorFactory.newInstance();
 
-			final int[] triangleVertexIndices = new int[ 3 ];
+		final Triangulator triangulator = triangulatorFactory.newTriangulator();
+		triangulator.setFlatness( flatness );
+		triangulator.setNormal( shapeNormal );
 
-			for ( final int[] triangle : triangulation.getTriangles() )
-			{
-				triangleVertexIndices[ 0 ] = vertexIndices[ triangle[ 0 ] ];
-				triangleVertexIndices[ 1 ] = vertexIndices[ triangle[ 1 ] ];
-				triangleVertexIndices[ 2 ] = vertexIndices[ triangle[ 2 ] ];
-				addFace( triangleVertexIndices , material , uvMap , flipTexture , false , twoSided );
-			}
+		final Triangulation triangulation = triangulator.triangulate( positive , negative );
+		addTriangulation( transform , triangulation , material , uvMap , flipTexture , twoSided );
+	}
+
+	/**
+	 * Add result from triangulator to current 3D object.
+	 *
+	 * @param   transform       Transform from 2D to 3D coordinates.
+	 * @param   triangulation   Triangulation result.
+	 * @param   material        Material to apply to the bottom cap.
+	 * @param   uvMap           UV-map used to generate texture coordinates.
+	 * @param   flipTexture     Whether the bottom texture direction is flipped.
+	 * @param   twoSided        Resulting face will be two-sided (has backface).
+	 */
+	private void addTriangulation( final Matrix3D transform , final Triangulation triangulation  , final Material material , final UVMap uvMap , final boolean flipTexture , final boolean twoSided )
+	{
+		final List<Vector3D> vertices = triangulation.getVertices( transform );
+
+		final int[] vertexIndices = new int[ vertices.size() ];
+		for ( int i = 0 ; i < vertexIndices.length ; i++ )
+		{
+			vertexIndices[ i ] = getVertexIndex( vertices.get( i ) );
+		}
+
+		final int[] triangleVertexIndices = new int[ 3 ];
+
+		for ( final int[] triangle : triangulation.getTriangles() )
+		{
+			triangleVertexIndices[ 0 ] = vertexIndices[ triangle[ 0 ] ];
+			triangleVertexIndices[ 1 ] = vertexIndices[ triangle[ 1 ] ];
+			triangleVertexIndices[ 2 ] = vertexIndices[ triangle[ 2 ] ];
+			addFace( triangleVertexIndices , material , uvMap , flipTexture , false , twoSided );
 		}
 	}
 
@@ -1231,14 +1271,13 @@ public abstract class Abstract3DObjectBuilder
 			result = false;
 
 			final float[] coords = new float[ 6 ];
-			outer: for ( PathIterator i = shape.getPathIterator( null ) ; !i.isDone() ; i.next() )
+			 for ( PathIterator i = shape.getPathIterator( null ) ; !result && !i.isDone() ; i.next() )
 			{
 				switch ( i.currentSegment( coords ) )
 				{
 					case PathIterator.SEG_CUBICTO :
 					case PathIterator.SEG_QUADTO :
 						result = true;
-						break outer;
 				}
 			}
 		}
