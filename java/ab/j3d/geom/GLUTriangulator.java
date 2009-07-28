@@ -130,7 +130,7 @@ class GLUTriangulator
 		return triangulationBuilder.getTriangulation();
 	}
 
-	public Triangulation triangulate( final Shape positive , final Iterable<Shape> negative )
+	public Triangulation triangulate( final Shape positive , final Iterable<? extends Shape> negative )
 	{
 		final TriangulationImpl    triangulation        = new TriangulationImpl();
 		final TriangulationBuilder triangulationBuilder = new TriangulationBuilder( triangulation );

@@ -79,5 +79,5 @@ public interface Triangulator
 	 *
 	 * @return  Triangulation result.
 	 */
-	Triangulation triangulate( Shape positive , Iterable<Shape> negative );
+	Triangulation triangulate( Shape positive , Iterable<? extends Shape> negative );
 }

@@ -384,13 +384,6 @@ class AreaTriangulator
 		return result;
 	}
 
-	/**
-	 * Triangulates the given shape and returns the result.
-	 *
-	 * @param   shape   Shape to be triangulated.
-	 *
-	 * @return  Triangulation result.
-	 */
 	public Triangulation triangulate( final Shape shape )
 	{
 		final Area area;
@@ -405,6 +398,16 @@ class AreaTriangulator
 		}
 
 		return triangulate( subdivide( area , _initialSubdivisionsX , _initialSubdivisionsY , _iteratedSubdivisionsX , _iteratedSubdivisionsY , _subdivisionIterations ) );
+	}
+
+	public Triangulation triangulate( final Shape positive , final Iterable<Shape> negative )
+	{
+		final Area combinedArea = new Area( positive );
+		for ( final Shape shape : negative )
+		{
+			combinedArea.subtract( ( shape instanceof Area ) ? (Area)shape : new Area( shape ) );
+		}
+		return triangulate( combinedArea );
 	}
 
 	private Triangulation triangulateImpl( final Area area )
