@@ -77,6 +77,11 @@ public abstract class Abstract3DObjectBuilder
 		LINE_SEGMENT ,
 
 		/**
+		 * Open path.
+		 */
+		OPEN_PATH ,
+
+		/**
 		 * Triangle with clockwise vertex order.
 		 */
 		CW_TRIANGLE ,
@@ -100,32 +105,54 @@ public abstract class Abstract3DObjectBuilder
 		 * Convex shape with clockwise vertex order.
 		 */
 		CW_CONVEX ,
+
 		/**
 		 * Convex shape with counter-clockwise vertex order.
 		 */
 		CCW_CONVEX ,
 
 		/**
-		 * Open path (possibly with curves).
+		 * Concave shape with clockwise vertex order.
 		 */
-		OPEN_PATH ,
+		CW_CONCAVE ,
 
 		/**
-		 * Concave shape with only straight segments.
+		 * Concave shape with counter-clockwise vertex order.
 		 */
-		STRAIGHT_CONCAVE ,
+		CCW_CONCAVE ,
 
 		/**
-		 * Complex shape (possible self-intersections or multiple sub-paths) with only
-		 * straight segments.
+		 * Complex shape with possible self-intersection or multiple sub-paths.
 		 */
-		STRAIGHT_COMPLEX ,
+		COMPLEX;
 
 		/**
-		 * Complex shape (possible self-intersections or multiple sub-paths) with
-		 * straight and curved segments.
+		 * Test if this shape has clockwise vertex order.
+		 *
+		 * @return  <code>true</code> if shape has clockwise vertex order;
+		 *          <code>false</code> if counter-clockwise or undetermined.
 		 */
-		CURVED_COMPLEX ,
+		public boolean isClockwise()
+		{
+			return ( ( this == CW_TRIANGLE ) ||
+			         ( this == CW_QUAD ) ||
+			         ( this == CW_CONVEX ) ||
+			         ( this == CW_CONCAVE ) );
+		}
+
+		/**
+		 * Test if this shape has counter-clockwise vertex order.
+		 *
+		 * @return  <code>true</code> if shape has counter-clockwise vertex order;
+		 *          <code>false</code> if clockwise or undetermined.
+		 */
+		public boolean isCounterClockwise()
+		{
+			return ( ( this == CCW_TRIANGLE ) ||
+			         ( this == CCW_QUAD ) ||
+			         ( this == CCW_CONVEX ) ||
+			         ( this == CCW_CONCAVE ) );
+		}
 	}
 
 	/**
@@ -306,7 +333,7 @@ public abstract class Abstract3DObjectBuilder
 
 		if ( fill )
 		{
-			addExtrudedShape( ellipse2d , radius * 0.02 , extrusion , base , material , uvMap , false , material , uvMap , false , material , uvMap , false , true , false );
+			addExtrudedShape( ellipse2d , radius * 0.02 , extrusion , base , material , uvMap , false , material , uvMap , false , material , uvMap , false , true , false , true );
 		}
 		else
 		{
@@ -944,36 +971,66 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   hasBackface         Flag to indicate if extruded faces have a backface.
 	 * @param   flipNormals         If <code>true</code>, normals are flipped to
 	 *                              point in the opposite direction.
+	 * @param   smooth              Shape is smooth.
 	 */
-	public void addExtrudedShape( @NotNull final Shape shape , final double flatness , @Nullable final Vector3D extrusion , @NotNull final Matrix3D transform , @Nullable final Material topMaterial , @Nullable final UVMap topMap , final boolean topFlipTexture , @Nullable final Material bottomMaterial , @Nullable final UVMap bottomMap , final boolean bottomFlipTexture , @Nullable final Material sideMaterial , @Nullable final UVMap sideMap , final boolean sideFlipTexture , final boolean hasBackface , final boolean flipNormals )
+	public void addExtrudedShape( @NotNull final Shape shape , final double flatness , @Nullable final Vector3D extrusion , @NotNull final Matrix3D transform , @Nullable final Material topMaterial , @Nullable final UVMap topMap , final boolean topFlipTexture , @Nullable final Material bottomMaterial , @Nullable final UVMap bottomMap , final boolean bottomFlipTexture , @Nullable final Material sideMaterial , @Nullable final UVMap sideMap , final boolean sideFlipTexture , final boolean hasBackface , final boolean flipNormals , final boolean smooth )
 	{
 		final double  ex            = ( extrusion != null ) ? extrusion.x : 0.0;
 		final double  ey            = ( extrusion != null ) ? extrusion.y : 0.0;
 		final double  ez            = ( extrusion != null ) ? extrusion.z : 0.0;
 		final boolean hasExtrusion  = !MathTools.almostEqual( ex , 0.0 ) || !MathTools.almostEqual( ey , 0.0 ) || !MathTools.almostEqual( ez , 0.0 );
-		final boolean flipExtrusion = flipNormals^( ez < 0.0 );
+		final boolean flipExtrusion = flipNormals ^ ( ez < 0.0 );
 
 		if ( hasExtrusion && ( sideMaterial != null ) )
 		{
-			addExtrudedShape( shape , flatness , extrusion , transform , sideMaterial , sideMap , sideFlipTexture , hasBackface , flipNormals , false );
+			addExtrudedShape( shape , flatness , extrusion , transform , sideMaterial , sideMap , sideFlipTexture , hasBackface , flipNormals , smooth );
 		}
 
-		final TriangulatorFactory triangulatorFactory = TriangulatorFactory.newInstance();
-		final Triangulator        triangulator        = triangulatorFactory.newTriangulator();
-
-		triangulator.setFlatness( flatness );
-
-		final Vector3D topNormal    = Vector3D.INIT.set( 0.0 , 0.0 , flipExtrusion ? -1.0 :  1.0 );
-		final Vector3D bottomNormal = Vector3D.INIT.set( 0.0 , 0.0 , flipExtrusion ?  1.0 : -1.0 );
-
-		triangulator.setNormal( topNormal );
-		addFilledShape2D( transform.plus( extrusion ) , shape , triangulator , topMaterial , topMap , topFlipTexture , hasBackface );
-
-		if ( hasExtrusion )
+		if ( ( topMaterial != null ) || ( bottomMaterial != null ) )
 		{
-			// @TODO Should not triangulate twice for a performance gain, since the triangulation for top and bottom caps is essentially the same.
-			triangulator.setNormal( bottomNormal );
-			addFilledShape2D( transform , shape , triangulator , bottomMaterial , bottomMap , bottomFlipTexture , hasBackface );
+			if ( shape instanceof Rectangle2D )
+			{
+				final Rectangle2D rectangle = (Rectangle2D)shape;
+				final double x1 = rectangle.getMinX();
+				final double y1 = rectangle.getMinY();
+				final double x2 = rectangle.getMaxX();
+				final double y2 = rectangle.getMaxY();
+
+				if ( bottomMaterial != null )
+				{
+					addQuad( transform.transform( x1 , y1 , 0.0 ) ,
+					         transform.transform( x1 , y2 , 0.0 ) ,
+					         transform.transform( x2 , y2 , 0.0 ) ,
+					         transform.transform( x2 , y1 , 0.0 ) , bottomMaterial, bottomMap, false , hasBackface );
+				}
+
+				if ( topMaterial != null )
+				{
+					addQuad( transform.transform( ex + x1 , ey + y1 , ez ) ,
+					         transform.transform( ex + x1 , ey + y2 , ez ) ,
+					         transform.transform( ex + x2 , ey + y2 , ez ) ,
+					         transform.transform( ex + x2 , ey + y1 , ez ) , topMaterial , topMap , false , hasBackface );
+				}
+			}
+			else
+			{
+				final TriangulatorFactory triangulatorFactory = TriangulatorFactory.newInstance();
+				final Triangulator triangulator = triangulatorFactory.newTriangulator();
+				triangulator.setFlatness( flatness );
+				triangulator.setNormal( Vector3D.INIT.set( 0.0 , 0.0 , flipExtrusion ? -1.0 : 1.0 ) );
+				final Triangulation triangulation = triangulator.triangulate( shape );
+
+				if ( bottomMaterial != null )
+				{
+					addTriangulation( transform , triangulation , bottomMaterial , bottomMap , bottomFlipTexture , hasBackface , true );
+				}
+
+				if ( topMaterial != null )
+				{
+					final Matrix3D topTransform = hasExtrusion ? transform.plus( transform.rotate( ex , ey , ez ) ) : transform;
+					addTriangulation( topTransform , triangulation , topMaterial , topMap , topFlipTexture , hasBackface , false );
+				}
+			}
 		}
 	}
 
@@ -998,8 +1055,10 @@ public abstract class Abstract3DObjectBuilder
 		final double ey = ( extrusion != null ) ? extrusion.y : 0.0;
 		final double ez = ( extrusion != null ) ? extrusion.z : 0.0;
 
-		final boolean hasExtrusion  = !MathTools.almostEqual( ex , 0.0 ) || !MathTools.almostEqual( ey , 0.0 ) || !MathTools.almostEqual( ez , 0.0 );
-		final boolean flipExtrusion = flipNormals ^ ( ez < 0.0 );
+		final boolean    hasExtrusion  = !MathTools.almostEqual( ex , 0.0 ) || !MathTools.almostEqual( ey , 0.0 ) || !MathTools.almostEqual( ez , 0.0 );
+		final ShapeClass shapeClass    = getShapeClass( shape );
+		final boolean    flipExtrusion = flipNormals ^ ( ez < 0.0 ) ^ shapeClass.isClockwise();
+		final boolean    twoSided      = hasBackface || ( shapeClass == ShapeClass.COMPLEX );
 
 		final PathIterator pathIterator = shape.getPathIterator( null , flatness );
 
@@ -1046,11 +1105,11 @@ public abstract class Abstract3DObjectBuilder
 
 							if ( flipExtrusion )
 							{
-								addFace( new int[] { point , extrudedPoint , lastExtrudedPoint , lastPoint} , material , uvMap , flipTexture , smooth , hasBackface );
+								addFace( new int[] { point , extrudedPoint , lastExtrudedPoint , lastPoint} , material , uvMap , flipTexture , smooth , twoSided );
 							}
 							else
 							{
-								addFace( new int[] { lastPoint , lastExtrudedPoint , extrudedPoint , point } , material , uvMap , flipTexture , smooth , hasBackface );
+								addFace( new int[] { lastPoint , lastExtrudedPoint , extrudedPoint , point } , material , uvMap , flipTexture , smooth , twoSided );
 							}
 
 							lastExtrudedPoint = extrudedPoint;
@@ -1073,11 +1132,11 @@ public abstract class Abstract3DObjectBuilder
 						{
 							if ( flipExtrusion )
 							{
-								addFace( new int[] { moveToPoint , moveToExtrudedPoint , lastExtrudedPoint , lastPoint } , material , uvMap , flipTexture , smooth , hasBackface );
+								addFace( new int[] { moveToPoint , moveToExtrudedPoint , lastExtrudedPoint , lastPoint } , material , uvMap , flipTexture , smooth , twoSided );
 							}
 							else
 							{
-								addFace( new int[] { lastPoint , lastExtrudedPoint , moveToExtrudedPoint , moveToPoint } , material , uvMap , flipTexture , smooth , hasBackface );
+								addFace( new int[] { lastPoint , lastExtrudedPoint , moveToExtrudedPoint , moveToPoint } , material , uvMap , flipTexture , smooth , twoSided );
 							}
 							lastExtrudedPoint = moveToExtrudedPoint;
 						}
@@ -1148,7 +1207,7 @@ public abstract class Abstract3DObjectBuilder
 		else
 		{
 			final Triangulation triangulation = triangulator.triangulate( shape );
-			addTriangulation( transform , triangulation , material , uvMap , flipTexture , twoSided );
+			addTriangulation( transform , triangulation , material , uvMap , flipTexture , twoSided , false );
 		}
 	}
 
@@ -1174,7 +1233,7 @@ public abstract class Abstract3DObjectBuilder
 		triangulator.setNormal( shapeNormal );
 
 		final Triangulation triangulation = triangulator.triangulate( positive , negative );
-		addTriangulation( transform , triangulation , material , uvMap , flipTexture , twoSided );
+		addTriangulation( transform , triangulation , material , uvMap , flipTexture , twoSided , false );
 	}
 
 	/**
@@ -1186,8 +1245,9 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   uvMap           UV-map used to generate texture coordinates.
 	 * @param   flipTexture     Whether the bottom texture direction is flipped.
 	 * @param   twoSided        Resulting face will be two-sided (has backface).
+	 * @param   flipNormals     If set, flip normals.
 	 */
-	private void addTriangulation( final Matrix3D transform , final Triangulation triangulation  , final Material material , final UVMap uvMap , final boolean flipTexture , final boolean twoSided )
+	private void addTriangulation( final Matrix3D transform , final Triangulation triangulation  , final Material material , final UVMap uvMap , final boolean flipTexture , final boolean twoSided , final boolean flipNormals )
 	{
 		final List<Vector3D> vertices = triangulation.getVertices( transform );
 
@@ -1201,9 +1261,19 @@ public abstract class Abstract3DObjectBuilder
 
 		for ( final int[] triangle : triangulation.getTriangles() )
 		{
-			triangleVertexIndices[ 0 ] = vertexIndices[ triangle[ 0 ] ];
-			triangleVertexIndices[ 1 ] = vertexIndices[ triangle[ 1 ] ];
-			triangleVertexIndices[ 2 ] = vertexIndices[ triangle[ 2 ] ];
+			if ( flipNormals )
+			{
+				triangleVertexIndices[ 0 ] = vertexIndices[ triangle[ 2 ] ];
+				triangleVertexIndices[ 1 ] = vertexIndices[ triangle[ 1 ] ];
+				triangleVertexIndices[ 2 ] = vertexIndices[ triangle[ 0 ] ];
+			}
+			else
+			{
+				triangleVertexIndices[ 0 ] = vertexIndices[ triangle[ 0 ] ];
+				triangleVertexIndices[ 1 ] = vertexIndices[ triangle[ 1 ] ];
+				triangleVertexIndices[ 2 ] = vertexIndices[ triangle[ 2 ] ];
+			}
+
 			addFace( triangleVertexIndices , material , uvMap , flipTexture , false , twoSided );
 		}
 	}
@@ -1288,15 +1358,14 @@ public abstract class Abstract3DObjectBuilder
 	/**
 	 * Get shape class.
 	 *
-	 * @param   shape       Shape to classify.
-	 * @param   flatness    Flatness to apply (<code>-1</code> for normal path).
+	 * @param   shape   Shape to classify.
 	 *
 	 * @return  {@link ShapeClass}
 	 *
 	 * @throws  NullPointerException if a parameter is <code>null</code>.
 	 */
 	@NotNull
-	public static ShapeClass getShapeClass( @NotNull final Shape shape , final double flatness )
+	public static ShapeClass getShapeClass( @NotNull final Shape shape )
 	{
 		final ShapeClass result;
 
@@ -1331,10 +1400,6 @@ public abstract class Abstract3DObjectBuilder
 			{
 				result = ShapeClass.OPEN_PATH;
 			}
-			else if ( flatness <= 0.0 )
-			{
-				result = ( arc.getAngleExtent() == 0.0 ) ? ShapeClass.CCW_CONVEX : ShapeClass.CURVED_COMPLEX;
-			}
 			else
 			{
 				result = ( arc.getAngleExtent() > 0.0 ) ? ShapeClass.CW_CONVEX : ShapeClass.CCW_CONVEX;
@@ -1348,22 +1413,14 @@ public abstract class Abstract3DObjectBuilder
 			{
 				result = ShapeClass.VOID;
 			}
-			else if ( flatness <= 0.0 )
-			{
-				result = ShapeClass.CURVED_COMPLEX;
-			}
 			else
 			{
 				result = ShapeClass.CCW_CONVEX;
 			}
 		}
-		else if ( shape instanceof Polygon )
-		{
-			result = ShapeClass.STRAIGHT_COMPLEX;
-		}
 		else
 		{
-			result = getShapeClass( ( flatness <= 0.0 ) ? shape.getPathIterator( null ) : shape.getPathIterator( null , flatness ) );
+			result = getShapeClass( shape.getPathIterator( null ) );
 		}
 
 		return result;
@@ -1385,127 +1442,86 @@ public abstract class Abstract3DObjectBuilder
 		final ShapeClass result;
 
 		int     numberOfSegments = 0;     /* number of non-void segments */
-		boolean positiveNormals  = false; /* encountered positive normals */
-		boolean negativeNormals  = false; /* encountered negative normals */
-		boolean curved           = false; /* encountered curved segments */
+		boolean curved           = false;
+		boolean positiveAngles   = false; /* encountered positive angles */
+		boolean negativeAngles   = false; /* encountered negative angles */
 		boolean multipleSubPaths = false; /* encountered multiple subpaths */
 
-		final float[] coords = new float[ 6 ];
+		final double[] coords = new double[ 6 ];
 
-		float moveX = 0.0f;
-		float moveY = 0.0f;
-		float previousX = 0.0f;
-		float previousY = 0.0f;
-		float currentX = 0.0f;
-		float currentY = 0.0f;
-		float firstX = 0.0f;
-		float firstY = 0.0f;
+		double moveX = 0.0;
+		double moveY = 0.0;
+		double previousX = 0.0;
+		double previousY = 0.0;
+		double currentX = 0.0;
+		double currentY = 0.0;
+		boolean needFirst = true;
+		double firstX = 0.0;
+		double firstY = 0.0;
+		double totalAngle = 0.0; /* should finish at 2PI (counter-clockwise) or -2PI (clockwise) for closed non-self-intersecting shapes */
 
 		for ( ; !multipleSubPaths && !pathIterator.isDone() ; pathIterator.next() )
 		{
 			final int segmentType = pathIterator.currentSegment( coords );
+			int numCoords = 2;
+
 			switch ( segmentType )
 			{
 				case PathIterator.SEG_MOVETO :
-				{
 					multipleSubPaths = ( numberOfSegments > 0 );
 					moveX = previousX = currentX = coords[ 0 ];
 					moveY = previousY = currentY = coords[ 1 ];
-//					System.out.println( "SEG_MOVETO : " + moveX + " , " + moveY );
+					needFirst = true;
 					break;
-				}
-
-				case PathIterator.SEG_LINETO :
-				{
-					final float nextX = coords[ 0 ];
-					final float nextY = coords[ 1 ];
-//					System.out.println( "SEG_LINETO : " + nextX + " , " + nextY );
-
-					if ( ( nextX != currentX ) || ( nextY != currentY ) )
-					{
-						final float normal = ( nextX - currentX ) * ( previousY - currentY ) - ( nextY - currentY ) * ( previousX - currentX );
-						positiveNormals |= ( normal > 0.0f );
-						negativeNormals |= ( normal < 0.0f );
-
-						if ( numberOfSegments == 0 )
-						{
-							firstX = nextX;
-							firstY = nextY;
-						}
-
-						previousX = currentX;
-						previousY = currentY;
-						currentX = nextX;
-						currentY = nextY;
-						numberOfSegments++;
-					}
-
-					break;
-				}
-
-				case PathIterator.SEG_QUADTO :
-				{
-					final float nextX = coords[ 2 ];
-					final float nextY = coords[ 3 ];
-//					System.out.println( "SEG_QUADTO : " + nextX + " , " + nextY + " , CP: " + coords[ 0 ] + " , " + coords[ 1 ] );
-
-					if ( ( nextX       != currentX ) || ( nextY       != currentY ) ||
-					     ( coords[ 0 ] != currentX ) || ( coords[ 1 ] != currentY ) )
-					{
-						if ( numberOfSegments == 0 )
-						{
-							firstX = nextX;
-							firstY = nextY;
-						}
-
-						previousX = currentX;
-						previousY = currentY;
-						currentX = nextX;
-						currentY = nextY;
-						numberOfSegments++;
-						curved = true;
-					}
-					break;
-				}
 
 				case PathIterator.SEG_CUBICTO :
-				{
-					final float nextX = coords[ 4 ];
-					final float nextY = coords[ 5 ];
-//					System.out.println( "SEG_CUBICTO : " + nextX + " , " + nextY + " , CP1: " + coords[ 0 ] + " , " + coords[ 1 ] + " , CP2: " + coords[ 2 ] + " , " + coords[ 3 ] );
-
-					if ( ( nextX       != currentX ) || ( nextY       != currentY ) ||
-					     ( coords[ 0 ] != currentX ) || ( coords[ 1 ] != currentY ) ||
-					     ( coords[ 2 ] != currentX ) || ( coords[ 3 ] != currentY ) )
+					numCoords += 2;
+					//noinspection fallthrough
+				case PathIterator.SEG_QUADTO :
+					numCoords += 2;
+					curved = true;
+					//noinspection fallthrough
+				case PathIterator.SEG_LINETO :
+					for ( int i = 0 ; i < numCoords ; i += 2 )
 					{
-						if ( numberOfSegments == 0 )
-						{
-							firstX = nextX;
-							firstY = nextY;
-						}
+						final double nextX = coords[ i ];
+						final double nextY = coords[ i + 1 ];
 
-						previousX = currentX;
-						previousY = currentY;
-						currentX = nextX;
-						currentY = nextY;
-						numberOfSegments++;
-						curved = true;
+						if ( ( nextX != currentX ) || ( nextY != currentY ) )
+						{
+							final double angle = getAngle( currentX - previousX , currentY - previousY , nextX - currentX , nextY - currentY );
+							totalAngle += angle;
+							positiveAngles |= ( angle > 0.0 );
+							negativeAngles |= ( angle < 0.0 );
+
+							if ( needFirst )
+							{
+								firstX = nextX;
+								firstY = nextY;
+								needFirst = false;
+							}
+
+							previousX = currentX;
+							previousY = currentY;
+							currentX = nextX;
+							currentY = nextY;
+							numberOfSegments++;
+						}
 					}
 					break;
-				}
 
 				case PathIterator.SEG_CLOSE :
-				{
-//					System.out.println( "SEG_CLOSE" );
-					float normal = ( firstX - moveX ) * ( previousY - moveY ) - ( firstY - moveY ) * ( previousX - moveX );
-					positiveNormals |= ( normal > 0.0f );
-					negativeNormals |= ( normal < 0.0f );
+					final double firstAngle = getAngle( moveX - currentX , moveY - currentY , firstX - moveX , firstY - moveY );
+					totalAngle += firstAngle;
+					positiveAngles |= ( firstAngle > 0.0 );
+					negativeAngles |= ( firstAngle < 0.0 );
 
 					if ( ( moveX != currentX ) || ( moveY != currentY ) )
 					{
-						normal = ( moveX - currentX ) * ( previousY - currentY ) - ( moveY - currentY ) * ( previousX - currentX );
-						positiveNormals |= ( normal > 0.0f );
-						negativeNormals |= ( normal < 0.0f );
+						final double lastAngle = getAngle( currentX - previousX , currentY - previousY , moveX - currentX , moveY - currentY );
+						totalAngle += lastAngle;
+						positiveAngles |= ( lastAngle > 0.0 );
+						negativeAngles |= ( lastAngle < 0.0 );
 
 						previousX = currentX;
 						previousY = currentY;
@@ -1514,26 +1530,19 @@ public abstract class Abstract3DObjectBuilder
 						numberOfSegments++;
 					}
 					break;
-				}
 
 				default :
-				{
 					throw new AssertionError( segmentType + "?" );
-				}
 			}
 		}
 
-		if ( curved )
+		if ( numberOfSegments == 0 )
 		{
-			result = ( !multipleSubPaths && ( ( currentX != moveX ) || ( currentY != moveY ) ) ) ? ShapeClass.OPEN_PATH : ShapeClass.CURVED_COMPLEX;
+			result = ShapeClass.VOID;
 		}
 		else if ( multipleSubPaths )
 		{
-			result = ShapeClass.STRAIGHT_COMPLEX;
-		}
-		else if ( numberOfSegments == 0 )
-		{
-			result = ShapeClass.VOID;
+			result = ShapeClass.COMPLEX;
 		}
 		else if ( numberOfSegments == 1 )
 		{
@@ -1546,22 +1555,66 @@ public abstract class Abstract3DObjectBuilder
 			{
 				result = ShapeClass.OPEN_PATH;
 			}
-			else if ( positiveNormals && negativeNormals )
-			{
-				result = ShapeClass.STRAIGHT_CONCAVE;
-			}
-			else if ( numberOfSegments == 3 )
-			{
-				result = negativeNormals ? ShapeClass.CW_TRIANGLE : ShapeClass.CCW_TRIANGLE;
-			}
-			else if ( numberOfSegments == 4 )
-			{
-				result = negativeNormals ? ShapeClass.CW_QUAD : ShapeClass.CCW_QUAD;
-			}
 			else
 			{
-				result = negativeNormals ? ShapeClass.CW_CONVEX : ShapeClass.CCW_CONVEX;
+				if ( positiveAngles && negativeAngles )
+				{
+					result = ( totalAngle < 0.0 ) ? ShapeClass.CW_CONCAVE : ShapeClass.CCW_CONCAVE;
+				}
+				else if ( !curved && ( numberOfSegments == 3 ) )
+				{
+					result = negativeAngles ? ShapeClass.CW_TRIANGLE : ShapeClass.CCW_TRIANGLE;
+				}
+				else if ( !curved && ( numberOfSegments == 4 ) )
+				{
+					result = negativeAngles ? ShapeClass.CW_QUAD : ShapeClass.CCW_QUAD;
+				}
+				else
+				{
+					result = negativeAngles ? ShapeClass.CW_CONVEX : ShapeClass.CCW_CONVEX;
+				}
 			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Get angle between two subsequent segments of a path.
+	 *
+	 * @param   seg1x   First segment delta X.
+	 * @param   seg1y   First segment delta Y.
+	 * @param   seg2x   Second segment delta X.
+	 * @param   seg2y   Second segment delta Y.
+	 *
+	 * @return  Angle between segments in radians (positive if angle is
+	 *          counter-clockwise, negative if clockwise, <code>0</code> if
+	 *          colinear).
+	 */
+	private static double getAngle( final double seg1x , final double seg1y , final double seg2x , final double seg2y )
+	{
+		final double result;
+
+		final double normal = seg2y * seg1x - seg2x * seg1y;
+		if ( normal < -0.001 )
+		{
+			final double dot     = seg1x * seg2x + seg1y * seg2y;
+			final double prevLen = Math.sqrt( seg1x * seg1x + seg1y * seg1y );
+			final double nextLen = Math.sqrt( seg2x * seg2x + seg2y * seg2y );
+
+			result = -Math.acos( dot / ( prevLen * nextLen ) );
+		}
+		else if ( normal > 0.001 )
+		{
+			final double dot     = seg1x * seg2x + seg1y * seg2y;
+			final double prevLen = Math.sqrt( seg1x * seg1x + seg1y * seg1y );
+			final double nextLen = Math.sqrt( seg2x * seg2x + seg2y * seg2y );
+
+			result = Math.acos( dot / ( prevLen * nextLen ) );
+		}
+		else
+		{
+			result = 0.0;
 		}
 
 		return result;
