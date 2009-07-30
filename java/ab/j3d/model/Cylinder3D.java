@@ -24,6 +24,9 @@ import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
@@ -73,7 +76,7 @@ public final class Cylinder3D
 	 * @param   hasTopCap           Whether the cylinder is capped at the top.
 	 * @param   hasBottomCap        Whether the cylinder is capped at the bottom.
 	 */
-	public Cylinder3D( final double radiusBottom , final double radiusTop , final double height , final int numEdges , final Material material , final boolean smoothCircumference , final boolean smoothCaps , final boolean hasTopCap , final boolean hasBottomCap )
+	public Cylinder3D( final double radiusBottom , final double radiusTop , final double height , final int numEdges , @Nullable final Material material , final boolean smoothCircumference , final boolean smoothCaps , final boolean hasTopCap , final boolean hasBottomCap )
 	{
 		if ( radiusBottom < 0.0 || radiusTop < 0.0 || height < 0.0 || numEdges < 3 )
 		{
@@ -110,7 +113,7 @@ public final class Cylinder3D
 			vertexCoordinates[ 0 ] = Vector3D.ZERO;
 		}
 
-		if ( !hasBottom )
+		if ( !hasTop )
 		{
 			vertexCoordinates[ topCoordinatesOffset ] = new Vector3D( 0.0 , 0.0 , height );
 		}
@@ -228,7 +231,7 @@ public final class Cylinder3D
 	 * @param   bottomMap           UV map for bottom cap.
 	 * @param   flipNormals         If set, flip normals.
 	 */
-	public Cylinder3D( final Vector3D origin , final Vector3D direction , final double height , final double radiusBottom , final double radiusTop , final int numEdges , final Material sideMaterial , final UVMap sideMap , final boolean smoothCircumference , final Material topMaterial , final UVMap topMap , final Material bottomMaterial , final UVMap bottomMap , final boolean flipNormals )
+	public Cylinder3D( @NotNull final Vector3D origin , @NotNull final Vector3D direction , final double height , final double radiusBottom , final double radiusTop , final int numEdges , @Nullable final Material sideMaterial , @Nullable final UVMap sideMap , final boolean smoothCircumference , @Nullable final Material topMaterial , @Nullable final UVMap topMap , final @Nullable Material bottomMaterial , @Nullable final UVMap bottomMap , final boolean flipNormals )
 	{
 		if ( ( radiusBottom < 0.0 ) || ( radiusTop < 0.0 ) || ( height < 0.0 ) || ( numEdges < 3 ) )
 		{
@@ -304,7 +307,7 @@ public final class Cylinder3D
 				vertexIndices[ i ] = flipNormals ? ( numEdges - 1 - i ) : i;
 			}
 
-			final Point2D.Float[] texturePoints = bottomMap.generate( bottomMaterial , vertexCoordinates , vertexIndices , false );
+			final Point2D.Float[] texturePoints = ( bottomMap != null ) ? bottomMap.generate( bottomMaterial , vertexCoordinates , vertexIndices , false ) : null;
 			addFace( new Face3D( this , vertexIndices , bottomMaterial , texturePoints , null , false , false ) );
 		}
 
@@ -330,7 +333,7 @@ public final class Cylinder3D
 				vertexIndices = flipNormals ? new int[] { numEdges + i2 , numEdges + i1 , i1 , i2 } : new int[] { i2 , i1 , numEdges + i1 , numEdges + i2 };
 			}
 
-			final Point2D.Float[] texturePoints = sideMap.generate( sideMaterial , vertexCoordinates , vertexIndices , false );
+			final Point2D.Float[] texturePoints = ( sideMap != null ) ? sideMap.generate( sideMaterial , vertexCoordinates , vertexIndices , false ) : null;
 			addFace( new Face3D( this , vertexIndices , sideMaterial , texturePoints , null , smoothCircumference , false ) );
 		}
 
@@ -348,7 +351,7 @@ public final class Cylinder3D
 				vertexIndices[ i ] = flipNormals ? ( lastVertex - numEdges + 1 + i ) : ( lastVertex - i );
 			}
 
-			final Point2D.Float[] texturePoints = topMap.generate( topMaterial , vertexCoordinates , vertexIndices , false );
+			final Point2D.Float[] texturePoints = ( topMap != null ) ? topMap.generate( topMaterial , vertexCoordinates , vertexIndices , false ) : null;
 			addFace( new Face3D( this , vertexIndices , topMaterial , texturePoints , null , false , false ) );
 		}
 	}
