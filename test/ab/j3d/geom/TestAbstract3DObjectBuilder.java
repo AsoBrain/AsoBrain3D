@@ -61,14 +61,12 @@ public final class TestAbstract3DObjectBuilder
 		class Test
 		{
 			final Shape _shape;
-			final ShapeClass _expectedNormal;
-			final ShapeClass _expectedFlattened;
+			final ShapeClass _expected;
 
-			Test( final ShapeClass expectedNormal , final ShapeClass expectedFlattened , final Shape shape )
+			Test( final ShapeClass expected , final Shape shape )
 			{
 				_shape = shape;
-				_expectedNormal = expectedNormal;
-				_expectedFlattened = expectedFlattened;
+				_expected = expected;
 			}
 		}
 
@@ -77,23 +75,23 @@ public final class TestAbstract3DObjectBuilder
 		 */
 		final Test[] tests =
 		{
-			new Test( ShapeClass.OPEN_PATH      , ShapeClass.OPEN_PATH    , new Arc2D.Double( 20.0 , 10.0 , 100.0 , 80.0 ,  45.0 , -90.0 , Arc2D.OPEN ) ) ,
-			new Test( ShapeClass.CURVED_COMPLEX , ShapeClass.CCW_CONVEX   , new Arc2D.Double( 20.0 , 10.0 , 100.0 , 80.0 ,  45.0 , -90.0 , Arc2D.PIE ) ) ,
-			new Test( ShapeClass.CURVED_COMPLEX , ShapeClass.CCW_CONVEX   , new Arc2D.Double( 20.0 , 10.0 , 100.0 , 80.0 ,  45.0 , -90.0 , Arc2D.CHORD ) ) ,
-			new Test( ShapeClass.OPEN_PATH      , ShapeClass.OPEN_PATH    , new Arc2D.Double( 20.0 , 10.0 , 100.0 , 80.0 , -45.0 ,  90.0 , Arc2D.OPEN ) ) ,
-			new Test( ShapeClass.CURVED_COMPLEX , ShapeClass.CW_CONVEX    , new Arc2D.Double( 20.0 , 10.0 , 100.0 , 80.0 , -45.0 ,  90.0 , Arc2D.PIE ) ) ,
-			new Test( ShapeClass.CURVED_COMPLEX , ShapeClass.CW_CONVEX    , new Arc2D.Double( 20.0 , 10.0 , 100.0 , 80.0 , -45.0 ,  90.0 , Arc2D.CHORD ) ) ,
-			new Test( ShapeClass.VOID           , ShapeClass.VOID         , new Arc2D.Double( 20.0 , 10.0 ,   0.0 ,  0.0 ,  45.0 , -90.0 , Arc2D.PIE ) ) ,
-			new Test( ShapeClass.VOID           , ShapeClass.VOID         , new Arc2D.Double( 20.0 , 10.0 , -10.0 , -1.0 ,  45.0 , -90.0 , Arc2D.PIE ) ) ,
-			new Test( ShapeClass.CCW_CONVEX     , ShapeClass.CCW_CONVEX   , new Arc2D.Double( 20.0 , 10.0 , 100.0 , 80.0 ,   0.0 ,   0.0 , Arc2D.PIE ) ) ,
-			new Test( ShapeClass.CURVED_COMPLEX , ShapeClass.CCW_CONVEX   , new Ellipse2D.Double( 20.0 , 10.0 , 100.0 , 80.0 ) ) ,
-			new Test( ShapeClass.VOID           , ShapeClass.VOID         , new Ellipse2D.Double( 20.0 , 10.0 , 0.0 , 0.0 ) ) ,
-			new Test( ShapeClass.VOID           , ShapeClass.VOID         , new Ellipse2D.Double( 20.0 , 10.0 , -100.0 , 0.0 ) ) ,
-			new Test( ShapeClass.CCW_QUAD       , ShapeClass.CCW_QUAD     , new Rectangle2D.Double( 20.0 , 10.0 , 100.0 ,  80.0 ) ) ,
-			new Test( ShapeClass.VOID           , ShapeClass.VOID         , new Rectangle2D.Double( 20.0 , 10.0 , 0.0 , 0.0 ) ) ,
-			new Test( ShapeClass.VOID           , ShapeClass.VOID         , new Rectangle2D.Double( 20.0 , 10.0 , 0.0 , -80.0 ) ) ,
-			new Test( ShapeClass.LINE_SEGMENT   , ShapeClass.LINE_SEGMENT , new Line2D.Double( 20.0 , 10.0 , 100.0 , 80.0 ) ) ,
-			new Test( ShapeClass.VOID           , ShapeClass.VOID         , new Line2D.Double( 20.0 , 10.0 , 20.0 , 10.0 ) ) ,
+			new Test( ShapeClass.OPEN_PATH    , new Arc2D.Double( 20.0 , 10.0 , 100.0 , 80.0 ,  45.0 , -90.0 , Arc2D.OPEN ) ) ,
+			new Test( ShapeClass.CCW_CONVEX   , new Arc2D.Double( 20.0 , 10.0 , 100.0 , 80.0 ,  45.0 , -90.0 , Arc2D.PIE ) ) ,
+			new Test( ShapeClass.CCW_CONVEX   , new Arc2D.Double( 20.0 , 10.0 , 100.0 , 80.0 ,  45.0 , -90.0 , Arc2D.CHORD ) ) ,
+			new Test( ShapeClass.OPEN_PATH    , new Arc2D.Double( 20.0 , 10.0 , 100.0 , 80.0 , -45.0 ,  90.0 , Arc2D.OPEN ) ) ,
+			new Test( ShapeClass.CW_CONVEX    , new Arc2D.Double( 20.0 , 10.0 , 100.0 , 80.0 , -45.0 ,  90.0 , Arc2D.PIE ) ) ,
+			new Test( ShapeClass.CW_CONVEX    , new Arc2D.Double( 20.0 , 10.0 , 100.0 , 80.0 , -45.0 ,  90.0 , Arc2D.CHORD ) ) ,
+			new Test( ShapeClass.VOID         , new Arc2D.Double( 20.0 , 10.0 ,   0.0 ,  0.0 ,  45.0 , -90.0 , Arc2D.PIE ) ) ,
+			new Test( ShapeClass.VOID         , new Arc2D.Double( 20.0 , 10.0 , -10.0 , -1.0 ,  45.0 , -90.0 , Arc2D.PIE ) ) ,
+			new Test( ShapeClass.CCW_CONVEX   , new Arc2D.Double( 20.0 , 10.0 , 100.0 , 80.0 ,   0.0 ,   0.0 , Arc2D.PIE ) ) ,
+			new Test( ShapeClass.CCW_CONVEX   , new Ellipse2D.Double( 20.0 , 10.0 , 100.0 , 80.0 ) ) ,
+			new Test( ShapeClass.VOID         , new Ellipse2D.Double( 20.0 , 10.0 , 0.0 , 0.0 ) ) ,
+			new Test( ShapeClass.VOID         , new Ellipse2D.Double( 20.0 , 10.0 , -100.0 , 0.0 ) ) ,
+			new Test( ShapeClass.CCW_QUAD     , new Rectangle2D.Double( 20.0 , 10.0 , 100.0 ,  80.0 ) ) ,
+			new Test( ShapeClass.VOID         , new Rectangle2D.Double( 20.0 , 10.0 , 0.0 , 0.0 ) ) ,
+			new Test( ShapeClass.VOID         , new Rectangle2D.Double( 20.0 , 10.0 , 0.0 , -80.0 ) ) ,
+			new Test( ShapeClass.LINE_SEGMENT , new Line2D.Double( 20.0 , 10.0 , 100.0 , 80.0 ) ) ,
+			new Test( ShapeClass.VOID         , new Line2D.Double( 20.0 , 10.0 , 20.0 , 10.0 ) ) ,
 		};
 
 		/*
@@ -104,10 +102,9 @@ public final class TestAbstract3DObjectBuilder
 			System.out.println( " - Test #" + ( i + 1 ) );
 
 			final Test test = tests[ i ];
-			assertEquals( "Unexpected 'getShapeClass( shape.getPathIterator( null ) )' result" , test._expectedNormal , getShapeClass( test._shape.getPathIterator( null ) ) );
-			assertEquals( "Unexpected 'getShapeClass( shape.getPathIterator( null , 0.5 ) )' result" , test._expectedFlattened ,  getShapeClass( test._shape.getPathIterator( null , 0.5 ) ) );
-			assertEquals( "Unexpected 'getShapeClass( shape , 0.0 )' result" , test._expectedNormal , getShapeClass( test._shape , 0.0 ) );
-			assertEquals( "Unexpected 'getShapeClass( shape , 0.5 )' result" , test._expectedFlattened , getShapeClass( test._shape , 0.5 ) );
+			assertEquals( "Unexpected 'getShapeClass( shape.getPathIterator( null ) )' result" , test._expected , getShapeClass( test._shape.getPathIterator( null ) ) );
+			assertEquals( "Unexpected 'getShapeClass( shape.getPathIterator( null , 0.5 ) )' result" , test._expected ,  getShapeClass( test._shape.getPathIterator( null , 0.5 ) ) );
+			assertEquals( "Unexpected 'getShapeClass( shape )' result" , test._expected , getShapeClass( test._shape ) );
 		}
 	}
 }
