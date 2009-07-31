@@ -248,7 +248,7 @@ public final class ExtrudedObject2D
 		final Object3DBuilder builder = new Object3DBuilder( this );
 		if ( caps )
 		{
-			builder.addExtrudedShape( shape , flatness , extrusion , transform , topMaterial , uvMap , false , bottomMaterial , uvMap , false , sideMaterial , uvMap , false , hasBackface , flipNormals );
+			builder.addExtrudedShape( shape , flatness , extrusion , transform , topMaterial , uvMap , false , bottomMaterial , uvMap , false , sideMaterial , uvMap , false , hasBackface , flipNormals , false );
 		}
 		else
 		{
@@ -293,30 +293,11 @@ public final class ExtrudedObject2D
 		final Object3DBuilder builder = new Object3DBuilder( this );
 		if ( caps )
 		{
-			builder.addExtrudedShape( shape , flatness , extrusion , transform , topMaterial , uvMap , topFlipTexture , bottomMaterial , uvMap , bottomFlipTexture , sideMaterial , uvMap , sideFlipTexture , hasBackface , flipNormals );
+			builder.addExtrudedShape( shape , flatness , extrusion , transform , topMaterial , uvMap , topFlipTexture , bottomMaterial , uvMap , bottomFlipTexture , sideMaterial , uvMap , sideFlipTexture , hasBackface , flipNormals , false );
 		}
 		else
 		{
 			builder.addExtrudedShape( shape , flatness , extrusion , transform , sideMaterial , uvMap , sideFlipTexture , hasBackface , flipNormals , false );
 		}
-	}
-
-	/**
-	 * Generate data from object properties.
-	 *
-	 * @param   target          Target {@link Object3D} to store generated data.
-	 * @param   shape           Base shape.
-	 * @param   extrusion       Extrusion vector (control-point displacement).
-	 * @param   transform       Transform to apply.
-	 * @param   material        Material to apply.
-	 * @param   flatness        Flatness to use.
-	 * @param   hasBackface     Flag to indicate if extruded faces have a backface.
-	 */
-	public static void generateExtrudedShape( final Object3D target , final Shape shape , final Vector3D extrusion , final Matrix3D transform , final Material material , final double flatness , final boolean hasBackface )
-	{
-		final UVMap uvMap = new BoxUVMap( Scene.MM , Matrix3D.INIT ); // @FIXME Retrieve model units instead of assuming millimeters.
-
-		final Object3DBuilder builder = new Object3DBuilder( target );
-		builder.addExtrudedShape( shape , flatness , extrusion , transform , material , uvMap , false , material , uvMap , false , material , uvMap , false , hasBackface , false );
 	}
 }
