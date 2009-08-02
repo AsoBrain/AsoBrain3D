@@ -814,7 +814,7 @@ public final class Polyline2D
 							{
 								final Rectangle2D thisBounds  = getBounds();
 								final Rectangle2D otherBounds = other.getBounds();
-								result = thisBounds.intersects( otherBounds ) ? getIntersectionPath_Line( other , getPoint( 0 ) , getPoint( 1 ) ) : null;
+								result = isIntersectingRectangleRectangle( thisBounds , otherBounds ) ? getIntersectionPath_Line( other , getPoint( 0 ) , getPoint( 1 ) ) : null;
 							}
 							break;
 
@@ -822,7 +822,7 @@ public final class Polyline2D
 							{
 								final Rectangle2D thisBounds  = getBounds();
 								final Rectangle2D otherBounds = other.getBounds();
-								result = thisBounds.intersects( otherBounds ) ? getIntersectionConvex_Line( other , this ) : null;
+								result = isIntersectingRectangleRectangle( thisBounds , otherBounds ) ? getIntersectionConvex_Line( other , this ) : null;
 							}
 							break;
 
@@ -846,7 +846,7 @@ public final class Polyline2D
 							{
 								final Rectangle2D thisBounds  = getBounds();
 								final Rectangle2D otherBounds = other.getBounds();
-								result = thisBounds.intersects( otherBounds ) ? getIntersectionPath_Line( this , other.getPoint( 0 ) , other.getPoint( 1 ) ) : null;
+								result = isIntersectingRectangleRectangle( thisBounds , otherBounds ) ? getIntersectionPath_Line( this , other.getPoint( 0 ) , other.getPoint( 1 ) ) : null;
 							}
 							break;
 
@@ -854,7 +854,7 @@ public final class Polyline2D
 							{
 								final Rectangle2D thisBounds  = getBounds();
 								final Rectangle2D otherBounds = other.getBounds();
-								result = thisBounds.intersects( otherBounds ) ? getIntersectionConvex_Path( other , this ) : null;
+								result = isIntersectingRectangleRectangle( thisBounds , otherBounds ) ? getIntersectionConvex_Path( other , this ) : null;
 							}
 							break;
 
@@ -862,7 +862,7 @@ public final class Polyline2D
 							{
 								final Rectangle2D thisBounds  = getBounds();
 								final Rectangle2D otherBounds = other.getBounds();
-								result = thisBounds.intersects( otherBounds ) ? getIntersectionPath_Path( this , other ) : null;
+								result = isIntersectingRectangleRectangle( thisBounds , otherBounds ) ? getIntersectionPath_Path( this , other ) : null;
 							}
 							break;
 
@@ -886,7 +886,7 @@ public final class Polyline2D
 							{
 								final Rectangle2D thisBounds  = getBounds();
 								final Rectangle2D otherBounds = other.getBounds();
-								result = thisBounds.intersects( otherBounds ) ? getIntersectionConvex_Line( this , other ) : null;
+								result = isIntersectingRectangleRectangle( thisBounds , otherBounds ) ? getIntersectionConvex_Line( this , other ) : null;
 							}
 							break;
 
@@ -894,7 +894,7 @@ public final class Polyline2D
 							{
 								final Rectangle2D thisBounds  = getBounds();
 								final Rectangle2D otherBounds = other.getBounds();
-								result = thisBounds.intersects( otherBounds ) ? getIntersectionConvex_Convex( this , other ) : null;
+								result = isIntersectingRectangleRectangle( thisBounds , otherBounds ) ? getIntersectionConvex_Convex( this , other ) : null;
 							}
 							break;
 
@@ -902,7 +902,7 @@ public final class Polyline2D
 							{
 								final Rectangle2D thisBounds  = getBounds();
 								final Rectangle2D otherBounds = other.getBounds();
-								result = thisBounds.intersects( otherBounds ) ? getIntersectionConvex_Path( this , other ) : null;
+								result = isIntersectingRectangleRectangle( thisBounds , otherBounds ) ? getIntersectionConvex_Path( this , other ) : null;
 							}
 							break;
 
@@ -2273,7 +2273,7 @@ public final class Polyline2D
 				final int otherType = other.getType();
 				if ( otherType != VOID )
 				{
-					if ( getBounds().intersects( other.getBounds() ) ) // Check bounding box.
+					if ( isIntersectingRectangleRectangle( getBounds() , other.getBounds() ) ) // Check bounding box.
 					{
 						switch ( myType <<5| otherType )
 						{
@@ -2619,6 +2619,27 @@ public final class Polyline2D
 		}
 
 		return false;
+	}
+
+	/**
+	 * Test wether two rectangles intersect or touch each other. This is almost
+	 * the same as {@link Rectangle2D#intersects(Rectangle2D)}, but this also
+	 * returns <code>true</code> if the two rectangles are empty and if their
+	 * borders touch.
+	 *
+	 * @param   rectangle1  First rectangle to test.
+	 * @param   rectangle2  Second rectangle to test.
+	 *
+	 * @return  <code>true</code> if the rectangles intersect or touch;
+	 *          <code>false</code> if the rectangles are disjunct.
+	 */
+	private static boolean isIntersectingRectangleRectangle( final Rectangle2D rectangle1 , final Rectangle2D rectangle2 )
+	{
+
+		return ( ( rectangle1.getMinX() <= rectangle2.getMaxX() ) &&
+		         ( rectangle1.getMaxX() >= rectangle2.getMinX() ) &&
+		         ( rectangle1.getMinY() <= rectangle2.getMaxY() ) &&
+		         ( rectangle1.getMaxY() >= rectangle2.getMinY() ) );
 	}
 
 	/**
