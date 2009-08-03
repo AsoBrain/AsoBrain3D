@@ -22,22 +22,14 @@ package ab.j3d.view.jogl;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.Map;
 import javax.media.opengl.GL;
-import javax.media.opengl.GLException;
 
 import com.sun.opengl.util.BufferUtil;
 import com.sun.opengl.util.texture.Texture;
 import com.sun.opengl.util.texture.TextureIO;
 
-import ab.j3d.MapTools;
-import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
-
-import com.numdata.oss.MathTools;
-import com.numdata.oss.TextTools;
-import com.numdata.oss.ui.ImageTools;
 
 /**
  * Utility methods for JOGL.
@@ -47,12 +39,6 @@ import com.numdata.oss.ui.ImageTools;
  */
 public class JOGLTools
 {
-	/**
-	 * Texture cache key for the normalization cube map, used for DOT3 bump
-	 * mapping.
-	 */
-	public static final String NORMALIZATION_CUBE_MAP = "__normalizationCubeMap";
-
 	/**
 	 * Utility/Application class is not supposed to be instantiated.
 	 */
@@ -75,228 +61,6 @@ public class JOGLTools
 				transform.xz , transform.yz , transform.zz , 0.0 ,
 				transform.xo , transform.yo , transform.zo , 1.0
 			} , 0 );
-	}
-
-	/**
-	 * Get {@link Texture} for color map of {@link Material}.
-	 *
-	 * @param   gl              OpenGL pipeline.
-	 * @param   material        Material to get color map texture from.
-	 * @param   textureCache    Texture cache.
-	 *
-	 * @return Color map texture; <code>null</code> if face has no color map or no
-	 *         texture coordinates.
-	 */
-	public static Texture getColorMapTexture( final GL gl , final Material material , final Map<String,Texture> textureCache  )
-	{
-		final Texture result;
-
-		if ( ( material != null ) && ( material.colorMap != null ) )
-		{
-			result = getTexture( gl , material , textureCache );
-		}
-		else
-		{
-			result = null;
-		}
-		return result;
-	}
-
-	/**
-	 * Get {@link Texture} for bump map of {@link Material}.
-	 *
-	 * @param   gl              OpenGL pipeline.
-	 * @param   material        MAterial to get bump map texture from.
-	 * @param   textureCache    Texture cache.
-	 *
-	 * @return Color map texture; <code>null</code> if face has no color map or no
-	 *         texture coordinates.
-	 */
-	public static Texture getBumpMapTexture( final GL gl , final Material material , final Map<String,Texture> textureCache )
-	{
-		Texture result = null;
-
-		if ( ( material != null ) && TextTools.isNonEmpty( material.bumpMap ) )
-		{
-			result = textureCache.get( material.bumpMap );
-
-			if ( result == null )
-			{
-				BufferedImage bufferedImage = MapTools.loadImage( material.bumpMap );
-				if ( bufferedImage != null )
-				{
-					bufferedImage = createNormalMapFromBumpMap( bufferedImage );
-
-					final boolean autoMipmapGeneration = hasAutoMipMapGenerationSupport( gl );
-
-					result = TextureIO.newTexture( createCompatibleTextureImage( bufferedImage , gl ) , autoMipmapGeneration );
-
-					result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
-					result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
-
-					if ( autoMipmapGeneration )
-					{
-						try
-						{
-							/**
-							 * Set generate mipmaps to true, this greatly increases performance and viewing pleasure in big scenes.
-							 * @TODO need to find out if generated mipmaps are faster or if pregenerated mipmaps are faster
-							 */
-							result.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
-
-							/** Set texture magnification to linear to support mipmaps. */
-							result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
-
-							/** Set texture minification to linear_mipmap)_nearest to support mipmaps */
-							result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
-						}
-						catch ( GLException e )
-						{
-							/*
-							 * If setting texture parameters fails, it's no
-							 * severe problem. Catch any exception so the view
-							 * doesn't crash.
-							 */
-							e.printStackTrace();
-						}
-					}
-				}
-
-				textureCache.put( material.bumpMap , result );
-			}
-		}
-
-		return result;
-	}
-
-	/**
-	 * Test if OpenGL supports auto-generated mipmaps.
-	 *
-	 * @param   gl  OpenGL pipeline.
-	 *
-	 * @return  <code>true</code> if OpenGL supports auto-generated mipmaps;
-	 *          <code>false</code> otherwise.
-	 */
-	public static boolean hasAutoMipMapGenerationSupport( final GL gl )
-	{
-		return ( gl.isExtensionAvailable( "GL_VERSION_1_4" ) || gl.isExtensionAvailable( "GL_SGIS_generate_mipmap" ) );
-	}
-
-	/**
-	 * Get {@link Texture} for the specified map.
-	 *
-	 * @param   gl              OpenGL pipeline.
-	 * @param   material        {@link Material} to get texture for.
-	 * @param   textureCache    Map containing the cached textures.
-	 *
-	 * @return  Texture for the specified name; <code>null</code> if the name was
-	 *          empty or no map by the given name was found.
-	 */
-	public static Texture getTexture( final GL gl , final Material material , final Map<String,Texture> textureCache )
-	{
-		return getTexture( gl , material.colorMap , textureCache );
-	}
-
-	/**
-	 * Get {@link Texture} for the specified map.
-	 *
-	 * @param   gl              OpenGL pipeline.
-	 * @param   map             Name of the texture map.
-	 * @param   textureCache    Map containing the cached textures.
-	 *
-	 * @return  Texture for the specified name; <code>null</code> if the name was
-	 *          empty or no map by the given name was found.
-	 */
-	public static Texture getTexture( final GL gl , final String map , final Map<String,Texture> textureCache )
-	{
-		Texture result = null;
-
-		if ( TextTools.isNonEmpty( map ) )
-		{
-			result = textureCache.get( map );
-
-			if ( result == null && !textureCache.containsKey( map ) )
-			{
-				final BufferedImage bufferedImage = MapTools.loadImage( map );
-				if ( bufferedImage != null )
-				{
-					final boolean autoMipmapGeneration = hasAutoMipMapGenerationSupport( gl );
-
-					result = TextureIO.newTexture( createCompatibleTextureImage( bufferedImage , gl ) , autoMipmapGeneration );
-
-					result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
-					result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
-
-					if ( autoMipmapGeneration )
-					{
-						try
-						{
-							/**
-							 * Set generate mipmaps to true, this greatly increases performance and viewing pleasure in big scenes.
-							 * @TODO need to find out if generated mipmaps are faster or if pregenerated mipmaps are faster
-							 */
-							result.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
-
-							/** Set texture magnification to GL_LINEAR to support mipmaps. */
-							result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
-
-							/** Set texture minification to GL_LINEAR_MIPMAP_NEAREST to support mipmaps. */
-							result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
-						}
-						catch ( GLException e )
-						{
-							/*
-							 * If setting texture parameters fails, it's no
-							 * severe problem. Catch any exception so the view
-							 * doesn't crash.
-							 */
-							e.printStackTrace();
-						}
-					}
-				}
-			}
-			textureCache.put( map , result );
-		}
-
-		return result;
-	}
-
-	/**
-	 * Scales the given image, if necessary, such that it is compatible with the
-	 * given OpenGL pipeline. The aspect ratio of the image may not be preserved.
-	 *
-	 * @param   image   Image to be scaled, if necessary.
-	 * @param   gl      OpenGL pipeline.
-	 *
-	 * @return  Compatible texture image. If the given image already meets all
-	 *          requirements, that same image is returned.
-	 *
-	 * @throws  IllegalStateException if the given OpenGL pipeline specifies a
-	 *          non-positive maximum texture size.
-	 */
-	public static BufferedImage createCompatibleTextureImage( final BufferedImage image , final GL gl )
-	{
-		/*
-		 * Textures must not exceed the maximum size. According to the OpenGL
-		 * specification, this must be at least 64.
-		 */
-		final int[] maxTextureSizeBuffer = new int[ 1 ];
-		gl.glGetIntegerv( GL.GL_MAX_TEXTURE_SIZE , maxTextureSizeBuffer , 0 );
-		final int maximumTextureSize = Math.max( 64 , maxTextureSizeBuffer[ 0 ] );
-
-		int scaledWidth  = Math.min( maximumTextureSize , image.getWidth()  );
-		int scaledHeight = Math.min( maximumTextureSize , image.getHeight() );
-
-		/*
-		 * Texture sizes may need to be powers of two.
-		 */
-		if ( !gl.isExtensionAvailable( "GL_ARB_texture_non_power_of_two" ) )
-		{
-			scaledWidth  = MathTools.nearestPowerOfTwo( scaledWidth  );
-			scaledHeight = MathTools.nearestPowerOfTwo( scaledHeight );
-		}
-
-		return ImageTools.createScaledInstance( image , scaledWidth , scaledHeight , false );
 	}
 
 	/**
@@ -496,27 +260,6 @@ public class JOGLTools
 			}
 		}
 
-		return result;
-	}
-
-	/**
-	 * Get normalization cube map, used to perform DOT3 bump mapping. For each
-	 * 3D texture coordinate, the value of the map represents the normalized
-	 * vector from the origin in the direction of the coordinate.
-	 *
-	 * @param   gl              OpenGL pipeline.
-	 * @param   textureCache    Texture cache.
-	 *
-	 * @return  Normalization cube map.
-	 */
-	public static Texture getNormalizationCubeMap( final GL gl , final Map<String,Texture> textureCache )
-	{
-		Texture result = textureCache.get( NORMALIZATION_CUBE_MAP );
-		if ( result == null )
-		{
-			result = createNormalizationCubeMap( gl );
-			textureCache.put( NORMALIZATION_CUBE_MAP , result );
-		}
 		return result;
 	}
 

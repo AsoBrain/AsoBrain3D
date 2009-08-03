@@ -24,7 +24,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.util.Collection;
-import java.util.Map;
 import javax.media.opengl.DebugGL;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
@@ -35,8 +34,6 @@ import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLPbuffer;
 import javax.media.opengl.glu.GLU;
 import javax.swing.JPopupMenu;
-
-import com.sun.opengl.util.texture.Texture;
 
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Scene;
@@ -489,7 +486,7 @@ public class JOGLView
 		JOGLRenderer renderer = _renderer;
 		if ( renderer == null )
 		{
-			final Map<String,Texture> textureCache = _joglEngine.getTextureCache();
+			final TextureCache textureCache = _joglEngine.getTextureCache();
 			renderer = new JOGLRenderer( gl , _configuration , _capabilities , textureCache , _glCanvas.getBackground() , isGridEnabled() , getGrid2wcs() , getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
 			_renderer = renderer;
 		}

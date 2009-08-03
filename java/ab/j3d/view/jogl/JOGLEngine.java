@@ -19,11 +19,7 @@
  */
 package ab.j3d.view.jogl;
 
-import java.util.HashMap;
-import java.util.Map;
 import javax.media.opengl.GLContext;
-
-import com.sun.opengl.util.texture.Texture;
 
 import ab.j3d.model.Scene;
 import ab.j3d.view.RenderEngine;
@@ -46,14 +42,14 @@ public class JOGLEngine
 	/**
 	 * Texture cache.
 	 */
-	private final Map<String,Texture> _textureCache;
+	private final TextureCache _textureCache;
 
 	/**
 	 * Construct new JOGL render engine.
 	 */
 	public JOGLEngine()
 	{
-		_textureCache = new HashMap<String,Texture>();
+		_textureCache = new TextureCache();
 	}
 
 	public View3D createView( final Scene scene )
@@ -86,7 +82,7 @@ public class JOGLEngine
 	 *
 	 * @return  Texture cache.
 	 */
-	Map<String,Texture> getTextureCache()
+	TextureCache getTextureCache()
 	{
 		return _textureCache;
 	}

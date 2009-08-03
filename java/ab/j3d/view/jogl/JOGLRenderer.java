@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLException;
 
@@ -79,7 +78,7 @@ public class JOGLRenderer
 	/**
 	 * Texture cache.
 	 */
-	private final Map<String,Texture> _textureCache;
+	private final TextureCache _textureCache;
 
 	/**
 	 * Wrapper for OpenGL pipeline.
@@ -232,7 +231,7 @@ public class JOGLRenderer
 	 * @param   gridHighlightAxes       If set, hightlight X=0 and Y=0 axes.
 	 * @param   gridHighlightInterval   Interval to use for highlighting grid lines.
 	 */
-	public JOGLRenderer( final GL gl , final JOGLConfiguration configuration , final JOGLCapabilities capabilities , final Map<String,Texture> textureCache , final Color backgroundColor , final boolean gridIsEnabled , final Matrix3D grid2wcs , final Rectangle gridBounds , final int gridCellSize , final boolean gridHighlightAxes , final int gridHighlightInterval )
+	public JOGLRenderer( final GL gl , final JOGLConfiguration configuration , final JOGLCapabilities capabilities , final TextureCache textureCache , final Color backgroundColor , final boolean gridIsEnabled , final Matrix3D grid2wcs , final Rectangle gridBounds , final int gridCellSize , final boolean gridHighlightAxes , final int gridHighlightInterval )
 	{
 		_gl = gl;
 		_textureCache = textureCache;
@@ -1378,30 +1377,32 @@ public class JOGLRenderer
 
 			final MultiPassRenderMode renderMode   = _renderMode;
 
+			/*
+			 * Get textures.
+			 */
+			final TextureCache textureCache = _textureCache;
+
+			final Texture colorMap    = textureCache.getColorMapTexture( gl , material );
+			final boolean hasColorMap = ( colorMap != null );
+
 			final float   extraAlpha    = style.getMaterialAlpha();
 			final float   combinedAlpha = material.diffuseColorAlpha * extraAlpha;
+			final boolean hasAlpha      = ( combinedAlpha < 0.99f ) || textureCache.hasAlpha( material.colorMap );
 			final boolean blend         = !isDepthPeelingEnabled() &&
-			                              ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && ( combinedAlpha < 0.99f );
+			                              ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && hasAlpha;
 
-			if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || ( combinedAlpha >= 1.0f ) ) &&
-			     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || ( combinedAlpha <  1.0f ) ) )
+			if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || !hasAlpha ) &&
+			     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || hasAlpha ) )
 			{
-				final Map<String,Texture> textureCache = _textureCache;
 
 				final Vector3D lightPosition    = _lightPositionRelativeToObject;
 				final boolean  hasLighting      = style.isMaterialLightingEnabled() && ( lightPosition != null );
 				final boolean  backfaceCulling  = style.isBackfaceCullingEnabled()  && !face.isTwoSided();
 				final boolean  setVertexNormals = hasLighting                       && face.smooth;
 
-				/*
-				 * Get textures.
-				 */
-				final Texture colorMap    = JOGLTools.getColorMapTexture( gl , material , textureCache );
-				final Texture bumpMap     = hasLighting ? JOGLTools.getBumpMapTexture( gl , material , textureCache ) : null;
-				final boolean hasColorMap = ( colorMap != null );
-				final boolean hasBumpMap  = ( bumpMap  != null );
-
-				final Texture normalizationCubeMap = hasBumpMap ? JOGLTools.getNormalizationCubeMap( gl , textureCache ) : null;
+				final Texture bumpMap = hasLighting ? textureCache.getBumpMapTexture( gl , material ) : null;
+				final boolean hasBumpMap = ( bumpMap != null );
+				final Texture normalizationCubeMap = hasBumpMap ? textureCache.getNormalizationCubeMap( gl ) : null;
 
 				/*
 				 * Set render/material properties.

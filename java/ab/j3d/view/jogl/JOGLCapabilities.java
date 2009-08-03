@@ -22,14 +22,11 @@ package ab.j3d.view.jogl;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.io.PrintStream;
-import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLContext;
 import javax.media.opengl.GLException;
 import javax.media.opengl.Threading;
-
-import com.sun.opengl.util.texture.Texture;
 
 import ab.j3d.Matrix3D;
 
@@ -337,7 +334,7 @@ public class JOGLCapabilities
 			if ( isShaderSupported() )
 			{
 				final JOGLConfiguration configuration = new JOGLConfiguration();
-				final JOGLRenderer renderer = new JOGLRenderer( _context.getGL() , configuration , JOGLCapabilities.this , new HashMap<String,Texture>() , Color.BLACK , false , Matrix3D.INIT , new Rectangle( 0 , 0 , 10 , 10 ) , 1 , false , 10 );
+				final JOGLRenderer renderer = new JOGLRenderer( _context.getGL() , configuration , JOGLCapabilities.this , new TextureCache() , Color.BLACK , false , Matrix3D.INIT , new Rectangle( 0 , 0 , 10 , 10 ) , 1 , false , 10 );
 				_result = renderer.isShadersEnabled();
 			}
 		}
