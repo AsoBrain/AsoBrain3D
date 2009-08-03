@@ -24,18 +24,17 @@
     <available property="api.jetbrains.annotations"      type="file" file="${idea.home}/redist/annotations.jar"/>
     <available property="api.jetbrains.javac2"           type="file" file="${idea.home}/redist/javac2.jar"/>
     <available property="api.jogl"                       type="file" file="${jogl.home}/lib/jogl.jar"/>
+    <available property="api.junit"                      type="file" file="${junit.home}/junit.jar"/>
     <available property="api.numdata.oss"                type="file" file="${numdata.oss.home}/lib/numdata-oss.jar"/>
     <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="idea.lib.path"/>
   </target>
 
   <target name="api-check" depends="init" description="Pre-compilation initialization">
-    <mkdir dir="classes/test"/>
-    <javac2 srcdir="test" destdir="classes/test" includes="apicheck/ApiCheck.java"/>
-    <java classname="apicheck.ApiCheck" classpath="classes/test" classpathref="java.classpath" failonerror="yes"/>
     <fail unless="api.hsqldb"                     message="Please check 'hsqldb' library presence and 'build.properties' file."/>
     <fail unless="api.jetbrains.annotations"      message="Please check 'JetBrains annotations' library presence and 'build.properties' file."/>
     <fail unless="api.jetbrains.javac2"           message="Please check 'JetBrains Javac2' library presence and 'build.properties' file."/>
     <fail unless="api.jogl"                       message="Please check 'JOGL' library presence and 'build.properties' file."/>
+    <fail unless="api.junit"                      message="Please check 'JUnit' library presence and 'build.properties' file."/>
     <fail unless="api.numdata.oss"                message="Please check 'Numdata Open Source Software Library' presence and 'build.properties' file."/>
   </target>
 
@@ -66,7 +65,7 @@
 
   <target name="dist-java" depends="compile-java" description="Generate Java distribution files">
     <mkdir dir="lib"/>
-    <jar destfile="lib/ab3d.jar" basedir="classes/java" excludes="**/.dependency-info/**"/>
+    <jar destfile="lib/ab3d.jar" basedir="classes/java"/>
   </target>
 
   <path id="test.classpath">
