@@ -21,20 +21,32 @@
   <target name="init">
     <tstamp/>
     <available property="api.hsqldb"                     type="file" file="${hsqldb.home}/lib/hsqldb.jar"/>
-    <available property="api.idea.annotations"           type="file" file="${idea.home}/redist/annotations.jar"/>
+    <available property="api.jetbrains.annotations"      type="file" file="${idea.home}/redist/annotations.jar"/>
+    <available property="api.jetbrains.javac2"           type="file" file="${idea.home}/redist/javac2.jar"/>
     <available property="api.jogl"                       type="file" file="${jogl.home}/lib/jogl.jar"/>
     <available property="api.numdata.oss"                type="file" file="${numdata.oss.home}/lib/numdata-oss.jar"/>
+    <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="idea.lib.path"/>
   </target>
 
   <target name="api-check" depends="init" description="Pre-compilation initialization">
     <mkdir dir="classes/test"/>
-    <javac srcdir="test" destdir="classes/test" includes="apicheck/ApiCheck.java"/>
+    <javac2 srcdir="test" destdir="classes/test" includes="apicheck/ApiCheck.java"/>
     <java classname="apicheck.ApiCheck" classpath="classes/test" classpathref="java.classpath" failonerror="yes"/>
     <fail unless="api.hsqldb"                     message="Please check 'hsqldb' library presence and 'build.properties' file."/>
-    <fail unless="api.idea.annotations"           message="Please check 'IDEA annotations' library presence and 'build.properties' file."/>
+    <fail unless="api.jetbrains.annotations"      message="Please check 'JetBrains annotations' library presence and 'build.properties' file."/>
+    <fail unless="api.jetbrains.javac2"           message="Please check 'JetBrains Javac2' library presence and 'build.properties' file."/>
     <fail unless="api.jogl"                       message="Please check 'JOGL' library presence and 'build.properties' file."/>
     <fail unless="api.numdata.oss"                message="Please check 'Numdata Open Source Software Library' presence and 'build.properties' file."/>
   </target>
+
+  <path id="idea.lib.path">
+    <pathelement location="${idea.home}/redist/annotations.jar"/>
+    <pathelement location="${idea.home}/redist/javac2.jar"/>
+    <fileset dir="${idea.home}/lib">
+      <include name="**/*.jar"/>
+      <exclude name="boot.jar"/>
+    </fileset>
+  </path>
 
   <path id="java.classpath">
     <pathelement location="classes"/>
@@ -46,7 +58,7 @@
 
   <target name="compile-java" depends="api-check" description="Compile Java source files">
     <mkdir dir="classes"/>
-    <javac srcdir="java" destdir="classes" classpathref="java.classpath" source="1.5"/>
+    <javac2 srcdir="java" destdir="classes" classpathref="java.classpath" source="1.5"/>
     <copy todir="classes">
       <fileset dir="java" excludes="**/*.java" />
     </copy>
@@ -66,7 +78,7 @@
 
   <target name="compile-tests" depends="compile-java" description="Compile unit tests">
     <mkdir dir="classes/test"/>
-    <javac srcdir="test" destdir="classes/test" classpathref="test.classpath" />
+    <javac2 srcdir="test" destdir="classes/test" classpathref="test.classpath" />
     <copy todir="classes/test">
       <fileset dir="test" excludes="**/*.java"/>
     </copy>
