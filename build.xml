@@ -49,7 +49,7 @@
   </path>
 
   <path id="java.classpath">
-    <pathelement location="classes"/>
+    <pathelement location="classes/java"/>
     <pathelement location="${idea.home}/redist/annotations.jar"/>
     <pathelement location="${jogl.home}/lib/jogl.jar"/>
     <pathelement location="${jogl.home}/lib/gluegen-rt.jar"/>
@@ -57,16 +57,16 @@
   </path>
 
   <target name="compile-java" depends="api-check" description="Compile Java source files">
-    <mkdir dir="classes"/>
-    <javac2 srcdir="java" destdir="classes" classpathref="java.classpath" source="1.5"/>
-    <copy todir="classes">
+    <mkdir dir="classes/java"/>
+    <javac2 srcdir="java" destdir="classes/java" classpathref="java.classpath" source="1.5"/>
+    <copy todir="classes/java">
       <fileset dir="java" excludes="**/*.java" />
     </copy>
   </target>
 
   <target name="dist-java" depends="compile-java" description="Generate Java distribution files">
     <mkdir dir="lib"/>
-    <jar destfile="lib/ab3d.jar" basedir="classes" excludes="test/**,**/.dependency-info/**"/>
+    <jar destfile="lib/ab3d.jar" basedir="classes/java" excludes="**/.dependency-info/**"/>
   </target>
 
   <path id="test.classpath">
