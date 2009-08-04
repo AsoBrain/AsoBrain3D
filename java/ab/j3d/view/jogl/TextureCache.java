@@ -72,6 +72,15 @@ public class TextureCache
 	}
 
 	/**
+	 * Removes all cached textures from the cache.
+	 */
+	public void clear()
+	{
+		_textures.clear();
+		_alpha.clear();
+	}
+
+	/**
 	 * Returns whether the specified texture has an alpha channel.
 	 *
 	 * @param   texture     Name of the texture.
