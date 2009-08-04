@@ -72,11 +72,6 @@ public class JOGLView
 	private JOGLConfiguration _configuration;
 
 	/**
-	 * Provides information about OpenGL capabilities.
-	 */
-	private JOGLCapabilities _capabilities;
-
-	/**
 	 * Scene input translator for this View.
 	 */
 	private final ViewControlInput _controlInput;
@@ -131,7 +126,6 @@ public class JOGLView
 		glCanvas = new GLCanvas( capabilities , null , joglEngine.getContext() , null );
 
 		_configuration = new JOGLConfiguration();
-		_capabilities = new JOGLCapabilities( glCanvas.getContext() );
 
 		joglEngine.setContext( glCanvas.getContext() );
 
@@ -148,14 +142,14 @@ public class JOGLView
 		update();
 	}
 
+	/**
+	 * Returns the view's rendering configuration.
+	 *
+	 * @return  Rendering configuration.
+	 */
 	public JOGLConfiguration getConfiguration()
 	{
 		return _configuration;
-	}
-
-	public JOGLCapabilities getCapabilities()
-	{
-		return _capabilities;
 	}
 
 	public double getFrontClipDistance()
@@ -519,7 +513,7 @@ public class JOGLView
 		if ( renderer == null )
 		{
 			final TextureCache textureCache = _joglEngine.getTextureCache();
-			renderer = new JOGLRenderer( gl , _configuration , _capabilities , textureCache , _glCanvas.getBackground() , isGridEnabled() , getGrid2wcs() , getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
+			renderer = new JOGLRenderer( gl , _configuration , textureCache , _glCanvas.getBackground() , isGridEnabled() , getGrid2wcs() , getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
 			_renderer = renderer;
 		}
 		return renderer;
