@@ -113,6 +113,41 @@ public class JOGLCapabilities
 	}
 
 	/**
+	 * Returns whether a rectangular texture target is supported.
+	 *
+	 * @return  <code>true</code> if a rectangular texture target is supported.
+	 */
+	public boolean isTextureRectangleSupported()
+	{
+		determineCapabilities();
+		return _textureRectangle;
+	}
+
+	/**
+	 * Returns whether non-power-of-two sized textures are supported.
+	 *
+	 * @return  <code>true</code> if non-power-of-two textures are supported.
+	 */
+	public boolean isNonPowerOfTwoSupported()
+	{
+		determineCapabilities();
+		return _nonPowerOfTwo;
+	}
+
+	/**
+	 * Returns whether non-power-of-two sized textures are supported using the
+	 * ARB extension.
+	 *
+	 * @return  <code>true</code> if non-power-of-two textures are supported
+	 *          using the ARB extension.
+	 */
+	public boolean isNonPowerOfTwoARBSupported()
+	{
+		determineCapabilities();
+		return _nonPowerOfTwoARB;
+	}
+
+	/**
 	 * Returns whether GLSL shader objects are supported using the OpenGL core
 	 * API. Shaders were added to the core in OpenGL 2.0.
 	 *
