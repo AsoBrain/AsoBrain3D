@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.media.opengl.GL;
+import javax.media.opengl.GLContext;
 import javax.media.opengl.GLException;
 
 import com.sun.opengl.util.texture.Texture;
@@ -173,7 +174,7 @@ public class JOGLRenderer
 	 * Keeps track of loaded shader objects, so they can be deleted when the
 	 * renderer is disposed of.
 	 */
-	private final List<Shader> _shaders;
+	private List<Shader> _shaders;
 
 	/**
 	 * Currently active shader program.
@@ -189,18 +190,23 @@ public class JOGLRenderer
 	/**
 	 * Textures used as color buffers when using depth peeling.
 	 */
-	private final Texture[] _colorBuffers;
+	private Texture[] _colorBuffers;
 
 	/**
 	 * Textures used as depth buffers when using depth peeling.
 	 */
-	private final Texture[] _depthBuffers;
+	private Texture[] _depthBuffers;
 
 	/**
 	 * Specifies which objects should be rendered during the current rendering
 	 * pass when performing multi-pass rendering.
 	 */
 	private MultiPassRenderMode _renderMode = MultiPassRenderMode.ALL;
+
+	/**
+	 * Rendering configuration to be used.
+	 */
+	private JOGLConfiguration _configuration;
 
 	/**
 	 * Specifies which objects should be rendered during the current rendering
@@ -219,8 +225,6 @@ public class JOGLRenderer
 	 * @param   gl                      GL pipeline.
 	 * @param   configuration           Specifies which OpenGL capabilities
 	 *                                  should be used, if available.
-	 * @param   capabilities            Provides information about OpenGL
-	 *                                  capabilities.
 	 * @param   textureCache            Map containing {@link Texture}s used in the scene.
 	 * @param   backgroundColor         Backgroundcolor to use.
 	 * @param   gridIsEnabled           <code>true</code> if the grid must be rendered,
@@ -231,10 +235,11 @@ public class JOGLRenderer
 	 * @param   gridHighlightAxes       If set, hightlight X=0 and Y=0 axes.
 	 * @param   gridHighlightInterval   Interval to use for highlighting grid lines.
 	 */
-	public JOGLRenderer( final GL gl , final JOGLConfiguration configuration , final JOGLCapabilities capabilities , final TextureCache textureCache , final Color backgroundColor , final boolean gridIsEnabled , final Matrix3D grid2wcs , final Rectangle gridBounds , final int gridCellSize , final boolean gridHighlightAxes , final int gridHighlightInterval )
+	public JOGLRenderer( final GL gl , final JOGLConfiguration configuration , final TextureCache textureCache , final Color backgroundColor , final boolean gridIsEnabled , final Matrix3D grid2wcs , final Rectangle gridBounds , final int gridCellSize , final boolean gridHighlightAxes , final int gridHighlightInterval )
 	{
 		_gl = gl;
 		_textureCache = textureCache;
+		_configuration = configuration;
 
 		_backgroundColor = backgroundColor;
 
@@ -251,6 +256,17 @@ public class JOGLRenderer
 		_dominantLightPosition = null;
 
 		_lightPositionRelativeToObject = null;
+	}
+
+	/**
+	 * Initialize GL context.
+	 */
+	public void init()
+	{
+		_textureCache.clear();
+
+		final JOGLConfiguration configuration = _configuration;
+		final JOGLCapabilities  capabilities  = new JOGLCapabilities( GLContext.getCurrent() );
 
 		ShaderImplementation shaderImplementation = null;
 
@@ -272,10 +288,14 @@ public class JOGLRenderer
 		Texture[] depthBuffers = null;
 		Texture[] colorBuffers = null;
 
-		if ( shaderImplementation != null )
+		if ( shaderImplementation == null )
+		{
+			_shaders = Collections.emptyList();
+		}
+		else
 		{
 			final boolean lightingEnabled     = configuration.isPerPixelLightingEnabled();
-			final boolean depthPeelingEnabled = configuration.isDepthPeelingEnabled() && capabilities.isDepthPeelingSupported();
+			final boolean depthPeelingEnabled = configuration.isDepthPeelingEnabled() && isDepthPeelingEnabled();
 
 			final List<Shader> shaders = new ArrayList<Shader>();
 			try
@@ -376,6 +396,8 @@ public class JOGLRenderer
 					colorBuffers = new Texture[ 3 ];
 					depthBuffers = new Texture[ 3 ];
 				}
+
+				_shaders = shaders;
 			}
 			catch ( IOException e )
 			{
@@ -388,15 +410,9 @@ public class JOGLRenderer
 				disableShaders();
 			}
 
-			_shaders = shaders;
+			_depthBuffers = depthBuffers;
+			_colorBuffers = colorBuffers;
 		}
-		else
-		{
-			_shaders = Collections.emptyList();
-		}
-
-		_depthBuffers = depthBuffers;
-		_colorBuffers = colorBuffers;
 	}
 
 	/**
@@ -574,13 +590,27 @@ public class JOGLRenderer
 	 */
 	public void dispose()
 	{
-		_colored.dispose();
-		_textured.dispose();
-		_blend.dispose();
-
-		for ( final Shader shader : _shaders )
+		if ( _colored != null )
 		{
-			shader.dispose();
+			_colored.dispose();
+		}
+
+		if ( _textured != null )
+		{
+			_textured.dispose();
+		}
+
+		if ( _blend != null )
+		{
+			_blend.dispose();
+		}
+
+		if ( _shaders != null )
+		{
+			for ( final Shader shader : _shaders )
+			{
+				shader.dispose();
+			}
 		}
 	}
 
