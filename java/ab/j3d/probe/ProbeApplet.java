@@ -11,7 +11,6 @@ package ab.j3d.probe;
 
 import java.awt.BorderLayout;
 import javax.swing.JApplet;
-import javax.swing.JLabel;
 
 /**
  * Runs the 3D capabilities probe as an applet.
@@ -38,7 +37,6 @@ public class ProbeApplet
 		_ui = ui;
 
 		setLayout( new BorderLayout() );
-		add( new JLabel( "Hello World!" ) , BorderLayout.NORTH );
 		add( ui , BorderLayout.CENTER );
 	}
 
