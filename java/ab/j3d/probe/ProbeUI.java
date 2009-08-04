@@ -14,7 +14,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
-import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.AbstractAction;
@@ -32,7 +31,9 @@ import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.control.FromToCameraControl2;
+import ab.j3d.geom.PlanarUVMap;
 import ab.j3d.model.Light3D;
+import ab.j3d.model.Object3DBuilder;
 import ab.j3d.model.Scene;
 import ab.j3d.model.Sphere3D;
 import ab.j3d.view.ProjectionPolicy;
@@ -52,9 +53,9 @@ import ab.j3d.view.jogl.JOGLView;
 public class ProbeUI
 	extends JPanel
 {
-	private JPanel _expectedContainer;
+	private JLabel _expected;
 
-	private JPanel _actualContainer;
+	private JOGLView _actual;
 
 	/**
 	 * Construct new DiagnosticUI.
@@ -62,6 +63,7 @@ public class ProbeUI
 	public ProbeUI()
 	{
 		final List<Probe> probes = Arrays.<Probe>asList(
+			new TextureProbe() ,
 			new VertexLighting() ,
 			new PixelLighting() ,
 			new Blending() ,
@@ -89,7 +91,13 @@ public class ProbeUI
 					}
 				}
 			} );
-			button.setBackground( probe.isSupported() ? Color.GREEN : Color.YELLOW );
+			SwingUtilities.invokeLater( new Runnable()
+			{
+				public void run()
+				{
+					button.setBackground( probe.isSupported() ? Color.GREEN : Color.YELLOW );
+				}
+			} );
 			probesPanel.add( button );
 		}
 
@@ -98,14 +106,21 @@ public class ProbeUI
 		expectedContainer.setBorder( BorderFactory.createBevelBorder( BevelBorder.LOWERED ) );
 		expectedContainer.setPreferredSize( new Dimension( 300 , 300 ) );
 		expectedContainer.setLayout( new BorderLayout() );
-		_expectedContainer = expectedContainer;
+
+		final JLabel expected = new JLabel();
+		expectedContainer.add( expected , BorderLayout.CENTER );
 
 		final JPanel actualContainer = new JPanel();
 		actualContainer.setBackground( Color.BLACK );
 		actualContainer.setBorder( BorderFactory.createBevelBorder( BevelBorder.LOWERED ) );
 		actualContainer.setPreferredSize( new Dimension( 300 , 300 ) );
 		actualContainer.setLayout( new BorderLayout() );
-		_actualContainer = actualContainer;
+
+		final RenderEngine engine = new JOGLEngine();
+		final Scene scene = new Scene( Scene.MM );
+		final JOGLView view = (JOGLView)engine.createView( scene );
+		actualContainer.add( view.getComponent() , BorderLayout.CENTER );
+		_actual = view;
 
 		final JPanel expectedPanel = new JPanel();
 		expectedPanel.setLayout( new BorderLayout( 5 , 5 ) );
@@ -167,30 +182,88 @@ public class ProbeUI
 				throw new AssertionError();
 			}
 
-			final JPanel expectedContainer = _expectedContainer;
-			final JPanel actualContainer   = _actualContainer;
+			final JOGLView view = _actual;
 
-			expectedContainer.removeAll();
-			actualContainer.removeAll();
-			actualContainer.revalidate();
+			final Scene scene = view.getScene();
+			scene.removeAllContentNodes();
+			createScene( scene );
 
-			final Scene scene = createScene();
-
-			final RenderEngine engine = new JOGLEngine();
-
-			final JOGLView view = (JOGLView)engine.createView( scene );
 			configureView( view );
-
-			actualContainer.add( view.getComponent() );
-			actualContainer.revalidate();
+			view.disposeRenderer();
 
 			final JOGLCapabilities capabilities = view.getCapabilities();
 			capabilities.printSummary( System.out );
 		}
 
-		protected abstract Scene createScene();
+		protected abstract void createScene( final Scene scene );
 
 		protected abstract void configureView( final JOGLView view );
+	}
+
+	private class TextureProbe
+		extends JOGLProbe
+	{
+		protected TextureProbe()
+		{
+			super( "Texture" );
+		}
+
+		@Override
+		public boolean isSupported()
+		{
+			final JOGLCapabilities capabilities = _actual.getCapabilities();
+			return super.isSupported() &&
+			       ( capabilities.isTextureRectangleSupported() ||
+			         capabilities.isNonPowerOfTwoSupported() ||
+			         capabilities.isNonPowerOfTwoARBSupported() );
+		}
+
+		protected void createScene( final Scene scene )
+		{
+			MapTools.imageMapFilenameSuffix = ".png";
+			MapTools.imageMapDirectory = "";
+
+			final Material texture1 = new Material( 0xffffffff );
+			texture1.colorMap = "ab/j3d/probe/texture1";
+			texture1.colorMapWidth = 0.001f;
+			texture1.colorMapHeight = 0.001f;
+			texture1.specularColorRed = 0.0f;
+			texture1.specularColorGreen = 0.0f;
+			texture1.specularColorBlue = 0.0f;
+
+			final Material red = new Material( 0xffff0000 );
+			red.specularColorRed = 0.0f;
+			red.specularColorGreen = 0.0f;
+			red.specularColorBlue = 0.0f;
+
+			final Light3D light1 = new Light3D();
+			light1.setFallOff( 0.0 );
+
+			scene.addContentNode( "light" , Matrix3D.INIT.setTranslation(  0.0 , -4.0 ,  0.0 ) , light1 );
+
+			final Object3DBuilder plane1 = new Object3DBuilder();
+			plane1.addQuad( new Vector3D( -0.5 , 0.0 , -0.5 ) ,
+			                new Vector3D( -0.5 , 0.0 ,  0.5 ) ,
+			                new Vector3D(  0.5 , 0.0 ,  0.5 ) ,
+			                new Vector3D(  0.5 , 0.0 , -0.5 ) , texture1 , new PlanarUVMap( scene.getUnit() , new Vector3D( -0.5 , 0.0 , -0.5 ) , Vector3D.NEGATIVE_Y_AXIS ) , false );
+			scene.addContentNode( "plane1" , Matrix3D.INIT , plane1.getObject3D() );
+
+			final Object3DBuilder plane2 = new Object3DBuilder();
+			plane2.addQuad( new Vector3D( -0.5 , 0.1 , -0.5 ) ,
+			                new Vector3D( -0.5 , 0.1 ,  0.5 ) ,
+			                new Vector3D(  0.5 , 0.1 ,  0.5 ) ,
+			                new Vector3D(  0.5 , 0.1 , -0.5 ) , red , false );
+			scene.addContentNode( "plane2" , Matrix3D.INIT , plane2.getObject3D() );
+		}
+
+		protected void configureView( final JOGLView view )
+		{
+			view.setBackground( Color.WHITE );
+			view.setFrontClipDistance( 0.01 );
+			view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
+			view.setRenderingPolicy( RenderingPolicy.SOLID );
+			view.setCameraControl( new FromToCameraControl2( view , new Vector3D( 0.0 , -1.5 , 0.0 ) , Vector3D.INIT ) );
+		}
 	}
 
 	private abstract class RGBLightsProbe
@@ -201,10 +274,8 @@ public class ProbeUI
 			super( name );
 		}
 
-		protected Scene createScene()
+		protected void createScene( final Scene scene )
 		{
-			final Scene scene = new Scene( Scene.MM );
-
 			final Light3D light1 = new Light3D();
 			light1.setDiffuse( 1.0f , 0.0f , 0.0f );
 			light1.setFallOff( 10.0 );
@@ -220,8 +291,6 @@ public class ProbeUI
 			scene.addContentNode( "light-1" , Matrix3D.INIT.setTranslation(  4.0 , -4.0 ,  4.0 ) , light1 );
 			scene.addContentNode( "light-2" , Matrix3D.INIT.setTranslation( -4.0 , -4.0 ,  4.0 ) , light2 );
 			scene.addContentNode( "light-3" , Matrix3D.INIT.setTranslation(  0.0 , -4.0 , -4.0 ) , light3 );
-
-			return scene;
 		}
 
 		protected void configureView( final JOGLView view )
@@ -247,15 +316,13 @@ public class ProbeUI
 			super( name );
 		}
 
-		protected Scene createScene()
+		protected void createScene( final Scene scene )
 		{
-			final Scene scene = super.createScene();
+			super.createScene( scene );
 
 			final Material sphereMaterial = new Material( 0xffe0c060 );
 			scene.addContentNode( "sphere"     , Matrix3D.INIT , new Sphere3D( 1.0 , 16 , 16 , sphereMaterial ) );
 			scene.addContentNode( "sphere-inv" , Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 0.0 ) , new Sphere3D( 2.0 , 16 , 16 , sphereMaterial , true ) );
-
-			return scene;
 		}
 
 		protected void configureView( final JOGLView view )
@@ -275,23 +342,22 @@ public class ProbeUI
 			super( "Per-pixel lighting" );
 		}
 
-		protected Scene createScene()
+		@Override
+		public boolean isSupported()
 		{
-			final Scene scene = super.createScene();
+			final JOGLCapabilities capabilities = _actual.getCapabilities();
+			return super.isSupported() &&
+			       ( capabilities.isShaderSupported() ||
+			         capabilities.isShaderSupportedARB() );
+		}
 
-			MapTools.imageMapDirectory = "";
-			final BufferedImage image = MapTools.getImage( "image" );
-			System.out.println( "image = " + image );
+		protected void createScene( final Scene scene )
+		{
+			super.createScene( scene );
 
 			final Material sphereMaterial = new Material( 0xffe0c060 );
-			sphereMaterial.colorMap       = "/home/meinders/soda/AsoBrain3D/java/image";
-			sphereMaterial.colorMapWidth  = 0.01f;
-			sphereMaterial.colorMapHeight = 0.01f;
-
 			scene.addContentNode( "sphere"     , Matrix3D.INIT , new Sphere3D( 1.0 , 16 , 16 , sphereMaterial ) );
 			scene.addContentNode( "sphere-inv" , Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 0.0 ) , new Sphere3D( 2.0 , 16 , 16 , sphereMaterial , true ) );
-
-			return scene;
 		}
 
 		protected void configureView( final JOGLView view )
@@ -312,10 +378,8 @@ public class ProbeUI
 		}
 
 		@Override
-		protected Scene createScene()
+		protected void createScene( final Scene scene )
 		{
-			final Scene scene = new Scene( Scene.MM );
-
 			final Light3D light1 = new Light3D();
 			light1.setFallOff( 10.0 );
 
@@ -336,8 +400,6 @@ public class ProbeUI
 			scene.addContentNode( "sphere-1" , Matrix3D.INIT , new Sphere3D( 1.0 , 16 , 16 , transparent1 ) );
 			scene.addContentNode( "sphere-4" , Matrix3D.INIT.setTranslation(  0.5 , 0.0 ,  0.5 ) , new Sphere3D( 0.5 , 16 , 16 , transparent3 ) );
 			scene.addContentNode( "sphere-5" , Matrix3D.INIT.setTranslation(  0.0 , 0.0 , -0.7 ) , new Sphere3D( 0.5 , 16 , 16 , opaque2 ) );
-
-			return scene;
 		}
 
 		protected void configureView( final JOGLView view )
@@ -375,6 +437,13 @@ public class ProbeUI
 		private DepthPeeling()
 		{
 			super( "Depth peeling" );
+		}
+
+		@Override
+		public boolean isSupported()
+		{
+			final JOGLCapabilities capabilities = _actual.getCapabilities();
+			return super.isSupported() && capabilities.isDepthPeelingSupported();
 		}
 
 		@Override
