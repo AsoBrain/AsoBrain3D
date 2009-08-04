@@ -29,6 +29,7 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLCapabilities;
+import javax.media.opengl.GLContext;
 import javax.media.opengl.GLDrawableFactory;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLPbuffer;
@@ -274,6 +275,29 @@ public class JOGLView
 	}
 
 	/**
+	 * Disposes the current renderer. It will automatically be replaced with a
+	 * new renderer when the next frame is rendered.
+	 */
+	public void disposeRenderer()
+	{
+		final JOGLRenderer renderer = _renderer;
+		if ( renderer != null )
+		{
+			final GLContext context = _glCanvas.getContext();
+			context.makeCurrent();
+			try
+			{
+				renderer.dispose();
+				_renderer = null;
+			}
+			finally
+			{
+				context.release();
+			}
+		}
+	}
+
+	/**
 	 * Render loop for the view.
 	 */
 	private class RenderThread
@@ -360,7 +384,7 @@ public class JOGLView
 	}
 
 	/**
-	 * Initialize GL context. Called once during initialization.
+	 * Initialize GL context.
 	 *
 	 * @param   glAutoDrawable  Target for performing OpenGL rendering.
 	 */
@@ -386,6 +410,8 @@ public class JOGLView
 
 		/* Normalize lighting normals after scaling */
 		gl.glEnable( GL.GL_NORMALIZE );
+
+		_renderer.init();
 	}
 
 	public void displayChanged( final GLAutoDrawable glAutoDrawable , final boolean b , final boolean b1 )
@@ -482,7 +508,13 @@ public class JOGLView
 		gl.glLoadIdentity();
 		JOGLTools.glMultMatrixd( gl , getScene2View() );
 
-		/* Render scene. */
+		final JOGLRenderer renderer = getOrCreateRenderer( gl );
+		renderer.setGridEnabled( isGridEnabled() );
+		renderer.renderScene( scene , styleFilters , viewStyle );
+	}
+
+	private JOGLRenderer getOrCreateRenderer( final GL gl )
+	{
 		JOGLRenderer renderer = _renderer;
 		if ( renderer == null )
 		{
@@ -490,8 +522,6 @@ public class JOGLView
 			renderer = new JOGLRenderer( gl , _configuration , _capabilities , textureCache , _glCanvas.getBackground() , isGridEnabled() , getGrid2wcs() , getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
 			_renderer = renderer;
 		}
-
-		renderer.setGridEnabled( isGridEnabled() );
-		renderer.renderScene( scene , styleFilters , viewStyle );
+		return renderer;
 	}
 }
