@@ -999,9 +999,9 @@ public abstract class Abstract3DObjectBuilder
 				if ( bottomMaterial != null )
 				{
 					addQuad( transform.transform( x1 , y1 , 0.0 ) ,
-					         transform.transform( x1 , y2 , 0.0 ) ,
+					         transform.transform( x2 , y1 , 0.0 ) ,
 					         transform.transform( x2 , y2 , 0.0 ) ,
-					         transform.transform( x2 , y1 , 0.0 ) , bottomMaterial, bottomMap, false , hasBackface );
+					         transform.transform( x1 , y2 , 0.0 ) , bottomMaterial , bottomMap , false , hasBackface );
 				}
 
 				if ( topMaterial != null )
