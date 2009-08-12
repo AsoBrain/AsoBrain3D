@@ -189,8 +189,7 @@ public class JOGLCapabilities
 		       _occlusionQuery     &&
 		       _multitexture       &&
 		       _textureRectangle   &&
-		       _framebufferObject  &&
-		       _nonPowerOfTwoARB;
+		       _framebufferObject;
 	}
 
 	/**
