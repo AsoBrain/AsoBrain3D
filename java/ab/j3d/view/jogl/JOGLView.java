@@ -346,7 +346,7 @@ public class JOGLView
 				{
 					if ( _updateRequested )
 					{
-						if ( viewComponent.isShowing() )
+						if ( viewComponent.isShowing() && ( viewComponent.getWidth() > 0 ) && ( viewComponent.getHeight() > 0 ) )
 						{
 							_updateRequested = false;
 							viewComponent.display();
@@ -402,24 +402,6 @@ public class JOGLView
 	{
 		final GL gl = new DebugGL( glAutoDrawable.getGL() );
 		glAutoDrawable.setGL( gl );
-
-		/* Enable depth buffering. */
-		gl.glEnable( GL.GL_DEPTH_TEST );
-		gl.glDepthMask( true );
-		gl.glDepthFunc ( GL.GL_LEQUAL );
-
-// @FIXME Disable explicit smoothing options for now. This causes extremely slow rendering on some machines. Should we set smoothing based on hardware capabilities?
-//		/* Set smoothing. */
-//		glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
-//		glWrapper.setBlend( true );
-//		gl.glEnable( GL.GL_LINE_SMOOTH ); //enable smooth lines
-//		gl.glHint( GL.GL_LINE_SMOOTH_HINT , GL.GL_NICEST );
-//		gl.glEnable( GL.GL_POLYGON_SMOOTH ); //enable smooth polygons
-//		gl.glHint( GL.GL_POLYGON_SMOOTH_HINT , GL.GL_NICEST );
-//		gl.glShadeModel( GL.GL_SMOOTH );
-
-		/* Normalize lighting normals after scaling */
-		gl.glEnable( GL.GL_NORMALIZE );
 
 		final JOGLRenderer renderer = getOrCreateRenderer( gl );
 		renderer.init();

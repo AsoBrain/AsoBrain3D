@@ -15,14 +15,7 @@ vec4 backLighting( in vec4 color );
 
 vec4 lighting( in vec4 color )
 {
-	if ( gl_FrontFacing )
-	{
-		return frontLighting( color );
-	}
-	else
-	{
-		return backLighting( color );
-	}
+    return frontLighting( color );
 }
 
 /*

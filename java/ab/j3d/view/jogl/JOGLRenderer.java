@@ -263,6 +263,26 @@ public class JOGLRenderer
 	 */
 	public void init()
 	{
+		final GL gl = _gl;
+
+		/* Enable depth buffering. */
+		gl.glEnable( GL.GL_DEPTH_TEST );
+		gl.glDepthMask( true );
+		gl.glDepthFunc ( GL.GL_LEQUAL );
+
+// @FIXME Disable explicit smoothing options for now. This causes extremely slow rendering on some machines. Should we set smoothing based on hardware capabilities?
+//		/* Set smoothing. */
+//		glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+//		glWrapper.setBlend( true );
+//		gl.glEnable( GL.GL_LINE_SMOOTH ); //enable smooth lines
+//		gl.glHint( GL.GL_LINE_SMOOTH_HINT , GL.GL_NICEST );
+//		gl.glEnable( GL.GL_POLYGON_SMOOTH ); //enable smooth polygons
+//		gl.glHint( GL.GL_POLYGON_SMOOTH_HINT , GL.GL_NICEST );
+//		gl.glShadeModel( GL.GL_SMOOTH );
+
+		/* Normalize lighting normals after scaling */
+		gl.glEnable( GL.GL_NORMALIZE );
+
 		_textureCache.clear();
 
 		final JOGLConfiguration configuration = _configuration;
@@ -295,7 +315,8 @@ public class JOGLRenderer
 		else
 		{
 			final boolean lightingEnabled     = configuration.isPerPixelLightingEnabled();
-			final boolean depthPeelingEnabled = configuration.isDepthPeelingEnabled() && isDepthPeelingEnabled();
+			final boolean depthPeelingEnabled = configuration.isDepthPeelingEnabled() &&
+			                                    capabilities.isDepthPeelingSupported();
 
 			final List<Shader> shaders = new ArrayList<Shader>();
 			try
@@ -1427,8 +1448,8 @@ public class JOGLRenderer
 
 				final Vector3D lightPosition    = _lightPositionRelativeToObject;
 				final boolean  hasLighting      = style.isMaterialLightingEnabled() && ( lightPosition != null );
-				final boolean  backfaceCulling  = style.isBackfaceCullingEnabled()  && !face.isTwoSided();
-				final boolean  setVertexNormals = hasLighting                       && face.smooth;
+				final boolean  backfaceCulling  = style.isBackfaceCullingEnabled() && !face.isTwoSided();
+				final boolean  setVertexNormals = hasLighting && face.smooth;
 
 				final Texture bumpMap = hasLighting ? textureCache.getBumpMapTexture( gl , material ) : null;
 				final boolean hasBumpMap = ( bumpMap != null );
@@ -1445,8 +1466,8 @@ public class JOGLRenderer
 					}
 					glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 				}
+
 				glWrapper.setBlend( blend );
-				glWrapper.setCullFace( backfaceCulling );
 				glWrapper.setLighting( hasLighting );
 				setMaterial( material , style , extraAlpha );
 
@@ -1531,98 +1552,113 @@ public class JOGLRenderer
 				}
 
 				/*
-				 * Render face.
+				 * Render face. Use multiple passes for two-sided lighting.
 				 */
-				gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS :
-				            ( vertexCount == 2 ) ? GL.GL_LINES :
-				            ( vertexCount == 3 ) ? GL.GL_TRIANGLES :
-				            ( vertexCount == 4 ) ? GL.GL_QUADS : GL.GL_POLYGON );
+				final int passes = !backfaceCulling && hasLighting ? 2 : 1;
 
-				if ( !setVertexNormals )
+				for ( int pass = 0 ; pass < passes ; pass++ )
 				{
-					final Vector3D normal = face.getNormal();
-					gl.glNormal3d( normal.x , normal.y , normal.z );
-				}
-
-				final List<Vertex> vertices = face.vertices;
-				for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
-				{
-					final Vertex vertex = vertices.get( vertexIndex );
-					final Vector3D point = vertex.point;
-
-					if ( hasBumpMap )
+					if ( passes == 2 )
 					{
-						gl.glMultiTexCoord3d( GL.GL_TEXTURE0 , lightPosition.x + point.x , lightPosition.y + point.y , lightPosition.z + point.z );
-						gl.glMultiTexCoord2f( GL.GL_TEXTURE1 , vertex.colorMapU , vertex.colorMapV );
-
-						if ( hasColorMap )
-						{
-							gl.glMultiTexCoord2f( GL.GL_TEXTURE3 , vertex.colorMapU , vertex.colorMapV );
-						}
+						glWrapper.setCullFace( true );
+						glWrapper.glCullFace( ( pass == 1 ) ? GL.GL_BACK : GL.GL_FRONT );
 					}
-					else if ( hasColorMap )
+					else
 					{
-						final float u = colorMapCoords.left()   + vertex.colorMapU * ( colorMapCoords.right() - colorMapCoords.left() );
-						final float v = colorMapCoords.bottom() + vertex.colorMapV * ( colorMapCoords.top() - colorMapCoords.bottom() );
-						gl.glTexCoord2f( u , v );
+						glWrapper.setCullFace( backfaceCulling );
 					}
 
-					if ( setVertexNormals )
+					gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS :
+					            ( vertexCount == 2 ) ? GL.GL_LINES :
+					            ( vertexCount == 3 ) ? GL.GL_TRIANGLES :
+					            ( vertexCount == 4 ) ? GL.GL_QUADS : GL.GL_POLYGON );
+
+					if ( !setVertexNormals )
 					{
-						final Vector3D vertexNormal = face.getVertexNormal( vertexIndex );
-						gl.glNormal3d( vertexNormal.x , vertexNormal.y , vertexNormal.z );
+						final Vector3D normal = face.getNormal();
+						gl.glNormal3d( normal.x , normal.y , normal.z );
 					}
 
-					gl.glVertex3d( point.x , point.y , point.z );
-				}
-
-				gl.glEnd();
-
-				/*
-				 * Disable color map.
-				 */
-				if ( hasColorMap )
-				{
-					colorMap.disable();
-				}
-
-				/*
-				 * Disable bump map.
-				 */
-				if ( hasBumpMap )
-				{
-					gl.glActiveTexture( GL.GL_TEXTURE2 );
-					bumpMap.disable();
-
-					gl.glActiveTexture( GL.GL_TEXTURE1 );
-					bumpMap.disable();
-
-					gl.glActiveTexture( GL.GL_TEXTURE0 );
-					normalizationCubeMap.disable();
-				}
-
-				if ( blend )
-				{
-					if ( combinedAlpha < 0.25f )
-					{
-						gl.glDepthMask( true );
-					}
-				}
-
-				if ( DRAW_NORMALS )
-				{
+					final List<Vertex> vertices = face.vertices;
 					for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
 					{
 						final Vertex vertex = vertices.get( vertexIndex );
 						final Vector3D point = vertex.point;
 
-						Vector3D normal = face.smooth ? face.getVertexNormal( vertexIndex ) : face.getNormal();
-						normal = point.plus( normal.multiply( 100.0 ) );
+						if ( hasBumpMap )
+						{
+							gl.glMultiTexCoord3d( GL.GL_TEXTURE0 , lightPosition.x + point.x , lightPosition.y + point.y , lightPosition.z + point.z );
+							gl.glMultiTexCoord2f( GL.GL_TEXTURE1 , vertex.colorMapU , vertex.colorMapV );
 
-						gl.glBegin( GL.GL_LINES );
+							if ( hasColorMap )
+							{
+								gl.glMultiTexCoord2f( GL.GL_TEXTURE3 , vertex.colorMapU , vertex.colorMapV );
+							}
+						}
+						else if ( hasColorMap )
+						{
+							final float u = colorMapCoords.left()   + vertex.colorMapU * ( colorMapCoords.right() - colorMapCoords.left() );
+							final float v = colorMapCoords.bottom() + vertex.colorMapV * ( colorMapCoords.top() - colorMapCoords.bottom() );
+							gl.glTexCoord2f( u , v );
+						}
+
+						if ( setVertexNormals )
+						{
+							final Vector3D vertexNormal = face.getVertexNormal( vertexIndex );
+							gl.glNormal3d( vertexNormal.x , vertexNormal.y , vertexNormal.z );
+						}
+
 						gl.glVertex3d( point.x , point.y , point.z );
-						gl.glVertex3d( normal.x , normal.y , normal.z );
-						gl.glEnd();
+					}
+
+					gl.glEnd();
+
+					/*
+					 * Disable color map.
+					 */
+					if ( hasColorMap )
+					{
+						colorMap.disable();
+					}
+
+					/*
+					 * Disable bump map.
+					 */
+					if ( hasBumpMap )
+					{
+						gl.glActiveTexture( GL.GL_TEXTURE2 );
+						bumpMap.disable();
+
+						gl.glActiveTexture( GL.GL_TEXTURE1 );
+						bumpMap.disable();
+
+						gl.glActiveTexture( GL.GL_TEXTURE0 );
+						normalizationCubeMap.disable();
+					}
+
+					if ( blend )
+					{
+						if ( combinedAlpha < 0.25f )
+						{
+							gl.glDepthMask( true );
+						}
+					}
+
+					if ( DRAW_NORMALS )
+					{
+						for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
+						{
+							final Vertex vertex = vertices.get( vertexIndex );
+							final Vector3D point = vertex.point;
+
+							Vector3D normal = face.smooth ? face.getVertexNormal( vertexIndex ) : face.getNormal();
+							normal = point.plus( normal.multiply( 100.0 ) );
+
+							gl.glBegin( GL.GL_LINES );
+							gl.glVertex3d( point.x , point.y , point.z );
+							gl.glVertex3d( normal.x , normal.y , normal.z );
+							gl.glEnd();
+						}
 					}
 				}
 			}
@@ -1673,33 +1709,48 @@ public class JOGLRenderer
 				useShader( hasLighting ? _colored : _unlit );
 
 				/*
-				 * Render face.
+				 * Render face. Use multiple passes for two-sided lighting.
 				 */
-				gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS :
-				            ( vertexCount == 2 ) ? GL.GL_LINES :
-				            ( vertexCount == 3 ) ? GL.GL_TRIANGLES :
-				            ( vertexCount == 4 ) ? GL.GL_QUADS : GL.GL_POLYGON );
+				final int passes = !backfaceCulling && hasLighting ? 2 : 1;
 
-				if ( !setVertexNormals )
+				for ( int pass = 0 ; pass < passes ; pass++ )
 				{
-					final Vector3D normal = face.getNormal();
-					gl.glNormal3d( normal.x , normal.y , normal.z );
-				}
-
-				for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
-				{
-					final Vertex vertex = vertices.get( vertexIndex );
-
-					if ( setVertexNormals )
+					if ( passes == 2 )
 					{
-						final Vector3D normal = face.getVertexNormal( vertexIndex );
+						glWrapper.setCullFace( true );
+						glWrapper.glCullFace( ( pass == 1 ) ? GL.GL_BACK : GL.GL_FRONT );
+					}
+					else
+					{
+						glWrapper.setCullFace( backfaceCulling );
+					}
+
+					gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS :
+					            ( vertexCount == 2 ) ? GL.GL_LINES :
+					            ( vertexCount == 3 ) ? GL.GL_TRIANGLES :
+					            ( vertexCount == 4 ) ? GL.GL_QUADS : GL.GL_POLYGON );
+
+					if ( !setVertexNormals )
+					{
+						final Vector3D normal = face.getNormal();
 						gl.glNormal3d( normal.x , normal.y , normal.z );
 					}
 
-					gl.glVertex3d( vertex.point.x , vertex.point.y , vertex.point.z );
-				}
+					for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
+					{
+						final Vertex vertex = vertices.get( vertexIndex );
 
-				gl.glEnd();
+						if ( setVertexNormals )
+						{
+							final Vector3D normal = face.getVertexNormal( vertexIndex );
+							gl.glNormal3d( normal.x , normal.y , normal.z );
+						}
+
+						gl.glVertex3d( vertex.point.x , vertex.point.y , vertex.point.z );
+					}
+
+					gl.glEnd();
+				}
 
 				if ( blend )
 				{
