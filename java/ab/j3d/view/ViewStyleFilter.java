@@ -108,6 +108,7 @@ public class ViewStyleFilter
 				result.setFillLightingEnabled( false );
 				result.setStrokeEnabled( true );
 				result.setStrokeColor( Color.BLACK );
+				result.setStrokeWidth( 1.5f );
 				break;
 
 			case SKETCH:
@@ -116,7 +117,7 @@ public class ViewStyleFilter
 				result.setMaterialAlpha( 0.5f );
 				result.setStrokeEnabled( true );
 				result.setStrokeColor( Color.BLACK );
-				result.setStrokeWidth( 2.5f );
+				result.setStrokeWidth( 1.5f );
 				break;
 
 			case SOLID:
