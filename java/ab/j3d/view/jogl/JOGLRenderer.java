@@ -1554,14 +1554,16 @@ public class JOGLRenderer
 				/*
 				 * Render face. Use multiple passes for two-sided lighting.
 				 */
-				final int passes = !backfaceCulling && hasLighting ? 2 : 1;
+				final int passes = ( !backfaceCulling && hasLighting && isShadersEnabled() ) ? 2 : 1;
+				final boolean multipass = ( passes > 1 );
 
 				for ( int pass = 0 ; pass < passes ; pass++ )
 				{
-					if ( passes == 2 )
+					final boolean isBackFace = multipass && ( pass == 0 );
+					if ( multipass )
 					{
 						glWrapper.setCullFace( true );
-						glWrapper.glCullFace( ( pass == 1 ) ? GL.GL_BACK : GL.GL_FRONT );
+						glWrapper.glCullFace( isBackFace ? GL.GL_FRONT : GL.GL_BACK );
 					}
 					else
 					{
@@ -1576,7 +1578,14 @@ public class JOGLRenderer
 					if ( !setVertexNormals )
 					{
 						final Vector3D normal = face.getNormal();
-						gl.glNormal3d( normal.x , normal.y , normal.z );
+						if ( isBackFace )
+						{
+							gl.glNormal3d( -normal.x , -normal.y , -normal.z );
+						}
+						else
+						{
+							gl.glNormal3d( normal.x , normal.y , normal.z );
+						}
 					}
 
 					final List<Vertex> vertices = face.vertices;
@@ -1605,7 +1614,14 @@ public class JOGLRenderer
 						if ( setVertexNormals )
 						{
 							final Vector3D vertexNormal = face.getVertexNormal( vertexIndex );
-							gl.glNormal3d( vertexNormal.x , vertexNormal.y , vertexNormal.z );
+							if ( isBackFace )
+							{
+								gl.glNormal3d( -vertexNormal.x , -vertexNormal.y , -vertexNormal.z );
+							}
+							else
+							{
+								gl.glNormal3d( vertexNormal.x , vertexNormal.y , vertexNormal.z );
+							}
 						}
 
 						gl.glVertex3d( point.x , point.y , point.z );
@@ -1711,14 +1727,16 @@ public class JOGLRenderer
 				/*
 				 * Render face. Use multiple passes for two-sided lighting.
 				 */
-				final int passes = !backfaceCulling && hasLighting ? 2 : 1;
+				final int passes = ( !backfaceCulling && hasLighting && isShadersEnabled() ) ? 2 : 1;
+				final boolean multipass = ( passes > 1 );
 
 				for ( int pass = 0 ; pass < passes ; pass++ )
 				{
-					if ( passes == 2 )
+					final boolean isBackFace = multipass && ( pass == 0 );
+					if ( multipass )
 					{
 						glWrapper.setCullFace( true );
-						glWrapper.glCullFace( ( pass == 1 ) ? GL.GL_BACK : GL.GL_FRONT );
+						glWrapper.glCullFace( isBackFace ? GL.GL_FRONT : GL.GL_BACK );
 					}
 					else
 					{
@@ -1733,7 +1751,14 @@ public class JOGLRenderer
 					if ( !setVertexNormals )
 					{
 						final Vector3D normal = face.getNormal();
-						gl.glNormal3d( normal.x , normal.y , normal.z );
+						if ( isBackFace )
+						{
+							gl.glNormal3d( -normal.x , -normal.y , -normal.z );
+						}
+						else
+						{
+							gl.glNormal3d( normal.x , normal.y , normal.z );
+						}
 					}
 
 					for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
@@ -1743,7 +1768,14 @@ public class JOGLRenderer
 						if ( setVertexNormals )
 						{
 							final Vector3D normal = face.getVertexNormal( vertexIndex );
-							gl.glNormal3d( normal.x , normal.y , normal.z );
+							if ( isBackFace )
+							{
+								gl.glNormal3d( -normal.x , -normal.y , -normal.z );
+							}
+							else
+							{
+								gl.glNormal3d( normal.x , normal.y , normal.z );
+							}
 						}
 
 						gl.glVertex3d( vertex.point.x , vertex.point.y , vertex.point.z );
