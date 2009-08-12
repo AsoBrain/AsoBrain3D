@@ -30,6 +30,7 @@ import ab.j3d.MapTools;
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
+import ab.j3d.control.ControlInputEvent;
 import ab.j3d.control.FromToCameraControl2;
 import ab.j3d.geom.PlanarUVMap;
 import ab.j3d.model.Light3D;
@@ -39,6 +40,7 @@ import ab.j3d.model.Sphere3D;
 import ab.j3d.view.ProjectionPolicy;
 import ab.j3d.view.RenderEngine;
 import ab.j3d.view.RenderingPolicy;
+import ab.j3d.view.View3D;
 import ab.j3d.view.jogl.JOGLCapabilities;
 import ab.j3d.view.jogl.JOGLConfiguration;
 import ab.j3d.view.jogl.JOGLEngine;
@@ -231,10 +233,10 @@ public class ProbeUI
 			texture1.specularColorGreen = 0.0f;
 			texture1.specularColorBlue = 0.0f;
 
-			final Material red = new Material( 0xffff0000 );
-			red.specularColorRed = 0.0f;
-			red.specularColorGreen = 0.0f;
-			red.specularColorBlue = 0.0f;
+			final Material green = new Material( 0xff00ff00 );
+			green.specularColorRed = 0.0f;
+			green.specularColorGreen = 0.0f;
+			green.specularColorBlue = 0.0f;
 
 			final Light3D light1 = new Light3D();
 			light1.setFallOff( 0.0 );
@@ -252,7 +254,7 @@ public class ProbeUI
 			plane2.addQuad( new Vector3D( -0.5 , 0.1 , -0.5 ) ,
 			                new Vector3D( -0.5 , 0.1 ,  0.5 ) ,
 			                new Vector3D(  0.5 , 0.1 ,  0.5 ) ,
-			                new Vector3D(  0.5 , 0.1 , -0.5 ) , red , false );
+			                new Vector3D(  0.5 , 0.1 , -0.5 ) , green , false );
 			scene.addContentNode( "plane2" , Matrix3D.INIT , plane2.getObject3D() );
 		}
 
@@ -262,7 +264,7 @@ public class ProbeUI
 			view.setFrontClipDistance( 0.01 );
 			view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
 			view.setRenderingPolicy( RenderingPolicy.SOLID );
-			view.setCameraControl( new FromToCameraControl2( view , new Vector3D( 0.0 , -1.5 , 0.0 ) , Vector3D.INIT ) );
+			view.setCameraControl( new FromToCameraControl( view , new Vector3D( 0.0 , -1.5 , 0.0 ) , Vector3D.INIT ) );
 		}
 	}
 
@@ -285,12 +287,12 @@ public class ProbeUI
 			light2.setFallOff( 10.0 );
 
 			final Light3D light3 = new Light3D();
-			light3.setDiffuse( 0.0f , 0.0f , 1.0f );
-			light3.setFallOff( 10.0 );
+			light3.setDiffuse( 1.0f , 1.0f , 1.0f );
+			light3.setFallOff( 5.0 );
 
 			scene.addContentNode( "light-1" , Matrix3D.INIT.setTranslation(  4.0 , -4.0 ,  4.0 ) , light1 );
 			scene.addContentNode( "light-2" , Matrix3D.INIT.setTranslation( -4.0 , -4.0 ,  4.0 ) , light2 );
-			scene.addContentNode( "light-3" , Matrix3D.INIT.setTranslation(  0.0 , -4.0 , -4.0 ) , light3 );
+			scene.addContentNode( "light-3" , Matrix3D.INIT.setTranslation(  0.0 ,  4.0 ,  0.0 ) , light3 );
 		}
 
 		protected void configureView( final JOGLView view )
@@ -299,7 +301,10 @@ public class ProbeUI
 			view.setFrontClipDistance( 0.01 );
 			view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
 			view.setRenderingPolicy( RenderingPolicy.SOLID );
-			view.setCameraControl( new FromToCameraControl2( view , new Vector3D( -1.0 , -3.0 , 2.0 ) , Vector3D.INIT ) );
+			view.setCameraControl( new FromToCameraControl( view , new Vector3D( -1.0 , -3.0 , 2.0 ) , Vector3D.INIT ) );
+
+			final JOGLConfiguration configuration = view.getConfiguration();
+			configuration.setDepthPeelingEnabled( false );
 		}
 	}
 
@@ -321,8 +326,22 @@ public class ProbeUI
 			super.createScene( scene );
 
 			final Material sphereMaterial = new Material( 0xffe0c060 );
-			scene.addContentNode( "sphere"     , Matrix3D.INIT , new Sphere3D( 1.0 , 16 , 16 , sphereMaterial ) );
+			scene.addContentNode( "sphere"     , Matrix3D.INIT , new Sphere3D( 0.5 , 16 , 16 , sphereMaterial ) );
 			scene.addContentNode( "sphere-inv" , Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 0.0 ) , new Sphere3D( 2.0 , 16 , 16 , sphereMaterial , true ) );
+
+			final Object3DBuilder twoSide1 = new Object3DBuilder();
+			twoSide1.addQuad( new Vector3D( -1.0 , 0.0 , -1.0 ) ,
+			                  new Vector3D( -1.0 , 0.0 ,  1.0 ) ,
+			                  new Vector3D(  0.0 , 0.0 ,  1.0 ) ,
+			                  new Vector3D(  0.0 , 0.0 , -1.0 ) , sphereMaterial , true );
+			scene.addContentNode( "two-side1" , Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 0.0 ) , twoSide1.getObject3D() );
+
+			final Object3DBuilder twoSide2 = new Object3DBuilder();
+			twoSide2.addQuad( new Vector3D(  0.0 , 0.0 , -1.0 ) ,
+			                  new Vector3D(  1.0 , 0.0 , -1.0 ) ,
+			                  new Vector3D(  1.0 , 0.0 ,  1.0 ) ,
+			                  new Vector3D(  0.0 , 0.0 ,  1.0 ) , sphereMaterial , true );
+			scene.addContentNode( "two-side2" , Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 0.0 ) , twoSide2.getObject3D() );
 		}
 
 		protected void configureView( final JOGLView view )
@@ -356,8 +375,22 @@ public class ProbeUI
 			super.createScene( scene );
 
 			final Material sphereMaterial = new Material( 0xffe0c060 );
-			scene.addContentNode( "sphere"     , Matrix3D.INIT , new Sphere3D( 1.0 , 16 , 16 , sphereMaterial ) );
+			scene.addContentNode( "sphere"     , Matrix3D.INIT , new Sphere3D( 0.5 , 16 , 16 , sphereMaterial ) );
 			scene.addContentNode( "sphere-inv" , Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 0.0 ) , new Sphere3D( 2.0 , 16 , 16 , sphereMaterial , true ) );
+
+			final Object3DBuilder twoSide1 = new Object3DBuilder();
+			twoSide1.addQuad( new Vector3D( -1.0 , 0.0 , -1.0 ) ,
+			                  new Vector3D( -1.0 , 0.0 ,  1.0 ) ,
+			                  new Vector3D(  0.0 , 0.0 ,  1.0 ) ,
+			                  new Vector3D(  0.0 , 0.0 , -1.0 ) , sphereMaterial , true );
+			scene.addContentNode( "two-side1" , Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 0.0 ) , twoSide1.getObject3D() );
+
+			final Object3DBuilder twoSide2 = new Object3DBuilder();
+			twoSide2.addQuad( new Vector3D(  0.0 , 0.0 , -1.0 ) ,
+			                  new Vector3D(  1.0 , 0.0 , -1.0 ) ,
+			                  new Vector3D(  1.0 , 0.0 ,  1.0 ) ,
+			                  new Vector3D(  0.0 , 0.0 ,  1.0 ) , sphereMaterial , true );
+			scene.addContentNode( "two-side2" , Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 0.0 ) , twoSide2.getObject3D() );
 		}
 
 		protected void configureView( final JOGLView view )
@@ -408,7 +441,7 @@ public class ProbeUI
 			view.setFrontClipDistance( 0.01 );
 			view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
 			view.setRenderingPolicy( RenderingPolicy.SOLID );
-			view.setCameraControl( new FromToCameraControl2( view , new Vector3D( -1.0 , -3.0 , 2.0 ) , Vector3D.INIT ) );
+			view.setCameraControl( new FromToCameraControl( view , new Vector3D( -1.0 , -3.0 , 2.0 ) , Vector3D.INIT ) );
 		}
 	}
 
@@ -454,6 +487,21 @@ public class ProbeUI
 			final JOGLConfiguration configuration = view.getConfiguration();
 			configuration.setPerPixelLightingEnabled( false );
 			configuration.setDepthPeelingEnabled( true );
+		}
+	}
+
+	private static class FromToCameraControl
+		extends FromToCameraControl2
+	{
+		FromToCameraControl( final View3D view , final Vector3D from , final Vector3D to )
+		{
+			super( view, from, to );
+		}
+
+		@Override
+		protected boolean isDragFromAroundToEvent( final ControlInputEvent event )
+		{
+			return SwingUtilities.isLeftMouseButton( event.getMouseEvent() );
 		}
 	}
 }
