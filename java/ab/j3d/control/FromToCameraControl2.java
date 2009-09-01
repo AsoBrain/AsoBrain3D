@@ -140,9 +140,9 @@ public class FromToCameraControl2
 	}
 
 	/**
-	 * Construct new first person camera control looking from the specified point
-	 * to the other specified point. The up vector is the Z+ axis, the secondary
-	 * is the Y+ axis.
+	 * Construct new first person camera control looking from the specified
+	 * point to the other specified point. The up vector is derived from the
+	 * from and to points, as specified by {@link #look(Vector3D,Vector3D)}.
 	 *
 	 * @param   view    View to be controlled.
 	 * @param   from    Initial point to look from.
@@ -153,7 +153,9 @@ public class FromToCameraControl2
 	 */
 	public FromToCameraControl2( final View3D view , final Vector3D from , final Vector3D to )
 	{
-		this( view , from , to , Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) );
+		super( view );
+		look( from , to );
+		save();
 	}
 
 	/**
