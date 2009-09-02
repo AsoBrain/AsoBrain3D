@@ -214,9 +214,9 @@ public class JOGLRenderer
 	 */
 	private enum MultiPassRenderMode
 	{
-		ALL ,
-		OPAQUE_ONLY ,
-		TRANSPARENT_ONLY
+		/** Render all faces.              */ ALL ,
+		/** Render only opaque faces.      */ OPAQUE_ONLY ,
+		/** Render only transparent faces. */ TRANSPARENT_ONLY
 	}
 
 	/**
@@ -269,6 +269,11 @@ public class JOGLRenderer
 		gl.glEnable( GL.GL_DEPTH_TEST );
 		gl.glDepthMask( true );
 		gl.glDepthFunc ( GL.GL_LEQUAL );
+
+		/* Enable polygon offsets. */
+		gl.glEnable( GL.GL_POLYGON_OFFSET_FILL );
+		gl.glEnable( GL.GL_POLYGON_OFFSET_LINE );
+		gl.glEnable( GL.GL_POLYGON_OFFSET_POINT );
 
 // @FIXME Disable explicit smoothing options for now. This causes extremely slow rendering on some machines. Should we set smoothing based on hardware capabilities?
 //		/* Set smoothing. */
@@ -1717,7 +1722,6 @@ public class JOGLRenderer
 				}
 				glWrapper.setBlend( blend );
 				glWrapper.setPolygonMode( GL.GL_FILL );
-				glWrapper.setPolygonOffsetFill( true );
 				glWrapper.glPolygonOffset( 0.0f , -1.0f );
 				glWrapper.setCullFace( backfaceCulling );
 				glWrapper.setLighting( hasLighting );
@@ -1791,7 +1795,6 @@ public class JOGLRenderer
 						gl.glDepthMask( true );
 					}
 				}
-				glWrapper.setPolygonOffsetFill( false );
 			}
 		}
 	}
@@ -1815,7 +1818,6 @@ public class JOGLRenderer
 			final GLWrapper glWrapper = _glWrapper;
 			glWrapper.setBlend( false );
 			glWrapper.setPolygonMode( GL.GL_LINE );
-			glWrapper.setPolygonOffsetFill( true );
 			glWrapper.glPolygonOffset( 0.0f , -2.0f );
 			glWrapper.glLineWidth( width );
 			glWrapper.setCullFace( backfaceCulling );
@@ -1891,7 +1893,6 @@ public class JOGLRenderer
 			}
 
 			glWrapper.setPolygonMode( GL.GL_FILL );
-			glWrapper.setPolygonOffsetFill( false );
 		}
 	}
 
@@ -1915,7 +1916,6 @@ public class JOGLRenderer
 			 */
 			glWrapper.setBlend( false  );
 			glWrapper.setPolygonMode( GL.GL_POINT );
-			glWrapper.setPolygonOffsetFill( true );
 			glWrapper.glPolygonOffset( 0.0f , -2.0f );
 			glWrapper.setCullFace( backfaceCulling );
 			glWrapper.setLighting( hasLighting );
@@ -1952,7 +1952,6 @@ public class JOGLRenderer
 			gl.glEnd();
 
 			glWrapper.setPolygonMode( GL.GL_FILL );
-			glWrapper.setPolygonOffsetFill( false );
 		}
 	}
 
