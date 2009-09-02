@@ -24,6 +24,8 @@ import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,6 +64,11 @@ public abstract class View3D
 	 * @see     #getPixelsToRadiansFactor()
 	 */
 	public static final double DEFAULT_PIXELS_TO_RADIANS_FACTOR = ( 2.0 *  Math.PI ) / 250.0;
+
+	/**
+	 * Bound property name: rendering policy.
+	 */
+	public static final String RENDERING_POLICY_PROPERTY = "renderingPolicy";
 
 	/**
 	 * Scene being viewed.
@@ -148,6 +155,11 @@ public abstract class View3D
 	 * highlighting is disabled.
 	 */
 	private int _gridHighlightInterval;
+
+	/**
+	 * Provides support for bound properties.
+	 */
+	protected final PropertyChangeSupport _pcs = new PropertyChangeSupport( this );
 
 	/**
 	 * Construct new view.
@@ -544,9 +556,11 @@ public abstract class View3D
 	 */
 	public void setRenderingPolicy( final RenderingPolicy policy )
 	{
-		if ( policy != _renderingPolicy )
+		final RenderingPolicy oldValue = _renderingPolicy;
+		if ( policy != oldValue )
 		{
 			_renderingPolicy = policy;
+			_pcs.firePropertyChange( RENDERING_POLICY_PROPERTY , oldValue , policy );
 			update();
 		}
 	}
@@ -928,5 +942,30 @@ public abstract class View3D
 	public void ambientLightChanged( final SceneUpdateEvent event )
 	{
 		update();
+	}
+
+	/**
+	 * Add a property change listener.
+	 *
+	 * @see     PropertyChangeSupport#addPropertyChangeListener(PropertyChangeListener)
+	 *
+	 * @param   listener    Listener to be added.
+	 */
+	public void addPropertyChangeListener( final PropertyChangeListener listener )
+	{
+		_pcs.addPropertyChangeListener( listener );
+	}
+
+	/**
+	 * Add a property change listener for a specific property.
+	 *
+	 * @see     PropertyChangeSupport#addPropertyChangeListener(String,PropertyChangeListener)
+	 *
+	 * @param   propertyName    Name of the property.
+	 * @param   listener        Listener to be added.
+	 */
+	public void addPropertyChangeListener( final String propertyName , final PropertyChangeListener listener )
+	{
+		_pcs.addPropertyChangeListener( propertyName , listener );
 	}
 }
