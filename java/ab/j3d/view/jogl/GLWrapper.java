@@ -42,7 +42,6 @@ public class GLWrapper
 	/** Cached state of {@link GL#GL_CULL_FACE}.                         */ private boolean _cullFaceState          = false;
 	/** Cached state of {@link GL#GL_LIGHTING}.                          */ private boolean _lightingState          = false;
 	/** Cached state of {@link GL#GL_LINE_SMOOTH}.                       */ private boolean _lineSmoothState        = false;
-	/** Cached state of {@link GL#GL_POLYGON_OFFSET_FILL}.               */ private boolean _polygonOffsetFillState = false;
 	/** Cached state of {@link GL#glBlendFunc(int, int)}.                */ private int     _blendFuncSfactor       = GL.GL_ONE;
 	/** Cached state of {@link GL#glBlendFunc(int, int)}.                */ private int     _blendFuncDfactor       = GL.GL_ZERO;
 	/** Cached state of {@link GL#glColor4f(float, float, float,float)}. */ private float   _color4fR               = 1.0f;
@@ -99,7 +98,6 @@ public class GLWrapper
 		setEnabled( GL.GL_CULL_FACE , _cullFaceState );
 		setEnabled( GL.GL_LIGHTING , _lightingState );
 		setEnabled( GL.GL_LINE_SMOOTH , _lineSmoothState );
-		setEnabled( GL.GL_POLYGON_OFFSET_FILL , _polygonOffsetFillState );
 		gl.glBlendFunc( _blendFuncSfactor , _blendFuncDfactor );
 		gl.glColor4f( _color4fR , _color4fG , _color4fB , _color4fA );
 		gl.glCullFace( _cullFace );
@@ -205,21 +203,6 @@ public class GLWrapper
 		{
 			setEnabled( GL.GL_LINE_SMOOTH , enable );
 			_lineSmoothState = lineSmooth;
-		}
-	}
-
-	/**
-	 * Enable or disable {@link GL#GL_POLYGON_OFFSET_FILL}.
-	 *
-	 * @param   enable  Enables {@link GL#GL_POLYGON_OFFSET_FILL} if set to true.
-	 */
-	public void setPolygonOffsetFill( final boolean enable )
-	{
-		final Boolean polygonOffsetFill = Boolean.valueOf( enable );
-		if ( polygonOffsetFill!= _polygonOffsetFillState )
-		{
-			setEnabled( GL.GL_POLYGON_OFFSET_FILL , enable );
-			_polygonOffsetFillState = polygonOffsetFill;
 		}
 	}
 
