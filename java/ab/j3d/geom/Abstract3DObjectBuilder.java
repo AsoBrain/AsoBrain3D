@@ -1191,7 +1191,9 @@ public abstract class Abstract3DObjectBuilder
 	 */
 	public void addFilledShape2D( @NotNull final Matrix3D transform , @NotNull final Shape shape , @NotNull final Triangulator triangulator , @Nullable final Material material , @Nullable final UVMap uvMap , final boolean flipTexture , final boolean twoSided )
 	{
-		if ( shape instanceof Rectangle2D )
+		final Vector3D normal = triangulator.getNormal();
+
+		if ( ( shape instanceof Rectangle2D ) && MathTools.almostEqual( Math.abs( normal.z ) , 1.0 ) )
 		{
 			final Rectangle2D rectangle = (Rectangle2D)shape;
 			final double x1 = rectangle.getMinX();
@@ -1199,10 +1201,20 @@ public abstract class Abstract3DObjectBuilder
 			final double x2 = rectangle.getMaxX();
 			final double y2 = rectangle.getMaxY();
 
-			addQuad( transform.transform( x1 , y1 , 0.0 ) ,
-			         transform.transform( x1 , y2 , 0.0 ) ,
-			         transform.transform( x2 , y2 , 0.0 ) ,
-			         transform.transform( x2 , y1 , 0.0 ) , material , uvMap , false , twoSided );
+			if ( normal.z > 0.0 )
+			{
+				addQuad( transform.transform( x1 , y1 , 0.0 ) ,
+				         transform.transform( x1 , y2 , 0.0 ) ,
+				         transform.transform( x2 , y2 , 0.0 ) ,
+				         transform.transform( x2 , y1 , 0.0 ) , material , uvMap , false , twoSided );
+			}
+			else
+			{
+				addQuad( transform.transform( x1 , y1 , 0.0 ) ,
+				         transform.transform( x2 , y1 , 0.0 ) ,
+				         transform.transform( x2 , y2 , 0.0 ) ,
+				         transform.transform( x1 , y2 , 0.0 ) , material , uvMap , false , twoSided );
+			}
 		}
 		else
 		{
