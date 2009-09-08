@@ -369,6 +369,7 @@ public class JOGLCapabilities
 			{
 				final JOGLConfiguration configuration = new JOGLConfiguration();
 				final JOGLRenderer renderer = new JOGLRenderer( _context.getGL() , configuration , new TextureCache() , Color.BLACK , false , Matrix3D.INIT , new Rectangle( 0 , 0 , 10 , 10 ) , 1 , false , 10 );
+				renderer.init();
 				_result = renderer.isShadersEnabled();
 			}
 		}
