@@ -182,7 +182,7 @@ public class JOGLCapabilities
 	 */
 	public boolean isDepthPeelingSupported()
 	{
-		return isShaderSupported() &&
+		return ( isShaderSupported() || isShaderSupportedARB() ) &&
 		       _depthTexture       &&
 		       _shadow             &&
 		       _shadowFuncs        &&
