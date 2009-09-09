@@ -21,7 +21,6 @@ package ab.j3d.view.jogl;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.util.Collection;
 import javax.media.opengl.DebugGL;
@@ -32,6 +31,7 @@ import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLContext;
 import javax.media.opengl.GLDrawableFactory;
 import javax.media.opengl.GLEventListener;
+import javax.media.opengl.GLException;
 import javax.media.opengl.GLPbuffer;
 import javax.media.opengl.glu.GLU;
 import javax.swing.JPopupMenu;
@@ -198,18 +198,7 @@ public class JOGLView
 	public void dispose()
 	{
 		super.dispose();
-
 		_renderer = null;
-
-		final GLCanvas glCanvas = _glCanvas;
-		if ( glCanvas != null )
-		{
-			final Container parent = glCanvas.getParent();
-			if ( parent != null )
-			{
-				parent.remove( glCanvas );
-			}
-		}
 	}
 
 	/**
@@ -357,6 +346,19 @@ public class JOGLView
 				{
 					System.err.println( "Render exception: " + t );
 					t.printStackTrace( System.err );
+
+					final GLContext context = GLContext.getCurrent();
+					if ( context != null )
+					{
+						try
+						{
+							context.release();
+						}
+						catch ( GLException e )
+						{
+							e.printStackTrace();
+						}
+					}
 				}
 
 				/*
