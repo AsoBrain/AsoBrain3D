@@ -300,12 +300,22 @@ public class JOGLRenderer
 		{
 			if ( capabilities.isShaderSupported() )
 			{
+				System.out.println( "JOGLRenderer: Using core shaders." );
 				shaderImplementation = new CoreShaderImplementation();
 			}
 			else if ( capabilities.isShaderSupportedARB() )
 			{
+				System.out.println( "JOGLRenderer: Using ARB shaders." );
 				shaderImplementation = new ARBShaderImplementation();
 			}
+			else
+			{
+				System.out.println( "JOGLRenderer: No shader support is available." );
+			}
+		}
+		else
+		{
+			System.out.println( "JOGLRenderer: No shader-dependent features are enabled." );
 		}
 
 		_shaderImplementation = shaderImplementation;
@@ -457,6 +467,7 @@ public class JOGLRenderer
 	 */
 	private void disableShaders()
 	{
+		System.out.println( "JOGLRenderer: Disabling shaders. (" + _shaderImplementation + ")" );
 		_shaderImplementation = null;
 	}
 
@@ -1236,6 +1247,7 @@ public class JOGLRenderer
 				}
 				catch ( GLException e )
 				{
+					e.printStackTrace();
 					disableShaders();
 				}
 			}
