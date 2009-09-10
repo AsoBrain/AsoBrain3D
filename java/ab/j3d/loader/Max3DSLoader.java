@@ -27,8 +27,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,8 +39,6 @@ import ab.j3d.model.Node3D;
 import ab.j3d.model.Object3D;
 import ab.j3d.model.Object3DBuilder;
 import ab.j3d.model.Transform3D;
-
-import com.numdata.oss.TextTools;
 
 /**
  * Loader for 3D Studio or 3D Studio MAX (<code>.3DS</colorMap>) files.
@@ -73,10 +69,10 @@ public final class Max3DSLoader
 	private final Node3D _root;
 
 	/**
-	 * URL of location from which supplemental files (e.g. textures) may be
-	 * loaded. This may be <code>null</code> if no such location is available.
+	 * Loader for resources (e.g. textures). This may be <code>null</code> if no
+	 * resource loader is available.
 	 */
-	private URL _supplementURL;
+	private ResourceLoader _resourceLoader;
 
 	/**
 	 * Maps material names ({@link String}) to {@link Material} objects
@@ -116,32 +112,12 @@ public final class Max3DSLoader
 	public static Node3D load( final Matrix3D transform , final File file )
 		throws IOException
 	{
+		final FileResourceLoader resourceLoader = new FileResourceLoader( file.getParentFile() );
+
 		final FileInputStream in = new FileInputStream( file );
 		try
 		{
-			URL supplementURL = null;
-			try
-			{
-				File directory = file.getParentFile();
-				if ( directory == null )
-				{
-					final File canonicalFile = file.getCanonicalFile();
-					directory = canonicalFile.getParentFile();
-				}
-
-				final URI fileURI = directory.toURI();
-				supplementURL = fileURI.toURL();
-			}
-			catch ( IOException e )
-			{
-				/* ignore errors related to getting the supplemental directory */
-			}
-			catch ( SecurityException e )
-			{
-				/* ignore errors related to getting the supplemental directory */
-			}
-
-			return load( transform , supplementURL , in );
+			return load( transform , resourceLoader , in );
 		}
 		finally
 		{
@@ -155,21 +131,19 @@ public final class Max3DSLoader
 	 *
 	 * @param   transform       Optional transormation to apply to the file
 	 *                          (typically used to scaling and axis alignment).
-	 * @param   supplementURL   URL of location from which supplemental files
-	 *                          (e.g. textures) may be loaded (<code>null</code>
-	 *                          if no such location is available).
+	 * @param   resourceLoader  Loader for resource files (e.g. textures).
 	 * @param   in              Stream to load the <code>.3DS</code> file from.
 	 *
 	 * @return  A {@link Node3D} with the loaded file.
 	 *
 	 * @throws  IOException if an error occured while loading the file.
 	 */
-	public static Node3D load( final Matrix3D transform , final URL supplementURL , final InputStream in )
+	public static Node3D load( final Matrix3D transform , final ResourceLoader resourceLoader , final InputStream in )
 		throws IOException
 	{
 		final Node3D result = ( transform == null || Matrix3D.INIT.equals( transform ) ) ? new Transform3D( transform ) : new Node3D();
 
-		final Max3DSLoader loader = new Max3DSLoader( result , supplementURL );
+		final Max3DSLoader loader = new Max3DSLoader( result , resourceLoader );
 		while ( true )
 		{
 			final int chunkID;
@@ -199,14 +173,12 @@ public final class Max3DSLoader
 	 * Internal constructor for loader.
 	 *
 	 * @param   root            Root of scene graph to add geometry to.
-	 * @param   supplementURL   URL of location from which supplemental files
-	 *                          (e.g. textures) may be loaded (<code>null</code>
-	 *                          if no such location is available).
+	 * @param   resourceLoader  Loader for resource files (e.g. textures).
 	 */
-	private Max3DSLoader( final Node3D root , final URL supplementURL )
+	private Max3DSLoader( final Node3D root , final ResourceLoader resourceLoader )
 	{
 		_root = root;
-		_supplementURL = supplementURL;
+		_resourceLoader = resourceLoader;
 		_object3DBuilder = null;
 		_material = null;
 		_textureCoords = null;
@@ -267,7 +239,7 @@ public final class Max3DSLoader
 			case 0x2100 : // LIGHT_AMBIENT - Ambient light
 				{
 					final float[] color = readColor( in );
-					System.out.println( " - LIGHT - ambient: " + color );
+//					System.out.println( " - LIGHT - ambient: " + color );
 				}
 				break;
 
@@ -288,7 +260,9 @@ public final class Max3DSLoader
 						_object3DBuilder = builder;
 						final Object3D object3d = builder.getObject3D();
 						object3d.setTag( objectName );
-						_material = new Material( 0xFFC0C0C0 );
+						final Material material = new Material( 0xFFC0C0C0 );
+						material.resourceLoader = _resourceLoader;
+						_material = material;
 
 						readChunk( in );
 					}
@@ -364,7 +338,7 @@ public final class Max3DSLoader
 
 			case 0x4130 : // OBJECT_MAT_GROUP - Materials used by object - associates material with the object.
 				{
-					 System.out.println( "    > material group" );
+//					 System.out.println( "    > material group" );
 
 					final String materialName = readString( in );
 					final int    faceCount    = readShort( in );
@@ -436,7 +410,7 @@ public final class Max3DSLoader
 			case 0xA000 : // MAT_NAME - Start of a material
 				{
 					final String materialName = readString( in );
-					System.out.println( " - START: material: " + materialName );
+//					System.out.println( " - START: material: " + materialName );
 
 					final Material material = new Material( Color.RED.getRGB() );
 					_materials.put( materialName , material );
@@ -447,7 +421,7 @@ public final class Max3DSLoader
 			case 0xA010 : // MAT_AMBIENT - Ambient color of material
 				{
 					final float[] color = readColor( in );
-					System.out.println( "    > ambient color: " + color );
+//					System.out.println( "    > ambient color: " + color );
 
 					_material.ambientColorRed   = color[ 0 ];
 					_material.ambientColorGreen = color[ 1 ];
@@ -458,7 +432,7 @@ public final class Max3DSLoader
 			case 0xA020 : // MAT_DIFFUSE - Diffuse color of material
 				{
 					final float[] color = readColor( in );
-					System.out.println( "    > diffuse color: " + color );
+//					System.out.println( "    > diffuse color: " + color );
 
 					_material.diffuseColorRed   = color[ 0 ];
 					_material.diffuseColorGreen = color[ 1 ];
@@ -469,7 +443,7 @@ public final class Max3DSLoader
 			case 0xA030 : // MAT_SPECULAR - Specular color of material
 				{
 					final float[] color = readColor( in );
-					System.out.println( "    > specular color: " + color );
+//					System.out.println( "    > specular color: " + color );
 
 					_material.specularColorRed   = color[ 0 ];
 					_material.specularColorGreen = color[ 1 ];
@@ -480,14 +454,14 @@ public final class Max3DSLoader
 			case 0xA040 : // MAT_SHININESS - shininess percentage
 				{
 					final float shininess = readPercentage( in );
-					System.out.println( "    > shininess: " + shininess );
+//					System.out.println( "    > shininess: " + shininess );
 				}
 				break;
 
 			case 0xA041 : // MAT_SHININESS_STRENGTH - shininess strength
 				{
 					final float shininessStrength = readPercentage( in );
-					System.out.println( "    > shininess strength: " + shininessStrength );
+//					System.out.println( "    > shininess strength: " + shininessStrength );
 
 					// Java 3D: Material.setShininess( ( 1.0f - ( ( _shininess + shininessStrength ) / 2.0f ) ) * 128.0f );
 				}
@@ -496,7 +470,7 @@ public final class Max3DSLoader
 			case 0xA050 : // MAT_TRANSPARENCY - Transparency percentage
 				{
 					final float transparency = readPercentage( in );
-					System.out.println( "    > transparency: " + transparency );
+//					System.out.println( "    > transparency: " + transparency );
 
 					if ( transparency > 0.1f )
 					{
@@ -507,27 +481,27 @@ public final class Max3DSLoader
 
 			case 0xA081 : // MAT_TWO_SIDE - Turn off face culling
 				{
-					System.out.println( "    > two-sided" );
+//					System.out.println( "    > two-sided" );
 				}
 				break;
 
 			case 0xA085 : // MAT_WIRE - Select wireframe rendering
 				{
-					System.out.println( "    > wireframe" );
+//					System.out.println( "    > wireframe" );
 				}
 				break;
 
 			case 0xA087 : // MAT_WIRESIZE - Wireframe line thickness
 				{
 					final float width = readFloat( in );
-					System.out.println( "    > wireframe line width: " + width );
+//					System.out.println( "    > wireframe line width: " + width );
 				}
 				break;
 
 			case 0xA100 : // MAT_SHADING - Shading mode (wireframe/flat/metalic/phong)
 				{
 					final int shading = readShort( in );
-					System.out.println( "    > shading: " + shading );
+//					System.out.println( "    > shading: " + shading );
 
 					switch ( shading )
 					{
@@ -561,10 +535,7 @@ public final class Max3DSLoader
 					/*
 					 * Read texure image
 					 */
-					final URL  supplementURL = _supplementURL;
-					final URL  imageURL      = new URL( supplementURL , TextTools.replace( TextTools.replace( materialName , '-' , "minus" ) , '+' , "plus" ).replace( ' ' , '_' ) );
-
-					_material.colorMap = imageURL.toExternalForm();
+					_material.colorMap = materialName;
 				}
 				break;
 
