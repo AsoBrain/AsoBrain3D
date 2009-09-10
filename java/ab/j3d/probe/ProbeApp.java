@@ -10,6 +10,7 @@
 package ab.j3d.probe;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
@@ -38,6 +39,7 @@ public class ProbeApp
 	public void run()
 	{
 		final ProbeUI ui = new ProbeUI();
+		ui.setPreferredSize( new Dimension( 800 , 400 ) );
 
 		final JFrame frame = new JFrame( "3D Capabilities Probe" );
 		frame.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
