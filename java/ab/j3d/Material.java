@@ -24,6 +24,8 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
 
+import ab.j3d.loader.ResourceLoader;
+
 import com.numdata.oss.TextTools;
 
 /**
@@ -248,6 +250,11 @@ public class Material
 	public boolean grain;
 
 	/**
+	 * Loader for resources related to this material (e.g. maps).
+	 */
+	public transient ResourceLoader resourceLoader;
+
+	/**
 	 * Default constructor.
 	 */
 	public Material()
@@ -275,6 +282,7 @@ public class Material
 		bumpMapWidth       = 0.0f;
 		bumpMapHeight      = 0.0f;
 		grain              = false;
+		resourceLoader     = null;
 	}
 
 	/**
@@ -309,6 +317,7 @@ public class Material
 		bumpMapWidth       = original.bumpMapWidth;
 		bumpMapHeight      = original.bumpMapHeight;
 		grain              = original.grain;
+		resourceLoader     = original.resourceLoader;
 	}
 
 	/**
@@ -373,6 +382,7 @@ public class Material
 		bumpMapWidth            = 0.0f;
 		bumpMapHeight           = 0.0f;
 		this.grain              = grain;
+		resourceLoader          = null;
 	}
 
 	/**
