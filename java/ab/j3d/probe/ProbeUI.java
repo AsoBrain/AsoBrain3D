@@ -13,11 +13,13 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -46,6 +48,8 @@ import ab.j3d.view.jogl.JOGLConfiguration;
 import ab.j3d.view.jogl.JOGLEngine;
 import ab.j3d.view.jogl.JOGLView;
 
+import com.numdata.oss.ui.ImageTools;
+
 /**
  * A user interface for testing 3D capabilities.
  *
@@ -60,10 +64,15 @@ public class ProbeUI
 	private JOGLView _actual;
 
 	/**
-	 * Construct new DiagnosticUI.
+	 * Construct new probe UI.
 	 */
 	public ProbeUI()
 	{
+		if ( !SwingUtilities.isEventDispatchThread() )
+		{
+			throw new AssertionError( "ProbeUI must be created on the EDT." );
+		}
+
 		final List<Probe> probes = Arrays.<Probe>asList(
 			new TextureProbe() ,
 			new VertexLighting() ,
@@ -72,6 +81,15 @@ public class ProbeUI
 			new DepthPeeling()
 		);
 
+		final JPanel expectedContainer = new JPanel();
+		expectedContainer.setBackground( Color.BLACK );
+		expectedContainer.setBorder( BorderFactory.createBevelBorder( BevelBorder.LOWERED ) );
+		expectedContainer.setPreferredSize( new Dimension( 300 , 300 ) );
+		expectedContainer.setLayout( new BorderLayout() );
+
+		final JLabel expected = new JLabel();
+		expectedContainer.add( expected , BorderLayout.CENTER );
+
 		final JPanel probesPanel = new JPanel();
 		for ( final Probe probe : probes )
 		{
@@ -79,6 +97,16 @@ public class ProbeUI
 			{
 				public void actionPerformed( final ActionEvent e )
 				{
+					final Image expectedImage = probe.getExpectedImage();
+					if ( expectedImage == null )
+					{
+						expected.setIcon( null );
+					}
+					else
+					{
+						expected.setIcon( new ImageIcon( expectedImage ) );
+					}
+
 					if ( probe.isSupported() )
 					{
 						probe.run();
@@ -102,15 +130,6 @@ public class ProbeUI
 			} );
 			probesPanel.add( button );
 		}
-
-		final JPanel expectedContainer = new JPanel();
-		expectedContainer.setBackground( Color.BLACK );
-		expectedContainer.setBorder( BorderFactory.createBevelBorder( BevelBorder.LOWERED ) );
-		expectedContainer.setPreferredSize( new Dimension( 300 , 300 ) );
-		expectedContainer.setLayout( new BorderLayout() );
-
-		final JLabel expected = new JLabel();
-		expectedContainer.add( expected , BorderLayout.CENTER );
 
 		final JPanel actualContainer = new JPanel();
 		actualContainer.setBackground( Color.BLACK );
@@ -145,6 +164,14 @@ public class ProbeUI
 		add( comparisonPanel , BorderLayout.CENTER );
 	}
 
+	/**
+	 * Dispose the probe, its 3D view and any resources it may hold.
+	 */
+	public void dispose()
+	{
+		_actual.dispose();
+	}
+
 	private abstract static class Probe
 	{
 		private final String _name;
@@ -158,6 +185,8 @@ public class ProbeUI
 		{
 			return _name;
 		}
+
+		public abstract Image getExpectedImage();
 
 		public abstract boolean isSupported();
 
@@ -177,7 +206,7 @@ public class ProbeUI
 			return true;
 		}
 
-		public void run()
+		public final void run()
 		{
 			if ( !SwingUtilities.isEventDispatchThread() )
 			{
@@ -266,6 +295,11 @@ public class ProbeUI
 			view.setRenderingPolicy( RenderingPolicy.SOLID );
 			view.setCameraControl( new FromToCameraControl( view , new Vector3D( 0.0 , -1.5 , 0.0 ) , Vector3D.INIT ) );
 		}
+
+		public Image getExpectedImage()
+		{
+			return ImageTools.load( "ab/j3d/probe/expected-texture.png" );
+		}
 	}
 
 	private abstract class RGBLightsProbe
@@ -351,6 +385,11 @@ public class ProbeUI
 			final JOGLConfiguration configuration = view.getConfiguration();
 			configuration.setPerPixelLightingEnabled( false );
 		}
+
+		public Image getExpectedImage()
+		{
+			return ImageTools.load( "ab/j3d/probe/expected-lighting.png" );
+		}
 	}
 
 	private class PixelLighting
@@ -399,6 +438,11 @@ public class ProbeUI
 
 			final JOGLConfiguration configuration = view.getConfiguration();
 			configuration.setPerPixelLightingEnabled( true );
+		}
+
+		public Image getExpectedImage()
+		{
+			return ImageTools.load( "ab/j3d/probe/expected-perPixelLighting.png" );
 		}
 	}
 
@@ -462,6 +506,11 @@ public class ProbeUI
 			configuration.setPerPixelLightingEnabled( false );
 			configuration.setDepthPeelingEnabled( false );
 		}
+
+		public Image getExpectedImage()
+		{
+			return ImageTools.load( null );
+		}
 	}
 
 	private class DepthPeeling
@@ -487,6 +536,11 @@ public class ProbeUI
 			final JOGLConfiguration configuration = view.getConfiguration();
 			configuration.setPerPixelLightingEnabled( false );
 			configuration.setDepthPeelingEnabled( true );
+		}
+
+		public Image getExpectedImage()
+		{
+			return ImageTools.load( null );
 		}
 	}
 
