@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2007
+ * (C) Copyright Numdata BV 2004-2009
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,72 +24,69 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import com.numdata.oss.TextTools;
+import org.jetbrains.annotations.NotNull;
 
 /**
- * This class loads a resource from a disk using a FileInputStream and makes it available as InputStream
- * <br /><br />
+ * This class loads resources from the file system.
  *
- * @author  Wijnand Wieskamp
+ * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
 public class FileResourceLoader
 	implements ResourceLoader
 {
 	/**
-	 * Default directory to read from
-	 */
-	public static final String DEFAULT_DIRECTORY = "./";
-
-	/**
-	 * Directory to read from based on given path in constructor.
+	 * Base directory to read resources from.
 	 */
 	private final File _directory;
 
 	/**
-	 * Constructs a new FileResourceLoader based on the given directory.
+	 * Constructs resource loader.
 	 *
-	 * @param path Path to the directory to search.
+	 * @param   path    Path to base directory to read resources from.
 	 *
 	 * @throws FileNotFoundException when path could not be found or is not a directory.
 	 */
-	public FileResourceLoader( final String path )
+	public FileResourceLoader( @NotNull final String path )
 		throws FileNotFoundException
 	{
-		final File directory;
-		if( TextTools.isNonEmpty( path ) )
-		{
-			directory = new File( path + File.separator);
-		}
-		else
-		{
-			directory = new File( DEFAULT_DIRECTORY );
-			System.out.println( "No folder specified, using default folder: \"" + DEFAULT_DIRECTORY + "\"" );
-		}
-		if( directory.canRead() && directory.isDirectory() )
-		{
-			_directory = directory;
-		}
-		else
-		{
-			throw new FileNotFoundException( "Could not open directory \"" + path + "\"" );
-		}
+		this( new File( path ) );
 	}
 
+	/**
+	 * Constructs resource loader.
+	 *
+	 * @param   directory   Base directory to read resources from.
+	 *
+	 * @throws  FileNotFoundException if the directory is not accessible.
+	 */
+	public FileResourceLoader( @NotNull final File directory )
+		throws FileNotFoundException
+	{
+		if ( !directory.canRead() || !directory.isDirectory() )
+		{
+			throw new FileNotFoundException( "Could not open directory \"" + directory.getPath() + "\"" );
+		}
+
+		_directory = directory;
+	}
+
+	/**
+	 * Get resource file for resource with given name.
+	 *
+	 * @param   name    Name of the resource to get.
+	 *
+	 * @return  Resource {@link File}.
+	 */
+	@NotNull
+	protected File getFile( final String name )
+	{
+		return new File( _directory , name );
+	}
 
 	public InputStream getResource( final String name )
 		throws FileNotFoundException
 	{
-		InputStream result = null;
-		if( _directory != null )
-		{
-
-			final File returnFile = new File( _directory.getAbsolutePath() + File.separator + name );
-			if ( returnFile.isFile() && returnFile.canRead() )
-			{
-				result = new FileInputStream( returnFile );
-			}
-		}
-		return result;
+		return new FileInputStream( getFile( name ) );
 	}
 }
