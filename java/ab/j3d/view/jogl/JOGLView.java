@@ -282,16 +282,24 @@ public class JOGLView
 		final JOGLRenderer renderer = _renderer;
 		if ( renderer != null )
 		{
+			final GLContext current = GLContext.getCurrent();
 			final GLContext context = _glCanvas.getContext();
-			context.makeCurrent();
-			try
+
+			if ( context.makeCurrent() != GLContext.CONTEXT_NOT_CURRENT )
 			{
-				renderer.dispose();
-				_renderer = null;
-			}
-			finally
-			{
-				context.release();
+				try
+				{
+					renderer.dispose();
+					_renderer = null;
+				}
+				finally
+				{
+					context.release();
+					if ( current != null )
+					{
+						current.makeCurrent();
+					}
+				}
 			}
 		}
 	}
@@ -402,11 +410,18 @@ public class JOGLView
 	 */
 	public void init( final GLAutoDrawable glAutoDrawable )
 	{
-		final GL gl = new DebugGL( glAutoDrawable.getGL() );
-		glAutoDrawable.setGL( gl );
+		try
+		{
+			final GL gl = new DebugGL( glAutoDrawable.getGL() );
+			glAutoDrawable.setGL( gl );
 
-		final JOGLRenderer renderer = getOrCreateRenderer( gl );
-		renderer.init();
+			final JOGLRenderer renderer = getOrCreateRenderer( gl );
+			renderer.init();
+		}
+		catch ( Throwable t )
+		{
+			t.printStackTrace();
+		}
 	}
 
 	public void displayChanged( final GLAutoDrawable glAutoDrawable , final boolean b , final boolean b1 )
@@ -416,13 +431,37 @@ public class JOGLView
 
 	public void reshape( final GLAutoDrawable glAutoDrawable , final int x , final int y , final int width , final int height )
 	{
-		if ( _renderThread != null )
+		try
 		{
-			_renderThread.requestUpdate();
+			if ( _renderThread != null )
+			{
+				_renderThread.requestUpdate();
+			}
+		}
+		catch ( Throwable t )
+		{
+			t.printStackTrace();
 		}
 	}
 
 	public void display( final GLAutoDrawable glAutoDrawable )
+	{
+		try
+		{
+			displayImpl( glAutoDrawable );
+		}
+		catch ( Throwable t )
+		{
+			t.printStackTrace();
+		}
+	}
+
+	/**
+	 * Renders a frame.
+	 *
+	 * @param   glAutoDrawable  Component to render to.
+	 */
+	private void displayImpl( final GLAutoDrawable glAutoDrawable )
 	{
 		final GL gl = glAutoDrawable.getGL();
 
