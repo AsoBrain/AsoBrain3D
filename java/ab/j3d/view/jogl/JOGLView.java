@@ -279,28 +279,42 @@ public class JOGLView
 	 */
 	public void disposeRenderer()
 	{
-		final JOGLRenderer renderer = _renderer;
+		JOGLRenderer renderer = _renderer;
+
 		if ( renderer != null )
 		{
 			final GLContext current = GLContext.getCurrent();
 			final GLContext context = _glCanvas.getContext();
 
-			if ( context.makeCurrent() != GLContext.CONTEXT_NOT_CURRENT )
+			if ( current == context )
 			{
-				try
+				renderer.dispose();
+				renderer = null;
+			}
+			else
+			{
+				if ( context.makeCurrent() != GLContext.CONTEXT_NOT_CURRENT )
 				{
-					renderer.dispose();
-					_renderer = null;
-				}
-				finally
-				{
-					context.release();
-					if ( current != null )
+					try
 					{
-						current.makeCurrent();
+						renderer.dispose();
+						renderer = null;
+					}
+					finally
+					{
+						context.release();
+						if ( current != null )
+						{
+							if ( current.makeCurrent() == GLContext.CONTEXT_NOT_CURRENT )
+							{
+								System.out.println( "Failed to make original GL context current after 'disposeRenderer'." );
+							}
+						}
 					}
 				}
 			}
+
+			_renderer = renderer;
 		}
 	}
 
@@ -444,7 +458,7 @@ public class JOGLView
 		}
 	}
 
-	public void display( final GLAutoDrawable glAutoDrawable )
+	public final void display( final GLAutoDrawable glAutoDrawable )
 	{
 		try
 		{
@@ -461,7 +475,7 @@ public class JOGLView
 	 *
 	 * @param   glAutoDrawable  Component to render to.
 	 */
-	private void displayImpl( final GLAutoDrawable glAutoDrawable )
+	protected void displayImpl( final GLAutoDrawable glAutoDrawable )
 	{
 		final GL gl = glAutoDrawable.getGL();
 
