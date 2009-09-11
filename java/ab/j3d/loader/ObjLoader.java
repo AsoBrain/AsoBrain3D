@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+
+import org.jetbrains.annotations.NotNull;
 
 import ab.j3d.Material;
 import ab.j3d.Matrix3D;
@@ -164,12 +167,46 @@ public class ObjLoader
 	 *
 	 * @throws  IOException if an error occured while loading the OBJ file.
 	 */
-	public static String load( final Abstract3DObjectBuilder builder , final Matrix3D transform , final ResourceLoader loader , final String objFileName )
+	public static String load( @NotNull final Abstract3DObjectBuilder builder , @NotNull final Matrix3D transform , @NotNull final ResourceLoader loader , @NotNull final String objFileName )
 		throws IOException
 	{
-		if ( loader == null )
-			throw new NullPointerException( "loader" );
+		InputStream inputStream = loader.getResource( objFileName );
+		if ( inputStream == null )
+		{
+			throw new FileNotFoundException( objFileName );
+		}
 
+		try
+		{
+			if ( objFileName.endsWith( ".gz" ) || objFileName.endsWith( ".GZ" ) )
+			{
+				inputStream = new GZIPInputStream( inputStream );
+			}
+
+			return load( builder , transform , loader , new  BufferedReader( new InputStreamReader( inputStream ) ) );
+		}
+		finally
+		{
+			inputStream.close();
+		}
+	}
+
+	/**
+	 * Load the specified OBJ file.
+	 *
+	 * @param   builder         Builder of resulting 3D object.
+	 * @param   transform       Transormation to apply to the OBJ (mostly used
+	 *                          to for scaling and axis alignment).
+	 * @param   loader          {@link ResourceLoader} to load OBJ models from.
+	 * @param   objReader       Reader for OBJ file.
+	 *
+	 * @return  Object name defined in OBJ file.
+	 *
+	 * @throws  IOException if an error occured while loading the OBJ file.
+	 */
+	public static String load( @NotNull final Abstract3DObjectBuilder builder , @NotNull final Matrix3D transform , @NotNull final ResourceLoader loader , @NotNull final BufferedReader objReader )
+		throws IOException
+	{
 		final Map<String,Material> actualMaterials = DEFAULT_MATERIALS;
 		final Material defaultMaterial = actualMaterials.containsKey( "default" ) ? actualMaterials.get( "default" ) : new Material( 0xFFC0C0C0 );
 
@@ -186,12 +223,8 @@ public class ObjLoader
 		String objectName = null;
 
 		String line;
-		final InputStream inputStream = loader.getResource( objFileName );
-		if ( inputStream == null )
-			throw new FileNotFoundException( objFileName );
 
-		final BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( inputStream ) );
-		while ( ( line = readLine( bufferedReader ) ) != null )
+		while ( ( line = readLine( objReader ) ) != null )
 		{
 			if ( line.length() > 0 )
 			{
