@@ -1,22 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="AsoBrain 3D Toolkit" default="all">
+<project name="AsoBrain 3D Toolkit" default="build">
   <property file="build.properties"/>
   <property file="../build.properties"/>
   <property file="${user.home}/build.properties"/>
   <property name="build.sysclasspath" value="last"/>
-
-  <target name="all" depends="dist,test" description="Generate distribution files and run unit tests"/>
 
   <target name="clean" depends="init" description="Remove temporary build files">
     <delete dir="classes"/>
     <delete dir="lib"/>
   </target>
 
-  <target name="distclean" depends="clean" description="Remove all temporary files"/>
-
-  <target name="compile" depends="compile-java,compile-tests" description="Compile everything"/>
-
-  <target name="dist" depends="compile,dist-java" description="Generate distribution files"/>
+  <target name="build" depends="compile-java,compile-tests" description="Build project">
+    <mkdir dir="lib"/>
+    <jar destfile="lib/ab3d.jar" basedir="classes/java"/>
+  </target>
 
   <target name="init">
     <tstamp/>
@@ -61,11 +58,6 @@
     <copy todir="classes/java">
       <fileset dir="java" excludes="**/*.java" />
     </copy>
-  </target>
-
-  <target name="dist-java" depends="compile-java" description="Generate Java distribution files">
-    <mkdir dir="lib"/>
-    <jar destfile="lib/ab3d.jar" basedir="classes/java"/>
   </target>
 
   <path id="test.classpath">
