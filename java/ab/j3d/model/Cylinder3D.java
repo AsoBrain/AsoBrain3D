@@ -121,17 +121,17 @@ public final class Cylinder3D
 		for ( int i = 0 ; i < numEdges ; i++ )
 		{
 			final double rad = (double)i * radStep;
-			final double x   =  Math.sin( rad ) * radiusBottom;
-			final double y   = -Math.cos( rad ) * radiusBottom;
+			final double x   =  Math.sin( rad );
+			final double y   = -Math.cos( rad );
 
 			if ( hasBottom )
 			{
-				vertexCoordinates[ i ] = new Vector3D( x , y , 0.0 );
+				vertexCoordinates[ i ] = new Vector3D( x * radiusBottom , y * radiusBottom , 0.0 );
 			}
 
 			if ( hasTop )
 			{
-				vertexCoordinates[ i + topCoordinatesOffset ] = new Vector3D( x , y , height );
+				vertexCoordinates[ i + topCoordinatesOffset ] = new Vector3D( x * radiusTop , y * radiusTop , height );
 			}
 		}
 
@@ -280,17 +280,17 @@ public final class Cylinder3D
 		for ( int i = 0 ; i < numEdges ; i++ )
 		{
 			final double rad = (double)i * radStep;
-			final double x   = Math.sin( rad ) * radiusBottom;
-			final double y   = -Math.cos( rad ) * radiusBottom;
+			final double x   =  Math.sin( rad );
+			final double y   = -Math.cos( rad );
 
 			if ( hasBottom )
 			{
-				vertexCoordinatesArray[ i ] = base.transform( x , y , 0.0 );
+				vertexCoordinatesArray[ i ] = base.transform( x * radiusBottom , y * radiusBottom , 0.0 );
 			}
 
 			if ( hasTop )
 			{
-				vertexCoordinatesArray[ topCoordinatesOffset + i ] = base.transform( x , y , height );
+				vertexCoordinatesArray[ topCoordinatesOffset + i ] = base.transform( x * radiusTop , y * radiusTop , height );
 			}
 		}
 
