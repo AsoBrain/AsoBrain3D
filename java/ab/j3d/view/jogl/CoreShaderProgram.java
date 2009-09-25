@@ -104,7 +104,7 @@ public class CoreShaderProgram
 			final String infoLog = getInfoLog();
 			if ( linkStatus[ 0 ] == GL.GL_FALSE )
 			{
-				throw new GLException( _name + ": " + ( ( infoLog == null ) ? "Shader(s) failed to link." : infoLog ) );
+				throw new GLException( ( infoLog == null ) ? ( "'" + _name + "' shader(s) failed to link (sorry, no details available)." ) : ( "Linking of '" + _name + "' shader(s) failed: " + infoLog ) );
 			}
 
 			_linked = true;
@@ -124,7 +124,7 @@ public class CoreShaderProgram
 		final String infoLog = getInfoLog();
 		if ( validateStatus[ 0 ] == GL.GL_FALSE )
 		{
-			throw new GLException( _name + ": " + ( ( infoLog == null ) ? "Validation of shader(s) failed." : infoLog ) );
+			throw new GLException( ( infoLog == null ) ? ( "Validation of '" + _name + "' shader(s) failed (sorry, no details available)." ) : ( "Validation of '" + _name + "' shader(s) failed: " + infoLog ) );
 		}
 	}
 
