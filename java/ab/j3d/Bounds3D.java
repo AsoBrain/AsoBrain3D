@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2007 Peter S. Heijnen
+ * Copyright (C) 1999-2009 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -49,7 +49,7 @@ public final class Bounds3D
 	/**
 	 * Initial value of a box (0-box).
 	 */
-	public static final Bounds3D INIT = new Bounds3D( Vector3D.INIT , Vector3D.INIT );
+	public static final Bounds3D INIT = new Bounds3D( Vector3D.ZERO , Vector3D.ZERO );
 
 	/**
 	 * Create a new box.
@@ -57,10 +57,26 @@ public final class Bounds3D
 	 * @param   v1  First vector of box.
 	 * @param   v2  Second vector of box.
 	 */
-	private Bounds3D( final Vector3D v1 , final Vector3D v2 )
+	public Bounds3D( final Vector3D v1 , final Vector3D v2 )
 	{
-		this.v1 = ( v1 == null ) ? Vector3D.INIT : v1;
-		this.v2 = ( v2 == null ) ? Vector3D.INIT : v2;
+		this.v1 = ( v1 == null ) ? Vector3D.ZERO : v1;
+		this.v2 = ( v2 == null ) ? Vector3D.ZERO : v2;
+	}
+
+	/**
+	 * Create a new box.
+	 *
+	 * @param   x1  X coordinate of first vector.
+	 * @param   y1  Y coordinate of first vector.
+	 * @param   z1  Z coordinate of first vector.
+	 * @param   x2  X coordinate of second vector.
+	 * @param   y2  Y coordinate of second vector.
+	 * @param   z2  Z coordinate of second vector.
+	 */
+	public Bounds3D( final double x1 , final double y1 , final double z1 , final double x2 , final double y2 , final double z2 )
+	{
+		v1 = new Vector3D( x1 , y1 , z1 );
+		v2 = new Vector3D( x2 , y2 , z2 );
 	}
 
 	/**
@@ -390,7 +406,7 @@ public final class Bounds3D
 
 			 if ( box.v1.equals( x , y , z ) ) result = box.v1;
 		else if ( box.v2.equals( x , y , z ) ) result = box.v2;
-		else result = Vector3D.INIT.set( x , y , z );
+		else result = new Vector3D( x , y , z );
 
 		return result;
 	}
@@ -422,7 +438,7 @@ public final class Bounds3D
 
 			 if ( bounds.v1.equals( x , y , z ) ) result = bounds.v1;
 		else if ( bounds.v2.equals( x , y , z ) ) result = bounds.v2;
-		else result = Vector3D.INIT.set( x , y , z );
+		else result = new Vector3D( x , y , z );
 
 		return result;
 	}
@@ -525,7 +541,7 @@ public final class Bounds3D
 		else if ( box1.v2.equals( x1 , y1 , z1 ) ) v1 = box1.v2;
 		else if ( box2.v1.equals( x1 , y1 , z1 ) ) v1 = box2.v1;
 		else if ( box2.v2.equals( x1 , y1 , z1 ) ) v1 = box2.v2;
-		else v1 = Vector3D.INIT.set( x1 , y1 , z1 );
+		else v1 = new Vector3D( x1 , y1 , z1 );
 
 		final Vector3D v2;
 
@@ -534,7 +550,7 @@ public final class Bounds3D
 		else if ( box2.v1.equals( x2 , y2 , z2 ) ) v2 = box2.v1;
 		else if ( box2.v2.equals( x2 , y2 , z2 ) ) v2 = box2.v2;
 		else if (      v1.equals( x2 , y2 , z2 ) ) v2 =      v1;
-		else v2 = Vector3D.INIT.set( x2 , y2 , z2 );
+		else v2 = new Vector3D( x2 , y2 , z2 );
 
 		/*
 		 * Try to reuse the existing boxes. If not possible, create
@@ -542,7 +558,7 @@ public final class Bounds3D
 		 */
 			 if ( ( box1.v1 == v1 ) && ( box1.v2 == v2 ) ) result = box1;
 		else if ( ( box2.v1 == v1 ) && ( box2.v2 == v2 ) ) result = box2;
-		else result = INIT.set( v1 , v2 );
+		else result = new Bounds3D( v1 , v2 );
 
 		return result;
 	}
@@ -561,7 +577,7 @@ public final class Bounds3D
 	 */
 	public Bounds3D set( final double x1 , final double y1 , final double z1 , final double x2 , final double y2 , final double z2 )
 	{
-		final Vector3D v0    = Vector3D.INIT;
+		final Vector3D v0    = Vector3D.ZERO;
 		final Vector3D oldV1 = v1;
 		final Vector3D oldV2 = v2;
 		final Vector3D newV1 = oldV1.set( x1 , y1 , z1 );
