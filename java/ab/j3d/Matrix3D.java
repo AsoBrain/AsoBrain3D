@@ -83,9 +83,9 @@ public final class Matrix3D
 	 * @param   nzz     Z quotient for Z component.
 	 * @param   nzo     Translation of Z component.
 	 */
-	private Matrix3D( final double nxx , final double nxy , final double nxz , final double nxo ,
-	                  final double nyx , final double nyy , final double nyz , final double nyo ,
-	                  final double nzx , final double nzy , final double nzz , final double nzo )
+	public Matrix3D( final double nxx , final double nxy , final double nxz , final double nxo ,
+	                 final double nyx , final double nyy , final double nyz , final double nyo ,
+	                 final double nzx , final double nzy , final double nzz , final double nzo )
 	{
 		xx = nxx;
 		xy = nxy;
@@ -1026,7 +1026,7 @@ public final class Matrix3D
 	 */
 	public Vector3D getTranslation()
 	{
-		return Vector3D.INIT.set( xo , yo , zo );
+		return Vector3D.ZERO.set( xo , yo , zo );
 	}
 
 	/**
