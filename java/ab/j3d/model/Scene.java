@@ -26,6 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jetbrains.annotations.NotNull;
+
+import ab.j3d.Bounds3D;
+import ab.j3d.Bounds3DBuilder;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.view.BSPTree;
@@ -107,7 +111,7 @@ public class Scene
 	/**
 	 * Content nodes.
 	 */
-	private final Map<Object, ContentNode> _contentNodes = new HashMap<Object, ContentNode>();
+	private final Map<Object,ContentNode> _contentNodes = new HashMap<Object,ContentNode>();
 
 	/**
 	 * List of listeners to notify about scene update events.
@@ -357,19 +361,52 @@ public class Scene
 	}
 
 	/**
-	 * Get content of this scene. The content comprises all nodes in the scene.
+	 * Get boundsing box that contains all 3D objects in the scene.
 	 *
-	 * @return  A {@link Node3DCollection} with all nodes in the scene
-	 *          (may be empty, but never <code>null</code>).
+	 * @return  Bounding box of scene.
 	 */
+	public Bounds3D getBounds()
+	{
+		final Bounds3DBuilder bounds3DBuilder = new Bounds3DBuilder();
+
+		for ( final ContentNode node : _contentNodes.values() )
+		{
+			final Bounds3D nodeBounds = node.getBounds();
+			bounds3DBuilder.addPoint( nodeBounds.v1 );
+			bounds3DBuilder.addPoint( nodeBounds.v2 );
+		}
+
+		return bounds3DBuilder.getBounds();
+	}
+
+	/**
+	 * Get content in this scene. The content comprises all nodes in the scene.
+	 *
+	 * @return  A {@link Node3DCollection} with all nodes in the scene.
+	 */
+	@NotNull
 	public Node3DCollection<Node3D> getContent()
 	{
-		final Node3DCollection<Node3D> result = new Node3DCollection<Node3D>();
+		return getContent( Node3D.class );
+	}
+
+	/**
+	 * Get content of the specified type in this scene.
+	 *
+	 * @param   nodeClass   Class of content nodes.
+	 *
+	 * @return  A {@link Node3DCollection} with all nodes in the scene of the
+	 *          specified <code>nodeClass</code>.
+	 */
+	@NotNull
+	public <T extends Node3D> Node3DCollection<T> getContent( @NotNull final Class<? extends T> nodeClass )
+	{
+		final Node3DCollection<T> result = new Node3DCollection<T>();
 
 		for ( final ContentNode node : _contentNodes.values() )
 		{
 			final Node3D node3D = node.getNode3D();
-			node3D.collectNodes( result , Node3D.class , node.getTransform() , false );
+			node3D.collectNodes( result , nodeClass , node.getTransform() , false );
 		}
 
 		return result;
