@@ -18,21 +18,48 @@ package ab.j3d.view.jogl;
  */
 public class JOGLConfiguration
 {
-	private boolean _perPixelLightingEnabled = true;
+	/**
+	 * Whether per-pixel lighting should be enabled. This applies only when
+	 * support for OpenGL shaders is available.
+	 */
+	private boolean _perPixelLightingEnabled = false;
 
+	/**
+	 * Whether depth-peeling should be enabled. This applies only when the
+	 * required OpenGL functionality is available.
+	 */
 	private boolean _depthPeelingEnabled = false;
 
+	/**
+	 * Maximum number of OpenGL lights to use.
+	 */
 	private int _maximumNumberOfLights = 3;
 
+	/**
+	 * Constructs a new JOGL configuration with default settings.
+	 */
 	public JOGLConfiguration()
 	{
 	}
 
+	/**
+	 * Returns whether per-pixel lighting should be enabled, when support is
+	 * available.
+	 *
+	 * @return  <code>true</code> if per-pixel lighting should be used.
+	 */
 	public boolean isPerPixelLightingEnabled()
 	{
 		return _perPixelLightingEnabled;
 	}
 
+	/**
+	 * Sets whether per-pixel lighting should be enabled, when support is
+	 * available.
+	 *
+	 * @param   perPixelLightingEnabled     <code>true</code> if per-pixel
+	 *                                      lighting should be used.
+	 */
 	public void setPerPixelLightingEnabled( final boolean perPixelLightingEnabled )
 	{
 		_perPixelLightingEnabled = perPixelLightingEnabled;
