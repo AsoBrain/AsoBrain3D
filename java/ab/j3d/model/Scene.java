@@ -372,8 +372,9 @@ public class Scene
 		for ( final ContentNode node : _contentNodes.values() )
 		{
 			final Bounds3D nodeBounds = node.getBounds();
-			bounds3DBuilder.addPoint( nodeBounds.v1 );
-			bounds3DBuilder.addPoint( nodeBounds.v2 );
+			final Matrix3D nodeToWCS = node.getTransform();
+			bounds3DBuilder.addPoint( nodeToWCS.transform( nodeBounds.v1 ) );
+			bounds3DBuilder.addPoint( nodeToWCS.transform( nodeBounds.v2 ) );
 		}
 
 		return bounds3DBuilder.getBounds();
