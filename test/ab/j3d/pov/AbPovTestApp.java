@@ -30,7 +30,7 @@ import ab.j3d.control.FromToCameraControl;
 import ab.j3d.model.Scene;
 import ab.j3d.view.RenderEngine;
 import ab.j3d.view.View3D;
-import ab.j3d.view.java3d.Java3dEngine;
+import ab.j3d.view.jogl.JOGLEngine;
 
 import com.numdata.oss.ui.ImageTools;
 import com.numdata.oss.ui.WindowTools;
@@ -58,7 +58,7 @@ final class AbPovTestApp
 	/**
 	 * An object of type {@link AbPovTestModel} is constructed, the objects are
 	 * retrieved and a view is created and added to a frame. The
-	 * {@link Java3dEngine} is used here.
+	 * {@link JOGLEngine} is used here.
 	 *
 	 * @param args Command-line arguments.
 	 */
@@ -95,7 +95,7 @@ final class AbPovTestApp
 		/*
 		 * Create Java3D-engine.
 		 */
-		final RenderEngine renderEngine = new Java3dEngine( scene );
+		final RenderEngine renderEngine = new JOGLEngine();
 
 		/*
 		 * Create and display view.

@@ -43,7 +43,7 @@ import ab.j3d.model.Object3DBuilder;
 import ab.j3d.model.Scene;
 import ab.j3d.view.RenderEngine;
 import ab.j3d.view.View3D;
-import ab.j3d.view.java3d.Java3dEngine;
+import ab.j3d.view.jogl.JOGLEngine;
 
 /**
  * The {@link Model3D} creates a 3d representation of a {@link Model}.
@@ -124,7 +124,7 @@ public final class Model3D
 		Scene.addLegacyLights( scene );
 		_scene = scene;
 
-		_renderEngine = new Java3dEngine( scene, Color.GRAY );
+		_renderEngine = new JOGLEngine();
 
 		_elements = new HashSet<SceneElement>();
 
