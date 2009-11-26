@@ -49,6 +49,7 @@
     <pathelement location="${idea.home}/redist/annotations.jar"/>
     <pathelement location="${jogl.home}/lib/jogl.jar"/>
     <pathelement location="${jogl.home}/lib/gluegen-rt.jar"/>
+    <pathelement location="${junit.home}/junit.jar"/>
     <pathelement location="${numdata.oss.home}/lib/numdata-oss.jar"/>
   </path>
 
