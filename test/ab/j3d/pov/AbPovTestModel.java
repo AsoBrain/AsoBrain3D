@@ -247,7 +247,7 @@ public final class AbPovTestModel
 			sideMaterial.colorMapWidth = 0.2f;
 			sideMaterial.colorMapHeight = 0.2f;
 
-			result = new Box3D( 200.0 , 10.0 , 200.0 , new BoxUVMap( Scene.MM , Matrix3D.getTransform( 0.0 , 0.0 , 45.0 , -350.0 , 0.0 , 0.0 ) ) , mainMaterial , mainMaterial , sideMaterial , sideMaterial , sideMaterial , sideMaterial );
+			result = new Box3D( 200.0 , 10.0 , 200.0 , new BoxUVMap( Scene.MM ) , mainMaterial , mainMaterial , sideMaterial , sideMaterial , sideMaterial , sideMaterial );
 		}
 		else
 		{

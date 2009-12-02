@@ -667,11 +667,12 @@ public final class TestAbToPovConverter
 			"\t}\n" +
 			"\tuv_vectors\n" +
 			"\t{\n" +
-			"\t\t12,\n" +
-			"\t\t<0.25,0.0> , <0.25,1.0> , <1.25,1.0> ,\n" +
-			"\t\t<1.25,0.0> , <0.0,0.0> , <0.0,1.0> ,\n" +
-			"\t\t<0.05,1.0> , <0.05,0.0> , <0.0,0.25> ,\n" +
-			"\t\t<0.0,1.25> , <0.05,1.25> , <0.05,0.25>\n" +
+			"\t\t13,\n" +
+			"\t\t<0.0,0.0> , <0.0,1.0> , <1.0,1.0> ,\n" +
+			"\t\t<1.0,0.0> , <-1.0,0.0> , <-1.0,1.0> ,\n" +
+			"\t\t<0.05,1.0> , <0.05,0.0> , <-0.05,0.0> ,\n" +
+			"\t\t<-0.05,1.0> , <0.0,0.05> , <1.0,0.05> ,\n" +
+			"\t\t<-1.0,0.05>\n" +
 			"\t}\n" +
 			"\ttexture_list\n" +
 			"\t{\n" +
@@ -688,8 +689,8 @@ public final class TestAbToPovConverter
 			"\tuv_indices\n" +
 			"\t{\n" +
 			"\t\t12,\n" +
-			"\t\t<0,1,2> , <0,2,3> , <0,1,2> , <0,2,3> , <4,5,6> , <4,6,7> ,\n" +
-			"\t\t<4,5,6> , <4,6,7> , <8,9,10> , <8,10,11> , <8,9,10> , <8,10,11>\n" +
+			"\t\t<0,1,2> , <0,2,3> , <4,5,1> , <4,1,0> , <0,1,6> , <0,6,7> ,\n" +
+			"\t\t<8,9,1> , <8,1,0> , <0,10,11> , <0,11,3> , <4,12,10> , <4,10,0>\n" +
 			"\t}\n" +
 			"\tuv_mapping\n" +
 			"}\n";
@@ -927,7 +928,7 @@ public final class TestAbToPovConverter
 	}
 
 	/**
-	 * This method tests the conversion of an extruded {@link Shape} to
+	 * This method tests the conversion of an extruded {@link java.awt.Shape} to
 	 * a {@link PovMesh2}.
 	 *
 	 * @throws IOException When there was a problem writing to the
