@@ -668,8 +668,6 @@ public final class Bounds3D
 	 */
 	public static String toFriendlyString( final Bounds3D bounds )
 	{
-		return ( bounds == null ) ? "null" :
-		       "( " + bounds.v1.x + " , " + bounds.v1.y + " , " + bounds.v1.z + " ) - ( " +
-		              bounds.v2.x + " , " + bounds.v2.y + " , " + bounds.v2.z + " )";
+		return ( bounds == null ) ? "null" : "[ " + bounds.v1.toFriendlyString() + " , " + bounds.v2.toFriendlyString() + " ]";
 	}
 }
