@@ -345,7 +345,7 @@ public final class Matrix3DTester
 	 */
 	public static void assertEqualOrientation( final String messagePrefix , final Matrix3D expected , final Matrix3D actual , final double delta )
 	{
-		final String actualPrefix = ( messagePrefix != null ) ? messagePrefix + " - " : "";
+		final String actualPrefix = ( ( messagePrefix != null ) ? messagePrefix + "\n" : "" ) + "Expected:" + expected.toFriendlyString() + "\nActual: " + actual.toFriendlyString() + "\n";
 
 		assertEquals( actualPrefix + "Incorrect 'xx' value." , expected.xx , actual.xx , delta );
 		assertEquals( actualPrefix + "Incorrect 'xy' value." , expected.xy , actual.xy , delta );
@@ -382,7 +382,7 @@ public final class Matrix3DTester
 	 */
 	public static void assertEqualTranslation( final String messagePrefix , final Matrix3D expected , final Matrix3D actual , final double delta )
 	{
-		final String actualPrefix = ( messagePrefix != null ) ? messagePrefix + " - " : "";
+		final String actualPrefix = ( ( messagePrefix != null ) ? messagePrefix + "\n" : "" ) + "Expected:" + expected.toFriendlyString() + "\nActual: " + actual.toFriendlyString() + "\n";
 
 		assertEquals( actualPrefix + "Incorrect 'xo' value." , expected.xo , actual.xo , delta );
 		assertEquals( actualPrefix + "Incorrect 'yo' value." , expected.yo , actual.yo , delta );
@@ -401,7 +401,7 @@ public final class Matrix3DTester
 	 */
 	public static void assertEquals( final String messagePrefix , final Matrix3D expected , final Matrix3D actual , final double delta )
 	{
-		final String actualPrefix = ( messagePrefix != null ) ? messagePrefix + " - " : "";
+		final String actualPrefix = ( ( messagePrefix != null ) ? messagePrefix + "\n" : "" ) + "Expected:" + expected.toFriendlyString() + "\nActual: " + actual.toFriendlyString() + "\n";
 
 		assertEquals( actualPrefix + "Incorrect 'xx' value." , expected.xx , actual.xx , delta );
 		assertEquals( actualPrefix + "Incorrect 'xy' value." , expected.xy , actual.xy , delta );
