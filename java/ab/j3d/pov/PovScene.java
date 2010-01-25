@@ -42,7 +42,6 @@ import javax.imageio.ImageIO;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 import javax.swing.BoundedRangeModel;
 
-import com.numdata.oss.ArrayTools;
 import com.numdata.oss.io.IndentingWriter;
 import com.numdata.oss.log.ClassLogger;
 
@@ -463,6 +462,28 @@ public class PovScene
 	public static Process startPovRay( final File povFile , final int width , final int height , final boolean background )
 		throws IOException
 	{
+		return startPovRay( povFile , width , height , background , 0 , width );
+	}
+
+	/**
+	 * Start POV-Ray render process. By specifying start and end columns, only
+	 * a part of the image can be rendered.
+	 *
+	 * @param   povFile         File containing POV-scene.
+	 * @param   width           The width of the rendered image.
+	 * @param   height          The height of the rendered image.
+	 * @param   background      Wether or not to draw a background.
+	 * @param   startColumn     First column (x-coordinate) to render.
+	 * @param   endColumn       Last column (x-coordinate) to render.
+	 *
+	 * @return  POV-Ray process.
+	 *
+	 * @throws  IOException if the POV-Ray executable could not be accessed.
+	 * @throws  SecurityException if a security manager prevents file access.
+	 */
+	public static Process startPovRay( final File povFile , final int width , final int height , final boolean background , final int startColumn , final int endColumn )
+		throws IOException
+	{
 		/*
 		 * Start POV-Ray process.
 		 */
@@ -482,7 +503,14 @@ public class PovScene
 		command.add( "+GA" );                      /* Turn on all debug, fatal, render, statistic, and warning text to the console */
 		command.add( background ? "-UA" : "+UA" ); /* Turn on/off alpha channel output */
 
-		LOG.debug( "rendering (command=" + ArrayTools.toString( command ) + ')' );
+		if ( startColumn != 0 )
+		{
+			command.add( "+SC" + startColumn ); /* Turn on/off alpha channel output */
+		}
+		if ( endColumn != height - 1 )
+		{
+			command.add( "+EC" + endColumn ); /* Turn on/off alpha channel output */
+		}
 
 		final ProcessBuilder processBuilder = new ProcessBuilder( command );
 		final Process result = processBuilder.start();
@@ -499,7 +527,6 @@ public class PovScene
 		{
 			LOG.warn( "failed to close 'stdin' of render process" , e );
 		}
-
 
 		return result;
 	}
@@ -745,8 +772,6 @@ public class PovScene
 				out.write( "minimum_reuse " );
 				out.writeln( String.valueOf( _radiosityMinimumReuse ) );
 			}
-
-			out.writeln( "pretrace_end 0.2" );
 
 			out.indentOut();
 			out.writeln( "}" );
