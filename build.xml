@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="AsoBrain 3D Toolkit" default="build">
-  <property file="build.properties"/>
   <property file="../build.properties"/>
-  <property file="${user.home}/build.properties"/>
   <property name="build.sysclasspath" value="last"/>
 
   <target name="clean" depends="init" description="Remove temporary build files">
@@ -17,11 +15,11 @@
 
   <target name="init">
     <tstamp/>
-    <available property="api.hsqldb"                     type="file" file="${hsqldb.home}/lib/hsqldb.jar"/>
+    <available property="api.hsqldb"                     type="file" file="${hsqldb.jar}"/>
     <available property="api.jetbrains.annotations"      type="file" file="${idea.home}/redist/annotations.jar"/>
     <available property="api.jetbrains.javac2"           type="file" file="${idea.home}/redist/javac2.jar"/>
-    <available property="api.jogl"                       type="file" file="${jogl.home}/lib/jogl.jar"/>
-    <available property="api.junit"                      type="file" file="${junit.home}/junit.jar"/>
+    <available property="api.jogl"                       type="file" file="${jogl.jar}"/>
+    <available property="api.junit"                      type="file" file="${junit.jar}"/>
     <available property="api.numdata.oss"                type="file" file="${numdata.oss.home}/lib/numdata-oss.jar"/>
     <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="idea.lib.path"/>
   </target>
@@ -47,9 +45,9 @@
   <path id="java.classpath">
     <pathelement location="classes/java"/>
     <pathelement location="${idea.home}/redist/annotations.jar"/>
-    <pathelement location="${jogl.home}/lib/jogl.jar"/>
-    <pathelement location="${jogl.home}/lib/gluegen-rt.jar"/>
-    <pathelement location="${junit.home}/junit.jar"/>
+    <pathelement location="${jogl.jar}"/>
+    <pathelement location="${gluegen-rt.jar}"/>
+    <pathelement location="${junit.jar}"/>
     <pathelement location="${numdata.oss.home}/lib/numdata-oss.jar"/>
   </path>
 
@@ -64,7 +62,7 @@
   <path id="test.classpath">
     <pathelement location="classes/test"/>
     <path refid="java.classpath"/>
-    <pathelement location="${hsqldb.home}/lib/hsqldb.jar"/>
+    <pathelement location="${hsqldb.jar}"/>
     <pathelement location="${numdata.oss.home}/classes/test"/>
   </path>
 
