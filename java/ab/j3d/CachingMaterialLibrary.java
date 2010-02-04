@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * Copyright (C) 2008-2008 Numdata BV
+ * Copyright (C) 2008-2010 Numdata BV
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -126,6 +126,7 @@ public class CachingMaterialLibrary
 			{
 				cache.put( material.code , material );
 			}
+			_materialCount = result.size();
 		}
 
 		return result;
