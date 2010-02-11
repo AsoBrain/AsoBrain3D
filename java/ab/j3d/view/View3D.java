@@ -35,6 +35,8 @@ import javax.swing.Action;
 import javax.swing.JLabel;
 import javax.swing.JToolBar;
 
+import org.jetbrains.annotations.NotNull;
+
 import ab.j3d.Matrix3D;
 import ab.j3d.control.CameraControl;
 import ab.j3d.control.Control;
@@ -166,11 +168,8 @@ public abstract class View3D
 	 *
 	 * @param   scene   Scene to view.
 	 */
-	protected View3D( final Scene scene )
+	protected View3D( @NotNull final Scene scene )
 	{
-		if ( scene == null )
-			throw new NullPointerException( "scene" );
-
 		scene.addSceneUpdateListener( this );
 		_scene = scene;
 
@@ -409,10 +408,14 @@ public abstract class View3D
 		if ( oldCameraControl != cameraControl )
 		{
 			if ( oldCameraControl != null )
+			{
 				removeControl( oldCameraControl );
+			}
 
 			if ( cameraControl != null )
+			{
 				appendControl( cameraControl );
+			}
 		}
 	}
 
@@ -570,6 +573,7 @@ public abstract class View3D
 	 *
 	 * @return  Render style filters.
 	 */
+	@NotNull
 	public Collection<RenderStyleFilter> getRenderStyleFilters()
 	{
 		return Collections.unmodifiableList( _renderStyleFilters );
@@ -580,11 +584,8 @@ public abstract class View3D
 	 *
 	 * @param   styleFilter     Render style filter to add.
 	 */
-	public void appendRenderStyleFilter( final RenderStyleFilter styleFilter )
+	public void appendRenderStyleFilter( @NotNull final RenderStyleFilter styleFilter )
 	{
-		if ( styleFilter == null )
-			throw new NullPointerException( "styleFilter" );
-
 		_renderStyleFilters.add( styleFilter );
 	}
 
@@ -593,13 +594,12 @@ public abstract class View3D
 	 *
 	 * @param   styleFilter     Render style filter to remove.
 	 */
-	public void removeRenderStyleFilter( final RenderStyleFilter styleFilter )
+	public void removeRenderStyleFilter( @NotNull final RenderStyleFilter styleFilter )
 	{
-		if ( styleFilter == null )
-			throw new NullPointerException( "styleFilter" );
-
 		if ( !_renderStyleFilters.remove( styleFilter ) )
+		{
 			throw new IllegalArgumentException();
+		}
 	}
 
 	/**
@@ -689,14 +689,13 @@ public abstract class View3D
 	 * @see     #hasOverlay
 	 * @see     #paintOverlay
 	 */
-	public void addOverlay( final ViewOverlay overlay )
+	public void addOverlay( @NotNull final ViewOverlay overlay )
 	{
-		if ( overlay == null )
-			throw new NullPointerException( "overlay" );
-
 		final List<ViewOverlay> overlays = _overlays;
 		if ( overlays.contains( overlay ) )
+		{
 			throw new IllegalArgumentException();
+		}
 
 		overlay.addView( this );
 
@@ -712,14 +711,13 @@ public abstract class View3D
 	 * @see     #hasOverlay
 	 * @see     #paintOverlay
 	 */
-	public void removeOverlay( final ViewOverlay overlay )
+	public void removeOverlay( @NotNull final ViewOverlay overlay )
 	{
-		if ( overlay == null )
-			throw new NullPointerException( "overlay" );
-
 		final List<ViewOverlay> overlays = _overlays;
 		if ( !overlays.remove( overlay ) )
+		{
 			throw new IllegalArgumentException();
+		}
 
 		overlay.removeView( this );
 	}
@@ -750,11 +748,8 @@ public abstract class View3D
 	 * @see     #hasOverlay
 	 * @see     #removeOverlay
 	 */
-	protected void paintOverlay( final Graphics2D g2d )
+	protected void paintOverlay( @NotNull final Graphics2D g2d )
 	{
-		if ( g2d == null )
-			throw new NullPointerException( "g2d" );
-
 		for ( final ViewOverlay overlay : _overlays )
 		{
 			overlay.paintOverlay( this , g2d );
