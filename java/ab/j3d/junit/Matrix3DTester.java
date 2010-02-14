@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * (C) Copyright Numdata BV 2005-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,7 @@ import junit.framework.AssertionFailedError;
 import ab.j3d.Matrix3D;
 
 /**
- * JUnit unit tool class to help with testing <code>Matrix3D</code> objects.
+ * JUnit unit tool class to help with testing {@link Matrix3D} objects.
  *
  * @see     Matrix3D
  *
@@ -33,7 +33,6 @@ import ab.j3d.Matrix3D;
  * @version $Revision$ $Date$
  */
 public final class Matrix3DTester
-	extends Assert
 {
 	/**
 	 *
@@ -113,7 +112,7 @@ public final class Matrix3DTester
 			}
 		}
 
-		assertEquals( "Initialization error." , matrices.length , index );
+		Assert.assertEquals( "Initialization error." , matrices.length , index );
 		ROTATED_TEST_MATRICES = matrices;
 	}
 
@@ -155,7 +154,7 @@ public final class Matrix3DTester
 		final String messageSuffix = "\n\nmatrix1 =\n" + matrix1.toFriendlyString()
 		                           + "\n\nmatrix2 =\n" + matrix2.toFriendlyString();
 
-		assertEquals( actualPrefix + "Has incorrect distance." + messageSuffix , expectedDistance , distance , delta );
+		Assert.assertEquals( actualPrefix + "Has incorrect distance." + messageSuffix , expectedDistance , distance , delta );
 	}
 
 	/**
@@ -189,9 +188,9 @@ public final class Matrix3DTester
 		                              + "\n\nmatrix =\n" + matrix.toFriendlyString()
 		                              + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
 
-		assertEquals( actualPrefix + "Incorrect relative X-value." + messageSuffix , expectedX , relativeMatrix.xo , delta );
-		assertEquals( actualPrefix + "Incorrect relative Y-value." + messageSuffix , expectedY , relativeMatrix.yo , delta );
-		assertEquals( actualPrefix + "Incorrect relative Z-value." + messageSuffix , expectedZ , relativeMatrix.zo , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect relative X-value." + messageSuffix , expectedX , relativeMatrix.xo , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect relative Y-value." + messageSuffix , expectedY , relativeMatrix.yo , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect relative Z-value." + messageSuffix , expectedZ , relativeMatrix.zo , delta );
 	}
 
 	/**
@@ -232,9 +231,9 @@ public final class Matrix3DTester
 		                              + "\n\nmatrix =\n" + matrix.toFriendlyString()
 		                              + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
 
-		     if ( direction < 0  ) assertTrue  ( actualPrefix + "Should have 'xo < 0', but it isn't." + messageSuffix ,       relativeMatrix.xo <  delta );
-		else if ( direction == 0 ) assertEquals( actualPrefix + "Should have 'xo = 0', but it isn't." + messageSuffix , 0.0 , relativeMatrix.xo ,  delta );
-		else /*   direction > 0 */ assertTrue  ( actualPrefix + "Should have 'xo > 0', but it isn't." + messageSuffix ,       relativeMatrix.xo > -delta );
+		     if ( direction < 0  ) Assert.assertTrue  ( actualPrefix + "Should have 'xo < 0', but it isn't." + messageSuffix ,       relativeMatrix.xo <  delta );
+		else if ( direction == 0 ) Assert.assertEquals( actualPrefix + "Should have 'xo = 0', but it isn't." + messageSuffix , 0.0 , relativeMatrix.xo ,  delta );
+		else /*   direction > 0 */ Assert.assertTrue  ( actualPrefix + "Should have 'xo > 0', but it isn't." + messageSuffix ,       relativeMatrix.xo > -delta );
 	}
 
 	/**
@@ -275,9 +274,9 @@ public final class Matrix3DTester
 		                              + "\n\nmatrix =\n" + matrix.toFriendlyString()
 		                              + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
 
-		     if ( direction < 0  ) assertTrue  ( actualPrefix + "Should have 'yo < 0', but it isn't." + messageSuffix ,       relativeMatrix.yo <  delta);
-		else if ( direction == 0 ) assertEquals( actualPrefix + "Should have 'yo = 0', but it isn't." + messageSuffix , 0.0 , relativeMatrix.yo ,  delta );
-		else /*   direction > 0 */ assertTrue  ( actualPrefix + "Should have 'yo > 0', but it isn't." + messageSuffix ,       relativeMatrix.yo > -delta );
+		     if ( direction < 0  ) Assert.assertTrue  ( actualPrefix + "Should have 'yo < 0', but it isn't." + messageSuffix ,       relativeMatrix.yo <  delta);
+		else if ( direction == 0 ) Assert.assertEquals( actualPrefix + "Should have 'yo = 0', but it isn't." + messageSuffix , 0.0 , relativeMatrix.yo ,  delta );
+		else /*   direction > 0 */ Assert.assertTrue  ( actualPrefix + "Should have 'yo > 0', but it isn't." + messageSuffix ,       relativeMatrix.yo > -delta );
 	}
 
 	/**
@@ -318,9 +317,9 @@ public final class Matrix3DTester
 		                              + "\n\nmatrix =\n" + matrix.toFriendlyString()
 		                              + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
 
-		     if ( direction < 0  ) assertTrue  ( actualPrefix + "Should have 'zo < 0', but it isn't." + messageSuffix ,       relativeMatrix.zo <  delta );
-		else if ( direction == 0 ) assertEquals( actualPrefix + "Should have 'zo = 0', but it isn't." + messageSuffix , 0.0 , relativeMatrix.zo ,  delta );
-		else /*   direction > 0 */ assertTrue  ( actualPrefix + "Should have 'zo > 0', but it isn't." + messageSuffix ,       relativeMatrix.zo > -delta );
+		     if ( direction < 0  ) Assert.assertTrue  ( actualPrefix + "Should have 'zo < 0', but it isn't." + messageSuffix ,       relativeMatrix.zo <  delta );
+		else if ( direction == 0 ) Assert.assertEquals( actualPrefix + "Should have 'zo = 0', but it isn't." + messageSuffix , 0.0 , relativeMatrix.zo ,  delta );
+		else /*   direction > 0 */ Assert.assertTrue  ( actualPrefix + "Should have 'zo > 0', but it isn't." + messageSuffix ,       relativeMatrix.zo > -delta );
 	}
 
 	/**
@@ -347,17 +346,17 @@ public final class Matrix3DTester
 	{
 		final String actualPrefix = ( ( messagePrefix != null ) ? messagePrefix + "\n" : "" ) + "Expected:" + expected.toFriendlyString() + "\nActual: " + actual.toFriendlyString() + "\n";
 
-		assertEquals( actualPrefix + "Incorrect 'xx' value." , expected.xx , actual.xx , delta );
-		assertEquals( actualPrefix + "Incorrect 'xy' value." , expected.xy , actual.xy , delta );
-		assertEquals( actualPrefix + "Incorrect 'xz' value." , expected.xz , actual.xz , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'xx' value." , expected.xx , actual.xx , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'xy' value." , expected.xy , actual.xy , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'xz' value." , expected.xz , actual.xz , delta );
 
-		assertEquals( actualPrefix + "Incorrect 'yx' value." , expected.yx , actual.yx , delta );
-		assertEquals( actualPrefix + "Incorrect 'yy' value." , expected.yy , actual.yy , delta );
-		assertEquals( actualPrefix + "Incorrect 'yz' value." , expected.yz , actual.yz , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'yx' value." , expected.yx , actual.yx , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'yy' value." , expected.yy , actual.yy , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'yz' value." , expected.yz , actual.yz , delta );
 
-		assertEquals( actualPrefix + "Incorrect 'zx' value." , expected.zx , actual.zx , delta );
-		assertEquals( actualPrefix + "Incorrect 'zy' value." , expected.zy , actual.zy , delta );
-		assertEquals( actualPrefix + "Incorrect 'zz' value." , expected.zz , actual.zz , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'zx' value." , expected.zx , actual.zx , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'zy' value." , expected.zy , actual.zy , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'zz' value." , expected.zz , actual.zz , delta );
 	}
 
 	/**
@@ -384,9 +383,9 @@ public final class Matrix3DTester
 	{
 		final String actualPrefix = ( ( messagePrefix != null ) ? messagePrefix + "\n" : "" ) + "Expected:" + expected.toFriendlyString() + "\nActual: " + actual.toFriendlyString() + "\n";
 
-		assertEquals( actualPrefix + "Incorrect 'xo' value." , expected.xo , actual.xo , delta );
-		assertEquals( actualPrefix + "Incorrect 'yo' value." , expected.yo , actual.yo , delta );
-		assertEquals( actualPrefix + "Incorrect 'zo' value." , expected.zo , actual.zo , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'xo' value." , expected.xo , actual.xo , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'yo' value." , expected.yo , actual.yo , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'zo' value." , expected.zo , actual.zo , delta );
 	}
 
 	/**
@@ -403,19 +402,19 @@ public final class Matrix3DTester
 	{
 		final String actualPrefix = ( ( messagePrefix != null ) ? messagePrefix + "\n" : "" ) + "Expected:" + expected.toFriendlyString() + "\nActual: " + actual.toFriendlyString() + "\n";
 
-		assertEquals( actualPrefix + "Incorrect 'xx' value." , expected.xx , actual.xx , delta );
-		assertEquals( actualPrefix + "Incorrect 'xy' value." , expected.xy , actual.xy , delta );
-		assertEquals( actualPrefix + "Incorrect 'xz' value." , expected.xz , actual.xz , delta );
-		assertEquals( actualPrefix + "Incorrect 'xo' value." , expected.xo , actual.xo , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'xx' value." , expected.xx , actual.xx , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'xy' value." , expected.xy , actual.xy , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'xz' value." , expected.xz , actual.xz , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'xo' value." , expected.xo , actual.xo , delta );
 
-		assertEquals( actualPrefix + "Incorrect 'yx' value." , expected.yx , actual.yx , delta );
-		assertEquals( actualPrefix + "Incorrect 'yy' value." , expected.yy , actual.yy , delta );
-		assertEquals( actualPrefix + "Incorrect 'yz' value." , expected.yz , actual.yz , delta );
-		assertEquals( actualPrefix + "Incorrect 'yo' value." , expected.yo , actual.yo , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'yx' value." , expected.yx , actual.yx , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'yy' value." , expected.yy , actual.yy , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'yz' value." , expected.yz , actual.yz , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'yo' value." , expected.yo , actual.yo , delta );
 
-		assertEquals( actualPrefix + "Incorrect 'zx' value." , expected.zx , actual.zx , delta );
-		assertEquals( actualPrefix + "Incorrect 'zy' value." , expected.zy , actual.zy , delta );
-		assertEquals( actualPrefix + "Incorrect 'zz' value." , expected.zz , actual.zz , delta );
-		assertEquals( actualPrefix + "Incorrect 'zo' value." , expected.zo , actual.zo , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'zx' value." , expected.zx , actual.zx , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'zy' value." , expected.zy , actual.zy , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'zz' value." , expected.zz , actual.zz , delta );
+		Assert.assertEquals( actualPrefix + "Incorrect 'zo' value." , expected.zo , actual.zo , delta );
 	}
 }
