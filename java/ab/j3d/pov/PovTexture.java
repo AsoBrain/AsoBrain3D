@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2009
+ * (C) Copyright Numdata BV 2000-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -128,9 +128,14 @@ public class PovTexture
 	private double _specular;
 
 	/**
-	 * Reflection factor.
+	 * Reflection factor parallel to surface normal.
 	 */
-	private double _reflection;
+	private PovVector _reflectionMin;
+
+	/**
+	 * Reflection factor perpendicular to surface normal.
+	 */
+	private PovVector _reflectionMax;
 
 	/**
 	 * Metallic texture flag.
@@ -182,6 +187,9 @@ public class PovTexture
 
 		/**
 		 * Construct reference to PovTexture instance.
+		 *
+		 * @param   reference   Referenced texture.
+		 * @param   rotation    Rotation to be applied.
 		 */
 		public Reference( final PovTexture reference , final PovVector rotation )
 		{
@@ -246,30 +254,29 @@ public class PovTexture
 	}
 
 	/**
-	 * Creates a texture map using the specified map.
-	 *
-	 * @param   name    Name of the texture.
-	 * @param   rgb     Color of the texture.
-	 * @param   imageMap     Path to map image to use.
+	 * Constructs a new texture instance with the defaults set. The constructed
+	 * instance cannot be used as is; either the name of the texture or a
+	 * free-form texture definition must be specified.
 	 */
-	private PovTexture( final String name , final PovVector rgb , final String free , final String imageMap )
+	private PovTexture()
 	{
-		_name         = name;
-		_free         = free;
-		_declared     = false;
-		_rgb          = rgb;
-		_imageMap     = imageMap;
-		_imageMapType = "jpeg";
-		_phong        = 0.0;
-		_phongSize    = 0.0;
-		_ambient      = null;
-		_diffuse      = 0.0;
-		_specular     = 0.0;
-		_reflection   = 0.0;
-		_filter       = 0.0;
-		_transmit     = 0.0;
-		_scale        = null;
-		_metallic     = false;
+		_name          = null;
+		_free          = null;
+		_declared      = false;
+		_rgb           = null;
+		_imageMap      = null;
+		_imageMapType  = null;
+		_phong         = 0.0;
+		_phongSize     = 0.0;
+		_ambient       = null;
+		_diffuse       = 0.0;
+		_specular      = 0.0;
+		_reflectionMin = null;
+		_reflectionMax = null;
+		_filter        = 0.0;
+		_transmit      = 0.0;
+		_scale         = null;
+		_metallic      = false;
 	}
 
 	/**
@@ -281,7 +288,8 @@ public class PovTexture
 	 */
 	protected PovTexture( final String name )
 	{
-		this( name , null , null , null );
+		this();
+		_name = name;
 	}
 
 	/**
@@ -294,7 +302,9 @@ public class PovTexture
 	 */
 	public PovTexture( final String name , final double r , final double g , final double b )
 	{
-		this( name , new PovVector( r , g , b ) , null , null );
+		this();
+		_name = name;
+		_rgb = new PovVector( r , g , b );
 	}
 
 	/**
@@ -305,7 +315,9 @@ public class PovTexture
 	 */
 	public PovTexture( final String name , final Color rgb )
 	{
-		this( name , new PovVector( rgb ) , null , null );
+		this();
+		_name = name;
+		_rgb = new PovVector( rgb );
 	}
 
 	/**
@@ -317,8 +329,10 @@ public class PovTexture
 	 */
 	public PovTexture( final String name , final String textureDirectory , final String imageMap )
 	{
-		this( name , null , null , ( ( imageMap != null ) && ( textureDirectory != null ) ) ? textureDirectory + imageMap
-		                           : imageMap );
+		this();
+		_name = name;
+		_imageMap = ( ( imageMap != null ) && ( textureDirectory != null ) ) ? textureDirectory + imageMap : imageMap;
+		_imageMapType  = "jpeg";
 	}
 
 	/**
@@ -332,7 +346,9 @@ public class PovTexture
 	 */
 	public PovTexture( final String name , final String free )
 	{
-		this( name , null , free , null );
+		this();
+		_name = name;
+		_free = free;
 	}
 
 	/**
@@ -345,11 +361,17 @@ public class PovTexture
 	 */
 	public PovTexture( final String textureDirectory , final Material material )
 	{
-		this( getNameForMaterial( material ) ,
-		      new PovVector( Math.max( (double)material.diffuseColorRed   , 0.001 ) ,
-		                     Math.max( (double)material.diffuseColorGreen , 0.001 ) ,
-		                     Math.max( (double)material.diffuseColorBlue  , 0.001 ) ) , null ,
-		      ( material.colorMap != null ) ? ( textureDirectory != null ) ? textureDirectory + '/' + material.colorMap : material.colorMap : null );
+		this();
+		_name = getNameForMaterial( material );
+		_rgb = new PovVector( Math.max( (double)material.diffuseColorRed   , 0.001 ) ,
+		                      Math.max( (double)material.diffuseColorGreen , 0.001 ) ,
+		                      Math.max( (double)material.diffuseColorBlue  , 0.001 ) );
+
+		if ( material.colorMap != null )
+		{
+			_imageMap = ( textureDirectory != null ) ? textureDirectory + '/' + material.colorMap : material.colorMap;
+			_imageMapType = "jpeg";
+		}
 
 		final double ambientRed   = (double)material.ambientColorRed   / Math.max( (double)material.diffuseColorRed   , 0.001 );
 		final double ambientGreen = (double)material.ambientColorGreen / Math.max( (double)material.diffuseColorGreen , 0.001 );
@@ -358,8 +380,23 @@ public class PovTexture
 
 		setDiffuse( 1.0 );
 		setTransmit( 1.0 - (double)material.diffuseColorAlpha );
-		setPhong( material.getSpecularReflectivity() );
+		setPhong( (double)material.getSpecularReflectivity() );
 		setPhongSize( 0.25 * (double)material.shininess );
+
+		if ( ( material.reflectionMin > 0.0f ) || ( material.reflectionMax > 0.0f ) )
+		{
+			final PovVector reflectionMin = new PovVector(
+					material.reflectionMin * material.reflectionRed ,
+					material.reflectionMin * material.reflectionGreen ,
+					material.reflectionMin * material.reflectionBlue );
+
+			final PovVector reflectionMax = new PovVector(
+					material.reflectionMax * material.reflectionRed ,
+					material.reflectionMax * material.reflectionGreen ,
+					material.reflectionMax * material.reflectionBlue );
+
+			setReflection( reflectionMin , reflectionMax );
+		}
 	}
 
 	/**
@@ -542,13 +579,46 @@ public class PovTexture
 	}
 
 	/**
-	 * Get specular reflection factor.
+	 * Returns the specular reflection factor at an angle parallel to the
+	 * surface normal.
 	 *
 	 * @return  Reflection factor.
 	 */
-	public final double getReflection()
+	public PovVector getReflectionMin()
 	{
-		return _reflection;
+		return _reflectionMin;
+	}
+
+	/**
+	 * Returns the specular reflection factor at angles perpendicular to the
+	 * surface normal.
+	 *
+	 * @return  Reflection factor.
+	 */
+	public PovVector getReflectionMax()
+	{
+		return _reflectionMax;
+	}
+
+	/**
+	 * Set specular reflection factors.
+	 *
+	 * <p>
+	 * This value is used to produce mirror-like reflections. For specular
+	 * highlights, use {@link #setSpecular} instead.
+	 *
+	 * @param   reflectionMin   Reflection factor parallel to surface normal.
+	 * @param   reflectionMax   Reflection factor perpendicular to surface normal.
+	 */
+	public final void setReflection( final PovVector reflectionMin , final PovVector reflectionMax )
+	{
+		if ( ( reflectionMin == null ) != ( reflectionMax == null ) )
+		{
+			throw new NullPointerException( "arguments must either both or neither be null" );
+		}
+
+		_reflectionMin = reflectionMin;
+		_reflectionMax = reflectionMax;
 	}
 
 	/**
@@ -562,7 +632,15 @@ public class PovTexture
 	 */
 	public final void setReflection( final double reflection )
 	{
-		_reflection = reflection;
+		if ( reflection == 0.0 )
+		{
+			setReflection( null , null );
+		}
+		else
+		{
+			final PovVector vector = new PovVector( reflection , reflection , reflection );
+			setReflection( vector , vector );
+		}
 	}
 
 	/**
@@ -997,11 +1075,15 @@ public class PovTexture
 			out.writeln( "metallic" );
 		}
 
-		final double reflection = getReflection();
-		if ( reflection > 0.0 )
+		final PovVector reflectionMin = getReflectionMin();
+		final PovVector reflectionMax = getReflectionMax();
+		if ( ( reflectionMin != null ) && ( reflectionMax != null ) )
 		{
-			out.write( "reflection " );
-			out.writeln( format( reflection ) );
+			out.write( "reflection { " );
+			reflectionMin.write( out );
+			out.writeln( " , " );
+			reflectionMax.write( out );
+			out.write( " }" );
 		}
 
 		out.indentOut();
@@ -1107,11 +1189,15 @@ public class PovTexture
 			out.writeln( "metallic" );
 		}
 
-		final double reflection = getReflection();
-		if ( reflection > 0.0 )
+		final PovVector reflectionMin = getReflectionMin();
+		final PovVector reflectionMax = getReflectionMax();
+		if ( ( reflectionMin != null ) && ( reflectionMax != null ) )
 		{
-			out.write( "reflection " );
-			out.writeln( format( reflection ) );
+			out.write( "reflection { " );
+			reflectionMin.write( out );
+			out.writeln( " , " );
+			reflectionMax.write( out );
+			out.write( " }" );
 		}
 
 		out.indentOut();
