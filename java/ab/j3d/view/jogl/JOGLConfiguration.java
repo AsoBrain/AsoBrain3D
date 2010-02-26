@@ -1,7 +1,7 @@
 /*
  * $Id$
  *
- * (C) Copyright Numdata BV 2009-2009 - All Rights Reserved
+ * (C) Copyright Numdata BV 2009-2010 - All Rights Reserved
  *
  * This software may not be used, copied, modified, or distributed in any
  * form without express permission from Numdata BV. Please contact Numdata BV
@@ -34,6 +34,11 @@ public class JOGLConfiguration
 	 * Maximum number of OpenGL lights to use.
 	 */
 	private int _maximumNumberOfLights = 3;
+
+	/**
+	 * Whether reflection maps should be enabled.
+	 */
+	private boolean _reflectionMapsEnabled = true;
 
 	/**
 	 * Constructs a new JOGL configuration with default settings.
@@ -83,5 +88,15 @@ public class JOGLConfiguration
 	public void setMaximumNumberOfLights( final int maximumNumberOfLights )
 	{
 		_maximumNumberOfLights = maximumNumberOfLights;
+	}
+
+	public boolean isReflectionMapsEnabled()
+	{
+		return _reflectionMapsEnabled;
+	}
+
+	public void setReflectionMapsEnabled( final boolean reflectionMapsEnabled )
+	{
+		_reflectionMapsEnabled = reflectionMapsEnabled;
 	}
 }
