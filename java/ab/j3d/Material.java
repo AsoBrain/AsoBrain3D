@@ -40,7 +40,7 @@ public class Material
 	/**
 	 * Serialization ID.
 	 */
-	private static final long serialVersionUID = -8129387219382329102L;
+	private static final long serialVersionUID = -1247188004008064101L;
 
 	/**
 	 *  Database table name.
@@ -74,6 +74,12 @@ public class Material
 		"  `bumpMapWidth` float NOT NULL,\n" +
 		"  `bumpMapHeight` float NOT NULL,\n" +
 		"  `grain` tinyint(1) NOT NULL,\n" +
+		"  `reflectionMap` varchar(64) default NULL,\n" +
+		"  `reflectionMin` float NOT NULL,\n" +
+		"  `reflectionMax` float NOT NULL,\n" +
+		"  `reflectionRed` float NOT NULL,\n" +
+		"  `reflectionGreen` float NOT NULL,\n" +
+		"  `reflectionBlue` float NOT NULL,\n" +
 		"  PRIMARY KEY  (`ID`),\n" +
 		"  UNIQUE KEY `code` (`code`)\n" +
 		");";
@@ -96,7 +102,7 @@ public class Material
 	 * (normally just 1). This value may range from almost 0 for objects
 	 * that absorb most ambient light to near 1 for objects that are highly
 	 * reflective. Typical values range from 0.1 to 0.2 for dull surfaces
-	 * and 0,7 to 0,8 for bright surfaces.
+	 * and 0.7 to 0.8 for bright surfaces.
 	 */
 	public float ambientColorRed;
 
@@ -147,7 +153,7 @@ public class Material
 	public float diffuseColorAlpha;
 
 	/**
-	 * Red component of specular reflection color.
+	 * Red component of specular highlight color.
 	 * <p>
 	 * Specular reflection is total or near total reflection of incoming
 	 * light in a concentrated region. It can be used to create highlights
@@ -156,21 +162,21 @@ public class Material
 	public float specularColorRed;
 
 	/**
-	 * Green component of specular reflection color.
+	 * Green component of specular highlight color.
 	 *
 	 * @see     #specularColorRed
 	 */
 	public float specularColorGreen;
 
 	/**
-	 * Blue component of specular reflection color.
+	 * Blue component of specular highlight color.
 	 *
 	 * @see     #specularColorRed
 	 */
 	public float specularColorBlue;
 
 	/**
-	 * Specular reflection exponent. This exponent is an indicator for
+	 * Specular highlight exponent. This exponent is an indicator for
 	 * the shininess or dullness of the material. Shiny surfaces have a
 	 * large value for n (64+) and very dull surfaces approach 1. This
 	 * value should be a power of 2 between 1 and 128.
@@ -181,7 +187,7 @@ public class Material
 	 * Red component of emissive color.
 	 * <p>
 	 * This determines the amount of light emitted by this material.
-	 * Note that this does automatically imply a light source.
+	 * Note that this doesn't automatically imply a light source.
 	 */
 	public float emissiveColorRed;
 
@@ -250,6 +256,50 @@ public class Material
 	public boolean grain;
 
 	/**
+	 * Name of the reflection map to use for real-time reflections. A renderer
+	 * may use the surrounding scene instead of this map.
+	 *
+	 * <p>
+	 * The reflection map is a cube map, encoded into a single image as follows:
+	 * <pre>
+	 * +--+--+--+--+
+	 * |  |Y+|  |  |
+	 * +--+--+--+--+
+	 * |X-|Z+|X+|Z-|
+	 * +--+--+--+--+
+	 * |  |Y-|  |  |
+	 * +--+--+--+--+
+	 * </pre>
+	 * (Each cell in the above grid is a square.)
+	 */
+	public String reflectionMap;
+
+	/**
+	 * Reflectivity of the material when viewed parallel to its normal.
+	 */
+	public float reflectionMin;
+
+	/**
+	 * Reflectivity of the material when viewed perpendicular to its normal.
+	 */
+	public float reflectionMax;
+
+	/**
+	 * Intensity of the red-component of (specular) reflections.
+	 */
+	public float reflectionRed;
+
+	/**
+	 * Intensity of the green-component of (specular) reflections.
+	 */
+	public float reflectionGreen;
+
+	/**
+	 * Intensity of the blue-component of (specular) reflections.
+	 */
+	public float reflectionBlue;
+
+	/**
 	 * Loader for resources related to this material (e.g. maps).
 	 */
 	public transient ResourceLoader resourceLoader;
@@ -281,6 +331,12 @@ public class Material
 		bumpMap            = null;
 		bumpMapWidth       = 0.0f;
 		bumpMapHeight      = 0.0f;
+		reflectionMap      = null;
+		reflectionMin      = 0.0f;
+		reflectionMax      = 0.0f;
+		reflectionRed      = 1.0f;
+		reflectionGreen    = 1.0f;
+		reflectionBlue     = 1.0f;
 		grain              = false;
 		resourceLoader     = null;
 	}
@@ -316,6 +372,12 @@ public class Material
 		bumpMap            = original.bumpMap;
 		bumpMapWidth       = original.bumpMapWidth;
 		bumpMapHeight      = original.bumpMapHeight;
+		reflectionMap      = original.reflectionMap;
+		reflectionMin      = original.reflectionMin;
+		reflectionMax      = original.reflectionMax;
+		reflectionRed      = original.reflectionRed;
+		reflectionGreen    = original.reflectionGreen;
+		reflectionBlue     = original.reflectionBlue;
 		grain              = original.grain;
 		resourceLoader     = original.resourceLoader;
 	}
@@ -382,6 +444,12 @@ public class Material
 		bumpMapWidth            = 0.0f;
 		bumpMapHeight           = 0.0f;
 		this.grain              = grain;
+		reflectionMap           = null;
+		reflectionMin           = 0.0f;
+		reflectionMax           = 0.0f;
+		reflectionRed           = 0.0f;
+		reflectionGreen         = 0.0f;
+		reflectionBlue          = 0.0f;
 		resourceLoader          = null;
 	}
 
@@ -581,7 +649,6 @@ public class Material
 		specularColorBlue  = (float)(   rgb         & 0xFF ) / 255.0f;
 	}
 
-
 	/**
 	 * Set emissive color.
 	 * <p>
@@ -611,5 +678,34 @@ public class Material
 		emissiveColorRed   = (float)( ( rgb >> 16 ) & 0xFF ) / 255.0f;
 		emissiveColorGreen = (float)( ( rgb >>  8 ) & 0xFF ) / 255.0f;
 		emissiveColorBlue  = (float)(   rgb         & 0xFF ) / 255.0f;
+	}
+
+	/**
+	 * Sets the color of (specular) reflections. For metallic materials, this
+	 * is typically the color of the metal. For other materials, it is typically
+	 * white, i.e. no change in color.
+	 *
+	 * @param   color   Reflection color.
+	 */
+	public void setReflectionColor( final Color color )
+	{
+		final float[] components = color.getColorComponents( null );
+		reflectionRed   = components[ 0 ];
+		reflectionGreen = components[ 1 ];
+		reflectionBlue  = components[ 2 ];
+	}
+
+	/**
+	 * Sets the color of (specular) reflections. For metallic materials, this
+	 * is typically the color of the metal. For other materials, it is typically
+	 * white, i.e. no change in color.
+	 *
+	 * @param   rgb     Reflection color.
+	 */
+	public void setReflectionColor( final int rgb )
+	{
+		reflectionRed   = (float)( ( rgb >> 16 ) & 0xFF ) / 255.0f;
+		reflectionGreen = (float)( ( rgb >>  8 ) & 0xFF ) / 255.0f;
+		reflectionBlue  = (float)(   rgb         & 0xFF ) / 255.0f;
 	}
 }
