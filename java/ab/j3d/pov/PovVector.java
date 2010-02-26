@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2006
+ * (C) Copyright Numdata BV 2000-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -51,6 +51,18 @@ public class PovVector
 	public PovVector( final Vector3D v )
 	{
 		_vector = v;
+	}
+
+	/**
+	 * Creates a vector based on 3D coordinates.
+	 *
+	 * @param   x   X coordinate of vector.
+	 * @param   y   Y coordinate of vector.
+	 * @param   z   Z coordinate of vector.
+	 */
+	public PovVector( final float x , final float y , final float z )
+	{
+		_vector = Vector3D.INIT.set( (double)x , (double)y , (double)z );
 	}
 
 	/**
@@ -152,7 +164,8 @@ public class PovVector
 		}
 		else if ( other instanceof PovVector )
 		{
-			result = _vector.equals( ((PovVector)other)._vector );
+			final PovVector otherVector = (PovVector)other;
+			result = _vector.equals( otherVector._vector );
 		}
 		else
 		{
