@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2009
+ * (C) Copyright Numdata BV 2007-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -398,8 +398,6 @@ public class JOGLView
 				catch ( InterruptedException e ) { /*ignored*/ }
 			}
 
-			_updateRequested      = false;
-
 //			System.out.println( "Renderer thread died: " + Thread.currentThread() );
 		}
 
@@ -558,6 +556,7 @@ public class JOGLView
 
 		final JOGLRenderer renderer = getOrCreateRenderer( gl );
 		renderer.setGridEnabled( isGridEnabled() );
+		renderer.setSceneToViewTransform( getScene2View() );
 		renderer.renderScene( scene , styleFilters , viewStyle );
 	}
 
