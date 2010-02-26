@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * (C) Copyright Numdata BV 2009-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,6 +34,7 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GLContext;
 import javax.media.opengl.GLException;
 
+import com.sun.opengl.util.GLUT;
 import com.sun.opengl.util.texture.Texture;
 import com.sun.opengl.util.texture.TextureCoords;
 import com.sun.opengl.util.texture.TextureData;
@@ -70,6 +71,43 @@ public class JOGLRenderer
 	 * If enabled, objects are drawn with lines for face and vertex normals.
 	 */
 	private static final boolean DRAW_NORMALS = false;
+
+	/**
+	 * Texture unit used for color maps.
+	 */
+	private static final int TEXTURE_UNIT_COLOR = GL.GL_TEXTURE0;
+
+	/**
+	 * Texture unit used for bump maps.
+	 */
+	private static final int TEXTURE_UNIT_BUMP = GL.GL_TEXTURE1;
+
+	/**
+	 * Texture unit used for environment maps (reflections).
+	 */
+	private static final int TEXTURE_UNIT_ENVIRONMENT = GL.GL_TEXTURE2;
+
+	/**
+	 * Texture unit used for depth peeling to store the 'near' depth.
+	 */
+	private static final int TEXTURE_UNIT_DEPTH_NEAR = GL.GL_TEXTURE3;
+
+	/**
+	 * Texture unit used for depth peeling to store the 'opaque' depth.
+	 */
+	private static final int TEXTURE_UNIT_DEPTH_OPAQUE = GL.GL_TEXTURE4;
+
+	/**
+	 * Texture unit used for depth peeling to blend layers together.
+	 * May overlap with a texture unit used during the normal rendering process.
+	 */
+	private static final int TEXTURE_UNIT_BLEND_FRONT = GL.GL_TEXTURE0;
+
+	/**
+	 * Texture unit used for depth peeling to blend layers together.
+	 * May overlap with a texture unit used during the normal rendering process.
+	 */
+	private static final int TEXTURE_UNIT_BLEND_BACK = GL.GL_TEXTURE1;
 
 	/**
 	 * OpenGL pipeline.
@@ -149,6 +187,18 @@ public class JOGLRenderer
 	 * dominant light source relative to the object.
 	 */
 	private Vector3D _lightPositionRelativeToObject;
+
+	/**
+	 * Scene to view transformation, excluding any translation components.
+	 * This transformation is used for the sky box.
+	 */
+	private Matrix3D _sceneToViewRotation;
+
+	/**
+	 * View to scene transformation, excluding any translation components.
+	 * This transformation is used for environment mapping.
+	 */
+	private Matrix3D _viewToSceneRotation;
 
 	/**
 	 * GLSL shader implementation to be used, if any.
@@ -241,6 +291,12 @@ public class JOGLRenderer
 		_textureCache = textureCache;
 		_configuration = configuration;
 
+		_shaderImplementation = null;
+		_shaders = null;
+
+		_colorBuffers = null;
+		_depthBuffers = null;
+
 		_backgroundColor = backgroundColor;
 
 		_gridEnabled = gridIsEnabled;
@@ -254,8 +310,10 @@ public class JOGLRenderer
 
 		_dominantLightIntensity = 0.0f;
 		_dominantLightPosition = null;
-
 		_lightPositionRelativeToObject = null;
+
+		_sceneToViewRotation = Matrix3D.INIT;
+		_viewToSceneRotation = Matrix3D.INIT;
 	}
 
 	/**
@@ -274,16 +332,6 @@ public class JOGLRenderer
 		gl.glEnable( GL.GL_POLYGON_OFFSET_FILL );
 		gl.glEnable( GL.GL_POLYGON_OFFSET_LINE );
 		gl.glEnable( GL.GL_POLYGON_OFFSET_POINT );
-
-// @FIXME Disable explicit smoothing options for now. This causes extremely slow rendering on some machines. Should we set smoothing based on hardware capabilities?
-//		/* Set smoothing. */
-//		glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
-//		glWrapper.setBlend( true );
-//		gl.glEnable( GL.GL_LINE_SMOOTH ); //enable smooth lines
-//		gl.glHint( GL.GL_LINE_SMOOTH_HINT , GL.GL_NICEST );
-//		gl.glEnable( GL.GL_POLYGON_SMOOTH ); //enable smooth polygons
-//		gl.glHint( GL.GL_POLYGON_SMOOTH_HINT , GL.GL_NICEST );
-//		gl.glShadeModel( GL.GL_SMOOTH );
 
 		/* Normalize lighting normals after scaling */
 		gl.glEnable( GL.GL_NORMALIZE );
@@ -482,6 +530,19 @@ public class JOGLRenderer
 	}
 
 	/**
+	 * Sets the scene to view transformation. The inverse of this transformation
+	 * is used for environment mapping, i.e. to make the environment stationary
+	 * with respect the the world instead of the camera.
+	 *
+	 * @param   sceneToView     Scene to view transformation.
+	 */
+	public void setSceneToViewTransform( final Matrix3D sceneToView )
+	{
+		_sceneToViewRotation = sceneToView.setTranslation( 0.0 , 0.0 , 0.0 );
+		_viewToSceneRotation = _sceneToViewRotation.inverse();
+	}
+
+	/**
 	 * Creates a vertex shader providing the main method for rendering with the
 	 * specified settings.
 	 *
@@ -663,12 +724,6 @@ public class JOGLRenderer
 		final GLWrapper glWrapper = new GLWrapper( gl );
 		_glWrapper = glWrapper;
 
-		/* Clear depth and color buffer. */
-		final float[] backgroundRGB = _backgroundColor.getRGBColorComponents( null );
-		gl.glClearColor( backgroundRGB[ 0 ] , backgroundRGB[ 1 ] , backgroundRGB[ 2 ] , 1.0f );
-		gl.glClearDepth( 1.0 );
-		gl.glClear( GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT );
-
 		/* Set backface culling. */
 		glWrapper.setCullFace( true );
 		glWrapper.glCullFace( GL.GL_BACK );
@@ -693,10 +748,8 @@ public class JOGLRenderer
 			unlit.enable();
 			if ( depthPeelingEnabled )
 			{
-				// Texture unit 0 is reserved for color maps. (see below)
-				// Texture unit 1 is reserved for future use. (bump mapping)
-				unlit.setUniform( "depthNear"   , 2 );
-				unlit.setUniform( "depthOpaque" , 3 );
+				unlit.setUniform( "depthNear"   , TEXTURE_UNIT_DEPTH_NEAR   - GL.GL_TEXTURE0 );
+				unlit.setUniform( "depthOpaque" , TEXTURE_UNIT_DEPTH_OPAQUE - GL.GL_TEXTURE0 );
 				unlit.setUniform( "width"       , (float)width );
 				unlit.setUniform( "height"      , (float)height );
 			}
@@ -711,13 +764,12 @@ public class JOGLRenderer
 			colored.enable();
 			if ( depthPeelingEnabled )
 			{
-				// Texture unit 0 is reserved for color maps. (see below)
-				// Texture unit 1 is reserved for future use. (bump mapping)
-				colored.setUniform( "depthNear"   , 2 );
-				colored.setUniform( "depthOpaque" , 3 );
+				colored.setUniform( "depthNear"   , TEXTURE_UNIT_DEPTH_NEAR   - GL.GL_TEXTURE0 );
+				colored.setUniform( "depthOpaque" , TEXTURE_UNIT_DEPTH_OPAQUE - GL.GL_TEXTURE0 );
 				colored.setUniform( "width"       , (float)width );
 				colored.setUniform( "height"      , (float)height );
 			}
+			colored.setUniform( "reflectionMap" , TEXTURE_UNIT_ENVIRONMENT - GL.GL_TEXTURE0 );
 			colored.disable();
 			colored.validate();
 		}
@@ -727,18 +779,20 @@ public class JOGLRenderer
 		if ( textured != null )
 		{
 			textured.enable();
-			textured.setUniform( "colorMap" , 0 );
+			textured.setUniform( "colorMap" , TEXTURE_UNIT_COLOR - GL.GL_TEXTURE0 );
+			textured.setUniform( "reflectionMap" , TEXTURE_UNIT_ENVIRONMENT - GL.GL_TEXTURE0 );
 			if ( depthPeelingEnabled )
 			{
-				// Texture unit 1 is reserved for future use. (bump mapping)
-				textured.setUniform( "depthNear"   , 2 );
-				textured.setUniform( "depthOpaque" , 3 );
+				textured.setUniform( "depthNear"   , TEXTURE_UNIT_DEPTH_NEAR   - GL.GL_TEXTURE0 );
+				textured.setUniform( "depthOpaque" , TEXTURE_UNIT_DEPTH_OPAQUE - GL.GL_TEXTURE0 );
 				textured.setUniform( "width"       , (float)width );
 				textured.setUniform( "height"      , (float)height );
 			}
 			textured.disable();
 			textured.validate();
 		}
+
+		renderBackground();
 
 		if ( depthPeelingEnabled )
 		{
@@ -750,6 +804,60 @@ public class JOGLRenderer
 		}
 
 		useShader( null );
+	}
+
+	private void renderBackground()
+	{
+		final GL gl = _gl;
+
+		/* Clear depth and color buffer. */
+		final float[] backgroundRGB = _backgroundColor.getRGBColorComponents( null );
+		gl.glClearColor( backgroundRGB[ 0 ] , backgroundRGB[ 1 ] , backgroundRGB[ 2 ] , 1.0f );
+		gl.glClearDepth( 1.0 );
+		gl.glClear( GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT );
+
+		/*
+		 * Sky box.
+		 */
+		if ( false )
+		{
+			gl.glDisable( GL.GL_DEPTH_TEST );
+			gl.glDisable( GL.GL_CULL_FACE );
+
+			gl.glMatrixMode( GL.GL_MODELVIEW );
+			gl.glPushMatrix();
+			gl.glLoadIdentity();
+			JOGLTools.glMultMatrixd( gl , _sceneToViewRotation );
+
+			final Texture reflectionMap = _textureCache.getCubeMap( gl, "reflection/gracht" );
+			reflectionMap.bind();
+			reflectionMap.enable();
+
+			gl.glTexGeni( GL.GL_S , GL.GL_TEXTURE_GEN_MODE , GL.GL_OBJECT_LINEAR );
+			gl.glTexGeni( GL.GL_T , GL.GL_TEXTURE_GEN_MODE , GL.GL_OBJECT_LINEAR );
+			gl.glTexGeni( GL.GL_R , GL.GL_TEXTURE_GEN_MODE , GL.GL_OBJECT_LINEAR );
+			gl.glTexGenfv( GL.GL_S , GL.GL_OBJECT_PLANE , new float[] { 1.0f , 0.0f , 0.0f , 1.0f } , 0 );
+			gl.glTexGenfv( GL.GL_T , GL.GL_OBJECT_PLANE , new float[] { 0.0f , 1.0f , 0.0f , 1.0f } , 0 );
+			gl.glTexGenfv( GL.GL_R , GL.GL_OBJECT_PLANE , new float[] { 0.0f , 0.0f , 1.0f , 1.0f } , 0 );
+			gl.glEnable( GL.GL_TEXTURE_GEN_S );
+			gl.glEnable( GL.GL_TEXTURE_GEN_T );
+			gl.glEnable( GL.GL_TEXTURE_GEN_R );
+
+			final GLUT glut = new GLUT();
+			gl.glColor3f( 1.0f , 1.0f , 1.0f );
+			glut.glutSolidCube( 10.0f );
+
+			gl.glDisable( GL.GL_TEXTURE_GEN_S );
+			gl.glDisable( GL.GL_TEXTURE_GEN_T );
+			gl.glDisable( GL.GL_TEXTURE_GEN_R );
+
+			reflectionMap.disable();
+
+			gl.glPopMatrix();
+
+			gl.glEnable( GL.GL_CULL_FACE );
+			gl.glEnable( GL.GL_DEPTH_TEST );
+		}
 	}
 
 	/**
@@ -827,21 +935,21 @@ public class JOGLRenderer
 		gl.glClearColor( 0.0f , 0.0f , 0.0f , 0.0f );
 		gl.glClear( GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT );
 
-		gl.glActiveTexture( GL.GL_TEXTURE2 );
+		gl.glActiveTexture( TEXTURE_UNIT_DEPTH_NEAR );
 		depthBuffers[ 1 ].enable();
 		depthBuffers[ 1 ].bind();
-		gl.glActiveTexture( GL.GL_TEXTURE3 );
+		gl.glActiveTexture( TEXTURE_UNIT_DEPTH_OPAQUE );
 		depthBuffers[ 0 ].enable();
 		depthBuffers[ 0 ].bind();
-		gl.glActiveTexture( GL.GL_TEXTURE0 );
+		gl.glActiveTexture( TEXTURE_UNIT_COLOR );
 
 		_renderMode = MultiPassRenderMode.OPAQUE_ONLY;
 		renderObjects( nodes , styleFilters , sceneStyle );
 
-		gl.glActiveTexture( GL.GL_TEXTURE3 );
+		gl.glActiveTexture( TEXTURE_UNIT_DEPTH_OPAQUE );
 		depthOpaque.enable();
 		depthOpaque.bind();
-		gl.glActiveTexture( GL.GL_TEXTURE0 );
+		gl.glActiveTexture( TEXTURE_UNIT_COLOR );
 
 		/*
 		 * Render transparent objects in multiple passes using depth peeling.
@@ -862,10 +970,10 @@ public class JOGLRenderer
 			gl.glClearColor( 0.0f , 0.0f , 0.0f , 0.0f );
 			gl.glClear( GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT );
 
-			gl.glActiveTexture( GL.GL_TEXTURE2 );
+			gl.glActiveTexture( TEXTURE_UNIT_DEPTH_NEAR );
 			depthNear.enable();
 			depthNear.bind();
-			gl.glActiveTexture( GL.GL_TEXTURE0 );
+			gl.glActiveTexture( TEXTURE_UNIT_COLOR );
 
 			/*
 			 * Render scene, keeping track of the number of samples rendered.
@@ -928,11 +1036,11 @@ public class JOGLRenderer
 		glWrapper.setBlend( true );
 		glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 
-		gl.glActiveTexture( GL.GL_TEXTURE3 );
+		gl.glActiveTexture( TEXTURE_UNIT_DEPTH_OPAQUE );
 		depthOpaque.disable();
-		gl.glActiveTexture( GL.GL_TEXTURE2 );
+		gl.glActiveTexture( TEXTURE_UNIT_DEPTH_NEAR );
 		depthBuffers[ 0 ].disable();
-		gl.glActiveTexture( GL.GL_TEXTURE0 );
+		gl.glActiveTexture( TEXTURE_UNIT_COLOR );
 
 		renderToViewport( composite );
 
@@ -1066,13 +1174,13 @@ public class JOGLRenderer
 
 		glWrapper.setColor( 1.0f , 1.0f , 1.0f , 1.0f );
 		gl.glBegin( GL.GL_QUADS );
-		gl.glMultiTexCoord2f( GL.GL_TEXTURE0 , left , bottom );
+		gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR , left , bottom );
 		gl.glVertex2d( -1.0 , -1.0 );
-		gl.glMultiTexCoord2f( GL.GL_TEXTURE0 , right , bottom );
+		gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR , right , bottom );
 		gl.glVertex2d(  1.0 , -1.0 );
-		gl.glMultiTexCoord2f( GL.GL_TEXTURE0 , right , top );
+		gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR , right , top );
 		gl.glVertex2d(  1.0 ,  1.0 );
-		gl.glMultiTexCoord2f( GL.GL_TEXTURE0 , left , top );
+		gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR , left , top );
 		gl.glVertex2d( -1.0 ,  1.0 );
 		gl.glEnd();
 
@@ -1101,22 +1209,22 @@ public class JOGLRenderer
 		gl.glDisable( GL.GL_DEPTH_TEST );
 		glWrapper.setLighting( false );
 
-		gl.glActiveTexture( GL.GL_TEXTURE1 );
+		gl.glActiveTexture( TEXTURE_UNIT_BLEND_BACK );
 		layer.enable();
 		layer.bind();
-		gl.glActiveTexture( GL.GL_TEXTURE0 );
+		gl.glActiveTexture( TEXTURE_UNIT_BLEND_FRONT );
 
 		final ShaderProgram previousShader = _activeShader;
 		final ShaderProgram blend = _blend;
 		useShader( blend );
-		blend.setUniform( "front" , 0 );
-		blend.setUniform( "back"  , 1 );
+		blend.setUniform( "front" , TEXTURE_UNIT_BLEND_FRONT - GL.GL_TEXTURE0 );
+		blend.setUniform( "back"  , TEXTURE_UNIT_BLEND_BACK  - GL.GL_TEXTURE0 );
 
 		renderToViewport( composite );
 
-		gl.glActiveTexture( GL.GL_TEXTURE1 );
+		gl.glActiveTexture( TEXTURE_UNIT_BLEND_BACK );
 		layer.disable();
-		gl.glActiveTexture( GL.GL_TEXTURE0 );
+		gl.glActiveTexture( TEXTURE_UNIT_BLEND_FRONT );
 
 		gl.glEnable( GL.GL_DEPTH_TEST );
 		glWrapper.setLighting( true );
@@ -1185,7 +1293,7 @@ public class JOGLRenderer
 		{
 			final Texture texture = textures[ i ];
 
-			gl.glActiveTexture( GL.GL_TEXTURE0 );
+			gl.glActiveTexture( TEXTURE_UNIT_COLOR );
 			texture.enable();
 			texture.bind();
 
@@ -1203,13 +1311,13 @@ public class JOGLRenderer
 
 			glWrapper.setColor( 1.0f , 1.0f , 1.0f , 1.0f );
 			gl.glBegin( GL.GL_QUADS );
-			gl.glMultiTexCoord2f( GL.GL_TEXTURE0 , left , bottom );
+			gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR , left , bottom );
 			gl.glVertex2d( minX , minY );
-			gl.glMultiTexCoord2f( GL.GL_TEXTURE0 , right , bottom );
+			gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR , right , bottom );
 			gl.glVertex2d( maxX , minY );
-			gl.glMultiTexCoord2f( GL.GL_TEXTURE0 , right , top );
+			gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR , right , top );
 			gl.glVertex2d( maxX , maxY );
-			gl.glMultiTexCoord2f( GL.GL_TEXTURE0 , left , top );
+			gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR , left , top );
 			gl.glVertex2d( minX , maxY );
 			gl.glEnd();
 		}
@@ -1450,9 +1558,6 @@ public class JOGLRenderer
 			 */
 			final TextureCache textureCache = _textureCache;
 
-			final Texture colorMap    = textureCache.getColorMapTexture( gl , material );
-			final boolean hasColorMap = ( colorMap != null );
-
 			final float   extraAlpha    = style.getMaterialAlpha();
 			final float   combinedAlpha = material.diffuseColorAlpha * extraAlpha;
 			final boolean hasAlpha      = ( combinedAlpha < 0.99f ) || textureCache.hasAlpha( material.colorMap );
@@ -1462,15 +1567,14 @@ public class JOGLRenderer
 			if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || !hasAlpha ) &&
 			     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || hasAlpha ) )
 			{
-
 				final Vector3D lightPosition    = _lightPositionRelativeToObject;
 				final boolean  hasLighting      = style.isMaterialLightingEnabled() && ( lightPosition != null );
 				final boolean  backfaceCulling  = style.isBackfaceCullingEnabled() && !face.isTwoSided();
 				final boolean  setVertexNormals = hasLighting && face.smooth;
 
-				final Texture bumpMap = hasLighting ? textureCache.getBumpMapTexture( gl , material ) : null;
-				final boolean hasBumpMap = ( bumpMap != null );
-				final Texture normalizationCubeMap = hasBumpMap ? textureCache.getNormalizationCubeMap( gl ) : null;
+				final Texture colorMap = textureCache.getColorMapTexture( gl , material );
+				final Texture bumpMap = isShadersEnabled() && hasLighting ? textureCache.getBumpMapTexture( gl , material ) : null;
+				final Texture normalizationCubeMap = ( bumpMap != null ) ? textureCache.getNormalizationCubeMap( gl ) : null;
 
 				/*
 				 * Set render/material properties.
@@ -1491,12 +1595,12 @@ public class JOGLRenderer
 				/*
 				 * Enable bump map.
 				 */
-				if ( hasBumpMap )
+				if ( bumpMap != null )
 				{
-					gl.glActiveTexture( GL.GL_TEXTURE1 );
+					gl.glActiveTexture( TEXTURE_UNIT_BUMP );
 					bumpMap.enable();
 					bumpMap.bind();
-					gl.glActiveTexture( GL.GL_TEXTURE0 );
+					gl.glActiveTexture( TEXTURE_UNIT_COLOR );
 				}
 				else if ( false ) // DOT3 bump mapping; disabled
 				{
@@ -1544,18 +1648,65 @@ public class JOGLRenderer
 					 * Environment Of The Third Texture Unit To Modulate (Multiply) The
 					 * Result Of Our Dot3 Operation With The Texture Value.
 					 */
-					if ( hasColorMap )
+					if ( colorMap != null )
 					{
 						gl.glActiveTexture( GL.GL_TEXTURE3 );
 						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_MODULATE );
 					}
 				}
 
+				final Texture reflectionMap = _configuration.isReflectionMapsEnabled() && ( material.reflectionMap != null ) ? textureCache.getCubeMap( gl , material.reflectionMap ) : null;
+				if ( reflectionMap != null )
+				{
+					gl.glActiveTexture( TEXTURE_UNIT_ENVIRONMENT );
+					reflectionMap.enable();
+					reflectionMap.bind();
+
+					if ( !isShadersEnabled() )
+					{
+						/*
+						 * Interpolate with previous texture stage.
+						 */
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE );
+						gl.glTexEnvfv( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_COLOR , new float[] { 0.0f , 0.0f , 0.0f , material.reflectionMin } , 0 );
+
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB , GL.GL_INTERPOLATE );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB , GL.GL_TEXTURE );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE1_RGB , GL.GL_PREVIOUS );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE2_RGB , GL.GL_CONSTANT );
+
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_ALPHA , GL.GL_INTERPOLATE );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_ALPHA , GL.GL_TEXTURE );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE1_ALPHA , GL.GL_PREVIOUS );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE2_ALPHA , GL.GL_CONSTANT );
+
+						/*
+						 * Generate reflection map UV coordinates.
+						 */
+						gl.glTexGeni( GL.GL_S , GL.GL_TEXTURE_GEN_MODE , GL.GL_REFLECTION_MAP );
+						gl.glTexGeni( GL.GL_T , GL.GL_TEXTURE_GEN_MODE , GL.GL_REFLECTION_MAP );
+						gl.glTexGeni( GL.GL_R , GL.GL_TEXTURE_GEN_MODE , GL.GL_REFLECTION_MAP );
+						gl.glEnable( GL.GL_TEXTURE_GEN_S );
+						gl.glEnable( GL.GL_TEXTURE_GEN_T );
+						gl.glEnable( GL.GL_TEXTURE_GEN_R );
+					}
+
+					/*
+					 * Inverse camera rotation.
+					 */
+					gl.glMatrixMode( GL.GL_TEXTURE );
+					gl.glPushMatrix();
+					JOGLTools.glMultMatrixd( gl , _viewToSceneRotation );
+					gl.glMatrixMode( GL.GL_MODELVIEW );
+
+					gl.glActiveTexture( TEXTURE_UNIT_COLOR );
+				}
+
 				/*
 				 * Enable color map.
 				 */
 				final TextureCoords colorMapCoords;
-				if ( hasColorMap )
+				if ( colorMap != null )
 				{
 					useShader( _textured );
 					colorMap.enable();
@@ -1566,6 +1717,14 @@ public class JOGLRenderer
 				{
 					useShader( _colored );
 					colorMapCoords = null;
+				}
+
+				if ( _activeShader != null )
+				{
+					final Vector3D reflectionColor = new Vector3D( (double)material.reflectionRed , (double)material.reflectionGreen , (double)material.reflectionBlue );
+					_activeShader.setUniform( "reflectionMin" , material.reflectionMin );
+					_activeShader.setUniform( "reflectionMax" , material.reflectionMax );
+					_activeShader.setUniform( "reflectionColor" , reflectionColor );
 				}
 
 				/*
@@ -1611,17 +1770,18 @@ public class JOGLRenderer
 						final Vertex vertex = vertices.get( vertexIndex );
 						final Vector3D point = vertex.point;
 
-						if ( hasBumpMap )
+						if ( bumpMap != null )
 						{
+							// TODO: Doesn't really match with other uses of texture units, because normalization cube map comes before color map. (Without shaders, bump is ugly anyway, except for special circumstances.)
 							gl.glMultiTexCoord3d( GL.GL_TEXTURE0 , lightPosition.x + point.x , lightPosition.y + point.y , lightPosition.z + point.z );
 							gl.glMultiTexCoord2f( GL.GL_TEXTURE1 , vertex.colorMapU , vertex.colorMapV );
 
-							if ( hasColorMap )
+							if ( colorMap != null )
 							{
 								gl.glMultiTexCoord2f( GL.GL_TEXTURE3 , vertex.colorMapU , vertex.colorMapV );
 							}
 						}
-						else if ( hasColorMap )
+						else if ( colorMap != null )
 						{
 							final float u = colorMapCoords.left()   + vertex.colorMapU * ( colorMapCoords.right() - colorMapCoords.left() );
 							final float v = colorMapCoords.bottom() + vertex.colorMapV * ( colorMapCoords.top() - colorMapCoords.bottom() );
@@ -1646,38 +1806,7 @@ public class JOGLRenderer
 
 					gl.glEnd();
 
-					/*
-					 * Disable color map.
-					 */
-					if ( hasColorMap )
-					{
-						colorMap.disable();
-					}
-
-					/*
-					 * Disable bump map.
-					 */
-					if ( hasBumpMap )
-					{
-						gl.glActiveTexture( GL.GL_TEXTURE2 );
-						bumpMap.disable();
-
-						gl.glActiveTexture( GL.GL_TEXTURE1 );
-						bumpMap.disable();
-
-						gl.glActiveTexture( GL.GL_TEXTURE0 );
-						normalizationCubeMap.disable();
-					}
-
-					if ( blend )
-					{
-						if ( combinedAlpha < 0.25f )
-						{
-							gl.glDepthMask( true );
-						}
-					}
-
-					if ( DRAW_NORMALS )
+					if ( DRAW_NORMALS && ( pass == passes - 1 ) )
 					{
 						for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
 						{
@@ -1692,6 +1821,62 @@ public class JOGLRenderer
 							gl.glVertex3d( normal.x , normal.y , normal.z );
 							gl.glEnd();
 						}
+					}
+				}
+
+				/*
+				 * Disable color map.
+				 */
+				if ( colorMap != null )
+				{
+					colorMap.disable();
+				}
+
+				/*
+				 * Disable bump map.
+				 */
+				if ( bumpMap != null )
+				{
+					gl.glActiveTexture( GL.GL_TEXTURE2 );
+					bumpMap.disable();
+
+					gl.glActiveTexture( GL.GL_TEXTURE1 );
+					bumpMap.disable();
+
+					gl.glActiveTexture( GL.GL_TEXTURE0 );
+					normalizationCubeMap.disable();
+				}
+
+				/*
+				 * Disable reflection map.
+				 */
+				if ( reflectionMap != null )
+				{
+					gl.glActiveTexture( TEXTURE_UNIT_ENVIRONMENT );
+
+					gl.glMatrixMode( GL.GL_TEXTURE );
+					gl.glPopMatrix();
+					gl.glMatrixMode( GL.GL_MODELVIEW );
+
+					if ( !isShadersEnabled() )
+					{
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_MODULATE );
+
+						gl.glDisable( GL.GL_TEXTURE_GEN_S );
+						gl.glDisable( GL.GL_TEXTURE_GEN_T );
+						gl.glDisable( GL.GL_TEXTURE_GEN_R );
+					}
+
+					reflectionMap.disable();
+
+					gl.glActiveTexture( TEXTURE_UNIT_COLOR );
+				}
+
+				if ( blend )
+				{
+					if ( combinedAlpha < 0.25f )
+					{
+						gl.glDepthMask( true );
 					}
 				}
 			}
@@ -1829,10 +2014,9 @@ public class JOGLRenderer
 			 */
 			final GLWrapper glWrapper = _glWrapper;
 			glWrapper.setBlend( false );
-			glWrapper.setPolygonMode( GL.GL_LINE );
-			glWrapper.glPolygonOffset( 0.0f , -2.0f );
 			glWrapper.glLineWidth( width );
-			glWrapper.setCullFace( backfaceCulling );
+			// FIXME: Backface culling doesn't work on lines. Need to do it ourselves.
+//			glWrapper.setCullFace( backfaceCulling );
 			glWrapper.setLighting( hasLighting );
 			setColor( color );
 			useShader( hasLighting ? _colored : _unlit );
@@ -1876,10 +2060,7 @@ public class JOGLRenderer
 			}
 			else
 			{
-				gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS :
-				            ( vertexCount == 2 ) ? GL.GL_LINES :
-				            ( vertexCount == 3 ) ? GL.GL_TRIANGLES :
-				            ( vertexCount == 4 ) ? GL.GL_QUADS : GL.GL_POLYGON );
+				gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS : GL.GL_LINE_LOOP );
 
 				if ( !setVertexNormals )
 				{
@@ -1903,8 +2084,6 @@ public class JOGLRenderer
 
 				gl.glEnd();
 			}
-
-			glWrapper.setPolygonMode( GL.GL_FILL );
 		}
 	}
 
