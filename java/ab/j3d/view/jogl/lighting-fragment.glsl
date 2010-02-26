@@ -3,8 +3,13 @@ const int lightCount = 3;
 varying vec3 vertex;
 varying vec3 normal;
 
+uniform samplerCube reflectionMap;
+uniform float reflectionMin;
+uniform float reflectionMax;
+uniform vec3 reflectionColor;
+
 /*
- * Per-pixel lighting.
+ * Per-pixel lighting and reflection.
  *
  * Based on source from: http://www.clockworkcoders.com/oglsl/tutorial5.htm
  * See also: http://www.gamedev.net/reference/articles/article2428.asp
@@ -15,7 +20,19 @@ vec4 backLighting( in vec4 color );
 
 vec4 lighting( in vec4 color )
 {
-    return frontLighting( color );
+	vec4 result = frontLighting( color );
+
+	if ( ( reflectionMin > 0.0 ) || ( reflectionMax > 0.0 ) )
+	{
+		vec3 N = normalize( normal );
+		vec3 E = normalize( -vertex );
+		vec3 R = ( gl_TextureMatrix[ 2 ] * vec4( -reflect( E , N ) , 1 ) ).xyz;
+		float reflectivity = reflectionMin + ( reflectionMax - reflectionMin ) * max( 1.0 - dot( N , E ) , 0.0 );
+		vec3 reflection = reflectionColor * textureCube( reflectionMap , R ).rgb;
+		result.rgb += reflectivity * reflection;
+	}
+
+	return result;
 }
 
 /*
