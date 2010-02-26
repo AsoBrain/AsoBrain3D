@@ -39,7 +39,7 @@ import ab.j3d.Material;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.control.ControlInputEvent;
-import ab.j3d.control.FromToCameraControl;
+import ab.j3d.control.FromToCameraControl2;
 import ab.j3d.control.MouseControl;
 import ab.j3d.model.ContentNode;
 import ab.j3d.model.Face3DIntersection;
@@ -108,7 +108,14 @@ public abstract class RenderEngineExample
 		final Vector3D viewAt   = Vector3D.INIT;
 
 		final View3D view = renderEngine.createView( scene );
-		view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
+		view.setCameraControl( new FromToCameraControl2( view , viewFrom , viewAt )
+		{
+			@Override
+			protected boolean isDragFromAroundToEvent( final ControlInputEvent event )
+			{
+				return event.isMouseButton1Down();
+			}
+		} );
 //		view.setProjectionPolicy( Projector.PARALLEL );
 		view.setGridEnabled( true );
 
