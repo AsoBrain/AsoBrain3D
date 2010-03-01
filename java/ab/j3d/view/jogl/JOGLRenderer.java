@@ -1589,6 +1589,7 @@ public class JOGLRenderer
 				}
 
 				glWrapper.setBlend( blend );
+				glWrapper.glPolygonOffset( 1.0f , 1.0f );
 				glWrapper.setLighting( hasLighting );
 				setMaterial( material , style , extraAlpha );
 
@@ -1918,8 +1919,7 @@ public class JOGLRenderer
 					glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 				}
 				glWrapper.setBlend( blend );
-				glWrapper.setPolygonMode( GL.GL_FILL );
-				glWrapper.glPolygonOffset( 0.0f , -1.0f );
+				glWrapper.glPolygonOffset( 1.0f , 1.0f );
 				glWrapper.setCullFace( backfaceCulling );
 				glWrapper.setLighting( hasLighting );
 				setColor( color );
@@ -2106,19 +2106,14 @@ public class JOGLRenderer
 			 * Set render/material properties.
 			 */
 			glWrapper.setBlend( false  );
-			glWrapper.setPolygonMode( GL.GL_POINT );
-			glWrapper.glPolygonOffset( 0.0f , -2.0f );
-			glWrapper.setCullFace( backfaceCulling );
+			// TODO: implement backface culling
 			glWrapper.setLighting( hasLighting );
 			setColor( color );
 
 			/*
-			 * Render face.
+			 * Render vertices.
 			 */
-			gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS :
-			            ( vertexCount == 2 ) ? GL.GL_LINES :
-			            ( vertexCount == 3 ) ? GL.GL_TRIANGLES :
-			            ( vertexCount == 4 ) ? GL.GL_QUADS : GL.GL_POLYGON );
+			gl.glBegin( GL.GL_POINTS );
 
 			if ( !setVertexNormals )
 			{
@@ -2141,8 +2136,6 @@ public class JOGLRenderer
 			}
 
 			gl.glEnd();
-
-			glWrapper.setPolygonMode( GL.GL_FILL );
 		}
 	}
 
