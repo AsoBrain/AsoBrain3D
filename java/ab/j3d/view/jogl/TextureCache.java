@@ -414,10 +414,11 @@ public class TextureCache
 				/*
 				 * Create the six sides of the cube map.
 				 */
-				loadCubeMap( gl , cubeImage , CubeMapOrientation.POSITIVE_Z );
+				loadCubeMap( gl , cubeImage , CubeMapOrientation.NEGATIVE_Y );
 
-				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR        );
-				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR        );
+				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_GENERATE_MIPMAP    , GL.GL_TRUE );
+				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_LINEAR );
+				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
 				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_S     , GL.GL_CLAMP_TO_EDGE );
 				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_T     , GL.GL_CLAMP_TO_EDGE );
 				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_R     , GL.GL_CLAMP_TO_EDGE );
