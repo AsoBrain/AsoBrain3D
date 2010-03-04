@@ -390,7 +390,7 @@ public class TextureCache
 
 		if ( result == null )
 		{
-			final BufferedImage cubeImage = MapTools.loadImage( cube );
+			final BufferedImage cubeImage = MapTools.getImage( cube );
 			if ( cubeImage != null )
 			{
 				if ( cubeImage.getWidth() * 3 != cubeImage.getHeight() * 4 )
