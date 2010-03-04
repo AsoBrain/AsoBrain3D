@@ -45,11 +45,37 @@ public class JOGLEngine
 	private final TextureCache _textureCache;
 
 	/**
+	 * Configuration settings.
+	 */
+	private JOGLConfiguration _configuration;
+
+	/**
 	 * Construct new JOGL render engine.
 	 */
 	public JOGLEngine()
 	{
+		this( new JOGLConfiguration() );
+	}
+
+	/**
+	 * Construct new JOGL render engine.
+	 *
+	 * @param   configuration   Configuration settings.
+	 */
+	public JOGLEngine( final JOGLConfiguration configuration )
+	{
+		_configuration = configuration;
 		_textureCache = new TextureCache();
+	}
+
+	/**
+	 * Returns the configuration settings to be used.
+	 *
+	 * @return  Configuration.
+	 */
+	public JOGLConfiguration getConfiguration()
+	{
+		return _configuration;
 	}
 
 	public View3D createView( final Scene scene )

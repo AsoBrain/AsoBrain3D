@@ -130,7 +130,7 @@ public class JOGLView
 		/* See if the model already contains a context. */
 		glCanvas = new GLCanvas( capabilities , null , joglEngine.getContext() , null );
 
-		_configuration = new JOGLConfiguration();
+		_configuration = joglEngine.getConfiguration();
 		_capabilities = new JOGLCapabilities( glCanvas.getContext() );
 
 		joglEngine.setContext( glCanvas.getContext() );
