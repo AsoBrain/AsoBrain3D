@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2009
+ * (C) Copyright Numdata BV 2007-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,8 @@
  */
 package ab.j3d.view;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Locale;
 
 import com.numdata.oss.ResourceBundleTools;
@@ -47,9 +49,22 @@ public class SwitchRenderingPolicyAction
 	 */
 	public SwitchRenderingPolicyAction( final Locale locale , final View3D view , final RenderingPolicy currentPolicy )
 	{
-
-		super( ResourceBundleTools.getBundle( RenderingPolicy.class , locale ) , currentPolicy );
+		super( ResourceBundleTools.getBundle( RenderingPolicy.class , locale ) , RenderingPolicy.class );
 		_view = view;
+
+		view.addPropertyChangeListener( new PropertyChangeListener()
+		{
+			@Override
+			public void propertyChange( final PropertyChangeEvent e )
+			{
+				if ( View3D.RENDERING_POLICY_PROPERTY.equals( e.getPropertyName() ) )
+				{
+					setSelectedValue( e.getNewValue() );
+				}
+			}
+		} );
+
+		setSelectedValue( currentPolicy );
 	}
 
 	public void run()
