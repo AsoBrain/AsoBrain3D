@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2009
+ * (C) Copyright Numdata BV 2004-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -600,6 +600,14 @@ public abstract class View3D
 		{
 			throw new IllegalArgumentException();
 		}
+	}
+
+	/**
+	 * Removes all render style filters from the view.
+	 */
+	public void clearRenderStyleFilters()
+	{
+		_renderStyleFilters.clear();
 	}
 
 	/**
