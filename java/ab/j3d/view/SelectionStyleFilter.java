@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * (C) Copyright Numdata BV 2009-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,13 +43,14 @@ public abstract class SelectionStyleFilter
 
 		if ( context instanceof ContentNode )
 		{
-			if ( isNodeSelected( (ContentNode)context ) )
+			final ContentNode contentNode = (ContentNode)context;
+			if ( isNodeSelected( contentNode ) )
 			{
-				result = applySelectionStyle( style );
+				result = applySelectionStyle( style , contentNode );
 			}
 			else if ( hasSelection() )
 			{
-				result = applyUnselectedStyle( style );
+				result = applyUnselectedStyle( style , contentNode );
 			}
 		}
 
@@ -58,7 +59,7 @@ public abstract class SelectionStyleFilter
 
 	/**
 	 * Test if there is an active selection. If this is <code>true</code>,
-	 * {@link #applyUnselectedStyle(RenderStyle)} will be called for any
+	 * {@link #applyUnselectedStyle} will be called for any
 	 * unselected {@link ContentNode}.
 	 *
 	 * @return  <code>true</code> if there is an active selection;
@@ -80,25 +81,19 @@ public abstract class SelectionStyleFilter
 	 * Apply style for selected nodes.
 	 *
 	 * @param   style   Style to filter.
+	 * @param   node    Content node being styled.
 	 *
 	 * @return  Filtered style.
 	 */
-	protected abstract RenderStyle applySelectionStyle( final RenderStyle style );
+	protected abstract RenderStyle applySelectionStyle( final RenderStyle style , final ContentNode node );
 
 	/**
 	 * Apply style for unselected nodes.
 	 *
 	 * @param   style   Style to filter.
+	 * @param   node    Content node being styled.
 	 *
 	 * @return  Filtered style.
 	 */
-
-	/**
-	 * Apply style for unselected nodes.
-	 *
-	 * @param   style   Style to filter.
-	 *
-	 * @return  Filtered style.
-	 */
-	protected abstract RenderStyle applyUnselectedStyle( final RenderStyle style );
+	protected abstract RenderStyle applyUnselectedStyle( final RenderStyle style , final ContentNode node );
 }
