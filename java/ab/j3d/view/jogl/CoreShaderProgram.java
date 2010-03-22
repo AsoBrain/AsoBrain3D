@@ -1,7 +1,7 @@
 /* ====================================================================
  * $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * (C) Copyright Numdata BV 2009-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -172,32 +172,29 @@ public class CoreShaderProgram
 	{
 		final GL gl = GLU.getCurrentGL();
 		final int variable = gl.glGetUniformLocation( _program , identifier );
-		if ( variable == -1 )
+		if ( variable != -1 )
 		{
-			throw new IllegalArgumentException( "Not a uniform variable: " + identifier );
+			gl.glUniform1f( variable , value );
 		}
-		gl.glUniform1f( variable , value );
 	}
 
 	public void setUniform( final String identifier , final int value )
 	{
 		final GL gl = GLU.getCurrentGL();
 		final int variable = gl.glGetUniformLocation( _program , identifier );
-		if ( variable == -1 )
+		if ( variable != -1 )
 		{
-			throw new IllegalArgumentException( "Not a uniform variable: " + identifier );
+			gl.glUniform1i( variable , value );
 		}
-		gl.glUniform1i( variable , value );
 	}
 
 	public void setUniform( final String identifier , final Vector3D value )
 	{
 		final GL gl = GLU.getCurrentGL();
 		final int variable = gl.glGetUniformLocation( _program , identifier );
-		if ( variable == -1 )
+		if ( variable != -1 )
 		{
-			throw new IllegalArgumentException( "Not a uniform variable: " + identifier );
+			gl.glUniform3f( variable , (float)value.x , (float)value.y , (float)value.z );
 		}
-		gl.glUniform3f( variable , (float)value.x , (float)value.y , (float)value.z );
 	}
 }

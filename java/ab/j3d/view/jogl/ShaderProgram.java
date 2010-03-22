@@ -101,32 +101,29 @@ public interface ShaderProgram
 	void dispose();
 
 	/**
-	 * Sets the uniform variable identified by the given name.
+	 * Sets the uniform variable identified by the given name. If no variable
+	 * exists with the given name, no action is taken and exception is thrown.
 	 *
 	 * @param   identifier  Name of the variable.
 	 * @param   value       Value to be set.
-	 *
-	 * @throws  IllegalArgumentException if there is no such variable.
 	 */
 	void setUniform( String identifier , float value );
 
 	/**
-	 * Sets the uniform variable identified by the given name.
+	 * Sets the uniform variable identified by the given name. If no variable
+	 * exists with the given name, no action is taken and exception is thrown.
 	 *
 	 * @param   identifier  Name of the variable.
 	 * @param   value       Value to be set.
-	 *
-	 * @throws  IllegalArgumentException if there is no such variable.
 	 */
 	void setUniform( String identifier , int value );
 
 	/**
-	 * Sets the uniform variable identified by the given name.
+	 * Sets the uniform variable identified by the given name. If no variable
+	 * exists with the given name, no action is taken and exception is thrown.
 	 *
 	 * @param   identifier  Name of the variable.
 	 * @param   value       Value to be set.
-	 *
-	 * @throws  IllegalArgumentException if there is no such variable.
 	 */
 	void setUniform( String identifier , Vector3D value );
 }
