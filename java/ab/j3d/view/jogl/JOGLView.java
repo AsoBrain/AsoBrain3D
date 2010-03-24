@@ -36,6 +36,8 @@ import javax.media.opengl.GLPbuffer;
 import javax.media.opengl.glu.GLU;
 import javax.swing.JPopupMenu;
 
+import org.jetbrains.annotations.NotNull;
+
 import ab.j3d.model.Camera3D;
 import ab.j3d.model.Scene;
 import ab.j3d.view.ProjectionPolicy;
@@ -102,6 +104,11 @@ public class JOGLView
 	private JOGLRenderer _renderer;
 
 	/**
+	 * Texture cache listener.
+	 */
+	private final TextureCacheListener _textureCacheListener;
+
+	/**
 	 * Construct new view.
 	 *
 	 * @param   joglEngine  Engine that created this view.
@@ -146,6 +153,18 @@ public class JOGLView
 		addOverlay( defaultViewControl );
 
 		update();
+
+		final TextureCacheListener textureCacheListener = new TextureCacheListener()
+		{
+			@Override
+			public void textureChanged( @NotNull final TextureCache textureCache , @NotNull final TextureProxy textureProxy )
+			{
+				startRenderer();
+			}
+		};
+		final TextureCache textureCache = joglEngine.getTextureCache();
+		textureCache.addListener( textureCacheListener );
+		_textureCacheListener = textureCacheListener;
 	}
 
 	/**
@@ -199,6 +218,9 @@ public class JOGLView
 	{
 		super.dispose();
 		_renderer = null;
+
+		final TextureCache textureCache = _joglEngine.getTextureCache();
+		textureCache.removeListener( _textureCacheListener );
 	}
 
 	/**
