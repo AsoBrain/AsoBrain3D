@@ -336,7 +336,7 @@ public class JOGLRenderer
 		/* Normalize lighting normals after scaling */
 		gl.glEnable( GL.GL_NORMALIZE );
 
-		_textureCache.clear();
+		_textureCache.init();
 
 		final JOGLConfiguration configuration = _configuration;
 		final JOGLCapabilities  capabilities  = new JOGLCapabilities( GLContext.getCurrent() );
@@ -829,7 +829,7 @@ public class JOGLRenderer
 			gl.glLoadIdentity();
 			JOGLTools.glMultMatrixd( gl , _sceneToViewRotation );
 
-			final Texture reflectionMap = _textureCache.getCubeMap( gl, "reflection/gracht" );
+			final Texture reflectionMap = _textureCache.getCubeMap( "reflection/gracht" );
 			reflectionMap.bind();
 			reflectionMap.enable();
 
@@ -1572,9 +1572,9 @@ public class JOGLRenderer
 				final boolean  backfaceCulling  = style.isBackfaceCullingEnabled() && !face.isTwoSided();
 				final boolean  setVertexNormals = hasLighting && face.smooth;
 
-				final Texture colorMap = textureCache.getColorMapTexture( gl , material );
-				final Texture bumpMap = isShadersEnabled() && hasLighting ? textureCache.getBumpMapTexture( gl , material ) : null;
-				final Texture normalizationCubeMap = ( bumpMap != null ) ? textureCache.getNormalizationCubeMap( gl ) : null;
+				final Texture colorMap = textureCache.getColorMapTexture( material );
+				final Texture bumpMap = isShadersEnabled() && hasLighting ? textureCache.getBumpMapTexture( material ) : null;
+				final Texture normalizationCubeMap = ( bumpMap != null ) ? textureCache.getNormalizationCubeMap() : null;
 
 				/*
 				 * Set render/material properties.
@@ -1656,7 +1656,7 @@ public class JOGLRenderer
 					}
 				}
 
-				final Texture reflectionMap = _configuration.isReflectionMapsEnabled() && ( material.reflectionMap != null ) ? textureCache.getCubeMap( gl , material.reflectionMap ) : null;
+				final Texture reflectionMap = _configuration.isReflectionMapsEnabled() && ( material.reflectionMap != null ) ? textureCache.getCubeMap( material.reflectionMap ) : null;
 				if ( reflectionMap != null )
 				{
 					gl.glActiveTexture( TEXTURE_UNIT_ENVIRONMENT );

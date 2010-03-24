@@ -19,27 +19,27 @@
  */
 package ab.j3d.view.jogl;
 
-import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import javax.media.opengl.GL;
-import javax.media.opengl.GLException;
+import javax.media.opengl.glu.GLU;
+import javax.swing.SwingUtilities;
 
 import com.sun.opengl.util.texture.Texture;
 import com.sun.opengl.util.texture.TextureData;
-import com.sun.opengl.util.texture.TextureIO;
+import org.jetbrains.annotations.NotNull;
 
-import ab.j3d.MapTools;
 import ab.j3d.Material;
 
-import com.numdata.oss.MathTools;
 import com.numdata.oss.TextTools;
-import com.numdata.oss.ui.ImageTools;
 
 /**
  * Provides loading and caching of textures for JOGL-based rendering.
@@ -58,7 +58,12 @@ public class TextureCache
 	/**
 	 * Cached textures, by name.
 	 */
-	private final Map<String,Texture> _textures;
+	private final Map<String, TextureProxy> _textures;
+
+	/**
+	 * Used to load texture data asynchronously.
+	 */
+	private final ExecutorService _executorService;
 
 	/**
 	 * Set of textures, by name, with an alpha channel.
@@ -66,57 +71,87 @@ public class TextureCache
 	private final Set<String> _alpha;
 
 	/**
-	 * Specifies the orientation/layout of a cube map represented as a single
-	 * texture. Constants are named after the side that the center square faces.
+	 * Maximum allowed texture size.
 	 */
-	private enum CubeMapOrientation
-	{
-		/**
-		 * Rotated 90 degrees around X-axis, compared to {@link #POSITIVE_Z}.
-		 * <pre>
-		 *     +---+
-		 *     | Z+|
-		 * +---+---+---+---+
-		 * | X-| Y-| X+| Y+|
-		 * +---+---+---+---+
-		 *     | Z-|
-		 *     +---+
-		 * </pre>
-		 */
-		NEGATIVE_Y ,
+	private int _maximumTextureSize = 0;
 
-		/**
-		 * Default orientation for OpenGL, meaning that no rotation of
-		 * sub-images is required using this layout.
-		 * <pre>
-		 *     +---+
-		 *     | Y+|
-		 * +---+---+---+---+
-		 * | X-| Z+| X+| Z-|
-		 * +---+---+---+---+
-		 *     | Y-|
-		 *     +---+
-		 * </pre>
-		 */
-		POSITIVE_Z
-	}
+	/**
+	 * Whether non-power-of-two textures are supported.
+	 */
+	private boolean _nonPowerOfTwo = false;
+
+	/**
+	 * Event listeners.
+	 */
+	private final List<TextureCacheListener> _listeners;
 
 	/**
 	 * Construct new texture cache.
 	 */
 	public TextureCache()
 	{
-		_textures = new HashMap<String,Texture>();
+		_textures = new HashMap<String, TextureProxy>();
 		_alpha = new HashSet<String>();
+		_executorService = Executors.newSingleThreadExecutor();
+		_listeners = new ArrayList<TextureCacheListener>();
 	}
 
 	/**
-	 * Removes all cached textures from the cache.
+	 * Notifies the texture cache that the GL context was (re)initialized.
+	 * Any previously created texture objects are no longer valid.
 	 */
-	public void clear()
+	public void init()
 	{
-		_textures.clear();
-		_alpha.clear();
+		/*
+		 * Determine requirements for textures.
+		 */
+		final GL gl = GLU.getCurrentGL();
+
+		final int[] maxTextureSizeBuffer = new int[ 1 ];
+		gl.glGetIntegerv( GL.GL_MAX_TEXTURE_SIZE , maxTextureSizeBuffer , 0 );
+
+		_maximumTextureSize = Math.max( 64 , maxTextureSizeBuffer[ 0 ] );
+		_nonPowerOfTwo = gl.isExtensionAvailable( "GL_ARB_texture_non_power_of_two" );
+
+		/*
+		 * Remove references to textures that are no longer valid.
+		 */
+		final Set<Map.Entry<String, TextureProxy>> textureEntries = _textures.entrySet();
+		for ( final Iterator<Map.Entry<String, TextureProxy>> i = textureEntries.iterator() ; i.hasNext() ; )
+		{
+			final Map.Entry<String, TextureProxy> entry = i.next();
+			final TextureProxy textureProxy = entry.getValue();
+
+			/*
+			 * If texture data is still available, a new texture can be created.
+			 * Otherwise, the proxy is of no use anymore.
+			 */
+			if ( !textureProxy.isTextureDataSet() )
+			{
+				i.remove();
+				_alpha.remove( entry.getKey() );
+			}
+		}
+	}
+
+	/**
+	 * Returns the maximum texture size.
+	 *
+	 * @return  Maximum texture size.
+	 */
+	public int getMaximumTextureSize()
+	{
+		return _maximumTextureSize;
+	}
+
+	/**
+	 * Returns whether non-power-of-two textures are supported.
+	 *
+	 * @return  <code>true</code> if non-power-of-two textures are supported.
+	 */
+	public boolean isNonPowerOfTwo()
+	{
+		return _nonPowerOfTwo;
 	}
 
 	/**
@@ -134,141 +169,56 @@ public class TextureCache
 	/**
 	 * Get {@link Texture} for the specified map.
 	 *
-	 * @param   gl          OpenGL pipeline.
 	 * @param   texture     Name of the texture map.
 	 *
 	 * @return  Texture for the specified name; <code>null</code> if the name was
 	 *          empty or no map by the given name was found.
 	 */
-	public Texture getTexture( final GL gl , final String texture )
+	public Texture getTexture( final String texture )
 	{
 		Texture result = null;
 
 		if ( TextTools.isNonEmpty( texture ) )
 		{
-			final Map<String, Texture> textures = _textures;
-			result = textures.get( texture );
+			final Map<String,TextureProxy> textures = _textures;
 
-			if ( result == null && !textures.containsKey( texture ) )
+			TextureProxy textureProxy = textures.get( texture );
+			if ( textureProxy == null )
 			{
-				final BufferedImage bufferedImage = MapTools.loadImage( texture );
-				if ( bufferedImage != null )
-				{
-					final boolean autoMipmapGeneration = hasAutoMipMapGenerationSupport( gl );
-
-					result = TextureIO.newTexture( createCompatibleTextureImage( bufferedImage , gl ) , autoMipmapGeneration );
-
-					result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
-					result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
-
-					if ( autoMipmapGeneration )
-					{
-						try
-						{
-							/**
-							 * Set generate mipmaps to true, this greatly increases performance and viewing pleasure in big scenes.
-							 * @TODO need to find out if generated mipmaps are faster or if pregenerated mipmaps are faster
-							 */
-							result.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
-
-							/** Set texture magnification to GL_LINEAR to support mipmaps. */
-							result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
-
-							/** Set texture minification to GL_LINEAR_MIPMAP_NEAREST to support mipmaps. */
-							result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
-						}
-						catch ( GLException e )
-						{
-							/*
-							 * If setting texture parameters fails, it's no
-							 * severe problem. Catch any exception so the view
-							 * doesn't crash.
-							 */
-							e.printStackTrace();
-						}
-					}
-
-					final ColorModel colorModel = bufferedImage.getColorModel();
-					if ( colorModel.hasAlpha() )
-					{
-						_alpha.add( texture );
-					}
-				}
+				textureProxy = new TextureProxy( texture , this );
+				loadTexture( texture , textureProxy );
 			}
 
-			_textures.put( texture , result );
+			result = textureProxy.getTexture();
+
+			if ( result != null )
+			{
+				final TextureData textureData = textureProxy.getTextureData();
+				if ( ( textureData != null ) && ( textureData.getInternalFormat() == GL.GL_RGBA ) )
+				{
+					_alpha.add( texture );
+				}
+			}
 		}
 
 		return result;
 	}
 
 	/**
-	 * Test if OpenGL supports auto-generated mipmaps.
-	 *
-	 * @param   gl  OpenGL pipeline.
-	 *
-	 * @return  <code>true</code> if OpenGL supports auto-generated mipmaps;
-	 *          <code>false</code> otherwise.
-	 */
-	private static boolean hasAutoMipMapGenerationSupport( final GL gl )
-	{
-		return ( gl.isExtensionAvailable( "GL_VERSION_1_4" ) || gl.isExtensionAvailable( "GL_SGIS_generate_mipmap" ) );
-	}
-
-	/**
-	 * Scales the given image, if necessary, such that it is compatible with the
-	 * given OpenGL pipeline. The aspect ratio of the image may not be preserved.
-	 *
-	 * @param   image   Image to be scaled, if necessary.
-	 * @param   gl      OpenGL pipeline.
-	 *
-	 * @return  Compatible texture image. If the given image already meets all
-	 *          requirements, that same image is returned.
-	 *
-	 * @throws  IllegalStateException if the given OpenGL pipeline specifies a
-	 *          non-positive maximum texture size.
-	 */
-	private static BufferedImage createCompatibleTextureImage( final BufferedImage image , final GL gl )
-	{
-		/*
-		 * Textures must not exceed the maximum size. According to the OpenGL
-		 * specification, this must be at least 64.
-		 */
-		final int[] maxTextureSizeBuffer = new int[ 1 ];
-		gl.glGetIntegerv( GL.GL_MAX_TEXTURE_SIZE , maxTextureSizeBuffer , 0 );
-		final int maximumTextureSize = Math.max( 64 , maxTextureSizeBuffer[ 0 ] );
-
-		int scaledWidth  = Math.min( maximumTextureSize , image.getWidth()  );
-		int scaledHeight = Math.min( maximumTextureSize , image.getHeight() );
-
-		/*
-		 * Texture sizes may need to be powers of two.
-		 */
-		if ( !gl.isExtensionAvailable( "GL_ARB_texture_non_power_of_two" ) )
-		{
-			scaledWidth  = MathTools.nearestPowerOfTwo( scaledWidth  );
-			scaledHeight = MathTools.nearestPowerOfTwo( scaledHeight );
-		}
-
-		return ImageTools.createScaledInstance( image , scaledWidth , scaledHeight , false );
-	}
-
-	/**
 	 * Get {@link Texture} for color map of {@link Material}.
 	 *
-	 * @param   gl              OpenGL pipeline.
 	 * @param   material        Material to get color map texture from.
 	 *
 	 * @return Color map texture; <code>null</code> if face has no color map or no
 	 *         texture coordinates.
 	 */
-	public Texture getColorMapTexture( final GL gl , final Material material )
+	public Texture getColorMapTexture( final Material material )
 	{
 		final Texture result;
 
 		if ( ( material != null ) && ( material.colorMap != null ) )
 		{
-			result = getTexture( gl , material.colorMap );
+			result = getTexture( material.colorMap );
 		}
 		else
 		{
@@ -280,65 +230,29 @@ public class TextureCache
 	/**
 	 * Get {@link Texture} for bump map of {@link Material}.
 	 *
-	 * @param   gl          OpenGL pipeline.
 	 * @param   material    MAterial to get bump map texture from.
 	 *
 	 * @return Color map texture; <code>null</code> if face has no color map or no
 	 *         texture coordinates.
 	 */
-	public Texture getBumpMapTexture( final GL gl , final Material material )
+	public Texture getBumpMapTexture( final Material material )
 	{
 		Texture result = null;
 
 		if ( ( material != null ) && TextTools.isNonEmpty( material.bumpMap ) )
 		{
-			final Map<String, Texture> textures = _textures;
-			result = textures.get( material.bumpMap );
+			final String texture = material.bumpMap;
 
-			if ( result == null )
+			final Map<String, TextureProxy> textures = _textures;
+
+			TextureProxy textureProxy = textures.get( texture );
+			if ( textureProxy == null )
 			{
-				BufferedImage bufferedImage = MapTools.loadImage( material.bumpMap );
-				if ( bufferedImage != null )
-				{
-					bufferedImage = JOGLTools.createNormalMapFromBumpMap( bufferedImage );
-
-					final boolean autoMipmapGeneration = hasAutoMipMapGenerationSupport( gl );
-
-					result = TextureIO.newTexture( createCompatibleTextureImage( bufferedImage , gl ) , autoMipmapGeneration );
-
-					result.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
-					result.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
-
-					if ( autoMipmapGeneration )
-					{
-						try
-						{
-							/**
-							 * Set generate mipmaps to true, this greatly increases performance and viewing pleasure in big scenes.
-							 * @TODO need to find out if generated mipmaps are faster or if pregenerated mipmaps are faster
-							 */
-							result.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
-
-							/** Set texture magnification to linear to support mipmaps. */
-							result.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
-
-							/** Set texture minification to linear_mipmap)_nearest to support mipmaps */
-							result.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
-						}
-						catch ( GLException e )
-						{
-							/*
-							 * If setting texture parameters fails, it's no
-							 * severe problem. Catch any exception so the view
-							 * doesn't crash.
-							 */
-							e.printStackTrace();
-						}
-					}
-				}
-
-				textures.put( material.bumpMap , result );
+				textureProxy = new BumpTextureProxy( texture , this );
+				loadTexture( texture , textureProxy );
 			}
+
+			result = textureProxy.getTexture();
 		}
 
 		return result;
@@ -349,19 +263,17 @@ public class TextureCache
 	 * 3D texture coordinate, the value of the map represents the normalized
 	 * vector from the origin in the direction of the coordinate.
 	 *
-	 * @param   gl  OpenGL pipeline.
-	 *
 	 * @return  Normalization cube map.
 	 */
-	public Texture getNormalizationCubeMap( final GL gl )
+	public Texture getNormalizationCubeMap()
 	{
-		Texture result = _textures.get( NORMALIZATION_CUBE_MAP );
+		TextureProxy result = _textures.get( NORMALIZATION_CUBE_MAP );
 		if ( result == null )
 		{
-			result = JOGLTools.createNormalizationCubeMap( gl );
+			result = new TextureProxy( JOGLTools.createNormalizationCubeMap( GLU.getCurrentGL() ) );
 			_textures.put( NORMALIZATION_CUBE_MAP , result );
 		}
-		return result;
+		return result.getTexture();
 	}
 
 	/**
@@ -378,62 +290,29 @@ public class TextureCache
 	 *     +---+
 	 * </pre>
 	 *
-	 * @param   gl      OpenGL pipeline.
 	 * @param   cube    Name of the cube map image.
 	 *
 	 * @return  Cube map texture.
 	 */
-	public Texture getCubeMap( final GL gl , final String cube )
+	public Texture getCubeMap( final String cube )
 	{
 		final String key = "cube:" + cube;
-		Texture result = _textures.get( key );
 
-		if ( result == null )
+		final Map<String, TextureProxy> textures = _textures;
+
+		TextureProxy textureProxy = textures.get( key );
+		if ( textureProxy == null )
 		{
-			final BufferedImage cubeImage = MapTools.getImage( cube );
-			if ( cubeImage != null )
-			{
-				if ( cubeImage.getWidth() * 3 != cubeImage.getHeight() * 4 )
-				{
-					throw new IllegalArgumentException( "Cube map must have 4:3 aspect ratio" );
-				}
-
-				if ( cubeImage.getWidth() % 4 != 0 )
-				{
-					throw new IllegalArgumentException( "Cube map width must be a multiple of 4" );
-				}
-
-				if ( cubeImage.getHeight() % 3 != 0 )
-				{
-					throw new IllegalArgumentException( "Cube map height must be a multiple of 3" );
-				}
-
-				result = TextureIO.newTexture( GL.GL_TEXTURE_CUBE_MAP );
-				result.bind();
-
-				/*
-				 * Create the six sides of the cube map.
-				 */
-				loadCubeMap( gl , cubeImage , CubeMapOrientation.NEGATIVE_Y );
-
-				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_GENERATE_MIPMAP    , GL.GL_TRUE );
-				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_LINEAR );
-				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
-				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_S     , GL.GL_CLAMP_TO_EDGE );
-				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_T     , GL.GL_CLAMP_TO_EDGE );
-				gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_R     , GL.GL_CLAMP_TO_EDGE );
-
-				_textures.put( key, result );
-			}
+			textureProxy = new CubeTextureProxy( cube , this );
+			loadTexture( key , textureProxy );
 		}
 
-		return result;
+		return textureProxy.getTexture();
 	}
 
 	/**
 	 * Returns a cube map based on the specified images.
 	 *
-	 * @param   gl  OpenGL pipeline.
 	 * @param   x1  Image on the negative-X side of the cube.
 	 * @param   y1  Image on the negative-Y side of the cube.
 	 * @param   z1  Image on the negative-Z side of the cube.
@@ -443,127 +322,82 @@ public class TextureCache
 	 *
 	 * @return  Cube map texture.
 	 */
-	public Texture getCubeMap( final GL gl , final String x1 , final String y1 , final String z1 , final String x2 , final String y2 , final String z2 )
+	public Texture getCubeMap( final String x1, final String y1, final String z1, final String x2, final String y2, final String z2 )
 	{
 		final String key = "cube6:" + x1 + ":" + y1 + ":" + z1 + ":" + x2 + ":" + y2 + ":" + z2;
-		Texture result = _textures.get( key );
 
-		if ( result == null )
+		final Map<String, TextureProxy> textures = _textures;
+
+		TextureProxy textureProxy = textures.get( key );
+		if ( textureProxy == null )
 		{
-			result = TextureIO.newTexture( GL.GL_TEXTURE_CUBE_MAP );
-			result.bind();
-
-			/*
-			 * Create the six sides of the cube map.
-			 */
-			loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_NEGATIVE_X , x1 );
-			loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_NEGATIVE_Y , y1 );
-			loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_NEGATIVE_Z , z1 );
-			loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_POSITIVE_X , x2 );
-			loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_POSITIVE_Y , y2 );
-			loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_POSITIVE_Z , z2 );
-
-			gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR        );
-			gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR        );
-			gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_S     , GL.GL_CLAMP_TO_EDGE );
-			gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_T     , GL.GL_CLAMP_TO_EDGE );
-			gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_R     , GL.GL_CLAMP_TO_EDGE );
-
-			_textures.put( key, result );
+			textureProxy = new CubeTextureProxy( x1 , y1 , z1 , x2 , y2 , z2 , this );
+			loadTexture( key , textureProxy );
 		}
 
-		return result;
+		return textureProxy.getTexture();
 	}
 
 	/**
-	 * Loads the given image as a cube map into the texture that is bound to the
-	 * active texture unit.
+	 * Asynchronously loads the given texture.
 	 *
-	 * @param   gl              OpenGL pipeline.
-	 * @param   image           Image to be loaded.
-	 * @param   orientation     Orientation of the cube map representation.
+	 * @param   key             Key identifying the texture.
+	 * @param   textureProxy    Texture to be loaded.
 	 */
-	private static void loadCubeMap( final GL gl , final BufferedImage image , final CubeMapOrientation orientation )
+	private void loadTexture( @NotNull final String key , @NotNull final TextureProxy textureProxy )
 	{
-		final int size = image.getWidth() / 4;
-		switch ( orientation )
+		_textures.put( key , textureProxy );
+
+		final Future<TextureData> textureData = _executorService.submit( textureProxy );
+		textureProxy.setTextureData( textureData );
+
+		_executorService.submit( new Runnable()
 		{
-			case POSITIVE_Z:
-				loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_NEGATIVE_X , getSubImage( image , 0 , 0 , size , size , size ) );
-				loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_NEGATIVE_Y , getSubImage( image , 0 , size , 2 * size , size , size ) );
-				loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_NEGATIVE_Z , getSubImage( image , 0 , 3 * size , size , size , size ) );
-				loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_POSITIVE_X , getSubImage( image , 0 , 2 * size , size , size , size ) );
-				loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_POSITIVE_Y , getSubImage( image , 0 , size , 0 , size , size ) );
-				loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_POSITIVE_Z , getSubImage( image , 0 , size , size , size , size ) );
-				break;
-
-			case NEGATIVE_Y:
-				loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_NEGATIVE_X , getSubImage( image , -90 , 0 , size , size , size ) );
-				loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_NEGATIVE_Y , getSubImage( image , 0 , size , size , size , size ) );
-				loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_NEGATIVE_Z , getSubImage( image , 0 , size , 2 * size , size , size ) );
-				loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_POSITIVE_X , getSubImage( image , 90 , 2 * size , size , size , size ) );
-				loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_POSITIVE_Y , getSubImage( image , 180 , 3 * size , size , size , size ) );
-				loadCubeMap( gl , GL.GL_TEXTURE_CUBE_MAP_POSITIVE_Z , getSubImage( image , 0 , size , 0 , size , size ) );
-				break;
-		}
+			@Override
+			public void run()
+			{
+				fireTextureChange( textureProxy );
+			}
+		} );
 	}
 
 	/**
-	 * Loads the specified image as a cube map into the texture that is bound to
-	 * the active texture unit.
+	 * Adds an event listener to the texture cache.
 	 *
-	 * @param   gl      OpenGL pipeline.
-	 * @param   target  Texture target.
-	 * @param   image   Image to be loaded.
+	 * @param   listener    Listener to be added.
 	 */
-	private static void loadCubeMap( final GL gl , final int target , final String image )
+	public void addListener( @NotNull final TextureCacheListener listener )
 	{
-		final BufferedImage bufferedImage = MapTools.loadImage( image );
-		if ( bufferedImage != null )
+		_listeners.add( listener );
+	}
+
+	/**
+	 * Removes an event listener to the texture cache.
+	 *
+	 * @param   listener    Listener to be removed.
+	 */
+	public void removeListener( @NotNull final TextureCacheListener listener )
+	{
+		_listeners.remove( listener );
+	}
+
+	/**
+	 * Notifies registered event listeners of a change in the given texture.
+	 *
+	 * @param   textureProxy    Changed texture.
+	 */
+	protected void fireTextureChange( @NotNull final TextureProxy textureProxy )
+	{
+		SwingUtilities.invokeLater( new Runnable()
 		{
-			final BufferedImage compatibleImage = createCompatibleTextureImage( bufferedImage , gl );
-			loadCubeMap( gl , target , compatibleImage );
-		}
-	}
-
-	/**
-	 * Loads the given image as a cube map into the texture that is bound to the
-	 * active texture unit.
-	 *
-	 * @param   gl      OpenGL pipeline.
-	 * @param   target  Texture target.
-	 * @param   image   Image to be loaded.
-	 */
-	private static void loadCubeMap( final GL gl , final int target , final BufferedImage image )
-	{
-		final TextureData textureData = TextureIO.newTextureData( image , GL.GL_RGB8 , GL.GL_RGB , false );
-		gl.glTexImage2D( target , 0 , textureData.getInternalFormat() , textureData.getWidth() , textureData.getHeight() , textureData.getBorder() , textureData.getPixelFormat() , textureData.getPixelType() , textureData.getBuffer() );
-		textureData.flush();
-	}
-
-	/**
-	 * Returns a sub-image from the given image.
-	 *
-	 * @param   image   Source image.
-	 * @param   angle   Angle of rotation, in degrees.
-	 * @param   x       Top-left corner x-coordinate of the source rectangle.
-	 * @param   y       Top-left corner y-coordinate of the source rectangle.
-	 * @param   w       Width of the source rectangle.
-	 * @param   h       Height of the source rectangle.
-	 *
-	 * @return  Specified sub-image.
-	 */
-	private static BufferedImage getSubImage( final BufferedImage image , final int angle , final int x , final int y , final int w , final int h )
-	{
-		final BufferedImage result = new BufferedImage( w , h , image.getType() );
-		final Graphics2D g = result.createGraphics();
-		final AffineTransform transform = new AffineTransform();
-		transform.translate( (double)( w / 2 ) , (double)( h / 2 ) );
-		transform.rotate( Math.toRadians( (double)-angle ) );
-		transform.translate( (double)( -x - w / 2 ) , (double)( -y - h / 2 ) );
-		g.setTransform( transform );
-		g.drawImage( image , 0 , 0 , null );
-		g.dispose();
-		return result;
+			@Override
+			public void run()
+			{
+				for ( final TextureCacheListener listener : _listeners )
+				{
+					listener.textureChanged( TextureCache.this , textureProxy );
+				}
+			}
+		} );
 	}
 }
