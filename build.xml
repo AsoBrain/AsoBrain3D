@@ -68,7 +68,7 @@
 
   <target name="compile-tests" depends="compile-java" description="Compile unit tests">
     <mkdir dir="classes/test"/>
-D    <javac2 srcdir="test" destdir="classes/test" classpathref="test.classpath" excludes="**/jogl2/**" />
+    <javac2 srcdir="test" destdir="classes/test" classpathref="test.classpath" excludes="**/jogl2/**" />
     <copy todir="classes/test">
       <fileset dir="test" excludes="**/*.java"/>
     </copy>
