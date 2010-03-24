@@ -53,7 +53,7 @@
 
   <target name="compile-java" depends="api-check" description="Compile Java source files">
     <mkdir dir="classes/java"/>
-    <javac2 srcdir="java" destdir="classes/java" classpathref="java.classpath" source="1.5"/>
+    <javac2 srcdir="java" destdir="classes/java" classpathref="java.classpath" source="1.5" excludes="**/jogl2/**" />
     <copy todir="classes/java">
       <fileset dir="java" excludes="**/*.java" />
     </copy>
@@ -68,7 +68,7 @@
 
   <target name="compile-tests" depends="compile-java" description="Compile unit tests">
     <mkdir dir="classes/test"/>
-    <javac2 srcdir="test" destdir="classes/test" classpathref="test.classpath" />
+D    <javac2 srcdir="test" destdir="classes/test" classpathref="test.classpath" excludes="**/jogl2/**" />
     <copy todir="classes/test">
       <fileset dir="test" excludes="**/*.java"/>
     </copy>
