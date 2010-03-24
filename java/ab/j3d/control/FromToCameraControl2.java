@@ -222,7 +222,7 @@ public class FromToCameraControl2
 	 */
 	public void look( final Vector3D from , final Vector3D to )
 	{
-		final Vector3D viewingDirection = to.minus( from );
+		final Vector3D viewingDirection = Vector3D.normalize( to.x - from.x , to.y - from.y , to.z - from.z );
 		final boolean isZAxis = viewingDirection.almostEquals( Vector3D.POSITIVE_Z_AXIS ) || viewingDirection.almostEquals( Vector3D.NEGATIVE_Z_AXIS );
 
 		final Vector3D reference = !isZAxis ? Vector3D.POSITIVE_Z_AXIS : Vector3D.POSITIVE_Y_AXIS;
