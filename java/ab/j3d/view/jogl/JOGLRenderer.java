@@ -2178,8 +2178,7 @@ public class JOGLRenderer
 		glWrapper.setColor( red , green , blue , alpha );
 		glWrapper.setMaterialAmbient( red , green , blue , alpha );
 		glWrapper.setMaterialDiffuse( red , green , blue , alpha );
-		glWrapper.setMaterialSpecular( 1.0f , 1.0f , 1.0f , alpha );
-		glWrapper.setMaterialShininess( 16.0f );
+		glWrapper.setMaterialSpecular( 0.0f , 0.0f , 0.0f , alpha );
 		glWrapper.setMaterialEmission( 0.0f , 0.0f , 0.0f , alpha );
 	}
 
