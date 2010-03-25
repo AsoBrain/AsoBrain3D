@@ -259,6 +259,11 @@ public class JOGLRenderer
 	private JOGLConfiguration _configuration;
 
 	/**
+	 * Available rendering capabilities.
+	 */
+	private JOGLCapabilities _capabilities = null;
+
+	/**
 	 * Specifies which objects should be rendered during the current rendering
 	 * pass when performing multi-pass rendering.
 	 */
@@ -340,6 +345,7 @@ public class JOGLRenderer
 
 		final JOGLConfiguration configuration = _configuration;
 		final JOGLCapabilities  capabilities  = new JOGLCapabilities( GLContext.getCurrent() );
+		_capabilities = capabilities;
 
 		ShaderImplementation shaderImplementation = null;
 
@@ -1656,7 +1662,10 @@ public class JOGLRenderer
 					}
 				}
 
-				final Texture reflectionMap = _configuration.isReflectionMapsEnabled() && ( material.reflectionMap != null ) ? textureCache.getCubeMap( material.reflectionMap ) : null;
+				final boolean reflectionsEnabled = _configuration.isReflectionMapsEnabled() &&
+				                                   _capabilities.isCubeMapSupported();
+
+				final Texture reflectionMap = reflectionsEnabled && ( material.reflectionMap != null ) ? textureCache.getCubeMap( material.reflectionMap ) : null;
 				if ( reflectionMap != null )
 				{
 					gl.glActiveTexture( TEXTURE_UNIT_ENVIRONMENT );

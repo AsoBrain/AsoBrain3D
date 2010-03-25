@@ -51,6 +51,8 @@ public class JOGLCapabilities
 	 */
 	private boolean _capabilitiesDetermined = false;
 
+	/** OpenGL version 1.3 or above.           */ private boolean _opengl13          = false;
+
 	/** GLSL vertex/pixel shaders.             */ private boolean _shaderObjects     = false;
 	/** GLSL vertex/pixel shaders (extension). */ private boolean _shaderObjectsARB  = false;
 
@@ -193,6 +195,17 @@ public class JOGLCapabilities
 	}
 
 	/**
+	 * Returns whether cube maps are supported.
+	 *
+	 * @return  <code>true</code> if cube maps are supported.
+	 */
+	public boolean isCubeMapSupported()
+	{
+		determineCapabilities();
+		return _opengl13;
+	}
+
+	/**
 	 * Returns whether {@link JOGLRenderer} can load, compile and link the
 	 * shaders it requires. This may fail due to driver bugs or unknown
 	 * programming errors.
@@ -258,6 +271,8 @@ public class JOGLCapabilities
 			final boolean opengl14 = gl.isExtensionAvailable( "GL_VERSION_1_4" );
 			final boolean opengl15 = gl.isExtensionAvailable( "GL_VERSION_1_5" );
 			final boolean opengl20 = gl.isExtensionAvailable( "GL_VERSION_2_0" );
+
+			_opengl13 = opengl13;
 
 			_textureRectangle  = gl.isExtensionAvailable( "GL_ARB_texture_rectangle" );
 
