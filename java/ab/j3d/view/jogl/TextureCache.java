@@ -81,6 +81,11 @@ public class TextureCache
 	private boolean _nonPowerOfTwo = false;
 
 	/**
+	 * Whether OpenGL 1.2 support is available.
+	 */
+	private boolean _isOpenGL12 = false;
+
+	/**
 	 * Event listeners.
 	 */
 	private final List<TextureCacheListener> _listeners;
@@ -112,6 +117,7 @@ public class TextureCache
 
 		_maximumTextureSize = Math.max( 64 , maxTextureSizeBuffer[ 0 ] );
 		_nonPowerOfTwo = gl.isExtensionAvailable( "GL_ARB_texture_non_power_of_two" );
+		_isOpenGL12 = gl.isExtensionAvailable( "GL_VERSION_1_2" );
 
 		/*
 		 * Remove references to textures that are no longer valid.
@@ -152,6 +158,16 @@ public class TextureCache
 	public boolean isNonPowerOfTwo()
 	{
 		return _nonPowerOfTwo;
+	}
+
+	/**
+	 * Returns whether OpenGL 1.2 support is available.
+	 *
+	 * @return  <code>true</code> if OpenGL 1.2 support is available.
+	 */
+	public boolean isOpenGL12()
+	{
+		return _isOpenGL12;
 	}
 
 	/**
