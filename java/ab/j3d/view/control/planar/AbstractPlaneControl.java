@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2009
+ * (C) Copyright Numdata BV 2007-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -152,7 +152,7 @@ public abstract class AbstractPlaneControl
 	 */
 	public Vector3D getWcsDelta()
 	{
-		return _wcsEnd.minus( _wcsStart );
+		return ( _wcsEnd != null ) && ( _wcsStart != null ) ? _wcsEnd.minus( _wcsStart ) : Vector3D.ZERO;
 	}
 
 	/**
