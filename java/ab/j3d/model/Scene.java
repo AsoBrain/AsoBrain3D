@@ -20,6 +20,7 @@
 package ab.j3d.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +34,7 @@ import ab.j3d.Bounds3DBuilder;
 import ab.j3d.Matrix3D;
 import ab.j3d.Vector3D;
 import ab.j3d.view.BSPTree;
+import ab.j3d.view.control.planar.ScenePlaneControl;
 
 /**
  * This class defines a 3D scene.
@@ -119,6 +121,11 @@ public class Scene
 	private final List<SceneUpdateListener> _sceneUpdateListeners = new ArrayList<SceneUpdateListener>();
 
 	/**
+	 * Plane controls for the entire scene.
+	 */
+	private final List<ScenePlaneControl> _planeControls;
+
+	/**
 	 * Binary Space Partitioning Tree ({@link BSPTree}) of this model.
 	 * <p />
 	 * The tree is only calculated when the scene changes (indicated by
@@ -163,6 +170,7 @@ public class Scene
 	public Scene( final double unit )
 	{
 		_unit = unit;
+		_planeControls = new ArrayList<ScenePlaneControl>();
 		_bspTree = new BSPTree();
 		_bspTreeDirty = true;
 	}
@@ -604,5 +612,36 @@ public class Scene
 				listener.ambientLightChanged( event );
 			}
 		}
+	}
+
+	/**
+	 * Returns plane controls that apply to the entire scene.
+	 *
+	 * @return  Plane controls.
+	 */
+	@NotNull
+	public List<ScenePlaneControl> getPlaneControls()
+	{
+		return Collections.unmodifiableList( _planeControls );
+	}
+
+	/**
+	 * Adds the given plane control to the scene.
+	 *
+	 * @param   planeControl    Plane control to be added.
+	 */
+	public void addPlaneControl( @NotNull final ScenePlaneControl planeControl )
+	{
+		_planeControls.add( planeControl );
+	}
+
+	/**
+	 * Removes the given plane control to the scene.
+	 *
+	 * @param   planeControl    Plane control to be removed.
+	 */
+	public void removePlaneControl( @NotNull final ScenePlaneControl planeControl )
+	{
+		_planeControls.remove( planeControl );
 	}
 }

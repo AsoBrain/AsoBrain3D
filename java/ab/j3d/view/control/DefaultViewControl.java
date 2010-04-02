@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2009
+ * (C) Copyright Numdata BV 2004-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,7 @@ package ab.j3d.view.control;
 
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
@@ -43,6 +44,7 @@ import ab.j3d.view.ViewControlInput;
 import ab.j3d.view.ViewOverlay;
 import ab.j3d.view.control.planar.PlanarGraphics2D;
 import ab.j3d.view.control.planar.PlaneControl;
+import ab.j3d.view.control.planar.ScenePlaneControl;
 import ab.j3d.view.control.planar.SubPlaneControl;
 
 import com.numdata.oss.MathTools;
@@ -84,6 +86,11 @@ public class DefaultViewControl
 	 * Currently active sub-plane control.
 	 */
 	private SubPlaneControl _subPlaneControl = null;
+
+	/**
+	 * Currently active scene plane control.
+	 */
+	private ScenePlaneControl _scenePlaneControl = null;
 
 	/**
 	 * Construct control that implements common view node behavior.
@@ -153,7 +160,7 @@ public class DefaultViewControl
 					final Vector3D pointerDirection = pointerRay.getDirection();
 
 					if ( !MathTools.almostEqual( Vector3D.dot( pointerDirection.x , pointerDirection.y , pointerDirection.z , plane2wcs.xz , plane2wcs.yz , plane2wcs.zz ) , 0.0 ) &&
-						 planeControl.mousePressed( event , node , wcsPoint ) )
+					     planeControl.mousePressed( event , node , wcsPoint ) )
 					{
 						_node         = node;
 						_plane2wcs    = plane2wcs;
@@ -206,6 +213,39 @@ public class DefaultViewControl
 				break;
 		}
 
+		if ( result != null )
+		{
+			for ( final ScenePlaneControl planeControl : scene.getPlaneControls() )
+			{
+				if ( planeControl.isEnabled() )
+				{
+					final Matrix3D plane2wcs  = planeControl.getPlane2Wcs();
+
+					final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( plane2wcs , planeControl.isPlaneTwoSided() , event.getPointerRay() );
+					if ( wcsPoint != null )
+					{
+						final Vector3D planePoint = plane2wcs.inverseTransform( wcsPoint );
+
+						final Rectangle2D bounds = planeControl.getPlaneBounds();
+						if ( bounds.contains( planePoint.x , planePoint.y ) )
+						{
+							if ( planeControl.mousePressed( event , planePoint.x , planePoint.y ) )
+							{
+								_plane2wcs         = plane2wcs;
+								_scenePlaneControl = planeControl;
+
+								updateViews();
+
+								startCapture( event );
+								result = null;
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+
 		return result;
 	}
 
@@ -213,12 +253,13 @@ public class DefaultViewControl
 	{
 		if ( isCaptured() )
 		{
-			final ContentNode node            = _node;
-			final Matrix3D         plane2wcs       = _plane2wcs;
-			final PlaneControl     planeControl    = _planeControl;
-			final SubPlaneControl  subPlaneControl = _subPlaneControl;
+			final ContentNode       node              = _node;
+			final Matrix3D          plane2wcs         = _plane2wcs;
+			final PlaneControl      planeControl      = _planeControl;
+			final SubPlaneControl   subPlaneControl   = _subPlaneControl;
+			final ScenePlaneControl scenePlaneControl = _scenePlaneControl;
 
-			if ( ( node != null ) && ( plane2wcs != null ) )
+			if ( plane2wcs != null )
 			{
 				if ( planeControl != null )
 				{
@@ -241,6 +282,17 @@ public class DefaultViewControl
 						updateViews();
 					}
 				}
+
+				if ( scenePlaneControl != null )
+				{
+					final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( plane2wcs , scenePlaneControl.isPlaneTwoSided() , event.getPointerRay() );
+					if ( wcsPoint != null )
+					{
+						final Vector3D planePoint = plane2wcs.inverseTransform( wcsPoint );
+						scenePlaneControl.mouseDragged( event , planePoint.x , planePoint.y );
+						updateViews();
+					}
+				}
 			}
 		}
 
@@ -251,12 +303,13 @@ public class DefaultViewControl
 	{
 		if ( isCaptured() && !event.isMouseButtonDown() )
 		{
-			final ContentNode node            = _node;
-			final Matrix3D         plane2wcs       = _plane2wcs;
-			final PlaneControl     planeControl    = _planeControl;
-			final SubPlaneControl  subPlaneControl = _subPlaneControl;
+			final ContentNode       node              = _node;
+			final Matrix3D          plane2wcs         = _plane2wcs;
+			final PlaneControl      planeControl      = _planeControl;
+			final SubPlaneControl   subPlaneControl   = _subPlaneControl;
+			final ScenePlaneControl scenePlaneControl = _scenePlaneControl;
 
-			if ( ( node != null ) && ( plane2wcs != null ) )
+			if ( plane2wcs != null )
 			{
 				if ( planeControl != null )
 				{
@@ -278,13 +331,25 @@ public class DefaultViewControl
 						updateViews();
 					}
 				}
+
+				if ( scenePlaneControl != null )
+				{
+					final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( plane2wcs , scenePlaneControl.isPlaneTwoSided() , event.getPointerRay() );
+					if ( wcsPoint != null )
+					{
+						final Vector3D planePoint = plane2wcs.inverseTransform( wcsPoint );
+						scenePlaneControl.mouseReleased( event , planePoint.x , planePoint.y );
+						updateViews();
+					}
+				}
 			}
 		}
 
-		_node            = null;
-		_plane2wcs       = null;
-		_planeControl    = null;
-		_subPlaneControl = null;
+		_node              = null;
+		_plane2wcs         = null;
+		_planeControl      = null;
+		_subPlaneControl   = null;
+		_scenePlaneControl = null;
 
 		return super.mouseReleased( event );
 	}
@@ -312,35 +377,47 @@ public class DefaultViewControl
 
 	public void paintOverlay( final View3D view , final Graphics2D g2d )
 	{
-		final ContentNode node            = _node;
-		final Matrix3D        plane2wcs       = _plane2wcs;
-		final PlaneControl    planeControl    = _planeControl;
-		final SubPlaneControl subPlaneControl = _subPlaneControl;
+		final Matrix3D          plane2wcs         = _plane2wcs;
+		final PlaneControl      planeControl      = _planeControl;
+		final SubPlaneControl   subPlaneControl   = _subPlaneControl;
+		final ScenePlaneControl scenePlaneControl = _scenePlaneControl;
 
-		if ( node != null )
+		if ( planeControl != null )
 		{
-			if ( planeControl != null )
+			final Matrix3D  wcs2view   = view.getScene2View();
+			final Matrix3D  plane2view = plane2wcs.multiply( wcs2view );
+			final Projector projector  = view.getProjector();
+
+			final PlanarGraphics2D planarGraphics2D = new PlanarGraphics2D( g2d , plane2view , projector );
+			planeControl.paintOverlay( view , g2d );
+			planarGraphics2D.dispose();
+		}
+
+		if ( subPlaneControl != null )
+		{
+			final Matrix3D  wcs2view   = view.getScene2View();
+			final Matrix3D  plane2view = plane2wcs.multiply( wcs2view );
+			final Projector projector  = view.getProjector();
+
+			final PlanarGraphics2D planarGraphics2D = new PlanarGraphics2D( g2d , plane2view , projector );
+			subPlaneControl.paint( view , planarGraphics2D );
+			planarGraphics2D.dispose();
+		}
+
+		final Scene scene = view.getScene();
+		for ( final ScenePlaneControl control : scene.getPlaneControls() )
+		{
+			if ( control.isEnabled() )
 			{
-				final Matrix3D  wcs2view   = view.getScene2View();
-				final Matrix3D  plane2view = plane2wcs.multiply( wcs2view );
-				final Projector projector  = view.getProjector();
+				final Matrix3D controlPlane2wcs = control.getPlane2Wcs();
+				final Matrix3D wcs2view = view.getScene2View();
+				final Matrix3D plane2view = controlPlane2wcs.multiply( wcs2view );
+				final Projector projector = view.getProjector();
 
 				final PlanarGraphics2D planarGraphics2D = new PlanarGraphics2D( g2d , plane2view , projector );
-				planeControl.paintOverlay( view , g2d );
-				planarGraphics2D.dispose();
-			}
-
-			if ( subPlaneControl != null )
-			{
-				final Matrix3D  wcs2view   = view.getScene2View();
-				final Matrix3D  plane2view = plane2wcs.multiply( wcs2view );
-				final Projector projector  = view.getProjector();
-
-				final PlanarGraphics2D planarGraphics2D = new PlanarGraphics2D( g2d , plane2view , projector );
-				subPlaneControl.paint( view , planarGraphics2D );
+				control.paint( view , planarGraphics2D );
 				planarGraphics2D.dispose();
 			}
 		}
 	}
-
 }
