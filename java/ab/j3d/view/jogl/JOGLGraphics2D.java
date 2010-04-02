@@ -131,6 +131,9 @@ public class JOGLGraphics2D
 		_gla  = gla;
 		_font = new Font( Font.SANS_SERIF , Font.PLAIN , 12 );
 
+		_paint      = Color.BLACK;
+		_background = Color.GRAY;
+
 		/* Enable blending to support transparency. */
 		final GL gl = gla.getGL();
 		gl.glEnable( GL.GL_BLEND );
@@ -396,8 +399,56 @@ public class JOGLGraphics2D
 		final GL gl = _gla.getGL();
 
 		glBegin2D();
-		gl.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_LINE );
-		drawFillImpl( gl , shape );
+
+		boolean started = false;
+		double  startX  = 0.0;
+		double  startY  = 0.0;
+
+		final double[] coordinates = new double[ 2 ];
+
+		final PathIterator pathIterator = shape.getPathIterator( getTransform() , 1.0 );
+		while ( !pathIterator.isDone() )
+		{
+			switch ( pathIterator.currentSegment( coordinates ) )
+			{
+				case PathIterator.SEG_MOVETO :
+					if ( started )
+					{
+						gl.glEnd();
+					}
+
+					gl.glBegin( GL.GL_LINE_STRIP );
+					startX = coordinates[ 0 ];
+					startY = coordinates[ 1 ];
+					gl.glVertex2d( startX , startY );
+					started = true;
+					break;
+
+				case PathIterator.SEG_CLOSE :
+					if ( started )
+					{
+						gl.glEnd();
+						gl.glVertex2d( startX , startY );
+						started = false;
+					}
+					break;
+
+				case PathIterator.SEG_LINETO :
+					if ( started )
+					{
+						gl.glVertex2d( coordinates[ 0 ] , coordinates[ 1 ] );
+					}
+					break;
+			}
+
+			pathIterator.next();
+		}
+
+		if ( started )
+		{
+			gl.glEnd();
+		}
+
 		glEnd2D();
 	}
 
@@ -407,48 +458,7 @@ public class JOGLGraphics2D
 
 		glBegin2D();
 		gl.glPolygonMode( GL.GL_FRONT_AND_BACK , GL.GL_FILL);
-		drawFillImpl( gl , shape );
-		glEnd2D();
-	}
 
-	public Composite getComposite()
-	{
-		return _composite;
-	}
-
-	public void setComposite( final Composite composite )
-	{
-		_composite = composite;
-	}
-
-	public Font getFont()
-	{
-		return _font;
-	}
-
-	public void setFont( final Font font )
-	{
-		_font = font;
-	}
-
-	public FontMetrics getFontMetrics( final Font font )
-	{
-		return new FontMetrics( font ) {};
-	}
-
-	public FontRenderContext getFontRenderContext()
-	{
-		return DEFAULT_FONT_RENDER_CONTEXT;
-	}
-
-	/**
-	 * Implementation to draw/fill 2D shapes.
-	 *
-	 * @param   gl      GL context.
-	 * @param   shape   Shape to render.
-	 */
-	private void drawFillImpl( final GL gl , final Shape shape )
-	{
 		if ( shape instanceof Line2D )
 		{
 			final Line2D line = (Line2D)shape;
@@ -471,6 +481,8 @@ public class JOGLGraphics2D
 		}
 		else
 		{
+			// TODO: Support concave shapes, i.e. use tesselator.
+
 			boolean started = false;
 			double  startX  = 0.0;
 			double  startY  = 0.0;
@@ -484,7 +496,9 @@ public class JOGLGraphics2D
 				{
 					case PathIterator.SEG_MOVETO :
 						if ( started )
+						{
 							gl.glEnd();
+						}
 
 						gl.glBegin( GL.GL_POLYGON );
 						startX = coordinates[ 0 ];
@@ -518,6 +532,38 @@ public class JOGLGraphics2D
 				gl.glEnd();
 			}
 		}
+
+		glEnd2D();
+	}
+
+	public Composite getComposite()
+	{
+		return _composite;
+	}
+
+	public void setComposite( final Composite composite )
+	{
+		_composite = composite;
+	}
+
+	public Font getFont()
+	{
+		return _font;
+	}
+
+	public void setFont( final Font font )
+	{
+		_font = font;
+	}
+
+	public FontMetrics getFontMetrics( final Font font )
+	{
+		return new FontMetrics( font ) {};
+	}
+
+	public FontRenderContext getFontRenderContext()
+	{
+		return DEFAULT_FONT_RENDER_CONTEXT;
 	}
 
 	public void drawArc( final int x , final int y , final int width , final int height , final int startAngle , final int arcAngle )
