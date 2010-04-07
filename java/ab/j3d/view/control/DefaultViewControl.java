@@ -380,7 +380,6 @@ public class DefaultViewControl
 		final Matrix3D          plane2wcs         = _plane2wcs;
 		final PlaneControl      planeControl      = _planeControl;
 		final SubPlaneControl   subPlaneControl   = _subPlaneControl;
-		final ScenePlaneControl scenePlaneControl = _scenePlaneControl;
 
 		if ( planeControl != null )
 		{
@@ -407,17 +406,14 @@ public class DefaultViewControl
 		final Scene scene = view.getScene();
 		for ( final ScenePlaneControl control : scene.getPlaneControls() )
 		{
-			if ( control.isEnabled() )
-			{
-				final Matrix3D controlPlane2wcs = control.getPlane2Wcs();
-				final Matrix3D wcs2view = view.getScene2View();
-				final Matrix3D plane2view = controlPlane2wcs.multiply( wcs2view );
-				final Projector projector = view.getProjector();
+			final Matrix3D controlPlane2wcs = control.getPlane2Wcs();
+			final Matrix3D wcs2view = view.getScene2View();
+			final Matrix3D plane2view = controlPlane2wcs.multiply( wcs2view );
+			final Projector projector = view.getProjector();
 
-				final PlanarGraphics2D planarGraphics2D = new PlanarGraphics2D( g2d , plane2view , projector );
-				control.paint( view , planarGraphics2D );
-				planarGraphics2D.dispose();
-			}
+			final PlanarGraphics2D planarGraphics2D = new PlanarGraphics2D( g2d , plane2view , projector );
+			control.paint( view , planarGraphics2D );
+			planarGraphics2D.dispose();
 		}
 	}
 }
