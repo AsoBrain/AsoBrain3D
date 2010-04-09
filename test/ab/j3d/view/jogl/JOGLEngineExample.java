@@ -35,7 +35,20 @@ public class JOGLEngineExample
 	 */
 	public JOGLEngineExample()
 	{
-		super( new JOGLEngine() );
+		super( createEngine() );
+	}
+
+	/**
+	 * Create engine for example.
+	 *
+	 * @return  {@link JOGLEngine}.
+	 */
+	private static JOGLEngine createEngine()
+	{
+		final JOGLConfiguration joglConfiguration = new JOGLConfiguration();
+		joglConfiguration.setDepthPeelingEnabled( true );
+		joglConfiguration.setPerPixelLightingEnabled( true );
+		return new JOGLEngine( joglConfiguration );
 	}
 
 	/**
