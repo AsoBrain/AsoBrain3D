@@ -721,6 +721,19 @@ public class JOGLRenderer
 	public void renderScene( final Scene scene , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
 	{
 		_gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { scene.getAmbientRed() , scene.getAmbientGreen() , scene.getAmbientBlue() , 1.0f } , 0 );
+
+		/*
+		 * Set texture matrices to identity matrix (this should already be the
+		 * case by default, but some OpenGL drivers seem to think otherwise).
+		 */
+		_gl.glMatrixMode( GL.GL_TEXTURE );
+		for ( int i = 6 ; i >= 0 ; i-- )
+		{
+			_gl.glActiveTexture( GL.GL_TEXTURE0 + i );
+			_gl.glLoadIdentity();
+		}
+		_gl.glMatrixMode( GL.GL_MODELVIEW );
+
 		super.renderScene( scene , styleFilters , sceneStyle );
 	}
 
