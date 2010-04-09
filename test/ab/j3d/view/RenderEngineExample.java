@@ -101,7 +101,7 @@ public class RenderEngineExample
 		final ContentNode cubeLeftNode = scene.addContentNode( "cubeLeft" , Matrix3D.getTransform( 0.0 , 225.0 , 90.0 , -0.250 / unit , 0.050 / unit , 0.0 ) , cubeLeft );
 		cubeLeftNode.setPlaneControl( createPlaneControl( cubeLeftNode.getTransform() ) );
 
-		final Object3D sphere = new Sphere3D( 0.1 / unit , 20 , 20 , new Material( Color.CYAN.getRGB() ) );
+		final Object3D sphere = new Sphere3D( 0.1 / unit , 20 , 20 , new Material( 0xC000FFFF ) );
 		sphere.setTag( "Sphere" );
 		final ContentNode sphereNode = scene.addContentNode( "shere" , Matrix3D.getTransform( 90.0 , 0.0 , 315.0 , 0.225 / unit , 0.0 , 0.0 ) , sphere );
 		sphereNode.setPlaneControl( createPlaneControl( sphereNode.getTransform() ) );
@@ -266,12 +266,12 @@ public class RenderEngineExample
 		final Vector3D rbt = Vector3D.INIT.set( max , max , max );
 		final Vector3D lbt = Vector3D.INIT.set( min , max , max );
 
-		final Material red     = new Material( Color.RED    .getRGB() );
-		final Material magenta = new Material( Color.MAGENTA.getRGB() );
-		final Material blue    = new Material( Color.BLUE   .getRGB() );
-		final Material cyan    = new Material( Color.CYAN   .getRGB() );
-		final Material green   = new Material( Color.GREEN  .getRGB() );
-		final Material yellow  = new Material( Color.YELLOW .getRGB() );
+		final Material red     = new Material( 0xC0FF0000 );
+		final Material magenta = new Material( 0xC0FF00FF );
+		final Material blue    = new Material( 0xC00000FF );
+		final Material cyan    = new Material( 0xC000FFFF );
+		final Material green   = new Material( 0xC000FF00 );
+		final Material yellow  = new Material( 0xC0FFFF00 );
 
 		final Point2D.Float[] texturePoints = { new Point2D.Float( 0.0f , 0.0f ) , new Point2D.Float( 1.0f , 0.0f ) , new Point2D.Float( 1.0f , 1.0f ) , new Point2D.Float( 0.0f , 1.0f ) };
 
