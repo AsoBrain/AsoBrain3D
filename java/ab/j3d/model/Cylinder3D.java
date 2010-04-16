@@ -272,7 +272,7 @@ public final class Cylinder3D
 			vertexCoordinatesArray[ 0 ] = base.getTranslation();
 		}
 
-		if ( !hasBottom )
+		if ( !hasTop )
 		{
 			vertexCoordinatesArray[ topCoordinatesOffset ] = base.transform( 0.0 , 0.0 , height );
 		}
