@@ -526,6 +526,17 @@ public class JOGLRenderer
 	}
 
 	/**
+	 * Returns whether reflections are requested and the required OpenGL
+	 * capabilities are supported.
+	 *
+	 * @return  <code>true</code> if reflections are enabled.
+	 */
+	private boolean isReflectionsEnabled()
+	{
+		return _configuration.isReflectionMapsEnabled() && _capabilities.isCubeMapSupported();
+	}
+
+	/**
 	 * Returns whether the renderer is using depth peeling.
 	 *
 	 * @return  <code>true</code> if depth peeling is enabled.
@@ -726,13 +737,16 @@ public class JOGLRenderer
 		 * Set texture matrices to identity matrix (this should already be the
 		 * case by default, but some OpenGL drivers seem to think otherwise).
 		 */
-		_gl.glMatrixMode( GL.GL_TEXTURE );
-		for ( int i = 6 ; i >= 0 ; i-- )
+		if ( isShadersEnabled() || isReflectionsEnabled() )
 		{
-			_gl.glActiveTexture( GL.GL_TEXTURE0 + i );
-			_gl.glLoadIdentity();
+			_gl.glMatrixMode( GL.GL_TEXTURE );
+			for ( int i = 2 ; i >= 0 ; i-- )
+			{
+				_gl.glActiveTexture( GL.GL_TEXTURE0 + i );
+				_gl.glLoadIdentity();
+			}
+			_gl.glMatrixMode( GL.GL_MODELVIEW );
 		}
-		_gl.glMatrixMode( GL.GL_MODELVIEW );
 
 		super.renderScene( scene , styleFilters , sceneStyle );
 	}
@@ -1675,8 +1689,7 @@ public class JOGLRenderer
 					}
 				}
 
-				final boolean reflectionsEnabled = _configuration.isReflectionMapsEnabled() &&
-				                                   _capabilities.isCubeMapSupported();
+				final boolean reflectionsEnabled = isReflectionsEnabled();
 
 				final Texture reflectionMap = reflectionsEnabled && ( material.reflectionMap != null ) ? textureCache.getCubeMap( material.reflectionMap ) : null;
 				if ( reflectionMap != null )
