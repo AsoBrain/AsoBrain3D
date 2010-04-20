@@ -1678,4 +1678,30 @@ public final class Matrix3D
 		                     x * xy + y * yy + z * zy ,
 		                     x * xz + y * yz + z * zz );
 	}
+
+	/**
+	 * Returns whether the coordinate system represented by the matrix follows
+	 * the right-hand rule.
+	 *
+	 * @return  <code>true</code> if the coordinate system is righthanded.
+	 */
+	public boolean isRighthanded()
+	{
+		// cross product of x-axis and y-axis -> derived z-axis (righthanded)
+		final double crossX = yx * zy - zx * yy;
+		final double crossY = zx * xy - xx * zy;
+		final double crossZ = xx * yy - yx * xy;
+
+		// normalize cross product
+		final double crossScale = Vector3D.length( xx, yx, zx ) * Vector3D.length( xy, yy, zy );
+		final double normalX = crossX / crossScale;
+		final double normalY = crossY / crossScale;
+		final double normalZ = crossZ / crossScale;
+
+		// dot product of z-axis and derived (righthanded) z-axis
+		final double zScale = Vector3D.length( xz, yz, zz );
+		final double d = Vector3D.dot( normalX, normalY, normalZ, xz / zScale, yz / zScale, zz / zScale );
+
+		return MathTools.almostEqual( d , 1.0 );
+	}
 }
