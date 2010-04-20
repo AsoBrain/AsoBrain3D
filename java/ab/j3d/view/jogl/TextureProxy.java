@@ -271,10 +271,11 @@ public class TextureProxy
 		final int width = image.getWidth();
 		final int height = image.getHeight();
 
-		final int internalFormat;
+		int internalFormat;
 		int pixelType;
 		int pixelFormat;
 
+		boolean convertImage = false;
 		boolean expectingGL12 = false;
 
 		switch ( image.getType() )
@@ -319,20 +320,27 @@ public class TextureProxy
 				pixelType = GL.GL_UNSIGNED_SHORT;
 				break;
 			default:
-				throw new IllegalArgumentException( "Unsupported image type: " + image.getType() );
+				internalFormat = GL.GL_RGBA;
+				pixelFormat = GL.GL_RGBA;
+				pixelType = GL.GL_UNSIGNED_BYTE;
+				convertImage = true;
+				break;
 		}
 
 		final Buffer buffer;
 
-		if ( expectingGL12 && !_textureCache.isOpenGL12() )
+		/*
+		 * OpenGL below 1.2 (i.e. Windows default) doesn't support a lot of
+		 * pixel formats. The image data has to be converted.
+		 */
+		convertImage |= ( expectingGL12 && !_textureCache.isOpenGL12() );
+
+		if ( convertImage )
 		{
-			/*
-			 * OpenGL below 1.2 (i.e. Windows default) doesn't support a lot of
-			 * pixel formats. The image data has to be converted.
-			 */
 			buffer = createBufferFromCustom( image );
 
 			final ColorModel colorModel = image.getColorModel();
+			internalFormat = colorModel.hasAlpha() ? GL.GL_RGBA : GL.GL_RGB;
 			pixelFormat = colorModel.hasAlpha() ? GL.GL_RGBA : GL.GL_RGB;
 			pixelType = GL.GL_UNSIGNED_BYTE;
 		}
