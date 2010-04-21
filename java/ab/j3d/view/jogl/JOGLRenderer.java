@@ -533,7 +533,9 @@ public class JOGLRenderer
 	 */
 	private boolean isReflectionsEnabled()
 	{
-		return _configuration.isReflectionMapsEnabled() && _capabilities.isCubeMapSupported();
+		return _configuration.isReflectionMapsEnabled() &&
+		       _capabilities.isCubeMapSupported() &&
+		       _capabilities.getMaxTextureUnits() >= 3;
 	}
 
 	/**
