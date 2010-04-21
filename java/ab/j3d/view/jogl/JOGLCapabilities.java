@@ -75,6 +75,8 @@ public class JOGLCapabilities
 	/** Seperate blending for color and alpha. */ private boolean _blendFuncSeperate = false;
 	/** Texture clamp to edges.                */ private boolean _edgeClamp         = false;
 
+	/** Number of supported texture units.     */ private int _maxTextureUnits = 1;
+
 	/** OpenGL version.                        */ private String _version    = null;
 	/** OpenGL implementation vendor.          */ private String _vendor     = null;
 	/** Supported extensions.                  */ private String _extensions = null;
@@ -220,6 +222,17 @@ public class JOGLCapabilities
 	}
 
 	/**
+	 * Returns the maximum number of regular texture units, as defined by
+	 * ARB_multitexture and OpenGL 1.3.
+	 *
+	 * @return  Maximum number of texture units; at least <code>2</code>.
+	 */
+	public int getMaxTextureUnits()
+	{
+		return _maxTextureUnits;
+	}
+
+	/**
 	 * Prints a summary of OpenGL information and capabilities to the given
 	 * output stream.
 	 *
@@ -303,7 +316,11 @@ public class JOGLCapabilities
 			_blendFuncSeperate = opengl14 || gl.isExtensionAvailable( "GL_EXT_blend_func_separate" );
 			_generateMipmap    = opengl14 || gl.isExtensionAvailable( "GL_SGIS_generate_mipmap" );
 
-			_multitexture      = opengl13 || gl.isExtensionAvailable( "GL_ARB_multitexture" );
+			if ( opengl13 || gl.isExtensionAvailable( "GL_ARB_multitexture" ) )
+			{
+				_multitexture = true;
+				_maxTextureUnits = getInteger( gl, GL.GL_MAX_TEXTURE_UNITS );
+			}
 
 			/*
 			 * NOTE: The extension is specified as 'GL_SGIS_texture_edge_clamp',
