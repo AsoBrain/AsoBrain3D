@@ -22,7 +22,7 @@ public class JOGLConfiguration
 	 * Whether per-pixel lighting should be enabled. This applies only when
 	 * support for OpenGL shaders is available.
 	 */
-	private boolean _perPixelLightingEnabled = false;
+	private boolean _perPixelLightingEnabled = true;
 
 	/**
 	 * Whether depth-peeling should be enabled. This applies only when the
@@ -43,7 +43,7 @@ public class JOGLConfiguration
 	/**
 	 * Whether full scene anti-aliasing should be enabled.
 	 */
-	private boolean _fsaaEnabled = false;
+	private boolean _fsaaEnabled = true;
 
 	/**
 	 * Constructs a new JOGL configuration with default settings.
