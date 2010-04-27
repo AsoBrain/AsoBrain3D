@@ -41,6 +41,11 @@ public class JOGLConfiguration
 	private boolean _reflectionMapsEnabled = true;
 
 	/**
+	 * Whether full scene anti-aliasing should be enabled.
+	 */
+	private boolean _fsaaEnabled = false;
+
+	/**
 	 * Constructs a new JOGL configuration with default settings.
 	 */
 	public JOGLConfiguration()
@@ -98,5 +103,26 @@ public class JOGLConfiguration
 	public void setReflectionMapsEnabled( final boolean reflectionMapsEnabled )
 	{
 		_reflectionMapsEnabled = reflectionMapsEnabled;
+	}
+
+	/**
+	 * Returns whether full scene anti-aliasing (FSAA) should be used.
+	 *
+	 * @return  <code>true</code> if full scene anti-aliasing should be used.
+	 */
+	public boolean isFSAAEnabled()
+	{
+		return _fsaaEnabled;
+	}
+
+	/**
+	 * Sets whether full scene anti-aliasing (FSAA) should be used.
+	 *
+	 * @param   fsaaEnabled     <code>true</code> to use full scene
+	 *                          anti-aliasing.
+	 */
+	public void setFSAAEnabled( final boolean fsaaEnabled )
+	{
+		_fsaaEnabled = fsaaEnabled;
 	}
 }

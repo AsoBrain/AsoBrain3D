@@ -130,17 +130,21 @@ public class JOGLView
 		final GLCanvas glCanvas;
 
 		final GLCapabilities capabilities = new GLCapabilities();
-		capabilities.setSampleBuffers( true );
-		/* set multisampling to 4, most graphic cards support this, if they don't support multisampling it will silently fail */
-		capabilities.setNumSamples( 4 );
+
+		
+		final JOGLConfiguration configuration = joglEngine.getConfiguration();
+		_configuration = configuration;
+		if ( configuration.isFSAAEnabled() )
+		{
+			capabilities.setSampleBuffers( true );
+			/* set multisampling to 4, most graphic cards support this, if they don't support multisampling it will silently fail */
+			capabilities.setNumSamples( 4 );
+		}
 
 		/* See if the model already contains a context. */
-		glCanvas = new GLCanvas( capabilities , null , joglEngine.getContext() , null );
+		glCanvas = new SharedContextGLCanvas( capabilities );
 
-		_configuration = joglEngine.getConfiguration();
 		_capabilities = new JOGLCapabilities( glCanvas.getContext() );
-
-		joglEngine.setContext( glCanvas.getContext() );
 
 		glCanvas.setMinimumSize( new Dimension( 0 , 0 ) ); //resize workaround
 		glCanvas.addGLEventListener( this );
@@ -593,5 +597,30 @@ public class JOGLView
 			_renderer = renderer;
 		}
 		return renderer;
+	}
+
+	/**
+	 * Canvas with a GL context that is shared with all other views created by
+	 * the same {@link JOGLEngine} instance.
+	 */
+	private class SharedContextGLCanvas
+		extends GLCanvas
+	{
+		/**
+		 * Constructs a new canvas with the specified capabilities.
+		 *
+		 * @param   capabilities    Capabilities to be requested.
+		 */
+		SharedContextGLCanvas( final GLCapabilities capabilities )
+		{
+			super( capabilities, null, _joglEngine.getContext(), null );
+		}
+
+		@Override
+		public void addNotify()
+		{
+			super.addNotify();
+			_joglEngine.setContext( getContext() );
+		}
 	}
 }
