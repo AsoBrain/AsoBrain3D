@@ -614,6 +614,12 @@ public class JOGLView
 		SharedContextGLCanvas( final GLCapabilities capabilities )
 		{
 			super( capabilities, null, _joglEngine.getContext(), null );
+
+			final GLContext context = getContext();
+			if ( ( context != null ) && ( _joglEngine.getContext() == null ) )
+			{
+				_joglEngine.setContext( context );
+			}
 		}
 
 		@Override
