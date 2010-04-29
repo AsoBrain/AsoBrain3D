@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view.jogl2;
+package ab.j3d.view.jogl;
 
 import ab.j3d.view.RenderEngineExample;
 
