@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2009 Peter S. Heijnen
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,7 @@ package ab.j3d;
 import java.util.Properties;
 
 import com.numdata.oss.PropertyTools;
+import com.numdata.oss.MathTools;
 
 /**
  * This class represents rectangular 3D bounds (specified by two vectors).
@@ -190,6 +191,7 @@ public final class Bounds3D
 				( ( otherV2 == null ) || v2.equals( otherV2 ) ) );
 	}
 
+	@Override
 	public boolean equals( final Object other )
 	{
 		final boolean result;
@@ -210,6 +212,7 @@ public final class Bounds3D
 		return result;
 	}
 
+	@Override
 	public int hashCode()
 	{
 		return v1.hashCode() ^ v2.hashCode();
@@ -284,6 +287,30 @@ public final class Bounds3D
 		    && ( Math.min( bounds2.v1.y , bounds2.v2.y ) < Math.max( bounds1.v1.y , bounds1.v2.y ) )
 		    && ( Math.min( bounds1.v1.z , bounds1.v2.z ) < Math.max( bounds2.v1.z , bounds2.v2.z ) )
 		    && ( Math.min( bounds2.v1.z , bounds2.v2.z ) < Math.max( bounds1.v1.z , bounds1.v2.z ) );
+	}
+
+	/**
+	 * Determine whether the two specified bounding boxes intersect. This method
+	 * does not return <code>true</code> if the intersection along any axis is
+	 * less than the specified <code>epsilon</code> value.
+	 *
+	 * @param   bounds1     First object for intersection test.
+	 * @param   bounds2     Seconds object for intersection test.
+	 * @param   epsilon     Tolerance (always a positive number).
+	 *
+	 * @return  <code>true</code> if the bounds intersect;
+	 *          <code>false</code> if the bounds are disjunct.
+	 */
+	public static boolean intersects( final Bounds3D bounds1 , final Bounds3D bounds2 , final double epsilon )
+	{
+		return ( bounds1 != null )
+		    && ( bounds2 != null )
+		    && MathTools.significantlyLessThan( Math.min( bounds1.v1.x , bounds1.v2.x ) , Math.max( bounds2.v1.x , bounds2.v2.x ) , epsilon )
+		    && MathTools.significantlyLessThan( Math.min( bounds2.v1.x , bounds2.v2.x ) , Math.max( bounds1.v1.x , bounds1.v2.x ) , epsilon )
+		    && MathTools.significantlyLessThan( Math.min( bounds1.v1.y , bounds1.v2.y ) , Math.max( bounds2.v1.y , bounds2.v2.y ) , epsilon )
+		    && MathTools.significantlyLessThan( Math.min( bounds2.v1.y , bounds2.v2.y ) , Math.max( bounds1.v1.y , bounds1.v2.y ) , epsilon )
+		    && MathTools.significantlyLessThan( Math.min( bounds1.v1.z , bounds1.v2.z ) , Math.max( bounds2.v1.z , bounds2.v2.z ) , epsilon )
+		    && MathTools.significantlyLessThan( Math.min( bounds2.v1.z , bounds2.v2.z ) , Math.max( bounds1.v1.z , bounds1.v2.z ) , epsilon );
 	}
 
 	/**
@@ -642,6 +669,7 @@ public final class Bounds3D
 	 *
 	 * @return  String representation of object.
 	 */
+	@Override
 	public String toString()
 	{
 		return v1 + ";" + v2;
