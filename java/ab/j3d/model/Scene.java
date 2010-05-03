@@ -144,17 +144,20 @@ public class Scene
 	 */
 	private final ContentNodeUpdateListener _contentNodeUpdateListener = new ContentNodeUpdateListener()
 		{
+			@Override
 			public void contentsUpdated( final ContentNodeUpdateEvent event )
 			{
 				_bspTreeDirty = true;
 				fireContentNodeContentUpdated( (ContentNode)event.getSource() );
 			}
 
+			@Override
 			public void renderingPropertiesUpdated( final ContentNodeUpdateEvent event )
 			{
 				fireContentNodePropertyChanged( (ContentNode)event.getSource() );
 			}
 
+			@Override
 			public void transformUpdated( final ContentNodeUpdateEvent event )
 			{
 				_bspTreeDirty = true;
@@ -182,19 +185,14 @@ public class Scene
 	 * IDs starting with "legacy-light".
 	 *
 	 * @param   scene   Scene to add legacy lights to.
-	 *
-	 * @throws  NullPointerException if <code>scene</code> is <code>null</code>.
 	 */
-	public static void addLegacyLights( final Scene scene )
+	public static void addLegacyLights( @NotNull final Scene scene )
 	{
-		if ( scene == null )
-			throw new NullPointerException( "scene" );
-
 		scene.setAmbient( 0.2f , 0.2f , 0.2f );
 
-		final DirectionalLight3D directional1 = new DirectionalLight3D( Vector3D.normalize( -0.8 ,  1.0 , -0.6 ) );
-		final DirectionalLight3D directional2 = new DirectionalLight3D( Vector3D.normalize(  1.0 , -1.0 ,  0.4 ) );
-		final DirectionalLight3D directional3 = new DirectionalLight3D( Vector3D.normalize( -2.0 ,  0.0 , -1.0 ) );
+		final Light3D directional1 = new DirectionalLight3D( Vector3D.normalize( -0.8 ,  1.0 , -0.6 ) );
+		final Light3D directional2 = new DirectionalLight3D( Vector3D.normalize(  1.0 , -1.0 ,  0.4 ) );
+		final Light3D directional3 = new DirectionalLight3D( Vector3D.normalize( -2.0 ,  0.0 , -1.0 ) );
 
 		directional1.setIntensity( 1.0f );
 		directional2.setIntensity( 0.5f );
@@ -256,14 +254,9 @@ public class Scene
 	 *
 	 * @return  Content node with the specified ID;
 	 *          <code>null</code> if no node with the specified ID was found.
-	 *
-	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public final ContentNode getContentNode( final Object id )
+	public final ContentNode getContentNode( @NotNull final Object id )
 	{
-		if ( id == null )
-			throw new NullPointerException( "id" );
-
 		return _contentNodes.get( id );
 	}
 
@@ -273,14 +266,9 @@ public class Scene
 	 * @param   node    Content node to add.
 	 *
 	 * @return  Node that was added.
-	 *
-	 * @throws  NullPointerException if <code>node</code> is <code>null</code>.
 	 */
-	public final ContentNode addContentNode( final ContentNode node )
+	public final ContentNode addContentNode( @NotNull final ContentNode node )
 	{
-		if ( node == null )
-			throw new NullPointerException( "node" );
-
 		if ( !_contentNodes.containsValue( node ) )
 		{
 			removeContentNode( node.getID() );
@@ -305,17 +293,9 @@ public class Scene
 	 * @param   node3D      Root in the 3D scene to create a content node for.
 	 *
 	 * @return  Content node that was added.
-	 *
-	 * @throws  NullPointerException if <code>id</code> or <code>node3D</code> is <code>null</code>.
 	 */
-	public final ContentNode addContentNode( final Object id , final Matrix3D transform , final Node3D node3D )
+	public final ContentNode addContentNode( @NotNull final Object id , final Matrix3D transform , @NotNull final Node3D node3D )
 	{
-		if ( id == null )
-			throw new NullPointerException( "id" );
-
-		if ( node3D == null )
-			throw new NullPointerException( "node3D" );
-
 		return addContentNode( new ContentNode( id , transform , node3D ) );
 	}
 
@@ -326,10 +306,8 @@ public class Scene
 	 *
 	 * @return  <code>true</code> if a content node with the specified ID was found;
 	 *          <code>false</code> if the scene contains no such content node.
-	 *
-	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public final boolean hasContentNode( final Object id )
+	public final boolean hasContentNode( @NotNull final Object id )
 	{
 		return ( getContentNode( id ) != null );
 	}
@@ -338,10 +316,8 @@ public class Scene
 	 * Remove content node.
 	 *
 	 * @param   id  ID of content node.
-	 *
-	 * @throws  NullPointerException if <code>id</code> is <code>null</code>.
 	 */
-	public void removeContentNode( final Object id )
+	public void removeContentNode( @NotNull final Object id )
 	{
 		final ContentNode node = getContentNode( id );
 		if ( node != null )
@@ -493,11 +469,8 @@ public class Scene
 	 *
 	 * @param   listener    Listener to add.
 	 */
-	public void addSceneUpdateListener( final SceneUpdateListener listener )
+	public void addSceneUpdateListener( @NotNull final SceneUpdateListener listener )
 	{
-		if ( listener == null )
-			throw new NullPointerException();
-
 		if ( _sceneUpdateListeners.contains( listener ) )
 		{
 			throw new IllegalArgumentException( "already registered" );

@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2009
+ * (C) Copyright Numdata BV 2004-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,9 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import ab.j3d.Bounds3D;
 import ab.j3d.Bounds3DBuilder;
 import ab.j3d.Matrix3D;
@@ -36,7 +39,7 @@ import ab.j3d.view.control.planar.SubPlaneControl;
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public final class ContentNode
+public class ContentNode
 {
 	/**
 	 * Application-assigned ID of this node.
@@ -56,7 +59,7 @@ public final class ContentNode
 	/**
 	 * Root in the 3D scene associated with this node.
 	 */
-	private Node3D _node3D;
+	private final Node3D _node3D;
 
 	/**
 	 * Context actions.
@@ -97,7 +100,7 @@ public final class ContentNode
 	 * @param   transform   Initial transform (<code>null</code> => identity).
 	 * @param   node3D      Root in the 3D scene.
 	 */
-	public ContentNode( final Object id , final Matrix3D transform , final Node3D node3D )
+	public ContentNode( final Object id , @Nullable final Matrix3D transform , final Node3D node3D )
 	{
 		_id = id;
 		_node3D = node3D;
@@ -109,7 +112,7 @@ public final class ContentNode
 	 *
 	 * @return  Application-assigned ID of this node.
 	 */
-	public final Object getID()
+	public Object getID()
 	{
 		return _id;
 	}
@@ -122,7 +125,7 @@ public final class ContentNode
 	 * @return  <code>true</code> if the nodes collide;
 	 *          <code>false</code> otherwise.
 	 */
-	public boolean collidesWith( final ContentNode thatNode )
+	public boolean collidesWith( @Nullable final ContentNode thatNode )
 	{
 		return collidesWith( getTransform() , thatNode );
 	}
@@ -137,7 +140,7 @@ public final class ContentNode
 	 * @return  <code>true</code> if the nodes collide;
 	 *          <code>false</code> otherwise.
 	 */
-	public boolean collidesWith( final Matrix3D thisNode2World , final ContentNode thatNode )
+	public boolean collidesWith( @NotNull final Matrix3D thisNode2World , @Nullable final ContentNode thatNode )
 	{
 		boolean result = false;
 
@@ -182,7 +185,7 @@ public final class ContentNode
 	 * @return combined bounds of all the {@link ab.j3d.model.Object3D}'s this
 	 * {@link ContentNode} contains.
 	 */
-	public final Bounds3D getBounds()
+	public Bounds3D getBounds()
 	{
 		Bounds3D result = _cachedBounds3d;
 		if ( result == null )
@@ -211,9 +214,10 @@ public final class ContentNode
 	 * Get collection of nodes with the content of this node. The returned
 	 * collection is cached, so please make no alterations to it.
 	 *
-	 * @return  Content of this node (never <code>null</code>).
+	 * @return  Content of this node.
 	 */
-	public final Node3DCollection<Object3D> getContent()
+	@NotNull
+	public Node3DCollection<Object3D> getContent()
 	{
 		Node3DCollection<Object3D> result = _cachedContent;
 
@@ -238,7 +242,8 @@ public final class ContentNode
 	 *
 	 * @return  Transform for this node.
 	 */
-	public final Matrix3D getTransform()
+	@NotNull
+	public Matrix3D getTransform()
 	{
 		return _transform;
 	}
@@ -248,11 +253,8 @@ public final class ContentNode
 	 *
 	 * @param   transform   Transform to set.
 	 */
-	public void setTransform( final Matrix3D transform )
+	public void setTransform( @NotNull final Matrix3D transform )
 	{
-		if ( transform == null )
-			throw new NullPointerException( "transform" );
-
 		if ( !transform.equals( _transform ) )
 		{
 			_transform = transform;
@@ -265,7 +267,7 @@ public final class ContentNode
 	 *
 	 * @return  Root in the 3D scene associated with this node.
 	 */
-	public final Node3D getNode3D()
+	public Node3D getNode3D()
 	{
 		return _node3D;
 	}
@@ -308,7 +310,7 @@ public final class ContentNode
 	 *
 	 * @param   action  Context action to add.
 	 */
-	public void addContextAction( final Action action )
+	public void addContextAction( @NotNull final Action action )
 	{
 		if ( !_contextActions.contains( action ) )
 		{
@@ -350,7 +352,7 @@ public final class ContentNode
 	 *
 	 * @param   action  Context action to remove.
 	 */
-	public void removeContextAction( final Action action )
+	public void removeContextAction( @NotNull final Action action )
 	{
 		_contextActions.remove( action );
 	}
@@ -360,7 +362,7 @@ public final class ContentNode
 	 *
 	 * @param   subPlaneControl     Sub-plane control to add.
 	 */
-	public void addSubPlaneControl( final SubPlaneControl subPlaneControl )
+	public void addSubPlaneControl( @NotNull final SubPlaneControl subPlaneControl )
 	{
 		_subPlaneControls.add( subPlaneControl );
 	}
@@ -399,7 +401,7 @@ public final class ContentNode
 	 *
 	 * @param   subPlaneControl     Sub-plane control to remove.
 	 */
-	public void removeSubPlaneControl( final SubPlaneControl subPlaneControl )
+	public void removeSubPlaneControl( @NotNull final SubPlaneControl subPlaneControl )
 	{
 		_subPlaneControls.remove( subPlaneControl );
 	}
@@ -409,13 +411,12 @@ public final class ContentNode
 	 *
 	 * @param   listener    Listener to add.
 	 */
-	public void addContentNodeUpdateListener( final ContentNodeUpdateListener listener )
+	public void addContentNodeUpdateListener( @NotNull final ContentNodeUpdateListener listener )
 	{
-		if ( listener == null )
-			throw new NullPointerException();
-
 		if ( _contentNodeUpdateListeners.contains( listener ) )
+		{
 			throw new IllegalArgumentException( "already registered" );
+		}
 
 		_contentNodeUpdateListeners.add( listener );
 	}
@@ -495,6 +496,7 @@ public final class ContentNode
 	 * @return  Plane control;
 	 *          <code>null</code> if no plane control is set.
 	 */
+	@Nullable
 	public PlaneControl getPlaneControl()
 	{
 		return _planeControl;
@@ -506,7 +508,7 @@ public final class ContentNode
 	 * @param   planeControl    Plane control to set or <code>null</code> to
 	 *                          disable plane control.
 	 */
-	public void setPlaneControl( final PlaneControl planeControl )
+	public void setPlaneControl( @Nullable final PlaneControl planeControl )
 	{
 		_planeControl = planeControl;
 	}
