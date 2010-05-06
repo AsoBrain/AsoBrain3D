@@ -16,8 +16,8 @@
   <target name="init">
     <tstamp/>
     <available property="api.hsqldb"                     type="file" file="${hsqldb.jar}"/>
-    <available property="api.jetbrains.annotations"      type="file" file="${idea.home}/redist/annotations.jar"/>
-    <available property="api.jetbrains.javac2"           type="file" file="${idea.home}/redist/javac2.jar"/>
+    <available property="api.jetbrains.annotations"      type="file" file="${jetbrains-annotations.jar}"/>
+    <available property="api.jetbrains.javac2"           type="file" file="${jetbrains-javac2.jar}"/>
     <available property="api.jogl"                       type="file" file="${jogl.jar}"/>
     <available property="api.junit"                      type="file" file="${junit.jar}"/>
     <available property="api.numdata.oss"                type="file" file="${numdata.oss.home}/lib/numdata-oss.jar"/>
@@ -34,17 +34,15 @@
   </target>
 
   <path id="idea.lib.path">
-    <pathelement location="${idea.home}/redist/annotations.jar"/>
-    <pathelement location="${idea.home}/redist/javac2.jar"/>
-    <fileset dir="${idea.home}/lib">
-      <include name="**/*.jar"/>
-      <exclude name="boot.jar"/>
-    </fileset>
+    <pathelement location="${jetbrains-annotations.jar}"/>
+    <pathelement location="${jetbrains-javac2.jar}"/>
+    <pathelement location="${asm.jar}"/>
+    <pathelement location="${asm-commons.jar}"/>
   </path>
 
   <path id="java.classpath">
     <pathelement location="classes/java"/>
-    <pathelement location="${idea.home}/redist/annotations.jar"/>
+    <pathelement location="${jetbrains-annotations.jar}"/>
     <pathelement location="${jogl.jar}"/>
     <pathelement location="${gluegen-rt.jar}"/>
     <pathelement location="${junit.jar}"/>
