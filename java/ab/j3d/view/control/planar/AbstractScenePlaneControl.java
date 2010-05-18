@@ -19,12 +19,12 @@
  */
 package ab.j3d.view.control.planar;
 
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
+import java.awt.geom.*;
 
-import ab.j3d.control.ControlInputEvent;
-
-import com.numdata.oss.MathTools;
+import ab.j3d.control.*;
+import ab.j3d.view.*;
+import com.numdata.oss.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Implements common functionality defined by {@link ScenePlaneControl}.
@@ -72,11 +72,19 @@ public abstract class AbstractScenePlaneControl
 		_active = false;
 	}
 
+	@Override
+	public boolean isVisible( final View3D view )
+	{
+		return isEnabled();
+	}
+
+	@Override
 	public boolean isEnabled()
 	{
 		return true;
 	}
 
+	@Override
 	public boolean mousePressed( final ControlInputEvent event , final double x , final double y )
 	{
 		_startX = x;
@@ -88,17 +96,24 @@ public abstract class AbstractScenePlaneControl
 		return isActive();
 	}
 
+	@Override
 	public void mouseDragged( final ControlInputEvent event , final double x , final double y )
 	{
 		_endX = x;
 		_endY = y;
 	}
 
+	@Override
 	public void mouseReleased( final ControlInputEvent event , final double x , final double y )
 	{
 		_endX   = x;
 		_endY   = y;
 		_active = false;
+	}
+
+	@Override
+	public void mouseMoved( final ControlInputEvent event, final double x, final double y )
+	{
 	}
 
 	/**
@@ -157,6 +172,7 @@ public abstract class AbstractScenePlaneControl
 	 *
 	 * @return  Direction from start to end point of drag movement.
 	 */
+	@Nullable
 	public Point2D getDirection()
 	{
 		final Point2D result;

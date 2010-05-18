@@ -19,14 +19,13 @@
  */
 package ab.j3d.view.control.planar;
 
-import java.awt.Graphics2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.*;
+import java.awt.geom.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.control.ControlInputEvent;
-import ab.j3d.model.Scene;
-import ab.j3d.view.View3D;
-import ab.j3d.view.ViewOverlay;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
 
 /**
  * A control behavior for a plane relative to the {@link Scene}.
@@ -61,7 +60,18 @@ public interface ScenePlaneControl
 	boolean isPlaneTwoSided();
 
 	/**
-	 * Test if the control is enabled.
+	 * Returns whether the control is visible (in the given view) and should be
+	 * painted.
+	 *
+	 * @param   view    View in which the control may be visible.
+	 *
+	 * @return  <code>true</code> if the control is visible;
+	 *          <code>false</code> otherwise.
+	 */
+	boolean isVisible( View3D view );
+
+	/**
+	 * Returns whether the control is enabled and should receive events.
 	 *
 	 * @return  <code>true</code> if the control is enabled;
 	 *          <code>false</code> otherwise.
@@ -97,6 +107,15 @@ public interface ScenePlaneControl
 	 * @param   y               Y coordinate on plane.
 	 */
 	void mouseReleased( ControlInputEvent event , double x , double y );
+
+	/**
+	 * Move event.
+	 *
+	 * @param   event           Event from control.
+	 * @param   x               X coordinate on plane.
+	 * @param   y               Y coordinate on plane.
+	 */
+	void mouseMoved( ControlInputEvent event , double x , double y );
 
 	/**
 	 * This method can paint on the plane using 2D coordinates relative to the

@@ -19,35 +19,21 @@
  */
 package ab.j3d.view.control;
 
-import java.awt.Graphics2D;
-import java.awt.event.MouseEvent;
-import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.EventObject;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.geom.*;
+import java.util.*;
 import java.util.List;
-import javax.swing.Action;
-import javax.swing.JPopupMenu;
+import javax.swing.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.control.ControlInputEvent;
-import ab.j3d.control.MouseControl;
-import ab.j3d.geom.GeometryTools;
-import ab.j3d.geom.Ray3D;
-import ab.j3d.model.ContentNode;
-import ab.j3d.model.Face3DIntersection;
-import ab.j3d.model.Scene;
-import ab.j3d.view.Projector;
-import ab.j3d.view.RenderEngine;
-import ab.j3d.view.View3D;
-import ab.j3d.view.ViewControlInput;
-import ab.j3d.view.ViewOverlay;
-import ab.j3d.view.control.planar.PlanarGraphics2D;
-import ab.j3d.view.control.planar.PlaneControl;
-import ab.j3d.view.control.planar.ScenePlaneControl;
-import ab.j3d.view.control.planar.SubPlaneControl;
-
-import com.numdata.oss.MathTools;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.geom.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+import ab.j3d.view.control.planar.*;
+import com.numdata.oss.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class implements the default control and overlay painter for
@@ -99,6 +85,8 @@ public class DefaultViewControl
 	{
 	}
 
+	@Nullable
+	@Override
 	public EventObject mouseClicked( final ControlInputEvent event )
 	{
 		EventObject result = event;
@@ -136,6 +124,7 @@ public class DefaultViewControl
 		return result;
 	}
 
+	@Override
 	public EventObject mousePressed( final ControlInputEvent event )
 	{
 		EventObject result = event;
@@ -210,7 +199,9 @@ public class DefaultViewControl
 			}
 
 			if ( result == null )
+			{
 				break;
+			}
 		}
 
 		if ( result != null )
@@ -249,6 +240,7 @@ public class DefaultViewControl
 		return result;
 	}
 
+	@Override
 	public EventObject mouseDragged( final ControlInputEvent event )
 	{
 		if ( isCaptured() )
@@ -299,6 +291,7 @@ public class DefaultViewControl
 		return super.mouseDragged( event );
 	}
 
+	@Override
 	public EventObject mouseReleased( final ControlInputEvent event )
 	{
 		if ( isCaptured() && !event.isMouseButtonDown() )
@@ -354,11 +347,51 @@ public class DefaultViewControl
 		return super.mouseReleased( event );
 	}
 
+	@Override
+	public EventObject mouseMoved( final ControlInputEvent event )
+	{
+		final ViewControlInput viewControlInput = event.getSource();
+		final View3D view = viewControlInput.getView();
+		final Scene scene = view.getScene();
+
+		boolean update = false;
+
+		for ( final ScenePlaneControl planeControl : scene.getPlaneControls() )
+		{
+			if ( planeControl.isEnabled() )
+			{
+				final Matrix3D plane2wcs = planeControl.getPlane2Wcs();
+
+				final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( plane2wcs, planeControl.isPlaneTwoSided(), event.getPointerRay() );
+				if ( wcsPoint != null )
+				{
+					final Vector3D planePoint = plane2wcs.inverseTransform( wcsPoint );
+
+					final Rectangle2D bounds = planeControl.getPlaneBounds();
+					if ( bounds.contains( planePoint.x, planePoint.y ) )
+					{
+						planeControl.mouseMoved( event, planePoint.x, planePoint.y );
+						update = true;
+					}
+				}
+			}
+		}
+
+		if ( update )
+		{
+			view.update();
+		}
+
+		return event;
+	}
+
+	@Override
 	public void addView( final View3D view )
 	{
 		_views.add( view );
 	}
 
+	@Override
 	public void removeView( final View3D view )
 	{
 		_views.remove( view );
@@ -375,13 +408,14 @@ public class DefaultViewControl
 		}
 	}
 
+	@Override
 	public void paintOverlay( final View3D view , final Graphics2D g2d )
 	{
 		final Matrix3D          plane2wcs         = _plane2wcs;
 		final PlaneControl      planeControl      = _planeControl;
 		final SubPlaneControl   subPlaneControl   = _subPlaneControl;
 
-		if ( planeControl != null )
+		if ( ( planeControl != null ) && ( planeControl.isEnabled() ) )
 		{
 			final Matrix3D  wcs2view   = view.getScene2View();
 			final Matrix3D  plane2view = plane2wcs.multiply( wcs2view );
@@ -392,7 +426,7 @@ public class DefaultViewControl
 			planarGraphics2D.dispose();
 		}
 
-		if ( subPlaneControl != null )
+		if ( ( subPlaneControl != null ) && ( subPlaneControl.isEnabled() ) )
 		{
 			final Matrix3D  wcs2view   = view.getScene2View();
 			final Matrix3D  plane2view = plane2wcs.multiply( wcs2view );
@@ -406,14 +440,17 @@ public class DefaultViewControl
 		final Scene scene = view.getScene();
 		for ( final ScenePlaneControl control : scene.getPlaneControls() )
 		{
-			final Matrix3D controlPlane2wcs = control.getPlane2Wcs();
-			final Matrix3D wcs2view = view.getScene2View();
-			final Matrix3D plane2view = controlPlane2wcs.multiply( wcs2view );
-			final Projector projector = view.getProjector();
+			if ( control.isVisible( view ) )
+			{
+				final Matrix3D controlPlane2wcs = control.getPlane2Wcs();
+				final Matrix3D wcs2view = view.getScene2View();
+				final Matrix3D plane2view = controlPlane2wcs.multiply( wcs2view );
+				final Projector projector = view.getProjector();
 
-			final PlanarGraphics2D planarGraphics2D = new PlanarGraphics2D( g2d , plane2view , projector );
-			control.paint( view , planarGraphics2D );
-			planarGraphics2D.dispose();
+				final PlanarGraphics2D planarGraphics2D = new PlanarGraphics2D( g2d , plane2view , projector );
+				control.paint( view , planarGraphics2D );
+				planarGraphics2D.dispose();
+			}
 		}
 	}
 }
