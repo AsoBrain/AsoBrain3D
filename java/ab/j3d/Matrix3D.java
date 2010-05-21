@@ -20,13 +20,10 @@
  */
 package ab.j3d;
 
-import java.text.DecimalFormat;
-import java.util.Properties;
+import java.text.*;
+import java.util.*;
 
-import com.numdata.oss.ArrayTools;
-import com.numdata.oss.MathTools;
-import com.numdata.oss.PropertyTools;
-import com.numdata.oss.TextTools;
+import com.numdata.oss.*;
 
 /**
  * This class is used to represent a 3D transformation matrix (although
@@ -1677,6 +1674,90 @@ public final class Matrix3D
 		return new Vector3D( x * xx + y * yx + z * zx ,
 		                     x * xy + y * yy + z * zy ,
 		                     x * xz + y * yz + z * zz );
+	}
+
+	/**
+	 * Calculates the X-coordinate of the given vector when rotated with the
+	 * inverse of this matrix.
+	 *
+	 * @param   vector  Directional vector to rotate.
+	 *
+	 * @return  Resulting X coordinate.
+	 */
+	public double inverseRotateX( final Vector3D vector )
+	{
+		return vector.x * xx + vector.y * yx + vector.z * zx;
+	}
+
+	/**
+	 * Calculates the X-coordinate of the given vector when rotated with the
+	 * inverse of this matrix.
+	 *
+	 * @param   x       X component of directional vector to rotate.
+	 * @param   y       Y component of directional vector to rotate.
+	 * @param   z       Z component of directional vector to rotate.
+	 *
+	 * @return  Resulting X coordinate.
+	 */
+	public double inverseRotateX( final double x , final double y , final double z )
+	{
+		return x * xx + y * yx + z * zx;
+	}
+
+	/**
+	 * Calculates the Y-coordinate of the given vector when rotated with the
+	 * inverse of this matrix.
+	 *
+	 * @param   vector  Directional vector to rotate.
+	 *
+	 * @return  Resulting Y-coordinate.
+	 */
+	public double inverseRotateY( final Vector3D vector )
+	{
+		return vector.x * xy + vector.y * yy + vector.z * zy;
+	}
+
+	/**
+	 * Calculates the Y-coordinate of the given vector when rotated with the
+	 * inverse of this matrix.
+	 *
+	 * @param   x       X component of directional vector to rotate.
+	 * @param   y       Y component of directional vector to rotate.
+	 * @param   z       Z component of directional vector to rotate.
+	 *
+	 * @return  Resulting Y-coordinate.
+	 */
+	public double inverseRotateY( final double x , final double y , final double z )
+	{
+		return x * xy + y * yy + z * zy;
+	}
+
+	/**
+	 * Calculates the Z-coordinate of the given vector when rotated with the
+	 * inverse of this matrix.
+	 *
+	 * @param   vector  Directional vector to rotate.
+	 *
+	 * @return  Resulting Z-coordinate.
+	 */
+	public double inverseRotateZ( final Vector3D vector )
+	{
+		return vector.x * xz + vector.y * yz + vector.z * zz;
+	}
+
+	/**
+	 * Calculates the Z-coordinate of the given vector when rotated with the
+	 * inverse of this matrix.
+	 *
+	 * @param   x       X component of directional vector to rotate.
+	 * @param   y       Y component of directional vector to rotate.
+	 * @param   z       Z component of directional vector to rotate.
+	 *
+	 * @return  Resulting Z-coordinate.
+	 */
+	public double inverseRotateZ( final double x , final double y , final double z )
+	{
+		return x * xz + y * yz + z * zz;
 	}
 
 	/**
