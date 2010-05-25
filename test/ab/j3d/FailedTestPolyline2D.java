@@ -40,7 +40,7 @@ public final class FailedTestPolyline2D
 	 * Tests various intersections of a convex and a path, where the path
 	 * overlaps one of the convex's edges.
 	 */
-	public void testGetIntersection5()
+	public static void testGetIntersection5()
 	{
 		System.out.println( CLASS_NAME + ".testGetIntersection5()" );
 

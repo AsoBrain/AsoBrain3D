@@ -227,4 +227,23 @@ public final class TestPolyline2D
 		final Polyline2D intersection = convex.getIntersection( expected );
 		assertEquals( "Unexpected result." , expected , intersection );
 	}
+
+	/**
+	 * Tests various intersections of a convex and a path, where the path
+	 * overlaps one of the convex's edges.
+	 */
+	public void testGetIntersection5()
+	{
+		System.out.print( "Expect to fail: " );
+		try
+		{
+			FailedTestPolyline2D.testGetIntersection5();
+			fail( "Expected test to fail" );
+		}
+		catch ( Exception e )
+		{
+			/* we expect the test to fail, so this is good */
+			e.printStackTrace();
+		}
+	}
 }
