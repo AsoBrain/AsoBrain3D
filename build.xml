@@ -13,6 +13,14 @@
     <jar destfile="lib/ab3d.jar" basedir="classes/java"/>
   </target>
 
+  <target name="release" depends="build" description="Build release">
+    <echo message="Running 'pack200' to compress JAR file"/>
+    <exec dir="lib" executable="pack200" failonerror="yes">
+      <arg value="ab3d.jar.pack.gz"/>
+      <arg value="ab3d.jar"/>
+    </exec>
+  </target>
+
   <target name="init">
     <tstamp/>
     <available property="api.hsqldb"                     type="file" file="${hsqldb.jar}"/>
