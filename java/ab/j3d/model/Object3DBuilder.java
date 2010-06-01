@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2009
+ * (C) Copyright Numdata BV 2004-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,16 +19,12 @@
  */
 package ab.j3d.model;
 
-import java.awt.geom.Point2D;
-import java.util.List;
+import java.awt.geom.*;
+import java.util.*;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import ab.j3d.Material;
-import ab.j3d.Vector3D;
-import ab.j3d.geom.Abstract3DObjectBuilder;
-import ab.j3d.geom.UVMap;
+import ab.j3d.*;
+import ab.j3d.geom.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class provides an implementation of the {@link Abstract3DObjectBuilder}
@@ -78,16 +74,10 @@ public class Object3DBuilder
 		return _target;
 	}
 
+	@Override
 	public int getVertexIndex( @NotNull final Vector3D point )
 	{
-		final List<Vector3D> vertexCoordinates = _target._vertexCoordinates;
-		int result = vertexCoordinates.indexOf( point );
-		if ( result < 0 )
-		{
-			result = vertexCoordinates.size();
-			vertexCoordinates.add( point );
-		}
-		return result;
+		return _target._vertexCoordinates.indexOfOrAdd( point );
 	}
 
 	/**
@@ -100,16 +90,19 @@ public class Object3DBuilder
 		return _target._vertexCoordinates.size();
 	}
 
+	@Override
 	public void setVertexCoordinates( @NotNull final List<Vector3D> vertexCoordinates )
 	{
 		_target.setVertexCoordinates( vertexCoordinates );
 	}
 
+	@Override
 	public void setVertexNormals( @NotNull final double[] vertexNormals )
 	{
 		_target.setVertexNormals( vertexNormals );
 	}
 
+	@Override
 	public void setVertexNormals( @NotNull final List<Vector3D> vertexNormals )
 	{
 		final int vertexCount = vertexNormals.size();
@@ -126,12 +119,14 @@ public class Object3DBuilder
 		setVertexNormals( doubles );
 	}
 
-	public void addFace( @NotNull final int[] vertexIndices , @Nullable final Material material , @Nullable final UVMap uvMap , final boolean flipTexture , final boolean smooth , final boolean twoSided )
+	@Override
+	public void addFace( @NotNull final int[] vertexIndices, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean smooth, final boolean twoSided )
 	{
-		addFace( vertexIndices , material , ( uvMap != null ) ? uvMap.generate( material , _target._vertexCoordinates , vertexIndices , flipTexture ) : null , null , smooth , twoSided );
+		addFace( vertexIndices, material, ( uvMap != null ) ? uvMap.generate( material, _target._vertexCoordinates, vertexIndices, flipTexture ) : null, null, smooth, twoSided );
 	}
 
-	public void addFace( @NotNull final Vector3D[] points , @Nullable final Material material , @Nullable final Point2D.Float[] texturePoints , @Nullable final Vector3D[] vertexNormals , final boolean smooth , final boolean twoSided )
+	@Override
+	public void addFace( @NotNull final Vector3D[] points, @Nullable final Material material, @Nullable final Point2D.Float[] texturePoints, @Nullable final Vector3D[] vertexNormals, final boolean smooth, final boolean twoSided )
 	{
 		final int   vertexCount   = points.length;
 		final int[] vertexIndices = new int[ vertexCount ];
@@ -141,15 +136,17 @@ public class Object3DBuilder
 			vertexIndices[ i ] = getVertexIndex( points[ i ] );
 		}
 
-		addFace( vertexIndices , material , texturePoints , vertexNormals , smooth , twoSided );
+		addFace( vertexIndices, material, texturePoints, vertexNormals, smooth, twoSided );
 	}
 
-	public void addFace( @NotNull final int[] vertexIndices , @Nullable final Material material , @Nullable final Point2D.Float[] texturePoints , @Nullable final Vector3D[] vertexNormals , final boolean smooth , final boolean twoSided )
+	@Override
+	public void addFace( @NotNull final int[] vertexIndices, @Nullable final Material material, @Nullable final Point2D.Float[] texturePoints, @Nullable final Vector3D[] vertexNormals, final boolean smooth, final boolean twoSided )
 	{
-		_target.addFace( new Face3D( _target , vertexIndices , material , texturePoints , vertexNormals , smooth , twoSided ) );
+		_target.addFace( new Face3D( _target, vertexIndices, material, texturePoints, vertexNormals, smooth, twoSided ) );
 	}
 
-	public void addText( @NotNull final String text , @NotNull final Vector3D origin , final double height , final double rotationAngle , final double obliqueAngle , @Nullable final Vector3D extrusion , @Nullable final Material material )
+	@Override
+	public void addText( @NotNull final String text, @NotNull final Vector3D origin, final double height, final double rotationAngle, final double obliqueAngle, @Nullable final Vector3D extrusion, @Nullable final Material material )
 	{
 		throw new AssertionError( "not implemented" );
 	}

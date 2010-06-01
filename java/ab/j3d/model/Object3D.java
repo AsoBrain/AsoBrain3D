@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2009 Peter S. Heijnen
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,24 +20,14 @@
  */
 package ab.j3d.model;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.awt.*;
+import java.util.*;
 import java.util.List;
 
-import ab.j3d.Bounds3D;
-import ab.j3d.Bounds3DBuilder;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.geom.BasicRay3D;
-import ab.j3d.geom.BasicTriangle3D;
-import ab.j3d.geom.CollisionNode;
-import ab.j3d.geom.GeometryTools;
-import ab.j3d.geom.Ray3D;
-import ab.j3d.geom.Triangle3D;
-import ab.j3d.model.Face3D.Vertex;
-
-import com.numdata.oss.HashList;
+import ab.j3d.*;
+import ab.j3d.geom.*;
+import ab.j3d.model.Face3D.*;
+import com.numdata.oss.*;
 
 /**
  * This class defined a 3D object node in a 3D tree. The 3D object consists of
@@ -59,7 +49,7 @@ public class Object3D
 	 * Coordinates of vertex coordinates in object. Vertex coordinates are
 	 * stored in an array of doubles with a triplet for each vertex.
 	 */
-	final List<Vector3D> _vertexCoordinates;
+	final HashList<Vector3D> _vertexCoordinates;
 
 	/**
 	 * Array of floats with normals of each face of the model. Normals are
@@ -254,16 +244,16 @@ public class Object3D
 	 * @return  <code>true</code> if the two graphs collide;
 	 *          <code>false</code> otherwise.
 	 */
-	public static boolean testCollision( final Node3D subTree1 , final Node3D subTree2 )
+	public static boolean testCollision( final Node3D subTree1, final Node3D subTree2 )
 	{
 		boolean result = false;
 
 		if ( ( subTree1 != null ) && ( subTree2 != null ) )
 		{
-			final Node3DCollection<Object3D> objects1 = subTree1.collectNodes( null , Object3D.class , Matrix3D.INIT , false );
+			final Node3DCollection<Object3D> objects1 = subTree1.collectNodes( null, Object3D.class, Matrix3D.INIT, false );
 			if ( objects1 != null )
 			{
-				final Node3DCollection<Object3D> objects2  = subTree2.collectNodes( null , Object3D.class , Matrix3D.INIT , false );
+				final Node3DCollection<Object3D> objects2  = subTree2.collectNodes( null, Object3D.class, Matrix3D.INIT, false );
 				if ( objects2 != null )
 				{
 					for ( int i = 0 ; !result && ( i < objects1.size() ) ; i++ )
@@ -277,7 +267,7 @@ public class Object3D
 							final Object3D object2      = objects2.getNode( j );
 							final Matrix3D object2ToWcs = objects2.getMatrix( j );
 
-							result = object1.collidesWith( object2ToWcs.multiply( wcsToObject1 ) , object2 );
+							result = object1.collidesWith( object2ToWcs.multiply( wcsToObject1 ), object2 );
 						}
 					}
 				}
@@ -296,14 +286,14 @@ public class Object3D
 	 * @return  <code>true</code> if the objects collide;
 	 *          <code>false</code> otherwise.
 	 */
-	public boolean collidesWith( final Matrix3D fromOtherToThis , final Object3D other )
+	public boolean collidesWith( final Matrix3D fromOtherToThis, final Object3D other )
 	{
 		final boolean result;
 
 		final Bounds3D thisOrientedBoundingBox  = getOrientedBoundingBox();
 		final Bounds3D otherOrientedBoundingBox = other.getOrientedBoundingBox();
 
-		if ( GeometryTools.testOrientedBoundingBoxIntersection( thisOrientedBoundingBox , fromOtherToThis , otherOrientedBoundingBox ) )
+		if ( GeometryTools.testOrientedBoundingBoxIntersection( thisOrientedBoundingBox, fromOtherToThis, otherOrientedBoundingBox ) )
 		{
 			final CollisionNode thisCollisionNode = getCollisionNode();
 			final CollisionNode otherCollisionNode = other.getCollisionNode();
@@ -366,12 +356,12 @@ public class Object3D
 						final Vector3D p2 = vertexCoordinates.get( v2.vertexCoordinateIndex );
 						final Vector3D p3 = vertexCoordinates.get( v3.vertexCoordinateIndex );
 
-						triangles.add( new BasicTriangle3D( p1 , p2 , p3 , true ) );
+						triangles.add( new BasicTriangle3D( p1, p2, p3, true ) );
 					}
 				}
 			}
 
-			result = new CollisionNode( triangles , 0 , triangles.size() );
+			result = new CollisionNode( triangles, 0, triangles.size() );
 
 			_collisionNode = result;
 		}
@@ -412,13 +402,13 @@ public class Object3D
 	 * @param   bounds3DBuilder     Builder to add bounds to.
 	 * @param   xform               Transform to apply to vertex coordinates.
 	 */
-	public void addBounds( final Bounds3DBuilder bounds3DBuilder , final Matrix3D xform )
+	public void addBounds( final Bounds3DBuilder bounds3DBuilder, final Matrix3D xform )
 	{
 		if ( ( xform != null ) && ( xform != Matrix3D.INIT ) && ( !Matrix3D.INIT.equals( xform ) ) )
 		{
 			for ( final Vector3D point : _vertexCoordinates )
 			{
-				bounds3DBuilder.addPoint( xform.transformX( point ) , xform.transformY( point ) , xform.transformZ( point ) );
+				bounds3DBuilder.addPoint( xform.transformX( point ), xform.transformY( point ), xform.transformZ( point ) );
 			}
 		}
 		else
@@ -472,10 +462,10 @@ public class Object3D
 	 *
 	 * @throws  NullPointerException if a required input argument is <code>null</code>.
 	 */
-	public List<Face3DIntersection> getIntersectionsWithRay( final List<Face3DIntersection> dest , final boolean sortResult , final Object objectID , final Matrix3D object2world , final Ray3D ray )
+	public List<Face3DIntersection> getIntersectionsWithRay( final List<Face3DIntersection> dest, final boolean sortResult, final Object objectID, final Matrix3D object2world, final Ray3D ray )
 	{
 		final Matrix3D world2object = object2world.inverse();
-		final Ray3D    ocsRay       = new BasicRay3D( world2object , ray );
+		final Ray3D    ocsRay       = new BasicRay3D( world2object, ray );
 
 		final List<Face3DIntersection> result = ( dest != null ) ? dest : new ArrayList<Face3DIntersection>();
 
@@ -484,16 +474,20 @@ public class Object3D
 		{
 			final Face3D face = getFace( i );
 
-			final Vector3D ocsPoint = GeometryTools.getIntersectionBetweenRayAndPolygon( face , ocsRay );
+			final Vector3D ocsPoint = GeometryTools.getIntersectionBetweenRayAndPolygon( face, ocsRay );
 			if ( ocsPoint != null )
 			{
 				final Vector3D wcsPoint = object2world.transform( ocsPoint );
 
-				final Face3DIntersection intersection = new Face3DIntersection( objectID , object2world , this , face , ray , wcsPoint );
+				final Face3DIntersection intersection = new Face3DIntersection( objectID, object2world, this, face, ray, wcsPoint );
 				if ( sortResult )
-					Face3DIntersection.addSortedByDistance( result , intersection );
+				{
+					Face3DIntersection.addSortedByDistance( result, intersection );
+				}
 				else
+				{
 					result.add( intersection );
+				}
 			}
 		}
 
