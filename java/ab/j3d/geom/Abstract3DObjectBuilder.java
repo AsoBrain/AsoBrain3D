@@ -19,31 +19,14 @@
  */
 package ab.j3d.geom;
 
-import java.awt.Polygon;
-import java.awt.Shape;
-import java.awt.geom.Arc2D;
-import java.awt.geom.CubicCurve2D;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.FlatteningPathIterator;
-import java.awt.geom.Line2D;
-import java.awt.geom.Path2D;
-import java.awt.geom.PathIterator;
-import java.awt.geom.Point2D;
-import java.awt.geom.QuadCurve2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.geom.RectangularShape;
-import java.awt.geom.RoundRectangle2D;
+import java.awt.*;
+import java.awt.geom.*;
 import java.util.List;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import ab.j3d.Material;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.model.Scene;
-
-import com.numdata.oss.MathTools;
+import ab.j3d.*;
+import ab.j3d.model.*;
+import com.numdata.oss.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This abstract class defines an interface through which an 3D object can easily
@@ -1022,13 +1005,13 @@ public abstract class Abstract3DObjectBuilder
 
 				if ( bottomMaterial != null )
 				{
-					addTriangulation( transform , triangulation , bottomMaterial , bottomMap , bottomFlipTexture , hasBackface , true );
+					addTriangulation( transform , triangulation , bottomMaterial , bottomMap , bottomFlipTexture , hasBackface , !flipNormals );
 				}
 
 				if ( topMaterial != null )
 				{
 					final Matrix3D topTransform = hasExtrusion ? transform.plus( transform.rotate( ex , ey , ez ) ) : transform;
-					addTriangulation( topTransform , triangulation , topMaterial , topMap , topFlipTexture , hasBackface , false );
+					addTriangulation( topTransform , triangulation , topMaterial , topMap , topFlipTexture , hasBackface , flipNormals );
 				}
 			}
 		}

@@ -19,24 +19,13 @@
  */
 package ab.j3d.geom;
 
-import java.awt.Shape;
-import java.awt.geom.Area;
-import java.awt.geom.FlatteningPathIterator;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Line2D;
-import java.awt.geom.PathIterator;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
+import java.awt.*;
+import java.awt.geom.*;
+import java.util.*;
 import java.util.List;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-
-import com.numdata.oss.MathTools;
+import ab.j3d.*;
+import ab.j3d.geom.Triangulation.*;
 
 /**
  * Triangular that uses Java2D's {@link Area} class in combination with a simple
@@ -100,11 +89,13 @@ class AreaTriangulator
 		_flatness              = 1.0;
 	}
 
+	@Override
 	public Vector3D getNormal()
 	{
 		return _normalsFlipped ? Vector3D.INIT.set( 0.0 , 0.0 , -1.0 ) : Vector3D.INIT.set( 0.0 , 0.0 , 1.0 );
 	}
 
+	@Override
 	public void setNormal( final Vector3D normal )
 	{
 		_normalsFlipped = ( normal.z < 0.0 );
@@ -226,23 +217,53 @@ class AreaTriangulator
 	{
 		final Triangulation triangulation = triangulate( area );
 
-		final Collection<int[]> triangles = triangulation.getTriangles();
-		final List<double[]>    points    = ( (TriangulationImpl)triangulation ).getPoints();
-		final List<Shape>       result    = new ArrayList<Shape>( triangles.size() );
+		final List<Shape> result = new ArrayList<Shape>();
 
-		for ( final int[] triangle : triangles )
+		for ( final Primitive primitive : triangulation.getPrimitives() )
 		{
-			final double[] p1 = points.get( triangle[ 0 ] );
-			final double[] p2 = points.get( triangle[ 1 ] );
-			final double[] p3 = points.get( triangle[ 2 ] );
+			switch ( primitive.getType() )
+			{
+				case TRIANGLE_FAN:
+				{
+					final int[] vertices = primitive.getVertices();
 
-			final GeneralPath triangleShape = new GeneralPath();
-			triangleShape.moveTo( p1[ 0 ] , p1[ 1 ] );
-			triangleShape.lineTo( p2[ 0 ] , p2[ 1 ] );
-			triangleShape.lineTo( p3[ 0 ] , p3[ 1 ] );
-			triangleShape.closePath();
+					final GeneralPath polygon = new GeneralPath( Path2D.WIND_NON_ZERO, vertices.length + 1 );
 
-			result.add( triangleShape );
+					Vector3D v = triangulation.getVertex( 0 );
+					polygon.moveTo( v.getX() , v.getY() );
+
+					for ( int i = 1; i < vertices.length; i++ )
+					{
+						v = triangulation.getVertex( i );
+						polygon.lineTo( v.getX() , v.getY() );
+					}
+
+					polygon.closePath();
+					result.add( polygon );
+					break;
+				}
+
+				default :
+				{
+					final int[] triangles = primitive.getTriangles();
+					for (int i = 0; i < triangles.length; )
+					{
+						final Vector3D p1 = triangulation.getVertex( triangles[ i++ ] );
+						final Vector3D p2 = triangulation.getVertex( triangles[ i++ ] );
+						final Vector3D p3 = triangulation.getVertex( triangles[ i++ ] );
+
+						final Path2D triangleShape = new GeneralPath();
+						triangleShape.moveTo( p1.getX() , p1.getY() );
+						triangleShape.lineTo( p2.getX() , p2.getY() );
+						triangleShape.lineTo( p3.getX() , p3.getY() );
+						triangleShape.closePath();
+						result.add( triangleShape );
+					}
+					break;
+				}
+			}
+
+
 		}
 
 		return result;
@@ -309,6 +330,7 @@ class AreaTriangulator
 	 *
 	 * @return  Flatness of interpolated shapes.
 	 */
+	@Override
 	public double getFlatness()
 	{
 		return _flatness;
@@ -321,69 +343,24 @@ class AreaTriangulator
 	 *
 	 * @param   flatness    Flatness to be set.
 	 */
+	@Override
 	public void setFlatness( final double flatness )
 	{
 		_flatness = flatness;
 	}
 
-	private Triangulation triangulate( final List<Area> areas )
+	@Override
+	public Triangulation triangulate( final Shape positive , final Iterable<? extends Shape> negative )
 	{
-		//System.out.println( CLASS_NAME + ".triangulate" );
-//		final long start = System.nanoTime();
-
-		final List<Triangulation> triangulations = new ArrayList<Triangulation>( areas.size() );
-
-		int pointCount    = 0;
-		int triangleCount = 0;
-
-		for ( final Area area : areas )
+		final Area combinedArea = new Area( positive );
+		for ( final Shape shape : negative )
 		{
-			final Triangulation triangulation = triangulateImpl( area );
-			triangulations.add( triangulation );
-
-			final List<double[]>    points    = ( (TriangulationImpl)triangulation ).getPoints();
-			final Collection<int[]> triangles = triangulation.getTriangles();
-
-			pointCount    += points.size();
-			triangleCount += triangles.size();
+			combinedArea.subtract( ( shape instanceof Area ) ? (Area)shape : new Area( shape ) );
 		}
-
-		final List<double[]> points    = new ArrayList<double[]>( pointCount    );
-		final List<int[]>    triangles = new ArrayList<int[]>   ( triangleCount );
-
-		for ( final Triangulation triangulation : triangulations )
-		{
-			final int firstIndex = points.size();
-			points.addAll( ( (TriangulationImpl)triangulation ).getPoints() );
-
-			final Collection<int[]> areaTriangles = triangulation.getTriangles();
-
-			if ( firstIndex == 0 )
-			{
-				triangles.addAll( areaTriangles );
-			}
-			else
-			{
-				for ( final int[] triangle : areaTriangles )
-				{
-					triangles.add( new int[]
-						{
-							triangle[ 0 ] + firstIndex ,
-							triangle[ 1 ] + firstIndex ,
-							triangle[ 2 ] + firstIndex
-						} );
-				}
-			}
-		}
-
-		final TriangulationImpl result = new TriangulationImpl( points , triangles );
-
-//		final long end = System.nanoTime();
-		//System.out.println( " - " + result._points.size() + " vertices, " + result._triangles.size() + " triangles in " + ( (double)( ( end - start ) / 100000L ) / 10.0 ) + " ms" );
-
-		return result;
+		return triangulate( combinedArea );
 	}
 
+	@Override
 	public Triangulation triangulate( final Shape shape )
 	{
 		final Area area;
@@ -400,91 +377,92 @@ class AreaTriangulator
 		return triangulate( subdivide( area , _initialSubdivisionsX , _initialSubdivisionsY , _iteratedSubdivisionsX , _iteratedSubdivisionsY , _subdivisionIterations ) );
 	}
 
-	public Triangulation triangulate( final Shape positive , final Iterable<? extends Shape> negative )
+	/**
+	 * Triangulate areas.
+	 *
+	 * @param   areas   Areas to triangulate.
+	 *
+	 * @return  Triangulation result.
+	 */
+	private Triangulation triangulate( final Iterable<? extends Area> areas )
 	{
-		final Area combinedArea = new Area( positive );
-		for ( final Shape shape : negative )
+		final BasicTriangulation triangulation = new BasicTriangulation();
+		for ( final Area area : areas )
 		{
-			combinedArea.subtract( ( shape instanceof Area ) ? (Area)shape : new Area( shape ) );
+			triangulateImpl( triangulation, area );
 		}
-		return triangulate( combinedArea );
+		return triangulation;
 	}
 
-	private Triangulation triangulateImpl( final Area area )
+	/**
+	 * Add triangulated area to triangulation result.
+	 *
+	 * @param   triangulation   Triangulation result.
+	 * @param   area            Area to triangulate.
+	 */
+	private void triangulateImpl( final BasicTriangulation triangulation, final Area area )
 	{
 		/*
 		 * Find points and lines in the shape of the area.
 		 */
-		final GeneralPath flattenedShape = new GeneralPath();
-		flattenedShape.append( area.getPathIterator( null , _flatness ) , false );
-		final PathIterator pathIterator = flattenedShape.getPathIterator( null );
-
-		final List<double[]> points = new ArrayList<double[]>();
-		final List<int[]>    lines  = new ArrayList<int[]>();
-
-		double movedToX     = 0.0;
-		double movedToY     = 0.0;
-		int    movedToIndex = 0;
-
-		int lastPointIndex = -1;
-		while ( !pathIterator.isDone() )
+		final GeneralPath flattenedShape;
+		final Set<Integer> indexSet = new HashSet<Integer>();
+		final List<int[]> lines;
 		{
+			flattenedShape = new GeneralPath();
+			flattenedShape.append( area.getPathIterator( null , _flatness ) , false );
+			final PathIterator pathIterator = flattenedShape.getPathIterator( null );
+
+			lines = new ArrayList<int[]>();
+
 			final double[] coordinates = new double[ 6 ];
-			final int      type        = pathIterator.currentSegment( coordinates );
+			int movedToIndex = 0;
+			int lastPointIndex = -1;
 
-			if ( type == PathIterator.SEG_CLOSE )
+			while ( !pathIterator.isDone() )
 			{
-				final double[] lastPoint = points.get( points.size() - 1 );
-
-				if ( !equalPoint( movedToX , movedToY , lastPoint[ 0 ] , lastPoint[ 1 ] ) )
+				final int type = pathIterator.currentSegment( coordinates );
+				if ( type == PathIterator.SEG_CLOSE )
 				{
-					lines.add( new int[] { lastPointIndex , movedToIndex } );
-				}
-			}
-			else
-			{
-				int pointIndex = -1;
-				for ( int j = 0; j < points.size(); j++ )
-				{
-					final double[] point = points.get( j );
-					if ( MathTools.almostEqual( point[ 0 ] , coordinates[ 0 ] ) &&
-				         MathTools.almostEqual( point[ 1 ] , coordinates[ 1 ] ) )
+					if ( lastPointIndex != movedToIndex )
 					{
-						pointIndex = j;
-						break;
+						lines.add( new int[] { lastPointIndex , movedToIndex } );
 					}
 				}
-
-				if ( pointIndex == -1 )
+				else
 				{
-					pointIndex = points.size();
-					points.add( new double[] { coordinates[ 0 ] , coordinates[ 1 ] } );
+					final int pointIndex = triangulation.addVertex( new Vector3D( coordinates[ 0 ], coordinates[ 1 ], 0.0 ) );
+					indexSet.add( Integer.valueOf( pointIndex ) );
+
+					if ( type == PathIterator.SEG_MOVETO )
+					{
+						movedToIndex = pointIndex;
+					}
+					else if ( type == PathIterator.SEG_LINETO )
+					{
+						lines.add( new int[] { lastPointIndex , pointIndex } );
+					}
+
+					lastPointIndex = pointIndex;
 				}
 
-				if ( type == PathIterator.SEG_MOVETO )
-				{
-					movedToX = coordinates[ 0 ];
-					movedToY = coordinates[ 1 ];
-					movedToIndex = pointIndex;
-				}
-				else if ( type == PathIterator.SEG_LINETO )
-				{
-					lines.add( new int[] { lastPointIndex , pointIndex } );
-				}
-
-				lastPointIndex = pointIndex;
+				pathIterator.next();
 			}
-
-			pathIterator.next();
 		}
 
 		/*
 		 * Find all other, non-intersecting, lines.
 		 */
-		for ( int p1Index = 0 ; p1Index < points.size() ; p1Index++ )
+		final List<Integer> points = new ArrayList<Integer>( indexSet );
+
+		for ( int p1IndexIndex = 0; p1IndexIndex < points.size(); p1IndexIndex++ )
 		{
-			for ( int p2Index = p1Index + 1 ; p2Index < points.size() ; p2Index++ )
+			final int p1Index = points.get( p1IndexIndex );
+
+			for ( int p2IndexIndex = p1IndexIndex + 1 ; p2IndexIndex < points.size(); p2IndexIndex++ )
 			{
+				final int p2Index = points.get( p2IndexIndex );
+
 				boolean isNewLine = true;
 
 				for ( int j = 0 ; isNewLine && j < lines.size() ; j++ )
@@ -507,17 +485,17 @@ class AreaTriangulator
 					for ( int j = 0 ; addLine && j < lines.size() ; j++ )
 					{
 						final int[]    existingLine = lines.get( j );
-						final double[] exLineP1     = points.get( existingLine[ 0 ] );
-						final double[] exLineP2     = points.get( existingLine[ 1 ] );
+						final Vector3D exLineP1     = triangulation.getVertex( existingLine[ 0 ] );
+						final Vector3D exLineP2     = triangulation.getVertex( existingLine[ 1 ] );
 
-						final double[] newLineP1 = points.get( p1Index );
-						final double[] newLineP2 = points.get( p2Index );
+						final Vector3D newLineP1 = triangulation.getVertex( p1Index );
+						final Vector3D newLineP2 = triangulation.getVertex( p2Index );
 
-						if ( !area.contains( ( newLineP1[ 0 ] + newLineP2[ 0 ] ) / 2.0 , ( newLineP1[ 1 ] + newLineP2[ 1 ] ) / 2.0 ) )
+						if ( !area.contains( ( newLineP1.getX() + newLineP2.getX() ) / 2.0 , ( newLineP1.getY() + newLineP2.getY() ) / 2.0 ) )
 						{
 							addLine = false;
 						}
-						else if ( intersectLines( exLineP1[ 0 ] , exLineP1[ 1 ] , exLineP2[ 0 ] , exLineP2[ 1 ] , newLineP1[ 0 ] , newLineP1[ 1 ] , newLineP2[ 0 ] , newLineP2[ 1 ] ) )
+						else if ( intersectLines( exLineP1.getX() , exLineP1.getY() , exLineP2.getX() , exLineP2.getY() , newLineP1.getX() , newLineP1.getY() , newLineP2.getX() , newLineP2.getY() ) )
 						{
 							addLine = false;
 						}
@@ -534,9 +512,9 @@ class AreaTriangulator
 		/*
 		 *  Map point index on point indexes of "linked" points.
 		 */
-		final List<Integer>[] pointMap = new ArrayList[ points.size() ];
+		final List<Integer>[] pointMap = new ArrayList[points.size()];
 
-		for ( int pIndex = 0 ; pIndex < points.size() ; pIndex++ )
+		for ( int pIndex = 0 ; pIndex < points.size(); pIndex++ )
 		{
 			final List<Integer> pointIndexes = new ArrayList<Integer>();
 
@@ -547,11 +525,11 @@ class AreaTriangulator
 
 				if ( lineP1Index == pIndex )
 				{
-					pointIndexes.add( new Integer( lineP2Index ) );
+					pointIndexes.add( Integer.valueOf( lineP2Index ) );
 				}
 				else if ( lineP2Index == pIndex )
 				{
-					pointIndexes.add( new Integer( lineP1Index ) );
+					pointIndexes.add( Integer.valueOf( lineP1Index ) );
 				}
 			}
 
@@ -563,7 +541,7 @@ class AreaTriangulator
 		 */
 		final List<int[]> triangles = new ArrayList<int[]>();
 
-		for ( int p1Index = 0 ; p1Index < points.size() ; p1Index++ )
+		for ( int p1Index = 0 ; p1Index < points.size(); p1Index++ )
 		{
 			final List<Integer> neighbours = pointMap[ p1Index ];
 			for ( final Integer p2Index : neighbours )
@@ -571,7 +549,9 @@ class AreaTriangulator
 				for ( final Integer p3Index : neighbours )
 				{
 					if ( p2Index.equals( p3Index ) )
+					{
 						continue;
+					}
 
 					if ( pointMap[ p2Index ].contains( p3Index ) )
 					{
@@ -600,11 +580,11 @@ class AreaTriangulator
 		{
 			final int[] triangle = iterator.next();
 
-			final double[] p1 = points.get( triangle[ 0 ] );
-			final double[] p2 = points.get( triangle[ 1 ] );
-			final double[] p3 = points.get( triangle[ 2 ] );
+			final Vector3D p1 = triangulation.getVertex( triangle[ 0 ] );
+			final Vector3D p2 = triangulation.getVertex( triangle[ 1 ] );
+			final Vector3D p3 = triangulation.getVertex( triangle[ 2 ] );
 
-			final boolean partOfArea = !flattenedShape.contains( pointWithinTriangle( p1[ 0 ] , p1[ 1 ] , p2[ 0 ] , p2[ 1 ] , p3[ 0 ] , p3[ 1 ] ) );
+			final boolean partOfArea = !flattenedShape.contains( pointWithinTriangle( p1.getX() , p1.getY() , p2.getX() , p2.getY() , p3.getX() , p3.getY() ) );
 
 			if ( partOfArea )
 			{
@@ -615,14 +595,14 @@ class AreaTriangulator
 		// Make all triangles counter-clockwise.
 		for ( final int[] triangle : triangles )
 		{
-			final double[] p1 = points.get( triangle[ 0 ] );
-			final double[] p2 = points.get( triangle[ 1 ] );
-			final double[] p3 = points.get( triangle[ 2 ] );
+			final Vector3D p1 = triangulation.getVertex( triangle[ 0 ] );
+			final Vector3D p2 = triangulation.getVertex( triangle[ 1 ] );
+			final Vector3D p3 = triangulation.getVertex( triangle[ 2 ] );
 
-			final double dx1 = p2[ 0 ] - p1[ 0 ];
-			final double dy1 = p2[ 1 ] - p1[ 1 ];
-			final double dx2 = p3[ 0 ] - p2[ 0 ];
-			final double dy2 = p3[ 1 ] - p2[ 1 ];
+			final double dx1 = p2.getX() - p1.getX();
+			final double dy1 = p2.getY() - p1.getY();
+			final double dx2 = p3.getX() - p2.getX();
+			final double dy2 = p3.getY() - p2.getY();
 
 			final double cross = dx1 * dy2 - dy1 * dx2;
 
@@ -633,8 +613,6 @@ class AreaTriangulator
 				triangle[ 2 ] = temp;
 			}
 		}
-
-		return new TriangulationImpl( points , triangles );
 	}
 
 	private static Point2D pointWithinTriangle( final double p1x , final double p1y , final double p2x , final double p2y , final double p3x , final double p3y )
@@ -681,60 +659,5 @@ class AreaTriangulator
 		}
 
 		return result;
-	}
-
-	/**
-	 * Represents the result of a triangulation operation.
-	 */
-	private static class TriangulationImpl
-		implements Triangulation
-	{
-		private List<double[]> _points;
-
-		private Collection<int[]> _triangles;
-
-		private TriangulationImpl( final List<double[]> points , final Collection<int[]> triangles )
-		{
-			_points    = points;
-			_triangles = triangles;
-		}
-
-		/**
-		 * Returns the vertices of the triangulation as a list of x/y coordinate
-		 * pairs.
-		 *
-		 * @return  List of arrays, each containing an x and an y coordinate.
-		 */
-		public List<double[]> getPoints()
-		{
-			return Collections.unmodifiableList( _points );
-		}
-
-		public Collection<int[]> getTriangles()
-		{
-			return Collections.unmodifiableCollection( _triangles );
-		}
-
-		/**
-		 * Returns the vertices of the triangulation as a list of 3D vectors.
-		 * Since the triangulation consists only of 2D information, a
-		 * transformation can be given to convert the coordinates to 3D. The
-		 * z-coordinate of all vertices before transformation is <code>0.0</code>.
-		 *
-		 * @param   transform   Transformation to be applied to the vectors.
-		 *
-		 * @return  List of vectors indicating the position of each vertex.
-		 */
-		public List<Vector3D> getVertices( final Matrix3D transform )
-		{
-			final List<Vector3D> result = new ArrayList<Vector3D>( _points.size() );
-
-			for ( final double[] point : _points )
-			{
-				result.add( transform.transform( Vector3D.INIT.set( point[ 0 ] , point[ 1 ] , 0.0 ) ) );
-			}
-
-			return result;
-		}
 	}
 }
