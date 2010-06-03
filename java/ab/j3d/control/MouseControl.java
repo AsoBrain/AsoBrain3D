@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2009
+ * (C) Copyright Numdata BV 2006-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,12 +19,12 @@
  */
 package ab.j3d.control;
 
-import java.awt.event.MouseEvent;
-import java.util.EventObject;
+import java.awt.event.*;
+import java.util.*;
 
-import ab.j3d.view.ViewControlInput;
-
-import com.numdata.oss.event.EventDispatcher;
+import ab.j3d.view.*;
+import com.numdata.oss.event.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class provides low-level support for mouse-controlled operations.
@@ -38,6 +38,7 @@ public class MouseControl
 	/**
 	 * Event dispatcher that is used for capture.
 	 */
+	@Nullable
 	private EventDispatcher _capturedDispatcher = null;
 
 	/**
@@ -57,6 +58,8 @@ public class MouseControl
 		return true;
 	}
 
+	@Override
+	@Nullable
 	public EventObject filterEvent( final EventObject event )
 	{
 		EventObject result = event;
@@ -93,6 +96,7 @@ public class MouseControl
 	 *
 	 * @return  Filtered event.
 	 */
+	@Nullable
 	protected EventObject filterMouseEvent( final ControlInputEvent event )
 	{
 		final EventObject result;
@@ -199,6 +203,7 @@ public class MouseControl
 	 *
 	 * @see     MouseEvent#MOUSE_CLICKED
 	 */
+	@Nullable
 	public EventObject mouseClicked( final ControlInputEvent event )
 	{
 		return isCaptured() ? null : event;
@@ -214,6 +219,7 @@ public class MouseControl
 	 *
 	 * @see     MouseEvent#MOUSE_WHEEL
 	 */
+	@Nullable
 	public EventObject mouseWheelMoved( final ControlInputEvent event )
 	{
 		return event;
@@ -229,6 +235,7 @@ public class MouseControl
 	 *
 	 * @see     MouseEvent#MOUSE_MOVED
 	 */
+	@Nullable
 	public EventObject mouseMoved( final ControlInputEvent event )
 	{
 		return event;
@@ -245,6 +252,7 @@ public class MouseControl
 	 *
 	 * @see     MouseEvent#MOUSE_PRESSED
 	 */
+	@Nullable
 	public EventObject mousePressed( final ControlInputEvent event )
 	{
 		return isCaptured() ? null : event;
@@ -260,6 +268,7 @@ public class MouseControl
 	 *
 	 * @see     MouseEvent#MOUSE_DRAGGED
 	 */
+	@Nullable
 	public EventObject mouseDragged( final ControlInputEvent event )
 	{
 		return isCaptured() ? null : event;
@@ -276,6 +285,7 @@ public class MouseControl
 	 *
 	 * @see     MouseEvent#MOUSE_RELEASED
 	 */
+	@Nullable
 	public EventObject mouseReleased( final ControlInputEvent event )
 	{
 		final ControlInputEvent result;
@@ -307,6 +317,7 @@ public class MouseControl
 	 *
 	 * @see     MouseEvent#MOUSE_ENTERED
 	 */
+	@Nullable
 	public EventObject mouseEntered( final ControlInputEvent event )
 	{
 		return event;
@@ -322,6 +333,7 @@ public class MouseControl
 	 *
 	 * @see     MouseEvent#MOUSE_EXITED
 	 */
+	@Nullable
 	public EventObject mouseExited( final ControlInputEvent event )
 	{
 		return event;
