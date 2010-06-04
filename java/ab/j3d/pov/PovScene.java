@@ -373,7 +373,7 @@ public class PovScene
 	 * @param   povFile         File or directory to write POV file to (optional).
 	 * @param   width           The width of the rendered image.
 	 * @param   height          The height of the rendered image.
-	 * @param   progressModel   Progressbar model.
+	 * @param   progressModel   Progress model.
 	 * @param   log             Log to write console output to.
 	 * @param   background      Wether or not to draw a background.
 	 *
@@ -528,74 +528,15 @@ public class PovScene
 	 *
 	 * @param   povProcess      POV-Ray process to monitor.
 	 * @param   height          The height of the rendered image.
-	 * @param   progressModel   Progressbar model.
+	 * @param   progressModel   Progress model.
 	 * @param   log             Log to write console output to.
 	 */
-	public static void monitorPovRayProcess( final Process povProcess, final int height, final BoundedRangeModel progressModel, final PrintWriter log )
+	public static void monitorPovRayProcess( @NotNull final Process povProcess, final int height, @Nullable final BoundedRangeModel progressModel, @Nullable final PrintWriter log )
 	{
 		if ( ( progressModel != null ) || ( log != null ) )
 		{
-			if ( progressModel != null )
-			{
-				progressModel.setMinimum( 0 );
-				progressModel.setValue( 0 );
-				progressModel.setMaximum( height );
-			}
-
-			final Thread stderrMonitor = new Thread( new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						final InputStream stderr = povProcess.getErrorStream();
-						try
-						{
-							final BufferedReader errorStream = new BufferedReader( new InputStreamReader( stderr ) );
-							String line;
-							while ( ( line = errorStream.readLine() ) != null )
-							{
-								if ( log != null )
-								{
-									log.println( line );
-									log.flush();
-								}
-
-								if ( ( progressModel != null ) && ( line.contains( " Rendering line " ) ) )
-								{
-									String temp = line.substring( line.indexOf( " Rendering line " ) + 16 );
-									final int end = temp.indexOf( (int)' ' );
-									temp = temp.substring( 0, end );
-
-									try
-									{
-										final int value = Integer.parseInt( temp );
-										progressModel.setValue( value );
-									}
-									catch( Exception e )
-									{
-										/* ignore */
-									}
-
-								}
-							}
-						}
-						catch ( IOException e )
-						{
-							/* ignore */
-						}
-						finally
-						{
-							try
-							{
-								stderr.close();
-							}
-							catch ( IOException e )
-							{
-								/* ignore */
-							}
-						}
-					}
-				} );
+			final PovRayProcessMonitor monitor = new PovRayProcessMonitor( povProcess, height, progressModel, log );
+			final Thread stderrMonitor = new Thread( monitor );
 			stderrMonitor.start();
 		}
 	}
@@ -910,6 +851,106 @@ public class PovScene
 			if ( geometry instanceof PovLight )
 			{
 				i.remove();
+			}
+		}
+	}
+
+	/**
+	 * Monitor for POV-Ray to read output from 'stderr' and monitor pogress
+	 * reported by POV-Ray in real time.
+	 */
+	public static class PovRayProcessMonitor
+		implements Runnable
+	{
+		/**
+		 * Progress model.
+		 */
+		@NotNull
+		private final Process _povProcess;
+
+		/**
+		 * Progress model.
+		 */
+		@Nullable
+		private final BoundedRangeModel _progressModel;
+
+		/**
+		 * Log to write console output to.
+		 */
+		@Nullable
+		private final PrintWriter _log;
+
+		/**
+		 * Construct monitor.
+		 *
+		 * @param   povProcess      POV-Ray process to monitor.
+		 * @param   height          The height of the rendered image.
+		 * @param   progressModel   Progress model.
+		 * @param   log             Log to write console output to.
+		 */
+		public PovRayProcessMonitor( @NotNull final Process povProcess, final int height, @Nullable final BoundedRangeModel progressModel, @Nullable final PrintWriter log )
+		{
+			if ( progressModel != null )
+			{
+				progressModel.setMinimum( 0 );
+				progressModel.setValue( 0 );
+				progressModel.setMaximum( height );
+			}
+
+			_povProcess = povProcess;
+			_progressModel = progressModel;
+			_log = log;
+		}
+
+		@Override
+					public void run()
+		{
+			final InputStream stderr = _povProcess.getErrorStream();
+			try
+			{
+				final BufferedReader errorStream = new BufferedReader( new InputStreamReader( stderr ) );
+				String line;
+				while ( ( line = errorStream.readLine() ) != null )
+				{
+					if ( _log != null )
+					{
+						_log.println( line );
+						_log.flush();
+					}
+
+					if ( ( _progressModel != null ) && ( line.contains( " Rendering line " ) ) )
+					{
+						String temp = line.substring( line.indexOf( " Rendering line " ) + 16 );
+						final int end = temp.indexOf( (int)' ' );
+						temp = temp.substring( 0, end );
+
+						try
+						{
+							final int value = Integer.parseInt( temp );
+							_progressModel.setValue( value );
+						}
+						catch( Exception e )
+						{
+							/* ignore */
+						}
+
+					}
+				}
+			}
+			catch ( IOException e )
+			{
+				/* ignore */
+			}
+			finally
+			{
+				try
+				{
+					stderr.close();
+				}
+				catch ( IOException e )
+				{
+					/* ignore */
+				}
 			}
 		}
 	}
