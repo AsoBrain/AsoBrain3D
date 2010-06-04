@@ -903,7 +903,7 @@ public class PovScene
 		}
 
 		@Override
-					public void run()
+		public void run()
 		{
 			final InputStream stderr = _povProcess.getErrorStream();
 			try
@@ -912,28 +912,30 @@ public class PovScene
 				String line;
 				while ( ( line = errorStream.readLine() ) != null )
 				{
-					if ( _log != null )
+					if ( line.contains( " Rendering line " ) )
+					{
+						if ( _progressModel != null )
+						{
+							String temp = line.substring( line.indexOf( " Rendering line " ) + 16 );
+							final int end = temp.indexOf( (int)' ' );
+							temp = temp.substring( 0, end );
+
+							try
+							{
+								final int value = Integer.parseInt( temp );
+								_progressModel.setValue( value );
+							}
+							catch( Exception e )
+							{
+								/* ignore */
+							}
+
+						}
+					}
+					else if ( _log != null )
 					{
 						_log.println( line );
 						_log.flush();
-					}
-
-					if ( ( _progressModel != null ) && ( line.contains( " Rendering line " ) ) )
-					{
-						String temp = line.substring( line.indexOf( " Rendering line " ) + 16 );
-						final int end = temp.indexOf( (int)' ' );
-						temp = temp.substring( 0, end );
-
-						try
-						{
-							final int value = Integer.parseInt( temp );
-							_progressModel.setValue( value );
-						}
-						catch( Exception e )
-						{
-							/* ignore */
-						}
-
 					}
 				}
 			}
