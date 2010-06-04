@@ -19,41 +19,16 @@
  */
 package ab.j3d.view.control.planar;
 
-import java.awt.Color;
-import java.awt.Composite;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.Image;
-import java.awt.Paint;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.Shape;
-import java.awt.Stroke;
-import java.awt.font.FontRenderContext;
-import java.awt.font.GlyphVector;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Arc2D;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Line2D;
-import java.awt.geom.PathIterator;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.geom.RoundRectangle2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageOp;
-import java.awt.image.ImageObserver;
-import java.awt.image.RenderedImage;
-import java.awt.image.renderable.RenderableImage;
-import java.text.AttributedCharacterIterator;
-import java.util.Map;
+import java.awt.*;
+import java.awt.font.*;
+import java.awt.geom.*;
+import java.awt.image.*;
+import java.awt.image.renderable.*;
+import java.text.*;
+import java.util.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.view.Projector;
+import ab.j3d.*;
+import ab.j3d.view.*;
 
 /**
  * This implementation of {@link Graphics2D} is used to draw on a plane in 3D
@@ -199,283 +174,338 @@ public class PlanarGraphics2D
 		return result;
 	}
 
+	@Override
 	public Graphics create()
 	{
 		return notImplemented();
 	}
 
+	@Override
 	public void dispose()
 	{
 	}
 
+	@Override
 	public GraphicsConfiguration getDeviceConfiguration()
 	{
 		return _g2d.getDeviceConfiguration();
 	}
 
+	@Override
 	public Object getRenderingHint( final RenderingHints.Key hintKey )
 	{
 		return _g2d.getRenderingHint( hintKey );
 	}
 
+	@Override
 	public RenderingHints getRenderingHints()
 	{
 		return _g2d.getRenderingHints();
 	}
 
+	@Override
 	public void addRenderingHints( final Map<?, ?> hints )
 	{
 		_g2d.addRenderingHints( hints );
 	}
 
+	@Override
 	public void setRenderingHint( final RenderingHints.Key hintKey , final Object hintValue )
 	{
 		_g2d.setRenderingHint( hintKey , hintValue );
 	}
 
+	@Override
 	public void setRenderingHints( final Map<?,?> hints )
 	{
 		_g2d.setRenderingHints( hints );
 	}
 
+	@Override
 	public Shape getClip()
 	{
 		return notImplemented();
 	}
 
+	@Override
 	public void setClip( final Shape clip )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public void clip( final Shape s )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public Rectangle getClipBounds()
 	{
 		return notImplemented();
 	}
 
+	@Override
 	public void setClip( final int x , final int y , final int width , final int height )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public void clipRect( final int x , final int y , final int width , final int height )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public boolean hit( final Rectangle rectangle , final Shape shape , final boolean onStroke )
 	{
 		notImplemented();
 		return false;
 	}
 
+	@Override
 	public void copyArea( final int x , final int y , final int width , final int height , final int dx , final int dy )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public Color getBackground()
 	{
 		return _g2d.getBackground();
 	}
 
+	@Override
 	public void setBackground( final Color color )
 	{
 		_g2d.setBackground( color );
 	}
 
+	@Override
 	public Color getColor()
 	{
 		return _g2d.getColor();
 	}
 
+	@Override
 	public void setColor( final Color c )
 	{
 		_g2d.setColor( c );
 	}
 
+	@Override
 	public Composite getComposite()
 	{
 		return _g2d.getComposite();
 	}
 
+	@Override
 	public void setComposite( final Composite composite )
 	{
 		_g2d.setComposite( composite );
 	}
 
+	@Override
 	public Font getFont()
 	{
 		return _g2d.getFont();
 	}
 
+	@Override
 	public void setFont( final Font font )
 	{
 		_g2d.setFont( font );
 	}
 
+	@Override
 	public FontMetrics getFontMetrics( final Font font )
 	{
 		return _g2d.getFontMetrics( font );
 	}
 
+	@Override
 	public FontRenderContext getFontRenderContext()
 	{
 		return _g2d.getFontRenderContext();
 	}
 
+	@Override
 	public Paint getPaint()
 	{
 		return _g2d.getPaint();
 	}
 
+	@Override
 	public void setPaint( final Paint paint )
 	{
 		_g2d.setPaint( paint );
 	}
 
+	@Override
 	public Stroke getStroke()
 	{
 		return _g2d.getStroke();
 	}
 
+	@Override
 	public void setStroke( final Stroke stroke )
 	{
 		_g2d.setStroke( stroke );
 	}
 
+	@Override
 	public void setPaintMode()
 	{
 		_g2d.setPaintMode();
 	}
 
+	@Override
 	public void setXORMode( final Color color )
 	{
 		_g2d.setXORMode( color );
 	}
 
+	@Override
 	public AffineTransform getTransform()
 	{
 		return null;
 	}
 
+	@Override
 	public void setTransform( final AffineTransform tx )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public void rotate( final double theta )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public void rotate( final double theta , final double x , final double y )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public void scale( final double sx , final double sy )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public void shear( final double shx , final double shy )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public void transform( final AffineTransform tx )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public void translate( final double tx , final double ty )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public void translate( final int x, final int y )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public void draw( final Shape s )
 	{
 		_g2d.draw( planeShape2ImageShape( s ) );
 	}
 
+	@Override
 	public void fill( final Shape s )
 	{
 		_g2d.fill( planeShape2ImageShape( s ) );
 	}
 
+	@Override
 	public void drawArc( final int x , final int y , final int width , final int height , final int startAngle , final int arcAngle )
 	{
 		draw( new Arc2D.Double( (double)x , (double)y , (double)width , (double)height , (double)startAngle , (double)arcAngle , Arc2D.OPEN ) );
 	}
 
+	@Override
 	public void fillArc( final int x , final int y , final int width , final int height , final int startAngle , final int arcAngle )
 	{
 		fill( new Arc2D.Double( (double)x , (double)y , (double)width , (double)height , (double)startAngle , (double)arcAngle , Arc2D.OPEN ) );
 	}
 
+	@Override
 	public void drawGlyphVector( final GlyphVector g , final float x, final float y )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public void drawImage( final BufferedImage img , final BufferedImageOp op , final int x , final int y )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public boolean drawImage( final Image img , final int dx1 , final int dy1 , final int dx2 , final int dy2 , final int sx1 , final int sy1 , final int sx2 , final int sy2 , final ImageObserver observer )
 	{
 		notImplemented();
 		return false;
 	}
 
+	@Override
 	public boolean drawImage( final Image img , final int dx1 , final int dy1 , final int dx2 , final int dy2 , final int sx1 , final int sy1 , final int sx2 , final int sy2 , final Color bgcolor , final ImageObserver observer )
 	{
 		notImplemented();
 		return false;
 	}
 
+	@Override
 	public boolean drawImage( final Image img , final int x , final int y , final Color bgcolor , final ImageObserver observer )
 	{
 		notImplemented();
 		return false;
 	}
 
+	@Override
 	public boolean drawImage( final Image img , final int x , final int y , final ImageObserver observer )
 	{
 		notImplemented();
 		return false;
 	}
 
+	@Override
 	public boolean drawImage( final Image img , final int x , final int y , final int width , final int height , final Color bgcolor , final ImageObserver observer )
 	{
 		notImplemented();
 		return false;
 	}
 
+	@Override
 	public boolean drawImage( final Image img , final int x , final int y , final int width , final int height , final ImageObserver observer )
 	{
 		notImplemented();
 		return false;
 	}
 
+	@Override
 	public boolean drawImage( final Image img , final AffineTransform xform , final ImageObserver obs )
 	{
 		notImplemented();
 		return false;
 	}
 
+	@Override
 	public void drawLine( final int x1 , final int y1 , final int x2 , final int y2 )
 	{
 		final Point2D p1 = plane2image( (double)x1 , (double)y1 );
@@ -484,16 +514,19 @@ public class PlanarGraphics2D
 		_g2d.drawLine( (int)p1.getX() , (int)p1.getY() , (int)p2.getX() , (int)p2.getY() );
 	}
 
+	@Override
 	public void drawOval( final int x , final int y , final int width , final int height )
 	{
 		draw( new Ellipse2D.Double( (double)x , (double)y , (double)width , (double)height ) );
 	}
 
+	@Override
 	public void fillOval( final int x , final int y , final int width , final int height )
 	{
 		fill( new Ellipse2D.Double( (double)x , (double)y , (double)width , (double)height ) );
 	}
 
+	@Override
 	public void drawPolygon( final int[] xPoints , final int[] yPoints , final int nPoints )
 	{
 		final int[] imageX = new int[ nPoints ];
@@ -510,6 +543,7 @@ public class PlanarGraphics2D
 		_g2d.drawPolygon( imageX , imageY , nPoints );
 	}
 
+	@Override
 	public void fillPolygon( final int[] xPoints , final int[] yPoints , final int nPoints )
 	{
 		final int[] imageX = new int[ nPoints ];
@@ -526,6 +560,7 @@ public class PlanarGraphics2D
 		_g2d.fillPolygon( imageX , imageY , nPoints );
 	}
 
+	@Override
 	public void drawPolyline( final int[] xPoints , final int[] yPoints , final int nPoints )
 	{
 		final int[] imageX = new int[ nPoints ];
@@ -542,52 +577,68 @@ public class PlanarGraphics2D
 		_g2d.drawPolyline( imageX , imageY , nPoints );
 	}
 
+	@Override
+	public void drawRect( final int x, final int y, final int width, final int height )
+	{
+		draw( new Rectangle2D.Double( (double)x , (double)y , (double)width , (double)height ) );
+	}
+
+	@Override
 	public void fillRect( final int x , final int y , final int width , final int height )
 	{
 		fill( new Rectangle2D.Double( (double)x , (double)y , (double)width , (double)height ) );
 	}
 
+	@Override
 	public void clearRect( final int x , final int y , final int width , final int height )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public void drawRenderableImage( final RenderableImage img , final AffineTransform xform )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public void drawRenderedImage( final RenderedImage img , final AffineTransform xform )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public void drawRoundRect( final int x , final int y , final int width , final int height , final int arcWidth , final int arcHeight )
 	{
 		draw( new RoundRectangle2D.Double( (double)x , (double)y , (double)width , (double)height , (double)arcWidth , (double)arcHeight ) );
 	}
 
+	@Override
 	public void fillRoundRect( final int x , final int y , final int width , final int height , final int arcWidth , final int arcHeight )
 	{
 		fill( new RoundRectangle2D.Double( (double)x , (double)y , (double)width , (double)height , (double)arcWidth , (double)arcHeight ) );
 	}
 
+	@Override
 	public void drawString( final AttributedCharacterIterator iterator , final float x , final float y )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public void drawString( final AttributedCharacterIterator iterator , final int x , final int y )
 	{
 		notImplemented();
 	}
 
+	@Override
 	public void drawString( final String str , final float x , final float y )
 	{
-		final Point2D point2d = plane2image( x , y );
+		final Point2D point2d = plane2image( (double)x, (double)y );
 		_g2d.drawString( str , (float)point2d.getX() , (float)point2d.getY() );
 	}
 
+	@Override
 	public void drawString( final String str , final int x , final int y )
 	{
 		drawString( str , (float)x , (float)y );
