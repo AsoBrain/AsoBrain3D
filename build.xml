@@ -61,6 +61,7 @@
     <mkdir dir="classes/java"/>
     <javac2 srcdir="java" destdir="classes/java" classpathref="java.classpath" source="1.5">
       <exclude name="**/jogl?*/**" />
+      <exclude name="**/java3d/**" />
     </javac2>
     <copy todir="classes/java">
       <fileset dir="java" excludes="**/*.java" />
@@ -78,6 +79,7 @@
     <mkdir dir="classes/test"/>
     <javac2 srcdir="test" destdir="classes/test" classpathref="test.classpath">
       <exclude name="**/jogl?*/**" />
+      <exclude name="**/java3d/**" />
     </javac2>
     <copy todir="classes/test">
       <fileset dir="test" excludes="**/*.java"/>
