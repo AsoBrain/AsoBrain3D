@@ -26,6 +26,7 @@ import java.util.List;
 
 import ab.j3d.*;
 import ab.j3d.geom.Triangulation.*;
+import ab.j3d.geom.Triangulation.Primitive.*;
 
 /**
  * Triangular that uses Java2D's {@link Area} class in combination with a simple
@@ -613,6 +614,19 @@ class AreaTriangulator
 				triangle[ 2 ] = temp;
 			}
 		}
+
+		// Add triangles to result
+		final int[] vertices = new int[ triangles.size() * 3 ];
+		int i = 0;
+		for ( final int[] triangle : triangles )
+		{
+			vertices[ i++ ] = triangle[ 0 ];
+			vertices[ i++ ] = triangle[ 1 ];
+			vertices[ i++ ] = triangle[ 2 ];
+		}
+
+
+		triangulation.addPrimitive( new Primitive( Type.TRIANGLES, vertices ) );
 	}
 
 	private static Point2D pointWithinTriangle( final double p1x , final double p1y , final double p2x , final double p2y , final double p3x , final double p3y )
