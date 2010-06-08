@@ -22,13 +22,14 @@ package ab.j3d.geom;
 import java.awt.*;
 import java.awt.geom.*;
 import java.util.*;
+import static javax.media.opengl.GL.*;
 import javax.media.opengl.glu.*;
+import static javax.media.opengl.glu.GLU.*;
 
 import ab.j3d.*;
+import ab.j3d.geom.ShapeTools.*;
 import ab.j3d.geom.Triangulation.*;
 import ab.j3d.geom.Triangulation.Primitive.*;
-import static javax.media.opengl.GL.*;
-import static javax.media.opengl.glu.GLU.*;
 
 /**
  * Implements the {@link Triangulator} interface using the tesselator provided
@@ -106,9 +107,9 @@ class GLUTriangulator
 		}
 
 		final Vector3D normal = _normal;
-		if ( normal != Vector3D.INIT )
+		if ( normal == null )
 		{
-			glu.gluTessNormal( tessellator, normal.x, normal.y, normal.z );
+			throw new IllegalStateException( "must have normal" );
 		}
 
 		final BasicTriangulation triangulation = new BasicTriangulation();
@@ -121,6 +122,16 @@ class GLUTriangulator
 		glu.gluTessCallback( tessellator, GLU_TESS_COMBINE, triangulationBuilder );
 
 		glu.gluBeginPolygon( tessellator );
+
+		final ShapeClass shapeClass = ShapeTools.getShapeClass( shape );
+		if ( shapeClass.isCounterClockwise() )
+		{
+			glu.gluTessNormal( tessellator, normal.x, normal.y, normal.z );
+		}
+		else
+		{
+			glu.gluTessNormal( tessellator, -normal.x, -normal.y, -normal.z );
+		}
 
 		createContour( triangulation, glu, tessellator, false, iterator );
 
@@ -153,12 +164,34 @@ class GLUTriangulator
 
 		glu.gluBeginPolygon( tessellator );
 
-		glu.gluTessNormal( tessellator, normal.x, normal.y, normal.z );
+		ShapeClass shapeClass = ShapeTools.getShapeClass( positive );
+		boolean normalFlipped = shapeClass.isClockwise();
+		if ( normalFlipped )
+		{
+			glu.gluTessNormal( tessellator, -normal.x, -normal.y, -normal.z );
+		}
+		else
+		{
+			glu.gluTessNormal( tessellator, normal.x, normal.y, normal.z );
+		}
+
 		boolean contourStarted = createContour( triangulation, glu, tessellator, false, positive.getPathIterator( null, _flatness ) );
 
 		glu.gluTessNormal( tessellator, -normal.x, -normal.y, -normal.z );
 		for ( final Shape shape : negative )
 		{
+			shapeClass = ShapeTools.getShapeClass( shape );
+
+			normalFlipped = shapeClass.isCounterClockwise();
+			if ( normalFlipped )
+			{
+				glu.gluTessNormal( tessellator, -normal.x, -normal.y, -normal.z );
+			}
+			else
+			{
+				glu.gluTessNormal( tessellator, normal.x, normal.y, normal.z );
+			}
+
 			contourStarted = createContour( triangulation, glu, tessellator, contourStarted, shape.getPathIterator( null, _flatness ) );
 		}
 
@@ -332,7 +365,7 @@ class GLUTriangulator
 			vertexBuffer[ vertexCount ] = (Integer)data;
 			_vertexCount = vertexCount + 1;
 		}
-		
+
 		@Override
 		public void combine( final double[] coords, final Object[] vertexData, final float[] weight, final Object[] output )
 		{
