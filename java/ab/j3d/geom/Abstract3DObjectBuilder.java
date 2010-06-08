@@ -24,6 +24,7 @@ import java.awt.geom.*;
 import java.util.List;
 
 import ab.j3d.*;
+import ab.j3d.geom.ShapeTools.*;
 import ab.j3d.model.*;
 import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
@@ -44,100 +45,6 @@ import org.jetbrains.annotations.*;
  */
 public abstract class Abstract3DObjectBuilder
 {
-	/**
-	 * Shape classes.
-	 */
-	public enum ShapeClass
-	{
-		/**
-		 * Nothingness.
-		 */
-		VOID ,
-
-		/**
-		 * Line segment.
-		 */
-		LINE_SEGMENT ,
-
-		/**
-		 * Open path.
-		 */
-		OPEN_PATH ,
-
-		/**
-		 * Triangle with clockwise vertex order.
-		 */
-		CW_TRIANGLE ,
-
-		/**
-		 * Triangle with counter-clockwise vertex order.
-		 */
-		CCW_TRIANGLE ,
-
-		/**
-		 * Quad with clockwise vertex order.
-		 */
-		CW_QUAD ,
-
-		/**
-		 * Quad with counter-clockwise vertex order.
-		 */
-		CCW_QUAD ,
-
-		/**
-		 * Convex shape with clockwise vertex order.
-		 */
-		CW_CONVEX ,
-
-		/**
-		 * Convex shape with counter-clockwise vertex order.
-		 */
-		CCW_CONVEX ,
-
-		/**
-		 * Concave shape with clockwise vertex order.
-		 */
-		CW_CONCAVE ,
-
-		/**
-		 * Concave shape with counter-clockwise vertex order.
-		 */
-		CCW_CONCAVE ,
-
-		/**
-		 * Complex shape with possible self-intersection or multiple sub-paths.
-		 */
-		COMPLEX;
-
-		/**
-		 * Test if this shape has clockwise vertex order.
-		 *
-		 * @return  <code>true</code> if shape has clockwise vertex order;
-		 *          <code>false</code> if counter-clockwise or undetermined.
-		 */
-		public boolean isClockwise()
-		{
-			return ( ( this == CW_TRIANGLE ) ||
-			         ( this == CW_QUAD ) ||
-			         ( this == CW_CONVEX ) ||
-			         ( this == CW_CONCAVE ) );
-		}
-
-		/**
-		 * Test if this shape has counter-clockwise vertex order.
-		 *
-		 * @return  <code>true</code> if shape has counter-clockwise vertex order;
-		 *          <code>false</code> if clockwise or undetermined.
-		 */
-		public boolean isCounterClockwise()
-		{
-			return ( ( this == CCW_TRIANGLE ) ||
-			         ( this == CCW_QUAD ) ||
-			         ( this == CCW_CONVEX ) ||
-			         ( this == CCW_CONCAVE ) );
-		}
-	}
-
 	/**
 	 * Construct builder.
 	 */
@@ -197,13 +104,15 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   material        Material specification to use for shading.
 	 * @param   fill            Create filled shape vs. create wireframe.
 	 */
-	public void addArc( @NotNull final Vector3D centerPoint , final double radius , final double startAngle , final double endAngle , final double startWidth , final double endWidth , @Nullable final Vector3D extrusion , @Nullable final Material material , final boolean fill )
+	public void addArc( @NotNull final Vector3D centerPoint, final double radius, final double startAngle, final double endAngle, final double startWidth, final double endWidth, @Nullable final Vector3D extrusion, @Nullable final Material material, final boolean fill )
 	{
 		final double twoPI = 2.0 * Math.PI;
 
 		double enclosedAngle = ( endAngle - startAngle ) % twoPI;
 		if ( enclosedAngle < 0.0 )
+		{
 			enclosedAngle += twoPI;
+		}
 
 		final int     nrSegments = ( enclosedAngle < Math.PI / 4.0 ) ? 3 : (int)( ( 32.0 * enclosedAngle ) / twoPI + 0.5 );
 		final double  angleStep  = enclosedAngle / (double)nrSegments;
@@ -215,7 +124,7 @@ public abstract class Abstract3DObjectBuilder
 			double cos         = Math.cos( angle );
 			double sin         = Math.sin( angle );
 
-			Vector3D point1 = centerPoint.plus( radius * cos , radius * sin , 0.0 );
+			Vector3D point1 = centerPoint.plus( radius * cos, radius * sin, 0.0 );
 
 			for ( int i = 0 ; i < nrSegments ; i++ )
 			{
@@ -223,18 +132,18 @@ public abstract class Abstract3DObjectBuilder
 				cos   = Math.cos( angle );
 				sin   = Math.sin( angle );
 
-				final Vector3D point2 = centerPoint.plus( radius * cos , radius * sin , 0.0 );
+				final Vector3D point2 = centerPoint.plus( radius * cos, radius * sin, 0.0 );
 
 				if ( extruded )
 				{
 					final Vector3D point1a = point1.plus( extrusion );
 					final Vector3D point2a = point2.plus( extrusion );
 
-					addQuad( point1 , point2 , point2a , point1a , null , material , fill , true );
+					addQuad( point1, point2, point2a, point1a, null, material, fill, true );
 				}
 				else
 				{
-					addLine( point1 , point2 , material );
+					addLine( point1, point2, material );
 				}
 
 				point1 = point2;
@@ -250,8 +159,8 @@ public abstract class Abstract3DObjectBuilder
 			double innerRadius = radius - startWidth / 2.0;
 			double outerRadius = innerRadius + startWidth;
 
-			Vector3D inner1 = centerPoint.plus( innerRadius * cos , innerRadius * sin , 0.0 );
-			Vector3D outer1 = centerPoint.plus( outerRadius * cos , outerRadius * sin , 0.0 );
+			Vector3D inner1 = centerPoint.plus( innerRadius * cos, innerRadius * sin, 0.0 );
+			Vector3D outer1 = centerPoint.plus( outerRadius * cos, outerRadius * sin, 0.0 );
 
 			for ( int i = 0 ; i < nrSegments ; i++ )
 			{
@@ -261,8 +170,8 @@ public abstract class Abstract3DObjectBuilder
 				cos         = Math.cos( angle );
 				sin         = Math.sin( angle );
 
-				final Vector3D inner2 = centerPoint.plus( innerRadius * cos , innerRadius * sin , 0.0 );
-				final Vector3D outer2 = centerPoint.plus( outerRadius * cos , outerRadius * sin , 0.0 );
+				final Vector3D inner2 = centerPoint.plus( innerRadius * cos, innerRadius * sin, 0.0 );
+				final Vector3D outer2 = centerPoint.plus( outerRadius * cos, outerRadius * sin, 0.0 );
 
 				if ( extruded )
 				{
@@ -274,18 +183,27 @@ public abstract class Abstract3DObjectBuilder
 					final boolean isFirst = ( i == 0 );
 					final boolean isLast  = ( i == ( nrSegments -1 ) );
 
-					addQuad( outer1 , outer2 , inner2 , inner1 , null , material , fill , true );
+					addQuad( outer1, outer2, inner2, inner1, null, material, fill, true );
 
-					if ( isFirst ) addQuad( outer1 , inner1 , extrudedInner1 , extrudedOuter1 , null , material , fill , true );
-					addQuad( inner1 , inner2 , extrudedInner2 , extrudedInner1 , null , material , fill , true );
-					addQuad( inner2 , outer2 , extrudedOuter2 , extrudedInner2 , null , material , fill , true );
-					if ( isLast  ) addQuad( outer2 , outer1 , extrudedOuter1 , extrudedOuter2 , null , material , fill , true );
+					if ( isFirst )
+					{
+						addQuad( outer1, inner1, extrudedInner1, extrudedOuter1, null, material, fill, true );
+					}
 
-					addQuad( extrudedOuter1 , extrudedInner1 , extrudedInner2 , extrudedOuter2 , null , material , fill , true );
+					addQuad( inner1, inner2, extrudedInner2, extrudedInner1, null, material, fill, true );
+
+					addQuad( inner2, outer2, extrudedOuter2, extrudedInner2, null, material, fill, true );
+
+					if ( isLast  )
+					{
+						addQuad( outer2, outer1, extrudedOuter1, extrudedOuter2, null, material, fill, true );
+					}
+
+					addQuad( extrudedOuter1, extrudedInner1, extrudedInner2, extrudedOuter2, null, material, fill, true );
 				}
 				else
 				{
-					addQuad( outer1 , inner1 , inner2 , outer2 , null , material , fill , true );
+					addQuad( outer1, inner1, inner2, outer2, null, material, fill, true );
 				}
 
 				inner1 = inner2;
@@ -304,23 +222,23 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   material        Material specification to use for shading.
 	 * @param   fill            Create filled shape vs. create wireframe.
 	 */
-	public void addCircle( @NotNull final Vector3D centerPoint , final double radius , @NotNull final Vector3D normal , @Nullable final Vector3D extrusion , @Nullable final Material material , final boolean fill )
+	public void addCircle( @NotNull final Vector3D centerPoint, final double radius, @NotNull final Vector3D normal, @Nullable final Vector3D extrusion, @Nullable final Material material, final boolean fill )
 	{
-		final Matrix3D base = Matrix3D.getPlaneTransform( centerPoint , normal , true );
+		final Matrix3D base = Matrix3D.getPlaneTransform( centerPoint, normal, true );
 
 		final float diameter = (float)radius * 2.0f;
 		final float origin = (float)-radius;
 		final Ellipse2D ellipse2d = new Ellipse2D.Float( origin, origin, diameter, diameter );
 
-		final UVMap uvMap = new BoxUVMap( Scene.MM , base ); // @FIXME Retrieve model units instead of assuming millimeters.
+		final UVMap uvMap = new BoxUVMap( Scene.MM, base ); // @FIXME Retrieve model units instead of assuming millimeters.
 
 		if ( fill )
 		{
-			addExtrudedShape( ellipse2d , radius * 0.02 , extrusion , base , material , uvMap , false , material , uvMap , false , material , uvMap , false , true , false , true );
+			addExtrudedShape( ellipse2d, radius * 0.02, extrusion, base, material, uvMap, false, material, uvMap, false, material, uvMap, false, true, false, true );
 		}
 		else
 		{
-			addExtrudedShape( ellipse2d , radius * 0.02 , extrusion , base , material , uvMap , false , true , false , true );
+			addExtrudedShape( ellipse2d, radius * 0.02, extrusion, base, material, uvMap, false, true, false, true );
 		}
 	}
 
@@ -342,9 +260,9 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   bottomMap           UV map for bottom cap.
 	 * @param   flipNormals         If set, flip normals.
 	 */
-	public void addCylinder( @NotNull final Vector3D origin , @NotNull final Vector3D direction , final double height , final double radiusBottom , final double radiusTop , final int numEdges , @Nullable final Material sideMaterial , @Nullable final UVMap sideMap , final boolean smoothCircumference , @Nullable final Material topMaterial , @Nullable final UVMap topMap , @Nullable final Material bottomMaterial , @Nullable final UVMap bottomMap , final boolean flipNormals )
+	public void addCylinder( @NotNull final Vector3D origin, @NotNull final Vector3D direction, final double height, final double radiusBottom, final double radiusTop, final int numEdges, @Nullable final Material sideMaterial, @Nullable final UVMap sideMap, final boolean smoothCircumference, @Nullable final Material topMaterial, @Nullable final UVMap topMap, @Nullable final Material bottomMaterial, @Nullable final UVMap bottomMap, final boolean flipNormals )
 	{
-		final Matrix3D base = Matrix3D.getPlaneTransform( origin , direction , true );
+		final Matrix3D base = Matrix3D.getPlaneTransform( origin, direction, true );
 
 		/*
 		 * Setup properties of cylinder.
@@ -366,7 +284,7 @@ public abstract class Abstract3DObjectBuilder
 			for ( int i = 0 ; i < numEdges ; i++ )
 			{
 				final double rad = (double)i * radStep;
-				vertexIndices[ v++ ] = getVertexIndex( base.transform( Math.sin( rad ) * radiusBottom , -Math.cos( rad ) * radiusBottom , 0.0 ) );
+				vertexIndices[ v++ ] = getVertexIndex( base.transform( Math.sin( rad ) * radiusBottom, -Math.cos( rad ) * radiusBottom, 0.0 ) );
 			}
 		}
 		else
@@ -379,12 +297,12 @@ public abstract class Abstract3DObjectBuilder
 			for ( int i = 0 ; i < numEdges ; i++ )
 			{
 				final double rad = (double)i * radStep;
-				vertexIndices[ v++ ] = getVertexIndex( base.transform( Math.sin( rad ) * radiusTop , -Math.cos( rad ) * radiusTop , height ) );
+				vertexIndices[ v++ ] = getVertexIndex( base.transform( Math.sin( rad ) * radiusTop, -Math.cos( rad ) * radiusTop, height ) );
 			}
 		}
 		else
 		{
-			vertexIndices[ v/*++*/ ] = getVertexIndex( base.transform( 0.0 , 0.0 , height ) );
+			vertexIndices[ v/*++*/ ] = getVertexIndex( base.transform( 0.0, 0.0, height ) );
 		}
 
 		/*
@@ -398,7 +316,7 @@ public abstract class Abstract3DObjectBuilder
 				faceVertices[ i ] = flipNormals ? ( numEdges - 1 - i ) : i;
 			}
 
-			addFace( faceVertices , bottomMaterial , bottomMap , false , false , false );
+			addFace( faceVertices, bottomMaterial, bottomMap, false, false, false );
 		}
 
 		/*
@@ -414,18 +332,18 @@ public abstract class Abstract3DObjectBuilder
 
 				if ( !hasTop )
 				{
-					faceVertices = flipNormals ? new int[] { vertexIndices[ numEdges ] , vertexIndices[ i1 ] , vertexIndices[ i2 ] } : new int[] { vertexIndices[ i2 ] , vertexIndices[ i1 ] , vertexIndices[ numEdges ] };
+					faceVertices = flipNormals ? new int[] { vertexIndices[ numEdges ], vertexIndices[ i1 ], vertexIndices[ i2 ] } : new int[] { vertexIndices[ i2 ], vertexIndices[ i1 ], vertexIndices[ numEdges ] };
 				}
 				else if ( !hasBottom )
 				{
-					faceVertices = flipNormals ? new int[] { vertexIndices[ 1 + i2 ] , vertexIndices[ 1 + i1 ] , vertexIndices[ 0 ] } : new int[] { vertexIndices[ 0 ] , vertexIndices[ 1 + i1 ] , vertexIndices[ 1 + i2 ] };
+					faceVertices = flipNormals ? new int[] { vertexIndices[ 1 + i2 ], vertexIndices[ 1 + i1 ], vertexIndices[ 0 ] } : new int[] { vertexIndices[ 0 ], vertexIndices[ 1 + i1 ], vertexIndices[ 1 + i2 ] };
 				}
 				else
 				{
-					faceVertices = flipNormals ? new int[] { vertexIndices[ numEdges + i2 ] , vertexIndices[ numEdges + i1 ] , vertexIndices[ i1 ] , vertexIndices[ i2 ] } : new int[] { vertexIndices[ i2 ] , vertexIndices[ i1 ] , vertexIndices[ numEdges + i1 ] , vertexIndices[ numEdges + i2 ] };
+					faceVertices = flipNormals ? new int[] { vertexIndices[ numEdges + i2 ], vertexIndices[ numEdges + i1 ], vertexIndices[ i1 ], vertexIndices[ i2 ] } : new int[] { vertexIndices[ i2 ], vertexIndices[ i1 ], vertexIndices[ numEdges + i1 ], vertexIndices[ numEdges + i2 ] };
 				}
 
-				addFace( faceVertices , sideMaterial , sideMap , false , smoothCircumference , false );
+				addFace( faceVertices, sideMaterial, sideMap, false, smoothCircumference, false );
 			}
 		}
 
@@ -443,7 +361,7 @@ public abstract class Abstract3DObjectBuilder
 				faceVertices[ i ] = vertexIndices[ flipNormals ? ( lastVertex - numEdges + 1 + i ) : ( lastVertex - i ) ];
 			}
 
-			addFace( faceVertices , topMaterial , topMap , false , false , false );
+			addFace( faceVertices, topMaterial, topMap, false, false, false );
 		}
 	}
 
@@ -454,9 +372,9 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   point2      Second point.
 	 * @param   material    Material specification to use for shading.
 	 */
-	public void addLine( @NotNull final Vector3D point1 , @NotNull final Vector3D point2 , @Nullable final Material material )
+	public void addLine( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @Nullable final Material material )
 	{
-		addFace( new Vector3D[] { point1 , point2 } , material , false , true );
+		addFace( new Vector3D[] { point1, point2 }, material, false, true );
 	}
 
 	/**
@@ -468,18 +386,18 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   material    Material specification to use for shading.
 	 * @param   fill        Create filled shape vs. create wireframe.
 	 */
-	public void addLine( @NotNull final Vector3D point1 , @NotNull final Vector3D point2 , @Nullable final Vector3D extrusion , @Nullable final Material material , final boolean fill )
+	public void addLine( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @Nullable final Vector3D extrusion, @Nullable final Material material, final boolean fill )
 	{
 		if ( ( extrusion != null ) && !extrusion.almostEquals( Vector3D.INIT ) )
 		{
 			final Vector3D p1a = point1.plus( extrusion );
 			final Vector3D p2a = point2.plus( extrusion );
 
-			addQuad( point1 , p1a , p2a , point2 , null , material , fill , true );
+			addQuad( point1, p1a, p2a, point2, null, material, fill, true );
 		}
 		else
 		{
-			addLine( point1 , point2 , material );
+			addLine( point1, point2, material );
 		}
 	}
 
@@ -491,9 +409,9 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	public void addFace( @NotNull final Vector3D[] points , @Nullable final Material material , final boolean smooth , final boolean twoSided )
+	public void addFace( @NotNull final Vector3D[] points, @Nullable final Material material, final boolean smooth, final boolean twoSided )
 	{
-		addFace( points , material , null , null , smooth , twoSided );
+		addFace( points, material, null, null, smooth, twoSided );
 	}
 
 	/**
@@ -504,9 +422,9 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	public void addFace( @NotNull final int[] vertexIndices , @Nullable final Material material , final boolean smooth , final boolean twoSided )
+	public void addFace( @NotNull final int[] vertexIndices, @Nullable final Material material, final boolean smooth, final boolean twoSided )
 	{
-		addFace( vertexIndices , material , null , null , smooth , twoSided );
+		addFace( vertexIndices, material, null, null, smooth, twoSided );
 	}
 
 	/**
@@ -519,7 +437,7 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	public void addFace( @NotNull final Vector3D[] points , @Nullable final Material material , @Nullable final UVMap uvMap , final boolean flipTexture , final boolean smooth , final boolean twoSided )
+	public void addFace( @NotNull final Vector3D[] points, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean smooth, final boolean twoSided )
 	{
 		final int[] vertexIndices = new int[ points.length ];
 		for ( int i = 0 ; i < points.length ; i++ )
@@ -527,7 +445,7 @@ public abstract class Abstract3DObjectBuilder
 			vertexIndices[ i ] = getVertexIndex( points[ i ] );
 		}
 
-		addFace( vertexIndices , material , uvMap , flipTexture , smooth , twoSided );
+		addFace( vertexIndices, material, uvMap, flipTexture, smooth, twoSided );
 	}
 
 	/**
@@ -540,7 +458,7 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	public abstract void addFace( @NotNull int[] vertexIndices , @Nullable Material material , @Nullable UVMap uvMap , boolean flipTexture , boolean smooth , boolean twoSided );
+	public abstract void addFace( @NotNull int[] vertexIndices, @Nullable Material material, @Nullable UVMap uvMap, boolean flipTexture, boolean smooth, boolean twoSided );
 
 	/**
 	 * Add face.
@@ -552,7 +470,7 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	public abstract void addFace( @NotNull Vector3D[] points , @Nullable Material material , @Nullable Point2D.Float[] texturePoints , @Nullable Vector3D[] vertexNormals , boolean smooth , boolean twoSided );
+	public abstract void addFace( @NotNull Vector3D[] points, @Nullable Material material, @Nullable Point2D.Float[] texturePoints, @Nullable Vector3D[] vertexNormals, boolean smooth, boolean twoSided );
 
 	/**
 	 * Add face.
@@ -564,7 +482,7 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	public abstract void addFace( @NotNull final int[] vertexIndices , @Nullable Material material , @Nullable Point2D.Float[] texturePoints , @Nullable Vector3D[] vertexNormals , boolean smooth , boolean twoSided );
+	public abstract void addFace( @NotNull int[] vertexIndices, @Nullable Material material, @Nullable Point2D.Float[] texturePoints, @Nullable Vector3D[] vertexNormals, boolean smooth, boolean twoSided );
 
 	/**
 	 * Add quad primitive.
@@ -576,9 +494,9 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   material        Material specification to use for shading.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public void addQuad( @NotNull final Vector3D point1 , @NotNull final Vector3D point2 , @NotNull final Vector3D point3 , @NotNull final Vector3D point4 , @Nullable final Material material , final boolean hasBackface )
+	public void addQuad( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @NotNull final Vector3D point4, @Nullable final Material material, final boolean hasBackface )
 	{
-		addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , material , false , hasBackface );
+		addFace( new Vector3D[] { point1, point2, point3, point4 }, material, false, hasBackface );
 	}
 
 	/**
@@ -592,9 +510,9 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   uvMap           UV-map used to generate texture coordinates.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public void addQuad( @NotNull final Vector3D point1 , @NotNull final Vector3D point2 , @NotNull final Vector3D point3 , @NotNull final Vector3D point4 , @Nullable final Material material , @Nullable final UVMap uvMap , final boolean hasBackface )
+	public void addQuad( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @NotNull final Vector3D point4, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean hasBackface )
 	{
-		addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , material , uvMap , false , false , hasBackface );
+		addFace( new Vector3D[] { point1, point2, point3, point4 }, material, uvMap, false, false, hasBackface );
 	}
 
 	/**
@@ -609,9 +527,9 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public void addQuad( @NotNull final Vector3D point1 , @NotNull final Vector3D point2 , @NotNull final Vector3D point3 , @NotNull final Vector3D point4 , @Nullable final Material material , @Nullable final UVMap uvMap , final boolean smooth , final boolean hasBackface )
+	public void addQuad( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @NotNull final Vector3D point4, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean smooth, final boolean hasBackface )
 	{
-		addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , material , uvMap , false , smooth , hasBackface );
+		addFace( new Vector3D[] { point1, point2, point3, point4 }, material, uvMap, false, smooth, hasBackface );
 	}
 
 	/**
@@ -628,9 +546,9 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   material        Material specification to use for shading.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public void addQuad( @NotNull final Vector3D point1 , @NotNull final Point2D.Float texturePoint1 , @NotNull final Vector3D point2 , @NotNull final Point2D.Float texturePoint2 , @NotNull final Vector3D point3 , @NotNull final Point2D.Float texturePoint3 , @NotNull final Vector3D point4 , @NotNull final Point2D.Float texturePoint4 , @Nullable final Material material , final boolean hasBackface )
+	public void addQuad( @NotNull final Vector3D point1, @NotNull final Point2D.Float texturePoint1, @NotNull final Vector3D point2, @NotNull final Point2D.Float texturePoint2, @NotNull final Vector3D point3, @NotNull final Point2D.Float texturePoint3, @NotNull final Vector3D point4, @NotNull final Point2D.Float texturePoint4, @Nullable final Material material, final boolean hasBackface )
 	{
-		addFace( new Vector3D[] { point1 , point2 , point3 , point4 } , material , new Point2D.Float[] { texturePoint1 , texturePoint2 , texturePoint3 , texturePoint4 } , null , false , hasBackface );
+		addFace( new Vector3D[] { point1, point2, point3, point4 }, material, new Point2D.Float[] { texturePoint1, texturePoint2, texturePoint3, texturePoint4 }, null, false, hasBackface );
 	}
 
 	/**
@@ -645,7 +563,7 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   fill            Create filled shape vs. create wireframe.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public void addQuad( @NotNull final Vector3D point1 , @NotNull final Vector3D point2 , @NotNull final Vector3D point3 , @NotNull final Vector3D point4 , @Nullable final Vector3D extrusion , @Nullable final Material material , final boolean fill , final boolean hasBackface )
+	public void addQuad( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @NotNull final Vector3D point4, @Nullable final Vector3D extrusion, @Nullable final Material material, final boolean fill, final boolean hasBackface )
 	{
 		if ( ( extrusion != null ) && !extrusion.almostEquals( Vector3D.INIT ) )
 		{
@@ -656,44 +574,44 @@ public abstract class Abstract3DObjectBuilder
 
 			if ( fill )
 			{
-				addQuad( point4  , point3  , point2  , point1  , material , false );
-				addQuad( point1  , point2  , point2a , point1a , material , false );
-				addQuad( point2  , point3  , point3a , point2a , material , false );
-				addQuad( point3  , point4  , point4a , point3a , material , false );
-				addQuad( point4  , point1  , point1a , point4a , material , false );
-				addQuad( point1a , point2a , point3a , point4a , material , false );
+				addQuad( point4 , point3 , point2 , point1 , material, false );
+				addQuad( point1 , point2 , point2a, point1a, material, false );
+				addQuad( point2 , point3 , point3a, point2a, material, false );
+				addQuad( point3 , point4 , point4a, point3a, material, false );
+				addQuad( point4 , point1 , point1a, point4a, material, false );
+				addQuad( point1a, point2a, point3a, point4a, material, false );
 			}
 			else
 			{
-				addLine( point1  , point1a , material );
-				addLine( point1  , point2  , material );
-				addLine( point1a , point2a , material );
+				addLine( point1 , point1a, material );
+				addLine( point1 , point2 , material );
+				addLine( point1a, point2a, material );
 
-				addLine( point2  , point2a , material );
-				addLine( point2  , point3  , material );
-				addLine( point2a , point3a , material );
+				addLine( point2 , point2a, material );
+				addLine( point2 , point3 , material );
+				addLine( point2a, point3a, material );
 
-				addLine( point3  , point3a , material );
-				addLine( point3  , point4  , material );
-				addLine( point3a , point4a , material );
+				addLine( point3 , point3a, material );
+				addLine( point3 , point4 , material );
+				addLine( point3a, point4a, material );
 
-				addLine( point4  , point4a , material );
-				addLine( point4  , point1  , material );
-				addLine( point4a , point1a , material );
+				addLine( point4 , point4a, material );
+				addLine( point4 , point1 , material );
+				addLine( point4a, point1a, material );
 			}
 		}
 		else
 		{
 			if ( fill )
 			{
-				addQuad( point1 , point2 , point3 , point4 , material , hasBackface );
+				addQuad( point1, point2, point3, point4, material, hasBackface );
 			}
 			else
 			{
-				addLine( point1 , point2 , material );
-				addLine( point2 , point3 , material );
-				addLine( point3 , point4 , material );
-				addLine( point4 , point1 , material );
+				addLine( point1, point2, material );
+				addLine( point2, point3, material );
+				addLine( point3, point4, material );
+				addLine( point4, point1, material );
 			}
 		}
 	}
@@ -709,7 +627,7 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   extrusion       Extrusion to apply (<code>null</code> or 0-vector => no extrusion).
 	 * @param   material        Material specification to use for shading.
 	 */
-	public abstract void addText( @NotNull String text , @NotNull Vector3D origin , double height , double rotationAngle , double obliqueAngle , @Nullable Vector3D extrusion , @Nullable Material material );
+	public abstract void addText( @NotNull String text, @NotNull Vector3D origin, double height, double rotationAngle, double obliqueAngle, @Nullable Vector3D extrusion, @Nullable Material material );
 
 	/**
 	 * Add triangle primitive.
@@ -720,9 +638,9 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   material        Material specification to use for shading.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public void addTriangle( @NotNull final Vector3D point1 , @NotNull final Vector3D point2 , @NotNull final Vector3D point3 , @Nullable final Material material , final boolean hasBackface )
+	public void addTriangle( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @Nullable final Material material, final boolean hasBackface )
 	{
-		addFace( new Vector3D[] { point1 , point2 , point3 } , material , false , hasBackface );
+		addFace( new Vector3D[] { point1, point2, point3 }, material, false, hasBackface );
 	}
 
 	/**
@@ -735,9 +653,9 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   uvMap           UV-map used to generate texture coordinates.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public void addTriangle( @NotNull final Vector3D point1 , @NotNull final Vector3D point2 , @NotNull final Vector3D point3 , @Nullable final Material material , @Nullable final UVMap uvMap , final boolean hasBackface )
+	public void addTriangle( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean hasBackface )
 	{
-		addFace( new Vector3D[] { point1 , point2 , point3 } , material , uvMap , false , false , hasBackface );
+		addFace( new Vector3D[] { point1, point2, point3 }, material, uvMap, false, false, hasBackface );
 	}
 
 	/**
@@ -751,9 +669,9 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public void addTriangle( @NotNull final Vector3D point1 , @NotNull final Vector3D point2 , @NotNull final Vector3D point3 , @Nullable final Material material , @Nullable final UVMap uvMap , final boolean smooth , final boolean hasBackface )
+	public void addTriangle( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean smooth, final boolean hasBackface )
 	{
-		addFace( new Vector3D[] { point1 , point2 , point3 } , material , uvMap , false , smooth , hasBackface );
+		addFace( new Vector3D[] { point1, point2, point3 }, material, uvMap, false, smooth, hasBackface );
 	}
 
 	/**
@@ -768,9 +686,9 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   material        Material specification to use for shading.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public void addTriangle( @NotNull final Vector3D point1 , @NotNull final Point2D.Float texturePoint1 , @NotNull final Vector3D point2 , @NotNull final Point2D.Float texturePoint2 , @NotNull final Vector3D point3 , @NotNull final Point2D.Float texturePoint3 , @Nullable final Material material , final boolean hasBackface )
+	public void addTriangle( @NotNull final Vector3D point1, @NotNull final Point2D.Float texturePoint1, @NotNull final Vector3D point2, @NotNull final Point2D.Float texturePoint2, @NotNull final Vector3D point3, @NotNull final Point2D.Float texturePoint3, @Nullable final Material material, final boolean hasBackface )
 	{
-		addFace( new Vector3D[] { point1 , point2 , point3 } , material , new Point2D.Float[] { texturePoint1 , texturePoint2 , texturePoint3 } , null , false , hasBackface );
+		addFace( new Vector3D[] { point1, point2, point3 }, material, new Point2D.Float[] { texturePoint1, texturePoint2, texturePoint3 }, null, false, hasBackface );
 	}
 
 	/**
@@ -784,7 +702,7 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   fill            Create filled shape vs. create wireframe.
 	 * @param   hasBackface     Flag to indicate if face has a backface.
 	 */
-	public void addTriangle( @NotNull final Vector3D point1 , @NotNull final Vector3D point2 , @NotNull final Vector3D point3 , @Nullable final Vector3D extrusion , @Nullable final Material material , final boolean fill , final boolean hasBackface )
+	public void addTriangle( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @Nullable final Vector3D extrusion, @Nullable final Material material, final boolean fill, final boolean hasBackface )
 	{
 		if ( ( extrusion != null ) && !extrusion.almostEquals( Vector3D.INIT ) )
 		{
@@ -794,38 +712,38 @@ public abstract class Abstract3DObjectBuilder
 
 			if ( fill )
 			{
-				addTriangle( point3  , point2  , point1  ,           material , false );
-				addQuad    ( point1  , point2  , point2a , point1a , material , false );
-				addQuad    ( point2  , point3  , point3a , point2a , material , false );
-				addQuad    ( point3  , point1  , point1a , point3a , material , false );
-				addTriangle( point1a , point2a , point3a ,           material , false );
+				addTriangle( point3 , point2 , point1 ,           material, false );
+				addQuad    ( point1 , point2 , point2a, point1a, material, false );
+				addQuad    ( point2 , point3 , point3a, point2a, material, false );
+				addQuad    ( point3 , point1 , point1a, point3a, material, false );
+				addTriangle( point1a, point2a, point3a,           material, false );
 			}
 			else
 			{
-				addLine( point1  , point1a , material );
-				addLine( point1  , point2  , material );
-				addLine( point1a , point2a , material );
+				addLine( point1 , point1a, material );
+				addLine( point1 , point2 , material );
+				addLine( point1a, point2a, material );
 
-				addLine( point2  , point2a , material );
-				addLine( point2  , point3  , material );
-				addLine( point2a , point3a , material );
+				addLine( point2 , point2a, material );
+				addLine( point2 , point3 , material );
+				addLine( point2a, point3a, material );
 
-				addLine( point3  , point3a , material );
-				addLine( point3  , point1  , material );
-				addLine( point3a , point1a , material );
+				addLine( point3 , point3a, material );
+				addLine( point3 , point1 , material );
+				addLine( point3a, point1a, material );
 			}
 		}
 		else
 		{
 			if ( fill )
 			{
-				addTriangle( point1 , point2 , point3 , material , hasBackface );
+				addTriangle( point1, point2, point3, material, hasBackface );
 			}
 			else
 			{
-				addLine( point1 , point2 , material );
-				addLine( point2 , point3 , material );
-				addLine( point3 , point1 , material );
+				addLine( point1, point2, material );
+				addLine( point2, point3, material );
+				addLine( point3, point1, material );
 			}
 		}
 	}
@@ -848,7 +766,7 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   smoothCircumference Set 'smooth' flag for circumference faces.
 	 * @param   closeEnds           Close ends of shape (make solid).
 	 */
-	public void addRotatedObject( @Nullable final Matrix3D transform , final double[] radii , final double[] zCoordinates , final int detail , @Nullable final Material material , final boolean smoothCircumference , final boolean closeEnds )
+	public void addRotatedObject( @Nullable final Matrix3D transform, final double[] radii, final double[] zCoordinates, final int detail, @Nullable final Material material, final boolean smoothCircumference, final boolean closeEnds )
 	{
 		int[] prevVertexIndices = null;
 
@@ -861,9 +779,9 @@ public abstract class Abstract3DObjectBuilder
 			 * Based on 'radius', create a list of vertex indices at this point.
 			 */
 			final int[] vertexIndices;
-			if ( MathTools.almostEqual( radius , 0.0 ) )
+			if ( MathTools.almostEqual( radius, 0.0 ) )
 			{
-				final Vector3D point = ( transform != null ) ? transform.transform( 0.0 , 0.0 , z ) : Vector3D.INIT.set( 0.0 , 0.0 , z );
+				final Vector3D point = ( transform != null ) ? transform.transform( 0.0, 0.0, z ) : Vector3D.INIT.set( 0.0, 0.0, z );
 				vertexIndices = new int[] { getVertexIndex( point ) };
 			}
 			else
@@ -877,7 +795,7 @@ public abstract class Abstract3DObjectBuilder
 					final double x     =  Math.sin( angle ) * radius;
 					final double y     = -Math.cos( angle ) * radius;
 
-					final Vector3D point = ( transform != null ) ? transform.transform( x , y , z ) : Vector3D.INIT.set( x , y , z );
+					final Vector3D point = ( transform != null ) ? transform.transform( x, y, z ) : Vector3D.INIT.set( x, y, z );
 					vertexIndices[ step ] = getVertexIndex( point );
 				}
 
@@ -885,7 +803,7 @@ public abstract class Abstract3DObjectBuilder
 				{
 					if ( i == 0 )
 					{
-						addFace( vertexIndices , material , false , false );
+						addFace( vertexIndices, material, false, false );
 					}
 					else if ( i == radii.length - 1 )
 					{
@@ -895,7 +813,7 @@ public abstract class Abstract3DObjectBuilder
 							reversed[ step ] = vertexIndices[ detail - 1 - step ];
 						}
 
-						addFace( reversed , material , false , false );
+						addFace( reversed, material, false, false );
 					}
 				}
 			}
@@ -912,14 +830,14 @@ public abstract class Abstract3DObjectBuilder
 						for ( int step = 0 ; step < detail ; step++ )
 						{
 							final int nextStep = ( step + 1 ) % detail;
-							addFace( new int[] { prevVertexIndices[ step ] , vertexIndices[ step ] , vertexIndices[ nextStep ] , prevVertexIndices[ nextStep ] } , material , smoothCircumference , false );
+							addFace( new int[] { prevVertexIndices[ step ], vertexIndices[ step ], vertexIndices[ nextStep ], prevVertexIndices[ nextStep ] }, material, smoothCircumference, false );
 						}
 					}
 					else
 					{
 						for ( int step = 0 ; step < detail ; step++ )
 						{
-							addFace( new int[] { prevVertexIndices[ 0 ] , vertexIndices[ step ] , vertexIndices[ ( step + 1 ) % detail ] } , material , smoothCircumference , false );
+							addFace( new int[] { prevVertexIndices[ 0 ], vertexIndices[ step ], vertexIndices[ ( step + 1 ) % detail ] }, material, smoothCircumference, false );
 						}
 					}
 				}
@@ -927,7 +845,7 @@ public abstract class Abstract3DObjectBuilder
 				{
 					for ( int step = 0 ; step < detail ; step++ )
 					{
-						addFace( new int[] { prevVertexIndices[ step ] , vertexIndices[ 0 ] , prevVertexIndices[ ( step + 1 ) % detail ] } , material , smoothCircumference , false );
+						addFace( new int[] { prevVertexIndices[ step ], vertexIndices[ 0 ], prevVertexIndices[ ( step + 1 ) % detail ] }, material, smoothCircumference, false );
 					}
 				}
 			}
@@ -956,17 +874,17 @@ public abstract class Abstract3DObjectBuilder
 	 *                              point in the opposite direction.
 	 * @param   smooth              Shape is smooth.
 	 */
-	public void addExtrudedShape( @NotNull final Shape shape , final double flatness , @Nullable final Vector3D extrusion , @NotNull final Matrix3D transform , @Nullable final Material topMaterial , @Nullable final UVMap topMap , final boolean topFlipTexture , @Nullable final Material bottomMaterial , @Nullable final UVMap bottomMap , final boolean bottomFlipTexture , @Nullable final Material sideMaterial , @Nullable final UVMap sideMap , final boolean sideFlipTexture , final boolean hasBackface , final boolean flipNormals , final boolean smooth )
+	public void addExtrudedShape( @NotNull final Shape shape, final double flatness, @Nullable final Vector3D extrusion, @NotNull final Matrix3D transform, @Nullable final Material topMaterial, @Nullable final UVMap topMap, final boolean topFlipTexture, @Nullable final Material bottomMaterial, @Nullable final UVMap bottomMap, final boolean bottomFlipTexture, @Nullable final Material sideMaterial, @Nullable final UVMap sideMap, final boolean sideFlipTexture, final boolean hasBackface, final boolean flipNormals, final boolean smooth )
 	{
 		final double  ex            = ( extrusion != null ) ? extrusion.x : 0.0;
 		final double  ey            = ( extrusion != null ) ? extrusion.y : 0.0;
 		final double  ez            = ( extrusion != null ) ? extrusion.z : 0.0;
-		final boolean hasExtrusion  = !MathTools.almostEqual( ex , 0.0 ) || !MathTools.almostEqual( ey , 0.0 ) || !MathTools.almostEqual( ez , 0.0 );
+		final boolean hasExtrusion  = !MathTools.almostEqual( ex, 0.0 ) || !MathTools.almostEqual( ey, 0.0 ) || !MathTools.almostEqual( ez, 0.0 );
 		final boolean flipExtrusion = flipNormals ^ ( ez < 0.0 );
 
 		if ( hasExtrusion && ( sideMaterial != null ) )
 		{
-			addExtrudedShape( shape , flatness , extrusion , transform , sideMaterial , sideMap , sideFlipTexture , hasBackface , flipNormals , smooth );
+			addExtrudedShape( shape, flatness, extrusion, transform, sideMaterial, sideMap, sideFlipTexture, hasBackface, flipNormals, smooth );
 		}
 
 		if ( ( topMaterial != null ) || ( bottomMaterial != null ) )
@@ -981,18 +899,18 @@ public abstract class Abstract3DObjectBuilder
 
 				if ( bottomMaterial != null )
 				{
-					addQuad( transform.transform( x1 , y1 , 0.0 ) ,
-					         transform.transform( x2 , y1 , 0.0 ) ,
-					         transform.transform( x2 , y2 , 0.0 ) ,
-					         transform.transform( x1 , y2 , 0.0 ) , bottomMaterial , bottomMap , false , hasBackface );
+					addQuad( transform.transform( x1, y1, 0.0 ),
+					         transform.transform( x2, y1, 0.0 ),
+					         transform.transform( x2, y2, 0.0 ),
+					         transform.transform( x1, y2, 0.0 ), bottomMaterial, bottomMap, false, hasBackface );
 				}
 
 				if ( topMaterial != null )
 				{
-					addQuad( transform.transform( ex + x1 , ey + y1 , ez ) ,
-					         transform.transform( ex + x1 , ey + y2 , ez ) ,
-					         transform.transform( ex + x2 , ey + y2 , ez ) ,
-					         transform.transform( ex + x2 , ey + y1 , ez ) , topMaterial , topMap , false , hasBackface );
+					addQuad( transform.transform( ex + x1, ey + y1, ez ),
+					         transform.transform( ex + x1, ey + y2, ez ),
+					         transform.transform( ex + x2, ey + y2, ez ),
+					         transform.transform( ex + x2, ey + y1, ez ), topMaterial, topMap, false, hasBackface );
 				}
 			}
 			else
@@ -1000,18 +918,18 @@ public abstract class Abstract3DObjectBuilder
 				final TriangulatorFactory triangulatorFactory = TriangulatorFactory.newInstance();
 				final Triangulator triangulator = triangulatorFactory.newTriangulator();
 				triangulator.setFlatness( flatness );
-				triangulator.setNormal( Vector3D.INIT.set( 0.0 , 0.0 , flipExtrusion ? -1.0 : 1.0 ) );
+				triangulator.setNormal( Vector3D.INIT.set( 0.0, 0.0, flipExtrusion ? -1.0 : 1.0 ) );
 				final Triangulation triangulation = triangulator.triangulate( shape );
 
 				if ( bottomMaterial != null )
 				{
-					addTriangulation( transform , triangulation , bottomMaterial , bottomMap , bottomFlipTexture , hasBackface , !flipNormals );
+					addTriangulation( transform, triangulation, bottomMaterial, bottomMap, bottomFlipTexture, hasBackface, !flipNormals );
 				}
 
 				if ( topMaterial != null )
 				{
-					final Matrix3D topTransform = hasExtrusion ? transform.plus( transform.rotate( ex , ey , ez ) ) : transform;
-					addTriangulation( topTransform , triangulation , topMaterial , topMap , topFlipTexture , hasBackface , flipNormals );
+					final Matrix3D topTransform = hasExtrusion ? transform.plus( transform.rotate( ex, ey, ez ) ) : transform;
+					addTriangulation( topTransform, triangulation, topMaterial, topMap, topFlipTexture, hasBackface, flipNormals );
 				}
 			}
 		}
@@ -1032,18 +950,18 @@ public abstract class Abstract3DObjectBuilder
 	 *                          point in the opposite direction.
 	 * @param   smooth          Shape is smooth.
 	 */
-	public void addExtrudedShape( @NotNull final Shape shape , final double flatness , @Nullable final Vector3D extrusion , @NotNull final Matrix3D transform , @Nullable final Material material , @Nullable final UVMap uvMap , final boolean flipTexture , final boolean hasBackface , final boolean flipNormals , final boolean smooth )
+	public void addExtrudedShape( @NotNull final Shape shape, final double flatness, @Nullable final Vector3D extrusion, @NotNull final Matrix3D transform, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean hasBackface, final boolean flipNormals, final boolean smooth )
 	{
 		final double ex = ( extrusion != null ) ? extrusion.x : 0.0;
 		final double ey = ( extrusion != null ) ? extrusion.y : 0.0;
 		final double ez = ( extrusion != null ) ? extrusion.z : 0.0;
 
-		final boolean    hasExtrusion  = !MathTools.almostEqual( ex , 0.0 ) || !MathTools.almostEqual( ey , 0.0 ) || !MathTools.almostEqual( ez , 0.0 );
-		final ShapeClass shapeClass    = getShapeClass( shape );
+		final boolean    hasExtrusion  = !MathTools.almostEqual( ex, 0.0 ) || !MathTools.almostEqual( ey, 0.0 ) || !MathTools.almostEqual( ez, 0.0 );
+		final ShapeClass shapeClass    = ShapeTools.getShapeClass( shape );
 		final boolean    flipExtrusion = flipNormals ^ ( ez < 0.0 ) ^ shapeClass.isClockwise();
 		final boolean    twoSided      = hasBackface || ( shapeClass == ShapeClass.COMPLEX );
 
-		final PathIterator pathIterator = shape.getPathIterator( null , flatness );
+		final PathIterator pathIterator = shape.getPathIterator( null, flatness );
 
 		final double[] coords = new double[ 6 ];
 
@@ -1062,12 +980,12 @@ public abstract class Abstract3DObjectBuilder
 					final double shapeX = coords[ 0 ];
 					final double shapeY = coords[ 1 ];
 
-					lastPoint = getVertexIndex( transform.transform( shapeX , shapeY , 0.0 ) );
+					lastPoint = getVertexIndex( transform.transform( shapeX, shapeY, 0.0 ) );
 					moveToPoint = lastPoint;
 
 					if ( hasExtrusion )
 					{
-						lastExtrudedPoint = getVertexIndex( transform.transform( shapeX + ex , shapeY + ey , ez ) );
+						lastExtrudedPoint = getVertexIndex( transform.transform( shapeX + ex, shapeY + ey, ez ) );
 						moveToExtrudedPoint = lastExtrudedPoint;
 					}
 					break;
@@ -1078,28 +996,28 @@ public abstract class Abstract3DObjectBuilder
 					final double shapeX = coords[ 0 ];
 					final double shapeY = coords[ 1 ];
 
-					final int point = getVertexIndex( transform.transform( shapeX , shapeY , 0.0 ) );
+					final int point = getVertexIndex( transform.transform( shapeX, shapeY, 0.0 ) );
 
 					if ( ( lastPoint >= 0 ) && ( lastPoint != point ) )
 					{
 						if ( hasExtrusion )
 						{
-							final int extrudedPoint = getVertexIndex( transform.transform( shapeX + ex , shapeY + ey , ez ) );
+							final int extrudedPoint = getVertexIndex( transform.transform( shapeX + ex, shapeY + ey, ez ) );
 
 							if ( flipExtrusion )
 							{
-								addFace( new int[] { point , extrudedPoint , lastExtrudedPoint , lastPoint} , material , uvMap , flipTexture , smooth , twoSided );
+								addFace( new int[] { point, extrudedPoint, lastExtrudedPoint, lastPoint}, material, uvMap, flipTexture, smooth, twoSided );
 							}
 							else
 							{
-								addFace( new int[] { lastPoint , lastExtrudedPoint , extrudedPoint , point } , material , uvMap , flipTexture , smooth , twoSided );
+								addFace( new int[] { lastPoint, lastExtrudedPoint, extrudedPoint, point }, material, uvMap, flipTexture, smooth, twoSided );
 							}
 
 							lastExtrudedPoint = extrudedPoint;
 						}
 						else /*if ( !caps )*/
 						{
-							addFace( new int[] { lastPoint , point } , material , uvMap , flipTexture , false , true );
+							addFace( new int[] { lastPoint, point }, material, uvMap, flipTexture, false, true );
 						}
 
 						lastPoint = point;
@@ -1115,17 +1033,17 @@ public abstract class Abstract3DObjectBuilder
 						{
 							if ( flipExtrusion )
 							{
-								addFace( new int[] { moveToPoint , moveToExtrudedPoint , lastExtrudedPoint , lastPoint } , material , uvMap , flipTexture , smooth , twoSided );
+								addFace( new int[] { moveToPoint, moveToExtrudedPoint, lastExtrudedPoint, lastPoint }, material, uvMap, flipTexture, smooth, twoSided );
 							}
 							else
 							{
-								addFace( new int[] { lastPoint , lastExtrudedPoint , moveToExtrudedPoint , moveToPoint } , material , uvMap , flipTexture , smooth , twoSided );
+								addFace( new int[] { lastPoint, lastExtrudedPoint, moveToExtrudedPoint, moveToPoint }, material, uvMap, flipTexture, smooth, twoSided );
 							}
 							lastExtrudedPoint = moveToExtrudedPoint;
 						}
 						else /*if ( !caps )*/
 						{
-							addFace( new int[] { lastPoint , moveToPoint } , material , uvMap , flipTexture , false , true );
+							addFace( new int[] { lastPoint, moveToPoint }, material, uvMap, flipTexture, false, true );
 						}
 					}
 
@@ -1150,7 +1068,7 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   flipTexture     Whether the bottom texture direction is flipped.
 	 * @param   twoSided        Resulting face will be two-sided (has backface).
 	 */
-	public void addFilledShape2D( @NotNull final Matrix3D transform , @NotNull final Shape shape , @NotNull final Vector3D shapeNormal , final double flatness , @Nullable final Material material , @Nullable final UVMap uvMap , final boolean flipTexture , final boolean twoSided )
+	public void addFilledShape2D( @NotNull final Matrix3D transform, @NotNull final Shape shape, @NotNull final Vector3D shapeNormal, final double flatness, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided )
 	{
 		final TriangulatorFactory triangulatorFactory = TriangulatorFactory.newInstance();
 
@@ -1158,7 +1076,7 @@ public abstract class Abstract3DObjectBuilder
 		triangulator.setFlatness( flatness );
 		triangulator.setNormal( shapeNormal );
 
-		addFilledShape2D( transform , shape , triangulator , material , uvMap , flipTexture , twoSided );
+		addFilledShape2D( transform, shape, triangulator, material, uvMap, flipTexture, twoSided );
 	}
 
 	/**
@@ -1172,11 +1090,11 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   flipTexture     Whether the bottom texture direction is flipped.
 	 * @param   twoSided        Resulting face will be two-sided (has backface).
 	 */
-	public void addFilledShape2D( @NotNull final Matrix3D transform , @NotNull final Shape shape , @NotNull final Triangulator triangulator , @Nullable final Material material , @Nullable final UVMap uvMap , final boolean flipTexture , final boolean twoSided )
+	public void addFilledShape2D( @NotNull final Matrix3D transform, @NotNull final Shape shape, @NotNull final Triangulator triangulator, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided )
 	{
 		final Vector3D normal = triangulator.getNormal();
 
-		if ( ( shape instanceof Rectangle2D ) && MathTools.almostEqual( Math.abs( normal.z ) , 1.0 ) )
+		if ( ( shape instanceof Rectangle2D ) && MathTools.almostEqual( Math.abs( normal.z ), 1.0 ) )
 		{
 			final Rectangle2D rectangle = (Rectangle2D)shape;
 			final double x1 = rectangle.getMinX();
@@ -1186,23 +1104,23 @@ public abstract class Abstract3DObjectBuilder
 
 			if ( normal.z > 0.0 )
 			{
-				addQuad( transform.transform( x1 , y1 , 0.0 ) ,
-				         transform.transform( x1 , y2 , 0.0 ) ,
-				         transform.transform( x2 , y2 , 0.0 ) ,
-				         transform.transform( x2 , y1 , 0.0 ) , material , uvMap , false , twoSided );
+				addQuad( transform.transform( x1, y1, 0.0 ),
+				         transform.transform( x1, y2, 0.0 ),
+				         transform.transform( x2, y2, 0.0 ),
+				         transform.transform( x2, y1, 0.0 ), material, uvMap, false, twoSided );
 			}
 			else
 			{
-				addQuad( transform.transform( x1 , y1 , 0.0 ) ,
-				         transform.transform( x2 , y1 , 0.0 ) ,
-				         transform.transform( x2 , y2 , 0.0 ) ,
-				         transform.transform( x1 , y2 , 0.0 ) , material , uvMap , false , twoSided );
+				addQuad( transform.transform( x1, y1, 0.0 ),
+				         transform.transform( x2, y1, 0.0 ),
+				         transform.transform( x2, y2, 0.0 ),
+				         transform.transform( x1, y2, 0.0 ), material, uvMap, false, twoSided );
 			}
 		}
 		else
 		{
 			final Triangulation triangulation = triangulator.triangulate( shape );
-			addTriangulation( transform , triangulation , material , uvMap , flipTexture , twoSided , false );
+			addTriangulation( transform, triangulation, material, uvMap, flipTexture, twoSided, false );
 		}
 	}
 
@@ -1219,7 +1137,7 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   flipTexture     Whether the bottom texture direction is flipped.
 	 * @param   twoSided        Resulting face will be two-sided (has backface).
 	 */
-	public void addFilledShape2D( @NotNull final Matrix3D transform , @NotNull final Shape positive , @NotNull final Iterable<? extends Shape> negative , @NotNull final Vector3D shapeNormal , final double flatness , @Nullable final Material material , @Nullable final UVMap uvMap , final boolean flipTexture , final boolean twoSided )
+	public void addFilledShape2D( @NotNull final Matrix3D transform, @NotNull final Shape positive, @NotNull final Iterable<? extends Shape> negative, @NotNull final Vector3D shapeNormal, final double flatness, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided )
 	{
 		final TriangulatorFactory triangulatorFactory = TriangulatorFactory.newInstance();
 
@@ -1227,8 +1145,8 @@ public abstract class Abstract3DObjectBuilder
 		triangulator.setFlatness( flatness );
 		triangulator.setNormal( shapeNormal );
 
-		final Triangulation triangulation = triangulator.triangulate( positive , negative );
-		addTriangulation( transform , triangulation , material , uvMap , flipTexture , twoSided , false );
+		final Triangulation triangulation = triangulator.triangulate( positive, negative );
+		addTriangulation( transform, triangulation, material, uvMap, flipTexture, twoSided, false );
 	}
 
 	/**
@@ -1242,7 +1160,7 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   twoSided        Resulting face will be two-sided (has backface).
 	 * @param   flipNormals     If set, flip normals.
 	 */
-	private void addTriangulation( final Matrix3D transform , final Triangulation triangulation  , final Material material , final UVMap uvMap , final boolean flipTexture , final boolean twoSided , final boolean flipNormals )
+	private void addTriangulation( final Matrix3D transform, final Triangulation triangulation , final Material material, final UVMap uvMap, final boolean flipTexture, final boolean twoSided, final boolean flipNormals )
 	{
 		final List<Vector3D> vertices = triangulation.getVertices( transform );
 
@@ -1258,360 +1176,18 @@ public abstract class Abstract3DObjectBuilder
 		{
 			if ( flipNormals )
 			{
-				triangleVertexIndices[ 0 ] = vertexIndices[ triangle[ 2 ] ];
-				triangleVertexIndices[ 1 ] = vertexIndices[ triangle[ 1 ] ];
-				triangleVertexIndices[ 2 ] = vertexIndices[ triangle[ 0 ] ];
-			}
-			else
-			{
 				triangleVertexIndices[ 0 ] = vertexIndices[ triangle[ 0 ] ];
 				triangleVertexIndices[ 1 ] = vertexIndices[ triangle[ 1 ] ];
 				triangleVertexIndices[ 2 ] = vertexIndices[ triangle[ 2 ] ];
 			}
-
-			addFace( triangleVertexIndices , material , uvMap , flipTexture , false , twoSided );
-		}
-	}
-
-	/**
-	 * Flatten shape.
-	 *
-	 * @param   shape       {@link Shape} to flatten.
-	 * @param   flatness    Flatness to apply (<code>-1</code> for normal path).
-	 *
-	 * @return  <code>true</code> if the specified <code>shape</code> contains
-	 *          at least one curve (potentially, that is).
-	 *
-	 * @throws  NullPointerException if a parameter is <code>null</code>.
-	 */
-	public static Shape flatten( @NotNull final Shape shape , final double flatness )
-	{
-		final Shape result;
-
-		if ( containsCurves( shape ) )
-		{
-			final PathIterator it = shape.getPathIterator( null , flatness );
-			final Path2D.Float path = new Path2D.Float( it.getWindingRule() );
-			path.append( it , false );
-			result = path;
-		}
-		else
-		{
-			result = shape;
-		}
-
-		return result;
-	}
-
-	/**
-	 * Determine if {@link Shape} contains any curves.
-	 *
-	 * @param   shape   {@link Shape} to test.
-	 *
-	 * @return  <code>true</code> if the specified <code>shape</code> contains
-	 *          at least one curve (potentially, that is).
-	 *
-	 * @throws  NullPointerException if a parameter is <code>null</code>.
-	 */
-	public static boolean containsCurves( @NotNull final Shape shape )
-	{
-		boolean result;
-
-		if ( ( shape instanceof Line2D ) ||
-		     ( shape instanceof Polygon ) ||
-		     ( shape instanceof Rectangle2D ) )
-		{
-			result = false;
-		}
-		else if ( ( shape instanceof Arc2D ) ||
-		          ( shape instanceof CubicCurve2D ) ||
-		          ( shape instanceof Ellipse2D ) ||
-		          ( shape instanceof QuadCurve2D ) ||
-		          ( shape instanceof RoundRectangle2D ) )
-		{
-			result = true;
-		}
-		else
-		{
-			result = false;
-
-			final float[] coords = new float[ 6 ];
-			 for ( PathIterator i = shape.getPathIterator( null ) ; !result && !i.isDone() ; i.next() )
-			{
-				switch ( i.currentSegment( coords ) )
-				{
-					case PathIterator.SEG_CUBICTO :
-					case PathIterator.SEG_QUADTO :
-						result = true;
-				}
-			}
-		}
-
-		return result;
-	}
-
-	/**
-	 * Get shape class.
-	 *
-	 * @param   shape   Shape to classify.
-	 *
-	 * @return  {@link ShapeClass}
-	 *
-	 * @throws  NullPointerException if a parameter is <code>null</code>.
-	 */
-	@NotNull
-	public static ShapeClass getShapeClass( @NotNull final Shape shape )
-	{
-		final ShapeClass result;
-
-		if ( shape instanceof Rectangle2D )
-		{
-			final Rectangle2D rectangle = (Rectangle2D)shape;
-
-			if ( ( rectangle.getWidth() <= 0.0 ) || ( rectangle.getHeight() <= 0.0 ) )
-			{
-				result = ShapeClass.VOID;
-			}
 			else
 			{
-				result = ShapeClass.CCW_QUAD;
+				triangleVertexIndices[ 0 ] = vertexIndices[ triangle[ 2 ] ];
+				triangleVertexIndices[ 1 ] = vertexIndices[ triangle[ 1 ] ];
+				triangleVertexIndices[ 2 ] = vertexIndices[ triangle[ 0 ] ];
 			}
+
+			addFace( triangleVertexIndices, material, uvMap, flipTexture, false, twoSided );
 		}
-		else if ( shape instanceof Line2D )
-		{
-			final Line2D line = (Line2D)shape;
-
-			result = ( ( line.getX1() == line.getX2() ) && ( line.getY1() == line.getY2() ) ) ? ShapeClass.VOID :  ShapeClass.LINE_SEGMENT;
-		}
-		else if ( shape instanceof Arc2D )
-		{
-			final Arc2D arc = (Arc2D)shape;
-
-			if ( ( arc.getWidth() <= 0.0 ) || ( arc.getHeight() <= 0.0 ) )
-			{
-				result = ShapeClass.VOID;
-			}
-			else if ( arc.getArcType() == Arc2D.OPEN )
-			{
-				result = ShapeClass.OPEN_PATH;
-			}
-			else
-			{
-				result = ( arc.getAngleExtent() > 0.0 ) ? ShapeClass.CW_CONVEX : ShapeClass.CCW_CONVEX;
-			}
-		}
-		else if ( ( shape instanceof Ellipse2D ) || ( shape instanceof RoundRectangle2D ) )
-		{
-			final RectangularShape rectangle = (RectangularShape)shape;
-
-			if ( ( rectangle.getWidth() <= 0.0 ) || ( rectangle.getHeight() <= 0.0 ) )
-			{
-				result = ShapeClass.VOID;
-			}
-			else
-			{
-				result = ShapeClass.CCW_CONVEX;
-			}
-		}
-		else
-		{
-			result = getShapeClass( shape.getPathIterator( null ) );
-		}
-
-		return result;
-	}
-
-	/**
-	 * Get shape class from {@link PathIterator}. The iterator should be at
-	 * the initial position in order to get a useful classification.
-	 *
-	 * @param   pathIterator    {@link PathIterator} to use.
-	 *
-	 * @return  {@link ShapeClass}.
-	 *
-	 * @throws  NullPointerException if any parameter is <code>null</code>.
-	 */
-	@NotNull
-	public static ShapeClass getShapeClass( @NotNull final PathIterator pathIterator )
-	{
-		final ShapeClass result;
-
-		int     numberOfSegments = 0;     /* number of non-void segments */
-		boolean curved           = false;
-		boolean positiveAngles   = false; /* encountered positive angles */
-		boolean negativeAngles   = false; /* encountered negative angles */
-		boolean multipleSubPaths = false; /* encountered multiple subpaths */
-
-		final double[] coords = new double[ 6 ];
-
-		double moveX = 0.0;
-		double moveY = 0.0;
-		double previousX = 0.0;
-		double previousY = 0.0;
-		double currentX = 0.0;
-		double currentY = 0.0;
-		boolean needFirst = true;
-		double firstX = 0.0;
-		double firstY = 0.0;
-		double totalAngle = 0.0; /* should finish at 2PI (counter-clockwise) or -2PI (clockwise) for closed non-self-intersecting shapes */
-
-		for ( ; !multipleSubPaths && !pathIterator.isDone() ; pathIterator.next() )
-		{
-			final int segmentType = pathIterator.currentSegment( coords );
-			int numCoords = 2;
-
-			switch ( segmentType )
-			{
-				case PathIterator.SEG_MOVETO :
-					multipleSubPaths = ( numberOfSegments > 0 );
-					moveX = previousX = currentX = coords[ 0 ];
-					moveY = previousY = currentY = coords[ 1 ];
-					needFirst = true;
-					break;
-
-				case PathIterator.SEG_CUBICTO :
-					numCoords += 2;
-					//noinspection fallthrough
-				case PathIterator.SEG_QUADTO :
-					numCoords += 2;
-					curved = true;
-					//noinspection fallthrough
-				case PathIterator.SEG_LINETO :
-					for ( int i = 0 ; i < numCoords ; i += 2 )
-					{
-						final double nextX = coords[ i ];
-						final double nextY = coords[ i + 1 ];
-
-						if ( ( nextX != currentX ) || ( nextY != currentY ) )
-						{
-							final double angle = getAngle( currentX - previousX , currentY - previousY , nextX - currentX , nextY - currentY );
-							totalAngle += angle;
-							positiveAngles |= ( angle > 0.0 );
-							negativeAngles |= ( angle < 0.0 );
-
-							if ( needFirst )
-							{
-								firstX = nextX;
-								firstY = nextY;
-								needFirst = false;
-							}
-
-							previousX = currentX;
-							previousY = currentY;
-							currentX = nextX;
-							currentY = nextY;
-							numberOfSegments++;
-						}
-					}
-					break;
-
-				case PathIterator.SEG_CLOSE :
-					final double firstAngle = getAngle( moveX - currentX , moveY - currentY , firstX - moveX , firstY - moveY );
-					totalAngle += firstAngle;
-					positiveAngles |= ( firstAngle > 0.0 );
-					negativeAngles |= ( firstAngle < 0.0 );
-
-					if ( ( moveX != currentX ) || ( moveY != currentY ) )
-					{
-						final double lastAngle = getAngle( currentX - previousX , currentY - previousY , moveX - currentX , moveY - currentY );
-						totalAngle += lastAngle;
-						positiveAngles |= ( lastAngle > 0.0 );
-						negativeAngles |= ( lastAngle < 0.0 );
-
-						previousX = currentX;
-						previousY = currentY;
-						currentX = moveX;
-						currentY = moveY;
-						numberOfSegments++;
-					}
-					break;
-
-				default :
-					throw new AssertionError( segmentType + "?" );
-			}
-		}
-
-		if ( numberOfSegments == 0 )
-		{
-			result = ShapeClass.VOID;
-		}
-		else if ( multipleSubPaths )
-		{
-			result = ShapeClass.COMPLEX;
-		}
-		else if ( numberOfSegments == 1 )
-		{
-			result = ShapeClass.LINE_SEGMENT;
-		}
-		else
-		{
-			final boolean closed = ( currentX == moveX ) && ( currentY == moveY );
-			if ( !closed )
-			{
-				result = ShapeClass.OPEN_PATH;
-			}
-			else
-			{
-				if ( positiveAngles && negativeAngles )
-				{
-					result = ( totalAngle < 0.0 ) ? ShapeClass.CW_CONCAVE : ShapeClass.CCW_CONCAVE;
-				}
-				else if ( !curved && ( numberOfSegments == 3 ) )
-				{
-					result = negativeAngles ? ShapeClass.CW_TRIANGLE : ShapeClass.CCW_TRIANGLE;
-				}
-				else if ( !curved && ( numberOfSegments == 4 ) )
-				{
-					result = negativeAngles ? ShapeClass.CW_QUAD : ShapeClass.CCW_QUAD;
-				}
-				else
-				{
-					result = negativeAngles ? ShapeClass.CW_CONVEX : ShapeClass.CCW_CONVEX;
-				}
-			}
-		}
-
-		return result;
-	}
-
-	/**
-	 * Get angle between two subsequent segments of a path.
-	 *
-	 * @param   seg1x   First segment delta X.
-	 * @param   seg1y   First segment delta Y.
-	 * @param   seg2x   Second segment delta X.
-	 * @param   seg2y   Second segment delta Y.
-	 *
-	 * @return  Angle between segments in radians (positive if angle is
-	 *          counter-clockwise, negative if clockwise, <code>0</code> if
-	 *          colinear).
-	 */
-	private static double getAngle( final double seg1x , final double seg1y , final double seg2x , final double seg2y )
-	{
-		final double result;
-
-		final double normal = seg2y * seg1x - seg2x * seg1y;
-		if ( normal < -0.001 )
-		{
-			final double dot     = seg1x * seg2x + seg1y * seg2y;
-			final double prevLen = Math.sqrt( seg1x * seg1x + seg1y * seg1y );
-			final double nextLen = Math.sqrt( seg2x * seg2x + seg2y * seg2y );
-
-			result = -Math.acos( dot / ( prevLen * nextLen ) );
-		}
-		else if ( normal > 0.001 )
-		{
-			final double dot     = seg1x * seg2x + seg1y * seg2y;
-			final double prevLen = Math.sqrt( seg1x * seg1x + seg1y * seg1y );
-			final double nextLen = Math.sqrt( seg2x * seg2x + seg2y * seg2y );
-
-			result = Math.acos( dot / ( prevLen * nextLen ) );
-		}
-		else
-		{
-			result = 0.0;
-		}
-
-		return result;
 	}
 }
