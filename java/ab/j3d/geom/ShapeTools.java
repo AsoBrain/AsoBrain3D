@@ -21,7 +21,10 @@ package ab.j3d.geom;
 
 import java.awt.*;
 import java.awt.geom.*;
+import java.text.*;
+import java.util.*;
 
+import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -33,6 +36,11 @@ import org.jetbrains.annotations.*;
 public class ShapeTools
 {
 	/**
+	 * PI / 2.
+	 */
+	public static final double HALF_PI = Math.PI / 2.0;
+
+	/**
 	 * Shape classes.
 	 */
 	public enum ShapeClass
@@ -40,57 +48,57 @@ public class ShapeTools
 		/**
 		 * Nothingness.
 		 */
-		VOID ,
+		VOID,
 
 		/**
 		 * Line segment.
 		 */
-		LINE_SEGMENT ,
+		LINE_SEGMENT,
 
 		/**
 		 * Open path.
 		 */
-		OPEN_PATH ,
+		OPEN_PATH,
 
 		/**
 		 * Triangle with clockwise vertex order.
 		 */
-		CW_TRIANGLE ,
+		CW_TRIANGLE,
 
 		/**
 		 * Triangle with counter-clockwise vertex order.
 		 */
-		CCW_TRIANGLE ,
+		CCW_TRIANGLE,
 
 		/**
 		 * Quad with clockwise vertex order.
 		 */
-		CW_QUAD ,
+		CW_QUAD,
 
 		/**
 		 * Quad with counter-clockwise vertex order.
 		 */
-		CCW_QUAD ,
+		CCW_QUAD,
 
 		/**
 		 * Convex shape with clockwise vertex order.
 		 */
-		CW_CONVEX ,
+		CW_CONVEX,
 
 		/**
 		 * Convex shape with counter-clockwise vertex order.
 		 */
-		CCW_CONVEX ,
+		CCW_CONVEX,
 
 		/**
 		 * Concave shape with clockwise vertex order.
 		 */
-		CW_CONCAVE ,
+		CW_CONCAVE,
 
 		/**
 		 * Concave shape with counter-clockwise vertex order.
 		 */
-		CCW_CONCAVE ,
+		CCW_CONCAVE,
 
 		/**
 		 * Complex shape with possible self-intersection or multiple sub-paths.
@@ -137,13 +145,13 @@ public class ShapeTools
 	 *
 	 * @throws  NullPointerException if a parameter is <code>null</code>.
 	 */
-	public static Shape flatten( @NotNull final Shape shape , final double flatness )
+	public static Shape flatten( @NotNull final Shape shape, final double flatness )
 	{
 		final Shape result;
 
 		if ( containsCurves( shape ) )
 		{
-			final PathIterator it = shape.getPathIterator( null , flatness );
+			final PathIterator it = shape.getPathIterator( null, flatness );
 			final Path2D.Float path = new Path2D.Float( it.getWindingRule() );
 			path.append( it, false );
 			result = path;
@@ -317,8 +325,12 @@ public class ShapeTools
 			{
 				case PathIterator.SEG_MOVETO :
 					multipleSubPaths = ( numberOfSegments > 0 );
-					moveX = previousX = currentX = coords[ 0 ];
-					moveY = previousY = currentY = coords[ 1 ];
+					moveX = coords[ 0 ];
+					moveY = coords[ 1 ];
+					previousX = moveX;
+					previousY = moveY;
+					currentX = moveX;
+					currentY = moveY;
 					needFirst = true;
 					break;
 
@@ -428,6 +440,189 @@ public class ShapeTools
 	}
 
 	/**
+	 * This utility-method calculates an approximation of an arc segment or
+	 * semicircle using quadratic B&eacute;zier curves and adds it to a
+	 * {@link Path2D}.
+	 *
+	 * @param   path        Path to append arc to.
+	 * @param   start       Start point of arc.
+	 * @param   end         End point of arc.
+	 * @param   angle       Included angle in radians.
+	 */
+	public static void appendArcCurves( final Path2D path, final Point2D start, final Point2D end, final double angle )
+	{
+		final double x1 = start.getX();
+		final double y1 = start.getY();
+		final double x2 = end.getX();
+		final double y2 = end.getY();
+
+		final double chordDeltaX = x2 - x1;
+		final double chordDeltaY = y2 - y1;
+		final double chordMidX = ( x1 + x2 ) / 2.0;
+		final double chordMidY = ( y1 + y2 ) / 2.0;
+		final double chordLength = Math.sqrt( chordDeltaX * chordDeltaX + chordDeltaY * chordDeltaY );
+
+		final double halfChordLength = chordLength / 2.0;
+		final double signedArcHeight = halfChordLength * Math.tan( angle / 4.0 );
+		final double signedRadius = ( halfChordLength * halfChordLength + signedArcHeight * signedArcHeight ) / ( 2.0 * signedArcHeight );
+		final double radius = Math.abs( signedRadius );
+		final double tanApothem = ( signedRadius - signedArcHeight ) / chordLength;
+		final Point2D center = new Point2D.Double( chordMidX - chordDeltaY * tanApothem, chordMidY + chordDeltaX * tanApothem );
+
+		appendArcCurves( path, center, radius, end, angle );
+	}
+
+	/**
+	 * This utility-method calculates an approximation of an arc segment or
+	 * semicircle using quadratic B&eacute;zier curves and adds it to a
+	 * {@link Path2D}.
+	 * <p />
+	 * The implementation is based on {@link ArcIterator} (most
+	 * magic is in {@link ArcIterator#btan}), and information that
+	 * was found at  <a href='http://www.afralisp.com/lisp/Bulges1.htm'>http://www.afralisp.com/lisp/Bulges1.htm</a>.
+	 *
+	 * @param   path        Path to append arc to.
+	 * @param   center      Center of circle on which the arc is defined.
+	 * @param   radius      Radius of circle on which the arc is defined.
+	 * @param   end         End point of arc.
+	 * @param   extend      Included angle of extend (in radians, may be negative).
+	 */
+	public static void appendArcCurves( final Path2D path, final Point2D center, final double radius, final Point2D end, final double extend  )
+	{
+		final int segmentCount = (int)Math.ceil( Math.abs( extend ) / HALF_PI );
+		if ( segmentCount > 0 )
+		{
+			final double angleIncrement = extend / (double)segmentCount;
+
+			final double bezierSegmentLength = 4.0 / 3.0 * Math.sin( angleIncrement / 2.0 ) / ( 1.0 + Math.cos( angleIncrement / 2.0  ) );
+			if ( bezierSegmentLength != 0.0 )
+			{
+				double currentAngle = Math.atan2( end.getY() - center.getY(), end.getX() - center.getX() ) - extend;
+				double cos1 = Math.cos( currentAngle ) * radius;
+				double sin1 = Math.sin( currentAngle ) * radius;
+
+				for ( int i = 0 ; i < segmentCount ; i++ )
+				{
+					currentAngle += angleIncrement;
+					final double cos2 = Math.cos( currentAngle ) * radius;
+					final double sin2 = Math.sin( currentAngle ) * radius;
+
+					final double p1x = center.getX() + cos1 - bezierSegmentLength * sin1;
+					final double p1y = center.getY() + sin1 + bezierSegmentLength * cos1;
+					final double p2x = center.getX() + cos2 + bezierSegmentLength * sin2;
+					final double p2y = center.getY() + sin2 - bezierSegmentLength * cos2;
+					final double p3x = center.getX() + cos2;
+					final double p3y = center.getY() + sin2;
+
+					path.curveTo( p1x, p1y, p2x, p2y, p3x, p3y );
+
+					cos1 = cos2;
+					sin1 = sin2;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Convert {@link Shape} to a friendly but short string format.
+	 *
+	 * @param   shape   {@link Shape} to convert.
+	 *
+	 * @return  Friendly but short string.
+	 */
+	public static String toShortFriendlyString( final Shape shape )
+	{
+		final String result;
+
+		final PathIterator pathIterator = shape.getPathIterator( null );
+
+		if ( pathIterator.isDone() )
+		{
+			result = "empty path";
+		}
+		else
+		{
+			final StringBuilder out = new StringBuilder();
+
+			final NumberFormat df = TextTools.getNumberFormat( Locale.US, 0, 2, false );
+
+			final double[] coords = new double[ 6 ];
+
+			for ( ; !pathIterator.isDone() ; pathIterator.next() )
+			{
+				if ( out.length() == 0 )
+				{
+					out.append( "path { " );
+				}
+				else
+				{
+					out.append( ", " );
+				}
+
+				switch ( pathIterator.currentSegment( coords ) )
+				{
+					case PathIterator.SEG_LINETO:
+						out.append( "LINE[" );
+						out.append( df.format( coords[ 0 ] ) );
+						out.append( ',' );
+						out.append( df.format( coords[ 1 ] ) );
+						out.append( ']' );
+						break;
+
+					case PathIterator.SEG_MOVETO:
+						out.append( "START[" );
+						out.append( df.format( coords[ 0 ] ) );
+						out.append( ',' );
+						out.append( df.format( coords[ 1 ] ) );
+						out.append( ']' );
+						break;
+
+					case PathIterator.SEG_CLOSE:
+						out.append( "CLOSE" );
+						break;
+
+					case PathIterator.SEG_QUADTO:
+						out.append( "QUAD[" );
+						out.append( df.format( coords[ 2 ] ) );
+						out.append( ',' );
+						out.append( df.format( coords[ 3 ] ) );
+						out.append( "](p1=[" );
+						out.append( df.format( coords[ 0 ] ) );
+						out.append( ',' );
+						out.append( df.format( coords[ 1 ] ) );
+						out.append( "])" );
+						break;
+
+					case PathIterator.SEG_CUBICTO:
+						out.append( "CUBIC[" );
+						out.append( df.format( coords[ 4 ] ) );
+						out.append( ',' );
+						out.append( df.format( coords[ 5 ] ) );
+						out.append( "](p1=[" );
+						out.append( df.format( coords[ 0 ] ) );
+						out.append( ',' );
+						out.append( df.format( coords[ 1 ] ) );
+						out.append( "],p2=[" );
+						out.append( df.format( coords[ 2 ] ) );
+						out.append( ',' );
+						out.append( df.format( coords[ 3 ] ) );
+						out.append( "])" );
+						break;
+
+					default :
+						out.append( "unknown segment" );
+				}
+			}
+
+			out.append( " }" );
+
+			result = out.toString();
+		}
+
+		return result;
+	}
+
+	/**
 	 * Get angle between two subsequent segments of a path.
 	 *
 	 * @param   seg1x   First segment delta X.
@@ -467,7 +662,6 @@ public class ShapeTools
 
 		return result;
 	}
-
 
 	/**
 	 * Utility/Application class is not supposed to be instantiated.
