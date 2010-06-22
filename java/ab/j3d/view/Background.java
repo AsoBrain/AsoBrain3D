@@ -67,16 +67,28 @@ public class Background
 	 *
 	 * @return  Background.
 	 */
-	public static Background createGradient( final Color... colors )
+	public static Background createGradient( @NotNull final Color... colors )
 	{
+		if ( colors.length == 0 )
+		{
+			throw new IllegalArgumentException( "no colors specified" );
+		}
+
 		final Background background = new Background();
 		background.setGradient( Arrays.asList( colors ) );
 		return background;
 	}
 
+	/**
+	 * Solid background color.
+	 */
 	@NotNull
 	private Color _color;
 
+	/**
+	 * Up to four gradient background colors, from bottom left,
+	 * counter-clockwise. Emtpy for no gradient.
+	 */
 	@NotNull
 	private List<Color> _gradient;
 
@@ -100,23 +112,49 @@ public class Background
 		setGradient( background.getGradient() );
 	}
 
+	/**
+	 * Returns the background color.
+	 *
+	 * @return  Background color.
+	 */
 	@NotNull
 	public Color getColor()
 	{
 		return _color;
 	}
 
+	/**
+	 * Sets the background color.
+	 *
+	 * @param   color   Background color.
+	 */
 	public void setColor( @NotNull final Color color )
 	{
 		_color = color;
 	}
 
+	/**
+	 * Returns up to four colors used for a gradient background. Colors are
+	 * specified starting from the bottom left corner in counter-clockwise
+	 * order. If fewer than four colors are specified, the specified sequence
+	 * of colors is repeated.
+	 *
+	 * @return  Gradient colors; empty for no gradient.
+	 */
 	@NotNull
 	public List<Color> getGradient()
 	{
 		return Collections.unmodifiableList( _gradient );
 	}
 
+	/**
+	 * Sets up to four colors used for a gradient background. Colors are
+	 * specified starting from the bottom left corner in counter-clockwise
+	 * order. If fewer than four colors are specified, the specified sequence
+	 * of colors is repeated.
+	 *
+	 * @param   gradient    Gradient to be set; empty to disable the gradient.
+	 */
 	public void setGradient( @NotNull final List<Color> gradient )
 	{
 		_gradient = new ArrayList<Color>( gradient );
