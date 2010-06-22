@@ -159,4 +159,22 @@ public class Background
 	{
 		_gradient = new ArrayList<Color>( gradient );
 	}
+
+	@Override
+	public boolean equals( final Object obj )
+	{
+		boolean result = false;
+		if ( obj instanceof Background )
+		{
+			final Background other = (Background)obj;
+			result = _color.equals( other._color ) && _gradient.equals( other._gradient );
+		}
+		return result;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return _color.hashCode() ^ _gradient.hashCode();
+	}
 }
