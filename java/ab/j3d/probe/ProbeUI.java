@@ -1,54 +1,38 @@
-/*
- * $Id$
+/* $Id$
+ * ====================================================================
+ * (C) Copyright Numdata BV 2009-2010
  *
- * (C) Copyright Numdata BV 2009-2009 - All Rights Reserved
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This software may not be used, copied, modified, or distributed in any
- * form without express permission from Numdata BV. Please contact Numdata BV
- * for license information.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d.probe;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.event.ActionEvent;
-import java.util.Arrays;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
 import java.util.List;
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.border.BevelBorder;
+import javax.swing.*;
+import javax.swing.border.*;
 
-import ab.j3d.MapTools;
-import ab.j3d.Material;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.control.ControlInputEvent;
-import ab.j3d.control.FromToCameraControl2;
-import ab.j3d.geom.PlanarUVMap;
-import ab.j3d.model.Light3D;
-import ab.j3d.model.Object3DBuilder;
-import ab.j3d.model.Scene;
-import ab.j3d.model.Sphere3D;
-import ab.j3d.view.ProjectionPolicy;
-import ab.j3d.view.RenderEngine;
-import ab.j3d.view.RenderingPolicy;
-import ab.j3d.view.View3D;
-import ab.j3d.view.jogl.JOGLCapabilities;
-import ab.j3d.view.jogl.JOGLConfiguration;
-import ab.j3d.view.jogl.JOGLEngine;
-import ab.j3d.view.jogl.JOGLView;
-
-import com.numdata.oss.ui.ImageTools;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.geom.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+import ab.j3d.view.jogl.*;
+import com.numdata.oss.ui.*;
 
 /**
  * A user interface for testing 3D capabilities.
@@ -289,7 +273,7 @@ public class ProbeUI
 
 		protected void configureView( final JOGLView view )
 		{
-			view.setBackground( Color.WHITE );
+			view.setBackground( Background.createSolid( Color.WHITE ) );
 			view.setFrontClipDistance( 0.01 );
 			view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
 			view.setRenderingPolicy( RenderingPolicy.SOLID );
@@ -331,7 +315,7 @@ public class ProbeUI
 
 		protected void configureView( final JOGLView view )
 		{
-			view.setBackground( Color.BLACK );
+			view.setBackground( Background.createSolid( Color.BLACK ) );
 			view.setFrontClipDistance( 0.01 );
 			view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
 			view.setRenderingPolicy( RenderingPolicy.SOLID );
@@ -481,7 +465,7 @@ public class ProbeUI
 
 		protected void configureView( final JOGLView view )
 		{
-			view.setBackground( Color.BLACK );
+			view.setBackground( Background.createSolid( Color.BLACK ) );
 			view.setFrontClipDistance( 0.01 );
 			view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
 			view.setRenderingPolicy( RenderingPolicy.SOLID );

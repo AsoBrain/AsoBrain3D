@@ -19,35 +19,18 @@
  */
 package ab.j3d.view;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.awt.*;
+import java.beans.*;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
-import javax.swing.Action;
-import javax.swing.JLabel;
-import javax.swing.JToolBar;
+import javax.swing.*;
 
-import org.jetbrains.annotations.NotNull;
-
-import ab.j3d.Matrix3D;
-import ab.j3d.control.CameraControl;
-import ab.j3d.control.Control;
-import ab.j3d.model.Camera3D;
-import ab.j3d.model.Scene;
-import ab.j3d.model.SceneUpdateEvent;
-import ab.j3d.model.SceneUpdateListener;
-import ab.j3d.model.Transform3D;
-
-import com.numdata.oss.event.EventDispatcher;
-import com.numdata.oss.ui.ActionTools;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.model.*;
+import com.numdata.oss.event.*;
+import com.numdata.oss.ui.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class defines a 3D view of a {@link Scene}.
@@ -128,35 +111,14 @@ public abstract class View3D
 	private final List<RenderStyleFilter> _renderStyleFilters = new ArrayList<RenderStyleFilter>();
 
 	/**
-	 * Grid enabled/disabled flag.
+	 * Grid to be shown (when enabled).
 	 */
-	private boolean _gridEnabled;
+	private final Grid _grid;
 
 	/**
-	 * Transforms grid to world coordinates.
+	 * Background of the view.
 	 */
-	private Matrix3D _grid2wcs;
-
-	/**
-	 * Bounds of grid in cell units.
-	 */
-	private Rectangle _gridBounds;
-
-	/**
-	 * Size of each grid cell in world units.
-	 */
-	private int _gridCellSize;
-
-	/**
-	 * If set, highlight X/Y grid axes.
-	 */
-	private boolean _gridHighlightAxes;
-
-	/**
-	 * Interval for highlighted grid lines. Less or equal to zero if
-	 * highlighting is disabled.
-	 */
-	private int _gridHighlightInterval;
+	private final Background _background;
 
 	/**
 	 * Provides support for bound properties.
@@ -190,12 +152,11 @@ public abstract class View3D
 
 		_cameraControl = null;
 
-		_gridEnabled           = false;
-		_grid2wcs              = Matrix3D.INIT;
-		_gridBounds            = new Rectangle( -100 , -100 , 200 , 200 );
-		_gridCellSize          = (int)Math.round( 1.0 / scene.getUnit() );
-		_gridHighlightAxes     = true;
-		_gridHighlightInterval = 10;
+		final Grid grid = new Grid();
+		grid.setCellSize( (int)Math.round( 1.0 / scene.getUnit() ) );
+		_grid = grid;
+
+		_background = Background.createDefault();
 
 		appendRenderStyleFilter( new ViewStyleFilter() );
 	}
@@ -247,12 +208,34 @@ public abstract class View3D
 	}
 
 	/**
-	 * Sets the background color of the view.
+	 * Sets the background of the view.
 	 *
-	 * @param   background  Background color to be set; may be <code>null</code>
-	 *                      for the default background color.
+	 * @param   background  Background to be set.
 	 */
-	public abstract void setBackground( final Color background );
+	public void setBackground( @NotNull final Background background )
+	{
+		_background.set( background );
+	}
+
+	/**
+	 * Returns the grid shown in the view (when enabled).
+	 *
+	 * @return  Grid.
+	 */
+	public Grid getGrid()
+	{
+		return _grid;
+	}
+
+	/**
+	 * Returns the background of the view.
+	 *
+	 * @return  Background.
+	 */
+	public Background getBackground()
+	{
+		return _background;
+	}
 
 	/**
 	 * Get scene being viewed.
@@ -507,7 +490,9 @@ public abstract class View3D
 	public void setResolution( final double resolution )
 	{
 		if ( ( resolution < 0.0 ) || Double.isNaN( resolution ) )
+		{
 			throw new IllegalArgumentException( String.valueOf( resolution ) );
+		}
 
 		_resolution = resolution;
 	}
@@ -798,150 +783,31 @@ public abstract class View3D
 		_label = label;
 	}
 
-	/**
-	 * Get grid enabled option.
-	 *
-	 * @return  <code>true</code> if grid is enabled;
-	 *          <code>false</code> if grid is disabled.
-	 */
-	public boolean isGridEnabled()
-	{
-		return _gridEnabled;
-	}
-
-	/**
-	 * Get grid enabled option.
-	 *
-	 * @param   enabled     Grid enabled.
-	 */
-	public void setGridEnabled( final boolean enabled )
-	{
-		_gridEnabled = enabled;
-	}
-
-	/**
-	 * Get tranform from grid to world coordinates.
-	 *
-	 * @return  Transform from grid to world coordinates.
-	 */
-	public Matrix3D getGrid2wcs()
-	{
-		return _grid2wcs;
-	}
-
-	/**
-	 * Set tranform from grid to world coordinates.
-	 *
-	 * @param   grid2wcs    Transforms grid to world coordinates.
-	 */
-	public void setGrid2wcs( final Matrix3D grid2wcs )
-	{
-		_grid2wcs = grid2wcs;
-	}
-
-	/**
-	 * Get bounds of grid in cell units.
-	 *
-	 * @return  Bounds of grid in cell units.
-	 */
-	public Rectangle getGridBounds()
-	{
-		return _gridBounds;
-	}
-
-	/**
-	 * Set bounds of grid in cell units.
-	 *
-	 * @param   bounds  Bounds of grid in cell units.
-	 */
-	public void setGridBounds( final Rectangle bounds )
-	{
-		_gridBounds = bounds;
-	}
-
-	/**
-	 * Get size of each grid cell in world units.
-	 *
-	 * @return  Size of each grid cell in world units.
-	 */
-	public int getGridCellSize()
-	{
-		return _gridCellSize;
-	}
-
-	/**
-	 * Size of each grid cell in world units.
-	 *
-	 * @param   cellSize    Size of each grid cell in world units.
-	 */
-	public void setGridCellSize( final int cellSize )
-	{
-		_gridCellSize = cellSize;
-	}
-
-	/**
-	 * Get X/Y grid axes highlight option.
-	 *
-	 * @return  <code>true</code> if X/Y grid axes are highlighted;
-	 *          <code>false</code> otherwise.
-	 */
-	public boolean isGridHighlightAxes()
-	{
-		return _gridHighlightAxes;
-	}
-
-	/**
-	 * Set X/Y grid axes highlight option.
-	 *
-	 * @param   highlightAxes   If set, highlight X/Y grid axes.
-	 */
-	public void setGridHighlightAxes( final boolean highlightAxes )
-	{
-		_gridHighlightAxes = highlightAxes;
-	}
-
-	/**
-	 * Get interval for highlighted grid lines.
-	 *
-	 * @return  Interval for highlighted grid lines;
-	 *          <= 0 if disabled.
-	 */
-	public int getGridHighlightInterval()
-	{
-		return _gridHighlightInterval;
-	}
-
-	/**
-	 * Set interval for highlighted grid lines.
-	 *
-	 * @param   highlightInterval   Interval for highlighted grid lines
-	 *                              (<= 0 to disable).
-	 */
-	public void setGridHighlightInterval( final int highlightInterval )
-	{
-		_gridHighlightInterval = highlightInterval;
-	}
-
+	@Override
 	public void contentNodeAdded( final SceneUpdateEvent event )
 	{
 		update();
 	}
 
+	@Override
 	public void contentNodeContentUpdated( final SceneUpdateEvent event )
 	{
 		update();
 	}
 
+	@Override
 	public void contentNodePropertyChanged( final SceneUpdateEvent event )
 	{
 		update();
 	}
 
+	@Override
 	public void contentNodeRemoved( final SceneUpdateEvent event )
 	{
 		update();
 	}
 
+	@Override
 	public void ambientLightChanged( final SceneUpdateEvent event )
 	{
 		update();

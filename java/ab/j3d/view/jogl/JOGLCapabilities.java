@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * (C) Copyright Numdata BV 2009-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,16 +19,9 @@
  */
 package ab.j3d.view.jogl;
 
-import java.awt.Color;
-import java.awt.Rectangle;
-import java.io.PrintStream;
-import java.util.concurrent.Semaphore;
-import javax.media.opengl.GL;
-import javax.media.opengl.GLContext;
-import javax.media.opengl.GLException;
-import javax.media.opengl.Threading;
-
-import ab.j3d.Matrix3D;
+import java.io.*;
+import java.util.concurrent.*;
+import javax.media.opengl.*;
 
 /**
  * Provides information about the capabilities and properties of an OpenGL
@@ -400,7 +393,7 @@ public class JOGLCapabilities
 			if ( isShaderSupported() )
 			{
 				final JOGLConfiguration configuration = new JOGLConfiguration();
-				final JOGLRenderer renderer = new JOGLRenderer( _context.getGL() , configuration , new TextureCache() , Color.BLACK , false , Matrix3D.INIT , new Rectangle( 0 , 0 , 10 , 10 ) , 1 , false , 10 );
+				final JOGLRenderer renderer = new JOGLRenderer( _context.getGL() , configuration , new TextureCache() );
 				renderer.init();
 				_result = renderer.isShadersEnabled();
 			}

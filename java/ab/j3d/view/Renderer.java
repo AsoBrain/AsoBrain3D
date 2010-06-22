@@ -19,16 +19,10 @@
  */
 package ab.j3d.view;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.model.ContentNode;
-import ab.j3d.model.Light3D;
-import ab.j3d.model.Node3D;
-import ab.j3d.model.Node3DCollection;
-import ab.j3d.model.Object3D;
-import ab.j3d.model.Scene;
+import ab.j3d.*;
+import ab.j3d.model.*;
 
 /**
  * This provides a possible base class for renderers.
@@ -51,10 +45,38 @@ public abstract class Renderer
 	 * @param   scene           Scene to be rendered.
 	 * @param   styleFilters    Style filters to apply.
 	 * @param   sceneStyle      Render style to use as base for scene.
+	 * @param   background      Background to be rendered.
+	 * @param   grid            Grid to be rendered (when enabled).
 	 */
-	public void renderScene( final Scene scene , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
+	public void renderScene( final Scene scene , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle, final Background background, final Grid grid )
 	{
+		renderBackground( background );
+
+		if ( grid.isEnabled() )
+		{
+			renderGrid( grid );
+		}
+
 		renderContentNodes( scene.getContentNodes() , styleFilters , sceneStyle );
+	}
+
+	/**
+	 * Renders the given background.
+	 *
+	 * @param   background  Background to be rendered.
+	 */
+	protected void renderBackground( final Background background )
+	{
+	}
+
+	/**
+	 * Renders the given grid. This method is only called when the given grid is
+	 * enabled.
+	 *
+	 * @param   grid    Grid to be rendered.
+	 */
+	protected void renderGrid( final Grid grid )
+	{
 	}
 
 	/**
@@ -72,6 +94,8 @@ public abstract class Renderer
 
 	/**
 	 * Render lights.
+	 *
+	 * @param   nodes   Content nodes that may contain lights.
 	 */
 	protected void renderLights( final List<ContentNode> nodes )
 	{
@@ -99,9 +123,15 @@ public abstract class Renderer
 		}
 	}
 
+	/**
+	 * Renders the given light.
+	 *
+	 * @param   light2world     Light to world transformation.
+	 * @param   light           Light to be rendered.
+	 */
 	protected abstract void renderLight( final Matrix3D light2world , final Light3D light );
 
-	/*
+	/**
 	 * Render objects in scene.
 	 *
 	 * @param   nodes           Nodes in the scene.
@@ -136,10 +166,27 @@ public abstract class Renderer
 		}
 	}
 
-	protected abstract void renderObjectBegin( final Matrix3D object2world , final Object3D object , final RenderStyle objectStyle );
+	/**
+	 * Prepares for rendering of the given object, e.g. by setting transforms.
+	 *
+	 * @param   object2world    Object to world transformation.
+	 * @param   object          Object to be rendered.
+	 * @param   objectStyle     Render style applied to the object.
+	 */
+	protected abstract void renderObjectBegin( Matrix3D object2world, Object3D object, RenderStyle objectStyle );
 
+	/**
+	 * Renders the given object.
+	 *
+	 * @param   object          Object to be rendered.
+	 * @param   objectStyle     Render style applied to the object.
+	 * @param   styleFilters    Style filters to be applied.
+	 * @param   object2world    Object to world transformation.
+	 */
 	protected abstract void renderObject( Object3D object, RenderStyle objectStyle, Collection<RenderStyleFilter> styleFilters, Matrix3D object2world );
 
+	/**
+	 * Performs any cleanup needed after rendering an object.
+	 */
 	protected abstract void renderObjectEnd();
-
 }

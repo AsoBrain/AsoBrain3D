@@ -19,44 +19,21 @@
  */
 package ab.j3d.view.jogl;
 
-import java.awt.Color;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.PathIterator;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.awt.*;
+import java.awt.geom.*;
+import java.io.*;
+import java.util.*;
 import java.util.List;
-import javax.media.opengl.GL;
-import javax.media.opengl.GLContext;
-import javax.media.opengl.GLException;
+import javax.media.opengl.*;
 
-import com.sun.opengl.util.GLUT;
-import com.sun.opengl.util.texture.Texture;
-import com.sun.opengl.util.texture.TextureCoords;
-import com.sun.opengl.util.texture.TextureData;
-import com.sun.opengl.util.texture.TextureIO;
-
-import ab.j3d.Material;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.model.ContentNode;
-import ab.j3d.model.DirectionalLight3D;
-import ab.j3d.model.ExtrudedObject2D;
-import ab.j3d.model.Face3D;
-import ab.j3d.model.Face3D.Vertex;
-import ab.j3d.model.Light3D;
-import ab.j3d.model.Object3D;
-import ab.j3d.model.Scene;
-import ab.j3d.model.SpotLight3D;
-import ab.j3d.view.RenderStyle;
-import ab.j3d.view.RenderStyleFilter;
-import ab.j3d.view.Renderer;
-
-import com.numdata.oss.TextTools;
+import ab.j3d.*;
+import ab.j3d.model.*;
+import ab.j3d.model.Face3D.*;
+import ab.j3d.view.*;
+import com.numdata.oss.*;
+import com.sun.opengl.util.*;
+import com.sun.opengl.util.texture.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Implements {@link Renderer} for JOGL.
@@ -135,42 +112,6 @@ public class JOGLRenderer
 	 * Maximum number of lights allowed in this scene.
 	 */
 	private int _maxLights = 0;
-
-	/**
-	 * Background color of image.
-	 */
-	private final Color _backgroundColor;
-
-	/**
-	 * Grid enabled/disabled flag.
-	 */
-	private boolean _gridEnabled;
-
-	/**
-	 * Transforms grid to world coordinates.
-	 */
-	private Matrix3D _grid2wcs;
-
-	/**
-	 * Bounds of grid in cell units.
-	 */
-	private Rectangle _gridBounds;
-
-	/**
-	 * Size of each grid cell in world units.
-	 */
-	private int _gridCellSize;
-
-	/**
-	 * If set, highlight X/Y grid axes.
-	 */
-	private boolean _gridHighlightAxes;
-
-	/**
-	 * Interval for highlighted grid lines. Less or equal to zero if
-	 * highlighting is disabled.
-	 */
-	private int _gridHighlightInterval;
 
 	/**
 	 * Position of most dominant light in the scene.
@@ -281,16 +222,8 @@ public class JOGLRenderer
 	 * @param   configuration           Specifies which OpenGL capabilities
 	 *                                  should be used, if available.
 	 * @param   textureCache            Map containing {@link Texture}s used in the scene.
-	 * @param   backgroundColor         Backgroundcolor to use.
-	 * @param   gridIsEnabled           <code>true</code> if the grid must be rendered,
-	 *                                  <code>false</code> otherwise.
-	 * @param   grid2wcs                Transforms grid to world coordinates.
-	 * @param   gridBounds              Bounds of grid.
-	 * @param   gridCellSize            Size of each cell.
-	 * @param   gridHighlightAxes       If set, hightlight X=0 and Y=0 axes.
-	 * @param   gridHighlightInterval   Interval to use for highlighting grid lines.
 	 */
-	public JOGLRenderer( final GL gl , final JOGLConfiguration configuration , final TextureCache textureCache , final Color backgroundColor , final boolean gridIsEnabled , final Matrix3D grid2wcs , final Rectangle gridBounds , final int gridCellSize , final boolean gridHighlightAxes , final int gridHighlightInterval )
+	public JOGLRenderer( final GL gl, final JOGLConfiguration configuration, final TextureCache textureCache )
 	{
 		_gl = gl;
 		_textureCache = textureCache;
@@ -301,15 +234,6 @@ public class JOGLRenderer
 
 		_colorBuffers = null;
 		_depthBuffers = null;
-
-		_backgroundColor = backgroundColor;
-
-		_gridEnabled = gridIsEnabled;
-		_grid2wcs = grid2wcs;
-		_gridBounds = gridBounds;
-		_gridCellSize = gridCellSize;
-		_gridHighlightAxes = gridHighlightAxes;
-		_gridHighlightInterval = gridHighlightInterval;
 
 		_glWrapper = null;
 
@@ -665,17 +589,6 @@ public class JOGLRenderer
 	}
 
 	/**
-	 * Sets whether the grid should be rendered.
-	 *
-	 * @param   gridEnabled     <code>true</code> to enable the grid;
-	 *                          <code>false</code> otherwise.
-	 */
-	public void setGridEnabled( final boolean gridEnabled )
-	{
-		_gridEnabled = gridEnabled;
-	}
-
-	/**
 	 * Loads a shader of the specified type.
 	 *
 	 * @param   shaderType  Type of shader.
@@ -731,8 +644,13 @@ public class JOGLRenderer
 		}
 	}
 
-	public void renderScene( final Scene scene , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
+	@Override
+	public void renderScene( final Scene scene, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle, final Background background, final Grid grid )
 	{
+		final GL gl = _gl;
+		final GLWrapper glWrapper = new GLWrapper( gl );
+		_glWrapper = glWrapper;
+
 		_gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { scene.getAmbientRed() , scene.getAmbientGreen() , scene.getAmbientBlue() , 1.0f } , 0 );
 
 		/*
@@ -750,14 +668,14 @@ public class JOGLRenderer
 			_gl.glMatrixMode( GL.GL_MODELVIEW );
 		}
 
-		super.renderScene( scene , styleFilters , sceneStyle );
+		super.renderScene( scene, styleFilters, sceneStyle, background, grid );
 	}
 
+	@Override
 	public void renderContentNodes( final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
 	{
 		final GL gl = _gl;
-		final GLWrapper glWrapper = new GLWrapper( gl );
-		_glWrapper = glWrapper;
+		final GLWrapper glWrapper = _glWrapper;
 
 		/* Set backface culling. */
 		glWrapper.setCullFace( true );
@@ -827,8 +745,6 @@ public class JOGLRenderer
 			textured.validate();
 		}
 
-		renderBackground();
-
 		if ( depthPeelingEnabled )
 		{
 			renderSceneWithDepthPeeling( width , height , nodes , styleFilters , sceneStyle );
@@ -841,57 +757,91 @@ public class JOGLRenderer
 		useShader( null );
 	}
 
-	private void renderBackground()
+	@Override
+	protected void renderBackground( final Background background )
 	{
 		final GL gl = _gl;
 
 		/* Clear depth and color buffer. */
-		final float[] backgroundRGB = _backgroundColor.getRGBColorComponents( null );
+		final Color backgroundColor = background.getColor();
+		final float[] backgroundRGB = backgroundColor.getRGBColorComponents( null );
 		gl.glClearColor( backgroundRGB[ 0 ] , backgroundRGB[ 1 ] , backgroundRGB[ 2 ] , 1.0f );
 		gl.glClearDepth( 1.0 );
 		gl.glClear( GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT );
 
-		/*
-		 * Sky box.
-		 */
-		if ( false )
+		final List<Color> gradient = background.getGradient();
+		if ( !gradient.isEmpty() )
 		{
 			gl.glDisable( GL.GL_DEPTH_TEST );
-			gl.glDisable( GL.GL_CULL_FACE );
+
+			gl.glMatrixMode( GL.GL_PROJECTION );
+			gl.glPushMatrix();
+			gl.glLoadIdentity();
 
 			gl.glMatrixMode( GL.GL_MODELVIEW );
 			gl.glPushMatrix();
 			gl.glLoadIdentity();
-			JOGLTools.glMultMatrixd( gl , _sceneToViewRotation );
 
-			final Texture reflectionMap = _textureCache.getCubeMap( "reflection/gracht" );
-			reflectionMap.bind();
-			reflectionMap.enable();
-
-			gl.glTexGeni( GL.GL_S , GL.GL_TEXTURE_GEN_MODE , GL.GL_OBJECT_LINEAR );
-			gl.glTexGeni( GL.GL_T , GL.GL_TEXTURE_GEN_MODE , GL.GL_OBJECT_LINEAR );
-			gl.glTexGeni( GL.GL_R , GL.GL_TEXTURE_GEN_MODE , GL.GL_OBJECT_LINEAR );
-			gl.glTexGenfv( GL.GL_S , GL.GL_OBJECT_PLANE , new float[] { 1.0f , 0.0f , 0.0f , 1.0f } , 0 );
-			gl.glTexGenfv( GL.GL_T , GL.GL_OBJECT_PLANE , new float[] { 0.0f , 1.0f , 0.0f , 1.0f } , 0 );
-			gl.glTexGenfv( GL.GL_R , GL.GL_OBJECT_PLANE , new float[] { 0.0f , 0.0f , 1.0f , 1.0f } , 0 );
-			gl.glEnable( GL.GL_TEXTURE_GEN_S );
-			gl.glEnable( GL.GL_TEXTURE_GEN_T );
-			gl.glEnable( GL.GL_TEXTURE_GEN_R );
-
-			final GLUT glut = new GLUT();
-			gl.glColor3f( 1.0f , 1.0f , 1.0f );
-			glut.glutSolidCube( 10.0f );
-
-			gl.glDisable( GL.GL_TEXTURE_GEN_S );
-			gl.glDisable( GL.GL_TEXTURE_GEN_T );
-			gl.glDisable( GL.GL_TEXTURE_GEN_R );
-
-			reflectionMap.disable();
+			gl.glBegin( GL.GL_QUADS );
+			setColor( gradient.get( 0 % gradient.size() ) );
+			gl.glVertex2d( -1.0, -1.0 );
+			setColor( gradient.get( 1 % gradient.size() ) );
+			gl.glVertex2d( 1.0, -1.0 );
+			setColor( gradient.get( 2 % gradient.size() ) );
+			gl.glVertex2d( 1.0, 1.0 );
+			setColor( gradient.get( 3 % gradient.size() ) );
+			gl.glVertex2d( -1.0, 1.0 );
+			gl.glEnd();
 
 			gl.glPopMatrix();
+			gl.glMatrixMode( GL.GL_PROJECTION );
+			gl.glPopMatrix();
+			gl.glMatrixMode( GL.GL_MODELVIEW );
 
-			gl.glEnable( GL.GL_CULL_FACE );
 			gl.glEnable( GL.GL_DEPTH_TEST );
+		}
+
+		if ( false )
+		{
+			final Texture reflectionMap = _textureCache.getCubeMap( "reflection/metal" );
+			if ( reflectionMap != null )
+			{
+				gl.glDisable( GL.GL_DEPTH_TEST );
+				gl.glDisable( GL.GL_CULL_FACE );
+
+				gl.glMatrixMode( GL.GL_MODELVIEW );
+				gl.glPushMatrix();
+				gl.glLoadIdentity(); // <-- FIXME Completely breaks everything. WTF?!
+				JOGLTools.glMultMatrixd( gl , _sceneToViewRotation );
+
+				reflectionMap.bind();
+				reflectionMap.enable();
+
+				gl.glTexGeni( GL.GL_S , GL.GL_TEXTURE_GEN_MODE , GL.GL_OBJECT_LINEAR );
+				gl.glTexGeni( GL.GL_T , GL.GL_TEXTURE_GEN_MODE , GL.GL_OBJECT_LINEAR );
+				gl.glTexGeni( GL.GL_R , GL.GL_TEXTURE_GEN_MODE , GL.GL_OBJECT_LINEAR );
+				gl.glTexGenfv( GL.GL_S , GL.GL_OBJECT_PLANE , new float[] { 1.0f , 0.0f , 0.0f , 1.0f } , 0 );
+				gl.glTexGenfv( GL.GL_T , GL.GL_OBJECT_PLANE , new float[] { 0.0f , 1.0f , 0.0f , 1.0f } , 0 );
+				gl.glTexGenfv( GL.GL_R , GL.GL_OBJECT_PLANE , new float[] { 0.0f , 0.0f , 1.0f , 1.0f } , 0 );
+				gl.glEnable( GL.GL_TEXTURE_GEN_S );
+				gl.glEnable( GL.GL_TEXTURE_GEN_T );
+				gl.glEnable( GL.GL_TEXTURE_GEN_R );
+
+				final GLUT glut = new GLUT();
+				gl.glColor3f( 1.0f , 1.0f , 1.0f );
+				glut.glutSolidCube( 10.0f );
+
+				gl.glDisable( GL.GL_TEXTURE_GEN_S );
+				gl.glDisable( GL.GL_TEXTURE_GEN_T );
+				gl.glDisable( GL.GL_TEXTURE_GEN_R );
+
+				reflectionMap.disable();
+
+				gl.glPopMatrix();
+
+				gl.glEnable( GL.GL_CULL_FACE );
+				gl.glEnable( GL.GL_DEPTH_TEST );
+			}
 		}
 	}
 
@@ -1050,15 +1000,6 @@ public class JOGLRenderer
 		gl.glBindFramebufferEXT( GL.GL_FRAMEBUFFER_EXT , 0 );
 		gl.glDeleteFramebuffersEXT( 1 , frameBuffer , 0 );
 
-		/*
-		 * Render the grid and opaque objects.
-		 */
-		if ( _gridEnabled )
-		{
-			useShader( _unlit );
-			drawGrid( _grid2wcs , _gridBounds , _gridCellSize , _gridHighlightAxes , _gridHighlightInterval );
-		}
-
 		_renderMode = MultiPassRenderMode.OPAQUE_ONLY;
 		renderObjects( nodes , styleFilters , sceneStyle );
 		useShader( null );
@@ -1094,11 +1035,6 @@ public class JOGLRenderer
 	 */
 	private void renderSceneWithoutDepthPeeling( final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
 	{
-		if ( _gridEnabled )
-		{
-			drawGrid( _grid2wcs , _gridBounds , _gridCellSize , _gridHighlightAxes , _gridHighlightInterval );
-		}
-
 		_renderMode = MultiPassRenderMode.OPAQUE_ONLY;
 		super.renderContentNodes( nodes , styleFilters , sceneStyle );
 		_renderMode = MultiPassRenderMode.TRANSPARENT_ONLY;
@@ -2375,130 +2311,126 @@ public class JOGLRenderer
 		gl.glEnd();
 	}
 
-	/**
-	 * Draw a 3D grid centered around point x,y,z with size dx,dy.
-	 *
-	 * @param   grid2world          Transforms grid to world coordinates.
-	 * @param   gridBounds          Bounds of grid.
-	 * @param   cellSize            Size of each cell.
-	 * @param   hightlightAxes      If set, hightlight X=0 and Y=0 axes.
-	 * @param   highlightInterval   Interval to use for highlighting grid lines.
-	 */
-	public void drawGrid( final Matrix3D grid2world , final Rectangle gridBounds , final int cellSize , final boolean hightlightAxes , final int highlightInterval )
+
+	@Override
+	protected void renderGrid( @NotNull final Grid grid )
 	{
-		if ( ( grid2world != null ) && ( gridBounds != null ) && ( gridBounds.width >= 0 ) && ( gridBounds.height >= 0 ) && ( cellSize >= 0 ) ) // argument sanity
+		useShader( _unlit );
+
+		final GL gl = _gl;
+		final GLWrapper glWrapper = _glWrapper;
+
+		gl.glPushMatrix();
+		JOGLTools.glMultMatrixd( gl , grid.getGrid2wcs() );
+
+		glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+		glWrapper.setBlend( true );
+		glWrapper.setLineSmooth( true );
+		glWrapper.setLighting( false );
+
+		final Rectangle gridBounds = grid.getBounds();
+		final int minCellX = gridBounds.x;
+		final int maxCellX = minCellX + gridBounds.width;
+		final int minCellY = gridBounds.y;
+		final int maxCellY = minCellY + gridBounds.height;
+
+		final int cellSize = grid.getCellSize();
+		final int minX = minCellX * cellSize;
+		final int maxX = maxCellX * cellSize;
+		final int minY = minCellY * cellSize;
+		final int maxY = maxCellY * cellSize;
+
+		final boolean hightlightAxes = grid.isHighlightAxes();
+		if ( hightlightAxes )
 		{
-			final GL gl = _gl;
-			final GLWrapper glWrapper = _glWrapper;
+			final boolean hasXaxis = ( minCellY <= 0 ) && ( maxCellY >= 0 );
+			final boolean hasYaxis = ( minCellX <= 0 ) && ( maxCellX >= 0 );
 
-			gl.glPushMatrix();
-			JOGLTools.glMultMatrixd( gl , grid2world );
-
-			glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
-			glWrapper.setBlend( true );
-			glWrapper.setLineSmooth( true );
-			glWrapper.setLighting( false );
-
-			final int minCellX = gridBounds.x;
-			final int maxCellX = minCellX + gridBounds.width;
-			final int minCellY = gridBounds.y;
-			final int maxCellY = minCellY + gridBounds.height;
-
-			final int minX = minCellX * cellSize;
-			final int maxX = maxCellX * cellSize;
-			final int minY = minCellY * cellSize;
-			final int maxY = maxCellY * cellSize;
-
-			if ( hightlightAxes )
+			if ( ( hasXaxis || hasYaxis ) )
 			{
-				final boolean hasXaxis = ( minCellY <= 0 ) && ( maxCellY >= 0 );
-				final boolean hasYaxis = ( minCellX <= 0 ) && ( maxCellX >= 0 );
+				glWrapper.glLineWidth( 2.5f );
+				setColor( 0.1f , 0.1f , 0.1f , 1.0f );
+				gl.glBegin( GL.GL_LINES );
 
-				if ( ( hasXaxis || hasYaxis ) )
+				if ( hasXaxis )
 				{
-					glWrapper.glLineWidth( 2.5f );
-					setColor( 0.1f , 0.1f , 0.1f , 1.0f );
-					gl.glBegin( GL.GL_LINES );
-
-					if ( hasXaxis )
-					{
-						gl.glVertex3i( minX , 0 , 0 );
-						gl.glVertex3i( maxX , 0 , 0 );
-					}
-
-					if ( hasYaxis )
-					{
-						gl.glVertex3i( 0 , minY , 0 );
-						gl.glVertex3i( 0 , maxY , 0 );
-					}
-
-					gl.glEnd();
+					gl.glVertex3i( minX , 0 , 0 );
+					gl.glVertex3i( maxX , 0 , 0 );
 				}
-			}
 
-			if ( highlightInterval > 1 )
-			{
-				final int highlightMinX = minCellX - minCellX % highlightInterval;
-				final int highLightMaxX = maxCellX - maxCellX % highlightInterval;
-				final int highlightMinY = minCellX - minCellX % highlightInterval;
-				final int highLightMaxY = maxCellX - maxCellX % highlightInterval;
-
-				final boolean hasHighlightX = ( highLightMaxX >= highlightMinX ) && ( !hightlightAxes || ( highlightMinX < 0 ) || ( highLightMaxX > 0 ) );
-				final boolean hasHighlightY = ( highLightMaxY >= highlightMinY ) && ( !hightlightAxes || ( highlightMinY < 0 ) || ( highLightMaxY > 0 ) );
-
-				if ( hasHighlightX || hasHighlightY )
+				if ( hasYaxis )
 				{
-					glWrapper.glLineWidth( 1.5f );
-					setColor( 0.5f , 0.5f , 0.5f , 1.0f );
-					gl.glBegin( GL.GL_LINES );
-
-					for ( int x = highlightMinX ; x <= highLightMaxX ; x += highlightInterval )
-					{
-						if ( !hightlightAxes || ( x != 0 ) )
-						{
-							gl.glVertex3i( x * cellSize , minY , 0 );
-							gl.glVertex3i( x * cellSize , maxY , 0 );
-						}
-					}
-
-					for ( int y = highlightMinY ; y <= highLightMaxY ; y += highlightInterval )
-					{
-						if ( !hightlightAxes || ( y != 0 ) )
-						{
-							gl.glVertex3i( minX , y * cellSize , 0 );
-							gl.glVertex3i( maxX , y * cellSize , 0 );
-						}
-					}
-
-					gl.glEnd();
+					gl.glVertex3i( 0 , minY , 0 );
+					gl.glVertex3i( 0 , maxY , 0 );
 				}
+
+				gl.glEnd();
 			}
-
-			glWrapper.glLineWidth( 1.0f );
-			setColor( 0.75f , 0.75f , 0.75f , 1.0f );
-			gl.glBegin( GL.GL_LINES );
-
-			for ( int x = minCellX ; x <= maxCellX ; x++ )
-			{
-				if ( ( !hightlightAxes || ( x != 0 ) ) && ( ( highlightInterval <= 1 ) || ( x % highlightInterval != 0 ) ) )
-				{
-					gl.glVertex3i( x * cellSize , minY , 0 );
-					gl.glVertex3i( x * cellSize , maxY , 0 );
-				}
-			}
-
-			for ( int y = minCellY ; y <= maxCellY ; y++ )
-			{
-				if ( ( !hightlightAxes || ( y != 0 ) ) && ( ( highlightInterval <= 1 ) || ( y % highlightInterval != 0 ) ) )
-				{
-					gl.glVertex3i( minX , y * cellSize , 0 );
-					gl.glVertex3i( maxX , y * cellSize , 0 );
-				}
-			}
-
-			gl.glEnd();
-
-			gl.glPopMatrix();
 		}
+
+		final int highlightInterval = grid.getHighlightInterval();
+		if ( highlightInterval > 1 )
+		{
+			final int highlightMinX = minCellX - minCellX % highlightInterval;
+			final int highLightMaxX = maxCellX - maxCellX % highlightInterval;
+			final int highlightMinY = minCellX - minCellX % highlightInterval;
+			final int highLightMaxY = maxCellX - maxCellX % highlightInterval;
+
+			final boolean hasHighlightX = ( highLightMaxX >= highlightMinX ) && ( !hightlightAxes || ( highlightMinX < 0 ) || ( highLightMaxX > 0 ) );
+			final boolean hasHighlightY = ( highLightMaxY >= highlightMinY ) && ( !hightlightAxes || ( highlightMinY < 0 ) || ( highLightMaxY > 0 ) );
+
+			if ( hasHighlightX || hasHighlightY )
+			{
+				glWrapper.glLineWidth( 1.5f );
+				setColor( 0.5f , 0.5f , 0.5f , 1.0f );
+				gl.glBegin( GL.GL_LINES );
+
+				for ( int x = highlightMinX ; x <= highLightMaxX ; x += highlightInterval )
+				{
+					if ( !hightlightAxes || ( x != 0 ) )
+					{
+						gl.glVertex3i( x * cellSize, minY , 0 );
+						gl.glVertex3i( x * cellSize, maxY , 0 );
+					}
+				}
+
+				for ( int y = highlightMinY ; y <= highLightMaxY ; y += highlightInterval )
+				{
+					if ( !hightlightAxes || ( y != 0 ) )
+					{
+						gl.glVertex3i( minX , y * cellSize, 0 );
+						gl.glVertex3i( maxX , y * cellSize, 0 );
+					}
+				}
+
+				gl.glEnd();
+			}
+		}
+
+		glWrapper.glLineWidth( 1.0f );
+		setColor( 0.75f , 0.75f , 0.75f , 1.0f );
+		gl.glBegin( GL.GL_LINES );
+
+		for ( int x = minCellX ; x <= maxCellX ; x++ )
+		{
+			if ( ( !hightlightAxes || ( x != 0 ) ) && ( ( highlightInterval <= 1 ) || ( x % highlightInterval != 0 ) ) )
+			{
+				gl.glVertex3i( x * cellSize, minY , 0 );
+				gl.glVertex3i( x * cellSize, maxY , 0 );
+			}
+		}
+
+		for ( int y = minCellY ; y <= maxCellY ; y++ )
+		{
+			if ( ( !hightlightAxes || ( y != 0 ) ) && ( ( highlightInterval <= 1 ) || ( y % highlightInterval != 0 ) ) )
+			{
+				gl.glVertex3i( minX , y * cellSize, 0 );
+				gl.glVertex3i( maxX , y * cellSize, 0 );
+			}
+		}
+
+		gl.glEnd();
+
+		gl.glPopMatrix();
 	}
 }

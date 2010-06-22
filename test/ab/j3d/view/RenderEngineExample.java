@@ -20,41 +20,20 @@
  */
 package ab.j3d.view;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.FontMetrics;
-import java.awt.Graphics2D;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.geom.Point2D;
-import java.util.EventObject;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.geom.*;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
-import ab.j3d.Material;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.control.ControlInputEvent;
-import ab.j3d.control.FromToCameraControl2;
-import ab.j3d.control.MouseControl;
-import ab.j3d.geom.BoxUVMap;
-import ab.j3d.model.Box3D;
-import ab.j3d.model.ContentNode;
-import ab.j3d.model.Face3DIntersection;
-import ab.j3d.model.Object3D;
-import ab.j3d.model.Object3DBuilder;
-import ab.j3d.model.Scene;
-import ab.j3d.model.SkyBox3D;
-import ab.j3d.model.Sphere3D;
-import ab.j3d.view.control.planar.PlaneControl;
-import ab.j3d.view.control.planar.PlaneMoveControl;
-
-import com.numdata.oss.TextTools;
-import com.numdata.oss.ui.WindowTools;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.geom.*;
+import ab.j3d.model.*;
+import ab.j3d.view.control.planar.*;
+import com.numdata.oss.*;
+import com.numdata.oss.ui.*;
 
 /**
  * Base implementation for render engine examples.
@@ -121,7 +100,11 @@ public class RenderEngineExample
 			}
 		} );
 //		view.setProjectionPolicy( Projector.PARALLEL );
-		view.setGridEnabled( true );
+
+		view.setBackground( Background.createGradient( Color.LIGHT_GRAY, Color.DARK_GRAY, Color.WHITE, Color.WHITE ) );
+
+		final Grid grid = view.getGrid();
+		grid.setEnabled( true );
 
 		final JPanel viewPanel = new JPanel( new BorderLayout() );
 		viewPanel.add( view.getComponent() , BorderLayout.CENTER );
@@ -316,7 +299,8 @@ public class RenderEngineExample
 						final Matrix3D node2world = contentNode.getTransform();
 						final Matrix3D grid2wcs   = plane2wcs.setTranslation( node2world.xo , node2world.yo , node2world.zo );
 
-						view.setGrid2wcs( grid2wcs );
+						final Grid grid = view.getGrid();
+						grid.setGrid2wcs( grid2wcs );
 						contentNode.setAlternate( true );
 					}
 
@@ -330,7 +314,8 @@ public class RenderEngineExample
 					final ViewControlInput controlInput = event.getSource();
 					final View3D view = controlInput.getView();
 
-					view.setGrid2wcs( Matrix3D.INIT );
+					final Grid grid = view.getGrid();
+					grid.setGrid2wcs( Matrix3D.INIT );
 					contentNode.setAlternate( false );
 				}
 			};
@@ -724,6 +709,6 @@ public class RenderEngineExample
 	 */
 	private static Material createMaterial( final String texture )
 	{
-		return new Material( texture , 0.3f , 0.3f , 0.3f , 1.0f , 1.0f , 1.0f , 1.0f , 0.2f , 0.2f , 0.2f , 32 , 0.0f , 0.0f , 0.0f , texture , 1.0f , 1.0f , true );
+		return new Material( texture, 0.3f, 0.3f, 0.3f, 1.0f, 1.0f, 1.0f, 1.0f, 0.2f, 0.2f, 0.2f, 32, 0.0f, 0.0f, 0.0f, texture, 1.0f, 1.0f, true );
 	}
 }

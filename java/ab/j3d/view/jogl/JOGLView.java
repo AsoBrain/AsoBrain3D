@@ -19,34 +19,16 @@
  */
 package ab.j3d.view.jogl;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.util.Collection;
-import javax.media.opengl.DebugGL;
-import javax.media.opengl.GL;
-import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLCanvas;
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLContext;
-import javax.media.opengl.GLDrawableFactory;
-import javax.media.opengl.GLEventListener;
-import javax.media.opengl.GLException;
-import javax.media.opengl.GLPbuffer;
-import javax.media.opengl.glu.GLU;
-import javax.swing.JPopupMenu;
+import java.awt.*;
+import java.util.*;
+import javax.media.opengl.*;
+import javax.media.opengl.glu.*;
+import javax.swing.*;
 
-import org.jetbrains.annotations.NotNull;
-
-import ab.j3d.model.Camera3D;
-import ab.j3d.model.Scene;
-import ab.j3d.view.ProjectionPolicy;
-import ab.j3d.view.Projector;
-import ab.j3d.view.RenderStyle;
-import ab.j3d.view.RenderStyleFilter;
-import ab.j3d.view.View3D;
-import ab.j3d.view.ViewControlInput;
-import ab.j3d.view.control.DefaultViewControl;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+import ab.j3d.view.control.*;
+import org.jetbrains.annotations.*;
 
 /**
  * JOGL view implementation.
@@ -131,7 +113,6 @@ public class JOGLView
 
 		final GLCapabilities capabilities = new GLCapabilities();
 
-		
 		final JOGLConfiguration configuration = joglEngine.getConfiguration();
 		_configuration = configuration;
 		if ( configuration.isFSAAEnabled() )
@@ -191,33 +172,33 @@ public class JOGLView
 		return _capabilities;
 	}
 
+	@Override
 	public double getFrontClipDistance()
 	{
 		return _frontClipDistance;
 	}
 
+	@Override
 	public void setFrontClipDistance( final double frontClipDistance )
 	{
 		_frontClipDistance = frontClipDistance;
 		update();
 	}
 
+	@Override
 	public double getBackClipDistance()
 	{
 		return _backClipDistance;
 	}
 
+	@Override
 	public void setBackClipDistance( final double backClipDistance )
 	{
 		_backClipDistance = backClipDistance;
 		update();
 	}
 
-	public void setBackground( final Color color )
-	{
-		_glCanvas.setBackground( color );
-	}
-
+	@Override
 	public void dispose()
 	{
 		super.dispose();
@@ -233,9 +214,11 @@ public class JOGLView
 	 * @return  Offscreen {@link GLPbuffer} of the jogl context or
 	 *          <code>NULL</code> if the graphic card doesnt have this ability.
 	 */
+	@Nullable
 	public GLPbuffer createOffscreenBuffer()
 	{
 		GLPbuffer buffer = null;
+
 		final GLDrawableFactory factory = GLDrawableFactory.getFactory();
 		if ( factory.canCreateGLPbuffer() )
 		{
@@ -245,16 +228,19 @@ public class JOGLView
 		return buffer;
 	}
 
+	@Override
 	public Component getComponent()
 	{
 		return _glCanvas;
 	}
 
+	@Override
 	public void update()
 	{
 		startRenderer();
 	}
 
+	@Override
 	public Projector getProjector()
 	{
 		final GLCanvas  viewComponent     = _glCanvas;
@@ -273,6 +259,7 @@ public class JOGLView
 		return Projector.createInstance( getProjectionPolicy() , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
 	}
 
+	@Override
 	protected ViewControlInput getControlInput()
 	{
 		return _controlInput;
@@ -372,6 +359,7 @@ public class JOGLView
 			_updateRequested = true;
 		}
 
+		@Override
 		public void run()
 		{
 //			System.out.println( "Render thread started: " + Thread.currentThread() );
@@ -446,6 +434,7 @@ public class JOGLView
 	 *
 	 * @param   glAutoDrawable  Target for performing OpenGL rendering.
 	 */
+	@Override
 	public void init( final GLAutoDrawable glAutoDrawable )
 	{
 		try
@@ -462,11 +451,13 @@ public class JOGLView
 		}
 	}
 
+	@Override
 	public void displayChanged( final GLAutoDrawable glAutoDrawable , final boolean b , final boolean b1 )
 	{
 		/* Not implemented in reference implementation. */
 	}
 
+	@Override
 	public void reshape( final GLAutoDrawable glAutoDrawable , final int x , final int y , final int width , final int height )
 	{
 		try
@@ -482,6 +473,7 @@ public class JOGLView
 		}
 	}
 
+	@Override
 	public final void display( final GLAutoDrawable glAutoDrawable )
 	{
 		try
@@ -581,18 +573,25 @@ public class JOGLView
 		JOGLTools.glMultMatrixd( gl , getScene2View() );
 
 		final JOGLRenderer renderer = getOrCreateRenderer( gl );
-		renderer.setGridEnabled( isGridEnabled() );
 		renderer.setSceneToViewTransform( getScene2View() );
-		renderer.renderScene( scene , styleFilters , viewStyle );
+		renderer.renderScene( scene, styleFilters, viewStyle, getBackground(), getGrid() );
 	}
 
+	/**
+	 * Creates a renderer for the given OpenGL pipeline or returns an existing
+	 * one.
+	 *
+	 * @param   gl  OpenGL pipeline.
+	 *
+	 * @return  New or existing renderer.
+	 */
 	private JOGLRenderer getOrCreateRenderer( final GL gl )
 	{
 		JOGLRenderer renderer = _renderer;
 		if ( renderer == null )
 		{
 			final TextureCache textureCache = _joglEngine.getTextureCache();
-			renderer = new JOGLRenderer( gl , _configuration , textureCache , _glCanvas.getBackground() , isGridEnabled() , getGrid2wcs() , getGridBounds() , getGridCellSize() , isGridHighlightAxes() , getGridHighlightInterval() );
+			renderer = new JOGLRenderer( gl , _configuration , textureCache );
 			renderer.init();
 			_renderer = renderer;
 		}

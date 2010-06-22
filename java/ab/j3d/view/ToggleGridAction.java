@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2008-2009
+ * (C) Copyright Numdata BV 2008-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +19,11 @@
  */
 package ab.j3d.view;
 
-import java.awt.event.ActionEvent;
-import java.util.Locale;
+import java.awt.event.*;
+import java.util.*;
 
-import com.numdata.oss.ResourceBundleTools;
-import com.numdata.oss.ui.ToggleAction;
+import com.numdata.oss.*;
+import com.numdata.oss.ui.*;
 
 /**
  * This action toggles the grid on/off.
@@ -51,23 +51,28 @@ public class ToggleGridAction
 		_view = view;
 	}
 
+	@Override
 	public void actionPerformed( final ActionEvent e )
 	{
 		setValue( !getValue() );
 	}
 
+	@Override
 	public boolean getValue()
 	{
 		final View3D view = _view;
-		return view.isGridEnabled();
+		final Grid grid = view.getGrid();
+		return grid.isEnabled();
 	}
 
+	@Override
 	public void setValue( final boolean value )
 	{
 		final View3D view = _view;
-		if ( value != view.isGridEnabled() )
+		final Grid grid = view.getGrid();
+		if ( value != grid.isEnabled() )
 		{
-			view.setGridEnabled( value );
+			grid.setEnabled( value );
 			view.update();
 		}
 	}
