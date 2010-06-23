@@ -20,12 +20,12 @@
  */
 package ab.j3d.view.jogl;
 
-import java.nio.charset.Charset;
-import javax.media.opengl.GL;
-import javax.media.opengl.GLException;
-import javax.media.opengl.glu.GLU;
+import java.nio.charset.*;
+import javax.media.opengl.*;
+import javax.media.opengl.glu.*;
 
-import ab.j3d.Vector3D;
+import ab.j3d.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Represents an OpenGL Shading Language (GLSL) shader program. This
@@ -68,11 +68,13 @@ public class ARBShaderProgram
 		_program = gl.glCreateProgramObjectARB();
 	}
 
+	@Override
 	public int getProgramObject()
 	{
 		return _program;
 	}
 
+	@Override
 	public void attach( final Shader shader )
 	{
 		final GL gl = GLU.getCurrentGL();
@@ -80,6 +82,7 @@ public class ARBShaderProgram
 		_linked = false;
 	}
 
+	@Override
 	public void detach( final Shader shader )
 	{
 		final GL gl = GLU.getCurrentGL();
@@ -87,6 +90,7 @@ public class ARBShaderProgram
 		_linked = false;
 	}
 
+	@Override
 	public void link()
 	{
 		if ( !_linked )
@@ -112,6 +116,7 @@ public class ARBShaderProgram
 		}
 	}
 
+	@Override
 	public void validate()
 	{
 		final GL gl = GLU.getCurrentGL();
@@ -129,6 +134,8 @@ public class ARBShaderProgram
 		}
 	}
 
+	@Nullable
+	@Override
 	public String getInfoLog()
 	{
 		final GL gl = GLU.getCurrentGL();
@@ -149,6 +156,7 @@ public class ARBShaderProgram
 		return infoLog;
 	}
 
+	@Override
 	public void enable()
 	{
 		final GL gl = GLU.getCurrentGL();
@@ -157,18 +165,22 @@ public class ARBShaderProgram
 		gl.glUseProgramObjectARB( _program );
 	}
 
+	@Override
 	public void disable()
 	{
 		final GL gl = GLU.getCurrentGL();
 		gl.glUseProgramObjectARB( 0 );
+		gl.glDisable( GL.GL_VERTEX_PROGRAM_TWO_SIDE_ARB );
 	}
 
+	@Override
 	public void dispose()
 	{
 		final GL gl = GLU.getCurrentGL();
 		gl.glDeleteObjectARB( _program );
 	}
 
+	@Override
 	public void setUniform( final String identifier , final float value )
 	{
 		final GL gl = GLU.getCurrentGL();
@@ -179,6 +191,7 @@ public class ARBShaderProgram
 		}
 	}
 
+	@Override
 	public void setUniform( final String identifier , final int value )
 	{
 		final GL gl = GLU.getCurrentGL();
@@ -189,6 +202,7 @@ public class ARBShaderProgram
 		}
 	}
 
+	@Override
 	public void setUniform( final String identifier , final Vector3D value )
 	{
 		final GL gl = GLU.getCurrentGL();

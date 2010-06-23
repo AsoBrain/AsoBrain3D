@@ -1,7 +1,7 @@
 /* ====================================================================
  * $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * (C) Copyright Numdata BV 2009-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,9 +20,10 @@
  */
 package ab.j3d.view.jogl;
 
-import javax.media.opengl.GLException;
+import javax.media.opengl.*;
 
-import ab.j3d.Vector3D;
+import ab.j3d.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Represents an OpenGL Shading Language (GLSL) shader program.
@@ -75,6 +76,7 @@ public interface ShaderProgram
 	 *
 	 * @return  Program information log.
 	 */
+	@Nullable
 	String getInfoLog();
 
 	/**
