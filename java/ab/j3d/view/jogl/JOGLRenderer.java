@@ -694,58 +694,69 @@ public class JOGLRenderer
 		 */
 		final boolean depthPeelingEnabled = isDepthPeelingEnabled();
 
-		// Renders objects with specified material color, without lighting.
-		final ShaderProgram unlit = _unlit;
-		if ( unlit != null )
+		if ( isShadersEnabled() )
 		{
-			unlit.enable();
-			if ( depthPeelingEnabled )
+			try
 			{
-				unlit.setUniform( "depthNear"   , TEXTURE_UNIT_DEPTH_NEAR   - GL.GL_TEXTURE0 );
-				unlit.setUniform( "depthOpaque" , TEXTURE_UNIT_DEPTH_OPAQUE - GL.GL_TEXTURE0 );
-				unlit.setUniform( "width"       , (float)width );
-				unlit.setUniform( "height"      , (float)height );
+				// Renders objects with specified material color, without lighting.
+				final ShaderProgram unlit = _unlit;
+				if ( unlit != null )
+				{
+					unlit.enable();
+					if ( depthPeelingEnabled )
+					{
+						unlit.setUniform( "depthNear"   , TEXTURE_UNIT_DEPTH_NEAR   - GL.GL_TEXTURE0 );
+						unlit.setUniform( "depthOpaque" , TEXTURE_UNIT_DEPTH_OPAQUE - GL.GL_TEXTURE0 );
+						unlit.setUniform( "width"       , (float)width );
+						unlit.setUniform( "height"      , (float)height );
+					}
+					unlit.disable();
+					unlit.validate();
+				}
+
+				// Renders objects with specified material color.
+				final ShaderProgram colored = _colored;
+				if ( colored != null )
+				{
+					colored.enable();
+					if ( depthPeelingEnabled )
+					{
+						colored.setUniform( "depthNear"   , TEXTURE_UNIT_DEPTH_NEAR   - GL.GL_TEXTURE0 );
+						colored.setUniform( "depthOpaque" , TEXTURE_UNIT_DEPTH_OPAQUE - GL.GL_TEXTURE0 );
+						colored.setUniform( "width"       , (float)width );
+						colored.setUniform( "height"      , (float)height );
+					}
+					colored.setUniform( "reflectionMap" , TEXTURE_UNIT_ENVIRONMENT - GL.GL_TEXTURE0 );
+					colored.disable();
+					colored.validate();
+				}
+
+				// Renders objects with color map.
+				final ShaderProgram textured = _textured;
+				if ( textured != null )
+				{
+					textured.enable();
+					textured.setUniform( "colorMap" , TEXTURE_UNIT_COLOR - GL.GL_TEXTURE0 );
+					textured.setUniform( "reflectionMap" , TEXTURE_UNIT_ENVIRONMENT - GL.GL_TEXTURE0 );
+					if ( depthPeelingEnabled )
+					{
+						textured.setUniform( "depthNear"   , TEXTURE_UNIT_DEPTH_NEAR   - GL.GL_TEXTURE0 );
+						textured.setUniform( "depthOpaque" , TEXTURE_UNIT_DEPTH_OPAQUE - GL.GL_TEXTURE0 );
+						textured.setUniform( "width"       , (float)width );
+						textured.setUniform( "height"      , (float)height );
+					}
+					textured.disable();
+					textured.validate();
+				}
 			}
-			unlit.disable();
-			unlit.validate();
+			catch ( GLException e )
+			{
+				e.printStackTrace();
+				disableShaders();
+			}
 		}
 
-		// Renders objects with specified material color.
-		final ShaderProgram colored = _colored;
-		if ( colored != null )
-		{
-			colored.enable();
-			if ( depthPeelingEnabled )
-			{
-				colored.setUniform( "depthNear"   , TEXTURE_UNIT_DEPTH_NEAR   - GL.GL_TEXTURE0 );
-				colored.setUniform( "depthOpaque" , TEXTURE_UNIT_DEPTH_OPAQUE - GL.GL_TEXTURE0 );
-				colored.setUniform( "width"       , (float)width );
-				colored.setUniform( "height"      , (float)height );
-			}
-			colored.setUniform( "reflectionMap" , TEXTURE_UNIT_ENVIRONMENT - GL.GL_TEXTURE0 );
-			colored.disable();
-			colored.validate();
-		}
-
-		// Renders objects with color map.
-		final ShaderProgram textured = _textured;
-		if ( textured != null )
-		{
-			textured.enable();
-			textured.setUniform( "colorMap" , TEXTURE_UNIT_COLOR - GL.GL_TEXTURE0 );
-			textured.setUniform( "reflectionMap" , TEXTURE_UNIT_ENVIRONMENT - GL.GL_TEXTURE0 );
-			if ( depthPeelingEnabled )
-			{
-				textured.setUniform( "depthNear"   , TEXTURE_UNIT_DEPTH_NEAR   - GL.GL_TEXTURE0 );
-				textured.setUniform( "depthOpaque" , TEXTURE_UNIT_DEPTH_OPAQUE - GL.GL_TEXTURE0 );
-				textured.setUniform( "width"       , (float)width );
-				textured.setUniform( "height"      , (float)height );
-			}
-			textured.disable();
-			textured.validate();
-		}
-
-		if ( depthPeelingEnabled )
+		if ( isShadersEnabled() && depthPeelingEnabled )
 		{
 			renderSceneWithDepthPeeling( width , height , nodes , styleFilters , sceneStyle );
 		}
