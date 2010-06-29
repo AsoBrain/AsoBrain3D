@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -634,7 +635,7 @@ public class ShapeTools
 	 *          counter-clockwise, negative if clockwise, <code>0</code> if
 	 *          colinear).
 	 */
-	private static double getAngle( final double seg1x, final double seg1y, final double seg2x, final double seg2y )
+	static double getAngle( final double seg1x, final double seg1y, final double seg2x, final double seg2y )
 	{
 		final double result;
 
