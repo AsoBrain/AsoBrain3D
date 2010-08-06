@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2009 Peter S. Heijnen
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,10 +20,10 @@
  */
 package ab.j3d;
 
-import java.text.*;
 import java.util.*;
 
 import com.numdata.oss.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class is used to represent a 3D transformation matrix (although
@@ -60,9 +60,9 @@ public final class Matrix3D
 	 * Initial value of a matrix (=identity matrix).
 	 */
 	public static final Matrix3D INIT = new Matrix3D(
-		1.0 , 0.0 , 0.0 , 0.0 ,
-		0.0 , 1.0 , 0.0 , 0.0 ,
-		0.0 , 0.0 , 1.0 , 0.0 );
+		1.0, 0.0, 0.0, 0.0,
+		0.0, 1.0, 0.0, 0.0,
+		0.0, 0.0, 1.0, 0.0 );
 
 	/**
 	 * Construct a new matrix.
@@ -80,9 +80,9 @@ public final class Matrix3D
 	 * @param   nzz     Z quotient for Z component.
 	 * @param   nzo     Translation of Z component.
 	 */
-	public Matrix3D( final double nxx , final double nxy , final double nxz , final double nxo ,
-	                 final double nyx , final double nyy , final double nyz , final double nyo ,
-	                 final double nzx , final double nzy , final double nzz , final double nzo )
+	public Matrix3D( final double nxx, final double nxy, final double nxz, final double nxo,
+	                 final double nyx, final double nyy, final double nyz, final double nyo,
+	                 final double nzx, final double nzy, final double nzz, final double nzo )
 	{
 		xx = nxx;
 		xy = nxy;
@@ -110,9 +110,9 @@ public final class Matrix3D
 	 * @return  <code>Matrix3D</code> object;
 	 *          <code>null</code> if property value is absent/invalid.
 	 */
-	public static Matrix3D getProperty( final Properties properties , final String name )
+	public static Matrix3D getProperty( final Properties properties, final String name )
 	{
-		return getProperty( properties , name , null );
+		return getProperty( properties, name, null );
 	}
 
 	/**
@@ -126,11 +126,11 @@ public final class Matrix3D
 	 * @return  <code>Matrix3D</code> object;
 	 *          <code>defaultValue</code> if property value is absent/invalid.
 	 */
-	public static Matrix3D getProperty( final Properties properties , final String name , final Matrix3D defaultValue )
+	public static Matrix3D getProperty( @NotNull final Properties properties, final String name, final Matrix3D defaultValue )
 	{
 		Matrix3D result = defaultValue;
 
-		final String stringValue = PropertyTools.getString( properties , name , null );
+		final String stringValue = properties.getProperty( name, null );
 		if ( stringValue != null )
 		{
 			try
@@ -160,20 +160,21 @@ public final class Matrix3D
 	{
 		return ( other != null )
 		    && ( ( other == this )
-		      || ( MathTools.almostEqual( xx , other.xx ) &&
-		           MathTools.almostEqual( xy , other.xy ) &&
-		           MathTools.almostEqual( xz , other.xz ) &&
-		           MathTools.almostEqual( xo , other.xo ) &&
-		           MathTools.almostEqual( yx , other.yx ) &&
-		           MathTools.almostEqual( yy , other.yy ) &&
-		           MathTools.almostEqual( yz , other.yz ) &&
-		           MathTools.almostEqual( yo , other.yo ) &&
-		           MathTools.almostEqual( zx , other.zx ) &&
-		           MathTools.almostEqual( zy , other.zy ) &&
-		           MathTools.almostEqual( zz , other.zz ) &&
-		           MathTools.almostEqual( zo , other.zo ) ) );
+		      || ( MathTools.almostEqual( xx, other.xx ) &&
+		           MathTools.almostEqual( xy, other.xy ) &&
+		           MathTools.almostEqual( xz, other.xz ) &&
+		           MathTools.almostEqual( xo, other.xo ) &&
+		           MathTools.almostEqual( yx, other.yx ) &&
+		           MathTools.almostEqual( yy, other.yy ) &&
+		           MathTools.almostEqual( yz, other.yz ) &&
+		           MathTools.almostEqual( yo, other.yo ) &&
+		           MathTools.almostEqual( zx, other.zx ) &&
+		           MathTools.almostEqual( zy, other.zy ) &&
+		           MathTools.almostEqual( zz, other.zz ) &&
+		           MathTools.almostEqual( zo, other.zo ) ) );
 	}
 
+	@Override
 	public boolean equals( final Object other )
 	{
 		final boolean result;
@@ -198,6 +199,7 @@ public final class Matrix3D
 		return result;
 	}
 
+	@Override
 	public int hashCode()
 	{
 		long l;
@@ -229,14 +231,13 @@ public final class Matrix3D
 	 *
 	 * @see     #toString()
 	 */
-	public static Matrix3D fromString( final String value )
+	public static Matrix3D fromString( @NotNull final String value )
 	{
-		if ( value == null )
-			throw new NullPointerException( "value" );
-
-		final String[] tokens = TextTools.tokenize( value , ',' );
+		final String[] tokens = value.split( "," );
 		if ( tokens.length != 12 )
+		{
 			throw new IllegalArgumentException( "tokens" );
+		}
 
 		final double xx = Double.parseDouble( tokens[  0 ] );
 		final double xy = Double.parseDouble( tokens[  1 ] );
@@ -253,9 +254,9 @@ public final class Matrix3D
 		final double zz = Double.parseDouble( tokens[ 10 ] );
 		final double zo = Double.parseDouble( tokens[ 11 ] );
 
-		return INIT.set( xx , xy , xz , xo ,
-		                 yx , yy , yz , yo ,
-		                 zx , zy , zz , zo );
+		return new Matrix3D( xx, xy, xz, xo,
+		                     yx, yy, yz, yo,
+		                     zx, zy, zz, zo );
 	}
 
 	/**
@@ -272,7 +273,7 @@ public final class Matrix3D
 	 *
 	 * @return  Transformation matrix.
 	 */
-	public static Matrix3D getTransform( final double rx , final double ry , final double rz , final double tx , final double ty , final double tz )
+	public static Matrix3D getTransform( final double rx, final double ry, final double rz, final double tx, final double ty, final double tz )
 	{
 		// FIXME: rx should be counter-clockwise!
 		final double radX = Math.toRadians( rx );
@@ -287,19 +288,19 @@ public final class Matrix3D
 		final double stZ = Math.sin( radZ );
 
 		return new Matrix3D(
-			/* xx */  ctZ * ctY - stZ * stX * stY ,
-			/* xy */ -stZ * ctY - ctZ * stX * stY ,
-			/* xz */  ctX * stY ,
-			/* xo */  tx ,
+			/* xx */  ctZ * ctY - stZ * stX * stY,
+			/* xy */ -stZ * ctY - ctZ * stX * stY,
+			/* xz */  ctX * stY,
+			/* xo */  tx,
 
-			/* yx */  stZ * ctX ,
-			/* yy */  ctZ * ctX ,
-			/* yz */        stX ,
-			/* y0 */  ty ,
+			/* yx */  stZ * ctX,
+			/* yy */  ctZ * ctX,
+			/* yz */        stX,
+			/* y0 */  ty,
 
-			/* zx */ -stZ * stX * ctY - ctZ * stY ,
-			/* zy */ -ctZ * stX * ctY + stZ * stY ,
-			/* zz */        ctX * ctY ,
+			/* zx */ -stZ * stX * ctY - ctZ * stY,
+			/* zy */ -ctZ * stX * ctY + stZ * stY,
+			/* zz */        ctX * ctY,
 			/* zo */  tz );
 	}
 
@@ -323,22 +324,12 @@ public final class Matrix3D
 	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
 	 * @throws  IllegalArgumentException if the from and two points are too close.
 	 */
-	public static Matrix3D getFromToTransform( final Vector3D from , final Vector3D to , final Vector3D upPrimary , final Vector3D upSecondary )
+	public static Matrix3D getFromToTransform( @NotNull final Vector3D from, @NotNull final Vector3D to, @NotNull final Vector3D upPrimary, @NotNull final Vector3D upSecondary )
 	{
-		if ( from == null )
-			throw new NullPointerException( "from" );
-
-		if ( to == null )
-			throw new NullPointerException( "to" );
-
-		if ( upPrimary == null )
-			throw new NullPointerException( "upPrimary" );
-
-		if ( upSecondary == null )
-			throw new NullPointerException( "upSecondary" );
-
 		if ( from.almostEquals( to ) )
+		{
 			throw new IllegalArgumentException( "from ~= to" );
+		}
 
 		/*
 		 * Z-axis points out of the to-point (center) towards the from-point (eye).
@@ -360,7 +351,9 @@ public final class Matrix3D
 		Vector3D up = upPrimary;
 		final double cos = up.x * zx + up.y * zy + up.z * zz;
 		if ( ( cos < -0.999 ) || ( cos > 0.999 ) )
+		{
 			up = upSecondary;
+		}
 
 		/*
 		 * X-axis is perpendicular to the Z-axis and the up-vector.
@@ -384,10 +377,9 @@ public final class Matrix3D
 		/*
 		 * Create matrix.
 		 */
-		return INIT.set(
-			xx , xy , xz , ( -from.x * xx -from.y * xy -from.z * xz ) ,
-			yx , yy , yz , ( -from.x * yx -from.y * yy -from.z * yz ) ,
-			zx , zy , zz , ( -from.x * zx -from.y * zy -from.z * zz ) );
+		return new Matrix3D( xx, xy, xz, ( -from.x * xx -from.y * xy -from.z * xz ),
+		                     yx, yy, yz, ( -from.x * yx -from.y * yy -from.z * yz ),
+		                     zx, zy, zz, ( -from.x * zx -from.y * zy -from.z * zz ) );
 	}
 
 	/**
@@ -411,7 +403,7 @@ public final class Matrix3D
 	 * @return  Transformation matrix (translation set to 0-vector) to be used
 	 *          for extrusion of 2D shapes.
 	 */
-	public static Matrix3D getPlaneTransform( final Vector3D origin , final Vector3D normal , final boolean rightHanded )
+	public static Matrix3D getPlaneTransform( final Vector3D origin, final Vector3D normal, final boolean rightHanded )
 	{
 		/*
 		 * Z-axis direction = normal
@@ -445,7 +437,7 @@ public final class Matrix3D
 		final double xAxisY;
 		final double xAxisZ;
 
-		if ( MathTools.almostEqual( zAxisZ , ( zAxisZ < 0.0 ) ? -1.0 : 1.0 ) )
+		if ( MathTools.almostEqual( zAxisZ, ( zAxisZ < 0.0 ) ? -1.0 : 1.0 ) )
 		{
 			xAxisX = rightHanded ?  zAxisZ : -zAxisZ;
 			xAxisY = 0.0;
@@ -465,9 +457,9 @@ public final class Matrix3D
 		final double yAxisY = zAxisZ * xAxisX - zAxisX * xAxisZ;
 		final double yAxisZ = zAxisX * xAxisY - zAxisY * xAxisX;
 
-		return INIT.set( xAxisX , yAxisX , zAxisX , origin.x ,
-		                 xAxisY , yAxisY , zAxisY , origin.y ,
-		                 xAxisZ , yAxisZ , zAxisZ , origin.z );
+		return new Matrix3D( xAxisX, yAxisX, zAxisX, origin.x,
+		                     xAxisY, yAxisY, zAxisY, origin.y,
+		                     xAxisZ, yAxisZ, zAxisZ, origin.z );
 	}
 
 	/**
@@ -485,9 +477,9 @@ public final class Matrix3D
 	 *
 	 * @return  Transformation matrix with requested rotation.
 	 */
-	public static Matrix3D getRotationTransform( final Vector3D pivot , final Vector3D direction , final double thetaRad )
+	public static Matrix3D getRotationTransform( final Vector3D pivot, final Vector3D direction, final double thetaRad )
 	{
-		return getRotationTransform( pivot.x , pivot.y , pivot.z , direction.x , direction.y , direction.z , thetaRad );
+		return getRotationTransform( pivot.x, pivot.y, pivot.z, direction.x, direction.y, direction.z, thetaRad );
 	}
 
 	/**
@@ -510,7 +502,7 @@ public final class Matrix3D
 	 *
 	 * @return  Transformation matrix with requested rotation.
 	 */
-	public static Matrix3D getRotationTransform( final double pivotX , final double pivotY , final double pivotZ , final double directionX , final double directionY , final double directionZ , final double thetaRad )
+	public static Matrix3D getRotationTransform( final double pivotX, final double pivotY, final double pivotZ, final double directionX, final double directionY, final double directionZ, final double thetaRad )
 	{
 		final double cos = Math.cos( thetaRad );
 		final double sin = Math.sin( thetaRad );
@@ -532,9 +524,9 @@ public final class Matrix3D
 		final double zy = tz * directionY + sin * directionX;
 		final double zz = tz * directionZ + cos;
 
-		return INIT.set( xx , xy , xz , pivotX - xx * pivotX - xy * pivotY - xz * pivotZ ,
-		                 yx , yy , yz , pivotY - yx * pivotX - yy * pivotY - yz * pivotZ ,
-		                 zx , zy , zz , pivotZ - zx * pivotX - zy * pivotY - zz * pivotZ );
+		return new Matrix3D( xx, xy, xz, pivotX - xx * pivotX - xy * pivotY - xz * pivotZ,
+		                     yx, yy, yz, pivotY - yx * pivotX - yy * pivotY - yz * pivotZ,
+		                     zx, zy, zz, pivotZ - zx * pivotX - zy * pivotY - zz * pivotZ );
 	}
 
 	/**
@@ -547,7 +539,7 @@ public final class Matrix3D
 	 */
 	public static Matrix3D getScaleTransform( final double scale )
 	{
-		return getScaleTransform( scale , scale , scale );
+		return getScaleTransform( scale, scale, scale );
 	}
 
 	/**
@@ -560,11 +552,11 @@ public final class Matrix3D
 	 *
 	 * @return  Scaling matrix with the given factor.
 	 */
-	public static Matrix3D getScaleTransform( final double x , final double y , final double z )
+	public static Matrix3D getScaleTransform( final double x, final double y, final double z )
 	{
-		return INIT.set(   x , 0.0 , 0.0 , 0.0 ,
-		                 0.0 ,   y , 0.0 , 0.0 ,
-		                 0.0 , 0.0 ,   z , 0.0 );
+		return new Matrix3D(   x, 0.0, 0.0, 0.0,
+		                     0.0,   y, 0.0, 0.0,
+		                     0.0, 0.0,   z, 0.0 );
 	}
 
 	/**
@@ -585,9 +577,9 @@ public final class Matrix3D
 	 */
 	public Matrix3D inverse()
 	{
-		return set( xx , yx , zx , - xo * xx - yo * yx - zo * zx ,
-		            xy , yy , zy , - xo * xy - yo * yy - zo * zy ,
-		            xz , yz , zz , - xo * xz - yo * yz - zo * zz );
+		return new Matrix3D( xx, yx, zx, - xo * xx - yo * yx - zo * zx,
+		                     xy, yy, zy, - xo * xy - yo * yy - zo * zy,
+		                     xz, yz, zz, - xo * xz - yo * yz - zo * zz );
 	}
 
 	/**
@@ -599,7 +591,7 @@ public final class Matrix3D
 	 */
 	public Matrix3D minus( final Vector3D vector )
 	{
-		return minus( vector.x , vector.y , vector.z );
+		return minus( vector.x, vector.y, vector.z );
 	}
 
 	/**
@@ -611,11 +603,11 @@ public final class Matrix3D
 	 *
 	 * @return  new Matrix3D with translation
 	 */
-	public Matrix3D minus( final double x , final double y , final double z )
+	public Matrix3D minus( final double x, final double y, final double z )
 	{
 		return ( ( x == 0.0 ) && ( y == 0.0 ) && ( z == 0.0 ) )
 		     ? this
-		     : setTranslation( xo - x , yo - y , zo - z );
+		     : setTranslation( xo - x, yo - y, zo - z );
 	}
 
 	/**
@@ -627,7 +619,7 @@ public final class Matrix3D
 	 */
 	public Matrix3D multiply( final Matrix3D other )
 	{
-		return multiply( this , other );
+		return multiply( this, other );
 	}
 
 	/**
@@ -638,14 +630,14 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting matrix.
 	 */
-	public static Matrix3D multiply( final Matrix3D m1 , final Matrix3D m2 )
+	public static Matrix3D multiply( final Matrix3D m1, final Matrix3D m2 )
 	{
-		return multiply( m1.xx , m1.xy , m1.xz , m1.xo ,
-		                 m1.yx , m1.yy , m1.yz , m1.yo ,
-		                 m1.zx , m1.zy , m1.zz , m1.zo ,
-		                 m2.xx , m2.xy , m2.xz , m2.xo ,
-		                 m2.yx , m2.yy , m2.yz , m2.yo ,
-		                 m2.zx , m2.zy , m2.zz , m2.zo );
+		return multiply( m1.xx, m1.xy, m1.xz, m1.xo,
+		                 m1.yx, m1.yy, m1.yz, m1.yo,
+		                 m1.zx, m1.zy, m1.zz, m1.zo,
+		                 m2.xx, m2.xy, m2.xz, m2.xo,
+		                 m2.yx, m2.yy, m2.yz, m2.yo,
+		                 m2.zx, m2.zy, m2.zz, m2.zo );
 	}
 
 	/**
@@ -668,17 +660,17 @@ public final class Matrix3D
 	 * @return  Resulting matrix.
 	 */
 	public static Matrix3D multiply(
-		final double xx1 , final double xy1 , final double xz1 , final double xo1 ,
-		final double yx1 , final double yy1 , final double yz1 , final double yo1 ,
-		final double zx1 , final double zy1 , final double zz1 , final double zo1 ,
+		final double xx1, final double xy1, final double xz1, final double xo1,
+		final double yx1, final double yy1, final double yz1, final double yo1,
+		final double zx1, final double zy1, final double zz1, final double zo1,
 	    final Matrix3D m2 )
 	{
-		return multiply( xx1 , xy1 , xz1 , xo1,
-		                 yx1 , yy1 , yz1 , yo1 ,
-		                 zx1 , zy1 , zz1 , zo1 ,
-		                 m2.xx , m2.xy , m2.xz , m2.xo ,
-		                 m2.yx , m2.yy , m2.yz , m2.yo ,
-		                 m2.zx , m2.zy , m2.zz , m2.zo );
+		return multiply( xx1, xy1, xz1, xo1,
+		                 yx1, yy1, yz1, yo1,
+		                 zx1, zy1, zz1, zo1,
+		                 m2.xx, m2.xy, m2.xz, m2.xo,
+		                 m2.yx, m2.yy, m2.yz, m2.yo,
+		                 m2.zx, m2.zy, m2.zz, m2.zo );
 	}
 
 	/**
@@ -701,17 +693,17 @@ public final class Matrix3D
 	 * @return  Resulting matrix.
 	 */
 	public static Matrix3D multiply(
-	    final Matrix3D m1 ,
-		final double xx2 , final double xy2 , final double xz2 , final double xo2 ,
-		final double yx2 , final double yy2 , final double yz2 , final double yo2 ,
-		final double zx2 , final double zy2 , final double zz2 , final double zo2 )
+	    final Matrix3D m1,
+		final double xx2, final double xy2, final double xz2, final double xo2,
+		final double yx2, final double yy2, final double yz2, final double yo2,
+		final double zx2, final double zy2, final double zz2, final double zo2 )
 	{
-		return multiply( m1.xx , m1.xy , m1.xz , m1.xo ,
-		                 m1.yx , m1.yy , m1.yz , m1.yo ,
-		                 m1.zx , m1.zy , m1.zz , m1.zo ,
-		                 xx2 , xy2 , xz2 , xo2,
-		                 yx2 , yy2 , yz2 , yo2 ,
-		                 zx2 , zy2 , zz2 , zo2 );
+		return multiply( m1.xx, m1.xy, m1.xz, m1.xo,
+		                 m1.yx, m1.yy, m1.yz, m1.yo,
+		                 m1.zx, m1.zy, m1.zz, m1.zo,
+		                 xx2, xy2, xz2, xo2,
+		                 yx2, yy2, yz2, yo2,
+		                 zx2, zy2, zz2, zo2 );
 	}
 
 	/**
@@ -745,25 +737,25 @@ public final class Matrix3D
 	 * @return  Resulting matrix.
 	 */
 	public static Matrix3D multiply(
-		final double xx1 , final double xy1 , final double xz1 , final double xo1 ,
-		final double yx1 , final double yy1 , final double yz1 , final double yo1 ,
-		final double zx1 , final double zy1 , final double zz1 , final double zo1 ,
-		final double xx2 , final double xy2 , final double xz2 , final double xo2 ,
-		final double yx2 , final double yy2 , final double yz2 , final double yo2 ,
-		final double zx2 , final double zy2 , final double zz2 , final double zo2 )
+		final double xx1, final double xy1, final double xz1, final double xo1,
+		final double yx1, final double yy1, final double yz1, final double yo1,
+		final double zx1, final double zy1, final double zz1, final double zo1,
+		final double xx2, final double xy2, final double xz2, final double xo2,
+		final double yx2, final double yy2, final double yz2, final double yo2,
+		final double zx2, final double zy2, final double zz2, final double zo2 )
 	{
-		return INIT.set( xx1 * xx2 + yx1 * xy2 + zx1 * xz2 ,
-		                 xy1 * xx2 + yy1 * xy2 + zy1 * xz2 ,
-		                 xz1 * xx2 + yz1 * xy2 + zz1 * xz2 ,
-		                 xo1 * xx2 + yo1 * xy2 + zo1 * xz2 + xo2 ,
-		                 xx1 * yx2 + yx1 * yy2 + zx1 * yz2 ,
-		                 xy1 * yx2 + yy1 * yy2 + zy1 * yz2 ,
-		                 xz1 * yx2 + yz1 * yy2 + zz1 * yz2 ,
-		                 xo1 * yx2 + yo1 * yy2 + zo1 * yz2 + yo2 ,
-		                 xx1 * zx2 + yx1 * zy2 + zx1 * zz2 ,
-		                 xy1 * zx2 + yy1 * zy2 + zy1 * zz2 ,
-		                 xz1 * zx2 + yz1 * zy2 + zz1 * zz2 ,
-		                 xo1 * zx2 + yo1 * zy2 + zo1 * zz2 + zo2 );
+		return new Matrix3D( xx1 * xx2 + yx1 * xy2 + zx1 * xz2,
+		                     xy1 * xx2 + yy1 * xy2 + zy1 * xz2,
+		                     xz1 * xx2 + yz1 * xy2 + zz1 * xz2,
+		                     xo1 * xx2 + yo1 * xy2 + zo1 * xz2 + xo2,
+		                     xx1 * yx2 + yx1 * yy2 + zx1 * yz2,
+		                     xy1 * yx2 + yy1 * yy2 + zy1 * yz2,
+		                     xz1 * yx2 + yz1 * yy2 + zz1 * yz2,
+		                     xo1 * yx2 + yo1 * yy2 + zo1 * yz2 + yo2,
+		                     xx1 * zx2 + yx1 * zy2 + zx1 * zz2,
+		                     xy1 * zx2 + yy1 * zy2 + zy1 * zz2,
+		                     xz1 * zx2 + yz1 * zy2 + zz1 * zz2,
+		                     xo1 * zx2 + yo1 * zy2 + zo1 * zz2 + zo2 );
 	}
 
 	/**
@@ -786,24 +778,24 @@ public final class Matrix3D
 	 * @return  Resulting matrix.
 	 */
 	public Matrix3D multiply(
-		final double otherXX , final double otherXY , final double otherXZ , final double otherXO ,
-		final double otherYX , final double otherYY , final double otherYZ , final double otherYO ,
-		final double otherZX , final double otherZY , final double otherZZ , final double otherZO )
+		final double otherXX, final double otherXY, final double otherXZ, final double otherXO,
+		final double otherYX, final double otherYY, final double otherYZ, final double otherYO,
+		final double otherZX, final double otherZY, final double otherZZ, final double otherZO )
 	{
-		return set(
-		 /* xx */ xx * otherXX + yx * otherXY + zx * otherXZ ,
-		 /* xy */ xy * otherXX + yy * otherXY + zy * otherXZ ,
-		 /* xz */ xz * otherXX + yz * otherXY + zz * otherXZ ,
-		 /* xo */ xo * otherXX + yo * otherXY + zo * otherXZ + otherXO ,
+		return new Matrix3D(
+		 /* xx */ xx * otherXX + yx * otherXY + zx * otherXZ,
+		 /* xy */ xy * otherXX + yy * otherXY + zy * otherXZ,
+		 /* xz */ xz * otherXX + yz * otherXY + zz * otherXZ,
+		 /* xo */ xo * otherXX + yo * otherXY + zo * otherXZ + otherXO,
 
-		 /* yx */ xx * otherYX + yx * otherYY + zx * otherYZ ,
-		 /* yy */ xy * otherYX + yy * otherYY + zy * otherYZ ,
-		 /* yz */ xz * otherYX + yz * otherYY + zz * otherYZ ,
-		 /* yo */ xo * otherYX + yo * otherYY + zo * otherYZ + otherYO ,
+		 /* yx */ xx * otherYX + yx * otherYY + zx * otherYZ,
+		 /* yy */ xy * otherYX + yy * otherYY + zy * otherYZ,
+		 /* yz */ xz * otherYX + yz * otherYY + zz * otherYZ,
+		 /* yo */ xo * otherYX + yo * otherYY + zo * otherYZ + otherYO,
 
-		 /* zx */ xx * otherZX + yx * otherZY + zx * otherZZ ,
-		 /* zy */ xy * otherZX + yy * otherZY + zy * otherZZ ,
-		 /* zz */ xz * otherZX + yz * otherZY + zz * otherZZ ,
+		 /* zx */ xx * otherZX + yx * otherZY + zx * otherZZ,
+		 /* zy */ xy * otherZX + yy * otherZY + zy * otherZZ,
+		 /* zz */ xz * otherZX + yz * otherZY + zz * otherZZ,
 		 /* zo */ xo * otherZX + yo * otherZY + zo * otherZZ + otherZO );
 	}
 
@@ -816,7 +808,7 @@ public final class Matrix3D
 	 */
 	public Matrix3D plus( final Vector3D vector )
 	{
-		return plus( vector.x , vector.y , vector.z );
+		return plus( vector.x, vector.y, vector.z );
 	}
 
 	/**
@@ -828,11 +820,11 @@ public final class Matrix3D
 	 *
 	 * @return  new Matrix3D with translation
 	 */
-	public Matrix3D plus( final double x , final double y , final double z )
+	public Matrix3D plus( final double x, final double y, final double z )
 	{
 		return ( x == 0.0 && y == 0.0 && z == 0.0 )
 		     ? this
-		     : setTranslation( xo + x , yo + y , zo + z );
+		     : setTranslation( xo + x, yo + y, zo + z );
 	}
 
 	/**
@@ -855,7 +847,7 @@ public final class Matrix3D
 	{
 		final Matrix3D result;
 
-		if ( MathTools.almostEqual( thetaRad , 0.0 ) )
+		if ( MathTools.almostEqual( thetaRad, 0.0 ) )
 		{
 			result = this;
 		}
@@ -864,9 +856,9 @@ public final class Matrix3D
 			final double cos = Math.cos( thetaRad );
 			final double sin = Math.sin( thetaRad );
 
-			result = set( xx , xy , xz , xo ,
-			              cos * yx - sin * zx , cos * yy - sin * zy , cos * yz - sin * zz , cos * yo - sin * zo ,
-			              sin * yx + cos * zx , sin * yy + cos * zy , sin * yz + cos * zz , sin * yo + cos * zo );
+			result = new Matrix3D( xx, xy, xz, xo,
+			                       cos * yx - sin * zx, cos * yy - sin * zy, cos * yz - sin * zz, cos * yo - sin * zo,
+			                       sin * yx + cos * zx, sin * yy + cos * zy, sin * yz + cos * zz, sin * yo + cos * zo );
 		}
 
 		return result;
@@ -892,7 +884,7 @@ public final class Matrix3D
 	{
 		final Matrix3D result;
 
-		if ( MathTools.almostEqual( thetaRad , 0.0 ) )
+		if ( MathTools.almostEqual( thetaRad, 0.0 ) )
 		{
 			result = this;
 		}
@@ -901,9 +893,9 @@ public final class Matrix3D
 			final double cos = Math.cos( thetaRad );
 			final double sin = Math.sin( thetaRad );
 
-			result = set( cos * xx + zx * sin ,  cos * xy + zy * sin ,  cos * xz + zz * sin ,  cos * xo + zo * sin ,
-			                       yx         ,           yy         ,           yz         ,          yo          ,
-			             -sin * xx + zx * cos , -sin * xy + zy * cos , -sin * xz + zz * cos , -sin * xo + zo * cos );
+			result = new Matrix3D(  cos * xx + zx * sin,  cos * xy + zy * sin,  cos * xz + zz * sin,  cos * xo + zo * sin,
+			                       yx, yy, yz, yo,
+			                       -sin * xx + zx * cos, -sin * xy + zy * cos, -sin * xz + zz * cos, -sin * xo + zo * cos );
 		}
 
 		return result;
@@ -929,7 +921,7 @@ public final class Matrix3D
 	{
 		final Matrix3D result;
 
-		if ( MathTools.almostEqual( thetaRad , 0.0 ) )
+		if ( MathTools.almostEqual( thetaRad, 0.0 ) )
 		{
 			result = this;
 		}
@@ -938,9 +930,9 @@ public final class Matrix3D
 			final double cos = Math.cos( thetaRad );
 			final double sin = Math.sin( thetaRad );
 
-			result = set( cos * xx - sin * yx , cos * xy - sin * yy , cos * xz - sin * yz , cos * xo - sin * yo ,
-			              sin * xx + cos * yx , sin * xy + cos * yy , sin * xz + cos * yz , sin * xo + cos * yo ,
-			              zx , zy , zz , zo );
+			result = new Matrix3D( cos * xx - sin * yx, cos * xy - sin * yy, cos * xz - sin * yz, cos * xo - sin * yo,
+			                       sin * xx + cos * yx, sin * xy + cos * yy, sin * xz + cos * yz, sin * xo + cos * yo,
+			                       zx, zy, zz, zo );
 		}
 
 		return result;
@@ -964,9 +956,9 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting vector.
 	 */
-	public Matrix3D set( final double nxx , final double nxy , final double nxz , final double nxo ,
-	                     final double nyx , final double nyy , final double nyz , final double nyo ,
-	                     final double nzx , final double nzy , final double nzz , final double nzo )
+	public Matrix3D set( final double nxx, final double nxy, final double nxz, final double nxo,
+	                     final double nyx, final double nyy, final double nyz, final double nyo,
+	                     final double nzx, final double nzy, final double nzz, final double nzo )
 	{
 		final double lxx = Double.isNaN( nxx ) ? xx : nxx;
 		final double lxy = Double.isNaN( nxy ) ? xy : nxy;
@@ -985,9 +977,9 @@ public final class Matrix3D
 		         lyx == yx && lyy == yy && lyz == yz && lyo == yo &&
 		         lzx == zx && lzy == zy && lzz == zz && lzo == zo )
 		       ? this
-		       : new Matrix3D( lxx , lxy , lxz , lxo ,
-		                       lyx , lyy , lyz , lyo ,
-		                       lzx , lzy , lzz , lzo );
+		       : new Matrix3D( lxx, lxy, lxz, lxo,
+		                       lyx, lyy, lyz, lyo,
+		                       lzx, lzy, lzz, lzo );
 	}
 
 	/**
@@ -999,7 +991,7 @@ public final class Matrix3D
 	 */
 	public Matrix3D scale( final double scale )
 	{
-		return scale( scale , scale , scale );
+		return scale( scale, scale, scale );
 	}
 
 	/**
@@ -1011,9 +1003,9 @@ public final class Matrix3D
 	 *
 	 * @return  This matrix scaled  with the given factors.
 	 */
-	public Matrix3D scale( final double x , final double y , final double z )
+	public Matrix3D scale( final double x, final double y, final double z )
 	{
-		return ( ( x != 1.0 ) || ( y != 1.0 ) || ( z != 1.0 ) ) ? set( x * xx, x * xy, x * xz, x * xo, y * yx, y * yy, y * yz, y * yo, z * zx, z * zy, z * zz, z * zo ) : this;
+		return new Matrix3D( x * xx, x * xy, x * xz, x * xo, y * yx, y * yy, y * yz, y * yo, z * zx, z * zy, z * zz, z * zo );
 	}
 
 	/**
@@ -1023,7 +1015,7 @@ public final class Matrix3D
 	 */
 	public Vector3D getTranslation()
 	{
-		return Vector3D.ZERO.set( xo , yo , zo );
+		return new Vector3D( xo, yo, zo );
 	}
 
 	/**
@@ -1035,7 +1027,7 @@ public final class Matrix3D
 	 */
 	public Matrix3D setTranslation( final Vector3D vector )
 	{
-		return setTranslation( vector.x , vector.y , vector.z );
+		return setTranslation( vector.x, vector.y, vector.z );
 	}
 
 	/**
@@ -1047,17 +1039,9 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting matrix.
 	 */
-	public Matrix3D setTranslation( final double x , final double y , final double z )
+	public Matrix3D setTranslation( final double x, final double y, final double z )
 	{
-		final double lx = Double.isNaN( x ) ? xo : x;
-		final double ly = Double.isNaN( y ) ? yo : y;
-		final double lz = Double.isNaN( z ) ? zo : z;
-
-		return ( ( lx == xo ) && ( ly == yo ) && ( lz == zo ) )
-		     ? this
-		     : set( xx , xy , xz , lx ,
-		            yx , yy , yz , ly ,
-		            zx , zy , zz , lz );
+		return new Matrix3D( xx, xy, xz, x, yx, yy, yz, y, zx, zy, zz, z );
 	}
 
 	/**
@@ -1065,6 +1049,7 @@ public final class Matrix3D
 	 *
 	 * @return  String representation of object.
 	 */
+	@Override
 	public String toString()
 	{
 		return xx + "," + xy + ',' + xz + ',' + xo + ',' +
@@ -1093,7 +1078,7 @@ public final class Matrix3D
 	 */
 	public static String toFriendlyString( final Matrix3D m )
 	{
-		return toFriendlyString( m , "\n\t\t\t" , "\n\t\t\t" );
+		return toFriendlyString( m, "\n\t\t\t", "\n\t\t\t" );
 	}
 
 	/**
@@ -1106,43 +1091,16 @@ public final class Matrix3D
 	 *
 	 * @return  Human-readable representation of Matrix3D object.
 	 */
-	public static String toFriendlyString( final Matrix3D m , final String prefix , final String infix )
+	public static String toFriendlyString( final Matrix3D m, final String prefix, final String infix )
 	{
-		final StringBuffer sb = new StringBuffer();
-		final DecimalFormat df1 = new DecimalFormat( "0.0" );
-		final DecimalFormat df2 = new DecimalFormat( "0.00" );
-
+		final StringBuilder sb = new StringBuilder();
+		final Formatter formatter = new Formatter( sb, null );
 		sb.append( prefix );
-		sb.append( "[ " );
-		TextTools.appendFixed( sb , df2.format( m.xx ) , 5 , true , ' ' );
-		sb.append( " , " );
-		TextTools.appendFixed( sb , df2.format( m.xy ) , 5 , true , ' ' );
-		sb.append( " , " );
-		TextTools.appendFixed( sb , df2.format( m.xz ) , 5 , true , ' ' );
-		sb.append( " , " );
-		TextTools.appendFixed( sb , df1.format( m.xo ) , 7 , true , ' ' );
-		sb.append( " ]" );
+		formatter.format( "[ %5.2f, %5.2f, %5.2f, %7.1f ]", Double.valueOf( m.xx ), Double.valueOf( m.xy ), Double.valueOf( m.xz ), Double.valueOf( m.xo ) );
 		sb.append( infix );
-		sb.append( "[ " );
-		TextTools.appendFixed( sb , df2.format( m.yx ) , 5 , true , ' ' );
-		sb.append( " , " );
-		TextTools.appendFixed( sb , df2.format( m.yy ) , 5 , true , ' ' );
-		sb.append( " , " );
-		TextTools.appendFixed( sb , df2.format( m.yz ) , 5 , true , ' ' );
-		sb.append( " , " );
-		TextTools.appendFixed( sb , df1.format( m.yo ) , 7 , true , ' ' );
-		sb.append( " ]" );
+		formatter.format( "[ %5.2f, %5.2f, %5.2f, %7.1f ]", Double.valueOf( m.yx ), Double.valueOf( m.yy ), Double.valueOf( m.yz ), Double.valueOf( m.yo ) );
 		sb.append( infix );
-		sb.append( "[ " );
-		TextTools.appendFixed( sb , df2.format( m.zx ) , 5 , true , ' ' );
-		sb.append( " , " );
-		TextTools.appendFixed( sb , df2.format( m.zy ) , 5 , true , ' ' );
-		sb.append( " , " );
-		TextTools.appendFixed( sb , df2.format( m.zz ) , 5 , true , ' ' );
-		sb.append( " , " );
-		TextTools.appendFixed( sb , df1.format( m.zo ) , 7 , true , ' ' );
-		sb.append( " ]" );
-
+		formatter.format( "[ %5.2f, %5.2f, %5.2f, %7.1f ]", Double.valueOf( m.zx ), Double.valueOf( m.zy ), Double.valueOf( m.zz ), Double.valueOf( m.zo ) );
 		return sb.toString();
 	}
 
@@ -1155,9 +1113,9 @@ public final class Matrix3D
 	 */
 	public Vector3D transform( final Vector3D vector )
 	{
-		return vector.set( vector.x * xx + vector.y * xy + vector.z * xz + xo ,
-		                   vector.x * yx + vector.y * yy + vector.z * yz + yo ,
-		                   vector.x * zx + vector.y * zy + vector.z * zz + zo );
+		return new Vector3D( vector.x * xx + vector.y * xy + vector.z * xz + xo,
+		                     vector.x * yx + vector.y * yy + vector.z * yz + yo,
+		                     vector.x * zx + vector.y * zy + vector.z * zz + zo );
 	}
 
 	/**
@@ -1169,10 +1127,10 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting vector.
 	 */
-	public Vector3D transform( final double x , final double y , final double z )
+	public Vector3D transform( final double x, final double y, final double z )
 	{
-		return new Vector3D( x * xx + y * xy + z * xz + xo ,
-		                     x * yx + y * yy + z * yz + yo ,
+		return new Vector3D( x * xx + y * xy + z * xz + xo,
+		                     x * yx + y * yy + z * yz + yo,
 		                     x * zx + y * zy + z * zz + zo );
 	}
 
@@ -1189,16 +1147,18 @@ public final class Matrix3D
 	 *
 	 * @see     #transform(double, double, double)
 	 * @see     #transform(Vector3D)
-	 * @see     ArrayTools#ensureLength
 	 */
-	public double[] transform( final double[] source , final double[] dest , final int pointCount )
+	public double[] transform( final double[] source, final double[] dest, final int pointCount )
 	{
 		double[] result = dest;
 
 		if ( ( source != dest ) || ( this != INIT ) )
 		{
 			final int resultLength = pointCount * 3;
-			result = (double[])ArrayTools.ensureLength( dest , double.class , -1 , resultLength );
+			if ( ( result == null ) || ( resultLength > result.length ) )
+			{
+				result = new double[ resultLength ];
+			}
 
 			final double lxx = xx;
 			final double lxy = xy;
@@ -1222,7 +1182,7 @@ public final class Matrix3D
 			{
 				if ( ( lxo == 0.0 ) && ( lyo == 0.0 ) && ( lzo == 0.0 ) )
 				{
-					System.arraycopy( source , 0 , result , 0 , resultLength );
+					System.arraycopy( source, 0, result, 0, resultLength );
 				}
 				else
 				{
@@ -1236,7 +1196,7 @@ public final class Matrix3D
 			}
 			else if ( ( lxo == 0.0 ) && ( lyo == 0.0 ) && ( lzo == 0.0 ) )
 			{
-				rotate( source , result , pointCount );
+				rotate( source, result, pointCount );
 			}
 			else
 			{
@@ -1269,7 +1229,7 @@ public final class Matrix3D
 	 */
 	public double transformX( final Vector3D vector )
 	{
-		return transformX( vector.x , vector.y , vector.z );
+		return transformX( vector.x, vector.y, vector.z );
 	}
 
 	/**
@@ -1281,7 +1241,7 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting X coordinate.
 	 */
-	public double transformX( final double x , final double y , final double z )
+	public double transformX( final double x, final double y, final double z )
 	{
 		return x * xx + y * xy + z * xz + xo;
 	}
@@ -1295,7 +1255,7 @@ public final class Matrix3D
 	 */
 	public double transformY( final Vector3D vector )
 	{
-		return transformY( vector.x , vector.y , vector.z );
+		return transformY( vector.x, vector.y, vector.z );
 	}
 
 	/**
@@ -1307,7 +1267,7 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting Y coordinate.
 	 */
-	public double transformY( final double x , final double y , final double z )
+	public double transformY( final double x, final double y, final double z )
 	{
 		return x * yx + y * yy + z * yz + yo;
 	}
@@ -1321,7 +1281,7 @@ public final class Matrix3D
 	 */
 	public double transformZ( final Vector3D vector )
 	{
-		return transformZ( vector.x , vector.y , vector.z );
+		return transformZ( vector.x, vector.y, vector.z );
 	}
 
 	/**
@@ -1333,7 +1293,7 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting Z coordinate.
 	 */
-	public double transformZ( final double x , final double y , final double z )
+	public double transformZ( final double x, final double y, final double z )
 	{
 		return x * zx + y * zy + z * zz + zo;
 	}
@@ -1347,7 +1307,7 @@ public final class Matrix3D
 	 */
 	public Bounds3D transform( final Bounds3D box )
 	{
-		return box.set( transform( box.v1 ) , transform( box.v2 ) );
+		return new Bounds3D( transform( box.v1 ), transform( box.v2 ) );
 	}
 
 	/**
@@ -1363,9 +1323,9 @@ public final class Matrix3D
 		final double ty = vector.y - yo;
 		final double tz = vector.z - zo;
 
-		return vector.set( tx * xx + ty * yx + tz * zx ,
-		                   tx * xy + ty * yy + tz * zy ,
-		                   tx * xz + ty * yz + tz * zz );
+		return new Vector3D( tx * xx + ty * yx + tz * zx,
+		                     tx * xy + ty * yy + tz * zy,
+		                     tx * xz + ty * yz + tz * zz );
 	}
 
 	/**
@@ -1377,14 +1337,14 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting vector.
 	 */
-	public Vector3D inverseTransform( final double x , final double y , final double z )
+	public Vector3D inverseTransform( final double x, final double y, final double z )
 	{
 		final double tz = z - zo;
 		final double ty = y - yo;
 		final double tx = x - xo;
 
-		return new Vector3D( tx * xx + ty * yx + tz * zx ,
-		                     tx * xy + ty * yy + tz * zy ,
+		return new Vector3D( tx * xx + ty * yx + tz * zx,
+		                     tx * xy + ty * yy + tz * zy,
 		                     tx * xz + ty * yz + tz * zz );
 	}
 
@@ -1397,7 +1357,7 @@ public final class Matrix3D
 	 */
 	public double inverseTransformX( final Vector3D vector )
 	{
-		return inverseTransformX( vector.x , vector.y , vector.z );
+		return inverseTransformX( vector.x, vector.y, vector.z );
 	}
 
 	/**
@@ -1409,7 +1369,7 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting X coordinate.
 	 */
-	public double inverseTransformX( final double x , final double y , final double z )
+	public double inverseTransformX( final double x, final double y, final double z )
 	{
 		return ( x - xo ) * xx + ( y - yo ) * yx + ( z - zo ) * zx;
 	}
@@ -1423,7 +1383,7 @@ public final class Matrix3D
 	 */
 	public double inverseTransformY( final Vector3D vector )
 	{
-		return inverseTransformY( vector.x , vector.y , vector.z );
+		return inverseTransformY( vector.x, vector.y, vector.z );
 	}
 
 	/**
@@ -1435,7 +1395,7 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting Y coordinate.
 	 */
-	public double inverseTransformY( final double x , final double y , final double z )
+	public double inverseTransformY( final double x, final double y, final double z )
 	{
 		return ( x - xo ) * xy + ( y - yo ) * yy + ( z - zo ) * zy;
 	}
@@ -1449,7 +1409,7 @@ public final class Matrix3D
 	 */
 	public double inverseTransformZ( final Vector3D vector )
 	{
-		return inverseTransformZ( vector.x , vector.y , vector.z );
+		return inverseTransformZ( vector.x, vector.y, vector.z );
 	}
 
 	/**
@@ -1461,7 +1421,7 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting Z coordinate.
 	 */
-	public double inverseTransformZ( final double x , final double y , final double z )
+	public double inverseTransformZ( final double x, final double y, final double z )
 	{
 		return ( x - xo ) * xz + ( y - yo ) * yz + ( z - zo ) * zz;
 	}
@@ -1476,7 +1436,7 @@ public final class Matrix3D
 	 */
 	public Vector3D rotate( final Vector3D vector )
 	{
-		return rotate( vector.x , vector.y , vector.z );
+		return rotate( vector.x, vector.y, vector.z );
 	}
 
 	/**
@@ -1489,10 +1449,10 @@ public final class Matrix3D
 	 *
 	 * @return  Rotated vector.
 	 */
-	public Vector3D rotate( final double x , final double y , final double z )
+	public Vector3D rotate( final double x, final double y, final double z )
 	{
-		return new Vector3D( x * xx + y * xy + z * xz ,
-		                     x * yx + y * yy + z * yz ,
+		return new Vector3D( x * xx + y * xy + z * xz,
+		                     x * yx + y * yy + z * yz,
 		                     x * zx + y * zy + z * zz );
 	}
 
@@ -1510,16 +1470,18 @@ public final class Matrix3D
 	 *
 	 * @see     #transform(double, double, double)
 	 * @see     #transform(Vector3D)
-	 * @see     ArrayTools#ensureLength
 	 */
-	public double[] rotate( final double[] source , final double[] dest , final int vectorCount )
+	public double[] rotate( final double[] source, final double[] dest, final int vectorCount )
 	{
 		double[] result = dest;
 
 		if ( ( source != dest ) || ( this != INIT ) )
 		{
 			final int resultLength = vectorCount * 3;
-			result = (double[])ArrayTools.ensureLength( dest , double.class , -1 , resultLength );
+			if ( ( result == null ) || ( resultLength > result.length ) )
+			{
+				result = new double[ resultLength ];
+			}
 
 			final double lxx = xx;
 			final double lxy = xy;
@@ -1536,7 +1498,9 @@ public final class Matrix3D
 			  && ( lzx == 0.0 ) && ( lzy == 0.0 ) && ( lzz == 1.0 ) )
 			{
 				if ( source != result )
-					System.arraycopy( source , 0 , result , 0 , resultLength );
+				{
+					System.arraycopy( source, 0, result, 0, resultLength );
+				}
 			}
 			else
 			{
@@ -1569,7 +1533,7 @@ public final class Matrix3D
 	 */
 	public double rotateX( final Vector3D vector )
 	{
-		return rotateX( vector.x , vector.y , vector.z );
+		return rotateX( vector.x, vector.y, vector.z );
 	}
 
 	/**
@@ -1581,7 +1545,7 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting X coordinate.
 	 */
-	public double rotateX( final double x , final double y , final double z )
+	public double rotateX( final double x, final double y, final double z )
 	{
 		return x * xx + y * xy + z * xz;
 	}
@@ -1595,7 +1559,7 @@ public final class Matrix3D
 	 */
 	public double rotateY( final Vector3D vector )
 	{
-		return rotateY( vector.x , vector.y , vector.z );
+		return rotateY( vector.x, vector.y, vector.z );
 	}
 
 	/**
@@ -1607,7 +1571,7 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting Y coordinate.
 	 */
-	public double rotateY( final double x , final double y , final double z )
+	public double rotateY( final double x, final double y, final double z )
 	{
 		return x * yx + y * yy + z * yz;
 	}
@@ -1621,7 +1585,7 @@ public final class Matrix3D
 	 */
 	public double rotateZ( final Vector3D vector )
 	{
-		return rotateZ( vector.x , vector.y , vector.z );
+		return rotateZ( vector.x, vector.y, vector.z );
 	}
 
 	/**
@@ -1633,7 +1597,7 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting Z coordinate.
 	 */
-	public double rotateZ( final double x , final double y , final double z )
+	public double rotateZ( final double x, final double y, final double z )
 	{
 		return x * zx + y * zy + z * zz;
 	}
@@ -1653,9 +1617,9 @@ public final class Matrix3D
 		final double y = vector.y;
 		final double z = vector.z;
 
-		return vector.set( x * xx + y * yx + z * zx ,
-		                   x * xy + y * yy + z * zy ,
-		                   x * xz + y * yz + z * zz );
+		return new Vector3D( x * xx + y * yx + z * zx,
+		                     x * xy + y * yy + z * zy,
+		                     x * xz + y * yz + z * zz );
 	}
 
 	/**
@@ -1669,10 +1633,10 @@ public final class Matrix3D
 	 *
 	 * @return  Rotated vector.
 	 */
-	public Vector3D inverseRotate( final double x , final double y , final double z )
+	public Vector3D inverseRotate( final double x, final double y, final double z )
 	{
-		return new Vector3D( x * xx + y * yx + z * zx ,
-		                     x * xy + y * yy + z * zy ,
+		return new Vector3D( x * xx + y * yx + z * zx,
+		                     x * xy + y * yy + z * zy,
 		                     x * xz + y * yz + z * zz );
 	}
 
@@ -1699,7 +1663,7 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting X coordinate.
 	 */
-	public double inverseRotateX( final double x , final double y , final double z )
+	public double inverseRotateX( final double x, final double y, final double z )
 	{
 		return x * xx + y * yx + z * zx;
 	}
@@ -1727,7 +1691,7 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting Y-coordinate.
 	 */
-	public double inverseRotateY( final double x , final double y , final double z )
+	public double inverseRotateY( final double x, final double y, final double z )
 	{
 		return x * xy + y * yy + z * zy;
 	}
@@ -1755,7 +1719,7 @@ public final class Matrix3D
 	 *
 	 * @return  Resulting Z-coordinate.
 	 */
-	public double inverseRotateZ( final double x , final double y , final double z )
+	public double inverseRotateZ( final double x, final double y, final double z )
 	{
 		return x * xz + y * yz + z * zz;
 	}
@@ -1773,16 +1737,7 @@ public final class Matrix3D
 		final double crossY = zx * xy - xx * zy;
 		final double crossZ = xx * yy - yx * xy;
 
-		// normalize cross product
-		final double crossScale = Vector3D.length( xx, yx, zx ) * Vector3D.length( xy, yy, zy );
-		final double normalX = crossX / crossScale;
-		final double normalY = crossY / crossScale;
-		final double normalZ = crossZ / crossScale;
-
-		// dot product of z-axis and derived (righthanded) z-axis
-		final double zScale = Vector3D.length( xz, yz, zz );
-		final double d = Vector3D.dot( normalX, normalY, normalZ, xz / zScale, yz / zScale, zz / zScale );
-
-		return MathTools.almostEqual( d , 1.0 );
+		// z-axis and derived (righthanded) z-axis should have same direction
+		return ( Vector3D.dot( crossX, crossY, crossZ, xz, yz, zz ) > 0.0 );
 	}
 }
