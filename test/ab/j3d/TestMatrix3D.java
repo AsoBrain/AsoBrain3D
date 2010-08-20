@@ -20,7 +20,7 @@
  */
 package ab.j3d;
 
-import junit.framework.TestCase;
+import junit.framework.*;
 
 /**
  * This test verifies the <code>Matrix3D</code> class.
@@ -155,9 +155,9 @@ public class TestMatrix3D
 
 		final Test[] extremeTests =
 		{
-			/* Test #1  */ new Test( null , null , NullPointerException.class ) ,
-			/* Test #2  */ new Test( null , v0   , NullPointerException.class ) ,
-			/* Test #3  */ new Test( v0   , null , NullPointerException.class ) ,
+			/* Test #1  */ new Test( null , null , IllegalArgumentException.class ) ,
+			/* Test #2  */ new Test( null , v0   , IllegalArgumentException.class ) ,
+			/* Test #3  */ new Test( v0   , null , IllegalArgumentException.class ) ,
 			/* Test #4  */ new Test( v0   , v0   , IllegalArgumentException.class ) ,
 		};
 
