@@ -19,22 +19,12 @@
  */
 package ab.j3d.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import org.jetbrains.annotations.NotNull;
-
-import ab.j3d.Bounds3D;
-import ab.j3d.Bounds3DBuilder;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.view.BSPTree;
-import ab.j3d.view.control.planar.ScenePlaneControl;
+import ab.j3d.*;
+import ab.j3d.view.*;
+import ab.j3d.view.control.planar.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class defines a 3D scene.
@@ -355,10 +345,7 @@ public class Scene
 
 		for ( final ContentNode node : _contentNodes.values() )
 		{
-			final Bounds3D nodeBounds = node.getBounds();
-			final Matrix3D nodeToWCS = node.getTransform();
-			bounds3DBuilder.addPoint( nodeToWCS.transform( nodeBounds.v1 ) );
-			bounds3DBuilder.addPoint( nodeToWCS.transform( nodeBounds.v2 ) );
+			bounds3DBuilder.addBounds( node.getTransform(), node.getBounds() );
 		}
 
 		return bounds3DBuilder.getBounds();
