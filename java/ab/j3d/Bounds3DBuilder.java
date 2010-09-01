@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2008
+ * (C) Copyright Peter S. Heijnen 2005-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -113,6 +113,67 @@ public final class Bounds3DBuilder
 	}
 
 	/**
+	 * Add {@link Bounds3D} to the bounding box.
+	 *
+	 * @param   bounds  {@link Bounds3D} to add.
+	 */
+	public void addBounds( final Bounds3D bounds )
+	{
+		addPoint( bounds.v1 );
+		addPoint( bounds.v2 );
+	}
+
+	/**
+	 * Add 3D bounds to the bounding box.
+	 *
+	 * @param   x1  First X coordinate of bounds.
+	 * @param   y1  First Y coordinate of bounds.
+	 * @param   z1  First Z coordinate of bounds.
+	 * @param   x2  Second X coordinate of bounds.
+	 * @param   y2  Second Y coordinate of bounds.
+	 * @param   z2  Second Z coordinate of bounds.
+	 */
+	public void addBounds( final double x1, final double y1, final double z1, final double x2, final double y2, final double z2 )
+	{
+		addPoint( x1, y1, z1 );
+		addPoint( x2, y2, z2 );
+	}
+
+	/**
+	 * Add transformed {@link Bounds3D} to the bounding box.
+	 *
+	 * @param   transform   Transformation to apply to {@link Bounds3D}.
+	 * @param   bounds      {@link Bounds3D} to add.
+	 */
+	public void addBounds( final Matrix3D transform, final Bounds3D bounds )
+	{
+		addBounds( transform, bounds.v1.x, bounds.v1.y, bounds.v1.z, bounds.v2.x, bounds.v2.y, bounds.v2.z );
+	}
+
+	/**
+	 * Add transformed 3D bounds to the bounding box.
+	 *
+	 * @param   transform   Transformation to apply to bounds.
+	 * @param   x1          First X coordinate of bounds.
+	 * @param   y1          First Y coordinate of bounds.
+	 * @param   z1          First Z coordinate of bounds.
+	 * @param   x2          Second X coordinate of bounds.
+	 * @param   y2          Second Y coordinate of bounds.
+	 * @param   z2          Second Z coordinate of bounds.
+	 */
+	public void addBounds( final Matrix3D transform, final double x1, final double y1, final double z1, final double x2, final double y2, final double z2 )
+	{
+		addPoint( transform, x1, y1, z1 );
+		addPoint( transform, x1, y1, z2 );
+		addPoint( transform, x1, y2, z1 );
+		addPoint( transform, x1, y2, z2 );
+		addPoint( transform, x2, y1, z1 );
+		addPoint( transform, x2, y1, z2 );
+		addPoint( transform, x2, y2, z1 );
+		addPoint( transform, x2, y2, z2 );
+	}
+
+	/**
 	 * Add point to builder to include in the bounding box being built.
 	 *
 	 * @param   point   Point to add.
@@ -134,15 +195,64 @@ public final class Bounds3DBuilder
 	public void addPoint( final double x , final double y , final double z )
 	{
 		_count++;
-		if ( x < _minX ) _minX = x;
-		if ( y < _minY ) _minY = y;
-		if ( z < _minZ ) _minZ = z;
-		if ( x > _maxX ) _maxX = x;
-		if ( y > _maxY ) _maxY = y;
-		if ( z > _maxZ ) _maxZ = z;
+
+		if ( x < _minX )
+		{
+			_minX = x;
+		}
+
+		if ( y < _minY )
+		{
+			_minY = y;
+		}
+
+		if ( z < _minZ )
+		{
+			_minZ = z;
+		}
+
+		if ( x > _maxX )
+		{
+			_maxX = x;
+		}
+
+		if ( y > _maxY )
+		{
+			_maxY = y;
+		}
+
+		if ( z > _maxZ )
+		{
+			_maxZ = z;
+		}
+
 		_sumX += x;
 		_sumY += y;
 		_sumZ += z;
+	}
+
+	/**
+	 * Add transformed point to the bounding box.
+	 *
+	 * @param   transform   Transformation to apply to point.
+	 * @param   point       Point.
+	 */
+	public void addPoint( final Matrix3D transform, final Vector3D point )
+	{
+		addPoint( transform, point.x, point.y, point.z  );
+	}
+
+	/**
+	 * Add transformed point to the bounding box.
+	 *
+	 * @param   transform   Transformation to apply to point.
+	 * @param   x           X coordinate of point.
+	 * @param   y           Y coordinate of point.
+	 * @param   z           Z coordinate of point.
+	 */
+	public void addPoint( final Matrix3D transform, final double x, final double y, final double z )
+	{
+		addPoint( transform.transformX( x, y, z ), transform.transformY( x, y, z ), transform.transformZ( x, y, z ) );
 	}
 
 	/**

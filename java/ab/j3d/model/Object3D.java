@@ -400,22 +400,20 @@ public class Object3D
 	 * Add bounds of this object to a {@link Bounds3DBuilder}. Optionally.
 	 *
 	 * @param   bounds3DBuilder     Builder to add bounds to.
-	 * @param   xform               Transform to apply to vertex coordinates.
+	 * @param   transform           Transform to apply to vertex coordinates.
 	 */
-	public void addBounds( final Bounds3DBuilder bounds3DBuilder, final Matrix3D xform )
+	public void addBounds( final Bounds3DBuilder bounds3DBuilder, final Matrix3D transform )
 	{
-		if ( ( xform != null ) && ( xform != Matrix3D.INIT ) && ( !Matrix3D.INIT.equals( xform ) ) )
+		if ( ( transform != null ) && ( transform != Matrix3D.INIT ) && ( !Matrix3D.INIT.equals( transform ) ) )
 		{
 			for ( final Vector3D point : _vertexCoordinates )
 			{
-				bounds3DBuilder.addPoint( xform.transformX( point ), xform.transformY( point ), xform.transformZ( point ) );
+				bounds3DBuilder.addPoint( transform, point );
 			}
 		}
 		else
 		{
-			final Bounds3D orientedBoundingBox = getOrientedBoundingBox();
-			bounds3DBuilder.addPoint( orientedBoundingBox.v1 );
-			bounds3DBuilder.addPoint( orientedBoundingBox.v2 );
+			bounds3DBuilder.addBounds( getOrientedBoundingBox() );
 		}
 	}
 
