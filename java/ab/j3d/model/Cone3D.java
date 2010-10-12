@@ -28,57 +28,67 @@ import ab.j3d.geom.*;
 import org.jetbrains.annotations.*;
 
 /**
- * This class defines a bound 3D cylinder.
+ * This class defines a (partial) 3D cone with.
  * <p>
- * The cylinder has its base at the local origin, has a given constant radius,
- * and extends upto a given height along the positive Z-axis.
+ * The partial cone has its base at the local origin, and has a given radius on
+ * the Z=0 plane, extends upto a given height along the positive Z-axis where
+ * it also has a given radius on the Z=height plane.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public final class Cylinder3D
+public final class Cone3D
 	extends Object3D
 {
 	/**
-	 * Height of cylinder (z-axis).
+	 * Height of cone (z-axis).
 	 */
 	public final double height;
 
 	/**
-	 * Radius at bottom (z=0).
+	 * Radius at top (z=height plane).
 	 */
-	public final double radius;
+	public final double radiusTop;
 
 	/**
-	 * Constructor for cylinder object. Radius of top or bottom may be set to 0 to create
-	 * a cone.
+	 * Radius at bottom (z=0 plane).
+	 */
+	public final double radiusBottom;
+
+	/**
+	 * Constructor for (partial) cone.
 	 *
-	 * @param   height              Height of cylinder (z-axis).
-	 * @param   radius              Radius.
+	 * @param   height              Height of cone (z-axis).
+	 * @param   radiusBottom        Radius at bottom (z=0).
+	 * @param   radiusTop           Radius at top (z=height).
 	 * @param   numEdges            Number of edges to approximate circle (minimum: 3).
-	 * @param   sideMaterial        Material of cylinder circumference.
+	 * @param   sideMaterial        Material of cone circumference.
 	 * @param   sideMap             UV map to use for circumference.
-	 * @param   smoothCircumference Apply smoothing to circumference of cylinder.
+	 * @param   smoothCircumference Apply smoothing to circumference of cone.
 	 * @param   topMaterial         Material for top cap (<code>null</code> => no cap).
 	 * @param   topMap              UV map for top cap.
 	 * @param   bottomMaterial      Material for bottom cap (<code>null</code> => no cap).
 	 * @param   bottomMap           UV map for bottom cap.
 	 * @param   flipNormals         If set, flip normals.
 	 */
-	public Cylinder3D( final double height, final double radius, final int numEdges, @Nullable final Material sideMaterial, @Nullable final UVMap sideMap, final boolean smoothCircumference, @Nullable final Material topMaterial, @Nullable final UVMap topMap, @Nullable final Material bottomMaterial, @Nullable final UVMap bottomMap, final boolean flipNormals )
+	public Cone3D( final double height, final double radiusBottom, final double radiusTop, final int numEdges, @Nullable final Material sideMaterial, @Nullable final UVMap sideMap, final boolean smoothCircumference, @Nullable final Material topMaterial, @Nullable final UVMap topMap, @Nullable final Material bottomMaterial, @Nullable final UVMap bottomMap, final boolean flipNormals )
 	{
-		if ( ( radius <= 0.0 ) || ( height <= 0.0 ) || ( numEdges < 3 ) )
+		if ( ( radiusBottom < 0.0 ) || ( radiusTop < 0.0 ) || ( radiusTop == radiusBottom ) || ( height <= 0.0 ) || ( numEdges < 3 ) )
 		{
-			throw new IllegalArgumentException( "inacceptable arguments to Cylinder constructor" );
+			throw new IllegalArgumentException( "inacceptable arguments to Cone constructor" );
 		}
 
-		this.height       = height;
-		this.radius = radius;
+		this.radiusTop = radiusTop;
+		this.radiusBottom = radiusBottom;
+		this.height = height;
 
 		/*
-		 * Setup properties of cylinder.
+		 * Setup properties of cone.
 		 */
-		final int vertexCount = numEdges + numEdges;
+		final boolean hasBottom = ( radiusBottom > 0.0 );
+		final boolean hasTop    = ( radiusTop > 0.0 );
+
+		final int vertexCount = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
 		final Vector3D[] vertexCoordinatesArray = new Vector3D[ vertexCount ];
 		final List<Vector3D> vertexCoordinates = Arrays.asList( vertexCoordinatesArray );
 
@@ -87,16 +97,33 @@ public final class Cylinder3D
 		/*
 		 * Generate vertices.
 		 */
-		final int topCoordinatesOffset = numEdges;
+		final int topCoordinatesOffset = hasBottom ? numEdges : 1;
+
+		if ( !hasBottom )
+		{
+			vertexCoordinatesArray[ 0 ] = Vector3D.ZERO;
+		}
+
+		if ( !hasTop )
+		{
+			vertexCoordinatesArray[ topCoordinatesOffset ] = new Vector3D( 0.0, 0.0, height );
+		}
 
 		for ( int i = 0 ; i < numEdges ; i++ )
 		{
 			final double rad = (double)i * radStep;
-			final double x   =  radius * Math.sin( rad );
-			final double y   = -radius * Math.cos( rad );
+			final double x   =  Math.sin( rad );
+			final double y   = -Math.cos( rad );
 
-			vertexCoordinatesArray[ i ] = new Vector3D( x, y, 0.0 );
-			vertexCoordinatesArray[ topCoordinatesOffset + i ] = new Vector3D( x, y, height );
+			if ( hasBottom )
+			{
+				vertexCoordinatesArray[ i ] = new Vector3D( x * radiusBottom, y * radiusBottom, 0.0 );
+			}
+
+			if ( hasTop )
+			{
+				vertexCoordinatesArray[ topCoordinatesOffset + i ] = new Vector3D( x * radiusTop, y * radiusTop, height );
+			}
 		}
 
 		setVertexCoordinates( vertexCoordinates );
@@ -104,7 +131,7 @@ public final class Cylinder3D
 		/*
 		 * Bottom face (if it exists).
 		 */
-		if ( bottomMaterial != null )
+		if ( hasBottom && ( bottomMaterial != null ) )
 		{
 			final int[] vertexIndices = new int[ numEdges ];
 			for ( int i = 0 ; i < numEdges ; i++ )
@@ -123,7 +150,20 @@ public final class Cylinder3D
 		{
 			final int   i2 = ( i1 + 1 ) % numEdges;
 
-			final int[] vertexIndices = flipNormals ? new int[] { numEdges + i2, numEdges + i1, i1, i2 } : new int[] { i2, i1, numEdges + i1, numEdges + i2 };
+			final int[] vertexIndices;
+
+			if ( !hasTop )
+			{
+				vertexIndices = flipNormals ? new int[] { numEdges, i1, i2 } : new int[] { i2, i1, numEdges };
+			}
+			else if ( !hasBottom )
+			{
+				vertexIndices = flipNormals ? new int[] { 1 + i2, 1 + i1, 0 } : new int[] { 0, 1 + i1, 1 + i2 };
+			}
+			else
+			{
+				vertexIndices = flipNormals ? new int[] { numEdges + i2, numEdges + i1, i1, i2 } : new int[] { i2, i1, numEdges + i1, numEdges + i2 };
+			}
 
 			final Point2D.Float[] texturePoints = ( sideMap != null ) ? sideMap.generate( sideMaterial, vertexCoordinates, vertexIndices, false ) : null;
 			addFace( new Face3D( this, vertexIndices, sideMaterial, texturePoints, null, smoothCircumference, false ) );
@@ -132,11 +172,11 @@ public final class Cylinder3D
 		/*
 		 * Top face (if it exists).
 		 */
-		if ( topMaterial != null )
+		if ( hasTop && ( topMaterial != null ) )
 		{
 			final int[] vertexIndices = new int[ numEdges ];
 
-			final int lastVertex = vertexCount - 1;
+			final int lastVertex = ( hasBottom ? numEdges : 1 ) + numEdges - 1;
 
 			for ( int i = 0 ; i < numEdges ; i++ )
 			{
@@ -148,30 +188,11 @@ public final class Cylinder3D
 		}
 	}
 
-	/**
-	 * Get height of cylinder.
-	 *
-	 * @return  Height of cylinder.
-	 */
-	public double getHeight()
-	{
-		return height;
-	}
-
-	/**
-	 * Get radius of cylinder.
-	 *
-	 * @return  Radius of cylinder.
-	 */
-	public double getRadius()
-	{
-		return radius;
-	}
-
 	@Override
 	protected Bounds3D calculateOrientedBoundingBox()
+
 	{
-		final double radius = this.radius;
+		final double radius = Math.max( radiusTop, radiusBottom );
 		return new Bounds3D( -radius, -radius, 0.0, radius, radius, height );
 	}
 }

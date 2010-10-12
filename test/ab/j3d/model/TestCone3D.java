@@ -25,21 +25,21 @@ import ab.j3d.geom.*;
 import junit.framework.*;
 
 /**
- * Unit test for {@link Cylinder3D} class.
+ * Unit test for {@link Cone3D} class.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public final class TestCylinder3D
+public final class TestCone3D
 	extends TestCase
 {
 	/**
 	 * Name of this class.
 	 */
-	private static final String CLASS_NAME = TestCylinder3D.class.getName();
+	private static final String CLASS_NAME = TestCone3D.class.getName();
 
 	/**
-	 * Test constructor for cylinder object.
+	 * Test constructor for cone object.
 	 *
 	 * @throws  Exception if the test fails.
 	 */
@@ -55,15 +55,20 @@ public final class TestCylinder3D
 
 		final BoxUVMap uvMap = new BoxUVMap( Scene.MM );
 
-		for ( int i = 0 ; i <= 0x3F ; i++ )
+		final double[] radiusBottom = { 0.0, 50.0, 50.0, 25.0 };
+		final double[] radiusTop = { 50.0, 0.0, 25.0, 50.0 };
+
+		for ( int i = 0 ; i <= 0xFF ; i++ )
 		{
-			new Cylinder3D( 50.0, 100.0 , 32 ,
-			                ( ( i & 0x01 ) == 0 ) ? material : null ,
-			                ( ( i & 0x02 ) == 0 ) ? uvMap : null  , false ,
-			                ( ( i & 0x04 ) == 0 ) ? material : null  ,
-			                ( ( i & 0x08 ) == 0 ) ? uvMap : null  ,
-			                ( ( i & 0x10 ) == 0 ) ? material : null  ,
-			                ( ( i & 0x20 ) == 0 ) ? uvMap : null  , false );
+			new Cone3D( 100.0 ,
+			            radiusBottom[ i & 0x03 ] ,
+			            radiusTop[ i & 0x03 ] , 32 ,
+			            ( ( i & 0x04 ) == 0 ) ? material : null ,
+			            ( ( i & 0x08 ) == 0 ) ? uvMap : null  , false ,
+			            ( ( i & 0x10 ) == 0 ) ? material : null  ,
+			            ( ( i & 0x20 ) == 0 ) ? uvMap : null  ,
+			            ( ( i & 0x40 ) == 0 ) ? material : null  ,
+			            ( ( i & 0x80 ) == 0 ) ? uvMap : null  , false );
 		}
 	}
 }
