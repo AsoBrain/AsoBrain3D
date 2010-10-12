@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,28 +20,15 @@
  */
 package ab.j3d.pov;
 
-import java.awt.Color;
-import java.awt.Shape;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.*;
+import java.awt.geom.*;
 
-import ab.j3d.Material;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.control.FromToCameraControl;
-import ab.j3d.geom.BoxUVMap;
-import ab.j3d.model.Box3D;
-import ab.j3d.model.Camera3D;
-import ab.j3d.model.ContentNode;
-import ab.j3d.model.Cylinder3D;
-import ab.j3d.model.Light3D;
-import ab.j3d.model.Object3D;
-import ab.j3d.model.Object3DBuilder;
-import ab.j3d.model.Scene;
-import ab.j3d.model.Sphere3D;
-import ab.j3d.view.View3D;
-import ab.j3d.view.java2d.Java2dEngine;
-import ab.j3d.view.java2d.Java2dView;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.geom.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+import ab.j3d.view.java2d.*;
 
 /**
  * This class constructs a testmodel ({@link Java2dEngine}) for testing the
@@ -74,26 +62,26 @@ public final class AbPovTestModel
 		 * Fill scene with objects from the testmodel.
 		 */
 		final Scene scene = _scene;
-		scene.addContentNode( "camera"            , Matrix3D.INIT , getCamera3D() );
-		scene.addContentNode( "redbox"            , Matrix3D.getTransform( 10.0 ,  0.0 ,  0.0 , -200.0 ,   0.0 , -250.0 ) , getRedXRotatedBox3D() );
-		scene.addContentNode( "greenbox"          , Matrix3D.getTransform(  0.0 , 10.0 ,  0.0 ,  -50.0 ,   0.0 , -250.0 ) , getGreenYRotatedBox3D() );
-		scene.addContentNode( "bluebox"           , Matrix3D.getTransform(  0.0 ,  0.0 , 10.0 ,  200.0 ,   0.0 , -250.0 ) , getBlueZRotatedBox3D() );
-		scene.addContentNode( "panel"             , Matrix3D.getTransform(  0.0 ,  0.0 , 45.0 , -350.0 ,   0.0 ,    0.0 ) , getTexturedBox3D() );
-		scene.addContentNode( "sphere"            , Matrix3D.getTransform(  0.0 ,  0.0 ,  0.0 ,    0.0 , 300.0 , -200.0 ) , getSphere3D() );
-		scene.addContentNode( "cylinder"          , Matrix3D.getTransform(  0.0 ,  0.0 ,  0.0 ,    0.0 ,   0.0 ,  150.0 ) , getCylinder3D() );
-		scene.addContentNode( "cone"              , Matrix3D.getTransform( 45.0 ,  0.0 ,  0.0 ,  250.0 ,   0.0 ,    0.0 ) , getCone3D() );
-		scene.addContentNode( "extruded"          , Matrix3D.INIT , getExtrudedObject2D() );
-		scene.addContentNode( "colorcube"         , Matrix3D.INIT , getColorCube() );
-		scene.addContentNode( "texturedcolorcube" , Matrix3D.INIT , getTexturedColorCube() );
+		scene.addContentNode( "camera"           , Matrix3D.INIT, getCamera3D() );
+		scene.addContentNode( "redbox"           , Matrix3D.getTransform( 10.0,  0.0,  0.0, -200.0,   0.0, -250.0 ), getRedXRotatedBox3D() );
+		scene.addContentNode( "greenbox"         , Matrix3D.getTransform(  0.0, 10.0,  0.0,  -50.0,   0.0, -250.0 ), getGreenYRotatedBox3D() );
+		scene.addContentNode( "bluebox"          , Matrix3D.getTransform(  0.0,  0.0, 10.0,  200.0,   0.0, -250.0 ), getBlueZRotatedBox3D() );
+		scene.addContentNode( "panel"            , Matrix3D.getTransform(  0.0,  0.0, 45.0, -350.0,   0.0,    0.0 ), getTexturedBox3D() );
+		scene.addContentNode( "sphere"           , Matrix3D.getTransform(  0.0,  0.0,  0.0,    0.0, 300.0, -200.0 ), getSphere3D() );
+		scene.addContentNode( "cylinder"         , Matrix3D.getTransform(  0.0,  0.0,  0.0,    0.0,   0.0,  150.0 ), getCylinder3D() );
+		scene.addContentNode( "cone"             , Matrix3D.getTransform( 45.0,  0.0,  0.0,  250.0,   0.0,    0.0 ), getCone3D() );
+		scene.addContentNode( "extruded"         , Matrix3D.INIT, getExtrudedObject2D() );
+		scene.addContentNode( "colorcube"        , Matrix3D.INIT, getColorCube() );
+		scene.addContentNode( "texturedcolorcube", Matrix3D.INIT, getTexturedColorCube() );
 
 		/*
 		 * Create view.
 		 */
-		final Vector3D viewFrom = Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 );
+		final Vector3D viewFrom = Vector3D.INIT.set( 0.0, -1000.0, 0.0 );
 		final Vector3D viewAt   = Vector3D.INIT;
 
-		final View3D view = new Java2dView( scene , null );
-		view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
+		final View3D view = new Java2dView( scene, null );
+		view.setCameraControl( new FromToCameraControl( view, viewFrom, viewAt ) );
 		_view = view;
 	}
 
@@ -159,7 +147,7 @@ public final class AbPovTestModel
 		{
 			final Color color = Color.RED;
 			final Material material  = createMaterialWithColor( color );
-			result = new Box3D( 100.0 , 200.0 , 100.0 , new BoxUVMap( Scene.MM ) , material );
+			result = new Box3D( 100.0, 200.0, 100.0, new BoxUVMap( Scene.MM ), material );
 		}
 		else
 		{
@@ -187,7 +175,7 @@ public final class AbPovTestModel
 			final Material material = createMaterialWithColor( Color.GREEN );
 			material.diffuseColorAlpha = 0.2f;
 
-			result = new Box3D( 100.0 , 200.0 , 100.0 , new BoxUVMap( Scene.MM ) , material );
+			result = new Box3D( 100.0, 200.0, 100.0, new BoxUVMap( Scene.MM ), material );
 		}
 		else
 		{
@@ -213,7 +201,7 @@ public final class AbPovTestModel
 		if ( node == null )
 		{
 			final Material material  = createMaterialWithColor( Color.BLUE );
-			result = new Box3D( 100.0 , 200.0 , 100.0 , new BoxUVMap( Scene.MM ) , material );
+			result = new Box3D( 100.0, 200.0, 100.0, new BoxUVMap( Scene.MM ), material );
 		}
 		else
 		{
@@ -247,7 +235,7 @@ public final class AbPovTestModel
 			sideMaterial.colorMapWidth = 0.2f;
 			sideMaterial.colorMapHeight = 0.2f;
 
-			result = new Box3D( 200.0 , 10.0 , 200.0 , new BoxUVMap( Scene.MM ) , mainMaterial , mainMaterial , sideMaterial , sideMaterial , sideMaterial , sideMaterial );
+			result = new Box3D( 200.0, 10.0, 200.0, new BoxUVMap( Scene.MM ), mainMaterial, mainMaterial, sideMaterial, sideMaterial, sideMaterial, sideMaterial );
 		}
 		else
 		{
@@ -273,7 +261,7 @@ public final class AbPovTestModel
 		if ( node == null )
 		{
 			final Material material  = createMaterialWithColor( Color.BLUE );
-			result = new Sphere3D( 50.0 , 20 , 20 , material );
+			result = new Sphere3D( 50.0, 20, 20, material );
 		}
 		else
 		{
@@ -299,8 +287,9 @@ public final class AbPovTestModel
 		final ContentNode node = _scene.getContentNode( "cylinder" );
 		if ( node == null )
 		{
-			final Material material  = createMaterialWithColor( Color.MAGENTA );
-			cylinder = new Cylinder3D( 50.0 , 50.0 , 100.0 , 100 , material , true , true , true , true );
+			final Material material = createMaterialWithColor( Color.MAGENTA );
+			final BoxUVMap uvMap = new BoxUVMap( Scene.MM );
+			cylinder = new Cylinder3D( 100.0, 50.0, 100, material, uvMap, true, material, uvMap, material, uvMap, false );
 		}
 		else
 		{
@@ -313,25 +302,26 @@ public final class AbPovTestModel
 	/**
 	 * This method constructs a white cone with a topradius of 50 mm, a
 	 * bottomradius of 100 mm, a height of 200 mm and 100 faces to approximate
-	 * a circle. Note that the cone is actually a cylinder.
+	 * a circle.
 	 *
-	 * @see Cylinder3D
+	 * @see Cone3D
 	 *
-	 * @return The constructed {@link Cylinder3D}.
+	 * @return The constructed {@link Cone3D}.
 	 */
-	public Cylinder3D getCone3D()
+	public Cone3D getCone3D()
 	{
-		final Cylinder3D result;
+		final Cone3D result;
 
 		final ContentNode node = _scene.getContentNode( "cone" );
 		if ( node == null )
 		{
 			final Material material = createMaterialWithColor( Color.WHITE );
-			result = new Cylinder3D( 100.0 , 50.0 , 200.0 , 100 , material , true , true , true , true );
+			final BoxUVMap uvMap = new BoxUVMap( Scene.MM );
+			result = new Cone3D( 200.0, 100.0, 50.0, 100, material, uvMap, true, material, uvMap, material, uvMap, false );
 		}
 		else
 		{
-			result = (Cylinder3D)node.getNode3D();
+			result = (Cone3D)node.getNode3D();
 		}
 
 		return result;
@@ -352,14 +342,14 @@ public final class AbPovTestModel
 		final ContentNode node = _scene.getContentNode( "colorcube" );
 		if ( node == null )
 		{
-			final Vector3D lfb = Vector3D.INIT.set( -100.0 , -100.0 , -100.0 );
-			final Vector3D rfb = Vector3D.INIT.set(  100.0 , -100.0 , -100.0 );
-			final Vector3D rbb = Vector3D.INIT.set(  100.0 ,  100.0 , -100.0 );
-			final Vector3D lbb = Vector3D.INIT.set( -100.0 ,  100.0 , -100.0 );
-			final Vector3D lft = Vector3D.INIT.set( -100.0 , -100.0 ,  100.0 );
-			final Vector3D rft = Vector3D.INIT.set(  100.0 , -100.0 ,  100.0 );
-			final Vector3D rbt = Vector3D.INIT.set(  100.0 ,  100.0 ,  100.0 );
-			final Vector3D lbt = Vector3D.INIT.set( -100.0 ,  100.0 ,  100.0 );
+			final Vector3D lfb = Vector3D.INIT.set( -100.0, -100.0, -100.0 );
+			final Vector3D rfb = Vector3D.INIT.set(  100.0, -100.0, -100.0 );
+			final Vector3D rbb = Vector3D.INIT.set(  100.0,  100.0, -100.0 );
+			final Vector3D lbb = Vector3D.INIT.set( -100.0,  100.0, -100.0 );
+			final Vector3D lft = Vector3D.INIT.set( -100.0, -100.0,  100.0 );
+			final Vector3D rft = Vector3D.INIT.set(  100.0, -100.0,  100.0 );
+			final Vector3D rbt = Vector3D.INIT.set(  100.0,  100.0,  100.0 );
+			final Vector3D lbt = Vector3D.INIT.set( -100.0,  100.0,  100.0 );
 
 			final Material topMaterial    = createMaterialWithColorMap( "CUBE_TOP" );
 			final Material bottomMaterial = createMaterialWithColorMap( "CUBE_BOTTOM" );
@@ -369,12 +359,12 @@ public final class AbPovTestModel
 			final Material rightMaterial  = createMaterialWithColorMap( "CUBE_RIGHT" );
 
 			final Object3DBuilder builder = new Object3DBuilder();
-			builder.addFace( new Vector3D[] { lft , lbt , rbt , rft } , topMaterial    , null , null , false , false );
-			builder.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , bottomMaterial , null , null , false , false );
-			builder.addFace( new Vector3D[] { lfb , lft , rft , rfb } , frontMaterial  , null , null , false , false );
-			builder.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , backMaterial   , null , null , false , false );
-			builder.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , leftMaterial   , null , null , false , false );
-			builder.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , rightMaterial  , null , null , false , false );
+			builder.addFace( new Vector3D[] { lft, lbt, rbt, rft }, topMaterial   , null, null, false, false );
+			builder.addFace( new Vector3D[] { lbb, lfb, rfb, rbb }, bottomMaterial, null, null, false, false );
+			builder.addFace( new Vector3D[] { lfb, lft, rft, rfb }, frontMaterial , null, null, false, false );
+			builder.addFace( new Vector3D[] { rbb, rbt, lbt, lbb }, backMaterial  , null, null, false, false );
+			builder.addFace( new Vector3D[] { lbb, lbt, lft, lfb }, leftMaterial  , null, null, false, false );
+			builder.addFace( new Vector3D[] { rfb, rft, rbt, rbb }, rightMaterial , null, null, false, false );
 			cube = builder.getObject3D();
 		}
 		else
@@ -400,14 +390,14 @@ public final class AbPovTestModel
 		final ContentNode node = _scene.getContentNode( "texturedcolorcube" );
 		if ( node == null )
 		{
-			final Vector3D lfb = Vector3D.INIT.set( -100.0 , -100.0 , -100.0 );
-			final Vector3D rfb = Vector3D.INIT.set(  100.0 , -100.0 , -100.0 );
-			final Vector3D rbb = Vector3D.INIT.set(  100.0 ,  100.0 , -100.0 );
-			final Vector3D lbb = Vector3D.INIT.set( -100.0 ,  100.0 , -100.0 );
-			final Vector3D lft = Vector3D.INIT.set( -100.0 , -100.0 ,  100.0 );
-			final Vector3D rft = Vector3D.INIT.set(  100.0 , -100.0 ,  100.0 );
-			final Vector3D rbt = Vector3D.INIT.set(  100.0 ,  100.0 ,  100.0 );
-			final Vector3D lbt = Vector3D.INIT.set( -100.0 ,  100.0 ,  100.0 );
+			final Vector3D lfb = Vector3D.INIT.set( -100.0, -100.0, -100.0 );
+			final Vector3D rfb = Vector3D.INIT.set(  100.0, -100.0, -100.0 );
+			final Vector3D rbb = Vector3D.INIT.set(  100.0,  100.0, -100.0 );
+			final Vector3D lbb = Vector3D.INIT.set( -100.0,  100.0, -100.0 );
+			final Vector3D lft = Vector3D.INIT.set( -100.0, -100.0,  100.0 );
+			final Vector3D rft = Vector3D.INIT.set(  100.0, -100.0,  100.0 );
+			final Vector3D rbt = Vector3D.INIT.set(  100.0,  100.0,  100.0 );
+			final Vector3D lbt = Vector3D.INIT.set( -100.0,  100.0,  100.0 );
 
 			final Material topMaterial    = createMaterialWithColorMap( "CUBE_TOP_TEXTURE_AND_COLOR" );    topMaterial.diffuseColorRed     = 1.0f; topMaterial.diffuseColorGreen       = 0.0f; topMaterial.diffuseColorBlue        = 0.0f;
 			final Material bottomMaterial = createMaterialWithColorMap( "CUBE_BOTTOM_TEXTURE_AND_COLOR" ); bottomMaterial.diffuseColorRed  = 0.0f; bottomMaterial.diffuseColorGreen    = 1.0f; bottomMaterial.diffuseColorBlue     = 0.0f;
@@ -416,15 +406,15 @@ public final class AbPovTestModel
 			final Material leftMaterial   = createMaterialWithColorMap( "CUBE_LEFT_TEXTURE_AND_COLOR" );   leftMaterial.diffuseColorRed    = 0.0f; leftMaterial.diffuseColorGreen      = 1.0f; leftMaterial.diffuseColorBlue       = 1.0f;
 			final Material rightMaterial  = createMaterialWithColorMap( "CUBE_RIGHT_TEXTURE_AND_COLOR" );  rightMaterial.diffuseColorRed   = 1.0f; rightMaterial.diffuseColorGreen     = 0.0f; rightMaterial.diffuseColorBlue      = 1.0f;
 
-			final Point2D.Float[] texturePoints = { new Point2D.Float( 0.5f , 0.0f ) , new Point2D.Float( 0.5f , 0.5f ) , new Point2D.Float( 0.0f , 0.5f ) , new Point2D.Float( 0.0f , 0.0f ) };
+			final Point2D.Float[] texturePoints = { new Point2D.Float( 0.5f, 0.0f ), new Point2D.Float( 0.5f, 0.5f ), new Point2D.Float( 0.0f, 0.5f ), new Point2D.Float( 0.0f, 0.0f ) };
 
 			final Object3DBuilder builder = new Object3DBuilder();
-			builder.addFace( new Vector3D[] { lft , lbt , rbt , rft } , topMaterial    , texturePoints , null , false , false );
-			builder.addFace( new Vector3D[] { lbb , lfb , rfb , rbb } , bottomMaterial , texturePoints , null , false , false );
-			builder.addFace( new Vector3D[] { lfb , lft , rft , rfb } , frontMaterial  , texturePoints , null , false , false );
-			builder.addFace( new Vector3D[] { rbb , rbt , lbt , lbb } , backMaterial   , texturePoints , null , false , false );
-			builder.addFace( new Vector3D[] { lbb , lbt , lft , lfb } , leftMaterial   , texturePoints , null , false , false );
-			builder.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , rightMaterial  , texturePoints , null , false , false );
+			builder.addFace( new Vector3D[] { lft, lbt, rbt, rft }, topMaterial   , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { lbb, lfb, rfb, rbb }, bottomMaterial, texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { lfb, lft, rft, rfb }, frontMaterial , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { rbb, rbt, lbt, lbb }, backMaterial  , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { lbb, lbt, lft, lfb }, leftMaterial  , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { rfb, rft, rbt, rbb }, rightMaterial , texturePoints, null, false, false );
 			result = builder.getObject3D();
 		}
 		else
@@ -450,12 +440,12 @@ public final class AbPovTestModel
 		if ( node == null )
 		{
 			final Material material  = createMaterialWithColor( Color.PINK );
-			final Shape    shape     = new Rectangle2D.Double( 0.0 , 0.0 , 100.0 , 100.0 );
-			final Vector3D extrusion = Vector3D.INIT.set( 0.0 , 100.0 , 100.0 );
-			final Matrix3D transform = Matrix3D.INIT.setTranslation( -400.0 , 0.0 , -250.0 );
+			final Shape    shape     = new Rectangle2D.Double( 0.0, 0.0, 100.0, 100.0 );
+			final Vector3D extrusion = Vector3D.INIT.set( 0.0, 100.0, 100.0 );
+			final Matrix3D transform = Matrix3D.INIT.setTranslation( -400.0, 0.0, -250.0 );
 
 			final Object3DBuilder builder = new Object3DBuilder();
-			builder.addExtrudedShape( shape , 1.0 , extrusion , transform , material , new BoxUVMap( Scene.MM , Matrix3D.INIT ) , false , true , false , false );
+			builder.addExtrudedShape( shape, 1.0, extrusion, transform, material, new BoxUVMap( Scene.MM, Matrix3D.INIT ), false, true, false, false );
 			result = builder.getObject3D();
 		}
 		else
@@ -483,7 +473,7 @@ public final class AbPovTestModel
 		{
 			result = new Light3D();
 			final float fallOffDistance = 100.0f;
-			result.setAttenuation( 0.0f , 0.0f , 1.0f / ( fallOffDistance * fallOffDistance ) );
+			result.setAttenuation( 0.0f, 0.0f, 1.0f / ( fallOffDistance * fallOffDistance ) );
 		}
 		else
 		{

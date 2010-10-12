@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,25 +20,12 @@
  */
 package ab.j3d.pov;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-import ab.j3d.Material;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.model.Box3D;
-import ab.j3d.model.Camera3D;
-import ab.j3d.model.Cylinder3D;
-import ab.j3d.model.DirectionalLight3D;
-import ab.j3d.model.Face3D;
-import ab.j3d.model.Face3D.Vertex;
-import ab.j3d.model.Light3D;
-import ab.j3d.model.Node3D;
-import ab.j3d.model.Node3DCollection;
-import ab.j3d.model.Object3D;
-import ab.j3d.model.Scene;
-import ab.j3d.model.Sphere3D;
-import ab.j3d.model.SpotLight3D;
+import ab.j3d.*;
+import ab.j3d.model.*;
+import ab.j3d.model.Face3D.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class can be used to convert a 3D scene from <code>ab.j3d.model</code>
@@ -63,11 +51,8 @@ public final class AbToPovConverter
 	 *
 	 * @param   imageMapDirectory    Directory containing POV-image maps.
 	 */
-	public AbToPovConverter( final String imageMapDirectory )
+	public AbToPovConverter( @NotNull final String imageMapDirectory )
 	{
-		if ( imageMapDirectory == null )
-			throw new NullPointerException( "imageMapDirectory" );
-
 		_imageMapDirectory = imageMapDirectory;
 
 		_scene = new PovScene();
@@ -127,35 +112,39 @@ public final class AbToPovConverter
 
 			if ( node instanceof Camera3D )
 			{
-//				scene.add( convertCamera3D( transform , (Camera3D)node , 1.0 ) );
+//				scene.add( convertCamera3D( transform, (Camera3D)node, 1.0 ) );
 			}
 			else if ( node instanceof Light3D )
 			{
-				povScene.add( convertLight3D( transform , (Light3D)node ) );
+				povScene.add( convertLight3D( transform, (Light3D)node ) );
 			}
 			else if ( node instanceof Box3D )
 			{
-				povScene.add( convertBox3D( transform , (Box3D)node ) );
+				povScene.add( convertBox3D( transform, (Box3D)node ) );
+			}
+			else if ( node instanceof Cone3D )
+			{
+				povScene.add( convertCone3D( transform, (Cone3D)node ) );
 			}
 			else if ( node instanceof Cylinder3D )
 			{
-				povScene.add( convertCylinder3D( transform , (Cylinder3D)node ) );
+				povScene.add( convertCylinder3D( transform, (Cylinder3D)node ) );
 			}
 			else if ( node instanceof Sphere3D )
 			{
-				povScene.add( convertSphere3D( transform , (Sphere3D)node ) );
+				povScene.add( convertSphere3D( transform, (Sphere3D)node ) );
 			}
 //			else if ( node instanceof ExtrudedObject2D ) // not optimized support available
 //			{
-//				scene.add( convertExtrudedObject2D( transform , (ExtrudedObject2D)node ) );
+//				scene.add( convertExtrudedObject2D( transform, (ExtrudedObject2D)node ) );
 //			}
 			else if ( node instanceof Object3D )
 			{
-				povScene.add( convertObject3D( transform , (Object3D)node ) );
+				povScene.add( convertObject3D( transform, (Object3D)node ) );
 			}
 		}
 
-		povScene.setAmbientLight( new PovVector( (double)scene.getAmbientRed() , (double)scene.getAmbientGreen() , (double)scene.getAmbientBlue() ) );
+		povScene.setAmbientLight( new PovVector( (double)scene.getAmbientRed(), (double)scene.getAmbientGreen(), (double)scene.getAmbientBlue() ) );
 
 		return povScene;
 	}
@@ -168,13 +157,13 @@ public final class AbToPovConverter
 	 *
 	 * @return  The resulting {@link PovGeometry} object.
 	 */
-	public PovGeometry convertBox3D( final Matrix3D box2wcs , final Box3D box )
+	public PovGeometry convertBox3D( final Matrix3D box2wcs, final Box3D box )
 	{
 		final PovGeometry result;
 
 		if ( containsMultipleMaterialsOrMaps( box ) )
 		{
-			result = convertObject3D( box2wcs , box );
+			result = convertObject3D( box2wcs, box );
 		}
 		else
 		{
@@ -182,10 +171,10 @@ public final class AbToPovConverter
 
 			final String     name    = ( box.getTag() != null ) ? String.valueOf( box.getTag() ) : null;
 			final Vector3D   v1      = Vector3D.INIT;
-			final Vector3D   v2      = v1.plus( box.getDX() , box.getDY() , box.getDZ() );
+			final Vector3D   v2      = v1.plus( box.getDX(), box.getDY(), box.getDZ() );
 			final PovTexture texture = convertMaterialToPovTexture( anyFace.material );
 
-			result = new PovBox( name , v1 , v2 , texture );
+			result = new PovBox( name, v1, v2, texture );
 			result.setTransform( new PovMatrix( box2wcs ) );
 		}
 
@@ -207,23 +196,53 @@ public final class AbToPovConverter
 	 *
 	 * @return  The resulting {@link PovCamera} object.
 	 */
-	public static PovCamera convertCamera3D( final Matrix3D transform , final Camera3D camera , final double aspectRatio )
+	public static PovCamera convertCamera3D( final Matrix3D transform, final Camera3D camera, final double aspectRatio )
 	{
 		final String    name     = ( camera.getTag() != null ) ? String.valueOf( camera.getTag() ) : null;
 		final PovVector location = null;
 		final PovVector lookAt   = null;
-		final PovVector right    = new PovVector( aspectRatio , 0.0 , 0.0 );
+		final PovVector right    = new PovVector( aspectRatio, 0.0, 0.0 );
 		final double    angle    = Math.toDegrees( camera.getAperture() );
 
-		final PovCamera result = new PovCamera( name , location , lookAt , right , angle );
+		final PovCamera result = new PovCamera( name, location, lookAt, right, angle );
 
 		result.setTransform( new PovMatrix( new double[]
 			{
-				 transform.xx ,  transform.yx ,  transform.zx ,
-				 transform.xy ,  transform.yy ,  transform.zy ,
-				-transform.xz , -transform.yz , -transform.zz ,
-				 transform.xo ,  transform.yo ,  transform.zo
+				 transform.xx,  transform.yx,  transform.zx,
+				 transform.xy,  transform.yy,  transform.zy,
+				-transform.xz, -transform.yz, -transform.zz,
+				 transform.xo,  transform.yo,  transform.zo
 			} ) );
+
+		return result;
+	}
+
+	/**
+	 * This method constructs a {@link PovCylinder} from a {@link Cone3D}
+	 * object.
+	 *
+	 * @param   transform   Transform to apply to node.
+	 * @param   cone    The {@link Cone3D} to be converted.
+	 *
+	 * @return  The resulting {@link PovGeometry} object.
+	 */
+	public PovGeometry convertCone3D( final Matrix3D transform, final Cone3D cone )
+	{
+		final PovGeometry result;
+
+		if ( containsMultipleMaterialsOrMaps( cone ) )
+		{
+			result = convertObject3D( transform, cone );
+		}
+		else
+		{
+			final String     name    = ( cone.getTag() != null ) ? String.valueOf( cone.getTag() ) : null;
+			final Face3D     anyFace = cone.getFace( 0 );
+			final PovTexture texture = convertMaterialToPovTexture( anyFace.material );
+
+			result = new PovCylinder( name, 0.0, 0.0, 0.0, cone.height, cone.radiusBottom, cone.radiusTop, texture );
+			result.setTransform( new PovMatrix( transform ) );
+		}
 
 		return result;
 	}
@@ -237,13 +256,13 @@ public final class AbToPovConverter
 	 *
 	 * @return  The resulting {@link PovGeometry} object.
 	 */
-	public PovGeometry convertCylinder3D( final Matrix3D transform , final Cylinder3D cylinder )
+	public PovGeometry convertCylinder3D( final Matrix3D transform, final Cylinder3D cylinder )
 	{
 		final PovGeometry result;
 
 		if ( containsMultipleMaterialsOrMaps( cylinder ) )
 		{
-			result = convertObject3D( transform , cylinder );
+			result = convertObject3D( transform, cylinder );
 		}
 		else
 		{
@@ -251,7 +270,7 @@ public final class AbToPovConverter
 			final Face3D     anyFace = cylinder.getFace( 0 );
 			final PovTexture texture = convertMaterialToPovTexture( anyFace.material );
 
-			result = new PovCylinder( name , 0.0 , 0.0 , 0.0 , cylinder.height , cylinder.radiusBottom , cylinder.radiusTop , texture );
+			result = new PovCylinder( name, 0.0, 0.0, 0.0, cylinder.height, cylinder.radius, cylinder.radius, texture );
 			result.setTransform( new PovMatrix( transform ) );
 		}
 
@@ -267,12 +286,12 @@ public final class AbToPovConverter
 	 *
 	 * @return  The resulting {@link PovLight} object.
 	 */
-	public static PovLight convertLight3D( final Matrix3D transform , final Light3D light )
+	public static PovLight convertLight3D( final Matrix3D transform, final Light3D light )
 	{
 		final String name = ( light.getTag() != null ) ? String.valueOf( light.getTag() ) : null;
 
-		final PovVector color = new PovVector( (double)light.getDiffuseRed() , (double)light.getDiffuseGreen() , (double)light.getDiffuseBlue() );
-		final PovLight result = new PovLight( name , transform.xo , transform.yo , transform.zo , color , true );
+		final PovVector color = new PovVector( (double)light.getDiffuseRed(), (double)light.getDiffuseGreen(), (double)light.getDiffuseBlue() );
+		final PovLight result = new PovLight( name, transform.xo, transform.yo, transform.zo, color, true );
 
 		if ( light instanceof DirectionalLight3D )
 		{
@@ -337,15 +356,15 @@ public final class AbToPovConverter
 	 *  3 |________\| 2
 	 *
 	 * </pre>
-	 * Triangle 1: ( 0 , 1 , 2 )<br>
-	 * Triangle 2: ( 0 , 2 , 3 )
+	 * Triangle 1: ( 0, 1, 2 )<br>
+	 * Triangle 2: ( 0, 2, 3 )
 	 *
 	 * @param   transform   Transform to apply to node.
 	 * @param   object      The {@link Object3D} to be converted.
 	 *
 	 * @return  The resulting {@link PovMesh2} object.
 	 */
-	public PovMesh2 convertObject3D( final Matrix3D transform , final Object3D object )
+	public PovMesh2 convertObject3D( final Matrix3D transform, final Object3D object )
 	{
 		final PovMesh2 result = new PovMesh2( ( object.getTag() != null ) ? String.valueOf( object.getTag() ) : null );
 
@@ -390,7 +409,7 @@ public final class AbToPovConverter
 						final double nx = vertexNormals[ vi3 ];
 						final double ny = vertexNormals[ vi3 + 1 ];
 						final double nz = vertexNormals[ vi3 + 2 ];
-						normalVectors.add( new PovVector( transform.rotate( nx , ny , nz ) ) );
+						normalVectors.add( new PovVector( transform.rotate( nx, ny, nz ) ) );
 					}
 
 					result.setNormalVectors( normalVectors );
@@ -412,7 +431,7 @@ public final class AbToPovConverter
 				final Vertex vertex0 = vertices.get( 0 );
 				final int v1  = vertex0.vertexCoordinateIndex;
 				final int vn1 = smooth ? v1 : 0;
-				final int uv1 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertex0.colorMapU , (double)vertex0.colorMapV , 0.0 ) ) : -1;
+				final int uv1 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertex0.colorMapU, (double)vertex0.colorMapV, 0.0 ) ) : -1;
 
 				int v2;
 				int vn2;
@@ -421,7 +440,7 @@ public final class AbToPovConverter
 				final Vertex vertex1 = vertices.get( 1 );
 				int v3  = vertex1.vertexCoordinateIndex;
 				int vn3 = smooth ? v3 : 0;
-				int uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertex1.colorMapU , (double)vertex1.colorMapV , 0.0 ) ) : -1;
+				int uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertex1.colorMapU, (double)vertex1.colorMapV, 0.0 ) ) : -1;
 
 				for ( int j = 2 ; j < vertexCount ; j++ )
 				{
@@ -432,9 +451,9 @@ public final class AbToPovConverter
 					final Vertex vertexJ = vertices.get( j );
 					v3  = vertexJ.vertexCoordinateIndex;
 					vn3 = smooth ? v3 : 0;
-					uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertexJ.colorMapU , (double)vertexJ.colorMapV , 0.0 ) ) : -1;
+					uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertexJ.colorMapU, (double)vertexJ.colorMapV, 0.0 ) ) : -1;
 
-					result.addTriangle( v1 , uv1 , vn1 , v2 , uv2 , vn2 , v3 , uv3 , vn3 , textureIndex );
+					result.addTriangle( v1, uv1, vn1, v2, uv2, vn2, v3, uv3, vn3, textureIndex );
 				}
 			}
 		}
@@ -450,20 +469,20 @@ public final class AbToPovConverter
 	 *
 	 * @return  The resulting {@link PovGeometry} object.
 	 */
-	public PovGeometry convertSphere3D( final Matrix3D transform , final Sphere3D sphere )
+	public PovGeometry convertSphere3D( final Matrix3D transform, final Sphere3D sphere )
 	{
 		final PovGeometry result;
 
 		if ( containsMultipleMaterialsOrMaps( sphere ) )
 		{
-			result = convertObject3D( transform , sphere );
+			result = convertObject3D( transform, sphere );
 		}
 		else
 		{
 			final Face3D     face    = sphere.getFace( 0 );
 			final PovTexture texture = convertMaterialToPovTexture( face.material );
 
-			result = new PovSphere( ( sphere.getTag() != null ) ? String.valueOf( sphere.getTag() ) : null , Vector3D.INIT , sphere.radius , texture );
+			result = new PovSphere( ( sphere.getTag() != null ) ? String.valueOf( sphere.getTag() ) : null, Vector3D.INIT, sphere.radius, texture );
 			result.setTransform( new PovMatrix( transform ) );
 		}
 		return result;
@@ -476,13 +495,14 @@ public final class AbToPovConverter
 	 *
 	 * @return  The resulting {@link PovTexture}.
 	 */
+	@Nullable
 	private PovTexture convertMaterialToPovTexture( final Material material )
 	{
 		PovTexture result;
 
 		if ( material != null )
 		{
-			final PovTexture newTexture = new PovTexture( _imageMapDirectory , material );
+			final PovTexture newTexture = new PovTexture( _imageMapDirectory, material );
 			final String textureName = newTexture.getName();
 
 			result = _scene.getTexture( textureName );
@@ -490,7 +510,7 @@ public final class AbToPovConverter
 			{
 //				newTexture.setReflection( 0.05 );
 				newTexture.setDeclared();
-				_scene.addTexture( textureName , newTexture );
+				_scene.addTexture( textureName, newTexture );
 				result = newTexture;
 			}
 		}

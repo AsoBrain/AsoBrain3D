@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,26 +20,16 @@
  */
 package ab.j3d.pov;
 
-import java.awt.Component;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URL;
+import java.awt.*;
+import java.io.*;
+import java.net.*;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
-
-import ab.j3d.Matrix3D;
-import ab.j3d.model.Box3D;
-import ab.j3d.model.Camera3D;
-import ab.j3d.model.Cylinder3D;
-import ab.j3d.model.Object3D;
-import ab.j3d.model.Scene;
-import ab.j3d.model.Sphere3D;
-import ab.j3d.view.View3D;
-
-import com.numdata.oss.io.IndentingWriter;
-import com.numdata.oss.ui.ImageTools;
+import ab.j3d.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+import com.numdata.oss.io.*;
+import com.numdata.oss.ui.*;
+import junit.framework.*;
 
 /**
  * This class tests the conversion of the testmodel to POV-Ray.
@@ -785,7 +776,7 @@ public final class TestAbToPovConverter
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovGeometry      cylinder        = converter.convertCylinder3D( Matrix3D.getTransform( -45.0 , 0.0 , 0.0 , 250.0 , 0.0 , 0.0 ) , testModel.getCone3D() );
+			final PovGeometry      cylinder        = converter.convertCone3D( Matrix3D.getTransform( -45.0 , 0.0 , 0.0 , 250.0 , 0.0 , 0.0 ) , testModel.getCone3D() );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 

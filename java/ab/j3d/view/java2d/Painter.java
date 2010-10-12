@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2009 Peter S. Heijnen
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,33 +20,15 @@
  */
 package ab.j3d.view.java2d;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.RenderingHints;
-import java.awt.Shape;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Rectangle2D;
+import java.awt.*;
+import java.awt.geom.*;
 import java.util.List;
 
-import ab.j3d.Material;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.model.Cylinder3D;
-import ab.j3d.model.ExtrudedObject2D;
-import ab.j3d.model.Face3D;
-import ab.j3d.model.Face3D.Vertex;
-import ab.j3d.model.Insert3D;
-import ab.j3d.model.Node3D;
-import ab.j3d.model.Object3D;
-import ab.j3d.model.Sphere3D;
-import ab.j3d.model.Transform3D;
-import ab.j3d.view.RenderQueue;
-import ab.j3d.view.RenderedPolygon;
-
-import com.numdata.oss.MathTools;
+import ab.j3d.*;
+import ab.j3d.model.*;
+import ab.j3d.model.Face3D.*;
+import ab.j3d.view.*;
+import com.numdata.oss.*;
 
 /**
  * This class can paint a 3D scene directly to a {@link Graphics2D} context.
@@ -73,10 +55,10 @@ public final class Painter
 	 * @param   applyLighting       Apply lighting effect to filled polygons.
 	 * @param   useMaterialColor    Try to apply material properties when filling polygons.
 	 */
-	public static void paintQueue( final Graphics2D g , final RenderQueue renderQueue , final boolean outline , final boolean fill , final boolean applyLighting , final boolean useMaterialColor )
+	public static void paintQueue( final Graphics2D g, final RenderQueue renderQueue, final boolean outline, final boolean fill, final boolean applyLighting, final boolean useMaterialColor )
 	{
 		final RenderedPolygon[] polygons = fill ? renderQueue.getQueuedPolygons() : renderQueue.getUnsortedQueue();
-		paintQueue( g , polygons , outline , fill , applyLighting , useMaterialColor );
+		paintQueue( g, polygons, outline, fill, applyLighting, useMaterialColor );
 	}
 
 	/**
@@ -89,11 +71,11 @@ public final class Painter
 	 * @param   applyLighting       Apply lighting effect to filled polygons.
 	 * @param   useMaterialColor    Try to apply material properties when filling polygons.
 	 */
-	public static void paintQueue( final Graphics2D g , final RenderedPolygon[] polygons , final boolean outline , final boolean fill , final boolean applyLighting , final boolean useMaterialColor )
+	public static void paintQueue( final Graphics2D g, final RenderedPolygon[] polygons, final boolean outline, final boolean fill, final boolean applyLighting, final boolean useMaterialColor )
 	{
 		for ( final RenderedPolygon polygon : polygons )
 		{
-			paintPolygon( g , polygon , outline , fill , applyLighting , useMaterialColor );
+			paintPolygon( g, polygon, outline, fill, applyLighting, useMaterialColor );
 		}
 	}
 
@@ -107,7 +89,7 @@ public final class Painter
 	 * @param   applyLighting       Apply lighting effect to filled polygons.
 	 * @param   useMaterialColor    Try to apply material properties when filling polygons.
 	 */
-	public static void paintPolygon( final Graphics2D g , final RenderedPolygon polygon , final boolean outline , final boolean fill , final boolean applyLighting , final boolean useMaterialColor )
+	public static void paintPolygon( final Graphics2D g, final RenderedPolygon polygon, final boolean outline, final boolean fill, final boolean applyLighting, final boolean useMaterialColor )
 	{
 		final Object antiAliasingValue = g.getRenderingHint( RenderingHints.KEY_ANTIALIASING );
 
@@ -133,19 +115,19 @@ public final class Painter
 			{
 				final float shadeFactor = polygon._object.shadeFactor;
 
-				final float factor = Math.min( 1.0f , ( 1.0f - shadeFactor ) + shadeFactor * Math.abs( (float)polygon._planeNormalZ ) );
+				final float factor = Math.min( 1.0f, ( 1.0f - shadeFactor ) + shadeFactor * Math.abs( (float)polygon._planeNormalZ ) );
 				if ( factor < 1.0f )
 				{
 					final Color color = (Color)fillPaint;
 					final float[] rgb = color.getRGBComponents( null );
 
-					fillPaint = new Color( factor * rgb[ 0 ] , factor * rgb[ 1 ] , factor * rgb[ 2 ] , rgb[ 3 ] );
+					fillPaint = new Color( factor * rgb[ 0 ], factor * rgb[ 1 ], factor * rgb[ 2 ], rgb[ 3 ] );
 				}
 			}
 
 			if ( fillPaint != null )
 			{
-				g.setRenderingHint( RenderingHints.KEY_ANTIALIASING , RenderingHints.VALUE_ANTIALIAS_OFF );
+				g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF );
 				g.setPaint( fillPaint );
 				g.fill( polygon );
 			}
@@ -159,12 +141,12 @@ public final class Painter
 			             : polygon._alternateAppearance ? polygon._object.alternateOutlineColor
 			                                            : polygon._object.outlineColor;
 
-			g.setRenderingHint( RenderingHints.KEY_ANTIALIASING , RenderingHints.VALUE_ANTIALIAS_ON );
+			g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 			g.setPaint( outlineColor );
 			g.draw( polygon );
 		}
 
-		g.setRenderingHint( RenderingHints.KEY_ANTIALIASING , antiAliasingValue );
+		g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, antiAliasingValue );
 	}
 
 	/**
@@ -185,9 +167,9 @@ public final class Painter
 	 * @param   node                    Node to paint.
 	 * @param   alternateAppearance     Use alternate appearance.
 	 */
-	public static void paintNode( final Graphics2D g , final Matrix3D view2image , final Matrix3D node2view , final Node3D node , final boolean alternateAppearance )
+	public static void paintNode( final Graphics2D g, final Matrix3D view2image, final Matrix3D node2view, final Node3D node, final boolean alternateAppearance )
 	{
-		paintNode( g , view2image , node2view , node , alternateAppearance , null );
+		paintNode( g, view2image, node2view, node, alternateAppearance, null );
 	}
 
 	/**
@@ -209,7 +191,7 @@ public final class Painter
 	 * @param   alternateAppearance     Use alternate appearance.
 	 * @param   fillPaintOverride       Override fill paint.
 	 */
-	public static void paintNode( final Graphics2D g , final Matrix3D view2image , final Matrix3D node2view , final Node3D node , final boolean alternateAppearance , final Paint fillPaintOverride )
+	public static void paintNode( final Graphics2D g, final Matrix3D view2image, final Matrix3D node2view, final Node3D node, final boolean alternateAppearance, final Paint fillPaintOverride )
 	{
 		final Matrix3D transform;
 
@@ -234,14 +216,14 @@ public final class Painter
 			final Color    outlineColor =                                                     alternateAppearance ? object.alternateOutlineColor : object.outlineColor;
 			final Paint    fillColor    = ( fillPaintOverride != null ) ? fillPaintOverride : alternateAppearance ? object.alternateFillColor    : object.fillColor;
 
-			paintObject( g , view2image , transform , object , outlineColor , fillColor , object.shadeFactor );
+			paintObject( g, view2image, transform, object, outlineColor, fillColor, object.shadeFactor );
 		}
 
 		final int  childCount = node.getChildCount();
 
 		for ( int i = 0 ; i < childCount ; i++ )
 		{
-			paintNode( g , view2image , transform , node.getChild( i ) , alternateAppearance , fillPaintOverride );
+			paintNode( g, view2image, transform, node.getChild( i ), alternateAppearance, fillPaintOverride );
 		}
 	}
 
@@ -273,7 +255,7 @@ public final class Painter
 	 * @param   fillPaint       Paint to use for filling faces (<code>null</code> to disable drawing).
 	 * @param   shadeFactor     Amount of shading that may be applied (0=none, 1=extreme).
 	 */
-	public static void paintNode( final Graphics2D g , final Matrix3D view2image , final Matrix3D node2view , final Node3D node , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
+	public static void paintNode( final Graphics2D g, final Matrix3D view2image, final Matrix3D node2view, final Node3D node, final Color outlineColor, final Paint fillPaint, final float shadeFactor )
 	{
 		final Matrix3D transform;
 
@@ -294,16 +276,19 @@ public final class Painter
 
 		if ( node instanceof Object3D )
 		{
-			paintObject( g , view2image , transform , (Object3D)node , outlineColor , fillPaint , shadeFactor );
+			paintObject( g, view2image, transform, (Object3D)node, outlineColor, fillPaint, shadeFactor );
 		}
 
 		final int  childCount = node.getChildCount();
 
 		for ( int i = 0 ; i < childCount ; i++ )
-			paintNode( g , view2image , transform , node.getChild( i ) , outlineColor , fillPaint , shadeFactor );
+		{
+			paintNode( g, view2image, transform, node.getChild( i ), outlineColor, fillPaint, shadeFactor );
+		}
 	}
 
-	private static void paintObject( final Graphics2D g , final Matrix3D view2image , final Matrix3D object2view , final Object3D object , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
+	/** @noinspection JavaDoc*/
+	private static void paintObject( final Graphics2D g, final Matrix3D view2image, final Matrix3D object2view, final Object3D object, final Color outlineColor, final Paint fillPaint, final float shadeFactor )
 	{
 		final int faceCount = object.getFaceCount();
 
@@ -312,9 +297,10 @@ public final class Painter
 		     && ( object2view != null )
 		     && ( ( outlineColor != null ) || ( fillPaint != null ) )
 		     && ( faceCount > 0 )
-		     && ( !( object instanceof Cylinder3D       ) || !paintCylinder     ( g , view2image , object2view , (Cylinder3D      )object , outlineColor , fillPaint , shadeFactor ) )
-		     && ( !( object instanceof Sphere3D         ) || !paintSphere       ( g , view2image , object2view , (Sphere3D        )object , outlineColor , fillPaint , shadeFactor ) )
-		     && ( !( object instanceof ExtrudedObject2D ) || !paintExtrudedShape( g , view2image , object2view , (ExtrudedObject2D)object , outlineColor , fillPaint , shadeFactor ) ) )
+		     && ( !( object instanceof Cone3D           ) || !paintConeOrCylinder( g, view2image, object2view, ( (Cone3D)object ).height, ( (Cone3D)object ).radiusBottom, ( (Cone3D)object ).radiusTop, outlineColor, fillPaint ) )
+		     && ( !( object instanceof Cylinder3D       ) || !paintConeOrCylinder( g, view2image, object2view, ( (Cylinder3D)object ).height, ( (Cylinder3D)object ).radius, ( (Cylinder3D)object ).radius, outlineColor, fillPaint ) )
+		     && ( !( object instanceof Sphere3D         ) || !paintSphere        ( g, view2image, object2view, (Sphere3D        )object, outlineColor, fillPaint ) )
+		     && ( !( object instanceof ExtrudedObject2D ) || !paintExtrudedShape ( g, view2image, object2view, (ExtrudedObject2D)object, outlineColor, fillPaint ) ) )
 		{
 			/*
 			 * If the array is to small, create a larger one.
@@ -323,7 +309,7 @@ public final class Painter
 			for ( int faceIndex = 0; faceIndex < faceCount; faceIndex++ )
 			{
 				final Face3D face = object.getFace( faceIndex );
-				maxVertexCount = Math.max( maxVertexCount , face.vertices.size() );
+				maxVertexCount = Math.max( maxVertexCount, face.vertices.size() );
 			}
 
 			final int[] xs = new int[ maxVertexCount ];
@@ -332,9 +318,13 @@ public final class Painter
 			final float[]  rgb;
 
 			if ( ( fillPaint instanceof Color ) && ( maxVertexCount > 2 ) && ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) )
-				rgb = ((Color)fillPaint).getRGBComponents( null );
+			{
+				rgb = ( (Color)fillPaint ).getRGBComponents( null );
+			}
 			else
+			{
 				rgb = null;
+			}
 
 			for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
 			{
@@ -353,17 +343,17 @@ public final class Painter
 					 */
 					final Vector3D faceNormal = face.normal;
 
-					final float transformedNormalZ = (float)object2view.rotateZ( faceNormal.x , faceNormal.y , faceNormal.z );
-					final float factor = Math.min( 1.0f , ( 1.0f - shadeFactor ) + shadeFactor * Math.abs( transformedNormalZ ) );
+					final float transformedNormalZ = (float)object2view.rotateZ( faceNormal.x, faceNormal.y, faceNormal.z );
+					final float factor = Math.min( 1.0f, ( 1.0f - shadeFactor ) + shadeFactor * Math.abs( transformedNormalZ ) );
 
-					faceFillPaint = ( factor < 1.0f ) ? new Color( factor * rgb[ 0 ] , factor * rgb[ 1 ] , factor * rgb[ 2 ] , rgb[ 3 ] ) : fillPaint;
+					faceFillPaint = ( factor < 1.0f ) ? new Color( factor * rgb[ 0 ], factor * rgb[ 1 ], factor * rgb[ 2 ], rgb[ 3 ] ) : fillPaint;
 				}
 				else
 				{
 					faceFillPaint = fillPaint;
 				}
 
-				paintFace( g , view2image , object2view , face , outlineColor , faceFillPaint , xs , ys );
+				paintFace( g, view2image, object2view, face, outlineColor, faceFillPaint, xs, ys );
 			}
 		}
 	}
@@ -382,39 +372,38 @@ public final class Painter
 	 *                          <code>null</code> to draw no outline.
 	 * @param   fillPaint       Paint to fill the painted shape with, or
 	 *                          <code>null</code> if the shape mustn't be filled.
-	 * @param   shadeFactor     Shade factor to be applied; currently ignored.
 	 *
 	 * @return  <code>true</code> if the shape was painted; <code>false</code>
 	 *          if the shape should be painted by some other means.
 	 */
-	private static boolean paintExtrudedShape( final Graphics2D g , final Matrix3D view2image , final Matrix3D object2view , final ExtrudedObject2D object , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
+	private static boolean paintExtrudedShape( final Graphics2D g, final Matrix3D view2image, final Matrix3D object2view, final ExtrudedObject2D object, final Color outlineColor, final Paint fillPaint )
 	{
 		final boolean result;
 
 		final Matrix3D scene2view = object.transform.multiply( object2view );
 		final Shape    shape    = object.shape;
 
-		g.translate( -0.5 , -0.5 ); // Match rounding used in other paint methods.
+		g.translate( -0.5, -0.5 ); // Match rounding used in other paint methods.
 
 		if ( ( object.extrusion.x != 0.0 ) || ( object.extrusion.y != 0.0 ) )
 		{
 			result = false;
 		}
-		else if ( MathTools.almostEqual( scene2view.zz , 0.0 ) )
+		else if ( MathTools.almostEqual( scene2view.zz, 0.0 ) )
 		{
 			final Rectangle2D bounds = shape.getBounds2D();
 
 			final Matrix3D object2graphics = scene2view.multiply( view2image );
 
-			final Vector3D v1 = object2graphics.transform( bounds.getMinX() , bounds.getMinY() , 0.0 );
-			final Vector3D v2 = object2graphics.transform( bounds.getMaxX() , bounds.getMaxY() , object.extrusion.z  );
+			final Vector3D v1 = object2graphics.transform( bounds.getMinX(), bounds.getMinY(), 0.0 );
+			final Vector3D v2 = object2graphics.transform( bounds.getMaxX(), bounds.getMaxY(), object.extrusion.z  );
 
-			final double minX = Math.min( v1.x , v2.x );
-			final double minY = Math.min( v1.y , v2.y );
-			final double maxX = Math.max( v1.x , v2.x );
-			final double maxY = Math.max( v1.y , v2.y );
+			final double minX = Math.min( v1.x, v2.x );
+			final double minY = Math.min( v1.y, v2.y );
+			final double maxX = Math.max( v1.x, v2.x );
+			final double maxY = Math.max( v1.y, v2.y );
 
-			final Rectangle2D.Double boundsShape = new Rectangle2D.Double( minX , minY , maxX - minX , maxY - minY );
+			final Rectangle2D.Double boundsShape = new Rectangle2D.Double( minX, minY, maxX - minX, maxY - minY );
 
 			if ( fillPaint != null )
 			{
@@ -430,17 +419,17 @@ public final class Painter
 
 			result = true;
 		}
-		else if ( MathTools.almostEqual( Math.abs( scene2view.zz ) , 1.0 ) )
+		else if ( MathTools.almostEqual( Math.abs( scene2view.zz ), 1.0 ) )
 		{
 			final Matrix3D object2graphics = scene2view.multiply( view2image );
 
 			final AffineTransform object2graphics2D = new AffineTransform(
-					object2graphics.xx , object2graphics.yx ,
-					object2graphics.xy , object2graphics.yy ,
-					object2graphics.xo , object2graphics.yo );
+					object2graphics.xx, object2graphics.yx,
+					object2graphics.xy, object2graphics.yy,
+					object2graphics.xo, object2graphics.yo );
 
 			final GeneralPath viewShape = new GeneralPath();
-			viewShape.append( shape.getPathIterator( object2graphics2D ) , false );
+			viewShape.append( shape.getPathIterator( object2graphics2D ), false );
 
 			if ( fillPaint != null )
 			{
@@ -461,66 +450,62 @@ public final class Painter
 			result = false;
 		}
 
-		g.translate( 0.5 , 0.5 ); // Undo translation applied above.
+		g.translate( 0.5, 0.5 ); // Undo translation applied above.
 
 		return result;
 	}
 
-	private static boolean paintCylinder( final Graphics2D g , final Matrix3D view2image , final Matrix3D cylinder2view , final Cylinder3D cylinder , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
+	/** @noinspection JavaDoc*/
+	private static boolean paintConeOrCylinder( final Graphics2D g, final Matrix3D view2image, final Matrix3D object2view, final double height, final double radiusBottom, final double radiusTop, final Color outlineColor, final Paint fillPaint )
 	{
 		final boolean result;
 
-		final Matrix3D viewBase = cylinder.base.multiply( cylinder2view );
-		final double   h        = cylinder.height;
-		final double   rBottom  = cylinder.radiusBottom;
-		final double   rTop     = cylinder.radiusTop;
-
-		final double zz = viewBase.zz;
-		final double xz = viewBase.xz;
-		final double yz = viewBase.yz;
-		final double xo = viewBase.xo;
-		final double yo = viewBase.yo;
-		final double zo = viewBase.zo;
+		final double zz = object2view.zz;
+		final double xz = object2view.xz;
+		final double yz = object2view.yz;
+		final double xo = object2view.xo;
+		final double yo = object2view.yo;
+		final double zo = object2view.zo;
 
 //		final float goldenRatio = 0.6180339f;
 
 		/*
-		 * The cylinder's center axis (Z-axis) is is parallel on the view plane
+		 * The cone's center axis (Z-axis) is is parallel on the view plane
 		 * (on the XY / Z=0 plane).
 		 *
-		 * We can can only see the outline of the cylinder (trapezoid).
+		 * We can can only see the outline of the cone (trapezoid).
 		 */
-		if ( MathTools.almostEqual( zz , 0.0 ) )
+		if ( MathTools.almostEqual( zz, 0.0 ) )
 		{
-			// (xz,yz) = direction of cylinder Z-axis in XY plane
-			// (xo,yo,zo) = view coordinate of cylinder bottom centeroid
+			// (xz,yz) = direction of cone Z-axis in XY plane
+			// (xo,yo,zo) = view coordinate of cone bottom centeroid
 
-			final double p1x = xo  + yz * rBottom;       // p1 = bottom left,
-			final double p1y = yo  - xz * rBottom;
-			final double p2x = xo  + yz * rTop + xz * h; // p2 = top left
-			final double p2y = yo  - xz * rTop + yz * h;
-			final double p3x = xo  - yz * rTop + xz * h; // p3 = top right
-			final double p3y = yo  + xz * rTop + yz * h;
-			final double p4x = xo  - yz * rBottom;       // p4 = bottom right
-			final double p4y = yo  + xz * rBottom;
+			final double p1x = xo  + yz * radiusBottom;            // p1 = bottom left,
+			final double p1y = yo  - xz * radiusBottom;
+			final double p2x = xo  + yz * radiusTop + xz * height; // p2 = top left
+			final double p2y = yo  - xz * radiusTop + yz * height;
+			final double p3x = xo  - yz * radiusTop + xz * height; // p3 = top right
+			final double p3y = yo  + xz * radiusTop + yz * height;
+			final double p4x = xo  - yz * radiusBottom;            // p4 = bottom right
+			final double p4y = yo  + xz * radiusBottom;
 
 			/*
 			 * Project and draw trapezoid.
 			 */
-			final float x1 = (float)view2image.transformX( p1x , p1y , zo );
-			final float y1 = (float)view2image.transformY( p1x , p1y , zo );
-			final float x2 = (float)view2image.transformX( p2x , p2y , zo );
-			final float y2 = (float)view2image.transformY( p2x , p2y , zo );
-			final float x3 = (float)view2image.transformX( p3x , p3y , zo );
-			final float y3 = (float)view2image.transformY( p3x , p3y , zo );
-			final float x4 = (float)view2image.transformX( p4x , p4y , zo );
-			final float y4 = (float)view2image.transformY( p4x , p4y , zo );
+			final float x1 = (float)view2image.transformX( p1x, p1y, zo );
+			final float y1 = (float)view2image.transformY( p1x, p1y, zo );
+			final float x2 = (float)view2image.transformX( p2x, p2y, zo );
+			final float y2 = (float)view2image.transformY( p2x, p2y, zo );
+			final float x3 = (float)view2image.transformX( p3x, p3y, zo );
+			final float y3 = (float)view2image.transformY( p3x, p3y, zo );
+			final float x4 = (float)view2image.transformX( p4x, p4y, zo );
+			final float y4 = (float)view2image.transformY( p4x, p4y, zo );
 
-			final GeneralPath path = new GeneralPath( GeneralPath.WIND_EVEN_ODD , 5 );
-			path.moveTo( x1 , y1 );
-			path.lineTo( x2 , y2 );
-			path.lineTo( x3 , y3 );
-			path.lineTo( x4 , y4 );
+			final GeneralPath path = new GeneralPath( GeneralPath.WIND_EVEN_ODD, 5 );
+			path.moveTo( x1, y1 );
+			path.lineTo( x2, y2 );
+			path.lineTo( x3, y3 );
+			path.lineTo( x4, y4 );
 			path.closePath();
 
 			if ( fillPaint != null )
@@ -529,7 +514,7 @@ public final class Painter
 //				{
 //					final float highlightX = ( 1.0f - goldenRatio ) * x1 + goldenRatio * x4;
 //					final float highlightY = ( 1.0f - goldenRatio ) * y1 + goldenRatio * y4;
-//					g.setPaint( new GradientPaint( highlightX , highlightY , (Color)fillPaint , x1 , y1 , (Color)outlineColor , true ) );
+//					g.setPaint( new GradientPaint( highlightX, highlightY, (Color)fillPaint, x1, y1, (Color)outlineColor, true ) );
 //				}
 //				else
 				{
@@ -550,32 +535,32 @@ public final class Painter
 		 * Viewing along Z-axis. We can see, the bottom and/or top cap and the
 		 * area between the two.
 		 */
-		else if ( MathTools.almostEqual( xz , 0.0 ) &&
-		          MathTools.almostEqual( yz , 0.0 ) )
+		else if ( MathTools.almostEqual( xz, 0.0 ) &&
+		          MathTools.almostEqual( yz, 0.0 ) )
 		{
-			final Matrix3D combinedTransform = viewBase.multiply( view2image );
+			final Matrix3D combinedTransform = object2view.multiply( view2image );
 
 			final float x         = (float)combinedTransform.xo;
 			final float y         = (float)combinedTransform.yo;
 			final float botZ      = (float)combinedTransform.zo;
 			final float botRadius;
 			{
-				final double dx = combinedTransform.xx * rBottom;
-				final double dy = combinedTransform.yx * rBottom;
+				final double dx = combinedTransform.xx * radiusBottom;
+				final double dy = combinedTransform.yx * radiusBottom;
 				botRadius = (float)Math.sqrt( dx * dx + dy * dy );
 			}
 
-			final Ellipse2D bot = MathTools.almostEqual( (double)botRadius , 0.0 ) ? null : new Ellipse2D.Float( x - botRadius , y - botRadius , 2.0f * botRadius , 2.0f * botRadius );
+			final Ellipse2D bot = MathTools.almostEqual( (double)botRadius, 0.0 ) ? null : new Ellipse2D.Float( x - botRadius, y - botRadius, 2.0f * botRadius, 2.0f * botRadius );
 
-			final float topZ = (float)combinedTransform.transformZ( 0.0 , 0.0 , h );
+			final float topZ = (float)combinedTransform.transformZ( 0.0, 0.0, height );
 			final float topRadius;
 			{
-				final double dx = rTop * combinedTransform.xx + h * combinedTransform.xz;
-				final double dy = rTop * combinedTransform.yx + h * combinedTransform.yz;
+				final double dx = radiusTop * combinedTransform.xx + height * combinedTransform.xz;
+				final double dy = radiusTop * combinedTransform.yx + height * combinedTransform.yz;
 				topRadius = (float)Math.sqrt( dx * dx + dy * dy );
 			}
 
-			final Ellipse2D top = MathTools.almostEqual( (double)topRadius , 0.0 ) ? null : new Ellipse2D.Float( x - topRadius , y - topRadius , 2.0f * topRadius , 2.0f * topRadius );
+			final Ellipse2D top = MathTools.almostEqual( (double)topRadius, 0.0 ) ? null : new Ellipse2D.Float( x - topRadius, y - topRadius, 2.0f * topRadius, 2.0f * topRadius );
 
 			if ( ( bot != null ) || ( top != null ) )
 			{
@@ -607,9 +592,9 @@ public final class Painter
 				{
 //					if ( ( shadeFactor >= 0.1f ) && ( shadeFactor <= 1.0f ) && ( fillPaint instanceof Color ) && ( outlineColor instanceof Color ))
 //					{
-//						final float r = Math.max( topRadius , botRadius );
+//						final float r = Math.max( topRadius, botRadius );
 //						final float highlight = ( goldenRatio - 0.5f ) * r;
-//						paint = new GradientPaint( x + highlight , y - highlight , (Color)fillPaint , x -r , y + r , (Color)outlineColor , true );
+//						paint = new GradientPaint( x + highlight, y - highlight, (Color)fillPaint, x -r, y + r, (Color)outlineColor, true );
 //					}
 //					else
 					{
@@ -618,7 +603,9 @@ public final class Painter
 					g.setPaint( paint );
 
 					if ( !shape1.equals( shape2 ) )
+					{
 						g.fill( shape1 );
+					}
 				}
 				else
 				{
@@ -629,7 +616,9 @@ public final class Painter
 				{
 					g.setPaint( outlineColor );
 					if ( !shape1.equals( shape2 ) )
+					{
 						g.draw( shape1 );
+					}
 				}
 
 				if ( shape2 != null )
@@ -651,10 +640,10 @@ public final class Painter
 //			rby = rby < 0 ? -rby : rby;
 //
 //			if ( rtx != 0 && rty != 0 )
-//				g.drawOval( (x - (rtx / 2) ) , (y - (rty / 2) ) , rtx , rty );
+//				g.drawOval( (x - (rtx / 2) ), (y - (rty / 2) ), rtx, rty );
 //
 //			if ( rbx != 0 && rby != 0 )
-//				g.drawOval( (x - (rbx / 2) ) , (y - (rby / 2) ) , rbx , rby );
+//				g.drawOval( (x - (rbx / 2) ), (y - (rby / 2) ), rbx, rby );
 
 			result = true;
 		}
@@ -675,7 +664,8 @@ public final class Painter
 		return result;
 	}
 
-	private static boolean paintSphere( final Graphics2D g , final Matrix3D view2image , final Matrix3D sphere2view , final Sphere3D sphere , final Color outlineColor , final Paint fillPaint , final float shadeFactor )
+	/** @noinspection JavaDoc*/
+	private static boolean paintSphere( final Graphics2D g, final Matrix3D view2image, final Matrix3D sphere2view, final Sphere3D sphere, final Color outlineColor, final Paint fillPaint )
 	{
 		final boolean result;
 
@@ -696,7 +686,7 @@ public final class Painter
 			r = (float)( radius * Math.sqrt( xx * xx + xy * xy + xz * xz ) );
 		}
 
-		final Ellipse2D shape = MathTools.almostEqual( (double)r , 0.0 ) ? null : new Ellipse2D.Float( x - r , y - r , r + r , r + r );
+		final Ellipse2D shape = MathTools.almostEqual( (double)r, 0.0 ) ? null : new Ellipse2D.Float( x - r, y - r, r + r, r + r );
 
 		if ( fillPaint != null )
 		{
@@ -706,7 +696,7 @@ public final class Painter
 //				final float goldenRatio = 0.6180339f;
 //				final float highlight   = ( goldenRatio - 0.5f ) * r;
 //
-//				paint = new GradientPaint( x + highlight , y - highlight , (Color)fillPaint , x -r , y + r , (Color)outlineColor , true );
+//				paint = new GradientPaint( x + highlight, y - highlight, (Color)fillPaint, x -r, y + r, (Color)outlineColor, true );
 //			}
 //			else
 			{
@@ -728,7 +718,6 @@ public final class Painter
 		return result;
 	}
 
-
 	/**
 	 * Paint 2D representation of this 3D face.
 	 *
@@ -743,7 +732,7 @@ public final class Painter
 	 *
 	 * @see     #paintNode
 	 */
-	private static void paintFace( final Graphics2D g , final Matrix3D view2image , final Matrix3D object2view , final Face3D face , final Color outlineColor , final Paint fillPaint , final int[] xs , final int[] ys )
+	private static void paintFace( final Graphics2D g, final Matrix3D view2image, final Matrix3D object2view, final Face3D face, final Color outlineColor, final Paint fillPaint, final int[] xs, final int[] ys )
 	{
 		final List<Vertex> vertices = face.vertices;
 		final int vertexCount = vertices.size();
@@ -759,8 +748,8 @@ public final class Painter
 				final double y  = object2view.transformY( vertex.point );
 				final double z  = object2view.transformZ( vertex.point );
 
-				final int ix = (int)view2image.transformX( x , y , z );
-				final int iy = (int)view2image.transformY( x , y , z );
+				final int ix = (int)view2image.transformX( x, y, z );
+				final int iy = (int)view2image.transformY( x, y, z );
 
 				/*
 				 * Perform backface removal if we have 3 points, so we can calculate the normal.
@@ -773,7 +762,9 @@ public final class Painter
 					      <= ( ( ys[ 0 ] - ys[ 1 ] ) * ( ix - xs[ 1 ] ) ) );
 
 					if ( !show )
+					{
 						break;
+					}
 				}
 
 				xs[ p ] = ix;
@@ -790,12 +781,12 @@ public final class Painter
 					{
 						if ( outlineColor == null )
 						{
-							g.drawLine( xs[ 0 ] , ys[ 0 ] , xs[ vertexCount - 1 ] , ys[ vertexCount - 1 ] );
+							g.drawLine( xs[ 0 ], ys[ 0 ], xs[ vertexCount - 1 ], ys[ vertexCount - 1 ] );
 						}
 					}
 					else
 					{
-						g.fillPolygon( xs , ys , vertexCount );
+						g.fillPolygon( xs, ys, vertexCount );
 					}
 				}
 
@@ -804,11 +795,11 @@ public final class Painter
 					g.setPaint( outlineColor );
 					if ( vertexCount < 3 ) /* point or line */
 					{
-						g.drawLine( xs[ 0 ] , ys[ 0 ] , xs[ vertexCount - 1 ] , ys[ vertexCount - 1 ] );
+						g.drawLine( xs[ 0 ], ys[ 0 ], xs[ vertexCount - 1 ], ys[ vertexCount - 1 ] );
 					}
 					else
 					{
-						g.drawPolygon( xs , ys , vertexCount );
+						g.drawPolygon( xs, ys, vertexCount );
 					}
 				}
 			}
