@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 2009-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,13 +20,10 @@
  */
 package ab.j3d.geom;
 
-import java.awt.geom.Point2D;
+import java.awt.geom.*;
 
-import ab.j3d.Bounds3D;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-
-import com.numdata.oss.MathTools;
+import ab.j3d.*;
+import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -44,26 +42,41 @@ public class GeometryTools
 	}
 
 	/**
-	 * Test bounding sphere intersection.
+	 * Test sphere intersection.
 	 *
-	 * @param   center1     Center of sphere #1.
-	 * @param   radius1     Radius of sphere #2.
-	 * @param   from2to1    Transformation from sphere #2 to sphere #1.
-	 * @param   center2     Center of sphere #2.
-	 * @param   radius2     Radius of sphere #2.
+	 * @param   center1     Center of sphere 1.
+	 * @param   radius1     Radius of sphere 1.
+	 * @param   from2to1    Transformation from sphere 2 to sphere 1.
+	 * @param   center2     Center of sphere 2.
+	 * @param   radius2     Radius of sphere 2.
 	 *
-	 * @return  <code>true</code> if the bounding spheres intersect;
+	 * @return  <code>true</code> if the spheres intersect;
 	 *          <code>false</code> otherwise.
 	 */
-	public static boolean testSphereIntersection( final Vector3D center1 , final double radius1 , final Matrix3D from2to1 , final Vector3D center2 , final double radius2 )
+	public static boolean testSphereIntersection( final Vector3D center1, final double radius1, final Matrix3D from2to1, final Vector3D center2, final double radius2 )
 	{
-		final double maxDistance = radius1 + radius2;
-
 		final double dx = from2to1.transformX( center2 ) - center1.x;
 		final double dy = from2to1.transformY( center2 ) - center1.y;
 		final double dz = from2to1.transformZ( center2 ) - center1.z;
+		return testSphereIntersection( radius1, dx, dy, dz, radius2 );
+	}
 
-		return ( dx * dx + dy * dy + dz * dz ) < ( maxDistance * maxDistance );
+	/**
+	 * Test sphere intersection.
+	 *
+	 * @param   radius1     Radius of sphere 2.
+	 * @param   centerDx    Delta X between center of spheres.
+	 * @param   centerDy    Delta Y between center of spheres.
+	 * @param   centerDz    Delta Z between center of spheres.
+	 * @param   radius2     Radius of sphere 2.
+	 *
+	 * @return  <code>true</code> if the spheres intersect;
+	 *          <code>false</code> otherwise.
+	 */
+	public static boolean testSphereIntersection( final double radius1, final double centerDx, final double centerDy, final double centerDz, final double radius2 )
+	{
+		final double maxDistance = radius1 + radius2;
+		return ( centerDx * centerDx + centerDy * centerDy + centerDz * centerDz ) < ( maxDistance * maxDistance );
 	}
 
 	/**
@@ -79,8 +92,52 @@ public class GeometryTools
 	 * @return  <code>true</code> if the bounding boxes intersect;
 	 *          <code>false</code> otherwise.
 	 */
-	public static boolean testOrientedBoundingBoxIntersection( @NotNull final Bounds3D box1 , @NotNull final Matrix3D from2to1 , @NotNull final Bounds3D box2 )
+	public static boolean testOrientedBoundingBoxIntersection( @NotNull final Bounds3D box1, @NotNull final Matrix3D from2to1, @NotNull final Bounds3D box2 )
 	{
+		return testOrientedBoundingBoxIntersection( box1.v1.x, box1.v1.y, box1.v1.z, box1.v2.x - box1.v1.x, box1.v2.y - box1.v1.y, box1.v2.z - box1.v1.z, from2to1, box2.v1.x, box2.v1.y, box2.v1.z, box2.v2.x - box2.v1.x, box2.v2.y - box2.v1.y, box2.v2.z - box2.v1.z );
+	}
+
+	/**
+	 * Test oriented bounding box intersection.
+	 *
+	 * Borrowed code from <A href='http://channel9.msdn.com/ShowPost.aspx?PostID=276041'>XNA Oriented Bounding Box Intersection Test</A>,
+	 * which was based on <A href='http://www.cs.unc.edu/~geom/theses/gottschalk/main.pdf'>Collision Queries using Oriented Boxes</A> by Stefan Gottschalk.
+	 *
+	 * @param   ox1         X coordinate of local axis-aligned origin of box 1.
+	 * @param   oy1         Y coordinate of local axis-aligned origin of box 1.
+	 * @param   oz1         Z coordinate of local axis-aligned origin of box 1.
+	 * @param   dx1         Local axis-aligned size along X-axis of box 1.
+	 * @param   dy1         Local axis-aligned size along Y-axis of box 1.
+	 * @param   dz1         Local axis-aligned size along Z-axis of box 1.
+	 * @param   from2to1    Transformation from box 2 to box 1.
+	 * @param   ox2         X coordinate of local axis-aligned origin of box 2.
+	 * @param   oy2         Y coordinate of local axis-aligned origin of box 2.
+	 * @param   oz2         Z coordinate of local axis-aligned origin of box 2.
+	 * @param   dx2         Local axis-aligned size along X-axis of box 2.
+	 * @param   dy2         Local axis-aligned size along Y-axis of box 2.
+	 * @param   dz2         Local axis-aligned size along Z-axis of box 2.
+	 *
+	 * @return  <code>true</code> if the bounding boxes intersect;
+	 *          <code>false</code> otherwise.
+	 */
+	public static boolean testOrientedBoundingBoxIntersection( final double ox1, final double oy1, final double oz1, final double dx1, final double dy1, final double dz1, @NotNull final Matrix3D from2to1, final double ox2, final double oy2, final double oz2, final double dx2, final double dy2, final double dz2 )
+	{
+		final double extents1X   = 0.5 * dx1;
+		final double extents1Y   = 0.5 * dy1;
+		final double extents1Z   = 0.5 * dz1;
+
+		final double extents2X   = 0.5 * dx2;
+		final double extents2Y   = 0.5 * dy2;
+		final double extents2Z   = 0.5 * dz2;
+
+		final double centerOtherX = ox2 + 0.5 * dx2;
+		final double centerOtherY = oy2 + 0.5 * dy2;
+		final double centerOtherZ = oz2 + 0.5 * dz2;
+
+		final double separationX = from2to1.transformX( centerOtherX, centerOtherY, centerOtherZ ) - ( ox1 + 0.5 * dx1 );
+		final double separationY = from2to1.transformY( centerOtherX, centerOtherY, centerOtherZ ) - ( oy1 + 0.5 * dy1 );
+		final double separationZ = from2to1.transformZ( centerOtherX, centerOtherY, centerOtherZ ) - ( oz1 + 0.5 * dz1 );
+
 		final double absXX = Math.abs( from2to1.xx );
 		final double absXY = Math.abs( from2to1.xy );
 		final double absXZ = Math.abs( from2to1.xz );
@@ -91,29 +148,13 @@ public class GeometryTools
 		final double absZY = Math.abs( from2to1.zy );
 		final double absZZ = Math.abs( from2to1.zz );
 
-		final double extents1X   = 0.5 * ( box1.v2.x - box1.v1.x );
-		final double extents1Y   = 0.5 * ( box1.v2.y - box1.v1.y );
-		final double extents1Z   = 0.5 * ( box1.v2.z - box1.v1.z );
-
-		final double extents2X   = 0.5 * ( box2.v2.x - box2.v1.x );
-		final double extents2Y   = 0.5 * ( box2.v2.y - box2.v1.y );
-		final double extents2Z   = 0.5 * ( box2.v2.z - box2.v1.z );
-
-		final double centerOtherX = 0.5 * ( box2.v1.x + box2.v2.x );
-		final double centerOtherY = 0.5 * ( box2.v1.y + box2.v2.y );
-		final double centerOtherZ = 0.5 * ( box2.v1.z + box2.v2.z );
-
-		final double separationX = from2to1.transformX( centerOtherX , centerOtherY , centerOtherZ ) - 0.5 * ( box1.v1.x + box1.v2.x );
-		final double separationY = from2to1.transformY( centerOtherX , centerOtherY , centerOtherZ ) - 0.5 * ( box1.v1.y + box1.v2.y );
-		final double separationZ = from2to1.transformZ( centerOtherX , centerOtherY , centerOtherZ ) - 0.5 * ( box1.v1.z + box1.v2.z );
-
 		return
-		/* Test 1 X axis */ MathTools.significantlyLessThan( Math.abs( separationX ), extents1X + Vector3D.dot( extents2X , extents2Y , extents2Z , absXX , absXY , absXZ ) ) &&
-		/* Test 1 Y axis */ MathTools.significantlyLessThan( Math.abs( separationY ), extents1Y + Vector3D.dot( extents2X , extents2Y , extents2Z , absYX , absYY , absYZ ) ) &&
-		/* Test 1 Z axis */ MathTools.significantlyLessThan( Math.abs( separationZ ), extents1Z + Vector3D.dot( extents2X , extents2Y , extents2Z , absZX , absZY , absZZ ) ) &&
-		/* Test 2 X axis */ MathTools.significantlyLessThan( Math.abs( Vector3D.dot( from2to1.xx , from2to1.yx , from2to1.zx , separationX , separationY , separationZ ) ), Vector3D.dot( extents1X , extents1Y , extents1Z , absXX , absYX , absZX ) + extents2X ) &&
-		/* Test 2 Y axis */ MathTools.significantlyLessThan( Math.abs( Vector3D.dot( from2to1.xy , from2to1.yy , from2to1.zy , separationX , separationY , separationZ ) ), Vector3D.dot( extents1X , extents1Y , extents1Z , absXY , absYY , absZY ) + extents2Y ) &&
-		/* Test 2 Z axis */ MathTools.significantlyLessThan( Math.abs( Vector3D.dot( from2to1.xz , from2to1.yz , from2to1.zz , separationX , separationY , separationZ ) ), Vector3D.dot( extents1X , extents1Y , extents1Z , absXZ , absYZ , absZZ ) + extents2Z ) &&
+		/* Test 1 X axis */ MathTools.significantlyLessThan( Math.abs( separationX ), extents1X + Vector3D.dot( extents2X, extents2Y, extents2Z, absXX, absXY, absXZ ) ) &&
+		/* Test 1 Y axis */ MathTools.significantlyLessThan( Math.abs( separationY ), extents1Y + Vector3D.dot( extents2X, extents2Y, extents2Z, absYX, absYY, absYZ ) ) &&
+		/* Test 1 Z axis */ MathTools.significantlyLessThan( Math.abs( separationZ ), extents1Z + Vector3D.dot( extents2X, extents2Y, extents2Z, absZX, absZY, absZZ ) ) &&
+		/* Test 2 X axis */ MathTools.significantlyLessThan( Math.abs( Vector3D.dot( from2to1.xx, from2to1.yx, from2to1.zx, separationX, separationY, separationZ ) ), Vector3D.dot( extents1X, extents1Y, extents1Z, absXX, absYX, absZX ) + extents2X ) &&
+		/* Test 2 Y axis */ MathTools.significantlyLessThan( Math.abs( Vector3D.dot( from2to1.xy, from2to1.yy, from2to1.zy, separationX, separationY, separationZ ) ), Vector3D.dot( extents1X, extents1Y, extents1Z, absXY, absYY, absZY ) + extents2Y ) &&
+		/* Test 2 Z axis */ MathTools.significantlyLessThan( Math.abs( Vector3D.dot( from2to1.xz, from2to1.yz, from2to1.zz, separationX, separationY, separationZ ) ), Vector3D.dot( extents1X, extents1Y, extents1Z, absXZ, absYZ, absZZ ) + extents2Z ) &&
 		/* Test 3 case 1 */ ( Math.abs( separationZ * from2to1.yx - separationY * from2to1.zx ) <= extents1Y * absZX + extents1Z * absYX + extents2Y * absXZ + extents2Z * absXY ) &&
 		/* Test 3 case 2 */ ( Math.abs( separationZ * from2to1.yy - separationY * from2to1.zy ) <= extents1Y * absZY + extents1Z * absYY + extents2X * absXZ + extents2Z * absXX ) &&
 		/* Test 3 case 3 */ ( Math.abs( separationZ * from2to1.yz - separationY * from2to1.zz ) <= extents1Y * absZZ + extents1Z * absYZ + extents2X * absXY + extents2Y * absXX ) &&
@@ -129,14 +170,122 @@ public class GeometryTools
 	/**
 	 * Test intersection between to triangles in 3D.
 	 *
-	 * parameters: vertices of triangle 1: V0,V1,V2
-	 *             vertices of triangle 2: U0,U1,U2
-	 * result    : returns 1 if the triangles intersect, otherwise 0
+	 * @param   v0  First vertex of first triangle.
+	 * @param   v1  Second vertex of first triangle.
+	 * @param   v2  Third vertex of first triangle.
+	 * @param   u0  First vertex of second triangle.
+	 * @param   u1  Second vertex of second triangle.
+	 * @param   u2  Third vertex of second triangle.
 	 *
+	 * @return  <code>true</code> if the triangles intersect;
+	 *          <code>false</code> otherwise.
 	 */
-	public static boolean testTriangleTriangleIntersection( final Vector3D v0 , final Vector3D v1 , final Vector3D v2 , final Vector3D u0 , final Vector3D u1 , final Vector3D u2 )
+	public static boolean testTriangleTriangleIntersection( final Vector3D v0, final Vector3D v1, final Vector3D v2, final Vector3D u0, final Vector3D u1, final Vector3D u2 )
 	{
-		return TriTriMoeler.testTriangleTriangle( v0 , v1 , v2 , u0 , u1 , u2 );
+		return TriTriMoeler.testTriangleTriangle( v0, v1, v2, u0, u1, u2 );
+	}
+
+	/**
+	 * Test intersection between axis-aligned box and sphere.
+	 *
+	 * @param   sphereCenter    Center of sphere.
+	 * @param   sphereRadius    Radius of sphere.
+	 * @param   box             Axis-aligned box.
+	 *
+	 * @return  <code>true</code> if sphere intersects with box;
+	 *          <code>false</code> otherwise.
+	 */
+	public static boolean testSphereBoxIntersection( final Vector3D sphereCenter, final double sphereRadius , final Bounds3D box )
+	{
+		return testSphereBoxIntersection( sphereCenter.x,  sphereCenter.y,  sphereCenter.z,  sphereRadius, box.v1.x, box.v1.y, box.v1.z, box.v2.x, box.v2.y, box.v2.z );
+	}
+	/**
+	 * Test intersection between axis-aligned box and sphere.
+	 *
+	 * @param   sphereCenterX   X coordinate of sphere center.
+	 * @param   sphereCenterY   Y coordinate of sphere center.
+	 * @param   sphereCenterZ   Z coordinate of sphere center.
+	 * @param   sphereRadius    Radius of sphere.
+	 * @param   boxMinX         Minimum X coordinate of axis-aligned box.
+	 * @param   boxMinY         Minimum Y coordinate of axis-aligned box.
+	 * @param   boxMinZ         Minimum Z coordinate of axis-aligned box.
+	 * @param   boxMaxX         Maximum X coordinate of axis-aligned box.
+	 * @param   boxMaxY         Maximum Y coordinate of axis-aligned box.
+	 * @param   boxMaxZ         Maximum Z coordinate of axis-aligned box.
+	 *
+	 * @return  <code>true</code> if sphere intersects with box;
+	 *          <code>false</code> otherwise.
+	 *
+	 * @noinspection MethodWithMultipleReturnPoints
+	 */
+	public static boolean testSphereBoxIntersection( final double sphereCenterX, final double sphereCenterY, final double sphereCenterZ, final double sphereRadius , final double boxMinX, final double boxMinY, final double boxMinZ, final double boxMaxX, final double boxMaxY, final double boxMaxZ )
+	{
+		double maxDistance = 0.0;
+
+		if ( sphereCenterX < boxMinX )
+		{
+			final double dx = boxMinX - sphereCenterX;
+			if ( dx > sphereRadius )
+			{
+				return false;
+			}
+
+			maxDistance = maxDistance + ( dx * dx );
+		}
+		else if ( sphereCenterX > boxMaxX )
+		{
+			final double dx = sphereCenterX - boxMaxX;
+			if ( dx > sphereRadius )
+			{
+				return false;
+			}
+
+			maxDistance = maxDistance + ( dx * dx );
+		}
+
+		if ( sphereCenterY < boxMinY )
+		{
+			final double dy = boxMinY - sphereCenterY;
+			if ( dy > sphereRadius )
+			{
+				return false;
+			}
+
+			maxDistance = maxDistance + ( dy * dy );
+		}
+		else if ( sphereCenterY > boxMaxY )
+		{
+			final double dy = sphereCenterY - boxMaxY;
+			if ( dy > sphereRadius )
+			{
+				return false;
+			}
+
+			maxDistance = maxDistance + ( dy * dy );
+		}
+
+		if ( sphereCenterZ < boxMinZ )
+		{
+			final double dz = boxMinZ - sphereCenterZ;
+			if ( dz > sphereRadius )
+			{
+				return false;
+			}
+
+			maxDistance = maxDistance + ( dz * dz );
+		}
+		else if ( sphereCenterZ > boxMaxZ )
+		{
+			final double dz = sphereCenterZ - boxMaxZ;
+			if ( dz > sphereRadius )
+			{
+				return false;
+			}
+
+			maxDistance = maxDistance + ( dz * dz );
+		}
+
+		return ( maxDistance < sphereRadius * sphereRadius );
 	}
 
 	/**
@@ -150,9 +299,9 @@ public class GeometryTools
 	 * @return  Points describing the intersection (1 or 2 points);
 	 *          <code>null</code> if no intersection was found.
 	 */
-	public static Point2D[] getIntersectionBetweenLineSegments( final Point2D p1 , final Point2D p2 , final Point2D p3 , final Point2D p4 )
+	public static Point2D[] getIntersectionBetweenLineSegments( final Point2D p1, final Point2D p2, final Point2D p3, final Point2D p4 )
 	{
-		return getIntersectionBetweenLineSegments( p1.getX() , p1.getY() , p2.getX() , p2.getY() , p3.getX() , p3.getY() , p4.getX() , p4.getY() );
+		return getIntersectionBetweenLineSegments( p1.getX(), p1.getY(), p2.getX(), p2.getY(), p3.getX(), p3.getY(), p4.getX(), p4.getY() );
 	}
 
 	/**
@@ -176,16 +325,16 @@ public class GeometryTools
 	 * @return  Points describing the intersection (1 or 2 points);
 	 *          <code>null</code> if no intersection was found.
 	 */
-	public static Point2D[] getIntersectionBetweenLineSegments( final double x1 , final double y1 , final double x2 , final double y2 , final double x3 , final double y3 , final double x4 , final double y4 )
+	public static Point2D[] getIntersectionBetweenLineSegments( final double x1, final double y1, final double x2, final double y2, final double x3, final double y3, final double x4, final double y4 )
 	{
 		Point2D[] result = null;
 
 		final double n1 = ( x4 - x3 ) * ( y1 - y3 ) - ( y4 - y3 ) * ( x1 - x3 );
 		final double d  = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 );
 
-		if ( MathTools.almostEqual( d , 0.0 , 0.00001 ) ) /* lines are parallel */
+		if ( MathTools.almostEqual( d, 0.0, 0.00001 ) ) /* lines are parallel */
 		{
-			if ( MathTools.almostEqual( n1 , 0.0 , 0.00001 ) ) /* they are coincident */
+			if ( MathTools.almostEqual( n1, 0.0, 0.00001 ) ) /* they are coincident */
 			{
 				double sx1;
 				double sx2;
@@ -196,13 +345,27 @@ public class GeometryTools
 
 				if ( x3 <= x4 )
 				{
-					if ( x3 > sx1 ) sx1 = x3;
-					if ( x4 < sx2 ) sx2 = x4;
+					if ( x3 > sx1 )
+					{
+						sx1 = x3;
+					}
+
+					if ( x4 < sx2 )
+					{
+						sx2 = x4;
+					}
 				}
 				else
 				{
-					if ( x4 > sx1 ) sx1 = x4;
-					if ( x3 < sx2 ) sx2 = x3;
+					if ( x4 > sx1 )
+					{
+						sx1 = x4;
+					}
+
+					if ( x3 < sx2 )
+					{
+						sx2 = x3;
+					}
 				}
 
 				if ( sx1 <= sx2 )
@@ -215,13 +378,27 @@ public class GeometryTools
 
 					if ( y3 <= y4 )
 					{
-						if ( y3 > sy1 ) sy1 = y3;
-						if ( y4 < sy2 ) sy2 = y4;
+						if ( y3 > sy1 )
+						{
+							sy1 = y3;
+						}
+
+						if ( y4 < sy2 )
+						{
+							sy2 = y4;
+						}
 					}
 					else
 					{
-						if ( y4 > sy1 ) sy1 = y4;
-						if ( y3 < sy2 ) sy2 = y3;
+						if ( y4 > sy1 )
+						{
+							sy1 = y4;
+						}
+
+						if ( y3 < sy2 )
+						{
+							sy2 = y3;
+						}
 					}
 
 					if ( sy1 <= sy2 )
@@ -229,17 +406,17 @@ public class GeometryTools
 						/*
 						 * Return the intersection.
 						 */
-						if ( MathTools.almostEqual( sx1 , sx2 , 0.00001 ) && MathTools.almostEqual( sy1 , sy2 , 0.00001 ) )
+						if ( MathTools.almostEqual( sx1, sx2, 0.00001 ) && MathTools.almostEqual( sy1, sy2, 0.00001 ) )
 						{
-							result = new Point2D[] { new Point2D.Double( sx1 , sy1 ) };
+							result = new Point2D[] { new Point2D.Double( sx1, sy1 ) };
 						}
 						else if ( isPositive )
 						{
-							result = new Point2D[] { new Point2D.Double( sx1 , sy1 ) , new Point2D.Double( sx2 , sy2 ) };
+							result = new Point2D[] { new Point2D.Double( sx1, sy1 ), new Point2D.Double( sx2, sy2 ) };
 						}
 						else
 						{
-							result = new Point2D[] { new Point2D.Double( sx1 , sy2 ) , new Point2D.Double( sx2 , sy1 ) };
+							result = new Point2D[] { new Point2D.Double( sx1, sy2 ), new Point2D.Double( sx2, sy1 ) };
 						}
 					}
 				}
@@ -262,7 +439,7 @@ public class GeometryTools
 					final double x = x1 + ua * ( x2 - x1 );
 					final double y = y1 + ua * ( y2 - y1 );
 
-					result = new Point2D[] { new Point2D.Double( x , y ) };
+					result = new Point2D[] { new Point2D.Double( x, y ) };
 				}
 			}
 		}
@@ -281,9 +458,10 @@ public class GeometryTools
 	 * @return  Point of intersection;
 	 *          <code>null</code> if no intersection exists (parallel lines).
 	 */
-	public static Point2D getIntersectionBetweenLines( final Point2D p1 , final Point2D p2 , final Point2D p3 , final Point2D p4 )
+	@Nullable
+	public static Point2D getIntersectionBetweenLines( final Point2D p1, final Point2D p2, final Point2D p3, final Point2D p4 )
 	{
-		return getIntersectionBetweenLines( p1.getX() , p1.getY() , p2.getX() , p2.getY() , p3.getX() , p3.getY() , p4.getX() , p4.getY() );
+		return getIntersectionBetweenLines( p1.getX(), p1.getY(), p2.getX(), p2.getY(), p3.getX(), p3.getY(), p4.getX(), p4.getY() );
 	}
 
 	/**
@@ -301,12 +479,13 @@ public class GeometryTools
 	 * @return  Point of intersection;
 	 *          <code>null</code> if no intersection exists (parallel lines).
 	 */
-	public static Point2D getIntersectionBetweenLines( final double x1 , final double y1 , final double x2 , final double y2 , final double x3 , final double y3 , final double x4 , final double y4 )
+	@Nullable
+	public static Point2D getIntersectionBetweenLines( final double x1, final double y1, final double x2, final double y2, final double x3, final double y3, final double x4, final double y4 )
 	{
 		Point2D result = null;
 
 		final double d = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 );
-		if ( !MathTools.almostEqual( d , 0.0 , 0.00001 ) ) /* are not parallel, so they intersect at some point */
+		if ( !MathTools.almostEqual( d, 0.0, 0.00001 ) ) /* are not parallel, so they intersect at some point */
 		{
 			final double n1 = ( x4 - x3 ) * ( y1 - y3 ) - ( y4 - y3 ) * ( x1 - x3 );
 			final double ua = n1 / d;
@@ -314,7 +493,7 @@ public class GeometryTools
 			final double x = x1 + ua * ( x2 - x1 );
 			final double y = y1 + ua * ( y2 - y1 );
 
-			result = new Point2D.Double( x , y );
+			result = new Point2D.Double( x, y );
 		}
 
 		return result;
@@ -342,16 +521,19 @@ public class GeometryTools
 	 *
 	 * @throws  NullPointerException if a required input argument is <code>null</code>.
 	 */
-	public static Vector3D getIntersectionBetweenRayAndPolygon( final Polygon3D polygon , final Ray3D ray )
+	@Nullable
+	public static Vector3D getIntersectionBetweenRayAndPolygon( final Polygon3D polygon, final Ray3D ray )
 	{
 		Vector3D result = null;
 
 		final int vertexCount = polygon.getVertexCount();
 		if ( vertexCount >= 3 )
 		{
-			result = getIntersectionBetweenRayAndPlane( polygon , ray );
-			if ( ( result != null ) && !isPointInsidePolygon( polygon , result ) )
+			result = getIntersectionBetweenRayAndPlane( polygon, ray );
+			if ( ( result != null ) && !isPointInsidePolygon( polygon, result ) )
+			{
 				result = null;
+			}
 		}
 
 		return result;
@@ -381,9 +563,10 @@ public class GeometryTools
 	 *
 	 * @throws  NullPointerException if a required input argument is <code>null</code>.
 	 */
-	public static Vector3D getIntersectionBetweenRayAndPlane( final Matrix3D planeTransform , final boolean twoSidedPlane , final Ray3D ray )
+	@Nullable
+	public static Vector3D getIntersectionBetweenRayAndPlane( final Matrix3D planeTransform, final boolean twoSidedPlane, final Ray3D ray )
 	{
-		return getIntersectionBetweenRayAndPlane( planeTransform.xz , planeTransform.yz , planeTransform.zz , Vector3D.dot( planeTransform.xz , planeTransform.yz , planeTransform.zz , planeTransform.xo , planeTransform.yo , planeTransform.zo ) , twoSidedPlane , ray.getOrigin() , ray.getDirection() , ray.isHalfRay() );
+		return getIntersectionBetweenRayAndPlane( planeTransform.xz, planeTransform.yz, planeTransform.zz, Vector3D.dot( planeTransform.xz, planeTransform.yz, planeTransform.zz, planeTransform.xo, planeTransform.yo, planeTransform.zo ), twoSidedPlane, ray.getOrigin(), ray.getDirection(), ray.isHalfRay() );
 	}
 
 	/**
@@ -409,10 +592,11 @@ public class GeometryTools
 	 *
 	 * @throws  NullPointerException if a required input argument is <code>null</code>.
 	 */
-	public static Vector3D getIntersectionBetweenRayAndPlane( final Plane3D plane , final Ray3D ray )
+	@Nullable
+	public static Vector3D getIntersectionBetweenRayAndPlane( final Plane3D plane, final Ray3D ray )
 	{
 		final Vector3D planeNormal = plane.getNormal();
-		return getIntersectionBetweenRayAndPlane( planeNormal.x , planeNormal.y , planeNormal.z , plane.getDistance() , plane.isTwoSided() , ray.getOrigin() , ray.getDirection() , ray.isHalfRay() );
+		return getIntersectionBetweenRayAndPlane( planeNormal.x, planeNormal.y, planeNormal.z, plane.getDistance(), plane.isTwoSided(), ray.getOrigin(), ray.getDirection(), ray.isHalfRay() );
 	}
 
 	/**
@@ -444,7 +628,8 @@ public class GeometryTools
 	 *
 	 * @throws  NullPointerException if a required input argument is <code>null</code>.
 	 */
-	public static Vector3D getIntersectionBetweenRayAndPlane( final double planeNormalX , final double planeNormalY , final double planeNormalZ , final double planeDistance , final boolean twoSidedPlane , final Vector3D rayOrigin , final Vector3D rayDirection , final boolean halfRay )
+	@Nullable
+	public static Vector3D getIntersectionBetweenRayAndPlane( final double planeNormalX, final double planeNormalY, final double planeNormalZ, final double planeDistance, final boolean twoSidedPlane, final Vector3D rayOrigin, final Vector3D rayDirection, final boolean halfRay )
 	{
 		Vector3D result = null;
 
@@ -452,7 +637,7 @@ public class GeometryTools
 		                         + planeNormalY * rayDirection.y
 		                         + planeNormalZ * rayDirection.z;
 
-		if ( twoSidedPlane ? !MathTools.almostEqual( denominator , 0.0 , 0.000001 ) : MathTools.significantlyLessThan( denominator , 0.0 , 0.000001 ) ) /* line parallel to plane */
+		if ( twoSidedPlane ? !MathTools.almostEqual( denominator, 0.0, 0.000001 ) : MathTools.significantlyLessThan( denominator, 0.0, 0.000001 ) ) /* line parallel to plane */
 		{
 			final double numerator = planeDistance - planeNormalX * rayOrigin.x
 			                                       - planeNormalY * rayOrigin.y
@@ -471,7 +656,7 @@ public class GeometryTools
 				final double y = rayOrigin.y + intersectionDistance * rayDirection.y;
 				final double z = rayOrigin.z + intersectionDistance * rayDirection.z;
 
-				result = Vector3D.INIT.set( x , y , z );
+				result = Vector3D.INIT.set( x, y, z );
 			}
 		}
 
@@ -488,9 +673,10 @@ public class GeometryTools
 	 * @return  Plane normal vector;
 	 *          <code>null</code> if no plane normal could be determined.
 	 */
+	@Nullable
 	public static Vector3D getPlaneNormal( final Vector3D... points )
 	{
-		return ( points.length > 3 ) ? getPlaneNormal( points[ 0 ] , points[ 1 ] , points[ 2 ] ) : null;
+		return ( points.length > 3 ) ? getPlaneNormal( points[ 0 ], points[ 1 ], points[ 2 ] ) : null;
 	}
 
 	/**
@@ -508,7 +694,8 @@ public class GeometryTools
 	 * @see     Plane3D#getNormal
 	 * @see     Plane3D#isTwoSided
 	 */
-	public static Vector3D getPlaneNormal( final Vector3D p1 , final Vector3D p2 , final Vector3D p3 )
+	@Nullable
+	public static Vector3D getPlaneNormal( final Vector3D p1, final Vector3D p2, final Vector3D p3 )
 	{
 		final double ux = p1.x - p2.x;
 		final double uy = p1.y - p2.y;
@@ -523,7 +710,7 @@ public class GeometryTools
 		final double crossZ = ux * vy - uy * vx;
 
 		final double l = Vector3D.length( crossX, crossY, crossZ );
-		return ( l == 0.0 ) ? null : ( l == 1.0 ) ? new Vector3D( crossX , crossY , crossZ ) : new Vector3D( crossX / l , crossY / l , crossZ / l );
+		return ( l == 0.0 ) ? null : ( l == 1.0 ) ? new Vector3D( crossX, crossY, crossZ ) : new Vector3D( crossX / l, crossY / l, crossZ / l );
 	}
 
 	/**
@@ -544,9 +731,9 @@ public class GeometryTools
 	 *
 	 * @throws  NullPointerException if an input argument is <code>null</code>.
 	 */
-	public static boolean isPointInsidePolygon( final Polygon3D polygon , final Vector3D point )
+	public static boolean isPointInsidePolygon( final Polygon3D polygon, final Vector3D point )
 	{
-		return isPointInsidePolygon( polygon , point.x , point.y , point.z );
+		return isPointInsidePolygon( polygon, point.x, point.y, point.z );
 	}
 
 	/**
@@ -569,7 +756,7 @@ public class GeometryTools
 	 *
 	 * @throws  NullPointerException if <code>polygon</code> is <code>null</code>.
 	 */
-	public static boolean isPointInsidePolygon( final Polygon3D polygon , final double x , final double y , final double z )
+	public static boolean isPointInsidePolygon( final Polygon3D polygon, final double x, final double y, final double z )
 	{
 		final boolean result;
 
@@ -609,7 +796,9 @@ public class GeometryTools
 
 				d = m1 * m2;
 				if ( d <= 0.0000001 ) /* We are on a node, consider this inside */
+				{
 					break;
+				}
 
 				angleSum += Math.acos( ( p1x * p2x + p1y * p2y + p1z * p2z ) / d );
 			}
@@ -665,13 +854,14 @@ public class GeometryTools
 	 * @return  Point on line closest to the given point;
 	 *          <code>null</code> if point lies outside the line segment.
 	 */
-	public static Vector3D getClosestPointOnLine( final Vector3D p , final Vector3D p1 , final Vector3D p2 , final boolean segmentOnly )
+	@Nullable
+	public static Vector3D getClosestPointOnLine( final Vector3D p, final Vector3D p1, final Vector3D p2, final boolean segmentOnly )
 	{
 		final double dx = p2.x - p1.x;
 		final double dy = p2.y - p1.y;
 		final double dz = p2.z - p1.z;
 		final double u  = ( ( p.x - p1.x ) * dx + ( p.y - p1.y ) * dy + ( p.z - p1.z ) * dz ) / ( dx * dx + dy * dy + dz * dz );
 
-		return ( !segmentOnly || ( ( u >= 0.00001 ) && u <= 1.00001 ) ) ? p1.plus( u * dx, u * dy , p.z ) : null;
+		return ( !segmentOnly || ( ( u >= 0.00001 ) && u <= 1.00001 ) ) ? p1.plus( u * dx, u * dy, p.z ) : null;
 	}
 }
