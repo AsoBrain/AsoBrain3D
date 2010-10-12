@@ -28,6 +28,7 @@ import ab.j3d.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.Face3D.*;
 import com.numdata.oss.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class defined a 3D object node in a 3D tree. The 3D object consists of
@@ -293,7 +294,7 @@ public class Object3D
 		final Bounds3D thisOrientedBoundingBox  = getOrientedBoundingBox();
 		final Bounds3D otherOrientedBoundingBox = other.getOrientedBoundingBox();
 
-		if ( GeometryTools.testOrientedBoundingBoxIntersection( thisOrientedBoundingBox, fromOtherToThis, otherOrientedBoundingBox ) )
+		if ( ( thisOrientedBoundingBox != null ) && ( otherOrientedBoundingBox != null ) && GeometryTools.testOrientedBoundingBoxIntersection( thisOrientedBoundingBox, fromOtherToThis, otherOrientedBoundingBox ) )
 		{
 			final CollisionNode thisCollisionNode = getCollisionNode();
 			final CollisionNode otherCollisionNode = other.getCollisionNode();
@@ -371,26 +372,44 @@ public class Object3D
 	/**
 	 * Get bounding box of this object in the object coordinate system (OCS).
 	 *
-	 * @return  Bounding box of this object in the object coordinate system (OCS).
+	 * @return  Bounding box in the object coordinate system (OCS);
+	 *          <code>null</code> if object is empty.
 	 */
+	@Nullable
 	public Bounds3D getOrientedBoundingBox()
 	{
 		Bounds3D result = _orientedBoundingBox;
 		if ( result == null )
 		{
-			final List<Vector3D> vertexCoordinates = _vertexCoordinates;
-			if ( !vertexCoordinates.isEmpty() )
+			result = calculateOrientedBoundingBox();
+			_orientedBoundingBox = result;
+		}
+
+		return result;
+	}
+
+	/**
+	 * Get bounding box of this object in the object coordinate system (OCS).
+	 *
+	 * @return  Bounding box in the object coordinate system (OCS);
+	 *          <code>null</code> if object is empty.
+	 */
+	@Nullable
+	protected Bounds3D calculateOrientedBoundingBox()
+	{
+		Bounds3D result = null;
+
+		final List<Vector3D> vertexCoordinates = _vertexCoordinates;
+		if ( !vertexCoordinates.isEmpty() )
+		{
+			final Bounds3DBuilder builder = new Bounds3DBuilder();
+
+			for ( final Vector3D point : vertexCoordinates )
 			{
-				final Bounds3DBuilder builder = new Bounds3DBuilder();
-
-				for ( final Vector3D point : vertexCoordinates )
-				{
-					builder.addPoint( point );
-				}
-
-				result = builder.getBounds();
-				_orientedBoundingBox = result;
+				builder.addPoint( point );
 			}
+
+			result = builder.getBounds();
 		}
 
 		return result;
@@ -406,9 +425,13 @@ public class Object3D
 	{
 		if ( ( transform != null ) && ( transform != Matrix3D.INIT ) && ( !Matrix3D.INIT.equals( transform ) ) )
 		{
-			for ( final Vector3D point : _vertexCoordinates )
+			final List<Vector3D> vertexCoordinates = _vertexCoordinates;
+			if ( !vertexCoordinates.isEmpty() )
 			{
-				bounds3DBuilder.addPoint( transform, point );
+				for ( final Vector3D point : vertexCoordinates )
+				{
+					bounds3DBuilder.addPoint( transform, point );
+				}
 			}
 		}
 		else
