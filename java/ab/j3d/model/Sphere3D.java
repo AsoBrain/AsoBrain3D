@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2009 Peter S. Heijnen
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,12 +20,11 @@
  */
 package ab.j3d.model;
 
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.geom.*;
+import java.util.*;
 
-import ab.j3d.Material;
-import ab.j3d.Vector3D;
+import ab.j3d.*;
+import ab.j3d.geom.*;
 
 /**
  * This class defines a 3D sphere.
@@ -174,5 +173,38 @@ public final class Sphere3D
 				_faces.add( new Face3D( this , vertexIndices , material , texturePoints , null , true , false ) );
 			}
 		}
+	}
+
+	@Override
+	protected Bounds3D calculateOrientedBoundingBox()
+	{
+		final double radius = this.radius;
+		return new Bounds3D( -radius,  -radius, -radius, radius, radius, radius );
+	}
+
+	@Override
+	public boolean collidesWith( final Matrix3D fromOtherToThis, final Object3D other )
+	{
+		final boolean result;
+
+		if ( other instanceof Sphere3D ) /* sphere vs. sphere */
+		{
+			final Sphere3D sphere = (Sphere3D)other;
+			result = GeometryTools.testSphereIntersection( radius, fromOtherToThis.xo, fromOtherToThis.yo, fromOtherToThis.zo,  sphere.radius );
+		}
+		else if ( other instanceof Box3D ) /* sphere vs. box */
+		{
+			final Box3D box = (Box3D)other;
+			final double centerX = fromOtherToThis.inverseTransformX( 0.0, 0.0, 0.0 );
+			final double centerY = fromOtherToThis.inverseTransformY( 0.0, 0.0, 0.0 );
+			final double centerZ = fromOtherToThis.inverseTransformZ( 0.0, 0.0, 0.0 );
+			result = GeometryTools.testSphereBoxIntersection( centerX, centerY, centerZ, radius, 0.0, 0.0, 0.0, box.getDX(), box.getDY(), box.getDZ() );
+		}
+		else
+		{
+			result = super.collidesWith( fromOtherToThis, other );
+		}
+
+		return result;
 	}
 }
