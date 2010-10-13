@@ -42,6 +42,121 @@ public class GeometryTools
 	}
 
 	/**
+	 * Converts an oriented bounding box (OBB) to an (word) axis-aligned
+	 * bounding box (AABB).
+	 *
+	 * @param   box2world   Transforms box to world coordinates.
+	 * @param   box         Oriented bounding box.
+	 *
+	 * @return  Axis-aligned bounding box.
+	 */
+	@NotNull
+	public static Bounds3D convertObbToAabb( @NotNull final Matrix3D box2world, @NotNull final Bounds3D box )
+	{
+		return convertObbToAabb( box2world, box.v1.x, box.v1.y, box.v1.z, box.v2.x, box.v2.y, box.v2.z );
+	}
+
+	/**
+	 * Converts an oriented bounding box (OBB) to an (word) axis-aligned
+	 * bounding box (AABB).
+	 *
+	 * @param   box2world   Transforms box to world coordinates.
+	 * @param   x1          Minimum X coordinate of oriented bounding box.
+	 * @param   y1          Minimum Y coordinate of oriented bounding box.
+	 * @param   z1          Minimum Z coordinate of oriented bounding box.
+	 * @param   x2          Maximum X coordinate of oriented bounding box.
+	 * @param   y2          Maximum Y coordinate of oriented bounding box.
+	 * @param   z2          Maximum Z coordinate of oriented bounding box.
+	 *
+	 * @return  Axis-aligned bounding box.
+	 */
+	@NotNull
+	public static Bounds3D convertObbToAabb( @NotNull final Matrix3D box2world, final double x1, final double y1, final double z1, final double x2, final double y2, final double z2 )
+	{
+		double tx = box2world.transformX( x1, y1, z1 );
+		double ty = box2world.transformY( x1, y1, z1 );
+		double tz = box2world.transformZ( x1, y1, z1 );
+		double minX = tx;
+		double minY = ty;
+		double minZ = tz;
+		double maxX = tx;
+		double maxY = ty;
+		double maxZ = tz;
+
+		tx = box2world.transformX( x1, y1, z2 );
+		ty = box2world.transformY( x1, y1, z2 );
+		tz = box2world.transformZ( x1, y1, z2 );
+		minX = Math.min( minX, tx );
+		minY = Math.min( minY, ty );
+		minZ = Math.min( minZ, tz );
+		maxX = Math.max( maxX, tx );
+		maxY = Math.max( maxY, ty );
+		maxZ = Math.max( maxZ, tz );
+
+		tx = box2world.transformX( x1, y2, z1 );
+		ty = box2world.transformY( x1, y2, z1 );
+		tz = box2world.transformZ( x1, y2, z1 );
+		minX = Math.min( minX, tx );
+		minY = Math.min( minY, ty );
+		minZ = Math.min( minZ, tz );
+		maxX = Math.max( maxX, tx );
+		maxY = Math.max( maxY, ty );
+		maxZ = Math.max( maxZ, tz );
+
+		tx = box2world.transformX( x1, y2, z2 );
+		ty = box2world.transformY( x1, y2, z2 );
+		tz = box2world.transformZ( x1, y2, z2 );
+		minX = Math.min( minX, tx );
+		minY = Math.min( minY, ty );
+		minZ = Math.min( minZ, tz );
+		maxX = Math.max( maxX, tx );
+		maxY = Math.max( maxY, ty );
+		maxZ = Math.max( maxZ, tz );
+
+		tx = box2world.transformX( x2, y1, z1 );
+		ty = box2world.transformY( x2, y1, z1 );
+		tz = box2world.transformZ( x2, y1, z1 );
+		minX = Math.min( minX, tx );
+		minY = Math.min( minY, ty );
+		minZ = Math.min( minZ, tz );
+		maxX = Math.max( maxX, tx );
+		maxY = Math.max( maxY, ty );
+		maxZ = Math.max( maxZ, tz );
+
+		tx = box2world.transformX( x2, y1, z2 );
+		ty = box2world.transformY( x2, y1, z2 );
+		tz = box2world.transformZ( x2, y1, z2 );
+		minX = Math.min( minX, tx );
+		minY = Math.min( minY, ty );
+		minZ = Math.min( minZ, tz );
+		maxX = Math.max( maxX, tx );
+		maxY = Math.max( maxY, ty );
+		maxZ = Math.max( maxZ, tz );
+
+		tx = box2world.transformX( x2, y2, z1 );
+		ty = box2world.transformY( x2, y2, z1 );
+		tz = box2world.transformZ( x2, y2, z1 );
+		minX = Math.min( minX, tx );
+		minY = Math.min( minY, ty );
+		minZ = Math.min( minZ, tz );
+		maxX = Math.max( maxX, tx );
+		maxY = Math.max( maxY, ty );
+		maxZ = Math.max( maxZ, tz );
+
+		tx = box2world.transformX( x2, y2, z2 );
+		ty = box2world.transformY( x2, y2, z2 );
+		tz = box2world.transformZ( x2, y2, z2 );
+		minX = Math.min( minX, tx );
+		minY = Math.min( minY, ty );
+		minZ = Math.min( minZ, tz );
+		maxX = Math.max( maxX, tx );
+		maxY = Math.max( maxY, ty );
+		maxZ = Math.max( maxZ, tz );
+
+		return new Bounds3D( minX, minY, minZ, maxX, maxY, maxZ );
+	}
+
+	/**
 	 * Test sphere intersection.
 	 *
 	 * @param   center1     Center of sphere 1.
@@ -777,7 +892,8 @@ public class GeometryTools
 			double p1z;
 			double m1;
 
-			double p2x = polygon.getX( i = vertexCount - 1 ) - x;
+			i = vertexCount - 1;
+			double p2x = polygon.getX( i ) - x;
 			double p2y = polygon.getY( i ) - y;
 			double p2z = polygon.getZ( i ) - z;
 			double m2  = Math.sqrt( p2x * p2x + p2y * p2y + p2z * p2z );
