@@ -649,19 +649,7 @@ public final class Bounds3D
 	 */
 	public Bounds3D sorted()
 	{
-		return sort( this );
-	}
-
-	/**
-	 * Get sorted bounds.
-	 *
-	 * @param   bounds  Bounds to sort.
-	 *
-	 * @return  Sorted bounds.
-	 */
-	public static Bounds3D sort( final Bounds3D bounds )
-	{
-		return bounds.set( min( bounds ) , max( bounds ) );
+		return set( min( this ) , max( this ) );
 	}
 
 	/**
