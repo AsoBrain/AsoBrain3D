@@ -34,12 +34,12 @@ import org.jetbrains.annotations.*;
  * @author  Rob Veneberg
  * @version $Revision$ $Date$
  */
-public final class AbToPovConverter
+public class AbToPovConverter
 {
 	/**
 	 * Variable that will hold the converted scene.
 	 */
-	private PovScene _scene;
+	private final PovScene _scene;
 
 	/**
 	 * Directory containing the used materials.
@@ -110,11 +110,7 @@ public final class AbToPovConverter
 			final Node3D   node      = nodes.getNode( i );
 			final Matrix3D transform = nodes.getMatrix( i );
 
-			if ( node instanceof Camera3D )
-			{
-//				scene.add( convertCamera3D( transform, (Camera3D)node, 1.0 ) );
-			}
-			else if ( node instanceof Light3D )
+			if ( node instanceof Light3D )
 			{
 				povScene.add( convertLight3D( transform, (Light3D)node ) );
 			}
@@ -177,42 +173,6 @@ public final class AbToPovConverter
 			result = new PovBox( name, v1, v2, texture );
 			result.setTransform( new PovMatrix( box2wcs ) );
 		}
-
-		return result;
-	}
-
-	/**
-	 * This method constructs a {@link PovCamera} from a {@link Camera3D} object.
-	 * <p>
-	 * The standard ratio used in POV-Ray is 4:3, wich means the rendered
-	 * image will get deformed if resolutions with a ratio other than 4:3
-	 * are used. Since the resulting image does not have a fixed ratio (the user
-	 * can choose any size, for example), the ratio also needs to be specified
-	 * in the POV-Ray camera.
-	 *
-	 * @param   transform       Camera transform (camera -> model, NOT model->camera/view transform).
-	 * @param   camera          The {@link Camera3D} object to be converted.
-	 * @param   aspectRatio     Aspect ratio of image (for square pixels: width / height).
-	 *
-	 * @return  The resulting {@link PovCamera} object.
-	 */
-	public static PovCamera convertCamera3D( final Matrix3D transform, final Camera3D camera, final double aspectRatio )
-	{
-		final String    name     = ( camera.getTag() != null ) ? String.valueOf( camera.getTag() ) : null;
-		final PovVector location = null;
-		final PovVector lookAt   = null;
-		final PovVector right    = new PovVector( aspectRatio, 0.0, 0.0 );
-		final double    angle    = Math.toDegrees( camera.getAperture() );
-
-		final PovCamera result = new PovCamera( name, location, lookAt, right, angle );
-
-		result.setTransform( new PovMatrix( new double[]
-			{
-				 transform.xx,  transform.yx,  transform.zx,
-				 transform.xy,  transform.yy,  transform.zy,
-				-transform.xz, -transform.yz, -transform.zz,
-				 transform.xo,  transform.yo,  transform.zo
-			} ) );
 
 		return result;
 	}

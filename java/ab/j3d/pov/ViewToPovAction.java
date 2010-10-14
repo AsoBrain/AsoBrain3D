@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,35 +20,18 @@
  */
 package ab.j3d.pov;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Insets;
-import java.awt.Window;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.text.MessageFormat;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import javax.swing.BoundedRangeModel;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.*;
+import java.io.*;
+import java.text.*;
+import java.util.*;
+import javax.swing.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.model.Camera3D;
-import ab.j3d.model.Scene;
-import ab.j3d.view.RenderEngine;
-import ab.j3d.view.View3D;
-
-import com.numdata.oss.ResourceBundleTools;
-import com.numdata.oss.ui.BasicAction;
-import com.numdata.oss.ui.ImagePanel;
-import com.numdata.oss.ui.WindowTools;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+import com.numdata.oss.*;
+import com.numdata.oss.ui.*;
 
 /**
  * This action converts the given {@link View3D} to a POV-Ray image using
@@ -97,10 +81,10 @@ public final class ViewToPovAction
 	 * @param   constraints         Layout constraints for the image panel.
 	 * @param   textureDirectory    Directory containing the POV-Ray textures.
 	 */
-	public ViewToPovAction( final Locale locale , final View3D view , final JPanel viewContainer , final Object constraints , final String textureDirectory )
+	public ViewToPovAction( final Locale locale, final View3D view, final JPanel viewContainer, final Object constraints, final String textureDirectory )
 	{
-		super( ResourceBundleTools.getBundle( ViewToPovAction.class , locale ) , "pov" );
-		_res = ResourceBundleTools.getBundle( ViewToPovAction.class , locale );
+		super( ResourceBundleTools.getBundle( ViewToPovAction.class, locale ), "pov" );
+		_res = ResourceBundleTools.getBundle( ViewToPovAction.class, locale );
 
 		final Component viewComponent = view.getComponent();
 
@@ -113,7 +97,7 @@ public final class ViewToPovAction
 				viewComponent.setVisible( true );
 			} } );
 
-		viewContainer.add(  imagePanel , constraints );
+		viewContainer.add(  imagePanel, constraints );
 
 		_view             = view;
 		_imagePanel       = imagePanel;
@@ -163,11 +147,11 @@ public final class ViewToPovAction
 		/*
 		 * Show progress bar.
 		 */
-		final JDialog           progress        = WindowTools.createProgressWindow( viewWindow , res.getString( "progressTitle" ) , res.getString( "progressMessage" ) );
+		final JDialog           progress        = WindowTools.createProgressWindow( viewWindow, res.getString( "progressTitle" ), res.getString( "progressMessage" ) );
 		final Container         progressContent = progress.getContentPane();
 		final JProgressBar      progressBar     = new JProgressBar();
 		final BoundedRangeModel progressModel   = progressBar.getModel();
-		progressContent.add( progressBar , BorderLayout.SOUTH );
+		progressContent.add( progressBar, BorderLayout.SOUTH );
 
 		WindowTools.packAndCenter( progress );
 
@@ -184,8 +168,6 @@ public final class ViewToPovAction
 			 * Convert view properties to camera properties.
 			 */
 			final Scene    scene       = view.getScene();
-			final Camera3D camera      = view.getCamera();
-			final Matrix3D view2scene  = view.getView2Scene();
 			final double   aspectRatio = (double)viewWidth / (double)viewHeight;
 
 			/*
@@ -193,14 +175,14 @@ public final class ViewToPovAction
 			 */
 			final AbToPovConverter converter = new AbToPovConverter( _textureDirectory );
 			final PovScene povScene = converter.convert( scene );
-			povScene.add( AbToPovConverter.convertCamera3D( view2scene , camera , aspectRatio ) );
+			povScene.add( new PovCamera( view.getLabel(), view.getView2Scene(), Math.toDegrees( view.getFieldOfView() ), aspectRatio ) );
 
 			/*
 			 * Render the povscene to an image and place the image on the image panel.
 			 */
 			try
 			{
-				image = povScene.render( null , viewWidth , viewHeight , progressModel , logWriter , false );
+				image = povScene.render( null, viewWidth, viewHeight, progressModel, logWriter, false );
 			}
 			catch ( IOException e )
 			{
@@ -228,9 +210,9 @@ public final class ViewToPovAction
 			final String logText = logBuffer.toString();
 			int pos = logText.length();
 			for ( int i = 0 ; ( pos > 0 ) && ( i < 25 ) ; i++ )
-				pos = logText.lastIndexOf( (int)'\n' , pos - 1 );
+				pos = logText.lastIndexOf( (int)'\n', pos - 1 );
 
-			WindowTools.showErrorDialog( viewWindow , res.getString( "errorTitle" ) , MessageFormat.format( res.getString( "errorMessage" ) , ( ( pos < 0 ) ? logText : logText.substring( pos ) ) ) );
+			WindowTools.showErrorDialog( viewWindow, res.getString( "errorTitle" ), MessageFormat.format( res.getString( "errorMessage" ), ( ( pos < 0 ) ? logText : logText.substring( pos ) ) ) );
 		}
 	}
 }

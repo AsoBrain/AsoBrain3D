@@ -19,43 +19,20 @@
  */
 package ab.j3d.view;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.GridLayout;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.*;
+import java.io.*;
+import java.util.*;
 import java.util.List;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 
-import ab.j3d.MapTools;
-import ab.j3d.Material;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.control.FromToCameraControl;
-import ab.j3d.geom.BoxUVMap;
-import ab.j3d.model.Box3D;
-import ab.j3d.model.Camera3D;
-import ab.j3d.model.Light3D;
-import ab.j3d.model.Scene;
-import ab.j3d.model.Sphere3D;
-import ab.j3d.model.SpotLight3D;
-import ab.j3d.pov.AbToPovConverter;
-import ab.j3d.pov.PovScene;
-import ab.j3d.pov.PovVector;
-import ab.j3d.view.jogl.JOGLEngine;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.geom.*;
+import ab.j3d.model.*;
+import ab.j3d.pov.*;
+import ab.j3d.view.jogl.*;
 
 /**
  * Shows a 3D scene using the various render engines in several lighting modes,
@@ -131,8 +108,7 @@ public class ViewComparison
 
 			if ( ( view != null ) && INCLUDE_POV_VIEW )
 			{
-				final Camera3D camera     = view.getCamera();
-				final Matrix3D view2scene = view.getView2Scene();
+				final View3D finalView = view;
 
 				final JLabel povComponent = new JLabel();
 				layoutPanel.add( povComponent );
@@ -150,12 +126,14 @@ public class ViewComparison
 							final Dimension size = povComponent.getSize();
 							if ( ( size.width > 0 ) && ( size.height > 0 ) )
 							{
-								final double   aspectRatio = (double)size.width / (double)size.height;
+								final String cameraName = finalView.getLabel();
+								final Matrix3D view2Scene = finalView.getView2Scene();
+								final double cameraAngle = Math.toDegrees( finalView.getFieldOfView() );
+								final double  aspectRatio = (double)size.width / (double)size.height;
 
 								final AbToPovConverter converter = new AbToPovConverter( MapTools.imageMapDirectory );
 								final PovScene povScene = converter.convert( scene );
-								povScene.add( AbToPovConverter.convertCamera3D( view2scene , camera , aspectRatio ) );
-
+								povScene.add( new PovCamera( cameraName, view2Scene, cameraAngle, aspectRatio ) );
 								povScene.setBackground( new PovVector( Color.GRAY ) );
 
 								publish( povScene.render( null , size.width , size.height , null , new PrintWriter( System.err ) , true ) );
