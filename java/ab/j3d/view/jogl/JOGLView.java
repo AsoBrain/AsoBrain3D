@@ -53,12 +53,12 @@ public class JOGLView
 	/**
 	 * Specifies which OpenGL capabilities should be used, if available.
 	 */
-	private JOGLConfiguration _configuration;
+	private final JOGLConfiguration _configuration;
 
 	/**
 	 * Provides information about OpenGL capabilities.
 	 */
-	private JOGLCapabilities _capabilities;
+	private final JOGLCapabilities _capabilities;
 
 	/**
 	 * Scene input translator for this View.
@@ -251,7 +251,7 @@ public class JOGLView
 		final Scene     scene             = getScene();
 		final double    viewUnit          = scene.getUnit();
 
-		final double    fieldOfView       = getAperture();
+		final double    fieldOfView       = getFieldOfView();
 		final double    zoomFactor        = getZoomFactor();
 		final double    frontClipDistance = _frontClipDistance;
 		final double    backClipDistance  = _backClipDistance;
@@ -500,19 +500,17 @@ public class JOGLView
 
 		if ( ( width > 0 ) && ( height > 0 ) )
 		{
-			final Camera3D camera = getCamera();
 			final double   aspect = (double)width / (double)height;
 
 			final ProjectionPolicy projectionPolicy = getProjectionPolicy();
 			if ( projectionPolicy == ProjectionPolicy.PARALLEL )
 			{
 				final Scene    scene    = getScene();
-				final Camera3D camera3D = getCamera();
 				final double   left     = -0.5 * (double)width;
-				final double   right    = +0.5 * (double)width;
+				final double   right    =  0.5 * (double)width;
 				final double   bottom   = -0.5 * (double)height;
-				final double   top      = +0.5 * (double)height;
-				final double   scale    = camera3D.getZoomFactor() * scene.getUnit() / getResolution();
+				final double   top      =  0.5 * (double)height;
+				final double   scale    = getZoomFactor() * scene.getUnit() / getResolution();
 				final double   near     = _frontClipDistance * scale;
 				final double   far      = _backClipDistance  * scale;
 
@@ -523,7 +521,7 @@ public class JOGLView
 			}
 			else if ( projectionPolicy == ProjectionPolicy.PERSPECTIVE )
 			{
-				final double fov  = Math.toDegrees( camera.getAperture() );
+				final double fov  = Math.toDegrees( getFieldOfView() );
 				final double near = _frontClipDistance;
 				final double far  = _backClipDistance;
 

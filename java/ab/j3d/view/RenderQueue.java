@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,20 +20,12 @@
  */
 package ab.j3d.view;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.model.Camera3D;
-import ab.j3d.model.Face3D;
-import ab.j3d.model.Node3DCollection;
-import ab.j3d.model.Object3D;
-
-import com.numdata.oss.ArrayTools;
-import com.numdata.oss.AugmentedArrayList;
-import com.numdata.oss.AugmentedList;
-import com.numdata.oss.io.IndentingWriter;
+import ab.j3d.*;
+import ab.j3d.model.*;
+import com.numdata.oss.*;
+import com.numdata.oss.io.*;
 
 /**
  * This class manages a render queue that can be used by a 3D render engine. It
@@ -104,11 +97,6 @@ public final class RenderQueue
 	final AugmentedList<List<RenderedPolygon>> _freeLists;
 
 	/**
-	 * Temporary/shared storage area for {@link #enqueueScene}.
-	 */
-	private final Node3DCollection<Object3D> _tmpNodeCollection;
-
-	/**
 	 * Temporary storage for clipping variables.
 	 */
 	private double[] _frontX;
@@ -165,7 +153,6 @@ public final class RenderQueue
 	{
 		_queue                   = new ArrayList<RenderedPolygon>( 64 );
 		_freeLists               = new AugmentedArrayList<List<RenderedPolygon>>( 4 );
-		_tmpNodeCollection       = new Node3DCollection<Object3D>();
 		_frontX                  = null;
 		_frontY                  = null;
 		_frontZ                  = null;
@@ -186,29 +173,11 @@ public final class RenderQueue
 		final List<RenderedPolygon> queue = _queue;
 
 		for ( int i = queue.size() ; --i >= 0 ; )
+		{
 			releasePolygon( queue.get( i ) );
+		}
 
 		queue.clear();
-	}
-
-	/**
-	 * Add scene to queue from the specified camera.
-	 *
-	 * @param   camera              Camera to enqueue scene for.
-	 * @param   projector           Projects camera coordinates on image plate pixels.
-	 * @param   backfaceCulling     Prevent backfaces from being rendered.
-	 */
-	public void enqueueScene( final Camera3D camera , final Projector projector , final boolean backfaceCulling )
-	{
-		final Node3DCollection<Object3D> nodeCollection = _tmpNodeCollection;
-		nodeCollection.clear();
-		camera.collectNodes( nodeCollection , Object3D.class , Matrix3D.INIT , true );
-
-		for ( int i = 0 ; i < nodeCollection.size() ; i++ )
-		{
-			final Object3D node = nodeCollection.getNode( i );
-			enqueueObject( projector , backfaceCulling , nodeCollection.getMatrix( i ) , node , false );
-		}
 	}
 
 	/**
@@ -384,7 +353,7 @@ public final class RenderQueue
 	 */
 	public List<RenderedPolygon> sortQueue( final List<RenderedPolygon> queue )
 	{
-		final ArrayList<RenderedPolygon> result = new ArrayList<RenderedPolygon>( queue.size() + ( queue.size() / 3 ) );
+		final List<RenderedPolygon> result = new ArrayList<RenderedPolygon>( queue.size() + ( queue.size() / 3 ) );
 		final ArrayList<RenderedPolygon> tempQueue = new ArrayList<RenderedPolygon>( queue );
 
 		int i = 0;
@@ -980,7 +949,9 @@ public final class RenderQueue
 
 		final AugmentedList<List<RenderedPolygon>> lists = _freeLists;
 		if ( vertexCount >= lists.size() )
+		{
 			lists.setLength( vertexCount );
+		}
 
 		List<RenderedPolygon> list = lists.get( listIndex );
 		if ( list == null )

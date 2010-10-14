@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,21 +20,16 @@
  */
 package ab.j3d.pov;
 
-import java.awt.BorderLayout;
-import java.util.Locale;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import java.awt.*;
+import java.util.*;
+import javax.swing.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.control.FromToCameraControl;
-import ab.j3d.model.Scene;
-import ab.j3d.view.RenderEngine;
-import ab.j3d.view.View3D;
-import ab.j3d.view.jogl.JOGLEngine;
-
-import com.numdata.oss.ui.ImageTools;
-import com.numdata.oss.ui.WindowTools;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+import ab.j3d.view.jogl.*;
+import com.numdata.oss.ui.*;
 
 /**
  * This test application can be used for visual testing of the
@@ -81,7 +77,6 @@ final class AbPovTestApp
 		 */
 		final Scene scene = new Scene( Scene.MM );
 		Scene.addLegacyLights( scene );
-		scene.addContentNode( "camera"    , Matrix3D.INIT , testModel.getCamera3D() );
 		scene.addContentNode( "redbox"    , Matrix3D.getTransform( 10.0 ,  0.0 ,  0.0 , -200.0 ,   0.0 , -250.0 ) , testModel.getRedXRotatedBox3D() );
 		scene.addContentNode( "greenbox"  , Matrix3D.getTransform(  0.0 , 10.0 ,  0.0 ,  -50.0 ,   0.0 , -250.0 ) , testModel.getGreenYRotatedBox3D() );
 		scene.addContentNode( "bluebox"   , Matrix3D.getTransform(  0.0 ,  0.0 , 10.0 ,  200.0 ,   0.0 , -250.0 ) , testModel.getBlueZRotatedBox3D() );

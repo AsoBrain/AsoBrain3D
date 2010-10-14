@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,7 +23,6 @@ import java.awt.event.*;
 import java.util.*;
 
 import ab.j3d.*;
-import ab.j3d.model.*;
 import ab.j3d.view.*;
 import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
@@ -33,7 +33,7 @@ import org.jetbrains.annotations.*;
  * <p />
  * Panning is achieved by modifying the translational compnents of the view
  * matrix ({@link View3D#setScene2View}, while the zoom effect is
- * achieved by manipulating the camera ({@link Camera3D#setZoomFactor}.
+ * achieved by manipulating the view's zoom factor ({@link View3D#setZoomFactor}.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
