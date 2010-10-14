@@ -345,7 +345,11 @@ public class Scene
 
 		for ( final ContentNode node : _contentNodes.values() )
 		{
-			bounds3DBuilder.addBounds( node.getTransform(), node.getBounds() );
+			final Bounds3D nodeBounds = node.getBounds();
+			if ( nodeBounds != null )
+			{
+				bounds3DBuilder.addBounds( node.getTransform(), nodeBounds );
+			}
 		}
 
 		return bounds3DBuilder.getBounds();
