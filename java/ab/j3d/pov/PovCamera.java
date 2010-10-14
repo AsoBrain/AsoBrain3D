@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2007
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,9 +20,10 @@
  */
 package ab.j3d.pov;
 
-import java.io.IOException;
+import java.io.*;
 
-import com.numdata.oss.io.IndentingWriter;
+import ab.j3d.*;
+import com.numdata.oss.io.*;
 
 /**
  * Pov Camera
@@ -61,6 +63,35 @@ public class PovCamera
 	 * Camera opening angle in decimal degrees (aperture; typically 45).
 	 */
 	private double _angle;
+
+	/**
+	 * Construct camera.
+	 * <p>
+	 * The standard ratio used in POV-Ray is 4:3, wich means the rendered
+	 * image will get deformed if resolutions when a ratio other than 4:3
+	 * is used. Since the resulting image does not have a fixed ratio (the user
+	 * can choose any size, for example), the ratio also needs to be specified
+	 * in the POV-Ray camera.
+	 *
+	 * @param   name            Name of camera object.
+	 * @param   view2scene      Transforms view to POV-scene coordinates.
+	 * @param   angle           Camera opening angle in decimal degrees
+	 *                          (aperture; typically 45).
+	 * @param   aspectRatio     Aspect ratio of image (for square pixels:
+	 *                          width / height).
+	 */
+	public PovCamera( final String name, final Matrix3D view2scene, final double angle, final double aspectRatio )
+	{
+		this( name, null, null, new PovVector( aspectRatio, 0.0, 0.0 ), angle );
+
+		setTransform( new PovMatrix( new double[]
+			{
+				 view2scene.xx,  view2scene.yx,  view2scene.zx,
+				 view2scene.xy,  view2scene.yy,  view2scene.zy,
+				-view2scene.xz, -view2scene.yz, -view2scene.zz,
+				 view2scene.xo,  view2scene.yo,  view2scene.zo
+			} ) );
+	}
 
 	/**
 	 * Construct camera.
@@ -111,6 +142,7 @@ public class PovCamera
 		_right    = ( ( right != null ) && ( right.getX() > 0.0 ) ) ? right : new PovVector( 1.33 , 0.0 , 0.0 );
 	}
 
+	@Override
 	public void write( final IndentingWriter out )
 		throws IOException
 	{
