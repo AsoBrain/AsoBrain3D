@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 2009-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -56,9 +57,14 @@ public abstract class View3D
 	public static final String RENDERING_POLICY_PROPERTY = "renderingPolicy";
 
 	/**
+	 * Bound property name: projection policy.
+	 */
+	public static final String PROJECTION_POLICY_PROPERTY = "projectionPolicy";
+
+	/**
 	 * Scene being viewed.
 	 */
-	private Scene _scene;
+	private final Scene _scene;
 
 	/**
 	 * Resolution of image in meters per pixel. If is set to <code>0.0</code>,
@@ -199,10 +205,10 @@ public abstract class View3D
 		final CameraControl cameraControl = getCameraControl();
 		if ( cameraControl != null )
 		{
-			ActionTools.addToToolBar( toolbar , cameraControl.getActions( locale ) );
+			ActionTools.addToToolBar( toolbar, cameraControl.getActions( locale ) );
 		}
 
-		ActionTools.addToToolBar( toolbar , getActions( locale ) );
+		ActionTools.addToToolBar( toolbar, getActions( locale ) );
 
 		return toolbar;
 	}
@@ -313,6 +319,19 @@ public abstract class View3D
 	}
 
 	/**
+	 * Get linear zoom factor. View units are multiplied by this factor to get
+	 * rendered units.
+	 *
+	 * @param   zoomFactor  Linear zoom factor.
+	 *
+	 * @see     Camera3D#setZoomFactor
+	 */
+	public void setZoomFactor( final double zoomFactor )
+	{
+		_camera.setZoomFactor( zoomFactor );
+	}
+
+	/**
 	 * Returns the distance between the camera and the front clipping plane,
 	 * in view units. The distance is measured in the viewing direction. Any
 	 * objects closer to the camera than the front clipping plane are invisible.
@@ -338,7 +357,7 @@ public abstract class View3D
 	 * @param   front   Distance from the camera to the front clipping plane,
 	 *                  in view units.
 	 */
-	public abstract void setFrontClipDistance( final double front );
+	public abstract void setFrontClipDistance( double front );
 
 	/**
 	 * Returns the distance between the camera and the back clipping plane,
@@ -366,7 +385,7 @@ public abstract class View3D
 	 * @param   back    Distance from the camera to the back clipping plane,
 	 *                  in view units.
 	 */
-	public abstract void setBackClipDistance( final double back );
+	public abstract void setBackClipDistance( double back );
 
 	/**
 	 * Get control for this view.
@@ -520,9 +539,11 @@ public abstract class View3D
 	 */
 	public void setProjectionPolicy( final ProjectionPolicy policy )
 	{
-		if ( policy != _projectionPolicy )
+		final ProjectionPolicy oldValue = _projectionPolicy;
+		if ( policy != oldValue )
 		{
 			_projectionPolicy = policy;
+			_pcs.firePropertyChange( PROJECTION_POLICY_PROPERTY, oldValue, policy );
 			update();
 		}
 	}
@@ -548,7 +569,7 @@ public abstract class View3D
 		if ( policy != oldValue )
 		{
 			_renderingPolicy = policy;
-			_pcs.firePropertyChange( RENDERING_POLICY_PROPERTY , oldValue , policy );
+			_pcs.firePropertyChange( RENDERING_POLICY_PROPERTY, oldValue, policy );
 			update();
 		}
 	}
@@ -745,7 +766,7 @@ public abstract class View3D
 	{
 		for ( final ViewOverlay overlay : _overlays )
 		{
-			overlay.paintOverlay( this , g2d );
+			overlay.paintOverlay( this, g2d );
 		}
 	}
 
@@ -758,7 +779,7 @@ public abstract class View3D
 	 */
 	public Action[] getActions( final Locale locale )
 	{
-		return new Action[] { new SwitchRenderingPolicyAction( locale , this , getRenderingPolicy() ) , new ToggleGridAction( locale , this ) };
+		return new Action[] { new SwitchRenderingPolicyAction( locale, this, getRenderingPolicy() ), new ToggleGridAction( locale, this ) };
 	}
 
 
@@ -833,8 +854,8 @@ public abstract class View3D
 	 * @param   propertyName    Name of the property.
 	 * @param   listener        Listener to be added.
 	 */
-	public void addPropertyChangeListener( final String propertyName , final PropertyChangeListener listener )
+	public void addPropertyChangeListener( final String propertyName, final PropertyChangeListener listener )
 	{
-		_pcs.addPropertyChangeListener( propertyName , listener );
+		_pcs.addPropertyChangeListener( propertyName, listener );
 	}
 }
