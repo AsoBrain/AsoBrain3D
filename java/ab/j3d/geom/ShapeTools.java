@@ -107,6 +107,21 @@ public class ShapeTools
 		COMPLEX;
 
 		/**
+		 * Test if this shape is convex.
+		 *
+		 * @return  <code>true</code> if shape is convex.
+		 */
+		public boolean isConvex()
+		{
+			return ( ( this == CCW_TRIANGLE ) ||
+			         ( this == CW_TRIANGLE ) ||
+			         ( this == CCW_QUAD ) ||
+			         ( this == CW_QUAD ) ||
+			         ( this == CCW_CONVEX ) ||
+			         ( this == CW_CONVEX ) );
+		}
+
+		/**
 		 * Test if this shape has clockwise vertex order.
 		 *
 		 * @return  <code>true</code> if shape has clockwise vertex order;
