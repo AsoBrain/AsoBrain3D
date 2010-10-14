@@ -28,6 +28,7 @@ import javax.swing.*;
 
 import ab.j3d.*;
 import ab.j3d.control.*;
+import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import com.numdata.oss.event.*;
 import com.numdata.oss.ui.*;
@@ -47,7 +48,7 @@ public abstract class View3D
 	 * a full circle by moving the mouse cursor 250 pixels (in no particular
 	 * direction).
 	 *
-	 * @see     #getPixelsToRadiansFactor()
+	 * @see     #getPixelsToRadians()
 	 */
 	public static final double DEFAULT_PIXELS_TO_RADIANS_FACTOR = ( 2.0 *  Math.PI ) / 250.0;
 
@@ -76,6 +77,13 @@ public abstract class View3D
 	private double _resolution;
 
 	/**
+	 * Scale factor from pixels to radians.
+	 *
+	 * @see     #getPixelsToRadians()
+	 */
+	private double _pixelsToRadiansFactor;
+
+	/**
 	 * Projection policy of this view.
 	 */
 	private ProjectionPolicy _projectionPolicy;
@@ -86,14 +94,22 @@ public abstract class View3D
 	private RenderingPolicy _renderingPolicy;
 
 	/**
-	 * Transformation of view.
+	 * Matrix that transforms scene to view coordinates.
 	 */
-	private Transform3D _transform;
+	private Matrix3D _scene2view;
 
 	/**
-	 * Camera from where the view is created.
+	 * Field of view (in radians). This only applies to perspective projections.
 	 */
-	private final Camera3D _camera;
+	private double _fieldOfView;
+
+	/**
+	 * Linear zoom factor. This factor use in combination with the image
+	 * resolution and scene units to translated view units to pixels.
+	 *
+	 * @see     #getPixelsToUnitsFactor()
+	 */
+	private double _zoomFactor;
 
 	/**
 	 * Control for this view.
@@ -143,18 +159,18 @@ public abstract class View3D
 
 		_resolution = 0.0;
 
+		_pixelsToRadiansFactor = DEFAULT_PIXELS_TO_RADIANS_FACTOR;
+
 		_projectionPolicy = ProjectionPolicy.PERSPECTIVE;
 
 		_renderingPolicy = RenderingPolicy.SOLID;
 
 		_label = null;
 
-		final Camera3D camera = new Camera3D();
-		_camera = camera;
+		_fieldOfView = Math.toRadians( 45.0 );
+		_zoomFactor = 1.0;
 
-		final Transform3D transform = new Transform3D();
-		transform.addChild( camera );
-		_transform = transform;
+		_scene2view = Matrix3D.INIT;
 
 		_cameraControl = null;
 
@@ -179,7 +195,7 @@ public abstract class View3D
 
 		_renderStyleFilters.clear();
 
-		_transform = null;
+		_scene2view = Matrix3D.INIT;
 		_cameraControl = null;
 		_label = null;
 	}
@@ -254,16 +270,6 @@ public abstract class View3D
 	}
 
 	/**
-	 * Get camera from where the view is created.
-	 *
-	 * @return  Camera from where the view is created (never <code>null</code>).
-	 */
-	public Camera3D getCamera()
-	{
-		return _camera;
-	}
-
-	/**
 	 * Get multiplicative scale factor from image coordinates (pixels) to
 	 * rotational units (radians).
 	 *
@@ -271,9 +277,21 @@ public abstract class View3D
 	 *
 	 * @see     #getResolution
 	 */
-	public double getPixelsToRadiansFactor()
+	public double getPixelsToRadians()
 	{
-		return DEFAULT_PIXELS_TO_RADIANS_FACTOR;
+		return _pixelsToRadiansFactor;
+	}
+
+	/**
+	 * Set factor from pixels to radians.
+	 *
+	 * @param   factor  Scale factor from pixels to radians (radians per pixel).
+	 *
+	 * @see     #getResolution
+	 */
+	public void setPixelsToRadians( final double factor )
+	{
+		_pixelsToRadiansFactor = factor;
 	}
 
 	/**
@@ -293,42 +311,49 @@ public abstract class View3D
 	}
 
 	/**
-	 * Get camera aperture for this view. This only applies to perspective
-	 * projections.
+	 * Get field of view. This only applies to perspective projections.
 	 *
-	 * @return  Camera aperture in radians.
-	 *
-	 * @see     Camera3D#getAperture
+	 * @return  Field of view in radians.
 	 */
-	public double getAperture()
+	public double getFieldOfView()
 	{
-		return _camera.getAperture();
+		return _fieldOfView;
 	}
 
 	/**
-	 * Get linear zoom factor. View units are multiplied by this factor to get
-	 * rendered units.
+	 * Set field of view. This only applies to perspective projections.
+	 *
+	 * @param   fieldOfView     Field of view in radians.
+	 */
+	public void setFieldOfView( final double fieldOfView )
+	{
+		_fieldOfView = fieldOfView;
+	}
+
+	/**
+	 * Get linear zoom factor. This factor use in combination with the image
+	 * resolution and scene units to translated view units to pixels.
 	 *
 	 * @return  Linear zoom factor.
 	 *
-	 * @see     Camera3D#getZoomFactor
+	 * @see     #getPixelsToUnitsFactor()
 	 */
 	public double getZoomFactor()
 	{
-		return _camera.getZoomFactor();
+		return _zoomFactor;
 	}
 
 	/**
-	 * Get linear zoom factor. View units are multiplied by this factor to get
-	 * rendered units.
+	 * Set linear zoom factor. This factor use in combination with the image
+	 * resolution and scene units to translated view units to pixels.
 	 *
 	 * @param   zoomFactor  Linear zoom factor.
 	 *
-	 * @see     Camera3D#setZoomFactor
+	 * @see     #getPixelsToUnitsFactor()
 	 */
 	public void setZoomFactor( final double zoomFactor )
 	{
-		_camera.setZoomFactor( zoomFactor );
+		_zoomFactor = zoomFactor;
 	}
 
 	/**
@@ -428,21 +453,19 @@ public abstract class View3D
 	 */
 	public Matrix3D getScene2View()
 	{
-		return _transform.getInverseTransform();
+		return _scene2view;
 	}
 
 	/**
 	 * Set view transform.
 	 *
 	 * @param   scene2view  Scene to view transform.
-	 *
-	 * @throws  NullPointerException if <code>transform</code> is <code>null</code>.
 	 */
-	public void setScene2View( final Matrix3D scene2view )
+	public void setScene2View( @NotNull final Matrix3D scene2view )
 	{
 		if ( !scene2view.equals( getScene2View() ) )
 		{
-			_transform.setTransform( scene2view.inverse() );
+			_scene2view = scene2view;
 			update();
 		}
 	}
@@ -454,23 +477,7 @@ public abstract class View3D
 	 */
 	public Matrix3D getView2Scene()
 	{
-		return _transform.getTransform();
-	}
-
-	/**
-	 * Set view transform.
-	 *
-	 * @param   view2scene  Scene to view transform.
-	 *
-	 * @throws  NullPointerException if <code>transform</code> is <code>null</code>.
-	 */
-	public void setView2scene( final Matrix3D view2scene )
-	{
-		if ( !view2scene.equals( getView2Scene() ) )
-		{
-			_transform.setTransform( view2scene );
-			update();
-		}
+		return _scene2view.inverse();
 	}
 
 	/**
@@ -514,6 +521,18 @@ public abstract class View3D
 		}
 
 		_resolution = resolution;
+	}
+
+	/**
+	 * Get aspect ratio of view (component). This ratio is calculated by
+	 * dividing the image width by the image height.
+	 *
+	 * @return  Aspect ratio.
+	 */
+	public double getAspectRatio()
+	{
+		final Component component = getComponent();
+		return (double)component.getWidth() / (double)component.getHeight();
 	}
 
 	/**
@@ -802,6 +821,73 @@ public abstract class View3D
 	public void setLabel( final String label )
 	{
 		_label = label;
+	}
+
+	/**
+	 * Adjust view volume to fit all scene contents. This is done by changing
+	 * the view position and zoom factor, but without changes to the view
+	 * direction.
+	 *
+	 * @see     Scene#getBounds()
+	 */
+	public void zoomToFitScene()
+	{
+		final Scene scene = getScene();
+
+		final Bounds3D sceneBounds = scene.getBounds();
+		if ( sceneBounds != null )
+		{
+			zoomToFitSceneBounds( sceneBounds );
+		}
+	}
+
+	/**
+	 * Adjust view volume to fit the specified bounds in the scene's coordinate
+	 * system. This is done by changing the view position and zoom factor, but
+	 * without changes to the view direction.
+	 *
+	 * @param   sceneBounds     Bounds in scene to fit in view.
+	 */
+	public void zoomToFitSceneBounds( @NotNull final Bounds3D sceneBounds )
+	{
+		zoomToFitViewBounds( GeometryTools.convertObbToAabb( getScene2View(), sceneBounds ) );
+	}
+
+	/**
+	 * Adjust view volume to fit the specified bounds in the view's locale
+	 * coordinate system. This is done by changing the view position and zoom
+	 * factor, but without changes to the view direction.
+	 *
+	 * @param   viewBounds  Bounds in view to fit in view.
+	 */
+	public void zoomToFitViewBounds( @NotNull final Bounds3D viewBounds )
+	{
+		final double viewSizeX = viewBounds.v2.x - viewBounds.v1.x;
+		final double viewSizeY = viewBounds.v2.y - viewBounds.v1.y;
+
+		final Scene scene = getScene();
+		final double unscaledPixels2units = getResolution() / scene.getUnit();
+		final Component viewComponent = getComponent();
+		final double aspectRatio = getAspectRatio();
+		final double fieldOfView = getFieldOfView();
+		final double frontClipDistance = getFrontClipDistance();
+
+		final double scaleX = (double)viewComponent.getWidth() / viewSizeX;
+		final double scaleY = (double)viewComponent.getHeight() / viewSizeY;
+		final double zoomFactor = Math.min( scaleX, scaleY ) * unscaledPixels2units;
+
+		final double eyeDistance2width = 2.0 * Math.tan( fieldOfView / 2.0 );
+		final double eyeDistance = Math.max( viewSizeX, aspectRatio * viewSizeY ) / eyeDistance2width;
+
+		final double viewOriginX = 0.5 * ( viewBounds.v1.x + viewBounds.v2.x );
+		final double viewOriginY = 0.5 * ( viewBounds.v1.y + viewBounds.v2.y );
+		final double viewOriginZ = viewBounds.v2.z + Math.max( frontClipDistance, eyeDistance );
+
+		final Matrix3D oldScene2View = getScene2View();
+		final Matrix3D scene2view = oldScene2View.minus( viewOriginX, viewOriginY, viewOriginZ );
+
+		setZoomFactor( 0.95 * zoomFactor );
+		setScene2View( scene2view );
 	}
 
 	@Override
