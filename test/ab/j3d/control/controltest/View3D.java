@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 2009-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,14 +20,11 @@
  */
 package ab.j3d.control.controltest;
 
-import java.awt.Component;
+import java.awt.*;
 
-import ab.j3d.Vector3D;
-import ab.j3d.control.CameraControl;
-import ab.j3d.control.Control;
-import ab.j3d.control.FromToCameraControl;
-import ab.j3d.model.Camera3D;
-import ab.j3d.view.ProjectionPolicy;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.view.*;
 
 /**
  * The {@link View3D} provides a view on a {@link Model3D}. It has a
@@ -134,10 +132,8 @@ public class View3D
 		}
 		else if ( PARALLEL_PROJECTION == projection )
 		{
-			final Camera3D camera = _view.getCamera();
-
 			_view.setProjectionPolicy( ProjectionPolicy.PARALLEL );
-			camera.setZoomFactor( 0.004 );
+			_view.setZoomFactor( 0.004 );
 		}
 		else
 		{
