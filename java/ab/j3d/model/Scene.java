@@ -370,7 +370,11 @@ public class Scene
 				final Bounds3D nodeBounds = node.getBounds();
 				if ( nodeBounds != null )
 				{
-					bounds3DBuilder = new Bounds3DBuilder();
+					if ( bounds3DBuilder == null )
+					{
+						bounds3DBuilder = new Bounds3DBuilder();
+					}
+
 					bounds3DBuilder.addBounds( node.getTransform(), nodeBounds );
 				}
 			}
