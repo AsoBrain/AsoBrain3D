@@ -130,6 +130,11 @@ public class Scene
 	private boolean _bspTreeDirty;
 
 	/**
+	 * Cached scene bounds.
+	 */
+	private Bounds3D _bounds;
+
+	/**
 	 * Shared listener for content node updates.
 	 */
 	private final ContentNodeUpdateListener _contentNodeUpdateListener = new ContentNodeUpdateListener()
@@ -137,7 +142,7 @@ public class Scene
 			@Override
 			public void contentsUpdated( final ContentNodeUpdateEvent event )
 			{
-				_bspTreeDirty = true;
+				invalidateCache();
 				fireContentNodeContentUpdated( (ContentNode)event.getSource() );
 			}
 
@@ -150,7 +155,7 @@ public class Scene
 			@Override
 			public void transformUpdated( final ContentNodeUpdateEvent event )
 			{
-				_bspTreeDirty = true;
+				invalidateCache();
 				fireContentNodePropertyChanged( (ContentNode)event.getSource() );
 			}
 		};
@@ -166,6 +171,17 @@ public class Scene
 		_planeControls = new ArrayList<ScenePlaneControl>();
 		_bspTree = new BSPTree();
 		_bspTreeDirty = true;
+		_bounds = null;
+	}
+
+	/**
+	 * Invalidate cached information about the scene. This should be called
+	 * whenever the scene contents change.
+	 */
+	protected void invalidateCache()
+	{
+		_bspTreeDirty = true;
+		_bounds = null;
 	}
 
 	/**
@@ -178,19 +194,19 @@ public class Scene
 	 */
 	public static void addLegacyLights( @NotNull final Scene scene )
 	{
-		scene.setAmbient( 0.2f , 0.2f , 0.2f );
+		scene.setAmbient( 0.2f, 0.2f, 0.2f );
 
-		final Light3D directional1 = new DirectionalLight3D( Vector3D.normalize( -0.8 ,  1.0 , -0.6 ) );
-		final Light3D directional2 = new DirectionalLight3D( Vector3D.normalize(  1.0 , -1.0 ,  0.4 ) );
-		final Light3D directional3 = new DirectionalLight3D( Vector3D.normalize( -2.0 ,  0.0 , -1.0 ) );
+		final Light3D directional1 = new DirectionalLight3D( Vector3D.normalize( -0.8,  1.0, -0.6 ) );
+		final Light3D directional2 = new DirectionalLight3D( Vector3D.normalize(  1.0, -1.0,  0.4 ) );
+		final Light3D directional3 = new DirectionalLight3D( Vector3D.normalize( -2.0,  0.0, -1.0 ) );
 
 		directional1.setIntensity( 1.0f );
 		directional2.setIntensity( 0.5f );
 		directional3.setIntensity( 0.5f );
 
-		scene.addContentNode( "legacy-light-1" , Matrix3D.INIT , directional1 );
-		scene.addContentNode( "legacy-light-2" , Matrix3D.INIT , directional2 );
-		scene.addContentNode( "legacy-light-3" , Matrix3D.INIT , directional3 );
+		scene.addContentNode( "legacy-light-1", Matrix3D.INIT, directional1 );
+		scene.addContentNode( "legacy-light-2", Matrix3D.INIT, directional2 );
+		scene.addContentNode( "legacy-light-3", Matrix3D.INIT, directional3 );
 	}
 
 	/**
@@ -263,8 +279,8 @@ public class Scene
 		{
 			removeContentNode( node.getID() );
 
-			_contentNodes.put( node.getID() , node );
-			_bspTreeDirty = true;
+			_contentNodes.put( node.getID(), node );
+			invalidateCache();
 
 			node.addContentNodeUpdateListener( _contentNodeUpdateListener );
 
@@ -284,9 +300,9 @@ public class Scene
 	 *
 	 * @return  Content node that was added.
 	 */
-	public final ContentNode addContentNode( @NotNull final Object id , final Matrix3D transform , @NotNull final Node3D node3D )
+	public final ContentNode addContentNode( @NotNull final Object id, final Matrix3D transform, @NotNull final Node3D node3D )
 	{
-		return addContentNode( new ContentNode( id , transform , node3D ) );
+		return addContentNode( new ContentNode( id, transform, node3D ) );
 	}
 
 	/**
@@ -314,7 +330,7 @@ public class Scene
 		{
 			node.removeContentNodeUpdateListener( _contentNodeUpdateListener );
 			_contentNodes.remove( id );
-			_bspTreeDirty = true;
+			invalidateCache();
 
 			fireContentNodeRemoved( node );
 		}
@@ -337,22 +353,36 @@ public class Scene
 	/**
 	 * Get boundsing box that contains all 3D objects in the scene.
 	 *
-	 * @return  Bounding box of scene.
+	 * @return  Bounding box of scene;
+	 *          <code>null</code> if scene is empty.
 	 */
+	@Nullable
 	public Bounds3D getBounds()
 	{
-		final Bounds3DBuilder bounds3DBuilder = new Bounds3DBuilder();
+		Bounds3D result = _bounds;
 
-		for ( final ContentNode node : _contentNodes.values() )
+		if ( result == null )
 		{
-			final Bounds3D nodeBounds = node.getBounds();
-			if ( nodeBounds != null )
+			Bounds3DBuilder bounds3DBuilder = null;
+
+			for ( final ContentNode node : _contentNodes.values() )
 			{
-				bounds3DBuilder.addBounds( node.getTransform(), nodeBounds );
+				final Bounds3D nodeBounds = node.getBounds();
+				if ( nodeBounds != null )
+				{
+					bounds3DBuilder = new Bounds3DBuilder();
+					bounds3DBuilder.addBounds( node.getTransform(), nodeBounds );
+				}
+			}
+
+			if ( bounds3DBuilder != null )
+			{
+				result = bounds3DBuilder.getBounds();
+				_bounds = result;
 			}
 		}
 
-		return bounds3DBuilder.getBounds();
+		return result;
 	}
 
 	/**
@@ -382,7 +412,7 @@ public class Scene
 		for ( final ContentNode node : _contentNodes.values() )
 		{
 			final Node3D node3D = node.getNode3D();
-			node3D.collectNodes( result , nodeClass , node.getTransform() , false );
+			node3D.collectNodes( result, nodeClass, node.getTransform(), false );
 		}
 
 		return result;
@@ -441,7 +471,7 @@ public class Scene
 	 * @param   greenIntensity  Intensity of the green color component.
 	 * @param   blueIntensity   Intensity of the blue color component.
 	 */
-	public void setAmbient( final float redIntensity , final float greenIntensity , final float blueIntensity )
+	public void setAmbient( final float redIntensity, final float greenIntensity, final float blueIntensity )
 	{
 		if ( ( _ambientColorRed   != redIntensity   ) ||
 		     ( _ambientColorGreen != greenIntensity ) ||
@@ -491,7 +521,7 @@ public class Scene
 		final List<SceneUpdateListener> listeners = _sceneUpdateListeners;
 		if ( !listeners.isEmpty() )
 		{
-			final SceneUpdateEvent event = new SceneUpdateEvent( this , SceneUpdateEvent.CONTENT_NODE_ADDED , node );
+			final SceneUpdateEvent event = new SceneUpdateEvent( this, SceneUpdateEvent.CONTENT_NODE_ADDED, node );
 
 			for ( final SceneUpdateListener listener : listeners )
 			{
@@ -511,7 +541,7 @@ public class Scene
 		final List<SceneUpdateListener> listeners = _sceneUpdateListeners;
 		if ( !listeners.isEmpty() )
 		{
-			final SceneUpdateEvent event = new SceneUpdateEvent( this , SceneUpdateEvent.CONTENT_NODE_REMOVED , node );
+			final SceneUpdateEvent event = new SceneUpdateEvent( this, SceneUpdateEvent.CONTENT_NODE_REMOVED, node );
 
 			for ( final SceneUpdateListener listener : listeners )
 			{
@@ -531,7 +561,7 @@ public class Scene
 		final List<SceneUpdateListener> listeners = _sceneUpdateListeners;
 		if ( !listeners.isEmpty() )
 		{
-			final SceneUpdateEvent event = new SceneUpdateEvent( this , SceneUpdateEvent.CONTENT_NODE_CONTENT_UPDATED , node );
+			final SceneUpdateEvent event = new SceneUpdateEvent( this, SceneUpdateEvent.CONTENT_NODE_CONTENT_UPDATED, node );
 
 			for ( final SceneUpdateListener listener : listeners )
 			{
@@ -551,7 +581,7 @@ public class Scene
 		final List<SceneUpdateListener> listeners = _sceneUpdateListeners;
 		if ( !listeners.isEmpty() )
 		{
-			final SceneUpdateEvent event = new SceneUpdateEvent( this , SceneUpdateEvent.CONTENT_NODE_PROPERTY_CHANGED , node );
+			final SceneUpdateEvent event = new SceneUpdateEvent( this, SceneUpdateEvent.CONTENT_NODE_PROPERTY_CHANGED, node );
 
 			for ( final SceneUpdateListener listener : listeners )
 			{
@@ -569,7 +599,7 @@ public class Scene
 		final List<SceneUpdateListener> listeners = _sceneUpdateListeners;
 		if ( !listeners.isEmpty() )
 		{
-			final SceneUpdateEvent event = new SceneUpdateEvent( this , SceneUpdateEvent.AMBIENT_LIGHT_CHANGED , null );
+			final SceneUpdateEvent event = new SceneUpdateEvent( this, SceneUpdateEvent.AMBIENT_LIGHT_CHANGED, null );
 
 			for ( final SceneUpdateListener listener : listeners )
 			{
