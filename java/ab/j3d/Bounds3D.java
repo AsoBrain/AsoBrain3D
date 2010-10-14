@@ -20,10 +20,9 @@
  */
 package ab.j3d;
 
-import java.util.Properties;
+import java.util.*;
 
-import com.numdata.oss.PropertyTools;
-import com.numdata.oss.MathTools;
+import com.numdata.oss.*;
 
 /**
  * This class represents rectangular 3D bounds (specified by two vectors).
@@ -649,7 +648,19 @@ public final class Bounds3D
 	 */
 	public Bounds3D sorted()
 	{
-		return set( min( this ) , max( this ) );
+		return sort( this );
+	}
+
+	/**
+	 * Get sorted bounds.
+	 *
+	 * @param   bounds  Bounds to sort.
+	 *
+	 * @return  Sorted bounds.
+	 */
+	public static Bounds3D sort( final Bounds3D bounds )
+	{
+		return bounds.set( min( bounds ) , max( bounds ) );
 	}
 
 	/**
