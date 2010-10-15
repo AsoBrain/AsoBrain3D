@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2007 Peter S. Heijnen
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,10 +20,8 @@
  */
 package ab.j3d.model;
 
-import junit.framework.ComparisonFailure;
-import junit.framework.TestCase;
-
-import ab.j3d.Matrix3D;
+import ab.j3d.*;
+import junit.framework.*;
 
 /**
  * This class tests the {@link Node3DCollection} class.
@@ -110,13 +108,15 @@ extends TestCase
 	{
 		System.out.println( CLASS_NAME + ".testGetMatrix()" );
 
-		/*
-		 * Define test properties.
-		 */
 		final Matrix3D matrix0 = Matrix3D.INIT;
 		final Matrix3D matrix1 = Matrix3D.getTransform( 1.0 , 2.0 , 3.0 , 4.0 , 5.0 , 6.0 );
 		final Node3D   node    = new Node3D();
 
+		/**
+		 * Defines test properties.
+		 *
+		 * @noinspection JavaDoc
+		 */
 		class Test
 		{
 			final int    _index;
@@ -130,9 +130,22 @@ extends TestCase
 				_out   = out;
 
 				final Node3DCollection<Node3D> collection = new Node3DCollection<Node3D>();
-				if ( nrMatrices > 0 ) collection.add( matrix0 , node );
-				if ( nrMatrices > 1 ) collection.add( matrix1 , node );
-				if ( nrMatrices > 2 ) throw new IllegalArgumentException( "nrMatrices" );
+
+				if ( nrMatrices > 0 )
+				{
+					collection.add( matrix0, node );
+				}
+
+				if ( nrMatrices > 1 )
+				{
+					collection.add( matrix1, node );
+				}
+
+				if ( nrMatrices > 2 )
+				{
+					throw new IllegalArgumentException( "nrMatrices" );
+				}
+
 				_collection = collection;
 			}
 		}
@@ -167,7 +180,9 @@ extends TestCase
 			{
 				final Matrix3D result = test._collection.getMatrix( test._index );
 				if ( expectedException != null )
+				{
 					fail( description + " should have thrown exception" );
+				}
 
 				assertSame( description , test._out, result );
 			}
@@ -181,7 +196,11 @@ extends TestCase
 
 				final Class<? extends Exception> exceptionClass = e.getClass();
 				if ( !expectedException.isAssignableFrom( exceptionClass ) )
-					throw new ComparisonFailure( description + " threw wrong exception" , expectedException.getName() , exceptionClass.getName() );
+				{
+					final ComparisonFailure failure = new ComparisonFailure( description + " threw wrong exception", expectedException.getName(), exceptionClass.getName() );
+					failure.initCause( e );
+					throw failure;
+				}
 			}
 		}
 	}
@@ -196,13 +215,15 @@ extends TestCase
 	{
 		System.out.println( CLASS_NAME + ".testGetNode()" );
 
-		/*
-		 * Define test properties.
-		 */
 		final Matrix3D matrix = Matrix3D.INIT;
 		final Node3D   node0  = new Node3D();
 		final Node3D   node1  = new Node3D();
 
+		/**
+		 * Defines test properties.
+		 *
+		 * @noinspection JavaDoc
+		 */
 		class Test
 		{
 			final int    _index;
@@ -216,9 +237,22 @@ extends TestCase
 				_out = out;
 
 				final Node3DCollection<Node3D> collection = new Node3DCollection<Node3D>();
-				if ( nrNodes > 0 ) collection.add( matrix , node0 );
-				if ( nrNodes > 1 ) collection.add( matrix , node1 );
-				if ( nrNodes > 2 ) throw new IllegalArgumentException( "nrNodes" );
+
+				if ( nrNodes > 0 )
+				{
+					collection.add( matrix, node0 );
+				}
+
+				if ( nrNodes > 1 )
+				{
+					collection.add( matrix, node1 );
+				}
+
+				if ( nrNodes > 2 )
+				{
+					throw new IllegalArgumentException( "nrNodes" );
+				}
+
 				_collection = collection;
 			}
 		}
@@ -253,7 +287,9 @@ extends TestCase
 			{
 				final Node3D result = test._collection.getNode( test._index );
 				if ( expectedException != null )
+				{
 					fail( description + " should have thrown exception" );
+				}
 
 				assertSame( description , test._out, result );
 			}
@@ -267,7 +303,11 @@ extends TestCase
 
 				final Class<? extends Exception> exceptionClass = e.getClass();
 				if ( !expectedException.isAssignableFrom( exceptionClass ) )
-					throw new ComparisonFailure( description + " threw wrong exception" , expectedException.getName() , exceptionClass.getName() );
+				{
+					final ComparisonFailure failure = new ComparisonFailure( description + " threw wrong exception", expectedException.getName(), exceptionClass.getName() );
+					failure.initCause( e );
+					throw failure;
+				}
 			}
 		}
 	}
