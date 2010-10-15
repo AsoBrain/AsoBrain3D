@@ -19,25 +19,13 @@
  */
 package ab.j3d.view.java2d;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import javax.swing.JComponent;
+import java.awt.*;
+import javax.swing.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.model.Scene;
-import ab.j3d.view.BSPTree;
-import ab.j3d.view.Projector;
-import ab.j3d.view.RenderedPolygon;
-import ab.j3d.view.RenderingPolicy;
-import ab.j3d.view.View3D;
-import ab.j3d.view.ViewControlInput;
-import ab.j3d.view.control.DefaultViewControl;
+import ab.j3d.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+import ab.j3d.view.control.*;
 
 /**
  * Java 2D view implementation.
@@ -255,7 +243,7 @@ public final class Java2dView
 		final Scene         scene             = getScene();
 		final double        viewUnit          = scene.getUnit();
 
-		final double        fieldOfView       = getAperture();
+		final double        fieldOfView       = getFieldOfView();
 		final double        zoomFactor        = getZoomFactor();
 		final double        frontClipDistance = _frontClipDistance;
 		final double        backClipDistance  = _backClipDistance;
