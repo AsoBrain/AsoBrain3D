@@ -1041,7 +1041,7 @@ public final class Matrix3D
 	 *
 	 * @return  Translation matrix.
 	 */
-	public Matrix3D getTranslation( final double x, final double y, final double z )
+	public static Matrix3D getTranslation( final double x, final double y, final double z )
 	{
 		return ( ( x == 0.0 ) && ( y == 0.0 ) && ( z == 0.0 ) ) ? IDENTITY : new Matrix3D( 1.0, 0.0, 0.0, x, 0.0, 1.0, 0.0, y, 0.0, 0.0, 1.0, z );
 	}
