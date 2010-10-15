@@ -48,7 +48,7 @@ public abstract class View3D
 	 * a full circle by moving the mouse cursor 250 pixels (in no particular
 	 * direction).
 	 *
-	 * @see     #getPixelsToRadians()
+	 * @see     #getPixelsToRadiansFactor()
 	 */
 	public static final double DEFAULT_PIXELS_TO_RADIANS_FACTOR = ( 2.0 *  Math.PI ) / 250.0;
 
@@ -79,7 +79,7 @@ public abstract class View3D
 	/**
 	 * Scale factor from pixels to radians.
 	 *
-	 * @see     #getPixelsToRadians()
+	 * @see     #getPixelsToRadiansFactor()
 	 */
 	private double _pixelsToRadiansFactor;
 
@@ -277,7 +277,7 @@ public abstract class View3D
 	 *
 	 * @see     #getResolution
 	 */
-	public double getPixelsToRadians()
+	public double getPixelsToRadiansFactor()
 	{
 		return _pixelsToRadiansFactor;
 	}
@@ -289,7 +289,7 @@ public abstract class View3D
 	 *
 	 * @see     #getResolution
 	 */
-	public void setPixelsToRadians( final double factor )
+	public void setPixelsToRadiansFactor( final double factor )
 	{
 		_pixelsToRadiansFactor = factor;
 	}
