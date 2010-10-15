@@ -470,13 +470,13 @@ public final class TestAbToPovConverter
 	}
 
 	/**
-	 * This method tests the conversion from {@link Camera3D} object to
+	 * This method tests the conversion from {@link View3D} object to
 	 * {@link PovCamera}.
 	 *
 	 * @throws IOException When there was a problem writing to the
 	 * {@link IndentingWriter}.
 	 */
-	public static void testCamera3DToPovCamera()
+	public static void testView3DToPovCamera()
 		throws IOException
 	{
 		final String actual;
@@ -484,13 +484,15 @@ public final class TestAbToPovConverter
 			final AbPovTestModel testModel = new AbPovTestModel();
 
 			final View3D    view          = testModel.getView();
+			final String    name          = view.getLabel();
 			final Matrix3D  view2scene    = view.getView2Scene();
+			final double    angle         = Math.toDegrees( view.getFieldOfView() );
 			final Component viewComponent = view.getComponent();
-			final double    aspectRatio   = (double)viewComponent.getWidth() / (double)viewComponent.getHeight();
+			final double    aspectRatio   = (double) viewComponent.getWidth() / (double) viewComponent.getHeight();
 
-			final PovCamera camera = AbToPovConverter.convertCamera3D( view2scene , view.getCamera() , aspectRatio );
+			final PovCamera camera = new PovCamera( name, view2scene, angle, aspectRatio );
 
-			final StringWriter stringWriter = new StringWriter();
+			final Writer stringWriter = new StringWriter();
 			final IndentingWriter indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
 			camera.write( indentingWriter );
@@ -1038,7 +1040,7 @@ public final class TestAbToPovConverter
 
 		final AbToPovConverter converter = new AbToPovConverter( getTexturesDirectory() );
 		final PovScene povScene = converter.convert( scene );
-		povScene.add( AbToPovConverter.convertCamera3D( view2scene , view.getCamera() , aspectRatio ) );
+		povScene.add( new PovCamera( view.getLabel(), view2scene, Math.toDegrees( view.getFieldOfView() ), aspectRatio ) );
 		povScene.write( new File( "test.pov" ) );
 	}
 }

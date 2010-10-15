@@ -62,7 +62,6 @@ public final class AbPovTestModel
 		 * Fill scene with objects from the testmodel.
 		 */
 		final Scene scene = _scene;
-		scene.addContentNode( "camera"           , Matrix3D.INIT, getCamera3D() );
 		scene.addContentNode( "redbox"           , Matrix3D.getTransform( 10.0,  0.0,  0.0, -200.0,   0.0, -250.0 ), getRedXRotatedBox3D() );
 		scene.addContentNode( "greenbox"         , Matrix3D.getTransform(  0.0, 10.0,  0.0,  -50.0,   0.0, -250.0 ), getGreenYRotatedBox3D() );
 		scene.addContentNode( "bluebox"          , Matrix3D.getTransform(  0.0,  0.0, 10.0,  200.0,   0.0, -250.0 ), getBlueZRotatedBox3D() );
@@ -103,31 +102,6 @@ public final class AbPovTestModel
 	public View3D getView()
 	{
 		return _view;
-	}
-
-	/**
-	 * Construct a camera with a zoomfactor of 1.0 and a field of view of 45
-	 * degrees.
-	 *
-	 * @see Camera3D
-	 *
-	 * @return The constructed {@link Camera3D} object.
-	 */
-	public Camera3D getCamera3D()
-	{
-		final Camera3D camera3D;
-
-		final ContentNode node = _scene.getContentNode( "camera" );
-		if ( node == null )
-		{
-			camera3D = new Camera3D( 1.0, 45.0 );
-		}
-		else
-		{
-			camera3D = (Camera3D)node.getNode3D();
-		}
-
-		return camera3D;
 	}
 
 	/**
