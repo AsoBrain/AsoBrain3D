@@ -56,7 +56,6 @@ package ab.j3d.geom.tessellator;
  * The <b>GLUtessellator</b> object is used to hold the data, such as the
  * vertices, edges and callback objects, to describe and tessellate complex
  * polygons.  A <b>GLUtessellator</b> object is used with the
- * {@link GLU GLU} tessellator methods and
  * {@link GLUtessellatorCallback GLU callbacks}.
  *
  * @author Eric Veach, July 1994
@@ -761,52 +760,14 @@ public interface GLUtessellator {
    ****************************************************************************/
   void gluEndPolygon();
 
-  int GLU_FALSE = 0;
-  int GLU_TRUE = 1;
-
-  int GLU_VERSION = 100800;
-  int GLU_EXTENSIONS = 100801;
-
-  String versionString = "1.3";
-  String extensionString = "GLU_EXT_nurbs_tessellator " +
-                                               "GLU_EXT_object_space_tess ";
-
   int GLU_INVALID_ENUM = 100900;
   int GLU_INVALID_VALUE = 100901;
   int GLU_OUT_OF_MEMORY = 100902;
-  int GLU_INVALID_OPERATION = 100904;
-
-
-  int GLU_POINT = 100010;
-  int GLU_LINE = 100011;
-  int GLU_FILL = 100012;
-  int GLU_SILHOUETTE = 100013;
-
-
-  int GLU_SMOOTH = 100000;
-  int GLU_FLAT = 100001;
-  int GLU_NONE = 100002;
-
-  int GLU_OUTSIDE = 100020;
-  int GLU_INSIDE = 100021;
-
-
-  int GLU_ERROR = 100103;
-
-
-
-
-
-
   int GLU_TESS_BEGIN = 100100;
-  int GLU_BEGIN = 100100;
   int GLU_TESS_VERTEX = 100101;
-  int GLU_VERTEX = 100101;
   int GLU_TESS_END = 100102;
-  int GLU_END = 100102;
   int GLU_TESS_ERROR = 100103;
   int GLU_TESS_EDGE_FLAG = 100104;
-  int GLU_EDGE_FLAG = 100104;
   int GLU_TESS_COMBINE = 100105;
   int GLU_TESS_BEGIN_DATA = 100106;
   int GLU_TESS_VERTEX_DATA = 100107;
@@ -814,33 +775,16 @@ public interface GLUtessellator {
   int GLU_TESS_ERROR_DATA = 100109;
   int GLU_TESS_EDGE_FLAG_DATA = 100110;
   int GLU_TESS_COMBINE_DATA = 100111;
-
-  int GLU_CW = 100120;
-  int GLU_CCW = 100121;
-  int GLU_INTERIOR = 100122;
-  int GLU_EXTERIOR = 100123;
-  int GLU_UNKNOWN = 100124;
-
   int GLU_TESS_WINDING_RULE = 100140;
   int GLU_TESS_BOUNDARY_ONLY = 100141;
   int GLU_TESS_TOLERANCE = 100142;
   int GLU_TESS_AVOID_DEGENERATE_TRIANGLES = 100149;
-
-  int GLU_TESS_ERROR1 = 100151;
-  int GLU_TESS_ERROR2 = 100152;
-  int GLU_TESS_ERROR3 = 100153;
-  int GLU_TESS_ERROR4 = 100154;
-  int GLU_TESS_ERROR5 = 100155;
-  int GLU_TESS_ERROR6 = 100156;
-  int GLU_TESS_ERROR7 = 100157;
-  int GLU_TESS_ERROR8 = 100158;
   int GLU_TESS_MISSING_BEGIN_POLYGON = 100151;
   int GLU_TESS_MISSING_BEGIN_CONTOUR = 100152;
   int GLU_TESS_MISSING_END_POLYGON = 100153;
   int GLU_TESS_MISSING_END_CONTOUR = 100154;
   int GLU_TESS_COORD_TOO_LARGE = 100155;
   int GLU_TESS_NEED_COMBINE_CALLBACK = 100156;
-
   int GLU_TESS_WINDING_ODD = 100130;
   int GLU_TESS_WINDING_NONZERO = 100131;
   int GLU_TESS_WINDING_POSITIVE = 100132;
@@ -848,10 +792,8 @@ public interface GLUtessellator {
   int GLU_TESS_WINDING_ABS_GEQ_TWO = 100134;
   double GLU_TESS_MAX_COORD = 1.0e150;
 
-
-  public static final int GL_LINE_LOOP = 0x0002;
-  public static final int GL_TRIANGLES = 0x0004;
-  public static final int GL_TRIANGLE_STRIP = 0x0005;
-  public static final int GL_TRIANGLE_FAN = 0x0006;
-
+  int GL_LINE_LOOP = 0x0002;
+  int GL_TRIANGLES = 0x0004;
+  int GL_TRIANGLE_STRIP = 0x0005;
+  int GL_TRIANGLE_FAN = 0x0006;
 }

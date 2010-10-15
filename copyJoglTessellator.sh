@@ -51,6 +51,7 @@ SAVEQUIT="wq
 
 echo "Getting definitions from GL.java"
 echo "g!/GL_LINE_LOOP\|GL_TRIANGLES\|GL_TRIANGLE_FAN\|GL_TRIANGLE_STRIP/d
+%s/public static final //
 ${GLOBAL_FIXES}${SAVEQUIT}"|ex GL.java
 
 ###############################################################################
@@ -62,6 +63,11 @@ echo "\"
 \"
 1,/tess.gluDeleteTess();/+2d
 /-------/,\$d
+\"
+\" Filter constanten
+\"
+/int GLU_/,\$g!/GLU_TESS\|GLU_INVALID_ENUM\|GLU_INVALID_VALUE\|GLU_OUT_OF_MEMORY/d
+%g/GLU_TESS_ERROR[0-9]/d
 \"
 \" Verwijder uitgecommentarieerd deel
 \"
@@ -86,6 +92,7 @@ ${SAVEQUIT}"|ex GLU.java
 
 echo "Adding contents of 'GL.java' and 'GLU.java' to GLUtessellator.java"
 echo "${GLOBAL_FIXES}
+g/GLU  *GLU/d
 \"
 \" Kopieer interface uit GLU.java
 \"
@@ -96,7 +103,6 @@ a
 .
 \$r GL.java
 a
-
 }
 .
 ${SAVEQUIT}"|ex GLUtessellator.java
