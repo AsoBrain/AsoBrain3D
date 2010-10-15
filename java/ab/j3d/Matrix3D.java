@@ -57,12 +57,17 @@ public final class Matrix3D
 	/** Translation of Z component. */ public final double zo;
 
 	/**
-	 * Initial value of a matrix (=identity matrix).
+	 * Identity matrix.
 	 */
-	public static final Matrix3D INIT = new Matrix3D(
+	public static final Matrix3D IDENTITY = new Matrix3D(
 		1.0, 0.0, 0.0, 0.0,
 		0.0, 1.0, 0.0, 0.0,
 		0.0, 0.0, 1.0, 0.0 );
+
+	/**
+	 * Initial value of a matrix (=identity matrix).
+	 */
+	public static final Matrix3D INIT = IDENTITY;
 
 	/**
 	 * Construct a new matrix.
@@ -782,21 +787,30 @@ public final class Matrix3D
 		final double otherYX, final double otherYY, final double otherYZ, final double otherYO,
 		final double otherZX, final double otherZY, final double otherZZ, final double otherZO )
 	{
-		return new Matrix3D(
-		 /* xx */ xx * otherXX + yx * otherXY + zx * otherXZ,
-		 /* xy */ xy * otherXX + yy * otherXY + zy * otherXZ,
-		 /* xz */ xz * otherXX + yz * otherXY + zz * otherXZ,
-		 /* xo */ xo * otherXX + yo * otherXY + zo * otherXZ + otherXO,
+		return multiply( xx, xy, xz, xo,
+		                 yx, yy, yz, yo,
+		                 zx, zy, zz, zo,
+		                 otherXX, otherXY, otherXZ, otherXO,
+		                 otherYX, otherYY, otherYZ, otherYO,
+		                 otherZX, otherZY, otherZZ, otherZO );
+	}
 
-		 /* yx */ xx * otherYX + yx * otherYY + zx * otherYZ,
-		 /* yy */ xy * otherYX + yy * otherYY + zy * otherYZ,
-		 /* yz */ xz * otherYX + yz * otherYY + zz * otherYZ,
-		 /* yo */ xo * otherYX + yo * otherYY + zo * otherYZ + otherYO,
-
-		 /* zx */ xx * otherZX + yx * otherZY + zx * otherZZ,
-		 /* zy */ xy * otherZX + yy * otherZY + zy * otherZZ,
-		 /* zz */ xz * otherZX + yz * otherZY + zz * otherZZ,
-		 /* zo */ xo * otherZX + yo * otherZY + zo * otherZZ + otherZO );
+	/**
+	 * Execute matrix multiplication between this and the inverse of another
+	 * matrix.
+	 *
+	 * @param   other   Matrix whose inverse to multiply with.
+	 *
+	 * @return  Resulting matrix.
+	 */
+	public Matrix3D multiplyInverse( final Matrix3D other )
+	{
+		return multiply( xx, xy, xz, xo,
+		                 yx, yy, yz, yo,
+		                 zx, zy, zz, zo,
+		                 other.xx, other.yx, other.zx, -other.xo * other.xx - other.yo * other.yx - other.zo * other.zx,
+		                 other.xy, other.yy, other.zy, -other.xo * other.xy - other.yo * other.yy - other.zo * other.zy,
+		                 other.xz, other.yz, other.zz, -other.xo * other.xz - other.yo * other.yz - other.zo * other.zz );
 	}
 
 	/**
@@ -1019,6 +1033,20 @@ public final class Matrix3D
 	}
 
 	/**
+	 * Get translation matrix from the specified translation vector.
+	 *
+	 * @param   x   X-translation.
+	 * @param   y   Y-translation.
+	 * @param   z   Z-translation.
+	 *
+	 * @return  Translation matrix.
+	 */
+	public Matrix3D getTranslation( final double x, final double y, final double z )
+	{
+		return ( ( x == 0.0 ) && ( y == 0.0 ) && ( z == 0.0 ) ) ? IDENTITY : new Matrix3D( 1.0, 0.0, 0.0, x, 0.0, 1.0, 0.0, y, 0.0, 0.0, 1.0, z );
+	}
+
+	/**
 	 * Set translation of a transform to the specified vector.
 	 *
 	 * @param   vector  Vector to use.
@@ -1152,7 +1180,7 @@ public final class Matrix3D
 	{
 		double[] result = dest;
 
-		if ( ( source != dest ) || ( this != INIT ) )
+		if ( ( source != dest ) || ( this != IDENTITY ) )
 		{
 			final int resultLength = pointCount * 3;
 			if ( ( result == null ) || ( resultLength > result.length ) )
@@ -1475,7 +1503,7 @@ public final class Matrix3D
 	{
 		double[] result = dest;
 
-		if ( ( source != dest ) || ( this != INIT ) )
+		if ( ( source != dest ) || ( this != IDENTITY ) )
 		{
 			final int resultLength = vectorCount * 3;
 			if ( ( result == null ) || ( resultLength > result.length ) )
