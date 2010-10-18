@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2009
+ * (C) Copyright Numdata BV 2004-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,32 +19,17 @@
  */
 package ab.j3d.view.java3d;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.Transparency;
-import java.awt.image.BufferedImage;
-import javax.media.j3d.Canvas3D;
-import javax.media.j3d.J3DGraphics2D;
+import java.awt.*;
+import java.awt.image.*;
+import javax.media.j3d.*;
 import javax.media.j3d.Transform3D;
-import javax.media.j3d.TransformGroup;
-import javax.media.j3d.View;
-import javax.media.j3d.ViewPlatform;
-import javax.swing.JPopupMenu;
-import javax.vecmath.Matrix3d;
-import javax.vecmath.Vector3d;
+import javax.swing.*;
+import javax.vecmath.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.model.Scene;
-import ab.j3d.view.ProjectionPolicy;
-import ab.j3d.view.Projector;
-import ab.j3d.view.View3D;
-import ab.j3d.view.ViewControlInput;
-import ab.j3d.view.ViewOverlay;
-import ab.j3d.view.control.DefaultViewControl;
+import ab.j3d.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+import ab.j3d.view.control.*;
 
 /**
  * Java 3D view implementation.
@@ -146,7 +131,7 @@ final class Java3dView
 		public void paint( final Graphics g )
 		{
 			final View     java3dView      = _java3dView;
-			final double   aperture        = getAperture();
+			final double   aperture        = getFieldOfView();
 			final double   imageResolution = getResolution();
 			final double   zoomFactor      = getZoomFactor();
 
@@ -382,7 +367,7 @@ final class Java3dView
 
 		final double    frontClip  = java3dview.getFrontClipDistance() / unit;
 		final double    backClip   = java3dview.getBackClipDistance() / unit;
-		final double    aperture   = getAperture();
+		final double    aperture   = getFieldOfView();
 		final double    zoomFactor = getZoomFactor();
 
 		return Projector.createInstance( getProjectionPolicy() , width , height , resolution , unit , frontClip , backClip , aperture , zoomFactor );
