@@ -108,7 +108,7 @@ public class GLUTessellator
 		}
 
 		final Collection<Contour> contours = new LinkedList<Contour>();
-		Contour.addContours( contours, iterator, false );
+		Contour.addContours( contours, iterator, false, false );
 
 		if ( !contours.isEmpty() )
 		{
@@ -129,12 +129,12 @@ public class GLUTessellator
 		}
 		else
 		{
-			final List<Contour> positiveContours = Contour.createContours( positive, _flatness, true );
+			final List<Contour> positiveContours = Contour.createContours( positive, _flatness, true, false );
 
 			final List<Contour> negativeContours = new ArrayList<Contour>( negative.size() );
 			for ( final Shape shape : negative )
 			{
-				Contour.addContours( negativeContours, shape.getPathIterator( null, _flatness ), true );
+				Contour.addContours( negativeContours, shape.getPathIterator( null, _flatness ), true, false );
 			}
 
 			tessellate( tessellationBuilder, positiveContours, negativeContours );

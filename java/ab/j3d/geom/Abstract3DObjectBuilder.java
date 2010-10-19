@@ -26,6 +26,7 @@ import java.util.*;
 import java.util.List;
 
 import ab.j3d.*;
+import ab.j3d.geom.ShapeTools.*;
 import ab.j3d.model.*;
 import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
@@ -969,7 +970,7 @@ public abstract class Abstract3DObjectBuilder
 		final boolean hasExtrusion  = !MathTools.almostEqual( ex, 0.0 ) || !MathTools.almostEqual( ey, 0.0 ) || !MathTools.almostEqual( ez, 0.0 );
 		final boolean flipExtrusion = flipNormals ^ ( ez < 0.0 );
 
-		final List<Contour> contours = Contour.createContours( shape, flatness, !flipExtrusion );
+		final List<Contour> contours = Contour.createContours( shape, flatness, !flipExtrusion, true );
 
 		if ( hasExtrusion )
 		{
@@ -999,7 +1000,12 @@ public abstract class Abstract3DObjectBuilder
 					}
 				}
 
-				addFace( new int[]{ previous1, previous2, first2, first1 }, material, uvMap, flipTexture, smooth, hasBackface );
+				final ShapeClass shapeClass = contour.getShapeClass();
+				final boolean isClosed = ( shapeClass != ShapeClass.LINE_SEGMENT ) && ( shapeClass != ShapeClass.OPEN_PATH );
+				if ( isClosed )
+				{
+					addFace( new int[]{ previous1, previous2, first2, first1 }, material, uvMap, flipTexture, smooth, hasBackface );
+				}
 			}
 		}
 		else
@@ -1025,7 +1031,12 @@ public abstract class Abstract3DObjectBuilder
 					}
 				}
 
-				addFace( new int[]{ previous, first }, material, uvMap, flipTexture, false, true );
+				final ShapeClass shapeClass = contour.getShapeClass();
+				final boolean isClosed = ( shapeClass != ShapeClass.LINE_SEGMENT ) && ( shapeClass != ShapeClass.OPEN_PATH );
+				if ( isClosed )
+				{
+					addFace( new int[]{ previous, first }, material, uvMap, flipTexture, false, true );
+				}
 			}
 		}
 	}

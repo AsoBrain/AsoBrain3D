@@ -61,27 +61,30 @@ public class Contour
 	 * @param   shape               Shape whose contour(s) to create.
 	 * @param   flatness            Flatness used for contours.
 	 * @param   counterClockwise    Make all contours counter-clockwise.
+	 * @param   keepOpenPaths       Keep open paths as contours.
 	 *
 	 * @return  Contour(s) that were created.
 	 */
 	@NotNull
-	public static List<Contour> createContours( @NotNull final Shape shape, final double flatness, final boolean counterClockwise )
+	public static List<Contour> createContours( @NotNull final Shape shape, final double flatness, final boolean counterClockwise, final boolean keepOpenPaths )
 	{
 		final List<Contour> result = new ArrayList<Contour>();
-		addContours( result, shape.getPathIterator( null, flatness ), counterClockwise );
+		addContours( result, shape.getPathIterator( null, flatness ), counterClockwise, keepOpenPaths );
 		return result;
 	}
 
 	/**
-	 * Add contour(s) from a {@link PathIterator}. A contour is defined as a
-	 * closed path whose vertices are specified by their index. The closing
-	 * segment of the path is not included.
+	 * Add contour(s) from a {@link PathIterator}. If <code>keepOpenPaths</code>
+	 * is set to <code>true</code>, then open paths are also added, otherwise
+	 * only closed paths will be retained. The closing segment of closed shapes
+	 * is not included.
 	 *
 	 * @param   contours                Collection to store contours in.
 	 * @param   pathIterator            Path iterator to create contour from.
 	 * @param   makeCounterClockwise    Make all contours counter-clockwise.
+	 * @param   keepOpenPaths           Keep open paths as contours.
 	 */
-	public static void addContours( @NotNull final Collection<Contour> contours, @NotNull final PathIterator pathIterator, final boolean makeCounterClockwise )
+	public static void addContours( @NotNull final Collection<Contour> contours, @NotNull final PathIterator pathIterator, final boolean makeCounterClockwise, final boolean keepOpenPaths )
 	{
 		final List<Point> points = new ArrayList<Point>();
 
@@ -89,7 +92,7 @@ public class Contour
 		boolean negativeAngles = false; /* encountered negative angles */
 		double totalAngle = 0.0; /* should finish at 2PI (counter-clockwise) or -2PI (clockwise) for closed non-self-intersecting shapes */
 		boolean reverseTested = false;
-		boolean reverseContour = false;
+		boolean reverseContour;
 
 		final double[] coords = new double[ 6 ];
 
@@ -101,6 +104,18 @@ public class Contour
 			{
 				case PathIterator.SEG_MOVETO :
 				{
+					if ( keepOpenPaths )
+					{
+						final int pointCount = points.size();
+						if ( pointCount >= 2 )
+						{
+							final List<Point> vertices = new ArrayList<Point>( points );
+							final ShapeClass shapeClass = ( pointCount == 2 ) ? ShapeClass.LINE_SEGMENT : ShapeClass.OPEN_PATH;
+							contours.add( new Contour( shapeClass, vertices ) );
+							points.clear();
+						}
+					}
+
 					final double moveX = coords[ 0 ];
 					final double moveY = coords[ 1 ];
 					positiveAngles = false;
@@ -209,6 +224,18 @@ public class Contour
 
 				default :
 					throw new AssertionError( segmentType + "?" );
+			}
+		}
+
+		if ( keepOpenPaths )
+		{
+			final int pointCount = points.size();
+			if ( pointCount >= 2 )
+			{
+				final List<Point> vertices = new ArrayList<Point>( points );
+				final ShapeClass shapeClass = ( pointCount == 2 ) ? ShapeClass.LINE_SEGMENT : ShapeClass.OPEN_PATH;
+				contours.add( new Contour( shapeClass, vertices ) );
+				points.clear();
 			}
 		}
 	}
