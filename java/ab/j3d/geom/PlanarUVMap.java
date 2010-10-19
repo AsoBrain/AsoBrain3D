@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 2009-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,12 +20,11 @@
  */
 package ab.j3d.geom;
 
-import java.awt.geom.Point2D;
-import java.util.List;
+import java.awt.geom.*;
+import java.util.*;
 
-import ab.j3d.Material;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
+import ab.j3d.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Defines a planar UV-mapping.
@@ -60,7 +60,7 @@ public class PlanarUVMap
 	 */
 	public PlanarUVMap( final double scale )
 	{
-		this( scale , Matrix3D.INIT );
+		this( scale, Matrix3D.INIT );
 	}
 
 	/**
@@ -71,9 +71,9 @@ public class PlanarUVMap
 	 * @param   normal  Normal vector indicating the orientation of the
 	 *                  plane.
 	 */
-	public PlanarUVMap( final double scale , final Vector3D normal )
+	public PlanarUVMap( final double scale, final Vector3D normal )
 	{
-		this( scale , Vector3D.INIT , normal );
+		this( scale, Vector3D.INIT, normal );
 	}
 
 	/**
@@ -85,9 +85,9 @@ public class PlanarUVMap
 	 * @param   normal  Normal vector indicating the orientation of the
 	 *                  plane.
 	 */
-	public PlanarUVMap( final double scale , final Vector3D origin , final Vector3D normal )
+	public PlanarUVMap( final double scale, final Vector3D origin, final Vector3D normal )
 	{
-		this( scale , Matrix3D.getPlaneTransform( origin , normal , true ) );
+		this( scale, Matrix3D.getPlaneTransform( origin, normal, true ) );
 	}
 
 	/**
@@ -97,9 +97,9 @@ public class PlanarUVMap
 	 * @param   scale       Scale of the UV-map.
 	 * @param   plane2wcs   Transform plane to world coordinates.
 	 */
-	public PlanarUVMap( final double scale , final Matrix3D plane2wcs )
+	public PlanarUVMap( final double scale, final Matrix3D plane2wcs )
 	{
-		this( (float)scale , (float)scale , plane2wcs );
+		this( (float)scale, (float)scale, plane2wcs );
 	}
 
 	/**
@@ -108,9 +108,9 @@ public class PlanarUVMap
 	 * @param   scaleU      Scale of the UV-map in the U-direction.
 	 * @param   scaleV      Scale of the UV-map in the V-direction.
 	 */
-	public PlanarUVMap( final float scaleU , final float scaleV )
+	public PlanarUVMap( final float scaleU, final float scaleV )
 	{
-		this( scaleU , scaleV , Matrix3D.INIT );
+		this( scaleU, scaleV, Matrix3D.INIT );
 	}
 
 	/**
@@ -121,7 +121,7 @@ public class PlanarUVMap
 	 * @param   scaleV      Scale of the UV-map in the V-direction.
 	 * @param   plane2wcs   Transform plane to world coordinates.
 	 */
-	public PlanarUVMap( final float scaleU , final float scaleV , final Matrix3D plane2wcs )
+	public PlanarUVMap( final float scaleU, final float scaleV, final Matrix3D plane2wcs )
 	{
 		_scaleU = scaleU;
 		_scaleV = scaleV;
@@ -197,9 +197,12 @@ public class PlanarUVMap
 		_plane2wcs = plane2wcs;
 	}
 
-	public Point2D.Float[] generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final boolean flipTexture )
+	@Override
+	public float[] generate( @Nullable final Material material, @NotNull final List<? extends Vector3D> vertexCoordinates, @Nullable final int[] vertexIndices, final boolean flipTexture )
 	{
-		final Point2D.Float[] result = new Point2D.Float[ vertexIndices.length ];
+		final int vertexCount = ( vertexIndices != null ) ? vertexIndices.length : vertexCoordinates.size();
+
+		final float[] result = new float[ vertexCount * 2 ];
 
 		final Matrix3D plane2wcs = _plane2wcs;
 
@@ -217,57 +220,23 @@ public class PlanarUVMap
 			scaleV = _scaleV;
 		}
 
-		for ( int i = 0 ; i < vertexIndices.length ; i++ )
+		int j = 0;
+		for ( int i = 0 ; i < vertexCount; i++ )
 		{
-			final int base = vertexIndices[ i ] * 3;
-
-			final double wcsX = vertexCoordinates[ base ];
-			final double wcsY = vertexCoordinates[ base + 1 ];
-			final double wcsZ = vertexCoordinates[ base + 2 ];
-
-			final float tx = (float)plane2wcs.inverseTransformX( wcsX , wcsY , wcsZ );
-			final float ty = (float)plane2wcs.inverseTransformY( wcsX , wcsY , wcsZ );
-
-			result[ i ] = flipTexture ? new Point2D.Float( ty * scaleU , tx * scaleV ) : new Point2D.Float( tx * scaleU , ty * scaleV );
-		}
-
-		return result;
-	}
-
-	public Point2D.Float[] generate( final Material material , final List<Vector3D> vertexCoordinates , final int[] vertexIndices , final boolean flipTexture )
-	{
-		final Point2D.Float[] result = new Point2D.Float[ vertexIndices.length ];
-
-		final Matrix3D plane2wcs = _plane2wcs;
-
-		final float scaleU;
-		final float scaleV;
-
-		if ( ( material != null ) && ( material.colorMapWidth > 0.0f ) && ( material.colorMapHeight > 0.0f ) )
-		{
-			scaleU = _scaleU / material.colorMapWidth;
-			scaleV = _scaleV / material.colorMapHeight;
-		}
-		else
-		{
-			scaleU = _scaleU;
-			scaleV = _scaleV;
-		}
-
-		for ( int i = 0 ; i < vertexIndices.length ; i++ )
-		{
-			final Vector3D vertex = vertexCoordinates.get( vertexIndices[ i ] );
+			final Vector3D vertex = vertexCoordinates.get( ( vertexIndices != null ) ? vertexIndices[ i ] : i );
 
 			final float tx = (float)plane2wcs.inverseTransformX( vertex );
 			final float ty = (float)plane2wcs.inverseTransformY( vertex );
 
-			result[ i ] = flipTexture ? new Point2D.Float( ty * scaleU , tx * scaleV ) : new Point2D.Float( tx * scaleU , ty * scaleV );
+			result[ j++ ] = flipTexture ? ty * scaleU : tx * scaleU;
+			result[ j++ ] = flipTexture ? tx * scaleV : ty * scaleV;
 		}
 
 		return result;
 	}
 
-	public Point2D.Float generate( final Material material , final Vector3D wcsPoint , final Vector3D normal , final boolean flipTexture )
+	@Override
+	public Point2D.Float generate( @Nullable final Material material, @NotNull final Vector3D wcsPoint, @NotNull final Vector3D normal, final boolean flipTexture )
 	{
 		final Matrix3D plane2wcs = _plane2wcs;
 
@@ -288,6 +257,6 @@ public class PlanarUVMap
 		final float tx = (float)plane2wcs.inverseTransformX( wcsPoint );
 		final float ty = (float)plane2wcs.inverseTransformY( wcsPoint );
 
-		return flipTexture ? new Point2D.Float( ty * scaleU , tx * scaleV ) : new Point2D.Float( tx * scaleU , ty * scaleV );
+		return flipTexture ? new Point2D.Float( ty * scaleU, tx * scaleV ) : new Point2D.Float( tx * scaleU, ty * scaleV );
 	}
 }

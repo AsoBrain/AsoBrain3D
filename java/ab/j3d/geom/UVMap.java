@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 2009-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +20,11 @@
  */
 package ab.j3d.geom;
 
-import java.awt.geom.Point2D;
-import java.util.List;
+import java.awt.geom.*;
+import java.util.*;
 
-import ab.j3d.Material;
-import ab.j3d.Vector3D;
+import ab.j3d.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Defines a mapping from spatial coordinates to texture coordinates.
@@ -37,28 +38,13 @@ public interface UVMap
 	 * Generates texture coordinates for the given vertices.
 	 *
 	 * @param   material            Material used to define texture scale.
-	 * @param   vertexCoordinates   Vertex coordinates, as xyz-triplets.
-	 * @param   vertexIndices       Indices for all vertices in the face. Each
-	 *                              index corresponds to three elements of
-	 *                              <code>vertexCoordinates</code>, representing
-	 *                              the x, y and z-coordinates of the vertex.
-	 * @param   flipTexture         Flip texture direction.
-	 *
-	 * @return  Texture coordinates for each vertex.
-	 */
-	Point2D.Float[] generate( Material material , double[] vertexCoordinates , int[] vertexIndices , boolean flipTexture );
-
-	/**
-	 * Generates texture coordinates for the given vertices.
-	 *
-	 * @param   material            Material used to define texture scale.
 	 * @param   vertexCoordinates   Vertex coordinates.
 	 * @param   vertexIndices       Indices for all vertices in the face.
 	 * @param   flipTexture         Flip texture direction.
 	 *
 	 * @return  Texture coordinates for each vertex.
 	 */
-	Point2D.Float[] generate( Material material , List<Vector3D> vertexCoordinates , int[] vertexIndices , boolean flipTexture );
+	float[] generate( @Nullable Material material , @NotNull List<? extends Vector3D> vertexCoordinates , @Nullable int[] vertexIndices , boolean flipTexture );
 
 	/**
 	 * Generate 2D point on texture for the given 3D point.
@@ -70,5 +56,5 @@ public interface UVMap
 	 *
 	 * @return  Texture coordinates.
 	 */
-	Point2D.Float generate( Material material , Vector3D point , Vector3D normal , boolean flipTexture );
+	Point2D.Float generate( @Nullable Material material , @NotNull Vector3D point , @NotNull Vector3D normal , boolean flipTexture );
 }
