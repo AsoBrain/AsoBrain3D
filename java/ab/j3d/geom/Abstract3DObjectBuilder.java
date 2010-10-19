@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,10 +22,10 @@ package ab.j3d.geom;
 
 import java.awt.*;
 import java.awt.geom.*;
+import java.util.*;
 import java.util.List;
 
 import ab.j3d.*;
-import ab.j3d.geom.ShapeTools.*;
 import ab.j3d.model.*;
 import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
@@ -232,11 +233,19 @@ public abstract class Abstract3DObjectBuilder
 
 		final UVMap uvMap = new BoxUVMap( Scene.MM, base ); // @FIXME Retrieve model units instead of assuming millimeters.
 
+		// TODO Use more intelligence here, we know the outline is a simple convex shape etc, no need for complex extrusion/tessellation here
 		if ( fill )
 		{
-			addExtrudedShape( ellipse2d, radius * 0.02, extrusion, base, material, uvMap, false, material, uvMap, false, material, uvMap, false, true, false, true );
+			if ( extrusion != null )
+			{
+				addExtrudedShape( ellipse2d, radius * 0.02, extrusion, base, material, uvMap, false, material, uvMap, false, material, uvMap, false, true, false, true );
+			}
+			else
+			{
+				addFilledShape2D( base, ellipse2d, Vector3D.POSITIVE_Z_AXIS, radius * 0.02, material, uvMap, false, true );
+			}
 		}
-		else
+		else if ( extrusion != null )
 		{
 			addExtrudedShape( ellipse2d, radius * 0.02, extrusion, base, material, uvMap, false, true, false, true );
 		}
@@ -470,7 +479,7 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	public abstract void addFace( @NotNull Vector3D[] points, @Nullable Material material, @Nullable Point2D.Float[] texturePoints, @Nullable Vector3D[] vertexNormals, boolean smooth, boolean twoSided );
+	public abstract void addFace( @NotNull Vector3D[] points, @Nullable Material material, @Nullable float[] texturePoints, @Nullable Vector3D[] vertexNormals, boolean smooth, boolean twoSided );
 
 	/**
 	 * Add face.
@@ -482,7 +491,7 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	public abstract void addFace( @NotNull int[] vertexIndices, @Nullable Material material, @Nullable Point2D.Float[] texturePoints, @Nullable Vector3D[] vertexNormals, boolean smooth, boolean twoSided );
+	public abstract void addFace( @NotNull int[] vertexIndices, @Nullable Material material, @Nullable float[] texturePoints, @Nullable Vector3D[] vertexNormals, boolean smooth, boolean twoSided );
 
 	/**
 	 * Add quad primitive.
@@ -548,7 +557,7 @@ public abstract class Abstract3DObjectBuilder
 	 */
 	public void addQuad( @NotNull final Vector3D point1, @NotNull final Point2D.Float texturePoint1, @NotNull final Vector3D point2, @NotNull final Point2D.Float texturePoint2, @NotNull final Vector3D point3, @NotNull final Point2D.Float texturePoint3, @NotNull final Vector3D point4, @NotNull final Point2D.Float texturePoint4, @Nullable final Material material, final boolean hasBackface )
 	{
-		addFace( new Vector3D[] { point1, point2, point3, point4 }, material, new Point2D.Float[] { texturePoint1, texturePoint2, texturePoint3, texturePoint4 }, null, false, hasBackface );
+		addFace( new Vector3D[] { point1, point2, point3, point4 }, material, new float[] { texturePoint1.x, texturePoint1.y, texturePoint2.x, texturePoint2.y, texturePoint3.x, texturePoint3.y, texturePoint4.x, texturePoint4.y }, null, false, hasBackface );
 	}
 
 	/**
@@ -574,29 +583,29 @@ public abstract class Abstract3DObjectBuilder
 
 			if ( fill )
 			{
-				addQuad( point4 , point3 , point2 , point1 , material, false );
-				addQuad( point1 , point2 , point2a, point1a, material, false );
-				addQuad( point2 , point3 , point3a, point2a, material, false );
-				addQuad( point3 , point4 , point4a, point3a, material, false );
-				addQuad( point4 , point1 , point1a, point4a, material, false );
+				addQuad( point4, point3, point2, point1, material, false );
+				addQuad( point1, point2, point2a, point1a, material, false );
+				addQuad( point2, point3, point3a, point2a, material, false );
+				addQuad( point3, point4, point4a, point3a, material, false );
+				addQuad( point4, point1, point1a, point4a, material, false );
 				addQuad( point1a, point2a, point3a, point4a, material, false );
 			}
 			else
 			{
-				addLine( point1 , point1a, material );
-				addLine( point1 , point2 , material );
+				addLine( point1, point1a, material );
+				addLine( point1, point2, material );
 				addLine( point1a, point2a, material );
 
-				addLine( point2 , point2a, material );
-				addLine( point2 , point3 , material );
+				addLine( point2, point2a, material );
+				addLine( point2, point3, material );
 				addLine( point2a, point3a, material );
 
-				addLine( point3 , point3a, material );
-				addLine( point3 , point4 , material );
+				addLine( point3, point3a, material );
+				addLine( point3, point4, material );
 				addLine( point3a, point4a, material );
 
-				addLine( point4 , point4a, material );
-				addLine( point4 , point1 , material );
+				addLine( point4, point4a, material );
+				addLine( point4, point1, material );
 				addLine( point4a, point1a, material );
 			}
 		}
@@ -688,7 +697,7 @@ public abstract class Abstract3DObjectBuilder
 	 */
 	public void addTriangle( @NotNull final Vector3D point1, @NotNull final Point2D.Float texturePoint1, @NotNull final Vector3D point2, @NotNull final Point2D.Float texturePoint2, @NotNull final Vector3D point3, @NotNull final Point2D.Float texturePoint3, @Nullable final Material material, final boolean hasBackface )
 	{
-		addFace( new Vector3D[] { point1, point2, point3 }, material, new Point2D.Float[] { texturePoint1, texturePoint2, texturePoint3 }, null, false, hasBackface );
+		addFace( new Vector3D[] { point1, point2, point3 }, material, new float[] { texturePoint1.x, texturePoint1.y, texturePoint2.x, texturePoint2.y, texturePoint3.x, texturePoint3.y }, null, false, hasBackface );
 	}
 
 	/**
@@ -712,24 +721,24 @@ public abstract class Abstract3DObjectBuilder
 
 			if ( fill )
 			{
-				addTriangle( point3 , point2 , point1 ,           material, false );
-				addQuad    ( point1 , point2 , point2a, point1a, material, false );
-				addQuad    ( point2 , point3 , point3a, point2a, material, false );
-				addQuad    ( point3 , point1 , point1a, point3a, material, false );
+				addTriangle( point3, point2, point1,           material, false );
+				addQuad    ( point1, point2, point2a, point1a, material, false );
+				addQuad    ( point2, point3, point3a, point2a, material, false );
+				addQuad    ( point3, point1, point1a, point3a, material, false );
 				addTriangle( point1a, point2a, point3a,           material, false );
 			}
 			else
 			{
-				addLine( point1 , point1a, material );
-				addLine( point1 , point2 , material );
+				addLine( point1, point1a, material );
+				addLine( point1, point2, material );
 				addLine( point1a, point2a, material );
 
-				addLine( point2 , point2a, material );
-				addLine( point2 , point3 , material );
+				addLine( point2, point2a, material );
+				addLine( point2, point3, material );
 				addLine( point2a, point3a, material );
 
-				addLine( point3 , point3a, material );
-				addLine( point3 , point1 , material );
+				addLine( point3, point3a, material );
+				addLine( point3, point1, material );
 				addLine( point3a, point1a, material );
 			}
 		}
@@ -874,13 +883,9 @@ public abstract class Abstract3DObjectBuilder
 	 *                              point in the opposite direction.
 	 * @param   smooth              Shape is smooth.
 	 */
-	public void addExtrudedShape( @NotNull final Shape shape, final double flatness, @Nullable final Vector3D extrusion, @NotNull final Matrix3D transform, @Nullable final Material topMaterial, @Nullable final UVMap topMap, final boolean topFlipTexture, @Nullable final Material bottomMaterial, @Nullable final UVMap bottomMap, final boolean bottomFlipTexture, @Nullable final Material sideMaterial, @Nullable final UVMap sideMap, final boolean sideFlipTexture, final boolean hasBackface, final boolean flipNormals, final boolean smooth )
+	public void addExtrudedShape( @NotNull final Shape shape, final double flatness, @NotNull final Vector3D extrusion, @NotNull final Matrix3D transform, @Nullable final Material topMaterial, @Nullable final UVMap topMap, final boolean topFlipTexture, @Nullable final Material bottomMaterial, @Nullable final UVMap bottomMap, final boolean bottomFlipTexture, @Nullable final Material sideMaterial, @Nullable final UVMap sideMap, final boolean sideFlipTexture, final boolean hasBackface, final boolean flipNormals, final boolean smooth )
 	{
-		final double  ex            = ( extrusion != null ) ? extrusion.x : 0.0;
-		final double  ey            = ( extrusion != null ) ? extrusion.y : 0.0;
-		final double  ez            = ( extrusion != null ) ? extrusion.z : 0.0;
-		final boolean hasExtrusion  = !MathTools.almostEqual( ex, 0.0 ) || !MathTools.almostEqual( ey, 0.0 ) || !MathTools.almostEqual( ez, 0.0 );
-		final boolean flipExtrusion = flipNormals ^ ( ez < 0.0 );
+		final boolean hasExtrusion = !extrusion.almostEquals( Vector3D.ZERO );
 
 		if ( hasExtrusion && ( sideMaterial != null ) )
 		{
@@ -889,50 +894,56 @@ public abstract class Abstract3DObjectBuilder
 
 		if ( ( topMaterial != null ) || ( bottomMaterial != null ) )
 		{
-			if ( shape instanceof Rectangle2D )
+			final Tessellator tessellator = new GLUTessellator();
+			tessellator.setFlatness( flatness );
+
+			if ( bottomMaterial == null )
 			{
-				final Rectangle2D rectangle = (Rectangle2D)shape;
-				final double x1 = rectangle.getMinX();
-				final double y1 = rectangle.getMinY();
-				final double x2 = rectangle.getMaxX();
-				final double y2 = rectangle.getMaxY();
+				final TessellationBuilder topTessellationBuilder = createTessellationBuilder( hasExtrusion ? transform.plus( transform.rotate( extrusion ) ) : transform );
 
-				if ( bottomMaterial != null )
-				{
-					addQuad( transform.transform( x1, y1, 0.0 ),
-					         transform.transform( x2, y1, 0.0 ),
-					         transform.transform( x2, y2, 0.0 ),
-					         transform.transform( x1, y2, 0.0 ), bottomMaterial, bottomMap, false, hasBackface );
-				}
+				tessellator.setNormal( flipNormals ? Vector3D.NEGATIVE_Z_AXIS : Vector3D.POSITIVE_Z_AXIS );
+				tessellator.tessellate( topTessellationBuilder, shape );
 
-				if ( topMaterial != null )
-				{
-					addQuad( transform.transform( ex + x1, ey + y1, ez ),
-					         transform.transform( ex + x1, ey + y2, ez ),
-					         transform.transform( ex + x2, ey + y2, ez ),
-					         transform.transform( ex + x2, ey + y1, ez ), topMaterial, topMap, false, hasBackface );
-				}
+				addFace( topTessellationBuilder.getTessellation(), topMaterial, topMap, topFlipTexture, hasBackface );
+			}
+			else if ( ( topMaterial == null ) || !hasExtrusion )
+			{
+				final TessellationBuilder bottomTessellationBuilder = createTessellationBuilder( transform );
+
+				tessellator.setNormal( flipNormals ? Vector3D.POSITIVE_Z_AXIS : Vector3D.NEGATIVE_Z_AXIS );
+				tessellator.tessellate( bottomTessellationBuilder, shape );
+
+				addFace( bottomTessellationBuilder.getTessellation(), bottomMaterial, bottomMap, bottomFlipTexture, hasBackface );
 			}
 			else
 			{
-				final TriangulatorFactory triangulatorFactory = TriangulatorFactory.newInstance();
-				final Triangulator triangulator = triangulatorFactory.newTriangulator();
-				triangulator.setFlatness( flatness );
-				triangulator.setNormal( Vector3D.INIT.set( 0.0, 0.0, flipExtrusion ? -1.0 : 1.0 ) );
-				final Triangulation triangulation = triangulator.triangulate( shape );
+				final Matrix3D topTransform = transform.plus( transform.rotate( extrusion ) );
 
-				if ( bottomMaterial != null )
-				{
-					addTriangulation( transform, triangulation, bottomMaterial, bottomMap, bottomFlipTexture, hasBackface, !flipNormals );
-				}
+				final TessellationBuilder topTessellationBuilder = createTessellationBuilder( topTransform );
+				final TessellationBuilder bottomTessellationBuilder = createTessellationBuilder( transform );
 
-				if ( topMaterial != null )
-				{
-					final Matrix3D topTransform = hasExtrusion ? transform.plus( transform.rotate( ex, ey, ez ) ) : transform;
-					addTriangulation( topTransform, triangulation, topMaterial, topMap, topFlipTexture, hasBackface, flipNormals );
-				}
+				final TessellationBuilder combinedBuilder = new DualTessellation( topTessellationBuilder, bottomTessellationBuilder, true );
+				tessellator.setNormal( flipNormals ? Vector3D.NEGATIVE_Z_AXIS : Vector3D.POSITIVE_Z_AXIS );
+				tessellator.tessellate( combinedBuilder, shape );
+
+				addFace( bottomTessellationBuilder.getTessellation(), bottomMaterial, bottomMap, bottomFlipTexture, hasBackface );
+				addFace( topTessellationBuilder.getTessellation(), topMaterial, topMap, topFlipTexture, hasBackface );
 			}
 		}
+	}
+
+	/**
+	 * Create a {@link TessellationBuilder} with the specified tranformation
+	 * matrix applied to all vertices.
+	 *
+	 * @param   transform   Transformation matrix to apply.
+	 *
+	 * @return  {@link TessellationBuilder}.
+	 */
+	@NotNull
+	protected TessellationBuilder createTessellationBuilder( @Nullable final Matrix3D transform )
+	{
+		return new BasicTessellationBuilder( transform );
 	}
 
 	/**
@@ -955,239 +966,140 @@ public abstract class Abstract3DObjectBuilder
 		final double ex = ( extrusion != null ) ? extrusion.x : 0.0;
 		final double ey = ( extrusion != null ) ? extrusion.y : 0.0;
 		final double ez = ( extrusion != null ) ? extrusion.z : 0.0;
+		final boolean hasExtrusion  = !MathTools.almostEqual( ex, 0.0 ) || !MathTools.almostEqual( ey, 0.0 ) || !MathTools.almostEqual( ez, 0.0 );
+		final boolean flipExtrusion = flipNormals ^ ( ez < 0.0 );
 
-		final boolean    hasExtrusion  = !MathTools.almostEqual( ex, 0.0 ) || !MathTools.almostEqual( ey, 0.0 ) || !MathTools.almostEqual( ez, 0.0 );
-		final ShapeClass shapeClass    = ShapeTools.getShapeClass( shape );
-		final boolean    flipExtrusion = flipNormals ^ ( ez < 0.0 ) ^ shapeClass.isClockwise();
-		final boolean    twoSided      = hasBackface || ( shapeClass == ShapeClass.COMPLEX );
+		final List<Contour> contours = Contour.createContours( shape, flatness, !flipExtrusion );
 
-		final PathIterator pathIterator = shape.getPathIterator( null, flatness );
-
-		final double[] coords = new double[ 6 ];
-
-		int lastPoint           = -1;
-		int lastExtrudedPoint   = -1;
-		int moveToPoint         = -1;
-		int moveToExtrudedPoint = -1;
-
-		while ( !pathIterator.isDone() )
+		if ( hasExtrusion )
 		{
-			final int type = pathIterator.currentSegment( coords );
-			switch ( type )
+			for ( final Contour contour : contours )
 			{
-				case FlatteningPathIterator.SEG_MOVETO:
+				final List<Contour.Point> points = contour.getPoints();
+
+				final Contour.Point firstPoint = points.get( 0 );
+				final int first1 = getVertexIndex( transform.transform( firstPoint.x, firstPoint.y, 0.0 ) );
+				final int first2 = getVertexIndex( transform.transform( firstPoint.x + ex, firstPoint.y + ey, ez ) );
+
+				int previous1 = first1;
+				int previous2 = first2;
+
+				for ( int pointIndex = 1; pointIndex < points.size(); pointIndex++ )
 				{
-					final double shapeX = coords[ 0 ];
-					final double shapeY = coords[ 1 ];
+					final Contour.Point nextPoint = points.get( pointIndex );
+					final int next1 = getVertexIndex( transform.transform( nextPoint.x, nextPoint.y, 0.0 ) );
 
-					lastPoint = getVertexIndex( transform.transform( shapeX, shapeY, 0.0 ) );
-					moveToPoint = lastPoint;
-
-					if ( hasExtrusion )
+					if ( previous1 != next1 )
 					{
-						lastExtrudedPoint = getVertexIndex( transform.transform( shapeX + ex, shapeY + ey, ez ) );
-						moveToExtrudedPoint = lastExtrudedPoint;
+						final int next2 = getVertexIndex( transform.transform( nextPoint.x + ex, nextPoint.y + ey, ez ) );
+						addFace( new int[]{ previous1, previous2, next2, next1 }, material, uvMap, flipTexture, smooth, hasBackface );
+
+						previous2 = next2;
+						previous1 = next1;
 					}
-					break;
 				}
 
-				case FlatteningPathIterator.SEG_LINETO:
-				{
-					final double shapeX = coords[ 0 ];
-					final double shapeY = coords[ 1 ];
-
-					final int point = getVertexIndex( transform.transform( shapeX, shapeY, 0.0 ) );
-
-					if ( ( lastPoint >= 0 ) && ( lastPoint != point ) )
-					{
-						if ( hasExtrusion )
-						{
-							final int extrudedPoint = getVertexIndex( transform.transform( shapeX + ex, shapeY + ey, ez ) );
-
-							if ( flipExtrusion )
-							{
-								addFace( new int[] { point, extrudedPoint, lastExtrudedPoint, lastPoint}, material, uvMap, flipTexture, smooth, twoSided );
-							}
-							else
-							{
-								addFace( new int[] { lastPoint, lastExtrudedPoint, extrudedPoint, point }, material, uvMap, flipTexture, smooth, twoSided );
-							}
-
-							lastExtrudedPoint = extrudedPoint;
-						}
-						else /*if ( !caps )*/
-						{
-							addFace( new int[] { lastPoint, point }, material, uvMap, flipTexture, false, true );
-						}
-
-						lastPoint = point;
-					}
-					break;
-				}
-
-				case FlatteningPathIterator.SEG_CLOSE:
-				{
-					if ( ( lastPoint >= 0 ) && ( lastPoint != moveToPoint ) )
-					{
-						if ( hasExtrusion )
-						{
-							if ( flipExtrusion )
-							{
-								addFace( new int[] { moveToPoint, moveToExtrudedPoint, lastExtrudedPoint, lastPoint }, material, uvMap, flipTexture, smooth, twoSided );
-							}
-							else
-							{
-								addFace( new int[] { lastPoint, lastExtrudedPoint, moveToExtrudedPoint, moveToPoint }, material, uvMap, flipTexture, smooth, twoSided );
-							}
-							lastExtrudedPoint = moveToExtrudedPoint;
-						}
-						else /*if ( !caps )*/
-						{
-							addFace( new int[] { lastPoint, moveToPoint }, material, uvMap, flipTexture, false, true );
-						}
-					}
-
-					lastPoint = moveToPoint;
-					break;
-				}
+				addFace( new int[]{ previous1, previous2, first2, first1 }, material, uvMap, flipTexture, smooth, hasBackface );
 			}
+		}
+		else
+		{
+			for ( final Contour contour : contours )
+			{
+				final List<Contour.Point> points = contour.getPoints();
 
-			pathIterator.next();
+				final Contour.Point firstPoint = points.get( 0 );
+				final int first = getVertexIndex( transform.transform( firstPoint.x, firstPoint.y, 0.0 ) );
+
+				int previous = first;
+
+				for ( int pointIndex = 1; pointIndex < points.size(); pointIndex++ )
+				{
+					final Contour.Point nextPoint = points.get( pointIndex );
+					final int next = getVertexIndex( transform.transform( nextPoint.x, nextPoint.y, 0.0 ) );
+
+					if ( previous != next )
+					{
+						addFace( new int[]{ previous, next }, material, uvMap, flipTexture, false, true );
+						previous = next;
+					}
+				}
+
+				addFace( new int[]{ previous, first }, material, uvMap, flipTexture, false, true );
+			}
 		}
 	}
 
 	/**
-	 * Add triangulated shape.
+	 * Add tessellated shape.
 	 *
 	 * @param   transform       Transform from 2D to 3D coordinates.
 	 * @param   shape           Shape to add.
 	 * @param   shapeNormal     Normal to use for shape.
 	 * @param   flatness        Flatness used to approximate curves.
-	 * @param   material        Material to apply to the bottom cap.
+	 * @param   material        Material to apply to the face.
 	 * @param   uvMap           UV-map used to generate texture coordinates.
 	 * @param   flipTexture     Whether the bottom texture direction is flipped.
 	 * @param   twoSided        Resulting face will be two-sided (has backface).
 	 */
 	public void addFilledShape2D( @NotNull final Matrix3D transform, @NotNull final Shape shape, @NotNull final Vector3D shapeNormal, final double flatness, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided )
 	{
-		final TriangulatorFactory triangulatorFactory = TriangulatorFactory.newInstance();
+		final Tessellator tessellator = new GLUTessellator();
+		tessellator.setFlatness( flatness );
+		tessellator.setNormal( shapeNormal );
 
-		final Triangulator triangulator = triangulatorFactory.newTriangulator();
-		triangulator.setFlatness( flatness );
-		triangulator.setNormal( shapeNormal );
-
-		addFilledShape2D( transform, shape, triangulator, material, uvMap, flipTexture, twoSided );
+		final TessellationBuilder tessellationBuilder = createTessellationBuilder( transform );
+		tessellator.tessellate( tessellationBuilder, shape );
+		addFace( tessellationBuilder.getTessellation(), material, uvMap, flipTexture, twoSided );
 	}
 
 	/**
-	 * Add triangulated shape.
-	 *
-	 * @param   transform       Transform from 2D to 3D coordinates.
-	 * @param   shape           Shape to add.
-	 * @param   triangulator    Triangulator to use.
-	 * @param   material        Material to apply to the bottom cap.
-	 * @param   uvMap           UV-map used to generate texture coordinates.
-	 * @param   flipTexture     Whether the bottom texture direction is flipped.
-	 * @param   twoSided        Resulting face will be two-sided (has backface).
-	 */
-	public void addFilledShape2D( @NotNull final Matrix3D transform, @NotNull final Shape shape, @NotNull final Triangulator triangulator, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided )
-	{
-		final Vector3D normal = triangulator.getNormal();
-
-		if ( ( shape instanceof Rectangle2D ) && MathTools.almostEqual( Math.abs( normal.z ), 1.0 ) )
-		{
-			final Rectangle2D rectangle = (Rectangle2D)shape;
-			final double x1 = rectangle.getMinX();
-			final double y1 = rectangle.getMinY();
-			final double x2 = rectangle.getMaxX();
-			final double y2 = rectangle.getMaxY();
-
-			if ( normal.z > 0.0 )
-			{
-				addQuad( transform.transform( x1, y1, 0.0 ),
-				         transform.transform( x1, y2, 0.0 ),
-				         transform.transform( x2, y2, 0.0 ),
-				         transform.transform( x2, y1, 0.0 ), material, uvMap, false, twoSided );
-			}
-			else
-			{
-				addQuad( transform.transform( x1, y1, 0.0 ),
-				         transform.transform( x2, y1, 0.0 ),
-				         transform.transform( x2, y2, 0.0 ),
-				         transform.transform( x1, y2, 0.0 ), material, uvMap, false, twoSided );
-			}
-		}
-		else
-		{
-			final Triangulation triangulation = triangulator.triangulate( shape );
-			addTriangulation( transform, triangulation, material, uvMap, flipTexture, twoSided, false );
-		}
-	}
-
-	/**
-	 * Add triangulated shape.
+	 * Add tessellated shape.
 	 *
 	 * @param   transform       Transform from 2D to 3D coordinates.
 	 * @param   positive        Positive geometry.
 	 * @param   negative        Negative geometry.
 	 * @param   shapeNormal     Normal to use for shape.
 	 * @param   flatness        Flatness used to approximate curves.
-	 * @param   material        Material to apply to the bottom cap.
+	 * @param   material        Material to apply to the face.
 	 * @param   uvMap           UV-map used to generate texture coordinates.
 	 * @param   flipTexture     Whether the bottom texture direction is flipped.
 	 * @param   twoSided        Resulting face will be two-sided (has backface).
 	 */
-	public void addFilledShape2D( @NotNull final Matrix3D transform, @NotNull final Shape positive, @NotNull final Iterable<? extends Shape> negative, @NotNull final Vector3D shapeNormal, final double flatness, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided )
+	public void addTessellatedShape( @NotNull final Matrix3D transform, @NotNull final Shape positive, @NotNull final Collection<? extends Shape> negative, @NotNull final Vector3D shapeNormal, final double flatness, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided )
 	{
-		final TriangulatorFactory triangulatorFactory = TriangulatorFactory.newInstance();
+		final Tessellator tessellator = new GLUTessellator();
+		tessellator.setFlatness( flatness );
+		tessellator.setNormal( shapeNormal );
 
-		final Triangulator triangulator = triangulatorFactory.newTriangulator();
-		triangulator.setFlatness( flatness );
-		triangulator.setNormal( shapeNormal );
-
-		final Triangulation triangulation = triangulator.triangulate( positive, negative );
-		addTriangulation( transform, triangulation, material, uvMap, flipTexture, twoSided, false );
+		final TessellationBuilder tessellationBuilder = createTessellationBuilder( transform );
+		tessellator.tessellate( tessellationBuilder, positive, negative );
+		addFace( tessellationBuilder.getTessellation(), material, uvMap, flipTexture, twoSided );
 	}
 
 	/**
-	 * Add result from triangulator to current 3D object.
+	 * Add result from tessellator to current 3D object.
 	 *
-	 * @param   transform       Transform from 2D to 3D coordinates.
-	 * @param   triangulation   Triangulation result.
-	 * @param   material        Material to apply to the bottom cap.
+	 * @param   tessellation     Tessellation to create face from.
+	 * @param   material        Material to apply to the face.
 	 * @param   uvMap           UV-map used to generate texture coordinates.
 	 * @param   flipTexture     Whether the bottom texture direction is flipped.
 	 * @param   twoSided        Resulting face will be two-sided (has backface).
-	 * @param   flipNormals     If set, flip normals.
 	 */
-	private void addTriangulation( final Matrix3D transform, final Triangulation triangulation , final Material material, final UVMap uvMap, final boolean flipTexture, final boolean twoSided, final boolean flipNormals )
+	protected void addFace( @NotNull final Tessellation tessellation, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided )
 	{
-		final List<Vector3D> vertices = triangulation.getVertices( transform );
-
-		final int[] vertexIndices = new int[ vertices.size() ];
-		for ( int i = 0 ; i < vertexIndices.length ; i++ )
-		{
-			vertexIndices[ i ] = getVertexIndex( vertices.get( i ) );
-		}
-
 		final int[] triangleVertexIndices = new int[ 3 ];
 
-		for ( final int[] triangle : triangulation.getTriangles() )
+		for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
 		{
-			if ( flipNormals )
+			final int[] triangles = primitive.getTriangles();
+			for ( int i = 0 ; i < triangles.length ; i += 3 )
 			{
-				triangleVertexIndices[ 0 ] = vertexIndices[ triangle[ 0 ] ];
-				triangleVertexIndices[ 1 ] = vertexIndices[ triangle[ 1 ] ];
-				triangleVertexIndices[ 2 ] = vertexIndices[ triangle[ 2 ] ];
+				triangleVertexIndices[ 0 ] = triangles[ i + 2 ];
+				triangleVertexIndices[ 1 ] = triangles[ i + 1 ];
+				triangleVertexIndices[ 2 ] = triangles[ i ];
+				addFace( triangleVertexIndices, material, uvMap, flipTexture, false, twoSided );
 			}
-			else
-			{
-				triangleVertexIndices[ 0 ] = vertexIndices[ triangle[ 2 ] ];
-				triangleVertexIndices[ 1 ] = vertexIndices[ triangle[ 1 ] ];
-				triangleVertexIndices[ 2 ] = vertexIndices[ triangle[ 0 ] ];
-			}
-
-			addFace( triangleVertexIndices, material, uvMap, flipTexture, false, twoSided );
 		}
 	}
 }
