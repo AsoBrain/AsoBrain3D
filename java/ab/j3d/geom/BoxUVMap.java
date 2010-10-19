@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 2009-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,12 +20,11 @@
  */
 package ab.j3d.geom;
 
-import java.awt.geom.Point2D;
-import java.util.List;
+import java.awt.geom.*;
+import java.util.*;
 
-import ab.j3d.Material;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
+import ab.j3d.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Defines a box UV-mapping.
@@ -64,7 +64,7 @@ public class BoxUVMap
 	 */
 	public BoxUVMap( final double modelUnits )
 	{
-		this( modelUnits , Matrix3D.INIT );
+		this( modelUnits, Matrix3D.INIT );
 	}
 
 	/**
@@ -74,9 +74,9 @@ public class BoxUVMap
 	 * @param   modelUnits  Size of a model unit in meters.
 	 * @param   origin      Location of the UV-origin in spatial coordinates.
 	 */
-	public BoxUVMap( final double modelUnits , final Vector3D origin )
+	public BoxUVMap( final double modelUnits, final Vector3D origin )
 	{
-		this( modelUnits , Matrix3D.INIT.setTranslation( origin ) );
+		this( modelUnits, Matrix3D.INIT.setTranslation( origin ) );
 	}
 
 	/**
@@ -86,9 +86,9 @@ public class BoxUVMap
 	 * @param   modelUnits  Size of a model unit in meters.
 	 * @param   box2wcs   Transforms spatial to box coordinates.
 	 */
-	public BoxUVMap( final double modelUnits , final Matrix3D box2wcs )
+	public BoxUVMap( final double modelUnits, final Matrix3D box2wcs )
 	{
-		this( modelUnits , box2wcs, false , false , false , false , false , false );
+		this( modelUnits, box2wcs, false, false, false, false, false, false );
 	}
 
 	/**
@@ -104,47 +104,47 @@ public class BoxUVMap
 	 * @param   flipTop     Flip top texture direction.
 	 * @param   flipBottom  Flip bottom texture direction.
 	 */
-	public BoxUVMap( final double modelUnits , final Matrix3D box2wcs , final boolean flipLeft , final boolean flipRight , final boolean flipFront , final boolean flipBack , final boolean flipTop , final boolean flipBottom )
+	public BoxUVMap( final double modelUnits, final Matrix3D box2wcs, final boolean flipLeft, final boolean flipRight, final boolean flipFront, final boolean flipBack, final boolean flipTop, final boolean flipBottom )
 	{
 		final PlanarUVMap[] maps = new PlanarUVMap[ 6 ];
 		final boolean[] flips = new boolean[ 6 ];
 
-		maps[ LEFT ] = new PlanarUVMap( modelUnits , Matrix3D.INIT.set(
-			-box2wcs.xy ,  box2wcs.xz , -box2wcs.xx , box2wcs.xo ,    // [  0 ,  0 , -1 ]
-			-box2wcs.yy ,  box2wcs.yz , -box2wcs.yx , box2wcs.yo ,    // [ -1 ,  0 ,  0 ] * box2wcs
-			-box2wcs.zy ,  box2wcs.zz , -box2wcs.zx , box2wcs.zo ) ); // [  0 ,  1 ,  0 ]
+		maps[ LEFT ] = new PlanarUVMap( modelUnits, Matrix3D.INIT.set(
+			-box2wcs.xy,  box2wcs.xz, -box2wcs.xx, box2wcs.xo,    // [  0,  0, -1 ]
+			-box2wcs.yy,  box2wcs.yz, -box2wcs.yx, box2wcs.yo,    // [ -1,  0,  0 ] * box2wcs
+			-box2wcs.zy,  box2wcs.zz, -box2wcs.zx, box2wcs.zo ) ); // [  0,  1,  0 ]
 
 		flips[ LEFT ] = flipLeft;
 
-		maps[ RIGHT ] = new PlanarUVMap( modelUnits , Matrix3D.INIT.set(
-			 box2wcs.xy ,  box2wcs.xz ,  box2wcs.xx , box2wcs.xo ,    // [ 0 ,  0 ,  1 ]
-			 box2wcs.yy ,  box2wcs.yz ,  box2wcs.yx , box2wcs.yo ,    // [ 1 ,  0 ,  0 ] * box2wcs
-			 box2wcs.zy ,  box2wcs.zz ,  box2wcs.zx , box2wcs.zo ) ); // [ 0 ,  1 ,  0 ]
+		maps[ RIGHT ] = new PlanarUVMap( modelUnits, Matrix3D.INIT.set(
+			 box2wcs.xy,  box2wcs.xz,  box2wcs.xx, box2wcs.xo,    // [ 0,  0,  1 ]
+			 box2wcs.yy,  box2wcs.yz,  box2wcs.yx, box2wcs.yo,    // [ 1,  0,  0 ] * box2wcs
+			 box2wcs.zy,  box2wcs.zz,  box2wcs.zx, box2wcs.zo ) ); // [ 0,  1,  0 ]
 
 		flips[ RIGHT ] = flipRight;
 
-		maps[ FRONT ] = new PlanarUVMap( modelUnits , Matrix3D.INIT.set(
-			 box2wcs.xx ,  box2wcs.xz , -box2wcs.xy , box2wcs.xo ,    // [ 1 ,  0 ,  0 ]
-			 box2wcs.yx ,  box2wcs.yz , -box2wcs.yy , box2wcs.yo ,    // [ 0 ,  0 , -1 ] * box2wcs
-			 box2wcs.zx ,  box2wcs.zz , -box2wcs.zy , box2wcs.zo ) ); // [ 0 ,  1 ,  0 ]
+		maps[ FRONT ] = new PlanarUVMap( modelUnits, Matrix3D.INIT.set(
+			 box2wcs.xx,  box2wcs.xz, -box2wcs.xy, box2wcs.xo,    // [ 1,  0,  0 ]
+			 box2wcs.yx,  box2wcs.yz, -box2wcs.yy, box2wcs.yo,    // [ 0,  0, -1 ] * box2wcs
+			 box2wcs.zx,  box2wcs.zz, -box2wcs.zy, box2wcs.zo ) ); // [ 0,  1,  0 ]
 
 		flips[ FRONT ] = flipFront;
 
-		maps[ BACK ] = new PlanarUVMap( modelUnits , Matrix3D.INIT.set(
-			-box2wcs.xx ,  box2wcs.xz ,  box2wcs.xy , box2wcs.xo ,    // [ -1 ,  0 ,  0 ]
-			-box2wcs.yx ,  box2wcs.yz ,  box2wcs.yy , box2wcs.yo ,    // [  0 ,  0 ,  1 ] * box2wcs
-			-box2wcs.zx ,  box2wcs.zz ,  box2wcs.zy , box2wcs.zo ) ); // [  0 ,  1 ,  0 ]
+		maps[ BACK ] = new PlanarUVMap( modelUnits, Matrix3D.INIT.set(
+			-box2wcs.xx,  box2wcs.xz,  box2wcs.xy, box2wcs.xo,    // [ -1,  0,  0 ]
+			-box2wcs.yx,  box2wcs.yz,  box2wcs.yy, box2wcs.yo,    // [  0,  0,  1 ] * box2wcs
+			-box2wcs.zx,  box2wcs.zz,  box2wcs.zy, box2wcs.zo ) ); // [  0,  1,  0 ]
 
 		flips[ BACK ] = flipBack;
 
-		maps[ BOTTOM ] = new PlanarUVMap( modelUnits , Matrix3D.INIT.set(
-			-box2wcs.xx ,  box2wcs.xy , -box2wcs.xz , box2wcs.xo ,    // [ -1 ,  0 ,  0 ]
-			-box2wcs.yx ,  box2wcs.yy , -box2wcs.yz , box2wcs.yo ,    // [  0 ,  1 ,  0 ] * box2wcs
-			-box2wcs.zx ,  box2wcs.zy , -box2wcs.zz , box2wcs.zo ) ); // [  0 ,  0 , -1 ]
+		maps[ BOTTOM ] = new PlanarUVMap( modelUnits, Matrix3D.INIT.set(
+			-box2wcs.xx,  box2wcs.xy, -box2wcs.xz, box2wcs.xo,    // [ -1,  0,  0 ]
+			-box2wcs.yx,  box2wcs.yy, -box2wcs.yz, box2wcs.yo,    // [  0,  1,  0 ] * box2wcs
+			-box2wcs.zx,  box2wcs.zy, -box2wcs.zz, box2wcs.zo ) ); // [  0,  0, -1 ]
 
 		flips[ BOTTOM ] = flipBottom;
 
-		maps[ TOP ] = new PlanarUVMap( modelUnits , box2wcs );
+		maps[ TOP ] = new PlanarUVMap( modelUnits, box2wcs );
 
 		flips[ TOP ] = flipTop;
 
@@ -169,22 +169,18 @@ public class BoxUVMap
 		return _maps[ side ];
 	}
 
-	public Point2D.Float[] generate( final Material material , final double[] vertexCoordinates , final int[] vertexIndices , final boolean flipTexture )
+	@Override
+	public float[] generate( @Nullable final Material material, @NotNull final List<? extends Vector3D> vertexCoordinates, @Nullable final int[] vertexIndices, final boolean flipTexture )
 	{
-		final int map = getTargetMap( vertexCoordinates , vertexIndices );
-		return _maps[ map ].generate( material , vertexCoordinates , vertexIndices , _flips[ map ] ^ flipTexture );
+		final int map = getTargetMap( vertexCoordinates, vertexIndices );
+		return _maps[ map ].generate( material, vertexCoordinates, vertexIndices, _flips[ map ] ^ flipTexture );
 	}
 
-	public Point2D.Float[] generate( final Material material , final List<Vector3D> vertexCoordinates , final int[] vertexIndices , final boolean flipTexture )
-	{
-		final int map = getTargetMap( vertexCoordinates , vertexIndices );
-		return _maps[ map ].generate( material , vertexCoordinates , vertexIndices , _flips[ map ] ^ flipTexture );
-	}
-
-	public Point2D.Float generate( final Material material , final Vector3D wcsPoint , final Vector3D normal , final boolean flipTexture )
+	@Override
+	public Point2D.Float generate( @Nullable final Material material, @NotNull final Vector3D wcsPoint, @NotNull final Vector3D normal, final boolean flipTexture )
 	{
 		final int map = getTargetMap( normal );
-		return _maps[ map ].generate( material , wcsPoint , normal , _flips[ map ] ^ flipTexture );
+		return _maps[ map ].generate( material, wcsPoint, normal, _flips[ map ] ^ flipTexture );
 	}
 
 	/**
@@ -197,62 +193,41 @@ public class BoxUVMap
 	 *
 	 * @return  Target map.
 	 */
-	private int getTargetMap( final double[] vertexCoordinates , final int[] vertexIndices )
+	private int getTargetMap( @NotNull final List<? extends Vector3D> vertexCoordinates, @Nullable final int[] vertexIndices )
 	{
 		final int result;
 
-		if ( vertexIndices.length >= 3 )
+		if ( vertexIndices != null )
 		{
-			final int base1 = vertexIndices[ 0 ] * 3;
-			final int base2 = vertexIndices[ 1 ] * 3;
-			final int base3 = vertexIndices[ 2 ] * 3;
+			if ( vertexIndices.length >= 3 )
+			{
+				final Vector3D p0 = vertexCoordinates.get( vertexIndices[ 0 ] );
+				final Vector3D p1 = vertexCoordinates.get( vertexIndices[ 1 ] );
+				final Vector3D p2 = vertexCoordinates.get( vertexIndices[ 2 ] );
 
-			final double xo = vertexCoordinates[ base2 ];
-			final double yo = vertexCoordinates[ base2 + 1 ];
-			final double zo = vertexCoordinates[ base2 + 2 ];
-
-			result = getTargetMap( Vector3D.cross(
-				vertexCoordinates[ base1     ] - xo ,
-				vertexCoordinates[ base1 + 1 ] - yo ,
-				vertexCoordinates[ base1 + 2 ] - zo ,
-				vertexCoordinates[ base3     ] - xo,
-				vertexCoordinates[ base3 + 1 ] - yo,
-				vertexCoordinates[ base3 + 2 ] - zo ) );
+				result = getTargetMap( Vector3D.cross( p0.x - p1.x, p0.y - p1.y, p0.z - p1.z, p2.x - p1.x, p2.y - p1.y, p2.z - p1.z ) );
+			}
+			else
+			{
+				result = 0;
+			}
 		}
 		else
 		{
-			result = 0;
+			if ( vertexCoordinates.size() >= 3 )
+			{
+				final Vector3D p0 = vertexCoordinates.get( 0 );
+				final Vector3D p1 = vertexCoordinates.get( 1 );
+				final Vector3D p2 = vertexCoordinates.get( 2 );
+
+				result = getTargetMap( Vector3D.cross( p0.x - p1.x, p0.y - p1.y, p0.z - p1.z, p2.x - p1.x, p2.y - p1.y, p2.z - p1.z ) );
+			}
+			else
+			{
+				result = 0;
+			}
 		}
 
-		return result;
-	}
-
-	/**
-	 * Try to determine the face normal and use it to choose the target map.
-	 *
-	 * Note that this assumes that the given indices represent a single face.
-	 *
-	 * @param   vertexCoordinates   Vertex coordinates, as xyz-triplets.
-	 * @param   vertexIndices       Indices for all vertices in the face.
-	 *
-	 * @return  Target map.
-	 */
-	private int getTargetMap( final List<Vector3D> vertexCoordinates , final int[] vertexIndices )
-	{
-		final int result;
-
-		if ( vertexIndices.length >= 3 )
-		{
-			final Vector3D p0 = vertexCoordinates.get( vertexIndices[ 0 ] );
-			final Vector3D p1 = vertexCoordinates.get( vertexIndices[ 1 ] );
-			final Vector3D p2 = vertexCoordinates.get( vertexIndices[ 2 ] );
-
-			result = getTargetMap( Vector3D.cross( p0.x - p1.x , p0.y - p1.y , p0.z - p1.z , p2.x - p1.x , p2.y - p1.y , p2.z - p1.z ) );
-		}
-		else
-		{
-			result = 0;
-		}
 
 		return result;
 	}
