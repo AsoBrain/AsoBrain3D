@@ -20,7 +20,6 @@
  */
 package ab.j3d.model;
 
-import java.awt.geom.*;
 import java.util.*;
 
 import ab.j3d.*;
@@ -48,9 +47,9 @@ public final class Sphere3D
 	 * @param   q           Number of faces around X/Z-axis to approximate the sphere.
 	 * @param   material    Material of sphere.
 	 */
-	public Sphere3D( final double radius , final int p , final int q , final Material material )
+	public Sphere3D( final double radius, final int p, final int q, final Material material )
 	{
-		this( radius , p , q , material , false );
+		this( radius, p, q, material, false );
 	}
 
 	/**
@@ -65,7 +64,7 @@ public final class Sphere3D
 	 * @param   flipNormals     <code>true</code> to flip the faces/normals of
 	 *                          the sphere, turning it inside-out.
 	 */
-	public Sphere3D( final double radius , final int p , final int q , final Material material , final boolean flipNormals )
+	public Sphere3D( final double radius, final int p, final int q, final Material material, final boolean flipNormals )
 	{
 		this.radius = radius;
 
@@ -78,7 +77,7 @@ public final class Sphere3D
 		 */
 		int n = 0;
 
-		vertexCoordinates.add( new Vector3D( 0.0 , 0.0 , -radius ) );
+		vertexCoordinates.add( new Vector3D( 0.0, 0.0, -radius ) );
 		vertexNormals[ n++ ] = 0.0;
 		vertexNormals[ n++ ] = 0.0;
 		vertexNormals[ n++ ] = -1.0;
@@ -96,14 +95,14 @@ public final class Sphere3D
 				final double normalY = -sinq * Math.cos( prad );
 				final double normalZ = -cosq;
 
-				vertexCoordinates.add( new Vector3D( radius * normalX , radius * normalY , radius * normalZ ) );
+				vertexCoordinates.add( new Vector3D( radius * normalX, radius * normalY, radius * normalZ ) );
 				vertexNormals[ n++ ] = normalX;
 				vertexNormals[ n++ ] = normalY;
 				vertexNormals[ n++ ] = normalZ;
 			}
 		}
 
-		vertexCoordinates.add( new Vector3D( 0.0 , 0.0 , radius ) );
+		vertexCoordinates.add( new Vector3D( 0.0, 0.0, radius ) );
 		vertexNormals[ n++ ] = 0.0;
 		vertexNormals[ n++ ] = 0.0;
 		vertexNormals[ n   ] = 1.0;
@@ -146,31 +145,31 @@ public final class Sphere3D
 
 				final int[] vertexIndices;
 
-				final Point2D.Float[] texturePoints;
+				final float[] texturePoints;
 
 				if ( qc == 0 )
 				{
-					vertexIndices = flipNormals ? new int[] { 0 , p4 , p3 } :
-					                              new int[] { 0 , p3 , p4 };
-					texturePoints = flipNormals ? new Point2D.Float[] { new Point2D.Float( uCenter , vBottom ) , new Point2D.Float( uRight , vTop ) , new Point2D.Float( uLeft  , vTop ) } :
-					                              new Point2D.Float[] { new Point2D.Float( uCenter , vBottom ) , new Point2D.Float( uLeft  , vTop ) , new Point2D.Float( uRight , vTop ) };
+					vertexIndices = flipNormals ? new int[] { 0, p4, p3 } :
+					                              new int[] { 0, p3, p4 };
+					texturePoints = flipNormals ? new float[] { uCenter, vBottom, uRight, vTop, uLeft , vTop } :
+					                              new float[] { uCenter, vBottom, uLeft , vTop, uRight, vTop };
 				}
 				else if ( qc < lastQ )
 				{
-					vertexIndices = flipNormals ? new int[] { p2 , p4 , p3 , p1 } :
-					                              new int[] { p2 , p1 , p3 , p4 };
-					texturePoints = flipNormals ? new Point2D.Float[] { new Point2D.Float( uRight , vBottom ) , new Point2D.Float( uRight , vTop    ) , new Point2D.Float( uLeft , vTop ) , new Point2D.Float( uLeft  , vBottom ) } :
-					                              new Point2D.Float[] { new Point2D.Float( uRight , vBottom ) , new Point2D.Float( uLeft  , vBottom ) , new Point2D.Float( uLeft , vTop ) , new Point2D.Float( uRight , vTop    ) };
+					vertexIndices = flipNormals ? new int[] { p2, p4, p3, p1 } :
+					                              new int[] { p2, p1, p3, p4 };
+					texturePoints = flipNormals ? new float[] { uRight, vBottom, uRight, vTop   , uLeft, vTop, uLeft , vBottom } :
+					                              new float[] { uRight, vBottom, uLeft , vBottom, uLeft, vTop, uRight, vTop    };
 				}
 				else // qc == lastQ
 				{
-					vertexIndices = flipNormals ? new int[] { p1 , p2 , lastV } :
-					                              new int[] { p2 , p1 , lastV };
-					texturePoints = flipNormals ? new Point2D.Float[] { new Point2D.Float( uLeft  , vBottom ) , new Point2D.Float( uRight , vBottom ) , new Point2D.Float( uCenter , vTop ) } :
-					                              new Point2D.Float[] { new Point2D.Float( uRight , vBottom ) , new Point2D.Float( uLeft  , vBottom ) , new Point2D.Float( uCenter , vTop ) };
+					vertexIndices = flipNormals ? new int[] { p1, p2, lastV } :
+					                              new int[] { p2, p1, lastV };
+					texturePoints = flipNormals ? new float[] { uLeft , vBottom, uRight, vBottom, uCenter, vTop } :
+					                              new float[] { uRight, vBottom, uLeft , vBottom, uCenter, vTop };
 				}
 
-				_faces.add( new Face3D( this , vertexIndices , material , texturePoints , null , true , false ) );
+				_faces.add( new Face3D( this, vertexIndices, material, texturePoints, null, true, false ) );
 			}
 		}
 	}

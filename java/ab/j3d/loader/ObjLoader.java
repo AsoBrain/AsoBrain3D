@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,33 +20,18 @@
  */
 package ab.j3d.loader;
 
-import java.awt.geom.Point2D;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
+import java.awt.geom.*;
+import java.io.*;
+import java.text.*;
+import java.util.*;
+import java.util.regex.*;
+import java.util.zip.*;
 
-import org.jetbrains.annotations.NotNull;
-
-import ab.j3d.Material;
-import ab.j3d.Matrix3D;
-import ab.j3d.ResourceLoaderMaterial;
-import ab.j3d.Vector3D;
-import ab.j3d.Vector3f;
-import ab.j3d.geom.Abstract3DObjectBuilder;
-import ab.j3d.model.Object3D;
-import ab.j3d.model.Object3DBuilder;
-
-import com.numdata.oss.TextTools;
+import ab.j3d.*;
+import ab.j3d.geom.*;
+import ab.j3d.model.*;
+import com.numdata.oss.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Loader for Wavefront Object Files (.obj).
@@ -144,7 +130,7 @@ public class ObjLoader
 	 *
 	 * @throws  IOException if an error occured while loading the OBJ file.
 	 */
-	public static Object3D load( final Matrix3D transform , final ResourceLoader loader , final String objFileName )
+	public static Object3D load( final Matrix3D transform, final ResourceLoader loader, final String objFileName )
 		throws IOException
 	{
 		final Object3DBuilder builder = new Object3DBuilder();
@@ -167,7 +153,7 @@ public class ObjLoader
 	 *
 	 * @throws  IOException if an error occured while loading the OBJ file.
 	 */
-	public static String load( @NotNull final Abstract3DObjectBuilder builder , @NotNull final Matrix3D transform , @NotNull final ResourceLoader loader , @NotNull final String objFileName )
+	public static String load( @NotNull final Abstract3DObjectBuilder builder, @NotNull final Matrix3D transform, @NotNull final ResourceLoader loader, @NotNull final String objFileName )
 		throws IOException
 	{
 		InputStream inputStream = loader.getResource( objFileName );
@@ -183,7 +169,7 @@ public class ObjLoader
 				inputStream = new GZIPInputStream( inputStream );
 			}
 
-			return load( builder , transform , loader , new  BufferedReader( new InputStreamReader( inputStream ) ) );
+			return load( builder, transform, loader, new  BufferedReader( new InputStreamReader( inputStream ) ) );
 		}
 		finally
 		{
@@ -204,7 +190,7 @@ public class ObjLoader
 	 *
 	 * @throws  IOException if an error occured while loading the OBJ file.
 	 */
-	public static String load( @NotNull final Abstract3DObjectBuilder builder , @NotNull final Matrix3D transform , @NotNull final ResourceLoader loader , @NotNull final BufferedReader objReader )
+	public static String load( @NotNull final Abstract3DObjectBuilder builder, @NotNull final Matrix3D transform, @NotNull final ResourceLoader loader, @NotNull final BufferedReader objReader )
 		throws IOException
 	{
 		final Map<String,Material> actualMaterials = DEFAULT_MATERIALS;
@@ -228,7 +214,7 @@ public class ObjLoader
 		{
 			if ( line.length() > 0 )
 			{
-				final String[] tokens = TextTools.tokenize( line , ' ' );
+				final String[] tokens = TextTools.tokenize( line, ' ' );
 				final String name = tokens[ 0 ];
 				final int argCount = tokens.length - 1;
 
@@ -257,14 +243,16 @@ public class ObjLoader
 					if ( "v".equals( name ) )
 					{
 						if ( argCount < 3 )
+						{
 							throw new IOException( "malformed vertex entry: " + line );
+						}
 
 						final double x = Double.parseDouble( tokens[ 1 ] );
 						final double y = Double.parseDouble( tokens[ 2 ] );
 						final double z = Double.parseDouble( tokens[ 3 ] );
 //						final double w = ( argCount >= 4 ) ? Double.parseDouble( tokens[ 4 ] ) : 1.0;
 
-						vertices.add( transform.transform( x , y , z ) );
+						vertices.add( transform.transform( x, y, z ) );
 					}
 					/*
 					 * vt u v w
@@ -290,13 +278,15 @@ public class ObjLoader
 					else if ( "vt".equals( name ) )
 					{
 						if ( argCount < 2 )
+						{
 							throw new IOException( "malformed texture vertex entry: " + line );
+						}
 
 						final float u = Float.parseFloat( tokens[ 1 ] );
 						final float v = Float.parseFloat( tokens[ 2 ] );
 						final float w = ( argCount >= 3 ) ? Float.parseFloat( tokens[ 3 ] ) : 0.0f;
 
-						textureVertices.add( new Vector3f( u , v , w ) );
+						textureVertices.add( new Vector3f( u, v, w ) );
 					}
 					/*
 					 * vn i j k
@@ -317,13 +307,15 @@ public class ObjLoader
 					else if ( "vn".equals( name ) )
 					{
 						if ( argCount < 3 )
+						{
 							throw new IOException( "malformed vertex normal entry: " + line );
+						}
 
 						final double i = Double.parseDouble( tokens[ 1 ] );
 						final double j = Double.parseDouble( tokens[ 2 ] );
 						final double k = Double.parseDouble( tokens[ 3 ] );
 
-						vertexNormals.add( transform.rotate( i , j , k ) );
+						vertexNormals.add( transform.rotate( i, j, k ) );
 					}
 					/*
 					 * p  v1 v2 v3 . . .
@@ -408,11 +400,15 @@ public class ObjLoader
 					          "f".equals( name ) )
 					{
 						if ( argCount < 1 )
+						{
 							throw new IOException( "too few face arguments in: " + line );
+						}
 
 						final int objVertexCount = vertices.size();
 						if ( objVertexCount < 1 )
+						{
 							throw new IOException( "vertex used before vertex declaration" );
+						}
 
 						final List<ObjFaceVertex> faceVertices = new ArrayList<ObjFaceVertex>( argCount - 1 );
 
@@ -422,16 +418,18 @@ public class ObjLoader
 
 							final Matcher matcher = POLYGON_VERTEX_PATTERN.matcher( arg );
 							if ( !matcher.matches() )
+							{
 								throw new IOException( "malformed face argument in: " + line );
+							}
 
 							final int vertexIndex        = Integer.parseInt( matcher.group( 1 ) ) - 1;
 							final int textureVertexIndex = ( matcher.group( 3 ) != null ) ? Integer.parseInt( matcher.group( 3 ) ) - 1 : -1;
 							final int vertexNormalIndex  = ( matcher.group( 5 ) != null ) ? Integer.parseInt( matcher.group( 5 ) ) - 1 : -1;
 
-							faceVertices.add( new ObjFaceVertex( vertexIndex , textureVertexIndex , vertexNormalIndex ) );
+							faceVertices.add( new ObjFaceVertex( vertexIndex, textureVertexIndex, vertexNormalIndex ) );
 						}
 
-						faces.add( new ObjFace( faceVertices , material ) );
+						faces.add( new ObjFace( faceVertices, material ) );
 					}
 					/*
 					 * g group_name1 group_name2 . . .
@@ -452,7 +450,7 @@ public class ObjLoader
 //						if ( argCount < 1 )
 //							throw new IOException( "too few group arguments in: " + line );
 
-						// groups = ArrayTools.remove( tokens , 0 , 0 );
+						// groups = ArrayTools.remove( tokens, 0, 0 );
 					}
 					/*
 					 * mtllib filename1 filename2 . . .
@@ -476,8 +474,10 @@ public class ObjLoader
 					else if ( "mtllib".equals( name ) )
 					{
 						if ( argCount < 1 )
+						{
 							throw new IOException( "too few material library arguments in: " + line );
-						loadMaterial( loader , line.substring( 7 ) );
+						}
+						loadMaterial( loader, line.substring( 7 ) );
 					}
 					/*
 					 * o object_name
@@ -492,7 +492,7 @@ public class ObjLoader
 					 */
 					else if ( "o".equals( name ) ) // object name (e.g. "o complete_lavalamp.lwo")
 					{
-						objectName = getStringAfter( line , tokens , 1 );
+						objectName = getStringAfter( line, tokens, 1 );
 					}
 					/*
 					 * usemtl material_name
@@ -511,15 +511,17 @@ public class ObjLoader
 					{
 						actualMaterials.putAll( objMaterials );
 						if ( argCount < 1 )
+						{
 							throw new IOException( "malformed 'usemtl' entry: " + line );
+						}
 
-						String materialName = getStringAfter( line , tokens , 1 );
-						materialName = materialName.replace( ' ' , '_' );
+						String materialName = getStringAfter( line, tokens, 1 );
+						materialName = materialName.replace( ' ', '_' );
 						material = actualMaterials.get( materialName );
 						if ( materialName == null )
 						{
 							material = defaultMaterial;
-							System.err.println( "'usemtl' references unknown material '" + materialName + "'" );
+							System.err.println( "'usemtl' references unknown material '" + materialName + '\'' );
 						}
 					}
 /*
@@ -548,7 +550,7 @@ public class ObjLoader
 			final int faceVertexCount = faceVertices.size();
 
 			final int[] vertexIndices = new int[faceVertexCount];
-			Point2D.Float[] texturePoints = null;
+			float[] texturePoints = null;
 			Vector3D[] faceVertexNormals = null;
 			boolean smooth = false;
 			Vector3D fixedVertexNormal = null;
@@ -559,7 +561,9 @@ public class ObjLoader
 
 				final int vertexIndex = objFaceVertex._vertexIndex;
 				if ( vertexIndex >= vertices.size() )
-					throw new IOException( "out-of-bounds vertex (" + vertexIndex + " >= " + vertices.size() + ")" );
+				{
+					throw new IOException( "out-of-bounds vertex (" + vertexIndex + " >= " + vertices.size() + ')' );
+				}
 
 				vertexIndices[ faceVertexIndex ] = vertexIndex;
 
@@ -567,21 +571,27 @@ public class ObjLoader
 				if ( textureVertexIndex >= 0 )
 				{
 					if ( textureVertexIndex >= textureVertices.size() )
-						throw new IOException( "out-of-bounds texture vertex (" + textureVertexIndex + " >= " + textureVertices.size() + ")" );
+					{
+						throw new IOException( "out-of-bounds texture vertex (" + textureVertexIndex + " >= " + textureVertices.size() + ')' );
+					}
 
 					if ( texturePoints == null )
 					{
-						texturePoints = new Point2D.Float[ faceVertexCount ];
+						texturePoints = new float[ faceVertexCount * 2 ];
 					}
 
-					texturePoints[ faceVertexIndex ] = textureVertices.get( textureVertexIndex );
+					final Point2D.Float texturePoint = textureVertices.get( textureVertexIndex );
+					texturePoints[ faceVertexIndex * 2 ] = texturePoint.x;
+					texturePoints[ faceVertexIndex * 2 + 1 ] = texturePoint.y;
 				}
 
 				final int vertexNormalIndex = objFaceVertex._vertexNormalIndex;
 				if ( vertexNormalIndex >= 0 )
 				{
 					if ( vertexNormalIndex >= vertexNormals.size() )
-						throw new IOException( "out-of-bounds vertex normal (" + vertexNormalIndex + " >= " + vertexNormals.size() + ")" );
+					{
+						throw new IOException( "out-of-bounds vertex normal (" + vertexNormalIndex + " >= " + vertexNormals.size() + ')' );
+					}
 
 					final Vector3D vertexNormal = vertexNormals.get( vertexNormalIndex );
 
@@ -599,7 +609,7 @@ public class ObjLoader
 						}
 					}
 
-					assignedVertexNormals.set( vertexIndex , vertexNormal );
+					assignedVertexNormals.set( vertexIndex, vertexNormal );
 
 					if ( fixedVertexNormal == null )
 					{
@@ -614,7 +624,7 @@ public class ObjLoader
 				}
 			}
 
-			builder.addFace( vertexIndices , objFace._material , texturePoints , faceVertexNormals , smooth , false );
+			builder.addFace( vertexIndices, objFace._material, texturePoints, faceVertexNormals, smooth, false );
 		}
 
 		if ( assignedVertexNormals != null )
@@ -630,28 +640,28 @@ public class ObjLoader
 		final Map<String,Material> materials = new HashMap<String,Material>();
 
 		/* default material (also used for unknown materials) */
-		materials.put( "default"       , new Material( 0xFFC0C0C0 ) );
+		materials.put( "default"      , new Material( 0xFFC0C0C0 ) );
 
 		/* basic colors */
-		materials.put( "black"         , new Material( 0xFF000000 ) );
-		materials.put( "blue"          , new Material( 0xFF0000FF ) );
-		materials.put( "green"         , new Material( 0xFF00FF00 ) );
-		materials.put( "cyan"          , new Material( 0xFF00FFFF ) );
-		materials.put( "red"           , new Material( 0xFFFF0000 ) );
-		materials.put( "magenta"       , new Material( 0xFFFF00FF ) );
-		materials.put( "yellow"        , new Material( 0xFFFFFF00 ) );
-		materials.put( "white"         , new Material( 0xFFFCFCFC ) );
+		materials.put( "black"        , new Material( 0xFF000000 ) );
+		materials.put( "blue"         , new Material( 0xFF0000FF ) );
+		materials.put( "green"        , new Material( 0xFF00FF00 ) );
+		materials.put( "cyan"         , new Material( 0xFF00FFFF ) );
+		materials.put( "red"          , new Material( 0xFFFF0000 ) );
+		materials.put( "magenta"      , new Material( 0xFFFF00FF ) );
+		materials.put( "yellow"       , new Material( 0xFFFFFF00 ) );
+		materials.put( "white"        , new Material( 0xFFFCFCFC ) );
 
 		/* materials */
-//		materials.put( "brass"         , new Material( 0xFFE0E010 ) );
-//		materials.put( "glass"         , new Material( 0x20102010 ) );
-//		materials.put( "light"         , new Material( 0x80FFFF20 ) );
-//		materials.put( "metal"         , new Material( 0xFFE0E0F8 ) );
-//		materials.put( "plastic"       , new Material( 0xFFC0C0C0 ) );
-//		materials.put( "porcelin"      , new Material( 0xFFFFFFFF ) );
-//		materials.put( "steel"         , new Material( 0xFFD0D0E8 ) );
-//		materials.put( "white_plastic" , new Material( 0xFFC0C0C0 ) );
-//		materials.put( "wood"          , new Material( 0xFF603820 ) );
+//		materials.put( "brass"        , new Material( 0xFFE0E010 ) );
+//		materials.put( "glass"        , new Material( 0x20102010 ) );
+//		materials.put( "light"        , new Material( 0x80FFFF20 ) );
+//		materials.put( "metal"        , new Material( 0xFFE0E0F8 ) );
+//		materials.put( "plastic"      , new Material( 0xFFC0C0C0 ) );
+//		materials.put( "porcelin"     , new Material( 0xFFFFFFFF ) );
+//		materials.put( "steel"        , new Material( 0xFFD0D0E8 ) );
+//		materials.put( "white_plastic", new Material( 0xFFC0C0C0 ) );
+//		materials.put( "wood"         , new Material( 0xFF603820 ) );
 
 		DEFAULT_MATERIALS = materials;
 	}
@@ -670,14 +680,14 @@ public class ObjLoader
 	 * @throws  IllegalArgumentException if the <code>startIndex</code> is out
 	 *          of range.
 	 */
-	private static String getStringAfter( final String line , final String[] tokens , final int startIndex )
+	private static String getStringAfter( final String line, final String[] tokens, final int startIndex )
 	{
 		if ( ( startIndex < 0 ) || ( startIndex >= tokens.length ) )
 			throw new IllegalArgumentException( "invalid start index: " + startIndex );
 
 		int start = 0;
 		for ( int i = 0 ; i < startIndex ; i++ )
-			start = line.indexOf( tokens[ i ] , start ) + tokens[ i ].length();
+			start = line.indexOf( tokens[ i ], start ) + tokens[ i ].length();
 
 		while ( Character.isWhitespace( line.charAt( start ) ) )
 			start++;
@@ -686,7 +696,7 @@ public class ObjLoader
 		if ( ( end > start ) && Character.isWhitespace( line.charAt( end - 1 ) ) )
 			end--;
 
-		return line.substring( start , end );
+		return line.substring( start, end );
 	}
 
 
@@ -707,7 +717,7 @@ public class ObjLoader
 	 *  @throws  IOException when material could not be loaded or contains malformed known entries. Unknown entries are ignored, e.g. "Ka foobar" will throw an exception,
 	 *                              but "Kgt foobar" won't because Kgt is not a known MTL entry.
 	 */
-	private static void loadMaterial( final ResourceLoader loader , final String materialName )
+	private static void loadMaterial( final ResourceLoader loader, final String materialName )
 		throws IOException
 	{
 		String line;
@@ -717,7 +727,7 @@ public class ObjLoader
 		{
 			if ( line.length() > 0 )
 			{
-				final String[] tokens   = TextTools.tokenize( line , ' ' );
+				final String[] tokens   = TextTools.tokenize( line, ' ' );
 				final String   name     = tokens[ 0 ];
 				final int argCount      = tokens.length - 1;
 				try
@@ -729,7 +739,7 @@ public class ObjLoader
 						    throw new IOException( "Malformed material entry: " + line );
 						tempMaterial = new ResourceLoaderMaterial( loader );
 						tempMaterial.code = ( tokens[ 1 ] );
-						objMaterials.put( ( tokens[ 1 ] ) , tempMaterial );
+						objMaterials.put( ( tokens[ 1 ] ), tempMaterial );
 					}
 					// Ambient lightning
 					else if ( "Ka".equals( name ) )
@@ -827,13 +837,13 @@ public class ObjLoader
 		{
 		final int hash = line.indexOf( (int) '#' );
 			if ( hash >= 0 )
-				line = line.substring( 0 , hash );
+				line = line.substring( 0, hash );
 			line = line.trim();
 			while ( line.length() > 0 && line.charAt( line.length() - 1 ) == '\\' )
 			{
-				line = MessageFormat.format( "{0} {1}" , line.substring( 0 , line.length() - 1 ) , bufferedReader.readLine() );
+				line = MessageFormat.format( "{0} {1}", line.substring( 0, line.length() - 1 ), bufferedReader.readLine() );
 			}
-			line = line.replaceAll( "\\s+" , " " );
+			line = line.replaceAll( "\\s+", " " );
 		}
 		return line;
 	}

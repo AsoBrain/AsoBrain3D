@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,26 +20,12 @@
  */
 package ab.j3d.loader;
 
-import java.awt.Color;
-import java.awt.geom.Point2D;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.awt.*;
+import java.io.*;
+import java.util.*;
 
-import ab.j3d.Material;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.model.Face3D;
-import ab.j3d.model.Node3D;
-import ab.j3d.model.Object3D;
-import ab.j3d.model.Object3DBuilder;
-import ab.j3d.model.Transform3D;
+import ab.j3d.*;
+import ab.j3d.model.*;
 
 /**
  * Loader for 3D Studio or 3D Studio MAX (<code>.3DS</colorMap>) files.
@@ -54,9 +41,9 @@ import ab.j3d.model.Transform3D;
  *  </dd>
  * </dl>
  *
- * @FIXME   Add support for lights.
- * @FIXME   Add support for unit set in file.
- * @FIXME   Properly handle material properties.
+ * FIXME    Add support for lights.
+ * FIXME    Add support for unit set in file.
+ * FIXME    Properly handle material properties.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
@@ -72,7 +59,7 @@ public final class Max3DSLoader
 	 * Loader for resources (e.g. textures). This may be <code>null</code> if no
 	 * resource loader is available.
 	 */
-	private ResourceLoader _resourceLoader;
+	private final ResourceLoader _resourceLoader;
 
 	/**
 	 * Maps material names ({@link String}) to {@link Material} objects
@@ -93,7 +80,7 @@ public final class Max3DSLoader
 	/**
 	 * Temporary texture coordinates array.
 	 */
-	private Point2D.Float[] _textureCoords;
+	private float[] _textureCoords;
 
 	/**
 	 * Load a scene graph from the contents of a 3D Studio or 3D Studio MAX
@@ -308,7 +295,7 @@ public final class Max3DSLoader
 
 					final Object3DBuilder builder       = _object3DBuilder;
 					final Material        material      = _material;
-					final Point2D.Float[] textureCoords = _textureCoords;
+					final float[]         textureCoords = _textureCoords;
 
 					for ( int i = 0 ; i < faceCount ; i++ )
 					{
@@ -317,11 +304,17 @@ public final class Max3DSLoader
 						final int vertexIndex3 = readShort( in );
 						/*nal int flags       */ readShort( in );
 
-						final Point2D.Float[] texturePoints;
+						final float[] texturePoints;
 
 						if ( textureCoords != null )
 						{
-							texturePoints = new Point2D.Float[] { textureCoords[ vertexIndex3 ] , textureCoords[ vertexIndex2 ] , textureCoords[ vertexIndex1 ] };
+							texturePoints = new float[] {
+								textureCoords[ vertexIndex3 * 2     ],
+								textureCoords[ vertexIndex3 * 2 + 1 ],
+								textureCoords[ vertexIndex2 * 2     ],
+								textureCoords[ vertexIndex2 * 2 + 1 ],
+								textureCoords[ vertexIndex1 * 2     ],
+								textureCoords[ vertexIndex1 * 2 + 1 ] };
 						}
 						else
 						{
@@ -345,7 +338,9 @@ public final class Max3DSLoader
 
 					final Material material = _materials.get( materialName );
 					if ( material == null )
+					{
 						throw new IOException( "can't find referenced material: " + materialName );
+					}
 
 					final Object3DBuilder builder = _object3DBuilder;
 					final Object3D object = builder.getObject3D();
@@ -368,13 +363,15 @@ public final class Max3DSLoader
 					final int vertexCount     = object.getVertexCount();
 
 					if ( faceVertexCount != vertexCount )
-						throw new IOException( "Number of texture vertices != #model vertices (" + faceVertexCount + " != " + vertexCount + ')' );
-
-					final Point2D.Float[] textureCoords = new Point2D.Float[ faceVertexCount ];
-
-					for ( int i = 0 ; i < faceVertexCount ; i++ )
 					{
-						textureCoords[ i ] = new Point2D.Float( readFloat( in ) , readFloat( in ) );
+						throw new IOException( "Number of texture vertices != #model vertices (" + faceVertexCount + " != " + vertexCount + ')' );
+					}
+
+					final float[] textureCoords = new float[ faceVertexCount * 2 ];
+
+					for ( int i = 0 ; i < textureCoords.length ; i++ )
+					{
+						textureCoords[ i ] = readFloat( in );
 					}
 
 					_textureCoords = textureCoords;
@@ -528,7 +525,7 @@ public final class Max3DSLoader
 					 */
 					/*    int    chnunkID    */ readShort( in );
 					/*    int    chunkLength */ readLong( in );
-					in.skip( 8 );
+					in.skip( 8L );
 					final String materialName = readString( in );
 //					System.out.println( "    > texture map: " + materialName );
 
@@ -614,7 +611,9 @@ public final class Max3DSLoader
 	{
 		final int result = in.read();
 		if ( result < 0 )
+		{
 			throw new EOFException();
+		}
 
 		return result;
 	}
@@ -692,7 +691,9 @@ public final class Max3DSLoader
 		final StringBuilder result = new StringBuilder();
 
 		for ( int ch = readChar( in ) ; ch != 0 ; ch = readChar( in ) )
-			result.append( (char)ch );
+		{
+			result.append( ( char ) ch );
+		}
 
 		return result.toString();
 	}

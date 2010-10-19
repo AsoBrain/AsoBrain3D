@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,25 +20,14 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.awt.geom.Point2D;
-import java.io.DataInput;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
+import java.awt.geom.*;
+import java.io.*;
+import java.util.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.geom.Abstract3DObjectBuilder;
-import ab.j3d.geom.GeometryTools;
-import ab.j3d.model.Node3D;
-import ab.j3d.model.Node3DCollection;
-import ab.j3d.model.Object3D;
-import ab.j3d.model.Object3DBuilder;
-import ab.j3d.model.Scene;
-import ab.j3d.model.Transform3D;
-
-import com.numdata.oss.io.LittleEndianDataInputStream;
+import ab.j3d.*;
+import ab.j3d.geom.*;
+import ab.j3d.model.*;
+import com.numdata.oss.io.*;
 
 /**
  * 3D Studio or 3D Studio MAX (<code>.3DS</colorMap>) file.
@@ -175,7 +165,7 @@ public class Max3DSFile
 
 	public static void buildMesh( final Abstract3DObjectBuilder builder , final Map<String,MaterialChunk> materials , final TriangleMeshChunk mesh )
 	{
-		final List<Vector3D> vertices           = mesh._vertices;
+		final List<Vector3D>  vertices           = mesh._vertices;
 		final Point2D.Float[] textureCoordinates = mesh._textureCoordinates;
 		final FacesChunk      facesChunk         = mesh._faces;
 
@@ -234,7 +224,7 @@ public class Max3DSFile
 
 		final Vector3D[] facePoints = new Vector3D[ 3 ];
 		final Vector3D[] vertexNormals = new Vector3D[ 3 ];
-		final Point2D.Float[] texturePoints = ( textureCoordinates != null ) ? new Point2D.Float[ 3 ] : null;
+		final float[] texturePoints = ( textureCoordinates != null ) ? new float[ 6 ] : null;
 
 		for ( int faceIndex = 0 ; faceIndex < faces.length ; faceIndex++ )
 		{
@@ -282,7 +272,9 @@ public class Max3DSFile
 
 				if ( textureCoordinates != null )
 				{
-					texturePoints[ 2 - k ] = textureCoordinates[ vertexIndex ];
+					final Point2D.Float texturePoint = textureCoordinates[ vertexIndex ];
+					texturePoints[ ( 2 - k ) * 2     ] = texturePoint.x;
+					texturePoints[ ( 2 - k ) * 2 + 1 ] = texturePoint.y;
 				}
 			}
 

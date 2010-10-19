@@ -20,7 +20,6 @@
  */
 package ab.j3d.model;
 
-import java.awt.geom.*;
 import java.util.*;
 
 import ab.j3d.*;
@@ -36,7 +35,7 @@ import org.jetbrains.annotations.*;
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public final class Cylinder3D
+public class Cylinder3D
 	extends Object3D
 {
 	/**
@@ -112,7 +111,7 @@ public final class Cylinder3D
 				vertexIndices[ i ] = flipNormals ? ( numEdges - 1 - i ) : i;
 			}
 
-			final Point2D.Float[] texturePoints = ( bottomMap != null ) ? bottomMap.generate( bottomMaterial, vertexCoordinates, vertexIndices, false ) : null;
+			final float[] texturePoints = ( bottomMap != null ) ? bottomMap.generate( bottomMaterial, vertexCoordinates, vertexIndices, false ) : null;
 			addFace( new Face3D( this, vertexIndices, bottomMaterial, texturePoints, null, false, false ) );
 		}
 
@@ -125,7 +124,7 @@ public final class Cylinder3D
 
 			final int[] vertexIndices = flipNormals ? new int[] { numEdges + i2, numEdges + i1, i1, i2 } : new int[] { i2, i1, numEdges + i1, numEdges + i2 };
 
-			final Point2D.Float[] texturePoints = ( sideMap != null ) ? sideMap.generate( sideMaterial, vertexCoordinates, vertexIndices, false ) : null;
+			final float[] texturePoints = ( sideMap != null ) ? sideMap.generate( sideMaterial, vertexCoordinates, vertexIndices, false ) : null;
 			addFace( new Face3D( this, vertexIndices, sideMaterial, texturePoints, null, smoothCircumference, false ) );
 		}
 
@@ -143,7 +142,7 @@ public final class Cylinder3D
 				vertexIndices[ i ] = flipNormals ? ( lastVertex - numEdges + 1 + i ) : ( lastVertex - i );
 			}
 
-			final Point2D.Float[] texturePoints = ( topMap != null ) ? topMap.generate( topMaterial, vertexCoordinates, vertexIndices, false ) : null;
+			final float[] texturePoints = ( topMap != null ) ? topMap.generate( topMaterial, vertexCoordinates, vertexIndices, false ) : null;
 			addFace( new Face3D( this, vertexIndices, topMaterial, texturePoints, null, false, false ) );
 		}
 	}

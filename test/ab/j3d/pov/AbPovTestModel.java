@@ -380,7 +380,7 @@ public final class AbPovTestModel
 			final Material leftMaterial   = createMaterialWithColorMap( "CUBE_LEFT_TEXTURE_AND_COLOR" );   leftMaterial.diffuseColorRed    = 0.0f; leftMaterial.diffuseColorGreen      = 1.0f; leftMaterial.diffuseColorBlue       = 1.0f;
 			final Material rightMaterial  = createMaterialWithColorMap( "CUBE_RIGHT_TEXTURE_AND_COLOR" );  rightMaterial.diffuseColorRed   = 1.0f; rightMaterial.diffuseColorGreen     = 0.0f; rightMaterial.diffuseColorBlue      = 1.0f;
 
-			final Point2D.Float[] texturePoints = { new Point2D.Float( 0.5f, 0.0f ), new Point2D.Float( 0.5f, 0.5f ), new Point2D.Float( 0.0f, 0.5f ), new Point2D.Float( 0.0f, 0.0f ) };
+			final float[] texturePoints = { 0.5f, 0.0f, 0.5f, 0.5f, 0.0f, 0.5f, 0.0f, 0.0f};
 
 			final Object3DBuilder builder = new Object3DBuilder();
 			builder.addFace( new Vector3D[] { lft, lbt, rbt, rft }, topMaterial   , texturePoints, null, false, false );
