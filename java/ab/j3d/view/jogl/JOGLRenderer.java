@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,6 +28,7 @@ import java.util.List;
 import javax.media.opengl.*;
 
 import ab.j3d.*;
+import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.model.Face3D.*;
 import ab.j3d.view.*;
@@ -39,6 +41,8 @@ import org.jetbrains.annotations.*;
  * Implements {@link Renderer} for JOGL.
  *
  * @author  Peter S. Heijnen
+ * @author  G. Meinders
+ *
  * @version $Revision$ $Date$
  */
 public class JOGLRenderer
@@ -1523,12 +1527,10 @@ public class JOGLRenderer
 		_gl.glPopMatrix();
 	}
 
-	protected void renderMaterialFace( final Face3D face , final RenderStyle style )
+	protected void renderMaterialFace( final Face3D face, final RenderStyle style )
 	{
-		final int      vertexCount = face.getVertexCount();
-		final Material material    = ( style.getMaterialOverride() != null ) ? style.getMaterialOverride() : face.material;
-
-		if ( ( material != null ) && ( vertexCount >= 2 ) )
+		final Material material = ( style.getMaterialOverride() != null ) ? style.getMaterialOverride() : face.material;
+		if ( material != null )
 		{
 			final GL        gl        = _gl;
 			final GLWrapper glWrapper = _glWrapper;
@@ -1543,353 +1545,373 @@ public class JOGLRenderer
 			final float   extraAlpha    = style.getMaterialAlpha();
 			final float   combinedAlpha = material.diffuseColorAlpha * extraAlpha;
 			final boolean hasAlpha      = ( combinedAlpha < 0.99f ) || textureCache.hasAlpha( material.colorMap );
-			final boolean blend         = !isDepthPeelingEnabled() &&
-			                              ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && hasAlpha;
+			final boolean blend         = !isDepthPeelingEnabled() && ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && hasAlpha;
 
 			if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || !hasAlpha ) &&
-			     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || hasAlpha ) )
+				 ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || hasAlpha ) )
 			{
-				final Vector3D lightPosition    = _lightPositionRelativeToObject;
-				final boolean  hasLighting      = style.isMaterialLightingEnabled() && ( lightPosition != null );
-				final boolean  backfaceCulling  = style.isBackfaceCullingEnabled() && !face.isTwoSided();
-				final boolean  setVertexNormals = hasLighting && face.smooth;
+				final List<Vertex> vertices = face.vertices;
+				final Tessellation tessellation = face.getTessellation();
+				final Collection<TessellationPrimitive> primitives = tessellation.getPrimitives();
 
-				final Texture colorMap = textureCache.getColorMapTexture( material );
-				final Texture bumpMap = isShadersEnabled() && hasLighting ? textureCache.getBumpMapTexture( material ) : null;
-				final Texture normalizationCubeMap = ( bumpMap != null ) ? textureCache.getNormalizationCubeMap() : null;
-
-				/*
-				 * Set render/material properties.
-				 */
-				if ( blend )
+				if ( !primitives.isEmpty() )
 				{
-					if ( combinedAlpha < 0.25f )
+					final Vector3D lightPosition    = _lightPositionRelativeToObject;
+					final boolean  hasLighting      = style.isMaterialLightingEnabled() && ( lightPosition != null );
+					final boolean  backfaceCulling  = style.isBackfaceCullingEnabled() && !face.isTwoSided();
+					final boolean  setVertexNormals = hasLighting && face.smooth;
+
+					final Texture colorMap = textureCache.getColorMapTexture( material );
+					final Texture bumpMap = isShadersEnabled() && hasLighting ? textureCache.getBumpMapTexture( material ) : null;
+					final Texture normalizationCubeMap = ( bumpMap != null ) ? textureCache.getNormalizationCubeMap() : null;
+
+					/*
+					 * Set render/material properties.
+					 */
+					if ( blend )
 					{
-						gl.glDepthMask( false );
+						if ( combinedAlpha < 0.25f )
+						{
+							gl.glDepthMask( false );
+						}
+						glWrapper.glBlendFunc( GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA );
 					}
-					glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
-				}
 
-				glWrapper.setBlend( blend );
-				glWrapper.glPolygonOffset( 1.0f , 1.0f );
-				glWrapper.setLighting( hasLighting );
-				setMaterial( material , style , extraAlpha );
-
-				/*
-				 * Enable bump map.
-				 */
-				if ( bumpMap != null )
-				{
-					gl.glActiveTexture( TEXTURE_UNIT_BUMP );
-					bumpMap.enable();
-					bumpMap.bind();
-					gl.glActiveTexture( TEXTURE_UNIT_COLOR );
-				}
-				else if ( false ) // DOT3 bump mapping; disabled
-				{
-					/*
-					 * Set The First Texture Unit To Normalize Our Vector From The
-					 * Surface To The Light. Set The Texture Environment Of The First
-					 * Texture Unit To Replace It With The Sampled Value Of The
-					 * Normalization Cube Map.
-					 */
-					gl.glActiveTexture( GL.GL_TEXTURE0 );
-					normalizationCubeMap.enable();
-					normalizationCubeMap.bind();
-					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE );
-					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_REPLACE );
-					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_TEXTURE );
+					glWrapper.setBlend( blend );
+					glWrapper.glPolygonOffset( 1.0f, 1.0f );
+					glWrapper.setLighting( hasLighting );
+					setMaterial( material, style, extraAlpha );
 
 					/*
-					 * Set The Second Unit To The Bump Map. Set The Texture Environment
-					 * Of The Second Texture Unit To Perform A Dot3 Operation With The
-					 * Value Of The Previous Texture Unit (The Normalized Vector Form
-					 * The Surface To The Light) And The Sampled Texture Value (The
-					 * Normalized Normal Vector Of Our Bump Map).
+					 * Enable bump map.
 					 */
-					gl.glActiveTexture( GL.GL_TEXTURE1 );
-					bumpMap.enable();
-					bumpMap.bind();
-					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE  );
-					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_DOT3_RGB );
-					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_PREVIOUS );
-					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE1_RGB      , GL.GL_TEXTURE  );
+					if ( bumpMap != null )
+					{
+						gl.glActiveTexture( TEXTURE_UNIT_BUMP );
+						bumpMap.enable();
+						bumpMap.bind();
+						gl.glActiveTexture( TEXTURE_UNIT_COLOR );
+					}
+					else if ( false ) // DOT3 bump mapping; disabled
+					{
+						/*
+						 * Set The First Texture Unit To Normalize Our Vector From The
+						 * Surface To The Light. Set The Texture Environment Of The First
+						 * Texture Unit To Replace It With The Sampled Value Of The
+						 * Normalization Cube Map.
+						 */
+						gl.glActiveTexture( GL.GL_TEXTURE0 );
+						normalizationCubeMap.enable();
+						normalizationCubeMap.bind();
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB     , GL.GL_REPLACE );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE0_RGB     , GL.GL_TEXTURE );
+
+						/*
+						 * Set The Second Unit To The Bump Map. Set The Texture Environment
+						 * Of The Second Texture Unit To Perform A Dot3 Operation With The
+						 * Value Of The Previous Texture Unit (The Normalized Vector Form
+						 * The Surface To The Light) And The Sampled Texture Value (The
+						 * Normalized Normal Vector Of Our Bump Map).
+						 */
+						gl.glActiveTexture( GL.GL_TEXTURE1 );
+						bumpMap.enable();
+						bumpMap.bind();
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE  );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB     , GL.GL_DOT3_RGB );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE0_RGB     , GL.GL_PREVIOUS );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE1_RGB     , GL.GL_TEXTURE  );
+
+						/*
+						 * The third unit is used to apply the diffuse color of the
+						 * material.
+						 */
+						gl.glActiveTexture( GL.GL_TEXTURE2 );
+						bumpMap.enable();
+						bumpMap.bind();
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE       );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB     , GL.GL_MODULATE      );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE0_RGB     , GL.GL_PRIMARY_COLOR );
+
+						/*
+						 * Set The Fourth Texture Unit To Our Texture. Set The Texture
+						 * Environment Of The Third Texture Unit To Modulate (Multiply) The
+						 * Result Of Our Dot3 Operation With The Texture Value.
+						 */
+						if ( colorMap != null )
+						{
+							gl.glActiveTexture( GL.GL_TEXTURE3 );
+							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_MODULATE );
+						}
+					}
+
+					final boolean reflectionsEnabled = isReflectionsEnabled();
+
+					final Texture reflectionMap = reflectionsEnabled && ( material.reflectionMap != null ) ? textureCache.getCubeMap( material.reflectionMap ) : null;
+					if ( reflectionMap != null )
+					{
+						gl.glActiveTexture( TEXTURE_UNIT_ENVIRONMENT );
+						reflectionMap.enable();
+						reflectionMap.bind();
+
+						if ( !isShadersEnabled() )
+						{
+							/*
+							 * Interpolate with previous texture stage.
+							 */
+							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE );
+							gl.glTexEnvfv( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_COLOR, new float[] { 0.0f, 0.0f, 0.0f, material.reflectionMin }, 0 );
+
+							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB, GL.GL_INTERPOLATE );
+							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE0_RGB, GL.GL_TEXTURE );
+							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE1_RGB, GL.GL_PREVIOUS );
+							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE2_RGB, GL.GL_CONSTANT );
+
+							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_COMBINE_ALPHA, GL.GL_INTERPOLATE );
+							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE0_ALPHA, GL.GL_TEXTURE );
+							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE1_ALPHA, GL.GL_PREVIOUS );
+							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE2_ALPHA, GL.GL_CONSTANT );
+
+							/*
+							 * Generate reflection map UV coordinates.
+							 */
+							gl.glTexGeni( GL.GL_S, GL.GL_TEXTURE_GEN_MODE, GL.GL_REFLECTION_MAP );
+							gl.glTexGeni( GL.GL_T, GL.GL_TEXTURE_GEN_MODE, GL.GL_REFLECTION_MAP );
+							gl.glTexGeni( GL.GL_R, GL.GL_TEXTURE_GEN_MODE, GL.GL_REFLECTION_MAP );
+							gl.glEnable( GL.GL_TEXTURE_GEN_S );
+							gl.glEnable( GL.GL_TEXTURE_GEN_T );
+							gl.glEnable( GL.GL_TEXTURE_GEN_R );
+						}
+
+						/*
+						 * Inverse camera rotation.
+						 */
+						gl.glMatrixMode( GL.GL_TEXTURE );
+						gl.glPushMatrix();
+						JOGLTools.glMultMatrixd( gl, _viewToSceneRotation );
+						gl.glMatrixMode( GL.GL_MODELVIEW );
+
+						gl.glActiveTexture( TEXTURE_UNIT_COLOR );
+					}
 
 					/*
-					 * The third unit is used to apply the diffuse color of the
-					 * material.
+					 * Enable color map.
 					 */
-					gl.glActiveTexture( GL.GL_TEXTURE2 );
-					bumpMap.enable();
-					bumpMap.bind();
-					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE       );
-					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB      , GL.GL_MODULATE      );
-					gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB      , GL.GL_PRIMARY_COLOR );
-
-					/*
-					 * Set The Fourth Texture Unit To Our Texture. Set The Texture
-					 * Environment Of The Third Texture Unit To Modulate (Multiply) The
-					 * Result Of Our Dot3 Operation With The Texture Value.
-					 */
+					final TextureCoords colorMapCoords;
 					if ( colorMap != null )
 					{
-						gl.glActiveTexture( GL.GL_TEXTURE3 );
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_MODULATE );
-					}
-				}
-
-				final boolean reflectionsEnabled = isReflectionsEnabled();
-
-				final Texture reflectionMap = reflectionsEnabled && ( material.reflectionMap != null ) ? textureCache.getCubeMap( material.reflectionMap ) : null;
-				if ( reflectionMap != null )
-				{
-					gl.glActiveTexture( TEXTURE_UNIT_ENVIRONMENT );
-					reflectionMap.enable();
-					reflectionMap.bind();
-
-					if ( !isShadersEnabled() )
-					{
-						/*
-						 * Interpolate with previous texture stage.
-						 */
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_COMBINE );
-						gl.glTexEnvfv( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_COLOR , new float[] { 0.0f , 0.0f , 0.0f , material.reflectionMin } , 0 );
-
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_RGB , GL.GL_INTERPOLATE );
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_RGB , GL.GL_TEXTURE );
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE1_RGB , GL.GL_PREVIOUS );
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE2_RGB , GL.GL_CONSTANT );
-
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_COMBINE_ALPHA , GL.GL_INTERPOLATE );
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE0_ALPHA , GL.GL_TEXTURE );
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE1_ALPHA , GL.GL_PREVIOUS );
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_SOURCE2_ALPHA , GL.GL_CONSTANT );
-
-						/*
-						 * Generate reflection map UV coordinates.
-						 */
-						gl.glTexGeni( GL.GL_S , GL.GL_TEXTURE_GEN_MODE , GL.GL_REFLECTION_MAP );
-						gl.glTexGeni( GL.GL_T , GL.GL_TEXTURE_GEN_MODE , GL.GL_REFLECTION_MAP );
-						gl.glTexGeni( GL.GL_R , GL.GL_TEXTURE_GEN_MODE , GL.GL_REFLECTION_MAP );
-						gl.glEnable( GL.GL_TEXTURE_GEN_S );
-						gl.glEnable( GL.GL_TEXTURE_GEN_T );
-						gl.glEnable( GL.GL_TEXTURE_GEN_R );
-					}
-
-					/*
-					 * Inverse camera rotation.
-					 */
-					gl.glMatrixMode( GL.GL_TEXTURE );
-					gl.glPushMatrix();
-					JOGLTools.glMultMatrixd( gl , _viewToSceneRotation );
-					gl.glMatrixMode( GL.GL_MODELVIEW );
-
-					gl.glActiveTexture( TEXTURE_UNIT_COLOR );
-				}
-
-				/*
-				 * Enable color map.
-				 */
-				final TextureCoords colorMapCoords;
-				if ( colorMap != null )
-				{
-					useShader( _textured );
-					colorMap.enable();
-					colorMap.bind();
-					colorMapCoords = colorMap.getImageTexCoords();
-				}
-				else
-				{
-					useShader( _colored );
-					colorMapCoords = null;
-				}
-
-				if ( _activeShader != null )
-				{
-					final Vector3D reflectionColor = new Vector3D( (double)material.reflectionRed , (double)material.reflectionGreen , (double)material.reflectionBlue );
-					_activeShader.setUniform( "reflectionMin" , material.reflectionMin );
-					_activeShader.setUniform( "reflectionMax" , material.reflectionMax );
-					_activeShader.setUniform( "reflectionColor" , reflectionColor );
-				}
-
-				/*
-				 * Render face. Use multiple passes for two-sided lighting.
-				 */
-				final int passes = ( !backfaceCulling && hasLighting && isShadersEnabled() ) ? 2 : 1;
-				final boolean multipass = ( passes > 1 );
-
-				for ( int pass = 0 ; pass < passes ; pass++ )
-				{
-					final boolean isBackFace = multipass && ( pass == 0 );
-					if ( multipass )
-					{
-						glWrapper.setCullFace( true );
-						glWrapper.glCullFace( isBackFace ? GL.GL_FRONT : GL.GL_BACK );
+						useShader( _textured );
+						colorMap.enable();
+						colorMap.bind();
+						colorMapCoords = colorMap.getImageTexCoords();
 					}
 					else
 					{
-						glWrapper.setCullFace( backfaceCulling );
+						useShader( _colored );
+						colorMapCoords = null;
 					}
 
-					gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS :
-					            ( vertexCount == 2 ) ? GL.GL_LINES :
-					            ( vertexCount == 3 ) ? GL.GL_TRIANGLES :
-					            ( vertexCount == 4 ) ? GL.GL_QUADS : GL.GL_POLYGON );
-
-					if ( !setVertexNormals )
+					if ( _activeShader != null )
 					{
-						final Vector3D normal = face.getNormal();
-						if ( isBackFace )
+						final Vector3D reflectionColor = new Vector3D( (double)material.reflectionRed, (double)material.reflectionGreen, (double)material.reflectionBlue );
+						_activeShader.setUniform( "reflectionMin", material.reflectionMin );
+						_activeShader.setUniform( "reflectionMax", material.reflectionMax );
+						_activeShader.setUniform( "reflectionColor", reflectionColor );
+					}
+
+					/*
+					 * Render face. Use multiple passes for two-sided lighting.
+					 */
+					final int passes = ( !backfaceCulling && hasLighting && isShadersEnabled() ) ? 2 : 1;
+					final boolean multipass = ( passes > 1 );
+
+					for ( int pass = 0 ; pass < passes ; pass++ )
+					{
+						final boolean isBackFace = multipass && ( pass == 0 );
+						if ( multipass )
 						{
-							gl.glNormal3d( -normal.x , -normal.y , -normal.z );
+							glWrapper.setCullFace( true );
+							glWrapper.glCullFace( isBackFace ? GL.GL_FRONT : GL.GL_BACK );
 						}
 						else
 						{
-							gl.glNormal3d( normal.x , normal.y , normal.z );
-						}
-					}
-
-					final List<Vertex> vertices = face.vertices;
-					for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
-					{
-						final Vertex vertex = vertices.get( vertexIndex );
-						final Vector3D point = vertex.point;
-
-						if ( bumpMap != null )
-						{
-							// TODO: Doesn't really match with other uses of texture units, because normalization cube map comes before color map. (Without shaders, bump is ugly anyway, except for special circumstances.)
-							gl.glMultiTexCoord3d( GL.GL_TEXTURE0 , lightPosition.x + point.x , lightPosition.y + point.y , lightPosition.z + point.z );
-							gl.glMultiTexCoord2f( GL.GL_TEXTURE1 , vertex.colorMapU , vertex.colorMapV );
-
-							if ( colorMap != null )
-							{
-								gl.glMultiTexCoord2f( GL.GL_TEXTURE3 , vertex.colorMapU , vertex.colorMapV );
-							}
-						}
-						else if ( colorMap != null )
-						{
-							final float u = colorMapCoords.left()   + vertex.colorMapU * ( colorMapCoords.right() - colorMapCoords.left() );
-							final float v = colorMapCoords.bottom() + vertex.colorMapV * ( colorMapCoords.top() - colorMapCoords.bottom() );
-							gl.glTexCoord2f( u , v );
+							glWrapper.setCullFace( backfaceCulling );
 						}
 
-						if ( setVertexNormals )
+						if ( !setVertexNormals )
 						{
-							final Vector3D vertexNormal = face.getVertexNormal( vertexIndex );
+							final Vector3D normal = face.getNormal();
 							if ( isBackFace )
 							{
-								gl.glNormal3d( -vertexNormal.x , -vertexNormal.y , -vertexNormal.z );
+								gl.glNormal3d( -normal.x, -normal.y, -normal.z );
 							}
 							else
 							{
-								gl.glNormal3d( vertexNormal.x , vertexNormal.y , vertexNormal.z );
+								gl.glNormal3d( normal.x, normal.y, normal.z );
 							}
 						}
 
-						gl.glVertex3d( point.x , point.y , point.z );
-					}
-
-					gl.glEnd();
-
-					if ( DRAW_NORMALS && ( pass == passes - 1 ) )
-					{
-						for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
+						for ( final TessellationPrimitive primitive : primitives )
 						{
-							final Vertex vertex = vertices.get( vertexIndex );
-							final Vector3D point = vertex.point;
+							if ( primitive instanceof TriangleList )
+							{
+								gl.glBegin( GL.GL_TRIANGLES );
+							}
+							else if ( primitive instanceof TriangleFan )
+							{
+								gl.glBegin( GL.GL_TRIANGLE_FAN );
+							}
+							else if ( primitive instanceof TriangleStrip )
+							{
+								gl.glBegin( GL.GL_TRIANGLE_STRIP );
+							}
+							else
+							{
+								continue;
+							}
 
-							Vector3D normal = face.smooth ? face.getVertexNormal( vertexIndex ) : face.getNormal();
-							normal = point.plus( normal.multiply( 100.0 ) );
+							for ( final int vertexIndex : primitive.getVertices() )
+							{
+								final Vertex vertex = vertices.get( vertexIndex );
+								final Vector3D point = vertex.point;
 
+								if ( bumpMap != null )
+								{
+									// TODO: Doesn't really match with other uses of texture units, because normalization cube map comes before color map. (Without shaders, bump is ugly anyway, except for special circumstances.)
+									gl.glMultiTexCoord3d( GL.GL_TEXTURE0, lightPosition.x + point.x, lightPosition.y + point.y, lightPosition.z + point.z );
+									gl.glMultiTexCoord2f( GL.GL_TEXTURE1, vertex.colorMapU, vertex.colorMapV );
+
+									if ( colorMap != null )
+									{
+										gl.glMultiTexCoord2f( GL.GL_TEXTURE3, vertex.colorMapU, vertex.colorMapV );
+									}
+								}
+								else if ( colorMap != null )
+								{
+									final float u = colorMapCoords.left()   + vertex.colorMapU * ( colorMapCoords.right() - colorMapCoords.left() );
+									final float v = colorMapCoords.bottom() + vertex.colorMapV * ( colorMapCoords.top() - colorMapCoords.bottom() );
+									gl.glTexCoord2f( u, v );
+								}
+
+								if ( setVertexNormals )
+								{
+									final Vector3D vertexNormal = face.getVertexNormal( vertexIndex );
+									if ( isBackFace )
+									{
+										gl.glNormal3d( -vertexNormal.x, -vertexNormal.y, -vertexNormal.z );
+									}
+									else
+									{
+										gl.glNormal3d( vertexNormal.x, vertexNormal.y, vertexNormal.z );
+									}
+								}
+
+								gl.glVertex3d( point.x, point.y, point.z );
+							}
+
+							gl.glEnd();
+						}
+
+						if ( DRAW_NORMALS && ( pass == passes - 1 ) )
+						{
 							gl.glBegin( GL.GL_LINES );
-							gl.glVertex3d( point.x , point.y , point.z );
-							gl.glVertex3d( normal.x , normal.y , normal.z );
+
+							for ( int vertexIndex = vertices.size() ; --vertexIndex >= 0 ; )
+							{
+								final Vertex vertex = vertices.get( vertexIndex );
+								final Vector3D point = vertex.point;
+								final Vector3D normal = face.smooth ? face.getVertexNormal( vertexIndex ) : face.getNormal();
+
+								gl.glVertex3d( point.x, point.y, point.z );
+								gl.glVertex3d( point.x + normal.x * 100.0, point.y + normal.y * 100.0, point.z + normal.z * 100.0 );
+							}
+
 							gl.glEnd();
 						}
 					}
-				}
 
-				/*
-				 * Disable color map.
-				 */
-				if ( colorMap != null )
-				{
-					colorMap.disable();
-				}
-
-				/*
-				 * Disable bump map.
-				 */
-				if ( bumpMap != null )
-				{
-					gl.glActiveTexture( GL.GL_TEXTURE2 );
-					bumpMap.disable();
-
-					gl.glActiveTexture( GL.GL_TEXTURE1 );
-					bumpMap.disable();
-
-					gl.glActiveTexture( GL.GL_TEXTURE0 );
-					normalizationCubeMap.disable();
-				}
-
-				/*
-				 * Disable reflection map.
-				 */
-				if ( reflectionMap != null )
-				{
-					gl.glActiveTexture( TEXTURE_UNIT_ENVIRONMENT );
-
-					gl.glMatrixMode( GL.GL_TEXTURE );
-					gl.glPopMatrix();
-					gl.glMatrixMode( GL.GL_MODELVIEW );
-
-					if ( !isShadersEnabled() )
+					/*
+					 * Disable color map.
+					 */
+					if ( colorMap != null )
 					{
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV , GL.GL_TEXTURE_ENV_MODE , GL.GL_MODULATE );
-
-						gl.glDisable( GL.GL_TEXTURE_GEN_S );
-						gl.glDisable( GL.GL_TEXTURE_GEN_T );
-						gl.glDisable( GL.GL_TEXTURE_GEN_R );
+						colorMap.disable();
 					}
 
-					reflectionMap.disable();
-
-					gl.glActiveTexture( TEXTURE_UNIT_COLOR );
-				}
-
-				if ( blend )
-				{
-					if ( combinedAlpha < 0.25f )
+					/*
+					 * Disable bump map.
+					 */
+					if ( bumpMap != null )
 					{
-						gl.glDepthMask( true );
+						gl.glActiveTexture( GL.GL_TEXTURE2 );
+						bumpMap.disable();
+
+						gl.glActiveTexture( GL.GL_TEXTURE1 );
+						bumpMap.disable();
+
+						gl.glActiveTexture( GL.GL_TEXTURE0 );
+						normalizationCubeMap.disable();
+					}
+
+					/*
+					 * Disable reflection map.
+					 */
+					if ( reflectionMap != null )
+					{
+						gl.glActiveTexture( TEXTURE_UNIT_ENVIRONMENT );
+
+						gl.glMatrixMode( GL.GL_TEXTURE );
+						gl.glPopMatrix();
+						gl.glMatrixMode( GL.GL_MODELVIEW );
+
+						if ( !isShadersEnabled() )
+						{
+							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_MODULATE );
+
+							gl.glDisable( GL.GL_TEXTURE_GEN_S );
+							gl.glDisable( GL.GL_TEXTURE_GEN_T );
+							gl.glDisable( GL.GL_TEXTURE_GEN_R );
+						}
+
+						reflectionMap.disable();
+
+						gl.glActiveTexture( TEXTURE_UNIT_COLOR );
+					}
+
+					if ( blend )
+					{
+						if ( combinedAlpha < 0.25f )
+						{
+							gl.glDepthMask( true );
+						}
 					}
 				}
 			}
 		}
 	}
 
-	protected void renderFilledFace( final Face3D face , final RenderStyle style )
+	protected void renderFilledFace( final Face3D face, final RenderStyle style )
 	{
-		final List<Vertex> vertices = face.vertices;
-		final int vertexCount = vertices.size();
+		final MultiPassRenderMode renderMode = _renderMode;
 
-		if ( vertexCount >= 2 )
+		final GL gl = _gl;
+		final GLWrapper glWrapper = _glWrapper;
+
+		final Color   color           = style.getFillColor();
+		final int     alpha           = color.getAlpha();
+		final boolean blend           = !isDepthPeelingEnabled() && ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && ( alpha < 255 );
+		final boolean backfaceCulling = style.isBackfaceCullingEnabled() && !face.isTwoSided();
+		final boolean hasLighting     = style.isFillLightingEnabled() && ( _lightPositionRelativeToObject != null );
+		final boolean setVertexNormals = hasLighting && face.smooth;
+
+		if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || ( alpha == 255 ) ) &&
+			 ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || ( alpha <  255 ) ) )
 		{
-			final MultiPassRenderMode renderMode = _renderMode;
+			final List<Vertex> vertices = face.vertices;
+			final Tessellation tessellation = face.getTessellation();
+			final Collection<TessellationPrimitive> primitives = tessellation.getPrimitives();
 
-			final GL gl = _gl;
-			final GLWrapper glWrapper = _glWrapper;
-
-			final Color   color           = style.getFillColor();
-			final int     alpha           = color.getAlpha();
-			final boolean blend           = !isDepthPeelingEnabled() &&
-			                              ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && ( alpha < 255 );
-			final boolean backfaceCulling = style.isBackfaceCullingEnabled() && !face.isTwoSided();
-			final boolean hasLighting     = style.isFillLightingEnabled() && ( _lightPositionRelativeToObject != null );
-			final boolean setVertexNormals = hasLighting && face.smooth;
-
-			if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || ( alpha == 255 ) ) &&
-			     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || ( alpha <  255 ) ) )
+			if ( !primitives.isEmpty() )
 			{
 				/*
 				 * Set render/material properties.
@@ -1900,10 +1922,10 @@ public class JOGLRenderer
 					{
 						gl.glDepthMask( false );
 					}
-					glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+					glWrapper.glBlendFunc( GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA );
 				}
 				glWrapper.setBlend( blend );
-				glWrapper.glPolygonOffset( 1.0f , 1.0f );
+				glWrapper.glPolygonOffset( 1.0f, 1.0f );
 				glWrapper.setCullFace( backfaceCulling );
 				glWrapper.setLighting( hasLighting );
 				setColor( color );
@@ -1928,45 +1950,61 @@ public class JOGLRenderer
 						glWrapper.setCullFace( backfaceCulling );
 					}
 
-					gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS :
-					            ( vertexCount == 2 ) ? GL.GL_LINES :
-					            ( vertexCount == 3 ) ? GL.GL_TRIANGLES :
-					            ( vertexCount == 4 ) ? GL.GL_QUADS : GL.GL_POLYGON );
-
 					if ( !setVertexNormals )
 					{
 						final Vector3D normal = face.getNormal();
 						if ( isBackFace )
 						{
-							gl.glNormal3d( -normal.x , -normal.y , -normal.z );
+							gl.glNormal3d( -normal.x, -normal.y, -normal.z );
 						}
 						else
 						{
-							gl.glNormal3d( normal.x , normal.y , normal.z );
+							gl.glNormal3d( normal.x, normal.y, normal.z );
 						}
 					}
 
-					for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
+					for ( final TessellationPrimitive primitive : primitives )
 					{
-						final Vertex vertex = vertices.get( vertexIndex );
-
-						if ( setVertexNormals )
+						if ( primitive instanceof TriangleList )
 						{
-							final Vector3D normal = face.getVertexNormal( vertexIndex );
-							if ( isBackFace )
-							{
-								gl.glNormal3d( -normal.x , -normal.y , -normal.z );
-							}
-							else
-							{
-								gl.glNormal3d( normal.x , normal.y , normal.z );
-							}
+							gl.glBegin( GL.GL_TRIANGLES );
+						}
+						else if ( primitive instanceof TriangleFan )
+						{
+							gl.glBegin( GL.GL_TRIANGLE_FAN );
+						}
+						else if ( primitive instanceof TriangleStrip )
+						{
+							gl.glBegin( GL.GL_TRIANGLE_STRIP );
+						}
+						else
+						{
+							continue;
 						}
 
-						gl.glVertex3d( vertex.point.x , vertex.point.y , vertex.point.z );
-					}
+						for ( final int vertexIndex : primitive.getVertices() )
+						{
+							final Vertex vertex = vertices.get( vertexIndex );
 
-					gl.glEnd();
+							if ( setVertexNormals )
+							{
+								final Vector3D normal = face.getVertexNormal( vertexIndex );
+								if ( isBackFace )
+								{
+									gl.glNormal3d( -normal.x, -normal.y, -normal.z );
+								}
+								else
+								{
+									gl.glNormal3d( normal.x, normal.y, normal.z );
+								}
+							}
+
+							final Vector3D point = vertex.point;
+							gl.glVertex3d( point.x, point.y, point.z );
+						}
+
+						gl.glEnd();
+					}
 				}
 
 				if ( blend )
@@ -1980,7 +2018,7 @@ public class JOGLRenderer
 		}
 	}
 
-	protected void renderStrokedFace( final Face3D face , final RenderStyle style )
+	protected void renderStrokedFace( final Face3D face, final RenderStyle style )
 	{
 		final List<Vertex> vertices = face.vertices;
 		final int vertexCount = vertices.size();
@@ -2010,49 +2048,19 @@ public class JOGLRenderer
 			/*
 			 * Render face.
 			 */
-			// @FIXME Drawing outlines like this is only needed while Face3D doesn't support concave faces.
-			// (A single Face3D could then be used for a concave shape, and the proper outline would be drawn automatically.)
-			final Object3D object3D = face.getObject();
-			if ( object3D instanceof ExtrudedObject2D )
+			if ( !setVertexNormals )
 			{
-				if ( face == object3D.getFace( 0 ) )
-				{
-					final ExtrudedObject2D extruded  = (ExtrudedObject2D)object3D;
-					final Shape            shape     = extruded.shape;
-					final Vector3D         extrusion = extruded.extrusion;
-
-					gl.glPushMatrix();
-					JOGLTools.glMultMatrixd( gl , extruded.transform );
-
-					/* Draw the bottom outline of the extruded shape. */
-					drawShape( shape , extruded.flatness );
-
-					/* Draw the sides of the extruded shape. */
-					drawExtrusionLines( shape , extrusion );
-
-					/* Draw the top outline of the extruded shape. */
-					gl.glMultMatrixd( new double[] {
-						1.0 , 0.0 , 0.0 , 0.0 ,
-						0.0 , 1.0 , 0.0 , 0.0 ,
-						0.0 , 0.0 , 1.0 , 0.0 ,
-						extrusion.x , extrusion.y ,extrusion.z , 1.0 } , 0 );
-
-					drawShape( shape , extruded.flatness );
-
-					gl.glPopMatrix();
-				}
+				final Vector3D normal = face.getNormal();
+				gl.glNormal3d( normal.x, normal.y, normal.z );
 			}
-			else
+
+			final Tessellation tessellation = face.getTessellation();
+
+			for ( final int[] outline : tessellation.getOutlines() )
 			{
-				gl.glBegin( ( vertexCount == 1 ) ? GL.GL_POINTS : GL.GL_LINE_LOOP );
+				gl.glBegin( GL.GL_LINE_LOOP );
 
-				if ( !setVertexNormals )
-				{
-					final Vector3D normal = face.getNormal();
-					gl.glNormal3d( normal.x , normal.y , normal.z );
-				}
-
-				for ( int vertexIndex = vertexCount ; --vertexIndex >= 0 ; )
+				for ( final int vertexIndex : outline )
 				{
 					final Vertex vertex = vertices.get( vertexIndex );
 					final Vector3D point = vertex.point;
@@ -2060,10 +2068,10 @@ public class JOGLRenderer
 					if ( setVertexNormals )
 					{
 						final Vector3D normal = face.getVertexNormal( vertexIndex );
-						gl.glNormal3d( normal.x , normal.y , normal.z );
+						gl.glNormal3d( normal.x, normal.y, normal.z );
 					}
 
-					gl.glVertex3d( point.x , point.y , point.z );
+					gl.glVertex3d( point.x, point.y, point.z );
 				}
 
 				gl.glEnd();
