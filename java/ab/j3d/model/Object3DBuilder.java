@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +20,11 @@
  */
 package ab.j3d.model;
 
-import java.awt.geom.*;
 import java.util.*;
 
 import ab.j3d.*;
 import ab.j3d.geom.*;
+import ab.j3d.model.Face3D.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -126,7 +127,7 @@ public class Object3DBuilder
 	}
 
 	@Override
-	public void addFace( @NotNull final Vector3D[] points, @Nullable final Material material, @Nullable final Point2D.Float[] texturePoints, @Nullable final Vector3D[] vertexNormals, final boolean smooth, final boolean twoSided )
+	public void addFace( @NotNull final Vector3D[] points, @Nullable final Material material, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals, final boolean smooth, final boolean twoSided )
 	{
 		final int   vertexCount   = points.length;
 		final int[] vertexIndices = new int[ vertexCount ];
@@ -140,7 +141,7 @@ public class Object3DBuilder
 	}
 
 	@Override
-	public void addFace( @NotNull final int[] vertexIndices, @Nullable final Material material, @Nullable final Point2D.Float[] texturePoints, @Nullable final Vector3D[] vertexNormals, final boolean smooth, final boolean twoSided )
+	public void addFace( @NotNull final int[] vertexIndices, @Nullable final Material material, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals, final boolean smooth, final boolean twoSided )
 	{
 		_target.addFace( new Face3D( _target, vertexIndices, material, texturePoints, vertexNormals, smooth, twoSided ) );
 	}
@@ -149,5 +150,38 @@ public class Object3DBuilder
 	public void addText( @NotNull final String text, @NotNull final Vector3D origin, final double height, final double rotationAngle, final double obliqueAngle, @Nullable final Vector3D extrusion, @Nullable final Material material )
 	{
 		throw new AssertionError( "not implemented" );
+	}
+
+	@Override
+	protected void addFace( @NotNull final Tessellation tessellation, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided )
+	{
+		final List<? extends Vector3D> points = tessellation.getVertices();
+		final int vertexCount = points.size();
+		final float[] texturePoints = ( uvMap != null ) ? uvMap.generate( material, points, null, flipTexture ) : null;
+
+		final List<Vertex> vertices = new ArrayList<Vertex>( vertexCount );
+		for ( int i = 0 ; i < vertexCount; i++ )
+		{
+			final Vector3D point = points.get( i );
+			final Vertex vertex = new Vertex( point, getVertexIndex( point ) );
+
+			if ( texturePoints != null )
+			{
+				final int texturePointIndex = i * 2;
+				vertex.colorMapU = texturePoints[ texturePointIndex ];
+				vertex.colorMapV = texturePoints[ texturePointIndex + 1 ];
+			}
+
+			vertices.add( vertex );
+		}
+
+		_target.addFace( new Face3D( _target, vertices, tessellation, material, false, twoSided ) );
+	}
+
+	@NotNull
+	@Override
+	protected TessellationBuilder createTessellationBuilder( @Nullable final Matrix3D transform )
+	{
+		return new BasicTessellationBuilder( transform );
 	}
 }

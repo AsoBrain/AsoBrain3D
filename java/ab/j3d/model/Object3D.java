@@ -1,5 +1,6 @@
 /* $Id$
- * ====================================================================
+ * 
+====================================================================
  * AsoBrain 3D Toolkit
  * Copyright (C) 1999-2010 Peter S. Heijnen
  *
@@ -16,7 +17,8 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * ====================================================================
+ * 
+====================================================================
  */
 package ab.j3d.model;
 
@@ -220,7 +222,7 @@ public class Object3D
 					if ( ( x != 0.0 ) || ( y != 0.0 ) || ( z != 0.0 ) )
 					{
 						double norm = x * x + y * y + z * z;
-						if ( norm != 1.0 )
+						if ( !MathTools.almostEqual( norm, 1.0 ) )
 						{
 							norm = 1.0 / Math.sqrt( norm );
 							vertexNormals[ i     ] = norm * x;
@@ -325,21 +327,21 @@ public class Object3D
 
 			for ( final Face3D face : _faces )
 			{
-				final int[] triangles = face.triangulate();
-				if ( triangles != null )
+				final Tessellation tessellation = face.getTessellation();
+				for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
 				{
+					final int[] triangles = primitive.getTriangles();
 					nrTriangles += triangles.length / 3;
 				}
 			}
 
 			final List<Triangle3D> triangles = new ArrayList<Triangle3D>( nrTriangles );
-
 			final Bounds3DBuilder boundsBuilder = new Bounds3DBuilder();
 
 			for ( final Face3D face : _faces )
 			{
-				final int[] faceTriangles = face.triangulate();
-				if ( faceTriangles != null )
+				final Tessellation tessellation = face.getTessellation();
+				for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
 				{
 					final List<Vertex> vertices = face.vertices;
 					for ( final Vertex vertex : vertices )
@@ -347,17 +349,14 @@ public class Object3D
 						boundsBuilder.addPoint( vertexCoordinates.get( vertex.vertexCoordinateIndex ) );
 					}
 
-					for ( int triangleIndex = 0 ; triangleIndex < faceTriangles.length ; triangleIndex += 3 )
+					final int[] primitiveTriangles = primitive.getTriangles();
+					for ( int i = 0 ; i < primitiveTriangles.length; i += 3 )
 					{
-						final Vertex v1 = vertices.get( faceTriangles[ triangleIndex     ] );
-						final Vertex v2 = vertices.get( faceTriangles[ triangleIndex + 1 ] );
-						final Vertex v3 = vertices.get( faceTriangles[ triangleIndex + 2 ] );
+						final Vertex v1 = vertices.get( primitiveTriangles[ i ] );
+						final Vertex v2 = vertices.get( primitiveTriangles[ i + 1 ] );
+						final Vertex v3 = vertices.get( primitiveTriangles[ i + 2 ] );
 
-						final Vector3D p1 = vertexCoordinates.get( v1.vertexCoordinateIndex );
-						final Vector3D p2 = vertexCoordinates.get( v2.vertexCoordinateIndex );
-						final Vector3D p3 = vertexCoordinates.get( v3.vertexCoordinateIndex );
-
-						triangles.add( new BasicTriangle3D( p1, p2, p3, true ) );
+						triangles.add( new BasicTriangle3D( v1.point, v2.point, v3.point, true ) );
 					}
 				}
 			}
@@ -551,6 +550,7 @@ public class Object3D
 	public final double[] getVertexNormals()
 	{
 		calculateVertexNormals();
+		//noinspection ReturnOfCollectionOrArrayField
 		return _vertexNormals;
 	}
 
@@ -573,7 +573,7 @@ public class Object3D
 	 *
 	 * @throws  IllegalStateException if faces have been added to the object.
 	 */
-	final void setVertexCoordinates( final List<Vector3D> vertexCoordinates )
+	final void setVertexCoordinates( final Collection<Vector3D> vertexCoordinates )
 	{
 		_vertexCoordinates.clear();
 		_vertexCoordinates.addAll( vertexCoordinates );
@@ -583,11 +583,17 @@ public class Object3D
 	/**
 	 * Set vertex normals. Vertex normals are pseudo-normals based on average
 	 * face normals at common vertices.
+	 * <dl>
+	 *  <dt>WARNING:</dt>
+	 *  <dd>The specified array is used as-is, so it should not be altered in
+	 *      any way unless you wish the world to end.</dd>
+	 * </dd>
 	 *
 	 * @param   vertexNormals   Vertex normals (one triplet per vertex).
 	 */
 	final void setVertexNormals( final double[] vertexNormals )
 	{
+		//noinspection AssignmentToCollectionOrArrayFieldFromParameter
 		_vertexNormals = vertexNormals;
 		_vertexNormalsDirty = false;
 	}

@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,15 +20,11 @@
  */
 package ab.j3d.model;
 
-import java.awt.geom.Point2D;
-import java.util.List;
+import java.util.*;
 
-import ab.j3d.Material;
-import ab.j3d.Vector3D;
-import ab.j3d.geom.Polygon3D;
-
-import com.numdata.oss.AugmentedArrayList;
-import com.numdata.oss.AugmentedList;
+import ab.j3d.*;
+import ab.j3d.geom.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class defines a 3D face of a 3D object.
@@ -35,13 +32,13 @@ import com.numdata.oss.AugmentedList;
  * @author  G.B.M. Rupert
  * @version $Revision$ ($Date$, $Author$)
  */
-public final class Face3D
+public class Face3D
 	implements Polygon3D
 {
 	/**
 	 * Value used for normal vector if no normal vector can be determined.
 	 */
-	private static final Vector3D NO_NORMAL = Vector3D.INIT.set( Double.NaN , 0.0 , Double.NaN );
+	private static final Vector3D NO_NORMAL = Vector3D.INIT.set( Double.NaN, 0.0, Double.NaN );
 
 	/**
 	 * Object to which this face belongs.
@@ -51,7 +48,7 @@ public final class Face3D
 	/**
 	 * Vertices of this face.
 	 */
-	public final AugmentedList<Vertex> vertices;
+	public final List<Vertex> vertices;
 
 	/**
 	* Smoothing flag this face. Smooth faces are used to approximate
@@ -114,9 +111,10 @@ public final class Face3D
 	public final Vector3D normal;
 
 	/**
-	 * Triangulated face. Stored as triplets of vertex indices in this plane.
+	 * Tessellation of this face.
 	 */
-	private int[] _triangles = null;
+	@Nullable
+	private Tessellation _tessellation = null;
 
 	/**
 	 * Construct new face.
@@ -129,39 +127,54 @@ public final class Face3D
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	public Face3D( final Object3D object , final int[] vertexIndices , final Material material , final Point2D.Float[] texturePoints , final Vector3D[] vertexNormals , final boolean smooth , final boolean twoSided )
+	public Face3D( @NotNull final Object3D object, @NotNull final int[] vertexIndices, @Nullable final Material material, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals, final boolean smooth, final boolean twoSided )
 	{
-		if ( object == null )
-			throw new NullPointerException( "object" );
+		this( object, createVertices( object, vertexIndices, texturePoints, vertexNormals ), null, material, smooth, twoSided );
+	}
 
-		final List<Vector3D> vertexCoordinates = object._vertexCoordinates;
-		final int vertexCount = vertexIndices.length;
+	/**
+	 * Construct new face.
+	 *
+	 * @param   object          Object to which this face belongs.
+	 * @param   vertices        Vertices used by this face.
+	 * @param   tessellation     Tessellation of this face (optional).
+	 * @param   material        Material to apply to the face.
+	 * @param   smooth          Face is smooth/curved vs. flat.
+	 * @param   twoSided        Face is two-sided.
+	 */
+	public Face3D( @NotNull final Object3D object, @NotNull final List<Vertex> vertices, @Nullable final Tessellation tessellation, @Nullable final Material material, final boolean smooth, final boolean twoSided )
+	{
+		_object = object;
+		this.vertices = vertices;
+		_tessellation = tessellation;
+		this.material = material;
+		this.smooth = smooth;
+		_twoSided = twoSided;
 
-		final AugmentedList<Vertex> vertices = new AugmentedArrayList<Vertex>( vertexCount );
-
-		for ( int vertexIndex = 0 ; vertexIndex < vertexCount; vertexIndex++ )
-		{
-			final Vertex vertex = new Vertex( vertexCoordinates , vertexIndices[ vertexIndex ] );
-			if ( texturePoints != null )
-			{
-				final Point2D.Float texturePoint = texturePoints[ vertexIndex ];
-				vertex.colorMapU = texturePoint.x;
-				vertex.colorMapV = texturePoint.y;
-			}
-
-			if ( vertexNormals != null )
-			{
-				vertex.normal = vertexNormals[ vertexIndex ];
-			}
-
-			vertices.add( vertex );
-		}
-
+		final int vertexCount = vertices.size();
 		if ( vertexCount >= 3 )
 		{
-			final Vector3D p0 = vertexCoordinates.get( vertices.get( 0 ).vertexCoordinateIndex );
-			final Vector3D p1 = vertexCoordinates.get( vertices.get( 1 ).vertexCoordinateIndex );
-			final Vector3D p2 = vertexCoordinates.get( vertices.get( 2 ).vertexCoordinateIndex );
+			int vi1 = 0;
+			int vi2 = 1;
+			int vi3 = 2;
+
+			if ( tessellation != null )
+			{
+				final Collection<TessellationPrimitive> primitives = tessellation.getPrimitives();
+				final Iterator<TessellationPrimitive> i = primitives.iterator();
+				if ( i.hasNext() )
+				{
+					final TessellationPrimitive primitive = i.next();
+					final int[] vertexIndices = primitive.getVertices();
+					vi1 = vertexIndices[ 2 ];
+					vi2 = vertexIndices[ 1 ];
+					vi3 = vertexIndices[ 0 ];
+				}
+			}
+
+			final Vector3D p0 = vertices.get( vi1 ).point;
+			final Vector3D p1 = vertices.get( vi2 ).point;
+			final Vector3D p2 = vertices.get( vi3 ).point;
 
 			final double u1 = p0.x - p1.x;
 			final double u2 = p0.y - p1.y;
@@ -177,7 +190,7 @@ public final class Face3D
 
 			final double l = Math.sqrt( crossX * crossX + crossY * crossY + crossZ * crossZ );
 			final Vector3D n = ( l > 0.0 ) ? Vector3D.INIT.set( crossX / l, crossY / l, crossZ / l ) : NO_NORMAL;
-			final double d = ( l > 0.0 ) ? Vector3D.dot( n.x , n.y , n.z , p1.x , p1.y , p1.z ) : 0.0;
+			final double d = ( l > 0.0 ) ? Vector3D.dot( n.x, n.y, n.z, p1.x, p1.y, p1.z ) : 0.0;
 
 			_crossX = crossX;
 			_crossY = crossY;
@@ -193,19 +206,53 @@ public final class Face3D
 			normal = NO_NORMAL;
 			planeDistance = 0.0;
 		}
-
-		_object        = object;
-		this.vertices = vertices;
-		this.material = material;
-		this.smooth = smooth;
-		_twoSided = twoSided;
 	}
 
+	/**
+	 * Construct vertices for face.
+	 *
+	 * @param   object          Object to which this face belongs.
+	 * @param   vertexIndices   Indices in {@link Object3D#_vertexCoordinates}.
+	 * @param   texturePoints   Texture coordinates for each vertex (optional).
+	 * @param   vertexNormals   Normal for each vertex (optional).
+	 *
+	 * @return  Vertices for face.
+	 */
+	public static List<Vertex> createVertices( @NotNull final Object3D object, @NotNull final int[] vertexIndices, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals )
+	{
+		final List<Vector3D> vertexCoordinates = object._vertexCoordinates;
+		final int vertexCount = vertexIndices.length;
+
+		final List<Vertex> vertices = new ArrayList<Vertex>( vertexCount );
+
+		for ( int vertexIndex = 0 ; vertexIndex < vertexCount; vertexIndex++ )
+		{
+			final Vertex vertex = new Vertex( vertexCoordinates, vertexIndices[ vertexIndex ] );
+			if ( texturePoints != null )
+			{
+				final int texturePointIndex = vertexIndex * 2;
+				vertex.colorMapU = texturePoints[ texturePointIndex ];
+				vertex.colorMapV = texturePoints[ texturePointIndex + 1 ];
+			}
+
+			if ( vertexNormals != null )
+			{
+				vertex.normal = vertexNormals[ vertexIndex ];
+			}
+
+			vertices.add( vertex );
+		}
+
+		return vertices;
+	}
+
+	@Override
 	public double getDistance()
 	{
 		return planeDistance;
 	}
 
+	@Override
 	public Vector3D getNormal()
 	{
 		return normal;
@@ -221,6 +268,7 @@ public final class Face3D
 		return _object;
 	}
 
+	@Override
 	public boolean isTwoSided()
 	{
 		return _twoSided;
@@ -240,6 +288,7 @@ public final class Face3D
 		return vertices.get( index );
 	}
 
+	@Override
 	public int getVertexCount()
 	{
 		return vertices.size();
@@ -263,72 +312,98 @@ public final class Face3D
 		{
 			final double[] vertexNormals = _object.getVertexNormals();
 			final int i = vertex.vertexCoordinateIndex * 3;
-			result = Vector3D.INIT.set( vertexNormals[ i ] , vertexNormals[ i + 1 ] , vertexNormals[ i + 2 ] );
+			result = Vector3D.INIT.set( vertexNormals[ i ], vertexNormals[ i + 1 ], vertexNormals[ i + 2 ] );
 			vertex.normal = result;
 		}
 		return result;
 	}
 
+	@Override
 	public double getX( final int index )
 	{
 		return vertices.get( index ).point.x;
 	}
 
+	@Override
 	public double getY( final int index )
 	{
 		return vertices.get( index ).point.y;
 	}
 
+	@Override
 	public double getZ( final int index )
 	{
 		return vertices.get( index ).point.z;
 	}
 
 	/**
-	 * This method returns a triangulated version of this face. The result
-	 * is an array containing indices of vertices in this face. If this
-	 * face has no triangles, <code>null</code> is returned.
-	 * <dl>
-	 *  <dt>NOTE:</dt>
-	 *  <dd>This method caches its result, so it can be called multiple times
-	 *      without consequence. However, the result is not cloned, so
-	 *      THE CONTENTS OF THE RESULT SHOULD NOT BE MODIFIED.</dd>
-	 * </dl>
+	 * Get outlines of face.
 	 *
-	 * @return  Array with indices to vertices in this face;
-	 *          <code>null</code> if this face has no triangles.
+	 * @return  Outlines of tessellated shapes.
 	 */
-	public int[] triangulate()
+	@NotNull
+	public List<int[]> getOutlines()
 	{
-		int[] result = _triangles;
+		final Tessellation tessellation = getTessellation();
+		return tessellation.getOutlines();
+	}
+
+	/**
+	 * This method returns a tessellated version of this face.
+	 *
+	 * @return  {@link Tessellation} of this face.
+	 */
+	@NotNull
+	public Tessellation getTessellation()
+	{
+		Tessellation result = _tessellation;
 		if ( result == null )
 		{
-			final int vertexCount = getVertexCount();
+			final List<Vertex> vertices = this.vertices;
+			final int vertexCount = vertices.size();
+
+			final List<Vector3D> points = new ArrayList<Vector3D>( vertexCount );
+
+			final int[] outline = new int[ vertexCount ];
+			final int lastVertex = vertexCount - 1;
+			for ( int i = 0; i < outline.length; i++ )
+			{
+				final Vertex vertex = vertices.get( i );
+				outline[ i ] = lastVertex - i;
+				points.add( vertex.point );
+			}
+
+			final List<TessellationPrimitive> primitives;
 			if ( vertexCount >= 3 )
 			{
-				final int triangleCount = vertexCount - 2;
-
-				result = new int[ triangleCount * 3 ];
-
-				int rc = 0;
-
-				for ( int k = 1 ; k <= triangleCount ; k++ )
-				{
-					result[ rc++ ] = 0;
-					result[ rc++ ] = k;
-					result[ rc++ ] = k + 1;
-				}
-				_triangles = result;
+				primitives = Collections.<TessellationPrimitive>singletonList( new TriangleFan( outline ) );
 			}
+			else
+			{
+				primitives = Collections.emptyList();
+			}
+
+			result = new BasicTessellation( points, Collections.singletonList( outline ), primitives );
+			_tessellation = result;
 		}
 
 		return result;
 	}
 
 	/**
+	 * Set tessellation of this face.
+	 *
+	 * @param   tessellation     Tessellation to use for this face.
+	 */
+	public void setTessellation( @NotNull final Tessellation tessellation )
+	{
+		_tessellation = tessellation;
+	}
+
+	/**
 	 * Defines a vertex of a face.
 	 */
-	public final class Vertex
+	public static final class Vertex
 	{
 		/**
 		 * Coordinates of vertex.
@@ -337,12 +412,8 @@ public final class Face3D
 
 		/**
 		 * Index of the vertex in the {@link Object3D#_vertexCoordinates} array.
-		 * <p />
-		 * Because coordinates in the {@link Object3D#_vertexCoordinates} array
-		 * are stored with a triplet for each vertex, these indices should be
-		 * multiplied by 3 to get the 'real' index.
 		 */
-		public final int vertexCoordinateIndex;
+		public int vertexCoordinateIndex;
 
 		/**
 		 * Color map U coordinate.
@@ -355,9 +426,22 @@ public final class Face3D
 		public float colorMapV = Float.NaN;
 
 		/**
-		 * Cached vertex normal.
+		 * Vertex normal.
 		 */
 		Vector3D normal;
+
+		/**
+		 * Construct vertex.
+		 *
+		 * @param   point                   Coordinates of vertex.
+		 * @param   vertexCoordinateIndex   Index of vertex coordinates.
+		 */
+		public Vertex( final Vector3D point, final int vertexCoordinateIndex )
+		{
+			this.point = point;
+			this.vertexCoordinateIndex = vertexCoordinateIndex;
+			normal = null;
+		}
 
 		/**
 		 * Construct vertex.
@@ -365,11 +449,9 @@ public final class Face3D
 		 * @param   vertexCoordinates       Vertex coordinates.
 		 * @param   vertexCoordinateIndex   Index of vertex coordinates.
 		 */
-		public Vertex( final List<Vector3D> vertexCoordinates , final int vertexCoordinateIndex )
+		public Vertex( final List<Vector3D> vertexCoordinates, final int vertexCoordinateIndex )
 		{
-			point = vertexCoordinates.get( vertexCoordinateIndex );
-			this.vertexCoordinateIndex = vertexCoordinateIndex;
-			normal = null;
+			this( vertexCoordinates.get( vertexCoordinateIndex ), vertexCoordinateIndex );
 		}
 
 		/**
