@@ -235,7 +235,13 @@ public class JOGLGraphics2D
 	public void dispose()
 	{
 		_gla = null;
-		_renderer = null;
+
+		final TextRenderer textRenderer = _renderer;
+		if ( textRenderer != null )
+		{
+			textRenderer.dispose();
+			_renderer = null;
+		}
 	}
 
 	@Override
@@ -888,7 +894,7 @@ public class JOGLGraphics2D
 		TextRenderer renderer = _renderer;
 		if ( renderer == null )
 		{
-		    renderer = new TextRenderer( getFont() );
+			renderer = new TextRenderer( getFont() );
 			_renderer = renderer;
 		}
 
