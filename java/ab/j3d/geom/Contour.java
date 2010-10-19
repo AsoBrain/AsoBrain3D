@@ -60,8 +60,7 @@ public class Contour
 	 *
 	 * @param   shape               Shape whose contour(s) to create.
 	 * @param   flatness            Flatness used for contours.
-	 * @param   counterClockwise    Add counter-clockwise vs. clockwise contours
-	 *                              to the result.
+	 * @param   counterClockwise    Make all contours counter-clockwise.
 	 *
 	 * @return  Contour(s) that were created.
 	 */
@@ -78,18 +77,19 @@ public class Contour
 	 * closed path whose vertices are specified by their index. The closing
 	 * segment of the path is not included.
 	 *
-	 * @param   contours            Collection to store contours in.
-	 * @param   pathIterator        Path iterator to create contour from.
-	 * @param   counterClockwise    Add counter-clockwise vs. clockwise contours
-	 *                              to the result.
+	 * @param   contours                Collection to store contours in.
+	 * @param   pathIterator            Path iterator to create contour from.
+	 * @param   makeCounterClockwise    Make all contours counter-clockwise.
 	 */
-	public static void addContours( @NotNull final Collection<Contour> contours, @NotNull final PathIterator pathIterator, final boolean counterClockwise )
+	public static void addContours( @NotNull final Collection<Contour> contours, @NotNull final PathIterator pathIterator, final boolean makeCounterClockwise )
 	{
 		final List<Point> points = new ArrayList<Point>();
 
 		boolean positiveAngles = false; /* encountered positive angles */
 		boolean negativeAngles = false; /* encountered negative angles */
 		double totalAngle = 0.0; /* should finish at 2PI (counter-clockwise) or -2PI (clockwise) for closed non-self-intersecting shapes */
+		boolean reverseTested = false;
+		boolean reverseContour = false;
 
 		final double[] coords = new double[ 6 ];
 
@@ -175,21 +175,24 @@ public class Contour
 							negativeAngles |= ( angle < 0.0 );
 							totalAngle += angle;
 
-							final boolean subPathIsCounterClockwise = ( totalAngle >= 0.0 );
+							boolean counterClockwise = ( totalAngle >= 0.0 );
+							reverseContour = ( !reverseTested && makeCounterClockwise && !counterClockwise );
+							reverseTested = true;
 
 							final List<Point> vertices;
 
-							if ( subPathIsCounterClockwise == counterClockwise )
-							{
-								vertices = new ArrayList<Point>( points );
-							}
-							else
+							if ( reverseContour )
 							{
 								vertices = new ArrayList<Point>();
 								for ( int i = pointCount; --i >= 0; )
 								{
 									vertices.add( points.get( i ) );
 								}
+								counterClockwise = !counterClockwise;
+							}
+							else
+							{
+								vertices = new ArrayList<Point>( points );
 							}
 
 							final ShapeClass shapeClass = ( positiveAngles && negativeAngles ) ? counterClockwise ? ShapeClass.CCW_CONCAVE : ShapeClass.CW_CONCAVE :
