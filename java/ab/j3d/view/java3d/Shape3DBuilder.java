@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2009 Peter S. Heijnen
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,25 +20,15 @@
  */
 package ab.j3d.view.java3d;
 
-import javax.media.j3d.Appearance;
-import javax.media.j3d.BranchGroup;
-import javax.media.j3d.LineArray;
-import javax.media.j3d.QuadArray;
-import javax.media.j3d.Shape3D;
-import javax.media.j3d.TriangleArray;
-import javax.vecmath.Point3d;
-import javax.vecmath.TexCoord2f;
+import java.util.*;
+import javax.media.j3d.*;
+import javax.vecmath.*;
 import javax.vecmath.Vector3f;
 
 import ab.j3d.Material;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.model.Face3D;
-import ab.j3d.model.Face3D.Vertex;
-import ab.j3d.model.Node3DCollection;
-import ab.j3d.model.Object3D;
-
-import com.numdata.oss.AugmentedList;
+import ab.j3d.*;
+import ab.j3d.model.*;
+import ab.j3d.model.Face3D.*;
 
 /**
  * This object builds {@link Shape3D} objects based on data from
@@ -101,7 +91,9 @@ public class Shape3DBuilder
 				final int      faceCount = object3d.getFaceCount();
 
 				for ( int j = 0 ; j < faceCount ; j++ )
+				{
 					shapeBuilder.prepareFace( object3d.getFace( j ) );
+				}
 			}
 
 			for ( int i = 0 ; i < nodes.size() ; i++ )
@@ -111,7 +103,9 @@ public class Shape3DBuilder
 				final int      faceCount = object3d.getFaceCount();
 
 				for ( int j = 0 ; j < faceCount ; j++ )
-					shapeBuilder.addFace( xform , object3d.getFace( j ) );
+				{
+					shapeBuilder.addFace( xform, object3d.getFace( j ) );
+				}
 			}
 
 			shapeBuilder.buildShapes( result );
@@ -136,10 +130,14 @@ public class Shape3DBuilder
 		final int faceCount = object3d.getFaceCount();
 
 		for ( int j = 0 ; j < faceCount ; j++ )
+		{
 			shapeBuilder.prepareFace( object3d.getFace( j ) );
+		}
 
 		for ( int j = 0 ; j < faceCount ; j++ )
-			shapeBuilder.addFace( xform , object3d.getFace( j ) );
+		{
+			shapeBuilder.addFace( xform, object3d.getFace( j ) );
+		}
 
 		final BranchGroup result = new BranchGroup();
 		result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
@@ -232,16 +230,20 @@ public class Shape3DBuilder
 			{
 				final int numberOfQuads = ( numberOfVerticesInFace - 2 ) / 2;
 				if ( numberOfQuads > 0 )
+				{
 					_quadCount += numberOfQuads;
+				}
 
 				if ( ( numberOfVerticesInFace % 2 ) != 0 )
+				{
 					_triangleCount++;
+				}
 			}
 		}
 
 		void addFace( final Matrix3D object2view , final Face3D face )
 		{
-			final AugmentedList<Vertex> vertices = face.vertices;
+			final List<Vertex> vertices = face.vertices;
 			final int vertexCount = vertices.size();
 			if ( vertexCount >= 2 )
 			{
@@ -253,7 +255,9 @@ public class Shape3DBuilder
 					if ( lineArray == null )
 					{
 						if ( lineCount == 0 )
+						{
 							throw new IllegalStateException( "should have called prepareFace()!" );
+						}
 
 						lineArray = new LineArray( 2 * lineCount , LineArray.COORDINATES );
 						lineCount = 0;
@@ -288,7 +292,9 @@ public class Shape3DBuilder
 						if ( quadArray == null )
 						{
 							if ( quadCount == 0 )
+							{
 								throw new IllegalStateException( "should have called prepareFace()!" );
+							}
 
 							quadArray = new QuadArray( 4 * quadCount , QuadArray.COORDINATES | QuadArray.NORMALS | QuadArray.TEXTURE_COORDINATE_2 );
 							quadCount = 0;
@@ -342,7 +348,9 @@ public class Shape3DBuilder
 						if ( triangleArray == null )
 						{
 							if ( triangleCount == 0 )
+							{
 								throw new IllegalStateException( "should have called prepareFace()!" );
+							}
 
 							triangleArray = new TriangleArray( 3 * triangleCount , TriangleArray.COORDINATES | TriangleArray.NORMALS | TriangleArray.TEXTURE_COORDINATE_2 );
 							triangleCount = 0;
@@ -382,13 +390,19 @@ public class Shape3DBuilder
 			final QuadArray     quadArray     = _quadArray;
 
 			if ( lineArray != null )
-				parentGroup.addChild( new Shape3D( lineArray , appearance ) );
+			{
+				parentGroup.addChild( new Shape3D( lineArray, appearance ) );
+			}
 
 			if ( triangleArray != null )
-				parentGroup.addChild( new Shape3D( triangleArray , appearance ) );
+			{
+				parentGroup.addChild( new Shape3D( triangleArray, appearance ) );
+			}
 
 			if ( quadArray != null )
-				parentGroup.addChild( new Shape3D( quadArray , appearance ) );
+			{
+				parentGroup.addChild( new Shape3D( quadArray, appearance ) );
+			}
 
 			_lineArray     = null;
 			_lineCount     = 0;
@@ -481,7 +495,9 @@ public class Shape3DBuilder
 		final int groupCount = _appearanceGroupCount;
 
 		for ( int i = 0 ; i < groupCount ; i++ )
+		{
 			_appearanceGroups[ i ].buildShapes( result );
+		}
 	}
 
 	/**
