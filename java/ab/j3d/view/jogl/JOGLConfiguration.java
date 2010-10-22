@@ -29,19 +29,17 @@ package ab.j3d.view.jogl;
 public class JOGLConfiguration
 {
 	/**
-	 * Whether per-pixel lighting should be enabled. This applies only when
-	 * support for OpenGL shaders is available.
+	 * Whether per-pixel lighting should be enabled.
 	 */
 	private boolean _perPixelLightingEnabled = true;
 
 	/**
-	 * Whether depth-peeling should be enabled. This applies only when the
-	 * required OpenGL functionality is available.
+	 * Whether depth-peeling should be enabled.
 	 */
 	private boolean _depthPeelingEnabled = false;
 
 	/**
-	 * Maximum number of OpenGL lights to use.
+	 * Maximum number of OpenGL lights to use in a single rendering pass.
 	 */
 	private int _maximumNumberOfLights = 3;
 
@@ -56,6 +54,16 @@ public class JOGLConfiguration
 	private boolean _fsaaEnabled = true;
 
 	/**
+	 * Whether shadow mapping should be enabled.
+	 */
+	private boolean _shadowEnabled = false;
+
+	/**
+	 * Whether multisample (soft) shadows should be enabled.
+	 */
+	private boolean _shadowMultisampleEnabled = false;
+
+	/**
 	 * Constructs a new JOGL configuration with default settings.
 	 */
 	public JOGLConfiguration()
@@ -63,8 +71,7 @@ public class JOGLConfiguration
 	}
 
 	/**
-	 * Returns whether per-pixel lighting should be enabled, when support is
-	 * available.
+	 * Returns whether per-pixel lighting should be enabled.
 	 *
 	 * @return  <code>true</code> if per-pixel lighting should be used.
 	 */
@@ -74,8 +81,7 @@ public class JOGLConfiguration
 	}
 
 	/**
-	 * Sets whether per-pixel lighting should be enabled, when support is
-	 * available.
+	 * Sets whether per-pixel lighting should be enabled.
 	 *
 	 * @param   perPixelLightingEnabled     <code>true</code> if per-pixel
 	 *                                      lighting should be used.
@@ -85,31 +91,65 @@ public class JOGLConfiguration
 		_perPixelLightingEnabled = perPixelLightingEnabled;
 	}
 
+	/**
+	 * Returns whether depth-peeling should be enabled.
+	 *
+	 * @return  <code>true</code> if depth-peeling should be enabled.
+	 */
 	public boolean isDepthPeelingEnabled()
 	{
 		return _depthPeelingEnabled;
 	}
 
+	/**
+	 * Sets whether depth-peeling should be enabled.
+	 *
+	 * @param   depthPeelingEnabled     <code>true</code> if depth-peeling
+	 *                                  should be enabled.
+	 */
 	public void setDepthPeelingEnabled( final boolean depthPeelingEnabled )
 	{
 		_depthPeelingEnabled = depthPeelingEnabled;
 	}
 
+	/**
+	 * Returns the maximum number of OpenGL lights to use in a single
+	 * rendering pass.
+	 *
+	 * @return  Maximum number of lights per rendering pass.
+	 */
 	public int getMaximumNumberOfLights()
 	{
 		return _maximumNumberOfLights;
 	}
 
-	public void setMaximumNumberOfLights( final int maximumNumberOfLights )
+	/**
+	 * Sets the maximum number of OpenGL lights to use in a single
+	 * rendering pass.
+	 *
+	 * @param   lights  Maximum number of lights per rendering pass.
+	 */
+	public void setMaximumNumberOfLights( final int lights )
 	{
-		_maximumNumberOfLights = maximumNumberOfLights;
+		_maximumNumberOfLights = lights;
 	}
 
+	/**
+	 * Returns whether reflection maps should be enabled.
+	 *
+	 * @return  <code>true</code> if reflection maps should be enabled.
+	 */
 	public boolean isReflectionMapsEnabled()
 	{
 		return _reflectionMapsEnabled;
 	}
 
+	/**
+	 * Sets whether reflection maps should be enabled.
+	 *
+	 * @param   reflectionMapsEnabled   <code>true</code> if reflection maps
+	 *                                  should be enabled.
+	 */
 	public void setReflectionMapsEnabled( final boolean reflectionMapsEnabled )
 	{
 		_reflectionMapsEnabled = reflectionMapsEnabled;
@@ -134,5 +174,46 @@ public class JOGLConfiguration
 	public void setFSAAEnabled( final boolean fsaaEnabled )
 	{
 		_fsaaEnabled = fsaaEnabled;
+	}
+
+	/**
+	 * Returns whether shadows should be enabled.
+	 *
+	 * @return  <code>true</code> if shadows should be enabled.
+	 */
+	public boolean isShadowEnabled()
+	{
+		return _shadowEnabled;
+	}
+
+	/**
+	 * Sets whether shadows should be enabled.
+	 *
+	 * @param   shadowEnabled   <code>true</code> if shadows should be enabled.
+	 */
+	public void setShadowEnabled( final boolean shadowEnabled )
+	{
+		_shadowEnabled = shadowEnabled;
+	}
+
+	/**
+	 * Returns whether multisample (soft) shadows should be enabled.
+	 *
+	 * @return  <code>true</code> if multisample (soft) shadows should be enabled.
+	 */
+	public boolean isShadowMultisampleEnabled()
+	{
+		return _shadowMultisampleEnabled;
+	}
+
+	/**
+	 * Sets whether multisample (soft) shadows should be enabled.
+	 *
+	 * @param   shadowMultisampleEnabled    <code>true</code> if multisample
+	 *                                      (soft) shadows should be enabled.
+	 */
+	public void setShadowMultisampleEnabled( final boolean shadowMultisampleEnabled )
+	{
+		_shadowMultisampleEnabled = shadowMultisampleEnabled;
 	}
 }
