@@ -314,6 +314,7 @@ public class GeometryTools
 	{
 		return testSphereBoxIntersection( sphereCenter.x,  sphereCenter.y,  sphereCenter.z,  sphereRadius, box.v1.x, box.v1.y, box.v1.z, box.v2.x, box.v2.y, box.v2.z );
 	}
+
 	/**
 	 * Test intersection between axis-aligned box and sphere.
 	 *
@@ -401,6 +402,93 @@ public class GeometryTools
 		}
 
 		return ( maxDistance < sphereRadius * sphereRadius );
+	}
+
+	/**
+	 * Tests whether a sphere and a cylinder intersect, including containment
+	 * and border cases.
+	 *
+	 * @param   sphereCenterX   X coordinate of sphere center.
+	 * @param   sphereCenterY   Y coordinate of sphere center.
+	 * @param   sphereCenterZ   Z coordinate of sphere center.
+	 * @param   sphereRadius    Radius of sphere.
+	 * @param   toSphere        Transformation from cylinder to sphere.
+	 * @param   cylinderHeight  Height of the cylinder.
+	 * @param   cylinderRadius  Radius of cylinder.
+	 *
+	 * @return  <code>true</code> if sphere intersects with cylinder;
+	 *          <code>false</code> otherwise.
+	 */
+	public static boolean testSphereCylinderIntersection( final double sphereCenterX, final double sphereCenterY, final double sphereCenterZ, final double sphereRadius, final Matrix3D toSphere, final double cylinderHeight, final double cylinderRadius )
+	{
+		final double x = toSphere.inverseTransformX( sphereCenterX, sphereCenterY, sphereCenterZ );
+		final double y = toSphere.inverseTransformY( sphereCenterX, sphereCenterY, sphereCenterZ );
+		final double z = toSphere.inverseTransformZ( sphereCenterX, sphereCenterY, sphereCenterZ );
+		return testSphereCylinderIntersection( x, y, z, sphereRadius, cylinderHeight, cylinderRadius );
+	}
+
+	/**
+	 * Tests whether a sphere and a cylinder intersect, including containment
+	 * and border cases. Coordinates are relative to the base of the cylinder.
+	 *
+	 * @param   sphereCenterX   X coordinate of sphere center.
+	 * @param   sphereCenterY   Y coordinate of sphere center.
+	 * @param   sphereCenterZ   Z coordinate of sphere center.
+	 * @param   sphereRadius    Radius of sphere.
+	 * @param   cylinderHeight  Height of the cylinder.
+	 * @param   cylinderRadius  Radius of cylinder.
+	 *
+	 * @return  <code>true</code> if sphere intersects with cylinder;
+	 *          <code>false</code> otherwise.
+	 *
+	 * @noinspection MethodWithMultipleReturnPoints
+	 */
+	public static boolean testSphereCylinderIntersection( final double sphereCenterX, final double sphereCenterY, final double sphereCenterZ, final double sphereRadius, final double cylinderHeight, final double cylinderRadius )
+	{
+		final double effectiveSphereRadius;
+
+		if ( sphereCenterZ < 0.0 )
+		{
+			if ( sphereCenterZ < -sphereRadius )
+			{
+				return false;
+			}
+
+			effectiveSphereRadius = Math.sqrt( sphereRadius * sphereRadius - sphereCenterZ * sphereCenterZ );
+		}
+		else if ( sphereCenterZ > cylinderHeight )
+		{
+			if ( sphereCenterZ > cylinderHeight + sphereRadius )
+			{
+				return false;
+			}
+
+			final double offsetZ = sphereCenterZ - cylinderHeight;
+			effectiveSphereRadius = Math.sqrt( sphereRadius * sphereRadius - offsetZ * offsetZ );
+		}
+		else
+		{
+			effectiveSphereRadius = sphereRadius;
+		}
+
+		return testCircleIntersection( cylinderRadius, sphereCenterX, sphereCenterY, effectiveSphereRadius );
+	}
+
+	/**
+	 * Tests whether two circles intersect.
+	 *
+	 * @param   radius1     Radius of the first circle.
+	 * @param   centerDx    Distance along x-axis between circle center points.
+	 * @param   centerDy    Distance along y-axis between circle center points.
+	 * @param   radius2     Radius of the second circle.
+	 *
+	 * @return  <code>true</code> if the circles intersect;
+	 *          <code>false</code> otherwise.
+	 */
+	private static boolean testCircleIntersection( final double radius1, final double centerDx, final double centerDy, final double radius2 )
+	{
+		final double combinedRadius = radius1 + radius2;
+		return MathTools.lessOrAlmostEqual( centerDx * centerDx + centerDy * centerDy, combinedRadius * combinedRadius, 0.00001 );
 	}
 
 	/**

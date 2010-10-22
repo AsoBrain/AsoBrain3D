@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,12 +20,9 @@
  */
 package ab.j3d.geom;
 
-import junit.framework.TestCase;
-
-import ab.j3d.Bounds3D;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.junit.Vector3DTester;
+import ab.j3d.*;
+import ab.j3d.junit.*;
+import junit.framework.*;
 
 /**
  * This class tests the {@link GeometryTools} class.
@@ -653,5 +651,33 @@ public final class TestGeometryTools
 			final boolean result = GeometryTools.isPointInsidePolygon( test._polygon, test._x, test._y, test._z );
 			assertEquals( description, test._expected, result );
 		}
+	}
+
+	/**
+	 * Unit test for {@link GeometryTools#testSphereCylinderIntersection}.
+	 */
+	public void testIntersectSphereCylinder()
+	{
+		// Obvious intersections and misses.
+		assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, 1.0, 1.0, 2.0, 1.0 ) );
+		assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 2.0, 1.0, 1.0, 1.0, 2.0, 1.0 ) );
+		assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 2.0, 1.0, 1.0, 2.0, 1.0 ) );
+		assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, -0.5, 1.0, 2.0, 1.0 ) );
+
+		// Sphere center below cylinder. (extreme cases)
+		assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, -Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ), 1.0, 2.0, 1.0 ) );
+		assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, -Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ) - 0.001, 1.0, 2.0, 1.0 ) );
+
+		// Sphere center above cylinder. (extreme cases)
+		assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, 2.0 + Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ), 1.0, 2.0, 1.0 ) );
+		assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 1.0, 1.0, 2.0 + Math.sqrt( 2.0 * Math.sqrt( 2.0 ) - 2.0 ) + 0.001, 1.0, 2.0, 1.0 ) );
+
+		// Sphere center on cylinder center line.
+		assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, -1.001, 1.0, 1.0, 1.0 ) );
+		assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, -1.0, 1.0, 1.0, 1.0 ) );
+		assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 0.0, 1.0, 1.0, 1.0 ) );
+		assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 1.0, 1.0, 1.0, 1.0 ) );
+		assertTrue( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 2.0, 1.0, 1.0, 1.0 ) );
+		assertFalse( "Unexpected result.", GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 2.001, 1.0, 1.0, 1.0 ) );
 	}
 }
