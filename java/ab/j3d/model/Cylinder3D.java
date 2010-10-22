@@ -173,4 +173,25 @@ public class Cylinder3D
 		final double radius = this.radius;
 		return new Bounds3D( -radius, -radius, 0.0, radius, radius, height );
 	}
+
+	@Override
+	public boolean collidesWith( final Matrix3D fromOtherToThis, final Object3D other )
+	{
+		final boolean result;
+
+		if ( other instanceof Sphere3D )
+		{
+			final Sphere3D sphere = (Sphere3D)other;
+			final double x = fromOtherToThis.transformX( 0.0, 0.0, 0.0 );
+			final double y = fromOtherToThis.transformY( 0.0, 0.0, 0.0 );
+			final double z = fromOtherToThis.transformZ( 0.0, 0.0, 0.0 );
+			result = GeometryTools.testSphereCylinderIntersection( x, y, z, sphere.radius, height, radius );
+		}
+		else
+		{
+			result = super.collidesWith( fromOtherToThis, other );
+		}
+
+		return result;
+	}
 }

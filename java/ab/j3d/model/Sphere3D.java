@@ -199,6 +199,11 @@ public final class Sphere3D
 			final double centerZ = fromOtherToThis.inverseTransformZ( 0.0, 0.0, 0.0 );
 			result = GeometryTools.testSphereBoxIntersection( centerX, centerY, centerZ, radius, 0.0, 0.0, 0.0, box.getDX(), box.getDY(), box.getDZ() );
 		}
+		else if ( other instanceof Cylinder3D ) /* sphere vs. cylinder */
+		{
+			final Cylinder3D cylinder = (Cylinder3D)other;
+			result = GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 0.0, radius, fromOtherToThis, cylinder.height, cylinder.radius );
+		}
 		else
 		{
 			result = super.collidesWith( fromOtherToThis, other );
