@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 2004-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,19 +20,12 @@
  */
 package ab.j3d.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import javax.swing.Action;
+import java.util.*;
+import javax.swing.*;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import ab.j3d.Bounds3D;
-import ab.j3d.Bounds3DBuilder;
-import ab.j3d.Matrix3D;
-import ab.j3d.view.control.planar.PlaneControl;
-import ab.j3d.view.control.planar.SubPlaneControl;
+import ab.j3d.*;
+import ab.j3d.view.control.planar.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Content node in {@link Scene}.
@@ -44,11 +38,13 @@ public class ContentNode
 	/**
 	 * Application-assigned ID of this node.
 	 */
+	@NotNull
 	private final Object _id;
 
 	/**
 	 * Transform for this node.
 	 */
+	@NotNull
 	private Matrix3D _transform;
 
 	/**
@@ -59,7 +55,8 @@ public class ContentNode
 	/**
 	 * Root in the 3D scene associated with this node.
 	 */
-	private final Node3D _node3D;
+	@NotNull
+	private Node3D _node3D;
 
 	/**
 	 * Context actions.
@@ -100,7 +97,7 @@ public class ContentNode
 	 * @param   transform   Initial transform (<code>null</code> => identity).
 	 * @param   node3D      Root in the 3D scene.
 	 */
-	public ContentNode( final Object id , @Nullable final Matrix3D transform , final Node3D node3D )
+	public ContentNode( @NotNull final Object id , @Nullable final Matrix3D transform , @NotNull final Node3D node3D )
 	{
 		_id = id;
 		_node3D = node3D;
@@ -112,6 +109,7 @@ public class ContentNode
 	 *
 	 * @return  Application-assigned ID of this node.
 	 */
+	@NotNull
 	public Object getID()
 	{
 		return _id;
@@ -185,6 +183,7 @@ public class ContentNode
 	 * @return combined bounds of all the {@link ab.j3d.model.Object3D}'s this
 	 * {@link ContentNode} contains.
 	 */
+	@Nullable
 	public Bounds3D getBounds()
 	{
 		Bounds3D result = _cachedBounds3d;
@@ -226,10 +225,7 @@ public class ContentNode
 			result = new Node3DCollection<Object3D>();
 
 			final Node3D root = getNode3D();
-			if ( root != null )
-			{
-				root.collectNodes( result , Object3D.class , Matrix3D.INIT , false );
-			}
+			root.collectNodes( result , Object3D.class , Matrix3D.INIT , false );
 
 			_cachedContent = result;
 		}
@@ -267,9 +263,24 @@ public class ContentNode
 	 *
 	 * @return  Root in the 3D scene associated with this node.
 	 */
+	@NotNull
 	public Node3D getNode3D()
 	{
 		return _node3D;
+	}
+
+	/**
+	 * Get root in the 3D scene associated with this node.
+	 *
+	 * @param   node3D  Root in the 3D scene associated with this node.
+	 */
+	public void setNode3D( @NotNull final Node3D node3D )
+	{
+		if ( _node3D != node3D )
+		{
+			_node3D = node3D;
+			fireContentUpdated();
+		}
 	}
 
 	/**
