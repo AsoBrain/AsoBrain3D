@@ -1,5 +1,4 @@
-const int lightCount = 3;
-
+// To enable multi-pass lighting: #define MULTIPASS_LIGHTING
 varying vec3 vertex;
 varying vec3 normal;
 
@@ -16,6 +15,8 @@ uniform vec3 reflectionColor;
  */
 
 vec4 frontLighting( in vec4 color );
+
+float shadow();
 
 vec4 lighting( in vec4 color )
 {
@@ -44,7 +45,12 @@ vec4 frontLighting( in vec4 color )
 	vec3 N = normalize( normal );
 	vec3 E = normalize( -vertex );
 
-	for ( int i = 0 ; i < lightCount ; i++ )
+#ifdef MULTIPASS_LIGHTING
+	const int i = 0;
+#else
+	const int lightCount = 3;
+	for ( int i = 0; i < lightCount; i++ )
+#endif
 	{
 		/*
 		 * Note on 'gl_LightSource' vs 'gl_FrontLightProduct':
@@ -63,7 +69,7 @@ vec4 frontLighting( in vec4 color )
 			vec3 diffuse  = gl_LightSource      [ i ].diffuse .rgb *      max( dot( N , L ) , 0.0 );
 			vec3 specular = gl_FrontLightProduct[ i ].specular.rgb * pow( max( dot( N , H ) , 0.0 ) , gl_FrontMaterial.shininess );
 
-			result += ambient + color.rgb * diffuse + specular;
+			result += ambient + ( color.rgb * diffuse + specular ) * shadow();
 		}
 		else
 		{
@@ -106,7 +112,7 @@ vec4 frontLighting( in vec4 color )
 				}
 			}
 
-			result += ambient + color.rgb * diffuse + specular;
+			result += ambient + ( color.rgb * diffuse + specular ) * shadow();
 		}
 	}
 
