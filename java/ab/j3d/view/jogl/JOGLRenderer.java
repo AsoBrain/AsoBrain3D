@@ -38,15 +38,13 @@ import com.sun.opengl.util.texture.*;
 import org.jetbrains.annotations.*;
 
 /**
- * Implements {@link Renderer} for JOGL.
+ * Renderer implemented using JOGL.
  *
  * @author  Peter S. Heijnen
  * @author  G. Meinders
- *
  * @version $Revision$ $Date$
  */
 public class JOGLRenderer
-	extends Renderer
 {
 	/**
 	 * If enabled, objects are drawn with lines for face and vertex normals.
@@ -91,31 +89,24 @@ public class JOGLRenderer
 	private static final int TEXTURE_UNIT_BLEND_BACK = GL.GL_TEXTURE1;
 
 	/**
+	 * Texture unit used for shadow mapping.
+	 */
+	private static final int TEXTURE_UNIT_SHADOW = GL.GL_TEXTURE7;
+
+	/**
 	 * OpenGL pipeline.
 	 */
 	private final GL _gl;
 
 	/**
+	 * Encapsulates complex and/or cacheable OpenGL state changes.
+	 */
+	private GLStateHelper _state;
+
+	/**
 	 * Texture cache.
 	 */
 	private final TextureCache _textureCache;
-
-	/**
-	 * Wrapper for OpenGL pipeline.
-	 */
-	private GLWrapper _glWrapper;
-
-	/**
-	 * Counting variable with index of JOGL light.
-	 *
-	 * @see     #renderLight
-	 */
-	private int _lightIndex = 0;
-
-	/**
-	 * Maximum number of lights allowed in this scene.
-	 */
-	private int _maxLights = 0;
 
 	/**
 	 * Position of most dominant light in the scene.
@@ -128,10 +119,20 @@ public class JOGLRenderer
 	private float _dominantLightIntensity;
 
 	/**
-	 * Temporary variable set by {@link #renderObjectBegin} to the most
-	 * dominant light source relative to the object.
+	 * Set to the most dominant light source relative to an object, while that
+	 * object is being rendered.
 	 */
 	private Vector3D _lightPositionRelativeToObject;
+
+	/**
+	 * Scene to view transformation.
+	 */
+	private Matrix3D _sceneToView;
+
+	/**
+	 * View to scene transformation.
+	 */
+	private Matrix3D _viewToScene;
 
 	/**
 	 * Scene to view transformation, excluding any translation components.
@@ -209,6 +210,39 @@ public class JOGLRenderer
 	private JOGLCapabilities _capabilities = null;
 
 	/**
+	 * Size of the shadow map texture (both width and height), in pixels.
+	 */
+	private final int _shadowSize = 512;
+
+	/**
+	 * Set to <code>true</code> while a shadow map is being rendered.
+	 */
+	private boolean _shadowPass;
+
+	/**
+	 * Serves as a fake accumulation buffer. Avoiding a real accumulation buffer
+	 * (glAccum) allows for FSAA to work.
+	 */
+	private int _accumulationTexture;
+
+	/**
+	 * Whether color should be rendered for shadow maps, instead of only depth.
+	 * (Useful for debugging only.)
+	 */
+	private static final boolean RENDER_SHADOW_COLOR = false;
+
+	/**
+	 * Shadow map instance, reused to render all shadow maps.
+	 */
+	private ShadowMap _shadowMap;
+
+	/**
+	 * Indicates whether the first lighting pass is currently being rendered.
+	 * Always <code>true</code> when using single-pass lighting.
+	 */
+	private boolean _firstPass = false;
+
+	/**
 	 * Specifies which objects should be rendered during the current rendering
 	 * pass when performing multi-pass rendering.
 	 */
@@ -230,6 +264,8 @@ public class JOGLRenderer
 	public JOGLRenderer( final GL gl, final JOGLConfiguration configuration, final TextureCache textureCache )
 	{
 		_gl = gl;
+		_state = null;
+
 		_textureCache = textureCache;
 		_configuration = configuration;
 
@@ -239,14 +275,30 @@ public class JOGLRenderer
 		_colorBuffers = null;
 		_depthBuffers = null;
 
-		_glWrapper = null;
-
 		_dominantLightIntensity = 0.0f;
 		_dominantLightPosition = null;
 		_lightPositionRelativeToObject = null;
 
+		_sceneToView = Matrix3D.INIT;
+		_viewToScene = Matrix3D.INIT;
 		_sceneToViewRotation = Matrix3D.INIT;
 		_viewToSceneRotation = Matrix3D.INIT;
+
+		_shadowMap = null;
+		_shadowPass = false;
+		_accumulationTexture = -1;
+	}
+
+	/**
+	 * Creates the OpenGL state helper for the renderer.
+	 *
+	 * @param   gl  OpenGL interface.
+	 *
+	 * @return  Create helper.
+	 */
+	private static GLStateHelper createGLStateHelper( final GL gl )
+	{
+		return new CachingGLStateHelper( gl );
 	}
 
 	/**
@@ -255,30 +307,34 @@ public class JOGLRenderer
 	public void init()
 	{
 		final GL gl = _gl;
+		final GLStateHelper state = createGLStateHelper( gl );
+		_state = state;
 
 		/* Enable depth buffering. */
-		gl.glEnable( GL.GL_DEPTH_TEST );
+		state.setEnabled( GL.GL_DEPTH_TEST, true );
 		gl.glDepthMask( true );
 		gl.glDepthFunc ( GL.GL_LEQUAL );
 
 		/* Enable polygon offsets. */
-		gl.glEnable( GL.GL_POLYGON_OFFSET_FILL );
-		gl.glEnable( GL.GL_POLYGON_OFFSET_LINE );
-		gl.glEnable( GL.GL_POLYGON_OFFSET_POINT );
+		state.setEnabled( GL.GL_POLYGON_OFFSET_FILL, true );
+		state.setEnabled( GL.GL_POLYGON_OFFSET_LINE, true );
+		state.setEnabled( GL.GL_POLYGON_OFFSET_POINT, true );
 
 		/* Normalize lighting normals after scaling */
-		gl.glEnable( GL.GL_NORMALIZE );
+		state.setEnabled( GL.GL_NORMALIZE, true );
 
 		_textureCache.init();
 
 		final JOGLConfiguration configuration = _configuration;
 		final JOGLCapabilities  capabilities  = new JOGLCapabilities( GLContext.getCurrent() );
+		capabilities.printSummary( System.out );
 		_capabilities = capabilities;
 
 		ShaderImplementation shaderImplementation = null;
 
 		if ( configuration.isPerPixelLightingEnabled() ||
-		     configuration.isDepthPeelingEnabled() )
+		     configuration.isDepthPeelingEnabled() ||
+		     configuration.isShadowEnabled() )
 		{
 			if ( capabilities.isShaderSupported() )
 			{
@@ -314,6 +370,7 @@ public class JOGLRenderer
 			final boolean lightingEnabled     = configuration.isPerPixelLightingEnabled();
 			final boolean depthPeelingEnabled = configuration.isDepthPeelingEnabled() &&
 			                                    capabilities.isDepthPeelingSupported();
+			final boolean shadowEnabled = configuration.isShadowEnabled();
 
 			final List<Shader> shaders = new ArrayList<Shader>();
 			try
@@ -324,7 +381,15 @@ public class JOGLRenderer
 				final Shader lightingVertex = loadShader( Shader.Type.VERTEX , "lighting-vertex.glsl" );
 				shaders.add( lightingVertex );
 
-				final Shader lightingFragment = loadShader( Shader.Type.FRAGMENT , "lighting-fragment.glsl" );
+				final Shader lightingFragment;
+				if ( isMultiPassLightingEnabled() )
+				{
+					lightingFragment = loadShader( Shader.Type.FRAGMENT, "lighting-fragment.glsl", "#define MULTIPASS_LIGHTING" );
+				}
+				else
+				{
+					lightingFragment = loadShader( Shader.Type.FRAGMENT , "lighting-fragment.glsl" );
+				}
 				shaders.add( lightingFragment );
 
 				final Shader materialVertex = loadShader( Shader.Type.VERTEX , "material-vertex.glsl" );
@@ -344,14 +409,33 @@ public class JOGLRenderer
 					depthPeelingFragment = null;
 				}
 
+				Shader shadowVertex = null;
+				Shader shadowFragment = null;
+
+				if ( shadowEnabled )
+				{
+					shadowVertex = loadShader( Shader.Type.VERTEX, "shadow-vertex.glsl" );
+					shaders.add( shadowVertex );
+
+					final String shadowFragmentShader = configuration.isShadowMultisampleEnabled() ? "shadow-fragment-multisample.glsl" : "shadow-fragment.glsl";
+					shadowFragment = loadShader( Shader.Type.FRAGMENT, shadowFragmentShader );
+					shaders.add( shadowFragment );
+				}
+
 				/*
 				 * Build shader programs for various rendering modes.
 				 */
 				final ShaderProgram unlit = shaderImplementation.createProgram( "unlit" );
-				unlit.attach( createVertexShaderMain  ( "color" , null ) );
-				unlit.attach( createFragmentShaderMain( "color" , null , depthPeelingEnabled ) );
+				unlit.attach( createVertexShaderMain( "color", null, shadowEnabled ) );
+				unlit.attach( createFragmentShaderMain( "color", null, shadowEnabled, depthPeelingEnabled ) );
 				unlit.attach( materialVertex );
 				unlit.attach( materialFragment );
+
+				if ( shadowEnabled )
+				{
+					unlit.attach( shadowVertex );
+					unlit.attach( shadowFragment );
+				}
 
 				if ( depthPeelingEnabled )
 				{
@@ -363,8 +447,8 @@ public class JOGLRenderer
 
 				final ShaderProgram colored  = shaderImplementation.createProgram( "colored"  );
 				final String lightingFunction = lightingEnabled ? "lighting" : null;
-				colored.attach( createVertexShaderMain  ( "color" , lightingFunction ) );
-				colored.attach( createFragmentShaderMain( "color" , lightingFunction , depthPeelingEnabled ) );
+				colored.attach( createVertexShaderMain( "color", lightingFunction, shadowEnabled ) );
+				colored.attach( createFragmentShaderMain( "color", lightingFunction, shadowEnabled, depthPeelingEnabled ) );
 				colored.attach( materialVertex );
 				colored.attach( materialFragment );
 
@@ -372,6 +456,12 @@ public class JOGLRenderer
 				{
 					colored.attach( lightingVertex );
 					colored.attach( lightingFragment );
+				}
+
+				if ( shadowEnabled )
+				{
+					colored.attach( shadowVertex );
+					colored.attach( shadowFragment );
 				}
 
 				if ( depthPeelingEnabled )
@@ -383,8 +473,8 @@ public class JOGLRenderer
 				_colored = colored;
 
 				final ShaderProgram textured = shaderImplementation.createProgram( "textured" );
-				textured.attach( createVertexShaderMain  ( "texture" , lightingFunction ) );
-				textured.attach( createFragmentShaderMain( "texture" , lightingFunction , depthPeelingEnabled ) );
+				textured.attach( createVertexShaderMain( "texture", lightingFunction, shadowEnabled ) );
+				textured.attach( createFragmentShaderMain( "texture", lightingFunction, shadowEnabled, depthPeelingEnabled ) );
 				textured.attach( materialVertex );
 				textured.attach( materialFragment );
 
@@ -392,6 +482,12 @@ public class JOGLRenderer
 				{
 					textured.attach( lightingVertex );
 					textured.attach( lightingFragment );
+				}
+
+				if ( shadowEnabled )
+				{
+					textured.attach( shadowVertex );
+					textured.attach( shadowFragment );
 				}
 
 				if ( depthPeelingEnabled )
@@ -430,6 +526,24 @@ public class JOGLRenderer
 
 			_depthBuffers = depthBuffers;
 			_colorBuffers = colorBuffers;
+		}
+
+		/* Set Light Model to two sided lighting. */
+		gl.glLightModeli( GL.GL_LIGHT_MODEL_TWO_SIDE , GL.GL_TRUE );
+
+		/* Set local view point */
+		gl.glLightModeli( GL.GL_LIGHT_MODEL_LOCAL_VIEWER , GL.GL_TRUE );
+
+		/* Apply specular hightlight after texturing (otherwise, this would be done before texturing, so we won't see it). */
+		if ( gl.isExtensionAvailable( "GL_VERSION_1_2" ) )
+		{
+			gl.glLightModeli( GL.GL_LIGHT_MODEL_COLOR_CONTROL , GL.GL_SEPARATE_SPECULAR_COLOR );
+		}
+
+		final ShadowMap shadowMap = _shadowMap;
+		if ( shadowMap != null )
+		{
+			shadowMap.init( gl );
 		}
 	}
 
@@ -477,6 +591,18 @@ public class JOGLRenderer
 	}
 
 	/**
+	 * Returns whether multi-pass lighting is supported and enabled.
+	 *
+	 * @return  <code>true</code> if multi-pass lighting is enabled.
+	 */
+	private boolean isMultiPassLightingEnabled()
+	{
+		return _configuration.isShadowEnabled() &&
+		       _capabilities.isNonPowerOfTwoSupported() &&
+		       _capabilities.isTextureRectangleSupported();
+	}
+
+	/**
 	 * Sets the scene to view transformation. The inverse of this transformation
 	 * is used for environment mapping, i.e. to make the environment stationary
 	 * with respect the the world instead of the camera.
@@ -485,8 +611,13 @@ public class JOGLRenderer
 	 */
 	public void setSceneToViewTransform( final Matrix3D sceneToView )
 	{
+		final Matrix3D viewToScene = sceneToView.inverse();
+
+		_sceneToView = sceneToView;
+		_viewToScene = viewToScene;
+
 		_sceneToViewRotation = sceneToView.setTranslation( 0.0 , 0.0 , 0.0 );
-		_viewToSceneRotation = _sceneToViewRotation.inverse();
+		_viewToSceneRotation = viewToScene.setTranslation( 0.0 , 0.0 , 0.0 );
 	}
 
 	/**
@@ -498,10 +629,11 @@ public class JOGLRenderer
 	 * @param   lightingFunction    Name of the lighting function, defined
 	 *                              in another vertex shader;
 	 *                              <code>null</code> to use no lighting.
+	 * @param   shadowEnabled       <code>true</code> to use shadow mapping.
 	 *
 	 * @return  Created vertex shader.
 	 */
-	private Shader createVertexShaderMain( final String colorFunction , final String lightingFunction )
+	private Shader createVertexShaderMain( final String colorFunction , final String lightingFunction, final boolean shadowEnabled )
 	{
 		final StringBuilder source = new StringBuilder();
 
@@ -516,16 +648,29 @@ public class JOGLRenderer
 			source.append( "();" );
 		}
 
+		if ( shadowEnabled )
+		{
+			source.append( "void shadow();" );
+		}
+
 		source.append( "void main()" );
 		source.append( "{" );
+
 		source.append( "gl_Position = ftransform();" );
 		source.append( colorFunction );
 		source.append( "();" );
+
 		if ( lightingFunction != null )
 		{
 			source.append( lightingFunction );
 			source.append( "();" );
 		}
+
+		if ( shadowEnabled )
+		{
+			source.append( "shadow();" );
+		}
+
 		source.append( "}" );
 
 		final Shader result = _shaderImplementation.createShader( Shader.Type.VERTEX );
@@ -542,13 +687,19 @@ public class JOGLRenderer
 	 * @param   lightingFunction        Name of the lighting function, defined
 	 *                                  in another fragment shader;
 	 *                                  <code>null</code> to use no lighting.
+	 * @param   shadowEnabled           <code>true</code> to use shadow mapping.
 	 * @param   depthPeelingEnabled     Whether depth peeling is enabled.
 	 *
 	 * @return  Created vertex shader.
 	 */
-	private Shader createFragmentShaderMain( final String colorFunction , final String lightingFunction , final boolean depthPeelingEnabled )
+	private Shader createFragmentShaderMain( final String colorFunction, final String lightingFunction, final boolean shadowEnabled, final boolean depthPeelingEnabled )
 	{
 		final StringBuilder source = new StringBuilder();
+
+		if ( !shadowEnabled )
+		{
+			source.append( "float shadow() { return 1.0; }" );
+		}
 
 		if ( depthPeelingEnabled )
 		{
@@ -568,10 +719,12 @@ public class JOGLRenderer
 
 		source.append( "void main()" );
 		source.append( "{" );
+
 		if ( depthPeelingEnabled )
 		{
 			source.append( "depthPeeling();" );
 		}
+
 		source.append( "gl_FragColor = " );
 		if ( lightingFunction != null )
 		{
@@ -585,6 +738,9 @@ public class JOGLRenderer
 			source.append( colorFunction );
 			source.append( "();" );
 		}
+		// TODO: Check if this works well with multi-pass lighting. Could end up too bright.
+		source.append( "gl_FragColor.rgb += gl_FrontMaterial.emission.rgb * gl_FragColor.a;" );
+
 		source.append( "}" );
 
 		final Shader result = _shaderImplementation.createShader( Shader.Type.FRAGMENT );
@@ -595,27 +751,45 @@ public class JOGLRenderer
 	/**
 	 * Loads a shader of the specified type.
 	 *
-	 * @param   shaderType  Type of shader.
-	 * @param   name        Name of the resource to be loaded.
+	 * @param   shaderType      Type of shader.
+	 * @param   name            Name of the resource to be loaded.
+	 * @param   prefixLines     Shader program lines to be prepended, if any.
 	 *
 	 * @return  Loaded shader.
 	 *
 	 * @throws  IOException if an I/O error occurs.
 	 * @throws  GLException if compilation of the shader fails.
 	 */
-	private Shader loadShader( final Shader.Type shaderType , final String name )
+	private Shader loadShader( final Shader.Type shaderType, final String name, final String... prefixLines )
 		throws IOException
 	{
 		final Shader result = _shaderImplementation.createShader( shaderType );
 
 		final Class<?>    clazz  = JOGLRenderer.class;
-		final InputStream source = clazz.getResourceAsStream( name );
-		if ( source == null )
+		final InputStream sourceIn = clazz.getResourceAsStream( name );
+		if ( sourceIn == null )
 		{
 			throw new IOException( "Failed to load shader: " + name );
 		}
 
-		result.setSource( TextTools.loadText( source ) );
+		final String source = TextTools.loadText( sourceIn );
+
+		if ( prefixLines.length == 0 )
+		{
+			result.setSource( source );
+		}
+		else
+		{
+			final String[] prefixedSource = new String[ prefixLines.length + 1 ];
+			for ( int i = 0 ; i < prefixLines.length ; i++ )
+			{
+				final String prefixLine = prefixLines[ i ];
+				prefixedSource[ i ] = prefixLine + "\n";
+			}
+			prefixedSource[ prefixLines.length ] = source;
+			result.setSource( prefixedSource );
+		}
+
 		return result;
 	}
 
@@ -648,14 +822,41 @@ public class JOGLRenderer
 		}
 	}
 
-	@Override
+	/**
+	 * Render a scene.
+	 *
+	 * @param   scene           Scene to be rendered.
+	 * @param   styleFilters    Style filters to apply.
+	 * @param   sceneStyle      Render style to use as base for scene.
+	 * @param   background      Background to be rendered.
+	 * @param   grid            Grid to be rendered (when enabled).
+	 */
 	public void renderScene( final Scene scene, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle, final Background background, final Grid grid )
 	{
-		final GL gl = _gl;
-		final GLWrapper glWrapper = new GLWrapper( gl );
-		_glWrapper = glWrapper;
+		_state = createGLStateHelper( _gl );
+		if ( isMultiPassLightingEnabled() )
+		{
+			renderSceneMultiPass( scene, styleFilters, sceneStyle, background, grid );
+		}
+		else
+		{
+			renderSceneSinglePass( scene, styleFilters, sceneStyle, background, grid );
+		}
+	}
 
-		_gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { scene.getAmbientRed() , scene.getAmbientGreen() , scene.getAmbientBlue() , 1.0f } , 0 );
+	/**
+	 * Render a scene, with lights rendered in multiple passes.
+	 *
+	 * @param   scene           Scene to be rendered.
+	 * @param   styleFilters    Style filters to apply.
+	 * @param   sceneStyle      Render style to use as base for scene.
+	 * @param   background      Background to be rendered.
+	 * @param   grid            Grid to be rendered (when enabled).
+	 */
+	public void renderSceneMultiPass( final Scene scene, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle, final Background background, final Grid grid )
+	{
+		final GL gl = _gl;
+		final GLStateHelper state = _state;
 
 		/*
 		 * Set texture matrices to identity matrix (this should already be the
@@ -663,27 +864,357 @@ public class JOGLRenderer
 		 */
 		if ( isShadersEnabled() || isReflectionsEnabled() )
 		{
-			_gl.glMatrixMode( GL.GL_TEXTURE );
+			gl.glMatrixMode( GL.GL_TEXTURE );
 			for ( int i = 2 ; i >= 0 ; i-- )
 			{
-				_gl.glActiveTexture( GL.GL_TEXTURE0 + i );
-				_gl.glLoadIdentity();
+				gl.glActiveTexture( GL.GL_TEXTURE0 + i );
+				gl.glLoadIdentity();
 			}
-			_gl.glMatrixMode( GL.GL_MODELVIEW );
+			gl.glMatrixMode( GL.GL_MODELVIEW );
 		}
 
-		super.renderScene( scene, styleFilters, sceneStyle, background, grid );
+		/*
+		 * Create or update accumulation texture.
+		 */
+		final int[] viewport = new int[ 4 ];
+		gl.glGetIntegerv( GL.GL_VIEWPORT , viewport , 0 );
+		final int width  = viewport[ 2 ];
+		final int height = viewport[ 3 ];
+
+		int accumulationTexture = _accumulationTexture;
+		boolean createAccumulationTexture = ( accumulationTexture == -1 );
+
+		if ( !createAccumulationTexture )
+		{
+			final int[] textureWidthHeight = new int[2];
+			gl.glGetTexLevelParameteriv( GL.GL_TEXTURE_2D, 0, GL.GL_TEXTURE_WIDTH, textureWidthHeight, 0 );
+			gl.glGetTexLevelParameteriv( GL.GL_TEXTURE_2D, 0, GL.GL_TEXTURE_HEIGHT, textureWidthHeight, 1 );
+			createAccumulationTexture = ( ( textureWidthHeight[ 0 ] != width ) || ( textureWidthHeight[ 1 ] != height ) );
+		}
+
+		if ( createAccumulationTexture )
+		{
+			final int[] textures = new int[ 1 ];
+
+			if ( accumulationTexture != -1 )
+			{
+				textures[ 0 ] = accumulationTexture;
+				gl.glDeleteTextures( 1, textures, 0 );
+			}
+
+			gl.glGenTextures( textures.length, textures, 0 );
+			accumulationTexture = textures[ 0 ];
+
+			gl.glBindTexture( GL.GL_TEXTURE_2D, accumulationTexture );
+			gl.glTexImage2D( GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, width, height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_INT, null );
+			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR );
+			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR );
+			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE );
+			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE );
+			_accumulationTexture = accumulationTexture;
+		}
+
+		final int[] test = new int[ 3 ];
+		gl.glGenTextures( test.length, test, 0 );
+		gl.glDeleteTextures( test.length, test, 0 );
+
+		/*
+		 * Render scene per light.
+		 */
+		final Node3DCollection<Light3D> lights = scene.getContent( Light3D.class );
+		if ( lights.size() == 0 )
+		{
+			throw new IllegalStateException( "Can't render multi-pass: there are no lights." );
+		}
+
+		for ( int i = 0; i < lights.size(); i++ )
+		{
+			_firstPass = ( i == 0 );
+			initLights();
+
+			final Light3D light = lights.getNode( i );
+			final Matrix3D lightTransform = lights.getMatrix( i );
+
+			/*
+			 * Shadow mapping pass (optional).
+			 */
+			ShadowMap shadowMap = null;
+			if ( isShadersEnabled() && _configuration.isShadowEnabled() )
+			{
+				shadowMap = _shadowMap;
+				if ( shadowMap == null )
+				{
+					shadowMap = new ShadowMap( _shadowSize, RENDER_SHADOW_COLOR );
+					shadowMap.init( gl );
+					_shadowMap = shadowMap;
+				}
+
+				shadowMap.setLight( light, lightTransform );
+				shadowMap.begin( gl, scene );
+
+				// Render to depth texture.
+				_shadowPass = true;
+				renderBackground( background );
+				renderContentNodes( scene.getContentNodes() , styleFilters, sceneStyle );
+				_shadowPass = false;
+
+				shadowMap.end( gl );
+			}
+
+			/*
+			 * Render from camera.
+			 */
+
+			if ( shadowMap != null )
+			{
+				// Bind shadow map.
+				gl.glActiveTexture( TEXTURE_UNIT_SHADOW );
+				gl.glBindTexture( GL.GL_TEXTURE_2D, shadowMap.getDepthTexture() );
+				gl.glMatrixMode( GL.GL_TEXTURE );
+				shadowMap.loadProjectionMatrix( gl );
+				JOGLTools.glMultMatrixd( gl, _viewToScene );
+				gl.glMatrixMode( GL.GL_MODELVIEW );
+				gl.glActiveTexture( GL.GL_TEXTURE0 );
+			}
+
+			/*
+			 * Render background during first pass. Use a black background for
+			 * the remaining passes, needed for additive blending.
+			 */
+			if ( i == 0 )
+			{
+				state.setEnabled( GL.GL_LIGHTING, false );
+				renderBackground( background );
+				state.setEnabled( GL.GL_LIGHTING, true );
+				gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { scene.getAmbientRed() , scene.getAmbientGreen() , scene.getAmbientBlue() , 1.0f } , 0 );
+			}
+			else
+			{
+				gl.glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+				gl.glClearDepth( 1.0 );
+				gl.glClear( GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT );
+				gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { 0.0f, 0.0f, 0.0f, 1.0f } , 0 );
+			}
+
+			/*
+			 * Render from the camera.
+			 */
+			gl.glMatrixMode( GL.GL_MODELVIEW );
+			gl.glLoadIdentity();
+			JOGLTools.glMultMatrixd( gl, _sceneToView );
+
+			/*
+			 * Render scene content with only the current light enabled.
+			 */
+			renderLight( GL.GL_LIGHT0, light, lightTransform );
+			renderContentNodes( scene.getContentNodes() , styleFilters, sceneStyle );
+
+			/*
+			 * Add previous rendering passes.
+			 */
+			if ( i > 0 )
+			{
+				state.setEnabled( GL.GL_LIGHTING, false );
+				gl.glBindTexture( GL.GL_TEXTURE_2D, accumulationTexture );
+				state.setBlendFunc( GL.GL_ONE, GL.GL_ONE );
+				state.setEnabled( GL.GL_BLEND, true );
+				JOGLTools.renderToScreen( gl, accumulationTexture, -1.0f, -1.0f, 1.0f, 1.0f );
+				state.setEnabled( GL.GL_BLEND, false );
+				state.setBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+			}
+
+			/*
+			 * Render grid in all passes, such that it will properly occlude
+			 * the objects behind it.
+			 */
+			if ( i == lights.size() - 1 )
+			{
+				if ( grid.isEnabled() )
+				{
+					renderGrid( grid );
+				}
+			}
+
+			/*
+			 * DEBUG: Render shadow map color/depth texture to screen.
+			 * /
+			if ( shadowMap != null )
+			{
+				gl.glBindTexture( GL.GL_TEXTURE_2D, shadowMap.getDepthTexture() );
+				gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_COMPARE_MODE, GL.GL_NONE );
+				JOGLTools.renderToScreen( gl, shadowMap.getDepthTexture(), -1.0f, -1.0f, -0.5f, -0.5f );
+				gl.glBindTexture( GL.GL_TEXTURE_2D, shadowMap.getDepthTexture() );
+				gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_COMPARE_MODE, GL.GL_COMPARE_R_TO_TEXTURE );
+				JOGLTools.renderToScreen( gl, shadowMap.getColorTexture(), 0.5f, -1.0f, 1.0f, -0.5f );
+			}
+			//*/
+
+			if ( i < lights.size() - 1 )
+			{
+				/*
+				 * Copy to texture.
+				 */
+				gl.glBindTexture( GL.GL_TEXTURE_2D, accumulationTexture );
+				gl.glCopyTexSubImage2D( GL.GL_TEXTURE_2D, 0, 0, 0, 0, 0, width, height );
+			}
+		}
 	}
 
-	@Override
+	/**
+	 * Render a scene, with lights rendered in multiple passes.
+	 *
+	 * @param   scene           Scene to be rendered.
+	 * @param   styleFilters    Style filters to apply.
+	 * @param   sceneStyle      Render style to use as base for scene.
+	 * @param   background      Background to be rendered.
+	 * @param   grid            Grid to be rendered (when enabled).
+	 */
+	public void renderSceneSinglePass( final Scene scene, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle, final Background background, final Grid grid )
+	{
+		// FIXME: Doesn't work with shadows enabled. Need to render shadow map for a single light.
+
+		final GL gl = _gl;
+		_firstPass = true;
+
+		/*
+		 * Set texture matrices to identity matrix (this should already be the
+		 * case by default, but some OpenGL drivers seem to think otherwise).
+		 */
+		if ( isShadersEnabled() || isReflectionsEnabled() )
+		{
+			gl.glMatrixMode( GL.GL_TEXTURE );
+			for ( int i = 2 ; i >= 0 ; i-- )
+			{
+				gl.glActiveTexture( GL.GL_TEXTURE0 + i );
+				gl.glLoadIdentity();
+			}
+			gl.glMatrixMode( GL.GL_MODELVIEW );
+		}
+
+		/*
+		 * Render background.
+		 */
+		final GLStateHelper state = _state;
+		state.setEnabled( GL.GL_LIGHTING, false );
+		renderBackground( background );
+		gl.glLightModelfv( GL.GL_LIGHT_MODEL_AMBIENT , new float[] { scene.getAmbientRed() , scene.getAmbientGreen() , scene.getAmbientBlue() , 1.0f } , 0 );
+		state.setEnabled( GL.GL_LIGHTING, true );
+
+		/*
+		 * Enable lights.
+		 */
+		initLights();
+		final Node3DCollection<Light3D> lights = scene.getContent( Light3D.class );
+		for ( int i = 0; i < Math.min( lights.size(), getMaxLights() ); i++ )
+		{
+			final Light3D light = lights.getNode( i );
+			final Matrix3D lightTransform = lights.getMatrix( i );
+			renderLight( GL.GL_LIGHT0 + i, light, lightTransform );
+		}
+
+		/*
+		 * Render from the camera.
+		 */
+		gl.glMatrixMode( GL.GL_MODELVIEW );
+		gl.glLoadIdentity();
+		JOGLTools.glMultMatrixd( gl, _sceneToView );
+		renderContentNodes( scene.getContentNodes() , styleFilters, sceneStyle );
+
+		/*
+		 * Render grid.
+		 */
+		if ( grid.isEnabled() )
+		{
+			gl.glMatrixMode( GL.GL_MODELVIEW );
+			renderGrid( grid );
+		}
+	}
+
+	/**
+	 * Render objects in scene.
+	 *
+	 * @param   nodes           Nodes in the scene.
+	 * @param   styleFilters    Style filters to apply.
+	 * @param   sceneStyle      Render style to use as base for scene.
+	 */
+	private void renderObjects( final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
+	{
+		final GL gl = _gl;
+
+		for ( final ContentNode node : nodes )
+		{
+			final Matrix3D node2world = node.getTransform();
+			final Node3DCollection<Object3D> content = node.getContent();
+
+			final RenderStyle nodeStyle = sceneStyle.applyFilters( styleFilters , node );
+
+			for ( int i = 0 ; i < content.size() ; i++ )
+			{
+				final Matrix3D object2node  = content.getMatrix( i );
+				final Matrix3D object2world = object2node.multiply( node2world );
+				final Object3D object       = content.getNode( i );
+				final int      faceCount    = object.getFaceCount();
+
+				final RenderStyle objectStyle = nodeStyle.applyFilters( styleFilters , object );
+
+				if ( faceCount > 0 )
+				{
+					_lightPositionRelativeToObject = ( _dominantLightPosition != null ) ? object2world.inverseTransform( _dominantLightPosition ) : null;
+					gl.glPushMatrix();
+					JOGLTools.glMultMatrixd( gl, object2world );
+
+					renderObject( object , objectStyle , styleFilters , object2world );
+
+					gl.glPopMatrix();
+				}
+			}
+		}
+	}
+
+	/**
+	 * Renders the given content nodes applying render styles as specified.
+	 *
+	 * @param   nodes           Nodes to be rendered.
+	 * @param   styleFilters    Render style filters to be applied.
+	 * @param   sceneStyle      Base render style for the entire scene.
+	 */
 	public void renderContentNodes( final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
 	{
 		final GL gl = _gl;
-		final GLWrapper glWrapper = _glWrapper;
 
 		/* Set backface culling. */
-		glWrapper.setCullFace( true );
-		glWrapper.glCullFace( GL.GL_BACK );
+		_state.setEnabled( GL.GL_CULL_FACE, true );
+		gl.glCullFace( _shadowPass ? GL.GL_FRONT : GL.GL_BACK );
+
+		setupShaders();
+
+		if ( isShadersEnabled() && isDepthPeelingEnabled() )
+		{
+			/*
+			 * Get viewport bounds.
+			 */
+			final int[] viewport = new int[ 4 ];
+			gl.glGetIntegerv( GL.GL_VIEWPORT , viewport , 0 );
+			final int width  = viewport[ 2 ];
+			final int height = viewport[ 3 ];
+
+			renderSceneWithDepthPeeling( width , height , nodes , styleFilters , sceneStyle );
+		}
+		else
+		{
+			renderSceneWithoutDepthPeeling( nodes , styleFilters , sceneStyle );
+		}
+
+		useShader( null );
+	}
+
+	/**
+	 * Sets uniform variables of GLSL shaders, specifying e.g. the texture units
+	 * to be used.
+	 */
+	private void setupShaders()
+	{
+		final GL gl = _gl;
 
 		/*
 		 * Get viewport bounds.
@@ -697,6 +1228,7 @@ public class JOGLRenderer
 		 * Build shader programs and set uniform variables (i.e. parameters).
 		 */
 		final boolean depthPeelingEnabled = isDepthPeelingEnabled();
+		final boolean shadowEnabled = _configuration.isShadowEnabled();
 
 		if ( isShadersEnabled() )
 		{
@@ -709,10 +1241,14 @@ public class JOGLRenderer
 					unlit.enable();
 					if ( depthPeelingEnabled )
 					{
-						unlit.setUniform( "depthNear"   , TEXTURE_UNIT_DEPTH_NEAR   - GL.GL_TEXTURE0 );
-						unlit.setUniform( "depthOpaque" , TEXTURE_UNIT_DEPTH_OPAQUE - GL.GL_TEXTURE0 );
-						unlit.setUniform( "width"       , (float)width );
-						unlit.setUniform( "height"      , (float)height );
+						unlit.setUniform( "depthNear"    , TEXTURE_UNIT_DEPTH_NEAR   - GL.GL_TEXTURE0 );
+						unlit.setUniform( "depthOpaque"  , TEXTURE_UNIT_DEPTH_OPAQUE - GL.GL_TEXTURE0 );
+						unlit.setUniform( "width"        , (float)width );
+						unlit.setUniform( "height"       , (float)height );
+					}
+					if ( shadowEnabled )
+					{
+						unlit.setUniform( "shadowMap", TEXTURE_UNIT_SHADOW - GL.GL_TEXTURE0 );
 					}
 					unlit.disable();
 					unlit.validate();
@@ -729,6 +1265,10 @@ public class JOGLRenderer
 						colored.setUniform( "depthOpaque" , TEXTURE_UNIT_DEPTH_OPAQUE - GL.GL_TEXTURE0 );
 						colored.setUniform( "width"       , (float)width );
 						colored.setUniform( "height"      , (float)height );
+					}
+					if ( shadowEnabled )
+					{
+						colored.setUniform( "shadowMap", TEXTURE_UNIT_SHADOW - GL.GL_TEXTURE0 );
 					}
 					colored.setUniform( "reflectionMap" , TEXTURE_UNIT_ENVIRONMENT - GL.GL_TEXTURE0 );
 					colored.disable();
@@ -749,6 +1289,10 @@ public class JOGLRenderer
 						textured.setUniform( "width"       , (float)width );
 						textured.setUniform( "height"      , (float)height );
 					}
+					if ( shadowEnabled )
+					{
+						textured.setUniform( "shadowMap", TEXTURE_UNIT_SHADOW - GL.GL_TEXTURE0 );
+					}
 					textured.disable();
 					textured.validate();
 				}
@@ -759,23 +1303,17 @@ public class JOGLRenderer
 				disableShaders();
 			}
 		}
-
-		if ( isShadersEnabled() && depthPeelingEnabled )
-		{
-			renderSceneWithDepthPeeling( width , height , nodes , styleFilters , sceneStyle );
-		}
-		else
-		{
-			renderSceneWithoutDepthPeeling( nodes , styleFilters , sceneStyle );
-		}
-
-		useShader( null );
 	}
 
-	@Override
-	protected void renderBackground( final Background background )
+	/**
+	 * Renders the given background.
+	 *
+	 * @param   background  Background to be rendered.
+	 */
+	private void renderBackground( final Background background )
 	{
 		final GL gl = _gl;
+		final GLStateHelper state = _state;
 
 		/* Clear depth and color buffer. */
 		final Color backgroundColor = background.getColor();
@@ -787,7 +1325,8 @@ public class JOGLRenderer
 		final List<Color> gradient = background.getGradient();
 		if ( !gradient.isEmpty() )
 		{
-			gl.glDisable( GL.GL_DEPTH_TEST );
+			state.setEnabled( GL.GL_CULL_FACE, false );
+			state.setEnabled( GL.GL_DEPTH_TEST, false );
 
 			gl.glMatrixMode( GL.GL_PROJECTION );
 			gl.glPushMatrix();
@@ -798,13 +1337,13 @@ public class JOGLRenderer
 			gl.glLoadIdentity();
 
 			gl.glBegin( GL.GL_QUADS );
-			setColor( gradient.get( 0 % gradient.size() ) );
+			state.setColor( gradient.get( 0 % gradient.size() ) );
 			gl.glVertex2d( -1.0, -1.0 );
-			setColor( gradient.get( 1 % gradient.size() ) );
+			state.setColor( gradient.get( 1 % gradient.size() ) );
 			gl.glVertex2d( 1.0, -1.0 );
-			setColor( gradient.get( 2 % gradient.size() ) );
+			state.setColor( gradient.get( 2 % gradient.size() ) );
 			gl.glVertex2d( 1.0, 1.0 );
-			setColor( gradient.get( 3 % gradient.size() ) );
+			state.setColor( gradient.get( 3 % gradient.size() ) );
 			gl.glVertex2d( -1.0, 1.0 );
 			gl.glEnd();
 
@@ -813,7 +1352,8 @@ public class JOGLRenderer
 			gl.glPopMatrix();
 			gl.glMatrixMode( GL.GL_MODELVIEW );
 
-			gl.glEnable( GL.GL_DEPTH_TEST );
+			state.setEnabled( GL.GL_DEPTH_TEST, true );
+			state.setEnabled( GL.GL_CULL_FACE, true );
 		}
 
 		if ( false )
@@ -821,8 +1361,8 @@ public class JOGLRenderer
 			final Texture reflectionMap = _textureCache.getCubeMap( "reflection/metal" );
 			if ( reflectionMap != null )
 			{
-				gl.glDisable( GL.GL_DEPTH_TEST );
-				gl.glDisable( GL.GL_CULL_FACE );
+				state.setEnabled( GL.GL_DEPTH_TEST, false );
+				state.setEnabled( GL.GL_CULL_FACE, false );
 
 				gl.glMatrixMode( GL.GL_MODELVIEW );
 				gl.glPushMatrix();
@@ -838,24 +1378,24 @@ public class JOGLRenderer
 				gl.glTexGenfv( GL.GL_S , GL.GL_OBJECT_PLANE , new float[] { 1.0f , 0.0f , 0.0f , 1.0f } , 0 );
 				gl.glTexGenfv( GL.GL_T , GL.GL_OBJECT_PLANE , new float[] { 0.0f , 1.0f , 0.0f , 1.0f } , 0 );
 				gl.glTexGenfv( GL.GL_R , GL.GL_OBJECT_PLANE , new float[] { 0.0f , 0.0f , 1.0f , 1.0f } , 0 );
-				gl.glEnable( GL.GL_TEXTURE_GEN_S );
-				gl.glEnable( GL.GL_TEXTURE_GEN_T );
-				gl.glEnable( GL.GL_TEXTURE_GEN_R );
+				state.setEnabled( GL.GL_TEXTURE_GEN_S, true );
+				state.setEnabled( GL.GL_TEXTURE_GEN_T, true );
+				state.setEnabled( GL.GL_TEXTURE_GEN_R, true );
 
 				final GLUT glut = new GLUT();
-				gl.glColor3f( 1.0f , 1.0f , 1.0f );
+				state.setColor( 1.0f , 1.0f , 1.0f, 1.0f );
 				glut.glutSolidCube( 10.0f );
 
-				gl.glDisable( GL.GL_TEXTURE_GEN_S );
-				gl.glDisable( GL.GL_TEXTURE_GEN_T );
-				gl.glDisable( GL.GL_TEXTURE_GEN_R );
+				state.setEnabled( GL.GL_TEXTURE_GEN_S, false );
+				state.setEnabled( GL.GL_TEXTURE_GEN_T, false );
+				state.setEnabled( GL.GL_TEXTURE_GEN_R, false );
 
 				reflectionMap.disable();
 
 				gl.glPopMatrix();
 
-				gl.glEnable( GL.GL_CULL_FACE );
-				gl.glEnable( GL.GL_DEPTH_TEST );
+				state.setEnabled( GL.GL_CULL_FACE, true );
+				state.setEnabled( GL.GL_DEPTH_TEST, true );
 			}
 		}
 	}
@@ -872,14 +1412,12 @@ public class JOGLRenderer
 	private void renderSceneWithDepthPeeling( final int width , final int height , final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
 	{
 		final GL gl = _gl;
-		final GLWrapper glWrapper = _glWrapper;
+		final GLStateHelper state = _state;
 
 		/*
 		 * Configure light parameters.
 		 */
-		_lightIndex = 0;
-		_maxLights  = getMaxLights();
-		renderLights( nodes );
+		initLights();
 
 		/*
 		 * Create frame buffer object to render to textures.
@@ -923,10 +1461,10 @@ public class JOGLRenderer
 		 * The depth buffer is re-used while rendering transparent objects,
 		 * skipping any objects that are fully occluded.
 		 */
-		gl.glEnable( GL.GL_DEPTH_TEST );
+		state.setEnabled( GL.GL_DEPTH_TEST, true );
 		gl.glDepthFunc( GL.GL_LEQUAL );
-		glWrapper.setBlend( false );
-		glWrapper.setLighting( true );
+		state.setEnabled( GL.GL_BLEND, false );
+		state.setEnabled( GL.GL_LIGHTING, true );
 
 		final Texture depthOpaque = depthBuffers[ 2 ];
 		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT , GL.GL_COLOR_ATTACHMENT0_EXT , opaque.getTarget()      , opaque.getTextureObject()      , 0 );
@@ -1022,10 +1560,10 @@ public class JOGLRenderer
 		/*
 		 * Render the depth-peeled composite image to the screen.
 		 */
-		gl.glDisable( GL.GL_DEPTH_TEST );
-		glWrapper.setLighting( false );
-		glWrapper.setBlend( true );
-		glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+		state.setEnabled( GL.GL_DEPTH_TEST, false );
+		state.setEnabled( GL.GL_LIGHTING, false );
+		state.setEnabled( GL.GL_BLEND, true );
+		state.setBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 
 		gl.glActiveTexture( TEXTURE_UNIT_DEPTH_OPAQUE );
 		depthOpaque.disable();
@@ -1050,10 +1588,19 @@ public class JOGLRenderer
 	 */
 	private void renderSceneWithoutDepthPeeling( final List<ContentNode> nodes , final Collection<RenderStyleFilter> styleFilters , final RenderStyle sceneStyle )
 	{
+		// FIXME: Display lists are great for performance, but only work when no textures are loaded during the render pass!
+//		final GL gl = _gl;
+//		final int list = gl.glGenLists( 1 );
+//		gl.glNewList( list, GL.GL_COMPILE_AND_EXECUTE );
+
 		_renderMode = MultiPassRenderMode.OPAQUE_ONLY;
-		super.renderContentNodes( nodes , styleFilters , sceneStyle );
+		renderObjects( nodes, styleFilters, sceneStyle );
+
 		_renderMode = MultiPassRenderMode.TRANSPARENT_ONLY;
-		super.renderContentNodes( nodes , styleFilters , sceneStyle );
+		renderObjects( nodes, styleFilters, sceneStyle );
+
+//		gl.glEndList();
+//		gl.glDeleteLists( list, 1 );
 	}
 
 	/**
@@ -1126,7 +1673,7 @@ public class JOGLRenderer
 
 	/**
 	 * Returns the maximum number of lights supported by the OpenGL
-	 * implementation.
+	 * implementation. At least (and most commonly) 8 lights are supported.
 	 *
 	 * @return  Maximum number of lights.
 	 */
@@ -1144,8 +1691,7 @@ public class JOGLRenderer
 	 */
 	private void renderToViewport( final Texture texture )
 	{
-		final GL        gl        = _gl;
-		final GLWrapper glWrapper = _glWrapper;
+		final GL gl = _gl;
 
 		texture.enable();
 		texture.bind();
@@ -1158,16 +1704,16 @@ public class JOGLRenderer
 		final float right  = textureCoords.right();
 		final float top    = textureCoords.top();
 
-		glWrapper.setColor( 1.0f , 1.0f , 1.0f , 1.0f );
+		_state.setColor( 1.0f, 1.0f, 1.0f, 1.0f );
 		gl.glBegin( GL.GL_QUADS );
-		gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR , left , bottom );
-		gl.glVertex2d( -1.0 , -1.0 );
-		gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR , right , bottom );
-		gl.glVertex2d(  1.0 , -1.0 );
-		gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR , right , top );
-		gl.glVertex2d(  1.0 ,  1.0 );
-		gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR , left , top );
-		gl.glVertex2d( -1.0 ,  1.0 );
+		gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, left, bottom );
+		gl.glVertex2d( -1.0, -1.0 );
+		gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, right, bottom );
+		gl.glVertex2d( 1.0, -1.0 );
+		gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, right, top );
+		gl.glVertex2d( 1.0, 1.0 );
+		gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR, left, top );
+		gl.glVertex2d( -1.0, 1.0 );
 		gl.glEnd();
 
 		fromViewportSpace();
@@ -1188,12 +1734,12 @@ public class JOGLRenderer
 	private void blend( final Texture composite , final Texture layer )
 	{
 		final GL gl = _gl;
-		final GLWrapper glWrapper = _glWrapper;
+		final GLStateHelper state = _state;
 
 		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT , GL.GL_COLOR_ATTACHMENT0_EXT , composite.getTarget() , composite.getTextureObject() , 0 );
 
-		gl.glDisable( GL.GL_DEPTH_TEST );
-		glWrapper.setLighting( false );
+		state.setEnabled( GL.GL_DEPTH_TEST, false );
+		state.setEnabled( GL.GL_LIGHTING, false );
 
 		gl.glActiveTexture( TEXTURE_UNIT_BLEND_BACK );
 		layer.enable();
@@ -1212,8 +1758,8 @@ public class JOGLRenderer
 		layer.disable();
 		gl.glActiveTexture( TEXTURE_UNIT_BLEND_FRONT );
 
-		gl.glEnable( GL.GL_DEPTH_TEST );
-		glWrapper.setLighting( true );
+		state.setEnabled( GL.GL_DEPTH_TEST, true );
+		state.setEnabled( GL.GL_LIGHTING, true );
 
 		useShader( previousShader );
 	}
@@ -1259,20 +1805,24 @@ public class JOGLRenderer
 	 */
 	private void displayTextures( final Texture[] textures , final double x , final boolean blend )
 	{
-		final GL        gl        = _gl;
-		final GLWrapper glWrapper = _glWrapper;
+		final GL gl = _gl;
 
 		/*
 		 * Render one of the buffers to a small rectangle on screen.
 		 */
 		toViewportSpace();
 
-		gl.glPushAttrib( GL.GL_ALL_ATTRIB_BITS );
-		glWrapper.setLighting( false );
-		glWrapper.setBlend( blend );
+		gl.glPushAttrib( GL.GL_ALL_ATTRIB_BITS ); // Don't use state helper until after 'glPopAttrib'!
+		gl.glDisable( GL.GL_LIGHTING );
+
 		if ( blend )
 		{
-			glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+			gl.glEnable( GL.GL_BLEND );
+			gl.glBlendFunc( GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA );
+		}
+		else
+		{
+			gl.glDisable( GL.GL_BLEND );
 		}
 
 		for ( int i = 0 ; i < textures.length ; i++ )
@@ -1295,7 +1845,7 @@ public class JOGLRenderer
 			final float right  = textureCoords.right();
 			final float top    = textureCoords.top();
 
-			glWrapper.setColor( 1.0f , 1.0f , 1.0f , 1.0f );
+			gl.glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
 			gl.glBegin( GL.GL_QUADS );
 			gl.glMultiTexCoord2f( TEXTURE_UNIT_COLOR , left , bottom );
 			gl.glVertex2d( minX , minY );
@@ -1322,79 +1872,62 @@ public class JOGLRenderer
 	{
 		if ( isShadersEnabled() )
 		{
-			final ShaderProgram activeShader = _activeShader;
-			if ( activeShader != shader )
+			if ( _shadowPass )
 			{
-				_activeShader = shader;
-
-				try
+				if ( _activeShader != null )
 				{
-					if ( activeShader != null )
-					{
-						activeShader.disable();
-					}
-
-					if ( shader != null )
-					{
-						shader.enable();
-					}
+					_activeShader.disable();
+					_activeShader = null;
 				}
-				catch ( GLException e )
+			}
+			else
+			{
+				final ShaderProgram activeShader = _activeShader;
+				if ( activeShader != shader )
 				{
-					e.printStackTrace();
-					disableShaders();
+					_activeShader = shader;
+
+					try
+					{
+						if ( activeShader != null )
+						{
+							activeShader.disable();
+						}
+
+						if ( shader != null )
+						{
+							shader.enable();
+						}
+					}
+					catch ( GLException e )
+					{
+						e.printStackTrace();
+						disableShaders();
+					}
 				}
 			}
 		}
 	}
 
-	protected void renderLights( final List<ContentNode> nodes )
+	/**
+	 * Initializes lighting properties.
+	 */
+	private void initLights()
 	{
-		final GL gl = _gl;
-
-		_lightIndex = 0;
-		_maxLights  = getMaxLights();
 		_dominantLightPosition = null;
 		_dominantLightIntensity = 0.0f;
-
-		/* Set Light Model to two sided lighting. */
-		gl.glLightModeli( GL.GL_LIGHT_MODEL_TWO_SIDE , GL.GL_TRUE );
-
-		/* Set local view point */
-		gl.glLightModeli( GL.GL_LIGHT_MODEL_LOCAL_VIEWER , GL.GL_TRUE );
-
-		/* Apply specular hightlight after texturing (otherwise, this would be done before texturing, so we won't see it). */
-		if ( gl.isExtensionAvailable( "GL_VERSION_1_2" ) )
-		{
-			gl.glLightModeli( GL.GL_LIGHT_MODEL_COLOR_CONTROL , GL.GL_SEPARATE_SPECULAR_COLOR );
-		}
-
-		/* Disable all lights */
-		for( int i = 0 ; i < _maxLights ; i++ )
-		{
-			final int light = GL.GL_LIGHT0 + i;
-			gl.glDisable( light );
-			gl.glLightfv( light , GL.GL_POSITION , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
-			gl.glLightfv( light , GL.GL_DIFFUSE  , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
-			gl.glLightfv( light , GL.GL_SPECULAR , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
-			gl.glLightfv( light , GL.GL_AMBIENT  , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
-		}
-
-		/* Let super render lights */
-		super.renderLights( nodes );
 	}
 
-	protected void renderLight( final Matrix3D light2world , final Light3D light )
+	/**
+	 * Renders the given light.
+	 *
+	 * @param   lightNumber     OpenGL identifier for the light.
+	 * @param   light           Light to be rendered.
+	 * @param   light2world     Light to world transformation.
+	 */
+	private void renderLight( final int lightNumber, final Light3D light, final Matrix3D light2world )
 	{
 		final GL gl = _gl;
-
-		final int lightIndex = _lightIndex++;
-		if ( lightIndex >= _maxLights )
-		{
-			throw new IllegalStateException( "No more than " + _maxLights + " lights supported." );
-		}
-
-		final int lightNumber = GL.GL_LIGHT0 + lightIndex;
 
 		gl.glLightfv( lightNumber , GL.GL_AMBIENT  , new float[] { 0.0f , 0.0f , 0.0f , 1.0f } , 0 );
 		gl.glLightfv( lightNumber , GL.GL_DIFFUSE  , new float[] { light.getDiffuseRed()  , light.getDiffuseGreen()  , light.getDiffuseBlue()  , 1.0f } , 0 );
@@ -1427,7 +1960,7 @@ public class JOGLRenderer
 			gl.glLightf( lightNumber , GL.GL_QUADRATIC_ATTENUATION , light.getQuadraticAttenuation() );
 		}
 
-		gl.glEnable( lightNumber );
+		_state.setEnabled( lightNumber, true );
 
 		/**
 		 * Determine dominant light position, used for bump mapping.
@@ -1442,13 +1975,14 @@ public class JOGLRenderer
 		}
 	}
 
-	protected void renderObjectBegin( final Matrix3D object2world , final Object3D object , final RenderStyle objectStyle )
-	{
-		_lightPositionRelativeToObject = ( _dominantLightPosition != null ) ? object2world.inverseTransform( _dominantLightPosition ) : null;
-		_gl.glPushMatrix();
-		JOGLTools.glMultMatrixd( _gl , object2world );
-	}
-
+	/**
+	 * Renders the given object.
+	 *
+	 * @param   object          Object to be rendered.
+	 * @param   objectStyle     Render style applied to the object.
+	 * @param   styleFilters    Style filters to be applied.
+	 * @param   object2world    Object to world transformation.
+	 */
 	protected void renderObject( final Object3D object , final RenderStyle objectStyle , final Collection<RenderStyleFilter> styleFilters , final Matrix3D object2world )
 	{
 		boolean anyMaterialEnabled = false;
@@ -1522,20 +2056,21 @@ public class JOGLRenderer
 		}
 	}
 
-	protected void renderObjectEnd()
-	{
-		_gl.glPopMatrix();
-	}
-
+	/**
+	 * Renders a face with a material applied to it.
+	 *
+	 * @param   face    Face to be rendered.
+	 * @param   style   Render style to be applied.
+	 */
 	protected void renderMaterialFace( final Face3D face, final RenderStyle style )
 	{
-		final Material material = ( style.getMaterialOverride() != null ) ? style.getMaterialOverride() : face.material;
-		if ( material != null )
-		{
-			final GL        gl        = _gl;
-			final GLWrapper glWrapper = _glWrapper;
+		final int      vertexCount = face.getVertexCount();
+		final Material material    = ( style.getMaterialOverride() != null ) ? style.getMaterialOverride() : face.material;
 
-			final MultiPassRenderMode renderMode   = _renderMode;
+		if ( ( material != null ) && ( vertexCount >= 2 ) )
+		{
+			final GL gl = _gl;
+			final MultiPassRenderMode renderMode = _renderMode;
 
 			/*
 			 * Get textures.
@@ -1545,10 +2080,11 @@ public class JOGLRenderer
 			final float   extraAlpha    = style.getMaterialAlpha();
 			final float   combinedAlpha = material.diffuseColorAlpha * extraAlpha;
 			final boolean hasAlpha      = ( combinedAlpha < 0.99f ) || textureCache.hasAlpha( material.colorMap );
-			final boolean blend         = !isDepthPeelingEnabled() && ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && hasAlpha;
+			final boolean blend         = !isDepthPeelingEnabled() &&
+			                              ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && hasAlpha;
 
 			if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || !hasAlpha ) &&
-				 ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || hasAlpha ) )
+			     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || hasAlpha ) )
 			{
 				final List<Vertex> vertices = face.vertices;
 				final Tessellation tessellation = face.getTessellation();
@@ -1568,19 +2104,19 @@ public class JOGLRenderer
 					/*
 					 * Set render/material properties.
 					 */
+					final GLStateHelper state = _state;
 					if ( blend )
 					{
 						if ( combinedAlpha < 0.25f )
 						{
 							gl.glDepthMask( false );
 						}
-						glWrapper.glBlendFunc( GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA );
+						state.setBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 					}
 
-					glWrapper.setBlend( blend );
-					glWrapper.glPolygonOffset( 1.0f, 1.0f );
-					glWrapper.setLighting( hasLighting );
-					setMaterial( material, style, extraAlpha );
+					state.setEnabled( GL.GL_BLEND, blend );
+					state.setEnabled( GL.GL_LIGHTING, hasLighting );
+					state.setMaterial( material , style , extraAlpha );
 
 					/*
 					 * Enable bump map.
@@ -1678,9 +2214,9 @@ public class JOGLRenderer
 							gl.glTexGeni( GL.GL_S, GL.GL_TEXTURE_GEN_MODE, GL.GL_REFLECTION_MAP );
 							gl.glTexGeni( GL.GL_T, GL.GL_TEXTURE_GEN_MODE, GL.GL_REFLECTION_MAP );
 							gl.glTexGeni( GL.GL_R, GL.GL_TEXTURE_GEN_MODE, GL.GL_REFLECTION_MAP );
-							gl.glEnable( GL.GL_TEXTURE_GEN_S );
-							gl.glEnable( GL.GL_TEXTURE_GEN_T );
-							gl.glEnable( GL.GL_TEXTURE_GEN_R );
+							state.setEnabled( GL.GL_TEXTURE_GEN_S, true );
+							state.setEnabled( GL.GL_TEXTURE_GEN_T, true );
+							state.setEnabled( GL.GL_TEXTURE_GEN_R, true );
 						}
 
 						/*
@@ -1711,12 +2247,13 @@ public class JOGLRenderer
 						colorMapCoords = null;
 					}
 
-					if ( _activeShader != null )
+					final ShaderProgram activeShader = _activeShader;
+					if ( activeShader != null )
 					{
 						final Vector3D reflectionColor = new Vector3D( (double)material.reflectionRed, (double)material.reflectionGreen, (double)material.reflectionBlue );
-						_activeShader.setUniform( "reflectionMin", material.reflectionMin );
-						_activeShader.setUniform( "reflectionMax", material.reflectionMax );
-						_activeShader.setUniform( "reflectionColor", reflectionColor );
+						activeShader.setUniform( "reflectionMin", material.reflectionMin );
+						activeShader.setUniform( "reflectionMax", material.reflectionMax );
+						activeShader.setUniform( "reflectionColor", reflectionColor );
 					}
 
 					/*
@@ -1728,15 +2265,7 @@ public class JOGLRenderer
 					for ( int pass = 0 ; pass < passes ; pass++ )
 					{
 						final boolean isBackFace = multipass && ( pass == 0 );
-						if ( multipass )
-						{
-							glWrapper.setCullFace( true );
-							glWrapper.glCullFace( isBackFace ? GL.GL_FRONT : GL.GL_BACK );
-						}
-						else
-						{
-							glWrapper.setCullFace( backfaceCulling );
-						}
+						state.setEnabled( GL.GL_CULL_FACE, multipass || backfaceCulling );
 
 						if ( !setVertexNormals )
 						{
@@ -1814,19 +2343,7 @@ public class JOGLRenderer
 
 						if ( DRAW_NORMALS && ( pass == passes - 1 ) )
 						{
-							gl.glBegin( GL.GL_LINES );
-
-							for ( int vertexIndex = vertices.size() ; --vertexIndex >= 0 ; )
-							{
-								final Vertex vertex = vertices.get( vertexIndex );
-								final Vector3D point = vertex.point;
-								final Vector3D normal = face.smooth ? face.getVertexNormal( vertexIndex ) : face.getNormal();
-
-								gl.glVertex3d( point.x, point.y, point.z );
-								gl.glVertex3d( point.x + normal.x * 100.0, point.y + normal.y * 100.0, point.z + normal.z * 100.0 );
-							}
-
-							gl.glEnd();
+							renderFaceNormals( face );
 						}
 					}
 
@@ -1868,9 +2385,9 @@ public class JOGLRenderer
 						{
 							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_MODULATE );
 
-							gl.glDisable( GL.GL_TEXTURE_GEN_S );
-							gl.glDisable( GL.GL_TEXTURE_GEN_T );
-							gl.glDisable( GL.GL_TEXTURE_GEN_R );
+							state.setEnabled( GL.GL_TEXTURE_GEN_S, false );
+							state.setEnabled( GL.GL_TEXTURE_GEN_T, false );
+							state.setEnabled( GL.GL_TEXTURE_GEN_R, false );
 						}
 
 						reflectionMap.disable();
@@ -1890,12 +2407,17 @@ public class JOGLRenderer
 		}
 	}
 
+	/**
+	 * Renders a face in a solid color.
+	 *
+	 * @param   face    Face to be rendered.
+	 * @param   style   Render style to be applied.
+	 */
 	protected void renderFilledFace( final Face3D face, final RenderStyle style )
 	{
 		final MultiPassRenderMode renderMode = _renderMode;
 
 		final GL gl = _gl;
-		final GLWrapper glWrapper = _glWrapper;
 
 		final Color   color           = style.getFillColor();
 		final int     alpha           = color.getAlpha();
@@ -1904,8 +2426,13 @@ public class JOGLRenderer
 		final boolean hasLighting     = style.isFillLightingEnabled() && ( _lightPositionRelativeToObject != null );
 		final boolean setVertexNormals = hasLighting && face.smooth;
 
+		if ( !hasLighting && !_firstPass )
+		{
+			return;
+		}
+
 		if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || ( alpha == 255 ) ) &&
-			 ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || ( alpha <  255 ) ) )
+		     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || ( alpha <  255 ) ) )
 		{
 			final List<Vertex> vertices = face.vertices;
 			final Tessellation tessellation = face.getTessellation();
@@ -1916,19 +2443,20 @@ public class JOGLRenderer
 				/*
 				 * Set render/material properties.
 				 */
+				final GLStateHelper state = _state;
 				if ( blend )
 				{
 					if ( alpha < 64 )
 					{
 						gl.glDepthMask( false );
 					}
-					glWrapper.glBlendFunc( GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA );
+					state.setBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 				}
-				glWrapper.setBlend( blend );
-				glWrapper.glPolygonOffset( 1.0f, 1.0f );
-				glWrapper.setCullFace( backfaceCulling );
-				glWrapper.setLighting( hasLighting );
-				setColor( color );
+
+				state.setEnabled( GL.GL_BLEND, blend );
+				state.setEnabled( GL.GL_LIGHTING, hasLighting );
+
+				state.setColor( color );
 				useShader( hasLighting ? _colored : _unlit );
 
 				/*
@@ -1936,19 +2464,11 @@ public class JOGLRenderer
 				 */
 				final int passes = ( !backfaceCulling && hasLighting && isShadersEnabled() ) ? 2 : 1;
 				final boolean multipass = ( passes > 1 );
+				state.setEnabled( GL.GL_CULL_FACE, multipass || backfaceCulling );
 
 				for ( int pass = 0 ; pass < passes ; pass++ )
 				{
 					final boolean isBackFace = multipass && ( pass == 0 );
-					if ( multipass )
-					{
-						glWrapper.setCullFace( true );
-						glWrapper.glCullFace( isBackFace ? GL.GL_FRONT : GL.GL_BACK );
-					}
-					else
-					{
-						glWrapper.setCullFace( backfaceCulling );
-					}
 
 					if ( !setVertexNormals )
 					{
@@ -2018,8 +2538,16 @@ public class JOGLRenderer
 		}
 	}
 
+	/**
+	 * Renders the outline of a face.
+	 *
+	 * @param   face    Face to be rendered.
+	 * @param   style   Render style to be applied.
+	 */
 	protected void renderStrokedFace( final Face3D face, final RenderStyle style )
 	{
+		final GL gl = _gl;
+
 		final List<Vertex> vertices = face.vertices;
 		final int vertexCount = vertices.size();
 
@@ -2031,19 +2559,23 @@ public class JOGLRenderer
 			final boolean hasLighting      = style.isStrokeLightingEnabled() && ( _lightPositionRelativeToObject != null );
 			final boolean setVertexNormals = hasLighting && face.smooth;
 
+			if ( !hasLighting && !_firstPass )
+			{
+				return;
+			}
+
 			/*
 			 * Set render/material properties.
 			 */
-			final GLWrapper glWrapper = _glWrapper;
-			glWrapper.setBlend( false );
-			glWrapper.glLineWidth( width );
+			final GLStateHelper state = _state;
+			state.setEnabled( GL.GL_BLEND, false );
+			gl.glLineWidth( width );
 			// FIXME: Backface culling doesn't work on lines. Need to do it ourselves.
-//			glWrapper.setCullFace( backfaceCulling );
-			glWrapper.setLighting( hasLighting );
-			setColor( color );
-			useShader( hasLighting ? _colored : _unlit );
 
-			final GL gl = _gl;
+			state.setEnabled( GL.GL_LIGHTING, hasLighting );
+
+			state.setColor( color );
+			useShader( hasLighting ? _colored : _unlit );
 
 			/*
 			 * Render face.
@@ -2079,6 +2611,12 @@ public class JOGLRenderer
 		}
 	}
 
+	/**
+	 * Renders the vertices of a face.
+	 *
+	 * @param   face    Face to be rendered.
+	 * @param   style   Render style to be applied.
+	 */
 	protected void renderFaceVertices( final RenderStyle style , final Matrix3D object2world , final Face3D face )
 	{
 		final List<Vertex> vertices = face.vertices;
@@ -2087,7 +2625,6 @@ public class JOGLRenderer
 		if ( vertexCount > 0 )
 		{
 			final GL gl = _gl;
-			final GLWrapper glWrapper = _glWrapper;
 
 			final Color   color            = style.getVertexColor();
 			final boolean backfaceCulling  = style.isBackfaceCullingEnabled() && !face.isTwoSided();
@@ -2097,10 +2634,12 @@ public class JOGLRenderer
 			/*
 			 * Set render/material properties.
 			 */
-			glWrapper.setBlend( false  );
-			// TODO: implement backface culling
-			glWrapper.setLighting( hasLighting );
-			setColor( color );
+			final GLStateHelper state = _state;
+			state.setEnabled( GL.GL_BLEND, false );
+			// TODO: implement backface culling, i.e. omit vertices for backfaces
+
+			state.setEnabled( GL.GL_LIGHTING, hasLighting );
+			state.setColor( color );
 
 			/*
 			 * Render vertices.
@@ -2132,80 +2671,49 @@ public class JOGLRenderer
 	}
 
 	/**
-	 * Set GL material properties.
+	 * Renders the normals of the given face as lines.
 	 *
-	 * @param   color   Color to set.
+	 * @param   face    Face to be rendered.
 	 */
-	private void setColor( final Color color )
+	private void renderFaceNormals( @NotNull final Face3D face )
 	{
-		final float[] rgba  = color.getRGBComponents( null );
-		final float   red   = rgba[ 0 ];
-		final float   green = rgba[ 1 ];
-		final float   blue  = rgba[ 2 ];
-		final float   alpha = rgba[ 3 ];
+		final Vector3D normal = face.getNormal();
 
-		setColor( red , green , blue , alpha );
-	}
+		double x = 0.0;
+		double y = 0.0;
+		double z = 0.0;
 
-	/**
-	 * Sets the current color and material to the given color.
-	 *
-	 * @param   red     Red component.
-	 * @param   green   Green component.
-	 * @param   blue    Blue component.
-	 * @param   alpha   Alpha component.
-	 */
-	private void setColor( final float red , final float green , final float blue , final float alpha )
-	{
-		final GLWrapper glWrapper = _glWrapper;
-		glWrapper.setColor( red , green , blue , alpha );
-		glWrapper.setMaterialAmbient( red , green , blue , alpha );
-		glWrapper.setMaterialDiffuse( red , green , blue , alpha );
-		glWrapper.setMaterialSpecular( 0.0f , 0.0f , 0.0f , alpha );
-		glWrapper.setMaterialEmission( 0.0f , 0.0f , 0.0f , alpha );
-	}
+		final GL gl = _gl;
+		final GLStateHelper state = _state;
 
-	/**
-	 * Set GL material properties.
-	 *
-	 * @param   material    {@link Material} properties.
-	 * @param   style       Render style to be applied.
-	 * @param   extraAlpha  Extra alpha multiplier.
-	 */
-	public void setMaterial( final Material material , final RenderStyle style , final float extraAlpha )
-	{
-		final float red;
-		final float green;
-		final float blue;
-		final float alpha;
+		state.setColor( 0.0f, 1.0f, 1.0f, 1.0f );
+		gl.glBegin( GL.GL_LINES );
 
-		if ( style.isFillEnabled() )
+		final double scale = 10.0;
+		for ( int i = 0 ; i < face.getVertexCount() ; i++ )
 		{
-			final Color materialDiffuse = new Color( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , extraAlpha * material.diffuseColorAlpha );
-			final Color diffuse = RenderStyle.blendColors( style.getFillColor() , materialDiffuse );
-			final float[] diffuseComponents = diffuse.getRGBComponents( null );
+			final double faceX = face.getX( i );
+			final double faceY = face.getY( i );
+			final double faceZ = face.getZ( i );
 
-			red   = diffuseComponents[ 0 ];
-			green = diffuseComponents[ 1 ];
-			blue  = diffuseComponents[ 2 ];
-			alpha = diffuseComponents[ 3 ];
-		}
-		else
-		{
-			red   = material.diffuseColorRed;
-			green = material.diffuseColorGreen;
-			blue  = material.diffuseColorBlue;
-			alpha = material.diffuseColorAlpha * extraAlpha;
+			x += faceX;
+			y += faceY;
+			z += faceZ;
+
+			final Vector3D vertexNormal = face.getVertexNormal( i );
+			gl.glVertex3d( faceX, faceY, faceZ );
+			gl.glVertex3d( faceX + scale * vertexNormal.x, faceY + scale * vertexNormal.y, faceZ + scale * vertexNormal.z );
 		}
 
-		final GLWrapper glWrapper = _glWrapper;
+		state.setColor( 1.0f, 0.0f, 0.0f, 1.0f );
+		x /= (double)face.getVertexCount();
+		y /= (double)face.getVertexCount();
+		z /= (double)face.getVertexCount();
 
-		glWrapper.setColor( red , green , blue , alpha );
-		glWrapper.setMaterialAmbient( material.ambientColorRed , material.ambientColorGreen , material.ambientColorBlue , alpha );
-		glWrapper.setMaterialDiffuse( red , green , blue , alpha );
-		glWrapper.setMaterialSpecular( material.specularColorRed , material.specularColorGreen , material.specularColorBlue , alpha );
-		glWrapper.setMaterialEmission( material.emissiveColorRed , material.emissiveColorGreen , material.emissiveColorBlue , alpha );
-		glWrapper.setMaterialShininess( (float)material.shininess );
+		gl.glVertex3d( x, y, z );
+		gl.glVertex3d( x + scale * normal.x, y + scale * normal.y, z + scale * normal.z );
+
+		gl.glEnd();
 	}
 
 	/**
@@ -2331,21 +2839,26 @@ public class JOGLRenderer
 	}
 
 
-	@Override
+	/**
+	 * Renders the given grid. This method is only called when the given grid is
+	 * enabled.
+	 *
+	 * @param   grid    Grid to be rendered.
+	 */
 	protected void renderGrid( @NotNull final Grid grid )
 	{
-		useShader( _unlit );
+		useShader( null );
 
 		final GL gl = _gl;
-		final GLWrapper glWrapper = _glWrapper;
+		final GLStateHelper state = _state;
 
 		gl.glPushMatrix();
 		JOGLTools.glMultMatrixd( gl , grid.getGrid2wcs() );
 
-		glWrapper.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
-		glWrapper.setBlend( true );
-		glWrapper.setLineSmooth( true );
-		glWrapper.setLighting( false );
+		state.setEnabled( GL.GL_BLEND, true );
+		state.setBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+		state.setEnabled( GL.GL_LINE_SMOOTH, true );
+		state.setEnabled( GL.GL_LIGHTING, false );
 
 		final Rectangle gridBounds = grid.getBounds();
 		final int minCellX = gridBounds.x;
@@ -2367,8 +2880,8 @@ public class JOGLRenderer
 
 			if ( ( hasXaxis || hasYaxis ) )
 			{
-				glWrapper.glLineWidth( 2.5f );
-				setColor( 0.1f , 0.1f , 0.1f , 1.0f );
+				gl.glLineWidth( 2.5f );
+				state.setColor( 0.1f , 0.1f , 0.1f , 1.0f );
 				gl.glBegin( GL.GL_LINES );
 
 				if ( hasXaxis )
@@ -2400,8 +2913,8 @@ public class JOGLRenderer
 
 			if ( hasHighlightX || hasHighlightY )
 			{
-				glWrapper.glLineWidth( 1.5f );
-				setColor( 0.5f , 0.5f , 0.5f , 1.0f );
+				gl.glLineWidth( 1.5f );
+				state.setColor( 0.5f , 0.5f , 0.5f , 1.0f );
 				gl.glBegin( GL.GL_LINES );
 
 				for ( int x = highlightMinX ; x <= highLightMaxX ; x += highlightInterval )
@@ -2426,8 +2939,8 @@ public class JOGLRenderer
 			}
 		}
 
-		glWrapper.glLineWidth( 1.0f );
-		setColor( 0.75f , 0.75f , 0.75f , 1.0f );
+		gl.glLineWidth( 1.0f );
+		state.setColor( 0.75f , 0.75f , 0.75f , 1.0f );
 		gl.glBegin( GL.GL_LINES );
 
 		for ( int x = minCellX ; x <= maxCellX ; x++ )
