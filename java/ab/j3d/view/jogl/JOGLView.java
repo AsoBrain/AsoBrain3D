@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,6 +25,7 @@ import java.util.*;
 import javax.media.opengl.*;
 import javax.media.opengl.glu.*;
 import javax.swing.*;
+import javax.swing.event.*;
 
 import ab.j3d.model.*;
 import ab.j3d.view.*;
@@ -81,6 +83,12 @@ public class JOGLView
 	private RenderThread _renderThread;
 
 	/**
+	 * Whether the view should continuously be rendered, even if no update was
+	 * requested.
+	 */
+	private boolean _renderedContinuously;
+
+	/**
 	 * JOGL renderer.
 	 */
 	private JOGLRenderer _renderer;
@@ -89,6 +97,16 @@ public class JOGLView
 	 * Texture cache listener.
 	 */
 	private final TextureCacheListener _textureCacheListener;
+
+	/**
+	 * Determines the rendering framerate.
+	 */
+	private final FrameCounter _frameCounter;
+
+	/**
+	 * Graphics context for painting 2D graphics to the GL.
+	 */
+	private JOGLGraphics2D _graphics2D;
 
 	/**
 	 * Construct new view.
@@ -100,11 +118,27 @@ public class JOGLView
 	{
 		super( scene );
 
-		_joglEngine        = joglEngine;
-		_frontClipDistance =   0.1 / scene.getUnit();
-		_backClipDistance  = 100.0 / scene.getUnit();
-		_renderThread      = null;
-		_renderer          = null;
+		_joglEngine = joglEngine;
+		_frontClipDistance = 0.1 / scene.getUnit();
+		_backClipDistance = 100.0 / scene.getUnit();
+		_renderThread = null;
+		_renderedContinuously = false;
+		_renderer = null;
+		_graphics2D = null;
+
+		final FrameCounter frameCounter = new FrameCounter();
+		frameCounter.addChangeListener( new ChangeListener()
+		{
+			@Override
+			public void stateChanged( final ChangeEvent e )
+			{
+				if ( isRenderedContinuously() )
+				{
+					System.out.println( frameCounter.get() + " fps" );
+				}
+			}
+		} );
+		_frameCounter = frameCounter;
 
 		/* Use heavyweight popups, since we use a heavyweight canvas */
 		JPopupMenu.setDefaultLightWeightPopupEnabled( false );
@@ -198,11 +232,40 @@ public class JOGLView
 		update();
 	}
 
+	/**
+	 * Returns whether the view should continuously be rendered, even if no
+	 * update was requested.
+	 *
+	 * @return  Whether continuous rendering is enabled.
+	 */
+	public boolean isRenderedContinuously()
+	{
+		return _renderedContinuously;
+	}
+
+	/**
+	 * Sets whether the view should continuously be rendered, even if no
+	 * update was requested.
+	 *
+	 * @param   renderedContinuously   Whether continuous rendering is enabled.
+	 */
+	public void setRenderedContinuously( final boolean renderedContinuously )
+	{
+		_renderedContinuously = renderedContinuously;
+	}
+
 	@Override
 	public void dispose()
 	{
 		super.dispose();
 		_renderer = null;
+
+		final JOGLGraphics2D graphics2D = _graphics2D;
+		if ( graphics2D != null )
+		{
+			graphics2D.dispose();
+			_graphics2D = null;
+		}
 
 		final TextureCache textureCache = _joglEngine.getTextureCache();
 		textureCache.removeListener( _textureCacheListener );
@@ -362,14 +425,14 @@ public class JOGLView
 		@Override
 		public void run()
 		{
-//			System.out.println( "Render thread started: " + Thread.currentThread() );
-
 			final GLCanvas viewComponent = _glCanvas;
 			while ( viewComponent.isShowing() )
 			{
+				boolean exceptionOccurred = false;
+
 				try
 				{
-					if ( _updateRequested )
+					if ( isRenderedContinuously() || _updateRequested )
 					{
 						if ( viewComponent.isShowing() && ( viewComponent.getWidth() > 0 ) && ( viewComponent.getHeight() > 0 ) )
 						{
@@ -395,24 +458,27 @@ public class JOGLView
 							e.printStackTrace();
 						}
 					}
+
+					exceptionOccurred = true;
 				}
 
-				/*
-				 * No update needed or an exception occured.
-				 *
-				 * Wait 300ms or wait to be notified.
-				 */
-				try
+				if ( exceptionOccurred || !isRenderedContinuously() )
 				{
-					synchronized ( this )
+					/*
+					 * No update needed or an exception occured.
+					 *
+					 * Wait 300ms or wait to be notified.
+					 */
+					try
 					{
-						wait( 300L );
+						synchronized ( this )
+						{
+							wait( 300L );
+						}
 					}
+					catch ( InterruptedException e ) { /*ignored*/ }
 				}
-				catch ( InterruptedException e ) { /*ignored*/ }
 			}
-
-//			System.out.println( "Renderer thread died: " + Thread.currentThread() );
 		}
 
 		/**
@@ -544,9 +610,13 @@ public class JOGLView
 
 			if ( hasOverlay() )
 			{
-				final JOGLGraphics2D joglGraphics2D = new JOGLGraphics2D( glAutoDrawable );
+				JOGLGraphics2D joglGraphics2D = _graphics2D;
+				if ( joglGraphics2D == null )
+				{
+					joglGraphics2D = new JOGLGraphics2D( glAutoDrawable );
+					_graphics2D = joglGraphics2D;
+				}
 				paintOverlay( joglGraphics2D );
-				joglGraphics2D.dispose();
 			}
 		}
 	}
@@ -573,6 +643,10 @@ public class JOGLView
 		final JOGLRenderer renderer = getOrCreateRenderer( gl );
 		renderer.setSceneToViewTransform( getScene2View() );
 		renderer.renderScene( scene, styleFilters, viewStyle, getBackground(), getGrid() );
+
+		final FrameCounter frameCounter = _frameCounter;
+		frameCounter.increment();
+		frameCounter.get();
 	}
 
 	/**
@@ -610,7 +684,7 @@ public class JOGLView
 		 */
 		SharedContextGLCanvas( final GLCapabilities capabilities )
 		{
-			super( capabilities, null, _joglEngine.getContext(), null );
+			super( capabilities, new CapabilitiesChooser(), _joglEngine.getContext(), null );
 
 			final GLContext context = getContext();
 			if ( ( context != null ) && ( _joglEngine.getContext() == null ) )
@@ -624,6 +698,29 @@ public class JOGLView
 		{
 			super.addNotify();
 			_joglEngine.setContext( getContext() );
+		}
+	}
+
+	/**
+	 * Chooses the optimal set of GL capabilities. Always chooses the
+	 * recommended choice at the moment.
+	 */
+	private static class CapabilitiesChooser
+		implements GLCapabilitiesChooser
+	{
+		@Override
+		public int chooseCapabilities( final GLCapabilities desired, final GLCapabilities[] available, final int windowSystemRecommendedChoice )
+		{
+/*
+			System.out.println( " - desired = " + desired );
+			System.out.println( " - available" );
+			for ( final GLCapabilities availableCapabilities : available )
+			{
+				System.out.println( "    - " + availableCapabilities );
+			}
+			System.out.println( " - windowSystemRecommendedChoice = " + windowSystemRecommendedChoice );
+*/
+			return windowSystemRecommendedChoice;
 		}
 	}
 }
