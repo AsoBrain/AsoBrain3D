@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,17 +20,13 @@
  */
 package ab.j3d.view.jogl;
 
-import java.awt.image.BufferedImage;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import javax.media.opengl.GL;
+import java.awt.image.*;
+import java.nio.*;
+import javax.media.opengl.*;
 
-import com.sun.opengl.util.BufferUtil;
-import com.sun.opengl.util.texture.Texture;
-import com.sun.opengl.util.texture.TextureIO;
-
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
+import ab.j3d.*;
+import com.sun.opengl.util.*;
+import com.sun.opengl.util.texture.*;
 
 /**
  * Utility methods for JOGL.
@@ -405,5 +402,53 @@ public class JOGLTools
 		gl.glTexParameteri( GL.GL_TEXTURE_CUBE_MAP , GL.GL_TEXTURE_WRAP_R     , GL.GL_CLAMP_TO_EDGE );
 
 		return result;
+	}
+
+	/**
+	 * Renders the given texture to the screen. The rectangle to render to is
+	 * specified using normalized device coordinates.
+	 *
+	 * @param   gl          OpenGL pipeline.
+	 * @param   texture     Texture.
+	 * @param   x1          X-coordinate of left side.
+	 * @param   y1          Y-coordinate of bottom side.
+	 * @param   x2          X-coordinate of right side.
+	 * @param   y2          Y-coordinate of top side.
+	 */
+	public static void renderToScreen( final GL gl, final int texture, final float x1, final float y1, final float x2, final float y2 )
+	{
+		gl.glPushAttrib( GL.GL_DEPTH_BUFFER_BIT );
+		gl.glDisable( GL.GL_DEPTH_TEST );
+
+		gl.glMatrixMode( GL.GL_PROJECTION );
+		gl.glPushMatrix();
+		gl.glLoadIdentity();
+		gl.glMatrixMode( GL.GL_MODELVIEW );
+		gl.glPushMatrix();
+		gl.glLoadIdentity();
+
+		gl.glBindTexture( GL.GL_TEXTURE_2D, texture );
+		gl.glEnable( GL.GL_TEXTURE_2D );
+
+		gl.glColor3f( 1.0f, 1.0f, 1.0f );
+		gl.glBegin( GL.GL_QUADS );
+		gl.glTexCoord2f( 0.0f, 0.0f );
+		gl.glVertex2f( x1, y1 );
+		gl.glTexCoord2f( 1.0f, 0.0f );
+		gl.glVertex2f( x2, y1 );
+		gl.glTexCoord2f( 1.0f, 1.0f );
+		gl.glVertex2f( x2, y2 );
+		gl.glTexCoord2f( 0.0f, 1.0f );
+		gl.glVertex2f( x1, y2 );
+		gl.glEnd();
+
+		gl.glDisable( GL.GL_TEXTURE_2D );
+
+		gl.glMatrixMode( GL.GL_PROJECTION );
+		gl.glPopMatrix();
+		gl.glMatrixMode( GL.GL_MODELVIEW );
+		gl.glPopMatrix();
+
+		gl.glPopAttrib();
 	}
 }
