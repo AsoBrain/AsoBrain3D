@@ -706,7 +706,7 @@ public class JOGLView
 	 * recommended choice at the moment.
 	 */
 	private static class CapabilitiesChooser
-		implements GLCapabilitiesChooser
+		extends DefaultGLCapabilitiesChooser
 	{
 		@Override
 		public int chooseCapabilities( final GLCapabilities desired, final GLCapabilities[] available, final int windowSystemRecommendedChoice )
@@ -720,7 +720,7 @@ public class JOGLView
 			}
 			System.out.println( " - windowSystemRecommendedChoice = " + windowSystemRecommendedChoice );
 */
-			return windowSystemRecommendedChoice;
+			return super.chooseCapabilities( desired, available, windowSystemRecommendedChoice );
 		}
 	}
 }
