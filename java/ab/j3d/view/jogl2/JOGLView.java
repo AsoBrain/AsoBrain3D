@@ -37,7 +37,6 @@ import javax.media.opengl.awt.GLCanvas;
 import javax.media.opengl.glu.GLU;
 import javax.swing.JPopupMenu;
 
-import ab.j3d.model.Camera3D;
 import ab.j3d.model.Scene;
 import ab.j3d.view.ProjectionPolicy;
 import ab.j3d.view.Projector;
@@ -495,19 +494,17 @@ public class JOGLView
 
 		if ( ( width > 0 ) && ( height > 0 ) )
 		{
-			final Camera3D camera = getCamera();
 			final double   aspect = (double)width / (double)height;
 
 			final ProjectionPolicy projectionPolicy = getProjectionPolicy();
 			if ( projectionPolicy == ProjectionPolicy.PARALLEL )
 			{
 				final Scene    scene    = getScene();
-				final Camera3D camera3D = getCamera();
 				final double   left     = -0.5 * (double)width;
 				final double   right    = +0.5 * (double)width;
 				final double   bottom   = -0.5 * (double)height;
 				final double   top      = +0.5 * (double)height;
-				final double   scale    = camera3D.getZoomFactor() * scene.getUnit() / getResolution();
+				final double   scale    = getZoomFactor() * scene.getUnit() / getResolution();
 				final double   near     = _frontClipDistance * scale;
 				final double   far      = _backClipDistance  * scale;
 
@@ -518,7 +515,7 @@ public class JOGLView
 			}
 			else if ( projectionPolicy == ProjectionPolicy.PERSPECTIVE )
 			{
-				final double fov  = Math.toDegrees( camera.getAperture() );
+				final double fov  = Math.toDegrees( getFieldOfView() );
 				final double near = _frontClipDistance;
 				final double far  = _backClipDistance;
 
