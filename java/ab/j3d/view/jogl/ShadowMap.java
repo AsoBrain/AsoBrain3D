@@ -292,6 +292,18 @@ public class ShadowMap
 		_modelviewMatrix = modelviewMatrix;
 
 		_framebuffer.bind();
+
+		/* Clear buffers. */
+		gl.glClearDepth( 1.0 );
+		if ( _renderColorMap )
+		{
+			gl.glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+			gl.glClear( GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT );
+		}
+		else
+		{
+			gl.glClear( GL.GL_DEPTH_BUFFER_BIT );
+		}
 	}
 
 	/**
