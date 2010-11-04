@@ -734,45 +734,28 @@ public final class Painter
 	 */
 	private static void paintFace( final Graphics2D g, final Matrix3D view2image, final Matrix3D object2view, final Face3D face, final Color outlineColor, final Paint fillPaint, final int[] xs, final int[] ys )
 	{
-		final List<Vertex> vertices = face.vertices;
-		final int vertexCount = vertices.size();
-
-		if ( ( vertexCount > 0 ) && ( ( outlineColor != null ) || ( fillPaint != null ) ) )
+		if ( ( ( outlineColor != null ) || ( fillPaint != null ) ) && ( object2view.rotateZ( face.getNormal() ) > 0.0 ) )
 		{
-			boolean show = true;
-			for ( int p = 0 ; p < vertexCount ; p++ )
+			final List<Vertex> vertices = face.vertices;
+			final int vertexCount = vertices.size();
+
+			if ( ( vertexCount > 0 ) && ( ( outlineColor != null ) || ( fillPaint != null ) ) )
 			{
-				final Vertex vertex = vertices.get( p );
-
-				final double x  = object2view.transformX( vertex.point );
-				final double y  = object2view.transformY( vertex.point );
-				final double z  = object2view.transformZ( vertex.point );
-
-				final int ix = (int)view2image.transformX( x, y, z );
-				final int iy = (int)view2image.transformY( x, y, z );
-
-				/*
-				 * Perform backface removal if we have 3 points, so we can calculate the normal.
-				 *
-				 * c = (x1-x2)*(y3-y2)-(y1-y2)*(x3-x2)
-				 */
-				if ( ( p == 2 ) && !face.isTwoSided() )
+				for ( int p = 0 ; p < vertexCount ; p++ )
 				{
-					show = ( ( ( xs[ 0 ] - xs[ 1 ] ) * ( iy - ys[ 1 ] ) )
-					      <= ( ( ys[ 0 ] - ys[ 1 ] ) * ( ix - xs[ 1 ] ) ) );
+					final Vertex vertex = vertices.get( p );
 
-					if ( !show )
-					{
-						break;
-					}
+					final double x  = object2view.transformX( vertex.point );
+					final double y  = object2view.transformY( vertex.point );
+					final double z  = object2view.transformZ( vertex.point );
+
+					final int ix = (int)view2image.transformX( x, y, z );
+					final int iy = (int)view2image.transformY( x, y, z );
+
+					xs[ p ] = ix;
+					ys[ p ] = iy;
 				}
 
-				xs[ p ] = ix;
-				ys[ p ] = iy;
-			}
-
-			if ( show )
-			{
 				if ( fillPaint != null )
 				{
 					g.setPaint( fillPaint );
