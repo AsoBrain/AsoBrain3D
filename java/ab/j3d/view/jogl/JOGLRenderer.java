@@ -603,6 +603,31 @@ public class JOGLRenderer
 	}
 
 	/**
+	 * Returns whether any light in the given scene is casting shadows.
+	 *
+	 * @param   scene   Scene to be checked.
+	 *
+	 * @return  <code>true</code> if there is at least one shadow casting light.
+	 */
+	private static boolean isAnyLightCastingShadows( final Scene scene )
+	{
+		boolean result = false;
+
+		final Node3DCollection<Light3D> lights = scene.getContent( Light3D.class );
+		for ( int i = 0 ; i < lights.size() ; i++ )
+		{
+			final Light3D light = lights.getNode( i );
+			if ( light.isCastingShadows() )
+			{
+				result = true;
+				break;
+			}
+		}
+
+		return result;
+	}
+
+	/**
 	 * Sets the scene to view transformation. The inverse of this transformation
 	 * is used for environment mapping, i.e. to make the environment stationary
 	 * with respect the the world instead of the camera.
@@ -914,10 +939,6 @@ public class JOGLRenderer
 			_accumulationTexture = accumulationTexture;
 		}
 
-		final int[] test = new int[ 3 ];
-		gl.glGenTextures( test.length, test, 0 );
-		gl.glDeleteTextures( test.length, test, 0 );
-
 		/*
 		 * Render scene per light.
 		 */
@@ -934,12 +955,13 @@ public class JOGLRenderer
 
 			final Light3D light = lights.getNode( i );
 			final Matrix3D lightTransform = lights.getMatrix( i );
+			final boolean castingShadows = isShadersEnabled() && _configuration.isShadowEnabled() && light.isCastingShadows();
 
 			/*
 			 * Shadow mapping pass (optional).
 			 */
 			ShadowMap shadowMap = null;
-			if ( isShadersEnabled() && _configuration.isShadowEnabled() )
+			if ( castingShadows )
 			{
 				shadowMap = _shadowMap;
 				if ( shadowMap == null )
@@ -954,7 +976,6 @@ public class JOGLRenderer
 
 				// Render to depth texture.
 				_shadowPass = true;
-				renderBackground( background );
 				renderContentNodes( scene.getContentNodes() , styleFilters, sceneStyle );
 				_shadowPass = false;
 
@@ -965,7 +986,7 @@ public class JOGLRenderer
 			 * Render from camera.
 			 */
 
-			if ( shadowMap != null )
+			if ( castingShadows )
 			{
 				// Bind shadow map.
 				gl.glActiveTexture( TEXTURE_UNIT_SHADOW );
@@ -1007,6 +1028,9 @@ public class JOGLRenderer
 			 * Render scene content with only the current light enabled.
 			 */
 			renderLight( GL.GL_LIGHT0, light, lightTransform );
+			setShadowMapEnabled( _textured, castingShadows );
+			setShadowMapEnabled( _colored, castingShadows );
+			setShadowMapEnabled( _unlit, castingShadows );
 			renderContentNodes( scene.getContentNodes() , styleFilters, sceneStyle );
 
 			/*
@@ -1058,6 +1082,19 @@ public class JOGLRenderer
 				gl.glCopyTexSubImage2D( GL.GL_TEXTURE_2D, 0, 0, 0, 0, 0, width, height );
 			}
 		}
+	}
+
+	/**
+	 * Enables or disables shadow mapping for the given shader.
+	 *
+	 * @param   shader              Shader to update.
+	 * @param   shadowMapEnabled    <code>true</code> to enable shadow mapping.
+	 */
+	private static void setShadowMapEnabled( final ShaderProgram shader, final boolean shadowMapEnabled )
+	{
+		shader.enable();
+		shader.setUniform( "shadowMapEnabled", shadowMapEnabled );
+		shader.disable();
 	}
 
 	/**
@@ -1985,60 +2022,29 @@ public class JOGLRenderer
 	 */
 	protected void renderObject( final Object3D object , final RenderStyle objectStyle , final Collection<RenderStyleFilter> styleFilters , final Matrix3D object2world )
 	{
-		boolean anyMaterialEnabled = false;
-		boolean anyFillEnabled     = false;
-		boolean anyStrokeEnabled   = false;
-		boolean anyVertexEnabled   = false;
+		final boolean anyMaterialEnabled = objectStyle.isMaterialEnabled();
+		final boolean anyFillEnabled     = objectStyle.isFillEnabled();
+		final boolean anyStrokeEnabled   = objectStyle.isStrokeEnabled();
+		final boolean anyVertexEnabled   = objectStyle.isVertexEnabled();
 
 		final int faceCount = object.getFaceCount();
-		final RenderStyle[] faceStyles = new RenderStyle[ faceCount ];
-
-		for ( int j = 0 ; j < faceCount; j++ )
-		{
-			final RenderStyle faceStyle = objectStyle.applyFilters( styleFilters , object.getFace( j ) );
-
-			anyMaterialEnabled |= faceStyle.isMaterialEnabled();
-			anyFillEnabled     |= faceStyle.isFillEnabled();
-			anyStrokeEnabled   |= faceStyle.isStrokeEnabled();
-			anyVertexEnabled   |= faceStyle.isVertexEnabled();
-
-			faceStyles[ j ] = faceStyle;
-		}
 
 		if ( anyMaterialEnabled || anyFillEnabled || anyStrokeEnabled || anyVertexEnabled )
 		{
 			if ( anyMaterialEnabled )
 			{
-				for ( int j = 0 ; j < faceCount; j++ )
-				{
-					final RenderStyle faceStyle = faceStyles[ j ];
-					if ( faceStyle.isMaterialEnabled() )
-					{
-						renderMaterialFace( object.getFace( j ), faceStyle );
-					}
-				}
+				renderObjectMaterial( object, objectStyle );
 			}
 			else if ( anyFillEnabled )
 			{
-				for ( int j = 0 ; j < faceCount; j++ )
-				{
-					final RenderStyle faceStyle = faceStyles[ j ];
-					if ( faceStyle.isFillEnabled() )
-					{
-						renderFilledFace( object.getFace( j ), faceStyle );
-					}
-				}
+				renderObjectFilled( object, objectStyle );
 			}
 
 			if ( anyStrokeEnabled )
 			{
 				for ( int j = 0 ; j < faceCount; j++ )
 				{
-					final RenderStyle faceStyle = faceStyles[ j ];
-					if ( faceStyle.isStrokeEnabled() )
-					{
-						renderStrokedFace( object.getFace( j ), faceStyle );
-					}
+					renderStrokedFace( object.getFace( j ), objectStyle );
 				}
 			}
 
@@ -2046,56 +2052,55 @@ public class JOGLRenderer
 			{
 				for ( int j = 0 ; j < faceCount; j++ )
 				{
-					final RenderStyle faceStyle = faceStyles[ j ];
-					if ( faceStyle.isVertexEnabled() )
-					{
-						renderFaceVertices( faceStyle , object2world , object.getFace( j ) );
-					}
+					renderFaceVertices( objectStyle , object2world , object.getFace( j ) );
 				}
 			}
 		}
 	}
 
 	/**
-	 * Renders a face with a material applied to it.
+	 * Renders the given object with a material applied to it.
 	 *
-	 * @param   face    Face to be rendered.
-	 * @param   style   Render style to be applied.
+	 * @param   object          Object to be rendered.
+	 * @param   objectStyle     Render style to be applied.
 	 */
-	protected void renderMaterialFace( final Face3D face, final RenderStyle style )
+	protected void renderObjectMaterial( final Object3D object, final RenderStyle objectStyle )
 	{
-		final int      vertexCount = face.getVertexCount();
-		final Material material    = ( style.getMaterialOverride() != null ) ? style.getMaterialOverride() : face.material;
-
-		if ( ( material != null ) && ( vertexCount >= 2 ) )
+		final Map<Material, List<Face3D>> facesByMaterial;
+		if ( objectStyle.getMaterialOverride() != null )
 		{
-			final GL gl = _gl;
-			final MultiPassRenderMode renderMode = _renderMode;
+			facesByMaterial = Collections.singletonMap( objectStyle.getMaterialOverride(), object.getFaces() );
+		}
+		else
+		{
+			facesByMaterial = CollectionTools.getGroupByField( object.getFaces(), "material", Material.class );
+		}
 
-			/*
-			 * Get textures.
-			 */
-			final TextureCache textureCache = _textureCache;
+		for ( final Map.Entry<Material, List<Face3D>> entry : facesByMaterial.entrySet() )
+		{
+			final Material material = entry.getKey();
+			final List<Face3D> faces = entry.getValue();
 
-			final float   extraAlpha    = style.getMaterialAlpha();
-			final float   combinedAlpha = material.diffuseColorAlpha * extraAlpha;
-			final boolean hasAlpha      = ( combinedAlpha < 0.99f ) || textureCache.hasAlpha( material.colorMap );
-			final boolean blend         = !isDepthPeelingEnabled() &&
-			                              ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && hasAlpha;
-
-			if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || !hasAlpha ) &&
-			     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || hasAlpha ) )
+			if ( material != null )
 			{
-				final List<Vertex> vertices = face.vertices;
-				final Tessellation tessellation = face.getTessellation();
-				final Collection<TessellationPrimitive> primitives = tessellation.getPrimitives();
+				final GL gl = _gl;
+				final MultiPassRenderMode renderMode = _renderMode;
 
-				if ( !primitives.isEmpty() )
+				/*
+				 * Get textures.
+				 */
+				final TextureCache textureCache = _textureCache;
+
+				final float extraAlpha = objectStyle.getMaterialAlpha();
+				final float combinedAlpha = material.diffuseColorAlpha * extraAlpha;
+				final boolean hasAlpha = ( combinedAlpha < 0.99f ) || textureCache.hasAlpha( material.colorMap );
+				final boolean blend = !isDepthPeelingEnabled() && ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && hasAlpha;
+
+				if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) || !hasAlpha ) &&
+				     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || hasAlpha ) )
 				{
-					final Vector3D lightPosition    = _lightPositionRelativeToObject;
-					final boolean  hasLighting      = style.isMaterialLightingEnabled() && ( lightPosition != null );
-					final boolean  backfaceCulling  = style.isBackfaceCullingEnabled() && !face.isTwoSided();
-					final boolean  setVertexNormals = hasLighting && face.smooth;
+					final Vector3D lightPosition = _lightPositionRelativeToObject;
+					final boolean hasLighting = objectStyle.isMaterialLightingEnabled() && ( lightPosition != null );
 
 					final Texture colorMap = textureCache.getColorMapTexture( material );
 					final Texture bumpMap = isShadersEnabled() && hasLighting ? textureCache.getBumpMapTexture( material ) : null;
@@ -2111,12 +2116,12 @@ public class JOGLRenderer
 						{
 							gl.glDepthMask( false );
 						}
-						state.setBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+						state.setBlendFunc( GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA );
 					}
 
 					state.setEnabled( GL.GL_BLEND, blend );
 					state.setEnabled( GL.GL_LIGHTING, hasLighting );
-					state.setMaterial( material , style , extraAlpha );
+					state.setMaterial( material, objectStyle, extraAlpha );
 
 					/*
 					 * Enable bump map.
@@ -2140,8 +2145,8 @@ public class JOGLRenderer
 						normalizationCubeMap.enable();
 						normalizationCubeMap.bind();
 						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE );
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB     , GL.GL_REPLACE );
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE0_RGB     , GL.GL_TEXTURE );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB, GL.GL_REPLACE );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE0_RGB, GL.GL_TEXTURE );
 
 						/*
 						 * Set The Second Unit To The Bump Map. Set The Texture Environment
@@ -2153,10 +2158,10 @@ public class JOGLRenderer
 						gl.glActiveTexture( GL.GL_TEXTURE1 );
 						bumpMap.enable();
 						bumpMap.bind();
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE  );
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB     , GL.GL_DOT3_RGB );
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE0_RGB     , GL.GL_PREVIOUS );
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE1_RGB     , GL.GL_TEXTURE  );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB, GL.GL_DOT3_RGB );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE0_RGB, GL.GL_PREVIOUS );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE1_RGB, GL.GL_TEXTURE );
 
 						/*
 						 * The third unit is used to apply the diffuse color of the
@@ -2165,9 +2170,9 @@ public class JOGLRenderer
 						gl.glActiveTexture( GL.GL_TEXTURE2 );
 						bumpMap.enable();
 						bumpMap.bind();
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE       );
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB     , GL.GL_MODULATE      );
-						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE0_RGB     , GL.GL_PRIMARY_COLOR );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB, GL.GL_MODULATE );
+						gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE0_RGB, GL.GL_PRIMARY_COLOR );
 
 						/*
 						 * Set The Fourth Texture Unit To Our Texture. Set The Texture
@@ -2257,94 +2262,11 @@ public class JOGLRenderer
 					}
 
 					/*
-					 * Render face. Use multiple passes for two-sided lighting.
+					 * Render faces.
 					 */
-					final int passes = ( !backfaceCulling && hasLighting && isShadersEnabled() ) ? 2 : 1;
-					final boolean multipass = ( passes > 1 );
-
-					for ( int pass = 0 ; pass < passes ; pass++ )
+					for ( final Face3D face : faces )
 					{
-						final boolean isBackFace = multipass && ( pass == 0 );
-						state.setEnabled( GL.GL_CULL_FACE, multipass || backfaceCulling );
-
-						if ( !setVertexNormals )
-						{
-							final Vector3D normal = face.getNormal();
-							if ( isBackFace )
-							{
-								gl.glNormal3d( -normal.x, -normal.y, -normal.z );
-							}
-							else
-							{
-								gl.glNormal3d( normal.x, normal.y, normal.z );
-							}
-						}
-
-						for ( final TessellationPrimitive primitive : primitives )
-						{
-							if ( primitive instanceof TriangleList )
-							{
-								gl.glBegin( GL.GL_TRIANGLES );
-							}
-							else if ( primitive instanceof TriangleFan )
-							{
-								gl.glBegin( GL.GL_TRIANGLE_FAN );
-							}
-							else if ( primitive instanceof TriangleStrip )
-							{
-								gl.glBegin( GL.GL_TRIANGLE_STRIP );
-							}
-							else
-							{
-								continue;
-							}
-
-							for ( final int vertexIndex : primitive.getVertices() )
-							{
-								final Vertex vertex = vertices.get( vertexIndex );
-								final Vector3D point = vertex.point;
-
-								if ( bumpMap != null )
-								{
-									// TODO: Doesn't really match with other uses of texture units, because normalization cube map comes before color map. (Without shaders, bump is ugly anyway, except for special circumstances.)
-									gl.glMultiTexCoord3d( GL.GL_TEXTURE0, lightPosition.x + point.x, lightPosition.y + point.y, lightPosition.z + point.z );
-									gl.glMultiTexCoord2f( GL.GL_TEXTURE1, vertex.colorMapU, vertex.colorMapV );
-
-									if ( colorMap != null )
-									{
-										gl.glMultiTexCoord2f( GL.GL_TEXTURE3, vertex.colorMapU, vertex.colorMapV );
-									}
-								}
-								else if ( colorMap != null )
-								{
-									final float u = colorMapCoords.left()   + vertex.colorMapU * ( colorMapCoords.right() - colorMapCoords.left() );
-									final float v = colorMapCoords.bottom() + vertex.colorMapV * ( colorMapCoords.top() - colorMapCoords.bottom() );
-									gl.glTexCoord2f( u, v );
-								}
-
-								if ( setVertexNormals )
-								{
-									final Vector3D vertexNormal = face.getVertexNormal( vertexIndex );
-									if ( isBackFace )
-									{
-										gl.glNormal3d( -vertexNormal.x, -vertexNormal.y, -vertexNormal.z );
-									}
-									else
-									{
-										gl.glNormal3d( vertexNormal.x, vertexNormal.y, vertexNormal.z );
-									}
-								}
-
-								gl.glVertex3d( point.x, point.y, point.z );
-							}
-
-							gl.glEnd();
-						}
-
-						if ( DRAW_NORMALS && ( pass == passes - 1 ) )
-						{
-							renderFaceNormals( face );
-						}
+						renderMaterialFace( face, objectStyle, bumpMap != null, colorMapCoords );
 					}
 
 					/*
@@ -2408,23 +2330,140 @@ public class JOGLRenderer
 	}
 
 	/**
-	 * Renders a face in a solid color.
+	 * Renders a face with a material applied to it.
 	 *
-	 * @param   face    Face to be rendered.
-	 * @param   style   Render style to be applied.
+	 * @param   face            Face to be rendered.
+	 * @param   style           Render style to be applied.
+	 * @param   bumpMap         Whether bump mapping is enabled.
+	 * @param   colorMapCoords  Texture coordinates for the color map.
 	 */
-	protected void renderFilledFace( final Face3D face, final RenderStyle style )
+	protected void renderMaterialFace( @NotNull final Face3D face, @NotNull final RenderStyle style, final boolean bumpMap, @Nullable final TextureCoords colorMapCoords )
+	{
+		final GL gl = _gl;
+		final GLStateHelper state = _state;
+
+		final List<Vertex> vertices = face.vertices;
+		final Tessellation tessellation = face.getTessellation();
+		final Collection<TessellationPrimitive> primitives = tessellation.getPrimitives();
+
+		if ( !primitives.isEmpty() )
+		{
+			final Vector3D lightPosition = _lightPositionRelativeToObject;
+			final boolean hasLighting = style.isMaterialLightingEnabled() && ( lightPosition != null );
+			final boolean backfaceCulling = style.isBackfaceCullingEnabled() && !face.isTwoSided();
+			final boolean setVertexNormals = hasLighting && face.smooth;
+
+			/*
+			 * Render face. Use multiple passes for two-sided lighting.
+			 */
+			final int passes = ( !backfaceCulling && hasLighting && isShadersEnabled() ) ? 2 : 1;
+			final boolean multipass = ( passes > 1 );
+
+			for ( int pass = 0; pass < passes; pass++ )
+			{
+				final boolean isBackFace = multipass && ( pass == 0 );
+				state.setEnabled( GL.GL_CULL_FACE, multipass || backfaceCulling );
+
+				if ( !setVertexNormals )
+				{
+					final Vector3D normal = face.getNormal();
+					if ( isBackFace )
+					{
+						gl.glNormal3d( -normal.x, -normal.y, -normal.z );
+					}
+					else
+					{
+						gl.glNormal3d( normal.x, normal.y, normal.z );
+					}
+				}
+
+				for ( final TessellationPrimitive primitive : primitives )
+				{
+					if ( primitive instanceof TriangleList )
+					{
+						gl.glBegin( GL.GL_TRIANGLES );
+					}
+					else if ( primitive instanceof TriangleFan )
+					{
+						gl.glBegin( GL.GL_TRIANGLE_FAN );
+					}
+					else if ( primitive instanceof TriangleStrip )
+					{
+						gl.glBegin( GL.GL_TRIANGLE_STRIP );
+					}
+					else
+					{
+						continue;
+					}
+
+					for ( final int vertexIndex : primitive.getVertices() )
+					{
+						final Vertex vertex = vertices.get( vertexIndex );
+						final Vector3D point = vertex.point;
+
+						if ( bumpMap )
+						{
+							// TODO: Doesn't really match with other uses of texture units, because normalization cube map comes before color map. (Without shaders, bump is ugly anyway, except for special circumstances.)
+							gl.glMultiTexCoord3d( GL.GL_TEXTURE0, lightPosition.x + point.x, lightPosition.y + point.y, lightPosition.z + point.z );
+							gl.glMultiTexCoord2f( GL.GL_TEXTURE1, vertex.colorMapU, vertex.colorMapV );
+
+							if ( colorMapCoords != null )
+							{
+								final float u = colorMapCoords.left() + vertex.colorMapU * ( colorMapCoords.right() - colorMapCoords.left() );
+								final float v = colorMapCoords.bottom() + vertex.colorMapV * ( colorMapCoords.top() - colorMapCoords.bottom() );
+								gl.glMultiTexCoord2f( GL.GL_TEXTURE3, u, v );
+							}
+						}
+						else if ( colorMapCoords != null )
+						{
+							final float u = colorMapCoords.left() + vertex.colorMapU * ( colorMapCoords.right() - colorMapCoords.left() );
+							final float v = colorMapCoords.bottom() + vertex.colorMapV * ( colorMapCoords.top() - colorMapCoords.bottom() );
+							gl.glTexCoord2f( u, v );
+						}
+
+						if ( setVertexNormals )
+						{
+							final Vector3D vertexNormal = face.getVertexNormal( vertexIndex );
+							if ( isBackFace )
+							{
+								gl.glNormal3d( -vertexNormal.x, -vertexNormal.y, -vertexNormal.z );
+							}
+							else
+							{
+								gl.glNormal3d( vertexNormal.x, vertexNormal.y, vertexNormal.z );
+							}
+						}
+
+						gl.glVertex3d( point.x, point.y, point.z );
+					}
+
+					gl.glEnd();
+				}
+
+				if ( DRAW_NORMALS && ( pass == passes - 1 ) )
+				{
+					renderFaceNormals( face );
+				}
+			}
+		}
+	}
+
+	/**
+	 * Renders the given object in a solid color.
+	 *
+	 * @param   object          Object to be rendered.
+	 * @param   objectStyle     Render style to be applied.
+	 */
+	protected void renderObjectFilled( final Object3D object, final RenderStyle objectStyle )
 	{
 		final MultiPassRenderMode renderMode = _renderMode;
 
 		final GL gl = _gl;
 
-		final Color   color           = style.getFillColor();
+		final Color   color           = objectStyle.getFillColor();
 		final int     alpha           = color.getAlpha();
 		final boolean blend           = !isDepthPeelingEnabled() && ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && ( alpha < 255 );
-		final boolean backfaceCulling = style.isBackfaceCullingEnabled() && !face.isTwoSided();
-		final boolean hasLighting     = style.isFillLightingEnabled() && ( _lightPositionRelativeToObject != null );
-		final boolean setVertexNormals = hasLighting && face.smooth;
+		final boolean hasLighting     = objectStyle.isFillLightingEnabled() && ( _lightPositionRelativeToObject != null );
 
 		if ( !hasLighting && !_firstPass )
 		{
@@ -2434,105 +2473,126 @@ public class JOGLRenderer
 		if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || ( alpha == 255 ) ) &&
 		     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || ( alpha <  255 ) ) )
 		{
-			final List<Vertex> vertices = face.vertices;
-			final Tessellation tessellation = face.getTessellation();
-			final Collection<TessellationPrimitive> primitives = tessellation.getPrimitives();
-
-			if ( !primitives.isEmpty() )
+			/*
+			 * Set render/material properties.
+			 */
+			final GLStateHelper state = _state;
+			if ( blend )
 			{
-				/*
-				 * Set render/material properties.
-				 */
-				final GLStateHelper state = _state;
-				if ( blend )
+				if ( alpha < 64 )
 				{
-					if ( alpha < 64 )
+					gl.glDepthMask( false );
+				}
+				state.setBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+			}
+
+			state.setEnabled( GL.GL_BLEND, blend );
+			state.setEnabled( GL.GL_LIGHTING, hasLighting );
+
+			state.setColor( color );
+			useShader( hasLighting ? _colored : _unlit );
+
+			for ( final Face3D face : object.getFaces() )
+			{
+				renderFilledFace( face, objectStyle );
+			}
+
+			if ( blend )
+			{
+				if ( alpha < 64 )
+				{
+					gl.glDepthMask( true );
+				}
+			}
+		}
+	}
+
+	/**
+	 * Renders a face in a solid color.
+	 *
+	 * @param   face    Face to be rendered.
+	 * @param   style   Render style to be applied.
+	 */
+	protected void renderFilledFace( final Face3D face, final RenderStyle style )
+	{
+		final GL gl = _gl;
+		final GLStateHelper state = _state;
+
+		final List<Vertex> vertices = face.vertices;
+		final Tessellation tessellation = face.getTessellation();
+		final Collection<TessellationPrimitive> primitives = tessellation.getPrimitives();
+
+		final boolean backfaceCulling = style.isBackfaceCullingEnabled() && !face.isTwoSided();
+		final boolean hasLighting     = style.isFillLightingEnabled() && ( _lightPositionRelativeToObject != null );
+		final boolean setVertexNormals = hasLighting && face.smooth;
+
+		if ( !primitives.isEmpty() )
+		{
+			/*
+			 * Render face. Use multiple passes for two-sided lighting.
+			 */
+			final int passes = ( !backfaceCulling && hasLighting && isShadersEnabled() ) ? 2 : 1;
+			final boolean multipass = ( passes > 1 );
+			state.setEnabled( GL.GL_CULL_FACE, multipass || backfaceCulling );
+
+			for ( int pass = 0 ; pass < passes ; pass++ )
+			{
+				final boolean isBackFace = multipass && ( pass == 0 );
+
+				if ( !setVertexNormals )
+				{
+					final Vector3D normal = face.getNormal();
+					if ( isBackFace )
 					{
-						gl.glDepthMask( false );
+						gl.glNormal3d( -normal.x, -normal.y, -normal.z );
 					}
-					state.setBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
+					else
+					{
+						gl.glNormal3d( normal.x, normal.y, normal.z );
+					}
 				}
 
-				state.setEnabled( GL.GL_BLEND, blend );
-				state.setEnabled( GL.GL_LIGHTING, hasLighting );
-
-				state.setColor( color );
-				useShader( hasLighting ? _colored : _unlit );
-
-				/*
-				 * Render face. Use multiple passes for two-sided lighting.
-				 */
-				final int passes = ( !backfaceCulling && hasLighting && isShadersEnabled() ) ? 2 : 1;
-				final boolean multipass = ( passes > 1 );
-				state.setEnabled( GL.GL_CULL_FACE, multipass || backfaceCulling );
-
-				for ( int pass = 0 ; pass < passes ; pass++ )
+				for ( final TessellationPrimitive primitive : primitives )
 				{
-					final boolean isBackFace = multipass && ( pass == 0 );
-
-					if ( !setVertexNormals )
+					if ( primitive instanceof TriangleList )
 					{
-						final Vector3D normal = face.getNormal();
-						if ( isBackFace )
-						{
-							gl.glNormal3d( -normal.x, -normal.y, -normal.z );
-						}
-						else
-						{
-							gl.glNormal3d( normal.x, normal.y, normal.z );
-						}
+						gl.glBegin( GL.GL_TRIANGLES );
+					}
+					else if ( primitive instanceof TriangleFan )
+					{
+						gl.glBegin( GL.GL_TRIANGLE_FAN );
+					}
+					else if ( primitive instanceof TriangleStrip )
+					{
+						gl.glBegin( GL.GL_TRIANGLE_STRIP );
+					}
+					else
+					{
+						continue;
 					}
 
-					for ( final TessellationPrimitive primitive : primitives )
+					for ( final int vertexIndex : primitive.getVertices() )
 					{
-						if ( primitive instanceof TriangleList )
-						{
-							gl.glBegin( GL.GL_TRIANGLES );
-						}
-						else if ( primitive instanceof TriangleFan )
-						{
-							gl.glBegin( GL.GL_TRIANGLE_FAN );
-						}
-						else if ( primitive instanceof TriangleStrip )
-						{
-							gl.glBegin( GL.GL_TRIANGLE_STRIP );
-						}
-						else
-						{
-							continue;
-						}
+						final Vertex vertex = vertices.get( vertexIndex );
 
-						for ( final int vertexIndex : primitive.getVertices() )
+						if ( setVertexNormals )
 						{
-							final Vertex vertex = vertices.get( vertexIndex );
-
-							if ( setVertexNormals )
+							final Vector3D normal = face.getVertexNormal( vertexIndex );
+							if ( isBackFace )
 							{
-								final Vector3D normal = face.getVertexNormal( vertexIndex );
-								if ( isBackFace )
-								{
-									gl.glNormal3d( -normal.x, -normal.y, -normal.z );
-								}
-								else
-								{
-									gl.glNormal3d( normal.x, normal.y, normal.z );
-								}
+								gl.glNormal3d( -normal.x, -normal.y, -normal.z );
 							}
-
-							final Vector3D point = vertex.point;
-							gl.glVertex3d( point.x, point.y, point.z );
+							else
+							{
+								gl.glNormal3d( normal.x, normal.y, normal.z );
+							}
 						}
 
-						gl.glEnd();
+						final Vector3D point = vertex.point;
+						gl.glVertex3d( point.x, point.y, point.z );
 					}
-				}
 
-				if ( blend )
-				{
-					if ( alpha < 64 )
-					{
-						gl.glDepthMask( true );
-					}
+					gl.glEnd();
 				}
 			}
 		}

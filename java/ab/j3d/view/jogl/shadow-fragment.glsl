@@ -1,17 +1,25 @@
 const float depthOffset = 0.0;
 
 uniform sampler2DShadow shadowMap;
+uniform bool shadowMapEnabled;
 
 float shadow()
 {
-	vec4 shadowCoordinate = gl_TexCoord[ 7 ];
-
-	float shadow = 1.0;
-	if ( shadowCoordinate.w > 0.0 )
+	if ( shadowMapEnabled )
 	{
-		shadowCoordinate.z += depthOffset;
-		shadow = shadow2DProj( shadowMap, shadowCoordinate ).z;
-	}
+		vec4 shadowCoordinate = gl_TexCoord[ 7 ];
 
-	return shadow;
+		float shadow = 1.0;
+		if ( shadowCoordinate.w > 0.0 )
+		{
+			shadowCoordinate.z += depthOffset;
+			shadow = shadow2DProj( shadowMap, shadowCoordinate ).z;
+		}
+
+		return shadow;
+	}
+	else
+	{
+		return 1.0;
+	}
 }
