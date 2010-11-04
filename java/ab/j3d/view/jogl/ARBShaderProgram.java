@@ -203,6 +203,12 @@ public class ARBShaderProgram
 	}
 
 	@Override
+	public void setUniform( final String identifier , final boolean value )
+	{
+		setUniform( identifier, value ? GL.GL_TRUE : GL.GL_FALSE );
+	}
+
+	@Override
 	public void setUniform( final String identifier , final Vector3D value )
 	{
 		final GL gl = GLU.getCurrentGL();
