@@ -99,6 +99,11 @@ public class Light3D
 	private float _quadraticAttenuation = 0.0f;
 
 	/**
+	 * Whether the light casts shadows.
+	 */
+	private boolean _castingShadows;
+
+	/**
 	 * Constructs a light with an intensity of <code>1.0</code> with quadratic
 	 * attenuation.
 	 */
@@ -440,5 +445,25 @@ public class Light3D
 		{
 			setAttenuation( 0.0f , 0.0f , 2.0f / (float)( fallOff * fallOff ) );
 		}
+	}
+
+	/**
+	 * Returns whether the light casts shadows.
+	 *
+	 * @return  <code>true</code> if the light casts shadows.
+	 */
+	public boolean isCastingShadows()
+	{
+		return _castingShadows;
+	}
+
+	/**
+	 * Sets whether the light casts shadows.
+	 *
+	 * @param   castingShadows  <code>true</code> to cast shadows.
+	 */
+	public void setCastingShadows( final boolean castingShadows )
+	{
+		_castingShadows = castingShadows;
 	}
 }
