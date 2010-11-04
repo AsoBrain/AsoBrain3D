@@ -1,5 +1,5 @@
 /* $Id$
- * 
+ *
 ====================================================================
  * AsoBrain 3D Toolkit
  * Copyright (C) 1999-2010 Peter S. Heijnen
@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * 
+ *
 ====================================================================
  */
 package ab.j3d.model;
@@ -449,6 +449,16 @@ public class Object3D
 	public final Face3D getFace( final int index )
 	{
 		return _faces.get( index );
+	}
+
+	/**
+	 * Returns the unmodifiable list of all faces.
+	 *
+	 * @return  Faces.
+	 */
+	public List<Face3D> getFaces()
+	{
+		return Collections.unmodifiableList( _faces );
 	}
 
 	/**
