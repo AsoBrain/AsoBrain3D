@@ -194,15 +194,16 @@ public class Scene
 	 */
 	public static void addLegacyLights( @NotNull final Scene scene )
 	{
-		scene.setAmbient( 0.2f, 0.2f, 0.2f );
+		scene.setAmbient( 0.4f, 0.4f, 0.4f );
 
 		final Light3D directional1 = new DirectionalLight3D( Vector3D.normalize( -0.8,  1.0, -0.6 ) );
 		final Light3D directional2 = new DirectionalLight3D( Vector3D.normalize(  1.0, -1.0,  0.4 ) );
 		final Light3D directional3 = new DirectionalLight3D( Vector3D.normalize( -2.0,  0.0, -1.0 ) );
 
 		directional1.setIntensity( 1.0f );
-		directional2.setIntensity( 0.5f );
-		directional3.setIntensity( 0.5f );
+		directional1.setCastingShadows( true );
+		directional2.setIntensity( 0.3f );
+		directional3.setIntensity( 0.3f );
 
 		scene.addContentNode( "legacy-light-1", Matrix3D.INIT, directional1 );
 		scene.addContentNode( "legacy-light-2", Matrix3D.INIT, directional2 );
