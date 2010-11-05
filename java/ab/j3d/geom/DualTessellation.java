@@ -97,7 +97,7 @@ public class DualTessellation
 	public void addPrimitive( @NotNull final TessellationPrimitive primitive )
 	{
 		_first.addPrimitive( primitive );
-		_second.addPrimitive( createSecondPrimitive( primitive, _firstToSecondVertices, _reverseSecondOrder ) );
+		addPrimitiveCopy( _second, primitive, _firstToSecondVertices, _reverseSecondOrder );
 	}
 
 	@NotNull
@@ -134,25 +134,22 @@ public class DualTessellation
 	}
 
 	/**
-	 * Create copy of a primitive. Vertices in the result are mapped using the
-	 * specified <code>vertexMap</code>, and, if desired, the vertices in the
-	 * result can also have reversed clockwise/counter-clockwise ordering.
+	 * Adds a copy of a primitive to the given tessellation builder. Vertices
+	 * in the result are mapped using the specified <code>vertexMap</code>, and,
+	 * if desired, the vertices in the result can also have reversed
+	 * clockwise/counter-clockwise ordering.
 	 *
+	 * @param   result                  Tessellation builder.
 	 * @param   primitive               Primitive to copy.
 	 * @param   vertexMap               Maps vertex indices from the specified
 	 *                                  primitive to the resulting primitive.
 	 * @param   reverseClockOrdering    Reverse clock ordering of result.
-	 *
-	 * @return  {@link TessellationPrimitive}.
 	 */
-	@NotNull
-	protected static TessellationPrimitive createSecondPrimitive( @NotNull final TessellationPrimitive primitive, @NotNull final Map<Integer, Integer> vertexMap, final boolean reverseClockOrdering )
+	protected static void addPrimitiveCopy( @NotNull final TessellationBuilder result, @NotNull final TessellationPrimitive primitive, @NotNull final Map<Integer, Integer> vertexMap, final boolean reverseClockOrdering )
 	{
 		final int[] vertices1 = primitive.getVertices();
 
 		final int length = vertices1.length;
-
-		final TessellationPrimitive result;
 
 		if ( primitive instanceof TriangleFan )
 		{
@@ -163,7 +160,7 @@ public class DualTessellation
 				vertices2[ i ] = vertexMap.get( Integer.valueOf( vertices1[ vertexIndex ] ) );
 			}
 
-			result = new TriangleFan( vertices2 );
+			result.addPrimitive( new TriangleFan( vertices2 ) );
 		}
 		else if ( primitive instanceof TriangleList )
 		{
@@ -176,46 +173,46 @@ public class DualTessellation
 				vertices2[ i ] = vertexMap.get( Integer.valueOf( vertices1[ vertexIndex ] ) );
 			}
 
-			result = new TriangleList( vertices2 );
+			result.addPrimitive( new TriangleList( vertices2 ) );
 		}
 		else if ( primitive instanceof TriangleStrip )
 		{
-			final int[] vertices2 = new int[ length ];
-
 			if ( reverseClockOrdering )
 			{
-				if ( ( length & 1 ) == 0 ) /* even */
+				final int oddLength = ( length - 1 ) | 1;
+				if ( oddLength >= 3 )
 				{
-					final int last = length - 1;
-					for ( int i = 0; i < length; i++ )
+					final int[] vertices2 = new int[ oddLength ];
+					final int last = oddLength - 1;
+					for ( int i = 0; i < oddLength; i++ )
 					{
 						vertices2[ i ] = vertexMap.get( Integer.valueOf( vertices1[ last - i ] ) );
 					}
+					result.addPrimitive( new TriangleStrip( vertices2 ) );
 				}
-				else /* odd */
+
+				if ( oddLength != length )
 				{
-					for ( int i = 0; i < length; i++ )
-					{
-						final int vertexIndex = ( i == 0 ) ? 0 : ( ( i % 2 ) == 1 ) ? ( i + 1 ) : ( i - 1 );
-						vertices2[ i ] = vertexMap.get( Integer.valueOf( vertices1[ vertexIndex ] ) );
-					}
+					final int[] vertices2 = new int[ 3 ];
+					vertices2[ 0 ] = vertexMap.get( Integer.valueOf( vertices1[ length - 3 ] ) );
+					vertices2[ 1 ] = vertexMap.get( Integer.valueOf( vertices1[ length - 2 ] ) );
+					vertices2[ 2 ] = vertexMap.get( Integer.valueOf( vertices1[ length - 1 ] ) );
+					result.addPrimitive( new TriangleList( vertices2 ) );
 				}
 			}
 			else
 			{
+				final int[] vertices2 = new int[ length ];
 				for ( int i = 0; i < length; i++ )
 				{
 					vertices2[ i ] = vertexMap.get( Integer.valueOf( vertices1[ i ] ) );
 				}
+				result.addPrimitive( new TriangleStrip( vertices2 ) );
 			}
-
-			result = new TriangleStrip( vertices2 );
 		}
 		else
 		{
 			throw new RuntimeException( "Unrecognized primitive: " + primitive );
 		}
-
-		return result;
 	}
 }
