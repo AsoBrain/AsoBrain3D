@@ -734,7 +734,7 @@ public final class Painter
 	 */
 	private static void paintFace( final Graphics2D g, final Matrix3D view2image, final Matrix3D object2view, final Face3D face, final Color outlineColor, final Paint fillPaint, final int[] xs, final int[] ys )
 	{
-		if ( ( ( outlineColor != null ) || ( fillPaint != null ) ) && ( object2view.rotateZ( face.getNormal() ) > 0.0 ) )
+		if ( ( ( outlineColor != null ) || ( fillPaint != null ) ) && ( object2view.rotateZ( face.getNormal() ) >= 0.0 ) )
 		{
 			final List<Vertex> vertices = face.vertices;
 			final int vertexCount = vertices.size();
