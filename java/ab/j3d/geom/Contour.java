@@ -112,7 +112,6 @@ public class Contour
 							final List<Point> vertices = new ArrayList<Point>( points );
 							final ShapeClass shapeClass = ( pointCount == 2 ) ? ShapeClass.LINE_SEGMENT : ShapeClass.OPEN_PATH;
 							contours.add( new Contour( shapeClass, vertices ) );
-							points.clear();
 						}
 					}
 
@@ -122,6 +121,7 @@ public class Contour
 					negativeAngles = false;
 					totalAngle = 0.0;
 
+					points.clear();
 					points.add( new Point( moveX, moveY ) );
 					break;
 				}
