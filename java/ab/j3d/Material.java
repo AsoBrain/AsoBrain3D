@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2009 Peter S. Heijnen
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,13 +20,12 @@
  */
 package ab.j3d;
 
-import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.io.Serializable;
+import java.awt.*;
+import java.awt.image.*;
+import java.io.*;
 
-import ab.j3d.loader.ResourceLoader;
-
-import com.numdata.oss.TextTools;
+import ab.j3d.loader.*;
+import com.numdata.oss.*;
 
 /**
  * This class defines a material to be using in a 3D environment.
@@ -419,7 +418,7 @@ public class Material
 	 * @param   colorMapHeight      Height of texture color map in meters (<code>0</code> => undetermined).
 	 * @param   grain               Flag to indicate that material has a 'grain'.
 	 */
-	public Material( final String code , final float ambientColorRed , final float ambientColorGreen , final float ambientColorBlue , final float diffuseColorRed , final float diffuseColorGreen , final float diffuseColorBlue , final float diffuseColorAlpha , final float specularColorRed , final float specularColorGreen , final float specularColorBlue , final int shininess , final float emissiveColorRed , final float emissiveColorGreen , final float emissiveColorBlue , final String colorMap , final float colorMapWidth , final float colorMapHeight , final boolean grain )
+	public Material( final String code, final float ambientColorRed, final float ambientColorGreen, final float ambientColorBlue, final float diffuseColorRed, final float diffuseColorGreen, final float diffuseColorBlue, final float diffuseColorAlpha, final float specularColorRed, final float specularColorGreen, final float specularColorBlue, final int shininess, final float emissiveColorRed, final float emissiveColorGreen, final float emissiveColorBlue, final String colorMap, final float colorMapWidth, final float colorMapHeight, final boolean grain )
 	{
 		ID                      = -1;
 		this.code               = code;
@@ -450,6 +449,72 @@ public class Material
 		reflectionRed           = 0.0f;
 		reflectionGreen         = 0.0f;
 		reflectionBlue          = 0.0f;
+		resourceLoader          = null;
+	}
+
+	/**
+	 * Construct material with the specified properties.
+	 *
+	 * @param   code                Code that uniquely identifies the material.
+	 * @param   ambientColorRed     Red component of ambient reflection color.
+	 * @param   ambientColorGreen   Green component of ambient reflection color.
+	 * @param   ambientColorBlue    Blue component of ambient reflection color.
+	 * @param   diffuseColorRed     Red component of diffuse reflection color.
+	 * @param   diffuseColorGreen   Green component of diffuse reflection color.
+	 * @param   diffuseColorBlue    Blue component of diffuse reflection color.
+	 * @param   diffuseColorAlpha   Opacity (opaque: 1.0, completely translucent: 0.0).
+	 * @param   specularColorRed    Red component of specular reflection color.
+	 * @param   specularColorGreen  Green component of specular reflection color.
+	 * @param   specularColorBlue   Blue component of specular reflection color.
+	 * @param   shininess           Specular reflection exponent.
+	 * @param   emissiveColorRed    Red component of emissive color.
+	 * @param   emissiveColorGreen  Green component of emissive color.
+	 * @param   emissiveColorBlue   Blue component of emissive color.
+	 * @param   colorMap            Name of color map (<code>null</code> => none).
+	 * @param   colorMapWidth       Width of color map in meters (<code>0</code> => undetermined).
+	 * @param   colorMapHeight      Height of texture color map in meters (<code>0</code> => undetermined).
+	 * @param   bumpMap             Name of bump map to use.
+	 * @param   bumpMapWidth        Width of bump map in meters.
+	 * @param   bumpMapHeight       Height of bump map in meters.
+	 * @param   grain               Flag to indicate that material has a 'grain'.
+	 * @param   reflectionMap       Name of the reflection map to use for real-time reflections.
+	 * @param   reflectionMin       Reflectivity of the material when viewed parallel to its normal.
+	 * @param   reflectionMax       Reflectivity of the material when viewed perpendicular to its normal.
+	 * @param   reflectionRed       Intensity of the red-component of (specular) reflections.
+	 * @param   reflectionGreen     Intensity of the green-component of (specular) reflections.
+	 * @param   reflectionBlue      Intensity of the blue-component of (specular) reflections.
+	 */
+	public Material( final String code, final float ambientColorRed, final float ambientColorGreen, final float ambientColorBlue, final float diffuseColorRed, final float diffuseColorGreen, final float diffuseColorBlue, final float diffuseColorAlpha, final float specularColorRed, final float specularColorGreen, final float specularColorBlue, final int shininess, final float emissiveColorRed, final float emissiveColorGreen, final float emissiveColorBlue, final String colorMap, final float colorMapWidth, final float colorMapHeight, final String bumpMap, final float bumpMapWidth, final float bumpMapHeight, final boolean grain, final String reflectionMap, final float reflectionMin, final float reflectionMax, final float reflectionRed, final float reflectionGreen, final float reflectionBlue )
+	{
+		ID                      = -1;
+		this.code               = code;
+		this.ambientColorRed    = ambientColorRed;
+		this.ambientColorGreen  = ambientColorGreen;
+		this.ambientColorBlue   = ambientColorBlue;
+		this.diffuseColorRed    = diffuseColorRed;
+		this.diffuseColorGreen  = diffuseColorGreen;
+		this.diffuseColorBlue   = diffuseColorBlue;
+		this.diffuseColorAlpha  = diffuseColorAlpha;
+		this.specularColorRed   = specularColorRed;
+		this.specularColorGreen = specularColorGreen;
+		this.specularColorBlue  = specularColorBlue;
+		this.shininess          = shininess;
+		this.emissiveColorRed   = emissiveColorRed;
+		this.emissiveColorGreen = emissiveColorGreen;
+		this.emissiveColorBlue  = emissiveColorBlue;
+		this.colorMap           = colorMap;
+		this.colorMapWidth      = colorMapWidth;
+		this.colorMapHeight     = colorMapHeight;
+		this.bumpMap            = bumpMap;
+		this.bumpMapWidth       = bumpMapWidth;
+		this.bumpMapHeight      = bumpMapHeight;
+		this.grain              = grain;
+		this.reflectionMap      = reflectionMap;
+		this.reflectionMin      = reflectionMin;
+		this.reflectionMax      = reflectionMax;
+		this.reflectionRed      = reflectionRed;
+		this.reflectionGreen    = reflectionGreen;
+		this.reflectionBlue     = reflectionBlue;
 		resourceLoader          = null;
 	}
 
