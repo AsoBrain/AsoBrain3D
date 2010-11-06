@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2009-2009 Peter S. Heijnen
+ * Copyright (C) 2009-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,9 +20,10 @@
  */
 package ab.j3d;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.util.*;
+
+import org.jetbrains.annotations.*;
 
 /**
  * Memory-based material library that uses another material library as a
@@ -42,24 +43,27 @@ public class FallbackMemoryMaterialLibrary
 	/**
 	 * Underlying material library used as a fallback.
 	 */
-	private MaterialLibrary _fallback;
+	@Nullable
+	private final MaterialLibrary _fallback;
 
 	/**
 	 * Constructs a new memory material library with the given fallback.
 	 *
-	 * @param   fallback    Material library used as a fallback.
+	 * @param   fallback    Material library used as a fallback (optional).
 	 */
-	public FallbackMemoryMaterialLibrary( final MaterialLibrary fallback )
+	public FallbackMemoryMaterialLibrary( @Nullable final MaterialLibrary fallback )
 	{
 		_fallback = fallback;
 	}
 
-	public Material getMaterialByCode( final String code )
+	@Override
+	@Nullable
+	public Material getMaterialByCode( @NotNull final String code )
 		throws IOException
 	{
 		Material result = super.getMaterialByCode( code );
 
-		if ( result == null )
+		if ( ( result == null ) && ( _fallback != null ) )
 		{
 			result = _fallback.getMaterialByCode( code );
 		}
@@ -67,15 +71,28 @@ public class FallbackMemoryMaterialLibrary
 		return result;
 	}
 
+	@Override
+	@NotNull
 	public List<Material> getMaterials()
 		throws IOException
 	{
-		final List<Material> fromSuper = super.getMaterials();
-		final List<Material> fromFallback = _fallback.getMaterials();
+		final List<Material> result;
 
-		final List<Material> result = new ArrayList<Material>( fromSuper.size() + fromFallback.size() );
-		result.addAll( fromSuper );
-		result.addAll( fromFallback );
+		final MaterialLibrary fallback = _fallback;
+		if ( fallback != null )
+		{
+			final List<Material> fromSuper = super.getMaterials();
+			final List<Material> fromFallback = fallback.getMaterials();
+
+			result = new ArrayList<Material>( fromSuper.size() + fromFallback.size() );
+			result.addAll( fromSuper );
+			result.addAll( fromFallback );
+		}
+		else
+		{
+			result = super.getMaterials();
+		}
+
 		return result;
 	}
 }
