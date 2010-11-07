@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2009 Peter S. Heijnen
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,13 +20,10 @@
  */
 package ab.j3d.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-import ab.j3d.Bounds3D;
-import ab.j3d.Bounds3DBuilder;
-import ab.j3d.Matrix3D;
+import ab.j3d.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class defines a node in a 3D scene graph. It can be used directly as
@@ -214,14 +211,13 @@ public class Node3D
 	 * @see     #removeChild
 	 * @see     #getParent
 	 */
-	public final void addChild( final Node3D node )
+	public final void addChild( @NotNull final Node3D node )
 	{
-		if ( node == null )
-			throw new NullPointerException( "node" );
-
 		final List<Node3D> children = _children;
 		if ( children.contains( node ) )
+		{
 			throw new IllegalArgumentException( node.toString() );
+		}
 
 		children.add( node );
 		setParentOfChild( node );
@@ -258,13 +254,12 @@ public class Node3D
 	 * @see     #addChild
 	 * @see     #getParent
 	 */
-	public final void removeChild( final Node3D node )
+	public final void removeChild( @NotNull final Node3D node )
 	{
-		if ( node == null )
-			throw new NullPointerException( "node" );
-
 		if ( !_children.remove( node ) )
+		{
 			throw new IllegalArgumentException( node.toString() );
+		}
 
 		if ( node._parent == this )
 		{
@@ -304,29 +299,40 @@ public class Node3D
 	 */
 	public final Bounds3D calculateBounds( final Matrix3D xform )
 	{
-		final Bounds3D result;
-
-		final Node3DCollection<Object3D> nodes = collectNodes( null , Object3D.class , xform , false );
-		if ( nodes != null )
+		final Bounds3DBuilder builder = new Bounds3DBuilder();
+		accept( new AbstractNode3DVisitor( xform )
 		{
-			final Bounds3DBuilder builder = new Bounds3DBuilder();
-
-			for ( int i = 0 ; i < nodes.size() ; i++ )
+			@Override
+			public void visitNode( @NotNull final Node3D node )
 			{
-				final Object3D object3d = nodes.getNode( i );
-				object3d.addBounds( builder , nodes.getMatrix( i ) );
+				if( node instanceof Object3D )
+				{
+					final Object3D object3d = (Object3D) node;
+					object3d.addBounds( builder, getTransform() );
+				}
 			}
+		} );
 
-			result = builder.getBounds();
-		}
-		else
-		{
-			result = null;
-		}
-
-		return result;
+		return builder.getBounds();
 	}
 
+	/**
+	 * Iterates over the tree structure, and calls back to the given visitor
+	 * while doing so.
+	 *
+	 * @param   visitor     Visitor to call back to.
+	 */
+	public void accept( final Node3DVisitor visitor )
+	{
+		visitor.visitNode( this );
+
+		for ( final Node3D child : _children )
+		{
+			visitor.enterBranch( this, child);
+			child.accept( visitor );
+			visitor.exitBranch( this, child );
+		}
+	}
 
 	/**
 	 * This method collects nodes of a specific time from the scene graph.
@@ -349,7 +355,7 @@ public class Node3D
 	 * @return  Collection (same as <code>collection</code> or newly created if
 	 *          it was <code>null</code> and at least one node was added).
 	 */
-	public <T extends Node3D> Node3DCollection<T> collectNodes( final Node3DCollection<T> collection , final Class<? extends T> nodeClass , final Matrix3D transform , final boolean upwards )
+	public <T extends Node3D> Node3DCollection<T> collectNodes( final Node3DCollection<T> collection, final Class<? extends T> nodeClass, final Matrix3D transform, final boolean upwards )
 	{
 		Node3DCollection<T> result = collection;
 
@@ -359,7 +365,7 @@ public class Node3D
 			/*
 			 * Traverse the tree upwards.
 			 */
-			result = parent.collectNodes( result , nodeClass , transform , true );
+			result = parent.collectNodes( result, nodeClass, transform, true );
 		}
 		else
 		{
@@ -375,7 +381,7 @@ public class Node3D
 					result = new Node3DCollection<T>();
 				}
 
-				result.add( transform , (T)this );
+				result.add( transform, (T)this );
 			}
 
 			/*
@@ -383,7 +389,7 @@ public class Node3D
 			 */
 			for ( final Node3D node : children )
 			{
-				result = node.collectNodes( result , nodeClass , transform , false );
+				result = node.collectNodes( result, nodeClass, transform, false );
 			}
 		}
 

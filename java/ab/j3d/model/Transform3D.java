@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2007 Peter S. Heijnen
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,13 +20,13 @@
  */
 package ab.j3d.model;
 
-import ab.j3d.Matrix3D;
+import ab.j3d.*;
 
 /**
  * This class defines a transformation node in the graphics tree..
  *
  * @author  Peter S. Heijnen
- * @version $Revision$ ($Date$, $Author$)
+ * @version $Revision$ $Date$
  */
 public class Transform3D
 	extends Node3D
@@ -46,8 +46,8 @@ public class Transform3D
 	 */
 	public Transform3D()
 	{
-		_transform        = Matrix3D.INIT;
-		_inverseTransform = Matrix3D.INIT;
+		_transform = Matrix3D.IDENTITY;
+		_inverseTransform = Matrix3D.IDENTITY;
 	}
 
 	/**
@@ -57,11 +57,25 @@ public class Transform3D
 	 */
 	public Transform3D( final Matrix3D transform )
 	{
-		_transform        = transform;
+		_transform = transform;
 		_inverseTransform = null;
 	}
 
-	public <T extends Node3D> Node3DCollection<T> collectNodes( final Node3DCollection<T> collection , final Class<? extends T> nodeClass , final Matrix3D transform , final boolean upwards )
+	@Override
+	public void accept( final Node3DVisitor visitor )
+	{
+		final Matrix3D transform = getTransform();
+		final boolean hasTransform = ( transform != null ) && ( transform != Matrix3D.IDENTITY );
+		if ( hasTransform )
+		{
+			visitor.applyTranform( transform );
+		}
+
+		super.accept( visitor );
+	}
+
+	@Override
+	public <T extends Node3D> Node3DCollection<T> collectNodes( final Node3DCollection<T> collection, final Class<? extends T> nodeClass, final Matrix3D transform, final boolean upwards )
 	{
 		/*
 		 * Determine modified transform based on combination of the
@@ -70,9 +84,14 @@ public class Transform3D
 		 */
 		final Matrix3D combinedTransform;
 
-		final Matrix3D nodeTransform = ( upwards ? getInverseTransform() : getTransform() );
-		if ( ( nodeTransform != null ) && ( nodeTransform != Matrix3D.INIT ) )
+		Matrix3D nodeTransform = getTransform();
+		if ( ( nodeTransform != null ) && ( nodeTransform != Matrix3D.IDENTITY ) )
 		{
+			if ( upwards )
+			{
+				nodeTransform = nodeTransform.inverse();
+			}
+
 			combinedTransform = nodeTransform.multiply( transform );
 		}
 		else
@@ -83,7 +102,7 @@ public class Transform3D
 		/*
 		 * Let super-class do its job with the modified transformation.
 		 */
-		return super.collectNodes( collection , nodeClass , combinedTransform , upwards );
+		return super.collectNodes( collection, nodeClass, combinedTransform, upwards );
 	}
 
 	/**
@@ -102,18 +121,6 @@ public class Transform3D
 		}
 
 		return result;
-	}
-
-	/**
-	 * Set inverse transformation matrix. This also sets the normal
-	 * transformation matrix.
-	 *
-	 * @param   transform   Inverse transformation matrix.
-	 */
-	public void setInverseTransform( final Matrix3D transform )
-	{
-		_transform        = transform.inverse();
-		_inverseTransform = transform;
 	}
 
 	/**
