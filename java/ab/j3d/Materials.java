@@ -32,8 +32,12 @@ public final class Materials
 	public static final Material LIGHTGRAY    = new Material( "lightgray"  , 0.75f, 0.75f, 0.75f, 0.75f, 0.75f, 0.75f, 1.0f, 0.20f, 0.20f, 0.20f,  32, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
 	public static final Material WHITE        = new Material( "white"      , 1.00f, 1.00f, 1.00f, 1.00f, 1.00f, 1.00f, 1.0f, 1.00f, 1.00f, 1.00f,   8, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
 	public static final Material RED          = new Material( "red"        , 1.00f, 0.00f, 0.00f, 1.00f, 0.00f, 0.00f, 1.0f, 0.20f, 0.20f, 0.20f,  32, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
+	public static final Material ORANGE       = new Material( "orange"     , 1.00f, 0.38f, 0.00f, 1.00f, 0.38f, 0.00f, 1.0f, 0.20f, 0.20f, 0.20f,  32, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
+	public static final Material YELLOW       = new Material( "yellow"     , 1.00f, 1.00f, 0.00f, 1.00f, 1.00f, 0.00f, 1.0f, 0.20f, 0.20f, 0.20f,  32, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
 	public static final Material GREEN        = new Material( "green"      , 0.00f, 1.00f, 0.00f, 0.00f, 1.00f, 0.00f, 1.0f, 0.20f, 0.20f, 0.20f,  32, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
+	public static final Material CYAN         = new Material( "cyan"       , 0.00f, 1.00f, 1.00f, 0.00f, 1.00f, 1.00f, 1.0f, 0.20f, 0.20f, 0.20f,  32, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
 	public static final Material BLUE         = new Material( "blue"       , 0.00f, 0.00f, 1.00f, 0.00f, 0.00f, 1.00f, 1.0f, 0.20f, 0.20f, 0.20f,  32, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
+	public static final Material MAGENTA      = new Material( "magenta"    , 1.00f, 0.00f, 1.00f, 1.00f, 0.00f, 1.00f, 1.0f, 0.20f, 0.20f, 0.20f,  32, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
 	public static final Material DARK_BROWN   = new Material( "dark_brown" , 0.24f, 0.16f, 0.05f, 0.24f, 0.16f, 0.05f, 1.0f, 0.20f, 0.20f, 0.20f,  32, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
 	public static final Material BROWN        = new Material( "brown"      , 0.76f, 0.51f, 0.37f, 0.76f, 0.51f, 0.37f, 1.0f, 0.20f, 0.20f, 0.20f,  32, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
 	public static final Material BEIGE        = new Material( "beige"      , 0.88f, 0.87f, 0.78f, 0.88f, 0.87f, 0.78f, 1.0f, 0.20f, 0.20f, 0.20f,  32, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
