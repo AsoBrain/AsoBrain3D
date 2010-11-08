@@ -101,7 +101,7 @@ public class Light3D
 	/**
 	 * Whether the light casts shadows.
 	 */
-	private boolean _castingShadows;
+	private boolean _castingShadows = false;
 
 	/**
 	 * Constructs a light with an intensity of <code>1.0</code> with quadratic
