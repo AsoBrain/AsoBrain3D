@@ -2052,7 +2052,7 @@ public class JOGLRenderer
 			{
 				for ( int j = 0 ; j < faceCount; j++ )
 				{
-					renderFaceVertices( objectStyle , object2world , object.getFace( j ) );
+					renderFaceVertices( objectStyle , object.getFace( j ) );
 				}
 			}
 		}
@@ -2677,7 +2677,7 @@ public class JOGLRenderer
 	 * @param   face    Face to be rendered.
 	 * @param   style   Render style to be applied.
 	 */
-	protected void renderFaceVertices( final RenderStyle style , final Matrix3D object2world , final Face3D face )
+	protected void renderFaceVertices( final RenderStyle style, final Face3D face )
 	{
 		final List<Vertex> vertices = face.vertices;
 		final int vertexCount = vertices.size();
