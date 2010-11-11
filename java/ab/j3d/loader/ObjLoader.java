@@ -741,29 +741,29 @@ public class ObjLoader
 						tempMaterial.code = ( tokens[ 1 ] );
 						objMaterials.put( ( tokens[ 1 ] ), tempMaterial );
 					}
-					// Ambient lightning
+					// Ambient lighting
 					else if ( "Ka".equals( name ) )
 					{
 						if ( argCount < 3 )
-						    throw new IOException( "Malformed ambient lightning entry: " + line );
+						    throw new IOException( "Malformed ambient lighting entry: " + line );
 						tempMaterial.ambientColorRed   = Float.valueOf( tokens[ 1 ] );
 						tempMaterial.ambientColorGreen = Float.valueOf( tokens[ 2 ] );
 						tempMaterial.ambientColorBlue  = Float.valueOf( tokens[ 3 ] );
 					}
-					// Diffuse lightning
+					// Diffuse lighting
 					else if ( "Kd".equals( name ) )
 					{
 						if ( argCount < 3 )
-						    throw new IOException( "Malformed diffuse lightning entry: " + line );
+						    throw new IOException( "Malformed diffuse lighting entry: " + line );
 						tempMaterial.diffuseColorRed   = Float.valueOf( tokens[ 1 ] );
 						tempMaterial.diffuseColorGreen = Float.valueOf( tokens[ 2 ] );
 						tempMaterial.diffuseColorBlue  = Float.valueOf( tokens[ 3 ] );
 					}
-					// Specular lightning
+					// Specular lighting
 					else if ( "Ks".equals( name ) )
 					{
 						if ( argCount < 3 )
-						    throw new IOException( "Malformed specular lightning entry: " + line );
+						    throw new IOException( "Malformed specular lighting entry: " + line );
 						tempMaterial.specularColorRed   = Float.valueOf( tokens[ 1 ] );
 						tempMaterial.specularColorGreen = Float.valueOf( tokens[ 2 ] );
 						tempMaterial.specularColorBlue  = Float.valueOf( tokens[ 3 ] );
