@@ -71,7 +71,7 @@ public class Max3DSFile
 	private Max3DSFile( final LittleEndianDataInputStream dataInput )
 		throws IOException
 	{
-		super( dataInput , dataInput.readUnsignedShort() , dataInput.readInt() - 6 );
+		super( dataInput, dataInput.readUnsignedShort(), dataInput.readInt() - 6 );
 	}
 
 	/**
@@ -93,77 +93,58 @@ public class Max3DSFile
 			final Matrix3D transform = Matrix3D.INIT; // triangleMeshChunk._transform;
 
 			final Object3DBuilder builder = new Object3DBuilder();
-			buildMesh( builder , materials , triangleMeshChunk );
+			buildMesh( builder, materials, triangleMeshChunk );
 			final Object3D object3d = builder.getObject3D();
 
-			scene.addContentNode( name , transform , object3d );
+			scene.addContentNode( name, transform, object3d );
 		}
 	}
 
 	/**
-	 * Builder 3D node with contents of this file.
+	 * Create 3D node with contents of this file.
 	 *
 	 * @return  3D node with contents of this file.
 	 */
 	public Node3D createSceneNode3D()
 	{
-		final Node3D result;
-
-		final Node3DCollection<Object3D> meshObjects = createMeshObjects();
-		if ( meshObjects.size() == 1 )
-		{
-			final Matrix3D transform = meshObjects.getMatrix( 0 );
-			if ( Matrix3D.INIT.equals( transform ) )
-			{
-				result = meshObjects.getNode( 0 );
-			}
-			else
-			{
-				result = new Transform3D( transform );
-				result.addChild( meshObjects.getNode( 0 ) );
-			}
-		}
-		else
-		{
-			result = new Node3D();
-
-			for ( int i = 0 ; i < meshObjects.size() ; i++ )
-			{
-				final Transform3D transform3d = new Transform3D( meshObjects.getMatrix( i ) );
-				transform3d.addChild( meshObjects.getNode( i ) );
-				result.addChild( transform3d );
-			}
-		}
-
-		return result;
+		final Node3D result = new Node3D();
+		buildScene( result );
+		return ( result.getChildCount() == 1 ) ? result.getChild( 0 ) : result;
 	}
 
 	/**
-	 * Builder 3D scene contents from this file.
+	 * Build 3D scene with contents of this file.
+	 *
+	 * @param   target  Target node to add contents to.
 	 */
-	public Node3DCollection<Object3D> createMeshObjects()
+	public void buildScene( final Node3D target )
 	{
 		final EditableObjectChunk editableObject = _editableObject;
 		final Map<String,TriangleMeshChunk> meshes = editableObject._meshes;
 		final Map<String,MaterialChunk> materials = editableObject._materials;
-
-		final Node3DCollection<Object3D> result = new Node3DCollection<Object3D>();
 
 		for ( final TriangleMeshChunk triangleMeshChunk : meshes.values() )
 		{
 			final Matrix3D transform = triangleMeshChunk._transform;
 
 			final Object3DBuilder builder = new Object3DBuilder();
-			buildMesh( builder , materials , triangleMeshChunk );
+			buildMesh( builder, materials, triangleMeshChunk );
 			final Object3D object3d = builder.getObject3D();
 
-			result.add( transform , object3d );
+			if ( Matrix3D.INIT.equals( transform ) )
+			{
+				target.addChild( object3d );
+			}
+			else
+			{
+				final Transform3D transform3d = new Transform3D( transform );
+				transform3d.addChild( object3d );
+				target.addChild( transform3d );
+			}
 		}
-
-		return result;
 	}
 
-	public static void buildMesh( final Abstract3DObjectBuilder builder , final Map<String,MaterialChunk> materials , final TriangleMeshChunk mesh )
+	public static void buildMesh( final Abstract3DObjectBuilder builder, final Map<String,MaterialChunk> materials, final TriangleMeshChunk mesh )
 	{
 		final List<Vector3D>  vertices           = mesh._vertices;
 		final Point2D.Float[] textureCoordinates = mesh._textureCoordinates;
@@ -179,7 +160,7 @@ public class Max3DSFile
 		for ( int i = 0; i < numberOfFaces; i++ )
 		{
 			final int[] face = faces[ i ];
-			faceNormals[ i ] = GeometryTools.getPlaneNormal( vertices.get( face[ 2 ] ) , vertices.get( face[ 1 ] ) , vertices.get( face[ 0 ] ) );
+			faceNormals[ i ] = GeometryTools.getPlaneNormal( vertices.get( face[ 2 ] ), vertices.get( face[ 1 ] ), vertices.get( face[ 0 ] ) );
 		}
 
 		final MaterialChunk[] faceMaterials = new MaterialChunk[ numberOfFaces ];
@@ -261,7 +242,7 @@ public class Max3DSFile
 						}
 					}
 
-					vertexNormal = Vector3D.normalize( nx , ny , nz );
+					vertexNormal = Vector3D.normalize( nx, ny, nz );
 				}
 				else
 				{
@@ -279,11 +260,11 @@ public class Max3DSFile
 			}
 
 			final MaterialChunk materialChunk = faceMaterials[ faceIndex ];
-			builder.addFace( facePoints , materialChunk != null ? materialChunk._material : null , texturePoints , vertexNormals , isSmooth , true );
+			builder.addFace( facePoints, materialChunk != null ? materialChunk._material : null, texturePoints, vertexNormals, isSmooth, true );
 		}
 	}
 
-	protected void processChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	protected void processChunk( final DataInput dataInput, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 		if ( chunkType != MAIN_3DS )
@@ -291,10 +272,10 @@ public class Max3DSFile
 			throw new IOException( "Header doesn't match 0x4D4D; Header=" + Integer.toHexString( chunkType ) );
 		}
 
-		super.processChunk( dataInput , chunkType , remainingChunkBytes );
+		super.processChunk( dataInput, chunkType, remainingChunkBytes );
 	}
 
-	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	protected void processChildChunk( final DataInput dataInput, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 		switch ( chunkType )
@@ -304,15 +285,15 @@ public class Max3DSFile
 				break;
 
 			case EDIT_3DS :
-				_editableObject = new EditableObjectChunk( dataInput , chunkType , remainingChunkBytes );
+				_editableObject = new EditableObjectChunk( dataInput, chunkType, remainingChunkBytes );
 				break;
 
 			case KEYFRAMES :
-				_keyframes = new KeyFramesChunk( dataInput , chunkType , remainingChunkBytes );
+				_keyframes = new KeyFramesChunk( dataInput, chunkType, remainingChunkBytes );
 				break;
 
 			default : // Ignore unknown chunks
-				skipFully( dataInput , remainingChunkBytes );
+				skipFully( dataInput, remainingChunkBytes );
 		}
 	}
 }
