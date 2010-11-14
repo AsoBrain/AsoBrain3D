@@ -40,11 +40,6 @@ import org.jetbrains.annotations.*;
 public class Node3D
 {
 	/**
-	 * Parent of this node (<code>null</code> if this a root node).
-	 */
-	private Node3D _parent;
-
-	/**
 	 * Collection of children of this node.
 	 */
 	private final List<Node3D> _children;
@@ -66,7 +61,6 @@ public class Node3D
 	 */
 	public Node3D()
 	{
-		_parent = null;
 		_children = new ArrayList<Node3D>();
 		_tag = null;
 	}
@@ -89,7 +83,7 @@ public class Node3D
 	 *
 	 * @see     #setTag
 	 */
-	public final Object getTag()
+	public Object getTag()
 	{
 		return _tag;
 	}
@@ -105,22 +99,9 @@ public class Node3D
 	 *
 	 * @see     #getTag
 	 */
-	public final void setTag( final Object tag )
+	public void setTag( final Object tag )
 	{
 		_tag = tag;
-	}
-
-	/**
-	 * Get parent of this node.
-	 *
-	 * @return  Parent node, or <code>null</code> if none exists.
-	 *
-	 * @see     #addChild
-	 * @see     #removeChild
-	 */
-	public final Node3D getParent()
-	{
-		return _parent;
 	}
 
 	/**
@@ -134,7 +115,7 @@ public class Node3D
 	 *
 	 * @see     #getChildCount
 	 */
-	public final Node3D getChild( final int index )
+	public Node3D getChild( final int index )
 	{
 		return _children.get( index );
 	}
@@ -147,7 +128,7 @@ public class Node3D
 	 * @see     #getChild
 	 * @see     #isLeaf
 	 */
-	public final int getChildCount()
+	public int getChildCount()
 	{
 		return _children.size();
 	}
@@ -163,33 +144,6 @@ public class Node3D
 	}
 
 	/**
-	 * Test if the specified node is an ancestor of this node.
-	 *
-	 * @param   node    Node to test.
-	 *
-	 * @return  <code>true</code> if the specified node is an ancestor;
-	 *          <code>false</code> otherwise.
-	 */
-	public final boolean isAncestor( final Node3D node )
-	{
-		boolean result = false;
-
-		if ( node != null )
-		{
-			for ( Node3D ancestor = getParent() ; ancestor != null ; ancestor = ancestor.getParent() )
-			{
-				result = ( node == ancestor );
-				if ( result )
-				{
-					break;
-				}
-			}
-		}
-
-		return result;
-	}
-
-	/**
 	 * This method returns <code>true</code> if this node is a leaf node
 	 * (it has no children).
 	 *
@@ -198,7 +152,7 @@ public class Node3D
 	 *
 	 * @see     #getChildCount
 	 */
-	public final boolean isLeaf()
+	public boolean isLeaf()
 	{
 		return _children.isEmpty();
 	}
@@ -209,9 +163,8 @@ public class Node3D
 	 * @param   node    Node to add as a child.
 	 *
 	 * @see     #removeChild
-	 * @see     #getParent
 	 */
-	public final void addChild( @NotNull final Node3D node )
+	public void addChild( @NotNull final Node3D node )
 	{
 		final List<Node3D> children = _children;
 		if ( children.contains( node ) )
@@ -220,30 +173,65 @@ public class Node3D
 		}
 
 		children.add( node );
-		setParentOfChild( node );
 
 		invalidateCache();
 	}
 
 	/**
-	 * This method is used internally by {@link #addChild} to update the
-	 * {@link #_parent} field of a newly added child node. This takes care of
-	 * removing the child node from its previous parent and setting it to this
-	 * node.
+	 * Add child nodes to this node.
 	 *
-	 * @param   node    Node whose {@link #_parent} field to update.
-	 *
-	 * @see     Insert3D#setParentOfChild
+	 * @param   nodes   Nodes to add as a child.
 	 */
-	void setParentOfChild( final Node3D node )
+	public void addChildren( @NotNull final Node3D... nodes )
 	{
-		final Node3D oldParent = node._parent;
-		if ( ( oldParent != null ) && ( oldParent != this ) )
+		final List<Node3D> children = _children;
+		boolean nodeAdded = false;
+		for ( final Node3D node : nodes )
 		{
-			oldParent.removeChild( node );
+			children.add( node );
+			nodeAdded = true;
 		}
 
-		node._parent = this;
+		if ( nodeAdded )
+		{
+			invalidateCache();
+		}
+	}
+
+	/**
+	 * Add child nodes to this node.
+	 *
+	 * @param   nodes   Nodes to add as a child.
+	 */
+	public void addChildren( @NotNull final Collection<? extends Node3D> nodes )
+	{
+		if ( !nodes.isEmpty() )
+		{
+			final List<Node3D> children = _children;
+			children.addAll( nodes );
+			invalidateCache();
+		}
+	}
+
+	/**
+	 * Add child nodes to this node.
+	 *
+	 * @param   nodes   Nodes to add as a child.
+	 */
+	public void addChildren( @NotNull final Iterable<? extends Node3D> nodes )
+	{
+		final List<Node3D> children = _children;
+		boolean nodeAdded = false;
+		for ( final Node3D node : nodes )
+		{
+			children.add( node );
+			nodeAdded = true;
+		}
+
+		if ( nodeAdded )
+		{
+			invalidateCache();
+		}
 	}
 
 	/**
@@ -252,18 +240,12 @@ public class Node3D
 	 * @param   node    Child node to remove.
 	 *
 	 * @see     #addChild
-	 * @see     #getParent
 	 */
-	public final void removeChild( @NotNull final Node3D node )
+	public void removeChild( @NotNull final Node3D node )
 	{
 		if ( !_children.remove( node ) )
 		{
 			throw new IllegalArgumentException( node.toString() );
-		}
-
-		if ( node._parent == this )
-		{
-			node._parent = null;
 		}
 
 		invalidateCache();
@@ -274,125 +256,47 @@ public class Node3D
 	 *
 	 * @see     #removeChild
 	 */
-	public final void removeAllChildren()
+	public void removeAllChildren()
 	{
-		final List<Node3D> children = _children;
-		while ( !children.isEmpty() )
-		{
-			final Node3D node = children.remove( children.size() - 1 );
-			if ( node._parent == this )
-			{
-				node._parent = null;
-			}
-		}
-
+		_children.clear();
 		invalidateCache();
 	}
 
 	/**
-	 * Calculate combined of bounds all objects starting at this node.
+	 * Calculate combined bounds all objects starting at this node.
 	 *
-	 * @param   xform   Transformation to apply to this node.
+	 * @param   transform   Transformation to apply to this node.
 	 *
 	 * @return  Calculated bounds;
 	 *          <code>null</code> if bounds could not be determined.
 	 */
-	public final Bounds3D calculateBounds( final Matrix3D xform )
+	public Bounds3D calculateBounds( final Matrix3D transform )
 	{
 		final Bounds3DBuilder builder = new Bounds3DBuilder();
-		accept( new AbstractNode3DVisitor( xform )
+
+		final Node3DVisitor worker = new Node3DVisitor()
 		{
 			@Override
-			public void visitNode( @NotNull final Node3D node )
+			public boolean visitNode( @NotNull final Node3DPath path )
 			{
-				if( node instanceof Object3D )
+				final Node3D node = path.getNode();
+				if ( node instanceof Object3D )
 				{
 					final Object3D object3d = (Object3D) node;
-					object3d.addBounds( builder, getTransform() );
+					object3d.addBounds( builder, path.getTransform() );
 				}
+				return true;
 			}
-		} );
+		};
 
+		Node3DTreeWalker.walk( worker, transform, this );
 		return builder.getBounds();
 	}
 
-	/**
-	 * Iterates over the tree structure, and calls back to the given visitor
-	 * while doing so.
-	 *
-	 * @param   visitor     Visitor to call back to.
-	 */
-	public void accept( final Node3DVisitor visitor )
+	@Override
+	public String toString()
 	{
-		visitor.visitNode( this );
-
-		for ( final Node3D child : _children )
-		{
-			visitor.enterBranch( this, child);
-			child.accept( visitor );
-			visitor.exitBranch( this, child );
-		}
-	}
-
-	/**
-	 * This method collects nodes of a specific time from the scene graph.
-	 * <p>
-	 * The scene graph can be traversed in two directions. First, going up the
-	 * tree to find the root, automatically followed by going down the tree to
-	 * collect the nodes. Second, going down the tree immediately.
-	 * <p>
-	 * In both directions, a transformation is maintained that transforms
-	 * coordinates from the current node to coordinates of the node where the
-	 * process started. This transformation is collected in combination with
-	 * the found node.
-	 *
-	 * @param   collection  Collection that contains all gathered nodes (may be
-	 *                      <code>null</code> to create a collection on demand).
-	 * @param   nodeClass   Class of requested nodes.
-	 * @param   transform   Transformation matrix upto this node.
-	 * @param   upwards     Direction in which the tree is being traversed.
-	 *
-	 * @return  Collection (same as <code>collection</code> or newly created if
-	 *          it was <code>null</code> and at least one node was added).
-	 */
-	public <T extends Node3D> Node3DCollection<T> collectNodes( final Node3DCollection<T> collection, final Class<? extends T> nodeClass, final Matrix3D transform, final boolean upwards )
-	{
-		Node3DCollection<T> result = collection;
-
-		final Node3D parent = getParent();
-		if ( upwards && ( parent != null ) )
-		{
-			/*
-			 * Traverse the tree upwards.
-			 */
-			result = parent.collectNodes( result, nodeClass, transform, true );
-		}
-		else
-		{
-			final List<Node3D> children = _children;
-
-			/*
-			 * If this is a matching node, add it to the collection.
-			 */
-			if ( nodeClass.isInstance( this ) )
-			{
-				if ( result == null )
-				{
-					result = new Node3DCollection<T>();
-				}
-
-				result.add( transform, (T)this );
-			}
-
-			/*
-			 * Traverse the tree downwards.
-			 */
-			for ( final Node3D node : children )
-			{
-				result = node.collectNodes( result, nodeClass, transform, false );
-			}
-		}
-
-		return result;
+		final Class<?> clazz = getClass();
+		return clazz.getSimpleName() + '@' + Integer.toHexString( hashCode() ) + "{tag=" + getTag() + '}';
 	}
 }
