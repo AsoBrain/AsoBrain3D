@@ -21,11 +21,11 @@
 package ab.j3d.model;
 
 import ab.j3d.*;
+import org.jetbrains.annotations.*;
 
 /**
- * Path build by {@link AbstractNode3DVisitor}. This is used to keep track of
- * the shortest path from the node the visitor started at and a visited node.
- * It also keeps track of a current transformation matrix.
+ * Path to a {@link Node3D}, keeping track of the path leading upto this node
+ * and the combined transformation matrix at the node.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
@@ -33,61 +33,75 @@ import ab.j3d.*;
 public class Node3DPath
 {
 	/**
-	 * Previous element in path, if any.
+	 * Parent path element. This is <code>null</code> for the 'root'.
 	 */
-	final Node3DPath _previous;
+	@Nullable
+	private final Node3DPath _parent;
 
 	/**
-	 * Combined transformation matrix at the visited node.
+	 * Combined transformation matrix at the node.
 	 */
-	final Matrix3D _transform;
+	@NotNull
+	private final Matrix3D _transform;
 
 	/**
-	 * Node that is visited.
+	 * {@link Node3D} to which this path leads.
 	 */
-	final Node3D _node;
+	@NotNull
+	private final Node3D _node;
 
 	/**
-	 * Create transform stack element.
+	 * Create path element.
 	 *
-	 * @param   previous    Previous element in path, if any.
-	 * @param   transform   Combined transformation matrix at the visited node.
-	 * @param   node        Node that is visited.
+	 * @param   parent      Parent path element (<code>null</code> for root).
+	 * @param   transform   Combined transformation matrix at node.
+	 * @param   node        {@link Node3D} to which the path leads.
 	 */
-	public Node3DPath( final Node3DPath previous, final Matrix3D transform, final Node3D node )
+	public Node3DPath( @Nullable final Node3DPath parent, @NotNull final Matrix3D transform, @NotNull final Node3D node )
 	{
-		_previous = previous;
+		_parent = parent;
 		_transform = transform;
 		_node = node;
 	}
 
 	/**
-	 * Get previous element in path, if any.
+	 * Get parent path element. This is <code>null</code> for the 'root'.
 	 *
-	 * @return  Previous element in path, if any.
+	 * @return  Parent path element;
+	 *          <code>null</code> if this is the 'root'.
 	 */
-	public Node3DPath getPrevious()
+	@Nullable
+	public Node3DPath getParent()
 	{
-		return _previous;
+		return _parent;
 	}
 
 	/**
-	 * Get transformation matrix that was stored.
+	 * Get combined transformation matrix at the node.
 	 *
-	 * @return  Transformation matrix that was stored.
+	 * @return  Combined transformation matrix at the node.
 	 */
+	@NotNull
 	public Matrix3D getTransform()
 	{
 		return _transform;
 	}
 
 	/**
-	 * Get node that is visited.
+	 * Get {@link Node3D} to which this path leads.
 	 *
-	 * @return  Node that is visited.
+	 * @return  {@link Node3D} to which this path leads.
 	 */
+	@NotNull
 	public Node3D getNode()
 	{
 		return _node;
+	}
+
+	@Override
+	public String toString()
+	{
+		final Class<?> clazz = getClass();
+		return clazz.getSimpleName() + '@' + Integer.toHexString( hashCode() ) + "{node=" + _node + ", transform=" + _transform.toShortFriendlyString() + ", parent=" + _parent + '}';
 	}
 }

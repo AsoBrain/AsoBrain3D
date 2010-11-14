@@ -20,11 +20,11 @@
  */
 package ab.j3d.model;
 
-import ab.j3d.*;
 import org.jetbrains.annotations.*;
 
 /**
- * Visitor for tree of {@link Node3D}s.
+ * Visitor for {@link Node3D} objects. This visitor is typically envoked by a
+ * {@link Node3DTreeWalker}.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
@@ -32,41 +32,13 @@ import org.jetbrains.annotations.*;
 public interface Node3DVisitor
 {
 	/**
-	 * Visits the given node.
+	 * Visits the node with given path. The return value indicates wether the
+	 * 'tour' along which the visitor is taken should be continued or aborted.
 	 *
-	 * @param   node    Node to visit.
-	 */
-	void visitNode( @NotNull Node3D node );
-
-	/**
-	 * Notify entering of tree branch.
-	 * <p>
-	 * This is called prior iteration and before calling {@link #visitNode} for
-	 * the given <code>branch</code>. This call is always reflected by a
-	 * matching call to {@link #exitBranch} with the same arguments.
+	 * @param   path    Path to the node that is visited.
 	 *
-	 * @param   parent  From which node the branch is entered.
-	 * @param   branch  Branch that is being entered.
+	 * @return  <code>true</code> if the 'tour' should continue;
+	 *          <code>false</code> if the 'tour' should be aborted.
 	 */
-	void enterBranch( @NotNull Node3D parent, @NotNull Node3D branch );
-
-	/**
-	 * Apply transformation matrix. The given transform should be multiplied
-	 * with any existing transform to determine a combined transform.
-	 *
-	 * @param   transform   Transformation to apply.
-	 */
-	void applyTranform( @NotNull Matrix3D transform );
-
-	/**
-	 * Notify exiting of tree branch.
-	 * <p>
-	 * This is called to reflect a prior call to the {@link #enterBranch} method
-	 * and is always called after a call to {@link #visitNode(Node3D)} for the
-	 * given <code>branch</code>.
-	 *
-	 * @param   parent  From which node the branch is entered.
-	 * @param   branch  Branch that is being entered.
-	 */
-	void exitBranch( @NotNull Node3D parent, @NotNull Node3D branch );
+	boolean visitNode( @NotNull Node3DPath path );
 }

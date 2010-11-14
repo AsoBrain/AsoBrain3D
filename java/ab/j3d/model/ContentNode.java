@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2004-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -66,7 +66,7 @@ public class ContentNode
 	/**
 	 * Cached collection of nodes the content of this node.
 	 */
-	private Node3DCollection<Object3D> _cachedContent = null;
+	private List<Node3DPath> _cachedContent = null;
 
 	/**
 	 * Cached node oriented {@link Bounds3D} for all contents of this node.
@@ -97,7 +97,7 @@ public class ContentNode
 	 * @param   transform   Initial transform (<code>null</code> => identity).
 	 * @param   node3D      Root in the 3D scene.
 	 */
-	public ContentNode( @NotNull final Object id , @Nullable final Matrix3D transform , @NotNull final Node3D node3D )
+	public ContentNode( @NotNull final Object id, @Nullable final Matrix3D transform, @NotNull final Node3D node3D )
 	{
 		_id = id;
 		_node3D = node3D;
@@ -125,7 +125,7 @@ public class ContentNode
 	 */
 	public boolean collidesWith( @Nullable final ContentNode thatNode )
 	{
-		return collidesWith( getTransform() , thatNode );
+		return collidesWith( getTransform(), thatNode );
 	}
 
 	/**
@@ -133,38 +133,55 @@ public class ContentNode
 	 * transform.
 	 *
 	 * @param   thisNode2World  Transformation to apply to this node.
-	 * @param   thatNode        Node to test collision with.
+	 * @param   thatContentNode        Node to test collision with.
 	 *
 	 * @return  <code>true</code> if the nodes collide;
 	 *          <code>false</code> otherwise.
 	 */
-	public boolean collidesWith( @NotNull final Matrix3D thisNode2World , @Nullable final ContentNode thatNode )
+	public boolean collidesWith( @NotNull final Matrix3D thisNode2World, @Nullable final ContentNode thatContentNode )
 	{
 		boolean result = false;
 
-		if ( ( thatNode != null ) && ( this != thatNode ) )
+		if ( ( thatContentNode != null ) && ( this != thatContentNode ) )
 		{
-			final Node3DCollection<Object3D> thisContent = getContent();
-			final Node3DCollection<Object3D> thatContent = thatNode.getContent();
+			final List<Node3DPath> thisContent = getContent();
+			final List<Node3DPath> thatContent = thatContentNode.getContent();
 
-			if ( ( thisContent.size() > 0 ) && ( thatContent.size() > 0 ) )
+			if ( !thisContent.isEmpty() && !thatContent.isEmpty() )
 			{
-				final Matrix3D thatNode2World    = thatNode.getTransform();
-				final Matrix3D thatNode2ThisNode = thatNode2World.multiply( thisNode2World.inverse() );
+				final Matrix3D thatNode2World = thatContentNode.getTransform();
+				final Matrix3D thatNode2ThisNode = thatNode2World.multiplyInverse( thisNode2World );
 
-				for ( int i = 0 ; !result && ( i < thisContent.size() ) ; i++ )
+				for ( final Node3DPath thisPath : thisContent )
 				{
-					final Object3D thisObject          = thisContent.getNode( i );
-					final Matrix3D thisObject2ThisNode = thisContent.getMatrix( i );
-					final Matrix3D thatNode2ThisObject = thatNode2ThisNode.multiply( thisObject2ThisNode.inverse() );
-
-					for ( int j = 0 ; !result && ( j < thatContent.size() ) ; j++ )
+					final Node3D thisNode = thisPath.getNode();
+					if ( thisNode instanceof Object3D )
 					{
-						final Object3D thatObject            = thatContent.getNode( j );
-						final Matrix3D thatObject2ThatNode   = thatContent.getMatrix( j );
-						final Matrix3D thatObject2ThisObject = thatObject2ThatNode.multiply( thatNode2ThisObject );
+						final Object3D thisObject = (Object3D) thisNode;
+						final Matrix3D thisObject2ThisNode = thisPath.getTransform();
+						final Matrix3D thatNode2ThisObject = thatNode2ThisNode.multiplyInverse( thisObject2ThisNode );
 
-						result = thisObject.collidesWith( thatObject2ThisObject , thatObject );
+						for ( final Node3DPath thatPath : thatContent )
+						{
+							final Node3D thatNode = thatPath.getNode();
+							if ( thatNode instanceof Object3D )
+							{
+								final Object3D thatObject = (Object3D) thatNode;
+								final Matrix3D thatObject2ThatNode = thatPath.getTransform();
+								final Matrix3D thatObject2ThisObject = thatObject2ThatNode.multiply( thatNode2ThisObject );
+
+								if ( thisObject.collidesWith( thatObject2ThisObject, thatObject ) )
+								{
+									result = true;
+									break;
+								}
+							}
+						}
+
+						if ( result )
+						{
+							break;
+						}
 					}
 				}
 			}
@@ -189,22 +206,9 @@ public class ContentNode
 		Bounds3D result = _cachedBounds3d;
 		if ( result == null )
 		{
-			final Node3DCollection<Object3D> content = getContent();
-			if ( content.size() > 0 )
-			{
-				final Bounds3DBuilder builder = new Bounds3DBuilder();
-
-				for ( int i = 0 ; i < content.size() ; i++ )
-				{
-					final Object3D object3d    = content.getNode( i );
-					final Matrix3D object2node = content.getMatrix( i );
-
-					object3d.addBounds( builder , object2node );
-				}
-
-				result = builder.getBounds();
-				_cachedBounds3d = result;
-			}
+			final Node3D node3d = getNode3D();
+			result = node3d.calculateBounds( Matrix3D.IDENTITY );
+			_cachedBounds3d = result;
 		}
 		return result;
 	}
@@ -216,17 +220,14 @@ public class ContentNode
 	 * @return  Content of this node.
 	 */
 	@NotNull
-	public Node3DCollection<Object3D> getContent()
+	public List<Node3DPath> getContent()
 	{
-		Node3DCollection<Object3D> result = _cachedContent;
-
+		List<Node3DPath> result = _cachedContent;
 		if ( result == null )
 		{
-			result = new Node3DCollection<Object3D>();
-
-			final Node3D root = getNode3D();
-			root.collectNodes( result , Object3D.class , Matrix3D.INIT , false );
-
+			final Node3DCollector collector = new Node3DCollector( Object3D.class );
+			Node3DTreeWalker.walk( collector, getNode3D() );
+			result = collector.getCollectedNodes();
 			_cachedContent = result;
 		}
 
@@ -451,7 +452,7 @@ public class ContentNode
 		final List<ContentNodeUpdateListener> listeners = _contentNodeUpdateListeners;
 		if ( !listeners.isEmpty() )
 		{
-			final ContentNodeUpdateEvent event = new ContentNodeUpdateEvent( this , ContentNodeUpdateEvent.RENDERING_PROPERTIES_UPDATED );
+			final ContentNodeUpdateEvent event = new ContentNodeUpdateEvent( this, ContentNodeUpdateEvent.RENDERING_PROPERTIES_UPDATED );
 
 			for ( final ContentNodeUpdateListener listener : listeners )
 			{
@@ -471,7 +472,7 @@ public class ContentNode
 		final List<ContentNodeUpdateListener> listeners = _contentNodeUpdateListeners;
 		if ( !listeners.isEmpty() )
 		{
-			final ContentNodeUpdateEvent event = new ContentNodeUpdateEvent( this , ContentNodeUpdateEvent.TRANSFORM_UPDATED );
+			final ContentNodeUpdateEvent event = new ContentNodeUpdateEvent( this, ContentNodeUpdateEvent.TRANSFORM_UPDATED );
 
 			for ( final ContentNodeUpdateListener listener : listeners )
 			{
@@ -492,7 +493,7 @@ public class ContentNode
 		final List<ContentNodeUpdateListener> listeners = _contentNodeUpdateListeners;
 		if ( !listeners.isEmpty() )
 		{
-			final ContentNodeUpdateEvent event = new ContentNodeUpdateEvent( this , ContentNodeUpdateEvent.CONTENT_UPDATED );
+			final ContentNodeUpdateEvent event = new ContentNodeUpdateEvent( this, ContentNodeUpdateEvent.CONTENT_UPDATED );
 
 			for ( final ContentNodeUpdateListener listener : listeners )
 			{

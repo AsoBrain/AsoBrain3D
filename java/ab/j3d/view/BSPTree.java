@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,15 +20,11 @@
  */
 package ab.j3d.view;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.model.Face3D;
-import ab.j3d.model.Node3D;
-import ab.j3d.model.Node3DCollection;
-import ab.j3d.model.Object3D;
+import ab.j3d.*;
+import ab.j3d.model.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class manages a Binary Space Partitioning Tree that can be used by a 3D render engine.
@@ -161,20 +158,24 @@ public class BSPTree
 	/**
 	 * Add a scene to the tree ( Note: the tree is not rebuild! ).
 	 *
-	 * @param   nodes   Nodes that specify the scene (only {@link Object3D} objects are used).
+	 * @param   scene   Scene to add.
 	 */
-	public void addScene( final Node3DCollection<Node3D> nodes )
+	public void addScene( final Scene scene )
 	{
-		for ( int i = 0 ; i < nodes.size() ; i++ )
+		scene.walk( new Node3DVisitor()
 		{
-			final Node3D   object       = nodes.getNode( i );
-			final Matrix3D object2world = nodes.getMatrix( i );
-
-			if ( object instanceof Object3D )
+			@Override
+			public boolean visitNode( @NotNull final Node3DPath path )
 			{
-				addObject3D( (Object3D)object , object2world );
+				final Node3D node = path.getNode();
+				if ( node instanceof Object3D )
+				{
+					addObject3D( (Object3D)node, path.getTransform() );
+				}
+
+				return true;
 			}
-		}
+		} );
 	}
 
 	/**
@@ -183,13 +184,13 @@ public class BSPTree
 	 * @param   object          Object to add.
 	 * @param   object2model    Transformation from object to model coordinates.
 	 */
-	public void addObject3D( final Object3D object , final Matrix3D object2model )
+	public void addObject3D( final Object3D object, final Matrix3D object2model )
 	{
 		final int faceCount = object.getFaceCount();
 
 		for ( int i = 0 ; i < faceCount ; i++ )
 		{
-			addPolygon( object2model , object , i , false );
+			addPolygon( object2model, object, i, false );
 		}
 	}
 
@@ -201,11 +202,11 @@ public class BSPTree
 	 * @param   faceIndex               Index of object's face.
 	 * @param   alternateAppearance     Use alternate vs. regular object appearance.
 	 */
-	public void addPolygon( final Matrix3D object2model , final Object3D object , final int faceIndex , final boolean alternateAppearance )
+	public void addPolygon( final Matrix3D object2model, final Object3D object, final int faceIndex, final boolean alternateAppearance )
 	{
 		final Face3D face = object.getFace( faceIndex );
 		final RenderedPolygon polygon = new RenderedPolygon( face.getVertexCount() );
-		polygon.initialize( object2model , null , object , face , alternateAppearance );
+		polygon.initialize( object2model, null, object, face, alternateAppearance );
 		_polygons.add( polygon );
 	}
 
@@ -220,15 +221,15 @@ public class BSPTree
 	 *
 	 * @return  Array filled with {@link RenderedPolygon} objects in specified paint order.
 	 */
-	public RenderedPolygon[] getRenderQueue( final Vector3D viewPoint , final Projector projector , final Matrix3D model2view , final boolean backfaceCulling , final boolean backToFront )
+	public RenderedPolygon[] getRenderQueue( final Vector3D viewPoint, final Projector projector, final Matrix3D model2view, final boolean backfaceCulling, final boolean backToFront )
 	{
 		final List<RenderedPolygon> queue = new ArrayList<RenderedPolygon>();
-		getSortedPolygons( viewPoint , _root , queue , backToFront );
+		getSortedPolygons( viewPoint, _root, queue, backToFront );
 
 		final List<RenderedPolygon> result = new ArrayList<RenderedPolygon>();
 		for ( final RenderedPolygon polygon : queue )
 		{
-			final RenderedPolygon renderedPolygon = getRenderedPolygon( polygon , model2view , projector , backfaceCulling );
+			final RenderedPolygon renderedPolygon = getRenderedPolygon( polygon, model2view, projector, backfaceCulling );
 			if ( renderedPolygon != null )
 			{
 				result.add( renderedPolygon );
@@ -251,7 +252,7 @@ public class BSPTree
 	 *
 	 * @return  The created rendered polygon.
 	 */
-	private static RenderedPolygon getRenderedPolygon( final RenderedPolygon polygon , final Matrix3D model2view , final Projector projector , final boolean backfaceCulling )
+	private static RenderedPolygon getRenderedPolygon( final RenderedPolygon polygon, final Matrix3D model2view, final Projector projector, final boolean backfaceCulling )
 	{
 		double x;
 		double y;
@@ -262,7 +263,7 @@ public class BSPTree
 		final int      vertexCount          = polygon._vertexCount;
 		final double[] viewCoordinates      = new double[ vertexCount * 3 ];
 		final int[]    projectedCoordinates = new int[ vertexCount * 2 ];
-		final Vector3D viewNormal           = model2view.rotate( polygon._planeNormalX , polygon._planeNormalY , polygon._planeNormalZ );
+		final Vector3D viewNormal           = model2view.rotate( polygon._planeNormalX, polygon._planeNormalY, polygon._planeNormalZ );
 
 		for ( int j = 0 ; j < vertexCount ; j++ )
 		{
@@ -270,13 +271,13 @@ public class BSPTree
 			y = polygon._viewY[ j ];
 			z = polygon._viewZ[ j ];
 
-			final Vector3D translated = model2view.transform( x , y , z );
+			final Vector3D translated = model2view.transform( x, y, z );
 
 			viewCoordinates[ j * 3     ] = translated.x;
 			viewCoordinates[ j * 3 + 1 ] = translated.y;
 			viewCoordinates[ j * 3 + 2 ] = translated.z;
 		}
-		projector.project( viewCoordinates , projectedCoordinates , vertexCount );
+		projector.project( viewCoordinates, projectedCoordinates, vertexCount );
 
 //		if ( !projector.outsideViewVolume( viewCoordinates ) ) // FIXME: When enabled, no polygons are visible at all.
 		{
@@ -339,8 +340,10 @@ public class BSPTree
 		}
 
 		// Perform backface culling.
-		if ( result != null && result.isBackface() && backfaceCulling )
+		if ( ( result != null ) && result.isBackface() && backfaceCulling )
+		{
 			result = null;
+		}
 
 		return result;
 	}
@@ -353,7 +356,7 @@ public class BSPTree
 	{
 		if ( !_polygons.isEmpty() )
 		{
-			build( _root , _polygons );
+			build( _root, _polygons );
 		}
 	}
 
@@ -377,7 +380,7 @@ public class BSPTree
 	 * @param   root        Root node of the tree.
 	 * @param   polygons    List of polygons to build up tree from.
 	 */
-	private void build( final BSPTreeNode root , final List<RenderedPolygon> polygons )
+	private void build( final BSPTreeNode root, final List<RenderedPolygon> polygons )
 	{
 		final RenderedPolygon       partitionPolygon = getPartitionPlane( polygons );
 		final RenderedPolygon       partitionPlane   = partitionPolygon;
@@ -391,7 +394,7 @@ public class BSPTree
 		{
 			if ( poly != partitionPolygon )
 			{
-				switch ( RenderQueue.compare( poly , partitionPlane ) )
+				switch ( RenderQueue.compare( poly, partitionPlane ) )
 				{
 					case RenderQueue.COPLANAR:
 					{
@@ -413,7 +416,7 @@ public class BSPTree
 
 					case RenderQueue.INTERSECTING:
 					{
-						final RenderedPolygon[] splitted = _renderQueue.clip( poly , partitionPlane );
+						final RenderedPolygon[] splitted = _renderQueue.clip( poly, partitionPlane );
 						backList.add( splitted[ 0 ] );
 						frontList.add( splitted[ 1 ] );
 						break;
@@ -427,7 +430,7 @@ public class BSPTree
 			final BSPTreeNode frontTree = new BSPTreeNode();
 			root.setFront( frontTree );
 
-			build( frontTree , frontList );
+			build( frontTree, frontList );
 		}
 
 		if ( !backList.isEmpty() )
@@ -435,7 +438,7 @@ public class BSPTree
 			final BSPTreeNode backTree = new BSPTreeNode();
 			root.setBack( backTree );
 
-			build( backTree , backList );
+			build( backTree, backList );
 		}
 	}
 
@@ -493,7 +496,7 @@ public class BSPTree
 	 * @param   result          Result list.
 	 * @param   backToFront     Should the polygons be ordered 'back-to-front' or 'front-to-back'.
 	 */
-	private static void getSortedPolygons( final Vector3D viewPoint , final BSPTreeNode root , final List<RenderedPolygon> result , final boolean backToFront )
+	private static void getSortedPolygons( final Vector3D viewPoint, final BSPTreeNode root, final List<RenderedPolygon> result, final boolean backToFront )
 	{
 		if ( root != null )
 		{
@@ -508,28 +511,28 @@ public class BSPTree
 			}
 			else
 			{
-				switch ( RenderQueue.compare( partitionPlane , viewPoint ) )
+				switch ( RenderQueue.compare( partitionPlane, viewPoint ) )
 				{
 					case RenderQueue.IN_FRONT :
 					{
-						getSortedPolygons( viewPoint , back  , result , backToFront );
+						getSortedPolygons( viewPoint, back, result, backToFront );
 						result.addAll( polygons );
-						getSortedPolygons( viewPoint , front , result , backToFront );
+						getSortedPolygons( viewPoint, front, result, backToFront );
 						break;
 					}
 
 					case RenderQueue.BEHIND :
 					{
-						getSortedPolygons( viewPoint , front , result , backToFront );
+						getSortedPolygons( viewPoint, front, result, backToFront );
 						result.addAll( polygons );
-						getSortedPolygons( viewPoint , back  , result , backToFront );
+						getSortedPolygons( viewPoint, back, result, backToFront );
 						break;
 					}
 
 					case RenderQueue.COPLANAR :
 					{
-						getSortedPolygons( viewPoint , back  , result , backToFront );
-						getSortedPolygons( viewPoint , front , result , backToFront );
+						getSortedPolygons( viewPoint, back, result, backToFront );
+						getSortedPolygons( viewPoint, front, result, backToFront );
 						break;
 					}
 				}

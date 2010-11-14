@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,12 +20,11 @@
  */
 package ab.j3d.model;
 
-import java.util.List;
+import java.util.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.geom.Polygon3D;
-import ab.j3d.geom.Ray3D;
+import ab.j3d.*;
+import ab.j3d.geom.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class provides information about the intersection between a ray and a
@@ -46,31 +46,43 @@ public final class Face3DIntersection
 	/**
 	 * ID of intersected object.
 	 */
+	@NotNull
 	private final Object _objectID;
 
 	/**
 	 * Transforms {@link Object3D} to world coordinates.
 	 */
+	@NotNull
 	private final Matrix3D _object2world;
 
 	/**
 	 * Object that was tested.
 	 */
-	private Object3D _object;
+	@NotNull
+	private final Object3D _object;
+
+	/**
+	 * Path in scene graph to <code>object</code>.
+	 */
+	@NotNull
+	private final Node3DPath _path;
 
 	/**
 	 * The {@link Polygon3D} that was intersected.
 	 */
+	@NotNull
 	private final Polygon3D _polygon;
 
 	/**
 	 * Intersection point in world coordinates.
 	 */
+	@NotNull
 	private final Vector3D _intersectionPoint;
 
 	/**
 	 * Ray that intersected the face.
 	 */
+	@NotNull
 	private final Ray3D _ray;
 
 	/**
@@ -88,37 +100,21 @@ public final class Face3DIntersection
 	 * @param   objectID            ID of intersected object.
 	 * @param   object2world        Transforms object to world coordinates.
 	 * @param   object              Object that was intersected.
+	 * @param   path                Path in scene graph to <code>object</code>.
 	 * @param   polygon             The {@link Polygon3D} that was intersected.
 	 * @param   ray                 {@link Ray3D} that intersected the face.
 	 * @param   intersectionPoint   Intersection point.
 	 */
-	public Face3DIntersection( final Object objectID , final Matrix3D object2world , final Object3D object , final Polygon3D polygon , final Ray3D ray , final Vector3D intersectionPoint )
+	public Face3DIntersection( @NotNull final Object objectID , @NotNull final Matrix3D object2world , @NotNull final Object3D object , @NotNull final Node3DPath path, @NotNull final Polygon3D polygon , @NotNull final Ray3D ray , @NotNull final Vector3D intersectionPoint )
 	{
-		if ( objectID == null )
-			throw new NullPointerException( "objectID" );
-
-		if ( object2world == null )
-			throw new NullPointerException( "object2world" );
-
-		if ( object == null )
-			throw new NullPointerException( "object" );
-
-		if ( polygon == null )
-			throw new NullPointerException( "face" );
-
-		if ( ray == null )
-			throw new NullPointerException( "ray" );
-
-		if ( intersectionPoint == null )
-			throw new NullPointerException( "intersectionPoint" );
-
-		_objectID          = objectID;
-		_object2world      = object2world;
-		_object            = object;
+		_objectID = objectID;
+		_object2world = object2world;
+		_object = object;
+		_path = path;
 		_polygon = polygon;
-		_ray               = ray;
+		_ray = ray;
 		_intersectionPoint = intersectionPoint;
-		_distance          = Double.NaN;
+		_distance = Double.NaN;
 	}
 
 	/**
@@ -146,15 +142,20 @@ public final class Face3DIntersection
 				final Face3DIntersection other = result.get( insertionIndex );
 
 				if ( distance <= other.getDistance() )
+				{
 					max = insertionIndex - 1;
+				}
 				else
+				{
 					min = ++insertionIndex;
+				}
 			}
 		}
 
 		result.add( insertionIndex , intersection );
 	}
 
+	@Override
 	public int compareTo( final Face3DIntersection face3DIntersection )
 	{
 		final double delta = getDistance() - face3DIntersection.getDistance();
@@ -179,10 +180,22 @@ public final class Face3DIntersection
 	}
 
 	/**
+	 * Get path in scene graph to <code>object</code>.
+	 *
+	 * @return  Path in scene graph to <code>object</code>.
+	 */
+	@NotNull
+	public Node3DPath getPath()
+	{
+		return _path;
+	}
+
+	/**
 	 * Get the {@link Polygon3D} that was intersected.
 	 *
 	 * @return  {@link Polygon3D} that was intersected.
 	 */
+	@NotNull
 	public Polygon3D getPolygon()
 	{
 		return _polygon;
@@ -193,6 +206,7 @@ public final class Face3DIntersection
 	 *
 	 * @return  Intersection point in world coordinates.
 	 */
+	@NotNull
 	public Vector3D getIntersectionPoint()
 	{
 		return _intersectionPoint;
@@ -203,6 +217,7 @@ public final class Face3DIntersection
 	 *
 	 * @return  {@link Object3D} that was intersected.
 	 */
+	@NotNull
 	public Object3D getObject()
 	{
 		return _object;
@@ -214,6 +229,7 @@ public final class Face3DIntersection
 	 *
 	 * @return  Transformation matrix from {@link Object3D} to world coordinates.
 	 */
+	@NotNull
 	public Matrix3D getObject2world()
 	{
 		return _object2world;
@@ -224,6 +240,7 @@ public final class Face3DIntersection
 	 *
 	 * @return  ID of the intersected object.
 	 */
+	@NotNull
 	public Object getObjectID()
 	{
 		return _objectID;
@@ -234,6 +251,7 @@ public final class Face3DIntersection
 	 *
 	 * @return  {@link Ray3D} that intersected the face.
 	 */
+	@NotNull
 	public Ray3D getRay()
 	{
 		return _ray;

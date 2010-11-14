@@ -61,48 +61,16 @@ public class Transform3D
 		_inverseTransform = null;
 	}
 
-	@Override
-	public void accept( final Node3DVisitor visitor )
+	/**
+	 * Construct node with specific initial transformation matrix.
+	 *
+	 * @param   transform   Transformation matrix to initialize node to.
+	 * @param   children    Nodes to add as children to this node.
+	 */
+	public Transform3D( final Matrix3D transform, final Node3D... children )
 	{
-		final Matrix3D transform = getTransform();
-		final boolean hasTransform = ( transform != null ) && ( transform != Matrix3D.IDENTITY );
-		if ( hasTransform )
-		{
-			visitor.applyTranform( transform );
-		}
-
-		super.accept( visitor );
-	}
-
-	@Override
-	public <T extends Node3D> Node3DCollection<T> collectNodes( final Node3DCollection<T> collection, final Class<? extends T> nodeClass, final Matrix3D transform, final boolean upwards )
-	{
-		/*
-		 * Determine modified transform based on combination of the
-		 * supplied transformation and the transformation defined
-		 * by this node.
-		 */
-		final Matrix3D combinedTransform;
-
-		Matrix3D nodeTransform = getTransform();
-		if ( ( nodeTransform != null ) && ( nodeTransform != Matrix3D.IDENTITY ) )
-		{
-			if ( upwards )
-			{
-				nodeTransform = nodeTransform.inverse();
-			}
-
-			combinedTransform = nodeTransform.multiply( transform );
-		}
-		else
-		{
-			combinedTransform = transform;
-		}
-
-		/*
-		 * Let super-class do its job with the modified transformation.
-		 */
-		return super.collectNodes( collection, nodeClass, combinedTransform, upwards );
+		this( transform );
+		addChildren( children );
 	}
 
 	/**
@@ -144,5 +112,12 @@ public class Transform3D
 	{
 		_transform        = transform;
 		_inverseTransform = null;
+	}
+
+	@Override
+	public String toString()
+	{
+		final Class<? extends Node3D> clazz = getClass();
+		return clazz.getSimpleName() + '@' + Integer.toHexString( hashCode() ) + "{tag=" + getTag() + ",transform=" + _transform.toShortFriendlyString() + '}';
 	}
 }
