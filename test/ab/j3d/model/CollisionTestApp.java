@@ -147,7 +147,7 @@ public class CollisionTestApp
 
 					final Node3D root = target.getNode3D();
 					final Transform3D transform = new Transform3D( Matrix3D.getTranslation( 0.0, 0.0, -1.0 ) );
-					transform.addChild( new ExtrudedObject2D( shape, new Vector3D( 0.0, 0.0, 2.0 ), Matrix3D.INIT, null, white, white, white, 0.01, false, false, true ) );
+					transform.addChild( new ExtrudedObject2D( shape, new Vector3D( 0.0, 0.0, 2.0 ), null, white, white, white, 0.01, false, false, true ) );
 					root.removeAllChildren();
 					root.addChild( transform );
 					target.fireContentUpdated();
