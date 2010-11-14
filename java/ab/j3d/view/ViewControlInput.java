@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,30 +20,17 @@
  */
 package ab.j3d.view;
 
-import java.awt.Component;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.util.LinkedList;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
 import java.util.List;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.control.Control;
-import ab.j3d.control.ControlInputEvent;
-import ab.j3d.geom.Ray3D;
-import ab.j3d.model.ContentNode;
-import ab.j3d.model.Face3DIntersection;
-import ab.j3d.model.Node3D;
-import ab.j3d.model.Node3DCollection;
-import ab.j3d.model.Object3D;
-import ab.j3d.model.Scene;
-
-import com.numdata.oss.event.EventDispatcher;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.geom.*;
+import ab.j3d.model.*;
+import com.numdata.oss.event.*;
+import org.jetbrains.annotations.*;
 
 /**
  * The <code>ViewControlInput</code> ckass receives input events for a
@@ -76,7 +64,7 @@ public class ViewControlInput
 	 * The {@link EventDispatcher} that dispatches the
 	 * {@link java.util.EventObject}s to registered {@link Control}s.
 	 */
-	private EventDispatcher _eventDispatcher;
+	private final EventDispatcher _eventDispatcher;
 
 	/**
 	 * The number of the current series of events. This number is increased
@@ -96,11 +84,8 @@ public class ViewControlInput
 	 *
 	 * @param   view    {@link View3D} whose input events to monitor.
 	 */
-	public ViewControlInput( final View3D view )
+	public ViewControlInput( @NotNull final View3D view )
 	{
-		if ( view == null )
-			throw new NullPointerException( "view" );
-
 		_view = view;
 
 		_dragStartX      = 0;
@@ -145,7 +130,7 @@ public class ViewControlInput
 			wasDragged = true;
 		}
 
-		final ControlInputEvent result = new ControlInputEvent( this , inputEvent , _eventNumber , wasDragged , _dragStartX , _dragStartY );
+		final ControlInputEvent result = new ControlInputEvent( this, inputEvent, _eventNumber, wasDragged, _dragStartX, _dragStartY );
 
 		if ( ( eventID == MouseEvent.MOUSE_RELEASED ) && !result.isMouseButtonDown() )
 		{
@@ -198,35 +183,18 @@ public class ViewControlInput
 	 * @param   ray     Ray to get intersections for.
 	 *
 	 * @return  A list of {@link Face3DIntersection}s, ordered from near to far.
-	 *
-	 * @throws  NullPointerException if <code>ray</code> is <code>null</code>.
 	 */
-	public List<Face3DIntersection> getIntersections( final Ray3D ray )
+	public List<Face3DIntersection> getIntersections( @NotNull final Ray3D ray )
 	{
-		final List<Face3DIntersection> result = new LinkedList<Face3DIntersection>();
+		final RayIntersectionVisitor intersectionVisitor = new RayIntersectionVisitor( ray );
 
 		final Scene scene = _view.getScene();
-
-		for ( final Object nodeID : scene.getContentNodeIDs() )
+		for ( final ContentNode contentNode : scene.getContentNodes() )
 		{
-			final ContentNode node = scene.getContentNode( nodeID );
-			final Node3D        node3D = node.getNode3D();
-
-			final Matrix3D node2model = node.getTransform();
-
-			final Node3DCollection<Object3D> subGraphNodes = new Node3DCollection<Object3D>();
-			node3D.collectNodes( subGraphNodes , Object3D.class , node2model , false );
-
-			for ( int i = 0 ; i < subGraphNodes.size() ; i++ )
-			{
-				final Object3D object       = subGraphNodes.getNode( i );
-				final Matrix3D object2world = subGraphNodes.getMatrix( i );
-
-				object.getIntersectionsWithRay( result , true , nodeID , object2world , ray );
-			}
+			intersectionVisitor.walk( contentNode );
 		}
 
-		return result;
+		return intersectionVisitor.intersections;
 	}
 
 	/**
@@ -264,6 +232,7 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link KeyEvent} that was dispatched
 	 */
+	@Override
 	public void keyPressed( final KeyEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -274,6 +243,7 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link KeyEvent} that was dispatched
 	 */
+	@Override
 	public void keyReleased( final KeyEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -284,6 +254,7 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link KeyEvent} that was dispatched
 	 */
+	@Override
 	public void keyTyped( final KeyEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -294,6 +265,7 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
+	@Override
 	public void mouseClicked( final MouseEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -304,6 +276,7 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
+	@Override
 	public void mouseDragged( final MouseEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -314,6 +287,7 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
+	@Override
 	public void mouseEntered( final MouseEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -324,6 +298,7 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
+	@Override
 	public void mouseExited( final MouseEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -334,6 +309,7 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
+	@Override
 	public void mouseMoved( final MouseEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -344,6 +320,7 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
+	@Override
 	public void mousePressed( final MouseEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -354,6 +331,7 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
+	@Override
 	public void mouseReleased( final MouseEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -364,8 +342,65 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
+	@Override
 	public void mouseWheelMoved( final MouseWheelEvent event )
 	{
 		dispatchControlInputEvent( event );
+	}
+
+	/**
+	 * This visitor collects intersections with a given ray.
+	 */
+	private static class RayIntersectionVisitor
+		implements Node3DVisitor
+	{
+		/**
+		 * Intersections with ray.
+		 */
+		public final List<Face3DIntersection> intersections = new ArrayList<Face3DIntersection>();
+
+		/**
+		 * ID of currently visited object (content node).
+		 */
+		private Object _objectId;
+
+		/**
+		 * Ray to find intersections with.
+		 */
+		private final Ray3D _ray;
+
+		/**
+		 * Create visitor.
+		 *
+		 * @param   ray     Ray to find intersections with.
+		 */
+		private RayIntersectionVisitor( final Ray3D ray )
+		{
+			_ray = ray;
+		}
+
+		/**
+		 * Walk through the specified content node.
+		 *
+		 * @param   contentNode     Content node to walk through.
+		 */
+		public void walk( final ContentNode contentNode )
+		{
+			_objectId = contentNode.getID();
+			Node3DTreeWalker.walk( this, contentNode.getTransform(), contentNode.getNode3D() );
+		}
+
+		@Override
+		public boolean visitNode( @NotNull final Node3DPath path )
+		{
+			final Node3D node = path.getNode();
+			if ( node instanceof Object3D )
+			{
+				final Object3D object = (Object3D) node;
+				object.getIntersectionsWithRay( intersections, true, _objectId, path, path.getTransform(), _ray );
+			}
+
+			return true;
+		}
 	}
 }

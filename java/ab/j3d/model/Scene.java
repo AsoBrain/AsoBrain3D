@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -225,7 +226,7 @@ public class Scene
 		if ( _bspTreeDirty )
 		{
 			result.reset();
-			result.addScene( getContent() );
+			result.addScene( this );
 			result.build();
 
 			_bspTreeDirty = false;
@@ -364,60 +365,59 @@ public class Scene
 
 		if ( result == null )
 		{
-			Bounds3DBuilder bounds3DBuilder = null;
+			final Bounds3DBuilder bounds3DBuilder = new Bounds3DBuilder();
 
 			for ( final ContentNode node : _contentNodes.values() )
 			{
 				final Bounds3D nodeBounds = node.getBounds();
 				if ( nodeBounds != null )
 				{
-					if ( bounds3DBuilder == null )
-					{
-						bounds3DBuilder = new Bounds3DBuilder();
-					}
-
 					bounds3DBuilder.addBounds( node.getTransform(), nodeBounds );
 				}
 			}
 
-			if ( bounds3DBuilder != null )
-			{
-				result = bounds3DBuilder.getBounds();
-				_bounds = result;
-			}
+			result = bounds3DBuilder.getBounds();
+			_bounds = result;
 		}
 
 		return result;
 	}
 
 	/**
-	 * Get content in this scene. The content comprises all nodes in the scene.
+	 * Perform tree-walk through entire scene with the given visitor.
 	 *
-	 * @return  A {@link Node3DCollection} with all nodes in the scene.
+	 * @param   visitor     Visitor that will be called for each visited node.
+	 *
+	 * @return  <code>true</code> if the tree walk was finished normally;
+	 *          <code>false</code> if the tree walk was aborted.
 	 */
-	@NotNull
-	public Node3DCollection<Node3D> getContent()
+	public boolean walk( @NotNull final Node3DVisitor visitor )
 	{
-		return getContent( Node3D.class );
+		return walk( visitor, Matrix3D.IDENTITY );
 	}
 
 	/**
-	 * Get content of the specified type in this scene.
+	 * Perform tree-walk through entire scene with the given visitor and initial
+	 * transformation matrix.
 	 *
-	 * @param   nodeClass   Class of content nodes.
+	 * @param   visitor     Visitor that will be called for each visited node.
+	 * @param   transform   Initial transformation matrix.
 	 *
-	 * @return  A {@link Node3DCollection} with all nodes in the scene of the
-	 *          specified <code>nodeClass</code>.
+	 * @return  <code>true</code> if the tree walk was finished normally;
+	 *          <code>false</code> if the tree walk was aborted.
 	 */
-	@NotNull
-	public <T extends Node3D> Node3DCollection<T> getContent( @NotNull final Class<? extends T> nodeClass )
+	public boolean walk( @NotNull final Node3DVisitor visitor, @NotNull final Matrix3D transform )
 	{
-		final Node3DCollection<T> result = new Node3DCollection<T>();
+		boolean result = true;
 
-		for ( final ContentNode node : _contentNodes.values() )
+		for ( final ContentNode contentNode : _contentNodes.values() )
 		{
-			final Node3D node3D = node.getNode3D();
-			node3D.collectNodes( result, nodeClass, node.getTransform(), false );
+			final Matrix3D node2scene = contentNode.getTransform();
+			result = Node3DTreeWalker.walk( visitor, node2scene.multiply( transform ), contentNode.getNode3D() );
+			if ( !result )
+			{
+				break;
+			}
 		}
 
 		return result;
