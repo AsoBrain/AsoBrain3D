@@ -20,6 +20,7 @@
  */
 package ab.j3d;
 
+import java.text.*;
 import java.util.*;
 
 import com.numdata.oss.*;
@@ -1129,6 +1130,43 @@ public final class Matrix3D
 		formatter.format( "[ %5.2f, %5.2f, %5.2f, %7.1f ]", Double.valueOf( m.yx ), Double.valueOf( m.yy ), Double.valueOf( m.yz ), Double.valueOf( m.yo ) );
 		sb.append( infix );
 		formatter.format( "[ %5.2f, %5.2f, %5.2f, %7.1f ]", Double.valueOf( m.zx ), Double.valueOf( m.zy ), Double.valueOf( m.zz ), Double.valueOf( m.zo ) );
+		return sb.toString();
+	}
+
+	/**
+	 * Create short human-readable representation of Matrix3D object.
+	 *
+	 * @return  Human-readable representation of Matrix3D object.
+	 */
+	public String toShortFriendlyString()
+	{
+		final StringBuilder sb = new StringBuilder();
+		final NumberFormat nf = TextTools.getNumberFormat( Locale.US, 1, 1, false );
+		sb.append( "[[" );
+		sb.append( nf.format( xx ) );
+		sb.append( ',' );
+		sb.append( nf.format( xy ) );
+		sb.append( ',' );
+		sb.append( nf.format( xz ) );
+		sb.append( ',' );
+		sb.append( nf.format( xo ) );
+		sb.append( "],[" );
+		sb.append( nf.format( yx ) );
+		sb.append( ',' );
+		sb.append( nf.format( yy ) );
+		sb.append( ',' );
+		sb.append( nf.format( yz ) );
+		sb.append( ',' );
+		sb.append( nf.format( yo ) );
+		sb.append( "],[" );
+		sb.append( nf.format( zx ) );
+		sb.append( ',' );
+		sb.append( nf.format( zy ) );
+		sb.append( ',' );
+		sb.append( nf.format( zz ) );
+		sb.append( ',' );
+		sb.append( nf.format( zo ) );
+		sb.append( "]]" );
 		return sb.toString();
 	}
 
