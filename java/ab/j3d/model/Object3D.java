@@ -1,6 +1,5 @@
 /* $Id$
- *
-====================================================================
+ * ====================================================================
  * AsoBrain 3D Toolkit
  * Copyright (C) 1999-2010 Peter S. Heijnen
  *
@@ -17,8 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- *
-====================================================================
+ * ====================================================================
  */
 package ab.j3d.model;
 
@@ -253,24 +251,39 @@ public class Object3D
 
 		if ( ( subTree1 != null ) && ( subTree2 != null ) )
 		{
-			final Node3DCollection<Object3D> objects1 = subTree1.collectNodes( null, Object3D.class, Matrix3D.INIT, false );
-			if ( objects1 != null )
+			final Node3DCollector collector1 = new Node3DCollector( Object3D.class );
+			Node3DTreeWalker.walk( collector1, subTree1 );
+			final List<Node3DPath> objects1 = collector1.getCollectedNodes();
+
+			if ( !objects1.isEmpty() )
 			{
-				final Node3DCollection<Object3D> objects2  = subTree2.collectNodes( null, Object3D.class, Matrix3D.INIT, false );
-				if ( objects2 != null )
+				final Node3DCollector collector2 = new Node3DCollector( Object3D.class );
+				Node3DTreeWalker.walk( collector2, subTree2 );
+				final List<Node3DPath> objects2 = collector2.getCollectedNodes();
+
+				if ( !objects2.isEmpty() )
 				{
-					for ( int i = 0 ; !result && ( i < objects1.size() ) ; i++ )
+					for ( final Node3DPath path1 : objects1 )
 					{
-						final Object3D object1      = objects1.getNode( i );
-						final Matrix3D object1ToWcs = objects1.getMatrix( i );
-						final Matrix3D wcsToObject1 = object1ToWcs.inverse();
+						final Object3D object1 = (Object3D) path1.getNode();
+						final Matrix3D object1ToWcs = path1.getTransform();
 
-						for ( int j = 0 ; !result && ( j < objects2.size() ) ; j++ )
+						for ( final Node3DPath path2 : objects2 )
 						{
-							final Object3D object2      = objects2.getNode( j );
-							final Matrix3D object2ToWcs = objects2.getMatrix( j );
+							final Object3D object2 = (Object3D) path2.getNode();
+							final Matrix3D object2ToWcs = path2.getTransform();
+							final Matrix3D object2to1 = object2ToWcs.multiplyInverse( object1ToWcs );
 
-							result = object1.collidesWith( object2ToWcs.multiply( wcsToObject1 ), object2 );
+							if ( object1.collidesWith( object2to1, object2 ) )
+							{
+								result = true;
+								break;
+							}
+						}
+
+						if ( result )
+						{
+							break;
 						}
 					}
 				}
@@ -484,6 +497,7 @@ public class Object3D
 	 * @param   dest            Destination for found intersections (<code>null</code> => create new).
 	 * @param   sortResult      Perform insertion sort in list.
 	 * @param   objectID        ID of object to test for intersections.
+	 * @param   path            Path in scene graph to this object.
 	 * @param   object2world    Transformation from object to world coordinates (OCS->WCS).
 	 * @param   ray             Ray expression in world coordinates (WCS).
 	 *
@@ -492,7 +506,7 @@ public class Object3D
 	 *
 	 * @throws  NullPointerException if a required input argument is <code>null</code>.
 	 */
-	public List<Face3DIntersection> getIntersectionsWithRay( final List<Face3DIntersection> dest, final boolean sortResult, final Object objectID, final Matrix3D object2world, final Ray3D ray )
+	public List<Face3DIntersection> getIntersectionsWithRay( final List<Face3DIntersection> dest, final boolean sortResult, final Object objectID, final Node3DPath path, final Matrix3D object2world, final Ray3D ray )
 	{
 		final Matrix3D world2object = object2world.inverse();
 		final Ray3D    ocsRay       = new BasicRay3D( world2object, ray );
@@ -509,7 +523,7 @@ public class Object3D
 			{
 				final Vector3D wcsPoint = object2world.transform( ocsPoint );
 
-				final Face3DIntersection intersection = new Face3DIntersection( objectID, object2world, this, face, ray, wcsPoint );
+				final Face3DIntersection intersection = new Face3DIntersection( objectID, object2world, this, path, face, ray, wcsPoint );
 				if ( sortResult )
 				{
 					Face3DIntersection.addSortedByDistance( result, intersection );

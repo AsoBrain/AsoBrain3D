@@ -103,45 +103,8 @@ public class AbToPovConverter
 	public PovScene convert( final Scene scene )
 	{
 		final PovScene povScene = _scene;
-
-		final Node3DCollection<Node3D> nodes = scene.getContent();
-		for ( int i = 0 ; i < nodes.size() ; i++ )
-		{
-			final Node3D   node      = nodes.getNode( i );
-			final Matrix3D transform = nodes.getMatrix( i );
-
-			if ( node instanceof Light3D )
-			{
-				povScene.add( convertLight3D( transform, (Light3D)node ) );
-			}
-			else if ( node instanceof Box3D )
-			{
-				povScene.add( convertBox3D( transform, (Box3D)node ) );
-			}
-			else if ( node instanceof Cone3D )
-			{
-				povScene.add( convertCone3D( transform, (Cone3D)node ) );
-			}
-			else if ( node instanceof Cylinder3D )
-			{
-				povScene.add( convertCylinder3D( transform, (Cylinder3D)node ) );
-			}
-			else if ( node instanceof Sphere3D )
-			{
-				povScene.add( convertSphere3D( transform, (Sphere3D)node ) );
-			}
-//			else if ( node instanceof ExtrudedObject2D ) // not optimized support available
-//			{
-//				scene.add( convertExtrudedObject2D( transform, (ExtrudedObject2D)node ) );
-//			}
-			else if ( node instanceof Object3D )
-			{
-				povScene.add( convertObject3D( transform, (Object3D)node ) );
-			}
-		}
-
 		povScene.setAmbientLight( new PovVector( (double)scene.getAmbientRed(), (double)scene.getAmbientGreen(), (double)scene.getAmbientBlue() ) );
-
+		scene.walk( new ConvertingVisitor() );
 		return povScene;
 	}
 
@@ -480,5 +443,49 @@ public class AbToPovConverter
 		}
 
 		return result;
+	}
+
+	/**
+	 * This {@link Node3DTreeWalker} calls conversion methods for all
+	 * convertable {@link Node3D} instances it encounters.
+	 */
+	private class ConvertingVisitor
+		implements Node3DVisitor
+	{
+		@Override
+		public boolean visitNode( @NotNull final Node3DPath path )
+		{
+			final Node3D node = path.getNode();
+			if ( node instanceof Light3D )
+			{
+				_scene.add( convertLight3D( path.getTransform(), (Light3D)node ) );
+			}
+			else if ( node instanceof Box3D )
+			{
+				_scene.add( convertBox3D( path.getTransform(), (Box3D)node ) );
+			}
+			else if ( node instanceof Cone3D )
+			{
+				_scene.add( convertCone3D( path.getTransform(), (Cone3D)node ) );
+			}
+			else if ( node instanceof Cylinder3D )
+			{
+				_scene.add( convertCylinder3D( path.getTransform(), (Cylinder3D)node ) );
+			}
+			else if ( node instanceof Sphere3D )
+			{
+				_scene.add( convertSphere3D( path.getTransform(), (Sphere3D)node ) );
+			}
+//			else if ( node instanceof ExtrudedObject2D ) // not optimized support available
+//			{
+//				scene.add( convertExtrudedObject2D( path.getTransform(), (ExtrudedObject2D)node ) );
+//			}
+			else if ( node instanceof Object3D )
+			{
+				_scene.add( convertObject3D( path.getTransform(), (Object3D)node ) );
+			}
+
+			return true;
+		}
 	}
 }

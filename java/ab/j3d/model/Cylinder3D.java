@@ -194,4 +194,11 @@ public class Cylinder3D
 
 		return result;
 	}
+
+	@Override
+	public String toString()
+	{
+		final Class<?> clazz = getClass();
+		return clazz.getSimpleName() + '@' + Integer.toHexString( hashCode() ) + "{tag=" + getTag() + ", height=" + height + ", radius=" + radius + '}';
+	}
 }
