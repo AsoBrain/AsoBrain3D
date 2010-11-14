@@ -195,12 +195,7 @@ public final class Painter
 	{
 		final Matrix3D transform;
 
-		if ( node instanceof Insert3D )
-		{
-			final Matrix3D insertTransform = ((Insert3D)node).getTransform();
-			transform = insertTransform.multiply( node2view );
-		}
-		else if ( node instanceof Transform3D )
+		if ( node instanceof Transform3D )
 		{
 			final Matrix3D transformTransform = ((Transform3D)node).getTransform();
 			transform = transformTransform.multiply( node2view );
@@ -212,9 +207,9 @@ public final class Painter
 
 		if ( node instanceof Object3D )
 		{
-			final Object3D object       = (Object3D)node;
-			final Color    outlineColor =                                                     alternateAppearance ? object.alternateOutlineColor : object.outlineColor;
-			final Paint    fillColor    = ( fillPaintOverride != null ) ? fillPaintOverride : alternateAppearance ? object.alternateFillColor    : object.fillColor;
+			final Object3D object = (Object3D) node;
+			final Color outlineColor = alternateAppearance ? object.alternateOutlineColor : object.outlineColor;
+			final Paint fillColor = ( fillPaintOverride != null ) ? fillPaintOverride : alternateAppearance ? object.alternateFillColor : object.fillColor;
 
 			paintObject( g, view2image, transform, object, outlineColor, fillColor, object.shadeFactor );
 		}
@@ -259,12 +254,7 @@ public final class Painter
 	{
 		final Matrix3D transform;
 
-		if ( node instanceof Insert3D )
-		{
-			final Matrix3D insertTransform = ((Insert3D)node).getTransform();
-			transform = insertTransform.multiply( node2view );
-		}
-		else if ( node instanceof Transform3D )
+		if ( node instanceof Transform3D )
 		{
 			final Matrix3D transformTransform = ((Transform3D)node).getTransform();
 			transform = transformTransform.multiply( node2view );
@@ -376,12 +366,11 @@ public final class Painter
 	 * @return  <code>true</code> if the shape was painted; <code>false</code>
 	 *          if the shape should be painted by some other means.
 	 */
-	private static boolean paintExtrudedShape( final Graphics2D g, final Matrix3D view2image, final Matrix3D object2view, final ExtrudedObject2D object, final Color outlineColor, final Paint fillPaint )
+	private static boolean paintExtrudedShape( final Graphics2D g, final Matrix3D view2image, final Matrix3D object2view, final ExtrudedObject2D object, final Paint outlineColor, final Paint fillPaint )
 	{
 		final boolean result;
 
-		final Matrix3D scene2view = object.transform.multiply( object2view );
-		final Shape    shape    = object.shape;
+		final Shape shape = object.shape;
 
 		g.translate( -0.5, -0.5 ); // Match rounding used in other paint methods.
 
@@ -389,11 +378,11 @@ public final class Painter
 		{
 			result = false;
 		}
-		else if ( MathTools.almostEqual( scene2view.zz, 0.0 ) )
+		else if ( MathTools.almostEqual( object2view.zz, 0.0 ) )
 		{
 			final Rectangle2D bounds = shape.getBounds2D();
 
-			final Matrix3D object2graphics = scene2view.multiply( view2image );
+			final Matrix3D object2graphics = object2view.multiply( view2image );
 
 			final Vector3D v1 = object2graphics.transform( bounds.getMinX(), bounds.getMinY(), 0.0 );
 			final Vector3D v2 = object2graphics.transform( bounds.getMaxX(), bounds.getMaxY(), object.extrusion.z  );
@@ -403,7 +392,7 @@ public final class Painter
 			final double maxX = Math.max( v1.x, v2.x );
 			final double maxY = Math.max( v1.y, v2.y );
 
-			final Rectangle2D.Double boundsShape = new Rectangle2D.Double( minX, minY, maxX - minX, maxY - minY );
+			final Shape boundsShape = new Rectangle2D.Double( minX, minY, maxX - minX, maxY - minY );
 
 			if ( fillPaint != null )
 			{
@@ -419,16 +408,16 @@ public final class Painter
 
 			result = true;
 		}
-		else if ( MathTools.almostEqual( Math.abs( scene2view.zz ), 1.0 ) )
+		else if ( MathTools.almostEqual( Math.abs( object2view.zz ), 1.0 ) )
 		{
-			final Matrix3D object2graphics = scene2view.multiply( view2image );
+			final Matrix3D object2image = object2view.multiply( view2image );
 
 			final AffineTransform object2graphics2D = new AffineTransform(
-					object2graphics.xx, object2graphics.yx,
-					object2graphics.xy, object2graphics.yy,
-					object2graphics.xo, object2graphics.yo );
+					object2image.xx, object2image.yx,
+					object2image.xy, object2image.yy,
+					object2image.xo, object2image.yo );
 
-			final GeneralPath viewShape = new GeneralPath();
+			final Path2D viewShape = new Path2D.Float();
 			viewShape.append( shape.getPathIterator( object2graphics2D ), false );
 
 			if ( fillPaint != null )
@@ -501,7 +490,7 @@ public final class Painter
 			final float x4 = (float)view2image.transformX( p4x, p4y, zo );
 			final float y4 = (float)view2image.transformY( p4x, p4y, zo );
 
-			final GeneralPath path = new GeneralPath( GeneralPath.WIND_EVEN_ODD, 5 );
+			final Path2D.Float path = new Path2D.Float( Path2D.WIND_EVEN_ODD, 5 );
 			path.moveTo( x1, y1 );
 			path.lineTo( x2, y2 );
 			path.lineTo( x3, y3 );
