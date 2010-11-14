@@ -25,11 +25,11 @@ import java.net.*;
 import java.util.*;
 import java.util.List;
 import java.util.zip.*;
-import static java.io.StreamTokenizer.*;
 
 import ab.j3d.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
+import static java.io.StreamTokenizer.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -94,7 +94,7 @@ public class ZjfLoader
 			final int partNr = partlist.get( i );
 			final Part part = parts.get( partNr );
 
-			final Insert3D insert = new Insert3D( matrixlist.get( i ), convertedParts.get( partNr ) );
+			final Transform3D insert = new Transform3D( matrixlist.get( i ), convertedParts.get( partNr ) );
 			insert.setTag( part.name );
 			result.addChild( insert );
 		}
