@@ -19,18 +19,14 @@
  */
 package ab.j3d.control;
 
-import java.awt.event.MouseEvent;
-import java.util.EventObject;
-import java.util.Locale;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import javax.swing.Action;
+import java.awt.event.*;
+import java.util.*;
+import javax.swing.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.view.View3D;
-
-import com.numdata.oss.ResourceBundleTools;
-import com.numdata.oss.ui.BasicAction;
+import ab.j3d.*;
+import ab.j3d.view.*;
+import com.numdata.oss.*;
+import com.numdata.oss.ui.*;
 
 /**
  * This abstract class defined a control(ler) for a 3D view.
@@ -57,8 +53,20 @@ import com.numdata.oss.ui.BasicAction;
 public abstract class CameraControl
 	extends MouseControl
 {
-	/** Action ID: Save settings.    */ public static final String SAVE_ACTION     = "save";
-	/** Action ID: Restore settings. */ public static final String RESTORE_ACTION  = "restore";
+	/**
+	 * Action: Zoom to fit.
+	 */
+	public static final String ZOOM_TO_FIT = "zoomToFit";
+
+	/**
+	 * Action: Save settings.
+	 */
+	public static final String SAVE = "save";
+
+	/**
+	 * Action: Restore settings.
+	 */
+	public static final String RESTORE = "restore";
 
 	/**
 	 * View being controlled.
@@ -84,21 +92,27 @@ public abstract class CameraControl
 	 */
 	public Action[] getActions( final Locale locale )
 	{
-		final ResourceBundle res = ResourceBundleTools.getBundle( CameraControl.class , locale );
+		final ResourceBundle res = ResourceBundleTools.getBundle( CameraControl.class, locale );
 
 		return new Action[]
 			{
-				new BasicAction( res , RESTORE_ACTION ) {
+				new BasicAction( res, ZOOM_TO_FIT ) {
+					@Override
 					public void run()
 					{
-						restore();
-					} } ,
-
-				new BasicAction( res , SAVE_ACTION ) {
-					public void run()
-					{
-						save();
-					} } ,
+						zoomToFit();
+					} },
+//				new BasicAction( res, RESTORE_ACTION ) {
+//					public void run()
+//					{
+//						restore();
+//					} },
+//
+//				new BasicAction( res, SAVE_ACTION ) {
+//					public void run()
+//					{
+//						save();
+//					} },
 			};
 	}
 
@@ -122,6 +136,7 @@ public abstract class CameraControl
 		_view.setScene2View( transform );
 	}
 
+	@Override
 	public EventObject mouseClicked( final ControlInputEvent event )
 	{
 		final MouseEvent mouseEvent = (MouseEvent)event.getInputEvent();
@@ -142,10 +157,21 @@ public abstract class CameraControl
 		return null;
 	}
 
+	@Override
 	public EventObject mousePressed( final ControlInputEvent event )
 	{
 		startCapture( event );
 		return null;
+	}
+
+	/**
+	 * Adjust view to fit scene contents.
+	 *
+	 * @see     View3D#zoomToFitScene()
+	 */
+	public void zoomToFit()
+	{
+		_view.zoomToFitScene();
 	}
 
 	/**
