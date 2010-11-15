@@ -68,43 +68,42 @@ public class Shape3DBuilder
 {
 	/**
 	 * Create a Java 3D {@link BranchGroup} containing a content graph by
-	 * converting {@link Object3D} instances in a
-	 * {@link Node3DCollection} using this builder.
+	 * converting {@link Object3D} instances.
 	 *
-	 * @param   nodes   Collection of nodes to create the branch group from.
+	 * @param   objectNodes Collection of nodes to create the branch group from.
 	 *
 	 * @return  {@link BranchGroup} containing the created content graph.
 	 */
-	public static BranchGroup createBranchGroup( final Node3DCollection<Object3D> nodes )
+	public static BranchGroup createBranchGroup( final List<Node3DPath> objectNodes )
 	{
 		final BranchGroup result = new BranchGroup();
 		result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
 		result.setCapability( BranchGroup.ALLOW_DETACH );
 
-		if ( ( nodes != null ) && ( nodes.size() > 0 ) )
+		if ( ( objectNodes != null ) && !objectNodes.isEmpty() )
 		{
 			final Shape3DBuilder shapeBuilder = new Shape3DBuilder();
 
-			for ( int i = 0 ; i < nodes.size() ; i++ )
+			for ( final Node3DPath path : objectNodes )
 			{
-				final Object3D object3d  = nodes.getNode( i );
-				final int      faceCount = object3d.getFaceCount();
+				final Object3D object3d = (Object3D)path.getNode();
+				final int faceCount = object3d.getFaceCount();
 
-				for ( int j = 0 ; j < faceCount ; j++ )
+				for ( int j = 0; j < faceCount; j++ )
 				{
 					shapeBuilder.prepareFace( object3d.getFace( j ) );
 				}
 			}
 
-			for ( int i = 0 ; i < nodes.size() ; i++ )
+			for ( final Node3DPath path : objectNodes )
 			{
-				final Matrix3D xform     = nodes.getMatrix( i );
-				final Object3D object3d  = nodes.getNode( i );
-				final int      faceCount = object3d.getFaceCount();
+				final Object3D object3d = (Object3D)path.getNode();
+				final Matrix3D transform = path.getTransform();
+				final int faceCount = object3d.getFaceCount();
 
 				for ( int j = 0 ; j < faceCount ; j++ )
 				{
-					shapeBuilder.addFace( xform, object3d.getFace( j ) );
+					shapeBuilder.addFace( transform, object3d.getFace( j ) );
 				}
 			}
 

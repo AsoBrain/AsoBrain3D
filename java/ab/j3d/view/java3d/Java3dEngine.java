@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,28 +20,16 @@
  */
 package ab.j3d.view.java3d;
 
-import java.awt.Color;
-import java.util.HashMap;
-import java.util.Map;
-import javax.media.j3d.AmbientLight;
-import javax.media.j3d.BoundingSphere;
-import javax.media.j3d.BranchGroup;
-import javax.media.j3d.PointLight;
-import javax.media.j3d.TransformGroup;
-import javax.vecmath.Color3f;
-import javax.vecmath.Point3d;
+import java.awt.*;
+import java.util.*;
+import java.util.List;
+import javax.media.j3d.*;
+import javax.vecmath.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.model.ContentNode;
-import ab.j3d.model.Light3D;
-import ab.j3d.model.Node3D;
-import ab.j3d.model.Node3DCollection;
-import ab.j3d.model.Object3D;
-import ab.j3d.model.Scene;
-import ab.j3d.model.SceneUpdateEvent;
-import ab.j3d.model.SceneUpdateListener;
-import ab.j3d.view.RenderEngine;
-import ab.j3d.view.View3D;
+import ab.j3d.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Java 3D render engine implementation.
@@ -93,11 +82,8 @@ public final class Java3dEngine
 	 * @param   scene       3D Scene to view.
 	 * @param   background  Background color to use for 3D views.
 	 */
-	public Java3dEngine( final Scene scene , final Color background )
+	public Java3dEngine( @NotNull final Scene scene , final Color background )
 	{
-		if ( scene == null )
-			throw new NullPointerException( "scene" );
-
 		scene.addSceneUpdateListener( this );
 		_scene = scene;
 
@@ -127,6 +113,7 @@ public final class Java3dEngine
 	 *
 	 * @param   event   Event from {@link Scene}.
 	 */
+	@Override
 	public void contentNodeAdded( final SceneUpdateEvent event )
 	{
 		final ContentNode node = event.getNode();
@@ -150,6 +137,7 @@ public final class Java3dEngine
 		updateNodeContent( node );
 	}
 
+	@Override
 	public void contentNodeRemoved( final SceneUpdateEvent event )
 	{
 		final ContentNode node = event.getNode();
@@ -161,11 +149,13 @@ public final class Java3dEngine
 		}
 	}
 
+	@Override
 	public void contentNodeContentUpdated( final SceneUpdateEvent event )
 	{
 		updateNodeContent( event.getNode() );
 	}
 
+	@Override
 	public void contentNodePropertyChanged( final SceneUpdateEvent event )
 	{
 		final ContentNode node = event.getNode();
@@ -176,6 +166,7 @@ public final class Java3dEngine
 		nodeTransform.setTransform( Java3dTools.convertMatrix3DToTransform3D( transform ) );
 	}
 
+	@Override
 	public void ambientLightChanged( final SceneUpdateEvent event )
 	{
 		AmbientLight ambientLight = _ambientLight;
@@ -192,6 +183,11 @@ public final class Java3dEngine
 		ambientLight.setColor( new Color3f( scene.getAmbientRed(), scene.getAmbientGreen(), scene.getAmbientBlue() ) );
 	}
 
+	/**
+	 * Update content of node.
+	 *
+	 * @param   node    Node to update.
+	 */
 	private void updateNodeContent( final ContentNode node )
 	{
 		final Object         id            = node.getID();
@@ -199,10 +195,16 @@ public final class Java3dEngine
 		final Matrix3D       transform     = node.getTransform();
 		final Node3D         node3D        = node.getNode3D();
 
-		final Node3DCollection<Object3D> objects = node3D.collectNodes( null , Object3D.class , Matrix3D.INIT , false );
+		final Node3DCollector objectCollector = new Node3DCollector( Object3D.class );
+		Node3DTreeWalker.walk(  objectCollector, node3D );
+		final List<Node3DPath> objects = objectCollector.getCollectedNodes();
+
 		final BranchGroup bg = Shape3DBuilder.createBranchGroup( objects );
 
-		final Node3DCollection<Light3D> lights = node3D.collectNodes( null , Light3D.class , Matrix3D.INIT , false );
+		final Node3DCollector lightCollector = new Node3DCollector( Light3D.class );
+		Node3DTreeWalker.walk(  lightCollector, node3D );
+		final List<Node3DPath> lights = lightCollector.getCollectedNodes();
+
 		addLights( bg , lights , transform );
 
 		/*
@@ -220,25 +222,25 @@ public final class Java3dEngine
 		}
 	}
 
-	private static void addLights( final BranchGroup bg , final Node3DCollection<Light3D> lights , final Matrix3D transform )
+	private static void addLights( final BranchGroup bg , final List<Node3DPath> lights , final Matrix3D transform )
 	{
-		if ( ( lights != null ) && ( lights.size() > 0 ) )
+		if ( ( lights != null ) && !lights.isEmpty() )
 		{
 			final BoundingSphere worldBounds = getWorldBounds();
 
-			for ( int i = 0 ; i < lights.size() ; i++ )
+			for ( final Node3DPath path : lights )
 			{
-				final Light3D modelLight = lights.getNode( i );
+				final Light3D modelLight = (Light3D)path.getNode();
 
 				final PointLight pointLight = new PointLight();
-				pointLight.setPosition( (float)transform.xo , (float)transform.yo , (float)transform.zo );
-				pointLight.setColor( new Color3f( modelLight.getDiffuseRed() , modelLight.getDiffuseGreen() , modelLight.getDiffuseBlue() ) );
-				pointLight.setAttenuation( modelLight.getConstantAttenuation() , modelLight.getLinearAttenuation() , modelLight.getQuadraticAttenuation() );
+				pointLight.setPosition( (float)transform.xo, (float)transform.yo, (float)transform.zo );
+				pointLight.setColor( new Color3f( modelLight.getDiffuseRed(), modelLight.getDiffuseGreen(), modelLight.getDiffuseBlue() ) );
+				pointLight.setAttenuation( modelLight.getConstantAttenuation(), modelLight.getLinearAttenuation(), modelLight.getQuadraticAttenuation() );
 
 				final float halfIntensityDistance = modelLight.getHalfIntensityDistance();
 				if ( halfIntensityDistance > 0.0f )
 				{
-					pointLight.setInfluencingBounds( new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , (double)halfIntensityDistance * 10.0 ) );
+					pointLight.setInfluencingBounds( new BoundingSphere( new Point3d( 0.0, 0.0, 0.0 ), (double)halfIntensityDistance * 10.0 ) );
 				}
 				else if ( halfIntensityDistance == 0.0f )
 				{
@@ -275,6 +277,7 @@ public final class Java3dEngine
 		return (TransformGroup)nodeRoot.getChild( 0 );
 	}
 
+	@Override
 	public View3D createView( final Scene scene )
 	{
 		if ( scene != _scene )
