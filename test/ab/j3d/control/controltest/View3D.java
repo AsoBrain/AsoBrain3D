@@ -176,8 +176,7 @@ public class View3D
 				throw new IllegalArgumentException( "The viewType should be one of TOP_VIEW, FRONT_VIEW, SIDE_VIEW or PERSPECTIVE_VIEW" );
 		}
 
-		_cameraControl.setTo( Vector3D.INIT );
-		_cameraControl.setFrom( from );
+		_cameraControl.look( from, Vector3D.ZERO );
 	}
 
 	/**
