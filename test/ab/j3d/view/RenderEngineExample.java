@@ -90,7 +90,7 @@ public class RenderEngineExample
 		final Vector3D viewAt   = Vector3D.INIT;
 
 		final View3D view = renderEngine.createView( scene );
-		view.setCameraControl( new FromToCameraControl2( view, viewFrom, viewAt )
+		view.setCameraControl( new FromToCameraControl( view, viewFrom, viewAt )
 		{
 			@Override
 			protected boolean isDragFromAroundToEvent( final ControlInputEvent event )

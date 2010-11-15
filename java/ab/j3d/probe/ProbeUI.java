@@ -277,7 +277,7 @@ public class ProbeUI
 			view.setFrontClipDistance( 0.01 );
 			view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
 			view.setRenderingPolicy( RenderingPolicy.SOLID );
-			view.setCameraControl( new FromToCameraControl( view , new Vector3D( 0.0 , -1.5 , 0.0 ) , Vector3D.INIT ) );
+			view.setCameraControl( new MyFromToCameraControl( view , new Vector3D( 0.0 , -1.5 , 0.0 ) , Vector3D.INIT ) );
 		}
 
 		public Image getExpectedImage()
@@ -319,7 +319,7 @@ public class ProbeUI
 			view.setFrontClipDistance( 0.01 );
 			view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
 			view.setRenderingPolicy( RenderingPolicy.SOLID );
-			view.setCameraControl( new FromToCameraControl( view , new Vector3D( -1.0 , -3.0 , 2.0 ) , Vector3D.INIT ) );
+			view.setCameraControl( new MyFromToCameraControl( view , new Vector3D( -1.0 , -3.0 , 2.0 ) , Vector3D.INIT ) );
 
 			final JOGLConfiguration configuration = view.getConfiguration();
 			configuration.setDepthPeelingEnabled( false );
@@ -469,7 +469,7 @@ public class ProbeUI
 			view.setFrontClipDistance( 0.01 );
 			view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
 			view.setRenderingPolicy( RenderingPolicy.SOLID );
-			view.setCameraControl( new FromToCameraControl( view , new Vector3D( -1.0 , -3.0 , 2.0 ) , Vector3D.INIT ) );
+			view.setCameraControl( new MyFromToCameraControl( view , new Vector3D( -1.0 , -3.0 , 2.0 ) , Vector3D.INIT ) );
 		}
 	}
 
@@ -528,10 +528,10 @@ public class ProbeUI
 		}
 	}
 
-	private static class FromToCameraControl
-		extends FromToCameraControl2
+	private static class MyFromToCameraControl
+		extends FromToCameraControl
 	{
-		FromToCameraControl( final View3D view , final Vector3D from , final Vector3D to )
+		MyFromToCameraControl( final View3D view , final Vector3D from , final Vector3D to )
 		{
 			super( view, from, to );
 		}

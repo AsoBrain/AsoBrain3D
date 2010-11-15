@@ -73,7 +73,7 @@ public class CollisionTestApp
 		final View3D view = engine.createView( scene );
 		view.setFrontClipDistance( 0.001 );
 		view.setBackClipDistance( 100.0 );
-		view.setCameraControl( new FromToCameraControl2( view, new Vector3D( -5.0, -10.0, 5.0 ), Vector3D.INIT ) );
+		view.setCameraControl( new FromToCameraControl( view, new Vector3D( -5.0, -10.0, 5.0 ), Vector3D.INIT ) );
 		view.setBackground( Background.createGradient( Color.LIGHT_GRAY, Color.GRAY ) );
 
 		final Grid grid = view.getGrid();
