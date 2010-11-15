@@ -21,6 +21,7 @@
 package ab.j3d.model;
 
 import ab.j3d.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class defines a transformation node in the graphics tree..
@@ -34,6 +35,7 @@ public class Transform3D
 	/**
 	 * Transformation matrix.
 	 */
+	@NotNull
 	private Matrix3D _transform;
 
 	/**
@@ -55,7 +57,7 @@ public class Transform3D
 	 *
 	 * @param   transform   Transformation matrix to initialize node to.
 	 */
-	public Transform3D( final Matrix3D transform )
+	public Transform3D( @NotNull final Matrix3D transform )
 	{
 		_transform = transform;
 		_inverseTransform = null;
@@ -67,7 +69,7 @@ public class Transform3D
 	 * @param   transform   Transformation matrix to initialize node to.
 	 * @param   children    Nodes to add as children to this node.
 	 */
-	public Transform3D( final Matrix3D transform, final Node3D... children )
+	public Transform3D( @NotNull final Matrix3D transform, final Node3D... children )
 	{
 		this( transform );
 		addChildren( children );
@@ -78,6 +80,7 @@ public class Transform3D
 	 *
 	 * @return  Inverse transformation matrix.
 	 */
+	@NotNull
 	public Matrix3D getInverseTransform()
 	{
 		Matrix3D result = _inverseTransform;
@@ -98,6 +101,7 @@ public class Transform3D
 	 *
 	 * @see     #getInverseTransform
 	 */
+	@NotNull
 	public Matrix3D getTransform()
 	{
 		return _transform;
@@ -108,7 +112,7 @@ public class Transform3D
 	 *
 	 * @param   transform   Transformation matrix.
 	 */
-	public void setTransform( final Matrix3D transform )
+	public void setTransform( @NotNull final Matrix3D transform )
 	{
 		_transform        = transform;
 		_inverseTransform = null;
