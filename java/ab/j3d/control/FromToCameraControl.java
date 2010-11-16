@@ -587,18 +587,13 @@ public class FromToCameraControl
 	protected void pan( final ControlInputEvent event )
 	{
 		final Matrix3D scene2view = _dragStartScene2View;
-		final double distance = _dragStartDistance;
-		final Vector3D up = new Vector3D( scene2view.yx, scene2view.yy, scene2view.yz );
-		final Vector3D direction = new Vector3D( -scene2view.zx, -scene2view.zy, -scene2view.zz );
-		final Vector3D from = scene2view.inverseTransform( 0.0, 0.0, 0.0 );
-		final Vector3D to = from.plus( direction.multiply( distance ) );
 
-		final Vector3D yAxis = up;
-		final Vector3D xAxis = Vector3D.cross( yAxis, direction );
+//		final double toUnits = view.getPixelsToUnitsFactor();
+		final double toUnits = 0.01 * _dragStartDistance;
 
-		final Vector3D xMovement = xAxis.multiply( 0.01 * distance * (double)event.getDragDeltaX() );
-		final Vector3D yMovement = yAxis.multiply( 0.01 * distance * (double)event.getDragDeltaY() );
+		final double dx =  toUnits * (double)event.getDragDeltaX();
+		final double dy = -toUnits * (double)event.getDragDeltaY();
 
-		look( from.plus( xMovement.plus( yMovement ) ), to.plus( xMovement.plus( yMovement ) ), up );
+		setScene2View( scene2view.plus( dx, dy, 0.0 ) );
 	}
 }
