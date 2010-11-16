@@ -19,12 +19,11 @@
  */
 package ab.j3d.view;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Locale;
+import java.beans.*;
+import java.util.*;
 
-import com.numdata.oss.ResourceBundleTools;
-import com.numdata.oss.ui.ChoiceAction;
+import com.numdata.oss.*;
+import com.numdata.oss.ui.*;
 
 /**
  * This action switches the rendering policy of a {@link View3D}.
@@ -33,7 +32,7 @@ import com.numdata.oss.ui.ChoiceAction;
  * @version $Revision$ $Date$
  */
 public class SwitchRenderingPolicyAction
-	extends ChoiceAction
+	extends EnumChoiceAction
 {
 	/**
 	 * The {@link View3D} this action belongs to.

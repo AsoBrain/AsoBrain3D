@@ -33,7 +33,7 @@ import com.numdata.oss.ui.*;
  * @version $Revision$ $Date$
  */
 public class SwitchProjectionPolicyAction
-	extends ChoiceAction
+	extends EnumChoiceAction
 {
 	/**
 	 * The {@link View3D} this action belongs to.
