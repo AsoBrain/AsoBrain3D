@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2009
+ * (C) Copyright Numdata BV 2004-2010
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,16 +19,13 @@
  */
 package ab.j3d.control;
 
-import java.awt.Color;
-import java.awt.Component;
+import java.awt.*;
 
-import junit.framework.TestCase;
-
-import ab.j3d.Matrix3D;
-import ab.j3d.model.Scene;
-import ab.j3d.view.Projector;
-import ab.j3d.view.View3D;
-import ab.j3d.view.ViewControlInput;
+import ab.j3d.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+import junit.framework.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class tests the {@link FromToCameraControl} class.
@@ -58,52 +55,59 @@ public class TestFromToCameraControl
 
 		final FromToCameraControl fromToCameraControl = new FromToCameraControl( new View3D( new Scene( Scene.MM ) )
 			{
-				public void setBackground( final Color background )
-				{
-				}
-
+				@Nullable
+				@Override
 				public Component getComponent()
 				{
 					return null;
 				}
 
+				@Override
 				public void update()
 				{
 				}
 
+				@Nullable
+				@Override
 				public Projector getProjector()
 				{
 					return null;
 				}
 
+				@Nullable
+				@Override
 				protected ViewControlInput getControlInput()
 				{
 					return null;
 				}
 
+				@Override
 				public double getFrontClipDistance()
 				{
 					return 0.0;
 				}
 
+				@Override
 				public void setFrontClipDistance( final double front )
 				{
 				}
 
+				@Override
 				public double getBackClipDistance()
 				{
 					return 0.0;
 				}
 
+				@Override
 				public void setBackClipDistance( final double back )
 				{
 				}
 			} );
 
-		final Matrix3D expected = Matrix3D.INIT.set(
+		final Matrix3D expected = new Matrix3D(
 			  1.0 ,  0.0 ,  0.0 ,  0.0 ,
 			  0.0 ,  0.0 ,  1.0 ,  0.0 ,
-			  0.0 , -1.0 ,  0.0 , -1.0 );
+			  0.0 , -1.0 ,  0.0 , -1000.0 );
 
 		final Matrix3D actual = fromToCameraControl.getScene2View();
 
