@@ -269,21 +269,26 @@ public class ShadowMap
 			final Vector3D max = transformedBounds.max();
 
 			final double zFar = -min.z;
-			final double zNear = Math.max( zFar / 10000.0, -max.z );
 
 			if ( light instanceof DirectionalLight3D )
 			{
+				final double zNear = -max.z;
 				gl.glOrtho( min.x, max.x, min.y, max.y, zNear, zFar );
 			}
-			else if ( light instanceof SpotLight3D )
+			else
 			{
-				final SpotLight3D spot = (SpotLight3D)light;
-				glu.gluPerspective( 2.0 * (double)spot.getSpreadAngle(), 1.0, zNear, zFar );
-			}
-			else // point light
-			{
-				// TODO: Calculating optimal field of view would improve shadows and avoid clipping. However, a true point-light (FoV=180) cannot be modeled in this way.
-				glu.gluPerspective( 30.0, 1.0, zNear, zFar );
+				final double zNear = Math.max( zFar / 10000.0, -max.z );
+
+				if ( light instanceof SpotLight3D )
+				{
+					final SpotLight3D spot = (SpotLight3D)light;
+					glu.gluPerspective( 2.0 * (double)spot.getSpreadAngle(), 1.0, zNear, zFar );
+				}
+				else // point light
+				{
+					// TODO: Calculating optimal field of view would improve shadows and avoid clipping. However, a true point-light (FoV=180) cannot be modeled in this way.
+					glu.gluPerspective( 30.0, 1.0, zNear, zFar );
+				}
 			}
 		}
 
