@@ -508,8 +508,7 @@ public class JOGLView
 			final GL gl = new DebugGL( glAutoDrawable.getGL() );
 			glAutoDrawable.setGL( gl );
 
-			final JOGLRenderer renderer = getOrCreateRenderer( gl );
-			renderer.init();
+			getOrCreateRenderer( gl, true );
 		}
 		catch ( Throwable t )
 		{
@@ -640,7 +639,7 @@ public class JOGLView
 		gl.glLoadIdentity();
 		JOGLTools.glMultMatrixd( gl , getScene2View() );
 
-		final JOGLRenderer renderer = getOrCreateRenderer( gl );
+		final JOGLRenderer renderer = getOrCreateRenderer( gl, false );
 		renderer.setSceneToViewTransform( getScene2View() );
 		renderer.renderScene( scene, styleFilters, viewStyle, getBackground(), getGrid() );
 
@@ -653,11 +652,13 @@ public class JOGLView
 	 * Creates a renderer for the given OpenGL pipeline or returns an existing
 	 * one.
 	 *
-	 * @param   gl  OpenGL pipeline.
+	 * @param   gl          OpenGL pipeline.
+	 * @param   alwaysInit  Always call {@link JOGLRenderer#init()} vs. only if
+	 *                      a new renderer was created.
 	 *
 	 * @return  New or existing renderer.
 	 */
-	private JOGLRenderer getOrCreateRenderer( final GL gl )
+	private JOGLRenderer getOrCreateRenderer( final GL gl, final boolean alwaysInit )
 	{
 		JOGLRenderer renderer = _renderer;
 		if ( renderer == null )
@@ -667,6 +668,11 @@ public class JOGLView
 			renderer.init();
 			_renderer = renderer;
 		}
+		else if ( alwaysInit )
+		{
+			renderer.init();
+		}
+
 		return renderer;
 	}
 
