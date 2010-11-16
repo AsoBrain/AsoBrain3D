@@ -150,7 +150,7 @@ public class ShadowMap
 		_depthTexture = 0;
 
 		_light = null;
-		_transform = Matrix3D.INIT;
+		_transform = Matrix3D.IDENTITY;
 
 		_projectionMatrix = null;
 		_modelviewMatrix = null;
@@ -240,48 +240,56 @@ public class ShadowMap
 		gl.glLoadIdentity();
 
 		// View from light.
-		Matrix3D lightTransform = Matrix3D.INIT;
+		Matrix3D lightViewTransform = Matrix3D.IDENTITY;
 		final Bounds3D sceneBounds = scene.getBounds();
 		if ( sceneBounds != null )
 		{
 			final Vector3D lightTarget = sceneBounds.center();
 
 			final Light3D light = _light;
-			final Matrix3D light1Transform = _transform;
+			final Matrix3D lightNodeTransform = _transform;
 
 			if ( light instanceof DirectionalLight3D )
 			{
 				final DirectionalLight3D directional = (DirectionalLight3D)light;
-				lightTransform = Matrix3D.getFromToTransform( Vector3D.ZERO, light1Transform.rotate( directional.getDirection() ), Vector3D.POSITIVE_Z_AXIS, Vector3D.POSITIVE_Y_AXIS );
-			}
-			else
-			{
-				lightTransform = Matrix3D.getFromToTransform( light1Transform.getTranslation(), lightTarget, Vector3D.POSITIVE_Z_AXIS, Vector3D.POSITIVE_Y_AXIS );
-			}
-
-			final Bounds3D transformedBounds = GeometryTools.convertObbToAabb( lightTransform, sceneBounds );
-			final Vector3D min = transformedBounds.min();
-			final Vector3D max = transformedBounds.max();
-
-			if ( light instanceof DirectionalLight3D )
-			{
-				gl.glOrtho( min.x, max.x, min.y, max.y, -max.z, -min.z );
+				lightViewTransform = Matrix3D.getFromToTransform( Vector3D.ZERO, lightNodeTransform.rotate( directional.getDirection() ), Vector3D.POSITIVE_Z_AXIS, Vector3D.POSITIVE_Y_AXIS );
 			}
 			else if ( light instanceof SpotLight3D )
 			{
 				final SpotLight3D spot = (SpotLight3D)light;
-				glu.gluPerspective( 2.0 * (double)spot.getSpreadAngle(), 1.0, -max.z, -min.z );
+				lightViewTransform = Matrix3D.getFromToTransform( lightNodeTransform.getTranslation(), lightNodeTransform.transform( spot.getDirection() ), Vector3D.POSITIVE_Z_AXIS, Vector3D.POSITIVE_Y_AXIS );
+			}
+			else
+			{
+				lightViewTransform = Matrix3D.getFromToTransform( lightNodeTransform.getTranslation(), lightTarget, Vector3D.POSITIVE_Z_AXIS, Vector3D.POSITIVE_Y_AXIS );
+			}
+
+			final Bounds3D transformedBounds = GeometryTools.convertObbToAabb( lightViewTransform, sceneBounds );
+			final Vector3D min = transformedBounds.min();
+			final Vector3D max = transformedBounds.max();
+
+			final double zFar = -min.z;
+			final double zNear = Math.max( zFar / 10000.0, -max.z );
+
+			if ( light instanceof DirectionalLight3D )
+			{
+				gl.glOrtho( min.x, max.x, min.y, max.y, zNear, zFar );
+			}
+			else if ( light instanceof SpotLight3D )
+			{
+				final SpotLight3D spot = (SpotLight3D)light;
+				glu.gluPerspective( 2.0 * (double)spot.getSpreadAngle(), 1.0, zNear, zFar );
 			}
 			else // point light
 			{
 				// TODO: Calculating optimal field of view would improve shadows and avoid clipping. However, a true point-light (FoV=180) cannot be modeled in this way.
-				glu.gluPerspective( 30.0, 1.0, -max.z, -min.z );
+				glu.gluPerspective( 30.0, 1.0, zNear, zFar );
 			}
 		}
 
 		gl.glMatrixMode( GL.GL_MODELVIEW );
 		gl.glLoadIdentity();
-		JOGLTools.glMultMatrixd( gl, lightTransform );
+		JOGLTools.glMultMatrixd( gl, lightViewTransform );
 
 		final double[] projectionMatrix = new double[ 16 ];
 		gl.glGetDoublev( GL.GL_PROJECTION_MATRIX, projectionMatrix, 0 );
