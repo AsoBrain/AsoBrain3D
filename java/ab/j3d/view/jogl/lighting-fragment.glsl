@@ -100,7 +100,10 @@ vec4 frontLighting( in vec4 color )
 				float spotEffect = dot( normalize( gl_LightSource[ i ].spotDirection ) , -L );
 				if ( spotEffect > gl_LightSource[ i ].spotCosCutoff )
 				{
-					attenuation *= pow( spotEffect , gl_LightSource[ i ].spotExponent );
+					float correctedSpotEffect = ( spotEffect - gl_LightSource[ i ].spotCosCutoff ) /
+					                            ( 1.0        - gl_LightSource[ i ].spotCosCutoff );
+
+					attenuation *= pow( correctedSpotEffect, gl_LightSource[ i ].spotExponent );
 
 					diffuse   = gl_LightSource      [ i ].diffuse .rgb * attenuation *      max( dot( N , L ) , 0.0 );
 					specular  = gl_FrontLightProduct[ i ].specular.rgb * attenuation * pow( max( dot( R , E ) , 0.0 ) , gl_FrontMaterial.shininess );
