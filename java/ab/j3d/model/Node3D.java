@@ -258,8 +258,11 @@ public class Node3D
 	 */
 	public void removeAllChildren()
 	{
-		_children.clear();
-		invalidateCache();
+		if ( !_children.isEmpty() )
+		{
+			_children.clear();
+			invalidateCache();
+		}
 	}
 
 	/**
