@@ -46,22 +46,6 @@ public final class Painter
 	}
 
 	/**
-	 * Paint all polygons in the render queue.
-	 *
-	 * @param   g                   Graphics context to paint on.
-	 * @param   renderQueue         Render queue whose contents to paint.
-	 * @param   outline             Paint polygon outlines.
-	 * @param   fill                Fill polygons (vs. outline only).
-	 * @param   applyLighting       Apply lighting effect to filled polygons.
-	 * @param   useMaterialColor    Try to apply material properties when filling polygons.
-	 */
-	public static void paintQueue( final Graphics2D g, final RenderQueue renderQueue, final boolean outline, final boolean fill, final boolean applyLighting, final boolean useMaterialColor )
-	{
-		final RenderedPolygon[] polygons = fill ? renderQueue.getQueuedPolygons() : renderQueue.getUnsortedQueue();
-		paintQueue( g, polygons, outline, fill, applyLighting, useMaterialColor );
-	}
-
-	/**
 	 * Paint all specified polygons.
 	 *
 	 * @param   g                   Graphics context to paint on.
@@ -219,6 +203,47 @@ public final class Painter
 		for ( int i = 0 ; i < childCount ; i++ )
 		{
 			paintNode( g, view2image, transform, node.getChild( i ), alternateAppearance, fillPaintOverride );
+		}
+	}
+
+	/**
+	 * Paint 2D representation of 3D objects at this node and its child nodes
+	 * using the specified render style.
+	 *
+	 * @param   g               Graphics2D context.
+	 * @param   view2image      Projection transform for Graphics2D context (3D->2D, pan, sale).
+	 * @param   node2view       Transformation from node's to view coordinate system.
+	 * @param   node            Node to paint.
+	 * @param   renderStyle     Render style.
+	 */
+	public static void paintNode( final Graphics2D g, final Matrix3D view2image, final Matrix3D node2view, final Node3D node, final RenderStyle renderStyle )
+	{
+		final Matrix3D object2view;
+
+		if ( node instanceof Transform3D )
+		{
+			final Matrix3D transformTransform = ((Transform3D)node).getTransform();
+			object2view = transformTransform.multiply( node2view );
+		}
+		else
+		{
+			object2view = node2view;
+		}
+
+		if ( node instanceof Object3D )
+		{
+			final Color outlineColor = renderStyle.isStrokeEnabled() ? renderStyle.getStrokeColor() : null;
+			final Color fillColor = renderStyle.isFillEnabled() ? renderStyle.getFillColor() : null;
+
+			final Object3D object = (Object3D) node;
+			paintObject( g, view2image, object2view, object, outlineColor, fillColor, renderStyle.isFillLightingEnabled() ? 5.0f : 0.0f );
+		}
+
+		final int  childCount = node.getChildCount();
+
+		for ( int i = 0 ; i < childCount ; i++ )
+		{
+			paintNode( g, view2image, object2view, node.getChild( i ), renderStyle );
 		}
 	}
 
