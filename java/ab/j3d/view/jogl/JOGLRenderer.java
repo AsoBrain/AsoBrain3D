@@ -2517,7 +2517,15 @@ public class JOGLRenderer
 			state.setEnabled( GL.GL_BLEND, blend );
 			state.setEnabled( GL.GL_LIGHTING, hasLighting );
 
-			state.setColor( color );
+			if ( hasLighting )
+			{
+				state.setColor( color, 0.5f, 0.5f, 0.1f, 32.0f );
+			}
+			else
+			{
+				state.setColor( color );
+			}
+
 			useShader( hasLighting ? _colored : _unlit );
 
 			for ( final Face3D face : object.getFaces() )
