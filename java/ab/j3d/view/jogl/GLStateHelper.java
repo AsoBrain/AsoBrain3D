@@ -80,6 +80,49 @@ public class GLStateHelper
 	}
 
 	/**
+	 * Sets OpenGL material properties for a solid color.
+	 *
+	 * @param   color                   Color to be set.
+	 * @param   ambientFactor           Color factor for ambient reflectivity.
+	 * @param   diffuseFactor           Color factor for diffuse reflectivity.
+	 * @param   specularReflectivity    Specular reflectivity (always white).
+	 * @param   shininess               Shininess (128=dull, 16=very shiny)
+	 */
+	protected void setColor( final Color color, final float ambientFactor, final float diffuseFactor, final float specularReflectivity, final float shininess )
+	{
+		final float[] rgba  = color.getRGBComponents( null );
+		final float   red   = rgba[ 0 ];
+		final float   green = rgba[ 1 ];
+		final float   blue  = rgba[ 2 ];
+		final float   alpha = rgba[ 3 ];
+
+		setColor( red, green, blue, alpha, ambientFactor, diffuseFactor, specularReflectivity, shininess );
+	}
+
+	/**
+	 * Sets OpenGL material properties for a solid color.
+	 *
+	 * @param   red                     Red component color to be set.
+	 * @param   green                   Green component color to be set.
+	 * @param   blue                    Blue component of color to be set.
+	 * @param   alpha                   Alpha component to be set.
+	 * @param   ambientFactor           Color factor for ambient reflectivity.
+	 * @param   diffuseFactor           Color factor for diffuse reflectivity.
+	 * @param   specularReflectivity    Specular reflectivity (always white).
+	 * @param   shininess               Shininess (128=dull, 16=very shiny)
+	 */
+	protected void setColor( final float red, final float green, final float blue, final float alpha, final float ambientFactor, final float diffuseFactor, final float specularReflectivity, final float shininess )
+	{
+		final GL gl = _gl;
+		gl.glColor4f( red, green, blue, alpha );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT , new float[] { ambientFactor * red , ambientFactor * green , ambientFactor * blue, alpha }, 0 );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE , new float[] { diffuseFactor * red, diffuseFactor * green, diffuseFactor * blue, alpha }, 0 );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_SPECULAR, new float[] { specularReflectivity, specularReflectivity, specularReflectivity, alpha }, 0 );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_EMISSION, new float[] { 0.0f, 0.0f, 0.0f, alpha }, 0 );
+		gl.glMaterialf( GL.GL_FRONT_AND_BACK, GL.GL_SHININESS, shininess );
+	}
+
+	/**
 	 * Sets GL material properties calculated from the given material,
 	 * render style and alpha.
 	 *
