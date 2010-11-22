@@ -19,10 +19,9 @@
  */
 package ab.j3d.view;
 
-import java.awt.Color;
+import java.awt.*;
 
-import ab.j3d.model.ContentNode;
-import ab.j3d.model.Object3D;
+import ab.j3d.model.*;
 
 /**
  * Provides the default rendering style attributes for a view.
@@ -108,7 +107,6 @@ public class ViewStyleFilter
 				result.setFillLightingEnabled( false );
 				result.setStrokeEnabled( true );
 				result.setStrokeColor( Color.BLACK );
-				result.setStrokeWidth( 1.5f );
 				break;
 
 			case SKETCH:
@@ -117,7 +115,7 @@ public class ViewStyleFilter
 				result.setMaterialAlpha( 0.5f );
 				result.setStrokeEnabled( true );
 				result.setStrokeColor( Color.BLACK );
-				result.setStrokeWidth( 1.5f );
+				result.setStrokeWidth( 2.0f );
 				break;
 
 			case SOLID:
@@ -129,7 +127,6 @@ public class ViewStyleFilter
 				result.setMaterialEnabled( false );
 				result.setStrokeEnabled( true );
 				result.setStrokeColor( Color.BLACK );
-				result.setStrokeWidth( 1.5f );
 				result.setBackfaceCullingEnabled( false );
 				break;
 
