@@ -29,6 +29,8 @@ package ab.j3d;
 public final class Materials
 {
 	public static final Material BLACK        = new Material( "black"      , 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 0.01f, 1.0f, 0.50f, 0.50f, 0.50f,  64, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
+	public static final Material DARKGRAY     = new Material( "darkgray"   , 0.25f, 0.25f, 0.25f, 0.25f, 0.25f, 0.25f, 1.0f, 0.40f, 0.40f, 0.40f,  64, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
+	public static final Material GRAY         = new Material( "gray"       , 0.50f, 0.50f, 0.50f, 0.50f, 0.50f, 0.50f, 1.0f, 0.30f, 0.30f, 0.30f,  64, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
 	public static final Material LIGHTGRAY    = new Material( "lightgray"  , 0.75f, 0.75f, 0.75f, 0.75f, 0.75f, 0.75f, 1.0f, 0.20f, 0.20f, 0.20f,  32, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
 	public static final Material WHITE        = new Material( "white"      , 1.00f, 1.00f, 1.00f, 1.00f, 1.00f, 1.00f, 1.0f, 1.00f, 1.00f, 1.00f,   8, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
 	public static final Material RED          = new Material( "red"        , 1.00f, 0.00f, 0.00f, 1.00f, 0.00f, 0.00f, 1.0f, 0.20f, 0.20f, 0.20f,  32, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
