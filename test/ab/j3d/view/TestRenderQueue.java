@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,18 +20,10 @@
  */
 package ab.j3d.view;
 
-import java.awt.Color;
-
-import junit.framework.TestCase;
-
-import ab.j3d.Material;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.model.Object3D;
-import ab.j3d.model.Object3DBuilder;
-import ab.j3d.model.Scene;
-
-import com.numdata.oss.junit.ArrayTester;
+import ab.j3d.*;
+import ab.j3d.model.*;
+import com.numdata.oss.junit.*;
+import junit.framework.*;
 
 /**
  * This class tests the {@link RenderQueue} class.
@@ -51,15 +44,17 @@ public final class TestRenderQueue
 	/**
 	 * Assert queue contents.
 	 */
-	private static void assertQueuedTags( final Object[] expectedTags , final RenderQueue queue )
+	private static void assertQueuedTags( final Object[] expectedTags, final RenderQueue queue )
 	{
 		final RenderedPolygon[] queuedPolygons = queue.getQueuedPolygons();
 
 		final Object[] actualTags = new Object[ queuedPolygons.length ];
 		for ( int i = 0 ; i < actualTags.length ; i++ )
+		{
 			actualTags[ i ] = queuedPolygons[ i ]._object.getTag();
+		}
 
-		ArrayTester.assertEquals( "Incorrect queue contents" , "expected" , "actual" , expectedTags , actualTags );
+		ArrayTester.assertEquals( "Incorrect queue contents", "expected", "actual", expectedTags, actualTags );
 	}
 
 	/**
@@ -73,46 +68,49 @@ public final class TestRenderQueue
 
 		System.out.println( " - Testing planes h1 and h2" );
 		renderQueue.clearQueue();
-		addPlane( renderQueue , "h2" );
-		addPlane( renderQueue , "h1" );
-		assertQueuedTags( new Object[] { "h1" , "h2" } , renderQueue );
+		addPlane( renderQueue, "h2" );
+		addPlane( renderQueue, "h1" );
+		assertQueuedTags( new Object[] { "h1", "h2" }, renderQueue );
 
 		System.out.println( " - Testing planes h1 and h2" );
 		renderQueue.clearQueue();
-		addPlane( renderQueue , "h1" );
-		addPlane( renderQueue , "h2" );
-		assertQueuedTags( new Object[] { "h1" , "h2" } , renderQueue );
+		addPlane( renderQueue, "h1" );
+		addPlane( renderQueue, "h2" );
+		assertQueuedTags( new Object[] { "h1", "h2" }, renderQueue );
 
 		// @FIXME following tests fail due to incomplete implementation
-		if ( "@FIXME".length() == 6 ) return;
+		if ( "@FIXME".length() == 6 )
+		{
+			return;
+		}
 
 		System.out.println( " - Testing planes d1 and d2" );
 		renderQueue.clearQueue();
-		addPlane( renderQueue , "d1" );
-		addPlane( renderQueue , "d2" );
-		assertQueuedTags( new Object[] { "d2" , "d1" } , renderQueue );
+		addPlane( renderQueue, "d1" );
+		addPlane( renderQueue, "d2" );
+		assertQueuedTags( new Object[] { "d2", "d1" }, renderQueue );
 
 		System.out.println( " - Testing planes d1 and d2" );
 		renderQueue.clearQueue();
-		addPlane( renderQueue , "d2" );
-		addPlane( renderQueue , "d1" );
-		assertQueuedTags( new Object[] { "d2" , "d1" } , renderQueue );
+		addPlane( renderQueue, "d2" );
+		addPlane( renderQueue, "d1" );
+		assertQueuedTags( new Object[] { "d2", "d1" }, renderQueue );
 
 		System.out.println( " - Testing planes h1 and v1" );
 		renderQueue.clearQueue();
-		addPlane( renderQueue , "h1" );
-		addPlane( renderQueue , "v1" );
-		assertQueuedTags( new Object[] { "v1" , "h1" , "v1" } , renderQueue );
+		addPlane( renderQueue, "h1" );
+		addPlane( renderQueue, "v1" );
+		assertQueuedTags( new Object[] { "v1", "h1", "v1" }, renderQueue );
 
 		System.out.println( " - Testing planes h1, h2 and v1" );
 		renderQueue.clearQueue();
-		addPlane( renderQueue , "h1" );
-		addPlane( renderQueue , "h2" );
-		addPlane( renderQueue , "v1" );
-		assertQueuedTags( new Object[] { "v1" , "h1" , "v1" , "h2" , "v1" } , renderQueue );
+		addPlane( renderQueue, "h1" );
+		addPlane( renderQueue, "h2" );
+		addPlane( renderQueue, "v1" );
+		assertQueuedTags( new Object[] { "v1", "h1", "v1", "h2", "v1" }, renderQueue );
 	}
 
-	private static void addPlane( final RenderQueue renderQueue , final String tag )
+	private static void addPlane( final RenderQueue renderQueue, final String tag )
 	{
 		Object3D object = null;
 		Matrix3D transform = null;
@@ -123,65 +121,65 @@ public final class TestRenderQueue
 		final double      frontClipDistance = 0.1 / viewUnit;
 		final double      backClipDistance  = 100.0 / viewUnit;
 		final double      imageResolution   = 0.0254 / 90.0; // getToolkit().getScreenResolution();
-		final Projector   projector         = Projector.createInstance( ProjectionPolicy.PERSPECTIVE , 800 , 600 , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
+		final Projector   projector         = Projector.createInstance( ProjectionPolicy.PERSPECTIVE, 800, 600, imageResolution, viewUnit, frontClipDistance, backClipDistance, fieldOfView, zoomFactor );
 
 		if ( "h1".equals( tag ) )
 		{
-			object    = createPlane( tag , 100.0 );
-			transform = Matrix3D.getTransform( 90.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 );
+			object    = createPlane( tag, 100.0 );
+			transform = Matrix3D.getTransform( 90.0, 0.0, 0.0, 0.0, 0.0, 0.0 );
 		}
 		else if ( "h2".equals( tag ) )
 		{
-			object    = createPlane( tag , 100.0 );
-			transform = Matrix3D.getTransform( 90.0 , 0.0 , 0.0 , -50.0 , -50.0 , 0.0 );
+			object    = createPlane( tag, 100.0 );
+			transform = Matrix3D.getTransform( 90.0, 0.0, 0.0, -50.0, -50.0, 0.0 );
 		}
 		else if ( "h3".equals( tag ) )
 		{
-			object    = createPlane( tag , 50.0 );
-			transform = Matrix3D.getTransform( 90.0 , 0.0 , 0.0 , -100.0 , 25.0 , 0.0 );
+			object    = createPlane( tag, 50.0 );
+			transform = Matrix3D.getTransform( 90.0, 0.0, 0.0, -100.0, 25.0, 0.0 );
 		}
 		else if ( "v1".equals( tag ) )
 		{
-			object    = createPlane( tag , 100.0 );
-			transform = Matrix3D.getTransform( 0.0 , 90.0 , 0.0 , -10.0 , 0.0 , 0.0 );
+			object    = createPlane( tag, 100.0 );
+			transform = Matrix3D.getTransform( 0.0, 90.0, 0.0, -10.0, 0.0, 0.0 );
 		}
 		else if ( "v2".equals( tag ) )
 		{
-			object    = createPlane( tag , 20.0 );
-			transform = Matrix3D.getTransform( 0.0 , 90.0 , 0.0 , 105.0 , -25.0 , 0.0 );
+			object    = createPlane( tag, 20.0 );
+			transform = Matrix3D.getTransform( 0.0, 90.0, 0.0, 105.0, -25.0, 0.0 );
 		}
 		else if ( "d1".equals( tag ) )
 		{
-			object    = createPlane( tag , 100.0 );
-			transform = Matrix3D.getTransform( -45.0 , 90.0 , 0.0 , 0.0 , 0.0 , 0.0 );
+			object    = createPlane( tag, 100.0 );
+			transform = Matrix3D.getTransform( -45.0, 90.0, 0.0, 0.0, 0.0, 0.0 );
 		}
 		else if ( "d2".equals( tag ) )
 		{
-			object    = createPlane( tag , 100.0 );
-			transform = Matrix3D.getTransform( 45.0 , 90.0 , 0.0 , 80.0 , 80.0 , 0.0 );
+			object    = createPlane( tag, 100.0 );
+			transform = Matrix3D.getTransform( 45.0, 90.0, 0.0, 80.0, 80.0, 0.0 );
 		}
 		else
 		{
 			fail( "don't know how to create object" );
 		}
 
-		final Matrix3D scene2view = Matrix3D.getFromToTransform( Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 ) , Vector3D.INIT , Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) , Vector3D.INIT.set( 0.0 , 1.0 , 0.0 ) );
-		renderQueue.enqueueObject( projector , true , transform.multiply( scene2view ) , object , false );
+		final Matrix3D scene2view = Matrix3D.getFromToTransform( new Vector3D( 0.0, -1000.0, 0.0 ), Vector3D.ZERO, Vector3D.POSITIVE_Z_AXIS, Vector3D.POSITIVE_Y_AXIS );
+		renderQueue.enqueueObject( projector, true, transform.multiply( scene2view ), object );
 	}
 
-	private static Object3D createPlane( final String tag , final double size )
+	private static Object3D createPlane( final String tag, final double size )
 	{
-		final Vector3D lf = Vector3D.INIT.set( -size , -size , 0.0 );
-		final Vector3D rf = Vector3D.INIT.set(  size , -size , 0.0 );
-		final Vector3D rb = Vector3D.INIT.set(  size ,  size , 0.0 );
-		final Vector3D lb = Vector3D.INIT.set( -size ,  size , 0.0 );
+		final Vector3D lf = new Vector3D( -size, -size, 0.0 );
+		final Vector3D rf = new Vector3D(  size, -size, 0.0 );
+		final Vector3D rb = new Vector3D(  size,  size, 0.0 );
+		final Vector3D lb = new Vector3D( -size,  size, 0.0 );
 
-		final Material red   = new Material( Color.RED  .getRGB() );
-		final Material green = new Material( Color.GREEN.getRGB() );
+		final Material red   = Materials.RED;
+		final Material green = Materials.GREEN;
 
 		final Object3DBuilder builder = new Object3DBuilder();
-		/* top    */ builder.addQuad( lf , lb , rb , rf , red   , false ); // Z =  size
-		/* bottom */ builder.addQuad( lb , lf , rf , rb , green , false ); // Z = -size
+		/* top    */ builder.addQuad( lf, lb, rb, rf, red  , false ); // Z =  size
+		/* bottom */ builder.addQuad( lb, lf, rf, rb, green, false ); // Z = -size
 		final Object3D result = builder.getObject3D();
 		result.setTag( tag );
 		return result;

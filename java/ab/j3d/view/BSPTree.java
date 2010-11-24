@@ -186,28 +186,12 @@ public class BSPTree
 	 */
 	public void addObject3D( final Object3D object, final Matrix3D object2model )
 	{
-		final int faceCount = object.getFaceCount();
-
-		for ( int i = 0 ; i < faceCount ; i++ )
+		for ( final Face3D face : object.getFaces() )
 		{
-			addPolygon( object2model, object, i, false );
+			final RenderedPolygon polygon = new RenderedPolygon( face.getVertexCount() );
+			polygon.initialize( object2model, null, object, face );
+			_polygons.add( polygon );
 		}
-	}
-
-	/**
-	 * Add a polygon to the tree ( Note: the tree is not rebuild! ).
-	 *
-	 * @param   object2model            Transforms object to model coordinates.
-	 * @param   object                  Object to get face from.
-	 * @param   faceIndex               Index of object's face.
-	 * @param   alternateAppearance     Use alternate vs. regular object appearance.
-	 */
-	public void addPolygon( final Matrix3D object2model, final Object3D object, final int faceIndex, final boolean alternateAppearance )
-	{
-		final Face3D face = object.getFace( faceIndex );
-		final RenderedPolygon polygon = new RenderedPolygon( face.getVertexCount() );
-		polygon.initialize( object2model, null, object, face, alternateAppearance );
-		_polygons.add( polygon );
 	}
 
 	/**
@@ -329,14 +313,13 @@ public class BSPTree
 			final double  planeConstant = planeNormalX * x0 + planeNormalY * y0 + planeNormalZ * z0;
 			final boolean backface      = ( projector instanceof Projector.PerspectiveProjector ) ? ( planeConstant <= 0.0 ) : ( planeNormalZ <= 0.0 );
 
-			result._object              = polygon._object;
-			result._planeNormalX        = planeNormalX;
-			result._planeNormalY        = planeNormalY;
-			result._planeNormalZ        = planeNormalZ;
-			result._planeConstant       = planeConstant;
-			result._backface            = backface;
-			result._material            = polygon._material;
-			result._alternateAppearance = polygon._alternateAppearance;
+			result._object = polygon._object;
+			result._planeNormalX = planeNormalX;
+			result._planeNormalY = planeNormalY;
+			result._planeNormalZ = planeNormalZ;
+			result._planeConstant = planeConstant;
+			result._backface = backface;
+			result._material = polygon._material;
 		}
 
 		// Perform backface culling.

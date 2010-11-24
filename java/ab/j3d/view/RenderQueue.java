@@ -183,13 +183,12 @@ public final class RenderQueue
 	/**
 	 * Add 3D object to queue.
 	 *
-	 * @param   projector               Projects view coordinates on image plate pixels.
-	 * @param   backfaceCulling         Prevent backfaces from being rendered.
-	 * @param   object2view             Transformation from object to view space.
-	 * @param   object                  Object to add to queue.
-	 * @param   alternateAppearance     Enqueue object using alternate appearance properties.
+	 * @param   projector           Projects view coordinates on image plate pixels.
+	 * @param   backfaceCulling     Prevent backfaces from being rendered.
+	 * @param   object2view         Transformation from object to view space.
+	 * @param   object              Object to add to queue.
 	 */
-	public void enqueueObject( final Projector projector , final boolean backfaceCulling , final Matrix3D object2view , final Object3D object , final boolean alternateAppearance )
+	public void enqueueObject( final Projector projector, final boolean backfaceCulling, final Matrix3D object2view, final Object3D object )
 	{
 		final int imageWidth  = projector.getImageWidth();
 		final int imageHeight = projector.getImageHeight();
@@ -200,7 +199,7 @@ public final class RenderQueue
 			final Face3D face = object.getFace( faceIndex );
 
 			final RenderedPolygon polygon = allocatePolygon( face.getVertexCount() );
-			polygon.initialize( object2view , projector , object , face , alternateAppearance );
+			polygon.initialize( object2view, projector, object, face );
 
 			if ( polygon.inViewVolume( imageWidth, imageHeight ) && // View volume culling
 			     ( !backfaceCulling || face.isTwoSided() || !polygon.isBackface() ) ) // Backface removal
@@ -240,14 +239,14 @@ public final class RenderQueue
 
 			if ( otherZ > z )
 			{
-				_queue.add( pointer , polygon );
+				_queue.add( pointer, polygon );
 				stop = true;
 			}
 		}
 
 		if ( !stop )
 		{
-			_queue.add( _queue.size() , polygon);
+			_queue.add( _queue.size(), polygon);
 		}
 	}
 
@@ -282,14 +281,14 @@ public final class RenderQueue
 
 				if ( otherZ > z )
 				{
-					result.add( pointer , polygon );
+					result.add( pointer, polygon );
 					stop = true;
 				}
 			}
 
 			if ( !stop )
 			{
-				result.add( result.size() , polygon);
+				result.add( result.size(), polygon);
 			}
 		}
 
@@ -367,7 +366,7 @@ public final class RenderQueue
 //					out.writeln( "Ordering polygon " + p._name );
 //					out.writeln( "{" );
 //					out.indentIn();
-					order( p , tempQueue , result , new ArrayList<RenderedPolygon>( 5 ) );
+					order( p, tempQueue, result, new ArrayList<RenderedPolygon>( 5 ) );
 //					out.indentOut();
 //					out.writeln( "}" );
 					break;
@@ -416,7 +415,7 @@ public final class RenderQueue
 	 *                          method because another polygon lay behind them.
 	 *                          Used for cycle detection.
 	 */
-	private void order( final RenderedPolygon poly , final List<RenderedPolygon> tempQueue , final List<RenderedPolygon> finalQueue , final List<RenderedPolygon> polygonStack )
+	private void order( final RenderedPolygon poly, final List<RenderedPolygon> tempQueue, final List<RenderedPolygon> finalQueue, final List<RenderedPolygon> polygonStack )
 	{
 		RenderedPolygon polygon = poly;
 		final int queueIndex = tempQueue.indexOf( polygon );
@@ -454,7 +453,7 @@ public final class RenderQueue
 							 * compared to eachother.
 							 */
 							int relation = -1;
-							int compared = compare( polygon , other );
+							int compared = compare( polygon, other );
 
 							if ( compared == IN_FRONT )
 							{
@@ -468,7 +467,7 @@ public final class RenderQueue
 								 * tested again, but now swapped. See javadoc for compare
 								 * for an expanation.
 								 */
-								compared = compare( other , polygon );
+								compared = compare( other, polygon );
 
 								if ( compared == BEHIND )
 								{
@@ -499,7 +498,7 @@ public final class RenderQueue
 //									out.writeln( "{" );
 //									out.indentIn();
 									polygonStack.add( polygon );
-									order( other , tempQueue , finalQueue , polygonStack );
+									order( other, tempQueue, finalQueue, polygonStack );
 									polygonStack.remove( polygon );
 //									out.indentOut();
 //									out.writeln( "}" );
@@ -514,7 +513,7 @@ public final class RenderQueue
 							 */
 							if ( relation == INTERSECTING )
 							{
-								final RenderedPolygon[] clipped = clip( polygon , other );
+								final RenderedPolygon[] clipped = clip( polygon, other );
 								final RenderedPolygon clip;
 
 								if ( clipped[ 0 ]._minViewZ == polygon._minViewZ )
@@ -538,7 +537,7 @@ public final class RenderQueue
 										final RenderedPolygon rp = tempQueue.get( pointer );
 										if ( rp._minViewZ > z )
 										{
-											tempQueue.add( pointer , clip );
+											tempQueue.add( pointer, clip );
 											stop = true;
 										}
 									}
@@ -546,7 +545,7 @@ public final class RenderQueue
 
 								if ( !stop )
 								{
-									tempQueue.add( tempQueue.size() , clip );
+									tempQueue.add( tempQueue.size(), clip );
 								}
 
 //								out.writeln( "clipping polygons. This is now " + polygon._name );
@@ -559,17 +558,17 @@ public final class RenderQueue
 						}
 						else
 						{
-//							out.writeln( "no overlap in y. ( Polygon minY " + polygon._minY + " , maxY " + polygon._maxY+ " ) ( Other minY " + other._minY+ " , maxY " + other._maxY+ " )" );
+//							out.writeln( "no overlap in y. ( Polygon minY " + polygon._minY + ", maxY " + polygon._maxY+ " ) ( Other minY " + other._minY+ ", maxY " + other._maxY+ " )" );
 						}
 					}
 					else
 					{
-//						out.writeln( "no overlap in x. ( Polygon minX " + polygon._minX + " , maxX " + polygon._maxX+ " ) ( Other minX " + other._minX+ " , maxX " + other._maxX+ " )" );
+//						out.writeln( "no overlap in x. ( Polygon minX " + polygon._minX + ", maxX " + polygon._maxX+ " ) ( Other minX " + other._minX+ ", maxX " + other._maxX+ " )" );
 					}
 				}
 				else
 				{
-//					out.writeln( "no overlap in z. ( Polygon minZ " + polygon._minZ + " , maxZ " + polygon._maxZ+ " ) ( Other minZ " + other._minZ+ " , maxZ " + other._maxZ+ " )" );
+//					out.writeln( "no overlap in z. ( Polygon minZ " + polygon._minZ + ", maxZ " + polygon._maxZ+ " ) ( Other minZ " + other._minZ+ ", maxZ " + other._maxZ+ " )" );
 				}
 			}
 
@@ -580,7 +579,7 @@ public final class RenderQueue
 		 */
 //		out.writeln( "done sorting, adding polygon." );
 		finalQueue.add( polygon );
-		tempQueue.set( queueIndex , null );
+		tempQueue.set( queueIndex, null );
 	}
 
 	/**
@@ -606,7 +605,7 @@ public final class RenderQueue
 	 * @see     #INTERSECTING
 	 * @see     #COPLANAR
 	 */
-	public static int compare( final RenderedPolygon polygon , final RenderedPolygon other )
+	public static int compare( final RenderedPolygon polygon, final RenderedPolygon other )
 	{
 		boolean  behind      = false;
 		boolean  inFront     = false;
@@ -624,7 +623,7 @@ public final class RenderQueue
 
 		for ( int vertex = 0 ; vertex < vertexCount ; vertex++ )
 		{
-			final double distanceToPlane = Vector3D.dot( planeNormalX , planeNormalY , planeNormalZ , xCoords[ vertex ] , yCoords[ vertex ] , zCoords[ vertex ] ) - planeDistance;
+			final double distanceToPlane = Vector3D.dot( planeNormalX, planeNormalY, planeNormalZ, xCoords[ vertex ], yCoords[ vertex ], zCoords[ vertex ] ) - planeDistance;
 			behind  = behind  || ( distanceToPlane < -0.001 );
 			inFront = inFront || ( distanceToPlane >  0.001 );
 
@@ -647,9 +646,9 @@ public final class RenderQueue
 	 * @return  Relation of point to plane ({@link #IN_FRONT}, {@link #BEHIND},
 	 *          or {@link #COPLANAR} ).
 	 */
-	public static int compare( final RenderedPolygon plane , final Vector3D point )
+	public static int compare( final RenderedPolygon plane, final Vector3D point )
 	{
-		final double distanceToPlane = Vector3D.dot( plane._planeNormalX , plane._planeNormalY , plane._planeNormalZ , point.x , point.y , point.z ) - plane._planeConstant;
+		final double distanceToPlane = Vector3D.dot( plane._planeNormalX, plane._planeNormalY, plane._planeNormalZ, point.x, point.y, point.z ) - plane._planeConstant;
 		return ( distanceToPlane >  0.001 ) ? IN_FRONT :
 		       ( distanceToPlane < -0.001 ) ? BEHIND : COPLANAR;
 	}
@@ -664,7 +663,7 @@ public final class RenderQueue
 	 *
 	 * @return  An array containing the two new {@link RenderedPolygon}s.
 	 */
-	public RenderedPolygon[] clip( final RenderedPolygon polygon , final RenderedPolygon cuttingPlane )
+	public RenderedPolygon[] clip( final RenderedPolygon polygon, final RenderedPolygon cuttingPlane )
 	{
 		/**
 		 * Setup variables to be used.
@@ -679,17 +678,29 @@ public final class RenderQueue
 
 		int frontCount = 0;
 		int backCount = 0;
-		final double[] frontX = _frontX = (double[])ArrayTools.ensureLength( _frontX , double.class , 1 , vertexCount + 2 );
-		final double[] frontY = _frontY = (double[])ArrayTools.ensureLength( _frontY , double.class , 1 , vertexCount + 2 );
-		final double[] frontZ = _frontZ = (double[])ArrayTools.ensureLength( _frontZ , double.class , 1 , vertexCount + 2 );
-		final double[]  backX =  _backX = (double[])ArrayTools.ensureLength(  _backX , double.class , 1 , vertexCount + 2 );
-		final double[]  backY =  _backY = (double[])ArrayTools.ensureLength(  _backY , double.class , 1 , vertexCount + 2 );
-		final double[]  backZ =  _backZ = (double[])ArrayTools.ensureLength(  _backZ , double.class , 1 , vertexCount + 2 );
+		final double[] frontX = (double[])ArrayTools.ensureLength( _frontX, double.class, 1, vertexCount + 2 );
+		final double[] frontY = (double[])ArrayTools.ensureLength( _frontY, double.class, 1, vertexCount + 2 );
+		final double[] frontZ = (double[])ArrayTools.ensureLength( _frontZ, double.class, 1, vertexCount + 2 );
+		final double[]  backX = (double[])ArrayTools.ensureLength(  _backX, double.class, 1, vertexCount + 2 );
+		final double[]  backY = (double[])ArrayTools.ensureLength(  _backY, double.class, 1, vertexCount + 2 );
+		final double[]  backZ = (double[])ArrayTools.ensureLength(  _backZ, double.class, 1, vertexCount + 2 );
 
-		final int[] frontProjX = _frontProjX = (int[])ArrayTools.ensureLength( _frontProjX , int.class , 1 , vertexCount + 2 );
-		final int[] frontProjY = _frontProjY = (int[])ArrayTools.ensureLength( _frontProjY , int.class , 1 , vertexCount + 2 );
-		final int[]  backProjX =  _backProjX = (int[])ArrayTools.ensureLength(  _backProjX , int.class , 1 , vertexCount + 2 );
-		final int[]  backProjY =  _backProjY = (int[])ArrayTools.ensureLength(  _backProjY , int.class , 1 , vertexCount + 2 );
+		final int[] frontProjX = (int[])ArrayTools.ensureLength( _frontProjX, int.class, 1, vertexCount + 2 );
+		final int[] frontProjY = (int[])ArrayTools.ensureLength( _frontProjY, int.class, 1, vertexCount + 2 );
+		final int[]  backProjX = (int[])ArrayTools.ensureLength(  _backProjX, int.class, 1, vertexCount + 2 );
+		final int[]  backProjY = (int[])ArrayTools.ensureLength(  _backProjY, int.class, 1, vertexCount + 2 );
+
+		_frontX = frontX;
+		_frontY = frontY;
+		_frontZ = frontZ;
+		_backX = backX;
+		_backY = backY;
+		_backZ = backZ;
+
+		_frontProjX = frontProjX;
+		_frontProjY = frontProjY;
+		_backProjX = backProjX;
+		_backProjY = backProjY;
 
 		final double cuttingNX = cuttingPlane._planeNormalX;
 		final double cuttingNY = cuttingPlane._planeNormalY;
@@ -701,7 +712,7 @@ public final class RenderQueue
 		double lastZ     =    zCoords[ lastIndex ];
 		int    lastProjX = projectedX[ lastIndex ];
 		int    lastProjY = projectedY[ lastIndex ];
-		double lastDot   = Vector3D.dot( cuttingNX , cuttingNY , cuttingNZ , lastX , lastY , lastZ );
+		double lastDot   = Vector3D.dot( cuttingNX, cuttingNY, cuttingNZ, lastX, lastY, lastZ );
 
 		/**
 		 * Iterate through all vertices of the plane
@@ -721,7 +732,7 @@ public final class RenderQueue
 			final double z     =    zCoords[ vertex ];
 			final int    projX = projectedX[ vertex ];
 			final int    projY = projectedY[ vertex ];
-			final double dot   = Vector3D.dot( cuttingNX , cuttingNY , cuttingNZ , x , y , z );
+			final double dot   = Vector3D.dot( cuttingNX, cuttingNY, cuttingNZ, x, y, z );
 
 			/**
 			 * If this vertex is on one side of the plane and the previous
@@ -740,11 +751,11 @@ public final class RenderQueue
 
 				if ( u < -0.001 || u > 1.001 )
 				{
-					System.err.println( "cuttingNormal: " + Vector3D.toFriendlyString( Vector3D.INIT.set( cuttingNX , cuttingNY , cuttingNZ ) ) + " - cuttingD: " + cuttingD );
+					System.err.println( "cuttingNormal: " + Vector3D.toFriendlyString( Vector3D.INIT.set( cuttingNX, cuttingNY, cuttingNZ ) ) + " - cuttingD: " + cuttingD );
 					System.err.println( "Last: coordinates: (" + (int)lastX + ',' + (int)lastY + ',' + (int)lastZ + ") - dot: " + lastDot );
 					System.err.println( "Current: coordinates: (" + (int)x + ',' + (int)y + ',' + (int)z + ")  - dot: " + dot );
 
-					throw new IllegalStateException( "Error! Trying to cut a line that does not intersect the cutting plane (u=" + u ); //+ " , u1=" + u1 + ')' );
+					throw new IllegalStateException( "Error! Trying to cut a line that does not intersect the cutting plane (u=" + u ); //+ ", u1=" + u1 + ')' );
 				}
 
 				final double cutX     = lastX + u * ( x - lastX );
@@ -836,7 +847,6 @@ public final class RenderQueue
 		front._maxImageX = maxX;
 		front._minImageY = minY;
 		front._maxImageY = maxY;
-		front._alternateAppearance = polygon._alternateAppearance;
 		front._object              = polygon._object;
 		front._planeConstant       = polygon._planeConstant;
 		front._planeNormalX        = polygon._planeNormalX;
@@ -878,17 +888,16 @@ public final class RenderQueue
 		back._maxImageX = maxX;
 		back._minImageY = minY;
 		back._maxImageY = maxY;
-		back._alternateAppearance = polygon._alternateAppearance;
-		back._object              = polygon._object;
-		back._planeConstant       = polygon._planeConstant;
-		back._planeNormalX        = polygon._planeNormalX;
-		back._planeNormalY        = polygon._planeNormalY;
-		back._planeNormalZ        = polygon._planeNormalZ;
-		back._backface            = polygon._backface;
-		back._material            = polygon._material;
-		back._name                = polygon._name + "_back";
+		back._object = polygon._object;
+		back._planeConstant = polygon._planeConstant;
+		back._planeNormalX = polygon._planeNormalX;
+		back._planeNormalY = polygon._planeNormalY;
+		back._planeNormalZ = polygon._planeNormalZ;
+		back._backface = polygon._backface;
+		back._material = polygon._material;
+		back._name = polygon._name + "_back";
 
-		return new RenderedPolygon[] { back , front };
+		return new RenderedPolygon[] { back, front };
 	}
 
 	/**
@@ -957,7 +966,7 @@ public final class RenderQueue
 		if ( list == null )
 		{
 			list = new ArrayList<RenderedPolygon>( 16 );
-			lists.set( listIndex , list );
+			lists.set( listIndex, list );
 		}
 
 		polygon.destroy();

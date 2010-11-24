@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,16 +20,12 @@
  */
 package ab.j3d.view;
 
-import java.awt.Point;
-import java.awt.Polygon;
+import java.awt.*;
 import java.util.List;
 
-import ab.j3d.Material;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.model.Face3D;
-import ab.j3d.model.Face3D.Vertex;
-import ab.j3d.model.Object3D;
+import ab.j3d.*;
+import ab.j3d.model.*;
+import ab.j3d.model.Face3D.*;
 
 /**
  * The <code>RenderedPolygon</code> class extends the {@link Polygon} features
@@ -56,16 +53,6 @@ public final class RenderedPolygon
 	 * @see     Face3D#material
 	 */
 	public Material _material;
-
-	/**
-	 * Use alternate vs. regular appearance for face.
-	 *
-	 * @see     Object3D#fillColor
-	 * @see     Object3D#outlineColor
-	 * @see     Object3D#alternateFillColor
-	 * @see     Object3D#alternateOutlineColor
-	 */
-	public boolean _alternateAppearance;
 
 	/**
 	 * The total number of vertices in polygon.
@@ -187,7 +174,7 @@ public final class RenderedPolygon
 	 */
 	RenderedPolygon( final int vertexCount )
 	{
-		this( vertexCount , new int[ vertexCount ] , new int[ vertexCount ] );
+		this( vertexCount, new int[ vertexCount ], new int[ vertexCount ] );
 	}
 
 	/**
@@ -199,9 +186,9 @@ public final class RenderedPolygon
 	 * @param   projectedX      Newly created array for projected X coordinates.
 	 * @param   projectedY      Newly created array for projected Y coordinates.
 	 */
-	private RenderedPolygon( final int vertexCount , final int[] projectedX , final int[] projectedY )
+	private RenderedPolygon( final int vertexCount, final int[] projectedX, final int[] projectedY )
 	{
-		super( projectedX , projectedY , 0 );
+		super( projectedX, projectedY, 0 );
 
 		_object              = null;
 		_face                = null;
@@ -228,7 +215,6 @@ public final class RenderedPolygon
 		_maxViewZ = 0.0;
 
 		_material = null;
-		_alternateAppearance = false;
 
 		xpoints = projectedX;
 		ypoints = projectedY;
@@ -238,13 +224,12 @@ public final class RenderedPolygon
 	/**
 	 * Initialize polygon with face properties.
 	 *
-	 * @param   object2view             Transforms object to view coordinates.
-	 * @param   projector               Projects view coordinates on image plate (pixels).
-	 * @param   object                  Object to get face from.
-	 * @param   face                    Face to initialize polygon with.
-	 * @param   alternateAppearance     Use alternate vs. regular object appearance.
+	 * @param   object2view     Transforms object to view coordinates.
+	 * @param   projector       Projects view coordinates on image plate (pixels).
+	 * @param   object          Object to get face from.
+	 * @param   face            Face to initialize polygon with.
 	 */
-	public void initialize( final Matrix3D object2view , final Projector projector , final Object3D object , final Face3D face , final boolean alternateAppearance )
+	public void initialize( final Matrix3D object2view, final Projector projector, final Object3D object, final Face3D face )
 	{
 		final int      pointCount = _vertexCount;
 		final int[]    projectedX = _projectedX;
@@ -254,11 +239,15 @@ public final class RenderedPolygon
 		final double[] viewZ      = _viewZ;
 
 		if ( ( xpoints != projectedX ) || ( ypoints != projectedY ) || ( npoints != pointCount ) )
+		{
 			throw new IllegalStateException();
+		}
 
 		final List<Vertex> vertices = face.vertices;
 		if ( vertices.size() != pointCount )
+		{
 			throw new IllegalArgumentException();
+		}
 
 		int    minImageX = Integer.MAX_VALUE;
 		int    maxImageX = Integer.MIN_VALUE;
@@ -287,7 +276,7 @@ public final class RenderedPolygon
 
 			if ( projector != null )
 			{
-				projector.project( projectedPoint , x , y , z );
+				projector.project( projectedPoint, x, y, z );
 				final int projX = projectedPoint.x;
 				final int projY = projectedPoint.y;
 
@@ -307,21 +296,20 @@ public final class RenderedPolygon
 		final double  planeConstant = planeNormalX * viewX[ 0 ] + planeNormalY * viewY[ 0 ] + planeNormalZ * viewZ[ 0 ];
 		final boolean backface      = ( projector instanceof Projector.PerspectiveProjector ) ? ( planeConstant <= 0.0 ) : ( planeNormalZ <= 0.0 );
 
-		_object              = object;
-		_face                = face;
-		_planeNormalX        = planeNormalX;
-		_planeNormalY        = planeNormalY;
-		_planeNormalZ        = planeNormalZ;
-		_planeConstant       = planeConstant;
-		_backface            = backface;
-		_minImageX           = minImageX;
-		_maxImageX           = maxImageX;
-		_minImageY           = minImageY;
-		_maxImageY           = maxImageY;
-		_minViewZ            = minViewZ;
-		_maxViewZ            = maxViewZ;
-		_material            = face.material;
-		_alternateAppearance = alternateAppearance;
+		_object = object;
+		_face = face;
+		_planeNormalX = planeNormalX;
+		_planeNormalY = planeNormalY;
+		_planeNormalZ = planeNormalZ;
+		_planeConstant = planeConstant;
+		_backface = backface;
+		_minImageX = minImageX;
+		_maxImageX = maxImageX;
+		_minImageY = minImageY;
+		_maxImageY = maxImageY;
+		_minViewZ = minViewZ;
+		_maxViewZ = maxViewZ;
+		_material = face.material;
 	}
 
 	/**
@@ -344,7 +332,7 @@ public final class RenderedPolygon
 	 * @return  <code>true</code> if polygon is (possibly) in view volume;
 	 *          <code>false</code> if polygon is (surely) outside view volume.
 	 */
-	public boolean inViewVolume( final int imageWidth , final int imageHeight )
+	public boolean inViewVolume( final int imageWidth, final int imageHeight )
 	{
 		return ( _minImageX < imageWidth ) && ( _maxImageX >= 0 ) && ( _minImageY < imageHeight ) && ( _maxImageY >= 0 );
 	}
@@ -400,8 +388,7 @@ public final class RenderedPolygon
 		sb.append(   "Object: "               ); sb.append( _object.getTag() );
 		sb.append( "\nFace: "                 ); sb.append( _face );
 		sb.append( "\nMaterial: "             ); sb.append( ( _material == null ? "null" : _material.code ) );
-		sb.append( "\nAlternate appearance: " ); sb.append( _alternateAppearance );
-		sb.append( "\nNormal: "               ); sb.append( Vector3D.toFriendlyString( Vector3D.INIT.set( _planeNormalX , _planeNormalY , _planeNormalZ ) ) );
+		sb.append( "\nNormal: "               ); sb.append( Vector3D.toFriendlyString( Vector3D.INIT.set( _planeNormalX, _planeNormalY, _planeNormalZ ) ) );
 		sb.append( "\nPlane constant: "       ); sb.append( _planeConstant );
 		sb.append( "\nBackface: "             ); sb.append( _backface );
 
@@ -409,8 +396,8 @@ public final class RenderedPolygon
 		for ( int i = 0; i < _vertexCount; i++ )
 		{
 			sb.append( "\n\t" );
-			sb.append( Vector3D.toFriendlyString( Vector3D.INIT.set( _viewX[ i ] , _viewY[ i ] , _viewZ[ i ] ) ) );
-			sb.append( "\n" );
+			sb.append( Vector3D.toFriendlyString( Vector3D.INIT.set( _viewX[ i ], _viewY[ i ], _viewZ[ i ] ) ) );
+			sb.append( '\n' );
 		}
 
 		sb.append( "Projected coordinates:" );
@@ -418,7 +405,7 @@ public final class RenderedPolygon
 		{
 			sb.append( "\n\t[ " );
 			sb.append( _projectedX[ i ] );
-			sb.append( " , " );
+			sb.append( ", " );
 			sb.append( _projectedY[ i ] );
 			sb.append( " ]\n" );
 		}
