@@ -21,11 +21,13 @@
 package ab.j3d.view.java2d;
 
 import java.awt.*;
+import java.util.*;
 import javax.swing.*;
 
 import ab.j3d.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
+import org.jetbrains.annotations.*;
 
 /**
  * UI component that renders the view.
@@ -42,14 +44,9 @@ final class Java2dViewComponent
 	private static final int MINIMUM_IMAGE_SIZE = 150;
 
 	/**
-	 * Stroke to use for sketched rendering.
-	 */
-	private static final BasicStroke SKETCH_STROKE = new BasicStroke( 0.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL );
-
-	/**
 	 * View that is rendered.
 	 */
-	private Java2dView _view;
+	private final Java2dView _view;
 
 	/**
 	 * Construct view component.
@@ -77,49 +74,57 @@ final class Java2dViewComponent
 	@Override
 	public void paintComponent( final Graphics g )
 	{
+		final Java2dView view = _view;
+		final Scene scene = view.getScene();
+
+		/* Setup initial style and apply style filters to this view. */
+		final RenderStyle defaultStyle = new RenderStyle();
+		final Collection<RenderStyleFilter> styleFilters = view.getRenderStyleFilters();
+		final RenderStyle viewStyle = defaultStyle.applyFilters( styleFilters , this );
+
+		final Map<Node3D,RenderStyle> nodeStyles = new HashMap<Node3D, RenderStyle>( );
+		scene.walk( new Node3DVisitor()
+		{
+			@Override
+			public boolean visitNode( @NotNull final Node3DPath path )
+			{
+				final Node3D node = path.getNode();
+
+				final Node3DPath parentPath = path.getParent();
+				final RenderStyle parentStyle = ( parentPath != null ) ? nodeStyles.get( parentPath.getNode() ) : viewStyle;
+
+				final RenderStyle nodeStyle = parentStyle.applyFilters( styleFilters, node );
+				nodeStyles.put( node, nodeStyle );
+				return true;
+			}
+		} );
+
+		final Matrix3D view2scene = view.getView2Scene();
+		final Vector3D viewPoint  = view2scene.getTranslation();
+		final Matrix3D scene2view = view.getScene2View();
+		final Projector projector = view.getProjector();
+
+		final Insets insets = getInsets();
+		final int componentWidth = getWidth();
+		final int imageWidth = componentWidth - insets.left - insets.right;
+		final int componentHeight = getHeight();
+		final int imageHeight = componentHeight - insets.top - insets.bottom;
+
+		final BSPTree bspTree = scene.getBspTree();
+		final RenderedPolygon[] renderQueue = bspTree.getRenderQueue( viewPoint, projector, scene2view, viewStyle.isBackfaceCullingEnabled(), true );
+
 		if ( isOpaque() )
 		{
 			g.setColor( getBackground() );
-			g.fillRect( 0, 0, getWidth(), getHeight() );
+			g.fillRect( 0, 0, componentWidth, componentHeight );
 		}
-
-		final Java2dView view = _view;
-		final Scene scene = view.getScene();
-		final BSPTree bspTree = scene.getBspTree();
-		final Projector projector = view.getProjector();
-		final Matrix3D model2view = view.getScene2View();
-
-		final Insets insets = getInsets();
-		final int imageWidth = getWidth() - insets.left - insets.right;
-		final int imageHeight = getHeight() - insets.top - insets.bottom;
-
-		final boolean fill;
-		final boolean outline;
-		final boolean useTextures;
-		final boolean backfaceCulling;
-		final boolean applyLighting;
-
-		final RenderingPolicy renderingPolicy = view.getRenderingPolicy();
-		switch ( renderingPolicy )
-		{
-				case SOLID     : fill = true;  outline = false; useTextures = true;  backfaceCulling = true;  applyLighting = true;  break;
-				case SCHEMATIC : fill = true;  outline = true;  useTextures = false; backfaceCulling = true;  applyLighting = false; break;
-				case SKETCH    : fill = true;  outline = false; useTextures = true;  backfaceCulling = true;  applyLighting = true;  break;
-				case WIREFRAME : fill = false; outline = true;  useTextures = false; backfaceCulling = false; applyLighting = false; break;
-				default        : fill = false; outline = false; useTextures = false; backfaceCulling = false; applyLighting = true;  break;
-		}
-
-		final Matrix3D view2model = view.getView2Scene();
-		final Vector3D viewPoint  = Vector3D.INIT.set( view2model.xo, view2model.yo, view2model.zo );
-		final RenderedPolygon[] renderQueue = bspTree.getRenderQueue( viewPoint, projector, model2view, backfaceCulling, true );
 
 		final Graphics2D g2d = (Graphics2D)g.create( insets.left, insets.top, imageWidth, imageHeight );
-		paintQueue( g2d, renderQueue, outline, fill, applyLighting, useTextures );
 
-		if ( renderingPolicy == RenderingPolicy.SKETCH )
+		for ( final RenderedPolygon polygon : renderQueue )
 		{
-			g2d.setStroke( SKETCH_STROKE );
-			paintQueue( g2d, renderQueue, true, false, false, false );
+			final RenderStyle renderStyle = nodeStyles.get( polygon._object );
+			paintPolygon( g2d, polygon, renderStyle );
 		}
 
 		view.paintOverlay( g2d );
@@ -128,56 +133,33 @@ final class Java2dViewComponent
 	}
 
 	/**
-	 * Paint all specified polygons.
-	 *
-	 * @param   g                   Graphics context to paint on.
-	 * @param   polygons            Polygons to paint.
-	 * @param   outline             Paint polygon outlines.
-	 * @param   fill                Fill polygons (vs. outline only).
-	 * @param   applyLighting       Apply lighting effect to filled polygons.
-	 * @param   useMaterialColor    Try to apply material properties when filling polygons.
-	 */
-	public void paintQueue( final Graphics2D g, final RenderedPolygon[] polygons, final boolean outline, final boolean fill, final boolean applyLighting, final boolean useMaterialColor )
-	{
-		for ( final RenderedPolygon polygon : polygons )
-		{
-			paintPolygon( g, polygon, outline, fill, applyLighting, useMaterialColor );
-		}
-	}
-
-	/**
 	 * Paint the specified polygon.
 	 *
-	 * @param   g                   Graphics context to paint on.
-	 * @param   polygon             Polygon to paint.
-	 * @param   outline             Paint polygon outlines.
-	 * @param   fill                Fill polygons (vs. outline only).
-	 * @param   applyLighting       Apply lighting effect to filled polygons.
-	 * @param   useMaterialColor    Try to apply material properties when filling polygons.
+	 * @param   g               Graphics context to paint on.
+	 * @param   polygon         Polygon to paint.
+	 * @param   renderStyle     Render style to use.
 	 */
-	public void paintPolygon( final Graphics2D g, final RenderedPolygon polygon, final boolean outline, final boolean fill, final boolean applyLighting, final boolean useMaterialColor )
+	private static void paintPolygon( final Graphics2D g, final RenderedPolygon polygon, final RenderStyle renderStyle )
 	{
 		final Object antiAliasingValue = g.getRenderingHint( RenderingHints.KEY_ANTIALIASING );
 
-		Color fillPaint = null;
+		final boolean fill = renderStyle.isMaterialEnabled() || renderStyle.isFillEnabled();
+
+		Color fillPaint;
 		if ( fill || ( polygon._vertexCount < 3 ) )
 		{
 			final Material material = polygon._material;
 
-			if ( polygon._alternateAppearance )
-			{
-				fillPaint = polygon._object.alternateFillColor;
-			}
-			else if ( useMaterialColor && ( material != null ) && ( material.colorMap == null ) )
+			if ( renderStyle.isMaterialEnabled() && ( material != null ) )
 			{
 				fillPaint = new Color( material.getARGB() );
 			}
 			else
 			{
-				fillPaint = polygon._object.fillColor;
+				fillPaint = renderStyle.getFillColor();
 			}
 
-			if ( fill && applyLighting )
+			if ( fill && ( renderStyle.isMaterialEnabled() ? renderStyle.isMaterialLightingEnabled(): renderStyle.isFillLightingEnabled() ) )
 			{
 				final float shadeFactor = 0.5f;
 
@@ -199,15 +181,17 @@ final class Java2dViewComponent
 			}
 		}
 
-		if ( outline || ( fillPaint == null ) )
+		if ( renderStyle.isStrokeEnabled() )
 		{
-			final Color outlineColor = ( fillPaint != null ) ? Color.DARK_GRAY : polygon._alternateAppearance ? polygon._object.alternateOutlineColor : polygon._object.outlineColor;
-			g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-			g.setPaint( outlineColor );
-			g.draw( polygon );
+			final Color outlineColor = renderStyle.getStrokeColor();
+			if ( outlineColor != null )
+			{
+				g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+				g.setPaint( outlineColor );
+				g.draw( polygon );
+			}
 		}
 
 		g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, antiAliasingValue );
 	}
-
 }
