@@ -265,13 +265,7 @@ public class RenderEngineExample
 		/* left   */ builder.addFace( new Vector3D[] { lbb, lbt, lft, lfb }, yellow , texturePoints, null, false, false ); // X = -size
 		/* right  */ builder.addFace( new Vector3D[] { rfb, rft, rbt, rbb }, blue   , texturePoints, null, false, false ); // X =  size
 
-		final Object3D cube = builder.getObject3D();
-		cube.fillColor = Color.BLUE;
-		cube.outlineColor = Color.BLACK;
-		cube.alternateFillColor = Color.GREEN;
-		cube.alternateOutlineColor = Color.BLACK;
-
-		return cube;
+		return builder.getObject3D();
 	}
 
 	/**
