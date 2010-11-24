@@ -20,9 +20,7 @@
  */
 package ab.j3d.model;
 
-import java.awt.*;
 import java.util.*;
-import java.util.List;
 
 import ab.j3d.*;
 import ab.j3d.geom.*;
@@ -74,49 +72,6 @@ public class Object3D
 	private CollisionNode _collisionNode = null;
 
 	/**
-	 * Outline color to use when this object is painted using Java 2D. If this
-	 * is set to <code>null</code>, the object outline will not be painted.
-	 *
-	 * @see     #fillColor
-	 * @see     #alternateOutlineColor
-	 */
-	public Color outlineColor;
-
-	/**
-	 * Fill color to use when this object is painted using Java 2D. If this is
-	 * set to <code>null</code>, the object faces will not be filled.
-	 *
-	 * @see     #outlineColor
-	 * @see     #alternateFillColor
-	 */
-	public Color fillColor;
-
-	/**
-	 * Amount of shading that may be applied (0=none, 1=extreme) when this
-	 * object is painted using Java 2D.
-	 */
-	public float shadeFactor;
-
-	/**
-	 * Alternate outline color to use when this object is painted using Java 2D.
-	 * If this is set to <code>null</code>, the object outline will not be
-	 * painted.
-	 *
-	 * @see     #alternateFillColor
-	 * @see     #outlineColor
-	 */
-	public Color alternateOutlineColor;
-
-	/**
-	 * Alternate fill color to use when this object is painted using Java 2D.
-	 * If this is set to <code>null</code>, the object faces will not be filled.
-	 *
-	 * @see     #alternateOutlineColor
-	 * @see     #fillColor
-	 */
-	public Color alternateFillColor;
-
-	/**
 	 * Bounding box of object in the local coordinate system.
 	 *
 	 * @see     #getOrientedBoundingBox()
@@ -129,18 +84,11 @@ public class Object3D
 	 */
 	public Object3D()
 	{
-		_faces                = new ArrayList<Face3D>();
-		_vertexCoordinates    = new HashList<Vector3D>();
-		_vertexNormals        = null;
-		_vertexNormalsDirty   = true;
-
-		outlineColor = Color.BLACK;
-		fillColor = Color.WHITE;
-		shadeFactor           = 0.5f;
-		alternateOutlineColor = Color.BLUE;
-		alternateFillColor = Color.WHITE;
-
-		_orientedBoundingBox  = null;
+		_faces = new ArrayList<Face3D>();
+		_vertexCoordinates = new HashList<Vector3D>();
+		_vertexNormals = null;
+		_vertexNormalsDirty = true;
+		_orientedBoundingBox = null;
 	}
 
 	/**

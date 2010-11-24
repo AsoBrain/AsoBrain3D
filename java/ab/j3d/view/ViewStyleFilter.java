@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -56,30 +57,6 @@ public class ViewStyleFilter
 		else if ( context instanceof ContentNode )
 		{
 			_node = (ContentNode)context;
-		}
-		else if ( context instanceof Object3D )
-		{
-			final boolean noFillColor = ( result.getFillColor() == null );
-			final boolean noStrokeColor = ( result.getStrokeColor() == null );
-
-			if ( noFillColor || noStrokeColor )
-			{
-				final ContentNode node      = _node;
-				final boolean       alternate = node.isAlternate();
-				final Object3D      object3D  = (Object3D)context;
-
-				result = result.clone();
-
-				if ( noFillColor )
-				{
-					result.setFillColor( alternate ? object3D.alternateFillColor : object3D.fillColor );
-				}
-
-				if ( noStrokeColor )
-				{
-					result.setStrokeColor( alternate ? object3D.alternateOutlineColor : object3D.outlineColor );
-				}
-			}
 		}
 
 		return result;
