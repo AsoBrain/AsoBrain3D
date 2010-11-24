@@ -50,13 +50,14 @@ public final class Painter
 	 * Paint 2D representation of 3D objects at this node and its child nodes
 	 * using the specified render style.
 	 *
-	 * @param   g               Graphics2D context.
-	 * @param   view2image      Projection transform for Graphics2D context (3D->2D, pan, sale).
-	 * @param   node2view       Transformation from node's to view coordinate system.
-	 * @param   node            Node to paint.
-	 * @param   renderStyle     Render style.
+	 * @param   g                   Graphics2D context.
+	 * @param   view2image          Projection transform for Graphics2D context (3D->2D, pan, sale).
+	 * @param   node2view           Transformation from node's to view coordinate system.
+	 * @param   node                Node to paint.
+	 * @param   renderStyle         Render style.
+	 * @param   renderStyleFilter   Render style filter.
 	 */
-	public static void paintNode( @NotNull final Graphics2D g, @NotNull final Matrix3D view2image, @NotNull final Matrix3D node2view, @NotNull final Node3D node, @NotNull final RenderStyle renderStyle )
+	public static void paintNode( @NotNull final Graphics2D g, @NotNull final Matrix3D view2image, @NotNull final Matrix3D node2view, @NotNull final Node3D node, @NotNull final RenderStyle renderStyle, @Nullable final RenderStyleFilter renderStyleFilter )
 	{
 		final Matrix3D object2view;
 
@@ -70,17 +71,23 @@ public final class Painter
 			object2view = node2view;
 		}
 
+		RenderStyle nodeStyle = renderStyle;
+		if ( renderStyleFilter != null )
+		{
+			nodeStyle = renderStyleFilter.applyFilter( nodeStyle, node );
+		}
+
 		if ( node instanceof Object3D )
 		{
 			final Object3D object = (Object3D) node;
-			paintObject( g, view2image, object2view, object, renderStyle );
+			paintObject( g, view2image, object2view, object, nodeStyle );
 		}
 
-		final int  childCount = node.getChildCount();
+		final int childCount = node.getChildCount();
 
 		for ( int i = 0 ; i < childCount ; i++ )
 		{
-			paintNode( g, view2image, object2view, node.getChild( i ), renderStyle );
+			paintNode( g, view2image, object2view, node.getChild( i ), nodeStyle, renderStyleFilter );
 		}
 	}
 
@@ -94,7 +101,6 @@ public final class Painter
 
 		if ( ( outlineColor != null ) || ( fillColor != null ) && ( faceCount > 0 ) )
 		{
-
 			if ( object instanceof Cone3D )
 			{
 				if ( !paintConeOrCylinder( g, view2image, object2view, ( (Cone3D)object ).height, ( (Cone3D)object ).radiusBottom, ( (Cone3D)object ).radiusTop, renderStyle ) )
