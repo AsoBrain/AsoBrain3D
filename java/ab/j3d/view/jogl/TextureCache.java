@@ -19,27 +19,16 @@
  */
 package ab.j3d.view.jogl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import javax.media.opengl.GL;
-import javax.media.opengl.glu.GLU;
-import javax.swing.SwingUtilities;
+import java.util.*;
+import java.util.concurrent.*;
+import javax.media.opengl.*;
+import javax.media.opengl.glu.*;
+import javax.swing.*;
 
-import com.sun.opengl.util.texture.Texture;
-import com.sun.opengl.util.texture.TextureData;
-import org.jetbrains.annotations.NotNull;
-
-import ab.j3d.Material;
-
-import com.numdata.oss.TextTools;
+import ab.j3d.*;
+import com.numdata.oss.*;
+import com.sun.opengl.util.texture.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Provides loading and caching of textures for JOGL-based rendering.
@@ -97,7 +86,12 @@ public class TextureCache
 	{
 		_textures = new HashMap<String, TextureProxy>();
 		_alpha = new HashSet<String>();
-		_executorService = Executors.newSingleThreadExecutor();
+
+		final DefaultThreadFactory threadFactory = new DefaultThreadFactory();
+		threadFactory.setNamePrefix( TextureCache.class.getName() );
+		threadFactory.setDaemon( true );
+		_executorService = Executors.newSingleThreadExecutor( threadFactory );
+
 		_listeners = new ArrayList<TextureCacheListener>();
 	}
 
