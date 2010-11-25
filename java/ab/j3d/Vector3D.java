@@ -20,13 +20,12 @@
  */
 package ab.j3d;
 
-import java.awt.geom.Point2D;
-import static java.lang.Double.*;
-import java.text.DecimalFormat;
-import java.util.Properties;
+import java.awt.geom.*;
+import java.text.*;
+import java.util.*;
 
-import com.numdata.oss.MathTools;
-import com.numdata.oss.PropertyTools;
+import com.numdata.oss.*;
+import static java.lang.Double.*;
 
 /**
  * This class represents a 3D vector.
@@ -114,6 +113,16 @@ public final class Vector3D
 	public double getY()
 	{
 		return y;
+	}
+
+	/**
+	 * Get Z component of this vector.
+	 *
+	 * @return  Z component of this vector.
+	*/
+	public double getZ()
+	{
+		return z;
 	}
 
 	public void setLocation( final double nx , final double ny )
