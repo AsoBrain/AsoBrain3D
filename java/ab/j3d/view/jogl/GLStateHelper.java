@@ -74,9 +74,9 @@ public class GLStateHelper
 	 * @param   blue    Blue component.
 	 * @param   alpha   Alpha component.
 	 */
-	public void setColor( final float red , final float green , final float blue , final float alpha )
+	public final void setColor( final float red , final float green , final float blue , final float alpha )
 	{
-		_gl.glColor4f( red, green, blue, alpha );
+		setColor( red, green, blue, alpha, 0.2f, 0.8f, 0.1f, 32.0f );
 	}
 
 	/**
@@ -88,7 +88,7 @@ public class GLStateHelper
 	 * @param   specularReflectivity    Specular reflectivity (always white).
 	 * @param   shininess               Shininess (128=dull, 16=very shiny)
 	 */
-	protected void setColor( final Color color, final float ambientFactor, final float diffuseFactor, final float specularReflectivity, final float shininess )
+	public final void setColor( final Color color, final float ambientFactor, final float diffuseFactor, final float specularReflectivity, final float shininess )
 	{
 		final float[] rgba  = color.getRGBComponents( null );
 		final float   red   = rgba[ 0 ];
@@ -111,7 +111,7 @@ public class GLStateHelper
 	 * @param   specularReflectivity    Specular reflectivity (always white).
 	 * @param   shininess               Shininess (128=dull, 16=very shiny)
 	 */
-	protected void setColor( final float red, final float green, final float blue, final float alpha, final float ambientFactor, final float diffuseFactor, final float specularReflectivity, final float shininess )
+	public void setColor( final float red, final float green, final float blue, final float alpha, final float ambientFactor, final float diffuseFactor, final float specularReflectivity, final float shininess )
 	{
 		final GL gl = _gl;
 		gl.glColor4f( red, green, blue, alpha );

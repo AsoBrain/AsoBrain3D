@@ -228,7 +228,7 @@ public class JOGLRenderer
 	 * Whether color should be rendered for shadow maps, instead of only depth.
 	 * (Useful for debugging only.)
 	 */
-	private static final boolean RENDER_SHADOW_COLOR = false;
+	private static final boolean DEBUG_RENDER_SHADOW_MAP = false;
 
 	/**
 	 * Shadow map instance, reused to render all shadow maps.
@@ -859,7 +859,17 @@ public class JOGLRenderer
 	public void renderScene( final Scene scene, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle, final Background background, final Grid grid )
 	{
 		_state = createGLStateHelper( _gl );
-		if ( isMultiPassLightingEnabled() )
+
+		final boolean hasLights = !scene.walk( new Node3DVisitor()
+		{
+			@Override
+			public boolean visitNode( @NotNull final Node3DPath path )
+			{
+				return !( path.getNode() instanceof Light3D );
+			}
+		} );
+
+		if ( hasLights && isMultiPassLightingEnabled() )
 		{
 			renderSceneMultiPass( scene, styleFilters, sceneStyle, background, grid );
 		}
@@ -969,7 +979,7 @@ public class JOGLRenderer
 				shadowMap = _shadowMap;
 				if ( shadowMap == null )
 				{
-					shadowMap = new ShadowMap( _shadowSize, RENDER_SHADOW_COLOR );
+					shadowMap = new ShadowMap( _shadowSize, DEBUG_RENDER_SHADOW_MAP );
 					shadowMap.init( gl );
 					_shadowMap = shadowMap;
 				}
@@ -1064,8 +1074,8 @@ public class JOGLRenderer
 
 			/*
 			 * DEBUG: Render shadow map color/depth texture to screen.
-			 * /
-			if ( shadowMap != null )
+			 */
+			if ( ( shadowMap != null ) && DEBUG_RENDER_SHADOW_MAP )
 			{
 				gl.glBindTexture( GL.GL_TEXTURE_2D, shadowMap.getDepthTexture() );
 				gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_COMPARE_MODE, GL.GL_NONE );
@@ -1074,7 +1084,6 @@ public class JOGLRenderer
 				gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_COMPARE_MODE, GL.GL_COMPARE_R_TO_TEXTURE );
 				JOGLTools.renderToScreen( gl, shadowMap.getColorTexture(), 0.5f, -1.0f, 1.0f, -0.5f );
 			}
-			//*/
 
 			if ( i < lightPaths.size() - 1 )
 			{
@@ -2121,11 +2130,16 @@ public class JOGLRenderer
 
 				final float extraAlpha = objectStyle.getMaterialAlpha();
 				final float combinedAlpha = material.diffuseColorAlpha * extraAlpha;
-				final boolean hasAlpha = ( combinedAlpha < 0.99f ) || textureCache.hasAlpha( material.colorMap );
-				final boolean blend = !isDepthPeelingEnabled() && ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && hasAlpha;
+				final boolean isTransparent = ( combinedAlpha < 0.99f ) || textureCache.hasAlpha( material.colorMap );
+				final boolean blend = !isDepthPeelingEnabled() && ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && isTransparent;
 
-				if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) || !hasAlpha ) &&
-				     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || hasAlpha ) )
+				if ( _shadowPass && ( material.diffuseColorAlpha < 0.99f ) )
+				{
+					continue;
+				}
+
+				if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) || !isTransparent ) &&
+				     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || isTransparent ) )
 				{
 					final Vector3D lightPosition = _lightPositionRelativeToObject;
 					final boolean hasLighting = objectStyle.isMaterialLightingEnabled() && ( lightPosition != null );
@@ -2517,15 +2531,7 @@ public class JOGLRenderer
 			state.setEnabled( GL.GL_BLEND, blend );
 			state.setEnabled( GL.GL_LIGHTING, hasLighting );
 
-			if ( hasLighting )
-			{
-				state.setColor( color, 0.5f, 0.5f, 0.1f, 32.0f );
-			}
-			else
-			{
-				state.setColor( color );
-			}
-
+			state.setColor( color );
 			useShader( hasLighting ? _colored : _unlit );
 
 			for ( final Face3D face : object.getFaces() )

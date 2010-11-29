@@ -45,14 +45,63 @@ public class DebugGLStateHelper
 	}
 
 	@Override
-	public void setColor( final float red, final float green, final float blue, final float alpha )
+	public void setColor( final float red, final float green, final float blue, final float alpha, final float ambientFactor, final float diffuseFactor, final float specularReflectivity, final float shininess )
 	{
-		super.setColor( red, green, blue, alpha );
-
 		final GL gl = _gl;
-		final float[] actual = new float[4];
-		gl.glGetFloatv( GL.GL_CURRENT_COLOR, actual, 0 );
-		assertEquals( new float[] { red, green, blue, alpha }, actual );
+
+		super.setColor( red, green, blue, alpha, ambientFactor, diffuseFactor, specularReflectivity, shininess );
+
+		{
+			final float[] expected = { red, green, blue, alpha };
+			final float[] actual = new float[4];
+			gl.glGetFloatv( GL.GL_CURRENT_COLOR, actual, 0 );
+			assertEquals( expected, actual );
+		}
+
+		{
+			final float[] expected = { ambientFactor * red, ambientFactor * green, ambientFactor * blue, alpha };
+			final float[] actual = new float[ 4 ];
+			gl.glGetMaterialfv( GL.GL_FRONT, GL.GL_AMBIENT, actual, 0 );
+			assertEquals( expected, actual );
+			gl.glGetMaterialfv( GL.GL_BACK, GL.GL_AMBIENT, actual, 0 );
+			assertEquals( expected, actual );
+		}
+
+		{
+			final float[] expected = { diffuseFactor * red, diffuseFactor * green, diffuseFactor * blue, alpha };
+			final float[] actual = new float[ 4 ];
+			gl.glGetMaterialfv( GL.GL_FRONT, GL.GL_DIFFUSE, actual, 0 );
+			assertEquals( expected, actual );
+			gl.glGetMaterialfv( GL.GL_BACK, GL.GL_DIFFUSE, actual, 0 );
+			assertEquals( expected, actual );
+		}
+
+		{
+			final float[] expected = { specularReflectivity, specularReflectivity, specularReflectivity, alpha };
+			final float[] actual = new float[ 4 ];
+			gl.glGetMaterialfv( GL.GL_FRONT, GL.GL_SPECULAR, actual, 0 );
+			assertEquals( expected, actual );
+			gl.glGetMaterialfv( GL.GL_BACK, GL.GL_SPECULAR, actual, 0 );
+			assertEquals( expected, actual );
+		}
+
+		{
+			final float[] expected = { 0.0f, 0.0f, 0.0f, alpha };
+			final float[] actual = new float[ 4 ];
+			gl.glGetMaterialfv( GL.GL_FRONT, GL.GL_EMISSION, actual, 0 );
+			assertEquals( expected, actual );
+			gl.glGetMaterialfv( GL.GL_BACK, GL.GL_EMISSION, actual, 0 );
+			assertEquals( expected, actual );
+		}
+
+		{
+			final float[] expected = { shininess };
+			final float[] actual = new float[ 1 ];
+			gl.glGetMaterialfv( GL.GL_FRONT, GL.GL_SHININESS, actual, 0 );
+			assertEquals( expected, actual );
+			gl.glGetMaterialfv( GL.GL_BACK, GL.GL_SHININESS, actual, 0 );
+			assertEquals( expected, actual );
+		}
 	}
 
 	@Override
@@ -60,7 +109,7 @@ public class DebugGLStateHelper
 	{
 		final GL gl = _gl;
 
-		super.setMaterial( material, red, green, blue, alpha);
+		super.setMaterial( material, red, green, blue, alpha );
 
 		{
 			final float[] expected = { red, green, blue, alpha };

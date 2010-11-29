@@ -87,7 +87,7 @@ public class CachingGLStateHelper
 	}
 
 	@Override
-	public void setColor( final float red , final float green , final float blue , final float alpha )
+	public void setColor( final float red, final float green, final float blue, final float alpha, final float ambientFactor, final float diffuseFactor, final float specularReflectivity, final float shininess )
 	{
 		final GL gl = _gl;
 
@@ -96,17 +96,17 @@ public class CachingGLStateHelper
 			gl.glColor4fv( _color, 0 );
 		}
 
-		if ( update( _materialAmbient, red, green, blue, alpha ) )
+		if ( update( _materialAmbient, ambientFactor * red, ambientFactor * green, ambientFactor * blue, alpha ) )
 		{
 			gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT, _materialAmbient, 0 );
 		}
 
-		if ( update( _materialDiffuse, red, green, blue, alpha ) )
+		if ( update( _materialDiffuse, diffuseFactor * red, diffuseFactor * green, diffuseFactor * blue, alpha ) )
 		{
 			gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE, _materialDiffuse, 0 );
 		}
 
-		if ( update( _materialSpecular, 0.0f, 0.0f, 0.0f, alpha ) )
+		if ( update( _materialSpecular, specularReflectivity, specularReflectivity, specularReflectivity, alpha ) )
 		{
 			gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_SPECULAR, _materialSpecular, 0 );
 		}
@@ -114,6 +114,12 @@ public class CachingGLStateHelper
 		if ( update( _materialEmissive, 0.0f, 0.0f, 0.0f, alpha ) )
 		{
 			gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_EMISSION, _materialEmissive, 0 );
+		}
+
+		if ( _shininess != shininess )
+		{
+			_shininess = shininess;
+			gl.glMaterialf( GL.GL_FRONT_AND_BACK, GL.GL_SHININESS, shininess );
 		}
 	}
 
@@ -167,7 +173,7 @@ public class CachingGLStateHelper
 	 */
 	private static boolean update( final float[] current, final float red, final float green, final float blue, final float alpha )
 	{
-		final boolean result = ( current[ 0 ] != red ) || ( current[ 0 ] != green ) || ( current[ 0 ] != blue ) || ( current[ 0 ] != alpha );
+		final boolean result = ( current[ 0 ] != red ) || ( current[ 1 ] != green ) || ( current[ 2 ] != blue ) || ( current[ 3 ] != alpha );
 		if ( result )
 		{
 			current[ 0 ] = red;
