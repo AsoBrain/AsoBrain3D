@@ -235,9 +235,10 @@ public abstract class Abstract3DObjectBuilder
 		final UVMap uvMap = new BoxUVMap( Scene.MM, base ); // @FIXME Retrieve model units instead of assuming millimeters.
 
 		// TODO Use more intelligence here, we know the outline is a simple convex shape etc, no need for complex extrusion/tessellation here
+		final boolean hasExtrusion = ( extrusion != null ) && !extrusion.almostEquals( Vector3D.ZERO );
 		if ( fill )
 		{
-			if ( extrusion != null )
+			if ( hasExtrusion )
 			{
 				addExtrudedShape( ellipse2d, radius * 0.02, extrusion, base, material, uvMap, false, material, uvMap, false, material, uvMap, false, true, false, true );
 			}
@@ -246,7 +247,7 @@ public abstract class Abstract3DObjectBuilder
 				addFilledShape2D( base, ellipse2d, Vector3D.POSITIVE_Z_AXIS, radius * 0.02, material, uvMap, false, true );
 			}
 		}
-		else if ( extrusion != null )
+		else if ( hasExtrusion )
 		{
 			addExtrudedShape( ellipse2d, radius * 0.02, extrusion, base, material, uvMap, false, true, false, true );
 		}
