@@ -276,7 +276,8 @@ public class JOGLCapabilities
 			final boolean opengl13 = gl.isExtensionAvailable( "GL_VERSION_1_3" );
 			final boolean opengl14 = gl.isExtensionAvailable( "GL_VERSION_1_4" );
 			final boolean opengl15 = gl.isExtensionAvailable( "GL_VERSION_1_5" );
-			final boolean opengl20 = gl.isExtensionAvailable( "GL_VERSION_2_0" );
+			final boolean opengl20 = gl.isExtensionAvailable( "GL_VERSION_2_0" ) ||
+			                         gl.isExtensionAvailable( "GL_VERSION_3_0" );
 
 			_opengl13 = opengl13;
 
