@@ -2133,7 +2133,7 @@ public class JOGLRenderer
 				final boolean isTransparent = ( combinedAlpha < 0.99f ) || textureCache.hasAlpha( material.colorMap );
 				final boolean blend = !isDepthPeelingEnabled() && ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && isTransparent;
 
-				if ( _shadowPass && ( material.diffuseColorAlpha < 0.99f ) )
+				if ( _shadowPass && ( material.diffuseColorAlpha < 0.50f ) )
 				{
 					continue;
 				}
