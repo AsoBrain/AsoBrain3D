@@ -187,7 +187,7 @@ public class ShadowMap
 		{
 			final int depthTexture = textures[ 0 ];
 			gl.glBindTexture( GL.GL_TEXTURE_2D, depthTexture );
-			gl.glTexImage2D( GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT24, size, size, 0, GL.GL_DEPTH_COMPONENT, GL.GL_UNSIGNED_INT, null );
+			gl.glTexImage2D( GL.GL_TEXTURE_2D, 0, GL.GL_DEPTH_COMPONENT, size, size, 0, GL.GL_DEPTH_COMPONENT, GL.GL_UNSIGNED_INT, null );
 			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR );
 			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR );
 			gl.glTexParameteri( GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE );
