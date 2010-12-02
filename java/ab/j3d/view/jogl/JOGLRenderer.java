@@ -2060,9 +2060,9 @@ public class JOGLRenderer
 	protected void renderObject( final Object3D object, final RenderStyle objectStyle )
 	{
 		final boolean anyMaterialEnabled = objectStyle.isMaterialEnabled();
-		final boolean anyFillEnabled     = objectStyle.isFillEnabled();
-		final boolean anyStrokeEnabled   = objectStyle.isStrokeEnabled();
-		final boolean anyVertexEnabled   = objectStyle.isVertexEnabled();
+		final boolean anyFillEnabled     = objectStyle.isFillEnabled() && ( objectStyle.getFillColor() != null );
+		final boolean anyStrokeEnabled   = objectStyle.isStrokeEnabled() && ( objectStyle.getStrokeColor() != null );
+		final boolean anyVertexEnabled   = objectStyle.isVertexEnabled() && ( objectStyle.getVertexColor() != null );
 
 		final int faceCount = object.getFaceCount();
 
