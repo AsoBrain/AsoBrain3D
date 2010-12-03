@@ -887,32 +887,67 @@ public abstract class Abstract3DObjectBuilder
 	 *
 	 * @throws  IllegalArgumentException if the shape is not extruded along
 	 *          the z-axis.
+	 *
+	 * @deprecated  The assumption that a 'null' material means that top/bottom/side geometry should not be generated is flawed. Better specify clearly what you want.
 	 */
+	@Deprecated
 	public void addExtrudedShape( @NotNull final Shape shape, final double flatness, @NotNull final Vector3D extrusion, @NotNull final Matrix3D transform, @Nullable final Material topMaterial, @Nullable final UVMap topMap, final boolean topFlipTexture, @Nullable final Material bottomMaterial, @Nullable final UVMap bottomMap, final boolean bottomFlipTexture, @Nullable final Material sideMaterial, @Nullable final UVMap sideMap, final boolean sideFlipTexture, final boolean twoSided, final boolean flipNormals, final boolean smooth )
+	{
+		addExtrudedShape( shape, flatness, extrusion, transform, topMaterial != null, topMaterial, topMap, topFlipTexture, bottomMaterial != null, bottomMaterial, bottomMap, bottomFlipTexture, sideMaterial != null, sideMaterial, sideMap, sideFlipTexture, twoSided, flipNormals, smooth );
+	}
+
+	/**
+	 * Add extruded shape with caps.
+	 *
+	 * @param   shape               Shape to add.
+	 * @param   extrusion           Extrusion vector (control-point displacement).
+	 * @param   transform           Transform to apply.
+	 * @param   top                 <code>true</code> to include a top face.
+	 * @param   topMaterial         Material to apply to the top cap.
+	 * @param   topMap              Provides UV coordinates for top cap.
+	 * @param   topFlipTexture      Whether the top texture direction is flipped.
+	 * @param   bottom              <code>true</code> to include a bottom face.
+	 * @param   bottomMaterial      Material to apply to the bottom cap.
+	 * @param   bottomMap           Provides UV coordinates for bottom cap.
+	 * @param   bottomFlipTexture   Whether the bottom texture direction is flipped.
+	 * @param   side                <code>true</code> to include side faces.
+	 * @param   sideMaterial        Material to apply to the extruded sides.
+	 * @param   sideMap             Provides UV coordinates for extruded sides.
+	 * @param   sideFlipTexture     Whether the side texture direction is flipped.
+	 * @param   flatness            Flatness to use.
+	 * @param   twoSided            Flag to indicate if extruded faces are two-sided.
+	 * @param   flipNormals         If <code>true</code>, normals are flipped to
+	 *                              point in the opposite direction.
+	 * @param   smooth              Shape is smooth.
+	 *
+	 * @throws  IllegalArgumentException if the shape is not extruded along
+	 *          the z-axis.
+	 */
+	public void addExtrudedShape( @NotNull final Shape shape, final double flatness, @NotNull final Vector3D extrusion, @NotNull final Matrix3D transform, final boolean top, @Nullable final Material topMaterial, @Nullable final UVMap topMap, final boolean topFlipTexture, final boolean bottom, @Nullable final Material bottomMaterial, @Nullable final UVMap bottomMap, final boolean bottomFlipTexture, final boolean side, @Nullable final Material sideMaterial, @Nullable final UVMap sideMap, final boolean sideFlipTexture, final boolean twoSided, final boolean flipNormals, final boolean smooth )
 	{
 		if ( extrusion.z == 0.0 )
 		{
 			throw new IllegalArgumentException( "extrusion.z: " + extrusion.z );
 		}
 
-		if ( ( sideMaterial == null ) && ( topMaterial == null ) && ( bottomMaterial == null ) )
+		if ( !side && !top && !bottom )
 		{
-			throw new IllegalArgumentException( "at least one material required" );
+			throw new IllegalArgumentException( "at least one kind of geometry is required" );
 		}
 
-		if ( sideMaterial != null )
+		if ( side )
 		{
 			addExtrudedShape( shape, flatness, extrusion, transform, sideMaterial, sideMap, sideFlipTexture, twoSided, flipNormals, smooth );
 		}
 
-		if ( ( topMaterial != null ) || ( bottomMaterial != null ) )
+		if ( top || bottom )
 		{
 			final Tessellator tessellator = new GLUTessellator();
 			tessellator.setFlatness( flatness );
 
 			final boolean flipExtrusion = flipNormals ^ ( extrusion.z < 0.0 );
 
-			if ( bottomMaterial == null )
+			if ( !bottom )
 			{
 				final TessellationBuilder topTessellationBuilder = createTessellationBuilder( transform.plus( transform.rotate( extrusion ) ) );
 
@@ -921,7 +956,7 @@ public abstract class Abstract3DObjectBuilder
 
 				addFace( topTessellationBuilder.getTessellation(), topMaterial, topMap, topFlipTexture, twoSided );
 			}
-			else if ( topMaterial == null )
+			else if ( !top )
 			{
 				final TessellationBuilder bottomTessellationBuilder = createTessellationBuilder( transform );
 
