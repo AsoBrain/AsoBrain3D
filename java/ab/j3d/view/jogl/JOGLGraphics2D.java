@@ -107,11 +107,6 @@ public class JOGLGraphics2D
 
 		_paint      = Color.BLACK;
 		_background = Color.GRAY;
-
-		/* Enable blending to support transparency. */
-		final GL gl = gla.getGL();
-		gl.glEnable( GL.GL_BLEND );
-		gl.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 	}
 
 	/**
@@ -148,6 +143,10 @@ public class JOGLGraphics2D
 		gl.glDisable( GL.GL_DEPTH_TEST );
 		gl.glDisable( GL.GL_LIGHTING );
 		gl.glDisable( GL.GL_CULL_FACE );
+
+		/* Enable blending to support transparency. */
+		gl.glEnable( GL.GL_BLEND );
+		gl.glBlendFunc( GL.GL_SRC_ALPHA , GL.GL_ONE_MINUS_SRC_ALPHA );
 
 		final Color   color = getColor();
 		final float[] argb  = color.getRGBComponents( null );
