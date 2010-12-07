@@ -146,6 +146,9 @@ public class JOGLView
 		final GLCanvas glCanvas;
 
 		final GLCapabilities capabilities = new GLCapabilities();
+		capabilities.setRedBits( 8 );
+		capabilities.setGreenBits( 8 );
+		capabilities.setBlueBits( 8 );
 
 		final JOGLConfiguration configuration = joglEngine.getConfiguration();
 		_configuration = configuration;
