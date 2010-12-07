@@ -137,4 +137,15 @@ public interface ShaderProgram
 	 * @param   value       Value to be set.
 	 */
 	void setUniform( String identifier , Vector3D value );
+
+	/**
+	 * Sets the uniform variable identified by the given name. If no variable
+	 * exists with the given name, no action is taken and exception is thrown.
+	 *
+	 * @param   identifier  Name of the variable.
+	 * @param   x           First element of the vector.
+	 * @param   y           Second element of the vector.
+	 * @param   z           Third element of the vector.
+	 */
+	void setUniform( String identifier, float x, float y, float z );
 }

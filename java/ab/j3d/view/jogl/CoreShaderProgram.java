@@ -210,11 +210,17 @@ public class CoreShaderProgram
 	@Override
 	public void setUniform( final String identifier , final Vector3D value )
 	{
+		setUniform( identifier, (float)value.x, (float)value.y, (float)value.z );
+	}
+
+	@Override
+	public void setUniform( final String identifier, final float x, final float y, final float z )
+	{
 		final GL gl = GLU.getCurrentGL();
 		final int variable = gl.glGetUniformLocation( _program , identifier );
 		if ( variable != -1 )
 		{
-			gl.glUniform3f( variable , (float)value.x , (float)value.y , (float)value.z );
+			gl.glUniform3f( variable, x, y, z );
 		}
 	}
 }

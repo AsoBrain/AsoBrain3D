@@ -211,11 +211,17 @@ public class ARBShaderProgram
 	@Override
 	public void setUniform( final String identifier , final Vector3D value )
 	{
+		setUniform( identifier, (float)value.x, (float)value.y, (float)value.z );
+	}
+
+	@Override
+	public void setUniform( final String identifier , final float x, final float y, final float z )
+	{
 		final GL gl = GLU.getCurrentGL();
 		final int variable = gl.glGetUniformLocationARB( _program , identifier );
 		if ( variable != -1 )
 		{
-			gl.glUniform3fARB( variable , (float)value.x , (float)value.y , (float)value.z );
+			gl.glUniform3fARB( variable, x, y, z );
 		}
 	}
 }
