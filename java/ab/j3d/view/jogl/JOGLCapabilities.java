@@ -396,7 +396,8 @@ public class JOGLCapabilities
 				final JOGLConfiguration configuration = new JOGLConfiguration();
 				final JOGLRenderer renderer = new JOGLRenderer( _context.getGL() , configuration , new TextureCache() );
 				renderer.init();
-				_result = renderer.isShadersEnabled();
+				final ShaderManager shaderManager = renderer.getShaderManager();
+				_result = shaderManager.isShaderSupportAvailable();
 			}
 		}
 	}
