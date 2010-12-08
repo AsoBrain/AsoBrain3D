@@ -1574,19 +1574,22 @@ public class JOGLRenderer
 				renderObjectFilled( object, objectStyle );
 			}
 
-			if ( anyStrokeEnabled )
+			if ( !_shadowPass )
 			{
-				for ( int j = 0 ; j < faceCount; j++ )
+				if ( anyStrokeEnabled )
 				{
-					renderStrokedFace( object.getFace( j ), objectStyle );
+					for ( int j = 0 ; j < faceCount; j++ )
+					{
+						renderStrokedFace( object.getFace( j ), objectStyle );
+					}
 				}
-			}
 
-			if ( anyVertexEnabled )
-			{
-				for ( int j = 0 ; j < faceCount; j++ )
+				if ( anyVertexEnabled )
 				{
-					renderFaceVertices( objectStyle, object.getFace( j ) );
+					for ( int j = 0 ; j < faceCount; j++ )
+					{
+						renderFaceVertices( objectStyle, object.getFace( j ) );
+					}
 				}
 			}
 		}
