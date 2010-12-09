@@ -208,19 +208,18 @@ public final class Matrix3D
 	@Override
 	public int hashCode()
 	{
-		long l;
-		return (int)( ( l = Double.doubleToLongBits( xx ) ) ^ ( l >>> 32 )
-		            ^ ( l = Double.doubleToLongBits( xy ) ) ^ ( l >>> 32 )
-		            ^ ( l = Double.doubleToLongBits( xz ) ) ^ ( l >>> 32 )
-		            ^ ( l = Double.doubleToLongBits( xo ) ) ^ ( l >>> 32 )
-		            ^ ( l = Double.doubleToLongBits( yx ) ) ^ ( l >>> 32 )
-		            ^ ( l = Double.doubleToLongBits( yy ) ) ^ ( l >>> 32 )
-		            ^ ( l = Double.doubleToLongBits( yz ) ) ^ ( l >>> 32 )
-		            ^ ( l = Double.doubleToLongBits( yo ) ) ^ ( l >>> 32 )
-		            ^ ( l = Double.doubleToLongBits( zx ) ) ^ ( l >>> 32 )
-		            ^ ( l = Double.doubleToLongBits( zy ) ) ^ ( l >>> 32 )
-		            ^ ( l = Double.doubleToLongBits( zz ) ) ^ ( l >>> 32 )
-		            ^ ( l = Double.doubleToLongBits( zo ) ) ^ ( l >>> 32 ) );
+		return MathTools.hashCode( xx ) ^
+		       MathTools.hashCode( xy ) ^
+		       MathTools.hashCode( xz ) ^
+		       MathTools.hashCode( xo ) ^
+		       MathTools.hashCode( yx ) ^
+		       MathTools.hashCode( yy ) ^
+		       MathTools.hashCode( yz ) ^
+		       MathTools.hashCode( yo ) ^
+		       MathTools.hashCode( zx ) ^
+		       MathTools.hashCode( zy ) ^
+		       MathTools.hashCode( zz ) ^
+		       MathTools.hashCode( zo );
 	}
 
 	/**
