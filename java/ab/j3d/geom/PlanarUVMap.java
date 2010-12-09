@@ -50,6 +50,7 @@ public class PlanarUVMap
 	/**
 	 * Transforms plane coordinates to model coordinates in model units.
 	 */
+	@NotNull
 	private Matrix3D _plane2wcs;
 
 	/**
@@ -121,7 +122,7 @@ public class PlanarUVMap
 	 * @param   scaleV      Scale of the UV-map in the V-direction.
 	 * @param   plane2wcs   Transform plane to world coordinates.
 	 */
-	public PlanarUVMap( final float scaleU, final float scaleV, final Matrix3D plane2wcs )
+	public PlanarUVMap( final float scaleU, final float scaleV, @NotNull final Matrix3D plane2wcs )
 	{
 		_scaleU = scaleU;
 		_scaleV = scaleV;
@@ -174,6 +175,7 @@ public class PlanarUVMap
 	 *
 	 * @return  Plane to world coordinate transformation matrix.
 	 */
+	@NotNull
 	public Matrix3D getPlane2wcs()
 	{
 		return _plane2wcs;
@@ -184,16 +186,9 @@ public class PlanarUVMap
 	 * No scaling is performed by the matrix.
 	 *
 	 * @param   plane2wcs   Plane to world coordinate transformation matrix.
-	 *
-	 * @throws  NullPointerException if any parameter is <code>null</code>.
 	 */
-	public void setPlane2wcs( final Matrix3D plane2wcs )
+	public void setPlane2wcs( @NotNull final Matrix3D plane2wcs )
 	{
-		if ( plane2wcs == null )
-		{
-			throw new NullPointerException( "plane2wcs" );
-		}
-
 		_plane2wcs = plane2wcs;
 	}
 
@@ -258,5 +253,37 @@ public class PlanarUVMap
 		final float ty = (float)plane2wcs.inverseTransformY( wcsPoint );
 
 		return flipTexture ? new Point2D.Float( ty * scaleU, tx * scaleV ) : new Point2D.Float( tx * scaleU, ty * scaleV );
+	}
+
+	@Override
+	public boolean equals( final Object obj )
+	{
+		final boolean result;
+
+		if ( obj == this )
+		{
+			result = true;
+		}
+		else if ( obj instanceof PlanarUVMap )
+		{
+			final PlanarUVMap other = (PlanarUVMap)obj;
+			result = ( _scaleU == other._scaleU ) &&
+			         ( _scaleV == other._scaleV ) &&
+			         _plane2wcs.equals( other._plane2wcs );
+		}
+		else
+		{
+			result = false;
+		}
+
+		return result;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Float.floatToIntBits( _scaleU ) ^
+		       Float.floatToIntBits( _scaleV ) ^
+		       _plane2wcs.hashCode();
 	}
 }

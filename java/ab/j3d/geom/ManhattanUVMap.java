@@ -43,6 +43,7 @@ public class ManhattanUVMap
 	/**
 	 * Transforms model units to UV coordinates.
 	 */
+	@NotNull
 	private final Matrix3D _transform;
 
 	/**
@@ -121,5 +122,33 @@ public class ManhattanUVMap
 		final float ty = (float)transform.transformY( point );
 
 		return flipTexture ? new Point2D.Float( scaleU * ty, scaleV * tx ) : new Point2D.Float( scaleU * tx, scaleV * ty );
+	}
+
+	@Override
+	public boolean equals( final Object obj )
+	{
+		final boolean result;
+
+		if ( obj == this )
+		{
+			result = true;
+		}
+		else if ( obj instanceof ManhattanUVMap )
+		{
+			final ManhattanUVMap other = (ManhattanUVMap)obj;
+			result = _transform.equals( other._transform );
+		}
+		else
+		{
+			result = false;
+		}
+
+		return result;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return _transform.hashCode();
 	}
 }

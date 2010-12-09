@@ -45,6 +45,7 @@ public class BoxUVMap
 	/**
 	 * Transforms box to world coordinates.
 	 */
+	@NotNull
 	private Matrix3D _box2wcs;
 
 	/**
@@ -86,7 +87,7 @@ public class BoxUVMap
 	 * @param   modelUnits  Size of a model unit in meters.
 	 * @param   box2wcs   Transforms spatial to box coordinates.
 	 */
-	public BoxUVMap( final double modelUnits, final Matrix3D box2wcs )
+	public BoxUVMap( final double modelUnits, @NotNull final Matrix3D box2wcs )
 	{
 		this( modelUnits, box2wcs, false, false, false, false, false, false );
 	}
@@ -104,7 +105,7 @@ public class BoxUVMap
 	 * @param   flipTop     Flip top texture direction.
 	 * @param   flipBottom  Flip bottom texture direction.
 	 */
-	public BoxUVMap( final double modelUnits, final Matrix3D box2wcs, final boolean flipLeft, final boolean flipRight, final boolean flipFront, final boolean flipBack, final boolean flipTop, final boolean flipBottom )
+	public BoxUVMap( final double modelUnits, @NotNull final Matrix3D box2wcs, final boolean flipLeft, final boolean flipRight, final boolean flipFront, final boolean flipBack, final boolean flipTop, final boolean flipBottom )
 	{
 		final PlanarUVMap[] maps = new PlanarUVMap[ 6 ];
 		final boolean[] flips = new boolean[ 6 ];
@@ -255,5 +256,37 @@ public class BoxUVMap
 		                                           : negY ? FRONT : BACK
 		                        : ( absX >= absY ) ? negX ? LEFT : RIGHT
 		                                           : negY ? FRONT : BACK;
+	}
+
+	@Override
+	public boolean equals( final Object obj )
+	{
+		final boolean result;
+
+		if ( obj == this )
+		{
+			result = true;
+		}
+		else if ( obj instanceof BoxUVMap )
+		{
+			final BoxUVMap other = (BoxUVMap)obj;
+			result = Arrays.equals( _flips, other._flips ) &&
+			         _box2wcs.equals( other._box2wcs ) &&
+			         Arrays.equals( _maps, other._maps );
+		}
+		else
+		{
+			result = false;
+		}
+
+		return result;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return _box2wcs.hashCode() ^
+		       Arrays.hashCode( _flips ) ^
+		       Arrays.hashCode( _maps );
 	}
 }
