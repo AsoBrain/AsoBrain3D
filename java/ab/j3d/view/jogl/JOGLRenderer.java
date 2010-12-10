@@ -2309,25 +2309,29 @@ public class JOGLRenderer
 		final GL gl = _gl;
 		final GLStateHelper state = _state;
 
+		/*
+		 * Render vertex normals (and determine average vertex coordinate).
+		 */
 		state.setColor( 0.0f, 1.0f, 1.0f, 1.0f );
 		gl.glBegin( GL.GL_LINES );
 
 		final double scale = 10.0;
 		for ( int i = 0 ; i < face.getVertexCount() ; i++ )
 		{
-			final double faceX = face.getX( i );
-			final double faceY = face.getY( i );
-			final double faceZ = face.getZ( i );
+			final Vector3D point = face.getVertex( i ).point;
 
-			x += faceX;
-			y += faceY;
-			z += faceZ;
+			x += point.x;
+			y += point.y;
+			z += point.z;
 
 			final Vector3D vertexNormal = face.getVertexNormal( i );
-			gl.glVertex3d( faceX, faceY, faceZ );
-			gl.glVertex3d( faceX + scale * vertexNormal.x, faceY + scale * vertexNormal.y, faceZ + scale * vertexNormal.z );
+			gl.glVertex3d( point.x, point.y, point.z );
+			gl.glVertex3d( point.x + scale * vertexNormal.x, point.y + scale * vertexNormal.y, point.z + scale * vertexNormal.z );
 		}
 
+		/*
+		 * Render face normal (at average vertex coordinate).
+		 */
 		state.setColor( 1.0f, 0.0f, 0.0f, 1.0f );
 		x /= (double)face.getVertexCount();
 		y /= (double)face.getVertexCount();
