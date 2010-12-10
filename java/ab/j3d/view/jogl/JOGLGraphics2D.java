@@ -103,9 +103,16 @@ public class JOGLGraphics2D
 	public JOGLGraphics2D( final GLAutoDrawable gla )
 	{
 		_gla  = gla;
-		_font = new Font( Font.SANS_SERIF , Font.PLAIN , 12 );
+		reset();
+	}
 
-		_paint      = Color.BLACK;
+	/**
+	 * Resets the fonts and colors of the graphics context to their defaults.
+	 */
+	public void reset()
+	{
+		_font = new Font( Font.SANS_SERIF , Font.PLAIN , 12 );
+		_paint = Color.BLACK;
 		_background = Color.GRAY;
 	}
 
@@ -891,7 +898,7 @@ public class JOGLGraphics2D
 
 		//create renderer if renderer has not been created already.
 		TextRenderer renderer = _renderer;
-		if ( renderer == null )
+		if ( ( renderer == null ) || ( renderer.getFont() != getFont() ) )
 		{
 			renderer = new TextRenderer( getFont() );
 			_renderer = renderer;
