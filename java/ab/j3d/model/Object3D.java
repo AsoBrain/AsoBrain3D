@@ -466,7 +466,7 @@ public class Object3D
 		{
 			final Face3D face = getFace( i );
 
-			final Vector3D ocsPoint = GeometryTools.getIntersectionBetweenRayAndPolygon( face, ocsRay );
+			final Vector3D ocsPoint = GeometryTools.getIntersectionBetweenRayAndFace( face, ocsRay );
 			if ( ocsPoint != null )
 			{
 				final Vector3D wcsPoint = object2world.transform( ocsPoint );

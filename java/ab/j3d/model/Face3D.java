@@ -33,7 +33,7 @@ import org.jetbrains.annotations.*;
  * @version $Revision$ ($Date$, $Author$)
  */
 public class Face3D
-	implements Polygon3D
+	implements Plane3D
 {
 	/**
 	 * Value used for normal vector if no normal vector can be determined.
@@ -288,7 +288,11 @@ public class Face3D
 		return vertices.get( index );
 	}
 
-	@Override
+	/**
+	 * Get number of vertices that define this face.
+	 *
+	 * @return  Number of vertices.
+	 */
 	public int getVertexCount()
 	{
 		return vertices.size();
@@ -316,24 +320,6 @@ public class Face3D
 			vertex.normal = result;
 		}
 		return result;
-	}
-
-	@Override
-	public double getX( final int index )
-	{
-		return vertices.get( index ).point.x;
-	}
-
-	@Override
-	public double getY( final int index )
-	{
-		return vertices.get( index ).point.y;
-	}
-
-	@Override
-	public double getZ( final int index )
-	{
-		return vertices.get( index ).point.z;
 	}
 
 	/**

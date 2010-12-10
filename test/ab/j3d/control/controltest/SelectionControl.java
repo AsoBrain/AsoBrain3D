@@ -19,18 +19,11 @@
  */
 package ab.j3d.control.controltest;
 
-import java.util.EventObject;
-import java.util.List;
+import java.util.*;
 
-import ab.j3d.control.ControlInputEvent;
-import ab.j3d.control.MouseControl;
-import ab.j3d.control.controltest.model.Floor;
-import ab.j3d.control.controltest.model.Model;
-import ab.j3d.control.controltest.model.PaintableTriangle;
-import ab.j3d.control.controltest.model.SceneElement;
-import ab.j3d.control.controltest.model.TetraHedron;
-import ab.j3d.model.Face3DIntersection;
-import ab.j3d.model.Object3D;
+import ab.j3d.control.*;
+import ab.j3d.control.controltest.model.*;
+import ab.j3d.model.*;
 
 /**
  * The SelectionControl handles events from the View, and selects
@@ -69,6 +62,7 @@ public class SelectionControl
 	 *
 	 * @return  The original event if nothing was selected, null if it was.
 	 */
+	@Override
 	public EventObject mouseClicked( final ControlInputEvent event )
 	{
 		final EventObject result;
@@ -93,7 +87,7 @@ public class SelectionControl
 						final Object3D object = intersection.getObject();
 						for ( int faceIndex = 0 ; faceIndex < object.getFaceCount() ; faceIndex++ )
 						{
-							if ( intersection.getPolygon() == object.getFace( faceIndex ) )
+							if ( intersection.getFace() == object.getFace( faceIndex ) )
 							{
 								_model.setSelectedFace( hedron.getFace( faceIndex ) );
 								break;

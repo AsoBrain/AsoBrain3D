@@ -21,8 +21,10 @@
 package ab.j3d.geom;
 
 import java.awt.geom.*;
+import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.model.*;
 import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
@@ -743,6 +745,74 @@ public class GeometryTools
 	}
 
 	/**
+	 * Returns the intersection point between a ray and a {@link Face3D}.
+	 * The intersection point is returned as a {@link Vector3D}; however, if
+	 * any of the following conditions is met, no intersection exists, and
+	 * <code>null</code> will be returned:
+	 * <ol>
+	 *  <li>The ray is parallel to the face's plane;</li>
+	 *  <li>The ray does not point towards the face;</li>
+	 *  <li>The ray intersects the face's plane outside the face.</li>
+	 * </ol>
+	 *
+	 * @param   face    Face to get intersection from.
+	 * @param   ray     Ray to get intersection from.
+	 *
+	 * @return  Intersection point of the face and ray, if any.
+	 *
+	 * @throws  NullPointerException if a required input argument is <code>null</code>.
+	 */
+	@Nullable
+	public static Vector3D getIntersectionBetweenRayAndFace( @NotNull final Face3D face, @NotNull final Ray3D ray )
+	{
+		Vector3D result = null;
+
+		final int vertexCount = face.getVertexCount();
+		if ( vertexCount >= 3 )
+		{
+			result = getIntersectionBetweenRayAndPlane( face, ray );
+
+			if ( result != null )
+			{
+				boolean inside = false;
+
+				final Tessellation tessellation = face.getTessellation();
+				final List<? extends Vector3D> vertices = tessellation.getVertices();
+
+				for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+				{
+					final int[] triangles = primitive.getTriangles();
+
+					for ( int i = 0 ; i < triangles.length ; i += 3 )
+					{
+						final Vector3D v1 = vertices.get( triangles[ i ] );
+						final Vector3D v2 = vertices.get( triangles[ i + 1 ] );
+						final Vector3D v3 = vertices.get( triangles[ i + 2 ] );
+
+						if ( isPointInsideTriangle( v1, v2, v3, result ) )
+						{
+							inside = true;
+							break;
+						}
+					}
+
+					if ( inside )
+					{
+						break;
+					}
+				}
+
+				if ( !inside )
+				{
+					result = null;
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/**
 	 * Returns the intersection point between a ray and a plane. The point is
 	 * returned as a {@link Vector3D}; however, if any of the following
 	 * conditions is met, no intersection exists, and <code>null</code> will be
@@ -1013,6 +1083,62 @@ public class GeometryTools
 			 *  - Angle sum is 2PI (with 0.0000001 deviation tolerance)
 			 */
 			result = ( i < vertexCount ) || ( ( angleSum > 6.2831852 ) && ( angleSum < 6.2831854 ) );
+		}
+		else
+		{
+			result = false;
+		}
+
+		return result;
+	}
+
+	/**
+	 * Returns whether the given point is inside the specified triangle. The
+	 * point must be on the same plane as the triangle. Otherwise the results
+	 * are undefined.
+	 *
+	 * <p>
+	 * This implementation first calculates the barycentric coordinates of the
+	 * point and then performs a simple comparison in that coordinate space.
+	 * Explanations of this and other methods can be found here:
+	 * <a href="http://softsurfer.com/Archive/algorithm_0105/algorithm_0105.htm">http://softsurfer.com/Archive/algorithm_0105/algorithm_0105.htm</a> and
+	 * <a href="http://www.blackpawn.com/texts/pointinpoly/default.html">http://www.blackpawn.com/texts/pointinpoly/default.html</a>
+	 *
+	 * @param   v1  First vertex of the triangle.
+	 * @param   v2  Second vertex of the triangle.
+	 * @param   v3  Third vertex of the triangle.
+	 * @param   p   Point on the same plane as the triangle.
+	 *
+	 * @return  <code>true</code> if the point is inside the triangle.
+	 */
+	public static boolean isPointInsideTriangle( final Vector3D v1, final Vector3D v2, final Vector3D v3, final Vector3D p )
+	{
+		final double ux = v2.x - v1.x;
+		final double uy = v2.y - v1.y;
+		final double uz = v2.z - v1.z;
+		final double vx = v3.x - v1.x;
+		final double vy = v3.y - v1.y;
+		final double vz = v3.z - v1.z;
+		final double wx = p.x  - v1.x;
+		final double wy = p.y  - v1.y;
+		final double wz = p.z  - v1.z;
+
+		// Various dot products
+		final double uu = ux * ux + uy * uy + uz * uz;
+		final double uv = ux * vx + uy * vy + uz * vz;
+		final double vv = vx * vx + vy * vy + vz * vz;
+		final double wu = wx * ux + wy * uy + wz * uz;
+		final double wv = wx * vx + wy * vy + wz * vz;
+		final double d = uv * uv - uu * vv;
+
+		// Compute and test barycentric coordinates
+		final boolean result;
+
+		final double s = ( uv * wv - vv * wu ) / d;
+		if ( s >= 0.0 && s <= 1.0 )
+		{
+			final double t = ( uv * wu - uu * wv ) / d;
+			result = ( t >= 0.0 ) && ( s + t <= 1.0 );
 		}
 		else
 		{

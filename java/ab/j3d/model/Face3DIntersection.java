@@ -68,10 +68,10 @@ public final class Face3DIntersection
 	private final Node3DPath _path;
 
 	/**
-	 * The {@link Polygon3D} that was intersected.
+	 * Intersected face.
 	 */
 	@NotNull
-	private final Polygon3D _polygon;
+	private final Face3D _face;
 
 	/**
 	 * Intersection point in world coordinates.
@@ -101,17 +101,17 @@ public final class Face3DIntersection
 	 * @param   object2world        Transforms object to world coordinates.
 	 * @param   object              Object that was intersected.
 	 * @param   path                Path in scene graph to <code>object</code>.
-	 * @param   polygon             The {@link Polygon3D} that was intersected.
+	 * @param   face                The {@link Face3D} that was intersected.
 	 * @param   ray                 {@link Ray3D} that intersected the face.
 	 * @param   intersectionPoint   Intersection point.
 	 */
-	public Face3DIntersection( @NotNull final Object objectID , @NotNull final Matrix3D object2world , @NotNull final Object3D object , @NotNull final Node3DPath path, @NotNull final Polygon3D polygon , @NotNull final Ray3D ray , @NotNull final Vector3D intersectionPoint )
+	public Face3DIntersection( @NotNull final Object objectID , @NotNull final Matrix3D object2world , @NotNull final Object3D object , @NotNull final Node3DPath path, @NotNull final Face3D face , @NotNull final Ray3D ray , @NotNull final Vector3D intersectionPoint )
 	{
 		_objectID = objectID;
 		_object2world = object2world;
 		_object = object;
 		_path = path;
-		_polygon = polygon;
+		_face = face;
 		_ray = ray;
 		_intersectionPoint = intersectionPoint;
 		_distance = Double.NaN;
@@ -191,14 +191,14 @@ public final class Face3DIntersection
 	}
 
 	/**
-	 * Get the {@link Polygon3D} that was intersected.
+	 * Get the face that was intersected.
 	 *
-	 * @return  {@link Polygon3D} that was intersected.
+	 * @return  Face that was intersected.
 	 */
 	@NotNull
-	public Polygon3D getPolygon()
+	public Face3D getFace()
 	{
-		return _polygon;
+		return _face;
 	}
 
 	/**
