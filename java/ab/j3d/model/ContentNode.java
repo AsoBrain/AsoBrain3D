@@ -524,4 +524,10 @@ public class ContentNode
 	{
 		_planeControl = planeControl;
 	}
+
+	@Override
+	public String toString()
+	{
+		return super.toString() + "[id=" + _id + "]";
+	}
 }
