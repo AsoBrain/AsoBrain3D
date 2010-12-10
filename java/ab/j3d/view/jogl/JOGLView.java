@@ -610,6 +610,10 @@ public class JOGLView
 
 			renderScene( gl );
 
+			final FrameCounter frameCounter = _frameCounter;
+			frameCounter.increment();
+			frameCounter.get();
+
 			if ( hasOverlay() )
 			{
 				JOGLGraphics2D joglGraphics2D = _graphics2D;
@@ -618,6 +622,11 @@ public class JOGLView
 					joglGraphics2D = new JOGLGraphics2D( glAutoDrawable );
 					_graphics2D = joglGraphics2D;
 				}
+				else
+				{
+					joglGraphics2D.reset();
+				}
+
 				paintOverlay( joglGraphics2D );
 			}
 		}
@@ -645,10 +654,6 @@ public class JOGLView
 		final JOGLRenderer renderer = getOrCreateRenderer( gl, false );
 		renderer.setSceneToViewTransform( getScene2View() );
 		renderer.renderScene( scene, styleFilters, viewStyle, getBackground(), getGrid() );
-
-		final FrameCounter frameCounter = _frameCounter;
-		frameCounter.increment();
-		frameCounter.get();
 	}
 
 	/**
