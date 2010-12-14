@@ -450,4 +450,68 @@ public class Face3D
 			this.normal = normal;
 		}
 	}
+
+	/**
+	 * Returns the intersection point between the face and the given ray.
+	 * If no intersection exists <code>null</code> will be returned. In the
+	 * following cases, there is no intersection:
+	 * <ol>
+	 *  <li>The ray is parallel to the face's plane;</li>
+	 *  <li>The ray does not point towards the face;</li>
+	 *  <li>The ray intersects the face's plane outside the face.</li>
+	 * </ol>
+	 *
+	 * @param   ray     Ray to get intersection from.
+	 *
+	 * @return  Intersection point with the ray, if any.
+	 */
+	@Nullable
+	public Vector3D getIntersection( @NotNull final Ray3D ray )
+	{
+		Vector3D result = null;
+
+		final int vertexCount = getVertexCount();
+		if ( vertexCount >= 3 )
+		{
+			result = GeometryTools.getIntersectionBetweenRayAndPlane( this, ray );
+
+			if ( result != null )
+			{
+				boolean inside = false;
+
+				final Tessellation tessellation = getTessellation();
+				final List<? extends Vector3D> tessellationVertices = tessellation.getVertices();
+
+				for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+				{
+					final int[] triangles = primitive.getTriangles();
+
+					for ( int i = 0 ; i < triangles.length ; i += 3 )
+					{
+						final Vector3D v1 = tessellationVertices.get( triangles[ i ] );
+						final Vector3D v2 = tessellationVertices.get( triangles[ i + 1 ] );
+						final Vector3D v3 = tessellationVertices.get( triangles[ i + 2 ] );
+
+						if ( GeometryTools.isPointInsideTriangle( v1, v2, v3, result ) )
+						{
+							inside = true;
+							break;
+						}
+					}
+
+					if ( inside )
+					{
+						break;
+					}
+				}
+
+				if ( !inside )
+				{
+					result = null;
+				}
+			}
+		}
+
+		return result;
+	}
 }

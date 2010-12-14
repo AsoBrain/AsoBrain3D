@@ -21,10 +21,8 @@
 package ab.j3d.geom;
 
 import java.awt.geom.*;
-import java.util.*;
 
 import ab.j3d.*;
-import ab.j3d.model.*;
 import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
@@ -738,74 +736,6 @@ public class GeometryTools
 			if ( ( result != null ) && !isPointInsidePolygon( polygon, result ) )
 			{
 				result = null;
-			}
-		}
-
-		return result;
-	}
-
-	/**
-	 * Returns the intersection point between a ray and a {@link Face3D}.
-	 * The intersection point is returned as a {@link Vector3D}; however, if
-	 * any of the following conditions is met, no intersection exists, and
-	 * <code>null</code> will be returned:
-	 * <ol>
-	 *  <li>The ray is parallel to the face's plane;</li>
-	 *  <li>The ray does not point towards the face;</li>
-	 *  <li>The ray intersects the face's plane outside the face.</li>
-	 * </ol>
-	 *
-	 * @param   face    Face to get intersection from.
-	 * @param   ray     Ray to get intersection from.
-	 *
-	 * @return  Intersection point of the face and ray, if any.
-	 *
-	 * @throws  NullPointerException if a required input argument is <code>null</code>.
-	 */
-	@Nullable
-	public static Vector3D getIntersectionBetweenRayAndFace( @NotNull final Face3D face, @NotNull final Ray3D ray )
-	{
-		Vector3D result = null;
-
-		final int vertexCount = face.getVertexCount();
-		if ( vertexCount >= 3 )
-		{
-			result = getIntersectionBetweenRayAndPlane( face, ray );
-
-			if ( result != null )
-			{
-				boolean inside = false;
-
-				final Tessellation tessellation = face.getTessellation();
-				final List<? extends Vector3D> vertices = tessellation.getVertices();
-
-				for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
-				{
-					final int[] triangles = primitive.getTriangles();
-
-					for ( int i = 0 ; i < triangles.length ; i += 3 )
-					{
-						final Vector3D v1 = vertices.get( triangles[ i ] );
-						final Vector3D v2 = vertices.get( triangles[ i + 1 ] );
-						final Vector3D v3 = vertices.get( triangles[ i + 2 ] );
-
-						if ( isPointInsideTriangle( v1, v2, v3, result ) )
-						{
-							inside = true;
-							break;
-						}
-					}
-
-					if ( inside )
-					{
-						break;
-					}
-				}
-
-				if ( !inside )
-				{
-					result = null;
-				}
 			}
 		}
 
