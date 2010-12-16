@@ -91,7 +91,6 @@ public class Contour
 		boolean positiveAngles = false; /* encountered positive angles */
 		boolean negativeAngles = false; /* encountered negative angles */
 		double totalAngle = 0.0; /* should finish at 2PI (counter-clockwise) or -2PI (clockwise) for closed non-self-intersecting shapes */
-		boolean reverseTested = false;
 		boolean reverseContour;
 
 		final double[] coords = new double[ 6 ];
@@ -191,8 +190,7 @@ public class Contour
 							totalAngle += angle;
 
 							boolean counterClockwise = ( totalAngle >= 0.0 );
-							reverseContour = ( !reverseTested && makeCounterClockwise && !counterClockwise );
-							reverseTested = true;
+							reverseContour = ( makeCounterClockwise && !counterClockwise );
 
 							final List<Point> vertices;
 
