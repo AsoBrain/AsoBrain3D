@@ -23,6 +23,8 @@ import java.io.*;
 import java.util.concurrent.*;
 import javax.media.opengl.*;
 
+import com.numdata.oss.*;
+
 /**
  * Provides information about the capabilities and properties of an OpenGL
  * context.
@@ -236,32 +238,28 @@ public class JOGLCapabilities
 		determineCapabilities();
 
 		out.println();
-		out.println( " About OpenGL:" );
-		out.println( "---------------" );
-		out.println( "Version:    " + _version );
-		out.println( "Vendor:     " + _vendor );
-		out.println( "Extensions: " + _extensions );
-		out.println( "Renderer:   " + _renderer );
-		out.println( "Shaders:    " + ( ( _shadingLanguageVersion == null ) ? "none" : _shadingLanguageVersion ) );
+		out.print( "OpenGL driver:        " );
+		out.print( "vendor="     ); out.print( TextTools.quote( _vendor ) );
+		out.print( ", renderer=" ); out.print( TextTools.quote( _renderer ) );
+		out.print( ", version="  ); out.print( TextTools.quote( _version ) );
+		out.print( ", shaders="  ); out.print( TextTools.quote( ( ( _shadingLanguageVersion == null ) ? "none" : _shadingLanguageVersion ) ) );
 		out.println();
-
-		out.println( " OpenGL capabilities:" );
-		out.println( "----------------------" );
-		out.println( "shaderObjects     = " + ( _shaderObjects     ? "yes (core)" : _shaderObjectsARB  ? "yes (ARB)" : "no" ) );
-		out.println( "framebufferObject = " + ( _framebufferObject ? "yes"        : "no" ) );
-		out.println( "drawBuffers       = " + ( _drawBuffers       ? "yes (core)" : _drawBuffersARB    ? "yes (ARB)" : "no" ) );
-		out.println( "occlusionQuery    = " + ( _occlusionQuery    ? "yes (core)" : _occlusionQueryARB ? "yes (ARB)" : "no" ) );
-		out.println( "shadowFuncs       = " + ( _shadowFuncs       ? "yes"        : "no" ) );
-		out.println( "depthTexture      = " + ( _depthTexture      ? "yes"        : "no" ) );
-		out.println( "shadow            = " + ( _shadow            ? "yes"        : "no" ) );
-		out.println( "textureRectangle  = " + ( _textureRectangle  ? "yes"        : "no" ) );
-		out.println( "multitexture      = " + ( _multitexture      ? "yes"        : "no" ) );
-		out.println( "generateMipmap    = " + ( _generateMipmap    ? "yes"        : "no" ) );
-		out.println( "blendFuncSeperate = " + ( _blendFuncSeperate ? "yes"        : "no" ) );
-		out.println( "edgeClamp         = " + ( _edgeClamp         ? "yes"        : "no" ) );
-		out.println( "nonPowerOfTwo     = " + ( _nonPowerOfTwo     ?
-		                                        _nonPowerOfTwoARB  ? "yes (core,ARB)" : "yes (core)" :
-		                                        _nonPowerOfTwoARB  ? "yes (ARB)"      : "no" ) );
+		out.print( "OpenGL extensions:    " ); out.println( _extensions );
+		out.print( "Open GL capabilities: " );
+		out.print( "shaderObjects=" );        out.print( ( _shaderObjects     ? "yes (core)" : _shaderObjectsARB  ? "yes (ARB)" : "no" ) );
+		out.print( ", framebufferObject=" );  out.print( ( _framebufferObject ? "yes"        : "no" ) );
+		out.print( ", drawBuffers=" );        out.print( ( _drawBuffers       ? "yes (core)" : _drawBuffersARB    ? "yes (ARB)" : "no" ) );
+		out.print( ", occlusionQuery=" );     out.print( ( _occlusionQuery    ? "yes (core)" : _occlusionQueryARB ? "yes (ARB)" : "no" ) );
+		out.print( ", shadowFuncs=" );        out.print( ( _shadowFuncs       ? "yes"        : "no" ) );
+		out.print( ", depthTexture=" );       out.print( ( _depthTexture      ? "yes"        : "no" ) );
+		out.print( ", shadow=" );             out.print( ( _shadow            ? "yes"        : "no" ) );
+		out.print( ", textureRectangle=" );   out.print( ( _textureRectangle  ? "yes"        : "no" ) );
+		out.print( ", multitexture=" );       out.print( ( _multitexture      ? "yes"        : "no" ) );
+		out.print( ", generateMipmap=" );     out.print( ( _generateMipmap    ? "yes"        : "no" ) );
+		out.print( ", blendFuncSeperate=" );  out.print( ( _blendFuncSeperate ? "yes"        : "no" ) );
+		out.print( ", edgeClamp=" );          out.print( ( _edgeClamp         ? "yes"        : "no" ) );
+		out.print( ", nonPowerOfTwo=" );      out.print( ( _nonPowerOfTwo     ? _nonPowerOfTwoARB  ? "yes (core,ARB)" : "yes (core)" : _nonPowerOfTwoARB  ? "yes (ARB)"      : "no" ) );
+		out.println();
 	}
 
 	/**
@@ -270,6 +268,7 @@ public class JOGLCapabilities
 	private class CapabilitiesProbe
 		extends Probe
 	{
+		@Override
 		protected void run( final GL gl )
 		{
 			final boolean opengl12 = gl.isExtensionAvailable( "GL_VERSION_1_2" );
@@ -389,6 +388,7 @@ public class JOGLCapabilities
 	{
 		private boolean _result = false;
 
+		@Override
 		protected void run( final GL gl )
 		{
 			if ( isShaderSupported() )
@@ -425,8 +425,9 @@ public class JOGLCapabilities
 		 *
 		 * @param   gl  OpenGL pipeline.
 		 */
-		protected abstract void run( final GL gl );
+		protected abstract void run( GL gl );
 
+		@Override
 		public final void run()
 		{
 			try
