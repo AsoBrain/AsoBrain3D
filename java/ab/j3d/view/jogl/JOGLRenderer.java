@@ -220,6 +220,11 @@ public class JOGLRenderer
 	}
 
 	/**
+	 * Keeps track of various statistics about the rendering process.
+	 */
+	private final RenderStatistics _statistics;
+
+	/**
 	 * Construct new JOGL renderer.
 	 *
 	 * @param   gl                      GL pipeline.
@@ -252,6 +257,8 @@ public class JOGLRenderer
 		_shadowMap = null;
 		_shadowPass = false;
 		_accumulationTexture = -1;
+
+		_statistics = new RenderStatistics();
 	}
 
 	/**
@@ -364,6 +371,16 @@ public class JOGLRenderer
 	public ShaderManager getShaderManager()
 	{
 		return _shaderManager;
+	}
+
+	/**
+	 * Returns statistics about the rendering process.
+	 *
+	 * @return  Rendering statistics.
+	 */
+	public RenderStatistics getStatistics()
+	{
+		return _statistics;
 	}
 
 	/**
@@ -484,6 +501,8 @@ public class JOGLRenderer
 		{
 			renderSceneSinglePass( scene, styleFilters, sceneStyle, background, grid );
 		}
+
+		_statistics.frameRendered();
 	}
 
 	/**
@@ -1342,9 +1361,10 @@ public class JOGLRenderer
 		layer.bind();
 		gl.glActiveTexture( TEXTURE_UNIT_BLEND_FRONT );
 
-		_shaderManager.disable();
+		final ShaderManager shaderManager = _shaderManager;
+		shaderManager.disable();
 
-		final ShaderProgram blend = _shaderManager.getShaderProgram( "blend" );
+		final ShaderProgram blend = shaderManager.getShaderProgram( "blend" );
 		if ( blend == null )
 		{
 			System.out.println( "JOGLRenderer: Missing shader program 'blend'. Depth peeling is disabled." );
@@ -1367,7 +1387,7 @@ public class JOGLRenderer
 			blend.disable();
 		}
 
-		_shaderManager.enable();
+		shaderManager.enable();
 	}
 
 	/**
@@ -1546,6 +1566,8 @@ public class JOGLRenderer
 	 */
 	protected void renderObject( final Object3D object, final RenderStyle objectStyle )
 	{
+		_statistics.objectRendered( object );
+
 		final boolean anyMaterialEnabled = objectStyle.isMaterialEnabled();
 		final boolean anyFillEnabled     = objectStyle.isFillEnabled() && ( objectStyle.getFillColor() != null );
 		final boolean anyStrokeEnabled   = objectStyle.isStrokeEnabled() && ( objectStyle.getStrokeColor() != null );
@@ -1908,6 +1930,7 @@ public class JOGLRenderer
 
 				for ( final TessellationPrimitive primitive : primitives )
 				{
+					_statistics.primitiveRendered();
 					if ( primitive instanceof TriangleList )
 					{
 						gl.glBegin( GL.GL_TRIANGLES );
@@ -2095,6 +2118,7 @@ public class JOGLRenderer
 
 				for ( final TessellationPrimitive primitive : primitives )
 				{
+					_statistics.primitiveRendered();
 					if ( primitive instanceof TriangleList )
 					{
 						gl.glBegin( GL.GL_TRIANGLES );
@@ -2195,6 +2219,7 @@ public class JOGLRenderer
 
 			for ( final int[] outline : tessellation.getOutlines() )
 			{
+				_statistics.primitiveRendered();
 				gl.glBegin( GL.GL_LINE_LOOP );
 
 				for ( final int vertexIndex : outline )
@@ -2258,6 +2283,7 @@ public class JOGLRenderer
 			 * Render vertices.
 			 */
 			gl.glBegin( GL.GL_POINTS );
+			_statistics.primitiveRendered();
 
 			if ( !setVertexNormals )
 			{
@@ -2456,5 +2482,126 @@ public class JOGLRenderer
 		gl.glEnd();
 
 		gl.glPopMatrix();
+	}
+
+	/**
+	 * Provides information about the number of objects and primitives rendered
+	 * during a single frame.
+	 */
+	public static class RenderStatistics
+	{
+		/**
+		 * Number of primitives rendered so far during the current frame.
+		 */
+		private int _primitiveCounter;
+
+		/**
+		 * Number of primitives rendered during the last frame.
+		 */
+		private int _primitiveCount;
+
+		/**
+		 * Number of objects rendered so far during the current frame.
+		 */
+		private int _objectCounter;
+
+		/**
+		 * Number of objects rendered during the last frame.
+		 */
+		private int _objectCount;
+
+		/**
+		 * Set of unique objects rendered so far during the current frame.
+		 */
+		private final Set<Object> _uniqueObjects;
+
+		/**
+		 * Number of unique objects rendered during the last frame.
+		 */
+		private int _uniqueObjectCount;
+
+		/**
+		 * Constructs a new instance.
+		 */
+		private RenderStatistics()
+		{
+			_primitiveCounter = 0;
+			_primitiveCount = 0;
+			_objectCounter = 0;
+			_objectCount = 0;
+			_uniqueObjects = new HashSet<Object>();
+			_uniqueObjectCount = 0;
+		}
+
+		/**
+		 * Returns the number of primitives rendered during the last frame.
+		 *
+		 * @return  Number of primitives.
+		 */
+		public int getPrimitiveCount()
+		{
+			return _primitiveCount;
+		}
+
+		/**
+		 * Returns the number of unique objects rendered during the last frame.
+		 * Unique is defined here as not equal to any of the other objects,
+		 * based on {@link Object#equals(Object)}.
+		 *
+		 * @return  Number of unique objects.
+		 */
+		public int getUniqueObjectCount()
+		{
+			return _uniqueObjectCount;
+		}
+
+		/**
+		 * Returns the number of objects rendered during the last frame. This
+		 * includes objects that are equal and objects being rendered multiple
+		 * times.
+		 *
+		 * @return  Number of objects.
+		 */
+		public int getObjectCount()
+		{
+			return _objectCount;
+		}
+
+		/**
+		 * Called at the end of a frame, allowing the current value of each
+		 * counter to be stored and to prepare for the next frame.
+		 */
+		private void frameRendered()
+		{
+			_primitiveCount = _primitiveCounter;
+			_primitiveCounter = 0;
+
+			_objectCount = _objectCounter;
+			_objectCounter = 0;
+
+			_uniqueObjectCount = _uniqueObjects.size();
+			_uniqueObjects.clear();
+		}
+
+		/**
+		 * Called when an object is rendered, such that the statistics may be
+		 * updated accordingly.
+		 *
+		 * @param   object  Object that was rendered.
+		 */
+		private void objectRendered( final Object object )
+		{
+			_uniqueObjects.add( object );
+			_objectCounter++;
+		}
+
+		/**
+		 * Called when a primitive is rendered, such that the statistics may be
+		 * updated accordingly.
+		 */
+		private void primitiveRendered()
+		{
+			_primitiveCounter++;
+		}
 	}
 }
