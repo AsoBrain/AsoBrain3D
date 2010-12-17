@@ -20,8 +20,8 @@
  */
 package ab.j3d.view.jogl;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.glu.GLU;
+import javax.media.opengl.*;
+import javax.media.opengl.glu.*;
 
 /**
  * Provides information about the number of samples rendered.
@@ -55,7 +55,7 @@ public class OcclusionQuery
 	 * Returns the number of samples that were rendered while the occlusion was
 	 * active. The query is ended in the process and cannot be used afterwards.
 	 *
-	 * @return
+	 * @return  Number of samples.
 	 */
 	public int getSampleCount()
 	{
