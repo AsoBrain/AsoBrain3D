@@ -127,17 +127,18 @@ public class JOGLView
 		_graphics2D = null;
 
 		final FrameCounter frameCounter = new FrameCounter();
-		frameCounter.addChangeListener( new ChangeListener()
+		if ( isRenderedContinuously() )
 		{
-			@Override
-			public void stateChanged( final ChangeEvent e )
+			frameCounter.addChangeListener( new ChangeListener()
 			{
-				if ( isRenderedContinuously() )
+				@Override
+				public void stateChanged( final ChangeEvent e )
 				{
 					System.out.println( frameCounter.get() + " fps" );
 				}
-			}
-		} );
+			} );
+			addOverlay( new RenderStatisticsOverlay() );
+		}
 		_frameCounter = frameCounter;
 
 		/* Use heavyweight popups, since we use a heavyweight canvas */
@@ -735,6 +736,39 @@ public class JOGLView
 			System.out.println( " - windowSystemRecommendedChoice = " + windowSystemRecommendedChoice );
 */
 			return super.chooseCapabilities( desired, available, windowSystemRecommendedChoice );
+		}
+	}
+
+	/**
+	 * Displays render statistics.
+	 *
+	 * @see     JOGLRenderer.RenderStatistics
+	 */
+	private class RenderStatisticsOverlay
+		implements ViewOverlay
+	{
+		@Override
+		public void addView( final View3D view )
+		{
+		}
+
+		@Override
+		public void removeView( final View3D view )
+		{
+		}
+
+		@Override
+		public void paintOverlay( final View3D view, final Graphics2D g )
+		{
+			final JOGLRenderer.RenderStatistics statistics = _renderer.getStatistics();
+			final Font font = g.getFont();
+			g.setFont( font.deriveFont( 10.0f ) );
+			g.setColor( new Color( 0xa0ffffff, true ) );
+			g.fillRect( 0, 0, 150, 50 );
+			g.setColor( Color.BLACK );
+			g.drawString( "FPS: " + _frameCounter.get(), 5, 15 );
+			g.drawString( "Primitives: " + statistics.getPrimitiveCount(), 5, 30 );
+			g.drawString( "Objects: " + statistics.getObjectCount() + " (" + statistics.getUniqueObjectCount() + " unique)", 5, 45 );
 		}
 	}
 }
