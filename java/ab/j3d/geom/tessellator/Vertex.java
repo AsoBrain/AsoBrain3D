@@ -40,36 +40,69 @@
  */
 package ab.j3d.geom.tessellator;
 
-abstract class PriorityQ
+import java.awt.geom.*;
+
+class Vertex
+	extends Point2D
 {
-	public static final int INIT_SIZE = 32;
+	/**
+	 * Next vertex (never <code>null</code>).
+	 */
+	public Vertex next;
 
-	public static class PQnode
+	/**
+	 * Previous vertex (never <code>null</code>).
+	 */
+	public Vertex prev;
+
+	/**
+	 * A half-edge with this origin.
+	 */
+	public HalfEdge anEdge;
+
+	/**
+	 * Client's data.
+	 */
+	public int vertexIndex;
+
+	/**
+	 * X coordinate.
+	 */
+	public double x;
+
+	/**
+	 * Y coordinate.
+	 */
+	public double y;
+
+	/* Internal data (keep hidden) */
+
+	/**
+	 * to allow deletion from priority queue
+	 */
+	public int pqHandle;
+
+	@Override
+	public Object clone()
 	{
-		int handle;
+		throw new UnsupportedOperationException();
 	}
 
-	public static class PQhandleElem
+	@Override
+	public double getX()
 	{
-		Object key;
-
-		int node;
+		return x;
 	}
 
-	public interface Comparator
+	@Override
+	public double getY()
 	{
-		boolean leq( Object key1, Object key2 );
+		return y;
 	}
 
-	abstract void pqInit();
-
-	abstract int pqInsert( Object keyNew );
-
-	abstract Object pqExtractMin();
-
-	abstract void pqDelete( int hCurr );
-
-	abstract Object pqMinimum();
-
-	abstract boolean pqIsEmpty();
+	@Override
+	public void setLocation( final double x, final double y )
+	{
+		throw new UnsupportedOperationException();
+	}
 }

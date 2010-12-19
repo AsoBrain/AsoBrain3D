@@ -40,36 +40,44 @@
  */
 package ab.j3d.geom.tessellator;
 
-abstract class PriorityQ
+import ab.j3d.geom.tessellator.RegionDict.*;
+
+class Region
 {
-	public static final int INIT_SIZE = 32;
+	/**
+	 * Upper edge, directed right to left
+	 */
+	HalfEdge upperEdge;
 
-	public static class PQnode
-	{
-		int handle;
-	}
+	/**
+	 * Dictionary node corresponding to {@link #upperEdge}.
+	 */
+	DictNode nodeUp;
 
-	public static class PQhandleElem
-	{
-		Object key;
+	/**
+	 * Used to determine which regions are inside the polygon.
+	 */
+	int windingNumber;
 
-		int node;
-	}
+	/**
+	 * Is this region inside the polygon?
+	 */
+	boolean inside;
 
-	public interface Comparator
-	{
-		boolean leq( Object key1, Object key2 );
-	}
+	/**
+	 * Marks fake edges at t = +/-infinity
+	 */
+	boolean sentinel;
 
-	abstract void pqInit();
+	/**
+	 * Marks regions where the upper or lower edge has changed, but we haven't
+	 * checked whether they intersect yet
+	 */
+	boolean dirty;
 
-	abstract int pqInsert( Object keyNew );
-
-	abstract Object pqExtractMin();
-
-	abstract void pqDelete( int hCurr );
-
-	abstract Object pqMinimum();
-
-	abstract boolean pqIsEmpty();
+	/**
+	 * Marks temporary edges introduced when we process a "right vertex" (one
+	 * without any edges leaving to the right)
+	 */
+	boolean fixUpperEdge;
 }

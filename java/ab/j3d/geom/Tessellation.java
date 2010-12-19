@@ -22,25 +22,54 @@ package ab.j3d.geom;
 
 import java.util.*;
 
-import ab.j3d.*;
 import org.jetbrains.annotations.*;
 
 /**
- * Represents a tessellation that may be build by a {@link TessellationBuilder}
- * directed by a {@link Tessellator}.
+ * Represents a tessellation.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public interface Tessellation
+public class Tessellation
 {
 	/**
-	 * Returns the vertices that are used in the tessellation.
-	 *
-	 * @return  List of vertices.
+	 * Primitives that the tessellation consists of.
 	 */
 	@NotNull
-	List<? extends Vector3D> getVertices();
+	protected final List<TessellationPrimitive> _primitives;
+
+	/**
+	 * Outlines of tessellated shapes.
+	 */
+	private final List<int[]> _outlines;
+
+	/**
+	 * Constructs a new tessellation.
+	 * <dl>
+	 *  <dt><strong>WARNING</strong></dt>
+	 *  <dd>The supplied collections are used as-is for efficiency. Therefore,
+	 *    changes to the collections are not isolated from this object!</dd>
+	 * </dl>
+	 *
+	 * @param   outlines    Outlines of tessellated shapes.
+	 * @param   primitives  Primitives that define the tessellation.
+	 */
+	public Tessellation( @NotNull final List<int[]> outlines, @NotNull final List<TessellationPrimitive> primitives )
+	{
+		_outlines = outlines;
+		_primitives = primitives;
+	}
+
+	/**
+	 * Returns the primitices that make up the tessellation.
+	 *
+	 * @return  Collection of primitives.
+	 */
+	@NotNull
+	public Collection<TessellationPrimitive> getPrimitives()
+	{
+		return _primitives;
+	}
 
 	/**
 	 * Get outlines of tessellated shapes.
@@ -48,12 +77,8 @@ public interface Tessellation
 	 * @return  Outlines of tessellated shapes.
 	 */
 	@NotNull
-	List<int[]> getOutlines();
-
-	/**
-	 * Returns the primitices that make up the tessellation.
-	 *
-	 * @return  Collection of primitives.
-	 */
-	Collection<TessellationPrimitive> getPrimitives();
+	public List<int[]> getOutlines()
+	{
+		return _outlines;
+	}
 }

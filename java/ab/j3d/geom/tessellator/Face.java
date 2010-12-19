@@ -40,36 +40,37 @@
  */
 package ab.j3d.geom.tessellator;
 
-abstract class PriorityQ
+class Face
 {
-	public static final int INIT_SIZE = 32;
+	/**
+	 * next face (never NULL)
+	 */
+	public Face next;
 
-	public static class PQnode
-	{
-		int handle;
-	}
+	/**
+	 * previous face (never NULL)
+	 */
+	public Face prev;
 
-	public static class PQhandleElem
-	{
-		Object key;
+	/**
+	 * a half edge with this left face
+	 */
+	public HalfEdge anEdge;
 
-		int node;
-	}
+	// Internal data (keep hidden)
 
-	public interface Comparator
-	{
-		boolean leq( Object key1, Object key2 );
-	}
+	/**
+	 * "stack" used for rendering to primitives.
+	 */
+	public Face renderStack;
 
-	abstract void pqInit();
+	/**
+	 * flag to mark this face a rendered.
+	 */
+	public boolean rendered;
 
-	abstract int pqInsert( Object keyNew );
-
-	abstract Object pqExtractMin();
-
-	abstract void pqDelete( int hCurr );
-
-	abstract Object pqMinimum();
-
-	abstract boolean pqIsEmpty();
+	/**
+	 * this face is in the polygon interior
+	 */
+	public boolean inside;
 }
