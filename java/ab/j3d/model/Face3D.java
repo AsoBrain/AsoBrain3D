@@ -348,15 +348,12 @@ public class Face3D
 			final List<Vertex> vertices = this.vertices;
 			final int vertexCount = vertices.size();
 
-			final List<Vector3D> points = new ArrayList<Vector3D>( vertexCount );
-
 			final int[] outline = new int[ vertexCount ];
 			final int lastVertex = vertexCount - 1;
 			for ( int i = 0; i < outline.length; i++ )
 			{
 				final Vertex vertex = vertices.get( i );
 				outline[ i ] = lastVertex - i;
-				points.add( vertex.point );
 			}
 
 			final List<TessellationPrimitive> primitives;
@@ -369,7 +366,7 @@ public class Face3D
 				primitives = Collections.emptyList();
 			}
 
-			result = new BasicTessellation( points, Collections.singletonList( outline ), primitives );
+			result = new Tessellation( Collections.singletonList( outline ), primitives );
 			_tessellation = result;
 		}
 
@@ -404,17 +401,34 @@ public class Face3D
 		/**
 		 * Color map U coordinate.
 		 */
-		public float colorMapU = Float.NaN;
+		public float colorMapU;
 
 		/**
 		 * Color map V coordinate.
 		 */
-		public float colorMapV = Float.NaN;
+		public float colorMapV;
 
 		/**
 		 * Vertex normal.
 		 */
 		Vector3D normal;
+
+		/**
+		 * Construct vertex.
+		 *
+		 * @param   point                   Coordinates of vertex.
+		 * @param   vertexCoordinateIndex   Index of vertex coordinates.
+		 * @param   colorMapU               Color map U coordinate.
+		 * @param   colorMapV               Color map V coordinate.
+		 */
+		public Vertex( final Vector3D point, final int vertexCoordinateIndex, final float colorMapU, final float colorMapV )
+		{
+			this.point = point;
+			this.vertexCoordinateIndex = vertexCoordinateIndex;
+			this.colorMapU = colorMapU;
+			this.colorMapV = colorMapV;
+			normal = null;
+		}
 
 		/**
 		 * Construct vertex.
@@ -427,6 +441,8 @@ public class Face3D
 			this.point = point;
 			this.vertexCoordinateIndex = vertexCoordinateIndex;
 			normal = null;
+			colorMapU = Float.NaN;
+			colorMapV = Float.NaN;
 		}
 
 		/**
@@ -480,7 +496,6 @@ public class Face3D
 				boolean inside = false;
 
 				final Tessellation tessellation = getTessellation();
-				final List<? extends Vector3D> tessellationVertices = tessellation.getVertices();
 
 				for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
 				{
@@ -488,9 +503,9 @@ public class Face3D
 
 					for ( int i = 0 ; i < triangles.length ; i += 3 )
 					{
-						final Vector3D v1 = tessellationVertices.get( triangles[ i ] );
-						final Vector3D v2 = tessellationVertices.get( triangles[ i + 1 ] );
-						final Vector3D v3 = tessellationVertices.get( triangles[ i + 2 ] );
+						final Vector3D v1 = vertices.get( triangles[ i ] ).point;
+						final Vector3D v2 = vertices.get( triangles[ i + 1 ] ).point;
+						final Vector3D v3 = vertices.get( triangles[ i + 2 ] ).point;
 
 						if ( GeometryTools.isPointInsideTriangle( v1, v2, v3, result ) )
 						{
