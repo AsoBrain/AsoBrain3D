@@ -162,8 +162,8 @@ public class CollisionTestApp
 					final Path2D shape = createShape();
 
 					final Object3DBuilder builder = new Object3DBuilder();
-					builder.addExtrudedShape( shape, 0.1, new Vector3D( 0.0, 0.0, 0.2 ), Matrix3D.getTranslation( 0.0, 0.0, 0.8 ), white, null, false, white, null, false, white, null, false, false, false, true );
-					builder.addExtrudedShape( shape, 0.1, new Vector3D( 0.0, 0.0, 0.2 ), Matrix3D.getTransform( 0.0, 0.0, 90.0, 0.0, 0.0, 0.0 ), white, null, false, white, null, false, white, null, false, false, false, true );
+					builder.addExtrudedShape( shape, 0.1, new Vector3D( 0.0, 0.0, 0.2 ), Matrix3D.getTranslation( 0.0, 0.0, 0.8 ), true, white, null, false, true, white, null, false, true, white, null, false, false, false, true );
+					builder.addExtrudedShape( shape, 0.1, new Vector3D( 0.0, 0.0, 0.2 ), Matrix3D.getTransform( 0.0, 0.0, 90.0, 0.0, 0.0, 0.0 ), true, white, null, false, true, white, null, false, true, white, null, false, false, false, true );
 
 					final Node3D root = target.getNode3D();
 					root.removeAllChildren();
