@@ -1,7 +1,8 @@
 /* ====================================================================
  * $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +21,8 @@
  */
 package ab.j3d.view.jogl;
 
+import org.jetbrains.annotations.*;
+
 /**
  * Represents a specific API for using OpenGL Shading Language (GLSL) shaders.
  * GLSL is supported in the OpenGL core since version 2.0, but for older OpenGL
@@ -37,7 +40,8 @@ public interface ShaderImplementation
 	 *
 	 * @return  Shader object.
 	 */
-	Shader createShader( Shader.Type type );
+	@NotNull
+	Shader createShader( @NotNull Shader.Type type );
 
 	/**
 	 * Creates a shader program.
@@ -47,5 +51,6 @@ public interface ShaderImplementation
 	 *
 	 * @return  Shader program.
 	 */
-	ShaderProgram createProgram( String name );
+	@NotNull
+	ShaderProgram createProgram( @Nullable String name );
 }

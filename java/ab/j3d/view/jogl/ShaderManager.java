@@ -91,8 +91,11 @@ public class ShaderManager
 
 	/**
 	 * Initializes the shaders and shader programs used.
+	 *
+	 * @throws  IOException if there was a problem reading the shader file.
 	 */
 	public void init()
+		throws IOException
 	{
 		/*
 		 * Load vertex and fragment shaders.
@@ -359,7 +362,7 @@ public class ShaderManager
 	 * @param   name    Name that identifies the shader.
 	 * @param   shader  Shader object.
 	 *
-	 * @see     #createShaderProgram(String, String[])
+	 * @see     #createShaderProgram(String, String...)
 	 */
 	public void register( final String name, final Shader shader )
 	{
@@ -376,46 +379,42 @@ public class ShaderManager
 	 * @return  Loaded shader.
 	 *
 	 * @throws  GLException if compilation of the shader fails.
+	 * @throws  IOException if there was a problem reading the shader file.
 	 */
-	@Nullable
+	@NotNull
 	public Shader loadShader( final Shader.Type shaderType, final String name, final String... prefixLines )
+		throws IOException
 	{
-		Shader result = null;
-
 		final ShaderImplementation shaderImplementation = _shaderImplementation;
-		if ( shaderImplementation != null )
+		if ( shaderImplementation == null )
 		{
-			final Class<?>    clazz  = JOGLRenderer.class;
-			final InputStream sourceIn = clazz.getResourceAsStream( name );
+			throw new IllegalStateException( "Must have shader implementation to be able to load any shaders" );
+		}
 
-			if ( sourceIn != null )
+		final Class<?> clazz = JOGLRenderer.class;
+		final InputStream sourceIn = clazz.getResourceAsStream( name );
+		if ( sourceIn == null )
+		{
+			throw new FileNotFoundException( name );
+		}
+
+		final String source = TextTools.loadText( sourceIn );
+
+		final Shader result = shaderImplementation.createShader( shaderType );
+		if ( prefixLines.length == 0 )
+		{
+			result.setSource( source );
+		}
+		else
+		{
+			final String[] prefixedSource = new String[ prefixLines.length + 1 ];
+			for ( int i = 0 ; i < prefixLines.length ; i++ )
 			{
-				try
-				{
-					final String source = TextTools.loadText( sourceIn );
-
-					result = shaderImplementation.createShader( shaderType );
-					if ( prefixLines.length == 0 )
-					{
-						result.setSource( source );
-					}
-					else
-					{
-						final String[] prefixedSource = new String[ prefixLines.length + 1 ];
-						for ( int i = 0 ; i < prefixLines.length ; i++ )
-						{
-							final String prefixLine = prefixLines[ i ];
-							prefixedSource[ i ] = prefixLine + '\n';
-						}
-						prefixedSource[ prefixLines.length ] = source;
-						result.setSource( prefixedSource );
-					}
-				}
-				catch ( IOException e )
-				{
-					e.printStackTrace();
-				}
+				final String prefixLine = prefixLines[ i ];
+				prefixedSource[ i ] = prefixLine + '\n';
 			}
+			prefixedSource[ prefixLines.length ] = source;
+			result.setSource( prefixedSource );
 		}
 
 		return result;

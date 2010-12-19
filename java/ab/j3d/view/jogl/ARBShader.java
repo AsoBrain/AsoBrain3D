@@ -1,7 +1,8 @@
 /* ====================================================================
  * $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,10 +21,9 @@
  */
 package ab.j3d.view.jogl;
 
-import java.nio.charset.Charset;
-import javax.media.opengl.GL;
-import javax.media.opengl.GLException;
-import javax.media.opengl.glu.GLU;
+import java.nio.charset.*;
+import javax.media.opengl.*;
+import javax.media.opengl.glu.*;
 
 /**
  * Represents an OpenGL Shading Language (GLSL) shader object. This
@@ -65,11 +65,13 @@ public class ARBShader
 		_shader = shader;
 	}
 
+	@Override
 	public int getShaderObject()
 	{
 		return _shader;
 	}
 
+	@Override
 	public void setSource( final String... source )
 	{
 		final int[] length = new int[ source.length ];
@@ -122,6 +124,7 @@ public class ARBShader
 		}
 	}
 
+	@Override
 	public void dispose()
 	{
 		final GL gl = GLU.getCurrentGL();

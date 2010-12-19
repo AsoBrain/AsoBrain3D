@@ -21,6 +21,7 @@
 package ab.j3d.view.jogl;
 
 import java.awt.*;
+import java.io.*;
 import java.util.*;
 import java.util.List;
 import javax.media.opengl.*;
@@ -302,47 +303,55 @@ public class JOGLRenderer
 		capabilities.printSummary( System.out );
 		_capabilities = capabilities;
 
-		ShaderImplementation shaderImplementation = null;
-
-		if ( configuration.isPerPixelLightingEnabled() ||
-		     configuration.isDepthPeelingEnabled() ||
-		     configuration.isShadowEnabled() )
+		final ShaderManager shaderManager;
 		{
-			if ( capabilities.isShaderSupported() )
+			ShaderImplementation shaderImplementation = null;
+
+			if ( configuration.isPerPixelLightingEnabled() ||
+			     configuration.isDepthPeelingEnabled() ||
+			     configuration.isShadowEnabled() )
 			{
-				shaderImplementation = new CoreShaderImplementation();
+				if ( capabilities.isShaderSupported() )
+				{
+					shaderImplementation = new CoreShaderImplementation();
+				}
+				else if ( capabilities.isShaderSupportedARB() )
+				{
+					shaderImplementation = new ARBShaderImplementation();
+				}
 			}
-			else if ( capabilities.isShaderSupportedARB() )
-			{
-				shaderImplementation = new ARBShaderImplementation();
-			}
+
+			shaderManager = new ShaderManager( shaderImplementation );
 		}
 
 		Texture[] depthBuffers = null;
 		Texture[] colorBuffers = null;
 
-		final ShaderManager shaderManager = new ShaderManager( shaderImplementation );
-		shaderManager.init();
-		_shaderManager = shaderManager;
-
-		if ( shaderImplementation != null )
+		if ( shaderManager.isShaderSupportAvailable() )
 		{
-			if ( configuration.isDepthPeelingEnabled() && capabilities.isDepthPeelingSupported() )
+			try
 			{
-				final Shader blendFragment = shaderManager.loadShader( Shader.Type.FRAGMENT, "blend-fragment.glsl" );
-				if ( blendFragment != null )
+				shaderManager.init();
+
+				if ( configuration.isDepthPeelingEnabled() && capabilities.isDepthPeelingSupported() )
 				{
-					shaderManager.register( "blend-fragment", blendFragment );
+					shaderManager.register( "blend-fragment", shaderManager.loadShader( Shader.Type.FRAGMENT, "blend-fragment.glsl" ) );
 					shaderManager.createShaderProgram( "blend", "blend-fragment" );
+
+					colorBuffers = new Texture[ 3 ];
+					depthBuffers = new Texture[ 3 ];
 				}
-
-				colorBuffers = new Texture[ 3 ];
-				depthBuffers = new Texture[ 3 ];
 			}
-
-			_depthBuffers = depthBuffers;
-			_colorBuffers = colorBuffers;
+			catch ( IOException e )
+			{
+				e.printStackTrace();
+				shaderManager.disableShaders();
+			}
 		}
+
+		_shaderManager = shaderManager;
+		_depthBuffers = depthBuffers;
+		_colorBuffers = colorBuffers;
 
 		/* Set Light Model to two sided lighting. */
 		gl.glLightModeli( GL.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_TRUE );

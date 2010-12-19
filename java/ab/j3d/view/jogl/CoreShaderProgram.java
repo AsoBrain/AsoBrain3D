@@ -1,7 +1,8 @@
 /* ====================================================================
  * $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -40,6 +41,7 @@ public class CoreShaderProgram
 	/**
 	 * Name of the program, intended for traceability; not used by OpenGL.
 	 */
+	@Nullable
 	private final String _name;
 
 	/**
@@ -57,10 +59,10 @@ public class CoreShaderProgram
 	 *
 	 * @param   name    Name for the program, for traceability.
 	 */
-	public CoreShaderProgram( final String name )
+	public CoreShaderProgram( @Nullable final String name )
 	{
-		_name    = name;
-		_linked  = false;
+		_name = name;
+		_linked = false;
 
 		final GL gl = GLU.getCurrentGL();
 
@@ -77,7 +79,7 @@ public class CoreShaderProgram
 	public void attach( final Shader shader )
 	{
 		final GL gl = GLU.getCurrentGL();
-		gl.glAttachShader( _program , shader.getShaderObject() );
+		gl.glAttachShader( _program, shader.getShaderObject() );
 		_linked = false;
 	}
 
@@ -85,7 +87,7 @@ public class CoreShaderProgram
 	public void detach( final Shader shader )
 	{
 		final GL gl = GLU.getCurrentGL();
-		gl.glDetachShader( _program , shader.getShaderObject() );
+		gl.glDetachShader( _program, shader.getShaderObject() );
 		_linked = false;
 	}
 
@@ -103,7 +105,7 @@ public class CoreShaderProgram
 			gl.glLinkProgram( program );
 
 			final int[] linkStatus = new int[ 1 ];
-			gl.glGetProgramiv( program , GL.GL_LINK_STATUS , linkStatus , 0 );
+			gl.glGetProgramiv( program, GL.GL_LINK_STATUS, linkStatus, 0 );
 
 			final String infoLog = getInfoLog();
 			if ( linkStatus[ 0 ] == GL.GL_FALSE )
@@ -124,7 +126,7 @@ public class CoreShaderProgram
 		gl.glValidateProgram( program );
 
 		final int[] validateStatus = new int[ 1 ];
-		gl.glGetProgramiv( program , GL.GL_VALIDATE_STATUS , validateStatus , 0 );
+		gl.glGetProgramiv( program, GL.GL_VALIDATE_STATUS, validateStatus, 0 );
 
 		final String infoLog = getInfoLog();
 		if ( validateStatus[ 0 ] == GL.GL_FALSE )
@@ -139,7 +141,7 @@ public class CoreShaderProgram
 	{
 		final GL gl = GLU.getCurrentGL();
 		final int[] infoLogLength = new int[ 1 ];
-		gl.glGetProgramiv( _program, GL.GL_INFO_LOG_LENGTH , infoLogLength , 0 );
+		gl.glGetProgramiv( _program, GL.GL_INFO_LOG_LENGTH, infoLogLength, 0 );
 
 		final String infoLog;
 		if( infoLogLength[ 0 ] == 0 )
@@ -149,8 +151,8 @@ public class CoreShaderProgram
 		else
 		{
 			final byte[] infoLogBytes = new byte[ infoLogLength[ 0 ] ];
-			gl.glGetProgramInfoLog( _program, infoLogLength[ 0 ] , infoLogLength , 0 , infoLogBytes , 0 );
-			infoLog = new String( infoLogBytes , 0 , infoLogLength[ 0 ] , Charset.forName( "iso-8859-1" ) );
+			gl.glGetProgramInfoLog( _program, infoLogLength[ 0 ], infoLogLength, 0, infoLogBytes, 0 );
+			infoLog = new String( infoLogBytes, 0, infoLogLength[ 0 ], Charset.forName( "iso-8859-1" ) );
 		}
 		return infoLog;
 	}
@@ -180,35 +182,35 @@ public class CoreShaderProgram
 	}
 
 	@Override
-	public void setUniform( final String identifier , final float value )
+	public void setUniform( final String identifier, final float value )
 	{
 		final GL gl = GLU.getCurrentGL();
-		final int variable = gl.glGetUniformLocation( _program , identifier );
+		final int variable = gl.glGetUniformLocation( _program, identifier );
 		if ( variable != -1 )
 		{
-			gl.glUniform1f( variable , value );
+			gl.glUniform1f( variable, value );
 		}
 	}
 
 	@Override
-	public void setUniform( final String identifier , final int value )
+	public void setUniform( final String identifier, final int value )
 	{
 		final GL gl = GLU.getCurrentGL();
-		final int variable = gl.glGetUniformLocation( _program , identifier );
+		final int variable = gl.glGetUniformLocation( _program, identifier );
 		if ( variable != -1 )
 		{
-			gl.glUniform1i( variable , value );
+			gl.glUniform1i( variable, value );
 		}
 	}
 
 	@Override
-	public void setUniform( final String identifier , final boolean value )
+	public void setUniform( final String identifier, final boolean value )
 	{
 		setUniform( identifier, value ? GL.GL_TRUE : GL.GL_FALSE );
 	}
 
 	@Override
-	public void setUniform( final String identifier , final Vector3D value )
+	public void setUniform( final String identifier, final Vector3D value )
 	{
 		setUniform( identifier, (float)value.x, (float)value.y, (float)value.z );
 	}
@@ -217,7 +219,7 @@ public class CoreShaderProgram
 	public void setUniform( final String identifier, final float x, final float y, final float z )
 	{
 		final GL gl = GLU.getCurrentGL();
-		final int variable = gl.glGetUniformLocation( _program , identifier );
+		final int variable = gl.glGetUniformLocation( _program, identifier );
 		if ( variable != -1 )
 		{
 			gl.glUniform3f( variable, x, y, z );

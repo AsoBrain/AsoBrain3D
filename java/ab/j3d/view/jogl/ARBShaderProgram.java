@@ -1,7 +1,8 @@
 /* ====================================================================
  * $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -41,6 +42,7 @@ public class ARBShaderProgram
 	/**
 	 * Name of the program, intended for traceability; not used by OpenGL.
 	 */
+	@Nullable
 	private final String _name;
 
 	/**
@@ -58,10 +60,10 @@ public class ARBShaderProgram
 	 *
 	 * @param   name    Name for the program, for traceability.
 	 */
-	public ARBShaderProgram( final String name )
+	public ARBShaderProgram( @Nullable final String name )
 	{
-		_name    = name;
-		_linked  = false;
+		_name = name;
+		_linked = false;
 
 		final GL gl = GLU.getCurrentGL();
 
@@ -86,7 +88,7 @@ public class ARBShaderProgram
 	public void detach( final Shader shader )
 	{
 		final GL gl = GLU.getCurrentGL();
-		gl.glDetachObjectARB( _program , shader.getShaderObject() );
+		gl.glDetachObjectARB( _program, shader.getShaderObject() );
 		_linked = false;
 	}
 
@@ -104,7 +106,7 @@ public class ARBShaderProgram
 			gl.glLinkProgramARB( program );
 
 			final int[] linkStatus = new int[ 1 ];
-			gl.glGetObjectParameterivARB( program , GL.GL_OBJECT_LINK_STATUS_ARB , linkStatus , 0 );
+			gl.glGetObjectParameterivARB( program, GL.GL_OBJECT_LINK_STATUS_ARB, linkStatus, 0 );
 
 			final String infoLog = getInfoLog();
 			if ( linkStatus[ 0 ] == GL.GL_FALSE )
@@ -125,7 +127,7 @@ public class ARBShaderProgram
 		gl.glValidateProgramARB( program );
 
 		final int[] validateStatus = new int[ 1 ];
-		gl.glGetObjectParameterivARB( program , GL.GL_OBJECT_VALIDATE_STATUS_ARB , validateStatus , 0 );
+		gl.glGetObjectParameterivARB( program, GL.GL_OBJECT_VALIDATE_STATUS_ARB, validateStatus, 0 );
 
 		final String infoLog = getInfoLog();
 		if ( validateStatus[ 0 ] == GL.GL_FALSE )
@@ -140,7 +142,7 @@ public class ARBShaderProgram
 	{
 		final GL gl = GLU.getCurrentGL();
 		final int[] infoLogLength = new int[ 1 ];
-		gl.glGetObjectParameterivARB( _program, GL.GL_OBJECT_INFO_LOG_LENGTH_ARB , infoLogLength , 0 );
+		gl.glGetObjectParameterivARB( _program, GL.GL_OBJECT_INFO_LOG_LENGTH_ARB, infoLogLength, 0 );
 
 		final String infoLog;
 		if( infoLogLength[ 0 ] == 0 )
@@ -150,8 +152,8 @@ public class ARBShaderProgram
 		else
 		{
 			final byte[] infoLogBytes = new byte[ infoLogLength[ 0 ] ];
-			gl.glGetInfoLogARB( _program, infoLogLength[ 0 ] , infoLogLength , 0 , infoLogBytes , 0 );
-			infoLog = new String( infoLogBytes , 0 , infoLogLength[ 0 ] , Charset.forName( "iso-8859-1" ) );
+			gl.glGetInfoLogARB( _program, infoLogLength[ 0 ], infoLogLength, 0, infoLogBytes, 0 );
+			infoLog = new String( infoLogBytes, 0, infoLogLength[ 0 ], Charset.forName( "iso-8859-1" ) );
 		}
 		return infoLog;
 	}
@@ -181,44 +183,44 @@ public class ARBShaderProgram
 	}
 
 	@Override
-	public void setUniform( final String identifier , final float value )
+	public void setUniform( final String identifier, final float value )
 	{
 		final GL gl = GLU.getCurrentGL();
-		final int variable = gl.glGetUniformLocationARB( _program , identifier );
+		final int variable = gl.glGetUniformLocationARB( _program, identifier );
 		if ( variable != -1 )
 		{
-			gl.glUniform1fARB( variable , value );
+			gl.glUniform1fARB( variable, value );
 		}
 	}
 
 	@Override
-	public void setUniform( final String identifier , final int value )
+	public void setUniform( final String identifier, final int value )
 	{
 		final GL gl = GLU.getCurrentGL();
-		final int variable = gl.glGetUniformLocationARB( _program , identifier );
+		final int variable = gl.glGetUniformLocationARB( _program, identifier );
 		if ( variable != -1 )
 		{
-			gl.glUniform1iARB( variable , value );
+			gl.glUniform1iARB( variable, value );
 		}
 	}
 
 	@Override
-	public void setUniform( final String identifier , final boolean value )
+	public void setUniform( final String identifier, final boolean value )
 	{
 		setUniform( identifier, value ? GL.GL_TRUE : GL.GL_FALSE );
 	}
 
 	@Override
-	public void setUniform( final String identifier , final Vector3D value )
+	public void setUniform( final String identifier, final Vector3D value )
 	{
 		setUniform( identifier, (float)value.x, (float)value.y, (float)value.z );
 	}
 
 	@Override
-	public void setUniform( final String identifier , final float x, final float y, final float z )
+	public void setUniform( final String identifier, final float x, final float y, final float z )
 	{
 		final GL gl = GLU.getCurrentGL();
-		final int variable = gl.glGetUniformLocationARB( _program , identifier );
+		final int variable = gl.glGetUniformLocationARB( _program, identifier );
 		if ( variable != -1 )
 		{
 			gl.glUniform3fARB( variable, x, y, z );

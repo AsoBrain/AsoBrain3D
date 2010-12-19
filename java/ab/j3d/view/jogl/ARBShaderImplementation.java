@@ -1,7 +1,8 @@
 /* ====================================================================
  * $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +21,8 @@
  */
 package ab.j3d.view.jogl;
 
+import org.jetbrains.annotations.*;
+
 /**
  * Provides OpenGL Shading Language (GLSL) shaders using the ARB extension.
  * As such, it may be supported on OpenGL versions 1.4 and above.
@@ -30,12 +33,14 @@ package ab.j3d.view.jogl;
 public class ARBShaderImplementation
 	implements ShaderImplementation
 {
-	public Shader createShader( final Shader.Type type )
+	@NotNull
+	public Shader createShader( @NotNull final Shader.Type type )
 	{
 		return new ARBShader( type );
 	}
 
-	public ShaderProgram createProgram( final String name )
+	@NotNull
+	public ShaderProgram createProgram( @Nullable final String name )
 	{
 		return new ARBShaderProgram( name );
 	}
