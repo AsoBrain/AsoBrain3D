@@ -52,683 +52,579 @@
 */
 package ab.j3d.geom.tessellator;
 
-class Mesh {
-    private Mesh() {
-    }
+import java.awt.geom.*;
+import java.util.*;
 
-    /************************ Utility Routines ************************/
-/* MakeEdge creates a new pair of half-edges which form their own loop.
- * No vertex or face structures are allocated, but these must be assigned
- * before the current edge operation is completed.
+import ab.j3d.geom.*;
+import com.numdata.oss.*;
+import org.jetbrains.annotations.*;
+
+/**
+ * The {@link Mesh} class defines a mesh during the tessellation process.
  */
-    static ab.j3d.geom.tessellator.GLUhalfEdge MakeEdge(ab.j3d.geom.tessellator.GLUhalfEdge eNext) {
-        ab.j3d.geom.tessellator.GLUhalfEdge e;
-        ab.j3d.geom.tessellator.GLUhalfEdge eSym;
-        ab.j3d.geom.tessellator.GLUhalfEdge ePrev;
-
-//        EdgePair * pair = (EdgePair *)
-//        memAlloc(sizeof(EdgePair));
-//        if (pair == NULL) return NULL;
-//
-//        e = &pair - > e;
-        e = new ab.j3d.geom.tessellator.GLUhalfEdge(true);
-//        eSym = &pair - > eSym;
-        eSym = new ab.j3d.geom.tessellator.GLUhalfEdge(false);
-
-
-        /* Make sure eNext points to the first edge of the edge pair */
-        if (!eNext.first) {
-            eNext = eNext.Sym;
-        }
-
-        /* Insert in circular doubly-linked list before eNext.
-         * Note that the prev pointer is stored in Sym->next.
-         */
-        ePrev = eNext.Sym.next;
-        eSym.next = ePrev;
-        ePrev.Sym.next = e;
-        e.next = eNext;
-        eNext.Sym.next = eSym;
-
-        e.Sym = eSym;
-        e.Onext = e;
-        e.Lnext = eSym;
-        e.Org = null;
-        e.Lface = null;
-        e.winding = 0;
-        e.activeRegion = null;
-
-        eSym.Sym = e;
-        eSym.Onext = eSym;
-        eSym.Lnext = e;
-        eSym.Org = null;
-        eSym.Lface = null;
-        eSym.winding = 0;
-        eSym.activeRegion = null;
-
-        return e;
-    }
-
-/* Splice( a, b ) is best described by the Guibas/Stolfi paper or the
- * CS348a notes (see mesh.h).  Basically it modifies the mesh so that
- * a->Onext and b->Onext are exchanged.  This can have various effects
- * depending on whether a and b belong to different face or vertex rings.
- * For more explanation see __gl_meshSplice() below.
- */
-    static void Splice(ab.j3d.geom.tessellator.GLUhalfEdge a, ab.j3d.geom.tessellator.GLUhalfEdge b) {
-        ab.j3d.geom.tessellator.GLUhalfEdge aOnext = a.Onext;
-        ab.j3d.geom.tessellator.GLUhalfEdge bOnext = b.Onext;
-
-        aOnext.Sym.Lnext = b;
-        bOnext.Sym.Lnext = a;
-        a.Onext = bOnext;
-        b.Onext = aOnext;
-    }
-
-/* MakeVertex( newVertex, eOrig, vNext ) attaches a new vertex and makes it the
- * origin of all edges in the vertex loop to which eOrig belongs. "vNext" gives
- * a place to insert the new vertex in the global vertex list.  We insert
- * the new vertex *before* vNext so that algorithms which walk the vertex
- * list will not see the newly created vertices.
- */
-    static void MakeVertex(ab.j3d.geom.tessellator.GLUvertex newVertex,
-                           ab.j3d.geom.tessellator.GLUhalfEdge eOrig, ab.j3d.geom.tessellator.GLUvertex vNext) {
-        ab.j3d.geom.tessellator.GLUhalfEdge e;
-        ab.j3d.geom.tessellator.GLUvertex vPrev;
-        ab.j3d.geom.tessellator.GLUvertex vNew = newVertex;
-
-        assert (vNew != null);
-
-        /* insert in circular doubly-linked list before vNext */
-        vPrev = vNext.prev;
-        vNew.prev = vPrev;
-        vPrev.next = vNew;
-        vNew.next = vNext;
-        vNext.prev = vNew;
-
-        vNew.anEdge = eOrig;
-        vNew.data = null;
-        /* leave coords, s, t undefined */
-
-        /* fix other edges on this vertex loop */
-        e = eOrig;
-        do {
-            e.Org = vNew;
-            e = e.Onext;
-        } while (e != eOrig);
-    }
-
-/* MakeFace( newFace, eOrig, fNext ) attaches a new face and makes it the left
- * face of all edges in the face loop to which eOrig belongs.  "fNext" gives
- * a place to insert the new face in the global face list.  We insert
- * the new face *before* fNext so that algorithms which walk the face
- * list will not see the newly created faces.
- */
-    static void MakeFace(ab.j3d.geom.tessellator.GLUface newFace, ab.j3d.geom.tessellator.GLUhalfEdge eOrig, ab.j3d.geom.tessellator.GLUface fNext) {
-        ab.j3d.geom.tessellator.GLUhalfEdge e;
-        ab.j3d.geom.tessellator.GLUface fPrev;
-        ab.j3d.geom.tessellator.GLUface fNew = newFace;
-
-        assert (fNew != null);
-
-        /* insert in circular doubly-linked list before fNext */
-        fPrev = fNext.prev;
-        fNew.prev = fPrev;
-        fPrev.next = fNew;
-        fNew.next = fNext;
-        fNext.prev = fNew;
-
-        fNew.anEdge = eOrig;
-        fNew.data = null;
-        fNew.trail = null;
-        fNew.marked = false;
-
-        /* The new face is marked "inside" if the old one was.  This is a
-         * convenience for the common case where a face has been split in two.
-         */
-        fNew.inside = fNext.inside;
-
-        /* fix other edges on this face loop */
-        e = eOrig;
-        do {
-            e.Lface = fNew;
-            e = e.Lnext;
-        } while (e != eOrig);
-    }
-
-/* KillEdge( eDel ) destroys an edge (the half-edges eDel and eDel->Sym),
- * and removes from the global edge list.
- */
-    static void KillEdge(ab.j3d.geom.tessellator.GLUhalfEdge eDel) {
-        ab.j3d.geom.tessellator.GLUhalfEdge ePrev, eNext;
-
-        /* Half-edges are allocated in pairs, see EdgePair above */
-        if (!eDel.first) {
-            eDel = eDel.Sym;
-        }
-
-        /* delete from circular doubly-linked list */
-        eNext = eDel.next;
-        ePrev = eDel.Sym.next;
-        eNext.Sym.next = ePrev;
-        ePrev.Sym.next = eNext;
-    }
-
-
-/* KillVertex( vDel ) destroys a vertex and removes it from the global
- * vertex list.  It updates the vertex loop to point to a given new vertex.
- */
-    static void KillVertex(ab.j3d.geom.tessellator.GLUvertex vDel, ab.j3d.geom.tessellator.GLUvertex newOrg) {
-        ab.j3d.geom.tessellator.GLUhalfEdge e, eStart = vDel.anEdge;
-        ab.j3d.geom.tessellator.GLUvertex vPrev, vNext;
-
-        /* change the origin of all affected edges */
-        e = eStart;
-        do {
-            e.Org = newOrg;
-            e = e.Onext;
-        } while (e != eStart);
-
-        /* delete from circular doubly-linked list */
-        vPrev = vDel.prev;
-        vNext = vDel.next;
-        vNext.prev = vPrev;
-        vPrev.next = vNext;
-    }
-
-/* KillFace( fDel ) destroys a face and removes it from the global face
- * list.  It updates the face loop to point to a given new face.
- */
-    static void KillFace(ab.j3d.geom.tessellator.GLUface fDel, ab.j3d.geom.tessellator.GLUface newLface) {
-        ab.j3d.geom.tessellator.GLUhalfEdge e, eStart = fDel.anEdge;
-        ab.j3d.geom.tessellator.GLUface fPrev, fNext;
-
-        /* change the left face of all affected edges */
-        e = eStart;
-        do {
-            e.Lface = newLface;
-            e = e.Lnext;
-        } while (e != eStart);
-
-        /* delete from circular doubly-linked list */
-        fPrev = fDel.prev;
-        fNext = fDel.next;
-        fNext.prev = fPrev;
-        fPrev.next = fNext;
-    }
-
-
-    /****************** Basic Edge Operations **********************/
-
-/* __gl_meshMakeEdge creates one edge, two vertices, and a loop (face).
- * The loop consists of the two new half-edges.
- */
-    public static ab.j3d.geom.tessellator.GLUhalfEdge __gl_meshMakeEdge(ab.j3d.geom.tessellator.GLUmesh mesh) {
-        ab.j3d.geom.tessellator.GLUvertex newVertex1 = new ab.j3d.geom.tessellator.GLUvertex();
-        ab.j3d.geom.tessellator.GLUvertex newVertex2 = new ab.j3d.geom.tessellator.GLUvertex();
-        ab.j3d.geom.tessellator.GLUface newFace = new ab.j3d.geom.tessellator.GLUface();
-        ab.j3d.geom.tessellator.GLUhalfEdge e;
-
-        e = MakeEdge(mesh.eHead);
-        if (e == null) return null;
-
-        MakeVertex(newVertex1, e, mesh.vHead);
-        MakeVertex(newVertex2, e.Sym, mesh.vHead);
-        MakeFace(newFace, e, mesh.fHead);
-        return e;
-    }
-
-
-/* __gl_meshSplice( eOrg, eDst ) is the basic operation for changing the
- * mesh connectivity and topology.  It changes the mesh so that
- *	eOrg->Onext <- OLD( eDst->Onext )
- *	eDst->Onext <- OLD( eOrg->Onext )
- * where OLD(...) means the value before the meshSplice operation.
- *
- * This can have two effects on the vertex structure:
- *  - if eOrg->Org != eDst->Org, the two vertices are merged together
- *  - if eOrg->Org == eDst->Org, the origin is split into two vertices
- * In both cases, eDst->Org is changed and eOrg->Org is untouched.
- *
- * Similarly (and independently) for the face structure,
- *  - if eOrg->Lface == eDst->Lface, one loop is split into two
- *  - if eOrg->Lface != eDst->Lface, two distinct loops are joined into one
- * In both cases, eDst->Lface is changed and eOrg->Lface is unaffected.
- *
- * Some special cases:
- * If eDst == eOrg, the operation has no effect.
- * If eDst == eOrg->Lnext, the new face will have a single edge.
- * If eDst == eOrg->Lprev, the old face will have a single edge.
- * If eDst == eOrg->Onext, the new vertex will have a single edge.
- * If eDst == eOrg->Oprev, the old vertex will have a single edge.
- */
-    public static boolean __gl_meshSplice(ab.j3d.geom.tessellator.GLUhalfEdge eOrg, ab.j3d.geom.tessellator.GLUhalfEdge eDst) {
-        boolean joiningLoops = false;
-        boolean joiningVertices = false;
-
-        if (eOrg == eDst) return true;
-
-        if (eDst.Org != eOrg.Org) {
-            /* We are merging two disjoint vertices -- destroy eDst->Org */
-            joiningVertices = true;
-            KillVertex(eDst.Org, eOrg.Org);
-        }
-        if (eDst.Lface != eOrg.Lface) {
-            /* We are connecting two disjoint loops -- destroy eDst.Lface */
-            joiningLoops = true;
-            KillFace(eDst.Lface, eOrg.Lface);
-        }
-
-        /* Change the edge structure */
-        Splice(eDst, eOrg);
-
-        if (!joiningVertices) {
-            ab.j3d.geom.tessellator.GLUvertex newVertex = new ab.j3d.geom.tessellator.GLUvertex();
-
-            /* We split one vertex into two -- the new vertex is eDst.Org.
-             * Make sure the old vertex points to a valid half-edge.
-             */
-            MakeVertex(newVertex, eDst, eOrg.Org);
-            eOrg.Org.anEdge = eOrg;
-        }
-        if (!joiningLoops) {
-            ab.j3d.geom.tessellator.GLUface newFace = new ab.j3d.geom.tessellator.GLUface();
-
-            /* We split one loop into two -- the new loop is eDst.Lface.
-             * Make sure the old face points to a valid half-edge.
-             */
-            MakeFace(newFace, eDst, eOrg.Lface);
-            eOrg.Lface.anEdge = eOrg;
-        }
-
-        return true;
-    }
-
-
-/* __gl_meshDelete( eDel ) removes the edge eDel.  There are several cases:
- * if (eDel.Lface != eDel.Rface), we join two loops into one; the loop
- * eDel.Lface is deleted.  Otherwise, we are splitting one loop into two;
- * the newly created loop will contain eDel.Dst.  If the deletion of eDel
- * would create isolated vertices, those are deleted as well.
- *
- * This function could be implemented as two calls to __gl_meshSplice
- * plus a few calls to memFree, but this would allocate and delete
- * unnecessary vertices and faces.
- */
-    static boolean __gl_meshDelete(ab.j3d.geom.tessellator.GLUhalfEdge eDel) {
-        ab.j3d.geom.tessellator.GLUhalfEdge eDelSym = eDel.Sym;
-        boolean joiningLoops = false;
-
-        /* First step: disconnect the origin vertex eDel.Org.  We make all
-         * changes to get a consistent mesh in this "intermediate" state.
-         */
-        if (eDel.Lface != eDel.Sym.Lface) {
-            /* We are joining two loops into one -- remove the left face */
-            joiningLoops = true;
-            KillFace(eDel.Lface, eDel.Sym.Lface);
-        }
-
-        if (eDel.Onext == eDel) {
-            KillVertex(eDel.Org, null);
-        } else {
-            /* Make sure that eDel.Org and eDel.Sym.Lface point to valid half-edges */
-            eDel.Sym.Lface.anEdge = eDel.Sym.Lnext;
-            eDel.Org.anEdge = eDel.Onext;
-
-            Splice(eDel, eDel.Sym.Lnext);
-            if (!joiningLoops) {
-                ab.j3d.geom.tessellator.GLUface newFace = new ab.j3d.geom.tessellator.GLUface();
-
-                /* We are splitting one loop into two -- create a new loop for eDel. */
-                MakeFace(newFace, eDel, eDel.Lface);
-            }
-        }
-
-        /* Claim: the mesh is now in a consistent state, except that eDel.Org
-         * may have been deleted.  Now we disconnect eDel.Dst.
-         */
-        if (eDelSym.Onext == eDelSym) {
-            KillVertex(eDelSym.Org, null);
-            KillFace(eDelSym.Lface, null);
-        } else {
-            /* Make sure that eDel.Dst and eDel.Lface point to valid half-edges */
-            eDel.Lface.anEdge = eDelSym.Sym.Lnext;
-            eDelSym.Org.anEdge = eDelSym.Onext;
-            Splice(eDelSym, eDelSym.Sym.Lnext);
-        }
-
-        /* Any isolated vertices or faces have already been freed. */
-        KillEdge(eDel);
-
-        return true;
-    }
-
-
-    /******************** Other Edge Operations **********************/
-
-/* All these routines can be implemented with the basic edge
- * operations above.  They are provided for convenience and efficiency.
- */
-
-
-/* __gl_meshAddEdgeVertex( eOrg ) creates a new edge eNew such that
- * eNew == eOrg.Lnext, and eNew.Dst is a newly created vertex.
- * eOrg and eNew will have the same left face.
- */
-    static ab.j3d.geom.tessellator.GLUhalfEdge __gl_meshAddEdgeVertex(ab.j3d.geom.tessellator.GLUhalfEdge eOrg) {
-        ab.j3d.geom.tessellator.GLUhalfEdge eNewSym;
-        ab.j3d.geom.tessellator.GLUhalfEdge eNew = MakeEdge(eOrg);
-
-        eNewSym = eNew.Sym;
-
-        /* Connect the new edge appropriately */
-        Splice(eNew, eOrg.Lnext);
-
-        /* Set the vertex and face information */
-        eNew.Org = eOrg.Sym.Org;
-        {
-            ab.j3d.geom.tessellator.GLUvertex newVertex = new ab.j3d.geom.tessellator.GLUvertex();
-
-            MakeVertex(newVertex, eNewSym, eNew.Org);
-        }
-        eNew.Lface = eNewSym.Lface = eOrg.Lface;
-
-        return eNew;
-    }
-
-
-/* __gl_meshSplitEdge( eOrg ) splits eOrg into two edges eOrg and eNew,
- * such that eNew == eOrg.Lnext.  The new vertex is eOrg.Sym.Org == eNew.Org.
- * eOrg and eNew will have the same left face.
- */
-    public static ab.j3d.geom.tessellator.GLUhalfEdge __gl_meshSplitEdge(ab.j3d.geom.tessellator.GLUhalfEdge eOrg) {
-        ab.j3d.geom.tessellator.GLUhalfEdge eNew;
-        ab.j3d.geom.tessellator.GLUhalfEdge tempHalfEdge = __gl_meshAddEdgeVertex(eOrg);
-
-        eNew = tempHalfEdge.Sym;
-
-        /* Disconnect eOrg from eOrg.Sym.Org and connect it to eNew.Org */
-        Splice(eOrg.Sym, eOrg.Sym.Sym.Lnext);
-        Splice(eOrg.Sym, eNew);
-
-        /* Set the vertex and face information */
-        eOrg.Sym.Org = eNew.Org;
-        eNew.Sym.Org.anEdge = eNew.Sym;	/* may have pointed to eOrg.Sym */
-        eNew.Sym.Lface = eOrg.Sym.Lface;
-        eNew.winding = eOrg.winding;	/* copy old winding information */
-        eNew.Sym.winding = eOrg.Sym.winding;
-
-        return eNew;
-    }
-
-
-/* __gl_meshConnect( eOrg, eDst ) creates a new edge from eOrg.Sym.Org
- * to eDst.Org, and returns the corresponding half-edge eNew.
- * If eOrg.Lface == eDst.Lface, this splits one loop into two,
- * and the newly created loop is eNew.Lface.  Otherwise, two disjoint
- * loops are merged into one, and the loop eDst.Lface is destroyed.
- *
- * If (eOrg == eDst), the new face will have only two edges.
- * If (eOrg.Lnext == eDst), the old face is reduced to a single edge.
- * If (eOrg.Lnext.Lnext == eDst), the old face is reduced to two edges.
- */
-    static ab.j3d.geom.tessellator.GLUhalfEdge __gl_meshConnect(ab.j3d.geom.tessellator.GLUhalfEdge eOrg, ab.j3d.geom.tessellator.GLUhalfEdge eDst) {
-        ab.j3d.geom.tessellator.GLUhalfEdge eNewSym;
-        boolean joiningLoops = false;
-        ab.j3d.geom.tessellator.GLUhalfEdge eNew = MakeEdge(eOrg);
-
-        eNewSym = eNew.Sym;
-
-        if (eDst.Lface != eOrg.Lface) {
-            /* We are connecting two disjoint loops -- destroy eDst.Lface */
-            joiningLoops = true;
-            KillFace(eDst.Lface, eOrg.Lface);
-        }
-
-        /* Connect the new edge appropriately */
-        Splice(eNew, eOrg.Lnext);
-        Splice(eNewSym, eDst);
-
-        /* Set the vertex and face information */
-        eNew.Org = eOrg.Sym.Org;
-        eNewSym.Org = eDst.Org;
-        eNew.Lface = eNewSym.Lface = eOrg.Lface;
-
-        /* Make sure the old face points to a valid half-edge */
-        eOrg.Lface.anEdge = eNewSym;
-
-        if (!joiningLoops) {
-            ab.j3d.geom.tessellator.GLUface newFace = new ab.j3d.geom.tessellator.GLUface();
-
-            /* We split one loop into two -- the new loop is eNew.Lface */
-            MakeFace(newFace, eNew, eOrg.Lface);
-        }
-        return eNew;
-    }
-
-
-    /******************** Other Operations **********************/
-
-/* __gl_meshZapFace( fZap ) destroys a face and removes it from the
- * global face list.  All edges of fZap will have a null pointer as their
- * left face.  Any edges which also have a null pointer as their right face
- * are deleted entirely (along with any isolated vertices this produces).
- * An entire mesh can be deleted by zapping its faces, one at a time,
- * in any order.  Zapped faces cannot be used in further mesh operations!
- */
-    static void __gl_meshZapFace(ab.j3d.geom.tessellator.GLUface fZap) {
-        ab.j3d.geom.tessellator.GLUhalfEdge eStart = fZap.anEdge;
-        ab.j3d.geom.tessellator.GLUhalfEdge e, eNext, eSym;
-        ab.j3d.geom.tessellator.GLUface fPrev, fNext;
-
-        /* walk around face, deleting edges whose right face is also null */
-        eNext = eStart.Lnext;
-        do {
-            e = eNext;
-            eNext = e.Lnext;
-
-            e.Lface = null;
-            if (e.Sym.Lface == null) {
-                /* delete the edge -- see __gl_MeshDelete above */
-
-                if (e.Onext == e) {
-                    KillVertex(e.Org, null);
-                } else {
-                    /* Make sure that e.Org points to a valid half-edge */
-                    e.Org.anEdge = e.Onext;
-                    Splice(e, e.Sym.Lnext);
-                }
-                eSym = e.Sym;
-                if (eSym.Onext == eSym) {
-                    KillVertex(eSym.Org, null);
-                } else {
-                    /* Make sure that eSym.Org points to a valid half-edge */
-                    eSym.Org.anEdge = eSym.Onext;
-                    Splice(eSym, eSym.Sym.Lnext);
-                }
-                KillEdge(e);
-            }
-        } while (e != eStart);
-
-        /* delete from circular doubly-linked list */
-        fPrev = fZap.prev;
-        fNext = fZap.next;
-        fNext.prev = fPrev;
-        fPrev.next = fNext;
-    }
-
-
-/* __gl_meshNewMesh() creates a new mesh with no edges, no vertices,
- * and no loops (what we usually call a "face").
- */
-    public static ab.j3d.geom.tessellator.GLUmesh __gl_meshNewMesh() {
-        ab.j3d.geom.tessellator.GLUvertex v;
-        ab.j3d.geom.tessellator.GLUface f;
-        ab.j3d.geom.tessellator.GLUhalfEdge e;
-        ab.j3d.geom.tessellator.GLUhalfEdge eSym;
-        ab.j3d.geom.tessellator.GLUmesh mesh = new ab.j3d.geom.tessellator.GLUmesh();
-
-        v = mesh.vHead;
-        f = mesh.fHead;
-        e = mesh.eHead;
-        eSym = mesh.eHeadSym;
-
-        v.next = v.prev = v;
-        v.anEdge = null;
-        v.data = null;
-
-        f.next = f.prev = f;
-        f.anEdge = null;
-        f.data = null;
-        f.trail = null;
-        f.marked = false;
-        f.inside = false;
-
-        e.next = e;
-        e.Sym = eSym;
-        e.Onext = null;
-        e.Lnext = null;
-        e.Org = null;
-        e.Lface = null;
-        e.winding = 0;
-        e.activeRegion = null;
-
-        eSym.next = eSym;
-        eSym.Sym = e;
-        eSym.Onext = null;
-        eSym.Lnext = null;
-        eSym.Org = null;
-        eSym.Lface = null;
-        eSym.winding = 0;
-        eSym.activeRegion = null;
-
-        return mesh;
-    }
-
-
-/* __gl_meshUnion( mesh1, mesh2 ) forms the union of all structures in
- * both meshes, and returns the new mesh (the old meshes are destroyed).
- */
-    static ab.j3d.geom.tessellator.GLUmesh __gl_meshUnion(ab.j3d.geom.tessellator.GLUmesh mesh1, ab.j3d.geom.tessellator.GLUmesh mesh2) {
-        ab.j3d.geom.tessellator.GLUface f1 = mesh1.fHead;
-        ab.j3d.geom.tessellator.GLUvertex v1 = mesh1.vHead;
-        ab.j3d.geom.tessellator.GLUhalfEdge e1 = mesh1.eHead;
-        ab.j3d.geom.tessellator.GLUface f2 = mesh2.fHead;
-        ab.j3d.geom.tessellator.GLUvertex v2 = mesh2.vHead;
-        ab.j3d.geom.tessellator.GLUhalfEdge e2 = mesh2.eHead;
-
-        /* Add the faces, vertices, and edges of mesh2 to those of mesh1 */
-        if (f2.next != f2) {
-            f1.prev.next = f2.next;
-            f2.next.prev = f1.prev;
-            f2.prev.next = f1;
-            f1.prev = f2.prev;
-        }
-
-        if (v2.next != v2) {
-            v1.prev.next = v2.next;
-            v2.next.prev = v1.prev;
-            v2.prev.next = v1;
-            v1.prev = v2.prev;
-        }
-
-        if (e2.next != e2) {
-            e1.Sym.next.Sym.next = e2.next;
-            e2.next.Sym.next = e1.Sym.next;
-            e2.Sym.next.Sym.next = e1;
-            e1.Sym.next = e2.Sym.next;
-        }
-
-        return mesh1;
-    }
-
-
-/* __gl_meshDeleteMesh( mesh ) will free all storage for any valid mesh.
- */
-    static void __gl_meshDeleteMeshZap(ab.j3d.geom.tessellator.GLUmesh mesh) {
-        ab.j3d.geom.tessellator.GLUface fHead = mesh.fHead;
-
-        while (fHead.next != fHead) {
-            __gl_meshZapFace(fHead.next);
-        }
-        assert (mesh.vHead.next == mesh.vHead);
-    }
-
-/* __gl_meshDeleteMesh( mesh ) will free all storage for any valid mesh.
- */
-    public static void __gl_meshDeleteMesh(ab.j3d.geom.tessellator.GLUmesh mesh) {
-        ab.j3d.geom.tessellator.GLUface f, fNext;
-        ab.j3d.geom.tessellator.GLUvertex v, vNext;
-        ab.j3d.geom.tessellator.GLUhalfEdge e, eNext;
-
-        for (f = mesh.fHead.next; f != mesh.fHead; f = fNext) {
-            fNext = f.next;
-        }
-
-        for (v = mesh.vHead.next; v != mesh.vHead; v = vNext) {
-            vNext = v.next;
-        }
-
-        for (e = mesh.eHead.next; e != mesh.eHead; e = eNext) {
-            /* One call frees both e and e.Sym (see EdgePair above) */
-            eNext = e.next;
-        }
-    }
-
-/* __gl_meshCheckMesh( mesh ) checks a mesh for self-consistency.
- */
-    public static void __gl_meshCheckMesh(ab.j3d.geom.tessellator.GLUmesh mesh) {
-        ab.j3d.geom.tessellator.GLUface fHead = mesh.fHead;
-        ab.j3d.geom.tessellator.GLUvertex vHead = mesh.vHead;
-        ab.j3d.geom.tessellator.GLUhalfEdge eHead = mesh.eHead;
-        ab.j3d.geom.tessellator.GLUface f, fPrev;
-        ab.j3d.geom.tessellator.GLUvertex v, vPrev;
-        ab.j3d.geom.tessellator.GLUhalfEdge e, ePrev;
-
-        fPrev = fHead;
-        for (fPrev = fHead; (f = fPrev.next) != fHead; fPrev = f) {
-            assert (f.prev == fPrev);
-            e = f.anEdge;
-            do {
-                assert (e.Sym != e);
-                assert (e.Sym.Sym == e);
-                assert (e.Lnext.Onext.Sym == e);
-                assert (e.Onext.Sym.Lnext == e);
-                assert (e.Lface == f);
-                e = e.Lnext;
-            } while (e != f.anEdge);
-        }
-        assert (f.prev == fPrev && f.anEdge == null && f.data == null);
-
-        vPrev = vHead;
-        for (vPrev = vHead; (v = vPrev.next) != vHead; vPrev = v) {
-            assert (v.prev == vPrev);
-            e = v.anEdge;
-            do {
-                assert (e.Sym != e);
-                assert (e.Sym.Sym == e);
-                assert (e.Lnext.Onext.Sym == e);
-                assert (e.Onext.Sym.Lnext == e);
-                assert (e.Org == v);
-                e = e.Onext;
-            } while (e != v.anEdge);
-        }
-        assert (v.prev == vPrev && v.anEdge == null && v.data == null);
-
-        ePrev = eHead;
-        for (ePrev = eHead; (e = ePrev.next) != eHead; ePrev = e) {
-            assert (e.Sym.next == ePrev.Sym);
-            assert (e.Sym != e);
-            assert (e.Sym.Sym == e);
-            assert (e.Org != null);
-            assert (e.Sym.Org != null);
-            assert (e.Lnext.Onext.Sym == e);
-            assert (e.Onext.Sym.Lnext == e);
-        }
-        assert (e.Sym.next == ePrev.Sym
-                && e.Sym == mesh.eHeadSym
-                && e.Sym.Sym == e
-                && e.Org == null && e.Sym.Org == null
-                && e.Lface == null && e.Sym.Lface == null);
-    }
+public class Mesh
+{
+	/**
+	 * Determines which parts of the polygon are on the "interior".
+	 * <P>
+	 * To understand how the winding rule works, consider that the contours
+	 * partition the plane into regions. The winding rule determines which of
+	 * these regions are inside the polygon.
+	 * <P>
+	 * For a single contour C, the winding number of a point x is simply the
+	 * signed number of revolutions we make around x as we travel once around C
+	 * (where CCW is positive).  When there are several contours, the individual
+	 * winding numbers are summed. This procedure associates a signed integer
+	 * value with each point x in the plane.  Note that the winding number is
+	 * the same for all points in a single region.
+	 * <P>
+	 * The winding rule classifies a region as "inside" if its winding number
+	 * belongs to the chosen category (odd, nonzero, positive, negative, or
+	 * absolute value of at least two). The "odd" and "nonzero" rules are common
+	 * ways to define the interior. The other three rules are useful for polygon
+	 * CSG operations.
+	 */
+	public enum WindingRule
+	{
+		ODD,
+		NONZERO,
+		POSITIVE,
+		NEGATIVE,
+		ABS_GEQ_TWO;
+
+		/**
+		 * Test wether a region with the given winding number is considered
+		 * "inside".
+		 *
+		 * @param   windingNumber   Winding number of region.
+		 *
+		 * @return  <code>true</code> if region is "inside";
+		 *          <code>false</code> if region is "outside".
+		 */
+		boolean isInside( final int windingNumber )
+		{
+			final boolean result;
+
+			switch ( this )
+			{
+				case ODD:
+					result = ( ( windingNumber & 1 ) != 0 );
+					break;
+
+				case NONZERO:
+					result = ( windingNumber != 0 );
+					break;
+
+				case POSITIVE:
+					result = ( windingNumber > 0 );
+					break;
+
+				case NEGATIVE:
+					result = ( windingNumber < 0 );
+					break;
+
+				case ABS_GEQ_TWO:
+					result = ( windingNumber >= 2 ) || ( windingNumber <= -2 );
+					break;
+
+				default:
+					throw new AssertionError( this );
+			}
+
+			return result;
+		}
+
+	}
+
+	/**
+	 * Winding rule of mesh.
+	 */
+	final WindingRule windingRule;
+
+	/**
+	 * head of vertex list
+	 */
+	Vertex _vertexListHead;
+
+	/**
+	 * head of face list
+	 */
+	Face _faceListHead;
+
+	/**
+	 * head of edge list
+	 */
+	HalfEdge _edgeListHead;
+
+	/**
+	 * symmetric counterpart of head of edge list
+	 */
+	HalfEdge _edgeListHeadSymmetric;
+
+	/**
+	 * Most recently added edge of contour that is being build. This is
+	 * <code>null</code> if no contour is started yet or the contour is
+	 * finished.
+	 */
+	private HalfEdge _lastContourEdge;
+
+	/**
+	 * Flag to indicate that {@link #finish} was called.
+	 */
+	private boolean _finished;
+
+	/**
+	 * Flag to indicate that the mesh was tessellated.
+	 *
+	 * @see     #constructPrimitives
+	 */
+	private boolean _tessellated;
+
+	/**
+	 * Flag to indicate that the mesh was outlined.
+	 *
+	 * @see     #constructOutlines
+	 */
+	private boolean _outlined;
+
+	/**
+	 * Creates a new mesh with no edges, no vertices, and no loops (what we
+	 * usually call a "face").
+	 *
+	 * @param   windingRule     Winding rule of mesh.
+	 */
+	public Mesh( final WindingRule windingRule )
+	{
+		this.windingRule = windingRule;
+
+		final Vertex vertexListHead = new Vertex();
+		vertexListHead.prev = vertexListHead;
+		vertexListHead.next = vertexListHead;
+		vertexListHead.anEdge = null;
+		vertexListHead.vertexIndex = -1;
+
+		final Face faceListHead = new Face();
+		faceListHead.prev = faceListHead;
+		faceListHead.next = faceListHead;
+		faceListHead.anEdge = null;
+		faceListHead.renderStack = null;
+		faceListHead.rendered = false;
+		faceListHead.inside = false;
+
+		final HalfEdge edgeListHead  = new HalfEdge( true );
+		edgeListHead.next = edgeListHead;
+		edgeListHead.ccwAroundOrigin = null;
+		edgeListHead.ccwAroundLeftFace = null;
+		edgeListHead.origin = null;
+		edgeListHead.leftFace = null;
+		edgeListHead.winding = 0;
+		edgeListHead.activeRegion = null;
+
+		final HalfEdge edgeListHeadSymmetric = new HalfEdge( false );
+		edgeListHeadSymmetric.next = edgeListHeadSymmetric;
+		edgeListHeadSymmetric.ccwAroundOrigin = null;
+		edgeListHeadSymmetric.ccwAroundLeftFace = null;
+		edgeListHeadSymmetric.origin = null;
+		edgeListHeadSymmetric.leftFace = null;
+		edgeListHeadSymmetric.winding = 0;
+		edgeListHeadSymmetric.activeRegion = null;
+
+		edgeListHead.symmetric = edgeListHeadSymmetric;
+		edgeListHeadSymmetric.symmetric = edgeListHead;
+
+		_vertexListHead = vertexListHead;
+		_faceListHead = faceListHead;
+		_edgeListHead = edgeListHead;
+		_edgeListHeadSymmetric = edgeListHeadSymmetric;
+
+		_lastContourEdge = null;
+		_finished = false;
+		_tessellated = false;
+		_outlined = false;
+	}
+
+	/**
+	 * Begin the definition of a new contour. The following vertices specify a
+	 * closed contour (the last vertex is automatically connected to the first).
+	 */
+	public void beginContour()
+	{
+		_lastContourEdge = null;
+	}
+
+	/**
+	 * Add vertex to current contour. Can only be called between
+	 * {@link #beginContour} and {@link #endContour}.
+	 *
+	 * @param   x   X coordinate of vertex.
+	 * @param   y   Y coordinate of vertex.
+	 */
+	public void addVertex( final double x, final double y )
+	{
+		if ( _finished )
+		{
+			throw new IllegalStateException( "finish() called" );
+		}
+
+		HalfEdge edge = _lastContourEdge;
+		if ( edge == null )
+		{
+			/* Make a self-loop (one vertex, one edge). */
+
+			edge = createSelfLoopEdge();
+			spliceMesh( edge, edge.symmetric );
+		}
+		else
+		{
+			/* Create a new vertex and edge which immediately follow e
+			 * in the ordering around the left face.
+			 */
+			edge.split();
+			edge = edge.ccwAroundLeftFace;
+		}
+
+		/* The new vertex is now e.Org. */
+		edge.origin.x = x;
+		edge.origin.y = y;
+
+		/*
+		 * The winding of an edge says how the winding number changes as we
+		 * cross from the edge''s right face to its left face.  We add the
+		 * vertices in such an order that a CCW contour will add +1 to
+		 * the winding number of the region inside the contour.
+		 */
+		edge.winding = 1;
+		edge.symmetric.winding = -1;
+
+		_lastContourEdge = edge;
+	}
+
+	/**
+	 * Indicates the end of a polygon contour.
+	 */
+	public void endContour()
+	{
+		_lastContourEdge = null;
+	}
+
+	/**
+	 * Ends the definition of the mesh. When this method is called, the polygon
+	 * can be tessellated or outlined using the {@link #constructPrimitives} or
+	 * {@link #constructOutlines} methods, respectively.
+	 */
+	public void finish()
+	{
+		if ( _finished )
+		{
+			throw new IllegalStateException( "finish() called" );
+		}
+
+		_lastContourEdge = null;
+
+		final Sweep sweep = new Sweep( this );
+		sweep.computeInterior();
+
+		_finished = true;
+		_tessellated = false;
+		_outlined = false;
+	}
+
+	/**
+	 * Constructs triangles for interior of mesh.
+	 *
+	 * @param   vertexList          List of 2D vertices to use in result.
+	 * @param   counterClockwise    Construct counter-clockwise primitives.
+	 *
+	 * @return  All triangles in the mesh.
+	 */
+	public int[] constructTriangles( final HashList<Point2D> vertexList, final boolean counterClockwise )
+	{
+		if ( !_finished )
+		{
+			throw new IllegalStateException( "need finish()" );
+		}
+
+		if ( _outlined )
+		{
+			throw new IllegalStateException( "not possible after outline()" );
+		}
+
+		return TesselationConstructor.constructTriangles( this, vertexList, counterClockwise );
+	}
+
+	/**
+	 * Constructs tessellation of mesh using primitives (triangle fans, triangle
+	 * strips, and separate triangles).
+	 *
+	 * @param   vertexList          List of 2D vertices in tessellation result.
+	 * @param   counterClockwise    Construct counter-clockwise primitives.
+	 *
+	 * @return  List of primitives that form the tessellation.
+	 */
+	@NotNull
+	public List<TessellationPrimitive> constructPrimitives( final HashList<Point2D> vertexList, final boolean counterClockwise )
+	{
+		if ( !_finished )
+		{
+			throw new IllegalStateException( "need finish()" );
+		}
+
+		if ( _outlined )
+		{
+			throw new IllegalStateException( "not possible after outline()" );
+		}
+
+		if ( !_tessellated )
+		{
+			MonotoneTessellator.tessellateInterior( this );
+			_tessellated = true;
+		}
+
+		return TesselationConstructor.constructPrimitives( this, vertexList, counterClockwise );
+	}
+
+	/**
+	 * Construct outlines of mesh. An outline is created for each boundary
+	 * between the "inside" and "outside" of the mesh.
+	 *
+	 * @param   vertexList          List of 2D vertices in tessellation result.
+	 * @param   counterClockwise    Construct counter-clockwise outlines.
+	 *
+	 * @return  Outlines of shape.
+	 */
+	public List<int[]> constructOutlines( final HashList<Point2D> vertexList, final boolean counterClockwise )
+	{
+		if ( !_finished )
+		{
+			throw new IllegalStateException( "need finish()" );
+		}
+
+		if ( !_outlined )
+		{
+			/*
+			 * If the user wants only the boundary contours, we throw away all edges
+			 * except those which separate the interior from the exterior.
+			 * Otherwise we tessellate all the regions marked "inside".
+			 */
+			setWindingNumber( 1, true );
+			_outlined = true;
+		}
+
+		return TesselationConstructor.constructOutlines( this, vertexList, counterClockwise );
+	}
+
+	/**** END OF PUBLIC API ****/
+
+	/**
+	 * Creates one edge, two vertices, and a loop (face).
+	 * The loop consists of the two new half-edges.
+	 *
+	 * @return  Edge of loop.
+	 */
+	@NotNull
+	HalfEdge createSelfLoopEdge()
+	{
+		final HalfEdge result = HalfEdge.makeEdge( _edgeListHead );
+		makeVertex( result, _vertexListHead );
+		makeVertex( result.symmetric, _vertexListHead );
+		HalfEdge.makeFace( result, _faceListHead );
+		return result;
+	}
+
+	/**
+	 * Resets the winding numbers on all edges so that regions marked "inside"
+	 * the polygon have a winding number of "value", and regions outside have a
+	 * winding number of 0.
+	 *
+	 * @param   windingNumber       Winding number to set on all edges.
+	 * @param   keepOutlineOnly     Delete edges which do not separate interior
+	 *                              from exterior regions.
+	 */
+	void setWindingNumber( final int windingNumber, final boolean keepOutlineOnly )
+	{
+		HalfEdge eNext;
+
+		for ( HalfEdge e = _edgeListHead.next; e != _edgeListHead; e = eNext )
+		{
+			eNext = e.next;
+			if ( e.symmetric.leftFace.inside != e.leftFace.inside )
+			{
+				/* This is a boundary edge (one side is interior, one is exterior). */
+				e.winding = e.leftFace.inside ? windingNumber : -windingNumber;
+			}
+			else
+			{
+				/* Both regions are interior, or both are exterior. */
+				if ( keepOutlineOnly )
+				{
+					e.delete();
+				}
+				else
+				{
+					e.winding = 0;
+				}
+			}
+		}
+	}
+
+	/*
+	 * Attaches a new vertex and makes it the
+	 * origin of all edges in the vertex loop to which eOrig belongs. "vNext" gives
+	 * a place to insert the new vertex in the global vertex list.  We insert
+	 * the new vertex *before* vNext so that algorithms which walk the vertex
+	 * list will not see the newly created vertices.
+	 */
+	static Vertex makeVertex( final HalfEdge eOrig, final Vertex vNext )
+	{
+		final Vertex result = new Vertex();
+
+		final Vertex vPrev;
+
+		/* insert in circular doubly-linked list before vNext */
+		vPrev = vNext.prev;
+		result.prev = vPrev;
+		vPrev.next = result;
+		result.next = vNext;
+		vNext.prev = result;
+
+		result.anEdge = eOrig;
+		result.vertexIndex = -1;
+		/* leave coords, s, t undefined */
+
+		/* fix other edges on this vertex loop */
+		HalfEdge e = eOrig;
+		do
+		{
+			e.origin = result;
+			e = e.ccwAroundOrigin;
+		}
+		while ( e != eOrig );
+
+		return result;
+	}
+
+	/**
+	 * Destroys a vertex and removes it from the global
+	 * vertex list.  It updates the vertex loop to point to a given new vertex.
+	 *
+	 * @param   vertex      Vertex to delete.
+	 * @param   newOrigin   New origin of affected edges.
+	 */
+	static void killVertex( final Vertex vertex, final Vertex newOrigin )
+	{
+		/* change the origin of all affected edges */
+		final HalfEdge startEdge = vertex.anEdge;
+		HalfEdge edge = startEdge;
+		do
+		{
+			edge.origin = newOrigin;
+			edge = edge.ccwAroundOrigin;
+		}
+		while ( edge != startEdge );
+
+		/* delete from circular double-linked list */
+		final Vertex previous = vertex.prev;
+		final Vertex next = vertex.next;
+		next.prev = previous;
+		previous.next = next;
+	}
+
+	/**
+	 * Destroys a face and removes it from the global face
+	 * list.  It updates the face loop to point to a given new face.
+	 *
+	 * @param   face            Face to remove.
+	 * @param   newLeftFace     New left face of affected edges.
+	 */
+	static void killFace( final Face face, final Face newLeftFace )
+	{
+		/* change the left face of all affected edges */
+		final HalfEdge startEdge = face.anEdge;
+		HalfEdge edge = startEdge;
+		do
+		{
+			edge.leftFace = newLeftFace;
+			edge = edge.ccwAroundLeftFace;
+		}
+		while ( edge != startEdge );
+
+		/* delete from circular doubly-linked list */
+		final Face previous = face.prev;
+		final Face next = face.next;
+		next.prev = previous;
+		previous.next = next;
+	}
+
+	/**
+	 * This is the basic operation for changing the mesh connectivity and topology.
+	 * It changes the mesh so that
+	 * eOrg->Onext <- OLD( eDst->Onext )
+	 * eDst->Onext <- OLD( eOrg->Onext )
+	 * where OLD(...) means the value before the meshSplice operation.
+	 * <p/>
+	 * This can have two effects on the vertex structure:
+	 * <ul>
+	 *  <li>if eOrg->Org != eDst->Org, the two vertices are merged together</li>
+	 *  <li>if eOrg->Org == eDst->Org, the origin is split into two vertices</li>
+	 * </ul>
+	 * In both cases, eDst->Org is changed and eOrg->Org is untouched.
+	 * <p/>
+	 * Similarly (and independently) for the face structure,
+	 * <ul>
+	 *  <li>if eOrg->Lface == eDst->Lface, one loop is split into two</li>
+	 *  <li>if eOrg->Lface != eDst->Lface, two distinct loops are joined into one</li>
+	 * </ul>
+	 * In both cases, eDst->Lface is changed and eOrg->Lface is unaffected.
+	 * <p/>
+	 * Some special cases:
+	 * <ul>
+	 *  <li>If eDst == eOrg, the operation has no effect.</li>
+	 *  <li>If eDst == eOrg->Lnext, the new face will have a single edge.</li>
+	 *  <li>If eDst == eOrg->Lprev, the old face will have a single edge.</li>
+	 *  <li>If eDst == eOrg->Onext, the new vertex will have a single edge.</li>
+	 *  <li>If eDst == eOrg->Oprev, the old vertex will have a single edge.</li>
+	 * </ul>
+	 */
+	static void spliceMesh( final HalfEdge eOrg, final HalfEdge eDst )
+	{
+		boolean joiningLoops = false;
+		boolean joiningVertices = false;
+
+		if ( eOrg != eDst )
+		{
+			if ( eDst.origin != eOrg.origin )
+			{
+				/* We are merging two disjoint vertices -- destroy eDst->Org */
+				joiningVertices = true;
+				killVertex( eDst.origin, eOrg.origin );
+			}
+			if ( eDst.leftFace != eOrg.leftFace )
+			{
+				/* We are connecting two disjoint loops -- destroy eDst.Lface */
+				joiningLoops = true;
+				killFace( eDst.leftFace, eOrg.leftFace );
+			}
+
+			/* Change the edge structure */
+			HalfEdge.spliceEdge( eDst, eOrg );
+
+			if ( !joiningVertices )
+			{
+				/* We split one vertex into two -- the new vertex is eDst.Org.
+				 * Make sure the old vertex points to a valid half-edge.
+				 */
+				makeVertex( eDst, eOrg.origin );
+				eOrg.origin.anEdge = eOrg;
+			}
+			if ( !joiningLoops )
+			{
+
+				/* We split one loop into two -- the new loop is eDst.Lface.
+				 * Make sure the old face points to a valid half-edge.
+				 */
+				HalfEdge.makeFace( eDst, eOrg.leftFace );
+				eOrg.leftFace.anEdge = eOrg;
+			}
+		}
+	}
 }

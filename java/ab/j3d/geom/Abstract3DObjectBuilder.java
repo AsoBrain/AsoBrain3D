@@ -27,6 +27,7 @@ import java.util.List;
 
 import ab.j3d.*;
 import ab.j3d.geom.ShapeTools.*;
+import ab.j3d.model.Face3D.*;
 import ab.j3d.model.*;
 import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
@@ -91,7 +92,21 @@ public abstract class Abstract3DObjectBuilder
 	 *
 	 * @param   vertexNormals   Vertex normals.
 	 */
-	public abstract void setVertexNormals( @NotNull List<Vector3D> vertexNormals );
+	public void setVertexNormals( @NotNull final List<Vector3D> vertexNormals )
+	{
+		final int vertexCount = vertexNormals.size();
+		final double[] doubles = new double[ vertexCount * 3 ];
+		int i = 0;
+		int j = 0;
+		while ( i < vertexCount )
+		{
+			final Vector3D normal = vertexNormals.get( i++ );
+			doubles[ j++ ] = normal.x;
+			doubles[ j++ ] = normal.y;
+			doubles[ j++ ] = normal.z;
+		}
+		setVertexNormals( doubles );
+	}
 
 	/**
 	 * Add arc.
@@ -240,11 +255,11 @@ public abstract class Abstract3DObjectBuilder
 		{
 			if ( hasExtrusion )
 			{
-				addExtrudedShape( ellipse2d, radius * 0.02, extrusion, base, material, uvMap, false, material, uvMap, false, material, uvMap, false, true, false, true );
+				addExtrudedShape( ellipse2d, radius * 0.02, extrusion, base, true, material, uvMap, false, true, material, uvMap, false, true, material, uvMap, false, true, false, true );
 			}
 			else
 			{
-				addFilledShape2D( base, ellipse2d, Vector3D.POSITIVE_Z_AXIS, radius * 0.02, material, uvMap, false, true );
+				addFilledShape2D( base, ellipse2d, radius * 0.02, material, uvMap, false, false, true );
 			}
 		}
 		else if ( hasExtrusion )
@@ -281,7 +296,7 @@ public abstract class Abstract3DObjectBuilder
 		final boolean  hasBottom         = ( radiusBottom > 0.0 );
 		final boolean  hasTop            = ( radiusTop    > 0.0 );
 		final int      vertexCount       = ( hasBottom ? numEdges : 1 ) + ( hasTop ? numEdges : 1 );
-		final int[] vertexIndices = new int[ vertexCount ];
+		final int[]    vertexIndices     = new int[ vertexCount ];
 
 		final double radStep = 2.0 * Math.PI / (double)numEdges;
 
@@ -481,7 +496,18 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Face is two-sided.
 	 */
-	public abstract void addFace( @NotNull Vector3D[] points, @Nullable Material material, @Nullable float[] texturePoints, @Nullable Vector3D[] vertexNormals, boolean smooth, boolean twoSided );
+	public void addFace( @NotNull final Vector3D[] points, @Nullable final Material material, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals, final boolean smooth, final boolean twoSided )
+	{
+		final int   vertexCount   = points.length;
+		final int[] vertexIndices = new int[ vertexCount ];
+
+		for ( int i = 0 ; i < vertexCount ; i++ )
+		{
+			vertexIndices[ i ] = getVertexIndex( points[ i ] );
+		}
+
+		addFace( vertexIndices, material, texturePoints, vertexNormals, smooth, twoSided );
+	}
 
 	/**
 	 * Add face.
@@ -638,7 +664,10 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   extrusion       Extrusion to apply (<code>null</code> or 0-vector => no extrusion).
 	 * @param   material        Material specification to use for shading.
 	 */
-	public abstract void addText( @NotNull String text, @NotNull Vector3D origin, double height, double rotationAngle, double obliqueAngle, @Nullable Vector3D extrusion, @Nullable Material material );
+	public void addText( @NotNull final String text, @NotNull final Vector3D origin, final double height, final double rotationAngle, final double obliqueAngle, @Nullable final Vector3D extrusion, @Nullable final Material material )
+	{
+		throw new UnsupportedOperationException();
+	}
 
 	/**
 	 * Add triangle primitive.
@@ -870,38 +899,6 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   shape               Shape to add.
 	 * @param   extrusion           Extrusion vector (control-point displacement).
 	 * @param   transform           Transform to apply.
-	 * @param   topMaterial         Material to apply to the top cap.
-	 * @param   topMap              Provides UV coordinates for top cap.
-	 * @param   topFlipTexture      Whether the top texture direction is flipped.
-	 * @param   bottomMaterial      Material to apply to the bottom cap.
-	 * @param   bottomMap           Provides UV coordinates for bottom cap.
-	 * @param   bottomFlipTexture   Whether the bottom texture direction is flipped.
-	 * @param   sideMaterial        Material to apply to the extruded sides.
-	 * @param   sideMap             Provides UV coordinates for extruded sides.
-	 * @param   sideFlipTexture     Whether the side texture direction is flipped.
-	 * @param   flatness            Flatness to use.
-	 * @param   twoSided            Flag to indicate if extruded faces are two-sided.
-	 * @param   flipNormals         If <code>true</code>, normals are flipped to
-	 *                              point in the opposite direction.
-	 * @param   smooth              Shape is smooth.
-	 *
-	 * @throws  IllegalArgumentException if the shape is not extruded along
-	 *          the z-axis.
-	 *
-	 * @deprecated  The assumption that a 'null' material means that top/bottom/side geometry should not be generated is flawed. Better specify clearly what you want.
-	 */
-	@Deprecated
-	public void addExtrudedShape( @NotNull final Shape shape, final double flatness, @NotNull final Vector3D extrusion, @NotNull final Matrix3D transform, @Nullable final Material topMaterial, @Nullable final UVMap topMap, final boolean topFlipTexture, @Nullable final Material bottomMaterial, @Nullable final UVMap bottomMap, final boolean bottomFlipTexture, @Nullable final Material sideMaterial, @Nullable final UVMap sideMap, final boolean sideFlipTexture, final boolean twoSided, final boolean flipNormals, final boolean smooth )
-	{
-		addExtrudedShape( shape, flatness, extrusion, transform, topMaterial != null, topMaterial, topMap, topFlipTexture, bottomMaterial != null, bottomMaterial, bottomMap, bottomFlipTexture, sideMaterial != null, sideMaterial, sideMap, sideFlipTexture, twoSided, flipNormals, smooth );
-	}
-
-	/**
-	 * Add extruded shape with caps.
-	 *
-	 * @param   shape               Shape to add.
-	 * @param   extrusion           Extrusion vector (control-point displacement).
-	 * @param   transform           Transform to apply.
 	 * @param   top                 <code>true</code> to include a top face.
 	 * @param   topMaterial         Material to apply to the top cap.
 	 * @param   topMap              Provides UV coordinates for top cap.
@@ -935,65 +932,60 @@ public abstract class Abstract3DObjectBuilder
 			throw new IllegalArgumentException( "at least one kind of geometry is required" );
 		}
 
+		final boolean flipExtrusion = flipNormals ^ ( extrusion.z < 0.0 );
+
+		final Tessellator tessellator = new Tessellator();
+		tessellator.defineShape( shape, flatness );
+
+		final HashList<Point2D> vertexList = new HashList<Point2D>();
+		final List<TessellationPrimitive> topPrimitives = top ? tessellator.constructPrimitives( vertexList, !flipExtrusion ) : null;
+		final List<TessellationPrimitive> bottomPrimitives = bottom ? tessellator.constructPrimitives( vertexList, flipExtrusion ) : null;
+		final List<int[]> outlines = tessellator.constructOutlines( vertexList, !flipExtrusion );
+
+		final List<Vector3D> topPoints = ( top || side ) ? transform( transform.plus( transform.rotate( extrusion ) ), vertexList ) : null;
+
+		if ( top )
+		{
+			final List<Vertex> topVertices = createVertices( topPoints, topMaterial, topMap, topFlipTexture );
+
+			final Tessellation topTessellation = new Tessellation( outlines, topPrimitives );
+			addFace( topVertices, topTessellation, topMaterial, false, twoSided );
+		}
+
+		final List<Vector3D> bottomPoints = ( bottom || side ) ? transform( transform, vertexList ) : null;
+
+		if ( bottom )
+		{
+			final List<Vertex> bottomVertices = createVertices( bottomPoints, bottomMaterial, bottomMap, bottomFlipTexture );
+
+			final Tessellation bottomTessellation = new Tessellation( outlines, bottomPrimitives );
+			addFace( bottomVertices, bottomTessellation, bottomMaterial, false, twoSided );
+		}
+
 		if ( side )
 		{
-			addExtrudedShape( shape, flatness, extrusion, transform, sideMaterial, sideMap, sideFlipTexture, twoSided, flipNormals, smooth );
-		}
-
-		if ( top || bottom )
-		{
-			final Tessellator tessellator = new GLUTessellator();
-			tessellator.setFlatness( flatness );
-
-			final boolean flipExtrusion = flipNormals ^ ( extrusion.z < 0.0 );
-
-			if ( !bottom )
+			for ( final int[] contour : outlines )
 			{
-				final TessellationBuilder topTessellationBuilder = createTessellationBuilder( transform.plus( transform.rotate( extrusion ) ) );
+				final int first1 = getVertexIndex( bottomPoints.get( contour[ 0 ] ) );
+				final int first2 = getVertexIndex( topPoints.get( contour[ 0 ] ) );
 
-				tessellator.setNormal( flipExtrusion ? Vector3D.NEGATIVE_Z_AXIS : Vector3D.POSITIVE_Z_AXIS );
-				tessellator.tessellate( topTessellationBuilder, shape );
+				int previous1 = first1;
+				int previous2 = first2;
 
-				addFace( topTessellationBuilder.getTessellation(), topMaterial, topMap, topFlipTexture, twoSided );
-			}
-			else if ( !top )
-			{
-				final TessellationBuilder bottomTessellationBuilder = createTessellationBuilder( transform );
+				for ( int pointIndex = 1; pointIndex < contour.length; pointIndex++ )
+				{
+					final int next1 = getVertexIndex( bottomPoints.get( contour[ pointIndex ] ) );
+					final int next2 = getVertexIndex( topPoints.get( contour[ pointIndex ] ) );
 
-				tessellator.setNormal( flipExtrusion ? Vector3D.POSITIVE_Z_AXIS : Vector3D.NEGATIVE_Z_AXIS );
-				tessellator.tessellate( bottomTessellationBuilder, shape );
+					addFace( new int[] { previous1, previous2, next2, next1 }, sideMaterial, sideMap, sideFlipTexture, smooth, twoSided );
 
-				addFace( bottomTessellationBuilder.getTessellation(), bottomMaterial, bottomMap, bottomFlipTexture, twoSided );
-			}
-			else
-			{
-				final Matrix3D topTransform = transform.plus( transform.rotate( extrusion ) );
+					previous2 = next2;
+					previous1 = next1;
+				}
 
-				final TessellationBuilder topTessellationBuilder = createTessellationBuilder( topTransform );
-				final TessellationBuilder bottomTessellationBuilder = createTessellationBuilder( transform );
-
-				final TessellationBuilder combinedBuilder = new DualTessellation( topTessellationBuilder, bottomTessellationBuilder, true );
-				tessellator.setNormal( flipExtrusion ? Vector3D.NEGATIVE_Z_AXIS : Vector3D.POSITIVE_Z_AXIS );
-				tessellator.tessellate( combinedBuilder, shape );
-
-				addFace( bottomTessellationBuilder.getTessellation(), bottomMaterial, bottomMap, bottomFlipTexture, twoSided );
-				addFace( topTessellationBuilder.getTessellation(), topMaterial, topMap, topFlipTexture, twoSided );
+				addFace( new int[] { previous1, previous2, first2, first1 }, sideMaterial, sideMap, sideFlipTexture, smooth, twoSided );
 			}
 		}
-	}
-
-	/**
-	 * Create a {@link TessellationBuilder} with the specified tranformation
-	 * matrix applied to all vertices.
-	 *
-	 * @param   transform   Transformation matrix to apply.
-	 *
-	 * @return  {@link TessellationBuilder}.
-	 */
-	@NotNull
-	protected TessellationBuilder createTessellationBuilder( @Nullable final Matrix3D transform )
-	{
-		return new BasicTessellationBuilder( transform );
 	}
 
 	/**
@@ -1046,15 +1038,11 @@ public abstract class Abstract3DObjectBuilder
 					final int next2 = getVertexIndex( transform.transform( nextPoint.x + extrusion.x, nextPoint.y + extrusion.y, extrusion.z ) );
 					if ( flipExtrusion )
 					{
-						addFace( new int[] {
-						previous1, next1, next2, previous2
-						}, material, uvMap, flipTexture, smooth, twoSided );
+						addFace( new int[] { previous1, next1, next2, previous2 }, material, uvMap, flipTexture, smooth, twoSided );
 					}
 					else
 					{
-						addFace( new int[] {
-						previous1, previous2, next2, next1
-						}, material, uvMap, flipTexture, smooth, twoSided );
+						addFace( new int[] { previous1, previous2, next2, next1 }, material, uvMap, flipTexture, smooth, twoSided );
 					}
 
 					previous2 = next2;
@@ -1068,15 +1056,11 @@ public abstract class Abstract3DObjectBuilder
 			{
 				if ( flipExtrusion )
 				{
-					addFace( new int[] {
-					previous1, first1, first2, previous2
-					}, material, uvMap, flipTexture, smooth, twoSided );
+					addFace( new int[] { previous1, first1, first2, previous2 }, material, uvMap, flipTexture, smooth, twoSided );
 				}
 				else
 				{
-					addFace( new int[] {
-					previous1, previous2, first2, first1
-					}, material, uvMap, flipTexture, smooth, twoSided );
+					addFace( new int[] { previous1, previous2, first2, first1 }, material, uvMap, flipTexture, smooth, twoSided );
 				}
 			}
 		}
@@ -1085,73 +1069,94 @@ public abstract class Abstract3DObjectBuilder
 	/**
 	 * Add tessellated shape.
 	 *
-	 * @param   transform       Transform from 2D to 3D coordinates.
+	 * @param   transform       Transforms 2D to 3D coordinates.
 	 * @param   shape           Shape to add.
-	 * @param   shapeNormal     Normal to use for shape.
 	 * @param   flatness        Flatness used to approximate curves.
 	 * @param   material        Material to apply to the face.
 	 * @param   uvMap           UV-map used to generate texture coordinates.
 	 * @param   flipTexture     Whether the bottom texture direction is flipped.
+	 * @param   flipNormals     Flip normals using CW instead of CCW triangles.
 	 * @param   twoSided        Resulting face will be two-sided (has backface).
 	 */
-	public void addFilledShape2D( @NotNull final Matrix3D transform, @NotNull final Shape shape, @NotNull final Vector3D shapeNormal, final double flatness, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided )
+	public void addFilledShape2D( @NotNull final Matrix3D transform, @NotNull final Shape shape, final double flatness, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean flipNormals, final boolean twoSided )
 	{
-		final Tessellator tessellator = new GLUTessellator();
-		tessellator.setFlatness( flatness );
-		tessellator.setNormal( shapeNormal );
+		final Tessellator tessellator = new Tessellator();
+		tessellator.defineShape( shape, flatness );
 
-		final TessellationBuilder tessellationBuilder = createTessellationBuilder( transform );
-		tessellator.tessellate( tessellationBuilder, shape );
-		addFace( tessellationBuilder.getTessellation(), material, uvMap, flipTexture, twoSided );
+		final HashList<Point2D> vertexList = new HashList<Point2D>();
+		final List<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, !flipNormals );
+		final List<int[]> outlines = tessellator.constructOutlines( vertexList, !flipNormals );
+
+		final Tessellation tessellation = new Tessellation( outlines, primitives );
+		final List<Vertex> vertices = createVertices( transform( transform, vertexList ), material, uvMap, flipTexture );
+
+		addFace( vertices, tessellation, material, false, twoSided );
 	}
 
 	/**
-	 * Add tessellated shape.
+	 * Create vertices for 3D face using the specified tessellation.
 	 *
-	 * @param   transform       Transform from 2D to 3D coordinates.
-	 * @param   positive        Positive geometry.
-	 * @param   negative        Negative geometry.
-	 * @param   shapeNormal     Normal to use for shape.
-	 * @param   flatness        Flatness used to approximate curves.
+	 * @param   points          3D points used as vertex coordinates.
 	 * @param   material        Material to apply to the face.
 	 * @param   uvMap           UV-map used to generate texture coordinates.
 	 * @param   flipTexture     Whether the bottom texture direction is flipped.
-	 * @param   twoSided        Resulting face will be two-sided (has backface).
-	 */
-	public void addTessellatedShape( @NotNull final Matrix3D transform, @NotNull final Shape positive, @NotNull final Collection<? extends Shape> negative, @NotNull final Vector3D shapeNormal, final double flatness, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided )
-	{
-		final Tessellator tessellator = new GLUTessellator();
-		tessellator.setFlatness( flatness );
-		tessellator.setNormal( shapeNormal );
-
-		final TessellationBuilder tessellationBuilder = createTessellationBuilder( transform );
-		tessellator.tessellate( tessellationBuilder, positive, negative );
-		addFace( tessellationBuilder.getTessellation(), material, uvMap, flipTexture, twoSided );
-	}
-
-	/**
-	 * Add result from tessellator to current 3D object.
 	 *
-	 * @param   tessellation     Tessellation to create face from.
-	 * @param   material        Material to apply to the face.
-	 * @param   uvMap           UV-map used to generate texture coordinates.
-	 * @param   flipTexture     Whether the bottom texture direction is flipped.
-	 * @param   twoSided        Resulting face will be two-sided (has backface).
+	 * @return  Vertices for 3D face.
 	 */
-	protected void addFace( @NotNull final Tessellation tessellation, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided )
+	protected List<Vertex> createVertices( final List<Vector3D> points, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture )
 	{
-		final int[] triangleVertexIndices = new int[ 3 ];
+		final int vertexCount = points.size();
+		final List<Vertex> vertices = new ArrayList<Vertex>( vertexCount );
 
-		for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+		if ( uvMap != null )
 		{
-			final int[] triangles = primitive.getTriangles();
-			for ( int i = 0 ; i < triangles.length ; i += 3 )
+			final float[] uvCoords = uvMap.generate( material, points, null, flipTexture );
+			for ( int i = 0, j= 0 ; i < vertexCount; )
 			{
-				triangleVertexIndices[ 0 ] = triangles[ i + 2 ];
-				triangleVertexIndices[ 1 ] = triangles[ i + 1 ];
-				triangleVertexIndices[ 2 ] = triangles[ i ];
-				addFace( triangleVertexIndices, material, uvMap, flipTexture, false, twoSided );
+				final Vector3D point = points.get( i++ );
+				vertices.add( new Vertex( point, getVertexIndex( point ), uvCoords[ j++ ], uvCoords[ j++ ] ) );
 			}
 		}
+		else
+		{
+			for ( int i = 0 ; i < vertexCount; i++ )
+			{
+				final Vector3D point = points.get( i );
+				vertices.add( new Vertex( point, getVertexIndex( point ) ) );
+			}
+		}
+
+		return vertices;
 	}
+
+	/**
+	 * Transforms points from a 2D plane into points in 3D space.
+	 *
+	 * @param   transform   Transforms 2D to 3D coordinates.
+	 * @param   points      2D points to transform.
+	 *
+	 * @return  3D points.
+	 */
+	protected static List<Vector3D> transform( @NotNull final Matrix3D transform, @NotNull final Collection<? extends Point2D> points )
+	{
+		final List<Vector3D> result = new ArrayList<Vector3D>( points.size() );
+
+		for ( final Point2D point : points )
+		{
+			result.add( transform.transform( point.getX(), point.getY(), 0.0 ) );
+		}
+
+		return result;
+	}
+
+	/**
+	 * Add face to current 3D object.
+	 *
+	 * @param   vertices        Vertices that defines the face.
+	 * @param   tessellation    Tessellation of face.
+	 * @param   material        Material to apply to the face.
+	 * @param   smooth          Face is smooth/curved vs. flat.
+	 * @param   twoSided        Resulting face will be two-sided (has backface).
+	 */
+	protected abstract void addFace( @NotNull List<Vertex> vertices, @NotNull Tessellation tessellation, @Nullable Material material, boolean smooth, boolean twoSided );
 }

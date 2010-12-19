@@ -69,15 +69,15 @@ public final class AbPovTestModel
 		scene.addContentNode( "sphere"           , Matrix3D.getTransform(  0.0,  0.0,  0.0,    0.0, 300.0, -200.0 ), getSphere3D() );
 		scene.addContentNode( "cylinder"         , Matrix3D.getTransform(  0.0,  0.0,  0.0,    0.0,   0.0,  150.0 ), getCylinder3D() );
 		scene.addContentNode( "cone"             , Matrix3D.getTransform( 45.0,  0.0,  0.0,  250.0,   0.0,    0.0 ), getCone3D() );
-		scene.addContentNode( "extruded"         , Matrix3D.INIT, getExtrudedObject2D() );
-		scene.addContentNode( "colorcube"        , Matrix3D.INIT, getColorCube() );
-		scene.addContentNode( "texturedcolorcube", Matrix3D.INIT, getTexturedColorCube() );
+		scene.addContentNode( "extruded"         , Matrix3D.IDENTITY, getExtrudedObject2D() );
+		scene.addContentNode( "colorcube"        , Matrix3D.IDENTITY, getColorCube() );
+		scene.addContentNode( "texturedcolorcube", Matrix3D.IDENTITY, getTexturedColorCube() );
 
 		/*
 		 * Create view.
 		 */
-		final Vector3D viewFrom = Vector3D.INIT.set( 0.0, -1000.0, 0.0 );
-		final Vector3D viewAt   = Vector3D.INIT;
+		final Vector3D viewFrom = new Vector3D( 0.0, -1000.0, 0.0 );
+		final Vector3D viewAt   = Vector3D.ZERO;
 
 		final View3D view = new Java2dView( scene, null );
 		view.setCameraControl( new FromToCameraControl( view, viewFrom, viewAt ) );
@@ -316,14 +316,14 @@ public final class AbPovTestModel
 		final ContentNode node = _scene.getContentNode( "colorcube" );
 		if ( node == null )
 		{
-			final Vector3D lfb = Vector3D.INIT.set( -100.0, -100.0, -100.0 );
-			final Vector3D rfb = Vector3D.INIT.set(  100.0, -100.0, -100.0 );
-			final Vector3D rbb = Vector3D.INIT.set(  100.0,  100.0, -100.0 );
-			final Vector3D lbb = Vector3D.INIT.set( -100.0,  100.0, -100.0 );
-			final Vector3D lft = Vector3D.INIT.set( -100.0, -100.0,  100.0 );
-			final Vector3D rft = Vector3D.INIT.set(  100.0, -100.0,  100.0 );
-			final Vector3D rbt = Vector3D.INIT.set(  100.0,  100.0,  100.0 );
-			final Vector3D lbt = Vector3D.INIT.set( -100.0,  100.0,  100.0 );
+			final Vector3D lfb = new Vector3D( -100.0, -100.0, -100.0 );
+			final Vector3D rfb = new Vector3D(  100.0, -100.0, -100.0 );
+			final Vector3D rbb = new Vector3D(  100.0,  100.0, -100.0 );
+			final Vector3D lbb = new Vector3D( -100.0,  100.0, -100.0 );
+			final Vector3D lft = new Vector3D( -100.0, -100.0,  100.0 );
+			final Vector3D rft = new Vector3D(  100.0, -100.0,  100.0 );
+			final Vector3D rbt = new Vector3D(  100.0,  100.0,  100.0 );
+			final Vector3D lbt = new Vector3D( -100.0,  100.0,  100.0 );
 
 			final Material topMaterial    = createMaterialWithColorMap( "CUBE_TOP" );
 			final Material bottomMaterial = createMaterialWithColorMap( "CUBE_BOTTOM" );
@@ -364,14 +364,14 @@ public final class AbPovTestModel
 		final ContentNode node = _scene.getContentNode( "texturedcolorcube" );
 		if ( node == null )
 		{
-			final Vector3D lfb = Vector3D.INIT.set( -100.0, -100.0, -100.0 );
-			final Vector3D rfb = Vector3D.INIT.set(  100.0, -100.0, -100.0 );
-			final Vector3D rbb = Vector3D.INIT.set(  100.0,  100.0, -100.0 );
-			final Vector3D lbb = Vector3D.INIT.set( -100.0,  100.0, -100.0 );
-			final Vector3D lft = Vector3D.INIT.set( -100.0, -100.0,  100.0 );
-			final Vector3D rft = Vector3D.INIT.set(  100.0, -100.0,  100.0 );
-			final Vector3D rbt = Vector3D.INIT.set(  100.0,  100.0,  100.0 );
-			final Vector3D lbt = Vector3D.INIT.set( -100.0,  100.0,  100.0 );
+			final Vector3D lfb = new Vector3D( -100.0, -100.0, -100.0 );
+			final Vector3D rfb = new Vector3D(  100.0, -100.0, -100.0 );
+			final Vector3D rbb = new Vector3D(  100.0,  100.0, -100.0 );
+			final Vector3D lbb = new Vector3D( -100.0,  100.0, -100.0 );
+			final Vector3D lft = new Vector3D( -100.0, -100.0,  100.0 );
+			final Vector3D rft = new Vector3D(  100.0, -100.0,  100.0 );
+			final Vector3D rbt = new Vector3D(  100.0,  100.0,  100.0 );
+			final Vector3D lbt = new Vector3D( -100.0,  100.0,  100.0 );
 
 			final Material topMaterial    = createMaterialWithColorMap( "CUBE_TOP_TEXTURE_AND_COLOR" );    topMaterial.diffuseColorRed     = 1.0f; topMaterial.diffuseColorGreen       = 0.0f; topMaterial.diffuseColorBlue        = 0.0f;
 			final Material bottomMaterial = createMaterialWithColorMap( "CUBE_BOTTOM_TEXTURE_AND_COLOR" ); bottomMaterial.diffuseColorRed  = 0.0f; bottomMaterial.diffuseColorGreen    = 1.0f; bottomMaterial.diffuseColorBlue     = 0.0f;
@@ -414,12 +414,13 @@ public final class AbPovTestModel
 		if ( node == null )
 		{
 			final Material material  = createMaterialWithColor( Color.PINK );
+			final BoxUVMap uvMap     = new BoxUVMap( Scene.MM, Matrix3D.IDENTITY );
 			final Shape    shape     = new Rectangle2D.Double( 0.0, 0.0, 100.0, 100.0 );
-			final Vector3D extrusion = Vector3D.INIT.set( 0.0, 100.0, 100.0 );
-			final Matrix3D transform = Matrix3D.INIT.setTranslation( -400.0, 0.0, -250.0 );
+			final Vector3D extrusion = new Vector3D( 0.0, 100.0, 100.0 );
+			final Matrix3D transform = Matrix3D.getTranslation( -400.0, 0.0, -250.0 );
 
 			final Object3DBuilder builder = new Object3DBuilder();
-			builder.addExtrudedShape( shape, 1.0, extrusion, transform, material, new BoxUVMap( Scene.MM, Matrix3D.INIT ), false, true, false, false );
+			builder.addExtrudedShape( shape, 1.0, extrusion, transform, false, null, null, false, true, material, uvMap, false, true, material, uvMap, false, true, false, false );
 			result = builder.getObject3D();
 		}
 		else

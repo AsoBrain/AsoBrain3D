@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2009-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,66 +21,176 @@
 package ab.j3d.geom;
 
 import java.awt.*;
+import java.awt.geom.*;
 import java.util.*;
+import java.util.List;
 
-import ab.j3d.*;
+import ab.j3d.geom.tessellator.*;
+import ab.j3d.geom.tessellator.Mesh.*;
+import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
  * Transforms 2-dimensional shapes into tessellated primitives. The result
  * consists primarily of {@link TessellationPrimitive} objects stored in a
- * {@link Tessellation} that is build by a {@link TessellationBuilder}.
+ * {@link Tessellation}.
+ *
+ * The tessellation algorithm implemented as part of the OpenGL Sample
+ * Implementation developed by Silicon Graphics, Inc.
  *
  * @author  G. Meinders
  * @version $Revision$ $Date$
  */
-public interface Tessellator
+public class Tessellator
 {
 	/**
-	 * Returns the normal of the shapes being tessellated. The default value is
-	 * [0, 0, 0].
-	 *
-	 * @return  Normal of tessellated shapes.
+	 * Mesh that was created.
 	 */
-	Vector3D getNormal();
+	private Mesh _mesh = null;
 
 	/**
-	 * Sets the normal used of the shapes being tessellated.
+	 * Defines a shape to tessellate. Any curves in the shape are flattened
+	 * using the given flatness.
 	 *
-	 * @param   normal  Normal to be set.
+	 * @param   shape       Shape to tessellate.
+	 * @param   flatness    Maximum distance between line segments and the
+	 *                      curves they approximate.
 	 */
-	void setNormal( Vector3D normal );
+	public void defineShape( @NotNull final Shape shape, final double flatness )
+	{
+		final PathIterator iterator = shape.getPathIterator( null, flatness );
+
+		final WindingRule windingRule;
+
+		switch ( iterator.getWindingRule() )
+		{
+			case PathIterator.WIND_EVEN_ODD:
+				windingRule = Mesh.WindingRule.ODD;
+				break;
+
+			case PathIterator.WIND_NON_ZERO:
+				windingRule = Mesh.WindingRule.NONZERO;
+				break;
+
+			default:
+				throw new AssertionError( "Illegal winding rule: " + iterator.getWindingRule() );
+		}
+
+		final Mesh mesh = new Mesh( windingRule );
+		tessellateShape( mesh, iterator );
+		mesh.finish();
+		_mesh = mesh;
+	}
 
 	/**
-	 * Returns the flatness used when flattening input shapes.
+	 * Add contour(s) from a {@link PathIterator}.
 	 *
-	 * @return  Flatness used when flattening input shapes.
+	 * @param   mesh            Mesh to add contours to.
+	 * @param   pathIterator    Path iterator to create contour from.
 	 */
-	double getFlatness();
+	private static void tessellateShape( final Mesh mesh, @NotNull final PathIterator pathIterator )
+	{
+		final LinkedList<double[]> points = new LinkedList<double[]>();
+		double[] cur = null;
+
+		for ( ; !pathIterator.isDone() ; pathIterator.next() )
+		{
+			final double[] coords = new double[ 2 ];
+			switch ( pathIterator.currentSegment( coords ) )
+			{
+				case PathIterator.SEG_MOVETO :
+					points.clear();
+					points.add( coords );
+					cur = coords;
+					break;
+
+				case PathIterator.SEG_LINETO :
+					if ( ( cur == null ) || !MathTools.almostEqual( coords[ 0 ], cur[ 0 ] ) || !MathTools.almostEqual( coords[ 1 ], cur[ 1 ] ) )
+					{
+						points.add( coords );
+					}
+					cur = coords;
+					break;
+
+				case PathIterator.SEG_CLOSE :
+					if ( points.size() > 2 )
+					{
+						final double[] start = points.getFirst();
+
+						final double[] last = points.getLast();
+						if ( MathTools.almostEqual( start[ 0 ], last[ 0 ] ) && MathTools.almostEqual( start[ 1 ], last[ 1 ] ) )
+						{
+							points.removeLast();
+						}
+
+						if ( points.size() > 2 )
+						{
+							mesh.beginContour();
+
+							for ( final double[] point : points )
+							{
+								mesh.addVertex( point[ 0 ], point[ 1 ] );
+							}
+
+							mesh.endContour();
+						}
+
+						points.clear();
+						cur = start;
+					}
+					break;
+			}
+		}
+	}
 
 	/**
-	 * Sets the flatness used when flattening input shapes.
+	 * Constructs triangles for interior of shape.
 	 *
-	 * @param   flatness    Flatness to be set.
+	 * @param   vertexList          List of 2D vertices to use in result.
+	 * @param   counterClockwise    Construct counter-clockwise primitives.
+	 *
+	 * @return  All triangles in the mesh.
 	 */
-	void setFlatness( double flatness );
+	public int[] constructTriangles( final HashList<Point2D> vertexList, final boolean counterClockwise )
+	{
+		if ( _mesh == null )
+		{
+			throw new IllegalStateException( "must defineShape() first" );
+		}
+
+		return _mesh.constructTriangles( vertexList, counterClockwise );
+	}
 
 	/**
-	 * Tessellates the given shape and returns the result.
+	 * Constructs tessellation of shape using primitives (triangle fans,
+	 * triangle strips, and triangle lists).
 	 *
-	 * @param   result  Tessellation result.
-	 * @param   shape   Shape to be tessellated.
+	 * @param   vertexList          Vertex list.
+	 * @param   counterClockwise    Construct counter-clockwise primitives.
+	 *
+	 * @return  List of primitives that form the tessellation.
 	 */
-	void tessellate( @NotNull TessellationBuilder result, @NotNull Shape shape );
+	public List<TessellationPrimitive> constructPrimitives( final HashList<Point2D> vertexList, final boolean counterClockwise )
+	{
+		if ( _mesh == null )
+		{
+			throw new IllegalStateException( "must defineShape() first" );
+		}
+
+		return _mesh.constructPrimitives( vertexList, counterClockwise );
+	}
 
 	/**
-	 * Tessellates a combination of <code>positive</code> and
-	 * <code>negative</code> shapes. The result is the difference between the
-	 * two.
+	 * Construct outlines of shape. An outline is created for each boundary
+	 * between the "inside" and "outside" of the mesh.
 	 *
-	 * @param   result      Tessellation result.
-	 * @param   positive    Positive geometry.
-	 * @param   negative    Negative geometry.
+	 * @param   vertexList          List of 2D vertices in tessellation result.
+	 * @param   counterClockwise    Construct counter-clockwise outlines.
+	 *
+	 * @return  Outlines of shape.
 	 */
-	void tessellate( @NotNull TessellationBuilder result, @NotNull Shape positive , @NotNull Collection<? extends Shape> negative );
+	public List<int[]> constructOutlines( final HashList<Point2D> vertexList, final boolean counterClockwise )
+	{
+		return _mesh.constructOutlines( vertexList, counterClockwise );
+	}
 }
