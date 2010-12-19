@@ -103,7 +103,7 @@ public class ExtrudedObject2D
 		final Abstract3DObjectBuilder builder = new Object3DBuilder( this );
 		if ( caps )
 		{
-			builder.addExtrudedShape( shape, flatness, extrusion, Matrix3D.IDENTITY, topMaterial, uvMap, false, bottomMaterial, uvMap, false, sideMaterial, uvMap, false, twoSided, flipNormals, false );
+			builder.addExtrudedShape( shape, flatness, extrusion, Matrix3D.IDENTITY, true, topMaterial, uvMap, false, true, bottomMaterial, uvMap, false, true, sideMaterial, uvMap, false, twoSided, flipNormals, false );
 		}
 		else
 		{
