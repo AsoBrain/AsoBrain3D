@@ -104,40 +104,9 @@ public class Object3DBuilder
 	}
 
 	@Override
-	public void setVertexNormals( @NotNull final List<Vector3D> vertexNormals )
-	{
-		final int vertexCount = vertexNormals.size();
-		final double[] doubles = new double[ vertexCount * 3 ];
-		int i = 0;
-		int j = 0;
-		while ( i < vertexCount )
-		{
-			final Vector3D normal = vertexNormals.get( i++ );
-			doubles[ j++ ] = normal.x;
-			doubles[ j++ ] = normal.y;
-			doubles[ j++ ] = normal.z;
-		}
-		setVertexNormals( doubles );
-	}
-
-	@Override
 	public void addFace( @NotNull final int[] vertexIndices, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean smooth, final boolean twoSided )
 	{
 		addFace( vertexIndices, material, ( uvMap != null ) ? uvMap.generate( material, _target._vertexCoordinates, vertexIndices, flipTexture ) : null, null, smooth, twoSided );
-	}
-
-	@Override
-	public void addFace( @NotNull final Vector3D[] points, @Nullable final Material material, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals, final boolean smooth, final boolean twoSided )
-	{
-		final int   vertexCount   = points.length;
-		final int[] vertexIndices = new int[ vertexCount ];
-
-		for ( int i = 0 ; i < vertexCount ; i++ )
-		{
-			vertexIndices[ i ] = getVertexIndex( points[ i ] );
-		}
-
-		addFace( vertexIndices, material, texturePoints, vertexNormals, smooth, twoSided );
 	}
 
 	@Override
@@ -147,41 +116,8 @@ public class Object3DBuilder
 	}
 
 	@Override
-	public void addText( @NotNull final String text, @NotNull final Vector3D origin, final double height, final double rotationAngle, final double obliqueAngle, @Nullable final Vector3D extrusion, @Nullable final Material material )
+	protected void addFace( @NotNull final List<Vertex> vertices, @NotNull final Tessellation tessellation, @Nullable final Material material, final boolean smooth, final boolean twoSided )
 	{
-		throw new AssertionError( "not implemented" );
-	}
-
-	@Override
-	protected void addFace( @NotNull final Tessellation tessellation, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided )
-	{
-		final List<? extends Vector3D> points = tessellation.getVertices();
-		final int vertexCount = points.size();
-		final float[] texturePoints = ( uvMap != null ) ? uvMap.generate( material, points, null, flipTexture ) : null;
-
-		final List<Vertex> vertices = new ArrayList<Vertex>( vertexCount );
-		for ( int i = 0 ; i < vertexCount; i++ )
-		{
-			final Vector3D point = points.get( i );
-			final Vertex vertex = new Vertex( point, getVertexIndex( point ) );
-
-			if ( texturePoints != null )
-			{
-				final int texturePointIndex = i * 2;
-				vertex.colorMapU = texturePoints[ texturePointIndex ];
-				vertex.colorMapV = texturePoints[ texturePointIndex + 1 ];
-			}
-
-			vertices.add( vertex );
-		}
-
-		_target.addFace( new Face3D( _target, vertices, tessellation, material, false, twoSided ) );
-	}
-
-	@NotNull
-	@Override
-	protected TessellationBuilder createTessellationBuilder( @Nullable final Matrix3D transform )
-	{
-		return new BasicTessellationBuilder( transform );
+		_target.addFace( new Face3D( _target, vertices, tessellation, material, smooth, twoSided ) );
 	}
 }
