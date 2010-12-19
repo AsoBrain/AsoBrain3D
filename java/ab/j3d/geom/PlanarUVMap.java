@@ -231,7 +231,7 @@ public class PlanarUVMap
 	}
 
 	@Override
-	public Point2D.Float generate( @Nullable final Material material, @NotNull final Vector3D wcsPoint, @NotNull final Vector3D normal, final boolean flipTexture )
+	public void generate( @NotNull final Point2D result, @Nullable final Material material, @NotNull final Vector3D point, @NotNull final Vector3D normal, final boolean flipTexture )
 	{
 		final Matrix3D plane2wcs = _plane2wcs;
 
@@ -249,10 +249,10 @@ public class PlanarUVMap
 			scaleV = _scaleV;
 		}
 
-		final float tx = (float)plane2wcs.inverseTransformX( wcsPoint );
-		final float ty = (float)plane2wcs.inverseTransformY( wcsPoint );
+		final float tx = (float)plane2wcs.inverseTransformX( point );
+		final float ty = (float)plane2wcs.inverseTransformY( point );
 
-		return flipTexture ? new Point2D.Float( ty * scaleU, tx * scaleV ) : new Point2D.Float( tx * scaleU, ty * scaleV );
+		result.setLocation( ( flipTexture ? ty : tx ) * scaleU, ( flipTexture ? tx : ty ) * scaleV );
 	}
 
 	@Override

@@ -178,10 +178,10 @@ public class BoxUVMap
 	}
 
 	@Override
-	public Point2D.Float generate( @Nullable final Material material, @NotNull final Vector3D wcsPoint, @NotNull final Vector3D normal, final boolean flipTexture )
+	public void generate( @NotNull final Point2D result, @Nullable final Material material, @NotNull final Vector3D wcsPoint, @NotNull final Vector3D normal, final boolean flipTexture )
 	{
 		final int map = getTargetMap( normal );
-		return _maps[ map ].generate( material, wcsPoint, normal, _flips[ map ] ^ flipTexture );
+		_maps[ map ].generate( result, material, wcsPoint, normal, _flips[ map ] ^ flipTexture );
 	}
 
 	/**

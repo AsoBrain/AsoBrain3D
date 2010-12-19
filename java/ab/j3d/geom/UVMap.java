@@ -44,17 +44,16 @@ public interface UVMap
 	 *
 	 * @return  Texture coordinates for each vertex.
 	 */
-	float[] generate( @Nullable Material material , @NotNull List<? extends Vector3D> vertexCoordinates , @Nullable int[] vertexIndices , boolean flipTexture );
+	float[] generate( @Nullable Material material, @NotNull List<? extends Vector3D> vertexCoordinates, @Nullable int[] vertexIndices, boolean flipTexture );
 
 	/**
 	 * Generate 2D point on texture for the given 3D point.
 	 *
-	 * @param   material            Material used to define texture scale.
-	 * @param   point               Point.
-	 * @param   normal              Normal of face to map texture on.
-	 * @param   flipTexture         Flip texture direction.
-	 *
-	 * @return  Texture coordinates.
+	 * @param   result          Target for resulting texture coordinates.
+	 * @param   material        Material used to define texture scale.
+	 * @param   point           Point.
+	 * @param   normal          Normal of face to map texture on.
+	 * @param   flipTexture     Flip texture direction.
 	 */
-	Point2D.Float generate( @Nullable Material material , @NotNull Vector3D point , @NotNull Vector3D normal , boolean flipTexture );
+	void generate( @NotNull Point2D result, @Nullable Material material, @NotNull Vector3D point, @NotNull Vector3D normal, boolean flipTexture );
 }

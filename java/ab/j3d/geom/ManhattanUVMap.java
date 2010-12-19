@@ -100,7 +100,7 @@ public class ManhattanUVMap
 	}
 
 	@Override
-	public Point2D.Float generate( @Nullable final Material material, @NotNull final Vector3D point, @NotNull final Vector3D normal, final boolean flipTexture )
+	public void generate( @NotNull final Point2D result, @Nullable final Material material, @NotNull final Vector3D point, @NotNull final Vector3D normal, final boolean flipTexture )
 	{
 		final Matrix3D transform = _transform;
 
@@ -121,7 +121,7 @@ public class ManhattanUVMap
 		final float tx = (float)transform.transformX( point );
 		final float ty = (float)transform.transformY( point );
 
-		return flipTexture ? new Point2D.Float( scaleU * ty, scaleV * tx ) : new Point2D.Float( scaleU * tx, scaleV * ty );
+		result.setLocation( scaleU * ( flipTexture ? ty: tx ) , scaleV * ( flipTexture ? tx : ty ) );
 	}
 
 	@Override
