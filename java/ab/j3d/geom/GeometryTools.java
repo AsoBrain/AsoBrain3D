@@ -1124,4 +1124,25 @@ public class GeometryTools
 
 		return ( !segmentOnly || ( ( u >= 0.00001 ) && u <= 1.00001 ) ) ? p1.plus( u * dx, u * dy, p.z ) : null;
 	}
+
+	/**
+	 * Calculate area of specified triangle.
+	 * <p />
+	 * The area is calculated by using "Heron's formula".
+	 *
+	 * @param   p1  First point of the triangle.
+	 * @param   p2  Second point of the triangle.
+	 * @param   p3  Third point of the triangle.
+	 *
+	 * @return  Area of specified triangle.
+	 */
+	public static double getTriangleArea( final Point2D p1, final Point2D p2, final Point2D p3 )
+	{
+		final double a = p1.distance( p2 );
+		final double b = p2.distance( p3 );
+		final double c = p3.distance( p1 );
+		final double p = ( a + b + c ) / 2.0;
+
+		return Math.sqrt( p * ( p - a ) * ( p - b ) * ( p - c ) );
+	}
 }
