@@ -464,6 +464,22 @@ public final class TestAbToPovConverter
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
+			"\t}\n\n" +
+
+			"#declare TEX_orange =\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\tcolor      rgb <1.0,0.38,0.001>\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tambient    rgb <1.0,1.0,0.0>\n" +
+			"\t\t\tdiffuse    1.0\n" +
+			"\t\t\tphong      0.2\n" +
+			"\t\t\tphong_size 8.0\n" +
+			"\t\t}\n" +
 			"\t}\n\n";
 
 		Assert.assertEquals( "Declaration generation error" , expected , actual );
@@ -833,6 +849,12 @@ public final class TestAbToPovConverter
 			"\t\t<100.0,-100.0,100.0> , <-100.0,100.0,-100.0> , <-100.0,-100.0,-100.0> ,\n" +
 			"\t\t<100.0,-100.0,-100.0> , <100.0,100.0,-100.0>\n" +
 			"\t}\n" +
+			"\tuv_vectors\n" +
+			"\t{\n" +
+			"\t\t4,\n" +
+			"\t\t<0.0,0.0> , <1.0,0.0> , <1.0,1.0> ,\n" +
+			"\t\t<0.0,1.0>\n" +
+			"\t}\n" +
 			"\ttexture_list\n" +
 			"\t{\n" +
 			"\t\t6,\n" +
@@ -849,6 +871,13 @@ public final class TestAbToPovConverter
 			"\t\t<0,1,2>,0 , <0,2,3>,0 , <4,5,6>,1 , <4,6,7>,1 , <5,0,3>,2 , <5,3,6>,2 ,\n" +
 			"\t\t<7,2,1>,3 , <7,1,4>,3 , <4,1,0>,4 , <4,0,5>,4 , <6,3,2>,5 , <6,2,7>,5\n" +
 			"\t}\n" +
+			"\tuv_indices\n" +
+			"\t{\n" +
+			"\t\t12,\n" +
+			"\t\t<0,1,2> , <0,2,3> , <0,1,2> , <0,2,3> , <0,1,2> , <0,2,3> ,\n" +
+			"\t\t<0,1,2> , <0,2,3> , <0,1,2> , <0,2,3> , <0,1,2> , <0,2,3>\n" +
+			"\t}\n" +
+			"\tuv_mapping\n" +
 			"}\n";
 
 		Assert.assertEquals( "ColorCube3D to pov conversion error" , expected , actual );
@@ -927,14 +956,14 @@ public final class TestAbToPovConverter
 	 * @throws IOException When there was a problem writing to the
 	 * {@link IndentingWriter}.
 	 */
-	public static void testExtrudedObject2DToPov()
+	public static void testExtrudedObject2DAToPov()
 		throws IOException
 	{
 		final String actual;
 		{
 			final AbPovTestModel   testModel       = new AbPovTestModel();
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovGeometry      mesh            = converter.convertObject3D( Matrix3D.INIT , testModel.getExtrudedObject2D() );
+			final PovGeometry      mesh            = converter.convertObject3D( Matrix3D.INIT , testModel.getExtrudedObject2DA() );
 			final StringWriter     stringWriter    = new StringWriter();
 			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
 
@@ -959,6 +988,50 @@ public final class TestAbToPovConverter
 			"\t\t<6,7,1> , <6,1,0>\n" +
 			"\t}\n" +
 			"\ttexture { TEX_RGB_255_175_175 }\n" +
+			"}\n";
+
+		Assert.assertEquals( "ExtrudedObject2D to pov conversion error" , expected , actual );
+	}
+
+	/**
+	 * This method tests the conversion of an extruded {@link java.awt.Shape} to
+	 * a {@link PovMesh2}.
+	 *
+	 * @throws IOException When there was a problem writing to the
+	 * {@link IndentingWriter}.
+	 */
+	public static void testExtrudedObject2DBToPov()
+		throws IOException
+	{
+		final String actual;
+		{
+			final AbPovTestModel   testModel       = new AbPovTestModel();
+			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
+			final PovGeometry      mesh            = converter.convertObject3D( Matrix3D.INIT , testModel.getExtrudedObject2DB() );
+			final StringWriter     stringWriter    = new StringWriter();
+			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
+
+			mesh.write( indentingWriter );
+			actual = stringWriter.toString();
+		}
+
+		final String expected =
+			"mesh2\n" +
+			"{\n" +
+			"\tvertex_vectors\n" +
+			"\t{\n" +
+			"\t\t8,\n" +
+			"\t\t<-400.0,100.0,-300.0> , <-300.0,100.0,-300.0> , <-300.0,0.0,-300.0> ,\n" +
+			"\t\t<-400.0,0.0,-300.0> , <-400.0,0.0,-250.0> , <-400.0,100.0,-250.0> ,\n" +
+			"\t\t<-300.0,100.0,-250.0> , <-300.0,0.0,-250.0>\n" +
+			"\t}\n" +
+			"\tface_indices\n" +
+			"\t{\n" +
+			"\t\t10,\n" +
+			"\t\t<0,1,2> , <0,2,3> , <4,3,0> , <4,0,5> , <5,0,1> , <5,1,6> ,\n" +
+			"\t\t<6,1,2> , <6,2,7> , <7,2,3> , <7,3,4>\n" +
+			"\t}\n" +
+			"\ttexture { TEX_orange }\n" +
 			"}\n";
 
 		Assert.assertEquals( "ExtrudedObject2D to pov conversion error" , expected , actual );

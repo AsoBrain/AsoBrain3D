@@ -63,7 +63,7 @@ final class AbPovTestApp
 		/*
 		 * Path to test textures.
 		 */
-		ImageTools.addToSearchPath( "AsoBrain3D/test/ab/j3d/pov" );
+		MapTools.imageMapDirectory = "test/ab/j3d/pov/textures";
 
 		/*
 		 * Create testmodel.
@@ -84,8 +84,9 @@ final class AbPovTestApp
 		scene.addContentNode( "sphere"    , Matrix3D.getTransform(  0.0 ,  0.0 ,  0.0 ,    0.0 , 300.0 , -200.0 ) , testModel.getSphere3D() );
 		scene.addContentNode( "cylinder"  , Matrix3D.getTransform(  0.0 ,  0.0 ,  0.0 ,    0.0 ,   0.0 ,  150.0 ) , testModel.getCylinder3D() );
 		scene.addContentNode( "cone"      , Matrix3D.getTransform( 45.0 ,  0.0 ,  0.0 ,  250.0 ,   0.0 ,    0.0 ) , testModel.getCone3D() );
-		scene.addContentNode( "extruded"  , Matrix3D.INIT , testModel.getExtrudedObject2D() );
-		scene.addContentNode( "colorcube" , Matrix3D.INIT , testModel.getColorCube() );
+		scene.addContentNode( "extrudedA" , Matrix3D.IDENTITY, testModel.getExtrudedObject2DA() );
+		scene.addContentNode( "extrudedB" , Matrix3D.getTransform( 0.0, 0.0, 45.0, 100.0, 100.0, 100.0 ) , testModel.getExtrudedObject2DB() );
+		scene.addContentNode( "colorcube" , Matrix3D.IDENTITY, testModel.getColorCube() );
 
 		/*
 		 * Create Java3D-engine.

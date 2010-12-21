@@ -69,7 +69,8 @@ public final class AbPovTestModel
 		scene.addContentNode( "sphere"           , Matrix3D.getTransform(  0.0,  0.0,  0.0,    0.0, 300.0, -200.0 ), getSphere3D() );
 		scene.addContentNode( "cylinder"         , Matrix3D.getTransform(  0.0,  0.0,  0.0,    0.0,   0.0,  150.0 ), getCylinder3D() );
 		scene.addContentNode( "cone"             , Matrix3D.getTransform( 45.0,  0.0,  0.0,  250.0,   0.0,    0.0 ), getCone3D() );
-		scene.addContentNode( "extruded"         , Matrix3D.IDENTITY, getExtrudedObject2D() );
+		scene.addContentNode( "extrudedA"        , Matrix3D.IDENTITY, getExtrudedObject2DA() );
+		scene.addContentNode( "extrudedB"        , Matrix3D.IDENTITY, getExtrudedObject2DB() );
 		scene.addContentNode( "colorcube"        , Matrix3D.IDENTITY, getColorCube() );
 		scene.addContentNode( "texturedcolorcube", Matrix3D.IDENTITY, getTexturedColorCube() );
 
@@ -332,13 +333,15 @@ public final class AbPovTestModel
 			final Material leftMaterial   = createMaterialWithColorMap( "CUBE_LEFT" );
 			final Material rightMaterial  = createMaterialWithColorMap( "CUBE_RIGHT" );
 
+			final float[] texturePoints = { 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f };
+
 			final Object3DBuilder builder = new Object3DBuilder();
-			builder.addFace( new Vector3D[] { lft, lbt, rbt, rft }, topMaterial   , null, null, false, false );
-			builder.addFace( new Vector3D[] { lbb, lfb, rfb, rbb }, bottomMaterial, null, null, false, false );
-			builder.addFace( new Vector3D[] { lfb, lft, rft, rfb }, frontMaterial , null, null, false, false );
-			builder.addFace( new Vector3D[] { rbb, rbt, lbt, lbb }, backMaterial  , null, null, false, false );
-			builder.addFace( new Vector3D[] { lbb, lbt, lft, lfb }, leftMaterial  , null, null, false, false );
-			builder.addFace( new Vector3D[] { rfb, rft, rbt, rbb }, rightMaterial , null, null, false, false );
+			builder.addFace( new Vector3D[] { lft, lbt, rbt, rft }, topMaterial   , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { lbb, lfb, rfb, rbb }, bottomMaterial, texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { lfb, lft, rft, rfb }, frontMaterial , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { rbb, rbt, lbt, lbb }, backMaterial  , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { lbb, lbt, lft, lfb }, leftMaterial  , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { rfb, rft, rbt, rbb }, rightMaterial , texturePoints, null, false, false );
 			cube = builder.getObject3D();
 		}
 		else
@@ -406,21 +409,52 @@ public final class AbPovTestModel
 	 *
 	 * @return The constructed extruded object.
 	 */
-	public Object3D getExtrudedObject2D()
+	public Object3D getExtrudedObject2DA()
 	{
 		final Object3D result;
 
-		final ContentNode node = _scene.getContentNode( "extruded" );
+		final ContentNode node = _scene.getContentNode( "extrudedA" );
 		if ( node == null )
 		{
 			final Material material  = createMaterialWithColor( Color.PINK );
-			final BoxUVMap uvMap     = new BoxUVMap( Scene.MM, Matrix3D.IDENTITY );
 			final Shape    shape     = new Rectangle2D.Double( 0.0, 0.0, 100.0, 100.0 );
 			final Vector3D extrusion = new Vector3D( 0.0, 100.0, 100.0 );
 			final Matrix3D transform = Matrix3D.getTranslation( -400.0, 0.0, -250.0 );
 
 			final Object3DBuilder builder = new Object3DBuilder();
-			builder.addExtrudedShape( shape, 1.0, extrusion, transform, false, null, null, false, true, material, uvMap, false, true, material, uvMap, false, true, false, false );
+			builder.addExtrudedShape( shape, 1.0, extrusion, transform, material, new BoxUVMap( Scene.MM, Matrix3D.IDENTITY ), false, true, false, false );
+			result = builder.getObject3D();
+		}
+		else
+		{
+			result = (Object3D)node.getNode3D();
+		}
+
+		return result;
+	}
+
+	/**
+	 * This method constructs an extruded object. The object is rectangular with
+	 * a width and height of 100 mm and all extruded vertices are placed 100
+	 * back (y) and 100 up (z).
+	 *
+	 * @return The constructed extruded object.
+	 */
+	public Object3D getExtrudedObject2DB()
+	{
+		final Object3D result;
+
+		final ContentNode node = _scene.getContentNode( "extrudedB" );
+		if ( node == null )
+		{
+			final Material material  = Materials.ORANGE;
+			final BoxUVMap uvMap     = new BoxUVMap( Scene.MM, Matrix3D.IDENTITY );
+			final Shape    shape     = new Rectangle2D.Double( 0.0, 0.0, 100.0, 100.0 );
+			final Vector3D extrusion = new Vector3D( 0.0, 0.0, -50.0 );
+			final Matrix3D transform = Matrix3D.getTranslation( -400.0, 0.0, -250.0 );
+
+			final Object3DBuilder builder = new Object3DBuilder();
+			builder.addExtrudedShape( shape, 1.0, extrusion, transform, true, material, uvMap, false, false, null, null, false, true, material, uvMap, false, true, false, false );
 			result = builder.getObject3D();
 		}
 		else
