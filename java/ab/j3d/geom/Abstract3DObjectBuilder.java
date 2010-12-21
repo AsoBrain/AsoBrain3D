@@ -255,7 +255,7 @@ public abstract class Abstract3DObjectBuilder
 		{
 			if ( hasExtrusion )
 			{
-				addExtrudedShape( ellipse2d, radius * 0.02, extrusion, base, true, material, uvMap, false, true, material, uvMap, false, true, material, uvMap, false, true, false, true );
+				addExtrudedShape( ellipse2d, radius * 0.02, extrusion, true, base, true, material, uvMap, false, true, material, uvMap, false, true, material, uvMap, false, true, false, true );
 			}
 			else
 			{
@@ -898,6 +898,7 @@ public abstract class Abstract3DObjectBuilder
 	 *
 	 * @param   shape               Shape to add.
 	 * @param   extrusion           Extrusion vector (control-point displacement).
+	 * @paaram  extrusionLines      Include extrusion (out)lines.
 	 * @param   transform           Transform to apply.
 	 * @param   top                 <code>true</code> to include a top face.
 	 * @param   topMaterial         Material to apply to the top cap.
@@ -920,7 +921,7 @@ public abstract class Abstract3DObjectBuilder
 	 * @throws  IllegalArgumentException if the shape is not extruded along
 	 *          the z-axis.
 	 */
-	public void addExtrudedShape( @NotNull final Shape shape, final double flatness, @NotNull final Vector3D extrusion, @NotNull final Matrix3D transform, final boolean top, @Nullable final Material topMaterial, @Nullable final UVMap topMap, final boolean topFlipTexture, final boolean bottom, @Nullable final Material bottomMaterial, @Nullable final UVMap bottomMap, final boolean bottomFlipTexture, final boolean side, @Nullable final Material sideMaterial, @Nullable final UVMap sideMap, final boolean sideFlipTexture, final boolean twoSided, final boolean flipNormals, final boolean smooth )
+	public void addExtrudedShape( @NotNull final Shape shape, final double flatness, @NotNull final Vector3D extrusion, final boolean extrusionLines, @NotNull final Matrix3D transform, final boolean top, @Nullable final Material topMaterial, @Nullable final UVMap topMap, final boolean topFlipTexture, final boolean bottom, @Nullable final Material bottomMaterial, @Nullable final UVMap bottomMap, final boolean bottomFlipTexture, final boolean side, @Nullable final Material sideMaterial, @Nullable final UVMap sideMap, final boolean sideFlipTexture, final boolean twoSided, final boolean flipNormals, final boolean smooth )
 	{
 		if ( extrusion.z == 0.0 )
 		{
@@ -962,28 +963,61 @@ public abstract class Abstract3DObjectBuilder
 			addFace( bottomVertices, bottomTessellation, bottomMaterial, false, twoSided );
 		}
 
-		if ( side )
+		if ( side && !outlines.isEmpty() )
 		{
+			final Point2D.Float uv = ( sideMap != null ) ? new Point2D.Float() : null;
+			final Tessellation extrusionTessellation = new Tessellation( extrusionLines ? Collections.<int[]>singletonList( new int[] { 0, 1, 2, 3 } ) : Collections.<int[]>emptyList(), Collections.<TessellationPrimitive>singletonList( new TriangleFan( new int[] { 0, 1, 2, 3 } ) ) );
+
 			for ( final int[] contour : outlines )
 			{
-				final int first1 = getVertexIndex( bottomPoints.get( contour[ 0 ] ) );
-				final int first2 = getVertexIndex( topPoints.get( contour[ 0 ] ) );
+				final int lastIndex = contour[ contour.length - 1 ];
+				Vector3D previousP1 = bottomPoints.get( lastIndex );
+				Vector3D previousP2 = topPoints.get( lastIndex );
+				int previousI1 = getVertexIndex( previousP1 );
+				int previousI2 = getVertexIndex( previousP2 );
 
-				int previous1 = first1;
-				int previous2 = first2;
-
-				for ( int pointIndex = 1; pointIndex < contour.length; pointIndex++ )
+				for ( final int vertexIndex : contour )
 				{
-					final int next1 = getVertexIndex( bottomPoints.get( contour[ pointIndex ] ) );
-					final int next2 = getVertexIndex( topPoints.get( contour[ pointIndex ] ) );
+					final Vector3D nextP1 = bottomPoints.get( vertexIndex );
+					final Vector3D nextP2 = topPoints.get( vertexIndex );
+					final int nextI1 = getVertexIndex( nextP1 );
+					final int nextI2 = getVertexIndex( nextP2 );
 
-					addFace( new int[] { previous1, previous2, next2, next1 }, sideMaterial, sideMap, sideFlipTexture, smooth, twoSided );
+					final Vertex v1 = new Vertex( nextP1, nextI1 );
+					final Vertex v2 = new Vertex( nextP2, nextI2 );
+					final Vertex v3 = new Vertex( previousP2, previousI2 );
+					final Vertex v4 = new Vertex( previousP1, previousI1 );
 
-					previous2 = next2;
-					previous1 = next1;
+					final Vector3D normal = GeometryTools.getPlaneNormal( v1.point, v2.point, v3.point );
+					if ( normal != null )
+					{
+						if ( sideMap != null )
+						{
+							sideMap.generate( uv, sideMaterial, v1.point, normal, sideFlipTexture );
+							v1.colorMapU = uv.x;
+							v1.colorMapV = uv.y;
+
+							sideMap.generate( uv, sideMaterial, v2.point, normal, sideFlipTexture );
+							v2.colorMapU = uv.x;
+							v2.colorMapV = uv.y;
+
+							sideMap.generate( uv, sideMaterial, v3.point, normal, sideFlipTexture );
+							v3.colorMapU = uv.x;
+							v3.colorMapV = uv.y;
+
+							sideMap.generate( uv, sideMaterial, v4.point, normal, sideFlipTexture );
+							v4.colorMapU = uv.x;
+							v4.colorMapV = uv.y;
+						}
+
+						addFace( Arrays.asList( v1, v2, v3, v4 ), extrusionTessellation, sideMaterial, smooth, twoSided );
+					}
+
+					previousP1 = nextP1;
+					previousP2 = nextP2;
+					previousI1 = nextI1;
+					previousI2 = nextI2;
 				}
-
-				addFace( new int[] { previous1, previous2, first2, first1 }, sideMaterial, sideMap, sideFlipTexture, smooth, twoSided );
 			}
 		}
 	}

@@ -261,14 +261,14 @@ public class TessellationExample
 		{
 			final Object3DBuilder builder = new Object3DBuilder();
 			final Vector3D extrusionPos = new Vector3D( 0.0, 0.0, 5.0 );
-			builder.addExtrudedShape( area, 0.1, extrusionPos, flipY, true, Materials.BLUE, UV_MAP, false, true, Materials.RED, UV_MAP, false, true, Materials.YELLOW, UV_MAP, false, false, false, false );
+			builder.addExtrudedShape( area, 0.1, extrusionPos, true, flipY, true, Materials.BLUE, UV_MAP, false, true, Materials.RED, UV_MAP, false, true, Materials.YELLOW, UV_MAP, false, false, false, false );
 			scene.addContentNode( name + "-2" , Matrix3D.getTranslation( x, y - offsetY, 0.0), builder.getObject3D() );
 		}
 
 		{
 			final Object3DBuilder builder = new Object3DBuilder();
 			final Vector3D extrusionNeg = new Vector3D( 0.0, 0.0, -5.0 );
-			builder.addExtrudedShape( area, 0.1, extrusionNeg, flipY, true, Materials.SILVER, UV_MAP, false, true, Materials.CHROME, UV_MAP, false, true, Materials.GOLD, UV_MAP, false, false, false, false );
+			builder.addExtrudedShape( area, 0.1, extrusionNeg, true, flipY, true, Materials.SILVER, UV_MAP, false, true, Materials.CHROME, UV_MAP, false, true, Materials.GOLD, UV_MAP, false, false, false, false );
 			scene.addContentNode( name + "-3" , Matrix3D.getTranslation( x, y - 2 * offsetY, 0.0), builder.getObject3D() );
 		}
 	}
