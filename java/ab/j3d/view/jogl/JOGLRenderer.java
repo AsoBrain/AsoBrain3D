@@ -1918,11 +1918,12 @@ public class JOGLRenderer
 			 */
 			final int passes = ( !backfaceCulling && hasLighting && _shaderManager.isShaderSupportAvailable() ) ? 2 : 1;
 			final boolean multipass = ( passes > 1 );
+			state.setEnabled( GL.GL_CULL_FACE, multipass || backfaceCulling );
 
 			for ( int pass = 0; pass < passes; pass++ )
 			{
 				final boolean isBackFace = multipass && ( pass == 0 );
-				state.setEnabled( GL.GL_CULL_FACE, multipass || backfaceCulling );
+				gl.glFrontFace( isBackFace ? GL.GL_CW : GL.GL_CCW );
 
 				if ( !setVertexNormals )
 				{
@@ -2108,9 +2109,10 @@ public class JOGLRenderer
 			final boolean multipass = ( passes > 1 );
 			state.setEnabled( GL.GL_CULL_FACE, multipass || backfaceCulling );
 
-			for ( int pass = 0 ; pass < passes ; pass++ )
+			for ( int pass = 0; pass < passes; pass++ )
 			{
 				final boolean isBackFace = multipass && ( pass == 0 );
+				gl.glFrontFace( isBackFace ? GL.GL_CW : GL.GL_CCW );
 
 				if ( !setVertexNormals )
 				{
