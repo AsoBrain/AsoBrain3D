@@ -611,12 +611,12 @@ public abstract class Abstract3DObjectBuilder
 
 			if ( fill )
 			{
-				addQuad( point4, point3, point2, point1, material, false );
-				addQuad( point1, point2, point2a, point1a, material, false );
-				addQuad( point2, point3, point3a, point2a, material, false );
-				addQuad( point3, point4, point4a, point3a, material, false );
-				addQuad( point4, point1, point1a, point4a, material, false );
-				addQuad( point1a, point2a, point3a, point4a, material, false );
+				addQuad( point4, point3, point2, point1, material, twoSided );
+				addQuad( point1, point2, point2a, point1a, material, twoSided );
+				addQuad( point2, point3, point3a, point2a, material, twoSided );
+				addQuad( point3, point4, point4a, point3a, material, twoSided );
+				addQuad( point4, point1, point1a, point4a, material, twoSided );
+				addQuad( point1a, point2a, point3a, point4a, material, twoSided );
 			}
 			else
 			{
