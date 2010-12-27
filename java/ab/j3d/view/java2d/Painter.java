@@ -25,6 +25,7 @@ import java.awt.geom.*;
 import java.util.List;
 
 import ab.j3d.*;
+import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.model.Face3D.*;
 import ab.j3d.view.*;
@@ -142,43 +143,25 @@ public final class Painter
 		final Color outlineColor = renderStyle.isStrokeEnabled() ? renderStyle.getStrokeColor() : null;
 		final Color fillColor = renderStyle.isFillEnabled() ? renderStyle.getFillColor() : null;
 		final boolean applyLighting = renderStyle.isFillLightingEnabled();
+		final Matrix3D object2image = object2view.multiply( view2image );
 
 		final int faceCount = object.getFaceCount();
 
-		/*
-		 * If the array is to small, create a larger one.
-		 */
-		int maxVertexCount = 0;
-		for ( int faceIndex = 0; faceIndex < faceCount; faceIndex++ )
-		{
-			final Face3D face = object.getFace( faceIndex );
-			maxVertexCount = Math.max( maxVertexCount, face.vertices.size() );
-		}
+		final Path2D.Float path = new Path2D.Float();
 
-		final int[] xs = new int[ maxVertexCount ];
-		final int[] ys = new int[ maxVertexCount ];
-
-		final float[]  rgb;
-
-		if ( applyLighting && ( maxVertexCount > 2 ) )
-		{
-			rgb = fillColor.getRGBComponents( null );
-		}
-		else
-		{
-			rgb = null;
-		}
+		final float[] rgb = applyLighting ? fillColor.getRGBComponents( null ) : null;
 
 		for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
 		{
 			final Face3D face = object.getFace( faceIndex );
+			final Tessellation tessellation = face.getTessellation();
 			final List<Vertex> vertices = face.vertices;
-			final int vertexCount = vertices.size();
+			final List<int[]> outlines = tessellation.getOutlines();
 
-			if ( ( vertexCount > 1 ) && ( object2view.rotateZ( face.getNormal() ) >= 0.0 ) )
+			if ( !outlines.isEmpty() && ( object2view.rotateZ( face.getNormal() ) >= 0.0 ) )
 			{
 				final Color faceFillColor;
-				if ( applyLighting && ( rgb != null ) && ( vertexCount > 2 ) )
+				if ( applyLighting )
 				{
 					final Vector3D faceNormal = face.normal;
 					final float transformedNormalZ = (float)object2view.rotateZ( faceNormal.x, faceNormal.y, faceNormal.z );
@@ -190,48 +173,38 @@ public final class Painter
 					faceFillColor = fillColor;
 				}
 
-				for ( int p = 0 ; p < vertexCount ; p++ )
+				for ( final int[] outline : outlines )
 				{
-					final Vertex vertex = vertices.get( p );
-
-					final double x  = object2view.transformX( vertex.point );
-					final double y  = object2view.transformY( vertex.point );
-					final double z  = object2view.transformZ( vertex.point );
-
-					final int ix = (int)view2image.transformX( x, y, z );
-					final int iy = (int)view2image.transformY( x, y, z );
-
-					xs[ p ] = ix;
-					ys[ p ] = iy;
-				}
-
-				if ( faceFillColor != null )
-				{
-					g.setPaint( faceFillColor );
-
-					if ( vertexCount < 3 ) /* point or line */
+					if ( outline.length > 2 )
 					{
-						if ( outlineColor == null )
+						path.reset();
+
+						for ( int p = 0 ; p < outline.length ; p++ )
 						{
-							g.drawLine( xs[ 0 ], ys[ 0 ], xs[ vertexCount - 1 ], ys[ vertexCount - 1 ] );
+							final Vector3D p3d = vertices.get( outline[ p ] ).point;
+							if ( p == 0 )
+							{
+								path.moveTo( object2image.transformX( p3d ), object2image.transformY( p3d ) );
+							}
+							else
+							{
+								path.lineTo( object2image.transformX( p3d ), object2image.transformY( p3d ) );
+							}
 						}
-					}
-					else
-					{
-						g.fillPolygon( xs, ys, vertexCount );
-					}
-				}
 
-				if ( outlineColor != null )
-				{
-					g.setPaint( outlineColor );
-					if ( vertexCount < 3 ) /* point or line */
-					{
-						g.drawLine( xs[ 0 ], ys[ 0 ], xs[ vertexCount - 1 ], ys[ vertexCount - 1 ] );
-					}
-					else
-					{
-						g.drawPolygon( xs, ys, vertexCount );
+						path.closePath();
+
+						if ( faceFillColor != null )
+						{
+							g.setPaint( faceFillColor );
+							g.fill( path );
+						}
+
+						if ( outlineColor != null )
+						{
+							g.setPaint( outlineColor );
+							g.draw( path );
+						}
 					}
 				}
 			}
