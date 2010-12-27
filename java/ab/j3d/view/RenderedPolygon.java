@@ -21,7 +21,6 @@
 package ab.j3d.view;
 
 import java.awt.*;
-import java.util.List;
 
 import ab.j3d.*;
 import ab.j3d.model.*;
@@ -41,11 +40,6 @@ public final class RenderedPolygon
 	 * Object for which the polygon was defined.
 	 */
 	public Object3D _object;
-
-	/**
-	 * Face for which the polygon was defined.
-	 */
-	public Face3D _face;
 
 	/**
 	 * Material applied to this face. Taken from {@link Face3D#material}.
@@ -191,7 +185,6 @@ public final class RenderedPolygon
 		super( projectedX, projectedY, 0 );
 
 		_object              = null;
-		_face                = null;
 		_vertexCount         = vertexCount;
 
 		_viewX = new double[ vertexCount ];
@@ -228,8 +221,9 @@ public final class RenderedPolygon
 	 * @param   projector       Projects view coordinates on image plate (pixels).
 	 * @param   object          Object to get face from.
 	 * @param   face            Face to initialize polygon with.
+	 * @param   vertexIndices   Convex face vertices.
 	 */
-	public void initialize( final Matrix3D object2view, final Projector projector, final Object3D object, final Face3D face )
+	public void initialize( final Matrix3D object2view, final Projector projector, final Object3D object, final Face3D face, final int[] vertexIndices )
 	{
 		final int      pointCount = _vertexCount;
 		final int[]    projectedX = _projectedX;
@@ -243,8 +237,7 @@ public final class RenderedPolygon
 			throw new IllegalStateException();
 		}
 
-		final List<Vertex> vertices = face.vertices;
-		if ( vertices.size() != pointCount )
+		if ( vertexIndices.length != pointCount )
 		{
 			throw new IllegalArgumentException();
 		}
@@ -260,7 +253,7 @@ public final class RenderedPolygon
 
 		for ( int vertexIndex = 0 ; vertexIndex < pointCount ; vertexIndex++ )
 		{
-			final Vertex vertex = vertices.get( vertexIndex );
+			final Vertex vertex = face.getVertex( vertexIndices[ vertexIndex ] );
 			final Vector3D oPoint = vertex.point;
 
 			final double x = object2view.transformX( oPoint );
@@ -297,7 +290,6 @@ public final class RenderedPolygon
 		final boolean backface      = ( projector instanceof Projector.PerspectiveProjector ) ? ( planeConstant <= 0.0 ) : ( planeNormalZ <= 0.0 );
 
 		_object = object;
-		_face = face;
 		_planeNormalX = planeNormalX;
 		_planeNormalY = planeNormalY;
 		_planeNormalZ = planeNormalZ;
@@ -319,7 +311,6 @@ public final class RenderedPolygon
 	{
 		invalidate();
 		_object   = null;
-		_face     = null;
 		_material = null;
 	}
 
@@ -386,7 +377,6 @@ public final class RenderedPolygon
 		final StringBuilder sb = new StringBuilder();
 
 		sb.append(   "Object: "               ); sb.append( _object.getTag() );
-		sb.append( "\nFace: "                 ); sb.append( _face );
 		sb.append( "\nMaterial: "             ); sb.append( ( _material == null ? "null" : _material.code ) );
 		sb.append( "\nNormal: "               ); sb.append( Vector3D.toFriendlyString( Vector3D.INIT.set( _planeNormalX, _planeNormalY, _planeNormalZ ) ) );
 		sb.append( "\nPlane constant: "       ); sb.append( _planeConstant );

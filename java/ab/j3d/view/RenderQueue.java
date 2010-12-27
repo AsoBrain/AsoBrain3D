@@ -23,6 +23,7 @@ package ab.j3d.view;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import com.numdata.oss.*;
 import com.numdata.oss.io.*;
@@ -197,21 +198,26 @@ public final class RenderQueue
 		for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
 		{
 			final Face3D face = object.getFace( faceIndex );
+			final Tessellation tessellation = face.getTessellation();
 
-			final RenderedPolygon polygon = allocatePolygon( face.getVertexCount() );
-			polygon.initialize( object2view, projector, object, face );
-
-			if ( polygon.inViewVolume( imageWidth, imageHeight ) && // View volume culling
-			     ( !backfaceCulling || face.isTwoSided() || !polygon.isBackface() ) ) // Backface removal
+			for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
 			{
-				//@FIXME: Debugging variable. Should be removed when the renderqueue works properly.
-				polygon._name = String.valueOf( object.getTag() );
+				final int[] triangles = primitive.getTriangles();
+				for ( int i = 0; i < triangles.length; i += 3 )
+				{
+					final RenderedPolygon polygon = allocatePolygon( 3 );
+					polygon.initialize( object2view, projector, object, face, new int[] { triangles[ i ], triangles[ i + 1], triangles[ i + 2 ] } );
 
-				enqueuePolygon( polygon );
-			}
-			else
-			{
-				releasePolygon( polygon );
+					if ( polygon.inViewVolume( imageWidth, imageHeight ) && // View volume culling
+					     ( !backfaceCulling || face.isTwoSided() || !polygon.isBackface() ) ) // Backface removal
+					{
+						enqueuePolygon( polygon );
+					}
+					else
+					{
+						releasePolygon( polygon );
+					}
+				}
 			}
 		}
 	}

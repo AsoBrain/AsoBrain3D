@@ -23,6 +23,7 @@ package ab.j3d.view;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import org.jetbrains.annotations.*;
 
@@ -188,9 +189,17 @@ public class BSPTree
 	{
 		for ( final Face3D face : object.getFaces() )
 		{
-			final RenderedPolygon polygon = new RenderedPolygon( face.getVertexCount() );
-			polygon.initialize( object2model, null, object, face );
-			_polygons.add( polygon );
+			final Tessellation tessellation = face.getTessellation();
+			for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+			{
+				final int[] triangles = primitive.getTriangles();
+				for ( int i = 0; i < triangles.length; i += 3 )
+				{
+					final RenderedPolygon polygon = new RenderedPolygon( 3 );
+					polygon.initialize( object2model, null, object, face, new int[] { triangles[ i ], triangles[ i + 1], triangles[ i + 2 ] } );
+					_polygons.add( polygon );
+				}
+			}
 		}
 	}
 
