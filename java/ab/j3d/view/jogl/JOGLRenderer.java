@@ -858,15 +858,15 @@ public class JOGLRenderer
 
 		for ( final ContentNode node : nodes )
 		{
-			final Matrix3D node2world = node.getTransform();
-			final List<Node3DPath> content = node.getContent();
+			final Node3DCollector collector = new Node3DCollector( Object3D.class );
+			Node3DTreeWalker.walk( collector, node.getTransform(), node.getNode3D() );
+			final List<Node3DPath> content = collector.getCollectedNodes();
 
 			final RenderStyle nodeStyle = sceneStyle.applyFilters( styleFilters, node );
 
 			for ( final Node3DPath path : content )
 			{
-				final Matrix3D object2node = path.getTransform();
-				final Matrix3D object2world = object2node.multiply( node2world );
+				final Matrix3D object2world = path.getTransform();
 				final Object3D object = (Object3D) path.getNode();
 				final int faceCount = object.getFaceCount();
 
