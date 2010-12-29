@@ -83,12 +83,6 @@ public class JOGLView
 	private RenderThread _renderThread;
 
 	/**
-	 * Whether the view should continuously be rendered, even if no update was
-	 * requested.
-	 */
-	private boolean _renderedContinuously;
-
-	/**
 	 * JOGL renderer.
 	 */
 	private JOGLRenderer _renderer;
@@ -114,7 +108,7 @@ public class JOGLView
 	 * @param   joglEngine  Engine that created this view.
 	 * @param   scene       Scene to view.
 	 */
-	public JOGLView( final JOGLEngine joglEngine , final Scene scene )
+	public JOGLView( final JOGLEngine joglEngine, final Scene scene )
 	{
 		super( scene );
 
@@ -122,12 +116,11 @@ public class JOGLView
 		_frontClipDistance = 0.1 / scene.getUnit();
 		_backClipDistance = 100.0 / scene.getUnit();
 		_renderThread = null;
-		_renderedContinuously = false;
 		_renderer = null;
 		_graphics2D = null;
 
 		final FrameCounter frameCounter = new FrameCounter();
-		if ( isRenderedContinuously() )
+		if ( isAnimationRunning() )
 		{
 			frameCounter.addChangeListener( new ChangeListener()
 			{
@@ -165,7 +158,7 @@ public class JOGLView
 
 		_capabilities = new JOGLCapabilities( glCanvas.getContext() );
 
-		glCanvas.setMinimumSize( new Dimension( 0 , 0 ) ); //resize workaround
+		glCanvas.setMinimumSize( new Dimension( 0, 0 ) ); //resize workaround
 		glCanvas.addGLEventListener( this );
 		_glCanvas = glCanvas;
 
@@ -180,7 +173,7 @@ public class JOGLView
 		final TextureCacheListener textureCacheListener = new TextureCacheListener()
 		{
 			@Override
-			public void textureChanged( @NotNull final TextureCache textureCache , @NotNull final TextureProxy textureProxy )
+			public void textureChanged( @NotNull final TextureCache textureCache, @NotNull final TextureProxy textureProxy )
 			{
 				startRenderer();
 			}
@@ -236,28 +229,6 @@ public class JOGLView
 		update();
 	}
 
-	/**
-	 * Returns whether the view should continuously be rendered, even if no
-	 * update was requested.
-	 *
-	 * @return  Whether continuous rendering is enabled.
-	 */
-	public boolean isRenderedContinuously()
-	{
-		return _renderedContinuously;
-	}
-
-	/**
-	 * Sets whether the view should continuously be rendered, even if no
-	 * update was requested.
-	 *
-	 * @param   renderedContinuously   Whether continuous rendering is enabled.
-	 */
-	public void setRenderedContinuously( final boolean renderedContinuously )
-	{
-		_renderedContinuously = renderedContinuously;
-	}
-
 	@Override
 	public void dispose()
 	{
@@ -289,7 +260,7 @@ public class JOGLView
 		final GLDrawableFactory factory = GLDrawableFactory.getFactory();
 		if ( factory.canCreateGLPbuffer() )
 		{
-			buffer = factory.createGLPbuffer( _glCanvas.getChosenGLCapabilities() , null , _glCanvas.getWidth() , _glCanvas.getHeight() , _glCanvas.getContext() );
+			buffer = factory.createGLPbuffer( _glCanvas.getChosenGLCapabilities(), null, _glCanvas.getWidth(), _glCanvas.getHeight(), _glCanvas.getContext() );
 		}
 
 		return buffer;
@@ -323,7 +294,7 @@ public class JOGLView
 		final double    frontClipDistance = _frontClipDistance;
 		final double    backClipDistance  = _backClipDistance;
 
-		return Projector.createInstance( getProjectionPolicy() , imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
+		return Projector.createInstance( getProjectionPolicy(), imageWidth, imageHeight, imageResolution, viewUnit, frontClipDistance, backClipDistance, fieldOfView, zoomFactor );
 	}
 
 	@Override
@@ -436,7 +407,7 @@ public class JOGLView
 
 				try
 				{
-					if ( isRenderedContinuously() || _updateRequested )
+					if ( isAnimationRunning() || _updateRequested )
 					{
 						if ( viewComponent.isShowing() && ( viewComponent.getWidth() > 0 ) && ( viewComponent.getHeight() > 0 ) )
 						{
@@ -466,7 +437,7 @@ public class JOGLView
 					exceptionOccurred = true;
 				}
 
-				if ( exceptionOccurred || !isRenderedContinuously() )
+				if ( exceptionOccurred || !( isAnimationRunning() || _updateRequested ) )
 				{
 					/*
 					 * No update needed or an exception occured.
@@ -521,13 +492,13 @@ public class JOGLView
 	}
 
 	@Override
-	public void displayChanged( final GLAutoDrawable glAutoDrawable , final boolean b , final boolean b1 )
+	public void displayChanged( final GLAutoDrawable glAutoDrawable, final boolean b, final boolean b1 )
 	{
 		/* Not implemented in reference implementation. */
 	}
 
 	@Override
-	public void reshape( final GLAutoDrawable glAutoDrawable , final int x , final int y , final int width , final int height )
+	public void reshape( final GLAutoDrawable glAutoDrawable, final int x, final int y, final int width, final int height )
 	{
 		try
 		{
@@ -585,8 +556,8 @@ public class JOGLView
 
 				gl.glMatrixMode( GL.GL_PROJECTION );
 				gl.glLoadIdentity();
-				gl.glOrtho( left , right , bottom , top , near , far );
-				gl.glScaled( scale , scale , scale );
+				gl.glOrtho( left, right, bottom, top, near, far );
+				gl.glScaled( scale, scale, scale );
 			}
 			else if ( projectionPolicy == ProjectionPolicy.PERSPECTIVE )
 			{
@@ -599,10 +570,10 @@ public class JOGLView
 				gl.glLoadIdentity();
 
 				final GLU glu = new GLU();
-				glu.gluPerspective( fov , 1.0 , near , far );
-				gl.glHint( GL.GL_PERSPECTIVE_CORRECTION_HINT , GL.GL_NICEST );
+				glu.gluPerspective( fov, 1.0, near, far );
+				gl.glHint( GL.GL_PERSPECTIVE_CORRECTION_HINT, GL.GL_NICEST );
 
-				gl.glScaled( 1.0 , aspect , 1.0 );
+				gl.glScaled( 1.0, aspect, 1.0 );
 			}
 			else
 			{
@@ -630,6 +601,11 @@ public class JOGLView
 
 				paintOverlay( joglGraphics2D );
 			}
+
+			if ( isAnimationRunning() )
+			{
+				startRenderer();
+			}
 		}
 	}
 
@@ -645,12 +621,12 @@ public class JOGLView
 		/* Setup initial style and apply style filters to this view. */
 		final RenderStyle defaultStyle = new RenderStyle();
 		final Collection<RenderStyleFilter> styleFilters = getRenderStyleFilters();
-		final RenderStyle viewStyle = defaultStyle.applyFilters( styleFilters , this );
+		final RenderStyle viewStyle = defaultStyle.applyFilters( styleFilters, this );
 
 		/* Apply view transform. */
 		gl.glMatrixMode( GL.GL_MODELVIEW );
 		gl.glLoadIdentity();
-		JOGLTools.glMultMatrixd( gl , getScene2View() );
+		JOGLTools.glMultMatrixd( gl, getScene2View() );
 
 		final JOGLRenderer renderer = getOrCreateRenderer( gl, false );
 		renderer.setSceneToViewTransform( getScene2View() );
@@ -673,7 +649,7 @@ public class JOGLView
 		if ( renderer == null )
 		{
 			final TextureCache textureCache = _joglEngine.getTextureCache();
-			renderer = new JOGLRenderer( gl , _configuration , textureCache );
+			renderer = new JOGLRenderer( gl, _configuration, textureCache );
 			renderer.init();
 			_renderer = renderer;
 		}
