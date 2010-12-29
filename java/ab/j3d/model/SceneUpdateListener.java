@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +20,7 @@
  */
 package ab.j3d.model;
 
-import java.util.EventListener;
+import java.util.*;
 
 /**
  * Listener for {@link SceneUpdateEvent}s from a {@link Scene}.
@@ -65,4 +66,18 @@ public interface SceneUpdateListener
 	 * @param   event   Event from the scene.
 	 */
 	void ambientLightChanged( SceneUpdateEvent event );
+
+	/**
+	 * Notifies the listener that scene animation was started.
+	 *
+	 * @param   event   Event from the scene.
+	 */
+	void animationStarted( SceneUpdateEvent event );
+
+	/**
+	 * Notifies the listener that scene animation was stopped.
+	 *
+	 * @param   event   Event from the scene.
+	 */
+	void animationStopped( SceneUpdateEvent event );
 }

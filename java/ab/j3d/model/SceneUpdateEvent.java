@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +20,7 @@
  */
 package ab.j3d.model;
 
-import java.util.EventObject;
+import java.util.*;
 
 /**
  * Event fired by {@link Scene}.
@@ -56,6 +57,16 @@ public class SceneUpdateEvent
 	public static final int AMBIENT_LIGHT_CHANGED = 4;
 
 	/**
+	 * ID for event to indicate that scene animation was started.
+	 */
+	public static final int ANIMATION_STARTED = 5;
+
+	/**
+	 * ID for event to indicate that scene animation was stopped.
+	 */
+	public static final int ANIMATION_STOPPED = 6;
+
+	/**
 	 * Serialized data version.
 	 */
 	private static final long serialVersionUID = -6457043864762971513L;
@@ -68,7 +79,7 @@ public class SceneUpdateEvent
 	/**
 	 * Related node.
 	 */
-	private ContentNode _node;
+	private final ContentNode _node;
 
 	/**
 	 * Construct event.
@@ -77,7 +88,7 @@ public class SceneUpdateEvent
 	 * @param   id      Event ID.
 	 * @param   node    Related node.
 	 */
-	public SceneUpdateEvent( final Scene scene , final int id , final ContentNode node )
+	public SceneUpdateEvent( final Scene scene, final int id, final ContentNode node )
 	{
 		super( scene );
 		_id = id;

@@ -536,6 +536,22 @@ public abstract class View3D
 	}
 
 	/**
+	 * Test wether an animation is running in this view. If this is the case,
+	 * the view should continuously be rendered, even if no explicit update was
+	 * requested.
+	 * <p>
+	 * This simply returns the {@link Scene#isAnimated()} result.
+	 *
+	 * @return  <code>true</code> if animation is running;
+	 *          <code>false</code> if view is static.
+	 */
+	public boolean isAnimationRunning()
+	{
+		final Scene scene = getScene();
+		return scene.isAnimated();
+	}
+
+	/**
 	 * Update contents of view. This may be the result of changes to the 3D
 	 * scene or view transform.
 	 */
@@ -918,6 +934,17 @@ public abstract class View3D
 	public void ambientLightChanged( final SceneUpdateEvent event )
 	{
 		update();
+	}
+
+	@Override
+	public void animationStarted( final SceneUpdateEvent event )
+	{
+		update();
+	}
+
+	@Override
+	public void animationStopped( final SceneUpdateEvent event )
+	{
 	}
 
 	/**

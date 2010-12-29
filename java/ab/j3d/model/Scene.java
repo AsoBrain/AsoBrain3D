@@ -136,6 +136,13 @@ public class Scene
 	private Bounds3D _bounds;
 
 	/**
+	 * Flag to indicate that this scene is animated as opposed to static. An
+	 * animated scene may be rendered continuously in order to see the
+	 * animation; rendering a static scene continuously is a waste of resources.
+	 */
+	private boolean _animated = false;
+
+	/**
 	 * Shared listener for content node updates.
 	 */
 	private final ContentNodeUpdateListener _contentNodeUpdateListener = new ContentNodeUpdateListener()
@@ -183,6 +190,57 @@ public class Scene
 	{
 		_bspTreeDirty = true;
 		_bounds = null;
+	}
+
+	/**
+	 * Flag to indicate that this scene is animated as opposed to static. An
+	 * animated scene may be rendered continuously in order to see the
+	 * animation; rendering a static scene continuously is a waste of resources.
+	 *
+	 * @return  <code>true</code> if this scene is animated;
+	 *          <code>false</code> if this scene is static.
+	 */
+	public boolean isAnimated()
+	{
+		return _animated;
+	}
+
+	/**
+	 * Set flag to indicate that this scene is animated as opposed to static. An
+	 * animated scene may be rendered continuously in order to see the
+	 * animation; rendering a static scene continuously is a waste of resources.
+	 *
+	 * @param   animated    <code>true</code> if this scene is animated;
+	 *                      <code>false</code> if this scene is static.
+	 */
+	public void setAnimated( final boolean animated )
+	{
+		final boolean oldValue = _animated;
+		if ( animated != oldValue )
+		{
+			final List<SceneUpdateListener> listeners = _sceneUpdateListeners;
+			if ( !listeners.isEmpty() )
+			{
+				if ( animated )
+				{
+					final SceneUpdateEvent event = new SceneUpdateEvent( this, SceneUpdateEvent.ANIMATION_STARTED, null );
+					for ( final SceneUpdateListener listener : listeners )
+					{
+						listener.animationStarted( event );
+					}
+				}
+				else
+				{
+					final SceneUpdateEvent event = new SceneUpdateEvent( this, SceneUpdateEvent.ANIMATION_STOPPED, null );
+					for ( final SceneUpdateListener listener : listeners )
+					{
+						listener.animationStopped( event );
+					}
+				}
+			}
+
+			_animated = animated;
+		}
 	}
 
 	/**
@@ -478,6 +536,7 @@ public class Scene
 	 */
 	public void setAmbient( final float redIntensity, final float greenIntensity, final float blueIntensity )
 	{
+		//noinspection FloatingPointEquality
 		if ( ( _ambientColorRed   != redIntensity   ) ||
 		     ( _ambientColorGreen != greenIntensity ) ||
 		     ( _ambientColorBlue  != blueIntensity  ) )
