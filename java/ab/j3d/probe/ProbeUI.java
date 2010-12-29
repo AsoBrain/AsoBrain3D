@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,9 +44,7 @@ import com.numdata.oss.ui.*;
 public class ProbeUI
 	extends JPanel
 {
-	private JLabel _expected;
-
-	private JOGLView _actual;
+	private final JOGLView _actual;
 
 	/**
 	 * Construct new probe UI.
@@ -58,27 +57,27 @@ public class ProbeUI
 		}
 
 		final List<Probe> probes = Arrays.<Probe>asList(
-			new TextureProbe() ,
-			new VertexLighting() ,
-			new PixelLighting() ,
-			new Blending() ,
-			new DepthPeeling()
+			new TextureProbe(),
+			new VertexLighting(),
+			new PixelLighting(),
+			new Blending()
 		);
 
 		final JPanel expectedContainer = new JPanel();
 		expectedContainer.setBackground( Color.BLACK );
 		expectedContainer.setBorder( BorderFactory.createBevelBorder( BevelBorder.LOWERED ) );
-		expectedContainer.setPreferredSize( new Dimension( 300 , 300 ) );
+		expectedContainer.setPreferredSize( new Dimension( 300, 300 ) );
 		expectedContainer.setLayout( new BorderLayout() );
 
 		final JLabel expected = new JLabel();
-		expectedContainer.add( expected , BorderLayout.CENTER );
+		expectedContainer.add( expected, BorderLayout.CENTER );
 
 		final JPanel probesPanel = new JPanel();
 		for ( final Probe probe : probes )
 		{
 			final JButton button = new JButton( new AbstractAction( probe.getName() )
 			{
+				@Override
 				public void actionPerformed( final ActionEvent e )
 				{
 					final Image expectedImage = probe.getExpectedImage();
@@ -97,7 +96,7 @@ public class ProbeUI
 					}
 					else
 					{
-						final int choice = JOptionPane.showConfirmDialog( ProbeUI.this , "It appears that your computer isn't capable of running this probe.\nAre you sure you want to try it anyway?" , "Probe not supported" , JOptionPane.YES_NO_CANCEL_OPTION , JOptionPane.QUESTION_MESSAGE );
+						final int choice = JOptionPane.showConfirmDialog( ProbeUI.this, "It appears that your computer isn't capable of running this probe.\nAre you sure you want to try it anyway?", "Probe not supported", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE );
 						if ( choice == JOptionPane.YES_OPTION )
 						{
 							probe.run();
@@ -107,6 +106,7 @@ public class ProbeUI
 			} );
 			SwingUtilities.invokeLater( new Runnable()
 			{
+				@Override
 				public void run()
 				{
 					button.setBackground( probe.isSupported() ? Color.GREEN : Color.YELLOW );
@@ -118,34 +118,34 @@ public class ProbeUI
 		final JPanel actualContainer = new JPanel();
 		actualContainer.setBackground( Color.BLACK );
 		actualContainer.setBorder( BorderFactory.createBevelBorder( BevelBorder.LOWERED ) );
-		actualContainer.setPreferredSize( new Dimension( 300 , 300 ) );
+		actualContainer.setPreferredSize( new Dimension( 300, 300 ) );
 		actualContainer.setLayout( new BorderLayout() );
 
 		final RenderEngine engine = new JOGLEngine();
 		final Scene scene = new Scene( Scene.MM );
 		final JOGLView view = (JOGLView)engine.createView( scene );
-		actualContainer.add( view.getComponent() , BorderLayout.CENTER );
+		actualContainer.add( view.getComponent(), BorderLayout.CENTER );
 		_actual = view;
 
 		final JPanel expectedPanel = new JPanel();
-		expectedPanel.setLayout( new BorderLayout( 5 , 5 ) );
-		expectedPanel.add( new JLabel( "Expected" , SwingConstants.CENTER ) , BorderLayout.NORTH );
-		expectedPanel.add( expectedContainer , BorderLayout.CENTER );
+		expectedPanel.setLayout( new BorderLayout( 5, 5 ) );
+		expectedPanel.add( new JLabel( "Expected", SwingConstants.CENTER ), BorderLayout.NORTH );
+		expectedPanel.add( expectedContainer, BorderLayout.CENTER );
 
 		final JPanel actualPanel = new JPanel();
-		actualPanel.setLayout( new BorderLayout( 5 , 5 ) );
-		actualPanel.add( new JLabel( "Your computer" , SwingConstants.CENTER ) , BorderLayout.NORTH );
-		actualPanel.add( actualContainer , BorderLayout.CENTER );
+		actualPanel.setLayout( new BorderLayout( 5, 5 ) );
+		actualPanel.add( new JLabel( "Your computer", SwingConstants.CENTER ), BorderLayout.NORTH );
+		actualPanel.add( actualContainer, BorderLayout.CENTER );
 
 		final JPanel comparisonPanel = new JPanel();
-		comparisonPanel.setLayout( new GridLayout( 1 , 2 , 5 , 5 ) );
+		comparisonPanel.setLayout( new GridLayout( 1, 2, 5, 5 ) );
 		comparisonPanel.add( expectedPanel );
 		comparisonPanel.add( actualPanel );
 
-		setBorder( BorderFactory.createEmptyBorder( 5 , 5 , 5 , 5 ) );
-		setLayout( new BorderLayout( 5 , 5 ) );
-		add( probesPanel , BorderLayout.NORTH );
-		add( comparisonPanel , BorderLayout.CENTER );
+		setBorder( BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
+		setLayout( new BorderLayout( 5, 5 ) );
+		add( probesPanel, BorderLayout.NORTH );
+		add( comparisonPanel, BorderLayout.CENTER );
 	}
 
 	/**
@@ -185,11 +185,13 @@ public class ProbeUI
 			super( name );
 		}
 
+		@Override
 		public boolean isSupported()
 		{
 			return true;
 		}
 
+		@Override
 		public final void run()
 		{
 			if ( !SwingUtilities.isEventDispatchThread() )
@@ -233,6 +235,7 @@ public class ProbeUI
 			         capabilities.isNonPowerOfTwoARBSupported() );
 		}
 
+		@Override
 		protected void createScene( final Scene scene )
 		{
 			MapTools.imageMapFilenameSuffix = ".png";
@@ -254,32 +257,34 @@ public class ProbeUI
 			final Light3D light1 = new Light3D();
 			light1.setFallOff( 0.0 );
 
-			scene.addContentNode( "light" , Matrix3D.INIT.setTranslation(  0.0 , -4.0 ,  0.0 ) , light1 );
+			scene.addContentNode( "light", Matrix3D.getTranslation(  0.0, -4.0,  0.0 ), light1 );
 
 			final Object3DBuilder plane1 = new Object3DBuilder();
-			plane1.addQuad( new Vector3D( -0.5 , 0.0 , -0.5 ) ,
-			                new Vector3D( -0.5 , 0.0 ,  0.5 ) ,
-			                new Vector3D(  0.5 , 0.0 ,  0.5 ) ,
-			                new Vector3D(  0.5 , 0.0 , -0.5 ) , texture1 , new PlanarUVMap( scene.getUnit() , new Vector3D( -0.5 , 0.0 , -0.5 ) , Vector3D.NEGATIVE_Y_AXIS ) , false );
-			scene.addContentNode( "plane1" , Matrix3D.INIT , plane1.getObject3D() );
+			plane1.addQuad( new Vector3D( -0.5, 0.0, -0.5 ),
+			                new Vector3D( -0.5, 0.0,  0.5 ),
+			                new Vector3D(  0.5, 0.0,  0.5 ),
+			                new Vector3D(  0.5, 0.0, -0.5 ), texture1, new PlanarUVMap( scene.getUnit(), new Vector3D( -0.5, 0.0, -0.5 ), Vector3D.NEGATIVE_Y_AXIS ), false );
+			scene.addContentNode( "plane1", Matrix3D.IDENTITY, plane1.getObject3D() );
 
 			final Object3DBuilder plane2 = new Object3DBuilder();
-			plane2.addQuad( new Vector3D( -0.5 , 0.1 , -0.5 ) ,
-			                new Vector3D( -0.5 , 0.1 ,  0.5 ) ,
-			                new Vector3D(  0.5 , 0.1 ,  0.5 ) ,
-			                new Vector3D(  0.5 , 0.1 , -0.5 ) , green , false );
-			scene.addContentNode( "plane2" , Matrix3D.INIT , plane2.getObject3D() );
+			plane2.addQuad( new Vector3D( -0.5, 0.1, -0.5 ),
+			                new Vector3D( -0.5, 0.1,  0.5 ),
+			                new Vector3D(  0.5, 0.1,  0.5 ),
+			                new Vector3D(  0.5, 0.1, -0.5 ), green, false );
+			scene.addContentNode( "plane2", Matrix3D.IDENTITY, plane2.getObject3D() );
 		}
 
+		@Override
 		protected void configureView( final JOGLView view )
 		{
 			view.setBackground( Background.createSolid( Color.WHITE ) );
 			view.setFrontClipDistance( 0.01 );
 			view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
 			view.setRenderingPolicy( RenderingPolicy.SOLID );
-			view.setCameraControl( new MyFromToCameraControl( view , new Vector3D( 0.0 , -1.5 , 0.0 ) , Vector3D.INIT ) );
+			view.setCameraControl( new MyFromToCameraControl( view, new Vector3D( 0.0, -1.5, 0.0 ), Vector3D.ZERO ) );
 		}
 
+		@Override
 		public Image getExpectedImage()
 		{
 			return ImageTools.load( "ab/j3d/probe/expected-texture.png" );
@@ -294,35 +299,34 @@ public class ProbeUI
 			super( name );
 		}
 
+		@Override
 		protected void createScene( final Scene scene )
 		{
 			final Light3D light1 = new Light3D();
-			light1.setDiffuse( 1.0f , 0.0f , 0.0f );
+			light1.setDiffuse( 1.0f, 0.0f, 0.0f );
 			light1.setFallOff( 10.0 );
 
 			final Light3D light2 = new Light3D();
-			light2.setDiffuse( 0.0f , 1.0f , 0.0f );
+			light2.setDiffuse( 0.0f, 1.0f, 0.0f );
 			light2.setFallOff( 10.0 );
 
 			final Light3D light3 = new Light3D();
-			light3.setDiffuse( 1.0f , 1.0f , 1.0f );
+			light3.setDiffuse( 1.0f, 1.0f, 1.0f );
 			light3.setFallOff( 5.0 );
 
-			scene.addContentNode( "light-1" , Matrix3D.INIT.setTranslation(  4.0 , -4.0 ,  4.0 ) , light1 );
-			scene.addContentNode( "light-2" , Matrix3D.INIT.setTranslation( -4.0 , -4.0 ,  4.0 ) , light2 );
-			scene.addContentNode( "light-3" , Matrix3D.INIT.setTranslation(  0.0 ,  4.0 ,  0.0 ) , light3 );
+			scene.addContentNode( "light-1", Matrix3D.getTranslation(  4.0, -4.0,  4.0 ), light1 );
+			scene.addContentNode( "light-2", Matrix3D.getTranslation( -4.0, -4.0,  4.0 ), light2 );
+			scene.addContentNode( "light-3", Matrix3D.getTranslation(  0.0,  4.0,  0.0 ), light3 );
 		}
 
+		@Override
 		protected void configureView( final JOGLView view )
 		{
 			view.setBackground( Background.createSolid( Color.BLACK ) );
 			view.setFrontClipDistance( 0.01 );
 			view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
 			view.setRenderingPolicy( RenderingPolicy.SOLID );
-			view.setCameraControl( new MyFromToCameraControl( view , new Vector3D( -1.0 , -3.0 , 2.0 ) , Vector3D.INIT ) );
-
-			final JOGLConfiguration configuration = view.getConfiguration();
-			configuration.setDepthPeelingEnabled( false );
+			view.setCameraControl( new MyFromToCameraControl( view, new Vector3D( -1.0, -3.0, 2.0 ), Vector3D.ZERO ) );
 		}
 	}
 
@@ -339,37 +343,41 @@ public class ProbeUI
 			super( name );
 		}
 
+		@Override
 		protected void createScene( final Scene scene )
 		{
 			super.createScene( scene );
 
 			final Material sphereMaterial = new Material( 0xffe0c060 );
-			scene.addContentNode( "sphere"     , Matrix3D.INIT , new Sphere3D( 0.5 , 16 , 16 , sphereMaterial ) );
-			scene.addContentNode( "sphere-inv" , Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 0.0 ) , new Sphere3D( 2.0 , 16 , 16 , sphereMaterial , true ) );
+			scene.addContentNode( "sphere"    , Matrix3D.IDENTITY, new Sphere3D( 0.5, 16, 16, sphereMaterial ) );
+			scene.addContentNode( "sphere-inv", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), new Sphere3D( 2.0, 16, 16, sphereMaterial, true ) );
 
 			final Object3DBuilder twoSide1 = new Object3DBuilder();
-			twoSide1.addQuad( new Vector3D( -1.0 , 0.0 , -1.0 ) ,
-			                  new Vector3D( -1.0 , 0.0 ,  1.0 ) ,
-			                  new Vector3D(  0.0 , 0.0 ,  1.0 ) ,
-			                  new Vector3D(  0.0 , 0.0 , -1.0 ) , sphereMaterial , true );
-			scene.addContentNode( "two-side1" , Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 0.0 ) , twoSide1.getObject3D() );
+			twoSide1.addQuad( new Vector3D( -1.0, 0.0, -1.0 ),
+			                  new Vector3D( -1.0, 0.0,  1.0 ),
+			                  new Vector3D(  0.0, 0.0,  1.0 ),
+			                  new Vector3D(  0.0, 0.0, -1.0 ), sphereMaterial, true );
+			scene.addContentNode( "two-side1", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), twoSide1.getObject3D() );
 
 			final Object3DBuilder twoSide2 = new Object3DBuilder();
-			twoSide2.addQuad( new Vector3D(  0.0 , 0.0 , -1.0 ) ,
-			                  new Vector3D(  1.0 , 0.0 , -1.0 ) ,
-			                  new Vector3D(  1.0 , 0.0 ,  1.0 ) ,
-			                  new Vector3D(  0.0 , 0.0 ,  1.0 ) , sphereMaterial , true );
-			scene.addContentNode( "two-side2" , Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 0.0 ) , twoSide2.getObject3D() );
+			twoSide2.addQuad( new Vector3D(  0.0, 0.0, -1.0 ),
+			                  new Vector3D(  1.0, 0.0, -1.0 ),
+			                  new Vector3D(  1.0, 0.0,  1.0 ),
+			                  new Vector3D(  0.0, 0.0,  1.0 ), sphereMaterial, true );
+			scene.addContentNode( "two-side2", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), twoSide2.getObject3D() );
 		}
 
+		@Override
 		protected void configureView( final JOGLView view )
 		{
 			super.configureView( view );
 
 			final JOGLConfiguration configuration = view.getConfiguration();
+			configuration.setSafeOptions();
 			configuration.setPerPixelLightingEnabled( false );
 		}
 
+		@Override
 		public Image getExpectedImage()
 		{
 			return ImageTools.load( "ab/j3d/probe/expected-lighting.png" );
@@ -393,49 +401,53 @@ public class ProbeUI
 			         capabilities.isShaderSupportedARB() );
 		}
 
+		@Override
 		protected void createScene( final Scene scene )
 		{
 			super.createScene( scene );
 
 			final Material sphereMaterial = new Material( 0xffe0c060 );
-			scene.addContentNode( "sphere"     , Matrix3D.INIT , new Sphere3D( 0.5 , 16 , 16 , sphereMaterial ) );
-			scene.addContentNode( "sphere-inv" , Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 0.0 ) , new Sphere3D( 2.0 , 16 , 16 , sphereMaterial , true ) );
+			scene.addContentNode( "sphere"    , Matrix3D.IDENTITY, new Sphere3D( 0.5, 16, 16, sphereMaterial ) );
+			scene.addContentNode( "sphere-inv", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), new Sphere3D( 2.0, 16, 16, sphereMaterial, true ) );
 
 			final Object3DBuilder twoSide1 = new Object3DBuilder();
-			twoSide1.addQuad( new Vector3D( -1.0 , 0.0 , -1.0 ) ,
-			                  new Vector3D( -1.0 , 0.0 ,  1.0 ) ,
-			                  new Vector3D(  0.0 , 0.0 ,  1.0 ) ,
-			                  new Vector3D(  0.0 , 0.0 , -1.0 ) , sphereMaterial , true );
-			scene.addContentNode( "two-side1" , Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 0.0 ) , twoSide1.getObject3D() );
+			twoSide1.addQuad( new Vector3D( -1.0, 0.0, -1.0 ),
+			                  new Vector3D( -1.0, 0.0,  1.0 ),
+			                  new Vector3D(  0.0, 0.0,  1.0 ),
+			                  new Vector3D(  0.0, 0.0, -1.0 ), sphereMaterial, true );
+			scene.addContentNode( "two-side1", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), twoSide1.getObject3D() );
 
 			final Object3DBuilder twoSide2 = new Object3DBuilder();
-			twoSide2.addQuad( new Vector3D(  0.0 , 0.0 , -1.0 ) ,
-			                  new Vector3D(  1.0 , 0.0 , -1.0 ) ,
-			                  new Vector3D(  1.0 , 0.0 ,  1.0 ) ,
-			                  new Vector3D(  0.0 , 0.0 ,  1.0 ) , sphereMaterial , true );
-			scene.addContentNode( "two-side2" , Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 0.0 ) , twoSide2.getObject3D() );
+			twoSide2.addQuad( new Vector3D(  0.0, 0.0, -1.0 ),
+			                  new Vector3D(  1.0, 0.0, -1.0 ),
+			                  new Vector3D(  1.0, 0.0,  1.0 ),
+			                  new Vector3D(  0.0, 0.0,  1.0 ), sphereMaterial, true );
+			scene.addContentNode( "two-side2", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), twoSide2.getObject3D() );
 		}
 
+		@Override
 		protected void configureView( final JOGLView view )
 		{
 			super.configureView( view );
 
 			final JOGLConfiguration configuration = view.getConfiguration();
+			configuration.setSafeOptions();
 			configuration.setPerPixelLightingEnabled( true );
 		}
 
+		@Override
 		public Image getExpectedImage()
 		{
 			return ImageTools.load( "ab/j3d/probe/expected-perPixelLighting.png" );
 		}
 	}
 
-	private abstract class TransparencyProbe
+	private class Blending
 		extends JOGLProbe
 	{
-		protected TransparencyProbe( final String name )
+		private Blending()
 		{
-			super( name );
+			super( "Blending" );
 		}
 
 		@Override
@@ -447,8 +459,8 @@ public class ProbeUI
 			final Light3D light2 = new Light3D();
 			light2.setFallOff( 5.0 );
 
-			scene.addContentNode( "light-1" , Matrix3D.INIT.setTranslation(  4.0 , -4.0 ,  4.0 ) , light1 );
-			scene.addContentNode( "light-2" , Matrix3D.INIT.setTranslation( -4.0 , -4.0 ,  4.0 ) , light2 );
+			scene.addContentNode( "light-1", Matrix3D.getTranslation(  4.0, -4.0,  4.0 ), light1 );
+			scene.addContentNode( "light-2", Matrix3D.getTranslation( -4.0, -4.0,  4.0 ), light2 );
 
 			final Material opaque1      = new Material( 0xffffffff );
 			final Material opaque2      = new Material( 0xffffff00 );
@@ -456,82 +468,37 @@ public class ProbeUI
 			final Material transparent2 = new Material( 0x8000ff00 );
 			final Material transparent3 = new Material( 0x800000ff );
 
-			scene.addContentNode( "sphere-2" , Matrix3D.INIT.setTranslation(  0.0 , 0.0 ,  0.0 ) , new Sphere3D( 0.5 , 16 , 16 , transparent2 ) );
-			scene.addContentNode( "sphere-3" , Matrix3D.INIT.setTranslation( -0.5 , 0.0 ,  0.5 ) , new Sphere3D( 0.5 , 16 , 16 , opaque1 ) );
-			scene.addContentNode( "sphere-1" , Matrix3D.INIT , new Sphere3D( 1.0 , 16 , 16 , transparent1 ) );
-			scene.addContentNode( "sphere-4" , Matrix3D.INIT.setTranslation(  0.5 , 0.0 ,  0.5 ) , new Sphere3D( 0.5 , 16 , 16 , transparent3 ) );
-			scene.addContentNode( "sphere-5" , Matrix3D.INIT.setTranslation(  0.0 , 0.0 , -0.7 ) , new Sphere3D( 0.5 , 16 , 16 , opaque2 ) );
+			scene.addContentNode( "sphere-2", Matrix3D.getTranslation(  0.0, 0.0,  0.0 ), new Sphere3D( 0.5, 16, 16, transparent2 ) );
+			scene.addContentNode( "sphere-3", Matrix3D.getTranslation( -0.5, 0.0,  0.5 ), new Sphere3D( 0.5, 16, 16, opaque1 ) );
+			scene.addContentNode( "sphere-1", Matrix3D.IDENTITY, new Sphere3D( 1.0, 16, 16, transparent1 ) );
+			scene.addContentNode( "sphere-4", Matrix3D.getTranslation(  0.5, 0.0,  0.5 ), new Sphere3D( 0.5, 16, 16, transparent3 ) );
+			scene.addContentNode( "sphere-5", Matrix3D.getTranslation(  0.0, 0.0, -0.7 ), new Sphere3D( 0.5, 16, 16, opaque2 ) );
 		}
 
+		@Override
 		protected void configureView( final JOGLView view )
 		{
 			view.setBackground( Background.createSolid( Color.BLACK ) );
 			view.setFrontClipDistance( 0.01 );
 			view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
 			view.setRenderingPolicy( RenderingPolicy.SOLID );
-			view.setCameraControl( new MyFromToCameraControl( view , new Vector3D( -1.0 , -3.0 , 2.0 ) , Vector3D.INIT ) );
-		}
-	}
-
-	private class Blending
-		extends TransparencyProbe
-	{
-		private Blending()
-		{
-			super( "Blending" );
-		}
-
-		@Override
-		protected void configureView( final JOGLView view )
-		{
-			super.configureView( view );
+			view.setCameraControl( new MyFromToCameraControl( view, new Vector3D( -1.0, -3.0, 2.0 ), Vector3D.ZERO ) );
 
 			final JOGLConfiguration configuration = view.getConfiguration();
-			configuration.setPerPixelLightingEnabled( false );
-			configuration.setDepthPeelingEnabled( false );
-		}
-
-		public Image getExpectedImage()
-		{
-			return ImageTools.load( null );
-		}
-	}
-
-	private class DepthPeeling
-		extends TransparencyProbe
-	{
-		private DepthPeeling()
-		{
-			super( "Depth peeling" );
+			configuration.setSafeOptions();
 		}
 
 		@Override
-		public boolean isSupported()
-		{
-			final JOGLCapabilities capabilities = _actual.getCapabilities();
-			return super.isSupported() && capabilities.isDepthPeelingSupported();
-		}
-
-		@Override
-		protected void configureView( final JOGLView view )
-		{
-			super.configureView( view );
-
-			final JOGLConfiguration configuration = view.getConfiguration();
-			configuration.setPerPixelLightingEnabled( false );
-			configuration.setDepthPeelingEnabled( true );
-		}
-
 		public Image getExpectedImage()
 		{
-			return ImageTools.load( null );
+			return ImageTools.load( "ab/j3d/probe/expected-blending.png" );
 		}
 	}
 
 	private static class MyFromToCameraControl
 		extends FromToCameraControl
 	{
-		MyFromToCameraControl( final View3D view , final Vector3D from , final Vector3D to )
+		MyFromToCameraControl( final View3D view, final Vector3D from, final Vector3D to )
 		{
 			super( view, from, to );
 		}
