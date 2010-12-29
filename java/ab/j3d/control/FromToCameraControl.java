@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2008-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -89,6 +90,20 @@ public class FromToCameraControl
 	 * This is used as temporary state variable for dragging operations.
 	 */
 	private double _dragStartDistance = 1000.0;
+
+	/**
+	 * Event modifiers that allow rotating around the to-point. This valus is
+	 * tested for equality against the event's
+	 * {@link ControlInputEvent#getSupportedModifiers() supported modifiers}.
+	 */
+	private int _rotateAroundToEventModifiers = InputEvent.BUTTON1_DOWN_MASK;
+
+	/**
+	 * Event modifiers that allow panning. This valus is tested for equality
+	 * against the event's {@link ControlInputEvent#getSupportedModifiers()
+	 * supported modifiers}.
+	 */
+	private int _panEventModifiers = InputEvent.BUTTON3_DOWN_MASK;
 
 	/**
 	 * Construct default first person view. This creates a view from (0,-1,0) to
@@ -448,8 +463,7 @@ public class FromToCameraControl
 	 */
 	protected boolean isDragFromAroundToEvent( final ControlInputEvent event )
 	{
-		return ( event.getSupportedModifiers() == ( InputEvent.BUTTON3_DOWN_MASK | InputEvent.CTRL_DOWN_MASK ) )
-		    || ( event.getSupportedModifiers() == InputEvent.BUTTON2_DOWN_MASK );
+		return ( _rotateAroundToEventModifiers != 0 ) && ( event.getSupportedModifiers() == _rotateAroundToEventModifiers );
 	}
 
 	/**
@@ -462,7 +476,7 @@ public class FromToCameraControl
 	 */
 	protected boolean isPanEvent( final ControlInputEvent event )
 	{
-		return ( event.getSupportedModifiers() == InputEvent.BUTTON3_DOWN_MASK );
+		return ( ( _panEventModifiers != 0 ) && ( event.getSupportedModifiers() == _panEventModifiers ) );
 	}
 
 	/**
@@ -595,5 +609,53 @@ public class FromToCameraControl
 		final double dy = -toUnits * (double)event.getDragDeltaY();
 
 		setScene2View( scene2view.plus( dx, dy, 0.0 ) );
+	}
+
+	/**
+	 * Get event modifiers that allow panning. This valus is tested for equality
+	 * against the event's {@link ControlInputEvent#getSupportedModifiers()
+	 * supported modifiers}.
+	 *
+	 * @return  Event modifiers for panning.
+	 */
+	public int getPanEventModifiers()
+	{
+		return _panEventModifiers;
+	}
+
+	/**
+	 * Get event modifiers that allow panning. This valus is tested for equality
+	 * against the event's {@link ControlInputEvent#getSupportedModifiers()
+	 * supported modifiers}.
+	 *
+	 * @param   modifiers   Event modifiers for panning.
+	 */
+	public void setPanEventModifiers( final int modifiers )
+	{
+		_panEventModifiers = modifiers;
+	}
+
+	/**
+	 * Get event modifiers that allow rotating around the to-point. This valus
+	 * is tested for equality against the event's
+	 * {@link ControlInputEvent#getSupportedModifiers() supported modifiers}.
+	 *
+	 * @return  Event modifiers for dragging from-point around to-point.
+	 */
+	public int getRotateAroundToEventModifiers()
+	{
+		return _rotateAroundToEventModifiers;
+	}
+
+	/**
+	 * Get event modifiers that allow rotating around the to-point. This valus
+	 * is tested for equality against the event's
+	 * {@link ControlInputEvent#getSupportedModifiers() supported modifiers}.
+	 *
+	 * @param   modifiers   Event modifiers for rotating around the to-point.
+	 */
+	public void setRotateAroundToEventModifiers( final int modifiers )
+	{
+		_rotateAroundToEventModifiers = modifiers;
 	}
 }
