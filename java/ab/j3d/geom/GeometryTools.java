@@ -35,6 +35,12 @@ import org.jetbrains.annotations.*;
 public class GeometryTools
 {
 	/**
+	 * Constant for 2 times <i>pi</i>, the ratio of the circumference of a
+	 * circle to its radius.
+	 */
+	public static final double TWO_PI = Math.PI + Math.PI;
+
+	/**
 	 * Tools class is not supposed to be instantiated.
 	 */
 	private GeometryTools()
@@ -913,6 +919,7 @@ public class GeometryTools
 		final double crossZ = ux * vy - uy * vx;
 
 		final double l = Vector3D.length( crossX, crossY, crossZ );
+		//noinspection FloatingPointEquality
 		return ( l == 0.0 ) ? null : ( l == 1.0 ) ? new Vector3D( crossX, crossY, crossZ ) : new Vector3D( crossX / l, crossY / l, crossZ / l );
 	}
 
@@ -1012,7 +1019,7 @@ public class GeometryTools
 			 *  - Aborted prematurely; or
 			 *  - Angle sum is 2PI (with 0.0000001 deviation tolerance)
 			 */
-			result = ( i < vertexCount ) || ( ( angleSum > 6.2831852 ) && ( angleSum < 6.2831854 ) );
+			result = ( i < vertexCount ) || ( ( angleSum > TWO_PI ) && ( angleSum < TWO_PI ) );
 		}
 		else
 		{
