@@ -36,20 +36,13 @@ public class Transform3D
 	 * Transformation matrix.
 	 */
 	@NotNull
-	private Matrix3D _transform;
-
-	/**
-	 * Inverse transformation matrix (<code>null</code> if not known yet).
-	 */
-	private Matrix3D _inverseTransform;
+	private Matrix3D _transform = Matrix3D.IDENTITY;
 
 	/**
 	 * Default constructor. Initializes node to an identity transform.
 	 */
 	public Transform3D()
 	{
-		_transform = Matrix3D.IDENTITY;
-		_inverseTransform = Matrix3D.IDENTITY;
 	}
 
 	/**
@@ -59,8 +52,7 @@ public class Transform3D
 	 */
 	public Transform3D( @NotNull final Matrix3D transform )
 	{
-		_transform = transform;
-		_inverseTransform = null;
+		setTransform( transform );
 	}
 
 	/**
@@ -76,30 +68,9 @@ public class Transform3D
 	}
 
 	/**
-	 * Get inverse transformation matrix.
-	 *
-	 * @return  Inverse transformation matrix.
-	 */
-	@NotNull
-	public Matrix3D getInverseTransform()
-	{
-		Matrix3D result = _inverseTransform;
-		if ( result == null )
-		{
-			final Matrix3D transform = getTransform();
-			result = transform.inverse();
-			_inverseTransform = result;
-		}
-
-		return result;
-	}
-
-	/**
 	 * Get transformation matrix.
 	 *
 	 * @return  Transformation matrix.
-	 *
-	 * @see     #getInverseTransform
 	 */
 	@NotNull
 	public Matrix3D getTransform()
@@ -114,14 +85,14 @@ public class Transform3D
 	 */
 	public void setTransform( @NotNull final Matrix3D transform )
 	{
-		_transform        = transform;
-		_inverseTransform = null;
+		_transform = transform;
 	}
 
 	@Override
 	public String toString()
 	{
 		final Class<? extends Node3D> clazz = getClass();
-		return clazz.getSimpleName() + '@' + Integer.toHexString( hashCode() ) + "{tag=" + getTag() + ",transform=" + _transform.toShortFriendlyString() + '}';
+		final Matrix3D transform = getTransform();
+		return clazz.getSimpleName() + '@' + Integer.toHexString( hashCode() ) + "{tag=" + getTag() + ",transform=" + transform.toShortFriendlyString() + '}';
 	}
 }
