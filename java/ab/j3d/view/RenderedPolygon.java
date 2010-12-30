@@ -237,7 +237,7 @@ public final class RenderedPolygon
 			throw new IllegalStateException();
 		}
 
-		if ( vertexIndices.length != pointCount )
+		if ( pointCount < 3 || vertexIndices.length != pointCount )
 		{
 			throw new IllegalArgumentException();
 		}
@@ -287,7 +287,7 @@ public final class RenderedPolygon
 		final double  planeNormalY  = object2view.rotateY( face.normal );
 		final double  planeNormalZ  = object2view.rotateZ( face.normal );
 		final double  planeConstant = planeNormalX * viewX[ 0 ] + planeNormalY * viewY[ 0 ] + planeNormalZ * viewZ[ 0 ];
-		final boolean backface      = ( projector instanceof Projector.PerspectiveProjector ) ? ( planeConstant <= 0.0 ) : ( planeNormalZ <= 0.0 );
+		final boolean backface  =  ( ( ( projectedX[ 0 ] - projectedX[ 1 ] ) * ( projectedY[ 2 ] - projectedY[ 1 ] ) - ( projectedY[ 0 ] - projectedY[ 1 ] ) * ( projectedX[ 2 ] - projectedX[ 1 ] ) ) >= 0 );
 
 		_object = object;
 		_planeNormalX = planeNormalX;

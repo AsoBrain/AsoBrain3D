@@ -275,6 +275,11 @@ public class BSPTree
 //		if ( !projector.outsideViewVolume( viewCoordinates ) ) // FIXME: When enabled, no polygons are visible at all.
 		{
 			result = new RenderedPolygon( vertexCount );
+			final int[] projectedX = result._projectedX;
+			final int[] projectedY = result._projectedY;
+			final double[] viewX = result._viewX;
+			final double[] viewY = result._viewY;
+			final double[] viewZ = result._viewZ;
 
 			int    minX = Integer.MAX_VALUE;
 			int    maxX = Integer.MIN_VALUE;
@@ -288,13 +293,13 @@ public class BSPTree
 				final int index1 = i * 2;
 				final int projX = projectedCoordinates[ index1     ];
 				final int projY = projectedCoordinates[ index1 + 1 ];
-				result._projectedX[ i ] = projX;
-				result._projectedY[ i ] = projY;
+				projectedX[ i ] = projX;
+				projectedY[ i ] = projY;
 
 				final int index2 = i * 3;
-				result._viewX[ i ] = viewCoordinates[ index2     ];
-				result._viewY[ i ] = viewCoordinates[ index2 + 1 ];
-				result._viewZ[ i ] = viewCoordinates[ index2 + 2 ];
+				viewX[ i ] = viewCoordinates[ index2     ];
+				viewY[ i ] = viewCoordinates[ index2 + 1 ];
+				viewZ[ i ] = viewCoordinates[ index2 + 2 ];
 				z = viewCoordinates[ index2 + 2 ];
 
 				minX = projX < minX ? projX : minX;
@@ -316,17 +321,17 @@ public class BSPTree
 			final double y0 = result._viewY[ 0 ];
 			final double z0 = result._viewZ[ 0 ];
 
-			final double  planeNormalX  = viewNormal.x;
-			final double  planeNormalY  = viewNormal.y;
-			final double  planeNormalZ  = viewNormal.z;
-			final double  planeConstant = planeNormalX * x0 + planeNormalY * y0 + planeNormalZ * z0;
-			final boolean backface      = ( projector instanceof Projector.PerspectiveProjector ) ? ( planeConstant <= 0.0 ) : ( planeNormalZ <= 0.0 );
+			final double planeNormalX = viewNormal.x;
+			final double planeNormalY = viewNormal.y;
+			final double planeNormalZ = viewNormal.z;
+			final double planeConstant = planeNormalX * x0 + planeNormalY * y0 + planeNormalZ * z0;
+			final boolean backface = ( ( ( projectedX[ 0 ] - projectedX[ 1 ] ) * ( projectedY[ 2 ] - projectedY[ 1 ] ) - ( projectedY[ 0 ] - projectedY[ 1 ] ) * ( projectedX[ 2 ] - projectedX[ 1 ] ) ) >= 0 );
 
 			result._object = polygon._object;
-			result._planeNormalX = planeNormalX;
-			result._planeNormalY = planeNormalY;
-			result._planeNormalZ = planeNormalZ;
-			result._planeConstant = planeConstant;
+			result._planeNormalX        = planeNormalX;
+			result._planeNormalY        = planeNormalY;
+			result._planeNormalZ        = planeNormalZ;
+			result._planeConstant       = planeConstant;
 			result._backface = backface;
 			result._material = polygon._material;
 		}
