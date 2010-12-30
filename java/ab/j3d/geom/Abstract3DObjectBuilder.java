@@ -21,6 +21,7 @@
 package ab.j3d.geom;
 
 import java.awt.*;
+import java.awt.font.*;
 import java.awt.geom.*;
 import java.util.*;
 import java.util.List;
@@ -670,6 +671,62 @@ public abstract class Abstract3DObjectBuilder
 	}
 
 	/**
+	 * Add text.
+	 *
+	 * @param   transform   Transforms text to the object being build.
+	 * @param   text        Text to add.
+	 * @param   font        Font to use.
+	 * @param   alignX      X alignment (0=left, 0.5=left, 1=right).
+	 * @param   alignY      Y alignment (0=baseline, 0.5=center, 1=ascent).
+	 * @param   alignZ      Z alignment (0=below, 0.5=center, 1=on top).
+	 * @param   extrusion   Extrusion along Z-axis.
+	 * @param   material    Material.
+	 * @param   uvMap       UV map.
+	 */
+	public void addText( final Matrix3D transform, final String text, final Font font, final double alignX, final double alignY, final double alignZ, final double extrusion, final Material material, final BoxUVMap uvMap )
+	{
+		addText( transform, text, font, alignX, alignY, alignZ, extrusion, 0.025, material, uvMap, material, uvMap, material, uvMap );
+	}
+
+	/**
+	 * Add text.
+	 *
+	 * @param   transform       Transforms text to the object being build.
+	 * @param   text            Text to add.
+	 * @param   font            Font to use.
+	 * @param   alignX          X alignment (0=left, 0.5=left, 1=right).
+	 * @param   alignY          Y alignment (0=baseline, 0.5=center, 1=ascent).
+	 * @param   alignZ          Z alignment (0=below, 0.5=center, 1=on top).
+	 * @param   extrusion       Extrusion along Z-axis.
+	 * @param   flatness        Flatness to use for curves.
+	 * @param   topMaterial     Material for top surface.
+	 * @param   topMap          UV map for top surface.
+	 * @param   bottomMaterial  Material for bottom surface.
+	 * @param   bottomMap       UV map for bottom surface.
+	 * @param   sideMaterial    Material for side surfaces.
+	 * @param   sideMap         UV map for side surfaces.
+	 */
+	public void addText( final Matrix3D transform, final String text, final Font font, final double alignX, final double alignY, final double alignZ, final double extrusion, final double flatness, final Material topMaterial, final BoxUVMap topMap, final Material bottomMaterial, final BoxUVMap bottomMap, final Material sideMaterial, final BoxUVMap sideMap )
+	{
+		final GlyphVector glyphVector = font.createGlyphVector( new FontRenderContext( null, false, true ), text );
+		final int numGlyphs = glyphVector.getNumGlyphs();
+		final Rectangle2D visualBounds = glyphVector.getVisualBounds();
+
+		final double x = -visualBounds.getMinX() - alignX * visualBounds.getWidth();
+		final double y = visualBounds.getMaxY() - alignY * visualBounds.getHeight();
+		final double z = -alignZ * extrusion;
+
+		final Matrix3D glyphTransform = Matrix3D.multiply( 1.0,  0.0,  0.0, x, 0.0, -1.0,  0.0, y, 0.0,  0.0, -1.0, z, transform );
+		final Vector3D extrusionVector = new Vector3D( 0.0, 0.0, -extrusion );
+
+		for ( int i = 0; i < numGlyphs; i++ )
+		{
+			final Shape outline = glyphVector.getGlyphOutline( i );
+			addExtrudedShape( outline, flatness, extrusionVector, true, glyphTransform, true, topMaterial, topMap, false, true, bottomMaterial, bottomMap, false, true, sideMaterial, sideMap, false, false, false, true );
+		}
+	}
+
+	/**
 	 * Add triangle primitive.
 	 *
 	 * @param   point1          First vertex coordinates.
@@ -898,7 +955,7 @@ public abstract class Abstract3DObjectBuilder
 	 *
 	 * @param   shape               Shape to add.
 	 * @param   extrusion           Extrusion vector (control-point displacement).
-	 * @paaram  extrusionLines      Include extrusion (out)lines.
+	 * @param   extrusionLines      Include extrusion (out)lines.
 	 * @param   transform           Transform to apply.
 	 * @param   top                 <code>true</code> to include a top face.
 	 * @param   topMaterial         Material to apply to the top cap.
