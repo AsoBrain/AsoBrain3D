@@ -123,23 +123,23 @@ public class JOGLConfiguration
 	}
 
 	/**
-	 * Create instance of {@link JOGLConfiguration} with 'lucious mode' options,
+	 * Create instance of {@link JOGLConfiguration} with 'luscious mode' options,
 	 * meaning that all optional features are enabled.
 	 *
 	 * @return  {@link JOGLConfiguration} instance.
 	 */
 	@NotNull
-	public static JOGLConfiguration createLuciousInstance()
+	public static JOGLConfiguration createLusciousInstance()
 	{
 		final JOGLConfiguration result = new JOGLConfiguration();
-		result.setLuciousOptions();
+		result.setLusciousOptions();
 		return result;
 	}
 
 	/**
-	 * Enable all options in this configuration. This enabled 'lucious mode'.
+	 * Enable all options in this configuration. This enabled 'luscious mode'.
 	 */
-	public void setLuciousOptions()
+	public void setLusciousOptions()
 	{
 		setPerPixelLightingEnabled( true );
 		setMaximumNumberOfLights( 3 );

@@ -42,7 +42,7 @@ public class Ab3dExample
 	 *  <dd>JOGL renderer with default configuration options.</dd>
 	 *  <dt>safe</dt>
 	 *  <dd>JOGL renderer with all optional features disabled ('safe mode').</dd>
-	 *  <dt>lucious</dt>
+	 *  <dt>luscious</dt>
 	 *  <dd>JOGL renderer with all features enabled.</dd>
 	 *  <dt>2d</dt>
 	 *  <dd>Java 2D renderer (-very- limited).</dd>
@@ -64,9 +64,9 @@ public class Ab3dExample
 		{
 			engine = new JOGLEngine( JOGLConfiguration.createSafeInstance() );
 		}
-		else if ( "lucious".equals( engineName ) )
+		else if ( "luscious".equals( engineName ) )
 		{
-			engine = new JOGLEngine( JOGLConfiguration.createLuciousInstance() );
+			engine = new JOGLEngine( JOGLConfiguration.createLusciousInstance() );
 		}
 		else /* default */
 		{

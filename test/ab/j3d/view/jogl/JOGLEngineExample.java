@@ -45,7 +45,7 @@ public class JOGLEngineExample
 	 */
 	private static JOGLEngine createEngine()
 	{
-		return new JOGLEngine( JOGLConfiguration.createLuciousInstance() );
+		return new JOGLEngine( JOGLConfiguration.createLusciousInstance() );
 	}
 
 	/**
