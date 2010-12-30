@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,6 +19,8 @@
  * ====================================================================
  */
 package ab.j3d.view.jogl;
+
+import org.jetbrains.annotations.*;
 
 /**
  * Specifies which rendering features should be enabled, provided that the
@@ -68,6 +71,90 @@ public class JOGLConfiguration
 	 */
 	public JOGLConfiguration()
 	{
+		setDefaultOptions();
+	}
+
+	/**
+	 * Create instance of {@link JOGLConfiguration} with default options.
+	 *
+	 * @return  {@link JOGLConfiguration} instance.
+	 */
+	@NotNull
+	public static JOGLConfiguration createDefaultInstance()
+	{
+		final JOGLConfiguration result = new JOGLConfiguration();
+		result.setDefaultOptions();
+		return result;
+	}
+
+	/**
+	 * Resets this configuration to default options.
+	 */
+	public void setDefaultOptions()
+	{
+		setPerPixelLightingEnabled( true );
+		setDepthPeelingEnabled( false );
+		setMaximumNumberOfLights( 3 );
+		setReflectionMapsEnabled( true );
+		setFSAAEnabled( true );
+		setShadowEnabled( false );
+		setShadowMultisampleEnabled( false );
+	}
+
+	/**
+	 * Create instance of {@link JOGLConfiguration} with 'safe mode' options,
+	 * meaning that all optional functionality is disabled.
+	 *
+	 * @return  {@link JOGLConfiguration} instance.
+	 */
+	@NotNull
+	public static JOGLConfiguration createSafeInstance()
+	{
+		final JOGLConfiguration result = new JOGLConfiguration();
+		result.setSafeOptions();
+		return result;
+	}
+
+	/**
+	 * Disable all options in this configuration. This enables 'safe mode'.
+	 */
+	public void setSafeOptions()
+	{
+		setPerPixelLightingEnabled( false );
+		setDepthPeelingEnabled( false );
+		setMaximumNumberOfLights( 3 );
+		setReflectionMapsEnabled( false );
+		setFSAAEnabled( false );
+		setShadowEnabled( false );
+		setShadowMultisampleEnabled( false );
+	}
+
+	/**
+	 * Create instance of {@link JOGLConfiguration} with 'lucious mode' options,
+	 * meaning that all optional features are enabled.
+	 *
+	 * @return  {@link JOGLConfiguration} instance.
+	 */
+	@NotNull
+	public static JOGLConfiguration createLuciousInstance()
+	{
+		final JOGLConfiguration result = new JOGLConfiguration();
+		result.setLuciousOptions();
+		return result;
+	}
+
+	/**
+	 * Enable all options in this configuration. This enabled 'lucious mode'.
+	 */
+	public void setLuciousOptions()
+	{
+		setPerPixelLightingEnabled( true );
+		setDepthPeelingEnabled( true );
+		setMaximumNumberOfLights( 3 );
+		setReflectionMapsEnabled( true );
+		setFSAAEnabled( true );
+		setShadowEnabled( true );
+		setShadowMultisampleEnabled( true );
 	}
 
 	/**
