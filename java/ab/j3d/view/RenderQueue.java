@@ -655,8 +655,8 @@ public final class RenderQueue
 	public static int compare( final RenderedPolygon plane, final Vector3D point )
 	{
 		final double distanceToPlane = Vector3D.dot( plane._planeNormalX, plane._planeNormalY, plane._planeNormalZ, point.x, point.y, point.z ) - plane._planeConstant;
-		return ( distanceToPlane >  0.001 ) ? IN_FRONT :
-		       ( distanceToPlane < -0.001 ) ? BEHIND : COPLANAR;
+		return ( distanceToPlane >  0.001 ) ? BEHIND :
+		       ( distanceToPlane < -0.001 ) ? IN_FRONT : COPLANAR;
 	}
 
 	/**
