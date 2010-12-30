@@ -2183,6 +2183,11 @@ public class JOGLRenderer
 		private int _uniqueObjectCount;
 
 		/**
+		 * Determines the rendering framerate.
+		 */
+		private final FrameCounter _frameCounter;
+
+		/**
 		 * Constructs a new instance.
 		 */
 		private RenderStatistics()
@@ -2193,6 +2198,17 @@ public class JOGLRenderer
 			_objectCount = 0;
 			_uniqueObjects = new HashSet<Object>();
 			_uniqueObjectCount = 0;
+
+			final FrameCounter frameCounter = new FrameCounter();
+//			frameCounter.addChangeListener( new ChangeListener()
+//			{
+//				@Override
+//				public void stateChanged( final ChangeEvent e )
+//				{
+//					System.out.println( frameCounter.get() + " fps" );
+//				}
+//			} );
+			_frameCounter = frameCounter;
 		}
 
 		/**
@@ -2243,6 +2259,10 @@ public class JOGLRenderer
 
 			_uniqueObjectCount = _uniqueObjects.size();
 			_uniqueObjects.clear();
+
+			final FrameCounter frameCounter = _frameCounter;
+			frameCounter.increment();
+			frameCounter.get();
 		}
 
 		/**
@@ -2264,6 +2284,16 @@ public class JOGLRenderer
 		private void primitiveRendered()
 		{
 			_primitiveCounter++;
+		}
+
+		/**
+		 * Returns the number of frames rendered during the previous second.
+		 *
+		 * @return  Number of frames rendered.
+		 */
+		public int getFPS()
+		{
+			return _frameCounter.get();
 		}
 	}
 }

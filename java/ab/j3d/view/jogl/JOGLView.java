@@ -25,7 +25,6 @@ import java.util.*;
 import javax.media.opengl.*;
 import javax.media.opengl.glu.*;
 import javax.swing.*;
-import javax.swing.event.*;
 
 import ab.j3d.model.*;
 import ab.j3d.view.*;
@@ -93,11 +92,6 @@ public class JOGLView
 	private final TextureCacheListener _textureCacheListener;
 
 	/**
-	 * Determines the rendering framerate.
-	 */
-	private final FrameCounter _frameCounter;
-
-	/**
 	 * Graphics context for painting 2D graphics to the GL.
 	 */
 	private JOGLGraphics2D _graphics2D;
@@ -118,21 +112,6 @@ public class JOGLView
 		_renderThread = null;
 		_renderer = null;
 		_graphics2D = null;
-
-		final FrameCounter frameCounter = new FrameCounter();
-		if ( isAnimationRunning() )
-		{
-			frameCounter.addChangeListener( new ChangeListener()
-			{
-				@Override
-				public void stateChanged( final ChangeEvent e )
-				{
-					System.out.println( frameCounter.get() + " fps" );
-				}
-			} );
-			addOverlay( new RenderStatisticsOverlay() );
-		}
-		_frameCounter = frameCounter;
 
 		/* Use heavyweight popups, since we use a heavyweight canvas */
 		JPopupMenu.setDefaultLightWeightPopupEnabled( false );
@@ -181,6 +160,14 @@ public class JOGLView
 		final TextureCache textureCache = joglEngine.getTextureCache();
 		textureCache.addListener( textureCacheListener );
 		_textureCacheListener = textureCacheListener;
+	}
+
+	/**
+	 * Add overlay that displays the render statistics.
+	 */
+	public void addStatisticsOverlay()
+	{
+		addOverlay( new RenderStatisticsOverlay() );
 	}
 
 	/**
@@ -582,10 +569,6 @@ public class JOGLView
 
 			renderScene( gl );
 
-			final FrameCounter frameCounter = _frameCounter;
-			frameCounter.increment();
-			frameCounter.get();
-
 			if ( hasOverlay() )
 			{
 				JOGLGraphics2D joglGraphics2D = _graphics2D;
@@ -736,15 +719,20 @@ public class JOGLView
 		@Override
 		public void paintOverlay( final View3D view, final Graphics2D g )
 		{
-			final JOGLRenderer.RenderStatistics statistics = _renderer.getStatistics();
-			final Font font = g.getFont();
-			g.setFont( font.deriveFont( 10.0f ) );
-			g.setColor( new Color( 0xa0ffffff, true ) );
-			g.fillRect( 0, 0, 150, 50 );
-			g.setColor( Color.BLACK );
-			g.drawString( "FPS: " + _frameCounter.get(), 5, 15 );
-			g.drawString( "Primitives: " + statistics.getPrimitiveCount(), 5, 30 );
-			g.drawString( "Objects: " + statistics.getObjectCount() + " (" + statistics.getUniqueObjectCount() + " unique)", 5, 45 );
+			final JOGLRenderer renderer = _renderer;
+			if ( renderer != null )
+			{
+				final JOGLRenderer.RenderStatistics statistics = renderer.getStatistics();
+				final Font font = g.getFont();
+				g.setFont( font.deriveFont( 10.0f ) );
+				g.setColor( new Color( 0xa0ffffff, true ) );
+				g.fillRect( 0, 0, 150, 50 );
+				g.setColor( Color.BLACK );
+				g.drawString( "FPS: " + statistics.getFPS(), 5, 15 );
+				g.drawString( "Primitives: " + statistics.getPrimitiveCount(), 5, 30 );
+				g.drawString( "Objects: " + statistics.getObjectCount() + " (" + statistics.getUniqueObjectCount() + " unique)", 5, 45 );
+			}
 		}
+
 	}
 }
