@@ -196,7 +196,7 @@ public class BSPTree
 				for ( int i = 0; i < triangles.length; i += 3 )
 				{
 					final RenderedPolygon polygon = new RenderedPolygon( 3 );
-					polygon.initialize( object2model, null, object, face, new int[] { triangles[ i ], triangles[ i + 1], triangles[ i + 2 ] } );
+					polygon.initialize( object2model, null, object, face, new int[] { triangles[ i + 2 ], triangles[ i + 1 ], triangles[ i ] } );
 					_polygons.add( polygon );
 				}
 			}
