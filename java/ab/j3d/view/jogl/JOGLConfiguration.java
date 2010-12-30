@@ -37,11 +37,6 @@ public class JOGLConfiguration
 	private boolean _perPixelLightingEnabled = true;
 
 	/**
-	 * Whether depth-peeling should be enabled.
-	 */
-	private boolean _depthPeelingEnabled = false;
-
-	/**
 	 * Maximum number of OpenGL lights to use in a single rendering pass.
 	 */
 	private int _maximumNumberOfLights = 3;
@@ -93,7 +88,6 @@ public class JOGLConfiguration
 	public void setDefaultOptions()
 	{
 		setPerPixelLightingEnabled( true );
-		setDepthPeelingEnabled( false );
 		setMaximumNumberOfLights( 3 );
 		setReflectionMapsEnabled( true );
 		setFSAAEnabled( true );
@@ -121,7 +115,6 @@ public class JOGLConfiguration
 	public void setSafeOptions()
 	{
 		setPerPixelLightingEnabled( false );
-		setDepthPeelingEnabled( false );
 		setMaximumNumberOfLights( 3 );
 		setReflectionMapsEnabled( false );
 		setFSAAEnabled( false );
@@ -149,7 +142,6 @@ public class JOGLConfiguration
 	public void setLuciousOptions()
 	{
 		setPerPixelLightingEnabled( true );
-		setDepthPeelingEnabled( true );
 		setMaximumNumberOfLights( 3 );
 		setReflectionMapsEnabled( true );
 		setFSAAEnabled( true );
@@ -176,27 +168,6 @@ public class JOGLConfiguration
 	public void setPerPixelLightingEnabled( final boolean perPixelLightingEnabled )
 	{
 		_perPixelLightingEnabled = perPixelLightingEnabled;
-	}
-
-	/**
-	 * Returns whether depth-peeling should be enabled.
-	 *
-	 * @return  <code>true</code> if depth-peeling should be enabled.
-	 */
-	public boolean isDepthPeelingEnabled()
-	{
-		return _depthPeelingEnabled;
-	}
-
-	/**
-	 * Sets whether depth-peeling should be enabled.
-	 *
-	 * @param   depthPeelingEnabled     <code>true</code> if depth-peeling
-	 *                                  should be enabled.
-	 */
-	public void setDepthPeelingEnabled( final boolean depthPeelingEnabled )
-	{
-		_depthPeelingEnabled = depthPeelingEnabled;
 	}
 
 	/**

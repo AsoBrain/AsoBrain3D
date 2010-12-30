@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -168,27 +169,6 @@ public class JOGLCapabilities
 	{
 		determineCapabilities();
 		return _shaderObjectsARB && ( _shadingLanguageVersion != null );
-	}
-
-	/**
-	 * Returns whether depth peeling, as implemented by {@link JOGLRenderer}, is
-	 * supported. In addition to OpenGL 2.0 functionality (some of which is also
-	 * supported using extensions on earlier OpenGL versions), extensions are
-	 * required to perform off-screen rendering.
-	 *
-	 * @return  <code>true</code> if the functionality required for
-	 *          depth-peeling is available.
-	 */
-	public boolean isDepthPeelingSupported()
-	{
-		return ( isShaderSupported() || isShaderSupportedARB() ) &&
-		       _depthTexture       &&
-		       _shadow             &&
-		       _shadowFuncs        &&
-		       _occlusionQuery     &&
-		       _multitexture       &&
-		       _textureRectangle   &&
-		       _framebufferObject;
 	}
 
 	/**

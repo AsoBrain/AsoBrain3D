@@ -1,5 +1,4 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
  * Copyright (C) 1999-2010 Peter S. Heijnen
@@ -24,7 +23,6 @@ package ab.j3d.view.jogl;
 import java.io.*;
 import java.util.*;
 import javax.media.opengl.*;
-import javax.media.opengl.glu.*;
 
 import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
@@ -105,7 +103,6 @@ public class ShaderManager
 		register( "lighting-fragment-multi", loadShader( Shader.Type.FRAGMENT, "lighting-fragment.glsl", "#define MULTIPASS_LIGHTING" ) );
 		register( "material-vertex", loadShader( Shader.Type.VERTEX, "material-vertex.glsl" ) );
 		register( "material-fragment", loadShader( Shader.Type.FRAGMENT, "material-fragment.glsl" ) );
-		register( "depth-peeling-fragment", loadShader( Shader.Type.FRAGMENT, "depth-peeling-fragment.glsl" ) );
 
 		register( "shadow-vertex", loadShader( Shader.Type.VERTEX, "shadow-vertex.glsl" ) );
 		register( "shadow-fragment-disabled", loadShader( Shader.Type.FRAGMENT, "shadow-fragment-disabled.glsl" ) );
@@ -116,11 +113,11 @@ public class ShaderManager
 		 * Generate 'main' functions for various shader usages.
 		 */
 		register( "unlit-vertex", createVertexShaderMain( "color", null ) );
-		register( "unlit-fragment", createFragmentShaderMain( "color", null, false ) );
+		register( "unlit-fragment", createFragmentShaderMain( "color", null ) );
 		register( "colored-vertex", createVertexShaderMain( "color", "lighting" ) );
-		register( "colored-fragment", createFragmentShaderMain( "color", "lighting", false ) );
+		register( "colored-fragment", createFragmentShaderMain( "color", "lighting" ) );
 		register( "textured-vertex", createVertexShaderMain( "texture", "lighting" ) );
-		register( "textured-fragment", createFragmentShaderMain( "texture", "lighting", false ) );
+		register( "textured-fragment", createFragmentShaderMain( "texture", "lighting" ) );
 
 		/*
 		 * Create distinct shader programs for the various kinds of rendering
@@ -508,12 +505,11 @@ public class ShaderManager
 	 * @param   lightingFunction        Name of the lighting function, defined
 	 *                                  in another fragment shader;
 	 *                                  <code>null</code> to use no lighting.
-	 * @param   depthPeelingEnabled     Whether depth peeling is enabled.
 	 *
 	 * @return  Created vertex shader.
 	 */
 	@Nullable
-	private Shader createFragmentShaderMain( final String colorFunction, final String lightingFunction, final boolean depthPeelingEnabled )
+	private Shader createFragmentShaderMain( final String colorFunction, final String lightingFunction )
 	{
 		Shader result = null;
 
@@ -521,11 +517,6 @@ public class ShaderManager
 		if ( shaderImplementation != null )
 		{
 			final StringBuilder source = new StringBuilder();
-
-			if ( depthPeelingEnabled )
-			{
-				source.append( "void depthPeeling();" );
-			}
 
 			source.append( "vec4 " );
 			source.append( colorFunction );
@@ -540,11 +531,6 @@ public class ShaderManager
 
 			source.append( "void main()" );
 			source.append( '{' );
-
-			if ( depthPeelingEnabled )
-			{
-				source.append( "depthPeeling();" );
-			}
 
 			source.append( "gl_FragColor = " );
 			if ( lightingFunction != null )
@@ -633,16 +619,6 @@ public class ShaderManager
 	 */
 	private void setupShaders()
 	{
-		final GL gl = GLU.getCurrentGL();
-
-		/*
-		 * Get viewport bounds.
-		 */
-		final int[] viewport = new int[ 4 ];
-		gl.glGetIntegerv( GL.GL_VIEWPORT, viewport, 0 );
-		final int width  = viewport[ 2 ];
-		final int height = viewport[ 3 ];
-
 		/*
 		 * Set shader program properties.
 		 */
@@ -652,12 +628,6 @@ public class ShaderManager
 			shaderProgram.setUniform( "colorMap", JOGLRenderer.TEXTURE_UNIT_COLOR - GL.GL_TEXTURE0 );
 			shaderProgram.setUniform( "reflectionMap", JOGLRenderer.TEXTURE_UNIT_ENVIRONMENT - GL.GL_TEXTURE0 );
 			shaderProgram.setUniform( "shadowMap", JOGLRenderer.TEXTURE_UNIT_SHADOW - GL.GL_TEXTURE0 );
-
-			// Depth peeling
-			shaderProgram.setUniform( "depthNear"  , JOGLRenderer.TEXTURE_UNIT_DEPTH_NEAR   - GL.GL_TEXTURE0 );
-			shaderProgram.setUniform( "depthOpaque", JOGLRenderer.TEXTURE_UNIT_DEPTH_OPAQUE - GL.GL_TEXTURE0 );
-			shaderProgram.setUniform( "width"      , (float)width );
-			shaderProgram.setUniform( "height"     , (float)height );
 
 			shaderProgram.disable();
 			shaderProgram.validate();
