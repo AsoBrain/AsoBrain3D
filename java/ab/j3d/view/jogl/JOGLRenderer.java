@@ -66,28 +66,6 @@ public class JOGLRenderer
 	static final int TEXTURE_UNIT_ENVIRONMENT = GL.GL_TEXTURE2;
 
 	/**
-	 * Texture unit used for depth peeling to store the 'near' depth.
-	 */
-	static final int TEXTURE_UNIT_DEPTH_NEAR = GL.GL_TEXTURE3;
-
-	/**
-	 * Texture unit used for depth peeling to store the 'opaque' depth.
-	 */
-	static final int TEXTURE_UNIT_DEPTH_OPAQUE = GL.GL_TEXTURE4;
-
-	/**
-	 * Texture unit used for depth peeling to blend layers together.
-	 * May overlap with a texture unit used during the normal rendering process.
-	 */
-	static final int TEXTURE_UNIT_BLEND_FRONT = GL.GL_TEXTURE0;
-
-	/**
-	 * Texture unit used for depth peeling to blend layers together.
-	 * May overlap with a texture unit used during the normal rendering process.
-	 */
-	static final int TEXTURE_UNIT_BLEND_BACK = GL.GL_TEXTURE1;
-
-	/**
 	 * Texture unit used for shadow mapping.
 	 */
 	static final int TEXTURE_UNIT_SHADOW = GL.GL_TEXTURE7;
@@ -149,16 +127,6 @@ public class JOGLRenderer
 	 * Manages shader programs.
 	 */
 	private ShaderManager _shaderManager;
-
-	/**
-	 * Textures used as color buffers when using depth peeling.
-	 */
-	private Texture[] _colorBuffers;
-
-	/**
-	 * Textures used as depth buffers when using depth peeling.
-	 */
-	private Texture[] _depthBuffers;
 
 	/**
 	 * Specifies which objects should be rendered during the current rendering
@@ -223,7 +191,8 @@ public class JOGLRenderer
 	/**
 	 * Keeps track of various statistics about the rendering process.
 	 */
-	private final RenderStatistics _statistics;
+	@Nullable
+	private RenderStatistics _statistics;
 
 	/**
 	 * Construct new JOGL renderer.
@@ -243,23 +212,20 @@ public class JOGLRenderer
 
 		_shaderManager = null;
 
-		_colorBuffers = null;
-		_depthBuffers = null;
-
 		_dominantLightIntensity = 0.0f;
 		_dominantLightPosition = null;
 		_lightPositionRelativeToObject = null;
 
-		_sceneToView = Matrix3D.INIT;
-		_viewToScene = Matrix3D.INIT;
-		_sceneToViewRotation = Matrix3D.INIT;
-		_viewToSceneRotation = Matrix3D.INIT;
+		_sceneToView = Matrix3D.IDENTITY;
+		_viewToScene = Matrix3D.IDENTITY;
+		_sceneToViewRotation = Matrix3D.IDENTITY;
+		_viewToSceneRotation = Matrix3D.IDENTITY;
 
 		_shadowMap = null;
 		_shadowPass = false;
 		_accumulationTexture = -1;
 
-		_statistics = new RenderStatistics();
+		_statistics = null;
 	}
 
 	/**
@@ -308,7 +274,6 @@ public class JOGLRenderer
 			ShaderImplementation shaderImplementation = null;
 
 			if ( configuration.isPerPixelLightingEnabled() ||
-			     configuration.isDepthPeelingEnabled() ||
 			     configuration.isShadowEnabled() )
 			{
 				if ( capabilities.isShaderSupported() )
@@ -324,23 +289,12 @@ public class JOGLRenderer
 			shaderManager = new ShaderManager( shaderImplementation );
 		}
 
-		Texture[] depthBuffers = null;
-		Texture[] colorBuffers = null;
-
 		if ( shaderManager.isShaderSupportAvailable() )
 		{
 			try
 			{
 				shaderManager.init();
 
-				if ( configuration.isDepthPeelingEnabled() && capabilities.isDepthPeelingSupported() )
-				{
-					shaderManager.register( "blend-fragment", shaderManager.loadShader( Shader.Type.FRAGMENT, "blend-fragment.glsl" ) );
-					shaderManager.createShaderProgram( "blend", "blend-fragment" );
-
-					colorBuffers = new Texture[ 3 ];
-					depthBuffers = new Texture[ 3 ];
-				}
 			}
 			catch ( IOException e )
 			{
@@ -350,8 +304,6 @@ public class JOGLRenderer
 		}
 
 		_shaderManager = shaderManager;
-		_depthBuffers = depthBuffers;
-		_colorBuffers = colorBuffers;
 
 		/* Set Light Model to two sided lighting. */
 		gl.glLightModeli( GL.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_TRUE );
@@ -383,13 +335,22 @@ public class JOGLRenderer
 	}
 
 	/**
-	 * Returns statistics about the rendering process.
+	 * Returns statistics about the rendering process. Statistics are only kept
+	 * once this method has been called.
 	 *
 	 * @return  Rendering statistics.
 	 */
+	@Nullable
 	public RenderStatistics getStatistics()
 	{
-		return _statistics;
+		RenderStatistics result = _statistics;
+		if ( result == null )
+		{
+			result = new RenderStatistics();
+			_statistics = result;
+		}
+
+		return result;
 	}
 
 	/**
@@ -403,16 +364,6 @@ public class JOGLRenderer
 		return _configuration.isReflectionMapsEnabled() &&
 		       _capabilities.isCubeMapSupported() &&
 		       _capabilities.getMaxTextureUnits() >= 3;
-	}
-
-	/**
-	 * Returns whether the renderer is using depth peeling.
-	 *
-	 * @return  <code>true</code> if depth peeling is enabled.
-	 */
-	private boolean isDepthPeelingEnabled()
-	{
-		return _shaderManager.isShaderSupportAvailable() && ( _depthBuffers != null );
 	}
 
 	/**
@@ -491,6 +442,8 @@ public class JOGLRenderer
 	 */
 	public void renderScene( final Scene scene, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle, final Background background, final Grid grid )
 	{
+		final RenderStatistics statistics = _statistics;
+
 		_state = createGLStateHelper( _gl );
 
 		final boolean hasLights = !scene.walk( new Node3DVisitor()
@@ -511,7 +464,10 @@ public class JOGLRenderer
 			renderSceneSinglePass( scene, styleFilters, sceneStyle, background, grid );
 		}
 
-		_statistics.frameRendered();
+		if ( statistics != null )
+		{
+			statistics.frameRendered();
+		}
 	}
 
 	/**
@@ -846,90 +802,6 @@ public class JOGLRenderer
 	}
 
 	/**
-	 * Render objects in scene.
-	 *
-	 * @param   nodes           Nodes in the scene.
-	 * @param   styleFilters    Style filters to apply.
-	 * @param   sceneStyle      Render style to use as base for scene.
-	 */
-	private void renderObjects( final List<ContentNode> nodes, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle )
-	{
-		final GL gl = _gl;
-
-		for ( final ContentNode node : nodes )
-		{
-			final Node3DCollector collector = new Node3DCollector( Object3D.class );
-			Node3DTreeWalker.walk( collector, node.getTransform(), node.getNode3D() );
-			final List<Node3DPath> content = collector.getCollectedNodes();
-
-			final RenderStyle nodeStyle = sceneStyle.applyFilters( styleFilters, node );
-
-			for ( final Node3DPath path : content )
-			{
-				final Matrix3D object2world = path.getTransform();
-				final Object3D object = (Object3D) path.getNode();
-				final int faceCount = object.getFaceCount();
-
-				final RenderStyle objectStyle = nodeStyle.applyFilters( styleFilters, object );
-
-				if ( faceCount > 0 )
-				{
-					_lightPositionRelativeToObject = ( _dominantLightPosition != null ) ? object2world.inverseTransform( _dominantLightPosition ) : null;
-					gl.glPushMatrix();
-					JOGLTools.glMultMatrixd( gl, object2world );
-
-					renderObject( object, objectStyle );
-
-					gl.glPopMatrix();
-				}
-			}
-		}
-	}
-
-	/**
-	 * Renders the given content nodes applying render styles as specified.
-	 *
-	 * @param   nodes           Nodes to be rendered.
-	 * @param   styleFilters    Render style filters to be applied.
-	 * @param   sceneStyle      Base render style for the entire scene.
-	 */
-	public void renderContentNodes( final List<ContentNode> nodes, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle )
-	{
-		final GL gl = _gl;
-
-		/* Set backface culling. */
-		_state.setEnabled( GL.GL_CULL_FACE, true );
-		gl.glCullFace( _shadowPass ? GL.GL_FRONT : GL.GL_BACK );
-
-		if ( !_shadowPass )
-		{
-			_shaderManager.enable();
-		}
-
-		if ( _shaderManager.isShaderSupportAvailable() && isDepthPeelingEnabled() )
-		{
-			/*
-			 * Get viewport bounds.
-			 */
-			final int[] viewport = new int[ 4 ];
-			gl.glGetIntegerv( GL.GL_VIEWPORT, viewport, 0 );
-			final int width  = viewport[ 2 ];
-			final int height = viewport[ 3 ];
-
-			renderSceneWithDepthPeeling( width, height, nodes, styleFilters, sceneStyle );
-		}
-		else
-		{
-			renderSceneWithoutDepthPeeling( nodes, styleFilters, sceneStyle );
-		}
-
-		if ( !_shadowPass )
-		{
-			_shaderManager.disable();
-		}
-	}
-
-	/**
 	 * Renders the given background.
 	 *
 	 * @param   background  Background to be rendered.
@@ -1025,194 +897,26 @@ public class JOGLRenderer
 	}
 
 	/**
-	 * Render the scene using depth peeling to render transparent faces.
+	 * Renders the given content nodes applying render styles as specified.
 	 *
-	 * @param   width           Width of the framebuffer, in pixels.
-	 * @param   height          Height of the framebuffer, in pixels.
-	 * @param   nodes           Nodes in the scene.
-	 * @param   styleFilters    Style filters to apply.
-	 * @param   sceneStyle      Render style to use as base for scene.
+	 * @param   nodes           Nodes to be rendered.
+	 * @param   styleFilters    Render style filters to be applied.
+	 * @param   sceneStyle      Base render style for the entire scene.
 	 */
-	private void renderSceneWithDepthPeeling( final int width, final int height, final List<ContentNode> nodes, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle )
+	public void renderContentNodes( final List<ContentNode> nodes, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle )
 	{
 		final GL gl = _gl;
-		final GLStateHelper state = _state;
 
-		/*
-		 * Configure light parameters.
-		 */
-		initLights();
+		/* Set backface culling. */
+		_state.setEnabled( GL.GL_CULL_FACE, true );
+		gl.glCullFace( _shadowPass ? GL.GL_FRONT : GL.GL_BACK );
 
-		/*
-		 * Create frame buffer object to render to textures.
-		 */
-		final int[] frameBuffer = new int[ 1 ];
-		gl.glGenFramebuffersEXT( 1, frameBuffer, 0 );
-		gl.glBindFramebufferEXT( GL.GL_FRAMEBUFFER_EXT, frameBuffer[ 0 ] );
-
-		/*
-		 * Create color and depth buffers, or re-use existing ones.
-		 */
-		final Texture[] colorBuffers = getColorBuffers( width, height );
-		final Texture[] depthBuffers = getDepthBuffers( width, height );
-
-		final Texture composite = colorBuffers[ 0 ];
-		final Texture layer     = colorBuffers[ 1 ];
-		final Texture opaque    = colorBuffers[ 2 ];
-
-		/*
-		 * Clear first color buffer, on which rendered layers are composited.
-		 */
-		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT, GL.GL_COLOR_ATTACHMENT0_EXT, composite.getTarget(), composite.getTextureObject(), 0 );
-		gl.glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-		gl.glClear( GL.GL_COLOR_BUFFER_BIT );
-
-		/*
-		 * Initialize near and far depth buffers.
-		 */
-		// Near depth buffer starts at 0.0 (near clipping plane).
-		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT, GL.GL_DEPTH_ATTACHMENT_EXT, depthBuffers[ 1 ].getTarget(), depthBuffers[ 1 ].getTextureObject(), 0 );
-		gl.glClearDepth( 0.0 );
-		gl.glClear( GL.GL_DEPTH_BUFFER_BIT );
-
-		// Far depth buffer starts at 1.0 (far clipping plane).
-		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT, GL.GL_DEPTH_ATTACHMENT_EXT, depthBuffers[ 0 ].getTarget(), depthBuffers[ 0 ].getTextureObject(), 0 );
-		gl.glClearDepth( 1.0 );
-		gl.glClear( GL.GL_DEPTH_BUFFER_BIT );
-
-		/*
-		 * Render opaque objects first, to a seperate depth and color buffer.
-		 * The depth buffer is re-used while rendering transparent objects,
-		 * skipping any objects that are fully occluded.
-		 */
-		state.setEnabled( GL.GL_DEPTH_TEST, true );
-		gl.glDepthFunc( GL.GL_LEQUAL );
-		state.setEnabled( GL.GL_BLEND, false );
-		state.setEnabled( GL.GL_LIGHTING, true );
-
-		final Texture depthOpaque = depthBuffers[ 2 ];
-		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT, GL.GL_COLOR_ATTACHMENT0_EXT, opaque.getTarget()     , opaque.getTextureObject()     , 0 );
-		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT, GL.GL_DEPTH_ATTACHMENT_EXT , depthOpaque.getTarget(), depthOpaque.getTextureObject(), 0 );
-
-		gl.glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-		gl.glClear( GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT );
-
-		gl.glActiveTexture( TEXTURE_UNIT_DEPTH_NEAR );
-		depthBuffers[ 1 ].enable();
-		depthBuffers[ 1 ].bind();
-		gl.glActiveTexture( TEXTURE_UNIT_DEPTH_OPAQUE );
-		depthBuffers[ 0 ].enable();
-		depthBuffers[ 0 ].bind();
-		gl.glActiveTexture( TEXTURE_UNIT_COLOR );
-
-		_renderMode = MultiPassRenderMode.OPAQUE_ONLY;
-		renderObjects( nodes, styleFilters, sceneStyle );
-
-		gl.glActiveTexture( TEXTURE_UNIT_DEPTH_OPAQUE );
-		depthOpaque.enable();
-		depthOpaque.bind();
-		gl.glActiveTexture( TEXTURE_UNIT_COLOR );
-
-		/*
-		 * Render transparent objects in multiple passes using depth peeling.
-		 */
-		final int maximumPasses = 4;
-		int pass;
-		for ( pass = 0 ; pass < maximumPasses ; pass++ )
+		if ( !_shadowPass )
 		{
-			/*
-			 * Read from and write to far ('normal') depth buffer.
-			 * Read from near depth buffer, used by the depth peeling shader to
-			 * skip previous layers.
-			 */
-			final Texture depthFar  = depthBuffers[   pass       % 2 ];
-			final Texture depthNear = depthBuffers[ ( pass + 1 ) % 2 ];
-			gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT, GL.GL_COLOR_ATTACHMENT0_EXT, layer.getTarget()   , layer.getTextureObject()   , 0 );
-			gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT, GL.GL_DEPTH_ATTACHMENT_EXT , depthFar.getTarget(), depthFar.getTextureObject(), 0 );
-			gl.glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-			gl.glClear( GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT );
-
-			gl.glActiveTexture( TEXTURE_UNIT_DEPTH_NEAR );
-			depthNear.enable();
-			depthNear.bind();
-			gl.glActiveTexture( TEXTURE_UNIT_COLOR );
-
-			/*
-			 * Render scene, keeping track of the number of samples rendered.
-			 * Depth peeling is finished when no more samples are rendered.
-			 */
-			final OcclusionQuery occlusionQuery = new OcclusionQuery();
-
-			_renderMode = MultiPassRenderMode.TRANSPARENT_ONLY;
-			renderObjects( nodes, styleFilters, sceneStyle );
-
-			final int sampleCount = occlusionQuery.getSampleCount();
-			if ( sampleCount == 0 )
-			{
-				break;
-			}
-
-			/*
-			 * Blend this layer with the result.
-			 */
-			blend( composite, layer );
+			_shaderManager.enable();
 		}
 
-		/*
-		 * Clear depth buffers for second opaque rendering pass.
-		 */
-		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT, GL.GL_DEPTH_ATTACHMENT_EXT, depthBuffers[ 0 ].getTarget(), depthBuffers[ 0 ].getTextureObject(), 0 );
-		gl.glClearDepth( 0.0 );
-		gl.glClear( GL.GL_DEPTH_BUFFER_BIT );
-		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT, GL.GL_DEPTH_ATTACHMENT_EXT, depthBuffers[ 1 ].getTarget(), depthBuffers[ 1 ].getTextureObject(), 0 );
-		gl.glClear( GL.GL_DEPTH_BUFFER_BIT );
-		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT, GL.GL_DEPTH_ATTACHMENT_EXT, depthOpaque.getTarget(), depthOpaque.getTextureObject(), 0 );
-		gl.glClearDepth( 1.0 );
-		gl.glClear( GL.GL_DEPTH_BUFFER_BIT );
-
-		/*
-		 * Delete the frame buffer object used to render to textures;
-		 * from here on, we render to the default frame buffer.
-		 */
-		gl.glBindFramebufferEXT( GL.GL_FRAMEBUFFER_EXT, 0 );
-		gl.glDeleteFramebuffersEXT( 1, frameBuffer, 0 );
-
-		_renderMode = MultiPassRenderMode.OPAQUE_ONLY;
-		renderObjects( nodes, styleFilters, sceneStyle );
-		_shaderManager.disable();
-
-		/*
-		 * Render the depth-peeled composite image to the screen.
-		 */
-		state.setEnabled( GL.GL_DEPTH_TEST, false );
-		state.setEnabled( GL.GL_LIGHTING, false );
-		state.setEnabled( GL.GL_BLEND, true );
-		state.setBlendFunc( GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA );
-
-		gl.glActiveTexture( TEXTURE_UNIT_DEPTH_OPAQUE );
-		depthOpaque.disable();
-		gl.glActiveTexture( TEXTURE_UNIT_DEPTH_NEAR );
-		depthBuffers[ 0 ].disable();
-		gl.glActiveTexture( TEXTURE_UNIT_COLOR );
-
-		renderToViewport( composite );
-
-//		displayTextures( colorBuffers, -1.0, true  );
-//		displayTextures( depthBuffers,  1.0, false );
-
-//		System.out.println( "Rendered " + width + " x " + height + " pixels in " + ( pass + 1 ) + " depth peeling pass(es) and 2 opaque passes" );
-	}
-
-	/**
-	 * Render the scene using blending to render transparent faces.
-	 *
-	 * @param   nodes           Nodes in the scene.
-	 * @param   styleFilters    Style filters to apply.
-	 * @param   sceneStyle      Render style to use as base for scene.
-	 */
-	private void renderSceneWithoutDepthPeeling( final List<ContentNode> nodes, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle )
-	{
-		// FIXME: Display lists are great for performance, but only work when no textures are loaded during the render pass!
+// FIXME: Display lists are great for performance, but only work when no textures are loaded during the render pass!
 //		final GL gl = _gl;
 //		final int list = gl.glGenLists( 1 );
 //		gl.glNewList( list, GL.GL_COMPILE_AND_EXECUTE );
@@ -1225,74 +929,52 @@ public class JOGLRenderer
 
 //		gl.glEndList();
 //		gl.glDeleteLists( list, 1 );
+
+		if ( !_shadowPass )
+		{
+			_shaderManager.disable();
+		}
 	}
 
 	/**
-	 * Returns textures of the given size to be used as color buffers. The
-	 * number of color buffers is determined by the size of the
-	 * {@link #_colorBuffers} array, which is used to cache color buffers.
+	 * Render objects in scene.
 	 *
-	 * @param   width   Width of each color buffer, in pixels.
-	 * @param   height  Height of each color buffer, in pixels.
-	 *
-	 * @return  Textures of the given size for use as color buffers.
+	 * @param   nodes           Nodes in the scene.
+	 * @param   styleFilters    Style filters to apply.
+	 * @param   sceneStyle      Render style to use as base for scene.
 	 */
-	private Texture[] getColorBuffers( final int width, final int height )
+	private void renderObjects( final List<ContentNode> nodes, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle )
 	{
-		final Texture[] result = _colorBuffers;
-		for ( int i = 0 ; i < result.length ; i++ )
+		final GL gl = _gl;
+
+		for ( final ContentNode node : nodes )
 		{
-			if ( ( result[ i ] == null ) ||
-			     ( result[ i ].getWidth()  != width  ) ||
-			     ( result[ i ].getHeight() != height ) )
+			final Node3DCollector collector = new Node3DCollector( Object3D.class );
+			Node3DTreeWalker.walk( collector, node.getTransform(), node.getNode3D() );
+			final List<Node3DPath> content = collector.getCollectedNodes();
+
+			final RenderStyle nodeStyle = sceneStyle.applyFilters( styleFilters, node );
+
+			for ( final Node3DPath path : content )
 			{
-				final TextureData textureData = new TextureData( GL.GL_RGBA8, width, height, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, false, false, false, null, null );
+				final Matrix3D object2world = path.getTransform();
+				final Object3D object = (Object3D) path.getNode();
+				final int faceCount = object.getFaceCount();
 
-				/*
-				 * Force 'GL_TEXTURE_2D' target.
-				 */
-				result[ i ] = TextureIO.newTexture( GL.GL_TEXTURE_2D );
-				result[ i ].updateImage( textureData, GL.GL_TEXTURE_2D );
+				final RenderStyle objectStyle = nodeStyle.applyFilters( styleFilters, object );
 
-				result[ i ].setTexParameteri( GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST       );
-				result[ i ].setTexParameteri( GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST       );
-				result[ i ].setTexParameteri( GL.GL_TEXTURE_WRAP_S    , GL.GL_CLAMP_TO_EDGE );
-				result[ i ].setTexParameteri( GL.GL_TEXTURE_WRAP_T    , GL.GL_CLAMP_TO_EDGE );
+				if ( faceCount > 0 )
+				{
+					_lightPositionRelativeToObject = ( _dominantLightPosition != null ) ? object2world.inverseTransform( _dominantLightPosition ) : null;
+					gl.glPushMatrix();
+					JOGLTools.glMultMatrixd( gl, object2world );
+
+					renderObject( object, objectStyle );
+
+					gl.glPopMatrix();
+				}
 			}
 		}
-		return result;
-	}
-
-	/**
-	 * Returns textures of the given size to be used as depth buffers. The
-	 * number of depth buffers is determined by the size of the
-	 * {@link #_depthBuffers} array, which is used to cache depth buffers.
-	 *
-	 * @param   width   Width of each depth buffer, in pixels.
-	 * @param   height  Height of each depth buffer, in pixels.
-	 *
-	 * @return  Textures of the given size for use as depth buffers.
-	 */
-	private Texture[] getDepthBuffers( final int width, final int height )
-	{
-		final Texture[] result = _depthBuffers;
-		for ( int i = 0 ; i < result.length ; i++ )
-		{
-			if ( ( result[ i ] == null ) ||
-			     ( result[ i ].getWidth()  != width  ) ||
-			     ( result[ i ].getHeight() != height ) )
-			{
-				final TextureData textureData = new TextureData( GL.GL_DEPTH_COMPONENT32, width, height, 0, GL.GL_DEPTH_COMPONENT, GL.GL_FLOAT, false, false, false, null, null );
-				result[ i ] = TextureIO.newTexture( GL.GL_TEXTURE_2D );
-				result[ i ].updateImage( textureData, GL.GL_TEXTURE_2D );
-				result[ i ].setTexParameteri( GL.GL_TEXTURE_MIN_FILTER  , GL.GL_NEAREST       );
-				result[ i ].setTexParameteri( GL.GL_TEXTURE_MAG_FILTER  , GL.GL_NEAREST       );
-				result[ i ].setTexParameteri( GL.GL_TEXTURE_WRAP_S      , GL.GL_CLAMP_TO_EDGE );
-				result[ i ].setTexParameteri( GL.GL_TEXTURE_WRAP_T      , GL.GL_CLAMP_TO_EDGE );
-				result[ i ].setTexParameteri( GL.GL_TEXTURE_COMPARE_MODE, GL.GL_NONE );
-			}
-		}
-		return result;
 	}
 
 	/**
@@ -1342,61 +1024,6 @@ public class JOGLRenderer
 
 		fromViewportSpace();
 		texture.disable();
-	}
-
-	/**
-	 * Blend the given layer with the composite, such that the layer appears
-	 * behind the current content of the composite.
-	 *
-	 * <p>
-	 * <em>This operation has the side effect of replacing the active
-	 * framebuffer's first color attachment ('GL_COLOR_ATTACHMENT0_EXT').</em>
-	 *
-	 * @param   composite   Composite to blend layer with.
-	 * @param   layer       Layer to put behind the composite.
-	 */
-	private void blend( final Texture composite, final Texture layer )
-	{
-		final GL gl = _gl;
-		final GLStateHelper state = _state;
-
-		gl.glFramebufferTexture2DEXT( GL.GL_FRAMEBUFFER_EXT, GL.GL_COLOR_ATTACHMENT0_EXT, composite.getTarget(), composite.getTextureObject(), 0 );
-
-		state.setEnabled( GL.GL_DEPTH_TEST, false );
-		state.setEnabled( GL.GL_LIGHTING, false );
-
-		gl.glActiveTexture( TEXTURE_UNIT_BLEND_BACK );
-		layer.enable();
-		layer.bind();
-		gl.glActiveTexture( TEXTURE_UNIT_BLEND_FRONT );
-
-		final ShaderManager shaderManager = _shaderManager;
-		shaderManager.disable();
-
-		final ShaderProgram blend = shaderManager.getShaderProgram( "blend" );
-		if ( blend == null )
-		{
-			System.out.println( "JOGLRenderer: Missing shader program 'blend'. Depth peeling is disabled." );
-			_configuration.setDepthPeelingEnabled( false );
-		}
-		else
-		{
-			blend.enable();
-			blend.setUniform( "front", TEXTURE_UNIT_BLEND_FRONT - GL.GL_TEXTURE0 );
-			blend.setUniform( "back" , TEXTURE_UNIT_BLEND_BACK  - GL.GL_TEXTURE0 );
-
-			renderToViewport( composite );
-
-			gl.glActiveTexture( TEXTURE_UNIT_BLEND_BACK );
-			layer.disable();
-			gl.glActiveTexture( TEXTURE_UNIT_BLEND_FRONT );
-
-			state.setEnabled( GL.GL_DEPTH_TEST, true );
-			state.setEnabled( GL.GL_LIGHTING, true );
-			blend.disable();
-		}
-
-		shaderManager.enable();
 	}
 
 	/**
@@ -1562,7 +1189,7 @@ public class JOGLRenderer
 		final float lightIntensity = light.getIntensity();
 		if ( ( _dominantLightPosition == null ) || ( _dominantLightIntensity < lightIntensity ) )
 		{
-			_dominantLightPosition = Vector3D.INIT.set( light2world.xo, light2world.yo, light2world.zo );
+			_dominantLightPosition = new Vector3D( light2world.xo, light2world.yo, light2world.zo );
 			_dominantLightIntensity = lightIntensity;
 		}
 	}
@@ -1575,7 +1202,11 @@ public class JOGLRenderer
 	 */
 	protected void renderObject( final Object3D object, final RenderStyle objectStyle )
 	{
-		_statistics.objectRendered( object );
+		final RenderStatistics statistics = _statistics;
+		if ( statistics != null )
+		{
+			statistics.objectRendered( object );
+		}
 
 		final boolean anyMaterialEnabled = objectStyle.isMaterialEnabled();
 		final boolean anyFillEnabled     = objectStyle.isFillEnabled() && ( objectStyle.getFillColor() != null );
@@ -1652,7 +1283,7 @@ public class JOGLRenderer
 				final float extraAlpha = objectStyle.getMaterialAlpha();
 				final float combinedAlpha = material.diffuseColorAlpha * extraAlpha;
 				final boolean isTransparent = ( combinedAlpha < 0.99f ) || textureCache.hasAlpha( material.colorMap );
-				final boolean blend = !isDepthPeelingEnabled() && ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && isTransparent;
+				final boolean blend = ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && isTransparent;
 
 				if ( _shadowPass && ( material.diffuseColorAlpha < 0.50f ) )
 				{
@@ -1901,6 +1532,7 @@ public class JOGLRenderer
 	{
 		final GL gl = _gl;
 		final GLStateHelper state = _state;
+		final RenderStatistics statistics = _statistics;
 
 		final List<Vertex> vertices = face.vertices;
 		final Tessellation tessellation = face.getTessellation();
@@ -1940,7 +1572,11 @@ public class JOGLRenderer
 
 				for ( final TessellationPrimitive primitive : primitives )
 				{
-					_statistics.primitiveRendered();
+					if ( statistics != null )
+					{
+						statistics.primitiveRendered();
+					}
+
 					if ( primitive instanceof TriangleList )
 					{
 						gl.glBegin( GL.GL_TRIANGLES );
@@ -2024,7 +1660,7 @@ public class JOGLRenderer
 
 		final Color   color           = objectStyle.getFillColor();
 		final int     alpha           = color.getAlpha();
-		final boolean blend           = !isDepthPeelingEnabled() && ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && ( alpha < 255 );
+		final boolean blend           = ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && ( alpha < 255 );
 		final boolean hasLighting     = objectStyle.isFillLightingEnabled() && ( _lightPositionRelativeToObject != null );
 
 		if ( !hasLighting )
@@ -2091,6 +1727,7 @@ public class JOGLRenderer
 	{
 		final GL gl = _gl;
 		final GLStateHelper state = _state;
+		final RenderStatistics statistics = _statistics;
 
 		final List<Vertex> vertices = face.vertices;
 		final Tessellation tessellation = face.getTessellation();
@@ -2129,7 +1766,11 @@ public class JOGLRenderer
 
 				for ( final TessellationPrimitive primitive : primitives )
 				{
-					_statistics.primitiveRendered();
+					if ( statistics != null )
+					{
+						statistics.primitiveRendered();
+					}
+
 					if ( primitive instanceof TriangleList )
 					{
 						gl.glBegin( GL.GL_TRIANGLES );
@@ -2183,6 +1824,7 @@ public class JOGLRenderer
 	protected void renderStrokedFace( final Face3D face, final RenderStyle style )
 	{
 		final GL gl = _gl;
+		final RenderStatistics statistics = _statistics;
 
 		final List<Vertex> vertices = face.vertices;
 		final int vertexCount = vertices.size();
@@ -2230,7 +1872,11 @@ public class JOGLRenderer
 
 			for ( final int[] outline : tessellation.getOutlines() )
 			{
-				_statistics.primitiveRendered();
+				if ( statistics != null )
+				{
+					statistics.primitiveRendered();
+				}
+
 				gl.glBegin( GL.GL_LINE_LOOP );
 
 				for ( final int vertexIndex : outline )
@@ -2268,6 +1914,8 @@ public class JOGLRenderer
 	 */
 	protected void renderFaceVertices( final RenderStyle style, final Face3D face )
 	{
+		final RenderStatistics statistics = _statistics;
+
 		final List<Vertex> vertices = face.vertices;
 		final int vertexCount = vertices.size();
 
@@ -2294,7 +1942,10 @@ public class JOGLRenderer
 			 * Render vertices.
 			 */
 			gl.glBegin( GL.GL_POINTS );
-			_statistics.primitiveRendered();
+			if ( statistics != null )
+			{
+				statistics.primitiveRendered();
+			}
 
 			if ( !setVertexNormals )
 			{
