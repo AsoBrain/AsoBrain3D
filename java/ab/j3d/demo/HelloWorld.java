@@ -21,8 +21,6 @@
 package ab.j3d.demo;
 
 import java.awt.*;
-import java.awt.font.*;
-import java.awt.geom.*;
 
 import ab.j3d.*;
 import ab.j3d.control.*;
@@ -94,40 +92,12 @@ public class HelloWorld
 	 */
 	public static Object3D createHelloWorld3D()
 	{
-		final Matrix3D text2node = Matrix3D.getTransform( -90.0, 0.0, 0.0, 0.0, 0.0, 0.0 );
 		final String text = "Hello world";
 		final Font font = new Font( "serif", Font.PLAIN, 2 );
-		final double alignX = 0.5;  /* 0=left, 0.5=left, 1=right */
-		final double alignY = 0.5; /* 0=baseline, 0.5=center, 1=ascent */
-		final double alignZ = 0.5; /* 0=below, 0.5=center, 1=on top */
-		final double extrusion = 0.5;
-		final double flatness = 0.025;
-		final Material topMaterial = Materials.CHROME;
-		final BoxUVMap topMap = new BoxUVMap( Scene.M );
-		final Material bottomMaterial = Materials.CHROME;
-		final BoxUVMap bottomMap = new BoxUVMap( Scene.M );
-		final Material sideMaterial = Materials.GOLD;
-		final BoxUVMap sideMap = new BoxUVMap( Scene.M );
-
-		final GlyphVector glyphVector = font.createGlyphVector( new FontRenderContext( null, false, true ), text );
-		final int numGlyphs = glyphVector.getNumGlyphs();
-		final Rectangle2D visualBounds = glyphVector.getVisualBounds();
-
-		final double x = -visualBounds.getMinX() - alignX * visualBounds.getWidth();
-		final double y = visualBounds.getMaxY() - alignY * visualBounds.getHeight();
-		final double z = -alignZ * extrusion;
-
-		final Matrix3D glyphTransform = Matrix3D.multiply( 1.0,  0.0,  0.0, x, 0.0, -1.0,  0.0, y, 0.0,  0.0, -1.0, z, text2node );
-		final Vector3D extrusionVector = new Vector3D( 0.0, 0.0, -extrusion );
-
 		final Object3DBuilder builder = new Object3DBuilder();
-
-		for ( int i = 0; i < numGlyphs; i++ )
-		{
-			final Shape outline = glyphVector.getGlyphOutline( i );
-			builder.addExtrudedShape( outline, flatness, extrusionVector, true, glyphTransform, true, topMaterial, topMap, false, true, bottomMaterial, bottomMap, false, true, sideMaterial, sideMap, false, false, false, true );
-		}
-
+		final BoxUVMap uvMap = new BoxUVMap( Scene.M );
+		builder.addText( Matrix3D.getTransform( -90.0, 0.0, 0.0, 0.0, 0.0, 0.0 ), text, font, 0.5, 0.5, 0.5, 0.5, 0.025, Materials.CHROME, uvMap, Materials.CHROME, uvMap, Materials.GOLD, uvMap );
 		return builder.getObject3D();
 	}
+
 }
