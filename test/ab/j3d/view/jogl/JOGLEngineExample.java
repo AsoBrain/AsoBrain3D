@@ -19,7 +19,7 @@
  */
 package ab.j3d.view.jogl;
 
-import ab.j3d.view.RenderEngineExample;
+import ab.j3d.view.*;
 
 /**
  * Example program for the JOGL render engine implementation.
@@ -45,10 +45,7 @@ public class JOGLEngineExample
 	 */
 	private static JOGLEngine createEngine()
 	{
-		final JOGLConfiguration joglConfiguration = new JOGLConfiguration();
-		joglConfiguration.setDepthPeelingEnabled( true );
-		joglConfiguration.setPerPixelLightingEnabled( true );
-		return new JOGLEngine( joglConfiguration );
+		return new JOGLEngine( JOGLConfiguration.createLuciousInstance() );
 	}
 
 	/**
