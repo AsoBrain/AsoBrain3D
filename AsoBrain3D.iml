@@ -17,16 +17,16 @@
     <orderEntry type="library" scope="PROVIDED" name="JUnit" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="JOGL" level="application" />
     <orderEntry type="module" module-name="NumdataOpenSource" />
-    <orderEntry type="module-library">
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="file://$MODULE_DIR$/../Ivenza_DecorLibrary/images" />
+          <root url="file://$MODULE_DIR$/images" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
 
