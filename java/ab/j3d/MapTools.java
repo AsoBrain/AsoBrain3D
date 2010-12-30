@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2007 Peter S. Heijnen
+ * Copyright (C) 1999-2010 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,10 +20,10 @@
  */
 package ab.j3d;
 
-import java.awt.image.BufferedImage;
+import java.awt.image.*;
 
-import com.numdata.oss.TextTools;
-import com.numdata.oss.ui.ImageTools;
+import com.numdata.oss.*;
+import com.numdata.oss.ui.*;
 
 /**
  * This class defines a map to be using in a 3D environment.
@@ -36,7 +36,7 @@ public final class MapTools
 	/**
 	 * Map path prefix from where material map images are loaded.
 	 */
-	public static String imageMapDirectory = "decors";
+	public static String imageMapDirectory = "";
 
 	/**
 	 * Map path suffix from where material map images are loaded.
