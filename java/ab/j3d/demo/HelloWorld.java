@@ -96,7 +96,7 @@ public class HelloWorld
 		final Font font = new Font( "serif", Font.PLAIN, 2 );
 		final Object3DBuilder builder = new Object3DBuilder();
 		final BoxUVMap uvMap = new BoxUVMap( Scene.M );
-		builder.addText( Matrix3D.getTransform( -90.0, 0.0, 0.0, 0.0, 0.0, 0.0 ), text, font, 0.5, 0.5, 0.5, 0.5, 0.025, Materials.CHROME, uvMap, Materials.CHROME, uvMap, Materials.GOLD, uvMap );
+		builder.addText( Matrix3D.getTransform( -90.0, 0.0, 0.0, 0.0, 0.0, 0.0 ), text, font, 1.0, 0.5, 0.5, 0.5, 0.5, 0.025, Materials.CHROME, uvMap, Materials.CHROME, uvMap, Materials.GOLD, uvMap );
 		return builder.getObject3D();
 	}
 
