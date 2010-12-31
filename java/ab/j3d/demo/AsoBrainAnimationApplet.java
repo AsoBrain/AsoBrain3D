@@ -23,6 +23,8 @@ package ab.j3d.demo;
 import java.awt.*;
 import javax.swing.*;
 
+import ab.j3d.*;
+
 /**
  * Applet that runs the {@link AsoBrainAnimation} example.
  *
@@ -40,6 +42,12 @@ public class AsoBrainAnimationApplet
 	@Override
 	public void init()
 	{
+		final String images = getParameter( "images" );
+		if ( images != null )
+		{
+			MapTools.imageMapDirectory = images;
+		}
+
 		final AsoBrainAnimation example = new AsoBrainAnimation();
 		final Component content = example.init( getParameter( "engine" ) );
 		_example = example;
