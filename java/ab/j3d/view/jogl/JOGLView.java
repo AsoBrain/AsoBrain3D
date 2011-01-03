@@ -503,6 +503,8 @@ public class JOGLView
 	@Override
 	public final void display( final GLAutoDrawable glAutoDrawable )
 	{
+		fireBeforeFrameEvent();
+
 		try
 		{
 			displayImpl( glAutoDrawable );
@@ -511,6 +513,8 @@ public class JOGLView
 		{
 			t.printStackTrace();
 		}
+
+		fireAfterFrameEvent();
 	}
 
 	/**
@@ -733,6 +737,5 @@ public class JOGLView
 				g.drawString( "Objects: " + statistics.getObjectCount() + " (" + statistics.getUniqueObjectCount() + " unique)", 5, 45 );
 			}
 		}
-
 	}
 }
