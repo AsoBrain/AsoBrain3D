@@ -89,7 +89,6 @@ public class ViewStyleFilter
 			case SKETCH:
 				result = new RenderStyle();
 				result.setMaterialEnabled( true );
-				result.setMaterialAlpha( 0.5f );
 				result.setStrokeEnabled( true );
 				result.setStrokeColor( Color.BLACK );
 				result.setStrokeWidth( 2.0f );
