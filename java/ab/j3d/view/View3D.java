@@ -148,6 +148,11 @@ public abstract class View3D
 	protected final PropertyChangeSupport _pcs = new PropertyChangeSupport( this );
 
 	/**
+	 * View listeners.
+	 */
+	private final List<ViewListener> _viewListeners = new ArrayList<ViewListener>();
+
+	/**
 	 * Construct new view.
 	 *
 	 * @param   scene   Scene to view.
@@ -970,5 +975,47 @@ public abstract class View3D
 	public void addPropertyChangeListener( final String propertyName, final PropertyChangeListener listener )
 	{
 		_pcs.addPropertyChangeListener( propertyName, listener );
+	}
+
+	/**
+	 * Adds a view listener to the view.
+	 *
+	 * @param   listener    Listener to be added.
+	 */
+	public void addViewListener( final ViewListener listener )
+	{
+		_viewListeners.add( listener );
+	}
+
+	/**
+	 * Removes a view listener to the view.
+	 *
+	 * @param   listener    Listener to be removed.
+	 */
+	public void removeViewListener( final ViewListener listener )
+	{
+		_viewListeners.remove( listener );
+	}
+
+	/**
+	 * Notifies view listeners of a {@link ViewListener#beforeFrame} event.
+	 */
+	protected void fireBeforeFrameEvent()
+	{
+		for ( final ViewListener listener : _viewListeners )
+		{
+			listener.beforeFrame( this );
+		}
+	}
+
+	/**
+	 * Notifies view listeners of a {@link ViewListener#afterFrame} event.
+	 */
+	protected void fireAfterFrameEvent()
+	{
+		for ( final ViewListener listener : _viewListeners )
+		{
+			listener.afterFrame( this );
+		}
 	}
 }
