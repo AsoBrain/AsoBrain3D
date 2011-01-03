@@ -22,8 +22,9 @@ package ab.j3d.example;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.geom.*;
+import ab.j3d.model.Face3D.*;
 import ab.j3d.model.*;
-import ab.j3d.model.Face3D.Vertex;
 
 /**
  * A geodesic sphere is an approximation of a sphere, based on subdivision of a
@@ -45,15 +46,19 @@ public class GeoSphere3D
 	 */
 	public GeoSphere3D( final double radius, final int subdivisions, final Material material )
 	{
-		createIcosahedralGeometry( radius, subdivisions, material );
-//		createOctahedralGeometry( radius, subdivisions, material );
+//		createIcosahedralGeometry( radius, subdivisions, material );
+		createOctahedralGeometry( radius, subdivisions, material );
 	}
 
+	/**
+	 * Creates geodesic sphere geometry based on an octahedron.
+	 *
+	 * @param   radius          Radius of the sphere.
+	 * @param   subdivisions    Number of (recursive) subdivisions.
+	 * @param   material        Material to be used.
+	 */
 	private void createOctahedralGeometry( final double radius, final int subdivisions, final Material material )
 	{
-		final List<Vector3D> vertexCoordinates = new ArrayList<Vector3D>();
-		final List<Vector3D> vertexNormals = new ArrayList<Vector3D>();
-
 		final Vector3D p0 = new Vector3D( 0.0, 0.0, radius );
 		final Vector3D p1 = new Vector3D( -radius, 0.0, 0.0 );
 		final Vector3D p2 = new Vector3D( 0.0, -radius, 0.0 );
@@ -61,41 +66,16 @@ public class GeoSphere3D
 		final Vector3D p4 = new Vector3D( 0.0, radius, 0.0 );
 		final Vector3D p5 = new Vector3D( 0.0, 0.0, -radius );
 
-		vertexCoordinates.add( p0 );
-		vertexCoordinates.add( p1 );
-		vertexCoordinates.add( p2 );
-		vertexCoordinates.add( p3 );
-		vertexCoordinates.add( p4 );
-		vertexCoordinates.add( p5 );
+		final Abstract3DObjectBuilder builder = getBuilder();
 
-		vertexNormals.add( p0.multiply( 1.0 / radius ) );
-		vertexNormals.add( p1.multiply( 1.0 / radius ) );
-		vertexNormals.add( p2.multiply( 1.0 / radius ) );
-		vertexNormals.add( p3.multiply( 1.0 / radius ) );
-		vertexNormals.add( p4.multiply( 1.0 / radius ) );
-		vertexNormals.add( p5.multiply( 1.0 / radius ) );
-
-		final Vertex v0 = new Vertex( p0, 0 );
-		final Vertex v1 = new Vertex( p1, 1 );
-		final Vertex v2 = new Vertex( p2, 2 );
-		final Vertex v3 = new Vertex( p3, 3 );
-		final Vertex v4 = new Vertex( p4, 4 );
-		final Vertex v5 = new Vertex( p5, 5 );
-
-		addSubdividedFace( vertexCoordinates, vertexNormals, v0, v1, v2, radius, subdivisions, material );
-		addSubdividedFace( vertexCoordinates, vertexNormals, v0, v2, v3, radius, subdivisions, Materials.GRAY );
-		addSubdividedFace( vertexCoordinates, vertexNormals, v0, v3, v4, radius, subdivisions, material );
-		addSubdividedFace( vertexCoordinates, vertexNormals, v0, v4, v1, radius, subdivisions, Materials.GRAY );
-
-		addSubdividedFace( vertexCoordinates, vertexNormals, v5, v2, v1, radius, subdivisions, Materials.GRAY );
-		addSubdividedFace( vertexCoordinates, vertexNormals, v5, v3, v2, radius, subdivisions, material );
-		addSubdividedFace( vertexCoordinates, vertexNormals, v5, v4, v3, radius, subdivisions, Materials.GRAY );
-		addSubdividedFace( vertexCoordinates, vertexNormals, v5, v1, v4, radius, subdivisions, material );
-
-		setVertexCoordinates( vertexCoordinates );
-		setVertexNormals( vectorsToDoubles( vertexNormals ) );
-
-//		createFaces( vertexCoordinates, vertexNormals, material );
+		addFaces( builder, p0, p2, p1, radius, subdivisions, material );
+		addFaces( builder, p0, p3, p2, radius, subdivisions, material );
+		addFaces( builder, p0, p4, p3, radius, subdivisions, material );
+		addFaces( builder, p0, p1, p4, radius, subdivisions, material );
+		addFaces( builder, p5, p1, p2, radius, subdivisions, material );
+		addFaces( builder, p5, p2, p3, radius, subdivisions, material );
+		addFaces( builder, p5, p3, p4, radius, subdivisions, material );
+		addFaces( builder, p5, p4, p1, radius, subdivisions, material );
 	}
 
 	private void createIcosahedralGeometry( final double radius, final int subdivisions, final Material material )
@@ -115,15 +95,17 @@ public class GeoSphere3D
 		 *   r = 0.5a ?( ??5 )
 		 *
 		 * gives:
-		 *   a = 2r / ?( ? ?5 )
+		 *   a = 2r / ?( ??5 )
 		 *
 		 * vertex coordinates for circumscribed sphere radius r:
-		 *   0, ±r / ?( ? ?5 ), ±?r / ?( ? ?5 )
-		 *   ±r / ?( ? ?5 ), ±?r / ?( ? ?5 ), 0
-		 *   ±?r / ?( ? ?5 ), 0, ±r / ?( ? ?5 )
+		 *   0, ±r / ?( ??5 ), ±?r / ?( ??5 )
+		 *   ±r / ?( ??5 ), ±?r / ?( ??5 ), 0
+		 *   ±?r / ?( ??5 ), 0, ±r / ?( ??5 )
 		 *
+		 * But that doesn't yield a vertex at (0,0,-radius) and (0,0,radius).
 		 *
-		 * hmm... see also http://www.cs.umbc.edu/~squire/reference/polyhedra.shtml
+		 * So either rotate it or see: http://www.cs.umbc.edu/~squire/reference/polyhedra.shtml
+		 * NOTE: 26.5650512 degrees = acos(1 / (sqrt(? * sqrt(5)) * cos(54 degrees)))
 		 */
 
 		final double phi = ( 1.0 + Math.sqrt( 5.0 ) ) / 2.0;
@@ -132,6 +114,8 @@ public class GeoSphere3D
 
 		final List<Vector3D> vertexCoordinates = new ArrayList<Vector3D>();
 		final List<Vector3D> vertexNormals = new ArrayList<Vector3D>();
+
+		final Abstract3DObjectBuilder builder = getBuilder();
 
 		vertexCoordinates.add( new Vector3D( 0.0, -factor1 * radius, -factor2 * radius ) );
 		vertexCoordinates.add( new Vector3D( 0.0,  factor1 * radius, -factor2 * radius ) );
@@ -150,95 +134,52 @@ public class GeoSphere3D
 		for ( int i = 0 ; i < vertexCoordinates.size() ; i++ )
 		{
 			final Vector3D point = vertexCoordinates.get( i );
-			System.out.println( " - point = " + point );
 			vertexNormals.add( point.normalize() );
 			vertices.add( new Vertex( point, i ) );
 		}
 
-		addSubdividedFace( vertexCoordinates, vertexNormals, vertices.get( 0 ), vertices.get( 1 ), vertices.get( 2 ), radius, subdivisions, material );
-
-		setVertexCoordinates( vertexCoordinates );
-		setVertexNormals( vectorsToDoubles( vertexNormals ) );
-	}
-
-	private static double[] vectorsToDoubles( final List<Vector3D> vectors )
-	{
-		final double[] result = new double[ vectors.size() * 3 ];
-		for ( int i = 0; i < vectors.size(); i++ )
-		{
-			final Vector3D vector = vectors.get( i );
-			result[ i * 3 ] = vector.x;
-			result[ i * 3 + 1 ] = vector.y;
-			result[ i * 3 + 2 ] = vector.z;
-		}
-		return result;
+		// FIXME: Use a builder, same as 'createOctahedralGeometry'.
+//		addSubdividedFace( vertexCoordinates, vertexNormals, vertices.get( 0 ), vertices.get( 1 ), vertices.get( 2 ), radius, subdivisions, material );
+//
+//		setVertexCoordinates( vertexCoordinates );
+//		setVertexNormals( vectorsToDoubles( vertexNormals ) );
 	}
 
 	/**
-	 * Run application.
+	 * Adds spherical geometry starting with the given triangle.
 	 *
-	 * @param args Command-line arguments.
+	 * @param   builder         Builder to be used.
+	 * @param   v0              Vertex coordinate.
+	 * @param   v1              Vertex coordinate.
+	 * @param   v2              Vertex coordinate.
+	 * @param   radius          Radius of the sphere.
+	 * @param   subdivisions    Number of (recursive) subdivisions.
+	 * @param   material        Material to be used.
 	 */
-	public static void main( final String[] args )
+	private static void addFaces( final Abstract3DObjectBuilder builder, final Vector3D v0, final Vector3D v1, final Vector3D v2, final double radius, final int subdivisions, final Material material )
 	{
-		new GeoSphere3D( 1.0, 1, Materials.WHITE );
-	}
-
-	private void addSubdividedFace( final List<Vector3D> vertexCoordinates, final List<Vector3D> vertexNormals, final Vertex v0, final Vertex v1, final Vertex v2, final double radius, final int subdivisions, final Material material )
-	{
-		/*
-		subdivide( face (p0, p1, p2) )
-		{
-			s0 = radius * normalize( (p0 + p1) / 2 )
-			s1 = radius * normalize( (p1 + p2) / 2 )
-			s2 = radius * normalize( (p2 + p0) / 2 )
-
-			subdivide( face (p0, s0, s2) )
-			subdivide( face (p1, s1, s0) )
-			subdivide( face (p2, s2, s1) )
-			subdivide( face (s0, s1, s2) )
-		}
-		*/
-
 		if ( subdivisions == 0 )
 		{
-			System.out.println( "add face:" );
-			System.out.println( " - v0 = " + v0 );
-			System.out.println( " - v1 = " + v1 );
-			System.out.println( " - v2 = " + v2 );
-			addFace( new Face3D( this, Arrays.asList( v0, v2, v1 ), null, material, true, false ) );
+			final Vector3D[] coordinates = { v0, v1, v2 };
+			final Vector3D[] normals =
+				{
+					v0.multiply( 1.0 / radius ),
+					v1.multiply( 1.0 / radius ),
+					v2.multiply( 1.0 / radius ),
+				};
+
+			builder.addFace( coordinates, material, null, normals, true, false );
 		}
 		else
 		{
-			final Vector3D p0 = subdivide( v0.point, v1.point, radius );
-			final Vector3D p1 = subdivide( v1.point, v2.point, radius );
-			final Vector3D p2 = subdivide( v2.point, v0.point, radius );
+			final Vector3D p0 = subdivide( v0, v1, radius );
+			final Vector3D p1 = subdivide( v1, v2, radius );
+			final Vector3D p2 = subdivide( v2, v0, radius );
 
-			final int i = vertexCoordinates.size();
-			vertexCoordinates.add( p0 );
-			vertexCoordinates.add( p1 );
-			vertexCoordinates.add( p2 );
-
-			final Vertex s0 = new Vertex( p0, i );
-			final Vertex s1 = new Vertex( p1, i + 1 );
-			final Vertex s2 = new Vertex( p2, i + 2 );
-
-			final Vector3D n0 = p0.multiply( 1.0 / radius );
-			final Vector3D n1 = p1.multiply( 1.0 / radius );
-			final Vector3D n2 = p2.multiply( 1.0 / radius );
-
-			vertexNormals.add( n0 );
-			vertexNormals.add( n1 );
-			vertexNormals.add( n2 );
-
-			s0.setNormal( n0 );
-			s1.setNormal( n1 );
-			s2.setNormal( n2 );
-
-			addSubdividedFace( vertexCoordinates, vertexNormals, v0, s0, s2, radius, subdivisions - 1, material );
-			addSubdividedFace( vertexCoordinates, vertexNormals, v1, s1, s0, radius, subdivisions - 1, material );
-			addSubdividedFace( vertexCoordinates, vertexNormals, v2, s2, s1, radius, subdivisions - 1, material );
-			addSubdividedFace( vertexCoordinates, vertexNormals, s0, s1, s2, radius, subdivisions - 1, material );
+			addFaces( builder, v0, p0, p2, radius, subdivisions - 1, material );
+			addFaces( builder, v1, p1, p0, radius, subdivisions - 1, material );
+			addFaces( builder, v2, p2, p1, radius, subdivisions - 1, material );
+			addFaces( builder, p0, p1, p2, radius, subdivisions - 1, material );
 		}
 	}
 
