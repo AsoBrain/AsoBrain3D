@@ -92,11 +92,21 @@ public class Object3D
 	}
 
 	/**
+	 * Returns a builder for creating the geometry of this object.
+	 *
+	 * @return  3D object builder.
+	 */
+	protected Abstract3DObjectBuilder getBuilder()
+	{
+		return new Object3DBuilder( this );
+	}
+
+	/**
 	 * Add a face to this object.
 	 *
 	 * @param   face    Face to add.
 	 */
-	protected final void addFace( final Face3D face )
+	final void addFace( final Face3D face )
 	{
 		_faces.add( face );
 	}
