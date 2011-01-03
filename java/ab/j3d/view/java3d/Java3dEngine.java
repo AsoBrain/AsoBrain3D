@@ -295,4 +295,14 @@ public final class Java3dEngine
 	{
 		return _universe;
 	}
+
+	@Override
+	public void animationStarted( final SceneUpdateEvent event )
+	{
+	}
+
+	@Override
+	public void animationStopped( final SceneUpdateEvent event )
+	{
+	}
 }
