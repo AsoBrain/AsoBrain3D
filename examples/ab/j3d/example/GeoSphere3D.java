@@ -84,28 +84,28 @@ public class GeoSphere3D
 		 * Source: http://en.wikipedia.org/wiki/Icosahedron
 		 * And minimal high school math.
 		 *
-		 * golden ratio: ? = (1 + ?5)/2
+		 * golden ratio: φ = (1 + √5)/2
 		 *
 		 * vertex coordinates for edge length a:
-		 *   0, �0.5a, �0.5?a
-		 *   �0.5a, �0.5?a, 0
-		 *   �0.5?a, 0, �0.5a
+		 *   0, ±0.5a, ±0.5φa
+		 *   ±0.5a, ±0.5φa, 0
+		 *   ±0.5φa, 0, ±0.5a
 		 *
 		 * circumscribed sphere radius r:
-		 *   r = 0.5a ?( ??5 )
+		 *   r = 0.5a √( φ√5 )
 		 *
 		 * gives:
-		 *   a = 2r / ?( ??5 )
+		 *   a = 2r / √( φ√5 )
 		 *
 		 * vertex coordinates for circumscribed sphere radius r:
-		 *   0, �r / ?( ??5 ), �?r / ?( ??5 )
-		 *   �r / ?( ??5 ), �?r / ?( ??5 ), 0
-		 *   �?r / ?( ??5 ), 0, �r / ?( ??5 )
+		 *   0, ±r / √( φ√5 ), ±φr / √( φ√5 )
+		 *   ±r / √( φ√5 ), ±φr / √( φ√5 ), 0
+		 *   ±φr / √( φ√5 ), 0, ±r / √( φ√5 )
 		 *
 		 * But that doesn't yield a vertex at (0,0,-radius) and (0,0,radius).
 		 *
 		 * So either rotate it or see: http://www.cs.umbc.edu/~squire/reference/polyhedra.shtml
-		 * NOTE: 26.5650512 degrees = acos(1 / (sqrt(? * sqrt(5)) * cos(54 degrees)))
+		 * NOTE: 26.5650512 degrees = acos(1 / (sqrt(φ * sqrt(5)) * cos(54 degrees)))
 		 */
 
 		final double phi = ( 1.0 + Math.sqrt( 5.0 ) ) / 2.0;
