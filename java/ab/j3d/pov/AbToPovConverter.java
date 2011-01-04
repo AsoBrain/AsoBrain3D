@@ -23,6 +23,7 @@ package ab.j3d.pov;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.model.Face3D.*;
 import org.jetbrains.annotations.*;
@@ -91,7 +92,7 @@ public class AbToPovConverter
 	}
 
 	/**
-	 * Work horse of the converter. Takes a {@link Node3DCollection} and then
+	 * Work horse of the converter. Takes a {@link Scene} and then
 	 * converts all individual nodes. Objects with texture mapping and/or
 	 * multiple textures and extruded objects are converted as
 	 * {@link Object3D}'s.
@@ -310,71 +311,62 @@ public class AbToPovConverter
 		for ( int i = 0 ; i < faceCount ; i++ )
 		{
 			final Face3D face = object.getFace( i );
-			final List<Vertex> vertices = face.vertices;
-			final int vertexCount = vertices.size();
 
-			if ( vertexCount > 2 )
+			/*
+			 * Require vertex normals for smooth faces.
+			 */
+			final boolean smooth = face.smooth;
+			if ( smooth && ( vertexNormals == null ) )
 			{
-				final boolean  smooth = face.smooth;
-				final Material material = face.material;
+				vertexNormals = object.getVertexNormals();
 
-				/*
-				 * Require vertex normals for smooth faces.
-				 */
-				if ( smooth && ( vertexNormals == null ) )
+				final List<PovVector> normalVectors = new ArrayList<PovVector>( vertexCoordinates.size() );
+				for ( int vertexCoordinateIndex = 0 ; vertexCoordinateIndex < vertexCoordinates.size() ; vertexCoordinateIndex++ )
 				{
-					vertexNormals = object.getVertexNormals();
-
-					final List<PovVector> normalVectors = new ArrayList<PovVector>( vertexCoordinates.size() );
-					for ( int vertexCoordinateIndex = 0 ; vertexCoordinateIndex < vertexCoordinates.size() ; vertexCoordinateIndex++ )
-					{
-						final int vi3 = vertexCoordinateIndex * 3;
-						final double nx = vertexNormals[ vi3 ];
-						final double ny = vertexNormals[ vi3 + 1 ];
-						final double nz = vertexNormals[ vi3 + 2 ];
-						normalVectors.add( new PovVector( transform.rotate( nx, ny, nz ) ) );
-					}
-
-					result.setNormalVectors( normalVectors );
+					final int vi3 = vertexCoordinateIndex * 3;
+					final double nx = vertexNormals[ vi3 ];
+					final double ny = vertexNormals[ vi3 + 1 ];
+					final double nz = vertexNormals[ vi3 + 2 ];
+					normalVectors.add( new PovVector( transform.rotate( nx, ny, nz ) ) );
 				}
 
-				/*
-				 * Convert material.
-				 */
-				if ( material != lastMaterial )
+				result.setNormalVectors( normalVectors );
+			}
+
+			/*
+			 * Convert material.
+			 */
+			final Material material = face.material;
+			if ( material != lastMaterial )
+			{
+				uvMapping    = ( material.colorMap != null );
+				textureIndex = result.getOrAddTextureIndex( convertMaterialToPovTexture( material ) );
+				lastMaterial = material;
+			}
+
+			/*
+			 * Add triangles.
+			 */
+			final Tessellation tessellation = face.getTessellation();
+			for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+			{
+				final int[] triangles = primitive.getTriangles();
+				for ( int j = 0; j < triangles.length; j += 3 )
 				{
-					uvMapping    = ( material.colorMap != null );
-					textureIndex = result.getOrAddTextureIndex( convertMaterialToPovTexture( material ) );
-					lastMaterial = material;
-				}
+					final Vertex vertex0 = face.getVertex( triangles[ j ] );
+					final int v1  = vertex0.vertexCoordinateIndex;
+					final int vn1 = smooth ? v1 : 0;
+					final int uv1 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertex0.colorMapU, (double)vertex0.colorMapV, 0.0 ) ) : -1;
 
-				/*
-				 * For every triangle, the first vertex is the same.
-				 */
-				final Vertex vertex0 = vertices.get( 0 );
-				final int v1  = vertex0.vertexCoordinateIndex;
-				final int vn1 = smooth ? v1 : 0;
-				final int uv1 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertex0.colorMapU, (double)vertex0.colorMapV, 0.0 ) ) : -1;
+					final Vertex vertex1 = face.getVertex( triangles[ j + 1 ] );
+					final int v2  = vertex1.vertexCoordinateIndex;
+					final int vn2 = smooth ? v2 : 0;
+					final int uv2 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertex1.colorMapU, (double)vertex1.colorMapV, 0.0 ) ) : -1;
 
-				int v2;
-				int vn2;
-				int uv2;
-
-				final Vertex vertex1 = vertices.get( 1 );
-				int v3  = vertex1.vertexCoordinateIndex;
-				int vn3 = smooth ? v3 : 0;
-				int uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertex1.colorMapU, (double)vertex1.colorMapV, 0.0 ) ) : -1;
-
-				for ( int j = 2 ; j < vertexCount ; j++ )
-				{
-					v2  = v3;
-					vn2 = vn3;
-					uv2 = uv3;
-
-					final Vertex vertexJ = vertices.get( j );
-					v3  = vertexJ.vertexCoordinateIndex;
-					vn3 = smooth ? v3 : 0;
-					uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertexJ.colorMapU, (double)vertexJ.colorMapV, 0.0 ) ) : -1;
+					final Vertex vertex2 = face.getVertex( triangles[ j + 2 ] );
+					final int v3  = vertex2.vertexCoordinateIndex;
+					final int vn3 = smooth ? v3 : 0;
+					final int uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertex2.colorMapU, (double)vertex2.colorMapV, 0.0 ) ) : -1;
 
 					result.addTriangle( v1, uv1, vn1, v2, uv2, vn2, v3, uv3, vn3, textureIndex );
 				}
