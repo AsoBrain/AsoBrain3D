@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -248,7 +248,6 @@ public final class Max3DSLoader
 						final Object3D object3d = builder.getObject3D();
 						object3d.setTag( objectName );
 						final Material material = new Material( 0xFFC0C0C0 );
-						material.resourceLoader = _resourceLoader;
 						_material = material;
 
 						readChunk( in );
