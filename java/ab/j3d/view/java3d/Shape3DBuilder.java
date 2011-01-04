@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,7 @@
 package ab.j3d.view.java3d;
 
 import java.util.*;
+import javax.media.j3d.Appearance;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 import javax.vecmath.Vector3f;
