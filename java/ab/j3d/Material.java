@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,7 +34,7 @@ import com.numdata.oss.*;
  * @version $Revision$ ($Date$, $Author$)
  */
 public class Material
-	implements Serializable
+	implements Appearance, Serializable
 {
 	/**
 	 * Serialization ID.
@@ -96,44 +96,36 @@ public class Material
 
 	/**
 	 * Red component of ambient reflection color.
-	 * <p>
-	 * This determines the amount of reflected light from ambient sources
-	 * (normally just 1). This value may range from almost 0 for objects
-	 * that absorb most ambient light to near 1 for objects that are highly
-	 * reflective. Typical values range from 0.1 to 0.2 for dull surfaces
-	 * and 0.7 to 0.8 for bright surfaces.
+	 *
+	 * @see     #getAmbientColorRed
 	 */
 	public float ambientColorRed;
 
 	/**
 	 * Green component of ambient reflection color.
 	 *
-	 * @see     #ambientColorRed
+	 * @see     #getAmbientColorGreen
 	 */
 	public float ambientColorGreen;
 
 	/**
 	 * Blue component of ambient reflection color.
 	 *
-	 * @see     #ambientColorRed
+	 * @see     #getAmbientColorBlue
 	 */
 	public float ambientColorBlue;
 
 	/**
 	 * Red component of diffuse reflection color.
-	 * <p>
-	 * This determines the amount of reflected light from diffuse sources.
-	 * This value may range from almost 0 for objects that absorb most
-	 * diffuse light to near 1 for objects that are highly reflective.
-	 * Typical values range from 0.1 to 0.2 for dull surfaces and 0.7 to
-	 * 0.8 for bright surfaces.
+	 *
+	 * @see     #getDiffuseColorRed
 	 */
 	public float diffuseColorRed;
 
 	/**
 	 * Green component of diffuse reflection color.
 	 *
-	 * @see     #diffuseColorRed
+	 * @see     #getDiffuseColorGreen
 	 */
 	public float diffuseColorGreen;
 
@@ -145,106 +137,100 @@ public class Material
 	public float diffuseColorBlue;
 
 	/**
-	 * Opacity. Determines the transparency of the material. This ranges
-	 * from fully opaque (1.0) to completely translucent (0.0). Any value
-	 * outside this ranges renders undefined results.
+	 * Opacity.
+	 *
+	 * @see     #getDiffuseColorAlpha
 	 */
 	public float diffuseColorAlpha;
 
 	/**
 	 * Red component of specular highlight color.
-	 * <p>
-	 * Specular reflection is total or near total reflection of incoming
-	 * light in a concentrated region. It can be used to create highlights
-	 * on shiny surfaces.
+	 *
+	 * @see     #getSpecularColorRed
 	 */
 	public float specularColorRed;
 
 	/**
 	 * Green component of specular highlight color.
 	 *
-	 * @see     #specularColorRed
+	 * @see     #getSpecularColorGreen
 	 */
 	public float specularColorGreen;
 
 	/**
 	 * Blue component of specular highlight color.
 	 *
-	 * @see     #specularColorRed
+	 * @see     #getSpecularColorBlue
 	 */
 	public float specularColorBlue;
 
 	/**
-	 * Specular highlight exponent. This exponent is an indicator for
-	 * the shininess or dullness of the material. Shiny surfaces have a
-	 * large value for n (64+) and very dull surfaces approach 1. This
-	 * value should be a power of 2 between 1 and 128.
+	 * Specular highlight exponent.
+	 *
+	 * @see     #getShininess
 	 */
 	public int shininess;
 
 	/**
 	 * Red component of emissive color.
-	 * <p>
-	 * This determines the amount of light emitted by this material.
-	 * Note that this doesn't automatically imply a light source.
+	 *
+	 * @see     #getEmissiveColorRed
 	 */
 	public float emissiveColorRed;
 
 	/**
 	 * Green component of emissive reflection color.
 	 *
-	 * @see     #emissiveColorRed
+	 * @see     #getEmissiveColorGreen
 	 */
 	public float emissiveColorGreen;
 
 	/**
 	 * Blue component of emissive reflection color.
 	 *
-	 * @see     #emissiveColorRed
+	 * @see     #getEmissiveColorBlue
 	 */
 	public float emissiveColorBlue;
 
 	/**
-	 * Name of color map to use. This map provides color and possibly
-	 * opacity (alpha) data. Set to <code>null</code> if no color map is
-	 * used.
+	 * Name of color map to use.
+	 *
+	 * @see     #getColorMap
 	 */
 	public String colorMap;
 
 	/**
-	 * Width of color map in meters. This can be used if the map has this
-	 * physical dimension, in which case it can be correctly scaled in a virtual
-	 * environment. Set to 0 if undetermined.
+	 * Width of color map in meters.
+	 *
+	 * @see     #getColorMap
 	 */
 	public float colorMapWidth;
 
 	/**
-	 * Height of color map in meters. This can be used if the map has this
-	 * physical dimension, in which case it can be correctly scaled in a virtual
-	 * environment. Set to 0 if undetermined.
+	 * Height of color map in meters.
+	 *
+	 * @see     #getColorMap
 	 */
 	public float colorMapHeight;
 
 	/**
-	 * Name of bump map to use. This map specifies a height offset at each
-	 * pixel, used to create the illusion of highly detailed geometry that
-	 * includes bumps, scratches and so on. The map should be in grayscale and
-	 * should have no transparency.
-	 * Set to <code>null</code> if no bump map is used.
+	 * Name of bump map to use.
+	 *
+	 * @see     #getBumpMap
 	 */
 	public String bumpMap;
 
 	/**
-	 * Width of bump map in meters. This can be used if the map has this
-	 * physical dimension, in which case it can be correctly scaled in a virtual
-	 * environment. Set to 0 if undetermined.
+	 * Width of bump map in meters.
+	 *
+	 * @see     #getBumpMap
 	 */
 	public float bumpMapWidth;
 
 	/**
-	 * Height of bump map in meters. This can be used if the map has this
-	 * physical dimension, in which case it can be correctly scaled in a virtual
-	 * environment. Set to 0 if undetermined.
+	 * Height of bump map in meters.
+	 *
+	 * @see     #getBumpMap
 	 */
 	public float bumpMapHeight;
 
@@ -255,46 +241,44 @@ public class Material
 	public boolean grain;
 
 	/**
-	 * Name of the reflection map to use for real-time reflections. A renderer
-	 * may use the surrounding scene instead of this map.
+	 * Name of the reflection map.
 	 *
-	 * <p>
-	 * The reflection map is a cube map, encoded into a single image as follows:
-	 * <pre>
-	 * +--+--+--+--+
-	 * |  |Y+|  |  |
-	 * +--+--+--+--+
-	 * |X-|Z+|X+|Z-|
-	 * +--+--+--+--+
-	 * |  |Y-|  |  |
-	 * +--+--+--+--+
-	 * </pre>
-	 * (Each cell in the above grid is a square.)
+	 * @see     #getReflectionMap
 	 */
 	public String reflectionMap;
 
 	/**
 	 * Reflectivity of the material when viewed parallel to its normal.
+	 *
+	 * @see     #getReflectionMap
 	 */
 	public float reflectionMin;
 
 	/**
 	 * Reflectivity of the material when viewed perpendicular to its normal.
+	 *
+	 * @see     #getReflectionMap
 	 */
 	public float reflectionMax;
 
 	/**
 	 * Intensity of the red-component of (specular) reflections.
+	 *
+	 * @see     #getReflectionMap
 	 */
 	public float reflectionRed;
 
 	/**
 	 * Intensity of the green-component of (specular) reflections.
+	 *
+	 * @see     #getReflectionMap
 	 */
 	public float reflectionGreen;
 
 	/**
 	 * Intensity of the blue-component of (specular) reflections.
+	 *
+	 * @see     #getReflectionMap
 	 */
 	public float reflectionBlue;
 
@@ -337,7 +321,6 @@ public class Material
 		reflectionGreen    = 1.0f;
 		reflectionBlue     = 1.0f;
 		grain              = false;
-		resourceLoader     = null;
 	}
 
 	/**
@@ -378,7 +361,6 @@ public class Material
 		reflectionGreen    = original.reflectionGreen;
 		reflectionBlue     = original.reflectionBlue;
 		grain              = original.grain;
-		resourceLoader     = original.resourceLoader;
 	}
 
 	/**
@@ -449,7 +431,6 @@ public class Material
 		reflectionRed           = 0.0f;
 		reflectionGreen         = 0.0f;
 		reflectionBlue          = 0.0f;
-		resourceLoader          = null;
 	}
 
 	/**
@@ -515,48 +496,6 @@ public class Material
 		this.reflectionRed      = reflectionRed;
 		this.reflectionGreen    = reflectionGreen;
 		this.reflectionBlue     = reflectionBlue;
-		resourceLoader          = null;
-	}
-
-	/**
-	 * Get {@link BufferedImage} instance with color map image.
-	 *
-	 * @param   useCache        Use caching of image data if available.
-	 *
-	 * @return  Color map image;
-	 *          <code>null</code> if no color map was defined or could be loaded.
- 	 */
-	public BufferedImage getColorMapImage( final boolean useCache )
-	{
-		final String map = colorMap;
-		return TextTools.isNonEmpty( map ) ? useCache ? MapTools.getImage( map ) : MapTools.loadImage( map ) : null;
-	}
-
-	/**
-	 * Get {@link BufferedImage} instance with bump map image.
-	 *
-	 * @param   useCache        Use caching of image data if available.
-	 *
-	 * @return  Bump map image;
-	 *          <code>null</code> if no color map was defined or could be loaded.
- 	 */
-	public BufferedImage getBumpMapImage( final boolean useCache )
-	{
-		final String map = bumpMap;
-		return TextTools.isNonEmpty( map ) ? useCache ? MapTools.getImage( map ) : MapTools.loadImage( map ) : null;
-	}
-
-	/**
-	 * This method returns the material color as ARGB.
-	 *
-	 * @return  Texture color as ARGB.
-	 */
-	public int getARGB()
-	{
-		return   Math.round( diffuseColorBlue  * 255.0f )
-		     | ( Math.round( diffuseColorGreen * 255.0f ) <<  8 )
-		     | ( Math.round( diffuseColorRed   * 255.0f ) << 16 )
-		     | ( Math.round( diffuseColorAlpha * 255.0f ) << 24 );
 	}
 
 	/**
@@ -592,15 +531,22 @@ public class Material
 		return 0.3f * specularColorRed + 0.59f * specularColorGreen + 0.11f * specularColorBlue;
 	}
 
-	/**
-	 * Get combined emission. This is based on the weighted average red, green,
-	 * and blue emissive color components.
-	 *
-	 * @return  Combined emission.
-	 */
-	public float getEmission()
+	@Override
+	public float getAmbientColorBlue()
 	{
-		return 0.3f * emissiveColorRed + 0.59f * emissiveColorGreen + 0.11f * emissiveColorBlue;
+		return ambientColorBlue;
+	}
+
+	@Override
+	public float getAmbientColorRed()
+	{
+		return ambientColorRed;
+	}
+
+	@Override
+	public float getAmbientColorGreen()
+	{
+		return ambientColorGreen;
 	}
 
 	/**
@@ -638,6 +584,43 @@ public class Material
 		ambientColorRed   = (float)( ( rgb >> 16 ) & 0xFF ) / 255.0f;
 		ambientColorGreen = (float)( ( rgb >>  8 ) & 0xFF ) / 255.0f;
 		ambientColorBlue  = (float)(   rgb         & 0xFF ) / 255.0f;
+	}
+
+	@Override
+	public float getDiffuseColorRed()
+	{
+		return diffuseColorRed;
+	}
+
+	@Override
+	public float getDiffuseColorGreen()
+	{
+		return diffuseColorGreen;
+	}
+
+	@Override
+	public float getDiffuseColorBlue()
+	{
+		return diffuseColorBlue;
+	}
+
+	@Override
+	public float getDiffuseColorAlpha()
+	{
+		return diffuseColorAlpha;
+	}
+
+	/**
+	 * This method returns the material color as ARGB.
+	 *
+	 * @return  Texture color as ARGB.
+	 */
+	public int getARGB()
+	{
+		return   Math.round( diffuseColorBlue  * 255.0f )
+		     | ( Math.round( diffuseColorGreen * 255.0f ) <<  8 )
+		     | ( Math.round( diffuseColorRed   * 255.0f ) << 16 )
+		     | ( Math.round( diffuseColorAlpha * 255.0f ) << 24 );
 	}
 
 	/**
@@ -680,6 +663,24 @@ public class Material
 		diffuseColorAlpha = ( iAlpha < 255 ) ? ( (float)iAlpha / 255.0f ) : 1.0f;
 	}
 
+	@Override
+	public float getSpecularColorRed()
+	{
+		return specularColorRed;
+	}
+
+	@Override
+	public float getSpecularColorGreen()
+	{
+		return specularColorGreen;
+	}
+
+	@Override
+	public float getSpecularColorBlue()
+	{
+		return specularColorBlue;
+	}
+
 	/**
 	 * Set specular reflection color.
 	 * <p>
@@ -697,7 +698,6 @@ public class Material
 		specularColorBlue  = components[ 2 ];
 	}
 
-
 	/**
 	 * Set specular reflection color.
 	 * <p>
@@ -712,6 +712,41 @@ public class Material
 		specularColorRed   = (float)( ( rgb >> 16 ) & 0xFF ) / 255.0f;
 		specularColorGreen = (float)( ( rgb >>  8 ) & 0xFF ) / 255.0f;
 		specularColorBlue  = (float)(   rgb         & 0xFF ) / 255.0f;
+	}
+
+	@Override
+	public int getShininess()
+	{
+		return shininess;
+	}
+
+	@Override
+	public float getEmissiveColorRed()
+	{
+		return emissiveColorRed;
+	}
+
+	@Override
+	public float getEmissiveColorGreen()
+	{
+		return emissiveColorGreen;
+	}
+
+	@Override
+	public float getEmissiveColorBlue()
+	{
+		return emissiveColorBlue;
+	}
+
+	/**
+	 * Get combined emission. This is based on the weighted average red, green,
+	 * and blue emissive color components.
+	 *
+	 * @return  Combined emission.
+	 */
+	public float getEmission()
+	{
+		return 0.3f * emissiveColorRed + 0.59f * emissiveColorGreen + 0.11f * emissiveColorBlue;
 	}
 
 	/**
@@ -745,6 +780,52 @@ public class Material
 		emissiveColorBlue  = (float)(   rgb         & 0xFF ) / 255.0f;
 	}
 
+	@Override
+	public TextureMap getColorMap()
+	{
+		return new MaterialColorMap();
+	}
+
+	/**
+	 * Get {@link BufferedImage} instance with color map image.
+	 *
+	 * @param   useCache        Use caching of image data if available.
+	 *
+	 * @return  Color map image;
+	 *          <code>null</code> if no color map was defined or could be loaded.
+ 	 */
+	public BufferedImage getColorMapImage( final boolean useCache )
+	{
+		final String map = colorMap;
+		return TextTools.isNonEmpty( map ) ? useCache ? MapTools.getImage( map ) : MapTools.loadImage( map ) : null;
+	}
+
+	@Override
+	public TextureMap getBumpMap()
+	{
+		return new MaterialBumpMap();
+	}
+
+	/**
+	 * Get {@link BufferedImage} instance with bump map image.
+	 *
+	 * @param   useCache        Use caching of image data if available.
+	 *
+	 * @return  Bump map image;
+	 *          <code>null</code> if no color map was defined or could be loaded.
+ 	 */
+	public BufferedImage getBumpMapImage( final boolean useCache )
+	{
+		final String map = bumpMap;
+		return TextTools.isNonEmpty( map ) ? useCache ? MapTools.getImage( map ) : MapTools.loadImage( map ) : null;
+	}
+
+	@Override
+	public ReflectionMap getReflectionMap()
+	{
+		return new MaterialReflectionMap();
+	}
+
 	/**
 	 * Sets the color of (specular) reflections. For metallic materials, this
 	 * is typically the color of the metal. For other materials, it is typically
@@ -772,5 +853,132 @@ public class Material
 		reflectionRed   = (float)( ( rgb >> 16 ) & 0xFF ) / 255.0f;
 		reflectionGreen = (float)( ( rgb >>  8 ) & 0xFF ) / 255.0f;
 		reflectionBlue  = (float)(   rgb         & 0xFF ) / 255.0f;
+	}
+
+	/**
+	 * Implementation of {@link TextureMap} based on color map properties of a
+	 * {@link Material}.
+	 */
+	private class MaterialColorMap
+		implements TextureMap
+	{
+		@Override
+		public BufferedImage getImage( final boolean useCache )
+		{
+			return getColorMapImage( useCache );
+		}
+
+		@Override
+		public String getName()
+		{
+			return colorMap;
+		}
+
+		@Override
+		public float getPhysicalWidth()
+		{
+			return colorMapWidth;
+		}
+
+		@Override
+		public float getPhysicalHeight()
+		{
+			return colorMapHeight;
+		}
+	}
+
+	/**
+	 * Implementation of {@link TextureMap} based on bump map properties of a
+	 * {@link Material}.
+	 */
+	private class MaterialBumpMap
+		implements TextureMap
+	{
+		@Override
+		public BufferedImage getImage( final boolean useCache )
+		{
+			return getBumpMapImage( useCache );
+		}
+
+		@Override
+		public String getName()
+		{
+			return bumpMap;
+		}
+
+		@Override
+		public float getPhysicalWidth()
+		{
+			return bumpMapWidth;
+		}
+
+		@Override
+		public float getPhysicalHeight()
+		{
+			return bumpMapHeight;
+		}
+	}
+
+	/**
+	 * Implementation of {@link ReflectionMap} based on reflection map
+	 * properties of a {@link Material}.
+	 */
+	private class MaterialReflectionMap
+		implements ReflectionMap
+	{
+		@Override
+		public float getReflectivityMin()
+		{
+			return reflectionMin;
+		}
+
+		@Override
+		public float getReflectivityMax()
+		{
+			return reflectionMax;
+		}
+
+		@Override
+		public float getIntensityRed()
+		{
+			return reflectionRed;
+		}
+
+		@Override
+		public float getIntensityGreen()
+		{
+			return reflectionGreen;
+		}
+
+		@Override
+		public float getIntensityBlue()
+		{
+			return reflectionBlue;
+		}
+
+		@Override
+		public BufferedImage getImage( final boolean useCache )
+		{
+			final String name = getName();
+			return TextTools.isNonEmpty( name ) ? useCache ? MapTools.getImage( name ) : MapTools.loadImage( name ) : null;
+		}
+
+		@Override
+		public String getName()
+		{
+			return reflectionMap;
+		}
+
+		@Override
+		public float getPhysicalWidth()
+		{
+			return 0.0f;
+		}
+
+		@Override
+		public float getPhysicalHeight()
+		{
+			return 0.0f;
+		}
 	}
 }
