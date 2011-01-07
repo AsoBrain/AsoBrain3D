@@ -1,24 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module type="JAVA_MODULE" version="4">
+<module relativePaths="false" type="JAVA_MODULE" version="4">
+  <component name="DBNavigator.Module.ConnectionManager">
+    <connections />
+  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/classes" />
-      <excludeFolder url="file://$MODULE_DIR$/java/ab/j3d/view/java3d" />
       <excludeFolder url="file://$MODULE_DIR$/java/ab/j3d/view/jogl2" />
       <excludeFolder url="file://$MODULE_DIR$/lib" />
-      <excludeFolder url="file://$MODULE_DIR$/test/ab/j3d/view/java3d" />
       <excludeFolder url="file://$MODULE_DIR$/test/ab/j3d/view/jogl2" />
     </content>
     <orderEntry type="inheritedJdk" />
-    <orderEntry type="library" name="JetBrains Annotations" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="JUnit" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="JOGL" level="application" />
-    <orderEntry type="module" module-name="NumdataOpenSource" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library" exported="">
+    <orderEntry type="module-library">
       <library>
         <CLASSES>
           <root url="file://$MODULE_DIR$/images" />
@@ -27,6 +24,12 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module" module-name="NumdataOpenSource" />
+    <orderEntry type="library" name="Java 3D" level="application" />
+    <orderEntry type="library" name="JetBrains Annotations" level="application" />
+    <orderEntry type="library" name="JUnit" level="application" />
+    <orderEntry type="library" name="Log4j" level="application" />
+    <orderEntry type="library" name="JOGL" level="application" />
   </component>
 </module>
 
