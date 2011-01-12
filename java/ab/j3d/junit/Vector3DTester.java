@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +20,10 @@
  */
 package ab.j3d.junit;
 
-import junit.framework.Assert;
-import junit.framework.AssertionFailedError;
-
-import ab.j3d.Vector3D;
+import ab.j3d.*;
+import com.numdata.oss.junit.*;
+import com.numdata.oss.junit.ArrayTester.*;
+import junit.framework.*;
 
 /**
  * JUnit unit tool class to help with testing {@link Vector3D} objects.
@@ -88,8 +89,44 @@ public final class Vector3DTester
 		{
 			Assert.assertEquals( messagePrefix , expected , actual );
 		}
-		else if ( errorX != null ) throw errorX;
-		else if ( errorY != null ) throw errorY;
-		else if ( errorZ != null ) throw errorZ;
+		else
+		{
+			if ( errorX != null )
+			{
+				throw errorX;
+			}
+
+			if ( errorY != null )
+			{
+				throw errorY;
+			}
+
+			if ( errorZ != null )
+			{
+				throw errorZ;
+			}
+		}
+	}
+
+	/**
+	 * Asserts that one vector is equal to another vector.
+	 *
+	 * @param   messagePrefix   Prefix to failure messages.
+	 * @param   expected        Expected vector value.
+	 * @param   actual          Actual vector value.
+	 * @param   delta           Delta value to limit the acceptable value range.
+	 *
+	 * @throws  AssertionFailedError is the assertion fails.
+	 */
+	public static void assertEquals( final String messagePrefix , final Vector3D[] expected , final Vector3D[] actual , final double delta )
+	{
+		ArrayTester.assertEquals( messagePrefix, expected, actual, new AssertEquals()
+		{
+			@Override
+			public void assertEquals( final String message, final Object expectedValue, final Object actualValue )
+			{
+				Vector3DTester.assertEquals( message, (Vector3D)expectedValue, (Vector3D)actualValue, delta );
+			}
+		} );
 	}
 }
