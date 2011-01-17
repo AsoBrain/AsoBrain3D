@@ -19,11 +19,10 @@
  */
 package ab.j3d.view.jogl;
 
-import javax.media.opengl.GLContext;
+import javax.media.opengl.*;
 
-import ab.j3d.model.Scene;
-import ab.j3d.view.RenderEngine;
-import ab.j3d.view.View3D;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
 
 /**
  * JOGL render engine implementation.
@@ -48,6 +47,11 @@ public class JOGLEngine
 	 * Configuration settings.
 	 */
 	private JOGLConfiguration _configuration;
+
+	/**
+	 * Number of registered views. All views may share the same context.
+	 */
+	private int _registeredViewCount;
 
 	/**
 	 * Construct new JOGL render engine.
@@ -78,9 +82,13 @@ public class JOGLEngine
 		return _configuration;
 	}
 
+	@Override
 	public View3D createView( final Scene scene )
 	{
-		return new JOGLView( this , scene );
+		synchronized ( this )
+		{
+			return new JOGLView( this, scene );
+		}
 	}
 
 	/**
@@ -111,5 +119,35 @@ public class JOGLEngine
 	TextureCache getTextureCache()
 	{
 		return _textureCache;
+	}
+
+	/**
+	 * Registers a view that uses the engine's shared context.
+	 */
+	void registerView()
+	{
+		_registeredViewCount++;
+	}
+
+	/**
+	 * Unregisters a view that uses the engine's shared context.
+	 */
+	void unregisterView()
+	{
+		if ( _registeredViewCount == 0 )
+		{
+			throw new IllegalStateException( "No registered views." );
+		}
+		_registeredViewCount--;
+	}
+
+	/**
+	 * Returns the number of registered views.
+	 *
+	 * @return  Number of registered views.
+	 */
+	int getRegisteredViewCount()
+	{
+		return _registeredViewCount;
 	}
 }

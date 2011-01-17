@@ -21,6 +21,7 @@
 package ab.j3d.view.jogl;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import javax.media.opengl.*;
 import javax.media.opengl.glu.*;
@@ -95,6 +96,11 @@ public class JOGLView
 	 * Graphics context for painting 2D graphics to the GL.
 	 */
 	private JOGLGraphics2D _graphics2D;
+
+	/**
+	 * Prevents the view from being disposed multiple times.
+	 */
+	private boolean _disposed = false;
 
 	/**
 	 * Construct new view.
@@ -219,18 +225,52 @@ public class JOGLView
 	@Override
 	public void dispose()
 	{
-		super.dispose();
-		_renderer = null;
-
-		final JOGLGraphics2D graphics2D = _graphics2D;
-		if ( graphics2D != null )
+		if ( !_disposed )
 		{
-			graphics2D.dispose();
-			_graphics2D = null;
-		}
+			_disposed = true;
 
-		final TextureCache textureCache = _joglEngine.getTextureCache();
-		textureCache.removeListener( _textureCacheListener );
+			final JOGLEngine engine = _joglEngine;
+			engine.unregisterView();
+
+			try
+			{
+				final GLContext context = _glCanvas.getContext();
+
+				if ( ( engine.getContext() != context ) ||
+				     ( engine.getRegisteredViewCount() == 0 ) )
+				{
+					try
+					{
+						context.release();
+					}
+					catch ( GLException gle )
+					{
+						// expected
+					}
+					finally
+					{
+						context.destroy();
+					}
+				}
+
+				_renderer = null;
+
+				final JOGLGraphics2D graphics2D = _graphics2D;
+				if ( graphics2D != null )
+				{
+					_graphics2D = null;
+				}
+
+				final TextureCache textureCache = engine.getTextureCache();
+				textureCache.removeListener( _textureCacheListener );
+
+				super.dispose();
+			}
+			catch ( Exception e )
+			{
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -669,6 +709,10 @@ public class JOGLView
 			{
 				_joglEngine.setContext( context );
 			}
+
+			_joglEngine.registerView();
+
+			addHierarchyListener( new DisposeListener() );
 		}
 
 		@Override
@@ -676,6 +720,49 @@ public class JOGLView
 		{
 			super.addNotify();
 			_joglEngine.setContext( getContext() );
+		}
+	}
+
+	/**
+	 * Diposes the view when its parent window is closed.
+	 */
+	private class DisposeListener
+		extends WindowAdapter
+		implements HierarchyListener
+	{
+		/**
+		 * Root component.
+		 */
+		private Component _root = null;
+
+		@Override
+		public void hierarchyChanged( final HierarchyEvent e )
+		{
+			if ( ( e.getChangeFlags() & (long)HierarchyEvent.PARENT_CHANGED ) == (long)HierarchyEvent.PARENT_CHANGED )
+			{
+				final Component root = SwingUtilities.getRoot( e.getChanged() );
+				final Component oldRoot = _root;
+				if ( oldRoot != root )
+				{
+					if ( oldRoot instanceof Window )
+					{
+						( (Window)oldRoot ).removeWindowListener( this );
+					}
+
+					if ( root instanceof Window )
+					{
+						( (Window)root ).addWindowListener( this );
+					}
+
+					_root = root;
+				}
+			}
+		}
+
+		@Override
+		public void windowClosed( final WindowEvent e )
+		{
+			dispose();
 		}
 	}
 
@@ -727,14 +814,17 @@ public class JOGLView
 			if ( renderer != null )
 			{
 				final JOGLRenderer.RenderStatistics statistics = renderer.getStatistics();
-				final Font font = g.getFont();
-				g.setFont( font.deriveFont( 10.0f ) );
-				g.setColor( new Color( 0xa0ffffff, true ) );
-				g.fillRect( 0, 0, 150, 50 );
-				g.setColor( Color.BLACK );
-				g.drawString( "FPS: " + statistics.getFPS(), 5, 15 );
-				g.drawString( "Primitives: " + statistics.getPrimitiveCount(), 5, 30 );
-				g.drawString( "Objects: " + statistics.getObjectCount() + " (" + statistics.getUniqueObjectCount() + " unique)", 5, 45 );
+				if ( statistics != null )
+				{
+					final Font font = g.getFont();
+					g.setFont( font.deriveFont( 10.0f ) );
+					g.setColor( new Color( 0xa0ffffff, true ) );
+					g.fillRect( 0, 0, 150, 50 );
+					g.setColor( Color.BLACK );
+					g.drawString( "FPS: " + statistics.getFPS(), 5, 15 );
+					g.drawString( "Primitives: " + statistics.getPrimitiveCount(), 5, 30 );
+					g.drawString( "Objects: " + statistics.getObjectCount() + " (" + statistics.getUniqueObjectCount() + " unique)", 5, 45 );
+				}
 			}
 		}
 	}
