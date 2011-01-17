@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -78,11 +78,26 @@ public class FromToCameraControl
 	private double _savedDistance = 1000.0;
 
 	/**
+	 * Saved zoom factor.
+	 *
+	 * @see     #save()
+	 * @see     #restore()
+	 */
+	private double _savedZoomFactor = 1.0;
+
+	/**
 	 * View transform when dragging started.
 	 * <p />
 	 * This is used as temporary state variable for dragging operations.
 	 */
 	private Matrix3D _dragStartScene2View = Matrix3D.IDENTITY;
+
+	/**
+	 * Zoom factor when dragging started.
+	 * <p />
+	 * This is used as temporary state variable for dragging operations.
+	 */
+	private double _dragStartZoomFactor = 1.0;
 
 	/**
 	 * Distance of target point, relative to view position, when dragging started.
@@ -352,6 +367,7 @@ public class FromToCameraControl
 	public void save()
 	{
 		_savedScene2View = getScene2View();
+		_savedZoomFactor = _view.getZoomFactor();
 		_savedDistance = _distance;
 	}
 
@@ -359,6 +375,7 @@ public class FromToCameraControl
 	public void restore()
 	{
 		_distance = _savedDistance;
+		_view.setZoomFactor( _savedZoomFactor );
 		setScene2View( _savedScene2View );
 	}
 
@@ -367,8 +384,10 @@ public class FromToCameraControl
 	{
 		settings.setProperty( "scene2view", String.valueOf( getScene2View() ) );
 		settings.setProperty( "distance", String.valueOf( _distance ) );
+		settings.setProperty( "zoomFactor", String.valueOf( _view.getZoomFactor() ) );
 		settings.setProperty( "savedScene2View", String.valueOf( _savedScene2View ) );
 		settings.setProperty( "savedDistance", String.valueOf( _savedDistance ) );
+		settings.setProperty( "savedZoomFactor", String.valueOf( _savedZoomFactor ) );
 	}
 
 	@Override
@@ -376,23 +395,48 @@ public class FromToCameraControl
 	{
 		try
 		{
-			final Matrix3D scene2view = Matrix3D.fromString( settings.getProperty( "scene2view" ) );
-			final double distance = Double.parseDouble( settings.getProperty( "distance" ) );
-			final Matrix3D savedScene2View = Matrix3D.fromString( settings.getProperty( "savedScene2View" ) );
-			final double savedDistance = Double.parseDouble( settings.getProperty( "savedDistance" ) );
+			if ( settings.getProperty( "savedDistance" ) != null )
+			{
+				_savedDistance = Double.parseDouble( settings.getProperty( "savedDistance" ) );
+			}
 
-			/* activate settings */
-			_distance = distance;
-			_savedScene2View = savedScene2View;
-			_savedDistance = savedDistance;
-			setScene2View( scene2view );
+
+			if ( settings.getProperty( "savedZoomFactor" ) != null )
+			{
+				_savedZoomFactor = Double.parseDouble( settings.getProperty( "savedZoomFactor" ) );
+			}
+
+			if ( settings.getProperty( "savedScene2View" ) != null )
+			{
+				_savedScene2View = Matrix3D.fromString( settings.getProperty( "savedScene2View" ) );
+			}
+
+			if ( settings.getProperty( "distance" ) != null )
+			{
+				_distance = Double.parseDouble( settings.getProperty( "distance" ) );
+			}
+
+			if ( settings.getProperty( "zoomFactor" ) != null )
+			{
+				_view.setZoomFactor( Double.parseDouble( settings.getProperty( "zoomFactor" ) ) );
+			}
+
+			if ( settings.getProperty( "scene2view" ) != null )
+			{
+				setScene2View( Matrix3D.fromString( settings.getProperty( "scene2view" ) ) );
+			}
+
+			_view.update();
+
 		}
 		catch ( NullPointerException e )
 		{
+			e.printStackTrace();
 			/* ignored, caused by missing properties */
 		}
 		catch ( IllegalArgumentException e )
 		{
+			e.printStackTrace();
 			/* ignored, caused by malformed properties or invalid control properties */
 		}
 	}
@@ -405,6 +449,7 @@ public class FromToCameraControl
 		if ( isSupportedDragEvent( event ) )
 		{
 			_dragStartScene2View = getScene2View();
+			_dragStartZoomFactor = _view.getZoomFactor();
 			_dragStartDistance = _distance;
 
 			result = super.mousePressed( event );
