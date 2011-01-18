@@ -11,6 +11,11 @@
   <target name="build" depends="compile-java,compile-tests" description="Build project">
     <mkdir dir="lib"/>
     <jar destfile="lib/ab3d.jar" basedir="classes/java"/>
+    <antcall target="sign-jars" />
+  </target>
+
+  <target name="sign-jars" if="keystore.asobrain">
+    <signjar jar="lib/ab3d.jar" keystore="${keystore.asobrain}" storepass="asobrain" alias="asobrain" />
   </target>
 
   <target name="release" depends="build" description="Build release">
