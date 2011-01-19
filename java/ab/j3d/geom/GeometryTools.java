@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2009-2010 Peter S. Heijnen
+ * Copyright (C) 2009-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,6 @@ package ab.j3d.geom;
 import java.awt.geom.*;
 
 import ab.j3d.*;
-import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -39,6 +38,11 @@ public class GeometryTools
 	 * circle to its radius.
 	 */
 	public static final double TWO_PI = Math.PI + Math.PI;
+
+	/**
+	 * Tolerance to use for floating-point comparisons.
+	 */
+	private static final double EPSILON = (double)0.00001f;
 
 	/**
 	 * Tools class is not supposed to be instantiated.
@@ -270,12 +274,12 @@ public class GeometryTools
 		final double absZZ = Math.abs( from2to1.zz );
 
 		return
-		/* Test 1 X axis */ MathTools.significantlyLessThan( Math.abs( separationX ), extents1X + Vector3D.dot( extents2X, extents2Y, extents2Z, absXX, absXY, absXZ ) ) &&
-		/* Test 1 Y axis */ MathTools.significantlyLessThan( Math.abs( separationY ), extents1Y + Vector3D.dot( extents2X, extents2Y, extents2Z, absYX, absYY, absYZ ) ) &&
-		/* Test 1 Z axis */ MathTools.significantlyLessThan( Math.abs( separationZ ), extents1Z + Vector3D.dot( extents2X, extents2Y, extents2Z, absZX, absZY, absZZ ) ) &&
-		/* Test 2 X axis */ MathTools.significantlyLessThan( Math.abs( Vector3D.dot( from2to1.xx, from2to1.yx, from2to1.zx, separationX, separationY, separationZ ) ), Vector3D.dot( extents1X, extents1Y, extents1Z, absXX, absYX, absZX ) + extents2X ) &&
-		/* Test 2 Y axis */ MathTools.significantlyLessThan( Math.abs( Vector3D.dot( from2to1.xy, from2to1.yy, from2to1.zy, separationX, separationY, separationZ ) ), Vector3D.dot( extents1X, extents1Y, extents1Z, absXY, absYY, absZY ) + extents2Y ) &&
-		/* Test 2 Z axis */ MathTools.significantlyLessThan( Math.abs( Vector3D.dot( from2to1.xz, from2to1.yz, from2to1.zz, separationX, separationY, separationZ ) ), Vector3D.dot( extents1X, extents1Y, extents1Z, absXZ, absYZ, absZZ ) + extents2Z ) &&
+		/* Test 1 X axis */ significantlyLessThan( Math.abs( separationX ), extents1X + Vector3D.dot( extents2X, extents2Y, extents2Z, absXX, absXY, absXZ ) ) &&
+		/* Test 1 Y axis */ significantlyLessThan( Math.abs( separationY ), extents1Y + Vector3D.dot( extents2X, extents2Y, extents2Z, absYX, absYY, absYZ ) ) &&
+		/* Test 1 Z axis */ significantlyLessThan( Math.abs( separationZ ), extents1Z + Vector3D.dot( extents2X, extents2Y, extents2Z, absZX, absZY, absZZ ) ) &&
+		/* Test 2 X axis */ significantlyLessThan( Math.abs( Vector3D.dot( from2to1.xx, from2to1.yx, from2to1.zx, separationX, separationY, separationZ ) ), Vector3D.dot( extents1X, extents1Y, extents1Z, absXX, absYX, absZX ) + extents2X ) &&
+		/* Test 2 Y axis */ significantlyLessThan( Math.abs( Vector3D.dot( from2to1.xy, from2to1.yy, from2to1.zy, separationX, separationY, separationZ ) ), Vector3D.dot( extents1X, extents1Y, extents1Z, absXY, absYY, absZY ) + extents2Y ) &&
+		/* Test 2 Z axis */ significantlyLessThan( Math.abs( Vector3D.dot( from2to1.xz, from2to1.yz, from2to1.zz, separationX, separationY, separationZ ) ), Vector3D.dot( extents1X, extents1Y, extents1Z, absXZ, absYZ, absZZ ) + extents2Z ) &&
 		/* Test 3 case 1 */ ( Math.abs( separationZ * from2to1.yx - separationY * from2to1.zx ) <= extents1Y * absZX + extents1Z * absYX + extents2Y * absXZ + extents2Z * absXY ) &&
 		/* Test 3 case 2 */ ( Math.abs( separationZ * from2to1.yy - separationY * from2to1.zy ) <= extents1Y * absZY + extents1Z * absYY + extents2X * absXZ + extents2Z * absXX ) &&
 		/* Test 3 case 3 */ ( Math.abs( separationZ * from2to1.yz - separationY * from2to1.zz ) <= extents1Y * absZZ + extents1Z * absYZ + extents2X * absXY + extents2Y * absXX ) &&
@@ -494,7 +498,7 @@ public class GeometryTools
 	private static boolean testCircleIntersection( final double radius1, final double centerDx, final double centerDy, final double radius2 )
 	{
 		final double combinedRadius = radius1 + radius2;
-		return MathTools.lessOrAlmostEqual( centerDx * centerDx + centerDy * centerDy, combinedRadius * combinedRadius, 0.00001 );
+		return lessOrAlmostEqual( centerDx * centerDx + centerDy * centerDy, combinedRadius * combinedRadius );
 	}
 
 	/**
@@ -541,9 +545,9 @@ public class GeometryTools
 		final double n1 = ( x4 - x3 ) * ( y1 - y3 ) - ( y4 - y3 ) * ( x1 - x3 );
 		final double d  = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 );
 
-		if ( MathTools.almostEqual( d, 0.0, 0.00001 ) ) /* lines are parallel */
+		if ( almostEqual( d, 0.0 ) ) /* lines are parallel */
 		{
-			if ( MathTools.almostEqual( n1, 0.0, 0.00001 ) ) /* they are coincident */
+			if ( almostEqual( n1, 0.0 ) ) /* they are coincident */
 			{
 				double sx1;
 				double sx2;
@@ -615,7 +619,7 @@ public class GeometryTools
 						/*
 						 * Return the intersection.
 						 */
-						if ( MathTools.almostEqual( sx1, sx2, 0.00001 ) && MathTools.almostEqual( sy1, sy2, 0.00001 ) )
+						if ( almostEqual( sx1, sx2 ) && almostEqual( sy1, sy2 ) )
 						{
 							result = new Point2D[] { new Point2D.Double( sx1, sy1 ) };
 						}
@@ -637,13 +641,13 @@ public class GeometryTools
 			 * Test if intersection point is within both line segments
 			 */
 			final double ua = n1 / d;
-			if ( ( ua >= -0.00001 ) && ( ua <= 1.00001 ) ) // float round error fix
+			if ( almostEqual( ua, 0.0 ) ) // float round error fix
 			{
 
 				final double n2 = ( x2 - x1 ) * ( y1 - y3 ) - ( y2 - y1 ) * ( x1 - x3 );
 				final double ub = n2 / d;
 
-				if ( ( ub >= -0.00001 ) && ( ub <= 1.00001 ) ) // float round error fix
+				if ( almostEqual( ub, 0.0 ) ) // float round error fix
 				{
 					final double x = x1 + ua * ( x2 - x1 );
 					final double y = y1 + ua * ( y2 - y1 );
@@ -694,7 +698,7 @@ public class GeometryTools
 		Point2D result = null;
 
 		final double d = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 );
-		if ( !MathTools.almostEqual( d, 0.0, 0.00001 ) ) /* are not parallel, so they intersect at some point */
+		if ( !almostEqual( d, 0.0 ) ) /* are not parallel, so they intersect at some point */
 		{
 			final double n1 = ( x4 - x3 ) * ( y1 - y3 ) - ( y4 - y3 ) * ( x1 - x3 );
 			final double ua = n1 / d;
@@ -846,7 +850,7 @@ public class GeometryTools
 		                         + planeNormalY * rayDirection.y
 		                         + planeNormalZ * rayDirection.z;
 
-		if ( twoSidedPlane ? !MathTools.almostEqual( denominator, 0.0, 0.000001 ) : MathTools.significantlyLessThan( denominator, 0.0, 0.000001 ) ) /* line parallel to plane */
+		if ( twoSidedPlane ? !almostEqual( denominator, 0.0 ) : significantlyLessThan( denominator, 0.0 ) ) /* line parallel to plane */
 		{
 			final double numerator = planeDistance - planeNormalX * rayOrigin.x
 			                                       - planeNormalY * rayOrigin.y
@@ -854,8 +858,7 @@ public class GeometryTools
 
 			final double intersectionDistance = numerator / denominator;
 
-			if ( ( intersectionDistance > -0.000001 )/* almost on plane */
-			  && ( intersectionDistance <  0.000001 ) )
+			if ( almostEqual( intersectionDistance, 0.0 ) ) /* (almost) on plane */
 			{
 				result = rayOrigin;
 			}
@@ -1006,7 +1009,7 @@ public class GeometryTools
 				m2  = Math.sqrt( p2x * p2x + p2y * p2y + p2z * p2z );
 
 				d = m1 * m2;
-				if ( d <= 0.0000001 ) /* We are on a node, consider this inside */
+				if ( almostEqual( d, 0.0 ) ) /* We are on a node, consider this inside */
 				{
 					break;
 				}
@@ -1017,9 +1020,9 @@ public class GeometryTools
 			/*
 			 * Inside if:
 			 *  - Aborted prematurely; or
-			 *  - Angle sum is 2PI (with 0.0000001 deviation tolerance)
+			 *  - Angle sum is 2PI
 			 */
-			result = ( i < vertexCount ) || ( ( angleSum > TWO_PI ) && ( angleSum < TWO_PI ) );
+			result = ( i < vertexCount ) || almostEqual( angleSum, TWO_PI );
 		}
 		else
 		{
@@ -1129,7 +1132,7 @@ public class GeometryTools
 		final double dz = p2.z - p1.z;
 		final double u  = ( ( p.x - p1.x ) * dx + ( p.y - p1.y ) * dy + ( p.z - p1.z ) * dz ) / ( dx * dx + dy * dy + dz * dz );
 
-		return ( !segmentOnly || ( ( u >= 0.00001 ) && u <= 1.00001 ) ) ? p1.plus( u * dx, u * dy, p.z ) : null;
+		return ( !segmentOnly || ( ( u >= -EPSILON ) && u <= ( 1.0 + EPSILON ) ) ) ? p1.plus( u * dx, u * dy, p.z ) : null;
 	}
 
 	/**
@@ -1151,5 +1154,85 @@ public class GeometryTools
 		final double p = ( a + b + c ) / 2.0;
 
 		return Math.sqrt( p * ( p - a ) * ( p - b ) * ( p - c ) );
+	}
+
+	/**
+	 * Test if the specified values are 'almost' equal (the difference between
+	 * them approaches the value 0).
+	 *
+	 * @param   value1      First value to compare.
+	 * @param   value2      Second value to compare.
+	 *
+	 * @return  <code>true</code> is the values are within a +/- 0.001 tolerance
+	 *          of eachother; <code>false</code> otherwise.
+	 */
+	public static boolean almostEqual( final double value1, final double value2 )
+	{
+		final double delta = value1 - value2;
+		return ( delta <= EPSILON ) && ( delta >= -EPSILON );
+	}
+
+	/**
+	 * Test if the first operand is greater than the second operand or almost
+	 * equal (the difference between them approaches the value 0).
+	 *
+	 * @param   value1      First value to compare.
+	 * @param   value2      Second value to compare.
+	 *
+	 * @return  <code>true</code> is <code>value1</code> is greater than or within
+	 *          a +/- 0.001 tolerance of <code>value2</code>;
+	 *          <code>false</code> otherwise.
+	 */
+	public static boolean greaterOrAlmostEqual( final double value1 , final double value2 )
+	{
+		return ( ( value2 - value1 ) <= EPSILON );
+	}
+
+	/**
+	 * Test if the first operand is less than the second operand or almost
+	 * equal (the difference between them approaches the value 0).
+	 *
+	 * @param   value1      First value to compare.
+	 * @param   value2      Second value to compare.
+	 *
+	 * @return  <code>true</code> is <code>value1</code> is less than or within
+	 *          a +/- 0.001 tolerance of <code>value2</code>;
+	 *          <code>false</code> otherwise.
+	 */
+	public static boolean lessOrAlmostEqual( final double value1, final double value2 )
+	{
+		return ( ( value1 - value2 ) <= EPSILON );
+	}
+
+	/**
+	 * Test if the first operand is significantly greater than the second operand
+	 * (the difference between them exceeds a 0.001 tolerance).
+	 *
+	 * @param   value1      First value to compare.
+	 * @param   value2      Second value to compare.
+	 *
+	 * @return  <code>true</code> is <code>value1</code> is at least the
+	 *          <code>0.001</code> greater than <code>value2</code>;
+	 *          <code>false</code> otherwise.
+	 */
+	public static boolean significantlyGreaterThan( final double value1 , final double value2 )
+	{
+		return ( ( value1 - value2 ) > EPSILON );
+	}
+
+	/**
+	 * Test if the first operand is significantly less than the second operand
+	 * (the difference between them exceeds a 0.001 tolerance).
+	 *
+	 * @param   value1      First value to compare.
+	 * @param   value2      Second value to compare.
+	 *
+	 * @return  <code>true</code> is <code>value1</code> is at least the
+	 *          <code>0.001</code> less than <code>value2</code>;
+	 *          <code>false</code> otherwise.
+	 */
+	public static boolean significantlyLessThan( final double value1, final double value2 )
+	{
+		return ( ( value2 - value1 ) > EPSILON );
 	}
 }
