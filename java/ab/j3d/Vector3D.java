@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2009 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,11 +21,9 @@
 package ab.j3d;
 
 import java.awt.geom.*;
+import static java.lang.Double.*;
 import java.text.*;
 import java.util.*;
-
-import com.numdata.oss.*;
-import static java.lang.Double.*;
 
 /**
  * This class represents a 3D vector.
@@ -39,37 +37,37 @@ public final class Vector3D
 	/**
 	 * Zero-vector.
 	 */
-	public static final Vector3D ZERO = new Vector3D( 0.0 , 0.0 , 0.0 );
+	public static final Vector3D ZERO = new Vector3D( 0.0, 0.0, 0.0 );
 
 	/**
 	 * Positive X-axis direction vector.
 	 */
-	public static final Vector3D POSITIVE_X_AXIS = new Vector3D( 1.0 , 0.0 , 0.0 );
+	public static final Vector3D POSITIVE_X_AXIS = new Vector3D( 1.0, 0.0, 0.0 );
 
 	/**
 	 * Negative X-axis direction vector.
 	 */
-	public static final Vector3D NEGATIVE_X_AXIS = new Vector3D( -1.0 , 0.0 , 0.0 );
+	public static final Vector3D NEGATIVE_X_AXIS = new Vector3D( -1.0, 0.0, 0.0 );
 
 	/**
 	 * Positive Y-axis direction vector.
 	 */
-	public static final Vector3D POSITIVE_Y_AXIS = new Vector3D( 0.0 , 1.0 , 0.0 );
+	public static final Vector3D POSITIVE_Y_AXIS = new Vector3D( 0.0, 1.0, 0.0 );
 
 	/**
 	 * Negative Y-axis direction vector.
 	 */
-	public static final Vector3D NEGATIVE_Y_AXIS = new Vector3D( 0.0 , -1.0 , 0.0 );
+	public static final Vector3D NEGATIVE_Y_AXIS = new Vector3D( 0.0, -1.0, 0.0 );
 
 	/**
 	 * Positive Z-axis direction vector.
 	 */
-	public static final Vector3D POSITIVE_Z_AXIS = new Vector3D( 0.0 , 0.0 , 1.0 );
+	public static final Vector3D POSITIVE_Z_AXIS = new Vector3D( 0.0, 0.0, 1.0 );
 
 	/**
 	 * Negative Z-axis direction vector.
 	 */
-	public static final Vector3D NEGATIVE_Z_AXIS = new Vector3D( 0.0 , 0.0 , -1.0 );
+	public static final Vector3D NEGATIVE_Z_AXIS = new Vector3D( 0.0, 0.0, -1.0 );
 
 	/**
 	 * X component of 3D vector.
@@ -92,24 +90,51 @@ public final class Vector3D
 	public static final Vector3D INIT = ZERO;
 
 	/**
+	 * Number format with one fraction digit.
+	 */
+	private static final NumberFormat ONE_DECIMAL_FORMAT;
+
+	/**
+	 * Number format with two fraction digits.
+	 */
+	private static final NumberFormat TWO_DECIMAL_FORMAT;
+
+	static
+	{
+		final NumberFormat oneDecimal = NumberFormat.getNumberInstance( Locale.US );
+		oneDecimal.setMinimumFractionDigits( 1 );
+		oneDecimal.setMaximumFractionDigits( 1 );
+		oneDecimal.setGroupingUsed( false );
+		ONE_DECIMAL_FORMAT = oneDecimal;
+
+		final NumberFormat twoDecimals = NumberFormat.getNumberInstance( Locale.US );
+		twoDecimals.setMinimumFractionDigits( 2 );
+		twoDecimals.setMaximumFractionDigits( 2 );
+		twoDecimals.setGroupingUsed( false );
+		TWO_DECIMAL_FORMAT = twoDecimals;
+	}
+
+	/**
 	 * Construct new vector.
 	 *
 	 * @param   nx  X-coordinate of vector.
 	 * @param   ny  Y-coordinate of vector.
 	 * @param   nz  Z-coordinate of vector.
 	 */
-	public Vector3D( final double nx , final double ny , final double nz )
+	public Vector3D( final double nx, final double ny, final double nz )
 	{
 		x = nx;
 		y = ny;
 		z = nz;
 	}
 
+	@Override
 	public double getX()
 	{
 		return x;
 	}
 
+	@Override
 	public double getY()
 	{
 		return y;
@@ -125,7 +150,8 @@ public final class Vector3D
 		return z;
 	}
 
-	public void setLocation( final double nx , final double ny )
+	@Override
+	public void setLocation( final double nx, final double ny )
 	{
 		if ( x != nx || y != ny )
 		{
@@ -134,43 +160,46 @@ public final class Vector3D
 	}
 
 	/**
-	 * Get <code>Vector3D</code> property with the specified name from a
+	 * Get {@link Vector3D} property with the specified name from a
 	 * {@link Properties} object.
 	 *
 	 * @param   properties  Properties to get vector from.
 	 * @param   name        Property name.
 	 *
-	 * @return  <code>Vector3D</code> object;
+	 * @return  {@link Vector3D} object;
 	 *          <code>null</code> if property value is absent/invalid.
 	 */
-	public static Vector3D getProperty( final Properties properties , final String name )
+	public static Vector3D getProperty( final Properties properties, final String name )
 	{
-		return getProperty( properties , name , null );
+		return getProperty( properties, name, null );
 	}
 
 	/**
-	 * Get <code>Vector3D</code> property with the specified name from a
+	 * Get {@link Vector3D} property with the specified name from a
 	 * {@link Properties} object.
 	 *
 	 * @param   properties      Properties to get vector from.
 	 * @param   name            Property name.
 	 * @param   defaultValue    Value to use if property value is absent/invalid.
 	 *
-	 * @return  <code>Vector3D</code> object;
+	 * @return  {@link Vector3D} object;
 	 *          <code>defaultValue</code> if property value is absent/invalid.
 	 */
-	public static Vector3D getProperty( final Properties properties , final String name , final Vector3D defaultValue )
+	public static Vector3D getProperty( final Properties properties, final String name, final Vector3D defaultValue )
 	{
 		Vector3D result = defaultValue;
 
-		final String stringValue = PropertyTools.getString( properties , name , null );
-		if ( stringValue != null )
+		if ( properties != null )
 		{
-			try
+			final String stringValue = properties.getProperty( name, null );
+			if ( stringValue != null )
 			{
-				result = fromString( stringValue );
+				try
+				{
+					result = fromString( stringValue );
+				}
+				catch ( Exception e ) { /* ignore */ }
 			}
-			catch ( Exception e ) { /* ignore */ }
 		}
 
 		return result;
@@ -184,9 +213,9 @@ public final class Vector3D
 	 *
 	 * @return  angle between vectors in radians.
 	 */
-	public static double angle( final Vector3D v1 , final Vector3D v2 )
+	public static double angle( final Vector3D v1, final Vector3D v2 )
 	{
-		return Math.acos( cosAngle( v1 , v2 ) );
+		return Math.acos( cosAngle( v1, v2 ) );
 	}
 
 	/**
@@ -198,9 +227,10 @@ public final class Vector3D
 	 * @return  <code>true</code> if the vectors are parallel;
 	 *          <code>false</code> if not.
 	 */
-	public static boolean areParallel( final Vector3D v1 , final Vector3D v2 )
+	public static boolean areParallel( final Vector3D v1, final Vector3D v2 )
 	{
-		return MathTools.almostEqual( Math.abs( cosAngle( v1 , v2 ) ) , 1.0 );
+		final double difference = Math.abs( cosAngle( v1, v2 ) ) - 1.0;
+		return ( difference <= 0.001 ) && ( difference >= -0.001 );
 	}
 
 	/**
@@ -212,9 +242,10 @@ public final class Vector3D
 	 * @return  <code>true</code> if the vectors define the same direction;
 	 *          <code>false</code> if not.
 	 */
-	public static boolean areSameDirection( final Vector3D v1 , final Vector3D v2 )
+	public static boolean areSameDirection( final Vector3D v1, final Vector3D v2 )
 	{
-		return MathTools.almostEqual( cosAngle( v1 , v2 ) , 1.0 );
+		final double difference = cosAngle( v1, v2 ) - 1.0;
+		return ( difference <= 0.001 ) && ( difference >= -0.001 );
 	}
 
 	/**
@@ -226,9 +257,10 @@ public final class Vector3D
 	 * @return  <code>true</code> if the vectors are perpendicular;
 	 *          <code>false</code> if not.
 	 */
-	public static boolean arePerpendicular( final Vector3D v1 , final Vector3D v2 )
+	public static boolean arePerpendicular( final Vector3D v1, final Vector3D v2 )
 	{
-		return MathTools.almostEqual( dot( v1 , v2 ) , 0.0 );
+		final double dot = dot( v1, v2 );
+		return ( dot <= 0.001 ) && ( dot >= -0.001 );
 	}
 
 	/**
@@ -239,10 +271,10 @@ public final class Vector3D
 	 *
 	 * @return  cos(angle) between vectors.
 	 */
-	public static double cosAngle( final Vector3D v1 , final Vector3D v2 )
+	public static double cosAngle( final Vector3D v1, final Vector3D v2 )
 	{
 		final double l = v1.length() * v2.length();
-		return ( l == 0.0 ) ? 0.0 : ( dot( v1 , v2 ) / l );
+		return ( l == 0.0 ) ? 0.0 : ( dot( v1, v2 ) / l );
 	}
 
 	/**
@@ -257,10 +289,10 @@ public final class Vector3D
 	 *
 	 * @return  Resulting vector.
 	 */
-	public static Vector3D cross( final double x1 , final double y1 , final double z1 , final double x2 , final double y2 , final double z2 )
+	public static Vector3D cross( final double x1, final double y1, final double z1, final double x2, final double y2, final double z2 )
 	{
-		return ZERO.set( y1 * z2 - z1 * y2 ,
-		                 z1 * x2 - x1 * z2 ,
+		return ZERO.set( y1 * z2 - z1 * y2,
+		                 z1 * x2 - x1 * z2,
 		                 x1 * y2 - y1 * x2 );
 	}
 
@@ -272,9 +304,9 @@ public final class Vector3D
 	 *
 	 * @return  Resulting vector.
 	 */
-	public static Vector3D cross( final Vector3D v1 , final Vector3D v2 )
+	public static Vector3D cross( final Vector3D v1, final Vector3D v2 )
 	{
-		return cross( v1.x , v1.y , v1.z , v2.x , v2.y , v2.z );
+		return cross( v1.x, v1.y, v1.z, v2.x, v2.y, v2.z );
 	}
 
 	/**
@@ -287,7 +319,7 @@ public final class Vector3D
 	 *
 	 * @return  Resulting vector.
 	 */
-	public static double crossZ( final double x1 , final double y1 , final double x2 , final double y2 )
+	public static double crossZ( final double x1, final double y1, final double x2, final double y2 )
 	{
 		return x1 * y2 - y1 * x2;
 	}
@@ -300,9 +332,9 @@ public final class Vector3D
 	 *
 	 * @return  Resulting vector.
 	 */
-	public static double crossZ( final Vector3D v1 , final Vector3D v2 )
+	public static double crossZ( final Vector3D v1, final Vector3D v2 )
 	{
-		return crossZ( v1.x , v1.y , v2.x , v2.y );
+		return crossZ( v1.x, v1.y, v2.x, v2.y );
 	}
 
 	/**
@@ -313,9 +345,9 @@ public final class Vector3D
 	 *
 	 * @return  Distance between this and the specified other vector.
 	 */
-	public static double distanceBetween( final Vector3D p1 , final Vector3D p2 )
+	public static double distanceBetween( final Vector3D p1, final Vector3D p2 )
 	{
-		return length( p1.x - p2.x , p1.y - p2.y , p1.z - p2.z );
+		return length( p1.x - p2.x, p1.y - p2.y, p1.z - p2.z );
 	}
 
 	/**
@@ -327,7 +359,7 @@ public final class Vector3D
 	 */
 	public double distanceTo( final Vector3D other )
 	{
-		return distanceBetween( this , other );
+		return distanceBetween( this, other );
 	}
 
 	/**
@@ -343,7 +375,7 @@ public final class Vector3D
 	 *
 	 * @return  Dot product.
 	 */
-	public static double dot( final double x1 , final double y1 , final double z1 , final double x2 , final double y2 , final double z2 )
+	public static double dot( final double x1, final double y1, final double z1, final double x2, final double y2, final double z2 )
 	{
 		return x1 * x2 + y1 * y2 + z1 * z2;
 	}
@@ -357,9 +389,9 @@ public final class Vector3D
 	 *
 	 * @return  Dot product.
 	 */
-	public static double dot( final Vector3D v1 , final Vector3D v2 )
+	public static double dot( final Vector3D v1, final Vector3D v2 )
 	{
-		return dot( v1.x , v1.y , v1.z , v2.x , v2.y , v2.z );
+		return dot( v1.x, v1.y, v1.z, v2.x, v2.y, v2.z );
 	}
 
 	/**
@@ -369,16 +401,10 @@ public final class Vector3D
 	 *
 	 * @return  <code>true</code> if the objects are almost equal;
 	 *          <code>false</code> if not.
-	 *
-	 * @see   MathTools#almostEqual
 	 */
 	public boolean almostEquals( final Vector3D other )
 	{
-		return ( other != null )
-		       && ( ( other == this )
-		            || ( MathTools.almostEqual( x , other.x ) &&
-		                 MathTools.almostEqual( y , other.y ) &&
-		                 MathTools.almostEqual( z , other.z ) ) );
+		return ( other == this ) || ( ( other != null ) && almostEquals( other.x, other.y, other.z ) );
 	}
 
 	/**
@@ -390,14 +416,13 @@ public final class Vector3D
 	 *
 	 * @return  <code>true</code> if the objects are almost equal;
 	 *          <code>false</code> if not.
-	 *
-	 * @see     MathTools#almostEqual
 	 */
-	public boolean almostEquals( final double otherX , final double otherY , final double otherZ )
+	public boolean almostEquals( final double otherX, final double otherY, final double otherZ )
 	{
-		return MathTools.almostEqual( x , otherX ) &&
-		       MathTools.almostEqual( y , otherY ) &&
-		       MathTools.almostEqual( z , otherZ );
+		final double dx = x - otherX;
+		final double dy = y - otherY;
+		final double dz = z - otherZ;
+		return ( ( dx <= 0.001 ) && ( dx >= -0.001 ) && ( dy <= 0.001 ) && ( dy >= -0.001 ) && ( dz <= 0.001 ) && ( dz >= -0.001 ) );
 	}
 
 	/**
@@ -410,13 +435,14 @@ public final class Vector3D
 	 * @return  <code>true</code> if vectors are equal;
 	 *          <code>false</code> if not.
 	 */
-	public boolean equals( final double otherX , final double otherY , final double otherZ )
+	public boolean equals( final double otherX, final double otherY, final double otherZ )
 	{
 		return ( isNaN( otherX ) || ( otherX == x ) ) &&
 		       ( isNaN( otherY ) || ( otherY == y ) ) &&
 		       ( isNaN( otherZ ) || ( otherZ == z ) );
 	}
 
+	@Override
 	public boolean equals( final Object other )
 	{
 		final boolean result;
@@ -438,6 +464,7 @@ public final class Vector3D
 		return result;
 	}
 
+	@Override
 	public int hashCode()
 	{
 		long l;
@@ -447,7 +474,7 @@ public final class Vector3D
 	}
 
 	/**
-	 * Convert string representation of vector back to <code>Vector3D</code>
+	 * Convert string representation of vector back to {@link Vector3D}
 	 * instance (see <code>toString()</code>).
 	 *
 	 * @param   value   String representation of object.
@@ -463,22 +490,28 @@ public final class Vector3D
 	public static Vector3D fromString( final String value )
 	{
 		if ( value == null )
+		{
 			throw new NullPointerException( "value" );
+		}
 
 		final int comma1 = value.indexOf( (int)',' );
 		if ( comma1 < 1 )
-			throw new IllegalArgumentException( "comma1" );
+		{
+			throw new IllegalArgumentException( value );
+		}
 
-		final double x = parseDouble( value.substring( 0 , comma1 ) );
+		final double x = parseDouble( value.substring( 0, comma1 ) );
 
-		final int comma2 = value.indexOf( (int)',' , comma1 + 1 );
+		final int comma2 = value.indexOf( (int)',', comma1 + 1 );
 		if ( comma2 < 1 )
-			throw new IllegalArgumentException( "comma2" );
+		{
+			throw new IllegalArgumentException( value );
+		}
 
-		final double y = parseDouble( value.substring( comma1 + 1 , comma2 ) );
+		final double y = parseDouble( value.substring( comma1 + 1, comma2 ) );
 		final double z = parseDouble( value.substring( comma2 + 1 ) );
 
-		return ZERO.set( x , y , z );
+		return ZERO.set( x, y, z );
 	}
 
 	/**
@@ -488,7 +521,7 @@ public final class Vector3D
 	 */
 	public double length()
 	{
-		return length( x , y , z );
+		return length( x, y, z );
 	}
 
 	/**
@@ -500,7 +533,7 @@ public final class Vector3D
 	 *
 	 * @return  Length of vector.
 	 */
-	public static double length( final double x , final double y , final double z )
+	public static double length( final double x, final double y, final double z )
 	{
 		return Math.sqrt( x * x + y * y + z * z );
 	}
@@ -514,7 +547,7 @@ public final class Vector3D
 	 */
 	public Vector3D minus( final Vector3D other )
 	{
-		return minus( other.x , other.y , other.z );
+		return minus( other.x, other.y, other.z );
 	}
 
 	/**
@@ -526,9 +559,9 @@ public final class Vector3D
 	 *
 	 * @return  Resulting vector.
 	 */
-	public Vector3D minus( final double otherX , final double otherY , final double otherZ )
+	public Vector3D minus( final double otherX, final double otherY, final double otherZ )
 	{
-		return set( x - otherX , y - otherY , z - otherZ );
+		return set( x - otherX, y - otherY, z - otherZ );
 	}
 
 	/**
@@ -540,7 +573,7 @@ public final class Vector3D
 	 */
 	public Vector3D multiply( final double factor )
 	{
-		return set( x * factor , y * factor , z * factor );
+		return set( x * factor, y * factor, z * factor );
 	}
 
 	/**
@@ -552,7 +585,7 @@ public final class Vector3D
 	public Vector3D normalize()
 	{
 		final double l = length();
-		return ( ( l == 0.0 ) || ( l == 1.0 ) ) ? this : set( x / l , y / l , z / l );
+		return ( ( l == 0.0 ) || ( l == 1.0 ) ) ? this : set( x / l, y / l, z / l );
 	}
 
 	/**
@@ -565,10 +598,10 @@ public final class Vector3D
 	 *
 	 * @return  Normalized vector.
 	 */
-	public static Vector3D normalize( final double x , final double y , final double z )
+	public static Vector3D normalize( final double x, final double y, final double z )
 	{
-		final double l = length( x , y , z );
-		return ( l == 0.0 ) ? ZERO : new Vector3D( x / l , y / l , z / l );
+		final double l = length( x, y, z );
+		return ( l == 0.0 ) ? ZERO : new Vector3D( x / l, y / l, z / l );
 	}
 
 	/**
@@ -580,7 +613,7 @@ public final class Vector3D
 	 */
 	public Vector3D plus( final Vector3D other )
 	{
-		return plus( other.x , other.y , other.z );
+		return plus( other.x, other.y, other.z );
 	}
 
 	/**
@@ -592,9 +625,9 @@ public final class Vector3D
 	 *
 	 * @return  Resulting vector.
 	 */
-	public Vector3D plus( final double otherX , final double otherY , final double otherZ )
+	public Vector3D plus( final double otherX, final double otherY, final double otherZ )
 	{
-		return set( x + otherX , y + otherY , z + otherZ );
+		return set( x + otherX, y + otherY, z + otherZ );
 	}
 
 	/**
@@ -606,21 +639,21 @@ public final class Vector3D
 	 *
 	 * @return  Resulting vector.
 	 */
-	public Vector3D set( final double nx , final double ny , final double nz )
+	public Vector3D set( final double nx, final double ny, final double nz )
 	{
 		final Vector3D result;
 
-		if ( ZERO.equals( nx , ny , nz ) )
+		if ( ZERO.equals( nx, ny, nz ) )
 		{
 			result = ZERO;
 		}
-		else if ( ( this != ZERO ) && equals( nx , ny , nz ) )
+		else if ( ( this != ZERO ) && equals( nx, ny, nz ) )
 		{
 			result = this;
 		}
 		else
 		{
-			result = new Vector3D( isNaN( nx ) ? x : nx , isNaN( ny ) ? y : ny , isNaN( nz ) ? z : nz );
+			result = new Vector3D( isNaN( nx ) ? x : nx, isNaN( ny ) ? y : ny, isNaN( nz ) ? z : nz );
 		}
 
 		return result;
@@ -631,6 +664,7 @@ public final class Vector3D
 	 *
 	 * @return  String representation of object.
 	 */
+	@Override
 	public String toString()
 	{
 		return x + "," + y + ',' + z;
@@ -641,7 +675,7 @@ public final class Vector3D
 	 * coordinates.
 	 * <p />
 	 * The polar/spherial coordinates are defined as the triplet
-	 * <code>( r , &theta; , &rho; )</code>, where r is radius, &theta; is the
+	 * <code>( r, &theta;, &rho; )</code>, where r is radius, &theta; is the
 	 * azimuth, and &rho; is the zenith.
 	 *
 	 * @return  Polar coordinates (radius,azimuth,zenith) based on cartesian
@@ -649,7 +683,7 @@ public final class Vector3D
 	 */
 	public Vector3D cartesianToPolar()
 	{
-		return cartesianToPolar( x , y , z );
+		return cartesianToPolar( x, y, z );
 	}
 
 	/**
@@ -657,7 +691,7 @@ public final class Vector3D
 	 * coordinates.
 	 * <p />
 	 * The polar/spherial coordinates are defined as the triplet
-	 * <code>( r , &theta; , &rho; )</code>, where r is radius, &theta; is the
+	 * <code>( r, &theta;, &rho; )</code>, where r is radius, &theta; is the
 	 * azimuth, and &rho; is the zenith.
 	 * <p />
 	 * See <a href="http://mathworld.wolfram.com/SphericalCoordinates.html">Spherical Coordinates</a>
@@ -672,7 +706,7 @@ public final class Vector3D
 	 * @return  Polar coordinates (radius,azimuth,zenith) based on cartesian
 	 *          coordinates defined by this vector.
 	 */
-	public static Vector3D cartesianToPolar( final double x , final double y , final double z )
+	public static Vector3D cartesianToPolar( final double x, final double y, final double z )
 	{
 		final Vector3D result;
 
@@ -688,7 +722,7 @@ public final class Vector3D
 		{
 			final double radius  = Math.sqrt( xSquared + ySquared + zSquared );
 			final double azimuth = Math.atan2( y, x );
-			final double zenith  = Math.atan2( Math.sqrt( xSquared + ySquared ) , z );
+			final double zenith  = Math.atan2( Math.sqrt( xSquared + ySquared ), z );
 
 			result = new Vector3D( radius, azimuth, zenith );
 		}
@@ -701,7 +735,7 @@ public final class Vector3D
 	 * coordinates.
 	 * <p />
 	 * The polar/spherial coordinates are defined as the triplet
-	 * <code>( r , &theta; , &rho; )</code>, where r is radius, &theta; is the
+	 * <code>( r, &theta;, &rho; )</code>, where r is radius, &theta; is the
 	 * azimuth, and &rho; is the zenith.
 	 *
 	 * @return  Cartesian coordinates based on polar coordinates
@@ -709,7 +743,7 @@ public final class Vector3D
 	 */
 	public Vector3D polarToCartesian()
 	{
-		return polarToCartesian( x , y , z );
+		return polarToCartesian( x, y, z );
 	}
 
 	/**
@@ -717,7 +751,7 @@ public final class Vector3D
 	 * coordinates.
 	 * <p />
 	 * The polar/spherial coordinates are defined as the triplet
-	 * <code>( r , &theta; , &rho; )</code>, where r is radius, &theta; is the
+	 * <code>( r, &theta;, &rho; )</code>, where r is radius, &theta; is the
 	 * azimuth, and &rho; is the zenith.
 	 * <p />
 	 * See <a href="http://mathworld.wolfram.com/SphericalCoordinates.html">Spherical Coordinates</a>
@@ -732,7 +766,7 @@ public final class Vector3D
 	 * @return  Cartesian coordinates based on polar coordinates
 	 *          (radius,azimuth,zenith) defined by this vector.
 	 */
-	public static Vector3D polarToCartesian( final double radius , final double azimuth , final double zenith )
+	public static Vector3D polarToCartesian( final double radius, final double azimuth, final double zenith )
 	{
 		final Vector3D result;
 
@@ -744,8 +778,8 @@ public final class Vector3D
 		{
 			final double radiusXY = radius * Math.sin( zenith );
 
-			result = new Vector3D( radiusXY * Math.cos( azimuth ) ,
-			                       radiusXY * Math.sin( azimuth ) ,
+			result = new Vector3D( radiusXY * Math.cos( azimuth ),
+			                       radiusXY * Math.sin( azimuth ),
 			                       radius   * Math.cos( zenith  ) );
 		}
 
@@ -753,31 +787,78 @@ public final class Vector3D
 	}
 
 	/**
-	 * Create human-readable representation of this <code>Vector3D</code> object.
+	 * Create human-readable representation of this {@link Vector3D} object.
 	 * This is aspecially useful for debugging purposes.
 	 *
-	 * @return  Human-readable representation of this <code>Vector3D</code> object.
+	 * @return  Human-readable representation of this {@link Vector3D} object.
 	 */
 	public String toFriendlyString()
 	{
-		return toFriendlyString( this );
+		return toFriendlyString( x, y, z );
 	}
 
 	/**
-	 * Create human-readable representation of <code>Vector3D</code> object.
+	 * Create human-readable representation of {@link Vector3D} object.
 	 * This is aspecially useful for debugging purposes.
 	 *
 	 * @param   vector   Vector3D instance (<code>null</code> produces 'null').
 	 *
-	 * @return  Human-readable representation of <code>Vector3D</code> object.
+	 * @return  Human-readable representation of {@link Vector3D} object.
 	 */
 	public static String toFriendlyString( final Vector3D vector )
 	{
-		final DecimalFormat df = new DecimalFormat( "0.00" );
+		return ( vector == null ) ? "null" : toFriendlyString( vector.x, vector.y, vector.z );
+	}
 
-		return ( vector == null ) ? "null" :
-		       "[ " + df.format( vector.x ) + " , "
-		       + df.format( vector.y ) + " , "
-		       + df.format( vector.z ) + " ]";
+	/**
+	 * Create human-readable representation of a vector.
+	 *
+	 * @param   x   X component of vector.
+	 * @param   y   Y component of vector.
+	 * @param   z   Z component of vector.
+	 *
+	 * @return  Human-readable representation of vector.
+	 */
+	public static String toFriendlyString( final double x, final double y, final double z )
+	{
+		final NumberFormat df = TWO_DECIMAL_FORMAT;
+		return "[ " + df.format( x ) + ", " + df.format( y ) + ", " + df.format( z ) + " ]";
+	}
+
+	/**
+	 * Create short human-readable representation of this vector.
+	 *
+	 * @return  Human-readable representation of {@link Vector3D} object.
+	 */
+	public String toShortFriendlyString()
+	{
+		return toShortFriendlyString( x, y, z );
+	}
+
+	/**
+	 * Create short human-readable representation of a vector.
+	 *
+	 * @param   vector   {@link Vector3D} (<code>null</code> produces 'null').
+	 *
+	 * @return  Human-readable representation of {@link Vector3D} object.
+	 */
+	public static String toShortFriendlyString( final Vector3D vector )
+	{
+		return ( vector == null ) ? "null" : toShortFriendlyString( vector.x, vector.y, vector.z );
+	}
+
+	/**
+	 * Create short human-readable representation of a vector.
+	 *
+	 * @param   x   X component of vector.
+	 * @param   y   Y component of vector.
+	 * @param   z   Z component of vector.
+	 *
+	 * @return  Human-readable representation of vector.
+	 */
+	public static String toShortFriendlyString( final double x, final double y, final double z )
+	{
+		final NumberFormat nf = ONE_DECIMAL_FORMAT;
+		return '[' + nf.format( x ) + ',' + nf.format( y ) + ',' + nf.format( z ) + ']';
 	}
 }
