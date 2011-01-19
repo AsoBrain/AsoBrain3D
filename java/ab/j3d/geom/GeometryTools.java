@@ -641,13 +641,13 @@ public class GeometryTools
 			 * Test if intersection point is within both line segments
 			 */
 			final double ua = n1 / d;
-			if ( almostEqual( ua, 0.0 ) ) // float round error fix
+			if ( ( ua >= -EPSILON ) && ( ua <= ( 1.0 + EPSILON ) ) ) // float round error fix
 			{
 
 				final double n2 = ( x2 - x1 ) * ( y1 - y3 ) - ( y2 - y1 ) * ( x1 - x3 );
 				final double ub = n2 / d;
 
-				if ( almostEqual( ub, 0.0 ) ) // float round error fix
+				if ( ( ub >= -EPSILON ) && ( ub <= ( 1.0 + EPSILON ) ) ) // float round error fix
 				{
 					final double x = x1 + ua * ( x2 - x1 );
 					final double y = y1 + ua * ( y2 - y1 );
