@@ -11,11 +11,13 @@
   <target name="build" depends="compile-java,compile-tests" description="Build project">
     <mkdir dir="lib"/>
     <jar destfile="lib/ab3d.jar" basedir="classes/java"/>
+    <jar destfile="lib/ab3d-test.jar" basedir="classes/test"/>
     <antcall target="sign-jars" />
   </target>
 
   <target name="sign-jars" if="keystore.asobrain">
     <signjar jar="lib/ab3d.jar" keystore="${keystore.asobrain}" storepass="asobrain" alias="asobrain" />
+    <signjar jar="lib/ab3d-test.jar" keystore="${keystore.asobrain}" storepass="asobrain" alias="asobrain" />
   </target>
 
   <target name="release" depends="build" description="Build release">
@@ -77,7 +79,7 @@
     <pathelement location="classes/test"/>
     <path refid="java.classpath"/>
     <pathelement location="${hsqldb.jar}"/>
-    <pathelement location="${numdata.oss.home}/classes/test"/>
+    <pathelement location="${numdata.oss.home}/lib/numdata-oss-test.jar"/>
   </path>
 
   <target name="compile-tests" depends="compile-java" description="Compile unit tests">
