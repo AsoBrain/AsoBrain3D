@@ -1163,8 +1163,8 @@ public class GeometryTools
 	 * @param   value1      First value to compare.
 	 * @param   value2      Second value to compare.
 	 *
-	 * @return  <code>true</code> is the values are within a +/- 0.001 tolerance
-	 *          of eachother; <code>false</code> otherwise.
+	 * @return  <code>true</code> is the values are within a tolerance of
+	 *          {@link #EPSILON} of eachother; <code>false</code> otherwise.
 	 */
 	public static boolean almostEqual( final double value1, final double value2 )
 	{
@@ -1180,7 +1180,7 @@ public class GeometryTools
 	 * @param   value2      Second value to compare.
 	 *
 	 * @return  <code>true</code> is <code>value1</code> is greater than or within
-	 *          a +/- 0.001 tolerance of <code>value2</code>;
+	 *          a tolerance of {@link #EPSILON} of <code>value2</code>;
 	 *          <code>false</code> otherwise.
 	 */
 	public static boolean greaterOrAlmostEqual( final double value1 , final double value2 )
@@ -1196,7 +1196,7 @@ public class GeometryTools
 	 * @param   value2      Second value to compare.
 	 *
 	 * @return  <code>true</code> is <code>value1</code> is less than or within
-	 *          a +/- 0.001 tolerance of <code>value2</code>;
+	 *          a tolerance of {@link #EPSILON} of <code>value2</code>;
 	 *          <code>false</code> otherwise.
 	 */
 	public static boolean lessOrAlmostEqual( final double value1, final double value2 )
@@ -1206,13 +1206,13 @@ public class GeometryTools
 
 	/**
 	 * Test if the first operand is significantly greater than the second operand
-	 * (the difference between them exceeds a 0.001 tolerance).
+	 * (the difference between them exceeds a tolerance of {@link #EPSILON}).
 	 *
 	 * @param   value1      First value to compare.
 	 * @param   value2      Second value to compare.
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is at least the
-	 *          <code>0.001</code> greater than <code>value2</code>;
+	 * @return  <code>true</code> is <code>value1</code> is at least
+	 *          {@link #EPSILON} greater than <code>value2</code>;
 	 *          <code>false</code> otherwise.
 	 */
 	public static boolean significantlyGreaterThan( final double value1 , final double value2 )
@@ -1222,17 +1222,169 @@ public class GeometryTools
 
 	/**
 	 * Test if the first operand is significantly less than the second operand
-	 * (the difference between them exceeds a 0.001 tolerance).
+	 * (the difference between them exceeds a tolerance of {@link #EPSILON}).
 	 *
 	 * @param   value1      First value to compare.
 	 * @param   value2      Second value to compare.
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is at least the
-	 *          <code>0.001</code> less than <code>value2</code>;
+	 * @return  <code>true</code> is <code>value1</code> is at least
+	 *          {@link #EPSILON} less than <code>value2</code>;
 	 *          <code>false</code> otherwise.
 	 */
 	public static boolean significantlyLessThan( final double value1, final double value2 )
 	{
 		return ( ( value2 - value1 ) > EPSILON );
+	}
+
+	/**
+	 * Returns the radius of an arc with the given chord length and height.
+	 *
+	 * @param   chordLength     Distance between the arc's end points.
+	 * @param   height          Height of the arc.
+	 *
+	 * @return  Radius of the arc.
+	 */
+	public static double arcHeightToRadius( final double chordLength, final double height )
+	{
+		final double halfChordLength = chordLength / 2.0;
+		return ( halfChordLength * halfChordLength + height * height ) / ( 2.0 * height );
+	}
+
+	/**
+	 * Returns the height of an arc with the given chord length and radius.
+	 * For <code>radius > chordLength / 2</code>, there are two
+	 * possible solutions. This method returns the solution closest to zero,
+	 * which results in an included angle of at most 180 degrees.
+	 *
+	 * @param   chordLength     Distance between the arc's end points.
+	 * @param   radius          Radius of the arc.
+	 *
+	 * @return  Height of the arc; <code>NaN</code> if there is no solution.
+	 */
+	public static double arcRadiusToHeight( final double chordLength, final double radius )
+	{
+		final double halfChordLength = chordLength / 2.0;
+		return Math.signum( radius) * ( Math.abs( radius ) - Math.sqrt( radius * radius - halfChordLength * halfChordLength ) );
+	}
+
+	/**
+	 * Returns the included angle of an arc with the given height.
+	 *
+	 * @param   chordLength     Distance between the arc's end points.
+	 * @param   height          Height of the arc.
+	 *
+	 * @return  Included angle.
+	 */
+	public static double arcHeightToAngle( final double chordLength, final double height )
+	{
+		final double halfChordLength = chordLength / 2.0;
+		return 4.0 * Math.atan2( height, halfChordLength );
+	}
+
+	/**
+	 * Returns the height of an arc with the given included angle.
+	 *
+	 * @param   chordLength     Distance between the arc's end points.
+	 * @param   angle           Included angle of the arc.
+	 *
+	 * @return  Height of the arc.
+	 */
+	public static double arcAngleToHeight( final double chordLength, final double angle )
+	{
+		final double halfChordLength = chordLength / 2.0;
+		return halfChordLength * Math.tan( angle / 4.0 );
+	}
+
+	/**
+	 * Returns the height of an arc between the given start and end points
+	 * through the other point.
+	 *
+	 * TODO: The current implementation can't produce arcs of more than 180 degrees.
+	 *
+	 * @param   start   Start point of the arc.
+	 * @param   end     End point of the arc.
+	 * @param   point   Point on the arc.
+	 *
+	 * @return  Arc height.
+	 */
+	public static double arcThroughPoint( final Vector3D start, final Vector3D end, final Vector3D point )
+	{
+		// line segment SE is a chord of the circle
+		final Vector3D s = start;
+		final Vector3D e = end;
+
+		// P is an arbitrary point on the circle
+		final Vector3D p = point;
+
+		// line segments SE and SP
+		final Vector3D se = e.minus( s );
+		final Vector3D sp = p.minus( s );
+
+		final double result;
+
+		// check for straight line
+		final Vector3D n = Vector3D.cross( se, sp );
+		if ( Vector3D.ZERO.almostEquals( n ) )
+		{
+			result = 0.0;
+		}
+		else
+		{
+			// midpoints of SE en SP
+			final Vector3D halfSE = s.plus( 0.5 * se.x, 0.5 * se.y, 0.5 * se.z );
+			final Vector3D halfSP = s.plus( 0.5 * sp.x, 0.5 * sp.y, 0.5 * sp.z );
+
+			// direction of perpendiculars of SE and SP
+			final Vector3D towardsCenterFromSE = Vector3D.cross( se, n );
+			final Vector3D towardsCenterFromSP = Vector3D.cross( sp, n );
+
+			// center point of the circle
+			final Vector3D c = intersectLinesPointDirection( halfSE, towardsCenterFromSE, halfSP, towardsCenterFromSP );
+
+			final double arcHeight = Vector3D.distanceBetween( c, s ) - Vector3D.distanceBetween( c, halfSE );
+			final Vector3D chordDirection = end.minus( start );
+			final Vector3D cross = Vector3D.cross( point.minus( start ), chordDirection );
+			result = arcHeight * Math.signum( cross.z );
+		}
+
+		return result;
+	}
+
+	/**
+	 * Intersects two lines, which are specified as a point and a direction.
+	 * The directions don't have to be normalized.
+	 *
+	 * <p>This implementation is limited to 2D intersections.
+	 * The z-coordinate of all input points is ignored (assumed zero).
+	 *
+	 * @see     <a href="http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline2d/">Intersection point of two lines (2 dimensions)</a>
+	 *
+	 * @param   p1  Point on the first line.
+	 * @param   d1  Direction of the first line.
+	 * @param   p2  Point on the second line.
+	 * @param   d2  Direction of the second line.
+	 *
+	 * @return  Intersection point.
+	 */
+	@Nullable
+	private static Vector3D intersectLinesPointDirection( final Vector3D p1, final Vector3D d1, final Vector3D p2, final Vector3D d2 )
+	{
+		final Vector3D result;
+
+		// p1 + ua . d1 = p2 + ub . d2
+		// ua = (d2 × (p1 - p2)) / (d2 × d1)
+
+		final double d = d2.y * d1.x - d2.x * d1.y;
+		if ( almostEqual( d, 0.0 ) )
+		{
+			result = null;
+		}
+		else
+		{
+			final double ua = ( d2.x * ( p1.y - p2.y ) - d2.y * ( p1.x - p2.x ) ) / d;
+			result = new Vector3D( p1.x + ua * d1.x, p1.y + ua * d1.y, p1.z );
+		}
+
+		return result;
 	}
 }
