@@ -1299,15 +1299,14 @@ public class GeometryTools
 	 * Returns the height of an arc between the given start and end points
 	 * through the other point.
 	 *
-	 * TODO: The current implementation can't produce arcs of more than 180 degrees.
-	 *
 	 * @param   start   Start point of the arc.
 	 * @param   end     End point of the arc.
 	 * @param   point   Point on the arc.
+	 * @param   normal  Normal of the plane containing the arc.
 	 *
 	 * @return  Arc height.
 	 */
-	public static double arcThroughPoint( final Vector3D start, final Vector3D end, final Vector3D point )
+	public static double arcThroughPoint( final Vector3D start, final Vector3D end, final Vector3D point, final Vector3D normal )
 	{
 		// line segment SE is a chord of the circle
 		final Vector3D s = start;
@@ -1340,11 +1339,20 @@ public class GeometryTools
 
 			// center point of the circle
 			final Vector3D c = intersectLinesPointDirection( halfSE, towardsCenterFromSE, halfSP, towardsCenterFromSP );
+			if ( c == null )
+			{
+				// lines must intersect
+				throw new AssertionError( "no intersection found" );
+			}
 
-			final double arcHeight = Vector3D.distanceBetween( c, s ) - Vector3D.distanceBetween( c, halfSE );
-			final Vector3D chordDirection = end.minus( start );
-			final Vector3D cross = Vector3D.cross( point.minus( start ), chordDirection );
-			result = arcHeight * Math.signum( cross.z );
+			// are points C and P on the same side of line segment SE?
+			final Vector3D sc = c.minus( s );
+			final double tripleProduct = Vector3D.dot( n, Vector3D.cross( se, sc ) );
+
+			final double radius = Vector3D.distanceBetween( c, s );
+			final double sagitta = Vector3D.distanceBetween( c, halfSE );
+			final double arcHeight = radius + sagitta * Math.signum( tripleProduct );
+			result = arcHeight * Math.signum( -Vector3D.dot( normal, n ) );
 		}
 
 		return result;
