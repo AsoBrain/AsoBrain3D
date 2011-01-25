@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,9 +22,9 @@ package ab.j3d;
 
 import java.text.*;
 import java.util.*;
+import java.util.regex.*;
 
-import com.numdata.oss.*;
-import org.jetbrains.annotations.*;
+import ab.j3d.geom.*;
 
 /**
  * This class is used to represent a 3D transformation matrix (although
@@ -69,6 +69,25 @@ public final class Matrix3D
 	 * Initial value of a matrix (=identity matrix).
 	 */
 	public static final Matrix3D INIT = IDENTITY;
+
+	/**
+	 * Number format with one fraction digit.
+	 */
+	private static final NumberFormat ONE_DECIMAL_FORMAT;
+
+	/**
+	 * Regex pattern only consisting of comma character.
+	 */
+	private static final Pattern COMMA = Pattern.compile( "," );
+
+	static
+	{
+		final NumberFormat oneDecimal = NumberFormat.getNumberInstance( Locale.US );
+		oneDecimal.setMinimumFractionDigits( 1 );
+		oneDecimal.setMaximumFractionDigits( 1 );
+		oneDecimal.setGroupingUsed( false );
+		ONE_DECIMAL_FORMAT = oneDecimal;
+	}
 
 	/**
 	 * Construct a new matrix.
@@ -132,11 +151,11 @@ public final class Matrix3D
 	 * @return  <code>Matrix3D</code> object;
 	 *          <code>defaultValue</code> if property value is absent/invalid.
 	 */
-	public static Matrix3D getProperty( @NotNull final Properties properties, final String name, final Matrix3D defaultValue )
+	public static Matrix3D getProperty( final Properties properties, final String name, final Matrix3D defaultValue )
 	{
 		Matrix3D result = defaultValue;
 
-		final String stringValue = properties.getProperty( name, null );
+		final String stringValue = ( properties != null ) ? properties.getProperty( name, null ) : null;
 		if ( stringValue != null )
 		{
 			try
@@ -160,24 +179,24 @@ public final class Matrix3D
 	 * @return  <code>true</code> if the objects are almost equal;
 	 *          <code>false</code> if not.
 	 *
-	 * @see     MathTools#almostEqual
+	 * @see     GeometryTools#almostEqual
 	 */
 	public boolean almostEquals( final Matrix3D other )
 	{
 		return ( other != null )
 		    && ( ( other == this )
-		      || ( MathTools.almostEqual( xx, other.xx ) &&
-		           MathTools.almostEqual( xy, other.xy ) &&
-		           MathTools.almostEqual( xz, other.xz ) &&
-		           MathTools.almostEqual( xo, other.xo ) &&
-		           MathTools.almostEqual( yx, other.yx ) &&
-		           MathTools.almostEqual( yy, other.yy ) &&
-		           MathTools.almostEqual( yz, other.yz ) &&
-		           MathTools.almostEqual( yo, other.yo ) &&
-		           MathTools.almostEqual( zx, other.zx ) &&
-		           MathTools.almostEqual( zy, other.zy ) &&
-		           MathTools.almostEqual( zz, other.zz ) &&
-		           MathTools.almostEqual( zo, other.zo ) ) );
+		      || ( GeometryTools.almostEqual( xx, other.xx ) &&
+		           GeometryTools.almostEqual( xy, other.xy ) &&
+		           GeometryTools.almostEqual( xz, other.xz ) &&
+		           GeometryTools.almostEqual( xo, other.xo ) &&
+		           GeometryTools.almostEqual( yx, other.yx ) &&
+		           GeometryTools.almostEqual( yy, other.yy ) &&
+		           GeometryTools.almostEqual( yz, other.yz ) &&
+		           GeometryTools.almostEqual( yo, other.yo ) &&
+		           GeometryTools.almostEqual( zx, other.zx ) &&
+		           GeometryTools.almostEqual( zy, other.zy ) &&
+		           GeometryTools.almostEqual( zz, other.zz ) &&
+		           GeometryTools.almostEqual( zo, other.zo ) ) );
 	}
 
 	@Override
@@ -208,18 +227,21 @@ public final class Matrix3D
 	@Override
 	public int hashCode()
 	{
-		return MathTools.hashCode( xx ) ^
-		       MathTools.hashCode( xy ) ^
-		       MathTools.hashCode( xz ) ^
-		       MathTools.hashCode( xo ) ^
-		       MathTools.hashCode( yx ) ^
-		       MathTools.hashCode( yy ) ^
-		       MathTools.hashCode( yz ) ^
-		       MathTools.hashCode( yo ) ^
-		       MathTools.hashCode( zx ) ^
-		       MathTools.hashCode( zy ) ^
-		       MathTools.hashCode( zz ) ^
-		       MathTools.hashCode( zo );
+		long l;
+		int result;
+		l = Double.doubleToLongBits( xx ); result  = (int) ( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( xy ); result ^= (int) ( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( xz ); result ^= (int) ( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( xo ); result ^= (int) ( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( yx ); result ^= (int) ( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( yy ); result ^= (int) ( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( yz ); result ^= (int) ( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( yo ); result ^= (int) ( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( zx ); result ^= (int) ( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( zy ); result ^= (int) ( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( zz ); result ^= (int) ( l ^ l >>> 32 );
+		l = Double.doubleToLongBits( zo ); result ^= (int) ( l ^ l >>> 32 );
+		return result;
 	}
 
 	/**
@@ -236,9 +258,9 @@ public final class Matrix3D
 	 *
 	 * @see     #toString()
 	 */
-	public static Matrix3D fromString( @NotNull final String value )
+	public static Matrix3D fromString( final String value )
 	{
-		final String[] tokens = value.split( "," );
+		final String[] tokens = COMMA.split( value, 0 );
 		if ( tokens.length != 12 )
 		{
 			throw new IllegalArgumentException( "tokens" );
@@ -329,7 +351,7 @@ public final class Matrix3D
 	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
 	 * @throws  IllegalArgumentException if the from and two points are too close.
 	 */
-	public static Matrix3D getFromToTransform( @NotNull final Vector3D from, @NotNull final Vector3D to, @NotNull final Vector3D upPrimary, @NotNull final Vector3D upSecondary )
+	public static Matrix3D getFromToTransform( final Vector3D from, final Vector3D to, final Vector3D upPrimary, final Vector3D upSecondary )
 	{
 		if ( from.almostEquals( to ) )
 		{
@@ -442,7 +464,7 @@ public final class Matrix3D
 		final double xAxisY;
 		final double xAxisZ;
 
-		if ( MathTools.almostEqual( zAxisZ, ( zAxisZ < 0.0 ) ? -1.0 : 1.0 ) )
+		if ( GeometryTools.almostEqual( zAxisZ, ( zAxisZ < 0.0 ) ? -1.0 : 1.0 ) )
 		{
 			xAxisX = rightHanded ?  zAxisZ : -zAxisZ;
 			xAxisY = 0.0;
@@ -582,9 +604,72 @@ public final class Matrix3D
 	 */
 	public Matrix3D inverse()
 	{
-		return new Matrix3D( xx, yx, zx, - xo * xx - yo * yx - zo * zx,
-		                     xy, yy, zy, - xo * xy - yo * yy - zo * zy,
-		                     xz, yz, zz, - xo * xz - yo * yz - zo * zz );
+		return new Matrix3D( xx, yx, zx, inverseXo(),
+		                     xy, yy, zy, inverseYo(),
+		                     xz, yz, zz, inverseZo() );
+	}
+
+	/**
+	 * Get <code>xo</code> of inverse transform.
+	 * <pre>
+	 *       | xx xy xz xo |
+	 *       | yx yy yz yo |
+	 *  T  = | zx zy zz zo |
+	 *       | 0  0  0  1  |
+	 *
+	 *       | xx yz zx <b>-xo*xx-yo*yx-zo*zx</b> |
+	 *   -1  | xy yy zy -xo*xy-yo*yy-zo*zy |
+	 *  T  = | xz yz zz -xo*xz-yo*yz-zo*zz |
+	 *       | 0  0  0  1                  |
+	 * </pre>
+	 *
+	 * @return  Inverse matrix.
+	 */
+	public double inverseXo()
+	{
+		return - xo * xx - yo * yx - zo * zx;
+	}
+
+	/**
+	 * Get <code>yo</code> of inverse transform.
+	 * <pre>
+	 *       | xx xy xz xo |
+	 *       | yx yy yz yo |
+	 *  T  = | zx zy zz zo |
+	 *       | 0  0  0  1  |
+	 *
+	 *       | xx yz zx -xo*xx-yo*yx-zo*zx |
+	 *   -1  | xy yy zy <b>-xo*xy-yo*yy-zo*zy</b> |
+	 *  T  = | xz yz zz -xo*xz-yo*yz-zo*zz |
+	 *       | 0  0  0  1                  |
+	 * </pre>
+	 *
+	 * @return  Inverse matrix.
+	 */
+	public double inverseYo()
+	{
+		return - xo * xy - yo * yy - zo * zy;
+	}
+
+	/**
+	 * Get <code>zo</code> of inverse transform.
+	 * <pre>
+	 *       | xx xy xz xo |
+	 *       | yx yy yz yo |
+	 *  T  = | zx zy zz zo |
+	 *       | 0  0  0  1  |
+	 *
+	 *       | xx yz zx -xo*xx-yo*yx-zo*zx |
+	 *   -1  | xy yy zy -xo*xy-yo*yy-zo*zy |
+	 *  T  = | xz yz zz <b>-xo*xz-yo*yz-zo*zz</b> |
+	 *       | 0  0  0  1                  |
+	 * </pre>
+	 *
+	 * @return  Inverse matrix.
+	 */
+	public double inverseZo()
+	{
+		return - xo * xz - yo * yz - zo * zz;
 	}
 
 	/**
@@ -861,7 +946,7 @@ public final class Matrix3D
 	{
 		final Matrix3D result;
 
-		if ( MathTools.almostEqual( thetaRad, 0.0 ) )
+		if ( GeometryTools.almostEqual( thetaRad, 0.0 ) )
 		{
 			result = this;
 		}
@@ -898,7 +983,7 @@ public final class Matrix3D
 	{
 		final Matrix3D result;
 
-		if ( MathTools.almostEqual( thetaRad, 0.0 ) )
+		if ( GeometryTools.almostEqual( thetaRad, 0.0 ) )
 		{
 			result = this;
 		}
@@ -935,7 +1020,7 @@ public final class Matrix3D
 	{
 		final Matrix3D result;
 
-		if ( MathTools.almostEqual( thetaRad, 0.0 ) )
+		if ( GeometryTools.almostEqual( thetaRad, 0.0 ) )
 		{
 			result = this;
 		}
@@ -1140,7 +1225,7 @@ public final class Matrix3D
 	public String toShortFriendlyString()
 	{
 		final StringBuilder sb = new StringBuilder();
-		final NumberFormat nf = TextTools.getNumberFormat( Locale.US, 1, 1, false );
+		final NumberFormat nf = ONE_DECIMAL_FORMAT;
 		sb.append( "[[" );
 		sb.append( nf.format( xx ) );
 		sb.append( ',' );
