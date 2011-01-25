@@ -3,6 +3,32 @@
   <property file="../build.properties"/>
   <property name="build.sysclasspath" value="last"/>
 
+  <macrodef name="repack200">
+    <attribute name="jar"/>
+    <sequential>
+      <echo message="Repacking '@{jar}' with pack200"/>
+      <exec executable="pack200" failonerror="yes">
+        <arg value="--repack"/>
+        <arg value="--unknown-attribute=error"/>
+        <arg value="@{jar}"/>
+      </exec>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="pack200">
+    <attribute name="jar"/>
+    <sequential>
+      <echo message="Compressing '@{jar}' to '@{jar}.pack.gz' with pack200"/>
+      <exec executable="pack200" failonerror="yes">
+        <arg value="--gzip"/>
+        <arg value="--unknown-attribute=error"/>
+        <arg value="--keep-file-order"/>
+        <arg value="@{jar}.pack.gz"/>
+        <arg value="@{jar}"/>
+      </exec>
+    </sequential>
+  </macrodef>
+
   <target name="clean" depends="init" description="Remove temporary build files">
     <delete dir="classes"/>
     <delete dir="lib"/>
@@ -12,20 +38,15 @@
     <mkdir dir="lib"/>
     <jar destfile="lib/ab3d.jar" basedir="classes/java"/>
     <jar destfile="lib/ab3d-test.jar" basedir="classes/test"/>
-    <antcall target="sign-jars" />
-  </target>
-
-  <target name="sign-jars" if="keystore.asobrain">
-    <signjar jar="lib/ab3d.jar" keystore="${keystore.asobrain}" storepass="asobrain" alias="asobrain" />
-    <signjar jar="lib/ab3d-test.jar" keystore="${keystore.asobrain}" storepass="asobrain" alias="asobrain" />
   </target>
 
   <target name="release" depends="build" description="Build release">
-    <echo message="Running 'pack200' to compress JAR file"/>
-    <exec dir="lib" executable="pack200" failonerror="yes">
-      <arg value="ab3d.jar.pack.gz"/>
-      <arg value="ab3d.jar"/>
-    </exec>
+    <repack200 jar="lib/ab3d.jar"/>
+    <signjar keystore="${asobrain.cert.keystore}" storepass="${asobrain.cert.storepass}" alias="${asobrain.cert.alias}">
+      <fileset file="lib/ab3d.jar" />
+      <fileset file="lib/ab3d-test.jar" />
+    </signjar>
+    <pack200 jar="lib/ab3d.jar"/>
   </target>
 
   <target name="init">
