@@ -3,31 +3,7 @@
   <property file="../build.properties"/>
   <property name="build.sysclasspath" value="last"/>
 
-  <macrodef name="repack200">
-    <attribute name="jar"/>
-    <sequential>
-      <echo message="Repacking '@{jar}' with pack200"/>
-      <exec executable="pack200" failonerror="yes">
-        <arg value="--repack"/>
-        <arg value="--unknown-attribute=error"/>
-        <arg value="@{jar}"/>
-      </exec>
-    </sequential>
-  </macrodef>
-
-  <macrodef name="pack200">
-    <attribute name="jar"/>
-    <sequential>
-      <echo message="Compressing '@{jar}' to '@{jar}.pack.gz' with pack200"/>
-      <exec executable="pack200" failonerror="yes">
-        <arg value="--gzip"/>
-        <arg value="--unknown-attribute=error"/>
-        <arg value="--keep-file-order"/>
-        <arg value="@{jar}.pack.gz"/>
-        <arg value="@{jar}"/>
-      </exec>
-    </sequential>
-  </macrodef>
+  <include file="${include.pack200}"/>
 
   <target name="clean" depends="init" description="Remove temporary build files">
     <delete dir="classes"/>
