@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -114,9 +114,10 @@ public class PanAndZoomCameraControl
 	{
 		try
 		{
-			final Matrix3D scene2view = Matrix3D.fromString( PropertyTools.getString( settings , "scene2view" ) );
-			final double zoomFactor = PropertyTools.getDouble( settings , "zoomFactor" );
 			final View3D view = _view;
+			final String scene2viewString = PropertyTools.getString( settings, "scene2view" );
+			final Matrix3D scene2view = ( scene2viewString != null ) ? Matrix3D.fromString( scene2viewString ) : view.getScene2View();
+			final double zoomFactor = PropertyTools.getDouble( settings , "zoomFactor", view.getZoomFactor() );
 			view.setZoomFactor( zoomFactor );
 			view.setScene2View( scene2view );
 			save();
