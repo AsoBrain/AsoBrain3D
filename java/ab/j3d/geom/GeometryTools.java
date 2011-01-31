@@ -42,7 +42,7 @@ public class GeometryTools
 	/**
 	 * Tolerance to use for floating-point comparisons.
 	 */
-	private static final double EPSILON = 0.0001;
+	private static final double EPSILON = 0.00001;
 
 	/**
 	 * Tools class is not supposed to be instantiated.

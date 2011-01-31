@@ -168,7 +168,7 @@ public class ShapeTools
 		if ( containsCurves( shape ) )
 		{
 			final PathIterator it = shape.getPathIterator( null, flatness );
-			final Path2D.Float path = new Path2D.Float( it.getWindingRule() );
+			final Path2D.Double path = new Path2D.Double( it.getWindingRule() );
 			path.append( it, false );
 			result = path;
 		}

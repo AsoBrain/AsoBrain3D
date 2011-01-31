@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2001-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,14 +20,12 @@
  */
 package ab.j3d;
 
-import java.awt.Shape;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
+import java.awt.*;
+import java.awt.geom.*;
+import java.util.*;
 import java.util.List;
 
-import ab.j3d.geom.GeometryTools;
+import ab.j3d.geom.*;
 
 /**
  * This class describes a polyline in 2D.
@@ -2836,13 +2835,13 @@ public final class Polyline2D
 	 */
 	public Shape getShape()
 	{
-		final GeneralPath result = new GeneralPath();
+		final Path2D result = new Path2D.Double();
 
 		final int pointCount = getPointCount();
 		if ( pointCount > 0 )
 		{
 			PolyPoint2D p1 = getPoint( 0 );
-			result.moveTo( (float)p1.x , (float)p1.y );
+			result.moveTo( p1.x , p1.y );
 
 			for ( int i = 1 ; i < pointCount ; i++ )
 			{
@@ -2852,14 +2851,14 @@ public final class Polyline2D
 					final double[] curves = PolyPoint2D.calculateArcCurves( p1.x , p1.y , p2.x , p2.y , p2.bulge );
 					for ( int j = 0 ; j < curves.length ; j += 6 )
 					{
-						result.curveTo( (float)curves[ j     ] , (float)curves[ j + 1 ] ,
-						                (float)curves[ j + 2 ] , (float)curves[ j + 3 ] ,
-						                (float)curves[ j + 4 ] , (float)curves[ j + 5 ] );
+						result.curveTo( curves[ j     ] , curves[ j + 1 ] ,
+						                curves[ j + 2 ] , curves[ j + 3 ] ,
+						                curves[ j + 4 ] , curves[ j + 5 ] );
 					}
 				}
 				else
 				{
-					result.lineTo( (float)p2.x , (float)p2.y );
+					result.lineTo( p2.x , p2.y );
 				}
 
 				p1 = p2;
