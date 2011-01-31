@@ -25,6 +25,8 @@ import static java.lang.Double.*;
 import java.text.*;
 import java.util.*;
 
+import ab.j3d.geom.*;
+
 /**
  * This class represents a 3D vector.
  *
@@ -229,8 +231,7 @@ public final class Vector3D
 	 */
 	public static boolean areParallel( final Vector3D v1, final Vector3D v2 )
 	{
-		final double difference = Math.abs( cosAngle( v1, v2 ) ) - 1.0;
-		return ( difference <= 0.001 ) && ( difference >= -0.001 );
+		return GeometryTools.almostEqual( Math.abs( cosAngle( v1, v2 ) ) - 1.0, 0.0 );
 	}
 
 	/**
@@ -244,8 +245,7 @@ public final class Vector3D
 	 */
 	public static boolean areSameDirection( final Vector3D v1, final Vector3D v2 )
 	{
-		final double difference = cosAngle( v1, v2 ) - 1.0;
-		return ( difference <= 0.001 ) && ( difference >= -0.001 );
+		return GeometryTools.almostEqual( cosAngle( v1, v2 ) - 1.0, 0.0 );
 	}
 
 	/**
@@ -259,8 +259,7 @@ public final class Vector3D
 	 */
 	public static boolean arePerpendicular( final Vector3D v1, final Vector3D v2 )
 	{
-		final double dot = dot( v1, v2 );
-		return ( dot <= 0.001 ) && ( dot >= -0.001 );
+		return GeometryTools.almostEqual( dot( v1, v2 ), 0.0 );
 	}
 
 	/**
@@ -401,6 +400,8 @@ public final class Vector3D
 	 *
 	 * @return  <code>true</code> if the objects are almost equal;
 	 *          <code>false</code> if not.
+	 *
+	 * @see     GeometryTools#almostEqual
 	 */
 	public boolean almostEquals( final Vector3D other )
 	{
@@ -416,13 +417,14 @@ public final class Vector3D
 	 *
 	 * @return  <code>true</code> if the objects are almost equal;
 	 *          <code>false</code> if not.
+	 *
+	 * @see     GeometryTools#almostEqual
 	 */
 	public boolean almostEquals( final double otherX, final double otherY, final double otherZ )
 	{
-		final double dx = x - otherX;
-		final double dy = y - otherY;
-		final double dz = z - otherZ;
-		return ( ( dx <= 0.001 ) && ( dx >= -0.001 ) && ( dy <= 0.001 ) && ( dy >= -0.001 ) && ( dz <= 0.001 ) && ( dz >= -0.001 ) );
+		return GeometryTools.almostEqual( x, otherX ) &&
+		       GeometryTools.almostEqual( y, otherY ) &&
+		       GeometryTools.almostEqual( z, otherZ );
 	}
 
 	/**
