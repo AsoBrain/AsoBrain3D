@@ -42,7 +42,7 @@ public class GeometryTools
 	/**
 	 * Tolerance to use for floating-point comparisons.
 	 */
-	private static final double EPSILON = (double)0.00001f;
+	private static final double EPSILON = 0.0001;
 
 	/**
 	 * Tools class is not supposed to be instantiated.
@@ -922,7 +922,6 @@ public class GeometryTools
 		final double crossZ = ux * vy - uy * vx;
 
 		final double l = Vector3D.length( crossX, crossY, crossZ );
-		//noinspection FloatingPointEquality
 		return ( l == 0.0 ) ? null : ( l == 1.0 ) ? new Vector3D( crossX, crossY, crossZ ) : new Vector3D( crossX / l, crossY / l, crossZ / l );
 	}
 
