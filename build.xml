@@ -12,7 +12,10 @@
 
   <target name="build" depends="compile-java,compile-tests" description="Build project">
     <mkdir dir="lib"/>
-    <jar destfile="lib/ab3d.jar" basedir="classes/java"/>
+    <jar destfile="lib/ab3d.jar">
+      <fileset dir="classes/java"/>
+      <fileset dir="images"/>
+    </jar>
     <jar destfile="lib/ab3d-test.jar" basedir="classes/test"/>
   </target>
 
