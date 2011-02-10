@@ -93,7 +93,6 @@ public class TextureCache
 		threadFactory.setNamePrefix( TextureCache.class.getName() );
 		threadFactory.setDaemon( true );
 		_executorService = Executors.newSingleThreadExecutor( threadFactory );
-		System.out.println( "TextureCache: Created executor service: " + _executorService );
 
 		_listeners = new ArrayList<TextureCacheListener>();
 	}
@@ -143,18 +142,15 @@ public class TextureCache
 	public void dispose()
 	{
 		final ExecutorService executorService = _executorService;
-		System.out.println( "TextureCache.dispose(): Initiating executor service shutdown: " + executorService );
 		executorService.shutdownNow();
 		try
 		{
 			executorService.awaitTermination( 10L, TimeUnit.SECONDS );
-			System.out.println( "TextureCache.dispose(): Executor service shutdown completed." );
 		}
 		catch ( InterruptedException e )
 		{
 			e.printStackTrace();
 		}
-		System.out.println( "TextureCache.dispose(): End of method." );
 	}
 
 	/**
