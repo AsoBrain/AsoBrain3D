@@ -19,11 +19,10 @@
  */
 package ab.j3d.view.java2d;
 
-import java.awt.Color;
+import java.awt.*;
 
-import ab.j3d.model.Scene;
-import ab.j3d.view.RenderEngine;
-import ab.j3d.view.View3D;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
 
 /**
  * Java 2D render engine implementation.
@@ -63,5 +62,10 @@ public final class Java2dEngine
 	public View3D createView( final Scene scene )
 	{
 		return new Java2dView( scene , _background );
+	}
+
+	@Override
+	public void dispose()
+	{
 	}
 }

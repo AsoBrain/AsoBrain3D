@@ -135,6 +135,26 @@ public class TextureCache
 	}
 
 	/**
+	 * Disposes the texture cache, releasing any resources it uses.
+	 */
+	public void dispose()
+	{
+		System.out.println( "TextureCache.dispose(): Initiating executor service shutdown." );
+		final ExecutorService executorService = _executorService;
+		executorService.shutdownNow();
+		try
+		{
+			executorService.awaitTermination( 10L, TimeUnit.SECONDS );
+			System.out.println( "TextureCache.dispose(): Executor service shutdown completed." );
+		}
+		catch ( InterruptedException e )
+		{
+			e.printStackTrace();
+		}
+		System.out.println( "TextureCache.dispose(): End of method." );
+	}
+
+	/**
 	 * Returns the maximum texture size.
 	 *
 	 * @return  Maximum texture size.

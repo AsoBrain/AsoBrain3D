@@ -72,6 +72,12 @@ public class JOGLEngine
 		_textureCache = new TextureCache();
 	}
 
+	@Override
+	public void dispose()
+	{
+		_textureCache.dispose();
+	}
+
 	/**
 	 * Returns the configuration settings to be used.
 	 *

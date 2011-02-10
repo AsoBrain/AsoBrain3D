@@ -286,6 +286,11 @@ public final class Java3dEngine
 		return new Java3dView( scene , _universe );
 	}
 
+	@Override
+	public void dispose()
+	{
+	}
+
 	/**
 	 * Get Java 3D universe containing scene.
 	 *

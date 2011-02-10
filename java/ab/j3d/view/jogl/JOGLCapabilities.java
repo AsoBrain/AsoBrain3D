@@ -374,10 +374,12 @@ public class JOGLCapabilities
 			if ( isShaderSupported() )
 			{
 				final JOGLConfiguration configuration = new JOGLConfiguration();
-				final JOGLRenderer renderer = new JOGLRenderer( _context.getGL() , configuration , new TextureCache() );
+				final TextureCache textureCache = new TextureCache();
+				final JOGLRenderer renderer = new JOGLRenderer( _context.getGL() , configuration , textureCache );
 				renderer.init();
 				final ShaderManager shaderManager = renderer.getShaderManager();
 				_result = shaderManager.isShaderSupportAvailable();
+				textureCache.dispose();
 			}
 		}
 	}

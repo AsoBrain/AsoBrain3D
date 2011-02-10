@@ -19,7 +19,7 @@
  */
 package ab.j3d.view;
 
-import ab.j3d.model.Scene;
+import ab.j3d.model.*;
 
 /**
  * This class provides functionality to create {@link Scene} views.
@@ -38,4 +38,9 @@ public interface RenderEngine
 	 * @return  View that was created.
 	 */
 	View3D createView( Scene scene );
+
+	/**
+	 * Disposes the render engine, releasing any resources it uses.
+	 */
+	void dispose();
 }
