@@ -80,7 +80,7 @@ final class Java2dViewComponent
 		/* Setup initial style and apply style filters to this view. */
 		final RenderStyle defaultStyle = new RenderStyle();
 		final Collection<RenderStyleFilter> styleFilters = view.getRenderStyleFilters();
-		final RenderStyle viewStyle = defaultStyle.applyFilters( styleFilters , this );
+		final RenderStyle viewStyle = defaultStyle.applyFilters( styleFilters , view );
 
 		final Map<Node3D,RenderStyle> nodeStyles = new HashMap<Node3D, RenderStyle>( );
 		scene.walk( new Node3DVisitor()
