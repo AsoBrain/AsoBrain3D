@@ -84,8 +84,6 @@ public class TextureCache
 	 */
 	public TextureCache()
 	{
-		Thread.dumpStack();
-
 		_textures = new HashMap<String, TextureProxy>();
 		_alpha = new HashSet<String>();
 
