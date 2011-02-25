@@ -140,13 +140,25 @@ public class TextureCache
 	public void dispose()
 	{
 		final ExecutorService executorService = _executorService;
-		executorService.shutdownNow();
 		try
 		{
-			executorService.awaitTermination( 10L, TimeUnit.SECONDS );
+			executorService.shutdownNow();
+			try
+			{
+				executorService.awaitTermination( 10L, TimeUnit.SECONDS );
+			}
+			catch ( InterruptedException e )
+			{
+				e.printStackTrace();
+			}
 		}
-		catch ( InterruptedException e )
+		catch ( SecurityException e )
 		{
+			/*
+			 * Thrown when modifying threads (to shutdown the executor service)
+			 * is not allowed. Should be caught, e.g. to avoid an error dialog
+			 * when called from an applet.
+			 */
 			e.printStackTrace();
 		}
 	}
