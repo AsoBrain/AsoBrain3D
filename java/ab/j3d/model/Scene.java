@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -425,7 +425,7 @@ public class Scene
 		{
 			final Bounds3DBuilder bounds3DBuilder = new Bounds3DBuilder();
 
-			for ( final ContentNode node : _contentNodes.values() )
+			for ( final ContentNode node : getContentNodes() )
 			{
 				final Bounds3D nodeBounds = node.getBounds();
 				if ( nodeBounds != null )
@@ -468,7 +468,7 @@ public class Scene
 	{
 		boolean result = true;
 
-		for ( final ContentNode contentNode : _contentNodes.values() )
+		for ( final ContentNode contentNode : getContentNodes() )
 		{
 			final Matrix3D node2scene = contentNode.getTransform();
 			result = Node3DTreeWalker.walk( visitor, node2scene.multiply( transform ), contentNode.getNode3D() );
