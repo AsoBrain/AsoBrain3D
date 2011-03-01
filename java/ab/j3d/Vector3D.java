@@ -21,11 +21,11 @@
 package ab.j3d;
 
 import java.awt.geom.*;
-import static java.lang.Double.*;
 import java.text.*;
 import java.util.*;
 
 import ab.j3d.geom.*;
+import static java.lang.Double.*;
 
 /**
  * This class represents a 3D vector.
@@ -359,6 +359,19 @@ public final class Vector3D
 	public double distanceTo( final Vector3D other )
 	{
 		return distanceBetween( this, other );
+	}
+
+	/**
+	 * Calculate average of two vectors (i.e. center between two point vectors).
+	 *
+	 * @param   v1  First vector.
+	 * @param   v2  Second vector.
+	 *
+	 * @return  Average vector (i.e. center point).
+	 */
+	public static Vector3D average( final Vector3D v1, final Vector3D v2 )
+	{
+		return v1.equals( v2 ) ? v1 : new Vector3D( 0.5 * ( v1.x + v2.x ), 0.5 * ( v1.y + v2.y ), 0.5 * ( v1.z + v2.z ) );
 	}
 
 	/**
