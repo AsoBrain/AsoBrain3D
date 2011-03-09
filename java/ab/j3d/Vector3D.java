@@ -21,11 +21,11 @@
 package ab.j3d;
 
 import java.awt.geom.*;
+import static java.lang.Double.*;
 import java.text.*;
 import java.util.*;
 
 import ab.j3d.geom.*;
-import static java.lang.Double.*;
 
 /**
  * This class represents a 3D vector.
@@ -359,6 +359,62 @@ public final class Vector3D
 	public double distanceTo( final Vector3D other )
 	{
 		return distanceBetween( this, other );
+	}
+
+	/**
+	 * Get direction from one point to another point.
+	 *
+	 * @param   from    Point vector for from-point.
+	 * @param   to      Point vector for to-point.
+	 *
+	 * @return  Direction from from-point to to-point.
+	 */
+	public static Vector3D direction( final Vector3D from, final Vector3D to )
+	{
+		return direction( from.x, from.y, from.z, to.x, to.y, to.z );
+	}
+
+	/**
+	 * Get direction from one point to another point.
+	 *
+	 * @param   x1      X coordinate of from-point.
+	 * @param   y1      Y coordinate of from-point.
+	 * @param   z1      Z coordinate of from-point.
+	 * @param   x2      X coordinate of to-point.
+	 * @param   y2      Y coordinate of to-point.
+	 * @param   z2      Z coordinate of to-point.
+	 *
+	 * @return  Direction from from-point to to-point.
+	 */
+	public static Vector3D direction( final double x1, final double y1, final double z1, final double x2, final double y2, final double z2 )
+	{
+		return normalize( x2 - x1, y2 - y1, z2 - z1 );
+	}
+
+	/**
+	 * Get direction from this point vector to another.
+	 *
+	 * @param   other   Point vector to calculate the direction to.
+	 *
+	 * @return  Direction from this to the other vector.
+	 */
+	public Vector3D directionTo( final Vector3D other )
+	{
+		return direction( x, y, z, other.x, other.y, other.z );
+	}
+
+	/**
+	 * Get direction from this point vector to another.
+	 *
+	 * @param   x       X coordinate of point to calculate the direction to.
+	 * @param   y       Y coordinate of point to calculate the direction to.
+	 * @param   z       Z coordinate of point to calculate the direction to.
+	 *
+	 * @return  Direction from this to the other vector.
+	 */
+	public Vector3D directionTo( final double x, final double y, final double z )
+	{
+		return direction( this.x, this.y, this.z,  x, y, z );
 	}
 
 	/**
@@ -787,7 +843,7 @@ public final class Vector3D
 
 		if ( radius == 0.0 )
 		{
-			result = INIT;
+			result = ZERO;
 		}
 		else
 		{
