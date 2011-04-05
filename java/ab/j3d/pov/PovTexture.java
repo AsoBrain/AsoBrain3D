@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2010
+ * (C) Copyright Numdata BV 2000-2011
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,12 +19,11 @@
  */
 package ab.j3d.pov;
 
-import java.awt.Color;
-import java.io.IOException;
+import java.awt.*;
+import java.io.*;
 
-import ab.j3d.Material;
-
-import com.numdata.oss.io.IndentingWriter;
+import ab.j3d.*;
+import com.numdata.oss.io.*;
 
 /**
  * Pov Texture / material definition.
@@ -412,11 +411,11 @@ public class PovTexture
 
 		if ( material.code != null )
 		{
-			result = material.code;
+			result = material.code.replaceAll( "['\"`+\\.,;:/|\\\\$%&?!]", "_" );
 		}
 		else if ( material.colorMap != null )
 		{
-			result = material.colorMap;
+			result = material.colorMap.replaceAll( "['\"`+\\.,;:/|\\\\$%&?!]", "_" );
 		}
 		else
 		{
