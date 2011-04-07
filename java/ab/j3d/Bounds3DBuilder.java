@@ -19,6 +19,8 @@
  */
 package ab.j3d;
 
+import org.jetbrains.annotations.*;
+
 /**
  * This class can be used to calculate a bounding box around a collection of
  * points.
@@ -281,14 +283,15 @@ public final class Bounds3DBuilder
 	}
 
 	/**
-	 * Get resulting bounding box from this builder. If no initial bounds were
-	 * specified and no points were added to this builder, then this method
-	 * will return <code>null</code> to indicate that no bounding box could be
-	 * calculated.
+	 * Get resulting bounding box from this builder. These bounds are always
+	 * {@link Bounds3D#sorted() sorted}. If no initial bounds were specified and
+	 * no points were added to this builder, then this method will return
+	 * <code>null</code> to indicate that no bounding box could be calculated.
 	 *
 	 * @return  Bounding box as {@link Bounds3D} instance;
 	 *          <code>null</code> if no bounding box could be determined.
 	 */
+	@Nullable
 	public Bounds3D getBounds()
 	{
 		Bounds3D result;
