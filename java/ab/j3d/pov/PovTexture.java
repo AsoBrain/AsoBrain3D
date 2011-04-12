@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2011
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,6 +24,7 @@ import java.awt.*;
 import java.io.*;
 
 import ab.j3d.*;
+import com.numdata.oss.*;
 import com.numdata.oss.io.*;
 
 /**
@@ -32,10 +34,10 @@ import com.numdata.oss.io.*;
  * <pre>
  * texture
  * {
- *     pigment { color rgb &lt; r , g , b &gt; }
+ *     pigment { color rgb &lt; r, g, b &gt; }
  *     finish
  *     {
- *        [ambient    rgb &lt; ar , ag , ab &gt]
+ *        [ambient    rgb &lt; ar, ag, ab &gt]
  *        [diffuse    d]
  *        [phong      p]
  *        [phong_size ps]
@@ -43,7 +45,7 @@ import com.numdata.oss.io.*;
  *        [metallic]
  *        [reflection r]
  *     }
- *     [scale &lt; x , y , z&gt;]
+ *     [scale &lt; x, y, z&gt;]
  * }
  * </pre>
  *
@@ -54,7 +56,7 @@ import com.numdata.oss.io.*;
  *     pigment { image_map { (gif/png) "filename" } }
  *     finish
  *     {
- *        [ambient    rgb &lt; ar , ag , ab &gt]
+ *        [ambient    rgb &lt; ar, ag, ab &gt]
  *        [diffuse    d]
  *        [phong      p]
  *        [phong_size ps]
@@ -62,7 +64,7 @@ import com.numdata.oss.io.*;
  *        [metallic]
  *        [reflection r]
  *     }
- *     [scale &lt; x , y , z&gt;]
+ *     [scale &lt; x, y, z&gt;]
  * }
  * </pre>
  *
@@ -70,7 +72,7 @@ import com.numdata.oss.io.*;
  * <pre>
  * texture
  * {
- *     referenceName [rotate &lt; x , y , z &gt; ]
+ *     referenceName [rotate &lt; x, y, z &gt; ]
  * }
  * </pre>
  *
@@ -86,7 +88,7 @@ public class PovTexture
 	private String _name;
 
 	/**
-	 * A free material
+	 * A free material.
 	 */
 	private String _free;
 
@@ -190,14 +192,15 @@ public class PovTexture
 		 * @param   reference   Referenced texture.
 		 * @param   rotation    Rotation to be applied.
 		 */
-		public Reference( final PovTexture reference , final PovVector rotation )
+		public Reference( final PovTexture reference, final PovVector rotation )
 		{
-			super( getReferenceCode( reference._name , rotation ) );
+			super( getReferenceCode( reference._name, rotation ) );
 
 			_rotation  = rotation;
 			_reference = reference;
 		}
 
+		@Override
 		public void write( final IndentingWriter out )
 			throws IOException
 		{
@@ -222,11 +225,13 @@ public class PovTexture
 			}
 		}
 
+		@Override
 		public final boolean isDeclared()
 		{
 			return ( ( _rotation == null ) ? _reference.isDeclared() : super.isDeclared() );
 		}
 
+		@Override
 		public final void declare( final IndentingWriter out )
 			throws IOException
 		{
@@ -299,11 +304,11 @@ public class PovTexture
 	 * @param   g       Green value of the color.
 	 * @param   b       Blue value of the color.
 	 */
-	public PovTexture( final String name , final double r , final double g , final double b )
+	public PovTexture( final String name, final double r, final double g, final double b )
 	{
 		this();
 		_name = name;
-		_rgb = new PovVector( r , g , b );
+		_rgb = new PovVector( r, g, b );
 	}
 
 	/**
@@ -312,7 +317,7 @@ public class PovTexture
 	 * @param   name    Name of the texture.
 	 * @param   rgb     Color of the texture.
 	 */
-	public PovTexture( final String name , final Color rgb )
+	public PovTexture( final String name, final Color rgb )
 	{
 		this();
 		_name = name;
@@ -326,7 +331,7 @@ public class PovTexture
 	 * @param   textureDirectory    Directory containing POV-textures.
 	 * @param   imageMap                 Filename of map to use.
 	 */
-	public PovTexture( final String name , final String textureDirectory , final String imageMap )
+	public PovTexture( final String name, final String textureDirectory, final String imageMap )
 	{
 		this();
 		_name = name;
@@ -343,7 +348,7 @@ public class PovTexture
 	 * @param   name    Name of the texture.
 	 * @param   free    Definition of the texture.
 	 */
-	public PovTexture( final String name , final String free )
+	public PovTexture( final String name, final String free )
 	{
 		this();
 		_name = name;
@@ -358,24 +363,24 @@ public class PovTexture
 	 * @param   material            {@link Material} object to be used to
 	 *                              construct the {@link PovTexture}.
 	 */
-	public PovTexture( final String textureDirectory , final Material material )
+	public PovTexture( final String textureDirectory, final Material material )
 	{
 		this();
 		_name = getNameForMaterial( material );
-		_rgb = new PovVector( Math.max( (double)material.diffuseColorRed   , 0.001 ) ,
-		                      Math.max( (double)material.diffuseColorGreen , 0.001 ) ,
-		                      Math.max( (double)material.diffuseColorBlue  , 0.001 ) );
+		_rgb = new PovVector( Math.max( (double)material.diffuseColorRed  , 0.001 ),
+		                      Math.max( (double)material.diffuseColorGreen, 0.001 ),
+		                      Math.max( (double)material.diffuseColorBlue , 0.001 ) );
 
-		if ( material.colorMap != null )
+		if ( !TextTools.isEmpty( material.colorMap ) )
 		{
 			_imageMap = ( textureDirectory != null ) ? textureDirectory + '/' + material.colorMap : material.colorMap;
 			_imageMapType = "jpeg";
 		}
 
-		final double ambientRed   = (double)material.ambientColorRed   / Math.max( (double)material.diffuseColorRed   , 0.001 );
-		final double ambientGreen = (double)material.ambientColorGreen / Math.max( (double)material.diffuseColorGreen , 0.001 );
-		final double ambientBlue  = (double)material.ambientColorBlue  / Math.max( (double)material.diffuseColorBlue  , 0.001 );
-		setAmbient( new PovVector( ambientRed , ambientGreen , ambientBlue ) );
+		final double ambientRed   = (double)material.ambientColorRed   / Math.max( (double)material.diffuseColorRed  , 0.001 );
+		final double ambientGreen = (double)material.ambientColorGreen / Math.max( (double)material.diffuseColorGreen, 0.001 );
+		final double ambientBlue  = (double)material.ambientColorBlue  / Math.max( (double)material.diffuseColorBlue , 0.001 );
+		setAmbient( new PovVector( ambientRed, ambientGreen, ambientBlue ) );
 
 		setDiffuse( 1.0 );
 		setTransmit( 1.0 - (double)material.diffuseColorAlpha );
@@ -385,16 +390,16 @@ public class PovTexture
 		if ( ( material.reflectionMin > 0.0f ) || ( material.reflectionMax > 0.0f ) )
 		{
 			final PovVector reflectionMin = new PovVector(
-					material.reflectionMin * material.reflectionRed ,
-					material.reflectionMin * material.reflectionGreen ,
+					material.reflectionMin * material.reflectionRed,
+					material.reflectionMin * material.reflectionGreen,
 					material.reflectionMin * material.reflectionBlue );
 
 			final PovVector reflectionMax = new PovVector(
-					material.reflectionMax * material.reflectionRed ,
-					material.reflectionMax * material.reflectionGreen ,
+					material.reflectionMax * material.reflectionRed,
+					material.reflectionMax * material.reflectionGreen,
 					material.reflectionMax * material.reflectionBlue );
 
-			setReflection( reflectionMin , reflectionMax );
+			setReflection( reflectionMin, reflectionMax );
 		}
 	}
 
@@ -409,11 +414,11 @@ public class PovTexture
 	{
 		final String result;
 
-		if ( material.code != null )
+		if ( !TextTools.isEmpty( material.code ) )
 		{
 			result = material.code.replaceAll( "['\"`+\\.,;:/|\\\\$%&?!]", "_" );
 		}
-		else if ( material.colorMap != null )
+		else if ( !TextTools.isEmpty( material.colorMap ) )
 		{
 			result = material.colorMap.replaceAll( "['\"`+\\.,;:/|\\\\$%&?!]", "_" );
 		}
@@ -439,7 +444,7 @@ public class PovTexture
 	 *
 	 * @return  Name of texture with specified rotation if it is referenced.
 	 */
-	public static String getReferenceCode( final String parentCode , final PovVector rotation )
+	public static String getReferenceCode( final String parentCode, final PovVector rotation )
 	{
 		final StringBuilder sb = new StringBuilder();
 		sb.append( parentCode );
@@ -474,7 +479,7 @@ public class PovTexture
 	 */
 	public static String getTextureCode( final String code )
 	{
-		final String fixed = code.replaceAll( "[/\\-:]" , "_" );
+		final String fixed = code.replaceAll( "[/\\-:]", "_" );
 		return !code.startsWith( "TEX_" ) ? "TEX_" + fixed : fixed;
 	}
 
@@ -487,7 +492,7 @@ public class PovTexture
 	 */
 	public static String getPigmentCode ( final String code )
 	{
-		final String fixed = code.replaceAll( "[/\\-:]" , "_" );
+		final String fixed = code.replaceAll( "[/\\-:]", "_" );
 		return !code.startsWith( "PIG_" ) ? "PIG_" + fixed : fixed;
 	}
 
@@ -530,7 +535,7 @@ public class PovTexture
 	 */
 	public final void setAmbient( final double ambient )
 	{
-		setAmbient( ( ambient <= 0.0 ) ? null : new PovVector( ambient , ambient , ambient ) );
+		setAmbient( ( ambient <= 0.0 ) ? null : new PovVector( ambient, ambient, ambient ) );
 	}
 
 	/**
@@ -609,7 +614,7 @@ public class PovTexture
 	 * @param   reflectionMin   Reflection factor parallel to surface normal.
 	 * @param   reflectionMax   Reflection factor perpendicular to surface normal.
 	 */
-	public final void setReflection( final PovVector reflectionMin , final PovVector reflectionMax )
+	public final void setReflection( final PovVector reflectionMin, final PovVector reflectionMax )
 	{
 		if ( ( reflectionMin == null ) != ( reflectionMax == null ) )
 		{
@@ -633,12 +638,12 @@ public class PovTexture
 	{
 		if ( reflection == 0.0 )
 		{
-			setReflection( null , null );
+			setReflection( null, null );
 		}
 		else
 		{
-			final PovVector vector = new PovVector( reflection , reflection , reflection );
-			setReflection( vector , vector );
+			final PovVector vector = new PovVector( reflection, reflection, reflection );
+			setReflection( vector, vector );
 		}
 	}
 
@@ -849,7 +854,7 @@ public class PovTexture
 	 * When the scene is writing to a scene, it can call
 	 * this method to have the pigments  be declared, so it
 	 * only has to be specified once. When actually using
-	 * the pigments , only the reference code has to be printed.
+	 * the pigments, only the reference code has to be printed.
 	 * This not only saves filesize, it also improves readability.
 	 *
 	 * @param   out     IndentingWriter to use for writing.
@@ -901,6 +906,7 @@ public class PovTexture
 		out.indentOut();
 	}
 
+	@Override
 	public void write( final IndentingWriter out )
 		throws IOException
 	{
@@ -1080,7 +1086,7 @@ public class PovTexture
 		{
 			out.write( "reflection { " );
 			reflectionMin.write( out );
-			out.writeln( " , " );
+			out.writeln( ", " );
 			reflectionMax.write( out );
 			out.write( " }" );
 		}
@@ -1194,7 +1200,7 @@ public class PovTexture
 		{
 			out.write( "reflection { " );
 			reflectionMin.write( out );
-			out.writeln( " , " );
+			out.writeln( ", " );
 			reflectionMax.write( out );
 			out.write( " }" );
 		}
@@ -1309,6 +1315,26 @@ public class PovTexture
 		out.newLine();
 	}
 
+	@Override
+	public int hashCode()
+	{
+		final int result;
+
+		String name = _name;
+		if ( name != null )
+		{
+			name = name.toUpperCase();
+			result = name.hashCode();
+		}
+		else
+		{
+			result = 0;
+		}
+
+		return result;
+	}
+
+	@Override
 	public final boolean equals( final Object other )
 	{
 		final boolean equals;
