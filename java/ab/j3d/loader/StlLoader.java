@@ -21,7 +21,6 @@
 package ab.j3d.loader;
 
 import java.io.*;
-import java.util.*;
 import java.util.regex.*;
 
 import ab.j3d.*;
@@ -107,12 +106,6 @@ import org.jetbrains.annotations.*;
 public class StlLoader
 {
 	/**
-	 * Binary representation of ASCII characters for 'solid', which are used to
-	 * recognize an ASCII file.
-	 */
-	private static final byte[] ASCII_HEADER = { (byte)'s', (byte)'o', (byte)'l', (byte)'i', (byte)'d' };
-
-	/**
 	 * Regex pattern to recognize 'facet normal <normalX> <normalY> <normalZ>' line.
 	 */
 	private static final Pattern FACET_PATTERN = Pattern.compile( "\\s*facet\\s+normal\\s+([-+\\d\\.eE]+)\\s+([-+\\d\\.eE]+)\\s+([-+\\d\\.eE]+)\\s*" );
@@ -190,18 +183,93 @@ public class StlLoader
 	{
 		final String result;
 
-		final byte[] id = DataStreamTools.readByteArray( in, ASCII_HEADER.length );
-		if ( Arrays.equals( id, ASCII_HEADER ) )
+		final BufferedInputStream bufferedIn = new BufferedInputStream( in );
+		final boolean isAscii = isAsciiFormat( bufferedIn );
+
+		if ( isAscii )
 		{
-			result = loadAscii( builder, transform, new BufferedReader( new InputStreamReader( in, "US-ASCII" ) ) );
+			result = loadAscii( builder, transform, new BufferedReader( new InputStreamReader( bufferedIn, "US-ASCII" ) ) );
 		}
 		else
 		{
-			final byte[] header = new byte[ 80 ];
-			System.arraycopy( id, 0, header, 0, id.length );
-			DataStreamTools.readByteArray( in, header, id.length, 80 - id.length );
+			result = loadBinary( builder, transform, bufferedIn );
+		}
 
-			result = loadBinary( builder, transform, header, in );
+		return result;
+	}
+
+	/**
+	 * Returns whether the given stream contains ASCII STL data.
+	 *
+	 * @param   in  Stream to read from. The current position is marked before
+	 *              any bytes are read and restored afterwards.
+	 *
+	 * @return  <code>true</code> if the stream contains ASCII STL data.
+	 *
+	 * @throws  IOException if an I/O error occurs.
+	 */
+	private static boolean isAsciiFormat( final BufferedInputStream in )
+		throws IOException
+	{
+		boolean result = false;
+		try
+		{
+			final int limit = 1024;
+			in.mark( limit );
+
+			boolean magic = true;
+			boolean header = true;
+
+			for ( int i = 0; i < limit; i++ )
+			{
+				final int read = in.read();
+				if ( read == -1 )
+				{
+					break;
+				}
+				final char c = (char)read;
+
+				if ( magic )
+				{
+					/*
+					 * Check magic number: "solid".
+					 *
+					 * Binary STL files should not start with this sequence,
+					 * however we have encountered binary STL files that do.
+					 */
+					magic = false;
+					if ( ( c != 's' ) || ( in.read() != (int)'o' ) || ( in.read() != (int)'l' ) || ( in.read() != (int)'i' ) || ( in.read() != (int)'d' ) )
+					{
+						break;
+					}
+				}
+				else if ( header )
+				{
+					// Skip until newline.
+					if ( c == '\r' || c == '\n' )
+					{
+						header = false;
+					}
+				}
+				else
+				{
+					if ( c <= ' ' )
+					{
+						// Skip any whitespace and control characters.
+					}
+					else
+					{
+						// Check first word: 'facet' or 'endsolid'.
+						result = ( c == 'f' ) ?  ( in.read() == (int)'a' ) && ( in.read() == (int)'c' ) && ( in.read() == (int)'e' ) && ( in.read() == (int)'t' ) :
+						         ( c == 'e' ) && ( in.read() == (int)'n' ) && ( in.read() == (int)'d' ) && ( in.read() == (int)'s' ) && ( in.read() == (int)'o' ) && ( in.read() == (int)'l' ) && ( in.read() == (int)'i' ) && ( in.read() == (int)'d' );
+						break;
+					}
+				}
+			}
+		}
+		finally
+		{
+			in.reset();
 		}
 
 		return result;
@@ -224,7 +292,9 @@ public class StlLoader
 	{
 		final Material material = _material;
 
-		final int[] vertexIndices = new int[ 3 ];
+		//noinspection MismatchedReadAndWriteOfArray
+		final int[] vertexIndices = new int[ 3 ]; // read indirectly using '.clone()'
+
 		int faceVertexIndex = 0;
 
 		for ( String line = reader.readLine(); line != null; line = reader.readLine() )
@@ -278,19 +348,57 @@ public class StlLoader
 	/**
 	 * Load the specified binary STL file.
 	 *
+	 * <p>See: <a href="http://en.wikipedia.org/wiki/STL_(file_format)">STL (file format) at Wikipedia</a>
+	 *
 	 * @param   builder         Builder of resulting 3D object.
 	 * @param   transform       Transormation to apply to the STL (mostly used
 	 *                          to for scaling and axis alignment).
-	 * @param   header          80-byte STL file header.
 	 * @param   in              Stream to read STL file from.
 	 *
 	 * @return  Object name defined in STL file.
 	 *
 	 * @throws  IOException if an error occured while loading the STL file.
 	 */
-	public String loadBinary( @NotNull final Abstract3DObjectBuilder builder, @NotNull final Matrix3D transform, @NotNull final byte[] header, @NotNull final InputStream in )
+	public String loadBinary( @NotNull final Abstract3DObjectBuilder builder, @NotNull final Matrix3D transform, @NotNull final InputStream in )
 		throws IOException
 	{
-		throw new UnsupportedOperationException( "Binary STL support is not implemented" );
+		final Material material = _material;
+		final Vector3D[] points = new Vector3D[ 3 ];
+		final Vector3D[] normals = new Vector3D[ 3 ];
+
+		final byte[] header = DataStreamTools.readByteArray( in, 80 );
+
+		try
+		{
+			final long numberOfTriangles = DataStreamTools.readUnsignedIntLE( in );
+			for ( long i = 0L; i < numberOfTriangles; i++ )
+			{
+				final Vector3D normal = transform.rotate( (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ) );
+				normals[ 0 ] = normal;
+				normals[ 1 ] = normal;
+				normals[ 2 ] = normal;
+
+				// Convert to clockwise, as needed by 'addFace' used below.
+				points[ 0 ] = transform.transform( (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ) );
+				points[ 2 ] = transform.transform( (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ) );
+				points[ 1 ] = transform.transform( (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ) );
+
+				final long attributeByteCount = (long)DataStreamTools.readUnsignedShortLE( in );
+				long skipped = 0L;
+				while ( skipped < attributeByteCount )
+				{
+					skipped += in.skip( attributeByteCount - skipped );
+				}
+
+				builder.addFace( points, material, null, normals, false, false );
+			}
+		}
+		catch ( EOFException e )
+		{
+			// End of file reached.
+		}
+
+		final String name = new String( header, 6, 80 - 6 );
+		return name.trim();
 	}
 }
