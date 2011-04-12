@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,6 +26,7 @@ import ab.j3d.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.model.Face3D.*;
+import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -83,7 +84,7 @@ public class AbToPovConverter
 
 			if ( material != null )
 			{
-				result = ( ( lastMaterial != null ) && !lastMaterial.equals( material ) ) || ( material.colorMap != null );
+				result = ( ( lastMaterial != null ) && !lastMaterial.equals( material ) ) || !TextTools.isEmpty( material.colorMap );
 				lastMaterial = material;
 			}
 		}
@@ -339,7 +340,7 @@ public class AbToPovConverter
 			final Material material = face.material;
 			if ( material != lastMaterial )
 			{
-				uvMapping    = ( material.colorMap != null );
+				uvMapping    = !TextTools.isEmpty( material.colorMap );
 				textureIndex = result.getOrAddTextureIndex( convertMaterialToPovTexture( material ) );
 				lastMaterial = material;
 			}

@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -251,11 +252,12 @@ public class TextureCache
 	 * @return Color map texture; <code>null</code> if face has no color map or no
 	 *         texture coordinates.
 	 */
+	@Nullable
 	public Texture getColorMapTexture( final Material material )
 	{
 		final Texture result;
 
-		if ( ( material != null ) && ( material.colorMap != null ) )
+		if ( ( material != null ) && !TextTools.isEmpty( material.colorMap ) )
 		{
 			result = getTexture( material.colorMap );
 		}
@@ -263,6 +265,7 @@ public class TextureCache
 		{
 			result = null;
 		}
+
 		return result;
 	}
 
