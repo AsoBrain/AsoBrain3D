@@ -21,8 +21,10 @@
 package ab.j3d.geom;
 
 import java.awt.geom.*;
+import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.model.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -1393,5 +1395,319 @@ public class GeometryTools
 		}
 
 		return result;
+	}
+
+	/**
+	 * Creates a cross-section of the given object by intersecting it with the
+	 * given plane.
+	 *
+	 * @param   object  Object to intersect.
+	 * @param   plane   Plane to intersect the object with.
+	 *
+	 * @return  Path representing the cross-section.
+	 */
+	public static Path2D.Double createCrossSectionPath( final Object3D object, final Plane3D plane )
+	{
+		final Graph graph = createCrossSectionGraph( object, plane );
+		return createPathFromGraph( graph, plane );
+	}
+
+	/**
+	 * Creates a 2D path from the given graph.
+	 *
+	 * @param   segmentGraph    Graph with line segments.
+	 * @param   plane           Plane that contains the segments.
+	 *
+	 * @return  2D path.
+	 */
+	static Path2D.Double createPathFromGraph( final Graph segmentGraph, final Plane3D plane )
+	{
+		final Vector3D planeNormal = plane.getNormal();
+		final Vector3D xAxis;
+		final Vector3D yAxis;
+		if ( Vector3D.POSITIVE_Z_AXIS.equals( planeNormal ) )
+		{
+			xAxis = Vector3D.POSITIVE_X_AXIS;
+			yAxis = Vector3D.POSITIVE_Y_AXIS;
+		}
+		else
+		{
+			Vector3D cross = Vector3D.cross( planeNormal, Vector3D.POSITIVE_Z_AXIS );
+			cross = cross.normalize();
+			yAxis = Vector3D.cross( cross, planeNormal );
+			xAxis = Vector3D.cross( yAxis, planeNormal );
+		}
+
+		final Bounds3DBuilder boundsBuilder = new Bounds3DBuilder();
+		for ( final Graph.Node node : segmentGraph )
+		{
+			boundsBuilder.addPoint( node.getPoint() );
+		}
+		final Path2D.Double result = new Path2D.Double();
+
+		for ( final Graph.Node startNode : segmentGraph )
+		{
+			Set<Graph.Node> neighbours = startNode.getConnected();
+			if ( !neighbours.isEmpty() )
+			{
+				/*
+				 * Build a line strip starting at the current node.
+				 */
+				final List<Vector3D> strip = new ArrayList<Vector3D>();
+				strip.add( startNode.getPoint() );
+
+				Graph.Node currentNode = startNode;
+				while ( true )
+				{
+					neighbours = currentNode.getConnected();
+					final Iterator<Graph.Node> i = neighbours.iterator();
+					if ( !i.hasNext() )
+					{
+						break;
+					}
+
+					final Graph.Node neighbour = i.next();
+					strip.add( neighbour.getPoint() );
+					currentNode.disconnect( neighbour );
+					neighbour.disconnect( currentNode );
+					currentNode = neighbour;
+				}
+
+				/*
+				 * Filter out redundant line segments.
+				 */
+				final List<Vector3D> filtered;
+				if ( strip.size() < 3 )
+				{
+					filtered = strip;
+				}
+				else
+				{
+					filtered = new ArrayList<Vector3D>( strip.size() );
+
+					final Vector3D first = strip.get( 0 );
+					final Vector3D last = strip.get( strip.size() - 1 );
+					final boolean loop = first.equals( last );
+
+					final int size = strip.size();
+					final int startIndex = loop ? 0 : 1;
+					final int endIndex = loop ? size : size - 1;
+
+					if ( !loop )
+					{
+						filtered.add( strip.get( 0 ) );
+					}
+
+					for ( int i = startIndex; i < endIndex; i++ )
+					{
+						final Vector3D p1 = strip.get( ( i + size - 1 ) % size );
+						final Vector3D p2 = strip.get( i );
+						final Vector3D p3 = strip.get( ( i + 1 ) % size );
+
+						final Vector3D v1 = Vector3D.normalize( p2.x - p1.x, p2.y - p1.y, p2.z - p1.z );
+						final Vector3D v2 = Vector3D.normalize( p3.x - p2.x, p3.y - p2.y, p3.z - p2.z );
+
+						final Vector3D angleOffset = Vector3D.cross( v1, v2 );
+						if ( Math.abs( Math.toDegrees( angleOffset.length() ) ) >= 1.0 )
+						{
+							filtered.add( p2 );
+						}
+					}
+
+					if ( loop )
+					{
+						final Vector3D firstFiltered = filtered.get( 0 );
+						final Vector3D lastFiltered = filtered.get( filtered.size() - 1 );
+						if ( !lastFiltered.equals( firstFiltered ) )
+						{
+							filtered.add( firstFiltered );
+						}
+					}
+					else
+					{
+						filtered.add( strip.get( strip.size() - 1 ) );
+					}
+				}
+
+				/*
+				 * Build a 2D path.
+				 */
+				Vector3D startPoint = null;
+				for ( final Vector3D point : filtered )
+				{
+					if ( startPoint == null )
+					{
+						result.moveTo( Vector3D.dot( xAxis, point ), Vector3D.dot( yAxis, point ) );
+						startPoint = point;
+					}
+					else if ( startPoint.equals( point ) )
+					{
+						result.closePath();
+						startPoint = null;
+					}
+					else
+					{
+						result.lineTo( Vector3D.dot( xAxis, point ), Vector3D.dot( yAxis, point ) );
+					}
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Creates a cross-section of the given object by intersecting it with the
+	 * given plane.
+	 *
+	 * <p>
+	 * For mathematical details, see:
+	 * <a href='http://astronomy.swin.edu.au/~pbourke/geometry/planeline/'>http://astronomy.swin.edu.au/~pbourke/geometry/planeline/</a>.
+	 *
+	 * @param   object  Object to intersect.
+	 * @param   plane   Plane to intersect the object with.
+	 *
+	 * @return  Graph representing the cross-section.
+	 */
+	static Graph createCrossSectionGraph( @NotNull final Object3D object, @NotNull final Plane3D plane )
+	{
+		final List<Vector3D> segmentStarts = new ArrayList<Vector3D>();
+		final List<Vector3D> segmentEnds = new ArrayList<Vector3D>();
+
+		for ( final Face3D face : object.getFaces() )
+		{
+			final Tessellation tessellation = face.getTessellation();
+			for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+			{
+				final int[] triangles = primitive.getTriangles();
+
+				final double planeDistance = plane.getDistance();
+				final Vector3D planeNormal = plane.getNormal();
+
+				for ( int i = 0; i < triangles.length; i += 3 )
+				{
+					final Face3D.Vertex vertex1 = face.getVertex( triangles[ i ] );
+					final Face3D.Vertex vertex2 = face.getVertex( triangles[ i + 1 ] );
+					final Face3D.Vertex vertex3 = face.getVertex( triangles[ i + 2 ] );
+
+					final Vector3D p1 = vertex1.point;
+					final Vector3D p2 = vertex2.point;
+					final Vector3D p3 = vertex3.point;
+
+					final double d1 = Vector3D.dot( planeNormal, p1 );
+					final double d2 = Vector3D.dot( planeNormal, p2 );
+					final double d3 = Vector3D.dot( planeNormal, p3 );
+
+					final boolean p1p2 = ( d1 <= planeDistance ) && ( d2 >= planeDistance ) ||
+					                     ( d2 <= planeDistance ) && ( d1 >= planeDistance );
+					final boolean p1p3 = ( d1 <= planeDistance ) && ( d3 >= planeDistance ) ||
+					                     ( d3 <= planeDistance ) && ( d1 >= planeDistance );
+					final boolean p2p3 = ( d2 <= planeDistance ) && ( d3 >= planeDistance ) ||
+					                     ( d3 <= planeDistance ) && ( d2 >= planeDistance );
+
+					if ( p1p2 )
+					{
+						final double u = ( planeDistance - d1 ) / ( d2 - d1 );
+						final Vector3D a = new Vector3D( u * ( p2.x - p1.x ) + p1.x,
+						                                 u * ( p2.y - p1.y ) + p1.y,
+						                                 u * ( p2.z - p1.z ) + p1.z );
+
+						if ( p1p3 )
+						{
+							final double v = ( planeDistance - d1 ) / ( d3 - d1 );
+							final Vector3D b = new Vector3D( v * ( p3.x - p1.x ) + p1.x,
+							                                 v * ( p3.y - p1.y ) + p1.y,
+							                                 v * ( p3.z - p1.z ) + p1.z );
+							segmentStarts.add( a );
+							segmentEnds.add( b );
+						}
+						else if ( p2p3 )
+						{
+							final double v = ( planeDistance - d2 ) / ( d3 - d2 );
+							final Vector3D b = new Vector3D( v * ( p3.x - p2.x ) + p2.x,
+							                                 v * ( p3.y - p2.y ) + p2.y,
+							                                 v * ( p3.z - p2.z ) + p2.z );
+							segmentStarts.add( a );
+							segmentEnds.add( b );
+						}
+					}
+					else if ( p1p3 && p2p3 )
+					{
+						final double u = ( planeDistance - d1 ) / ( d3 - d1 );
+						final Vector3D a = new Vector3D( u * ( p3.x - p1.x ) + p1.x,
+						                                 u * ( p3.y - p1.y ) + p1.y,
+						                                 u * ( p3.z - p1.z ) + p1.z );
+
+						final double v = ( planeDistance - d2 ) / ( d3 - d2 );
+						final Vector3D b = new Vector3D( v * ( p3.x - p2.x ) + p2.x,
+						                                 v * ( p3.y - p2.y ) + p2.y,
+						                                 v * ( p3.z - p2.z ) + p2.z );
+						segmentStarts.add( a );
+						segmentEnds.add( b );
+					}
+				}
+			}
+		}
+
+		final Graph segmentGraph = new Graph();
+		for ( int i = 0; i < segmentStarts.size(); i++ )
+		{
+			final Graph.Node node1 = segmentGraph.getOrAdd( segmentStarts.get( i ) );
+			final Graph.Node node2 = segmentGraph.getOrAdd( segmentEnds.get( i ) );
+			node1.connect( node2 );
+			node2.connect( node1 );
+		}
+		return segmentGraph;
+	}
+
+	/**
+	 * Returns the result of removing all faces from the given object that are
+	 * behind or intersect the given plane.
+	 *
+	 * TODO: Clip intersecting faces and add the part(s) in front of the plane.
+	 *
+	 * @param   object  Object to be sliced.
+	 * @param   plane   Intersection plane.
+	 *
+	 * @return  Sliced hardware shape.
+	 */
+	public static Object3D slice( final Object3D object, final BasicPlane3D plane )
+	{
+		final Object3DBuilder builder = new Object3DBuilder();
+
+		final double planeDistance = plane.getDistance();
+		final Vector3D normal = plane.getNormal();
+		for ( final Face3D face : object.getFaces() )
+		{
+			boolean front = false;
+			boolean rear = false;
+
+			for ( int i = 0; i < face.getVertexCount(); i++ )
+			{
+				final Face3D.Vertex vertex = face.getVertex( i );
+				final double faceDistance = Vector3D.dot( normal, vertex.point );
+				if ( faceDistance > planeDistance )
+				{
+					front = true;
+				}
+				else
+				{
+					rear = true;
+				}
+			}
+
+			if ( !rear )
+			{
+				// Add faces in front of or on the plane.
+				builder.addFace( face.vertices, face.getTessellation(), face.material, face.smooth, face.isTwoSided() );
+			}
+			else if ( front )
+			{
+				// Clip faces intersecting the plane.
+				// TODO: Not yet implemented.
+			}
+		}
+
+		return builder.getObject3D();
 	}
 }
