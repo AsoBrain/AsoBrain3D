@@ -10,7 +10,7 @@
     <delete dir="lib"/>
   </target>
 
-  <target name="build" depends="compile-java,compile-tests" description="Build project">
+  <target name="build" depends="compile-java,compile-tests,jars.uptodate.check" unless="jars.uptodate" description="Build project">
     <mkdir dir="lib"/>
     <jar destfile="lib/ab3d.jar">
       <fileset dir="classes/java"/>
@@ -19,13 +19,39 @@
     <jar destfile="lib/ab3d-test.jar" basedir="classes/test"/>
   </target>
 
-  <target name="release" depends="build" description="Build release">
+  <target name="jars.uptodate.check" depends="compile-java,compile-tests">
+    <condition property="jars.uptodate">
+      <and>
+        <uptodate>
+          <srcfiles dir="classes/java"/>
+          <mapper type="merge" to="../../lib/ab3d.jar"/>
+        </uptodate>
+        <uptodate>
+          <srcfiles dir="images"/>
+          <mapper type="merge" to="../lib/ab3d.jar"/>
+        </uptodate>
+        <uptodate>
+          <srcfiles dir="." includes="classes/test/**"/>
+          <mapper type="merge" to="lib/ab3d-test.jar"/>
+        </uptodate>
+      </and>
+    </condition>
+  </target>
+
+  <target name="release" depends="build,pack200.uptodate.check" unless="pack200.uptodate" description="Build release">
     <repack200 jar="lib/ab3d.jar"/>
     <signjar keystore="${asobrain.cert.keystore}" storepass="${asobrain.cert.storepass}" alias="${asobrain.cert.alias}">
       <fileset file="lib/ab3d.jar" />
       <fileset file="lib/ab3d-test.jar" />
     </signjar>
     <pack200 jar="lib/ab3d.jar"/>
+  </target>
+
+  <target name="pack200.uptodate.check" depends="build">
+    <uptodate property="pack200.uptodate">
+      <srcfiles dir="." includes="lib/*.jar,bin/*.jar" excludes="**/*-test.jar"/>
+      <mapper type="glob" from="*.jar" to="*.jar.pack.gz"/>
+    </uptodate>
   </target>
 
   <target name="init">
@@ -64,7 +90,7 @@
     <pathelement location="${numdata.oss.home}/lib/numdata-oss.jar"/>
   </path>
 
-  <target name="compile-java" depends="api-check" description="Compile Java source files">
+  <target name="compile-java" depends="api-check,java.uptodate.check" unless="java.uptodate" description="Compile Java source files">
     <mkdir dir="classes/java"/>
     <javac2 srcdir="java" destdir="classes/java" classpathref="java.classpath" source="1.5">
       <exclude name="**/jogl?*/**" />
@@ -75,6 +101,21 @@
     </copy>
   </target>
 
+  <target name="java.uptodate.check">
+    <condition property="java.uptodate">
+      <and>
+        <uptodate>
+          <srcfiles dir="." includes="java/**/*.java" excludes="**/jogl?*/**,**/java3d/**" />
+          <mapper type="glob" from="*.java" to="classes/*.class"/>
+        </uptodate>
+        <uptodate>
+          <srcfiles dir="." includes="java/**" excludes="**/*.java"/>
+          <mapper type="glob" from="*" to="classes/*"/>
+        </uptodate>
+      </and>
+    </condition>
+  </target>
+
   <path id="test.classpath">
     <pathelement location="classes/test"/>
     <path refid="java.classpath"/>
@@ -82,7 +123,7 @@
     <pathelement location="${numdata.oss.home}/lib/numdata-oss-test.jar"/>
   </path>
 
-  <target name="compile-tests" depends="compile-java" description="Compile unit tests">
+  <target name="compile-tests" depends="compile-java,tests.uptodate.check" unless="tests.uptodate" description="Compile unit tests">
     <mkdir dir="classes/test"/>
     <javac2 srcdir="test" destdir="classes/test" classpathref="test.classpath">
       <exclude name="**/jogl?*/**" />
@@ -91,6 +132,21 @@
     <copy todir="classes/test">
       <fileset dir="test" excludes="**/*.java"/>
     </copy>
+  </target>
+
+  <target name="tests.uptodate.check">
+    <condition property="tests.uptodate">
+      <and>
+        <uptodate>
+          <srcfiles dir="." includes="test/**/*.java" excludes="**/jogl?*/**,**/java3d/**" />
+          <mapper type="glob" from="*.java" to="classes/*.class"/>
+        </uptodate>
+        <uptodate>
+          <srcfiles dir="." includes="test/**" excludes="**/*.java"/>
+          <mapper type="glob" from="*" to="classes/*"/>
+        </uptodate>
+      </and>
+    </condition>
   </target>
 
   <target name="test" depends="compile-tests" description="Execute unit tests">
