@@ -268,6 +268,41 @@ public class Face3D
 		return _object;
 	}
 
+	/**
+	 * Returns the vertices of this face.
+	 *
+	 * @return  Vertices of this face.
+	 */
+	public List<Vertex> getVertices()
+	{
+		return Collections.unmodifiableList( vertices );
+	}
+
+	/**
+	 * Returns the smoothing flag of this face. Smooth faces are used to
+	 * approximate smooth/curved/rounded parts of objects.
+	 *
+	 * <p>
+	 * This information would typically be used to select the most appropriate
+	 * shading algorithm.
+	 *
+	 * @return  Smoothing flag.
+	 */
+	public boolean isSmooth()
+	{
+		return smooth;
+	}
+
+	/**
+	 * Returns the material of this face.
+	 *
+	 * @return  Material of this face.
+	 */
+	public Material getMaterial()
+	{
+		return material;
+	}
+
 	@Override
 	public boolean isTwoSided()
 	{
