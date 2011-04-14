@@ -116,7 +116,7 @@ public class Object3DBuilder
 	}
 
 	@Override
-	protected void addFace( @NotNull final List<Vertex> vertices, @NotNull final Tessellation tessellation, @Nullable final Material material, final boolean smooth, final boolean twoSided )
+	public void addFace( @NotNull final List<Vertex> vertices, @NotNull final Tessellation tessellation, @Nullable final Material material, final boolean smooth, final boolean twoSided )
 	{
 		_target.addFace( new Face3D( _target, vertices, tessellation, material, smooth, twoSided ) );
 	}
