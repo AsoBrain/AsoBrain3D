@@ -73,17 +73,17 @@ public class Face3D
 	/**
 	 * X component of cross product of first and second edge of this face.
 	 */
-	final double _crossX;
+	public final double _crossX;
 
 	/**
 	 * Y component of cross product of first and second edge of this face.
 	 */
-	final double _crossY;
+	public final double _crossY;
 
 	/**
 	 * Z component of cross product of first and second edge of this face.
 	 */
-	final double _crossZ;
+	public final double _crossZ;
 
 	/**
 	 * Distance component of plane relative to origin. This defines the
@@ -383,13 +383,13 @@ public class Face3D
 			final List<Vertex> vertices = this.vertices;
 			final int vertexCount = vertices.size();
 
-			final int[] outline = new int[ vertexCount ];
+			final int[] outline = new int[ vertexCount + 1 ];
 			final int lastVertex = vertexCount - 1;
-			for ( int i = 0; i < outline.length; i++ )
+			for ( int i = 0; i < vertexCount; i++ )
 			{
-				final Vertex vertex = vertices.get( i );
 				outline[ i ] = lastVertex - i;
 			}
+			outline[ outline.length - 1 ] = outline[ 0 ];
 
 			final List<TessellationPrimitive> primitives;
 			if ( vertexCount >= 3 )

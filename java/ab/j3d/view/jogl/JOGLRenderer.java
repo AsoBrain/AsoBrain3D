@@ -1877,7 +1877,7 @@ public class JOGLRenderer
 					statistics.primitiveRendered();
 				}
 
-				gl.glBegin( GL.GL_LINE_LOOP );
+				gl.glBegin( GL.GL_LINE_STRIP );
 
 				for ( final int vertexIndex : outline )
 				{

@@ -22,6 +22,7 @@ package ab.j3d.geom;
 
 import java.util.*;
 
+import ab.j3d.model.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -41,7 +42,8 @@ public class Tessellation
 	/**
 	 * Outlines of tessellated shapes.
 	 */
-	private final List<int[]> _outlines;
+	@NotNull
+	private List<int[]> _outlines;
 
 	/**
 	 * Constructs a new tessellation.
@@ -80,5 +82,16 @@ public class Tessellation
 	public List<int[]> getOutlines()
 	{
 		return _outlines;
+	}
+
+	/**
+	 * Sets the outlines of the tessellated shapes. Each array is a list of
+	 * indices in {@link Face3D#getVertices()}, forming a line strip.
+	 *
+	 * @param   outlines    Outlines to be set.
+	 */
+	public void setOutlines( @NotNull final List<int[]> outlines )
+	{
+		_outlines = outlines;
 	}
 }

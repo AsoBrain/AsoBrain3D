@@ -1018,7 +1018,7 @@ public abstract class Abstract3DObjectBuilder
 		if ( side && !outlines.isEmpty() )
 		{
 			final Point2D.Float uv = ( sideMap != null ) ? new Point2D.Float() : null;
-			final Tessellation extrusionTessellation = new Tessellation( extrusionLines ? Collections.<int[]>singletonList( new int[] { 0, 1, 2, 3 } ) : Collections.<int[]>emptyList(), Collections.<TessellationPrimitive>singletonList( new TriangleFan( new int[] { 0, 1, 2, 3 } ) ) );
+			final Tessellation extrusionTessellation = new Tessellation( extrusionLines ? Collections.<int[]>singletonList( new int[] { 0, 1, 2, 3, 0 } ) : Collections.<int[]>emptyList(), Collections.<TessellationPrimitive>singletonList( new TriangleFan( new int[] { 0, 1, 2, 3, 0 } ) ) );
 
 			for ( final int[] contour : outlines )
 			{

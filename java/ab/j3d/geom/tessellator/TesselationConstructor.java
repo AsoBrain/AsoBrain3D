@@ -203,7 +203,7 @@ class TesselationConstructor
 				}
 				while ( e != f.anEdge );
 
-				final int[] vertices = new int[ vertexCount ];
+				final int[] vertices = new int[ vertexCount + 1 ];
 
 				if ( counterClockwise )
 				{
@@ -218,6 +218,7 @@ class TesselationConstructor
 				}
 				while ( e != f.anEdge );
 
+				vertices[ vertices.length - 1 ] = vertices[ 0 ];
 				result.add( vertices );
 			}
 		}
