@@ -1018,18 +1018,19 @@ public abstract class Abstract3DObjectBuilder
 		if ( side && !outlines.isEmpty() )
 		{
 			final Point2D.Float uv = ( sideMap != null ) ? new Point2D.Float() : null;
-			final Tessellation extrusionTessellation = new Tessellation( extrusionLines ? Collections.<int[]>singletonList( new int[] { 0, 1, 2, 3, 0 } ) : Collections.<int[]>emptyList(), Collections.<TessellationPrimitive>singletonList( new TriangleFan( new int[] { 0, 1, 2, 3, 0 } ) ) );
+			final Tessellation extrusionTessellation = new Tessellation( extrusionLines ? Collections.<int[]>singletonList( new int[] { 0, 1, 2, 3, 0 } ) : Collections.<int[]>emptyList(), Collections.<TessellationPrimitive>singletonList( new TriangleFan( new int[] { 0, 1, 2, 3 } ) ) );
 
 			for ( final int[] contour : outlines )
 			{
-				final int lastIndex = contour[ contour.length - 1 ];
+				final int lastIndex = contour[ 0 ];
 				Vector3D previousP1 = bottomPoints.get( lastIndex );
 				Vector3D previousP2 = topPoints.get( lastIndex );
 				int previousI1 = getVertexIndex( previousP1 );
 				int previousI2 = getVertexIndex( previousP2 );
 
-				for ( final int vertexIndex : contour )
+				for ( int i = 1; i < contour.length; i++ )
 				{
+					final int vertexIndex = contour[ i ];
 					final Vector3D nextP1 = bottomPoints.get( vertexIndex );
 					final Vector3D nextP2 = topPoints.get( vertexIndex );
 					final int nextI1 = getVertexIndex( nextP1 );
