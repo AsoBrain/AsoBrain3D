@@ -1495,7 +1495,7 @@ public class GeometryTools
 
 					if ( !loop )
 					{
-						filtered.add( strip.get( 0 ) );
+						filtered.add( first );
 					}
 
 					for ( int i = startIndex; i < endIndex; i++ )
@@ -1517,15 +1517,15 @@ public class GeometryTools
 					if ( loop )
 					{
 						final Vector3D firstFiltered = filtered.get( 0 );
-						final Vector3D lastFiltered = filtered.get( filtered.size() - 1 );
-						if ( !lastFiltered.equals( firstFiltered ) )
+						if ( !last.equals( firstFiltered ) )
 						{
-							filtered.add( firstFiltered );
+							filtered.add( last );
 						}
+						filtered.add( null );
 					}
 					else
 					{
-						filtered.add( strip.get( strip.size() - 1 ) );
+						filtered.add( last );
 					}
 				}
 
@@ -1535,15 +1535,15 @@ public class GeometryTools
 				Vector3D startPoint = null;
 				for ( final Vector3D point : filtered )
 				{
-					if ( startPoint == null )
-					{
-						result.moveTo( Vector3D.dot( xAxis, point ), Vector3D.dot( yAxis, point ) );
-						startPoint = point;
-					}
-					else if ( startPoint.equals( point ) )
+					if ( point == null )
 					{
 						result.closePath();
 						startPoint = null;
+					}
+					else if ( startPoint == null )
+					{
+						result.moveTo( Vector3D.dot( xAxis, point ), Vector3D.dot( yAxis, point ) );
+						startPoint = point;
 					}
 					else
 					{
