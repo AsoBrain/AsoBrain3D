@@ -380,21 +380,25 @@ public class Face3D
 		Tessellation result = _tessellation;
 		if ( result == null )
 		{
-			final List<Vertex> vertices = this.vertices;
-			final int vertexCount = vertices.size();
+			final int vertexCount = this.vertices.size();
 
 			final int[] outline = new int[ vertexCount + 1 ];
-			final int lastVertex = vertexCount - 1;
 			for ( int i = 0; i < vertexCount; i++ )
 			{
-				outline[ i ] = lastVertex - i;
+				outline[ i ] = i;
 			}
 			outline[ outline.length - 1 ] = outline[ 0 ];
 
 			final List<TessellationPrimitive> primitives;
 			if ( vertexCount >= 3 )
 			{
-				primitives = Collections.<TessellationPrimitive>singletonList( new TriangleFan( outline ) );
+				final int[] vertexIndices = new int[ vertexCount ];
+				final int lastVertex = vertexCount - 1;
+				for ( int i = 0; i < vertexIndices.length; i++ )
+				{
+					vertexIndices[ i ] = lastVertex - i;
+				}
+				primitives = Collections.<TessellationPrimitive>singletonList( new TriangleFan( vertexIndices ) );
 			}
 			else
 			{
