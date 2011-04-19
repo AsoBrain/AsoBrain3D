@@ -23,6 +23,8 @@ package ab.j3d.pov;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
+import java.util.*;
+import java.util.List;
 
 import ab.j3d.*;
 import ab.j3d.model.*;
@@ -952,89 +954,59 @@ public final class TestAbToPovConverter
 	/**
 	 * This method tests the conversion of an extruded {@link java.awt.Shape} to
 	 * a {@link PovMesh2}.
-	 *
-	 * @throws IOException When there was a problem writing to the
-	 * {@link IndentingWriter}.
 	 */
 	public static void testExtrudedObject2DAToPov()
-		throws IOException
 	{
-		final String actual;
-		{
-			final AbPovTestModel   testModel       = new AbPovTestModel();
-			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovGeometry      mesh            = converter.convertObject3D( Matrix3D.INIT , testModel.getExtrudedObject2DA() );
-			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
+		final AbPovTestModel   testModel       = new AbPovTestModel();
+		final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
+		final PovMesh2         mesh            = converter.convertObject3D( Matrix3D.INIT , testModel.getExtrudedObject2DA() );
 
-			mesh.write( indentingWriter );
-			actual = stringWriter.toString();
-		}
+		final List<Vector3D[]> expectedTriangles = new ArrayList<Vector3D[]>( Arrays.asList(
+			new Vector3D[] { new Vector3D( -300.0, 0.0, -250.0 ), new Vector3D( -300.0, 100.0, -150.0 ), new Vector3D( -400.0, 100.0, -150.0 ) },
+			new Vector3D[] { new Vector3D( -300.0, 0.0, -250.0 ), new Vector3D( -400.0, 100.0, -150.0 ), new Vector3D( -400.0, 0.0, -250.0 ) },
+			new Vector3D[] { new Vector3D( -300.0, 100.0, -250.0 ), new Vector3D( -300.0, 200.0, -150.0 ), new Vector3D( -300.0, 100.0, -150.0 ) },
+			new Vector3D[] { new Vector3D( -300.0, 100.0, -250.0 ), new Vector3D( -300.0, 100.0, -150.0 ), new Vector3D( -300.0, 0.0, -250.0 ) },
+			new Vector3D[] { new Vector3D( -400.0, 100.0, -250.0 ), new Vector3D( -400.0, 200.0, -150.0 ), new Vector3D( -300.0, 200.0, -150.0 ) },
+			new Vector3D[] { new Vector3D( -400.0, 100.0, -250.0 ), new Vector3D( -300.0, 200.0, -150.0 ), new Vector3D( -300.0, 100.0, -250.0 ) },
+			new Vector3D[] { new Vector3D( -400.0, 0.0, -250.0 ), new Vector3D( -400.0, 100.0, -150.0 ), new Vector3D( -400.0, 200.0, -150.0 ) },
+			new Vector3D[] { new Vector3D( -400.0, 0.0, -250.0 ), new Vector3D( -400.0, 200.0, -150.0 ), new Vector3D( -400.0, 100.0, -250.0 ) }
+		) );
+		assertSameMesh( expectedTriangles, mesh );
 
-		final String expected =
-			"mesh2\n"
-			+ "{\n"
-			+ "\tvertex_vectors\n"
-			+ "\t{\n"
-			+ "\t\t8,\n"
-			+ "\t\t<-400.0,0.0,-250.0> , <-400.0,100.0,-150.0> , <-300.0,0.0,-250.0> ,\n"
-			+ "\t\t<-300.0,100.0,-150.0> , <-300.0,100.0,-250.0> , <-300.0,200.0,-150.0> ,\n"
-			+ "\t\t<-400.0,100.0,-250.0> , <-400.0,200.0,-150.0>\n"
-			+ "\t}\n"
-			+ "\tface_indices\n"
-			+ "\t{\n"
-			+ "\t\t8,\n"
-			+ "\t\t<2,3,1> , <2,1,0> , <4,5,3> , <4,3,2> , <6,7,5> , <6,5,4> ,\n"
-			+ "\t\t<0,1,7> , <0,7,6>\n"
-			+ "\t}\n"
-			+ "\ttexture { TEX_RGB_255_175_175 }\n"
-			+ "}\n";
-
-		Assert.assertEquals( "ExtrudedObject2D to pov conversion error" , expected , actual );
+		final List<PovTexture> textureList = mesh.getTextureList();
+		assertEquals( "Unexpected number of textures.", 1, textureList.size() );
+		final PovTexture texture = textureList.get( 0 );
+		assertEquals( "Unexpected texture.", "RGB_255_175_175", texture.getName() );
 	}
 
 	/**
 	 * This method tests the conversion of an extruded {@link java.awt.Shape} to
 	 * a {@link PovMesh2}.
-	 *
-	 * @throws IOException When there was a problem writing to the
-	 * {@link IndentingWriter}.
 	 */
 	public static void testExtrudedObject2DBToPov()
-		throws IOException
 	{
-		final String actual;
-		{
-			final AbPovTestModel   testModel       = new AbPovTestModel();
-			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
-			final PovGeometry      mesh            = converter.convertObject3D( Matrix3D.INIT , testModel.getExtrudedObject2DB() );
-			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
+		final AbPovTestModel   testModel       = new AbPovTestModel();
+		final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
+		final PovMesh2         mesh            = converter.convertObject3D( Matrix3D.INIT , testModel.getExtrudedObject2DB() );
 
-			mesh.write( indentingWriter );
-			actual = stringWriter.toString();
-		}
+		final List<Vector3D[]> expectedTriangles = new ArrayList<Vector3D[]>( Arrays.asList(
+			new Vector3D[] { new Vector3D( -400.0, 100.0, -300.0 ), new Vector3D( -300.0, 100.0, -300.0 ), new Vector3D( -300.0, 0.0, -300.0 ) },
+			new Vector3D[] { new Vector3D( -400.0, 100.0, -300.0 ), new Vector3D( -300.0, 0.0, -300.0 ), new Vector3D( -400.0, 0.0, -300.0 ) },
+			new Vector3D[] { new Vector3D( -400.0, 0.0, -250.0 ), new Vector3D( -400.0, 0.0, -300.0 ), new Vector3D( -300.0, 0.0, -300.0 ) },
+			new Vector3D[] { new Vector3D( -400.0, 0.0, -250.0 ), new Vector3D( -300.0, 0.0, -300.0 ), new Vector3D( -300.0, 0.0, -250.0 ) },
+			new Vector3D[] { new Vector3D( -400.0, 100.0, -250.0 ), new Vector3D( -400.0, 100.0, -300.0 ), new Vector3D( -400.0, 0.0, -300.0 ) },
+			new Vector3D[] { new Vector3D( -400.0, 100.0, -250.0 ), new Vector3D( -400.0, 0.0, -300.0 ), new Vector3D( -400.0, 0.0, -250.0 ) },
+			new Vector3D[] { new Vector3D( -300.0, 100.0, -250.0 ), new Vector3D( -300.0, 100.0, -300.0 ), new Vector3D( -400.0, 100.0, -300.0 ) },
+			new Vector3D[] { new Vector3D( -300.0, 100.0, -250.0 ), new Vector3D( -400.0, 100.0, -300.0 ), new Vector3D( -400.0, 100.0, -250.0 ) },
+			new Vector3D[] { new Vector3D( -300.0, 0.0, -250.0 ), new Vector3D( -300.0, 0.0, -300.0 ), new Vector3D( -300.0, 100.0, -300.0 ) },
+			new Vector3D[] { new Vector3D( -300.0, 0.0, -250.0 ), new Vector3D( -300.0, 100.0, -300.0 ), new Vector3D( -300.0, 100.0, -250.0 ) }
+		) );
+		assertSameMesh( expectedTriangles, mesh );
 
-		final String expected =
-			"mesh2\n" +
-			"{\n" +
-			"\tvertex_vectors\n" +
-			"\t{\n" +
-			"\t\t8,\n" +
-			"\t\t<-400.0,100.0,-300.0> , <-300.0,100.0,-300.0> , <-300.0,0.0,-300.0> ,\n" +
-			"\t\t<-400.0,0.0,-300.0> , <-300.0,0.0,-250.0> , <-400.0,0.0,-250.0> ,\n" +
-			"\t\t<-400.0,100.0,-250.0> , <-300.0,100.0,-250.0>\n" +
-			"\t}\n" +
-			"\tface_indices\n" +
-			"\t{\n" +
-			"\t\t10,\n" +
-			"\t\t<0,1,2> , <0,2,3> , <5,3,2> , <5,2,4> , <6,0,3> , <6,3,5> ,\n" +
-			"\t\t<7,1,0> , <7,0,6> , <4,2,1> , <4,1,7>\n" +
-			"\t}\n" +
-			"\ttexture { TEX_orange }\n" +
-			"}\n";
-
-		Assert.assertEquals( "ExtrudedObject2D to pov conversion error" , expected , actual );
+		final List<PovTexture> textureList = mesh.getTextureList();
+		assertEquals( "Unexpected number of textures.", 1, textureList.size() );
+		final PovTexture texture = textureList.get( 0 );
+		assertEquals( "Unexpected texture.", "orange", texture.getName() );
 	}
 
 	/**
@@ -1115,5 +1087,102 @@ public final class TestAbToPovConverter
 		final PovScene povScene = converter.convert( scene );
 		povScene.add( new PovCamera( view.getLabel(), view2scene, Math.toDegrees( view.getFieldOfView() ), aspectRatio ) );
 		povScene.write( new File( "test.pov" ) );
+	}
+
+	/**
+	 * Asserts that the given mesh matches the given list of triangles.
+	 *
+	 * @param   expected    Vertex coordinates of the expected triangles.
+	 * @param   actual      Actual mesh.
+	 */
+	private static void assertSameMesh( final List<Vector3D[]> expected, final PovMesh2 actual )
+	{
+		final List<PovVector> vertices = actual.getVertexVectors();
+
+		final List<PovMesh2.Triangle> unexpected = new ArrayList<PovMesh2.Triangle>();
+		final List<Vector3D[]> missing = new ArrayList<Vector3D[]>( expected );
+
+		for ( final PovMesh2.Triangle actualTriangle : actual.getTriangles() )
+		{
+			final PovVector actualVertex1 = vertices.get( actualTriangle._vertexIndex1 );
+			final PovVector actualVertex2 = vertices.get( actualTriangle._vertexIndex2 );
+			final PovVector actualVertex3 = vertices.get( actualTriangle._vertexIndex3 );
+
+			boolean found = false;
+			for ( Iterator<Vector3D[]> iterator = missing.iterator() ; iterator.hasNext() ; )
+			{
+				final Vector3D[] expectedTriangle = iterator.next();
+				if ( isSameTriangle( expectedTriangle, actualVertex1, actualVertex2, actualVertex3 ) )
+				{
+					found = true;
+					iterator.remove();
+					break;
+				}
+			}
+
+			if ( !found )
+			{
+				unexpected.add( actualTriangle );
+			}
+		}
+
+		if ( !missing.isEmpty() || !unexpected.isEmpty() )
+		{
+			final StringBuilder message = new StringBuilder();
+			message.append( "Meshes differ:\n" );
+
+			message.append( "\tMissing triangles:\n" );
+			for ( final Vector3D[] triangle : missing )
+			{
+				message.append( "\t\t" );
+				message.append( triangle[ 0 ].toFriendlyString() );
+				message.append( ", " );
+				message.append( triangle[ 1 ].toFriendlyString() );
+				message.append( ", " );
+				message.append( triangle[ 2 ].toFriendlyString() );
+				message.append( "\n" );
+			}
+
+			message.append( "\tUnexpected  triangles:\n" );
+			for ( final PovMesh2.Triangle triangle : unexpected )
+			{
+				message.append( "\t\t" );
+				message.append( vertices.get( triangle._vertexIndex1 ) );
+				message.append( ", " );
+				message.append( vertices.get( triangle._vertexIndex2 ) );
+				message.append( ", " );
+				message.append( vertices.get( triangle._vertexIndex3 ) );
+				message.append( "\n" );
+			}
+
+			fail( message.toString() );
+		}
+	}
+
+	/**
+	 * Returns whether the given sets of vertex coordinates represent the same
+	 * triangle. Both triangles must have the same winding to be equal, but
+	 * the starting point may be different.
+	 *
+	 * @param   expectedTriangle    Vertex coordinates of the expected triangle.
+	 * @param   actualVertex1       Vertex coordinate 1 of the actual triangle.
+	 * @param   actualVertex2       Vertex coordinate 2 of the actual triangle.
+	 * @param   actualVertex3       Vertex coordinate 3 of the actual triangle.
+	 *
+	 * @return  <code>true</code> if the triangles are the same.
+	 */
+	private static boolean isSameTriangle( final Vector3D[] expectedTriangle, final PovVector actualVertex1, final PovVector actualVertex2, final PovVector actualVertex3 )
+	{
+		return ( expectedTriangle[ 0 ].equals( actualVertex1.getX(), actualVertex1.getY(), actualVertex1.getZ() ) &&
+		         expectedTriangle[ 1 ].equals( actualVertex2.getX(), actualVertex2.getY(), actualVertex2.getZ() ) &&
+		         expectedTriangle[ 2 ].equals( actualVertex3.getX(), actualVertex3.getY(), actualVertex3.getZ() ) ) ||
+
+		       ( expectedTriangle[ 1 ].equals( actualVertex1.getX(), actualVertex1.getY(), actualVertex1.getZ() ) &&
+		         expectedTriangle[ 2 ].equals( actualVertex2.getX(), actualVertex2.getY(), actualVertex2.getZ() ) &&
+		         expectedTriangle[ 0 ].equals( actualVertex3.getX(), actualVertex3.getY(), actualVertex3.getZ() ) ) ||
+
+		       ( expectedTriangle[ 2 ].equals( actualVertex1.getX(), actualVertex1.getY(), actualVertex1.getZ() ) &&
+		         expectedTriangle[ 0 ].equals( actualVertex2.getX(), actualVertex2.getY(), actualVertex2.getZ() ) &&
+		         expectedTriangle[ 1 ].equals( actualVertex3.getX(), actualVertex3.getY(), actualVertex3.getZ() ) );
 	}
 }
