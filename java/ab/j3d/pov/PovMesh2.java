@@ -19,11 +19,10 @@
  */
 package ab.j3d.pov;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
-import com.numdata.oss.io.IndentingWriter;
+import com.numdata.oss.io.*;
 
 /**
  * This class represents a POV-Ray mesh2 object. All lists are zero-based
@@ -121,7 +120,7 @@ public final class PovMesh2
 	private final List<PovVector> _uvVectors = new ArrayList();
 
 	/**
-	 * List containing {@link PovVector}s describing all vertices of the mesh.
+	 * List containing {@link PovVector}s describing all normals of the mesh.
 	 * The list contains no duplicates.
 	 */
 	private final List<PovVector> _normalVectors = new ArrayList();
@@ -137,6 +136,13 @@ public final class PovMesh2
 	 * List containing all triangle in this mesh.
 	 */
 	private final List<Triangle> _triangles = new ArrayList();
+
+	/**
+	 * Whether {@link #_triangles} is sorted.
+	 *
+	 * @see     #sortTriangles()
+	 */
+	private  boolean _trianglesSorted = false;
 
 	/**
 	 * This inner class represents a single triangle in the mesh.
@@ -231,6 +237,44 @@ public final class PovMesh2
 				out.write( format( _normalIndex3 ) );
 				out.write( (int)'>' );
 			}
+		}
+
+		@Override
+		public boolean equals( final Object other )
+		{
+			final boolean result;
+			if ( other == this )
+			{
+				result = true;
+			}
+			else if ( other instanceof Triangle )
+			{
+				final Triangle triangle = (Triangle)other;
+				result = ( _vertexIndex1 == triangle._vertexIndex1 ) &&
+				         ( _uvIndex1     == triangle._uvIndex1     ) &&
+				         ( _normalIndex1 == triangle._normalIndex1 ) &&
+				         ( _vertexIndex2 == triangle._vertexIndex2 ) &&
+				         ( _uvIndex2     == triangle._uvIndex2     ) &&
+				         ( _normalIndex2 == triangle._normalIndex2 ) &&
+				         ( _vertexIndex3 == triangle._vertexIndex3 ) &&
+				         ( _uvIndex3     == triangle._uvIndex3     ) &&
+				         ( _normalIndex3 == triangle._normalIndex3 ) &&
+				         ( _textureIndex == triangle._textureIndex );
+			}
+			else
+			{
+				result = false;
+			}
+			return result;
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return _vertexIndex1      ^ _uvIndex1 << 1 ^ _normalIndex1 << 2 ^
+			       _vertexIndex2 << 3 ^ _uvIndex2 << 4 ^ _normalIndex2 << 5 ^
+			       _vertexIndex3 << 6 ^ _uvIndex3 << 7 ^ _normalIndex3 << 8 ^
+			       _textureIndex << 9;
 		}
 	}
 
@@ -383,6 +427,7 @@ public final class PovMesh2
 	    final int texture )
 	{
 		_triangles.add( new Triangle( v1 , uv1 , vn1 , v2 , uv2 , vn2 , v3 , uv3 , vn3 , texture ) );
+		_trianglesSorted = false;
 	}
 
 	boolean hasUV()
@@ -464,34 +509,86 @@ public final class PovMesh2
 		}
 	}
 
+	/**
+	 * Returns the {@link PovVector}s describing all vertices of the mesh.
+	 * The list contains no duplicates.
+	 *
+	 * @return  Vertex coordinates.
+	 */
+	public List<PovVector> getVertexVectors()
+	{
+		return Collections.unmodifiableList( _vertexVectors );
+	}
+
+	/**
+	 * Returns the {@link PovVector}s describing all U/V-vectors of the
+	 * mesh. The list contains no duplicates.
+	 *
+	 * @return  UV-coordinates.
+	 */
+	public List<PovVector> getUvVectors()
+	{
+		return Collections.unmodifiableList( _uvVectors );
+	}
+
+	/**
+	 * Returns the {@link PovVector}s describing all normals of the mesh.
+	 * The list contains no duplicates.
+	 *
+	 * @return  Vertex normals.
+	 */
+	public List<PovVector> getNormalVectors()
+	{
+		return Collections.unmodifiableList( _normalVectors );
+	}
+
+	/**
+	 * Returns all used textures.
+	 *
+	 * @return  Textures.
+	 */
+	public List<PovTexture> getTextureList()
+	{
+		return Collections.unmodifiableList( _textureList );
+	}
+
+	/**
+	 * Returns the triangles that make up the mesh.
+	 *
+	 * @return  Triangles.
+	 */
+	public List<Triangle> getTriangles()
+	{
+		sortTriangles();
+		return Collections.unmodifiableList( _triangles );
+	}
+
+	/**
+	 * Sorts triangles so that triangles with UV-indices come first;
+	 * those without, come last.
+	 */
+	private void sortTriangles()
+	{
+		if ( !_trianglesSorted )
+		{
+			_trianglesSorted = true;
+			Collections.sort( _triangles, new Comparator<Triangle>()
+			{
+				@Override
+				public int compare( final Triangle o1, final Triangle o2 )
+				{
+					return o1.hasUV() ? o2.hasUV() ? 0 : -1 :
+					                    o2.hasUV() ? 1 : 0;
+				}
+			} );
+		}
+	}
+
+	@Override
 	public void write( final IndentingWriter out )
 		throws IOException
 	{
-		/*
-		 * Sorted triangles so that triangles with UV-indices come first;
-		 * those without, come last.
-		 */
-		final List<Triangle> triangles;
-		{
-			final List<Triangle> unsortedTriangles = _triangles;
-			final int            triangleCount     = unsortedTriangles.size();
-
-			triangles = new ArrayList( triangleCount );
-
-			for ( int i = 0 ; i < triangleCount ; i++ )
-			{
-				final Triangle triangle = unsortedTriangles.get( i );
-				if ( triangle.hasUV() )
-					triangles.add( triangle );
-			}
-
-			for ( int i = 0 ; i < triangleCount ; i++ )
-			{
-				final Triangle triangle = unsortedTriangles.get( i );
-				if ( !triangle.hasUV() )
-					triangles.add( triangle );
-			}
-		}
+		final List<Triangle> triangles = getTriangles();
 
 		out.write( "mesh2" );
 		final String name = getName();
