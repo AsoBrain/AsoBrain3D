@@ -1731,7 +1731,7 @@ public class GeometryTools
 		/*
 		 * Map faces by vertex coordinate.
 		 */
-		final List<List<Face3D>> facesByVertexCoordinate = new ArrayList<List<Face3D>>( Collections.nCopies( object.getVertexCount(), (List<Face3D>)null ) );
+		final List<List<Face3D>> facesByVertexCoordinate = new ArrayList<List<Face3D>>( Collections.nCopies( object.getVertexCount(), Collections.<Face3D>emptyList() ) );
 		for ( final Face3D face : faces )
 		{
 			face.smooth = smoothing;
@@ -1739,7 +1739,7 @@ public class GeometryTools
 			for ( final Face3D.Vertex vertex : face.getVertices() )
 			{
 				List<Face3D> faceList = facesByVertexCoordinate.get( vertex.vertexCoordinateIndex );
-				if ( faceList == null )
+				if ( faceList.isEmpty() )
 				{
 					faceList = new ArrayList<Face3D>();
 					facesByVertexCoordinate.set( vertex.vertexCoordinateIndex, faceList );
