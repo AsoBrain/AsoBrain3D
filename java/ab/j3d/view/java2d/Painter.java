@@ -158,7 +158,7 @@ public final class Painter
 			final List<Vertex> vertices = face.vertices;
 			final List<int[]> outlines = tessellation.getOutlines();
 
-			if ( !outlines.isEmpty() && ( object2view.rotateZ( face.getNormal() ) >= 0.0 ) )
+			if ( object2view.rotateZ( face.getNormal() ) >= 0.0 )
 			{
 				final Color faceFillColor;
 				if ( applyLighting )
@@ -173,9 +173,39 @@ public final class Painter
 					faceFillColor = fillColor;
 				}
 
+				/*
+				 * Fill faces.
+				 */
+				for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+				{
+					path.reset();
+
+					final int[] triangles = primitive.getTriangles();
+					for ( int i = 0 ; i < triangles.length ; i += 3 )
+					{
+						final Vector3D p1 = vertices.get( triangles[ i     ] ).point;
+						final Vector3D p2 = vertices.get( triangles[ i + 1 ] ).point;
+						final Vector3D p3 = vertices.get( triangles[ i + 2 ] ).point;
+
+						path.moveTo( object2image.transformX( p1 ), object2image.transformY( p1 ) );
+						path.lineTo( object2image.transformX( p2 ), object2image.transformY( p2 ) );
+						path.lineTo( object2image.transformX( p3 ), object2image.transformY( p3 ) );
+						path.closePath();
+					}
+
+					if ( faceFillColor != null )
+					{
+						g.setPaint( faceFillColor );
+						g.fill( path );
+					}
+				}
+
+				/*
+				 * Draw outlines.
+				 */
 				for ( final int[] outline : outlines )
 				{
-					if ( outline.length > 2 )
+					if ( outline.length > 1 )
 					{
 						path.reset();
 
@@ -190,14 +220,6 @@ public final class Painter
 							{
 								path.lineTo( object2image.transformX( p3d ), object2image.transformY( p3d ) );
 							}
-						}
-
-						path.closePath();
-
-						if ( faceFillColor != null )
-						{
-							g.setPaint( faceFillColor );
-							g.fill( path );
 						}
 
 						if ( outlineColor != null )
