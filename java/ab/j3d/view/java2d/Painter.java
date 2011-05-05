@@ -149,7 +149,7 @@ public final class Painter
 
 		final Path2D.Float path = new Path2D.Float();
 
-		final float[] rgb = applyLighting ? fillColor.getRGBComponents( null ) : null;
+		final float[] rgb = ( applyLighting && ( fillColor != null ) ) ? fillColor.getRGBComponents( null ) : null;
 
 		for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
 		{
