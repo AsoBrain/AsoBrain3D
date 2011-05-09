@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="AsoBrain 3D Toolkit" default="build">
+<project name="AsoBrain 3D Toolkit" default="release">
   <property file="../build.properties"/>
   <property name="build.sysclasspath" value="last"/>
 
