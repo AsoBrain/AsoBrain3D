@@ -37,7 +37,7 @@ public final class Sphere3D
 	/**
 	 * Radius of sphere.
 	 */
-	public final double radius;
+	public final double _radius;
 
 	/**
 	 * Constructor for sphere.
@@ -66,21 +66,17 @@ public final class Sphere3D
 	 */
 	public Sphere3D( final double radius, final int p, final int q, final Material material, final boolean flipNormals )
 	{
-		this.radius = radius;
+		_radius = radius;
 
-		final int      vertexCount       = p * ( q - 1 ) + 2;
+		final int vertexCount = p * ( q - 1 ) + 2;
 		final List<Vector3D> vertexCoordinates = new ArrayList<Vector3D>( vertexCount );
-		final double[] vertexNormals     = new double[ vertexCount * 3 ];
+		final List<Vector3D> vertexNormals = new ArrayList<Vector3D>( vertexCount );
 
 		/*
 		 * Generate vertices.
 		 */
-		int n = 0;
-
 		vertexCoordinates.add( new Vector3D( 0.0, 0.0, -radius ) );
-		vertexNormals[ n++ ] = 0.0;
-		vertexNormals[ n++ ] = 0.0;
-		vertexNormals[ n++ ] = -1.0;
+		vertexNormals.add( flipNormals ? Vector3D.POSITIVE_Z_AXIS : Vector3D.NEGATIVE_Z_AXIS );
 
 		for ( int qc = 1 ; qc < q ; qc++ )
 		{
@@ -96,27 +92,14 @@ public final class Sphere3D
 				final double normalZ = -cosq;
 
 				vertexCoordinates.add( new Vector3D( radius * normalX, radius * normalY, radius * normalZ ) );
-				vertexNormals[ n++ ] = normalX;
-				vertexNormals[ n++ ] = normalY;
-				vertexNormals[ n++ ] = normalZ;
+				vertexNormals.add( flipNormals ? new Vector3D( -normalX, -normalY, -normalZ ) : new Vector3D( normalX, normalY, normalZ ) );
 			}
 		}
 
 		vertexCoordinates.add( new Vector3D( 0.0, 0.0, radius ) );
-		vertexNormals[ n++ ] = 0.0;
-		vertexNormals[ n++ ] = 0.0;
-		vertexNormals[ n   ] = 1.0;
-
-		if ( flipNormals )
-		{
-			for ( int i = 0 ; i < vertexNormals.length ; i++ )
-			{
-				vertexNormals[ i ] = -vertexNormals[ i ];
-			}
-		}
+		vertexNormals.add( flipNormals ? Vector3D.NEGATIVE_Z_AXIS : Vector3D.POSITIVE_Z_AXIS );
 
 		setVertexCoordinates( vertexCoordinates );
-		setVertexNormals( vertexNormals );
 
 		/*
 		 * Define faces
@@ -127,6 +110,7 @@ public final class Sphere3D
 		final float scaleU = 1.0f / (float)p;
 		final float scaleV = 1.0f / (float)q;
 
+		final FaceGroup faceGroup = getFaceGroup( material, true, false );
 		for ( int qc = 0 ; qc < q; qc++ )
 		{
 			for ( int pc = 0 ; pc < p; pc++ )
@@ -169,7 +153,12 @@ public final class Sphere3D
 					                              new float[] { uRight, vBottom, uLeft , vBottom, uCenter, vTop };
 				}
 
-				_faces.add( new Face3D( this, vertexIndices, material, texturePoints, null, true, false ) );
+				final Face3D face = new Face3D( this, vertexIndices, texturePoints, null );
+				for ( final Face3D.Vertex vertex : face.getVertices() )
+				{
+					vertex.setNormal( vertexNormals.get( vertex.vertexCoordinateIndex ) );
+				}
+				faceGroup.addFace( face );
 			}
 		}
 	}
@@ -177,7 +166,7 @@ public final class Sphere3D
 	@Override
 	protected Bounds3D calculateOrientedBoundingBox()
 	{
-		final double radius = this.radius;
+		final double radius = _radius;
 		return new Bounds3D( -radius,  -radius, -radius, radius, radius, radius );
 	}
 
@@ -189,7 +178,7 @@ public final class Sphere3D
 		if ( other instanceof Sphere3D ) /* sphere vs. sphere */
 		{
 			final Sphere3D sphere = (Sphere3D)other;
-			result = GeometryTools.testSphereIntersection( radius, fromOtherToThis.xo, fromOtherToThis.yo, fromOtherToThis.zo,  sphere.radius );
+			result = GeometryTools.testSphereIntersection( _radius, fromOtherToThis.xo, fromOtherToThis.yo, fromOtherToThis.zo,  sphere._radius );
 		}
 		else if ( other instanceof Box3D ) /* sphere vs. box */
 		{
@@ -197,12 +186,12 @@ public final class Sphere3D
 			final double centerX = fromOtherToThis.inverseTransformX( 0.0, 0.0, 0.0 );
 			final double centerY = fromOtherToThis.inverseTransformY( 0.0, 0.0, 0.0 );
 			final double centerZ = fromOtherToThis.inverseTransformZ( 0.0, 0.0, 0.0 );
-			result = GeometryTools.testSphereBoxIntersection( centerX, centerY, centerZ, radius, 0.0, 0.0, 0.0, box.getDX(), box.getDY(), box.getDZ() );
+			result = GeometryTools.testSphereBoxIntersection( centerX, centerY, centerZ, _radius, 0.0, 0.0, 0.0, box.getDX(), box.getDY(), box.getDZ() );
 		}
 		else if ( other instanceof Cylinder3D ) /* sphere vs. cylinder */
 		{
 			final Cylinder3D cylinder = (Cylinder3D)other;
-			result = GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 0.0, radius, fromOtherToThis, cylinder.height, cylinder.radius );
+			result = GeometryTools.testSphereCylinderIntersection( 0.0, 0.0, 0.0, _radius, fromOtherToThis, cylinder.height, cylinder.radius );
 		}
 		else
 		{

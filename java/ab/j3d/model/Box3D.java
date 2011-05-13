@@ -23,6 +23,7 @@ package ab.j3d.model;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 
 /**
@@ -127,7 +128,9 @@ public final class Box3D
 	{
 		final double size = Vector3D.length( dx, dy, dz );
 		if ( size <= 0.0 )
+		{
 			throw new IllegalArgumentException( dx + " x " + dy + " x " + dz );
+		}
 
 		_dx = dx;
 		_dy = dy;
@@ -150,36 +153,48 @@ public final class Box3D
 			new Vector3D(  dx ,  dy ,  dz ) ,    // 6      |.     |/
 			new Vector3D( 0.0 ,  dy ,  dz ) ) ); // 7      0------1
 
-		setVertexNormals( new double[]
+		// TODO: Why does a cube have normals that make it appear spherical?
+		final Vector3D[] vertexNormals =
 		{
-			/* 0 */ -nx , -ny , -nz ,
-			/* 1 */  nx , -ny , -nz ,
-			/* 2 */  nx ,  ny , -nz ,
-			/* 3 */ -nx ,  ny , -nz ,
-			/* 4 */ -nx , -ny ,  nz ,
-			/* 5 */  nx , -ny ,  nz ,
-			/* 6 */  nx ,  ny ,  nz ,
-			/* 7 */ -nx ,  ny ,  nz
-		} );
+			/* 0 */ new Vector3D( -nx , -ny , -nz ) ,
+			/* 1 */ new Vector3D(  nx , -ny , -nz ) ,
+			/* 2 */ new Vector3D(  nx ,  ny , -nz ) ,
+			/* 3 */ new Vector3D( -nx ,  ny , -nz ) ,
+			/* 4 */ new Vector3D( -nx , -ny ,  nz ) ,
+			/* 5 */ new Vector3D(  nx , -ny ,  nz ) ,
+			/* 6 */ new Vector3D(  nx ,  ny ,  nz ) ,
+			/* 7 */ new Vector3D( -nx ,  ny ,  nz )
+		};
 
-		addFace( FRONT_VERTICES  , frontMaterial  , frontMap  );
-		addFace( REAR_VERTICES   , rearMaterial   , rearMap   );
-		addFace( RIGHT_VERTICES  , rightMaterial  , rightMap  );
-		addFace( LEFT_VERTICES   , leftMaterial   , leftMap   );
-		addFace( TOP_VERTICES    , topMaterial    , topMap    );
-		addFace( BOTTOM_VERTICES , bottomMaterial , bottomMap );
+		addFace( FRONT_VERTICES  , vertexNormals , frontMaterial  , frontMap  );
+		addFace( REAR_VERTICES   , vertexNormals , rearMaterial   , rearMap   );
+		addFace( RIGHT_VERTICES  , vertexNormals , rightMaterial  , rightMap  );
+		addFace( LEFT_VERTICES   , vertexNormals , leftMaterial   , leftMap   );
+		addFace( TOP_VERTICES    , vertexNormals , topMaterial    , topMap    );
+		addFace( BOTTOM_VERTICES , vertexNormals , bottomMaterial , bottomMap );
 	}
 
 	/**
 	 * Helper method to add a texture mapped face.
 	 *
-	 * @param   vertices        Vertices that define the face.
-	 * @param   material        Material to use for the face.
-	 * @param   uvMap           UV map to use.
+	 * @param   vertexCoordinates   Vertices that define the face.
+	 * @param   normals             Normals by vertex coordinate index.
+	 * @param   appearance          Appearance to use for the face.
+	 * @param   uvMap               UV map to use.
 	 */
-	private void addFace( final int[] vertices , final Material material , final UVMap uvMap )
+	private void addFace( final int[] vertexCoordinates , final Vector3D[] normals , final Appearance appearance , final UVMap uvMap )
 	{
-		addFace( new Face3D( this , vertices , material , ( uvMap != null ) ? uvMap.generate( material , _vertexCoordinates , vertices , false ) : null , null , false , false ) );
+		final TextureMap colorMap = ( appearance == null ) ? null : appearance.getColorMap();
+		final float[] textureCoordinates = ( uvMap != null ) ? uvMap.generate( colorMap, _vertexCoordinates, vertexCoordinates, false ) : null;
+
+		final List<Face3D.Vertex> vertices = Face3D.createVertices( this, vertexCoordinates, textureCoordinates, null );
+		for ( final Face3D.Vertex vertex : vertices )
+		{
+			vertex.normal = normals[ vertex.vertexCoordinateIndex ];
+		}
+
+		final FaceGroup faceGroup = getFaceGroup( appearance, false, false );
+		faceGroup.addFace( new Face3D( this, vertices, null ) );
 	}
 
 	/**
@@ -236,7 +251,7 @@ public final class Box3D
 			final double centerX = fromOtherToThis.transformX( 0.0, 0.0, 0.0 );
 			final double centerY = fromOtherToThis.transformY( 0.0, 0.0, 0.0 );
 			final double centerZ = fromOtherToThis.transformZ( 0.0, 0.0, 0.0 );
-			result = GeometryTools.testSphereBoxIntersection( centerX, centerY, centerZ, sphere.radius, 0.0, 0.0, 0.0, getDX(), getDY(), getDZ() );
+			result = GeometryTools.testSphereBoxIntersection( centerX, centerY, centerZ, sphere._radius, 0.0, 0.0, 0.0, getDX(), getDY(), getDZ() );
 		}
 		else
 		{

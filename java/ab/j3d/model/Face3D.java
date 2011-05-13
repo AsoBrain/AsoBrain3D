@@ -51,26 +51,6 @@ public class Face3D
 	public final List<Vertex> vertices;
 
 	/**
-	* Smoothing flag this face. Smooth faces are used to approximate
-	 * smooth/curved/rounded parts of objects.
-	 * <p />
-	 * This information would typically be used to select the most appropriate
-	 * shading algorithm.
-	*/
-	public boolean smooth;
-
-	/**
-	 * Material of this face.
-	 */
-	public Material material;
-
-	/**
-	 * Flag to indicate that the plane is two-sided. This means, that the
-	 * plane is 'visible' on both sides.
-	 */
-	private final boolean _twoSided;
-
-	/**
 	 * X component of cross product of first and second edge of this face.
 	 */
 	public final double _crossX;
@@ -121,15 +101,12 @@ public class Face3D
 	 *
 	 * @param   object          Object to which this face belongs.
 	 * @param   vertexIndices   Indices in {@link Object3D#_vertexCoordinates}.
-	 * @param   material        Material to apply to the face.
 	 * @param   texturePoints   Texture coordinates for each vertex (optional).
 	 * @param   vertexNormals   Normal for each vertex (optional).
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   twoSided        Face is two-sided.
 	 */
-	public Face3D( @NotNull final Object3D object, @NotNull final int[] vertexIndices, @Nullable final Material material, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals, final boolean smooth, final boolean twoSided )
+	public Face3D( @NotNull final Object3D object, @NotNull final int[] vertexIndices, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals )
 	{
-		this( object, createVertices( object, vertexIndices, texturePoints, vertexNormals ), null, material, smooth, twoSided );
+		this( object, createVertices( object, vertexIndices, texturePoints, vertexNormals ), null );
 	}
 
 	/**
@@ -137,19 +114,13 @@ public class Face3D
 	 *
 	 * @param   object          Object to which this face belongs.
 	 * @param   vertices        Vertices used by this face.
-	 * @param   tessellation     Tessellation of this face (optional).
-	 * @param   material        Material to apply to the face.
-	 * @param   smooth          Face is smooth/curved vs. flat.
-	 * @param   twoSided        Face is two-sided.
+	 * @param   tessellation    Tessellation of this face (optional).
 	 */
-	public Face3D( @NotNull final Object3D object, @NotNull final List<Vertex> vertices, @Nullable final Tessellation tessellation, @Nullable final Material material, final boolean smooth, final boolean twoSided )
+	public Face3D( @NotNull final Object3D object, @NotNull final List<Vertex> vertices, @Nullable final Tessellation tessellation )
 	{
 		_object = object;
 		this.vertices = vertices;
 		_tessellation = tessellation;
-		this.material = material;
-		this.smooth = smooth;
-		_twoSided = twoSided;
 
 		final int vertexCount = vertices.size();
 		if ( vertexCount >= 3 )
@@ -258,6 +229,12 @@ public class Face3D
 		return normal;
 	}
 
+	@Override
+	public boolean isTwoSided()
+	{
+		return false;
+	}
+
 	/**
 	 * Get object to which this face belongs.
 	 *
@@ -276,37 +253,6 @@ public class Face3D
 	public List<Vertex> getVertices()
 	{
 		return Collections.unmodifiableList( vertices );
-	}
-
-	/**
-	 * Returns the smoothing flag of this face. Smooth faces are used to
-	 * approximate smooth/curved/rounded parts of objects.
-	 *
-	 * <p>
-	 * This information would typically be used to select the most appropriate
-	 * shading algorithm.
-	 *
-	 * @return  Smoothing flag.
-	 */
-	public boolean isSmooth()
-	{
-		return smooth;
-	}
-
-	/**
-	 * Returns the material of this face.
-	 *
-	 * @return  Material of this face.
-	 */
-	public Material getMaterial()
-	{
-		return material;
-	}
-
-	@Override
-	public boolean isTwoSided()
-	{
-		return _twoSided;
 	}
 
 	/**
@@ -342,17 +288,15 @@ public class Face3D
 	 *
 	 * @throws  IndexOutOfBoundsException if <code>index</code> is out of bounds.
 	 */
+	@NotNull
 	public Vector3D getVertexNormal( final int index )
 	{
 		final Vertex vertex = vertices.get( index );
-
 		Vector3D result = vertex.normal;
 		if ( result == null )
 		{
-			final double[] vertexNormals = _object.getVertexNormals();
-			final int i = vertex.vertexCoordinateIndex * 3;
-			result = Vector3D.INIT.set( vertexNormals[ i ], vertexNormals[ i + 1 ], vertexNormals[ i + 2 ] );
-			vertex.normal = result;
+			result = getNormal();
+			vertex.setNormal( result );
 		}
 		return result;
 	}
@@ -380,7 +324,7 @@ public class Face3D
 		Tessellation result = _tessellation;
 		if ( result == null )
 		{
-			final int vertexCount = this.vertices.size();
+			final int vertexCount = vertices.size();
 
 			final int[] outline = new int[ vertexCount + 1 ];
 			for ( int i = 0; i < vertexCount; i++ )
@@ -450,6 +394,7 @@ public class Face3D
 		/**
 		 * Vertex normal.
 		 */
+		@Nullable
 		Vector3D normal;
 
 		/**
@@ -496,11 +441,25 @@ public class Face3D
 		}
 
 		/**
+		 * Returns the vertex normal. Note that the vertex may not have an
+		 * explicit normal, resulting in <code>null</code>.
+		 *
+		 * @return  Normal vector.
+		 *
+		 * @see     Face3D#getVertexNormal
+		 */
+		@Nullable
+		public Vector3D getNormal()
+		{
+			return normal;
+		}
+
+		/**
 		 * Set vertex normal.
 		 *
 		 * @param   normal  Vertex normal.
 		*/
-		public void setNormal( final Vector3D normal )
+		public void setNormal( @Nullable final Vector3D normal )
 		{
 			this.normal = normal;
 		}

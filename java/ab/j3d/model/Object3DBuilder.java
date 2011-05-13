@@ -23,6 +23,7 @@ package ab.j3d.model;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.Face3D.*;
 import org.jetbrains.annotations.*;
@@ -98,26 +99,22 @@ public class Object3DBuilder
 	}
 
 	@Override
-	public void setVertexNormals( @NotNull final double[] vertexNormals )
+	public void addFace( @NotNull final int[] vertexIndices, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final Vector3D[] vertexNormals, final boolean flipTexture, final boolean smooth, final boolean twoSided )
 	{
-		_target.setVertexNormals( vertexNormals );
+		addFace( vertexIndices, appearance, ( uvMap != null ) ? uvMap.generate( ( appearance == null ) ? null : appearance.getColorMap(), _target._vertexCoordinates, vertexIndices, flipTexture ) : null, vertexNormals, smooth, twoSided );
 	}
 
 	@Override
-	public void addFace( @NotNull final int[] vertexIndices, @Nullable final Material material, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean smooth, final boolean twoSided )
+	public void addFace( @NotNull final int[] vertexIndices, @Nullable final Appearance appearance, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals, final boolean smooth, final boolean twoSided )
 	{
-		addFace( vertexIndices, material, ( uvMap != null ) ? uvMap.generate( material, _target._vertexCoordinates, vertexIndices, flipTexture ) : null, null, smooth, twoSided );
+		final FaceGroup faceGroup = _target.getFaceGroup( appearance, smooth, twoSided );
+		faceGroup.addFace( new Face3D( _target, vertexIndices, texturePoints, vertexNormals) );
 	}
 
 	@Override
-	public void addFace( @NotNull final int[] vertexIndices, @Nullable final Material material, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals, final boolean smooth, final boolean twoSided )
+	public void addFace( @NotNull final List<Vertex> vertices, @Nullable final Tessellation tessellation, @Nullable final Appearance appearance, final boolean smooth, final boolean twoSided )
 	{
-		_target.addFace( new Face3D( _target, vertexIndices, material, texturePoints, vertexNormals, smooth, twoSided ) );
-	}
-
-	@Override
-	public void addFace( @NotNull final List<Vertex> vertices, @NotNull final Tessellation tessellation, @Nullable final Material material, final boolean smooth, final boolean twoSided )
-	{
-		_target.addFace( new Face3D( _target, vertices, tessellation, material, smooth, twoSided ) );
+		final FaceGroup faceGroup = _target.getFaceGroup( appearance, smooth, twoSided );
+		faceGroup.addFace( new Face3D( _target, vertices, tessellation ) );
 	}
 }

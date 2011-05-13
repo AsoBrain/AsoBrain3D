@@ -23,6 +23,7 @@ package ab.j3d.model;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.Face3D.*;
 import com.numdata.oss.*;
@@ -40,31 +41,15 @@ public class Object3D
 	extends Node3D
 {
 	/**
-	 * List of faces in this object.
+	 * List of face groups in this object.
 	 */
-	final List<Face3D> _faces;
+	final List<FaceGroup> _faceGroups;
 
 	/**
 	 * Coordinates of vertex coordinates in object. Vertex coordinates are
 	 * stored in an array of doubles with a triplet for each vertex.
 	 */
 	final HashList<Vector3D> _vertexCoordinates;
-
-	/**
-	 * Array of floats with normals of each face of the model. Normals are
-	 * stored in an array of floats with a triplet for each normal (x,y,z).
-	 * The number of normals is equal to the number of faces (obviously).
-	 * <p>
-	 * This is only calculated when the model changes (indicated by the
-	 * _normalsDirty field).
-	 */
-	double[] _vertexNormals;
-
-	/**
-	 * This internal flag is set to indicate that the vertex coordinates or
-	 * faces changed, so the vertex normals need to be re-calculated.
-	 */
-	boolean _vertexNormalsDirty;
 
 	/**
 	 * Helper for collision tests.
@@ -84,10 +69,8 @@ public class Object3D
 	 */
 	public Object3D()
 	{
-		_faces = new ArrayList<Face3D>();
+		_faceGroups = new ArrayList<FaceGroup>();
 		_vertexCoordinates = new HashList<Vector3D>();
-		_vertexNormals = null;
-		_vertexNormalsDirty = true;
 		_orientedBoundingBox = null;
 	}
 
@@ -102,95 +85,23 @@ public class Object3D
 	}
 
 	/**
-	 * Add a face to this object.
+	 * Returns the face groups in this object.
 	 *
-	 * @param   face    Face to add.
+	 * @return  Face groups in this object.
 	 */
-	final void addFace( final Face3D face )
+	public List<FaceGroup> getFaceGroups()
 	{
-		_faces.add( face );
+		return Collections.unmodifiableList( _faceGroups );
 	}
 
 	/**
-	 * The following text is from http://nate.scuzzy.net/normals/normals.html.
+	 * Add a face group to this object.
 	 *
-	 * There is no way to calculate a true vertex normal since a vertex is just
-	 * a point in space, so the best we can get is an approximation for our vertex
-	 * normals. If you understand the ideas behind face normals, calculating vertex
-	 * normals will be a breeze. A vertex normal is simply the average of the face
-	 * normals that surround a particular vertex. So how do you go about
-	 * calculating a vertex normal? For every face in your face list you need to
-	 * generate the normal to that face but, do not normalize it. Then for each
-	 * vertex in the face add the face normal to the corresponding vertex normal
-	 * for the current vertex. After you have gone through all the verticies of
-	 * the face you then can normalize the face normal, do not normalize the vertex
-	 * normal. After you have done this for all faces walk the vertex normal list
-	 * and normalize each normal. Once you have done this you have your vertex
-	 * normals. Pretty simple isn't it? Thanks to hude for this better method for
-	 * calculating vertex normals.
-	 *
-	 * PS: We do not follow the suggested implementation in this article, but use
-	 *     its suggested calculations.
+	 * @param   faceGroup    Face group to add.
 	 */
-	void calculateVertexNormals()
+	final void addFaceGroup( final FaceGroup faceGroup )
 	{
-		if ( _vertexNormalsDirty )
-		{
-			synchronized( this )
-			{
-				final int          vertexCount = getVertexCount();
-				final List<Face3D> faces       = _faces;
-				final int          faceCount   = faces.size();
-
-				_vertexNormals = null;
-				final double[] vertexNormals = new double[ vertexCount * 3 ];
-				_vertexNormals = vertexNormals;
-
-				/*
-				 * Sum unnormalized normals of faces that use this vertex.
-				 */
-				for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
-				{
-					final Face3D face = faces.get( faceIndex );
-
-					if ( face.smooth )
-					{
-						for ( final Vertex vertex : face.vertices )
-						{
-							final int i = vertex.vertexCoordinateIndex * 3;
-							vertexNormals[ i     ] += face._crossX;
-							vertexNormals[ i + 1 ] += face._crossY;
-							vertexNormals[ i + 2 ] += face._crossZ;
-						}
-					}
-				}
-
-				/*
-				 * Now normalize the normals.
-				 */
-				for ( int vertexIndex = 0 ; vertexIndex < vertexCount ; vertexIndex++ )
-				{
-					final int i = vertexIndex * 3;
-					final double x = vertexNormals[ i     ];
-					final double y = vertexNormals[ i + 1 ];
-					final double z = vertexNormals[ i + 2 ];
-
-					if ( ( x != 0.0 ) || ( y != 0.0 ) || ( z != 0.0 ) )
-					{
-						double norm = x * x + y * y + z * z;
-						if ( !MathTools.almostEqual( norm, 1.0 ) )
-						{
-							norm = 1.0 / Math.sqrt( norm );
-							vertexNormals[ i     ] = norm * x;
-							vertexNormals[ i + 1 ] = norm * y;
-							vertexNormals[ i + 2 ] = norm * z;
-						}
-					}
-				}
-
-				_vertexNormalsDirty = false;
-			}
-		}
+		_faceGroups.add( faceGroup );
 	}
 
 	/**
@@ -296,38 +207,44 @@ public class Object3D
 
 			int nrTriangles = 0;
 
-			for ( final Face3D face : _faces )
+			for ( final FaceGroup faceGroup : getFaceGroups() )
 			{
-				final Tessellation tessellation = face.getTessellation();
-				for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+				for ( final Face3D face : faceGroup.getFaces() )
 				{
-					final int[] triangles = primitive.getTriangles();
-					nrTriangles += triangles.length / 3;
+					final Tessellation tessellation = face.getTessellation();
+					for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+					{
+						final int[] triangles = primitive.getTriangles();
+						nrTriangles += triangles.length / 3;
+					}
 				}
 			}
 
 			final List<Triangle3D> triangles = new ArrayList<Triangle3D>( nrTriangles );
 			final Bounds3DBuilder boundsBuilder = new Bounds3DBuilder();
 
-			for ( final Face3D face : _faces )
+			for ( final FaceGroup faceGroup : getFaceGroups() )
 			{
-				final Tessellation tessellation = face.getTessellation();
-				for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+				for ( final Face3D face : faceGroup.getFaces() )
 				{
-					final List<Vertex> vertices = face.vertices;
-					for ( final Vertex vertex : vertices )
+					final Tessellation tessellation = face.getTessellation();
+					for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
 					{
-						boundsBuilder.addPoint( vertexCoordinates.get( vertex.vertexCoordinateIndex ) );
-					}
+						final List<Vertex> vertices = face.vertices;
+						for ( final Vertex vertex : vertices )
+						{
+							boundsBuilder.addPoint( vertexCoordinates.get( vertex.vertexCoordinateIndex ) );
+						}
 
-					final int[] primitiveTriangles = primitive.getTriangles();
-					for ( int i = 0 ; i < primitiveTriangles.length; i += 3 )
-					{
-						final Vertex v1 = vertices.get( primitiveTriangles[ i ] );
-						final Vertex v2 = vertices.get( primitiveTriangles[ i + 1 ] );
-						final Vertex v3 = vertices.get( primitiveTriangles[ i + 2 ] );
+						final int[] primitiveTriangles = primitive.getTriangles();
+						for ( int i = 0 ; i < primitiveTriangles.length; i += 3 )
+						{
+							final Vertex v1 = vertices.get( primitiveTriangles[ i ] );
+							final Vertex v2 = vertices.get( primitiveTriangles[ i + 1 ] );
+							final Vertex v3 = vertices.get( primitiveTriangles[ i + 2 ] );
 
-						triangles.add( new BasicTriangle3D( v1.point, v2.point, v3.point, true ) );
+							triangles.add( new BasicTriangle3D( v1.point, v2.point, v3.point, true ) );
+						}
 					}
 				}
 			}
@@ -415,38 +332,6 @@ public class Object3D
 	}
 
 	/**
-	 * Get face with the specified index.
-	 *
-	 * @param   index   Index of face to retrieve.
-	 *
-	 * @return  Face with the specified index.
-	 */
-	public final Face3D getFace( final int index )
-	{
-		return _faces.get( index );
-	}
-
-	/**
-	 * Returns the unmodifiable list of all faces.
-	 *
-	 * @return  Faces.
-	 */
-	public List<Face3D> getFaces()
-	{
-		return Collections.unmodifiableList( _faces );
-	}
-
-	/**
-	 * Get number of faces in the model.
-	 *
-	 * @return  Number of faces.
-	 */
-	public final int getFaceCount()
-	{
-		return _faces.size();
-	}
-
-	/**
 	 * Find intersections between this object and the specified ray. The ray
 	 * starts at <code>rayOrigin</code> and points in <code>rayDirection</code>.
 	 * The intersections are returned as a {@link List} containing
@@ -475,24 +360,24 @@ public class Object3D
 
 		final List<Face3DIntersection> result = ( dest != null ) ? dest : new ArrayList<Face3DIntersection>();
 
-		final int faceCount = getFaceCount();
-		for ( int i = 0 ; i < faceCount ; i++ )
+		for ( final FaceGroup faceGroup : getFaceGroups() )
 		{
-			final Face3D face = getFace( i );
-
-			final Vector3D ocsPoint = face.getIntersection( ocsRay );
-			if ( ocsPoint != null )
+			for ( final Face3D face : faceGroup.getFaces() )
 			{
-				final Vector3D wcsPoint = object2world.transform( ocsPoint );
+				final Vector3D ocsPoint = face.getIntersection( ocsRay );
+				if ( ocsPoint != null )
+				{
+					final Vector3D wcsPoint = object2world.transform( ocsPoint );
 
-				final Face3DIntersection intersection = new Face3DIntersection( objectID, object2world, this, path, face, ray, wcsPoint );
-				if ( sortResult )
-				{
-					Face3DIntersection.addSortedByDistance( result, intersection );
-				}
-				else
-				{
-					result.add( intersection );
+					final Face3DIntersection intersection = new Face3DIntersection( objectID, object2world, this, path, face, ray, wcsPoint );
+					if ( sortResult )
+					{
+						Face3DIntersection.addSortedByDistance( result, intersection );
+					}
+					else
+					{
+						result.add( intersection );
+					}
 				}
 			}
 		}
@@ -523,30 +408,11 @@ public class Object3D
 	}
 
 	/**
-	 * Get transformed vertex normals. By default, vertex normals are
-	 * pseudo-normals based on average face normals at each vertex.
-	 * <dl>
-	 *  <dt>WARNING:</dt>
-	 *  <dd>The returned array is shared, so it should not be altered in any
-	 *      way unless you wish the world to end.</dd>
-	 * </dd>
-	 *
-	 * @return  Vertex normals.
-	 */
-	public final double[] getVertexNormals()
-	{
-		calculateVertexNormals();
-		//noinspection ReturnOfCollectionOrArrayField
-		return _vertexNormals;
-	}
-
-	/**
 	 * Invalidate derived data, because the face has been modified.
 	 */
 	void invalidate()
 	{
 		_orientedBoundingBox = null;
-		_vertexNormalsDirty = true;
 		_collisionNode = null;
 	}
 
@@ -567,20 +433,37 @@ public class Object3D
 	}
 
 	/**
-	 * Set vertex normals. Vertex normals are pseudo-normals based on average
-	 * face normals at common vertices.
-	 * <dl>
-	 *  <dt>WARNING:</dt>
-	 *  <dd>The specified array is used as-is, so it should not be altered in
-	 *      any way unless you wish the world to end.</dd>
-	 * </dd>
+	 * Returns a face group with the given properties. If there an existing face
+	 * group is found, it is returned. Otherwise a new face group is created.
 	 *
-	 * @param   vertexNormals   Vertex normals (one triplet per vertex).
+	 * @param   appearance  Appearance.
+	 * @param   smooth      Smoothing flag.
+	 * @param   twoSided    Two-sided flag.
+	 *
+	 * @return  Face group.
 	 */
-	final void setVertexNormals( final double[] vertexNormals )
+	@NotNull
+	protected FaceGroup getFaceGroup( final Appearance appearance, final boolean smooth, final boolean twoSided )
 	{
-		//noinspection AssignmentToCollectionOrArrayFieldFromParameter
-		_vertexNormals = vertexNormals;
-		_vertexNormalsDirty = false;
+		FaceGroup result = null;
+
+		for ( final FaceGroup faceGroup : _faceGroups )
+		{
+			if ( ( faceGroup.getAppearance() == appearance ) &&
+			     ( faceGroup.isSmooth() == smooth ) &&
+			     ( faceGroup.isTwoSided() == twoSided ) )
+			{
+				result = faceGroup;
+				break;
+			}
+		}
+
+		if ( result == null )
+		{
+			result = new FaceGroup( appearance, smooth, twoSided );
+			addFaceGroup( result );
+		}
+
+		return result;
 	}
 }

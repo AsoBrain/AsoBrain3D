@@ -23,6 +23,7 @@ package ab.j3d.model;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import org.jetbrains.annotations.*;
 
@@ -55,16 +56,16 @@ public class Cylinder3D
 	 * @param   height              Height of cylinder (z-axis).
 	 * @param   radius              Radius.
 	 * @param   numEdges            Number of edges to approximate circle (minimum: 3).
-	 * @param   sideMaterial        Material of cylinder circumference.
+	 * @param   sideAppearance        Material of cylinder circumference.
 	 * @param   sideMap             UV map to use for circumference.
 	 * @param   smoothCircumference Apply smoothing to circumference of cylinder.
-	 * @param   topMaterial         Material for top cap (<code>null</code> => no cap).
+	 * @param   topAppearance         Material for top cap (<code>null</code> => no cap).
 	 * @param   topMap              UV map for top cap.
-	 * @param   bottomMaterial      Material for bottom cap (<code>null</code> => no cap).
+	 * @param   bottomAppearance      Material for bottom cap (<code>null</code> => no cap).
 	 * @param   bottomMap           UV map for bottom cap.
 	 * @param   flipNormals         If set, flip normals.
 	 */
-	public Cylinder3D( final double height, final double radius, final int numEdges, @Nullable final Material sideMaterial, @Nullable final UVMap sideMap, final boolean smoothCircumference, @Nullable final Material topMaterial, @Nullable final UVMap topMap, @Nullable final Material bottomMaterial, @Nullable final UVMap bottomMap, final boolean flipNormals )
+	public Cylinder3D( final double height, final double radius, final int numEdges, @Nullable final Material sideAppearance, @Nullable final UVMap sideMap, final boolean smoothCircumference, @Nullable final Material topAppearance, @Nullable final UVMap topMap, @Nullable final Material bottomAppearance, @Nullable final UVMap bottomMap, final boolean flipNormals )
 	{
 		if ( ( radius <= 0.0 ) || ( height <= 0.0 ) || ( numEdges < 3 ) )
 		{
@@ -103,7 +104,7 @@ public class Cylinder3D
 		/*
 		 * Bottom face (if it exists).
 		 */
-		if ( bottomMaterial != null )
+		if ( bottomAppearance != null )
 		{
 			final int[] vertexIndices = new int[ numEdges ];
 			for ( int i = 0 ; i < numEdges ; i++ )
@@ -111,27 +112,30 @@ public class Cylinder3D
 				vertexIndices[ i ] = flipNormals ? ( numEdges - 1 - i ) : i;
 			}
 
-			final float[] texturePoints = ( bottomMap != null ) ? bottomMap.generate( bottomMaterial, vertexCoordinates, vertexIndices, false ) : null;
-			addFace( new Face3D( this, vertexIndices, bottomMaterial, texturePoints, null, false, false ) );
+			final float[] texturePoints = ( bottomMap != null ) ? bottomMap.generate( bottomAppearance.getColorMap(), vertexCoordinates, vertexIndices, false ) : null;
+			final FaceGroup faceGroup = getFaceGroup( bottomAppearance, false, false );
+			faceGroup.addFace( new Face3D( this, vertexIndices, texturePoints, null ) );
 		}
 
 		/*
 		 * Circumference.
 		 */
+		final FaceGroup sideFaceGroup = getFaceGroup( sideAppearance, smoothCircumference, false );
 		for ( int i1 = 0 ; i1 < numEdges ; i1++ )
 		{
 			final int   i2 = ( i1 + 1 ) % numEdges;
 
 			final int[] vertexIndices = flipNormals ? new int[] { numEdges + i2, numEdges + i1, i1, i2 } : new int[] { i2, i1, numEdges + i1, numEdges + i2 };
 
-			final float[] texturePoints = ( sideMap != null ) ? sideMap.generate( sideMaterial, vertexCoordinates, vertexIndices, false ) : null;
-			addFace( new Face3D( this, vertexIndices, sideMaterial, texturePoints, null, smoothCircumference, false ) );
+			final TextureMap colorMap = ( sideAppearance == null ) ? null : sideAppearance.getColorMap();
+			final float[] texturePoints = ( sideMap != null ) ? sideMap.generate( colorMap, vertexCoordinates, vertexIndices, false ) : null;
+			sideFaceGroup.addFace( new Face3D( this, vertexIndices, texturePoints, null ) );
 		}
 
 		/*
 		 * Top face (if it exists).
 		 */
-		if ( topMaterial != null )
+		if ( topAppearance != null )
 		{
 			final int[] vertexIndices = new int[ numEdges ];
 
@@ -142,8 +146,9 @@ public class Cylinder3D
 				vertexIndices[ i ] = flipNormals ? ( lastVertex - numEdges + 1 + i ) : ( lastVertex - i );
 			}
 
-			final float[] texturePoints = ( topMap != null ) ? topMap.generate( topMaterial, vertexCoordinates, vertexIndices, false ) : null;
-			addFace( new Face3D( this, vertexIndices, topMaterial, texturePoints, null, false, false ) );
+			final float[] texturePoints = ( topMap != null ) ? topMap.generate( topAppearance.getColorMap(), vertexCoordinates, vertexIndices, false ) : null;
+			final FaceGroup faceGroup = getFaceGroup( topAppearance, false, false );
+			faceGroup.addFace( new Face3D( this, vertexIndices, texturePoints, null ) );
 		}
 	}
 
@@ -185,7 +190,7 @@ public class Cylinder3D
 			final double x = fromOtherToThis.transformX( 0.0, 0.0, 0.0 );
 			final double y = fromOtherToThis.transformY( 0.0, 0.0, 0.0 );
 			final double z = fromOtherToThis.transformZ( 0.0, 0.0, 0.0 );
-			result = GeometryTools.testSphereCylinderIntersection( x, y, z, sphere.radius, height, radius );
+			result = GeometryTools.testSphereCylinderIntersection( x, y, z, sphere._radius, height, radius );
 		}
 		else
 		{
