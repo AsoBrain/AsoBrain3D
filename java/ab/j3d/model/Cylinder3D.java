@@ -50,20 +50,65 @@ public class Cylinder3D
 	public final double radius;
 
 	/**
+	 * Number of edges to approximate circle.
+	 */
+	private int _numEdges;
+
+	/**
+	 * Material of cylinder circumference.
+	 */
+	private Material _sideAppearance;
+
+	/**
+	 * UV map to use for circumference.
+	 */
+	private UVMap _sideMap;
+
+	/**
+	 * Apply smoothing to circumference of cylinder.
+	 */
+	private boolean _smoothCircumference;
+
+	/**
+	 * Material for top cap (<code>null</code> => no cap).
+	 */
+	private Material _topAppearance;
+
+	/**
+	 * UV map for top cap.
+	 */
+	private UVMap _topMap;
+
+	/**
+	 * Material for bottom cap (<code>null</code> => no cap).
+	 */
+	private Material _bottomAppearance;
+
+	/**
+	 * UV map for bottom cap.
+	 */
+	private UVMap _bottomMap;
+
+	/**
+	 * If set, flip normals.
+	 */
+	private boolean _flipNormals;
+
+	/**
 	 * Constructor for cylinder object. Radius of top or bottom may be set to 0 to create
 	 * a cone.
 	 *
-	 * @param   height              Height of cylinder (z-axis).
-	 * @param   radius              Radius.
-	 * @param   numEdges            Number of edges to approximate circle (minimum: 3).
-	 * @param   sideAppearance        Material of cylinder circumference.
-	 * @param   sideMap             UV map to use for circumference.
-	 * @param   smoothCircumference Apply smoothing to circumference of cylinder.
-	 * @param   topAppearance         Material for top cap (<code>null</code> => no cap).
-	 * @param   topMap              UV map for top cap.
-	 * @param   bottomAppearance      Material for bottom cap (<code>null</code> => no cap).
-	 * @param   bottomMap           UV map for bottom cap.
-	 * @param   flipNormals         If set, flip normals.
+	 * @param   height                  Height of cylinder (z-axis).
+	 * @param   radius                  Radius.
+	 * @param   numEdges                Number of edges to approximate circle (minimum: 3).
+	 * @param   sideAppearance          Material of cylinder circumference.
+	 * @param   sideMap                 UV map to use for circumference.
+	 * @param   smoothCircumference     Apply smoothing to circumference of cylinder.
+	 * @param   topAppearance           Material for top cap (<code>null</code> => no cap).
+	 * @param   topMap                  UV map for top cap.
+	 * @param   bottomAppearance        Material for bottom cap (<code>null</code> => no cap).
+	 * @param   bottomMap               UV map for bottom cap.
+	 * @param   flipNormals             If set, flip normals.
 	 */
 	public Cylinder3D( final double height, final double radius, final int numEdges, @Nullable final Material sideAppearance, @Nullable final UVMap sideMap, final boolean smoothCircumference, @Nullable final Material topAppearance, @Nullable final UVMap topMap, @Nullable final Material bottomAppearance, @Nullable final UVMap bottomMap, final boolean flipNormals )
 	{
@@ -72,8 +117,17 @@ public class Cylinder3D
 			throw new IllegalArgumentException( "inacceptable arguments to Cylinder constructor" );
 		}
 
-		this.height       = height;
+		this.height = height;
 		this.radius = radius;
+		_numEdges = numEdges;
+		_sideAppearance = sideAppearance;
+		_sideMap = sideMap;
+		_smoothCircumference = smoothCircumference;
+		_topAppearance = topAppearance;
+		_topMap = topMap;
+		_bottomAppearance = bottomAppearance;
+		_bottomMap = bottomMap;
+		_flipNormals = flipNormals;
 
 		/*
 		 * Setup properties of cylinder.
@@ -198,6 +252,49 @@ public class Cylinder3D
 		}
 
 		return result;
+	}
+
+	@Override
+	public boolean equals( final Object other )
+	{
+		final boolean result;
+		if ( other == this )
+		{
+			result = true;
+		}
+		else if ( other instanceof Cylinder3D )
+		{
+			final Cylinder3D cylinder = (Cylinder3D)other;
+			result = ( height               == cylinder.height               ) &&
+			         ( radius               == cylinder.radius               ) &&
+			         ( _numEdges            == cylinder._numEdges            ) &&
+			         ( ( _sideAppearance    == null ) ? ( cylinder._sideAppearance   == null ) : _sideAppearance  .equals( cylinder._sideAppearance   ) ) &&
+			         ( ( _topAppearance     == null ) ? ( cylinder._topAppearance    == null ) : _topAppearance   .equals( cylinder._topAppearance    ) ) &&
+			         ( ( _bottomAppearance  == null ) ? ( cylinder._bottomAppearance == null ) : _bottomAppearance.equals( cylinder._bottomAppearance ) ) &&
+			         ( ( _sideMap           == null ) ? ( cylinder._sideMap          == null ) : _sideMap         .equals( cylinder._sideMap          ) ) &&
+			         ( ( _topMap            == null ) ? ( cylinder._topMap           == null ) : _topMap          .equals( cylinder._topMap           ) ) &&
+			         ( ( _bottomMap         == null ) ? ( cylinder._bottomMap        == null ) : _bottomMap       .equals( cylinder._bottomMap        ) ) &&
+			         ( _smoothCircumference == cylinder._smoothCircumference ) &&
+			         ( _flipNormals         == cylinder._flipNormals         );
+		}
+		else
+		{
+			result = false;
+		}
+		return result;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		final long height = Double.doubleToLongBits( this.height );
+		final long radius = Double.doubleToLongBits( this.radius );
+		return (int)height ^ (int)( height >>> 32 ) ^
+		       (int)radius ^ (int)( radius >>> 32 ) ^
+		       _numEdges ^
+		       _sideAppearance.hashCode() ^
+		       _topAppearance.hashCode() ^
+		       _bottomAppearance.hashCode();
 	}
 
 	@Override
