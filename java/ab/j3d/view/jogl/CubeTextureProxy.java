@@ -9,19 +9,12 @@
  */
 package ab.j3d.view.jogl;
 
-import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-import javax.media.opengl.GL;
-import javax.media.opengl.glu.GLU;
+import javax.media.opengl.*;
+import javax.media.opengl.glu.*;
 
-import com.sun.opengl.util.texture.Texture;
-import com.sun.opengl.util.texture.TextureData;
-import com.sun.opengl.util.texture.TextureIO;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import ab.j3d.MapTools;
+import ab.j3d.appearance.*;
+import com.sun.opengl.util.texture.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Provides a cube map texture, with support for loading texture data
@@ -33,12 +26,10 @@ import ab.j3d.MapTools;
 public class CubeTextureProxy
 	extends TextureProxy
 {
-	/** Name of the image for the negative-X side of the cube. */ private final String _x1;
-	/** Name of the image for the negative-Y side of the cube. */ private final String _y1;
-	/** Name of the image for the negative-Z side of the cube. */ private final String _z1;
-	/** Name of the image for the positive-X side of the cube. */ private final String _x2;
-	/** Name of the image for the positive-Y side of the cube. */ private final String _y2;
-	/** Name of the image for the positive-Z side of the cube. */ private final String _z2;
+	/**
+	 * Cube map specification.
+	 */
+	private CubeMap _cubeMap;
 
 	/** Texture data for the negative-X side of the cube. */ private volatile TextureData _x1Data = null;
 	/** Texture data for the negative-Y side of the cube. */ private volatile TextureData _y1Data = null;
@@ -86,53 +77,26 @@ public class CubeTextureProxy
 	/**
 	 * Constructs a new cube map texture from a single image.
 	 *
-	 * @param   name            Name of the image.
+	 * @param   cubeMap         Cube map.
 	 * @param   textureCache    Texture cache.
 	 */
-	public CubeTextureProxy( @NotNull final String name , final TextureCache textureCache )
+	public CubeTextureProxy( @NotNull final CubeMap cubeMap, final TextureCache textureCache )
 	{
-		super( name , textureCache );
-		_x1 = null;
-		_y1 = null;
-		_z1 = null;
-		_x2 = null;
-		_y2 = null;
-		_z2 = null;
-	}
-
-	/**
-	 * Constructs a new cube map texture from six seperate images.
-	 *
-	 * @param   x1              Image on the negative-X side of the cube.
-	 * @param   y1              Image on the negative-Y side of the cube.
-	 * @param   z1              Image on the negative-Z side of the cube.
-	 * @param   x2              Image on the positive-X side of the cube.
-	 * @param   y2              Image on the positive-Y side of the cube.
-	 * @param   z2              Image on the positive-Z side of the cube.
-	 * @param   textureCache    Texture cache.
-	 */
-	public CubeTextureProxy( @NotNull final String x1 , @NotNull final String y1 , @NotNull final String z1 , @NotNull final String x2 , @NotNull final String y2 , @NotNull final String z2 , final TextureCache textureCache )
-	{
-		super( "" , textureCache );
-		_x1 = x1;
-		_y1 = y1;
-		_z1 = z1;
-		_x2 = x2;
-		_y2 = y2;
-		_z2 = z2;
+		super( textureCache );
+		_cubeMap = cubeMap;
 	}
 
 	@Override
 	public TextureData call()
 	{
-		if ( _x1 == null )
-		{
-			loadFromSingleImage();
-		}
-		else
-		{
-			loadFromMultipleImages();
-		}
+		final CubeMap cubeMap = _cubeMap;
+
+		_x1Data = createTextureData( cubeMap.getImageX1() );
+		_y1Data = createTextureData( cubeMap.getImageY1() );
+		_z1Data = createTextureData( cubeMap.getImageZ1() );
+		_x2Data = createTextureData( cubeMap.getImageX2() );
+		_y2Data = createTextureData( cubeMap.getImageY2() );
+		_z2Data = createTextureData( cubeMap.getImageZ2() );
 
 		// Not really applicable for a cube map.
 		return null;
@@ -188,133 +152,9 @@ public class CubeTextureProxy
 		return texture;
 	}
 
-	/**
-	 * Loads the texture data for the cube map from seperate images.
-	 */
-	private void loadFromMultipleImages()
-	{
-		_x1Data = loadTextureData( _x1 );
-		_y1Data = loadTextureData( _y1 );
-		_z1Data = loadTextureData( _z1 );
-		_x2Data = loadTextureData( _x2 );
-		_y2Data = loadTextureData( _y2 );
-		_z2Data = loadTextureData( _z2 );
-	}
-
-	/**
-	 * Creates texture data for the specified image.
-	 *
-	 * @param   name    Name of the image.
-	 *
-	 * @return  Texture data.
-	 */
-	@Nullable
-	private TextureData loadTextureData( @NotNull final String name )
-	{
-		TextureData result = null;
-
-		final BufferedImage bufferedImage = MapTools.loadImage( name );
-		if ( bufferedImage != null )
-		{
-			final BufferedImage compatibleImage = createCompatibleTextureImage( bufferedImage );
-			result = createTextureData( compatibleImage );
-		}
-
-		return result;
-	}
-
-	/**
-	 * Loads the texture data for the cube map from a single image.
-	 */
-	private void loadFromSingleImage()
-	{
-		final BufferedImage cubeImage = MapTools.getImage( _name );
-		if ( cubeImage != null )
-		{
-			if ( cubeImage.getWidth() * 3 != cubeImage.getHeight() * 4 )
-			{
-				throw new IllegalArgumentException( "Cube map must have 4:3 aspect ratio" );
-			}
-
-			if ( cubeImage.getWidth() % 4 != 0 )
-			{
-				throw new IllegalArgumentException( "Cube map width must be a multiple of 4" );
-			}
-
-			if ( cubeImage.getHeight() % 3 != 0 )
-			{
-				throw new IllegalArgumentException( "Cube map height must be a multiple of 3" );
-			}
-
-			final int size = cubeImage.getWidth() / 4;
-
-			TextureData x1Data = null;
-			TextureData y1Data = null;
-			TextureData z1Data = null;
-			TextureData x2Data = null;
-			TextureData y2Data = null;
-			TextureData z2Data = null;
-
-			switch ( CubeMapOrientation.NEGATIVE_Y )
-			{
-				case POSITIVE_Z:
-					x1Data = createTextureData( getSubImage( cubeImage, 0 , 0 , size , size , size ) );
-					y1Data = createTextureData( getSubImage( cubeImage, 0 , size , 2 * size , size , size ) );
-					z1Data = createTextureData( getSubImage( cubeImage, 0 , 3 * size , size , size , size ) );
-					x2Data = createTextureData( getSubImage( cubeImage, 0 , 2 * size , size , size , size ) );
-					y2Data = createTextureData( getSubImage( cubeImage, 0 , size , 0 , size , size ) );
-					z2Data = createTextureData( getSubImage( cubeImage, 0 , size , size , size , size ) );
-					break;
-
-				case NEGATIVE_Y:
-					x1Data = createTextureData( getSubImage( cubeImage, -90 , 0 , size , size , size ) );
-					y1Data = createTextureData( getSubImage( cubeImage, 0 , size , size , size , size ) );
-					z1Data = createTextureData( getSubImage( cubeImage, 0 , size , 2 * size , size , size ) );
-					x2Data = createTextureData( getSubImage( cubeImage, 90 , 2 * size , size , size , size ) );
-					y2Data = createTextureData( getSubImage( cubeImage, 180 , 3 * size , size , size , size ) );
-					z2Data = createTextureData( getSubImage( cubeImage, 0 , size , 0 , size , size ) );
-					break;
-			}
-
-			_x1Data = x1Data;
-			_y1Data = y1Data;
-			_z1Data = z1Data;
-			_x2Data = x2Data;
-			_y2Data = y2Data;
-			_z2Data = z2Data;
-		}
-	}
-
-	/**
-	 * Returns a sub-image from the given image.
-	 *
-	 * @param   image   Source image.
-	 * @param   angle   Angle of rotation, in degrees.
-	 * @param   x       Top-left corner x-coordinate of the source rectangle.
-	 * @param   y       Top-left corner y-coordinate of the source rectangle.
-	 * @param   w       Width of the source rectangle.
-	 * @param   h       Height of the source rectangle.
-	 *
-	 * @return  Specified sub-image.
-	 */
-	private static BufferedImage getSubImage( final BufferedImage image , final int angle , final int x , final int y , final int w , final int h )
-	{
-		final BufferedImage result = new BufferedImage( w , h , image.getType() );
-		final Graphics2D g = result.createGraphics();
-		final AffineTransform transform = new AffineTransform();
-		transform.translate( (double)( w / 2 ) , (double)( h / 2 ) );
-		transform.rotate( Math.toRadians( (double)-angle ) );
-		transform.translate( (double)( -x - w / 2 ) , (double)( -y - h / 2 ) );
-		g.setTransform( transform );
-		g.drawImage( image , 0 , 0 , null );
-		g.dispose();
-		return result;
-	}
-
 	@Override
 	public String toString()
 	{
-		return super.toString() + ( ( _name == "" ) ? "[" + _x1 + "," + _y1 + "," + _z1 + "," + _x2 + "," + _y2 + "," + _z2 + "]"
-		                                            : "[" + _name + "]" );
+		return super.toString() + "[cubeMap=" + _cubeMap + "]";
 	}
 }

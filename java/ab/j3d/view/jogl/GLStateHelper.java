@@ -23,7 +23,7 @@ package ab.j3d.view.jogl;
 import java.awt.*;
 import javax.media.opengl.*;
 
-import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.view.*;
 
 /**
@@ -126,11 +126,11 @@ public class GLStateHelper
 	 * Sets GL material properties calculated from the given material,
 	 * render style and alpha.
 	 *
-	 * @param   material    {@link Material} properties.
+	 * @param   appearance  Appearance properties to be set.
 	 * @param   style       Render style to be applied.
 	 * @param   extraAlpha  Extra alpha multiplier.
 	 */
-	public final void setMaterial( final Material material, final RenderStyle style, final float extraAlpha )
+	public final void setAppearance( final Appearance appearance, final RenderStyle style, final float extraAlpha )
 	{
 		final float red;
 		final float green;
@@ -139,8 +139,8 @@ public class GLStateHelper
 
 		if ( style.isFillEnabled() )
 		{
-			final Color materialDiffuse = new Color( material.diffuseColorRed , material.diffuseColorGreen , material.diffuseColorBlue , extraAlpha * material.diffuseColorAlpha );
-			final Color diffuse = RenderStyle.blendColors( style.getFillColor() , materialDiffuse );
+			final Color materialDiffuse = new Color( appearance.getDiffuseColorRed(), appearance.getDiffuseColorGreen(), appearance.getDiffuseColorBlue(), extraAlpha * appearance.getDiffuseColorAlpha() );
+			final Color diffuse = RenderStyle.blendColors( style.getFillColor(), materialDiffuse );
 			final float[] diffuseComponents = diffuse.getRGBComponents( null );
 
 			red   = diffuseComponents[ 0 ];
@@ -150,33 +150,33 @@ public class GLStateHelper
 		}
 		else
 		{
-			red   = material.diffuseColorRed;
-			green = material.diffuseColorGreen;
-			blue  = material.diffuseColorBlue;
-			alpha = material.diffuseColorAlpha * extraAlpha;
+			red   = appearance.getDiffuseColorRed();
+			green = appearance.getDiffuseColorGreen();
+			blue  = appearance.getDiffuseColorBlue();
+			alpha = appearance.getDiffuseColorAlpha() * extraAlpha;
 		}
 
-		setMaterial( material, red, green, blue, alpha );
+		setAppearance( appearance, red, green, blue, alpha );
 	}
 
 	/**
 	 * Sets OpenGL material properties.
 	 *
-	 * @param   material    Material properties to be set.
+	 * @param   appearance  Appearance properties to be set.
 	 * @param   red         Red component of the diffuse color to be set.
 	 * @param   green       Green component of the diffuse color to be set.
 	 * @param   blue        Blue component of the diffuse color to be set.
 	 * @param   alpha       Alpha component to be set.
 	 */
-	protected void setMaterial( final Material material, final float red, final float green, final float blue, final float alpha )
+	protected void setAppearance( final Appearance appearance, final float red, final float green, final float blue, final float alpha )
 	{
 		final GL gl = _gl;
 		gl.glColor4f( red, green, blue, alpha );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT , new float[] { material.ambientColorRed , material.ambientColorGreen , material.ambientColorBlue , alpha }, 0 );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT , new float[] { appearance.getAmbientColorRed(), appearance.getAmbientColorGreen(), appearance.getAmbientColorBlue(), alpha }, 0 );
 		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE , new float[] { red, green, blue, alpha }, 0 );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_SPECULAR, new float[] { material.specularColorRed , material.specularColorGreen , material.specularColorBlue , alpha }, 0 );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_EMISSION, new float[] { material.emissiveColorRed , material.emissiveColorGreen , material.emissiveColorBlue , alpha }, 0 );
-		gl.glMaterialf( GL.GL_FRONT_AND_BACK, GL.GL_SHININESS, (float)material.shininess );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_SPECULAR, new float[] { appearance.getSpecularColorRed(), appearance.getSpecularColorGreen(), appearance.getSpecularColorBlue(), alpha }, 0 );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_EMISSION, new float[] { appearance.getEmissiveColorRed(), appearance.getEmissiveColorGreen(), appearance.getEmissiveColorBlue(), alpha }, 0 );
+		gl.glMaterialf( GL.GL_FRONT_AND_BACK, GL.GL_SHININESS, (float)appearance.getShininess() );
 	}
 
 	/**

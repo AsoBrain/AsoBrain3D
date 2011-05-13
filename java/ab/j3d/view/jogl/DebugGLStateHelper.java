@@ -23,7 +23,7 @@ package ab.j3d.view.jogl;
 import java.util.*;
 import javax.media.opengl.*;
 
-import ab.j3d.*;
+import ab.j3d.appearance.*;
 
 /**
  * Handles OpenGL state changes and verifies that changes were properly applied.
@@ -105,11 +105,11 @@ public class DebugGLStateHelper
 	}
 
 	@Override
-	protected void setMaterial( final Material material, final float red, final float green, final float blue, final float alpha )
+	protected void setAppearance( final Appearance appearance, final float red, final float green, final float blue, final float alpha )
 	{
 		final GL gl = _gl;
 
-		super.setMaterial( material, red, green, blue, alpha );
+		super.setAppearance( appearance, red, green, blue, alpha );
 
 		{
 			final float[] expected = { red, green, blue, alpha };
@@ -119,7 +119,7 @@ public class DebugGLStateHelper
 		}
 
 		{
-			final float[] expected = { material.ambientColorRed, material.ambientColorGreen, material.ambientColorBlue, alpha };
+			final float[] expected = { appearance.getAmbientColorRed(), appearance.getAmbientColorGreen(), appearance.getAmbientColorBlue(), alpha };
 			final float[] actual = new float[ 4 ];
 			gl.glGetMaterialfv( GL.GL_FRONT, GL.GL_AMBIENT, actual, 0 );
 			assertEquals( expected, actual );
@@ -137,7 +137,7 @@ public class DebugGLStateHelper
 		}
 
 		{
-			final float[] expected = { material.specularColorRed, material.specularColorGreen, material.specularColorBlue, alpha };
+			final float[] expected = { appearance.getSpecularColorRed(), appearance.getSpecularColorGreen(), appearance.getSpecularColorBlue(), alpha };
 			final float[] actual = new float[ 4 ];
 			gl.glGetMaterialfv( GL.GL_FRONT, GL.GL_SPECULAR, actual, 0 );
 			assertEquals( expected, actual );
@@ -146,7 +146,7 @@ public class DebugGLStateHelper
 		}
 
 		{
-			final float[] expected = { material.emissiveColorRed, material.emissiveColorGreen, material.emissiveColorBlue, alpha };
+			final float[] expected = { appearance.getEmissiveColorRed(), appearance.getEmissiveColorGreen(), appearance.getEmissiveColorBlue(), alpha };
 			final float[] actual = new float[ 4 ];
 			gl.glGetMaterialfv( GL.GL_FRONT, GL.GL_EMISSION, actual, 0 );
 			assertEquals( expected, actual );
@@ -155,7 +155,7 @@ public class DebugGLStateHelper
 		}
 
 		{
-			final float[] expected = { (float)material.shininess };
+			final float[] expected = { (float)appearance.getShininess() };
 			final float[] actual = new float[ 1 ];
 			gl.glGetMaterialfv( GL.GL_FRONT, GL.GL_SHININESS, actual, 0 );
 			assertEquals( expected, actual );

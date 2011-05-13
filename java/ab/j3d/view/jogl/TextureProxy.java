@@ -9,44 +9,19 @@
  */
 package ab.j3d.view.jogl;
 
-import java.awt.AlphaComposite;
-import java.awt.Graphics2D;
-import java.awt.Transparency;
-import java.awt.color.ColorSpace;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.ComponentColorModel;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferDouble;
-import java.awt.image.DataBufferFloat;
-import java.awt.image.DataBufferInt;
-import java.awt.image.DataBufferShort;
-import java.awt.image.DataBufferUShort;
-import java.awt.image.WritableRaster;
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import javax.media.opengl.GL;
-import javax.media.opengl.GLException;
-import javax.media.opengl.glu.GLU;
+import java.awt.*;
+import java.awt.color.*;
+import java.awt.image.*;
+import java.nio.*;
+import java.util.concurrent.*;
+import javax.media.opengl.*;
+import javax.media.opengl.glu.*;
 
-import com.sun.opengl.util.texture.Texture;
-import com.sun.opengl.util.texture.TextureData;
-import com.sun.opengl.util.texture.TextureIO;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import ab.j3d.MapTools;
-
-import com.numdata.oss.MathTools;
-import com.numdata.oss.ui.ImageTools;
+import ab.j3d.appearance.*;
+import com.numdata.oss.*;
+import com.numdata.oss.ui.*;
+import com.sun.opengl.util.texture.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Provides access to a {@link Texture} in such a way that it can be loaded
@@ -63,7 +38,7 @@ public class TextureProxy
 	/**
 	 * Name of the texture image.
 	 */
-	protected final String _name;
+	protected final TextureMap _textureMap;
 
 	/**
 	 * Texture cache.
@@ -84,12 +59,10 @@ public class TextureProxy
 	 * Construct new texture proxy for a texture that is already loaded.
 	 *
 	 * @param   texture     Texture to be wrapped.
-	 *
-	 * @see     MapTools#loadImage
 	 */
 	public TextureProxy( @NotNull final Texture texture )
 	{
-		_name = null;
+		_textureMap = null;
 		_textureCache = null;
 		_textureData = null;
 		_texture = texture;
@@ -98,14 +71,25 @@ public class TextureProxy
 	/**
 	 * Construct new texture proxy.
 	 *
-	 * @param   name            Name of the texture image.
+	 * @param   textureMap      Texture map.
 	 * @param   textureCache    Texture cache.
-	 *
-	 * @see     MapTools#loadImage
 	 */
-	public TextureProxy( @NotNull final String name , final TextureCache textureCache )
+	public TextureProxy( @NotNull final TextureMap textureMap , final TextureCache textureCache )
 	{
-		_name = name;
+		_textureMap = textureMap;
+		_textureCache = textureCache;
+		_textureData = null;
+		_texture = null;
+	}
+
+	/**
+	 * Construct new texture proxy.
+	 *
+	 * @param   textureCache    Texture cache.
+	 */
+	protected TextureProxy( final TextureCache textureCache )
+	{
+		_textureMap = null;
 		_textureCache = textureCache;
 		_textureData = null;
 		_texture = null;
@@ -217,16 +201,27 @@ public class TextureProxy
 	@Override
 	public TextureData call()
 	{
+		return createTextureData( _textureMap.getImage( false ) );
+	}
+
+	/**
+	 * Creates texture data from the given buffered image, if not
+	 * <code>null</code>. The image is automatically converted to a compatible
+	 * format using {@link #createCompatibleTextureImage(BufferedImage)}.
+	 *
+	 * @param   image   Texture image.
+	 *
+	 * @return  Compatible texture data.
+	 */
+	@Nullable
+	protected TextureData createTextureData( @Nullable final BufferedImage image )
+	{
 		TextureData result = null;
-
-		final BufferedImage bufferedImage = MapTools.loadImage( _name );
-		if ( bufferedImage != null )
+		if ( image != null )
 		{
-			final BufferedImage compatibleImage = createCompatibleTextureImage( bufferedImage );
-			final TextureData textureData = createTextureData( compatibleImage );
-			result = textureData;
+			final BufferedImage compatibleImage = createCompatibleTextureImage( image );
+			result = createTextureDataFromCompatibleImage( compatibleImage );
 		}
-
 		return result;
 	}
 
@@ -266,7 +261,7 @@ public class TextureProxy
 	 *
 	 * @noinspection JavaDoc
 	 */
-	protected TextureData createTextureData( final BufferedImage image )
+	protected TextureData createTextureDataFromCompatibleImage( final BufferedImage image )
 	{
 		final int width = image.getWidth();
 		final int height = image.getHeight();
@@ -496,15 +491,14 @@ public class TextureProxy
 			try
 			{
 				/**
-				 * Set generate mipmaps to true, this greatly increases performance and viewing pleasure in big scenes.
-				 * @TODO need to find out if generated mipmaps are faster or if pregenerated mipmaps are faster
+				 * Generate mip maps to avoid 'noise' on far-away textures.
 				 */
 				texture.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
 
-				/** Set texture magnification to GL_LINEAR to support mipmaps. */
+				/*
+				 * Use linear texture filtering.
+				 */
 				texture.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
-
-				/** Set texture minification to GL_LINEAR_MIPMAP_NEAREST to support mipmaps. */
 				texture.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
 			}
 			catch ( GLException e )
@@ -535,6 +529,6 @@ public class TextureProxy
 	@Override
 	public String toString()
 	{
-		return super.toString() + "[" + _name + "]";
+		return super.toString() + "[textureMap=" + _textureMap + "]";
 	}
 }

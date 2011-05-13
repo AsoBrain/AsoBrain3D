@@ -24,6 +24,7 @@ import java.io.*;
 import java.util.*;
 import javax.media.opengl.*;
 
+import ab.j3d.appearance.*;
 import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
@@ -256,8 +257,17 @@ public class ShaderManager
 	}
 
 	/**
-	 * Sets the reflectivity of the current material. Applies only to the
-	 * currently active shader.
+	 * Sets the reflectivity properties of the currently active shader.
+	 *
+	 * @param   reflectionMap       Specifies reflection properties.
+	 */
+	public void setReflectivity( @NotNull final ReflectionMap reflectionMap )
+	{
+		setReflectivity( reflectionMap.getReflectivityMin(), reflectionMap.getReflectivityMax(), reflectionMap.getIntensityRed(), reflectionMap.getIntensityGreen(), reflectionMap.getIntensityBlue() );
+	}
+
+	/**
+	 * Sets the reflectivity properties of the currently active shader.
 	 *
 	 * @param   reflectionMin       Reflectivity perpendicular to face normals.
 	 * @param   reflectionMax       Reflectivity parallel to face normals.
@@ -626,6 +636,7 @@ public class ShaderManager
 		{
 			shaderProgram.enable();
 			shaderProgram.setUniform( "colorMap", JOGLRenderer.TEXTURE_UNIT_COLOR - GL.GL_TEXTURE0 );
+			shaderProgram.setUniform( "bumpMap", JOGLRenderer.TEXTURE_UNIT_BUMP - GL.GL_TEXTURE0 );
 			shaderProgram.setUniform( "reflectionMap", JOGLRenderer.TEXTURE_UNIT_ENVIRONMENT - GL.GL_TEXTURE0 );
 			shaderProgram.setUniform( "shadowMap", JOGLRenderer.TEXTURE_UNIT_SHADOW - GL.GL_TEXTURE0 );
 

@@ -258,6 +258,7 @@ public class JOGLView
 				final JOGLGraphics2D graphics2D = _graphics2D;
 				if ( graphics2D != null )
 				{
+					graphics2D.dispose();
 					_graphics2D = null;
 				}
 

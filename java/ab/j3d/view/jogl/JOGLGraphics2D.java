@@ -898,8 +898,13 @@ public class JOGLGraphics2D
 
 		//create renderer if renderer has not been created already.
 		TextRenderer renderer = _renderer;
-		if ( ( renderer == null ) || ( renderer.getFont() != getFont() ) )
+		final Font font = getFont();
+		if ( ( renderer == null ) || !font.equals( renderer.getFont() ) )
 		{
+			if ( renderer != null )
+			{
+				renderer.dispose();
+			}
 			renderer = new TextRenderer( getFont() );
 			_renderer = renderer;
 		}

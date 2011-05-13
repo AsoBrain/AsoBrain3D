@@ -23,7 +23,7 @@ package ab.j3d.view.jogl;
 import java.util.*;
 import javax.media.opengl.*;
 
-import ab.j3d.*;
+import ab.j3d.appearance.*;
 
 /**
  * Handles OpenGL state changes and caches OpenGL state to improve performance.
@@ -124,7 +124,7 @@ public class CachingGLStateHelper
 	}
 
 	@Override
-	protected void setMaterial( final Material material, final float red, final float green, final float blue, final float alpha )
+	protected void setAppearance( final Appearance appearance, final float red, final float green, final float blue, final float alpha )
 	{
 		final GL gl = _gl;
 
@@ -133,7 +133,7 @@ public class CachingGLStateHelper
 			gl.glColor4fv( _color, 0 );
 		}
 
-		if ( update( _materialAmbient, material.ambientColorRed , material.ambientColorGreen , material.ambientColorBlue , alpha ) )
+		if ( update( _materialAmbient, appearance.getAmbientColorRed() , appearance.getAmbientColorGreen() , appearance.getAmbientColorBlue() , alpha ) )
 		{
 			gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT , _materialAmbient, 0 );
 		}
@@ -143,20 +143,20 @@ public class CachingGLStateHelper
 			gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE , _materialDiffuse, 0 );
 		}
 
-		if ( update( _materialSpecular, material.specularColorRed , material.specularColorGreen , material.specularColorBlue , alpha ) )
+		if ( update( _materialSpecular, appearance.getSpecularColorRed() , appearance.getSpecularColorGreen() , appearance.getSpecularColorBlue() , alpha ) )
 		{
 			gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_SPECULAR, _materialSpecular, 0 );
 		}
 
-		if ( update( _materialEmissive, material.emissiveColorRed , material.emissiveColorGreen , material.emissiveColorBlue , alpha ) )
+		if ( update( _materialEmissive, appearance.getEmissiveColorRed() , appearance.getEmissiveColorGreen() , appearance.getEmissiveColorBlue() , alpha ) )
 		{
 			gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_EMISSION, _materialEmissive, 0 );
 		}
 
-		if ( _shininess != (float)material.shininess )
+		if ( _shininess != (float)appearance.getShininess() )
 		{
-			_shininess = (float)material.shininess;
-			gl.glMaterialf( GL.GL_FRONT_AND_BACK, GL.GL_SHININESS, (float)material.shininess );
+			_shininess = (float)appearance.getShininess();
+			gl.glMaterialf( GL.GL_FRONT_AND_BACK, GL.GL_SHININESS, (float)appearance.getShininess() );
 		}
 	}
 

@@ -9,11 +9,11 @@
  */
 package ab.j3d.view.jogl;
 
-import java.awt.image.BufferedImage;
+import java.awt.image.*;
 
-import com.sun.opengl.util.texture.TextureData;
-
-import ab.j3d.MapTools;
+import ab.j3d.*;
+import ab.j3d.appearance.*;
+import com.sun.opengl.util.texture.*;
 
 /**
  * Texture proxy for a bump map.
@@ -27,14 +27,14 @@ public class BumpTextureProxy
 	/**
 	 * Construct new texture proxy for a bump map.
 	 *
-	 * @param   name            Name of the texture image.
+	 * @param   textureMap      Texture map.
 	 * @param   textureCache    Texture cache.
 	 *
 	 * @see     MapTools#loadImage
 	 */
-	public BumpTextureProxy( final String name , final TextureCache textureCache )
+	public BumpTextureProxy( final TextureMap textureMap, final TextureCache textureCache )
 	{
-		super( name , textureCache );
+		super( textureMap, textureCache );
 	}
 
 	@Override
@@ -42,13 +42,13 @@ public class BumpTextureProxy
 	{
 		TextureData result = null;
 
-		final BufferedImage bufferedImage = MapTools.loadImage( _name );
+		final BufferedImage bufferedImage = _textureMap.getImage( false );
 		if ( bufferedImage != null )
 		{
 			final BufferedImage normalMap = JOGLTools.createNormalMapFromBumpMap( bufferedImage );
 			final BufferedImage compatibleImage = createCompatibleTextureImage( normalMap );
 
-			result = createTextureData( compatibleImage );
+			result = createTextureDataFromCompatibleImage( compatibleImage );
 		}
 
 		return result;
