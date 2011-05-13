@@ -182,6 +182,11 @@ public class JOGLRenderer
 	private RenderStatistics _statistics;
 
 	/**
+	 * Environment map for {@link #renderEnvironment()}.
+	 */
+	private SingleImageCubeMap _environmentMap;
+
+	/**
 	 * Construct new JOGL renderer.
 	 *
 	 * @param   gl                      GL pipeline.
@@ -828,48 +833,63 @@ public class JOGLRenderer
 			state.setEnabled( GL.GL_CULL_FACE, true );
 		}
 
-		if ( false )
+//		renderEnvironment();
+	}
+
+	/**
+	 * Renders an environment surrounding the entire scene using a cube map.
+	 * This is currently not used, but provided for future reference.
+	 */
+	private void renderEnvironment()
+	{
+		SingleImageCubeMap environmentMap = _environmentMap;
+		if ( environmentMap == null )
 		{
-			final SingleImageCubeMap cubeMap = new SingleImageCubeMap( MapTools.loadImage( "reflection/metal" ) );
-			final Texture cubeMapTexture = _textureCache.getCubeMap( cubeMap );
-			if ( cubeMapTexture != null )
-			{
-				state.setEnabled( GL.GL_DEPTH_TEST, false );
-				state.setEnabled( GL.GL_CULL_FACE, false );
+			environmentMap = new SingleImageCubeMap( MapTools.loadImage( "reflection/metal" ) );
+			_environmentMap = environmentMap;
+		}
 
-				gl.glMatrixMode( GL.GL_MODELVIEW );
-				gl.glPushMatrix();
-				gl.glLoadIdentity(); // <-- FIXME Completely breaks everything. WTF?!
-				JOGLTools.glMultMatrixd( gl, _sceneToViewRotation );
+		final Texture cubeMapTexture = _textureCache.getCubeMap( environmentMap );
+		if ( cubeMapTexture != null )
+		{
+			final GL gl = _gl;
+			final GLStateHelper state = _state;
 
-				cubeMapTexture.bind();
-				cubeMapTexture.enable();
+			state.setEnabled( GL.GL_DEPTH_TEST, false );
+			state.setEnabled( GL.GL_CULL_FACE, false );
 
-				gl.glTexGeni( GL.GL_S, GL.GL_TEXTURE_GEN_MODE, GL.GL_OBJECT_LINEAR );
-				gl.glTexGeni( GL.GL_T, GL.GL_TEXTURE_GEN_MODE, GL.GL_OBJECT_LINEAR );
-				gl.glTexGeni( GL.GL_R, GL.GL_TEXTURE_GEN_MODE, GL.GL_OBJECT_LINEAR );
-				gl.glTexGenfv( GL.GL_S, GL.GL_OBJECT_PLANE, new float[] { 1.0f, 0.0f, 0.0f, 1.0f }, 0 );
-				gl.glTexGenfv( GL.GL_T, GL.GL_OBJECT_PLANE, new float[] { 0.0f, 1.0f, 0.0f, 1.0f }, 0 );
-				gl.glTexGenfv( GL.GL_R, GL.GL_OBJECT_PLANE, new float[] { 0.0f, 0.0f, 1.0f, 1.0f }, 0 );
-				state.setEnabled( GL.GL_TEXTURE_GEN_S, true );
-				state.setEnabled( GL.GL_TEXTURE_GEN_T, true );
-				state.setEnabled( GL.GL_TEXTURE_GEN_R, true );
+			gl.glMatrixMode( GL.GL_MODELVIEW );
+			gl.glPushMatrix();
+			gl.glLoadIdentity();
+			JOGLTools.glMultMatrixd( gl, _sceneToViewRotation );
 
-				final GLUT glut = new GLUT();
-				state.setColor( 1.0f, 1.0f, 1.0f, 1.0f );
-				glut.glutSolidCube( 10.0f );
+			cubeMapTexture.bind();
+			cubeMapTexture.enable();
 
-				state.setEnabled( GL.GL_TEXTURE_GEN_S, false );
-				state.setEnabled( GL.GL_TEXTURE_GEN_T, false );
-				state.setEnabled( GL.GL_TEXTURE_GEN_R, false );
+			gl.glTexGeni( GL.GL_S, GL.GL_TEXTURE_GEN_MODE, GL.GL_OBJECT_LINEAR );
+			gl.glTexGeni( GL.GL_T, GL.GL_TEXTURE_GEN_MODE, GL.GL_OBJECT_LINEAR );
+			gl.glTexGeni( GL.GL_R, GL.GL_TEXTURE_GEN_MODE, GL.GL_OBJECT_LINEAR );
+			gl.glTexGenfv( GL.GL_S, GL.GL_OBJECT_PLANE, new float[] { 1.0f, 0.0f, 0.0f, 1.0f }, 0 );
+			gl.glTexGenfv( GL.GL_T, GL.GL_OBJECT_PLANE, new float[] { 0.0f, 1.0f, 0.0f, 1.0f }, 0 );
+			gl.glTexGenfv( GL.GL_R, GL.GL_OBJECT_PLANE, new float[] { 0.0f, 0.0f, 1.0f, 1.0f }, 0 );
+			state.setEnabled( GL.GL_TEXTURE_GEN_S, true );
+			state.setEnabled( GL.GL_TEXTURE_GEN_T, true );
+			state.setEnabled( GL.GL_TEXTURE_GEN_R, true );
 
-				cubeMapTexture.disable();
+			final GLUT glut = new GLUT();
+			state.setColor( 1.0f, 1.0f, 1.0f, 1.0f );
+			glut.glutSolidCube( 1000.0f );
 
-				gl.glPopMatrix();
+			state.setEnabled( GL.GL_TEXTURE_GEN_S, false );
+			state.setEnabled( GL.GL_TEXTURE_GEN_T, false );
+			state.setEnabled( GL.GL_TEXTURE_GEN_R, false );
 
-				state.setEnabled( GL.GL_CULL_FACE, true );
-				state.setEnabled( GL.GL_DEPTH_TEST, true );
-			}
+			cubeMapTexture.disable();
+
+			gl.glPopMatrix();
+
+			state.setEnabled( GL.GL_CULL_FACE, true );
+			state.setEnabled( GL.GL_DEPTH_TEST, true );
 		}
 	}
 
