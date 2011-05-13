@@ -937,7 +937,7 @@ public class JOGLRenderer
 	 */
 	private void renderObjects( final List<ContentNode> nodes, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle )
 	{
-		final Map<Duet<Object3D, RenderStyle>, List<Node3DPath>> objectGroups = new HashMap<Duet<Object3D, RenderStyle>, List<Node3DPath>>();
+		final Map<Duet<Object3D, RenderStyle>, List<Node3DPath>> objectGroups = new LinkedHashMap<Duet<Object3D, RenderStyle>, List<Node3DPath>>();
 
 		for ( final ContentNode node : nodes )
 		{
@@ -1176,12 +1176,6 @@ public class JOGLRenderer
 	 */
 	protected void renderObject( final Object3D object, final List<Node3DPath> paths, final RenderStyle objectStyle )
 	{
-		final RenderStatistics statistics = _statistics;
-		if ( statistics != null )
-		{
-			statistics.objectRendered( object );
-		}
-
 		final boolean anyMaterialEnabled = objectStyle.isMaterialEnabled();
 		final boolean anyFillEnabled     = objectStyle.isFillEnabled() && ( objectStyle.getFillColor() != null );
 		final boolean anyStrokeEnabled   = objectStyle.isStrokeEnabled() && ( objectStyle.getStrokeColor() != null );
@@ -1189,6 +1183,12 @@ public class JOGLRenderer
 
 		if ( anyMaterialEnabled || anyFillEnabled || anyStrokeEnabled || anyVertexEnabled )
 		{
+			final RenderStatistics statistics = _statistics;
+			if ( statistics != null )
+			{
+				statistics.objectRendered( object, paths.size() );
+			}
+
 			if ( anyMaterialEnabled )
 			{
 				renderObjectMaterial( object, paths, objectStyle );
@@ -1904,11 +1904,12 @@ public class JOGLRenderer
 		 * updated accordingly.
 		 *
 		 * @param   object  Object that was rendered.
+		 * @param   count   Number of times the object was rendered.
 		 */
-		private void objectRendered( final Object object )
+		private void objectRendered( final Object object, final int count )
 		{
 			_uniqueObjects.add( object );
-			_objectCounter++;
+			_objectCounter += count;
 		}
 
 		/**
