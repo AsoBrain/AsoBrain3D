@@ -20,7 +20,7 @@
  */
 package ab.j3d.a3ds;
 
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Texture mapping coordinates.
@@ -56,6 +56,30 @@ public final class MappingCoordinates
 
 		if ( Ab3dsFile.DEBUG )
 			System.out.println( "Mapping coordinates" );
+	}
+
+	/**
+	 * Returns the texture U-coordinate for the specified vertex.
+	 *
+	 * @param   vertexIndex     Vertex index.
+	 *
+	 * @return  U-coordinate for the vertex.
+	 */
+	public float getMapU( final int vertexIndex )
+	{
+		return _mapX[ vertexIndex ];
+	}
+
+	/**
+	 * Returns the texture V-coordinate for the specified vertex.
+	 *
+	 * @param   vertexIndex     Vertex index.
+	 *
+	 * @return  V-coordinate for the vertex.
+	 */
+	public float getMapV( final int vertexIndex )
+	{
+		return _mapY[ vertexIndex ];
 	}
 
 	public long getSize()

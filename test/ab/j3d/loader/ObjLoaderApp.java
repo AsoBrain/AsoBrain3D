@@ -19,23 +19,18 @@
  */
 package ab.j3d.loader;
 
-import java.awt.BorderLayout;
-import java.io.IOException;
-import java.util.Locale;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import java.awt.*;
+import java.io.*;
+import java.util.*;
+import javax.swing.*;
 
-import ab.j3d.Bounds3D;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.control.FromToCameraControl;
-import ab.j3d.model.Object3D;
-import ab.j3d.model.Scene;
-import ab.j3d.view.RenderEngine;
-import ab.j3d.view.View3D;
-import ab.j3d.view.jogl.JOGLEngine;
-
-import com.numdata.oss.ui.WindowTools;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.geom.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+import ab.j3d.view.jogl.*;
+import com.numdata.oss.ui.*;
 
 /**
  * This is a sample application for the {@link ObjLoader} class.
@@ -54,7 +49,7 @@ public class ObjLoaderApp
 	{
 		try
 		{
-			final double   unit      = Scene.MM;
+			final double   unit      = Scene.M;
 			final Matrix3D transform = Matrix3D.INIT.rotateX( Math.toRadians( 90.0 ) );
 
 			//Load from jar file...
@@ -62,9 +57,10 @@ public class ObjLoaderApp
 			//final ResourceLoader loader =   new ZipResourceLoader( fileLoader.getResource( "penguin.jar" ) );
 
 			//Or load from directory
-			final ResourceLoader loader = new FileResourceLoader( System.getProperty( "user.home" ) + "/soda/Ivenza_LayoutPlugin/objects/" );
+			final ResourceLoader loader = new FileResourceLoader( System.getProperty( "user.home" ) + "/soda/Ivenza_LayoutPlugin/objects/HiFi" );
 
-			final Object3D object3d = ObjLoader.load( transform , loader , "door2c.obj" );
+			final Object3D object3d = ObjLoader.load( transform , loader , "tv06.obj" );
+			GeometryTools.smooth( object3d, 30.0, 5.0, false );
 			final Bounds3D bounds   = object3d.getOrientedBoundingBox();
 			final Vector3D size     = bounds.size();
 			final double   toCM     = 100.0 * unit;
@@ -73,13 +69,40 @@ public class ObjLoaderApp
 			final Vector3D viewAt   = Vector3D.INIT.set( 0.0 , 0.0 , bounds.v2.z / 2.0 );
 
 			final Scene scene = new Scene( unit );
-			Scene.addLegacyLights( scene );
-			scene.addContentNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d );
+			scene.addContentNode( "obj" , Matrix3D.getTransform( 90.0, 0.0, 0.0, 0.0 , 0.0 , -bounds.v1.z ) , object3d );
+//			scene.addContentNode( "sphere", null, new Sphere3D( 0.1, 8, 8, Materials.ALU_PLATE ) );
 
-			final RenderEngine renderEngine = new JOGLEngine();
+			final Light3D light1 = new Light3D();
+			light1.setIntensity( 0.7f );
+			light1.setFallOff( 10.0 );
+			light1.setCastingShadows( true );
+			final ContentNode lightNode1 = scene.addContentNode( "light-1", null, light1 );
+
+			final Light3D light2 = new Light3D();
+			light2.setIntensity( 0.5f );
+			light2.setFallOff( 0.0 );
+			scene.addContentNode( "light-2", Matrix3D.getTranslation( -10.0, 10.0, 10.0 ), light2 );
+
+			final RenderEngine renderEngine = new JOGLEngine( /*JOGLConfiguration.createLusciousInstance()*/ );
 
 			final View3D view = renderEngine.createView( scene );
 			view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
+			view.addViewListener( new ViewListener()
+			{
+				@Override
+				public void beforeFrame( final View3D view )
+				{
+				}
+
+				@Override
+				public void afterFrame( final View3D view )
+				{
+					final double alpha = ( (double)System.currentTimeMillis() / 1000.0 ) % ( 2.0 * Math.PI );
+					final Vector3D center = bounds.center();
+					lightNode1.setTransform( Matrix3D.getTranslation( center.x + Math.cos( alpha ) * 5.0, center.y + Math.sin( alpha ) * 5.0, center.z + 5.0 ) );
+				}
+			} );
+			scene.setAnimated( true );
 
 			final JPanel viewPanel = new JPanel( new BorderLayout() );
 			viewPanel.add( view.getComponent() , BorderLayout.CENTER );

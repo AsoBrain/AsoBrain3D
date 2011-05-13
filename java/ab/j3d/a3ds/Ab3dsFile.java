@@ -20,10 +20,15 @@
  */
 package ab.j3d.a3ds;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.util.*;
+
+import ab.j3d.*;
+import ab.j3d.appearance.*;
+import ab.j3d.geom.*;
+import ab.j3d.loader.*;
+import ab.j3d.model.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This is a representation of a .3ds file it contains the main entrance to
@@ -40,33 +45,15 @@ public final class Ab3dsFile
 	public static boolean DEBUG = false;
 
 	/**
-	 * Name of scene.
-	 */
-	private String _name;
-
-	/**
 	 * The main entrance point of the model.
 	 */
-	protected HierarchyChunk _main;
+	private HierarchyChunk _main;
 
 	/**
-	 * Creates a new Ab3dsFile with specified name.
-	 *
-	 * @param   name    Name of the 3ds model.
+	 * Creates a new 3DS file.
 	 */
-	public Ab3dsFile( final String name )
+	public Ab3dsFile()
 	{
-		clear( name );
-	}
-
-	/**
-	 * Clears the all content and specifies a new name.
-	 *
-	 * @param   newName New name for the model.
-	 */
-	public void clear( final String newName )
-	{
-		_name = newName;
 		_main = new HierarchyChunk( Chunk.MAIN3DS );
 		_main.add( new HierarchyChunk( Chunk.EDIT3DS ) );
 	}
@@ -76,10 +63,11 @@ public final class Ab3dsFile
 	 *
 	 * @return  Edit chunk.
 	 */
+	@Nullable
 	public HierarchyChunk getEditChunk()
 	{
-		return ( getMainChunk() == null ) ? null
-		     : ((HierarchyChunk)getMainChunk().getFirstChunkByID( Chunk.EDIT3DS ));
+		final HierarchyChunk mainChunk = getMainChunk();
+		return ( mainChunk == null ) ? null : (HierarchyChunk)mainChunk.getFirstChunkByID( Chunk.EDIT3DS );
 	}
 
 	/**
@@ -87,62 +75,83 @@ public final class Ab3dsFile
 	 *
 	 * @return  the main chunk.
 	 */
+	@Nullable
 	public HierarchyChunk getMainChunk()
 	{
 		return ( _main.getID() != Chunk.MAIN3DS ) ? null : _main;
 	}
 
 	/**
-	 * Gets the name of the model.
+	 * Loads a 3DS model from a file.
 	 *
-	 * @return  the name of the 3dsfile.
+	 * @param   file    File to be loaded.
+	 *
+	 * @throws  IOException if an I/O error occurs.
 	 */
-	public String getName()
+	public void load( @NotNull final File file )
+		throws IOException
 	{
-		return _name;
+		final FileInputStream fis = new FileInputStream( file );
+		try
+		{
+			load( fis );
+		}
+		finally
+		{
+			fis.close();
+		}
 	}
 
 	/**
-	 * Load 3ds model from file.
+	 * Loads a 3DS model from the given stream.
+	 *
+	 * @param   in  Stream to load from.
+	 *
+	 * @throws  IOException if an I/O error occurs.
 	 */
-	public void load()
+	public void load( @NotNull final InputStream in )
+		throws IOException
 	{
-		load( _name );
+		final Ab3dsInputStream is = new Ab3dsInputStream( in );
+
+		if ( DEBUG )
+		{
+			System.out.println( "Reading 3DS file." );
+		}
+
+		final HierarchyChunk main = new HierarchyChunk( is.readInt() );
+		_main = main;
+
+		if ( main.getID() != Chunk.MAIN3DS )
+		{
+			throw new RuntimeException( "File is not a valid .3DS file! (does not start with 0x4D4D)" );
+		}
+
+		main.read( is );
+
+		if ( DEBUG )
+		{
+			System.out.println( "Finished 3DS file." );
+		}
 	}
 
 	/**
-	 * Loads a 3ds file into the hierarchy.
+	 * Saves the current hierarchy as a 3DS file.
 	 *
-	 * @param   file    File to load from.
+	 * @param   file    File to save to.
 	 */
-	public void load( final File file )
+	public void save( final File file )
 	{
 		try
 		{
-			final FileInputStream fis = new FileInputStream(file);
+			final FileOutputStream fos = new FileOutputStream( file );
 			try
 			{
-				final Ab3dsInputStream is = new Ab3dsInputStream( fis );
-
-				/*
-				 * Main chunk.
-				 */
-				if ( DEBUG )
-					System.out.println( "READING 3DS FILE" );
-
-				_main = new HierarchyChunk( is.readInt() );
-
-				if ( _main.getID() != Chunk.MAIN3DS )
-					throw new RuntimeException( "File is not a valid .3DS file! (does not start with 0x4D4D)" );
-
-				_main.read( is );
-
-				if ( DEBUG )
-					System.out.println( "FINISHED 3DS FILE" );
+				save( fos );
 			}
 			finally
 			{
-				fis.close();
+				fos.close();
 			}
 		}
 		catch ( IOException e )
@@ -152,21 +161,411 @@ public final class Ab3dsFile
 	}
 
 	/**
-	 * Loads a 3ds file into the hierarchy.
+	 * Saves the current 3DS hierarchy to the given stream.
 	 *
-	 * @param   filename    Name of the file to load from.
+	 * @param   out     Stream to write to.
+	 *
+	 * @throws  IOException if an I/O error occurs.
 	 */
-	public void load( final String filename )
+	private void save( @NotNull final OutputStream out )
+		throws IOException
 	{
-		load( new File( filename ) );
+		final Ab3dsOutputStream os = new Ab3dsOutputStream( out );
+
+		if ( DEBUG )
+		{
+			System.out.println( "Writing 3DS file." );
+		}
+
+		_main.write( os );
+
+		if ( DEBUG )
+		{
+			System.out.println( "Writing 3DS file." );
+		}
+	}
+
+	/**
+	 * Creates a 3D model from the loaded 3DS file. Since no context information
+	 * is provided, textures are not included in the created model.
+	 *
+	 * @return  Root node of 3D model.
+	 *
+	 * @throws  IllegalStateException if no model is loaded.
+	 */
+	@NotNull
+	public Node3D createModel()
+	{
+		final HierarchyChunk editChunk = getEditChunk();
+		if ( editChunk == null )
+		{
+			throw new IllegalStateException( "No model loaded. (Missing edit chunk.)" );
+		}
+
+		/*
+		 * Create materials and keep track of additional material
+		 * specifications, e.g. two-sidedness.
+		 */
+		final Map<String, Appearance> materials = new HashMap<String, Appearance>();
+		final Map<String, Ab3dsMaterial> materialChunks = new HashMap<String, Ab3dsMaterial>();
+
+		for ( final Chunk chunk : editChunk.getChunksByID( Chunk.EDIT_MATERIAL ) )
+		{
+			final Ab3dsMaterial materialChunk = (Ab3dsMaterial)chunk;
+			final String name = materialChunk.getName();
+			materialChunks.put( name, materialChunk );
+			materials.put( name, createAppearance( materialChunk ) );
+		}
+
+		return createModel( materials, materialChunks );
+	}
+
+	/**
+	 * Creates a 3D model from the loaded 3DS file.
+	 *
+	 * @param   context     Directory used to resolve relative paths.
+	 *
+	 * @return  Root node of 3D model.
+	 *
+	 * @throws  IllegalStateException if no model is loaded.
+	 */
+	@NotNull
+	public Node3D createModel( @NotNull final File context )
+	{
+		final HierarchyChunk editChunk = getEditChunk();
+		if ( editChunk == null )
+		{
+			throw new IllegalStateException( "No model loaded. (Missing edit chunk.)" );
+		}
+
+		/*
+		 * Create materials and keep track of additional material
+		 * specifications, e.g. two-sidedness.
+		 */
+		final Map<String, Appearance> materials = new HashMap<String, Appearance>();
+		final Map<String, Ab3dsMaterial> materialChunks = new HashMap<String, Ab3dsMaterial>();
+
+		for ( final Chunk chunk : editChunk.getChunksByID( Chunk.EDIT_MATERIAL ) )
+		{
+			final Ab3dsMaterial materialChunk = (Ab3dsMaterial)chunk;
+			final String name = materialChunk.getName();
+			materialChunks.put( name, materialChunk );
+
+			final BasicAppearance appearance = createAppearance( materialChunk );
+
+			final TextureMap textureMap = materialChunk.getTexture1Map();
+			if ( textureMap != null )
+			{
+				appearance.setColorMap( new FileTextureMap( new File( context, textureMap.getPath() ) ) );
+			}
+
+			materials.put( name, appearance );
+		}
+
+		return createModel( materials, materialChunks );
+	}
+
+	/**
+	 * Creates a 3D model from the loaded 3DS file.
+	 *
+	 * @param   resourceLoader  Resource loader to be used.
+	 *
+	 * @return  Root node of 3D model.
+	 *
+	 * @throws  IllegalStateException if no model is loaded.
+	 */
+	@NotNull
+	public Node3D createModel( @NotNull final ResourceLoader resourceLoader )
+	{
+		final HierarchyChunk editChunk = getEditChunk();
+		if ( editChunk == null )
+		{
+			throw new IllegalStateException( "No model loaded. (Missing edit chunk.)" );
+		}
+
+		/*
+		 * Create materials and keep track of additional material
+		 * specifications, e.g. two-sidedness.
+		 */
+		final Map<String, Appearance> materials = new HashMap<String, Appearance>();
+		final Map<String, Ab3dsMaterial> materialChunks = new HashMap<String, Ab3dsMaterial>();
+
+		for ( final Chunk chunk : editChunk.getChunksByID( Chunk.EDIT_MATERIAL ) )
+		{
+			final Ab3dsMaterial materialChunk = (Ab3dsMaterial)chunk;
+			final String name = materialChunk.getName();
+			materialChunks.put( name, materialChunk );
+
+			final BasicAppearance appearance = createAppearance( materialChunk );
+
+			final TextureMap textureMap = materialChunk.getTexture1Map();
+			if ( textureMap != null )
+			{
+				appearance.setColorMap( new ResourceLoaderTextureMap( resourceLoader, textureMap.getPath() ) );
+			}
+
+			materials.put( name, appearance );
+		}
+
+		return createModel( materials, materialChunks );
+	}
+
+	/**
+	 * Creates a basic appearance from the given material chunk, excluding any
+	 * texture maps.
+	 *
+	 * @param   materialChunk   Material chunk.
+	 *
+	 * @return  Appearance.
+	 */
+	private static BasicAppearance createAppearance( @NotNull final Ab3dsMaterial materialChunk )
+	{
+		final BasicAppearance appearance = new BasicAppearance();
+
+		final Ab3dsRGB ambient = materialChunk.getAmbient();
+		appearance.setAmbientColorRed( ambient.getRed() );
+		appearance.setAmbientColorGreen( ambient.getGreen() );
+		appearance.setAmbientColorBlue( ambient.getBlue() );
+
+		final Ab3dsRGB diffuse = materialChunk.getDiffuse();
+		appearance.setDiffuseColorRed( diffuse.getRed() );
+		appearance.setDiffuseColorGreen( diffuse.getGreen() );
+		appearance.setDiffuseColorBlue( diffuse.getBlue() );
+		appearance.setDiffuseColorAlpha( 1.0f - materialChunk.getTransparency() );
+
+		final Ab3dsRGB specular = materialChunk.getSpecular();
+		appearance.setSpecularColorRed( specular.getRed() );
+		appearance.setSpecularColorGreen( specular.getGreen() );
+		appearance.setSpecularColorBlue( specular.getBlue() );
+		appearance.setShininess( materialChunk.getShininess() );
+		return appearance;
+	}
+
+	/**
+	 * Creates a 3D model from the 3DS file, using the given material
+	 * information.
+	 *
+	 * @param   materials       Materials by material name.
+	 * @param   materialChunks  Material chunks by material name.
+	 *
+	 * @return  Root node of 3D model.
+	 *
+	 * @throws  IllegalStateException if no model is loaded.
+	 */
+	@NotNull
+	private Node3D createModel( @NotNull final Map<String, Appearance> materials, @NotNull final Map<String, Ab3dsMaterial> materialChunks )
+	{
+		final Node3D result = new Node3D();
+
+		final HierarchyChunk editChunk = getEditChunk();
+		if ( editChunk == null )
+		{
+			throw new IllegalStateException( "No model loaded. (Missing edit chunk.)" );
+		}
+
+		for ( final Chunk chunk : editChunk.getChunksByID( Chunk.EDIT_OBJECT ) )
+		{
+			final ObjectChunk objectChunk = (ObjectChunk)chunk;
+			for ( final Chunk meshChunk : objectChunk.getChunksByID( Chunk.OBJ_TRIMESH ) )
+			{
+				final HierarchyChunk hierarchyChunk = (HierarchyChunk)meshChunk;
+
+				final FaceList faceList = (FaceList)hierarchyChunk.getFirstChunkByID( Chunk.TRI_FACEL1 );
+				final VertexList vertexList = (VertexList)hierarchyChunk.getFirstChunkByID( Chunk.TRI_VERTEXLIST );
+
+				if ( ( faceList != null ) && ( vertexList != null ) )
+				{
+					/*
+					 * Map materials by face.
+					 */
+					final List<Chunk> faceMaterialChunks = faceList.getChunksByID( Chunk.TRI_MATERIAL );
+					final List<Appearance> appearanceByFace = new ArrayList<Appearance>( Collections.nCopies( faceList.getFaceCount(), (Appearance)null ) );
+					final List<Ab3dsMaterial> materialChunkByFace = new ArrayList<Ab3dsMaterial>( Collections.nCopies( faceList.getFaceCount(), (Ab3dsMaterial)null ) );
+					for ( final Chunk faceMaterialChunk : faceMaterialChunks )
+					{
+						final FaceList.FaceMaterial faceMaterial = (FaceList.FaceMaterial)faceMaterialChunk;
+						final Appearance appearance = materials.get( faceMaterial.name );
+						final Ab3dsMaterial materialChunk = materialChunks.get( faceMaterial.name );
+						for ( final int face : faceMaterial.faces )
+						{
+							appearanceByFace.set( face, appearance );
+							materialChunkByFace.set( face, materialChunk );
+						}
+					}
+
+					/*
+					 * Prepare information needed to calculate vertex normals
+					 * based on smoothing groups.
+					 */
+					final List<List<Integer>> facesByVertex = new ArrayList<List<Integer>>( Collections.nCopies( vertexList.getVertexCount(), (List<Integer>)null ) );
+					final List<Vector3D> faceNormals = new ArrayList<Vector3D>( faceList.getFaceCount() );
+					for ( int faceIndex = 0; faceIndex < faceList.getFaceCount(); faceIndex++ )
+					{
+						final FaceList.Triangle face = faceList.getFace( faceIndex );
+						for ( int faceVertexIndex = 1; faceVertexIndex <= 3; faceVertexIndex++ )
+						{
+							final int objectVertexIndex = face.getVertex( faceVertexIndex );
+							List<Integer> faces = facesByVertex.get( objectVertexIndex );
+							if ( faces == null )
+							{
+								faces = new ArrayList<Integer>();
+								facesByVertex.set( objectVertexIndex, faces );
+							}
+							faces.add( Integer.valueOf( faceIndex ) );
+						}
+
+						final Vector3D v1 = vertexList.getVertex( face.getVertex( 1 ) );
+						final Vector3D v2 = vertexList.getVertex( face.getVertex( 2 ) );
+						final Vector3D v3 = vertexList.getVertex( face.getVertex( 3 ) );
+
+						final Vector3D normal = Vector3D.cross( v2.minus( v1 ), v3.minus( v1 ) );
+						faceNormals.add( normal.normalize() );
+					}
+
+					/*
+					 * Build geometry.
+					 */
+					final Object3DBuilder builder = new Object3DBuilder();
+
+					final SmoothingGroups smoothingGroups = (SmoothingGroups)faceList.getFirstChunkByID( Chunk.TRI_SMOOTH );
+					final MappingCoordinates mappingCoordinates = (MappingCoordinates)hierarchyChunk.getFirstChunkByID( Chunk.TRI_MAP_COORDS );
+					// TODO: Support standard mappings. (e.g. spherical)
+//					final StandardMapping standardMapping = (StandardMapping)hierarchyChunk.getFirstChunkByID( Chunk.TRI_MAP_STAND );
+
+					final List<TessellationPrimitive> singleTriangle = Collections.<TessellationPrimitive>singletonList( new TriangleFan( new int[] { 0, 1, 2 } ) );
+					final List<int[]> singleTriangleOutline = Collections.singletonList( new int[] { 0, 1, 2, 0 } );
+
+					for ( int faceIndex = 0; faceIndex < faceList.getFaceCount(); faceIndex++ )
+					{
+						final FaceList.Triangle face = faceList.getFace( faceIndex );
+
+						final List<Face3D.Vertex> vertices = new ArrayList<Face3D.Vertex>( 3 );
+						for ( int faceVertexIndex = 1; faceVertexIndex <= 3; faceVertexIndex++ )
+						{
+							final int objectVertexIndex = face.getVertex( faceVertexIndex );
+
+							/*
+							 * Calculate vertex normal based on smoothing groups.
+							 *
+							 * Official documentation on the subject, via the
+							 * Internet Archive:
+							 * http://replay.web.archive.org/20070401142147/http://sparks.discreet.com/knowledgebase/webhelp/html/idx_AT_computing_face_and_vertex_normals.htm
+							 */
+							Vector3D vertexNormal = faceNormals.get( faceIndex );
+							if ( smoothingGroups != null )
+							{
+								int smoothingGroup = smoothingGroups.getSmoothingGroup( faceIndex );
+								if ( smoothingGroup != 0 )
+								{
+									double normalX = vertexNormal.x;
+									double normalY = vertexNormal.y;
+									double normalZ = vertexNormal.z;
+
+									/*
+									 * Merge all overlapping smoothing groups.
+									 */
+									int smoothingGroupBefore;
+									do
+									{
+										smoothingGroupBefore = smoothingGroup;
+										for ( final int otherFaceIndex : facesByVertex.get( objectVertexIndex ) )
+										{
+											final int otherGroup = smoothingGroups.getSmoothingGroup( otherFaceIndex );
+											if ( ( smoothingGroup & otherGroup ) != 0 )
+											{
+												smoothingGroup |= otherGroup;
+											}
+										}
+									}
+									while ( smoothingGroupBefore != smoothingGroup );
+
+									/*
+									 * Calculate normal based on smoothing groups.
+									 */
+									for ( final int otherFaceIndex : facesByVertex.get( objectVertexIndex ) )
+									{
+										if ( otherFaceIndex != faceIndex )
+										{
+											final int otherGroup = smoothingGroups.getSmoothingGroup( otherFaceIndex );
+											if ( ( smoothingGroup & otherGroup ) != 0 )
+											{
+												final Vector3D otherNormal = faceNormals.get( otherFaceIndex );
+												normalX += otherNormal.x;
+												normalY += otherNormal.y;
+												normalZ += otherNormal.z;
+											}
+										}
+									}
+
+									if ( !vertexNormal.equals( normalX, normalY, normalZ ) )
+									{
+										vertexNormal = Vector3D.normalize( normalX, normalY, normalZ );
+									}
+								}
+							}
+
+							final Vector3D vertexCoordinate = vertexList.getVertex( objectVertexIndex );
+							final float colorMapU = ( mappingCoordinates == null ) ? Float.NaN : mappingCoordinates.getMapU( objectVertexIndex );
+							final float colorMapV = ( mappingCoordinates == null ) ? Float.NaN : mappingCoordinates.getMapV( objectVertexIndex );
+
+							final Face3D.Vertex vertex = new Face3D.Vertex( vertexCoordinate, objectVertexIndex, colorMapU, colorMapV );
+							vertex.setNormal( vertexNormal );
+							vertices.add( vertex );
+						}
+
+						final Tessellation tessellation = new Tessellation( singleTriangleOutline, singleTriangle );
+
+						final Ab3dsMaterial materialChunk = materialChunkByFace.get( faceIndex );
+
+						final Appearance appearance = appearanceByFace.get( faceIndex );
+						final boolean twoSided = ( materialChunk != null ) && materialChunk.isTwoSided();
+
+						builder.addFace( vertices, tessellation, appearance, false, twoSided );
+					}
+
+					final ArrayList<Vector3D> vertexCoordinates = new ArrayList<Vector3D>( vertexList.getVertexCount() );
+					for ( int i = 0; i < vertexList.getVertexCount(); i++ )
+					{
+						vertexCoordinates.add( vertexList.getVertex( i ) );
+					}
+					builder.setVertexCoordinates( vertexCoordinates );
+
+					GeometryTools.smooth( builder.getObject3D(), 0.0, 1.0, false );
+					result.addChild( builder.getObject3D() );
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Loads a 3DS model from the given stream.
+	 *
+	 * @param   resourceLoader  Resource loader to be used.
+	 * @param   in              Stream to read from.
+	 *
+	 * @return  Root node of 3D model.
+	 *
+	 * @throws  IOException if an I/O error occurs.
+	 */
+	public static Node3D load( @NotNull final ResourceLoader resourceLoader, @NotNull final InputStream in )
+		throws IOException
+	{
+		final Ab3dsFile file = new Ab3dsFile();
+		file.load( in );
+		return file.createModel( resourceLoader );
 	}
 
 	/**
 	 * Run application.
 	 *
 	 * @param   args    Command-line arguments.
+	 *
+	 * @throws  IOException if an I/O error occurs.
 	 */
 	public static void main( final String[] args )
+		throws IOException
 	{
 		boolean ok = true;
 
@@ -188,64 +587,15 @@ public final class Ab3dsFile
 
 		if ( ok )
 		{
-			final Ab3dsFile f = new Ab3dsFile( "test" );
+			final Ab3dsFile f = new Ab3dsFile();
 			f.load( new File( "C:\\progra~1\\Graphics\\3dsmax\\meshes\\Tv.3ds" ) );
-			System.out.println( "---------------------------" );
+			if ( DEBUG )
+			{
+				System.out.println( "---------------------------" );
+			}
 
 			//f.saveAs( new File( "C:\\progra~1\\Graphics\\3dsmax\\meshes\\Tv2.3ds" ) );
 			//f.load( new File( "C:\\temp\\3ds\\write.3ds" ) );
 		}
-	}
-
-	/**
-	 * Saves the current hierarchy as a 3ds file.
-	 */
-	public void save()
-	{
-		saveAs( _name );
-	}
-
-	/**
-	 * Saves the current hierarchy as a 3ds file.
-	 *
-	 * @param   file    File to save to.
-	 */
-	public void saveAs( final File file )
-	{
-		try
-		{
-			final FileOutputStream fos = new FileOutputStream( file );
-			try
-			{
-				final Ab3dsOutputStream os = new Ab3dsOutputStream( fos );
-
-				/*
-				 * Main chunk.
-				 */
-				System.out.println( "WRITING 3DS FILE" );
-
-				_main.write( os );
-
-				System.out.println( "WRITING 3DS FILE" );
-			}
-			finally
-			{
-				fos.close();
-			}
-		}
-		catch ( IOException e )
-		{
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Saves the current hierarchy as a 3ds file.
-	 *
-	 * @param   filename    Name of the file to save to.
-	 */
-	public void saveAs( final String filename )
-	{
-		saveAs( new File( filename ) );
 	}
 }

@@ -199,7 +199,7 @@ public class ObjLoader
 		/*
 		 * Read OBJ data
 		 */
-		final List<Vector3D> vertices = new ArrayList<Vector3D>();
+		final List<Vector3D> vertexCoordinates = new ArrayList<Vector3D>();
 		final List<Point2D.Float> textureVertices = new ArrayList<Point2D.Float>();
 		final List<Vector3D> vertexNormals = new ArrayList<Vector3D>();
 		final List<ObjFace> faces = new ArrayList<ObjFace>();
@@ -252,7 +252,7 @@ public class ObjLoader
 						final double z = Double.parseDouble( tokens[ 3 ] );
 //						final double w = ( argCount >= 4 ) ? Double.parseDouble( tokens[ 4 ] ) : 1.0;
 
-						vertices.add( transform.transform( x, y, z ) );
+						vertexCoordinates.add( transform.transform( x, y, z ) );
 					}
 					/*
 					 * vt u v w
@@ -404,7 +404,7 @@ public class ObjLoader
 							throw new IOException( "too few face arguments in: " + line );
 						}
 
-						final int objVertexCount = vertices.size();
+						final int objVertexCount = vertexCoordinates.size();
 						if ( objVertexCount < 1 )
 						{
 							throw new IOException( "vertex used before vertex declaration" );
@@ -540,7 +540,7 @@ public class ObjLoader
 
 //		System.out.println( " - OBJ file loaded succesfully" );
 
-		builder.setVertexCoordinates( vertices );
+		builder.setVertexCoordinates( vertexCoordinates );
 
 		List<Vector3D> assignedVertexNormals = null;
 
@@ -548,10 +548,8 @@ public class ObjLoader
 		{
 			final List<ObjFaceVertex> faceVertices = objFace._vertices;
 			final int faceVertexCount = faceVertices.size();
+			final List<Face3D.Vertex> vertices = new ArrayList<Face3D.Vertex>( faceVertexCount );
 
-			final int[] vertexIndices = new int[faceVertexCount];
-			float[] texturePoints = null;
-			Vector3D[] faceVertexNormals = null;
 			boolean smooth = false;
 			Vector3D fixedVertexNormal = null;
 
@@ -560,12 +558,13 @@ public class ObjLoader
 				final ObjFaceVertex objFaceVertex = faceVertices.get( faceVertexCount - faceVertexIndex - 1 );
 
 				final int vertexIndex = objFaceVertex._vertexIndex;
-				if ( vertexIndex >= vertices.size() )
+				if ( vertexIndex >= vertexCoordinates.size() )
 				{
-					throw new IOException( "out-of-bounds vertex (" + vertexIndex + " >= " + vertices.size() + ')' );
+					throw new IOException( "out-of-bounds vertex (" + vertexIndex + " >= " + vertexCoordinates.size() + ')' );
 				}
 
-				vertexIndices[ faceVertexIndex ] = vertexIndex;
+				final Face3D.Vertex vertex = new Face3D.Vertex( vertexCoordinates.get( vertexIndex ), vertexIndex );
+				vertices.add( vertex );
 
 				final int textureVertexIndex = objFaceVertex._textureVertexIndex;
 				if ( textureVertexIndex >= 0 )
@@ -575,14 +574,9 @@ public class ObjLoader
 						throw new IOException( "out-of-bounds texture vertex (" + textureVertexIndex + " >= " + textureVertices.size() + ')' );
 					}
 
-					if ( texturePoints == null )
-					{
-						texturePoints = new float[ faceVertexCount * 2 ];
-					}
-
 					final Point2D.Float texturePoint = textureVertices.get( textureVertexIndex );
-					texturePoints[ faceVertexIndex * 2 ] = texturePoint.x;
-					texturePoints[ faceVertexIndex * 2 + 1 ] = texturePoint.y;
+					vertex.colorMapU = texturePoint.x;
+					vertex.colorMapV = texturePoint.y;
 				}
 
 				final int vertexNormalIndex = objFaceVertex._vertexNormalIndex;
@@ -595,15 +589,10 @@ public class ObjLoader
 
 					final Vector3D vertexNormal = vertexNormals.get( vertexNormalIndex );
 
-					if ( faceVertexNormals == null )
-					{
-						faceVertexNormals = new Vector3D[ faceVertexCount ];
-					}
-
 					if ( assignedVertexNormals == null )
 					{
-						assignedVertexNormals = new ArrayList<Vector3D>( vertices.size() );
-						for ( int i = vertices.size() ; --i >= 0 ; )
+						assignedVertexNormals = new ArrayList<Vector3D>( vertexCoordinates.size() );
+						for ( int i = vertexCoordinates.size() ; --i >= 0 ; )
 						{
 							assignedVertexNormals.add( Vector3D.ZERO );
 						}
@@ -620,16 +609,11 @@ public class ObjLoader
 						smooth |= !fixedVertexNormal.equals( vertexNormal );
 					}
 
-					faceVertexNormals[ faceVertexIndex ] = vertexNormal;
+					vertex.setNormal( vertexNormal );
 				}
 			}
 
-			builder.addFace( vertexIndices, objFace._material, texturePoints, faceVertexNormals, smooth, false );
-		}
-
-		if ( assignedVertexNormals != null )
-		{
-			builder.setVertexNormals( assignedVertexNormals );
+			builder.addFace( vertices, null, objFace._material, smooth, false );
 		}
 
 		return objectName;
@@ -683,18 +667,26 @@ public class ObjLoader
 	private static String getStringAfter( final String line, final String[] tokens, final int startIndex )
 	{
 		if ( ( startIndex < 0 ) || ( startIndex >= tokens.length ) )
+		{
 			throw new IllegalArgumentException( "invalid start index: " + startIndex );
+		}
 
 		int start = 0;
 		for ( int i = 0 ; i < startIndex ; i++ )
+		{
 			start = line.indexOf( tokens[ i ], start ) + tokens[ i ].length();
+		}
 
 		while ( Character.isWhitespace( line.charAt( start ) ) )
+		{
 			start++;
+		}
 
 		int end = line.length();
 		if ( ( end > start ) && Character.isWhitespace( line.charAt( end - 1 ) ) )
+		{
 			end--;
+		}
 
 		return line.substring( start, end );
 	}
@@ -736,7 +728,9 @@ public class ObjLoader
 					if ( "newmtl".equals( name ) )
 					{
 						if ( argCount < 1 )
-						    throw new IOException( "Malformed material entry: " + line );
+						{
+							throw new IOException( "Malformed material entry: " + line );
+						}
 						tempMaterial = new ResourceLoaderMaterial( loader );
 						tempMaterial.code = ( tokens[ 1 ] );
 						objMaterials.put( ( tokens[ 1 ] ), tempMaterial );
@@ -745,7 +739,9 @@ public class ObjLoader
 					else if ( "Ka".equals( name ) )
 					{
 						if ( argCount < 3 )
-						    throw new IOException( "Malformed ambient lighting entry: " + line );
+						{
+							throw new IOException( "Malformed ambient lighting entry: " + line );
+						}
 						tempMaterial.ambientColorRed   = Float.valueOf( tokens[ 1 ] );
 						tempMaterial.ambientColorGreen = Float.valueOf( tokens[ 2 ] );
 						tempMaterial.ambientColorBlue  = Float.valueOf( tokens[ 3 ] );
@@ -754,7 +750,9 @@ public class ObjLoader
 					else if ( "Kd".equals( name ) )
 					{
 						if ( argCount < 3 )
-						    throw new IOException( "Malformed diffuse lighting entry: " + line );
+						{
+							throw new IOException( "Malformed diffuse lighting entry: " + line );
+						}
 						tempMaterial.diffuseColorRed   = Float.valueOf( tokens[ 1 ] );
 						tempMaterial.diffuseColorGreen = Float.valueOf( tokens[ 2 ] );
 						tempMaterial.diffuseColorBlue  = Float.valueOf( tokens[ 3 ] );
@@ -763,7 +761,9 @@ public class ObjLoader
 					else if ( "Ks".equals( name ) )
 					{
 						if ( argCount < 3 )
-						    throw new IOException( "Malformed specular lighting entry: " + line );
+						{
+							throw new IOException( "Malformed specular lighting entry: " + line );
+						}
 						tempMaterial.specularColorRed   = Float.valueOf( tokens[ 1 ] );
 						tempMaterial.specularColorGreen = Float.valueOf( tokens[ 2 ] );
 						tempMaterial.specularColorBlue  = Float.valueOf( tokens[ 3 ] );
@@ -772,7 +772,9 @@ public class ObjLoader
 					else if ( "Ns".equals( name ) )
 					{
 						if ( argCount < 1 )
-						    throw new IOException( "Malformed shininess entry: " + line );
+						{
+							throw new IOException( "Malformed shininess entry: " + line );
+						}
 						final float shininess = Float.parseFloat( tokens[ 1 ] );
 						// value range is from 0 to 1000
 						if ( shininess > 1000.0f )
@@ -789,15 +791,27 @@ public class ObjLoader
 					else if ( "d".equals( name ) || "Tr".equals( name ) )
 					{
 						if ( argCount < 1 )
-						    throw new IOException( "Malformed transparency entry: " + line );
+						{
+							throw new IOException( "Malformed transparency entry: " + line );
+						}
 						tempMaterial.diffuseColorAlpha = Float.parseFloat( tokens[ 1 ] );
 					}
 					// Texture mapping
-					else if ( "map_Kd".equals( name ) || "map_Ka".equals( name ) || "bump".equals( name ) )
+					else if ( "map_Kd".equals( name ) || "map_Ka".equals( name ) )
 					{
 						if ( argCount < 1 )
-						    throw new IOException( "Malformed texture entry: " + line );
+						{
+							throw new IOException( "Malformed texture entry: " + line );
+						}
 						tempMaterial.colorMap = ( tokens[ 1 ] );
+					}
+					else if ( "bump".equals( name ) )
+					{
+						if ( argCount < 1 )
+						{
+							throw new IOException( "Malformed texture entry: " + line );
+						}
+						tempMaterial.bumpMap = ( tokens[ 1 ] );
 					}
 					//Non-recognized, non-# (comment) line.
 					//@TODO: Implement following MTL Lines:
@@ -837,7 +851,9 @@ public class ObjLoader
 		{
 		final int hash = line.indexOf( (int) '#' );
 			if ( hash >= 0 )
+			{
 				line = line.substring( 0, hash );
+			}
 			line = line.trim();
 			while ( line.length() > 0 && line.charAt( line.length() - 1 ) == '\\' )
 			{

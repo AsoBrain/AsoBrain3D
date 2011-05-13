@@ -20,9 +20,10 @@
  */
 package ab.j3d.a3ds;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.util.*;
+
+import org.jetbrains.annotations.*;
 
 /**
  * This chunk is the base class for any chunk that has subchunks.
@@ -37,7 +38,7 @@ public class HierarchyChunk
 	/**
 	 * Collection of subchunks.
 	 */
-	private final List _chunks = new ArrayList();
+	private final List<Chunk> _chunks = new ArrayList<Chunk>();
 
 	/**
 	 * Constructor of Chunk with ChunkID to be used
@@ -48,7 +49,8 @@ public class HierarchyChunk
 	public HierarchyChunk( final int id )
 	{
 		super( id );
-		//System.out.println( "New Hierarchy Chunk ID = " + getHex( id ) );
+		if ( Ab3dsFile.DEBUG )
+			System.out.println( "New Hierarchy Chunk ID = " + getHex( id ) );
 	}
 
 	/**
@@ -70,7 +72,8 @@ public class HierarchyChunk
 	 */
 	public final Chunk getChunk( final int index )
 	{
-		return (Chunk)getChunks().get( index );
+		final List<Chunk> chunks = getChunks();
+		return chunks.get( index );
 	}
 
 	/**
@@ -80,7 +83,8 @@ public class HierarchyChunk
 	 */
 	public final int getChunkCount()
 	{
-		return getChunks().size();
+		final List<Chunk> chunks = getChunks();
+		return chunks.size();
 	}
 
 	/**
@@ -88,7 +92,7 @@ public class HierarchyChunk
 	 *
 	 * @return  List containing all subchunks of this chunk.
 	 */
-	public final List getChunks()
+	public final List<Chunk> getChunks()
 	{
 		return _chunks;
 	}
@@ -100,15 +104,17 @@ public class HierarchyChunk
 	 *
 	 * @return  List with all chunks matching the ID.
 	 */
-	public final List getChunksByID( final int id )
+	public final List<Chunk> getChunksByID( final int id )
 	{
-		final List collect = new ArrayList();
+		final List<Chunk> collect = new ArrayList<Chunk>();
 
 		for ( int i = 0 ; i < getChunkCount() ; i++ )
 		{
 			final Chunk chunk = getChunk( i );
 			if ( chunk.getID() == id )
+			{
 				collect.add( chunk );
+			}
 		}
 
 		return collect;
@@ -121,6 +127,7 @@ public class HierarchyChunk
 	 *
 	 * @return  Chunk with specified ID or null if not found.
 	 */
+	@Nullable
 	public final Chunk getFirstChunkByID( final int id )
 	{
 		Chunk result = null;
@@ -138,22 +145,27 @@ public class HierarchyChunk
 		return result;
 	}
 
+	@Override
 	public long getSize()
 	{
-		final List sub = getChunks();
+		final List<Chunk> sub = getChunks();
 
 		int size = 0;
-		for ( int i = 0 ; i < sub.size() ; i++ )
-			size += ((Chunk)sub.get( i )).getSize();
+		for ( final Chunk chunk : sub )
+		{
+			size += (int)chunk.getSize();
+		}
 
-		return HEADER_SIZE + size;
+		return HEADER_SIZE + (long)size;
 	}
 
+	@Override
 	public void read( final Ab3dsInputStream is )
 		throws IOException
 	{
 		readHeader( is );
-		//System.out.println( "size = " + _chunkSize );
+		if ( Ab3dsFile.DEBUG )
+			System.out.println( "size = " + _chunkSize );
 		readSubChunks( is );
 	}
 
@@ -170,16 +182,24 @@ public class HierarchyChunk
 		int id = is.readInt();
 		while ( !is.isEOF() && is.getPointer() < _chunkEnd )
 		{
-			System.out.println( this + " found id : " + getHex(id) + " at " + is.getPointer() );
-			final Chunk sub = createChunk( id );
+			if ( Ab3dsFile.DEBUG )
+			{
+				System.out.println( this + " found id : " + getHex(id) + " at " + is.getPointer() );
+			}
+
+			final Chunk sub = createChunk( id, this );
 			sub.read( is );
-			getChunks().add( sub );
+			final List<Chunk> chunks = getChunks();
+			chunks.add( sub );
 
 			if ( is.getPointer() < _chunkEnd )
+			{
 				id = is.readInt();
+			}
 		}
 	}
 
+	@Override
 	public void write( final Ab3dsOutputStream os )
 		throws IOException
 	{
@@ -197,10 +217,10 @@ public class HierarchyChunk
 	public final void writeSubChunks( final Ab3dsOutputStream os )
 		throws IOException
 	{
-		final List sub = getChunks();
-		for ( int i = 0 ; i < sub.size() ; i++ )
+		final List<Chunk> sub = getChunks();
+		for ( final Chunk chunk : sub )
 		{
-			((Chunk)sub.get( i )).write( os );
+			chunk.write( os );
 		}
 	}
 

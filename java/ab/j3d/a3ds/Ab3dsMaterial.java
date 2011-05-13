@@ -20,7 +20,7 @@
  */
 package ab.j3d.a3ds;
 
-import java.io.IOException;
+import java.io.*;
 
 /**
  * This chunk specifies a material definition.
@@ -84,6 +84,7 @@ public final class Ab3dsMaterial
 	private int _transparency = 0; // Max: 0 = opacity 100%
 	private int _transfalloff = 0;
 	private int _reflectblur = 0;
+	private boolean _twoSided = false;
 	private int _type;
 	private int _selfilum;
 	private float _wireThickness;
@@ -120,6 +121,111 @@ public final class Ab3dsMaterial
 	{
 		this( EDIT_MATERIAL );
 		_name = name;
+	}
+
+	public String getName()
+	{
+		return _name;
+	}
+
+	public Ab3dsRGB getAmbient()
+	{
+		return _ambient;
+	}
+
+	public Ab3dsRGB getDiffuse()
+	{
+		return _diffuse;
+	}
+
+	public Ab3dsRGB getSpecular()
+	{
+		return _specular;
+	}
+
+	public int getShininess()
+	{
+		return _shininess;
+	}
+
+	public int getShinstrength()
+	{
+		return _shinstrength;
+	}
+
+	public float getTransparency()
+	{
+		return (float)_transparency / 255.0f;
+	}
+
+	public int getTransfalloff()
+	{
+		return _transfalloff;
+	}
+
+	public int getReflectblur()
+	{
+		return _reflectblur;
+	}
+
+	public boolean isTwoSided()
+	{
+		return _twoSided;
+	}
+
+	public int getType()
+	{
+		return _type;
+	}
+
+	public int getSelfilum()
+	{
+		return _selfilum;
+	}
+
+	public float getWireThickness()
+	{
+		return _wireThickness;
+	}
+
+	public TextureMap getTexture1Map()
+	{
+		return _texture1Map;
+	}
+
+	public TextureMap getTexture2Map()
+	{
+		return _texture2Map;
+	}
+
+	public TextureMap getOpacityMap()
+	{
+		return _opacityMap;
+	}
+
+	public TextureMap getBumpMap()
+	{
+		return _bumpMap;
+	}
+
+	public TextureMap getSpecularMap()
+	{
+		return _specularMap;
+	}
+
+	public TextureMap getShininessMap()
+	{
+		return _shininessMap;
+	}
+
+	public TextureMap getIlluminationMap()
+	{
+		return _illuminationMap;
+	}
+
+	public TextureMap getReflectionMap()
+	{
+		return _reflectionMap;
 	}
 
 	/**
@@ -173,14 +279,15 @@ public final class Ab3dsMaterial
 			switch ( id )
 			{
 				case MAT_NAME			: _name = is.readString(); 				break;
-				case MAT_AMBIENT		: _ambient = readColor( is );			break;
-				case MAT_DIFFUSE		: _diffuse = readColor( is );			break;
-				case MAT_SPECULAR		: _specular = readColor( is );			break;
+				case MAT_AMBIENT		: _ambient = readColor( is, size - HEADER_SIZE ); break;
+				case MAT_DIFFUSE		: _diffuse = readColor( is, size - HEADER_SIZE ); break;
+				case MAT_SPECULAR		: _specular = readColor( is, size - HEADER_SIZE ); break;
 				case MAT_SHININESS  	: _shininess = readDoubleByte( is );	break;
 				case MAT_SHINSTRENGTH  	: _shinstrength = readDoubleByte( is );	break;
 				case MAT_TRANSPARENCY  	: _transparency = readDoubleByte( is );	break;
 				case MAT_TRANSFALLOFF  	: _transfalloff = readDoubleByte( is );	break;
 				case MAT_REFLECTBLUR   	: _reflectblur = readDoubleByte( is );	break;
+				case MAT_TWO_SIDED      : _twoSided = true; is.skip( size - HEADER_SIZE ); break;
 				case MAT_TYPE			: _type = is.readInt();					break;
 				case MAT_ILLUMINATION	: _selfilum = readDoubleByte( is );		break;
 				case MAT_WIRETHICKNESS	: _wireThickness = is.readFloat();		break;

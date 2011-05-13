@@ -20,7 +20,7 @@
  */
 package ab.j3d.a3ds;
 
-import java.io.IOException;
+import java.io.*;
 
 /**
  * This chunk specifies a RGB color value.
@@ -34,6 +34,11 @@ public final class Ab3dsRGB extends DataChunk
 	 * If true, the color is specified by floats, otherwise by ints.
 	 */
 	private final boolean _floats;
+
+	/**
+	 * <code>true</code> is the color is gamma-corrected.
+	 */
+	private boolean _gamma;
 
 	/**
 	 * Float value (0..1) of color's red segment.
@@ -74,7 +79,7 @@ public final class Ab3dsRGB extends DataChunk
 	 */
 	public Ab3dsRGB( final float r , final float g , final float b )
 	{
-		this( RGB_FLOAT , true );
+		this( RGB_FLOAT, true, false );
 		_fr = r;
 		_fg = g;
 		_fb = b;
@@ -86,21 +91,23 @@ public final class Ab3dsRGB extends DataChunk
 	 *
 	 * @param   id      ID of the chunk.
 	 * @param   floats  If true, the rgb is specified as floats, otherwise with bytes.
+	 * @param   gamma   <code>true</code> is the color is gamma-corrected.
 	 */
-	public Ab3dsRGB( final int id, final boolean floats )
+	public Ab3dsRGB( final int id, final boolean floats, final boolean gamma )
 	{
 		super( id );
 
 		_floats = floats;
-		_fr     = 0;
-		_fg     = 0;
-		_fb     = 0;
-		_r      = 0;
-		_g      = 0;
-		_b      = 0;
+		_gamma  = gamma;
+		_fr     = 0.0f;
+		_fg     = 0.0f;
+		_fb     = 0.0f;
+		_r      = (byte)0;
+		_g      = (byte)0;
+		_b      = (byte)0;
 
-//		if ( Ab3dsFile.DEBUG )
-//			System.out.println( "  - RGB " + (floats?"floats":"bytes") );
+		if ( Ab3dsFile.DEBUG )
+			System.out.println( "  - RGB " + (floats?"floats":"bytes") );
 	}
 
 	/**
@@ -112,7 +119,7 @@ public final class Ab3dsRGB extends DataChunk
 	 */
 	public Ab3dsRGB( final int r , final int g , final int b )
 	{
-		this( RGB_BYTE , false );
+		this( RGB_BYTE, false, false );
 
 		_r      = (byte)r;
 		_g      = (byte)g;
@@ -174,8 +181,60 @@ public final class Ab3dsRGB extends DataChunk
 		if ( _floats )
 			result = "R:" + _fr + " G:" + _fg + " B:" + _fb;
 		else
-			result = "R:" + _r + " G:" + _g + " B:" + _b;
+			result = "R:" + ( _r & 0xff ) + " G:" + ( _g & 0xff ) + " B:" + ( _b & 0xff );
 
 		return result;
+	}
+
+	/**
+	 * Converts the given byte to a float in the range from 0.0 to 1.0.
+	 *
+	 * @param   b   Byte value.
+	 *
+	 * @return  Float value.
+	 */
+	private static float byteToFloat( final byte b )
+	{
+		return (float)( (int)b & 0xff ) / 255.0f;
+	}
+
+	/**
+	 * Returns the red component of this color.
+	 *
+	 * @return  Red component, between 0.0 and 1.0.
+	 */
+	public float getRed()
+	{
+		return _floats ? _fr : byteToFloat( _r );
+	}
+
+	/**
+	 * Returns the green component of this color.
+	 *
+	 * @return  Green component, between 0.0 and 1.0.
+	 */
+	public float getGreen()
+	{
+		return _floats ? _fg : byteToFloat( _g );
+	}
+
+	/**
+	 * Returns the blue component of this color.
+	 *
+	 * @return  Blue component, between 0.0 and 1.0.
+	 */
+	public float getBlue()
+	{
+		return _floats ? _fb : byteToFloat( _b );
+	}
+
+	/**
+	 * Returns whether the color is gamma-corrected.
+	 *
+	 * @return  <code>true</code> if the color is gamma-corrected.
+	 */
+	public boolean isGamma()
+	{
+		return _gamma;
 	}
 }

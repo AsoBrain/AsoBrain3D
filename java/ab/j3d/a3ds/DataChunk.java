@@ -20,7 +20,7 @@
  */
 package ab.j3d.a3ds;
 
-import java.io.IOException;
+import java.io.*;
 
 /**
  * This chunk is the base class for any chunk that does not contain sub chunks.
@@ -43,21 +43,35 @@ public abstract class DataChunk
 	}
 
 	/**
-	 * Reads color from stream
+	 * Reads color from stream. There may be multiple nested color chunks.
 	 *
 	 * @param   is      Stream to read from.
+	 * @param   size    Bytes to be read.
 	 *
 	 * @return  Ab3dsRGB chunk that was read.
 	 *
 	 * @throws IOException when reading failed.
 	 */
-	protected static Ab3dsRGB readColor( final Ab3dsInputStream is )
+	protected Ab3dsRGB readColor( final Ab3dsInputStream is, final long size )
 		throws IOException
 	{
-		final Ab3dsRGB rgb = (Ab3dsRGB)createChunk( is.readInt() );
-		rgb.read( is );
+		final long start = is.getPointer();
 
-		return rgb;
+		Ab3dsRGB result = null;
+
+		do
+		{
+			final Ab3dsRGB rgb = (Ab3dsRGB)createChunk( is.readInt(), this );
+			rgb.read( is );
+
+			if ( ( result == null ) || ( !result.isGamma() && rgb.isGamma() ) )
+			{
+				result = rgb;
+			}
+		}
+		while ( is.getPointer() - start < size );
+
+		return result;
 	}
 
 	/**

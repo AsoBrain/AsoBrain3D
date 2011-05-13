@@ -19,24 +19,17 @@
  */
 package ab.j3d.loader;
 
-import java.awt.BorderLayout;
-import java.io.File;
-import java.io.IOException;
-import java.util.Locale;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import java.awt.*;
+import java.io.*;
+import java.util.*;
+import javax.swing.*;
 
-import ab.j3d.Bounds3D;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.control.FromToCameraControl;
-import ab.j3d.model.Node3D;
-import ab.j3d.model.Scene;
-import ab.j3d.view.RenderEngine;
-import ab.j3d.view.View3D;
-import ab.j3d.view.jogl.JOGLEngine;
-
-import com.numdata.oss.ui.WindowTools;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+import ab.j3d.view.jogl.*;
+import com.numdata.oss.ui.*;
 
 /**
  * This is a sample application for the {@link Max3DSLoader} class.
@@ -56,10 +49,13 @@ public class Max3DSLoaderApp
 		try
 		{
 //			final double   unit      = Scene.FOOT;
-			final double   unit      = Scene.INCH;
+//			final double   unit      = Scene.INCH;
+			final double   unit      = Scene.METER;
 
 			final Matrix3D transform = Matrix3D.INIT; // .rotateX( Math.toRadians( 90.0 ) );
 
+			final String   path      = "/numdata/3d/dosch/furniture/3ds/Kitchen/kitchen01.3ds";
+//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/toilet2/Wc.3ds";
 //			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/fishtank/fishtank.3ds";
 //			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/flower01_s/flower01.3ds";
 //			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/vtr/vtr.3ds";
@@ -80,28 +76,38 @@ public class Max3DSLoaderApp
 //			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/woman7/woman7.3ds"; // kneeling + accepting
 //			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/woman8/woman8.3ds"; // stair walking + reaching
 //			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/woman9/woman1.3ds"; // full nudity
-			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/tricycle/trecic3.3ds";
+//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/tricycle/trecic3.3ds";
 
+			final File sourceFile = new File( path );
 
-			final Node3D object3d = Max3DSLoader.load( transform , new File( path ) );
+			final Node3D root = Max3DSLoader.load( transform, sourceFile );
+			/*
+			final Ab3dsFile ab3dsFile = new Ab3dsFile();
+			ab3dsFile.load( sourceFile );
+			final Node3D root = ab3dsFile.createModel( sourceFile.getParentFile() );
+			*/
 
-			final Bounds3D bounds   = Bounds3D.INIT; // object3d.getBounds( null , null );
+			final Bounds3D bounds   = root.calculateBounds( Matrix3D.IDENTITY );
 			final Vector3D size     = bounds.size();
-			final double   toCM     = 100.0 * unit;
+			final double   toCM     = unit / Scene.CM;
 
 			final Vector3D viewFrom = Vector3D.INIT.set( 0.0 , bounds.v1.y - 3.0 / unit , bounds.v2.z / 2.0 + 1.2 / unit );
-			final Vector3D viewAt   = Vector3D.INIT.set( 0.0 , 0.0 , bounds.v2.z / 2.0 );
+			final Vector3D viewTo   = bounds.center();
 
 			System.out.println( "object size = " + Math.round( toCM * size.x ) + " x " + Math.round( toCM * size.y ) + " x " + Math.round( toCM * size.z ) + " cm" );
 
 			final Scene scene = new Scene( unit );
 			Scene.addLegacyLights( scene );
-			scene.addContentNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , object3d );
+			scene.addContentNode( "obj" , Matrix3D.INIT.plus( 0.0 , 0.0 , -bounds.v1.z ) , root );
+			scene.setAnimated( true );
 
 			final RenderEngine renderEngine = new JOGLEngine(); // new Color( 51 , 77 , 102 ) );
 
-			final View3D view = renderEngine.createView( scene );
-			view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
+			final JOGLView view = (JOGLView)renderEngine.createView( scene );
+			view.addStatisticsOverlay();
+			view.setCameraControl( new FromToCameraControl( view , viewFrom, viewTo ) );
+			view.setBackClipDistance( size.length() * 2.0 );
+			view.setFrontClipDistance( size.length() / 10000.0 );
 
 			final JPanel viewPanel = new JPanel( new BorderLayout() );
 			viewPanel.add( view.getComponent() , BorderLayout.CENTER );

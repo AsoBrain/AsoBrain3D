@@ -20,7 +20,7 @@
  */
 package ab.j3d.a3ds;
 
-import java.io.IOException;
+import java.io.*;
 
 /**
  * This is the base class for all 3ds file chunks.
@@ -83,6 +83,8 @@ public abstract class Chunk
 	//public static final int BOGUS			= 0x0011;
 	public static final int RGB_FLOAT		= 0x0010;
 	public static final int RGB_BYTE		= 0x0011;
+	public static final int RGB_BYTE_GAMMA  = 0x0012;
+	public static final int RGB_FLOAT_GAMMA = 0x0013;
 	public static final int DOUBLE_BYTE		= 0x0030;
 	public static final int CAMERA			= 0xFFFF;
 
@@ -100,6 +102,7 @@ public abstract class Chunk
 		public static final int MAT_TRANSPARENCY = 0xA050;
 		public static final int MAT_TRANSFALLOFF = 0xA052;
 		public static final int MAT_REFLECTBLUR  = 0xA053;
+		public static final int MAT_TWO_SIDED    = 0xA081;
 		public static final int MAT_TYPE		 = 0xA100;
 		public static final int MAT_ILLUMINATION = 0xA084;
 		public static final int MAT_WIRETHICKNESS= 0xA087;
@@ -233,7 +236,7 @@ public abstract class Chunk
 	 *
 	 * @return  the new Chunk with specified ID.
 	 */
-	public static Chunk createChunk( final int id )
+	public static Chunk createChunk( final int id, final Chunk parent )
 	{
 		switch ( id )
 		{
@@ -243,9 +246,10 @@ public abstract class Chunk
 			case TRI_MATERIAL 	: return new FaceList.FaceMaterial( id );
 			case TRI_MAP_STAND 	: return new StandardMapping( id );
 			case TRI_MAP_COORDS : return new MappingCoordinates( id );
+			case TRI_SMOOTH     : return new SmoothingGroups( parent );
 			case OBJ_LIGHT		: return new Ab3dsLight( id );
 			case LIT_SPOT		: return new Ab3dsLight.SpotLight( id );
-			case LIT_OFF		: return new Ab3dsLight.State( id );
+			case LIT_OFF		: return new Ab3dsLight.Off( id );
 			case LIT_RAY		: return new EmptyChunk( id );
 			case LIT_CAST		: return new EmptyChunk( id );
 			case LIT_IN_RANGE 	:
@@ -254,8 +258,10 @@ public abstract class Chunk
 			case LIT_RAY_BIAS 	:
 			case LIT_ROLL 		: return new FloatChunk( id );
 			case OBJ_CAMERA		: return new Ab3dsCamera();
-			case RGB_FLOAT		: return new Ab3dsRGB( id , true );
-			case RGB_BYTE		: return new Ab3dsRGB( id , false );
+			case RGB_FLOAT		: return new Ab3dsRGB( id , true, false );
+			case RGB_BYTE		: return new Ab3dsRGB( id , false, false );
+			case RGB_BYTE_GAMMA : return new Ab3dsRGB( id , false, true );
+			case RGB_FLOAT_GAMMA: return new Ab3dsRGB( id , false, true );
 
 			case EDIT_MATERIAL	: return new Ab3dsMaterial( id );
 			case MAT_TEXT1_MAP	:
@@ -357,6 +363,10 @@ public abstract class Chunk
 	{
 		_chunkStart = is.getPointer() - 2;
 		_chunkSize  = is.readLong();
+		if ( _chunkSize == 0L )
+		{
+			throw new IOException( "illegal chunk size: " + _chunkSize );
+		}
 		_chunkEnd   = _chunkStart + _chunkSize;
 	}
 
@@ -367,7 +377,7 @@ public abstract class Chunk
 	 */
 	public String toString()
 	{
-		return "Chunk id="+getHex(_id);
+		return getClass().getSimpleName() + " id="+getHex(_id);
 	}
 
 	/**
@@ -380,15 +390,13 @@ public abstract class Chunk
 	public abstract void write( Ab3dsOutputStream os ) throws IOException;
 
 	/**
-	 * @param   is	the stream to read from.
-	 * @param   fp	filepointer to the current position in stream.
-	 *
-	 * @return  filepointer at point of return.
+	 * @param   os  Stream to write to.
 	 */
 	public final void writeHeader( final Ab3dsOutputStream os )
 		throws IOException
 	{
-		//System.out.println( "Write chunk : " + getHex( getID() ) + "   size = " + getSize() );
+		if ( Ab3dsFile.DEBUG )
+			System.out.println( "Write chunk : " + getHex( getID() ) + "   size = " + getSize() );
 		os.writeInt( getID() );
 		os.writeLong( getSize() );
 	}

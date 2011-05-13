@@ -20,7 +20,7 @@
  */
 package ab.j3d.a3ds;
 
-import java.io.IOException;
+import java.io.*;
 
 /**
  *
@@ -88,7 +88,7 @@ public final class StandardMapping extends DataChunk
 		_matrix = new float[4][3];
 		for ( int i = 0 ; i < 4 ; i++ )
 		{
-			for ( int j = 0 ; j < 4 ; j++ )
+			for ( int j = 0 ; j < 3 ; j++ )
 			{
 				_matrix[i][j] = is.readFloat();
 			}

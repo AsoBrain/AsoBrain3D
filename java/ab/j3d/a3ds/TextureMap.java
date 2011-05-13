@@ -20,7 +20,7 @@
  */
 package ab.j3d.a3ds;
 
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Material texture map chunk.
@@ -44,6 +44,16 @@ public final class TextureMap extends DataChunk
 	public TextureMap( final int id )
 	{
 		super( id );
+	}
+
+	/**
+	 * Peturns the path to the texture image.
+	 *
+	 * @return  Texture image path.
+	 */
+	public String getPath()
+	{
+		return _path;
 	}
 
 	/**
@@ -147,5 +157,4 @@ public final class TextureMap extends DataChunk
 		os.writeLong( HEADER_SIZE + FLOAT_SIZE );
 		os.writeFloat( _blur );
 	}
-
 }

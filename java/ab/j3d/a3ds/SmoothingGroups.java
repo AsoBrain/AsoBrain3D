@@ -1,7 +1,8 @@
-/* $Id$
+/*
+ * $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Sjoerd Bouwman
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,65 +24,68 @@ package ab.j3d.a3ds;
 import java.io.*;
 
 /**
- * When the current implementation of this package does not know about
- * certain chunk type, this chunk class is used to skip the chunk.
+ * Smoothing groups list.
  *
- * @author  Sjoerd Bouwman
+ * @author  G. Meinders
  * @version $Revision$ $Date$
  */
-public final class UnknownChunk extends Chunk
+public class SmoothingGroups
+	extends Chunk
 {
 	/**
-	 * Constructor of Chunk with ChunkID to be used
-	 * when the Chunk is read from inputstream.
-	 *
-	 * @param   id      ID of the chunk.
+	 * Smoothing group bit mask by face index.
 	 */
-	public UnknownChunk( final int id )
-	{
-		super(id);
-		if ( Ab3dsFile.DEBUG )
-			System.out.println( "New UNKNOWN Chunk ID = " + getHex( id ) );
-	}
+	private int[] _smoothingGroupsPerFace;
 
 	/**
-	 * Returns the size in bytes of the chunk.
+	 * Constructs a new instance.
 	 *
-	 * @return  the size of the chunk in bytes.
+	 * @param   parent  Parent chunk.
 	 */
+	public SmoothingGroups( final Chunk parent )
+	{
+		super( TRI_SMOOTH );
+		final FaceList faceList = (FaceList)parent;
+		_smoothingGroupsPerFace = new int[ faceList.getFaceCount() ];
+	}
+
+	@Override
 	public long getSize()
 	{
-		return 0;
+		return HEADER_SIZE + (long)( _smoothingGroupsPerFace.length * LONG_SIZE );
 	}
 
 	/**
-	 * Reads the chunk from the input stream.
+	 * Returns the smoothing groups that the given face belongs to.
 	 *
-	 * @param   is	the stream to read from.
+	 * @param   faceIndex   Index of the face.
 	 *
-	 * @throws IOException when an io error occurred.
+	 * @return  Smoothing groups, as a bit mask.
 	 */
+	public int getSmoothingGroup( final int faceIndex )
+	{
+		return _smoothingGroupsPerFace[ faceIndex ];
+	}
+
+	@Override
 	public void read( final Ab3dsInputStream is )
-		throws java.io.IOException
+		throws IOException
 	{
 		readHeader( is );
-		is.skip( _chunkEnd - is.getPointer() );
+		for ( int i = 0 ; i < _smoothingGroupsPerFace.length ; i++ )
+		{
+			_smoothingGroupsPerFace[ i ] = (int)is.readLong();
+		}
 	}
 
-	/**
-	 * Writes the chunk the output stream.
-	 *
-	 * @param   os	the stream to write to.
-	 *
-	 * @throws IOException when an io error occurred.
-	 */
+	@Override
 	public void write( final Ab3dsOutputStream os )
 		throws IOException
 	{
-		/*
-		 * Don't write anything
-		 */
-		if ( Ab3dsFile.DEBUG )
-			System.out.println( "Skipping unknown chunk : " + getHex( getID() ) );
+		writeHeader( os );
+		for ( final int smoothingGroup : _smoothingGroupsPerFace )
+		{
+			os.writeLong( (long)smoothingGroup );
+		}
 	}
 }

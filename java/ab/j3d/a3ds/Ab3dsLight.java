@@ -20,7 +20,7 @@
  */
 package ab.j3d.a3ds;
 
-import java.io.IOException;
+import java.io.*;
 
 /**
  * This chunk specifies a light.
@@ -49,40 +49,38 @@ import java.io.IOException;
 public final class Ab3dsLight
 	extends HierarchyChunk
 {
-	public static final class State
+	/*
+	 * When present, indicates that the light source is turned off.
+	 */
+	public static final class Off
 		extends DataChunk
 	{
-		public boolean on;
-
 		/**
 		 * Constructor of Chunk with ChunkID to be used
 		 * when the Chunk is read from inputstream.
 		 *
 		 * @param   id      ID of the chunk.
 		 */
-		public State( final int id )
+		public Off( final int id )
 		{
 			super( id );
-			on = false;
 		}
 
 		public long getSize()
 		{
-			return HEADER_SIZE + BOOLEAN_SIZE;
+			return HEADER_SIZE;
 		}
 
 		public void read( final Ab3dsInputStream is )
 			throws IOException
 		{
 			readHeader( is );
-			on = is.readBoolean();
 		}
 
 		public void write( final Ab3dsOutputStream os )
 			throws IOException
 		{
 			writeHeader( os );
-			os.writeBoolean( on );
 		}
 	}
 

@@ -25,6 +25,7 @@ import java.io.*;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.a3ds.*;
 import ab.j3d.model.*;
 
 /**
@@ -41,25 +42,24 @@ import ab.j3d.model.*;
  *  </dd>
  * </dl>
  *
+ * FIXME    Materials are broken.
  * FIXME    Add support for lights.
  * FIXME    Add support for unit set in file.
  * FIXME    Properly handle material properties.
  *
+ * @deprecated  Materials are currently broken. Fixing them may prove difficult.
+ *              Use {@link Ab3dsFile} instead of this class.
+ *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
+@Deprecated
 public final class Max3DSLoader
 {
 	/**
 	 * Root of scene graph to which geometry is added.
 	 */
 	private final Node3D _root;
-
-	/**
-	 * Loader for resources (e.g. textures). This may be <code>null</code> if no
-	 * resource loader is available.
-	 */
-	private final ResourceLoader _resourceLoader;
 
 	/**
 	 * Maps material names ({@link String}) to {@link Material} objects
@@ -130,7 +130,7 @@ public final class Max3DSLoader
 	{
 		final Node3D result = ( transform == null || Matrix3D.INIT.equals( transform ) ) ? new Transform3D( transform ) : new Node3D();
 
-		final Max3DSLoader loader = new Max3DSLoader( result , resourceLoader );
+		final Max3DSLoader loader = new Max3DSLoader( result );
 		while ( true )
 		{
 			final int chunkID;
@@ -160,12 +160,10 @@ public final class Max3DSLoader
 	 * Internal constructor for loader.
 	 *
 	 * @param   root            Root of scene graph to add geometry to.
-	 * @param   resourceLoader  Loader for resource files (e.g. textures).
 	 */
-	private Max3DSLoader( final Node3D root , final ResourceLoader resourceLoader )
+	private Max3DSLoader( final Node3D root )
 	{
 		_root = root;
-		_resourceLoader = resourceLoader;
 		_object3DBuilder = null;
 		_material = null;
 		_textureCoords = null;
@@ -347,8 +345,8 @@ public final class Max3DSLoader
 					for ( int i = 0 ; i < faceCount ; i++ )
 					{
 						final int faceIndex = readShort( in );
-						final Face3D face = object.getFace( faceIndex );
-						face.material = material;
+//						final Face3D face = object.getFace( faceIndex );
+//						face.material = material;
 					}
 
 					_material = material;
@@ -386,17 +384,13 @@ public final class Max3DSLoader
 					 * at a time, specifying vertex normals and texture coordinates
 					 * (if present).
 					 */
-					final Object3D object    = _object3DBuilder.getObject3D();
-					final int      faceCount = object.getFaceCount();
+					final Object3D object = _object3DBuilder.getObject3D();
 
-					for ( int i = 0 ; i < faceCount ; i++ )
+					for ( final FaceGroup faceGroup : object.getFaceGroups() )
 					{
-						final int groupBitMask = readLong( in ); // may be part of any of 32 'smoothing groups' - any will do for us
-
-						if ( groupBitMask != 0 )
+						for ( final Face3D face : faceGroup.getFaces() )
 						{
-							final Face3D face = object.getFace( i );
-							face.smooth = true;
+							readLong( in );
 						}
 					}
 				}

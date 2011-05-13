@@ -126,6 +126,12 @@ public class StlLoader
 	Material _material = Materials.ALUMINIUM;
 
 	/**
+	 * UV-map applied to loaded objects.
+	 */
+	@Nullable
+	UVMap _uvMap = null;
+
+	/**
 	 * Get material used for resulting 3D object.
 	 *
 	 * @return  Material used for resulting 3D object.
@@ -143,6 +149,27 @@ public class StlLoader
 	public void setMaterial( final Material material )
 	{
 		_material = material;
+	}
+
+	/**
+	 * Returns the UV-map applied to loaded objects.
+	 *
+	 * @return  UV-map.
+	 */
+	@Nullable
+	public UVMap getUvMap()
+	{
+		return _uvMap;
+	}
+
+	/**
+	 * Sets the UV-map to be applied to loaded objects.
+	 *
+	 * @param   uvMap   UV-map to be used.
+	 */
+	public void setUvMap( @Nullable final UVMap uvMap )
+	{
+		_uvMap = uvMap;
 	}
 
 	/**
@@ -291,6 +318,7 @@ public class StlLoader
 		throws IOException
 	{
 		final Material material = _material;
+		final UVMap uvMap = _uvMap;
 
 		//noinspection MismatchedReadAndWriteOfArray
 		final int[] vertexIndices = new int[ 3 ]; // read indirectly using '.clone()'
@@ -335,7 +363,7 @@ public class StlLoader
 							throw new IOException( "Invalid facet defined in STL file. Should have 3 vertices, but have " + vertexCount );
 						}
 
-						builder.addFace( vertexIndices.clone(), material, false, false );
+						builder.addFace( vertexIndices.clone(), material, uvMap, false, false, false );
 						faceVertexIndex = 0;
 					}
 				}
@@ -363,6 +391,7 @@ public class StlLoader
 		throws IOException
 	{
 		final Material material = _material;
+		final UVMap uvMap = _uvMap;
 		final Vector3D[] points = new Vector3D[ 3 ];
 		final Vector3D[] normals = new Vector3D[ 3 ];
 
@@ -390,7 +419,7 @@ public class StlLoader
 					skipped += in.skip( attributeByteCount - skipped );
 				}
 
-				builder.addFace( points, material, null, normals, false, false );
+				builder.addFace( points, material, uvMap, normals, false, false, false );
 			}
 		}
 		catch ( EOFException e )
