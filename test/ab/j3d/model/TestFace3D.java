@@ -19,10 +19,11 @@
  */
 package ab.j3d.model;
 
-import junit.framework.TestCase;
+import java.util.*;
 
-import ab.j3d.Vector3D;
-import ab.j3d.junit.Vector3DTester;
+import ab.j3d.*;
+import ab.j3d.junit.*;
+import junit.framework.*;
 
 /**
  * This class tests the {@link Face3D} class.
@@ -64,7 +65,10 @@ public class TestFace3D
 				builder.addFace( vertices , null , false , false );
 				final Object3D object = builder.getObject3D();
 
-				_face     = object.getFace( 0 );
+				final List<FaceGroup> faceGroups = object.getFaceGroups();
+				final FaceGroup faceGroup = faceGroups.get( 0 );
+				final List<Face3D> faces = faceGroup.getFaces();
+				_face     = faces.get( 0 );
 				_expected = distance;
 			}
 		}
@@ -157,7 +161,10 @@ public class TestFace3D
 				builder.addFace( vertices , null , false , false );
 				final Object3D object = builder.getObject3D();
 
-				_face     = object.getFace( 0 );
+				final List<FaceGroup> faceGroups = object.getFaceGroups();
+				final FaceGroup faceGroup = faceGroups.get( 0 );
+				final List<Face3D> faces = faceGroup.getFaces();
+				_face     = faces.get( 0 );
 				_expected = Vector3D.INIT.set( normalX , normalY , normalZ );
 			}
 		}
@@ -242,28 +249,32 @@ public class TestFace3D
 		/* right  */ builder.addFace( new Vector3D[] { rfb , rft , rbt , rbb } , null , false , false );
 		final Object3D cube = builder.getObject3D();
 
-		assertEquals( "Normal(top).x"    ,  0.0 , cube.getFace( 0 ).normal.x , 0.001 );
-		assertEquals( "Normal(top).y"    ,  0.0 , cube.getFace( 0 ).normal.y , 0.001 );
-		assertEquals( "Normal(top).z"    ,  1.0 , cube.getFace( 0 ).normal.z , 0.001 );
+		final List<FaceGroup> faceGroups = cube.getFaceGroups();
+		final FaceGroup faceGroup = faceGroups.get( 0 );
+		final List<Face3D> faces = faceGroup.getFaces();
 
-		assertEquals( "Normal(bottom).x" ,  0.0 , cube.getFace( 1 ).normal.x , 0.001 );
-		assertEquals( "Normal(bottom).y" ,  0.0 , cube.getFace( 1 ).normal.y , 0.001 );
-		assertEquals( "Normal(bottom).z" , -1.0 , cube.getFace( 1 ).normal.z , 0.001 );
+		assertEquals( "Normal(top).x"    ,  0.0 , faces.get( 0 ).normal.x , 0.001 );
+		assertEquals( "Normal(top).y"    ,  0.0 , faces.get( 0 ).normal.y , 0.001 );
+		assertEquals( "Normal(top).z"    ,  1.0 , faces.get( 0 ).normal.z , 0.001 );
 
-		assertEquals( "Normal(front).x"  ,  0.0 , cube.getFace( 2 ).normal.x , 0.001 );
-		assertEquals( "Normal(front).y"  , -1.0 , cube.getFace( 2 ).normal.y , 0.001 );
-		assertEquals( "Normal(front).z"  ,  0.0 , cube.getFace( 2 ).normal.z , 0.001 );
+		assertEquals( "Normal(bottom).x" ,  0.0 , faces.get( 1 ).normal.x , 0.001 );
+		assertEquals( "Normal(bottom).y" ,  0.0 , faces.get( 1 ).normal.y , 0.001 );
+		assertEquals( "Normal(bottom).z" , -1.0 , faces.get( 1 ).normal.z , 0.001 );
 
-		assertEquals( "Normal(back).x"   ,  0.0 , cube.getFace( 3 ).normal.x , 0.001 );
-		assertEquals( "Normal(back).y"   ,  1.0 , cube.getFace( 3 ).normal.y , 0.001 );
-		assertEquals( "Normal(back).z"   ,  0.0 , cube.getFace( 3 ).normal.z , 0.001 );
+		assertEquals( "Normal(front).x"  ,  0.0 , faces.get( 2 ).normal.x , 0.001 );
+		assertEquals( "Normal(front).y"  , -1.0 , faces.get( 2 ).normal.y , 0.001 );
+		assertEquals( "Normal(front).z"  ,  0.0 , faces.get( 2 ).normal.z , 0.001 );
 
-		assertEquals( "Normal(left).x"   , -1.0 , cube.getFace( 4 ).normal.x , 0.001 );
-		assertEquals( "Normal(left).y"   ,  0.0 , cube.getFace( 4 ).normal.y , 0.001 );
-		assertEquals( "Normal(left).z"   ,  0.0 , cube.getFace( 4 ).normal.z , 0.001 );
+		assertEquals( "Normal(back).x"   ,  0.0 , faces.get( 3 ).normal.x , 0.001 );
+		assertEquals( "Normal(back).y"   ,  1.0 , faces.get( 3 ).normal.y , 0.001 );
+		assertEquals( "Normal(back).z"   ,  0.0 , faces.get( 3 ).normal.z , 0.001 );
 
-		assertEquals( "Normal(right).x"  ,  1.0 , cube.getFace( 5 ).normal.x , 0.001 );
-		assertEquals( "Normal(right).y"  ,  0.0 , cube.getFace( 5 ).normal.y , 0.001 );
-		assertEquals( "Normal(right).z"  ,  0.0 , cube.getFace( 5 ).normal.z , 0.001 );
+		assertEquals( "Normal(left).x"   , -1.0 , faces.get( 4 ).normal.x , 0.001 );
+		assertEquals( "Normal(left).y"   ,  0.0 , faces.get( 4 ).normal.y , 0.001 );
+		assertEquals( "Normal(left).z"   ,  0.0 , faces.get( 4 ).normal.z , 0.001 );
+
+		assertEquals( "Normal(right).x"  ,  1.0 , faces.get( 5 ).normal.x , 0.001 );
+		assertEquals( "Normal(right).y"  ,  0.0 , faces.get( 5 ).normal.y , 0.001 );
+		assertEquals( "Normal(right).z"  ,  0.0 , faces.get( 5 ).normal.z , 0.001 );
 	}
 }

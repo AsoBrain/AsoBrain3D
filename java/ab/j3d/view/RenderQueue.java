@@ -194,28 +194,29 @@ public final class RenderQueue
 		final int imageWidth  = projector.getImageWidth();
 		final int imageHeight = projector.getImageHeight();
 
-		final int faceCount = object.getFaceCount();
-		for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
+		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
-			final Face3D face = object.getFace( faceIndex );
-			final Tessellation tessellation = face.getTessellation();
-
-			for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+			for ( final Face3D face : faceGroup.getFaces() )
 			{
-				final int[] triangles = primitive.getTriangles();
-				for ( int i = 0; i < triangles.length; i += 3 )
-				{
-					final RenderedPolygon polygon = allocatePolygon( 3 );
-					polygon.initialize( object2view, projector, object, face, new int[] { triangles[ i ], triangles[ i + 1], triangles[ i + 2 ] } );
+				final Tessellation tessellation = face.getTessellation();
 
-					if ( polygon.inViewVolume( imageWidth, imageHeight ) && // View volume culling
-					     ( !backfaceCulling || face.isTwoSided() || !polygon.isBackface() ) ) // Backface removal
+				for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+				{
+					final int[] triangles = primitive.getTriangles();
+					for ( int i = 0; i < triangles.length; i += 3 )
 					{
-						enqueuePolygon( polygon );
-					}
-					else
-					{
-						releasePolygon( polygon );
+						final RenderedPolygon polygon = allocatePolygon( 3 );
+						polygon.initialize( object2view, projector, object, faceGroup, face, new int[] { triangles[ i ], triangles[ i + 1], triangles[ i + 2 ] } );
+
+						if ( polygon.inViewVolume( imageWidth, imageHeight ) && // View volume culling
+						     ( !backfaceCulling || face.isTwoSided() || !polygon.isBackface() ) ) // Backface removal
+						{
+							enqueuePolygon( polygon );
+						}
+						else
+						{
+							releasePolygon( polygon );
+						}
 					}
 				}
 			}
@@ -859,7 +860,7 @@ public final class RenderQueue
 		front._planeNormalY        = polygon._planeNormalY;
 		front._planeNormalZ        = polygon._planeNormalZ;
 		front._backface            = polygon._backface;
-		front._material            = polygon._material;
+		front._appearance = polygon._appearance;
 		front._name                = polygon._name + "_front";
 
 		final RenderedPolygon back = new RenderedPolygon( backCount );
@@ -900,7 +901,7 @@ public final class RenderQueue
 		back._planeNormalY = polygon._planeNormalY;
 		back._planeNormalZ = polygon._planeNormalZ;
 		back._backface = polygon._backface;
-		back._material = polygon._material;
+		back._appearance = polygon._appearance;
 		back._name = polygon._name + "_back";
 
 		return new RenderedPolygon[] { back, front };

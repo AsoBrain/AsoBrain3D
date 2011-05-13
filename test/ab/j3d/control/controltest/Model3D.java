@@ -19,31 +19,17 @@
  */
 package ab.j3d.control.controltest;
 
-import java.awt.Color;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.HashSet;
-import java.util.Set;
+import java.awt.*;
+import java.beans.*;
+import java.util.*;
 
-import ab.j3d.Material;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.control.controltest.model.Floor;
-import ab.j3d.control.controltest.model.Model;
-import ab.j3d.control.controltest.model.PaintableTriangle;
-import ab.j3d.control.controltest.model.SceneElement;
-import ab.j3d.control.controltest.model.TetraHedron;
-import ab.j3d.control.controltest.model.Wall;
-import ab.j3d.geom.BoxUVMap;
-import ab.j3d.model.Box3D;
-import ab.j3d.model.ContentNode;
-import ab.j3d.model.Face3D;
-import ab.j3d.model.Object3D;
-import ab.j3d.model.Object3DBuilder;
-import ab.j3d.model.Scene;
-import ab.j3d.view.RenderEngine;
+import ab.j3d.*;
+import ab.j3d.control.controltest.model.*;
+import ab.j3d.geom.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
 import ab.j3d.view.View3D;
-import ab.j3d.view.jogl.JOGLEngine;
+import ab.j3d.view.jogl.*;
 
 /**
  * The {@link Model3D} creates a 3d representation of a {@link Model}.
@@ -393,8 +379,11 @@ public final class Model3D
 			{
 				final Object3D hedron3D = (Object3D)hedronNode.getNode3D();
 
+				// FIXME: broken
+/*
 				final Face3D face = hedron3D.getFace( newFace.getFaceNumber() );
 				face.material = FACE_SELECTION_MATERIAL;
+*/
 			}
 		}
 
@@ -419,10 +408,9 @@ public final class Model3D
 	 */
 	private static void setMaterialOfAllFaces( final Object3D object , final Material material )
 	{
-		for ( int i = 0 ; i < object.getFaceCount() ; i++ )
+		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
-			final Face3D face = object.getFace( i );
-			face.material = material;
+			faceGroup.setAppearance( material );
 		}
 	}
 }

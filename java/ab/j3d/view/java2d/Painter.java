@@ -98,9 +98,7 @@ public final class Painter
 		final Color outlineColor = renderStyle.isStrokeEnabled() ? renderStyle.getStrokeColor() : null;
 		final Color fillColor = renderStyle.isFillEnabled() ? renderStyle.getFillColor() : null;
 
-		final int faceCount = object.getFaceCount();
-
-		if ( ( outlineColor != null ) || ( fillColor != null ) && ( faceCount > 0 ) )
+		if ( ( outlineColor != null ) || ( fillColor != null ) )
 		{
 			if ( object instanceof Cone3D )
 			{
@@ -145,87 +143,87 @@ public final class Painter
 		final boolean applyLighting = renderStyle.isFillLightingEnabled();
 		final Matrix3D object2image = object2view.multiply( view2image );
 
-		final int faceCount = object.getFaceCount();
-
 		final Path2D.Float path = new Path2D.Float();
 
 		final float[] rgb = ( applyLighting && ( fillColor != null ) ) ? fillColor.getRGBComponents( null ) : null;
 
-		for ( int faceIndex = 0 ; faceIndex < faceCount ; faceIndex++ )
+		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
-			final Face3D face = object.getFace( faceIndex );
-			final Tessellation tessellation = face.getTessellation();
-			final List<Vertex> vertices = face.vertices;
-			final List<int[]> outlines = tessellation.getOutlines();
-
-			if ( object2view.rotateZ( face.getNormal() ) >= 0.0 )
+			for ( final Face3D face : faceGroup.getFaces() )
 			{
-				final Color faceFillColor;
-				if ( applyLighting )
-				{
-					final Vector3D faceNormal = face.normal;
-					final float transformedNormalZ = (float)object2view.rotateZ( faceNormal.x, faceNormal.y, faceNormal.z );
-					final float factor = Math.min( 1.0f, 0.5f + 0.5f * Math.abs( transformedNormalZ ) );
-					faceFillColor = ( factor < 1.0f ) ? new Color( factor * rgb[ 0 ], factor * rgb[ 1 ], factor * rgb[ 2 ], rgb[ 3 ] ) : fillColor;
-				}
-				else
-				{
-					faceFillColor = fillColor;
-				}
+				final Tessellation tessellation = face.getTessellation();
+				final List<Vertex> vertices = face.vertices;
+				final List<int[]> outlines = tessellation.getOutlines();
 
-				/*
-				 * Fill faces.
-				 */
-				for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+				if ( object2view.rotateZ( face.getNormal() ) >= 0.0 )
 				{
-					path.reset();
-
-					final int[] triangles = primitive.getTriangles();
-					for ( int i = 0 ; i < triangles.length ; i += 3 )
+					final Color faceFillColor;
+					if ( applyLighting )
 					{
-						final Vector3D p1 = vertices.get( triangles[ i     ] ).point;
-						final Vector3D p2 = vertices.get( triangles[ i + 1 ] ).point;
-						final Vector3D p3 = vertices.get( triangles[ i + 2 ] ).point;
-
-						path.moveTo( object2image.transformX( p1 ), object2image.transformY( p1 ) );
-						path.lineTo( object2image.transformX( p2 ), object2image.transformY( p2 ) );
-						path.lineTo( object2image.transformX( p3 ), object2image.transformY( p3 ) );
-						path.closePath();
+						final Vector3D faceNormal = face.normal;
+						final float transformedNormalZ = (float)object2view.rotateZ( faceNormal.x, faceNormal.y, faceNormal.z );
+						final float factor = Math.min( 1.0f, 0.5f + 0.5f * Math.abs( transformedNormalZ ) );
+						faceFillColor = ( factor < 1.0f ) ? new Color( factor * rgb[ 0 ], factor * rgb[ 1 ], factor * rgb[ 2 ], rgb[ 3 ] ) : fillColor;
+					}
+					else
+					{
+						faceFillColor = fillColor;
 					}
 
-					if ( faceFillColor != null )
-					{
-						g.setPaint( faceFillColor );
-						g.fill( path );
-					}
-				}
-
-				/*
-				 * Draw outlines.
-				 */
-				for ( final int[] outline : outlines )
-				{
-					if ( outline.length > 1 )
+					/*
+					 * Fill faces.
+					 */
+					for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
 					{
 						path.reset();
 
-						for ( int p = 0 ; p < outline.length ; p++ )
+						final int[] triangles = primitive.getTriangles();
+						for ( int i = 0 ; i < triangles.length ; i += 3 )
 						{
-							final Vector3D p3d = vertices.get( outline[ p ] ).point;
-							if ( p == 0 )
-							{
-								path.moveTo( object2image.transformX( p3d ), object2image.transformY( p3d ) );
-							}
-							else
-							{
-								path.lineTo( object2image.transformX( p3d ), object2image.transformY( p3d ) );
-							}
+							final Vector3D p1 = vertices.get( triangles[ i     ] ).point;
+							final Vector3D p2 = vertices.get( triangles[ i + 1 ] ).point;
+							final Vector3D p3 = vertices.get( triangles[ i + 2 ] ).point;
+
+							path.moveTo( object2image.transformX( p1 ), object2image.transformY( p1 ) );
+							path.lineTo( object2image.transformX( p2 ), object2image.transformY( p2 ) );
+							path.lineTo( object2image.transformX( p3 ), object2image.transformY( p3 ) );
+							path.closePath();
 						}
 
-						if ( outlineColor != null )
+						if ( faceFillColor != null )
 						{
-							g.setPaint( outlineColor );
-							g.draw( path );
+							g.setPaint( faceFillColor );
+							g.fill( path );
+						}
+					}
+
+					/*
+					 * Draw outlines.
+					 */
+					for ( final int[] outline : outlines )
+					{
+						if ( outline.length > 1 )
+						{
+							path.reset();
+
+							for ( int p = 0 ; p < outline.length ; p++ )
+							{
+								final Vector3D p3d = vertices.get( outline[ p ] ).point;
+								if ( p == 0 )
+								{
+									path.moveTo( object2image.transformX( p3d ), object2image.transformY( p3d ) );
+								}
+								else
+								{
+									path.lineTo( object2image.transformX( p3d ), object2image.transformY( p3d ) );
+								}
+							}
+
+							if ( outlineColor != null )
+							{
+								g.setPaint( outlineColor );
+								g.draw( path );
+							}
 						}
 					}
 				}
@@ -554,7 +552,7 @@ public final class Painter
 		final Color fillColor = renderStyle.isFillEnabled() ? renderStyle.getFillColor() : null;
 		final boolean applyLighting = renderStyle.isFillLightingEnabled();
 
-		final double radius = sphere.radius;
+		final double radius = sphere._radius;
 
 		final Matrix3D viewBase          = sphere2view;
 		final Matrix3D combinedTransform = viewBase.multiply( view2image );

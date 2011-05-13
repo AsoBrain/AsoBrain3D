@@ -1574,55 +1574,72 @@ public class GeometryTools
 		final List<Vector3D> segmentStarts = new ArrayList<Vector3D>();
 		final List<Vector3D> segmentEnds = new ArrayList<Vector3D>();
 
-		for ( final Face3D face : object.getFaces() )
+		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
-			final Tessellation tessellation = face.getTessellation();
-			for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+			for ( final Face3D face : faceGroup.getFaces() )
 			{
-				final int[] triangles = primitive.getTriangles();
-
-				final double planeDistance = plane.getDistance();
-				final Vector3D planeNormal = plane.getNormal();
-
-				for ( int i = 0; i < triangles.length; i += 3 )
+				final Tessellation tessellation = face.getTessellation();
+				for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
 				{
-					final Face3D.Vertex vertex1 = face.getVertex( triangles[ i ] );
-					final Face3D.Vertex vertex2 = face.getVertex( triangles[ i + 1 ] );
-					final Face3D.Vertex vertex3 = face.getVertex( triangles[ i + 2 ] );
+					final int[] triangles = primitive.getTriangles();
 
-					final Vector3D p1 = vertex1.point;
-					final Vector3D p2 = vertex2.point;
-					final Vector3D p3 = vertex3.point;
+					final double planeDistance = plane.getDistance();
+					final Vector3D planeNormal = plane.getNormal();
 
-					final double d1 = Vector3D.dot( planeNormal, p1 );
-					final double d2 = Vector3D.dot( planeNormal, p2 );
-					final double d3 = Vector3D.dot( planeNormal, p3 );
-
-					final boolean p1p2 = ( d1 <= planeDistance ) && ( d2 >= planeDistance ) ||
-					                     ( d2 <= planeDistance ) && ( d1 >= planeDistance );
-					final boolean p1p3 = ( d1 <= planeDistance ) && ( d3 >= planeDistance ) ||
-					                     ( d3 <= planeDistance ) && ( d1 >= planeDistance );
-					final boolean p2p3 = ( d2 <= planeDistance ) && ( d3 >= planeDistance ) ||
-					                     ( d3 <= planeDistance ) && ( d2 >= planeDistance );
-
-					if ( p1p2 )
+					for ( int i = 0; i < triangles.length; i += 3 )
 					{
-						final double u = ( planeDistance - d1 ) / ( d2 - d1 );
-						final Vector3D a = new Vector3D( u * ( p2.x - p1.x ) + p1.x,
-						                                 u * ( p2.y - p1.y ) + p1.y,
-						                                 u * ( p2.z - p1.z ) + p1.z );
+						final Face3D.Vertex vertex1 = face.getVertex( triangles[ i ] );
+						final Face3D.Vertex vertex2 = face.getVertex( triangles[ i + 1 ] );
+						final Face3D.Vertex vertex3 = face.getVertex( triangles[ i + 2 ] );
 
-						if ( p1p3 )
+						final Vector3D p1 = vertex1.point;
+						final Vector3D p2 = vertex2.point;
+						final Vector3D p3 = vertex3.point;
+
+						final double d1 = Vector3D.dot( planeNormal, p1 );
+						final double d2 = Vector3D.dot( planeNormal, p2 );
+						final double d3 = Vector3D.dot( planeNormal, p3 );
+
+						final boolean p1p2 = ( d1 <= planeDistance ) && ( d2 >= planeDistance ) ||
+						                     ( d2 <= planeDistance ) && ( d1 >= planeDistance );
+						final boolean p1p3 = ( d1 <= planeDistance ) && ( d3 >= planeDistance ) ||
+						                     ( d3 <= planeDistance ) && ( d1 >= planeDistance );
+						final boolean p2p3 = ( d2 <= planeDistance ) && ( d3 >= planeDistance ) ||
+						                     ( d3 <= planeDistance ) && ( d2 >= planeDistance );
+
+						if ( p1p2 )
 						{
-							final double v = ( planeDistance - d1 ) / ( d3 - d1 );
-							final Vector3D b = new Vector3D( v * ( p3.x - p1.x ) + p1.x,
-							                                 v * ( p3.y - p1.y ) + p1.y,
-							                                 v * ( p3.z - p1.z ) + p1.z );
-							segmentStarts.add( a );
-							segmentEnds.add( b );
+							final double u = ( planeDistance - d1 ) / ( d2 - d1 );
+							final Vector3D a = new Vector3D( u * ( p2.x - p1.x ) + p1.x,
+							                                 u * ( p2.y - p1.y ) + p1.y,
+							                                 u * ( p2.z - p1.z ) + p1.z );
+
+							if ( p1p3 )
+							{
+								final double v = ( planeDistance - d1 ) / ( d3 - d1 );
+								final Vector3D b = new Vector3D( v * ( p3.x - p1.x ) + p1.x,
+								                                 v * ( p3.y - p1.y ) + p1.y,
+								                                 v * ( p3.z - p1.z ) + p1.z );
+								segmentStarts.add( a );
+								segmentEnds.add( b );
+							}
+							else if ( p2p3 )
+							{
+								final double v = ( planeDistance - d2 ) / ( d3 - d2 );
+								final Vector3D b = new Vector3D( v * ( p3.x - p2.x ) + p2.x,
+								                                 v * ( p3.y - p2.y ) + p2.y,
+								                                 v * ( p3.z - p2.z ) + p2.z );
+								segmentStarts.add( a );
+								segmentEnds.add( b );
+							}
 						}
-						else if ( p2p3 )
+						else if ( p1p3 && p2p3 )
 						{
+							final double u = ( planeDistance - d1 ) / ( d3 - d1 );
+							final Vector3D a = new Vector3D( u * ( p3.x - p1.x ) + p1.x,
+							                                 u * ( p3.y - p1.y ) + p1.y,
+							                                 u * ( p3.z - p1.z ) + p1.z );
+
 							final double v = ( planeDistance - d2 ) / ( d3 - d2 );
 							final Vector3D b = new Vector3D( v * ( p3.x - p2.x ) + p2.x,
 							                                 v * ( p3.y - p2.y ) + p2.y,
@@ -1630,20 +1647,6 @@ public class GeometryTools
 							segmentStarts.add( a );
 							segmentEnds.add( b );
 						}
-					}
-					else if ( p1p3 && p2p3 )
-					{
-						final double u = ( planeDistance - d1 ) / ( d3 - d1 );
-						final Vector3D a = new Vector3D( u * ( p3.x - p1.x ) + p1.x,
-						                                 u * ( p3.y - p1.y ) + p1.y,
-						                                 u * ( p3.z - p1.z ) + p1.z );
-
-						final double v = ( planeDistance - d2 ) / ( d3 - d2 );
-						final Vector3D b = new Vector3D( v * ( p3.x - p2.x ) + p2.x,
-						                                 v * ( p3.y - p2.y ) + p2.y,
-						                                 v * ( p3.z - p2.z ) + p2.z );
-						segmentStarts.add( a );
-						segmentEnds.add( b );
 					}
 				}
 			}
@@ -1678,34 +1681,38 @@ public class GeometryTools
 
 		final double planeDistance = plane.getDistance();
 		final Vector3D normal = plane.getNormal();
-		for ( final Face3D face : object.getFaces() )
+		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
-			boolean front = false;
-			boolean rear = false;
+			for ( final Face3D face : faceGroup.getFaces() )
+			{
+				boolean front = false;
+				boolean rear = false;
 
-			for ( int i = 0; i < face.getVertexCount(); i++ )
-			{
-				final Face3D.Vertex vertex = face.getVertex( i );
-				final double faceDistance = Vector3D.dot( normal, vertex.point );
-				if ( faceDistance > planeDistance )
+				for ( int i = 0; i < face.getVertexCount(); i++ )
 				{
-					front = true;
+					final Face3D.Vertex vertex = face.getVertex( i );
+					final double faceDistance = Vector3D.dot( normal, vertex.point );
+					if ( faceDistance > planeDistance )
+					{
+						front = true;
+					}
+					else
+					{
+						rear = true;
+					}
 				}
-				else
-				{
-					rear = true;
-				}
-			}
 
-			if ( !rear )
-			{
-				// Add faces in front of or on the plane.
-				builder.addFace( face.vertices, face.getTessellation(), face.material, face.smooth, face.isTwoSided() );
-			}
-			else if ( front )
-			{
-				// Clip faces intersecting the plane.
-				// TODO: Not yet implemented.
+				if ( !rear )
+				{
+					// Add faces in front of or on the plane.
+					// FIXME: Horribly inefficient.
+					builder.addFace( face.vertices, face.getTessellation(), faceGroup.getAppearance(), faceGroup.isSmooth(), faceGroup.isTwoSided() );
+				}
+				else if ( front )
+				{
+					// Clip faces intersecting the plane.
+					// TODO: Not yet implemented.
+				}
 			}
 		}
 
@@ -1724,27 +1731,54 @@ public class GeometryTools
 	 */
 	public static void smooth( final Object3D object, final double maximumSmoothAngle, final double maximumEdgeAngle, final boolean separateMaterials )
 	{
-		final List<Face3D> faces = object.getFaces();
+		final int vertexCount = object.getVertexCount();
+		if ( separateMaterials )
+		{
+			for ( final FaceGroup faceGroup : object.getFaceGroups() )
+			{
+				smooth( Collections.singletonList( faceGroup ), maximumSmoothAngle, maximumEdgeAngle, vertexCount );
+			}
+		}
+		else
+		{
+			smooth( object.getFaceGroups(), maximumSmoothAngle, maximumEdgeAngle, vertexCount );
+		}
+	}
+
+	/**
+	 * Calculates vertex normals and removes edges based on the angles between
+	 * adjacent faces.
+	 *
+	 * @param   faceGroups          Face groups to be smoothed.
+	 * @param   maximumSmoothAngle  Maximum smoothing angle, in degrees.
+	 * @param   maximumEdgeAngle    Maximum angle for which edges are removed.
+	 * @param   vertexCount         Number of vertex coordinates stored in the
+	 *                              object containing the faces.
+	 */
+	private static void smooth( final List<FaceGroup> faceGroups, final double maximumSmoothAngle, final double maximumEdgeAngle, final int vertexCount )
+	{
 		final boolean smoothing = maximumSmoothAngle > 0.0;
 		final boolean edgeRemoval = maximumEdgeAngle > 0.0;
 
 		/*
 		 * Map faces by vertex coordinate.
 		 */
-		final List<List<Face3D>> facesByVertexCoordinate = new ArrayList<List<Face3D>>( Collections.nCopies( object.getVertexCount(), Collections.<Face3D>emptyList() ) );
-		for ( final Face3D face : faces )
+		final List<List<Face3D>> facesByVertexCoordinate = new ArrayList<List<Face3D>>( Collections.nCopies( vertexCount, Collections.<Face3D>emptyList() ) );
+		for ( final FaceGroup faceGroup : faceGroups )
 		{
-			face.smooth = smoothing;
-
-			for ( final Face3D.Vertex vertex : face.getVertices() )
+			faceGroup.setSmooth( smoothing );
+			for ( final Face3D face : faceGroup.getFaces() )
 			{
-				List<Face3D> faceList = facesByVertexCoordinate.get( vertex.vertexCoordinateIndex );
-				if ( faceList.isEmpty() )
+				for ( final Face3D.Vertex vertex : face.getVertices() )
 				{
-					faceList = new ArrayList<Face3D>();
-					facesByVertexCoordinate.set( vertex.vertexCoordinateIndex, faceList );
+					List<Face3D> faceList = facesByVertexCoordinate.get( vertex.vertexCoordinateIndex );
+					if ( faceList.isEmpty() )
+					{
+						faceList = new ArrayList<Face3D>();
+						facesByVertexCoordinate.set( vertex.vertexCoordinateIndex, faceList );
+					}
+					faceList.add( face );
 				}
-				faceList.add( face );
 			}
 		}
 
@@ -1755,85 +1789,88 @@ public class GeometryTools
 			 */
 			final double minCosEdges = Math.cos( Math.toRadians( maximumEdgeAngle ) );
 			final List<int[]> outlines = new LinkedList<int[]>();
-			for ( final Face3D face : faces )
+			for ( final FaceGroup faceGroup : faceGroups )
 			{
-				boolean outlinesModified = false;
-				outlines.clear();
-
-				for ( final int[] outline : face.getOutlines() )
+				for ( final Face3D face : faceGroup.getFaces() )
 				{
-					int outlineStart = 0;
-					List<Face3D> startFaces = facesByVertexCoordinate.get( face.vertices.get( outline[ 0 ] ).vertexCoordinateIndex );
+					boolean outlinesModified = false;
+					outlines.clear();
 
-					for ( int i = 1; i < outline.length; i++ )
+					for ( final int[] outline : face.getOutlines() )
 					{
-						final List<Face3D> endFaces = facesByVertexCoordinate.get( face.vertices.get( outline[ i ] ).vertexCoordinateIndex );
+						int outlineStart = 0;
+						List<Face3D> startFaces = facesByVertexCoordinate.get( face.vertices.get( outline[ 0 ] ).vertexCoordinateIndex );
 
-						/*
-						 * Find face on the opposite side of this edge.
-						 */
-						Face3D symmetric = null;
-						for ( final Face3D startFace : startFaces )
+						for ( int i = 1; i < outline.length; i++ )
 						{
-							if ( endFaces.contains( startFace ) )
-							{
-								symmetric = startFace;
-								break;
-							}
-						}
+							final List<Face3D> endFaces = facesByVertexCoordinate.get( face.vertices.get( outline[ i ] ).vertexCoordinateIndex );
 
-						/*
-						 * If requested, apply only to faces with the same
-						 * material.
-						 */
-						if ( ( symmetric != null ) && ( !separateMaterials || ( face.material == symmetric.material ) ) )
-						{
-							final double cos = Vector3D.dot( face.getNormal(), symmetric.getNormal() );
-							if ( cos >= minCosEdges )
+							/*
+							 * Find face on the opposite side of this edge.
+							 */
+							Face3D symmetric = null;
+							for ( final Face3D startFace : startFaces )
 							{
-								if ( i - outlineStart > 1 )
+								if ( endFaces.contains( startFace ) )
 								{
-									final int[] fragment = new int[ i - outlineStart ];
-									System.arraycopy( outline, outlineStart, fragment, 0, i - outlineStart );
-									outlines.add( fragment );
+									symmetric = startFace;
+									break;
 								}
+							}
 
-								outlineStart = i;
+							/*
+							 * If requested, apply only to faces with the same
+							 * material.
+							 */
+							if ( symmetric != null )
+							{
+								final double cos = Vector3D.dot( face.getNormal(), symmetric.getNormal() );
+								if ( cos >= minCosEdges )
+								{
+									if ( i - outlineStart > 1 )
+									{
+										final int[] fragment = new int[ i - outlineStart ];
+										System.arraycopy( outline, outlineStart, fragment, 0, i - outlineStart );
+										outlines.add( fragment );
+									}
+
+									outlineStart = i;
+								}
+							}
+
+							startFaces = endFaces;
+						}
+
+						if ( outlineStart == 0 )
+						{
+							outlines.add( outline );
+						}
+						else
+						{
+							outlinesModified = true;
+							if ( outline.length - outlineStart > 1 )
+							{
+								final int[] fragment = new int[ outline.length - outlineStart ];
+								System.arraycopy( outline, outlineStart, fragment, 0, outline.length - outlineStart );
+								outlines.add( fragment );
 							}
 						}
-
-						startFaces = endFaces;
 					}
 
-					if ( outlineStart == 0 )
+					if ( outlinesModified )
 					{
-						outlines.add( outline );
-					}
-					else
-					{
-						outlinesModified = true;
-						if ( outline.length - outlineStart > 1 )
+						final Tessellation tessellation = face.getTessellation();
+						switch ( outlines.size() )
 						{
-							final int[] fragment = new int[ outline.length - outlineStart ];
-							System.arraycopy( outline, outlineStart, fragment, 0, outline.length - outlineStart );
-							outlines.add( fragment );
+							case 0:
+								tessellation.setOutlines( Collections.<int[]>emptyList() );
+								break;
+							case 1:
+								tessellation.setOutlines( Collections.singletonList( outlines.get( 0 ) ) );
+								break;
+							default:
+								tessellation.setOutlines( new ArrayList<int[]>( outlines ) );
 						}
-					}
-				}
-
-				if ( outlinesModified )
-				{
-					final Tessellation tessellation = face.getTessellation();
-					switch ( outlines.size() )
-					{
-						case 0:
-							tessellation.setOutlines( Collections.<int[]>emptyList() );
-							break;
-						case 1:
-							tessellation.setOutlines( Collections.singletonList( outlines.get( 0 ) ) );
-							break;
-						default:
-							tessellation.setOutlines( new ArrayList<int[]>( outlines ) );
 					}
 				}
 			}
@@ -1864,7 +1901,7 @@ public class GeometryTools
 							 * If requested, place different materials in
 							 * different smoothing groups.
 							 */
-							if ( ( !separateMaterials || ( face1.material == face2.material ) ) && !visited.contains( face2 ) )
+							if ( !visited.contains( face2 ) )
 							{
 								final double cos = Vector3D.dot( face1.getNormal(), face2.getNormal() );
 								if ( cos >= minCosSmooth )

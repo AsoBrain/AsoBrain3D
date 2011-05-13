@@ -19,16 +19,15 @@
  */
 package ab.j3d.view;
 
-import java.awt.Color;
-import java.util.Collection;
+import java.awt.*;
+import java.util.*;
 
-import ab.j3d.Material;
+import ab.j3d.*;
 
 /**
  * Described how things should be rendered.
  *
  * @see     RenderStyleFilter
- * @see     Renderer
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
@@ -545,5 +544,77 @@ public class RenderStyle
 	public void setBackfaceCullingEnabled( final boolean enable )
 	{
 		_backfaceCullingEnabled = enable;
+	}
+
+	@Override
+	public boolean equals( Object o )
+	{
+		if ( this == o ) return true;
+		if ( !( o instanceof RenderStyle ) ) return false;
+
+		RenderStyle that = (RenderStyle)o;
+
+		if ( _backfaceCullingEnabled != that._backfaceCullingEnabled )
+			return false;
+		if ( _fillEnabled != that._fillEnabled ) return false;
+		if ( _fillLightingEnabled != that._fillLightingEnabled ) return false;
+		if ( Float.compare( that._materialAlpha, _materialAlpha ) != 0 )
+		{
+			return false;
+		}
+		if ( _materialEnabled != that._materialEnabled ) return false;
+		if ( _materialLightingEnabled != that._materialLightingEnabled )
+		{
+			return false;
+		}
+		if ( _strokeEnabled != that._strokeEnabled ) return false;
+		if ( _strokeLightingEnabled != that._strokeLightingEnabled )
+			return false;
+		if ( Float.compare( that._strokeWidth, _strokeWidth ) != 0 )
+			return false;
+		if ( _vertexEnabled != that._vertexEnabled ) return false;
+		if ( _vertexLightingEnabled != that._vertexLightingEnabled )
+			return false;
+		if ( Float.compare( that._vertexSize, _vertexSize ) != 0 ) return false;
+		if ( _fillColor != null ? !_fillColor.equals( that._fillColor ) : that._fillColor != null )
+		{
+			return false;
+		}
+		if ( _materialOverride != null ? !_materialOverride.equals( that._materialOverride ) : that._materialOverride != null )
+		{
+			return false;
+		}
+		if ( _strokeColor != null ? !_strokeColor.equals( that._strokeColor ) : that._strokeColor != null )
+		{
+			return false;
+		}
+		if ( _vertexColor != null ? !_vertexColor.equals( that._vertexColor ) : that._vertexColor != null )
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		int result = ( _materialEnabled ? 1 : 0 );
+		result = 31 * result + ( _materialLightingEnabled ? 1 : 0 );
+		result = 31 * result + ( _materialOverride != null ? _materialOverride.hashCode() : 0 );
+		result = 31 * result + ( _materialAlpha != +0.0f ? Float.floatToIntBits( _materialAlpha ) : 0 );
+		result = 31 * result + ( _fillEnabled ? 1 : 0 );
+		result = 31 * result + ( _fillColor != null ? _fillColor.hashCode() : 0 );
+		result = 31 * result + ( _fillLightingEnabled ? 1 : 0 );
+		result = 31 * result + ( _strokeEnabled ? 1 : 0 );
+		result = 31 * result + ( _strokeColor != null ? _strokeColor.hashCode() : 0 );
+		result = 31 * result + ( _strokeWidth != +0.0f ? Float.floatToIntBits( _strokeWidth ) : 0 );
+		result = 31 * result + ( _strokeLightingEnabled ? 1 : 0 );
+		result = 31 * result + ( _vertexEnabled ? 1 : 0 );
+		result = 31 * result + ( _vertexColor != null ? _vertexColor.hashCode() : 0 );
+		result = 31 * result + ( _vertexSize != +0.0f ? Float.floatToIntBits( _vertexSize ) : 0 );
+		result = 31 * result + ( _vertexLightingEnabled ? 1 : 0 );
+		result = 31 * result + ( _backfaceCullingEnabled ? 1 : 0 );
+		return result;
 	}
 }

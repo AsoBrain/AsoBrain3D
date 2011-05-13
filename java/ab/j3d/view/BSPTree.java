@@ -187,17 +187,20 @@ public class BSPTree
 	 */
 	public void addObject3D( final Object3D object, final Matrix3D object2model )
 	{
-		for ( final Face3D face : object.getFaces() )
+		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
-			final Tessellation tessellation = face.getTessellation();
-			for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+			for ( final Face3D face : faceGroup.getFaces() )
 			{
-				final int[] triangles = primitive.getTriangles();
-				for ( int i = 0; i < triangles.length; i += 3 )
+				final Tessellation tessellation = face.getTessellation();
+				for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
 				{
-					final RenderedPolygon polygon = new RenderedPolygon( 3 );
-					polygon.initialize( object2model, null, object, face, new int[] { triangles[ i + 2 ], triangles[ i + 1 ], triangles[ i ] } );
-					_polygons.add( polygon );
+					final int[] triangles = primitive.getTriangles();
+					for ( int i = 0; i < triangles.length; i += 3 )
+					{
+						final RenderedPolygon polygon = new RenderedPolygon( 3 );
+						polygon.initialize( object2model, null, object, faceGroup, face, new int[] { triangles[ i + 2 ], triangles[ i + 1 ], triangles[ i ] } );
+						_polygons.add( polygon );
+					}
 				}
 			}
 		}
@@ -333,7 +336,7 @@ public class BSPTree
 			result._planeNormalZ        = planeNormalZ;
 			result._planeConstant       = planeConstant;
 			result._backface = backface;
-			result._material = polygon._material;
+			result._appearance = polygon._appearance;
 		}
 
 		// Perform backface culling.

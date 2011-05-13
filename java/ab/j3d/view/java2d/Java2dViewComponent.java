@@ -25,6 +25,7 @@ import java.util.*;
 import javax.swing.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
 import org.jetbrains.annotations.*;
@@ -148,11 +149,11 @@ final class Java2dViewComponent
 		Color fillPaint;
 		if ( fill || ( polygon._vertexCount < 3 ) )
 		{
-			final Material material = polygon._material;
+			final Appearance appearance = polygon._appearance;
 
-			if ( renderStyle.isMaterialEnabled() && ( material != null ) )
+			if ( renderStyle.isMaterialEnabled() && ( appearance != null ) )
 			{
-				fillPaint = new Color( material.getARGB() );
+				fillPaint = new Color( appearance.getDiffuseColorRed(), appearance.getDiffuseColorGreen(), appearance.getDiffuseColorBlue(), appearance.getDiffuseColorAlpha() );
 			}
 			else
 			{

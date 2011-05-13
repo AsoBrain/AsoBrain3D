@@ -84,6 +84,8 @@ public class SelectionControl
 					{
 						final TetraHedron hedron = (TetraHedron)id;
 
+						// FIXME: broken
+/*
 						final Object3D object = intersection.getObject();
 						for ( int faceIndex = 0 ; faceIndex < object.getFaceCount() ; faceIndex++ )
 						{
@@ -93,6 +95,7 @@ public class SelectionControl
 								break;
 							}
 						}
+*/
 					}
 				}
 				else

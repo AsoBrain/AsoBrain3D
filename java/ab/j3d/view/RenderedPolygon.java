@@ -23,6 +23,7 @@ package ab.j3d.view;
 import java.awt.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.model.*;
 import ab.j3d.model.Face3D.*;
 
@@ -42,11 +43,11 @@ public final class RenderedPolygon
 	public Object3D _object;
 
 	/**
-	 * Material applied to this face. Taken from {@link Face3D#material}.
+	 * Material applied to this face.
 	 *
-	 * @see     Face3D#material
+	 * @see     FaceGroup#getAppearance()
 	 */
-	public Material _material;
+	public Appearance _appearance;
 
 	/**
 	 * The total number of vertices in polygon.
@@ -207,7 +208,7 @@ public final class RenderedPolygon
 		_minViewZ = 0.0;
 		_maxViewZ = 0.0;
 
-		_material = null;
+		_appearance = null;
 
 		xpoints = projectedX;
 		ypoints = projectedY;
@@ -220,10 +221,11 @@ public final class RenderedPolygon
 	 * @param   object2view     Transforms object to view coordinates.
 	 * @param   projector       Projects view coordinates on image plate (pixels).
 	 * @param   object          Object to get face from.
+	 * @param   faceGroup       Face group containing the face.
 	 * @param   face            Face to initialize polygon with.
 	 * @param   vertexIndices   Convex face vertices.
 	 */
-	public void initialize( final Matrix3D object2view, final Projector projector, final Object3D object, final Face3D face, final int[] vertexIndices )
+	public void initialize( final Matrix3D object2view, final Projector projector, final Object3D object, final FaceGroup faceGroup, final Face3D face, final int[] vertexIndices )
 	{
 		final int      pointCount = _vertexCount;
 		final int[]    projectedX = _projectedX;
@@ -301,7 +303,7 @@ public final class RenderedPolygon
 		_maxImageY = maxImageY;
 		_minViewZ = minViewZ;
 		_maxViewZ = maxViewZ;
-		_material = face.material;
+		_appearance = faceGroup.getAppearance();
 	}
 
 	/**
@@ -311,7 +313,7 @@ public final class RenderedPolygon
 	{
 		invalidate();
 		_object   = null;
-		_material = null;
+		_appearance = null;
 	}
 
 	/**
@@ -377,7 +379,7 @@ public final class RenderedPolygon
 		final StringBuilder sb = new StringBuilder();
 
 		sb.append(   "Object: "               ); sb.append( _object.getTag() );
-		sb.append( "\nMaterial: "             ); sb.append( ( _material == null ? "null" : _material.code ) );
+		sb.append( "\nAppearance: "           ); sb.append( _appearance );
 		sb.append( "\nNormal: "               ); sb.append( Vector3D.toFriendlyString( Vector3D.INIT.set( _planeNormalX, _planeNormalY, _planeNormalZ ) ) );
 		sb.append( "\nPlane constant: "       ); sb.append( _planeConstant );
 		sb.append( "\nBackface: "             ); sb.append( _backface );
