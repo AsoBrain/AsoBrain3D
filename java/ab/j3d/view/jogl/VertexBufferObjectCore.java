@@ -79,25 +79,8 @@ public class VertexBufferObjectCore
 	public void draw()
 	{
 		final GL gl = GLU.getCurrentGL();
-
 		gl.glBindBuffer( GL.GL_ARRAY_BUFFER, _vertexBufferObject );
-
-		gl.glEnableClientState( GL.GL_VERTEX_ARRAY );
-		if ( _bytesPerVertex > 12 )
-		{
-			gl.glEnableClientState( GL.GL_NORMAL_ARRAY );
-			gl.glEnableClientState( GL.GL_TEXTURE_COORD_ARRAY );
-		}
-
 		performDrawOperations( gl );
-
-		gl.glDisableClientState( GL.GL_VERTEX_ARRAY );
-		if ( _bytesPerVertex > 12 )
-		{
-			gl.glDisableClientState( GL.GL_NORMAL_ARRAY );
-			gl.glDisableClientState( GL.GL_TEXTURE_COORD_ARRAY );
-		}
-
 		gl.glBindBuffer( GL.GL_ARRAY_BUFFER, 0 );
 	}
 

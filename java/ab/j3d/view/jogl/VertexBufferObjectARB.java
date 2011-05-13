@@ -79,25 +79,8 @@ public class VertexBufferObjectARB
 	public void draw()
 	{
 		final GL gl = GLU.getCurrentGL();
-
 		gl.glBindBufferARB( GL.GL_ARRAY_BUFFER_ARB, _vertexBufferObject );
-
-		gl.glEnableClientState( GL.GL_VERTEX_ARRAY );
-		if ( _bytesPerVertex > 12 )
-		{
-			gl.glEnableClientState( GL.GL_NORMAL_ARRAY );
-			gl.glEnableClientState( GL.GL_TEXTURE_COORD_ARRAY );
-		}
-
 		performDrawOperations( gl );
-
-		gl.glDisableClientState( GL.GL_VERTEX_ARRAY );
-		if ( _bytesPerVertex > 12 )
-		{
-			gl.glDisableClientState( GL.GL_NORMAL_ARRAY );
-			gl.glDisableClientState( GL.GL_TEXTURE_COORD_ARRAY );
-		}
-
 		gl.glBindBufferARB( GL.GL_ARRAY_BUFFER_ARB, 0 );
 	}
 

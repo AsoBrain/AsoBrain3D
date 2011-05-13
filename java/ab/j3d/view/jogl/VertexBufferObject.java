@@ -45,10 +45,9 @@ public abstract class VertexBufferObject
 	protected List<DrawOperation> _drawOperations = null;
 
 	/**
-	 * Number of bytes per vertex. (Depends on which vertex attributes are
-	 * included in the buffer data.)
+	 * Specifies which attributes are specified for each vertex.
 	 */
-	protected int _bytesPerVertex = -1;
+	protected VertexFormat _vertexFormat = null;
 
 	/**
 	 * Constructs a new vertex buffer object.
@@ -147,8 +146,10 @@ public abstract class VertexBufferObject
 		/*
 		 * Allocate a byte buffer for the vertex data.
 		 */
-		final int bytesPerVertex = 12 + 12 + 8; // vertex + normal + texcoord
-		_bytesPerVertex = bytesPerVertex;
+		final DefaultVertexFormat vertexFormat = new DefaultVertexFormat();
+		_vertexFormat = vertexFormat;
+
+		final int bytesPerVertex = vertexFormat.getBytesPerVertex();
 
 		final ByteBuffer vertexBuffer = ByteBuffer.allocate( vertexCount * bytesPerVertex );
 		vertexBuffer.order( ByteOrder.LITTLE_ENDIAN );
@@ -217,26 +218,7 @@ public abstract class VertexBufferObject
 
 					for ( final int vertexIndex : vertices )
 					{
-						final Face3D.Vertex vertex = face.getVertex( vertexIndex );
-						buffer.putFloat( (float)vertex.point.x );
-						buffer.putFloat( (float)vertex.point.y );
-						buffer.putFloat( (float)vertex.point.z );
-
-						final Vector3D normal;
-						if ( faceGroup.isSmooth() )
-						{
-							normal = face.getVertexNormal( vertexIndex );
-						}
-						else
-						{
-							normal = face.getNormal();
-						}
-						buffer.putFloat( (float)normal.x );
-						buffer.putFloat( (float)normal.y );
-						buffer.putFloat( (float)normal.z );
-
-						buffer.putFloat( vertex.colorMapU );
-						buffer.putFloat( vertex.colorMapV );
+						vertexFormat.encode( buffer, vertexIndex, face, faceGroup );
 					}
 
 					if ( mode != -1 )
@@ -289,8 +271,10 @@ public abstract class VertexBufferObject
 		/*
 		 * Allocate a byte buffer for the vertex data.
 		 */
-		final int bytesPerVertex = 12;
-		_bytesPerVertex = bytesPerVertex;
+		final SimpleVertexFormat vertexFormat = new SimpleVertexFormat();
+		_vertexFormat = vertexFormat;
+
+		final int bytesPerVertex = vertexFormat.getBytesPerVertex();
 
 		final ByteBuffer vertexBuffer = ByteBuffer.allocate( vertexCount * bytesPerVertex );
 		vertexBuffer.order( ByteOrder.LITTLE_ENDIAN );
@@ -306,14 +290,8 @@ public abstract class VertexBufferObject
 				{
 					for ( int i = 0; i < outline.length - 1; i++ )
 					{
-						final Face3D.Vertex start = face.getVertex( outline[ i ] );
-						final Face3D.Vertex end = face.getVertex( outline[ i + 1 ] );
-						vertexBuffer.putFloat( (float)start.point.x );
-						vertexBuffer.putFloat( (float)start.point.y );
-						vertexBuffer.putFloat( (float)start.point.z );
-						vertexBuffer.putFloat( (float)end.point.x );
-						vertexBuffer.putFloat( (float)end.point.y );
-						vertexBuffer.putFloat( (float)end.point.z );
+						vertexFormat.encode( vertexBuffer, outline[ i ], face, faceGroup );
+						vertexFormat.encode( vertexBuffer, outline[ i + 1 ], face, faceGroup );
 					}
 				}
 			}
@@ -353,8 +331,10 @@ public abstract class VertexBufferObject
 		/*
 		 * Allocate a byte buffer for the vertex data.
 		 */
-		final int bytesPerVertex = 12;
-		_bytesPerVertex = bytesPerVertex;
+		final SimpleVertexFormat vertexFormat = new SimpleVertexFormat();
+		_vertexFormat = vertexFormat;
+
+		final int bytesPerVertex = vertexFormat.getBytesPerVertex();
 
 		final ByteBuffer vertexBuffer = ByteBuffer.allocate( vertexCount * bytesPerVertex );
 		vertexBuffer.order( ByteOrder.LITTLE_ENDIAN );
@@ -370,14 +350,8 @@ public abstract class VertexBufferObject
 				{
 					for ( int i = 0; i < outline.length - 1; i++ )
 					{
-						final Face3D.Vertex start = face.getVertex( outline[ i ] );
-						final Face3D.Vertex end = face.getVertex( outline[ i + 1 ] );
-						vertexBuffer.putFloat( (float)start.point.x );
-						vertexBuffer.putFloat( (float)start.point.y );
-						vertexBuffer.putFloat( (float)start.point.z );
-						vertexBuffer.putFloat( (float)end.point.x );
-						vertexBuffer.putFloat( (float)end.point.y );
-						vertexBuffer.putFloat( (float)end.point.z );
+						vertexFormat.encode( vertexBuffer, outline[ i ], face, faceGroup );
+						vertexFormat.encode( vertexBuffer, outline[ i + 1 ], face, faceGroup );
 					}
 				}
 			}
@@ -397,21 +371,12 @@ public abstract class VertexBufferObject
 	 */
 	protected void performDrawOperations( final GL gl )
 	{
-		final int bytesPerVertex = _bytesPerVertex;
-
-		gl.glVertexPointer( 3, GL.GL_FLOAT, bytesPerVertex, 0L );
-
-		if ( bytesPerVertex > 12 )
-		{
-			gl.glNormalPointer( GL.GL_FLOAT, bytesPerVertex, 12L );
-			gl.glTexCoordPointer( 2, GL.GL_FLOAT, bytesPerVertex, 24L );
-		}
-
-//		System.out.println( "_drawOperations.size() = " + _drawOperations.size() );
+		_vertexFormat.enable( gl );
 		for ( final DrawOperation drawOperation : _drawOperations )
 		{
 			drawOperation.draw( gl );
 		}
+		_vertexFormat.disable( gl );
 	}
 
 	/**
@@ -467,6 +432,13 @@ public abstract class VertexBufferObject
 		{
 			gl.glDrawArrays( _mode, _start, _count );
 		}
+
+		@Override
+		public String toString()
+		{
+			final Class<?> clazz = getClass();
+			return clazz.getName() + "[mode=" + _mode + ", start=" + _start + ", count=" + _count + "]";
+		}
 	}
 
 	/**
@@ -515,6 +487,144 @@ public abstract class VertexBufferObject
 		public void draw( final GL gl )
 		{
 			gl.glDrawElements( _mode, _count, _type, _indices );
+		}
+	}
+
+	/**
+	 * Specifies which attributes are specified for each vertex and which data
+	 * types are used.
+	 */
+	private interface VertexFormat
+	{
+		/**
+		 * Enables drawing of geometry with this vertex format.
+		 *
+		 * @param   gl  OpenGL interface.
+		 */
+		void enable( @NotNull GL gl );
+
+		/**
+		 * Disables drawing of geometry with this vertex format.
+		 *
+		 * @param   gl  OpenGL interface.
+		 */
+		void disable( @NotNull GL gl );
+
+		/**
+		 * Returns the number of bytes needed to store one vertex using this
+		 * format.
+		 *
+		 * @return  Number of bytes per vertex.
+		 */
+		int getBytesPerVertex();
+
+		/**
+		 * Adds the given vertex at the current position in the given byte
+		 * buffer, encoded using this vertex format.
+		 *
+		 * @param   target          Byte buffer to add the vertex to.
+		 * @param   vertexIndex     Index of the vertex.
+		 * @param   face            Face that contains the vertex.
+		 * @param   faceGroup       Face group containing the face.
+		 */
+		void encode( @NotNull ByteBuffer target, int vertexIndex, @NotNull Face3D face, @NotNull FaceGroup faceGroup );
+	}
+
+	/**
+	 * A typical vertex format that specifies the vertex coordinate, vertex
+	 * normal and a single texture coordinate, using 32-bit floating points.
+	 */
+	private static class DefaultVertexFormat
+		implements VertexFormat
+	{
+		@Override
+		public int getBytesPerVertex()
+		{
+			return 12 + 12 + 8; // vertex + normal + texcoord
+		}
+
+		@Override
+		public void enable( @NotNull final GL gl )
+		{
+			gl.glEnableClientState( GL.GL_VERTEX_ARRAY );
+			gl.glEnableClientState( GL.GL_NORMAL_ARRAY );
+			gl.glEnableClientState( GL.GL_TEXTURE_COORD_ARRAY );
+
+			final int bytesPerVertex = getBytesPerVertex();
+			gl.glVertexPointer( 3, GL.GL_FLOAT, bytesPerVertex, 0L );
+			gl.glNormalPointer( GL.GL_FLOAT, bytesPerVertex, 12L );
+			gl.glTexCoordPointer( 2, GL.GL_FLOAT, bytesPerVertex, 24L );
+		}
+
+		@Override
+		public void disable( @NotNull final GL gl )
+		{
+			gl.glDisableClientState( GL.GL_VERTEX_ARRAY );
+			gl.glDisableClientState( GL.GL_NORMAL_ARRAY );
+			gl.glDisableClientState( GL.GL_TEXTURE_COORD_ARRAY );
+		}
+
+		@Override
+		public void encode( @NotNull final ByteBuffer target, final int vertexIndex, @NotNull final Face3D face, @NotNull final FaceGroup faceGroup )
+		{
+			final Face3D.Vertex vertex = face.getVertex( vertexIndex );
+
+			target.putFloat( (float)vertex.point.x );
+			target.putFloat( (float)vertex.point.y );
+			target.putFloat( (float)vertex.point.z );
+
+			final Vector3D normal;
+			if ( faceGroup.isSmooth() )
+			{
+				normal = face.getVertexNormal( vertexIndex );
+			}
+			else
+			{
+				normal = face.getNormal();
+			}
+			target.putFloat( (float)normal.x );
+			target.putFloat( (float)normal.y );
+			target.putFloat( (float)normal.z );
+
+			target.putFloat( vertex.colorMapU );
+			target.putFloat( vertex.colorMapV );
+		}
+	}
+
+	/**
+	 * A vertex format that only specifies the vertex coordinate.
+	 */
+	private static class SimpleVertexFormat
+		implements VertexFormat
+	{
+		@Override
+		public int getBytesPerVertex()
+		{
+			return 12;
+		}
+
+		@Override
+		public void enable( @NotNull final GL gl )
+		{
+			gl.glEnableClientState( GL.GL_VERTEX_ARRAY );
+
+			final int bytesPerVertex = getBytesPerVertex();
+			gl.glVertexPointer( 3, GL.GL_FLOAT, bytesPerVertex, 0L );
+		}
+
+		@Override
+		public void disable( @NotNull final GL gl )
+		{
+			gl.glDisableClientState( GL.GL_VERTEX_ARRAY );
+		}
+
+		@Override
+		public void encode( @NotNull final ByteBuffer target, final int vertexIndex, @NotNull final Face3D face, @NotNull final FaceGroup faceGroup )
+		{
+			final Face3D.Vertex vertex = face.getVertex( vertexIndex );
+			target.putFloat( (float)vertex.point.x );
+			target.putFloat( (float)vertex.point.y );
+			target.putFloat( (float)vertex.point.z );
 		}
 	}
 }
