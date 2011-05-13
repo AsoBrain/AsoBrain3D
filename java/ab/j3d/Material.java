@@ -24,8 +24,9 @@ import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
 
-import ab.j3d.loader.*;
+import ab.j3d.appearance.*;
 import com.numdata.oss.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class defines a material to be using in a 3D environment.
@@ -281,11 +282,6 @@ public class Material
 	 * @see     #getReflectionMap
 	 */
 	public float reflectionBlue;
-
-	/**
-	 * Loader for resources related to this material (e.g. maps).
-	 */
-	public transient ResourceLoader resourceLoader;
 
 	/**
 	 * Default constructor.
@@ -783,47 +779,19 @@ public class Material
 	@Override
 	public TextureMap getColorMap()
 	{
-		return new MaterialColorMap();
-	}
-
-	/**
-	 * Get {@link BufferedImage} instance with color map image.
-	 *
-	 * @param   useCache        Use caching of image data if available.
-	 *
-	 * @return  Color map image;
-	 *          <code>null</code> if no color map was defined or could be loaded.
- 	 */
-	public BufferedImage getColorMapImage( final boolean useCache )
-	{
-		final String map = colorMap;
-		return TextTools.isNonEmpty( map ) ? useCache ? MapTools.getImage( map ) : MapTools.loadImage( map ) : null;
+		return TextTools.isEmpty( colorMap ) ? null : new MaterialTextureMap( colorMap, colorMapWidth, colorMapHeight );
 	}
 
 	@Override
 	public TextureMap getBumpMap()
 	{
-		return new MaterialBumpMap();
-	}
-
-	/**
-	 * Get {@link BufferedImage} instance with bump map image.
-	 *
-	 * @param   useCache        Use caching of image data if available.
-	 *
-	 * @return  Bump map image;
-	 *          <code>null</code> if no color map was defined or could be loaded.
- 	 */
-	public BufferedImage getBumpMapImage( final boolean useCache )
-	{
-		final String map = bumpMap;
-		return TextTools.isNonEmpty( map ) ? useCache ? MapTools.getImage( map ) : MapTools.loadImage( map ) : null;
+		return TextTools.isEmpty( bumpMap ) ? null : new MaterialTextureMap( bumpMap, bumpMapWidth, bumpMapHeight );
 	}
 
 	@Override
 	public ReflectionMap getReflectionMap()
 	{
-		return new MaterialReflectionMap();
+		return TextTools.isEmpty( reflectionMap ) ? null : new MaterialReflectionMap( reflectionMap, reflectionMin, reflectionMax, reflectionRed, reflectionGreen, reflectionBlue );
 	}
 
 	/**
@@ -859,63 +827,61 @@ public class Material
 	 * Implementation of {@link TextureMap} based on color map properties of a
 	 * {@link Material}.
 	 */
-	private class MaterialColorMap
-		implements TextureMap
+	protected static class MaterialTextureMap
+		extends AbstractTextureMap
 	{
+		/**
+		 * Texture map identifier.
+		 */
+		@Nullable
+		protected final String _map;
+
+		/**
+		 * Constructs a new texture map.
+		 *
+		 * @param   map             Texture map identifier.
+		 * @param   physicalWidth   Physical width of the texture, in meters.
+		 * @param   physicalHeight  Physical height of the texture, in meters.
+		 */
+		public MaterialTextureMap( @Nullable final String map, final float physicalWidth, final float physicalHeight )
+		{
+			super( physicalWidth, physicalHeight );
+			_map = map;
+		}
+
 		@Override
+		@Nullable
 		public BufferedImage getImage( final boolean useCache )
 		{
-			return getColorMapImage( useCache );
+			final String map = _map;
+			return TextTools.isNonEmpty( map ) ? useCache ? MapTools.getImage( map ) : MapTools.loadImage( map ) : null;
 		}
 
 		@Override
-		public String getName()
+		public boolean equals( final Object other )
 		{
-			return colorMap;
+			final boolean result;
+			if ( other == this )
+			{
+				result = true;
+			}
+			else if ( other instanceof MaterialTextureMap )
+			{
+				final MaterialTextureMap map = (MaterialTextureMap)other;
+				result = super.equals( other ) &&
+				         TextTools.equals( _map, map._map );
+			}
+			else
+			{
+				result = false;
+			}
+			return result;
 		}
 
 		@Override
-		public float getPhysicalWidth()
+		public int hashCode()
 		{
-			return colorMapWidth;
-		}
-
-		@Override
-		public float getPhysicalHeight()
-		{
-			return colorMapHeight;
-		}
-	}
-
-	/**
-	 * Implementation of {@link TextureMap} based on bump map properties of a
-	 * {@link Material}.
-	 */
-	private class MaterialBumpMap
-		implements TextureMap
-	{
-		@Override
-		public BufferedImage getImage( final boolean useCache )
-		{
-			return getBumpMapImage( useCache );
-		}
-
-		@Override
-		public String getName()
-		{
-			return bumpMap;
-		}
-
-		@Override
-		public float getPhysicalWidth()
-		{
-			return bumpMapWidth;
-		}
-
-		@Override
-		public float getPhysicalHeight()
-		{
-			return bumpMapHeight;
+			return super.hashCode() ^ ( ( _map == null ) ? 0 : _map.hashCode() );
 		}
 	}
 
@@ -923,62 +889,137 @@ public class Material
 	 * Implementation of {@link ReflectionMap} based on reflection map
 	 * properties of a {@link Material}.
 	 */
-	private class MaterialReflectionMap
+	private static class MaterialReflectionMap
+		extends SingleImageCubeMap
 		implements ReflectionMap
 	{
+		/**
+		 * Name of the reflection map.
+		 */
+		@Nullable
+		private final String _reflectionMap;
+
+		/**
+		 * Reflectivity of the material when viewed parallel to its normal.
+		 */
+		private final float _reflectionMin;
+
+		/**
+		 * Reflectivity of the material when viewed perpendicular to its normal.
+		 */
+		private final float _reflectionMax;
+
+		/**
+		 * Intensity of the red-component of (specular) reflections.
+		 */
+		private final float _reflectionRed;
+
+		/**
+		 * Intensity of the green-component of (specular) reflections.
+		 */
+		private final float _reflectionGreen;
+
+		/**
+		 * Intensity of the blue-component of (specular) reflections.
+		 */
+		private final float _reflectionBlue;
+
+		/**
+		 * Constructs a new reflection map.
+		 *
+		 * @param   reflectionMap       Reflection map.
+		 * @param   reflectionMin       Reflectivity of the material when viewed parallel to its normal.
+		 * @param   reflectionMax       Reflectivity of the material when viewed perpendicular to its normal.
+		 * @param   reflectionRed       Intensity of the red-component of (specular) reflections.
+		 * @param   reflectionGreen     Intensity of the green-component of (specular) reflections.
+		 * @param   reflectionBlue      Intensity of the blue-component of (specular) reflections.
+		 */
+		private MaterialReflectionMap( @Nullable final String reflectionMap, final float reflectionMin, final float reflectionMax, final float reflectionRed, final float reflectionGreen, final float reflectionBlue )
+		{
+			_reflectionMap = reflectionMap;
+			_reflectionMin = reflectionMin;
+			_reflectionMax = reflectionMax;
+			_reflectionRed = reflectionRed;
+			_reflectionGreen = reflectionGreen;
+			_reflectionBlue = reflectionBlue;
+		}
+
 		@Override
 		public float getReflectivityMin()
 		{
-			return reflectionMin;
+			return _reflectionMin;
 		}
 
 		@Override
 		public float getReflectivityMax()
 		{
-			return reflectionMax;
+			return _reflectionMax;
 		}
 
 		@Override
 		public float getIntensityRed()
 		{
-			return reflectionRed;
+			return _reflectionRed;
 		}
 
 		@Override
 		public float getIntensityGreen()
 		{
-			return reflectionGreen;
+			return _reflectionGreen;
 		}
 
 		@Override
 		public float getIntensityBlue()
 		{
-			return reflectionBlue;
+			return _reflectionBlue;
+		}
+
+		@Nullable
+		@Override
+		public BufferedImage getImage()
+		{
+			final BufferedImage image = super.getImage();
+			if ( ( image == null ) && ( _reflectionMap != null ) )
+			{
+				setImage( MapTools.loadImage( _reflectionMap ) );
+			}
+			return image;
 		}
 
 		@Override
-		public BufferedImage getImage( final boolean useCache )
+		public boolean equals( final Object other )
 		{
-			final String name = getName();
-			return TextTools.isNonEmpty( name ) ? useCache ? MapTools.getImage( name ) : MapTools.loadImage( name ) : null;
+			final boolean result;
+			if ( other == this )
+			{
+				result = true;
+			}
+			else if ( other instanceof MaterialReflectionMap )
+			{
+				final MaterialReflectionMap map = (MaterialReflectionMap)other;
+				result = ( _reflectionMin == map._reflectionMin ) &&
+				         ( _reflectionMax == map._reflectionMax ) &&
+				         ( _reflectionRed == map._reflectionRed ) &&
+				         ( _reflectionGreen == map._reflectionGreen ) &&
+				         ( _reflectionBlue == map._reflectionBlue ) &&
+				         TextTools.equals( _reflectionMap, map._reflectionMap );
+			}
+			else
+			{
+				result = false;
+			}
+			return result;
 		}
 
 		@Override
-		public String getName()
+		public int hashCode()
 		{
-			return reflectionMap;
-		}
-
-		@Override
-		public float getPhysicalWidth()
-		{
-			return 0.0f;
-		}
-
-		@Override
-		public float getPhysicalHeight()
-		{
-			return 0.0f;
+			return ( ( _reflectionMap == null ) ? 0 : _reflectionMap.hashCode() ) ^
+			       Float.floatToRawIntBits( _reflectionMin ) ^
+			       Float.floatToRawIntBits( _reflectionMax ) ^
+			       Float.floatToRawIntBits( _reflectionRed ) ^
+			       Float.floatToRawIntBits( _reflectionGreen ) ^
+			       Float.floatToRawIntBits( _reflectionBlue );
 		}
 	}
 }

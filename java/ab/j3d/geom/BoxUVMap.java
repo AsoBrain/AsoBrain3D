@@ -24,6 +24,7 @@ import java.awt.geom.*;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -171,17 +172,17 @@ public class BoxUVMap
 	}
 
 	@Override
-	public float[] generate( @Nullable final Material material, @NotNull final List<? extends Vector3D> vertexCoordinates, @Nullable final int[] vertexIndices, final boolean flipTexture )
+	public float[] generate( @Nullable final TextureMap textureMap, @NotNull final List<? extends Vector3D> vertexCoordinates, @Nullable final int[] vertexIndices, final boolean flipTexture )
 	{
 		final int map = getTargetMap( vertexCoordinates, vertexIndices );
-		return _maps[ map ].generate( material, vertexCoordinates, vertexIndices, _flips[ map ] ^ flipTexture );
+		return _maps[ map ].generate( textureMap, vertexCoordinates, vertexIndices, _flips[ map ] ^ flipTexture );
 	}
 
 	@Override
-	public void generate( @NotNull final Point2D result, @Nullable final Material material, @NotNull final Vector3D wcsPoint, @NotNull final Vector3D normal, final boolean flipTexture )
+	public void generate( @NotNull final Point2D result, @Nullable final TextureMap textureMap, @NotNull final Vector3D wcsPoint, @NotNull final Vector3D normal, final boolean flipTexture )
 	{
 		final int map = getTargetMap( normal );
-		_maps[ map ].generate( result, material, wcsPoint, normal, _flips[ map ] ^ flipTexture );
+		_maps[ map ].generate( result, textureMap, wcsPoint, normal, _flips[ map ] ^ flipTexture );
 	}
 
 	/**

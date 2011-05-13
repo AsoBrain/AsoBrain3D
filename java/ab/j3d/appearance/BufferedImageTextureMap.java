@@ -25,24 +25,25 @@ import java.awt.image.*;
 import org.jetbrains.annotations.*;
 
 /**
- * Basic implementation of the {@link TextureMap} interface.
+ * Implementation of the {@link TextureMap} interface based on a buffered image.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public class BasicTextureMap
+public class BufferedImageTextureMap
 	extends AbstractTextureMap
 {
 	/**
 	 * Texture map image.
 	 */
+	@Nullable
 	private BufferedImage _image;
 
 	/**
 	 * Construct map without image. An image must be set for this texure map
 	 * to be useful.
 	 */
-	public BasicTextureMap()
+	public BufferedImageTextureMap()
 	{
 		this( null );
 	}
@@ -52,7 +53,7 @@ public class BasicTextureMap
 	 *
 	 * @param   image   Texture map image.
 	 */
-	public BasicTextureMap( @Nullable final BufferedImage image )
+	public BufferedImageTextureMap( @Nullable final BufferedImage image )
 	{
 		this( image, 0.0f, 0.0f );
 	}
@@ -66,7 +67,7 @@ public class BasicTextureMap
 	 * @param   physicalHeight  Physical height in meters (<code>0.0</code> if
 	 *                          undeterminate).
 	 */
-	public BasicTextureMap( @Nullable final BufferedImage image, final float physicalWidth, final float physicalHeight )
+	public BufferedImageTextureMap( @Nullable final BufferedImage image, final float physicalWidth, final float physicalHeight )
 	{
 		super( physicalWidth, physicalHeight );
 		_image = image;
@@ -83,8 +84,36 @@ public class BasicTextureMap
 	 *
 	 * @param   image   Texture map image.
 	 */
-	public void setImage( final BufferedImage image )
+	public void setImage( @Nullable final BufferedImage image )
 	{
 		_image = image;
+	}
+
+	@Override
+	public boolean equals( final Object other )
+	{
+		final boolean result;
+		if ( other == this )
+		{
+			result = true;
+		}
+		else if ( other instanceof BufferedImageTextureMap )
+		{
+			final BufferedImageTextureMap map = (BufferedImageTextureMap)other;
+			final BufferedImage image = _image;
+			result = super.equals( other ) &&
+			         ( ( image == null ) ? ( map._image == null ) : image.equals( map._image ) );
+		}
+		else
+		{
+			result = false;
+		}
+		return result;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return super.hashCode() ^ ( ( _image == null ) ? 0 : _image.hashCode() );
 	}
 }

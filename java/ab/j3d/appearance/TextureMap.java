@@ -22,6 +22,8 @@ package ab.j3d.appearance;
 
 import java.awt.image.*;
 
+import org.jetbrains.annotations.*;
+
 /**
  * This interface defines a texture map.
  *
@@ -38,6 +40,7 @@ public interface TextureMap
 	 * @return  {@link BufferedImage};
 	 *          <code>null</code> if image is not available.
 	 */
+	@Nullable
 	BufferedImage getImage( boolean useCache );
 
 	/**

@@ -97,4 +97,32 @@ public abstract class AbstractTextureMap
 	{
 		_physicalHeight = physicalHeight;
 	}
+
+	@Override
+	public boolean equals( final Object other )
+	{
+		final boolean result;
+		if ( other == this )
+		{
+			result = true;
+		}
+		else if ( other instanceof TextureMap )
+		{
+			final TextureMap map = (TextureMap)other;
+			result = ( _physicalWidth == map.getPhysicalWidth() ) &&
+			         ( _physicalHeight == map.getPhysicalHeight() );
+		}
+		else
+		{
+			result = false;
+		}
+		return result;
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Float.floatToRawIntBits( _physicalWidth ) ^
+		       Float.floatToRawIntBits( _physicalHeight );
+	}
 }

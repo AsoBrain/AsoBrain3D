@@ -48,15 +48,9 @@
  */
 package ab.j3d;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.ref.SoftReference;
-import java.util.HashMap;
-import java.util.Map;
-import javax.imageio.ImageIO;
-
-import ab.j3d.loader.ResourceLoader;
+import ab.j3d.appearance.*;
+import ab.j3d.loader.*;
+import com.numdata.oss.*;
 
 /**
  * Material which loads its texture from a resourceloader.
@@ -71,11 +65,6 @@ public class ResourceLoaderMaterial
 	 * {@link ResourceLoader} to use.
 	 */
 	private ResourceLoader _resourceloader;
-
-	/**
-	 * Texture cache
-	 */
-	private Map<String,SoftReference<BufferedImage>> _textureCache = new HashMap<String,SoftReference<BufferedImage>>();
 
 	/**
 	 * serialVersionUID
@@ -105,35 +94,16 @@ public class ResourceLoaderMaterial
 		_resourceloader = null;
 	}
 
-	public BufferedImage getColorMapImage( final boolean useCache )
+	@Override
+	public TextureMap getColorMap()
 	{
-		BufferedImage result;
-		final ResourceLoader resourceloader = _resourceloader;
-		if ( resourceloader != null )
-		{
-			final Map<String,SoftReference<BufferedImage>> textureCache               = _textureCache;
-			final SoftReference<BufferedImage>             bufferedImageSoftReference = textureCache.get( super.colorMap );
-			if ( useCache && bufferedImageSoftReference != null )
-			{
-				result = bufferedImageSoftReference.get();
-			}
-			else
-			{
-				try
-				{
-					final InputStream inputStream = resourceloader.getResource( super.colorMap );
-					result = ImageIO.read( inputStream );
-					textureCache.put( super.colorMap , new SoftReference<BufferedImage>( result ) );
-				}
-				catch ( IOException e )
-				{
-					result = null;
-					e.printStackTrace();
-				}
-			}
-		}
-		else
-			result = super.getColorMapImage( true );
-		return result;
+		return TextTools.isEmpty( colorMap ) ? null : new ResourceLoaderTextureMap( _resourceloader, colorMap, colorMapWidth, colorMapHeight );
 	}
+
+	@Override
+	public TextureMap getBumpMap()
+	{
+		return TextTools.isEmpty( bumpMap ) ? null : new ResourceLoaderTextureMap( _resourceloader, bumpMap, bumpMapWidth, bumpMapHeight );
+	}
+
 }

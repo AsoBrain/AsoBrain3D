@@ -24,6 +24,7 @@ import java.awt.geom.*;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -193,7 +194,7 @@ public class PlanarUVMap
 	}
 
 	@Override
-	public float[] generate( @Nullable final Material material, @NotNull final List<? extends Vector3D> vertexCoordinates, @Nullable final int[] vertexIndices, final boolean flipTexture )
+	public float[] generate( @Nullable final TextureMap textureMap, @NotNull final List<? extends Vector3D> vertexCoordinates, @Nullable final int[] vertexIndices, final boolean flipTexture )
 	{
 		final int vertexCount = ( vertexIndices != null ) ? vertexIndices.length : vertexCoordinates.size();
 
@@ -204,10 +205,10 @@ public class PlanarUVMap
 		final float scaleU;
 		final float scaleV;
 
-		if ( ( material != null ) && ( material.colorMapWidth > 0.0f ) && ( material.colorMapHeight > 0.0f ) )
+		if ( ( textureMap != null ) && ( textureMap.getPhysicalWidth() > 0.0f ) && ( textureMap.getPhysicalHeight() > 0.0f ) )
 		{
-			scaleU = _scaleU / material.colorMapWidth;
-			scaleV = _scaleV / material.colorMapHeight;
+			scaleU = _scaleU / textureMap.getPhysicalWidth();
+			scaleV = _scaleV / textureMap.getPhysicalHeight();
 		}
 		else
 		{
@@ -231,17 +232,17 @@ public class PlanarUVMap
 	}
 
 	@Override
-	public void generate( @NotNull final Point2D result, @Nullable final Material material, @NotNull final Vector3D point, @NotNull final Vector3D normal, final boolean flipTexture )
+	public void generate( @NotNull final Point2D result, @Nullable final TextureMap textureMap, @NotNull final Vector3D point, @NotNull final Vector3D normal, final boolean flipTexture )
 	{
 		final Matrix3D plane2wcs = _plane2wcs;
 
 		final float scaleU;
 		final float scaleV;
 
-		if ( ( material != null ) && ( material.colorMapWidth > 0.0f ) && ( material.colorMapHeight > 0.0f ) )
+		if ( ( textureMap != null ) && ( textureMap.getPhysicalWidth() > 0.0f ) && ( textureMap.getPhysicalHeight() > 0.0f ) )
 		{
-			scaleU = _scaleU / material.colorMapWidth;
-			scaleV = _scaleV / material.colorMapHeight;
+			scaleU = _scaleU / textureMap.getPhysicalWidth();
+			scaleV = _scaleV / textureMap.getPhysicalHeight();
 		}
 		else
 		{

@@ -171,6 +171,7 @@ public class SingleImageCubeMap
 	 *
 	 * @return  Image for entire cube map.
 	 */
+	@Nullable
 	public BufferedImage getImage()
 	{
 		return _image;

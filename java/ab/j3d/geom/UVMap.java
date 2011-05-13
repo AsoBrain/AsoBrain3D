@@ -24,6 +24,7 @@ import java.awt.geom.*;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -37,23 +38,23 @@ public interface UVMap
 	/**
 	 * Generates texture coordinates for the given vertices.
 	 *
-	 * @param   material            Material used to define texture scale.
+	 * @param   textureMap          Specifies texture scale.
 	 * @param   vertexCoordinates   Vertex coordinates.
 	 * @param   vertexIndices       Indices for all vertices in the face.
 	 * @param   flipTexture         Flip texture direction.
 	 *
 	 * @return  Texture coordinates for each vertex.
 	 */
-	float[] generate( @Nullable Material material, @NotNull List<? extends Vector3D> vertexCoordinates, @Nullable int[] vertexIndices, boolean flipTexture );
+	float[] generate( @Nullable TextureMap textureMap, @NotNull List<? extends Vector3D> vertexCoordinates, @Nullable int[] vertexIndices, boolean flipTexture );
 
 	/**
 	 * Generate 2D point on texture for the given 3D point.
 	 *
 	 * @param   result          Target for resulting texture coordinates.
-	 * @param   material        Material used to define texture scale.
+	 * @param   textureMap      Specifies texture scale.
 	 * @param   point           Point.
 	 * @param   normal          Normal of face to map texture on.
 	 * @param   flipTexture     Flip texture direction.
 	 */
-	void generate( @NotNull Point2D result, @Nullable Material material, @NotNull Vector3D point, @NotNull Vector3D normal, boolean flipTexture );
+	void generate( @NotNull Point2D result, @Nullable TextureMap textureMap, @NotNull Vector3D point, @NotNull Vector3D normal, boolean flipTexture );
 }
