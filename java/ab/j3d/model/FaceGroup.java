@@ -121,6 +121,7 @@ public class FaceGroup
 	 *
 	 * @return  Material of faces in this group.
 	 */
+	@Nullable
 	public Appearance getAppearance()
 	{
 		return _appearance;
@@ -131,7 +132,7 @@ public class FaceGroup
 	 *
 	 * @param   appearance    Material to be set.
 	 */
-	public void setAppearance( final Appearance appearance )
+	public void setAppearance( @Nullable final Appearance appearance )
 	{
 		_appearance = appearance;
 	}
