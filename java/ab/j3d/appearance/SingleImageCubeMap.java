@@ -232,12 +232,12 @@ public class SingleImageCubeMap
 				switch ( getOrientation() )
 				{
 					case POSITIVE_Z:
-						result = image.getSubimage( 0, size, size, size );
+						result = getSubImage( image, 0, size, size, size );
 						break;
 
 					case NEGATIVE_Y:
 						result = getRotatedSubImage( image, 0, size, size, size, 270 );
-//						result = getRotatedImage( image.getSubimage( 0, size, size, size ), 270 );
+//						result = getRotatedImage( getSubImage( image, 0, size, size, size ), 270 );
 						break;
 
 					default:
@@ -263,11 +263,11 @@ public class SingleImageCubeMap
 				switch ( getOrientation() )
 					{
 						case POSITIVE_Z:
-							result = image.getSubimage( size, 2 * size, size, size );
+							result = getSubImage( image, size, 2 * size, size, size );
 							break;
 
 						case NEGATIVE_Y:
-							result = image.getSubimage( size, size, size, size );
+							result = getSubImage( image, size, size, size, size );
 							break;
 
 						default:
@@ -293,11 +293,11 @@ public class SingleImageCubeMap
 				switch ( getOrientation() )
 					{
 						case POSITIVE_Z:
-							result = image.getSubimage( size * 3, size, size, size );
+							result = getSubImage( image, size * 3, size, size, size );
 							break;
 
 						case NEGATIVE_Y:
-							result = image.getSubimage( size, 2 * size, size, size );
+							result = getRotatedSubImage( image, size, 2 * size, size, size, 180 );
 							break;
 
 						default:
@@ -323,12 +323,12 @@ public class SingleImageCubeMap
 				switch ( getOrientation() )
 					{
 						case POSITIVE_Z:
-							result = image.getSubimage( 2 * size, size, size, size );
+							result = getSubImage( image, 2 * size, size, size, size );
 							break;
 
 						case NEGATIVE_Y:
 							result = getRotatedSubImage( image, 2 * size, size, size, size, 90 );
-			//				result = getRotatedImage( image.getSubimage( 2 * size, size, size, size ), 90 );
+			//				result = getRotatedImage( getSubImage( image, 2 * size, size, size, size ), 90 );
 							break;
 
 						default:
@@ -354,12 +354,12 @@ public class SingleImageCubeMap
 				switch ( getOrientation() )
 					{
 						case POSITIVE_Z:
-							result = image.getSubimage( size, 0, size, size );
+							result = getSubImage( image, size, 0, size, size );
 							break;
 
 						case NEGATIVE_Y:
 							result = getRotatedSubImage( image, 3 * size, size, size, size, 180 );
-			//				result = getRotatedImage( image.getSubimage( 3 * size, size, size, size ), 180 );
+			//				result = getRotatedImage( getSubImage( image, 3 * size, size, size, size ), 180 );
 							break;
 
 						default:
@@ -385,11 +385,11 @@ public class SingleImageCubeMap
 				switch ( getOrientation() )
 					{
 						case POSITIVE_Z:
-							result = image.getSubimage( size, size, size, size );
+							result = getSubImage( image, size, size, size, size );
 							break;
 
 						case NEGATIVE_Y:
-							result = image.getSubimage( size, 0, size, size );
+							result = getSubImage( image, size, 0, size, size );
 							break;
 
 						default:
@@ -398,6 +398,37 @@ public class SingleImageCubeMap
 			}
 		}
 
+		return result;
+	}
+
+	/**
+	 * Returns a sub-image from the given image.
+	 *
+	 * @param   image   Source image.
+	 * @param   x       Top-left corner x-coordinate of the source rectangle.
+	 * @param   y       Top-left corner y-coordinate of the source rectangle.
+	 * @param   w       Width of the source rectangle.
+	 * @param   h       Height of the source rectangle.
+	 *
+	 * @return  Specified sub-image.
+	 */
+	private static BufferedImage getSubImage( final BufferedImage image, final int x, final int y, final int w, final int h )
+	{
+		/*
+		 * 'getSubimage' creates an image that shares the data buffer of the
+		 * original image. This causes problems when 'TextureProxy' attempts
+		 * to efficiently create texture data directly from the data buffer.
+		 *
+		 * TODO: Support sub-images in 'TextureProxy.wrapImageDataBuffer'.
+		 * (Which is not trivial and currently not worth the minor performance
+		 * loss from creating a new image.)
+		 */
+//		return image.getSubimage( x, y, w, h );
+
+		final BufferedImage result = new BufferedImage( w, h, image.getType() );
+		final Graphics2D g = result.createGraphics();
+		g.drawImage( image, -x, -y, null );
+		g.dispose();
 		return result;
 	}
 
