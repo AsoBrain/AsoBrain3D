@@ -30,6 +30,7 @@ import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
+import com.numdata.oss.ensemble.*;
 import com.sun.opengl.util.*;
 import com.sun.opengl.util.texture.*;
 import org.jetbrains.annotations.*;
@@ -184,7 +185,7 @@ public class JOGLRenderer
 	/**
 	 * Environment map for {@link #renderEnvironment()}.
 	 */
-	private SingleImageCubeMap _environmentMap;
+	private SingleImageCubeMap _environmentMap = null;
 
 	/**
 	 * Construct new JOGL renderer.
@@ -936,7 +937,7 @@ public class JOGLRenderer
 	 */
 	private void renderObjects( final List<ContentNode> nodes, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle )
 	{
-		final GL gl = _gl;
+		final Map<Duet<Object3D, RenderStyle>, List<Node3DPath>> objectGroups = new HashMap<Duet<Object3D, RenderStyle>, List<Node3DPath>>();
 
 		for ( final ContentNode node : nodes )
 		{
@@ -948,18 +949,25 @@ public class JOGLRenderer
 
 			for ( final Node3DPath path : content )
 			{
-				final Matrix3D object2world = path.getTransform();
 				final Object3D object = (Object3D) path.getNode();
-
 				final RenderStyle objectStyle = nodeStyle.applyFilters( styleFilters, object );
+				final BasicDuet<Object3D, RenderStyle> key = new BasicDuet<Object3D, RenderStyle>( object, objectStyle );
 
-				gl.glPushMatrix();
-				JOGLTools.glMultMatrixd( gl, object2world );
+				List<Node3DPath> objectGroup = objectGroups.get( key );
+				if ( objectGroup == null )
+				{
+					objectGroup = new ArrayList<Node3DPath>();
+					objectGroups.put( key, objectGroup );
+				}
 
-				renderObject( object, objectStyle );
-
-				gl.glPopMatrix();
+				objectGroup.add( path );
 			}
+		}
+
+		for ( final Map.Entry<Duet<Object3D, RenderStyle>, List<Node3DPath>> objectGroup : objectGroups.entrySet() )
+		{
+			final Duet<Object3D, RenderStyle> key = objectGroup.getKey();
+			renderObject( key.getValue1(), objectGroup.getValue(), key.getValue2() );
 		}
 	}
 
@@ -1163,9 +1171,10 @@ public class JOGLRenderer
 	 * Renders the given object.
 	 *
 	 * @param   object          Object to be rendered.
+	 * @param   paths           Node paths to the object.
 	 * @param   objectStyle     Render style applied to the object.
 	 */
-	protected void renderObject( final Object3D object, final RenderStyle objectStyle )
+	protected void renderObject( final Object3D object, final List<Node3DPath> paths, final RenderStyle objectStyle )
 	{
 		final RenderStatistics statistics = _statistics;
 		if ( statistics != null )
@@ -1182,23 +1191,23 @@ public class JOGLRenderer
 		{
 			if ( anyMaterialEnabled )
 			{
-				renderObjectMaterial( object, objectStyle );
+				renderObjectMaterial( object, paths, objectStyle );
 			}
 			else if ( anyFillEnabled )
 			{
-				renderObjectFilled( object, objectStyle );
+				renderObjectFilled( object, paths, objectStyle );
 			}
 
 			if ( !_shadowPass )
 			{
 				if ( anyStrokeEnabled )
 				{
-					renderObjectStroked( object, objectStyle );
+					renderObjectStroked( object, paths, objectStyle );
 				}
 
 				if ( anyVertexEnabled )
 				{
-					renderObjectVertices( object, objectStyle );
+					renderObjectVertices( object, paths, objectStyle );
 				}
 			}
 		}
@@ -1208,9 +1217,10 @@ public class JOGLRenderer
 	 * Renders the given object with a material applied to it.
 	 *
 	 * @param   object          Object to be rendered.
+	 * @param   paths           Node paths to the object.
 	 * @param   objectStyle     Render style to be applied.
 	 */
-	private void renderObjectMaterial( final Object3D object, final RenderStyle objectStyle )
+	private void renderObjectMaterial( @NotNull final Object3D object, @NotNull final List<Node3DPath> paths, @NotNull final RenderStyle objectStyle )
 	{
 		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
@@ -1349,9 +1359,13 @@ public class JOGLRenderer
 					state.setEnabled( GL.GL_CULL_FACE, objectStyle.isBackfaceCullingEnabled() && !faceGroup.isTwoSided() );
 
 					final GeometryObject geometryObject = _geometryObjectManager.getGeometryObject( faceGroup, GeometryType.FACES );
-					if ( geometryObject != null )
+					for ( final Node3DPath path : paths )
 					{
+						final Matrix3D object2world = path.getTransform();
+						gl.glPushMatrix();
+						JOGLTools.glMultMatrixd( gl, object2world );
 						geometryObject.draw();
+						gl.glPopMatrix();
 					}
 
 					if ( DRAW_NORMALS )
@@ -1418,9 +1432,10 @@ public class JOGLRenderer
 	 * Renders the given object in a solid color.
 	 *
 	 * @param   object          Object to be rendered.
+	 * @param   paths           Node paths to the object.
 	 * @param   objectStyle     Render style to be applied.
 	 */
-	private void renderObjectFilled( final Object3D object, final RenderStyle objectStyle )
+	private void renderObjectFilled( @NotNull final Object3D object, @NotNull final List<Node3DPath> paths, @NotNull final RenderStyle objectStyle )
 	{
 		final MultiPassRenderMode renderMode = _renderMode;
 
@@ -1467,7 +1482,14 @@ public class JOGLRenderer
 				state.setEnabled( GL.GL_CULL_FACE, objectStyle.isBackfaceCullingEnabled() && !faceGroup.isTwoSided() );
 
 				final GeometryObject geometryObject = _geometryObjectManager.getGeometryObject( faceGroup, GeometryType.FACES );
-				geometryObject.draw();
+				for ( final Node3DPath path : paths )
+				{
+					final Matrix3D object2world = path.getTransform();
+					gl.glPushMatrix();
+					JOGLTools.glMultMatrixd( gl, object2world );
+					geometryObject.draw();
+					gl.glPopMatrix();
+				}
 			}
 
 			if ( blend )
@@ -1489,9 +1511,10 @@ public class JOGLRenderer
 	 * Renders the outlines of the given object.
 	 *
 	 * @param   object          Object to be rendered.
+	 * @param   paths           Node paths to the object.
 	 * @param   objectStyle     Render style to be applied.
 	 */
-	private void renderObjectStroked( final Object3D object, final RenderStyle objectStyle )
+	private void renderObjectStroked( final Object3D object, @NotNull final List<Node3DPath> paths, @NotNull final RenderStyle objectStyle )
 	{
 		final GL gl = _gl;
 
@@ -1521,7 +1544,14 @@ public class JOGLRenderer
 			final boolean backfaceCulling  = objectStyle.isBackfaceCullingEnabled() && !faceGroup.isTwoSided();
 
 			final GeometryObject geometryObject = _geometryObjectManager.getGeometryObject( faceGroup, GeometryType.OUTLINES );
-			geometryObject.draw();
+			for ( final Node3DPath path : paths )
+			{
+				final Matrix3D object2world = path.getTransform();
+				gl.glPushMatrix();
+				JOGLTools.glMultMatrixd( gl, object2world );
+				geometryObject.draw();
+				gl.glPopMatrix();
+			}
 		}
 
 		if ( depthOnly )
@@ -1534,9 +1564,10 @@ public class JOGLRenderer
 	 * Renders the vertices of the given object.
 	 *
 	 * @param   object          Object to be rendered.
+	 * @param   paths           Node paths to the object.
 	 * @param   objectStyle     Render style to be applied.
 	 */
-	private void renderObjectVertices( @NotNull final Object3D object, @NotNull final RenderStyle objectStyle )
+	private void renderObjectVertices( @NotNull final Object3D object, @NotNull final List<Node3DPath> paths, @NotNull final RenderStyle objectStyle )
 	{
 		final GL gl = _gl;
 
@@ -1562,7 +1593,14 @@ public class JOGLRenderer
 			final boolean backfaceCulling  = objectStyle.isBackfaceCullingEnabled() && !faceGroup.isTwoSided();
 
 			final GeometryObject geometryObject = _geometryObjectManager.getGeometryObject( faceGroup, GeometryType.OUTLINES );
-			geometryObject.draw();
+			for ( final Node3DPath path : paths )
+			{
+				final Matrix3D object2world = path.getTransform();
+				gl.glPushMatrix();
+				JOGLTools.glMultMatrixd( gl, object2world );
+				geometryObject.draw();
+				gl.glPopMatrix();
+			}
 		}
 
 		if ( depthOnly )
