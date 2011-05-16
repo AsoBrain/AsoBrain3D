@@ -125,9 +125,12 @@ public class Light3D
 	 * distance specifies the distance at which the light reaches half its
 	 * specified intensity.
 	 *
+	 * @deprecated  Use {@link #Light3D(float, float)}.
+	 *
 	 * @param   intensity   Intensity of the light.
 	 * @param   fallOff     Fall-off distance.
 	 */
+	@Deprecated
 	public Light3D( final int intensity , final double fallOff )
 	{
 		if ( intensity < 0 )
@@ -141,6 +144,29 @@ public class Light3D
 		}
 
 		setIntensity( (float)intensity / 255.0f );
+		setFallOff( fallOff );
+	}
+
+	/**
+	 * Constructs a white light with the specified intensity and fall-off
+	 * distance.
+	 *
+	 * @param   intensity   Intensity of the light.
+	 * @param   fallOff     Fall-off distance.
+	 */
+	public Light3D( final float intensity, final float fallOff )
+	{
+		if ( intensity < 0.0f )
+		{
+			throw new IllegalArgumentException( "intensity < 0.0: " + intensity );
+		}
+
+		if ( fallOff < 0.0f )
+		{
+			throw new IllegalArgumentException( "fallOff < 0.0: " + fallOff );
+		}
+
+		setIntensity( intensity );
 		setFallOff( fallOff );
 	}
 
@@ -417,6 +443,18 @@ public class Light3D
 	}
 
 	/**
+	 * Sets the fall-off distance of the light.
+	 *
+	 * @param   fallOff     Fall-off distance to be set.
+	 *
+	 * @see     #setFallOff(float)
+	 */
+	public void setFallOff( final double fallOff )
+	{
+		setFallOff( (float)fallOff );
+	}
+
+	/**
 	 * Sets the fall-off distance of the light. This is the distance at which
 	 * the light reaches half its specified intensity. Such attenuation is
 	 * realized by using the following attenuation factors:
@@ -431,19 +469,19 @@ public class Light3D
 	 *
 	 * @param   fallOff     Fall-off distance to be set.
 	 */
-	public void setFallOff( final double fallOff )
+	public void setFallOff( final float fallOff )
 	{
-		if ( fallOff < 0.0 )
+		if ( fallOff < 0.0f )
 		{
 			throw new IllegalArgumentException( "fallOff < 0.0: " + fallOff );
 		}
-		else if ( fallOff == 0.0 )
+		else if ( fallOff == 0.0f )
 		{
 			setAttenuation( 1.0f , 0.0f , 0.0f );
 		}
 		else
 		{
-			setAttenuation( 0.0f , 0.0f , 2.0f / (float)( fallOff * fallOff ) );
+			setAttenuation( 0.0f , 0.0f , 2.0f / ( fallOff * fallOff ) );
 		}
 	}
 
