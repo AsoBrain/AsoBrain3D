@@ -20,13 +20,14 @@
  */
 package ab.j3d.view.jogl;
 
+import java.security.*;
 import java.util.*;
 import java.util.concurrent.*;
 import javax.media.opengl.*;
 import javax.media.opengl.glu.*;
 import javax.swing.*;
 
-import ab.j3d.*;
+import ab.j3d.appearance.*;
 import com.numdata.oss.*;
 import com.sun.opengl.util.texture.*;
 import org.jetbrains.annotations.*;
@@ -46,9 +47,9 @@ public class TextureCache
 	public static final String NORMALIZATION_CUBE_MAP = "__normalizationCubeMap";
 
 	/**
-	 * Cached textures, by name.
+	 * Cached textures, mapped by arbitrary key objects.
 	 */
-	private final Map<String, TextureProxy> _textures;
+	private final Map<Object, TextureProxy> _textures;
 
 	/**
 	 * Used to load texture data asynchronously.
@@ -56,9 +57,9 @@ public class TextureCache
 	private final ExecutorService _executorService;
 
 	/**
-	 * Set of textures, by name, with an alpha channel.
+	 * Set of textures, by key object, with an alpha channel.
 	 */
-	private final Set<String> _alpha;
+	private final Set<Object> _alpha;
 
 	/**
 	 * Maximum allowed texture size.
@@ -85,8 +86,8 @@ public class TextureCache
 	 */
 	public TextureCache()
 	{
-		_textures = new HashMap<String, TextureProxy>();
-		_alpha = new HashSet<String>();
+		_textures = new HashMap<Object, TextureProxy>();
+		_alpha = new HashSet<Object>();
 
 		final DefaultThreadFactory threadFactory = new DefaultThreadFactory();
 		threadFactory.setNamePrefix( TextureCache.class.getName() );
@@ -117,10 +118,10 @@ public class TextureCache
 		/*
 		 * Remove references to textures that are no longer valid.
 		 */
-		final Set<Map.Entry<String, TextureProxy>> textureEntries = _textures.entrySet();
-		for ( final Iterator<Map.Entry<String, TextureProxy>> i = textureEntries.iterator() ; i.hasNext() ; )
+		final Set<Map.Entry<Object, TextureProxy>> textureEntries = _textures.entrySet();
+		for ( final Iterator<Map.Entry<Object, TextureProxy>> i = textureEntries.iterator() ; i.hasNext() ; )
 		{
-			final Map.Entry<String, TextureProxy> entry = i.next();
+			final Map.Entry<Object, TextureProxy> entry = i.next();
 			final TextureProxy textureProxy = entry.getValue();
 
 			/*
@@ -143,15 +144,20 @@ public class TextureCache
 		final ExecutorService executorService = _executorService;
 		try
 		{
-			executorService.shutdownNow();
-			try
+			AccessController.doPrivileged( new PrivilegedAction<Object>()
 			{
-				executorService.awaitTermination( 10L, TimeUnit.SECONDS );
-			}
-			catch ( InterruptedException e )
-			{
-				e.printStackTrace();
-			}
+				@Override
+				public Object run()
+				{
+					return executorService.shutdownNow();
+				}
+			} );
+
+			executorService.awaitTermination( 10L, TimeUnit.SECONDS );
+		}
+		catch ( InterruptedException e )
+		{
+			e.printStackTrace();
 		}
 		catch ( SecurityException e )
 		{
@@ -201,7 +207,7 @@ public class TextureCache
 	 *
 	 * @return  <code>true</code> if the texture has an alpha channel.
 	 */
-	public boolean hasAlpha( final String texture )
+	public boolean hasAlpha( final TextureMap texture )
 	{
 		return _alpha.contains( texture );
 	}
@@ -209,92 +215,89 @@ public class TextureCache
 	/**
 	 * Get {@link Texture} for the specified map.
 	 *
-	 * @param   texture     Name of the texture map.
+	 * @param   textureMap  Texture map.
 	 *
-	 * @return  Texture for the specified name; <code>null</code> if the name was
-	 *          empty or no map by the given name was found.
-	 */
-	public Texture getTexture( final String texture )
-	{
-		Texture result = null;
-
-		if ( TextTools.isNonEmpty( texture ) )
-		{
-			final Map<String,TextureProxy> textures = _textures;
-
-			TextureProxy textureProxy = textures.get( texture );
-			if ( textureProxy == null )
-			{
-				textureProxy = new TextureProxy( texture , this );
-				loadTexture( texture , textureProxy );
-			}
-
-			result = textureProxy.getTexture();
-
-			if ( result != null )
-			{
-				final TextureData textureData = textureProxy.getTextureData();
-				if ( ( textureData != null ) && ( textureData.getInternalFormat() == GL.GL_RGBA ) )
-				{
-					_alpha.add( texture );
-				}
-			}
-		}
-
-		return result;
-	}
-
-	/**
-	 * Get {@link Texture} for color map of {@link Material}.
-	 *
-	 * @param   material        Material to get color map texture from.
-	 *
-	 * @return Color map texture; <code>null</code> if face has no color map or no
-	 *         texture coordinates.
+	 * @return  Texture for the specified name;
+	 *          <code>null</code> if the texture is not available (or not yet).
 	 */
 	@Nullable
-	public Texture getColorMapTexture( final Material material )
+	public Texture getTexture( @NotNull final TextureMap textureMap )
 	{
-		final Texture result;
+		final Map<Object,TextureProxy> textures = _textures;
 
-		if ( ( material != null ) && !TextTools.isEmpty( material.colorMap ) )
+		TextureProxy textureProxy = textures.get( textureMap );
+		if ( textureProxy == null )
 		{
-			result = getTexture( material.colorMap );
+			textureProxy = new TextureProxy( textureMap, this );
+			loadTexture( textureMap, textureProxy );
 		}
-		else
+
+		final Texture result = textureProxy.getTexture();
+
+		if ( result != null )
 		{
-			result = null;
+			final TextureData textureData = textureProxy.getTextureData();
+			if ( ( textureData != null ) && ( textureData.getInternalFormat() == GL.GL_RGBA ) )
+			{
+				_alpha.add( textureMap );
+			}
 		}
 
 		return result;
 	}
 
 	/**
-	 * Get {@link Texture} for bump map of {@link Material}.
+	 * Get {@link Texture} for color map of {@link Appearance}.
 	 *
-	 * @param   material    MAterial to get bump map texture from.
+	 * @param   appearance  Appearance to get color map texture from.
 	 *
-	 * @return Color map texture; <code>null</code> if face has no color map or no
-	 *         texture coordinates.
+	 * @return  Color map texture; <code>null</code> if face has no color map or
+	 *          no texture coordinates.
 	 */
-	public Texture getBumpMapTexture( final Material material )
+	@Nullable
+	public Texture getColorMapTexture( final Appearance appearance )
 	{
 		Texture result = null;
 
-		if ( ( material != null ) && TextTools.isNonEmpty( material.bumpMap ) )
+		if ( appearance != null )
 		{
-			final String texture = material.bumpMap;
-
-			final Map<String, TextureProxy> textures = _textures;
-
-			TextureProxy textureProxy = textures.get( texture );
-			if ( textureProxy == null )
+			final TextureMap colorMap = appearance.getColorMap();
+			if ( colorMap != null )
 			{
-				textureProxy = new BumpTextureProxy( texture , this );
-				loadTexture( texture , textureProxy );
+				result = getTexture( colorMap );
 			}
+		}
 
-			result = textureProxy.getTexture();
+		return result;
+	}
+
+	/**
+	 * Get {@link Texture} for bump map of {@link Appearance}.
+	 *
+	 * @param   appearance  Appearance  to get bump map texture from.
+	 *
+	 * @return  Color map texture; <code>null</code> if face has no color map or
+	 *          no texture coordinates.
+	 */
+	@Nullable
+	public Texture getBumpMapTexture( final Appearance appearance )
+	{
+		Texture result = null;
+
+		if ( appearance != null )
+		{
+			final TextureMap bumpMap = appearance.getBumpMap();
+			if ( bumpMap != null )
+			{
+				TextureProxy textureProxy = _textures.get( bumpMap );
+				if ( textureProxy == null )
+				{
+					textureProxy = new BumpTextureProxy( bumpMap, this );
+					loadTexture( bumpMap, textureProxy );
+				}
+
+				result = textureProxy.getTexture();
+			}
 		}
 
 		return result;
@@ -307,6 +310,7 @@ public class TextureCache
 	 *
 	 * @return  Normalization cube map.
 	 */
+	@Nullable
 	public Texture getNormalizationCubeMap()
 	{
 		TextureProxy result = _textures.get( NORMALIZATION_CUBE_MAP );
@@ -319,62 +323,20 @@ public class TextureCache
 	}
 
 	/**
-	 * Returns a cube map based on the specified image. The image must have
-	 * an aspect ratio of 4:3, consisting of 12 squares with the following
-	 * layout:
-	 * <pre>
-	 *     +---+
-	 *     | Y+|
-	 * +---+---+---+---+
-	 * | X-| Z+| X+| Z-|
-	 * +---+---+---+---+
-	 *     | Y-|
-	 *     +---+
-	 * </pre>
+	 * Returns a cube map texture for the given cube map.
 	 *
-	 * @param   cube    Name of the cube map image.
+	 * @param   cubeMap     Cube map.
 	 *
 	 * @return  Cube map texture.
 	 */
-	public Texture getCubeMap( final String cube )
+	@Nullable
+	public Texture getCubeMap( final CubeMap cubeMap )
 	{
-		final String key = "cube:" + cube;
-
-		final Map<String, TextureProxy> textures = _textures;
-
-		TextureProxy textureProxy = textures.get( key );
+		TextureProxy textureProxy = _textures.get( cubeMap );
 		if ( textureProxy == null )
 		{
-			textureProxy = new CubeTextureProxy( cube , this );
-			loadTexture( key , textureProxy );
-		}
-
-		return textureProxy.getTexture();
-	}
-
-	/**
-	 * Returns a cube map based on the specified images.
-	 *
-	 * @param   x1  Image on the negative-X side of the cube.
-	 * @param   y1  Image on the negative-Y side of the cube.
-	 * @param   z1  Image on the negative-Z side of the cube.
-	 * @param   x2  Image on the positive-X side of the cube.
-	 * @param   y2  Image on the positive-Y side of the cube.
-	 * @param   z2  Image on the positive-Z side of the cube.
-	 *
-	 * @return  Cube map texture.
-	 */
-	public Texture getCubeMap( final String x1, final String y1, final String z1, final String x2, final String y2, final String z2 )
-	{
-		final String key = "cube6:" + x1 + ":" + y1 + ":" + z1 + ":" + x2 + ":" + y2 + ":" + z2;
-
-		final Map<String, TextureProxy> textures = _textures;
-
-		TextureProxy textureProxy = textures.get( key );
-		if ( textureProxy == null )
-		{
-			textureProxy = new CubeTextureProxy( x1 , y1 , z1 , x2 , y2 , z2 , this );
-			loadTexture( key , textureProxy );
+			textureProxy = new CubeTextureProxy( cubeMap, this );
+			loadTexture( cubeMap, textureProxy );
 		}
 
 		return textureProxy.getTexture();
@@ -386,9 +348,9 @@ public class TextureCache
 	 * @param   key             Key identifying the texture.
 	 * @param   textureProxy    Texture to be loaded.
 	 */
-	private void loadTexture( @NotNull final String key , @NotNull final TextureProxy textureProxy )
+	private void loadTexture( @NotNull final Object key , @NotNull final TextureProxy textureProxy )
 	{
-		_textures.put( key , textureProxy );
+		_textures.put( key, textureProxy );
 
 		final Future<TextureData> textureData = _executorService.submit( textureProxy );
 		textureProxy.setTextureData( textureData );
