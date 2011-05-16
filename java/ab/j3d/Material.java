@@ -978,10 +978,11 @@ public class Material
 		@Override
 		public BufferedImage getImage()
 		{
-			final BufferedImage image = super.getImage();
+			BufferedImage image = super.getImage();
 			if ( ( image == null ) && ( _reflectionMap != null ) )
 			{
-				setImage( MapTools.loadImage( _reflectionMap ) );
+				image = MapTools.loadImage( _reflectionMap );
+				setImage( image );
 			}
 			return image;
 		}
