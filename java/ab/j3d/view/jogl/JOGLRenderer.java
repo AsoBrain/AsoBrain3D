@@ -846,7 +846,7 @@ public class JOGLRenderer
 		SingleImageCubeMap environmentMap = _environmentMap;
 		if ( environmentMap == null )
 		{
-			environmentMap = new SingleImageCubeMap( MapTools.loadImage( "reflection/metal" ) );
+			environmentMap = new SingleImageCubeMap( MapTools.loadImage( "ab3d/maps/reflect-sky-bw" ) );
 			_environmentMap = environmentMap;
 		}
 
@@ -1300,7 +1300,8 @@ public class JOGLRenderer
 							 * Interpolate with previous texture stage.
 							 */
 							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE );
-							gl.glTexEnvfv( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_COLOR, new float[] { 0.0f, 0.0f, 0.0f, reflectionMap.getReflectivityMin() }, 0 );
+							final float reflectivity = ( reflectionMap.getReflectivityMin() + reflectionMap.getReflectivityMax() ) / 2.0f;
+							gl.glTexEnvfv( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_COLOR, new float[] { 0.0f, 0.0f, 0.0f, reflectivity }, 0 );
 
 							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB, GL.GL_INTERPOLATE );
 							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_SOURCE0_RGB, GL.GL_TEXTURE );
