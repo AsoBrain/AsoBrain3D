@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2007
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,16 +20,11 @@
  */
 package ab.j3d.loader;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.Random;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.io.*;
+import java.util.*;
+import java.util.zip.*;
 
-import junit.framework.TestCase;
-
-import com.numdata.oss.ArrayTools;
+import junit.framework.*;
 
 /**
  * This class tests the {@link ZipResourceLoader} class.
@@ -99,23 +95,23 @@ public class TestZipResourceLoader
 		final BufferedInputStream rl1 = new BufferedInputStream( resourceLoader.getResource( "file1" ) );
 		final byte[] file1 = new byte[ be1.length ];
 		rl1.read( file1 );
-		assertEquals( "Incorrect file or file not found." , ArrayTools.toString( be1 ) , ArrayTools.toString( file1 ) );
+		assertEquals( "Incorrect file or file not found." , Arrays.toString( be1 ) , Arrays.toString( file1 ) );
 
 		final BufferedInputStream rl2 = new BufferedInputStream( resourceLoader.getResource( "file2" ) );
 		final byte[] file2 = new byte[ be2.length ];
 		rl2.read( file2 );
-		assertEquals( "Incorrect file or file not found." , ArrayTools.toString( be2 ) , ArrayTools.toString( file2 ) );
+		assertEquals( "Incorrect file or file not found." , Arrays.toString( be2 ) , Arrays.toString( file2 ) );
 
 		final BufferedInputStream rl3 = new BufferedInputStream( resourceLoader.getResource( "file3" ) );
 		final byte[] file3 = new byte[ be3.length ];
 		rl3.read( file3 );
-		assertEquals( "Incorrect file or file not found." , ArrayTools.toString( be3 ) , ArrayTools.toString( file3 ) );
+		assertEquals( "Incorrect file or file not found." , Arrays.toString( be3 ) , Arrays.toString( file3 ) );
 
 		final byte[] actualFiles = new byte[10000];
 
 		System.arraycopy( file1 , 0 , actualFiles , 0                           , file1.length );
 		System.arraycopy( file2 , 0 , actualFiles , file1.length                , file2.length );
 		System.arraycopy( file3 , 0 , actualFiles , file1.length + file2.length , file3.length );
-		assertEquals( "Input and Output file don't match" , ArrayTools.toString( expectedFiles ), ArrayTools.toString( actualFiles ) );
+		assertEquals( "Input and Output file don't match" , Arrays.toString( expectedFiles ), Arrays.toString( actualFiles ) );
 	}
 }

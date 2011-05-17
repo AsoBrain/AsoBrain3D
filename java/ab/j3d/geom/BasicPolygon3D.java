@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2007
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,9 +20,7 @@
  */
 package ab.j3d.geom;
 
-import ab.j3d.Vector3D;
-
-import com.numdata.oss.ArrayTools;
+import ab.j3d.*;
 
 /**
  * Basic implementation of {@link Polygon3D}.
@@ -56,15 +55,19 @@ public class BasicPolygon3D
 	 * @throws  NullPointerException if <code>vertices</code> is <code>null</code>.
 	 * @throws  IllegalArgumentException if <code>vertices</code> has less than 3 elements.
 	 */
-	public BasicPolygon3D( final Vector3D[] vertices , final boolean twoSided )
+	public BasicPolygon3D( final Vector3D[] vertices, final boolean twoSided )
 	{
 		if ( vertices == null )
+		{
 			throw new NullPointerException( "vertices" );
+		}
 
 		if ( vertices.length < 3 )
+		{
 			throw new IllegalArgumentException( "polygon must have at least 3 vertices" );
+		}
 
-		_vertices = (Vector3D[])ArrayTools.clone( vertices );
+		_vertices = vertices.clone();
 		_twoSided = twoSided;
 		_normal   = null;
 	}
@@ -91,7 +94,7 @@ public class BasicPolygon3D
 
 	public double getDistance()
 	{
-		return Vector3D.dot( getNormal() , _vertices[ 0 ] );
+		return Vector3D.dot( getNormal(), _vertices[ 0 ] );
 	}
 
 	public Vector3D getNormal()
@@ -100,7 +103,7 @@ public class BasicPolygon3D
 		if ( result == null )
 		{
 			final Vector3D[] vertices = _vertices;
-			result = GeometryTools.getPlaneNormal( vertices[ 0 ] , vertices[ 1 ] , vertices[ 2 ] );
+			result = GeometryTools.getPlaneNormal( vertices[ 0 ], vertices[ 1 ], vertices[ 2 ] );
 			_normal = result;
 		}
 		return result;

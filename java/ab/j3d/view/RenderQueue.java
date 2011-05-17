@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,8 +25,6 @@ import java.util.*;
 import ab.j3d.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
-import com.numdata.oss.*;
-import com.numdata.oss.io.*;
 
 /**
  * This class manages a render queue that can be used by a 3D render engine. It
@@ -95,75 +93,15 @@ public final class RenderQueue
 	 * list is the number of vertices in the freed polygon Index minus 1.
 	 * Elements are created on-demand (inialized to <code>null</code>).
 	 */
-	final AugmentedList<List<RenderedPolygon>> _freeLists;
-
-	/**
-	 * Temporary storage for clipping variables.
-	 */
-	private double[] _frontX;
-
-	/**
-	 * Temporary storage for clipping variables.
-	 */
-	private double[] _frontY;
-
-	/**
-	 * Temporary storage for clipping variables.
-	 */
-	private double[] _frontZ;
-
-	/**
-	 * Temporary storage for clipping variables.
-	 */
-	private double[] _backX;
-
-	/**
-	 * Temporary storage for clipping variables.
-	 */
-	private double[] _backY;
-
-	/**
-	 * Temporary storage for clipping variables.
-	 */
-	private double[] _backZ;
-
-	/**
-	 * Temporary storage for clipping variables.
-	 */
-	private int[] _frontProjX;
-
-	/**
-	 * Temporary storage for clipping variables.
-	 */
-	private int[] _frontProjY;
-
-	/**
-	 * Temporary storage for clipping variables.
-	 */
-	private int[] _backProjX;
-
-	/**
-	 * Temporary storage for clipping variables.
-	 */
-	private int[] _backProjY;
+	final List<List<RenderedPolygon>> _freeLists;
 
 	/**
 	 * Construct new render queue.
 	 */
 	public RenderQueue()
 	{
-		_queue                   = new ArrayList<RenderedPolygon>( 64 );
-		_freeLists               = new AugmentedArrayList<List<RenderedPolygon>>( 4 );
-		_frontX                  = null;
-		_frontY                  = null;
-		_frontZ                  = null;
-		_backX                   = null;
-		_backY                   = null;
-		_backZ                   = null;
-		_frontProjX              = null;
-		_frontProjY              = null;
-		_backProjX               = null;
-		_backProjY               = null;
+		_queue = new ArrayList<RenderedPolygon>( 64 );
+		_freeLists = new ArrayList<List<RenderedPolygon>>( 4 );
 	}
 
 	/**
@@ -403,8 +341,6 @@ public final class RenderQueue
 	 * Note that this method does not work as it should at the moment. The
 	 * biggest problem is that cycle detection isn't working properly. This
 	 * causes either an infinite loop or some polygons are not sorted properly.
-	 * An {@link IndentingWriter} is passed on as a parameter to generate output
-	 * of the ordering proces.
 	 *
 	 * @param   poly            {@link RenderedPolygon} to put in the final
 	 *                          queue.
@@ -685,29 +621,17 @@ public final class RenderQueue
 
 		int frontCount = 0;
 		int backCount = 0;
-		final double[] frontX = (double[])ArrayTools.ensureLength( _frontX, double.class, 1, vertexCount + 2 );
-		final double[] frontY = (double[])ArrayTools.ensureLength( _frontY, double.class, 1, vertexCount + 2 );
-		final double[] frontZ = (double[])ArrayTools.ensureLength( _frontZ, double.class, 1, vertexCount + 2 );
-		final double[]  backX = (double[])ArrayTools.ensureLength(  _backX, double.class, 1, vertexCount + 2 );
-		final double[]  backY = (double[])ArrayTools.ensureLength(  _backY, double.class, 1, vertexCount + 2 );
-		final double[]  backZ = (double[])ArrayTools.ensureLength(  _backZ, double.class, 1, vertexCount + 2 );
+		final double[] frontX = new double[ vertexCount + 2 ];
+		final double[] frontY = new double[ vertexCount + 2 ];
+		final double[] frontZ = new double[ vertexCount + 2 ];
+		final double[]  backX = new double[ vertexCount + 2 ];
+		final double[]  backY = new double[ vertexCount + 2 ];
+		final double[]  backZ = new double[ vertexCount + 2 ];
 
-		final int[] frontProjX = (int[])ArrayTools.ensureLength( _frontProjX, int.class, 1, vertexCount + 2 );
-		final int[] frontProjY = (int[])ArrayTools.ensureLength( _frontProjY, int.class, 1, vertexCount + 2 );
-		final int[]  backProjX = (int[])ArrayTools.ensureLength(  _backProjX, int.class, 1, vertexCount + 2 );
-		final int[]  backProjY = (int[])ArrayTools.ensureLength(  _backProjY, int.class, 1, vertexCount + 2 );
-
-		_frontX = frontX;
-		_frontY = frontY;
-		_frontZ = frontZ;
-		_backX = backX;
-		_backY = backY;
-		_backZ = backZ;
-
-		_frontProjX = frontProjX;
-		_frontProjY = frontProjY;
-		_backProjX = backProjX;
-		_backProjY = backProjY;
+		final int[] frontProjX = new int[ vertexCount ];
+		final int[] frontProjY = new int[ vertexCount ];
+		final int[]  backProjX = new int[ vertexCount ];
+		final int[]  backProjY = new int[ vertexCount ];
 
 		final double cuttingNX = cuttingPlane._planeNormalX;
 		final double cuttingNY = cuttingPlane._planeNormalY;
@@ -963,10 +887,10 @@ public final class RenderQueue
 		final int vertexCount = polygon._vertexCount;
 		final int listIndex   = vertexCount - 1;
 
-		final AugmentedList<List<RenderedPolygon>> lists = _freeLists;
-		if ( vertexCount >= lists.size() )
+		final List<List<RenderedPolygon>> lists = _freeLists;
+		for ( int tail = lists.size(); --tail > listIndex; )
 		{
-			lists.setLength( vertexCount );
+			lists.remove( tail );
 		}
 
 		List<RenderedPolygon> list = lists.get( listIndex );
