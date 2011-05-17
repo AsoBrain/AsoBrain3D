@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2008-2009 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,11 +20,8 @@
  */
 package ab.j3d;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 /**
  * This class provides a simple in-memory material library.
@@ -47,26 +44,33 @@ public class MemoryMaterialLibrary
 	{
 	}
 
+	@Override
 	public Material getMaterialByCode( final String code )
 		throws IOException
 	{
 		if ( code == null )
-			throw new NullPointerException( "code" );
+		{
+			throw new IllegalArgumentException( "code" );
+		}
 
 		return _materials.get( code );
 	}
 
+	@Override
 	public List<Material> getMaterials()
 		throws IOException
 	{
 		return new ArrayList<Material>( _materials.values() );
 	}
 
+	@Override
 	public void storeMaterial( final Material material )
 		throws IOException
 	{
 		if ( material == null )
-			throw new NullPointerException( "material" );
+		{
+			throw new IllegalArgumentException( "material" );
+		}
 
 		final Map<String,Material> materials = _materials;
 
@@ -104,12 +108,12 @@ public class MemoryMaterialLibrary
 					throw new IOException( "Duplicate material code: " + material.code );
 				}
 
-				maxID = Math.max( maxID , existing.ID );
+				maxID = Math.max( maxID, existing.ID );
 			}
 
 			material.ID = maxID + 1;
 		}
 
-		materials.put( material.code , material );
+		materials.put( material.code, material );
 	}
 }

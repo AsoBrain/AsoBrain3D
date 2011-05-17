@@ -19,14 +19,8 @@
  */
 package ab.j3d;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import com.numdata.oss.Cache;
-import com.numdata.oss.TextTools;
-
+import java.io.*;
+import java.util.*;
 
 /**
  * This class wraps an {@link MaterialLibrary} with caching functionality.
@@ -60,27 +54,27 @@ public class CachingMaterialLibrary
 	public CachingMaterialLibrary( final MaterialLibrary library )
 	{
 		_library = library;
-		_cache = new Cache<String,Material>();
+		_cache = new HashMap<String,Material>();
 	}
 
+	@Override
 	public final Material getMaterialByCode( final String code )
 		throws IOException
 	{
 		Material result = null;
 
 		if ( code == null )
-			throw new NullPointerException( "code" );
-
-		if ( TextTools.isNonEmpty( code ) )
 		{
-			final Map<String,Material> cache = _cache;
+			throw new IllegalArgumentException( "code" );
+		}
 
-			result = cache.get( code );
-			if ( ( result == null ) && !isCacheComplete() && !cache.containsKey( code ) )
-			{
-				result = _library.getMaterialByCode( code );
-				cache.put( code , result );
-			}
+		final Map<String,Material> cache = _cache;
+
+		result = cache.get( code );
+		if ( ( result == null ) && !isCacheComplete() && !cache.containsKey( code ) )
+		{
+			result = _library.getMaterialByCode( code );
+			cache.put( code, result );
 		}
 
 		return result;
@@ -97,6 +91,7 @@ public class CachingMaterialLibrary
 		return ( _materialCount >= 0 ) && ( _materialCount == _cache.size() );
 	}
 
+	@Override
 	public List<Material> getMaterials()
 		throws IOException
 	{
@@ -124,7 +119,7 @@ public class CachingMaterialLibrary
 
 			for ( final Material material : result )
 			{
-				cache.put( material.code , material );
+				cache.put( material.code, material );
 			}
 			_materialCount = result.size();
 		}
@@ -132,16 +127,21 @@ public class CachingMaterialLibrary
 		return result;
 	}
 
+	@Override
 	public void storeMaterial( final Material material )
 		throws IOException
 	{
 		if ( material == null )
-			throw new NullPointerException( "material" );
+		{
+			throw new IllegalArgumentException( "material" );
+		}
 
 		if ( material.code == null )
-			throw new NullPointerException( "material.code" );
+		{
+			throw new IllegalArgumentException( "material.code" );
+		}
 
 		_library.storeMaterial( material );
-		_cache.put( material.code , material );
+		_cache.put( material.code, material );
 	}
 }
