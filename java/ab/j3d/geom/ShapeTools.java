@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,9 +25,6 @@ import java.awt.geom.*;
 import java.text.*;
 import java.util.*;
 
-import com.numdata.oss.*;
-import org.jetbrains.annotations.*;
-
 /**
  * Provides some utilities for working with 2D shapes.
  *
@@ -40,6 +37,19 @@ public class ShapeTools
 	 * PI / 2.
 	 */
 	public static final double HALF_PI = Math.PI / 2.0;
+
+	/**
+	 * Number format that has upto 2 decimals.
+	 */
+	private static final NumberFormat TOW_DECIMALS;
+	static
+	{
+		final NumberFormat df = NumberFormat.getNumberInstance( Locale.US );
+		df.setGroupingUsed( false );
+		df.setMinimumFractionDigits( 0 );
+		df.setMaximumFractionDigits( 2 );
+		TOW_DECIMALS = df;
+	}
 
 	/**
 	 * Shape classes.
@@ -161,8 +171,13 @@ public class ShapeTools
 	 *
 	 * @throws  NullPointerException if a parameter is <code>null</code>.
 	 */
-	public static Shape flatten( @NotNull final Shape shape, final double flatness )
+	public static Shape flatten( final Shape shape, final double flatness )
 	{
+		if ( shape == null )
+		{
+			throw new IllegalArgumentException( "shape == null" );
+		}
+
 		final Shape result;
 
 		if ( containsCurves( shape ) )
@@ -190,8 +205,13 @@ public class ShapeTools
 	 *
 	 * @throws  NullPointerException if a parameter is <code>null</code>.
 	 */
-	public static boolean containsCurves( @NotNull final Shape shape )
+	public static boolean containsCurves( final Shape shape )
 	{
+		if ( shape == null )
+		{
+			throw new IllegalArgumentException( "shape == null" );
+		}
+
 		boolean result;
 
 		if ( ( shape instanceof Line2D ) ||
@@ -234,11 +254,15 @@ public class ShapeTools
 	 *
 	 * @return  {@link ShapeClass}
 	 *
-	 * @throws  NullPointerException if a parameter is <code>null</code>.
+	 * @throws  IllegalArgumentException if parameter is <code>null</code>.
 	 */
-	@NotNull
-	public static ShapeClass getShapeClass( @NotNull final Shape shape )
+	public static ShapeClass getShapeClass( final Shape shape )
 	{
+		if ( shape == null )
+		{
+			throw new IllegalArgumentException( "shape == null" );
+		}
+
 		final ShapeClass result;
 
 		if ( shape instanceof Rectangle2D )
@@ -306,12 +330,16 @@ public class ShapeTools
 	 *
 	 * @return  {@link ShapeClass}.
 	 *
-	 * @throws  NullPointerException if any parameter is <code>null</code>.
+	 * @throws  IllegalArgumentException if parameter is <code>null</code>.
 	 */
-	@NotNull
-	public static ShapeClass getShapeClass( @NotNull final PathIterator pathIterator )
+	public static ShapeClass getShapeClass( final PathIterator pathIterator )
 	{
 		final ShapeClass result;
+
+		if ( pathIterator == null )
+		{
+			throw new IllegalArgumentException( "pathIterator == null" );
+		}
 
 		int     numberOfSegments = 0;     /* number of non-void segments */
 		boolean curved           = false;
@@ -560,7 +588,7 @@ public class ShapeTools
 		{
 			final StringBuilder out = new StringBuilder();
 
-			final NumberFormat df = TextTools.getNumberFormat( Locale.US, 0, 2, false );
+			final NumberFormat df = TOW_DECIMALS;
 
 			final double[] coords = new double[ 6 ];
 
