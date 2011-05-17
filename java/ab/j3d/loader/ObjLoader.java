@@ -30,7 +30,6 @@ import java.util.zip.*;
 import ab.j3d.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
-import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -103,6 +102,11 @@ import org.jetbrains.annotations.*;
  */
 public class ObjLoader
 {
+	/**
+	 * Whitespace pattern. This is the field separator in OBJ files.
+	 */
+	private static final Pattern WHITESPACE = Pattern.compile( "\\s+" );
+
 	/**
 	 * Pattern for vertices in polygonal geometry statements 'p', 'l', and 'f'.
 	 */
@@ -214,7 +218,7 @@ public class ObjLoader
 		{
 			if ( line.length() > 0 )
 			{
-				final String[] tokens = TextTools.tokenize( line, ' ' );
+				final String[] tokens = WHITESPACE.split( line.trim(), 0 );
 				final String name = tokens[ 0 ];
 				final int argCount = tokens.length - 1;
 
@@ -719,9 +723,10 @@ public class ObjLoader
 		{
 			if ( line.length() > 0 )
 			{
-				final String[] tokens   = TextTools.tokenize( line, ' ' );
-				final String   name     = tokens[ 0 ];
-				final int argCount      = tokens.length - 1;
+				final String[] tokens = WHITESPACE.split( line.trim(), 0 );
+				final String name = tokens[ 0 ];
+				final int argCount = tokens.length - 1;
+
 				try
 				{
 					// New Material
