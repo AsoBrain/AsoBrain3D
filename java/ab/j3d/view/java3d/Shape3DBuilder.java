@@ -21,7 +21,6 @@
 package ab.j3d.view.java3d;
 
 import java.util.*;
-import javax.media.j3d.Appearance;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 import javax.vecmath.Vector3f;
@@ -30,6 +29,7 @@ import ab.j3d.Material;
 import ab.j3d.*;
 import ab.j3d.model.*;
 import ab.j3d.model.Face3D.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This object builds {@link Shape3D} objects based on data from
@@ -43,14 +43,17 @@ import ab.j3d.model.Face3D.*;
  *     Construct a new {@link Shape3DBuilder}.
  *   </li>
  *   <li>
- *     Call the {@link #prepareFace} method for every face that will be
- *     added later. This is used to determine correct storage requirements,
- *     so no collection classes are needed.
+ *     Call the {@link #getAppearanceGroup} for each {@link FaceGroup}.
  *   </li>
  *   <li>
- *     Call the {@link #addFace} method for every face that was
- *     previously announced using {@link #prepareFace}. This will take
- *     care of the the line/triangle/quad geometry conversions.
+ *     Call the {@link AppearanceGroup#prepareFace} method for every face that
+ *     will be added later. This is used to determine correct storage
+ *     requirements, so no collection classes are needed.
+ *   </li>
+ *   <li>
+ *     Call the {@link AppearanceGroup#addFace} method for every face that was
+ *     previously announced using {@link AppearanceGroup#prepareFace}. This will
+ *     take care of the the line/triangle/quad geometry conversions.
  *   </li>
  *   <li>
  *     Call the {@link #buildShapes} method. This will build the
@@ -88,11 +91,16 @@ public class Shape3DBuilder
 			for ( final Node3DPath path : objectNodes )
 			{
 				final Object3D object3d = (Object3D)path.getNode();
-				final int faceCount = object3d.getFaceCount();
-
-				for ( int j = 0; j < faceCount; j++ )
+				for ( final FaceGroup faceGroup : object3d.getFaceGroups() )
 				{
-					shapeBuilder.prepareFace( object3d.getFace( j ) );
+					final AppearanceGroup appearanceGroup = shapeBuilder.getAppearanceGroup( faceGroup );
+					if ( appearanceGroup != null )
+					{
+						for ( final Face3D face : faceGroup.getFaces() )
+						{
+							appearanceGroup.prepareFace( face.getVertexCount() );
+						}
+					}
 				}
 			}
 
@@ -100,11 +108,17 @@ public class Shape3DBuilder
 			{
 				final Object3D object3d = (Object3D)path.getNode();
 				final Matrix3D transform = path.getTransform();
-				final int faceCount = object3d.getFaceCount();
 
-				for ( int j = 0 ; j < faceCount ; j++ )
+				for ( final FaceGroup faceGroup : object3d.getFaceGroups() )
 				{
-					shapeBuilder.addFace( transform, object3d.getFace( j ) );
+					final AppearanceGroup appearanceGroup = shapeBuilder.getAppearanceGroup( faceGroup );
+					if ( appearanceGroup != null )
+					{
+						for ( final Face3D face : faceGroup.getFaces() )
+						{
+							appearanceGroup.addFace( transform, face );
+						}
+					}
 				}
 			}
 
@@ -118,25 +132,37 @@ public class Shape3DBuilder
 	 * Create a Java 3D {@link BranchGroup} containing a content graph by
 	 * converting an {@link Object3D} instance using this builder.
 	 *
-	 * @param   xform       Transform to apply to vertices.
+	 * @param   object2branch       Transform to apply to vertices.
 	 * @param   object3d    Object3D to convert.
 	 *
 	 * @return  {@link BranchGroup} containing the created content graph.
 	 */
-	public static BranchGroup createBranchGroup( final Matrix3D xform , final Object3D object3d )
+	public static BranchGroup createBranchGroup( final Matrix3D object2branch, final Object3D object3d )
 	{
 		final Shape3DBuilder shapeBuilder = new Shape3DBuilder();
 
-		final int faceCount = object3d.getFaceCount();
-
-		for ( int j = 0 ; j < faceCount ; j++ )
+		for ( final FaceGroup faceGroup : object3d.getFaceGroups() )
 		{
-			shapeBuilder.prepareFace( object3d.getFace( j ) );
+			final AppearanceGroup appearanceGroup = shapeBuilder.getAppearanceGroup( faceGroup );
+			if ( appearanceGroup != null )
+			{
+				for ( final Face3D face : faceGroup.getFaces() )
+				{
+					appearanceGroup.prepareFace( face.getVertexCount() );
+				}
+			}
 		}
 
-		for ( int j = 0 ; j < faceCount ; j++ )
+		for ( final FaceGroup faceGroup : object3d.getFaceGroups() )
 		{
-			shapeBuilder.addFace( xform, object3d.getFace( j ) );
+			final AppearanceGroup appearanceGroup = shapeBuilder.getAppearanceGroup( faceGroup );
+			if ( appearanceGroup != null )
+			{
+				for ( final Face3D face : faceGroup.getFaces() )
+				{
+					appearanceGroup.addFace( object2branch, face );
+				}
+			}
 		}
 
 		final BranchGroup result = new BranchGroup();
@@ -147,19 +173,10 @@ public class Shape3DBuilder
 	}
 
 	/**
-	 * Array containing appearance groups. A appearance group contains shapes that
-	 * share the same material.
-	 * <p />
-	 * The array length should not be used to determine the number of elements
-	 * contained therein (it is initially <code>null</code> anyway), use the
-	 * {@link #_appearanceGroupCount} field instead.
+	 * Appearance groups. A appearance group contains shapes that share the same
+	 * apperance.
 	 */
-	private AppearanceGroup[] _appearanceGroups;
-
-	/**
-	 * The number of elements stored in {@link #_appearanceGroups}.
-	 */
-	private int _appearanceGroupCount;
+	private final List<AppearanceGroup> _appearanceGroups = new ArrayList<AppearanceGroup>();
 
 	/**
 	 * This is the workhorse of the builder. It contains a set of shapes that
@@ -196,7 +213,7 @@ public class Shape3DBuilder
 	 */
 	private static class AppearanceGroup
 	{
-		private Material      _material;
+		private ab.j3d.appearance.Appearance _material;
 		private boolean       _hasBackface;
 		private Appearance    _appearance;
 		private int           _lineCount;
@@ -207,7 +224,7 @@ public class Shape3DBuilder
 		private QuadArray     _quadArray;
 
 
-		AppearanceGroup( final Material material , final boolean hasBackface , final Appearance appearance )
+		AppearanceGroup( final ab.j3d.appearance.Appearance material, final boolean hasBackface, final Appearance appearance )
 		{
 			_material      = material;
 			_hasBackface   = hasBackface;
@@ -241,7 +258,7 @@ public class Shape3DBuilder
 			}
 		}
 
-		void addFace( final Matrix3D object2view , final Face3D face )
+		void addFace( final Matrix3D object2view, final Face3D face )
 		{
 			final List<Vertex> vertices = face.vertices;
 			final int vertexCount = vertices.size();
@@ -259,13 +276,13 @@ public class Shape3DBuilder
 							throw new IllegalStateException( "should have called prepareFace()!" );
 						}
 
-						lineArray = new LineArray( 2 * lineCount , LineArray.COORDINATES );
+						lineArray = new LineArray( 2 * lineCount, LineArray.COORDINATES );
 						lineCount = 0;
 					}
 
 					final int coordinateIndex = lineCount * 2;
-					lineArray.setCoordinate( coordinateIndex     , getVertexCoordinate( object2view , vertices.get( 0 ) ) );
-					lineArray.setCoordinate( coordinateIndex + 1 , getVertexCoordinate( object2view , vertices.get( 1 ) ) );
+					lineArray.setCoordinate( coordinateIndex    , getVertexCoordinate( object2view, vertices.get( 0 ) ) );
+					lineArray.setCoordinate( coordinateIndex + 1, getVertexCoordinate( object2view, vertices.get( 1 ) ) );
 
 					_lineArray = lineArray;
 					_lineCount = lineCount + 1;
@@ -274,15 +291,15 @@ public class Shape3DBuilder
 				{
 					Vertex vertex = vertices.get( 0 );
 
-					final Point3d       vertexCoord0  = getVertexCoordinate( object2view , vertex );
-					final TexCoord2f    textureCoord0 = new TexCoord2f( vertex.colorMapU , vertex.colorMapV );
-					final Vector3f      vertexNormal0 = getVertexNormal( object2view , face , 0 );
+					final Point3d       vertexCoord0  = getVertexCoordinate( object2view, vertex );
+					final TexCoord2f    textureCoord0 = new TexCoord2f( vertex.colorMapU, vertex.colorMapV );
+					final Vector3f      vertexNormal0 = getVertexNormal( object2view, face, 0 );
 
 					vertex = vertices.get( 1 );
 
-					Point3d    vertexCoord1  = getVertexCoordinate( object2view , vertex );
-					TexCoord2f textureCoord1 = new TexCoord2f( vertex.colorMapU , vertex.colorMapV );
-					Vector3f   vertexNormal1 = getVertexNormal( object2view , face , 1 );
+					Point3d    vertexCoord1  = getVertexCoordinate( object2view, vertex );
+					TexCoord2f textureCoord1 = new TexCoord2f( vertex.colorMapU, vertex.colorMapV );
+					Vector3f   vertexNormal1 = getVertexNormal( object2view, face, 1 );
 
 					if ( vertexCount > 3 ) // more than 3 vertices => add quads
 					{
@@ -296,38 +313,38 @@ public class Shape3DBuilder
 								throw new IllegalStateException( "should have called prepareFace()!" );
 							}
 
-							quadArray = new QuadArray( 4 * quadCount , QuadArray.COORDINATES | QuadArray.NORMALS | QuadArray.TEXTURE_COORDINATE_2 );
+							quadArray = new QuadArray( 4 * quadCount, QuadArray.COORDINATES | QuadArray.NORMALS | QuadArray.TEXTURE_COORDINATE_2 );
 							quadCount = 0;
 						}
 
 						for ( int vertexIndex3 = 3 ; vertexIndex3 < vertexCount ; vertexIndex3 += 2 )
 						{
 							vertex = vertices.get( vertexIndex3 - 1 );
-							final Point3d    vertexCoord2  = getVertexCoordinate( object2view , vertex );
-							final TexCoord2f textureCoord2 = new TexCoord2f( vertex.colorMapU , vertex.colorMapV );
-							final Vector3f   vertexNormal2 = getVertexNormal( object2view , face , vertexIndex3 - 1 );
+							final Point3d    vertexCoord2  = getVertexCoordinate( object2view, vertex );
+							final TexCoord2f textureCoord2 = new TexCoord2f( vertex.colorMapU, vertex.colorMapV );
+							final Vector3f   vertexNormal2 = getVertexNormal( object2view, face, vertexIndex3 - 1 );
 
 							vertex = vertices.get( vertexIndex3 );
-							final Point3d    vertexCoord3  = getVertexCoordinate( object2view , vertex );
-							final TexCoord2f textureCoord3 = new TexCoord2f( vertex.colorMapU , vertex.colorMapV );
-							final Vector3f   vertexNormal3 = getVertexNormal( object2view , face , vertexIndex3 );
+							final Point3d    vertexCoord3  = getVertexCoordinate( object2view, vertex );
+							final TexCoord2f textureCoord3 = new TexCoord2f( vertex.colorMapU, vertex.colorMapV );
+							final Vector3f   vertexNormal3 = getVertexNormal( object2view, face, vertexIndex3 );
 
 							final int coordinateIndex = quadCount * 4;
 
-							quadArray.setCoordinate( coordinateIndex     , vertexCoord3 );
-							quadArray.setCoordinate( coordinateIndex + 1 , vertexCoord2 );
-							quadArray.setCoordinate( coordinateIndex + 2 , vertexCoord1 );
-							quadArray.setCoordinate( coordinateIndex + 3 , vertexCoord0 );
+							quadArray.setCoordinate( coordinateIndex    , vertexCoord3 );
+							quadArray.setCoordinate( coordinateIndex + 1, vertexCoord2 );
+							quadArray.setCoordinate( coordinateIndex + 2, vertexCoord1 );
+							quadArray.setCoordinate( coordinateIndex + 3, vertexCoord0 );
 
-							quadArray.setTextureCoordinate( 0 , coordinateIndex     , textureCoord3 );
-							quadArray.setTextureCoordinate( 0 , coordinateIndex + 1 , textureCoord2 );
-							quadArray.setTextureCoordinate( 0 , coordinateIndex + 2 , textureCoord1 );
-							quadArray.setTextureCoordinate( 0 , coordinateIndex + 3 , textureCoord0 );
+							quadArray.setTextureCoordinate( 0, coordinateIndex    , textureCoord3 );
+							quadArray.setTextureCoordinate( 0, coordinateIndex + 1, textureCoord2 );
+							quadArray.setTextureCoordinate( 0, coordinateIndex + 2, textureCoord1 );
+							quadArray.setTextureCoordinate( 0, coordinateIndex + 3, textureCoord0 );
 
-							quadArray.setNormal( coordinateIndex     , vertexNormal3 );
-							quadArray.setNormal( coordinateIndex + 1 , vertexNormal2 );
-							quadArray.setNormal( coordinateIndex + 2 , vertexNormal1 );
-							quadArray.setNormal( coordinateIndex + 3 , vertexNormal0 );
+							quadArray.setNormal( coordinateIndex    , vertexNormal3 );
+							quadArray.setNormal( coordinateIndex + 1, vertexNormal2 );
+							quadArray.setNormal( coordinateIndex + 2, vertexNormal1 );
+							quadArray.setNormal( coordinateIndex + 3, vertexNormal0 );
 
 							vertexCoord1  = vertexCoord3;
 							vertexNormal1 = vertexNormal3;
@@ -352,28 +369,28 @@ public class Shape3DBuilder
 								throw new IllegalStateException( "should have called prepareFace()!" );
 							}
 
-							triangleArray = new TriangleArray( 3 * triangleCount , TriangleArray.COORDINATES | TriangleArray.NORMALS | TriangleArray.TEXTURE_COORDINATE_2 );
+							triangleArray = new TriangleArray( 3 * triangleCount, TriangleArray.COORDINATES | TriangleArray.NORMALS | TriangleArray.TEXTURE_COORDINATE_2 );
 							triangleCount = 0;
 						}
 
 						vertex = vertices.get( vertexCount - 1 );
-						final Point3d    vertexCoord2  = getVertexCoordinate( object2view , vertex );
-						final Vector3f   vertexNormal2 = getVertexNormal( object2view , face , vertexCount - 1 );
-						final TexCoord2f textureCoord2 = new TexCoord2f( vertex.colorMapU , vertex.colorMapV );
+						final Point3d    vertexCoord2  = getVertexCoordinate( object2view, vertex );
+						final Vector3f   vertexNormal2 = getVertexNormal( object2view, face, vertexCount - 1 );
+						final TexCoord2f textureCoord2 = new TexCoord2f( vertex.colorMapU, vertex.colorMapV );
 
 						final int coordinateIndex = triangleCount * 3;
 
-						triangleArray.setCoordinate( coordinateIndex     , vertexCoord2 );
-						triangleArray.setCoordinate( coordinateIndex + 1 , vertexCoord1 );
-						triangleArray.setCoordinate( coordinateIndex + 2 , vertexCoord0 );
+						triangleArray.setCoordinate( coordinateIndex    , vertexCoord2 );
+						triangleArray.setCoordinate( coordinateIndex + 1, vertexCoord1 );
+						triangleArray.setCoordinate( coordinateIndex + 2, vertexCoord0 );
 
-						triangleArray.setTextureCoordinate( 0 , coordinateIndex     , textureCoord2 );
-						triangleArray.setTextureCoordinate( 0 , coordinateIndex + 1 , textureCoord1 );
-						triangleArray.setTextureCoordinate( 0 , coordinateIndex + 2 , textureCoord0 );
+						triangleArray.setTextureCoordinate( 0, coordinateIndex    , textureCoord2 );
+						triangleArray.setTextureCoordinate( 0, coordinateIndex + 1, textureCoord1 );
+						triangleArray.setTextureCoordinate( 0, coordinateIndex + 2, textureCoord0 );
 
-						triangleArray.setNormal( coordinateIndex     , vertexNormal2 );
-						triangleArray.setNormal( coordinateIndex + 1 , vertexNormal1 );
-						triangleArray.setNormal( coordinateIndex + 2 , vertexNormal0 );
+						triangleArray.setNormal( coordinateIndex    , vertexNormal2 );
+						triangleArray.setNormal( coordinateIndex + 1, vertexNormal1 );
+						triangleArray.setNormal( coordinateIndex + 2, vertexNormal0 );
 
 						_triangleArray = triangleArray;
 						_triangleCount = triangleCount + 1;
@@ -412,17 +429,17 @@ public class Shape3DBuilder
 			_quadCount     = 0;
 		}
 
-		private static Point3d getVertexCoordinate( final Matrix3D xform , final Vertex vertex )
+		private static Point3d getVertexCoordinate( final Matrix3D xform, final Vertex vertex )
 		{
 			final Vector3D point = vertex.point;
-			return new Point3d( xform.transformX( point ) , xform.transformY( point ) , xform.transformZ( point ) );
+			return new Point3d( xform.transformX( point ), xform.transformY( point ), xform.transformZ( point ) );
 		}
 
-		private static Vector3f getVertexNormal( final Matrix3D object2view , final Face3D face , final int vertexIndex )
+		private static Vector3f getVertexNormal( final Matrix3D object2view, final Face3D face, final int vertexIndex )
 		{
-			final Vector3D normal = face.smooth ? face.getVertexNormal( vertexIndex ) : face.getNormal();
+			final Vector3D normal = face.getVertexNormal( vertexIndex );
 			final Vector3D rotatedNormal = object2view.rotate( normal );
-			return new Vector3f( (float)rotatedNormal.x , (float)rotatedNormal.y , (float)rotatedNormal.z );
+			return new Vector3f( (float)rotatedNormal.x, (float)rotatedNormal.y, (float)rotatedNormal.z );
 		}
 	}
 
@@ -433,125 +450,66 @@ public class Shape3DBuilder
 	 */
 	Shape3DBuilder()
 	{
-		_appearanceGroups     = null;
-		_appearanceGroupCount = 0;
-	}
-
-	/**
-	 * Prepare for building the specified face. This is used to determine the
-	 * correct storage requirements, so no collection classes are needed.
-	 *
-	 * @param   face    Face to prepare for.
-	 *
-	 * @see     #addFace
-	 */
-	public void prepareFace( final Face3D face )
-	{
-		final Material material = face.material;
-		if ( material != null )
-		{
-			final boolean hasBackface = face.isTwoSided();
-
-			final AppearanceGroup group = getGroup( material , hasBackface );
-			group.prepareFace( face.getVertexCount() );
-		}
-	}
-
-	/**
-	 * Add the specified face. This myst be called for every face that was
-	 * previously announced using {@link #prepareFace}. This will take
-	 * care of the the line/triangle/quad geometry conversions.
-	 *
-	 * @param   object2view     Transform to apply to vertex coordinates.
-	 * @param   face            Face to add.
-	 *
-	 * @see     #prepareFace
-	 * @see     #buildShapes
-	 */
-	public void addFace( final Matrix3D object2view , final Face3D face )
-	{
-		final Material material = face.material;
-		if ( material != null )
-		{
-			final boolean hasBackface = face.isTwoSided();
-
-			final AppearanceGroup group = getGroup( material , hasBackface );
-			group.addFace( object2view , face );
-		}
 	}
 
 	/**
 	 * Build shapes. This will build the {@link Shape3D} objects from the
-	 * geometry data collected by the {@link #addFace} method, and add
+	 * geometry data collected in the {@link AppearanceGroup}s, and add
 	 * them to a supplied {@link BranchGroup} node.
 	 *
 	 * @param   result  Branch group to add shapes to.
 	 *
-	 * @see     #prepareFace
-	 * @see     #addFace
+	 * @see     #getAppearanceGroup
+	 * @see     AppearanceGroup#prepareFace
+	 * @see     AppearanceGroup#addFace
 	 */
 	public void buildShapes( final BranchGroup result )
 	{
-		final int groupCount = _appearanceGroupCount;
-
-		for ( int i = 0 ; i < groupCount ; i++ )
+		for ( final AppearanceGroup appearanceGroup : _appearanceGroups )
 		{
-			_appearanceGroups[ i ].buildShapes( result );
+			appearanceGroup.buildShapes( result );
 		}
 	}
 
 	/**
 	 * Get {@link AppearanceGroup} for specified material and culling mode.
 	 *
-	 * @param   material        Material to get {@link AppearanceGroup} for.
-	 * @param   hasBackface     Culling mode to get {@link AppearanceGroup} for.
+	 * @param   faceGroup   {@link FaceGroup} to get {@link AppearanceGroup} for.
 	 *
 	 * @return  {@link AppearanceGroup}.
 	 */
-	private AppearanceGroup getGroup( final Material material , final boolean hasBackface )
+	@Nullable
+	private AppearanceGroup getAppearanceGroup( final FaceGroup faceGroup )
 	{
 		AppearanceGroup result = null;
 
-		final AppearanceGroup[] groups = _appearanceGroups;
-		final int count = _appearanceGroupCount;
-
-		for ( int i = 0 ; i < count ; i++ )
+		final ab.j3d.appearance.Appearance abAppearance = faceGroup.getAppearance();
+		if ( abAppearance != null )
 		{
-			final AppearanceGroup group = groups[ i ];
-			if ( ( group._material == material ) && ( group._hasBackface == hasBackface ) )
-			{
-				result = group;
-				break;
-			}
-		}
+			final boolean hasBackface = faceGroup.isTwoSided();
 
-		if ( result == null )
-		{
-			final AppearanceGroup[] newGroups;
-			if ( groups == null )
+			final List<AppearanceGroup> appearanceGroups = _appearanceGroups;
+
+			for ( final AppearanceGroup appearanceGroup : appearanceGroups )
 			{
-				newGroups = new AppearanceGroup[ 8 ];
-			}
-			else if ( count >= groups.length )
-			{
-				newGroups = new AppearanceGroup[ groups.length * 2 ];
-				System.arraycopy( groups , 0 , newGroups , 0 , count );
-			}
-			else
-			{
-				newGroups = groups;
+				if ( ( appearanceGroup._material == abAppearance ) && ( appearanceGroup._hasBackface == hasBackface ) )
+				{
+					result = appearanceGroup;
+					break;
+				}
 			}
 
-			final Java3dTools tools      = Java3dTools.getInstance();
-			final Appearance  appearance = tools.getAppearance( material , 1.0f , hasBackface );
+			if ( result == null )
+			{
+				final Java3dTools tools = Java3dTools.getInstance();
+				final Appearance appearance = tools.getAppearance( abAppearance, 1.0f, hasBackface );
 
-			result = new AppearanceGroup( material , hasBackface , appearance );
-			newGroups[ count ] = result;
-
-			_appearanceGroups     = newGroups;
-			_appearanceGroupCount = count + 1;
+				result = new AppearanceGroup( abAppearance, hasBackface, appearance );
+				appearanceGroups.add( result );
+			}
 		}
 
 		return result;
 	}
+
 }

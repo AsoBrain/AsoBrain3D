@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2006 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,56 +20,20 @@
  */
 package ab.j3d.view.java3d;
 
-import java.awt.Canvas;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-import java.awt.Transparency;
-import java.awt.color.ColorSpace;
-import java.awt.image.BufferedImage;
-import java.awt.image.ComponentColorModel;
-import java.awt.image.DataBuffer;
-import java.awt.image.ImageObserver;
+import java.awt.*;
+import java.awt.color.*;
+import java.awt.image.*;
 import java.awt.image.Raster;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import javax.media.j3d.Appearance;
-import javax.media.j3d.BranchGroup;
-import javax.media.j3d.Canvas3D;
-import javax.media.j3d.ColoringAttributes;
-import javax.media.j3d.GraphicsConfigTemplate3D;
-import javax.media.j3d.Group;
-import javax.media.j3d.ImageComponent;
-import javax.media.j3d.ImageComponent2D;
-import javax.media.j3d.LineAttributes;
-import javax.media.j3d.LineStripArray;
+import javax.media.j3d.*;
 import javax.media.j3d.Material;
-import javax.media.j3d.Node;
-import javax.media.j3d.PolygonAttributes;
-import javax.media.j3d.QuadArray;
-import javax.media.j3d.Shape3D;
-import javax.media.j3d.Texture;
-import javax.media.j3d.Texture2D;
-import javax.media.j3d.TextureAttributes;
-import javax.media.j3d.Transform3D;
-import javax.media.j3d.TransparencyAttributes;
-import javax.vecmath.Color3f;
-import javax.vecmath.Matrix4d;
-import javax.vecmath.Point3f;
-import javax.vecmath.Tuple3f;
-import javax.vecmath.Tuple3i;
+import javax.vecmath.*;
 import javax.vecmath.Vector3f;
 
-import ab.j3d.Matrix3D;
-
-import com.numdata.oss.TextTools;
+import ab.j3d.*;
+import ab.j3d.appearance.*;
 
 /**
  * Utility methods for Java 3D support.
@@ -89,12 +53,12 @@ public final class Java3dTools
 	/**
 	 * Color model for <code>loadTexture()</code>.
 	 */
-	private static final ComponentColorModel TEXTURE_CM = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ) , new int[] { 8 , 8 , 8 , 8 } , true , false , Transparency.TRANSLUCENT , 0 );
+	private static final ComponentColorModel TEXTURE_CM = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ), new int[] { 8, 8, 8, 8 }, true, false, Transparency.TRANSLUCENT, 0 );
 
 	/**
 	 * Texture map cache (maps map name to texture).
 	 */
-	private final Map<String,Texture> _textureCache = new HashMap<String,Texture>();
+	private final Map<TextureMap,Texture> _textureCache = new HashMap<TextureMap,Texture>();
 
 	/**
 	 * Singleton {@link Java3dTools} instance.
@@ -134,10 +98,10 @@ public final class Java3dTools
 	public static Transform3D convertMatrix3DToTransform3D( final Matrix3D matrix )
 	{
 		return new Transform3D( new Matrix4d(
-			matrix.xx , matrix.xy , matrix.xz , matrix.xo ,
-			matrix.yx , matrix.yy , matrix.yz , matrix.yo ,
-			matrix.zx , matrix.zy , matrix.zz , matrix.zo ,
-			0.0       , 0.0       , 0.0       , 1.0 ) );
+			matrix.xx, matrix.xy, matrix.xz, matrix.xo,
+			matrix.yx, matrix.yy, matrix.yz, matrix.yo,
+			matrix.zx, matrix.zy, matrix.zz, matrix.zo,
+			0.0      , 0.0      , 0.0      , 1.0 ) );
 	}
 
 	/**
@@ -151,11 +115,11 @@ public final class Java3dTools
 	 *
 	 * @return  Group containing unit shape.
 	 */
-	public static Group createGrid( final Tuple3f origin , final Tuple3i size , final float unit , final int interval , final Color3f color )
+	public static Group createGrid( final Tuple3f origin, final Tuple3i size, final float unit, final int interval, final Color3f color )
 	{
-		final Vector3f min     = new Vector3f( origin.x - (float)size.x * unit , origin.y - (float)size.y * unit , origin.z - (float)size.z * unit );
-		final Vector3f max     = new Vector3f( origin.x + (float)size.x * unit , origin.y + (float)size.y * unit , origin.z + (float)size.z * unit );
-		final int      maxSize = Math.max( Math.max( size.x , size.y ) , size.z );
+		final Vector3f min     = new Vector3f( origin.x - (float)size.x * unit, origin.y - (float)size.y * unit, origin.z - (float)size.z * unit );
+		final Vector3f max     = new Vector3f( origin.x + (float)size.x * unit, origin.y + (float)size.y * unit, origin.z + (float)size.z * unit );
+		final int      maxSize = Math.max( Math.max( size.x, size.y ), size.z );
 
 		final PolygonAttributes polygonAttributes = new PolygonAttributes();
 		polygonAttributes.setPolygonMode( PolygonAttributes.POLYGON_LINE );
@@ -177,28 +141,28 @@ public final class Java3dTools
 				if ( gridIndex <= size.x )
 				{
 					final float x = origin.x + (float)( mult * gridIndex ) * unit;
-					coords.add( new Point3f( x , min.y , min.z ) );
-					coords.add( new Point3f( x , max.y , min.z ) );
-					coords.add( new Point3f( x , max.y , max.z ) );
-					coords.add( new Point3f( x , min.y , max.z ) );
+					coords.add( new Point3f( x, min.y, min.z ) );
+					coords.add( new Point3f( x, max.y, min.z ) );
+					coords.add( new Point3f( x, max.y, max.z ) );
+					coords.add( new Point3f( x, min.y, max.z ) );
 				}
 
 				if ( gridIndex <= size.y )
 				{
 					final float y = origin.y + (float)( mult * gridIndex ) * unit;
-					coords.add( new Point3f( min.x , y , min.z ) );
-					coords.add( new Point3f( max.x , y , min.z ) );
-					coords.add( new Point3f( max.x , y , max.z ) );
-					coords.add( new Point3f( min.x , y , max.z ) );
+					coords.add( new Point3f( min.x, y, min.z ) );
+					coords.add( new Point3f( max.x, y, min.z ) );
+					coords.add( new Point3f( max.x, y, max.z ) );
+					coords.add( new Point3f( min.x, y, max.z ) );
 				}
 
 				if ( gridIndex <= size.z )
 				{
 					final float z = origin.z + (float)( mult * gridIndex ) * unit;
-					coords.add( new Point3f( min.x , min.y , z ) );
-					coords.add( new Point3f( max.x , min.y , z ) );
-					coords.add( new Point3f( max.x , max.y , z ) );
-					coords.add( new Point3f( min.x , max.y , z ) );
+					coords.add( new Point3f( min.x, min.y, z ) );
+					coords.add( new Point3f( max.x, min.y, z ) );
+					coords.add( new Point3f( max.x, max.y, z ) );
+					coords.add( new Point3f( min.x, max.y, z ) );
 				}
 			}
 		}
@@ -218,11 +182,11 @@ public final class Java3dTools
 			appearance.setPolygonAttributes( polygonAttributes );
 			appearance.setColoringAttributes( coloringAttributes );
 
-			final QuadArray quadArray = new QuadArray( vCoords.size() , LineStripArray.COORDINATES );
+			final QuadArray quadArray = new QuadArray( vCoords.size(), LineStripArray.COORDINATES );
 			final Point3f[] pCoords = (Point3f[])vCoords.toArray( new Point3f[ vCoords.size() ] );
-			quadArray.setCoordinates( 0 , pCoords );
+			quadArray.setCoordinates( 0, pCoords );
 
-			final Shape3D child = new Shape3D( quadArray , appearance );
+			final Shape3D child = new Shape3D( quadArray, appearance );
 
 			/*@FIXME dirty hack to prevent "Intesection not allowed" exceptions when checking for mouseclicks */
 			child.setPickable( false );
@@ -264,7 +228,7 @@ public final class Java3dTools
 				 */
 				public Dimension getMinimumSize()
 				{
-					return new Dimension( 10 , 10 );
+					return new Dimension( 10, 10 );
 				}
 			};
 	}
@@ -302,7 +266,7 @@ public final class Java3dTools
 	 * @see     #createDynamicScene
 	 * @see     #clearDynamicContent
 	 */
-	public static void addDynamicContent( final Group dynamicScene , final BranchGroup content )
+	public static void addDynamicContent( final Group dynamicScene, final BranchGroup content )
 	{
 		content.setCapability( BranchGroup.ALLOW_DETACH );
 		content.compile();
@@ -331,15 +295,15 @@ public final class Java3dTools
 	 *
 	 * @return  Appearance for the specified texture spec.
 	 */
-	public Appearance getAppearance( final ab.j3d.Material abMaterial , final float opacity , final boolean hasBackface )
+	public Appearance getAppearance( final ab.j3d.appearance.Appearance abMaterial, final float opacity, final boolean hasBackface )
 	{
 		final Material j3dMaterial = new Material();
 		j3dMaterial.setLightingEnable( true );
-		j3dMaterial.setAmbientColor  ( abMaterial.ambientColorRed  , abMaterial.ambientColorGreen  , abMaterial.ambientColorBlue  );
-		j3dMaterial.setEmissiveColor ( abMaterial.emissiveColorRed , abMaterial.emissiveColorGreen , abMaterial.emissiveColorBlue );
-		j3dMaterial.setDiffuseColor  ( abMaterial.diffuseColorRed  , abMaterial.diffuseColorGreen  , abMaterial.diffuseColorBlue  );
-		j3dMaterial.setSpecularColor ( abMaterial.specularColorRed , abMaterial.specularColorGreen , abMaterial.specularColorBlue );
-		j3dMaterial.setShininess     ( (float)abMaterial.shininess );
+		j3dMaterial.setAmbientColor  ( abMaterial.getAmbientColorRed() , abMaterial.getAmbientColorGreen() , abMaterial.getAmbientColorBlue()  );
+		j3dMaterial.setEmissiveColor ( abMaterial.getEmissiveColorRed(), abMaterial.getEmissiveColorGreen(), abMaterial.getEmissiveColorBlue() );
+		j3dMaterial.setDiffuseColor  ( abMaterial.getDiffuseColorRed() , abMaterial.getDiffuseColorGreen() , abMaterial.getDiffuseColorBlue()  );
+		j3dMaterial.setSpecularColor ( abMaterial.getSpecularColorRed(), abMaterial.getSpecularColorGreen(), abMaterial.getSpecularColorBlue() );
+		j3dMaterial.setShininess     ( (float)abMaterial.getShininess() );
 
 		final Appearance appearance = new Appearance();
 		appearance.setCapability( Appearance.ALLOW_TEXTURE_READ );
@@ -358,10 +322,10 @@ public final class Java3dTools
 		// Setup Transparency
 		boolean noCulling = hasBackface;
 
-		final float combinedOpacity = opacity * abMaterial.diffuseColorAlpha;
+		final float combinedOpacity = opacity * abMaterial.getDiffuseColorAlpha();
 		if ( combinedOpacity >= 0.0f && combinedOpacity < 0.999f )
 		{
-			final TransparencyAttributes transparency = new TransparencyAttributes( TransparencyAttributes.NICEST , 1.0f - combinedOpacity );
+			final TransparencyAttributes transparency = new TransparencyAttributes( TransparencyAttributes.NICEST, 1.0f - combinedOpacity );
 			appearance.setTransparencyAttributes( transparency );
 			noCulling = true;
 		}
@@ -374,7 +338,7 @@ public final class Java3dTools
 			appearance.setPolygonAttributes( polygonAttributes );
 		}
 
-		appearance.setColoringAttributes( new ColoringAttributes( abMaterial.diffuseColorRed , abMaterial.diffuseColorGreen , abMaterial.diffuseColorBlue , ColoringAttributes.FASTEST ) );
+		appearance.setColoringAttributes( new ColoringAttributes( abMaterial.getDiffuseColorRed(), abMaterial.getDiffuseColorGreen(), abMaterial.getDiffuseColorBlue(), ColoringAttributes.FASTEST ) );
 
 		return appearance;
 	}
@@ -388,27 +352,31 @@ public final class Java3dTools
 	 *          <code>null</code> if the name was empty or no map by the
 	 *          given name was found.
 	 */
-	public Texture getColorMapTexture( final ab.j3d.Material material )
+	public Texture getColorMapTexture( final ab.j3d.appearance.Appearance material )
 	{
 		Texture result = null;
 
-		if ( ( material != null ) && TextTools.isNonEmpty( material.colorMap ) )
+		if ( material != null )
 		{
-			final Map<String,Texture> cache = _textureCache;
-			if ( cache.containsKey( material.colorMap ) )
+			final TextureMap colorMap = material.getColorMap();
+			if ( colorMap != null )
 			{
-				result = cache.get( material.colorMap );
-			}
-			else
-			{
-				final Image image = material.getColorMapImage( false );
-				if ( image != null )
+				final Map<TextureMap,Texture> cache = _textureCache;
+				if ( cache.containsKey( colorMap ) )
 				{
-					result = loadTexture( image );
-					result.setCapability( Texture.ALLOW_SIZE_READ );
+					result = cache.get( colorMap );
 				}
+				else
+				{
+					final Image image = colorMap.getImage( false );
+					if ( image != null )
+					{
+						result = loadTexture( image );
+						result.setCapability( Texture.ALLOW_SIZE_READ );
+					}
 
-				cache.put( material.colorMap , result );
+					cache.put( colorMap, result );
+				}
 			}
 		}
 
@@ -432,11 +400,11 @@ public final class Java3dTools
 		if ( image != null )
 		{
 			final Component observer = TEXTURE_OBSERVER;
-			observer.prepareImage( image , null );
+			observer.prepareImage( image, null );
 
 			while ( true )
 			{
-				final int status = observer.checkImage( image , null );
+				final int status = observer.checkImage( image, null );
 				if ( ( status & ImageObserver.ERROR ) != 0 )
 				{
 					break;
@@ -446,14 +414,14 @@ public final class Java3dTools
 					final int width  = getAdjustedTextureSize( image.getWidth( observer ) );
 					final int height = getAdjustedTextureSize( image.getHeight( observer ) );
 
-					final BufferedImage bufferedImage = new BufferedImage( TEXTURE_CM , Raster.createInterleavedRaster( DataBuffer.TYPE_BYTE , width , height , width * 4 , 4 , new int[] { 0 , 1 , 2 , 3 } , null ) , false , null );
+					final BufferedImage bufferedImage = new BufferedImage( TEXTURE_CM, Raster.createInterleavedRaster( DataBuffer.TYPE_BYTE, width, height, width * 4, 4, new int[] { 0, 1, 2, 3 }, null ), false, null );
 
 					final Graphics g = bufferedImage.getGraphics();
-					g.drawImage( image , 0 , 0 , width , height , observer );
+					g.drawImage( image, 0, 0, width, height, observer );
 					g.dispose();
 
-					result = new Texture2D( Texture2D.BASE_LEVEL , Texture.RGBA , width , height );
-					result.setImage( 0 , new ImageComponent2D( ImageComponent.FORMAT_RGBA , bufferedImage , false , false ) );
+					result = new Texture2D( Texture2D.BASE_LEVEL, Texture.RGBA, width, height );
+					result.setImage( 0, new ImageComponent2D( ImageComponent.FORMAT_RGBA, bufferedImage, false, false ) );
 					result.setMinFilter( Texture.BASE_LEVEL_LINEAR );
 					result.setMagFilter( Texture.BASE_LEVEL_LINEAR );
 					break;
@@ -514,7 +482,7 @@ public final class Java3dTools
 	 */
 	public static void showTree( final Node node )
 	{
-		showTreeNode( "" , null , node );
+		showTreeNode( "", null, node );
 	}
 
 	/**
@@ -526,7 +494,7 @@ public final class Java3dTools
 	 * @param   parentChildren  Child nodes of parent node (needed for layout).
 	 * @param   node            Tree node to display.
 	 */
-	private static void showTreeNode( final String prefix , final List parentChildren , final Node node )
+	private static void showTreeNode( final String prefix, final List parentChildren, final Node node )
 	{
 		final List children = new ArrayList();
 		if ( node instanceof Group )
@@ -560,7 +528,7 @@ public final class Java3dTools
 		System.out.println( subPrefix );
 
 		for ( int i = 0 ; i < children.size() ; i++ )
-			showTreeNode( nextPrefix , children , (Node)children.get( i ) );
+			showTreeNode( nextPrefix, children, (Node)children.get( i ) );
 
 	}
 
