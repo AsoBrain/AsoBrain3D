@@ -1348,10 +1348,7 @@ public class JOGLRenderer
 					{
 						shaderManager.setLightingEnabled( true );
 						shaderManager.setTextureEnabled( colorMap != null );
-						if ( reflectionMap != null )
-						{
-							shaderManager.setReflectivity( reflectionMap );
-						}
+						shaderManager.setReflectivity( reflectionMap );
 					}
 
 					/*
@@ -1472,8 +1469,10 @@ public class JOGLRenderer
 			state.setEnabled( GL.GL_LIGHTING, hasLighting );
 
 			state.setColor( color );
-			_shaderManager.setLightingEnabled( hasLighting );
-			_shaderManager.setTextureEnabled( false );
+			final ShaderManager shaderManager = _shaderManager;
+			shaderManager.setLightingEnabled( hasLighting );
+			shaderManager.setTextureEnabled( false );
+			shaderManager.setReflectivity( null );
 
 			/*
 			 * Render faces.
@@ -1536,8 +1535,10 @@ public class JOGLRenderer
 
 		gl.glLineWidth( width );
 
-		_shaderManager.setLightingEnabled( hasLighting );
-		_shaderManager.setTextureEnabled( false );
+		final ShaderManager shaderManager = _shaderManager;
+		shaderManager.setLightingEnabled( hasLighting );
+		shaderManager.setTextureEnabled( false );
+		shaderManager.setReflectivity( null );
 
 		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
@@ -1585,8 +1586,10 @@ public class JOGLRenderer
 		state.setEnabled( GL.GL_LIGHTING, hasLighting );
 		state.setColor( objectStyle.getVertexColor() );
 
-		_shaderManager.setLightingEnabled( hasLighting );
-		_shaderManager.setTextureEnabled( false );
+		final ShaderManager shaderManager = _shaderManager;
+		shaderManager.setLightingEnabled( hasLighting );
+		shaderManager.setTextureEnabled( false );
+		shaderManager.setReflectivity( null );
 
 		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{

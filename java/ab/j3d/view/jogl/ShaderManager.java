@@ -259,11 +259,19 @@ public class ShaderManager
 	/**
 	 * Sets the reflectivity properties of the currently active shader.
 	 *
-	 * @param   reflectionMap       Specifies reflection properties.
+	 * @param   reflectionMap       Specifies reflection properties;
+	 *                              <code>null</code> to disable reflections.
 	 */
-	public void setReflectivity( @NotNull final ReflectionMap reflectionMap )
+	public void setReflectivity( @Nullable final ReflectionMap reflectionMap )
 	{
-		setReflectivity( reflectionMap.getReflectivityMin(), reflectionMap.getReflectivityMax(), reflectionMap.getIntensityRed(), reflectionMap.getIntensityGreen(), reflectionMap.getIntensityBlue() );
+		if ( reflectionMap == null )
+		{
+			setReflectivity( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f );
+		}
+		else
+		{
+			setReflectivity( reflectionMap.getReflectivityMin(), reflectionMap.getReflectivityMax(), reflectionMap.getIntensityRed(), reflectionMap.getIntensityGreen(), reflectionMap.getIntensityBlue() );
+		}
 	}
 
 	/**
