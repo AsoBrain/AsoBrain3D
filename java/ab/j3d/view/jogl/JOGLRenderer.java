@@ -283,12 +283,6 @@ public class JOGLRenderer
 			try
 			{
 				shaderManager.init();
-
-				shaderManager.register( "blur-horizontal", shaderManager.loadShader( Shader.Type.FRAGMENT, "blur-horizontal.glsl" ) );
-				shaderManager.createShaderProgram( "blur-horizontal", "blur-horizontal" );
-
-				shaderManager.register( "blur-vertical", shaderManager.loadShader( Shader.Type.FRAGMENT, "blur-vertical.glsl" ) );
-				shaderManager.createShaderProgram( "blur-vertical", "blur-vertical" );
 			}
 			catch ( IOException e )
 			{
