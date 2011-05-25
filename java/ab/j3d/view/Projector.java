@@ -19,13 +19,12 @@
  */
 package ab.j3d.view;
 
-import java.awt.Point;
+import java.awt.*;
+import java.awt.geom.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.geom.BasicRay3D;
-import ab.j3d.geom.Ray3D;
-import ab.j3d.model.Face3D;
+import ab.j3d.*;
+import ab.j3d.geom.*;
+import ab.j3d.model.*;
 
 /**
  * A projector defines abstract methods to project 3D points on to a 2D
@@ -218,8 +217,8 @@ public abstract class Projector
 	 * projector. The view coordinates of the face vertices are specified as a
 	 * <code>double</code>-array argument.
 	 *
-	 * @param   face            Face to test against view volume.
-	 * @param   vertexCoordinates     View coordinates of object's vertices.
+	 * @param   face                Face to test against view volume.
+	 * @param   vertexCoordinates   View coordinates of object's vertices.
 	 *
 	 * @return  <code>true</code> if the face lies completely within the view volume;
 	 *          <code>false</code> if the face has no vertices, or lies (partly)
@@ -296,6 +295,20 @@ public abstract class Projector
 	public abstract boolean inViewVolume( double x , double y , double z );
 
 	/**
+	 * This function tests if a point defined in view coordinates lies within
+	 * the view volume of this projector.
+	 *
+	 * @param   point       Point in view coordinates.
+	 *
+	 * @return  <code>true</code> if the point lies within the view volume;
+	 *          <code>false</code> if the point lies outside the view volume.
+	 */
+	public boolean inViewVolume( final Vector3D point )
+	{
+		return inViewVolume( point.x, point.y, point.z );
+	}
+
+	/**
 	 * This function projects a set of 3D points on a 2D surface
 	 * (image plate, view plane, screen). Point coordinates are supplied using
 	 * double arrays containing a triplets/duos for each point.
@@ -342,7 +355,7 @@ public abstract class Projector
 	 * @param   viewY   Y coordinate of point in view coordinate system.
 	 * @param   viewZ   Z coordinate of point in view coordinate system.
 	 */
-	public abstract void project( final Point result , final double viewX , final double viewY , final double viewZ );
+	public abstract void project( final Point2D result , final double viewX , final double viewY , final double viewZ );
 
 	/**
 	 * Get image width in pixels.
@@ -546,11 +559,12 @@ public abstract class Projector
 			return result;
 		}
 
-		public void project( final Point result , final double viewX , final double viewY , final double viewZ )
+		public void project( final Point2D result , final double viewX , final double viewY , final double viewZ )
 		{
 			final double f = _view2pixels / ( 1.0 - ( viewZ + _eyeDistance ) / _eyeDistance );
-			result.x = _imageCenterX + (int)( f * viewX + 0.5 );
-			result.y = _imageCenterY - (int)( f * viewY + 0.5 );
+			final double x = _imageCenterX + f * viewX;
+			final double y = _imageCenterY - f * viewY;
+			result.setLocation( x, y );
 		}
 
 		public Vector3D imageToView( final double imageX , final double imageY , final double viewZ )
@@ -572,7 +586,8 @@ public abstract class Projector
 		{
 			final boolean result;
 
-			if ( ( z >= _frontClipDistance ) && ( z <= _backClipDistance ) )
+			final double depth = -z;
+			if ( ( depth >= _frontClipDistance ) && ( depth <= _backClipDistance ) )
 			{
 				result = true;
 //				final double f      = 1.0 - z / _eyeDistance;
@@ -640,10 +655,11 @@ public abstract class Projector
 			return new BasicRay3D( transform , origin , direction , false );
 		}
 
-		public void project( final Point result , final double viewX , final double viewY , final double viewZ )
+		public void project( final Point2D result , final double viewX , final double viewY , final double viewZ )
 		{
-			result.x = _imageCenterX + (int)( _view2pixels * viewX + 0.5 );
-			result.y = _imageCenterY - (int)( _view2pixels * viewY + 0.5 );
+			final double x = _imageCenterX + _view2pixels * viewX;
+			final double y = _imageCenterY - _view2pixels * viewY;
+			result.setLocation( x, y );
 		}
 
 		public Vector3D imageToView( final double imageX , final double imageY , final double viewZ )
@@ -660,9 +676,10 @@ public abstract class Projector
 
 		public boolean inViewVolume( final double x , final double y , final double z )
 		{
+			final double depth = -z;
 			return ( x >= -_limitX ) && ( x <= _limitX )
 			    && ( y >= -_limitY ) && ( y <= _limitY )
-			    && ( z >= _frontClipDistance ) && ( z <= _backClipDistance );
+			    && ( depth >= _frontClipDistance ) && ( depth <= _backClipDistance );
 		}
 
 	}
@@ -735,10 +752,11 @@ public abstract class Projector
 			return new BasicRay3D( transform , origin , direction , false );
 		}
 
-		public void project( final Point result , final double viewX , final double viewY , final double viewZ )
+		public void project( final Point2D result , final double viewX , final double viewY , final double viewZ )
 		{
-			result.x = _imageCenterX + (int)( _view2pixels * ( viewX - viewZ * _xComponentOfZ ) + 0.5 );
-			result.y = _imageCenterY - (int)( _view2pixels * ( viewY - viewZ * _yComponentOfZ ) + 0.5 );
+			final double x = _imageCenterX + _view2pixels * ( viewX - viewZ * _xComponentOfZ );
+			final double y = _imageCenterY - _view2pixels * ( viewY - viewZ * _yComponentOfZ );
+			result.setLocation( x, y );
 		}
 
 		public Vector3D imageToView( final double imageX , final double imageY , final double viewZ )
@@ -759,10 +777,10 @@ public abstract class Projector
 		{
 			double tmp;
 
-			return ( z >= _frontClipDistance ) && ( z <= _backClipDistance )
+			final double depth = -z;
+			return ( depth >= _frontClipDistance ) && ( depth <= _backClipDistance )
 			    && ( ( tmp = ( x - z * _xComponentOfZ     ) ) >= -_limitX ) && ( tmp <= _limitX )
 			    && ( ( tmp = (     z * _yComponentOfZ - y ) ) >= -_limitY ) && ( tmp <= _limitY );
 		}
-
 	}
 }
