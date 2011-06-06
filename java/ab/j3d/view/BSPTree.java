@@ -275,7 +275,7 @@ public class BSPTree
 		}
 		projector.project( viewCoordinates, projectedCoordinates, vertexCount );
 
-//		if ( !projector.outsideViewVolume( viewCoordinates ) ) // FIXME: When enabled, no polygons are visible at all.
+		if ( !projector.outsideViewVolume( viewCoordinates ) )
 		{
 			result = new RenderedPolygon( vertexCount );
 			final int[] projectedX = result._projectedX;
