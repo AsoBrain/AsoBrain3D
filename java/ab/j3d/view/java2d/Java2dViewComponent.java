@@ -125,7 +125,10 @@ final class Java2dViewComponent
 		for ( final RenderedPolygon polygon : renderQueue )
 		{
 			final RenderStyle renderStyle = nodeStyles.get( polygon._object );
-			paintPolygon( g2d, polygon, renderStyle );
+			if ( renderStyle != null )
+			{
+				paintPolygon( g2d, polygon, renderStyle );
+			}
 		}
 
 		view.paintOverlay( g2d );
@@ -147,7 +150,7 @@ final class Java2dViewComponent
 		final boolean fill = renderStyle.isMaterialEnabled() || renderStyle.isFillEnabled();
 
 		Color fillPaint;
-		if ( fill || ( polygon._vertexCount < 3 ) )
+		if ( fill )
 		{
 			final Appearance appearance = polygon._appearance;
 
@@ -160,22 +163,22 @@ final class Java2dViewComponent
 				fillPaint = renderStyle.getFillColor();
 			}
 
-			if ( fill && ( renderStyle.isMaterialEnabled() ? renderStyle.isMaterialLightingEnabled(): renderStyle.isFillLightingEnabled() ) )
-			{
-				final float shadeFactor = 0.5f;
-
-				final float factor = Math.min( 1.0f, ( 1.0f - shadeFactor ) + shadeFactor * Math.abs( (float)polygon._planeNormalZ ) );
-				if ( factor < 1.0f )
-				{
-					final Color color = fillPaint;
-					final float[] rgb = color.getRGBComponents( null );
-
-					fillPaint = new Color( factor * rgb[ 0 ], factor * rgb[ 1 ], factor * rgb[ 2 ], rgb[ 3 ] );
-				}
-			}
-
 			if ( fillPaint != null )
 			{
+				if ( ( renderStyle.isMaterialEnabled() ? renderStyle.isMaterialLightingEnabled() : renderStyle.isFillLightingEnabled() ) )
+				{
+					final float shadeFactor = 0.5f;
+
+					final float factor = Math.min( 1.0f, ( 1.0f - shadeFactor ) + shadeFactor * Math.abs( (float)polygon._planeNormalZ ) );
+					if ( factor < 1.0f )
+					{
+						final Color color = fillPaint;
+						final float[] rgb = color.getRGBComponents( null );
+
+						fillPaint = new Color( factor * rgb[ 0 ], factor * rgb[ 1 ], factor * rgb[ 2 ], rgb[ 3 ] );
+					}
+				}
+
 				g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF );
 				g.setPaint( fillPaint );
 				g.fill( polygon );
