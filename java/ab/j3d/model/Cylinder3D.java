@@ -25,6 +25,7 @@ import java.util.*;
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
+import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -287,14 +288,12 @@ public class Cylinder3D
 	@Override
 	public int hashCode()
 	{
-		final long height = Double.doubleToLongBits( this.height );
-		final long radius = Double.doubleToLongBits( this.radius );
-		return (int)height ^ (int)( height >>> 32 ) ^
-		       (int)radius ^ (int)( radius >>> 32 ) ^
+		return MathTools.hashCode( height ) ^
+		       MathTools.hashCode( radius ) ^
 		       _numEdges ^
-		       _sideAppearance.hashCode() ^
-		       _topAppearance.hashCode() ^
-		       _bottomAppearance.hashCode();
+		       ( ( _sideAppearance != null ) ? _sideAppearance.hashCode() : 0 ) ^
+		       ( ( _topAppearance != null ) ? _topAppearance.hashCode() : 0 ) ^
+		       ( ( _bottomAppearance != null ) ? _bottomAppearance.hashCode() : 0 );
 	}
 
 	@Override
