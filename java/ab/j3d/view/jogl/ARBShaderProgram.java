@@ -163,7 +163,6 @@ public class ARBShaderProgram
 	{
 		final GL gl = GLU.getCurrentGL();
 		link();
-		gl.glEnable( GL.GL_VERTEX_PROGRAM_TWO_SIDE_ARB );
 		gl.glUseProgramObjectARB( _program );
 	}
 
@@ -172,7 +171,6 @@ public class ARBShaderProgram
 	{
 		final GL gl = GLU.getCurrentGL();
 		gl.glUseProgramObjectARB( 0 );
-		gl.glDisable( GL.GL_VERTEX_PROGRAM_TWO_SIDE_ARB );
 	}
 
 	@Override
@@ -225,5 +223,11 @@ public class ARBShaderProgram
 		{
 			gl.glUniform3fARB( variable, x, y, z );
 		}
+	}
+
+	@Override
+	public String toString()
+	{
+		return super.toString() + "[" + _name + "]";
 	}
 }

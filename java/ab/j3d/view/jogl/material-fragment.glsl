@@ -1,16 +1,18 @@
 /*
  * Material color.
  */
+varying vec4 diffuseColor;
 vec4 color()
 {
-	return gl_Color;
+	return diffuseColor;
 }
 
 /*
  * Color mapping.
  */
 uniform sampler2D colorMap;
+varying vec2 colorMapCoord;
 vec4 texture()
 {
-	return gl_Color * texture2D( colorMap , gl_TexCoord[ 0 ].st );
+	return diffuseColor * texture2D( colorMap, colorMapCoord.st );
 }

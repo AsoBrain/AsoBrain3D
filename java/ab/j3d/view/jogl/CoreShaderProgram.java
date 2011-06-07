@@ -162,7 +162,6 @@ public class CoreShaderProgram
 	{
 		final GL gl = GLU.getCurrentGL();
 		link();
-		gl.glEnable( GL.GL_VERTEX_PROGRAM_TWO_SIDE );
 		gl.glUseProgram( _program );
 	}
 
@@ -171,7 +170,6 @@ public class CoreShaderProgram
 	{
 		final GL gl = GLU.getCurrentGL();
 		gl.glUseProgram( 0 );
-		gl.glDisable( GL.GL_VERTEX_PROGRAM_TWO_SIDE );
 	}
 
 	@Override
