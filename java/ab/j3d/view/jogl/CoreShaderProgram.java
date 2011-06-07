@@ -225,4 +225,10 @@ public class CoreShaderProgram
 			gl.glUniform3f( variable, x, y, z );
 		}
 	}
+
+	@Override
+	public String toString()
+	{
+		return super.toString() + "[" + _name + "]";
+	}
 }
