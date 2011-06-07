@@ -95,7 +95,7 @@ public class ImmediateModeGeometryObject
 			final boolean setVertexNormals = faceGroup.isSmooth();
 
 			final Appearance appearance = faceGroup.getAppearance();
-			final TextureMap colorMap = appearance.getColorMap();
+			final TextureMap colorMap = ( appearance == null ) ? null : appearance.getColorMap();
 
 			for ( final Face3D face : faceGroup.getFaces() )
 			{
