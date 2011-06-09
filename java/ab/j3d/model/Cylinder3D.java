@@ -144,14 +144,19 @@ public class Cylinder3D
 		 */
 		final int topCoordinatesOffset = numEdges;
 
+		final Vector3D[] vertexNormals = new Vector3D[ numEdges ];
+
 		for ( int i = 0 ; i < numEdges ; i++ )
 		{
-			final double rad = (double)i * radStep;
-			final double x   =  radius * Math.sin( rad );
-			final double y   = -radius * Math.cos( rad );
+			final double angle = (double)i * radStep;
+			final double normalX = Math.sin( angle );
+			final double normalY = -Math.cos( angle );
+			final double x = radius * normalX;
+			final double y = radius * normalY;
 
 			vertexCoordinatesArray[ i ] = new Vector3D( x, y, 0.0 );
 			vertexCoordinatesArray[ topCoordinatesOffset + i ] = new Vector3D( x, y, height );
+			vertexNormals[ i ] = flipNormals ? new Vector3D( -normalX, -normalY, 0.0 ) : new Vector3D( normalX, normalY, 0.0 );
 		}
 
 		setVertexCoordinates( vertexCoordinates );
@@ -181,10 +186,11 @@ public class Cylinder3D
 			final int   i2 = ( i1 + 1 ) % numEdges;
 
 			final int[] vertexIndices = flipNormals ? new int[] { numEdges + i2, numEdges + i1, i1, i2 } : new int[] { i2, i1, numEdges + i1, numEdges + i2 };
+			final Vector3D[] faceVertexNormals = new Vector3D[] { vertexNormals[ i2 ], vertexNormals[ i1 ], vertexNormals[ i1 ], vertexNormals[ i2 ] };
 
 			final TextureMap colorMap = ( sideAppearance == null ) ? null : sideAppearance.getColorMap();
 			final float[] texturePoints = ( sideMap != null ) ? sideMap.generate( colorMap, vertexCoordinates, vertexIndices, false ) : null;
-			sideFaceGroup.addFace( new Face3D( this, vertexIndices, texturePoints, null ) );
+			sideFaceGroup.addFace( new Face3D( this, vertexIndices, texturePoints, faceVertexNormals ) );
 		}
 
 		/*
