@@ -1890,4 +1890,21 @@ public final class Matrix3D
 		// z-axis and derived (righthanded) z-axis should have same direction
 		return ( Vector3D.dot( crossX, crossY, crossZ, xz, yz, zz ) > 0.0 );
 	}
+
+	/**
+	 * Returns the determinant of the matrix.
+	 *
+	 * @return  Determinant of the matrix.
+	 *
+	 * @see     <a href="http://en.wikipedia.org/wiki/Determinant">Determinant (Wikipedia)</a>
+	 */
+	public double determinant()
+	{
+		return xx * yy * zz -
+		       xx * yz * zy -
+		       xy * yx * zz +
+		       xy * yz * zx +
+		       xz * yx * zy -
+		       xz * yy * zx;
+	}
 }
