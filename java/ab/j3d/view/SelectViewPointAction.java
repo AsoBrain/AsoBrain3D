@@ -92,12 +92,12 @@ public class SelectViewPointAction
 	/**
 	 * Locale to use.
 	 */
-	private final Locale _locale;
+	protected final Locale _locale;
 
 	/**
 	 * The {@link View3D} this action belongs to.
 	 */
-	private final View3D _view;
+	protected final View3D _view;
 
 	/**
 	 * Avaiable view points to choose from.
@@ -254,7 +254,8 @@ public class SelectViewPointAction
 		@NotNull
 		public String getDescription( final Locale locale )
 		{
-			return _description.get( locale );
+			final String result = _description.get( locale );
+			return ( result == null ) ? getName() : result;
 		}
 
 		/**
