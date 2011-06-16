@@ -19,8 +19,7 @@
  */
 package ab.j3d.geom;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
+import ab.j3d.*;
 
 /**
  * Basic implementation of {@link Ray3D}. This implementation has several
@@ -183,16 +182,19 @@ public class BasicRay3D
 		_halfRay   = halfRay;
 	}
 
+	@Override
 	public Vector3D getDirection()
 	{
 		return _direction;
 	}
 
+	@Override
 	public Vector3D getOrigin()
 	{
 		return _origin;
 	}
 
+	@Override
 	public boolean isHalfRay()
 	{
 		return _halfRay;
@@ -241,26 +243,34 @@ public class BasicRay3D
 		_origin = origin;
 	}
 
-	/**
-	 * Returns a string representation of the object. In general, the
-	 * <code>toString</code> method returns a string that "textually represents"
-	 * this object. The result should be a concise but informative representation
-	 * that is easy for a person to read. It is recommended that all subclasses
-	 * override this method.
-	 * <p/>
-	 * The <code>toString</code> method for class <code>Object</code> returns a
-	 * string consisting of the name of the class of which the object is an
-	 * instance, the at-sign character `<code>@</code>', and the unsigned
-	 * hexadecimal representation of the hash code of the object. In other words,
-	 * this method returns a string equal to the value of: <blockquote>
-	 * <pre>
-	 * getClass().getName() + '@' + Integer.toHexString(hashCode())
-	 * </pre></blockquote>
-	 *
-	 * @return a string representation of the object.
-	 */
 	public String toString()
 	{
 		return BasicRay3D.class.getName() + "=[origin=" + _origin.toFriendlyString() + ",direction=" + _direction.toFriendlyString() + ']';
+	}
+
+	public boolean equals( final Object other )
+	{
+		final boolean result;
+		if ( other == this )
+		{
+			result = true;
+		}
+		else if ( other instanceof Ray3D )
+		{
+			final Ray3D ray = (Ray3D)other;
+			result = ( isHalfRay() == ray.isHalfRay() ) &&
+		             _origin.equals( ray.getOrigin() ) &&
+		             _direction.equals( ray.getDirection() );
+		}
+		else
+		{
+			result = false;
+		}
+		return result;
+	}
+
+	public int hashCode()
+	{
+		return _origin.hashCode() ^ _direction.hashCode();
 	}
 }
