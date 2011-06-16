@@ -899,25 +899,27 @@ public class JOGLRenderer
 	{
 		final GL gl = _gl;
 
-		/* Set backface culling. */
 		_state.setEnabled( GL.GL_CULL_FACE, true );
 
-		final boolean shadowPass = _shadowPass;
-		gl.glCullFace( shadowPass ? GL.GL_FRONT : GL.GL_BACK );
-
-		if ( !shadowPass )
+		if ( _shadowPass )
 		{
-			_shaderManager.enable();
+			gl.glCullFace( GL.GL_FRONT );
+
+			_renderMode = MultiPassRenderMode.ALL;
+			renderObjects( nodes, styleFilters, sceneStyle );
 		}
-
-		_renderMode = MultiPassRenderMode.OPAQUE_ONLY;
-		renderObjects( nodes, styleFilters, sceneStyle );
-
-		_renderMode = MultiPassRenderMode.TRANSPARENT_ONLY;
-		renderObjects( nodes, styleFilters, sceneStyle );
-
-		if ( !shadowPass )
+		else
 		{
+			gl.glCullFace( GL.GL_BACK );
+
+			_shaderManager.enable();
+
+			_renderMode = MultiPassRenderMode.OPAQUE_ONLY;
+			renderObjects( nodes, styleFilters, sceneStyle );
+
+			_renderMode = MultiPassRenderMode.TRANSPARENT_ONLY;
+			renderObjects( nodes, styleFilters, sceneStyle );
+
 			_shaderManager.disable();
 		}
 	}
@@ -935,6 +937,11 @@ public class JOGLRenderer
 
 		for ( final ContentNode node : nodes )
 		{
+			if ( _shadowPass && !node.isCastingShadows() )
+			{
+				continue;
+			}
+
 			final Node3DCollector collector = new Node3DCollector( Object3D.class );
 			Node3DTreeWalker.walk( collector, node.getTransform(), node.getNode3D() );
 			final List<Node3DPath> content = collector.getCollectedNodes();
@@ -1685,34 +1692,32 @@ public class JOGLRenderer
 		final int maxY = maxCellY * cellSize;
 
 		final boolean hightlightAxes = grid.isHighlightAxes();
-		if ( hightlightAxes )
+		final int highlightInterval = grid.getHighlightInterval();
+
+		gl.glLineWidth( 1.0f );
+		state.setColor( 0.75f, 0.75f, 0.75f, 1.0f );
+		gl.glBegin( GL.GL_LINES );
+
+		for ( int x = minCellX ; x <= maxCellX ; x++ )
 		{
-			final boolean hasXaxis = ( minCellY <= 0 ) && ( maxCellY >= 0 );
-			final boolean hasYaxis = ( minCellX <= 0 ) && ( maxCellX >= 0 );
-
-			if ( ( hasXaxis || hasYaxis ) )
+			if ( ( !hightlightAxes || ( x != 0 ) ) && ( ( highlightInterval <= 1 ) || ( x % highlightInterval != 0 ) ) )
 			{
-				gl.glLineWidth( 2.5f );
-				state.setColor( 0.1f, 0.1f, 0.1f, 1.0f );
-				gl.glBegin( GL.GL_LINES );
-
-				if ( hasXaxis )
-				{
-					gl.glVertex3i( minX, 0, 0 );
-					gl.glVertex3i( maxX, 0, 0 );
-				}
-
-				if ( hasYaxis )
-				{
-					gl.glVertex3i( 0, minY, 0 );
-					gl.glVertex3i( 0, maxY, 0 );
-				}
-
-				gl.glEnd();
+				gl.glVertex3i( x * cellSize, minY, 0 );
+				gl.glVertex3i( x * cellSize, maxY, 0 );
 			}
 		}
 
-		final int highlightInterval = grid.getHighlightInterval();
+		for ( int y = minCellY ; y <= maxCellY ; y++ )
+		{
+			if ( ( !hightlightAxes || ( y != 0 ) ) && ( ( highlightInterval <= 1 ) || ( y % highlightInterval != 0 ) ) )
+			{
+				gl.glVertex3i( minX, y * cellSize, 0 );
+				gl.glVertex3i( maxX, y * cellSize, 0 );
+			}
+		}
+
+		gl.glEnd();
+
 		if ( highlightInterval > 1 )
 		{
 			final int highlightMinX = minCellX - minCellX % highlightInterval;
@@ -1751,29 +1756,32 @@ public class JOGLRenderer
 			}
 		}
 
-		gl.glLineWidth( 1.0f );
-		state.setColor( 0.75f, 0.75f, 0.75f, 1.0f );
-		gl.glBegin( GL.GL_LINES );
-
-		for ( int x = minCellX ; x <= maxCellX ; x++ )
+		if ( hightlightAxes )
 		{
-			if ( ( !hightlightAxes || ( x != 0 ) ) && ( ( highlightInterval <= 1 ) || ( x % highlightInterval != 0 ) ) )
+			final boolean hasXaxis = ( minCellY <= 0 ) && ( maxCellY >= 0 );
+			final boolean hasYaxis = ( minCellX <= 0 ) && ( maxCellX >= 0 );
+
+			if ( ( hasXaxis || hasYaxis ) )
 			{
-				gl.glVertex3i( x * cellSize, minY, 0 );
-				gl.glVertex3i( x * cellSize, maxY, 0 );
+				gl.glLineWidth( 2.0f );
+				state.setColor( 0.1f, 0.1f, 0.1f, 1.0f );
+				gl.glBegin( GL.GL_LINES );
+
+				if ( hasXaxis )
+				{
+					gl.glVertex3i( minX, 0, 0 );
+					gl.glVertex3i( maxX, 0, 0 );
+				}
+
+				if ( hasYaxis )
+				{
+					gl.glVertex3i( 0, minY, 0 );
+					gl.glVertex3i( 0, maxY, 0 );
+				}
+
+				gl.glEnd();
 			}
 		}
-
-		for ( int y = minCellY ; y <= maxCellY ; y++ )
-		{
-			if ( ( !hightlightAxes || ( y != 0 ) ) && ( ( highlightInterval <= 1 ) || ( y % highlightInterval != 0 ) ) )
-			{
-				gl.glVertex3i( minX, y * cellSize, 0 );
-				gl.glVertex3i( maxX, y * cellSize, 0 );
-			}
-		}
-
-		gl.glEnd();
 
 		gl.glPopMatrix();
 	}
