@@ -468,7 +468,7 @@ public class ShaderManager
 	 * @return  Created vertex shader.
 	 */
 	@Nullable
-	private Shader createVertexShaderMain( final String colorFunction, final String lightingFunction )
+	private Shader createVertexShaderMain( @NotNull final String colorFunction, @Nullable final String lightingFunction )
 	{
 		Shader result = null;
 
@@ -479,33 +479,35 @@ public class ShaderManager
 
 			source.append( "void " );
 			source.append( colorFunction );
-			source.append( "();" );
+			source.append( "();\n" );
 
-			source.append( "void shadow();" );
+			source.append( "void shadow();\n" );
 
 			if ( lightingFunction != null )
 			{
 				source.append( "void " );
 				source.append( lightingFunction );
-				source.append( "();" );
+				source.append( "();\n" );
 			}
 
-			source.append( "void main()" );
-			source.append( '{' );
+			source.append( "void main()\n" );
+			source.append( "{\n" );
 
-			source.append( "gl_Position = ftransform();" );
+			source.append( "\tgl_Position = ftransform();\n" );
+			source.append( "\t" );
 			source.append( colorFunction );
-			source.append( "();" );
+			source.append( "();\n" );
 
 			if ( lightingFunction != null )
 			{
+				source.append( "\t" );
 				source.append( lightingFunction );
-				source.append( "();" );
+				source.append( "();\n" );
 			}
 
-			source.append( "shadow();" );
+			source.append( "\tshadow();\n" );
 
-			source.append( '}' );
+			source.append( "}\n" );
 
 			result = shaderImplementation.createShader( Shader.Type.VERTEX );
 			result.setSource( source.toString() );
@@ -527,7 +529,7 @@ public class ShaderManager
 	 * @return  Created vertex shader.
 	 */
 	@Nullable
-	private Shader createFragmentShaderMain( final String colorFunction, final String lightingFunction )
+	private Shader createFragmentShaderMain( @NotNull final String colorFunction, @Nullable final String lightingFunction )
 	{
 		Shader result = null;
 
@@ -538,35 +540,35 @@ public class ShaderManager
 
 			source.append( "vec4 " );
 			source.append( colorFunction );
-			source.append( "();" );
+			source.append( "();\n" );
 
 			if ( lightingFunction != null )
 			{
 				source.append( "vec4 " );
 				source.append( lightingFunction );
-				source.append( "( in vec4 color );" );
+				source.append( "( in vec4 color );\n" );
 			}
 
-			source.append( "void main()" );
-			source.append( '{' );
+			source.append( "void main()\n" );
+			source.append( "{\n" );
 
-			source.append( "gl_FragColor = " );
+			source.append( "\tgl_FragColor = " );
 			if ( lightingFunction != null )
 			{
 				source.append( lightingFunction );
 				source.append( "( " );
 				source.append( colorFunction );
-				source.append( "() );" );
+				source.append( "() );\n" );
 			}
 			else
 			{
 				source.append( colorFunction );
-				source.append( "();" );
+				source.append( "();\n" );
 			}
 			// TODO: Check if this works well with multi-pass lighting. Could end up too bright.
-			source.append( "gl_FragColor.rgb += gl_FrontMaterial.emission.rgb * gl_FragColor.a;" );
+			source.append( "\tgl_FragColor.rgb += gl_FrontMaterial.emission.rgb * gl_FragColor.a;\n" );
 
-			source.append( '}' );
+			source.append( "}\n" );
 
 			result = shaderImplementation.createShader( Shader.Type.FRAGMENT );
 			result.setSource( source.toString() );
@@ -581,7 +583,7 @@ public class ShaderManager
 	 * @param   shaderProgram   Shader program to be used; <code>null</code> to
 	 *                          use OpenGL's fixed functionality instead.
 	 */
-	private void useShader( final ShaderProgram shaderProgram )
+	private void useShader( @Nullable final ShaderProgram shaderProgram )
 	{
 		final ShaderProgram active = _activeShaderProgram;
 		if ( active != shaderProgram )
@@ -650,6 +652,11 @@ public class ShaderManager
 
 			shaderProgram.disable();
 			shaderProgram.validate();
+		}
+
+		if ( _activeShaderProgram != null )
+		{
+			_activeShaderProgram.enable();
 		}
 	}
 }
