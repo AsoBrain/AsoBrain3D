@@ -29,6 +29,7 @@ import java.util.zip.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
+import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
@@ -362,6 +363,10 @@ public class ObjWriter
 				if ( node instanceof Object3D )
 				{
 					final Object3D object = (Object3D)node;
+					out.write( "o " );
+					out.write( getObjectName( object ) );
+					out.write( '\n' );
+
 					final Matrix3D transform = path.getTransform();
 
 					for ( final FaceGroup faceGroup : object.getFaceGroups() )
@@ -380,7 +385,7 @@ public class ObjWriter
 						{
 							final int vertexCount = face.getVertexCount();
 
-							for ( int i = vertexCount - 1; i >= 0; i-- )
+							for ( int i = 0; i < vertexCount; i++ )
 							{
 								final Face3D.Vertex vertex = face.getVertex( i );
 
@@ -394,9 +399,9 @@ public class ObjWriter
 								out.write( '\n' );
 
 								out.write( "vt " );
-								out.write( DECIMAL_FORMAT.format( vertex.colorMapU ) );
+								out.write( DECIMAL_FORMAT.format( Float.isNaN( vertex.colorMapU ) ? 0.0f : vertex.colorMapU ) );
 								out.write( ' ' );
-								out.write( DECIMAL_FORMAT.format( vertex.colorMapV ) );
+								out.write( DECIMAL_FORMAT.format( Float.isNaN( vertex.colorMapV ) ? 0.0f : vertex.colorMapV ) );
 								out.write( '\n' );
 
 								final Vector3D normal = face.getVertexNormal( i );
@@ -410,18 +415,27 @@ public class ObjWriter
 								out.write( '\n' );
 							}
 
-							out.write( 'f' );
-							for ( int i = 0; i < vertexCount; i++ )
+							final Tessellation tessellation = face.getTessellation();
+							for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
 							{
-								out.write( ' ' );
-								out.write( String.valueOf( vertexIndex ) );
-								out.write( '/' );
-								out.write( String.valueOf( vertexIndex ) );
-								out.write( '/' );
-								out.write( String.valueOf( vertexIndex ) );
-								vertexIndex++;
+								final int[] triangles = primitive.getTriangles();
+								for ( int i = 0 ; i < triangles.length ; i += 3 )
+								{
+									out.write( 'f' );
+									for ( int j = 0; j < 3; j++ )
+									{
+										out.write( ' ' );
+										out.write( String.valueOf( vertexIndex + triangles[ i + j ] ) );
+										out.write( '/' );
+										out.write( String.valueOf( vertexIndex + triangles[ i + j ] ) );
+										out.write( '/' );
+										out.write( String.valueOf( vertexIndex + triangles[ i + j ] ) );
+									}
+									out.write( '\n' );
+								}
 							}
-							out.write( '\n' );
+
+							vertexIndex += vertexCount;
 						}
 					}
 				}
@@ -435,6 +449,19 @@ public class ObjWriter
 			_currentAppearance = currentAppearance;
 
 			return true;
+		}
+
+		/**
+		 * Returns a name for the given object.
+		 *
+		 * @param   object  Object to be named.
+		 *
+		 * @return  Name for the object.
+		 */
+		@NotNull
+		private String getObjectName( @NotNull final Object3D object )
+		{
+			return String.valueOf( object.getTag() );
 		}
 
 		/**
