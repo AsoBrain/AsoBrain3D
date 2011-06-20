@@ -22,6 +22,7 @@
 package ab.j3d.loader;
 
 import java.io.*;
+import java.net.*;
 import java.nio.charset.*;
 import java.text.*;
 import java.util.*;
@@ -48,6 +49,72 @@ public class ObjWriter
 	private static final NumberFormat DECIMAL_FORMAT = TextTools.getNumberFormat( Locale.US, 1, 6, false );
 
 	/**
+	 * Character encoding to be used.
+	 */
+	private final Charset _charset = Charset.forName( "US-ASCII" );
+
+	/**
+	 * Texture map URI to resolve texture map names against.
+	 */
+	private URI _textureMapURI = null;
+
+	/**
+	 * Suffix added to material codes to create texture map names.
+	 */
+	private String _textureMapSuffix = ".jpg";
+
+	/**
+	 * Constructs a new instance.
+	 */
+	public ObjWriter()
+	{
+	}
+
+	/**
+	 * Returns the URI used to resolve the location of texture maps.
+	 *
+	 * @return  Texture map URI; <code>null</code> if not used.
+	 */
+	@Nullable
+	public URI getTextureMapURI()
+	{
+		return _textureMapURI;
+	}
+
+	/**
+	 * Sets the URI used to resolve the location of texture maps.
+	 *
+	 * @param   textureMapURI   Texture map URI; <code>null</code> if not used.
+	 */
+	public void setTextureMapURI( @Nullable final URI textureMapURI )
+	{
+		_textureMapURI = textureMapURI;
+	}
+
+	/**
+	 * Returns the suffix that is appended to texture map names. This may be
+	 * used to specify a file extension, which is usually not
+	 * included in {@link Material#colorMap} and so on.
+	 *
+	 * @return  Texture map suffix.
+	 */
+	@Nullable
+	public String getTextureMapSuffix()
+	{
+		return _textureMapSuffix;
+	}
+
+	/**
+	 * Sets the suffix that is appended to texture map names.
+	 *
+	 * @param   textureMapSuffix    Texture map suffix.
+	 */
+	public void setTextureMapSuffix( @Nullable final String textureMapSuffix )
+	{
+		_textureMapSuffix = textureMapSuffix;
+	}
+
+	/**
 	 * Writes an OBJ file for the given node.
 	 *
 	 * @param   out     Stream to write to.
@@ -58,13 +125,34 @@ public class ObjWriter
 	public void write( final OutputStream out, final Node3D node )
 		throws IOException
 	{
-		final Charset charset = Charset.forName( "US-ASCII" );
-
-		final BufferedWriter objWriter = new BufferedWriter( new OutputStreamWriter( out, charset ) );
+		final BufferedWriter objWriter = new BufferedWriter( new OutputStreamWriter( out, _charset ) );
+		objWriter.write( "mtllib ivenza.mtl\n" );
 		final ObjGenerator objGenerator = new ObjGenerator( objWriter );
 		Node3DTreeWalker.walk( objGenerator, node );
 
 		objWriter.flush();
+	}
+
+	/**
+	 * Writes an MTL file containing the given appearances.
+	 *
+	 * @param   out             Stream to write to.
+	 * @param   appearances     Appearances to be written.
+	 *
+	 * @throws  IOException if an I/O error occurs.
+	 */
+	public void writeMTL( final OutputStream out, final Collection<? extends Appearance> appearances )
+		throws IOException
+	{
+		final BufferedWriter mtlWriter = new BufferedWriter( new OutputStreamWriter( out, _charset ) );
+		final MtlGenerator mtlGenerator = new MtlGenerator( mtlWriter );
+
+		for ( final Appearance appearance : appearances )
+		{
+			mtlGenerator.writeAppearance( appearance );
+		}
+
+		mtlWriter.flush();
 	}
 
 	/**
@@ -79,13 +167,11 @@ public class ObjWriter
 	public void writeZIP( final OutputStream out, final Node3D node, final String name )
 		throws IOException
 	{
-		final Charset charset = Charset.forName( "US-ASCII" );
-
-		final ZipOutputStream zipOut = new ZipOutputStream( out );
+		final ZipOutputStream zipOut = new ZipOutputStream( new BufferedOutputStream( out ) );
 
 		zipOut.putNextEntry( new ZipEntry( name + ".mtl" ) );
 
-		final BufferedWriter mtlWriter = new BufferedWriter( new OutputStreamWriter( zipOut, charset ) );
+		final BufferedWriter mtlWriter = new BufferedWriter( new OutputStreamWriter( zipOut, _charset ) );
 		final MtlGenerator mtlGenerator = new MtlGenerator( mtlWriter );
 		Node3DTreeWalker.walk( mtlGenerator, node );
 
@@ -94,7 +180,7 @@ public class ObjWriter
 
 		zipOut.putNextEntry( new ZipEntry( name + ".obj" ) );
 
-		final BufferedWriter objWriter = new BufferedWriter( new OutputStreamWriter( out, charset ) );
+		final BufferedWriter objWriter = new BufferedWriter( new OutputStreamWriter( out, _charset ) );
 		objWriter.write( "mtllib model.mtl\n" );
 		final ObjGenerator objGenerator = new ObjGenerator( objWriter );
 		Node3DTreeWalker.walk( objGenerator, node );
@@ -110,7 +196,7 @@ public class ObjWriter
 	 * Node visitor that generates an MTL file containing definitions of the
 	 * materials of all visited {@link Object3D}s.
 	 */
-	private static class MtlGenerator
+	private class MtlGenerator
 		implements Node3DVisitor
 	{
 		/**
@@ -152,9 +238,7 @@ public class ObjWriter
 						final Appearance appearance = faceGroup.getAppearance();
 						if ( ( appearance != null ) && !_appearanceToMaterial.containsKey( appearance ) )
 						{
-							final String materialName = generateMaterialName( appearance );
-							writeMaterial( materialName, appearance );
-							_appearanceToMaterial.put( appearance, materialName );
+							writeAppearance( appearance );
 						}
 					}
 				}
@@ -165,6 +249,21 @@ public class ObjWriter
 			}
 
 			return true;
+		}
+
+		/**
+		 * Writes the given appearance.
+		 *
+		 * @param   appearance  Appearance to be written.
+		 *
+		 * @throws  IOException if an I/O error occurs.
+		 */
+		public void writeAppearance( final Appearance appearance )
+			throws IOException
+		{
+			final String materialName = generateMaterialName( appearance );
+			writeMaterial( materialName, appearance );
+			_appearanceToMaterial.put( appearance, materialName );
 		}
 
 		/**
@@ -227,7 +326,7 @@ public class ObjWriter
 				if ( colorMap != null )
 				{
 					out.write( "map_Kd " );
-					out.write( material.colorMap );
+					out.write( getTextureMapLocation( material.colorMap ) );
 					out.write( '\n' );
 				}
 
@@ -235,10 +334,33 @@ public class ObjWriter
 				if ( bumpMap != null )
 				{
 					out.write( "bump " );
-					out.write( material.bumpMap );
+					out.write( getTextureMapLocation( material.bumpMap ) );
 					out.write( '\n' );
 				}
 			}
+		}
+
+		/**
+		 * Returns the file name or URI of the texture map with the given name.
+		 *
+		 * @param   name    Texture map name.
+		 *
+		 * @return  File name or URI for the texture map.
+		 */
+		private String getTextureMapLocation( final String name )
+		{
+			String result = name;
+			if ( _textureMapSuffix != null )
+			{
+				result += _textureMapSuffix;
+			}
+
+			if ( _textureMapURI != null )
+			{
+				final URI resolved = _textureMapURI.resolve( name );
+				result = resolved.toString();
+			}
+			return result;
 		}
 
 		/**
