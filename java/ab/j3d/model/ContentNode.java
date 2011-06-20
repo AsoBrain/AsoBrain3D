@@ -89,6 +89,11 @@ public class ContentNode
 	private final List<ContentNodeUpdateListener> _contentNodeUpdateListeners = new ArrayList<ContentNodeUpdateListener>();
 
 	/**
+	 * Whether the content node can cast shadows.
+	 */
+	private boolean _castingShadows = true;
+
+	/**
 	 * Construct new content node. The <code>materialOverride</code> and
 	 * <code>opacity</code> values can be used to provide extra hints for
 	 * rendering objects.
@@ -529,5 +534,25 @@ public class ContentNode
 	public String toString()
 	{
 		return super.toString() + "[id=" + _id + "]";
+	}
+
+	/**
+	 * Returns whether the content node can cast shadows.
+	 *
+	 * @return  <code>true</code> if the content node can cast shadows.
+	 */
+	public boolean isCastingShadows()
+	{
+		return _castingShadows;
+	}
+
+	/**
+	 * Sets whether the content node can cast shadows.
+	 *
+	 * @param   castingShadows  <code>true</code> to allow shadow casting.
+	 */
+	public void setCastingShadows( final boolean castingShadows )
+	{
+		_castingShadows = castingShadows;
 	}
 }
