@@ -1364,12 +1364,13 @@ public class JOGLRenderer
 						gl.glPushMatrix();
 						JOGLTools.glMultMatrixd( gl, object2world );
 						geometryObject.draw();
-						gl.glPopMatrix();
-					}
 
-					if ( DRAW_NORMALS )
-					{
-						renderFaceNormals( faceGroup.getFaces() );
+						if ( DRAW_NORMALS )
+						{
+							renderFaceNormals( faceGroup.getFaces() );
+						}
+
+						gl.glPopMatrix();
 					}
 
 					/*
