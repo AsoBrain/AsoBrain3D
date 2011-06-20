@@ -554,6 +554,21 @@ public class ObjWriter
 										out.write( String.valueOf( vertexIndex + triangles[ i + j ] ) );
 									}
 									out.write( '\n' );
+
+									if ( faceGroup.isTwoSided() )
+									{
+										out.write( 'f' );
+										for ( int j = 2; j >= 0; j-- )
+										{
+											out.write( ' ' );
+											out.write( String.valueOf( vertexIndex + triangles[ i + j ] ) );
+											out.write( '/' );
+											out.write( String.valueOf( vertexIndex + triangles[ i + j ] ) );
+											out.write( '/' );
+											out.write( String.valueOf( vertexIndex + triangles[ i + j ] ) );
+										}
+										out.write( '\n' );
+									}
 								}
 							}
 
