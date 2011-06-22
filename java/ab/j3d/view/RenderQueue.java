@@ -628,10 +628,10 @@ public final class RenderQueue
 		final double[]  backY = new double[ vertexCount + 2 ];
 		final double[]  backZ = new double[ vertexCount + 2 ];
 
-		final int[] frontProjX = new int[ vertexCount ];
-		final int[] frontProjY = new int[ vertexCount ];
-		final int[]  backProjX = new int[ vertexCount ];
-		final int[]  backProjY = new int[ vertexCount ];
+		final int[] frontProjX = new int[ vertexCount + 2 ];
+		final int[] frontProjY = new int[ vertexCount + 2 ];
+		final int[]  backProjX = new int[ vertexCount + 2 ];
+		final int[]  backProjY = new int[ vertexCount + 2 ];
 
 		final double cuttingNX = cuttingPlane._planeNormalX;
 		final double cuttingNY = cuttingPlane._planeNormalY;
