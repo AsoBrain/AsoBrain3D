@@ -89,6 +89,11 @@ public class ContentNode
 	private final List<ContentNodeUpdateListener> _contentNodeUpdateListeners = new ArrayList<ContentNodeUpdateListener>();
 
 	/**
+	 * Defines control behavior for the node.
+	 */
+	private ContentNodeControl _control;
+
+	/**
 	 * Whether the content node can cast shadows.
 	 */
 	private boolean _castingShadows = true;
@@ -534,6 +539,27 @@ public class ContentNode
 	public String toString()
 	{
 		return super.toString() + "[id=" + _id + "]";
+	}
+
+	/**
+	 * Returns the control for this content node.
+	 *
+	 * @return  Control.
+	 */
+	@Nullable
+	public ContentNodeControl getControl()
+	{
+		return _control;
+	}
+
+	/**
+	 * Sets the control for this content node.
+	 *
+	 * @param   control     Control to be set.
+	 */
+	public void setControl( @Nullable final ContentNodeControl control )
+	{
+		_control = control;
 	}
 
 	/**
