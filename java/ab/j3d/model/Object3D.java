@@ -183,7 +183,8 @@ public class Object3D
 			final CollisionNode thisCollisionNode = getCollisionNode();
 			final CollisionNode otherCollisionNode = other.getCollisionNode();
 
-			result = thisCollisionNode.collidesWith( otherCollisionNode, fromOtherToThis );
+			result = ( thisCollisionNode != null ) && ( otherCollisionNode != null ) &&
+			         thisCollisionNode.collidesWith( otherCollisionNode, fromOtherToThis );
 		}
 		else
 		{
@@ -249,7 +250,7 @@ public class Object3D
 				}
 			}
 
-			result = new CollisionNode( triangles, 0, triangles.size() );
+			result = triangles.isEmpty() ? null : new CollisionNode( triangles, 0, triangles.size() );
 
 			_collisionNode = result;
 		}
