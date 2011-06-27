@@ -632,7 +632,49 @@ public class JOGLGraphics2D
 	@Override
 	public FontMetrics getFontMetrics( final Font font )
 	{
-		return new FontMetrics( font ) {};
+		final TextRenderer textRenderer = getTextRenderer();
+		final LineMetrics lineMetrics = font.getLineMetrics( "", textRenderer.getFontRenderContext() );
+
+		return new FontMetrics( font )
+		{
+			@Override
+			public int getAscent()
+			{
+				return (int)lineMetrics.getAscent();
+			}
+
+			@Override
+			public int getDescent()
+			{
+				return (int)lineMetrics.getDescent();
+			}
+
+			@Override
+			public int getLeading()
+			{
+				return (int)lineMetrics.getLeading();
+			}
+
+			@Override
+			public int getMaxAdvance()
+			{
+				return -1;
+			}
+
+			@Override
+			public int charWidth( final char ch )
+			{
+				final Rectangle2D bounds = font.getStringBounds( new char[] { ch }, 0, 0, _renderer.getFontRenderContext() );
+				return (int)bounds.getWidth();
+			}
+
+			@Override
+			public int charsWidth( final char[] data, final int off, final int len )
+			{
+				final Rectangle2D bounds = font.getStringBounds( data, off, off + len, _renderer.getFontRenderContext() );
+				return (int)bounds.getWidth();
+			}
+		};
 	}
 
 	@Override
@@ -899,6 +941,23 @@ public class JOGLGraphics2D
 		final GLAutoDrawable gla = _gla;
 
 		//create renderer if renderer has not been created already.
+		final TextRenderer renderer = getTextRenderer();
+
+		renderer.setColor( getColor() );
+		renderer.beginRendering( gla.getWidth() , gla.getHeight() );
+		// Draw text
+		renderer.draw( str , x , gla.getHeight() - y );
+		// Clean up rendering
+		renderer.endRendering();
+	}
+
+	/**
+	 * Returns a text renderer for the current font.
+	 *
+	 * @return  Text renderer.
+	 */
+	private TextRenderer getTextRenderer()
+	{
 		TextRenderer renderer = _renderer;
 		final Font font = getFont();
 		if ( ( renderer == null ) || !font.equals( renderer.getFont() ) )
@@ -910,13 +969,7 @@ public class JOGLGraphics2D
 			renderer = new TextRenderer( getFont() );
 			_renderer = renderer;
 		}
-
-		renderer.setColor( getColor() );
-		renderer.beginRendering( gla.getWidth() , gla.getHeight() );
-		// Draw text
-		renderer.draw( str , x , gla.getHeight() - y );
-		// Clean up rendering
-		renderer.endRendering();
+		return renderer;
 	}
 
 	@Override
