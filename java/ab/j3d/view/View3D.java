@@ -738,10 +738,6 @@ public abstract class View3D
 	 * first, will get the first turn in painting.
 	 *
 	 * @param   overlay     {@link ViewOverlay} to add.
-
-	 * @see     #removeOverlay
-	 * @see     #hasOverlay
-	 * @see     #paintOverlay
 	 */
 	public void addOverlay( @NotNull final ViewOverlay overlay )
 	{
@@ -760,10 +756,6 @@ public abstract class View3D
 	 * Removes an {@link ViewOverlay} from this view.
 	 *
 	 * @param   overlay     {@link ViewOverlay} to remove.
-
-	 * @see     #addOverlay
-	 * @see     #hasOverlay
-	 * @see     #paintOverlay
 	 */
 	public void removeOverlay( @NotNull final ViewOverlay overlay )
 	{
@@ -777,13 +769,9 @@ public abstract class View3D
 	}
 
 	/**
-	 * Returns wether or not this view has registered {@link ViewOverlay}.
+	 * Returns whether the view has a {@link ViewOverlay}.
 	 *
-	 * @return  wether or not this view has registered {@link ViewOverlay}.
-	 *
-	 * @see     #addOverlay
-	 * @see     #removeOverlay
-	 * @see     #paintOverlay
+	 * @return  <code>true</code> if the view has an overlay.
 	 */
 	protected boolean hasOverlay()
 	{
@@ -791,16 +779,9 @@ public abstract class View3D
 	}
 
 	/**
-	 * Iterates through all registered {@link ViewOverlay}s, and for each of
-	 * them calls the {@link ViewOverlay#paintOverlay} method. This method should
-	 * only be called by the view after rendering of the 3d scene has been
-	 * completed.
+	 * Paints all registered overlay painters.
 	 *
-	 * @param   g2d     {@link Graphics2D} object the painters can use to paint.
-
-	 * @see     #addOverlay
-	 * @see     #hasOverlay
-	 * @see     #removeOverlay
+	 * @param   g2d     Graphics to paint to.
 	 */
 	protected void paintOverlay( @NotNull final Graphics2D g2d )
 	{
