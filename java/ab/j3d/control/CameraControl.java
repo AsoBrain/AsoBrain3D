@@ -160,8 +160,8 @@ public abstract class CameraControl
 	@Override
 	public EventObject mousePressed( final ControlInputEvent event )
 	{
-		startCapture( event );
-		return null;
+		startCaptureOnDrag( event );
+		return super.mousePressed( event );
 	}
 
 	/**

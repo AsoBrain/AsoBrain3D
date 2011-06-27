@@ -48,6 +48,11 @@ public class MouseControl
 	private int _capturedSequence = -1;
 
 	/**
+	 * Event sequence to be captured on the next mouse dragged event.
+	 */
+	private ControlInputEvent _captureOnDrag;
+
+	/**
 	 * Test if this control is currently enabled.
 	 *
 	 * @return  <code>true</code> if control is enabled;
@@ -112,10 +117,17 @@ public class MouseControl
 				break;
 
 			case MouseEvent.MOUSE_DRAGGED :
+				final ControlInputEvent captureOnDrag = _captureOnDrag;
+				if ( captureOnDrag != null )
+				{
+					startCapture( captureOnDrag );
+					_captureOnDrag = null;
+				}
 				result = mouseDragged( event );
 				break;
 
 			case MouseEvent.MOUSE_RELEASED :
+				_captureOnDrag = null;
 				result = mouseReleased( event );
 				break;
 
@@ -140,6 +152,18 @@ public class MouseControl
 		}
 
 		return result;
+	}
+
+	/**
+	 * Capture all events starting from the next mouse dragged event.
+	 *
+	 * @param   event   Control input event whose sequence to capture.
+	 *
+	 * @see     #startCapture
+	 */
+	protected void startCaptureOnDrag( final ControlInputEvent event )
+	{
+		_captureOnDrag = event;
 	}
 
 	/**
