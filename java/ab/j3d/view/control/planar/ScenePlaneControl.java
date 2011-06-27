@@ -79,19 +79,22 @@ public interface ScenePlaneControl
 	boolean isEnabled();
 
 	/**
-	 * Drag start event.
+	 * Notifies the control that a mouse button was pressed. The control can
+	 * capture the mouse at this point, such that it will receive subsequent
+	 * mouse events.
 	 *
 	 * @param   event           Event from control.
 	 * @param   x               X coordinate on plane.
 	 * @param   y               Y coordinate on plane.
 	 *
-	 * @return  <code>true</code> if a drag operation is started;
+	 * @return  <code>true</code> if the event is captured;
 	 *          <code>false</code> otherwise>
 	 */
 	boolean mousePressed( ControlInputEvent event , double x , double y );
 
 	/**
-	 * Drag event.
+	 * Notifies the control that the mouse was dragged. This event is only
+	 * received if the mouse was previously captured by the control.
 	 *
 	 * @param   event           Event from control.
 	 * @param   x               X coordinate on plane.
@@ -100,7 +103,8 @@ public interface ScenePlaneControl
 	void mouseDragged( ControlInputEvent event , double x , double y );
 
 	/**
-	 * Drag end event.
+	 * Notifies the control that the mouse button was released. This event is
+	 * only received if the mouse was previously captured by the control.
 	 *
 	 * @param   event           Event from control.
 	 * @param   x               X coordinate on plane.
@@ -109,7 +113,7 @@ public interface ScenePlaneControl
 	void mouseReleased( ControlInputEvent event , double x , double y );
 
 	/**
-	 * Move event.
+	 * Notifies the control that the mouse was moved.
 	 *
 	 * @param   event           Event from control.
 	 * @param   x               X coordinate on plane.
