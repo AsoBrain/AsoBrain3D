@@ -8,6 +8,7 @@
   <target name="clean" depends="init" description="Remove temporary build files">
     <delete dir="classes"/>
     <delete dir="lib"/>
+    <delete file="ab3d-test.jar"/>
   </target>
 
   <target name="build" depends="compile-java,compile-tests,jars.uptodate.check" unless="jars.uptodate" description="Build project">
@@ -16,7 +17,7 @@
       <fileset dir="classes/java"/>
       <fileset dir="images"/>
     </jar>
-    <jar destfile="lib/ab3d-test.jar" basedir="classes/test"/>
+    <jar destfile="ab3d-test.jar" basedir="classes/test"/>
   </target>
 
   <target name="jars.uptodate.check" depends="compile-java,compile-tests">
@@ -32,7 +33,7 @@
         </uptodate>
         <uptodate>
           <srcfiles dir="." includes="classes/test/**"/>
-          <mapper type="merge" to="lib/ab3d-test.jar"/>
+          <mapper type="merge" to="ab3d-test.jar"/>
         </uptodate>
       </and>
     </condition>
@@ -42,14 +43,14 @@
     <repack200 jar="lib/ab3d.jar"/>
     <signjar keystore="${asobrain.cert.keystore}" storepass="${asobrain.cert.storepass}" alias="${asobrain.cert.alias}">
       <fileset file="lib/ab3d.jar" />
-      <fileset file="lib/ab3d-test.jar" />
+      <fileset file="ab3d-test.jar" />
     </signjar>
     <pack200 jar="lib/ab3d.jar"/>
   </target>
 
   <target name="pack200.uptodate.check" depends="build">
     <uptodate property="pack200.uptodate">
-      <srcfiles dir="." includes="lib/*.jar,bin/*.jar" excludes="**/*-test.jar"/>
+      <srcfiles dir="." includes="lib/*.jar,bin/*.jar" />
       <mapper type="glob" from="*.jar" to="*.jar.pack.gz"/>
     </uptodate>
   </target>
@@ -120,7 +121,7 @@
     <pathelement location="classes/test"/>
     <path refid="java.classpath"/>
     <pathelement location="${hsqldb.jar}"/>
-    <pathelement location="${numdata.oss.home}/lib/numdata-oss-test.jar"/>
+    <pathelement location="${numdata.oss.home}/numdata-oss-test.jar"/>
   </path>
 
   <target name="compile-tests" depends="compile-java,tests.uptodate.check" unless="tests.uptodate" description="Compile unit tests">
