@@ -86,7 +86,7 @@ public class TextureProxy
 	 * @param   textureMap      Texture map.
 	 * @param   textureCache    Texture cache.
 	 */
-	public TextureProxy( @NotNull final TextureMap textureMap , final TextureCache textureCache )
+	public TextureProxy( @NotNull final TextureMap textureMap, final TextureCache textureCache )
 	{
 		_textureMap = textureMap;
 		_textureCache = textureCache;
@@ -160,7 +160,7 @@ public class TextureProxy
 		final Texture result = TextureIO.newTexture( textureData );
 
 		final GL gl = GLU.getCurrentGL();
-		setTextureParameters( gl , result );
+		setTextureParameters( gl, result );
 
 		return result;
 	}
@@ -253,8 +253,8 @@ public class TextureProxy
 	{
 		final TextureCache textureCache = _textureCache;
 
-		int scaledWidth  = Math.min( textureCache.getMaximumTextureSize() , image.getWidth()  );
-		int scaledHeight = Math.min( textureCache.getMaximumTextureSize() , image.getHeight() );
+		int scaledWidth  = Math.min( textureCache.getMaximumTextureSize(), image.getWidth()  );
+		int scaledHeight = Math.min( textureCache.getMaximumTextureSize(), image.getHeight() );
 
 		/*
 		 * Texture sizes may need to be powers of two.
@@ -265,7 +265,7 @@ public class TextureProxy
 			scaledHeight = MathTools.nearestPowerOfTwo( scaledHeight );
 		}
 
-		return ImageTools.createScaledInstance( image , scaledWidth , scaledHeight , false );
+		return ImageTools.createScaledInstance( image, scaledWidth, scaledHeight, false, null );
 	}
 
 	/**
@@ -356,7 +356,7 @@ public class TextureProxy
 			buffer = wrapImageDataBuffer( image );
 		}
 
-		return new TextureData( internalFormat , width , height , 0 , pixelFormat , pixelType , true , false , true , buffer , null );
+		return new TextureData( internalFormat, width, height, 0, pixelFormat, pixelType, true, false, true, buffer, null );
 	}
 
 	/**
@@ -441,33 +441,33 @@ public class TextureProxy
 		{
 			if ( hasAlpha )
 			{
-				colorModel = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ) , new int[] { 8 , 8 , 8 , 8 } , true , true , Transparency.TRANSLUCENT , DataBuffer.TYPE_BYTE );
+				colorModel = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ), new int[] { 8, 8, 8, 8 }, true, true, Transparency.TRANSLUCENT, DataBuffer.TYPE_BYTE );
 			}
 			else
 			{
-				colorModel = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ) , new int[] { 8 , 8 , 8 , 0 } , false , false , Transparency.OPAQUE , DataBuffer.TYPE_BYTE );
+				colorModel = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ), new int[] { 8, 8, 8, 0 }, false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE );
 			}
 		}
 		else
 		{
 			if ( hasAlpha )
 			{
-				colorModel = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ) , null , true , true , Transparency.TRANSLUCENT , dataBufferType );
+				colorModel = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ), null, true, true, Transparency.TRANSLUCENT, dataBufferType );
 			}
 			else
 			{
-				colorModel = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ) , null , false , false , Transparency.OPAQUE , dataBufferType );
+				colorModel = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ), null, false, false, Transparency.OPAQUE, dataBufferType );
 			}
 		}
 
 		final boolean premultiplied = colorModel.isAlphaPremultiplied();
-		final WritableRaster raster = colorModel.createCompatibleWritableRaster( width , height );
-		final BufferedImage resultImage = new BufferedImage( colorModel , raster , premultiplied , null );
+		final WritableRaster raster = colorModel.createCompatibleWritableRaster( width, height );
+		final BufferedImage resultImage = new BufferedImage( colorModel, raster, premultiplied, null );
 
 		// copy the source image into the temporary image
 		final Graphics2D g = resultImage.createGraphics();
 		g.setComposite( AlphaComposite.Src );
-		g.drawImage( image , 0 , 0 , null );
+		g.drawImage( image, 0, 0, null );
 		g.dispose();
 
 		return wrapImageDataBuffer( resultImage );
@@ -493,10 +493,10 @@ public class TextureProxy
 	 * @param   gl          OpenGL pipeline.
 	 * @param   texture     Texture to set parameters for.
 	 */
-	private static void setTextureParameters( @NotNull final GL gl , @NotNull final Texture texture )
+	private static void setTextureParameters( @NotNull final GL gl, @NotNull final Texture texture )
 	{
-		texture.setTexParameteri( GL.GL_TEXTURE_WRAP_S , GL.GL_REPEAT );
-		texture.setTexParameteri( GL.GL_TEXTURE_WRAP_T , GL.GL_REPEAT );
+		texture.setTexParameteri( GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT );
+		texture.setTexParameteri( GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT );
 
 		if ( hasAutoMipMapGenerationSupport( gl ) )
 		{
@@ -505,13 +505,13 @@ public class TextureProxy
 				/**
 				 * Generate mip maps to avoid 'noise' on far-away textures.
 				 */
-				texture.setTexParameteri( GL.GL_GENERATE_MIPMAP , GL.GL_TRUE );
+				texture.setTexParameteri( GL.GL_GENERATE_MIPMAP, GL.GL_TRUE );
 
 				/*
 				 * Use linear texture filtering.
 				 */
-				texture.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER , GL.GL_LINEAR );
-				texture.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER , GL.GL_LINEAR_MIPMAP_NEAREST );
+				texture.setTexParameteri( GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR );
+				texture.setTexParameteri( GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_NEAREST );
 			}
 			catch ( GLException e )
 			{
