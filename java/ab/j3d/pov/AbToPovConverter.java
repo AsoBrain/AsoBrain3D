@@ -498,7 +498,27 @@ public class AbToPovConverter
 //			}
 			else if ( node instanceof Object3D )
 			{
-				_scene.add( convertObject3D( path.getTransform(), (Object3D)node ) );
+				boolean hasFaces = false;
+
+				final Object3D object = (Object3D)node;
+				for ( final FaceGroup faceGroup : object.getFaceGroups() )
+				{
+					for ( final Face3D face : faceGroup.getFaces() )
+					{
+						final Tessellation tessellation = face.getTessellation();
+						final Collection<TessellationPrimitive> primitives = tessellation.getPrimitives();
+						if ( !primitives.isEmpty() )
+						{
+							hasFaces = true;
+							break;
+						}
+					}
+				}
+
+				if ( hasFaces )
+				{
+					_scene.add( convertObject3D( path.getTransform(), (Object3D)node ) );
+				}
 			}
 
 			return true;
