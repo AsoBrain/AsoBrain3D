@@ -115,12 +115,17 @@ public class ObjLoader
 	/**
 	 * Materials from OBJ MTL file.
 	 */
-	private static final Map<String,Material> objMaterials = new HashMap<String,Material>();
+	private final Map<String,Material> _materials = new HashMap<String,Material>();
 
 	/**
 	 * Default materials to use for OBJ files.
 	 */
 	private static final Map<String,Material> DEFAULT_MATERIALS;
+
+	/**
+	 * Transformation applied to all geometry.
+	 */
+	private Matrix3D _transform;
 
 	/**
 	 * Load the specified OBJ file.
@@ -137,11 +142,8 @@ public class ObjLoader
 	public static Object3D load( final Matrix3D transform, final ResourceLoader loader, final String objFileName )
 		throws IOException
 	{
-		final Object3DBuilder builder = new Object3DBuilder();
-		final String objectName = load( builder, transform, loader, objFileName );
-		final Object3D result = builder.getObject3D();
-		result.setTag( objectName );
-		return result;
+		final ObjLoader objLoader = new ObjLoader( transform );
+		return objLoader.load( loader, objFileName );
 	}
 
 	/**
@@ -160,25 +162,8 @@ public class ObjLoader
 	public static String load( @NotNull final Abstract3DObjectBuilder builder, @NotNull final Matrix3D transform, @NotNull final ResourceLoader loader, @NotNull final String objFileName )
 		throws IOException
 	{
-		InputStream inputStream = loader.getResource( objFileName );
-		if ( inputStream == null )
-		{
-			throw new FileNotFoundException( objFileName );
-		}
-
-		try
-		{
-			if ( objFileName.endsWith( ".gz" ) || objFileName.endsWith( ".GZ" ) )
-			{
-				inputStream = new GZIPInputStream( inputStream );
-			}
-
-			return load( builder, transform, loader, new  BufferedReader( new InputStreamReader( inputStream ) ) );
-		}
-		finally
-		{
-			inputStream.close();
-		}
+		final ObjLoader objLoader = new ObjLoader( transform );
+		return objLoader.load( builder, loader, objFileName );
 	}
 
 	/**
@@ -195,6 +180,79 @@ public class ObjLoader
 	 * @throws  IOException if an error occured while loading the OBJ file.
 	 */
 	public static String load( @NotNull final Abstract3DObjectBuilder builder, @NotNull final Matrix3D transform, @NotNull final ResourceLoader loader, @NotNull final BufferedReader objReader )
+		throws IOException
+	{
+		final ObjLoader objLoader = new ObjLoader( transform );
+		return objLoader.load( builder, loader, objReader );
+	}
+
+	/**
+	 * Load the specified OBJ file.
+	 *
+	 * @param   loader          {@link ResourceLoader} to load OBJ models from.
+	 * @param   objFileName     Name of OBJ modelfile to be loaded.
+	 *
+	 * @return  {@link Object3D} with loaded OBJ file.
+	 *
+	 * @throws  IOException if an error occured while loading the OBJ file.
+	 */
+	public Object3D load( final ResourceLoader loader, final String objFileName )
+		throws IOException
+	{
+		final Object3DBuilder builder = new Object3DBuilder();
+		final String objectName = load( builder, loader, objFileName );
+		final Object3D result = builder.getObject3D();
+		result.setTag( objectName );
+		return result;
+	}
+
+	/**
+	 * Load the specified OBJ file.
+	 *
+	 * @param   builder         Builder of resulting 3D object.
+	 * @param   loader          {@link ResourceLoader} to load OBJ models from.
+	 * @param   objFileName     Name of OBJ modelfile to be loaded.
+	 *
+	 * @return  Object name defined in OBJ file.
+	 *
+	 * @throws  IOException if an error occured while loading the OBJ file.
+	 */
+	public String load( @NotNull final Abstract3DObjectBuilder builder, @NotNull final ResourceLoader loader, @NotNull final String objFileName )
+		throws IOException
+	{
+		InputStream inputStream = loader.getResource( objFileName );
+		if ( inputStream == null )
+		{
+			throw new FileNotFoundException( objFileName );
+		}
+
+		try
+		{
+			if ( objFileName.endsWith( ".gz" ) || objFileName.endsWith( ".GZ" ) )
+			{
+				inputStream = new GZIPInputStream( inputStream );
+			}
+
+			return load( builder, loader, new  BufferedReader( new InputStreamReader( inputStream ) ) );
+		}
+		finally
+		{
+			inputStream.close();
+		}
+	}
+
+	/**
+	 * Load the specified OBJ file.
+	 *
+	 * @param   builder         Builder of resulting 3D object.
+	 * @param   loader          {@link ResourceLoader} to load OBJ models from.
+	 * @param   objReader       Reader for OBJ file.
+	 *
+	 * @return  Object name defined in OBJ file.
+	 *
+	 * @throws  IOException if an error occured while loading the OBJ file.
+	 */
+	public String load( @NotNull final Abstract3DObjectBuilder builder, @NotNull final ResourceLoader loader, @NotNull final BufferedReader objReader )
 		throws IOException
 	{
 		final Map<String,Material> actualMaterials = DEFAULT_MATERIALS;
@@ -256,7 +314,7 @@ public class ObjLoader
 						final double z = Double.parseDouble( tokens[ 3 ] );
 //						final double w = ( argCount >= 4 ) ? Double.parseDouble( tokens[ 4 ] ) : 1.0;
 
-						vertexCoordinates.add( transform.transform( x, y, z ) );
+						vertexCoordinates.add( _transform.transform( x, y, z ) );
 					}
 					/*
 					 * vt u v w
@@ -319,7 +377,7 @@ public class ObjLoader
 						final double j = Double.parseDouble( tokens[ 2 ] );
 						final double k = Double.parseDouble( tokens[ 3 ] );
 
-						vertexNormals.add( transform.rotate( i, j, k ) );
+						vertexNormals.add( _transform.rotate( i, j, k ) );
 					}
 					/*
 					 * p  v1 v2 v3 . . .
@@ -513,7 +571,7 @@ public class ObjLoader
 					 */
 					else if ( "usemtl".equals( name ) )
 					{
-						actualMaterials.putAll( objMaterials );
+						actualMaterials.putAll( _materials );
 						if ( argCount < 1 )
 						{
 							throw new IOException( "malformed 'usemtl' entry: " + line );
@@ -697,10 +755,24 @@ public class ObjLoader
 
 
 	/**
-	 * Utility/Application class is not supposed to be instantiated.
+	 * Constructs a new instance.
+	 *
+	 * @param   transform       Transformation to apply to the OBJ (mostly used
+	 *                          to for scaling and axis alignment).
 	 */
-	private ObjLoader()
+	public ObjLoader( final Matrix3D transform )
 	{
+		_transform = transform;
+	}
+
+	/**
+	 * Returns all materials that have been read so far.
+	 *
+	 * @return  Materials.
+	 */
+	public Map<String, Material> getMaterials()
+	{
+		return Collections.unmodifiableMap( _materials );
 	}
 
 	/**
@@ -713,7 +785,7 @@ public class ObjLoader
 	 *  @throws  IOException when material could not be loaded or contains malformed known entries. Unknown entries are ignored, e.g. "Ka foobar" will throw an exception,
 	 *                              but "Kgt foobar" won't because Kgt is not a known MTL entry.
 	 */
-	private static void loadMaterial( final ResourceLoader loader, final String materialName )
+	private void loadMaterial( final ResourceLoader loader, final String materialName )
 		throws IOException
 	{
 		String line;
@@ -738,7 +810,7 @@ public class ObjLoader
 						}
 						tempMaterial = new ResourceLoaderMaterial( loader );
 						tempMaterial.code = ( tokens[ 1 ] );
-						objMaterials.put( ( tokens[ 1 ] ), tempMaterial );
+						_materials.put( ( tokens[ 1 ] ), tempMaterial );
 					}
 					// Ambient lighting
 					else if ( "Ka".equals( name ) )
@@ -809,6 +881,8 @@ public class ObjLoader
 							throw new IOException( "Malformed texture entry: " + line );
 						}
 						tempMaterial.colorMap = ( tokens[ 1 ] );
+						tempMaterial.colorMapWidth = 1.0f;
+						tempMaterial.colorMapHeight = 1.0f;
 					}
 					else if ( "bump".equals( name ) )
 					{
