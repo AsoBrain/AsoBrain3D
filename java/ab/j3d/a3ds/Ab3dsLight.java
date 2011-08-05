@@ -106,7 +106,7 @@ public final class Ab3dsLight
 		public float _targetZ;
 
 		/**
-		 * Hot spot. Defines the light beam frustrum.
+		 * Hot spot. Defines the light beam frustum.
 		 *
 		 * @FIXME need description here, don't know the values that go here.
 		 */
