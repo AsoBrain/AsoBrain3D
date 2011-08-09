@@ -56,6 +56,7 @@
   </target>
 
   <target name="init">
+    <echo message="Project: ${ant.project.name}"/>
     <tstamp/>
     <available property="api.hsqldb"                     type="file" file="${hsqldb.jar}"/>
     <available property="api.jetbrains.annotations"      type="file" file="${jetbrains-annotations.jar}"/>
