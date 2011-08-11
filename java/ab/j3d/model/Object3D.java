@@ -64,6 +64,19 @@ public class Object3D
 	private Bounds3D _orientedBoundingBox;
 
 	/**
+	 * Low-detail representation of the object.
+	 */
+	private Node3D _lowDetail = null;
+
+	/**
+	 * Threshold value for using the low-detail representation of
+	 * the object, specified as the area in pixels occupied by the
+	 * object in image space. If the approximated area occupied by the object
+	 * is smaller, the low-detail representation will be rendered instead.
+	 */
+	private double _lowDetailThreshold = 0.0;
+
+	/**
 	 * Construct base object. Additional properties need to be set to make the
 	 * object usable.
 	 */
@@ -466,5 +479,161 @@ public class Object3D
 		}
 
 		return result;
+	}
+
+	/**
+	 * Returns a low-detail representation of the object or the object itself,
+	 * based on the visual size of the object.
+	 *
+	 * @param   area    Approximate visual size of the object, in pixels.
+	 *
+	 * @return  Object suitable for the specified visual size.
+	 */
+	public Node3D getLevelOfDetail( final double area )
+	{
+		final Node3D lowDetail = _lowDetail;
+		return ( area >= getLowDetailThreshold() ) ? this :
+		       ( ( lowDetail instanceof Object3D ) && ( lowDetail != this ) ) ? ( (Object3D)lowDetail ).getLevelOfDetail( area ) : lowDetail;
+	}
+
+	/**
+	 * Returns a low-detail representation of the object. If <code>null</code>
+	 * is returned, the object will not be rendered at low detail levels.
+	 * Objects that should always be rendered at full detail may return
+	 * <code>this</code>.
+	 *
+	 * @return  Low-detail representation of the object.
+	 */
+	@Nullable
+	public Node3D getLowDetail()
+	{
+		return _lowDetail;
+	}
+
+	/**
+	 * Sets the low-detail representation of the object. If <code>null</code>
+	 * is returned, the object will not be rendered below the {@link #getLowDetailThreshold()
+	 * low-detail threshold}. Objects that should always be rendered at full
+	 * detail may return <code>this</code>.
+	 *
+	 * @param   lowDetail   Low-detail representation of the object.
+	 */
+	public void setLowDetail( final Node3D lowDetail )
+	{
+		_lowDetail = lowDetail;
+	}
+
+	/**
+	 * Returns the threshold value for using the low-detail representation of
+	 * the object, specified as the area in pixels occupied by the
+	 * object in image space. If the approximated area occupied by the object
+	 * is smaller, the low-detail representation will be rendered instead.
+	 *
+	 * @return  Low-detail threshold, in pixels.
+	 */
+	public double getLowDetailThreshold()
+	{
+		return _lowDetailThreshold;
+	}
+
+	/**
+	 * Sets the threshold value for using the low-detail representation of
+	 * the object, specified as the area in pixels occupied by the
+	 * object in image space. If the approximated area occupied by the object
+	 * is smaller, the low-detail representation will be rendered instead.
+	 *
+	 * @param   lowDetailThreshold  Low-detail threshold, in pixels.
+	 */
+	public void setLowDetailThreshold( final double lowDetailThreshold )
+	{
+		_lowDetailThreshold = lowDetailThreshold;
+	}
+
+	/**
+	 * Returns whether this object provides a low-detail version.
+	 *
+	 * @return  <code>true</code> if a low-detail version is available.
+	 */
+	public boolean isLowDetailAvailable()
+	{
+		return ( getLowDetail() != this ) && ( getLowDetailThreshold() > 0.0 );
+	}
+
+	/**
+	 * Low-detail representation of the object, consisting of a bounding box.
+	 */
+	protected static class LowDetailObject3D
+		extends Object3D
+	{
+		/**
+		 * Bounding box.
+		 */
+		private Bounds3D _bounds;
+
+		/**
+		 * Material.
+		 */
+		private Material _material;
+
+		/**
+		 * Constructs a new instance.
+		 *
+		 * @param   bounds      Bounding box.
+		 * @param   material    Material.
+		 */
+		public LowDetailObject3D( final Bounds3D bounds, final Material material )
+		{
+			_bounds = bounds;
+			_material = material;
+
+			final Vector3D p1 = new Vector3D( bounds.v1.x, bounds.v1.y, bounds.v1.z );
+			final Vector3D p2 = new Vector3D( bounds.v2.x, bounds.v1.y, bounds.v1.z );
+			final Vector3D p3 = new Vector3D( bounds.v1.x, bounds.v2.y, bounds.v1.z );
+			final Vector3D p4 = new Vector3D( bounds.v2.x, bounds.v2.y, bounds.v1.z );
+			final Vector3D p5 = new Vector3D( bounds.v1.x, bounds.v1.y, bounds.v2.z );
+			final Vector3D p6 = new Vector3D( bounds.v2.x, bounds.v1.y, bounds.v2.z );
+			final Vector3D p7 = new Vector3D( bounds.v1.x, bounds.v2.y, bounds.v2.z );
+			final Vector3D p8 = new Vector3D( bounds.v2.x, bounds.v2.y, bounds.v2.z );
+
+			final Abstract3DObjectBuilder builder = getBuilder();
+			final BoxUVMap uvMap = new BoxUVMap( Scene.MM );
+			builder.addQuad( p1, p3, p7, p5, material, uvMap, false );
+			builder.addQuad( p2, p6, p8, p4, material, uvMap, false );
+			builder.addQuad( p1, p5, p6, p2, material, uvMap, false );
+			builder.addQuad( p4, p8, p7, p3, material, uvMap, false );
+			builder.addQuad( p1, p2, p4, p3, material, uvMap, false );
+			builder.addQuad( p5, p7, p8, p6, material, uvMap, false );
+		}
+
+		@Override
+		public Bounds3D getOrientedBoundingBox()
+		{
+			return _bounds;
+		}
+
+		@Override
+		public boolean equals( final Object object )
+		{
+			boolean result = false;
+			if ( object == this )
+			{
+				result = true;
+			}
+			else if ( object instanceof LowDetailObject3D )
+			{
+				final LowDetailObject3D other = (LowDetailObject3D)object;
+				result = _bounds.equals( other._bounds ) &&
+				         _material.equals( other._material );
+			}
+			return result;
+		}
+
+		@Override
+		public int hashCode()
+		{
+			int result = _bounds.hashCode();
+			result = 31 * result + _material.hashCode();
+			return result;
+		}
 	}
 }
