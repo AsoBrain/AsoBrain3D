@@ -27,6 +27,7 @@ import java.awt.geom.*;
 import ab.j3d.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
+import org.jetbrains.annotations.*;
 
 /**
  * A projector defines abstract methods to project 3D points on to a 2D
@@ -134,6 +135,11 @@ public abstract class Projector
 	protected final double _limitY;
 
 	/**
+	 * Viewing frustum.
+	 */
+	private ViewingFrustum _viewingFrustum;
+
+	/**
 	 * Create projector with the specified properties.
 	 *
 	 * @param   projectionPolicy    Projection policy.
@@ -212,6 +218,41 @@ public abstract class Projector
 		_view2pixels = view2pixels;
 		_limitX      = (double)imageWidth  / ( 2.0 * view2pixels );
 		_limitY      = (double)imageHeight / ( 2.0 * view2pixels );
+	}
+
+	/**
+	 * Returns whether the given bounds intersect the view volume.
+	 *
+	 * @param   transform   Transform from bounds to scene space.
+	 * @param   bounds      Bounds to be checked.
+	 *
+	 * @return  <code>true</code> if the bounds intersect the view volume.
+	 */
+	public boolean inViewVolume( final Matrix3D transform, final Bounds3D bounds )
+	{
+		final ViewingFrustum frustum = getViewingFrustum();
+		return ( frustum == null ) || frustum.contains( transform, bounds );
+	}
+
+	/**
+	 * Returns the viewing frustum for this projector.
+	 *
+	 * @return  Viewing frustum.
+	 */
+	@Nullable
+	public ViewingFrustum getViewingFrustum()
+	{
+		ViewingFrustum result = _viewingFrustum;
+		if ( result == null )
+		{
+			final Matrix4D projectionMatrix = getProjectionMatrix();
+			if ( projectionMatrix != null )
+			{
+				result = new ViewingFrustum( projectionMatrix );
+				_viewingFrustum = result;
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -483,6 +524,13 @@ public abstract class Projector
 	public abstract Ray3D getPointerRay( final Matrix3D transform , final double pointerX , final double pointerY );
 
 	/**
+	 * Returns a projection matrix for this projection.
+	 *
+	 * @return  Projection matrix.
+	 */
+	public abstract Matrix4D getProjectionMatrix();
+
+	/**
 	 * Perspective projector implementation.
 	 * <p />
 	 * Perspective projection maps 3D points on a 2D surface by taking the
@@ -628,6 +676,22 @@ public abstract class Projector
 		{
 			return _eyeDistance;
 		}
+
+		@Override
+		public Matrix4D getProjectionMatrix()
+		{
+			final double zNear = getFrontClipDistance();
+			final double zFar = getBackClipDistance();
+			final double aspect = (double)getImageWidth() / (double)getImageHeight();
+			final double f = 2.0 * getEyeDistance() * getView2pixels() / (double)getImageHeight();
+
+			return new Matrix4D(
+				f / aspect, 0.0, 0.0, 0.0,
+				0.0, f, 0.0, 0.0,
+				0.0, 0.0, ( zFar + zNear ) / ( zNear - zFar ), 2.0 * zFar * zNear / ( zNear - zFar ),
+				0.0, 0.0, -1.0, 0.0
+			);
+		}
 	}
 
 	/**
@@ -696,6 +760,23 @@ public abstract class Projector
 			    && ( depth >= _frontClipDistance ) && ( depth <= _backClipDistance );
 		}
 
+		@Override
+		public Matrix4D getProjectionMatrix()
+		{
+			final double left = -_limitX;
+			final double right = _limitX;
+			final double bottom = -_limitY;
+			final double top = _limitY;
+			final double near = _frontClipDistance;
+			final double far = _backClipDistance;
+
+			return new Matrix4D(
+				2.0 / ( right - left ), 0.0, 0.0, -( right + left ) / ( right - left ),
+				0.0, 2.0 / ( top - bottom ), 0.0, -( top + bottom ) / ( top - bottom ),
+				0.0, 0.0, -2.0 / ( far - near ), -( far + near ) / ( far - near ),
+				0.0, 0.0, 0.0, 1.0
+			);
+		}
 	}
 
 	/**
@@ -795,6 +876,12 @@ public abstract class Projector
 			return ( depth >= _frontClipDistance ) && ( depth <= _backClipDistance )
 			    && ( ( tmp = ( x - z * _xComponentOfZ     ) ) >= -_limitX ) && ( tmp <= _limitX )
 			    && ( ( tmp = (     z * _yComponentOfZ - y ) ) >= -_limitY ) && ( tmp <= _limitY );
+		}
+
+		@Override
+		public Matrix4D getProjectionMatrix()
+		{
+			return null; // TODO: Implement isometric projection matrix.
 		}
 	}
 }
