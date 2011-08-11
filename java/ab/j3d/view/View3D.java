@@ -153,6 +153,17 @@ public abstract class View3D
 	private final List<ViewListener> _viewListeners = new ArrayList<ViewListener>();
 
 	/**
+	 * Whether view frustum culling should be enabled, if supported by the view.
+	 */
+	private boolean _viewFrustumCulling = true;
+
+	/**
+	 * Whether dynamic level of detail should be enabled, if supported by the
+	 * view.
+	 */
+	private boolean _levelOfDetail = true;
+
+	/**
 	 * Construct new view.
 	 *
 	 * @param   scene   Scene to view.
@@ -416,6 +427,65 @@ public abstract class View3D
 	 *                  in view units.
 	 */
 	public abstract void setBackClipDistance( double back );
+
+	/**
+	 * Sets whether view frustum culling is enabled, if supported.
+	 *
+	 * @param   viewFrustumCulling  <code>true</code> to enable view frustum culling.
+	 */
+	public void setViewFrustumCulling( final boolean viewFrustumCulling )
+	{
+		_viewFrustumCulling = viewFrustumCulling;
+	}
+
+	/**
+	 * Sets whether view frustum culling is enabled, if supported.
+	 *
+	 * @return  <code>true</code> if view frustum culling is enabled.
+	 */
+	public boolean isViewFrustumCulling()
+	{
+		return _viewFrustumCulling;
+	}
+
+	/**
+	 * Returns whether the given object is visible in this view.
+	 *
+	 * @param   transform   Object-to-world transformation.
+	 * @param   object      Object to be checked.
+	 *
+	 * @return  <code>true</code> if the object is visible.
+	 */
+	public boolean isVisible( final Matrix3D transform, final Object3D object )
+	{
+		boolean result = true;
+		if ( isViewFrustumCulling() )
+		{
+			final Projector projector = getProjector();
+			result = projector.inViewVolume( transform.multiply( getScene2View() ), object.getOrientedBoundingBox() );
+		}
+		return result;
+	}
+
+	/**
+	 * Returns whether (dynamic) level of detail is enabled.
+	 *
+	 * @return  <code>true</code> if level of detail is enabled.
+	 */
+	public boolean isLevelOfDetail()
+	{
+		return _levelOfDetail;
+	}
+
+	/**
+	 * Sets whether (dynamic) level of detail is enabled.
+	 *
+	 * @param   levelOfDetail   <code>true</code> to enable level of detail.
+	 */
+	public void setLevelOfDetail( final boolean levelOfDetail )
+	{
+		_levelOfDetail = levelOfDetail;
+	}
 
 	/**
 	 * Get control for this view.
