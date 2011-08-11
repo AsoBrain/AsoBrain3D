@@ -677,7 +677,7 @@ public class JOGLView
 		if ( renderer == null )
 		{
 			final TextureCache textureCache = _joglEngine.getTextureCache();
-			renderer = new JOGLRenderer( gl, _configuration, textureCache );
+			renderer = new JOGLRenderer( gl, _configuration, textureCache, this );
 			renderer.init();
 			_renderer = renderer;
 		}

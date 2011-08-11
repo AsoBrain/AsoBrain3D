@@ -166,6 +166,11 @@ public class JOGLRenderer
 	private GeometryObjectManager _geometryObjectManager = new GeometryObjectManager();
 
 	/**
+	 * Projector to be used for view frustum culling.
+	 */
+	private View3D _view;
+
+	/**
 	 * Specifies which objects should be rendered during the current rendering
 	 * pass when performing multi-pass rendering.
 	 */
@@ -190,18 +195,20 @@ public class JOGLRenderer
 	/**
 	 * Construct new JOGL renderer.
 	 *
-	 * @param   gl                      GL pipeline.
-	 * @param   configuration           Specifies which OpenGL capabilities
-	 *                                  should be used, if available.
-	 * @param   textureCache            Map containing {@link Texture}s used in the scene.
+	 * @param   gl              GL pipeline.
+	 * @param   configuration   Specifies which OpenGL capabilities should be
+	 *                          used, if available.
+	 * @param   textureCache    Map containing {@link Texture}s used in the scene.
+	 * @param   view            View to be rendered.
 	 */
-	public JOGLRenderer( final GL gl, final JOGLConfiguration configuration, final TextureCache textureCache )
+	public JOGLRenderer( final GL gl, final JOGLConfiguration configuration, final TextureCache textureCache, final View3D view )
 	{
 		_gl = gl;
 		_state = null;
 
 		_textureCache = textureCache;
 		_configuration = configuration;
+		_view = view;
 
 		_shaderManager = null;
 
@@ -455,6 +462,7 @@ public class JOGLRenderer
 
 		if ( statistics != null )
 		{
+			System.out.println( "----------frameRendered" );
 			statistics.frameRendered();
 		}
 
@@ -828,6 +836,67 @@ public class JOGLRenderer
 			state.setEnabled( GL.GL_CULL_FACE, true );
 		}
 
+		final TextureMap image = background.getImage();
+		if ( image != null )
+		{
+			final Texture texture = _textureCache.getTexture( image );
+			if ( texture != null )
+			{
+				state.setEnabled( GL.GL_CULL_FACE, false );
+				state.setEnabled( GL.GL_DEPTH_TEST, false );
+
+				texture.enable();
+				texture.bind();
+
+				gl.glMatrixMode( GL.GL_PROJECTION );
+				gl.glPushMatrix();
+				gl.glLoadIdentity();
+
+				gl.glMatrixMode( GL.GL_MODELVIEW );
+				gl.glPushMatrix();
+				gl.glLoadIdentity();
+
+				final int[] viewport = new int[ 4 ];
+				gl.glGetIntegerv( GL.GL_VIEWPORT, viewport, 0 );
+				final int width  = viewport[ 2 ];
+				final int height = viewport[ 3 ];
+
+				final float viewAspect = (float)width / (float)height;
+				final float textureAspect = texture.getAspectRatio();
+				gl.glScalef( textureAspect, viewAspect, 1.0f );
+
+				final double xo = background.getCenterX();
+				final double yo = background.getCenterY();
+
+				final double x1 = xo + -1.0;
+				final double x2 = xo + 1.0;
+				final double y1 = yo + -1.0;
+				final double y2 = yo + 1.0;
+
+				state.setColor( 1.0f, 1.0f, 1.0f, 1.0f );
+				gl.glBegin( GL.GL_QUADS );
+				gl.glTexCoord2d( 0.0, 1.0 );
+				gl.glVertex2d( x1, y1 );
+				gl.glTexCoord2d( 1.0, 1.0 );
+				gl.glVertex2d( x2, y1 );
+				gl.glTexCoord2d( 1.0, 0.0 );
+				gl.glVertex2d( x2, y2 );
+				gl.glTexCoord2d( 0.0, 0.0 );
+				gl.glVertex2d( x1, y2 );
+				gl.glEnd();
+
+				gl.glPopMatrix();
+				gl.glMatrixMode( GL.GL_PROJECTION );
+				gl.glPopMatrix();
+				gl.glMatrixMode( GL.GL_MODELVIEW );
+
+				texture.disable();
+
+				state.setEnabled( GL.GL_DEPTH_TEST, true );
+				state.setEnabled( GL.GL_CULL_FACE, true );
+			}
+		}
+
 //		renderEnvironment();
 	}
 
@@ -933,36 +1002,51 @@ public class JOGLRenderer
 	 */
 	private void renderObjects( final List<ContentNode> nodes, final Collection<RenderStyleFilter> styleFilters, final RenderStyle sceneStyle )
 	{
+		final boolean shadowPass = _shadowPass;
+
 		final Map<Duet<Object3D, RenderStyle>, List<Node3DPath>> objectGroups = new LinkedHashMap<Duet<Object3D, RenderStyle>, List<Node3DPath>>();
 
 		for ( final ContentNode node : nodes )
 		{
-			if ( _shadowPass && !node.isCastingShadows() )
+			if ( shadowPass && !node.isCastingShadows() )
 			{
 				continue;
 			}
 
-			final Node3DCollector collector = new Node3DCollector( Object3D.class );
-			Node3DTreeWalker.walk( collector, node.getTransform(), node.getNode3D() );
-			final List<Node3DPath> content = collector.getCollectedNodes();
-
 			final RenderStyle nodeStyle = sceneStyle.applyFilters( styleFilters, node );
 
-			for ( final Node3DPath path : content )
+			final Node3DTreeWalker treeWalker = new LevelOfDetailTreeWalker();
+			treeWalker.walkNode( new Node3DVisitor()
 			{
-				final Object3D object = (Object3D) path.getNode();
-				final RenderStyle objectStyle = nodeStyle.applyFilters( styleFilters, object );
-				final BasicDuet<Object3D, RenderStyle> key = new BasicDuet<Object3D, RenderStyle>( object, objectStyle );
-
-				List<Node3DPath> objectGroup = objectGroups.get( key );
-				if ( objectGroup == null )
+				@Override
+				public boolean visitNode( @NotNull final Node3DPath path )
 				{
-					objectGroup = new ArrayList<Node3DPath>();
-					objectGroups.put( key, objectGroup );
-				}
+					final Node3D node = path.getNode();
+					if ( node instanceof Object3D )
+					{
+						final Object3D object = (Object3D)node;
 
-				objectGroup.add( path );
-			}
+						final View3D view = _view;
+						final boolean visibleByCamera = view.isVisible( path.getTransform(), object );
+
+						if ( shadowPass || visibleByCamera )
+						{
+							final RenderStyle objectStyle = nodeStyle.applyFilters( styleFilters, path );
+							final BasicDuet<Object3D, RenderStyle> key = new BasicDuet<Object3D, RenderStyle>( object, objectStyle );
+
+							List<Node3DPath> objectGroup = objectGroups.get( key );
+							if ( objectGroup == null )
+							{
+								objectGroup = new ArrayList<Node3DPath>();
+								objectGroups.put( key, objectGroup );
+							}
+
+							objectGroup.add( path );
+						}
+					}
+					return true;
+				}
+			}, node.getTransform(), node.getNode3D() );
 		}
 
 		for ( final Map.Entry<Duet<Object3D, RenderStyle>, List<Node3DPath>> objectGroup : objectGroups.entrySet() )
@@ -1130,7 +1214,9 @@ public class JOGLRenderer
 	{
 		final GL gl = _gl;
 
-		gl.glLightfv( lightNumber, GL.GL_AMBIENT , new float[] { 0.0f, 0.0f, 0.0f, 1.0f }, 0 );
+		gl.glLightfv( lightNumber, GL.GL_AMBIENT, new float[] {
+		0.0f, 0.0f, 0.0f, 1.0f
+		}, 0 );
 		gl.glLightfv( lightNumber, GL.GL_DIFFUSE , new float[] { light.getDiffuseRed() , light.getDiffuseGreen() , light.getDiffuseBlue() , 1.0f }, 0 );
 		gl.glLightfv( lightNumber, GL.GL_SPECULAR, new float[] { light.getSpecularRed(), light.getSpecularGreen(), light.getSpecularBlue(), 1.0f }, 0 );
 
@@ -1162,7 +1248,7 @@ public class JOGLRenderer
 		else
 		{
 			gl.glLightf ( lightNumber, GL.GL_SPOT_CUTOFF   , 180.0f );
-			gl.glLightf ( lightNumber, GL.GL_SPOT_EXPONENT , 0.0f );
+			gl.glLightf( lightNumber, GL.GL_SPOT_EXPONENT, 0.0f );
 		}
 
 		_state.setEnabled( lightNumber, true );
@@ -1187,6 +1273,7 @@ public class JOGLRenderer
 			final RenderStatistics statistics = _statistics;
 			if ( statistics != null )
 			{
+				System.out.println( "objectRendered( " + object + " / " + object.getTag() + ", " + paths.size() + " )" );
 				statistics.objectRendered( object, paths.size() );
 			}
 
@@ -1936,6 +2023,72 @@ public class JOGLRenderer
 		public int getFPS()
 		{
 			return _frameCounter.get();
+		}
+	}
+
+	/**
+	 * Tree walker that takes level of detail of {@link Object3D}s into account.
+	 */
+	private class LevelOfDetailTreeWalker
+		extends Node3DTreeWalker
+	{
+		/**
+		 * Calculates projected object bounds.
+		 */
+		private final Convex2D _projectedBounds = new Convex2D( 8 );
+
+		@Override
+		public boolean walkNode( @NotNull final Node3DVisitor visitor, @NotNull final Node3DPath path )
+		{
+			boolean result = visitor.visitNode( path );
+			if ( result )
+			{
+				final Node3D node = path.getNode();
+				final Matrix3D transform = path.getTransform();
+
+				for ( final Node3D child : node.getChildren() )
+				{
+					Node3D renderedChild = child;
+					if ( _view.isLevelOfDetail() && ( renderedChild instanceof Object3D ) )
+					{
+						final Object3D object = (Object3D)renderedChild;
+						if ( object.isLowDetailAvailable() )
+						{
+							final Bounds3D boundingBox = object.getOrientedBoundingBox();
+							if ( boundingBox != null )
+							{
+								final Projector projector = _view.getProjector();
+								final Matrix3D scene2View = _view.getScene2View();
+								final Matrix3D object2View = path.getTransform().multiply( scene2View );
+
+								_projectedBounds.clear();
+								projector.project( _projectedBounds.add(), object2View.transform( boundingBox.v1.x, boundingBox.v1.y, boundingBox.v1.z ) );
+								projector.project( _projectedBounds.add(), object2View.transform( boundingBox.v2.x, boundingBox.v1.y, boundingBox.v1.z ) );
+								projector.project( _projectedBounds.add(), object2View.transform( boundingBox.v1.x, boundingBox.v2.y, boundingBox.v1.z ) );
+								projector.project( _projectedBounds.add(), object2View.transform( boundingBox.v2.x, boundingBox.v2.y, boundingBox.v1.z ) );
+								projector.project( _projectedBounds.add(), object2View.transform( boundingBox.v1.x, boundingBox.v1.y, boundingBox.v2.z ) );
+								projector.project( _projectedBounds.add(), object2View.transform( boundingBox.v2.x, boundingBox.v1.y, boundingBox.v2.z ) );
+								projector.project( _projectedBounds.add(), object2View.transform( boundingBox.v1.x, boundingBox.v2.y, boundingBox.v2.z ) );
+								projector.project( _projectedBounds.add(), object2View.transform( boundingBox.v2.x, boundingBox.v2.y, boundingBox.v2.z ) );
+								final double area = _projectedBounds.area();
+
+								renderedChild = object.getLevelOfDetail( area );
+							}
+						}
+					}
+
+					if ( renderedChild != null )
+					{
+						if ( !walkNode( visitor, createPath( path, transform, renderedChild ) ) )
+						{
+							result = false;
+							break;
+						}
+					}
+				}
+			}
+
+			return result;
 		}
 	}
 }

@@ -375,7 +375,7 @@ public class JOGLCapabilities
 			{
 				final JOGLConfiguration configuration = new JOGLConfiguration();
 				final TextureCache textureCache = new TextureCache();
-				final JOGLRenderer renderer = new JOGLRenderer( _context.getGL() , configuration , textureCache );
+				final JOGLRenderer renderer = new JOGLRenderer( _context.getGL() , configuration , textureCache, null );
 				renderer.init();
 				final ShaderManager shaderManager = renderer.getShaderManager();
 				_result = shaderManager.isShaderSupportAvailable();
