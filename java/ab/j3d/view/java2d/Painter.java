@@ -60,35 +60,70 @@ public final class Painter
 	 */
 	public static void paintNode( @NotNull final Graphics2D g, @NotNull final Matrix3D view2image, @NotNull final Matrix3D node2view, @NotNull final Node3D node, @NotNull final RenderStyle renderStyle, @Nullable final RenderStyleFilter renderStyleFilter )
 	{
-		final Matrix3D object2view;
-
-		if ( node instanceof Transform3D )
+		Node3D renderedNode = node;
+		if ( ( node instanceof Object3D ) && ( (Object3D)renderedNode ).isLowDetailAvailable() )
 		{
-			final Matrix3D transformTransform = ((Transform3D)node).getTransform();
-			object2view = transformTransform.multiply( node2view );
+			final Object3D object = (Object3D)renderedNode;
+			final Bounds3D boundingBox = object.getOrientedBoundingBox();
+			if ( boundingBox != null )
+			{
+				final Convex2D projectedBounds = new Convex2D( 8 );
+
+				final Matrix3D object2image = node2view.multiply( view2image );
+				Point2D point = projectedBounds.add();
+				point.setLocation( object2image.transformX( boundingBox.v1.x, boundingBox.v1.y, boundingBox.v1.z ), object2image.transformY( boundingBox.v1.x, boundingBox.v1.y, boundingBox.v1.z ) );
+				point = projectedBounds.add();
+				point.setLocation( object2image.transformX( boundingBox.v2.x, boundingBox.v1.y, boundingBox.v1.z ), object2image.transformY( boundingBox.v2.x, boundingBox.v1.y, boundingBox.v1.z ) );
+				point = projectedBounds.add();
+				point.setLocation( object2image.transformX( boundingBox.v1.x, boundingBox.v2.y, boundingBox.v1.z ), object2image.transformY( boundingBox.v1.x, boundingBox.v2.y, boundingBox.v1.z ) );
+				point = projectedBounds.add();
+				point.setLocation( object2image.transformX( boundingBox.v2.x, boundingBox.v2.y, boundingBox.v1.z ), object2image.transformY( boundingBox.v2.x, boundingBox.v2.y, boundingBox.v1.z ) );
+				point = projectedBounds.add();
+				point.setLocation( object2image.transformX( boundingBox.v1.x, boundingBox.v1.y, boundingBox.v2.z ), object2image.transformY( boundingBox.v1.x, boundingBox.v1.y, boundingBox.v2.z ) );
+				point = projectedBounds.add();
+				point.setLocation( object2image.transformX( boundingBox.v2.x, boundingBox.v1.y, boundingBox.v2.z ), object2image.transformY( boundingBox.v2.x, boundingBox.v1.y, boundingBox.v2.z ) );
+				point = projectedBounds.add();
+				point.setLocation( object2image.transformX( boundingBox.v1.x, boundingBox.v2.y, boundingBox.v2.z ), object2image.transformY( boundingBox.v1.x, boundingBox.v2.y, boundingBox.v2.z ) );
+				point = projectedBounds.add();
+				point.setLocation( object2image.transformX( boundingBox.v2.x, boundingBox.v2.y, boundingBox.v2.z ), object2image.transformY( boundingBox.v2.x, boundingBox.v2.y, boundingBox.v2.z ) );
+
+				final double area = projectedBounds.area();
+				renderedNode = object.getLevelOfDetail( area );
+			}
 		}
-		else
-		{
-			object2view = node2view;
-		}
 
-		RenderStyle nodeStyle = renderStyle;
-		if ( renderStyleFilter != null )
+		if ( renderedNode != null )
 		{
-			nodeStyle = renderStyleFilter.applyFilter( nodeStyle, node );
-		}
+			final Matrix3D object2view;
 
-		if ( node instanceof Object3D )
-		{
-			final Object3D object = (Object3D) node;
-			paintObject( g, view2image, object2view, object, nodeStyle );
-		}
+			if ( renderedNode instanceof Transform3D )
+			{
+				final Matrix3D transformTransform = ((Transform3D)renderedNode).getTransform();
+				object2view = transformTransform.multiply( node2view );
+			}
+			else
+			{
+				object2view = node2view;
+			}
 
-		final int childCount = node.getChildCount();
+			RenderStyle nodeStyle = renderStyle;
+			if ( renderStyleFilter != null )
+			{
+				nodeStyle = renderStyleFilter.applyFilter( nodeStyle, renderedNode );
+			}
 
-		for ( int i = 0 ; i < childCount ; i++ )
-		{
-			paintNode( g, view2image, object2view, node.getChild( i ), nodeStyle, renderStyleFilter );
+			if ( renderedNode instanceof Object3D )
+			{
+				final Object3D object = (Object3D) renderedNode;
+				paintObject( g, view2image, object2view, object, nodeStyle );
+			}
+
+			final int childCount = renderedNode.getChildCount();
+
+			for ( int i = 0 ; i < childCount ; i++ )
+			{
+				paintNode( g, view2image, object2view, renderedNode.getChild( i ), nodeStyle, renderStyleFilter );
+			}
 		}
 	}
 
