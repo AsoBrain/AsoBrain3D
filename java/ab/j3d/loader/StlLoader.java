@@ -21,6 +21,7 @@
 package ab.j3d.loader;
 
 import java.io.*;
+import java.util.*;
 import java.util.regex.*;
 
 import ab.j3d.*;
@@ -412,12 +413,12 @@ public class StlLoader
 				points[ 2 ] = transform.transform( (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ) );
 				points[ 1 ] = transform.transform( (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ) );
 
-				final long attributeByteCount = (long)DataStreamTools.readUnsignedShortLE( in );
-				long skipped = 0L;
-				while ( skipped < attributeByteCount )
-				{
-					skipped += in.skip( attributeByteCount - skipped );
-				}
+				/*
+				 * Skip 'attribute byte count' which apparently does not
+				 * specify a number of bytes that follows this 'count', but is
+				 * used by some packages to store color information.
+				 */
+				DataStreamTools.readUnsignedShortLE( in );
 
 				builder.addFace( points, material, uvMap, normals, false, false, false );
 			}
