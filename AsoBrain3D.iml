@@ -25,11 +25,11 @@
       </library>
     </orderEntry>
     <orderEntry type="module" module-name="NumdataOpenSource" />
-    <orderEntry type="library" name="Java 3D" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="Java 3D" level="application" />
     <orderEntry type="library" name="JetBrains Annotations" level="application" />
-    <orderEntry type="library" name="JUnit" level="application" />
-    <orderEntry type="library" name="Log4j" level="application" />
-    <orderEntry type="library" name="JOGL" level="application" />
+    <orderEntry type="library" scope="TEST" name="JUnit" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="Log4j" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="JOGL" level="application" />
   </component>
 </module>
 
