@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2009-2010 Peter S. Heijnen
+ * Copyright (C) 2009-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -462,7 +462,8 @@ public abstract class View3D
 		if ( isViewFrustumCulling() )
 		{
 			final Projector projector = getProjector();
-			result = projector.inViewVolume( transform.multiply( getScene2View() ), object.getOrientedBoundingBox() );
+			final Bounds3D obb = object.getOrientedBoundingBox();
+			result = ( obb != null ) && projector.inViewVolume( transform.multiply( getScene2View() ), obb );
 		}
 		return result;
 	}
