@@ -273,27 +273,12 @@ public class Node3D
 	 * @return  Calculated bounds;
 	 *          <code>null</code> if bounds could not be determined.
 	 */
+	@Nullable
 	public Bounds3D calculateBounds( final Matrix3D transform )
 	{
-		final Bounds3DBuilder builder = new Bounds3DBuilder();
-
-		final Node3DVisitor worker = new Node3DVisitor()
-		{
-			@Override
-			public boolean visitNode( @NotNull final Node3DPath path )
-			{
-				final Node3D node = path.getNode();
-				if ( node instanceof Object3D )
-				{
-					final Object3D object3d = (Object3D) node;
-					object3d.addBounds( builder, path.getTransform() );
-				}
-				return true;
-			}
-		};
-
+		final Bounds3DBuilderVisitor worker = new Bounds3DBuilderVisitor();
 		Node3DTreeWalker.walk( worker, transform, this );
-		return builder.getBounds();
+		return worker.getBounds();
 	}
 
 	@Override
@@ -302,4 +287,5 @@ public class Node3D
 		final Class<?> clazz = getClass();
 		return clazz.getSimpleName() + '@' + Integer.toHexString( hashCode() ) + "{tag=" + getTag() + '}';
 	}
+
 }
