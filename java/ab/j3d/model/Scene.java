@@ -21,6 +21,7 @@
 package ab.j3d.model;
 
 import java.util.*;
+import java.util.concurrent.atomic.*;
 
 import ab.j3d.*;
 import ab.j3d.view.*;
@@ -141,6 +142,17 @@ public class Scene
 	 * animation; rendering a static scene continuously is a waste of resources.
 	 */
 	private boolean _animated = false;
+
+	/**
+	 * Keeps track of the sequence number of the latest {@link SceneUpdate}
+	 * instance. This is used to determine whether updates are still current.
+	 */
+	private AtomicInteger _updateSequenceNumber = new AtomicInteger();
+
+	/**
+	 * Performs tasks needed for scene updates asynchronously.
+	 */
+//	private final ExecutorService _executorService = Executors.newSingleThreadExecutor();
 
 	/**
 	 * Shared listener for content node updates.
@@ -701,5 +713,36 @@ public class Scene
 	public void removePlaneControl( @NotNull final ScenePlaneControl planeControl )
 	{
 		_planeControls.remove( planeControl );
+	}
+
+	/**
+	 * Returns a new scene update instance.
+	 *
+	 * @return  Scene update.
+	 */
+	public SceneUpdate createUpdate()
+	{
+		return new SceneUpdate( this );
+//		return new AsynchronousSceneUpdate( this, _executorService );
+	}
+
+	/**
+	 * Returns a sequence number for a newly created {@link SceneUpdate}.
+	 *
+	 * @return  Scene update sequence number.
+	 */
+	int incrementAndGetUpdateSequenceNumber()
+	{
+		return _updateSequenceNumber.incrementAndGet();
+	}
+
+	/**
+	 * Returns the sequence number of the newest {@link SceneUpdate}.
+	 *
+	 * @return  Scene update sequence number.
+	 */
+	int getUpdateSequenceNumber()
+	{
+		return _updateSequenceNumber.get();
 	}
 }
