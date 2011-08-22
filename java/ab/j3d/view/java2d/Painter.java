@@ -205,30 +205,79 @@ public final class Painter
 						faceFillColor = fillColor;
 					}
 
+					final int fillAlpha = faceFillColor == null ? 0 : faceFillColor.getAlpha();
+
 					/*
 					 * Fill faces.
 					 */
-					for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
+					if ( ( fillAlpha > 0 ) && ( faceFillColor != null ) )
 					{
-						path.reset();
-
-						final int[] triangles = primitive.getTriangles();
-						for ( int i = 0 ; i < triangles.length ; i += 3 )
+						final Color opaqueFaceFillColor = ( fillAlpha < 255 ) ? new Color( faceFillColor.getRGB() ) : faceFillColor;
+						for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
 						{
-							final Vector3D p1 = vertices.get( triangles[ i     ] ).point;
-							final Vector3D p2 = vertices.get( triangles[ i + 1 ] ).point;
-							final Vector3D p3 = vertices.get( triangles[ i + 2 ] ).point;
+							final int[] triangles = primitive.getTriangles();
+							if ( isRectangle( object2image, vertices, triangles ) )
+							{
+								double x1 = object2image.transformX( vertices.get( triangles[ 0 ] ).point );
+								double y1 = object2image.transformY( vertices.get( triangles[ 0 ] ).point );
+								double x2 = object2image.transformX( vertices.get( triangles[ 2 ] ).point );
+								double y2 = object2image.transformY( vertices.get( triangles[ 2 ] ).point );
 
-							path.moveTo( object2image.transformX( p1 ), object2image.transformY( p1 ) );
-							path.lineTo( object2image.transformX( p2 ), object2image.transformY( p2 ) );
-							path.lineTo( object2image.transformX( p3 ), object2image.transformY( p3 ) );
-							path.closePath();
-						}
+								if ( x1 > x2 )
+								{
+									final double temp = x1;
+									x1 = x2;
+									x2 = temp;
+								}
 
-						if ( faceFillColor != null )
-						{
-							g.setPaint( faceFillColor );
-							g.fill( path );
+								if ( y1 > y2 )
+								{
+									final double temp = y1;
+									y1 = y2;
+									y2 = temp;
+								}
+
+								g.setPaint( opaqueFaceFillColor );
+								if ( fillAlpha < 255 )
+								{
+									fillEtched( g, x1, y1, x2, y2 );
+								}
+								else
+								{
+									g.fill( new Rectangle2D.Double( x1, y1, x2 - x1, y2 - y1 ) );
+								}
+							}
+							else
+							{
+								path.reset();
+
+								for ( int i = 0 ; i < triangles.length ; i += 3 )
+								{
+									final Vector3D p1 = vertices.get( triangles[ i     ] ).point;
+									final Vector3D p2 = vertices.get( triangles[ i + 1 ] ).point;
+									final Vector3D p3 = vertices.get( triangles[ i + 2 ] ).point;
+
+									path.moveTo( object2image.transformX( p1 ), object2image.transformY( p1 ) );
+									path.lineTo( object2image.transformX( p2 ), object2image.transformY( p2 ) );
+									path.lineTo( object2image.transformX( p3 ), object2image.transformY( p3 ) );
+									path.closePath();
+								}
+
+								if ( fillAlpha < 255 )
+								{
+									final Shape clip = g.getClip();
+									g.setClip( path );
+									g.setPaint( opaqueFaceFillColor );
+									final Rectangle2D bounds = path.getBounds2D();
+									fillEtched( g, bounds.getMinX(), bounds.getMinY(), bounds.getMaxX(), bounds.getMaxY() );
+									g.setClip( clip );
+								}
+								else
+								{
+									g.setPaint( faceFillColor );
+									g.fill( path );
+								}
+							}
 						}
 					}
 
@@ -264,6 +313,68 @@ public final class Painter
 				}
 			}
 		}
+	}
+
+	/**
+	 * Fills the given rectangle using lines at a fixed distance from eachother.
+	 *
+	 * @param   g   Graphics context.
+	 * @param   x1  Minimum X-coordinate.
+	 * @param   y1  Minimum Y-coordinate.
+	 * @param   x2  Maximum X-coordinate.
+	 * @param   y2  Maximum Y-coordinate.
+	 */
+	private static void fillEtched( final Graphics2D g, final double x1, final double y1, final double x2, final double y2 )
+	{
+		final int step = 16;
+
+		final int cMin = ( (int)( x1 + y1 ) / step + 1 ) * step;
+		final int cMax =   (int)( x2 + y2 ) / step       * step;
+
+		for ( int c = cMin; c <= cMax; c += step )
+		{
+			final int lineX1 = Math.min( (int)x2, c - (int)y1 );
+			final int lineY1 = c - lineX1;
+			final int lineY2 = Math.min( (int)y2, c - (int)x1 );
+			final int lineX2 = c - lineY2;
+			g.drawLine( lineX1, lineY1, lineX2, lineY2 );
+		}
+	}
+
+	/**
+	 * Returns whether the given triangles are a rectangle. This implementation
+	 * performs a rough check to see if the triangles are a rectangle formed
+	 * by a triangle fan. As such, this method may return false negatives.
+	 *
+	 * @param   object2image    Object to image transformation.
+	 * @param   vertices        Vertices.
+	 * @param   triangles       Vertex indices of each triangle.
+	 *
+	 * @return  <code>true</code> if the triangles form a rectangle.
+	 */
+	private static boolean isRectangle( final Matrix3D object2image, final List<Vertex> vertices, final int[] triangles )
+	{
+		boolean result = false;
+
+		if ( ( triangles.length == 6 ) && ( triangles[ 0 ] == triangles[ 3 ] ) && ( triangles[ 2 ] == triangles[ 4 ] ) )
+		{
+			final Vector3D p1 = vertices.get( triangles[ 0 ] ).point;
+			final Vector3D p2 = vertices.get( triangles[ 1 ] ).point;
+			final Vector3D p3 = vertices.get( triangles[ 2 ] ).point;
+			final Vector3D p4 = vertices.get( triangles[ 5 ] ).point;
+
+			result = ( ( object2image.transformX( p1 ) == object2image.transformX( p2 ) ) &&
+			           ( object2image.transformY( p2 ) == object2image.transformY( p3 ) ) &&
+			           ( object2image.transformX( p3 ) == object2image.transformX( p4 ) ) &&
+			           ( object2image.transformY( p4 ) == object2image.transformY( p1 ) ) ) ||
+
+			         ( ( object2image.transformY( p1 ) == object2image.transformY( p2 ) ) &&
+			           ( object2image.transformX( p2 ) == object2image.transformX( p3 ) ) &&
+			           ( object2image.transformY( p3 ) == object2image.transformY( p4 ) ) &&
+			           ( object2image.transformX( p4 ) == object2image.transformX( p1 ) ) );
+		}
+
+		return result;
 	}
 
 	/**
