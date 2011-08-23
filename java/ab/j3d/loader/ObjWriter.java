@@ -186,7 +186,7 @@ public class ObjWriter
 
 		zipOut.putNextEntry( new ZipEntry( name + ".obj" ) );
 
-		final BufferedWriter objWriter = new BufferedWriter( new OutputStreamWriter( out, _charset ) );
+		final BufferedWriter objWriter = new BufferedWriter( new OutputStreamWriter( zipOut, _charset ) );
 		objWriter.write( "mtllib " + name + ".mtl\n" );
 		final ObjGenerator objGenerator = new ObjGenerator( objWriter );
 		Node3DTreeWalker.walk( objGenerator, node );
