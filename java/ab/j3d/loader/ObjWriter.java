@@ -117,16 +117,22 @@ public class ObjWriter
 	/**
 	 * Writes an OBJ file for the given node.
 	 *
-	 * @param   out     Stream to write to.
-	 * @param   node    Node to be written.
+	 * @param   out                 Stream to write to.
+	 * @param   node                Node to be written.
+	 * @param   materialLibraries   Names of material libraries.
 	 *
 	 * @throws  IOException if an I/O error occurs.
 	 */
-	public void write( final OutputStream out, final Node3D node )
+	public void write( final OutputStream out, final Node3D node, final String... materialLibraries )
 		throws IOException
 	{
 		final BufferedWriter objWriter = new BufferedWriter( new OutputStreamWriter( out, _charset ) );
-		objWriter.write( "mtllib ivenza.mtl\n" );
+		for ( final String materialLibrary : materialLibraries )
+		{
+			objWriter.write( "mtllib " );
+			objWriter.write( materialLibrary );
+			objWriter.write( "\n" );
+		}
 		final ObjGenerator objGenerator = new ObjGenerator( objWriter );
 		Node3DTreeWalker.walk( objGenerator, node );
 
