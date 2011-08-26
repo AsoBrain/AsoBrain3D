@@ -836,6 +836,7 @@ public class JOGLRenderer
 			state.setEnabled( GL.GL_CULL_FACE, true );
 		}
 
+/*
 		final TextureMap image = background.getImage();
 		if ( image != null )
 		{
@@ -896,6 +897,7 @@ public class JOGLRenderer
 				state.setEnabled( GL.GL_CULL_FACE, true );
 			}
 		}
+*/
 
 //		renderEnvironment();
 	}
