@@ -247,7 +247,11 @@ public class JOGLGraphics2D
 		final TextRenderer textRenderer = _renderer;
 		if ( textRenderer != null )
 		{
-			textRenderer.dispose();
+			if ( GLContext.getCurrent() != null )
+			{
+				textRenderer.dispose();
+			}
+
 			_renderer = null;
 		}
 	}
