@@ -1060,7 +1060,7 @@ public abstract class BoxSide
 	 * @param   planarGraphics  Planar graphics to paint to.
 	 * @param   bounds          Bounds of the side.
 	 */
-	private void paintPlane( final PlanarGraphics2D planarGraphics, final Rectangle2D bounds )
+	protected void paintPlane( final PlanarGraphics2D planarGraphics, final Rectangle2D bounds )
 	{
 		if ( _color != null )
 		{
