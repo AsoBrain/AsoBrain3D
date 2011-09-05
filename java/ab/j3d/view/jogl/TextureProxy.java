@@ -139,6 +139,7 @@ public class TextureProxy
 				if ( textureData != null )
 				{
 					texture = createTexture( textureData );
+					_textureData = null;
 					textureData.flush();
 					_texture = texture;
 				}
