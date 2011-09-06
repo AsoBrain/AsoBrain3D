@@ -84,6 +84,7 @@ public abstract class DragControl
 		return !pointerRayParallelToPlane ? orientedPlane .setTranslation( point ) : null;
 	}
 
+	@Override
 	public EventObject mousePressed( final ControlInputEvent event )
 	{
 		EventObject result = event;
@@ -115,6 +116,7 @@ public abstract class DragControl
 		return result;
 	}
 
+	@Override
 	public EventObject mouseDragged( final ControlInputEvent event )
 	{
 		final EventObject result;
@@ -132,6 +134,7 @@ public abstract class DragControl
 		return result;
 	}
 
+	@Override
 	public EventObject mouseReleased( final ControlInputEvent event )
 	{
 		final EventObject result;
@@ -139,6 +142,7 @@ public abstract class DragControl
 		if ( _activeDragger != null )
 		{
 			dragTo( event );
+			dragEnd( event );
 			dragStop();
 			result = null;
 		}
