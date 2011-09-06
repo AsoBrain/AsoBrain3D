@@ -85,9 +85,17 @@ public class SelectViewPointAction
 		-1.0,  0.0,  0.0, 0.0 ) );
 
 	/**
+	 * View transform for isometric view.
+	 */
+	public static final ViewPoint ISOMETRIC_VIEW = new ViewPoint( "isometric", new Matrix3D(
+		Math.sqrt( 0.5 ), Math.sqrt( 0.5 ),              0.0, 0.0,
+		            -0.5,              0.5, Math.sqrt( 0.5 ), 0.0,
+		             0.5,             -0.5, Math.sqrt( 0.5 ), 0.0 ) );
+
+	/**
 	 * Standard avaiable view points.
 	 */
-	public static final List<ViewPoint> STANDARD_VIEW_POINTS = Arrays.asList( FRONT_VIEW, REAR_VIEW, TOP_VIEW, BOTTOM_VIEW, RIGHT_VIEW, LEFT_VIEW );
+	public static final List<ViewPoint> STANDARD_VIEW_POINTS = Arrays.asList( FRONT_VIEW, REAR_VIEW, TOP_VIEW, BOTTOM_VIEW, RIGHT_VIEW, LEFT_VIEW, ISOMETRIC_VIEW );
 
 	/**
 	 * Locale to use.
