@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -47,9 +47,14 @@ public final class Bounds3D
 	public final Vector3D v2;
 
 	/**
+	 * Empty box defined by zero-vectors.
+	 */
+	public static final Bounds3D EMPTY = new Bounds3D( Vector3D.ZERO , Vector3D.ZERO );
+
+	/**
 	 * Initial value of a box (0-box).
 	 */
-	public static final Bounds3D INIT = new Bounds3D( Vector3D.ZERO , Vector3D.ZERO );
+	public static final Bounds3D INIT = EMPTY;
 
 	/**
 	 * Create a new box.
@@ -146,6 +151,32 @@ public final class Bounds3D
 	}
 
 	/**
+	 * Test whether these bounds are empty. This returns true if these bounds
+	 * describe a zero-volume, meaning that any of the coordinates is equal for
+	 * both vectors.
+	 *
+	 * @return  <code>true</code> if the bounds are empty (zero volume);
+	 *          <code>false</code> if the bounds are not empty (non-zero volume).
+	 */
+	public boolean isEmpty()
+	{
+		return ( ( v1.x == v2.x ) || ( v1.y == v2.y ) || ( v1.z == v2.z ) );
+	}
+
+	/**
+	 * Test whether these bounds are sorted. This means that each coordinate of
+	 * the first vector is lesser or equal to the same coordinate of the second
+	 * vector.
+	 *
+	 * @return  <code>true</code> if the bounds are sorted;
+	 *          <code>false</code> if the bounds are not sorted.
+	 */
+	public boolean isSorted()
+	{
+		return ( ( v1.x <= v2.x ) && ( v1.y <= v2.y ) && ( v1.z <= v2.z ) );
+	}
+
+	/**
 	 * Test if this bounds contains the specified point.
 	 *
 	 * @param   point   Point to test.
@@ -234,11 +265,15 @@ public final class Bounds3D
 	public static Bounds3D fromString( final String value )
 	{
 		if ( value == null )
+		{
 			throw new NullPointerException( "value" );
+		}
 
 		final int semi = value.indexOf( (int)';' );
 		if ( semi < 1 )
+		{
 			throw new IllegalArgumentException( "semi" );
+		}
 
 		final Vector3D v1 = Vector3D.fromString( value.substring( 0 , semi ) );
 		final Vector3D v2 = Vector3D.fromString( value.substring( semi + 1 ) );
@@ -430,9 +465,18 @@ public final class Bounds3D
 		final double y = Math.max( box.v1.y , box.v2.y );
 		final double z = Math.max( box.v1.z , box.v2.z );
 
-			 if ( box.v1.equals( x , y , z ) ) result = box.v1;
-		else if ( box.v2.equals( x , y , z ) ) result = box.v2;
-		else result = new Vector3D( x , y , z );
+		if ( box.v1.equals( x, y, z ) )
+		{
+			result = box.v1;
+		}
+		else if ( box.v2.equals( x, y, z ) )
+		{
+			result = box.v2;
+		}
+		else
+		{
+			result = new Vector3D( x, y, z );
+		}
 
 		return result;
 	}
@@ -462,9 +506,18 @@ public final class Bounds3D
 		final double y = Math.min( bounds.v1.y , bounds.v2.y );
 		final double z = Math.min( bounds.v1.z , bounds.v2.z );
 
-			 if ( bounds.v1.equals( x , y , z ) ) result = bounds.v1;
-		else if ( bounds.v2.equals( x , y , z ) ) result = bounds.v2;
-		else result = new Vector3D( x , y , z );
+		if ( bounds.v1.equals( x, y, z ) )
+		{
+			result = bounds.v1;
+		}
+		else if ( bounds.v2.equals( x, y, z ) )
+		{
+			result = bounds.v2;
+		}
+		else
+		{
+			result = new Vector3D( x, y, z );
+		}
 
 		return result;
 	}
@@ -563,28 +616,70 @@ public final class Bounds3D
 		 */
 		final Vector3D v1;
 
-		     if ( box1.v1.equals( x1 , y1 , z1 ) ) v1 = box1.v1;
-		else if ( box1.v2.equals( x1 , y1 , z1 ) ) v1 = box1.v2;
-		else if ( box2.v1.equals( x1 , y1 , z1 ) ) v1 = box2.v1;
-		else if ( box2.v2.equals( x1 , y1 , z1 ) ) v1 = box2.v2;
-		else v1 = new Vector3D( x1 , y1 , z1 );
+		if ( box1.v1.equals( x1, y1, z1 ) )
+		{
+			v1 = box1.v1;
+		}
+		else if ( box1.v2.equals( x1, y1, z1 ) )
+		{
+			v1 = box1.v2;
+		}
+		else if ( box2.v1.equals( x1, y1, z1 ) )
+		{
+			v1 = box2.v1;
+		}
+		else if ( box2.v2.equals( x1, y1, z1 ) )
+		{
+			v1 = box2.v2;
+		}
+		else
+		{
+			v1 = new Vector3D( x1, y1, z1 );
+		}
 
 		final Vector3D v2;
 
-		     if ( box1.v1.equals( x2 , y2 , z2 ) ) v2 = box1.v1;
-		else if ( box1.v2.equals( x2 , y2 , z2 ) ) v2 = box1.v2;
-		else if ( box2.v1.equals( x2 , y2 , z2 ) ) v2 = box2.v1;
-		else if ( box2.v2.equals( x2 , y2 , z2 ) ) v2 = box2.v2;
-		else if (      v1.equals( x2 , y2 , z2 ) ) v2 =      v1;
-		else v2 = new Vector3D( x2 , y2 , z2 );
+		if ( box1.v1.equals( x2, y2, z2 ) )
+		{
+			v2 = box1.v1;
+		}
+		else if ( box1.v2.equals( x2, y2, z2 ) )
+		{
+			v2 = box1.v2;
+		}
+		else if ( box2.v1.equals( x2, y2, z2 ) )
+		{
+			v2 = box2.v1;
+		}
+		else if ( box2.v2.equals( x2, y2, z2 ) )
+		{
+			v2 = box2.v2;
+		}
+		else if ( v1.equals( x2, y2, z2 ) )
+		{
+			v2 = v1;
+		}
+		else
+		{
+			v2 = new Vector3D( x2, y2, z2 );
+		}
 
 		/*
 		 * Try to reuse the existing boxes. If not possible, create
 		 * a new one.
 		 */
-			 if ( ( box1.v1 == v1 ) && ( box1.v2 == v2 ) ) result = box1;
-		else if ( ( box2.v1 == v1 ) && ( box2.v2 == v2 ) ) result = box2;
-		else result = new Bounds3D( v1 , v2 );
+		if ( ( box1.v1 == v1 ) && ( box1.v2 == v2 ) )
+		{
+			result = box1;
+		}
+		else if ( ( box2.v1 == v1 ) && ( box2.v2 == v2 ) )
+		{
+			result = box2;
+		}
+		else
+		{
+			result = new Bounds3D( v1, v2 );
+		}
 
 		return result;
 	}
