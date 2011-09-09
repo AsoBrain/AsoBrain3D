@@ -49,7 +49,7 @@ public final class Bounds3D
 	/**
 	 * Empty box defined by zero-vectors.
 	 */
-	public static final Bounds3D EMPTY = new Bounds3D( Vector3D.ZERO , Vector3D.ZERO );
+	public static final Bounds3D EMPTY = new Bounds3D( Vector3D.ZERO, Vector3D.ZERO );
 
 	/**
 	 * Initial value of a box (0-box).
@@ -62,7 +62,7 @@ public final class Bounds3D
 	 * @param   v1  First vector of box.
 	 * @param   v2  Second vector of box.
 	 */
-	public Bounds3D( final Vector3D v1 , final Vector3D v2 )
+	public Bounds3D( final Vector3D v1, final Vector3D v2 )
 	{
 		this.v1 = ( v1 == null ) ? Vector3D.ZERO : v1;
 		this.v2 = ( v2 == null ) ? Vector3D.ZERO : v2;
@@ -78,10 +78,10 @@ public final class Bounds3D
 	 * @param   y2  Y coordinate of second vector.
 	 * @param   z2  Z coordinate of second vector.
 	 */
-	public Bounds3D( final double x1 , final double y1 , final double z1 , final double x2 , final double y2 , final double z2 )
+	public Bounds3D( final double x1, final double y1, final double z1, final double x2, final double y2, final double z2 )
 	{
-		v1 = new Vector3D( x1 , y1 , z1 );
-		v2 = new Vector3D( x2 , y2 , z2 );
+		v1 = new Vector3D( x1, y1, z1 );
+		v2 = new Vector3D( x2, y2, z2 );
 	}
 
 	/**
@@ -94,9 +94,9 @@ public final class Bounds3D
 	 * @return  <code>Bounds3D</code> object;
 	 *          <code>null</code> if property value is absent/invalid.
 	 */
-	public static Bounds3D getProperty( final Properties properties , final String name )
+	public static Bounds3D getProperty( final Properties properties, final String name )
 	{
-		return getProperty( properties , name , null );
+		return getProperty( properties, name, null );
 	}
 
 	/**
@@ -110,11 +110,11 @@ public final class Bounds3D
 	 * @return  <code>Bounds3D</code> object;
 	 *          <code>defaultValue</code> if property value is absent/invalid.
 	 */
-	public static Bounds3D getProperty( final Properties properties , final String name , final Bounds3D defaultValue )
+	public static Bounds3D getProperty( final Properties properties, final String name, final Bounds3D defaultValue )
 	{
 		Bounds3D result = defaultValue;
 
-		final String stringValue = PropertyTools.getString( properties , name , null );
+		final String stringValue = PropertyTools.getString( properties, name, null );
 		if ( stringValue != null )
 		{
 			try
@@ -137,7 +137,67 @@ public final class Bounds3D
 	 */
 	public Vector3D center()
 	{
-		return v1.set( ( v1.x + v2.x ) / 2.0 , ( v1.y + v2.y ) / 2.0 , ( v1.z + v2.z ) / 2.0 );
+		return v1.set( ( v1.x + v2.x ) / 2.0, ( v1.y + v2.y ) / 2.0, ( v1.z + v2.z ) / 2.0 );
+	}
+
+	/**
+	 * Get center X.
+	 *
+	 * @return  Center X (avaerage of X coordinate of vector 1 and vector 2).
+	 */
+	public double centerX()
+	{
+		return 0.5 * ( v1.x + v2.x );
+	}
+
+	/**
+	 * Get center Y.
+	 *
+	 * @return  Center Y (avaerage of Y coordinate of vector 1 and vector 2).
+	 */
+	public double centerY()
+	{
+		return 0.5 * ( v1.y + v2.y );
+	}
+
+	/**
+	 * Get center Z.
+	 *
+	 * @return  Center Z (avaerage of Z coordinate of vector 1 and vector 2).
+	 */
+	public double centerZ()
+	{
+		return 0.5 * ( v1.z + v2.z );
+	}
+
+	/**
+	 * Get delta X.
+	 *
+	 * @return  Delta X (X coordinate of vector 1 substracted from vector 2).
+	 */
+	public double deltaX()
+	{
+		return v2.x - v1.x;
+	}
+
+	/**
+	 * Get delta Y.
+	 *
+	 * @return  Delta Y (Y coordinate of vector 1 substracted from vector 2).
+	 */
+	public double deltaY()
+	{
+		return v2.y - v1.y;
+	}
+
+	/**
+	 * Get delta Z.
+	 *
+	 * @return  Delta Z (Z coordinate of vector 1 substracted from vector 2).
+	 */
+	public double deltaZ()
+	{
+		return v2.z - v1.z;
 	}
 
 	/**
@@ -186,7 +246,7 @@ public final class Bounds3D
 	 */
 	public boolean contains( final Vector3D point )
 	{
-		return contains( point.x , point.y , point.z );
+		return contains( point.x, point.y, point.z );
 	}
 
 	/**
@@ -199,11 +259,11 @@ public final class Bounds3D
 	 * @return  <code>true</code> if this bounds contains the specified point;
 	 *          <code>false</code> if the point is outside these bounds.
 	 */
-	public boolean contains( final double x , final double y , final double z )
+	public boolean contains( final double x, final double y, final double z )
 	{
-		return ( x >= Math.min( v1.x , v2.x ) ) && ( x <= Math.max( v1.x , v2.x ) ) &&
-		       ( y >= Math.min( v1.y , v2.y ) ) && ( y <= Math.max( v1.y , v2.y ) ) &&
-		       ( z >= Math.min( v1.z , v2.z ) ) && ( z <= Math.max( v1.z , v2.z ) );
+		return ( x >= Math.min( v1.x, v2.x ) ) && ( x <= Math.max( v1.x, v2.x ) ) &&
+		       ( y >= Math.min( v1.y, v2.y ) ) && ( y <= Math.max( v1.y, v2.y ) ) &&
+		       ( z >= Math.min( v1.z, v2.z ) ) && ( z <= Math.max( v1.z, v2.z ) );
 	}
 
 	/**
@@ -215,7 +275,7 @@ public final class Bounds3D
 	 * @return  <code>true</code> if the bounds are equal,
 	 *          <code>false</code> if not.
 	 */
-	public boolean equals( final Vector3D otherV1 , final Vector3D otherV2 )
+	public boolean equals( final Vector3D otherV1, final Vector3D otherV2 )
 	{
 		return( ( ( otherV1 == null ) || v1.equals( otherV1 ) ) &&
 				( ( otherV2 == null ) || v2.equals( otherV2 ) ) );
@@ -275,10 +335,10 @@ public final class Bounds3D
 			throw new IllegalArgumentException( "semi" );
 		}
 
-		final Vector3D v1 = Vector3D.fromString( value.substring( 0 , semi ) );
+		final Vector3D v1 = Vector3D.fromString( value.substring( 0, semi ) );
 		final Vector3D v2 = Vector3D.fromString( value.substring( semi + 1 ) );
 
-		return INIT.set( v1 , v2 );
+		return INIT.set( v1, v2 );
 	}
 
 	/**
@@ -291,15 +351,15 @@ public final class Bounds3D
 	 *
 	 * @return  Bounds of intersection.
 	 */
-	public static Bounds3D intersect( final Bounds3D bounds1 , final Bounds3D bounds2 )
+	public static Bounds3D intersect( final Bounds3D bounds1, final Bounds3D bounds2 )
 	{
-		return rebuild( bounds1 , bounds2 ,
-			Math.max( Math.min( bounds1.v1.x , bounds1.v2.x ) , Math.min( bounds2.v1.x , bounds2.v2.x ) ) ,
-			Math.max( Math.min( bounds1.v1.y , bounds1.v2.y ) , Math.min( bounds2.v1.y , bounds2.v2.y ) ) ,
-			Math.max( Math.min( bounds1.v1.z , bounds1.v2.z ) , Math.min( bounds2.v1.z , bounds2.v2.z ) ) ,
-			Math.min( Math.max( bounds1.v1.x , bounds1.v2.x ) , Math.max( bounds2.v1.x , bounds2.v2.x ) ) ,
-			Math.min( Math.max( bounds1.v1.y , bounds1.v2.y ) , Math.max( bounds2.v1.y , bounds2.v2.y ) ) ,
-			Math.min( Math.max( bounds1.v1.z , bounds1.v2.z ) , Math.max( bounds2.v1.z , bounds2.v2.z ) ) );
+		return rebuild( bounds1, bounds2,
+			Math.max( Math.min( bounds1.v1.x, bounds1.v2.x ), Math.min( bounds2.v1.x, bounds2.v2.x ) ),
+			Math.max( Math.min( bounds1.v1.y, bounds1.v2.y ), Math.min( bounds2.v1.y, bounds2.v2.y ) ),
+			Math.max( Math.min( bounds1.v1.z, bounds1.v2.z ), Math.min( bounds2.v1.z, bounds2.v2.z ) ),
+			Math.min( Math.max( bounds1.v1.x, bounds1.v2.x ), Math.max( bounds2.v1.x, bounds2.v2.x ) ),
+			Math.min( Math.max( bounds1.v1.y, bounds1.v2.y ), Math.max( bounds2.v1.y, bounds2.v2.y ) ),
+			Math.min( Math.max( bounds1.v1.z, bounds1.v2.z ), Math.max( bounds2.v1.z, bounds2.v2.z ) ) );
 	}
 
 	/**
@@ -311,16 +371,16 @@ public final class Bounds3D
 	 * @return  <code>true</code> if the bounds intersect;
 	 *          <code>false</code> if the bounds are disjunct.
 	 */
-	public static boolean intersects( final Bounds3D bounds1 , final Bounds3D bounds2 )
+	public static boolean intersects( final Bounds3D bounds1, final Bounds3D bounds2 )
 	{
 		return ( bounds1 != null )
 		    && ( bounds2 != null )
-		    && ( Math.min( bounds1.v1.x , bounds1.v2.x ) < Math.max( bounds2.v1.x , bounds2.v2.x ) )
-		    && ( Math.min( bounds2.v1.x , bounds2.v2.x ) < Math.max( bounds1.v1.x , bounds1.v2.x ) )
-		    && ( Math.min( bounds1.v1.y , bounds1.v2.y ) < Math.max( bounds2.v1.y , bounds2.v2.y ) )
-		    && ( Math.min( bounds2.v1.y , bounds2.v2.y ) < Math.max( bounds1.v1.y , bounds1.v2.y ) )
-		    && ( Math.min( bounds1.v1.z , bounds1.v2.z ) < Math.max( bounds2.v1.z , bounds2.v2.z ) )
-		    && ( Math.min( bounds2.v1.z , bounds2.v2.z ) < Math.max( bounds1.v1.z , bounds1.v2.z ) );
+		    && ( Math.min( bounds1.v1.x, bounds1.v2.x ) < Math.max( bounds2.v1.x, bounds2.v2.x ) )
+		    && ( Math.min( bounds2.v1.x, bounds2.v2.x ) < Math.max( bounds1.v1.x, bounds1.v2.x ) )
+		    && ( Math.min( bounds1.v1.y, bounds1.v2.y ) < Math.max( bounds2.v1.y, bounds2.v2.y ) )
+		    && ( Math.min( bounds2.v1.y, bounds2.v2.y ) < Math.max( bounds1.v1.y, bounds1.v2.y ) )
+		    && ( Math.min( bounds1.v1.z, bounds1.v2.z ) < Math.max( bounds2.v1.z, bounds2.v2.z ) )
+		    && ( Math.min( bounds2.v1.z, bounds2.v2.z ) < Math.max( bounds1.v1.z, bounds1.v2.z ) );
 	}
 
 	/**
@@ -335,16 +395,16 @@ public final class Bounds3D
 	 * @return  <code>true</code> if the bounds intersect;
 	 *          <code>false</code> if the bounds are disjunct.
 	 */
-	public static boolean intersects( final Bounds3D bounds1 , final Bounds3D bounds2 , final double epsilon )
+	public static boolean intersects( final Bounds3D bounds1, final Bounds3D bounds2, final double epsilon )
 	{
 		return ( bounds1 != null )
 		    && ( bounds2 != null )
-		    && MathTools.significantlyLessThan( Math.min( bounds1.v1.x , bounds1.v2.x ) , Math.max( bounds2.v1.x , bounds2.v2.x ) , epsilon )
-		    && MathTools.significantlyLessThan( Math.min( bounds2.v1.x , bounds2.v2.x ) , Math.max( bounds1.v1.x , bounds1.v2.x ) , epsilon )
-		    && MathTools.significantlyLessThan( Math.min( bounds1.v1.y , bounds1.v2.y ) , Math.max( bounds2.v1.y , bounds2.v2.y ) , epsilon )
-		    && MathTools.significantlyLessThan( Math.min( bounds2.v1.y , bounds2.v2.y ) , Math.max( bounds1.v1.y , bounds1.v2.y ) , epsilon )
-		    && MathTools.significantlyLessThan( Math.min( bounds1.v1.z , bounds1.v2.z ) , Math.max( bounds2.v1.z , bounds2.v2.z ) , epsilon )
-		    && MathTools.significantlyLessThan( Math.min( bounds2.v1.z , bounds2.v2.z ) , Math.max( bounds1.v1.z , bounds1.v2.z ) , epsilon );
+		    && MathTools.significantlyLessThan( Math.min( bounds1.v1.x, bounds1.v2.x ), Math.max( bounds2.v1.x, bounds2.v2.x ), epsilon )
+		    && MathTools.significantlyLessThan( Math.min( bounds2.v1.x, bounds2.v2.x ), Math.max( bounds1.v1.x, bounds1.v2.x ), epsilon )
+		    && MathTools.significantlyLessThan( Math.min( bounds1.v1.y, bounds1.v2.y ), Math.max( bounds2.v1.y, bounds2.v2.y ), epsilon )
+		    && MathTools.significantlyLessThan( Math.min( bounds2.v1.y, bounds2.v2.y ), Math.max( bounds1.v1.y, bounds1.v2.y ), epsilon )
+		    && MathTools.significantlyLessThan( Math.min( bounds1.v1.z, bounds1.v2.z ), Math.max( bounds2.v1.z, bounds2.v2.z ), epsilon )
+		    && MathTools.significantlyLessThan( Math.min( bounds2.v1.z, bounds2.v2.z ), Math.max( bounds1.v1.z, bounds1.v2.z ), epsilon );
 	}
 
 	/**
@@ -356,7 +416,7 @@ public final class Bounds3D
 	 */
 	public Bounds3D join( final Vector3D point )
 	{
-		return join( this , point.x , point.y , point.z );
+		return join( this, point.x, point.y, point.z );
 	}
 
 	/**
@@ -368,9 +428,9 @@ public final class Bounds3D
 	 *
 	 * @return  Joined bounds.
 	 */
-	public Bounds3D join( final double x , final double y , final double z )
+	public Bounds3D join( final double x, final double y, final double z )
 	{
-		return join( this , x , y , z );
+		return join( this, x, y, z );
 	}
 
 	/**
@@ -381,9 +441,9 @@ public final class Bounds3D
 	 *
 	 * @return  Joined bounds.
 	 */
-	public static Bounds3D join( final Bounds3D bounds , final Vector3D point )
+	public static Bounds3D join( final Bounds3D bounds, final Vector3D point )
 	{
-		return join( bounds , point.x , point.y , point.z );
+		return join( bounds, point.x, point.y, point.z );
 	}
 
 	/**
@@ -396,17 +456,17 @@ public final class Bounds3D
 	 *
 	 * @return  Joined bounds.
 	 */
-	public static Bounds3D join( final Bounds3D bounds , final double x , final double y , final double z )
+	public static Bounds3D join( final Bounds3D bounds, final double x, final double y, final double z )
 	{
 		final Vector3D v1 = bounds.v1;
 		final Vector3D v2 = bounds.v2;
 
-		return bounds.set( Math.min( x , Math.min( v1.x , v2.x ) ) ,
-		                   Math.min( y , Math.min( v1.y , v2.y ) ) ,
-		                   Math.min( z , Math.min( v1.z , v2.z ) ) ,
-		                   Math.max( x , Math.max( v1.x , v2.x ) ) ,
-		                   Math.max( y , Math.max( v1.y , v2.y ) ) ,
-		                   Math.max( z , Math.max( v1.z , v2.z ) ) );
+		return bounds.set( Math.min( x, Math.min( v1.x, v2.x ) ),
+		                   Math.min( y, Math.min( v1.y, v2.y ) ),
+		                   Math.min( z, Math.min( v1.z, v2.z ) ),
+		                   Math.max( x, Math.max( v1.x, v2.x ) ),
+		                   Math.max( y, Math.max( v1.y, v2.y ) ),
+		                   Math.max( z, Math.max( v1.z, v2.z ) ) );
 	}
 
 	/**
@@ -418,7 +478,7 @@ public final class Bounds3D
 	 */
 	public Bounds3D join( final Bounds3D other )
 	{
-		return join ( this , other );
+		return join ( this, other );
 	}
 
 	/**
@@ -429,15 +489,15 @@ public final class Bounds3D
 	 *
 	 * @return  Joined bounds.
 	 */
-	public static Bounds3D join( final Bounds3D bounds1 , final Bounds3D bounds2 )
+	public static Bounds3D join( final Bounds3D bounds1, final Bounds3D bounds2 )
 	{
-		return ( bounds1 == null ) ? bounds2 : ( bounds2 == null ) ? bounds1 : rebuild( bounds1 , bounds2 ,
-			Math.min( Math.min( bounds1.v1.x , bounds1.v2.x ) , Math.min( bounds2.v1.x , bounds2.v2.x ) ) ,
-			Math.min( Math.min( bounds1.v1.y , bounds1.v2.y ) , Math.min( bounds2.v1.y , bounds2.v2.y ) ) ,
-			Math.min( Math.min( bounds1.v1.z , bounds1.v2.z ) , Math.min( bounds2.v1.z , bounds2.v2.z ) ) ,
-			Math.max( Math.max( bounds1.v1.x , bounds1.v2.x ) , Math.max( bounds2.v1.x , bounds2.v2.x ) ) ,
-			Math.max( Math.max( bounds1.v1.y , bounds1.v2.y ) , Math.max( bounds2.v1.y , bounds2.v2.y ) ) ,
-			Math.max( Math.max( bounds1.v1.z , bounds1.v2.z ) , Math.max( bounds2.v1.z , bounds2.v2.z ) ) );
+		return ( bounds1 == null ) ? bounds2 : ( bounds2 == null ) ? bounds1 : rebuild( bounds1, bounds2,
+			Math.min( Math.min( bounds1.v1.x, bounds1.v2.x ), Math.min( bounds2.v1.x, bounds2.v2.x ) ),
+			Math.min( Math.min( bounds1.v1.y, bounds1.v2.y ), Math.min( bounds2.v1.y, bounds2.v2.y ) ),
+			Math.min( Math.min( bounds1.v1.z, bounds1.v2.z ), Math.min( bounds2.v1.z, bounds2.v2.z ) ),
+			Math.max( Math.max( bounds1.v1.x, bounds1.v2.x ), Math.max( bounds2.v1.x, bounds2.v2.x ) ),
+			Math.max( Math.max( bounds1.v1.y, bounds1.v2.y ), Math.max( bounds2.v1.y, bounds2.v2.y ) ),
+			Math.max( Math.max( bounds1.v1.z, bounds1.v2.z ), Math.max( bounds2.v1.z, bounds2.v2.z ) ) );
 	}
 
 	/**
@@ -461,9 +521,9 @@ public final class Bounds3D
 	{
 		final Vector3D result;
 
-		final double x = Math.max( box.v1.x , box.v2.x );
-		final double y = Math.max( box.v1.y , box.v2.y );
-		final double z = Math.max( box.v1.z , box.v2.z );
+		final double x = Math.max( box.v1.x, box.v2.x );
+		final double y = Math.max( box.v1.y, box.v2.y );
+		final double z = Math.max( box.v1.z, box.v2.z );
 
 		if ( box.v1.equals( x, y, z ) )
 		{
@@ -502,9 +562,9 @@ public final class Bounds3D
 	{
 		final Vector3D result;
 
-		final double x = Math.min( bounds.v1.x , bounds.v2.x );
-		final double y = Math.min( bounds.v1.y , bounds.v2.y );
-		final double z = Math.min( bounds.v1.z , bounds.v2.z );
+		final double x = Math.min( bounds.v1.x, bounds.v2.x );
+		final double y = Math.min( bounds.v1.y, bounds.v2.y );
+		final double z = Math.min( bounds.v1.z, bounds.v2.z );
 
 		if ( bounds.v1.equals( x, y, z ) )
 		{
@@ -531,7 +591,7 @@ public final class Bounds3D
 	 */
 	public Bounds3D minus( final Vector3D vector )
 	{
-		return minus( vector.x , vector.y , vector.z );
+		return minus( vector.x, vector.y, vector.z );
 	}
 
 	/**
@@ -543,10 +603,10 @@ public final class Bounds3D
 	 *
 	 * @return  Resulting bounds.
 	 */
-	public Bounds3D minus( final double x , final double y , final double z )
+	public Bounds3D minus( final double x, final double y, final double z )
 	{
 		return ( ( x == 0.0 ) && ( y == 0.0 ) && ( z == 0.0 ) ) ? this
-		     : set( v1.minus( x , y , z ) , v2.minus( x , y , z ) );
+		     : set( v1.minus( x, y, z ), v2.minus( x, y, z ) );
 	}
 
 	/**
@@ -558,7 +618,7 @@ public final class Bounds3D
 	 */
 	public Bounds3D multiply( final double factor )
 	{
-		return set( v1.multiply( factor ) , v2.multiply( factor ) );
+		return set( v1.multiply( factor ), v2.multiply( factor ) );
 	}
 
 	/**
@@ -570,7 +630,7 @@ public final class Bounds3D
 	 */
 	public Bounds3D plus( final Vector3D vector )
 	{
-		return plus( vector.x , vector.y , vector.z );
+		return plus( vector.x, vector.y, vector.z );
 	}
 
 	/**
@@ -582,10 +642,10 @@ public final class Bounds3D
 	 *
 	 * @return  Resulting bounds.
 	 */
-	public Bounds3D plus( final double x , final double y , final double z )
+	public Bounds3D plus( final double x, final double y, final double z )
 	{
 		return ( ( x == 0.0 ) && ( y == 0.0 ) && ( z == 0.0 ) ) ? this
-		     : set( v1.plus( x , y , z ) , v2.plus( x , y , z ) );
+		     : set( v1.plus( x, y, z ), v2.plus( x, y, z ) );
 	}
 
 	/**
@@ -604,9 +664,9 @@ public final class Bounds3D
 	 * @return  Bounds3D object based on the desired coordinates.
 	 */
 	private static Bounds3D rebuild(
-		final Bounds3D box1 , final Bounds3D box2 ,
-		final double x1 , final double y1 , final double z1 ,
-		final double x2 , final double y2 , final double z2 )
+		final Bounds3D box1, final Bounds3D box2,
+		final double x1, final double y1, final double z1,
+		final double x2, final double y2, final double z2 )
 	{
 		final Bounds3D result;
 
@@ -696,17 +756,17 @@ public final class Bounds3D
 	 *
 	 * @return  Resulting bounds.
 	 */
-	public Bounds3D set( final double x1 , final double y1 , final double z1 , final double x2 , final double y2 , final double z2 )
+	public Bounds3D set( final double x1, final double y1, final double z1, final double x2, final double y2, final double z2 )
 	{
 		final Vector3D v0    = Vector3D.ZERO;
 		final Vector3D oldV1 = v1;
 		final Vector3D oldV2 = v2;
-		final Vector3D newV1 = oldV1.set( x1 , y1 , z1 );
-		final Vector3D newV2 = oldV2.set( x2 , y2 , z2 );
+		final Vector3D newV1 = oldV1.set( x1, y1, z1 );
+		final Vector3D newV2 = oldV2.set( x2, y2, z2 );
 
 		return ( ( newV1 == oldV1 ) && ( newV2 == oldV2 ) ) ? this :
 		       ( ( newV1 == v0    ) && ( newV2 == v0    ) ) ? INIT :
-		       new Bounds3D( newV1 , newV2 );
+		       new Bounds3D( newV1, newV2 );
 	}
 
 	/**
@@ -717,11 +777,11 @@ public final class Bounds3D
 	 *
 	 * @return  Resulting bounds.
 	 */
-	public Bounds3D set( final Vector3D newV1 , final Vector3D newV2 )
+	public Bounds3D set( final Vector3D newV1, final Vector3D newV2 )
 	{
 		return ( ( ( newV1 == null ) || newV1.equals( v1 ) )
 		      && ( ( newV2 == null ) || newV2.equals( v2 ) ) ) ? this
-		     : new Bounds3D( ( newV1 == null ) ? v1 : newV1 , ( newV2 == null ) ? v2 : newV2 );
+		     : new Bounds3D( ( newV1 == null ) ? v1 : newV1, ( newV2 == null ) ? v2 : newV2 );
 	}
 
 	/**
@@ -731,7 +791,37 @@ public final class Bounds3D
 	 */
 	public Vector3D size()
 	{
-		return v2.set( Math.abs( v2.x - v1.x ) , Math.abs( v2.y - v1.y ) , Math.abs( v2.z - v1.z ) );
+		return v2.set( Math.abs( v2.x - v1.x ), Math.abs( v2.y - v1.y ), Math.abs( v2.z - v1.z ) );
+	}
+
+	/**
+	 * Get sixe along X axis.
+	 *
+	 * @return  Sixe along X (distance between X coordinates of vector 1 and 2).
+	 */
+	public double sizeX()
+	{
+		return Math.abs( v2.x - v1.x );
+	}
+
+	/**
+	 * Get siye along Y axis.
+	 *
+	 * @return  Siye along Y (distance between Y coordinates of vector 1 and 2).
+	 */
+	public double sizeY()
+	{
+		return Math.abs( v2.y - v1.y );
+	}
+
+	/**
+	 * Get size along Z axis.
+	 *
+	 * @return  Size along Z (distance between Z coordinates of vector 1 and 2).
+	 */
+	public double sizeZ()
+	{
+		return Math.abs( v2.z - v1.z );
 	}
 
 	/**
@@ -755,7 +845,7 @@ public final class Bounds3D
 	 */
 	public static Bounds3D sort( final Bounds3D bounds )
 	{
-		return bounds.set( min( bounds ) , max( bounds ) );
+		return bounds.set( min( bounds ), max( bounds ) );
 	}
 
 	/**
@@ -790,6 +880,6 @@ public final class Bounds3D
 	 */
 	public static String toFriendlyString( final Bounds3D bounds )
 	{
-		return ( bounds == null ) ? "null" : "[ " + bounds.v1.toFriendlyString() + " , " + bounds.v2.toFriendlyString() + " ]";
+		return ( bounds == null ) ? "null" : "[ " + bounds.v1.toFriendlyString() + ", " + bounds.v2.toFriendlyString() + " ]";
 	}
 }
