@@ -298,6 +298,11 @@ public final class Vector3D
 	/**
 	 * Determine cross product between two vectors.
 	 *
+	 * <p>
+	 * The cross product is related to the sine function by the equation
+	 * <blockquote>|a &times; b| = |a| |b| sin &theta;</blockquote>
+	 * where &theta; denotes the angle between the two vectors.
+	 *
 	 * @param   v1      First vector.
 	 * @param   v2      Second vector.
 	 *
@@ -451,6 +456,11 @@ public final class Vector3D
 	/**
 	 * Calculate dot product (a.k.a. inner product) of this vector and another
 	 * one specified as argument.
+	 *
+	 * <p>
+	 * The dot product is related to the cosine function by the equation
+	 * <blockquote>a &middot; b = |a| |b| cos &theta;</blockquote>
+	 * where &theta; denotes the angle between the two vectors.
 	 *
 	 * @param   v1      First vector operand.
 	 * @param   v2      Second vector operand.
