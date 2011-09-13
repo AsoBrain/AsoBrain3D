@@ -871,7 +871,7 @@ public abstract class View3D
 	 */
 	public Action[] getActions( final Locale locale )
 	{
-		return new Action[] { new SwitchRenderingPolicyAction( locale, this, getRenderingPolicy() ), new ToggleGridAction( locale, this ) };
+		return new Action[] { new SwitchRenderingPolicyAction( locale, this ), new ToggleGridAction( locale, this ) };
 	}
 
 

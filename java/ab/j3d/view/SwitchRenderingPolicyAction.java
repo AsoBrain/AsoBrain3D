@@ -44,9 +44,8 @@ public class SwitchRenderingPolicyAction
 	 *
 	 * @param   locale          Preferred locale for internationalization.
 	 * @param   view            The view this action belongs to.
-	 * @param   currentPolicy   Current rendering policy of the view.
 	 */
-	public SwitchRenderingPolicyAction( final Locale locale , final View3D view , final RenderingPolicy currentPolicy )
+	public SwitchRenderingPolicyAction( final Locale locale, final View3D view )
 	{
 		super( ResourceBundleTools.getBundle( RenderingPolicy.class , locale ) , RenderingPolicy.class );
 		_view = view;
@@ -63,9 +62,10 @@ public class SwitchRenderingPolicyAction
 			}
 		} );
 
-		setSelectedValue( currentPolicy );
+		setSelectedValue( view.getRenderingPolicy() );
 	}
 
+	@Override
 	public void run()
 	{
 		_view.setRenderingPolicy( (RenderingPolicy)getSelectedValue() );
