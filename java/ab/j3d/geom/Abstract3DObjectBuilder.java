@@ -654,6 +654,96 @@ public abstract class Abstract3DObjectBuilder
 	}
 
 	/**
+	 * Adds a face that appears to be a quad, but is actually subdivided into
+	 * many smaller quads. This improves rendering quality for large quads when
+	 * per-vertex lighting is used.
+	 *
+	 * <p>
+	 * Example of a quad subdivided into 3 by 2 subdivisions:
+	 * <pre>
+	 * p4             p3
+	 *   o---+---+---o
+	 *   |   |   |   |
+	 *   +---+---+---+
+	 *   |   |   |   |
+	 *   o---+---+---o
+	 * p1             p2
+	 * </pre>
+	 *
+	 * <p>This implementation uses a single triangle strip to represent all of
+	 * the quads.
+	 *
+	 * @param   point1          First vertex coordinates.
+	 * @param   point2          Second vertex coordinates.
+	 * @param   point3          Third vertex coordinates.
+	 * @param   point4          Fourth vertex coordinates.
+	 * @param   segmentsX       Number of subdivisions along the local X-axis.
+	 * @param   segmentsY       Number of subdivisions along the local Y-axis.
+	 * @param   appearance      Appearance specification to use for shading.
+	 * @param   uvMap           UV-map used to generate texture coordinates.
+	 * @param   smooth          Face is smooth/curved vs. flat.
+	 * @param   twoSided        Flag to indicate if face has a backface.
+	 */
+	public void addSubdividedQuad( final Vector3D point1, final Vector3D point2, final Vector3D point3, final Vector3D point4, final int segmentsX, final int segmentsY, final Appearance appearance, final UVMap uvMap, final boolean smooth, final boolean twoSided )
+	{
+		final List<Vertex> vertices = new ArrayList<Vertex>( ( segmentsX + 1 ) * ( segmentsY + 1 ) );
+
+		final Vector3D cross = Vector3D.cross( point3.minus( point1 ), point2.minus( point1 ) );
+		final Vector3D normal = cross.normalize();
+
+		for ( int y = 0; y <= segmentsY; y++ )
+		{
+			final double a = (double)y / (double)segmentsY;
+
+			final double x1 = point1.x * ( 1.0 - a ) + point4.x * a;
+			final double y1 = point1.y * ( 1.0 - a ) + point4.y * a;
+			final double z1 = point1.z * ( 1.0 - a ) + point4.z * a;
+
+			final double x2 = point2.x * ( 1.0 - a ) + point3.x * a;
+			final double y2 = point2.y * ( 1.0 - a ) + point3.y * a;
+			final double z2 = point2.z * ( 1.0 - a ) + point3.z * a;
+
+			for ( int x = 0; x <= segmentsX; x++ )
+			{
+				final double b = (double)x / (double)segmentsX;
+
+				final Vector3D point = new Vector3D( x1 * ( 1.0 - b ) + x2 * b,
+				                                     y1 * ( 1.0 - b ) + y2 * b,
+				                                     z1 * ( 1.0 - b ) + z2 * b );
+
+				final Point2D.Float textureCoordinate = new Point2D.Float();
+				uvMap.generate( textureCoordinate, appearance.getColorMap(), point, normal, false );
+
+				final Vertex vertex = new Vertex( point, vertices.size(), textureCoordinate.x, textureCoordinate.y );
+				vertex.setNormal( normal );
+				vertex.vertexCoordinateIndex = getVertexIndex( point );
+				vertices.add( vertex );
+			}
+		}
+
+		final int[] triangleStrip = new int[ ( 2 * segmentsX + 4 ) * segmentsY - 2 ];
+		int i = 0;
+		for ( int y = 0; y < segmentsY; y++ )
+		{
+			for ( int x = 0; x <= segmentsX; x++ )
+			{
+				triangleStrip[ i++ ] = vertices.get( x + ( segmentsX + 1 ) * y ).vertexCoordinateIndex;
+				triangleStrip[ i++ ] = vertices.get( x + ( segmentsX + 1 ) * ( y + 1 ) ).vertexCoordinateIndex;
+			}
+
+			if ( y < segmentsY - 1 )
+			{
+				triangleStrip[ i++ ] = vertices.get( segmentsX + ( segmentsX + 1 ) * ( y + 1 ) ).vertexCoordinateIndex;
+				triangleStrip[ i++ ] = vertices.get( ( segmentsX + 1 ) * ( y + 1 ) ).vertexCoordinateIndex;
+			}
+		}
+
+		final List<int[]> outline = Collections.singletonList( new int[] { 0, segmentsX, ( segmentsX + 1 ) * ( segmentsY + 1 ) - 1, ( segmentsX + 1 ) * segmentsY, 0 } );
+		final Tessellation tessellation = new Tessellation( outline, Collections.<TessellationPrimitive>singletonList( new TriangleStrip( triangleStrip ) ) );
+		addFace( vertices, tessellation, appearance, smooth, twoSided );
+	}
+
+	/**
 	 * Add text.
 	 *
 	 * @param   text            Text value.
