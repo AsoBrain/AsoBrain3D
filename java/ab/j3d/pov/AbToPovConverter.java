@@ -248,7 +248,12 @@ public class AbToPovConverter
 			}
 			// else: regular point light
 
-			if ( light.getQuadraticAttenuation() > 0.0f )
+			if ( !( light.getFullIntensityDistance() > 0.0f ) ) // May be NaN!
+			{
+				// Light definition is incompatible with POV. Don't fade.
+				result.setFadePower( PovLight.FADE_NONE );
+			}
+			else if ( light.getQuadraticAttenuation() > 0.0f )
 			{
 				result.setFadeDistance( (double)light.getFullIntensityDistance() );
 				result.setFadePower( PovLight.FADE_QUADRATIC );
