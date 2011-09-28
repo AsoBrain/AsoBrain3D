@@ -94,6 +94,17 @@ public class PovScene
 	private double _radiosityBrightness = 1.0;
 
 	/**
+	 * The integer number of rays that are sent out whenever a new radiosity
+	 * value has to be calculated is given by count. A value of 35 is the
+	 * default, the maximum is 1600. When this value is too low, the light level
+	 * will tend to look a little bit blotchy, as if the surfaces you are
+	 * looking at were slightly warped. If this is not important to your scene
+	 * (as in the case that you have a bump map or if you have a strong texture)
+	 * then by all means use a lower number.
+	 */
+	private int _radiosityCount = 35;
+
+	/**
 	 * This value mainly affects the structures of the shadows. Values larger
 	 * than the default of <code>1.8</code> do not have much effects, they make
 	 * the shadows even flatter. Extremely low values can lead to very good
@@ -301,6 +312,34 @@ public class PovScene
 		}
 
 		_radiosityBrightness = radiosityBrightness;
+	}
+
+	/**
+	 * Returns the number of rays that are sent out whenever a new radiosity
+	 * value has to be calculated.
+	 *
+	 * @return  Number of rays for radiosity calculations.
+	 */
+	public int getRadiosityCount()
+	{
+		return _radiosityCount;
+	}
+
+	/**
+	 * Sets the number of rays that are sent out whenever a new radiosity
+	 * value has to be calculated.
+	 *
+	 * <p>A value of 35 is the default, the maximum is 1600. When this value is
+	 * too low, the light level will tend to look a little bit blotchy, as if
+	 * the surfaces you are looking at were slightly warped. If this is not
+	 * important to your scene (as in the case that you have a bump map or if
+	 * you have a strong texture) then by all means use a lower number.
+	 *
+	 * @param   radiosityCount  Number of rays for radiosity calculations.
+	 */
+	public void setRadiosityCount( final int radiosityCount )
+	{
+		_radiosityCount = radiosityCount;
 	}
 
 	/**
@@ -694,6 +733,12 @@ public class PovScene
 			{
 				out.write( "brightness " );
 				out.writeln( String.valueOf( _radiosityBrightness ) );
+			}
+
+			if ( _radiosityCount != 35 )
+			{
+				out.write( "count " );
+				out.writeln( String.valueOf( _radiosityCount ) );
 			}
 
 			if ( _radiosityErrorBound != 1.8 )
