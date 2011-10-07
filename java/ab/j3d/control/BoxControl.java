@@ -211,6 +211,36 @@ public class BoxControl
 	}
 
 	/**
+	 * Sets the delegate to be used for the specified side of the box.
+	 * For convenience, this method also sets the side's behavior.
+	 *
+	 * @param   side        Side of the box.
+	 * @param   listener    Delegate to be set.
+	 * @param   behavior    Behavior to be set.
+	 */
+	public void setListener( final BoxSide.Side side, final BoxControlDelegate listener, final BoxSide.Behavior behavior )
+	{
+		setListener( side, listener, behavior, BoxSide.BehaviorHint.NONE );
+	}
+
+	/**
+	 * Sets the delegate to be used for the specified side of the box.
+	 * For convenience, this method also sets the side's behavior (and hint).
+	 *
+	 * @param   side            Side of the box.
+	 * @param   listener        Delegate to be set.
+	 * @param   behavior        Behavior to be set.
+	 * @param   behaviorHint    Behavior hint to be set.
+	 */
+	public void setListener( final BoxSide.Side side, final BoxControlDelegate listener, final BoxSide.Behavior behavior, final BoxSide.BehaviorHint behaviorHint )
+	{
+		final BoxSide sideObject = getSide( side );
+		sideObject.setListener( listener );
+		sideObject.setBehavior( behavior );
+		sideObject.setBehaviorHint( behaviorHint );
+	}
+
+	/**
 	 * Returns a side of the box.
 	 *
 	 * @param   side    Specifies a side.
