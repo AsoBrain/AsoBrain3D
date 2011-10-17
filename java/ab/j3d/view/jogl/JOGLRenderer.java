@@ -462,7 +462,6 @@ public class JOGLRenderer
 
 		if ( statistics != null )
 		{
-			System.out.println( "----------frameRendered" );
 			statistics.frameRendered();
 		}
 
@@ -1275,7 +1274,6 @@ public class JOGLRenderer
 			final RenderStatistics statistics = _statistics;
 			if ( statistics != null )
 			{
-				System.out.println( "objectRendered( " + object + " / " + object.getTag() + ", " + paths.size() + " )" );
 				statistics.objectRendered( object, paths.size() );
 			}
 
