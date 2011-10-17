@@ -296,6 +296,11 @@ public class JOGLRenderer
 				e.printStackTrace();
 				shaderManager.disableShaders();
 			}
+			catch ( GLException e )
+			{
+				e.printStackTrace();
+				shaderManager.disableShaders();
+			}
 		}
 
 		_shaderManager = shaderManager;
