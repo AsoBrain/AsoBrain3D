@@ -684,12 +684,13 @@ public abstract class Abstract3DObjectBuilder
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Flag to indicate if face has a backface.
 	 */
-	public void addSubdividedQuad( final Vector3D point1, final Vector3D point2, final Vector3D point3, final Vector3D point4, final int segmentsX, final int segmentsY, final Appearance appearance, final UVMap uvMap, final boolean smooth, final boolean twoSided )
+	public void addSubdividedQuad( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @NotNull final Vector3D point4, final int segmentsX, final int segmentsY, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean smooth, final boolean twoSided )
 	{
 		final List<Vertex> vertices = new ArrayList<Vertex>( ( segmentsX + 1 ) * ( segmentsY + 1 ) );
 
 		final Vector3D cross = Vector3D.cross( point3.minus( point1 ), point2.minus( point1 ) );
 		final Vector3D normal = cross.normalize();
+		final Point2D.Float textureCoordinate = new Point2D.Float();
 
 		for ( int y = 0; y <= segmentsY; y++ )
 		{
@@ -711,8 +712,10 @@ public abstract class Abstract3DObjectBuilder
 				                                     y1 * ( 1.0 - b ) + y2 * b,
 				                                     z1 * ( 1.0 - b ) + z2 * b );
 
-				final Point2D.Float textureCoordinate = new Point2D.Float();
-				uvMap.generate( textureCoordinate, appearance.getColorMap(), point, normal, false );
+				if ( ( uvMap != null ) && ( appearance != null ) )
+				{
+					uvMap.generate( textureCoordinate, appearance.getColorMap(), point, normal, false );
+				}
 
 				final Vertex vertex = new Vertex( point, vertices.size(), textureCoordinate.x, textureCoordinate.y );
 				vertex.setNormal( normal );
