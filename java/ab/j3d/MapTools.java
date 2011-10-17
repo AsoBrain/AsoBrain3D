@@ -90,6 +90,20 @@ public final class MapTools
  	 */
 	public static String getPath( final String map )
 	{
-		return TextTools.isNonEmpty( map ) ? TextTools.isNonEmpty( imageMapDirectory ) ? imageMapDirectory + '/' + map + imageMapFilenameSuffix : map + imageMapFilenameSuffix: null;
+		final String result;
+		if ( TextTools.isNonEmpty( map ) )
+		{
+			String suffix = imageMapFilenameSuffix;
+			if ( map.endsWith( ".png" ) )
+			{
+				suffix = "";
+			}
+			result = TextTools.isNonEmpty( imageMapDirectory ) ? imageMapDirectory + '/' + map + suffix : map + suffix;
+		}
+		else
+		{
+			result = null;
+		}
+		return result;
 	}
 }
