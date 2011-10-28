@@ -40,10 +40,9 @@
  */
 package ab.j3d.geom.tessellator;
 
-import java.awt.geom.*;
+import ab.j3d.*;
 
 class Vertex
-	extends Point2D
 {
 	/**
 	 * Next vertex (never <code>null</code>).
@@ -66,14 +65,9 @@ class Vertex
 	public int vertexIndex;
 
 	/**
-	 * X coordinate.
+	 * Location of vertex.
 	 */
-	public double x;
-
-	/**
-	 * Y coordinate.
-	 */
-	public double y;
+	public final Vector2D location = new Vector2D( 0.0, 0.0 );
 
 	/* Internal data (keep hidden) */
 
@@ -84,24 +78,6 @@ class Vertex
 
 	@Override
 	public Object clone()
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public double getX()
-	{
-		return x;
-	}
-
-	@Override
-	public double getY()
-	{
-		return y;
-	}
-
-	@Override
-	public void setLocation( final double x, final double y )
 	{
 		throw new UnsupportedOperationException();
 	}

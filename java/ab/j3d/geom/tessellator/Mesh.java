@@ -52,7 +52,6 @@
 */
 package ab.j3d.geom.tessellator;
 
-import java.awt.geom.*;
 import java.util.*;
 
 import ab.j3d.*;
@@ -284,8 +283,7 @@ public class Mesh
 		}
 
 		/* The new vertex is now e.Org. */
-		edge.origin.x = x;
-		edge.origin.y = y;
+		edge.origin.location.set( x, y );
 
 		/*
 		 * The winding of an edge says how the winding number changes as we
@@ -337,7 +335,7 @@ public class Mesh
 	 *
 	 * @return  All triangles in the mesh.
 	 */
-	public int[] constructTriangles( final HashList<Point2D> vertexList, final boolean counterClockwise )
+	public int[] constructTriangles( final HashList<Vector2D> vertexList, final boolean counterClockwise )
 	{
 		if ( !_finished )
 		{
@@ -362,7 +360,7 @@ public class Mesh
 	 * @return  List of primitives that form the tessellation.
 	 */
 	@NotNull
-	public List<TessellationPrimitive> constructPrimitives( final HashList<Point2D> vertexList, final boolean counterClockwise )
+	public List<TessellationPrimitive> constructPrimitives( final HashList<Vector2D> vertexList, final boolean counterClockwise )
 	{
 		if ( !_finished )
 		{
@@ -392,7 +390,7 @@ public class Mesh
 	 *
 	 * @return  Outlines of shape.
 	 */
-	public List<int[]> constructOutlines( final HashList<Point2D> vertexList, final boolean counterClockwise )
+	public List<int[]> constructOutlines( final HashList<Vector2D> vertexList, final boolean counterClockwise )
 	{
 		if ( !_finished )
 		{

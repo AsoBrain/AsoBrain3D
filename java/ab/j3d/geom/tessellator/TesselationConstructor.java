@@ -40,7 +40,6 @@
  */
 package ab.j3d.geom.tessellator;
 
-import java.awt.geom.*;
 import java.util.*;
 
 import ab.j3d.*;
@@ -64,7 +63,7 @@ class TesselationConstructor
 	 *
 	 * @return  All triangles in the mesh.
 	 */
-	static int[] constructTriangles( final Mesh mesh, final HashList<Point2D> vertexList, final boolean counterClockwise )
+	static int[] constructTriangles( final Mesh mesh, final HashList<Vector2D> vertexList, final boolean counterClockwise )
 	{
 		int vertexCount = 0;
 
@@ -131,7 +130,7 @@ class TesselationConstructor
 	 *
 	 * @return  List of primitives that form the tessellation.
 	 */
-	static List<TessellationPrimitive> constructPrimitives( final Mesh mesh, final HashList<Point2D> vertexList, final boolean counterClockwise )
+	static List<TessellationPrimitive> constructPrimitives( final Mesh mesh, final HashList<Vector2D> vertexList, final boolean counterClockwise )
 	{
 		final List<TessellationPrimitive> result = new LinkedList<TessellationPrimitive>();
 
@@ -186,7 +185,7 @@ class TesselationConstructor
 	 *
 	 * @return  Outlines of shape.
 	 */
-	static List<int[]> constructOutlines( final Mesh mesh, final HashList<Point2D> vertexList, final boolean counterClockwise )
+	static List<int[]> constructOutlines( final Mesh mesh, final HashList<Vector2D> vertexList, final boolean counterClockwise )
 	{
 		final List<int[]> result = new LinkedList<int[]>();
 
@@ -241,7 +240,7 @@ class TesselationConstructor
 	 * @return  <code>TessellationPrimitive</code> that was built;
 	 *          <code>null</code> if face is a lonely triangle.
 	 */
-	private static TessellationPrimitive buildMaximumPrimitive( final Face face, final HashList<Point2D> vertexList, final boolean counterClockwise )
+	private static TessellationPrimitive buildMaximumPrimitive( final Face face, final HashList<Vector2D> vertexList, final boolean counterClockwise )
 	{
 		final HalfEdge edge1 = face.anEdge;
 		final HalfEdge edge2 = edge1.ccwAroundLeftFace;
@@ -292,7 +291,7 @@ class TesselationConstructor
 	 *
 	 * @return  {@link TriangleList}.
 	 */
-	private static TriangleList createTriangleList( final Face triangleList, final HashList<Point2D> vertexList, final boolean counterClockwise )
+	private static TriangleList createTriangleList( final Face triangleList, final HashList<Vector2D> vertexList, final boolean counterClockwise )
 	{
 		int vertexCount = 0;
 		for ( Face face = triangleList; face != null; face = face.renderStack )
@@ -345,12 +344,12 @@ class TesselationConstructor
 	 *
 	 * @return  {@link Vertex#vertexIndex} (new index may be assigned).
 	 */
-	protected static int getVertexIndex( final HashList<Point2D> vertexList, final Vertex vertex )
+	protected static int getVertexIndex( final HashList<Vector2D> vertexList, final Vertex vertex )
 	{
 		int vertexIndex = vertex.vertexIndex;
 		if ( vertexIndex < 0 )
 		{
-			vertexIndex = vertexList.indexOfOrAdd( vertex );
+			vertexIndex = vertexList.indexOfOrAdd( vertex.location );
 			vertex.vertexIndex = vertexIndex;
 		}
 		return vertexIndex;
@@ -410,7 +409,7 @@ class TesselationConstructor
 		 *
 		 * @return  {@link TessellationPrimitive}.
 		 */
-		TessellationPrimitive createPrimitive( final HashList<Point2D> vertexList );
+		TessellationPrimitive createPrimitive( final HashList<Vector2D> vertexList );
 	}
 
 	/**
@@ -489,13 +488,13 @@ class TesselationConstructor
 		}
 
 		@Override
-		public TriangleFan createPrimitive( final HashList<Point2D> vertexList )
+		public TriangleFan createPrimitive( final HashList<Vector2D> vertexList )
 		{
 			final int[] vertices = new int[ _triangleCount + 2 ];
 			int vertexIndex = 0;
 
 			HalfEdge edge = _startEdge;
-			vertices[ vertexIndex++ ] = getVertexIndex( vertexList, edge.origin );
+			vertices[ vertexIndex++ ] = getVertexIndex( vertexList, edge.origin);
 			vertices[ vertexIndex++ ] = getVertexIndex( vertexList, edge.symmetric.origin );
 
 			if ( _counterClockwise )
@@ -646,7 +645,7 @@ class TesselationConstructor
 		}
 
 		@Override
-		public TriangleStrip createPrimitive( final HashList<Point2D> vertexList )
+		public TriangleStrip createPrimitive( final HashList<Vector2D> vertexList )
 		{
 			final boolean counterClockwise = _counterClockwise;
 			HalfEdge edge = _startEdge;

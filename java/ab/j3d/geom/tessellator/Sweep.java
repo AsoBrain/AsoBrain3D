@@ -583,8 +583,8 @@ class Sweep
 			return false;
 		}	/* right endpoints are the same */
 
-		tMinUp = Math.min( orgUp.y, dstUp.y );
-		tMaxLo = Math.max( orgLo.y, dstLo.y );
+		tMinUp = Math.min( orgUp.location.getY(), dstUp.location.getY() );
+		tMaxLo = Math.max( orgLo.location.getY(), dstLo.location.getY() );
 		if ( tMinUp > tMaxLo )
 		{
 			return false;
@@ -609,10 +609,10 @@ class Sweep
 
 		Geom.edgeIntersect( dstUp, orgUp, dstLo, orgLo, isect );
 		/* The following properties are guaranteed: */
-		assert ( Math.min( orgUp.y, dstUp.y ) <= isect.y );
-		assert ( isect.y <= Math.max( orgLo.y, dstLo.y ) );
-		assert ( Math.min( dstLo.x, dstUp.x ) <= isect.x );
-		assert ( isect.x <= Math.max( orgLo.x, orgUp.x ) );
+		assert ( Math.min( orgUp.location.getY(), dstUp.location.getY() ) <= isect.location.getY() );
+		assert ( isect.location.getY() <= Math.max( orgLo.location.getY(), dstLo.location.getY() ) );
+		assert ( Math.min( dstLo.location.getX(), dstUp.location.getX() ) <= isect.location.getX() );
+		assert ( isect.location.getX() <= Math.max( orgLo.location.getX(), orgUp.location.getX() ) );
 
 		if ( Geom.vertLeq( isect, _event ) )
 		{
@@ -623,8 +623,7 @@ class Sweep
 			 * in the first place).  The easiest and safest thing to do is
 			 * replace the intersection by _event.
 			 */
-			isect.x = _event.x;
-			isect.y = _event.y;
+			isect.location.set( _event.location.getX(), _event.location.getY() );
 		}
 		/*
 		 * Similarly, if the computed intersection lies to the right of the
@@ -636,8 +635,7 @@ class Sweep
 		orgMin = Geom.vertLeq( orgUp, orgLo ) ? orgUp : orgLo;
 		if ( Geom.vertLeq( orgMin, isect ) )
 		{
-			isect.x = orgMin.x;
-			isect.y = orgMin.y;
+			isect.location.set( orgMin.location.getX(), orgMin.location.getY() );
 		}
 
 		if ( Geom.vertEq( isect, orgUp ) || Geom.vertEq( isect, orgLo ) )
@@ -693,15 +691,13 @@ class Sweep
 			{
 				regionAbove( regUp ).dirty = regUp.dirty = true;
 				eUp.symmetric.split();
-				eUp.origin.x = _event.x;
-				eUp.origin.y = _event.y;
+				eUp.origin.location.set( _event.location.getX(), _event.location.getY() );
 			}
 			if ( Geom.edgeSign( dstLo, _event, isect ) <= 0 )
 			{
 				regUp.dirty = regLo.dirty = true;
 				eLo.symmetric.split();
-				eLo.origin.x = _event.x;
-				eLo.origin.y = _event.y;
+				eLo.origin.location.set( _event.location.getX(), _event.location.getY() );
 			}
 			/* leave the rest for ConnectRightVertex */
 			return false;
@@ -719,10 +715,9 @@ class Sweep
 		eUp.symmetric.split();
 		eLo.symmetric.split();
 		Mesh.spliceMesh( eLo.symmetric.ccwAroundLeftFace, eUp );
-		eUp.origin.x = isect.x;
-		eUp.origin.y = isect.y;
+		eUp.origin.location.set( isect.location.getX(), isect.location.getY() );
 		eUp.origin.pqHandle = _pq.pqInsert( eUp.origin ); /* pqSortInsert */
-		// COMBINE CALLBACK HERE: eUp.origin.vertexIndex = _tessellationBuilder.addVertex( eUp.origin.x, eUp.origin.y, 0.0 );
+		// COMBINE CALLBACK HERE: eUp.origin.vertexIndex = _tessellationBuilder.addVertex( eUp.origin.getX(), eUp.origin.getY(), 0.0 );
 		regLo.dirty = true;
 		regUp.dirty = true;
 		regionAbove( regUp ).dirty = true;
@@ -1144,10 +1139,8 @@ class Sweep
 	void addSentinel( final double t )
 	{
 		final HalfEdge sentinelEdge = _mesh.createSelfLoopEdge();
-		sentinelEdge.origin.x = SENTINEL_COORD;
-		sentinelEdge.origin.y = t;
-		sentinelEdge.symmetric.origin.x = -SENTINEL_COORD;
-		sentinelEdge.symmetric.origin.y = t;
+		sentinelEdge.origin.location.set( SENTINEL_COORD, t );
+		sentinelEdge.symmetric.origin.location.set( -SENTINEL_COORD, t );
 		_event = sentinelEdge.symmetric.origin;
 
 		final Region region = new Region();
