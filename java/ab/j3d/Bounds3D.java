@@ -22,8 +22,6 @@ package ab.j3d;
 
 import java.util.*;
 
-import com.numdata.oss.*;
-
 /**
  * This class represents rectangular 3D bounds (specified by two vectors).
  *
@@ -114,16 +112,19 @@ public final class Bounds3D
 	{
 		Bounds3D result = defaultValue;
 
-		final String stringValue = PropertyTools.getString( properties, name, null );
-		if ( stringValue != null )
+		if ( properties != null )
 		{
-			try
+			final String stringValue = properties.getProperty( name, null );
+			if ( stringValue != null )
 			{
-				result = fromString( stringValue );
-			}
-			catch ( Exception e )
-			{
-				/* ignore errors => return default */
+				try
+				{
+					result = fromString( stringValue );
+				}
+				catch ( Exception e )
+				{
+					/* ignore errors => return default */
+				}
 			}
 		}
 
@@ -137,7 +138,7 @@ public final class Bounds3D
 	 */
 	public Vector3D center()
 	{
-		return v1.set( ( v1.x + v2.x ) / 2.0, ( v1.y + v2.y ) / 2.0, ( v1.z + v2.z ) / 2.0 );
+		return v1.set( ( v1.getX() + v2.getX() ) / 2.0, ( v1.y + v2.y ) / 2.0, ( v1.getZ() + v2.getZ() ) / 2.0 );
 	}
 
 	/**
@@ -397,14 +398,23 @@ public final class Bounds3D
 	 */
 	public static boolean intersects( final Bounds3D bounds1, final Bounds3D bounds2, final double epsilon )
 	{
-		return ( bounds1 != null )
-		    && ( bounds2 != null )
-		    && MathTools.significantlyLessThan( Math.min( bounds1.v1.x, bounds1.v2.x ), Math.max( bounds2.v1.x, bounds2.v2.x ), epsilon )
-		    && MathTools.significantlyLessThan( Math.min( bounds2.v1.x, bounds2.v2.x ), Math.max( bounds1.v1.x, bounds1.v2.x ), epsilon )
-		    && MathTools.significantlyLessThan( Math.min( bounds1.v1.y, bounds1.v2.y ), Math.max( bounds2.v1.y, bounds2.v2.y ), epsilon )
-		    && MathTools.significantlyLessThan( Math.min( bounds2.v1.y, bounds2.v2.y ), Math.max( bounds1.v1.y, bounds1.v2.y ), epsilon )
-		    && MathTools.significantlyLessThan( Math.min( bounds1.v1.z, bounds1.v2.z ), Math.max( bounds2.v1.z, bounds2.v2.z ), epsilon )
-		    && MathTools.significantlyLessThan( Math.min( bounds2.v1.z, bounds2.v2.z ), Math.max( bounds1.v1.z, bounds1.v2.z ), epsilon );
+		final boolean result;
+
+		if ( ( bounds1 != null ) && ( bounds2 != null ) )
+		{
+			result = MathTools.significantlyLessThan( Math.min( bounds1.v1.x, bounds1.v2.x ), Math.max( bounds2.v1.x, bounds2.v2.x ), epsilon )
+		          && MathTools.significantlyLessThan( Math.min( bounds2.v1.x, bounds2.v2.x ), Math.max( bounds1.v1.x, bounds1.v2.x ), epsilon )
+		          && MathTools.significantlyLessThan( Math.min( bounds1.v1.y, bounds1.v2.y ), Math.max( bounds2.v1.y, bounds2.v2.y ), epsilon )
+		          && MathTools.significantlyLessThan( Math.min( bounds2.v1.y, bounds2.v2.y ), Math.max( bounds1.v1.y, bounds1.v2.y ), epsilon )
+		          && MathTools.significantlyLessThan( Math.min( bounds1.v1.z, bounds1.v2.z ), Math.max( bounds2.v1.z, bounds2.v2.z ), epsilon )
+		          && MathTools.significantlyLessThan( Math.min( bounds2.v1.z, bounds2.v2.z ), Math.max( bounds1.v1.z, bounds1.v2.z ), epsilon );
+		}
+		else
+		{
+			result = false;
+		}
+
+		return result;
 	}
 
 	/**
