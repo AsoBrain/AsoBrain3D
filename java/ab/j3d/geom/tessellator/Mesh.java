@@ -260,6 +260,17 @@ public class Mesh
 	 */
 	public void addVertex( final double x, final double y )
 	{
+		addVertex( new Vector2D( x, y ) );
+	}
+
+	/**
+	 * Add vertex to current contour. Can only be called between
+	 * {@link #beginContour} and {@link #endContour}.
+	 *
+	 * @param   location    Location of vertex.
+	 */
+	public void addVertex( final Vector2D location )
+	{
 		if ( _finished )
 		{
 			throw new IllegalStateException( "finish() called" );
@@ -283,7 +294,7 @@ public class Mesh
 		}
 
 		/* The new vertex is now e.Org. */
-		edge.origin.location.set( x, y );
+		edge.origin.location = location;
 
 		/*
 		 * The winding of an edge says how the winding number changes as we

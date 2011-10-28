@@ -40,6 +40,7 @@
  */
 package ab.j3d.geom.tessellator;
 
+import ab.j3d.*;
 import ab.j3d.geom.tessellator.PriorityQ.*;
 
 /**
@@ -607,7 +608,7 @@ class Sweep
 
 		/* At this point the edges intersect, at least marginally */
 
-		Geom.edgeIntersect( dstUp, orgUp, dstLo, orgLo, isect );
+		isect.location = Geom.edgeIntersect( dstUp, orgUp, dstLo, orgLo );
 		/* The following properties are guaranteed: */
 		assert ( Math.min( orgUp.location.getY(), dstUp.location.getY() ) <= isect.location.getY() );
 		assert ( isect.location.getY() <= Math.max( orgLo.location.getY(), dstLo.location.getY() ) );
@@ -623,7 +624,7 @@ class Sweep
 			 * in the first place).  The easiest and safest thing to do is
 			 * replace the intersection by _event.
 			 */
-			isect.location.set( _event.location.getX(), _event.location.getY() );
+			isect.location = _event.location;
 		}
 		/*
 		 * Similarly, if the computed intersection lies to the right of the
@@ -635,7 +636,7 @@ class Sweep
 		orgMin = Geom.vertLeq( orgUp, orgLo ) ? orgUp : orgLo;
 		if ( Geom.vertLeq( orgMin, isect ) )
 		{
-			isect.location.set( orgMin.location.getX(), orgMin.location.getY() );
+			isect.location = orgMin.location;
 		}
 
 		if ( Geom.vertEq( isect, orgUp ) || Geom.vertEq( isect, orgLo ) )
@@ -691,13 +692,13 @@ class Sweep
 			{
 				regionAbove( regUp ).dirty = regUp.dirty = true;
 				eUp.symmetric.split();
-				eUp.origin.location.set( _event.location.getX(), _event.location.getY() );
+				eUp.origin.location = _event.location;
 			}
 			if ( Geom.edgeSign( dstLo, _event, isect ) <= 0 )
 			{
 				regUp.dirty = regLo.dirty = true;
 				eLo.symmetric.split();
-				eLo.origin.location.set( _event.location.getX(), _event.location.getY() );
+				eLo.origin.location = _event.location;
 			}
 			/* leave the rest for ConnectRightVertex */
 			return false;
@@ -715,7 +716,7 @@ class Sweep
 		eUp.symmetric.split();
 		eLo.symmetric.split();
 		Mesh.spliceMesh( eLo.symmetric.ccwAroundLeftFace, eUp );
-		eUp.origin.location.set( isect.location.getX(), isect.location.getY() );
+		eUp.origin.location = isect.location;
 		eUp.origin.pqHandle = _pq.pqInsert( eUp.origin ); /* pqSortInsert */
 		// COMBINE CALLBACK HERE: eUp.origin.vertexIndex = _tessellationBuilder.addVertex( eUp.origin.getX(), eUp.origin.getY(), 0.0 );
 		regLo.dirty = true;
@@ -1139,8 +1140,8 @@ class Sweep
 	void addSentinel( final double t )
 	{
 		final HalfEdge sentinelEdge = _mesh.createSelfLoopEdge();
-		sentinelEdge.origin.location.set( SENTINEL_COORD, t );
-		sentinelEdge.symmetric.origin.location.set( -SENTINEL_COORD, t );
+		sentinelEdge.origin.location = new Vector2D( SENTINEL_COORD, t );
+		sentinelEdge.symmetric.origin.location = new Vector2D( -SENTINEL_COORD, t );
 		_event = sentinelEdge.symmetric.origin;
 
 		final Region region = new Region();

@@ -67,7 +67,7 @@ class Vertex
 	/**
 	 * Location of vertex.
 	 */
-	public final Vector2D location = new Vector2D( 0.0, 0.0 );
+	public Vector2D location = Vector2D.ZERO;
 
 	/* Internal data (keep hidden) */
 
