@@ -50,7 +50,7 @@ public class TestTessellator
 			final Tessellator tessellator = new Tessellator();
 			tessellator.defineShape( emptyPath, 0.0 );
 
-			final HashList<Point2D> vertexList = new HashList<Point2D>();
+			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
 			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
 			tessellator.constructOutlines( vertexList, true );
 
@@ -64,7 +64,7 @@ public class TestTessellator
 			final Tessellator tessellator = new Tessellator();
 			tessellator.defineShape( point, 0.0 );
 
-			final HashList<Point2D> vertexList = new HashList<Point2D>();
+			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
 			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
 			tessellator.constructOutlines( vertexList, true );
 
@@ -79,7 +79,7 @@ public class TestTessellator
 			final Tessellator tessellator = new Tessellator();
 			tessellator.defineShape( point, 0.0 );
 
-			final HashList<Point2D> vertexList = new HashList<Point2D>();
+			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
 			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
 			tessellator.constructOutlines( vertexList, true );
 
@@ -94,7 +94,7 @@ public class TestTessellator
 			final Tessellator tessellator = new Tessellator();
 			tessellator.defineShape( line, 0.0 );
 
-			final HashList<Point2D> vertexList = new HashList<Point2D>();
+			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
 			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
 			tessellator.constructOutlines( vertexList, true );
 
@@ -111,7 +111,7 @@ public class TestTessellator
 			final Tessellator tessellator = new Tessellator();
 			tessellator.defineShape( clockwise, 0.0 );
 
-			final HashList<Point2D> vertexList = new HashList<Point2D>();
+			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
 			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
 			tessellator.constructOutlines( vertexList, true );
 
@@ -132,7 +132,7 @@ public class TestTessellator
 			final Tessellator tessellator = new Tessellator();
 			tessellator.defineShape( clockwise, 0.0 );
 
-			final HashList<Point2D> vertexList = new HashList<Point2D>();
+			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
 			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
 			tessellator.constructOutlines( vertexList, true );
 
@@ -152,7 +152,7 @@ public class TestTessellator
 			final Tessellator tessellator = new Tessellator();
 			tessellator.defineShape( clockwise, 0.0 );
 
-			final HashList<Point2D> vertexList = new HashList<Point2D>();
+			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
 			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
 			tessellator.constructOutlines( vertexList, true );
 
