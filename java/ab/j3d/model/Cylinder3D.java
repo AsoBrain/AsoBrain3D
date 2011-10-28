@@ -25,7 +25,6 @@ import java.util.*;
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
-import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**

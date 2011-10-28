@@ -31,14 +31,13 @@ import ab.j3d.appearance.*;
 import ab.j3d.geom.ShapeTools.*;
 import ab.j3d.model.Face3D.*;
 import ab.j3d.model.*;
-import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
  * This abstract class defines an interface through which an 3D object can easily
  * be created from (mostly 2D) shapes.
  * <p />
- * Implementors only need to implement simple shapes, since more comlex ones are
+ * Implementers only need to implement simple shapes, since more comlex ones are
  * automatically converted into simpler elements. If an implementation can provide
  * a better/more direct implementation of a complex shape, such an implementation
  * is always preferred.

@@ -43,8 +43,8 @@ package ab.j3d.geom.tessellator;
 import java.awt.geom.*;
 import java.util.*;
 
+import ab.j3d.*;
 import ab.j3d.geom.*;
-import com.numdata.oss.*;
 
 /**
  * This constructs primitives and outlines from a {@link Mesh}.
