@@ -40,6 +40,8 @@
  */
 package ab.j3d.geom.tessellator;
 
+import ab.j3d.*;
+
 @SuppressWarnings( { "JavaDoc" } )
 class Geom
 {
@@ -59,33 +61,45 @@ class Geom
 	 */
 	static double edgeEval( final Vertex u, final Vertex v, final Vertex w)
 	{
-		final double gapL;
-		final double gapR;
-
 		assert ( vertLeq(u, v) && vertLeq(v, w));
 
-		gapL = v.x - u.x;
-		gapR = w.x - v.x;
+		final double ux = u.location.getX();
+		final double vx = v.location.getX();
+		final double wz = w.location.getX();
 
-		if (gapL + gapR > 0.0) {
-			if (gapL < gapR) {
-				return (v.y - u.y ) + (u.y - w.y ) * (gapL / (gapL + gapR));
-			} else {
-				return (v.y - w.y ) + (w.y - u.y ) * (gapR / (gapL + gapR));
+		final double gapL = vx - ux;
+		final double gapR = wz - vx;
+
+		if ( gapL + gapR > 0.0 )
+		{
+			final double uy = u.location.getY();
+			final double vy = v.location.getY();
+			final double wy = w.location.getY();
+
+			if ( gapL < gapR )
+			{
+				return ( vy - uy ) + ( uy - wy ) * ( gapL / ( gapL + gapR ) );
+			}
+			else
+			{
+				return ( vy - wy ) + ( wy - uy ) * ( gapR / ( gapL + gapR ) );
 			}
 		}
-		/* vertical line */
-		return 0;
+		else
+		{
+			/* vertical line */
+			return 0;
+		}
 	}
 
 	static double edgeSign( final Vertex u, final Vertex v, final Vertex w )
 	{
 		assert ( vertLeq(u, v) && vertLeq(v, w));
 
-		final double gapL = v.x - u.x;
-		final double gapR = w.x - v.x;
+		final double gapL = v.location.getX() - u.location.getX();
+		final double gapR = w.location.getX() - v.location.getX();
 
-		return ( ( gapL + gapR > 0.0 ) ) ? ( v.y - w.y ) * gapL + ( v.y - u.y ) * gapR : 0.0 /* vertical line */;
+		return ( ( gapL + gapR > 0.0 ) ) ? ( v.location.getY() - w.location.getY() ) * gapL + ( v.location.getY() - u.location.getY() ) * gapR : 0.0 /* vertical line */;
 	}
 
 	/***********************************************************************
@@ -111,18 +125,18 @@ class Geom
 
 		assert ( transLeq( u, v ) && transLeq( v, w ) );
 
-		gapL = v.y - u.y;
-		gapR = w.y - v.y;
+		gapL = v.location.getY() - u.location.getY();
+		gapR = w.location.getY() - v.location.getY();
 
 		if ( gapL + gapR > 0.0 )
 		{
 			if ( gapL < gapR )
 			{
-				return ( v.x - u.x ) + ( u.x - w.x ) * ( gapL / ( gapL + gapR ) );
+				return ( v.location.getX() - u.location.getX() ) + ( u.location.getX() - w.location.getX() ) * ( gapL / ( gapL + gapR ) );
 			}
 			else
 			{
-				return ( v.x - w.x ) + ( w.x - u.x ) * ( gapR / ( gapL + gapR ) );
+				return ( v.location.getX() - w.location.getX() ) + ( w.location.getX() - u.location.getX() ) * ( gapR / ( gapL + gapR ) );
 			}
 		}
 
@@ -142,11 +156,11 @@ class Geom
 
 		assert ( transLeq(u, v) && transLeq(v, w));
 
-		gapL = v.y - u.y;
-		gapR = w.y - v.y;
+		gapL = v.location.getY() - u.location.getY();
+		gapR = w.location.getY() - v.location.getY();
 
 		if (gapL + gapR > 0) {
-			return (v.x - w.x ) * gapL + (v.x - u.x ) * gapR;
+			return (v.location.getX() - w.location.getX() ) * gapL + (v.location.getX() - u.location.getX() ) * gapR;
 		}
 		/* vertical line */
 		return 0;
@@ -182,7 +196,7 @@ class Geom
 	 * The computed point is guaranteed to lie in the intersection of the
 	 * bounding rectangles defined by each edge.
 	 */
-	static void edgeIntersect( Vertex o1, Vertex d1, Vertex o2, Vertex d2, final Vertex v )
+	static Vector2D edgeIntersect( Vertex o1, Vertex d1, Vertex o2, Vertex d2 )
 	{
 		double z1;
 		double z2;
@@ -217,10 +231,12 @@ class Geom
 			d2 = temp;
 		}
 
+		final double x;
+
 		if ( !vertLeq( o2, d1 ) )
 		{
 			/* Technically, no intersection -- do our best */
-			v.x = ( o2.x + d1.x ) / 2.0;
+			x = ( o2.location.getX() + d1.location.getX() ) / 2.0;
 		}
 		else if ( vertLeq( d1, d2 ) )
 		{
@@ -232,7 +248,7 @@ class Geom
 				z1 = -z1;
 				z2 = -z2;
 			}
-			v.x = interpolate( z1, o2.x, z2, d1.x );
+			x = interpolate( z1, o2.location.getX(), z2, d1.location.getX() );
 		}
 		else
 		{
@@ -244,7 +260,7 @@ class Geom
 				z1 = -z1;
 				z2 = -z2;
 			}
-			v.x = interpolate( z1, o2.x, z2, d2.x );
+			x = interpolate( z1, o2.location.getX(), z2, d2.location.getX() );
 		}
 
 		/* Now repeat the process for t */
@@ -271,10 +287,12 @@ class Geom
 			d1 = temp;
 		}
 
+		final double y;
+
 		if ( !transLeq( o2, d1 ) )
 		{
 			/* Technically, no intersection -- do our best */
-			v.y = ( o2.y + d1.y ) / 2.0;
+			y = ( o2.location.getY() + d1.location.getY() ) / 2.0;
 		}
 		else if ( transLeq( d1, d2 ) )
 		{
@@ -286,7 +304,7 @@ class Geom
 				z1 = -z1;
 				z2 = -z2;
 			}
-			v.y = interpolate( z1, o2.y, z2, d1.y );
+			y = interpolate( z1, o2.location.getY(), z2, d1.location.getY() );
 		}
 		else
 		{
@@ -298,25 +316,27 @@ class Geom
 				z1 = -z1;
 				z2 = -z2;
 			}
-			v.y = interpolate( z1, o2.y, z2, d2.y );
+			y = interpolate( z1, o2.location.getY(), z2, d2.location.getY() );
 		}
+
+		return new Vector2D( x, y );
 	}
 
 	static boolean vertEq( final Vertex v1, final Vertex v2 )
 	{
-		return v1.x == v2.x && v1.y == v2.y;
+		return v1.location.getX() == v2.location.getX() && v1.location.getY() == v2.location.getY();
 	}
 
 	static boolean vertLeq( final Vertex v1, final Vertex v2 )
 	{
-		return v1.x < v2.x || ( v1.x == v2.x && v1.y <= v2.y );
+		return v1.location.getX() < v2.location.getX() || ( v1.location.getX() == v2.location.getX() && v1.location.getY() <= v2.location.getY() );
 	}
 
 	/* Versions of {@link #vertLeq}, {@link #edgeSign}, {@link #edgeEval} with s and t transposed. */
 
 	private static boolean transLeq( final Vertex u, final Vertex v )
 	{
-		return ( u.y < v.y ) || ( u.y == v.y && u.x <= v.x );
+		return ( u.location.getY() < v.location.getY() ) || ( u.location.getY() == v.location.getY() && u.location.getX() <= v.location.getX() );
 	}
 
 
