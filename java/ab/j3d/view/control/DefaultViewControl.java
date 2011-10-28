@@ -1,6 +1,6 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2010
+ * (C) Copyright Numdata BV 2004-2011
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,7 +31,6 @@ import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
 import ab.j3d.view.control.planar.*;
-import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -120,38 +119,61 @@ public class DefaultViewControl
 		final Scene scene = view.getScene();
 		final Ray3D pointerRay = event.getPointerRay();
 
-		final List<ContentNode> relevantContentNodes = new ArrayList<ContentNode>();
-		final List<Double> contentNodeReferenceDepths = new ArrayList<Double>();
+		final List<ContentNode> contentNodes = scene.getContentNodes();
+		final Map<ContentNodeControl,Double> controlDepths = new HashMap<ContentNodeControl, Double>();
 
-		for ( final ContentNode contentNode : scene.getContentNodes() )
+		for ( Iterator<ContentNode> it = contentNodes.iterator(); it.hasNext(); )
 		{
+			final ContentNode contentNode = it.next();
+
 			final ContentNodeControl control = contentNode.getControl();
-			if ( control != null )
+			if ( control == null )
+			{
+				it.remove();
+			}
+			else
 			{
 				final Double depth = control.getDepth( pointerRay );
-				if ( depth != null )
+				if ( depth == null )
 				{
-					relevantContentNodes.add( contentNode );
-					contentNodeReferenceDepths.add( depth );
+					it.remove();
+				}
+				else
+				{
+					controlDepths.put( control, depth );
 				}
 			}
 		}
 
-		CollectionTools.sortRelated( contentNodeReferenceDepths, relevantContentNodes );
-		Collections.sort( relevantContentNodes, new Comparator<ContentNode>()
+		Collections.sort( contentNodes, new Comparator<ContentNode>()
 		{
 			@Override
 			public int compare( final ContentNode o1, final ContentNode o2 )
 			{
-				final ContentNodeControl c1 = o1.getControl();
-				final ContentNodeControl c2 = o2.getControl();
-				final int p1 = ( c1 == null ) ? Integer.MIN_VALUE : c1.getPrecedence();
-				final int p2 = ( c2 == null ) ? Integer.MIN_VALUE : c2.getPrecedence();
-				return p2 - p1;
+				int result = 0;
+
+				final ContentNodeControl control1 = o1.getControl();
+				final ContentNodeControl control2 = o2.getControl();
+
+				if ( ( control1 != null ) && ( control2 != null ) ) /* always true */
+				{
+					result = control2.getPrecedence() - control1.getPrecedence();
+					if ( result == 0 )
+					{
+						final Double depth1 = controlDepths.get( control1 );
+						final Double depth2 = controlDepths.get( control2 );
+						if ( ( depth1 != null ) && ( depth2 != null ) ) /* always true */
+						{
+							result = depth1.compareTo( depth2 );
+						}
+					}
+				}
+
+				return result;
 			}
 		} );
 
-		return relevantContentNodes;
+		return contentNodes;
 	}
 
 	@Nullable

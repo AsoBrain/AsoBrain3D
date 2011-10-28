@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,7 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.util.*;
 
-import com.numdata.oss.*;
+import ab.j3d.*;
 import junit.framework.*;
 
 /**
