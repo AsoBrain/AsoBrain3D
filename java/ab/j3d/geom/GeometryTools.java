@@ -514,7 +514,7 @@ public class GeometryTools
 	 * @return  Points describing the intersection (1 or 2 points);
 	 *          <code>null</code> if no intersection was found.
 	 */
-	public static Point2D[] getIntersectionBetweenLineSegments( final Point2D p1, final Point2D p2, final Point2D p3, final Point2D p4 )
+	public static Vector2D[] getIntersectionBetweenLineSegments( final Vector2D p1, final Vector2D p2, final Vector2D p3, final Vector2D p4 )
 	{
 		return getIntersectionBetweenLineSegments( p1.getX(), p1.getY(), p2.getX(), p2.getY(), p3.getX(), p3.getY(), p4.getX(), p4.getY() );
 	}
@@ -540,9 +540,9 @@ public class GeometryTools
 	 * @return  Points describing the intersection (1 or 2 points);
 	 *          <code>null</code> if no intersection was found.
 	 */
-	public static Point2D[] getIntersectionBetweenLineSegments( final double x1, final double y1, final double x2, final double y2, final double x3, final double y3, final double x4, final double y4 )
+	public static Vector2D[] getIntersectionBetweenLineSegments( final double x1, final double y1, final double x2, final double y2, final double x3, final double y3, final double x4, final double y4 )
 	{
-		Point2D[] result = null;
+		Vector2D[] result = null;
 
 		final double n1 = ( x4 - x3 ) * ( y1 - y3 ) - ( y4 - y3 ) * ( x1 - x3 );
 		final double d  = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 );
@@ -623,15 +623,15 @@ public class GeometryTools
 						 */
 						if ( almostEqual( sx1, sx2 ) && almostEqual( sy1, sy2 ) )
 						{
-							result = new Point2D[] { new Point2D.Double( sx1, sy1 ) };
+							result = new Vector2D[] { new Vector2D( sx1, sy1 ) };
 						}
 						else if ( isPositive )
 						{
-							result = new Point2D[] { new Point2D.Double( sx1, sy1 ), new Point2D.Double( sx2, sy2 ) };
+							result = new Vector2D[] { new Vector2D( sx1, sy1 ), new Vector2D( sx2, sy2 ) };
 						}
 						else
 						{
-							result = new Point2D[] { new Point2D.Double( sx1, sy2 ), new Point2D.Double( sx2, sy1 ) };
+							result = new Vector2D[] { new Vector2D( sx1, sy2 ), new Vector2D( sx2, sy1 ) };
 						}
 					}
 				}
@@ -654,7 +654,7 @@ public class GeometryTools
 					final double x = x1 + ua * ( x2 - x1 );
 					final double y = y1 + ua * ( y2 - y1 );
 
-					result = new Point2D[] { new Point2D.Double( x, y ) };
+					result = new Vector2D[] { new Vector2D( x, y ) };
 				}
 			}
 		}
@@ -674,7 +674,7 @@ public class GeometryTools
 	 *          <code>null</code> if no intersection exists (parallel lines).
 	 */
 	@Nullable
-	public static Point2D getIntersectionBetweenLines( final Point2D p1, final Point2D p2, final Point2D p3, final Point2D p4 )
+	public static Vector2D getIntersectionBetweenLines( final Vector2D p1, final Vector2D p2, final Vector2D p3, final Vector2D p4 )
 	{
 		return getIntersectionBetweenLines( p1.getX(), p1.getY(), p2.getX(), p2.getY(), p3.getX(), p3.getY(), p4.getX(), p4.getY() );
 	}
@@ -695,9 +695,9 @@ public class GeometryTools
 	 *          <code>null</code> if no intersection exists (parallel lines).
 	 */
 	@Nullable
-	public static Point2D getIntersectionBetweenLines( final double x1, final double y1, final double x2, final double y2, final double x3, final double y3, final double x4, final double y4 )
+	public static Vector2D getIntersectionBetweenLines( final double x1, final double y1, final double x2, final double y2, final double x3, final double y3, final double x4, final double y4 )
 	{
-		Point2D result = null;
+		Vector2D result = null;
 
 		final double d = ( y4 - y3 ) * ( x2 - x1 ) - ( x4 - x3 ) * ( y2 - y1 );
 		if ( !almostEqual( d, 0.0 ) ) /* are not parallel, so they intersect at some point */
@@ -708,7 +708,7 @@ public class GeometryTools
 			final double x = x1 + ua * ( x2 - x1 );
 			final double y = y1 + ua * ( y2 - y1 );
 
-			result = new Point2D.Double( x, y );
+			result = new Vector2D( x, y );
 		}
 
 		return result;
@@ -1147,11 +1147,11 @@ public class GeometryTools
 	 *
 	 * @return  Area of specified triangle.
 	 */
-	public static double getTriangleArea( final Point2D p1, final Point2D p2, final Point2D p3 )
+	public static double getTriangleArea( final Vector2D p1, final Vector2D p2, final Vector2D p3 )
 	{
-		final double a = p1.distance( p2 );
-		final double b = p2.distance( p3 );
-		final double c = p3.distance( p1 );
+		final double a = p1.distanceTo( p2 );
+		final double b = p2.distanceTo( p3 );
+		final double c = p3.distanceTo( p1 );
 		final double p = ( a + b + c ) / 2.0;
 
 		return Math.sqrt( p * ( p - a ) * ( p - b ) * ( p - c ) );
@@ -1165,7 +1165,7 @@ public class GeometryTools
 	 * @param   value2      Second value to compare.
 	 *
 	 * @return  <code>true</code> is the values are within a tolerance of
-	 *          {@link #EPSILON} of eachother; <code>false</code> otherwise.
+	 *          {@link #EPSILON} of each other; <code>false</code> otherwise.
 	 */
 	public static boolean almostEqual( final double value1, final double value2 )
 	{

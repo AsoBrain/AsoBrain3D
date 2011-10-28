@@ -151,7 +151,7 @@ public class Tessellator
 	 *
 	 * @return  All triangles in the mesh.
 	 */
-	public int[] constructTriangles( final HashList<Point2D> vertexList, final boolean counterClockwise )
+	public int[] constructTriangles( final HashList<Vector2D> vertexList, final boolean counterClockwise )
 	{
 		if ( _mesh == null )
 		{
@@ -170,7 +170,7 @@ public class Tessellator
 	 *
 	 * @return  List of primitives that form the tessellation.
 	 */
-	public List<TessellationPrimitive> constructPrimitives( final HashList<Point2D> vertexList, final boolean counterClockwise )
+	public List<TessellationPrimitive> constructPrimitives( final HashList<Vector2D> vertexList, final boolean counterClockwise )
 	{
 		if ( _mesh == null )
 		{
@@ -189,7 +189,7 @@ public class Tessellator
 	 *
 	 * @return  Outlines of shape.
 	 */
-	public List<int[]> constructOutlines( final HashList<Point2D> vertexList, final boolean counterClockwise )
+	public List<int[]> constructOutlines( final HashList<Vector2D> vertexList, final boolean counterClockwise )
 	{
 		return _mesh.constructOutlines( vertexList, counterClockwise );
 	}
