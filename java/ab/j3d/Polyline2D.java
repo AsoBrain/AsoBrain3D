@@ -1834,7 +1834,7 @@ public final class Polyline2D
 	{
 		final Polyline2D result;
 
-		final Point2D[] intersection = GeometryTools.getIntersectionBetweenLineSegments( p1 , p2 , p3 , p4 );
+		final Vector2D[] intersection = GeometryTools.getIntersectionBetweenLineSegments( p1.getX(), p1.getY(), p2.getX(), p2.getY(), p3.getX(), p3.getY(), p4.getX(), p4.getY() );
 		if ( intersection != null )
 		{
 			result = new Polyline2D( intersection.length );
@@ -1869,7 +1869,7 @@ public final class Polyline2D
 	{
 		final PolyPoint2D[] result;
 
-		final Point2D[] intersection = GeometryTools.getIntersectionBetweenLineSegments( p1 , p2 , p3 , p4 );
+		final Vector2D[] intersection = GeometryTools.getIntersectionBetweenLineSegments( p1.getX(), p1.getY(), p2.getX(), p2.getY(), p3.getX(), p3.getY(), p4.getX(), p4.getY() );
 		if ( intersection != null )
 		{
 			result = ( ( cache != null ) && ( cache.length == 2 ) ) ? cache : new PolyPoint2D[ 2 ];
@@ -2465,7 +2465,7 @@ public final class Polyline2D
 	 */
 	private static boolean isIntersectingLine_Line( final Point2D p1 , final Point2D p2 , final Point2D p3 , final Point2D p4 )
 	{
-		return ( GeometryTools.getIntersectionBetweenLineSegments( p1 , p2 , p3 , p4 ) != null );
+		return ( GeometryTools.getIntersectionBetweenLineSegments( p1.getX(), p1.getY(), p2.getX(), p2.getY(), p3.getX(), p3.getY(), p4.getX(), p4.getY() ) != null );
 	}
 
 	/**
