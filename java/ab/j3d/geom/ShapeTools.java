@@ -533,6 +533,28 @@ public class ShapeTools
 	 */
 	public static void appendArcCurves( final Path2D path, final Point2D center, final double radius, final Point2D end, final double extend  )
 	{
+		appendArcCurves( path, center.getX(), center.getY(), radius, end.getX(), end.getY(), extend );
+	}
+
+	/**
+	 * This utility-method calculates an approximation of an arc segment or
+	 * semicircle using quadratic B&eacute;zier curves and adds it to a
+	 * {@link Path2D}.
+	 * <p />
+	 * The implementation is based on {@link ArcIterator} (most
+	 * magic is in {@link ArcIterator#btan}), and information that
+	 * was found at  <a href='http://www.afralisp.com/lisp/Bulges1.htm'>http://www.afralisp.com/lisp/Bulges1.htm</a>.
+	 *
+	 * @param   path        Path to append arc to.
+	 * @param   centerX     Center of circle on which the arc is defined.
+	 * @param   centerY     Center of circle on which the arc is defined.
+	 * @param   radius      Radius of circle on which the arc is defined.
+	 * @param   endX        End point of arc.
+	 * @param   endY        End point of arc.
+	 * @param   extend      Included angle of extend (in radians, may be negative).
+	 */
+	public static void appendArcCurves( final Path2D path, final double centerX, final double centerY, final double radius, final double endX, final double endY, final double extend  )
+	{
 		final int segmentCount = (int)Math.ceil( Math.abs( extend ) / HALF_PI );
 		if ( segmentCount > 0 )
 		{
@@ -541,7 +563,7 @@ public class ShapeTools
 			final double bezierSegmentLength = 4.0 / 3.0 * Math.sin( angleIncrement / 2.0 ) / ( 1.0 + Math.cos( angleIncrement / 2.0  ) );
 			if ( bezierSegmentLength != 0.0 )
 			{
-				double currentAngle = Math.atan2( end.getY() - center.getY(), end.getX() - center.getX() ) - extend;
+				double currentAngle = Math.atan2( endY - centerY, endX - centerX ) - extend;
 				double cos1 = Math.cos( currentAngle ) * radius;
 				double sin1 = Math.sin( currentAngle ) * radius;
 
@@ -551,12 +573,12 @@ public class ShapeTools
 					final double cos2 = Math.cos( currentAngle ) * radius;
 					final double sin2 = Math.sin( currentAngle ) * radius;
 
-					final double p1x = center.getX() + cos1 - bezierSegmentLength * sin1;
-					final double p1y = center.getY() + sin1 + bezierSegmentLength * cos1;
-					final double p2x = center.getX() + cos2 + bezierSegmentLength * sin2;
-					final double p2y = center.getY() + sin2 - bezierSegmentLength * cos2;
-					final double p3x = center.getX() + cos2;
-					final double p3y = center.getY() + sin2;
+					final double p1x = centerX + cos1 - bezierSegmentLength * sin1;
+					final double p1y = centerY + sin1 + bezierSegmentLength * cos1;
+					final double p2x = centerX + cos2 + bezierSegmentLength * sin2;
+					final double p2y = centerY + sin2 - bezierSegmentLength * cos2;
+					final double p3x = centerX + cos2;
+					final double p3y = centerY + sin2;
 
 					path.curveTo( p1x, p1y, p2x, p2y, p3x, p3y );
 
