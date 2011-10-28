@@ -461,7 +461,7 @@ public class Vector2D
 		final double x = Double.parseDouble( value.substring( 0, comma ) );
 		final double y = Double.parseDouble( value.substring( comma + 1 ) );
 
-		return ZERO.set( x, y );
+		return ZERO.getInstance( x, y );
 	}
 
 	/**
@@ -509,7 +509,7 @@ public class Vector2D
 	 */
 	public Vector2D minus( final double otherX, final double otherY )
 	{
-		return set( getX() - otherX, getY() - otherY );
+		return getInstance( getX() - otherX, getY() - otherY );
 	}
 
 	/**
@@ -521,7 +521,7 @@ public class Vector2D
 	 */
 	public Vector2D multiply( final double factor )
 	{
-		return set( getX() * factor, getY() * factor );
+		return getInstance( getX() * factor, getY() * factor );
 	}
 
 	/**
@@ -533,7 +533,7 @@ public class Vector2D
 	public Vector2D normalize()
 	{
 		final double l = length();
-		return ( ( l == 0.0 ) || ( l == 1.0 ) ) ? this : set( getX() / l, getY() / l );
+		return ( ( l == 0.0 ) || ( l == 1.0 ) ) ? this : getInstance( getX() / l, getY() / l );
 	}
 
 	/**
@@ -573,7 +573,7 @@ public class Vector2D
 	 */
 	public Vector2D plus( final double otherX, final double otherY )
 	{
-		return set( getX() + otherX, getY() + otherY );
+		return getInstance( getX() + otherX, getY() + otherY );
 	}
 
 	/**
@@ -584,7 +584,7 @@ public class Vector2D
 	 *
 	 * @return  Resulting vector.
 	 */
-	public Vector2D set( final double x, final double y )
+	public Vector2D getInstance( final double x, final double y )
 	{
 		return ZERO.equals( x, y ) ? ZERO : equals( x, y ) ? this : new Vector2D( x, y );
 	}
@@ -602,7 +602,7 @@ public class Vector2D
 
 	/**
 	 * Create human-readable representation of this {@link Vector2D} object.
-	 * This is aspecially useful for debugging purposes.
+	 * This is especially useful for debugging purposes.
 	 *
 	 * @return  Human-readable representation of this {@link Vector2D} object.
 	 */
@@ -613,7 +613,7 @@ public class Vector2D
 
 	/**
 	 * Create human-readable representation of {@link Vector2D} object.
-	 * This is aspecially useful for debugging purposes.
+	 * This is especially useful for debugging purposes.
 	 *
 	 * @param   vector   Vector2D instance (<code>null</code> produces 'null').
 	 *
