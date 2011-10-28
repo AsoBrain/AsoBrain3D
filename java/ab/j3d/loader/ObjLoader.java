@@ -20,7 +20,6 @@
  */
 package ab.j3d.loader;
 
-import java.awt.geom.*;
 import java.io.*;
 import java.text.*;
 import java.util.*;
@@ -262,7 +261,7 @@ public class ObjLoader
 		 * Read OBJ data
 		 */
 		final List<Vector3D> vertexCoordinates = new ArrayList<Vector3D>();
-		final List<Point2D.Float> textureVertices = new ArrayList<Point2D.Float>();
+		final List<Vector3f> textureVertices = new ArrayList<Vector3f>();
 		final List<Vector3D> vertexNormals = new ArrayList<Vector3D>();
 		final List<ObjFace> faces = new ArrayList<ObjFace>();
 
@@ -636,9 +635,9 @@ public class ObjLoader
 						throw new IOException( "out-of-bounds texture vertex (" + textureVertexIndex + " >= " + textureVertices.size() + ')' );
 					}
 
-					final Point2D.Float texturePoint = textureVertices.get( textureVertexIndex );
-					vertex.colorMapU = texturePoint.x;
-					vertex.colorMapV = texturePoint.y;
+					final Vector3f texturePoint = textureVertices.get( textureVertexIndex );
+					vertex.colorMapU = texturePoint.getX();
+					vertex.colorMapV = texturePoint.getY();
 				}
 
 				final int vertexNormalIndex = objFaceVertex._vertexNormalIndex;
