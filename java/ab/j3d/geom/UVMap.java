@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2009-2010 Peter S. Heijnen
+ * Copyright (C) 2009-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,6 @@
  */
 package ab.j3d.geom;
 
-import java.awt.geom.*;
 import java.util.*;
 
 import ab.j3d.*;
@@ -56,5 +55,5 @@ public interface UVMap
 	 * @param   normal          Normal of face to map texture on.
 	 * @param   flipTexture     Flip texture direction.
 	 */
-	void generate( @NotNull Point2D result, @Nullable TextureMap textureMap, @NotNull Vector3D point, @NotNull Vector3D normal, boolean flipTexture );
+	void generate( @NotNull Vector2f result, @Nullable TextureMap textureMap, @NotNull Vector3D point, @NotNull Vector3D normal, boolean flipTexture );
 }

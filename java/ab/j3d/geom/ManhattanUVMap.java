@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2009-2010 Peter S. Heijnen
+ * Copyright (C) 2009-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,6 @@
  */
 package ab.j3d.geom;
 
-import java.awt.geom.*;
 import java.util.*;
 
 import ab.j3d.*;
@@ -86,7 +85,7 @@ public class ManhattanUVMap
 		}
 
 		int j = 0;
-		for ( int i = 0 ; i < vertexIndices.length ; i++ )
+		for ( int i = 0; i < vertexCount; i++ )
 		{
 			final Vector3D vertex = vertexCoordinates.get( ( vertexIndices != null ) ? vertexIndices[ i ] : i );
 
@@ -101,7 +100,7 @@ public class ManhattanUVMap
 	}
 
 	@Override
-	public void generate( @NotNull final Point2D result, @Nullable final TextureMap textureMap, @NotNull final Vector3D point, @NotNull final Vector3D normal, final boolean flipTexture )
+	public void generate( @NotNull final Vector2f result, @Nullable final TextureMap textureMap, @NotNull final Vector3D point, @NotNull final Vector3D normal, final boolean flipTexture )
 	{
 		final Matrix3D transform = _transform;
 
@@ -122,7 +121,7 @@ public class ManhattanUVMap
 		final float tx = (float)transform.transformX( point );
 		final float ty = (float)transform.transformY( point );
 
-		result.setLocation( scaleU * ( flipTexture ? ty: tx ) , scaleV * ( flipTexture ? tx : ty ) );
+		result.set( scaleU * ( flipTexture ? ty : tx ), scaleV * ( flipTexture ? tx : ty ) );
 	}
 
 	@Override

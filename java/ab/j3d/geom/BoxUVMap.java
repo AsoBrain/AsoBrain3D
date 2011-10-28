@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2009-2010 Peter S. Heijnen
+ * Copyright (C) 2009-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,6 @@
  */
 package ab.j3d.geom;
 
-import java.awt.geom.*;
 import java.util.*;
 
 import ab.j3d.*;
@@ -47,17 +46,17 @@ public class BoxUVMap
 	 * Transforms box to world coordinates.
 	 */
 	@NotNull
-	private Matrix3D _box2wcs;
+	private final Matrix3D _box2wcs;
 
 	/**
 	 * UV maps used to map the sides.
 	 */
-	private PlanarUVMap[] _maps;
+	private final PlanarUVMap[] _maps;
 
 	/**
 	 * Texture flipping for each map.
 	 */
-	private boolean[] _flips;
+	private final boolean[] _flips;
 
 	/**
 	 * Construct new UV-map that applies a uniform box mapping.
@@ -179,7 +178,7 @@ public class BoxUVMap
 	}
 
 	@Override
-	public void generate( @NotNull final Point2D result, @Nullable final TextureMap textureMap, @NotNull final Vector3D wcsPoint, @NotNull final Vector3D normal, final boolean flipTexture )
+	public void generate( @NotNull final Vector2f result, @Nullable final TextureMap textureMap, @NotNull final Vector3D wcsPoint, @NotNull final Vector3D normal, final boolean flipTexture )
 	{
 		final int map = getTargetMap( normal );
 		_maps[ map ].generate( result, textureMap, wcsPoint, normal, _flips[ map ] ^ flipTexture );

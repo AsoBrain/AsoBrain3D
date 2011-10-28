@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2009-2010 Peter S. Heijnen
+ * Copyright (C) 2009-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,6 @@
  */
 package ab.j3d.geom;
 
-import java.awt.geom.*;
 import java.util.*;
 
 import ab.j3d.*;
@@ -232,7 +231,7 @@ public class PlanarUVMap
 	}
 
 	@Override
-	public void generate( @NotNull final Point2D result, @Nullable final TextureMap textureMap, @NotNull final Vector3D point, @NotNull final Vector3D normal, final boolean flipTexture )
+	public void generate( @NotNull final Vector2f result, @Nullable final TextureMap textureMap, @NotNull final Vector3D point, @NotNull final Vector3D normal, final boolean flipTexture )
 	{
 		final Matrix3D plane2wcs = _plane2wcs;
 
@@ -253,7 +252,7 @@ public class PlanarUVMap
 		final float tx = (float)plane2wcs.inverseTransformX( point );
 		final float ty = (float)plane2wcs.inverseTransformY( point );
 
-		result.setLocation( ( flipTexture ? ty : tx ) * scaleU, ( flipTexture ? tx : ty ) * scaleV );
+		result.set( ( flipTexture ? ty : tx ) * scaleU, ( flipTexture ? tx : ty ) * scaleV );
 	}
 
 	@Override
