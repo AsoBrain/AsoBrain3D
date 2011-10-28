@@ -20,8 +20,6 @@
  */
 package ab.j3d;
 
-import java.awt.geom.*;
-import static java.lang.Double.*;
 import java.text.*;
 import java.util.*;
 
@@ -33,8 +31,8 @@ import ab.j3d.geom.*;
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public final class Vector3D
-	extends Point2D
+public class Vector3D
+	extends Vector2D
 {
 	/**
 	 * Zero-vector.
@@ -72,16 +70,6 @@ public final class Vector3D
 	public static final Vector3D NEGATIVE_Z_AXIS = new Vector3D( 0.0, 0.0, -1.0 );
 
 	/**
-	 * X component of 3D vector.
-	 */
-	public final double x;
-
-	/**
-	 * Y component of 3D vector.
-	 */
-	public final double y;
-
-	/**
 	 * Z component of 3D vector.
 	 */
 	public final double z;
@@ -92,29 +80,9 @@ public final class Vector3D
 	public static final Vector3D INIT = ZERO;
 
 	/**
-	 * Number format with one fraction digit.
+	 * Serialized data version.
 	 */
-	private static final NumberFormat ONE_DECIMAL_FORMAT;
-
-	/**
-	 * Number format with two fraction digits.
-	 */
-	private static final NumberFormat TWO_DECIMAL_FORMAT;
-
-	static
-	{
-		final NumberFormat oneDecimal = NumberFormat.getNumberInstance( Locale.US );
-		oneDecimal.setMinimumFractionDigits( 1 );
-		oneDecimal.setMaximumFractionDigits( 1 );
-		oneDecimal.setGroupingUsed( false );
-		ONE_DECIMAL_FORMAT = oneDecimal;
-
-		final NumberFormat twoDecimals = NumberFormat.getNumberInstance( Locale.US );
-		twoDecimals.setMinimumFractionDigits( 2 );
-		twoDecimals.setMaximumFractionDigits( 2 );
-		twoDecimals.setGroupingUsed( false );
-		TWO_DECIMAL_FORMAT = twoDecimals;
-	}
+	private static final long serialVersionUID = 234972165412209583L;
 
 	/**
 	 * Construct new vector.
@@ -125,21 +93,8 @@ public final class Vector3D
 	 */
 	public Vector3D( final double nx, final double ny, final double nz )
 	{
-		x = nx;
-		y = ny;
+		super( nx, ny );
 		z = nz;
-	}
-
-	@Override
-	public double getX()
-	{
-		return x;
-	}
-
-	@Override
-	public double getY()
-	{
-		return y;
 	}
 
 	/**
@@ -150,15 +105,6 @@ public final class Vector3D
 	public double getZ()
 	{
 		return z;
-	}
-
-	@Override
-	public void setLocation( final double nx, final double ny )
-	{
-		if ( x != nx || y != ny )
-		{
-			throw new IllegalStateException( getClass() + " is immutable" );
-		}
 	}
 
 	/**
@@ -310,16 +256,16 @@ public final class Vector3D
 	 */
 	public static Vector3D cross( final Vector3D v1, final Vector3D v2 )
 	{
-		return cross( v1.x, v1.y, v1.z, v2.x, v2.y, v2.z );
+		return cross( v1.getX(), v1.getY(), v1.getZ(), v2.getX(), v2.getY(), v2.getZ() );
 	}
 
 	/**
 	 * Determine Z component of cross product between two vectors.
 	 *
-	 * @param   x1      X-coordinate of first vector operand.
-	 * @param   y1      Y-coordinate of first vector operand.
-	 * @param   x2      X-coordinate of second vector operand.
-	 * @param   y2      Y-coordinate of second vector operand.
+	 * @param   x1  X-coordinate of first vector operand.
+	 * @param   y1  Y-coordinate of first vector operand.
+	 * @param   x2  X-coordinate of second vector operand.
+	 * @param   y2  Y-coordinate of second vector operand.
 	 *
 	 * @return  Resulting vector.
 	 */
@@ -331,27 +277,27 @@ public final class Vector3D
 	/**
 	 * Determine Z component of cross between two vectors.
 	 *
-	 * @param   v1      First vector.
-	 * @param   v2      Second vector.
+	 * @param   v1  First vector.
+	 * @param   v2  Second vector.
 	 *
 	 * @return  Resulting vector.
 	 */
 	public static double crossZ( final Vector3D v1, final Vector3D v2 )
 	{
-		return crossZ( v1.x, v1.y, v2.x, v2.y );
+		return crossZ( v1.getX(), v1.getY(), v2.getX(), v2.getY() );
 	}
 
 	/**
 	 * Calculate distance between two point vectors.
 	 *
-	 * @param   p1      First point vector to calculate the distance between.
-	 * @param   p2      Second point vector to calculate the distance between.
+	 * @param   p1  First point vector to calculate the distance between.
+	 * @param   p2  Second point vector to calculate the distance between.
 	 *
 	 * @return  Distance between this and the specified other vector.
 	 */
 	public static double distanceBetween( final Vector3D p1, final Vector3D p2 )
 	{
-		return length( p1.x - p2.x, p1.y - p2.y, p1.z - p2.z );
+		return length( p1.getX() - p2.getX(), p1.getY() - p2.getY(), p1.getZ() - p2.getZ() );
 	}
 
 	/**
@@ -376,18 +322,18 @@ public final class Vector3D
 	 */
 	public static Vector3D direction( final Vector3D from, final Vector3D to )
 	{
-		return direction( from.x, from.y, from.z, to.x, to.y, to.z );
+		return direction( from.getX(), from.getY(), from.getZ(), to.getX(), to.getY(), to.getZ() );
 	}
 
 	/**
 	 * Get direction from one point to another point.
 	 *
-	 * @param   x1      X coordinate of from-point.
-	 * @param   y1      Y coordinate of from-point.
-	 * @param   z1      Z coordinate of from-point.
-	 * @param   x2      X coordinate of to-point.
-	 * @param   y2      Y coordinate of to-point.
-	 * @param   z2      Z coordinate of to-point.
+	 * @param   x1  X coordinate of from-point.
+	 * @param   y1  Y coordinate of from-point.
+	 * @param   z1  Z coordinate of from-point.
+	 * @param   x2  X coordinate of to-point.
+	 * @param   y2  Y coordinate of to-point.
+	 * @param   z2  Z coordinate of to-point.
 	 *
 	 * @return  Direction from from-point to to-point.
 	 */
@@ -405,21 +351,21 @@ public final class Vector3D
 	 */
 	public Vector3D directionTo( final Vector3D other )
 	{
-		return direction( x, y, z, other.x, other.y, other.z );
+		return direction( getX(), getY(), getZ(), other.getX(), other.getY(), other.getZ() );
 	}
 
 	/**
 	 * Get direction from this point vector to another.
 	 *
-	 * @param   x       X coordinate of point to calculate the direction to.
-	 * @param   y       Y coordinate of point to calculate the direction to.
-	 * @param   z       Z coordinate of point to calculate the direction to.
+	 * @param   x   X coordinate of point to calculate the direction to.
+	 * @param   y   Y coordinate of point to calculate the direction to.
+	 * @param   z   Z coordinate of point to calculate the direction to.
 	 *
 	 * @return  Direction from this to the other vector.
 	 */
 	public Vector3D directionTo( final double x, final double y, final double z )
 	{
-		return direction( this.x, this.y, this.z,  x, y, z );
+		return direction( getX(), getY(), getZ(),  x, y, z );
 	}
 
 	/**
@@ -432,19 +378,19 @@ public final class Vector3D
 	 */
 	public static Vector3D average( final Vector3D v1, final Vector3D v2 )
 	{
-		return v1.equals( v2 ) ? v1 : new Vector3D( 0.5 * ( v1.x + v2.x ), 0.5 * ( v1.y + v2.y ), 0.5 * ( v1.z + v2.z ) );
+		return v1.equals( v2 ) ? v1 : new Vector3D( 0.5 * ( v1.getX() + v2.getX() ), 0.5 * ( v1.getY() + v2.getY() ), 0.5 * ( v1.getZ() + v2.getZ() ) );
 	}
 
 	/**
 	 * Calculate dot product (a.k.a. inner product) of this vector and another
 	 * one specified as argument.
 	 *
-	 * @param   x1      X-coordinate of first vector operand.
-	 * @param   y1      Y-coordinate of first vector operand.
-	 * @param   z1      Z-coordinate of first vector operand.
-	 * @param   x2      X-coordinate of second vector operand.
-	 * @param   y2      Y-coordinate of second vector operand.
-	 * @param   z2      Z-coordinate of second vector operand.
+	 * @param   x1  X-coordinate of first vector operand.
+	 * @param   y1  Y-coordinate of first vector operand.
+	 * @param   z1  Z-coordinate of first vector operand.
+	 * @param   x2  X-coordinate of second vector operand.
+	 * @param   y2  Y-coordinate of second vector operand.
+	 * @param   z2  Z-coordinate of second vector operand.
 	 *
 	 * @return  Dot product.
 	 */
@@ -462,14 +408,14 @@ public final class Vector3D
 	 * <blockquote>a &middot; b = |a| |b| cos &theta;</blockquote>
 	 * where &theta; denotes the angle between the two vectors.
 	 *
-	 * @param   v1      First vector operand.
-	 * @param   v2      Second vector operand.
+	 * @param   v1  First vector operand.
+	 * @param   v2  Second vector operand.
 	 *
 	 * @return  Dot product.
 	 */
 	public static double dot( final Vector3D v1, final Vector3D v2 )
 	{
-		return dot( v1.x, v1.y, v1.z, v2.x, v2.y, v2.z );
+		return dot( v1.getX(), v1.getY(), v1.getZ(), v2.getX(), v2.getY(), v2.getZ() );
 	}
 
 	/**
@@ -484,7 +430,7 @@ public final class Vector3D
 	 */
 	public boolean almostEquals( final Vector3D other )
 	{
-		return ( other == this ) || ( ( other != null ) && almostEquals( other.x, other.y, other.z ) );
+		return ( other == this ) || ( ( other != null ) && almostEquals( other.getX(), other.getY(), other.getZ() ) );
 	}
 
 	/**
@@ -501,9 +447,9 @@ public final class Vector3D
 	 */
 	public boolean almostEquals( final double otherX, final double otherY, final double otherZ )
 	{
-		return GeometryTools.almostEqual( x, otherX ) &&
-		       GeometryTools.almostEqual( y, otherY ) &&
-		       GeometryTools.almostEqual( z, otherZ );
+		return GeometryTools.almostEqual( getX(), otherX ) &&
+		       GeometryTools.almostEqual( getY(), otherY ) &&
+		       GeometryTools.almostEqual( getZ(), otherZ );
 	}
 
 	/**
@@ -518,9 +464,9 @@ public final class Vector3D
 	 */
 	public boolean equals( final double otherX, final double otherY, final double otherZ )
 	{
-		return ( isNaN( otherX ) || ( otherX == x ) ) &&
-		       ( isNaN( otherY ) || ( otherY == y ) ) &&
-		       ( isNaN( otherZ ) || ( otherZ == z ) );
+		return ( Double.isNaN( otherX ) || ( otherX == getX() ) ) &&
+		       ( Double.isNaN( otherY ) || ( otherY == getY() ) ) &&
+		       ( Double.isNaN( otherZ ) || ( otherZ == getZ() ) );
 	}
 
 	@Override
@@ -539,7 +485,7 @@ public final class Vector3D
 		else
 		{
 			final Vector3D v = (Vector3D)other;
-			result = ( ( x == v.x ) && ( y == v.y ) && ( z == v.z ) );
+			result = ( ( getX() == v.getX() ) && ( getY() == v.getY() ) && ( getZ() == v.getZ() ) );
 		}
 
 		return result;
@@ -549,9 +495,9 @@ public final class Vector3D
 	public int hashCode()
 	{
 		long l;
-		return (int)( ( l = doubleToLongBits( x ) ) ^ ( l >>> 32 ) ^
-		              ( l = doubleToLongBits( y ) ) ^ ( l >>> 32 ) ^
-		              ( l = doubleToLongBits( z ) ) ^ ( l >>> 32 ) );
+		return (int)( ( l = Double.doubleToLongBits( getX() ) ) ^ ( l >>> 32 ) ^
+		              ( l = Double.doubleToLongBits( getY() ) ) ^ ( l >>> 32 ) ^
+		              ( l = Double.doubleToLongBits( getZ() ) ) ^ ( l >>> 32 ) );
 	}
 
 	/**
@@ -581,7 +527,7 @@ public final class Vector3D
 			throw new IllegalArgumentException( value );
 		}
 
-		final double x = parseDouble( value.substring( 0, comma1 ) );
+		final double x = Double.parseDouble( value.substring( 0, comma1 ) );
 
 		final int comma2 = value.indexOf( (int)',', comma1 + 1 );
 		if ( comma2 < 1 )
@@ -589,8 +535,8 @@ public final class Vector3D
 			throw new IllegalArgumentException( value );
 		}
 
-		final double y = parseDouble( value.substring( comma1 + 1, comma2 ) );
-		final double z = parseDouble( value.substring( comma2 + 1 ) );
+		final double y = Double.parseDouble( value.substring( comma1 + 1, comma2 ) );
+		final double z = Double.parseDouble( value.substring( comma2 + 1 ) );
 
 		return ZERO.set( x, y, z );
 	}
@@ -600,9 +546,10 @@ public final class Vector3D
 	 *
 	 * @return  Length of vector.
 	 */
+	@Override
 	public double length()
 	{
-		return length( x, y, z );
+		return length( getX(), getY(), getZ() );
 	}
 
 	/**
@@ -628,7 +575,7 @@ public final class Vector3D
 	 */
 	public Vector3D minus( final Vector3D other )
 	{
-		return minus( other.x, other.y, other.z );
+		return minus( other.getX(), other.getY(), other.getZ() );
 	}
 
 	/**
@@ -642,7 +589,7 @@ public final class Vector3D
 	 */
 	public Vector3D minus( final double otherX, final double otherY, final double otherZ )
 	{
-		return set( x - otherX, y - otherY, z - otherZ );
+		return set( getX() - otherX, getY() - otherY, getZ() - otherZ );
 	}
 
 	/**
@@ -652,9 +599,10 @@ public final class Vector3D
 	 *
 	 * @return  Resulting vector.
 	 */
+	@Override
 	public Vector3D multiply( final double factor )
 	{
-		return set( x * factor, y * factor, z * factor );
+		return set( getX() * factor, getY() * factor, getZ() * factor );
 	}
 
 	/**
@@ -663,10 +611,11 @@ public final class Vector3D
 	 *
 	 * @return  Normalized vector.
 	 */
+	@Override
 	public Vector3D normalize()
 	{
 		final double l = length();
-		return ( ( l == 0.0 ) || ( l == 1.0 ) ) ? this : set( x / l, y / l, z / l );
+		return ( ( l == 0.0 ) || ( l == 1.0 ) ) ? this : set( getX() / l, getY() / l, getZ() / l );
 	}
 
 	/**
@@ -694,7 +643,7 @@ public final class Vector3D
 	 */
 	public Vector3D plus( final Vector3D other )
 	{
-		return plus( other.x, other.y, other.z );
+		return plus( other.getX(), other.getY(), other.getZ() );
 	}
 
 	/**
@@ -708,33 +657,33 @@ public final class Vector3D
 	 */
 	public Vector3D plus( final double otherX, final double otherY, final double otherZ )
 	{
-		return set( x + otherX, y + otherY, z + otherZ );
+		return set( getX() + otherX, getY() + otherY, getZ() + otherZ );
 	}
 
 	/**
 	 * Set vector to the specified coordinates.
 	 *
-	 * @param   nx      X-coordinate of vector.
-	 * @param   ny      Y-coordinate of vector.
-	 * @param   nz      Z-coordinate of vector.
+	 * @param   x   X-coordinate of vector.
+	 * @param   y   Y-coordinate of vector.
+	 * @param   z   Z-coordinate of vector.
 	 *
 	 * @return  Resulting vector.
 	 */
-	public Vector3D set( final double nx, final double ny, final double nz )
+	public Vector3D set( final double x, final double y, final double z )
 	{
 		final Vector3D result;
 
-		if ( ZERO.equals( nx, ny, nz ) )
+		if ( ZERO.equals( x, y, z ) )
 		{
 			result = ZERO;
 		}
-		else if ( ( this != ZERO ) && equals( nx, ny, nz ) )
+		else if ( ( this != ZERO ) && equals( x, y, z ) )
 		{
 			result = this;
 		}
 		else
 		{
-			result = new Vector3D( isNaN( nx ) ? x : nx, isNaN( ny ) ? y : ny, isNaN( nz ) ? z : nz );
+			result = new Vector3D( Double.isNaN( x ) ? getX() : x, Double.isNaN( y ) ? getY() : y, Double.isNaN( z ) ? getZ() : z );
 		}
 
 		return result;
@@ -748,7 +697,7 @@ public final class Vector3D
 	@Override
 	public String toString()
 	{
-		return x + "," + y + ',' + z;
+		return getX() + "," + getY() + ',' + getZ();
 	}
 
 	/**
@@ -764,7 +713,7 @@ public final class Vector3D
 	 */
 	public Vector3D cartesianToPolar()
 	{
-		return cartesianToPolar( x, y, z );
+		return cartesianToPolar( getX(), getY(), getZ() );
 	}
 
 	/**
@@ -780,9 +729,9 @@ public final class Vector3D
 	 * See <a href="http://astronomy.swin.edu.au/~pbourke/projection/coords/">Coordinate System Transformation</a>
 	 * by <a href="http://astronomy.swin.edu.au/~pbourke/">Paul Bourke</a>.
 	 *
-	 * @param   x       Cartesian X coordinate.
-	 * @param   y       Cartesian Y coordinate.
-	 * @param   z       Cartesian Z coordinate.
+	 * @param   x   Cartesian X coordinate.
+	 * @param   y   Cartesian Y coordinate.
+	 * @param   z   Cartesian Z coordinate.
 	 *
 	 * @return  Polar coordinates (radius,azimuth,zenith) based on cartesian
 	 *          coordinates defined by this vector.
@@ -824,7 +773,7 @@ public final class Vector3D
 	 */
 	public Vector3D polarToCartesian()
 	{
-		return polarToCartesian( x, y, z );
+		return polarToCartesian( getX(), getY(), getZ() );
 	}
 
 	/**
@@ -873,9 +822,10 @@ public final class Vector3D
 	 *
 	 * @return  Human-readable representation of this {@link Vector3D} object.
 	 */
+	@Override
 	public String toFriendlyString()
 	{
-		return toFriendlyString( x, y, z );
+		return toFriendlyString( getX(), getY(), getZ() );
 	}
 
 	/**
@@ -888,7 +838,7 @@ public final class Vector3D
 	 */
 	public static String toFriendlyString( final Vector3D vector )
 	{
-		return ( vector == null ) ? "null" : toFriendlyString( vector.x, vector.y, vector.z );
+		return ( vector == null ) ? "null" : toFriendlyString( vector.getX(), vector.getY(), vector.getZ() );
 	}
 
 	/**
@@ -911,9 +861,10 @@ public final class Vector3D
 	 *
 	 * @return  Human-readable representation of {@link Vector3D} object.
 	 */
+	@Override
 	public String toShortFriendlyString()
 	{
-		return toShortFriendlyString( x, y, z );
+		return toShortFriendlyString( getX(), getY(), getZ() );
 	}
 
 	/**
@@ -925,7 +876,7 @@ public final class Vector3D
 	 */
 	public static String toShortFriendlyString( final Vector3D vector )
 	{
-		return ( vector == null ) ? "null" : toShortFriendlyString( vector.x, vector.y, vector.z );
+		return ( vector == null ) ? "null" : toShortFriendlyString( vector.getX(), vector.getY(), vector.getZ() );
 	}
 
 	/**
