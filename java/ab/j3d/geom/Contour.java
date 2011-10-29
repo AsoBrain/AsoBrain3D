@@ -20,14 +20,9 @@
  */
 package ab.j3d.geom;
 
-import java.awt.*;
-import java.awt.geom.*;
 import java.util.*;
-import java.util.List;
 
-import ab.j3d.geom.ShapeTools.*;
-import com.numdata.oss.*;
-import org.jetbrains.annotations.*;
+import ab.j3d.*;
 
 /**
  * This defines a contour. A contour is a single closed path whose segments
@@ -36,15 +31,122 @@ import org.jetbrains.annotations.*;
  * automatically connected to the start point.
  *
  * The main purpose of this class is providing intermediate analysis and storage
- * of 2D shape data. The {@link #createContours} and {@link #addContours}
- * methods can beused to convienently construct {@link Contour}s from Java 2D
- * shapes.
+ * of 2D shape data.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
 public class Contour
 {
+	/**
+	 * Shape classes.
+	 */
+	public enum ShapeClass
+	{
+		/**
+		 * Nothingness.
+		 */
+		VOID,
+
+		/**
+		 * Line segment.
+		 */
+		LINE_SEGMENT,
+
+		/**
+		 * Open path.
+		 */
+		OPEN_PATH,
+
+		/**
+		 * Triangle with clockwise vertex order.
+		 */
+		CW_TRIANGLE,
+
+		/**
+		 * Triangle with counter-clockwise vertex order.
+		 */
+		CCW_TRIANGLE,
+
+		/**
+		 * Quad with clockwise vertex order.
+		 */
+		CW_QUAD,
+
+		/**
+		 * Quad with counter-clockwise vertex order.
+		 */
+		CCW_QUAD,
+
+		/**
+		 * Convex shape with clockwise vertex order.
+		 */
+		CW_CONVEX,
+
+		/**
+		 * Convex shape with counter-clockwise vertex order.
+		 */
+		CCW_CONVEX,
+
+		/**
+		 * Concave shape with clockwise vertex order.
+		 */
+		CW_CONCAVE,
+
+		/**
+		 * Concave shape with counter-clockwise vertex order.
+		 */
+		CCW_CONCAVE,
+
+		/**
+		 * Complex shape with possible self-intersection or multiple sub-paths.
+		 */
+		COMPLEX;
+
+		/**
+		 * Test if this shape is convex.
+		 *
+		 * @return  <code>true</code> if shape is convex.
+		 */
+		public boolean isConvex()
+		{
+			return ( ( this == CCW_TRIANGLE ) ||
+			         ( this == CW_TRIANGLE ) ||
+			         ( this == CCW_QUAD ) ||
+			         ( this == CW_QUAD ) ||
+			         ( this == CCW_CONVEX ) ||
+			         ( this == CW_CONVEX ) );
+		}
+
+		/**
+		 * Test if this shape has clockwise vertex order.
+		 *
+		 * @return  <code>true</code> if shape has clockwise vertex order;
+		 *          <code>false</code> if counter-clockwise or undetermined.
+		 */
+		public boolean isClockwise()
+		{
+			return ( ( this == CW_TRIANGLE ) ||
+			         ( this == CW_QUAD ) ||
+			         ( this == CW_CONVEX ) ||
+			         ( this == CW_CONCAVE ) );
+		}
+
+		/**
+		 * Test if this shape has counter-clockwise vertex order.
+		 *
+		 * @return  <code>true</code> if shape has counter-clockwise vertex order;
+		 *          <code>false</code> if clockwise or undetermined.
+		 */
+		public boolean isCounterClockwise()
+		{
+			return ( ( this == CCW_TRIANGLE ) ||
+			         ( this == CCW_QUAD ) ||
+			         ( this == CCW_CONVEX ) ||
+			         ( this == CCW_CONCAVE ) );
+		}
+	}
+
 	/**
 	 * Shape class of contour.
 	 */
@@ -56,195 +158,12 @@ public class Contour
 	final List<Point> _points;
 
 	/**
-	 * Create contour(s) from a flattened {@link Shape}.
-	 *
-	 * @param   shape               Shape whose contour(s) to create.
-	 * @param   flatness            Flatness used for contours.
-	 * @param   counterClockwise    Make all contours counter-clockwise.
-	 * @param   keepOpenPaths       Keep open paths as contours.
-	 *
-	 * @return  Contour(s) that were created.
-	 */
-	@NotNull
-	public static List<Contour> createContours( @NotNull final Shape shape, final double flatness, final boolean counterClockwise, final boolean keepOpenPaths )
-	{
-		final List<Contour> result = new ArrayList<Contour>();
-		addContours( result, shape.getPathIterator( null, flatness ), counterClockwise, keepOpenPaths );
-		return result;
-	}
-
-	/**
-	 * Add contour(s) from a {@link PathIterator}. If <code>keepOpenPaths</code>
-	 * is set to <code>true</code>, then open paths are also added, otherwise
-	 * only closed paths will be retained. The closing segment of closed shapes
-	 * is not included.
-	 *
-	 * @param   contours                Collection to store contours in.
-	 * @param   pathIterator            Path iterator to create contour from.
-	 * @param   makeCounterClockwise    Make all contours counter-clockwise.
-	 * @param   keepOpenPaths           Keep open paths as contours.
-	 */
-	public static void addContours( @NotNull final Collection<Contour> contours, @NotNull final PathIterator pathIterator, final boolean makeCounterClockwise, final boolean keepOpenPaths )
-	{
-		final List<Point> points = new ArrayList<Point>();
-
-		boolean positiveAngles = false; /* encountered positive angles */
-		boolean negativeAngles = false; /* encountered negative angles */
-		double totalAngle = 0.0; /* should finish at 2PI (counter-clockwise) or -2PI (clockwise) for closed non-self-intersecting shapes */
-		boolean reverseContour;
-
-		final double[] coords = new double[ 6 ];
-
-		for ( ; !pathIterator.isDone() ; pathIterator.next() )
-		{
-			final int segmentType = pathIterator.currentSegment( coords );
-
-			switch ( segmentType )
-			{
-				case PathIterator.SEG_MOVETO :
-				{
-					if ( keepOpenPaths )
-					{
-						final int pointCount = points.size();
-						if ( pointCount >= 2 )
-						{
-							final List<Point> vertices = new ArrayList<Point>( points );
-							final ShapeClass shapeClass = ( pointCount == 2 ) ? ShapeClass.LINE_SEGMENT : ShapeClass.OPEN_PATH;
-							contours.add( new Contour( shapeClass, vertices ) );
-						}
-					}
-
-					final double moveX = coords[ 0 ];
-					final double moveY = coords[ 1 ];
-					positiveAngles = false;
-					negativeAngles = false;
-					totalAngle = 0.0;
-
-					points.clear();
-					points.add( new Point( moveX, moveY ) );
-					break;
-				}
-
-				case PathIterator.SEG_LINETO :
-				{
-					final int pointIndex = points.size();
-					if ( pointIndex == 0 )
-					{
-						throw new IllegalStateException( "Line segment before move encountered" );
-					}
-
-					final double nextX = coords[ 0 ];
-					final double nextY = coords[ 1 ];
-
-					final Point current = points.get( pointIndex - 1 );
-
-					if ( !MathTools.almostEqual( nextX, current.x ) || !MathTools.almostEqual( nextY, current.y ) )
-					{
-						final Point next = new Point( nextX, nextY );
-						points.add( next );
-
-						if ( pointIndex >= 2 )
-						{
-							final Point previous = points.get( pointIndex - 2 );
-
-							final double angle = ShapeTools.getAngle( current.x - previous.x, current.y - previous.y, next.x - current.x, next.y - current.y );
-							current.angle = angle;
-							positiveAngles |= ( angle > 0.0 );
-							negativeAngles |= ( angle < 0.0 );
-							totalAngle += angle;
-						}
-					}
-					break;
-				}
-
-				case PathIterator.SEG_CLOSE :
-					int pointCount = points.size();
-					if ( pointCount > 2 )
-					{
-						final Point start = points.get( 0 );
-
-						Point last = points.get( pointCount - 1 );
-						if ( MathTools.almostEqual( start.x, last.x ) && MathTools.almostEqual( start.y, last.y ) )
-						{
-							last = points.remove( --pointCount );
-						}
-						else
-						{
-							final Point previous = points.get( pointCount - 2 );
-
-							final double angle = ShapeTools.getAngle( last.x - previous.x, last.y - previous.y, start.x - last.x, start.y - last.y );
-							last.angle = angle;
-							positiveAngles |= ( angle > 0.0 );
-							negativeAngles |= ( angle < 0.0 );
-							totalAngle += angle;
-						}
-
-						if ( pointCount > 2 )
-						{
-							final Point firstEdge = points.get( 1 );
-
-							final double angle = ShapeTools.getAngle( start.x - last.x, start.y - last.y, firstEdge.x - start.x, firstEdge.y - start.y );
-							start.angle = angle;
-							positiveAngles |= ( angle > 0.0 );
-							negativeAngles |= ( angle < 0.0 );
-							totalAngle += angle;
-
-							boolean counterClockwise = ( totalAngle >= 0.0 );
-							reverseContour = ( makeCounterClockwise && !counterClockwise );
-
-							final List<Point> vertices;
-
-							if ( reverseContour )
-							{
-								vertices = new ArrayList<Point>();
-								for ( int i = pointCount; --i >= 0; )
-								{
-									vertices.add( points.get( i ) );
-								}
-								counterClockwise = !counterClockwise;
-							}
-							else
-							{
-								vertices = new ArrayList<Point>( points );
-							}
-
-							final ShapeClass shapeClass = ( positiveAngles && negativeAngles ) ? counterClockwise ? ShapeClass.CCW_CONCAVE : ShapeClass.CW_CONCAVE :
-							                              ( pointCount == 3 ) ? counterClockwise ? ShapeClass.CCW_TRIANGLE : ShapeClass.CW_TRIANGLE :
-							                              ( pointCount == 4 ) ? counterClockwise ? ShapeClass.CCW_QUAD : ShapeClass.CW_QUAD :
-							                              counterClockwise ? ShapeClass.CCW_CONVEX : ShapeClass.CW_CONVEX;
-
-							contours.add( new Contour( shapeClass, vertices ) );
-						}
-
-						points.clear();
-					}
-					break;
-
-				default :
-					throw new AssertionError( segmentType + "?" );
-			}
-		}
-
-		if ( keepOpenPaths )
-		{
-			final int pointCount = points.size();
-			if ( pointCount >= 2 )
-			{
-				final List<Point> vertices = new ArrayList<Point>( points );
-				final ShapeClass shapeClass = ( pointCount == 2 ) ? ShapeClass.LINE_SEGMENT : ShapeClass.OPEN_PATH;
-				contours.add( new Contour( shapeClass, vertices ) );
-				points.clear();
-			}
-		}
-	}
-
-	/**
 	 * Construct contour.
 	 *
 	 * @param   shapeClass  Shape class of contour.
 	 * @param   points      Points that define the contour.
 	 */
-	Contour( final ShapeClass shapeClass, final List<Point> points )
+	public Contour( final ShapeClass shapeClass, final List<Point> points )
 	{
 		_shapeClass = shapeClass;
 		_points = points;
@@ -271,13 +190,54 @@ public class Contour
 	}
 
 	/**
+	 * Get angle between two subsequent segments of a path.
+	 *
+	 * @param   seg1x   First segment delta X.
+	 * @param   seg1y   First segment delta Y.
+	 * @param   seg2x   Second segment delta X.
+	 * @param   seg2y   Second segment delta Y.
+	 *
+	 * @return  Angle between segments in radians (positive if angle is
+	 *          counter-clockwise, negative if clockwise, <code>0</code> if
+	 *          colinear).
+	 */
+	public static double getAngle( final double seg1x, final double seg1y, final double seg2x, final double seg2y )
+	{
+		final double result;
+
+		final double normal = seg2y * seg1x - seg2x * seg1y;
+		if ( normal < -0.001 )
+		{
+			final double dot     = seg1x * seg2x + seg1y * seg2y;
+			final double prevLen = Math.sqrt( seg1x * seg1x + seg1y * seg1y );
+			final double nextLen = Math.sqrt( seg2x * seg2x + seg2y * seg2y );
+
+			result = -Math.acos( dot / ( prevLen * nextLen ) );
+		}
+		else if ( normal > 0.001 )
+		{
+			final double dot     = seg1x * seg2x + seg1y * seg2y;
+			final double prevLen = Math.sqrt( seg1x * seg1x + seg1y * seg1y );
+			final double nextLen = Math.sqrt( seg2x * seg2x + seg2y * seg2y );
+
+			result = Math.acos( dot / ( prevLen * nextLen ) );
+		}
+		else
+		{
+			result = 0.0;
+		}
+
+		return result;
+	}
+
+	/**
 	 * This defines a point on a contour.
 	 *
 	 * @author  Peter S. Heijnen
 	 * @version $Revision$ $Date$
 	 */
 	public static class Point
-		extends Point2D.Double
+		extends Vector2D
 	{
 		/**
 		 * Serialized data version.
@@ -295,7 +255,7 @@ public class Contour
 		 * @param   x   X coordinate of point.
 		 * @param   y   Y coordinate of point.
 		 */
-		Point( final double x, final double y )
+		public Point( final double x, final double y )
 		{
 			super( x, y );
 		}
@@ -310,6 +270,18 @@ public class Contour
 		public double getAngle()
 		{
 			return angle;
+		}
+
+		/**
+		 * Set angle in radians between the two segments connected by this
+		 * point.
+		 *
+		 * @return  Angle in radians between the two segments connected by this
+		 *          point.
+		 */
+		public void setAngle( final double angle )
+		{
+			this.angle = angle;
 		}
 	}
 }
