@@ -20,15 +20,10 @@
  */
 package ab.j3d.geom;
 
-import java.awt.*;
-import java.awt.geom.*;
 import java.util.*;
-import java.util.List;
 
 import ab.j3d.*;
 import ab.j3d.geom.tessellator.*;
-import ab.j3d.geom.tessellator.Mesh.*;
-import org.jetbrains.annotations.*;
 
 /**
  * Transforms 2-dimensional shapes into tessellated primitives. The result
@@ -46,101 +41,16 @@ public class Tessellator
 	/**
 	 * Mesh that was created.
 	 */
-	private Mesh _mesh = null;
+	private final Mesh _mesh;
 
 	/**
-	 * Defines a shape to tessellate. Any curves in the shape are flattened
-	 * using the given flatness.
+	 * Create tessellator for the given mesh.
 	 *
-	 * @param   shape       Shape to tessellate.
-	 * @param   flatness    Maximum distance between line segments and the
-	 *                      curves they approximate.
+	 * @param   mesh    Mesh to tessellate.
 	 */
-	public void defineShape( @NotNull final Shape shape, final double flatness )
+	public Tessellator( final Mesh mesh )
 	{
-		final PathIterator iterator = shape.getPathIterator( null, flatness );
-
-		final WindingRule windingRule;
-
-		switch ( iterator.getWindingRule() )
-		{
-			case PathIterator.WIND_EVEN_ODD:
-				windingRule = Mesh.WindingRule.ODD;
-				break;
-
-			case PathIterator.WIND_NON_ZERO:
-				windingRule = Mesh.WindingRule.NONZERO;
-				break;
-
-			default:
-				throw new AssertionError( "Illegal winding rule: " + iterator.getWindingRule() );
-		}
-
-		final Mesh mesh = new Mesh( windingRule );
-		tessellateShape( mesh, iterator );
-		mesh.finish();
 		_mesh = mesh;
-	}
-
-	/**
-	 * Add contour(s) from a {@link PathIterator}.
-	 *
-	 * @param   mesh            Mesh to add contours to.
-	 * @param   pathIterator    Path iterator to create contour from.
-	 */
-	private static void tessellateShape( final Mesh mesh, @NotNull final PathIterator pathIterator )
-	{
-		final LinkedList<double[]> points = new LinkedList<double[]>();
-		double[] cur = null;
-
-		for ( ; !pathIterator.isDone() ; pathIterator.next() )
-		{
-			final double[] coords = new double[ 2 ];
-			switch ( pathIterator.currentSegment( coords ) )
-			{
-				case PathIterator.SEG_MOVETO :
-					points.clear();
-					points.add( coords );
-					cur = coords;
-					break;
-
-				case PathIterator.SEG_LINETO :
-					if ( ( cur == null ) || !MathTools.almostEqual( coords[ 0 ], cur[ 0 ] ) || !MathTools.almostEqual( coords[ 1 ], cur[ 1 ] ) )
-					{
-						points.add( coords );
-					}
-					cur = coords;
-					break;
-
-				case PathIterator.SEG_CLOSE :
-					if ( points.size() > 2 )
-					{
-						final double[] start = points.getFirst();
-
-						final double[] last = points.getLast();
-						if ( MathTools.almostEqual( start[ 0 ], last[ 0 ] ) && MathTools.almostEqual( start[ 1 ], last[ 1 ] ) )
-						{
-							points.removeLast();
-						}
-
-						if ( points.size() > 2 )
-						{
-							mesh.beginContour();
-
-							for ( final double[] point : points )
-							{
-								mesh.addVertex( point[ 0 ], point[ 1 ] );
-							}
-
-							mesh.endContour();
-						}
-
-						points.clear();
-						cur = start;
-					}
-					break;
-			}
-		}
 	}
 
 	/**
