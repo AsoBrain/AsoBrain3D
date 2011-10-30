@@ -323,7 +323,7 @@ public class Object3D
 	 */
 	public void addBounds( final Bounds3DBuilder bounds3DBuilder, final Matrix3D transform )
 	{
-		if ( ( transform != null ) && ( transform != Matrix3D.INIT ) && ( !Matrix3D.INIT.equals( transform ) ) )
+		if ( ( transform != null ) && ( transform != Matrix3D.IDENTITY ) && ( !Matrix3D.IDENTITY.equals( transform ) ) )
 		{
 			final List<Vector3D> vertexCoordinates = _vertexCoordinates;
 			if ( !vertexCoordinates.isEmpty() )
@@ -567,12 +567,12 @@ public class Object3D
 		/**
 		 * Bounding box.
 		 */
-		private Bounds3D _bounds;
+		private final Bounds3D _bounds;
 
 		/**
 		 * Material.
 		 */
-		private Material _material;
+		private final Material _material;
 
 		/**
 		 * Constructs a new instance.
@@ -580,7 +580,7 @@ public class Object3D
 		 * @param   bounds      Bounding box.
 		 * @param   material    Material.
 		 */
-		public LowDetailObject3D( final Bounds3D bounds, final Material material )
+		protected LowDetailObject3D( final Bounds3D bounds, final Material material )
 		{
 			_bounds = bounds;
 			_material = material;
