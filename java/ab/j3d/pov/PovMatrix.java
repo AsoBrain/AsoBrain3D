@@ -19,13 +19,12 @@
  */
 package ab.j3d.pov;
 
-import java.io.IOException;
-import java.text.NumberFormat;
-import java.util.Locale;
+import java.io.*;
+import java.text.*;
+import java.util.*;
 
-import com.numdata.oss.io.IndentingWriter;
-
-import ab.j3d.Matrix3D;
+import ab.j3d.*;
+import com.numdata.oss.io.*;
 
 /**
  * Pov Transformation matrix.
@@ -129,7 +128,7 @@ public class PovMatrix
 	{
 		final double[] data = _data;
 
-		return Matrix3D.INIT.set(
+		return Matrix3D.IDENTITY.set(
 			data[  0 ] , data[  3 ] , data[  6 ] , data[  9 ] ,
 			data[  1 ] , data[  4 ] , data[  7 ] , data[ 10 ] ,
 			data[  2 ] , data[  5 ] , data[  8 ] , data[ 11 ] );
@@ -147,6 +146,7 @@ public class PovMatrix
 		return DOUBLE_FORMAT.format( ( value == -0.0 ) ? 0.0 : value );
 	}
 
+	@Override
 	public void write( final IndentingWriter out )
 		throws IOException
 	{
