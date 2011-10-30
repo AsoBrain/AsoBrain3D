@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2010-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +20,9 @@
  */
 package ab.j3d.view;
 
-import java.awt.*;
 import java.util.*;
-import java.util.List;
 
+import ab.j3d.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -40,7 +40,7 @@ public class Background
 	 */
 	public static Background createDefault()
 	{
-		return createSolid( new Color( 0xeeeeee ) );
+		return createSolid( new Vector3f( (float)0xEE / 255.0f, (float)0xEE / 255.0f, (float)0xEE / 255.0f ) );
 	}
 
 	/**
@@ -50,24 +50,24 @@ public class Background
 	 *
 	 * @return  Background.
 	 */
-	public static Background createSolid( final Color color )
+	public static Background createSolid( final Vector3f color )
 	{
 		final Background background = new Background();
-		background.setColor( color );
+		background.setVector3f( color );
 		return background;
 	}
 
 	/**
-	 * Creates a gradient background with up to four colors. Colors are
+	 * Creates a gradient background with up to four colors. Vector3fs are
 	 * specified starting from the bottom left corner in counter-clockwise
 	 * order. If fewer than four colors are specified, the specified sequence
 	 * of colors is repeated.
 	 *
-	 * @param   colors  Colors that make up the gradient.
+	 * @param   colors  Vector3fs that make up the gradient.
 	 *
 	 * @return  Background.
 	 */
-	public static Background createGradient( @NotNull final Color... colors )
+	public static Background createGradient( @NotNull final Vector3f... colors )
 	{
 		if ( colors.length == 0 )
 		{
@@ -83,21 +83,21 @@ public class Background
 	 * Solid background color.
 	 */
 	@NotNull
-	private Color _color;
+	private Vector3f _color;
 
 	/**
 	 * Up to four gradient background colors, from bottom left,
-	 * counter-clockwise. Emtpy for no gradient.
+	 * counter-clockwise. Empty for no gradient.
 	 */
 	@NotNull
-	private List<Color> _gradient;
+	private List<Vector3f> _gradient;
 
 	/**
 	 * Constructs a new background consisting of only a solid white color.
 	 */
 	private Background()
 	{
-		_color = Color.WHITE;
+		_color = new Vector3f( 1.0f, 1.0f, 1.0f );
 		_gradient = Collections.emptyList();
 	}
 
@@ -108,7 +108,7 @@ public class Background
 	 */
 	public void set( final Background background )
 	{
-		setColor( background.getColor() );
+		setVector3f( background.getVector3f() );
 		setGradient( background.getGradient() );
 	}
 
@@ -118,7 +118,7 @@ public class Background
 	 * @return  Background color.
 	 */
 	@NotNull
-	public Color getColor()
+	public Vector3f getVector3f()
 	{
 		return _color;
 	}
@@ -128,13 +128,13 @@ public class Background
 	 *
 	 * @param   color   Background color.
 	 */
-	public void setColor( @NotNull final Color color )
+	public void setVector3f( @NotNull final Vector3f color )
 	{
 		_color = color;
 	}
 
 	/**
-	 * Returns up to four colors used for a gradient background. Colors are
+	 * Returns up to four colors used for a gradient background. Vector3fs are
 	 * specified starting from the bottom left corner in counter-clockwise
 	 * order. If fewer than four colors are specified, the specified sequence
 	 * of colors is repeated.
@@ -142,22 +142,22 @@ public class Background
 	 * @return  Gradient colors; empty for no gradient.
 	 */
 	@NotNull
-	public List<Color> getGradient()
+	public List<Vector3f> getGradient()
 	{
 		return Collections.unmodifiableList( _gradient );
 	}
 
 	/**
-	 * Sets up to four colors used for a gradient background. Colors are
+	 * Sets up to four colors used for a gradient background. Vector3fs are
 	 * specified starting from the bottom left corner in counter-clockwise
 	 * order. If fewer than four colors are specified, the specified sequence
 	 * of colors is repeated.
 	 *
 	 * @param   gradient    Gradient to be set; empty to disable the gradient.
 	 */
-	public void setGradient( @NotNull final List<Color> gradient )
+	public void setGradient( @NotNull final List<Vector3f> gradient )
 	{
-		_gradient = new ArrayList<Color>( gradient );
+		_gradient = new ArrayList<Vector3f>( gradient );
 	}
 
 	@Override
