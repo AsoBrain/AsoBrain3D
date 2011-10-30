@@ -1,5 +1,4 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
  * Copyright (C) 1999-2011 Peter S. Heijnen
@@ -20,9 +19,6 @@
  * ====================================================================
  */
 package ab.j3d.view;
-
-import java.awt.*;
-import java.awt.geom.*;
 
 import ab.j3d.*;
 import ab.j3d.geom.*;
@@ -157,22 +153,18 @@ public abstract class Projector
 	 * @throws  IllegalArgumentException if no projector could be created for
 	 *          the specified properties.
 	 */
-	public static Projector createInstance( final ProjectionPolicy projectionPolicy , final int imageWidth , final int imageHeight , final double imageResolution , final double viewUnit , final double frontClipDistance , final double backClipDistance , final double fieldOfView , final double zoomFactor )
+	public static Projector createInstance( final ProjectionPolicy projectionPolicy, final int imageWidth, final int imageHeight, final double imageResolution, final double viewUnit, final double frontClipDistance, final double backClipDistance, final double fieldOfView, final double zoomFactor )
 	{
 		final Projector result;
 
 		switch ( projectionPolicy )
 		{
 			case PERSPECTIVE :
-				result = new PerspectiveProjector( imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , fieldOfView , zoomFactor );
+				result = new PerspectiveProjector( imageWidth, imageHeight, imageResolution, viewUnit, frontClipDistance, backClipDistance, fieldOfView, zoomFactor );
 				break;
 
 			case PARALLEL :
-				result = new ParallelProjector( imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , zoomFactor );
-				break;
-
-			case ISOMETRIC :
-				result = new IsometricProjector( imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , zoomFactor );
+				result = new ParallelProjector( imageWidth, imageHeight, imageResolution, viewUnit, frontClipDistance, backClipDistance, zoomFactor );
 				break;
 
 			default :
@@ -196,12 +188,17 @@ public abstract class Projector
 	 * @throws  IllegalArgumentException if <code>frontClipDistance</code> is
 	 *          negative, zero or not less than <code>backClipDistance</code>.
 	 */
-	protected Projector( final int imageWidth , final int imageHeight , final double imageResolution , final double viewUnit , final double frontClipDistance , final double backClipDistance , final double zoomFactor )
+	protected Projector( final int imageWidth, final int imageHeight, final double imageResolution, final double viewUnit, final double frontClipDistance, final double backClipDistance, final double zoomFactor )
 	{
 		if ( frontClipDistance <= 0.0 )
+		{
 			throw new IllegalArgumentException( "frontClipDistance <= 0.0: " + frontClipDistance );
+		}
+
 		if ( frontClipDistance >= backClipDistance )
+		{
 			throw new IllegalArgumentException( "frontClipDistance >= backClipDistance: " + frontClipDistance + " >= " + backClipDistance );
+		}
 
 		_viewUnit          = viewUnit;
 		_imageWidth        = imageWidth;
@@ -218,6 +215,7 @@ public abstract class Projector
 		_view2pixels = view2pixels;
 		_limitX      = (double)imageWidth  / ( 2.0 * view2pixels );
 		_limitY      = (double)imageHeight / ( 2.0 * view2pixels );
+		_viewingFrustum = null;
 	}
 
 	/**
@@ -269,7 +267,7 @@ public abstract class Projector
 	 *
 	 * @see     #inViewVolume(double, double, double)
 	 */
-	public final boolean inViewVolume( final Face3D face , final double[] vertexCoordinates )
+	public final boolean inViewVolume( final Face3D face, final double[] vertexCoordinates )
 	{
 		boolean result = false;
 
@@ -285,7 +283,7 @@ public abstract class Projector
 //				final double y = vertexCoordinates[ vertexIndex + 1 ];
 //				final double z = vertexCoordinates[ vertexIndex + 2 ];
 //
-//				if ( inViewVolume( x , y , z ) )
+//				if ( inViewVolume( x, y, z ) )
 //				{
 					result = true;
 //					break;
@@ -315,8 +313,14 @@ public abstract class Projector
 		{
 			result = true;
 
-			for ( int i = 0 ; result && ( i < vertices.length ) ; i += 3 )
-				result = !inViewVolume( vertices[ i ] , vertices[ i + 1 ] , vertices[ i + 2 ] );
+			for ( int i = 0 ; i < vertices.length ; i += 3 )
+			{
+				if ( inViewVolume( vertices[ i ], vertices[ i + 1 ], vertices[ i + 2 ] ) )
+				{
+					result = false;
+					break;
+				}
+			}
 		}
 
 		return result;
@@ -335,7 +339,7 @@ public abstract class Projector
 	 *
 	 * @see     #inViewVolume(Face3D, double[])
 	 */
-	public abstract boolean inViewVolume( double x , double y , double z );
+	public abstract boolean inViewVolume( double x, double y, double z );
 
 	/**
 	 * This function tests if a point defined in view coordinates lies within
@@ -352,38 +356,30 @@ public abstract class Projector
 	}
 
 	/**
-	 * This function projects a set of 3D points on a 2D surface
-	 * (image plate, view plane, screen). Point coordinates are supplied using
-	 * double arrays containing a triplets/duos for each point.
+	 * This function projects a set of 3D points in view coordinates onto the 2D
+	 * image (image plate, view plane, screen).
 	 *
 	 * @param   source      Source array with 3D coordinates.
-	 * @param   dest        Destination array for 2D coordinates (may be
-	 *                      <code>null</code> or too small to create new).
-	 * @param   pointCount  Number of points.
+	 * @param   target      Target array for 2D coordinates (reused if it is not
+	 *                      <code>null</code> and large enough).
+	 * @param   pointCount  Number of points to project.
 	 *
-	 * @return  Array to which the projected coordinates were written
-	 *          (may be different from the <code>dest</code> argument).
+	 * @return  Array with projected 2D points (newly created if the supplied
+	 *          <code>target</code> array was <code>null</code> or too small).
 	 */
-	public int[] project( final double[] source , final int[] dest , final int pointCount )
+	public double[] project( final double[] source, final double[] target, final int pointCount )
 	{
-		final int    resultLength = pointCount * 2;
+		final int resultLength = pointCount * 2;
 
-		int[] result = dest;
+		double[] result = target;
 		if ( ( result == null ) || ( result.length < resultLength ) )
 		{
-			result = new int[ resultLength ];
+			result = new double[ resultLength ];
 		}
 
-		final Point tmp = new Point();
-
-		int sourceIndex = 0;
-		int resultIndex = 0 ;
-
-		while ( resultIndex < resultLength )
+		for ( int resultIndex = 0, sourceIndex = 0; resultIndex < resultLength; resultIndex += 2 )
 		{
-			project( tmp , source[ sourceIndex++ ] , source[ sourceIndex++ ] , source[ sourceIndex++ ] );
-			result[ resultIndex++ ] = tmp.x;
-			result[ resultIndex++ ] = tmp.y;
+			project( result, resultIndex, source[ sourceIndex++ ], source[ sourceIndex++ ], source[ sourceIndex++ ] );
 		}
 
 		return result;
@@ -393,28 +389,154 @@ public abstract class Projector
 	 * This method projects a 3D point in view coordinates onto the 2D image
 	 * (image plate, view plane, screen).
 	 *
-	 * @param   result  Result target.
-	 * @param   point   Point in view coordinate system.
+	 * The 2D point is stored in the <code>result</code> array as 2 elements at
+	 * <code>resultOffset</code>.
 	 *
-	 * @return  Projected point; same {@link Point2D} instance as <code>result</code> parameter.
+	 * @param   result          Target array to store result in.
+	 * @param   resultOffset    Offset in <code>result</code>.
+	 * @param   point           3D point in view to project onto 2D plane.
 	 */
-	public Point2D project( final Point2D result , final Vector3D point )
+	public void project( final double[] result, final int resultOffset, final Vector3D point )
 	{
-		return project( result, point.x, point.y, point.z );
+		project( result, resultOffset, point.getX(), point.getY(), point.getZ() );
 	}
 
 	/**
 	 * This method projects a 3D point in view coordinates onto the 2D image
 	 * (image plate, view plane, screen).
 	 *
-	 * @param   result  Result target.
-	 * @param   viewX   X coordinate of point in view coordinate system.
-	 * @param   viewY   Y coordinate of point in view coordinate system.
-	 * @param   viewZ   Z coordinate of point in view coordinate system.
+	 * The 2D point is stored in the <code>result</code> array as 2 elements at
+	 * <code>resultOffset</code>.
 	 *
-	 * @return  Projected point; same {@link Point2D} instance as <code>result</code> parameter.
+	 * @param   result          Target array to store result in.
+	 * @param   resultOffset    Offset in <code>result</code>.
+	 * @param   viewX           X coordinate of point in view.
+	 * @param   viewY           Y coordinate of point in view.
+	 * @param   viewZ           Z coordinate of point in view.
 	 */
-	public abstract Point2D project( final Point2D result , final double viewX , final double viewY , final double viewZ );
+	public abstract void project( final double[] result, final int resultOffset, final double viewX, final double viewY, final double viewZ );
+
+	/**
+	 * This function projects a set of 3D points in view coordinates onto the 2D
+	 * image (image plate, view plane, screen).
+	 *
+	 * @param   source      Source array with 3D coordinates.
+	 * @param   target      Target array for 2D coordinates (reused if it is not
+	 *                      <code>null</code> and large enough).
+	 * @param   pointCount  Number of points to project.
+	 *
+	 * @return  Array with projected 2D points (newly created if the supplied
+	 *          <code>target</code> array was <code>null</code> or too small).
+	 */
+	public float[] project( final double[] source, final float[] target, final int pointCount )
+	{
+		final int resultLength = pointCount * 2;
+
+		float[] result = target;
+		if ( ( result == null ) || ( result.length < resultLength ) )
+		{
+			result = new float[ resultLength ];
+		}
+
+		for ( int resultIndex = 0, sourceIndex = 0; resultIndex < resultLength; resultIndex += 2 )
+		{
+			project( result, resultIndex, source[ sourceIndex++ ], source[ sourceIndex++ ], source[ sourceIndex++ ] );
+		}
+
+		return result;
+	}
+
+	/**
+	 * This method projects a 3D point in view coordinates onto the 2D image
+	 * (image plate, view plane, screen).
+	 *
+	 * The 2D point is stored in the <code>result</code> array as 2 elements at
+	 * <code>resultOffset</code>.
+	 *
+	 * @param   result          Target array to store result in.
+	 * @param   resultOffset    Offset in <code>result</code>.
+	 * @param   point           3D point in view to project onto 2D plane.
+	 */
+	public void project( final float[] result, final int resultOffset, final Vector3D point )
+	{
+		project( result, resultOffset, point.getX(), point.getY(), point.getZ() );
+	}
+
+	/**
+	 * This method projects a 3D point in view coordinates onto the 2D image
+	 * (image plate, view plane, screen).
+	 *
+	 * The 2D point is stored in the <code>result</code> array as 2 elements at
+	 * <code>resultOffset</code>.
+	 *
+	 * @param   result          Target array to store result in.
+	 * @param   resultOffset    Offset in <code>result</code>.
+	 * @param   viewX           X coordinate of point in view.
+	 * @param   viewY           Y coordinate of point in view.
+	 * @param   viewZ           Z coordinate of point in view.
+	 */
+	public abstract void project( final float[] result, final int resultOffset, final double viewX, final double viewY, final double viewZ );
+
+	/**
+	 * This function projects a set of 3D points in view coordinates onto the 2D
+	 * image (image plate, view plane, screen).
+	 *
+	 * @param   source      Source array with 3D coordinates.
+	 * @param   target      Target array for 2D coordinates (reused if it is not
+	 *                      <code>null</code> and large enough).
+	 * @param   pointCount  Number of points to project.
+	 *
+	 * @return  Array with projected 2D points (newly created if the supplied
+	 *          <code>target</code> array was <code>null</code> or too small).
+	 */
+	public int[] project( final double[] source, final int[] target, final int pointCount )
+	{
+		final int resultLength = pointCount * 2;
+
+		int[] result = target;
+		if ( ( result == null ) || ( result.length < resultLength ) )
+		{
+			result = new int[ resultLength ];
+		}
+
+		for ( int resultIndex = 0, sourceIndex = 0; resultIndex < resultLength; resultIndex += 2 )
+		{
+			project( result, resultIndex, source[ sourceIndex++ ], source[ sourceIndex++ ], source[ sourceIndex++ ] );
+		}
+
+		return result;
+	}
+
+	/**
+	 * This method projects a 3D point in view coordinates onto the 2D image
+	 * (image plate, view plane, screen).
+	 *
+	 * The 2D point is stored in the <code>result</code> array as 2 elements at
+	 * <code>resultOffset</code>.
+	 *
+	 * @param   result          Target array to store result in.
+	 * @param   resultOffset    Offset in <code>result</code>.
+	 * @param   point           3D point in view to project onto 2D plane.
+	 */
+	public void project( final int[] result, final int resultOffset, final Vector3D point )
+	{
+		project( result, resultOffset, point.getX(), point.getY(), point.getZ() );
+	}
+
+	/**
+	 * This method projects a 3D point in view coordinates onto the 2D image
+	 * (image plate, view plane, screen). The 3
+	 *
+	 * The 2D point is stored in the <code>result</code> array as 2 elements at
+	 * <code>resultOffset</code>.
+	 *
+	 * @param   result          Target array to store result in.
+	 * @param   resultOffset    Offset in <code>result</code>.
+	 * @param   viewX           X coordinate of point in view.
+	 * @param   viewY           Y coordinate of point in view.
+	 * @param   viewZ           Z coordinate of point in view.
+	 */
+	public abstract void project( final int[] result, final int resultOffset, final double viewX, final double viewY, final double viewZ );
 
 	/**
 	 * Get image width in pixels.
@@ -510,10 +632,10 @@ public abstract class Projector
 	 *
 	 * @return  3D view coordinates for the given 2D image coordinates.
 	 */
-	public abstract Vector3D imageToView( double imageX , double imageY , double viewZ );
+	public abstract Vector3D imageToView( double imageX, double imageY, double viewZ );
 
 	/**
-	 * Get a ray originating from a (mouse) pointer at (<code>pointerX</code> ,
+	 * Get a ray originating from a (mouse) pointer at (<code>pointerX</code>,
 	 * <code>pointerY</code>) on the image plate, pointing into the view volume.
 	 * <p />
 	 * The ray is defined in the view's coordinate system, but may optionally be
@@ -525,7 +647,7 @@ public abstract class Projector
 	 *
 	 * @return  Ray from pointer into view volume (VCS if not transformed).
 	 */
-	public abstract Ray3D getPointerRay( final Matrix3D transform , final double pointerX , final double pointerY );
+	public abstract Ray3D getPointerRay( final Matrix3D transform, final double pointerX, final double pointerY );
 
 	/**
 	 * Returns a projection matrix for this projection.
@@ -551,7 +673,7 @@ public abstract class Projector
 	 * *          image plate
 	 * </pre>
 	 */
-	public static final class PerspectiveProjector
+	public static class PerspectiveProjector
 		extends Projector
 	{
 		/**
@@ -571,9 +693,9 @@ public abstract class Projector
 		 * @param   fieldOfView         Camera's field of view in radians.
 		 * @param   zoomFactor          Linear zoom factor.
 		 */
-		PerspectiveProjector( final int imageWidth , final int imageHeight , final double imageResolution , final double viewUnit , final double frontClipDistance , final double backClipDistance , final double fieldOfView , final double zoomFactor )
+		PerspectiveProjector( final int imageWidth, final int imageHeight, final double imageResolution, final double viewUnit, final double frontClipDistance, final double backClipDistance, final double fieldOfView, final double zoomFactor )
 		{
-			super( imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , zoomFactor );
+			super( imageWidth, imageHeight, imageResolution, viewUnit, frontClipDistance, backClipDistance, zoomFactor );
 
 			final double view2pixels = _view2pixels;
 			final double viewWidth   = (double)imageWidth / view2pixels;
@@ -582,7 +704,7 @@ public abstract class Projector
 		}
 
 		@Override
-		public Ray3D getPointerRay( final Matrix3D transform , final double pointerX , final double pointerY )
+		public Ray3D getPointerRay( final Matrix3D transform, final double pointerX, final double pointerY )
 		{
 			final double centerX     = (double)( _imageCenterX );
 			final double centerY     = (double)( _imageCenterY );
@@ -598,47 +720,44 @@ public abstract class Projector
 			final double directionY = viewY / distance;
 			final double directionZ = -eyeDistance / distance;
 
-			return new BasicRay3D( transform , viewX - eyeDistance * directionX , viewY - eyeDistance * directionY , -eyeDistance - eyeDistance * directionZ , directionX , directionY , directionZ , true );
+			return new BasicRay3D( transform, viewX - eyeDistance * directionX, viewY - eyeDistance * directionY, -eyeDistance - eyeDistance * directionZ, directionX, directionY, directionZ, true );
 		}
 
 		@Override
-		public int[] project( final double[] source , final int[] dest , final int pointCount )
-		{
-			final int    resultLength = pointCount * 2;
-
-			int[] result = dest;
-			if ( ( result == null ) || ( result.length < resultLength ) )
-			{
-				result = new int[ resultLength ];
-			}
-
-			final Point tmp = new Point();
-
-			int sourceIndex = 0;
-			int resultIndex = 0 ;
-
-			while ( resultIndex < resultLength )
-			{
-				project( tmp , source[ sourceIndex++ ] , source[ sourceIndex++ ] , source[ sourceIndex++ ] );
-				result[ resultIndex++ ] = tmp.x;
-				result[ resultIndex++ ] = tmp.y;
-			}
-
-			return result;
-		}
-
-		@Override
-		public Point2D project( final Point2D result , final double viewX , final double viewY , final double viewZ )
+		public void project( final double[] result, final int resultOffset, final double viewX, final double viewY, final double viewZ )
 		{
 			final double f = _view2pixels / ( 1.0 - ( viewZ + _eyeDistance ) / _eyeDistance );
 			final double x = _imageCenterX + f * viewX;
 			final double y = _imageCenterY - f * viewY;
-			result.setLocation( x, y );
-			return result;
+
+			result[ resultOffset ] = x;
+			result[ resultOffset + 1 ] = y;
 		}
 
 		@Override
-		public Vector3D imageToView( final double imageX , final double imageY , final double viewZ )
+		public void project( final float[] result, final int resultOffset, final double viewX, final double viewY, final double viewZ )
+		{
+			final double f = _view2pixels / ( 1.0 - ( viewZ + _eyeDistance ) / _eyeDistance );
+			final double x = _imageCenterX + f * viewX;
+			final double y = _imageCenterY - f * viewY;
+
+			result[ resultOffset ] = (float) x;
+			result[ resultOffset + 1 ] = (float) y;
+		}
+
+		@Override
+		public void project( final int[] result, final int resultOffset, final double viewX, final double viewY, final double viewZ )
+		{
+			final double f = _view2pixels / ( 1.0 - ( viewZ + _eyeDistance ) / _eyeDistance );
+			final double x = _imageCenterX + f * viewX;
+			final double y = _imageCenterY - f * viewY;
+
+			result[ resultOffset ] = (int) Math.floor( x + 0.5);
+			result[ resultOffset + 1 ] = (int) Math.floor( y + 0.5 );
+		}
+
+		@Override
+		public Vector3D imageToView( final double imageX, final double imageY, final double viewZ )
 		{
 			final double centerX     = (double)( _imageCenterX );
 			final double centerY     = (double)( _imageCenterY );
@@ -650,11 +769,11 @@ public abstract class Projector
 			final double viewX = ( imageX - centerX ) / f;
 			final double viewY = ( centerY - imageY ) / f;
 
-			return Vector3D.INIT.set( viewX , viewY , viewZ );
+			return new Vector3D( viewX, viewY, viewZ );
 		}
 
 		@Override
-		public boolean inViewVolume( final double x , final double y , final double z )
+		public boolean inViewVolume( final double x, final double y, final double z )
 		{
 			final boolean result;
 
@@ -717,7 +836,7 @@ public abstract class Projector
 		/**
 		 * Direction of pointer ray.
 		 */
-		private static final Vector3D POINTER_DIRECTION = Vector3D.INIT.set( 0.0 , 0.0 , -1.0 );
+		private static final Vector3D POINTER_DIRECTION = Vector3D.NEGATIVE_Z_AXIS;
 
 		/**
 		 * Construct parallel projector.
@@ -730,31 +849,52 @@ public abstract class Projector
 		 * @param   backClipDistance    Back clipping plane distance in view units.
 		 * @param   zoomFactor          Linear zoom factor.
 		 */
-		ParallelProjector( final int imageWidth , final int imageHeight , final double imageResolution , final double viewUnit , final double frontClipDistance , final double backClipDistance , final double zoomFactor )
+		ParallelProjector( final int imageWidth, final int imageHeight, final double imageResolution, final double viewUnit, final double frontClipDistance, final double backClipDistance, final double zoomFactor )
 		{
-			super( imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , zoomFactor );
+			super( imageWidth, imageHeight, imageResolution, viewUnit, frontClipDistance, backClipDistance, zoomFactor );
 		}
 
 		@Override
-		public Ray3D getPointerRay( final Matrix3D transform , final double pointerX , final double pointerY )
+		public Ray3D getPointerRay( final Matrix3D transform, final double pointerX, final double pointerY )
 		{
-			final Vector3D origin    = imageToView( pointerX , pointerY , 0.0 );
+			final Vector3D origin    = imageToView( pointerX, pointerY, 0.0 );
 			final Vector3D direction = POINTER_DIRECTION;
 
-			return new BasicRay3D( transform , origin , direction , false );
+			return new BasicRay3D( transform, origin, direction, false );
 		}
 
 		@Override
-		public Point2D project( final Point2D result , final double viewX , final double viewY , final double viewZ )
+		public void project( final double[] result, final int resultOffset, final double viewX, final double viewY, final double viewZ )
 		{
 			final double x = _imageCenterX + _view2pixels * viewX;
 			final double y = _imageCenterY - _view2pixels * viewY;
-			result.setLocation( x, y );
-			return result;
+
+			result[ resultOffset ] = x;
+			result[ resultOffset + 1 ] = y;
 		}
 
 		@Override
-		public Vector3D imageToView( final double imageX , final double imageY , final double viewZ )
+		public void project( final float[] result, final int resultOffset, final double viewX, final double viewY, final double viewZ )
+		{
+			final double x = _imageCenterX + _view2pixels * viewX;
+			final double y = _imageCenterY - _view2pixels * viewY;
+
+			result[ resultOffset ] = (float)x;
+			result[ resultOffset + 1 ] = (float)y;
+		}
+
+		@Override
+		public void project( final int[] result, final int resultOffset, final double viewX, final double viewY, final double viewZ )
+		{
+			final double x = _imageCenterX + _view2pixels * viewX;
+			final double y = _imageCenterY - _view2pixels * viewY;
+
+			result[ resultOffset ] = (int) Math.floor( x + 0.5);
+			result[ resultOffset + 1 ] = (int) Math.floor( y + 0.5 );
+		}
+
+		@Override
+		public Vector3D imageToView( final double imageX, final double imageY, final double viewZ )
 		{
 			final double centerX     = (double)_imageWidth / 2.0;
 			final double centerY     = (double)_imageHeight / 2.0;
@@ -763,11 +903,11 @@ public abstract class Projector
 			final double viewX = ( imageX - centerX ) / view2pixels;
 			final double viewY = ( centerY - imageY ) / view2pixels;
 
-			return Vector3D.INIT.set( viewX , viewY , viewZ );
+			return new Vector3D( viewX, viewY, viewZ );
 		}
 
 		@Override
-		public boolean inViewVolume( final double x , final double y , final double z )
+		public boolean inViewVolume( final double x, final double y, final double z )
 		{
 			final double depth = -z;
 			return ( x >= -_limitX ) && ( x <= _limitX )
@@ -794,114 +934,4 @@ public abstract class Projector
 		}
 	}
 
-	/**
-	 * Isometric projector implementation.
-	 * <p />
-	 * Isometric projection is a parallel projection method that projects the
-	 * view Z-axis onto the rendered X- and Y-axis by using the displacing
-	 * points by the half Z-value 30 degrees relative to the X-axis (top-right).
-	 */
-	static class IsometricProjector
-		extends Projector
-	{
-		/**
-		 * X-component of the Z-axis.
-		 */
-		private final double _xComponentOfZ;
-
-		/**
-		 * Y-component of the Z-axis.
-		 */
-		private final double _yComponentOfZ;
-
-		/**
-		 * Direction of pointer ray (calculated on-demand).
-		 *
-		 * @see     #getPointerRay
-		 */
-		private Vector3D _pointerDirection;
-
-		/**
-		 * Construct isometric projector.
-		 *
-		 * @param   imageWidth          Image width in pixels.
-		 * @param   imageHeight         Image height in pixels.
-		 * @param   imageResolution     Image resolution in meters per pixel.
-		 * @param   viewUnit            Unit scale factor (e.g. {@link ab.j3d.model.Scene#MM}).
-		 * @param   frontClipDistance   Front clipping plane distance in view units.
-		 * @param   backClipDistance    Back clipping plane distance in view units.
-		 * @param   zoomFactor          Linear zoom factor.
-		 */
-		IsometricProjector( final int imageWidth , final int imageHeight , final double imageResolution , final double viewUnit , final double frontClipDistance , final double backClipDistance , final double zoomFactor )
-		{
-			super( imageWidth , imageHeight , imageResolution , viewUnit , frontClipDistance , backClipDistance , zoomFactor );
-
-			final double zScale = 0.5;
-			final double zAngle = Math.PI / 6.0; // 30 decimal degrees
-
-			_xComponentOfZ    = zScale * Math.cos( zAngle );
-			_yComponentOfZ    = zScale * Math.sin( zAngle );
-			_pointerDirection = null;
-		}
-
-		@Override
-		public Ray3D getPointerRay( final Matrix3D transform , final double pointerX , final double pointerY )
-		{
-			final Vector3D origin = imageToView( pointerX , pointerY , 0.0 );
-
-			Vector3D direction = _pointerDirection;
-			if ( direction == null )
-			{
-				final double isoX   = _xComponentOfZ;
-				final double isoY   = _yComponentOfZ;
-				final double length = Math.sqrt( isoX * isoX + isoY * isoY + 1.0 );
-
-				direction = Vector3D.INIT.set( -isoX / length , -isoY / length , -1.0 / length );
-				_pointerDirection = direction;
-			}
-
-			return new BasicRay3D( transform , origin , direction , false );
-		}
-
-		@Override
-		public Point2D project( final Point2D result , final double viewX , final double viewY , final double viewZ )
-		{
-			final double x = _imageCenterX + _view2pixels * ( viewX - viewZ * _xComponentOfZ );
-			final double y = _imageCenterY - _view2pixels * ( viewY - viewZ * _yComponentOfZ );
-			result.setLocation( x, y );
-			return result;
-		}
-
-		@Override
-		public Vector3D imageToView( final double imageX , final double imageY , final double viewZ )
-		{
-			final double centerX     = (double)_imageWidth / 2.0;
-			final double centerY     = (double)_imageHeight / 2.0;
-			final double view2pixels = _view2pixels;
-			final double isoX        = _xComponentOfZ;
-			final double isoY        = _yComponentOfZ;
-
-			final double viewX = ( imageX - centerX ) / view2pixels + viewZ * isoX;
-			final double viewY = ( centerY - imageY ) / view2pixels + viewZ * isoY;
-
-			return Vector3D.INIT.set( viewX , viewY , viewZ );
-		}
-
-		@Override
-		public boolean inViewVolume( final double x , final double y , final double z )
-		{
-			double tmp;
-
-			final double depth = -z;
-			return ( depth >= _frontClipDistance ) && ( depth <= _backClipDistance )
-			    && ( ( tmp = ( x - z * _xComponentOfZ     ) ) >= -_limitX ) && ( tmp <= _limitX )
-			    && ( ( tmp = (     z * _yComponentOfZ - y ) ) >= -_limitY ) && ( tmp <= _limitY );
-		}
-
-		@Override
-		public Matrix4D getProjectionMatrix()
-		{
-			return null; // TODO: Implement isometric projection matrix.
-		}
-	}
 }
