@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,7 @@ import java.awt.*;
 import java.awt.geom.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
@@ -422,7 +423,7 @@ public final class AbPovTestModel
 			final Matrix3D transform = Matrix3D.getTranslation( -400.0, 0.0, -250.0 );
 
 			final Object3DBuilder builder = new Object3DBuilder();
-			builder.addExtrudedShape( shape, 1.0, extrusion, transform, material, new BoxUVMap( Scene.MM, Matrix3D.IDENTITY ), false, true, false, false );
+			ShapeTools.addExtrudedShape( builder, shape, 1.0, extrusion, transform, material, new BoxUVMap( Scene.MM, Matrix3D.IDENTITY ), false, true, false, false );
 			result = builder.getObject3D();
 		}
 		else
@@ -454,7 +455,7 @@ public final class AbPovTestModel
 			final Matrix3D transform = Matrix3D.getTranslation( -400.0, 0.0, -250.0 );
 
 			final Object3DBuilder builder = new Object3DBuilder();
-			builder.addExtrudedShape( shape, 1.0, extrusion, true, transform, true, material, uvMap, false, false, null, null, false, true, material, uvMap, false, true, false, false );
+			ShapeTools.addExtrudedShape( builder, shape, 1.0, extrusion, true, transform, true, material, uvMap, false, false, null, null, false, true, material, uvMap, false, true, false, false );
 			result = builder.getObject3D();
 		}
 		else
