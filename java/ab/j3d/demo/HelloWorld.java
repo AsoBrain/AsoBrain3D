@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,7 @@ package ab.j3d.demo;
 import java.awt.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
@@ -96,7 +97,7 @@ public class HelloWorld
 		final Font font = new Font( "serif", Font.PLAIN, 2 );
 		final Object3DBuilder builder = new Object3DBuilder();
 		final BoxUVMap uvMap = new BoxUVMap( Scene.M );
-		builder.addText( Matrix3D.getTransform( -90.0, 0.0, 0.0, 0.0, 0.0, 0.0 ), text, font, 1.0, 0.5, 0.5, 0.5, 0.5, 0.025, Materials.CHROME, uvMap, Materials.CHROME, uvMap, Materials.GOLD, uvMap );
+		ShapeTools.addText( builder, Matrix3D.getTransform( -90.0, 0.0, 0.0, 0.0, 0.0, 0.0 ), text, font, 1.0, 0.5, 0.5, 0.5, 0.5, 0.025, Materials.CHROME, uvMap, Materials.CHROME, uvMap, Materials.GOLD, uvMap );
 		return builder.getObject3D();
 	}
 

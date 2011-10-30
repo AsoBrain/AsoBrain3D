@@ -25,6 +25,7 @@ import java.awt.geom.*;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.*;
 import junit.framework.*;
 
 /**
@@ -47,8 +48,7 @@ public class TestTessellator
 		{
 			final Shape emptyPath = new Path2D.Float();
 
-			final Tessellator tessellator = new Tessellator();
-			tessellator.defineShape( emptyPath, 0.0 );
+			final Tessellator tessellator = ShapeTools.createTessellator( emptyPath, 0.0 );
 
 			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
 			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
@@ -61,8 +61,7 @@ public class TestTessellator
 			final Path2D point = new Path2D.Float();
 			point.moveTo( 10.0 , 10.0 );
 
-			final Tessellator tessellator = new Tessellator();
-			tessellator.defineShape( point, 0.0 );
+			final Tessellator tessellator = ShapeTools.createTessellator( point, 0.0 );
 
 			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
 			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
@@ -76,8 +75,7 @@ public class TestTessellator
 			point.moveTo( 10.0 , 10.0 );
 			point.closePath();
 
-			final Tessellator tessellator = new Tessellator();
-			tessellator.defineShape( point, 0.0 );
+			final Tessellator tessellator = ShapeTools.createTessellator( point, 0.0 );
 
 			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
 			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
@@ -91,8 +89,7 @@ public class TestTessellator
 			line.moveTo( 10.0 , 10.0 );
 			line.lineTo( 20.0 , 30.0 );
 
-			final Tessellator tessellator = new Tessellator();
-			tessellator.defineShape( line, 0.0 );
+			final Tessellator tessellator = ShapeTools.createTessellator( line, 0.0 );
 
 			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
 			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
@@ -108,8 +105,7 @@ public class TestTessellator
 			clockwise.lineTo( 15.0 , 5.0 );
 			clockwise.closePath();
 
-			final Tessellator tessellator = new Tessellator();
-			tessellator.defineShape( clockwise, 0.0 );
+			final Tessellator tessellator = ShapeTools.createTessellator( clockwise, 0.0 );
 
 			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
 			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
@@ -129,8 +125,7 @@ public class TestTessellator
 			clockwise.lineTo( 115.0 , 5.0 );
 			clockwise.closePath();
 
-			final Tessellator tessellator = new Tessellator();
-			tessellator.defineShape( clockwise, 0.0 );
+			final Tessellator tessellator = ShapeTools.createTessellator( clockwise, 0.0 );
 
 			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
 			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
@@ -149,8 +144,7 @@ public class TestTessellator
 			clockwise.lineTo( 120.0 , 30.0 );
 			clockwise.lineTo( 115.0 , 5.0 );
 
-			final Tessellator tessellator = new Tessellator();
-			tessellator.defineShape( clockwise, 0.0 );
+			final Tessellator tessellator = ShapeTools.createTessellator( clockwise, 0.0 );
 
 			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
 			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );

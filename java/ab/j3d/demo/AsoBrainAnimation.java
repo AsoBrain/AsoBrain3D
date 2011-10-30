@@ -23,6 +23,7 @@ package ab.j3d.demo;
 import java.awt.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
@@ -118,19 +119,19 @@ public class AsoBrainAnimation
 		final Material asoBrainColor = new Material( "white", 0.90f, 1.00f, 1.00f, 0.90f, 1.00f, 1.00f, 1.0f, 1.00f, 1.00f, 1.00f, 16, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
 
 		final Object3DBuilder wwwBuilder = new Object3DBuilder();
-		wwwBuilder.addText( Matrix3D.IDENTITY, "www.", font1, 0.4, 1.0, 0.5, 0.0, 0.05, 0.01, wwwComColor, null, wwwComColor, null, wwwComColor, null );
+		ShapeTools.addText( wwwBuilder, Matrix3D.IDENTITY, "www.", font1, 0.4, 1.0, 0.5, 0.0, 0.05, 0.01, wwwComColor, null, wwwComColor, null, wwwComColor, null );
 		scene.addContentNode( "www.", Matrix3D.getTranslation( -1.7, 0.0, 1.0 ), wwwBuilder.getObject3D() );
 
 		final Object3DBuilder asoBuilder = new Object3DBuilder();
-		asoBuilder.addText( Matrix3D.IDENTITY, "ASO", font1, 0.7, 1.0, 0.5, 0.0, 0.1, 0.01, asoBrainColor, null, asoBrainColor, null, asoBrainColor, null );
+		ShapeTools.addText( asoBuilder, Matrix3D.IDENTITY, "ASO", font1, 0.7, 1.0, 0.5, 0.0, 0.1, 0.01, asoBrainColor, null, asoBrainColor, null, asoBrainColor, null );
 		scene.addContentNode( "ASO", Matrix3D.getTranslation( -0.3, -0.1, 1.0 ), asoBuilder.getObject3D() );
 
 		final Object3DBuilder brainBuilder = new Object3DBuilder();
-		brainBuilder.addText( Matrix3D.IDENTITY, "BRAiN", font1, 0.7, 0.0, 0.5, 0.0, 0.1, 0.01, asoBrainColor, null, asoBrainColor, null, asoBrainColor, null );
+		ShapeTools.addText( brainBuilder, Matrix3D.IDENTITY, "BRAiN", font1, 0.7, 0.0, 0.5, 0.0, 0.1, 0.01, asoBrainColor, null, asoBrainColor, null, asoBrainColor, null );
 		scene.addContentNode( "BRAiN", Matrix3D.getTranslation( -0.25, 0.1, 1.0 ), brainBuilder.getObject3D() );
 
 		final Object3DBuilder comBuilder = new Object3DBuilder();
-		comBuilder.addText( Matrix3D.IDENTITY, ".com", font1, 0.4, 0.0, 0.5, 0.0, 0.05, 0.01, wwwComColor, null, wwwComColor, null, wwwComColor, null );
+		ShapeTools.addText( comBuilder, Matrix3D.IDENTITY, ".com", font1, 0.4, 0.0, 0.5, 0.0, 0.05, 0.01, wwwComColor, null, wwwComColor, null, wwwComColor, null );
 		scene.addContentNode( ".com", Matrix3D.getTranslation( 1.8, 0.0, 1.0 ), comBuilder.getObject3D() );
 
 		return scene;
