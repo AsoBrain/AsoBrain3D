@@ -21,7 +21,6 @@
  */
 package ab.j3d.view;
 
-import java.awt.geom.*;
 import java.util.*;
 
 /**
@@ -40,17 +39,17 @@ import java.util.*;
 public class Convex2D
 {
 	/**
-	 * List of points that defines the convex polygon. Only elements
-	 * <code>0</code> through <code>_size - 1</code> are relevant. Any other
-	 * elements are cached points that may be used by future calls to
-	 * {@link #add()}.
+	 * Arrays with points that defines the convex polygon. Each points is stored
+	 * as two elements in this array and only elements <code>0</code> through
+	 * <code>_size * 2 - 1</code> are relevant. The rest of the array is
+	 * pre-allocated and may be used by future calls to {@link #add}.
 	 *
 	 * <p>If {@link #_convex} is set, the points describe the outline of the
 	 * convex polygon. Otherwise, the list contains arbitrary points used
 	 * as input. The {@link #makeConvex()} method performs the conversion
 	 * between these two states.
 	 */
-	private final List<Point2D> _points;
+	private double[] _points;
 
 	/**
 	 * Number of relevant points in {@link #_points}.
@@ -69,7 +68,7 @@ public class Convex2D
 	 */
 	public Convex2D( final int initialCapacity )
 	{
-		_points = new ArrayList<Point2D>( initialCapacity );
+		_points = new double[ initialCapacity * 2 ];
 	}
 
 	/**
@@ -82,28 +81,27 @@ public class Convex2D
 	}
 
 	/**
-	 * Adds a point to the convex polygon. The returned object is used to set
-	 * the position of the point. The initial position of the point is
-	 * undefined.
+	 * Adds a point to the convex polygon.
 	 *
-	 * @return  Added point.
+	 * @param   x   X coordinate of point to add.
+	 * @param   y   Y coordinate of point to add.
 	 */
-	public Point2D add()
+	public void add( final double x, final double y )
 	{
-		final Point2D result;
-		final List<Point2D> points = _points;
-		final int index = _size++;
-		if ( points.size() > index )
+		final int index = _size++ * 2;
+
+		double[] points = _points;
+		if ( index >= points.length )
 		{
-			result = points.get( index );
+			// growth behavior is the same as 'java.util.ArrayList'
+			final int newCapacity = Math.max( index + 2, ( ( points.length * 3 ) / 4 + 1 ) * 2 );
+			points = Arrays.copyOf( points, newCapacity );
+			_points = points;
 		}
-		else
-		{
-			result = new Point2D.Double();
-			points.add( result );
-		}
+
+		points[ index ] = x;
+		points[ index + 1 ] = y;
 		_convex = false;
-		return result;
 	}
 
 	/**
@@ -127,18 +125,26 @@ public class Convex2D
 		makeConvexIfNeeded();
 
 		double result = 0.0;
-		final List<Point2D> points = _points;
 
-		final Point2D a = points.get( 0 );
-		final double ax = a.getX();
-		final double ay = a.getY();
-		for ( int i = 2; i < _size; i++ )
+		final int size = _size;
+		if ( size > 2 )
 		{
-			final Point2D b = points.get( i - 1 );
-			final Point2D c = points.get( i );
+			final double[] points = _points;
+			final int length = size * 2;
 
-			// Always positive, because points are in counter-clockwise order.
-			result += ( b.getX() - ax ) * ( c.getY() - ay ) - ( c.getX() - ax ) * ( b.getY() - ay );
+			final double ax = points[ 0 ];
+			final double ay = points[ 1 ];
+
+			for ( int i = 4; i < length; i += 2 )
+			{
+				final double bx = points[ i - 2 ];
+				final double by = points[ i - 1 ];
+				final double cx = points[ i ];
+				final double cy = points[ i + 1 ];
+
+				// Always positive, because points are in counter-clockwise order.
+				result += ( bx - ax ) * ( cy - ay ) - ( cx - ax ) * ( by - ay );
+			}
 		}
 
 		return result / 2.0;
@@ -160,8 +166,8 @@ public class Convex2D
 	 */
 	private void makeConvex()
 	{
-		final List<Point2D> points = _points;
-		final int size = _size;
+		final double[] points = _points;
+		final int length = _size * 2;
 
 		/*
 		 * Find a starting point A with the minimum Y-coordinate.
@@ -169,10 +175,9 @@ public class Convex2D
 		double minY = Double.POSITIVE_INFINITY;
 		int indexMinY = 0;
 
-		for ( int i = 0; i < size; i++ )
+		for ( int i = 0; i < length; i += 2 )
 		{
-			final Point2D point = points.get( i );
-			final double y = point.getY();
+			final double y = points[ i + 1 ];
 			if ( y < minY )
 			{
 				minY = y;
@@ -182,46 +187,57 @@ public class Convex2D
 
 		if ( indexMinY != 0 )
 		{
-			points.set( indexMinY, points.set( 0, points.get( indexMinY ) ) );
+			final double x0 = points[ 0 ];
+			final double y0 = points[ 1 ];
+			points[ 0 ] = points[ indexMinY ];
+			points[ 1 ] = points[ indexMinY + 1 ];
+			points[ indexMinY ] = x0;
+			points[ indexMinY + 1 ] = y0;
 		}
 
 		/*
 		 * For the current starting point A, find a point B such that all
 		 * other points lie to the left of AB.
 		 */
-		for ( int i = 1; i < size; i++ )
+		for ( int i = 2; i < length; i += 2 )
 		{
-			final int currentIndex = i - 1;
-			final Point2D current = points.get( currentIndex );
+			final double currentX = points[ i - 2 ];
+			final double currentY = points[ i - 1 ];
 
-			Point2D next = points.get( i );
 			int nextIndex = i;
+			double nextX = points[ nextIndex ];
+			double nextY = points[ nextIndex + 1 ];
 
-			for ( int j = i + 1; j <= size; j++ )
+			for ( int j = i + 2; j <= length; j += 2 )
 			{
-				final int pointIndex = j % size;
-				final Point2D point = points.get( pointIndex );
+				final int pointIndex = j % length;
+				final double pointX = points[ pointIndex ];
+				final double pointY = points[ pointIndex + 1 ];
 
-				final double signedArea = ( next.getX() - current.getX() ) * ( point.getY() - current.getY() ) - ( point.getX() - current.getX() ) * ( next.getY() - current.getY() );
+				final double signedArea = ( nextX - currentX ) * ( pointY - currentY ) - ( pointX - currentX ) * ( nextY - currentY );
 				if ( signedArea < 0.0 )
 				{
 					/*
 					 * Point is to the right of AB. Use it as new B.
 					 */
-					next = point;
+					nextX = pointX;
+					nextY = pointY;
 					nextIndex = pointIndex;
 				}
 			}
 
 			if ( nextIndex == 0 )
 			{
-				_size = i;
+				_size = i / 2;
 				break;
 			}
 
 			if ( i != nextIndex )
 			{
-				points.set( nextIndex, points.set( i, points.get( nextIndex ) ) );
+				points[ nextIndex ] = points[ i ];
+				points[ nextIndex + 1 ] = points[ i + 1 ];
+				points[ i ] = nextX;
+				points[ i + 1 ] = nextY;
 			}
 		}
 	}
