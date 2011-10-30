@@ -53,7 +53,7 @@ public class Background
 	public static Background createSolid( final Vector3f color )
 	{
 		final Background background = new Background();
-		background.setVector3f( color );
+		background.setColor( color );
 		return background;
 	}
 
@@ -108,7 +108,7 @@ public class Background
 	 */
 	public void set( final Background background )
 	{
-		setVector3f( background.getVector3f() );
+		setColor( background.getColor() );
 		setGradient( background.getGradient() );
 	}
 
@@ -118,7 +118,7 @@ public class Background
 	 * @return  Background color.
 	 */
 	@NotNull
-	public Vector3f getVector3f()
+	public Vector3f getColor()
 	{
 		return _color;
 	}
@@ -128,7 +128,7 @@ public class Background
 	 *
 	 * @param   color   Background color.
 	 */
-	public void setVector3f( @NotNull final Vector3f color )
+	public void setColor( @NotNull final Vector3f color )
 	{
 		_color = color;
 	}
