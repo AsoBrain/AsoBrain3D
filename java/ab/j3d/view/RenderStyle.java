@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +20,6 @@
  */
 package ab.j3d.view;
 
-import java.awt.*;
 import java.util.*;
 
 import ab.j3d.*;
@@ -66,7 +66,7 @@ public class RenderStyle
 	/**
 	 * Color to use for filling.
 	 */
-	private Color _fillColor = null;
+	private Color4f _fillColor = null;
 
 	/**
 	 * Flag to indicate that lighting should be applied to filling.
@@ -81,7 +81,7 @@ public class RenderStyle
 	/**
 	 * Color to use for stroking.
 	 */
-	private Color _strokeColor;
+	private Color4f _strokeColor;
 
 	/**
 	 * Width of strokes.
@@ -101,7 +101,7 @@ public class RenderStyle
 	/**
 	 * Color to use for vertices.
 	 */
-	private Color _vertexColor = null;
+	private Color4f _vertexColor = null;
 
 	/**
 	 * Size of vertices.
@@ -167,24 +167,21 @@ public class RenderStyle
 	 *
 	 * @return  Blended color.
 	 */
-	public static Color blendColors( final Color src , final Color dst )
+	public static Color4f blendColors( final Color4f src , final Color4f dst )
 	{
-		final Color result;
+		final Color4f result;
 
 		if ( ( dst != null ) && ( src.getAlpha() < 255 ) )
 		{
-			final float[] srcRGBA = src.getRGBComponents( null );
-			final float[] dstRGBA = dst.getRGBComponents( null );
-
-			final float srcRatio = srcRGBA[ 3 ];
-			final float dstRatio = dstRGBA[ 3 ] * ( 1.0f - srcRatio );
+			final float srcRatio = src.getAlpha();
+			final float dstRatio = dst.getAlpha() * ( 1.0f - srcRatio );
 
 			final float alpha = dstRatio + srcRatio;
-			final float red   = ( dstRatio * dstRGBA[ 0 ] + srcRatio * srcRGBA[ 0 ] ) / alpha;
-			final float green = ( dstRatio * dstRGBA[ 1 ] + srcRatio * srcRGBA[ 1 ] ) / alpha;
-			final float blue  = ( dstRatio * dstRGBA[ 2 ] + srcRatio * srcRGBA[ 2 ] ) / alpha;
+			final float red   = ( dstRatio * dst.getRed() + srcRatio * src.getRed() ) / alpha;
+			final float green = ( dstRatio * dst.getGreen() + srcRatio * src.getGreen() ) / alpha;
+			final float blue  = ( dstRatio * dst.getBlue() + srcRatio * src.getBlue() ) / alpha;
 
-			result = new Color( red, green, blue, alpha );
+			result = new Color4f( red, green, blue, alpha );
 		}
 		else
 		{
@@ -324,7 +321,7 @@ public class RenderStyle
 	 * @return  Color used for filling;
 	 *          <code>null</code> if undefined.
 	 */
-	public Color getFillColor()
+	public Color4f getFillColor()
 	{
 		return _fillColor;
 	}
@@ -334,7 +331,7 @@ public class RenderStyle
 	 *
 	 * @param   color   Color to use for filling.
 	 */
-	public void setFillColor( final Color color )
+	public void setFillColor( final Color4f color )
 	{
 		_fillColor = color;
 	}
@@ -387,7 +384,7 @@ public class RenderStyle
 	 * @return  Color used for strokes;
 	 *          <code>null</code> if undefined.
 	 */
-	public Color getStrokeColor()
+	public Color4f getStrokeColor()
 	{
 		return _strokeColor;
 	}
@@ -397,7 +394,7 @@ public class RenderStyle
 	 *
 	 * @param   color   Color to use for strokes.
 	 */
-	public void setStrokeColor( final Color color )
+	public void setStrokeColor( final Color4f color )
 	{
 		_strokeColor = color;
 	}
@@ -470,7 +467,7 @@ public class RenderStyle
 	 * @return  Color used for vertices;
 	 *          <code>null</code> if undefined.
 	 */
-	public Color getVertexColor()
+	public Color4f getVertexColor()
 	{
 		return _vertexColor;
 	}
@@ -480,7 +477,7 @@ public class RenderStyle
 	 *
 	 * @param   color   Color to use for vertices.
 	 */
-	public void setVertexColor( final Color color )
+	public void setVertexColor( final Color4f color )
 	{
 		_vertexColor = color;
 	}

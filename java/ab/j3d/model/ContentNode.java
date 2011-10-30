@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -111,7 +111,7 @@ public class ContentNode
 	{
 		_id = id;
 		_node3D = node3D;
-		_transform = ( transform != null ) ? transform : Matrix3D.INIT;
+		_transform = ( transform != null ) ? transform : Matrix3D.IDENTITY;
 	}
 
 	/**
