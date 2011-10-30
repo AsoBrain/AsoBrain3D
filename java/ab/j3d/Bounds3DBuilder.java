@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Peter S. Heijnen 2005-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,12 +26,10 @@ import org.jetbrains.annotations.*;
  * This class can be used to calculate a bounding box around a collection of
  * points.
  *
- * @see     Bounds3D
- *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public final class Bounds3DBuilder
+public class Bounds3DBuilder
 {
 	/**
 	 * Number of points that were added.
@@ -110,8 +109,8 @@ public final class Bounds3DBuilder
 		_sumX    = 0.0;
 		_sumY    = 0.0;
 		_sumZ    = 0.0;
-		_average = Vector3D.INIT;
-		_bounds  = Bounds3D.INIT;
+		_average = Vector3D.ZERO;
+		_bounds  = Bounds3D.EMPTY;
 	}
 
 	/**
@@ -259,7 +258,7 @@ public final class Bounds3DBuilder
 
 	/**
 	 * Get average point from this builder. If no points were added, this method
-	 * returns {@link Vector3D#INIT}.
+	 * returns {@link Vector3D#ZERO}.
 	 *
 	 * @return  Average point.
 	 */
@@ -274,7 +273,7 @@ public final class Bounds3DBuilder
 		}
 		else
 		{
-			result = Vector3D.INIT;
+			result = Vector3D.ZERO;
 		}
 
 		_average = result;

@@ -147,7 +147,7 @@ public class Scene
 	 * Keeps track of the sequence number of the latest {@link SceneUpdate}
 	 * instance. This is used to determine whether updates are still current.
 	 */
-	private AtomicInteger _updateSequenceNumber = new AtomicInteger();
+	private final AtomicInteger _updateSequenceNumber = new AtomicInteger();
 
 	/**
 	 * Performs tasks needed for scene updates asynchronously.
@@ -159,20 +159,17 @@ public class Scene
 	 */
 	private final ContentNodeUpdateListener _contentNodeUpdateListener = new ContentNodeUpdateListener()
 		{
-			@Override
 			public void contentsUpdated( final ContentNodeUpdateEvent event )
 			{
 				invalidateCache();
 				fireContentNodeContentUpdated( (ContentNode)event.getSource() );
 			}
 
-			@Override
 			public void renderingPropertiesUpdated( final ContentNodeUpdateEvent event )
 			{
 				fireContentNodePropertyChanged( (ContentNode)event.getSource() );
 			}
 
-			@Override
 			public void transformUpdated( final ContentNodeUpdateEvent event )
 			{
 				invalidateCache();
@@ -276,9 +273,9 @@ public class Scene
 		directional2.setIntensity( 0.3f );
 		directional3.setIntensity( 0.3f );
 
-		scene.addContentNode( "legacy-light-1", Matrix3D.INIT, directional1 );
-		scene.addContentNode( "legacy-light-2", Matrix3D.INIT, directional2 );
-		scene.addContentNode( "legacy-light-3", Matrix3D.INIT, directional3 );
+		scene.addContentNode( "legacy-light-1", Matrix3D.IDENTITY, directional1 );
+		scene.addContentNode( "legacy-light-2", Matrix3D.IDENTITY, directional2 );
+		scene.addContentNode( "legacy-light-3", Matrix3D.IDENTITY, directional3 );
 	}
 
 	/**

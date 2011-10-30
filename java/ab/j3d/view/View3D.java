@@ -186,7 +186,7 @@ public abstract class View3D
 		_fieldOfView = Math.toRadians( 45.0 );
 		_zoomFactor = 1.0;
 
-		_scene2view = Matrix3D.INIT;
+		_scene2view = Matrix3D.IDENTITY;
 
 		_cameraControl = null;
 
@@ -211,7 +211,7 @@ public abstract class View3D
 
 		_renderStyleFilters.clear();
 
-		_scene2view = Matrix3D.INIT;
+		_scene2view = Matrix3D.IDENTITY;
 		_cameraControl = null;
 		_label = null;
 	}
@@ -963,43 +963,36 @@ public abstract class View3D
 		setScene2View( scene2view );
 	}
 
-	@Override
 	public void contentNodeAdded( final SceneUpdateEvent event )
 	{
 		update();
 	}
 
-	@Override
 	public void contentNodeContentUpdated( final SceneUpdateEvent event )
 	{
 		update();
 	}
 
-	@Override
 	public void contentNodePropertyChanged( final SceneUpdateEvent event )
 	{
 		update();
 	}
 
-	@Override
 	public void contentNodeRemoved( final SceneUpdateEvent event )
 	{
 		update();
 	}
 
-	@Override
 	public void ambientLightChanged( final SceneUpdateEvent event )
 	{
 		update();
 	}
 
-	@Override
 	public void animationStarted( final SceneUpdateEvent event )
 	{
 		update();
 	}
 
-	@Override
 	public void animationStopped( final SceneUpdateEvent event )
 	{
 	}

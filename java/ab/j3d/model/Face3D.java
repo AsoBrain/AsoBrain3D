@@ -38,7 +38,7 @@ public class Face3D
 	/**
 	 * Value used for normal vector if no normal vector can be determined.
 	 */
-	private static final Vector3D NO_NORMAL = Vector3D.INIT.set( Double.NaN, 0.0, Double.NaN );
+	private static final Vector3D NO_NORMAL = new Vector3D( Double.NaN, 0.0, Double.NaN );
 
 	/**
 	 * Object to which this face belongs.
@@ -160,7 +160,7 @@ public class Face3D
 			final double crossZ = u1 * v2 - u2 * v1;
 
 			final double l = Math.sqrt( crossX * crossX + crossY * crossY + crossZ * crossZ );
-			final Vector3D n = ( l > 0.0 ) ? Vector3D.INIT.set( crossX / l, crossY / l, crossZ / l ) : NO_NORMAL;
+			final Vector3D n = ( l > 0.0 ) ? new Vector3D( crossX / l, crossY / l, crossZ / l ) : NO_NORMAL;
 			final double d = ( l > 0.0 ) ? Vector3D.dot( n.x, n.y, n.z, p1.x, p1.y, p1.z ) : 0.0;
 
 			_crossX = crossX;
@@ -217,19 +217,16 @@ public class Face3D
 		return vertices;
 	}
 
-	@Override
 	public double getDistance()
 	{
 		return planeDistance;
 	}
 
-	@Override
 	public Vector3D getNormal()
 	{
 		return normal;
 	}
 
-	@Override
 	public boolean isTwoSided()
 	{
 		return false;
