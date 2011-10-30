@@ -1,6 +1,8 @@
-/* $Id$
+/*
+ * $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2010-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,8 +21,6 @@
  */
 package ab.j3d.view;
 
-import java.awt.*;
-
 import ab.j3d.*;
 import org.jetbrains.annotations.*;
 
@@ -35,48 +35,50 @@ public class Grid
 	/**
 	 * Grid enabled/disabled flag.
 	 */
-	private boolean _enabled;
+	private boolean _enabled = false;
 
 	/**
 	 * Transforms grid to world coordinates.
 	 */
 	@NotNull
-	private Matrix3D _grid2wcs;
+	private Matrix3D _grid2wcs = Matrix3D.IDENTITY;
+
 
 	/**
-	 * Bounds of grid in cell units.
+	 * Minimum X coordinate of grid in cell units.
 	 */
-	@NotNull
-	private Rectangle _bounds;
+	private int _minimumX = -100;
+
+	/**
+	 * Minimum Y coordinate of grid in cell units.
+	 */
+	private int _minimumY = -100;
+
+	/**
+	 * Maximum X coordinate of grid in cell units.
+	 */
+	private int _maximumX = 100;
+
+	/**
+	 * Maximum Y coordinate of grid in cell units.
+	 */
+	private int _maximumY = 100;
 
 	/**
 	 * Size of each grid cell in world units.
 	 */
-	private int _cellSize;
+	private int _cellSize = 1;
 
 	/**
 	 * If set, highlight X/Y grid axes.
 	 */
-	private boolean _highlightAxes;
+	private boolean _highlightAxes = true;
 
 	/**
 	 * Interval for highlighted grid lines. Less or equal to zero if
 	 * highlighting is disabled.
 	 */
-	private int _highlightInterval;
-
-	/**
-	 * Construct new Grid.
-	 */
-	public Grid()
-	{
-		_enabled = false;
-		_grid2wcs = Matrix3D.INIT;
-		_bounds = new Rectangle( -100, -100, 200, 200 );
-		_cellSize = 1;
-		_highlightAxes = true;
-		_highlightInterval = 10;
-	}
+	private int _highlightInterval = 10;
 
 	/**
 	 * Get grid enabled option.
@@ -100,7 +102,7 @@ public class Grid
 	}
 
 	/**
-	 * Get tranform from grid to world coordinates.
+	 * Get transform from grid to world coordinates.
 	 *
 	 * @return  Transform from grid to world coordinates.
 	 */
@@ -111,7 +113,7 @@ public class Grid
 	}
 
 	/**
-	 * Set tranform from grid to world coordinates.
+	 * Set transform from grid to world coordinates.
 	 *
 	 * @param   grid2wcs    Transforms grid to world coordinates.
 	 */
@@ -121,32 +123,22 @@ public class Grid
 	}
 
 	/**
-	 * Get bounds of grid in cell units.
-	 *
-	 * @return  Bounds of grid in cell units.
-	 */
-	@NotNull
-	public Rectangle getBounds()
-	{
-		return _bounds;
-	}
-
-	/**
 	 * Set bounds of grid in cell units.
 	 *
-	 * @param   bounds  Bounds of grid in cell units.
+	 * @param   minimumX    Minimum X coordinate of grid in cell units.
+	 * @param   minimumY    Minimum Y coordinate of grid in cell units.
+	 * @param   maximumX    Maximum X coordinate of grid in cell units.
+	 * @param   maximumY    Maximum Y coordinate of grid in cell units.
 	 *
 	 * @throws  IllegalArgumentException if the width or height of the given
 	 *          bounds is negative or zero.
 	 */
-	public void setBounds( @NotNull final Rectangle bounds )
+	public void setBounds( final int minimumX, final int minimumY, final int maximumX, final int maximumY )
 	{
-		if ( ( bounds.width <= 0 ) || ( bounds.height <= 0 ) )
-		{
-			throw new IllegalArgumentException( "bounds: " + bounds );
-		}
-
-		_bounds = bounds;
+		_minimumX = minimumX;
+		_minimumY = minimumY;
+		_maximumX = maximumX;
+		_maximumY = maximumY;
 	}
 
 	/**
@@ -218,5 +210,85 @@ public class Grid
 	public void setHighlightInterval( final int highlightInterval )
 	{
 		_highlightInterval = highlightInterval;
+	}
+
+	/**
+	 * Get minimum X coordinate of grid in cell units.
+	 *
+	 * @return  Minimum X coordinate of grid in cell units.
+	 */
+	public int getMinimumX()
+	{
+		return _minimumX;
+	}
+
+	/**
+	 * Set minimum X coordinate of grid in cell units.
+	 *
+	 * @param   minimumX    Minimum X coordinate of grid in cell units.
+	 */
+	public void setMinimumX( final int minimumX )
+	{
+		_minimumX = minimumX;
+	}
+
+	/**
+	 * Get minimum Y coordinate of grid in cell units.
+	 *
+	 * @return  Minimum Y coordinate of grid in cell units.
+	 */
+	public int getMinimumY()
+	{
+		return _minimumY;
+	}
+
+	/**
+	 * Set minimum Y coordinate of grid in cell units.
+	 *
+	 * @param   minimumY    Minimum Y coordinate of grid in cell units.
+	 */
+	public void setMinimumY( final int minimumY )
+	{
+		_minimumY = minimumY;
+	}
+
+	/**
+	 * Get maximum X coordinate of grid in cell units.
+	 *
+	 * @return  Maximum X coordinate of grid in cell units.
+	 */
+	public int getMaximumX()
+	{
+		return _maximumX;
+	}
+
+	/**
+	 * Set maximum X coordinate of grid in cell units.
+	 *
+	 * @param   maximumX    Maximum X coordinate of grid in cell units.
+	 */
+	public void setMaximumX( final int maximumX )
+	{
+		_maximumX = maximumX;
+	}
+
+	/**
+	 * Get maximum Y coordinate of grid in cell units.
+	 *
+	 * @return  Maximum Y coordinate of grid in cell units.
+	 */
+	public int getMaximumY()
+	{
+		return _maximumY;
+	}
+
+	/**
+	 * Set maximum Y coordinate of grid in cell units.
+	 *
+	 * @param   maximumY    Maximum Y coordinate of grid in cell units.
+	 */
+	public void setMaximumY( final int maximumY )
+	{
+		_maximumY = maximumY;
 	}
 }
