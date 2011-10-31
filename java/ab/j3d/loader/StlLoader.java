@@ -21,13 +21,11 @@
 package ab.j3d.loader;
 
 import java.io.*;
-import java.util.*;
 import java.util.regex.*;
 
 import ab.j3d.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
-import com.numdata.oss.io.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -393,32 +391,43 @@ public class StlLoader
 	{
 		final Material material = _material;
 		final UVMap uvMap = _uvMap;
-		final Vector3D[] points = new Vector3D[ 3 ];
-		final Vector3D[] normals = new Vector3D[ 3 ];
 
-		final byte[] header = DataStreamTools.readByteArray( in, 80 );
+		final byte[] header = new byte[ 80 ];
+		for ( int headerOffset = 0; headerOffset < header.length; )
+		{
+			final int readNow = in.read( header, headerOffset, header.length - headerOffset );
+			if ( readNow < 0 )
+			{
+				throw new EOFException();
+			}
+
+			headerOffset += readNow;
+		}
 
 		try
 		{
-			final long numberOfTriangles = DataStreamTools.readUnsignedIntLE( in );
+			final Vector3D[] points = new Vector3D[ 3 ];
+			final Vector3D[] normals = new Vector3D[ 3 ];
+
+			final long numberOfTriangles = readUnsignedInt32( in );
 			for ( long i = 0L; i < numberOfTriangles; i++ )
 			{
-				final Vector3D normal = transform.rotate( (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ) );
+				final Vector3D normal = transform.rotate( readFloat32( in ), readFloat32( in ), readFloat32( in ) );
 				normals[ 0 ] = normal;
 				normals[ 1 ] = normal;
 				normals[ 2 ] = normal;
 
 				// Convert to clockwise, as needed by 'addFace' used below.
-				points[ 0 ] = transform.transform( (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ) );
-				points[ 2 ] = transform.transform( (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ) );
-				points[ 1 ] = transform.transform( (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ), (double)DataStreamTools.readFloatLE( in ) );
+				points[ 0 ] = transform.transform( readFloat32( in ), readFloat32( in ), readFloat32( in ) );
+				points[ 2 ] = transform.transform( readFloat32( in ), readFloat32( in ), readFloat32( in ) );
+				points[ 1 ] = transform.transform( readFloat32( in ), readFloat32( in ), readFloat32( in ) );
 
 				/*
 				 * Skip 'attribute byte count' which apparently does not
 				 * specify a number of bytes that follows this 'count', but is
 				 * used by some packages to store color information.
 				 */
-				DataStreamTools.readUnsignedShortLE( in );
+				readUnsignedInt16( in );
 
 				builder.addFace( points, material, uvMap, normals, false, false, false );
 			}
@@ -430,5 +439,78 @@ public class StlLoader
 
 		final String name = new String( header, 6, 80 - 6 );
 		return name.trim();
+	}
+
+	/**
+	 * Read unsigned 16-bit integer from stream.
+	 *
+	 * @param   in  Stream to read from.
+	 *
+	 * @return  Value that was read.
+	 *
+	 * @throws  IOException if an I/O error occurs.
+	 */
+	private static int readUnsignedInt16( final InputStream in )
+		throws IOException
+	{
+		final int ch1 = in.read();
+		final int ch2 = in.read();
+
+		if ( ( ch1 | ch2 ) < 0 )
+		{
+			throw new EOFException();
+		}
+
+		return ( ch2 << 8 ) + ch1;
+	}
+
+	/**
+	 * Read unsigned 32-bit integer from stream.
+	 *
+	 * @param   in  Stream to read from.
+	 *
+	 * @return  Value that was read.
+	 *
+	 * @throws  IOException if an I/O error occurs.
+	 */
+	private static long readUnsignedInt32( final InputStream in )
+		throws IOException
+	{
+		final int ch1 = in.read();
+		final int ch2 = in.read();
+		final int ch3 = in.read();
+		final int ch4 = in.read();
+
+		if ( ( ch1 | ch2 | ch3 | ch4 ) < 0 )
+		{
+			throw new EOFException();
+		}
+
+		return ( (long)ch4 << 24 ) + ( (long)ch3 << 16 ) + ( (long)ch2 << 8 ) + (long)ch1;
+	}
+
+	/**
+	 * Read 32-bit floating-point value from stream.
+	 *
+	 * @param   in  Stream to read from.
+	 *
+	 * @return  Value that was read.
+	 *
+	 * @throws  IOException if an I/O error occurs.
+	 */
+	private static double readFloat32( final InputStream in )
+		throws IOException
+	{
+		final int ch1 = in.read();
+		final int ch2 = in.read();
+		final int ch3 = in.read();
+		final int ch4 = in.read();
+
+		if ( ( ch1 | ch2 | ch3 | ch4 ) < 0 )
+		{
+			throw new EOFException();
+		}
+
+		return (double) Float.intBitsToFloat( ( ch4 << 24 ) + ( ch3 << 16 ) + ( ch2 << 8 ) + ch1 );
 	}
 }
