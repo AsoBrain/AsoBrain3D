@@ -23,6 +23,8 @@ package ab.j3d.view;
 
 import java.util.*;
 
+import ab.j3d.*;
+
 /**
  * A convex polygon in 2D. The polygon is constructed from an arbitrary set of
  * points, forming the convex hull of that set.
@@ -83,51 +85,77 @@ public class Convex2D
 	/**
 	 * Adds a point to the convex polygon.
 	 *
+	 * @param   point   Point to add.
+	 */
+	public void add( final Vector2D point )
+	{
+		add( point.getX(), point.getY() );
+	}
+
+	/**
+	 * Adds a point to the convex polygon.
+	 *
 	 * @param   x   X coordinate of point to add.
 	 * @param   y   Y coordinate of point to add.
 	 */
 	public void add( final double x, final double y )
 	{
-		final int index = _size++ * 2;
-		ensureCapacity( index + 2 );
-		_points[ index ] = x;
-		_points[ index + 1 ] = y;
+		final int oldSize = _size;
+		final int newSize = oldSize + 1;
+
+		ensureCapacity( newSize );
+
+		final double[] points = _points;
+		final int pointIndex = oldSize * 2;
+		points[ pointIndex ] = x;
+		points[ pointIndex + 1 ] = y;
+		_size = newSize;
 		_convex = false;
 	}
 
 	/**
 	 * Ensures that the backing array can store at least the given number of
-	 * elements.
+	 * points.
 	 *
-	 * @param   capacity    Minimum size of the array after this method exits.
+	 * @param   capacity    Minimum number of points that may be stored.
 	 */
-	private void ensureCapacity( final int capacity )
+	public void ensureCapacity( final int capacity )
 	{
-		double[] points = _points;
-		if ( capacity > points.length )
+		final double[] oldPoints = _points;
+		final int oldCapacity = oldPoints.length / 2;
+
+		if ( capacity > oldCapacity )
 		{
-			// growth behavior is the same as 'java.util.ArrayList'
-			final int newCapacity = Math.max( capacity, ( ( points.length * 3 ) / 4 + 1 ) * 2 );
-			points = Arrays.copyOf( points, newCapacity );
-			_points = points;
+			// the growth behavior here is the same as 'java.util.ArrayList'
+			int newCapacity = ( oldCapacity * 3 ) / 2 + 1;
+			if ( capacity > newCapacity )
+			{
+				newCapacity = capacity;
+			}
+
+			_points = Arrays.copyOf( oldPoints, newCapacity * 2 );
 		}
 	}
 
 	/**
-	 * Adds points to the convex shape from the given array.
+	 * Adds multiple points to the convex polygon.
 	 *
-	 * @param   points  Contains the points to be added.
-	 * @param   start   Offset of the first point to add.
-	 * @param   count   Number of points to add.
-	 * @param   stride  Offset between one point and the next.
+	 * @param   source          Array containing points to add.
+	 * @param   sourceOffset    Offset in source array.
+	 * @param   numberOfPoints  Number of points stored in the array.
 	 */
-	public void add( final double[] points, final int start, final int count, final int stride )
+	public void add( final double[] source, final int sourceOffset, final int numberOfPoints )
 	{
-		ensureCapacity( _size + count * 2 );
-		final int end = start + count * stride;
-		for ( int i = start; i < end; i += stride )
+		if ( numberOfPoints > 0 )
 		{
-			add( points[ i ], points[ i + 1 ] );
+			final int oldSize = _size;
+			final int newSize = oldSize + numberOfPoints;
+
+			ensureCapacity( newSize );
+
+			System.arraycopy( source, sourceOffset, _points, oldSize * 2, numberOfPoints * 2 );
+			_size = newSize;
+			_convex = false;
 		}
 	}
 
