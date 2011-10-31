@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2008
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,19 +20,14 @@
  */
 package ab.j3d.control.controltest;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
+import java.awt.*;
+import javax.swing.*;
 
-import com.numdata.oss.ui.WindowTools;
-
-import ab.j3d.control.Control;
-import ab.j3d.control.controltest.model.Model;
+import ab.j3d.control.*;
+import ab.j3d.control.controltest.model.*;
 
 /**
- * The GUI mamanges the GUI for this test application. Among other things it
+ * The GUI manages the GUI for this test application. Among other things it
  * creates the {@link JFrame}, the {@link Model3D}, and four {@link View3D}s on
  * that 3d model. It also registers a number of {@link Control}s to these views,
  * so that the user can manipulate the {@link Model}.
@@ -54,30 +50,37 @@ public class GUI
 		final SelectionControl selectionControl = new SelectionControl( model );
 		final MoveControl      moveControl      = new MoveControl( model );
 
-		final View3D view1 = new View3D( model3D , View3D.TOP_VIEW , View3D.PARALLEL_PROJECTION );
+		final View3D view1 = new View3D( model3D, View3D.TOP_VIEW, View3D.PARALLEL_PROJECTION );
 		view1.insertControl( selectionControl );
 		view1.insertControl( moveControl );
 
-		final View3D view2 = new View3D( model3D , View3D.FRONT_VIEW , View3D.PARALLEL_PROJECTION );
+		final View3D view2 = new View3D( model3D, View3D.FRONT_VIEW, View3D.PARALLEL_PROJECTION );
 		view2.insertControl( selectionControl );
 		view2.insertControl( moveControl );
 
-		final View3D view3 = new View3D( model3D , View3D.LEFT_VIEW , View3D.PARALLEL_PROJECTION );
+		final View3D view3 = new View3D( model3D, View3D.LEFT_VIEW, View3D.PARALLEL_PROJECTION );
 		view3.insertControl( selectionControl );
 		view3.insertControl( moveControl );
 
-		final View3D view4 = new View3D( model3D , View3D.PERSPECTIVE_VIEW , View3D.PERSPECTIVE_PROJECTION );
+		final View3D view4 = new View3D( model3D, View3D.PERSPECTIVE_VIEW, View3D.PERSPECTIVE_PROJECTION );
 		view4.insertControl( selectionControl );
 		view4.insertControl( moveControl );
 
-		final JSplitPane topSplit      = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT , view1.getComponent() , view2.getComponent() );
-		final JSplitPane bottomSplit   = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT , view3.getComponent() , view4.getComponent() );
-		final JSplitPane verticalSplit = new JSplitPane( JSplitPane.VERTICAL_SPLIT   , topSplit              , bottomSplit         );
+		final JSplitPane topSplit = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, view1.getComponent(), view2.getComponent() );
+		final JSplitPane bottomSplit = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, view3.getComponent(), view4.getComponent() );
+		final JSplitPane verticalSplit = new JSplitPane( JSplitPane.VERTICAL_SPLIT, topSplit, bottomSplit );
 
 		final Container contentPane = new JPanel( new BorderLayout() );
-		contentPane.add( verticalSplit , BorderLayout.CENTER );
+		contentPane.add( verticalSplit, BorderLayout.CENTER );
 
-		final JFrame frame = WindowTools.createFrame( "ControlTest" , -300 , -100 , contentPane );
+		final JFrame frame = new JFrame( "ControlTest" );
+		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+		frame.setContentPane( contentPane );
+		final Toolkit toolkit = frame.getToolkit();
+		final GraphicsConfiguration graphicsConfiguration = frame.getGraphicsConfiguration();
+		final Rectangle screenBounds = graphicsConfiguration.getBounds();
+		final Insets screenInsets = toolkit.getScreenInsets( graphicsConfiguration );
+		frame.setBounds( screenBounds.x + screenInsets.left + 300 / 2, screenBounds.y + screenInsets.top + 100 / 2, screenBounds.width - screenInsets.left - screenInsets.right - 300 , screenBounds.height - screenInsets.top - screenInsets.bottom - 100 );
 		frame.setVisible( true );
 
 		topSplit.setDividerLocation( 0.5 );
