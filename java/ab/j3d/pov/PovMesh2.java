@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2008
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,8 +22,6 @@ package ab.j3d.pov;
 
 import java.io.*;
 import java.util.*;
-
-import com.numdata.oss.io.*;
 
 /**
  * This class represents a POV-Ray mesh2 object. All lists are zero-based
@@ -104,38 +103,38 @@ import com.numdata.oss.io.*;
  * @author  Rob Veneberg
  * @version $Revision$ $Date$
  */
-public final class PovMesh2
+public class PovMesh2
 	extends PovGeometry
 {
 	/**
 	 * List containing {@link PovVector}s describing all vertices of the mesh.
 	 * The list contains no duplicates.
 	 */
-	private final List<PovVector> _vertexVectors = new ArrayList();
+	private final List<PovVector> _vertexVectors = new ArrayList<PovVector>();
 
 	/**
 	 * List containing {@link PovVector}s describing all U/V-vectors of the
 	 * mesh. The list contains no duplicates.
 	 */
-	private final List<PovVector> _uvVectors = new ArrayList();
+	private final List<PovVector> _uvVectors = new ArrayList<PovVector>();
 
 	/**
 	 * List containing {@link PovVector}s describing all normals of the mesh.
 	 * The list contains no duplicates.
 	 */
-	private final List<PovVector> _normalVectors = new ArrayList();
+	private final List<PovVector> _normalVectors = new ArrayList<PovVector>();
 
 	/**
 	 * List containing all used textures. The duplicates are filtered in the
 	 * write method. The reason for this is that a face index can also have an
 	 * index into the texture list [textureNr].
 	 */
-	private final List<PovTexture> _textureList = new ArrayList();
+	private final List<PovTexture> _textureList = new ArrayList<PovTexture>();
 
 	/**
 	 * List containing all triangle in this mesh.
 	 */
-	private final List<Triangle> _triangles = new ArrayList();
+	private final List<Triangle> _triangles = new ArrayList<Triangle>();
 
 	/**
 	 * Whether {@link #_triangles} is sorted.
@@ -177,7 +176,7 @@ public final class PovMesh2
 			_textureIndex = textureIndex;
 		}
 
-		void writeFaceIndices( final IndentingWriter out , final boolean includeTextureIndex )
+		void writeFaceIndices( final PovWriter out , final boolean includeTextureIndex )
 			throws IOException
 		{
 			out.write( (int)'<' );
@@ -200,7 +199,7 @@ public final class PovMesh2
 			return ( ( _uvIndex1 >= 0 ) && ( _uvIndex2 >= 0 ) && ( _uvIndex3 >= 0 ) );
 		}
 
-		void writeUvIndices( final IndentingWriter out )
+		void writeUvIndices( final PovWriter out )
 			throws IOException
 		{
 			if ( hasUV() )
@@ -224,7 +223,7 @@ public final class PovMesh2
 			return ( ( _normalIndex1 >= 0 ) && ( _normalIndex2 >= 0 ) && ( _normalIndex3 >= 0 ) );
 		}
 
-		void writeNormalIndices( final IndentingWriter out )
+		void writeNormalIndices( final PovWriter out )
 			throws IOException
 		{
 			if ( hasNormals() )
@@ -574,7 +573,6 @@ public final class PovMesh2
 			_trianglesSorted = true;
 			Collections.sort( _triangles, new Comparator<Triangle>()
 			{
-				@Override
 				public int compare( final Triangle o1, final Triangle o2 )
 				{
 					return o1.hasUV() ? o2.hasUV() ? 0 : -1 :
@@ -585,7 +583,7 @@ public final class PovMesh2
 	}
 
 	@Override
-	public void write( final IndentingWriter out )
+	public void write( final PovWriter out )
 		throws IOException
 	{
 		final List<Triangle> triangles = getTriangles();
@@ -640,7 +638,7 @@ public final class PovMesh2
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	void writeVertexVectors( final IndentingWriter out )
+	void writeVertexVectors( final PovWriter out )
 		throws IOException
 	{
 		final List<PovVector> vertexVectors = _vertexVectors;
@@ -683,7 +681,7 @@ public final class PovMesh2
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	void writeUvVectors( final IndentingWriter out )
+	void writeUvVectors( final PovWriter out )
 		throws IOException
 	{
 		if ( hasUV() )
@@ -733,7 +731,7 @@ public final class PovMesh2
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	void writeNormalVectors( final IndentingWriter out )
+	void writeNormalVectors( final PovWriter out )
 		throws IOException
 	{
 		if ( hasNormals() )
@@ -780,7 +778,7 @@ public final class PovMesh2
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	void writeTextureList( final IndentingWriter out )
+	void writeTextureList( final PovWriter out )
 		throws IOException
 	{
 		final List<PovTexture> textureList  = _textureList;
@@ -796,9 +794,8 @@ public final class PovMesh2
 			out.write( (int)',' );
 			out.newLine();
 
-			for ( int i = 0 ; i < textureCount ; i++ )
+			for ( final PovTexture texture : textureList )
 			{
-				final PovTexture texture = textureList.get( i );
 				texture.write( out );
 			}
 
@@ -823,7 +820,7 @@ public final class PovMesh2
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	void writeFaceIndices( final IndentingWriter out , final List<Triangle> triangles )
+	void writeFaceIndices( final PovWriter out , final List<Triangle> triangles )
 		throws IOException
 	{
 		final boolean includeTextureIndex = ( _textureList.size() > 1 );
@@ -864,7 +861,7 @@ public final class PovMesh2
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	void writeUvIndices( final IndentingWriter out , final List<Triangle> triangles )
+	void writeUvIndices( final PovWriter out , final List<Triangle> triangles )
 		throws IOException
 	{
 		if ( hasUV() )
@@ -906,7 +903,7 @@ public final class PovMesh2
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	void writeNormalIndices( final IndentingWriter out , final List<Triangle> triangles )
+	void writeNormalIndices( final PovWriter out , final List<Triangle> triangles )
 		throws IOException
 	{
 		if ( hasNormals() )
@@ -932,7 +929,7 @@ public final class PovMesh2
 		}
 	}
 
-	private static void writeElementSeparator( final IndentingWriter out , final int elementsPerLine , final int elementIndex )
+	private static void writeElementSeparator( final PovWriter out , final int elementsPerLine , final int elementIndex )
 		throws IOException
 	{
 		if ( elementIndex > 0 )

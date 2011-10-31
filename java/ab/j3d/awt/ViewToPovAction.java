@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.pov;
+package ab.j3d.awt;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -29,6 +29,7 @@ import java.util.*;
 import javax.swing.*;
 
 import ab.j3d.model.*;
+import ab.j3d.pov.*;
 import ab.j3d.view.*;
 import com.numdata.oss.*;
 import com.numdata.oss.ui.*;
@@ -42,7 +43,7 @@ import com.numdata.oss.ui.*;
  * @author  Rob Veneberg
  * @version $Revision$ $Date$
  */
-public final class ViewToPovAction
+public class ViewToPovAction
 	extends BasicAction
 {
 	/**
@@ -90,7 +91,9 @@ public final class ViewToPovAction
 
 		final ImagePanel imagePanel = new ImagePanel();
 		imagePanel.setVisible( false );
-		imagePanel.addMouseListener( new MouseAdapter() {
+		imagePanel.addMouseListener( new MouseAdapter()
+		{
+			@Override
 			public void mousePressed( final MouseEvent e)
 			{
 				imagePanel.setVisible( false );
@@ -99,8 +102,8 @@ public final class ViewToPovAction
 
 		viewContainer.add(  imagePanel, constraints );
 
-		_view             = view;
-		_imagePanel       = imagePanel;
+		_view = view;
+		_imagePanel = imagePanel;
 		_textureDirectory = textureDirectory;
 	}
 
@@ -182,7 +185,7 @@ public final class ViewToPovAction
 			 */
 			try
 			{
-				image = povScene.render( null, viewWidth, viewHeight, progressModel, logWriter, false );
+				image = PovRenderer.render( povScene, null, viewWidth, viewHeight, progressModel, logWriter, false );
 			}
 			catch ( IOException e )
 			{
@@ -210,7 +213,9 @@ public final class ViewToPovAction
 			final String logText = logBuffer.toString();
 			int pos = logText.length();
 			for ( int i = 0 ; ( pos > 0 ) && ( i < 25 ) ; i++ )
-				pos = logText.lastIndexOf( (int)'\n', pos - 1 );
+			{
+				pos = logText.lastIndexOf( (int) '\n', pos - 1 );
+			}
 
 			WindowTools.showErrorDialog( viewWindow, res.getString( "errorTitle" ), MessageFormat.format( res.getString( "errorMessage" ), ( ( pos < 0 ) ? logText : logText.substring( pos ) ) ) );
 		}

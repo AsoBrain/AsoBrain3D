@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2007
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +20,9 @@
  */
 package ab.j3d.pov;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
-import com.numdata.oss.io.IndentingWriter;
 
 /**
  * Free patch object of triangles.
@@ -84,7 +83,7 @@ public class PovMesh
 			_texture = texture;
 		}
 
-		public void write( final IndentingWriter out )
+		public void write( final PovWriter out )
 			throws IOException
 		{
 			final PovTexture texture    = _texture;
@@ -188,7 +187,7 @@ public class PovMesh
 			addTriangle( points[ 0 ] , points[ i + 1 ] , points[ i + 2 ] , smooth , texture );
 	}
 
-	public void write( final IndentingWriter out )
+	public void write( final PovWriter out )
 		throws IOException
 	{
 		/*

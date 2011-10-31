@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2006
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,7 +25,6 @@ import java.text.*;
 import java.util.*;
 
 import ab.j3d.*;
-import com.numdata.oss.io.*;
 
 /**
  * Pov Transformation matrix.
@@ -147,7 +147,7 @@ public class PovMatrix
 	}
 
 	@Override
-	public void write( final IndentingWriter out )
+	public void write( final PovWriter out )
 		throws IOException
 	{
 		final double[]     data        = _data;
@@ -184,7 +184,7 @@ public class PovMatrix
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	public void writeShort( final IndentingWriter out )
+	public void writeShort( final PovWriter out )
 		throws IOException
 	{
 		final double[] data = _data;

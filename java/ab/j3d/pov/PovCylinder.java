@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2007
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,9 +20,8 @@
  */
 package ab.j3d.pov;
 
-import java.io.IOException;
+import java.io.*;
 
-import com.numdata.oss.io.IndentingWriter;
 
 /**
  * Pov cylinder.
@@ -215,7 +215,7 @@ public class PovCylinder
 		_r2 = r2;
 	}
 
-	public void write( final IndentingWriter out )
+	public void write( final PovWriter out )
 		throws IOException
 	{
 		out.write( "cone" );

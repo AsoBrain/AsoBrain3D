@@ -20,12 +20,9 @@
  */
 package ab.j3d.pov;
 
-import java.awt.*;
 import java.io.*;
 
 import ab.j3d.*;
-import com.numdata.oss.*;
-import com.numdata.oss.io.*;
 
 /**
  * Pov Texture / material definition.
@@ -201,7 +198,7 @@ public class PovTexture
 		}
 
 		@Override
-		public void write( final IndentingWriter out )
+		public void write( final PovWriter out )
 			throws IOException
 		{
 			if ( isDeclared() )
@@ -232,7 +229,7 @@ public class PovTexture
 		}
 
 		@Override
-		public final void declare( final IndentingWriter out )
+		public final void declare( final PovWriter out )
 			throws IOException
 		{
 			final PovTexture reference = _reference;
@@ -312,19 +309,6 @@ public class PovTexture
 	}
 
 	/**
-	 * Creates a texture based on java.awt.Color.
-	 *
-	 * @param   name    Name of the texture.
-	 * @param   rgb     Color of the texture.
-	 */
-	public PovTexture( final String name, final Color rgb )
-	{
-		this();
-		_name = name;
-		_rgb = new PovVector( rgb );
-	}
-
-	/**
 	 * Creates a texture map using the specified map.
 	 *
 	 * @param   name                Name of the texture.
@@ -371,7 +355,7 @@ public class PovTexture
 		                      Math.max( (double)material.diffuseColorGreen, 0.001 ),
 		                      Math.max( (double)material.diffuseColorBlue , 0.001 ) );
 
-		if ( !TextTools.isEmpty( material.colorMap ) )
+		if ( ( material.colorMap != null ) && !material.colorMap.isEmpty() )
 		{
 			_imageMap = ( textureDirectory != null ) ? textureDirectory + '/' + material.colorMap : material.colorMap;
 			_imageMapType = "jpeg";
@@ -414,11 +398,11 @@ public class PovTexture
 	{
 		final String result;
 
-		if ( !TextTools.isEmpty( material.code ) )
+		if ( ( material.code != null ) && !material.code.isEmpty() )
 		{
 			result = material.code.replaceAll( "['\"`+\\.,;:/|\\\\$%&?!]", "_" );
 		}
-		else if ( !TextTools.isEmpty( material.colorMap ) )
+		else if ( ( material.colorMap != null ) && !material.colorMap.isEmpty() )
 		{
 			result = material.colorMap.replaceAll( "['\"`+\\.,;:/|\\\\$%&?!]", "_" );
 		}
@@ -837,7 +821,7 @@ public class PovTexture
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	public void declare( final IndentingWriter out )
+	public void declare( final PovWriter out )
 		throws IOException
 	{
 		out.write( "#declare " );
@@ -861,7 +845,7 @@ public class PovTexture
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	public void declarePigments( final IndentingWriter out )
+	public void declarePigments( final PovWriter out )
 		throws IOException
 	{
 		out.write( "#declare " );
@@ -893,7 +877,7 @@ public class PovTexture
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	public void declarePigmentMap( final IndentingWriter out )
+	public void declarePigmentMap( final PovWriter out )
 		throws IOException
 	{
 		out.write( "#declare " );
@@ -907,7 +891,7 @@ public class PovTexture
 	}
 
 	@Override
-	public void write( final IndentingWriter out )
+	public void write( final PovWriter out )
 		throws IOException
 	{
 		if ( isDeclared() )
@@ -935,7 +919,7 @@ public class PovTexture
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	private void writeTexture( final IndentingWriter out )
+	private void writeTexture( final PovWriter out )
 		throws IOException
 	{
 		out.writeln( "texture" );
@@ -1114,7 +1098,7 @@ public class PovTexture
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	private void writePigmentMap( final IndentingWriter out )
+	private void writePigmentMap( final PovWriter out )
 		throws IOException
 	{
 		out.writeln( "texture" );
@@ -1229,7 +1213,7 @@ public class PovTexture
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	private void writeTexturePigment ( final IndentingWriter out )
+	private void writeTexturePigment ( final PovWriter out )
 		throws IOException
 	{
 		out.writeln( "pigment" );
@@ -1279,7 +1263,7 @@ public class PovTexture
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	private void writeColorPigment ( final IndentingWriter out )
+	private void writeColorPigment ( final PovWriter out )
 		throws IOException
 	{
 		out.writeln( "pigment" );

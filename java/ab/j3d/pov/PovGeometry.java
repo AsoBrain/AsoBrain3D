@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2007
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,16 +20,13 @@
  */
 package ab.j3d.pov;
 
-import java.io.IOException;
-
-import com.numdata.oss.TextTools;
-import com.numdata.oss.io.IndentingWriter;
+import java.io.*;
 
 /**
  * Base class for all geometry in the POV world.
  * <p>
  * Note that the {@link PovLight} and the {@link PovCamera} are
- * {@link PovGeometry} aswell.
+ * {@link PovGeometry} as well.
  *
  * @author  Sjoerd Bouwman
  * @version $Revision$ ($Date$, $Author$)
@@ -398,7 +396,7 @@ public abstract class PovGeometry
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	protected final void writeShortTransformation( final IndentingWriter out )
+	protected final void writeShortTransformation( final PovWriter out )
 		throws IOException
 	{
 		final PovMatrix transform = getTransform();
@@ -448,7 +446,7 @@ public abstract class PovGeometry
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	protected final void writeModifiers( final IndentingWriter out )
+	protected final void writeModifiers( final PovWriter out )
 		throws IOException
 	{
 		/* inverse/hollow/no_shadow */
@@ -521,7 +519,9 @@ public abstract class PovGeometry
 		}
 		else
 		{
-			result = TextTools.compare( getName() , other.getName() );
+			final String thisName = getName();
+			final String otherName = other.getName();
+			result = ( thisName == null ) ? ( otherName != null ) ? -1 : 0 : ( otherName == null ) ? 1 : thisName.compareTo( otherName );
 		}
 
 		return result;

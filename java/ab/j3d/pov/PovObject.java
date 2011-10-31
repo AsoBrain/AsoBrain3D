@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2006
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +20,10 @@
  */
 package ab.j3d.pov;
 
-import java.io.IOException;
-import java.text.NumberFormat;
-import java.util.Locale;
+import java.io.*;
+import java.text.*;
+import java.util.*;
 
-import com.numdata.oss.io.IndentingWriter;
 
 /**
  * Base class for each object pov object.
@@ -60,14 +60,14 @@ public abstract class PovObject
 	/**
 	 * Writes the PovObject to the specified writer.
 	 * <p>
-	 * The method should use {@link IndentingWriter#indentIn} and
-	 * {@link IndentingWriter#indentOut} to keep the output readable.
+	 * The method should use {@link PovWriter#indentIn} and
+	 * {@link PovWriter#indentOut} to keep the output readable.
 	 *
 	 * @param   out     Writer to use for output.
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	public abstract void write( final IndentingWriter out )
+	public abstract void write( final PovWriter out )
 		throws IOException;
 
 	/**

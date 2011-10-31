@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,12 +20,10 @@
  */
 package ab.j3d.pov;
 
-import java.awt.Color;
-import java.io.IOException;
+import java.io.*;
 
-import ab.j3d.Vector3D;
+import ab.j3d.*;
 
-import com.numdata.oss.io.IndentingWriter;
 
 /**
  * Pov Vector (also used to define colors).
@@ -62,7 +61,7 @@ public class PovVector
 	 */
 	public PovVector( final float x , final float y , final float z )
 	{
-		_vector = Vector3D.INIT.set( (double)x , (double)y , (double)z );
+		_vector = new Vector3D( (double)x , (double)y , (double)z );
 	}
 
 	/**
@@ -74,32 +73,7 @@ public class PovVector
 	 */
 	public PovVector( final double x , final double y , final double z )
 	{
-		_vector = Vector3D.INIT.set( x , y , z );
-	}
-
-	/**
-	 * Creates a vector based on a java.awt.Color. The three values of the
-	 * vector will be the r, g and b values of the color.
-	 *
-	 * @param   color   Color to base the vector on.
-	 */
-	public PovVector( final Color color )
-	{
-		this( (double)color.getRed() / 255.0 , (double)color.getGreen() / 255.0 , (double)color.getBlue() / 255.0 );
-	}
-
-	/**
-	 * Creates a vector based on a java.awt.Color, with each resulting color
-	 * value (RGB) multiplied by the given scalar.
-	 *
-	 * @param   color   Color to base the vector on.
-	 * @param   scalar  Scalar to multiply the color with.
-	 */
-	public PovVector( final Color color , final double scalar )
-	{
-		this( (double)color.getRed()   * scalar / 255.0 ,
-		      (double)color.getGreen() * scalar / 255.0 ,
-		      (double)color.getBlue()  * scalar / 255.0   );
+		_vector = new Vector3D( x , y , z );
 	}
 
 	/**
@@ -142,7 +116,7 @@ public class PovVector
 		_vector = vector;
 	}
 
-	public void write( final IndentingWriter out )
+	public void write( final PovWriter out )
 		throws IOException
 	{
 		out.write( (int)'<' );

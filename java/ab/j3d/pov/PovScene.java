@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2000-2006
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,17 +20,9 @@
  */
 package ab.j3d.pov;
 
-import java.awt.*;
-import java.awt.image.*;
 import java.io.*;
 import java.util.*;
-import java.util.List;
-import javax.imageio.*;
-import javax.imageio.stream.*;
-import javax.swing.*;
 
-import com.numdata.oss.io.*;
-import com.numdata.oss.log.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -43,36 +36,31 @@ import org.jetbrains.annotations.*;
 public class PovScene
 {
 	/**
-	 * Log used for messages related to this class.
-	 */
-	private static final ClassLogger LOG = ClassLogger.getFor( PovScene.class );
-
-	/**
 	 * All main branches of geometry in the scene.
 	 */
-	private List<PovGeometry> _geometry = new ArrayList<PovGeometry>();
+	private final List<PovGeometry> _geometry = new ArrayList<PovGeometry>();
 
 	/**
 	 * All globally defined textures in the scene.
 	 * These textures will be declared on top of the pov source
 	 * like : #declare TEX_name = texture { definition }
 	 */
-	private Map<String,PovTexture> _textures = new HashMap<String,PovTexture>();
+	private final Map<String,PovTexture> _textures = new HashMap<String,PovTexture>();
 
 	/**
 	 * Declared or predefined shapes in the scene.
 	 */
-	private Map<String,PovGeometry> _declaredShapes = new HashMap<String,PovGeometry>();
+	private final Map<String,PovGeometry> _declaredShapes = new HashMap<String,PovGeometry>();
 
 	/**
 	 * Background color of the scene.
 	 */
-	private PovVector _background = new PovVector( Color.BLACK );
+	private PovVector _background = new PovVector( 0.0f, 0.0f, 0.0f );
 
 	/**
 	 * Ambient light in the scene.
 	 */
-	private PovVector _ambientLight = new PovVector( Color.BLACK );
+	private PovVector _ambientLight = new PovVector( 0.0f, 0.0f, 0.0f );
 
 	/**
 	 * Assumed gamma level.
@@ -127,7 +115,7 @@ public class PovScene
 
 	/**
 	 * Get indenting writer from the specified writer. If the specified writer
-	 * is already an {@link IndentingWriter}, it will be returned as-is.
+	 * is already an {@link PovWriter}, it will be returned as-is.
 	 *
 	 * @param   out     Writer to use for output.
 	 *
@@ -135,9 +123,9 @@ public class PovScene
 	 *
 	 * @throws  NullPointerException if <code>out</code> is <code>null</code>.
 	 */
-	static IndentingWriter getIndentingWriter( @NotNull final Writer out )
+	static PovWriter getPovWriter( @NotNull final Writer out )
 	{
-		return ( out instanceof IndentingWriter ) ? (IndentingWriter)out : new IndentingWriter( out, "\t" );
+		return ( out instanceof PovWriter ) ? (PovWriter)out : new PovWriter( out, "\t" );
 	}
 
 	/**
@@ -406,181 +394,6 @@ public class PovScene
 	}
 
 	/**
-	 * Renders the scene to an image with the specified size and returns the
-	 * resulting image.
-	 *
-	 * @param   povFile         File or directory to write POV file to (optional).
-	 * @param   width           The width of the rendered image.
-	 * @param   height          The height of the rendered image.
-	 * @param   progressModel   Progress model.
-	 * @param   log             Log to write console output to.
-	 * @param   background      Wether or not to draw a background.
-	 *
-	 * @return  Rendered image.
-	 *
-	 * @throws  IOException if there was a problem reading/writing data.
-	 */
-	public BufferedImage render( final File povFile, final int width, final int height, final BoundedRangeModel progressModel, final PrintWriter log, final boolean background )
-		throws IOException
-	{
-		BufferedImage result;
-
-		final File actualPovFile = write( povFile );
-
-		final Process process = startPovRay( actualPovFile, width, height, background );
-		try
-		{
-			monitorPovRayProcess( process, height, progressModel, log );
-
-			/*
-			 * Pipe data from 'stdout' to 'out'
-			 */
-			LOG.debug( "reading rendered image data" );
-			try
-			{
-				final InputStream is = process.getInputStream();
-				try
-				{
-					result = ImageIO.read( new MemoryCacheImageInputStream( is ) );
-				}
-				finally
-				{
-					is.close();
-				}
-
-				LOG.trace( "waiting for POV-Ray process to finish" );
-			}
-			catch ( IOException e )
-			{
-				throw new IOException( "POV-Ray command exeution failed", e );
-			}
-		}
-		finally
-		{
-			process.destroy();
-
-			if ( actualPovFile != povFile )
-			{
-				LOG.debug( "deleting temporary POV-Ray file: " + actualPovFile.getPath() );
-				actualPovFile.delete();
-			}
-		}
-
-		return result;
-	}
-
-	/**
-	 * Start POV-Ray render process.
-	 *
-	 * @param   povFile     File containing POV-scene.
-	 * @param   width       The width of the rendered image.
-	 * @param   height      The height of the rendered image.
-	 * @param   background  Wether or not to draw a background.
-	 *
-	 * @return  POV-Ray process.
-	 *
-	 * @throws  IOException if the POV-Ray executable could not be accessed.
-	 * @throws  SecurityException if a security manager prevents file access.
-	 */
-	public static Process startPovRay( final File povFile, final int width, final int height, final boolean background )
-		throws IOException
-	{
-		return startPovRay( povFile, width, height, background, 0, width );
-	}
-
-	/**
-	 * Start POV-Ray render process. By specifying start and end columns, only
-	 * a part of the image can be rendered.
-	 *
-	 * @param   povFile         File containing POV-scene.
-	 * @param   width           The width of the rendered image.
-	 * @param   height          The height of the rendered image.
-	 * @param   background      Wether or not to draw a background.
-	 * @param   startColumn     First column (x-coordinate) to render.
-	 * @param   endColumn       Last column (x-coordinate) to render.
-	 *
-	 * @return  POV-Ray process.
-	 *
-	 * @throws  IOException if the POV-Ray executable could not be accessed.
-	 * @throws  SecurityException if a security manager prevents file access.
-	 */
-	public static Process startPovRay( final File povFile, final int width, final int height, final boolean background, final int startColumn, final int endColumn )
-		throws IOException
-	{
-		/*
-		 * Start POV-Ray process.
-		 */
-		final List<String> command = new ArrayList<String>( 16 );
-
-		command.add( "povray" );                   /* POV-Ray executable */
-		command.add( "+I" + povFile.getPath() );   /* Input file ('-' = stdin) */
-		command.add( "+O-" );                      /* Output file ('-' = stdout) */
-		command.add( "+FN" );                      /* File format: PNG */
-		command.add( "+W" + width );               /* Image width */
-		command.add( "+H" + height );              /* Image height */
-		command.add( "-D" );                       /* Don't show preview */
-		command.add( "+Q9" );                      /* Quality (default=9) */
-		command.add( "+A0.2" );                    /* Turn on anti-aliasing */
-		command.add( "+AM1" );
-		command.add( "+R3" );
-		command.add( "+GA" );                      /* Turn on all debug, fatal, render, statistic, and warning text to the console */
-		command.add( background ? "-UA" : "+UA" ); /* Turn on/off alpha channel output */
-
-		if ( startColumn != 0 )
-		{
-			command.add( "+SC" + startColumn ); /* Turn on/off alpha channel output */
-		}
-		if ( endColumn != height - 1 )
-		{
-			command.add( "+EC" + endColumn ); /* Turn on/off alpha channel output */
-		}
-
-		if ( LOG.isTraceEnabled() )
-		{
-			synchronized ( LOG )
-			{
-				LOG.trace( "Starting POV-ray: " + command );
-			}
-		}
-
-		final ProcessBuilder processBuilder = new ProcessBuilder( command );
-		final Process result = processBuilder.start();
-
-		/*
-		 * Close 'stdin'
-		 */
-		final OutputStream os = result.getOutputStream();
-		try
-		{
-			os.close();
-		}
-		catch ( Exception e )
-		{
-			LOG.warn( "failed to close 'stdin' of render process", e );
-		}
-
-		return result;
-	}
-
-	/**
-	 * Monitor 'stderr' for progress monitoring and logging from POV-Ray.
-	 *
-	 * @param   povProcess      POV-Ray process to monitor.
-	 * @param   height          The height of the rendered image.
-	 * @param   progressModel   Progress model.
-	 * @param   log             Log to write console output to.
-	 */
-	public static void monitorPovRayProcess( @NotNull final Process povProcess, final int height, @Nullable final BoundedRangeModel progressModel, @Nullable final PrintWriter log )
-	{
-		if ( ( progressModel != null ) || ( log != null ) )
-		{
-			final PovRayProcessMonitor monitor = new PovRayProcessMonitor( povProcess, height, progressModel, log );
-			final Thread stderrMonitor = new Thread( monitor );
-			stderrMonitor.start();
-		}
-	}
-
-	/**
 	 * Saves the current scene as a .pov file.
 	 *
 	 * @param   file    File or directory to write scene to.
@@ -605,7 +418,6 @@ public class PovScene
 			try
 			{
 				result = File.createTempFile( "PovScene-", ".pov", ( ( file != null ) && file.isDirectory() ) ? file : null );
-				LOG.debug( "created temporary POV-Ray file: " + result.getPath() );
 				result.deleteOnExit();
 			}
 			catch ( IOException e )
@@ -641,21 +453,6 @@ public class PovScene
 	/**
 	 * Saves the current scene as a .pov file.
 	 *
-	 * @param   out     Stream to save to.
-	 *
-	 * @throws  IOException when writing failed.
-	 */
-	public void write( final OutputStream out )
-		throws IOException
-	{
-		final OutputStreamWriter streamWriter = new OutputStreamWriter( out );
-		write( streamWriter );
-		streamWriter.flush();
-	}
-
-	/**
-	 * Saves the current scene as a .pov file.
-	 *
 	 * @param   out     Writer to use for output.
 	 *
 	 * @throws  IOException when writing failed.
@@ -663,7 +460,7 @@ public class PovScene
 	public void write( final Writer out )
 		throws IOException
 	{
-		final IndentingWriter iw = getIndentingWriter( out );
+		final PovWriter iw = getPovWriter( out );
 
 		/*
 		 * Make sure, all geometry is sorted alfabetically.
@@ -683,7 +480,7 @@ public class PovScene
 		writeGeometry( iw, geometry );
 	}
 
-	protected static void writeFileHeader( final IndentingWriter out )
+	protected static void writeFileHeader( final PovWriter out )
 		throws IOException
 	{
 		//out.writeln( "#version unofficial MegaPov 0.7;" );
@@ -694,7 +491,7 @@ public class PovScene
 		out.newLine();
 	}
 
-	protected void writeAtmosphericEffects( final IndentingWriter out )
+	protected void writeAtmosphericEffects( final PovWriter out )
 		throws IOException
 	{
 		if ( _background != null )
@@ -710,7 +507,7 @@ public class PovScene
 		}
 	}
 
-	protected void writeGlobalSettings( final IndentingWriter out )
+	protected void writeGlobalSettings( final PovWriter out )
 		throws IOException
 	{
 		out.writeln( "global_settings" );
@@ -763,7 +560,7 @@ public class PovScene
 		out.newLine();
 	}
 
-	protected static void writeCameras( final IndentingWriter out, final PovGeometry[] geometry )
+	protected static void writeCameras( final PovWriter out, final PovGeometry[] geometry )
 		throws IOException
 	{
 		for ( final PovGeometry geom : geometry )
@@ -776,7 +573,7 @@ public class PovScene
 		}
 	}
 
-	protected static void writeLights( final IndentingWriter out, final PovGeometry[] geometry )
+	protected static void writeLights( final PovWriter out, final PovGeometry[] geometry )
 		throws IOException
 	{
 		for ( final PovGeometry geom : geometry )
@@ -796,7 +593,7 @@ public class PovScene
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	protected void writeTextureDefs( final IndentingWriter out )
+	protected void writeTextureDefs( final PovWriter out )
 		throws IOException
 	{
 		final Map<String,PovTexture> textures = _textures;
@@ -829,7 +626,7 @@ public class PovScene
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	protected void writeDeclaredShapes( final IndentingWriter out )
+	protected void writeDeclaredShapes( final PovWriter out )
 		throws IOException
 	{
 		final Map<String,PovGeometry> declaredShapes = _declaredShapes;
@@ -862,7 +659,7 @@ public class PovScene
 		}
 	}
 
-	protected static void writeGeometry( final IndentingWriter out, final PovGeometry[] geometry )
+	protected static void writeGeometry( final PovWriter out, final PovGeometry[] geometry )
 		throws IOException
 	{
 		if ( ( geometry != null ) && ( geometry.length > 0 ) )
@@ -896,108 +693,6 @@ public class PovScene
 			if ( geometry instanceof PovLight )
 			{
 				i.remove();
-			}
-		}
-	}
-
-	/**
-	 * Monitor for POV-Ray to read output from 'stderr' and monitor pogress
-	 * reported by POV-Ray in real time.
-	 */
-	public static class PovRayProcessMonitor
-		implements Runnable
-	{
-		/**
-		 * Progress model.
-		 */
-		@NotNull
-		private final Process _povProcess;
-
-		/**
-		 * Progress model.
-		 */
-		@Nullable
-		private final BoundedRangeModel _progressModel;
-
-		/**
-		 * Log to write console output to.
-		 */
-		@Nullable
-		private final PrintWriter _log;
-
-		/**
-		 * Construct monitor.
-		 *
-		 * @param   povProcess      POV-Ray process to monitor.
-		 * @param   height          The height of the rendered image.
-		 * @param   progressModel   Progress model.
-		 * @param   log             Log to write console output to.
-		 */
-		public PovRayProcessMonitor( @NotNull final Process povProcess, final int height, @Nullable final BoundedRangeModel progressModel, @Nullable final PrintWriter log )
-		{
-			if ( progressModel != null )
-			{
-				progressModel.setMinimum( 0 );
-				progressModel.setValue( 0 );
-				progressModel.setMaximum( height );
-			}
-
-			_povProcess = povProcess;
-			_progressModel = progressModel;
-			_log = log;
-		}
-
-		@Override
-		public void run()
-		{
-			final InputStream stderr = _povProcess.getErrorStream();
-			try
-			{
-				final BufferedReader errorStream = new BufferedReader( new InputStreamReader( stderr ) );
-				String line;
-				while ( ( line = errorStream.readLine() ) != null )
-				{
-					if ( line.contains( " Rendering line " ) )
-					{
-						if ( _progressModel != null )
-						{
-							String temp = line.substring( line.indexOf( " Rendering line " ) + 16 );
-							final int end = temp.indexOf( (int)' ' );
-							temp = temp.substring( 0, end );
-
-							try
-							{
-								final int value = Integer.parseInt( temp );
-								_progressModel.setValue( value );
-							}
-							catch( Exception e )
-							{
-								/* ignore */
-							}
-
-						}
-					}
-					else if ( _log != null )
-					{
-						_log.println( line );
-						_log.flush();
-					}
-				}
-			}
-			catch ( IOException e )
-			{
-				/* ignore */
-			}
-			finally
-			{
-				try
-				{
-					stderr.close();
-				}
-				catch ( IOException e )
-				{
-					/* ignore */
-				}
 			}
 		}
 	}
