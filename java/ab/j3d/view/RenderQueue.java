@@ -52,7 +52,7 @@ import ab.j3d.model.*;
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public final class RenderQueue
+public class RenderQueue
 {
 	/**
 	 * Indicates a polygon is in front of another. Used in {@link #compare}.
@@ -472,8 +472,7 @@ public final class RenderQueue
 
 								final double z = clip._minViewZ;
 								boolean stop = false;
-								int pointer;
-								for ( pointer = 0 ; pointer < tempQueue.size() && !stop ; pointer++ )
+								for ( int pointer = 0; pointer < tempQueue.size() && !stop ; pointer++ )
 								{
 									if ( tempQueue.get( pointer ) != null )
 									{
@@ -682,7 +681,7 @@ public final class RenderQueue
 
 				if ( u < -0.001 || u > 1.001 )
 				{
-					System.err.println( "cuttingNormal: " + Vector3D.toFriendlyString( Vector3D.INIT.set( cuttingNX, cuttingNY, cuttingNZ ) ) + " - cuttingD: " + cuttingD );
+					System.err.println( "cuttingNormal: " + Vector3D.toFriendlyString( new Vector3D( cuttingNX, cuttingNY, cuttingNZ ) ) + " - cuttingD: " + cuttingD );
 					System.err.println( "Last: coordinates: (" + (int)lastX + ',' + (int)lastY + ',' + (int)lastZ + ") - dot: " + lastDot );
 					System.err.println( "Current: coordinates: (" + (int)x + ',' + (int)y + ',' + (int)z + ")  - dot: " + dot );
 

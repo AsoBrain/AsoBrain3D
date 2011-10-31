@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,7 +34,7 @@ import ab.j3d.model.Face3D.*;
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public final class RenderedPolygon
+public class RenderedPolygon
 	extends Polygon
 {
 	/**
@@ -251,7 +251,7 @@ public final class RenderedPolygon
 		double minViewZ = Double.POSITIVE_INFINITY;
 		double maxViewZ = Double.NEGATIVE_INFINITY;
 
-		final Point projectedPoint = new Point();
+		final int[] projectedPoint = new int[ 2 ];
 
 		for ( int vertexIndex = 0 ; vertexIndex < pointCount ; vertexIndex++ )
 		{
@@ -271,9 +271,9 @@ public final class RenderedPolygon
 
 			if ( projector != null )
 			{
-				projector.project( projectedPoint, x, y, z );
-				final int projX = projectedPoint.x;
-				final int projY = projectedPoint.y;
+				projector.project( projectedPoint, 0, x, y, z );
+				final int projX = projectedPoint[ 0 ];
+				final int projY = projectedPoint[ 1 ];
 
 				projectedX[ vertexIndex ] = projX;
 				projectedY[ vertexIndex ] = projY;
@@ -380,7 +380,7 @@ public final class RenderedPolygon
 
 		sb.append(   "Object: "               ); sb.append( _object.getTag() );
 		sb.append( "\nAppearance: "           ); sb.append( _appearance );
-		sb.append( "\nNormal: "               ); sb.append( Vector3D.toFriendlyString( Vector3D.INIT.set( _planeNormalX, _planeNormalY, _planeNormalZ ) ) );
+		sb.append( "\nNormal: "               ); sb.append( Vector3D.toFriendlyString( _planeNormalX, _planeNormalY, _planeNormalZ ) );
 		sb.append( "\nPlane constant: "       ); sb.append( _planeConstant );
 		sb.append( "\nBackface: "             ); sb.append( _backface );
 
@@ -388,7 +388,7 @@ public final class RenderedPolygon
 		for ( int i = 0; i < _vertexCount; i++ )
 		{
 			sb.append( "\n\t" );
-			sb.append( Vector3D.toFriendlyString( Vector3D.INIT.set( _viewX[ i ], _viewY[ i ], _viewZ[ i ] ) ) );
+			sb.append( Vector3D.toFriendlyString( _viewX[ i ], _viewY[ i ], _viewZ[ i ] ) );
 			sb.append( '\n' );
 		}
 
