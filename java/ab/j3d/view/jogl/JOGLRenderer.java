@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,10 +20,8 @@
  */
 package ab.j3d.view.jogl;
 
-import java.awt.*;
 import java.io.*;
 import java.util.*;
-import java.util.List;
 import javax.media.opengl.*;
 
 import ab.j3d.*;
@@ -397,7 +395,6 @@ public class JOGLRenderer
 	 */
 	private static final Node3DVisitor SHADOW_CASTING_LIGHT_VISITOR = new Node3DVisitor()
 	{
-		@Override
 		public boolean visitNode( @NotNull final Node3DPath path )
 		{
 			final Node3D node = path.getNode();
@@ -449,7 +446,6 @@ public class JOGLRenderer
 
 		final boolean hasLights = !scene.walk( new Node3DVisitor()
 		{
-			@Override
 			public boolean visitNode( @NotNull final Node3DPath path )
 			{
 				return !( path.getNode() instanceof Light3D );
@@ -749,7 +745,6 @@ public class JOGLRenderer
 			 */
 			final int _maxlights = getMaxLights();
 
-			@Override
 			public boolean visitNode( @NotNull final Node3DPath path )
 			{
 				final boolean result;
@@ -800,15 +795,19 @@ public class JOGLRenderer
 		final GLStateHelper state = _state;
 
 		/* Clear depth and color buffer. */
-		final Color backgroundColor = background.getColor();
-		final float[] backgroundRGB = backgroundColor.getRGBColorComponents( null );
-		gl.glClearColor( backgroundRGB[ 0 ], backgroundRGB[ 1 ], backgroundRGB[ 2 ], 1.0f );
+		final Color4f backgroundColor = background.getColor();
+		gl.glClearColor( backgroundColor.getRed(), backgroundColor.getGreen(), backgroundColor.getBlue(), backgroundColor.getAlpha() );
 		gl.glClearDepth( 1.0 );
 		gl.glClear( GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT );
 
-		final List<Color> gradient = background.getGradient();
+		final List<Color4f> gradient = background.getGradient();
 		if ( !gradient.isEmpty() )
 		{
+			final Color4f color0 = gradient.get( 0 % gradient.size() );
+			final Color4f color1 = gradient.get( 1 % gradient.size() );
+			final Color4f color2 = gradient.get( 2 % gradient.size() );
+			final Color4f color3 = gradient.get( 3 % gradient.size() );
+
 			state.setEnabled( GL.GL_CULL_FACE, false );
 			state.setEnabled( GL.GL_DEPTH_TEST, false );
 
@@ -821,13 +820,13 @@ public class JOGLRenderer
 			gl.glLoadIdentity();
 
 			gl.glBegin( GL.GL_QUADS );
-			state.setColor( gradient.get( 0 % gradient.size() ) );
+			state.setColor( color0.getRed(), color0.getGreen(), color0.getBlue(), color0.getAlpha() );
 			gl.glVertex2d( -1.0, -1.0 );
-			state.setColor( gradient.get( 1 % gradient.size() ) );
+			state.setColor( color1.getRed(), color1.getGreen(), color1.getBlue(), color1.getAlpha() );
 			gl.glVertex2d( 1.0, -1.0 );
-			state.setColor( gradient.get( 2 % gradient.size() ) );
+			state.setColor( color2.getRed(), color2.getGreen(), color2.getBlue(), color2.getAlpha() );
 			gl.glVertex2d( 1.0, 1.0 );
-			state.setColor( gradient.get( 3 % gradient.size() ) );
+			state.setColor( color3.getRed(), color3.getGreen(), color3.getBlue(), color3.getAlpha() );
 			gl.glVertex2d( -1.0, 1.0 );
 			gl.glEnd();
 
@@ -1024,7 +1023,6 @@ public class JOGLRenderer
 			final Node3DTreeWalker treeWalker = new LevelOfDetailTreeWalker();
 			treeWalker.walkNode( new Node3DVisitor()
 			{
-				@Override
 				public boolean visitNode( @NotNull final Node3DPath path )
 				{
 					final Node3D node = path.getNode();
@@ -1533,18 +1531,18 @@ public class JOGLRenderer
 
 		final GL gl = _gl;
 
-		final Color   color           = objectStyle.getFillColor();
-		final int     alpha           = color.getAlpha();
-		final boolean blend           = ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && ( alpha < 255 );
-		final boolean hasLighting     = objectStyle.isFillLightingEnabled();
+		final Color4f color = objectStyle.getFillColor();
+		final float alpha = color.getAlpha();
+		final boolean blend = ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && ( alpha < 1.0f );
+		final boolean hasLighting = objectStyle.isFillLightingEnabled();
 
 		if ( !hasLighting && !_renderUnlit )
 		{
 			gl.glColorMask( false, false, false, false );
 		}
 
-		if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || ( alpha == 255 ) ) &&
-		     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || ( alpha <  255 ) ) )
+		if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || ( alpha >= 1.0f ) ) &&
+		     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || ( alpha < 1.0f ) ) )
 		{
 			/*
 			 * Set render/material properties.
@@ -1552,7 +1550,7 @@ public class JOGLRenderer
 			final GLStateHelper state = _state;
 			if ( blend )
 			{
-				if ( alpha < 64 )
+				if ( alpha < 0.25 )
 				{
 					gl.glDepthMask( false );
 				}
@@ -1588,7 +1586,7 @@ public class JOGLRenderer
 
 			if ( blend )
 			{
-				if ( alpha < 64 )
+				if ( alpha < 0.25 )
 				{
 					gl.glDepthMask( true );
 				}
@@ -1612,7 +1610,7 @@ public class JOGLRenderer
 	{
 		final GL gl = _gl;
 
-		final Color color = objectStyle.getStrokeColor();
+		final Color4f color = objectStyle.getStrokeColor();
 		final float width = objectStyle.getStrokeWidth();
 		final boolean hasLighting = objectStyle.isStrokeLightingEnabled();
 
@@ -1772,11 +1770,10 @@ public class JOGLRenderer
 		state.setEnabled( GL.GL_LINE_SMOOTH, true );
 		state.setEnabled( GL.GL_LIGHTING, false );
 
-		final Rectangle gridBounds = grid.getBounds();
-		final int minCellX = gridBounds.x;
-		final int maxCellX = minCellX + gridBounds.width;
-		final int minCellY = gridBounds.y;
-		final int maxCellY = minCellY + gridBounds.height;
+		final int minCellX = grid.getMinimumX();
+		final int maxCellX = grid.getMaximumX();
+		final int minCellY = grid.getMinimumY();
+		final int maxCellY = grid.getMaximumY();
 
 		final int cellSize = grid.getCellSize();
 		final int minX = minCellX * cellSize;
@@ -2064,19 +2061,29 @@ public class JOGLRenderer
 							{
 								final Projector projector = _view.getProjector();
 								final Matrix3D scene2View = _view.getScene2View();
-								final Matrix3D object2View = path.getTransform().multiply( scene2View );
+								final Matrix3D object2scene = path.getTransform();
+								final Matrix3D object2View = object2scene.multiply( scene2View );
 
-								_projectedBounds.clear();
-								projector.project( _projectedBounds.add(), object2View.transform( boundingBox.v1.x, boundingBox.v1.y, boundingBox.v1.z ) );
-								projector.project( _projectedBounds.add(), object2View.transform( boundingBox.v2.x, boundingBox.v1.y, boundingBox.v1.z ) );
-								projector.project( _projectedBounds.add(), object2View.transform( boundingBox.v1.x, boundingBox.v2.y, boundingBox.v1.z ) );
-								projector.project( _projectedBounds.add(), object2View.transform( boundingBox.v2.x, boundingBox.v2.y, boundingBox.v1.z ) );
-								projector.project( _projectedBounds.add(), object2View.transform( boundingBox.v1.x, boundingBox.v1.y, boundingBox.v2.z ) );
-								projector.project( _projectedBounds.add(), object2View.transform( boundingBox.v2.x, boundingBox.v1.y, boundingBox.v2.z ) );
-								projector.project( _projectedBounds.add(), object2View.transform( boundingBox.v1.x, boundingBox.v2.y, boundingBox.v2.z ) );
-								projector.project( _projectedBounds.add(), object2View.transform( boundingBox.v2.x, boundingBox.v2.y, boundingBox.v2.z ) );
-								final double area = _projectedBounds.area();
+								final double[] points =
+								{
+									boundingBox.v1.x, boundingBox.v1.y, boundingBox.v1.z,
+									boundingBox.v2.x, boundingBox.v1.y, boundingBox.v1.z,
+									boundingBox.v1.x, boundingBox.v2.y, boundingBox.v1.z,
+									boundingBox.v2.x, boundingBox.v2.y, boundingBox.v1.z,
+									boundingBox.v1.x, boundingBox.v1.y, boundingBox.v2.z,
+									boundingBox.v2.x, boundingBox.v1.y, boundingBox.v2.z,
+									boundingBox.v1.x, boundingBox.v2.y, boundingBox.v2.z,
+									boundingBox.v2.x, boundingBox.v2.y, boundingBox.v2.z
+								};
 
+								object2View.transform( points, points, 8 );
+								projector.project( points, points, 8 );
+
+								final Convex2D projectedBounds = _projectedBounds;
+								projectedBounds.clear();
+								projectedBounds.add( points, 0, 8 );
+
+								final double area = projectedBounds.area();
 								renderedChild = object.getLevelOfDetail( area );
 							}
 						}

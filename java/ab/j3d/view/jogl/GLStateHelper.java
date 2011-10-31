@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,9 +20,9 @@
  */
 package ab.j3d.view.jogl;
 
-import java.awt.*;
 import javax.media.opengl.*;
 
+import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.view.*;
 
@@ -55,15 +55,9 @@ public class GLStateHelper
 	 *
 	 * @param   color   Color to set.
 	 */
-	public final void setColor( final Color color )
+	public final void setColor( final Color4f color )
 	{
-		final float[] rgba  = color.getRGBComponents( null );
-		final float   red   = rgba[ 0 ];
-		final float   green = rgba[ 1 ];
-		final float   blue  = rgba[ 2 ];
-		final float   alpha = rgba[ 3 ];
-
-		setColor( red , green , blue , alpha );
+		setColor( color.getRed() , color.getGreen(), color.getBlue() , color.getAlpha() );
 	}
 
 	/**
@@ -88,15 +82,9 @@ public class GLStateHelper
 	 * @param   specularReflectivity    Specular reflectivity (always white).
 	 * @param   shininess               Shininess (128=dull, 16=very shiny)
 	 */
-	public final void setColor( final Color color, final float ambientFactor, final float diffuseFactor, final float specularReflectivity, final float shininess )
+	public final void setColor( final Color4f color, final float ambientFactor, final float diffuseFactor, final float specularReflectivity, final float shininess )
 	{
-		final float[] rgba  = color.getRGBComponents( null );
-		final float   red   = rgba[ 0 ];
-		final float   green = rgba[ 1 ];
-		final float   blue  = rgba[ 2 ];
-		final float   alpha = rgba[ 3 ];
-
-		setColor( red, green, blue, alpha, ambientFactor, diffuseFactor, specularReflectivity, shininess );
+		setColor( color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha(), ambientFactor, diffuseFactor, specularReflectivity, shininess );
 	}
 
 	/**
@@ -139,14 +127,13 @@ public class GLStateHelper
 
 		if ( style.isFillEnabled() )
 		{
-			final Color materialDiffuse = new Color( appearance.getDiffuseColorRed(), appearance.getDiffuseColorGreen(), appearance.getDiffuseColorBlue(), extraAlpha * appearance.getDiffuseColorAlpha() );
-			final Color diffuse = RenderStyle.blendColors( style.getFillColor(), materialDiffuse );
-			final float[] diffuseComponents = diffuse.getRGBComponents( null );
+			final Color4f materialDiffuse = new Color4f( appearance.getDiffuseColorRed(), appearance.getDiffuseColorGreen(), appearance.getDiffuseColorBlue(), extraAlpha * appearance.getDiffuseColorAlpha() );
+			final Color4f diffuse = RenderStyle.blendColors( style.getFillColor(), materialDiffuse );
 
-			red   = diffuseComponents[ 0 ];
-			green = diffuseComponents[ 1 ];
-			blue  = diffuseComponents[ 2 ];
-			alpha = diffuseComponents[ 3 ];
+			red   = diffuse.getRed();
+			green = diffuse.getGreen();
+			blue  = diffuse.getBlue();
+			alpha = diffuse.getAlpha();
 		}
 		else
 		{
