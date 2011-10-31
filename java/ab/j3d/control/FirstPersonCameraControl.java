@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -14,18 +15,16 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
 package ab.j3d.control;
 
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.util.EventObject;
-import java.util.Properties;
+import java.awt.event.*;
+import java.util.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.view.View3D;
+import ab.j3d.*;
+import ab.j3d.view.*;
 
 /**
  * This class implements a camera control based on a first person view. The
@@ -95,14 +94,14 @@ public class FirstPersonCameraControl
 	 * <p />
 	 * This is used as temporary state variable for dragging operations.
 	 */
-	private Vector3D _dragStartFrom = Vector3D.INIT;
+	private Vector3D _dragStartFrom = Vector3D.ZERO;
 
 	/**
 	 * Point to which was being looked when dragging started.
 	 * <p />
 	 * This is used as temporary state variable for dragging operations.
 	 */
-	private Vector3D _dragStartTo = Vector3D.INIT;
+	private Vector3D _dragStartTo = Vector3D.ZERO;
 
 	/**
 	 * Construct default first person view. This creates a view from (1,0,0) to
@@ -112,7 +111,7 @@ public class FirstPersonCameraControl
 	 */
 	public FirstPersonCameraControl( final View3D view )
 	{
-		this( view , 1.0 );
+		this( view, 1.0 );
 	}
 
 	/**
@@ -124,9 +123,9 @@ public class FirstPersonCameraControl
 	 *
 	 * @throws  IllegalArgumentException if the distance is (almost) 0.
 	 */
-	public FirstPersonCameraControl( final View3D view , final double distance )
+	public FirstPersonCameraControl( final View3D view, final double distance )
 	{
-		this( view , Vector3D.INIT.set( 0.0 , -distance , 0.0 ) , Vector3D.INIT );
+		this( view, new Vector3D( 0.0, -distance, 0.0 ), Vector3D.ZERO );
 	}
 
 	/**
@@ -141,9 +140,9 @@ public class FirstPersonCameraControl
 	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
 	 * @throws  IllegalArgumentException if the from and two points are too close.
 	 */
-	public FirstPersonCameraControl( final View3D view , final Vector3D from , final Vector3D to )
+	public FirstPersonCameraControl( final View3D view, final Vector3D from, final Vector3D to )
 	{
-		this( view , from , to , Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) , Vector3D.INIT.set( 0.0 , 1.0 , 0.0 ) );
+		this( view, from, to, Vector3D.POSITIVE_Z_AXIS, Vector3D.POSITIVE_Y_AXIS );
 	}
 
 	/**
@@ -161,7 +160,7 @@ public class FirstPersonCameraControl
 	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
 	 * @throws  IllegalArgumentException if the from and two points are too close.
 	 */
-	public FirstPersonCameraControl( final View3D view , final Vector3D from , final Vector3D to , final Vector3D upPrimary , final Vector3D upSecondary )
+	public FirstPersonCameraControl( final View3D view, final Vector3D from, final Vector3D to, final Vector3D upPrimary, final Vector3D upSecondary )
 	{
 		super( view );
 
@@ -173,7 +172,7 @@ public class FirstPersonCameraControl
 		_savedFrom   = from;
 		_savedTo     = to;
 
-		setScene2View( Matrix3D.getFromToTransform( from , to , upPrimary , upSecondary ) );
+		setScene2View( Matrix3D.getFromToTransform( from, to, upPrimary, upSecondary ) );
 	}
 
 	/**
@@ -185,7 +184,7 @@ public class FirstPersonCameraControl
 	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
 	 * @throws  IllegalArgumentException if the from and two points are too close.
 	 */
-	public void look( final Vector3D from , final Vector3D to )
+	public void look( final Vector3D from, final Vector3D to )
 	{
 		setFrom( from );
 		setTo( to );
@@ -207,7 +206,7 @@ public class FirstPersonCameraControl
 		if ( !from.equals( _from ) )
 		{
 			_from = from;
-			setScene2View( Matrix3D.getFromToTransform( from , _to , _upPrimary , _upSecondary ) );
+			setScene2View( Matrix3D.getFromToTransform( from, _to, _upPrimary, _upSecondary ) );
 		}
 	}
 
@@ -224,7 +223,7 @@ public class FirstPersonCameraControl
 		if ( !to.equals( _to ) )
 		{
 			_to = to;
-			setScene2View( Matrix3D.getFromToTransform( _from , to , _upPrimary , _upSecondary ) );
+			setScene2View( Matrix3D.getFromToTransform( _from, to, _upPrimary, _upSecondary ) );
 		}
 	}
 
@@ -267,7 +266,7 @@ public class FirstPersonCameraControl
 
 	public void restore()
 	{
-		look( _savedFrom , _savedTo );
+		look( _savedFrom, _savedTo );
 	}
 
 	public void saveSettings( final Properties settings )
@@ -275,12 +274,12 @@ public class FirstPersonCameraControl
 		if ( settings == null )
 			throw new NullPointerException( "settings" );
 
-		settings.setProperty( "from"        , _from       .toString() );
-		settings.setProperty( "to"          , _to         .toString() );
-		settings.setProperty( "upPrimary"   , _upPrimary  .toString() );
-		settings.setProperty( "upSecondary" , _upSecondary.toString() );
-		settings.setProperty( "savedFrom"   , _savedFrom  .toString() );
-		settings.setProperty( "savedTo"     , _savedTo    .toString() );
+		settings.setProperty( "from"       , _from       .toString() );
+		settings.setProperty( "to"         , _to         .toString() );
+		settings.setProperty( "upPrimary"  , _upPrimary  .toString() );
+		settings.setProperty( "upSecondary", _upSecondary.toString() );
+		settings.setProperty( "savedFrom"  , _savedFrom  .toString() );
+		settings.setProperty( "savedTo"    , _savedTo    .toString() );
 	}
 
 	public void loadSettings( final Properties settings )
@@ -295,12 +294,12 @@ public class FirstPersonCameraControl
 			final Vector3D savedTo     = Vector3D.fromString( settings.getProperty( "savedTo"     ) );
 
 			/* verify settings */
-			Matrix3D.getFromToTransform( from , to , upPrimary , upSecondary );
+			Matrix3D.getFromToTransform( from, to, upPrimary, upSecondary );
 
 			/* activate settings */
 			setUpPrimary( upPrimary );
 			setUpSecondary( upSecondary );
-			look( from , to );
+			look( from, to );
 			_savedFrom = savedFrom;
 			_savedTo   = savedTo;
 		}
@@ -372,32 +371,32 @@ public class FirstPersonCameraControl
 			switch ( keyCode )
 			{
 				case KeyEvent.VK_LEFT :
-					moveSteps( from , to , getScene2View() , -1.0 ,  0.0 ,  0.0 );
+					moveSteps( from, to, getScene2View(), -1.0,  0.0,  0.0 );
 					result = null;
 					break;
 
 				case KeyEvent.VK_RIGHT :
-					moveSteps( from , to , getScene2View() ,  1.0 ,  0.0 ,  0.0 );
+					moveSteps( from, to, getScene2View(),  1.0,  0.0,  0.0 );
 					result = null;
 					break;
 
 				case KeyEvent.VK_UP :
-					moveSteps( from , to , getScene2View() ,  0.0 ,  1.0 ,  0.0 );
+					moveSteps( from, to, getScene2View(),  0.0,  1.0,  0.0 );
 					result = null;
 					break;
 
 				case KeyEvent.VK_DOWN :
-					moveSteps( from , to , getScene2View() ,  0.0 , -1.0 ,  0.0 );
+					moveSteps( from, to, getScene2View(),  0.0, -1.0,  0.0 );
 					result = null;
 					break;
 
 				case KeyEvent.VK_PAGE_DOWN :
-					moveSteps( from , to , getScene2View() ,  0.0 ,  0.0 , -0.5 );
+					moveSteps( from, to, getScene2View(),  0.0,  0.0, -0.5 );
 					result = null;
 					break;
 
 				case KeyEvent.VK_PAGE_UP :
-					moveSteps( from , to , getScene2View() ,  0.0 ,  0.0 ,  0.5 );
+					moveSteps( from, to, getScene2View(),  0.0,  0.0,  0.5 );
 					result = null;
 					break;
 			}
@@ -448,12 +447,12 @@ public class FirstPersonCameraControl
 	 * @param   ySteps      Steps in Y-direction.
 	 * @param   zSteps      Steps in Z-direction.
 	 */
-	private void moveSteps( final Vector3D from , final Vector3D to , final Matrix3D transform , final double xSteps , final double ySteps , final double zSteps )
+	private void moveSteps( final Vector3D from, final Vector3D to, final Matrix3D transform, final double xSteps, final double ySteps, final double zSteps )
 	{
 		final Vector3D upPrimary = _upPrimary;
-		final Vector3D zAxis     = Vector3D.INIT.set( transform.zx , transform.zy , transform.zz );
-		final Vector3D xAxis     = Vector3D.cross( upPrimary , zAxis );
-		final Vector3D yAxis     = Vector3D.cross( upPrimary , xAxis );
+		final Vector3D zAxis     = new Vector3D( transform.zx, transform.zy, transform.zz );
+		final Vector3D xAxis     = Vector3D.cross( upPrimary, zAxis );
+		final Vector3D yAxis     = Vector3D.cross( upPrimary, xAxis );
 
 		final double stepSize = getStepSize();
 
@@ -482,7 +481,7 @@ public class FirstPersonCameraControl
 		final double   deltaX    = -toRadians * (double)event.getDragDeltaX();
 		final double   deltaY    = -(double)event.getDragDeltaY();
 
-		final Matrix3D rotation  = Matrix3D.getRotationTransform( from , upPrimary , deltaX );
+		final Matrix3D rotation  = Matrix3D.getRotationTransform( from, upPrimary, deltaX );
 		final Vector3D elevation = upPrimary.multiply( distance * deltaY / 100.0 );
 
 		Vector3D newto = to;
@@ -508,7 +507,7 @@ public class FirstPersonCameraControl
 		final double   deltaX    = -toRadians * (double)event.getDragDeltaX();
 		final double   deltaY    = (double)event.getDragDeltaY();
 
-		final Matrix3D rotation  = Matrix3D.getRotationTransform( to , upPrimary , deltaX );
+		final Matrix3D rotation  = Matrix3D.getRotationTransform( to, upPrimary, deltaX );
 		final Vector3D elevation = upPrimary.multiply( distance * deltaY / 100.0 );
 
 		Vector3D newFrom = from;
@@ -529,7 +528,7 @@ public class FirstPersonCameraControl
 
 		final double deltaY = (double)event.getDragDeltaY();
 
-		final double zoom = Math.max( 0.1 , 1.0 + deltaY / 100.0 );
+		final double zoom = Math.max( 0.1, 1.0 + deltaY / 100.0 );
 
 		Vector3D newFrom = from;
 		newFrom = newFrom.multiply( zoom );
@@ -546,11 +545,11 @@ public class FirstPersonCameraControl
 	{
 		final Matrix3D transform = getScene2View();
 		final Vector3D upPrimary = _upPrimary;
-		final Vector3D zAxis     = Vector3D.INIT.set( transform.zx , transform.zy , transform.zz );
-		final Vector3D xAxis     = Vector3D.cross( upPrimary , zAxis );
-		final Vector3D yAxis     = Vector3D.cross( upPrimary , xAxis );
+		final Vector3D zAxis     = new Vector3D( transform.zx, transform.zy, transform.zz );
+		final Vector3D xAxis     = Vector3D.cross( upPrimary, zAxis );
+		final Vector3D yAxis     = Vector3D.cross( upPrimary, xAxis );
 
-		final Vector3D xMovement = Vector3D.INIT.plus( xAxis.multiply( (double)event.getDragDeltaX() * 50.0 ) );
+		final Vector3D xMovement = xAxis.multiply( (double) event.getDragDeltaX() * 50.0 );
 		final Vector3D movement  = xMovement.plus( yAxis.multiply( (double)event.getDragDeltaY() * -100.0 ) );
 
 		setFrom( _dragStartFrom.plus( movement ) );

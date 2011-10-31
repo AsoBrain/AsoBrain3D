@@ -19,8 +19,7 @@
  */
 package ab.j3d.geom;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
+import ab.j3d.*;
 
 /**
  * Basic implementation of {@link Plane3D}. This implementation has several
@@ -71,7 +70,7 @@ public class BasicPlane3D
 	 */
 	public BasicPlane3D( final double normalX , final double normalY , final double normalZ , final double distance , final boolean twoSided )
 	{
-		this( Vector3D.INIT.set( normalX , normalY , normalZ ) , distance , twoSided );
+		this( new Vector3D( normalX , normalY , normalZ ) , distance , twoSided );
 	}
 
 	/**
@@ -113,12 +112,14 @@ public class BasicPlane3D
 	public BasicPlane3D( final Matrix3D transform , final Vector3D normal , final double distance , final boolean twoSided )
 	{
 		if ( normal == null )
+		{
 			throw new NullPointerException( "normal" );
+		}
 
 		final Vector3D transformedNormal;
 		final double   transformedDistance;
 
-		if ( ( transform != null ) && ( transform != Matrix3D.INIT ) )
+		if ( ( transform != null ) && ( transform != Matrix3D.IDENTITY ) )
 		{
 			final double refX = normal.x * distance;
 			final double refY = normal.y * distance;
@@ -171,7 +172,9 @@ public class BasicPlane3D
 	public BasicPlane3D( final Vector3D normal , final double distance , final boolean twoSided )
 	{
 		if ( normal == null )
+		{
 			throw new NullPointerException( "normal" );
+		}
 
 		_normal   = normal;
 		_distance = distance;

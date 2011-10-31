@@ -117,7 +117,7 @@ public class PanZoomAndRotateCameraControl
 		System.out.println( "  deltaY = DEG " + Math.toDegrees( deltaY ) );
 
 
-		final Matrix3D orientation     = Matrix3D.getRotationTransform( Vector3D.INIT.plus( 0.0, 0.0, eyeDistance ), Vector3D.POSITIVE_Y_AXIS, deltaX );
+		final Matrix3D orientation     = Matrix3D.getRotationTransform( new Vector3D( 0.0, 0.0, eyeDistance ), Vector3D.POSITIVE_Y_AXIS, deltaX );
 		System.out.println( "orientation = " + orientation );
 
 		final Matrix3D view2scene = orientation.multiply( scene2view.inverse() );

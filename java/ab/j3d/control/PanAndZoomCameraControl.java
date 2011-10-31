@@ -31,7 +31,7 @@ import org.jetbrains.annotations.*;
  * This class implements a camera control that allows only camera panning and
  * zooming.
  * <p />
- * Panning is achieved by modifying the translational compnents of the view
+ * Panning is achieved by modifying the translational components of the view
  * matrix ({@link View3D#setScene2View}, while the zoom effect is
  * achieved by manipulating the view's zoom factor ({@link View3D#setZoomFactor}.
  *
@@ -52,7 +52,7 @@ public class PanAndZoomCameraControl
 	/**
 	 * View transform at start of drag operation.
 	 */
-	protected Matrix3D _dragStartScene2View = Matrix3D.INIT;
+	protected Matrix3D _dragStartScene2View = Matrix3D.IDENTITY;
 
 	/**
 	 * Projector used when dragging started.

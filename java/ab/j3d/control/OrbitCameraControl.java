@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -14,18 +15,16 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
 package ab.j3d.control;
 
-import java.util.EventObject;
-import java.util.NoSuchElementException;
-import java.util.Properties;
+import java.util.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.view.View3D;
-
-import com.numdata.oss.PropertyTools;
+import ab.j3d.*;
+import ab.j3d.view.*;
+import com.numdata.oss.*;
 
 /**
  * This class implements a camera control based on a 'from' and 'to' point. The
@@ -83,7 +82,7 @@ public class OrbitCameraControl
 	 */
 	public OrbitCameraControl( final View3D view )
 	{
-		this( view , 1.0 );
+		this( view, 1.0 );
 	}
 
 	/**
@@ -93,9 +92,9 @@ public class OrbitCameraControl
 	 * @param   view        View to be controlled.
 	 * @param   distance    Distance from origin.
 	 */
-	public OrbitCameraControl( final View3D view , final double distance )
+	public OrbitCameraControl( final View3D view, final double distance )
 	{
-		this( view , 0.0 , 0.0 , 0.0 , 0.0 , -distance , 0.0 );
+		this( view, 0.0, 0.0, 0.0, 0.0, -distance, 0.0 );
 	}
 
 	/**
@@ -109,9 +108,9 @@ public class OrbitCameraControl
 	 * @param   y           Initial translation along Y axis.
 	 * @param   z           Initial translation along Z axis.
 	 */
-	public OrbitCameraControl( final View3D view , final double rx , final double ry , final double rz , final double x , final double y , final double z )
+	public OrbitCameraControl( final View3D view, final double rx, final double ry, final double rz, final double x, final double y, final double z )
 	{
-		this( view , 0.0 , 0.0 , 0.0 , rx , ry , rz , x , y , z );
+		this( view, 0.0, 0.0, 0.0, rx, ry, rz, x, y, z );
 	}
 
 	/**
@@ -129,7 +128,7 @@ public class OrbitCameraControl
 	 * @param   y       Initial translation along Y axis.
 	 * @param   z       Initial translation along Z axis.
 	 */
-	public OrbitCameraControl( final View3D view , final double ox , final double oy , final double oz , final double rx , final double ry , final double rz , final double x , final double y , final double z )
+	public OrbitCameraControl( final View3D view, final double ox, final double oy, final double oz, final double rx, final double ry, final double rz, final double x, final double y, final double z )
 	{
 		super( view );
 
@@ -143,15 +142,15 @@ public class OrbitCameraControl
 		_dragStartTranslationY = 0.0;
 		_dragStartTranslationZ = 0.0;
 
-		_savedSettings = new double[] { _originX = ox , _originY = oy , _originZ = oz , _rotationX = rx , _rotationY = ry , _rotationZ = rz , _translationX = x , _translationY = y , _translationZ = z };
+		_savedSettings = new double[] { _originX = ox, _originY = oy, _originZ = oz, _rotationX = rx, _rotationY = ry, _rotationZ = rz, _translationX = x, _translationY = y, _translationZ = z };
 		updateTransform();
 	}
 
 	private void updateTransform()
 	{
-		final Matrix3D originTransform = Matrix3D.INIT.setTranslation( _originX , _originY , _originZ );
+		final Matrix3D originTransform = Matrix3D.getTranslation( _originX, _originY, _originZ );
 
-		setScene2View( originTransform.multiply( Matrix3D.getTransform( _rotationX , _rotationY , _rotationZ , _translationX , _translationY , _translationZ ) ) );
+		setScene2View( originTransform.multiply( Matrix3D.getTransform( _rotationX, _rotationY, _rotationZ, _translationX, _translationY, _translationZ ) ) );
 	}
 
 	public void save()
@@ -189,30 +188,30 @@ public class OrbitCameraControl
 		if ( settings == null )
 			throw new NullPointerException( "settings" );
 
-		settings.setProperty( "ox" , String.valueOf( _originX      ) );
-		settings.setProperty( "oy" , String.valueOf( _originY      ) );
-		settings.setProperty( "oz" , String.valueOf( _originZ      ) );
-		settings.setProperty( "rx" , String.valueOf( _rotationX    ) );
-		settings.setProperty( "ry" , String.valueOf( _rotationY    ) );
-		settings.setProperty( "rz" , String.valueOf( _rotationZ    ) );
-		settings.setProperty( "x"  , String.valueOf( _translationX ) );
-		settings.setProperty( "y"  , String.valueOf( _translationY ) );
-		settings.setProperty( "z"  , String.valueOf( _translationZ ) );
+		settings.setProperty( "ox", String.valueOf( _originX      ) );
+		settings.setProperty( "oy", String.valueOf( _originY      ) );
+		settings.setProperty( "oz", String.valueOf( _originZ      ) );
+		settings.setProperty( "rx", String.valueOf( _rotationX    ) );
+		settings.setProperty( "ry", String.valueOf( _rotationY    ) );
+		settings.setProperty( "rz", String.valueOf( _rotationZ    ) );
+		settings.setProperty( "x" , String.valueOf( _translationX ) );
+		settings.setProperty( "y" , String.valueOf( _translationY ) );
+		settings.setProperty( "z" , String.valueOf( _translationZ ) );
 	}
 
 	public void loadSettings( final Properties settings )
 	{
 		try
 		{
-			final double ox = PropertyTools.getDouble( settings , "ox" );
-			final double oy = PropertyTools.getDouble( settings , "oy" );
-			final double oz = PropertyTools.getDouble( settings , "oz" );
-			final double rx = PropertyTools.getDouble( settings , "rx" );
-			final double ry = PropertyTools.getDouble( settings , "ry" );
-			final double rz = PropertyTools.getDouble( settings , "rz" );
-			final double x  = PropertyTools.getDouble( settings , "x"  );
-			final double y  = PropertyTools.getDouble( settings , "y"  );
-			final double z  = PropertyTools.getDouble( settings , "z"  );
+			final double ox = PropertyTools.getDouble( settings, "ox" );
+			final double oy = PropertyTools.getDouble( settings, "oy" );
+			final double oz = PropertyTools.getDouble( settings, "oz" );
+			final double rx = PropertyTools.getDouble( settings, "rx" );
+			final double ry = PropertyTools.getDouble( settings, "ry" );
+			final double rz = PropertyTools.getDouble( settings, "rz" );
+			final double x  = PropertyTools.getDouble( settings, "x"  );
+			final double y  = PropertyTools.getDouble( settings, "y"  );
+			final double z  = PropertyTools.getDouble( settings, "z"  );
 
 			final double[] saved = _savedSettings;
 			saved[ 0 ] = ox;
