@@ -20,9 +20,9 @@
  */
 package ab.j3d.a3ds;
 
-import java.io.IOException;
+import java.io.*;
 
-import ab.j3d.Vector3D;
+import ab.j3d.*;
 
 /**
  * This chunk specifies a list of vertices for a mesh.
@@ -30,7 +30,7 @@ import ab.j3d.Vector3D;
  * @author  Sjoerd Bouwman
  * @version $Revision$ $Date$
  */
-public final class VertexList
+public class VertexList
 	extends DataChunk
 {
 	private Vector3D[] _vertices;
@@ -108,7 +108,7 @@ public final class VertexList
 			final float x = is.readFloat();
 			final float y = is.readFloat();
 			final float z = is.readFloat();
-			_vertices[i] = Vector3D.INIT.set( x , y , z );
+			_vertices[i] = new Vector3D( x , y , z );
 		}
 	}
 

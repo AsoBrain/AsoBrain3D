@@ -870,7 +870,7 @@ public class GeometryTools
 				final double y = rayOrigin.y + intersectionDistance * rayDirection.y;
 				final double z = rayOrigin.z + intersectionDistance * rayDirection.z;
 
-				result = Vector3D.INIT.set( x, y, z );
+				result = new Vector3D( x, y, z );
 			}
 		}
 
