@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -62,7 +63,7 @@ public class PlanarGraphics2D
 	 * @param   plane2view  Transformation matrix that transforms planar coordinates to view coordinates.
 	 * @param   projector   Projector that projects view coordinates to image coordinates.
 	 */
-	public PlanarGraphics2D( final Graphics2D g2d , final Matrix3D plane2view , final Projector projector )
+	public PlanarGraphics2D( final Graphics2D g2d, final Matrix3D plane2view, final Projector projector )
 	{
 		_g2d        = g2d;
 		_plane2view = plane2view;
@@ -87,11 +88,11 @@ public class PlanarGraphics2D
 	 *
 	 * @return  Image coordinates.
 	 */
-	private Point plane2image( final double x , final double y )
+	private double[] plane2image( final double x, final double y )
 	{
-		final Point result = new Point();
+		final double[] result = new double[ 2 ];
 		final Matrix3D plane2view = _plane2view;
-		_projector.project( result , plane2view.transformX( x , y , 0.0 ) , plane2view.transformY( x , y , 0.0 ) , plane2view.transformZ( x , y , 0.0 ) );
+		_projector.project( result, 0, plane2view.transformX( x, y, 0.0 ), plane2view.transformY( x, y, 0.0 ), plane2view.transformZ( x, y, 0.0 ) );
 		return result;
 	}
 
@@ -110,16 +111,16 @@ public class PlanarGraphics2D
 		{
 			final Line2D line = (Line2D)shape;
 
-			final Point2D p1 = plane2image( line.getX1() , line.getY1() );
-			final Point2D p2 = plane2image( line.getX2() , line.getY2() );
+			final double[] p1 = plane2image( line.getX1(), line.getY1() );
+			final double[] p2 = plane2image( line.getX2(), line.getY2() );
 
-			result = new Line2D.Double( p1.getX() , p1.getY() , p2.getX() , p2.getY() );
+			result = new Line2D.Double( p1[ 0 ], p1[ 1 ], p2[ 0 ], p2[ 1 ] );
 		}
 		else
 		{
 			final PathIterator pathIterator = shape.getPathIterator( getTransform() );
 
-			final GeneralPath imageShape = new GeneralPath( pathIterator.getWindingRule() , 10 );
+			final GeneralPath imageShape = new GeneralPath( pathIterator.getWindingRule(), 10 );
 
 			final double[] coordinates = new double[ 6 ];
 
@@ -129,32 +130,32 @@ public class PlanarGraphics2D
 				{
 					case PathIterator.SEG_MOVETO :
 						{
-							final Point2D p = plane2image( coordinates[ 0 ], coordinates[ 1 ] );
-							imageShape.moveTo( p.getX() , p.getY() );
+							final double[] p = plane2image( coordinates[ 0 ], coordinates[ 1 ] );
+							imageShape.moveTo( p[ 0 ], p[ 1 ] );
 						}
 						break;
 
 					case PathIterator.SEG_LINETO :
 						{
-							final Point2D p = plane2image( coordinates[ 0 ], coordinates[ 1 ] );
-							imageShape.lineTo( p.getX() , p.getY() );
+							final double[] p = plane2image( coordinates[ 0 ], coordinates[ 1 ] );
+							imageShape.lineTo( p[ 0 ], p[ 1 ] );
 						}
 						break;
 
 					case PathIterator.SEG_QUADTO :
 						{
-							final Point2D p1 = plane2image( coordinates[ 0 ], coordinates[ 1 ] );
-							final Point2D p2 = plane2image( coordinates[ 2 ], coordinates[ 3 ] );
-							imageShape.quadTo( p1.getX() , p1.getY() , p2.getX() , p2.getY() );
+							final double[] p1 = plane2image( coordinates[ 0 ], coordinates[ 1 ] );
+							final double[] p2 = plane2image( coordinates[ 2 ], coordinates[ 3 ] );
+							imageShape.quadTo( p1[ 0 ], p1[ 1 ], p2[ 0 ], p2[ 1 ] );
 						}
 						break;
 
 					case PathIterator.SEG_CUBICTO :
 						{
-							final Point2D p1 = plane2image( coordinates[ 0 ], coordinates[ 1 ] );
-							final Point2D p2 = plane2image( coordinates[ 2 ], coordinates[ 3 ] );
-							final Point2D p3 = plane2image( coordinates[ 4 ], coordinates[ 5 ] );
-							imageShape.curveTo( p1.getX() , p1.getY() , p2.getX() , p2.getY() , p3.getX() , p3.getY() );
+							final double[] p1 = plane2image( coordinates[ 0 ], coordinates[ 1 ] );
+							final double[] p2 = plane2image( coordinates[ 2 ], coordinates[ 3 ] );
+							final double[] p3 = plane2image( coordinates[ 4 ], coordinates[ 5 ] );
+							imageShape.curveTo( p1[ 0 ], p1[ 1 ], p2[ 0 ], p2[ 1 ], p3[ 0 ], p3[ 1 ] );
 						}
 						break;
 
@@ -210,9 +211,9 @@ public class PlanarGraphics2D
 	}
 
 	@Override
-	public void setRenderingHint( final RenderingHints.Key hintKey , final Object hintValue )
+	public void setRenderingHint( final RenderingHints.Key hintKey, final Object hintValue )
 	{
-		_g2d.setRenderingHint( hintKey , hintValue );
+		_g2d.setRenderingHint( hintKey, hintValue );
 	}
 
 	@Override
@@ -246,26 +247,26 @@ public class PlanarGraphics2D
 	}
 
 	@Override
-	public void setClip( final int x , final int y , final int width , final int height )
+	public void setClip( final int x, final int y, final int width, final int height )
 	{
 		notImplemented();
 	}
 
 	@Override
-	public void clipRect( final int x , final int y , final int width , final int height )
+	public void clipRect( final int x, final int y, final int width, final int height )
 	{
 		notImplemented();
 	}
 
 	@Override
-	public boolean hit( final Rectangle rectangle , final Shape shape , final boolean onStroke )
+	public boolean hit( final Rectangle rectangle, final Shape shape, final boolean onStroke )
 	{
 		notImplemented();
 		return false;
 	}
 
 	@Override
-	public void copyArea( final int x , final int y , final int width , final int height , final int dx , final int dy )
+	public void copyArea( final int x, final int y, final int width, final int height, final int dx, final int dy )
 	{
 		notImplemented();
 	}
@@ -385,19 +386,19 @@ public class PlanarGraphics2D
 	}
 
 	@Override
-	public void rotate( final double theta , final double x , final double y )
+	public void rotate( final double theta, final double x, final double y )
 	{
 		notImplemented();
 	}
 
 	@Override
-	public void scale( final double sx , final double sy )
+	public void scale( final double sx, final double sy )
 	{
 		notImplemented();
 	}
 
 	@Override
-	public void shear( final double shx , final double shy )
+	public void shear( final double shx, final double shy )
 	{
 		notImplemented();
 	}
@@ -409,7 +410,7 @@ public class PlanarGraphics2D
 	}
 
 	@Override
-	public void translate( final double tx , final double ty )
+	public void translate( final double tx, final double ty )
 	{
 		notImplemented();
 	}
@@ -433,214 +434,214 @@ public class PlanarGraphics2D
 	}
 
 	@Override
-	public void drawArc( final int x , final int y , final int width , final int height , final int startAngle , final int arcAngle )
+	public void drawArc( final int x, final int y, final int width, final int height, final int startAngle, final int arcAngle )
 	{
-		draw( new Arc2D.Double( (double)x , (double)y , (double)width , (double)height , (double)startAngle , (double)arcAngle , Arc2D.OPEN ) );
+		draw( new Arc2D.Double( (double)x, (double)y, (double)width, (double)height, (double)startAngle, (double)arcAngle, Arc2D.OPEN ) );
 	}
 
 	@Override
-	public void fillArc( final int x , final int y , final int width , final int height , final int startAngle , final int arcAngle )
+	public void fillArc( final int x, final int y, final int width, final int height, final int startAngle, final int arcAngle )
 	{
-		fill( new Arc2D.Double( (double)x , (double)y , (double)width , (double)height , (double)startAngle , (double)arcAngle , Arc2D.OPEN ) );
+		fill( new Arc2D.Double( (double)x, (double)y, (double)width, (double)height, (double)startAngle, (double)arcAngle, Arc2D.OPEN ) );
 	}
 
 	@Override
-	public void drawGlyphVector( final GlyphVector g , final float x, final float y )
-	{
-		notImplemented();
-	}
-
-	@Override
-	public void drawImage( final BufferedImage img , final BufferedImageOp op , final int x , final int y )
+	public void drawGlyphVector( final GlyphVector g, final float x, final float y )
 	{
 		notImplemented();
 	}
 
 	@Override
-	public boolean drawImage( final Image img , final int dx1 , final int dy1 , final int dx2 , final int dy2 , final int sx1 , final int sy1 , final int sx2 , final int sy2 , final ImageObserver observer )
+	public void drawImage( final BufferedImage img, final BufferedImageOp op, final int x, final int y )
 	{
 		notImplemented();
-		return false;
 	}
 
 	@Override
-	public boolean drawImage( final Image img , final int dx1 , final int dy1 , final int dx2 , final int dy2 , final int sx1 , final int sy1 , final int sx2 , final int sy2 , final Color bgcolor , final ImageObserver observer )
+	public boolean drawImage( final Image img, final int dx1, final int dy1, final int dx2, final int dy2, final int sx1, final int sy1, final int sx2, final int sy2, final ImageObserver observer )
 	{
 		notImplemented();
 		return false;
 	}
 
 	@Override
-	public boolean drawImage( final Image img , final int x , final int y , final Color bgcolor , final ImageObserver observer )
+	public boolean drawImage( final Image img, final int dx1, final int dy1, final int dx2, final int dy2, final int sx1, final int sy1, final int sx2, final int sy2, final Color bgcolor, final ImageObserver observer )
 	{
 		notImplemented();
 		return false;
 	}
 
 	@Override
-	public boolean drawImage( final Image img , final int x , final int y , final ImageObserver observer )
+	public boolean drawImage( final Image img, final int x, final int y, final Color bgcolor, final ImageObserver observer )
 	{
 		notImplemented();
 		return false;
 	}
 
 	@Override
-	public boolean drawImage( final Image img , final int x , final int y , final int width , final int height , final Color bgcolor , final ImageObserver observer )
+	public boolean drawImage( final Image img, final int x, final int y, final ImageObserver observer )
 	{
 		notImplemented();
 		return false;
 	}
 
 	@Override
-	public boolean drawImage( final Image img , final int x , final int y , final int width , final int height , final ImageObserver observer )
+	public boolean drawImage( final Image img, final int x, final int y, final int width, final int height, final Color bgcolor, final ImageObserver observer )
 	{
 		notImplemented();
 		return false;
 	}
 
 	@Override
-	public boolean drawImage( final Image img , final AffineTransform xform , final ImageObserver obs )
+	public boolean drawImage( final Image img, final int x, final int y, final int width, final int height, final ImageObserver observer )
 	{
 		notImplemented();
 		return false;
 	}
 
 	@Override
-	public void drawLine( final int x1 , final int y1 , final int x2 , final int y2 )
+	public boolean drawImage( final Image img, final AffineTransform xform, final ImageObserver obs )
 	{
-		final Point2D p1 = plane2image( (double)x1 , (double)y1 );
-		final Point2D p2 = plane2image( (double)x2 , (double)y2 );
-
-		_g2d.drawLine( (int)p1.getX() , (int)p1.getY() , (int)p2.getX() , (int)p2.getY() );
+		notImplemented();
+		return false;
 	}
 
 	@Override
-	public void drawOval( final int x , final int y , final int width , final int height )
+	public void drawLine( final int x1, final int y1, final int x2, final int y2 )
 	{
-		draw( new Ellipse2D.Double( (double)x , (double)y , (double)width , (double)height ) );
+		final double[] p1 = plane2image( (double)x1, (double)y1 );
+		final double[] p2 = plane2image( (double)x2, (double)y2 );
+
+		_g2d.drawLine( (int)p1[ 0 ], (int)p1[ 1 ], (int)p2[ 0 ], (int)p2[ 1 ] );
 	}
 
 	@Override
-	public void fillOval( final int x , final int y , final int width , final int height )
+	public void drawOval( final int x, final int y, final int width, final int height )
 	{
-		fill( new Ellipse2D.Double( (double)x , (double)y , (double)width , (double)height ) );
+		draw( new Ellipse2D.Double( (double)x, (double)y, (double)width, (double)height ) );
 	}
 
 	@Override
-	public void drawPolygon( final int[] xPoints , final int[] yPoints , final int nPoints )
+	public void fillOval( final int x, final int y, final int width, final int height )
+	{
+		fill( new Ellipse2D.Double( (double)x, (double)y, (double)width, (double)height ) );
+	}
+
+	@Override
+	public void drawPolygon( final int[] xPoints, final int[] yPoints, final int nPoints )
 	{
 		final int[] imageX = new int[ nPoints ];
 		final int[] imageY = new int[ nPoints ];
 
 		for ( int i = 0 ; i < nPoints ; i++ )
 		{
-			final Point2D p = plane2image( (double)xPoints[ i ] , (double)yPoints[ i ] );
+			final double[] p = plane2image( (double)xPoints[ i ], (double)yPoints[ i ] );
 
-			imageX[ i ] = (int)p.getX();
-			imageY[ i ] = (int)p.getY();
+			imageX[ i ] = (int)p[ 0 ];
+			imageY[ i ] = (int)p[ 1 ];
 		}
 
-		_g2d.drawPolygon( imageX , imageY , nPoints );
+		_g2d.drawPolygon( imageX, imageY, nPoints );
 	}
 
 	@Override
-	public void fillPolygon( final int[] xPoints , final int[] yPoints , final int nPoints )
+	public void fillPolygon( final int[] xPoints, final int[] yPoints, final int nPoints )
 	{
 		final int[] imageX = new int[ nPoints ];
 		final int[] imageY = new int[ nPoints ];
 
 		for ( int i = 0 ; i < nPoints ; i++ )
 		{
-			final Point2D p = plane2image( (double)xPoints[ i ] , (double)yPoints[ i ] );
+			final double[] p = plane2image( (double)xPoints[ i ], (double)yPoints[ i ] );
 
-			imageX[ i ] = (int)p.getX();
-			imageY[ i ] = (int)p.getY();
+			imageX[ i ] = (int)p[ 0 ];
+			imageY[ i ] = (int)p[ 1 ];
 		}
 
-		_g2d.fillPolygon( imageX , imageY , nPoints );
+		_g2d.fillPolygon( imageX, imageY, nPoints );
 	}
 
 	@Override
-	public void drawPolyline( final int[] xPoints , final int[] yPoints , final int nPoints )
+	public void drawPolyline( final int[] xPoints, final int[] yPoints, final int nPoints )
 	{
 		final int[] imageX = new int[ nPoints ];
 		final int[] imageY = new int[ nPoints ];
 
 		for ( int i = 0 ; i < nPoints ; i++ )
 		{
-			final Point2D p = plane2image( (double)xPoints[ i ] , (double)yPoints[ i ] );
+			final double[] p = plane2image( (double)xPoints[ i ], (double)yPoints[ i ] );
 
-			imageX[ i ] = (int)p.getX();
-			imageY[ i ] = (int)p.getY();
+			imageX[ i ] = (int)p[ 0 ];
+			imageY[ i ] = (int)p[ 1 ];
 		}
 
-		_g2d.drawPolyline( imageX , imageY , nPoints );
+		_g2d.drawPolyline( imageX, imageY, nPoints );
 	}
 
 	@Override
 	public void drawRect( final int x, final int y, final int width, final int height )
 	{
-		draw( new Rectangle2D.Double( (double)x , (double)y , (double)width , (double)height ) );
+		draw( new Rectangle2D.Double( (double)x, (double)y, (double)width, (double)height ) );
 	}
 
 	@Override
-	public void fillRect( final int x , final int y , final int width , final int height )
+	public void fillRect( final int x, final int y, final int width, final int height )
 	{
-		fill( new Rectangle2D.Double( (double)x , (double)y , (double)width , (double)height ) );
+		fill( new Rectangle2D.Double( (double)x, (double)y, (double)width, (double)height ) );
 	}
 
 	@Override
-	public void clearRect( final int x , final int y , final int width , final int height )
-	{
-		notImplemented();
-	}
-
-	@Override
-	public void drawRenderableImage( final RenderableImage img , final AffineTransform xform )
+	public void clearRect( final int x, final int y, final int width, final int height )
 	{
 		notImplemented();
 	}
 
 	@Override
-	public void drawRenderedImage( final RenderedImage img , final AffineTransform xform )
+	public void drawRenderableImage( final RenderableImage img, final AffineTransform xform )
 	{
 		notImplemented();
 	}
 
 	@Override
-	public void drawRoundRect( final int x , final int y , final int width , final int height , final int arcWidth , final int arcHeight )
-	{
-		draw( new RoundRectangle2D.Double( (double)x , (double)y , (double)width , (double)height , (double)arcWidth , (double)arcHeight ) );
-	}
-
-	@Override
-	public void fillRoundRect( final int x , final int y , final int width , final int height , final int arcWidth , final int arcHeight )
-	{
-		fill( new RoundRectangle2D.Double( (double)x , (double)y , (double)width , (double)height , (double)arcWidth , (double)arcHeight ) );
-	}
-
-	@Override
-	public void drawString( final AttributedCharacterIterator iterator , final float x , final float y )
+	public void drawRenderedImage( final RenderedImage img, final AffineTransform xform )
 	{
 		notImplemented();
 	}
 
 	@Override
-	public void drawString( final AttributedCharacterIterator iterator , final int x , final int y )
+	public void drawRoundRect( final int x, final int y, final int width, final int height, final int arcWidth, final int arcHeight )
+	{
+		draw( new RoundRectangle2D.Double( (double)x, (double)y, (double)width, (double)height, (double)arcWidth, (double)arcHeight ) );
+	}
+
+	@Override
+	public void fillRoundRect( final int x, final int y, final int width, final int height, final int arcWidth, final int arcHeight )
+	{
+		fill( new RoundRectangle2D.Double( (double)x, (double)y, (double)width, (double)height, (double)arcWidth, (double)arcHeight ) );
+	}
+
+	@Override
+	public void drawString( final AttributedCharacterIterator iterator, final float x, final float y )
 	{
 		notImplemented();
 	}
 
 	@Override
-	public void drawString( final String str , final float x , final float y )
+	public void drawString( final AttributedCharacterIterator iterator, final int x, final int y )
 	{
-		final Point2D point2d = plane2image( (double)x, (double)y );
-		_g2d.drawString( str , (float)point2d.getX() , (float)point2d.getY() );
+		notImplemented();
 	}
 
 	@Override
-	public void drawString( final String str , final int x , final int y )
+	public void drawString( final String str, final float x, final float y )
 	{
-		drawString( str , (float)x , (float)y );
+		final double[] point2d = plane2image( (double)x, (double)y );
+		_g2d.drawString( str, (float)point2d[ 0 ], (float)point2d[ 1 ] );
+	}
+
+	@Override
+	public void drawString( final String str, final int x, final int y )
+	{
+		drawString( str, (float)x, (float)y );
 	}
 }
