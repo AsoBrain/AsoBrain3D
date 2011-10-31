@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,7 +31,7 @@ import ab.j3d.view.*;
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public final class Java2dEngine
+public class Java2dEngine
 	implements RenderEngine
 {
 	/**
@@ -61,10 +62,9 @@ public final class Java2dEngine
 
 	public View3D createView( final Scene scene )
 	{
-		return new Java2dView( scene , _background );
+		return new Java2dView( scene, _background );
 	}
 
-	@Override
 	public void dispose()
 	{
 	}
