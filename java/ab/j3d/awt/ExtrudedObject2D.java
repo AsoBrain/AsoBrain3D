@@ -104,11 +104,11 @@ public class ExtrudedObject2D
 		final Abstract3DObjectBuilder builder = getBuilder();
 		if ( caps )
 		{
-			ShapeTools.addExtrudedShape( builder, shape, flatness, extrusion, true, Matrix3D.IDENTITY, true, topMaterial, uvMap, false, true, bottomMaterial, uvMap, false, true, sideMaterial, uvMap, false, twoSided, flipNormals, false );
+			builder.addExtrudedShape( ShapeTools.createTessellator( shape, flatness ), extrusion, true, Matrix3D.IDENTITY, true, topMaterial, uvMap, false, true, bottomMaterial, uvMap, false, true, sideMaterial, uvMap, false, twoSided, flipNormals, false );
 		}
 		else
 		{
-			ShapeTools.addExtrudedShape( builder, shape, flatness, extrusion, Matrix3D.IDENTITY, sideMaterial, uvMap, false, twoSided, flipNormals, false );
+			builder.addExtrudedShape( ShapeTools.createContours( shape, flatness, true, true ), extrusion, Matrix3D.IDENTITY, sideMaterial, uvMap, false, twoSided, flipNormals, false );
 		}
 	}
 
