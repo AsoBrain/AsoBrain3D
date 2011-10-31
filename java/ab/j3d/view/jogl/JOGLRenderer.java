@@ -28,7 +28,6 @@ import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import com.numdata.oss.ensemble.*;
 import com.sun.opengl.util.*;
 import com.sun.opengl.util.texture.*;
 import org.jetbrains.annotations.*;
@@ -1009,7 +1008,7 @@ public class JOGLRenderer
 	{
 		final boolean shadowPass = _shadowPass;
 
-		final Map<Duet<Object3D, RenderStyle>, List<Node3DPath>> objectGroups = new LinkedHashMap<Duet<Object3D, RenderStyle>, List<Node3DPath>>();
+		final Map<StyledObject3D, List<Node3DPath>> objectPathsByGroup = new LinkedHashMap<StyledObject3D, List<Node3DPath>>();
 
 		for ( final ContentNode node : nodes )
 		{
@@ -1036,16 +1035,16 @@ public class JOGLRenderer
 						if ( shadowPass || visibleByCamera )
 						{
 							final RenderStyle objectStyle = nodeStyle.applyFilters( styleFilters, path );
-							final BasicDuet<Object3D, RenderStyle> key = new BasicDuet<Object3D, RenderStyle>( object, objectStyle );
+							final StyledObject3D key = new StyledObject3D( object, objectStyle );
 
-							List<Node3DPath> objectGroup = objectGroups.get( key );
-							if ( objectGroup == null )
+							List<Node3DPath> paths = objectPathsByGroup.get( key );
+							if ( paths == null )
 							{
-								objectGroup = new ArrayList<Node3DPath>();
-								objectGroups.put( key, objectGroup );
+								paths = new ArrayList<Node3DPath>();
+								objectPathsByGroup.put( key, paths );
 							}
 
-							objectGroup.add( path );
+							paths.add( path );
 						}
 					}
 					return true;
@@ -1053,10 +1052,11 @@ public class JOGLRenderer
 			}, node.getTransform(), node.getNode3D() );
 		}
 
-		for ( final Map.Entry<Duet<Object3D, RenderStyle>, List<Node3DPath>> objectGroup : objectGroups.entrySet() )
+		for ( final Map.Entry<StyledObject3D, List<Node3DPath>> objectGroupEntry : objectPathsByGroup.entrySet() )
 		{
-			final Duet<Object3D, RenderStyle> key = objectGroup.getKey();
-			renderObject( key.getValue1(), objectGroup.getValue(), key.getValue2() );
+			final StyledObject3D objectGroup = objectGroupEntry.getKey();
+			final List<Node3DPath> paths = objectGroupEntry.getValue();
+			renderObject( objectGroup.getObject(), paths, objectGroup.getRenderStyle() );
 		}
 	}
 
@@ -2102,5 +2102,78 @@ public class JOGLRenderer
 
 			return result;
 		}
+	}
+
+	/**
+	 * Combination of 3D object and render style. This is used during rendering
+	 * to render the same object and style efficiently.
+	 */
+	private static class StyledObject3D
+	{
+		/**
+		 * 3D object.
+		 */
+		private final Object3D _object;
+
+		/**
+		 * Render style.
+		 */
+		private final RenderStyle _renderStyle;
+
+		/**
+		 * Construct.
+		 *
+		 * @param   object        3D object.
+		 * @param   renderStyle     Render style.
+		 */
+		StyledObject3D( final Object3D object, final RenderStyle renderStyle )
+		{
+			_object = object;
+			_renderStyle = renderStyle;
+		}
+
+		/**
+		 * Get 3D object.
+		 *
+		 * @return  3D object.
+		 */
+		public Object3D getObject()
+		{
+			return _object;
+		}
+
+		/**
+		 * Get render style.
+		 *
+		 * @return  Render style.
+		 */
+		public RenderStyle getRenderStyle()
+		{
+			return _renderStyle;
+		}
+
+		public boolean equals( final Object obj )
+		{
+			final boolean result;
+
+			if ( obj instanceof StyledObject3D )
+			{
+				final StyledObject3D other = (StyledObject3D)obj;
+				result = _object.equals( other._object ) && _renderStyle.equals( other.getRenderStyle() );
+			}
+			else
+			{
+				result = false;
+			}
+
+			return result;
+		}
+
+		public int hashCode()
+		{
+			return ( ( _object != null ) ? _object.hashCode() : 0 ) ^
+			       ( ( _renderStyle != null ) ? _renderStyle.hashCode() : 0 );
+		}
+
 	}
 }
