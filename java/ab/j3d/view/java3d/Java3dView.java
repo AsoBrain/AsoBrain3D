@@ -27,7 +27,6 @@ import javax.media.j3d.Transform3D;
 import javax.swing.*;
 import javax.vecmath.*;
 
-import ab.j3d.Color4f;
 import ab.j3d.*;
 import ab.j3d.model.*;
 import ab.j3d.view.Background;
@@ -253,8 +252,8 @@ class Java3dView
 	@Override
 	public void setBackground( @NotNull final Background background )
 	{
-		final Color4f color = background.getColor();
-		_canvas.setBackground( new Color( color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() ) );
+		final Color4 color = background.getColor();
+		_canvas.setBackground( new Color( color.getRedFloat(), color.getGreenFloat(), color.getBlueFloat(), color.getAlphaFloat() ) );
 	}
 
 	@Override

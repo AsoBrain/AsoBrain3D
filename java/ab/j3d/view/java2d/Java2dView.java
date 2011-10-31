@@ -96,8 +96,8 @@ public class Java2dView
 	@Override
 	public void setBackground( @NotNull final Background background )
 	{
-		final Color4f color = background.getColor();
-		_viewComponent.setBackground( new Color( color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() ) );
+		final Color4 color = background.getColor();
+		_viewComponent.setBackground( new Color( color.getRedFloat(), color.getGreenFloat(), color.getBlueFloat(), color.getAlphaFloat() ) );
 	}
 
 	@Override
