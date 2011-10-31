@@ -36,7 +36,7 @@ import org.jetbrains.annotations.*;
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-final class Java2dViewComponent
+class Java2dViewComponent
 	extends JComponent
 {
 	/**
@@ -86,7 +86,6 @@ final class Java2dViewComponent
 		final Map<Node3D,RenderStyle> nodeStyles = new HashMap<Node3D, RenderStyle>( );
 		scene.walk( new Node3DVisitor()
 		{
-			@Override
 			public boolean visitNode( @NotNull final Node3DPath path )
 			{
 				final Node3D node = path.getNode();
@@ -149,18 +148,19 @@ final class Java2dViewComponent
 
 		final boolean fill = renderStyle.isMaterialEnabled() || renderStyle.isFillEnabled();
 
-		Color fillPaint;
 		if ( fill )
 		{
 			final Appearance appearance = polygon._appearance;
 
+			Color fillPaint;
 			if ( renderStyle.isMaterialEnabled() && ( appearance != null ) )
 			{
 				fillPaint = new Color( appearance.getDiffuseColorRed(), appearance.getDiffuseColorGreen(), appearance.getDiffuseColorBlue(), appearance.getDiffuseColorAlpha() );
 			}
 			else
 			{
-				fillPaint = renderStyle.getFillColor();
+				final Color4f fillColor = renderStyle.getFillColor();
+				fillPaint = ( fillColor != null ) ? new Color( fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), fillColor.getAlpha() ) : null;
 			}
 
 			if ( fillPaint != null )
@@ -187,11 +187,11 @@ final class Java2dViewComponent
 
 		if ( renderStyle.isStrokeEnabled() )
 		{
-			final Color outlineColor = renderStyle.getStrokeColor();
+			final Color4f outlineColor = renderStyle.getStrokeColor();
 			if ( outlineColor != null )
 			{
 				g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-				g.setPaint( outlineColor );
+				g.setPaint( new Color( outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), outlineColor.getAlpha() ) );
 				g.draw( polygon );
 			}
 		}

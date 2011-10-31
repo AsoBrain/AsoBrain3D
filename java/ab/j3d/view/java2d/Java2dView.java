@@ -22,6 +22,7 @@ package ab.j3d.view.java2d;
 
 import java.awt.*;
 
+import ab.j3d.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
 import ab.j3d.view.control.*;
@@ -33,18 +34,13 @@ import org.jetbrains.annotations.*;
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-public final class Java2dView
+public class Java2dView
 	extends View3D
 {
 	/**
 	 * Component through which a rendering of the view is shown.
 	 */
 	private final Java2dViewComponent _viewComponent;
-
-	/**
-	 * Insets cache.
-	 */
-	private Insets _insetsCache = null;
 
 	/**
 	 * The SceneInputTranslator for this View.
@@ -100,7 +96,8 @@ public final class Java2dView
 	@Override
 	public void setBackground( @NotNull final Background background )
 	{
-		_viewComponent.setBackground( background.getColor() );
+		final Color4f color = background.getColor();
+		_viewComponent.setBackground( new Color( color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() ) );
 	}
 
 	@Override
@@ -150,7 +147,7 @@ public final class Java2dView
 	public Projector getProjector()
 	{
 		final Java2dViewComponent viewComponent = _viewComponent;
-		final Insets insets = viewComponent.getInsets( _insetsCache );
+		final Insets insets = viewComponent.getInsets( null );
 		final int imageWidth = viewComponent.getWidth() - insets.left - insets.right;
 		final int imageHeight = viewComponent.getHeight() - insets.top - insets.bottom;
 		final double imageResolution = getResolution();
