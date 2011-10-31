@@ -122,8 +122,8 @@ public class Painter
 	/** @noinspection JavaDoc*/
 	private static void paintObject( final Graphics2D g, final Matrix3D view2image, final Matrix3D object2view, final Object3D object, final RenderStyle renderStyle )
 	{
-		final Color4f outlineColor = renderStyle.isStrokeEnabled() ? renderStyle.getStrokeColor() : null;
-		final Color4f fillColor = renderStyle.isFillEnabled() ? renderStyle.getFillColor() : null;
+		final Color4 outlineColor = renderStyle.isStrokeEnabled() ? renderStyle.getStrokeColor() : null;
+		final Color4 fillColor = renderStyle.isFillEnabled() ? renderStyle.getFillColor() : null;
 
 		if ( ( outlineColor != null ) || ( fillColor != null ) )
 		{
@@ -165,8 +165,8 @@ public class Painter
 	/** @noinspection JavaDoc*/
 	private static void paintMesh( final Graphics2D g, final Matrix3D view2image, final Matrix3D object2view, final Object3D object, final RenderStyle renderStyle )
 	{
-		final Color4f outlineColor = renderStyle.isStrokeEnabled() ? renderStyle.getStrokeColor() : null;
-		final Color4f fillColor = renderStyle.isFillEnabled() ? renderStyle.getFillColor() : null;
+		final Color4 outlineColor = renderStyle.isStrokeEnabled() ? renderStyle.getStrokeColor() : null;
+		final Color4 fillColor = renderStyle.isFillEnabled() ? renderStyle.getFillColor() : null;
 		final boolean applyLighting = renderStyle.isFillLightingEnabled();
 		final Matrix3D object2image = object2view.multiply( view2image );
 
@@ -190,11 +190,11 @@ public class Painter
 						final Vector3D faceNormal = face.normal;
 						final float transformedNormalZ = (float)object2view.rotateZ( faceNormal.x, faceNormal.y, faceNormal.z );
 						final float factor = Math.min( 1.0f, 0.5f + 0.5f * Math.abs( transformedNormalZ ) );
-						faceFillColor = ( factor < 1.0f ) ? new Color( factor * fillColor.getRed(), factor * fillColor.getGreen(), factor * fillColor.getBlue(), fillColor.getAlpha() ) : new Color( fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), fillColor.getAlpha() );
+						faceFillColor = ( factor < 1.0f ) ? new Color( factor * fillColor.getRedFloat(), factor * fillColor.getGreenFloat(), factor * fillColor.getBlueFloat(), fillColor.getAlphaFloat() ) : new Color( fillColor.getRedFloat(), fillColor.getGreenFloat(), fillColor.getBlueFloat(), fillColor.getAlphaFloat() );
 					}
 					else
 					{
-						faceFillColor = new Color( fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), fillColor.getAlpha() );
+						faceFillColor = new Color( fillColor.getRedFloat(), fillColor.getGreenFloat(), fillColor.getBlueFloat(), fillColor.getAlphaFloat() );
 					}
 
 					final int fillAlpha = faceFillColor == null ? 0 : faceFillColor.getAlpha();
@@ -297,7 +297,7 @@ public class Painter
 
 							if ( outlineColor != null )
 							{
-								g.setPaint( new Color( outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), outlineColor.getAlpha() ) );
+								g.setPaint( new Color( outlineColor.getRedFloat(), outlineColor.getGreenFloat(), outlineColor.getBlueFloat(), outlineColor.getAlphaFloat() ) );
 								g.draw( path );
 							}
 						}
@@ -388,8 +388,8 @@ public class Painter
 	{
 		final boolean result;
 
-		final Color4f outlineColor = renderStyle.isStrokeEnabled() ? renderStyle.getStrokeColor() : null;
-		final Color4f fillColor = renderStyle.isFillEnabled() ? renderStyle.getFillColor() : null;
+		final Color4 outlineColor = renderStyle.isStrokeEnabled() ? renderStyle.getStrokeColor() : null;
+		final Color4 fillColor = renderStyle.isFillEnabled() ? renderStyle.getFillColor() : null;
 
 
 		final Shape shape = object.shape;
@@ -418,13 +418,13 @@ public class Painter
 
 			if ( fillColor != null )
 			{
-				g.setPaint( new Color( fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), fillColor.getAlpha() ) );
+				g.setPaint( new Color( fillColor.getRedFloat(), fillColor.getGreenFloat(), fillColor.getBlueFloat(), fillColor.getAlphaFloat() ) );
 				g.fill( boundsShape );
 			}
 
 			if ( outlineColor != null )
 			{
-				g.setPaint( new Color( outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), outlineColor.getAlpha() ) );
+				g.setPaint( new Color( outlineColor.getRedFloat(), outlineColor.getGreenFloat(), outlineColor.getBlueFloat(), outlineColor.getAlphaFloat() ) );
 				g.draw( boundsShape );
 			}
 
@@ -444,13 +444,13 @@ public class Painter
 
 			if ( fillColor != null )
 			{
-				g.setPaint( new Color( fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), fillColor.getAlpha() ) );
+				g.setPaint( new Color( fillColor.getRedFloat(), fillColor.getGreenFloat(), fillColor.getBlueFloat(), fillColor.getAlphaFloat() ) );
 				g.fill( viewShape );
 			}
 
 			if ( outlineColor != null )
 			{
-				g.setPaint( new Color( outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), outlineColor.getAlpha() ) );
+				g.setPaint( new Color( outlineColor.getRedFloat(), outlineColor.getGreenFloat(), outlineColor.getBlueFloat(), outlineColor.getAlphaFloat() ) );
 				g.draw( viewShape );
 			}
 
@@ -471,8 +471,8 @@ public class Painter
 	{
 		final boolean result;
 
-		final Color4f outlineColor = renderStyle.isStrokeEnabled() ? renderStyle.getStrokeColor() : null;
-		final Color4f fillColor = renderStyle.isFillEnabled() ? renderStyle.getFillColor() : null;
+		final Color4 outlineColor = renderStyle.isStrokeEnabled() ? renderStyle.getStrokeColor() : null;
+		final Color4 fillColor = renderStyle.isFillEnabled() ? renderStyle.getFillColor() : null;
 		final boolean applyLighting = renderStyle.isFillLightingEnabled();
 
 
@@ -531,18 +531,18 @@ public class Painter
 					final float goldenRatio = 0.6180339f;
 					final float highlightX = ( 1.0f - goldenRatio ) * x1 + goldenRatio * x4;
 					final float highlightY = ( 1.0f - goldenRatio ) * y1 + goldenRatio * y4;
-					g.setPaint( new GradientPaint( highlightX, highlightY, new Color( fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), fillColor.getAlpha() ), x1, y1, new Color( outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), outlineColor.getAlpha() ), true ) );
+					g.setPaint( new GradientPaint( highlightX, highlightY, new Color( fillColor.getRedFloat(), fillColor.getGreenFloat(), fillColor.getBlueFloat(), fillColor.getAlphaFloat() ), x1, y1, new Color( outlineColor.getRedFloat(), outlineColor.getGreenFloat(), outlineColor.getBlueFloat(), outlineColor.getAlphaFloat() ), true ) );
 				}
 				else
 				{
-					g.setPaint( new Color( fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), fillColor.getAlpha() ) );
+					g.setPaint( new Color( fillColor.getRedFloat(), fillColor.getGreenFloat(), fillColor.getBlueFloat(), fillColor.getAlphaFloat() ) );
 				}
 				g.fill( path );
 			}
 
 			if ( outlineColor != null )
 			{
-				g.setPaint( new Color( outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), outlineColor.getAlpha() ) );
+				g.setPaint( new Color( outlineColor.getRedFloat(), outlineColor.getGreenFloat(), outlineColor.getBlueFloat(), outlineColor.getAlphaFloat() ) );
 				g.draw( path );
 			}
 
@@ -615,7 +615,7 @@ public class Painter
 //					}
 //					else
 					{
-						paint = new Color( fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), fillColor.getAlpha() );
+						paint = new Color( fillColor.getRedFloat(), fillColor.getGreenFloat(), fillColor.getBlueFloat(), fillColor.getAlphaFloat() );
 					}
 					g.setPaint( paint );
 
@@ -631,7 +631,7 @@ public class Painter
 
 				if ( outlineColor != null )
 				{
-					g.setPaint( new Color( outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), outlineColor.getAlpha() ) );
+					g.setPaint( new Color( outlineColor.getRedFloat(), outlineColor.getGreenFloat(), outlineColor.getBlueFloat(), outlineColor.getAlphaFloat() ) );
 					if ( !shape1.equals( shape2 ) )
 					{
 						g.draw( shape1 );
@@ -648,7 +648,7 @@ public class Painter
 
 					if ( outlineColor != null )
 					{
-						g.setPaint( new Color( outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), outlineColor.getAlpha() ) );
+						g.setPaint( new Color( outlineColor.getRedFloat(), outlineColor.getGreenFloat(), outlineColor.getBlueFloat(), outlineColor.getAlphaFloat() ) );
 						g.draw( shape2 );
 					}
 				}
@@ -686,8 +686,8 @@ public class Painter
 	{
 		final boolean result;
 
-		final Color4f outlineColor = renderStyle.isStrokeEnabled() ? renderStyle.getStrokeColor() : null;
-		final Color4f fillColor = renderStyle.isFillEnabled() ? renderStyle.getFillColor() : null;
+		final Color4 outlineColor = renderStyle.isStrokeEnabled() ? renderStyle.getStrokeColor() : null;
+		final Color4 fillColor = renderStyle.isFillEnabled() ? renderStyle.getFillColor() : null;
 		final boolean applyLighting = renderStyle.isFillLightingEnabled();
 
 		final double radius = sphere._radius;
@@ -717,11 +717,11 @@ public class Painter
 				final float goldenRatio = 0.6180339f;
 				final float highlight   = ( goldenRatio - 0.5f ) * r;
 
-				paint = new GradientPaint( x + highlight, y - highlight, new Color( fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), fillColor.getAlpha() ), x -r, y + r, new Color( outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), outlineColor.getAlpha() ), true );
+				paint = new GradientPaint( x + highlight, y - highlight, new Color( fillColor.getRedFloat(), fillColor.getGreenFloat(), fillColor.getBlueFloat(), fillColor.getAlphaFloat() ), x -r, y + r, new Color( outlineColor.getRedFloat(), outlineColor.getGreenFloat(), outlineColor.getBlueFloat(), outlineColor.getAlphaFloat() ), true );
 			}
 			else
 			{
-				paint = new Color( fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), fillColor.getAlpha() );
+				paint = new Color( fillColor.getRedFloat(), fillColor.getGreenFloat(), fillColor.getBlueFloat(), fillColor.getAlphaFloat() );
 			}
 
 			g.setPaint( paint );
@@ -730,7 +730,7 @@ public class Painter
 
 		if ( outlineColor != null )
 		{
-			g.setPaint( new Color( outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), outlineColor.getAlpha() ) );
+			g.setPaint( new Color( outlineColor.getRedFloat(), outlineColor.getGreenFloat(), outlineColor.getBlueFloat(), outlineColor.getAlphaFloat() ) );
 			g.draw( shape );
 		}
 

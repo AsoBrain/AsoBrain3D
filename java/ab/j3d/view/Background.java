@@ -50,7 +50,7 @@ public class Background
 	 *
 	 * @return  Background.
 	 */
-	public static Background createSolid( final Color4f color )
+	public static Background createSolid( final Color4 color )
 	{
 		final Background background = new Background();
 		background.setColor( color );
@@ -67,7 +67,7 @@ public class Background
 	 *
 	 * @return  Background.
 	 */
-	public static Background createGradient( @NotNull final Color4f... colors )
+	public static Background createGradient( @NotNull final Color4... colors )
 	{
 		if ( colors.length == 0 )
 		{
@@ -83,14 +83,14 @@ public class Background
 	 * Solid background color.
 	 */
 	@NotNull
-	private Color4f _color;
+	private Color4 _color;
 
 	/**
 	 * Up to four gradient background colors, from bottom left,
 	 * counter-clockwise. Empty for no gradient.
 	 */
 	@NotNull
-	private List<Color4f> _gradient;
+	private List<Color4> _gradient;
 
 	/**
 	 * Constructs a new background consisting of only a solid white color.
@@ -118,7 +118,7 @@ public class Background
 	 * @return  Background color.
 	 */
 	@NotNull
-	public Color4f getColor()
+	public Color4 getColor()
 	{
 		return _color;
 	}
@@ -128,7 +128,7 @@ public class Background
 	 *
 	 * @param   color   Background color.
 	 */
-	public void setColor( @NotNull final Color4f color )
+	public void setColor( @NotNull final Color4 color )
 	{
 		_color = color;
 	}
@@ -142,7 +142,7 @@ public class Background
 	 * @return  Gradient colors; empty for no gradient.
 	 */
 	@NotNull
-	public List<Color4f> getGradient()
+	public List<Color4> getGradient()
 	{
 		return Collections.unmodifiableList( _gradient );
 	}
@@ -155,9 +155,9 @@ public class Background
 	 *
 	 * @param   gradient    Gradient to be set; empty to disable the gradient.
 	 */
-	public void setGradient( @NotNull final List<Color4f> gradient )
+	public void setGradient( @NotNull final List<Color4> gradient )
 	{
-		_gradient = new ArrayList<Color4f>( gradient );
+		_gradient = new ArrayList<Color4>( gradient );
 	}
 
 	@Override

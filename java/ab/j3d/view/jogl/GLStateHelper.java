@@ -55,9 +55,9 @@ public class GLStateHelper
 	 *
 	 * @param   color   Color to set.
 	 */
-	public final void setColor( final Color4f color )
+	public final void setColor( final Color4 color )
 	{
-		setColor( color.getRed() , color.getGreen(), color.getBlue() , color.getAlpha() );
+		setColor( color.getRedFloat(), color.getGreenFloat(), color.getBlueFloat(), color.getAlphaFloat() );
 	}
 
 	/**
@@ -68,7 +68,7 @@ public class GLStateHelper
 	 * @param   blue    Blue component.
 	 * @param   alpha   Alpha component.
 	 */
-	public final void setColor( final float red , final float green , final float blue , final float alpha )
+	public final void setColor( final float red, final float green, final float blue, final float alpha )
 	{
 		setColor( red, green, blue, alpha, 0.2f, 0.8f, 0.1f, 32.0f );
 	}
@@ -103,8 +103,8 @@ public class GLStateHelper
 	{
 		final GL gl = _gl;
 		gl.glColor4f( red, green, blue, alpha );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT , new float[] { ambientFactor * red , ambientFactor * green , ambientFactor * blue, alpha }, 0 );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE , new float[] { diffuseFactor * red, diffuseFactor * green, diffuseFactor * blue, alpha }, 0 );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT, new float[] { ambientFactor * red, ambientFactor * green, ambientFactor * blue, alpha }, 0 );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE, new float[] { diffuseFactor * red, diffuseFactor * green, diffuseFactor * blue, alpha }, 0 );
 		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_SPECULAR, new float[] { specularReflectivity, specularReflectivity, specularReflectivity, alpha }, 0 );
 		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_EMISSION, new float[] { 0.0f, 0.0f, 0.0f, alpha }, 0 );
 		gl.glMaterialf( GL.GL_FRONT_AND_BACK, GL.GL_SHININESS, shininess );
@@ -127,13 +127,13 @@ public class GLStateHelper
 
 		if ( style.isFillEnabled() )
 		{
-			final Color4f materialDiffuse = new Color4f( appearance.getDiffuseColorRed(), appearance.getDiffuseColorGreen(), appearance.getDiffuseColorBlue(), extraAlpha * appearance.getDiffuseColorAlpha() );
-			final Color4f diffuse = RenderStyle.blendColors( style.getFillColor(), materialDiffuse );
+			final Color4 materialDiffuse = new Color4f( appearance.getDiffuseColorRed(), appearance.getDiffuseColorGreen(), appearance.getDiffuseColorBlue(), extraAlpha * appearance.getDiffuseColorAlpha() );
+			final Color4 diffuse = RenderStyle.blendColors( style.getFillColor(), materialDiffuse );
 
-			red   = diffuse.getRed();
-			green = diffuse.getGreen();
-			blue  = diffuse.getBlue();
-			alpha = diffuse.getAlpha();
+			red   = diffuse.getRedFloat();
+			green = diffuse.getGreenFloat();
+			blue  = diffuse.getBlueFloat();
+			alpha = diffuse.getAlphaFloat();
 		}
 		else
 		{
@@ -159,8 +159,8 @@ public class GLStateHelper
 	{
 		final GL gl = _gl;
 		gl.glColor4f( red, green, blue, alpha );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT , new float[] { appearance.getAmbientColorRed(), appearance.getAmbientColorGreen(), appearance.getAmbientColorBlue(), alpha }, 0 );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE , new float[] { red, green, blue, alpha }, 0 );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT, new float[] { appearance.getAmbientColorRed(), appearance.getAmbientColorGreen(), appearance.getAmbientColorBlue(), alpha }, 0 );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE, new float[] { red, green, blue, alpha }, 0 );
 		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_SPECULAR, new float[] { appearance.getSpecularColorRed(), appearance.getSpecularColorGreen(), appearance.getSpecularColorBlue(), alpha }, 0 );
 		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_EMISSION, new float[] { appearance.getEmissiveColorRed(), appearance.getEmissiveColorGreen(), appearance.getEmissiveColorBlue(), alpha }, 0 );
 		gl.glMaterialf( GL.GL_FRONT_AND_BACK, GL.GL_SHININESS, (float)appearance.getShininess() );

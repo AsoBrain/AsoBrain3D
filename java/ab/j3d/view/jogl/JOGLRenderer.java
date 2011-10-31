@@ -795,18 +795,18 @@ public class JOGLRenderer
 		final GLStateHelper state = _state;
 
 		/* Clear depth and color buffer. */
-		final Color4f backgroundColor = background.getColor();
-		gl.glClearColor( backgroundColor.getRed(), backgroundColor.getGreen(), backgroundColor.getBlue(), backgroundColor.getAlpha() );
+		final Color4 backgroundColor = background.getColor();
+		gl.glClearColor( backgroundColor.getRedFloat(), backgroundColor.getGreenFloat(), backgroundColor.getBlueFloat(), backgroundColor.getAlphaFloat() );
 		gl.glClearDepth( 1.0 );
 		gl.glClear( GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT );
 
-		final List<Color4f> gradient = background.getGradient();
+		final List<Color4> gradient = background.getGradient();
 		if ( !gradient.isEmpty() )
 		{
-			final Color4f color0 = gradient.get( 0 % gradient.size() );
-			final Color4f color1 = gradient.get( 1 % gradient.size() );
-			final Color4f color2 = gradient.get( 2 % gradient.size() );
-			final Color4f color3 = gradient.get( 3 % gradient.size() );
+			final Color4 color0 = gradient.get( 0 % gradient.size() );
+			final Color4 color1 = gradient.get( 1 % gradient.size() );
+			final Color4 color2 = gradient.get( 2 % gradient.size() );
+			final Color4 color3 = gradient.get( 3 % gradient.size() );
 
 			state.setEnabled( GL.GL_CULL_FACE, false );
 			state.setEnabled( GL.GL_DEPTH_TEST, false );
@@ -820,13 +820,13 @@ public class JOGLRenderer
 			gl.glLoadIdentity();
 
 			gl.glBegin( GL.GL_QUADS );
-			state.setColor( color0.getRed(), color0.getGreen(), color0.getBlue(), color0.getAlpha() );
+			state.setColor( color0.getRedFloat(), color0.getGreenFloat(), color0.getBlueFloat(), color0.getAlphaFloat() );
 			gl.glVertex2d( -1.0, -1.0 );
-			state.setColor( color1.getRed(), color1.getGreen(), color1.getBlue(), color1.getAlpha() );
+			state.setColor( color1.getRedFloat(), color1.getGreenFloat(), color1.getBlueFloat(), color1.getAlphaFloat() );
 			gl.glVertex2d( 1.0, -1.0 );
-			state.setColor( color2.getRed(), color2.getGreen(), color2.getBlue(), color2.getAlpha() );
+			state.setColor( color2.getRedFloat(), color2.getGreenFloat(), color2.getBlueFloat(), color2.getAlphaFloat() );
 			gl.glVertex2d( 1.0, 1.0 );
-			state.setColor( color3.getRed(), color3.getGreen(), color3.getBlue(), color3.getAlpha() );
+			state.setColor( color3.getRedFloat(), color3.getGreenFloat(), color3.getBlueFloat(), color3.getAlphaFloat() );
 			gl.glVertex2d( -1.0, 1.0 );
 			gl.glEnd();
 
@@ -1531,8 +1531,8 @@ public class JOGLRenderer
 
 		final GL gl = _gl;
 
-		final Color4f color = objectStyle.getFillColor();
-		final float alpha = color.getAlpha();
+		final Color4 color = objectStyle.getFillColor();
+		final float alpha = color.getAlphaFloat();
 		final boolean blend = ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && ( alpha < 1.0f );
 		final boolean hasLighting = objectStyle.isFillLightingEnabled();
 
@@ -1610,7 +1610,7 @@ public class JOGLRenderer
 	{
 		final GL gl = _gl;
 
-		final Color4f color = objectStyle.getStrokeColor();
+		final Color4 color = objectStyle.getStrokeColor();
 		final float width = objectStyle.getStrokeWidth();
 		final boolean hasLighting = objectStyle.isStrokeLightingEnabled();
 

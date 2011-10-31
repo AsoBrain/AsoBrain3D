@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -159,8 +159,8 @@ class Java2dViewComponent
 			}
 			else
 			{
-				final Color4f fillColor = renderStyle.getFillColor();
-				fillPaint = ( fillColor != null ) ? new Color( fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), fillColor.getAlpha() ) : null;
+				final Color4 fillColor = renderStyle.getFillColor();
+				fillPaint = ( fillColor != null ) ? new Color( fillColor.getRedFloat(), fillColor.getGreenFloat(), fillColor.getBlueFloat(), fillColor.getAlphaFloat() ) : null;
 			}
 
 			if ( fillPaint != null )
@@ -187,11 +187,11 @@ class Java2dViewComponent
 
 		if ( renderStyle.isStrokeEnabled() )
 		{
-			final Color4f outlineColor = renderStyle.getStrokeColor();
+			final Color4 outlineColor = renderStyle.getStrokeColor();
 			if ( outlineColor != null )
 			{
 				g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
-				g.setPaint( new Color( outlineColor.getRed(), outlineColor.getGreen(), outlineColor.getBlue(), outlineColor.getAlpha() ) );
+				g.setPaint( new Color( outlineColor.getRedFloat(), outlineColor.getGreenFloat(), outlineColor.getBlueFloat(), outlineColor.getAlphaFloat() ) );
 				g.draw( polygon );
 			}
 		}
