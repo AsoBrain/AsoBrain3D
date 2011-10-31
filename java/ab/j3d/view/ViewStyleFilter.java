@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,7 @@
  */
 package ab.j3d.view;
 
-import java.awt.*;
-
+import ab.j3d.*;
 import ab.j3d.model.*;
 
 /**
@@ -80,17 +79,17 @@ public class ViewStyleFilter
 				result.setMaterialEnabled( false );
 				result.setMaterialLightingEnabled( false );
 				result.setFillEnabled( true );
-				result.setFillColor( Color.WHITE );
+				result.setFillColor( new Color4f( 1.0f, 1.0f, 1.0f )  );
 				result.setFillLightingEnabled( false );
 				result.setStrokeEnabled( true );
-				result.setStrokeColor( Color.BLACK );
+				result.setStrokeColor( new Color4f( 0.0f, 0.0f, 0.0f ) );
 				break;
 
 			case SKETCH:
 				result = new RenderStyle();
 				result.setMaterialEnabled( true );
 				result.setStrokeEnabled( true );
-				result.setStrokeColor( Color.BLACK );
+				result.setStrokeColor( new Color4f( 0.0f, 0.0f, 0.0f ) );
 				result.setStrokeWidth( 2.0f );
 				break;
 
@@ -102,7 +101,7 @@ public class ViewStyleFilter
 				result = new RenderStyle();
 				result.setMaterialEnabled( false );
 				result.setStrokeEnabled( true );
-				result.setStrokeColor( Color.BLACK );
+				result.setStrokeColor( new Color4f( 0.0f, 0.0f, 0.0f ) );
 				result.setBackfaceCullingEnabled( false );
 				break;
 
