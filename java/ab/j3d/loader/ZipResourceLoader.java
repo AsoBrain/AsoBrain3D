@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2007
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,18 +20,11 @@
  */
 package ab.j3d.loader;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.io.*;
+import java.util.zip.*;
 
 /**
- * This class loads a specified resource from a zip-archive.
- * <br /><br />
- * Zip archive can be binary data or a ZipFile object.
+ * This class loads a specified resource from a ZIP-archive.
  *
  * @author  Wijnand Wieskamp
  * @version $Revision$ $Date$
@@ -59,7 +53,7 @@ public class ZipResourceLoader
 		final byte [] buffer = new byte[ 10240 ];
         while ( ( length = inputStream.read( buffer ) ) > 0 )
         {
-			bos.write( buffer , 0 , length );
+			bos.write( buffer, 0, length );
 		}
 		_binaryData = bos.toByteArray();
 	}
@@ -73,11 +67,11 @@ public class ZipResourceLoader
 		throws IOException
 	{
 		final byte[] binaryData = _binaryData;
-		ZipEntry zipEntry;
 		InputStream result = null;
 		if ( binaryData != null && binaryData.length > 0 )
 		{
 			final ZipInputStream zipInputStream = new ZipInputStream( new ByteArrayInputStream( binaryData ) );
+			ZipEntry zipEntry;
 			while ( result == null && ( zipEntry = zipInputStream.getNextEntry() ) != null )
 			{
 				if ( name.equals( zipEntry.getName() ) )
@@ -86,8 +80,12 @@ public class ZipResourceLoader
 				}
 			}
 		}
+
 		if ( result == null )
+		{
 			throw new FileNotFoundException( "File \"" + name + "\" not found in specified archive." );
+		}
+
 		return result;
 	}
 }

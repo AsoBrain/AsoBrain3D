@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,12 +20,13 @@
  */
 package ab.j3d.loader;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
+
+import org.jetbrains.annotations.*;
 
 /**
- * This class implements the {@link ResourceLoader} interface for resources 
+ * This class implements the {@link ResourceLoader} interface for resources
  * relative to a designated URL.
  *
  * @author  Peter S. Heijnen.
@@ -43,19 +45,15 @@ public class URLResourceLoader
 	 *
 	 * @param   baseURL     Base URL to load resources from.
 	 */
-	public URLResourceLoader( final URL baseURL )
+	public URLResourceLoader( @NotNull final URL baseURL )
 	{
-		if ( baseURL == null )
-			throw new NullPointerException( "baseURL" );
-
 		_baseURL = baseURL;
 	}
-
 
 	public InputStream getResource( final String name )
 		throws IOException
 	{
-		final URL url = new URL( _baseURL , name );
+		final URL url = new URL( _baseURL, name );
 		return url.openStream();
 	}
 }

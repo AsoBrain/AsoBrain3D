@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2007
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,8 +20,7 @@
  */
 package ab.j3d.loader;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 /**
  * This interface is used to retrieve resources from another resource, e.g. a

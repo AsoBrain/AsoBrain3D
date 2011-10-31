@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,12 +20,9 @@
  */
 package ab.j3d.loader;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
 /**
  * This class loads resources from the file system.
@@ -81,7 +79,7 @@ public class FileResourceLoader
 	@NotNull
 	protected File getFile( final String name )
 	{
-		return new File( _directory , name );
+		return new File( _directory, name );
 	}
 
 	public InputStream getResource( final String name )
