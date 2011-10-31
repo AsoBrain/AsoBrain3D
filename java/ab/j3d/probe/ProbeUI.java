@@ -77,7 +77,6 @@ public class ProbeUI
 		{
 			final JButton button = new JButton( new AbstractAction( probe.getName() )
 			{
-				@Override
 				public void actionPerformed( final ActionEvent e )
 				{
 					final Image expectedImage = probe.getExpectedImage();
@@ -106,7 +105,6 @@ public class ProbeUI
 			} );
 			SwingUtilities.invokeLater( new Runnable()
 			{
-				@Override
 				public void run()
 				{
 					button.setBackground( probe.isSupported() ? Color.GREEN : Color.YELLOW );
@@ -277,7 +275,7 @@ public class ProbeUI
 		@Override
 		protected void configureView( final JOGLView view )
 		{
-			view.setBackground( Background.createSolid( Color.WHITE ) );
+			view.setBackground( Background.createSolid( new Color4f( 1.0f, 1.0f, 1.0f ) ) );
 			view.setFrontClipDistance( 0.01 );
 			view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
 			view.setRenderingPolicy( RenderingPolicy.SOLID );
@@ -322,7 +320,7 @@ public class ProbeUI
 		@Override
 		protected void configureView( final JOGLView view )
 		{
-			view.setBackground( Background.createSolid( Color.BLACK ) );
+			view.setBackground( Background.createSolid( new Color4f( 0.0f, 0.0f, 0.0f ) ) );
 			view.setFrontClipDistance( 0.01 );
 			view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
 			view.setRenderingPolicy( RenderingPolicy.SOLID );
@@ -478,7 +476,7 @@ public class ProbeUI
 		@Override
 		protected void configureView( final JOGLView view )
 		{
-			view.setBackground( Background.createSolid( Color.BLACK ) );
+			view.setBackground( Background.createSolid( new Color4f( 0.0f, 0.0f, 0.0f ) ) );
 			view.setFrontClipDistance( 0.01 );
 			view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
 			view.setRenderingPolicy( RenderingPolicy.SOLID );
