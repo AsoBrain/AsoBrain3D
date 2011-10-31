@@ -18,12 +18,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.geom;
+package ab.j3d.awt;
 
 import java.awt.*;
 import java.awt.geom.*;
 
-import com.numdata.oss.junit.*;
 import junit.framework.*;
 
 /**
@@ -61,16 +60,20 @@ public class ShapeTester
 		Assert.assertEquals( message + ": winding rule", expected.getWindingRule(), actual.getWindingRule() );
 
 		int segmentIndex = 0;
-		final double[] expectedCoords = new double[ 6 ];
-		final double[] actualCoords = new double[ 6 ];
 
 		while ( !expected.isDone() && !actual.isDone() )
 		{
+			final double[] expectedCoords = new double[ 6 ];
 			final int expectedType = expected.currentSegment( expectedCoords );
+			final double[] actualCoords = new double[ 6 ];
 			final int actualType = actual.currentSegment( actualCoords );
 
 			Assert.assertEquals( message + ": segments[" + segmentIndex + "].type", expectedType, actualType );
-			ArrayTester.assertEquals( message + ": segments[" + segmentIndex + "].coords", expectedCoords, actualCoords );
+			for ( int i = 0; i < 6; i++ )
+			{
+				Assert.assertEquals( message + ": segments[" + segmentIndex + "].coords[ " + i + " ]", expectedCoords[ i ], actualCoords[ i ], 0.001 );
+
+			}
 
 			segmentIndex++;
 			expected.next();
