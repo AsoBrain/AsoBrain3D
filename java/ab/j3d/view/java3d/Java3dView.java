@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,10 +27,13 @@ import javax.media.j3d.Transform3D;
 import javax.swing.*;
 import javax.vecmath.*;
 
+import ab.j3d.Color4f;
 import ab.j3d.*;
 import ab.j3d.model.*;
+import ab.j3d.view.Background;
 import ab.j3d.view.*;
 import ab.j3d.view.control.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Java 3D view implementation.
@@ -37,7 +41,7 @@ import ab.j3d.view.control.*;
  * @author  G.B.M. Rupert
  * @version $Revision$ $Date$
  */
-final class Java3dView
+class Java3dView
 	extends View3D
 {
 	/**
@@ -98,13 +102,13 @@ final class Java3dView
 	 * {@link ViewOverlay}s to paint on top of the rendered
 	 * scene.
 	 */
-	private final class ViewComponent
+	private class ViewComponent
 		extends Canvas3D
 	{
 		/**
 		 * Wether or not this overlay is double buffered.
 		 */
-		private boolean _overlayDoubleBuffered;
+		private final boolean _overlayDoubleBuffered;
 
 		/**
 		 * The image used as buffer.
@@ -128,6 +132,7 @@ final class Java3dView
 		 *
 		 * @param   g   Graphics context
 		 */
+		@Override
 		public void paint( final Graphics g )
 		{
 			final View     java3dView      = _java3dView;
@@ -148,6 +153,7 @@ final class Java3dView
 		 * {@link ViewOverlay}s get to paint over the rendered
 		 * scene.
 		 */
+		@Override
 		public void postRender()
 		{
 			BufferedImage overlayBufferImage = null;
@@ -193,12 +199,13 @@ final class Java3dView
 		}
 
 		/**
-		 * Override {@link #getMinimumSize} to allow layout manager to
+		 * Override {@link Component#getMinimumSize} to allow layout manager to
 		 * do its job. Otherwise, this will always return the current size of
 		 * the canvas, not allowing it to be reduced in size.
 		 *
 		 * @return  a dimension object indicating this component's minimum size.
 		 */
+		@Override
 		public Dimension getMinimumSize()
 		{
 			return new Dimension( 10 , 10 );
@@ -243,36 +250,44 @@ final class Java3dView
 		update();
 	}
 
-	public void setBackground( final Color background )
+	@Override
+	public void setBackground( @NotNull final Background background )
 	{
-		_canvas.setBackground( background );
+		final Color4f color = background.getColor();
+		_canvas.setBackground( new Color( color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() ) );
 	}
 
+	@Override
 	public double getFrontClipDistance()
 	{
 		return _java3dView.getFrontClipDistance();
 	}
 
+	@Override
 	public void setFrontClipDistance( final double front )
 	{
 		_java3dView.setFrontClipDistance( front );
 	}
 
+	@Override
 	public double getBackClipDistance()
 	{
 		return _java3dView.getBackClipDistance();
 	}
 
+	@Override
 	public void setBackClipDistance( final double back )
 	{
 		_java3dView.setBackClipDistance( back );
 	}
 
+	@Override
 	public Component getComponent()
 	{
 		return _canvas;
 	}
 
+	@Override
 	public void setProjectionPolicy( final ProjectionPolicy policy )
 	{
 		if ( policy != getProjectionPolicy() )
@@ -285,7 +300,6 @@ final class Java3dView
 					java3dView.setProjectionPolicy( View.PERSPECTIVE_PROJECTION );
 					break;
 
-				case ISOMETRIC :
 				case PARALLEL :
 					java3dView.setProjectionPolicy( View.PARALLEL_PROJECTION );
 					break;
@@ -299,6 +313,7 @@ final class Java3dView
 
 	}
 
+	@Override
 	public void update()
 	{
 		final Matrix3D  scene2view = getScene2View();
@@ -353,6 +368,7 @@ final class Java3dView
 	 *
 	 * @return  the {@link Projector} for this view
 	 */
+	@Override
 	public Projector getProjector()
 	{
 		final View java3dview = _java3dView;
@@ -373,6 +389,7 @@ final class Java3dView
 		return Projector.createInstance( getProjectionPolicy() , width , height , resolution , unit , frontClip , backClip , aperture , zoomFactor );
 	}
 
+	@Override
 	protected ViewControlInput getControlInput()
 	{
 		return _controlInput;
