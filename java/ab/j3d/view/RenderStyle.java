@@ -66,7 +66,7 @@ public class RenderStyle
 	/**
 	 * Color to use for filling.
 	 */
-	private Color4f _fillColor = null;
+	private Color4 _fillColor = null;
 
 	/**
 	 * Flag to indicate that lighting should be applied to filling.
@@ -81,7 +81,7 @@ public class RenderStyle
 	/**
 	 * Color to use for stroking.
 	 */
-	private Color4f _strokeColor;
+	private Color4 _strokeColor;
 
 	/**
 	 * Width of strokes.
@@ -101,7 +101,7 @@ public class RenderStyle
 	/**
 	 * Color to use for vertices.
 	 */
-	private Color4f _vertexColor = null;
+	private Color4 _vertexColor = null;
 
 	/**
 	 * Size of vertices.
@@ -167,19 +167,19 @@ public class RenderStyle
 	 *
 	 * @return  Blended color.
 	 */
-	public static Color4f blendColors( final Color4f src , final Color4f dst )
+	public static Color4 blendColors( final Color4 src , final Color4 dst )
 	{
-		final Color4f result;
+		final Color4 result;
 
-		if ( ( dst != null ) && ( src.getAlpha() < 255 ) )
+		if ( ( dst != null ) && ( src.getAlphaFloat() < 255 ) )
 		{
-			final float srcRatio = src.getAlpha();
-			final float dstRatio = dst.getAlpha() * ( 1.0f - srcRatio );
+			final float srcRatio = src.getAlphaFloat();
+			final float dstRatio = dst.getAlphaFloat() * ( 1.0f - srcRatio );
 
 			final float alpha = dstRatio + srcRatio;
-			final float red   = ( dstRatio * dst.getRed() + srcRatio * src.getRed() ) / alpha;
-			final float green = ( dstRatio * dst.getGreen() + srcRatio * src.getGreen() ) / alpha;
-			final float blue  = ( dstRatio * dst.getBlue() + srcRatio * src.getBlue() ) / alpha;
+			final float red   = ( dstRatio * dst.getRedFloat() + srcRatio * src.getRedFloat() ) / alpha;
+			final float green = ( dstRatio * dst.getGreenFloat() + srcRatio * src.getGreenFloat() ) / alpha;
+			final float blue  = ( dstRatio * dst.getBlueFloat() + srcRatio * src.getBlueFloat() ) / alpha;
 
 			result = new Color4f( red, green, blue, alpha );
 		}
@@ -191,6 +191,7 @@ public class RenderStyle
 		return result;
 	}
 
+	@Override
 	public RenderStyle clone()
 	{
 		try
@@ -321,7 +322,7 @@ public class RenderStyle
 	 * @return  Color used for filling;
 	 *          <code>null</code> if undefined.
 	 */
-	public Color4f getFillColor()
+	public Color4 getFillColor()
 	{
 		return _fillColor;
 	}
@@ -331,7 +332,7 @@ public class RenderStyle
 	 *
 	 * @param   color   Color to use for filling.
 	 */
-	public void setFillColor( final Color4f color )
+	public void setFillColor( final Color4 color )
 	{
 		_fillColor = color;
 	}
@@ -384,7 +385,7 @@ public class RenderStyle
 	 * @return  Color used for strokes;
 	 *          <code>null</code> if undefined.
 	 */
-	public Color4f getStrokeColor()
+	public Color4 getStrokeColor()
 	{
 		return _strokeColor;
 	}
@@ -394,7 +395,7 @@ public class RenderStyle
 	 *
 	 * @param   color   Color to use for strokes.
 	 */
-	public void setStrokeColor( final Color4f color )
+	public void setStrokeColor( final Color4 color )
 	{
 		_strokeColor = color;
 	}
@@ -467,7 +468,7 @@ public class RenderStyle
 	 * @return  Color used for vertices;
 	 *          <code>null</code> if undefined.
 	 */
-	public Color4f getVertexColor()
+	public Color4 getVertexColor()
 	{
 		return _vertexColor;
 	}
@@ -477,7 +478,7 @@ public class RenderStyle
 	 *
 	 * @param   color   Color to use for vertices.
 	 */
-	public void setVertexColor( final Color4f color )
+	public void setVertexColor( final Color4 color )
 	{
 		_vertexColor = color;
 	}
