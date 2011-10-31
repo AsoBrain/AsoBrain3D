@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,6 @@ import java.util.*;
 import javax.media.opengl.*;
 
 import ab.j3d.appearance.*;
-import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -413,7 +412,25 @@ public class ShaderManager
 			throw new FileNotFoundException( name );
 		}
 
-		final String source = TextTools.loadText( sourceIn );
+		final String source;
+		try
+		{
+			final BufferedInputStream bis = new BufferedInputStream( sourceIn );
+
+			final StringBuilder sb = new StringBuilder( Math.min( 10, bis.available() ) );
+			for ( int c = bis.read(), l = -1; c >= 0; l = c, c = bis.read() )
+			{
+				if ( ( l != (int)'\r' || c != (int)'\n' ) && ( l != (int)'\n' || c != (int)'\r' ) )
+				{
+					sb.append( ( c == (int) '\r' ) ? '\n' : (char)c );
+				}
+			}
+			source = sb.toString();
+		}
+		finally
+		{
+			sourceIn.close();
+		}
 
 		final Shader result = shaderImplementation.createShader( shaderType );
 		if ( prefixLines.length == 0 )
