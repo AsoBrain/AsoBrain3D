@@ -527,19 +527,16 @@ public class Material
 		return 0.3f * specularColorRed + 0.59f * specularColorGreen + 0.11f * specularColorBlue;
 	}
 
-	@Override
 	public float getAmbientColorBlue()
 	{
 		return ambientColorBlue;
 	}
 
-	@Override
 	public float getAmbientColorRed()
 	{
 		return ambientColorRed;
 	}
 
-	@Override
 	public float getAmbientColorGreen()
 	{
 		return ambientColorGreen;
@@ -582,25 +579,21 @@ public class Material
 		ambientColorBlue  = (float)(   rgb         & 0xFF ) / 255.0f;
 	}
 
-	@Override
 	public float getDiffuseColorRed()
 	{
 		return diffuseColorRed;
 	}
 
-	@Override
 	public float getDiffuseColorGreen()
 	{
 		return diffuseColorGreen;
 	}
 
-	@Override
 	public float getDiffuseColorBlue()
 	{
 		return diffuseColorBlue;
 	}
 
-	@Override
 	public float getDiffuseColorAlpha()
 	{
 		return diffuseColorAlpha;
@@ -659,19 +652,16 @@ public class Material
 		diffuseColorAlpha = ( iAlpha < 255 ) ? ( (float)iAlpha / 255.0f ) : 1.0f;
 	}
 
-	@Override
 	public float getSpecularColorRed()
 	{
 		return specularColorRed;
 	}
 
-	@Override
 	public float getSpecularColorGreen()
 	{
 		return specularColorGreen;
 	}
 
-	@Override
 	public float getSpecularColorBlue()
 	{
 		return specularColorBlue;
@@ -710,25 +700,21 @@ public class Material
 		specularColorBlue  = (float)(   rgb         & 0xFF ) / 255.0f;
 	}
 
-	@Override
 	public int getShininess()
 	{
 		return shininess;
 	}
 
-	@Override
 	public float getEmissiveColorRed()
 	{
 		return emissiveColorRed;
 	}
 
-	@Override
 	public float getEmissiveColorGreen()
 	{
 		return emissiveColorGreen;
 	}
 
-	@Override
 	public float getEmissiveColorBlue()
 	{
 		return emissiveColorBlue;
@@ -776,19 +762,16 @@ public class Material
 		emissiveColorBlue  = (float)(   rgb         & 0xFF ) / 255.0f;
 	}
 
-	@Override
 	public TextureMap getColorMap()
 	{
 		return TextTools.isEmpty( colorMap ) ? null : new MaterialTextureMap( colorMap, colorMapWidth, colorMapHeight );
 	}
 
-	@Override
 	public TextureMap getBumpMap()
 	{
 		return TextTools.isEmpty( bumpMap ) ? null : new MaterialTextureMap( bumpMap, bumpMapWidth, bumpMapHeight );
 	}
 
-	@Override
 	public ReflectionMap getReflectionMap()
 	{
 		return TextTools.isEmpty( reflectionMap ) ? null : new MaterialReflectionMap( reflectionMap, reflectionMin, reflectionMax, reflectionRed, reflectionGreen, reflectionBlue );
@@ -843,13 +826,12 @@ public class Material
 		 * @param   physicalWidth   Physical width of the texture, in meters.
 		 * @param   physicalHeight  Physical height of the texture, in meters.
 		 */
-		public MaterialTextureMap( @Nullable final String map, final float physicalWidth, final float physicalHeight )
+		protected MaterialTextureMap( @Nullable final String map, final float physicalWidth, final float physicalHeight )
 		{
 			super( physicalWidth, physicalHeight );
 			_map = map;
 		}
 
-		@Override
 		@Nullable
 		public BufferedImage getImage( final boolean useCache )
 		{
@@ -944,31 +926,26 @@ public class Material
 			_reflectionBlue = reflectionBlue;
 		}
 
-		@Override
 		public float getReflectivityMin()
 		{
 			return _reflectionMin;
 		}
 
-		@Override
 		public float getReflectivityMax()
 		{
 			return _reflectionMax;
 		}
 
-		@Override
 		public float getIntensityRed()
 		{
 			return _reflectionRed;
 		}
 
-		@Override
 		public float getIntensityGreen()
 		{
 			return _reflectionGreen;
 		}
 
-		@Override
 		public float getIntensityBlue()
 		{
 			return _reflectionBlue;
