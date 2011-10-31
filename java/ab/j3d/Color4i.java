@@ -30,7 +30,7 @@ import java.io.*;
  * @version $Revision$ ($Date$, $Author$)
  */
 public class Color4i
-	implements Serializable
+	implements Color4, Serializable
 {
 	/**
 	 * Serialized data version.
@@ -40,22 +40,34 @@ public class Color4i
 	/**
 	 * Red component (0.0 - 255).
 	 */
-	private int _red;
+	private final int _red;
 
 	/**
 	 * Green component (0.0 - 255).
 	 */
-	private int _green;
+	private final int _green;
 
 	/**
 	 * Blue component (0.0 - 255).
 	 */
-	private int _blue;
+	private final int _blue;
 
 	/**
 	 * Alpha value (0 - 255 = transparent - opaque).
 	 */
-	private int _alpha;
+	private final int _alpha;
+
+	/**
+	 * Create color from integer encoded in ARGB format (bits 0-7: blue,
+	 * bits 8-15: green, bits 16-23: red, bits 24-31: alpha). If the alpha is
+	 * zero, it is automatically changed to 255 (opaque).
+	 *
+	 * @param   argb    Color as ARGB-encoded integer.
+	 */
+	public Color4i( final int argb )
+	{
+		this( ( argb >> 16 ) & 0xFF, ( argb >> 8 ) & 0xFF, argb & 0xFF, ( argb < 0x1000000 ) ? 255 : ( argb >> 24 & 0xFF ) );
+	}
 
 	/**
 	 * Create color. Alpha is set to fully opaque.
@@ -110,241 +122,53 @@ public class Color4i
 		_alpha = alpha;
 	}
 
-	/**
-	 * Set color. Alpha is set to fully opaque.
-	 *
-	 * @param   red     Red component (0 - 255).
-	 * @param   green   Green component (0 - 255).
-	 * @param   blue    Blue component (0 - 255).
-	 */
-	public void setColor( final int red, final int green, final int blue )
+	public float getRedFloat()
 	{
-		setColor( red, green, blue, 255 );
+		return (float) getRedInt() / 255.0f;
 	}
 
-	/**
-	 * Set color. Alpha is set to 1 (fully opaque).
-	 *
-	 * @param   red     Red component (0 - 255).
-	 * @param   green   Green component (0 - 255).
-	 * @param   blue    Blue component (0 - 255).
-	 * @param   alpha   Alpha value (0 - 255 = transparent - opaque).
-	 */
-	public void setColor( final int red, final int green, final int blue, final int alpha )
-	{
-		setRed( red );
-		setGreen( green );
-		setBlue( blue );
-		setAlpha( alpha );
-	}
-
-	/**
-	 * Set color. Alpha is set to fully opaque.
-	 *
-	 * @param   red     Red component (0.0 - 1.0).
-	 * @param   green   Green component (0.0 - 1.0).
-	 * @param   blue    Blue component (0.0 - 1.0).
-	 */
-	public void setColor( final float red, final float green, final float blue )
-	{
-		setColor( red, green, blue, 1.0f );
-	}
-
-	/**
-	 * Set color.
-	 *
-	 * @param   red     Red component (0.0 - 1.0).
-	 * @param   green   Green component (0.0 - 1.0).
-	 * @param   blue    Blue component (0.0 - 1.0).
-	 * @param   alpha   Alpha value (0.0 - 1.0 = transparent - opaque).
-	 */
-	public void setColor( final float red, final float green, final float blue, final float alpha )
-	{
-		setRed( red );
-		setGreen( green );
-		setBlue( blue );
-		setAlpha( alpha );
-	}
-
-	/**
-	 * Get red component as integer.
-	 *
-	 * @return  Red component (0 - 255).
-	 */
-	public int getRed()
+	public int getRedInt()
 	{
 		return _red;
 	}
 
-	/**
-	 * Set red component.
-	 *
-	 * @param   red     Red component (0 - 255).
-	 */
-	public void setRed( final int red )
+	public float getGreenFloat()
 	{
-		_red = red;
+		return (float) getGreenInt() / 255.0f;
 	}
 
-	/**
-	 * Get red component.
-	 *
-	 * @return  Red component (0.0 - 1.0).
-	 */
-	public float getRedFloat()
-	{
-		return (float) getRed() / 255.0f;
-	}
-
-	/**
-	 * Set red component.
-	 *
-	 * @param   red     Red component (0.0 - 1.0).
-	 */
-	public void setRed( final float red )
-	{
-		setRed( Math.round( red * 255.0f ) );
-	}
-
-	/**
-	 * Get green component as integer.
-	 *
-	 * @return  Green component (0 - 255).
-	 */
-	public int getGreen()
+	public int getGreenInt()
 	{
 		return _green;
 	}
 
-	/**
-	 * Set green component.
-	 *
-	 * @param   green     Green component (0 - 255).
-	 */
-	public void setGreen( final int green )
+	public float getBlueFloat()
 	{
-		_green = green;
+		return (float) getBlueInt() / 255.0f;
 	}
 
-	/**
-	 * Get green component.
-	 *
-	 * @return  Green component (0.0 - 1.0).
-	 */
-	public float getGreenFloat()
-	{
-		return (float) getGreen() / 255.0f;
-	}
-
-	/**
-	 * Set green component.
-	 *
-	 * @param   green     Green component (0.0 - 1.0).
-	 */
-	public void setGreen( final float green )
-	{
-		setGreen( Math.round( green * 255.0f ) );
-	}
-
-	/**
-	 * Get blue component as integer.
-	 *
-	 * @return  Blue component (0 - 255).
-	 */
-	public int getBlue()
+	public int getBlueInt()
 	{
 		return _blue;
 	}
 
-	/**
-	 * Set blue component.
-	 *
-	 * @param   blue     Blue component (0 - 255).
-	 */
-	public void setBlue( final int blue )
+	public float getAlphaFloat()
 	{
-		_blue = blue;
+		return (float) getAlphaInt() / 255.0f;
 	}
 
-	/**
-	 * Get blue component.
-	 *
-	 * @return  Blue component (0.0 - 1.0).
-	 */
-	public float getBlueFloat()
-	{
-		return (float) getBlue() / 255.0f;
-	}
-
-	/**
-	 * Set blue component.
-	 *
-	 * @param   blue     Blue component (0.0 - 1.0).
-	 */
-	public void setBlue( final float blue )
-	{
-		setBlue( Math.round( blue * 255.0f ) );
-	}
-
-	/**
-	 * Get alpha value as integer.
-	 *
-	 * @return  Alpha value (0 - 255 = transparent - opaque).
-	 */
-	public int getAlpha()
+	public int getAlphaInt()
 	{
 		return _alpha;
 	}
 
-	/**
-	 * Set alpha value.
-	 *
-	 * @param   alpha     Alpha value (0 - 255 = transparent - opaque).
-	 */
-	public void setAlpha( final int alpha )
-	{
-		_alpha = alpha;
-	}
-
-	/**
-	 * Get alpha value.
-	 *
-	 * @return  Alpha value (0.0 - 1.0 = transparent - opaque).
-	 */
-	public float getAlphaFloat()
-	{
-		return (float) getAlpha() / 255.0f;
-	}
-
-	/**
-	 * Set alpha value.
-	 *
-	 * @param   alpha     Alpha value (0.0 - 1.0 = transparent - opaque).
-	 */
-	public void setAlpha( final float alpha )
-	{
-		setAlpha( Math.round( alpha * 255.0f ) );
-	}
-
-	/**
-	 * Get color encoded as integer in RGB format (bits 0-7: blue, bits 8-15:
-	 * green, bits 16-23: red).
-	 *
-	 * @return  Color as RGB integer.
-	 */
 	public int getRGB()
 	{
-		return getBlue() | ( getGreen() <<  8 ) | ( getRed() << 16 );
+		return getBlueInt() | ( getGreenInt() <<  8 ) | ( getRedInt() << 16 );
 	}
 
-	/**
-	 * Get color encoded as integer in ARGB format (bits 0-7: blue, bits 8-15:
-	 * green, bits 16-23: red, bits 24-31: alpha).
-	 *
-	 * @return  Color as ARGB integer.
-	 */
 	public int getARGB()
 	{
-		return getBlue() | ( getGreen() <<  8 ) | ( getRed() << 16 ) | ( Math.round( getAlpha() * 255.0f ) << 24 );
+		return getBlueInt() | ( getGreenInt() <<  8 ) | ( getRedInt() << 16 ) | ( Math.round( getAlphaInt() * 255.0f ) << 24 );
 	}
 }
