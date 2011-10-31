@@ -27,6 +27,7 @@ import java.util.List;
 import javax.swing.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
