@@ -100,7 +100,7 @@ public class RenderEngineExample
 		} );
 //		view.setProjectionPolicy( Projector.PARALLEL );
 
-		view.setBackground( Background.createGradient( Color.LIGHT_GRAY, Color.DARK_GRAY, Color.WHITE, Color.WHITE ) );
+		view.setBackground( Background.createGradient( new Color4f(192, 192, 192), new Color4f(64, 64, 64), new Color4f( 255, 255, 255 ), new Color4f( 255, 255, 255 ) ) );
 
 		final Grid grid = view.getGrid();
 		grid.setEnabled( true );
@@ -144,6 +144,7 @@ public class RenderEngineExample
 
 		view.insertControl( new MouseControl()
 		{
+			@Override
 			public EventObject mouseClicked( final ControlInputEvent event )
 			{
 				final List<Face3DIntersection> objects = event.getIntersections();
@@ -174,6 +175,7 @@ public class RenderEngineExample
 			 */
 			private RenderingPolicy _oldRenderingPolicy = null;
 
+			@Override
 			public void mousePressed( final MouseEvent e )
 			{
 				if ( SwingUtilities.isRightMouseButton( e ) )
@@ -183,6 +185,7 @@ public class RenderEngineExample
 				}
 			}
 
+			@Override
 			public void mouseReleased( final MouseEvent e )
 			{
 				if ( SwingUtilities.isRightMouseButton( e ) )
@@ -279,6 +282,7 @@ public class RenderEngineExample
 	{
 		return new PlaneMoveControl( plane2wcs, true )
 			{
+				@Override
 				public boolean mousePressed( final ControlInputEvent event, final ContentNode contentNode, final Vector3D wcsPoint )
 				{
 					final boolean result = super.mousePressed( event, contentNode, wcsPoint );
@@ -300,6 +304,7 @@ public class RenderEngineExample
 					return result;
 				}
 
+				@Override
 				public void mouseReleased( final ControlInputEvent event, final ContentNode contentNode, final Vector3D wcsPoint )
 				{
 					super.mouseReleased( event, contentNode, wcsPoint );

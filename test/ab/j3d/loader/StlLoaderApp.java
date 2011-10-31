@@ -75,7 +75,7 @@ public class StlLoaderApp
 		final RenderEngine renderEngine = new JOGLEngine();
 
 		final View3D view = renderEngine.createView( scene );
-		view.setBackground( Background.createGradient( new Color( 0x677988 ), new Color( 0x174772 ), new Color( 0x85A4BF ), new Color( 0x9FB8CE ) ) );
+		view.setBackground( Background.createGradient( new Color4f( 0x67, 0x79, 0x88 ), new Color4f( 0x17, 0x47, 0x72 ), new Color4f( 0x85, 0xA4, 0xBF ), new Color4f( 0x9F, 0xB8, 0xCE ) ) );
 
 		view.setCameraControl( new FromToCameraControl( view, viewFrom, viewAt ) );
 
