@@ -109,7 +109,7 @@ public class SpheresLightsAndShadows
 		view.setBackClipDistance( 50.0 );
 
 		view.setRenderingPolicy( RenderingPolicy.SOLID );
-		view.setBackground( Background.createSolid( new Color( 0.2f, 0.2f, 0.2f ) ) );
+		view.setBackground( Background.createSolid( new Color4f( 0.2f, 0.2f, 0.2f ) ) );
 	}
 
 	@Override
