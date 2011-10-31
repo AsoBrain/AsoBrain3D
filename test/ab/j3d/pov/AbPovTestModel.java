@@ -455,7 +455,7 @@ public final class AbPovTestModel
 			final Matrix3D transform = Matrix3D.getTranslation( -400.0, 0.0, -250.0 );
 
 			final Object3DBuilder builder = new Object3DBuilder();
-			ShapeTools.addExtrudedShape( builder, shape, 1.0, extrusion, true, transform, true, material, uvMap, false, false, null, null, false, true, material, uvMap, false, true, false, false );
+			builder.addExtrudedShape( ShapeTools.createTessellator( shape, 1.0 ), extrusion, true, transform, true, material, uvMap, false, false, null, null, false, true, material, uvMap, false, true, false, false );
 			result = builder.getObject3D();
 		}
 		else

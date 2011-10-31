@@ -17,13 +17,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.pov;
+package ab.j3d.awt;
 
-import java.util.Locale;
+import java.util.*;
 
-import junit.framework.TestCase;
-
-import com.numdata.oss.junit.ResourceBundleTester;
+import com.numdata.oss.junit.*;
+import junit.framework.*;
 
 /**
  * This class tests the {@link ViewToPovAction} class.

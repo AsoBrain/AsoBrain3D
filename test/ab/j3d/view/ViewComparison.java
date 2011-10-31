@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2008-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,6 +29,7 @@ import java.util.List;
 import javax.swing.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
@@ -134,9 +136,9 @@ public class ViewComparison
 								final AbToPovConverter converter = new AbToPovConverter( MapTools.imageMapDirectory );
 								final PovScene povScene = converter.convert( scene );
 								povScene.add( new PovCamera( cameraName, view2Scene, cameraAngle, aspectRatio ) );
-								povScene.setBackground( new PovVector( Color.GRAY ) );
+								povScene.setBackground( new PovVector( 0.5f, 0.5f, 0.5f ) );
 
-								publish( povScene.render( null , size.width , size.height , null , new PrintWriter( System.err ) , true ) );
+								publish( PovRenderer.render( povScene, null, size.width, size.height, null, new PrintWriter( System.err ), true ) );
 							}
 							Thread.sleep( 1000L );
 						}
@@ -190,10 +192,10 @@ public class ViewComparison
 
 		protected Template()
 		{
-			_cameraLocation = Vector3D.INIT.set( 500.0 , -500.0 , 500.0 );
-			_cameraTarget   = Vector3D.INIT.plus( 0.0 , 150.0 , 40.0 );
-//			_cameraLocation = Vector3D.INIT.set( 4000.0 , 1500.0 , 4000.0 );
-//			_cameraTarget   = Vector3D.INIT.plus( 0.0 , 1500.0 , 40.0 );
+			_cameraLocation = new Vector3D( 500.0 , -500.0 , 500.0 );
+			_cameraTarget   = new Vector3D( 0.0 , 150.0 , 40.0 );
+//			_cameraLocation = new Vector3D( 4000.0 , 1500.0 , 4000.0 );
+//			_cameraTarget   = new Vector3D( 0.0 , 1500.0 , 40.0 );
 		}
 
 		public void setCameraLocation( final Vector3D cameraLocation )
@@ -248,19 +250,19 @@ public class ViewComparison
 			/*
 			 * Test basic specular highlights, smoothing and texturing.
 			 */
-			target.addContentNode( "sphere-1" , Matrix3D.INIT.plus( -100.0 , -100.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , solid    ) );
-			target.addContentNode( "sphere-2" , Matrix3D.INIT.plus(    0.0 , -100.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , solid    ) );
-			target.addContentNode( "sphere-3" , Matrix3D.INIT.plus(  100.0 , -100.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , textured ) );
-			target.addContentNode( "sphere-4" , Matrix3D.INIT.plus( -100.0 ,    0.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , solid    ) );
-			target.addContentNode( "sphere-5" , Matrix3D.INIT.plus(    0.0 ,    0.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , shiny    ) );
-			target.addContentNode( "sphere-6" , Matrix3D.INIT.plus(  100.0 ,    0.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , shinier  ) );
-			target.addContentNode( "box-1"    , Matrix3D.INIT.plus( -140.0 ,   60.0 ,  0.0 ) , new Box3D   ( 80.0 , 80.0 , 80.0 , new BoxUVMap( Scene.MM ) , solid ) );
+			target.addContentNode( "sphere-1" , Matrix3D.getTranslation( -100.0 , -100.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , solid    ) );
+			target.addContentNode( "sphere-2" , Matrix3D.getTranslation(    0.0 , -100.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , solid    ) );
+			target.addContentNode( "sphere-3" , Matrix3D.getTranslation(  100.0 , -100.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , textured ) );
+			target.addContentNode( "sphere-4" , Matrix3D.getTranslation( -100.0 ,    0.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , solid    ) );
+			target.addContentNode( "sphere-5" , Matrix3D.getTranslation(    0.0 ,    0.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , shiny    ) );
+			target.addContentNode( "sphere-6" , Matrix3D.getTranslation(  100.0 ,    0.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , shinier  ) );
+			target.addContentNode( "box-1"    , Matrix3D.getTranslation( -140.0 ,   60.0 ,  0.0 ) , new Box3D   ( 80.0 , 80.0 , 80.0 , new BoxUVMap( Scene.MM ) , solid ) );
 
 			/*
 			 * Test advanced texturing. (i.e. with non-white diffuse color)
 			 */
-			target.addContentNode( "sphere-7" , Matrix3D.INIT.plus(    0.0 ,  100.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , textured2 ) );
-			target.addContentNode( "sphere-8" , Matrix3D.INIT.plus(  100.0 ,  100.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , textured3 ) );
+			target.addContentNode( "sphere-7" , Matrix3D.getTranslation(    0.0 ,  100.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , textured2 ) );
+			target.addContentNode( "sphere-8" , Matrix3D.getTranslation(  100.0 ,  100.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , textured3 ) );
 
 			/*
 			 * Test combinations of diffuse and ambient colors.
@@ -280,7 +282,7 @@ public class ViewComparison
 
 					final double x = (double)( i % 3 ) * 100.0 - 100.0;
 					final double y = (double)( i / 3 ) * 100.0 + 200.0;
-					target.addContentNode( "ambient-sphere-" + j , Matrix3D.INIT.plus( x , y , z ) , new Sphere3D( 40.0 , 16 , 16 , material ) );
+					target.addContentNode( "ambient-sphere-" + j , Matrix3D.getTranslation( x , y , z ) , new Sphere3D( 40.0 , 16 , 16 , material ) );
 
 					i++;
 					j++;
@@ -293,9 +295,9 @@ public class ViewComparison
 			 */
 			for ( int i = 0 ; i < 50 ; i++ )
 			{
-				target.addContentNode( "distant-sphere-a-" + i , Matrix3D.INIT.plus( -100.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( 40.0 , 16 , 16 , solid    ) );
-				target.addContentNode( "distant-sphere-b-" + i , Matrix3D.INIT.plus(    0.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( 40.0 , 16 , 16 , shiny    ) );
-				target.addContentNode( "distant-sphere-c-" + i , Matrix3D.INIT.plus(  100.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( 40.0 , 16 , 16 , textured ) );
+				target.addContentNode( "distant-sphere-a-" + i , Matrix3D.getTranslation( -100.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( 40.0 , 16 , 16 , solid    ) );
+				target.addContentNode( "distant-sphere-b-" + i , Matrix3D.getTranslation(    0.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( 40.0 , 16 , 16 , shiny    ) );
+				target.addContentNode( "distant-sphere-c-" + i , Matrix3D.getTranslation(  100.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( 40.0 , 16 , 16 , textured ) );
 			}
 
 			createLights( target );
@@ -312,7 +314,7 @@ public class ViewComparison
 			final Light3D pointLight = new Light3D();
 			pointLight.setIntensity( 0.5f );
 			pointLight.setFallOff( FALL_OFF );
-			target.addContentNode( "light-1" , Matrix3D.INIT.plus(  1000.0 ,  -1000.0 ,  1000.0 ) , pointLight );
+			target.addContentNode( "light-1" , Matrix3D.getTranslation(  1000.0 ,  -1000.0 ,  1000.0 ) , pointLight );
 
 			final SpotLight3D spotLight = new SpotLight3D( Vector3D.normalize( 1.0 , 1.0 , -1.0 ) , 10.0f );
 			spotLight.setIntensity( 2.0f );

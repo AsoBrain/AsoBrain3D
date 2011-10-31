@@ -17,27 +17,28 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view;
+package ab.j3d.awt;
 
 import java.awt.event.*;
 import java.util.*;
 
+import ab.j3d.view.*;
 import com.numdata.oss.*;
 import com.numdata.oss.ui.*;
 
 /**
- * This action toggles the grid on/off.
+ * This action toggles perspective projection on/off.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public class ToggleGridAction
+public class TogglePerspectiveAction
 	extends ToggleAction
 {
 	/**
 	 * The {@link View3D} this action belongs to.
 	 */
-	private View3D _view;
+	private final View3D _view;
 
 	/**
 	 * Create action.
@@ -45,9 +46,9 @@ public class ToggleGridAction
 	 * @param   locale  Preferred locale for internationalization.
 	 * @param   view    View to create action for.
 	 */
-	public ToggleGridAction( final Locale locale , final View3D view )
+	public TogglePerspectiveAction( final Locale locale , final View3D view )
 	{
-		super( ResourceBundleTools.getBundle( ToggleGridAction.class , locale ) , "toggleGrid" );
+		super( ResourceBundleTools.getBundle( TogglePerspectiveAction.class , locale ) , "togglePerspective" );
 		_view = view;
 	}
 
@@ -61,19 +62,22 @@ public class ToggleGridAction
 	public boolean getValue()
 	{
 		final View3D view = _view;
-		final Grid grid = view.getGrid();
-		return grid.isEnabled();
+		return ( view.getProjectionPolicy() == ProjectionPolicy.PERSPECTIVE );
 	}
 
 	@Override
 	public void setValue( final boolean value )
 	{
 		final View3D view = _view;
-		final Grid grid = view.getGrid();
-		if ( value != grid.isEnabled() )
+		switch ( view.getProjectionPolicy() )
 		{
-			grid.setEnabled( value );
-			view.update();
+			case PARALLEL:
+				view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
+				break;
+
+			case PERSPECTIVE:
+				view.setProjectionPolicy( ProjectionPolicy.PARALLEL );
+				break;
 		}
 	}
 }

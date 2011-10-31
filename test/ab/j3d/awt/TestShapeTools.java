@@ -1,8 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2009 Peter S. Heijnen
- * Copyright (C) 2009-2009 Numdata BV
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view.java2d;
+package ab.j3d.awt;
 
 import java.awt.*;
 import java.awt.geom.*;
@@ -28,21 +27,21 @@ import ab.j3d.geom.*;
 import junit.framework.*;
 
 /**
- * This class tests the {@link Java2dTools} class.
+ * This class tests the {@link ShapeTools} class.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public class TestJava2dTools
+public class TestShapeTools
 	extends TestCase
 {
 	/**
 	 * Name of this class.
 	 */
-	private static final String CLASS_NAME = TestJava2dTools.class.getName();
+	private static final String CLASS_NAME = TestShapeTools.class.getName();
 
 	/**
-	 * Test {@link Java2dTools#getShapeClass} method.
+	 * Test {@link ShapeTools#getShapeClass} method.
 	 */
 	public static void testGetShapeClass()
 	{
@@ -97,9 +96,9 @@ public class TestJava2dTools
 			System.out.println( " - Test #" + ( i + 1 ) );
 
 			final Test test = tests[ i ];
-			assertEquals( "Unexpected 'getShapeClass( shape.getPathIterator( null ) )' result", test._expected, Java2dTools.getShapeClass( test._shape.getPathIterator( null ) ) );
-			assertEquals( "Unexpected 'getShapeClass( shape.getPathIterator( null, 0.5 ) )' result", test._expected,  Java2dTools.getShapeClass( test._shape.getPathIterator( null, 0.5 ) ) );
-			assertEquals( "Unexpected 'getShapeClass( shape )' result", test._expected, Java2dTools.getShapeClass( test._shape ) );
+			assertEquals( "Unexpected 'getShapeClass( shape.getPathIterator( null ) )' result", test._expected, ShapeTools.getShapeClass( test._shape.getPathIterator( null ) ) );
+			assertEquals( "Unexpected 'getShapeClass( shape.getPathIterator( null, 0.5 ) )' result", test._expected,  ShapeTools.getShapeClass( test._shape.getPathIterator( null, 0.5 ) ) );
+			assertEquals( "Unexpected 'getShapeClass( shape )' result", test._expected, ShapeTools.getShapeClass( test._shape ) );
 		}
 	}
 }

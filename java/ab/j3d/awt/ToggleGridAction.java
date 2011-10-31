@@ -17,21 +17,22 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view;
+package ab.j3d.awt;
 
 import java.awt.event.*;
 import java.util.*;
 
+import ab.j3d.view.*;
 import com.numdata.oss.*;
 import com.numdata.oss.ui.*;
 
 /**
- * This action toggles perspective projection on/off.
+ * This action toggles the grid on/off.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public class TogglePerspectiveAction
+public class ToggleGridAction
 	extends ToggleAction
 {
 	/**
@@ -45,16 +46,10 @@ public class TogglePerspectiveAction
 	 * @param   locale  Preferred locale for internationalization.
 	 * @param   view    View to create action for.
 	 */
-	public TogglePerspectiveAction( final Locale locale , final View3D view )
+	public ToggleGridAction( final Locale locale , final View3D view )
 	{
-		super( ResourceBundleTools.getBundle( TogglePerspectiveAction.class , locale ) , "togglePerspective" );
+		super( ResourceBundleTools.getBundle( ToggleGridAction.class , locale ) , "toggleGrid" );
 		_view = view;
-	}
-
-	@Override
-	public boolean isEnabled()
-	{
-		return super.isEnabled() && ( _view.getProjectionPolicy() != ProjectionPolicy.ISOMETRIC );
 	}
 
 	@Override
@@ -67,22 +62,19 @@ public class TogglePerspectiveAction
 	public boolean getValue()
 	{
 		final View3D view = _view;
-		return ( view.getProjectionPolicy() == ProjectionPolicy.PERSPECTIVE );
+		final Grid grid = view.getGrid();
+		return grid.isEnabled();
 	}
 
 	@Override
 	public void setValue( final boolean value )
 	{
 		final View3D view = _view;
-		switch ( view.getProjectionPolicy() )
+		final Grid grid = view.getGrid();
+		if ( value != grid.isEnabled() )
 		{
-			case PARALLEL:
-				view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
-				break;
-
-			case PERSPECTIVE:
-				view.setProjectionPolicy( ProjectionPolicy.PARALLEL );
-				break;
+			grid.setEnabled( value );
+			view.update();
 		}
 	}
 }

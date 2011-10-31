@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,7 @@ import java.util.List;
 import javax.swing.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
@@ -254,21 +255,23 @@ public class TessellationExample
 
 		{
 			final Object3DBuilder builder = new Object3DBuilder();
-			builder.addFilledShape2D( flipY, area, 0.1, Materials.GREEN, UV_MAP, false, true, false );
+			ShapeTools.addFilledShape2D( builder, flipY, area, 0.1, Materials.GREEN, UV_MAP, false, true, false );
 			scene.addContentNode( name + "-1" , Matrix3D.getTranslation( x, y, 0.0), builder.getObject3D() );
 		}
+
+		final Tessellator areaTessellator = ShapeTools.createTessellator( area, 0.1 );
 
 		{
 			final Object3DBuilder builder = new Object3DBuilder();
 			final Vector3D extrusionPos = new Vector3D( 0.0, 0.0, 5.0 );
-			builder.addExtrudedShape( area, 0.1, extrusionPos, true, flipY, true, Materials.BLUE, UV_MAP, false, true, Materials.RED, UV_MAP, false, true, Materials.YELLOW, UV_MAP, false, false, false, false );
+			builder.addExtrudedShape( areaTessellator, extrusionPos, true, flipY, true, Materials.BLUE, UV_MAP, false, true, Materials.RED, UV_MAP, false, true, Materials.YELLOW, UV_MAP, false, false, false, false );
 			scene.addContentNode( name + "-2" , Matrix3D.getTranslation( x, y - offsetY, 0.0), builder.getObject3D() );
 		}
 
 		{
 			final Object3DBuilder builder = new Object3DBuilder();
 			final Vector3D extrusionNeg = new Vector3D( 0.0, 0.0, -5.0 );
-			builder.addExtrudedShape( area, 0.1, extrusionNeg, true, flipY, true, Materials.SILVER, UV_MAP, false, true, Materials.CHROME, UV_MAP, false, true, Materials.GOLD, UV_MAP, false, false, false, false );
+			builder.addExtrudedShape( areaTessellator, extrusionNeg, true, flipY, true, Materials.SILVER, UV_MAP, false, true, Materials.CHROME, UV_MAP, false, true, Materials.GOLD, UV_MAP, false, false, false, false );
 			scene.addContentNode( name + "-3" , Matrix3D.getTranslation( x, y - 2 * offsetY, 0.0), builder.getObject3D() );
 		}
 	}

@@ -18,11 +18,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view;
+package ab.j3d.awt;
 
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.view.*;
 import com.numdata.oss.*;
 import com.numdata.oss.ui.*;
 import org.jetbrains.annotations.*;
