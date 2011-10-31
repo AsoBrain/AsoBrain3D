@@ -29,13 +29,12 @@ import java.util.List;
 import ab.j3d.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import com.numdata.oss.io.*;
 import com.numdata.oss.ui.*;
 import junit.framework.*;
 
 /**
- * This class tests the conversion of the testmodel to POV-Ray.
- * All objects are converted seperately.
+ * This class tests the conversion of the test model to POV-Ray.
+ * All objects are converted separately.
  *
  * @see     AbPovTestModel
  * @see     AbToPovConverter
@@ -43,7 +42,7 @@ import junit.framework.*;
  * @author  Rob Veneberg
  * @version $Revision$ $Date$
  */
-public final class TestAbToPovConverter
+public class TestAbToPovConverter
 	extends TestCase
 {
 	/**
@@ -51,9 +50,9 @@ public final class TestAbToPovConverter
 	 * All textures should be declared.
 	 *
 	 * @throws IOException When there was a problem writing to the
-	 * {@link IndentingWriter}.
+	 * {@link PovWriter}.
 	 */
-	public static void testDeclarations()
+	public void testDeclarations()
 		throws IOException
 	{
 		ImageTools.addToSearchPath( getTestDirectory() );
@@ -66,9 +65,9 @@ public final class TestAbToPovConverter
 			final AbToPovConverter converter       = new AbToPovConverter( texturesDirectory );
 			final PovScene         povScene        = converter.convert( scene );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
+			final PovWriter povWriter = PovScene.getPovWriter( stringWriter );
 
-			povScene.write( indentingWriter );
+			povScene.write( povWriter );
 
 			final String povScript = stringWriter.toString();
 
@@ -492,9 +491,9 @@ public final class TestAbToPovConverter
 	 * {@link PovCamera}.
 	 *
 	 * @throws IOException When there was a problem writing to the
-	 * {@link IndentingWriter}.
+	 * {@link PovWriter}.
 	 */
-	public static void testView3DToPovCamera()
+	public void testView3DToPovCamera()
 		throws IOException
 	{
 		final String actual;
@@ -511,9 +510,9 @@ public final class TestAbToPovConverter
 			final PovCamera camera = new PovCamera( name, view2scene, angle, aspectRatio );
 
 			final Writer stringWriter = new StringWriter();
-			final IndentingWriter indentingWriter = PovScene.getIndentingWriter( stringWriter );
+			final PovWriter povWriter = PovScene.getPovWriter( stringWriter );
 
-			camera.write( indentingWriter );
+			camera.write( povWriter );
 			actual = stringWriter.toString();
 		}
 
@@ -536,9 +535,9 @@ public final class TestAbToPovConverter
 	 * x-axis) {@link Box3D} object to a {@link PovBox}.
 	 *
 	 * @throws IOException When there was a problem writing to the
-	 * {@link IndentingWriter}.
+	 * {@link PovWriter}.
 	 */
-	public static void testRedXRotatedBox3DToPov()
+	public void testRedXRotatedBox3DToPov()
 		throws IOException
 	{
 		final String actual;
@@ -547,9 +546,9 @@ public final class TestAbToPovConverter
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovGeometry      povBox          = converter.convertBox3D( Matrix3D.getTransform( -10.0 , 0.0 , 0.0 , -200.0 , 0.0 , -250.0 ) , testModel.getRedXRotatedBox3D() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
+			final PovWriter povWriter = PovScene.getPovWriter( stringWriter );
 
-			povBox.write( indentingWriter );
+			povBox.write( povWriter );
 			actual = stringWriter.toString();
 		}
 
@@ -575,9 +574,9 @@ public final class TestAbToPovConverter
 	 * are also tested.
 	 *
 	 * @throws IOException When there was a problem writing to the
-	 * {@link IndentingWriter}.
+	 * {@link PovWriter}.
 	 */
-	public static void testGreenYRotatedBox3DToPov()
+	public void testGreenYRotatedBox3DToPov()
 		throws IOException
 	{
 		final String actual;
@@ -586,9 +585,9 @@ public final class TestAbToPovConverter
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovGeometry      povBox          = converter.convertBox3D( Matrix3D.getTransform(  0.0 , 10.0 ,  0.0 ,  -50.0 ,   0.0 , -250.0 ) , testModel.getGreenYRotatedBox3D() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
+			final PovWriter povWriter = PovScene.getPovWriter( stringWriter );
 
-			povBox.write( indentingWriter );
+			povBox.write( povWriter );
 			actual = stringWriter.toString();
 		}
 
@@ -612,9 +611,9 @@ public final class TestAbToPovConverter
 	 * z-axis) {@link Box3D} object to a {@link PovBox}.
 	 *
 	 * @throws IOException When there was a problem writing to the
-	 * {@link IndentingWriter}.
+	 * {@link PovWriter}.
 	 */
-	public static void testBlueZRotatedBox3DToPov()
+	public void testBlueZRotatedBox3DToPov()
 		throws IOException
 	{
 		final String actual;
@@ -623,9 +622,9 @@ public final class TestAbToPovConverter
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovGeometry      povBox          = converter.convertBox3D( Matrix3D.getTransform(  0.0 ,  0.0 , 10.0 ,  200.0 ,   0.0 , -250.0 ) , testModel.getBlueZRotatedBox3D() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
+			final PovWriter povWriter = PovScene.getPovWriter( stringWriter );
 
-			povBox.write( indentingWriter );
+			povBox.write( povWriter );
 			actual = stringWriter.toString();
 		}
 
@@ -649,9 +648,9 @@ public final class TestAbToPovConverter
 	 * (a wooden panel) with a different side-texture to a {@link PovMesh2}.
 	 *
 	 * @throws IOException When there was a problem writing to the
-	 * {@link IndentingWriter}.
+	 * {@link PovWriter}.
 	 */
-	public static void testTexturedBox3DToPov()
+	public void testTexturedBox3DToPov()
 		throws IOException
 	{
 		final String actual;
@@ -660,9 +659,9 @@ public final class TestAbToPovConverter
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovMesh2         mesh            = converter.convertObject3D( Matrix3D.getTransform(  0.0 ,  0.0 , 45.0 , -350.0 ,   0.0 ,    0.0 ) , testModel.getTexturedBox3D() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
+			final PovWriter povWriter = PovScene.getPovWriter( stringWriter );
 
-			mesh.write( indentingWriter );
+			mesh.write( povWriter );
 			actual = stringWriter.toString();
 		}
 
@@ -714,9 +713,9 @@ public final class TestAbToPovConverter
 	 * {@link PovSphere}.
 	 *
 	 * @throws IOException When there was a problem writing to the
-	 * {@link IndentingWriter}.
+	 * {@link PovWriter}.
 	 */
-	public static void testSphere3DToPov()
+	public void testSphere3DToPov()
 		throws IOException
 	{
 		final String actual;
@@ -725,9 +724,9 @@ public final class TestAbToPovConverter
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovGeometry      sphere          = converter.convertSphere3D( Matrix3D.INIT.setTranslation( 0.0 , 300.0 , -200.0 ) , testModel.getSphere3D() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
+			final PovWriter povWriter = PovScene.getPovWriter( stringWriter );
 
-			sphere.write( indentingWriter );
+			sphere.write( povWriter );
 			actual = stringWriter.toString();
 		}
 
@@ -750,9 +749,9 @@ public final class TestAbToPovConverter
 	 * {@link PovCylinder}.
 	 *
 	 * @throws IOException When there was a problem writing to the
-	 * {@link IndentingWriter}.
+	 * {@link PovWriter}.
 	 */
-	public static void testCylinder3DToPov()
+	public void testCylinder3DToPov()
 		throws IOException
 	{
 		final String actual;
@@ -761,9 +760,9 @@ public final class TestAbToPovConverter
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovGeometry      cylinder        = converter.convertCylinder3D( Matrix3D.INIT.setTranslation( 0.0 , 0.0 , 150.0 ) , testModel.getCylinder3D() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
+			final PovWriter povWriter = PovScene.getPovWriter( stringWriter );
 
-			cylinder.write( indentingWriter );
+			cylinder.write( povWriter );
 			actual = stringWriter.toString();
 		}
 
@@ -787,9 +786,9 @@ public final class TestAbToPovConverter
 	 * a {@link PovCylinder}.
 	 *
 	 * @throws IOException When there was a problem writing to the
-	 * {@link IndentingWriter}.
+	 * {@link PovWriter}.
 	 */
-	public static void testCone3DToPov()
+	public void testCone3DToPov()
 		throws IOException
 	{
 		final String actual;
@@ -798,9 +797,9 @@ public final class TestAbToPovConverter
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovGeometry      cylinder        = converter.convertCone3D( Matrix3D.getTransform( -45.0 , 0.0 , 0.0 , 250.0 , 0.0 , 0.0 ) , testModel.getCone3D() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
+			final PovWriter povWriter = PovScene.getPovWriter( stringWriter );
 
-			cylinder.write( indentingWriter );
+			cylinder.write( povWriter );
 			actual = stringWriter.toString();
 		}
 
@@ -824,9 +823,9 @@ public final class TestAbToPovConverter
 	 * with a different texture per face) to a {@link PovMesh2}.
 	 *
 	 * @throws IOException When there was a problem writing to the
-	 * {@link IndentingWriter}.
+	 * {@link PovWriter}.
 	 */
-	public static void testColorCubeToPov()
+	public void testColorCubeToPov()
 		throws IOException
 	{
 		final String actual;
@@ -835,9 +834,9 @@ public final class TestAbToPovConverter
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovGeometry      mesh            = converter.convertObject3D( Matrix3D.INIT , testModel.getColorCube() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
+			final PovWriter povWriter = PovScene.getPovWriter( stringWriter );
 
-			mesh.write( indentingWriter );
+			mesh.write( povWriter );
 			actual = stringWriter.toString();
 		}
 
@@ -890,9 +889,9 @@ public final class TestAbToPovConverter
 	 * with a different texture per face) to a {@link PovMesh2}.
 	 *
 	 * @throws IOException When there was a problem writing to the
-	 * {@link IndentingWriter}.
+	 * {@link PovWriter}.
 	 */
-	public static void testTexturedColorCubeToPov()
+	public void testTexturedColorCubeToPov()
 		throws IOException
 	{
 		final String actual;
@@ -901,9 +900,9 @@ public final class TestAbToPovConverter
 			final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
 			final PovGeometry      mesh            = converter.convertObject3D( Matrix3D.INIT , testModel.getTexturedColorCube() );
 			final StringWriter     stringWriter    = new StringWriter();
-			final IndentingWriter  indentingWriter = PovScene.getIndentingWriter( stringWriter );
+			final PovWriter povWriter = PovScene.getPovWriter( stringWriter );
 
-			mesh.write( indentingWriter );
+			mesh.write( povWriter );
 			actual = stringWriter.toString();
 		}
 
@@ -955,7 +954,7 @@ public final class TestAbToPovConverter
 	 * This method tests the conversion of an extruded {@link java.awt.Shape} to
 	 * a {@link PovMesh2}.
 	 */
-	public static void testExtrudedObject2DAToPov()
+	public void testExtrudedObject2DAToPov()
 	{
 		final AbPovTestModel   testModel       = new AbPovTestModel();
 		final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
@@ -983,7 +982,7 @@ public final class TestAbToPovConverter
 	 * This method tests the conversion of an extruded {@link java.awt.Shape} to
 	 * a {@link PovMesh2}.
 	 */
-	public static void testExtrudedObject2DBToPov()
+	public void testExtrudedObject2DBToPov()
 	{
 		final AbPovTestModel   testModel       = new AbPovTestModel();
 		final AbToPovConverter converter       = new AbToPovConverter( getTexturesDirectory() );
@@ -1014,7 +1013,7 @@ public final class TestAbToPovConverter
 	 *
 	 * @throws  Exception if the test fails.
 	 */
-	public static void testLight3DToPov()
+	public void testLight3DToPov()
 		throws Exception
 	{
 		final String actual;
@@ -1023,9 +1022,9 @@ public final class TestAbToPovConverter
 			final Matrix3D        transform       = Matrix3D.INIT.setTranslation( 500.0 , -500.0 , 500.0 );
 			final PovLight        light           = AbToPovConverter.convertLight3D( transform , testModel.getLight3D() );
 			final StringWriter    stringWriter    = new StringWriter();
-			final IndentingWriter indentingWriter = PovScene.getIndentingWriter( stringWriter );
+			final PovWriter povWriter = PovScene.getPovWriter( stringWriter );
 
-			light.write( indentingWriter );
+			light.write( povWriter );
 			actual = stringWriter.toString();
 		}
 

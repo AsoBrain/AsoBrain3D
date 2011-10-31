@@ -21,7 +21,7 @@
  */
 package ab.j3d.view;
 
-import junit.framework.TestCase;
+import junit.framework.*;
 
 /**
  * Unit test for the {@link Convex2D} class.
@@ -53,12 +53,12 @@ public class TestConvex2D
 	public void testSize()
 	{
 		final Convex2D convex = new Convex2D( 6 );
-		convex.add().setLocation( -1.0, -1.0 ); // A
-		convex.add().setLocation( 1.0, 2.0 );   // B
-		convex.add().setLocation( 1.0, 0.0 );   // C
-		convex.add().setLocation( 2.0, 0.0 );   // D
-		convex.add().setLocation( -2.0, 2.0 );  // E
-		convex.add().setLocation( -1.0, 0.0 );  // F
+		convex.add( -1.0, -1.0 ); // A
+		convex.add( 1.0, 2.0 );   // B
+		convex.add( 1.0, 0.0 );   // C
+		convex.add( 2.0, 0.0 );   // D
+		convex.add( -2.0, 2.0 );  // E
+		convex.add( -1.0, 0.0 );  // F
 		assertEquals( "Unexpected value.", 4, convex.size() );
 	}
 
@@ -83,12 +83,12 @@ public class TestConvex2D
 	public void testArea()
 	{
 		final Convex2D convex = new Convex2D( 6 );
-		convex.add().setLocation( -1.0, -1.0 ); // A
-		convex.add().setLocation( 1.0, 2.0 );   // B
-		convex.add().setLocation( 1.0, 0.0 );   // C
-		convex.add().setLocation( 2.0, 0.0 );   // D
-		convex.add().setLocation( -2.0, 2.0 );  // E
-		convex.add().setLocation( -1.0, 0.0 );  // F
+		convex.add( -1.0, -1.0 ); // A
+		convex.add( 1.0, 2.0 );   // B
+		convex.add( 1.0, 0.0 );   // C
+		convex.add( 2.0, 0.0 );   // D
+		convex.add( -2.0, 2.0 );  // E
+		convex.add( -1.0, 0.0 );  // F
 		assertEquals( "Unexpected value.", 8.0, convex.area(), 0.0 );
 	}
 }
