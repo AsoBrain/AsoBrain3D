@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +20,10 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.awt.Color;
-import java.io.DataInput;
-import java.io.IOException;
+import java.awt.*;
+import java.io.*;
 
-import ab.j3d.Vector3f;
+import ab.j3d.*;
 
 /**
  * Type   : {@link #LIGHT_OBJ}
@@ -48,43 +48,45 @@ class LightChunk
 
 	boolean _attenuateOn;
 
-	LightChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	LightChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		super( dataInput , chunkType , remainingChunkBytes );
+		super( in, chunkType, remainingChunkBytes );
 	}
 
-	protected void processChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		_location = new Vector3f( dataInput.readFloat() , dataInput.readFloat() , dataInput.readFloat() );
+		_location = new Vector3f( readFloat( in ), readFloat( in ), readFloat( in ) );
 
-		super.processChunk( dataInput , chunkType , remainingChunkBytes - 3 * 4 );
+		super.processChunk( in, chunkType, remainingChunkBytes - 3 * 4 );
 	}
 
-	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChildChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 		switch ( chunkType )
 		{
 			case COLOR_FLOAT:
-				_lightColor = new Color( dataInput.readFloat() , dataInput.readFloat() , dataInput.readFloat() , 1.0f );
+				_lightColor = new Color( readFloat( in ), readFloat( in ), readFloat( in ), 1.0f );
 				break;
 
 			case LIGHT_OUT_RANGE:
-				_outerRange = dataInput.readFloat();
+				_outerRange = readFloat( in );
 				break;
 
 			case LIGHT_IN_RANGE:
-				_innerRange = dataInput.readFloat();
+				_innerRange = readFloat( in );
 				break;
 
 			case LIGHT_MULTIPLIER:
-				_multiplier = dataInput.readFloat();
+				_multiplier = readFloat( in );
 				break;
 
 			case LIGHT_SPOTLIGHT:
-				_spotLightChunk = new SpotLightChunk( dataInput , chunkType , remainingChunkBytes );
+				_spotLightChunk = new SpotLightChunk( in, chunkType, remainingChunkBytes );
 				break;
 
 			case LIGHT_ATTENU_ON:
@@ -92,7 +94,7 @@ class LightChunk
 				break;
 
 			default : // Ignore unknown chunks
-				skipFully( dataInput , remainingChunkBytes );
+				skipFully( in, remainingChunkBytes );
 		}
 	}
 }

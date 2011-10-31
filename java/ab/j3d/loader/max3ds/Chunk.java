@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,9 +20,7 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.io.DataInput;
-import java.io.EOFException;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Base class of all chunks.
@@ -155,45 +154,45 @@ abstract class Chunk
 	/**
 	 * Construct chunk from data input.
 	 *
-	 * @param   dataInput           Data input source.
+	 * @param   in                  Input stream.
 	 * @param   chunkType           This chunk's type.
 	 * @param   remainingChunkBytes Remaining number of unread bytes in this chunk.
 	 *
-	 * @throws  IOException if a read error occured.
+	 * @throws  IOException if a read error occurred.
 	 */
-	protected Chunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	protected Chunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-//		System.out.println( this + "() - type=0x" + Integer.toHexString( chunkType ) + ", remainingChunkBytes=" + remainingChunkBytes );
-		processChunk( dataInput , chunkType , remainingChunkBytes );
+//		System.out.println( this + "( final InputStream in ) - type=0x" + Integer.toHexString( chunkType ) + ", remainingChunkBytes=" + remainingChunkBytes );
+		processChunk( in, chunkType, remainingChunkBytes );
 	}
 
 	/**
 	 * Read chunk data and process its sub chunks.
 	 *
-	 * @param   dataInput           Data input source.
+	 * @param   in                  Input stream.
 	 * @param   chunkType           This chunk's type.
 	 * @param   remainingChunkBytes Remaining number of unread bytes in this chunk.
 	 *
-	 * @throws  IOException if a read error occured.
+	 * @throws  IOException if a read error occurred.
 	 */
-	protected void processChunk( final DataInput dataInput, final int chunkType , final int remainingChunkBytes )
+	protected void processChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-//		System.out.println( "  Chunk.processChunk( ... , chunkType=0x" + Integer.toHexString( chunkType ) + " , remainingChunkBytes=" + remainingChunkBytes + " )" );
+//		System.out.println( "  Chunk.processChunk( ..., chunkType=0x" + Integer.toHexString( chunkType ) + ", remainingChunkBytes=" + remainingChunkBytes + " )" );
 		int todo = remainingChunkBytes;
 		while ( todo > 0 )
 		{
-			final int childType = dataInput.readUnsignedShort();
-			final int childSize = dataInput.readInt();
+			final int childType = readUnsignedShort( in );
+			final int childSize = readInt( in );
 
 			if ( childSize > todo )
 			{
 				throw new IOException( "Header length doesn't match up: End ID#:" + Integer.toHexString( childType ) + " len left to read=" + todo + " parentID#=" + Integer.toHexString( chunkType ) );
 			}
 
-//			System.out.println( "    processChildChunk( ... , chunkType=0x" + Integer.toHexString( childType ) + " , remainingChunkBytes=" + ( childSize - 6 ) + " )" );
-			processChildChunk( dataInput , childType , childSize - 6 );
+//			System.out.println( "    processChildChunk( ..., chunkType=0x" + Integer.toHexString( childType ) + ", remainingChunkBytes=" + ( childSize - 6 ) + " )" );
+			processChildChunk( in, childType, childSize - 6 );
 
 			todo -= childSize;
 		}
@@ -202,32 +201,34 @@ abstract class Chunk
 	/**
 	 * Process a child chunk.
 	 *
-	 * @param   dataInput           Data input source.
+	 * @param   in                  Input stream.
 	 * @param   chunkType           Child's chunk type.
 	 * @param   remainingChunkBytes Remaining number of unread bytes in child chunk.
 	 *
-	 * @throws  IOException if a read error occured.
+	 * @throws  IOException if a read error occurred.
 	 */
-	protected abstract void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	protected abstract void processChildChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException;
 
 	/**
 	 * Skip number of data bytes.
 	 *
-	 * @param   dataInput       Data input source.
+	 * @param   in              Input stream.
 	 * @param   numberOfBytes   Number of bytes to skip.
 	 *
-	 * @throws  IOException if a read error occured.
+	 * @throws  IOException if a read error occurred.
 	 */
-	protected static void skipFully( final DataInput dataInput , final int numberOfBytes )
+	protected static void skipFully( final InputStream in, final int numberOfBytes )
 		throws IOException
 	{
 		int remainder = numberOfBytes;
 		while ( remainder > 0 )
 		{
-			final int skipped = dataInput.skipBytes( remainder );
-			if ( skipped <= 0 )
+			final long skipped = in.skip( remainder );
+			if ( skipped <= 0L )
+			{
 				throw new EOFException();
+			}
 
 			remainder -= skipped;
 		}
@@ -237,18 +238,18 @@ abstract class Chunk
 	 * Read 0-terminated string with variable data length The number of bytes
 	 * read is the length of the returned string + 1.
 	 *
-	 * @param   dataInput   Data input source.
+	 * @param   in  Input stream.
 	 *
 	 * @return  String that was read.
 	 *
-	 * @throws  IOException if a read error occured.
+	 * @throws  IOException if a read error occurred.
 	 */
-	protected static String readCString( final DataInput dataInput )
+	protected static String readCString( final InputStream in )
 		throws IOException
 	{
 		final StringBuilder sb = new StringBuilder();
 
-		for ( byte b = dataInput.readByte() ; b != (byte)0 ; b = dataInput.readByte() )
+		for ( byte b = readByte( in ); b != (byte)0; b = readByte( in ) )
 		{
 			sb.append( (char)b );
 		}
@@ -260,19 +261,112 @@ abstract class Chunk
 	 * Read 0-terminated string with fixed data length. The number of bytes read
 	 * is always <code>numberOfBytes</code>.
 	 *
-	 * @param   dataInput       Data input source.
+	 * @param   in              Input stream.
 	 * @param   numberOfBytes   Number of bytes to read.
 	 *
 	 * @return  String that was read.
 	 *
-	 * @throws  IOException if a read error occured.
+	 * @throws  IOException if a read error occurred.
 	 */
-	protected static String readCString( final DataInput dataInput , final int numberOfBytes )
+	protected static String readCString( final InputStream in, final int numberOfBytes )
 		throws IOException
 	{
 		final byte[] bytes = new byte[ numberOfBytes ];
-		dataInput.readFully( bytes );
+		readBytes( in, bytes );
 
-		return new String( bytes , 0 , numberOfBytes - 1 );
+		return new String( bytes, 0, numberOfBytes - 1 );
+	}
+
+	protected static byte readByte( final InputStream in )
+		throws IOException
+	{
+		final int b = in.read();
+		if ( b < 0 )
+		{
+			throw new EOFException();
+		}
+
+		return (byte)b;
+	}
+
+	protected static void readBytes( final InputStream in, final byte[] dest )
+		throws IOException
+	{
+		readBytes( in, dest, 0, dest.length );
+	}
+
+	protected static void readBytes( final InputStream in, final byte[] dest, final int offset, final int length )
+		throws IOException
+	{
+		int currentOffset = offset;
+		int todo = length;
+
+		while ( todo > 0 )
+		{
+			final int read = in.read( dest, currentOffset, todo );
+			if ( read <= 0 )
+			{
+				throw new EOFException();
+			}
+
+			currentOffset += read;
+			todo -= read;
+		}
+	}
+
+	protected static int skipBytes( final InputStream in, final int length )
+		throws IOException
+	{
+		return (int)in.skip( (long) length );
+	}
+
+	protected static short readShort( final InputStream in )
+		throws IOException
+	{
+		return (short)readUnsignedShort( in );
+	}
+
+	protected static int readInt( final InputStream in )
+		throws IOException
+	{
+		final int s0 = readUnsignedShort( in );
+		final int s1 = readUnsignedShort( in );
+		return s0 | ( s1 << 16 );
+	}
+
+	protected static long readLong( final InputStream in )
+		throws IOException
+	{
+		final int s0 = readUnsignedShort( in );
+		final int s1 = readUnsignedShort( in );
+		final int s2 = readUnsignedShort( in );
+		final int s3 = readUnsignedShort( in );
+		return (long)s0 | ( (long)s1 << 16 ) | ( (long)s2 << 24 ) | ( (long)s3 << 32 );
+	}
+
+	protected static float readFloat( final InputStream in )
+		throws IOException
+	{
+		return Float.intBitsToFloat( readInt( in ) );
+	}
+
+	protected static int readUnsignedByte( final InputStream in )
+		throws IOException
+	{
+		final int b = in.read();
+		if ( b < 0 )
+		{
+			throw new EOFException();
+		}
+
+		return b;
+	}
+
+	protected static int readUnsignedShort( final InputStream in )
+		throws IOException
+	{
+		final int b0 = readUnsignedByte( in );
+		final int b1 = readUnsignedByte( in );
+		return b0 | ( b1 << 8 );
 	}
 }

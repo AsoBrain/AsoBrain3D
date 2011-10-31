@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,13 +20,11 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.awt.Color;
-import java.io.DataInput;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.awt.*;
+import java.io.*;
+import java.util.*;
 
-import ab.j3d.Vector3f;
+import ab.j3d.*;
 
 /**
  * Type   : {@link #EDIT_3DS}
@@ -70,13 +69,14 @@ class EditableObjectChunk
 
 	DistanceQueueChunk _distanceQueue;
 
-	EditableObjectChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	EditableObjectChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		super( dataInput , chunkType , remainingChunkBytes );
+		super( in, chunkType, remainingChunkBytes );
 	}
 
-	protected void processChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 		_materials = new HashMap<String,MaterialChunk>();
@@ -84,10 +84,11 @@ class EditableObjectChunk
 		_lights = new HashMap<String,LightChunk>();
 		_cameras = new HashMap<String,CameraChunk>();
 
-		super.processChunk( dataInput , chunkType , remainingChunkBytes );
+		super.processChunk( in, chunkType, remainingChunkBytes );
 	}
 
-	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChildChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 		final ColorChunk colorChunk;
@@ -95,33 +96,33 @@ class EditableObjectChunk
 		switch ( chunkType )
 		{
 			case MASTER_SCALE :
-				_masterScale = dataInput.readFloat();
+				_masterScale = readFloat( in );
 				break;
 
 			case SHADOW_MAP_RANGE :
-				_shadowMapRange = dataInput.readFloat();
+				_shadowMapRange = readFloat( in );
 				break;
 
 			case RAYTRACE_BIAS :
-				_rayTraceBias = dataInput.readFloat();
+				_rayTraceBias = readFloat( in );
 				break;
 
 			case O_CONSTS :
-				_oConstPlanes = new Vector3f( dataInput.readFloat() , dataInput.readFloat() , dataInput.readFloat() );
+				_oConstPlanes = new Vector3f( readFloat( in ), readFloat( in ), readFloat( in ) );
 				break;
 
 			case GEN_AMB_COLOR :
-				colorChunk = new ColorChunk( dataInput , chunkType , remainingChunkBytes );
+				colorChunk = new ColorChunk( in, chunkType, remainingChunkBytes );
 				_ambientColor = colorChunk.getColor();
 				break;
 
 			case BACKGRD_COLOR :
-				colorChunk = new ColorChunk( dataInput , chunkType , remainingChunkBytes );
+				colorChunk = new ColorChunk( in, chunkType, remainingChunkBytes );
 				_backgroundColor = colorChunk.getColor();
 				break;
 
 			case BACKGRD_BITMAP :
-				_backgroundBigMap = readCString( dataInput );
+				_backgroundBigMap = readCString( in );
 				break;
 
 			case USE_BCK_COLOR :
@@ -129,54 +130,54 @@ class EditableObjectChunk
 				break;
 
 			case FOG_FLAG :
-				_fog = new FogChunk( dataInput , chunkType , remainingChunkBytes );
+				_fog = new FogChunk( in, chunkType, remainingChunkBytes );
 				break;
 
 			case SHADOW_BIAS :
-				_shadowBias = dataInput.readFloat();
+				_shadowBias = readFloat( in );
 				break;
 
 			case SHADOW_MAP_SIZE :
-				_shadowMapSize = dataInput.readShort();
+				_shadowMapSize = readShort( in );
 				break;
 
 			case LAYERED_FOG_OPT :
-				_fogOptions = new LayeredFogChunk( dataInput , chunkType , remainingChunkBytes );
+				_fogOptions = new LayeredFogChunk( in, chunkType, remainingChunkBytes );
 				break;
 
 			case DISTANCE_QUEUE :
-				_distanceQueue = new DistanceQueueChunk( dataInput , chunkType , remainingChunkBytes );
+				_distanceQueue = new DistanceQueueChunk( in, chunkType, remainingChunkBytes );
 				break;
 
 			case NAMED_OBJECT :
-				final NamedObjectChunk namedObjectChunk = new NamedObjectChunk( dataInput , chunkType , remainingChunkBytes );
+				final NamedObjectChunk namedObjectChunk = new NamedObjectChunk( in, chunkType, remainingChunkBytes );
 
 				final Chunk content = namedObjectChunk._content;
 				if ( content instanceof TriangleMeshChunk )
 				{
-					_meshes.put( namedObjectChunk.name , (TriangleMeshChunk)content );
+					_meshes.put( namedObjectChunk.name, (TriangleMeshChunk)content );
 				}
 				else if ( content instanceof LightChunk )
 				{
-					_lights.put( namedObjectChunk.name , (LightChunk)content );
+					_lights.put( namedObjectChunk.name, (LightChunk)content );
 				}
 				else if ( content instanceof CameraChunk )
 				{
-					_cameras.put( namedObjectChunk.name , (CameraChunk)content );
+					_cameras.put( namedObjectChunk.name, (CameraChunk)content );
 				}
 				else
 				{
-					throw new IOException( "Unrecognied named object '" + namedObjectChunk.name + " ' content: " + content );
+					throw new IOException( "Unrecognized named object '" + namedObjectChunk.name + " ' content: " + content );
 				}
 				break;
 
 			case MAT_BLOCK :
-				final MaterialChunk material = new MaterialChunk( dataInput , chunkType , remainingChunkBytes );
-				_materials.put( material._name , material );
+				final MaterialChunk material = new MaterialChunk( in, chunkType, remainingChunkBytes );
+				_materials.put( material._name, material );
 				break;
 
 			default : // Ignore unknown chunks
-				skipFully( dataInput , remainingChunkBytes );
+				skipFully( in, remainingChunkBytes );
 		}
 	}
 }

@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,14 +20,13 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.awt.Color;
-import java.io.DataInput;
-import java.io.IOException;
+import java.awt.*;
+import java.io.*;
 
 /**
- * Type   : {@link #COLOR_FLOAT} ,
- *          {@link #COLOR_BYTE} ,
- *          {@link #CLR_BYTE_GAMA} ,
+ * Type   : {@link #COLOR_FLOAT},
+ *          {@link #COLOR_BYTE},
+ *          {@link #CLR_BYTE_GAMA},
  *          {@link #CLR_FLOAT_GAMA}.
  * Parent : any
  *
@@ -39,38 +39,39 @@ class ColorChunk
 
 	Color _gamaColor;
 
-	ColorChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	ColorChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		super( dataInput , chunkType , remainingChunkBytes );
+		super( in, chunkType, remainingChunkBytes );
 //		System.out.println( "  Read: color=" + _color + ", gamaColor=" + _gamaColor );
 	}
 
-	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChildChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 //		System.out.println( "ColorChunk.processChildChunk( " + chunkType + " )" );
 		switch ( chunkType )
 		{
 			case COLOR_BYTE :
-				_color = new Color( dataInput.readUnsignedByte() , dataInput.readUnsignedByte() , dataInput.readUnsignedByte() );
+				_color = new Color( readUnsignedByte( in ), readUnsignedByte( in ), readUnsignedByte( in ) );
 				break;
 
 			case COLOR_FLOAT :
-				_color = new Color( dataInput.readFloat() , dataInput.readFloat() , dataInput.readFloat() , 1.0f );
+				_color = new Color( readFloat( in ), readFloat( in ), readFloat( in ), 1.0f );
 				break;
 
 			case CLR_BYTE_GAMA :
-				_gamaColor = new Color( dataInput.readUnsignedByte() , dataInput.readUnsignedByte() , dataInput.readUnsignedByte() );
+				_gamaColor = new Color( readUnsignedByte( in ), readUnsignedByte( in ), readUnsignedByte( in ) );
 				break;
 
 			case CLR_FLOAT_GAMA :
-				_gamaColor = new Color( dataInput.readFloat() , dataInput.readFloat() , dataInput.readFloat() , 1.0f );
+				_gamaColor = new Color( readFloat( in ), readFloat( in ), readFloat( in ), 1.0f );
 				break;
 
 			default : // Ignore unknown chunks
 				System.out.println( "Skipped unknown color chunk 0x" + Integer.toHexString( chunkType ) );
-				skipFully( dataInput , remainingChunkBytes );
+				skipFully( in, remainingChunkBytes );
 		}
 	}
 

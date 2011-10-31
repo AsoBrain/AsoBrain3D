@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +20,9 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.io.DataInput;
-import java.io.IOException;
+import java.io.*;
 
-import ab.j3d.Vector3f;
+import ab.j3d.*;
 
 /**
  * Type   : {@link #CAMERA_FLAG}
@@ -45,35 +45,38 @@ class CameraChunk
 
 	float _far;
 
-	CameraChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+
+	CameraChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		super( dataInput , chunkType , remainingChunkBytes );
+		super( in, chunkType, remainingChunkBytes );
 	}
 
-	protected void processChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		_position = new Vector3f( dataInput.readFloat() , dataInput.readFloat() , dataInput.readFloat() );
-		_targetLocation = new Vector3f( dataInput.readFloat() , dataInput.readFloat() , dataInput.readFloat() );
-		_bankAngle = dataInput.readFloat();
-		_focus = dataInput.readFloat();
+		_position = new Vector3f( readFloat( in ), readFloat( in ), readFloat( in ) );
+		_targetLocation = new Vector3f( readFloat( in ), readFloat( in ), readFloat( in ) );
+		_bankAngle = readFloat( in );
+		_focus = readFloat( in );
 
-		super.processChunk( dataInput , chunkType , remainingChunkBytes - 8 * 4 );
+		super.processChunk( in, chunkType, remainingChunkBytes - 8 * 4 );
 	}
 
-	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChildChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 		switch ( chunkType )
 		{
 			case CAMERA_RANGES:
-				_near = dataInput.readFloat();
-				_far = dataInput.readFloat();
+				_near = readFloat( in );
+				_far = readFloat( in );
 				break;
 
 			default : // Ignore unknown chunks
-				skipFully( dataInput , remainingChunkBytes );
+				skipFully( in, remainingChunkBytes );
 		}
 	}
 }

@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,8 +20,7 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.io.DataInput;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Type   : {@link #DISTANCE_QUEUE}
@@ -41,24 +41,26 @@ class DistanceQueueChunk
 
 	boolean _activeDistanceQueue;
 
-	DistanceQueueChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	DistanceQueueChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		super( dataInput , chunkType , remainingChunkBytes );
+		super( in, chunkType, remainingChunkBytes );
 	}
 
-	protected void processChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		_nearPlane = dataInput.readFloat();
-		_nearDensity = dataInput.readFloat();
-		_farPlane = dataInput.readFloat();
-		_farDensity = dataInput.readFloat();
+		_nearPlane = readFloat( in );
+		_nearDensity = readFloat( in );
+		_farPlane = readFloat( in );
+		_farDensity = readFloat( in );
 
-		super.processChunk( dataInput , chunkType , remainingChunkBytes - 4 * 4 );
+		super.processChunk( in, chunkType, remainingChunkBytes - 4 * 4 );
 	}
 
-	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChildChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 		switch ( chunkType )
@@ -68,7 +70,7 @@ class DistanceQueueChunk
 				break;
 
 			default : // Ignore unknown chunks
-				skipFully( dataInput , remainingChunkBytes );
+				skipFully( in, remainingChunkBytes );
 		}
 	}
 }

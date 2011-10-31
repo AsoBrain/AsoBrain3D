@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,8 +20,7 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.io.DataInput;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Type   : {@link #NAMED_OBJECT}
@@ -35,20 +35,22 @@ class NamedObjectChunk
 
 	Chunk _content;
 
-	NamedObjectChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	NamedObjectChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		super( dataInput , chunkType , remainingChunkBytes );
+		super( in, chunkType, remainingChunkBytes );
 	}
 
-	protected void processChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		name = readCString( dataInput );
-		super.processChunk( dataInput , chunkType , remainingChunkBytes - ( name.length() + 1 ) );
+		name = readCString( in );
+		super.processChunk( in, chunkType, remainingChunkBytes - ( name.length() + 1 ) );
 	}
 
-	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChildChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 		Chunk content = _content;
@@ -57,27 +59,33 @@ class NamedObjectChunk
 		{
 			case OBJ_TRIMESH:
 				if ( content != null )
+				{
 					throw new IOException( "Already have content!" );
+				}
 
-				content = new TriangleMeshChunk( dataInput , chunkType , remainingChunkBytes );
+				content = new TriangleMeshChunk( in, chunkType, remainingChunkBytes );
 				break;
 
 			case CAMERA_FLAG:
 				if ( content != null )
+				{
 					throw new IOException( "Already have content!" );
+				}
 
-				content = new CameraChunk( dataInput , chunkType , remainingChunkBytes );
+				content = new CameraChunk( in, chunkType, remainingChunkBytes );
 				break;
 
 			case LIGHT_OBJ:
 				if ( content != null )
+				{
 					throw new IOException( "Already have content!" );
+				}
 
-				content = new LightChunk( dataInput , chunkType , remainingChunkBytes );
+				content = new LightChunk( in, chunkType, remainingChunkBytes );
 				break;
 
 			default : // Ignore unknown chunks
-				skipFully( dataInput , remainingChunkBytes );
+				skipFully( in, remainingChunkBytes );
 		}
 
 		_content = content;

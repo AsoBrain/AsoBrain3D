@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +20,9 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.io.DataInput;
-import java.io.IOException;
+import java.io.*;
 
-import ab.j3d.Vector3f;
+import ab.j3d.*;
 
 /**
  * Type   : {@link #LIGHT_SPOTLIGHT}
@@ -55,29 +55,31 @@ class SpotLightChunk
 
 	boolean _spotOvershoot;
 
-	SpotLightChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	SpotLightChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		super( dataInput , chunkType , remainingChunkBytes );
+		super( in, chunkType, remainingChunkBytes );
 	}
 
-	protected void processChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		_target = new Vector3f( dataInput.readFloat() , dataInput.readFloat() , dataInput.readFloat() );
-		_hotSpot = dataInput.readFloat();
-		_fallOff = dataInput.readFloat();
+		_target = new Vector3f( readFloat( in ), readFloat( in ), readFloat( in ) );
+		_hotSpot = readFloat( in );
+		_fallOff = readFloat( in );
 
-		super.processChunk( dataInput , chunkType , remainingChunkBytes - 5 * 4 );
+		super.processChunk( in, chunkType, remainingChunkBytes - 5 * 4 );
 	}
 
-	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChildChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 		switch ( chunkType )
 		{
 			case LIGHT_SPOT_ROLL :
-				_roll = dataInput.readFloat();
+				_roll = readFloat( in );
 				break;
 
 			case LIGHT_SPOT_SHADOWED :
@@ -85,13 +87,13 @@ class SpotLightChunk
 				break;
 
 			case LIGHT_SPOT_BIAS :
-				_bias = dataInput.readFloat();
+				_bias = readFloat( in );
 				break;
 
 			case LIGHT_LOC_SHADOW :
-				_shadowBias   = dataInput.readFloat();
-				_shadowFilter = dataInput.readFloat();
-				_shadowSize   = dataInput.readShort();
+				_shadowBias   = readFloat( in );
+				_shadowFilter = readFloat( in );
+				_shadowSize   = readShort( in );
 				break;
 
 			case LIGHT_SEE_CONE :
@@ -103,7 +105,7 @@ class SpotLightChunk
 				break;
 
 			default : // Ignore unknown chunks
-				skipFully( dataInput , remainingChunkBytes );
+				skipFully( in, remainingChunkBytes );
 		}
 	}
 }

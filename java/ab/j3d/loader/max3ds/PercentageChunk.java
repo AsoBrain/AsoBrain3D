@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,8 +20,7 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.io.DataInput;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Type   : {@link #PRCT_INT_FRMT}
@@ -34,27 +34,28 @@ class PercentageChunk
 {
 	float _percentage;
 
-	PercentageChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	PercentageChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		super( dataInput , chunkType , remainingChunkBytes );
+		super( in, chunkType, remainingChunkBytes );
 	}
 
-	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChildChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 		switch ( chunkType )
 		{
 			case PRCT_INT_FRMT:
-				_percentage = (float)dataInput.readShort() / 100.0f;
+				_percentage = (float)readShort( in ) / 100.0f;
 				break;
 
 			case PRCT_FLT_FRMT:
-				_percentage = dataInput.readFloat();
+				_percentage = readFloat( in );
 				break;
 
 			default : // Ignore unknown chunks
-				skipFully( dataInput , remainingChunkBytes );
+				skipFully( in, remainingChunkBytes );
 		}
 	}
 }

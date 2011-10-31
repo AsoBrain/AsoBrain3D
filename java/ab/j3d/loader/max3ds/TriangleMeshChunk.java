@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,14 +20,10 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.awt.geom.Point2D;
-import java.io.DataInput;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
+import ab.j3d.*;
 
 /**
  * Type   : {@link #OBJ_TRIMESH}.
@@ -39,7 +36,7 @@ class TriangleMeshChunk
 {
 	List<Vector3D> _vertices;
 
-	Point2D.Float[] _textureCoordinates;
+	Vector2f[] _textureCoordinates;
 
 	byte _color;
 
@@ -47,128 +44,129 @@ class TriangleMeshChunk
 
 	Matrix3D _transform;
 
-	TriangleMeshChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	TriangleMeshChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		super( dataInput , chunkType , remainingChunkBytes );
+		super( in, chunkType, remainingChunkBytes );
 	}
 
-	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChildChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 		switch ( chunkType )
 		{
 			case VERTEX_LIST:
-				readVertexCoordinates( dataInput );
+				readVertexCoordinates( in );
 				break;
 
 			case TEXT_COORDS:
-				readTextureCoordinates( dataInput );
+				readTextureCoordinates( in );
 				break;
 
 			case COORD_SYS:
-				readCoordinateSystem( dataInput );
+				readCoordinateSystem( in );
 				break;
 
 			case FACES_ARRAY:
-				_faces = new FacesChunk( dataInput , chunkType , remainingChunkBytes );
+				_faces = new FacesChunk( in, chunkType, remainingChunkBytes );
 				break;
 
 			case VERTEX_OPTIONS:
-				readOptions( dataInput );
+				readOptions( in );
 				break;
 
 			case MESH_COLOR:
-				_color = dataInput.readByte();
+				_color = readByte( in );
 				break;
 
 			case MESH_TEXTURE_INFO:
-				readMeshTextureInfo( dataInput );
+				readMeshTextureInfo( in );
 				break;
 
 			default : // Ignore unknown chunks
-				skipFully( dataInput , remainingChunkBytes );
+				skipFully( in, remainingChunkBytes );
 		}
 	}
 
-	private static void readMeshTextureInfo( final DataInput dataInput )
+	private static void readMeshTextureInfo( final InputStream in )
 		throws IOException
 	{
-		/*final short type    =*/ dataInput.readShort();
-		/*final float xTiling =*/ dataInput.readFloat();
-		/*final float yTiling =*/ dataInput.readFloat();
-		/*final float Xicon   =*/ dataInput.readFloat();
-		/*final float Yicon   =*/ dataInput.readFloat();
-		/*final float Zicon   =*/ dataInput.readFloat();
+		/*final short type    =*/ readShort( in );
+		/*final float xTiling =*/ readFloat( in );
+		/*final float yTiling =*/ readFloat( in );
+		/*final float Xicon   =*/ readFloat( in );
+		/*final float Yicon   =*/ readFloat( in );
+		/*final float Zicon   =*/ readFloat( in );
 
 		final float[][] matrix = new float[ 4 ][ 3 ];
 		for ( int i = 0; i < 4; i++ )
 		{
 			for ( int j = 0; j < 3; j++ )
 			{
-				matrix[ i ][ j ] = dataInput.readFloat();
+				matrix[ i ][ j ] = readFloat( in );
 			}
 		}
 
-		/*final float scaling   =*/ dataInput.readFloat();
-		/*final float planIconW =*/ dataInput.readFloat();
-		/*final float planIconH =*/ dataInput.readFloat();
-		/*final float cylIconH  =*/ dataInput.readFloat();
+		/*final float scaling   =*/ readFloat( in );
+		/*final float planIconW =*/ readFloat( in );
+		/*final float planIconH =*/ readFloat( in );
+		/*final float cylIconH  =*/ readFloat( in );
 	}
 
-	private static void readOptions( final DataInput dataInput )
+	private static void readOptions( final InputStream in )
 		throws IOException
 	{
-		final int numberOfOptions = dataInput.readUnsignedShort();
+		final int numberOfOptions = readUnsignedShort( in );
 		for ( int i = 0; i < numberOfOptions; i++ )
 		{
-			/*final short option =*/ dataInput.readShort();
+			/*final short option =*/ readShort( in );
 		}
 	}
 
-	private void readCoordinateSystem( final DataInput dataInput )
+	private void readCoordinateSystem( final InputStream in )
 		throws IOException
 	{
-		final double rotationXX = (double)dataInput.readFloat();
-		final double rotationYX = (double)dataInput.readFloat();
-		final double rotationZX = (double)dataInput.readFloat();
-		final double rotationXY = (double)dataInput.readFloat();
-		final double rotationYY = (double)dataInput.readFloat();
-		final double rotationZY = (double)dataInput.readFloat();
-		final double rotationXZ = (double)dataInput.readFloat();
-		final double rotationYZ = (double)dataInput.readFloat();
-		final double rotationZZ = (double)dataInput.readFloat();
-		final double originX    = (double)dataInput.readFloat();
-		final double originY    = (double)dataInput.readFloat();
-		final double originZ    = (double)dataInput.readFloat();
+		final double rotationXX = (double)readFloat( in );
+		final double rotationYX = (double)readFloat( in );
+		final double rotationZX = (double)readFloat( in );
+		final double rotationXY = (double)readFloat( in );
+		final double rotationYY = (double)readFloat( in );
+		final double rotationZY = (double)readFloat( in );
+		final double rotationXZ = (double)readFloat( in );
+		final double rotationYZ = (double)readFloat( in );
+		final double rotationZZ = (double)readFloat( in );
+		final double originX    = (double)readFloat( in );
+		final double originY    = (double)readFloat( in );
+		final double originZ    = (double)readFloat( in );
 
-		_transform = Matrix3D.INIT.set( rotationXX , rotationXY , rotationXZ , originX ,
-		                                rotationYX , rotationYY , rotationYZ , originY ,
-		                                rotationZX , rotationZY , rotationZZ , originZ );
+		_transform = Matrix3D.IDENTITY.set( rotationXX, rotationXY, rotationXZ, originX,
+		                                    rotationYX, rotationYY, rotationYZ, originY,
+		                                    rotationZX, rotationZY, rotationZZ, originZ );
 	}
 
-	private void readVertexCoordinates( final DataInput dataInput )
+	private void readVertexCoordinates( final InputStream in )
 		throws IOException
 	{
-		final int numberOfVertices = dataInput.readUnsignedShort();
+		final int numberOfVertices = readUnsignedShort( in );
 
 		final List<Vector3D> vertices = new ArrayList<Vector3D>( numberOfVertices );
-		for ( int i = 0 ; i < numberOfVertices ; i++ )
+		for ( int i = 0; i < numberOfVertices; i++ )
 		{
-			vertices.add( new Vector3D( (double)dataInput.readFloat() , (double)dataInput.readFloat() , (double)dataInput.readFloat() ) );
+			vertices.add( new Vector3D( (double)readFloat( in ), (double)readFloat( in ), (double)readFloat( in ) ) );
 		}
 
 		_vertices = vertices;
 	}
 
-	private void readTextureCoordinates( final DataInput dataInput )
+	private void readTextureCoordinates( final InputStream in )
 		throws IOException
 	{
-		final Point2D.Float[] textureCoordinates = new Point2D.Float[ dataInput.readUnsignedShort() ];
+		final Vector2f[] textureCoordinates = new Vector2f[ readUnsignedShort( in ) ];
 
 		for ( int i = 0; i < textureCoordinates.length; i++ )
 		{
-			textureCoordinates[ i ] = new Point2D.Float( dataInput.readFloat() , dataInput.readFloat() );
+			textureCoordinates[ i ] = new Vector2f( readFloat( in ), readFloat( in ) );
 		}
 
 		_textureCoordinates = textureCoordinates;

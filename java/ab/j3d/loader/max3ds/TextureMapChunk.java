@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,8 +20,7 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.io.DataInput;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Type   : {@link #TEXMAP_ONE},
@@ -46,43 +46,44 @@ class TextureMapChunk
 
 	float _uScale;
 
-	TextureMapChunk( final DataInput dataInput , final int chunkType , final int chunkSize )
+	TextureMapChunk( final InputStream in, final int chunkType, final int chunkSize )
 		throws IOException
 	{
-		super( dataInput , chunkType , chunkSize );
+		super( in, chunkType, chunkSize );
 	}
 
-	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChildChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 		switch ( chunkType )
 		{
 			case MAT_TEXNAME:
-				_name = readCString( dataInput , remainingChunkBytes );
+				_name = readCString( in, remainingChunkBytes );
 				break;
 
 			case MAT_TEX_FLAGS:
-				_flags = dataInput.readUnsignedShort();
+				_flags = readUnsignedShort( in );
 				break;
 
 			case MAT_TEX_BLUR:
-				_blur = dataInput.readFloat();
+				_blur = readFloat( in );
 				break;
 
 			case MAT_TEX_BUMP_PER:
-				_bumpPercentage = (float)dataInput.readShort() / 100.0f;
+				_bumpPercentage = (float)readShort( in ) / 100.0f;
 				break;
 
 			case TEXTURE_V_SCALE:
-				_vScale = dataInput.readFloat();
+				_vScale = readFloat( in );
 				break;
 
 			case TEXTURE_U_SCALE:
-				_uScale = dataInput.readFloat();
+				_uScale = readFloat( in );
 				break;
 
 			default : // Ignore unknown chunks
-				skipFully( dataInput , remainingChunkBytes );
+				skipFully( in, remainingChunkBytes );
 		}
 	}
 }

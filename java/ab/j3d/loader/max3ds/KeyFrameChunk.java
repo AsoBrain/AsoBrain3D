@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,13 +20,11 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.awt.Color;
-import java.io.DataInput;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.awt.*;
+import java.io.*;
+import java.util.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3f;
+import ab.j3d.*;
 
 /**
  * <pre>
@@ -59,163 +58,165 @@ class KeyFrameChunk
 
 	Vector3f _boundingBoxMax;
 
-	KeyFrameChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	KeyFrameChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		super( dataInput , chunkType , remainingChunkBytes );
+		super( in, chunkType, remainingChunkBytes );
 	}
 
-	protected void processChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 		_track = new ArrayList<Frame>();
-		super.processChunk( dataInput , chunkType , remainingChunkBytes );
+		super.processChunk( in, chunkType, remainingChunkBytes );
 	}
 
-	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChildChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 		switch ( chunkType )
 		{
 			case NODE_ID :
-				_id = dataInput.readShort();
+				_id = readShort( in );
 				break;
 
 			case TRACK_HEADER :
-				_name = readCString( dataInput );
-				 dataInput.readShort(); /* flag1 */
-				dataInput.readShort(); /* flag2 */
-				_parent = dataInput.readShort();
+				_name = readCString( in );
+				 readShort( in ); /* flag1 */
+				readShort( in ); /* flag2 */
+				_parent = readShort( in );
 				break;
 
 			case TRACK_PIVOT :
-				_pivot = new Vector3f( dataInput.readFloat() , dataInput.readFloat() , dataInput.readFloat() );
+				_pivot = new Vector3f( readFloat( in ), readFloat( in ), readFloat( in ) );
 				break;
 
 			case TRACK_POS_TAG :
-				dataInput.readShort(); /* flags */
-				dataInput.readLong(); /* unknown */
+				readShort( in ); /* flags */
+				readLong( in ); /* unknown */
 
-				for ( int frameCount = dataInput.readInt() ; --frameCount >= 0 ; )
+				for ( int frameCount = readInt( in ); --frameCount >= 0; )
 				{
-					final Frame frame = getFrame( dataInput.readInt() ); /* frame number */
-					dataInput.readShort(); /* acceleration data */
+					final Frame frame = getFrame( readInt( in ) ); /* frame number */
+					readShort( in ); /* acceleration data */
 
-					frame._position = new Vector3f( dataInput.readFloat() , dataInput.readFloat() , dataInput.readFloat() );
+					frame._position = new Vector3f( readFloat( in ), readFloat( in ), readFloat( in ) );
 				}
 				break;
 
 			case TRACK_ROT_TAG :
-				dataInput.readShort(); /* flags */
-				dataInput.readLong(); /* unknown */
+				readShort( in ); /* flags */
+				readLong( in ); /* unknown */
 
-				for ( int frameCount = dataInput.readInt() ; --frameCount >= 0 ; )
+				for ( int frameCount = readInt( in ); --frameCount >= 0; )
 				{
-					final Frame frame = getFrame( dataInput.readInt() ); /* frame number */
-					dataInput.readShort(); /* acceleration data */
+					final Frame frame = getFrame( readInt( in ) ); /* frame number */
+					readShort( in ); /* acceleration data */
 
-					final float angle = dataInput.readFloat();
-					final float axisX = dataInput.readFloat();
-					final float axisY = dataInput.readFloat();
-					final float axisZ = dataInput.readFloat();
+					final float angle = readFloat( in );
+					final float axisX = readFloat( in );
+					final float axisY = readFloat( in );
+					final float axisZ = readFloat( in );
 
-					frame._rotation = Matrix3D.getRotationTransform( 0.0 , 0.0 , 0.0 , (double)axisX , (double)axisY , (double)axisZ , (double)angle );
+					frame._rotation = Matrix3D.getRotationTransform( 0.0, 0.0, 0.0, (double)axisX, (double)axisY, (double)axisZ, (double)angle );
 				}
 				break;
 
 			case TRACK_SCL_TAG :
-				dataInput.readShort(); /* flags */
-				dataInput.readLong(); /* unknown */
+				readShort( in ); /* flags */
+				readLong( in ); /* unknown */
 
-				for ( int frameCount = dataInput.readInt() ; --frameCount >= 0 ; )
+				for ( int frameCount = readInt( in ); --frameCount >= 0; )
 				{
-					final Frame frame = getFrame( dataInput.readInt() ); /* frame number */
-					dataInput.readShort(); /* acceleration data */
+					final Frame frame = getFrame( readInt( in ) ); /* frame number */
+					readShort( in ); /* acceleration data */
 
-					frame._scale = new Vector3f( dataInput.readFloat() , dataInput.readFloat() , dataInput.readFloat() );
+					frame._scale = new Vector3f( readFloat( in ), readFloat( in ), readFloat( in ) );
 				}
 				break;
 
 			case MORPH_SMOOTH :
-				_morphSmoothAngle = dataInput.readFloat();
+				_morphSmoothAngle = readFloat( in );
 				break;
 
 			case KEY_FOV_TRACK :
-				dataInput.readShort(); /* flags */
-				dataInput.readLong(); /* unknown */
+				readShort( in ); /* flags */
+				readLong( in ); /* unknown */
 
-				for ( int frameCount = dataInput.readInt() ; --frameCount >= 0 ; )
+				for ( int frameCount = readInt( in ); --frameCount >= 0; )
 				{
-					final Frame frame = getFrame( dataInput.readInt() ); /* frame number */
-					dataInput.readShort(); /* acceleration data */
+					final Frame frame = getFrame( readInt( in ) ); /* frame number */
+					readShort( in ); /* acceleration data */
 
-					frame._fieldOfView = dataInput.readFloat();
+					frame._fieldOfView = readFloat( in );
 				}
 				break;
 
 			case KEY_ROLL_TRACK :
-				dataInput.readShort(); /* flags */
-				dataInput.readLong(); /* unknown */
+				readShort( in ); /* flags */
+				readLong( in ); /* unknown */
 
-				for ( int frameCount = dataInput.readInt() ; --frameCount >= 0 ; )
+				for ( int frameCount = readInt( in ); --frameCount >= 0; )
 				{
-					final Frame frame = getFrame( dataInput.readInt() ); /* frame number */
-					dataInput.readShort(); /* acceleration data */
+					final Frame frame = getFrame( readInt( in ) ); /* frame number */
+					readShort( in ); /* acceleration data */
 
-					frame._roll = dataInput.readFloat();
+					frame._roll = readFloat( in );
 				}
 				break;
 
 			case KEY_COLOR_TRACK :
-				dataInput.readShort(); /* flags */
-				dataInput.readLong(); /* unknown */
+				readShort( in ); /* flags */
+				readLong( in ); /* unknown */
 
-				for ( int frameCount = dataInput.readInt() ; --frameCount >= 0 ; )
+				for ( int frameCount = readInt( in ); --frameCount >= 0; )
 				{
-					final Frame frame = getFrame( dataInput.readInt() ); /* frame number */
-					dataInput.readShort(); /* acceleration data */
+					final Frame frame = getFrame( readInt( in ) ); /* frame number */
+					readShort( in ); /* acceleration data */
 
-					frame._color = new Color( dataInput.readFloat() , dataInput.readFloat() , dataInput.readFloat() , 1.0f );
+					frame._color = new Color( readFloat( in ), readFloat( in ), readFloat( in ), 1.0f );
 				}
 				break;
 
 			case KEY_HOTSPOT_TRACK :
-				dataInput.readShort(); /* flags */
-				dataInput.readLong(); /* unknown */
+				readShort( in ); /* flags */
+				readLong( in ); /* unknown */
 
-				for ( int frameCount = dataInput.readInt() ; --frameCount >= 0 ; )
+				for ( int frameCount = readInt( in ); --frameCount >= 0; )
 				{
-					final Frame frame = getFrame( dataInput.readInt() ); /* frame number */
-					dataInput.readShort(); /* acceleration data */
+					final Frame frame = getFrame( readInt( in ) ); /* frame number */
+					readShort( in ); /* acceleration data */
 
-					frame._hotSpot = dataInput.readFloat();
+					frame._hotSpot = readFloat( in );
 				}
 				break;
 
 			case KEY_FALLOFF_TRACK :
-				dataInput.readShort(); /* flags */
-				dataInput.readLong(); /* unknown */
+				readShort( in ); /* flags */
+				readLong( in ); /* unknown */
 
-				for ( int frameCount = dataInput.readInt() ; --frameCount >= 0 ; )
+				for ( int frameCount = readInt( in ); --frameCount >= 0; )
 				{
-					final Frame frame = getFrame( dataInput.readInt() ); /* frame number */
-					dataInput.readShort(); /* acceleration data */
+					final Frame frame = getFrame( readInt( in ) ); /* frame number */
+					readShort( in ); /* acceleration data */
 
-					frame._fallOff = dataInput.readFloat();
+					frame._fallOff = readFloat( in );
 				}
 				break;
 
 			case BOUNDING_BOX :
-				_boundingBoxMin = new Vector3f( dataInput.readFloat() , dataInput.readFloat() , dataInput.readFloat() );
-				_boundingBoxMax = new Vector3f( dataInput.readFloat() , dataInput.readFloat() , dataInput.readFloat() );
+				_boundingBoxMin = new Vector3f( readFloat( in ), readFloat( in ), readFloat( in ) );
+				_boundingBoxMax = new Vector3f( readFloat( in ), readFloat( in ), readFloat( in ) );
 				break;
 
 			case INSTANCE_NAME :
-				_name = readCString( dataInput );
+				_name = readCString( in );
 				break;
 
 			default : // Ignore unknown chunks
-				skipFully( dataInput , remainingChunkBytes );
+				skipFully( in, remainingChunkBytes );
 		}
 	}
 
@@ -226,7 +227,7 @@ class KeyFrameChunk
 		final ArrayList<Frame> track = _track;
 
 		int i;
-		for ( i = 0 ; i < track.size() ; i++ )
+		for ( i = 0; i < track.size(); i++ )
 		{
 			final Frame frame = track.get( i );
 
@@ -246,7 +247,7 @@ class KeyFrameChunk
 		{
 			result = new Frame();
 			result._number = number;
-			track.add( i , result );
+			track.add( i, result );
 		}
 
 		return result;

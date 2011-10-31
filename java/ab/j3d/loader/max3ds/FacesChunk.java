@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +20,8 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.io.DataInput;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
 /**
  * Type   : {@link #FACES_ARRAY}
@@ -43,23 +42,24 @@ class FacesChunk
 
 	List<int[]> _materialIndices;
 
-	FacesChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	FacesChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		super( dataInput , chunkType , remainingChunkBytes );
+		super( in, chunkType, remainingChunkBytes );
 	}
 
-	protected void processChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		final int numberOfFaces = dataInput.readUnsignedShort();
+		final int numberOfFaces = readUnsignedShort( in );
 
 		final int[][] faces = new int[ numberOfFaces ][];
 
 		for ( int i = 0; i < numberOfFaces; i++ )
 		{
-			faces[ i ] = new int[] { dataInput.readUnsignedShort() , dataInput.readUnsignedShort() , dataInput.readUnsignedShort() };
-			/*short flag =*/ dataInput.readShort();
+			faces[ i ] = new int[] { readUnsignedShort( in ), readUnsignedShort( in ), readUnsignedShort( in ) };
+			/*short flag =*/ readShort( in );
 		}
 
 		_materialNames = new ArrayList<String>();
@@ -67,54 +67,55 @@ class FacesChunk
 		_numberOfFaces = numberOfFaces;
 		_faces = faces;
 
-		super.processChunk( dataInput , chunkType , remainingChunkBytes - ( 2 + numberOfFaces * ( 3 * 2 + 2 ) ) );
+		super.processChunk( in, chunkType, remainingChunkBytes - ( 2 + numberOfFaces * ( 3 * 2 + 2 ) ) );
 	}
 
 
-	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChildChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 		switch ( chunkType )
 		{
 			case SMOOTH_GROUP:
-				readSmoothing( dataInput );
+				readSmoothing( in );
 				break;
 
 			case MESH_MAT_GROUP:
-				readMeshMaterialGroup( dataInput );
+				readMeshMaterialGroup( in );
 				break;
 
 			default : // Ignore unknown chunks
-				skipFully( dataInput , remainingChunkBytes );
+				skipFully( in, remainingChunkBytes );
 		}
 	}
 
-	private void readMeshMaterialGroup( final DataInput dataInput )
+	private void readMeshMaterialGroup( final InputStream in )
 		throws IOException
 	{
-		final String name = readCString( dataInput );
+		final String name = readCString( in );
 
-		final int numberOfFaces = dataInput.readUnsignedShort();
+		final int numberOfFaces = readUnsignedShort( in );
 
 		final int[] appliedFacesIndexes = new int[ numberOfFaces ];
 		for ( int i = 0; i < numberOfFaces; i++ )
 		{
-			appliedFacesIndexes[ i ] = dataInput.readUnsignedShort();
+			appliedFacesIndexes[ i ] = readUnsignedShort( in );
 		}
 
 		_materialNames.add( name );
 		_materialIndices.add( appliedFacesIndexes );
 	}
 
-	private void readSmoothing( final DataInput dataInput )
+	private void readSmoothing( final InputStream in )
 		throws IOException
 	{
 		final int numberOfFaces = _numberOfFaces;
 
 		final int[] smoothingGroups = new int[ numberOfFaces ];
-		for ( int i = 0 ; i < numberOfFaces ; i++ )
+		for ( int i = 0; i < numberOfFaces; i++ )
 		{
-			smoothingGroups[ i ] = dataInput.readInt();
+			smoothingGroups[ i ] = readInt( in );
 		}
 
 		_smoothingGroups = smoothingGroups;

@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +20,9 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.io.DataInput;
-import java.io.IOException;
+import java.io.*;
 
-import ab.j3d.Material;
+import ab.j3d.*;
 
 /**
  * Type   : {@link #MAT_BLOCK}
@@ -45,21 +45,23 @@ class MaterialChunk
 
 	TextureMapChunk _bumpMap;
 
-	MaterialChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	MaterialChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		super( dataInput , chunkType , remainingChunkBytes );
+		super( in, chunkType, remainingChunkBytes );
 	}
 
-	protected void processChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 		_material = new Material();
 
-		super.processChunk( dataInput , chunkType , remainingChunkBytes );
+		super.processChunk( in, chunkType, remainingChunkBytes );
 	}
 
-	protected void processChildChunk( final DataInput dataInput , final int chunkType , final int remainingChunkBytes )
+	@Override
+	protected void processChildChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
 		final Material material = _material;
@@ -69,41 +71,41 @@ class MaterialChunk
 		switch ( chunkType )
 		{
 			case MAT_NAME:
-				_name = readCString( dataInput );
+				_name = readCString( in );
 				break;
 
 			case MAT_AMB_COLOR:
-				colorChunk = new ColorChunk( dataInput , chunkType , remainingChunkBytes );
+				colorChunk = new ColorChunk( in, chunkType, remainingChunkBytes );
 				material.setAmbientColor( colorChunk.getColor() );
 				break;
 
 			case MAT_DIF_COLOR:
-				colorChunk = new ColorChunk( dataInput , chunkType , remainingChunkBytes );
+				colorChunk = new ColorChunk( in, chunkType, remainingChunkBytes );
 				material.setDiffuseColor( colorChunk.getColor() );
 				break;
 
 			case MAT_SPEC_CLR:
-				colorChunk = new ColorChunk( dataInput , chunkType , remainingChunkBytes );
+				colorChunk = new ColorChunk( in, chunkType, remainingChunkBytes );
 				material.setSpecularColor( colorChunk.getColor() );
 				break;
 
 			case MAT_SHINE:
-				material.shininess = (int)( 128.0f * new PercentageChunk( dataInput , chunkType , remainingChunkBytes )._percentage );
+				material.shininess = (int)( 128.0f * new PercentageChunk( in, chunkType, remainingChunkBytes )._percentage );
 				break;
 
 			case MAT_ALPHA:
-				material.diffuseColorAlpha = 1.0f - new PercentageChunk( dataInput , chunkType , remainingChunkBytes )._percentage;
+				material.diffuseColorAlpha = 1.0f - new PercentageChunk( in, chunkType, remainingChunkBytes )._percentage;
 				break;
 
 			case IN_TRANC_FLAG:
 				break;
 
 			case TEXMAP_ONE:
-				_textureMapOne = new TextureMapChunk( dataInput , chunkType , remainingChunkBytes );
+				_textureMapOne = new TextureMapChunk( in, chunkType, remainingChunkBytes );
 				break;
 
 			case MAT_TEX_BUMPMAP:
-				_bumpMap = new TextureMapChunk( dataInput , chunkType , remainingChunkBytes );
+				_bumpMap = new TextureMapChunk( in, chunkType, remainingChunkBytes );
 				break;
 
 			case MAT_SOFTEN:
@@ -116,7 +118,7 @@ class MaterialChunk
 				break;
 
 			case MAT_REFLECT_MAP:
-				_reflectionMap = new TextureMapChunk( dataInput , chunkType , remainingChunkBytes );
+				_reflectionMap = new TextureMapChunk( in, chunkType, remainingChunkBytes );
 				break;
 
 			case MAT_TWO_SIDED:
@@ -130,11 +132,11 @@ class MaterialChunk
 				break;
 
 			case MAT_TEX2MAP:
-				_textureMapTwo = new TextureMapChunk( dataInput , chunkType , remainingChunkBytes );
+				_textureMapTwo = new TextureMapChunk( in, chunkType, remainingChunkBytes );
 				break;
 
 			default:
-				skipFully( dataInput , remainingChunkBytes );
+				skipFully( in, remainingChunkBytes );
 		}
 	}
 }
