@@ -24,8 +24,6 @@ import java.io.*;
 import java.util.concurrent.*;
 import javax.media.opengl.*;
 
-import com.numdata.oss.*;
-
 /**
  * Provides information about the capabilities and properties of an OpenGL
  * context.
@@ -219,10 +217,10 @@ public class JOGLCapabilities
 
 		out.println();
 		out.print( "OpenGL driver:        " );
-		out.print( "vendor="     ); out.print( TextTools.quote( _vendor ) );
-		out.print( ", renderer=" ); out.print( TextTools.quote( _renderer ) );
-		out.print( ", version="  ); out.print( TextTools.quote( _version ) );
-		out.print( ", shaders="  ); out.print( TextTools.quote( ( ( _shadingLanguageVersion == null ) ? "none" : _shadingLanguageVersion ) ) );
+		out.print( "vendor='"     ); out.print( _vendor ); out.print( '\'' );
+		out.print( ", renderer='" ); out.print( _renderer ); out.print( '\'');
+		out.print( ", version='"  ); out.print( _version ); out.print( '\'');
+		out.print( ", shaders='"  ); out.print( ( _shadingLanguageVersion != null ) ? _shadingLanguageVersion : "none" ); out.print( '\'' );
 		out.println();
 		out.print( "OpenGL extensions:    " ); out.println( _extensions );
 		out.print( "Open GL capabilities: " );
@@ -409,7 +407,6 @@ public class JOGLCapabilities
 		 */
 		protected abstract void run( GL gl );
 
-		@Override
 		public final void run()
 		{
 			try

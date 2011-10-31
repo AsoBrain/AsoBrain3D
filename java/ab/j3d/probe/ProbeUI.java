@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,8 +22,12 @@ package ab.j3d.probe;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.*;
+import java.io.*;
+import java.net.*;
 import java.util.*;
 import java.util.List;
+import javax.imageio.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
@@ -33,7 +37,6 @@ import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
 import ab.j3d.view.jogl.*;
-import com.numdata.oss.ui.*;
 
 /**
  * A user interface for testing 3D capabilities.
@@ -170,6 +173,27 @@ public class ProbeUI
 
 		public abstract Image getExpectedImage();
 
+		protected Image getImage( final String path )
+		{
+			final Class<?> thisClass = getClass();
+			final ClassLoader classLoader = thisClass.getClassLoader();
+			final URL imageUrl = classLoader.getResource( path );
+			BufferedImage result = null;
+			if ( imageUrl != null )
+			{
+				try
+				{
+					result = ImageIO.read( imageUrl );
+				}
+				catch ( IOException e )
+				{
+					System.err.println( "ImageIO.read( " + imageUrl + " ) => " + e );
+					e.printStackTrace();
+				}
+			}
+			return result;
+		}
+
 		public abstract boolean isSupported();
 
 		public abstract void run();
@@ -285,7 +309,7 @@ public class ProbeUI
 		@Override
 		public Image getExpectedImage()
 		{
-			return ImageTools.load( "ab/j3d/probe/expected-texture.png" );
+			return getImage( "/ab/j3d/probe/expected-texture.png" );
 		}
 	}
 
@@ -358,10 +382,10 @@ public class ProbeUI
 			scene.addContentNode( "two-side1", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), twoSide1.getObject3D() );
 
 			final Object3DBuilder twoSide2 = new Object3DBuilder();
-			twoSide2.addQuad( new Vector3D(  0.0, 0.0, -1.0 ),
-			                  new Vector3D(  1.0, 0.0, -1.0 ),
-			                  new Vector3D(  1.0, 0.0,  1.0 ),
-			                  new Vector3D(  0.0, 0.0,  1.0 ), sphereMaterial, true );
+			twoSide2.addQuad( new Vector3D( 0.0, 0.0, -1.0 ),
+			                  new Vector3D( 1.0, 0.0, -1.0 ),
+			                  new Vector3D( 1.0, 0.0, 1.0 ),
+			                  new Vector3D( 0.0, 0.0, 1.0 ), sphereMaterial, true );
 			scene.addContentNode( "two-side2", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), twoSide2.getObject3D() );
 		}
 
@@ -378,7 +402,7 @@ public class ProbeUI
 		@Override
 		public Image getExpectedImage()
 		{
-			return ImageTools.load( "ab/j3d/probe/expected-lighting.png" );
+			return getImage( "/ab/j3d/probe/expected-lighting.png" );
 		}
 	}
 
@@ -436,7 +460,7 @@ public class ProbeUI
 		@Override
 		public Image getExpectedImage()
 		{
-			return ImageTools.load( "ab/j3d/probe/expected-perPixelLighting.png" );
+			return getImage( "/ab/j3d/probe/expected-perPixelLighting.png" );
 		}
 	}
 
@@ -489,7 +513,7 @@ public class ProbeUI
 		@Override
 		public Image getExpectedImage()
 		{
-			return ImageTools.load( "ab/j3d/probe/expected-blending.png" );
+			return getImage( "/ab/j3d/probe/expected-blending.png" );
 		}
 	}
 
