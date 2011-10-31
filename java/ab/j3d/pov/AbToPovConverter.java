@@ -133,7 +133,7 @@ public class AbToPovConverter
 			final FaceGroup anyFaceGroup = faceGroups.get( 0 );
 
 			final String     name    = ( box.getTag() != null ) ? String.valueOf( box.getTag() ) : null;
-			final Vector3D   v1      = Vector3D.INIT;
+			final Vector3D   v1      = Vector3D.ZERO;
 			final Vector3D   v2      = v1.plus( box.getDX(), box.getDY(), box.getDZ() );
 			final PovTexture texture = convertMaterialToPovTexture( anyFaceGroup.getAppearance() );
 
@@ -420,7 +420,7 @@ public class AbToPovConverter
 			final FaceGroup faceGroup = faceGroups.get( 0 );
 			final PovTexture texture = convertMaterialToPovTexture( faceGroup.getAppearance() );
 
-			result = new PovSphere( ( sphere.getTag() != null ) ? String.valueOf( sphere.getTag() ) : null, Vector3D.INIT, sphere._radius, texture );
+			result = new PovSphere( ( sphere.getTag() != null ) ? String.valueOf( sphere.getTag() ) : null, Vector3D.ZERO, sphere._radius, texture );
 			result.setTransform( new PovMatrix( transform ) );
 		}
 		return result;
@@ -468,12 +468,11 @@ public class AbToPovConverter
 
 	/**
 	 * This {@link Node3DTreeWalker} calls conversion methods for all
-	 * convertable {@link Node3D} instances it encounters.
+	 * convertible {@link Node3D} instances it encounters.
 	 */
 	private class ConvertingVisitor
 		implements Node3DVisitor
 	{
-		@Override
 		public boolean visitNode( @NotNull final Node3DPath path )
 		{
 			final Node3D node = path.getNode();
