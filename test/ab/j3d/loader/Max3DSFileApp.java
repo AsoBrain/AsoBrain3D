@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,24 +20,18 @@
  */
 package ab.j3d.loader;
 
-import java.awt.BorderLayout;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Locale;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import java.awt.*;
+import java.io.*;
+import java.util.*;
+import javax.swing.*;
 
-import ab.j3d.Bounds3D;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.control.FromToCameraControl;
-import ab.j3d.loader.max3ds.Max3DSFile;
-import ab.j3d.model.Scene;
-import ab.j3d.view.RenderEngine;
-import ab.j3d.view.View3D;
-import ab.j3d.view.jogl.JOGLEngine;
-
-import com.numdata.oss.ui.WindowTools;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.loader.max3ds.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+import ab.j3d.view.jogl.*;
+import com.numdata.oss.ui.*;
 
 /**
  * This is a sample application for the {@link Max3DSFile} class.
@@ -58,7 +53,7 @@ public class Max3DSFileApp
 //			final double   unit      = Scene.FOOT;
 			final double   unit      = Scene.MM;
 
-			final Matrix3D transform = Matrix3D.INIT; // .rotateX( Math.toRadians( 90.0 ) );
+			final Matrix3D transform = Matrix3D.IDENTITY; // .rotateX( Math.toRadians( 90.0 ) );
 
 //			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/fishtank/fishtank.3ds";
 			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/flower01_s/flower01.3ds";
@@ -85,12 +80,12 @@ public class Max3DSFileApp
 
 			final Max3DSFile maxFile = new Max3DSFile( new FileInputStream( path ) );
 
-			final Bounds3D bounds   = Bounds3D.INIT; // object3d.getBounds( null , null );
+			final Bounds3D bounds   = Bounds3D.EMPTY; // object3d.getBounds( null , null );
 			final Vector3D size     = bounds.size();
 			final double   toCM     = 100.0 * unit;
 
-			final Vector3D viewFrom = Vector3D.INIT.set( 0.0 , bounds.v1.y - 3.0 / unit , bounds.v2.z / 2.0 + 1.2 / unit );
-			final Vector3D viewAt   = Vector3D.INIT.set( 0.0 , 0.0 , bounds.v2.z / 2.0 );
+			final Vector3D viewFrom = new Vector3D( 0.0 , bounds.v1.y - 3.0 / unit , bounds.v2.z / 2.0 + 1.2 / unit );
+			final Vector3D viewAt   = new Vector3D( 0.0 , 0.0 , bounds.v2.z / 2.0 );
 
 			System.out.println( "object size = " + Math.round( toCM * size.x ) + " x " + Math.round( toCM * size.y ) + " x " + Math.round( toCM * size.z ) + " cm" );
 
