@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,9 @@ import javax.swing.*;
 import javax.swing.Timer;
 
 import ab.j3d.*;
+import ab.j3d.awt.*;
 import ab.j3d.control.*;
+import ab.j3d.geom.*;
 import ab.j3d.view.*;
 import ab.j3d.view.jogl.*;
 
@@ -73,8 +75,8 @@ public class CollisionTestApp
 		final View3D view = engine.createView( scene );
 		view.setFrontClipDistance( 0.001 );
 		view.setBackClipDistance( 100.0 );
-		view.setCameraControl( new FromToCameraControl( view, new Vector3D( -5.0, -10.0, 5.0 ), Vector3D.INIT ) );
-		view.setBackground( Background.createGradient( Color.LIGHT_GRAY, Color.GRAY ) );
+		view.setCameraControl( new FromToCameraControl( view, new Vector3D( -5.0, -10.0, 5.0 ), Vector3D.ZERO ) );
+		view.setBackground( Background.createGradient( new Color4f( 192, 192, 192 ), new Color4f( 128, 128, 128) ) );
 
 		final Grid grid = view.getGrid();
 		grid.setEnabled( true );
@@ -86,7 +88,6 @@ public class CollisionTestApp
 		{
 			toolBar.add( new AbstractAction( "Sphere" )
 			{
-				@Override
 				public void actionPerformed( final ActionEvent e )
 				{
 					final Node3D root = target.getNode3D();
@@ -98,7 +99,6 @@ public class CollisionTestApp
 
 			toolBar.add( new AbstractAction( "Cube" )
 			{
-				@Override
 				public void actionPerformed( final ActionEvent e )
 				{
 					final Node3D root = target.getNode3D();
@@ -112,7 +112,6 @@ public class CollisionTestApp
 
 			toolBar.add( new AbstractAction( "Cylinder" )
 			{
-				@Override
 				public void actionPerformed( final ActionEvent e )
 				{
 					final Node3D root = target.getNode3D();
@@ -126,7 +125,6 @@ public class CollisionTestApp
 
 			toolBar.add( new AbstractAction( "Cone" )
 			{
-				@Override
 				public void actionPerformed( final ActionEvent e )
 				{
 					final Node3D root = target.getNode3D();
@@ -140,7 +138,6 @@ public class CollisionTestApp
 
 			toolBar.add( new AbstractAction( "Prism" )
 			{
-				@Override
 				public void actionPerformed( final ActionEvent e )
 				{
 					final Path2D shape = createShape();
@@ -156,14 +153,14 @@ public class CollisionTestApp
 
 			toolBar.add( new AbstractAction( "Free-form" )
 			{
-				@Override
 				public void actionPerformed( final ActionEvent e )
 				{
 					final Path2D shape = createShape();
 
 					final Object3DBuilder builder = new Object3DBuilder();
-					builder.addExtrudedShape( shape, 0.1, new Vector3D( 0.0, 0.0, 0.2 ), true, Matrix3D.getTranslation( 0.0, 0.0, 0.8 ), true, white, null, false, true, white, null, false, true, white, null, false, false, false, true );
-					builder.addExtrudedShape( shape, 0.1, new Vector3D( 0.0, 0.0, 0.2 ), true, Matrix3D.getTransform( 0.0, 0.0, 90.0, 0.0, 0.0, 0.0 ), true, white, null, false, true, white, null, false, true, white, null, false, false, false, true );
+					final Tessellator shapeTessellator = ShapeTools.createTessellator( shape, 0.1 );
+					builder.addExtrudedShape( shapeTessellator, new Vector3D( 0.0, 0.0, 0.2 ), true, Matrix3D.getTranslation( 0.0, 0.0, 0.8 ), true, white, null, false, true, white, null, false, true, white, null, false, false, false, true );
+					builder.addExtrudedShape( shapeTessellator, new Vector3D( 0.0, 0.0, 0.2 ), true, Matrix3D.getTransform( 0.0, 0.0, 90.0, 0.0, 0.0, 0.0 ), true, white, null, false, true, white, null, false, true, white, null, false, false, false, true );
 
 					final Node3D root = target.getNode3D();
 					root.removeAllChildren();
@@ -185,16 +182,15 @@ public class CollisionTestApp
 		frame.setSize( 1024, 768 );
 		frame.setVisible( true );
 
-		final Matrix3D orbit1 = Matrix3D.getRotationTransform( Vector3D.INIT, randomUnitVector(), Math.toRadians( 1.3 ) );
-		final Matrix3D orbit2 = Matrix3D.getRotationTransform( Vector3D.INIT, randomUnitVector(), Math.toRadians( 0.9 ) );
-		final Matrix3D tumble1 = Matrix3D.getRotationTransform( Vector3D.INIT, randomUnitVector(), Math.toRadians( 0.7 ) );
-		final Matrix3D tumble2 = Matrix3D.getRotationTransform( Vector3D.INIT, randomUnitVector(), Math.toRadians( 1.1 ) );
+		final Matrix3D orbit1 = Matrix3D.getRotationTransform( Vector3D.ZERO, randomUnitVector(), Math.toRadians( 1.3 ) );
+		final Matrix3D orbit2 = Matrix3D.getRotationTransform( Vector3D.ZERO, randomUnitVector(), Math.toRadians( 0.9 ) );
+		final Matrix3D tumble1 = Matrix3D.getRotationTransform( Vector3D.ZERO, randomUnitVector(), Math.toRadians( 0.7 ) );
+		final Matrix3D tumble2 = Matrix3D.getRotationTransform( Vector3D.ZERO, randomUnitVector(), Math.toRadians( 1.1 ) );
 
 		final List<ContentNode> collisions = new ArrayList<ContentNode>();
 
 		final Timer timer = new Timer( 30, new ActionListener()
 		{
-			@Override
 			public void actionPerformed( final ActionEvent e )
 			{
 				{
@@ -239,7 +235,6 @@ public class CollisionTestApp
 
 		view.appendRenderStyleFilter( new RenderStyleFilter()
 		{
-			@Override
 			public RenderStyle applyFilter( final RenderStyle style, final Object context )
 			{
 				RenderStyle result = style;
