@@ -128,7 +128,7 @@ public final class Max3DSLoader
 	public static Node3D load( final Matrix3D transform , final ResourceLoader resourceLoader , final InputStream in )
 		throws IOException
 	{
-		final Node3D result = ( transform == null || Matrix3D.INIT.equals( transform ) ) ? new Transform3D( transform ) : new Node3D();
+		final Node3D result = ( transform == null || Matrix3D.IDENTITY.equals( transform ) ) ? new Transform3D( transform ) : new Node3D();
 
 		final Max3DSLoader loader = new Max3DSLoader( result );
 		while ( true )
