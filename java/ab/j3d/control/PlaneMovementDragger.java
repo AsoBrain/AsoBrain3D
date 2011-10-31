@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,14 +20,10 @@
  */
 package ab.j3d.control;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.geom.BasicPlane3D;
-import ab.j3d.geom.GeometryTools;
-import ab.j3d.geom.Plane3D;
-import ab.j3d.geom.Ray3D;
-import ab.j3d.model.Face3DIntersection;
-import ab.j3d.view.Projector;
+import ab.j3d.*;
+import ab.j3d.geom.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
 
 /**
  * This class can assist with dragging an object over a plane.
@@ -68,7 +65,7 @@ public class PlaneMovementDragger
 	 * Translation from intersection point within object to object origin in
 	 * world coordinates (WCS).
 	 */
-	private Vector3D _wcsTranslation;
+	private final Vector3D _wcsTranslation;
 
 	/**
 	 * End location of dragged object in the world coordinates (WCS).
@@ -129,7 +126,7 @@ public class PlaneMovementDragger
 		final Matrix3D object2world         = intersection.getObject2world();
 		final Matrix3D view2world           = world2view.inverse();
 
-		final Vector3D wcsObjectOrigin      = object2world.transform( Vector3D.INIT );
+		final Vector3D wcsObjectOrigin      = object2world.getTranslation();
 		final Vector3D wcsIntersectionPoint = intersection.getIntersectionPoint();
 
 		_view2world     = view2world;

@@ -61,7 +61,7 @@ public class PlanarUVMap
 	 */
 	public PlanarUVMap( final double scale )
 	{
-		this( scale, Matrix3D.INIT );
+		this( scale, Matrix3D.IDENTITY );
 	}
 
 	/**
@@ -74,7 +74,7 @@ public class PlanarUVMap
 	 */
 	public PlanarUVMap( final double scale, final Vector3D normal )
 	{
-		this( scale, Vector3D.INIT, normal );
+		this( scale, Vector3D.ZERO, normal );
 	}
 
 	/**
@@ -111,7 +111,7 @@ public class PlanarUVMap
 	 */
 	public PlanarUVMap( final float scaleU, final float scaleV )
 	{
-		this( scaleU, scaleV, Matrix3D.INIT );
+		this( scaleU, scaleV, Matrix3D.IDENTITY );
 	}
 
 	/**
@@ -192,7 +192,6 @@ public class PlanarUVMap
 		_plane2wcs = plane2wcs;
 	}
 
-	@Override
 	public float[] generate( @Nullable final TextureMap textureMap, @NotNull final List<? extends Vector3D> vertexCoordinates, @Nullable final int[] vertexIndices, final boolean flipTexture )
 	{
 		final int vertexCount = ( vertexIndices != null ) ? vertexIndices.length : vertexCoordinates.size();
@@ -230,7 +229,6 @@ public class PlanarUVMap
 		return result;
 	}
 
-	@Override
 	public void generate( @NotNull final Vector2f result, @Nullable final TextureMap textureMap, @NotNull final Vector3D point, @NotNull final Vector3D normal, final boolean flipTexture )
 	{
 		final Matrix3D plane2wcs = _plane2wcs;

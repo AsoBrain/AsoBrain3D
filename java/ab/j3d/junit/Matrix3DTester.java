@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,20 +20,16 @@
  */
 package ab.j3d.junit;
 
-import junit.framework.Assert;
-import junit.framework.AssertionFailedError;
-
-import ab.j3d.Matrix3D;
+import ab.j3d.*;
+import junit.framework.*;
 
 /**
  * JUnit unit tool class to help with testing {@link Matrix3D} objects.
  *
- * @see     Matrix3D
- *
  * @author  H.B.J. te Lintelo
  * @version $Revision$ $Date$
  */
-public final class Matrix3DTester
+public class Matrix3DTester
 {
 	/**
 	 *
@@ -59,13 +56,13 @@ public final class Matrix3DTester
 	/**
 	 * Standard matrix usable for tests. This defines the identity matrix.
 	 */
-	public static final Matrix3D IDENTITY = Matrix3D.INIT;
+	public static final Matrix3D IDENTITY = Matrix3D.IDENTITY;
 
 	/**
 	 * Standard matrix usable for tests. This defines a rotation of 180 degrees
 	 * over the Y-axis.
 	 */
-	public static final Matrix3D FLIPPED_OVER_X_AXIS = Matrix3D.INIT.set(
+	public static final Matrix3D FLIPPED_OVER_X_AXIS = new Matrix3D(
 		 1.0 ,  0.0 ,  0.0 , 0.0 ,
 		 0.0 , -1.0 ,  0.0 , 0.0 ,
 		 0.0 ,  0.0 , -1.0 , 0.0 );
@@ -74,7 +71,7 @@ public final class Matrix3DTester
 	 * Standard matrix usable for tests. This defines a rotation of 180 degrees
 	 * over the Y-axis.
 	 */
-	public static final Matrix3D FLIPPED_OVER_Y_AXIS = Matrix3D.INIT.set(
+	public static final Matrix3D FLIPPED_OVER_Y_AXIS = new Matrix3D(
 		-1.0 ,  0.0 ,  0.0 , 0.0 ,
 		 0.0 ,  1.0 ,  0.0 , 0.0 ,
 		 0.0 ,  0.0 , -1.0 , 0.0 );
@@ -83,14 +80,14 @@ public final class Matrix3DTester
 	 * Standard matrix usable for tests. This defines a rotation of 180 degrees
 	 * over the Z-axis.
 	 */
-	public static final Matrix3D FLIPPED_OVER_Z_AXIS = Matrix3D.INIT.set(
+	public static final Matrix3D FLIPPED_OVER_Z_AXIS = new Matrix3D(
 		-1.0 ,  0.0 ,  0.0 , 0.0 ,
 		 0.0 , -1.0 ,  0.0 , 0.0 ,
 		 0.0 ,  0.0 ,  1.0 , 0.0 );
 
 
 	/**
-	 * Array with posssible base transforms for tests.
+	 * Array with possible base transforms for tests.
 	 * <p />
 	 * These transforms can be used to test different orientations. Each axis is
 	 * set in steps of 45 degrees. Also, various translations are applied.
@@ -231,9 +228,18 @@ public final class Matrix3DTester
 		                              + "\n\nmatrix =\n" + matrix.toFriendlyString()
 		                              + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
 
-		     if ( direction < 0  ) Assert.assertTrue  ( actualPrefix + "Should have 'xo < 0', but it isn't." + messageSuffix ,       relativeMatrix.xo <  delta );
-		else if ( direction == 0 ) Assert.assertEquals( actualPrefix + "Should have 'xo = 0', but it isn't." + messageSuffix , 0.0 , relativeMatrix.xo ,  delta );
-		else /*   direction > 0 */ Assert.assertTrue  ( actualPrefix + "Should have 'xo > 0', but it isn't." + messageSuffix ,       relativeMatrix.xo > -delta );
+		if ( direction < 0 )
+		{
+			Assert.assertTrue( actualPrefix + "Should have 'xo < 0', but it isn't." + messageSuffix, relativeMatrix.xo < delta );
+		}
+		else if ( direction == 0 )
+		{
+			Assert.assertEquals( actualPrefix + "Should have 'xo = 0', but it isn't." + messageSuffix, 0.0, relativeMatrix.xo, delta );
+		}
+		else /* direction > 0 */
+		{
+			Assert.assertTrue( actualPrefix + "Should have 'xo > 0', but it isn't." + messageSuffix, relativeMatrix.xo > -delta );
+		}
 	}
 
 	/**
@@ -274,9 +280,18 @@ public final class Matrix3DTester
 		                              + "\n\nmatrix =\n" + matrix.toFriendlyString()
 		                              + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
 
-		     if ( direction < 0  ) Assert.assertTrue  ( actualPrefix + "Should have 'yo < 0', but it isn't." + messageSuffix ,       relativeMatrix.yo <  delta);
-		else if ( direction == 0 ) Assert.assertEquals( actualPrefix + "Should have 'yo = 0', but it isn't." + messageSuffix , 0.0 , relativeMatrix.yo ,  delta );
-		else /*   direction > 0 */ Assert.assertTrue  ( actualPrefix + "Should have 'yo > 0', but it isn't." + messageSuffix ,       relativeMatrix.yo > -delta );
+		if ( direction < 0 )
+		{
+			Assert.assertTrue( actualPrefix + "Should have 'yo < 0', but it isn't." + messageSuffix, relativeMatrix.yo < delta );
+		}
+		else if ( direction == 0 )
+		{
+			Assert.assertEquals( actualPrefix + "Should have 'yo = 0', but it isn't." + messageSuffix, 0.0, relativeMatrix.yo, delta );
+		}
+		else /* direction > 0 */
+		{
+			Assert.assertTrue( actualPrefix + "Should have 'yo > 0', but it isn't." + messageSuffix, relativeMatrix.yo > -delta );
+		}
 	}
 
 	/**
@@ -317,9 +332,18 @@ public final class Matrix3DTester
 		                              + "\n\nmatrix =\n" + matrix.toFriendlyString()
 		                              + "\n\nrelativeMatrix =\n" + relativeMatrix.toFriendlyString();
 
-		     if ( direction < 0  ) Assert.assertTrue  ( actualPrefix + "Should have 'zo < 0', but it isn't." + messageSuffix ,       relativeMatrix.zo <  delta );
-		else if ( direction == 0 ) Assert.assertEquals( actualPrefix + "Should have 'zo = 0', but it isn't." + messageSuffix , 0.0 , relativeMatrix.zo ,  delta );
-		else /*   direction > 0 */ Assert.assertTrue  ( actualPrefix + "Should have 'zo > 0', but it isn't." + messageSuffix ,       relativeMatrix.zo > -delta );
+		if ( direction < 0 )
+		{
+			Assert.assertTrue( actualPrefix + "Should have 'zo < 0', but it isn't." + messageSuffix, relativeMatrix.zo < delta );
+		}
+		else if ( direction == 0 )
+		{
+			Assert.assertEquals( actualPrefix + "Should have 'zo = 0', but it isn't." + messageSuffix, 0.0, relativeMatrix.zo, delta );
+		}
+		else /*   direction > 0 */
+		{
+			Assert.assertTrue( actualPrefix + "Should have 'zo > 0', but it isn't." + messageSuffix, relativeMatrix.zo > -delta );
+		}
 	}
 
 	/**
