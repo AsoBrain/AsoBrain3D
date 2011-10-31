@@ -19,16 +19,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-
 package ab.j3d.demo;
 
 import java.awt.*;
 import java.awt.geom.*;
 import java.util.*;
-
 import javax.swing.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
@@ -74,7 +73,7 @@ public class FrustumDemo
 		final View3D normalView = engine.createView( scene );
 		normalView.setFrontClipDistance( 1.0 );
 		normalView.setBackClipDistance( 100.0 );
-		normalView.setBackground( Background.createSolid( Color.BLACK ) );
+		normalView.setBackground( Background.createSolid( new Color4f( 0.0f, 0.0f, 0.0f ) ) );
 
 //		normalView.setProjectionPolicy( ProjectionPolicy.PARALLEL );
 //		normalView.setZoomFactor( 0.1 );
@@ -86,13 +85,11 @@ public class FrustumDemo
 
 		normalView.addViewListener( new ViewListener()
 		{
-			@Override
 			public void beforeFrame( final View3D view )
 			{
 				_frustumNode.update();
 			}
 
-			@Override
 			public void afterFrame( final View3D view )
 			{
 			}
@@ -101,7 +98,6 @@ public class FrustumDemo
 		final View3D frustumView = engine.createView( scene );
 		frustumView.appendRenderStyleFilter( new RenderStyleFilter()
 		{
-			@Override
 			public RenderStyle applyFilter( final RenderStyle style, final Object context )
 			{
 				RenderStyle result = style;
@@ -124,7 +120,7 @@ public class FrustumDemo
 			}
 		} );
 		frustumView.setViewFrustumCulling( false );
-		frustumView.setBackground( Background.createSolid( Color.BLACK ) );
+		frustumView.setBackground( Background.createSolid( new Color4f( 0.0f, 0.0f, 0.0f ) ) );
 		frustumView.setCameraControl( new FromToCameraControl( frustumView, new Vector3D( 10.0, -20.0, 10.0 ), new Vector3D( 0.32, 0.33, 0.80 ), Vector3D.POSITIVE_Z_AXIS ) );
 		panel.add( frustumView.getComponent() );
 
@@ -216,7 +212,11 @@ public class FrustumDemo
 		scene.addContentNode( "cone", Matrix3D.IDENTITY, coneRotator );
 
 		final Shape shapeToExtrude = new Arc2D.Double( -1.0, -1.0, 2.0, 2.0, 80.0, 280.0, Arc2D.PIE);
-		final ExtrudedObject2D extrudedShape = new ExtrudedObject2D( shapeToExtrude, new Vector3D( 0.0, 0.0, 1.0 ), null, Materials.BLUE, Materials.RED, Materials.GREEN, 0.025, false, false, true );
+		final Object3DBuilder builder = new Object3DBuilder();
+		final Tessellator tessellatedShape = ShapeTools.createTessellator( shapeToExtrude, 0.025 );
+		builder.addExtrudedShape( tessellatedShape, new Vector3D( 0.0, 0.0, 1.0 ), true, Matrix3D.IDENTITY, true, Materials.BLUE, null, false, true, Materials.RED, null, false, true, Materials.GREEN, null, false, false, false, false );
+		final Object3D extrudedShape = builder.getObject3D();
+
 		final Transform3D extrudedShapeRotator = new Rotator( 240.0 );
 		extrudedShapeRotator.addChild( extrudedShape );
 		scene.addContentNode( "extrudedShape", Matrix3D.IDENTITY, extrudedShapeRotator );
@@ -256,8 +256,9 @@ public class FrustumDemo
 		freeShape.closePath();
 
 		final Object3DBuilder builder = new Object3DBuilder();
-		builder.addExtrudedShape( freeShape, 0.1, new Vector3D( 0.0, 0.0, 0.5 ), true, Matrix3D.getTranslation( 0.0, 0.0, 0.8 ), true, Materials.BLUE, null, false, true, Materials.RED, null, false, true, Materials.GREEN, null, false, false, false, true );
-		builder.addExtrudedShape( freeShape, 0.1, new Vector3D( 0.0, 0.0, 0.5 ), true, Matrix3D.getTransform( 0.0, 0.0, 90.0, 0.0, 0.0, 0.0 ), true, Materials.BLUE, null, false, true, Materials.RED, null, false, true, Materials.GREEN, null, false, false, false, true );
+		final Tessellator freeShapeTessellator = ShapeTools.createTessellator( freeShape, 0.1 );
+		builder.addExtrudedShape( freeShapeTessellator, new Vector3D( 0.0, 0.0, 0.5 ), true, Matrix3D.getTranslation( 0.0, 0.0, 0.8 ), true, Materials.BLUE, null, false, true, Materials.RED, null, false, true, Materials.GREEN, null, false, false, false, true );
+		builder.addExtrudedShape( freeShapeTessellator, new Vector3D( 0.0, 0.0, 0.5 ), true, Matrix3D.getTransform( 0.0, 0.0, 90.0, 0.0, 0.0, 0.0 ), true, Materials.BLUE, null, false, true, Materials.RED, null, false, true, Materials.GREEN, null, false, false, false, true );
 		return builder.getObject3D();
 	}
 

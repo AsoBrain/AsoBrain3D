@@ -60,7 +60,7 @@ public class AsoBrainAnimation
 		_scene = scene;
 
 		final View3D view = engine.createView( scene );
-		view.setBackground( Background.createSolid( Color.BLACK ) );
+		view.setBackground( Background.createSolid( new Color4f( 0.0f, 0.0f, 0.0f ) ) );
 		view.setCameraControl( new FromToCameraControl( view, new Vector3D( 0.0, 0.0, 8.0 ), Vector3D.ZERO, Vector3D.POSITIVE_Y_AXIS ) );
 		return view.getComponent();
 	}

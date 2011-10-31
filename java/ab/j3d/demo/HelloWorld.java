@@ -56,7 +56,7 @@ public class HelloWorld
 		final Vector3D lookAt = new Vector3D( 0.21, 1.20, -0.59 );
 
 		final View3D view = engine.createView( scene );
-		view.setBackground( Background.createSolid( Color.BLACK ) );
+		view.setBackground( Background.createSolid( new Color4f( 0.0f, 0.0f, 0.0f ) ) );
 		view.setCameraControl( new FromToCameraControl( view, lookFrom, lookAt, Vector3D.POSITIVE_Z_AXIS ) );
 		return view.getComponent();
 	}

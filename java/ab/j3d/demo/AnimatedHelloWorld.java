@@ -25,6 +25,7 @@ import java.awt.geom.*;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
@@ -61,7 +62,7 @@ public class AnimatedHelloWorld
 		_scene = scene;
 
 		final View3D view = engine.createView( scene );
-		view.setBackground( Background.createSolid( Color.BLACK ) );
+		view.setBackground( Background.createSolid( new Color4f( 0.0f, 0.0f, 0.0f ) ) );
 		final Vector3D lookFrom = new Vector3D( 1.55, -19.73, 7.79 );
 		final Vector3D lookAt = new Vector3D( 0.32, 0.33, 0.80 );
 		view.setCameraControl( new FromToCameraControl( view, lookFrom, lookAt, Vector3D.POSITIVE_Z_AXIS ) );
@@ -148,7 +149,12 @@ public class AnimatedHelloWorld
 		scene.addContentNode( "cone", Matrix3D.IDENTITY, coneRotator );
 
 		final Shape shapeToExtrude = new Arc2D.Double( -1.0, -1.0, 2.0, 2.0, 80.0, 280.0, Arc2D.PIE);
-		final ExtrudedObject2D extrudedShape = new ExtrudedObject2D( shapeToExtrude, new Vector3D( 0.0, 0.0, 1.0 ), null, Materials.BLUE, Materials.RED, Materials.GREEN, 0.025, false, false, true );
+
+		final Object3DBuilder builder = new Object3DBuilder();
+		final Tessellator shapeTessellator = ShapeTools.createTessellator( shapeToExtrude, 0.025 );
+		builder.addExtrudedShape( shapeTessellator, new Vector3D( 0.0, 0.0, 1.0 ), true, Matrix3D.IDENTITY, true, Materials.BLUE, null, false, true, Materials.RED, null, false, true, Materials.GREEN, null, false, false, false, false );
+		final Object3D extrudedShape = builder.getObject3D();
+
 		final Transform3D extrudedShapeRotator = new Rotator( 240.0 );
 		extrudedShapeRotator.addChild( extrudedShape );
 		scene.addContentNode( "extrudedShape", Matrix3D.IDENTITY, extrudedShapeRotator );
@@ -188,8 +194,9 @@ public class AnimatedHelloWorld
 		freeShape.closePath();
 
 		final Object3DBuilder builder = new Object3DBuilder();
-		builder.addExtrudedShape( freeShape, 0.1, new Vector3D( 0.0, 0.0, 0.5 ), true, Matrix3D.getTranslation( 0.0, 0.0, 0.8 ), true, Materials.BLUE, null, false, true, Materials.RED, null, false, true, Materials.GREEN, null, false, false, false, true );
-		builder.addExtrudedShape( freeShape, 0.1, new Vector3D( 0.0, 0.0, 0.5 ), true, Matrix3D.getTransform( 0.0, 0.0, 90.0, 0.0, 0.0, 0.0 ), true, Materials.BLUE, null, false, true, Materials.RED, null, false, true, Materials.GREEN, null, false, false, false, true );
+		final Tessellator freeShapeTessellator = ShapeTools.createTessellator( freeShape, 0.1 );
+		builder.addExtrudedShape( freeShapeTessellator, new Vector3D( 0.0, 0.0, 0.5 ), true, Matrix3D.getTranslation( 0.0, 0.0, 0.8 ), true, Materials.BLUE, null, false, true, Materials.RED, null, false, true, Materials.GREEN, null, false, false, false, true );
+		builder.addExtrudedShape( freeShapeTessellator, new Vector3D( 0.0, 0.0, 0.5 ), true, Matrix3D.getTransform( 0.0, 0.0, 90.0, 0.0, 0.0, 0.0 ), true, Materials.BLUE, null, false, true, Materials.RED, null, false, true, Materials.GREEN, null, false, false, false, true );
 		return builder.getObject3D();
 	}
 

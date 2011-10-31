@@ -134,8 +134,8 @@ public class ViewerApplet
 				}
 				else if ( GRADIENT_2_RGB_6.matcher( background ).matches() )
 				{
-					final Color color1 = parseRgb6( background, 0 );
-					final Color color2 = parseRgb6( background, 8 );
+					final Color4f color1 = parseRgb6( background, 0 );
+					final Color4f color2 = parseRgb6( background, 8 );
 					view.setBackground( Background.createGradient( color1, color1, color2, color2 ) );
 				}
 				else
@@ -181,12 +181,12 @@ public class ViewerApplet
 	 *
 	 * @return  Parsed color.
 	 */
-	private static Color parseRgb6( final String string, final int offset )
+	private static Color4f parseRgb6( final String string, final int offset )
 	{
 		final int red = Integer.parseInt( string.substring( offset + 1, offset + 3 ), 16 );
 		final int green = Integer.parseInt( string.substring( offset + 3, offset + 5 ), 16 );
 		final int blue = Integer.parseInt( string.substring( offset + 5, offset + 7 ), 16 );
-		return new Color( red, green, blue );
+		return new Color4f( red, green, blue );
 	}
 
 	@Override
@@ -203,7 +203,6 @@ public class ViewerApplet
 		{
 			_executor.submit( new Runnable()
 			{
-				@Override
 				public void run()
 				{
 					final Object3D model;
@@ -234,7 +233,6 @@ public class ViewerApplet
 					{
 						SwingUtilities.invokeLater( new Runnable()
 						{
-							@Override
 							public void run()
 							{
 								final Scene scene = _scene;
@@ -307,19 +305,16 @@ public class ViewerApplet
 			}
 		}
 
-		@Override
 		public void addView( final View3D view )
 		{
 			_views.add( view );
 		}
 
-		@Override
 		public void removeView( final View3D view )
 		{
 			_views.remove( view );
 		}
 
-		@Override
 		public void paintOverlay( final View3D view, final Graphics2D g )
 		{
 			if ( _status != null )
