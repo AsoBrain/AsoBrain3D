@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,8 +31,6 @@ import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.view.control.planar.*;
-import com.numdata.oss.*;
-import com.numdata.oss.ui.*;
 
 /**
  * Base implementation for render engine examples.
@@ -71,7 +69,7 @@ public class RenderEngineExample
 
 		final Object3D cube = createCube( 0.1 / unit );
 		cube.setTag( "Cube 1" );
-		final ContentNode cubeNode = scene.addContentNode( "cube", Matrix3D.INIT, cube );
+		final ContentNode cubeNode = scene.addContentNode( "cube", Matrix3D.IDENTITY, cube );
 		cubeNode.setPlaneControl( createPlaneControl( cubeNode.getTransform() ) );
 
 		final Object3D cubeLeft = createCube( 0.075 / unit );
@@ -87,7 +85,7 @@ public class RenderEngineExample
 		addMaterialCubes( scene );
 
 		final Vector3D viewFrom = Vector3D.polarToCartesian( 1.5 / unit, -0.2 * Math.PI, 0.4 * Math.PI );
-		final Vector3D viewAt   = Vector3D.INIT;
+		final Vector3D viewAt   = Vector3D.ZERO;
 
 		final View3D view = renderEngine.createView( scene );
 		view.setCameraControl( new FromToCameraControl( view, viewFrom, viewAt )
@@ -109,7 +107,27 @@ public class RenderEngineExample
 		viewPanel.add( view.getComponent(), BorderLayout.CENTER );
 		viewPanel.add( view.createToolBar( Locale.ENGLISH ), BorderLayout.NORTH );
 
-		final JFrame frame = WindowTools.createFrame( renderEngine.getClass() + " example", 800, 600, viewPanel );
+		final JFrame frame = new JFrame( renderEngine.getClass() + " example" );
+		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+		frame.setContentPane( viewPanel );
+		final Toolkit toolkit = frame.getToolkit();
+		frame.setSize( 800, 600 );
+
+		final GraphicsConfiguration graphicsConfiguration = frame.getGraphicsConfiguration();
+		if ( graphicsConfiguration != null )
+		{
+			final Rectangle screenBounds = graphicsConfiguration.getBounds();
+			final Insets screenInsets = toolkit.getScreenInsets( graphicsConfiguration );
+			frame.setLocation( screenBounds.x + ( screenBounds.width + screenInsets.left + screenInsets.right - frame.getWidth() ) / 2,
+			                   screenBounds.y + ( screenBounds.height + screenInsets.top + screenInsets.bottom - frame.getHeight() ) / 2 );
+		}
+		else
+		{
+			final Dimension screenSize = toolkit.getScreenSize();
+			frame.setLocation( ( screenSize.width - frame.getWidth() ) / 2,
+			                   ( screenSize.height - 5 - frame.getHeight() ) / 2 );
+		}
+
 		frame.setVisible( true );
 
 		final Object3D testCube = createCube(0.075 / unit);
@@ -195,7 +213,7 @@ public class RenderEngineExample
 			}
 		} );
 
-		scene.addContentNode( "skybox", Matrix3D.INIT, createSkyBox() );
+		scene.addContentNode( "skybox", Matrix3D.IDENTITY, createSkyBox() );
 	}
 
 	/**
@@ -242,14 +260,14 @@ public class RenderEngineExample
 		final double min = -size;
 		final double max =  size;
 
-		final Vector3D lfb = Vector3D.INIT.set( min, min, min );
-		final Vector3D rfb = Vector3D.INIT.set( max, min, min );
-		final Vector3D rbb = Vector3D.INIT.set( max, max, min );
-		final Vector3D lbb = Vector3D.INIT.set( min, max, min );
-		final Vector3D lft = Vector3D.INIT.set( min, min, max );
-		final Vector3D rft = Vector3D.INIT.set( max, min, max );
-		final Vector3D rbt = Vector3D.INIT.set( max, max, max );
-		final Vector3D lbt = Vector3D.INIT.set( min, max, max );
+		final Vector3D lfb = new Vector3D( min, min, min );
+		final Vector3D rfb = new Vector3D( max, min, min );
+		final Vector3D rbb = new Vector3D( max, max, min );
+		final Vector3D lbb = new Vector3D( min, max, min );
+		final Vector3D lft = new Vector3D( min, min, max );
+		final Vector3D rft = new Vector3D( max, min, max );
+		final Vector3D rbt = new Vector3D( max, max, max );
+		final Vector3D lbt = new Vector3D( min, max, max );
 
 		final Material red     = new Material( 0xC0FF0000 );
 		final Material magenta = new Material( 0xC0FF00FF );
@@ -313,7 +331,7 @@ public class RenderEngineExample
 					final View3D view = controlInput.getView();
 
 					final Grid grid = view.getGrid();
-					grid.setGrid2wcs( Matrix3D.INIT );
+					grid.setGrid2wcs( Matrix3D.IDENTITY );
 					contentNode.setAlternate( false );
 				}
 			};
@@ -358,7 +376,8 @@ public class RenderEngineExample
 
 		public void paintOverlay( final View3D view, final Graphics2D g2 )
 		{
-			if ( TextTools.isNonEmpty( _text ) )
+			final String text = _text;
+			if ( ( text != null ) && !text.isEmpty() )
 			{
 				final FontMetrics metrics = g2.getFontMetrics();
 				final Component component = view.getComponent();
@@ -366,7 +385,7 @@ public class RenderEngineExample
 				g2.setColor( new Color( 0x80000000, true ) );
 				g2.fillRect( 0, y - metrics.getHeight() / 2, component.getWidth(), 2 * metrics.getHeight() );
 				g2.setColor( Color.WHITE );
-				g2.drawString( _text, 50 + metrics.getLeading(), y + metrics.getLeading() + metrics.getAscent() );
+				g2.drawString( text, 50 + metrics.getLeading(), y + metrics.getLeading() + metrics.getAscent() );
 			}
 		}
 	}
@@ -692,7 +711,7 @@ public class RenderEngineExample
 					createMaterial( textures[ i * 6 + 4 ] ),
 					createMaterial( textures[ i * 6 + 5 ] ) );
 
-			final Matrix3D matrix = Matrix3D.INIT.plus( 1.1 * boxSize * (double)( i % 10 - 5 ), 100.0, 1.1 * boxSize * (double)( i / 10 ) );
+			final Matrix3D matrix = Matrix3D.getTranslation( 1.1 * boxSize * (double) ( i % 10 - 5 ), 100.0, 1.1 * boxSize * (double) ( i / 10 ) );
 
 			scene.addContentNode( "texture-box-" + i, matrix, box );
 		}
