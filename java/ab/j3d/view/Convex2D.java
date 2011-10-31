@@ -89,19 +89,46 @@ public class Convex2D
 	public void add( final double x, final double y )
 	{
 		final int index = _size++ * 2;
+		ensureCapacity( index + 2 );
+		_points[ index ] = x;
+		_points[ index + 1 ] = y;
+		_convex = false;
+	}
 
+	/**
+	 * Ensures that the backing array can store at least the given number of
+	 * elements.
+	 *
+	 * @param   capacity    Minimum size of the array after this method exits.
+	 */
+	private void ensureCapacity( final int capacity )
+	{
 		double[] points = _points;
-		if ( index >= points.length )
+		if ( capacity > points.length )
 		{
 			// growth behavior is the same as 'java.util.ArrayList'
-			final int newCapacity = Math.max( index + 2, ( ( points.length * 3 ) / 4 + 1 ) * 2 );
+			final int newCapacity = Math.max( capacity, ( ( points.length * 3 ) / 4 + 1 ) * 2 );
 			points = Arrays.copyOf( points, newCapacity );
 			_points = points;
 		}
+	}
 
-		points[ index ] = x;
-		points[ index + 1 ] = y;
-		_convex = false;
+	/**
+	 * Adds points to the convex shape from the given array.
+	 *
+	 * @param   points  Contains the points to be added.
+	 * @param   start   Offset of the first point to add.
+	 * @param   count   Number of points to add.
+	 * @param   stride  Offset between one point and the next.
+	 */
+	public void add( final double[] points, final int start, final int count, final int stride )
+	{
+		ensureCapacity( _size + count * 2 );
+		final int end = start + count * stride;
+		for ( int i = start; i < end; i += stride )
+		{
+			add( points[ i ], points[ i + 1 ] );
+		}
 	}
 
 	/**
