@@ -24,7 +24,6 @@ package ab.j3d.view.jogl;
 import java.util.*;
 
 import ab.j3d.model.*;
-import com.numdata.oss.ensemble.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -44,12 +43,12 @@ public class GeometryObjectManager
 	/**
 	 * Geometry objects being managed.
 	 */
-	private Map<Duet<FaceGroup, GeometryType>, GeometryObject> _geometryObjects = new HashMap<Duet<FaceGroup, GeometryType>, GeometryObject>();
+	private final Map<Key, GeometryObject> _geometryObjects = new HashMap<Key, GeometryObject>();
 
 	/**
 	 * Geometry objects that were not used during the last frame.
 	 */
-	private Set<Duet<FaceGroup, GeometryType>> _unusedGeometryObjects = new HashSet<Duet<FaceGroup, GeometryType>>();
+	private final Set<Key> _unusedGeometryObjects = new HashSet<Key>();
 
 	/**
 	 * Constructs a new manager for geometry objects.
@@ -80,9 +79,9 @@ public class GeometryObjectManager
 	@NotNull
 	public GeometryObject getGeometryObject( @NotNull final FaceGroup faceGroup, @NotNull final GeometryType type )
 	{
-		final Map<Duet<FaceGroup, GeometryType>, GeometryObject> geometryObjects = _geometryObjects;
+		final Map<Key, GeometryObject> geometryObjects = _geometryObjects;
 
-		final BasicDuet<FaceGroup, GeometryType> key = new BasicDuet<FaceGroup, GeometryType>( faceGroup, type );
+		final Key key = new Key( faceGroup, type );
 		GeometryObject result = geometryObjects.get( key );
 
 		if ( result == null )
@@ -133,5 +132,57 @@ public class GeometryObjectManager
 		}
 		unusedKeys.clear();
 		unusedKeys.addAll( geometryObjects.keySet() );
+	}
+
+	/**
+	 * Key by which {@link GeometryObject} instances are mapped.
+	 */
+	private static class Key
+	{
+		/**
+		 * Faces to be included in the geometry.
+		 */
+		private final FaceGroup _faceGroup;
+
+		/**
+		 * Type of geometry.
+		 */
+		private final GeometryType _type;
+
+		/**
+		 * Construct key.
+		 *
+		 * @param   faceGroup   Faces to be included in the geometry.
+		 * @param   type        Type of geometry.
+		 */
+		private Key( final FaceGroup faceGroup, final GeometryType type )
+		{
+			_faceGroup = faceGroup;
+			_type = type;
+		}
+
+		public boolean equals( final Object obj )
+		{
+			final boolean result;
+
+			if ( obj instanceof Key )
+			{
+				final Key other = (Key)obj;
+				result = ( _type == other._type ) && _faceGroup.equals( other._faceGroup );
+			}
+			else
+			{
+				result = false;
+			}
+
+			return result;
+		}
+
+		public int hashCode()
+		{
+			return ( ( _faceGroup != null ) ? _faceGroup.hashCode() : 0 ) ^
+			       ( ( _type != null ) ? _type.hashCode() : 0 );
+		}
+
 	}
 }

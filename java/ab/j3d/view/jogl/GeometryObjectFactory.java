@@ -26,7 +26,6 @@ import javax.media.opengl.*;
 import javax.media.opengl.glu.*;
 
 import ab.j3d.model.*;
-import com.numdata.oss.log.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -38,11 +37,6 @@ import org.jetbrains.annotations.*;
  */
 public class GeometryObjectFactory
 {
-	/**
-	 * Log used for messages related to this class.
-	 */
-	private static final ClassLogger LOG = ClassLogger.getFor( GeometryObjectFactory.class );
-
 	/**
 	 * Specifies a {@link GeometryObject} implementation.
 	 */
@@ -130,7 +124,7 @@ public class GeometryObjectFactory
 				result = Implementation.IMMEDIATE_MODE;
 			}
 			_implementation = result;
-			LOG.info( "Using " + result + " implementation." );
+			System.err.println( "Using " + result + " implementation." );
 		}
 		return result;
 	}
