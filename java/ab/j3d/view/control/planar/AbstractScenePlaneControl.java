@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2010-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,9 +22,9 @@ package ab.j3d.view.control.planar;
 
 import java.awt.geom.*;
 
+import ab.j3d.*;
 import ab.j3d.control.*;
 import ab.j3d.view.*;
-import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -72,20 +73,17 @@ public abstract class AbstractScenePlaneControl
 		_active = false;
 	}
 
-	@Override
 	public boolean isVisible( final View3D view )
 	{
 		return isEnabled();
 	}
 
-	@Override
 	public boolean isEnabled()
 	{
 		return true;
 	}
 
-	@Override
-	public boolean mousePressed( final ControlInputEvent event , final double x , final double y )
+	public boolean mousePressed( final ControlInputEvent event, final double x, final double y )
 	{
 		_startX = x;
 		_startY = y;
@@ -96,22 +94,19 @@ public abstract class AbstractScenePlaneControl
 		return isActive();
 	}
 
-	@Override
-	public void mouseDragged( final ControlInputEvent event , final double x , final double y )
+	public void mouseDragged( final ControlInputEvent event, final double x, final double y )
 	{
 		_endX = x;
 		_endY = y;
 	}
 
-	@Override
-	public void mouseReleased( final ControlInputEvent event , final double x , final double y )
+	public void mouseReleased( final ControlInputEvent event, final double x, final double y )
 	{
 		_endX   = x;
 		_endY   = y;
 		_active = false;
 	}
 
-	@Override
 	public void mouseMoved( final ControlInputEvent event, final double x, final double y )
 	{
 	}
@@ -164,7 +159,7 @@ public abstract class AbstractScenePlaneControl
 	 */
 	public Line2D getLine2D()
 	{
-		return new Line2D.Double( _startX , _startY , _endX , _endY );
+		return new Line2D.Double( _startX, _startY, _endX, _endY );
 	}
 
 	/**
@@ -180,7 +175,7 @@ public abstract class AbstractScenePlaneControl
 		final double dx = _endX - _startX;
 		final double dy = _endY - _startY;
 
-		if ( !MathTools.almostEqual( dx , 0.0 ) && !MathTools.almostEqual( dx , 0.0 ) )
+		if ( !MathTools.almostEqual( dx, 0.0 ) && !MathTools.almostEqual( dx, 0.0 ) )
 		{
 			final double l = Math.sqrt( dx * dx + dy * dy );
 

@@ -23,7 +23,6 @@ package ab.j3d.loader;
 
 import java.io.*;
 import java.net.*;
-import java.nio.charset.*;
 import java.text.*;
 import java.util.*;
 import java.util.zip.*;
@@ -32,7 +31,6 @@ import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
-import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -46,12 +44,16 @@ public class ObjWriter
 	/**
 	 * Number format with up to 6 decimals.
 	 */
-	private static final NumberFormat DECIMAL_FORMAT = TextTools.getNumberFormat( Locale.US, 1, 6, false );
+	private static final NumberFormat DECIMAL_FORMAT;
 
-	/**
-	 * Character encoding to be used.
-	 */
-	private final Charset _charset = Charset.forName( "US-ASCII" );
+	static
+	{
+		final NumberFormat df = NumberFormat.getNumberInstance( Locale.US );
+		df.setGroupingUsed( false );
+		df.setMinimumFractionDigits( 1 );
+		df.setMaximumFractionDigits( 6 );
+		DECIMAL_FORMAT = df;
+	}
 
 	/**
 	 * Texture map URI to resolve texture map names against.
@@ -62,13 +64,6 @@ public class ObjWriter
 	 * Suffix added to material codes to create texture map names.
 	 */
 	private String _textureMapSuffix = ".jpg";
-
-	/**
-	 * Constructs a new instance.
-	 */
-	public ObjWriter()
-	{
-	}
 
 	/**
 	 * Returns the URI used to resolve the location of texture maps.
@@ -126,7 +121,7 @@ public class ObjWriter
 	public void write( final OutputStream out, final Node3D node, final String... materialLibraries )
 		throws IOException
 	{
-		final BufferedWriter objWriter = new BufferedWriter( new OutputStreamWriter( out, _charset ) );
+		final BufferedWriter objWriter = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
 		for ( final String materialLibrary : materialLibraries )
 		{
 			objWriter.write( "mtllib " );
@@ -150,7 +145,7 @@ public class ObjWriter
 	public void writeMTL( final OutputStream out, final Collection<? extends Appearance> appearances )
 		throws IOException
 	{
-		final BufferedWriter mtlWriter = new BufferedWriter( new OutputStreamWriter( out, _charset ) );
+		final BufferedWriter mtlWriter = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
 		final MtlGenerator mtlGenerator = new MtlGenerator( mtlWriter );
 
 		for ( final Appearance appearance : appearances )
@@ -177,7 +172,7 @@ public class ObjWriter
 
 		zipOut.putNextEntry( new ZipEntry( name + ".mtl" ) );
 
-		final BufferedWriter mtlWriter = new BufferedWriter( new OutputStreamWriter( zipOut, _charset ) );
+		final BufferedWriter mtlWriter = new BufferedWriter( new OutputStreamWriter( zipOut, "US-ASCII" ) );
 		final MtlGenerator mtlGenerator = new MtlGenerator( mtlWriter );
 		Node3DTreeWalker.walk( mtlGenerator, node );
 
@@ -186,7 +181,7 @@ public class ObjWriter
 
 		zipOut.putNextEntry( new ZipEntry( name + ".obj" ) );
 
-		final BufferedWriter objWriter = new BufferedWriter( new OutputStreamWriter( zipOut, _charset ) );
+		final BufferedWriter objWriter = new BufferedWriter( new OutputStreamWriter( zipOut, "US-ASCII" ) );
 		objWriter.write( "mtllib " + name + ".mtl\n" );
 		final ObjGenerator objGenerator = new ObjGenerator( objWriter );
 		Node3DTreeWalker.walk( objGenerator, node );
@@ -225,12 +220,11 @@ public class ObjWriter
 		 *
 		 * @param   out     Stream to write to.
 		 */
-		public MtlGenerator( final Writer out )
+		MtlGenerator( final Writer out )
 		{
 			_out = out;
 		}
 
-		@Override
 		public boolean visitNode( @NotNull final Node3DPath path )
 		{
 			try
@@ -477,7 +471,6 @@ public class ObjWriter
 			_materials = materials;
 		}
 
-		@Override
 		public boolean visitNode( @NotNull final Node3DPath path )
 		{
 			final Writer out = _out;

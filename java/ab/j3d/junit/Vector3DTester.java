@@ -21,8 +21,6 @@
 package ab.j3d.junit;
 
 import ab.j3d.*;
-import com.numdata.oss.junit.*;
-import com.numdata.oss.junit.ArrayTester.*;
 import junit.framework.*;
 
 /**
@@ -31,7 +29,7 @@ import junit.framework.*;
  * @author  H.B.J. te Lintelo
  * @version $Revision$ $Date$
  */
-public final class Vector3DTester
+public class Vector3DTester
 {
 	/**
 	 * Utility class is not supposed to be instantiated.
@@ -120,13 +118,26 @@ public final class Vector3DTester
 	 */
 	public static void assertEquals( final String messagePrefix , final Vector3D[] expected , final Vector3D[] actual , final double delta )
 	{
-		ArrayTester.assertEquals( messagePrefix, expected, actual, new AssertEquals()
+		final String actualPrefix = ( ( messagePrefix != null ) ? messagePrefix + " - " : "" );
+
+		if ( expected == null )
 		{
-			@Override
-			public void assertEquals( final String message, final Object expectedValue, final Object actualValue )
+			Assert.assertNull( actualPrefix + "expected" + " is 'null', '" + "actual" + "' is not", actual );
+		}
+		else
+		{
+			Assert.assertNotNull( actualPrefix + "actual" + " is 'null', '" + "expected" + "' is not", actual );
+			Assert.assertEquals( actualPrefix + '\'' + "expected" + "' should have same length as '" + "actual" + '\'', expected.length, actual.length );
+
+			for ( int i = 0; i < expected.length; i++ )
 			{
-				Vector3DTester.assertEquals( message, (Vector3D)expectedValue, (Vector3D)actualValue, delta );
+				final String expectedValueName = "expected" + "[ " + i + " ]";
+				final String actualValueName   = "actual" +   "[ " + i + " ]";
+				final Vector3D expectedValue     = expected[ i ];
+				final Vector3D actualValue       = actual[ i ];
+
+				assertEquals( actualPrefix + "mismatch " + expectedValueName + " == " + actualValueName, expectedValue, actualValue, delta );
 			}
-		} );
+		}
 	}
 }
