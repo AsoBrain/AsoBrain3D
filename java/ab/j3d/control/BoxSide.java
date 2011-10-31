@@ -19,7 +19,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-
 package ab.j3d.control;
 
 import java.awt.*;
@@ -644,7 +643,6 @@ public abstract class BoxSide
 		return ( ( _listener != null ) && _listener.isVisible() ) || _edgeX1.isVisible() || _edgeX2.isVisible() || _edgeY1.isVisible() || _edgeY2.isVisible();
 	}
 
-	@Override
 	public Double getDepth( final Ray3D pointerRay )
 	{
 		Double result = null;
@@ -749,7 +747,6 @@ public abstract class BoxSide
 		return edgeY;
 	}
 
-	@Override
 	public void mouseMoved( final ControlInputEvent event, final ContentNode contentNode )
 	{
 		final Ray3D pointerRay = event.getPointerRay();
@@ -786,7 +783,6 @@ public abstract class BoxSide
 		}
 	}
 
-	@Override
 	public boolean mousePressed( final ControlInputEvent event, final ContentNode contentNode )
 	{
 		boolean result = false;
@@ -883,7 +879,6 @@ public abstract class BoxSide
 		return ( _listener != null ) || ( edgeX != null ) || ( edgeY != null );
 	}
 
-	@Override
 	public boolean mouseDragged( final ControlInputEvent event, final ContentNode contentNode )
 	{
 		boolean result = false;
@@ -993,7 +988,6 @@ public abstract class BoxSide
 		return result;
 	}
 
-	@Override
 	public void mouseReleased( final ControlInputEvent event, final ContentNode contentNode )
 	{
 		if ( _activePlane != null )
@@ -1032,7 +1026,6 @@ public abstract class BoxSide
 		}
 	}
 
-	@Override
 	public void paintOverlay( final View3D view, final Graphics2D g )
 	{
 		if ( isVisible() )
@@ -1227,42 +1220,42 @@ public abstract class BoxSide
 			final Matrix3D plane2wcs = getPlane2Wcs();
 			final Matrix3D plane2view = plane2wcs.multiply( scene2view );
 			final Projector projector = view.getProjector();
-			final Point2D.Double point = new Point2D.Double();
+			final double[] point = new double[ 2 ];
 
 			final double size = 60.0;
 			{
 				final Path2D.Double triangle = new Path2D.Double();
-				projector.project( point, plane2view.transform( centerX - 0.5 * size, centerY, 0.0 ) );
-				triangle.moveTo( point.x, point.y );
-				projector.project( point, plane2view.transform( centerX, centerY, 0.5 * size ) );
-				triangle.lineTo( point.x, point.y );
-				projector.project( point, plane2view.transform( centerX + 0.5 * size, centerY, 0.0 ) );
-				triangle.lineTo( point.x, point.y );
+				projector.project( point, 0, plane2view.transform( centerX - 0.5 * size, centerY, 0.0 ) );
+				triangle.moveTo( point[ 0 ], point[ 1 ] );
+				projector.project( point, 0, plane2view.transform( centerX, centerY, 0.5 * size ) );
+				triangle.lineTo( point[ 0 ], point[ 1 ] );
+				projector.project( point, 0, plane2view.transform( centerX + 0.5 * size, centerY, 0.0 ) );
+				triangle.lineTo( point[ 0 ], point[ 1 ] );
 				triangle.closePath();
 
-				projector.project( point, plane2view.transform( centerX - 0.5 * size, centerY, size ) );
-				triangle.moveTo( point.x, point.y );
-				projector.project( point, plane2view.transform( centerX, centerY, 1.5 * size ) );
-				triangle.lineTo( point.x, point.y );
-				projector.project( point, plane2view.transform( centerX + 0.5 * size, centerY, size ) );
-				triangle.lineTo( point.x, point.y );
+				projector.project( point, 0, plane2view.transform( centerX - 0.5 * size, centerY, size ) );
+				triangle.moveTo( point[ 0 ], point[ 1 ] );
+				projector.project( point, 0, plane2view.transform( centerX, centerY, 1.5 * size ) );
+				triangle.lineTo( point[ 0 ], point[ 1 ] );
+				projector.project( point, 0, plane2view.transform( centerX + 0.5 * size, centerY, size ) );
+				triangle.lineTo( point[ 0 ], point[ 1 ] );
 				triangle.closePath();
 
 				/*
 				projector.project( point, plane2view.transform( centerX, centerY - 0.5 * size, 0.0 ) );
-				triangle.moveTo( point.x, point.y );
+				triangle.moveTo( point[ 0 ], point[ 1 ] );
 				projector.project( point, plane2view.transform( centerX, centerY, 0.5 * size ) );
-				triangle.lineTo( point.x, point.y );
+				triangle.lineTo( point[ 0 ], point[ 1 ] );
 				projector.project( point, plane2view.transform( centerX, centerY + 0.5 * size, 0.0 ) );
-				triangle.lineTo( point.x, point.y );
+				triangle.lineTo( point[ 0 ], point[ 1 ] );
 				triangle.closePath();
 
 				projector.project( point, plane2view.transform( centerX, centerY - 0.5 * size, size ) );
-				triangle.moveTo( point.x, point.y );
+				triangle.moveTo( point[ 0 ], point[ 1 ] );
 				projector.project( point, plane2view.transform( centerX, centerY, 1.5 * size ) );
-				triangle.lineTo( point.x, point.y );
+				triangle.lineTo( point[ 0 ], point[ 1 ] );
 				projector.project( point, plane2view.transform( centerX, centerY + 0.5 * size, size ) );
-				triangle.lineTo( point.x, point.y );
+				triangle.lineTo( point[ 0 ], point[ 1 ] );
 				triangle.closePath();
 				*/
 
@@ -1271,12 +1264,10 @@ public abstract class BoxSide
 		}
 	}
 
-	@Override
 	public void addView( final View3D view )
 	{
 	}
 
-	@Override
 	public void removeView( final View3D view )
 	{
 	}
@@ -1310,15 +1301,18 @@ public abstract class BoxSide
 
 		if ( result )
 		{
-			final Point p1 = new Point();
-			final Point p2 = new Point();
-			final Point p3 = new Point();
+			final double[] projected = new double[ 6 ];
+			projector.project( projected, 0, v1.x, v1.y, v1.z );
+			projector.project( projected, 2, v2.x, v2.y, v2.z );
+			projector.project( projected, 4, v3.x, v3.y, v3.z );
+			final double p1x = projected[ 0 ];
+			final double p1y = projected[ 1 ];
+			final double p2x = projected[ 2 ];
+			final double p2y = projected[ 3 ];
+			final double p3x = projected[ 4 ];
+			final double p3y = projected[ 5 ];
 
-			projector.project( p1, v1.x, v1.y, v1.z );
-			projector.project( p2, v2.x, v2.y, v2.z );
-			projector.project( p3, v3.x, v3.y, v3.z );
-
-			result = ( ( p1.x - p2.x ) * ( p3.y - p2.y ) - ( p1.y - p2.y ) * ( p3.x - p2.x ) ) > 0;
+			result = ( ( ( p1x - p2x ) * ( p3y - p2y ) - ( p1y - p2y ) * ( p3x - p2x ) ) > 0.0 );
 		}
 
 		return result;
