@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2008-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -38,7 +39,7 @@ public class ToggleGridAction
 	/**
 	 * The {@link View3D} this action belongs to.
 	 */
-	private View3D _view;
+	private final View3D _view;
 
 	/**
 	 * Create action.
@@ -46,9 +47,9 @@ public class ToggleGridAction
 	 * @param   locale  Preferred locale for internationalization.
 	 * @param   view    View to create action for.
 	 */
-	public ToggleGridAction( final Locale locale , final View3D view )
+	public ToggleGridAction( final Locale locale, final View3D view )
 	{
-		super( ResourceBundleTools.getBundle( ToggleGridAction.class , locale ) , "toggleGrid" );
+		super( ResourceBundleTools.getBundle( ToggleGridAction.class, locale ), "toggleGrid" );
 		_view = view;
 	}
 

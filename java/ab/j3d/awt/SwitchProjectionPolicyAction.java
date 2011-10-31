@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2009-2010 Peter S. Heijnen
+ * Copyright (C) 2009-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -55,7 +55,6 @@ public class SwitchProjectionPolicyAction
 
 		view.addPropertyChangeListener( new PropertyChangeListener()
 		{
-			@Override
 			public void propertyChange( final PropertyChangeEvent e )
 			{
 				if ( View3D.PROJECTION_POLICY_PROPERTY.equals( e.getPropertyName() ) )
@@ -68,7 +67,6 @@ public class SwitchProjectionPolicyAction
 		setSelectedValue( currentPolicy );
 	}
 
-	@Override
 	public void run()
 	{
 		_view.setProjectionPolicy( (ProjectionPolicy)getSelectedValue() );

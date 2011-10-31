@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2008-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -46,9 +47,9 @@ public class TogglePerspectiveAction
 	 * @param   locale  Preferred locale for internationalization.
 	 * @param   view    View to create action for.
 	 */
-	public TogglePerspectiveAction( final Locale locale , final View3D view )
+	public TogglePerspectiveAction( final Locale locale, final View3D view )
 	{
-		super( ResourceBundleTools.getBundle( TogglePerspectiveAction.class , locale ) , "togglePerspective" );
+		super( ResourceBundleTools.getBundle( TogglePerspectiveAction.class, locale ), "togglePerspective" );
 		_view = view;
 	}
 

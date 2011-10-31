@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -48,12 +49,11 @@ public class SwitchRenderingPolicyAction
 	 */
 	public SwitchRenderingPolicyAction( final Locale locale, final View3D view )
 	{
-		super( ResourceBundleTools.getBundle( RenderingPolicy.class , locale ) , RenderingPolicy.class );
+		super( ResourceBundleTools.getBundle( RenderingPolicy.class, locale ), RenderingPolicy.class );
 		_view = view;
 
 		view.addPropertyChangeListener( new PropertyChangeListener()
 		{
-			@Override
 			public void propertyChange( final PropertyChangeEvent e )
 			{
 				if ( View3D.RENDERING_POLICY_PROPERTY.equals( e.getPropertyName() ) )
@@ -66,7 +66,6 @@ public class SwitchRenderingPolicyAction
 		setSelectedValue( view.getRenderingPolicy() );
 	}
 
-	@Override
 	public void run()
 	{
 		_view.setRenderingPolicy( (RenderingPolicy)getSelectedValue() );
