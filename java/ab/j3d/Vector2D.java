@@ -190,8 +190,8 @@ public class Vector2D
 	/**
 	 * Get cos(angle) between this vector and another one specified as argument.
 	 *
-	 * @param   v1      First vector.
-	 * @param   v2      Second vector.
+	 * @param   v1  First vector.
+	 * @param   v2  Second vector.
 	 *
 	 * @return  cos(angle) between vectors.
 	 */
@@ -199,6 +199,22 @@ public class Vector2D
 	{
 		final double l = v1.length() * v2.length();
 		return ( l == 0.0 ) ? 0.0 : ( dot( v1, v2 ) / l );
+	}
+
+	/**
+	 * Get cos(angle) between two vectors.
+	 *
+	 * @param   x1  X-coordinate of first vector.
+	 * @param   y1  Y-coordinate of first vector.
+	 * @param   x2  X-coordinate of second vector.
+	 * @param   y2  Y-coordinate of second vector.
+	 *
+	 * @return  cos(angle) between vectors.
+	 */
+	public static double cosAngle( final double x1, final double y1, final double x2, final double y2 )
+	{
+		final double l = length( x1, y1 ) * length( x2, y2 );
+		return ( l == 0.0 ) ? 0.0 : dot( x1, y1, x2, y2 ) / l;
 	}
 
 	/**
