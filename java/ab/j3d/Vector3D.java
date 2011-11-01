@@ -75,11 +75,6 @@ public class Vector3D
 	public final double z;
 
 	/**
-	 * Initial value of a vector (0-vector).
-	 */
-	public static final Vector3D INIT = ZERO;
-
-	/**
 	 * Serialized data version.
 	 */
 	private static final long serialVersionUID = 234972165412209583L;
@@ -218,8 +213,25 @@ public class Vector3D
 	 */
 	public static double cosAngle( final Vector3D v1, final Vector3D v2 )
 	{
-		final double l = v1.length() * v2.length();
-		return ( l == 0.0 ) ? 0.0 : ( dot( v1, v2 ) / l );
+		return cosAngle( v1.getX(), v1.getY(), v1.getZ(), v2.getX(), v2.getY(), v2.getZ() );
+	}
+
+	/**
+	 * Get cos(angle) between two vectors.
+	 *
+	 * @param   x1      X-coordinate of first vector.
+	 * @param   y1      Y-coordinate of first vector.
+	 * @param   z1      Z-coordinate of first vector.
+	 * @param   x2      X-coordinate of second vector.
+	 * @param   y2      Y-coordinate of second vector.
+	 * @param   z2      Z-coordinate of second vector.
+	 *
+	 * @return  cos(angle) between vectors.
+	 */
+	public static double cosAngle( final double x1, final double y1, final double z1, final double x2, final double y2, final double z2 )
+	{
+		final double l = length( x1, y1, z1 ) * length( x2, y2, z2 );
+		return ( l == 0.0 ) ? 0.0 : dot( x1, y1, z1, x2, y2, z2 ) / l;
 	}
 
 	/**
@@ -701,10 +713,10 @@ public class Vector3D
 	}
 
 	/**
-	 * This function translates cartesian coordinates to polar/spherial
+	 * This function translates cartesian coordinates to polar/spherical
 	 * coordinates.
 	 * <p />
-	 * The polar/spherial coordinates are defined as the triplet
+	 * The polar/spherical coordinates are defined as the triplet
 	 * <code>( r, &theta;, &rho; )</code>, where r is radius, &theta; is the
 	 * azimuth, and &rho; is the zenith.
 	 *
@@ -717,10 +729,10 @@ public class Vector3D
 	}
 
 	/**
-	 * This function translates cartesian coordinates to polar/spherial
+	 * This function translates cartesian coordinates to polar/spherical
 	 * coordinates.
 	 * <p />
-	 * The polar/spherial coordinates are defined as the triplet
+	 * The polar/spherical coordinates are defined as the triplet
 	 * <code>( r, &theta;, &rho; )</code>, where r is radius, &theta; is the
 	 * azimuth, and &rho; is the zenith.
 	 * <p />
@@ -761,10 +773,10 @@ public class Vector3D
 	}
 
 	/**
-	 * This function translates polar/spherial coordinates to cartesian
+	 * This function translates polar/spherical coordinates to cartesian
 	 * coordinates.
 	 * <p />
-	 * The polar/spherial coordinates are defined as the triplet
+	 * The polar/spherical coordinates are defined as the triplet
 	 * <code>( r, &theta;, &rho; )</code>, where r is radius, &theta; is the
 	 * azimuth, and &rho; is the zenith.
 	 *
@@ -777,10 +789,10 @@ public class Vector3D
 	}
 
 	/**
-	 * This function translates polar/spherial coordinates to cartesian
+	 * This function translates polar/spherical coordinates to cartesian
 	 * coordinates.
 	 * <p />
-	 * The polar/spherial coordinates are defined as the triplet
+	 * The polar/spherical coordinates are defined as the triplet
 	 * <code>( r, &theta;, &rho; )</code>, where r is radius, &theta; is the
 	 * azimuth, and &rho; is the zenith.
 	 * <p />
@@ -818,7 +830,7 @@ public class Vector3D
 
 	/**
 	 * Create human-readable representation of this {@link Vector3D} object.
-	 * This is aspecially useful for debugging purposes.
+	 * This is especially useful for debugging purposes.
 	 *
 	 * @return  Human-readable representation of this {@link Vector3D} object.
 	 */
@@ -830,7 +842,7 @@ public class Vector3D
 
 	/**
 	 * Create human-readable representation of {@link Vector3D} object.
-	 * This is aspecially useful for debugging purposes.
+	 * This is especially useful for debugging purposes.
 	 *
 	 * @param   vector   Vector3D instance (<code>null</code> produces 'null').
 	 *
