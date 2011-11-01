@@ -65,7 +65,6 @@
     <available property="api.jetbrains.javac2"           type="file" file="${jetbrains-javac2.jar}"/>
     <available property="api.jogl"                       type="file" file="${jogl.jar}"/>
     <available property="api.junit"                      type="file" file="${junit.jar}"/>
-    <available property="api.numdata.oss"                type="file" file="${numdata.oss.home}/lib/numdata-oss.jar"/>
     <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="idea.lib.path"/>
   </target>
 
@@ -75,7 +74,6 @@
     <fail unless="api.jetbrains.javac2"           message="Please check 'JetBrains Javac2' library presence and 'build.properties' file."/>
     <fail unless="api.jogl"                       message="Please check 'JOGL' library presence and 'build.properties' file."/>
     <fail unless="api.junit"                      message="Please check 'JUnit' library presence and 'build.properties' file."/>
-    <fail unless="api.numdata.oss"                message="Please check 'Numdata Open Source Software Library' presence and 'build.properties' file."/>
   </target>
 
   <path id="idea.lib.path">
@@ -91,7 +89,6 @@
     <pathelement location="${jogl.jar}"/>
     <pathelement location="${gluegen-rt.jar}"/>
     <pathelement location="${junit.jar}"/>
-    <pathelement location="${numdata.oss.home}/lib/numdata-oss.jar"/>
   </path>
 
   <target name="compile-java" depends="api-check,java.uptodate.check" unless="java.uptodate" description="Compile Java source files">
@@ -124,12 +121,11 @@
     <pathelement location="classes/test"/>
     <path refid="java.classpath"/>
     <pathelement location="${hsqldb.jar}"/>
-    <pathelement location="${numdata.oss.home}/numdata-oss-test.jar"/>
   </path>
 
   <target name="compile-tests" depends="compile-java,tests.uptodate.check" unless="tests.uptodate" description="Compile unit tests">
     <mkdir dir="classes/test"/>
-    <javac2 srcdir="test" destdir="classes/test" classpathref="test.classpath">
+    <javac2 srcdir="test" destdir="classes/test" classpathref="test.classpath" source="1.5">
       <exclude name="**/jogl?*/**" />
       <exclude name="**/java3d/**" />
     </javac2>
