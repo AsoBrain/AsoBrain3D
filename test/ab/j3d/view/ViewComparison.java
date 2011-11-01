@@ -30,11 +30,11 @@ import javax.swing.*;
 
 import ab.j3d.*;
 import ab.j3d.awt.*;
+import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.pov.*;
-import ab.j3d.view.jogl.*;
 
 /**
  * Shows a 3D scene using the various render engines in several lighting modes,
@@ -83,6 +83,7 @@ public class ViewComparison
 		frame.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
 		frame.addWindowListener( new WindowAdapter()
 		{
+			@Override
 			public void windowClosed( final WindowEvent e )
 			{
 				System.exit( 0 );
@@ -117,6 +118,7 @@ public class ViewComparison
 
 				final SwingWorker<Object,BufferedImage> povImageRenderer = new SwingWorker<Object,BufferedImage>()
 				{
+					@Override
 					protected Object doInBackground()
 						throws Exception
 					{
@@ -133,7 +135,7 @@ public class ViewComparison
 								final double cameraAngle = Math.toDegrees( finalView.getFieldOfView() );
 								final double  aspectRatio = (double)size.width / (double)size.height;
 
-								final AbToPovConverter converter = new AbToPovConverter( MapTools.imageMapDirectory );
+								final AbToPovConverter converter = new AbToPovConverter();
 								final PovScene povScene = converter.convert( scene );
 								povScene.add( new PovCamera( cameraName, view2Scene, cameraAngle, aspectRatio ) );
 								povScene.setBackground( new PovVector( 0.5f, 0.5f, 0.5f ) );
@@ -145,6 +147,7 @@ public class ViewComparison
 						return null;
 					}
 
+					@Override
 					protected void process( final List<BufferedImage> chunks )
 					{
 						try
@@ -161,6 +164,7 @@ public class ViewComparison
 				povImageRenderer.execute();
 				frame.addWindowListener( new WindowAdapter()
 				{
+					@Override
 					public void windowClosed( final WindowEvent e )
 					{
 						povImageRenderer.cancel( false );
@@ -219,6 +223,7 @@ public class ViewComparison
 	private static class DefaultTemplate
 		extends Template
 	{
+		@Override
 		public void createModel( final Scene target )
 		{
 			final Material solid     = new Material( 0xffff8000 ); solid    .code = "solid";
@@ -327,6 +332,7 @@ public class ViewComparison
 	private static class DiffuseOnlyTemplate
 		extends DefaultTemplate
 	{
+		@Override
 		protected void createLights( final Scene target )
 		{
 			createDiffuseLights( target );
@@ -336,6 +342,7 @@ public class ViewComparison
 	private static class AmbientOnlyTemplate
 		extends DefaultTemplate
 	{
+		@Override
 		protected void createLights( final Scene target )
 		{
 			target.setAmbient( 0.5f , 0.5f , 0.5f );
