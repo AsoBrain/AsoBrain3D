@@ -28,7 +28,6 @@ import javax.imageio.stream.*;
 import javax.swing.*;
 
 import ab.j3d.pov.*;
-import com.numdata.oss.log.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -40,11 +39,6 @@ import org.jetbrains.annotations.*;
  */
 public class PovRenderer
 {
-	/**
-	 * Log used for messages related to this class.
-	 */
-	private static final ClassLogger LOG = ClassLogger.getFor( PovScene.class );
-
 	/**
 	 * Renders the scene to an image with the specified size and returns the
 	 * resulting image.
@@ -76,7 +70,6 @@ public class PovRenderer
 			/*
 			 * Pipe data from 'stdout' to 'out'
 			 */
-			LOG.debug( "reading rendered image data" );
 			try
 			{
 				final InputStream is = process.getInputStream();
@@ -88,8 +81,6 @@ public class PovRenderer
 				{
 					is.close();
 				}
-
-				LOG.trace( "waiting for POV-Ray process to finish" );
 			}
 			catch ( IOException e )
 			{
@@ -102,7 +93,6 @@ public class PovRenderer
 
 			if ( ( actualPovFile != null ) && ( actualPovFile != povFile ) )
 			{
-				LOG.debug( "deleting temporary POV-Ray file: " + actualPovFile.getPath() );
 				actualPovFile.delete();
 			}
 		}
@@ -176,14 +166,6 @@ public class PovRenderer
 			command.add( "+EC" + endColumn ); /* Turn on/off alpha channel output */
 		}
 
-		if ( LOG.isTraceEnabled() )
-		{
-			synchronized ( LOG )
-			{
-				LOG.trace( "Starting POV-ray: " + command );
-			}
-		}
-
 		final ProcessBuilder processBuilder = new ProcessBuilder( command );
 		final Process result = processBuilder.start();
 
@@ -197,7 +179,7 @@ public class PovRenderer
 		}
 		catch ( Exception e )
 		{
-			LOG.warn( "failed to close 'stdin' of render process", e );
+			System.err.println( "failed to close 'stdin' of render process:" + e );
 		}
 
 		return result;
