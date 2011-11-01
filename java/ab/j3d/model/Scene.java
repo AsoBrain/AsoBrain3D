@@ -24,7 +24,6 @@ import java.util.*;
 import java.util.concurrent.atomic.*;
 
 import ab.j3d.*;
-import ab.j3d.view.*;
 import ab.j3d.view.control.planar.*;
 import org.jetbrains.annotations.*;
 
@@ -118,20 +117,6 @@ public class Scene
 	private final List<ScenePlaneControl> _planeControls;
 
 	/**
-	 * Binary Space Partitioning Tree ({@link BSPTree}) of this model.
-	 * <p />
-	 * The tree is only calculated when the scene changes (indicated by
-	 * the {@link #_bspTreeDirty} field).
-	 */
-	private final BSPTree _bspTree;
-
-	/**
-	 * This internal flag is set to indicate that the scene is
-	 * changed, so the {@link BSPTree} needs to be re-calculated.
-	 */
-	private boolean _bspTreeDirty;
-
-	/**
 	 * Cached scene bounds.
 	 */
 	private Bounds3D _bounds;
@@ -186,8 +171,6 @@ public class Scene
 	{
 		_unit = unit;
 		_planeControls = new ArrayList<ScenePlaneControl>();
-		_bspTree = new BSPTree();
-		_bspTreeDirty = true;
 		_bounds = null;
 	}
 
@@ -197,7 +180,6 @@ public class Scene
 	 */
 	protected void invalidateCache()
 	{
-		_bspTreeDirty = true;
 		_bounds = null;
 	}
 
@@ -276,30 +258,6 @@ public class Scene
 		scene.addContentNode( "legacy-light-1", Matrix3D.IDENTITY, directional1 );
 		scene.addContentNode( "legacy-light-2", Matrix3D.IDENTITY, directional2 );
 		scene.addContentNode( "legacy-light-3", Matrix3D.IDENTITY, directional3 );
-	}
-
-	/**
-	 * Get binary Space Partitioning Tree ({@link BSPTree}) of this scene.
-	 * <p />
-	 * The tree is only calculated when the scene changes (indicated by
-	 * the {@link #_bspTreeDirty} field).
-	 *
-	 * @return  The Binary Space Partitioning Tree of this scene.
-	 */
-	public BSPTree getBspTree()
-	{
-		final BSPTree result = _bspTree;
-
-		if ( _bspTreeDirty )
-		{
-			result.reset();
-			result.addScene( this );
-			result.build();
-
-			_bspTreeDirty = false;
-		}
-
-		return result;
 	}
 
 	/**
