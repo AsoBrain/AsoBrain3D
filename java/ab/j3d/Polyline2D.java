@@ -574,7 +574,7 @@ public final class Polyline2D
 				 * panel. The face is always rectangular with a width matching the segment
 				 * length and a height matching the panel thickness.
 				 */
-				result = Matrix3D.INIT.set(
+				result = new Matrix3D(
 					dirX , 0.0 ,  dirY , p1.x ,
 					dirY , 0.0 , -dirX , p1.y ,
 					 0.0 , 1.0 ,   0.0 ,  0.0 );
@@ -607,10 +607,25 @@ public final class Polyline2D
 				{
 					final PolyPoint2D p = getPoint( pointIndex );
 
-					if ( p.x < minX ) minX = p.x;
-					if ( p.y < minY ) minY = p.y;
-					if ( p.x > maxX ) maxX = p.x;
-					if ( p.y > maxY ) maxY = p.y;
+					if ( p.x < minX )
+					{
+						minX = p.x;
+					}
+
+					if ( p.y < minY )
+					{
+						minY = p.y;
+					}
+
+					if ( p.x > maxX )
+					{
+						maxX = p.x;
+					}
+
+					if ( p.y > maxY )
+					{
+						maxY = p.y;
+					}
 				}
 
 				result = new Rectangle2D.Double( minX , minY , maxX - minX , maxY - minY );

@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2001-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +20,9 @@
  */
 package ab.j3d;
 
-import java.awt.geom.Point2D;
-import static java.lang.Double.doubleToLongBits;
-import static java.lang.Double.parseDouble;
+import java.awt.geom.*;
 
-import com.numdata.oss.MathTools;
+import static java.lang.Double.*;
 
 /**
  * This class describes a polyline control point in 2D.
@@ -32,7 +31,7 @@ import com.numdata.oss.MathTools;
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public final class PolyPoint2D
+public class PolyPoint2D
 	extends Point2D
 {
 	/**
@@ -113,7 +112,7 @@ public final class PolyPoint2D
 	 *
 	 * @see     #bulge
 	 */
-	public static double calculateArcSegmentRadius( final double p1X , final double p1Y , final double p2X , final double p2Y , final double bulge )
+	public static double calculateArcSegmentRadius( final double p1X, final double p1Y, final double p2X, final double p2Y, final double bulge )
 	{
 		final double deltaX          = p2X - p1X;
 		final double deltaY          = p2Y - p1Y;
@@ -140,7 +139,7 @@ public final class PolyPoint2D
 	 *
 	 * @see     #bulge
 	 */
-	public static PolyPoint2D calculateArcSegmentCenter( final double p1X , final double p1Y , final double p2X , final double p2Y , final double bulge )
+	public static PolyPoint2D calculateArcSegmentCenter( final double p1X, final double p1Y, final double p2X, final double p2Y, final double bulge )
 	{
 		final double chordDeltaX = p2X - p1X;
 		final double chordDeltaY = p2Y - p1Y;
@@ -157,7 +156,7 @@ public final class PolyPoint2D
 		final double centerX         = chordMidX - tanApothem * chordDeltaY;
 		final double centerY         = chordMidY + tanApothem * chordDeltaX;
 
-		return new PolyPoint2D( centerX , centerY , 0.0 );
+		return new PolyPoint2D( centerX, centerY, 0.0 );
 	}
 
 	/**
@@ -175,10 +174,10 @@ public final class PolyPoint2D
 	 * @see     #bulge
 	 * @see     #getArcSegmentAngle
 	 */
-	public static double calculateArcSegmentStartAngle( final double p1X , final double p1Y , final double p2X , final double p2Y , final double bulge )
+	public static double calculateArcSegmentStartAngle( final double p1X, final double p1Y, final double p2X, final double p2Y, final double bulge )
 	{
-		final PolyPoint2D center = calculateArcSegmentCenter( p1X , p1Y , p2X , p2Y , bulge );
-		final double      angle  = Math.toDegrees( Math.atan2( p1Y - center.y , p1X - center.x ) );
+		final PolyPoint2D center = calculateArcSegmentCenter( p1X, p1Y, p2X, p2Y, bulge );
+		final double      angle  = Math.toDegrees( Math.atan2( p1Y - center.y, p1X - center.x ) );
 
 		return ( angle < 0.0 ) ? angle + 360.0 : angle;
 	}
@@ -205,7 +204,7 @@ public final class PolyPoint2D
 	 *
 	 * @see     #bulge
 	 */
-	public static double[] calculateArcCurves( final double p1X , final double p1Y , final double p2X , final double p2Y , final double bulge )
+	public static double[] calculateArcCurves( final double p1X, final double p1Y, final double p2X, final double p2Y, final double bulge )
 	{
 		final double[] result;
 
@@ -261,7 +260,7 @@ public final class PolyPoint2D
 				centerY = chordMidY + tanApothem * chordDeltaX;
 			}
 
-			double angle     = Math.atan2( p1Y - centerY , p1X - centerX );
+			double angle     = Math.atan2( p1Y - centerY, p1X - centerX );
 			double cosAngle1 = Math.cos( angle );
 			double sinAngle1 = Math.sin( angle );
 
@@ -296,7 +295,7 @@ public final class PolyPoint2D
 	 * @param   newY        Y coordinate of control point.
 	 * @param   newBulge    Bulge at control point.
 	 */
-	public PolyPoint2D( final double newX , final double newY , final double newBulge )
+	public PolyPoint2D( final double newX, final double newY, final double newBulge )
 	{
 		x     = newX;
 		y     = newY;
@@ -327,7 +326,7 @@ public final class PolyPoint2D
 	 */
 	public boolean almostEquals( final PolyPoint2D other )
 	{
-		return almostEquals( other , ALMOST );
+		return almostEquals( other, ALMOST );
 	}
 
 	/**
@@ -341,13 +340,13 @@ public final class PolyPoint2D
 	 * @return  <code>true</code> if the specified point is 'almost' equal;
 	 *          <code>false</code> if the specified point is different.
 	 */
-	public boolean almostEquals( final PolyPoint2D other , final double tolerance )
+	public boolean almostEquals( final PolyPoint2D other, final double tolerance )
 	{
 		return ( other != null ) &&
 		         ( ( other == this ) ||
-		           ( MathTools.almostEqual( x     , other.x     , tolerance ) &&
-		             MathTools.almostEqual( y     , other.y     , tolerance ) &&
-		             MathTools.almostEqual( bulge , other.bulge , tolerance ) ) );
+		           ( MathTools.almostEqual( x, other.x, tolerance ) &&
+		             MathTools.almostEqual( y, other.y, tolerance ) &&
+		             MathTools.almostEqual( bulge, other.bulge, tolerance ) ) );
 	}
 
 	/**
@@ -432,7 +431,7 @@ public final class PolyPoint2D
 	 */
 	public PolyPoint2D getArcSegmentCenter( final PolyPoint2D start )
 	{
-		return calculateArcSegmentCenter( start.x , start.y , x , y , bulge );
+		return calculateArcSegmentCenter( start.x, start.y, x, y, bulge );
 	}
 
 	/**
@@ -445,7 +444,7 @@ public final class PolyPoint2D
 	 */
 	public double getArcSegmentRadius( final PolyPoint2D start )
 	{
-		return calculateArcSegmentRadius( start.x , start.y , x , y , bulge );
+		return calculateArcSegmentRadius( start.x, start.y, x, y, bulge );
 	}
 
 	/**
@@ -470,7 +469,7 @@ public final class PolyPoint2D
 	 * @return  Direction of segment;
 	 *          <code>null</code> if start and end are too close.
 	 */
-	public static PolyPoint2D getDirection( final PolyPoint2D start , final PolyPoint2D end )
+	public static PolyPoint2D getDirection( final PolyPoint2D start, final PolyPoint2D end )
 	{
 		final PolyPoint2D result;
 
@@ -485,7 +484,7 @@ public final class PolyPoint2D
 
 			final double length = Math.sqrt( dx * dx + dy * dy );
 
-			result = new PolyPoint2D( dx / length , dy / length , 0.0 );
+			result = new PolyPoint2D( dx / length, dy / length, 0.0 );
 		}
 
 		return result;
@@ -499,7 +498,7 @@ public final class PolyPoint2D
 	 *
 	 * @return  Length of segment.
 	 */
-	public static double getLength( final PolyPoint2D start , final PolyPoint2D end )
+	public static double getLength( final PolyPoint2D start, final PolyPoint2D end )
 	{
 		final double result;
 
@@ -544,19 +543,19 @@ public final class PolyPoint2D
 	 *          <code>start</code>-<code>end</code> segment or extruded segment
 	 *          has a zero length).
 	 */
-	public static PolyPoint2D getExtrudedPoint( final PolyPoint2D start , final PolyPoint2D end , final double extrusion )
+	public static PolyPoint2D getExtrudedPoint( final PolyPoint2D start, final PolyPoint2D end, final double extrusion )
 	{
 		final PolyPoint2D result;
 
 		if ( extrusion != 0.0 )
 		{
-			final double length = getLength(  start , end );
+			final double length = getLength(  start, end );
 			if ( length > 0.0 )
 			{
 				final double factor = ( ( ( extrusion > 0.0 ) ? length : 0.0 ) + extrusion ) / length;
 
-				result = new PolyPoint2D( start.x + factor * ( end.x - start.x )
-				                        , start.y + factor * ( end.y - start.y ) , 0.0 );
+				result = new PolyPoint2D( start.x + factor * ( end.x - start.x ),
+				                          start.y + factor * ( end.y - start.y ), 0.0 );
 			}
 			else
 			{
@@ -571,20 +570,25 @@ public final class PolyPoint2D
 		return result;
 	}
 
+	@Override
 	public double getX()
 	{
 		return x;
 	}
 
+	@Override
 	public double getY()
 	{
 		return y;
 	}
 
-	public void setLocation( final double x , final double y )
+	@Override
+	public void setLocation( final double x, final double y )
 	{
 		if ( ( x != this.x ) || ( y != this.y ) )
+		{
 			throw new UnsupportedOperationException();
+		}
 	}
 
 	/**
@@ -600,40 +604,50 @@ public final class PolyPoint2D
 		final PolyPoint2D result;
 
 		if ( str == null || str.length() == 0 )
+		{
 			throw new IllegalArgumentException( "invalid point specification: " + str );
+		}
 
 		final int firstComma = str.indexOf( (int)',' );
 		if ( firstComma < 0 )
+		{
 			throw new IllegalArgumentException( "insufficient tokens in specification: " + str );
+		}
 
-		final String type = str.substring( 0 , firstComma );
+		final String type = str.substring( 0, firstComma );
 
 		if ( "L".equals( type ) )
 		{
-			final int secondComma = str.indexOf( (int)',' , firstComma + 1 );
-			if ( ( secondComma < 0 ) || ( str.indexOf( (int)',' , secondComma + 1 ) >= 0 ) )
+			final int secondComma = str.indexOf( (int)',', firstComma + 1 );
+			if ( ( secondComma < 0 ) || ( str.indexOf( (int)',', secondComma + 1 ) >= 0 ) )
+			{
 				throw new IllegalArgumentException( "invalid token count in line specification: " + str );
+			}
 
-			final double lineEndX = parseDouble( str.substring( firstComma + 1 , secondComma ) );
+			final double lineEndX = parseDouble( str.substring( firstComma + 1, secondComma ) );
 			final double lineEndY = parseDouble( str.substring( secondComma + 1 ) );
 
-			result = new PolyPoint2D( lineEndX , lineEndY , 0.0 );
+			result = new PolyPoint2D( lineEndX, lineEndY, 0.0 );
 		}
 		else if ( "A".equals( type ) )
 		{
-			final int secondComma = str.indexOf( (int)',' , firstComma + 1 );
+			final int secondComma = str.indexOf( (int)',', firstComma + 1 );
 			if ( secondComma < 0 )
+			{
 				throw new IllegalArgumentException( "invalid token count in line specification: " + str );
+			}
 
-			final int thirdComma = str.indexOf( (int)',' , secondComma + 1 );
-			if ( ( thirdComma < 0 ) || ( str.indexOf( (int)',' , thirdComma + 1 ) >= 0 ) )
+			final int thirdComma = str.indexOf( (int)',', secondComma + 1 );
+			if ( ( thirdComma < 0 ) || ( str.indexOf( (int)',', thirdComma + 1 ) >= 0 ) )
+			{
 				throw new IllegalArgumentException( "invalid token count in line specification: " + str );
+			}
 
-			final double arcEndX  = parseDouble( str.substring( firstComma  + 1 , secondComma ) );
-			final double arcEndY  = parseDouble( str.substring( secondComma + 1 , thirdComma ) );
+			final double arcEndX  = parseDouble( str.substring( firstComma  + 1, secondComma ) );
+			final double arcEndY  = parseDouble( str.substring( secondComma + 1, thirdComma ) );
 			final double arcBulge = parseDouble( str.substring( thirdComma  + 1 ) );
 
-			result = new PolyPoint2D( arcEndX , arcEndY , arcBulge );
+			result = new PolyPoint2D( arcEndX, arcEndY, arcBulge );
 		}
 		else
 		{
