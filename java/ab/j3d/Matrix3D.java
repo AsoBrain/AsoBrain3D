@@ -42,7 +42,7 @@ import ab.j3d.geom.*;
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public final class Matrix3D
+public class Matrix3D
 {
 	/** X quotient for X component. */ public final double xx;
 	/** Y quotient for X component. */ public final double xy;
@@ -67,6 +67,8 @@ public final class Matrix3D
 
 	/**
 	 * Initial value of a matrix (=identity matrix).
+	 *
+	 * @deprecated Use {@link #IDENTITY}, constructor, or factory method instead.
 	 */
 	public static final Matrix3D INIT = IDENTITY;
 
@@ -266,18 +268,18 @@ public final class Matrix3D
 			throw new IllegalArgumentException( "tokens" );
 		}
 
-		final double xx = Double.parseDouble( tokens[  0 ] );
-		final double xy = Double.parseDouble( tokens[  1 ] );
-		final double xz = Double.parseDouble( tokens[  2 ] );
-		final double xo = Double.parseDouble( tokens[  3 ] );
+		final double xx = Double.parseDouble( tokens[ 0 ] );
+		final double xy = Double.parseDouble( tokens[ 1 ] );
+		final double xz = Double.parseDouble( tokens[ 2 ] );
+		final double xo = Double.parseDouble( tokens[ 3 ] );
 
 		final double yx = Double.parseDouble( tokens[  4 ] );
 		final double yy = Double.parseDouble( tokens[  5 ] );
 		final double yz = Double.parseDouble( tokens[  6 ] );
 		final double yo = Double.parseDouble( tokens[  7 ] );
 
-		final double zx = Double.parseDouble( tokens[  8 ] );
-		final double zy = Double.parseDouble( tokens[  9 ] );
+		final double zx = Double.parseDouble( tokens[ 8 ] );
+		final double zy = Double.parseDouble( tokens[ 9 ] );
 		final double zz = Double.parseDouble( tokens[ 10 ] );
 		final double zo = Double.parseDouble( tokens[ 11 ] );
 
@@ -1132,6 +1134,18 @@ public final class Matrix3D
 	}
 
 	/**
+	 * Get translation matrix from the specified translation vector.
+	 *
+	 * @param   translation Translation vector.
+	 *
+	 * @return  Translation matrix.
+	 */
+	public static Matrix3D getTranslation( final Vector3D translation )
+	{
+		return getTranslation( translation.getX(), translation.getY(), translation.getZ() );
+	}
+
+	/**
 	 * Set translation of a transform to the specified vector.
 	 *
 	 * @param   vector  Vector to use.
@@ -1350,15 +1364,11 @@ public final class Matrix3D
 			}
 			else
 			{
-				double x;
-				double y;
-				double z;
-
 				for ( int i = 0 ; i < resultLength ; i += 3 )
 				{
-					x = source[ i     ];
-					y = source[ i + 1 ];
-					z = source[ i + 2 ];
+					final double x = source[ i ];
+					final double y = source[ i + 1 ];
+					final double z = source[ i + 2 ];
 
 					result[ i     ] = x * lxx + y * lxy + z * lxz + lxo;
 					result[ i + 1 ] = x * lyx + y * lyy + z * lyz + lyo;
@@ -1654,15 +1664,11 @@ public final class Matrix3D
 			}
 			else
 			{
-				double x;
-				double y;
-				double z;
-
 				for ( int resultIndex = 0 ; resultIndex < resultLength ; resultIndex += 3 )
 				{
-					x = source[ resultIndex     ];
-					y = source[ resultIndex + 1 ];
-					z = source[ resultIndex + 2 ];
+					final double x = source[ resultIndex ];
+					final double y = source[ resultIndex + 1 ];
+					final double z = source[ resultIndex + 2 ];
 
 					result[ resultIndex     ] = x * lxx + y * lxy + z * lxz;
 					result[ resultIndex + 1 ] = x * lyx + y * lyy + z * lyz;
