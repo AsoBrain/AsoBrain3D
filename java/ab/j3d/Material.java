@@ -23,9 +23,10 @@ package ab.j3d;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
+import java.net.*;
+import javax.imageio.*;
 
 import ab.j3d.appearance.*;
-import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -83,6 +84,11 @@ public class Material
 		"  PRIMARY KEY  (`ID`),\n" +
 		"  UNIQUE KEY `code` (`code`)\n" +
 		");";
+
+	/**
+	 * Map path prefix from where material map images are loaded.
+	 */
+	public static URL imagesDirectoryUrl = null;
 
 	/**
 	 * Unique record ID.
@@ -363,14 +369,25 @@ public class Material
 	 * Construct texture for ARGB value.
 	 *
 	 * @param   argb    ARGB color specification.
-	 *
-	 * @see     java.awt.Color
 	 */
 	public Material( final int argb )
 	{
 		this();
-		setAmbientColor( argb );
-		setDiffuseColor( argb );
+		final Color4f color = new Color4f( argb );
+		setAmbientColor( color );
+		setDiffuseColor( color );
+	}
+
+	/**
+	 * Construct texture for ARGB value.
+	 *
+	 * @param   color   Color to build appearance for.
+	 */
+	public Material( final Color4 color )
+	{
+		this();
+		setAmbientColor( color );
+		setDiffuseColor( color );
 	}
 
 	/**
@@ -553,12 +570,11 @@ public class Material
 	 *
 	 * @param   color   Ambient reflection color.
 	 */
-	public void setAmbientColor( final Color color )
+	public void setAmbientColor( final Color4 color )
 	{
-		final float[] components = color.getColorComponents( null );
-		ambientColorRed   = components[ 0 ];
-		ambientColorGreen = components[ 1 ];
-		ambientColorBlue  = components[ 2 ];
+		ambientColorRed = color.getRedFloat();
+		ambientColorGreen = color.getGreenFloat();
+		ambientColorBlue = color.getBlueFloat();
 	}
 
 	/**
@@ -570,13 +586,14 @@ public class Material
 	 * reflective. Typical values range from 0.1 to 0.2 for dull surfaces
 	 * and 0,7 to 0,8 for bright surfaces.
 	 *
-	 * @param   rgb     Ambient reflection color.
+	 * @param   color   Ambient reflection color.
 	 */
-	public void setAmbientColor( final int rgb )
+	public void setAmbientColor( final Color color )
 	{
-		ambientColorRed   = (float)( ( rgb >> 16 ) & 0xFF ) / 255.0f;
-		ambientColorGreen = (float)( ( rgb >>  8 ) & 0xFF ) / 255.0f;
-		ambientColorBlue  = (float)(   rgb         & 0xFF ) / 255.0f;
+		final float[] components = color.getColorComponents( null );
+		ambientColorRed   = components[ 0 ];
+		ambientColorGreen = components[ 1 ];
+		ambientColorBlue  = components[ 2 ];
 	}
 
 	public float getDiffuseColorRed()
@@ -641,15 +658,14 @@ public class Material
 	 * Typical values range from 0.1 to 0.2 for dull surfaces and 0.7 to
 	 * 0.8 for bright surfaces.
 	 *
-	 * @param   argb    Diffuse reflection color and opacity.
+	 * @param   color   Diffuse reflection color and opacity.
 	 */
-	public void setDiffuseColor( final int argb )
+	public void setDiffuseColor( final Color4 color )
 	{
-		final int iAlpha =         ( ( argb >> 24 ) & 0xFF );
-		diffuseColorRed   = (float)( ( argb >> 16 ) & 0xFF ) / 255.0f;
-		diffuseColorGreen = (float)( ( argb >>  8 ) & 0xFF ) / 255.0f;
-		diffuseColorBlue  = (float)(   argb         & 0xFF ) / 255.0f;
-		diffuseColorAlpha = ( iAlpha < 255 ) ? ( (float)iAlpha / 255.0f ) : 1.0f;
+		diffuseColorRed = color.getRedFloat();
+		diffuseColorGreen = color.getGreenFloat();
+		diffuseColorBlue = color.getBlueFloat();
+		diffuseColorAlpha = color.getAlphaFloat();
 	}
 
 	public float getSpecularColorRed()
@@ -691,13 +707,13 @@ public class Material
 	 * light in a concentrated region. It can be used to create highlights
 	 * on shiny surfaces.
 	 *
-	 * @param   rgb     Specular reflection color.
+	 * @param   color   Specular reflection color.
 	 */
-	public void setSpecularColor( final int rgb )
+	public void setSpecularColor( final Color4 color )
 	{
-		specularColorRed   = (float)( ( rgb >> 16 ) & 0xFF ) / 255.0f;
-		specularColorGreen = (float)( ( rgb >>  8 ) & 0xFF ) / 255.0f;
-		specularColorBlue  = (float)(   rgb         & 0xFF ) / 255.0f;
+		specularColorRed = color.getRedFloat();
+		specularColorGreen = color.getGreenFloat();
+		specularColorBlue = color.getBlueFloat();
 	}
 
 	public int getShininess()
@@ -739,12 +755,11 @@ public class Material
 	 *
 	 * @param   color   Emissive color.
 	 */
-	public void setEmissiveColor( final Color color )
+	public void setEmissiveColor( final Color4 color )
 	{
-		final float[] components = color.getColorComponents( null );
-		emissiveColorRed   = components[ 0 ];
-		emissiveColorGreen = components[ 1 ];
-		emissiveColorBlue  = components[ 2 ];
+		emissiveColorRed = color.getRedFloat();
+		emissiveColorGreen = color.getGreenFloat();
+		emissiveColorBlue  = color.getBlueFloat();
 	}
 
 	/**
@@ -753,28 +768,46 @@ public class Material
 	 * This determines the amount of light emitted by this material.
 	 * Note that this automatically implies a light source.
 	 *
-	 * @param   rgb     Emissive color.
+	 * @param   color   Emissive color.
 	 */
-	public void setEmissiveColor( final int rgb )
+	public void setEmissiveColor( final Color color )
 	{
-		emissiveColorRed   = (float)( ( rgb >> 16 ) & 0xFF ) / 255.0f;
-		emissiveColorGreen = (float)( ( rgb >>  8 ) & 0xFF ) / 255.0f;
-		emissiveColorBlue  = (float)(   rgb         & 0xFF ) / 255.0f;
+		final float[] components = color.getColorComponents( null );
+		emissiveColorRed   = components[ 0 ];
+		emissiveColorGreen = components[ 1 ];
+		emissiveColorBlue  = components[ 2 ];
 	}
 
 	public TextureMap getColorMap()
 	{
-		return TextTools.isEmpty( colorMap ) ? null : new MaterialTextureMap( colorMap, colorMapWidth, colorMapHeight );
+		final String colorMap = this.colorMap;
+		return ( ( colorMap == null ) || colorMap.isEmpty() ) ? null : new MaterialTextureMap( colorMap + ".jpg", colorMapWidth, colorMapHeight );
 	}
 
 	public TextureMap getBumpMap()
 	{
-		return TextTools.isEmpty( bumpMap ) ? null : new MaterialTextureMap( bumpMap, bumpMapWidth, bumpMapHeight );
+		final String bumpMap = this.bumpMap;
+		return ( ( bumpMap == null ) || bumpMap.isEmpty() ) ? null : new MaterialTextureMap( bumpMap + ".jpg", bumpMapWidth, bumpMapHeight );
 	}
 
 	public ReflectionMap getReflectionMap()
 	{
-		return TextTools.isEmpty( reflectionMap ) ? null : new MaterialReflectionMap( reflectionMap, reflectionMin, reflectionMax, reflectionRed, reflectionGreen, reflectionBlue );
+		final String reflectionMap = this.reflectionMap;
+		return ( ( reflectionMap == null ) || reflectionMap.isEmpty() ) ? null : new MaterialReflectionMap( reflectionMap + ".jpg", reflectionMin, reflectionMax, reflectionRed, reflectionGreen, reflectionBlue );
+	}
+
+	/**
+	 * Sets the color of (specular) reflections. For metallic materials, this
+	 * is typically the color of the metal. For other materials, it is typically
+	 * white, i.e. no change in color.
+	 *
+	 * @param   color   Reflection color.
+	 */
+	public void setReflectionColor( final Color4 color )
+	{
+		reflectionRed = color.getRedFloat();
+		reflectionGreen = color.getGreenFloat();
+		reflectionBlue  = color.getBlueFloat();
 	}
 
 	/**
@@ -793,20 +826,6 @@ public class Material
 	}
 
 	/**
-	 * Sets the color of (specular) reflections. For metallic materials, this
-	 * is typically the color of the metal. For other materials, it is typically
-	 * white, i.e. no change in color.
-	 *
-	 * @param   rgb     Reflection color.
-	 */
-	public void setReflectionColor( final int rgb )
-	{
-		reflectionRed   = (float)( ( rgb >> 16 ) & 0xFF ) / 255.0f;
-		reflectionGreen = (float)( ( rgb >>  8 ) & 0xFF ) / 255.0f;
-		reflectionBlue  = (float)(   rgb         & 0xFF ) / 255.0f;
-	}
-
-	/**
 	 * Implementation of {@link TextureMap} based on color map properties of a
 	 * {@link Material}.
 	 */
@@ -814,44 +833,57 @@ public class Material
 		extends AbstractTextureMap
 	{
 		/**
-		 * Texture map identifier.
+		 * Path to texture map image.
 		 */
 		@Nullable
-		protected final String _map;
+		protected final String _path;
 
 		/**
 		 * Constructs a new texture map.
 		 *
-		 * @param   map             Texture map identifier.
+		 * @param   path            Path to texture map image.
 		 * @param   physicalWidth   Physical width of the texture, in meters.
 		 * @param   physicalHeight  Physical height of the texture, in meters.
 		 */
-		protected MaterialTextureMap( @Nullable final String map, final float physicalWidth, final float physicalHeight )
+		protected MaterialTextureMap( @Nullable final String path, final float physicalWidth, final float physicalHeight )
 		{
 			super( physicalWidth, physicalHeight );
-			_map = map;
+			_path = path;
+		}
+
+		public URL getImageUrl()
+		{
+			URL result = null;
+
+			final String map = _path;
+			if ( ( map != null ) && !map.isEmpty() )
+			{
+				result = getGlobalImageUrl( map );
+			}
+
+			return result;
 		}
 
 		@Nullable
-		public BufferedImage getImage( final boolean useCache )
+		public BufferedImage loadImage()
+			throws IOException
 		{
-			final String map = _map;
-			return TextTools.isNonEmpty( map ) ? useCache ? MapTools.getImage( map ) : MapTools.loadImage( map ) : null;
+			final URL imageUrl = getImageUrl();
+			return ( imageUrl != null ) ? ImageIO.read( imageUrl ) : null;
 		}
 
 		@Override
-		public boolean equals( final Object other )
+		public boolean equals( final Object object )
 		{
 			final boolean result;
-			if ( other == this )
+			if ( object == this )
 			{
 				result = true;
 			}
-			else if ( other instanceof MaterialTextureMap )
+			else if ( object instanceof MaterialTextureMap )
 			{
-				final MaterialTextureMap map = (MaterialTextureMap)other;
-				result = super.equals( other ) &&
-				         TextTools.equals( _map, map._map );
+				final MaterialTextureMap other = (MaterialTextureMap)object;
+				result = super.equals( object ) && ( ( _path == null ) ? ( other._path == null ) : _path.equals( other._path ) );
 			}
 			else
 			{
@@ -863,7 +895,7 @@ public class Material
 		@Override
 		public int hashCode()
 		{
-			return super.hashCode() ^ ( ( _map == null ) ? 0 : _map.hashCode() );
+			return super.hashCode() ^ ( ( _path == null ) ? 0 : _path.hashCode() );
 		}
 	}
 
@@ -956,11 +988,24 @@ public class Material
 		public BufferedImage getImage()
 		{
 			BufferedImage image = super.getImage();
-			if ( ( image == null ) && ( _reflectionMap != null ) )
+			final String reflectionMap = _reflectionMap;
+
+			if ( ( image == null ) && ( reflectionMap != null ) && !reflectionMap.isEmpty() )
 			{
-				image = MapTools.loadImage( _reflectionMap );
-				setImage( image );
+				try
+				{
+					final URL imageUrl = getGlobalImageUrl( reflectionMap );
+
+					image = ImageIO.read( imageUrl );
+					setImage( image );
+				}
+				catch ( IOException e )
+				{
+					/* should we prevent loading this image again? */
+					e.printStackTrace();
+				}
 			}
+
 			return image;
 		}
 
@@ -980,7 +1025,7 @@ public class Material
 				         ( _reflectionRed == map._reflectionRed ) &&
 				         ( _reflectionGreen == map._reflectionGreen ) &&
 				         ( _reflectionBlue == map._reflectionBlue ) &&
-				         TextTools.equals( _reflectionMap, map._reflectionMap );
+				         ( ( _reflectionMap == null ) ? ( map._reflectionMap == null ) : _reflectionMap.equals( map._reflectionMap ) );
 			}
 			else
 			{
@@ -1000,4 +1045,32 @@ public class Material
 			       Float.floatToRawIntBits( _reflectionBlue );
 		}
 	}
+
+	/**
+	 * Get path to map image.
+	 *
+	 * @param   path     Name of map (<code>null</code> or empty strings allowed).
+	 *
+	 * @return  Map image;
+	 *          <code>null</code> if map has no image or the image could not be loaded.
+	 *
+	 * @deprecated Images used by materials should contain this information. Ugly!
+ 	 */
+	private static URL getGlobalImageUrl( final String path )
+	{
+		if ( imagesDirectoryUrl == null )
+		{
+			throw new AssertionError( "baseUrl -must- be set already" );
+		}
+
+		try
+		{
+			return new URL( imagesDirectoryUrl, path );
+		}
+		catch ( MalformedURLException e )
+		{
+			throw new IllegalArgumentException( "Bad URL spec: " + path );
+		}
+	}
+
 }
