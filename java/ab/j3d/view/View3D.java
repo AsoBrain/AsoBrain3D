@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2009-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,15 +24,11 @@ import java.awt.*;
 import java.beans.*;
 import java.util.*;
 import java.util.List;
-import javax.swing.*;
 
 import ab.j3d.*;
-import ab.j3d.awt.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
-import com.numdata.oss.event.*;
-import com.numdata.oss.ui.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -215,35 +211,6 @@ public abstract class View3D
 		_scene2view = Matrix3D.IDENTITY;
 		_cameraControl = null;
 		_label = null;
-	}
-
-	/**
-	 * Create tool bar to control this view.
-	 *
-	 * @param   locale  Preferred locale for internationalization.
-	 *
-	 * @return  Tool bar.
-	 */
-	public JToolBar createToolBar( final Locale locale )
-	{
-		final String label = getLabel();
-
-		final JToolBar toolbar = new JToolBar( label );
-
-		if ( label != null )
-		{
-			toolbar.add( new JLabel( getLabel() + ": " ) );
-		}
-
-		final CameraControl cameraControl = getCameraControl();
-		if ( cameraControl != null )
-		{
-			ActionTools.addToToolBar( toolbar, cameraControl.getActions( locale ) );
-		}
-
-		ActionTools.addToToolBar( toolbar, getActions( locale ) );
-
-		return toolbar;
 	}
 
 	/**
@@ -511,14 +478,18 @@ public abstract class View3D
 
 		if ( oldCameraControl != cameraControl )
 		{
-			if ( oldCameraControl != null )
+			final ViewControlInput controlInput = getControlInput();
+			if ( controlInput != null )
 			{
-				removeControl( oldCameraControl );
-			}
+				if ( oldCameraControl != null )
+				{
+					controlInput.removeControlInputListener( oldCameraControl );
+				}
 
-			if ( cameraControl != null )
-			{
-				appendControl( cameraControl );
+				if ( cameraControl != null )
+				{
+					controlInput.addControlInputListener( cameraControl );
+				}
 			}
 		}
 	}
@@ -742,68 +713,7 @@ public abstract class View3D
 	 * @return  The {@link ViewControlInput} for this view;
 	 *          <code>null</code> if this view has none.
 	 */
-	protected abstract ViewControlInput getControlInput();
-
-	/**
-	 * Adds a {@link Control} to the end of the control chain of this view.
-	 * the list of controls.
-	 * <dl>
-	 *  <dt>NOTE:</dt>
-	 *  <dd>Not all views support user input. If not, calls to this method may
-	 *   be ignored.</dd>
-	 * </dl>
-	 *
-	 * @param   control     The {@link Control} to add
-	 */
-	public void appendControl( final Control control )
-	{
-		final ViewControlInput controlInput = getControlInput();
-		if ( controlInput != null )
-		{
-			final EventDispatcher eventQueue = controlInput.getEventDispatcher();
-			eventQueue.appendFilter( control );
-		}
-	}
-
-	/**
-	 * Inserts a {@link Control} at the start of the control chain of this view.
-	 * <dl>
-	 *  <dt>NOTE:</dt>
-	 *  <dd>Not all views support user input. If not, calls to this method may
-	 *   be ignored.</dd>
-	 * </dl>
-	 *
-	 * @param   control     The {@link Control} to add.
-	 */
-	public void insertControl( final Control control )
-	{
-		final ViewControlInput controlInput = getControlInput();
-		if ( controlInput != null )
-		{
-			final EventDispatcher eventQueue = controlInput.getEventDispatcher();
-			eventQueue.insertFilter( control );
-		}
-	}
-
-	/**
-	 * Removes a {@link Control} from the list of controls.
-	 * <dl>
-	 *  <dt>NOTE:</dt>
-	 *  <dd>Not all views support user input. If not, calls to this method may
-	 *   be ignored.</dd>
-	 * </dl>
-	 *
-	 * @param   control     The Control to remove
-	 */
-	public void removeControl( final Control control )
-	{
-		final ViewControlInput controlInput = getControlInput();
-		if ( controlInput != null )
-		{
-			final EventDispatcher eventQueue = controlInput.getEventDispatcher();
-			eventQueue.removeFilter( control );
-		}
-	}
+	public abstract ViewControlInput getControlInput();
 
 	/**
 	 * Adds an {@link ViewOverlay} to this view. The overlay that is added
@@ -862,19 +772,6 @@ public abstract class View3D
 			overlay.paintOverlay( this, g2d );
 		}
 	}
-
-	/**
-	 * Get actions of the view.
-	 *
-	 * @param   locale  Preferred locale for internationalization.
-	 *
-	 * @return  Actions of the view.
-	 */
-	public Action[] getActions( final Locale locale )
-	{
-		return new Action[] { new SwitchRenderingPolicyAction( locale, this ), new ToggleGridAction( locale, this ) };
-	}
-
 
 	/**
 	 * Get label of view.
@@ -1064,4 +961,5 @@ public abstract class View3D
 			listener.afterFrame( this );
 		}
 	}
+
 }
