@@ -34,11 +34,11 @@ import javax.swing.*;
 import ab.j3d.*;
 import ab.j3d.awt.view.*;
 import ab.j3d.awt.view.java2d.*;
+import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.loader.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import ab.j3d.view.jogl.*;
 
 /**
  * <p>Simple 3D model viewer for use on the web. Currently only supports zipped

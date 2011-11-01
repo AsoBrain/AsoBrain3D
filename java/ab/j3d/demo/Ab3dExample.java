@@ -22,9 +22,9 @@ package ab.j3d.demo;
 
 import java.awt.*;
 
+import ab.j3d.awt.view.java2d.*;
+import ab.j3d.awt.view.jogl.*;
 import ab.j3d.view.*;
-import ab.j3d.view.java2d.*;
-import ab.j3d.view.jogl.*;
 
 /**
  * Utility class for AsoBrain 3D demo applications.
