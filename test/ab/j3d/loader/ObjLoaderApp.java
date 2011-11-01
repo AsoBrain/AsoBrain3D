@@ -26,11 +26,12 @@ import java.util.*;
 import javax.swing.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.view.*;
+import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import ab.j3d.view.jogl.*;
 
 /**
  * This is a sample application for the {@link ObjLoader} class.
@@ -43,87 +44,89 @@ public class ObjLoaderApp
 	/**
 	 * Run application.
 	 *
-	 * @param args Command-line arguments.
+	 * @param   args    Command-line arguments.
+	 *
+	 * @throws  Exception if the application crashes.
 	 */
 	public static void main( final String[] args )
+		throws Exception
 	{
-		try
+		final double   unit      = Scene.M;
+		final Matrix3D transform = Matrix3D.IDENTITY.rotateX( Math.toRadians( 90.0 ) );
+
+		//Load from jar file...
+		//final ResourceLoader fileLoader =   new FileResourceLoader( "/home/wijnand/cube/" );
+		//final ResourceLoader loader =   new ZipResourceLoader( fileLoader.getResource( "penguin.jar" ) );
+
+		//Or load from directory
+		final ResourceLoader loader = new URLResourceLoader( new File( System.getProperty( "user.home" ) + "/soda/Ivenza_LayoutPlugin/objects/HiFi" ) );
+
+		final Object3D object3d = ObjLoader.load( transform, loader, "tv06.obj" );
+		GeometryTools.smooth( object3d, 30.0, 5.0, false );
+
+		final Bounds3D bounds = object3d.getOrientedBoundingBox();
+		if ( bounds == null )
 		{
-			final double   unit      = Scene.M;
-			final Matrix3D transform = Matrix3D.IDENTITY.rotateX( Math.toRadians( 90.0 ) );
+			throw new RuntimeException( "Empty geometry" );
+		}
 
-			//Load from jar file...
-			//final ResourceLoader fileLoader =   new FileResourceLoader( "/home/wijnand/cube/" );
-			//final ResourceLoader loader =   new ZipResourceLoader( fileLoader.getResource( "penguin.jar" ) );
+		final Vector3D size = bounds.size();
+		final double toCM = 100.0 * unit;
 
-			//Or load from directory
-			final ResourceLoader loader = new FileResourceLoader( System.getProperty( "user.home" ) + "/soda/Ivenza_LayoutPlugin/objects/HiFi" );
+		final Vector3D viewFrom = new Vector3D( 0.0, bounds.v1.y - 3.0 / unit, bounds.v2.z / 2.0 + 1.2 / unit );
+		final Vector3D viewAt = new Vector3D( 0.0, 0.0, bounds.v2.z / 2.0 );
 
-			final Object3D object3d = ObjLoader.load( transform, loader, "tv06.obj" );
-			GeometryTools.smooth( object3d, 30.0, 5.0, false );
-			final Bounds3D bounds   = object3d.getOrientedBoundingBox();
-			final Vector3D size     = bounds.size();
-			final double   toCM     = 100.0 * unit;
+		final Scene scene = new Scene( unit );
+		scene.addContentNode( "obj", Matrix3D.getTransform( 90.0, 0.0, 0.0, 0.0, 0.0, -bounds.v1.z ), object3d );
+//		scene.addContentNode( "sphere", null, new Sphere3D( 0.1, 8, 8, Materials.ALU_PLATE ) );
 
-			final Vector3D viewFrom = new Vector3D( 0.0, bounds.v1.y - 3.0 / unit, bounds.v2.z / 2.0 + 1.2 / unit );
-			final Vector3D viewAt   = new Vector3D( 0.0, 0.0, bounds.v2.z / 2.0 );
+		final Light3D light1 = new Light3D();
+		light1.setIntensity( 0.7f );
+		light1.setFallOff( 10.0 );
+		light1.setCastingShadows( true );
+		final ContentNode lightNode1 = scene.addContentNode( "light-1", null, light1 );
 
-			final Scene scene = new Scene( unit );
-			scene.addContentNode( "obj", Matrix3D.getTransform( 90.0, 0.0, 0.0, 0.0, 0.0, -bounds.v1.z ), object3d );
-//			scene.addContentNode( "sphere", null, new Sphere3D( 0.1, 8, 8, Materials.ALU_PLATE ) );
+		final Light3D light2 = new Light3D();
+		light2.setIntensity( 0.5f );
+		light2.setFallOff( 0.0 );
+		scene.addContentNode( "light-2", Matrix3D.getTranslation( -10.0, 10.0, 10.0 ), light2 );
 
-			final Light3D light1 = new Light3D();
-			light1.setIntensity( 0.7f );
-			light1.setFallOff( 10.0 );
-			light1.setCastingShadows( true );
-			final ContentNode lightNode1 = scene.addContentNode( "light-1", null, light1 );
+		final RenderEngine renderEngine = new JOGLEngine( /*JOGLConfiguration.createLusciousInstance()*/ );
 
-			final Light3D light2 = new Light3D();
-			light2.setIntensity( 0.5f );
-			light2.setFallOff( 0.0 );
-			scene.addContentNode( "light-2", Matrix3D.getTranslation( -10.0, 10.0, 10.0 ), light2 );
-
-			final RenderEngine renderEngine = new JOGLEngine( /*JOGLConfiguration.createLusciousInstance()*/ );
-
-			final View3D view = renderEngine.createView( scene );
-			view.setCameraControl( new FromToCameraControl( view, viewFrom, viewAt ) );
-			view.addViewListener( new ViewListener()
+		final View3D view = renderEngine.createView( scene );
+		view.setCameraControl( new FromToCameraControl( view, viewFrom, viewAt ) );
+		view.addViewListener( new ViewListener()
+		{
+			public void beforeFrame( final View3D view )
 			{
-				public void beforeFrame( final View3D view )
-				{
-				}
+			}
 
-				public void afterFrame( final View3D view )
-				{
-					final double alpha = ( (double)System.currentTimeMillis() / 1000.0 ) % ( 2.0 * Math.PI );
-					final Vector3D center = bounds.center();
-					lightNode1.setTransform( Matrix3D.getTranslation( center.x + Math.cos( alpha ) * 5.0, center.y + Math.sin( alpha ) * 5.0, center.z + 5.0 ) );
-				}
-			} );
-			scene.setAnimated( true );
+			public void afterFrame( final View3D view )
+			{
+				final double alpha = ( (double)System.currentTimeMillis() / 1000.0 ) % ( 2.0 * Math.PI );
+				final Vector3D center = bounds.center();
+				lightNode1.setTransform( Matrix3D.getTranslation( center.x + Math.cos( alpha ) * 5.0, center.y + Math.sin( alpha ) * 5.0, center.z + 5.0 ) );
+			}
+		} );
+		scene.setAnimated( true );
 
-			final JPanel viewPanel = new JPanel( new BorderLayout() );
-			viewPanel.add( view.getComponent(), BorderLayout.CENTER );
-			viewPanel.add( view.createToolBar( new Locale( "nl" ) ), BorderLayout.SOUTH );
+		final JPanel viewPanel = new JPanel( new BorderLayout() );
+		viewPanel.add( view.getComponent(), BorderLayout.CENTER );
+		viewPanel.add( View3DPanel.createToolBar( view, new Locale( "nl" ) ), BorderLayout.SOUTH );
 
-			final JFrame frame = new JFrame( renderEngine.getClass() + " example" );
-			frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-			frame.setContentPane( viewPanel );
-			frame.setSize( 800, 600 );
-			final Toolkit toolkit = frame.getToolkit();
-			final GraphicsConfiguration graphicsConfiguration = frame.getGraphicsConfiguration();
-			final Rectangle screenBounds = graphicsConfiguration.getBounds();
-			final Insets screenInsets = toolkit.getScreenInsets( graphicsConfiguration );
-			frame.setLocation( screenBounds.x + ( screenBounds.width  + screenInsets.left + screenInsets.right - frame.getWidth() ) / 2,
-			                   screenBounds.y + ( screenBounds.height + screenInsets.top + screenInsets.bottom - frame.getHeight() ) / 2 );
-			frame.setVisible( true );
+		final JFrame frame = new JFrame( renderEngine.getClass() + " example" );
+		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+		frame.setContentPane( viewPanel );
+		frame.setSize( 800, 600 );
+		final Toolkit toolkit = frame.getToolkit();
+		final GraphicsConfiguration graphicsConfiguration = frame.getGraphicsConfiguration();
+		final Rectangle screenBounds = graphicsConfiguration.getBounds();
+		final Insets screenInsets = toolkit.getScreenInsets( graphicsConfiguration );
+		frame.setLocation( screenBounds.x + ( screenBounds.width  + screenInsets.left + screenInsets.right - frame.getWidth() ) / 2,
+		                   screenBounds.y + ( screenBounds.height + screenInsets.top + screenInsets.bottom - frame.getHeight() ) / 2 );
+		frame.setVisible( true );
 
-			System.out.println( "object size = " + Math.round( toCM * size.x ) + " x " + Math.round( toCM * size.y ) + " x " + Math.round( toCM * size.z ) + " cm" );
-		}
-		catch ( IOException e )
-		{
-			e.printStackTrace();
-		}
+		System.out.println( "object size = " + Math.round( toCM * size.x ) + " x " + Math.round( toCM * size.y ) + " x " + Math.round( toCM * size.z ) + " cm" );
 	}
 
 	/**
