@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2001-2005 Numdata BV
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@
  */
 package ab.j3d;
 
-import junit.framework.TestCase;
+import junit.framework.*;
 
 /**
  * Test functionality of <code>PolyPoint2D</code> class.
@@ -30,7 +30,7 @@ import junit.framework.TestCase;
  * @author  H.B.J. te Lintelo
  * @version $Revision$ $Date$
  */
-public final class TestPolyPoint2D
+public class TestPolyPoint2D
 	extends TestCase
 {
 	/**
@@ -47,9 +47,9 @@ public final class TestPolyPoint2D
 	{
 		System.out.println( CLASS_NAME + ".testAlmostEqual1()" );
 
-		final PolyPoint2D pp1 = new PolyPoint2D( 10.0 , 10.0 , 0.0 );
-		final PolyPoint2D pp2 = new PolyPoint2D( 10.0 , 10.0 , 0.0 );
-		assertTrue( "Points are equal, but almost equal test fails." , pp1.almostEquals( pp2 ) );
+		final PolyPoint2D pp1 = new PolyPoint2D( 10.0, 10.0, 0.0 );
+		final PolyPoint2D pp2 = new PolyPoint2D( 10.0, 10.0, 0.0 );
+		assertTrue( "Points are equal, but almost equal test fails.", pp1.almostEquals( pp2 ) );
 	}
 
 	/**
@@ -61,9 +61,9 @@ public final class TestPolyPoint2D
 	{
 		System.out.println( CLASS_NAME + ".testAlmostEqual2()" );
 
-		final PolyPoint2D pp1 = new PolyPoint2D( 10.0 , 10.0 , 0.0 );
-		final PolyPoint2D pp2 = new PolyPoint2D( 11.0 , 11.0 , 0.0 );
-		assertFalse( "Points are not equal, but almost equal test returns true." , pp1.almostEquals( pp2 ) );
+		final PolyPoint2D pp1 = new PolyPoint2D( 10.0, 10.0, 0.0 );
+		final PolyPoint2D pp2 = new PolyPoint2D( 11.0, 11.0, 0.0 );
+		assertFalse( "Points are not equal, but almost equal test returns true.", pp1.almostEquals( pp2 ) );
 	}
 
 	/**
@@ -87,7 +87,7 @@ public final class TestPolyPoint2D
 	 *    intersection. If two intersections are found, the start and end point
 	 *    are compared to the last found point, to see if the line segment is
 	 *    connected. This test is performed using the
-	 *    <code>PolyPoint2D.almostEquals( PolyPoint2D , tolerance )</code>
+	 *    <code>PolyPoint2D.almostEquals( PolyPoint2D, tolerance )</code>
 	 *    method to cope with rounding errors. If the X or Y variable is larger
 	 *    than 2047 mm, the check mysteriously? Further analysis showed that
 	 *    the problem has to do with the maximum number of digits in a
@@ -113,8 +113,8 @@ public final class TestPolyPoint2D
 	{
 		System.out.println( CLASS_NAME + ".testAlmostEqual3()" );
 
-		final PolyPoint2D pp1 = new PolyPoint2D( 4000.0 , 10.0 , 0.0 );
-		final PolyPoint2D pp2 = new PolyPoint2D( 4000.0 , 10.0 , 0.0 );
-		assertTrue( "Points are equal, but almost equal test fails." , pp1.almostEquals( pp2 ) );
+		final PolyPoint2D pp1 = new PolyPoint2D( 4000.0, 10.0, 0.0 );
+		final PolyPoint2D pp2 = new PolyPoint2D( 4000.0, 10.0, 0.0 );
+		assertTrue( "Points are equal, but almost equal test fails.", pp1.almostEquals( pp2 ) );
 	}
 }
