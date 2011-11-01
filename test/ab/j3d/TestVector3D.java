@@ -20,9 +20,9 @@
  */
 package ab.j3d;
 
-import java.util.Properties;
+import java.util.*;
 
-import junit.framework.TestCase;
+import junit.framework.*;
 
 /**
  * This class tests the {@link Vector3D} class.
@@ -63,24 +63,22 @@ public class TestVector3D
 		final Vector3D[] testVectors =
 		{
 			null ,
-			Vector3D.INIT ,
-			Vector3D.INIT.set( 1.0 , 2.0 , 3.0 ) ,
-			Vector3D.INIT.set( 0.0 , 0.0 , 0.0 ) ,
-			Vector3D.INIT.set( 0.0 , 0.0 , 1.0 ) ,
-			Vector3D.INIT.set( 0.0 , 1.0 , 0.0 ) ,
-			Vector3D.INIT.set( 1.0 , 0.0 , 0.0 ) ,
+			Vector3D.ZERO,
+			Vector3D.ZERO.set( 1.0 , 2.0 , 3.0 ) ,
+			Vector3D.ZERO.set( 0.0 , 0.0 , 0.0 ) ,
+			Vector3D.ZERO.set( 0.0 , 0.0 , 1.0 ) ,
+			Vector3D.ZERO.set( 0.0 , 1.0 , 0.0 ) ,
+			Vector3D.ZERO.set( 1.0 , 0.0 , 0.0 ) ,
 		};
 
-		for ( int i = 0 ; i < testVectors.length ; i++ )
+		for ( final Vector3D in : testVectors )
 		{
-			final Vector3D in = testVectors[ i ];
-
 			final Properties p = new Properties();
-			p.setProperty( "vector" , String.valueOf( in ) );
+			p.setProperty( "vector", String.valueOf( in ) );
 
-			final Vector3D out = Vector3D.getProperty( p , "vector" );
+			final Vector3D out = Vector3D.getProperty( p, "vector" );
 
-			assertEquals( "set/get for vector (" + in + ") failed" , in , out );
+			assertEquals( "set/get for vector (" + in + ") failed", in, out );
 		}
 	}
 }
