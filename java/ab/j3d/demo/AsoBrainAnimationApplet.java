@@ -21,6 +21,7 @@
 package ab.j3d.demo;
 
 import java.awt.*;
+import java.net.*;
 import javax.swing.*;
 
 import ab.j3d.*;
@@ -45,7 +46,16 @@ public class AsoBrainAnimationApplet
 		final String images = getParameter( "images" );
 		if ( images != null )
 		{
-			MapTools.imageMapDirectory = images;
+			try
+			{
+				Material.imagesDirectoryUrl = new URL( images );
+			}
+			catch ( MalformedURLException e )
+			{
+				System.err.println( "Malformed images URL: " + images );
+				System.err.println();
+				System.err.println( "(" + e + ')' );
+			}
 		}
 
 		final AsoBrainAnimation example = new AsoBrainAnimation();
