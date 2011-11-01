@@ -27,9 +27,9 @@ import javax.media.opengl.*;
 import javax.media.opengl.glu.*;
 import javax.swing.*;
 
+import ab.j3d.awt.view.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import ab.j3d.view.control.*;
 import org.jetbrains.annotations.*;
 
 /**

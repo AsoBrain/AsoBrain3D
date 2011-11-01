@@ -30,10 +30,10 @@ import javax.swing.Timer;
 
 import ab.j3d.*;
 import ab.j3d.awt.*;
+import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.view.*;
-import ab.j3d.view.jogl.*;
 
 /**
  * Test application for visualizing geometry intersection tests.

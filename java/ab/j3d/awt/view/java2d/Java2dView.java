@@ -23,9 +23,9 @@ package ab.j3d.awt.view.java2d;
 import java.awt.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.view.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import ab.j3d.view.control.*;
 import org.jetbrains.annotations.*;
 
 /**
