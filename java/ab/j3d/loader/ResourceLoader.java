@@ -21,6 +21,7 @@
 package ab.j3d.loader;
 
 import java.io.*;
+import java.net.*;
 
 /**
  * This interface is used to retrieve resources from another resource, e.g. a
@@ -32,14 +33,22 @@ import java.io.*;
 public interface ResourceLoader
 {
 	/**
-	 * Loads a resource from the resource the loader was constructed with.
+	 * Get resource from loader.
 	 *
-	 * @param   name Name of the resource to be loaded.
+	 * @param   path    Relative path to resource.
 	 *
-	 * @return  {@link InputStream} containing the resource.
-	 *
-	 * @throws  IOException if resource could not be loaded.
+	 * @return  {@link URL} for the requested resource;
+	 *          <code>null</code> if the resource was not accessible.
 	 */
-	InputStream getResource( String name )
-		throws IOException;
+	URL getResource( String path );
+
+	/**
+	 * Get resource from loader.
+	 *
+	 * @param   path    Relative path to resource.
+	 *
+	 * @return  {@link InputStream} for the requested resource;
+	 *          <code>null</code> if the resource was not accessible.
+	 */
+	InputStream getResourceAsStream( String path );
 }

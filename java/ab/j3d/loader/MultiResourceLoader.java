@@ -22,6 +22,7 @@
 package ab.j3d.loader;
 
 import java.io.*;
+import java.net.*;
 import java.util.*;
 
 import org.jetbrains.annotations.*;
@@ -88,34 +89,39 @@ public class MultiResourceLoader
 		_mounts.add( new Mount( resourceLoader, mountPoint, subTree ) );
 	}
 
-	@Override
-	public InputStream getResource( final String name )
-		throws IOException
+	public URL getResource( final String path )
+	{
+		URL result = null;
+
+		for ( final Mount entry : _mounts )
+		{
+			if ( path.startsWith( entry._mountPoint ) )
+			{
+				result = entry._resourceLoader.getResource( entry._subTree + path.substring( entry._mountPoint.length() ) );
+				if ( result != null )
+				{
+					break;
+				}
+			}
+		}
+
+		return result;
+	}
+
+	public InputStream getResourceAsStream( final String path )
 	{
 		InputStream result = null;
 
 		for ( final Mount entry : _mounts )
 		{
-			if ( name.startsWith( entry._mountPoint ) )
+			if ( path.startsWith( entry._mountPoint ) )
 			{
-				try
+				result = entry._resourceLoader.getResourceAsStream( entry._subTree + path.substring( entry._mountPoint.length() ) );
+				if ( result != null )
 				{
-					result = entry._resourceLoader.getResource( entry._subTree + name.substring( entry._mountPoint.length() ) );
-				}
-				catch ( FileNotFoundException e )
-				{
-					// Try the next resource loader.
-				}
-				catch ( IOException e )
-				{
-					e.printStackTrace();
+					break;
 				}
 			}
-		}
-
-		if ( result == null )
-		{
-			throw new FileNotFoundException( name );
 		}
 
 		return result;
@@ -130,19 +136,19 @@ public class MultiResourceLoader
 		 * Resource loader that is mounted.
 		 */
 		@NotNull
-		private ResourceLoader _resourceLoader;
+		private final ResourceLoader _resourceLoader;
 
 		/**
 		 * Mount point.
 		 */
 		@NotNull
-		private String _mountPoint;
+		private final String _mountPoint;
 
 		/**
 		 * Sub-tree.
 		 */
 		@NotNull
-		private String _subTree;
+		private final String _subTree;
 
 		/**
 		 * Constructs a new instance.

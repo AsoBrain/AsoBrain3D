@@ -38,22 +38,68 @@ public class URLResourceLoader
 	/**
 	 * Base URL to load resources from.
 	 */
-	private final URL _baseURL;
+	@NotNull
+	private final URL _baseUrl;
 
 	/**
 	 * Construct resource loader.
 	 *
-	 * @param   baseURL     Base URL to load resources from.
+	 * @param   baseUrl     Base URL to load resources from.
 	 */
-	public URLResourceLoader( @NotNull final URL baseURL )
+	public URLResourceLoader( @NotNull final URL baseUrl )
 	{
-		_baseURL = baseURL;
+		_baseUrl = baseUrl;
 	}
 
-	public InputStream getResource( final String name )
-		throws IOException
+	/**
+	 * Construct texture map for base file.
+	 *
+	 * @param   baseFile   Image file.
+	 */
+	public URLResourceLoader( @NotNull final File baseFile )
 	{
-		final URL url = new URL( _baseURL, name );
-		return url.openStream();
+		final URI uri = baseFile.toURI();
+		try
+		{
+			final URL url = uri.toURL();
+			_baseUrl = url;
+		}
+		catch ( MalformedURLException e )
+		{
+			/* should never happen for file URI */
+			throw new IllegalArgumentException( e );
+		}
+	}
+
+	public URL getResource( final String path )
+	{
+		try
+		{
+			return new URL( _baseUrl, path );
+		}
+		catch ( MalformedURLException e )
+		{
+			throw new IllegalArgumentException( path, e );
+		}
+	}
+
+	public InputStream getResourceAsStream( final String path )
+	{
+		InputStream result = null;
+
+		final URL url = getResource( path );
+		if ( url != null )
+		{
+			try
+			{
+				result = url.openStream();
+			}
+			catch ( IOException e )
+			{
+				System.err.println( "error: getResource( '" + url + "' ) => " + e );
+			}
+		}
+
+		return result;
 	}
 }

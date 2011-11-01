@@ -21,6 +21,7 @@
 package ab.j3d.loader;
 
 import java.io.*;
+import java.net.*;
 import java.util.zip.*;
 
 /**
@@ -32,60 +33,117 @@ import java.util.zip.*;
 public class ZipResourceLoader
 	implements ResourceLoader
 {
-
 	/**
-	 *  The zip file as binary data constructed from {@link InputStream} @ constructor.
+	 * URL of ZIP file.
 	 */
-	private byte[] _binaryData = null;
+	private final URL _zipUrl;
 
 	/**
-	 * Constructs a {@link ZipResourceLoader } based on given {@link InputStream }.
+	 *  The zip file as binary data.
+	 */
+	private byte[] _zipData = null;
+
+	/**
+	 * Constructs resource loader for ZIP file.
 	 *
-	 * @param inputStream   The zip archive as {@link InputStream}.
+	 * @param   zipUrl  URL to ZIP archive.
 	 *
 	 * @throws IOException  when {@link InputStream } could not be read.
 	 */
-	public ZipResourceLoader( final InputStream inputStream )
+	public ZipResourceLoader( final URL zipUrl )
 		throws IOException
 	{
-		final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		int length;
-		final byte [] buffer = new byte[ 10240 ];
-        while ( ( length = inputStream.read( buffer ) ) > 0 )
-        {
-			bos.write( buffer, 0, length );
-		}
-		_binaryData = bos.toByteArray();
+		_zipUrl = zipUrl;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * <P>
-	 * In this case, a zip archive.
-	 */
-	public InputStream getResource( final String name )
-		throws IOException
+	public URL getResource( final String path )
 	{
-		final byte[] binaryData = _binaryData;
-		InputStream result = null;
-		if ( binaryData != null && binaryData.length > 0 )
+		URL result = null;
+
+		if ( ( path != null ) && !path.isEmpty() )
 		{
-			final ZipInputStream zipInputStream = new ZipInputStream( new ByteArrayInputStream( binaryData ) );
-			ZipEntry zipEntry;
-			while ( result == null && ( zipEntry = zipInputStream.getNextEntry() ) != null )
+			try
 			{
-				if ( name.equals( zipEntry.getName() ) )
-				{
-					result = zipInputStream;
-				}
+				final String separator = ( path.charAt( 0 ) == '/' ) ? "!" : "!/";
+				result = new URL( "jar:" + _zipUrl.toExternalForm() + separator + path );
+			}
+			catch ( MalformedURLException e )
+			{
+				throw new IllegalArgumentException( path, e );
 			}
 		}
 
-		if ( result == null )
+		return result;
+	}
+
+	public InputStream getResourceAsStream( final String path )
+	{
+		final byte[] binaryData = _zipData;
+		InputStream result = null;
+		if ( binaryData != null && binaryData.length > 0 )
 		{
-			throw new FileNotFoundException( "File \"" + name + "\" not found in specified archive." );
+			try
+			{
+				final ZipInputStream zis = getZipInputStream();
+				try
+				{
+					while ( true )
+					{
+						final ZipEntry zipEntry = zis.getNextEntry();
+						if ( path.equals( zipEntry.getName() ) )
+						{
+							result = zis;
+							break;
+						}
+					}
+				}
+				finally
+				{
+					zis.close();
+				}
+			}
+			catch ( IOException e )
+			{
+				e.printStackTrace();
+			}
 		}
 
 		return result;
+	}
+
+	/**
+	 * Get {@link ZipInputStream} for the ZIP file.
+	 *
+	 * @return  {@link ZipInputStream}.
+	 *
+	 * @throws  IOException if an I/O error occurs.
+	 */
+	private ZipInputStream getZipInputStream()
+		throws IOException
+	{
+		byte[] binaryData = _zipData;
+		if ( binaryData == null )
+		{
+			final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+
+			final InputStream in = _zipUrl.openStream();
+			try
+			{
+				final byte [] buffer = new byte[ 10240 ];
+				for ( int length = in.read( buffer ); length > 0; length = in.read( buffer ) )
+				{
+					bos.write( buffer, 0, length );
+				}
+			}
+			finally
+			{
+				in.close();
+			}
+
+			binaryData = bos.toByteArray();
+			_zipData = binaryData;
+		}
+
+		return new ZipInputStream( new ByteArrayInputStream( binaryData ) );
 	}
 }
