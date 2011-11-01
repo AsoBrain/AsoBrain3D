@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -59,14 +60,10 @@ public class SelectionControl
 	 * {@link PaintableTriangle} is selected.
 	 *
 	 * @param   event   The event passed on.
-	 *
-	 * @return  The original event if nothing was selected, null if it was.
 	 */
 	@Override
-	public EventObject mouseClicked( final ControlInputEvent event )
+	public void mouseClicked( final ControlInputEvent event )
 	{
-		final EventObject result;
-
 		final Model model = _model;
 
 		final List<Face3DIntersection> intersections = event.getIntersections();
@@ -107,15 +104,10 @@ public class SelectionControl
 			{
 				model.setSelection( null );
 			}
-
-			result = null;
 		}
 		else
 		{
 			model.setSelection( null );
-			result = event;
 		}
-
-		return result;
 	}
 }

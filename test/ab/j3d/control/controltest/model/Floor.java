@@ -1,7 +1,7 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@
  */
 package ab.j3d.control.controltest.model;
 
-import ab.j3d.Matrix3D;
+import ab.j3d.*;
 
 /**
  * This class models a floor. A floor only has a length and a breadth, in this
@@ -48,7 +48,7 @@ public class Floor
 	 * @param   sizeX   Floor size in the x dimension
 	 * @param   sizeY   Floor size in the y dimension
 	 */
-	public Floor( final double sizeX , final double sizeY )
+	public Floor( final double sizeX, final double sizeY )
 	{
 		_xSize = sizeX;
 		_ySize = sizeY;
@@ -102,8 +102,9 @@ public class Floor
 	 *
 	 * @return  Transformation matrix of this element.
 	 */
+	@Override
 	public Matrix3D getTransform()
 	{
-		return Matrix3D.INIT;
+		return Matrix3D.IDENTITY;
 	}
 }

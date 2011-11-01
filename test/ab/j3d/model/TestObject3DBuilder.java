@@ -1,8 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2009 Peter S. Heijnen
- * Copyright (C) 2009-2009 Numdata BV
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,9 +20,8 @@
  */
 package ab.j3d.model;
 
-import junit.framework.TestCase;
-
-import ab.j3d.Vector3D;
+import ab.j3d.*;
+import junit.framework.*;
 
 /**
  * This class tests the {@link Object3DBuilder} class.
@@ -31,7 +29,7 @@ import ab.j3d.Vector3D;
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public final class TestObject3DBuilder
+public class TestObject3DBuilder
 	extends TestCase
 {
 	/**
@@ -47,21 +45,21 @@ public final class TestObject3DBuilder
 		System.out.println( CLASS_NAME + ".testGetVertexIndex" );
 
 		final Object3DBuilder builder = new Object3DBuilder();
-		assertEquals( "[pre] vertexCount" , 0 , builder.getVertexCount() );
+		assertEquals( "[pre] vertexCount", 0, builder.getVertexCount() );
 
-		assertEquals( "test1 - vertexIndex" , 0 , builder.getVertexIndex( new Vector3D( 0.0 , 0.0 , 0.0 ) ) );
-		assertEquals( "test1 - vertexCount" , 1 , builder.getVertexCount() );
+		assertEquals( "test1 - vertexIndex", 0, builder.getVertexIndex( new Vector3D( 0.0, 0.0, 0.0 ) ) );
+		assertEquals( "test1 - vertexCount", 1, builder.getVertexCount() );
 
-		assertEquals( "test2 - vertexIndex" , 0 , builder.getVertexIndex( new Vector3D( 0.0 , 0.0 , 0.0 ) ) );
-		assertEquals( "test2 - vertexCount" , 1 , builder.getVertexCount() );
+		assertEquals( "test2 - vertexIndex", 0, builder.getVertexIndex( new Vector3D( 0.0, 0.0, 0.0 ) ) );
+		assertEquals( "test2 - vertexCount", 1, builder.getVertexCount() );
 
-		assertEquals( "test3 - vertexIndex" , 1 , builder.getVertexIndex( new Vector3D( 1.0 , 0.0 , 0.0 ) ) );
-		assertEquals( "test3 - vertexCount" , 2 , builder.getVertexCount() );
+		assertEquals( "test3 - vertexIndex", 1, builder.getVertexIndex( new Vector3D( 1.0, 0.0, 0.0 ) ) );
+		assertEquals( "test3 - vertexCount", 2, builder.getVertexCount() );
 
-		assertEquals( "test4 - vertexIndex" , 2 , builder.getVertexIndex( new Vector3D( 0.0 , 1.0 , 0.0 ) ) );
-		assertEquals( "test4 - vertexCount" , 3 , builder.getVertexCount() );
+		assertEquals( "test4 - vertexIndex", 2, builder.getVertexIndex( new Vector3D( 0.0, 1.0, 0.0 ) ) );
+		assertEquals( "test4 - vertexCount", 3, builder.getVertexCount() );
 
-		assertEquals( "test5 - vertexIndex" , 3 , builder.getVertexIndex( new Vector3D( 0.0 , 0.0 , 1.0 ) ) );
-		assertEquals( "test5 - vertexCount" , 4 , builder.getVertexCount() );
+		assertEquals( "test5 - vertexIndex", 3, builder.getVertexIndex( new Vector3D( 0.0, 0.0, 1.0 ) ) );
+		assertEquals( "test5 - vertexCount", 4, builder.getVertexCount() );
 	}
 }

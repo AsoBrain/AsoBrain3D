@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +20,8 @@
  */
 package ab.j3d.control.controltest;
 
-import ab.j3d.control.Control;
-import ab.j3d.control.controltest.model.Floor;
-import ab.j3d.control.controltest.model.Model;
-import ab.j3d.control.controltest.model.TetraHedron;
-import ab.j3d.control.controltest.model.Wall;
+import ab.j3d.control.*;
+import ab.j3d.control.controltest.model.*;
 
 /**
  * The ControlTest test application demonstrates what is possible with the
@@ -36,7 +34,7 @@ import ab.j3d.control.controltest.model.Wall;
  * There is a 3d representation of this model ({@link Model3D}), with a number of
  * views on it ({@link View3D}). This can count as the view side.<p>
  * And lastly, there is the controller side, which are the {@link Control}s. At
- * this moment there is anly a control that manages selection of objects
+ * this moment there is only a control that manages selection of objects
  * ({@link SelectionControl}), but this can be extended in the future, to
  * showcase new features possible with the Control system.
  *
@@ -48,7 +46,7 @@ public class ControlTest
 	/**
 	 * The Model for this application.
 	 */
-	private Model _model;
+	private final Model _model;
 
 	/**
 	 * Construct new ControlTest.
@@ -57,11 +55,11 @@ public class ControlTest
 	{
 		final Model model = new Model();
 
-		model.addSceneElement( new Floor( 200.0 , 200.0 ) );
+		model.addSceneElement( new Floor( 200.0, 200.0 ) );
 
-		model.addSceneElement( new Wall( 20.0 , 120.0 ,  3.0 ) );
-		model.addSceneElement( new Wall(  0.0 ,  20.0 , 90.0 , 15.0 , 80.0 , 5.0 ) );
-		model.addSceneElement( new Wall( 20.0 , -50.0 ,  0.0 , 17.0 , 60.0 , 4.0 ) );
+		model.addSceneElement( new Wall( 20.0, 120.0,  3.0 ) );
+		model.addSceneElement( new Wall(  0.0,  20.0, 90.0, 15.0, 80.0, 5.0 ) );
+		model.addSceneElement( new Wall( 20.0, -50.0,  0.0, 17.0, 60.0, 4.0 ) );
 
 		model.addSceneElement( new TetraHedron(  20.0,  20.0, 0.0, 30.0 ) );
 		model.addSceneElement( new TetraHedron( -40.0, -40.0, 0.0, 15.0 ) );
@@ -81,6 +79,11 @@ public class ControlTest
 		return _model;
 	}
 
+	/**
+	 * Run application.
+	 *
+	 * @param   args    Command-line arguments.
+	 */
 	public static void main( final String[] args )
 	{
 		new ControlTest();

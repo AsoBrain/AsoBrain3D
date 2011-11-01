@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,12 +25,12 @@ import java.beans.*;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.controltest.model.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
 import ab.j3d.view.View3D;
-import ab.j3d.view.jogl.*;
 
 /**
  * The {@link Model3D} creates a 3d representation of a {@link Model}.
@@ -37,7 +38,7 @@ import ab.j3d.view.jogl.*;
  * @author  Mart Slot
  * @version $Revision$ $Date$
  */
-public final class Model3D
+public class Model3D
 {
 	/**
 	 * The material for the floor.
@@ -101,9 +102,9 @@ public final class Model3D
 			}
 		};
 
-		model.addPropertyChangeListener( SceneElement.ELEMENT_CHANGED , propertyListener );
-		model.addPropertyChangeListener( Model.SELECTION_CHANGED , propertyListener );
-		model.addPropertyChangeListener( Model.FACE_SELECTION_CHANGED   , propertyListener );
+		model.addPropertyChangeListener( SceneElement.ELEMENT_CHANGED, propertyListener );
+		model.addPropertyChangeListener( Model.SELECTION_CHANGED, propertyListener );
+		model.addPropertyChangeListener( Model.FACE_SELECTION_CHANGED, propertyListener );
 		_model = model;
 
 		final Scene scene = new Scene( Scene.FOOT );
@@ -151,13 +152,13 @@ public final class Model3D
 		{
 			final SceneElement oldSelection = (SceneElement)event.getOldValue();
 			final SceneElement newSelection = (SceneElement)event.getNewValue();
-			updateSelection( oldSelection , newSelection );
+			updateSelection( oldSelection, newSelection );
 		}
 		else if ( Model.FACE_SELECTION_CHANGED == property )
 		{
 			final PaintableTriangle oldFace = (PaintableTriangle)event.getOldValue();
 			final PaintableTriangle newFace = (PaintableTriangle)event.getNewValue();
-			updateFaceSelection( oldFace , newFace );
+			updateFaceSelection( oldFace, newFace );
 		}
 	}
 
@@ -216,10 +217,10 @@ public final class Model3D
 
 		if ( element == _model.getSelection() )
 		{
-			setMaterialOfAllFaces( element3D , SELECTION_MATERIAL );
+			setMaterialOfAllFaces( element3D, SELECTION_MATERIAL );
 		}
 
-		_scene.addContentNode( element , transform , element3D );
+		_scene.addContentNode( element, transform, element3D );
 		_elements.add( element );
 	}
 
@@ -236,10 +237,10 @@ public final class Model3D
 		final double halfY = floor.getYSize() / 2.0;
 
 		final Object3DBuilder builder = new Object3DBuilder();
-		builder.addQuad( Vector3D.INIT.set( -halfX , -halfY , 0.0 ) ,
-		                 Vector3D.INIT.set( -halfX ,  halfY , 0.0 ) ,
-		                 Vector3D.INIT.set(  halfX ,  halfY , 0.0 ) ,
-		                 Vector3D.INIT.set(  halfX , -halfY , 0.0 ) , FLOOR_MATERIAL , true );
+		builder.addQuad( new Vector3D( -halfX, -halfY, 0.0 ),
+		                 new Vector3D( -halfX,  halfY, 0.0 ),
+		                 new Vector3D(  halfX,  halfY, 0.0 ),
+		                 new Vector3D(  halfX, -halfY, 0.0 ), FLOOR_MATERIAL, true );
 		return builder.getObject3D();
 	}
 
@@ -257,7 +258,7 @@ public final class Model3D
 		final double depth  = wall.getYSize();
 
 		final Material material = WALL_MATERIAL;
-		return new Box3D( width , depth , height , new BoxUVMap( Scene.MM ) , material );
+		return new Box3D( width, depth, height, new BoxUVMap( Scene.MM ), material );
 	}
 
 	/**
@@ -282,16 +283,16 @@ public final class Model3D
 		final double depth1    = height / Math.tan( Math.toRadians( 51.0 ) );
 		final double depth2    = depth  - depth1;
 
-		final Vector3D v0 = Vector3D.INIT.set( -halfWidth , -depth2 ,    0.0 );
-		final Vector3D v1 = Vector3D.INIT.set(  halfWidth , -depth2 ,    0.0 );
-		final Vector3D v2 = Vector3D.INIT.set(        0.0 ,  depth1 ,    0.0 );
-		final Vector3D v3 = Vector3D.INIT.set(        0.0 ,     0.0 , height );
+		final Vector3D v0 = new Vector3D( -halfWidth, -depth2,    0.0 );
+		final Vector3D v1 = new Vector3D(  halfWidth, -depth2,    0.0 );
+		final Vector3D v2 = new Vector3D(        0.0,  depth1,    0.0 );
+		final Vector3D v3 = new Vector3D(        0.0,     0.0, height );
 
 		final Object3DBuilder builder = new Object3DBuilder();
-		/* Bottom */ builder.addTriangle( v2 , v0 , v1 , material , false );
-		/* Back   */ builder.addTriangle( v3 , v1 , v0 , material , false );
-		/* Left   */ builder.addTriangle( v3 , v0 , v2 , material , false );
-		/* Right  */ builder.addTriangle( v3 , v2 , v1 , material , false );
+		/* Bottom */ builder.addTriangle( v2, v0, v1, material, false );
+		/* Back   */ builder.addTriangle( v3, v1, v0, material, false );
+		/* Left   */ builder.addTriangle( v3, v0, v2, material, false );
+		/* Right  */ builder.addTriangle( v3, v2, v1, material, false );
 		return result;
 	}
 
@@ -305,7 +306,7 @@ public final class Model3D
 	 * @param   oldSelection   Previous selection (may be <code>null</code>).
 	 * @param   newSelection   New selection (may be <code>null</code>).
 	 */
-	private void updateSelection( final SceneElement oldSelection , final SceneElement newSelection )
+	private void updateSelection( final SceneElement oldSelection, final SceneElement newSelection )
 	{
 		final Scene scene = _scene;
 
@@ -329,7 +330,7 @@ public final class Model3D
 				material = HEDRON_MATERIAL;
 			}
 
-			setMaterialOfAllFaces( oldObject3D , material );
+			setMaterialOfAllFaces( oldObject3D, material );
 
 			final ContentNode contentNode = scene.getContentNode( oldSelection );
 			contentNode.fireContentUpdated();
@@ -340,7 +341,7 @@ public final class Model3D
 			final ContentNode newNode = scene.getContentNode( newSelection );
 			final Object3D newObject3D = ( newNode != null ) ? (Object3D)newNode.getNode3D() : null;
 
-			setMaterialOfAllFaces( newObject3D , SELECTION_MATERIAL );
+			setMaterialOfAllFaces( newObject3D, SELECTION_MATERIAL );
 			final ContentNode contentNode = scene.getContentNode( newSelection );
 			contentNode.fireContentUpdated();
 		}
@@ -355,7 +356,7 @@ public final class Model3D
 	 * @param   oldFace   Previous selection (may be <code>null</code>).
 	 * @param   newFace   New selection (may be <code>null</code>).
 	 */
-	private void updateFaceSelection( final PaintableTriangle oldFace , final PaintableTriangle newFace )
+	private void updateFaceSelection( final PaintableTriangle oldFace, final PaintableTriangle newFace )
 	{
 		final Scene scene = _scene;
 
@@ -366,7 +367,7 @@ public final class Model3D
 
 			final ContentNode hedronNode = scene.getContentNode( oldHedron );
 			final Object3D hedron3D = ( hedronNode != null ) ? (Object3D)hedronNode.getNode3D() : null;
-			setMaterialOfAllFaces( hedron3D , SELECTION_MATERIAL );
+			setMaterialOfAllFaces( hedron3D, SELECTION_MATERIAL );
 		}
 
 		TetraHedron newHedron = null;
@@ -406,7 +407,7 @@ public final class Model3D
 	 * @param   object      3D object whose face material to set.
 	 * @param   material    Material to set.
 	 */
-	private static void setMaterialOfAllFaces( final Object3D object , final Material material )
+	private static void setMaterialOfAllFaces( final Object3D object, final Material material )
 	{
 		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{

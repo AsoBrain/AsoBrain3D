@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2009-2009 Numdata BV
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@
  */
 package ab.j3d.model;
 
-import junit.framework.TestCase;
+import junit.framework.*;
 
 /**
  * Unit test for the {@link Light3D} class.
@@ -39,26 +39,26 @@ public class TestLight3D
 	{
 		final Light3D light3D = new Light3D();
 
-		light3D.setAttenuation( 0.0f , 0.0f , 1.0f );
-		assertEquals( "For inverse square attenuation, distance should be sqrt(2)" , (float)Math.sqrt( 2.0 ) , light3D.getHalfIntensityDistance() , 0.0f );
+		light3D.setAttenuation( 0.0f, 0.0f, 1.0f );
+		assertEquals( "For inverse square attenuation, distance should be sqrt(2)", (float)Math.sqrt( 2.0 ), light3D.getHalfIntensityDistance(), 0.0f );
 
-		light3D.setAttenuation( 0.0f , 1.0f , 0.0f );
-		assertEquals( "For inverse linear attenuation, distance should be 2" , 2.0f , light3D.getHalfIntensityDistance() , 0.0f );
+		light3D.setAttenuation( 0.0f, 1.0f, 0.0f );
+		assertEquals( "For inverse linear attenuation, distance should be 2", 2.0f, light3D.getHalfIntensityDistance(), 0.0f );
 
-		light3D.setAttenuation( 2.0f , 0.0f , 0.0f );
-		assertEquals( "For constant attenuation, the return value must be 0.0" , 0.0f , light3D.getHalfIntensityDistance() , 0.0f );
+		light3D.setAttenuation( 2.0f, 0.0f, 0.0f );
+		assertEquals( "For constant attenuation, the return value must be 0.0", 0.0f, light3D.getHalfIntensityDistance(), 0.0f );
 
-		light3D.setAttenuation( 1.0f , 0.0f , 1.0f );
-		assertEquals( "Attenuation should be 0.5 at distance 1." , 1.0f , light3D.getHalfIntensityDistance() , 0.0f );
+		light3D.setAttenuation( 1.0f, 0.0f, 1.0f );
+		assertEquals( "Attenuation should be 0.5 at distance 1.", 1.0f, light3D.getHalfIntensityDistance(), 0.0f );
 
-		light3D.setAttenuation( 1.0f , 1.0f , 0.0f );
-		assertEquals( "Attenuation should be 0.5 at distance 1." , 1.0f , light3D.getHalfIntensityDistance() , 0.0f );
+		light3D.setAttenuation( 1.0f, 1.0f, 0.0f );
+		assertEquals( "Attenuation should be 0.5 at distance 1.", 1.0f, light3D.getHalfIntensityDistance(), 0.0f );
 
-		light3D.setAttenuation( 1.0f , 0.0f , 2.0f );
-		assertEquals( "Attenuation should be 0.5 at distance sqrt(0.5)." , (float)Math.sqrt( 0.5 ) , light3D.getHalfIntensityDistance() , 0.0f );
+		light3D.setAttenuation( 1.0f, 0.0f, 2.0f );
+		assertEquals( "Attenuation should be 0.5 at distance sqrt(0.5).", (float)Math.sqrt( 0.5 ), light3D.getHalfIntensityDistance(), 0.0f );
 
-		light3D.setAttenuation( 1.0f , 2.0f , 0.0f );
-		assertEquals( "Attenuation should be 0.5 at distance 0.5." , 0.5f , light3D.getHalfIntensityDistance() , 0.0f );
+		light3D.setAttenuation( 1.0f, 2.0f, 0.0f );
+		assertEquals( "Attenuation should be 0.5 at distance 0.5.", 0.5f, light3D.getHalfIntensityDistance(), 0.0f );
 	}
 
 	/**
@@ -70,12 +70,12 @@ public class TestLight3D
 		final Light3D light3D = new Light3D();
 
 		light3D.setFallOff( 200000.0 );
-		assertEquals( "Half attenuation distance must match fall-off." , 200000.0f , light3D.getHalfIntensityDistance() , 1.0e-6f );
+		assertEquals( "Half attenuation distance must match fall-off.", 200000.0f, light3D.getHalfIntensityDistance(), 1.0e-6f );
 
 		light3D.setFallOff( 200.0 );
-		assertEquals( "Half attenuation distance must match fall-off." , 200.0f , light3D.getHalfIntensityDistance() , 1.0e-6f );
+		assertEquals( "Half attenuation distance must match fall-off.", 200.0f, light3D.getHalfIntensityDistance(), 1.0e-6f );
 
 		light3D.setFallOff( 0.0 );
-		assertEquals( "Half attenuation distance must match fall-off." , 0.0f , light3D.getHalfIntensityDistance() , 1.0e-6f );
+		assertEquals( "Half attenuation distance must match fall-off.", 0.0f, light3D.getHalfIntensityDistance(), 1.0e-6f );
 	}
 }

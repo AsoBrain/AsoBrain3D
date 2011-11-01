@@ -1,7 +1,7 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -53,7 +53,7 @@ public class PaintableTriangle
 	 * @param   face    The face number of this triangle.
 	 * @param   size    The size of the edges of this triangle.
 	 */
-	public PaintableTriangle( final TetraHedron hedron , final int face , final double size )
+	public PaintableTriangle( final TetraHedron hedron, final int face, final double size )
 	{
 		_hedron = hedron;
 		_face = face;
@@ -108,12 +108,12 @@ public class PaintableTriangle
 	 * @param   x   The x coordinate of where to paint.
 	 * @param   y   The y coordinate of where to paint.
 	 */
-	public void paintAt( final double x , final double y )
+	public void paintAt( final double x, final double y )
 	{
 		/*This method does not actually work, but that is not a priority at
 		  this moment, as long as the mechanism of clicking and painting works*/
 
-		System.out.println( "Paint at x: " + x + " , y: " + y );
+		System.out.println( "Paint at x: " + x + ", y: " + y );
 	}
 
 }

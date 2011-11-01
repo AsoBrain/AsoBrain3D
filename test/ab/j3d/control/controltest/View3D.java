@@ -94,7 +94,7 @@ public class View3D
 	 * @param   viewType    The type of view to create. Should be one of
 	 *                      {@link #TOP_VIEW}, {@link #FRONT_VIEW},
 	 *                      {@link #LEFT_VIEW} or {@link #PERSPECTIVE_VIEW}.
-	 * @param   perspective Wether this view should have perspective projection.
+	 * @param   perspective Whether this view should have perspective projection.
 	 */
 	public View3D( final Model3D model , final int viewType , final int perspective)
 	{
@@ -119,10 +119,10 @@ public class View3D
 	}
 
 	/**
-	 * Sets wether this view should have perspective projection
+	 * Sets whether this view should have perspective projection
 	 * (<code>true</code>) or parallel projection (<code>false</code>).
 	 *
-	 * @param   projection  Wether this view should have perspective projection.
+	 * @param   projection  Whether this view should have perspective projection.
 	 */
 	public void setProjection( final int projection )
 	{
@@ -157,19 +157,19 @@ public class View3D
 		switch( viewType ){
 
 			case TOP_VIEW :
-				from = Vector3D.INIT.set( 0.0 , 0.0 , 200.0 );
+				from = new Vector3D( 0.0 , 0.0 , 200.0 );
 				break;
 
 			case FRONT_VIEW :
-				from = Vector3D.INIT.set( 0.0 , -200.0 , 0.0 );
+				from = new Vector3D( 0.0 , -200.0 , 0.0 );
 				break;
 
 			case LEFT_VIEW :
-				from = Vector3D.INIT.set( -200.0 , 0.0 , 0.0 );
+				from = new Vector3D( -200.0 , 0.0 , 0.0 );
 				break;
 
 			case PERSPECTIVE_VIEW :
-				from = Vector3D.INIT.set( -100.0 , -100.0 , 100.0 );
+				from = new Vector3D( -100.0 , -100.0 , 100.0 );
 				break;
 
 			default :
@@ -186,7 +186,11 @@ public class View3D
 	 */
 	public void insertControl( final Control control )
 	{
-		_view.insertControl( control );
+		final ViewControlInput controlInput = _view.getControlInput();
+		if ( controlInput != null )
+		{
+			controlInput.insertControlInputListener( control );
+		}
 	}
 
 	/**
@@ -196,6 +200,10 @@ public class View3D
 	 */
 	public void removeControl( final Control control )
 	{
-		_view.removeControl( control );
+		final ViewControlInput controlInput = _view.getControlInput();
+		if ( controlInput != null )
+		{
+			controlInput.removeControlInputListener( control );
+		}
 	}
 }

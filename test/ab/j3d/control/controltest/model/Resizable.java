@@ -1,7 +1,7 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -80,6 +80,6 @@ public interface Resizable
 	 * @param   y   New y dimension of this element.
 	 * @param   z   New z dimension of this element.
 	 */
-	void setSize( final double x , final double y , final double z );
+	void setSize( final double x, final double y, final double z );
 
 }

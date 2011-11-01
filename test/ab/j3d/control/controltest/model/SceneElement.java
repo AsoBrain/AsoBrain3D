@@ -1,7 +1,7 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,10 +20,9 @@
  */
 package ab.j3d.control.controltest.model;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.beans.*;
 
-import ab.j3d.Matrix3D;
+import ab.j3d.*;
 
 /**
  * Each element in a {@link Model} has to be a subclass of this class, so that
@@ -75,9 +74,9 @@ public abstract class SceneElement
 	 * @param   p   property to listen for.
 	 * @param   l   {@link PropertyChangeListener} to add
 	 */
-	protected final void addPropertyChangeListener( final String p , final PropertyChangeListener l )
+	protected final void addPropertyChangeListener( final String p, final PropertyChangeListener l )
 	{
-		_pcs.addPropertyChangeListener( p , l );
+		_pcs.addPropertyChangeListener( p, l );
 	}
 
 	/**
@@ -86,9 +85,9 @@ public abstract class SceneElement
 	 * @param p The property the listener was listening to
 	 * @param l The Listener to remove.
 	 */
-	protected final void removePropertyChangeListener( final String p , final PropertyChangeListener l )
+	protected final void removePropertyChangeListener( final String p, final PropertyChangeListener l )
 	{
-		_pcs.removePropertyChangeListener( p , l );
+		_pcs.removePropertyChangeListener( p, l );
 	}
 
 	/**
@@ -102,6 +101,6 @@ public abstract class SceneElement
 	 */
 	protected final void elementChanged()
 	{
-		_pcs.firePropertyChange( ELEMENT_CHANGED , null , this );
+		_pcs.firePropertyChange( ELEMENT_CHANGED, null, this );
 	}
 }

@@ -1,7 +1,7 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@
  */
 package ab.j3d.control.controltest.model;
 
-import ab.j3d.Matrix3D;
+import ab.j3d.*;
 
 /**
  * This class models a wall. A wall is always a box shape. The size of this box
@@ -71,9 +71,9 @@ public class Wall
 	 * @param   width   width of the wall.
 	 * @param   depth   depth of the wall.
 	 */
-	public Wall( final double height , final double width , final double depth )
+	public Wall( final double height, final double width, final double depth )
 	{
-		this( 0.0 , 0.0 , 0.0 , height , width , depth );
+		this( 0.0, 0.0, 0.0, height, width, depth );
 	}
 
 	/**
@@ -86,7 +86,7 @@ public class Wall
 	 * @param   width       width of the wall.
 	 * @param   depth       depth of the wall.
 	 */
-	public Wall( final double x , final double y , final double rotation , final double height , final double width , final double depth )
+	public Wall( final double x, final double y, final double rotation, final double height, final double width, final double depth )
 	{
 		_x        = x;
 		_y        = y;
@@ -102,9 +102,10 @@ public class Wall
 	 *
 	 * @return  Transformation matrix of this element.
 	 */
+	@Override
 	public Matrix3D getTransform()
 	{
-		return Matrix3D.getTransform( 0.0 , 0.0 , _rotation , _x , _y , 0.0);
+		return Matrix3D.getTransform( 0.0, 0.0, _rotation, _x, _y, 0.0);
 	}
 
 	/**
@@ -155,7 +156,7 @@ public class Wall
 	 * @param   x   x coordinate of the new location
 	 * @param   y   y coordinate of the new location
 	 */
-	public void setLocation( final double x , final double y )
+	public void setLocation( final double x, final double y )
 	{
 		_x = x;
 		_y = y;
@@ -222,7 +223,7 @@ public class Wall
 	 */
 	public void setXSize( final double x )
 	{
-		setSize( x , _depth , _height );
+		setSize( x, _depth, _height );
 	}
 
 	/**
@@ -232,7 +233,7 @@ public class Wall
 	 */
 	public void setYSize( final double y )
 	{
-		setSize( _width , y , _height );
+		setSize( _width, y, _height );
 	}
 
 	/**
@@ -242,7 +243,7 @@ public class Wall
 	 */
 	public void setZSize( final double z )
 	{
-		setSize( _width , _depth , z );
+		setSize( _width, _depth, z );
 	}
 
 	/**
@@ -252,7 +253,7 @@ public class Wall
 	 * @param y new y dimension of this element.
 	 * @param z new z dimension of this element.
 	 */
-	public void setSize( final double x , final double y , final double z )
+	public void setSize( final double x, final double y, final double z )
 	{
 		boolean change = false;
 

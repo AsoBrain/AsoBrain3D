@@ -1,7 +1,7 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@
  */
 package ab.j3d.control.controltest.model;
 
-import ab.j3d.Matrix3D;
+import ab.j3d.*;
 
 /**
  * This class models a regular tetrahedron, a pyramid consisting of four
@@ -74,7 +74,7 @@ public class TetraHedron
 
 	/**
 	 * The faces of this tetrahedron. This is an array with all four faces. The
-	 * indices of the faces correspond to the static ints BOTTOM_FACE,
+	 * indices of the faces correspond to the static integers BOTTOM_FACE,
 	 * BACK_FACE, LEFT_FACE and RIGHT_FACE
 	 */
 	private final PaintableTriangle[] _faces;
@@ -88,7 +88,7 @@ public class TetraHedron
 	 * @param   size        Size of the tetrahedron. This will be the length of
 	 *                      the edges.
 	 */
-	public TetraHedron( final double x , final double y , final double rotation , final double size )
+	public TetraHedron( final double x, final double y, final double rotation, final double size )
 	{
 		_x        = x;
 		_y        = y;
@@ -98,7 +98,7 @@ public class TetraHedron
 		_faces = new PaintableTriangle[ 4 ];
 		for ( int i = 0 ; i < 4 ; i++ )
 		{
-			_faces[ i ] = new PaintableTriangle( this , i , size );
+			_faces[ i ] = new PaintableTriangle( this, i, size );
 		}
 	}
 
@@ -108,9 +108,10 @@ public class TetraHedron
 	 *
 	 * @return  Transformation matrix of this element.
 	 */
+	@Override
 	public Matrix3D getTransform()
 	{
-		return Matrix3D.getTransform( 0.0 , 0.0 , _rotation , _x , _y , 0.0 );
+		return Matrix3D.getTransform( 0.0, 0.0, _rotation, _x, _y, 0.0 );
 	}
 
 	/**
@@ -161,7 +162,7 @@ public class TetraHedron
 	 * @param   x   x coordinate of the new location
 	 * @param   y   y coordinate of the new location
 	 */
-	public void setLocation( final double x , final double y )
+	public void setLocation( final double x, final double y )
 	{
 		_x = x;
 		_y = y;

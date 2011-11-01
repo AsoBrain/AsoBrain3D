@@ -1,7 +1,7 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2005
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,12 +20,8 @@
  */
 package ab.j3d.control.controltest.model;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.beans.*;
+import java.util.*;
 
 /**
  * The Model contains a number of {@link SceneElement}s, which can be added and
@@ -148,7 +144,7 @@ public class Model
 		final SceneElement old = _selection;
 		_selection = element;
 
-		_pcs.firePropertyChange( SELECTION_CHANGED , old , element );
+		_pcs.firePropertyChange( SELECTION_CHANGED, old, element );
 	}
 
 	/**
@@ -182,7 +178,7 @@ public class Model
 		{
 			final PaintableTriangle old = _selectedFace;
 			_selectedFace = face;
-			_pcs.firePropertyChange( FACE_SELECTION_CHANGED , old , face );
+			_pcs.firePropertyChange( FACE_SELECTION_CHANGED, old, face );
 		}
 	}
 
@@ -198,8 +194,8 @@ public class Model
 	public void addSceneElement( final SceneElement element )
 	{
 		_scene.add( element );
-		element.addPropertyChangeListener( SceneElement.ELEMENT_CHANGED , this );
-		_pcs.firePropertyChange( MODEL_CHANGED , null , this );
+		element.addPropertyChangeListener( SceneElement.ELEMENT_CHANGED, this );
+		_pcs.firePropertyChange( MODEL_CHANGED, null, this );
 	}
 
 	/**
@@ -214,8 +210,8 @@ public class Model
 	public void removeSceneElement( final SceneElement element )
 	{
 		_scene.remove( element );
-		element.removePropertyChangeListener( SceneElement.ELEMENT_CHANGED , this );
-		_pcs.firePropertyChange( MODEL_CHANGED , null , this );
+		element.removePropertyChangeListener( SceneElement.ELEMENT_CHANGED, this );
+		_pcs.firePropertyChange( MODEL_CHANGED, null, this );
 	}
 
 	/**
@@ -230,7 +226,7 @@ public class Model
 	 */
 	public void addPropertyChangeListener( final String p, final PropertyChangeListener l )
 	{
-		_pcs.addPropertyChangeListener( p , l );
+		_pcs.addPropertyChangeListener( p, l );
 	}
 
 	/**
@@ -244,7 +240,7 @@ public class Model
 	 */
 	public void removePropertyChangeListener( final String p, final PropertyChangeListener l )
 	{
-		_pcs.removePropertyChangeListener( p , l );
+		_pcs.removePropertyChangeListener( p, l );
 	}
 
 	/**
@@ -264,7 +260,7 @@ public class Model
 
 		if ( propertyName.equals( SceneElement.ELEMENT_CHANGED ) )
 		{
-			_pcs.firePropertyChange( SceneElement.ELEMENT_CHANGED , null , evt.getNewValue() );
+			_pcs.firePropertyChange( SceneElement.ELEMENT_CHANGED, null, evt.getNewValue() );
 		}
 	}
 }
