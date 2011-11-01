@@ -18,64 +18,55 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.awt;
+package ab.j3d.awt.view;
 
-import java.awt.event.*;
 import java.util.*;
+import javax.swing.*;
 
 import ab.j3d.view.*;
-import com.numdata.oss.*;
-import com.numdata.oss.ui.*;
 
 /**
- * This action toggles the grid on/off.
+ * This check box toggles the perspective projection of a view on/off.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public class ToggleGridAction
-	extends ToggleAction
+public class PerspectiveCheckBox
+	extends JCheckBox
 {
-	/**
-	 * The {@link View3D} this action belongs to.
-	 */
-	private final View3D _view;
-
 	/**
 	 * Create action.
 	 *
 	 * @param   locale  Preferred locale for internationalization.
 	 * @param   view    View to create action for.
 	 */
-	public ToggleGridAction( final Locale locale, final View3D view )
+	public PerspectiveCheckBox( final Locale locale, final View3D view )
 	{
-		super( ResourceBundleTools.getBundle( ToggleGridAction.class, locale ), "toggleGrid" );
-		_view = view;
-	}
+		setOpaque( false );
 
-	@Override
-	public void actionPerformed( final ActionEvent e )
-	{
-		setValue( !getValue() );
-	}
+		final ResourceBundle bundle = ResourceBundle.getBundle( "LocalStrings", locale );
+		setText( bundle.getString( "togglePerspective" ) );
 
-	@Override
-	public boolean getValue()
-	{
-		final View3D view = _view;
-		final Grid grid = view.getGrid();
-		return grid.isEnabled();
-	}
-
-	@Override
-	public void setValue( final boolean value )
-	{
-		final View3D view = _view;
-		final Grid grid = view.getGrid();
-		if ( value != grid.isEnabled() )
+		setModel( new ToggleButtonModel()
 		{
-			grid.setEnabled( value );
-			view.update();
-		}
+			@Override
+			public boolean isSelected()
+			{
+				return ( view.getProjectionPolicy() == ProjectionPolicy.PERSPECTIVE );
+			}
+
+			@Override
+			public void setSelected( final boolean value )
+			{
+				super.setSelected( value );
+
+				if ( value != isSelected() )
+				{
+					view.setProjectionPolicy( value ? ProjectionPolicy.PERSPECTIVE : ProjectionPolicy.PARALLEL );
+				}
+			}
+		} );
+
+		setSelected( view.getProjectionPolicy() == ProjectionPolicy.PERSPECTIVE );
 	}
 }

@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2009-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,29 +18,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.awt;
+package ab.j3d.awt.view;
 
+import java.awt.*;
+import java.awt.event.*;
 import java.beans.*;
 import java.util.*;
+import javax.swing.*;
 
 import ab.j3d.view.*;
-import com.numdata.oss.*;
-import com.numdata.oss.ui.*;
 
 /**
- * This action switches the projection policy of a {@link View3D}.
+ * This combo box switches the projection policy of a {@link View3D}.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public class SwitchProjectionPolicyAction
-	extends EnumChoiceAction
+public class ProjectionPolicyComboBox
+	extends JComboBox
 {
-	/**
-	 * The {@link View3D} this action belongs to.
-	 */
-	private final View3D _view;
-
 	/**
 	 * Construct a new action to switch the projection policy of a view.
 	 *
@@ -48,10 +44,41 @@ public class SwitchProjectionPolicyAction
 	 * @param   view            The view this action belongs to.
 	 * @param   currentPolicy   Current projection policy of the view.
 	 */
-	public SwitchProjectionPolicyAction( final Locale locale, final View3D view, final ProjectionPolicy currentPolicy )
+	public ProjectionPolicyComboBox( final Locale locale, final View3D view, final ProjectionPolicy currentPolicy )
 	{
-		super( ResourceBundleTools.getBundle( ProjectionPolicy.class, locale ), ProjectionPolicy.class );
-		_view = view;
+		super( ProjectionPolicy.values() );
+		setSelectedItem( currentPolicy );
+		setMaximumSize( getPreferredSize() );
+
+		final ProjectionPolicy[] values = ProjectionPolicy.values();
+
+		final ResourceBundle bundle = ResourceBundle.getBundle( "LocalStrings", locale );
+
+		final Map<ProjectionPolicy,String> labels = new EnumMap<ProjectionPolicy, String>( ProjectionPolicy.class );
+		for ( final ProjectionPolicy value : values )
+		{
+			labels.put( value, bundle.getString( value.name() ) );
+		}
+
+		final ListCellRenderer originalRenderer = getRenderer();
+		setRenderer( new ListCellRenderer()
+		{
+			public Component getListCellRendererComponent( final JList list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus )
+			{
+				return originalRenderer.getListCellRendererComponent( list, labels.get( value ), index, isSelected, cellHasFocus );
+			}
+		} );
+
+		addItemListener( new ItemListener()
+		{
+			public void itemStateChanged( final ItemEvent e )
+			{
+				if ( e.getStateChange() == ItemEvent.SELECTED )
+				{
+					view.setProjectionPolicy( (ProjectionPolicy) e.getItem() );
+				}
+			}
+		} );
 
 		view.addPropertyChangeListener( new PropertyChangeListener()
 		{
@@ -59,16 +86,9 @@ public class SwitchProjectionPolicyAction
 			{
 				if ( View3D.PROJECTION_POLICY_PROPERTY.equals( e.getPropertyName() ) )
 				{
-					setSelectedValue( e.getNewValue() );
+					setSelectedItem( e.getNewValue() );
 				}
 			}
 		} );
-
-		setSelectedValue( currentPolicy );
-	}
-
-	public void run()
-	{
-		_view.setProjectionPolicy( (ProjectionPolicy)getSelectedValue() );
 	}
 }

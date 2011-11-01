@@ -18,67 +18,59 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.awt;
+package ab.j3d.awt.view;
 
-import java.awt.event.*;
 import java.util.*;
+import javax.swing.*;
 
 import ab.j3d.view.*;
-import com.numdata.oss.*;
-import com.numdata.oss.ui.*;
 
 /**
- * This action toggles perspective projection on/off.
+ * This check box toggles the grid of a view on/off.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public class TogglePerspectiveAction
-	extends ToggleAction
+public class GridCheckBox
+	extends JCheckBox
 {
-	/**
-	 * The {@link View3D} this action belongs to.
-	 */
-	private final View3D _view;
-
 	/**
 	 * Create action.
 	 *
 	 * @param   locale  Preferred locale for internationalization.
 	 * @param   view    View to create action for.
 	 */
-	public TogglePerspectiveAction( final Locale locale, final View3D view )
+	public GridCheckBox( final Locale locale, final View3D view )
 	{
-		super( ResourceBundleTools.getBundle( TogglePerspectiveAction.class, locale ), "togglePerspective" );
-		_view = view;
-	}
+		setOpaque( false );
 
-	@Override
-	public void actionPerformed( final ActionEvent e )
-	{
-		setValue( !getValue() );
-	}
+		final ResourceBundle bundle = ResourceBundle.getBundle( "LocalStrings", locale );
+		setText( bundle.getString( "toggleGrid" ) );
 
-	@Override
-	public boolean getValue()
-	{
-		final View3D view = _view;
-		return ( view.getProjectionPolicy() == ProjectionPolicy.PERSPECTIVE );
-	}
-
-	@Override
-	public void setValue( final boolean value )
-	{
-		final View3D view = _view;
-		switch ( view.getProjectionPolicy() )
+		setModel( new ToggleButtonModel()
 		{
-			case PARALLEL:
-				view.setProjectionPolicy( ProjectionPolicy.PERSPECTIVE );
-				break;
+			@Override
+			public boolean isSelected()
+			{
+				final Grid grid = view.getGrid();
+				return grid.isEnabled();
+			}
 
-			case PERSPECTIVE:
-				view.setProjectionPolicy( ProjectionPolicy.PARALLEL );
-				break;
-		}
+			@Override
+			public void setSelected( final boolean value )
+			{
+				super.setSelected( value );
+
+				final Grid grid = view.getGrid();
+				if ( value != grid.isEnabled() )
+				{
+					grid.setEnabled( value );
+					view.update();
+				}
+			}
+		} );
+
+		final Grid grid = view.getGrid();
+		setSelected( grid.isEnabled() );
 	}
 }

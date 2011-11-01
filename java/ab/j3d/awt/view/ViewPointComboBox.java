@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2009-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,14 +18,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.awt;
+package ab.j3d.awt.view;
 
+import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
+import java.util.List;
+import javax.swing.*;
 
 import ab.j3d.*;
 import ab.j3d.view.*;
-import com.numdata.oss.*;
-import com.numdata.oss.ui.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -34,8 +36,8 @@ import org.jetbrains.annotations.*;
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public class SelectViewPointAction
-	extends ChoiceAction
+public class ViewPointComboBox
+	extends JComboBox
 {
 	/**
 	 * View transform for front view.
@@ -109,11 +111,6 @@ public class SelectViewPointAction
 	protected final View3D _view;
 
 	/**
-	 * Avaiable view points to choose from.
-	 */
-	private final List<ViewPoint> _viewPoints;
-
-	/**
 	 * Currently selected view point.
 	 */
 	private ViewPoint _selectedViewPoint;
@@ -125,7 +122,7 @@ public class SelectViewPointAction
 	 * @param   view                The view this action belongs to.
 	 * @param   defaultViewPoint    Default view point.
 	 */
-	public SelectViewPointAction( final Locale locale, final View3D view, final ViewPoint defaultViewPoint )
+	public ViewPointComboBox( final Locale locale, final View3D view, final ViewPoint defaultViewPoint )
 	{
 		final List<ViewPoint> viewPoints = STANDARD_VIEW_POINTS;
 		if ( !viewPoints.contains( defaultViewPoint ) )
@@ -136,9 +133,61 @@ public class SelectViewPointAction
 		_locale = locale;
 		_view = view;
 		_selectedViewPoint = null;
-		_viewPoints = new ArrayList<ViewPoint>( viewPoints );
+
+		final ResourceBundle bundle = ResourceBundle.getBundle( "LocalStrings", locale );
+
+		final Map<ViewPoint,String> labels = new HashMap<ViewPoint, String>();
+		for ( final ViewPoint viewPoint : viewPoints )
+		{
+			String label = viewPoint.getName();
+			try
+			{
+				label = bundle.getString( label );
+			}
+			catch ( MissingResourceException e )
+			{
+				/* ignore */
+			}
+			labels.put( viewPoint, label );
+		}
 
 		setViewPoint( defaultViewPoint );
+		setSelectedItem( defaultViewPoint );
+
+
+		final JComboBox comboBox = new JComboBox( viewPoints.toArray() );
+		comboBox.setMaximumSize( comboBox.getPreferredSize() );
+
+		final ListCellRenderer originalRenderer = comboBox.getRenderer();
+		comboBox.setRenderer( new ListCellRenderer()
+		{
+			public Component getListCellRendererComponent( final JList list , final Object value , final int index , final boolean isSelected , final boolean cellHasFocus )
+			{
+				return originalRenderer.getListCellRendererComponent( list , labels.get( value ) , index , isSelected , cellHasFocus );
+			}
+		} );
+
+		comboBox.addItemListener( new ItemListener()
+		{
+			public void itemStateChanged( final ItemEvent e )
+			{
+				if ( e.getStateChange() == ItemEvent.SELECTED )
+				{
+					final ViewPoint viewPoint = (ViewPoint) e.getItem();
+					setViewPoint( viewPoint );
+				}
+			}
+		} );
+	}
+
+	/**
+	 * Get current view point.
+	 *
+	 * @return  Current view point.
+	 */
+	public ViewPoint getViewPoint()
+	{
+		return _selectedViewPoint;
 	}
 
 	/**
@@ -153,51 +202,11 @@ public class SelectViewPointAction
 		{
 			final View3D view = _view;
 			final Matrix3D oldScene2View = view.getScene2View();
-			final Matrix3D newOrientation = viewPoint._scene2view;
+			final Matrix3D newOrientation = viewPoint.getScene2view();
 			view.setScene2View( newOrientation.setTranslation( oldScene2View.getTranslation() ) );
 			view.zoomToFitScene();
 			_selectedViewPoint = viewPoint;
-			firePropertyChange( SELECTED_VALUE, oldViewPoint, viewPoint );
-		}
-	}
-
-	@Override
-	public Object getLabel( final Object value )
-	{
-		final Object result;
-
-		if ( value instanceof ViewPoint )
-		{
-			final ViewPoint viewPoint = (ViewPoint) value;
-			result = viewPoint.getDescription( _locale );
-		}
-		else
-		{
-			result = value;
-		}
-
-		return result;
-	}
-
-	@Override
-	public ViewPoint[] getValues()
-	{
-		final List<ViewPoint> viewPoints = _viewPoints;
-		return viewPoints.toArray( new ViewPoint[ viewPoints.size() ] );
-	}
-
-	@Override
-	public ViewPoint getSelectedValue()
-	{
-		return _selectedViewPoint;
-	}
-
-	@Override
-	public void setSelectedValue( final Object selectedValue )
-	{
-		if ( selectedValue instanceof  ViewPoint )
-		{
-			setViewPoint( (ViewPoint) selectedValue );
+			setSelectedItem( viewPoint );
 		}
 	}
 
@@ -211,12 +220,6 @@ public class SelectViewPointAction
 		 */
 		@NotNull
 		final String _name;
-
-		/**
-		 * Description of view point.
-		 */
-		@NotNull
-		final LocalizableString _description;
 
 		/**
 		 * Transform for view point.
@@ -239,7 +242,6 @@ public class SelectViewPointAction
 
 			_name = name;
 			_scene2view = scene2view;
-			_description = new ResourceBundleString( SelectViewPointAction.class, name );
 		}
 
 		/**
@@ -251,20 +253,6 @@ public class SelectViewPointAction
 		public String getName()
 		{
 			return _name;
-		}
-
-		/**
-		 * Get description of view point.
-		 *
-		 * @param   locale  Locale to get description for.
-		 *
-		 * @return  Description of view point.
-		 */
-		@NotNull
-		public String getDescription( final Locale locale )
-		{
-			final String result = _description.get( locale );
-			return ( result == null ) ? getName() : result;
 		}
 
 		/**
