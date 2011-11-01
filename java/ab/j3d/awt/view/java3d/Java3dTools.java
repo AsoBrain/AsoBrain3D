@@ -18,12 +18,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view.java3d;
+package ab.j3d.awt.view.java3d;
 
 import java.awt.*;
 import java.awt.color.*;
 import java.awt.image.*;
 import java.awt.image.Raster;
+import java.io.*;
 import java.util.*;
 import java.util.List;
 import javax.media.j3d.Appearance;
@@ -368,7 +369,16 @@ public final class Java3dTools
 				}
 				else
 				{
-					final Image image = colorMap.getImage( false );
+					Image image = null;
+					try
+					{
+						image = colorMap.loadImage();
+					}
+					catch ( IOException e )
+					{
+						e.printStackTrace();
+					}
+
 					if ( image != null )
 					{
 						result = loadTexture( image );

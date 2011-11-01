@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view.java3d;
+package ab.j3d.awt.view.java3d;
 
 import java.awt.*;
 import java.util.*;

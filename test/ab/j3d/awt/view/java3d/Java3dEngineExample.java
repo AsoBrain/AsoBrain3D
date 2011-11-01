@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2004-2009 Numdata BV
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,25 +18,28 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view.java2d;
+package ab.j3d.awt.view.java3d;
 
-import ab.j3d.view.RenderEngineExample;
+import java.awt.*;
+
+import ab.j3d.model.*;
+import ab.j3d.view.*;
 
 /**
- * Example program for the Java 2D render engine implementation.
+ * Example program for the Java 3D render engine implementation.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public final class Java2dEngineExample
+public class Java3dEngineExample
 	extends RenderEngineExample
 {
 	/**
 	 * Construct application.
 	 */
-	private Java2dEngineExample()
+	private Java3dEngineExample()
 	{
-		super( new Java2dEngine() );
+		super( new Java3dEngine( new Scene( Scene.MM ), Color.BLACK ) );
 	}
 
 	/**
@@ -46,7 +49,7 @@ public final class Java2dEngineExample
 	 */
 	public static void main( final String[] args )
 	{
-		new Java2dEngineExample();
+		new Java3dEngineExample();
 	}
 
 }

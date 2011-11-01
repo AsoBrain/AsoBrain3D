@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2007
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,24 +18,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view.java3d;
+package ab.j3d.awt.view.java3d;
 
-import java.awt.Color;
-import javax.media.j3d.Background;
-import javax.media.j3d.BoundingSphere;
-import javax.media.j3d.BranchGroup;
-import javax.media.j3d.Canvas3D;
-import javax.media.j3d.Group;
-import javax.media.j3d.Locale;
-import javax.media.j3d.PhysicalBody;
-import javax.media.j3d.PhysicalEnvironment;
-import javax.media.j3d.Transform3D;
-import javax.media.j3d.TransformGroup;
-import javax.media.j3d.View;
-import javax.media.j3d.ViewPlatform;
-import javax.media.j3d.VirtualUniverse;
-import javax.vecmath.Color3f;
-import javax.vecmath.Point3d;
+import java.awt.*;
+import javax.media.j3d.*;
+import javax.vecmath.*;
 
 /**
  * This class extends the <code>VirtualUniverse</code> class and adds extra
@@ -103,7 +91,7 @@ public class Java3dUniverse
 	 * @see     #createView
 	 * @see     #getContent
 	 */
-	public Java3dUniverse( final double unit , final Color background )
+	public Java3dUniverse( final double unit, final Color background )
 	{
 		_locale              = new Locale( this );
 		_physicalBody        = null;
@@ -117,7 +105,7 @@ public class Java3dUniverse
 	 * <p />
 	 * The <code>BranchGroup</code> in the content graph must be added to the
 	 * universe using <code>addBranchGroup<()/code> by the caller, since it is
-	 * not necessarily the same as the specifiec content graph (the latter may
+	 * not necessarily the same as the specified content graph (the latter may
 	 * be a descendant node).
 	 * <p />
 	 * The unit scale factor is stored as-is and is not used in any way by this
@@ -128,7 +116,7 @@ public class Java3dUniverse
 	 *
 	 * @see     #addBranchGroup
 	 */
-	public Java3dUniverse( final Group content , final double unit )
+	public Java3dUniverse( final Group content, final double unit )
 	{
 		_locale              = new Locale( this );
 		_physicalBody        = null;
@@ -224,7 +212,7 @@ public class Java3dUniverse
 	 * @see     #getPhysicalBody
 	 * @see     #getPhysicalEnvironment
 	 */
-	public View createView( final TransformGroup transformGroup , final Canvas3D canvas )
+	public View createView( final TransformGroup transformGroup, final Canvas3D canvas )
 	{
 		transformGroup.setCapability( TransformGroup.ALLOW_TRANSFORM_READ );
 		transformGroup.setCapability( TransformGroup.ALLOW_TRANSFORM_WRITE );
@@ -267,7 +255,7 @@ public class Java3dUniverse
 	 */
 	protected BranchGroup createContentScene( final Color backgroundColor )
 	{
-		final BoundingSphere bounds = new BoundingSphere( new Point3d( 0.0 , 0.0 , 0.0 ) , 100.0 );
+		final BoundingSphere bounds = new BoundingSphere( new Point3d( 0.0, 0.0, 0.0 ), 100.0 );
 
 		// create static scene
 		final BranchGroup scene = new BranchGroup();

@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view.java2d;
+package ab.j3d.awt.view.java2d;
 
 import java.awt.*;
 import java.util.*;
@@ -110,7 +110,7 @@ class Java2dViewComponent
 		final int componentHeight = getHeight();
 		final int imageHeight = componentHeight - insets.top - insets.bottom;
 
-		final BSPTree bspTree = scene.getBspTree();
+		final BSPTree bspTree = view.getBspTree();
 		final RenderedPolygon[] renderQueue = bspTree.getRenderQueue( viewPoint, projector, scene2view, viewStyle.isBackfaceCullingEnabled(), true );
 
 		if ( isOpaque() )

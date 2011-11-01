@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view.java2d;
+package ab.j3d.awt.view.java2d;
 
 import java.awt.*;
 
@@ -58,6 +58,20 @@ public class Java2dView
 	private double _backClipDistance;
 
 	/**
+	 * Binary Space Partitioning Tree ({@link BSPTree}) of the scene.
+	 * <p />
+	 * The tree is only calculated when the scene changes (indicated by
+	 * the {@link #_bspTreeDirty} field).
+	 */
+	private final BSPTree _bspTree;
+
+	/**
+	 * This internal flag is set to indicate that the scene is
+	 * changed, so the {@link BSPTree} needs to be re-calculated.
+	 */
+	private boolean _bspTreeDirty;
+
+	/**
 	 * Construct new view.
 	 *
 	 * @param   scene       Scene to view.
@@ -66,7 +80,7 @@ public class Java2dView
 	 *                      background color of the current look and feel is
 	 *                      used.
 	 */
-	public Java2dView( final Scene scene , final Color background )
+	public Java2dView( final Scene scene, final Color background )
 	{
 		super( scene );
 
@@ -87,8 +101,11 @@ public class Java2dView
 		_controlInput = new ViewControlInput( this );
 
 		final DefaultViewControl defaultViewControl = new DefaultViewControl();
-		appendControl( defaultViewControl );
+		addControlInputListener( defaultViewControl );
 		addOverlay( defaultViewControl );
+
+		_bspTree = new BSPTree();
+		_bspTreeDirty = true;
 
 		update();
 	}
@@ -133,9 +150,61 @@ public class Java2dView
 	}
 
 	@Override
+	public void contentNodeAdded( final SceneUpdateEvent event )
+	{
+		_bspTreeDirty = true;
+		super.contentNodeAdded( event );
+	}
+
+	@Override
+	public void contentNodeContentUpdated( final SceneUpdateEvent event )
+	{
+		_bspTreeDirty = true;
+		super.contentNodeContentUpdated( event );
+	}
+
+	@Override
+	public void contentNodePropertyChanged( final SceneUpdateEvent event )
+	{
+		_bspTreeDirty = true;
+		super.contentNodePropertyChanged( event );
+	}
+
+	@Override
+	public void contentNodeRemoved( final SceneUpdateEvent event )
+	{
+		_bspTreeDirty = true;
+		super.contentNodeRemoved( event );
+	}
+
+	@Override
 	public void update()
 	{
 		_viewComponent.repaint();
+	}
+
+	/**
+	 * Get binary Space Partitioning Tree ({@link BSPTree}) of the scene.
+	 * <p />
+	 * The tree is only calculated when the scene changes (indicated by
+	 * the {@link #_bspTreeDirty} field).
+	 *
+	 * @return  The Binary Space Partitioning Tree of the scene.
+	 */
+	public BSPTree getBspTree()
+	{
+		final BSPTree result = _bspTree;
+
+		if ( _bspTreeDirty )
+		{
+			result.reset();
+			result.addScene( getScene() );
+			result.build();
+
+			_bspTreeDirty = false;
+		}
+
+		return result;
 	}
 
 	/**
