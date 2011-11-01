@@ -72,41 +72,41 @@ public class TestMatrix3D
 		/*
 		 * Test if each component is correctly tested by equals()
 		 */
-		m = new Matrix3D( 9.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'xx'" , !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
+		m = new Matrix3D( 9.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'xx'", !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
 
-		m = new Matrix3D( 1.0 , 9.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'xy'" , !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
+		m = new Matrix3D( 1.0, 9.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'xy'", !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
 
-		m = new Matrix3D( 1.0 , 0.0 , 9.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'xz'" , !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
+		m = new Matrix3D( 1.0, 0.0, 9.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'xz'", !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
 
-		m = new Matrix3D( 1.0 , 0.0 , 0.0 , 9.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'xo'" , !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
+		m = new Matrix3D( 1.0, 0.0, 0.0, 9.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'xo'", !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
 
-		m = new Matrix3D( 1.0 , 0.0 , 0.0 , 0.0 , 9.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'yx'" , !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
+		m = new Matrix3D( 1.0, 0.0, 0.0, 0.0, 9.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'yx'", !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
 
-		m = new Matrix3D( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 9.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'yy'" , !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
+		m = new Matrix3D( 1.0, 0.0, 0.0, 0.0, 0.0, 9.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'yy'", !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
 
-		m = new Matrix3D( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 9.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'yz'" , !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
+		m = new Matrix3D( 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 9.0, 0.0, 0.0, 0.0, 1.0, 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'yz'", !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
 
-		m = new Matrix3D( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 9.0 , 0.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'yo'" , !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
+		m = new Matrix3D( 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 9.0, 0.0, 0.0, 1.0, 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'yo'", !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
 
-		m = new Matrix3D( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 9.0 , 0.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'zx'" , !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
+		m = new Matrix3D( 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 9.0, 0.0, 1.0, 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'zx'", !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
 
-		m = new Matrix3D( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 9.0 , 1.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'zy'" , !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
+		m = new Matrix3D( 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 9.0, 1.0, 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'zy'", !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
 
-		m = new Matrix3D( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 9.0 , 0.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'zz'" , !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
+		m = new Matrix3D( 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 9.0, 0.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'zz'", !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
 
-		m = new Matrix3D( 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 0.0 , 0.0 , 0.0 , 0.0 , 1.0 , 9.0 );
-		assertTrue( "Matrix3D.equals() did not correctly test 'zo'" , !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
+		m = new Matrix3D( 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 9.0 );
+		assertTrue( "Matrix3D.equals() did not correctly test 'zo'", !Matrix3D.IDENTITY.equals( m ) && !m.equals( Matrix3D.IDENTITY ) );
 	}
 
 	/**
@@ -130,7 +130,7 @@ public class TestMatrix3D
 			final Vector3D to;
 			final Object   out;
 
-			private Test( final Vector3D from , final Vector3D to , final Object out )
+			private Test( final Vector3D from, final Vector3D to, final Object out )
 			{
 				this.from = from;
 				this.to   = to;
@@ -144,72 +144,72 @@ public class TestMatrix3D
 
 		final Test[] extremeTests =
 		{
-			/* Test #1  */ new Test( null , null , NullPointerException.class ) ,
-			/* Test #2  */ new Test( null , Vector3D.ZERO, NullPointerException.class ) ,
-			/* Test #3  */ new Test( Vector3D.ZERO, null , NullPointerException.class ) ,
-			/* Test #4  */ new Test( Vector3D.ZERO, Vector3D.ZERO, IllegalArgumentException.class ) ,
+			/* Test #1  */ new Test( null, null, NullPointerException.class ),
+			/* Test #2  */ new Test( null, Vector3D.ZERO, NullPointerException.class ),
+			/* Test #3  */ new Test( Vector3D.ZERO, null, NullPointerException.class ),
+			/* Test #4  */ new Test( Vector3D.ZERO, Vector3D.ZERO, IllegalArgumentException.class ),
 		};
 
 		/*
 		 * Define tests for orthogonal views.
 		 */
 		final Matrix3D leftView = new Matrix3D(
-			 0.0 , -1.0 ,  0.0 , 0.0 ,
-			 0.0 ,  0.0 ,  1.0 , 0.0 ,
-			-1.0 ,  0.0 ,  0.0 , 0.0 );
+			 0.0, -1.0,  0.0, 0.0,
+			 0.0,  0.0,  1.0, 0.0,
+			-1.0,  0.0,  0.0, 0.0 );
 
 		final Matrix3D rightView = new Matrix3D(
-			 0.0 ,  1.0 ,  0.0 , 0.0 ,
-			 0.0 ,  0.0 ,  1.0 , 0.0 ,
-			 1.0 ,  0.0 ,  0.0 , 0.0 );
+			 0.0,  1.0,  0.0, 0.0,
+			 0.0,  0.0,  1.0, 0.0,
+			 1.0,  0.0,  0.0, 0.0 );
 
 		final Matrix3D frontView = new Matrix3D(
-			 1.0 ,  0.0 ,  0.0 , 0.0 ,
-			 0.0 ,  0.0 ,  1.0 , 0.0 ,
-			 0.0 , -1.0 ,  0.0 , 0.0 );
+			 1.0,  0.0,  0.0, 0.0,
+			 0.0,  0.0,  1.0, 0.0,
+			 0.0, -1.0,  0.0, 0.0 );
 
 		final Matrix3D rearView = new Matrix3D(
-			-1.0 ,  0.0 ,  0.0 , 0.0 ,
-			 0.0 ,  0.0 ,  1.0 , 0.0 ,
-			 0.0 ,  1.0 ,  0.0 , 0.0 );
+			-1.0,  0.0,  0.0, 0.0,
+			 0.0,  0.0,  1.0, 0.0,
+			 0.0,  1.0,  0.0, 0.0 );
 
 		final Matrix3D bottomView = new Matrix3D(
-			-1.0 ,  0.0 ,  0.0 , 0.0 ,
-			 0.0 ,  1.0 ,  0.0 , 0.0 ,
-			 0.0 ,  0.0 , -1.0 , 0.0 );
+			-1.0,  0.0,  0.0, 0.0,
+			 0.0,  1.0,  0.0, 0.0,
+			 0.0,  0.0, -1.0, 0.0 );
 
 		final Matrix3D topView = new Matrix3D(
-			 1.0 ,  0.0 ,  0.0 , 0.0 ,
-			 0.0 ,  1.0 ,  0.0 , 0.0 ,
-			 0.0 ,  0.0 ,  1.0 , 0.0 );
+			 1.0,  0.0,  0.0, 0.0,
+			 0.0,  1.0,  0.0, 0.0,
+			 0.0,  0.0,  1.0, 0.0 );
 
 		final Test[] orthogonalTests =
 		{
-			/* Test #5  */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_X_AXIS, leftView   ) ,
-			/* Test #6  */ new Test( Vector3D.ZERO, Vector3D.NEGATIVE_X_AXIS, rightView  ) ,
-			/* Test #7  */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Y_AXIS, frontView  ) ,
-			/* Test #8  */ new Test( Vector3D.ZERO, Vector3D.NEGATIVE_Y_AXIS, rearView   ) ,
-			/* Test #9  */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Z_AXIS, bottomView ) ,
-			/* Test #10 */ new Test( Vector3D.ZERO, Vector3D.NEGATIVE_Z_AXIS, topView    ) ,
+			/* Test #5  */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_X_AXIS, leftView   ),
+			/* Test #6  */ new Test( Vector3D.ZERO, Vector3D.NEGATIVE_X_AXIS, rightView  ),
+			/* Test #7  */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Y_AXIS, frontView  ),
+			/* Test #8  */ new Test( Vector3D.ZERO, Vector3D.NEGATIVE_Y_AXIS, rearView   ),
+			/* Test #9  */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Z_AXIS, bottomView ),
+			/* Test #10 */ new Test( Vector3D.ZERO, Vector3D.NEGATIVE_Z_AXIS, topView    ),
 
-			/* Test #11 */ new Test( Vector3D.NEGATIVE_X_AXIS, Vector3D.ZERO, leftView   .plus( 0.0 , 0.0 , -1.0 ) ) ,
-			/* Test #12 */ new Test( Vector3D.POSITIVE_X_AXIS, Vector3D.ZERO, rightView  .plus( 0.0 , 0.0 , -1.0 ) ) ,
-			/* Test #13 */ new Test( Vector3D.NEGATIVE_Y_AXIS, Vector3D.ZERO, frontView  .plus( 0.0 , 0.0 , -1.0 ) ) ,
-			/* Test #14 */ new Test( Vector3D.POSITIVE_Y_AXIS, Vector3D.ZERO, rearView   .plus( 0.0 , 0.0 , -1.0 ) ) ,
-			/* Test #15 */ new Test( Vector3D.NEGATIVE_Z_AXIS, Vector3D.ZERO, bottomView .plus( 0.0 , 0.0 , -1.0 ) ) ,
-			/* Test #16 */ new Test( Vector3D.POSITIVE_Z_AXIS, Vector3D.ZERO, topView    .plus( 0.0 , 0.0 , -1.0 ) ) ,
+			/* Test #11 */ new Test( Vector3D.NEGATIVE_X_AXIS, Vector3D.ZERO, leftView   .plus( 0.0, 0.0, -1.0 ) ),
+			/* Test #12 */ new Test( Vector3D.POSITIVE_X_AXIS, Vector3D.ZERO, rightView  .plus( 0.0, 0.0, -1.0 ) ),
+			/* Test #13 */ new Test( Vector3D.NEGATIVE_Y_AXIS, Vector3D.ZERO, frontView  .plus( 0.0, 0.0, -1.0 ) ),
+			/* Test #14 */ new Test( Vector3D.POSITIVE_Y_AXIS, Vector3D.ZERO, rearView   .plus( 0.0, 0.0, -1.0 ) ),
+			/* Test #15 */ new Test( Vector3D.NEGATIVE_Z_AXIS, Vector3D.ZERO, bottomView .plus( 0.0, 0.0, -1.0 ) ),
+			/* Test #16 */ new Test( Vector3D.POSITIVE_Z_AXIS, Vector3D.ZERO, topView    .plus( 0.0, 0.0, -1.0 ) ),
 		};
 
 		/*
 		 * Define tests for diagonal views.
 		 */
-		// final Vector3D X1Y0Z0 = v0.set(  1.0 , -1.0 , -1.0 );
-		// final Vector3D X0Y1Z0 = v0.set( -1.0 ,  1.0 , -1.0 );
-		// final Vector3D X1Y1Z0 = v0.set(  1.0 ,  1.0 , -1.0 );
-		// final Vector3D X0Y0Z1 = v0.set( -1.0 , -1.0 ,  1.0 );
-		// final Vector3D X1Y0Z1 = v0.set(  1.0 , -1.0 ,  1.0 );
-		// final Vector3D X0Y1Z1 = v0.set( -1.0 ,  1.0 ,  1.0 );
-		// final Vector3D X1Y1Z1 = v0.set(  1.0 ,  1.0 ,  1.0 );
+		// final Vector3D X1Y0Z0 = new Vector3D(  1.0, -1.0, -1.0 );
+		// final Vector3D X0Y1Z0 = new Vector3D( -1.0,  1.0, -1.0 );
+		// final Vector3D X1Y1Z0 = new Vector3D(  1.0,  1.0, -1.0 );
+		// final Vector3D X0Y0Z1 = new Vector3D( -1.0, -1.0,  1.0 );
+		// final Vector3D X1Y0Z1 = new Vector3D(  1.0, -1.0,  1.0 );
+		// final Vector3D X0Y1Z1 = new Vector3D( -1.0,  1.0,  1.0 );
+		// final Vector3D X1Y1Z1 = new Vector3D(  1.0,  1.0,  1.0 );
 
 		final double deg45  = Math.PI / 4.0;
 		final double deg90  = Math.PI / 2.0;
@@ -221,17 +221,17 @@ public class TestMatrix3D
 
 		final Test[] diagonalTests =
 		{
-			/* Test #17 */ new Test( Vector3D.ZERO.set(  0.0 , -1.0 , -1.0 ) , Vector3D.ZERO, Matrix3D.IDENTITY.rotateX( -deg135 )                      .plus( 0.0 , 0.0 , -sqrt2 ) ) ,
-			/* Test #18 */ new Test( Vector3D.ZERO.set( -1.0 ,  0.0 ,  1.0 ) , Vector3D.ZERO, Matrix3D.IDENTITY.rotateY(   deg45 ).rotateZ(      deg90 ).plus( 0.0 , 0.0 , -sqrt2 ) ) ,
-			/* Test #19 */ new Test( Vector3D.ZERO.set(  1.0 ,  0.0 ,  1.0 ) , Vector3D.ZERO, Matrix3D.IDENTITY.rotateY(  -deg45 ).rotateZ(     -deg90 ).plus( 0.0 , 0.0 , -sqrt2 ) ) ,
-			/* Test #20 */ new Test( Vector3D.POSITIVE_X_AXIS                , Vector3D.ZERO, Matrix3D.IDENTITY.rotateZ(  -deg90 ).rotateX(     -deg90 ).plus( 0.0 , 0.0 , -1.0   ) ) ,
-			/* Test #21 */ new Test( Vector3D.ZERO.set( -1.0 , -1.0 , -1.0 ) , Vector3D.ZERO, Matrix3D.IDENTITY.rotateZ(   deg45 ).rotateX(  -deg125_2 ).plus( 0.0 , 0.0 , -sqrt3 ) ) ,
+			/* Test #17 */ new Test( new Vector3D(  0.0, -1.0, -1.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateX( -deg135 )                      .plus( 0.0, 0.0, -sqrt2 ) ),
+			/* Test #18 */ new Test( new Vector3D( -1.0,  0.0,  1.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateY(   deg45 ).rotateZ(      deg90 ).plus( 0.0, 0.0, -sqrt2 ) ),
+			/* Test #19 */ new Test( new Vector3D(  1.0,  0.0,  1.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateY(  -deg45 ).rotateZ(     -deg90 ).plus( 0.0, 0.0, -sqrt2 ) ),
+			/* Test #20 */ new Test( new Vector3D(  1.0,  0.0,  0.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateZ(  -deg90 ).rotateX(     -deg90 ).plus( 0.0, 0.0, -1.0   ) ),
+			/* Test #21 */ new Test( new Vector3D( -1.0, -1.0, -1.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateZ(   deg45 ).rotateX(  -deg125_2 ).plus( 0.0, 0.0, -sqrt3 ) ),
 		};
 
 		/*
 		 * Execute tests.
 		 */
-		final Test[][] allTests = { extremeTests , orthogonalTests , diagonalTests };
+		final Test[][] allTests = { extremeTests, orthogonalTests, diagonalTests };
 		int testNr = 1;
 		for ( final Test[] tests : allTests )
 		{
@@ -296,7 +296,7 @@ public class TestMatrix3D
 			final double   thetaRad;
 			final Object   result;
 
-			private Test( final Vector3D pivot , final Vector3D direction , final double thetaRad , final Matrix3D result )
+			private Test( final Vector3D pivot, final Vector3D direction, final double thetaRad, final Matrix3D result )
 			{
 				this.pivot     = pivot;
 				this.direction = direction;
@@ -308,16 +308,15 @@ public class TestMatrix3D
 		/*
 		 * Define tests to execute.
 		 */
-		final Vector3D v0 = Vector3D.INIT;
 
 		final Test[] tests =
 		{
-			/* Test #1 */ new Test( v0 , v0.set( 1.0 , 0.0 , 0.0 ) , 0.0 , Matrix3D.IDENTITY ),
-			/* Test #2 */ new Test( v0 , v0.set( 1.0 , 0.0 , 0.0 ) , 1.0 , Matrix3D.IDENTITY.rotateX( 1.0 ) ),
-			/* Test #3 */ new Test( v0 , v0.set( 0.0 , 1.0 , 0.0 ) , 0.0 , Matrix3D.IDENTITY ),
-			/* Test #4 */ new Test( v0 , v0.set( 0.0 , 1.0 , 0.0 ) , 1.0 , Matrix3D.IDENTITY.rotateY( 1.0 ) ),
-			/* Test #5 */ new Test( v0 , v0.set( 0.0 , 0.0 , 1.0 ) , 0.0 , Matrix3D.IDENTITY ),
-			/* Test #6 */ new Test( v0 , v0.set( 0.0 , 0.0 , 1.0 ) , 1.0 , Matrix3D.IDENTITY.rotateZ( 1.0 ) ),
+			/* Test #1 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_X_AXIS, 0.0, Matrix3D.IDENTITY ),
+			/* Test #2 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_X_AXIS, 1.0, Matrix3D.IDENTITY.rotateX( 1.0 ) ),
+			/* Test #3 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Y_AXIS, 0.0, Matrix3D.IDENTITY ),
+			/* Test #4 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Y_AXIS, 1.0, Matrix3D.IDENTITY.rotateY( 1.0 ) ),
+			/* Test #5 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Z_AXIS, 0.0, Matrix3D.IDENTITY ),
+			/* Test #6 */ new Test( Vector3D.ZERO, Vector3D.POSITIVE_Z_AXIS, 1.0, Matrix3D.IDENTITY.rotateZ( 1.0 ) ),
 		};
 
 		/*
@@ -338,9 +337,9 @@ public class TestMatrix3D
 				}
 
 				final Matrix3D expected = (Matrix3D)test.result;
-				final Matrix3D actual = Matrix3D.getRotationTransform( test.pivot , test.direction , test.thetaRad );
+				final Matrix3D actual = Matrix3D.getRotationTransform( test.pivot, test.direction, test.thetaRad );
 
-				assertEquals( description + "\nExpected:" + expected.toFriendlyString() + "\nActual:" + actual.toFriendlyString() + '\n' , expected , actual );
+				assertEquals( description + "\nExpected:" + expected.toFriendlyString() + "\nActual:" + actual.toFriendlyString() + '\n', expected, actual );
 			}
 			catch ( Exception e )
 			{
@@ -383,18 +382,18 @@ public class TestMatrix3D
 
 			final String where = "Rotate X over " + angle + " degrees";
 
-			assertEquals( where + " - xx" ,  1.0 , matrix.xx , 0.0 );
-			assertEquals( where + " - xy" ,  0.0 , matrix.xy , 0.0 );
-			assertEquals( where + " - xz" ,  0.0 , matrix.xz , 0.0 );
-			assertEquals( where + " - xo" ,  0.0 , matrix.xo , 0.0 );
-			assertEquals( where + " - yx" ,  0.0 , matrix.yx , 0.0 );
-			assertEquals( where + " - yy" ,  cos , matrix.yy , 0.0 );
-			assertEquals( where + " - yz" , -sin , matrix.yz , 0.0 );
-			assertEquals( where + " - yo" ,  0.0 , matrix.yo , 0.0 );
-			assertEquals( where + " - zx" ,  0.0 , matrix.zx , 0.0 );
-			assertEquals( where + " - zy" ,  sin , matrix.zy , 0.0 );
-			assertEquals( where + " - zz" ,  cos , matrix.zz , 0.0 );
-			assertEquals( where + " - zo" ,  0.0 , matrix.zo , 0.0 );
+			assertEquals( where + " - xx",  1.0, matrix.xx, 0.0 );
+			assertEquals( where + " - xy",  0.0, matrix.xy, 0.0 );
+			assertEquals( where + " - xz",  0.0, matrix.xz, 0.0 );
+			assertEquals( where + " - xo",  0.0, matrix.xo, 0.0 );
+			assertEquals( where + " - yx",  0.0, matrix.yx, 0.0 );
+			assertEquals( where + " - yy",  cos, matrix.yy, 0.0 );
+			assertEquals( where + " - yz", -sin, matrix.yz, 0.0 );
+			assertEquals( where + " - yo",  0.0, matrix.yo, 0.0 );
+			assertEquals( where + " - zx",  0.0, matrix.zx, 0.0 );
+			assertEquals( where + " - zy",  sin, matrix.zy, 0.0 );
+			assertEquals( where + " - zz",  cos, matrix.zz, 0.0 );
+			assertEquals( where + " - zo",  0.0, matrix.zo, 0.0 );
 		}
 
 		/*
@@ -402,16 +401,16 @@ public class TestMatrix3D
 		 */
 		final double[][][] vectorTests =
 		{
-			{ { 90.0 } , { 1.0 , 0.0 , 0.0 } , {  1.0 ,  0.0 ,  0.0 } } ,
-			{ { 90.0 } , { 0.0 , 1.0 , 0.0 } , {  0.0 ,  0.0 ,  1.0 } } ,
-			{ { 90.0 } , { 0.0 , 0.0 , 1.0 } , {  0.0 , -1.0 ,  0.0 } } ,
+			{ { 90.0 }, { 1.0, 0.0, 0.0 }, {  1.0,  0.0,  0.0 } },
+			{ { 90.0 }, { 0.0, 1.0, 0.0 }, {  0.0,  0.0,  1.0 } },
+			{ { 90.0 }, { 0.0, 0.0, 1.0 }, {  0.0, -1.0,  0.0 } },
 		};
 
 		for ( final double[][] test : vectorTests )
 		{
 			final double deg = test[ 0 ][ 0 ];
-			final Vector3D vector = Vector3D.INIT.set( test[ 1 ][ 0 ], test[ 1 ][ 1 ], test[ 1 ][ 2 ] );
-			final Vector3D expected = Vector3D.INIT.set( test[ 2 ][ 0 ], test[ 2 ][ 1 ], test[ 2 ][ 2 ] );
+			final Vector3D vector = new Vector3D( test[ 1 ][ 0 ], test[ 1 ][ 1 ], test[ 1 ][ 2 ] );
+			final Vector3D expected = new Vector3D( test[ 2 ][ 0 ], test[ 2 ][ 1 ], test[ 2 ][ 2 ] );
 
 			final Matrix3D matrix = Matrix3D.IDENTITY.rotateX( Math.toRadians( deg ) );
 			final Vector3D actual = matrix.transform( vector );
@@ -448,18 +447,18 @@ public class TestMatrix3D
 
 			final String where = "Rotate Y over " + angle + " degrees";
 
-			assertEquals( where + " - xx" ,  cos , matrix.xx , 0.0 );
-			assertEquals( where + " - xy" ,  0.0 , matrix.xy , 0.0 );
-			assertEquals( where + " - xz" ,  sin , matrix.xz , 0.0 );
-			assertEquals( where + " - xo" ,  0.0 , matrix.xo , 0.0 );
-			assertEquals( where + " - yx" ,  0.0 , matrix.yx , 0.0 );
-			assertEquals( where + " - yy" ,  1.0 , matrix.yy , 0.0 );
-			assertEquals( where + " - yz" ,  0.0 , matrix.yz , 0.0 );
-			assertEquals( where + " - yo" ,  0.0 , matrix.yo , 0.0 );
-			assertEquals( where + " - zx" , -sin , matrix.zx , 0.0 );
-			assertEquals( where + " - zy" ,  0.0 , matrix.zy , 0.0 );
-			assertEquals( where + " - zz" ,  cos , matrix.zz , 0.0 );
-			assertEquals( where + " - zo" ,  0.0 , matrix.zo , 0.0 );
+			assertEquals( where + " - xx",  cos, matrix.xx, 0.0 );
+			assertEquals( where + " - xy",  0.0, matrix.xy, 0.0 );
+			assertEquals( where + " - xz",  sin, matrix.xz, 0.0 );
+			assertEquals( where + " - xo",  0.0, matrix.xo, 0.0 );
+			assertEquals( where + " - yx",  0.0, matrix.yx, 0.0 );
+			assertEquals( where + " - yy",  1.0, matrix.yy, 0.0 );
+			assertEquals( where + " - yz",  0.0, matrix.yz, 0.0 );
+			assertEquals( where + " - yo",  0.0, matrix.yo, 0.0 );
+			assertEquals( where + " - zx", -sin, matrix.zx, 0.0 );
+			assertEquals( where + " - zy",  0.0, matrix.zy, 0.0 );
+			assertEquals( where + " - zz",  cos, matrix.zz, 0.0 );
+			assertEquals( where + " - zo",  0.0, matrix.zo, 0.0 );
 		}
 
 		/*
@@ -467,16 +466,16 @@ public class TestMatrix3D
 		 */
 		final double[][][] vectorTests =
 		{
-			{ { 90.0 } , { 1.0 , 0.0 , 0.0 } , {  0.0 ,  0.0 , -1.0 } } ,
-			{ { 90.0 } , { 0.0 , 1.0 , 0.0 } , {  0.0 ,  1.0 ,  0.0 } } ,
-			{ { 90.0 } , { 0.0 , 0.0 , 1.0 } , {  1.0 ,  0.0 ,  0.0 } } ,
+			{ { 90.0 }, { 1.0, 0.0, 0.0 }, {  0.0,  0.0, -1.0 } },
+			{ { 90.0 }, { 0.0, 1.0, 0.0 }, {  0.0,  1.0,  0.0 } },
+			{ { 90.0 }, { 0.0, 0.0, 1.0 }, {  1.0,  0.0,  0.0 } },
 		};
 
 		for ( final double[][] test : vectorTests )
 		{
 			final double deg = test[ 0 ][ 0 ];
-			final Vector3D vector = Vector3D.INIT.set( test[ 1 ][ 0 ], test[ 1 ][ 1 ], test[ 1 ][ 2 ] );
-			final Vector3D expected = Vector3D.INIT.set( test[ 2 ][ 0 ], test[ 2 ][ 1 ], test[ 2 ][ 2 ] );
+			final Vector3D vector = new Vector3D( test[ 1 ][ 0 ], test[ 1 ][ 1 ], test[ 1 ][ 2 ] );
+			final Vector3D expected = new Vector3D( test[ 2 ][ 0 ], test[ 2 ][ 1 ], test[ 2 ][ 2 ] );
 
 			final Matrix3D matrix = Matrix3D.IDENTITY.rotateY( Math.toRadians( deg ) );
 			final Vector3D actual = matrix.transform( vector );
@@ -513,18 +512,18 @@ public class TestMatrix3D
 
 			final String where = "Rotate Z over " + angle + " degrees";
 
-			assertEquals( where + " - xx" ,  cos , matrix.xx , 0.0 );
-			assertEquals( where + " - xy" , -sin , matrix.xy , 0.0 );
-			assertEquals( where + " - xz" ,  0.0 , matrix.xz , 0.0 );
-			assertEquals( where + " - xo" ,  0.0 , matrix.xo , 0.0 );
-			assertEquals( where + " - yx" ,  sin , matrix.yx , 0.0 );
-			assertEquals( where + " - yy" ,  cos , matrix.yy , 0.0 );
-			assertEquals( where + " - yz" ,  0.0 , matrix.yz , 0.0 );
-			assertEquals( where + " - yo" ,  0.0 , matrix.yo , 0.0 );
-			assertEquals( where + " - zx" ,  0.0 , matrix.zx , 0.0 );
-			assertEquals( where + " - zy" ,  0.0 , matrix.zy , 0.0 );
-			assertEquals( where + " - zz" ,  1.0 , matrix.zz , 0.0 );
-			assertEquals( where + " - zo" ,  0.0 , matrix.zo , 0.0 );
+			assertEquals( where + " - xx",  cos, matrix.xx, 0.0 );
+			assertEquals( where + " - xy", -sin, matrix.xy, 0.0 );
+			assertEquals( where + " - xz",  0.0, matrix.xz, 0.0 );
+			assertEquals( where + " - xo",  0.0, matrix.xo, 0.0 );
+			assertEquals( where + " - yx",  sin, matrix.yx, 0.0 );
+			assertEquals( where + " - yy",  cos, matrix.yy, 0.0 );
+			assertEquals( where + " - yz",  0.0, matrix.yz, 0.0 );
+			assertEquals( where + " - yo",  0.0, matrix.yo, 0.0 );
+			assertEquals( where + " - zx",  0.0, matrix.zx, 0.0 );
+			assertEquals( where + " - zy",  0.0, matrix.zy, 0.0 );
+			assertEquals( where + " - zz",  1.0, matrix.zz, 0.0 );
+			assertEquals( where + " - zo",  0.0, matrix.zo, 0.0 );
 		}
 
 		/*
@@ -532,16 +531,16 @@ public class TestMatrix3D
 		 */
 		final double[][][] vectorTests =
 		{
-			{ { 90.0 } , { 1.0 , 0.0 , 0.0 } , {  0.0 ,  1.0 ,  0.0 } } ,
-			{ { 90.0 } , { 0.0 , 1.0 , 0.0 } , { -1.0 ,  0.0 ,  0.0 } } ,
-			{ { 90.0 } , { 0.0 , 0.0 , 1.0 } , {  0.0 ,  0.0 ,  1.0 } } ,
+			{ { 90.0 }, { 1.0, 0.0, 0.0 }, {  0.0,  1.0,  0.0 } },
+			{ { 90.0 }, { 0.0, 1.0, 0.0 }, { -1.0,  0.0,  0.0 } },
+			{ { 90.0 }, { 0.0, 0.0, 1.0 }, {  0.0,  0.0,  1.0 } },
 		};
 
 		for ( final double[][] test : vectorTests )
 		{
 			final double deg = test[ 0 ][ 0 ];
-			final Vector3D vector = Vector3D.INIT.set( test[ 1 ][ 0 ], test[ 1 ][ 1 ], test[ 1 ][ 2 ] );
-			final Vector3D expected = Vector3D.INIT.set( test[ 2 ][ 0 ], test[ 2 ][ 1 ], test[ 2 ][ 2 ] );
+			final Vector3D vector = new Vector3D( test[ 1 ][ 0 ], test[ 1 ][ 1 ], test[ 1 ][ 2 ] );
+			final Vector3D expected = new Vector3D( test[ 2 ][ 0 ], test[ 2 ][ 1 ], test[ 2 ][ 2 ] );
 
 			final Matrix3D matrix = Matrix3D.IDENTITY.rotateZ( Math.toRadians( deg ) );
 			final Vector3D actual = matrix.transform( vector );
