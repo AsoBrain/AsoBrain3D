@@ -21,8 +21,10 @@
 package ab.j3d.pov;
 
 import java.io.*;
+import java.net.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 
 /**
  * Pov Texture / material definition.
@@ -101,14 +103,9 @@ public class PovTexture
 	private PovVector _rgb;
 
 	/**
-	 * In case of image map, the name of the image file.
+	 * In case of image map, URL to the image file.
 	 */
-	private String _imageMap;
-
-	/**
-	 * Type of image map (e.g. 'jpeg').
-	 */
-	private String _imageMapType;
+	private URL _image;
 
 	/**
 	 * Ambient reflectivity factor.
@@ -261,23 +258,22 @@ public class PovTexture
 	 */
 	private PovTexture()
 	{
-		_name          = null;
-		_free          = null;
-		_declared      = false;
-		_rgb           = null;
-		_imageMap      = null;
-		_imageMapType  = null;
-		_phong         = 0.0;
-		_phongSize     = 0.0;
-		_ambient       = null;
-		_diffuse       = 0.0;
-		_specular      = 0.0;
+		_name = null;
+		_free = null;
+		_declared = false;
+		_rgb = null;
+		_image = null;
+		_phong = 0.0;
+		_phongSize = 0.0;
+		_ambient = null;
+		_diffuse = 0.0;
+		_specular = 0.0;
 		_reflectionMin = null;
 		_reflectionMax = null;
-		_filter        = 0.0;
-		_transmit      = 0.0;
-		_scale         = null;
-		_metallic      = false;
+		_filter = 0.0;
+		_transmit = 0.0;
+		_scale = null;
+		_metallic = false;
 	}
 
 	/**
@@ -311,16 +307,14 @@ public class PovTexture
 	/**
 	 * Creates a texture map using the specified map.
 	 *
-	 * @param   name                Name of the texture.
-	 * @param   textureDirectory    Directory containing POV-textures.
-	 * @param   imageMap                 Filename of map to use.
+	 * @param   name    Name of the texture.
+	 * @param   image   URL to image map to use.
 	 */
-	public PovTexture( final String name, final String textureDirectory, final String imageMap )
+	public PovTexture( final String name, final URL image )
 	{
 		this();
 		_name = name;
-		_imageMap = ( ( imageMap != null ) && ( textureDirectory != null ) ) ? textureDirectory + imageMap : imageMap;
-		_imageMapType  = "jpeg";
+		_image = image;
 	}
 
 	/**
@@ -340,83 +334,49 @@ public class PovTexture
 	}
 
 	/**
-	 * Create a new {@link PovTexture} based on the given {@link Material}
-	 * object.
+	 * Create texture from {@link Appearance} object.
 	 *
-	 * @param   textureDirectory    Directory containing POV-textures.
-	 * @param   material            {@link Material} object to be used to
-	 *                              construct the {@link PovTexture}.
+	 * @param   appearance  {@link Appearance} to construct texture from.
 	 */
-	public PovTexture( final String textureDirectory, final Material material )
+	public PovTexture( final Material appearance )
 	{
 		this();
-		_name = getNameForMaterial( material );
-		_rgb = new PovVector( Math.max( (double)material.diffuseColorRed  , 0.001 ),
-		                      Math.max( (double)material.diffuseColorGreen, 0.001 ),
-		                      Math.max( (double)material.diffuseColorBlue , 0.001 ) );
+		_name = "APPEARANCE_" + Integer.toHexString( System.identityHashCode( appearance ) );
 
-		if ( ( material.colorMap != null ) && !material.colorMap.isEmpty() )
+		final float diffuseRed = Math.max( appearance.getDiffuseColorRed(), 0.001f );
+		final float diffuseGreen = Math.max( appearance.getDiffuseColorGreen(), 0.001f );
+		final float diffuseBlue = Math.max( appearance.getDiffuseColorBlue(), 0.001f );
+
+		_rgb = new PovVector( diffuseRed, diffuseGreen, diffuseBlue );
+
+		final TextureMap colorMap = appearance.getColorMap();
+		if ( colorMap != null )
 		{
-			_imageMap = ( textureDirectory != null ) ? textureDirectory + '/' + material.colorMap : material.colorMap;
-			_imageMapType = "jpeg";
+			_image = colorMap.getImageUrl();
 		}
 
-		final double ambientRed   = (double)material.ambientColorRed   / Math.max( (double)material.diffuseColorRed  , 0.001 );
-		final double ambientGreen = (double)material.ambientColorGreen / Math.max( (double)material.diffuseColorGreen, 0.001 );
-		final double ambientBlue  = (double)material.ambientColorBlue  / Math.max( (double)material.diffuseColorBlue , 0.001 );
+		final float ambientRed   = appearance.getAmbientColorRed()   / diffuseRed;
+		final float ambientGreen = appearance.getAmbientColorGreen() / diffuseGreen;
+		final float ambientBlue  = appearance.getAmbientColorBlue()  / diffuseBlue;
 		setAmbient( new PovVector( ambientRed, ambientGreen, ambientBlue ) );
 
 		setDiffuse( 1.0 );
-		setTransmit( 1.0 - (double)material.diffuseColorAlpha );
-		setPhong( (double)material.getSpecularReflectivity() );
-		setPhongSize( 0.25 * (double)material.shininess );
+		setTransmit( (double)( 1.0f - appearance.getDiffuseColorAlpha() ) );
+		setPhong( (double)appearance.getSpecularReflectivity() );
+		setPhongSize( 0.25 * (double)appearance.getShininess() );
 
-		if ( ( material.reflectionMin > 0.0f ) || ( material.reflectionMax > 0.0f ) )
+		final ReflectionMap reflectionMap = appearance.getReflectionMap();
+		if ( reflectionMap != null )
 		{
-			final PovVector reflectionMin = new PovVector(
-					material.reflectionMin * material.reflectionRed,
-					material.reflectionMin * material.reflectionGreen,
-					material.reflectionMin * material.reflectionBlue );
-
-			final PovVector reflectionMax = new PovVector(
-					material.reflectionMax * material.reflectionRed,
-					material.reflectionMax * material.reflectionGreen,
-					material.reflectionMax * material.reflectionBlue );
-
-			setReflection( reflectionMin, reflectionMax );
+			final float min = reflectionMap.getReflectivityMin();
+			final float max = reflectionMap.getReflectivityMax();
+			if ( ( min > 0.0f ) || ( max > 0.0f ) )
+			{
+				final PovVector reflectionMin = new PovVector( min * reflectionMap.getIntensityRed(), min * reflectionMap.getIntensityGreen(), min * reflectionMap.getIntensityBlue() );
+				final PovVector reflectionMax = new PovVector( max * reflectionMap.getIntensityRed(), max * reflectionMap.getIntensityGreen(), max * reflectionMap.getIntensityBlue() );
+				setReflection( reflectionMin, reflectionMax );
+			}
 		}
-	}
-
-	/**
-	 * Get name to give to a texture for the specified material.
-	 *
-	 * @param   material    Material to get name for.
-	 *
-	 * @return  Name for material.
-	 */
-	public static String getNameForMaterial( final Material material )
-	{
-		final String result;
-
-		if ( ( material.code != null ) && !material.code.isEmpty() )
-		{
-			result = material.code.replaceAll( "['\"`+\\.,;:/|\\\\$%&?!]", "_" );
-		}
-		else if ( ( material.colorMap != null ) && !material.colorMap.isEmpty() )
-		{
-			result = material.colorMap.replaceAll( "['\"`+\\.,;:/|\\\\$%&?!]", "_" );
-		}
-		else
-		{
-			final int argb  = material.getARGB();
-			final int red   = ( ( argb >> 16 ) & 0xFF );
-			final int green = ( ( argb >>  8 ) & 0xFF );
-			final int blue  = ( argb & 0xFF );
-
-			result = "RGB_" + red + '_' + green + '_' + blue;
-		}
-
-		return result;
 	}
 
 	/**
@@ -780,13 +740,38 @@ public class PovTexture
 	}
 
 	/**
+	 * Get file extension of image.
+	 *
+	 * @return  File extension of image;
+	 *          <code>null</code> if image is undefined or has no extension.
+	 */
+	private String getImageType()
+	{
+		String result = null;
+
+		final URL image = _image;
+		if ( image != null )
+		{
+			final String path = image.getPath();
+
+			final int dot = path.lastIndexOf( '.', path.lastIndexOf( '/' ) + 1 );
+			if ( dot >= 0 )
+			{
+				result = path.substring( dot + 1 );
+			}
+		}
+
+		return result;
+	}
+
+	/**
 	 * Checks if this texture is a texture map.
 	 *
 	 * @return  true if this is a texturemap.
 	 */
 	public final boolean hasImageMap()
 	{
-		return ( _imageMap != null );
+		return ( _image != null );
 	}
 
 	/**
@@ -931,16 +916,20 @@ public class PovTexture
 		out.indentIn();
 
 		final PovVector rgb = _rgb;
-		if ( hasImageMap() )
+
+		final URL image = _image;
+		if ( image != null )
 		{
-			final String imageMap     = _imageMap;
-			final String imageMapType = _imageMapType;
-			//String imageMapType = map.substring( map.lastIndexOf( (int)'.' ) + 1 );
+			final String imageType = getImageType();
 
 			out.write( "image_map  { " );
-			out.write( imageMapType );
-			out.write( " \"" );
-			out.write( imageMap );
+			if ( imageType != null )
+			{
+				out.write( imageType );
+				out.write( ' ' );
+			}
+			out.write( '"' );
+			out.write( image.toExternalForm() );
 			out.write( "\" }" );
 			out.newLine();
 		}
@@ -1220,16 +1209,19 @@ public class PovTexture
 		out.writeln( "{" );
 		out.indentIn();
 
-		final String imageMap = _imageMap;
-		if ( imageMap != null )
+		final URL image = _image;
+		if ( image != null )
 		{
-			final String imageMapType = _imageMapType;
-			//String imageMapType = map.substring( map.lastIndexOf( (int)'.' ) + 1 );
+			final String imageType = getImageType();
 
 			out.write( "image_map  { " );
-			out.write( imageMapType );
-			out.write( " \"" );
-			out.write( imageMap );
+			if ( imageType != null )
+			{
+				out.write( imageType );
+				out.write( ' ' );
+			}
+			out.write( '"' );
+			out.write( image.toExternalForm() );
 			out.write( "\" }" );
 			out.newLine();
 		}
