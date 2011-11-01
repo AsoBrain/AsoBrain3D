@@ -32,13 +32,13 @@ import java.util.regex.*;
 import javax.swing.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.view.*;
+import ab.j3d.awt.view.java2d.*;
 import ab.j3d.control.*;
 import ab.j3d.loader.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import ab.j3d.view.java2d.*;
 import ab.j3d.view.jogl.*;
-import com.numdata.oss.*;
 
 /**
  * <p>Simple 3D model viewer for use on the web. Currently only supports zipped
@@ -54,7 +54,7 @@ import com.numdata.oss.*;
  * <tr><td>background</td><td>Background color (#rrggbb) or gradient (#rrggbb #rrggbb).</td></tr>
  * </table>
  *
- * @author G. Meinders
+ * @author  G. Meinders
  * @version $Revision$ $Date$
  */
 public class ViewerApplet
@@ -93,7 +93,8 @@ public class ViewerApplet
 	@Override
 	public void init()
 	{
-		final ResourceBundle bundle = ResourceBundleTools.getBundle( ViewerApplet.class, getLocale() );
+		final Locale locale = getLocale();
+		final ResourceBundle bundle = ResourceBundle.getBundle( "LocalStrings", locale );
 
 		try
 		{
@@ -145,7 +146,16 @@ public class ViewerApplet
 			}
 
 			final StatusOverlay statusOverlay = new StatusOverlay();
-			statusOverlay.setStatus( ResourceBundleTools.getString( bundle, "loadingModel", "Loading model..." ) );
+			String statusText = "Loading model...";
+			try
+			{
+				statusText = bundle.getString( "loadingModel" );
+			}
+			catch ( MissingResourceException e )
+			{
+				/* ignored, will return default value */
+			}
+			statusOverlay.setStatus( statusText );
 			view.addOverlay( statusOverlay );
 			_statusOverlay = statusOverlay;
 
@@ -155,7 +165,7 @@ public class ViewerApplet
 			{
 				final JPanel panel = new JPanel( new BorderLayout() );
 				panel.add( view.getComponent() );
-				panel.add( view.createToolBar( getLocale() ), BorderLayout.PAGE_END );
+				panel.add( View3DPanel.createToolBar( view, locale ), BorderLayout.PAGE_END );
 				setContentPane( panel );
 			}
 			else
@@ -211,7 +221,7 @@ public class ViewerApplet
 						final MultiResourceLoader resourceLoader = new MultiResourceLoader();
 
 						final URL source = new URL( getParameter( "source" ) );
-						resourceLoader.mount( new ZipResourceLoader( source.openStream() ) );
+						resourceLoader.mount( new ZipResourceLoader( source ) );
 
 						if ( getParameter( "textures" ) != null )
 						{
