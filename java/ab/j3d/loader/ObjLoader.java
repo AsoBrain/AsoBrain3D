@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -124,7 +124,7 @@ public class ObjLoader
 	/**
 	 * Transformation applied to all geometry.
 	 */
-	private Matrix3D _transform;
+	private final Matrix3D _transform;
 
 	/**
 	 * Load the specified OBJ file.
@@ -156,7 +156,7 @@ public class ObjLoader
 	 *
 	 * @return  Object name defined in OBJ file.
 	 *
-	 * @throws  IOException if an error occured while loading the OBJ file.
+	 * @throws  IOException if an error occurred while loading the OBJ file.
 	 */
 	public static String load( @NotNull final Abstract3DObjectBuilder builder, @NotNull final Matrix3D transform, @NotNull final ResourceLoader loader, @NotNull final String objFileName )
 		throws IOException
@@ -219,7 +219,7 @@ public class ObjLoader
 	public String load( @NotNull final Abstract3DObjectBuilder builder, @NotNull final ResourceLoader loader, @NotNull final String objFileName )
 		throws IOException
 	{
-		InputStream inputStream = loader.getResource( objFileName );
+		InputStream inputStream = loader.getResourceAsStream( objFileName );
 		if ( inputStream == null )
 		{
 			throw new FileNotFoundException( objFileName );
@@ -232,7 +232,7 @@ public class ObjLoader
 				inputStream = new GZIPInputStream( inputStream );
 			}
 
-			return load( builder, loader, new  BufferedReader( new InputStreamReader( inputStream ) ) );
+			return load( builder, loader, new BufferedReader( new InputStreamReader( inputStream ) ) );
 		}
 		finally
 		{
@@ -789,7 +789,7 @@ public class ObjLoader
 	{
 		String line;
 		ResourceLoaderMaterial tempMaterial = null;
-		final BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( loader.getResource( materialName ) ) );
+		final BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( loader.getResourceAsStream( materialName ) ) );
 		while ( ( line = readLine( bufferedReader ) ) != null )
 		{
 			if ( line.length() > 0 )
