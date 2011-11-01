@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -51,9 +52,6 @@ import com.sun.opengl.util.texture.TextureIO;
 import ab.j3d.MapTools;
 import ab.j3d.Material;
 
-import com.numdata.oss.MathTools;
-import com.numdata.oss.TextTools;
-import com.numdata.oss.ui.ImageTools;
 
 /**
  * Provides loading and caching of textures for JOGL-based rendering.

@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -57,7 +58,6 @@ import ab.j3d.view.RenderStyle;
 import ab.j3d.view.RenderStyleFilter;
 import ab.j3d.view.Renderer;
 
-import com.numdata.oss.TextTools;
 
 /**
  * Implements {@link Renderer} for JOGL.
