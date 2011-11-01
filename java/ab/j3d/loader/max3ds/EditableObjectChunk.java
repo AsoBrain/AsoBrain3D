@@ -20,7 +20,6 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.awt.*;
 import java.io.*;
 import java.util.*;
 
@@ -51,9 +50,9 @@ class EditableObjectChunk
 
 	Vector3f _oConstPlanes;
 
-	Color _ambientColor;
+	Color4 _ambientColor;
 
-	Color _backgroundColor;
+	Color4 _backgroundColor;
 
 	String _backgroundBigMap;
 
