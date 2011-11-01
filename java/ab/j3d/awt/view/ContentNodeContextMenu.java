@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view.control;
+package ab.j3d.awt.view;
 
 import javax.swing.*;
 
@@ -57,7 +58,7 @@ public class ContentNodeContextMenu
 	 * @param   contentNode         {@link ContentNode} for which this popup is created.
 	 * @param   face3DIntersection  {@link Face3DIntersection} between node and pointer.
 	 */
-	public ContentNodeContextMenu( final String label , final ControlInputEvent controlInputEvent , final ContentNode contentNode, final Face3DIntersection face3DIntersection )
+	public ContentNodeContextMenu( final String label, final ControlInputEvent controlInputEvent, final ContentNode contentNode, final Face3DIntersection face3DIntersection )
 	{
 		super( label );
 		_contentNode = contentNode;

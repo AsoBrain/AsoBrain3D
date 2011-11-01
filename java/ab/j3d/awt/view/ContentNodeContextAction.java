@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,18 +18,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view.control;
+package ab.j3d.awt.view;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.util.ResourceBundle;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.util.*;
+import javax.swing.*;
 
-import ab.j3d.control.ControlInputEvent;
-import ab.j3d.model.ContentNode;
-import ab.j3d.model.Face3DIntersection;
+import ab.j3d.control.*;
+import ab.j3d.model.*;
 
-import com.numdata.oss.ui.BasicAction;
-import com.numdata.oss.ui.WindowTools;
 
 /**
  * This class defines an action for a {@link ContentNode}. This action includes
@@ -39,7 +39,7 @@ import com.numdata.oss.ui.WindowTools;
  * @version $Revision$ $Date$
  */
 public abstract class ContentNodeContextAction
-	extends BasicAction
+	extends AbstractAction
 {
 	/**
 	 * Construct basic action with settings from resource bundle using the
@@ -49,16 +49,72 @@ public abstract class ContentNodeContextAction
 	 *  <tr><td>{key}         </td><td>name                </td><td>{key}  </td></tr>
 	 *  <tr><td>{key}Icon     </td><td>smallIcon           </td></tr>none  </td></tr>
 	 *  <tr><td>{key}Tip      </td><td>shortDescription    </td></tr>none  </td></tr>
-	 *  <tr><td>{key}KeyStroke</td><td>keyboardAccellerator</td></tr>none  </td></tr>
+	 *  <tr><td>{key}KeyStroke</td><td>keyboardAccelerator </td></tr>none  </td></tr>
 	 *  <tr><td>{key}Mnemonic </td><td>mnemonicKey         </td></tr>none  </td></tr>
 	 * </table>
 	 *
-	 * @param   bundle      Resource bundle to get settings from.
-	 * @param   key         Resource key to use (also used as action command).
+	 * @param   bundle  Resource bundle to get settings from.
+	 * @param   name    Name of action.
 	 */
-	protected ContentNodeContextAction( final ResourceBundle bundle , final String key )
+	protected ContentNodeContextAction( final ResourceBundle bundle, final String name )
 	{
-		super( bundle , key );
+		putValue( ACTION_COMMAND_KEY, name );
+
+		final Class<?> thisClass = getClass();
+		final ClassLoader classLoader = thisClass.getClassLoader();
+
+		try
+		{
+			putValue( NAME, bundle.getString( name ) );
+		}
+		catch ( MissingResourceException e )
+		{
+			/* ignore, property will not be set */
+		}
+
+		try
+		{
+			putValue( SMALL_ICON, new ImageIcon( classLoader.getResource( bundle.getString( name + "Icon" ) ) ) );
+		}
+		catch ( MissingResourceException e )
+		{
+			/* ignore, property will not be set */
+		}
+
+		try
+		{
+			putValue( SHORT_DESCRIPTION, bundle.getString( name + "Tip" ) );
+		}
+		catch ( MissingResourceException e )
+		{
+			/* ignore, property will not be set */
+		}
+
+		try
+		{
+			final KeyStroke keyStroke = KeyStroke.getKeyStroke( bundle.getString( name + "KeyStroke" ) );
+			if ( keyStroke != null )
+			{
+				putValue( ACCELERATOR_KEY, keyStroke );
+			}
+		}
+		catch ( MissingResourceException e )
+		{
+			/* ignore, property will not be set */
+		}
+
+		try
+		{
+			final KeyStroke keyStroke = KeyStroke.getKeyStroke( bundle.getString( name + "Mnemonic" ) );
+			if ( ( keyStroke != null ) && ( keyStroke.getKeyCode() >= 0 ) )
+			{
+				putValue( MNEMONIC_KEY, Integer.valueOf( keyStroke.getKeyCode() ) );
+			}
+		}
+		catch ( MissingResourceException e )
+		{
+			/* ignore, property will not be set */
+		}
 	}
 
 	/**
@@ -80,22 +136,22 @@ public abstract class ContentNodeContextAction
 			if( topLevelComponent instanceof ContentNodeContextMenu )
 			{
 				final ContentNodeContextMenu contentNodeContextMenu = (ContentNodeContextMenu)topLevelComponent;
-				run( contentNodeContextMenu.getControlInputEvent() , contentNodeContextMenu.getContentNode() , contentNodeContextMenu.getFace3DIntersection() );
+				run( contentNodeContextMenu.getControlInputEvent(), contentNodeContextMenu.getContentNode(), contentNodeContextMenu.getFace3DIntersection() );
 			}
 			else
 			{
-				run( null , null , null );
+				run( null, null, null );
 			}
 		}
 		catch ( Throwable problem )
 		{
-			WindowTools.showErrorDialog( null , problem , getClass() );
+			final StringWriter sw = new StringWriter();
+			problem.printStackTrace( new PrintWriter( sw ) );
+			final String stackTrace = sw.toString();
+			final String[] stackTraceLines = stackTrace.split( "\n" );
+			final Object message = new JScrollPane( new JList( stackTraceLines ) );
+			JOptionPane.showMessageDialog( null, message, problem.getLocalizedMessage(), JOptionPane.ERROR_MESSAGE );
 		}
-	}
-
-	public final void run()
-	{
-		run( null , null , null );
 	}
 
 	/**
@@ -106,6 +162,6 @@ public abstract class ContentNodeContextAction
 	 * @param   contentNode         {@link ContentNode} on which was clicked, can be null.
 	 * @param   face3DIntersection  {@link Face3DIntersection} that was found, can be null.
 	 */
-	protected abstract void run( final ControlInputEvent controlInputEvent , final ContentNode contentNode , Face3DIntersection face3DIntersection );
+	protected abstract void run( final ControlInputEvent controlInputEvent, final ContentNode contentNode, Face3DIntersection face3DIntersection );
 }
 
