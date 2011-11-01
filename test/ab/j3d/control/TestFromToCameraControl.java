@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -76,7 +77,7 @@ public class TestFromToCameraControl
 
 				@Nullable
 				@Override
-				protected ViewControlInput getControlInput()
+				public ViewControlInput getControlInput()
 				{
 					return null;
 				}
@@ -105,13 +106,12 @@ public class TestFromToCameraControl
 			} );
 
 		final Matrix3D expected = new Matrix3D(
-			  1.0 ,  0.0 ,  0.0 ,  0.0 ,
-			  0.0 ,  0.0 ,  1.0 ,  0.0 ,
-			  0.0 , -1.0 ,  0.0 , -1000.0 );
+			  1.0,  0.0,  0.0,  0.0,
+			  0.0,  0.0,  1.0,  0.0,
+			  0.0, -1.0,  0.0, -1000.0 );
 
 		final Matrix3D actual = fromToCameraControl.getScene2View();
 
-		assertTrue( "Initial transform failed!\nExpected:" + expected.toFriendlyString() + "\nActual:" + actual.toFriendlyString()
-		          , expected.almostEquals( actual ) );
+		assertTrue( "Initial transform failed!\nExpected:" + expected.toFriendlyString() + "\nActual:" + actual.toFriendlyString(), expected.almostEquals( actual ) );
 	}
 }
