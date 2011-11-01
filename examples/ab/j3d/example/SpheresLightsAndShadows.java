@@ -1,7 +1,7 @@
 /* $Id$
- *
+ * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,16 +16,9 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d.example;
-
-import java.awt.*;
-
-import ab.j3d.*;
-import ab.j3d.model.*;
-import ab.j3d.view.*;
-import ab.j3d.view.jogl.*;
-import org.jetbrains.annotations.*;
 
 /**
  * Renders a scene with several colored spheres, lit by two spot lights with
@@ -53,19 +46,19 @@ public class SpheresLightsAndShadows
 	protected Scene createScene()
 	{
 		final Material white = new Material();
-		white.setSpecularColor( 0x404040 );
+		white.setSpecularColor( new Color4f( 0x404040 ) ;
 
 		final Material color1 = new Material();
-		color1.setDiffuseColor( 0xffff6040 );
-		color1.setSpecularColor( 0x404040 );
+		color1.setDiffuseColor( new Color4f( 0xffff6040 ) ) );
+		color1.setSpecularColor( new Color4f( 0x404040 ) );
 
 		final Material color2 = new Material();
-		color2.setDiffuseColor( 0xff40c040 );
-		color2.setSpecularColor( 0x404040 );
+		color2.setDiffuseColor( new Color4f( 0xff40c040 ) );
+		color2.setSpecularColor( new Color4f( 0x404040 ) );
 
 		final Material color3 = new Material();
-		color3.setDiffuseColor( 0xff4060ff );
-		color3.setSpecularColor( 0x404040 );
+		color3.setDiffuseColor( new Color4f( 0xff4060ff ) );
+		color3.setSpecularColor( new Color4f( 0x404040 ) );
 
 		final Scene scene = new Scene( Scene.MM );
 		scene.setAmbient( 0.2f, 0.2f, 0.2f );
