@@ -98,10 +98,11 @@ public class Java2dView
 		}
 		_viewComponent = viewComponent;
 
-		_controlInput = new ViewControlInput( this );
+		final ViewControlInput controlInput = new ViewControlInput( this );
+		_controlInput = controlInput;
 
 		final DefaultViewControl defaultViewControl = new DefaultViewControl();
-		addControlInputListener( defaultViewControl );
+		controlInput.addControlInputListener( defaultViewControl );
 		addOverlay( defaultViewControl );
 
 		_bspTree = new BSPTree();
@@ -239,7 +240,7 @@ public class Java2dView
 	}
 
 	@Override
-	protected ViewControlInput getControlInput()
+	public ViewControlInput getControlInput()
 	{
 		return _controlInput;
 	}

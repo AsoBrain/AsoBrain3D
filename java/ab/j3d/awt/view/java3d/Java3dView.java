@@ -240,10 +240,11 @@ class Java3dView
 		_canvas = canvas;
 		_java3dView = java3dView;
 
-		_controlInput = new ViewControlInput( this );
+		final ViewControlInput controlInput = new ViewControlInput( this );
+		_controlInput = controlInput;
 
 		final DefaultViewControl defaultViewControl = new DefaultViewControl();
-		addControlInputListener( defaultViewControl );
+		controlInput.addControlInputListener( defaultViewControl );
 		addOverlay( defaultViewControl );
 
 		update();
@@ -389,7 +390,7 @@ class Java3dView
 	}
 
 	@Override
-	protected ViewControlInput getControlInput()
+	public ViewControlInput getControlInput()
 	{
 		return _controlInput;
 	}
