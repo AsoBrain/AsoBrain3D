@@ -218,7 +218,6 @@ public class SingleImageCubeMap
 		}
 	}
 
-	@Override
 	public BufferedImage getImageX1()
 	{
 		BufferedImage result = _imageX1;
@@ -249,7 +248,6 @@ public class SingleImageCubeMap
 		return result;
 	}
 
-	@Override
 	public BufferedImage getImageY1()
 	{
 		BufferedImage result = _imageY1;
@@ -279,7 +277,6 @@ public class SingleImageCubeMap
 		return result;
 	}
 
-	@Override
 	public BufferedImage getImageZ1()
 	{
 		BufferedImage result = _imageZ1;
@@ -309,7 +306,6 @@ public class SingleImageCubeMap
 		return result;
 	}
 
-	@Override
 	public BufferedImage getImageX2()
 	{
 		BufferedImage result = _imageX2;
@@ -340,7 +336,6 @@ public class SingleImageCubeMap
 		return result;
 	}
 
-	@Override
 	public BufferedImage getImageY2()
 	{
 		BufferedImage result = _imageY2;
@@ -371,7 +366,6 @@ public class SingleImageCubeMap
 		return result;
 	}
 
-	@Override
 	public BufferedImage getImageZ2()
 	{
 		BufferedImage result = _imageZ2;

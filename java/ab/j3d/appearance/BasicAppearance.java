@@ -36,92 +36,91 @@ public class BasicAppearance
 	/**
 	 * Red component of ambient reflection color.
 	 */
-	private float _ambientColorRed;
+	private float _ambientColorRed = 0.0f;
 
 	/**
 	 * Green component of ambient reflection color.
 	 */
-	private float _ambientColorGreen;
+	private float _ambientColorGreen = 0.0f;
 
 	/**
 	 * Blue component of ambient reflection color.
 	 */
-	private float _ambientColorBlue;
+	private float _ambientColorBlue = 0.0f;
 
 	/**
 	 * Red component of diffuse reflection color.
 	 */
-	private float _diffuseColorRed;
+	private float _diffuseColorRed = 0.0f;
 
 	/**
 	 * Green component of diffuse reflection color.
 	 */
-	private float _diffuseColorGreen;
+	private float _diffuseColorGreen = 0.0f;
 
 	/**
 	 * Blue component of diffuse reflection color.
 	 */
-	private float _diffuseColorBlue;
+	private float _diffuseColorBlue = 0.0f;
 
 	/**
 	 * Opacity.
 	 */
-	private float _diffuseColorAlpha;
+	private float _diffuseColorAlpha = 0.0f;
 
 	/**
 	 * Red component of specular highlight color.
 	 */
-	private float _specularColorRed;
+	private float _specularColorRed = 0.0f;
 
 	/**
 	 * Green component of specular highlight color.
 	 */
-	private float _specularColorGreen;
+	private float _specularColorGreen = 0.0f;
 
 	/**
 	 * Blue component of specular highlight color.
 	 */
-	private float _specularColorBlue;
+	private float _specularColorBlue = 0.0f;
 
 	/**
 	 * Specular highlight exponent.
 	 */
-	private int _shininess;
+	private int _shininess = 0;
 
 	/**
 	 * Red component of emissive color.
 	 */
-	private float _emissiveColorRed;
+	private float _emissiveColorRed = 0.0f;
 
 	/**
 	 * Green component of emissive reflection color.
 	 */
-	private float _emissiveColorGreen;
+	private float _emissiveColorGreen = 0.0f;
 
 	/**
 	 * Blue component of emissive reflection color.
 	 */
-	private float _emissiveColorBlue;
+	private float _emissiveColorBlue = 0.0f;
 
 	/**
 	 * Color map to use.
 	 */
 	@Nullable
-	private TextureMap _colorMap;
+	private TextureMap _colorMap = null;
 
 	/**
 	 * Bump map to use.
 	 */
 	@Nullable
-	private TextureMap _bumpMap;
+	private TextureMap _bumpMap = null;
 
 	/**
 	 * Map to use for reflections.
 	 */
 	@Nullable
-	private ReflectionMap _reflectionMap;
+	private ReflectionMap _reflectionMap = null;
 
-	@Override
 	public float getAmbientColorRed()
 	{
 		return _ambientColorRed;
@@ -137,7 +136,6 @@ public class BasicAppearance
 		_ambientColorRed = red;
 	}
 
-	@Override
 	public float getAmbientColorGreen()
 	{
 		return _ambientColorGreen;
@@ -153,7 +151,6 @@ public class BasicAppearance
 		_ambientColorGreen = green;
 	}
 
-	@Override
 	public float getAmbientColorBlue()
 	{
 		return _ambientColorBlue;
@@ -169,7 +166,6 @@ public class BasicAppearance
 		_ambientColorBlue = blue;
 	}
 
-	@Override
 	public float getDiffuseColorRed()
 	{
 		return _diffuseColorRed;
@@ -185,7 +181,6 @@ public class BasicAppearance
 		_diffuseColorRed = red;
 	}
 
-	@Override
 	public float getDiffuseColorGreen()
 	{
 		return _diffuseColorGreen;
@@ -201,7 +196,6 @@ public class BasicAppearance
 		_diffuseColorGreen = green;
 	}
 
-	@Override
 	public float getDiffuseColorBlue()
 	{
 		return _diffuseColorBlue;
@@ -217,7 +211,6 @@ public class BasicAppearance
 		_diffuseColorBlue = blue;
 	}
 
-	@Override
 	public float getDiffuseColorAlpha()
 	{
 		return _diffuseColorAlpha;
@@ -235,7 +228,6 @@ public class BasicAppearance
 		_diffuseColorAlpha = alpha;
 	}
 
-	@Override
 	public float getSpecularColorRed()
 	{
 		return _specularColorRed;
@@ -251,7 +243,6 @@ public class BasicAppearance
 		_specularColorRed = red;
 	}
 
-	@Override
 	public float getSpecularColorGreen()
 	{
 		return _specularColorGreen;
@@ -267,7 +258,6 @@ public class BasicAppearance
 		_specularColorGreen = green;
 	}
 
-	@Override
 	public float getSpecularColorBlue()
 	{
 		return _specularColorBlue;
@@ -283,7 +273,6 @@ public class BasicAppearance
 		_specularColorBlue = blue;
 	}
 
-	@Override
 	public int getShininess()
 	{
 		return _shininess;
@@ -299,7 +288,6 @@ public class BasicAppearance
 		_shininess = shininess;
 	}
 
-	@Override
 	public float getEmissiveColorRed()
 	{
 		return _emissiveColorRed;
@@ -315,7 +303,6 @@ public class BasicAppearance
 		_emissiveColorRed = red;
 	}
 
-	@Override
 	public float getEmissiveColorGreen()
 	{
 		return _emissiveColorGreen;
@@ -331,7 +318,6 @@ public class BasicAppearance
 		_emissiveColorGreen = green;
 	}
 
-	@Override
 	public float getEmissiveColorBlue()
 	{
 		return _emissiveColorBlue;
@@ -347,7 +333,6 @@ public class BasicAppearance
 		_emissiveColorBlue = blue;
 	}
 
-	@Override
 	@Nullable
 	public TextureMap getColorMap()
 	{
@@ -364,7 +349,6 @@ public class BasicAppearance
 		_colorMap = map;
 	}
 
-	@Override
 	@Nullable
 	public TextureMap getBumpMap()
 	{
@@ -381,7 +365,6 @@ public class BasicAppearance
 		_bumpMap = map;
 	}
 
-	@Override
 	@Nullable
 	public ReflectionMap getReflectionMap()
 	{

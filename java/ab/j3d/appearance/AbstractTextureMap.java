@@ -30,17 +30,17 @@ public abstract class AbstractTextureMap
 	implements TextureMap
 {
 	/**
-	 * Physical width of map in meters (<code>0.0</code>0 if undeterminate).
+	 * Physical width of map in meters (<code>0.0</code>0 if indeterminate).
 	 */
 	private float _physicalWidth;
 
 	/**
-	 * Physical height of map in meters (<code>0.0</code>0 if undeterminate).
+	 * Physical height of map in meters (<code>0.0</code>0 if indeterminate).
 	 */
 	private float _physicalHeight;
 
 	/**
-	 * Construct map with undeterminate physical dimensions.
+	 * Construct map with indeterminate physical dimensions.
 	 */
 	protected AbstractTextureMap()
 	{
@@ -52,9 +52,9 @@ public abstract class AbstractTextureMap
 	 * Construct map.
 	 *
 	 * @param   physicalWidth   Physical width in meters (<code>0.0</code> if
-	 *                          undeterminate).
+	 *                          indeterminate).
 	 * @param   physicalHeight  Physical height in meters (<code>0.0</code> if
-	 *                          undeterminate).
+	 *                          indeterminate).
 	 */
 	protected AbstractTextureMap( final float physicalWidth, final float physicalHeight )
 	{
@@ -62,7 +62,6 @@ public abstract class AbstractTextureMap
 		_physicalHeight = physicalHeight;
 	}
 
-	@Override
 	public float getPhysicalWidth()
 	{
 		return _physicalWidth;
@@ -80,7 +79,6 @@ public abstract class AbstractTextureMap
 		_physicalWidth = physicalWidth;
 	}
 
-	@Override
 	public float getPhysicalHeight()
 	{
 		return _physicalHeight;
