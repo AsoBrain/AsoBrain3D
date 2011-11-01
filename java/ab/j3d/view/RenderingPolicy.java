@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,7 +36,7 @@ public enum RenderingPolicy
 	 * <p />
 	 * Example implementation: ray-tracing / per-pixel shading and texture mapping.
 	 */
-	SOLID ,
+	SOLID,
 
 	/**
 	 * Rendering policy: schematic.
@@ -46,7 +47,7 @@ public enum RenderingPolicy
 	 * <p />
 	 * Example implementation: flat shading / functional color coding.
 	 */
-	SCHEMATIC ,
+	SCHEMATIC,
 
 	/**
 	 * Rendering policy: sketch.
@@ -56,7 +57,7 @@ public enum RenderingPolicy
 	 * <p />
 	 * Example implementation: pencil sketch / cartoon rendering / silhouette.
 	 */
-	SKETCH ,
+	SKETCH,
 
 	/**
 	 * Rendering policy: wireframe.

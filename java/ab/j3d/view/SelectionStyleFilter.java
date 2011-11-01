@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +20,7 @@
  */
 package ab.j3d.view;
 
-import ab.j3d.model.ContentNode;
+import ab.j3d.model.*;
 
 /**
  * Style filter to visualize selection.
@@ -37,7 +38,7 @@ public abstract class SelectionStyleFilter
 	{
 	}
 
-	public RenderStyle applyFilter( final RenderStyle style , final Object context )
+	public RenderStyle applyFilter( final RenderStyle style, final Object context )
 	{
 		RenderStyle result = style;
 
@@ -46,11 +47,11 @@ public abstract class SelectionStyleFilter
 			final ContentNode contentNode = (ContentNode)context;
 			if ( isNodeSelected( contentNode ) )
 			{
-				result = applySelectionStyle( style , contentNode );
+				result = applySelectionStyle( style, contentNode );
 			}
 			else if ( hasSelection() )
 			{
-				result = applyUnselectedStyle( style , contentNode );
+				result = applyUnselectedStyle( style, contentNode );
 			}
 		}
 
@@ -85,7 +86,7 @@ public abstract class SelectionStyleFilter
 	 *
 	 * @return  Filtered style.
 	 */
-	protected abstract RenderStyle applySelectionStyle( final RenderStyle style , final ContentNode node );
+	protected abstract RenderStyle applySelectionStyle( final RenderStyle style, final ContentNode node );
 
 	/**
 	 * Apply style for unselected nodes.
@@ -95,5 +96,5 @@ public abstract class SelectionStyleFilter
 	 *
 	 * @return  Filtered style.
 	 */
-	protected abstract RenderStyle applyUnselectedStyle( final RenderStyle style , final ContentNode node );
+	protected abstract RenderStyle applyUnselectedStyle( final RenderStyle style, final ContentNode node );
 }
