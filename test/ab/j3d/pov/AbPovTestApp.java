@@ -25,11 +25,11 @@ import java.util.*;
 import javax.swing.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.view.*;
+import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import ab.j3d.view.jogl.*;
-import com.numdata.oss.ui.*;
 
 /**
  * This test application can be used for visual testing of the
@@ -44,7 +44,7 @@ import com.numdata.oss.ui.*;
  * @author  Rob Veneberg
  * @version $Revision$ $Date$
  */
-final class AbPovTestApp
+class AbPovTestApp
 {
 	/**
 	 * No need for objects of this class.
@@ -63,7 +63,7 @@ final class AbPovTestApp
 		/*
 		 * Path to test textures.
 		 */
-		MapTools.imageMapDirectory = "test/ab/j3d/pov/textures";
+		Material.imagesDirectoryUrl = AbPovTestApp.class.getResource( "/ab/j3d/pov/textures/" );
 
 		/*
 		 * Create testmodel.
@@ -77,16 +77,16 @@ final class AbPovTestApp
 		 */
 		final Scene scene = new Scene( Scene.MM );
 		Scene.addLegacyLights( scene );
-		scene.addContentNode( "redbox"    , Matrix3D.getTransform( 10.0 ,  0.0 ,  0.0 , -200.0 ,   0.0 , -250.0 ) , testModel.getRedXRotatedBox3D() );
-		scene.addContentNode( "greenbox"  , Matrix3D.getTransform(  0.0 , 10.0 ,  0.0 ,  -50.0 ,   0.0 , -250.0 ) , testModel.getGreenYRotatedBox3D() );
-		scene.addContentNode( "bluebox"   , Matrix3D.getTransform(  0.0 ,  0.0 , 10.0 ,  200.0 ,   0.0 , -250.0 ) , testModel.getBlueZRotatedBox3D() );
-		scene.addContentNode( "panel"     , Matrix3D.getTransform(  0.0 ,  0.0 , 45.0 , -350.0 ,   0.0 ,    0.0 ) , testModel.getTexturedBox3D() );
-		scene.addContentNode( "sphere"    , Matrix3D.getTransform(  0.0 ,  0.0 ,  0.0 ,    0.0 , 300.0 , -200.0 ) , testModel.getSphere3D() );
-		scene.addContentNode( "cylinder"  , Matrix3D.getTransform(  0.0 ,  0.0 ,  0.0 ,    0.0 ,   0.0 ,  150.0 ) , testModel.getCylinder3D() );
-		scene.addContentNode( "cone"      , Matrix3D.getTransform( 45.0 ,  0.0 ,  0.0 ,  250.0 ,   0.0 ,    0.0 ) , testModel.getCone3D() );
-		scene.addContentNode( "extrudedA" , Matrix3D.IDENTITY, testModel.getExtrudedObject2DA() );
-		scene.addContentNode( "extrudedB" , Matrix3D.getTransform( 0.0, 0.0, 45.0, 100.0, 100.0, 100.0 ) , testModel.getExtrudedObject2DB() );
-		scene.addContentNode( "colorcube" , Matrix3D.IDENTITY, testModel.getColorCube() );
+		scene.addContentNode( "redbox"   , Matrix3D.getTransform( 10.0,  0.0,  0.0, -200.0,   0.0, -250.0 ), testModel.getRedXRotatedBox3D() );
+		scene.addContentNode( "greenbox" , Matrix3D.getTransform(  0.0, 10.0,  0.0,  -50.0,   0.0, -250.0 ), testModel.getGreenYRotatedBox3D() );
+		scene.addContentNode( "bluebox"  , Matrix3D.getTransform(  0.0,  0.0, 10.0,  200.0,   0.0, -250.0 ), testModel.getBlueZRotatedBox3D() );
+		scene.addContentNode( "panel"    , Matrix3D.getTransform(  0.0,  0.0, 45.0, -350.0,   0.0,    0.0 ), testModel.getTexturedBox3D() );
+		scene.addContentNode( "sphere"   , Matrix3D.getTransform(  0.0,  0.0,  0.0,    0.0, 300.0, -200.0 ), testModel.getSphere3D() );
+		scene.addContentNode( "cylinder" , Matrix3D.getTransform(  0.0,  0.0,  0.0,    0.0,   0.0,  150.0 ), testModel.getCylinder3D() );
+		scene.addContentNode( "cone"     , Matrix3D.getTransform( 45.0,  0.0,  0.0,  250.0,   0.0,    0.0 ), testModel.getCone3D() );
+		scene.addContentNode( "extrudedA", Matrix3D.IDENTITY, testModel.getExtrudedObject2DA() );
+		scene.addContentNode( "extrudedB", Matrix3D.getTransform( 0.0, 0.0, 45.0, 100.0, 100.0, 100.0 ), testModel.getExtrudedObject2DB() );
+		scene.addContentNode( "colorcube", Matrix3D.IDENTITY, testModel.getColorCube() );
 
 		/*
 		 * Create Java3D-engine.
@@ -96,17 +96,28 @@ final class AbPovTestApp
 		/*
 		 * Create and display view.
 		 */
-		final Vector3D viewFrom = Vector3D.INIT.set( 0.0 , -1000.0 , 0.0 );
-		final Vector3D viewAt   = Vector3D.INIT;
+		final Vector3D viewFrom = new Vector3D( 0.0, -1000.0, 0.0 );
+		final Vector3D viewAt = Vector3D.ZERO;
 
 		final View3D view = renderEngine.createView( scene );
-		view.setCameraControl( new FromToCameraControl( view , viewFrom , viewAt ) );
+		view.setCameraControl( new FromToCameraControl( view, viewFrom, viewAt ) );
 
 		final JPanel viewPanel = new JPanel( new BorderLayout() );
-		viewPanel.add( view.getComponent() , BorderLayout.CENTER );
-		viewPanel.add( view.createToolBar( Locale.ENGLISH ) , BorderLayout.SOUTH );
+		viewPanel.add( view.getComponent(), BorderLayout.CENTER );
+		viewPanel.add( View3DPanel.createToolBar( view, Locale.ENGLISH ), BorderLayout.SOUTH );
 
-		final JFrame frame = WindowTools.createFrame( "Testscene" , 800 , 600 , viewPanel );
+		final JFrame frame = new JFrame( "Testscene" );
+		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+		frame.setContentPane( viewPanel );
+		frame.setSize( 800, 600 );
+
+		final Toolkit toolkit = frame.getToolkit();
+		final GraphicsConfiguration graphicsConfiguration = frame.getGraphicsConfiguration();
+		final Rectangle screenBounds = graphicsConfiguration.getBounds();
+		final Insets screenInsets = toolkit.getScreenInsets( graphicsConfiguration );
+		frame.setLocation( screenBounds.x + ( screenBounds.width  + screenInsets.left + screenInsets.right - frame.getWidth() ) / 2,
+		                   screenBounds.y + ( screenBounds.height + screenInsets.top + screenInsets.bottom - frame.getHeight() ) / 2 );
+
 		frame.setVisible( true );
 	}
 }

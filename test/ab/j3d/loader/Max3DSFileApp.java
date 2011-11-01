@@ -26,12 +26,12 @@ import java.util.*;
 import javax.swing.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.view.*;
+import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.loader.max3ds.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import ab.j3d.view.jogl.*;
-import com.numdata.oss.ui.*;
 
 /**
  * This is a sample application for the {@link Max3DSFile} class.
@@ -55,27 +55,27 @@ public class Max3DSFileApp
 
 			final Matrix3D transform = Matrix3D.IDENTITY; // .rotateX( Math.toRadians( 90.0 ) );
 
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/fishtank/fishtank.3ds";
-			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/flower01_s/flower01.3ds";
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/vtr/vtr.3ds";
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/man1/man1.3ds"; // standing straight
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/man2/man2.3ds"; // sitting + lifted arms
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/man3/man3.3ds"; // on knees + reaching
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/man4/man4.3ds"; // walking straight
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/man5/man5.3ds"; // kneeling + reaching
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/man6/man6.3ds"; // bending  + grasping
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/man7/man7.3ds"; // kneeling + accepting
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/man8/man8.3ds"; // stair walking + reaching
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/woman1/woman1.3ds"; // standing straight
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/woman2/woman2.3ds"; // sitting + lifted arms
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/woman3/woman3.3ds"; // on knees + reaching
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/woman4/woman4.3ds"; // walking straight
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/woman5/woman5.3ds"; // kneeling + reaching
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/woman6/woman6.3ds"; // bending  + grasping
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/woman7/woman7.3ds"; // kneeling + accepting
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/woman8/woman8.3ds"; // stair walking + reaching
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/woman9/woman1.3ds"; // full nudity
-//			final String   path      = "/numdata/3d/3ds-from-web/3dcafe/tricycle/trecic3.3ds";
+//			final String   path      = "fishtank/fishtank.3ds";
+			final String   path      = "flower01_s/flower01.3ds";
+//			final String   path      = "vtr/vtr.3ds";
+//			final String   path      = "man1/man1.3ds"; // standing straight
+//			final String   path      = "man2/man2.3ds"; // sitting + lifted arms
+//			final String   path      = "man3/man3.3ds"; // on knees + reaching
+//			final String   path      = "man4/man4.3ds"; // walking straight
+//			final String   path      = "man5/man5.3ds"; // kneeling + reaching
+//			final String   path      = "man6/man6.3ds"; // bending  + grasping
+//			final String   path      = "man7/man7.3ds"; // kneeling + accepting
+//			final String   path      = "man8/man8.3ds"; // stair walking + reaching
+//			final String   path      = "woman1/woman1.3ds"; // standing straight
+//			final String   path      = "woman2/woman2.3ds"; // sitting + lifted arms
+//			final String   path      = "woman3/woman3.3ds"; // on knees + reaching
+//			final String   path      = "woman4/woman4.3ds"; // walking straight
+//			final String   path      = "woman5/woman5.3ds"; // kneeling + reaching
+//			final String   path      = "woman6/woman6.3ds"; // bending  + grasping
+//			final String   path      = "woman7/woman7.3ds"; // kneeling + accepting
+//			final String   path      = "woman8/woman8.3ds"; // stair walking + reaching
+//			final String   path      = "woman9/woman1.3ds"; // full nudity
+//			final String   path      = "tricycle/trecic3.3ds";
 
 
 			final Max3DSFile maxFile = new Max3DSFile( new FileInputStream( path ) );
@@ -100,9 +100,19 @@ public class Max3DSFileApp
 
 			final JPanel viewPanel = new JPanel( new BorderLayout() );
 			viewPanel.add( view.getComponent() , BorderLayout.CENTER );
-			viewPanel.add( view.createToolBar( new Locale( "nl" ) ) , BorderLayout.SOUTH );
+			viewPanel.add( View3DPanel.createToolBar( view, new Locale( "nl" ) ) , BorderLayout.SOUTH );
 
-			final JFrame frame = WindowTools.createFrame( renderEngine.getClass() + " example" , 800 , 600 , viewPanel );
+			final JFrame frame = new JFrame( renderEngine.getClass() + " example" );
+			frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+			frame.setContentPane( viewPanel );
+			final Toolkit toolkit = frame.getToolkit();
+			final GraphicsConfiguration graphicsConfiguration = frame.getGraphicsConfiguration();
+			final Rectangle screenBounds = graphicsConfiguration.getBounds();
+			final Insets screenInsets = toolkit.getScreenInsets( graphicsConfiguration );
+			frame.setSize( 800, 800 );
+			frame.setLocation( screenBounds.x + ( screenBounds.width + screenInsets.left + screenInsets.right - frame.getWidth() ) / 2,
+			                   screenBounds.y + ( screenBounds.height + screenInsets.top + screenInsets.bottom - frame.getHeight() ) / 2 );
+
 			frame.setVisible( true );
 		}
 		catch ( IOException e )

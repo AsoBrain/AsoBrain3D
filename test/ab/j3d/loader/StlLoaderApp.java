@@ -25,11 +25,11 @@ import java.util.*;
 import javax.swing.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.view.*;
+import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import ab.j3d.view.jogl.*;
-import com.numdata.oss.ui.*;
 
 /**
  * This is a sample application for the {@link StlLoader} class.
@@ -81,9 +81,20 @@ public class StlLoaderApp
 
 		final JPanel viewPanel = new JPanel( new BorderLayout() );
 		viewPanel.add( view.getComponent(), BorderLayout.CENTER );
-		viewPanel.add( view.createToolBar( new Locale( "nl" ) ), BorderLayout.SOUTH );
+		viewPanel.add( View3DPanel.createToolBar( view, new Locale( "nl" ) ), BorderLayout.SOUTH );
 
-		final JFrame frame = WindowTools.createFrame( StlLoaderApp.class.getName(), 800, 600, viewPanel );
+		final JFrame frame = new JFrame( StlLoaderApp.class.getName() );
+		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+		frame.setContentPane( viewPanel );
+		frame.setSize( 800, 600 );
+
+		final Toolkit toolkit = frame.getToolkit();
+		final GraphicsConfiguration graphicsConfiguration = frame.getGraphicsConfiguration();
+		final Rectangle screenBounds = graphicsConfiguration.getBounds();
+		final Insets screenInsets = toolkit.getScreenInsets( graphicsConfiguration );
+		frame.setLocation( screenBounds.x + ( screenBounds.width  + screenInsets.left + screenInsets.right - frame.getWidth() ) / 2,
+		                   screenBounds.y + ( screenBounds.height + screenInsets.top + screenInsets.bottom - frame.getHeight() ) / 2 );
+
 		frame.setVisible( true );
 	}
 
