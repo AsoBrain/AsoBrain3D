@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2008
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -68,9 +69,9 @@ public class BasicPlane3D
 	 *
 	 * @throws  NullPointerException if <code>normal</code> is <code>null</code>.
 	 */
-	public BasicPlane3D( final double normalX , final double normalY , final double normalZ , final double distance , final boolean twoSided )
+	public BasicPlane3D( final double normalX, final double normalY, final double normalZ, final double distance, final boolean twoSided )
 	{
-		this( new Vector3D( normalX , normalY , normalZ ) , distance , twoSided );
+		this( new Vector3D( normalX, normalY, normalZ ), distance, twoSided );
 	}
 
 	/**
@@ -81,9 +82,9 @@ public class BasicPlane3D
 	 *
 	 * @throws  NullPointerException if <code>planeTransform</code> is <code>null</code>.
 	 */
-	public BasicPlane3D( final Matrix3D planeTransform , final boolean twoSided )
+	public BasicPlane3D( final Matrix3D planeTransform, final boolean twoSided )
 	{
-		this( planeTransform.xz , planeTransform.yz , planeTransform.zz , Vector3D.dot( planeTransform.xz , planeTransform.yz , planeTransform.zz , planeTransform.xo , planeTransform.yo , planeTransform.zo ) , twoSided );
+		this( planeTransform.xz, planeTransform.yz, planeTransform.zz, Vector3D.dot( planeTransform.xz, planeTransform.yz, planeTransform.zz, planeTransform.xo, planeTransform.yo, planeTransform.zo ), twoSided );
 	}
 	/**
 	 * Construct transformed plane.
@@ -93,9 +94,9 @@ public class BasicPlane3D
 	 *
 	 * @throws  NullPointerException if <code>plane</code> is <code>null</code>.
 	 */
-	public BasicPlane3D( final Matrix3D transform , final Plane3D plane )
+	public BasicPlane3D( final Matrix3D transform, final Plane3D plane )
 	{
-		this( transform , plane.getNormal() , plane.getDistance() , plane.isTwoSided() );
+		this( transform, plane.getNormal(), plane.getDistance(), plane.isTwoSided() );
 	}
 
 	/**
@@ -109,7 +110,7 @@ public class BasicPlane3D
 	 *
 	 * @throws  NullPointerException if <code>normal</code> is <code>null</code>.
 	 */
-	public BasicPlane3D( final Matrix3D transform , final Vector3D normal , final double distance , final boolean twoSided )
+	public BasicPlane3D( final Matrix3D transform, final Vector3D normal, final double distance, final boolean twoSided )
 	{
 		if ( normal == null )
 		{
@@ -126,9 +127,9 @@ public class BasicPlane3D
 			final double refZ = normal.z * distance;
 
 			transformedNormal   = transform.rotate( normal );
-			transformedDistance = transformedNormal.x * transform.transformX( refX , refY , refZ )
-			                    + transformedNormal.y * transform.transformY( refX , refY , refZ )
-			                    + transformedNormal.z * transform.transformZ( refX , refY , refZ );
+			transformedDistance = transformedNormal.x * transform.transformX( refX, refY, refZ )
+			                    + transformedNormal.y * transform.transformY( refX, refY, refZ )
+			                    + transformedNormal.z * transform.transformZ( refX, refY, refZ );
 		}
 		else
 		{
@@ -151,12 +152,12 @@ public class BasicPlane3D
 	 *
 	 * @throws  NullPointerException if <code>plane</code> is <code>null</code>.
 	 */
-	public BasicPlane3D( final Plane3D plane , final Vector3D point )
+	public BasicPlane3D( final Plane3D plane, final Vector3D point )
 	{
 		final Vector3D normal = plane.getNormal();
 
 		_normal   = normal;
-		_distance = Vector3D.dot( normal , point );
+		_distance = Vector3D.dot( normal, point );
 		_twoSided = plane.isTwoSided();
 	}
 
@@ -169,7 +170,7 @@ public class BasicPlane3D
 	 *
 	 * @throws  NullPointerException if <code>normal</code> is <code>null</code>.
 	 */
-	public BasicPlane3D( final Vector3D normal , final double distance , final boolean twoSided )
+	public BasicPlane3D( final Vector3D normal, final double distance, final boolean twoSided )
 	{
 		if ( normal == null )
 		{

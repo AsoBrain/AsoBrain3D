@@ -1,27 +1,26 @@
-/*   ColDet - C++ 3D Collision Detection Library
- *   Copyright (C) 2000 Amir Geva
- *
- *   ColDet - 3D Collision Detection Library for Java
- *   Copyright (C) 2008-2009 Numdata BV
+/* $Id$
+ * ====================================================================
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public
+ * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * version 2.1 of the License, or (at your option) any later version.
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Library General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d.geom;
 
-import ab.j3d.Vector3D;
+import ab.j3d.*;
 
 /**
  * Triangle/triangle intersection test routine,
@@ -44,19 +43,19 @@ class TriTriMoeler
 	 * result    : returns 1 if the triangles intersect, otherwise 0
 	 *
 	 */
-	static boolean testTriangleTriangle( final Vector3D v0 , final Vector3D v1 , final Vector3D v2 , final Vector3D u0 , final Vector3D u1 , final Vector3D u2 )
+	static boolean testTriangleTriangle( final Vector3D v0, final Vector3D v1, final Vector3D v2, final Vector3D u0, final Vector3D u1, final Vector3D u2 )
 	{
 		/* compute plane equation of triangle(V0,V1,V2) */
 		Vector3D e1 = v1.minus( v0 );
 		Vector3D e2 = v2.minus( v0 );
-		final Vector3D n1 = Vector3D.cross( e1 , e2 );
-		final double d1 = -Vector3D.dot( n1 , v0 );
+		final Vector3D n1 = Vector3D.cross( e1, e2 );
+		final double d1 = -Vector3D.dot( n1, v0 );
 		/* plane equation 1: N1.X+d1=0 */
 
 		/* put U0,U1,U2 into plane equation 1 to compute signed distances to the plane*/
-		double du0 = Vector3D.dot( n1 , u0 ) + d1;
-		double du1 = Vector3D.dot( n1 , u1 ) + d1;
-		double du2 = Vector3D.dot( n1 , u2 ) + d1;
+		double du0 = Vector3D.dot( n1, u0 ) + d1;
+		double du1 = Vector3D.dot( n1, u1 ) + d1;
+		double du2 = Vector3D.dot( n1, u2 ) + d1;
 
 		/* coplanarity robustness check */
 		if ( Math.abs( du0 ) < 0.000001 ) du0 = 0.0;
@@ -76,9 +75,9 @@ class TriTriMoeler
 		/* plane equation 2: N2.X+d2=0 */
 
 		/* put V0,V1,V2 into plane equation 2 */
-		double dv0 = Vector3D.dot( n2 , v0 ) + d2;
-		double dv1 = Vector3D.dot( n2 , v1 ) + d2;
-		double dv2 = Vector3D.dot( n2 , v2 ) + d2;
+		double dv0 = Vector3D.dot( n2, v0 ) + d2;
+		double dv1 = Vector3D.dot( n2, v1 ) + d2;
+		double dv2 = Vector3D.dot( n2, v2 ) + d2;
 
 		if ( Math.abs( dv0 ) < 0.000001 ) dv0 = 0.0;
 		if ( Math.abs( dv1 ) < 0.000001 ) dv1 = 0.0;
@@ -134,7 +133,7 @@ class TriTriMoeler
 		}
 
 		/* compute interval for triangle 1 */
-		final double[] isect1 = computeIntervals( vp0 , vp1 , vp2 , dv0 , dv1 , dv2 , dv0dv1 , dv0dv2 );
+		final double[] isect1 = computeIntervals( vp0, vp1, vp2, dv0, dv1, dv2, dv0dv1, dv0dv2 );
 		if ( isect1 == null )
 		{
 			/* triangles are coplanar */
@@ -162,29 +161,29 @@ class TriTriMoeler
 		{
 			/* here we know that D0D2<=0.0 */
 			/* that is D0, D1 are on the same side, D2 on the other or on the plane */
-			result = new double[] { vv2 + ( vv0 - vv2 ) * d2 / ( d2 - d0 ) ,
+			result = new double[] { vv2 + ( vv0 - vv2 ) * d2 / ( d2 - d0 ),
 			                        vv2 + ( vv1 - vv2 ) * d2 / ( d2 - d1 ) };
 		}
 		else if ( d0d2 > 0.0 )
 		{
 			/* here we know that d0d1<=0.0 */
-			result = new double[] { vv1 + ( vv0 - vv1 ) * d1 / ( d1 - d0 ) ,
+			result = new double[] { vv1 + ( vv0 - vv1 ) * d1 / ( d1 - d0 ),
 			                        vv1 + ( vv2 - vv1 ) * d1 / ( d1 - d2 ) };
 		}
 		else if ( d1 * d2 > 0.0 || d0 != 0.0 )
 		{
 			/* here we know that d0d1<=0.0 or that D0!=0.0 */
-			result = new double[] { vv0 + ( vv1 - vv0 ) * d0 / ( d0 - d1 ) ,
+			result = new double[] { vv0 + ( vv1 - vv0 ) * d0 / ( d0 - d1 ),
 			                        vv0 + ( vv2 - vv0 ) * d0 / ( d0 - d2 ) };
 		}
 		else if ( d1 != 0.0 )
 		{
-			result = new double[] { vv1 + ( vv0 - vv1 ) * d1 / ( d1 - d0 ) ,
+			result = new double[] { vv1 + ( vv0 - vv1 ) * d1 / ( d1 - d0 ),
 			                        vv1 + ( vv2 - vv1 ) * d1 / ( d1 - d2 ) };
 		}
 		else if ( d2 != 0.0 )
 		{
-			result = new double[] { vv2 + ( vv0 - vv2 ) * d2 / ( d2 - d0 ) ,
+			result = new double[] { vv2 + ( vv0 - vv2 ) * d2 / ( d2 - d0 ),
 			                        vv2 + ( vv1 - vv2 ) * d2 / ( d2 - d1 ) };
 		}
 		else
@@ -293,7 +292,7 @@ class TriTriMoeler
 		return ( ( d0 * d1 > 0.0 ) && ( d0 * d2 > 0.0 ) );
 	}
 
-	private static double get( final Vector3D vector , final int i )
+	private static double get( final Vector3D vector, final int i )
 	{
 		switch ( i )
 		{

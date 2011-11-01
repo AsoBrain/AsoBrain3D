@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +20,7 @@
  */
 package ab.j3d.geom;
 
-import ab.j3d.Vector3D;
+import ab.j3d.*;
 
 /**
  * Abstract implementation of {@link Triangle3D} interface.
@@ -116,7 +117,7 @@ public abstract class AbstractTriangle3D
 
 	public double getDistance()
 	{
-		return Vector3D.dot( getNormal() , getP1() );
+		return Vector3D.dot( getNormal(), getP1() );
 	}
 
 	public Vector3D getNormal()
@@ -124,7 +125,7 @@ public abstract class AbstractTriangle3D
 		Vector3D result = _normal;
 		if ( result == null )
 		{
-			result = GeometryTools.getPlaneNormal( getP1() , getP2() , getP3() );
+			result = GeometryTools.getPlaneNormal( getP1(), getP2(), getP3() );
 			_normal = result;
 		}
 		return result;
@@ -140,7 +141,7 @@ public abstract class AbstractTriangle3D
 		double result = _perimeter;
 		if ( result == -1.0 )
 		{
-			result = calculatePerimeter( getP1() , getP2() , getP3() );
+			result = calculatePerimeter( getP1(), getP2(), getP3() );
 			_perimeter = result;
 		}
 		return result;
@@ -155,7 +156,7 @@ public abstract class AbstractTriangle3D
 	 *
 	 * @return  Perimeter of specified triangle.
 	 */
-	public static double calculatePerimeter( final Vector3D p1 , final Vector3D p2 , final Vector3D p3 )
+	public static double calculatePerimeter( final Vector3D p1, final Vector3D p2, final Vector3D p3 )
 	{
 		final double edge1Length = p1.distanceTo( p2 );
 		final double edge2Length = p2.distanceTo( p3 );
@@ -174,7 +175,7 @@ public abstract class AbstractTriangle3D
 		double result = _area;
 		if ( result == -1.0 )
 		{
-			result = calculateArea( getP1() , getP2() , getP3() );
+			result = calculateArea( getP1(), getP2(), getP3() );
 			_area = result;
 		}
 		return result;
@@ -205,7 +206,7 @@ public abstract class AbstractTriangle3D
 	 *
 	 * @return  Area of specified triangle.
 	 */
-	public static double calculateArea( final Vector3D p1 , final Vector3D p2 , final Vector3D p3 )
+	public static double calculateArea( final Vector3D p1, final Vector3D p2, final Vector3D p3 )
 	{
 		final double a = p1.distanceTo( p2 );
 		final double b = p2.distanceTo( p3 );

@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +20,7 @@
  */
 package ab.j3d.geom;
 
-import ab.j3d.Vector3D;
+import ab.j3d.*;
 
 /**
  * Basic implementation of {@link Triangle3D} interface.
@@ -58,7 +59,7 @@ public class BasicTriangle3D
 	 * @param   p3          Third point of the triangle.
 	 * @param   twoSided    Plane is two-sided.
 	 */
-	public BasicTriangle3D( final Vector3D p1 , final Vector3D p2 , final Vector3D p3 , final boolean twoSided )
+	public BasicTriangle3D( final Vector3D p1, final Vector3D p2, final Vector3D p3, final boolean twoSided )
 	{
 		_p1 = p1;
 		_p2 = p2;

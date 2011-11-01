@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2008-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,12 +20,10 @@
  */
 package ab.j3d.geom;
 
-import java.util.List;
+import java.util.*;
 
-import ab.j3d.Bounds3D;
-import ab.j3d.Bounds3DBuilder;
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
+import ab.j3d.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This object can be used to test for collisions between polygon soups.
@@ -40,22 +39,22 @@ public class CollisionNode
 	/**
 	 * Triangles at this node.
 	 */
-	private List<Triangle3D> _triangles;
+	private final List<Triangle3D> _triangles;
 
 	/**
 	 * Start offset in '_triangles'.
 	 */
-	private int _trianglesOffset;
+	private final int _trianglesOffset;
 
 	/**
 	 * Number of triangles.
 	 */
-	private int _trianglesCount;
+	private final int _trianglesCount;
 
 	/**
 	 * Bounding box of for this node that contains all triangles at this node.
 	 */
-	private Bounds3D _bounds;
+	private final Bounds3D _bounds;
 
 	/**
 	 * Point to split this node at.
@@ -88,16 +87,22 @@ public class CollisionNode
 	 * @throws  IllegalArgumentException if <code>trianglesCount</code> is <code>0</code>.
 	 * @throws  IndexOutOfBoundsException if a invalid range is specified.
 	 */
-	public CollisionNode( final List<Triangle3D> triangles , final int trianglesOffset , final int trianglesCount )
+	public CollisionNode( final List<Triangle3D> triangles, final int trianglesOffset, final int trianglesCount )
 	{
 		if ( trianglesOffset < 0 )
+		{
 			throw new IndexOutOfBoundsException( String.valueOf( trianglesOffset ) );
+		}
 
 		if ( trianglesCount <= 0 )
+		{
 			throw new IllegalArgumentException( String.valueOf( trianglesCount ) );
+		}
 
 		if ( trianglesOffset + trianglesCount > triangles.size() )
+		{
 			throw new IndexOutOfBoundsException( String.valueOf( trianglesOffset + trianglesCount ) );
+		}
 
 		final Bounds3DBuilder boundsBuilder = new Bounds3DBuilder();
 
@@ -127,9 +132,9 @@ public class CollisionNode
 	 * @return  <code>true</code> if a collision was found;
 	 *          <code>false</code> if no collision was found.
 	 */
-	public boolean collidesWith( final CollisionNode other , final Matrix3D other2this )
+	public boolean collidesWith( final CollisionNode other, final Matrix3D other2this )
 	{
-		return collidesWith( other , other2this , other2this.inverse() );
+		return collidesWith( other, other2this, other2this.inverse() );
 	}
 
 	/**
@@ -141,26 +146,15 @@ public class CollisionNode
 	 *
 	 * @return  <code>true</code> if a collision was found;
 	 *          <code>false</code> if no collision was found.
-	 *
-	 * @throws  NullPointerException if any parameter is <code>null</code>.
 	 */
-	public boolean collidesWith( final CollisionNode other , final Matrix3D other2this , final Matrix3D this2other )
+	public boolean collidesWith( @NotNull final CollisionNode other, @NotNull final Matrix3D other2this, @NotNull final Matrix3D this2other )
 	{
-		if ( other == null )
-			throw new NullPointerException( "other" );
-
-		if ( other2this == null )
-			throw new NullPointerException( "other2this" );
-
-		if ( this2other == null )
-			throw new NullPointerException( "this2other" );
-
 		final boolean result;
 
 		final Bounds3D bounds1 = _bounds;
 		final Bounds3D bounds2 = other._bounds;
 
-		if ( ( bounds1 != null ) && ( bounds2 != null ) && GeometryTools.testOrientedBoundingBoxIntersection( bounds1 , other2this , bounds2 ) )
+		if ( ( bounds1 != null ) && ( bounds2 != null ) && GeometryTools.testOrientedBoundingBoxIntersection( bounds1, other2this, bounds2 ) )
 		{
 			if ( !split() )
 			{
@@ -176,24 +170,24 @@ public class CollisionNode
 					}
 					else
 					{
-						result = other.testTriangleTriangleCollision( this , this2other );
+						result = other.testTriangleTriangleCollision( this, this2other );
 					}
 				}
 				else
 				{
-					result = other._child1.collidesWith( this , this2other , other2this ) ||
-					         other._child2.collidesWith( this , this2other , other2this );
+					result = other._child1.collidesWith( this, this2other, other2this ) ||
+					         other._child2.collidesWith( this, this2other, other2this );
 				}
 			}
 			else if ( ( bounds1.volume() > bounds2.volume() ) || !other.split() )
 			{
-				result = _child1.collidesWith( other , other2this , this2other ) ||
-				         _child2.collidesWith( other , other2this , this2other );
+				result = _child1.collidesWith( other, other2this, this2other ) ||
+				         _child2.collidesWith( other, other2this, this2other );
 			}
 			else
 			{
-				result = other._child1.collidesWith( this , this2other , other2this ) ||
-				         other._child2.collidesWith( this , this2other , other2this );
+				result = other._child1.collidesWith( this, this2other, other2this ) ||
+				         other._child2.collidesWith( this, this2other, other2this );
 			}
 		}
 		else
@@ -213,7 +207,7 @@ public class CollisionNode
 	 * @return  <code>true</code> if a collision was found;
 	 *          <code>false</code> if no collision was found.
 	 */
-	private boolean testTriangleTriangleCollision( final CollisionNode other , final Matrix3D other2this )
+	private boolean testTriangleTriangleCollision( final CollisionNode other, final Matrix3D other2this )
 	{
 		boolean result = false;
 
@@ -237,7 +231,7 @@ public class CollisionNode
 			{
 				final Triangle3D thisTriangle = thisTriangles.get( thisIndex );
 
-				if ( GeometryTools.testTriangleTriangleIntersection( otherP1 , otherP2 , otherP3 , thisTriangle.getP1() , thisTriangle.getP2() , thisTriangle.getP3() ) )
+				if ( GeometryTools.testTriangleTriangleIntersection( otherP1, otherP2, otherP3, thisTriangle.getP1(), thisTriangle.getP2(), thisTriangle.getP3() ) )
 				{
 					result = true;
 					break;
@@ -333,8 +327,8 @@ public class CollisionNode
 						countLeft = countZ;
 					}
 
-					_child1 = new CollisionNode( triangles , trianglesOffset , countLeft );
-					_child2 = new CollisionNode( triangles , trianglesOffset + countLeft , trianglesCount - countLeft );
+					_child1 = new CollisionNode( triangles, trianglesOffset, countLeft );
+					_child2 = new CollisionNode( triangles, trianglesOffset + countLeft, trianglesCount - countLeft );
 					result = true;
 				}
 				else
@@ -375,10 +369,14 @@ public class CollisionNode
 
 				final boolean isLeft = ( rightElement.getAveragePoint().x < splitX );
 				if ( !isLeft )
+				{
 					break;
+				}
 
 				if ( ++leftIndex >= rightIndex )
+				{
 					break outerLoop;
+				}
 			}
 
 			/*
@@ -391,14 +389,18 @@ public class CollisionNode
 
 				final boolean isLeft = ( leftElement.getAveragePoint().x < splitX );
 				if ( isLeft )
+				{
 					break;
+				}
 
 				if ( leftIndex >= --rightIndex )
+				{
 					break outerLoop;
+				}
 			}
 
-			triangles.set( leftIndex++ , leftElement );
-			triangles.set( rightIndex-- , rightElement );
+			triangles.set( leftIndex++, leftElement );
+			triangles.set( rightIndex--, rightElement );
 		}
 	}
 
@@ -426,10 +428,14 @@ public class CollisionNode
 
 				final boolean isLeft = ( rightElement.getAveragePoint().y < splitY );
 				if ( !isLeft )
+				{
 					break;
+				}
 
 				if ( ++leftIndex >= rightIndex )
+				{
 					break outerLoop;
+				}
 			}
 
 			/*
@@ -442,14 +448,18 @@ public class CollisionNode
 
 				final boolean isLeft = ( leftElement.getAveragePoint().y < splitY );
 				if ( isLeft )
+				{
 					break;
+				}
 
 				if ( leftIndex >= --rightIndex )
+				{
 					break outerLoop;
+				}
 			}
 
-			triangles.set( leftIndex++ , leftElement );
-			triangles.set( rightIndex-- , rightElement );
+			triangles.set( leftIndex++, leftElement );
+			triangles.set( rightIndex--, rightElement );
 		}
 	}
 
@@ -477,10 +487,14 @@ public class CollisionNode
 
 				final boolean isLeft = ( rightElement.getAveragePoint().z < splitZ );
 				if ( !isLeft )
+				{
 					break;
+				}
 
 				if ( ++leftIndex >= rightIndex )
+				{
 					break outerLoop;
+				}
 			}
 
 			/*
@@ -493,14 +507,18 @@ public class CollisionNode
 
 				final boolean isLeft = ( leftElement.getAveragePoint().z < splitZ );
 				if ( isLeft )
+				{
 					break;
+				}
 
 				if ( leftIndex >= --rightIndex )
+				{
 					break outerLoop;
+				}
 			}
 
-			triangles.set( leftIndex++ , leftElement );
-			triangles.set( rightIndex-- , rightElement );
+			triangles.set( leftIndex++, leftElement );
+			triangles.set( rightIndex--, rightElement );
 		}
 	}
 }
