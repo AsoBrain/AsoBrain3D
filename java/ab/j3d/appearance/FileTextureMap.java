@@ -23,8 +23,9 @@ package ab.j3d.appearance;
 
 import java.awt.image.*;
 import java.io.*;
+import java.net.*;
+import javax.imageio.*;
 
-import com.numdata.oss.ui.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -37,26 +38,61 @@ public class FileTextureMap
 	extends AbstractTextureMap
 {
 	/**
-	 * File containing the texture image.
+	 * Image file URL.
 	 */
 	@NotNull
-	private final File _file;
+	private final URL _imageUrl;
 
 	/**
-	 * Constructs a texture map from an image read from the given file.
-	 *
-	 * @param   file    File containing the texture image.
+	 * External form of image file URL. We need this, because we should not call
+	 * {@link URL#equals(Object)} and {@link URL#hashCode()}, because they may
+	 * perform DNS lookups and other heavyweight things.
 	 */
-	public FileTextureMap( @NotNull final File file )
+	@NotNull
+	private final String _imageUrlString;
+
+	/**
+	 * Construct texture map for image file.
+	 *
+	 * @param   imageFile   Image file.
+	 */
+	public FileTextureMap( @NotNull final File imageFile )
 	{
-		_file = file;
+		final URI uri = imageFile.toURI();
+		try
+		{
+			final URL url = uri.toURL();
+			_imageUrl = url;
+			_imageUrlString = url.toExternalForm();
+		}
+		catch ( MalformedURLException e )
+		{
+			/* should never happen for file URI */
+			throw new IllegalArgumentException( e );
+		}
 	}
 
-	@Override
-	public BufferedImage getImage( final boolean useCache )
+	/**
+	 * Construct texture map for image file URL.
+	 *
+	 * @param   imageUrl    URL for image file.
+	 */
+	public FileTextureMap( @NotNull final URL imageUrl )
 	{
-		final String path = _file.getPath();
-		return useCache ? ImageTools.getImage( path ) : ImageTools.load( path );
+		_imageUrl = imageUrl;
+		_imageUrlString = imageUrl.toExternalForm();
+	}
+
+	@NotNull
+	public URL getImageUrl()
+	{
+		return _imageUrl;
+	}
+
+	public BufferedImage loadImage()
+		throws IOException
+	{
+		return ImageIO.read( _imageUrl );
 	}
 
 	@Override
@@ -69,9 +105,8 @@ public class FileTextureMap
 		}
 		else if ( object instanceof FileTextureMap )
 		{
-			final FileTextureMap map = (FileTextureMap)object;
-			result = super.equals( object ) &&
-			         _file.equals( map._file );
+			final FileTextureMap other = (FileTextureMap)object;
+			result = super.equals( object ) && _imageUrlString.equals( other._imageUrlString );
 		}
 		else
 		{
@@ -83,6 +118,6 @@ public class FileTextureMap
 	@Override
 	public int hashCode()
 	{
-		return super.hashCode() ^ _file.hashCode();
+		return super.hashCode() ^ _imageUrlString.hashCode();
 	}
 }

@@ -21,6 +21,8 @@
 package ab.j3d.appearance;
 
 import java.awt.image.*;
+import java.io.*;
+import java.net.*;
 
 import org.jetbrains.annotations.*;
 
@@ -33,15 +35,28 @@ import org.jetbrains.annotations.*;
 public interface TextureMap
 {
 	/**
-	 * Get map image.
+	 * Get URL for image file.
 	 *
-	 * @param   useCache    If set, use cached images.
+	 * Note that if this returns <code>null</code>, there may still be an image,
+	 * but it may not be file-based or its URL could not be constructed.
+	 *
+	 * @return  {@link URL} for image file;
+	 *          <code>null</code> if image file is not available.
+	 */
+	@Nullable
+	URL getImageUrl();
+
+	/**
+	 * Load image.
 	 *
 	 * @return  {@link BufferedImage};
 	 *          <code>null</code> if image is not available.
+	 *
+	 * @throws  IOException if an I/O error occurs while reading the image.
 	 */
 	@Nullable
-	BufferedImage getImage( boolean useCache );
+	BufferedImage loadImage()
+		throws IOException;
 
 	/**
 	 * Get physical width of map in meters. If available, this can be used to

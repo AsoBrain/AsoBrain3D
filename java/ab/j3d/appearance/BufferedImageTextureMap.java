@@ -21,6 +21,8 @@
 package ab.j3d.appearance;
 
 import java.awt.image.*;
+import java.io.*;
+import java.net.*;
 
 import org.jetbrains.annotations.*;
 
@@ -73,8 +75,13 @@ public class BufferedImageTextureMap
 		_image = image;
 	}
 
-	@Override
-	public BufferedImage getImage( final boolean useCache )
+	public URL getImageUrl()
+	{
+		return null;
+	}
+
+	public BufferedImage loadImage()
+		throws IOException
 	{
 		return _image;
 	}

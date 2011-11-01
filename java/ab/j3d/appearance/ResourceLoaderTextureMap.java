@@ -23,10 +23,10 @@ package ab.j3d.appearance;
 
 import java.awt.image.*;
 import java.io.*;
+import java.net.*;
 import javax.imageio.*;
 
 import ab.j3d.loader.*;
-import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -42,13 +42,13 @@ public class ResourceLoaderTextureMap
 	 * Resource loaded used to retrieve the texture image.
 	 */
 	@NotNull
-	private ResourceLoader _resourceLoader;
+	private final ResourceLoader _resourceLoader;
 
 	/**
 	 * Identifies the texture image.
 	 */
 	@NotNull
-	private String _name;
+	private final String _name;
 
 	/**
 	 * Constructs a new texture map.
@@ -77,39 +77,47 @@ public class ResourceLoaderTextureMap
 		_name = name;
 	}
 
-	@Override
-	public BufferedImage getImage( final boolean useCache )
+	public URL getImageUrl()
+	{
+		return _resourceLoader.getResource( _name );
+	}
+
+	public BufferedImage loadImage()
+		throws IOException
 	{
 		BufferedImage result = null;
 
-		final ResourceLoader resourceLoader = _resourceLoader;
-		try
+		final InputStream in = _resourceLoader.getResourceAsStream( _name );
+		if ( in != null )
 		{
-			final InputStream inputStream = resourceLoader.getResource( _name );
-			result = ImageIO.read( inputStream );
-		}
-		catch ( IOException e )
-		{
-			/* Silently ignored. */
+			try
+			{
+				result = ImageIO.read( in );
+				return result;
+			}
+			finally
+			{
+				in.close();
+			}
 		}
 
 		return result;
 	}
 
 	@Override
-	public boolean equals( final Object other )
+	public boolean equals( final Object object )
 	{
 		final boolean result;
-		if ( other == this )
+		if ( object == this )
 		{
 			result = true;
 		}
-		else if ( other instanceof ResourceLoaderTextureMap )
+		else if ( object instanceof ResourceLoaderTextureMap )
 		{
-			final ResourceLoaderTextureMap map = (ResourceLoaderTextureMap)other;
-			result = super.equals( other ) &&
-			         _resourceLoader.equals( map._resourceLoader ) &&
-			         TextTools.equals( _name, map._name );
+			final ResourceLoaderTextureMap other = (ResourceLoaderTextureMap)object;
+			result = super.equals( object ) &&
+			         _resourceLoader.equals( other._resourceLoader ) &&
+			         _name.equals( other._name );
 		}
 		else
 		{
