@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2006-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +20,7 @@
  */
 package ab.j3d.view;
 
-import java.awt.Graphics2D;
+import java.awt.*;
 
 /**
  * An {@link ViewOverlay} is allowed to paint over an already rendered view.
@@ -56,5 +57,5 @@ public interface ViewOverlay
 	 * @param   view    {@link View3D} that rendered the scene.
 	 * @param   g2d     {@link Graphics2D} to paint the overlay.
 	 */
-	void paintOverlay( View3D view , Graphics2D g2d );
+	void paintOverlay( View3D view, Graphics2D g2d );
 }

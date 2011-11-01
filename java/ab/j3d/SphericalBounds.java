@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2007
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -57,9 +58,9 @@ public class SphericalBounds
 	 * @param   azimuth     Azimuth of the direction, in radians.
 	 * @param   zenith      Zenith of the direction, in radians.
 	 */
-	public SphericalBounds( final double azimuth , final double zenith )
+	public SphericalBounds( final double azimuth, final double zenith )
 	{
-		this( azimuth , azimuth , zenith , zenith );
+		this( azimuth, azimuth, zenith, zenith );
 	}
 
 	/**
@@ -74,19 +75,29 @@ public class SphericalBounds
 	 * @throws  IllegalArgumentException if any parameter is out of bounds or if
 	 *          the minimum zenith is greater than the maximum zenith.
 	 */
-	public SphericalBounds( final double minimumAzimuth , final double maximumAzimuth , final double minimumZenith , final double maximumZenith )
+	public SphericalBounds( final double minimumAzimuth, final double maximumAzimuth, final double minimumZenith, final double maximumZenith )
 	{
 		if ( ( minimumAzimuth < -Math.PI ) || ( minimumAzimuth > Math.PI ) )
+		{
 			throw new IllegalArgumentException( "minimumAzimuth" );
+		}
 		if ( ( maximumAzimuth < -Math.PI ) || ( maximumAzimuth > Math.PI ) )
+		{
 			throw new IllegalArgumentException( "maximumAzimuth" );
+		}
 
 		if ( ( minimumZenith < 0.0 ) || ( minimumZenith > Math.PI ) )
+		{
 			throw new IllegalArgumentException( "minimumZenith" );
+		}
 		if ( ( maximumZenith < 0.0 ) || ( maximumZenith > Math.PI ) )
+		{
 			throw new IllegalArgumentException( "maximumZenith" );
+		}
 		if ( minimumZenith > maximumZenith )
+		{
 			throw new IllegalArgumentException( "minimumZenith > maximumZenith" );
+		}
 
 		_minimumAzimuth = minimumAzimuth;
 		_maximumAzimuth = maximumAzimuth;
@@ -102,18 +113,24 @@ public class SphericalBounds
 	 * @param   zenithOffset    Zenith offset, in radians, between 0.0 and pi.
 	 * @param   zenithRange     Zenith range, in radians, between -pi and pi.
 	 *
+	 * @return  Spherical bounds for the specified angular ranges.
+	 *
 	 * @throws  IllegalArgumentException if zenithOffset + zenithRange is not
 	 *          in the range from 0.0 to pi (both inclusive).
 	 */
-	public static SphericalBounds fromRange( final double azimuthOffset , final double azimuthRange , final double zenithOffset , final double zenithRange )
+	public static SphericalBounds fromRange( final double azimuthOffset, final double azimuthRange, final double zenithOffset, final double zenithRange )
 	{
 		final double zenithEndOffset = zenithOffset + zenithRange;
 
 		if ( zenithEndOffset < 0.0 )
+		{
 			throw new IllegalArgumentException( "zenithOffset + zenithRange < 0.0" );
+		}
 
 		if ( zenithEndOffset > Math.PI )
+		{
 			throw new IllegalArgumentException( "zenithOffset + zenithRange > pi" );
+		}
 
 		final double minimumAzimuth;
 		final double maximumAzimuth;
@@ -134,7 +151,7 @@ public class SphericalBounds
 		final double minimumZenith = ( zenithRange >= 0.0 ) ? zenithOffset : zenithEndOffset;
 		final double maximumZenith = ( zenithRange <  0.0 ) ? zenithOffset : zenithEndOffset;
 
-		return new SphericalBounds( minimumAzimuth , maximumAzimuth , minimumZenith , maximumZenith );
+		return new SphericalBounds( minimumAzimuth, maximumAzimuth, minimumZenith, maximumZenith );
 	}
 
 	/**
@@ -147,10 +164,12 @@ public class SphericalBounds
 	 * @param   delta           Amount to be added to the bounds on each side,
 	 *                          in radians.
 	 *
+	 * @return  Spherical bounds for angular ranges.
+	 *
 	 * @throws  IllegalArgumentException if zenithOffset + zenithRange is not
 	 *          in the range from 0.0 to pi (both inclusive).
 	 */
-	public static SphericalBounds fromRange( final double azimuthOffset , final double azimuthRange , final double zenithOffset , final double zenithRange , final double delta )
+	public static SphericalBounds fromRange( final double azimuthOffset, final double azimuthRange, final double zenithOffset, final double zenithRange, final double delta )
 	{
 		/*
 		 * Extend offset/range to include the given delta.
@@ -163,10 +182,10 @@ public class SphericalBounds
 		/*
 		 * Prevent that zenith offset or range exceeds its valid range.
 		 */
-		final double normalZenithOffset = Math.min( Math.max( 0.0 , extendedZenithOffset ) , Math.PI );
-		final double normalZenithRange  = Math.min( Math.max( -normalZenithOffset , extendedZenithRange ) , Math.PI - normalZenithOffset );
+		final double normalZenithOffset = Math.min( Math.max( 0.0, extendedZenithOffset ), Math.PI );
+		final double normalZenithRange  = Math.min( Math.max( -normalZenithOffset, extendedZenithRange ), Math.PI - normalZenithOffset );
 
-		return fromRange( extendedAzimuthOffset , extendedAzimuthRange , normalZenithOffset , normalZenithRange );
+		return fromRange( extendedAzimuthOffset, extendedAzimuthRange, normalZenithOffset, normalZenithRange );
 	}
 
 	/**
@@ -180,7 +199,7 @@ public class SphericalBounds
 	public static SphericalBounds fromDirectionTo( final Vector3D point )
 	{
 		final Vector3D polar = point.cartesianToPolar();
-		return new SphericalBounds( polar.y , polar.y , polar.z , polar.z );
+		return new SphericalBounds( polar.y, polar.y, polar.z, polar.z );
 	}
 
 	/**
@@ -203,7 +222,9 @@ public class SphericalBounds
 	{
 		double range = _maximumAzimuth - _minimumAzimuth;
 		if ( range < 0.0 )
+		{
 			range += 2.0 * Math.PI;
+		}
 
 		final double centerAzimuth = _minimumAzimuth + range / 2.0;
 
@@ -285,7 +306,7 @@ public class SphericalBounds
 	 * @return  <code>true</code> if the direction is contained in the bounds;
 	 *          <code>false</code> otherwise.
 	 */
-	public boolean contains( final double azimuth , final double zenith )
+	public boolean contains( final double azimuth, final double zenith )
 	{
 		final boolean result;
 
@@ -317,16 +338,17 @@ public class SphericalBounds
 	/**
 	 * Returns whether the given direction is contained in the spherical bounds.
 	 *
-	 * @param   azimuth     Azimuth of the direction, in radians.
-	 * @param   zenith      Zenith of the direction, in radians.
-	 *
+	 * @param   azimuth             Azimuth of the direction, in radians.
+	 * @param   zenith              Zenith of the direction, in radians.
+	 * @param   includeOpposite     If set, also contain zenith rotated 180
+	 *                              degrees.
 	 * @return  <code>true</code> if the direction is contained in the bounds;
 	 *          <code>false</code> otherwise.
 	 */
-	public boolean contains( final double azimuth , final double zenith , final boolean includeOpposite )
+	public boolean contains( final double azimuth, final double zenith, final boolean includeOpposite )
 	{
-		return contains( azimuth , zenith ) ||
-	           ( includeOpposite && contains( azimuth , zenith + Math.PI ) );
+		return contains( azimuth, zenith ) ||
+	           ( includeOpposite && contains( azimuth, zenith + Math.PI ) );
 	}
 
 	/**
@@ -341,7 +363,7 @@ public class SphericalBounds
 	public boolean containsDirectionTo( final Vector3D cartesian )
 	{
 		final Vector3D polar = cartesian.cartesianToPolar();
-		return contains( polar.y , polar.z );
+		return contains( polar.y, polar.z );
 	}
 
 	/**
@@ -355,7 +377,7 @@ public class SphericalBounds
 	 */
 	public boolean contains( final Vector3D direction )
 	{
-		return contains( direction.y , direction.z );
+		return contains( direction.y, direction.z );
 	}
 
 	/**
@@ -372,9 +394,9 @@ public class SphericalBounds
 	 *          direction is contained in the bounds;
 	 *          <code>false</code> otherwise.
 	 */
-	public boolean contains( final Vector3D direction , final boolean includeOpposite )
+	public boolean contains( final Vector3D direction, final boolean includeOpposite )
 	{
-		return contains( direction.y , direction.z , includeOpposite );
+		return contains( direction.y, direction.z, includeOpposite );
 	}
 
 	/**
@@ -391,11 +413,11 @@ public class SphericalBounds
 	 *          contained in the bounds;
 	 *          <code>false</code> otherwise.
 	 */
-	public boolean contains( final SphericalBounds bounds , final boolean includeOpposite )
+	public boolean contains( final SphericalBounds bounds, final boolean includeOpposite )
 	{
-		final boolean containsMinimum = contains( bounds.getMinimumAzimuth() , bounds.getMinimumZenith() , false );
-		final boolean containsCenter  = contains( bounds.getCenterAzimuth()  , bounds.getCenterZenith()  , false );
-		final boolean containsMaximum = contains( bounds.getMaximumAzimuth() , bounds.getMaximumZenith() , false );
+		final boolean containsMinimum = contains( bounds.getMinimumAzimuth(), bounds.getMinimumZenith(), false );
+		final boolean containsCenter  = contains( bounds.getCenterAzimuth(), bounds.getCenterZenith(), false );
+		final boolean containsMaximum = contains( bounds.getMaximumAzimuth(), bounds.getMaximumZenith(), false );
 
 		final boolean result;
 
@@ -405,9 +427,9 @@ public class SphericalBounds
 		}
 		else
 		{
-			result = ( contains( bounds.getMinimumAzimuth() , bounds.getMinimumZenith() , true ) &&
-			           contains( bounds.getCenterAzimuth()  , bounds.getCenterZenith()  , true ) &&
-			           contains( bounds.getMaximumAzimuth() , bounds.getMaximumZenith() , true ) );
+			result = ( contains( bounds.getMinimumAzimuth(), bounds.getMinimumZenith(), true ) &&
+			           contains( bounds.getCenterAzimuth(), bounds.getCenterZenith(), true ) &&
+			           contains( bounds.getMaximumAzimuth(), bounds.getMaximumZenith(), true ) );
 		}
 
 		return result;
@@ -424,15 +446,15 @@ public class SphericalBounds
 	 * @return  Spherical bounds containing both these bounds and the given
 	 *          direction.
 	 */
-	public SphericalBounds add( final double azimuth , final double zenith )
+	public SphericalBounds add( final double azimuth, final double zenith )
 	{
 		final SphericalBounds result;
 
 		if ( isEmpty() )
 		{
-			result = new SphericalBounds( azimuth , zenith );
+			result = new SphericalBounds( azimuth, zenith );
 		}
-		else if ( contains( azimuth , zenith ) )
+		else if ( contains( azimuth, zenith ) )
 		{
 			result = this;
 		}
@@ -442,16 +464,16 @@ public class SphericalBounds
 			final double normalAzimuth      = normalize( ( signedNormalZenith >= 0.0 ) ? azimuth : azimuth + Math.PI );
 			final double normalZenith       = Math.abs( signedNormalZenith );
 
-			final double azimuthFromMinimum = angleBetween( _minimumAzimuth , normalAzimuth );
-			final double azimuthFromMaximum = angleBetween( _maximumAzimuth , normalAzimuth );
+			final double azimuthFromMinimum = angleBetween( _minimumAzimuth, normalAzimuth );
+			final double azimuthFromMaximum = angleBetween( _maximumAzimuth, normalAzimuth );
 
 			if ( azimuthFromMinimum <= azimuthFromMaximum )
 			{
-				result = new SphericalBounds( normalAzimuth , _maximumAzimuth , Math.min( _minimumZenith  , normalZenith  ) , Math.max( _maximumZenith  , normalZenith  ) );
+				result = new SphericalBounds( normalAzimuth, _maximumAzimuth, Math.min( _minimumZenith, normalZenith  ), Math.max( _maximumZenith, normalZenith  ) );
 			}
 			else
 			{
-				result = new SphericalBounds( _minimumAzimuth , normalAzimuth , Math.min( _minimumZenith  , normalZenith  ) , Math.max( _maximumZenith  , normalZenith  ) );
+				result = new SphericalBounds( _minimumAzimuth, normalAzimuth, Math.min( _minimumZenith, normalZenith  ), Math.max( _maximumZenith, normalZenith  ) );
 			}
 		}
 
@@ -471,7 +493,7 @@ public class SphericalBounds
 	public SphericalBounds addDirectionTo( final Vector3D point )
 	{
 		final Vector3D polar = point.cartesianToPolar();
-		return add( polar.y , polar.z );
+		return add( polar.y, polar.z );
 	}
 
 	/**
@@ -510,9 +532,9 @@ public class SphericalBounds
 	 * @param   first   First angle, in radians, between -pi and pi.
 	 * @param   second  Second angle, in radians, between -pi and pi.
 	 *
-	 * @return
+	 * @return  Smallest angular difference between two angles.
 	 */
-	private static double angleBetween( final double first , final double second )
+	private static double angleBetween( final double first, final double second )
 	{
 		final double difference = Math.abs( first - second );
 		return ( difference > Math.PI ) ? Math.PI * 2.0 - difference
