@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2010-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +20,9 @@
  */
 package ab.j3d.loader;
 
-import java.awt.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.List;
 import java.util.zip.*;
 
 import ab.j3d.*;
@@ -47,6 +46,8 @@ public class ZjfLoader
 	 * @param   url     URL to file.
 	 *
 	 * @return  {@link Node3D}..
+	 *
+	 * @throws  IOException if an I/O error occurs.
 	 */
 	public static Node3D load( @NotNull final URL url )
 		throws IOException
@@ -60,6 +61,8 @@ public class ZjfLoader
 	 * @param   reader  ZJF file reader.
 	 *
 	 * @return  {@link Node3D}.
+	 *
+	 * @throws  IOException if an I/O error occurs.
 	 */
 	public static Node3D load( @NotNull final Reader reader )
 		throws IOException
@@ -73,6 +76,8 @@ public class ZjfLoader
 	 * @param   assembly    Assembly to convert.
 	 *
 	 * @return  {@link Node3D}.
+	 *
+	 * @throws  IOException if an I/O error occurs.
 	 */
 	static Node3D convertAssemblyToNode3D( final Assembly assembly )
 		throws IOException
@@ -122,7 +127,7 @@ public class ZjfLoader
 			final List<Integer> vertices = triangle.vertices;
 			final List<Integer> normalList = triangle.normalList;
 
-			final int[] vertexIndices = { vertices.get( 0 ), vertices.get( 1 ) , vertices.get( 2 ) };
+			final int[] vertexIndices = { vertices.get( 0 ), vertices.get( 1 ), vertices.get( 2 ) };
 			final Vector3D[] vertexNormals = ( normalList != null ) ? new Vector3D[] { normals.get( normalList.get( 0 ) ), normals.get( normalList.get( 1 ) ), normals.get( normalList.get( 2 ) ) } : null;
 			final Material material = new Material( triangle.color.getRGB() | 0xFF000000 );
 
@@ -193,7 +198,6 @@ public class ZjfLoader
 		stream.wordChars( (int)'-', (int)'-' );
 		stream.quoteChar( (int) '"' );
 
-		int count;
 		Part currentPart = null;
 
 		int state = START;
@@ -636,7 +640,7 @@ public class ZjfLoader
 					}
 
 					final int b = (int) getDoubleValue( stream );
-					currentPart.color = new Color( r, g, b );
+					currentPart.color = new Color4f( r, g, b );
 
 					stream.nextToken();
 
@@ -762,7 +766,7 @@ public class ZjfLoader
 	private static class Part
 	{
 		int alpha;
-		Color color;
+		Color4f color;
 		String name;
 		List<Vector3D> vertexCoordinates = new ArrayList<Vector3D>();
 		String mid;
@@ -775,12 +779,12 @@ public class ZjfLoader
 
 	private static class Triangle
 	{
-		Color color;
+		Color4f color;
 		List<Integer> vertices;
 		List<Integer> normalList;
 		Vector3D normal;
 
-		Triangle( Part part, List<Integer> vertices, Color col, int alpha )
+		Triangle( Part part, List<Integer> vertices, Color4f col, int alpha )
 		{
 			normal = null;
 			this.vertices = vertices;
