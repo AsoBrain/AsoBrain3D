@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,14 +20,12 @@
  */
 package ab.j3d.view.control.planar;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.control.ControlInputEvent;
-import ab.j3d.model.ContentNode;
-import ab.j3d.view.View3D;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
 
 /**
  * This class provides some basic functionality of a {@link PlaneControl}.
@@ -55,7 +54,7 @@ public abstract class AbstractPlaneControl
 	/**
 	 * List of registered views.
 	 */
-	private List<View3D> _views = new ArrayList<View3D>();
+	private final List<View3D> _views = new ArrayList<View3D>();
 
 	/**
 	 * Construct new control.
@@ -104,7 +103,7 @@ public abstract class AbstractPlaneControl
 		}
 	}
 
-	public boolean mousePressed( final ControlInputEvent event , final ContentNode contentNode , final Vector3D wcsStart )
+	public boolean mousePressed( final ControlInputEvent event, final ContentNode contentNode, final Vector3D wcsStart )
 	{
 		_wcsStart = wcsStart;
 		_wcsEnd   = null;
@@ -113,13 +112,13 @@ public abstract class AbstractPlaneControl
 		return isActive();
 	}
 
-	public void mouseDragged( final ControlInputEvent event , final ContentNode contentNode , final Vector3D wcsEnd )
+	public void mouseDragged( final ControlInputEvent event, final ContentNode contentNode, final Vector3D wcsEnd )
 	{
 		_wcsEnd = wcsEnd;
 
 	}
 
-	public void mouseReleased( final ControlInputEvent event , final ContentNode contentNode , final Vector3D wcsEnd )
+	public void mouseReleased( final ControlInputEvent event, final ContentNode contentNode, final Vector3D wcsEnd )
 	{
 		_wcsEnd = wcsEnd;
 		_active = false;

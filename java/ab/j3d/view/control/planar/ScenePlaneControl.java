@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2010-2010
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -90,7 +91,7 @@ public interface ScenePlaneControl
 	 * @return  <code>true</code> if the event is captured;
 	 *          <code>false</code> otherwise>
 	 */
-	boolean mousePressed( ControlInputEvent event , double x , double y );
+	boolean mousePressed( ControlInputEvent event, double x, double y );
 
 	/**
 	 * Notifies the control that the mouse was dragged. This event is only
@@ -100,7 +101,7 @@ public interface ScenePlaneControl
 	 * @param   x               X coordinate on plane.
 	 * @param   y               Y coordinate on plane.
 	 */
-	void mouseDragged( ControlInputEvent event , double x , double y );
+	void mouseDragged( ControlInputEvent event, double x, double y );
 
 	/**
 	 * Notifies the control that the mouse button was released. This event is
@@ -110,7 +111,7 @@ public interface ScenePlaneControl
 	 * @param   x               X coordinate on plane.
 	 * @param   y               Y coordinate on plane.
 	 */
-	void mouseReleased( ControlInputEvent event , double x , double y );
+	void mouseReleased( ControlInputEvent event, double x, double y );
 
 	/**
 	 * Notifies the control that the mouse was moved.
@@ -119,7 +120,7 @@ public interface ScenePlaneControl
 	 * @param   x               X coordinate on plane.
 	 * @param   y               Y coordinate on plane.
 	 */
-	void mouseMoved( ControlInputEvent event , double x , double y );
+	void mouseMoved( ControlInputEvent event, double x, double y );
 
 	/**
 	 * This method can paint on the plane using 2D coordinates relative to the
@@ -135,5 +136,5 @@ public interface ScenePlaneControl
 	 * @param   view    {@link View3D} which has rendered the scene.
 	 * @param   g2d     {@link Graphics2D} object which can do the 2D painting.
 	 */
-	void paint( final View3D view , final Graphics2D g2d );
+	void paint( final View3D view, final Graphics2D g2d );
 }

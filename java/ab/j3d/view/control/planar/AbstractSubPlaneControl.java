@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,14 +20,12 @@
  */
 package ab.j3d.view.control.planar;
 
-import java.awt.geom.Line2D;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.*;
 
-import ab.j3d.control.ControlInputEvent;
-import ab.j3d.model.ContentNode;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.model.*;
 
-import com.numdata.oss.MathTools;
 
 /**
  * This class provides some basic functionality of a {@link SubPlaneControl}.
@@ -79,7 +78,7 @@ public abstract class AbstractSubPlaneControl
 		return true;
 	}
 
-	public boolean mousePressed( final ControlInputEvent event , final ContentNode contentNode , final double x , final double y )
+	public boolean mousePressed( final ControlInputEvent event, final ContentNode contentNode, final double x, final double y )
 	{
 		_startX = x;
 		_startY = y;
@@ -90,13 +89,13 @@ public abstract class AbstractSubPlaneControl
 		return isActive();
 	}
 
-	public void mouseDragged( final ControlInputEvent event , final ContentNode contentNode , final double x , final double y )
+	public void mouseDragged( final ControlInputEvent event, final ContentNode contentNode, final double x, final double y )
 	{
 		_endX = x;
 		_endY = y;
 	}
 
-	public void mouseReleased( final ControlInputEvent event , final ContentNode contentNode , final double x , final double y )
+	public void mouseReleased( final ControlInputEvent event, final ContentNode contentNode, final double x, final double y )
 	{
 		_endX   = x;
 		_endY   = y;
@@ -130,7 +129,7 @@ public abstract class AbstractSubPlaneControl
 	 */
 	public double getMinX()
 	{
-		return Math.min( _startX , _endX );
+		return Math.min( _startX, _endX );
 	}
 
 	/**
@@ -140,7 +139,7 @@ public abstract class AbstractSubPlaneControl
 	 */
 	public double getMinY()
 	{
-		return Math.min( _startY , _endY );
+		return Math.min( _startY, _endY );
 	}
 
 	/**
@@ -150,7 +149,7 @@ public abstract class AbstractSubPlaneControl
 	 */
 	public double getMaxX()
 	{
-		return Math.max( _startX , _endX );
+		return Math.max( _startX, _endX );
 	}
 
 	/**
@@ -160,7 +159,7 @@ public abstract class AbstractSubPlaneControl
 	 */
 	public double getMaxY()
 	{
-		return Math.max( _startY , _endY );
+		return Math.max( _startY, _endY );
 	}
 
 	/**
@@ -190,7 +189,7 @@ public abstract class AbstractSubPlaneControl
 	 */
 	public Rectangle2D getRectangle2D()
 	{
-		return new Rectangle2D.Double( getMinX() , getMinY() , getWidth() , getHeight() );
+		return new Rectangle2D.Double( getMinX(), getMinY(), getWidth(), getHeight() );
 	}
 
 	/**
@@ -201,7 +200,7 @@ public abstract class AbstractSubPlaneControl
 	 */
 	public Line2D getLine2D()
 	{
-		return new Line2D.Double( _startX , _startY , _endX , _endY );
+		return new Line2D.Double( _startX, _startY, _endX, _endY );
 	}
 
 	/**
@@ -216,7 +215,7 @@ public abstract class AbstractSubPlaneControl
 		final double dx = _endX - _startX;
 		final double dy = _endY - _startY;
 
-		if ( !MathTools.almostEqual( dx , 0.0 ) && !MathTools.almostEqual( dx , 0.0 ) )
+		if ( !MathTools.almostEqual( dx, 0.0 ) && !MathTools.almostEqual( dx, 0.0 ) )
 		{
 			final double l = Math.sqrt( dx * dx + dy * dy );
 
@@ -237,7 +236,7 @@ public abstract class AbstractSubPlaneControl
 	 */
 	public double getBoundEndX()
 	{
-		return Math.min( Math.max( 0.0 , _endX ) , getPlaneWidth() );
+		return Math.min( Math.max( 0.0, _endX ), getPlaneWidth() );
 	}
 
 	/**
@@ -247,7 +246,7 @@ public abstract class AbstractSubPlaneControl
 	 */
 	public double getBoundEndY()
 	{
-		return Math.min( Math.max( 0.0 , _endY ) , getPlaneHeight() );
+		return Math.min( Math.max( 0.0, _endY ), getPlaneHeight() );
 	}
 
 	/**
@@ -258,7 +257,7 @@ public abstract class AbstractSubPlaneControl
 	 */
 	public double getBoundMinX()
 	{
-		return Math.max( 0.0 , getMinX() );
+		return Math.max( 0.0, getMinX() );
 	}
 
 	/**
@@ -269,7 +268,7 @@ public abstract class AbstractSubPlaneControl
 	 */
 	public double getBoundMinY()
 	{
-		return Math.max( 0.0 , getMinY() );
+		return Math.max( 0.0, getMinY() );
 	}
 
 	/**
@@ -280,7 +279,7 @@ public abstract class AbstractSubPlaneControl
 	 */
 	public double getBoundMaxX()
 	{
-		return Math.min( getPlaneWidth() , getMaxX() );
+		return Math.min( getPlaneWidth(), getMaxX() );
 	}
 
 	/**
@@ -291,7 +290,7 @@ public abstract class AbstractSubPlaneControl
 	 */
 	public double getBoundMaxY()
 	{
-		return Math.min( getPlaneHeight() , getMaxY() );
+		return Math.min( getPlaneHeight(), getMaxY() );
 	}
 
 	/**
@@ -324,7 +323,7 @@ public abstract class AbstractSubPlaneControl
 	 */
 	public Rectangle2D getBoundRectangle2D()
 	{
-		return new Rectangle2D.Double( getBoundMinX() , getBoundMinY() , getBoundWidth() , getBoundHeight() );
+		return new Rectangle2D.Double( getBoundMinX(), getBoundMinY(), getBoundWidth(), getBoundHeight() );
 	}
 
 	/**
@@ -368,7 +367,7 @@ public abstract class AbstractSubPlaneControl
 			endY = maxY;
 		}
 
-		return new Line2D.Double( startX , startY , endX , endY );
+		return new Line2D.Double( startX, startY, endX, endY );
 	}
 
 	/**

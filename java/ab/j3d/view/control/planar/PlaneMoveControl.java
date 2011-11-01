@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2008-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,13 +20,12 @@
  */
 package ab.j3d.view.control.planar;
 
-import java.awt.Graphics2D;
+import java.awt.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.control.ControlInputEvent;
-import ab.j3d.model.ContentNode;
-import ab.j3d.view.View3D;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
 
 /**
  * This implementation of {@link PlaneControl} moves the selected node on a
@@ -40,7 +40,7 @@ public class PlaneMoveControl
 	/**
 	 * Transformation from drag plane to WCS.
 	 */
-	private Matrix3D _plane2wcs;
+	private final Matrix3D _plane2wcs;
 
 	/**
 	 * Drag plane is two-sided vs. one-sided.
@@ -55,11 +55,22 @@ public class PlaneMoveControl
 	/**
 	 * Manipulation mode.
 	 */
-	public static enum ManipulationMode
+	public enum ManipulationMode
 	{
-		/** Not manipulating anything. */ NONE ,
-		/** Move.                      */ MOVE ,
-		/** Rotate.                    */ ROTATE ,
+		/**
+		 * Not manipulating anything.
+		 */
+		NONE,
+
+		/**
+		 * Move.
+		 */
+		MOVE,
+
+		/**
+		 * Rotate.
+		 */
+		ROTATE
 	}
 
 	/**
@@ -73,7 +84,7 @@ public class PlaneMoveControl
 	 * @param   plane2wcs       Transformation from drag plane to WCS.
 	 * @param   twoSidedPlane   Plane is two-sided vs. one-sided.
 	 */
-	public PlaneMoveControl( final Matrix3D plane2wcs , final boolean twoSidedPlane )
+	public PlaneMoveControl( final Matrix3D plane2wcs, final boolean twoSidedPlane )
 	{
 		_plane2wcs = plane2wcs;
 		_twoSidedPlane = twoSidedPlane;
@@ -101,11 +112,12 @@ public class PlaneMoveControl
 		return _manipulationMode;
 	}
 
-	public boolean mousePressed( final ControlInputEvent event , final ContentNode contentNode , final Vector3D wcsStart )
+	@Override
+	public boolean mousePressed( final ControlInputEvent event, final ContentNode contentNode, final Vector3D wcsStart )
 	{
 		final ManipulationMode manipulationMode;
 
-		if ( super.mousePressed( event , contentNode , wcsStart ) )
+		if ( super.mousePressed( event, contentNode, wcsStart ) )
 		{
 			manipulationMode = event.isControlDown() ? ManipulationMode.ROTATE : ManipulationMode.MOVE;
 		}
@@ -120,20 +132,22 @@ public class PlaneMoveControl
 		return ( manipulationMode != ManipulationMode.NONE );
 	}
 
-	public void mouseDragged( final ControlInputEvent event , final ContentNode contentNode , final Vector3D wcsPoint )
+	@Override
+	public void mouseDragged( final ControlInputEvent event, final ContentNode contentNode, final Vector3D wcsPoint )
 	{
-		super.mouseDragged( event , contentNode , wcsPoint );
+		super.mouseDragged( event, contentNode, wcsPoint );
 
-		drag( contentNode , event );
+		drag( contentNode, event );
 	}
 
-	public void mouseReleased( final ControlInputEvent event , final ContentNode contentNode , final Vector3D wcsPoint )
+	@Override
+	public void mouseReleased( final ControlInputEvent event, final ContentNode contentNode, final Vector3D wcsPoint )
 	{
-		super.mouseReleased( event , contentNode , wcsPoint );
-		drag( contentNode , event );
+		super.mouseReleased( event, contentNode, wcsPoint );
+		drag( contentNode, event );
 	}
 
-	public void paintOverlay( final View3D view , final Graphics2D g2d )
+	public void paintOverlay( final View3D view, final Graphics2D g2d )
 	{
 	}
 
@@ -143,7 +157,7 @@ public class PlaneMoveControl
 	 * @param   contentNode     Node that is being controlled.
 	 * @param   event           Event from control.
 	 */
-	protected void drag( final ContentNode contentNode , final ControlInputEvent event )
+	protected void drag( final ContentNode contentNode, final ControlInputEvent event )
 	{
 		switch ( getManipulationMode() )
 		{
@@ -156,7 +170,7 @@ public class PlaneMoveControl
 				final double verticalDegrees   = -toDegrees * (double)event.getDragDeltaY();
 				final double horizontalDegrees =  toDegrees * (double)event.getDragDeltaX();
 
-				final Matrix3D rotation = Matrix3D.getTransform( 0.0 , 0.0 , verticalDegrees - horizontalDegrees , 0.0 , 0.0 , 0.0 );
+				final Matrix3D rotation = Matrix3D.getTransform( 0.0, 0.0, verticalDegrees - horizontalDegrees, 0.0, 0.0, 0.0 );
 				contentNode.setTransform( rotation.multiply( _startTransform ) );
 				break;
 		}
@@ -172,6 +186,6 @@ public class PlaneMoveControl
 		final Matrix3D nodeTransform = _startTransform;
 		final Vector3D wcsDelta      = getWcsDelta();
 
-		return wcsDelta.plus( nodeTransform.xo , nodeTransform.yo , nodeTransform.zo );
+		return wcsDelta.plus( nodeTransform.xo, nodeTransform.yo, nodeTransform.zo );
 	}
 }

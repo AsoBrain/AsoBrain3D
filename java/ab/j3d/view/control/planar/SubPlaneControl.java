@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,13 +20,12 @@
  */
 package ab.j3d.view.control.planar;
 
-import java.awt.Graphics2D;
+import java.awt.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.model.ContentNode;
-import ab.j3d.control.ControlInputEvent;
-import ab.j3d.view.View3D;
-import ab.j3d.view.ViewOverlay;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
 
 /**
  * This interface defines control behavior for a plane relative to a
@@ -86,7 +86,7 @@ public interface SubPlaneControl
 	 * @return  <code>true</code> if a drag operation is started;
 	 *          <code>false</code> otherwise>
 	 */
-	boolean mousePressed( ControlInputEvent event , ContentNode contentNode , double x , double y );
+	boolean mousePressed( ControlInputEvent event, ContentNode contentNode, double x, double y );
 
 	/**
 	 * Drag event.
@@ -96,7 +96,7 @@ public interface SubPlaneControl
 	 * @param   x               X coordinate on plane.
 	 * @param   y               Y coordinate on plane.
 	 */
-	void mouseDragged( ControlInputEvent event , ContentNode contentNode , double x , double y );
+	void mouseDragged( ControlInputEvent event, ContentNode contentNode, double x, double y );
 
 	/**
 	 * Drag end event.
@@ -106,7 +106,7 @@ public interface SubPlaneControl
 	 * @param   x               X coordinate on plane.
 	 * @param   y               Y coordinate on plane.
 	 */
-	void mouseReleased( ControlInputEvent event , ContentNode contentNode , double x , double y );
+	void mouseReleased( ControlInputEvent event, ContentNode contentNode, double x, double y );
 
 	/**
 	 * This method can paint on the plane using 2D coordinates relative to the
@@ -122,5 +122,5 @@ public interface SubPlaneControl
 	 * @param   view    {@link View3D} which has rendered the scene.
 	 * @param   g2d     {@link Graphics2D} object which can do the 2D painting.
 	 */
-	void paint( final View3D view , final Graphics2D g2d );
+	void paint( final View3D view, final Graphics2D g2d );
 }

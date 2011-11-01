@@ -29,13 +29,12 @@ import ab.j3d.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
-import com.numdata.oss.event.*;
 import org.jetbrains.annotations.*;
 
 /**
- * The <code>ViewControlInput</code> ckass receives input events for a
- * {@link View3D}, converts them to {@link ControlInputEvent}s, and dispatches
- * them to a local {@link EventDispatcher}.
+ * The <code>ViewControlInput</code> receives input events for a {@link View3D},
+ * converts them to {@link ControlInputEvent}s, and sends them to registered
+ * {@link ControlInputListener listeners}.
  *
  * @author  Mart Slot
  * @version $Revision$ $Date$
@@ -61,10 +60,16 @@ public class ViewControlInput
 	protected int _dragStartY;
 
 	/**
-	 * The {@link EventDispatcher} that dispatches the
-	 * {@link java.util.EventObject}s to registered {@link Control}s.
+	 * List of registered listeners.
 	 */
-	private final EventDispatcher _eventDispatcher;
+	private final List<ControlInputListener> _controlInputListeners = new ArrayList<ControlInputListener>();
+
+	/**
+	 * Listener that is given first pick when filtering events. The rest of the
+	 * listener ordering is retained. When the focus is released, the original
+	 * listener ordering is restored.
+	 */
+	private ControlInputListener _focusListener = null;
 
 	/**
 	 * The number of the current series of events. This number is increased
@@ -88,11 +93,10 @@ public class ViewControlInput
 	{
 		_view = view;
 
-		_dragStartX      = 0;
-		_dragStartY      = 0;
-		_eventDispatcher = new EventDispatcher();
-		_eventNumber     = 0;
-		_wasDragged      = false;
+		_dragStartX = 0;
+		_dragStartY = 0;
+		_eventNumber = 0;
+		_wasDragged = false;
 
 		final Component component = view.getComponent();
 		if ( component != null )
@@ -144,26 +148,113 @@ public class ViewControlInput
 	}
 
 	/**
-	 * This method takes an {@link InputEvent}, converts it to a
-	 * {@link ControlInputEvent}, and dispatches it on the local
-	 * {@link EventDispatcher}.
+	 * Add a {@link ControlInputListener}. This listener will be called before
+	 * all previously registered listeners.
 	 *
-	 * @param   inputEvent  Input event to dispatch.
+	 * @param   listener    Listener to add.
 	 */
-	public void dispatchControlInputEvent( final InputEvent inputEvent )
+	public void addControlInputListener( final ControlInputListener listener )
 	{
-		_eventDispatcher.dispatch( createControlnputEvent( inputEvent ) );
+		_controlInputListeners.add( listener );
 	}
 
 	/**
-	 * Returns the {@link EventDispatcher} that dispatches the
-	 * {@link java.util.EventObject}s to registered {@link Control}s.
+	 * Add a {@link ControlInputListener}. This listener will be called before
+	 * all previously registered listeners.
 	 *
-	 * @return  This translators {@link EventDispatcher}.
+	 * @param   listener    Listener to add.
 	 */
-	public EventDispatcher getEventDispatcher()
+	public void insertControlInputListener( final ControlInputListener listener )
 	{
-		return _eventDispatcher;
+		_controlInputListeners.add( 0, listener );
+	}
+
+	/**
+	 * Removes a previously registered {@link ControlInputListener}.
+	 *
+	 * @param   listener    Listener to remove
+	 */
+	public void removeControlInputListener( final ControlInputListener listener )
+	{
+		_controlInputListeners.remove( listener );
+	}
+
+	/**
+	 * Tests whether the specified listener currently has this dispatcher's focus.
+	 *
+	 * @param   listener  Listener to test.
+	 *
+	 * @return  <code>true</code> if the specified listener has focus;
+	 *          <code>false</code> otherwise.
+	 */
+	public boolean hasFocus( @NotNull final ControlInputListener listener )
+	{
+		return ( listener == _focusListener );
+	}
+
+	/**
+	 * Requests that focus is transferred to the specified listener.
+	 * <p>
+	 * Until the focus is released or transferred to another listener, only the
+	 * specified listener will receive events.
+	 *
+	 * @param   listener    Listener to be given focus.
+	 */
+	public void requestFocus( @NotNull final ControlInputListener listener )
+	{
+		_focusListener = listener;
+	}
+
+	/**
+	 * Requests that focus is released from any listener set as such. This will
+	 * restore the original listener ordering.
+	 */
+	public void releaseFocus()
+	{
+		_focusListener = null;
+	}
+
+	/**
+	 * This converts an {@link InputEvent} to a {@link ControlInputEvent}, and
+	 * sends it to registered listeners. If a focus listener is set, only that
+	 	 * listener will receive the event.
+	 *
+	 * @param   inputEvent  Input event to dispatch.
+	 */
+	protected void dispatchControlInputEvent( final InputEvent inputEvent )
+	{
+		dispatchControlInputEvent( createControlnputEvent( inputEvent ) );
+	}
+
+	/**
+	 * Send event to registered listeners. If a focus listener is set, only that
+	 * listener will receive the event.
+	 *
+	 * @param   event   Event to dispatch.
+	 */
+	protected void dispatchControlInputEvent( final ControlInputEvent event )
+	{
+		final ControlInputListener focusListener = _focusListener;
+		if ( focusListener != null )
+		{
+			focusListener.inputReceived( event );
+		}
+
+		// re-test focus; the focus listener may have released focus
+		if ( _focusListener == null )
+		{
+			final List<ControlInputListener> listeners = _controlInputListeners;
+			/* NOTE: use indexed loop here to prevent ConcurrentModificationException's when listeners change the listener list */
+			//noinspection ForLoopReplaceableByForEach
+			for ( int i = 0 ; i < listeners.size() ; i++ )
+			{
+				final ControlInputListener listener = listeners.get( i );
+				if ( listener != focusListener )
+				{
+					listener.inputReceived( event );
+				}
+			}
+		}
 	}
 
 	/**
@@ -232,7 +323,6 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link KeyEvent} that was dispatched
 	 */
-	@Override
 	public void keyPressed( final KeyEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -243,7 +333,6 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link KeyEvent} that was dispatched
 	 */
-	@Override
 	public void keyReleased( final KeyEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -254,7 +343,6 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link KeyEvent} that was dispatched
 	 */
-	@Override
 	public void keyTyped( final KeyEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -265,7 +353,6 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
-	@Override
 	public void mouseClicked( final MouseEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -276,7 +363,6 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
-	@Override
 	public void mouseDragged( final MouseEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -287,7 +373,6 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
-	@Override
 	public void mouseEntered( final MouseEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -298,7 +383,6 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
-	@Override
 	public void mouseExited( final MouseEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -309,7 +393,6 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
-	@Override
 	public void mouseMoved( final MouseEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -320,7 +403,6 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
-	@Override
 	public void mousePressed( final MouseEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -331,7 +413,6 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
-	@Override
 	public void mouseReleased( final MouseEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -342,7 +423,6 @@ public class ViewControlInput
 	 *
 	 * @param   event   {@link MouseEvent} that was dispatched
 	 */
-	@Override
 	public void mouseWheelMoved( final MouseWheelEvent event )
 	{
 		dispatchControlInputEvent( event );
@@ -362,7 +442,7 @@ public class ViewControlInput
 		/**
 		 * ID of currently visited object (content node).
 		 */
-		private Object _objectId;
+		private Object _objectId = null;
 
 		/**
 		 * Ray to find intersections with.
@@ -390,7 +470,6 @@ public class ViewControlInput
 			Node3DTreeWalker.walk( this, contentNode.getTransform(), contentNode.getNode3D() );
 		}
 
-		@Override
 		public boolean visitNode( @NotNull final Node3DPath path )
 		{
 			final Node3D node = path.getNode();

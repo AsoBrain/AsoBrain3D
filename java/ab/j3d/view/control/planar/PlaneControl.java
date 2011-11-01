@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,11 +20,10 @@
  */
 package ab.j3d.view.control.planar;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.control.ControlInputEvent;
-import ab.j3d.view.ViewOverlay;
-import ab.j3d.model.ContentNode;
+import ab.j3d.*;
+import ab.j3d.control.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
 
 /**
  * This interface defines control behavior for a {@link ContentNode} relative
@@ -70,7 +70,7 @@ public interface PlaneControl
 	 * @return  <code>true</code> if a drag operation is started;
 	 *          <code>false</code> otherwise>
 	 */
-	boolean mousePressed( ControlInputEvent event , ContentNode contentNode , Vector3D wcsPoint );
+	boolean mousePressed( ControlInputEvent event, ContentNode contentNode, Vector3D wcsPoint );
 
 	/**
 	 * Drag event.
@@ -79,7 +79,7 @@ public interface PlaneControl
 	 * @param   contentNode     Node whose plane is controlled.
 	 * @param   wcsEnd          Drag point in WCS.
 	 */
-	void mouseDragged( ControlInputEvent event , ContentNode contentNode , Vector3D wcsEnd );
+	void mouseDragged( ControlInputEvent event, ContentNode contentNode, Vector3D wcsEnd );
 
 	/**
 	 * Drag end event.
@@ -88,5 +88,5 @@ public interface PlaneControl
 	 * @param   contentNode     Node whose plane is controlled.
 	 * @param   wcsPoint        Drag point in WCS.
 	 */
-	void mouseReleased( ControlInputEvent event , ContentNode contentNode , Vector3D wcsPoint );
+	void mouseReleased( ControlInputEvent event, ContentNode contentNode, Vector3D wcsPoint );
 }
