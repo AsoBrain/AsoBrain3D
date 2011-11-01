@@ -30,12 +30,12 @@ import javax.swing.*;
 
 import ab.j3d.*;
 import ab.j3d.awt.*;
+import ab.j3d.awt.view.*;
+import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import ab.j3d.view.jogl.*;
-import com.numdata.oss.ui.*;
 
 /**
  * Example program for the tessellation functionality in the library.
@@ -102,10 +102,20 @@ public class TessellationExample
 
 		final JPanel viewPanel = new JPanel( new BorderLayout() );
 		viewPanel.add( view.getComponent(), BorderLayout.CENTER );
-		viewPanel.add( view.createToolBar( Locale.ENGLISH ), BorderLayout.NORTH );
+		viewPanel.add( View3DPanel.createToolBar( view, Locale.ENGLISH ), BorderLayout.NORTH );
 
-		final JFrame frame = WindowTools.createFrame( String.valueOf( TessellationExample.class ), 800, 600, viewPanel );
+		final JFrame frame = new JFrame( String.valueOf( TessellationExample.class ) );
 		frame.setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
+		frame.setContentPane( viewPanel );
+		frame.setSize( 800, 600 );
+
+		final Toolkit toolkit = frame.getToolkit();
+		final GraphicsConfiguration graphicsConfiguration = frame.getGraphicsConfiguration();
+		final Rectangle screenBounds = graphicsConfiguration.getBounds();
+		final Insets screenInsets = toolkit.getScreenInsets( graphicsConfiguration );
+		frame.setLocation( screenBounds.x + ( screenBounds.width  + screenInsets.left + screenInsets.right - frame.getWidth() ) / 2,
+		                   screenBounds.y + ( screenBounds.height + screenInsets.top + screenInsets.bottom - frame.getHeight() ) / 2 );
+
 		frame.setVisible( true );
 	}
 

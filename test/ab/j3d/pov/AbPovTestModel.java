@@ -25,11 +25,11 @@ import java.awt.geom.*;
 
 import ab.j3d.*;
 import ab.j3d.awt.*;
+import ab.j3d.awt.view.java2d.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import ab.j3d.view.java2d.*;
 
 /**
  * This class constructs a testmodel ({@link Java2dEngine}) for testing the
