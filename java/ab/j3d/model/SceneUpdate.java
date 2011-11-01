@@ -52,7 +52,7 @@ public class SceneUpdate
 	 *
 	 * @param   scene   Scene to be updated.
 	 */
-	SceneUpdate( final Scene scene )
+	protected SceneUpdate( final Scene scene )
 	{
 		_scene = scene;
 		_sequenceNumber = scene.incrementAndGetUpdateSequenceNumber();
