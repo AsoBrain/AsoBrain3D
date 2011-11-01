@@ -22,11 +22,12 @@ package ab.j3d.view;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import javax.swing.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.view.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
@@ -105,7 +106,7 @@ public class RenderEngineExample
 
 		final JPanel viewPanel = new JPanel( new BorderLayout() );
 		viewPanel.add( view.getComponent(), BorderLayout.CENTER );
-		viewPanel.add( view.createToolBar( Locale.ENGLISH ), BorderLayout.NORTH );
+		viewPanel.add( View3DPanel.createToolBar( view, Locale.ENGLISH ), BorderLayout.NORTH );
 
 		final JFrame frame = new JFrame( renderEngine.getClass() + " example" );
 		frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
@@ -160,10 +161,11 @@ public class RenderEngineExample
 		clicked.setText( "Click on an object to change this text." );
 		view.addOverlay( clicked );
 
-		view.insertControl( new MouseControl()
+		final ViewControlInput controlInput = view.getControlInput();
+		controlInput.insertControlInputListener( new MouseControl()
 		{
 			@Override
-			public EventObject mouseClicked( final ControlInputEvent event )
+			public void mouseClicked( final ControlInputEvent event )
 			{
 				final List<Face3DIntersection> objects = event.getIntersections();
 
@@ -181,7 +183,6 @@ public class RenderEngineExample
 				clicked.setText( sb.toString() );
 
 				view.update();
-				return event;
 			}
 		} );
 
