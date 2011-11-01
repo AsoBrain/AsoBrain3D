@@ -20,7 +20,6 @@
  */
 package ab.j3d.geom;
 
-import java.awt.geom.*;
 import java.util.*;
 
 import ab.j3d.*;
@@ -45,6 +44,12 @@ public class GeometryTools
 	 * Tolerance to use for floating-point comparisons.
 	 */
 	private static final double EPSILON = 0.00001;
+
+	/**
+	 * Cosine of 1 decimal degree. This is close to 1.0 and can be used as a
+	 * border value.
+	 */
+	private static final double COSINE_ONE_DEGREE = Math.cos( Math.toRadians( 1.0 ) );
 
 	/**
 	 * Tools class is not supposed to be instantiated.
@@ -1404,23 +1409,23 @@ public class GeometryTools
 	 * @param   object  Object to intersect.
 	 * @param   plane   Plane to intersect the object with.
 	 *
-	 * @return  Path representing the cross-section.
+	 * @return  2D paths representing the cross-section.
 	 */
-	public static Path2D.Double createCrossSectionPath( final Object3D object, final Plane3D plane )
+	public static List<List<Vector2D>> createCrossSectionPath( final Object3D object, final Plane3D plane )
 	{
 		final Graph graph = createCrossSectionGraph( object, plane );
 		return createPathFromGraph( graph, plane );
 	}
 
 	/**
-	 * Creates a 2D path from the given graph.
+	 * Creates a 2D paths from the given graph.
 	 *
 	 * @param   segmentGraph    Graph with line segments.
 	 * @param   plane           Plane that contains the segments.
 	 *
 	 * @return  2D path.
 	 */
-	static Path2D.Double createPathFromGraph( final Graph segmentGraph, final Plane3D plane )
+	static List<List<Vector2D>> createPathFromGraph( final Graph segmentGraph, final Plane3D plane )
 	{
 		final Vector3D planeNormal = plane.getNormal();
 		final Vector3D xAxis;
@@ -1443,7 +1448,7 @@ public class GeometryTools
 		{
 			boundsBuilder.addPoint( node.getPoint() );
 		}
-		final Path2D.Double result = new Path2D.Double();
+		final List<List<Vector2D>> result = new ArrayList<List<Vector2D>>();
 
 		for ( final Graph.Node startNode : segmentGraph )
 		{
@@ -1476,80 +1481,40 @@ public class GeometryTools
 				/*
 				 * Filter out redundant line segments.
 				 */
-				final List<Vector3D> filtered;
-				if ( strip.size() < 3 )
+				final List<Vector2D> path2d = new ArrayList<Vector2D>( strip.size() );
+
+				double prevX = 0.0;
+				double prevY = 0.0;
+
+				final int lastPoint = strip.size() - 1;
+				for ( int i = 0; i <= lastPoint; i++ )
 				{
-					filtered = strip;
-				}
-				else
-				{
-					filtered = new ArrayList<Vector3D>( strip.size() );
+					final Vector2D cur3d = strip.get( i );
+					final double curX = Vector3D.dot( xAxis, cur3d );
+					final double curY = Vector3D.dot( yAxis, cur3d );
 
-					final Vector3D first = strip.get( 0 );
-					final Vector3D last = strip.get( strip.size() - 1 );
-					final boolean loop = first.equals( last );
-
-					final int size = strip.size();
-					final int startIndex = loop ? 0 : 1;
-					final int endIndex = loop ? size : size - 1;
-
-					if ( !loop )
+					if ( ( i == 0 ) || ( i == lastPoint ) )
 					{
-						filtered.add( first );
-					}
-
-					for ( int i = startIndex; i < endIndex; i++ )
-					{
-						final Vector3D p1 = strip.get( ( i + size - 1 ) % size );
-						final Vector3D p2 = strip.get( i );
-						final Vector3D p3 = strip.get( ( i + 1 ) % size );
-
-						final Vector3D v1 = Vector3D.normalize( p2.x - p1.x, p2.y - p1.y, p2.z - p1.z );
-						final Vector3D v2 = Vector3D.normalize( p3.x - p2.x, p3.y - p2.y, p3.z - p2.z );
-
-						final Vector3D angleOffset = Vector3D.cross( v1, v2 );
-						if ( Math.abs( Math.toDegrees( angleOffset.length() ) ) >= 1.0 )
-						{
-							filtered.add( p2 );
-						}
-					}
-
-					if ( loop )
-					{
-						final Vector3D firstFiltered = filtered.get( 0 );
-						if ( !last.equals( firstFiltered ) )
-						{
-							filtered.add( last );
-						}
-						filtered.add( null );
+						path2d.add( new Vector2D( curX, curY ) );
 					}
 					else
 					{
-						filtered.add( last );
+						final Vector2D next3d = strip.get( i );
+						final double nextX = Vector3D.dot( xAxis, next3d );
+						final double nextY = Vector3D.dot( yAxis, next3d );
+
+						final double cosAngle = Vector2D.cosAngle( curX - prevX, curY - prevY, nextX - curX, nextY - curY );
+						if ( Math.abs( cosAngle ) < COSINE_ONE_DEGREE )
+						{
+							path2d.add( new Vector2D( curX, curY ) );
+						}
 					}
+
+					prevX = curX;
+					prevY = curY;
 				}
 
-				/*
-				 * Build a 2D path.
-				 */
-				Vector3D startPoint = null;
-				for ( final Vector3D point : filtered )
-				{
-					if ( point == null )
-					{
-						result.closePath();
-						startPoint = null;
-					}
-					else if ( startPoint == null )
-					{
-						result.moveTo( Vector3D.dot( xAxis, point ), Vector3D.dot( yAxis, point ) );
-						startPoint = point;
-					}
-					else
-					{
-						result.lineTo( Vector3D.dot( xAxis, point ), Vector3D.dot( yAxis, point ) );
-					}
-				}
+				result.add( path2d );
 			}
 		}
 

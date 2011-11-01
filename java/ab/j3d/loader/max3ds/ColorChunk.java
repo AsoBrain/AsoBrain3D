@@ -20,8 +20,9 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.awt.*;
 import java.io.*;
+
+import ab.j3d.*;
 
 /**
  * Type   : {@link #COLOR_FLOAT},
@@ -35,9 +36,9 @@ import java.io.*;
 class ColorChunk
 	extends Chunk
 {
-	Color _color;
+	Color4 _color;
 
-	Color _gamaColor;
+	Color4 _gamaColor;
 
 	ColorChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
@@ -54,19 +55,19 @@ class ColorChunk
 		switch ( chunkType )
 		{
 			case COLOR_BYTE :
-				_color = new Color( readUnsignedByte( in ), readUnsignedByte( in ), readUnsignedByte( in ) );
+				_color = new Color4f( readUnsignedByte( in ), readUnsignedByte( in ), readUnsignedByte( in ) );
 				break;
 
 			case COLOR_FLOAT :
-				_color = new Color( readFloat( in ), readFloat( in ), readFloat( in ), 1.0f );
+				_color = new Color4f( readFloat( in ), readFloat( in ), readFloat( in ) );
 				break;
 
 			case CLR_BYTE_GAMA :
-				_gamaColor = new Color( readUnsignedByte( in ), readUnsignedByte( in ), readUnsignedByte( in ) );
+				_gamaColor = new Color4f( readUnsignedByte( in ), readUnsignedByte( in ), readUnsignedByte( in ) );
 				break;
 
 			case CLR_FLOAT_GAMA :
-				_gamaColor = new Color( readFloat( in ), readFloat( in ), readFloat( in ), 1.0f );
+				_gamaColor = new Color4f( readFloat( in ), readFloat( in ), readFloat( in ) );
 				break;
 
 			default : // Ignore unknown chunks
@@ -75,7 +76,7 @@ class ColorChunk
 		}
 	}
 
-	public Color getColor()
+	public Color4 getColor()
 	{
 		return ( _color == null ) ? _gamaColor : _color;
 	}

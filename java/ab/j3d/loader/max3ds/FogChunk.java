@@ -20,8 +20,9 @@
  */
 package ab.j3d.loader.max3ds;
 
-import java.awt.*;
 import java.io.*;
+
+import ab.j3d.*;
 
 /**
  * Type:   {@link #FOG_FLAG}
@@ -42,7 +43,7 @@ class FogChunk
 
 	boolean _useBackGround;
 
-	Color _background;
+	Color4 _background;
 
 	FogChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
@@ -69,7 +70,7 @@ class FogChunk
 		switch ( chunkType )
 		{
 			case COLOR_FLOAT :
-				_background = new Color( readFloat( in ), readFloat( in ), readFloat( in ), 1.0f );
+				_background = new Color4f( readFloat( in ), readFloat( in ), readFloat( in ) );
 				break;
 
 			case FOG_BACKGROUND :
