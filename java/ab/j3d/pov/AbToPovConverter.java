@@ -44,18 +44,11 @@ public class AbToPovConverter
 	private final PovScene _scene;
 
 	/**
-	 * Directory containing the used materials.
-	 */
-	private final String _imageMapDirectory;
-
-	/**
 	 * Construct new converter and set the image map directory.
 	 *
-	 * @param   imageMapDirectory    Directory containing POV-image maps.
 	 */
-	public AbToPovConverter( @NotNull final String imageMapDirectory )
+	public AbToPovConverter()
 	{
-		_imageMapDirectory = imageMapDirectory;
 
 		_scene = new PovScene();
 	}
@@ -446,7 +439,7 @@ public class AbToPovConverter
 			 * known and may not even be on the local file system (e.g. memory).
 			 */
 			final Material material = (Material)appearance;
-			final PovTexture newTexture = new PovTexture( _imageMapDirectory, material );
+			final PovTexture newTexture = new PovTexture( material );
 			final String textureName = newTexture.getName();
 
 			result = _scene.getTexture( textureName );
