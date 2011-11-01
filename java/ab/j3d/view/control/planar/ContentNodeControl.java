@@ -25,15 +25,13 @@ import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import ab.j3d.view.control.*;
 
 /**
  * This interface defines control behavior for a {@link ContentNode}.
  *
  * <p>
  * A node control may also implement {@link ViewOverlay}, in which case it
- * should automatically be painted when bound to a content node. By default,
- * this behavior is provided by {@link DefaultViewControl}.
+ * should automatically be painted when bound to a content node.
  *
  * @author  G. Meinders
  * @version $Revision$ $Date$
