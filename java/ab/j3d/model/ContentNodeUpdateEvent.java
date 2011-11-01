@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2008-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +20,7 @@
  */
 package ab.j3d.model;
 
-import java.util.EventObject;
+import java.util.*;
 
 /**
  * Event fired by {@link ContentNode}.
@@ -50,6 +51,9 @@ public class ContentNodeUpdateEvent
 	 */
 	private final int _id;
 
+	/**
+	 * Serialized data version.
+	 */
 	private static final long serialVersionUID = -2324880479966704631L;
 
 	/**
@@ -58,7 +62,7 @@ public class ContentNodeUpdateEvent
 	 * @param   node    Origin of event.
 	 * @param   id      Event ID.
 	 */
-	public ContentNodeUpdateEvent( final ContentNode node , final int id )
+	public ContentNodeUpdateEvent( final ContentNode node, final int id )
 	{
 		super( node );
 		_id = id;

@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2008-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +20,7 @@
  */
 package ab.j3d.model;
 
-import java.util.EventListener;
+import java.util.*;
 
 /**
  * Listener for {@link ContentNodeUpdateEvent}s from a {@link ContentNode}.

@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +20,7 @@
  */
 package ab.j3d.model;
 
-import ab.j3d.Vector3D;
+import ab.j3d.*;
 
 /**
  * A spot light emits light from a single point, but only in a cone pointing in
@@ -82,7 +83,7 @@ public class SpotLight3D
 	 *                          the light cone, in degrees. Must be between
 	 *                          <code>0.0</code> and <code>90.0</code>.
 	 */
-	public SpotLight3D( final Vector3D direction , final float spreadAngle )
+	public SpotLight3D( final Vector3D direction, final float spreadAngle )
 	{
 		setDirection( direction );
 		setSpreadAngle( spreadAngle );
@@ -136,8 +137,8 @@ public class SpotLight3D
 	/**
 	 * Returns the concentration of the emitted light. Light is attenuated
 	 * towards the outer edge of the spot's cone. For lower values, the light
-	 * has a sharper edge, such that only light closer to the edge is noticably
-	 * attenuated. For higher values, the edge is smoother, with noticable
+	 * has a sharper edge, such that only light closer to the edge is noticeably
+	 * attenuated. For higher values, the edge is smoother, with noticeable
 	 * attenuation starting closer to the center of the cone.
 	 *
 	 * @return  Concentration of the light cone, in the range from
@@ -152,8 +153,8 @@ public class SpotLight3D
 	/**
 	 * Sets the concentration of the emitted light. Light is attenuated
 	 * towards the outer edge of the spot's cone. For lower values, the light
-	 * has a sharper edge, such that only light closer to the edge is noticably
-	 * attenuated. For higher values, the edge is smoother, with noticable
+	 * has a sharper edge, such that only light closer to the edge is noticeably
+	 * attenuated. For higher values, the edge is smoother, with noticeable
 	 * attenuation starting closer to the center of the cone.
 	 *
 	 * @param   concentration   Concentration of the light cone, in the range

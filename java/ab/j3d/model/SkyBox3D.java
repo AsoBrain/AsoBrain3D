@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2007-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -14,11 +15,12 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
 package ab.j3d.model;
 
-import ab.j3d.Material;
+import ab.j3d.*;
 
 /**
  * Defines a sky box, specifying the materials to be used for creating an
@@ -58,12 +60,12 @@ public class SkyBox3D
 	 */
 	public SkyBox3D( final String name )
 	{
-		this( new Material( name + "-north"   , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-north"   , 0.0f , 0.0f , false ) ,
-		      new Material( name + "-east"    , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-east"    , 0.0f , 0.0f , false ) ,
-		      new Material( name + "-south"   , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-south"   , 0.0f , 0.0f , false ) ,
-		      new Material( name + "-west"    , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-west"    , 0.0f , 0.0f , false ) ,
-		      new Material( name + "-ceiling" , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-ceiling" , 0.0f , 0.0f , false ) ,
-		      new Material( name + "-floor"   , 1.0f , 1.0f , 1.0f , 0.0f , 0.0f , 0.0f , 1.0f , 0.0f , 0.0f , 0.0f , 0 , 0.0f , 0.0f , 0.0f , name + "-floor"   , 0.0f , 0.0f , false ) );
+		this( new Material( name + "-north",   1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0, 0.0f, 0.0f, 0.0f, name + "-north",   0.0f, 0.0f, false ),
+		      new Material( name + "-east",    1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0, 0.0f, 0.0f, 0.0f, name + "-east",    0.0f, 0.0f, false ),
+		      new Material( name + "-south",   1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0, 0.0f, 0.0f, 0.0f, name + "-south",   0.0f, 0.0f, false ),
+		      new Material( name + "-west",    1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0, 0.0f, 0.0f, 0.0f, name + "-west",    0.0f, 0.0f, false ),
+		      new Material( name + "-ceiling", 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0, 0.0f, 0.0f, 0.0f, name + "-ceiling", 0.0f, 0.0f, false ),
+		      new Material( name + "-floor",   1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0, 0.0f, 0.0f, 0.0f, name + "-floor",   0.0f, 0.0f, false ) );
 	}
 
 	/**
@@ -76,7 +78,7 @@ public class SkyBox3D
 	 * @param   ceiling     Material to be used for the ceiling of the sky box.
 	 * @param   floor       Material to be used for the floor of the sky box.
 	 */
-	public SkyBox3D( final Material north , final Material east , final Material south , final Material west , final Material ceiling , final Material floor )
+	public SkyBox3D( final Material north, final Material east, final Material south, final Material west, final Material ceiling, final Material floor )
 	{
 		_north   = north;
 		_east    = east;
