@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,10 +20,9 @@
  */
 package ab.j3d.view;
 
-import junit.framework.TestCase;
-
-import ab.j3d.Vector3D;
-import ab.j3d.model.Scene;
+import ab.j3d.*;
+import ab.j3d.model.*;
+import junit.framework.*;
 
 /**
  * This class tests the {@link Projector} class.
@@ -51,70 +51,70 @@ public class TestProjector
 
 		System.out.println( " - PerspectiveProjector" );
 
-		Projector projector = Projector.createInstance( ProjectionPolicy.PERSPECTIVE , 100 , 100 , 1.0 , Scene.M , 0.1 , 1000.0 , Math.toRadians( 45.0 ) , 1.0);
+		Projector projector = Projector.createInstance( ProjectionPolicy.PERSPECTIVE, 100, 100, 1.0, Scene.M, 0.1, 1000.0, Math.toRadians( 45.0 ), 1.0);
 
-		Vector3D screen = Vector3D.INIT.set( 0.0 , 100.0 , 100.0 );
-		Vector3D world = projector.imageToView( screen.x , screen.y , screen.z );
-		Vector3D expected = Vector3D.INIT.set( 41.42 , 41.42 , 100.0 );
+		Vector3D screen = new Vector3D( 0.0, 100.0, 100.0 );
+		Vector3D world = projector.imageToView( screen.x, screen.y, screen.z );
+		Vector3D expected = new Vector3D( 41.42, 41.42, 100.0 );
 		System.out.println( "    > testing " + screen.toString() );
-		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
+		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString(), world.distanceTo(  expected ) < 1.0);
 
-		screen = Vector3D.INIT.set( 0.0 , 0.0 , 100.0 );
-		world = projector.imageToView( screen.x , screen.y , screen.z );
-		expected = Vector3D.INIT.set( 41.42 , -41.42 , 100.0 );
+		screen = new Vector3D( 0.0, 0.0, 100.0 );
+		world = projector.imageToView( screen.x, screen.y, screen.z );
+		expected = new Vector3D( 41.42, -41.42, 100.0 );
 		System.out.println( "    > testing " + screen.toString() );
-		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
+		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString(), world.distanceTo(  expected ) < 1.0);
 
-		screen = Vector3D.INIT.set( 100.0 , 100.0 , 100.0 );
-		world = projector.imageToView( screen.x , screen.y , screen.z );
-		expected = Vector3D.INIT.set( -41.42 , 42.42 , 100.0 );
+		screen = new Vector3D( 100.0, 100.0, 100.0 );
+		world = projector.imageToView( screen.x, screen.y, screen.z );
+		expected = new Vector3D( -41.42, 42.42, 100.0 );
 		System.out.println( "    > testing " + screen.toString() );
-		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
+		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString(), world.distanceTo(  expected ) < 1.0);
 
-		screen = Vector3D.INIT.set( 100.0 , 0.0 , 100.0 );
-		world = projector.imageToView( screen.x , screen.y , screen.z );
-		expected = Vector3D.INIT.set( -41.42 , -41.42 , 100.0 );
+		screen = new Vector3D( 100.0, 0.0, 100.0 );
+		world = projector.imageToView( screen.x, screen.y, screen.z );
+		expected = new Vector3D( -41.42, -41.42, 100.0 );
 		System.out.println( "    > testing " + screen.toString() );
-		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
+		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString(), world.distanceTo(  expected ) < 1.0);
 
-		screen = Vector3D.INIT.set( 50.0 , 50.0 , 100.0 );
-		world = projector.imageToView( screen.x , screen.y , screen.z );
-		expected = Vector3D.INIT.set( 0.0 , 0.0 , 100.0 );
+		screen = new Vector3D( 50.0, 50.0, 100.0 );
+		world = projector.imageToView( screen.x, screen.y, screen.z );
+		expected = new Vector3D( 0.0, 0.0, 100.0 );
 		System.out.println( "    > testing " + screen.toString() );
-		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
+		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString(), world.distanceTo(  expected ) < 1.0);
 
 		System.out.println( " - ParallelProjector" );
 
-		projector = Projector.createInstance( ProjectionPolicy.PARALLEL , 100 , 100 , 1.0 , Scene.M , 0.1 , 1000.0 , Math.toRadians( 45.0 ) , 1.0);
+		projector = Projector.createInstance( ProjectionPolicy.PARALLEL, 100, 100, 1.0, Scene.M, 0.1, 1000.0, Math.toRadians( 45.0 ), 1.0);
 
-		screen = Vector3D.INIT.set( 0.0 , 0.0 , 100.0 );
-		world = projector.imageToView( screen.x , screen.y , screen.z );
-		expected = Vector3D.INIT.set( -50.0 , 50.0 , 100.0 );
+		screen = new Vector3D( 0.0, 0.0, 100.0 );
+		world = projector.imageToView( screen.x, screen.y, screen.z );
+		expected = new Vector3D( -50.0, 50.0, 100.0 );
 		System.out.println( "    > testing " + screen.toString() );
-		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
+		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString(), world.distanceTo(  expected ) < 1.0);
 
-		screen = Vector3D.INIT.set( 0.0 , 100.0 , 100.0 );
-		world = projector.imageToView( screen.x , screen.y , screen.z );
-		expected = Vector3D.INIT.set( -50.0 , -50.0 , 100.0 );
+		screen = new Vector3D( 0.0, 100.0, 100.0 );
+		world = projector.imageToView( screen.x, screen.y, screen.z );
+		expected = new Vector3D( -50.0, -50.0, 100.0 );
 		System.out.println( "    > testing " + screen.toString() );
-		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
+		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString(), world.distanceTo(  expected ) < 1.0);
 
-		screen = Vector3D.INIT.set( 100.0 , 0.0 , 100.0 );
-		world = projector.imageToView( screen.x , screen.y , screen.z );
-		expected = Vector3D.INIT.set( 50.0 , 50.0 , 100.0 );
+		screen = new Vector3D( 100.0, 0.0, 100.0 );
+		world = projector.imageToView( screen.x, screen.y, screen.z );
+		expected = new Vector3D( 50.0, 50.0, 100.0 );
 		System.out.println( "    > testing " + screen.toString() );
-		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
+		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString(), world.distanceTo(  expected ) < 1.0);
 
-		screen = Vector3D.INIT.set( 100.0 , 100.0 , 100.0 );
-		world = projector.imageToView( screen.x , screen.y , screen.z );
-		expected = Vector3D.INIT.set( 50.0 , -50.0 , 100.0 );
+		screen = new Vector3D( 100.0, 100.0, 100.0 );
+		world = projector.imageToView( screen.x, screen.y, screen.z );
+		expected = new Vector3D( 50.0, -50.0, 100.0 );
 		System.out.println( "    > testing " + screen.toString() );
-		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
+		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString(), world.distanceTo(  expected ) < 1.0);
 
-		screen = Vector3D.INIT.set( 50.0 , 50.0 , 100.0 );
-		world = projector.imageToView( screen.x , screen.y , screen.z );
-		expected = Vector3D.INIT.set( 0.0 , 0.0 , 100.0 );
+		screen = new Vector3D( 50.0, 50.0, 100.0 );
+		world = projector.imageToView( screen.x, screen.y, screen.z );
+		expected = new Vector3D( 0.0, 0.0, 100.0 );
 		System.out.println( "    > testing " + screen.toString() );
-		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString() , world.distanceTo(  expected ) < 1.0);
+		assertTrue( "The calculated world coordinates do not match the expected coordinates. Expected: " + expected.toString() + "  result: " + world.toString(), world.distanceTo(  expected ) < 1.0);
 	}
 }
