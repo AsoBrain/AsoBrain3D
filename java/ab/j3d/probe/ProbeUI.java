@@ -32,11 +32,11 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 import ab.j3d.*;
+import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import ab.j3d.view.jogl.*;
 
 /**
  * A user interface for testing 3D capabilities.
@@ -47,6 +47,15 @@ import ab.j3d.view.jogl.*;
 public class ProbeUI
 	extends JPanel
 {
+
+	/**
+	 * URL to directory containing this class.
+	 */
+	private static final URL PROBE_UI_URL = ProbeUI.class.getResource( "/ab/j3d/probe/" );
+
+	/**
+	 * View with rendered image.
+	 */
 	private final JOGLView _actual;
 
 	/**
@@ -175,21 +184,15 @@ public class ProbeUI
 
 		protected Image getImage( final String path )
 		{
-			final Class<?> thisClass = getClass();
-			final ClassLoader classLoader = thisClass.getClassLoader();
-			final URL imageUrl = classLoader.getResource( path );
 			BufferedImage result = null;
-			if ( imageUrl != null )
+			try
 			{
-				try
-				{
-					result = ImageIO.read( imageUrl );
-				}
-				catch ( IOException e )
-				{
-					System.err.println( "ImageIO.read( " + imageUrl + " ) => " + e );
-					e.printStackTrace();
-				}
+				result = ImageIO.read( new URL( PROBE_UI_URL, path ) );
+			}
+			catch ( IOException e )
+			{
+				System.err.println( "ImageIO.read( " + path + " ) => " + e );
+				e.printStackTrace();
 			}
 			return result;
 		}
@@ -260,11 +263,10 @@ public class ProbeUI
 		@Override
 		protected void createScene( final Scene scene )
 		{
-			MapTools.imageMapFilenameSuffix = ".png";
-			MapTools.imageMapDirectory = "";
+			Material.imagesDirectoryUrl = PROBE_UI_URL;
 
 			final Material texture1 = new Material( 0xffffffff );
-			texture1.colorMap = "ab/j3d/probe/texture1";
+			texture1.colorMap = "texture1.png";
 			texture1.colorMapWidth = 0.001f;
 			texture1.colorMapHeight = 0.001f;
 			texture1.specularColorRed = 0.0f;
@@ -309,7 +311,7 @@ public class ProbeUI
 		@Override
 		public Image getExpectedImage()
 		{
-			return getImage( "/ab/j3d/probe/expected-texture.png" );
+			return getImage( "expected-texture.png" );
 		}
 	}
 
@@ -402,7 +404,7 @@ public class ProbeUI
 		@Override
 		public Image getExpectedImage()
 		{
-			return getImage( "/ab/j3d/probe/expected-lighting.png" );
+			return getImage( "expected-lighting.png" );
 		}
 	}
 
@@ -460,7 +462,7 @@ public class ProbeUI
 		@Override
 		public Image getExpectedImage()
 		{
-			return getImage( "/ab/j3d/probe/expected-perPixelLighting.png" );
+			return getImage( "expected-perPixelLighting.png" );
 		}
 	}
 
@@ -513,7 +515,7 @@ public class ProbeUI
 		@Override
 		public Image getExpectedImage()
 		{
-			return getImage( "/ab/j3d/probe/expected-blending.png" );
+			return getImage( "expected-blending.png" );
 		}
 	}
 
