@@ -28,7 +28,7 @@ import java.util.*;
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public final class Bounds3D
+public class Bounds3D
 {
 	/**
 	 * First vector component of box. Normally the minimum vector.
@@ -51,6 +51,8 @@ public final class Bounds3D
 
 	/**
 	 * Initial value of a box (0-box).
+	 *
+	 * @deprecated Don't use this anymore, use {@link #EMPTY} or constructor call.
 	 */
 	public static final Bounds3D INIT = EMPTY;
 
@@ -339,7 +341,7 @@ public final class Bounds3D
 		final Vector3D v1 = Vector3D.fromString( value.substring( 0, semi ) );
 		final Vector3D v2 = Vector3D.fromString( value.substring( semi + 1 ) );
 
-		return INIT.set( v1, v2 );
+		return EMPTY.set( v1, v2 );
 	}
 
 	/**
@@ -775,7 +777,7 @@ public final class Bounds3D
 		final Vector3D newV2 = oldV2.set( x2, y2, z2 );
 
 		return ( ( newV1 == oldV1 ) && ( newV2 == oldV2 ) ) ? this :
-		       ( ( newV1 == v0    ) && ( newV2 == v0    ) ) ? INIT :
+		       ( ( newV1 == v0    ) && ( newV2 == v0    ) ) ? EMPTY :
 		       new Bounds3D( newV1, newV2 );
 	}
 
