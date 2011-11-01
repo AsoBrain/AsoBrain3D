@@ -57,7 +57,7 @@ public class HashList<E>
 	/**
 	 * Construct list will all contents from the specified collection.
 	 *
-	 * @param   collection  Collection with intial contents.
+	 * @param   collection  Collection with initial contents.
 	 */
 	public HashList( final Collection<? extends E> collection )
 	{
@@ -448,26 +448,22 @@ public class HashList<E>
 		 */
 		boolean _removed = false;
 
-		@Override
 		public void add( final E element )
 		{
 			HashList.this.add( _index++, element );
 			_removable = false;
 		}
 
-		@Override
 		public boolean hasNext()
 		{
 			return ( _index < size() - 1 );
 		}
 
-		@Override
 		public boolean hasPrevious()
 		{
 			return ( _index > 0 );
 		}
 
-		@Override
 		public E next()
 		{
 			if ( !hasNext() )
@@ -487,13 +483,11 @@ public class HashList<E>
 			return get( index );
 		}
 
-		@Override
 		public int nextIndex()
 		{
 			return ( _removed ? _index : ( _index + 1 ) );
 		}
 
-		@Override
 		public E previous()
 		{
 			if ( !hasPrevious() )
@@ -507,13 +501,11 @@ public class HashList<E>
 			return get( --_index );
 		}
 
-		@Override
 		public int previousIndex()
 		{
 			return hasPrevious() ? ( _index - 1 ) : -1;
 		}
 
-		@Override
 		public void remove()
 		{
 			if ( !_removable )
@@ -527,7 +519,6 @@ public class HashList<E>
 			HashList.this.remove( _index );
 		}
 
-		@Override
 		public void set( final E value )
 		{
 			HashList.this.set( _index, value );
