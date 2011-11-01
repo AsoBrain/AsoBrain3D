@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2004-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,12 +22,9 @@ package ab.j3d.control;
 
 import java.awt.event.*;
 import java.util.*;
-import javax.swing.*;
 
 import ab.j3d.*;
 import ab.j3d.view.*;
-import com.numdata.oss.*;
-import com.numdata.oss.ui.*;
 
 /**
  * This abstract class defined a control(ler) for a 3D view.
@@ -84,39 +82,6 @@ public abstract class CameraControl
 	}
 
 	/**
-	 * Get actions of the camera control.
-	 *
-	 * @param   locale  Preferred locale for internationalization.
-	 *
-	 * @return  Actions of the camera control.
-	 */
-	public Action[] getActions( final Locale locale )
-	{
-		final ResourceBundle res = ResourceBundleTools.getBundle( CameraControl.class, locale );
-
-		return new Action[]
-			{
-				new BasicAction( res, ZOOM_TO_FIT ) {
-					@Override
-					public void run()
-					{
-						zoomToFit();
-					} },
-//				new BasicAction( res, RESTORE_ACTION ) {
-//					public void run()
-//					{
-//						restore();
-//					} },
-//
-//				new BasicAction( res, SAVE_ACTION ) {
-//					public void run()
-//					{
-//						save();
-//					} },
-			};
-	}
-
-	/**
 	 * Get view transform.
 	 *
 	 * @return  View transform.
@@ -137,7 +102,7 @@ public abstract class CameraControl
 	}
 
 	@Override
-	public EventObject mouseClicked( final ControlInputEvent event )
+	public void mouseClicked( final ControlInputEvent event )
 	{
 		final MouseEvent mouseEvent = (MouseEvent)event.getInputEvent();
 		if ( mouseEvent.getClickCount() == 2 )
@@ -153,15 +118,12 @@ public abstract class CameraControl
 					break;
 			}
 		}
-
-		return null;
 	}
 
 	@Override
-	public EventObject mousePressed( final ControlInputEvent event )
+	public void mousePressed( final ControlInputEvent event )
 	{
 		startCaptureOnDrag( event );
-		return super.mousePressed( event );
 	}
 
 	/**

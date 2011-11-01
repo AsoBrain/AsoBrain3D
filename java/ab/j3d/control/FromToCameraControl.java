@@ -442,28 +442,18 @@ public class FromToCameraControl
 	}
 
 	@Override
-	public EventObject mousePressed( final ControlInputEvent event )
+	public void mousePressed( final ControlInputEvent event )
 	{
-		final EventObject result;
-
 		if ( isSupportedDragEvent( event ) )
 		{
 			_dragStartScene2View = getScene2View();
 			_dragStartZoomFactor = _view.getZoomFactor();
 			_dragStartDistance = _distance;
-
-			result = super.mousePressed( event );
 		}
-		else
-		{
-			result = event;
-		}
-
-		return result;
 	}
 
 	@Override
-	public EventObject mouseDragged( final ControlInputEvent event )
+	public void mouseDragged( final ControlInputEvent event )
 	{
 		if ( isCaptured() )
 		{
@@ -480,8 +470,6 @@ public class FromToCameraControl
 				zoom( event );
 			}
 		}
-
-		return super.mouseDragged( event );
 	}
 
 	/**
@@ -538,11 +526,10 @@ public class FromToCameraControl
 	}
 
 	@Override
-	public EventObject mouseWheelMoved( final ControlInputEvent event )
+	public void mouseWheelMoved( final ControlInputEvent event )
 	{
 		final MouseWheelEvent mouseWheelEvent = (MouseWheelEvent)event.getMouseEvent();
 		zoom( -mouseWheelEvent.getWheelRotation(), event.isControlDown() );
-		return null;
 	}
 
 	/**

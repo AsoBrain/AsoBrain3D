@@ -24,7 +24,6 @@ import java.util.*;
 
 import ab.j3d.*;
 import ab.j3d.view.*;
-import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -115,12 +114,30 @@ public class PanAndZoomCameraControl
 		try
 		{
 			final View3D view = _view;
-			final String scene2viewString = PropertyTools.getString( settings, "scene2view" );
-			final Matrix3D scene2view = ( scene2viewString != null ) ? Matrix3D.fromString( scene2viewString ) : view.getScene2View();
-			final double zoomFactor = PropertyTools.getDouble( settings , "zoomFactor", view.getZoomFactor() );
-			view.setZoomFactor( zoomFactor );
-			view.setScene2View( scene2view );
-			save();
+
+			final String scene2viewString = settings.getProperty( "scene2view" );
+			if ( scene2viewString != null )
+			{
+				final Matrix3D scene2view = Matrix3D.fromString( scene2viewString );
+
+				double zoomFactor = view.getZoomFactor();
+				final String zoomFactorString = settings.getProperty( "zoomFactor" );
+				if ( ( zoomFactorString != null ) && ( zoomFactorString.length() > 0 ) )
+				{
+					try
+					{
+						zoomFactor = Double.parseDouble( zoomFactorString );
+					}
+					catch ( NumberFormatException nfe )
+					{
+						/* ignored, will return default value */
+					}
+				}
+
+				view.setZoomFactor( zoomFactor );
+				view.setScene2View( scene2view );
+				save();
+			}
 		}
 		catch ( NoSuchElementException e )
 		{
@@ -133,17 +150,15 @@ public class PanAndZoomCameraControl
 	}
 
 	@Override
-	public EventObject mousePressed( final ControlInputEvent event )
+	public void mousePressed( final ControlInputEvent event )
 	{
 		final View3D view = _view;
 		_dragStartProjector = view.getProjector();
 		_dragStartScene2View = view.getScene2View();
-
-		return super.mousePressed( event );
 	}
 
 	@Override
-	public EventObject mouseDragged( final ControlInputEvent event )
+	public void mouseDragged( final ControlInputEvent event )
 	{
 		if ( isCaptured() )
 		{
@@ -156,15 +171,12 @@ public class PanAndZoomCameraControl
 				pan( event );
 			}
 		}
-
-		return super.mouseDragged( event );
 	}
 
 	@Override
-	public EventObject mouseWheelMoved( final ControlInputEvent event )
+	public void mouseWheelMoved( final ControlInputEvent event )
 	{
 		zoomWheel( event );
-		return null;
 	}
 
 	/**

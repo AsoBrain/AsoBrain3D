@@ -25,6 +25,7 @@ import java.util.*;
 
 import ab.j3d.*;
 import ab.j3d.view.*;
+import org.jetbrains.annotations.*;
 
 /**
  * This class implements a camera control based on a first person view. The
@@ -198,11 +199,8 @@ public class FirstPersonCameraControl
 	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
 	 * @throws  IllegalArgumentException if the from and two points are too close.
 	 */
-	public void setFrom( final Vector3D from )
+	public void setFrom( @NotNull final Vector3D from )
 	{
-		if ( from == null )
-			throw new NullPointerException( "from" );
-
 		if ( !from.equals( _from ) )
 		{
 			_from = from;
@@ -215,11 +213,8 @@ public class FirstPersonCameraControl
 	 *
 	 * @param   to      New point to look at.
 	 */
-	public void setTo( final Vector3D to )
+	public void setTo( @NotNull final Vector3D to )
 	{
-		if ( to == null )
-			throw new NullPointerException( "to" );
-
 		if ( !to.equals( _to ) )
 		{
 			_to = to;
@@ -234,11 +229,8 @@ public class FirstPersonCameraControl
 	 *
 	 * @see     #setUpSecondary(Vector3D)
 	 */
-	public void setUpPrimary( final Vector3D upPrimary )
+	public void setUpPrimary( @NotNull final Vector3D upPrimary )
 	{
-		if ( upPrimary == null )
-			throw new NullPointerException( "upPrimary" );
-
 		_upPrimary = upPrimary;
 	}
 
@@ -250,30 +242,27 @@ public class FirstPersonCameraControl
 	 *
 	 * @see     #setUpPrimary(Vector3D)
 	 */
-	public void setUpSecondary( final Vector3D upSecondary )
+	public void setUpSecondary( @NotNull final Vector3D upSecondary )
 	{
-		if ( upSecondary == null )
-			throw new NullPointerException( "upSecondary" );
-
 		_upSecondary = upSecondary;
 	}
 
+	@Override
 	public void save()
 	{
 		_savedFrom = _from;
 		_savedTo   = _to;
 	}
 
+	@Override
 	public void restore()
 	{
 		look( _savedFrom, _savedTo );
 	}
 
-	public void saveSettings( final Properties settings )
+	@Override
+	public void saveSettings( @NotNull final Properties settings )
 	{
-		if ( settings == null )
-			throw new NullPointerException( "settings" );
-
 		settings.setProperty( "from"       , _from       .toString() );
 		settings.setProperty( "to"         , _to         .toString() );
 		settings.setProperty( "upPrimary"  , _upPrimary  .toString() );
@@ -282,7 +271,8 @@ public class FirstPersonCameraControl
 		settings.setProperty( "savedTo"    , _savedTo    .toString() );
 	}
 
-	public void loadSettings( final Properties settings )
+	@Override
+	public void loadSettings( @NotNull final Properties settings )
 	{
 		try
 		{
@@ -323,30 +313,19 @@ public class FirstPersonCameraControl
 		return _from.distanceTo( _to ) / 10.0;
 	}
 
-	public EventObject filterEvent( final EventObject event )
+	@Override
+	public void inputReceived( final ControlInputEvent event )
 	{
-		final EventObject result;
-
-		if ( ( event instanceof ControlInputEvent ) && isEnabled() )
+		if ( isEnabled() )
 		{
-			final ControlInputEvent controlInputEvent = (ControlInputEvent)event;
-
-			final InputEvent keyEvent = controlInputEvent.getInputEvent();
-			if ( ( keyEvent != null ) && ( keyEvent.getID() == KeyEvent.KEY_TYPED ) )
+			final InputEvent inputEvent = event.getInputEvent();
+			if ( ( inputEvent != null ) && ( inputEvent.getID() == KeyEvent.KEY_TYPED ) )
 			{
-				result = handleKeyTyped( controlInputEvent );
-			}
-			else
-			{
-				result = super.filterEvent( controlInputEvent );
+				handleKeyTyped( event );
 			}
 		}
-		else
-		{
-			result = super.filterEvent( event );
-		}
 
-		return result;
+		super.inputReceived( event );
 	}
 
 	/**
@@ -405,15 +384,15 @@ public class FirstPersonCameraControl
 		return result;
 	}
 
-	public EventObject mousePressed( final ControlInputEvent event )
+	@Override
+	public void mousePressed( final ControlInputEvent event )
 	{
 		_dragStartFrom = _from;
 		_dragStartTo   = _to;
-
-		return super.mousePressed( event );
 	}
 
-	public EventObject mouseDragged( final ControlInputEvent event )
+	@Override
+	public void mouseDragged( final ControlInputEvent event )
 	{
 		if ( isCaptured() )
 		{
@@ -433,8 +412,6 @@ public class FirstPersonCameraControl
 				zoom( event );
 			}
 		}
-
-		return super.mouseDragged( event );
 	}
 
 	/**

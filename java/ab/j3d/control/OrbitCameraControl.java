@@ -24,7 +24,6 @@ import java.util.*;
 
 import ab.j3d.*;
 import ab.j3d.view.*;
-import com.numdata.oss.*;
 
 /**
  * This class implements a camera control based on a 'from' and 'to' point. The
@@ -203,15 +202,15 @@ public class OrbitCameraControl
 	{
 		try
 		{
-			final double ox = PropertyTools.getDouble( settings, "ox" );
-			final double oy = PropertyTools.getDouble( settings, "oy" );
-			final double oz = PropertyTools.getDouble( settings, "oz" );
-			final double rx = PropertyTools.getDouble( settings, "rx" );
-			final double ry = PropertyTools.getDouble( settings, "ry" );
-			final double rz = PropertyTools.getDouble( settings, "rz" );
-			final double x  = PropertyTools.getDouble( settings, "x"  );
-			final double y  = PropertyTools.getDouble( settings, "y"  );
-			final double z  = PropertyTools.getDouble( settings, "z"  );
+			final double ox = Double.parseDouble( settings.getProperty( "ox" ) );
+			final double oy = Double.parseDouble( settings.getProperty( "oy" ) );
+			final double oz = Double.parseDouble( settings.getProperty( "oz" ) );
+			final double rx = Double.parseDouble( settings.getProperty( "rx" ) );
+			final double ry = Double.parseDouble( settings.getProperty( "ry" ) );
+			final double rz = Double.parseDouble( settings.getProperty( "rz" ) );
+			final double x  = Double.parseDouble( settings.getProperty( "x" ) );
+			final double y  = Double.parseDouble( settings.getProperty( "y" ) );
+			final double z  = Double.parseDouble( settings.getProperty( "z" ) );
 
 			final double[] saved = _savedSettings;
 			saved[ 0 ] = ox;
@@ -225,17 +224,13 @@ public class OrbitCameraControl
 			saved[ 8 ] = z;
 			restore();
 		}
-		catch ( NoSuchElementException e )
+		catch ( RuntimeException e )
 		{
 			/* ignored, caused by missing properties */
 		}
-		catch ( NumberFormatException e )
-		{
-			/* ignored, caused by malformed properties */
-		}
 	}
 
-	public EventObject mousePressed( final ControlInputEvent event )
+	public void mousePressed( final ControlInputEvent event )
 	{
 		_dragStartRotationX    = _rotationX;
 		_dragStartRotationY    = _rotationY;
@@ -243,11 +238,9 @@ public class OrbitCameraControl
 		_dragStartTranslationX = _translationX;
 		_dragStartTranslationY = _translationY;
 		_dragStartTranslationZ = _translationZ;
-
-		return super.mousePressed( event );
 	}
 
-	public EventObject mouseDragged( final ControlInputEvent event )
+	public void mouseDragged( final ControlInputEvent event )
 	{
 		if ( isCaptured() )
 		{
@@ -264,8 +257,6 @@ public class OrbitCameraControl
 				zoom( event );
 			}
 		}
-
-		return super.mouseDragged( event );
 	}
 
 	protected void rotate( final ControlInputEvent event )

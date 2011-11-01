@@ -20,7 +20,6 @@
 package ab.j3d.control;
 
 import java.awt.*;
-import java.util.*;
 
 import ab.j3d.*;
 import ab.j3d.view.*;
@@ -50,7 +49,7 @@ public class PanZoomAndRotateCameraControl
 	}
 
 	@Override
-	public EventObject mouseDragged( final ControlInputEvent event )
+	public void mouseDragged( final ControlInputEvent event )
 	{
 		if ( isCaptured() )
 		{
@@ -59,8 +58,6 @@ public class PanZoomAndRotateCameraControl
 				rotateDrag( event );
 			}
 		}
-
-		return super.mouseDragged( event );
 	}
 
 	/**
@@ -121,7 +118,7 @@ public class PanZoomAndRotateCameraControl
 		System.out.println( "orientation = " + orientation );
 
 		final Matrix3D view2scene = orientation.multiply( scene2view.inverse() );
-		System.out.println( "* NEW * scene2view = " + view2scene.inverse().toFriendlyString() );
+		System.out.println( "* NEW * scene2view = " + Matrix3D.toFriendlyString( view2scene.inverse() ) );
 		view.setScene2View( view2scene.inverse() );
 
 //		final Vector3D orientedUp      = orientation.transform( up );

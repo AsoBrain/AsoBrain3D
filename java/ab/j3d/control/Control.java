@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2005-2006
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +20,7 @@
  */
 package ab.j3d.control;
 
-import com.numdata.oss.event.EventFilter;
+import ab.j3d.view.*;
 
 /**
  * A control listens to events and used to control a view or 3D world with the
@@ -29,6 +30,6 @@ import com.numdata.oss.event.EventFilter;
  * @version $Revision$ $Date$
  */
 public interface Control
-	extends EventFilter
+	extends ControlInputListener
 {
 }

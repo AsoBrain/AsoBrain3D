@@ -1,6 +1,7 @@
 /* $Id$
  * ====================================================================
- * (C) Copyright Numdata BV 2009-2009
+ * AsoBrain 3D Toolkit
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,21 +20,13 @@
  */
 package ab.j3d.control;
 
-import java.util.ArrayList;
-import java.util.EventObject;
-import java.util.List;
+import java.util.*;
 
-import ab.j3d.Matrix3D;
-import ab.j3d.Vector3D;
-import ab.j3d.geom.GeometryTools;
-import ab.j3d.geom.Ray3D;
-import ab.j3d.model.ContentNode;
-import ab.j3d.model.Face3DIntersection;
-import ab.j3d.model.Scene;
-import ab.j3d.view.View3D;
-import ab.j3d.view.ViewControlInput;
-
-import com.numdata.oss.MathTools;
+import ab.j3d.*;
+import ab.j3d.geom.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+import org.jetbrains.annotations.*;
 
 /**
  * Basic implementation of a control to drag stuff.
@@ -77,18 +70,16 @@ public abstract class DragControl
 	 * @return  Plane on which dragging should take place;
 	 *          <code>null</code> if no drag plane is available.
 	 */
-	public static Matrix3D getDragPlane( final Matrix3D orientedPlane  , final Ray3D pointerRay , final Vector3D point )
+	public static Matrix3D getDragPlane( final Matrix3D orientedPlane, final Ray3D pointerRay, final Vector3D point )
 	{
 		final Vector3D pointerDirection = pointerRay.getDirection();
-		final boolean pointerRayParallelToPlane = MathTools.almostEqual( 0.0 , Vector3D.dot( orientedPlane .xz , orientedPlane .yz , orientedPlane .zz , pointerDirection.x , pointerDirection.y , pointerDirection.z ) );
+		final boolean pointerRayParallelToPlane = MathTools.almostEqual( 0.0, Vector3D.dot( orientedPlane.xz, orientedPlane.yz, orientedPlane.zz, pointerDirection.x, pointerDirection.y, pointerDirection.z ) );
 		return !pointerRayParallelToPlane ? orientedPlane .setTranslation( point ) : null;
 	}
 
 	@Override
-	public EventObject mousePressed( final ControlInputEvent event )
+	public void mousePressed( final ControlInputEvent event )
 	{
-		EventObject result = event;
-
 		if ( isEnabled() && event.isMouseButton1Down() )
 		{
 			final ViewControlInput viewControlInput = event.getSource();
@@ -100,58 +91,37 @@ public abstract class DragControl
 				final ContentNode node = scene.getContentNode( intersection.getObjectID() );
 				if ( node != null )
 				{
-					if ( dragStart( event , node , intersection ) )
+					if ( dragStart( event, node, intersection ) )
 					{
 						if ( _activeDragger != null )
 						{
 							startCapture( event );
 						}
-						result = null;
 						break;
 					}
 				}
 			}
 		}
-
-		return result;
 	}
 
 	@Override
-	public EventObject mouseDragged( final ControlInputEvent event )
+	public void mouseDragged( final ControlInputEvent event )
 	{
-		final EventObject result;
-
 		if ( _activeDragger != null )
 		{
 			dragTo( event );
-			result = null;
 		}
-		else
-		{
-			result = super.mouseDragged( event );
-		}
-
-		return result;
 	}
 
 	@Override
-	public EventObject mouseReleased( final ControlInputEvent event )
+	public void mouseReleased( final ControlInputEvent event )
 	{
-		final EventObject result;
-
 		if ( _activeDragger != null )
 		{
 			dragTo( event );
 			dragEnd( event );
 			dragStop();
-			result = null;
 		}
-		else
-		{
-			result = super.mouseReleased( event );
-		}
-
-		return result;
 	}
 
 	/**
@@ -159,11 +129,8 @@ public abstract class DragControl
 	 *
 	 * @param   dragger     Dragger to add.
 	 */
-	public void addDragger( final Dragger dragger )
+	public void addDragger( @NotNull final Dragger dragger )
 	{
-		if ( dragger == null )
-			throw new NullPointerException( "dragger" );
-
 		_draggers.add( dragger );
 	}
 
@@ -177,13 +144,13 @@ public abstract class DragControl
 	 * @return  <code>true</code> to stop trying to drag;
 	 *          <code>false</code> if we should continue.
 	 */
-	protected boolean dragStart( final ControlInputEvent event , final ContentNode node , final Face3DIntersection intersection )
+	protected boolean dragStart( final ControlInputEvent event, final ContentNode node, final Face3DIntersection intersection )
 	{
 		boolean result = false;
 
 		for ( final Dragger dragger : _draggers )
 		{
-			final Matrix3D wcsDragPlane = dragger.dragStart( event , node , event.getPointerRay() , intersection );
+			final Matrix3D wcsDragPlane = dragger.dragStart( event, node, event.getPointerRay(), intersection );
 			if ( wcsDragPlane != null )
 			{
 				_activeDragger = dragger;
@@ -209,10 +176,10 @@ public abstract class DragControl
 		{
 			final Matrix3D wcsDragPlane = _wcsDragPlane;
 
-			final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( wcsDragPlane , true , event.getPointerRay() );
+			final Vector3D wcsPoint = GeometryTools.getIntersectionBetweenRayAndPlane( wcsDragPlane, true, event.getPointerRay() );
 			if ( wcsPoint != null )
 			{
-				activeDragger.dragTo( event , _draggedNode , wcsDragPlane.inverseRotate( wcsPoint.minus( wcsDragPlane.xo , wcsDragPlane.yo , wcsDragPlane.zo ) ) );
+				activeDragger.dragTo( event, _draggedNode, wcsDragPlane.inverseRotate( wcsPoint.minus( wcsDragPlane.xo, wcsDragPlane.yo, wcsDragPlane.zo ) ) );
 			}
 		}
 	}
@@ -224,7 +191,7 @@ public abstract class DragControl
 	 */
 	protected void dragEnd( final ControlInputEvent event )
 	{
-		_activeDragger.dragEnd( event , _draggedNode );
+		_activeDragger.dragEnd( event, _draggedNode );
 	}
 
 	/**
@@ -241,7 +208,7 @@ public abstract class DragControl
 	/**
 	 * Interface to drag nodes.
 	 */
-	public static interface Dragger
+	public interface Dragger
 	{
 		/**
 		 * Calculate plane to use for dragging operation. Parameters and result
@@ -255,7 +222,7 @@ public abstract class DragControl
 		 * @return  Plane on which dragging should take place (plane to wcs);
 		 *          <code>null</code> if no drag plane is available.
 		 */
-		Matrix3D dragStart( ControlInputEvent event , ContentNode node , Ray3D pointerRay , Face3DIntersection intersection );
+		Matrix3D dragStart( ControlInputEvent event, ContentNode node, Ray3D pointerRay, Face3DIntersection intersection );
 
 		/**
 		 * Drag node.
@@ -264,7 +231,7 @@ public abstract class DragControl
 		 * @param   node        Node being dragged.
 		 * @param   planeDelta  Movement on plane during drag operation.
 		 */
-		void dragTo( ControlInputEvent event , ContentNode node, Vector3D planeDelta );
+		void dragTo( ControlInputEvent event, ContentNode node, Vector3D planeDelta );
 
 		/**
 		 * End drag operation.
@@ -272,6 +239,6 @@ public abstract class DragControl
 		 * @param   event       Event from control.
 		 * @param   node        Node being dragged.
 		 */
-		void dragEnd( ControlInputEvent event , ContentNode node );
+		void dragEnd( ControlInputEvent event, ContentNode node );
 	}
 }
