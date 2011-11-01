@@ -32,7 +32,7 @@ import junit.framework.*;
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public final class TestGeometryTools
+public class TestGeometryTools
 	extends TestCase
 {
 	/**
@@ -50,7 +50,7 @@ public final class TestGeometryTools
 		{
 			final Bounds3D first  = Bounds3D.fromString( "18.0,0.0,54.75;44.85,56.5,278.723625994732" );
 			final Bounds3D second = Bounds3D.fromString( "0.0,0.0,0.0;500.0,764.0,18.0" );
-			final Matrix3D secondToFirst = Matrix3D.INIT.set(
+			final Matrix3D secondToFirst = new Matrix3D(
 				0.0, 0.0, 1.0,  0.0,
 				1.0, 0.0, 0.0,  0.0,
 				0.0, 1.0, 0.0, 18.0 );
@@ -60,7 +60,7 @@ public final class TestGeometryTools
 		{
 			final Bounds3D first  = Bounds3D.fromString( "18.0,0.0,54.75;44.85,56.5,278.723625994732" );
 			final Bounds3D second = Bounds3D.fromString( "0.0,0.0,0.0;578.0,779.0,18.0" );
-			final Matrix3D secondToFirst = Matrix3D.INIT.set(
+			final Matrix3D secondToFirst = new Matrix3D(
 				1.0,  0.0,  0.0,   11.0,
 				0.0,  0.0, -1.0,    0.0,
 				0.0,  1.0,  0.0,   10.5 );
@@ -70,7 +70,7 @@ public final class TestGeometryTools
 		{
 			final Bounds3D first  = Bounds3D.fromString( "309.791845703125,0.0,54.75;336.641845703125,56.5,278.723625994732" );
 			final Bounds3D second = Bounds3D.fromString( "0.0,0.0,0.0;151.85658264160156,480.0,18.0" );
-			final Matrix3D secondToFirst = Matrix3D.INIT.set(
+			final Matrix3D secondToFirst = new Matrix3D(
 				1.0,  0.0,  0.0,  184.3,
 				0.0,  1.0,  0.0,    0.0,
 				0.0,  0.0,  1.0,  195.5 );
@@ -80,7 +80,7 @@ public final class TestGeometryTools
 		{
 			final Bounds3D first  = Bounds3D.fromString( "309.791845703125,0.0,54.75;336.641845703125,56.5,278.723625994732" );
 			final Bounds3D second = Bounds3D.fromString( "0.0,0.0,0.0;151.85658264160156,480.0,18.0" );
-			final Matrix3D secondToFirst = Matrix3D.INIT.set(
+			final Matrix3D secondToFirst = new Matrix3D(
 				1.0,  0.0,  0.0,  184.3,
 				0.0,  1.0,  0.0,    0.0,
 				0.0,  0.0,  1.0,  195.5 );
@@ -90,7 +90,7 @@ public final class TestGeometryTools
 		{
 			final Bounds3D first  = Bounds3D.fromString( "309.791845703125,0.0,54.75;336.641845703125,56.5,278.723625994732" );
 			final Bounds3D second = Bounds3D.fromString( "0.0,0.0,0.0;480.0,373.0,18.0" );
-			final Matrix3D secondToFirst = Matrix3D.INIT.set(
+			final Matrix3D secondToFirst = new Matrix3D(
 				0.0,  0.0,  1.0,  336.6,
 				1.0,  0.0,  0.0,    0.0,
 				0.0,  1.0,  0.0,   18.0 );
@@ -100,7 +100,7 @@ public final class TestGeometryTools
 		{
 			final Bounds3D first  = Bounds3D.fromString( "309.791845703125,0.0,54.75;336.641845703125,56.5,278.723625994732" );
 			final Bounds3D second = Bounds3D.fromString( "0.0,0.0,0.0;578.0,779.0,18.0" );
-			final Matrix3D secondToFirst = Matrix3D.INIT.set(
+			final Matrix3D secondToFirst = new Matrix3D(
 				1.0,  0.0,  0.0,   11.0,
 				0.0,  0.0, -1.0,    0.1,
 				0.0,  1.0,  0.0,   10.5 );
@@ -110,7 +110,7 @@ public final class TestGeometryTools
 		{
 			final Bounds3D first  = Bounds3D.fromString( "555.15,0.0,54.75;582.0,56.5,278.723625994732" );
 			final Bounds3D second = Bounds3D.fromString( "0.0,0.0,0.0;578.0,779.0,18.0" );
-			final Matrix3D secondToFirst = Matrix3D.INIT.set(
+			final Matrix3D secondToFirst = new Matrix3D(
 				1.0,  0.0,  0.0,   11.0,
 				0.0,  0.0, -1.0,    0.1,
 				0.0,  1.0,  0.0,   10.5 );
@@ -120,7 +120,7 @@ public final class TestGeometryTools
 		{
 			final Bounds3D first  = Bounds3D.fromString( "555.15,0.0,54.75;582.0,56.5,278.723625994732" );
 			final Bounds3D second = Bounds3D.fromString( "0.0,0.0,0.0;500.0,764.0,18.0" );
-			final Matrix3D secondToFirst = Matrix3D.INIT.set(
+			final Matrix3D secondToFirst = new Matrix3D(
 				0.0,  0.0,  1.0,  581.9,
 				1.0,  0.0,  0.0,    0.0,
 				0.0,  1.0,  0.0,   18.0 );
@@ -138,8 +138,10 @@ public final class TestGeometryTools
 	{
 		System.out.println( CLASS_NAME + ".testGetIntersectionBetweenRayAndPolygon()" );
 
-		/*
-		 * Define test properties.
+		/**
+		 * Test properties.
+		 *
+		 * @noinspection JavaDoc
 		 */
 		class Test
 		{
@@ -158,16 +160,16 @@ public final class TestGeometryTools
 		/*
 		 * Define tests to execute.
 		 */
-		final Vector3D v0 = Vector3D.INIT;
+		final Vector3D v0 = Vector3D.ZERO;
 
-		final Vector3D leftFrontBottom  = v0.set( -1.0, -1.0, -1.0 );
-		final Vector3D leftFrontTop     = v0.set( -1.0, -1.0,  1.0 );
-		final Vector3D leftRearBottom   = v0.set( -1.0,  1.0, -1.0 );
-		final Vector3D leftRearTop      = v0.set( -1.0,  1.0,  1.0 );
-		final Vector3D rightFrontBottom = v0.set(  1.0, -1.0, -1.0 );
-		final Vector3D rightFrontTop    = v0.set(  1.0, -1.0,  1.0 );
-		final Vector3D rightRearBottom  = v0.set(  1.0,  1.0, -1.0 );
-		final Vector3D rightRearTop     = v0.set(  1.0,  1.0,  1.0 );
+		final Vector3D leftFrontBottom  = new Vector3D( -1.0, -1.0, -1.0 );
+		final Vector3D leftFrontTop     = new Vector3D( -1.0, -1.0,  1.0 );
+		final Vector3D leftRearBottom   = new Vector3D( -1.0,  1.0, -1.0 );
+		final Vector3D leftRearTop      = new Vector3D( -1.0,  1.0,  1.0 );
+		final Vector3D rightFrontBottom = new Vector3D(  1.0, -1.0, -1.0 );
+		final Vector3D rightFrontTop    = new Vector3D(  1.0, -1.0,  1.0 );
+		final Vector3D rightRearBottom  = new Vector3D(  1.0,  1.0, -1.0 );
+		final Vector3D rightRearTop     = new Vector3D(  1.0,  1.0,  1.0 );
 
 		final Polygon3D leftSide   = new BasicPolygon3D( new Vector3D[] { leftRearBottom  , leftRearTop     , leftFrontTop    , leftFrontBottom  }, false );
 		final Polygon3D rightSide  = new BasicPolygon3D( new Vector3D[] { rightFrontBottom, rightFrontTop   , rightRearTop    , rightRearBottom  }, false );
@@ -178,41 +180,41 @@ public final class TestGeometryTools
 
 		final Test[] tests =
 		{
-			/* Test #1  */ new Test( leftSide  , -2.0,  0.0,  0.0,  1.0,  0.0,  0.0, v0.set( -1.0,  0.0,  0.0 ) ),
-			/* Test #2  */ new Test( leftSide  , -1.0,  0.0,  0.0,  1.0,  0.0,  0.0, v0.set( -1.0,  0.0,  0.0 ) ),
-			/* Test #3  */ new Test( leftSide  ,  0.0,  0.0,  0.0,  1.0,  0.0,  0.0, null                         ),
-			/* Test #4  */ new Test( leftSide  ,  1.0,  0.0,  0.0,  1.0,  0.0,  0.0, null                         ),
-			/* Test #5  */ new Test( leftSide  ,  2.0,  0.0,  0.0,  1.0,  0.0,  0.0, null                         ),
+			/* Test #1  */ new Test( leftSide  , -2.0,  0.0,  0.0,  1.0,  0.0,  0.0, Vector3D.NEGATIVE_X_AXIS ),
+			/* Test #2  */ new Test( leftSide  , -1.0,  0.0,  0.0,  1.0,  0.0,  0.0, Vector3D.NEGATIVE_X_AXIS ),
+			/* Test #3  */ new Test( leftSide  ,  0.0,  0.0,  0.0,  1.0,  0.0,  0.0, null ),
+			/* Test #4  */ new Test( leftSide  ,  1.0,  0.0,  0.0,  1.0,  0.0,  0.0, null ),
+			/* Test #5  */ new Test( leftSide  ,  2.0,  0.0,  0.0,  1.0,  0.0,  0.0, null ),
 
-			/* Test #6  */ new Test( rightSide , -2.0,  0.0,  0.0, -1.0,  0.0,  0.0, null                         ),
-			/* Test #7  */ new Test( rightSide , -1.0,  0.0,  0.0, -1.0,  0.0,  0.0, null                         ),
-			/* Test #8  */ new Test( rightSide ,  0.0,  0.0,  0.0, -1.0,  0.0,  0.0, null                         ),
-			/* Test #9  */ new Test( rightSide ,  1.0,  0.0,  0.0, -1.0,  0.0,  0.0, v0.set(  1.0,  0.0,  0.0 ) ),
-			/* Test #10 */ new Test( rightSide ,  2.0,  0.0,  0.0, -1.0,  0.0,  0.0, v0.set(  1.0,  0.0,  0.0 ) ),
+			/* Test #6  */ new Test( rightSide , -2.0,  0.0,  0.0, -1.0,  0.0,  0.0, null ),
+			/* Test #7  */ new Test( rightSide , -1.0,  0.0,  0.0, -1.0,  0.0,  0.0, null ),
+			/* Test #8  */ new Test( rightSide ,  0.0,  0.0,  0.0, -1.0,  0.0,  0.0, null ),
+			/* Test #9  */ new Test( rightSide ,  1.0,  0.0,  0.0, -1.0,  0.0,  0.0, Vector3D.POSITIVE_X_AXIS ),
+			/* Test #10 */ new Test( rightSide ,  2.0,  0.0,  0.0, -1.0,  0.0,  0.0, Vector3D.POSITIVE_X_AXIS ),
 
-			/* Test #11 */ new Test( frontSide ,  0.0, -2.0,  0.0,  0.0,  1.0,  0.0, v0.set(  0.0, -1.0,  0.0 ) ),
-			/* Test #12 */ new Test( frontSide ,  0.0, -1.0,  0.0,  0.0,  1.0,  0.0, v0.set(  0.0, -1.0,  0.0 ) ),
-			/* Test #13 */ new Test( frontSide ,  0.0,  0.0,  0.0,  0.0,  1.0,  0.0, null                         ),
-			/* Test #14 */ new Test( frontSide ,  0.0,  1.0,  0.0,  0.0,  1.0,  0.0, null                         ),
-			/* Test #15 */ new Test( frontSide ,  0.0,  2.0,  0.0,  0.0,  1.0,  0.0, null                         ),
+			/* Test #11 */ new Test( frontSide ,  0.0, -2.0,  0.0,  0.0,  1.0,  0.0, Vector3D.NEGATIVE_Y_AXIS ),
+			/* Test #12 */ new Test( frontSide ,  0.0, -1.0,  0.0,  0.0,  1.0,  0.0, Vector3D.NEGATIVE_Y_AXIS ),
+			/* Test #13 */ new Test( frontSide ,  0.0,  0.0,  0.0,  0.0,  1.0,  0.0, null ),
+			/* Test #14 */ new Test( frontSide ,  0.0,  1.0,  0.0,  0.0,  1.0,  0.0, null ),
+			/* Test #15 */ new Test( frontSide ,  0.0,  2.0,  0.0,  0.0,  1.0,  0.0, null ),
 
-			/* Test #16 */ new Test( rearSide  ,  0.0, -2.0,  0.0,  0.0, -1.0,  0.0, null                         ),
-			/* Test #17 */ new Test( rearSide  ,  0.0, -1.0,  0.0,  0.0, -1.0,  0.0, null                         ),
-			/* Test #18 */ new Test( rearSide  ,  0.0,  0.0,  0.0,  0.0, -1.0,  0.0, null                         ),
-			/* Test #19 */ new Test( rearSide  ,  0.0,  1.0,  0.0,  0.0, -1.0,  0.0, v0.set(  0.0,  1.0,  0.0 ) ),
-			/* Test #20 */ new Test( rearSide  ,  0.0,  2.0,  0.0,  0.0, -1.0,  0.0, v0.set(  0.0,  1.0,  0.0 ) ),
+			/* Test #16 */ new Test( rearSide  ,  0.0, -2.0,  0.0,  0.0, -1.0,  0.0, null ),
+			/* Test #17 */ new Test( rearSide  ,  0.0, -1.0,  0.0,  0.0, -1.0,  0.0, null ),
+			/* Test #18 */ new Test( rearSide  ,  0.0,  0.0,  0.0,  0.0, -1.0,  0.0, null ),
+			/* Test #19 */ new Test( rearSide  ,  0.0,  1.0,  0.0,  0.0, -1.0,  0.0, Vector3D.POSITIVE_Y_AXIS ),
+			/* Test #20 */ new Test( rearSide  ,  0.0,  2.0,  0.0,  0.0, -1.0,  0.0, Vector3D.POSITIVE_Y_AXIS ),
 
-			/* Test #21 */ new Test( bottomSide,  0.0,  0.0, -2.0,  0.0,  0.0,  1.0, v0.set(  0.0,  0.0, -1.0 ) ),
-			/* Test #22 */ new Test( bottomSide,  0.0,  0.0, -1.0,  0.0,  0.0,  1.0, v0.set(  0.0,  0.0, -1.0 ) ),
-			/* Test #23 */ new Test( bottomSide,  0.0,  0.0,  0.0,  0.0,  0.0,  1.0, null                         ),
-			/* Test #24 */ new Test( bottomSide,  0.0,  0.0,  1.0,  0.0,  0.0,  1.0, null                         ),
-			/* Test #25 */ new Test( bottomSide,  0.0,  0.0,  2.0,  0.0,  0.0,  1.0, null                         ),
+			/* Test #21 */ new Test( bottomSide,  0.0,  0.0, -2.0,  0.0,  0.0,  1.0, Vector3D.NEGATIVE_Z_AXIS ),
+			/* Test #22 */ new Test( bottomSide,  0.0,  0.0, -1.0,  0.0,  0.0,  1.0, Vector3D.NEGATIVE_Z_AXIS ),
+			/* Test #23 */ new Test( bottomSide,  0.0,  0.0,  0.0,  0.0,  0.0,  1.0, null ),
+			/* Test #24 */ new Test( bottomSide,  0.0,  0.0,  1.0,  0.0,  0.0,  1.0, null ),
+			/* Test #25 */ new Test( bottomSide,  0.0,  0.0,  2.0,  0.0,  0.0,  1.0, null ),
 
-			/* Test #26 */ new Test( topSide   ,  0.0,  0.0, -2.0,  0.0,  0.0, -1.0, null                         ),
-			/* Test #27 */ new Test( topSide   ,  0.0,  0.0, -1.0,  0.0,  0.0, -1.0, null                         ),
-			/* Test #28 */ new Test( topSide   ,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0, null                         ),
-			/* Test #29 */ new Test( topSide   ,  0.0,  0.0,  1.0,  0.0,  0.0, -1.0, v0.set(  0.0,  0.0,  1.0 ) ),
-			/* Test #30 */ new Test( topSide   ,  0.0,  0.0,  2.0,  0.0,  0.0, -1.0, v0.set(  0.0,  0.0,  1.0 ) ),
+			/* Test #26 */ new Test( topSide   ,  0.0,  0.0, -2.0,  0.0,  0.0, -1.0, null ),
+			/* Test #27 */ new Test( topSide   ,  0.0,  0.0, -1.0,  0.0,  0.0, -1.0, null ),
+			/* Test #28 */ new Test( topSide   ,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0, null ),
+			/* Test #29 */ new Test( topSide   ,  0.0,  0.0,  1.0,  0.0,  0.0, -1.0, Vector3D.POSITIVE_Z_AXIS ),
+			/* Test #30 */ new Test( topSide   ,  0.0,  0.0,  2.0,  0.0,  0.0, -1.0, Vector3D.POSITIVE_Z_AXIS ),
 		};
 
 		/*
@@ -239,10 +241,12 @@ public final class TestGeometryTools
 	{
 		System.out.println( CLASS_NAME + ".testGetIntersectionBetweenRayAndPlane()" );
 
-		/*
-		 * Define test properties.
+		/**
+		 * Test properties.
+		 *
+		 * @noinspection JavaDoc
 		 */
-		final class Test
+		class Test
 		{
 			final double   _planeNormalX;
 			final double   _planeNormalY;
@@ -269,88 +273,86 @@ public final class TestGeometryTools
 		/*
 		 * Define tests to execute.
 		 */
-		final Vector3D v0 = Vector3D.INIT;
-
 		final Test[] tests =
 		{
 			/*
 			 * Tests with plane: Z = -5
 			 */
 
-			/* Test #1  */ new Test( 0.0, 0.0,  1.0, -5.0, false, v0.set( 0.0, 0.0, -10.0 ), v0.set(  0.0,  0.0, -1.0 ), null                       ),
-			/* Test #2  */ new Test( 0.0, 0.0,  1.0, -5.0, false, v0.set( 0.0, 0.0,   0.0 ), v0.set(  0.0,  0.0, -1.0 ), v0.set( 0.0, 0.0, -5.0 ) ),
-			/* Test #3  */ new Test( 0.0, 0.0,  1.0, -5.0, false, v0.set( 0.0, 0.0,  10.0 ), v0.set(  0.0,  0.0, -1.0 ), v0.set( 0.0, 0.0, -5.0 ) ),
-			/* Test #4  */ new Test( 0.0, 0.0,  1.0, -5.0, false, v0.set( 0.0, 0.0, -10.0 ), v0.set(  0.0,  0.0,  1.0 ), null                       ),
-			/* Test #5  */ new Test( 0.0, 0.0,  1.0, -5.0, false, v0.set( 0.0, 0.0,   0.0 ), v0.set(  0.0,  0.0,  1.0 ), null                       ),
-			/* Test #6  */ new Test( 0.0, 0.0,  1.0, -5.0, false, v0.set( 0.0, 0.0,  10.0 ), v0.set(  0.0,  0.0,  1.0 ), null                       ),
+			/* Test #1  */ new Test( 0.0, 0.0,  1.0, -5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+			/* Test #2  */ new Test( 0.0, 0.0,  1.0, -5.0, false, new Vector3D( 0.0, 0.0,   0.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, -5.0 ) ),
+			/* Test #3  */ new Test( 0.0, 0.0,  1.0, -5.0, false, new Vector3D( 0.0, 0.0,  10.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, -5.0 ) ),
+			/* Test #4  */ new Test( 0.0, 0.0,  1.0, -5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+			/* Test #5  */ new Test( 0.0, 0.0,  1.0, -5.0, false, new Vector3D( 0.0, 0.0,   0.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+			/* Test #6  */ new Test( 0.0, 0.0,  1.0, -5.0, false, new Vector3D( 0.0, 0.0,  10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
 
-			/* Test #7  */ new Test( 0.0, 0.0,  1.0, -5.0, true , v0.set( 0.0, 0.0, -10.0 ), v0.set(  0.0,  0.0, -1.0 ), null                       ),
-			/* Test #8  */ new Test( 0.0, 0.0,  1.0, -5.0, true , v0.set( 0.0, 0.0,   0.0 ), v0.set(  0.0,  0.0, -1.0 ), v0.set( 0.0, 0.0, -5.0 ) ),
-			/* Test #9  */ new Test( 0.0, 0.0,  1.0, -5.0, true , v0.set( 0.0, 0.0,  10.0 ), v0.set(  0.0,  0.0, -1.0 ), v0.set( 0.0, 0.0, -5.0 ) ),
-			/* Test #10 */ new Test( 0.0, 0.0,  1.0, -5.0, true , v0.set( 0.0, 0.0, -10.0 ), v0.set(  0.0,  0.0,  1.0 ), v0.set( 0.0, 0.0, -5.0 ) ),
-			/* Test #11 */ new Test( 0.0, 0.0,  1.0, -5.0, true , v0.set( 0.0, 0.0,   0.0 ), v0.set(  0.0,  0.0,  1.0 ), null                       ),
-			/* Test #12 */ new Test( 0.0, 0.0,  1.0, -5.0, true , v0.set( 0.0, 0.0,  10.0 ), v0.set(  0.0,  0.0,  1.0 ), null                       ),
+			/* Test #7  */ new Test( 0.0, 0.0,  1.0, -5.0, true , new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+			/* Test #8  */ new Test( 0.0, 0.0,  1.0, -5.0, true , new Vector3D( 0.0, 0.0,   0.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, -5.0 ) ),
+			/* Test #9  */ new Test( 0.0, 0.0,  1.0, -5.0, true , new Vector3D( 0.0, 0.0,  10.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0, -5.0 ) ),
+			/* Test #10 */ new Test( 0.0, 0.0,  1.0, -5.0, true , new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0, -5.0 ) ),
+			/* Test #11 */ new Test( 0.0, 0.0,  1.0, -5.0, true , new Vector3D( 0.0, 0.0,   0.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+			/* Test #12 */ new Test( 0.0, 0.0,  1.0, -5.0, true , new Vector3D( 0.0, 0.0,  10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
 
 			/*
 			 * Tests with plane: Z = 0
 			 */
 
-			/* Test #13 */ new Test( 0.0, 0.0,  1.0,  0.0, false, v0.set( 0.0, 0.0, -10.0 ), v0.set(  0.0,  0.0, -1.0 ), null                       ),
-			/* Test #14 */ new Test( 0.0, 0.0,  1.0,  0.0, false, v0.set( 0.0, 0.0,   0.0 ), v0.set(  0.0,  0.0, -1.0 ), v0.set( 0.0, 0.0,  0.0 ) ),
-			/* Test #15 */ new Test( 0.0, 0.0,  1.0,  0.0, false, v0.set( 0.0, 0.0,  10.0 ), v0.set(  0.0,  0.0, -1.0 ), v0.set( 0.0, 0.0,  0.0 ) ),
-			/* Test #16 */ new Test( 0.0, 0.0,  1.0,  0.0, false, v0.set( 0.0, 0.0, -10.0 ), v0.set(  0.0,  0.0,  1.0 ), null                       ),
-			/* Test #17 */ new Test( 0.0, 0.0,  1.0,  0.0, false, v0.set( 0.0, 0.0,   0.0 ), v0.set(  0.0,  0.0,  1.0 ), null                       ),
-			/* Test #18 */ new Test( 0.0, 0.0,  1.0,  0.0, false, v0.set( 0.0, 0.0,  10.0 ), v0.set(  0.0,  0.0,  1.0 ), null                       ),
+			/* Test #13 */ new Test( 0.0, 0.0,  1.0,  0.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+			/* Test #14 */ new Test( 0.0, 0.0,  1.0,  0.0, false, new Vector3D( 0.0, 0.0,   0.0 ), Vector3D.NEGATIVE_Z_AXIS, Vector3D.ZERO ),
+			/* Test #15 */ new Test( 0.0, 0.0,  1.0,  0.0, false, new Vector3D( 0.0, 0.0,  10.0 ), Vector3D.NEGATIVE_Z_AXIS, Vector3D.ZERO ),
+			/* Test #16 */ new Test( 0.0, 0.0,  1.0,  0.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+			/* Test #17 */ new Test( 0.0, 0.0,  1.0,  0.0, false, new Vector3D( 0.0, 0.0,   0.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+			/* Test #18 */ new Test( 0.0, 0.0,  1.0,  0.0, false, new Vector3D( 0.0, 0.0,  10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
 
-			/* Test #19 */ new Test( 0.0, 0.0, -1.0,  0.0, false, v0.set( 0.0, 0.0, -10.0 ), v0.set(  0.0,  0.0, -1.0 ), null                       ),
-			/* Test #20 */ new Test( 0.0, 0.0, -1.0,  0.0, false, v0.set( 0.0, 0.0,   0.0 ), v0.set(  0.0,  0.0, -1.0 ), null                       ),
-			/* Test #21 */ new Test( 0.0, 0.0, -1.0,  0.0, false, v0.set( 0.0, 0.0,  10.0 ), v0.set(  0.0,  0.0, -1.0 ), null                       ),
-			/* Test #22 */ new Test( 0.0, 0.0, -1.0,  0.0, false, v0.set( 0.0, 0.0, -10.0 ), v0.set(  0.0,  0.0,  1.0 ), v0.set( 0.0, 0.0,  0.0 ) ),
-			/* Test #23 */ new Test( 0.0, 0.0, -1.0,  0.0, false, v0.set( 0.0, 0.0,   0.0 ), v0.set(  0.0,  0.0,  1.0 ), v0.set( 0.0, 0.0,  0.0 ) ),
-			/* Test #24 */ new Test( 0.0, 0.0, -1.0,  0.0, false, v0.set( 0.0, 0.0,  10.0 ), v0.set(  0.0,  0.0,  1.0 ), null                       ),
+			/* Test #19 */ new Test( 0.0, 0.0, -1.0,  0.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+			/* Test #20 */ new Test( 0.0, 0.0, -1.0,  0.0, false, new Vector3D( 0.0, 0.0,   0.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+			/* Test #21 */ new Test( 0.0, 0.0, -1.0,  0.0, false, new Vector3D( 0.0, 0.0,  10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+			/* Test #22 */ new Test( 0.0, 0.0, -1.0,  0.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, Vector3D.ZERO ),
+			/* Test #23 */ new Test( 0.0, 0.0, -1.0,  0.0, false, new Vector3D( 0.0, 0.0,   0.0 ), Vector3D.POSITIVE_Z_AXIS, Vector3D.ZERO ),
+			/* Test #24 */ new Test( 0.0, 0.0, -1.0,  0.0, false, new Vector3D( 0.0, 0.0,  10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
 
 			/*
 			 * Tests with plane: Z = 5
 			 */
 
-			/* Test #25 */ new Test( 0.0, 0.0,  1.0,  5.0, false, v0.set( 0.0, 0.0, -10.0 ), v0.set(  0.0,  0.0, -1.0 ), null                       ),
-			/* Test #26 */ new Test( 0.0, 0.0,  1.0,  5.0, false, v0.set( 0.0, 0.0,   0.0 ), v0.set(  0.0,  0.0, -1.0 ), null                       ),
-			/* Test #27 */ new Test( 0.0, 0.0,  1.0,  5.0, false, v0.set( 0.0, 0.0,  10.0 ), v0.set(  0.0,  0.0, -1.0 ), v0.set( 0.0, 0.0,  5.0 ) ),
-			/* Test #28 */ new Test( 0.0, 0.0,  1.0,  5.0, false, v0.set( 0.0, 0.0, -10.0 ), v0.set(  0.0,  0.0,  1.0 ), null                       ),
-			/* Test #29 */ new Test( 0.0, 0.0,  1.0,  5.0, false, v0.set( 0.0, 0.0,   0.0 ), v0.set(  0.0,  0.0,  1.0 ), null                       ),
-			/* Test #30 */ new Test( 0.0, 0.0,  1.0,  5.0, false, v0.set( 0.0, 0.0,  10.0 ), v0.set(  0.0,  0.0,  1.0 ), null                       ),
+			/* Test #25 */ new Test( 0.0, 0.0,  1.0,  5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+			/* Test #26 */ new Test( 0.0, 0.0,  1.0,  5.0, false, new Vector3D( 0.0, 0.0,   0.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+			/* Test #27 */ new Test( 0.0, 0.0,  1.0,  5.0, false, new Vector3D( 0.0, 0.0,  10.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0,  5.0 ) ),
+			/* Test #28 */ new Test( 0.0, 0.0,  1.0,  5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+			/* Test #29 */ new Test( 0.0, 0.0,  1.0,  5.0, false, new Vector3D( 0.0, 0.0,   0.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+			/* Test #30 */ new Test( 0.0, 0.0,  1.0,  5.0, false, new Vector3D( 0.0, 0.0,  10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
 
-			/* Test #31 */ new Test( 0.0, 0.0,  1.0,  5.0, true , v0.set( 0.0, 0.0, -10.0 ), v0.set(  0.0,  0.0, -1.0 ), null                       ),
-			/* Test #32 */ new Test( 0.0, 0.0,  1.0,  5.0, true , v0.set( 0.0, 0.0,   0.0 ), v0.set(  0.0,  0.0, -1.0 ), null                       ),
-			/* Test #33 */ new Test( 0.0, 0.0,  1.0,  5.0, true , v0.set( 0.0, 0.0,  10.0 ), v0.set(  0.0,  0.0, -1.0 ), v0.set( 0.0, 0.0,  5.0 ) ),
-			/* Test #34 */ new Test( 0.0, 0.0,  1.0,  5.0, true , v0.set( 0.0, 0.0, -10.0 ), v0.set(  0.0,  0.0,  1.0 ), v0.set( 0.0, 0.0,  5.0 ) ),
-			/* Test #35 */ new Test( 0.0, 0.0,  1.0,  5.0, true , v0.set( 0.0, 0.0,   0.0 ), v0.set(  0.0,  0.0,  1.0 ), v0.set( 0.0, 0.0,  5.0 ) ),
-			/* Test #36 */ new Test( 0.0, 0.0,  1.0,  5.0, true , v0.set( 0.0, 0.0,  10.0 ), v0.set(  0.0,  0.0,  1.0 ), null                       ),
+			/* Test #31 */ new Test( 0.0, 0.0,  1.0,  5.0, true , new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+			/* Test #32 */ new Test( 0.0, 0.0,  1.0,  5.0, true , new Vector3D( 0.0, 0.0,   0.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+			/* Test #33 */ new Test( 0.0, 0.0,  1.0,  5.0, true , new Vector3D( 0.0, 0.0,  10.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0,  5.0 ) ),
+			/* Test #34 */ new Test( 0.0, 0.0,  1.0,  5.0, true , new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0,  5.0 ) ),
+			/* Test #35 */ new Test( 0.0, 0.0,  1.0,  5.0, true , new Vector3D( 0.0, 0.0,   0.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0,  5.0 ) ),
+			/* Test #36 */ new Test( 0.0, 0.0,  1.0,  5.0, true , new Vector3D( 0.0, 0.0,  10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
 
-			/* Test #37 */ new Test( 0.0, 0.0, -1.0, -5.0, false, v0.set( 0.0, 0.0, -10.0 ), v0.set(  0.0,  0.0, -1.0 ), null                       ),
-			/* Test #38 */ new Test( 0.0, 0.0, -1.0, -5.0, false, v0.set( 0.0, 0.0,   0.0 ), v0.set(  0.0,  0.0, -1.0 ), null                       ),
-			/* Test #39 */ new Test( 0.0, 0.0, -1.0, -5.0, false, v0.set( 0.0, 0.0,  10.0 ), v0.set(  0.0,  0.0, -1.0 ), null                       ),
-			/* Test #40 */ new Test( 0.0, 0.0, -1.0, -5.0, false, v0.set( 0.0, 0.0, -10.0 ), v0.set(  0.0,  0.0,  1.0 ), v0.set( 0.0, 0.0,  5.0 ) ),
-			/* Test #41 */ new Test( 0.0, 0.0, -1.0, -5.0, false, v0.set( 0.0, 0.0,   0.0 ), v0.set(  0.0,  0.0,  1.0 ), v0.set( 0.0, 0.0,  5.0 ) ),
-			/* Test #42 */ new Test( 0.0, 0.0, -1.0, -5.0, false, v0.set( 0.0, 0.0,  10.0 ), v0.set(  0.0,  0.0,  1.0 ), null                       ),
+			/* Test #37 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+			/* Test #38 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0,   0.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+			/* Test #39 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0,  10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+			/* Test #40 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0,  5.0 ) ),
+			/* Test #41 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0,   0.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0,  5.0 ) ),
+			/* Test #42 */ new Test( 0.0, 0.0, -1.0, -5.0, false, new Vector3D( 0.0, 0.0,  10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
 
-			/* Test #43 */ new Test( 0.0, 0.0, -1.0, -5.0, true , v0.set( 0.0, 0.0, -10.0 ), v0.set(  0.0,  0.0, -1.0 ), null                       ),
-			/* Test #44 */ new Test( 0.0, 0.0, -1.0, -5.0, true , v0.set( 0.0, 0.0,   0.0 ), v0.set(  0.0,  0.0, -1.0 ), null                       ),
-			/* Test #45 */ new Test( 0.0, 0.0, -1.0, -5.0, true , v0.set( 0.0, 0.0,  10.0 ), v0.set(  0.0,  0.0, -1.0 ), v0.set( 0.0, 0.0,  5.0 ) ),
-			/* Test #46 */ new Test( 0.0, 0.0, -1.0, -5.0, true , v0.set( 0.0, 0.0, -10.0 ), v0.set(  0.0,  0.0,  1.0 ), v0.set( 0.0, 0.0,  5.0 ) ),
-			/* Test #47 */ new Test( 0.0, 0.0, -1.0, -5.0, true , v0.set( 0.0, 0.0,   0.0 ), v0.set(  0.0,  0.0,  1.0 ), v0.set( 0.0, 0.0,  5.0 ) ),
-			/* Test #48 */ new Test( 0.0, 0.0, -1.0, -5.0, true , v0.set( 0.0, 0.0,  10.0 ), v0.set(  0.0,  0.0,  1.0 ), null                       ),
+			/* Test #43 */ new Test( 0.0, 0.0, -1.0, -5.0, true , new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+			/* Test #44 */ new Test( 0.0, 0.0, -1.0, -5.0, true , new Vector3D( 0.0, 0.0,   0.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
+			/* Test #45 */ new Test( 0.0, 0.0, -1.0, -5.0, true , new Vector3D( 0.0, 0.0,  10.0 ), Vector3D.NEGATIVE_Z_AXIS, new Vector3D( 0.0, 0.0,  5.0 ) ),
+			/* Test #46 */ new Test( 0.0, 0.0, -1.0, -5.0, true , new Vector3D( 0.0, 0.0, -10.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0,  5.0 ) ),
+			/* Test #47 */ new Test( 0.0, 0.0, -1.0, -5.0, true , new Vector3D( 0.0, 0.0,   0.0 ), Vector3D.POSITIVE_Z_AXIS, new Vector3D( 0.0, 0.0,  5.0 ) ),
+			/* Test #48 */ new Test( 0.0, 0.0, -1.0, -5.0, true , new Vector3D( 0.0, 0.0,  10.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
 
 			/*
 			 * Tests with plane: X = 0
 			 */
 
-			/* Test #49 */ new Test( 1.0, 0.0,  0.0,  0.0, false, v0.set( 1.0, 1.0,   1.0 ), v0.set(  1.0,  0.0,  0.0 ), null                       ),
-			/* Test #50 */ new Test( 1.0, 0.0,  0.0,  0.0, false, v0.set( 1.0, 1.0,   1.0 ), v0.set(  0.0,  1.0,  0.0 ), null                       ),
-			/* Test #51 */ new Test( 1.0, 0.0,  0.0,  0.0, false, v0.set( 1.0, 1.0,   1.0 ), v0.set(  0.0,  0.0,  1.0 ), null                       ),
-			/* Test #52 */ new Test( 1.0, 0.0,  0.0,  0.0, false, v0.set( 1.0, 1.0,   1.0 ), v0.set( -1.0,  0.0,  0.0 ), v0.set( 0.0, 1.0, 1.0 )  ),
-			/* Test #53 */ new Test( 1.0, 0.0,  0.0,  0.0, false, v0.set( 1.0, 1.0,   1.0 ), v0.set(  0.0, -1.0,  0.0 ), null                       ),
-			/* Test #54 */ new Test( 1.0, 0.0,  0.0,  0.0, false, v0.set( 1.0, 1.0,   1.0 ), v0.set(  0.0,  0.0, -1.0 ), null                       ),
+			/* Test #49 */ new Test( 1.0, 0.0,  0.0,  0.0, false, new Vector3D( 1.0, 1.0,   1.0 ), Vector3D.POSITIVE_X_AXIS, null ),
+			/* Test #50 */ new Test( 1.0, 0.0,  0.0,  0.0, false, new Vector3D( 1.0, 1.0,   1.0 ), Vector3D.POSITIVE_Y_AXIS, null ),
+			/* Test #51 */ new Test( 1.0, 0.0,  0.0,  0.0, false, new Vector3D( 1.0, 1.0,   1.0 ), Vector3D.POSITIVE_Z_AXIS, null ),
+			/* Test #52 */ new Test( 1.0, 0.0,  0.0,  0.0, false, new Vector3D( 1.0, 1.0,   1.0 ), Vector3D.NEGATIVE_X_AXIS, new Vector3D( 0.0, 1.0, 1.0 ) ),
+			/* Test #53 */ new Test( 1.0, 0.0,  0.0,  0.0, false, new Vector3D( 1.0, 1.0,   1.0 ), Vector3D.NEGATIVE_Y_AXIS, null ),
+			/* Test #54 */ new Test( 1.0, 0.0,  0.0,  0.0, false, new Vector3D( 1.0, 1.0,   1.0 ), Vector3D.NEGATIVE_Z_AXIS, null ),
 		};
 
 		/*
@@ -363,13 +365,17 @@ public final class TestGeometryTools
 
 			Class expectedException = null;
 			if ( ( test._expected instanceof Class ) && Exception.class.isAssignableFrom( (Class)test._expected ) )
-				expectedException = (Class)test._expected;
+			{
+				expectedException = (Class) test._expected;
+			}
 
 			try
 			{
 				final Vector3D result = GeometryTools.getIntersectionBetweenRayAndPlane( test._planeNormalX, test._planeNormalY, test._planeNormalZ, test._planeDistance, test._planeTwoSided, test._rayOrigin, test._rayDirection, true );
 				if ( expectedException != null )
+				{
 					fail( description + " should have thrown exception" );
+				}
 
 				assertEquals( description, test._expected, result );
 			}
@@ -396,8 +402,10 @@ public final class TestGeometryTools
 	{
 		System.out.println( CLASS_NAME + ".testGetPlaneNormal()" );
 
-		/*
-		 * Define test properties.
+		/**
+		 * Test properties.
+		 *
+		 * @noinspection JavaDoc
 		 */
 		class Test
 		{
@@ -411,21 +419,21 @@ public final class TestGeometryTools
 				_p1       = p1;
 				_p2       = p2;
 				_p3       = p3;
-				_expected = Vector3D.INIT.set( normalX, normalY, normalZ );
+				_expected = new Vector3D( normalX, normalY, normalZ );
 			}
 		}
 
 		/*
 		 * Define tests to execute.
 		 */
-		final Vector3D leftFrontBottom  = Vector3D.INIT.set( -1.0, -1.0, -1.0 );
-		final Vector3D leftFrontTop     = Vector3D.INIT.set( -1.0, -1.0,  1.0 );
-		final Vector3D leftRearBottom   = Vector3D.INIT.set( -1.0,  1.0, -1.0 );
-		final Vector3D leftRearTop      = Vector3D.INIT.set( -1.0,  1.0,  1.0 );
-		final Vector3D rightFrontBottom = Vector3D.INIT.set(  1.0, -1.0, -1.0 );
-		final Vector3D rightFrontTop    = Vector3D.INIT.set(  1.0, -1.0,  1.0 );
-		final Vector3D rightRearBottom  = Vector3D.INIT.set(  1.0,  1.0, -1.0 );
-		final Vector3D rightRearTop     = Vector3D.INIT.set(  1.0,  1.0,  1.0 );
+		final Vector3D leftFrontBottom  = new Vector3D( -1.0, -1.0, -1.0 );
+		final Vector3D leftFrontTop     = new Vector3D( -1.0, -1.0,  1.0 );
+		final Vector3D leftRearBottom   = new Vector3D( -1.0,  1.0, -1.0 );
+		final Vector3D leftRearTop      = new Vector3D( -1.0,  1.0,  1.0 );
+		final Vector3D rightFrontBottom = new Vector3D(  1.0, -1.0, -1.0 );
+		final Vector3D rightFrontTop    = new Vector3D(  1.0, -1.0,  1.0 );
+		final Vector3D rightRearBottom  = new Vector3D(  1.0,  1.0, -1.0 );
+		final Vector3D rightRearTop     = new Vector3D(  1.0,  1.0,  1.0 );
 
 		final double hr2 = Math.sqrt( 0.5 );
 
@@ -479,10 +487,12 @@ public final class TestGeometryTools
 	{
 		System.out.println( CLASS_NAME + ".testIsPointInsidePolygon()" );
 
-		/*
-		 * Define test properties.
+		/**
+		 * Test properties.
+		 *
+		 * @noinspection JavaDoc
 		 */
-		final class Test
+		class Test
 		{
 			final Polygon3D _polygon;
 			final double    _x;
@@ -523,14 +533,14 @@ public final class TestGeometryTools
 			{
 				private final Vector3D[] _vertices =
 				{
-					/* 0 */ Vector3D.INIT.set(  0.0, 20.0, 5.0 ),
-					/* 1 */ Vector3D.INIT.set( 10.0, 30.0, 5.0 ),
-					/* 2 */ Vector3D.INIT.set( 30.0, 30.0, 5.0 ),
-					/* 3 */ Vector3D.INIT.set( 30.0, 20.0, 5.0 ),
-					/* 4 */ Vector3D.INIT.set( 30.0, 10.0, 5.0 ),
-					/* 5 */ Vector3D.INIT.set( 30.0,  0.0, 5.0 ),
-					/* 6 */ Vector3D.INIT.set( 10.0,  0.0, 5.0 ),
-					/* 7 */ Vector3D.INIT.set(  0.0, 10.0, 5.0 ),
+					/* 0 */ new Vector3D(  0.0, 20.0, 5.0 ),
+					/* 1 */ new Vector3D( 10.0, 30.0, 5.0 ),
+					/* 2 */ new Vector3D( 30.0, 30.0, 5.0 ),
+					/* 3 */ new Vector3D( 30.0, 20.0, 5.0 ),
+					/* 4 */ new Vector3D( 30.0, 10.0, 5.0 ),
+					/* 5 */ new Vector3D( 30.0,  0.0, 5.0 ),
+					/* 6 */ new Vector3D( 10.0,  0.0, 5.0 ),
+					/* 7 */ new Vector3D(  0.0, 10.0, 5.0 ),
 				};
 
 				private final Vector3D _normal;
@@ -556,13 +566,13 @@ public final class TestGeometryTools
 			{
 				private final Vector3D[] _vertices =
 				{
-					/* 0 */ Vector3D.INIT.set( -10.0, -10.0, 5.0 ),
-					/* 1 */ Vector3D.INIT.set(  10.0, -10.0, 5.0 ),
-					/* 2 */ Vector3D.INIT.set(  10.0,  10.0, 5.0 ),
-					/* 3 */ Vector3D.INIT.set( -10.0,  10.0, 5.0 ),
+					/* 0 */ new Vector3D( -10.0, -10.0, 5.0 ),
+					/* 1 */ new Vector3D(  10.0, -10.0, 5.0 ),
+					/* 2 */ new Vector3D(  10.0,  10.0, 5.0 ),
+					/* 3 */ new Vector3D( -10.0,  10.0, 5.0 ),
 				};
 
-				private final Vector3D _normal = Vector3D.INIT.set( 0.0, 0.0, -1.0 );
+				private final Vector3D _normal = new Vector3D( 0.0, 0.0, -1.0 );
 
 				public int      getVertexCount()        { return _vertices.length; }
 				public double   getX( final int index ) { return _vertices[ index ].x; }
@@ -578,11 +588,11 @@ public final class TestGeometryTools
 			/* center */
 
 			/* Test #1  */ new Test( polygon1, 20.0, 15.0,  0.0, false ),
-			/* Test #2  */ new Test( polygon1, 20.0, 15.0,  5.0, true  ),
+			/* Test #2  */ new Test( polygon1, 20.0, 15.0,  5.0, true ),
 			/* Test #3  */ new Test( polygon1, 20.0, 15.0, 10.0, false ),
 
 			/* Test #4  */ new Test( polygon2,  0.0,  0.0,  0.0, false ),
-			/* Test #5  */ new Test( polygon2,  0.0,  0.0,  5.0, true  ),
+			/* Test #5  */ new Test( polygon2,  0.0,  0.0,  5.0, true ),
 			/* Test #6  */ new Test( polygon2,  0.0,  0.0, 10.0, false ),
 
 			/* outside */
