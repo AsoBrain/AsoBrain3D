@@ -32,21 +32,21 @@ import java.util.*;
  *     vertex_vectors
  *     {
  *         [number of vertices]
- *         {@link PovVector} , {@link PovVector} , {@link PovVector} ,
+ *         {@link PovVector}, {@link PovVector}, {@link PovVector},
  *         ...
  *     }
  *
  *     uv_vectors
  *     {
  *         [number of U/V vectors]
- *         {@link PovVector} , {@link PovVector} , {@link PovVector} ,
+ *         {@link PovVector}, {@link PovVector}, {@link PovVector},
  *         ...
  *     }
  *
  *     normal_vectors
  *     {
  *         [number of normals]
- *         {@link PovVector} , {@link PovVector} , {@link PovVector} ,
+ *         {@link PovVector}, {@link PovVector}, {@link PovVector},
  *         ...
  *     }
  *
@@ -61,21 +61,21 @@ import java.util.*;
  *     face_indices
  *     {
  *         [number of face indices]
- *         &lt;index1,index2,index33&gt;[,textureIndex] ,
+ *         &lt;index1,index2,index33&gt;[,textureIndex],
  *         ...
  *     }
  *
  *     uv_indices
  *     {
  *         [number of U/V indices]
- *         &lt;index1,index2,index3&gt; ,
+ *         &lt;index1,index2,index3&gt;,
  *         ...
  *     }
  *
  *     normal_indices
  *     {
  *         [number of normal indices]
- *         &lt;index1,index2,index33&gt; ,
+ *         &lt;index1,index2,index33&gt;,
  *         ...
  *     }
  *
@@ -159,9 +159,9 @@ public class PovMesh2
 		final int _normalIndex3;
 		final int _textureIndex;
 
-		Triangle( final int vertexIndex1 , final int uvIndex1 , final int normalIndex1 ,
-		          final int vertexIndex2 , final int uvIndex2 , final int normalIndex2 ,
-		          final int vertexIndex3 , final int uvIndex3 , final int normalIndex3 ,
+		Triangle( final int vertexIndex1, final int uvIndex1, final int normalIndex1,
+		          final int vertexIndex2, final int uvIndex2, final int normalIndex2,
+		          final int vertexIndex3, final int uvIndex3, final int normalIndex3,
 		          final int textureIndex )
 		{
 			_vertexIndex1 = vertexIndex1;
@@ -176,7 +176,7 @@ public class PovMesh2
 			_textureIndex = textureIndex;
 		}
 
-		void writeFaceIndices( final PovWriter out , final boolean includeTextureIndex )
+		void writeFaceIndices( final PovWriter out, final boolean includeTextureIndex )
 			throws IOException
 		{
 			out.write( (int)'<' );
@@ -298,7 +298,7 @@ public class PovMesh2
 	 */
 	int getOrAddVertexVectorIndex( final PovVector vertex )
 	{
-		return getOrAddElementIndex( _vertexVectors , vertex );
+		return getOrAddElementIndex( _vertexVectors, vertex );
 	}
 
 	/**
@@ -312,7 +312,7 @@ public class PovMesh2
 	 */
 	int getOrAddUvVectorIndex( final PovVector uvVector )
 	{
-		return getOrAddElementIndex( _uvVectors , uvVector );
+		return getOrAddElementIndex( _uvVectors, uvVector );
 	}
 
 	/**
@@ -326,7 +326,7 @@ public class PovMesh2
 	 */
 	int getOrAddNormalVectorIndex( final PovVector normalVector )
 	{
-		return getOrAddElementIndex( _normalVectors , normalVector );
+		return getOrAddElementIndex( _normalVectors, normalVector );
 	}
 
 	/**
@@ -340,7 +340,7 @@ public class PovMesh2
 	 */
 	int getOrAddTextureIndex( final PovTexture texture )
 	{
-		return getOrAddElementIndex( _textureList , texture );
+		return getOrAddElementIndex( _textureList, texture );
 	}
 
 	/**
@@ -357,7 +357,7 @@ public class PovMesh2
 	 *
 	 * @throws  NullPointerException if <code>list</code> is <code>null</code>.
 	 */
-	private static <T> int getOrAddElementIndex( final List<T> list , final T element )
+	private static <T> int getOrAddElementIndex( final List<T> list, final T element )
 	{
 		int result;
 
@@ -393,15 +393,15 @@ public class PovMesh2
 	 * @param   texture     Texture for this face.
 	 */
 	public void addTriangle(
-		final PovVector v1 , final PovVector uv1 , final PovVector vn1 ,
-	    final PovVector v2 , final PovVector uv2 , final PovVector vn2 ,
-	    final PovVector v3 , final PovVector uv3 , final PovVector vn3 ,
+		final PovVector v1, final PovVector uv1, final PovVector vn1,
+	    final PovVector v2, final PovVector uv2, final PovVector vn2,
+	    final PovVector v3, final PovVector uv3, final PovVector vn3,
 	    final PovTexture texture )
 	{
 		addTriangle(
-			getOrAddVertexVectorIndex( v1 ) , getOrAddUvVectorIndex( uv1 ) , getOrAddNormalVectorIndex( vn1 ) ,
-			getOrAddVertexVectorIndex( v2 ) , getOrAddUvVectorIndex( uv2 ) , getOrAddNormalVectorIndex( vn2 ) ,
-			getOrAddVertexVectorIndex( v3 ) , getOrAddUvVectorIndex( uv3 ) , getOrAddNormalVectorIndex( vn3 ) ,
+			getOrAddVertexVectorIndex( v1 ), getOrAddUvVectorIndex( uv1 ), getOrAddNormalVectorIndex( vn1 ),
+			getOrAddVertexVectorIndex( v2 ), getOrAddUvVectorIndex( uv2 ), getOrAddNormalVectorIndex( vn2 ),
+			getOrAddVertexVectorIndex( v3 ), getOrAddUvVectorIndex( uv3 ), getOrAddNormalVectorIndex( vn3 ),
 			getOrAddTextureIndex( texture ) );
 	}
 
@@ -420,12 +420,12 @@ public class PovMesh2
 	 * @param   texture     Texture index for this face.
 	 */
 	public void addTriangle(
-		final int v1 , final int uv1 , final int vn1 ,
-	    final int v2 , final int uv2 , final int vn2 ,
-	    final int v3 , final int uv3 , final int vn3 ,
+		final int v1, final int uv1, final int vn1,
+	    final int v2, final int uv2, final int vn2,
+	    final int v3, final int uv3, final int vn3,
 	    final int texture )
 	{
-		_triangles.add( new Triangle( v1 , uv1 , vn1 , v2 , uv2 , vn2 , v3 , uv3 , vn3 , texture ) );
+		_triangles.add( new Triangle( v1, uv1, vn1, v2, uv2, vn2, v3, uv3, vn3, texture ) );
 		_trianglesSorted = false;
 	}
 
@@ -603,9 +603,9 @@ public class PovMesh2
 		writeUvVectors    ( out );             // uv_vectors {}
 		writeNormalVectors( out );             // normal_vectors {}
 		writeTextureList  ( out );             // texture_list {}
-		writeFaceIndices  ( out , triangles ); // face_indices {}
-		writeUvIndices    ( out , triangles ); // uv_indices {}
-		writeNormalIndices( out , triangles ); // normal_indices {}
+		writeFaceIndices  ( out, triangles ); // face_indices {}
+		writeUvIndices    ( out, triangles ); // uv_indices {}
+		writeNormalIndices( out, triangles ); // normal_indices {}
 
 		if ( hasUV() )
 		{
@@ -629,7 +629,7 @@ public class PovMesh2
 	 * vertex_vectors
 	 * {
 	 *     [number of vertices]
-	 *     {@link PovVector} , {@link PovVector} , {@link PovVector} ,
+	 *     {@link PovVector}, {@link PovVector}, {@link PovVector},
 	 *     ...
 	 * }
 	 * </pre>
@@ -656,7 +656,7 @@ public class PovMesh2
 		{
 			final PovVector vector = vertexVectors.get( i );
 
-			writeElementSeparator( out , 3 , i );
+			writeElementSeparator( out, 3, i );
 			vector.write( out );
 		}
 
@@ -672,7 +672,7 @@ public class PovMesh2
 	 * uv_vectors
 	 * {
 	 *     [number of U/V vectors]
-	 *     {@link PovVector} , {@link PovVector} , {@link PovVector} ,
+	 *     {@link PovVector}, {@link PovVector}, {@link PovVector},
 	 *     ...
 	 * }
 	 * </pre>
@@ -701,7 +701,7 @@ public class PovMesh2
 			{
 				final PovVector vector = uvVectors.get( i );
 
-				writeElementSeparator( out , 3 , i );
+				writeElementSeparator( out, 3, i );
 				out.write( (int)'<' );
 				out.write( format( vector.getX() ) );
 				out.write( (int)',' );
@@ -722,7 +722,7 @@ public class PovMesh2
 	 * normal_vectors
 	 * {
 	 *     [number of normals]
-	 *     {@link PovVector} , {@link PovVector} , {@link PovVector} ,
+	 *     {@link PovVector}, {@link PovVector}, {@link PovVector},
 	 *     ...
 	 * }
 	 * </pre>
@@ -751,7 +751,7 @@ public class PovMesh2
 			{
 				final PovVector vector = normalVectors.get( i );
 
-				writeElementSeparator( out , 3 , i );
+				writeElementSeparator( out, 3, i );
 				vector.write( out );
 			}
 
@@ -810,7 +810,7 @@ public class PovMesh2
 	 * face_indices
 	 * {
 	 *     [number of face indices]
-	 *     &lt;index1,index2,index33&gt;[,textureIndex] ,
+	 *     &lt;index1,index2,index33&gt;[,textureIndex],
 	 *     ...
 	 * }
 	 * </pre>
@@ -820,7 +820,7 @@ public class PovMesh2
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	void writeFaceIndices( final PovWriter out , final List<Triangle> triangles )
+	void writeFaceIndices( final PovWriter out, final List<Triangle> triangles )
 		throws IOException
 	{
 		final boolean includeTextureIndex = ( _textureList.size() > 1 );
@@ -834,10 +834,10 @@ public class PovMesh2
 
 		for ( int i = 0 ; i < triangles.size() ; i++ )
 		{
-			writeElementSeparator( out , 6 , i );
+			writeElementSeparator( out, 6, i );
 
 			final Triangle triangle = triangles.get( i );
-			triangle.writeFaceIndices( out , includeTextureIndex );
+			triangle.writeFaceIndices( out, includeTextureIndex );
 		}
 		out.newLine();
 
@@ -851,7 +851,7 @@ public class PovMesh2
 	 * uv_indices
 	 * {
 	 *     [number of U/V indices]
-	 *     &lt;index1,index2,index3&gt; ,
+	 *     &lt;index1,index2,index3&gt;,
 	 *     ...
 	 * }
 	 * </pre>
@@ -861,7 +861,7 @@ public class PovMesh2
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	void writeUvIndices( final PovWriter out , final List<Triangle> triangles )
+	void writeUvIndices( final PovWriter out, final List<Triangle> triangles )
 		throws IOException
 	{
 		if ( hasUV() )
@@ -877,7 +877,7 @@ public class PovMesh2
 			{
 				final Triangle triangle = triangles.get( i );
 
-				writeElementSeparator( out , 6 , i );
+				writeElementSeparator( out, 6, i );
 				triangle.writeUvIndices( out );
 			}
 			out.newLine();
@@ -893,7 +893,7 @@ public class PovMesh2
 	 * normal_indices
 	 * {
 	 *     [number of normal indices]
-	 *     &lt;index1,index2,index33&gt; ,
+	 *     &lt;index1,index2,index33&gt;,
 	 *     ...
 	 * }
 	 * </pre>
@@ -903,7 +903,7 @@ public class PovMesh2
 	 *
 	 * @throws  IOException when writing failed.
 	 */
-	void writeNormalIndices( final PovWriter out , final List<Triangle> triangles )
+	void writeNormalIndices( final PovWriter out, final List<Triangle> triangles )
 		throws IOException
 	{
 		if ( hasNormals() )
@@ -917,7 +917,7 @@ public class PovMesh2
 
 			for ( int i = 0 ; i < triangles.size() ; i++ )
 			{
-				writeElementSeparator( out , 3 , i );
+				writeElementSeparator( out, 3, i );
 
 				final Triangle triangle = triangles.get( i );
 				triangle.writeNormalIndices( out );
@@ -929,18 +929,18 @@ public class PovMesh2
 		}
 	}
 
-	private static void writeElementSeparator( final PovWriter out , final int elementsPerLine , final int elementIndex )
+	private static void writeElementSeparator( final PovWriter out, final int elementsPerLine, final int elementIndex )
 		throws IOException
 	{
 		if ( elementIndex > 0 )
 		{
 			if ( ( elementIndex % elementsPerLine ) == 0 )
 			{
-				out.writeln( " ," );
+				out.writeln( "," );
 			}
 			else
 			{
-				out.write( " , " );
+				out.write( ", " );
 			}
 		}
 	}

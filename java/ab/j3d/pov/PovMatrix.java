@@ -29,10 +29,10 @@ import ab.j3d.*;
 /**
  * Pov Transformation matrix.
  * <pre>
- * &lt; xx , yx , zx ,     // \
- *   xy , yy , zy ,     //  --- Rotation
- *   xz , yz , zz ,     // /
- *   xo , yo , zo &gt;     // Translation
+ * &lt; xx, yx, zx,     // \
+ *   xy, yy, zy,     //  --- Rotation
+ *   xz, yz, zz,     // /
+ *   xo, yo, zo &gt;     // Translation
  * </pre>
  *
  * @author  Sjoerd Bouwman
@@ -84,10 +84,10 @@ public class PovMatrix
 	{
 		this( new double[]
 			{
-				m.xx , m.yx , m.zx ,
-				m.xy , m.yy , m.zy ,
-				m.xz , m.yz , m.zz ,
-				m.xo , m.yo , m.zo
+				m.xx, m.yx, m.zx,
+				m.xy, m.yy, m.zy,
+				m.xz, m.yz, m.zz,
+				m.xo, m.yo, m.zo
 			} );
 	}
 
@@ -129,9 +129,9 @@ public class PovMatrix
 		final double[] data = _data;
 
 		return Matrix3D.IDENTITY.set(
-			data[  0 ] , data[  3 ] , data[  6 ] , data[  9 ] ,
-			data[  1 ] , data[  4 ] , data[  7 ] , data[ 10 ] ,
-			data[  2 ] , data[  5 ] , data[  8 ] , data[ 11 ] );
+			data[  0 ], data[  3 ], data[  6 ], data[  9 ],
+			data[  1 ], data[  4 ], data[  7 ], data[ 10 ],
+			data[  2 ], data[  5 ], data[  8 ], data[ 11 ] );
 	}
 
 	/**
@@ -153,26 +153,26 @@ public class PovMatrix
 		final double[]     data        = _data;
 
 		out.write( "matrix < " );
-		out.write( format( data[  0 ] ) ); out.write( " , " );
-		out.write( format( data[  1 ] ) ); out.write( " , " );
-		out.write( format( data[  2 ] ) ); out.write( " ,"  );
+		out.write( format( data[  0 ] ) ); out.write( ", " );
+		out.write( format( data[  1 ] ) ); out.write( ", " );
+		out.write( format( data[  2 ] ) ); out.write( ","  );
 		out.newLine();
 
 		out.write( "         " );
-		out.write( format( data[  3 ] ) ); out.write( " , " );
-		out.write( format( data[  4 ] ) ); out.write( " , " );
-		out.write( format( data[  5 ] ) ); out.write( " ,"  );
+		out.write( format( data[  3 ] ) ); out.write( ", " );
+		out.write( format( data[  4 ] ) ); out.write( ", " );
+		out.write( format( data[  5 ] ) ); out.write( ","  );
 		out.newLine();
 
 		out.write( "         " );
-		out.write( format( data[  6 ] ) ); out.write( " , " );
-		out.write( format( data[  7 ] ) ); out.write( " , " );
-		out.write( format( data[  8 ] ) ); out.write( " ,"  );
+		out.write( format( data[  6 ] ) ); out.write( ", " );
+		out.write( format( data[  7 ] ) ); out.write( ", " );
+		out.write( format( data[  8 ] ) ); out.write( ","  );
 		out.newLine();
 
 		out.write( "         " );
-		out.write( format( data[  9 ] ) ); out.write( " , " );
-		out.write( format( data[ 10 ] ) ); out.write( " , " );
+		out.write( format( data[  9 ] ) ); out.write( ", " );
+		out.write( format( data[ 10 ] ) ); out.write( ", " );
 		out.write( format( data[ 11 ] ) ); out.write( " >"  );
 		out.newLine();
 	}

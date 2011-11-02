@@ -29,9 +29,9 @@ import java.util.*;
  * <pre>
  * mesh // name
  * {
- *     triangle { &lt;x1,y1,z1&gt; , &lt;x2,y2,z2&gt; , &lt;x3,y3,z3&gt; [texture] }
- *     triangle { &lt;x1,y1,z1&gt; , &lt;x2,y2,z2&gt; , &lt;x3,y3,z3&gt; [texture] }
- *     triangle { &lt;x1,y1,z1&gt; , &lt;x2,y2,z2&gt; , &lt;x3,y3,z3&gt; [texture] }
+ *     triangle { &lt;x1,y1,z1&gt;, &lt;x2,y2,z2&gt;, &lt;x3,y3,z3&gt; [texture] }
+ *     triangle { &lt;x1,y1,z1&gt;, &lt;x2,y2,z2&gt;, &lt;x3,y3,z3&gt; [texture] }
+ *     triangle { &lt;x1,y1,z1&gt;, &lt;x2,y2,z2&gt;, &lt;x3,y3,z3&gt; [texture] }
  *     [rotate]
  *     [matrix]
  *     [texture]
@@ -69,12 +69,12 @@ public class PovMesh
 		public final boolean   _smooth;
 		public PovTexture      _texture;
 
-		Triangle( final PovVector p1 , final PovVector p2 , final PovVector p3 , final boolean smooth )
+		Triangle( final PovVector p1, final PovVector p2, final PovVector p3, final boolean smooth )
 		{
-			this( p1 , p2 , p3 , smooth , null );
+			this( p1, p2, p3, smooth, null );
 		}
 
-		Triangle( final PovVector p1 , final PovVector p2 , final PovVector p3 , final boolean smooth , final PovTexture texture )
+		Triangle( final PovVector p1, final PovVector p2, final PovVector p3, final boolean smooth, final PovTexture texture )
 		{
 			_p1      = p1;
 			_p2      = p2;
@@ -97,9 +97,9 @@ public class PovMesh
 
 			out.write( "triangle { " );
 			_p1.write( out );
-			out.write( " , " );
+			out.write( ", " );
 			_p2.write( out );
-			out.write( " , " );
+			out.write( ", " );
 			_p3.write( out );
 			out.write( (int)' ' );
 
@@ -122,9 +122,9 @@ public class PovMesh
 	 * @param   name        Name of the shape.
 	 * @param   texture     Texture of the shape.
 	 */
-	public PovMesh( final String name , final PovTexture texture )
+	public PovMesh( final String name, final PovTexture texture )
 	{
-		super( name , texture );
+		super( name, texture );
 
 		_insideVector = null;
 	}
@@ -167,9 +167,9 @@ public class PovMesh
 	 * @param   smooth      The triangle is used to immitate a smooth surface.
 	 * @param   texture     Texture applied to triangle.
 	 */
-	public void addTriangle( final PovVector p1 , final PovVector p2 , final PovVector p3 , final boolean smooth , final PovTexture texture )
+	public void addTriangle( final PovVector p1, final PovVector p2, final PovVector p3, final boolean smooth, final PovTexture texture )
 	{
-		_triangles.add( new Triangle( p1 , p2 , p3 , smooth , texture ) );
+		_triangles.add( new Triangle( p1, p2, p3, smooth, texture ) );
 	}
 
 	/**
@@ -181,10 +181,10 @@ public class PovMesh
 	 * @param   smooth      Face is smooth.
 	 * @param   texture     Texture of the face (may be <code>null</code>).
 	 */
-	public void addPolygon( final PovVector[] points , final boolean smooth , final PovTexture texture )
+	public void addPolygon( final PovVector[] points, final boolean smooth, final PovTexture texture )
 	{
 		for ( int i = 0 ; i < points.length - 2 ; i++ )
-			addTriangle( points[ 0 ] , points[ i + 1 ] , points[ i + 2 ] , smooth , texture );
+			addTriangle( points[ 0 ], points[ i + 1 ], points[ i + 2 ], smooth, texture );
 	}
 
 	public void write( final PovWriter out )
