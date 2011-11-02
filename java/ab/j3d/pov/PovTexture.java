@@ -343,9 +343,9 @@ public class PovTexture
 		this();
 		_name = "APPEARANCE_" + Integer.toHexString( System.identityHashCode( appearance ) );
 
-		final float diffuseRed = Math.max( appearance.getDiffuseColorRed(), 0.001f );
-		final float diffuseGreen = Math.max( appearance.getDiffuseColorGreen(), 0.001f );
-		final float diffuseBlue = Math.max( appearance.getDiffuseColorBlue(), 0.001f );
+		final double diffuseRed = Math.max( (double)appearance.getDiffuseColorRed(), 0.001 );
+		final double diffuseGreen = Math.max( (double)appearance.getDiffuseColorGreen(), 0.001 );
+		final double diffuseBlue = Math.max( (double)appearance.getDiffuseColorBlue(), 0.001 );
 
 		_rgb = new PovVector( diffuseRed, diffuseGreen, diffuseBlue );
 
@@ -355,9 +355,9 @@ public class PovTexture
 			_image = colorMap.getImageUrl();
 		}
 
-		final float ambientRed   = appearance.getAmbientColorRed()   / diffuseRed;
-		final float ambientGreen = appearance.getAmbientColorGreen() / diffuseGreen;
-		final float ambientBlue  = appearance.getAmbientColorBlue()  / diffuseBlue;
+		final double ambientRed   = (double)appearance.getAmbientColorRed()   / diffuseRed;
+		final double ambientGreen = (double)appearance.getAmbientColorGreen() / diffuseGreen;
+		final double ambientBlue  = (double)appearance.getAmbientColorBlue()  / diffuseBlue;
 		setAmbient( new PovVector( ambientRed, ambientGreen, ambientBlue ) );
 
 		setDiffuse( 1.0 );
@@ -368,12 +368,16 @@ public class PovTexture
 		final ReflectionMap reflectionMap = appearance.getReflectionMap();
 		if ( reflectionMap != null )
 		{
-			final float min = reflectionMap.getReflectivityMin();
-			final float max = reflectionMap.getReflectivityMax();
+			final double min = reflectionMap.getReflectivityMin();
+			final double max = reflectionMap.getReflectivityMax();
 			if ( ( min > 0.0f ) || ( max > 0.0f ) )
 			{
-				final PovVector reflectionMin = new PovVector( min * reflectionMap.getIntensityRed(), min * reflectionMap.getIntensityGreen(), min * reflectionMap.getIntensityBlue() );
-				final PovVector reflectionMax = new PovVector( max * reflectionMap.getIntensityRed(), max * reflectionMap.getIntensityGreen(), max * reflectionMap.getIntensityBlue() );
+				final double red = (double) reflectionMap.getIntensityRed();
+				final double green = (double) reflectionMap.getIntensityGreen();
+				final double blue = (double) reflectionMap.getIntensityBlue();
+
+				final PovVector reflectionMin = new PovVector( min * red, min * green, min * blue );
+				final PovVector reflectionMax = new PovVector( max * red, max * green, max * blue );
 				setReflection( reflectionMin, reflectionMax );
 			}
 		}
@@ -753,11 +757,16 @@ public class PovTexture
 		if ( image != null )
 		{
 			final String path = image.getPath();
+			final String filename = path.substring( path.lastIndexOf( '/' ) + 1 );
 
-			final int dot = path.lastIndexOf( '.', path.lastIndexOf( '/' ) + 1 );
+			final int dot = filename.lastIndexOf( '.' );
 			if ( dot >= 0 )
 			{
-				result = path.substring( dot + 1 );
+				result = filename.substring( dot + 1 );
+				if ( "jpg".equals( result ) )
+				{
+					result = "jpeg";
+				}
 			}
 		}
 
