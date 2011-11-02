@@ -45,7 +45,7 @@ public class PovScene
 	 * These textures will be declared on top of the pov source
 	 * like : #declare TEX_name = texture { definition }
 	 */
-	private final Map<String,PovTexture> _textures = new HashMap<String,PovTexture>();
+	private final Map<String,PovTexture> _textures = new LinkedHashMap<String,PovTexture>();
 
 	/**
 	 * Declared or predefined shapes in the scene.
@@ -185,6 +185,16 @@ public class PovScene
 	public PovTexture getTexture( final String code )
 	{
 		return _textures.get( code );
+	}
+
+	/**
+	 * Get codes of textures that are declared by this scene.
+	 *
+	 * @return  Texture codes.
+	 */
+	public Set<String> getTextureCodes()
+	{
+		return Collections.unmodifiableSet( _textures.keySet() );
 	}
 
 	/**
@@ -600,19 +610,12 @@ public class PovScene
 
 		if ( !textures.isEmpty() )
 		{
-			final Set<String> textureKeySet = textures.keySet();
-			final String[]    textureKeys   = textureKeySet.toArray( new String[ textureKeySet.size() ] );
-
-			Arrays.sort( textureKeys );
-
 			out.writeln( "/*" );
 			out.writeln( " * Texture definitions" );
 			out.writeln( " */" );
 
-			for ( final String key : textureKeys )
+			for ( final PovTexture texture : textures.values() )
 			{
-				final PovTexture texture = textures.get( key );
-
 				texture.declare( out );
 				out.newLine();
 			}
