@@ -20,6 +20,7 @@
  */
 package ab.j3d.appearance;
 
+import ab.j3d.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -31,7 +32,7 @@ import org.jetbrains.annotations.*;
 public interface Appearance
 {
 	/**
-	 * Red component of ambient reflection color.
+	 * Get ambient reflection color.
 	 * <p>
 	 * This determines the amount of reflected light from ambient sources
 	 * (normally just 1). This value may range from almost 0 for objects
@@ -39,30 +40,12 @@ public interface Appearance
 	 * reflective. Typical values range from 0.1 to 0.2 for dull surfaces
 	 * and 0.7 to 0.8 for bright surfaces.
 	 *
-	 * @return  Red component of ambient reflection color.
+	 * @return  Ambient reflection color.
 	 */
-	float getAmbientColorRed();
+	Color4 getAmbientColor();
 
 	/**
-	 * Green component of ambient reflection color.
-	 *
-	 * @return  Green component of ambient reflection color.
-	 *
-	 * @see     #getAmbientColorRed
-	 */
-	float getAmbientColorGreen();
-
-	/**
-	 * Blue component of ambient reflection color.
-	 *
-	 * @return  Blue component of ambient reflection color.
-	 *
-	 * @see     #getAmbientColorRed
-	 */
-	float getAmbientColorBlue();
-
-	/**
-	 * Red component of diffuse reflection color.
+	 * Get diffuse reflection color and opacity.
 	 * <p>
 	 * This determines the amount of reflected light from diffuse sources.
 	 * This value may range from almost 0 for objects that absorb most
@@ -70,65 +53,20 @@ public interface Appearance
 	 * Typical values range from 0.1 to 0.2 for dull surfaces and 0.7 to
 	 * 0.8 for bright surfaces.
 	 *
-	 * @return  Red component of diffuse reflection color.
+	 * @return  Diffuse reflection color and opacity.
 	 */
-	float getDiffuseColorRed();
+	Color4 getDiffuseColor();
 
 	/**
-	 * Green component of diffuse reflection color.
-	 *
-	 * @return  Green component of diffuse reflection color.
-	 *
-	 * @see     #getDiffuseColorRed
-	 */
-	float getDiffuseColorGreen();
-
-	/**
-	 * Blue component of diffuse reflection color.
-	 *
-	 * @return  Blue component of diffuse reflection color.
-	 *
-	 * @see     #getDiffuseColorRed
-	 */
-	float getDiffuseColorBlue();
-
-	/**
-	 * Opacity. Determines the transparency of the material. This ranges
-	 * from fully opaque (1.0) to completely translucent (0.0). Any value
-	 * outside this ranges renders undefined results.
-	 *
-	 * @return  Opacity.
-	 */
-	float getDiffuseColorAlpha();
-
-	/**
-	 * Red component of specular highlight color.
+	 * Get specular highlight color.
 	 * <p>
 	 * Specular reflection is total or near total reflection of incoming
 	 * light in a concentrated region. It can be used to create highlights
 	 * on shiny surfaces.
 	 *
-	 * @return  Red component of specular highlight color.
+	 * @return  Specular highlight color.
 	 */
-	float getSpecularColorRed();
-
-	/**
-	 * Green component of specular highlight color.
-	 *
-	 * @return  Green component of specular highlight color.
-	 *
-	 * @see     #getSpecularColorRed
-	 */
-	float getSpecularColorGreen();
-
-	/**
-	 * Blue component of specular highlight color.
-	 *
-	 * @return  Blue component of specular highlight color.
-	 *
-	 * @see     #getSpecularColorRed
-	 */
-	float getSpecularColorBlue();
+	Color4 getSpecularColor();
 
 	/**
 	 * Specular highlight exponent. This exponent is an indicator for
@@ -141,32 +79,14 @@ public interface Appearance
 	int getShininess();
 
 	/**
-	 * Red component of emissive color.
+	 * Get emissive color.
 	 * <p>
 	 * This determines the amount of light emitted by this material.
 	 * Note that this doesn't automatically imply a light source.
 	 *
-	 * @return  Red component of emissive color.
+	 * @return  Emissive color.
 	 */
-	float getEmissiveColorRed();
-
-	/**
-	 * Green component of emissive reflection color.
-	 *
-	 * @return  Green component of emissive reflection color.
-	 *
-	 * @see     #getEmissiveColorRed
-	 */
-	float getEmissiveColorGreen();
-
-	/**
-	 * Blue component of emissive reflection color.
-	 *
-	 * @return  Blue component of emissive reflection color.
-	 *
-	 * @see     #getEmissiveColorRed
-	 */
-	float getEmissiveColorBlue();
+	Color4 getEmissiveColor();
 
 	/**
 	 * Color map to use. This map provides color and possibly opacity (alpha)
@@ -199,5 +119,32 @@ public interface Appearance
 	 *          <code>null</code> if no reflection map is available.
 	 */
 	@Nullable
-	ReflectionMap getReflectionMap();
+	CubeMap getReflectionMap();
+
+	/**
+	 * Get reflection intensity of the material when viewed parallel to its
+	 * normal. If a reflection map is active, that map will be combined with the
+	 * reflection intensity and reflection color.
+	 *
+	 * @return  Reflectivity when viewed parallel to its normal.
+	 */
+	float getReflectionMin();
+
+	/**
+	 * Get reflectivity of the material when viewed perpendicular to its normal.
+	 * If a reflection map is active, that map will be combined with the
+	 * reflection intensity and reflection color.
+	 *
+	 * @return  Reflectivity when viewed perpendicular to its normal.
+	 */
+	float getReflectionMax();
+
+	/**
+	 * Get reflection color/intensity of (specular) reflections. If a reflection
+	 * map is active, that map will be combined with the reflection intensity
+	 * and reflection color.
+	 *
+	 * @return  Reflection color/intensity of (specular) reflections.
+	 */
+	Color4 getReflectionColor();
 }

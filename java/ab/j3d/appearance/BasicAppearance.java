@@ -20,6 +20,7 @@
  */
 package ab.j3d.appearance;
 
+import ab.j3d.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -36,52 +37,17 @@ public class BasicAppearance
 	/**
 	 * Red component of ambient reflection color.
 	 */
-	private float _ambientColorRed = 0.0f;
-
-	/**
-	 * Green component of ambient reflection color.
-	 */
-	private float _ambientColorGreen = 0.0f;
-
-	/**
-	 * Blue component of ambient reflection color.
-	 */
-	private float _ambientColorBlue = 0.0f;
+	private Color4 _ambientColor = Color4.BLACK;
 
 	/**
 	 * Red component of diffuse reflection color.
 	 */
-	private float _diffuseColorRed = 0.0f;
-
-	/**
-	 * Green component of diffuse reflection color.
-	 */
-	private float _diffuseColorGreen = 0.0f;
-
-	/**
-	 * Blue component of diffuse reflection color.
-	 */
-	private float _diffuseColorBlue = 0.0f;
-
-	/**
-	 * Opacity.
-	 */
-	private float _diffuseColorAlpha = 0.0f;
+	private Color4 _diffuseColor = Color4.BLACK;
 
 	/**
 	 * Red component of specular highlight color.
 	 */
-	private float _specularColorRed = 0.0f;
-
-	/**
-	 * Green component of specular highlight color.
-	 */
-	private float _specularColorGreen = 0.0f;
-
-	/**
-	 * Blue component of specular highlight color.
-	 */
-	private float _specularColorBlue = 0.0f;
+	private Color4 _specularColor = Color4.BLACK;
 
 	/**
 	 * Specular highlight exponent.
@@ -91,17 +57,7 @@ public class BasicAppearance
 	/**
 	 * Red component of emissive color.
 	 */
-	private float _emissiveColorRed = 0.0f;
-
-	/**
-	 * Green component of emissive reflection color.
-	 */
-	private float _emissiveColorGreen = 0.0f;
-
-	/**
-	 * Blue component of emissive reflection color.
-	 */
-	private float _emissiveColorBlue = 0.0f;
+	private Color4 _emissiveColor = Color4.BLACK;
 
 	/**
 	 * Color map to use.
@@ -119,158 +75,135 @@ public class BasicAppearance
 	 * Map to use for reflections.
 	 */
 	@Nullable
-	private ReflectionMap _reflectionMap = null;
+	private CubeMap _reflectionMap = null;
 
-	public float getAmbientColorRed()
+	/**
+	 * Reflectivity of the material when viewed parallel to its normal.
+	 */
+	private float _reflectionMin = 0.0f;
+
+	/**
+	 * Reflectivity of the material when viewed perpendicular to its normal.
+	 */
+	private float _reflectionMax = 1.0f;
+
+	/**
+	 * Reflection color/intensity of (specular) reflections.
+	 */
+	private Color4 _reflectionColor = Color4.WHITE;
+
+	public Color4 getAmbientColor()
 	{
-		return _ambientColorRed;
+		return _ambientColor;
 	}
 
 	/**
-	 * Set red component of ambient reflection color.
+	 * Set ambient reflection color.
+	 * <p>
+	 * This determines the amount of reflected light from ambient sources
+	 * (normally just 1). This value may range from almost 0 for objects
+	 * that absorb most ambient light to near 1 for objects that are highly
+	 * reflective. Typical values range from 0.1 to 0.2 for dull surfaces
+	 * and 0,7 to 0,8 for bright surfaces.
 	 *
-	 * @param   red     Red component of ambient reflection color.
+	 * @param   red     Red intensity.
+	 * @param   green   Green intensity.
+	 * @param   blue    Blue intensity.
 	 */
-	public void setAmbientColorRed( final float red )
+	public void setAmbientColor( final float red, final float green, final float blue )
 	{
-		_ambientColorRed = red;
-	}
-
-	public float getAmbientColorGreen()
-	{
-		return _ambientColorGreen;
+		setAmbientColor( new Color4f( red, green, blue ) );
 	}
 
 	/**
-	 * Green component of ambient reflection color.
+	 * Set ambient reflection color.
+	 * <p>
+	 * This determines the amount of reflected light from ambient sources
+	 * (normally just 1). This value may range from almost 0 for objects
+	 * that absorb most ambient light to near 1 for objects that are highly
+	 * reflective. Typical values range from 0.1 to 0.2 for dull surfaces
+	 * and 0,7 to 0,8 for bright surfaces.
 	 *
-	 * @param   green   Green component of ambient reflection color.
+	 * @param   color   Ambient reflection color.
 	 */
-	public void setAmbientColorGreen( final float green )
+	public void setAmbientColor( final Color4 color )
 	{
-		_ambientColorGreen = green;
+		_ambientColor = color;
 	}
 
-	public float getAmbientColorBlue()
+	public Color4 getDiffuseColor()
 	{
-		return _ambientColorBlue;
+		return _diffuseColor;
 	}
 
 	/**
-	 * Blue component of ambient reflection color.
+	 * Set diffuse reflection color and opacity.
+	 * <p>
+	 * This determines the amount of reflected light from diffuse sources.
+	 * This value may range from almost 0 for objects that absorb most
+	 * diffuse light to near 1 for objects that are highly reflective.
+	 * Typical values range from 0.1 to 0.2 for dull surfaces and 0.7 to
+	 * 0.8 for bright surfaces.
 	 *
-	 * @param   blue    Blue component of ambient reflection color.
+	 * @param   red     Red intensity.
+	 * @param   green   Green intensity.
+	 * @param   blue    Blue intensity.
+	 * @param   alpha   Alpha value.
 	 */
-	public void setAmbientColorBlue( final float blue )
+	public void setDiffuseColor( final float red, final float green, final float blue, final float alpha )
 	{
-		_ambientColorBlue = blue;
-	}
-
-	public float getDiffuseColorRed()
-	{
-		return _diffuseColorRed;
+		setDiffuseColor( new Color4f( red, green, blue, alpha ) );
 	}
 
 	/**
-	 * Red component of diffuse reflection color.
+	 * Set diffuse reflection color and opacity.
+	 * <p>
+	 * This determines the amount of reflected light from diffuse sources.
+	 * This value may range from almost 0 for objects that absorb most
+	 * diffuse light to near 1 for objects that are highly reflective.
+	 * Typical values range from 0.1 to 0.2 for dull surfaces and 0.7 to
+	 * 0.8 for bright surfaces.
 	 *
-	 * @param   red     Red component of diffuse reflection color.
+	 * @param   color   Diffuse reflection color and opacity.
 	 */
-	public void setDiffuseColorRed( final float red )
+	public void setDiffuseColor( final Color4 color )
 	{
-		_diffuseColorRed = red;
+		_diffuseColor = color;
 	}
 
-	public float getDiffuseColorGreen()
+	public Color4 getSpecularColor()
 	{
-		return _diffuseColorGreen;
+		return _specularColor;
 	}
 
 	/**
-	 * Green component of diffuse reflection color.
+	 * Set specular reflection color.
+	 * <p>
+	 * Specular reflection is total or near total reflection of incoming
+	 * light in a concentrated region. It can be used to create highlights
+	 * on shiny surfaces.
 	 *
-	 * @param   green   Green component of diffuse reflection color.
+	 * @param   red     Red intensity.
+	 * @param   green   Green intensity.
+	 * @param   blue    Blue intensity.
 	 */
-	public void setDiffuseColorGreen( final float green )
+	public void setSpecularColor( final float red, final float green, final float blue )
 	{
-		_diffuseColorGreen = green;
-	}
-
-	public float getDiffuseColorBlue()
-	{
-		return _diffuseColorBlue;
+		setSpecularColor( new Color4f( red, green, blue ) );
 	}
 
 	/**
-	 * Blue component of diffuse reflection color.
+	 * Set specular reflection color.
+	 * <p>
+	 * Specular reflection is total or near total reflection of incoming
+	 * light in a concentrated region. It can be used to create highlights
+	 * on shiny surfaces.
 	 *
-	 * @param   blue    Blue component of diffuse reflection color.
+	 * @param   color   Specular reflection color.
 	 */
-	public void setDiffuseColorBlue( final float blue )
+	public void setSpecularColor( final Color4 color )
 	{
-		_diffuseColorBlue = blue;
-	}
-
-	public float getDiffuseColorAlpha()
-	{
-		return _diffuseColorAlpha;
-	}
-
-	/**
-	 * Opacity. Determines the transparency of the material. This ranges
-	 * from fully opaque (1.0) to completely translucent (0.0). Any value
-	 * outside this ranges renders undefined results.
-	 *
-	 * @param   alpha   Opacity.
-	 */
-	public void setDiffuseColorAlpha( final float alpha )
-	{
-		_diffuseColorAlpha = alpha;
-	}
-
-	public float getSpecularColorRed()
-	{
-		return _specularColorRed;
-	}
-
-	/**
-	 * Red component of specular highlight color.
-	 *
-	 * @param   red     Red component of specular highlight color.
-	 */
-	public void setSpecularColorRed( final float red )
-	{
-		_specularColorRed = red;
-	}
-
-	public float getSpecularColorGreen()
-	{
-		return _specularColorGreen;
-	}
-
-	/**
-	 * Green component of specular highlight color.
-	 *
-	 * @param   green   Green component of specular highlight color.
-	 */
-	public void setSpecularColorGreen( final float green )
-	{
-		_specularColorGreen = green;
-	}
-
-	public float getSpecularColorBlue()
-	{
-		return _specularColorBlue;
-	}
-
-	/**
-	 * Blue component of specular highlight color.
-	 *
-	 * @param   blue   Blue component of specular highlight color.
-	 */
-	public void setSpecularColorBlue( final float blue )
-	{
-		_specularColorBlue = blue;
+		_specularColor = color;
 	}
 
 	public int getShininess()
@@ -288,49 +221,37 @@ public class BasicAppearance
 		_shininess = shininess;
 	}
 
-	public float getEmissiveColorRed()
+	public Color4 getEmissiveColor()
 	{
-		return _emissiveColorRed;
+		return _emissiveColor;
 	}
 
 	/**
-	 * Red component of emissive color.
+	 * Set emissive color.
+	 * <p>
+	 * This determines the amount of light emitted by this material.
+	 * Note that this automatically implies a light source.
 	 *
-	 * @param   red     Red component of emissive color.
+	 * @param   red     Red intensity.
+	 * @param   green   Green intensity.
+	 * @param   blue    Blue intensity.
 	 */
-	public void setEmissiveColorRed( final float red )
+	public void setEmissiveColor( final float red, final float green, final float blue )
 	{
-		_emissiveColorRed = red;
-	}
-
-	public float getEmissiveColorGreen()
-	{
-		return _emissiveColorGreen;
+		setEmissiveColor( new Color4f( red, green, blue ) );
 	}
 
 	/**
-	 * Green component of emissive reflection color.
+	 * Set emissive color.
+	 * <p>
+	 * This determines the amount of light emitted by this material.
+	 * Note that this automatically implies a light source.
 	 *
-	 * @param   green   Green component of emissive reflection color.
+	 * @param   color   Emissive color.
 	 */
-	public void setEmissiveColorGreen( final float green )
+	public void setEmissiveColor( final Color4 color )
 	{
-		_emissiveColorGreen = green;
-	}
-
-	public float getEmissiveColorBlue()
-	{
-		return _emissiveColorBlue;
-	}
-
-	/**
-	 * Blue component of emissive reflection color.
-	 *
-	 * @param   blue    Blue component of emissive reflection color.
-	 */
-	public void setEmissiveColorBlue( final float blue )
-	{
-		_emissiveColorBlue = blue;
+		_emissiveColor = color;
 	}
 
 	@Nullable
@@ -366,7 +287,7 @@ public class BasicAppearance
 	}
 
 	@Nullable
-	public ReflectionMap getReflectionMap()
+	public CubeMap getReflectionMap()
 	{
 		return _reflectionMap;
 	}
@@ -376,8 +297,66 @@ public class BasicAppearance
 	 *
 	 * @param   map     Reflection map; <code>null</code> if none.
 	 */
-	public void setReflectionMap( @Nullable final ReflectionMap map )
+	public void setReflectionMap( @Nullable final CubeMap map )
 	{
 		_reflectionMap = map;
+	}
+
+
+	public float getReflectionMin()
+	{
+		return _reflectionMin;
+	}
+
+	/**
+	 * Get reflectivity of the material when viewed parallel to its normal.
+	 *
+	 * @param   reflectivity    Reflectivity if view is parallel to normal.
+	 */
+	public void setReflectionMin( final float reflectivity )
+	{
+		_reflectionMin = reflectivity;
+	}
+
+	public float getReflectionMax()
+	{
+		return _reflectionMax;
+	}
+
+	/**
+	 * Get reflectivity of the material when viewed perpendicular to its normal.
+	 *
+	 * @param   reflectivity    Reflectivity if view is perpendicular to normal.
+	 */
+	public void setReflectionMax( final float reflectivity )
+	{
+		_reflectionMax = reflectivity;
+	}
+
+	public Color4 getReflectionColor()
+	{
+		return _reflectionColor;
+	}
+
+	/**
+	 * Set reflection color/intensity of (specular) reflections.
+	 *
+	 * @param   red     Red intensity.
+	 * @param   green   Green intensity.
+	 * @param   blue    Blue intensity.
+	 */
+	public void setReflectionColor( final float red, final float green, final float blue )
+	{
+		setReflectionColor( new Color4f( red, green, blue ) );
+	}
+
+	/**
+	 * Set reflection color/intensity of (specular) reflections.
+	 *
+	 * @param   color     Reflection color/intensity.
+	 */
+	public void setReflectionColor( final Color4 color )
+	{
+		_reflectionColor = color;
 	}
 }
