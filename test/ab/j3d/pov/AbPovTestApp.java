@@ -61,11 +61,6 @@ class AbPovTestApp
 	public static void main( final String[] args )
 	{
 		/*
-		 * Path to test textures.
-		 */
-		Material.imagesDirectoryUrl = AbPovTestApp.class.getResource( "/ab/j3d/pov/textures/" );
-
-		/*
 		 * Create testmodel.
 		 */
 		final AbPovTestModel testModel = new AbPovTestModel();

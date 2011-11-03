@@ -45,14 +45,6 @@ import junit.framework.*;
 public class TestAbToPovConverter
 	extends TestCase
 {
-	@Override
-	protected void setUp()
-		throws Exception
-	{
-		super.setUp();
-		Material.imagesDirectoryUrl = getTexturesDirectory();
-	}
-
 	/**
 	 * This method tests if the needed texture declarations are generated.
 	 * All textures should be declared.

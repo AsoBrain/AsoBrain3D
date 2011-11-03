@@ -24,6 +24,7 @@ import java.io.*;
 import java.util.regex.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import org.jetbrains.annotations.*;
@@ -120,9 +121,9 @@ public class StlLoader
 	private static final Pattern ENDFACET_PATTERN = Pattern.compile( "\\s*endfacet\\s*" );
 
 	/**
-	 * Material to use for resulting 3D object.
+	 * Appearance to use for resulting 3D object.
 	 */
-	Material _material = Materials.ALUMINIUM;
+	Appearance _appearance = BasicAppearances.ALUMINIUM;
 
 	/**
 	 * UV-map applied to loaded objects.
@@ -131,23 +132,23 @@ public class StlLoader
 	UVMap _uvMap = null;
 
 	/**
-	 * Get material used for resulting 3D object.
+	 * Get appearance used for resulting 3D object.
 	 *
-	 * @return  Material used for resulting 3D object.
+	 * @return  Appearance used for resulting 3D object.
 	 */
-	public Material getMaterial()
+	public Appearance getAppearance()
 	{
-		return _material;
+		return _appearance;
 	}
 
 	/**
-	 * Set material to use for resulting 3D object.
+	 * Set appearance to use for resulting 3D object.
 	 *
-	 * @param   material    Material to use for resulting 3D object.
+	 * @param   appearance    Appearance to use for resulting 3D object.
 	 */
-	public void setMaterial( final Material material )
+	public void setAppearance( final Appearance appearance )
 	{
-		_material = material;
+		_appearance = appearance;
 	}
 
 	/**
@@ -316,7 +317,7 @@ public class StlLoader
 	protected String loadAscii( @NotNull final Abstract3DObjectBuilder builder, @NotNull final Matrix3D transform, @NotNull final BufferedReader reader )
 		throws IOException
 	{
-		final Material material = _material;
+		final Appearance appearance = _appearance;
 		final UVMap uvMap = _uvMap;
 
 		//noinspection MismatchedReadAndWriteOfArray
@@ -362,7 +363,7 @@ public class StlLoader
 							throw new IOException( "Invalid facet defined in STL file. Should have 3 vertices, but have " + vertexCount );
 						}
 
-						builder.addFace( vertexIndices.clone(), material, uvMap, false, false, false );
+						builder.addFace( vertexIndices.clone(), appearance, uvMap, false, false, false );
 						faceVertexIndex = 0;
 					}
 				}
@@ -389,7 +390,7 @@ public class StlLoader
 	public String loadBinary( @NotNull final Abstract3DObjectBuilder builder, @NotNull final Matrix3D transform, @NotNull final InputStream in )
 		throws IOException
 	{
-		final Material material = _material;
+		final Appearance appearance = _appearance;
 		final UVMap uvMap = _uvMap;
 
 		final byte[] header = new byte[ 80 ];
@@ -429,7 +430,7 @@ public class StlLoader
 				 */
 				readUnsignedInt16( in );
 
-				builder.addFace( points, material, uvMap, normals, false, false, false );
+				builder.addFace( points, appearance, uvMap, normals, false, false, false );
 			}
 		}
 		catch ( EOFException e )

@@ -32,6 +32,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
@@ -263,20 +264,18 @@ public class ProbeUI
 		@Override
 		protected void createScene( final Scene scene )
 		{
-			Material.imagesDirectoryUrl = PROBE_UI_URL;
+			final URL textureUrl;
+			try
+			{
+				textureUrl = new URL( PROBE_UI_URL, "texture1.png" );
+			}
+			catch ( MalformedURLException e )
+			{
+				throw new AssertionError( e );
+			}
+			final BasicAppearance texture1 = BasicAppearance.createForColorMap( new FileTextureMap( textureUrl, 0.001f, 0.001f ) );
 
-			final Material texture1 = new Material( 0xffffffff );
-			texture1.colorMap = "texture1.png";
-			texture1.colorMapWidth = 0.001f;
-			texture1.colorMapHeight = 0.001f;
-			texture1.specularColorRed = 0.0f;
-			texture1.specularColorGreen = 0.0f;
-			texture1.specularColorBlue = 0.0f;
-
-			final Material green = new Material( 0xff00ff00 );
-			green.specularColorRed = 0.0f;
-			green.specularColorGreen = 0.0f;
-			green.specularColorBlue = 0.0f;
+			final BasicAppearance green = BasicAppearance.createForColor( Color4.GREEN );
 
 			final Light3D light1 = new Light3D();
 			light1.setFallOff( 0.0 );
@@ -372,22 +371,22 @@ public class ProbeUI
 		{
 			super.createScene( scene );
 
-			final Material sphereMaterial = new Material( 0xffe0c060 );
-			scene.addContentNode( "sphere"    , Matrix3D.IDENTITY, new Sphere3D( 0.5, 16, 16, sphereMaterial ) );
-			scene.addContentNode( "sphere-inv", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), new Sphere3D( 2.0, 16, 16, sphereMaterial, true ) );
+			final Appearance sphereAppearance = BasicAppearance.createForColor( new Color4f( 0xffe0c060 ) );
+			scene.addContentNode( "sphere"    , Matrix3D.IDENTITY, new Sphere3D( 0.5, 16, 16, sphereAppearance ) );
+			scene.addContentNode( "sphere-inv", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), new Sphere3D( 2.0, 16, 16, sphereAppearance, true ) );
 
 			final Object3DBuilder twoSide1 = new Object3DBuilder();
 			twoSide1.addQuad( new Vector3D( -1.0, 0.0, -1.0 ),
 			                  new Vector3D( -1.0, 0.0,  1.0 ),
-			                  new Vector3D(  0.0, 0.0,  1.0 ),
-			                  new Vector3D(  0.0, 0.0, -1.0 ), sphereMaterial, true );
+			                  Vector3D.POSITIVE_Z_AXIS,
+			                  Vector3D.NEGATIVE_Z_AXIS, sphereAppearance, true );
 			scene.addContentNode( "two-side1", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), twoSide1.getObject3D() );
 
 			final Object3DBuilder twoSide2 = new Object3DBuilder();
-			twoSide2.addQuad( new Vector3D( 0.0, 0.0, -1.0 ),
+			twoSide2.addQuad( Vector3D.NEGATIVE_Z_AXIS,
 			                  new Vector3D( 1.0, 0.0, -1.0 ),
 			                  new Vector3D( 1.0, 0.0, 1.0 ),
-			                  new Vector3D( 0.0, 0.0, 1.0 ), sphereMaterial, true );
+			                  Vector3D.POSITIVE_Z_AXIS, sphereAppearance, true );
 			scene.addContentNode( "two-side2", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), twoSide2.getObject3D() );
 		}
 
@@ -430,22 +429,22 @@ public class ProbeUI
 		{
 			super.createScene( scene );
 
-			final Material sphereMaterial = new Material( 0xffe0c060 );
-			scene.addContentNode( "sphere"    , Matrix3D.IDENTITY, new Sphere3D( 0.5, 16, 16, sphereMaterial ) );
-			scene.addContentNode( "sphere-inv", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), new Sphere3D( 2.0, 16, 16, sphereMaterial, true ) );
+			final Appearance sphereAppearance = BasicAppearance.createForColor( new Color4f( 0xffe0c060 ) );
+			scene.addContentNode( "sphere"    , Matrix3D.IDENTITY, new Sphere3D( 0.5, 16, 16, sphereAppearance ) );
+			scene.addContentNode( "sphere-inv", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), new Sphere3D( 2.0, 16, 16, sphereAppearance, true ) );
 
 			final Object3DBuilder twoSide1 = new Object3DBuilder();
 			twoSide1.addQuad( new Vector3D( -1.0, 0.0, -1.0 ),
 			                  new Vector3D( -1.0, 0.0,  1.0 ),
-			                  new Vector3D(  0.0, 0.0,  1.0 ),
-			                  new Vector3D(  0.0, 0.0, -1.0 ), sphereMaterial, true );
+			                  Vector3D.POSITIVE_Z_AXIS,
+			                  Vector3D.NEGATIVE_Z_AXIS, sphereAppearance, true );
 			scene.addContentNode( "two-side1", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), twoSide1.getObject3D() );
 
 			final Object3DBuilder twoSide2 = new Object3DBuilder();
-			twoSide2.addQuad( new Vector3D(  0.0, 0.0, -1.0 ),
+			twoSide2.addQuad( Vector3D.NEGATIVE_Z_AXIS,
 			                  new Vector3D(  1.0, 0.0, -1.0 ),
 			                  new Vector3D(  1.0, 0.0,  1.0 ),
-			                  new Vector3D(  0.0, 0.0,  1.0 ), sphereMaterial, true );
+			                  Vector3D.POSITIVE_Z_AXIS, sphereAppearance, true );
 			scene.addContentNode( "two-side2", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), twoSide2.getObject3D() );
 		}
 
@@ -486,11 +485,11 @@ public class ProbeUI
 			scene.addContentNode( "light-1", Matrix3D.getTranslation(  4.0, -4.0,  4.0 ), light1 );
 			scene.addContentNode( "light-2", Matrix3D.getTranslation( -4.0, -4.0,  4.0 ), light2 );
 
-			final Material opaque1      = new Material( 0xffffffff );
-			final Material opaque2      = new Material( 0xffffff00 );
-			final Material transparent1 = new Material( 0x80ff0000 );
-			final Material transparent2 = new Material( 0x8000ff00 );
-			final Material transparent3 = new Material( 0x800000ff );
+			final Appearance opaque1      = BasicAppearance.createForColor( new Color4f( 0xffffffff ) );
+			final Appearance opaque2      = BasicAppearance.createForColor( new Color4f( 0xffffff00 ) );
+			final Appearance transparent1 = BasicAppearance.createForColor( new Color4f( 0x80ff0000 ) );
+			final Appearance transparent2 = BasicAppearance.createForColor( new Color4f( 0x8000ff00 ) );
+			final Appearance transparent3 = BasicAppearance.createForColor( new Color4f( 0x800000ff ) );
 
 			scene.addContentNode( "sphere-2", Matrix3D.getTranslation(  0.0, 0.0,  0.0 ), new Sphere3D( 0.5, 16, 16, transparent2 ) );
 			scene.addContentNode( "sphere-3", Matrix3D.getTranslation( -0.5, 0.0,  0.5 ), new Sphere3D( 0.5, 16, 16, opaque1 ) );
