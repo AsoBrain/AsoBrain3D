@@ -120,27 +120,23 @@ public class GLStateHelper
 	 */
 	public final void setAppearance( final Appearance appearance, final RenderStyle style, final float extraAlpha )
 	{
-		final float red;
-		final float green;
-		final float blue;
-		final float alpha;
+		final Color4 diffuseColor = appearance.getDiffuseColor();
+
+		float red = diffuseColor.getRedFloat();
+		float green = diffuseColor.getGreenFloat();
+		float blue = diffuseColor.getBlueFloat();
+		float alpha = diffuseColor.getAlphaFloat() * extraAlpha;
 
 		if ( style.isFillEnabled() )
 		{
-			final Color4 materialDiffuse = new Color4f( appearance.getDiffuseColorRed(), appearance.getDiffuseColorGreen(), appearance.getDiffuseColorBlue(), extraAlpha * appearance.getDiffuseColorAlpha() );
-			final Color4 diffuse = RenderStyle.blendColors( style.getFillColor(), materialDiffuse );
-
-			red   = diffuse.getRedFloat();
-			green = diffuse.getGreenFloat();
-			blue  = diffuse.getBlueFloat();
-			alpha = diffuse.getAlphaFloat();
+			final Color4 blended = RenderStyle.blendColors( style.getFillColor(), red, green, blue, alpha );
+			red = blended.getRedFloat();
+			green = blended.getGreenFloat();
+			blue  = blended.getBlueFloat();
+			alpha = blended.getAlphaFloat();
 		}
 		else
 		{
-			red   = appearance.getDiffuseColorRed();
-			green = appearance.getDiffuseColorGreen();
-			blue  = appearance.getDiffuseColorBlue();
-			alpha = appearance.getDiffuseColorAlpha() * extraAlpha;
 		}
 
 		setAppearance( appearance, red, green, blue, alpha );
@@ -149,20 +145,24 @@ public class GLStateHelper
 	/**
 	 * Sets OpenGL material properties.
 	 *
-	 * @param   appearance  Appearance properties to be set.
-	 * @param   red         Red component of the diffuse color to be set.
-	 * @param   green       Green component of the diffuse color to be set.
-	 * @param   blue        Blue component of the diffuse color to be set.
-	 * @param   alpha       Alpha component to be set.
+	 * @param   appearance      Appearance properties to be set.
+	 * @param   diffuseRed      Red component of the diffuse color to be set.
+	 * @param   diffuseGreen    Green component of the diffuse color to be set.
+	 * @param   diffuseBlue     Blue component of the diffuse color to be set.
+	 * @param   alpha           Alpha value to be set.
 	 */
-	protected void setAppearance( final Appearance appearance, final float red, final float green, final float blue, final float alpha )
+	protected void setAppearance( final Appearance appearance, final float diffuseRed, final float diffuseGreen, final float diffuseBlue, final float alpha )
 	{
+		final Color4 ambientColor = appearance.getAmbientColor();
+		final Color4 specularColor = appearance.getSpecularColor();
+		final Color4 emissiveColor = appearance.getEmissiveColor();
+
 		final GL gl = _gl;
-		gl.glColor4f( red, green, blue, alpha );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT, new float[] { appearance.getAmbientColorRed(), appearance.getAmbientColorGreen(), appearance.getAmbientColorBlue(), alpha }, 0 );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE, new float[] { red, green, blue, alpha }, 0 );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_SPECULAR, new float[] { appearance.getSpecularColorRed(), appearance.getSpecularColorGreen(), appearance.getSpecularColorBlue(), alpha }, 0 );
-		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_EMISSION, new float[] { appearance.getEmissiveColorRed(), appearance.getEmissiveColorGreen(), appearance.getEmissiveColorBlue(), alpha }, 0 );
+		gl.glColor4f( diffuseRed, diffuseGreen, diffuseBlue, alpha );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT, new float[] { ambientColor.getRedFloat(), ambientColor.getGreenFloat(), ambientColor.getBlueFloat(), alpha }, 0 );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE, new float[] { diffuseRed, diffuseGreen, diffuseBlue, alpha }, 0 );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_SPECULAR, new float[] { specularColor.getRedFloat(), specularColor.getGreenFloat(), specularColor.getBlueFloat(), alpha }, 0 );
+		gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_EMISSION, new float[] { emissiveColor.getRedFloat(), emissiveColor.getGreenFloat(), emissiveColor.getBlueFloat(), alpha }, 0 );
 		gl.glMaterialf( GL.GL_FRONT_AND_BACK, GL.GL_SHININESS, (float)appearance.getShininess() );
 	}
 
