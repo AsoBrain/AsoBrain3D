@@ -338,43 +338,43 @@ public class PovTexture
 	 *
 	 * @param   appearance  {@link Appearance} to construct texture from.
 	 */
-	public PovTexture( final Material appearance )
+	public PovTexture( final Appearance appearance )
 	{
 		this();
 		_name = "APPEARANCE_" + Integer.toHexString( System.identityHashCode( appearance ) );
 
-		final double diffuseRed = Math.max( (double)appearance.getDiffuseColorRed(), 0.001 );
-		final double diffuseGreen = Math.max( (double)appearance.getDiffuseColorGreen(), 0.001 );
-		final double diffuseBlue = Math.max( (double)appearance.getDiffuseColorBlue(), 0.001 );
+		final Color4 ambientColor = appearance.getAmbientColor();
+		final Color4 diffuseColor = appearance.getDiffuseColor();
+		final Color4 specularColor = appearance.getSpecularColor();
+		final TextureMap colorMap = appearance.getColorMap();
+		final int shininess = appearance.getShininess();
+		final ReflectionMap reflectionMap = appearance.getReflectionMap();
+
+		final double diffuseRed = Math.max( (double)diffuseColor.getRedFloat(), 0.001 );
+		final double diffuseGreen = Math.max( (double)diffuseColor.getGreenFloat(), 0.001 );
+		final double diffuseBlue = Math.max( (double)diffuseColor.getBlueFloat(), 0.001 );
+		final double ambientRed   = (double)ambientColor.getRedFloat()   / diffuseRed;
+		final double ambientGreen = (double)ambientColor.getGreenFloat() / diffuseGreen;
+		final double ambientBlue  = (double)ambientColor.getBlueFloat()  / diffuseBlue;
 
 		_rgb = new PovVector( diffuseRed, diffuseGreen, diffuseBlue );
-
-		final TextureMap colorMap = appearance.getColorMap();
-		if ( colorMap != null )
-		{
-			_image = colorMap.getImageUrl();
-		}
-
-		final double ambientRed   = (double)appearance.getAmbientColorRed()   / diffuseRed;
-		final double ambientGreen = (double)appearance.getAmbientColorGreen() / diffuseGreen;
-		final double ambientBlue  = (double)appearance.getAmbientColorBlue()  / diffuseBlue;
+		_image = ( colorMap != null ) ? colorMap.getImageUrl() : null;
 		setAmbient( new PovVector( ambientRed, ambientGreen, ambientBlue ) );
-
 		setDiffuse( 1.0 );
-		setTransmit( (double)( 1.0f - appearance.getDiffuseColorAlpha() ) );
-		setPhong( (double)appearance.getSpecularReflectivity() );
-		setPhongSize( 0.25 * (double)appearance.getShininess() );
+		setTransmit( (double)( 1.0f - diffuseColor.getAlphaFloat() ) );
+		setPhong( (double)specularColor.getLuminance() );
+		setPhongSize( 0.25 * (double)shininess );
 
-		final ReflectionMap reflectionMap = appearance.getReflectionMap();
 		if ( reflectionMap != null )
 		{
-			final double min = reflectionMap.getReflectivityMin();
-			final double max = reflectionMap.getReflectivityMax();
-			if ( ( min > 0.0f ) || ( max > 0.0f ) )
+			final double min = (double)reflectionMap.getReflectivityMin();
+			final double max = (double)reflectionMap.getReflectivityMax();
+			if ( ( min > 0.0 ) || ( max > 0.0 ) )
 			{
-				final double red = (double) reflectionMap.getIntensityRed();
-				final double green = (double) reflectionMap.getIntensityGreen();
-				final double blue = (double) reflectionMap.getIntensityBlue();
+				final Color4 reflectionColor = reflectionMap.getColor();
+				final double red = (double)reflectionColor.getRedFloat();
+				final double green = (double) reflectionColor.getGreenFloat();
+				final double blue = (double) reflectionColor.getBlueFloat();
 
 				final PovVector reflectionMin = new PovVector( min * red, min * green, min * blue );
 				final PovVector reflectionMax = new PovVector( max * red, max * green, max * blue );
