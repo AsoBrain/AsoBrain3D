@@ -167,19 +167,35 @@ public class RenderStyle
 	 *
 	 * @return  Blended color.
 	 */
-	public static Color4 blendColors( final Color4 src , final Color4 dst )
+	public static Color4 blendColors( final Color4 src, final Color4 dst )
+	{
+		return ( dst != null ) ? blendColors( src, dst.getRedFloat(), dst.getGreenFloat(), dst.getBlueFloat(), dst.getAlphaFloat() ) : src;
+	}
+
+	/**
+	 * Blend two colors.
+	 *
+	 * @param   src         Incoming color, blended with the destination color.
+	 * @param   dstRed      Red intensity of destination color.
+	 * @param   dstGreen    Green intensity of destination color.
+	 * @param   dstBlue     Blue value of destination color.
+	 * @param   dstAlpha    Alpha value of destination color.
+	 *
+	 * @return  Blended color.
+	 */
+	public static Color4 blendColors( final Color4 src, final float dstRed, final float dstGreen, final float dstBlue, final float dstAlpha )
 	{
 		final Color4 result;
 
-		if ( ( dst != null ) && ( src.getAlphaFloat() < 255 ) )
+		final float srcAlpha = src.getAlphaFloat();
+		if ( srcAlpha < 1.0f )
 		{
-			final float srcRatio = src.getAlphaFloat();
-			final float dstRatio = dst.getAlphaFloat() * ( 1.0f - srcRatio );
+			final float dstRatio = dstAlpha * ( 1.0f - srcAlpha );
 
-			final float alpha = dstRatio + srcRatio;
-			final float red   = ( dstRatio * dst.getRedFloat() + srcRatio * src.getRedFloat() ) / alpha;
-			final float green = ( dstRatio * dst.getGreenFloat() + srcRatio * src.getGreenFloat() ) / alpha;
-			final float blue  = ( dstRatio * dst.getBlueFloat() + srcRatio * src.getBlueFloat() ) / alpha;
+			final float alpha = dstRatio + srcAlpha;
+			final float red   = ( dstRatio * dstRed + srcAlpha * src.getRedFloat() ) / alpha;
+			final float green = ( dstRatio * dstGreen + srcAlpha * src.getGreenFloat() ) / alpha;
+			final float blue  = ( dstRatio * dstBlue + srcAlpha * src.getBlueFloat() ) / alpha;
 
 			result = new Color4f( red, green, blue, alpha );
 		}
