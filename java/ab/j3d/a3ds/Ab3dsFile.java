@@ -323,21 +323,15 @@ public final class Ab3dsFile
 		final BasicAppearance appearance = new BasicAppearance();
 
 		final Ab3dsRGB ambient = materialChunk.getAmbient();
-		appearance.setAmbientColorRed( ambient.getRed() );
-		appearance.setAmbientColorGreen( ambient.getGreen() );
-		appearance.setAmbientColorBlue( ambient.getBlue() );
+		appearance.setAmbientColor( new Color4f( ambient.getRed(), ambient.getGreen(), ambient.getBlue() );
 
 		final Ab3dsRGB diffuse = materialChunk.getDiffuse();
-		appearance.setDiffuseColorRed( diffuse.getRed() );
-		appearance.setDiffuseColorGreen( diffuse.getGreen() );
-		appearance.setDiffuseColorBlue( diffuse.getBlue() );
-		appearance.setDiffuseColorAlpha( 1.0f - materialChunk.getTransparency() );
+		appearance.setDiffuseColor( new Color4f( diffuse.getRed(), diffuse.getGreen(), diffuse.getBlue(), 1.0f - materialChunk.getTransparency() );
 
 		final Ab3dsRGB specular = materialChunk.getSpecular();
-		appearance.setSpecularColorRed( specular.getRed() );
-		appearance.setSpecularColorGreen( specular.getGreen() );
-		appearance.setSpecularColorBlue( specular.getBlue() );
+		appearance.setSpecularColor( new Color4f( specular.getRed(), specular.getGreen(), specular.getBlue() ) );
 		appearance.setShininess( materialChunk.getShininess() );
+
 		return appearance;
 	}
 
@@ -523,7 +517,7 @@ public final class Ab3dsFile
 						builder.addFace( vertices, tessellation, appearance, false, twoSided );
 					}
 
-					final ArrayList<Vector3D> vertexCoordinates = new ArrayList<Vector3D>( vertexList.getVertexCount() );
+					final List<Vector3D> vertexCoordinates = new ArrayList<Vector3D>( vertexList.getVertexCount() );
 					for ( int i = 0; i < vertexList.getVertexCount(); i++ )
 					{
 						vertexCoordinates.add( vertexList.getVertex( i ) );
