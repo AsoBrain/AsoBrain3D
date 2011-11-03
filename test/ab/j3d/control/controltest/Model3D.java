@@ -20,11 +20,11 @@
  */
 package ab.j3d.control.controltest;
 
-import java.awt.*;
 import java.beans.*;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.controltest.model.*;
 import ab.j3d.geom.*;
@@ -41,29 +41,46 @@ import ab.j3d.view.View3D;
 public class Model3D
 {
 	/**
-	 * The material for the floor.
+	 * The appearance for the floor.
 	 */
-	private static final Material FLOOR_MATERIAL = new Material( Color.WHITE.getRGB() );
+	private static final Appearance FLOOR_APPEARANCE = createApperance( Color4.WHITE );
 
 	/**
-	 * The material for a Wall.
+	 * The appearance for a Wall.
 	 */
-	private static final Material WALL_MATERIAL = new Material( Color.RED.getRGB() );
+	private static final Appearance WALL_APPEARANCE = createApperance( Color4.RED );
 
 	/**
-	 * The material for a TetraHedron.
+	 * The appearance for a TetraHedron.
 	 */
-	private static final Material HEDRON_MATERIAL = new Material( Color.GREEN.getRGB() );
+	private static final Appearance HEDRON_APPEARANCE = createApperance( Color4.GREEN );
 
 	/**
-	 * The material for a selected TetraHedron.
+	 * The appearance for a selected TetraHedron.
 	 */
-	private static final Material SELECTION_MATERIAL = new Material( Color.BLUE.getRGB() );
+	private static final Appearance SELECTION_APPEARANCE = createApperance( Color4.BLUE );
 
 	/**
-	 * The material for a selected face.
+	 * The appearance for a selected face.
 	 */
-	private static final Material FACE_SELECTION_MATERIAL = new Material( Color.MAGENTA.getRGB() );
+	private static final Appearance FACE_SELECTION_APPEARANCE = createApperance( Color4.MAGENTA );
+
+	/**
+	 * Create appearance for solid color.
+	 *
+	 * @param   color   Color to create appearance for.
+	 *
+	 * @return  Appearance for solid color.
+	 */
+	public static Appearance createApperance( final Color4 color )
+	{
+		final BasicAppearance result = new BasicAppearance();
+		result.setAmbientColor( color );
+		result.setDiffuseColor( color );
+		result.setSpecularColor( Color4.WHITE );
+		result.setShininess( 16 );
+		return result;
+	}
 
 	/**
 	 * {@link Model} whose objects should be translated to 3d.
@@ -217,7 +234,7 @@ public class Model3D
 
 		if ( element == _model.getSelection() )
 		{
-			setMaterialOfAllFaces( element3D, SELECTION_MATERIAL );
+			setAppearanceOfAllFaces( element3D, SELECTION_APPEARANCE );
 		}
 
 		_scene.addContentNode( element, transform, element3D );
@@ -240,7 +257,7 @@ public class Model3D
 		builder.addQuad( new Vector3D( -halfX, -halfY, 0.0 ),
 		                 new Vector3D( -halfX,  halfY, 0.0 ),
 		                 new Vector3D(  halfX,  halfY, 0.0 ),
-		                 new Vector3D(  halfX, -halfY, 0.0 ), FLOOR_MATERIAL, true );
+		                 new Vector3D(  halfX, -halfY, 0.0 ), FLOOR_APPEARANCE, true );
 		return builder.getObject3D();
 	}
 
@@ -257,8 +274,8 @@ public class Model3D
 		final double height = wall.getZSize();
 		final double depth  = wall.getYSize();
 
-		final Material material = WALL_MATERIAL;
-		return new Box3D( width, depth, height, new BoxUVMap( Scene.MM ), material );
+		final Appearance appearance = WALL_APPEARANCE;
+		return new Box3D( width, depth, height, new BoxUVMap( Scene.MM ), appearance );
 	}
 
 	/**
@@ -273,7 +290,7 @@ public class Model3D
 	{
 		final Object3D result = new Object3D();
 
-		final Material material = HEDRON_MATERIAL;
+		final Appearance appearance = HEDRON_APPEARANCE;
 
 		final double width     = hedron.getSize();
 		final double depth     = Math.cos( Math.toRadians( 30.0 ) ) * width;
@@ -289,17 +306,17 @@ public class Model3D
 		final Vector3D v3 = new Vector3D(        0.0,     0.0, height );
 
 		final Object3DBuilder builder = new Object3DBuilder();
-		/* Bottom */ builder.addTriangle( v2, v0, v1, material, false );
-		/* Back   */ builder.addTriangle( v3, v1, v0, material, false );
-		/* Left   */ builder.addTriangle( v3, v0, v2, material, false );
-		/* Right  */ builder.addTriangle( v3, v2, v1, material, false );
+		/* Bottom */ builder.addTriangle( v2, v0, v1, appearance, false );
+		/* Back   */ builder.addTriangle( v3, v1, v0, appearance, false );
+		/* Left   */ builder.addTriangle( v3, v0, v2, appearance, false );
+		/* Right  */ builder.addTriangle( v3, v2, v1, appearance, false );
 		return result;
 	}
 
 	/**
 	 * Updates selection from <code>oldSelection</code> to
 	 * <code>newSelection</code>. The old {@link SceneElement} (if not
-	 * <code>null</code>) is given back the normal material, while the new
+	 * <code>null</code>) is given back the normal appearance, while the new
 	 * {@link SceneElement} (if not <code>null</code>) is given the color of a
 	 * selected {@link SceneElement}.
 	 *
@@ -315,22 +332,22 @@ public class Model3D
 			final ContentNode oldNode = scene.getContentNode( oldSelection );
 			final Object3D oldObject3D = ( oldNode != null ) ? (Object3D)oldNode.getNode3D() : null;
 
-			Material material = null;
+			Appearance appearance = null;
 
 			if ( oldSelection instanceof Floor )
 			{
-				material = FLOOR_MATERIAL;
+				appearance = FLOOR_APPEARANCE;
 			}
 			else if ( oldSelection instanceof Wall )
 			{
-				material = WALL_MATERIAL;
+				appearance = WALL_APPEARANCE;
 			}
 			else if ( oldSelection instanceof TetraHedron )
 			{
-				material = HEDRON_MATERIAL;
+				appearance = HEDRON_APPEARANCE;
 			}
 
-			setMaterialOfAllFaces( oldObject3D, material );
+			setAppearanceOfAllFaces( oldObject3D, appearance );
 
 			final ContentNode contentNode = scene.getContentNode( oldSelection );
 			contentNode.fireContentUpdated();
@@ -341,7 +358,7 @@ public class Model3D
 			final ContentNode newNode = scene.getContentNode( newSelection );
 			final Object3D newObject3D = ( newNode != null ) ? (Object3D)newNode.getNode3D() : null;
 
-			setMaterialOfAllFaces( newObject3D, SELECTION_MATERIAL );
+			setAppearanceOfAllFaces( newObject3D, SELECTION_APPEARANCE );
 			final ContentNode contentNode = scene.getContentNode( newSelection );
 			contentNode.fireContentUpdated();
 		}
@@ -349,7 +366,7 @@ public class Model3D
 
 	/**
 	 * Updates face selection from <code>oldFace</code> to <code>newFace</code>.
-	 * The old face (if not <code>null</code>) is given back the normal material,
+	 * The old face (if not <code>null</code>) is given back the normal appearance,
 	 * while the new face (if not <code>null</code>) is given the color of a
 	 * selected face.
 	 *
@@ -367,7 +384,7 @@ public class Model3D
 
 			final ContentNode hedronNode = scene.getContentNode( oldHedron );
 			final Object3D hedron3D = ( hedronNode != null ) ? (Object3D)hedronNode.getNode3D() : null;
-			setMaterialOfAllFaces( hedron3D, SELECTION_MATERIAL );
+			setAppearanceOfAllFaces( hedron3D, SELECTION_APPEARANCE );
 		}
 
 		TetraHedron newHedron = null;
@@ -383,7 +400,7 @@ public class Model3D
 				// FIXME: broken
 /*
 				final Face3D face = hedron3D.getFace( newFace.getFaceNumber() );
-				face.material = FACE_SELECTION_MATERIAL;
+				face.appearance = FACE_SELECTION_APPEARANCE;
 */
 			}
 		}
@@ -402,16 +419,16 @@ public class Model3D
 	}
 
 	/**
-	 * Set material of all faces of the specified 3D object.
+	 * Set appearance of all faces of the specified 3D object.
 	 *
-	 * @param   object      3D object whose face material to set.
-	 * @param   material    Material to set.
+	 * @param   object      3D object whose face appearance to set.
+	 * @param   appearance    Appearance to set.
 	 */
-	private static void setMaterialOfAllFaces( final Object3D object, final Material material )
+	private static void setAppearanceOfAllFaces( final Object3D object, final Appearance appearance )
 	{
 		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
-			faceGroup.setAppearance( material );
+			faceGroup.setAppearance( appearance );
 		}
 	}
 }

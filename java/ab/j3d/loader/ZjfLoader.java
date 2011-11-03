@@ -26,6 +26,7 @@ import java.util.*;
 import java.util.zip.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import static java.io.StreamTokenizer.*;
@@ -129,9 +130,9 @@ public class ZjfLoader
 
 			final int[] vertexIndices = { vertices.get( 0 ), vertices.get( 1 ), vertices.get( 2 ) };
 			final Vector3D[] vertexNormals = ( normalList != null ) ? new Vector3D[] { normals.get( normalList.get( 0 ) ), normals.get( normalList.get( 1 ) ), normals.get( normalList.get( 2 ) ) } : null;
-			final Material material = new Material( triangle.color.getRGB() | 0xFF000000 );
+			final Appearance appearance = BasicAppearance.createForColor( triangle.color );
 
-			builder.addFace( vertexIndices, material, null, vertexNormals, false, true );
+			builder.addFace( vertexIndices, appearance, null, vertexNormals, false, true );
 		}
 
 		return builder.getObject3D();

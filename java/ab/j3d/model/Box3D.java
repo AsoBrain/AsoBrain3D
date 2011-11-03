@@ -32,7 +32,7 @@ import ab.j3d.geom.*;
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public final class Box3D
+public class Box3D
 	extends Object3D
 {
 	/** Vertices for front face.  */ private static final int[] FRONT_VERTICES  = { 0 , 4 , 5 , 1 };
@@ -58,7 +58,7 @@ public final class Box3D
 	private final double _dz;
 
 	/**
-	 * Constructs a new box with the specified dimensions and the given material
+	 * Constructs a new box with the specified dimensions and the given appearance
 	 * on all sides, mapped according to the given UV map. At least one of the
 	 * box's dimensions must be non-zero.
 	 *
@@ -66,65 +66,65 @@ public final class Box3D
 	 * @param   dy              Height of box (y-axis).
 	 * @param   dz              Depth of box (z-axis).
 	 * @param   uvMap           UV mapping to use.
-	 * @param   material        Material applied to all sides of the box.
+	 * @param   appearance        Appearance applied to all sides of the box.
 	 *
 	 * @throws  IllegalArgumentException if <code>dx</code>, <code>dy</code> and
 	 *          <code>dz</code> are all zero.
 	 */
-	public Box3D( final double dx , final double dy , final double dz , final UVMap uvMap , final Material material  )
+	public Box3D( final double dx , final double dy , final double dz , final UVMap uvMap , final Appearance appearance  )
 	{
-		this( dx , dy , dz , uvMap , material , material , material , material , material , material );
+		this( dx , dy , dz , uvMap , appearance , appearance , appearance , appearance , appearance , appearance );
 	}
 
 	/**
 	 * Constructs a new box with the specified dimensions and the given
-	 * materials on their respective sides, mapped according to the given UV
+	 * appearances on their respective sides, mapped according to the given UV
 	 * map. At least one of the box's dimensions must be non-zero.
 	 *
 	 * @param   dx              Width of box (x-axis).
 	 * @param   dy              Height of box (y-axis).
 	 * @param   dz              Depth of box (z-axis).
 	 * @param   uvMap           UV mapping to use.
-	 * @param   frontMaterial   Material applied to the front of the box.
-	 * @param   rearMaterial    Material applied to the rear of the box.
-	 * @param   rightMaterial   Material applied to the right of the box.
-	 * @param   leftMaterial    Material applied to the left of the box.
-	 * @param   topMaterial     Material applied to the top of the box.
-	 * @param   bottomMaterial  Material applied to the bottom of the box.
+	 * @param   frontAppearance   Appearance applied to the front of the box.
+	 * @param   rearAppearance    Appearance applied to the rear of the box.
+	 * @param   rightAppearance   Appearance applied to the right of the box.
+	 * @param   leftAppearance    Appearance applied to the left of the box.
+	 * @param   topAppearance     Appearance applied to the top of the box.
+	 * @param   bottomAppearance  Appearance applied to the bottom of the box.
 	 *
 	 * @throws  IllegalArgumentException if <code>dx</code>, <code>dy</code> and
 	 *          <code>dz</code> are all zero.
 	 */
-	public Box3D( final double dx , final double dy , final double dz , final UVMap uvMap , final Material frontMaterial , final Material rearMaterial , final Material rightMaterial , final Material leftMaterial , final Material topMaterial , final Material bottomMaterial )
+	public Box3D( final double dx , final double dy , final double dz , final UVMap uvMap , final Appearance frontAppearance , final Appearance rearAppearance , final Appearance rightAppearance , final Appearance leftAppearance , final Appearance topAppearance , final Appearance bottomAppearance )
 	{
-		this( dx , dy , dz , frontMaterial , uvMap , rearMaterial , uvMap , rightMaterial , uvMap , leftMaterial , uvMap , topMaterial , uvMap , bottomMaterial , uvMap );
+		this( dx , dy , dz , frontAppearance , uvMap , rearAppearance , uvMap , rightAppearance , uvMap , leftAppearance , uvMap , topAppearance , uvMap , bottomAppearance , uvMap );
 	}
 
 	/**
 	 * Constructs a new box with the specified dimensions and the given
-	 * materials on their respective sides, mapped according to the given UV
+	 * appearances on their respective sides, mapped according to the given UV
 	 * map. At least one of the box's dimensions must be non-zero.
 	 *
 	 * @param   dx              Width of box (x-axis).
 	 * @param   dy              Height of box (y-axis).
 	 * @param   dz              Depth of box (z-axis).
-	 * @param   frontMaterial   Material applied to the front of the box.
+	 * @param   frontAppearance   Appearance applied to the front of the box.
 	 * @param   frontMap        UV-mapping to use for the front of the box.
-	 * @param   rearMaterial    Material applied to the rear of the box.
+	 * @param   rearAppearance    Appearance applied to the rear of the box.
 	 * @param   rearMap         UV-mapping to use for the rear of the box.
-	 * @param   rightMaterial   Material applied to the right of the box.
+	 * @param   rightAppearance   Appearance applied to the right of the box.
 	 * @param   rightMap        UV-mapping to use for the right of the box.
-	 * @param   leftMaterial    Material applied to the left of the box.
+	 * @param   leftAppearance    Appearance applied to the left of the box.
 	 * @param   leftMap         UV-mapping to use for the left of the box.
-	 * @param   topMaterial     Material applied to the top of the box.
+	 * @param   topAppearance     Appearance applied to the top of the box.
 	 * @param   topMap          UV-mapping to use for the top of the box.
-	 * @param   bottomMaterial  Material applied to the bottom of the box.
+	 * @param   bottomAppearance  Appearance applied to the bottom of the box.
 	 * @param   bottomMap       UV-mapping to use for the bottom of the box.
 	 *
 	 * @throws  IllegalArgumentException if <code>dx</code>, <code>dy</code> and
 	 *          <code>dz</code> are all zero.
 	 */
-	public Box3D( final double dx , final double dy , final double dz , final Material frontMaterial , final UVMap frontMap , final Material rearMaterial , final UVMap rearMap , final Material rightMaterial , final UVMap rightMap , final Material leftMaterial , final UVMap leftMap , final Material topMaterial , final UVMap topMap , final Material bottomMaterial , final UVMap bottomMap )
+	public Box3D( final double dx , final double dy , final double dz , final Appearance frontAppearance , final UVMap frontMap , final Appearance rearAppearance , final UVMap rearMap , final Appearance rightAppearance , final UVMap rightMap , final Appearance leftAppearance , final UVMap leftMap , final Appearance topAppearance , final UVMap topMap , final Appearance bottomAppearance , final UVMap bottomMap )
 	{
 		final double size = Vector3D.length( dx, dy, dz );
 		if ( size <= 0.0 )
@@ -144,7 +144,7 @@ public final class Box3D
 		 * Create vertex coordinates and normals.
 		 */
 		setVertexCoordinates( Arrays.asList(
-			new Vector3D( 0.0 , 0.0 , 0.0 ) ,    // 0        7------6
+			Vector3D.ZERO ,    // 0        7------6
 			new Vector3D(  dx , 0.0 , 0.0 ) ,    // 1       /:     /|
 			new Vector3D(  dx ,  dy , 0.0 ) ,    // 2      4------5 |
 			new Vector3D( 0.0 ,  dy , 0.0 ) ,    // 3      | :    | |
@@ -166,12 +166,12 @@ public final class Box3D
 			/* 7 */ new Vector3D( -nx ,  ny ,  nz )
 		};
 
-		addFace( FRONT_VERTICES  , vertexNormals , frontMaterial  , frontMap  );
-		addFace( REAR_VERTICES   , vertexNormals , rearMaterial   , rearMap   );
-		addFace( RIGHT_VERTICES  , vertexNormals , rightMaterial  , rightMap  );
-		addFace( LEFT_VERTICES   , vertexNormals , leftMaterial   , leftMap   );
-		addFace( TOP_VERTICES    , vertexNormals , topMaterial    , topMap    );
-		addFace( BOTTOM_VERTICES , vertexNormals , bottomMaterial , bottomMap );
+		addFace( FRONT_VERTICES  , vertexNormals , frontAppearance  , frontMap  );
+		addFace( REAR_VERTICES   , vertexNormals , rearAppearance   , rearMap   );
+		addFace( RIGHT_VERTICES  , vertexNormals , rightAppearance  , rightMap  );
+		addFace( LEFT_VERTICES   , vertexNormals , leftAppearance   , leftMap   );
+		addFace( TOP_VERTICES    , vertexNormals , topAppearance    , topMap    );
+		addFace( BOTTOM_VERTICES , vertexNormals , bottomAppearance , bottomMap );
 	}
 
 	/**

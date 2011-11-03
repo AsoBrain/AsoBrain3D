@@ -55,9 +55,9 @@ public class Cylinder3D
 	private int _numEdges;
 
 	/**
-	 * Material of cylinder circumference.
+	 * Appearance of cylinder circumference.
 	 */
-	private Material _sideAppearance;
+	private Appearance _sideAppearance;
 
 	/**
 	 * UV map to use for circumference.
@@ -70,9 +70,9 @@ public class Cylinder3D
 	private boolean _smoothCircumference;
 
 	/**
-	 * Material for top cap (<code>null</code> => no cap).
+	 * Appearance for top cap (<code>null</code> => no cap).
 	 */
-	private Material _topAppearance;
+	private Appearance _topAppearance;
 
 	/**
 	 * UV map for top cap.
@@ -80,9 +80,9 @@ public class Cylinder3D
 	private UVMap _topMap;
 
 	/**
-	 * Material for bottom cap (<code>null</code> => no cap).
+	 * Appearance for bottom cap (<code>null</code> => no cap).
 	 */
-	private Material _bottomAppearance;
+	private Appearance _bottomAppearance;
 
 	/**
 	 * UV map for bottom cap.
@@ -101,16 +101,16 @@ public class Cylinder3D
 	 * @param   height                  Height of cylinder (z-axis).
 	 * @param   radius                  Radius.
 	 * @param   numEdges                Number of edges to approximate circle (minimum: 3).
-	 * @param   sideAppearance          Material of cylinder circumference.
+	 * @param   sideAppearance          Appearance of cylinder circumference.
 	 * @param   sideMap                 UV map to use for circumference.
 	 * @param   smoothCircumference     Apply smoothing to circumference of cylinder.
-	 * @param   topAppearance           Material for top cap (<code>null</code> => no cap).
+	 * @param   topAppearance           Appearance for top cap (<code>null</code> => no cap).
 	 * @param   topMap                  UV map for top cap.
-	 * @param   bottomAppearance        Material for bottom cap (<code>null</code> => no cap).
+	 * @param   bottomAppearance        Appearance for bottom cap (<code>null</code> => no cap).
 	 * @param   bottomMap               UV map for bottom cap.
 	 * @param   flipNormals             If set, flip normals.
 	 */
-	public Cylinder3D( final double height, final double radius, final int numEdges, @Nullable final Material sideAppearance, @Nullable final UVMap sideMap, final boolean smoothCircumference, @Nullable final Material topAppearance, @Nullable final UVMap topMap, @Nullable final Material bottomAppearance, @Nullable final UVMap bottomMap, final boolean flipNormals )
+	public Cylinder3D( final double height, final double radius, final int numEdges, @Nullable final Appearance sideAppearance, @Nullable final UVMap sideMap, final boolean smoothCircumference, @Nullable final Appearance topAppearance, @Nullable final UVMap topMap, @Nullable final Appearance bottomAppearance, @Nullable final UVMap bottomMap, final boolean flipNormals )
 	{
 		if ( ( radius <= 0.0 ) || ( height <= 0.0 ) || ( numEdges < 3 ) )
 		{

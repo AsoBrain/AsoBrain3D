@@ -24,6 +24,7 @@ import java.awt.*;
 import java.awt.geom.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.awt.*;
 import ab.j3d.awt.view.java2d.*;
 import ab.j3d.control.*;
@@ -42,7 +43,7 @@ import ab.j3d.view.*;
  * @author  Rob Veneberg
  * @version $Revision$ $Date$
  */
-public final class AbPovTestModel
+public class AbPovTestModel
 {
 	/**
 	 * The used scene.
@@ -60,7 +61,7 @@ public final class AbPovTestModel
 	public AbPovTestModel()
 	{
 		/*
-		 * Fill scene with objects from the testmodel.
+		 * Fill scene with objects from the test model.
 		 */
 		final Scene scene = _scene;
 		scene.addContentNode( "redbox"           , Matrix3D.getTransform( 10.0,  0.0,  0.0, -200.0,   0.0, -250.0 ), getRedXRotatedBox3D() );
@@ -121,9 +122,9 @@ public final class AbPovTestModel
 		final ContentNode node = _scene.getContentNode( "redbox" );
 		if ( node == null )
 		{
-			final Color color = Color.RED;
-			final Material material  = createMaterialWithColor( color );
-			result = new Box3D( 100.0, 200.0, 100.0, new BoxUVMap( Scene.MM ), material );
+			final Color4 color = Color4.RED;
+			final Appearance appearance  = createAppearanceWithColor( color );
+			result = new Box3D( 100.0, 200.0, 100.0, new BoxUVMap( Scene.MM ), appearance );
 		}
 		else
 		{
@@ -148,10 +149,8 @@ public final class AbPovTestModel
 		final ContentNode node = _scene.getContentNode( "greenbox" );
 		if ( node == null )
 		{
-			final Material material = createMaterialWithColor( Color.GREEN );
-			material.diffuseColorAlpha = 0.2f;
-
-			result = new Box3D( 100.0, 200.0, 100.0, new BoxUVMap( Scene.MM ), material );
+			final Appearance appearance = createAppearanceWithColor( new Color4f( 0.0f, 1.0f, 0.0f, 0.2f ) );
+			result = new Box3D( 100.0, 200.0, 100.0, new BoxUVMap( Scene.MM ), appearance );
 		}
 		else
 		{
@@ -176,8 +175,8 @@ public final class AbPovTestModel
 		final ContentNode node = _scene.getContentNode( "bluebox" );
 		if ( node == null )
 		{
-			final Material material  = createMaterialWithColor( Color.BLUE );
-			result = new Box3D( 100.0, 200.0, 100.0, new BoxUVMap( Scene.MM ), material );
+			final Appearance appearance  = createAppearanceWithColor( Color4.BLUE );
+			result = new Box3D( 100.0, 200.0, 100.0, new BoxUVMap( Scene.MM ), appearance );
 		}
 		else
 		{
@@ -203,15 +202,10 @@ public final class AbPovTestModel
 		final ContentNode node = _scene.getContentNode( "texturedbox" );
 		if ( node == null )
 		{
-			final Material mainMaterial = createMaterialWithColorMap( "MPXs" );
-			mainMaterial.colorMapWidth = 0.2f;
-			mainMaterial.colorMapHeight = 0.2f;
+			final Appearance mainAppearance = createAppearanceWithColorMap( "ab/j3d/pov/textures/MPXs.jpg", 0.2f, 0.2f );
+			final Appearance sideAppearance = createAppearanceWithColorMap( "ab/j3d/pov/textures/MFCs.jpg", 0.2f, 0.2f );
 
-			final Material sideMaterial = createMaterialWithColorMap( "MFCs" );
-			sideMaterial.colorMapWidth = 0.2f;
-			sideMaterial.colorMapHeight = 0.2f;
-
-			result = new Box3D( 200.0, 10.0, 200.0, new BoxUVMap( Scene.MM ), mainMaterial, mainMaterial, sideMaterial, sideMaterial, sideMaterial, sideMaterial );
+			result = new Box3D( 200.0, 10.0, 200.0, new BoxUVMap( Scene.MM ), mainAppearance, mainAppearance, sideAppearance, sideAppearance, sideAppearance, sideAppearance );
 		}
 		else
 		{
@@ -236,8 +230,8 @@ public final class AbPovTestModel
 		final ContentNode node = _scene.getContentNode( "sphere" );
 		if ( node == null )
 		{
-			final Material material  = createMaterialWithColor( Color.BLUE );
-			result = new Sphere3D( 50.0, 20, 20, material );
+			final Appearance appearance  = createAppearanceWithColor( Color4.BLUE );
+			result = new Sphere3D( 50.0, 20, 20, appearance );
 		}
 		else
 		{
@@ -263,9 +257,9 @@ public final class AbPovTestModel
 		final ContentNode node = _scene.getContentNode( "cylinder" );
 		if ( node == null )
 		{
-			final Material material = createMaterialWithColor( Color.MAGENTA );
+			final Appearance appearance = createAppearanceWithColor( Color4.MAGENTA );
 			final BoxUVMap uvMap = new BoxUVMap( Scene.MM );
-			cylinder = new Cylinder3D( 100.0, 50.0, 100, material, uvMap, true, material, uvMap, material, uvMap, false );
+			cylinder = new Cylinder3D( 100.0, 50.0, 100, appearance, uvMap, true, appearance, uvMap, appearance, uvMap, false );
 		}
 		else
 		{
@@ -291,9 +285,9 @@ public final class AbPovTestModel
 		final ContentNode node = _scene.getContentNode( "cone" );
 		if ( node == null )
 		{
-			final Material material = createMaterialWithColor( Color.WHITE );
+			final Appearance appearance = createAppearanceWithColor( Color4.WHITE );
 			final BoxUVMap uvMap = new BoxUVMap( Scene.MM );
-			result = new Cone3D( 200.0, 100.0, 50.0, 100, material, uvMap, true, material, uvMap, material, uvMap, false );
+			result = new Cone3D( 200.0, 100.0, 50.0, 100, appearance, uvMap, true, appearance, uvMap, appearance, uvMap, false );
 		}
 		else
 		{
@@ -327,22 +321,22 @@ public final class AbPovTestModel
 			final Vector3D rbt = new Vector3D(  100.0,  100.0,  100.0 );
 			final Vector3D lbt = new Vector3D( -100.0,  100.0,  100.0 );
 
-			final Material topMaterial    = createMaterialWithColorMap( "CUBE_TOP" );
-			final Material bottomMaterial = createMaterialWithColorMap( "CUBE_BOTTOM" );
-			final Material frontMaterial  = createMaterialWithColorMap( "CUBE_FRONT" );
-			final Material backMaterial   = createMaterialWithColorMap( "CUBE_BACK" );
-			final Material leftMaterial   = createMaterialWithColorMap( "CUBE_LEFT" );
-			final Material rightMaterial  = createMaterialWithColorMap( "CUBE_RIGHT" );
+			final Appearance topAppearance    = createAppearanceWithColorMap( "ab/j3d/pov/textures/CUBE_TOP.jpg", 0.0f, 0.0f );
+			final Appearance bottomAppearance = createAppearanceWithColorMap( "ab/j3d/pov/textures/CUBE_BOTTOM.jpg", 0.0f, 0.0f );
+			final Appearance frontAppearance  = createAppearanceWithColorMap( "ab/j3d/pov/textures/CUBE_FRONT.jpg", 0.0f, 0.0f );
+			final Appearance backAppearance   = createAppearanceWithColorMap( "ab/j3d/pov/textures/CUBE_BACK.jpg", 0.0f, 0.0f );
+			final Appearance leftAppearance   = createAppearanceWithColorMap( "ab/j3d/pov/textures/CUBE_LEFT.jpg", 0.0f, 0.0f );
+			final Appearance rightAppearance  = createAppearanceWithColorMap( "ab/j3d/pov/textures/CUBE_RIGHT.jpg", 0.0f, 0.0f );
 
 			final float[] texturePoints = { 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f };
 
 			final Object3DBuilder builder = new Object3DBuilder();
-			builder.addFace( new Vector3D[] { lft, lbt, rbt, rft }, topMaterial   , texturePoints, null, false, false );
-			builder.addFace( new Vector3D[] { lbb, lfb, rfb, rbb }, bottomMaterial, texturePoints, null, false, false );
-			builder.addFace( new Vector3D[] { lfb, lft, rft, rfb }, frontMaterial , texturePoints, null, false, false );
-			builder.addFace( new Vector3D[] { rbb, rbt, lbt, lbb }, backMaterial  , texturePoints, null, false, false );
-			builder.addFace( new Vector3D[] { lbb, lbt, lft, lfb }, leftMaterial  , texturePoints, null, false, false );
-			builder.addFace( new Vector3D[] { rfb, rft, rbt, rbb }, rightMaterial , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { lft, lbt, rbt, rft }, topAppearance   , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { lbb, lfb, rfb, rbb }, bottomAppearance, texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { lfb, lft, rft, rfb }, frontAppearance , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { rbb, rbt, lbt, lbb }, backAppearance  , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { lbb, lbt, lft, lfb }, leftAppearance  , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { rfb, rft, rbt, rbb }, rightAppearance , texturePoints, null, false, false );
 			cube = builder.getObject3D();
 		}
 		else
@@ -377,22 +371,22 @@ public final class AbPovTestModel
 			final Vector3D rbt = new Vector3D(  100.0,  100.0,  100.0 );
 			final Vector3D lbt = new Vector3D( -100.0,  100.0,  100.0 );
 
-			final Material topMaterial    = createMaterialWithColorMap( "CUBE_TOP_TEXTURE_AND_COLOR" );    topMaterial.diffuseColorRed     = 1.0f; topMaterial.diffuseColorGreen       = 0.0f; topMaterial.diffuseColorBlue        = 0.0f;
-			final Material bottomMaterial = createMaterialWithColorMap( "CUBE_BOTTOM_TEXTURE_AND_COLOR" ); bottomMaterial.diffuseColorRed  = 0.0f; bottomMaterial.diffuseColorGreen    = 1.0f; bottomMaterial.diffuseColorBlue     = 0.0f;
-			final Material frontMaterial  = createMaterialWithColorMap( "CUBE_FRONT_TEXTURE_AND_COLOR" );  frontMaterial.diffuseColorRed   = 0.0f; frontMaterial.diffuseColorGreen     = 0.0f; frontMaterial.diffuseColorBlue      = 1.0f;
-			final Material backMaterial   = createMaterialWithColorMap( "CUBE_BACK_TEXTURE_AND_COLOR" );   backMaterial.diffuseColorRed    = 1.0f; backMaterial.diffuseColorGreen      = 1.0f; backMaterial.diffuseColorBlue       = 0.0f;
-			final Material leftMaterial   = createMaterialWithColorMap( "CUBE_LEFT_TEXTURE_AND_COLOR" );   leftMaterial.diffuseColorRed    = 0.0f; leftMaterial.diffuseColorGreen      = 1.0f; leftMaterial.diffuseColorBlue       = 1.0f;
-			final Material rightMaterial  = createMaterialWithColorMap( "CUBE_RIGHT_TEXTURE_AND_COLOR" );  rightMaterial.diffuseColorRed   = 1.0f; rightMaterial.diffuseColorGreen     = 0.0f; rightMaterial.diffuseColorBlue      = 1.0f;
+			final BasicAppearance topAppearance    = createAppearanceWithColorMap( "CUBE_TOP_TEXTURE_AND_COLOR.jpg", 0.0f, 0.0f );    topAppearance   .setDiffuseColor( Color4.RED );
+			final BasicAppearance bottomAppearance = createAppearanceWithColorMap( "CUBE_BOTTOM_TEXTURE_AND_COLOR.jpg", 0.0f, 0.0f ); bottomAppearance.setDiffuseColor( Color4.GREEN );
+			final BasicAppearance frontAppearance  = createAppearanceWithColorMap( "CUBE_FRONT_TEXTURE_AND_COLOR.jpg", 0.0f, 0.0f );  frontAppearance .setDiffuseColor( Color4.BLUE );
+			final BasicAppearance backAppearance   = createAppearanceWithColorMap( "CUBE_BACK_TEXTURE_AND_COLOR.jpg", 0.0f, 0.0f );   backAppearance  .setDiffuseColor( Color4.YELLOW );
+			final BasicAppearance leftAppearance   = createAppearanceWithColorMap( "CUBE_LEFT_TEXTURE_AND_COLOR.jpg", 0.0f, 0.0f );   leftAppearance  .setDiffuseColor( Color4.CYAN );
+			final BasicAppearance rightAppearance  = createAppearanceWithColorMap( "CUBE_RIGHT_TEXTURE_AND_COLOR.jpg", 0.0f, 0.0f );  rightAppearance .setDiffuseColor( Color4.MAGENTA );
 
 			final float[] texturePoints = { 0.5f, 0.0f, 0.5f, 0.5f, 0.0f, 0.5f, 0.0f, 0.0f};
 
 			final Object3DBuilder builder = new Object3DBuilder();
-			builder.addFace( new Vector3D[] { lft, lbt, rbt, rft }, topMaterial   , texturePoints, null, false, false );
-			builder.addFace( new Vector3D[] { lbb, lfb, rfb, rbb }, bottomMaterial, texturePoints, null, false, false );
-			builder.addFace( new Vector3D[] { lfb, lft, rft, rfb }, frontMaterial , texturePoints, null, false, false );
-			builder.addFace( new Vector3D[] { rbb, rbt, lbt, lbb }, backMaterial  , texturePoints, null, false, false );
-			builder.addFace( new Vector3D[] { lbb, lbt, lft, lfb }, leftMaterial  , texturePoints, null, false, false );
-			builder.addFace( new Vector3D[] { rfb, rft, rbt, rbb }, rightMaterial , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { lft, lbt, rbt, rft }, topAppearance   , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { lbb, lfb, rfb, rbb }, bottomAppearance, texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { lfb, lft, rft, rfb }, frontAppearance , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { rbb, rbt, lbt, lbb }, backAppearance  , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { lbb, lbt, lft, lfb }, leftAppearance  , texturePoints, null, false, false );
+			builder.addFace( new Vector3D[] { rfb, rft, rbt, rbb }, rightAppearance , texturePoints, null, false, false );
 			result = builder.getObject3D();
 		}
 		else
@@ -417,13 +411,13 @@ public final class AbPovTestModel
 		final ContentNode node = _scene.getContentNode( "extrudedA" );
 		if ( node == null )
 		{
-			final Material material  = createMaterialWithColor( Color.PINK );
+			final Appearance appearance  = createAppearanceWithColor( Color4.PINK );
 			final Shape    shape     = new Rectangle2D.Double( 0.0, 0.0, 100.0, 100.0 );
 			final Vector3D extrusion = new Vector3D( 0.0, 100.0, 100.0 );
 			final Matrix3D transform = Matrix3D.getTranslation( -400.0, 0.0, -250.0 );
 
 			final Object3DBuilder builder = new Object3DBuilder();
-			ShapeTools.addExtrudedShape( builder, shape, 1.0, extrusion, transform, material, new BoxUVMap( Scene.MM, Matrix3D.IDENTITY ), false, true, false, false );
+			ShapeTools.addExtrudedShape( builder, shape, 1.0, extrusion, transform, appearance, new BoxUVMap( Scene.MM, Matrix3D.IDENTITY ), false, true, false, false );
 			result = builder.getObject3D();
 		}
 		else
@@ -448,14 +442,14 @@ public final class AbPovTestModel
 		final ContentNode node = _scene.getContentNode( "extrudedB" );
 		if ( node == null )
 		{
-			final Material material  = Materials.ORANGE;
-			final BoxUVMap uvMap     = new BoxUVMap( Scene.MM, Matrix3D.IDENTITY );
-			final Shape    shape     = new Rectangle2D.Double( 0.0, 0.0, 100.0, 100.0 );
+			final Appearance appearance = BasicAppearances.ORANGE;
+			final BoxUVMap uvMap = new BoxUVMap( Scene.MM, Matrix3D.IDENTITY );
+			final Shape shape = new Rectangle2D.Double( 0.0, 0.0, 100.0, 100.0 );
 			final Vector3D extrusion = new Vector3D( 0.0, 0.0, -50.0 );
 			final Matrix3D transform = Matrix3D.getTranslation( -400.0, 0.0, -250.0 );
 
 			final Object3DBuilder builder = new Object3DBuilder();
-			builder.addExtrudedShape( ShapeTools.createTessellator( shape, 1.0 ), extrusion, true, transform, true, material, uvMap, false, false, null, null, false, true, material, uvMap, false, true, false, false );
+			builder.addExtrudedShape( ShapeTools.createTessellator( shape, 1.0 ), extrusion, true, transform, true, appearance, uvMap, false, false, null, null, false, true, appearance, uvMap, false, true, false, false );
 			result = builder.getObject3D();
 		}
 		else
@@ -494,38 +488,37 @@ public final class AbPovTestModel
 	}
 
 	/**
-	 * Create material for solid color.
+	 * Create appearance for solid color.
 	 *
 	 * @param   color   Color.
 	 *
-	 * @return  {@link Material}.
+	 * @return  {@link BasicAppearance}.
 	 */
-	private static Material createMaterialWithColor( final Color color )
+	private static BasicAppearance createAppearanceWithColor( final Color4 color )
 	{
-		final Material result = new Material( color.getRGB() );
-		result.specularColorRed = 1.0f;
-		result.specularColorGreen = 1.0f;
-		result.specularColorBlue = 1.0f;
-		result.shininess = 16;
+		final BasicAppearance result = new BasicAppearance();
+		result.setAmbientColor( color );
+		result.setDiffuseColor( color );
+		result.setSpecularColor( Color4.WHITE );
+		result.setShininess( 16 );
 		return result;
 	}
 
 	/**
-	 * Create material with color map.
+	 * Create appearance with color map.
 	 *
-	 * @param   colorMap    Color map name.
+	 * @param   colorMap        Color map.
+	 * @param   physicalWidth   Physical width of color map.
+	 * @param   physicalHeight  Physical height of color map.
 	 *
-	 * @return  {@link Material}.
+	 * @return  {@link BasicAppearance}.
 	 */
-	private static Material createMaterialWithColorMap( final String colorMap )
+	private static BasicAppearance createAppearanceWithColorMap( final String colorMap, final float physicalWidth, final float physicalHeight )
 	{
-		final Material result = new Material();
-		result.code = colorMap;
-		result.specularColorRed = 1.0f;
-		result.specularColorGreen = 1.0f;
-		result.specularColorBlue = 1.0f;
-		result.shininess = 16;
-		result.colorMap = colorMap;
+		final BasicAppearance result = new BasicAppearance();
+		result.setSpecularColor( Color4.WHITE );
+		result.setShininess( 16 );
+		result.setColorMap( new FileTextureMap( AbPovTestModel.class.getResource( colorMap ), physicalWidth, physicalHeight ) );
 		return result;
 	}
 }

@@ -23,6 +23,7 @@ package ab.j3d.model;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 
 /**
@@ -31,7 +32,7 @@ import ab.j3d.geom.*;
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public final class Sphere3D
+public class Sphere3D
 	extends Object3D
 {
 	/**
@@ -45,11 +46,11 @@ public final class Sphere3D
 	 * @param   radius      Radius of sphere.
 	 * @param   p           Number of faces around Y-axis to approximate the sphere.
 	 * @param   q           Number of faces around X/Z-axis to approximate the sphere.
-	 * @param   material    Material of sphere.
+	 * @param   appearance  Appearance of sphere.
 	 */
-	public Sphere3D( final double radius, final int p, final int q, final Material material )
+	public Sphere3D( final double radius, final int p, final int q, final Appearance appearance )
 	{
-		this( radius, p, q, material, false );
+		this( radius, p, q, appearance, false );
 	}
 
 	/**
@@ -60,11 +61,11 @@ public final class Sphere3D
 	 *                          the sphere.
 	 * @param   q               Number of faces around X/Z-axis to approximate
 	 *                          the sphere.
-	 * @param   material        Material of sphere.
+	 * @param   appearance        Appearance of sphere.
 	 * @param   flipNormals     <code>true</code> to flip the faces/normals of
 	 *                          the sphere, turning it inside-out.
 	 */
-	public Sphere3D( final double radius, final int p, final int q, final Material material, final boolean flipNormals )
+	public Sphere3D( final double radius, final int p, final int q, final Appearance appearance, final boolean flipNormals )
 	{
 		_radius = radius;
 
@@ -110,7 +111,7 @@ public final class Sphere3D
 		final float scaleU = 1.0f / (float)p;
 		final float scaleV = 1.0f / (float)q;
 
-		final FaceGroup faceGroup = getFaceGroup( material, true, false );
+		final FaceGroup faceGroup = getFaceGroup( appearance, true, false );
 		for ( int qc = 0 ; qc < q; qc++ )
 		{
 			for ( int pc = 0 ; pc < p; pc++ )

@@ -570,20 +570,20 @@ public class Object3D
 		private final Bounds3D _bounds;
 
 		/**
-		 * Material.
+		 * Appearance.
 		 */
-		private final Material _material;
+		private final Appearance _appearance;
 
 		/**
 		 * Constructs a new instance.
 		 *
 		 * @param   bounds      Bounding box.
-		 * @param   material    Material.
+		 * @param   appearance  Appearance.
 		 */
-		protected LowDetailObject3D( final Bounds3D bounds, final Material material )
+		protected LowDetailObject3D( final Bounds3D bounds, final Appearance appearance )
 		{
 			_bounds = bounds;
-			_material = material;
+			_appearance = appearance;
 
 			final Vector3D p1 = new Vector3D( bounds.v1.x, bounds.v1.y, bounds.v1.z );
 			final Vector3D p2 = new Vector3D( bounds.v2.x, bounds.v1.y, bounds.v1.z );
@@ -596,12 +596,12 @@ public class Object3D
 
 			final Abstract3DObjectBuilder builder = getBuilder();
 			final BoxUVMap uvMap = new BoxUVMap( Scene.MM );
-			builder.addQuad( p1, p3, p7, p5, material, uvMap, false );
-			builder.addQuad( p2, p6, p8, p4, material, uvMap, false );
-			builder.addQuad( p1, p5, p6, p2, material, uvMap, false );
-			builder.addQuad( p4, p8, p7, p3, material, uvMap, false );
-			builder.addQuad( p1, p2, p4, p3, material, uvMap, false );
-			builder.addQuad( p5, p7, p8, p6, material, uvMap, false );
+			builder.addQuad( p1, p3, p7, p5, appearance, uvMap, false );
+			builder.addQuad( p2, p6, p8, p4, appearance, uvMap, false );
+			builder.addQuad( p1, p5, p6, p2, appearance, uvMap, false );
+			builder.addQuad( p4, p8, p7, p3, appearance, uvMap, false );
+			builder.addQuad( p1, p2, p4, p3, appearance, uvMap, false );
+			builder.addQuad( p5, p7, p8, p6, appearance, uvMap, false );
 		}
 
 		@Override
@@ -622,7 +622,7 @@ public class Object3D
 			{
 				final LowDetailObject3D other = (LowDetailObject3D)object;
 				result = _bounds.equals( other._bounds ) &&
-				         _material.equals( other._material );
+				         _appearance.equals( other._appearance );
 			}
 			return result;
 		}
@@ -631,7 +631,7 @@ public class Object3D
 		public int hashCode()
 		{
 			int result = _bounds.hashCode();
-			result = 31 * result + _material.hashCode();
+			result = 31 * result + _appearance.hashCode();
 			return result;
 		}
 	}

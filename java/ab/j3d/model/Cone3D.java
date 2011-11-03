@@ -31,7 +31,7 @@ import org.jetbrains.annotations.*;
  * This class defines a (partial) 3D cone with.
  * <p>
  * The partial cone has its base at the local origin, and has a given radius on
- * the Z=0 plane, extends upto a given height along the positive Z-axis where
+ * the Z=0 plane, extends up to a given height along the positive Z-axis where
  * it also has a given radius on the Z=height plane.
  *
  * @author  Peter S. Heijnen
@@ -62,20 +62,20 @@ public class Cone3D
 	 * @param   radiusBottom        Radius at bottom (z=0).
 	 * @param   radiusTop           Radius at top (z=height).
 	 * @param   numEdges            Number of edges to approximate circle (minimum: 3).
-	 * @param   sideMaterial        Material of cone circumference.
+	 * @param   sideAppearance      Appearance of cone circumference.
 	 * @param   sideMap             UV map to use for circumference.
 	 * @param   smoothCircumference Apply smoothing to circumference of cone.
-	 * @param   topMaterial         Material for top cap (<code>null</code> => no cap).
+	 * @param   topAppearance       Appearance for top cap (<code>null</code> => no cap).
 	 * @param   topMap              UV map for top cap.
-	 * @param   bottomMaterial      Material for bottom cap (<code>null</code> => no cap).
+	 * @param   bottomAppearance    Appearance for bottom cap (<code>null</code> => no cap).
 	 * @param   bottomMap           UV map for bottom cap.
 	 * @param   flipNormals         If set, flip normals.
 	 */
-	public Cone3D( final double height, final double radiusBottom, final double radiusTop, final int numEdges, @Nullable final Material sideMaterial, @Nullable final UVMap sideMap, final boolean smoothCircumference, @Nullable final Material topMaterial, @Nullable final UVMap topMap, @Nullable final Material bottomMaterial, @Nullable final UVMap bottomMap, final boolean flipNormals )
+	public Cone3D( final double height, final double radiusBottom, final double radiusTop, final int numEdges, @Nullable final Appearance sideAppearance, @Nullable final UVMap sideMap, final boolean smoothCircumference, @Nullable final Appearance topAppearance, @Nullable final UVMap topMap, @Nullable final Appearance bottomAppearance, @Nullable final UVMap bottomMap, final boolean flipNormals )
 	{
 		if ( ( radiusBottom < 0.0 ) || ( radiusTop < 0.0 ) || ( radiusTop == radiusBottom ) || ( height <= 0.0 ) || ( numEdges < 3 ) )
 		{
-			throw new IllegalArgumentException( "inacceptable arguments to Cone constructor" );
+			throw new IllegalArgumentException( "unacceptable arguments to Cone constructor" );
 		}
 
 		this.radiusTop = radiusTop;
@@ -131,7 +131,7 @@ public class Cone3D
 		/*
 		 * Bottom face (if it exists).
 		 */
-		if ( hasBottom && ( bottomMaterial != null ) )
+		if ( hasBottom && ( bottomAppearance != null ) )
 		{
 			final int[] vertexIndices = new int[ numEdges ];
 			for ( int i = 0 ; i < numEdges ; i++ )
@@ -139,15 +139,15 @@ public class Cone3D
 				vertexIndices[ i ] = flipNormals ? ( numEdges - 1 - i ) : i;
 			}
 
-			final float[] texturePoints = ( bottomMap != null ) ? bottomMap.generate( bottomMaterial.getColorMap(), vertexCoordinates, vertexIndices, false ) : null;
-			final FaceGroup faceGroup = getFaceGroup( bottomMaterial, false, false );
+			final float[] texturePoints = ( bottomMap != null ) ? bottomMap.generate( bottomAppearance.getColorMap(), vertexCoordinates, vertexIndices, false ) : null;
+			final FaceGroup faceGroup = getFaceGroup( bottomAppearance, false, false );
 			faceGroup.addFace( new Face3D( this, vertexIndices, texturePoints, null ) );
 		}
 
 		/*
 		 * Circumference.
 		 */
-		final FaceGroup sideFaceGroup = getFaceGroup( sideMaterial, smoothCircumference, false );
+		final FaceGroup sideFaceGroup = getFaceGroup( sideAppearance, smoothCircumference, false );
 		for ( int i1 = 0 ; i1 < numEdges ; i1++ )
 		{
 			final int   i2 = ( i1 + 1 ) % numEdges;
@@ -167,7 +167,7 @@ public class Cone3D
 				vertexIndices = flipNormals ? new int[] { numEdges + i2, numEdges + i1, i1, i2 } : new int[] { i2, i1, numEdges + i1, numEdges + i2 };
 			}
 
-			final TextureMap colorMap = ( sideMaterial == null ) ? null : sideMaterial.getColorMap();
+			final TextureMap colorMap = ( sideAppearance == null ) ? null : sideAppearance.getColorMap();
 			final float[] texturePoints = ( sideMap != null ) ? sideMap.generate( colorMap, vertexCoordinates, vertexIndices, false ) : null;
 			sideFaceGroup.addFace( new Face3D( this, vertexIndices, texturePoints, null ) );
 		}
@@ -175,7 +175,7 @@ public class Cone3D
 		/*
 		 * Top face (if it exists).
 		 */
-		if ( hasTop && ( topMaterial != null ) )
+		if ( hasTop && ( topAppearance != null ) )
 		{
 			final int[] vertexIndices = new int[ numEdges ];
 
@@ -186,8 +186,8 @@ public class Cone3D
 				vertexIndices[ i ] = flipNormals ? ( lastVertex - numEdges + 1 + i ) : ( lastVertex - i );
 			}
 
-			final float[] texturePoints = ( topMap != null ) ? topMap.generate( topMaterial.getColorMap(), vertexCoordinates, vertexIndices, false ) : null;
-			final FaceGroup faceGroup = getFaceGroup( topMaterial, false, false );
+			final float[] texturePoints = ( topMap != null ) ? topMap.generate( topAppearance.getColorMap(), vertexCoordinates, vertexIndices, false ) : null;
+			final FaceGroup faceGroup = getFaceGroup( topAppearance, false, false );
 			faceGroup.addFace( new Face3D( this, vertexIndices, texturePoints, null ) );
 		}
 	}

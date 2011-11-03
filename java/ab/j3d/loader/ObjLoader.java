@@ -27,6 +27,7 @@ import java.util.regex.*;
 import java.util.zip.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import org.jetbrains.annotations.*;
@@ -114,12 +115,12 @@ public class ObjLoader
 	/**
 	 * Materials from OBJ MTL file.
 	 */
-	private final Map<String,Material> _materials = new HashMap<String,Material>();
+	private final Map<String,Appearance> _materials = new HashMap<String,Appearance>();
 
 	/**
 	 * Default materials to use for OBJ files.
 	 */
-	private static final Map<String,Material> DEFAULT_MATERIALS;
+	private static final Map<String,Appearance> DEFAULT_MATERIALS;
 
 	/**
 	 * Transformation applied to all geometry.
@@ -254,8 +255,8 @@ public class ObjLoader
 	public String load( @NotNull final Abstract3DObjectBuilder builder, @NotNull final ResourceLoader loader, @NotNull final BufferedReader objReader )
 		throws IOException
 	{
-		final Map<String,Material> actualMaterials = DEFAULT_MATERIALS;
-		final Material defaultMaterial = actualMaterials.containsKey( "default" ) ? actualMaterials.get( "default" ) : new Material( 0xFFC0C0C0 );
+		final Map<String,Appearance> actualMaterials = DEFAULT_MATERIALS;
+		final Appearance defaultMaterial = actualMaterials.containsKey( "default" ) ? actualMaterials.get( "default" ) : BasicAppearance.createForColor( Color4.LIGHT_GRAY );
 
 		/*
 		 * Read OBJ data
@@ -265,7 +266,7 @@ public class ObjLoader
 		final List<Vector3D> vertexNormals = new ArrayList<Vector3D>();
 		final List<ObjFace> faces = new ArrayList<ObjFace>();
 
-		Material material = defaultMaterial;
+		Appearance material = defaultMaterial;
 
 		String objectName = null;
 
@@ -674,7 +675,7 @@ public class ObjLoader
 				}
 			}
 
-			builder.addFace( vertices, null, objFace._material, smooth, false );
+			builder.addFace( vertices, null, objFace._appearance, smooth, false );
 		}
 
 		return objectName;
@@ -682,31 +683,31 @@ public class ObjLoader
 
 	static
 	{
-		final Map<String,Material> materials = new HashMap<String,Material>();
+		final Map<String,Appearance> materials = new HashMap<String,Appearance>();
 
 		/* default material (also used for unknown materials) */
-		materials.put( "default"      , new Material( 0xFFC0C0C0 ) );
+		materials.put( "default"      , BasicAppearance.createForColor( new Color4f( 0xFFC0C0C0 ) ) );
 
 		/* basic colors */
-		materials.put( "black"        , new Material( 0xFF000000 ) );
-		materials.put( "blue"         , new Material( 0xFF0000FF ) );
-		materials.put( "green"        , new Material( 0xFF00FF00 ) );
-		materials.put( "cyan"         , new Material( 0xFF00FFFF ) );
-		materials.put( "red"          , new Material( 0xFFFF0000 ) );
-		materials.put( "magenta"      , new Material( 0xFFFF00FF ) );
-		materials.put( "yellow"       , new Material( 0xFFFFFF00 ) );
-		materials.put( "white"        , new Material( 0xFFFCFCFC ) );
+		materials.put( "black"        , BasicAppearance.createForColor( new Color4f( 0xFF000000 ) ) );
+		materials.put( "blue"         , BasicAppearance.createForColor( new Color4f( 0xFF0000FF ) ) );
+		materials.put( "green"        , BasicAppearance.createForColor( new Color4f( 0xFF00FF00 ) ) );
+		materials.put( "cyan"         , BasicAppearance.createForColor( new Color4f( 0xFF00FFFF ) ) );
+		materials.put( "red"          , BasicAppearance.createForColor( new Color4f( 0xFFFF0000 ) ) );
+		materials.put( "magenta"      , BasicAppearance.createForColor( new Color4f( 0xFFFF00FF ) ) );
+		materials.put( "yellow"       , BasicAppearance.createForColor( new Color4f( 0xFFFFFF00 ) ) );
+		materials.put( "white"        , BasicAppearance.createForColor( new Color4f( 0xFFFCFCFC ) ) );
 
 		/* materials */
-//		materials.put( "brass"        , new Material( 0xFFE0E010 ) );
-//		materials.put( "glass"        , new Material( 0x20102010 ) );
-//		materials.put( "light"        , new Material( 0x80FFFF20 ) );
-//		materials.put( "metal"        , new Material( 0xFFE0E0F8 ) );
-//		materials.put( "plastic"      , new Material( 0xFFC0C0C0 ) );
-//		materials.put( "porcelin"     , new Material( 0xFFFFFFFF ) );
-//		materials.put( "steel"        , new Material( 0xFFD0D0E8 ) );
-//		materials.put( "white_plastic", new Material( 0xFFC0C0C0 ) );
-//		materials.put( "wood"         , new Material( 0xFF603820 ) );
+//		materials.put( "brass"        , BasicAppearance.createForColor( new Color4f( 0xFFE0E010 ) ) );
+//		materials.put( "glass"        , BasicAppearance.createForColor( new Color4f( 0x20102010 ) ) );
+//		materials.put( "light"        , BasicAppearance.createForColor( new Color4f( 0x80FFFF20 ) ) );
+//		materials.put( "metal"        , BasicAppearance.createForColor( new Color4f( 0xFFE0E0F8 ) ) );
+//		materials.put( "plastic"      , BasicAppearance.createForColor( new Color4f( 0xFFC0C0C0 ) ) );
+//		materials.put( "porcelin"     , BasicAppearance.createForColor( new Color4f( 0xFFFFFFFF ) ) );
+//		materials.put( "steel"        , BasicAppearance.createForColor( new Color4f( 0xFFD0D0E8 ) ) );
+//		materials.put( "white_plastic", BasicAppearance.createForColor( new Color4f( 0xFFC0C0C0 ) ) );
+//		materials.put( "wood"         , BasicAppearance.createForColor( new Color4f( 0xFF603820 ) ) );
 
 		DEFAULT_MATERIALS = materials;
 	}
@@ -769,7 +770,7 @@ public class ObjLoader
 	 *
 	 * @return  Materials.
 	 */
-	public Map<String, Material> getMaterials()
+	public Map<String, Appearance> getMaterials()
 	{
 		return Collections.unmodifiableMap( _materials );
 	}
@@ -781,14 +782,18 @@ public class ObjLoader
 	 *  @param  loader          Resource loader to load textures from.
 	 *  @param  materialName    Name of the the MTL file.
 	 *
-	 *  @throws  IOException when material could not be loaded or contains malformed known entries. Unknown entries are ignored, e.g. "Ka foobar" will throw an exception,
-	 *                              but "Kgt foobar" won't because Kgt is not a known MTL entry.
+	 * @throws  IOException when material could not be loaded or contains
+	 *          malformed known entries. Unknown entries are ignored, e.g.
+	 *          "Ka foobar" will throw an exception, but "Kgt foobar" won't
+	 *          because Kgt is not a known MTL entry.
 	 */
 	private void loadMaterial( final ResourceLoader loader, final String materialName )
 		throws IOException
 	{
 		String line;
-		ResourceLoaderMaterial tempMaterial = null;
+
+		BasicAppearance tempMaterial = null;
+
 		final BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( loader.getResourceAsStream( materialName ) ) );
 		while ( ( line = readLine( bufferedReader ) ) != null )
 		{
@@ -807,9 +812,8 @@ public class ObjLoader
 						{
 							throw new IOException( "Malformed material entry: " + line );
 						}
-						tempMaterial = new ResourceLoaderMaterial( loader );
-						tempMaterial.code = ( tokens[ 1 ] );
-						_materials.put( ( tokens[ 1 ] ), tempMaterial );
+						tempMaterial = new BasicAppearance();
+						_materials.put( tokens[ 1 ], tempMaterial );
 					}
 					// Ambient lighting
 					else if ( "Ka".equals( name ) )
@@ -818,9 +822,7 @@ public class ObjLoader
 						{
 							throw new IOException( "Malformed ambient lighting entry: " + line );
 						}
-						tempMaterial.ambientColorRed   = Float.valueOf( tokens[ 1 ] );
-						tempMaterial.ambientColorGreen = Float.valueOf( tokens[ 2 ] );
-						tempMaterial.ambientColorBlue  = Float.valueOf( tokens[ 3 ] );
+						tempMaterial.setAmbientColor( new Color4f( Float.valueOf( tokens[ 1 ] ), Float.valueOf( tokens[ 2 ] ), Float.valueOf( tokens[ 3 ] ) ) );
 					}
 					// Diffuse lighting
 					else if ( "Kd".equals( name ) )
@@ -829,9 +831,7 @@ public class ObjLoader
 						{
 							throw new IOException( "Malformed diffuse lighting entry: " + line );
 						}
-						tempMaterial.diffuseColorRed   = Float.valueOf( tokens[ 1 ] );
-						tempMaterial.diffuseColorGreen = Float.valueOf( tokens[ 2 ] );
-						tempMaterial.diffuseColorBlue  = Float.valueOf( tokens[ 3 ] );
+						tempMaterial.setDiffuseColor( new Color4f( Float.valueOf( tokens[ 1 ] ), Float.valueOf( tokens[ 2 ] ), Float.valueOf( tokens[ 3 ] ) ) );
 					}
 					// Specular lighting
 					else if ( "Ks".equals( name ) )
@@ -840,9 +840,7 @@ public class ObjLoader
 						{
 							throw new IOException( "Malformed specular lighting entry: " + line );
 						}
-						tempMaterial.specularColorRed   = Float.valueOf( tokens[ 1 ] );
-						tempMaterial.specularColorGreen = Float.valueOf( tokens[ 2 ] );
-						tempMaterial.specularColorBlue  = Float.valueOf( tokens[ 3 ] );
+						tempMaterial.setSpecularColor( new Color4f( Float.valueOf( tokens[ 1 ] ), Float.valueOf( tokens[ 2 ] ), Float.valueOf( tokens[ 3 ] ) ) );
 					}
 					// Shininess
 					else if ( "Ns".equals( name ) )
@@ -856,11 +854,11 @@ public class ObjLoader
 						if ( shininess > 1000.0f )
 						{
 							// set material shininess to max
-							tempMaterial.shininess = 128;
+							tempMaterial.setShininess( 128 );
 						}
 						else
 						{
-							tempMaterial.shininess = (int)( shininess * 128.0f / 1000.0f );
+							tempMaterial.setShininess( (int)( shininess * 128.0f / 1000.0f ) );
 						}
 					}
 					// Alpha blending
@@ -870,7 +868,8 @@ public class ObjLoader
 						{
 							throw new IOException( "Malformed transparency entry: " + line );
 						}
-						tempMaterial.diffuseColorAlpha = Float.parseFloat( tokens[ 1 ] );
+						final Color4 diffuseColor = tempMaterial.getDiffuseColor();
+						tempMaterial.setDiffuseColor( new Color4f( diffuseColor.getRedFloat(), diffuseColor.getGreenFloat(), diffuseColor.getBlueFloat(), Float.valueOf( tokens[ 1 ] ) ) );
 					}
 					// Texture mapping
 					else if ( "map_Kd".equals( name ) || "map_Ka".equals( name ) )
@@ -879,9 +878,7 @@ public class ObjLoader
 						{
 							throw new IOException( "Malformed texture entry: " + line );
 						}
-						tempMaterial.colorMap = ( tokens[ 1 ] );
-						tempMaterial.colorMapWidth = 1.0f;
-						tempMaterial.colorMapHeight = 1.0f;
+						tempMaterial.setColorMap( new ResourceLoaderTextureMap( loader, tokens[ 1 ], 1.0f, 1.0f ) );
 					}
 					else if ( "bump".equals( name ) )
 					{
@@ -889,7 +886,7 @@ public class ObjLoader
 						{
 							throw new IOException( "Malformed texture entry: " + line );
 						}
-						tempMaterial.bumpMap = ( tokens[ 1 ] );
+						tempMaterial.setBumpMap( new ResourceLoaderTextureMap( loader, tokens[ 1 ] ) );
 					}
 					//Non-recognized, non-# (comment) line.
 					//@TODO: Implement following MTL Lines:
@@ -955,17 +952,17 @@ public class ObjLoader
 		/**
 		 * Material of face.
 		 */
-		private final Material _material;
+		private final Appearance _appearance;
 
 		/**
 		 * Construct face.
 		 * @param   vertices    Vertices in face.
-		 * @param   material    Material of face.
+		 * @param   appearance    Material of face.
 		 */
-		private ObjFace( final List<ObjFaceVertex> vertices, final Material material )
+		private ObjFace( final List<ObjFaceVertex> vertices, final Appearance appearance )
 		{
 			_vertices = vertices;
-			_material= material;
+			_appearance = appearance;
 		}
 	}
 
