@@ -150,6 +150,17 @@ public interface Color4
 	int getAlphaInt();
 
 	/**
+	 * Get luminance of the color. This is a gray tone value computed from red,
+	 * green, and blue componeents via the formula:
+	 * <blockquote>
+	 *     luminance = 0.3 * red + 0.59 * green + 0.11 * blue
+	 * </blockquote>
+	 *
+	 * @return  Luminance (0.0-1.0).
+	 */
+	float getLuminance();
+
+	/**
 	 * Get color encoded as integer in RGB format (bits 0-7: blue, bits 8-15:
 	 * green, bits 16-23: red).
 	 *
