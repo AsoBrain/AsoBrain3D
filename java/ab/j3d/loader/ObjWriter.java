@@ -282,28 +282,31 @@ public class ObjWriter
 			out.write( materialName );
 			out.write( '\n' );
 
+			final Color4 ambientColor = appearance.getAmbientColor();
 			out.write( "Ka " );
-			out.write( DECIMAL_FORMAT.format( appearance.getAmbientColorRed() ) );
+			out.write( DECIMAL_FORMAT.format( ambientColor.getRedFloat() ) );
 			out.write( ' ' );
-			out.write( DECIMAL_FORMAT.format( appearance.getAmbientColorGreen() ) );
+			out.write( DECIMAL_FORMAT.format( ambientColor.getGreenFloat() ) );
 			out.write( ' ' );
-			out.write( DECIMAL_FORMAT.format( appearance.getAmbientColorBlue() ) );
+			out.write( DECIMAL_FORMAT.format( ambientColor.getBlueFloat() ) );
 			out.write( '\n' );
 
+			final Color4 diffuseColor = appearance.getDiffuseColor();
 			out.write( "Kd " );
-			out.write( DECIMAL_FORMAT.format( appearance.getDiffuseColorRed() ) );
+			out.write( DECIMAL_FORMAT.format( diffuseColor.getRedFloat() ) );
 			out.write( ' ' );
-			out.write( DECIMAL_FORMAT.format( appearance.getDiffuseColorGreen() ) );
+			out.write( DECIMAL_FORMAT.format( diffuseColor.getGreenFloat() ) );
 			out.write( ' ' );
-			out.write( DECIMAL_FORMAT.format( appearance.getDiffuseColorBlue() ) );
+			out.write( DECIMAL_FORMAT.format( diffuseColor.getBlueFloat() ) );
 			out.write( '\n' );
 
+			final Color4 specularColor = appearance.getSpecularColor();
 			out.write( "Ks " );
-			out.write( DECIMAL_FORMAT.format( appearance.getSpecularColorRed() ) );
+			out.write( DECIMAL_FORMAT.format( specularColor.getRedFloat() ) );
 			out.write( ' ' );
-			out.write( DECIMAL_FORMAT.format( appearance.getSpecularColorGreen() ) );
+			out.write( DECIMAL_FORMAT.format( specularColor.getGreenFloat() ) );
 			out.write( ' ' );
-			out.write( DECIMAL_FORMAT.format( appearance.getSpecularColorBlue() ) );
+			out.write( DECIMAL_FORMAT.format( specularColor.getBlueFloat() ) );
 			out.write( '\n' );
 
 			out.write( "illum 2\n" );
@@ -315,7 +318,7 @@ public class ObjWriter
 			out.write( '\n' );
 
 			out.write( "d " );
-			out.write( DECIMAL_FORMAT.format( appearance.getDiffuseColorAlpha() ) );
+			out.write( DECIMAL_FORMAT.format( diffuseColor.getAlphaFloat() ) );
 			out.write( '\n' );
 
 			if ( appearance instanceof Material )

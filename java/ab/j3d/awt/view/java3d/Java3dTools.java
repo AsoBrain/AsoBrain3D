@@ -42,7 +42,7 @@ import ab.j3d.appearance.*;
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public final class Java3dTools
+public class Java3dTools
 {
 	/**
 	 * Texture observer needed by {@link #loadTexture} to load textures.
@@ -130,12 +130,12 @@ public final class Java3dTools
 		coloringAttributes.setColor( color );
 		coloringAttributes.setShadeModel( ColoringAttributes.FASTEST );
 
-		final List thickCoords = new ArrayList();
-		final List thinCoords  = new ArrayList();
+		final List<Point3f> thickCoords = new ArrayList<Point3f>();
+		final List<Point3f> thinCoords  = new ArrayList<Point3f>();
 
 		for ( int gridIndex = maxSize ; gridIndex >= 0 ; gridIndex-- )
 		{
-			final List coords = ( ( interval > 0 ) && ( ( gridIndex % interval ) == 0 ) ) ? thickCoords : thinCoords;
+			final List<Point3f> coords = ( ( interval > 0 ) && ( ( gridIndex % interval ) == 0 ) ) ? thickCoords : thinCoords;
 
 			for ( int mult = ( gridIndex == 0 ) ? 1 : -1 ; mult <= 1 ; mult += 2 )
 			{
@@ -171,9 +171,11 @@ public final class Java3dTools
 		final Group group = new Group();
 		for ( int i = 0 ; i < 2 ; i++ )
 		{
-			final List vCoords = ( i == 0 ) ? thinCoords : thickCoords;
+			final List<Point3f> vCoords = ( i == 0 ) ? thinCoords : thickCoords;
 			if ( vCoords.isEmpty() )
+			{
 				continue;
+			}
 
 			final LineAttributes lineAttributes = new LineAttributes();
 			lineAttributes.setLineWidth( ( i == 0 ) ? 1.0f : 3.0f );
@@ -184,7 +186,7 @@ public final class Java3dTools
 			appearance.setColoringAttributes( coloringAttributes );
 
 			final QuadArray quadArray = new QuadArray( vCoords.size(), LineStripArray.COORDINATES );
-			final Point3f[] pCoords = (Point3f[])vCoords.toArray( new Point3f[ vCoords.size() ] );
+			final Point3f[] pCoords = vCoords.toArray( new Point3f[ vCoords.size() ] );
 			quadArray.setCoordinates( 0, pCoords );
 
 			final Shape3D child = new Shape3D( quadArray, appearance );
@@ -227,6 +229,7 @@ public final class Java3dTools
 				 * do its job. Otherwise, this will always return the current size of
 				 * the canvas, not allowing it to be reduced in size.
 				 */
+				@Override
 				public Dimension getMinimumSize()
 				{
 					return new Dimension( 10, 10 );
@@ -290,27 +293,32 @@ public final class Java3dTools
 	/**
 	 * Get Java3D {@link Appearance} for the specified material.
 	 *
-	 * @param   abMaterial      Material to get the {@link Appearance} for.
+	 * @param   abAppearance    Material to get the {@link Appearance} for.
 	 * @param   opacity         Opacity to apply to the returned appearance.
-	 * @param   hasBackface     Flag to indicate if face has a backface.
+	 * @param   hasBackFace     Flag to indicate if face has a back-face.
 	 *
 	 * @return  Appearance for the specified texture spec.
 	 */
-	public Appearance getAppearance( final ab.j3d.appearance.Appearance abMaterial, final float opacity, final boolean hasBackface )
+	public Appearance getAppearance( final ab.j3d.appearance.Appearance abAppearance, final float opacity, final boolean hasBackFace )
 	{
+		final Color4 abAmbient = abAppearance.getAmbientColor();
+		final Color4 abDiffuse = abAppearance.getDiffuseColor();
+		final Color4 abSpecular = abAppearance.getSpecularColor();
+		final Color4 abEmissive = abAppearance.getEmissiveColor();
+
 		final Material j3dMaterial = new Material();
 		j3dMaterial.setLightingEnable( true );
-		j3dMaterial.setAmbientColor  ( abMaterial.getAmbientColorRed() , abMaterial.getAmbientColorGreen() , abMaterial.getAmbientColorBlue()  );
-		j3dMaterial.setEmissiveColor ( abMaterial.getEmissiveColorRed(), abMaterial.getEmissiveColorGreen(), abMaterial.getEmissiveColorBlue() );
-		j3dMaterial.setDiffuseColor  ( abMaterial.getDiffuseColorRed() , abMaterial.getDiffuseColorGreen() , abMaterial.getDiffuseColorBlue()  );
-		j3dMaterial.setSpecularColor ( abMaterial.getSpecularColorRed(), abMaterial.getSpecularColorGreen(), abMaterial.getSpecularColorBlue() );
-		j3dMaterial.setShininess     ( (float)abMaterial.getShininess() );
+		j3dMaterial.setAmbientColor( abAmbient.getRedFloat(), abAmbient.getGreenFloat(), abAmbient.getBlueFloat() );
+		j3dMaterial.setEmissiveColor( abEmissive.getRedFloat(), abEmissive.getGreenFloat(), abEmissive.getBlueFloat() );
+		j3dMaterial.setDiffuseColor( abDiffuse.getRedFloat(), abDiffuse.getGreenFloat(), abDiffuse.getBlueFloat() );
+		j3dMaterial.setSpecularColor( abSpecular.getRedFloat(), abSpecular.getGreenFloat(), abSpecular.getBlueFloat() );
+		j3dMaterial.setShininess( (float) abAppearance.getShininess() );
 
 		final Appearance appearance = new Appearance();
 		appearance.setCapability( Appearance.ALLOW_TEXTURE_READ );
 		appearance.setMaterial( j3dMaterial );
 
-		final Texture texture = getColorMapTexture( abMaterial );
+		final Texture texture = getColorMapTexture( abAppearance );
 		if ( texture != null )
 		{
 			appearance.setTexture( texture );
@@ -321,9 +329,9 @@ public final class Java3dTools
 		}
 
 		// Setup Transparency
-		boolean noCulling = hasBackface;
+		boolean noCulling = hasBackFace;
 
-		final float combinedOpacity = opacity * abMaterial.getDiffuseColorAlpha();
+		final float combinedOpacity = opacity * abDiffuse.getAlphaFloat();
 		if ( combinedOpacity >= 0.0f && combinedOpacity < 0.999f )
 		{
 			final TransparencyAttributes transparency = new TransparencyAttributes( TransparencyAttributes.NICEST, 1.0f - combinedOpacity );
@@ -339,7 +347,7 @@ public final class Java3dTools
 			appearance.setPolygonAttributes( polygonAttributes );
 		}
 
-		appearance.setColoringAttributes( new ColoringAttributes( abMaterial.getDiffuseColorRed(), abMaterial.getDiffuseColorGreen(), abMaterial.getDiffuseColorBlue(), ColoringAttributes.FASTEST ) );
+		appearance.setColoringAttributes( new ColoringAttributes( abDiffuse.getRedFloat(), abDiffuse.getGreenFloat(), abDiffuse.getBlueFloat(), ColoringAttributes.FASTEST ) );
 
 		return appearance;
 	}
@@ -468,13 +476,17 @@ public final class Java3dTools
 		{
 			result = 2;
 			while ( size > result )
+			{
 				result *= 2;
+			}
 
 			if ( size != result )
 			{
 				final int halfResult = result / 2;
 				if ( ( result - size ) > ( size - halfResult ) )
+				{
 					result = halfResult;
+				}
 			}
 		}
 		else
@@ -511,11 +523,13 @@ public final class Java3dTools
 		{
 			final Group group = (Group)node;
 			for ( Enumeration e = group.getAllChildren() ; e.hasMoreElements() ; )
+			{
 				children.add( e.nextElement() );
+			}
 		}
 
 		final boolean isLast  = ( parentChildren == null ) || parentChildren.indexOf( node ) == ( parentChildren.size() - 1 );
-		final boolean isLeaf  = children.size() == 0;
+		final boolean isLeaf  = children.isEmpty();
 
 		if ( parentChildren != null )
 		{
@@ -538,7 +552,9 @@ public final class Java3dTools
 		System.out.println( subPrefix );
 
 		for ( int i = 0 ; i < children.size() ; i++ )
-			showTreeNode( nextPrefix, children, (Node)children.get( i ) );
+		{
+			showTreeNode( nextPrefix, children, (Node) children.get( i ) );
+		}
 
 	}
 

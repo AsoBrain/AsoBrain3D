@@ -429,31 +429,17 @@ public class AbToPovConverter
 	@Nullable
 	private PovTexture convertMaterialToPovTexture( final Appearance appearance )
 	{
-		PovTexture result;
 
-		if ( appearance instanceof Material )
-		{
-			/*
-			 * TODO: Support arbitrary appearances.
-			 * This is difficult, because the location of texture images is not
-			 * known and may not even be on the local file system (e.g. memory).
-			 */
-			final Material material = (Material)appearance;
-			final PovTexture newTexture = new PovTexture( material );
-			final String textureName = newTexture.getName();
+		final PovTexture newTexture = new PovTexture( appearance );
+		final String textureName = newTexture.getName();
 
-			result = _scene.getTexture( textureName );
-			if ( result == null )
-			{
-//				newTexture.setReflection( 0.05 );
-				newTexture.setDeclared();
-				_scene.addTexture( textureName, newTexture );
-				result = newTexture;
-			}
-		}
-		else
+		PovTexture result = _scene.getTexture( textureName );
+		if ( result == null )
 		{
-			result = null;
+//			newTexture.setReflection( 0.05 );
+			newTexture.setDeclared();
+			_scene.addTexture( textureName, newTexture );
+			result = newTexture;
 		}
 
 		return result;

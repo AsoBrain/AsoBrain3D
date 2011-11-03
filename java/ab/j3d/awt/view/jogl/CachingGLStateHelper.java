@@ -23,6 +23,7 @@ package ab.j3d.awt.view.jogl;
 import java.util.*;
 import javax.media.opengl.*;
 
+import ab.j3d.*;
 import ab.j3d.appearance.*;
 
 /**
@@ -124,31 +125,34 @@ public class CachingGLStateHelper
 	}
 
 	@Override
-	protected void setAppearance( final Appearance appearance, final float red, final float green, final float blue, final float alpha )
+	protected void setAppearance( final Appearance appearance, final float diffuseRed, final float diffuseGreen, final float diffuseBlue, final float diffuseAlpha )
 	{
 		final GL gl = _gl;
 
-		if ( update( _color, red, green, blue, alpha ) )
+		if ( update( _color, diffuseRed, diffuseGreen, diffuseBlue, diffuseAlpha ) )
 		{
 			gl.glColor4fv( _color, 0 );
 		}
 
-		if ( update( _materialAmbient, appearance.getAmbientColorRed() , appearance.getAmbientColorGreen() , appearance.getAmbientColorBlue() , alpha ) )
+		final Color4 ambientColor = appearance.getAmbientColor();
+		if ( update( _materialAmbient, ambientColor.getRedFloat() , ambientColor.getGreenFloat() , ambientColor.getBlueFloat() , diffuseAlpha ) )
 		{
 			gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT , _materialAmbient, 0 );
 		}
 
-		if ( update( _materialDiffuse, red , green , blue , alpha ) )
+		if ( update( _materialDiffuse, diffuseRed, diffuseGreen, diffuseBlue, diffuseAlpha ) )
 		{
 			gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE , _materialDiffuse, 0 );
 		}
 
-		if ( update( _materialSpecular, appearance.getSpecularColorRed() , appearance.getSpecularColorGreen() , appearance.getSpecularColorBlue() , alpha ) )
+		final Color4 specularColor = appearance.getSpecularColor();
+		if ( update( _materialSpecular, specularColor.getRedFloat() , specularColor.getGreenFloat() , specularColor.getBlueFloat() , diffuseAlpha ) )
 		{
 			gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_SPECULAR, _materialSpecular, 0 );
 		}
 
-		if ( update( _materialEmissive, appearance.getEmissiveColorRed() , appearance.getEmissiveColorGreen() , appearance.getEmissiveColorBlue() , alpha ) )
+		final Color4 emissiveColor = appearance.getEmissiveColor();
+		if ( update( _materialEmissive, emissiveColor.getRedFloat() , emissiveColor.getGreenFloat() , emissiveColor.getBlueFloat() , diffuseAlpha ) )
 		{
 			gl.glMaterialfv( GL.GL_FRONT_AND_BACK, GL.GL_EMISSION, _materialEmissive, 0 );
 		}
