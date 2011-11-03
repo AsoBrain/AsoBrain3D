@@ -20,10 +20,13 @@
  */
 package ab.j3d.model;
 
+import java.net.*;
+
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 
 /**
- * Defines a sky box, specifying the materials to be used for creating an
+ * Defines a sky box, specifying the appearances to be used for creating an
  * infinitely distant background for a 3D scene.
  *
  * @author  G. Meinders
@@ -32,53 +35,73 @@ import ab.j3d.*;
 public class SkyBox3D
 	extends Node3D
 {
-	/** Material for the north side of the sky box. */
-	private final Material _north;
+	/** Appearance for the north side of the sky box. */
+	private final Appearance _north;
 
-	/** Material for the east side of the sky box. */
-	private final Material _east;
+	/** Appearance for the east side of the sky box. */
+	private final Appearance _east;
 
-	/** Material for the south side of the sky box. */
-	private final Material _south;
+	/** Appearance for the south side of the sky box. */
+	private final Appearance _south;
 
-	/** Material for the west side of the sky box. */
-	private final Material _west;
+	/** Appearance for the west side of the sky box. */
+	private final Appearance _west;
 
-	/** Material for the ceiling of the sky box. */
-	private final Material _ceiling;
+	/** Appearance for the ceiling of the sky box. */
+	private final Appearance _ceiling;
 
-	/** Material for the floor of the sky box. */
-	private final Material _floor;
+	/** Appearance for the floor of the sky box. */
+	private final Appearance _floor;
 
 	/**
 	 * Construct new sky box.
 	 *
-	 * @param   name    Name of the sky box. This name is suffixed with "-north",
-	 *                  "-east", "-south", "-west", "-ceiling" and "-floor" to
-	 *                  for the names of the color maps on each side of the sky
-	 *                  box.
+	 * @param   baseUrl     Base URL to resolve images against.
+	 * @param   name        File name prefix of the sky box images. This name is
+	 *                      suffixed with "-north.jpg", "-east.jpg",
+	 *                      "-south.jpg", "-west.jpg", "-ceiling.jpg",
+	 *                      and "-floor.jpg" to get the names of the color maps
+	 *                      on each side of the sky box.
+	 *
+	 * @throws  MalformedURLException if the URL/name is malformed.
 	 */
-	public SkyBox3D( final String name )
+	public SkyBox3D( final URL baseUrl, final String name )
+		throws MalformedURLException
 	{
-		this( new Material( name + "-north",   1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0, 0.0f, 0.0f, 0.0f, name + "-north",   0.0f, 0.0f, false ),
-		      new Material( name + "-east",    1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0, 0.0f, 0.0f, 0.0f, name + "-east",    0.0f, 0.0f, false ),
-		      new Material( name + "-south",   1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0, 0.0f, 0.0f, 0.0f, name + "-south",   0.0f, 0.0f, false ),
-		      new Material( name + "-west",    1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0, 0.0f, 0.0f, 0.0f, name + "-west",    0.0f, 0.0f, false ),
-		      new Material( name + "-ceiling", 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0, 0.0f, 0.0f, 0.0f, name + "-ceiling", 0.0f, 0.0f, false ),
-		      new Material( name + "-floor",   1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0, 0.0f, 0.0f, 0.0f, name + "-floor",   0.0f, 0.0f, false ) );
+		this( createAppearance( new URL( baseUrl, name + "-north.jpg" ) ),
+		      createAppearance( new URL( baseUrl, name + "-east.jpg" ) ),
+		      createAppearance( new URL( baseUrl, name + "-south.jpg" ) ),
+		      createAppearance( new URL( baseUrl, name + "-west.jpg" ) ),
+		      createAppearance( new URL( baseUrl, name + "-ceiling.jpg" ) ),
+		      createAppearance( new URL( baseUrl, name + "-floor.jpg" ) ) );
+	}
+
+	/**
+	 * Helper-method to create an {@link Appearance} based on an URL.
+	 *
+	 * @param   colorMap    URL of color map image.
+	 *
+	 * @return  {@link Appearance}.
+	 */
+	private static Appearance createAppearance( final URL colorMap )
+	{
+		final BasicAppearance result = new BasicAppearance();
+		result.setAmbientColor( Color4.WHITE );
+		result.setColorMap( new FileTextureMap( colorMap ) );
+		return result;
 	}
 
 	/**
 	 * Construct new sky box.
 	 *
-	 * @param   north       Material to be used for the north side of the sky box.
-	 * @param   east        Material to be used for the east side of the sky box.
-	 * @param   south       Material to be used for the south side of the sky box.
-	 * @param   west        Material to be used for the west side of the sky box.
-	 * @param   ceiling     Material to be used for the ceiling of the sky box.
-	 * @param   floor       Material to be used for the floor of the sky box.
+	 * @param   north       Appearance to be used for the north side of the sky box.
+	 * @param   east        Appearance to be used for the east side of the sky box.
+	 * @param   south       Appearance to be used for the south side of the sky box.
+	 * @param   west        Appearance to be used for the west side of the sky box.
+	 * @param   ceiling     Appearance to be used for the ceiling of the sky box.
+	 * @param   floor       Appearance to be used for the floor of the sky box.
 	 */
-	public SkyBox3D( final Material north, final Material east, final Material south, final Material west, final Material ceiling, final Material floor )
+	public SkyBox3D( final Appearance north, final Appearance east, final Appearance south, final Appearance west, final Appearance ceiling, final Appearance floor )
 	{
 		_north   = north;
 		_east    = east;
@@ -89,61 +112,61 @@ public class SkyBox3D
 	}
 
 	/**
-	 * Returns the material of the north side of the sky box.
+	 * Returns the appearance of the north side of the sky box.
 	 *
-	 * @return  Material of the north side.
+	 * @return  Appearance of the north side.
 	 */
-	public Material getNorth()
+	public Appearance getNorth()
 	{
 		return _north;
 	}
 
 	/**
-	 * Returns the material of the east side of the sky box.
+	 * Returns the appearance of the east side of the sky box.
 	 *
-	 * @return  Material of the east side.
+	 * @return  Appearance of the east side.
 	 */
-	public Material getEast()
+	public Appearance getEast()
 	{
 		return _east;
 	}
 
 	/**
-	 * Returns the material of the south side of the sky box.
+	 * Returns the appearance of the south side of the sky box.
 	 *
-	 * @return  Material of the south side.
+	 * @return  Appearance of the south side.
 	 */
-	public Material getSouth()
+	public Appearance getSouth()
 	{
 		return _south;
 	}
 
 	/**
-	 * Returns the material of the west side of the sky box.
+	 * Returns the appearance of the west side of the sky box.
 	 *
-	 * @return  Material of the west side.
+	 * @return  Appearance of the west side.
 	 */
-	public Material getWest()
+	public Appearance getWest()
 	{
 		return _west;
 	}
 
 	/**
-	 * Returns the material of the ceiling of the sky box.
+	 * Returns the appearance of the ceiling of the sky box.
 	 *
-	 * @return  Material of the ceiling.
+	 * @return  Appearance of the ceiling.
 	 */
-	public Material getCeiling()
+	public Appearance getCeiling()
 	{
 		return _ceiling;
 	}
 
 	/**
-	 * Returns the material of the floor of the sky box.
+	 * Returns the appearance of the floor of the sky box.
 	 *
-	 * @return  Material of the floor.
+	 * @return  Appearance of the floor.
 	 */
-	public Material getFloor()
+	public Appearance getFloor()
 	{
 		return _floor;
 	}
