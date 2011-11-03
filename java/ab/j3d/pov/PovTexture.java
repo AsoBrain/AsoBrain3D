@@ -348,7 +348,7 @@ public class PovTexture
 		final Color4 specularColor = appearance.getSpecularColor();
 		final TextureMap colorMap = appearance.getColorMap();
 		final int shininess = appearance.getShininess();
-		final ReflectionMap reflectionMap = appearance.getReflectionMap();
+		final CubeMap reflectionMap = appearance.getReflectionMap();
 
 		final double diffuseRed = Math.max( (double)diffuseColor.getRedFloat(), 0.001 );
 		final double diffuseGreen = Math.max( (double)diffuseColor.getGreenFloat(), 0.001 );
@@ -367,11 +367,11 @@ public class PovTexture
 
 		if ( reflectionMap != null )
 		{
-			final double min = (double)reflectionMap.getReflectivityMin();
-			final double max = (double)reflectionMap.getReflectivityMax();
+			final double min = (double)appearance.getReflectionMin();
+			final double max = (double)appearance.getReflectionMax();
 			if ( ( min > 0.0 ) || ( max > 0.0 ) )
 			{
-				final Color4 reflectionColor = reflectionMap.getColor();
+				final Color4 reflectionColor = appearance.getReflectionColor();
 				final double red = (double)reflectionColor.getRedFloat();
 				final double green = (double) reflectionColor.getGreenFloat();
 				final double blue = (double) reflectionColor.getBlueFloat();
