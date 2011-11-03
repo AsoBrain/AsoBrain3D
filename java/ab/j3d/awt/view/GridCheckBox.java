@@ -35,6 +35,11 @@ public class GridCheckBox
 	extends JCheckBox
 {
 	/**
+	 * Name of resource bundle for this class.
+	 */
+	private static final String BUNDLE_NAME = GridCheckBox.class.getPackage().getName() + ".LocalStrings";
+
+	/**
 	 * Create action.
 	 *
 	 * @param   locale  Preferred locale for internationalization.
@@ -44,7 +49,7 @@ public class GridCheckBox
 	{
 		setOpaque( false );
 
-		final ResourceBundle bundle = ResourceBundle.getBundle( "LocalStrings", locale );
+		final ResourceBundle bundle = ResourceBundle.getBundle( BUNDLE_NAME, locale );
 		setText( bundle.getString( "toggleGrid" ) );
 
 		setModel( new ToggleButtonModel()
