@@ -83,6 +83,22 @@ public class FileTextureMap
 		_imageUrlString = imageUrl.toExternalForm();
 	}
 
+	/**
+	 * Construct texture map for image file URL and given physical size.
+	 *
+	 * @param   imageUrl        URL for image file.
+	 * @param   physicalWidth   Physical width in meters (<code>0.0</code> if
+	 *                          indeterminate).
+	 * @param   physicalHeight  Physical height in meters (<code>0.0</code> if
+	 *                          indeterminate).
+	 */
+	public FileTextureMap( @NotNull final URL imageUrl, final float physicalWidth, final float physicalHeight )
+	{
+		super( physicalWidth, physicalHeight );
+		_imageUrl = imageUrl;
+		_imageUrlString = imageUrl.toExternalForm();
+	}
+
 	@NotNull
 	public URL getImageUrl()
 	{
