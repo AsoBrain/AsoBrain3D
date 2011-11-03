@@ -29,6 +29,71 @@ package ab.j3d;
 public interface Color4
 {
 	/**
+	 * The color white.
+	 */
+	Color4 WHITE = new Color4f( 1.0f, 1.0f, 1.0f );
+
+	/**
+	 * The color light gray.
+	 */
+	Color4 LIGHT_GRAY = new Color4f( 0.75f, 0.75f, 0.75f );
+
+	/**
+	 * The color gray.
+	 */
+	Color4 GRAY = new Color4f( 0.5f, 0.5f, 0.5f );
+
+	/**
+	 * The color dark gray.
+	 */
+	Color4 DARK_GRAY = new Color4f( 0.25f, 0.25f, 0.25f );
+
+	/**
+	 * The color black.
+	 */
+	Color4 BLACK = new Color4f( 0.0f, 0.0f, 0.0f );
+
+	/**
+	 * The color red.
+	 */
+	Color4 RED = new Color4f( 1.0f, 0.0f, 0.0f );
+
+	/**
+	 * The color pink.
+	 */
+	Color4 PINK = new Color4f( 1.0f, 0.7f, 0.7f );
+
+	/**
+	 * The color orange.
+	 */
+	Color4 ORANGE = new Color4f( 1.0f, 0.8f, 0.0f );
+
+	/**
+	 * The color yellow.
+	 */
+	Color4 YELLOW = new Color4f( 1.0f, 1.0f, 0.0f );
+
+	/**
+	 * The color green.
+	 */
+	Color4 GREEN = new Color4f( 0.0f, 1.0f, 0.0f );
+
+	/**
+	 * The color magenta.
+	 */
+	Color4 MAGENTA =  new Color4f( 1.0f, 0.0f, 1.0f );
+
+	/**
+	 * The color cyan.
+	 */
+	Color4 CYAN = new Color4f( 0.0f, 1.0f, 1.0f );
+
+	/**
+	 * The color blue.
+	 */
+	Color4 BLUE = new Color4f( 0.0f, 0.0f, 1.0f );
+
+	/**
 	 * Get red component.
 	 *
 	 * @return  Red component (0.0 - 1.0).
