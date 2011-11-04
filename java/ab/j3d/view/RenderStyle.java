@@ -23,6 +23,7 @@ package ab.j3d.view;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 
 /**
  * Described how things should be rendered.
@@ -36,27 +37,27 @@ public class RenderStyle
 	implements Cloneable
 {
 	/**
-	 * Flag to indicate that rendering with material is enabled.
+	 * Flag to indicate that rendering with appearance is enabled.
 	 */
-	private boolean _materialEnabled;
+	private boolean _appearanceEnabled;
 
 	/**
 	 * Flag to indicate that lighting should be applied to rendering with
-	 * material.
+	 * appearance.
 	 */
-	private boolean _materialLightingEnabled;
+	private boolean _appearanceLightingEnabled;
 
 	/**
-	 * Override original material with this one. This may be <code>null</code>
+	 * Override original appearance with this one. This may be <code>null</code>
 	 * to disable override.
 	 */
-	private Material _materialOverride;
+	private Appearance _appearanceOverride;
 
 	/**
-	 * Extra alpha value for material. This can be used to make the material
+	 * Extra alpha value for appearance. This can be used to make the appearance
 	 * (partially) translucent.
 	 */
-	private float _materialAlpha;
+	private float _appearanceAlpha;
 
 	/**
 	 * Flag to indicate that filling is enabled.
@@ -123,10 +124,10 @@ public class RenderStyle
 	 */
 	public RenderStyle()
 	{
-		_materialEnabled = true;
-		_materialLightingEnabled = true;
-		_materialOverride = null;
-		_materialAlpha = 1.0f;
+		_appearanceEnabled = true;
+		_appearanceLightingEnabled = true;
+		_appearanceOverride = null;
+		_appearanceAlpha = 1.0f;
 		_fillEnabled = false;
 		_fillLightingEnabled = true;
 		_strokeEnabled = false;
@@ -221,94 +222,94 @@ public class RenderStyle
 	}
 
 	/**
-	 * Check wether rendering with materials is enabled.
+	 * Check wether rendering with appearances is enabled.
 	 *
-	 * @return  <code>true</code> if rendering with materials is enabled;
+	 * @return  <code>true</code> if rendering with appearances is enabled;
 	 *          <code>false</code> otherwise.
 	 */
-	public boolean isMaterialEnabled()
+	public boolean isAppearanceEnabled()
 	{
-		return _materialEnabled;
+		return _appearanceEnabled;
 	}
 
 	/**
-	 * Enable/disable rendering with materials.
+	 * Enable/disable rendering with appearances.
 	 *
-	 * @param   enable  Enable vs. disable rendering with materials.
+	 * @param   enable  Enable vs. disable rendering with appearances.
 	 */
-	public void setMaterialEnabled( final boolean enable )
+	public void setAppearanceEnabled( final boolean enable )
 	{
-		_materialEnabled = enable;
+		_appearanceEnabled = enable;
 	}
 
 	/**
-	 * Check wether lighting is applied to rendering with material.
+	 * Check wether lighting is applied to rendering with appearance.
 	 *
-	 * @return  <code>true</code> if lighting is applied to rendering with material;
+	 * @return  <code>true</code> if lighting is applied to rendering with appearance;
 	 *          <code>false</code> otherwise.
 	 */
-	public boolean isMaterialLightingEnabled()
+	public boolean isAppearanceLightingEnabled()
 	{
-		return _materialLightingEnabled;
+		return _appearanceLightingEnabled;
 	}
 
 	/**
-	 * Enable/disable application of lighting to rendering with material.
+	 * Enable/disable application of lighting to rendering with appearance.
 	 *
-	 * @param   enable  Enable vs. disable of lighting for material rendering.
+	 * @param   enable  Enable vs. disable of lighting for appearance rendering.
 	 */
-	public void setMaterialLightingEnabled( final boolean enable )
+	public void setAppearanceLightingEnabled( final boolean enable )
 	{
-		_materialLightingEnabled = enable;
+		_appearanceLightingEnabled = enable;
 	}
 
 	/**
-	 * Get material override. The original material will be replaced with this
-	 * one.
+	 * Get appearance override. The original appearance will be replaced with
+	 * this one.
 	 *
-	 * @return  Material override;
+	 * @return  Appearance override;
 	 *          <code>null</code> if disabled.
 	 */
-	public Material getMaterialOverride()
+	public Appearance getAppearanceOverride()
 	{
-		return _materialOverride;
+		return _appearanceOverride;
 	}
 
 	/**
-	 * Set material override. The original material will be replaced with this
+	 * Set appearance override. The original appearance will be replaced with this
 	 * one. This may be <code>null</code> to disable override.
 	 *
-	 * @param   material    Material override (<code>null</code> to disable).
+	 * @param   appearance    Appearance override (<code>null</code> to disable).
 	 */
-	public void setMaterialOverride( final Material material )
+	public void setAppearanceOverride( final Appearance appearance )
 	{
-		_materialOverride = material;
+		_appearanceOverride = appearance;
 	}
 
 	/**
-	 * Get extra alpha value for material.
+	 * Get extra alpha value for appearance.
 	 *
-	 * @return  Extra alpha value for material (0.0 = completely translucent;
-	 *          1.0 = use unaltered alpha values from material).
-	 * Extra alpha value for material. This can be used to make the material
+	 * @return  Extra alpha value for appearance (0.0 = completely translucent;
+	 *          1.0 = use unaltered alpha values from appearance).
+	 * Extra alpha value for appearance. This can be used to make the appearance
 	 * (partially) translucent.
 	 */
-	public float getMaterialAlpha()
+	public float getAppearanceAlpha()
 	{
-		return _materialAlpha;
+		return _appearanceAlpha;
 	}
 
 	/**
-	 * Set extra alpha value for material. This can be used to make the material
+	 * Set extra alpha value for appearance. This can be used to make the appearance
 	 * (partially) translucent.
 	 *
-	 * @param   alpha   Extra alpha value for material (0.0 = completely
+	 * @param   alpha   Extra alpha value for appearance (0.0 = completely
 	 *                  translucent; 1.0 = use unaltered alpha values from
-	 *                  material).
+	 *                  appearance).
 	 */
-	public void setMaterialAlpha( final float alpha )
+	public void setAppearanceAlpha( final float alpha )
 	{
-		_materialAlpha = alpha;
+		_appearanceAlpha = alpha;
 	}
 
 	/**
@@ -572,12 +573,12 @@ public class RenderStyle
 			return false;
 		if ( _fillEnabled != that._fillEnabled ) return false;
 		if ( _fillLightingEnabled != that._fillLightingEnabled ) return false;
-		if ( Float.compare( that._materialAlpha, _materialAlpha ) != 0 )
+		if ( Float.compare( that._appearanceAlpha, _appearanceAlpha ) != 0 )
 		{
 			return false;
 		}
-		if ( _materialEnabled != that._materialEnabled ) return false;
-		if ( _materialLightingEnabled != that._materialLightingEnabled )
+		if ( _appearanceEnabled != that._appearanceEnabled ) return false;
+		if ( _appearanceLightingEnabled != that._appearanceLightingEnabled )
 		{
 			return false;
 		}
@@ -594,7 +595,7 @@ public class RenderStyle
 		{
 			return false;
 		}
-		if ( _materialOverride != null ? !_materialOverride.equals( that._materialOverride ) : that._materialOverride != null )
+		if ( _appearanceOverride != null ? !_appearanceOverride.equals( that._appearanceOverride ) : that._appearanceOverride != null )
 		{
 			return false;
 		}
@@ -613,10 +614,10 @@ public class RenderStyle
 	@Override
 	public int hashCode()
 	{
-		int result = ( _materialEnabled ? 1 : 0 );
-		result = 31 * result + ( _materialLightingEnabled ? 1 : 0 );
-		result = 31 * result + ( _materialOverride != null ? _materialOverride.hashCode() : 0 );
-		result = 31 * result + ( _materialAlpha != +0.0f ? Float.floatToIntBits( _materialAlpha ) : 0 );
+		int result = ( _appearanceEnabled ? 1 : 0 );
+		result = 31 * result + ( _appearanceLightingEnabled ? 1 : 0 );
+		result = 31 * result + ( _appearanceOverride != null ? _appearanceOverride.hashCode() : 0 );
+		result = 31 * result + ( _appearanceAlpha != +0.0f ? Float.floatToIntBits( _appearanceAlpha ) : 0 );
 		result = 31 * result + ( _fillEnabled ? 1 : 0 );
 		result = 31 * result + ( _fillColor != null ? _fillColor.hashCode() : 0 );
 		result = 31 * result + ( _fillLightingEnabled ? 1 : 0 );

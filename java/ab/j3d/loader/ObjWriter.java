@@ -376,17 +376,7 @@ public class ObjWriter
 		 */
 		private String generateMaterialName( final Appearance appearance )
 		{
-			final String result;
-			if ( appearance instanceof Material )
-			{
-				final Material material = (Material)appearance;
-				result = generateUniqueName( material.code );
-			}
-			else
-			{
-				result = generateUniqueName( "material" );
-			}
-			return result;
+			return generateUniqueName( "material" );
 		}
 
 		/**

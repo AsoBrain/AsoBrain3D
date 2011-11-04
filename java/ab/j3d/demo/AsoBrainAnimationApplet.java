@@ -24,8 +24,6 @@ import java.awt.*;
 import java.net.*;
 import javax.swing.*;
 
-import ab.j3d.*;
-
 /**
  * Applet that runs the {@link AsoBrainAnimation} example.
  *
@@ -40,6 +38,11 @@ public class AsoBrainAnimationApplet
 	 */
 	private AsoBrainAnimation _example = null;
 
+	/**
+	 * Location of images.
+	 */
+	private URL _imagesUrl = null;
+
 	@Override
 	public void init()
 	{
@@ -48,7 +51,7 @@ public class AsoBrainAnimationApplet
 		{
 			try
 			{
-				Material.imagesDirectoryUrl = new URL( images );
+				_imagesUrl = new URL( images );
 			}
 			catch ( MalformedURLException e )
 			{
