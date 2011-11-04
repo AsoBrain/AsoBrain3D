@@ -27,6 +27,7 @@ import java.util.*;
 import javax.swing.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.awt.view.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
@@ -78,7 +79,7 @@ public class RenderEngineExample
 		final ContentNode cubeLeftNode = scene.addContentNode( "cubeLeft", Matrix3D.getTransform( 0.0, 225.0, 90.0, -0.250 / unit, 0.050 / unit, 0.0 ), cubeLeft );
 		cubeLeftNode.setPlaneControl( createPlaneControl( cubeLeftNode.getTransform() ) );
 
-		final Object3D sphere = new Sphere3D( 0.1 / unit, 20, 20, new Material( 0xC000FFFF ) );
+		final Object3D sphere = new Sphere3D( 0.1 / unit, 20, 20, BasicAppearance.createForColor( new Color4f( 0.0f, 1.0f, 1.0f, 075f ) ) );
 		sphere.setTag( "Sphere" );
 		final ContentNode sphereNode = scene.addContentNode( "shere", Matrix3D.getTransform( 90.0, 0.0, 315.0, 0.225 / unit, 0.0, 0.0 ), sphere );
 		sphereNode.setPlaneControl( createPlaneControl( sphereNode.getTransform() ) );
@@ -144,9 +145,9 @@ public class RenderEngineExample
 				Thread.sleep(10);
 				System.out.println("Plaatje " + i);
 				System.out.println( Runtime.getRuntime().freeMemory() + " vrij geheugen" );
-				Material red     = new Material( Color.WHITE    .getRGB() );
+				Appearance red     = new Appearance( Color.WHITE    .getRGB() );
 				red.colorMap="test-"+(10000+i);
-				testCube.getFace(0).setMaterial(red);
+				testCube.getFace(0).setAppearance(red);
 				view.update();
 			}
 			catch ( InterruptedException e )
@@ -224,12 +225,12 @@ public class RenderEngineExample
 	 */
 	public static SkyBox3D createSkyBox()
 	{
-		final Material north   = new Material( Color.LIGHT_GRAY.getRGB() );
-		final Material east    = new Material( Color.GRAY      .getRGB() );
-		final Material south   = new Material( Color.DARK_GRAY .getRGB() );
-		final Material west    = new Material( Color.GRAY      .getRGB() );
-		final Material ceiling = new Material( 0xffc0e0ff ); // 'sky blue'
-		final Material floor   = new Material( 0xff806040 ); // 'dirt brown'
+		final Appearance north   = BasicAppearance.createForColor( Color4.LIGHT_GRAY );
+		final Appearance east    = BasicAppearance.createForColor( Color4.GRAY );
+		final Appearance south   = BasicAppearance.createForColor( Color4.DARK_GRAY );
+		final Appearance west    = BasicAppearance.createForColor( Color4.GRAY );
+		final Appearance ceiling = BasicAppearance.createForColor( new Color4f( 0xffc0e0ff ) ); // 'sky blue'
+		final Appearance floor   = BasicAppearance.createForColor( new Color4f( 0xff806040 ) ); // 'dirt brown'
 
 		return new SkyBox3D( north, east, south, west, ceiling, floor );
 	}
@@ -270,12 +271,12 @@ public class RenderEngineExample
 		final Vector3D rbt = new Vector3D( max, max, max );
 		final Vector3D lbt = new Vector3D( min, max, max );
 
-		final Material red     = new Material( 0xC0FF0000 );
-		final Material magenta = new Material( 0xC0FF00FF );
-		final Material blue    = new Material( 0xC00000FF );
-		final Material cyan    = new Material( 0xC000FFFF );
-		final Material green   = new Material( 0xC000FF00 );
-		final Material yellow  = new Material( 0xC0FFFF00 );
+		final Appearance red     = BasicAppearance.createForColor( new Color4f( 0xC0FF0000 ) );
+		final Appearance magenta = BasicAppearance.createForColor( new Color4f( 0xC0FF00FF ) );
+		final Appearance blue    = BasicAppearance.createForColor( new Color4f( 0xC00000FF ) );
+		final Appearance cyan    = BasicAppearance.createForColor( new Color4f( 0xC000FFFF ) );
+		final Appearance green   = BasicAppearance.createForColor( new Color4f( 0xC000FF00 ) );
+		final Appearance yellow  = BasicAppearance.createForColor( new Color4f( 0xC0FFFF00 ) );
 
 		final float[] texturePoints = { 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f };
 
@@ -705,12 +706,12 @@ public class RenderEngineExample
 		{
 			final Box3D box = new Box3D( boxSize, boxSize, boxSize,
 					new BoxUVMap( 1.0 / boxSize ),
-					createMaterial( textures[ i * 6     ] ),
-					createMaterial( textures[ i * 6 + 1 ] ),
-					createMaterial( textures[ i * 6 + 2 ] ),
-					createMaterial( textures[ i * 6 + 3 ] ),
-					createMaterial( textures[ i * 6 + 4 ] ),
-					createMaterial( textures[ i * 6 + 5 ] ) );
+					createAppearance( textures[ i * 6 ] ),
+					createAppearance( textures[ i * 6 + 1 ] ),
+					createAppearance( textures[ i * 6 + 2 ] ),
+					createAppearance( textures[ i * 6 + 3 ] ),
+					createAppearance( textures[ i * 6 + 4 ] ),
+					createAppearance( textures[ i * 6 + 5 ] ) );
 
 			final Matrix3D matrix = Matrix3D.getTranslation( 1.1 * boxSize * (double) ( i % 10 - 5 ), 100.0, 1.1 * boxSize * (double) ( i / 10 ) );
 
@@ -719,14 +720,20 @@ public class RenderEngineExample
 	}
 
 	/**
-	 * Creates a material with the given color map.
+	 * Creates a appearance with the given color map.
 	 *
 	 * @param   texture     Color map to be used.
 	 *
-	 * @return  Created material.
+	 * @return  Created appearance.
 	 */
-	private static Material createMaterial( final String texture )
+	private static Appearance createAppearance( final String texture )
 	{
-		return new Material( texture, 0.3f, 0.3f, 0.3f, 1.0f, 1.0f, 1.0f, 1.0f, 0.2f, 0.2f, 0.2f, 32, 0.0f, 0.0f, 0.0f, texture, 1.0f, 1.0f, true );
+		final BasicAppearance result = new BasicAppearance();
+		result.setAmbientColor( new Color4f( 0.3f, 0.3f, 0.3f ) );
+		result.setDiffuseColor( Color4.WHITE );
+		result.setSpecularColor( new Color4f( 0.2f, 0.2f, 0.2f ) );
+		result.setShininess( 32 );
+		result.setColorMap( new FileTextureMap( RenderEngineExample.class.getResource( "decors/" + texture + ".jpg" ), 1.0f, 1.0f ) );
+		return result;
 	}
 }
