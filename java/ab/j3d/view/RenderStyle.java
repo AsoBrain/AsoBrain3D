@@ -39,13 +39,13 @@ public class RenderStyle
 	/**
 	 * Flag to indicate that rendering with appearance is enabled.
 	 */
-	private boolean _appearanceEnabled;
+	private boolean _materialEnabled;
 
 	/**
 	 * Flag to indicate that lighting should be applied to rendering with
 	 * appearance.
 	 */
-	private boolean _appearanceLightingEnabled;
+	private boolean _materialLightingEnabled;
 
 	/**
 	 * Override original appearance with this one. This may be <code>null</code>
@@ -57,7 +57,7 @@ public class RenderStyle
 	 * Extra alpha value for appearance. This can be used to make the appearance
 	 * (partially) translucent.
 	 */
-	private float _appearanceAlpha;
+	private float _extraAlpha;
 
 	/**
 	 * Flag to indicate that filling is enabled.
@@ -124,10 +124,10 @@ public class RenderStyle
 	 */
 	public RenderStyle()
 	{
-		_appearanceEnabled = true;
-		_appearanceLightingEnabled = true;
+		_materialEnabled = true;
+		_materialLightingEnabled = true;
 		_appearanceOverride = null;
-		_appearanceAlpha = 1.0f;
+		_extraAlpha = 1.0f;
 		_fillEnabled = false;
 		_fillLightingEnabled = true;
 		_strokeEnabled = false;
@@ -222,14 +222,14 @@ public class RenderStyle
 	}
 
 	/**
-	 * Check wether rendering with appearances is enabled.
+	 * Check whether rendering with appearances is enabled.
 	 *
 	 * @return  <code>true</code> if rendering with appearances is enabled;
 	 *          <code>false</code> otherwise.
 	 */
-	public boolean isAppearanceEnabled()
+	public boolean isMaterialEnabled()
 	{
-		return _appearanceEnabled;
+		return _materialEnabled;
 	}
 
 	/**
@@ -237,20 +237,20 @@ public class RenderStyle
 	 *
 	 * @param   enable  Enable vs. disable rendering with appearances.
 	 */
-	public void setAppearanceEnabled( final boolean enable )
+	public void setMaterialEnabled( final boolean enable )
 	{
-		_appearanceEnabled = enable;
+		_materialEnabled = enable;
 	}
 
 	/**
-	 * Check wether lighting is applied to rendering with appearance.
+	 * Check whether lighting is applied to rendering with appearance.
 	 *
 	 * @return  <code>true</code> if lighting is applied to rendering with appearance;
 	 *          <code>false</code> otherwise.
 	 */
-	public boolean isAppearanceLightingEnabled()
+	public boolean isMaterialLightingEnabled()
 	{
-		return _appearanceLightingEnabled;
+		return _materialLightingEnabled;
 	}
 
 	/**
@@ -258,9 +258,9 @@ public class RenderStyle
 	 *
 	 * @param   enable  Enable vs. disable of lighting for appearance rendering.
 	 */
-	public void setAppearanceLightingEnabled( final boolean enable )
+	public void setMaterialLightingEnabled( final boolean enable )
 	{
-		_appearanceLightingEnabled = enable;
+		_materialLightingEnabled = enable;
 	}
 
 	/**
@@ -276,8 +276,8 @@ public class RenderStyle
 	}
 
 	/**
-	 * Set appearance override. The original appearance will be replaced with this
-	 * one. This may be <code>null</code> to disable override.
+	 * Set appearance override. The original appearance will be replaced with
+	 * this one. This may be <code>null</code> to disable override.
 	 *
 	 * @param   appearance    Appearance override (<code>null</code> to disable).
 	 */
@@ -294,9 +294,9 @@ public class RenderStyle
 	 * Extra alpha value for appearance. This can be used to make the appearance
 	 * (partially) translucent.
 	 */
-	public float getAppearanceAlpha()
+	public float getExtraAlpha()
 	{
-		return _appearanceAlpha;
+		return _extraAlpha;
 	}
 
 	/**
@@ -307,13 +307,13 @@ public class RenderStyle
 	 *                  translucent; 1.0 = use unaltered alpha values from
 	 *                  appearance).
 	 */
-	public void setAppearanceAlpha( final float alpha )
+	public void setExtraAlpha( final float alpha )
 	{
-		_appearanceAlpha = alpha;
+		_extraAlpha = alpha;
 	}
 
 	/**
-	 * Check wether filling is enabled.
+	 * Check whether filling is enabled.
 	 *
 	 * @return  <code>true</code> if filling is enabled;
 	 *          <code>false</code> otherwise.
@@ -355,7 +355,7 @@ public class RenderStyle
 	}
 
 	/**
-	 * Check wether lighting is applied to filling.
+	 * Check whether lighting is applied to filling.
 	 *
 	 * @return  <code>true</code> if lighting is applied to filling;
 	 *          <code>false</code> otherwise.
@@ -376,7 +376,7 @@ public class RenderStyle
 	}
 
 	/**
-	 * Check wether stroke (outline) rendering is enabled.
+	 * Check whether stroke (outline) rendering is enabled.
 	 *
 	 * @return  <code>true</code> if stroke (outline) rendering is enabled;
 	 *          <code>false</code> otherwise.
@@ -438,7 +438,7 @@ public class RenderStyle
 	}
 
 	/**
-	 * Check wether lighting are applied to strokes.
+	 * Check whether lighting are applied to strokes.
 	 *
 	 * @return  <code>true</code> if lighting is applied to strokes;
 	 *          <code>false</code> otherwise.
@@ -459,7 +459,7 @@ public class RenderStyle
 	}
 
 	/**
-	 * Check wether vertex rendering is enabled.
+	 * Check whether vertex rendering is enabled.
 	 *
 	 * @return  <code>true</code> if vertex rendering is enabled;
 	 *          <code>false</code> otherwise.
@@ -501,7 +501,7 @@ public class RenderStyle
 	}
 
 	/**
-	 * Check wether lighting are applied to vertices.
+	 * Check whether lighting are applied to vertices.
 	 *
 	 * @return  <code>true</code> if lighting are applied to vertices.
 	 */
@@ -541,7 +541,7 @@ public class RenderStyle
 	}
 
 	/**
-	 * Check wether backfaces are culled.
+	 * Check whether backfaces are culled.
 	 *
 	 * @return  <code>true</code> if backfaces are culled;
 	 *          <code>false</code> otherwise.
@@ -562,7 +562,7 @@ public class RenderStyle
 	}
 
 	@Override
-	public boolean equals( Object o )
+	public boolean equals( final Object o )
 	{
 		if ( this == o ) return true;
 		if ( !( o instanceof RenderStyle ) ) return false;
@@ -573,12 +573,12 @@ public class RenderStyle
 			return false;
 		if ( _fillEnabled != that._fillEnabled ) return false;
 		if ( _fillLightingEnabled != that._fillLightingEnabled ) return false;
-		if ( Float.compare( that._appearanceAlpha, _appearanceAlpha ) != 0 )
+		if ( Float.compare( that._extraAlpha, _extraAlpha ) != 0 )
 		{
 			return false;
 		}
-		if ( _appearanceEnabled != that._appearanceEnabled ) return false;
-		if ( _appearanceLightingEnabled != that._appearanceLightingEnabled )
+		if ( _materialEnabled != that._materialEnabled ) return false;
+		if ( _materialLightingEnabled != that._materialLightingEnabled )
 		{
 			return false;
 		}
@@ -614,10 +614,10 @@ public class RenderStyle
 	@Override
 	public int hashCode()
 	{
-		int result = ( _appearanceEnabled ? 1 : 0 );
-		result = 31 * result + ( _appearanceLightingEnabled ? 1 : 0 );
+		int result = ( _materialEnabled ? 1 : 0 );
+		result = 31 * result + ( _materialLightingEnabled ? 1 : 0 );
 		result = 31 * result + ( _appearanceOverride != null ? _appearanceOverride.hashCode() : 0 );
-		result = 31 * result + ( _appearanceAlpha != +0.0f ? Float.floatToIntBits( _appearanceAlpha ) : 0 );
+		result = 31 * result + ( _extraAlpha != +0.0f ? Float.floatToIntBits( _extraAlpha ) : 0 );
 		result = 31 * result + ( _fillEnabled ? 1 : 0 );
 		result = 31 * result + ( _fillColor != null ? _fillColor.hashCode() : 0 );
 		result = 31 * result + ( _fillLightingEnabled ? 1 : 0 );
