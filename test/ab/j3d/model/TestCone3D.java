@@ -20,7 +20,10 @@
  */
 package ab.j3d.model;
 
+import java.net.*;
+
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import junit.framework.*;
 
@@ -30,7 +33,7 @@ import junit.framework.*;
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public final class TestCone3D
+public class TestCone3D
 	extends TestCase
 {
 	/**
@@ -47,11 +50,10 @@ public final class TestCone3D
 		throws Exception
 	{
 		System.out.println( CLASS_NAME + ".testConstructor" );
-		final Material material = new Material();
-		material.code = "test";
-		material.colorMap = "test";
-		material.colorMapWidth = 123.0f;
-		material.colorMapHeight = 456.0f;
+		final BasicAppearance appearance = new BasicAppearance();
+		appearance.setDiffuseColor( Color4.WHITE );
+		appearance.setSpecularColor( Color4.WHITE );
+		appearance.setColorMap( new FileTextureMap( new URL(  "test" ), 123.0f, 456.0f ) );
 
 		final BoxUVMap uvMap = new BoxUVMap( Scene.MM );
 
@@ -63,11 +65,11 @@ public final class TestCone3D
 			new Cone3D( 100.0 ,
 			            radiusBottom[ i & 0x03 ] ,
 			            radiusTop[ i & 0x03 ] , 32 ,
-			            ( ( i & 0x04 ) == 0 ) ? material : null ,
+			            ( ( i & 0x04 ) == 0 ) ? appearance : null ,
 			            ( ( i & 0x08 ) == 0 ) ? uvMap : null  , false ,
-			            ( ( i & 0x10 ) == 0 ) ? material : null  ,
+			            ( ( i & 0x10 ) == 0 ) ? appearance : null  ,
 			            ( ( i & 0x20 ) == 0 ) ? uvMap : null  ,
-			            ( ( i & 0x40 ) == 0 ) ? material : null  ,
+			            ( ( i & 0x40 ) == 0 ) ? appearance : null  ,
 			            ( ( i & 0x80 ) == 0 ) ? uvMap : null  , false );
 		}
 	}

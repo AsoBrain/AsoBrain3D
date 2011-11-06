@@ -27,6 +27,7 @@ import java.util.*;
 import javax.swing.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.awt.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
@@ -113,7 +114,7 @@ public class FrustumDemo
 						final boolean visible = projector.inViewVolume( object2Scene.multiply( scene2View ), object.getOrientedBoundingBox() );
 
 						result = style.clone();
-						result.setMaterialAlpha( visible ? 1.0f: 0.2f );
+						result.setExtraAlpha( visible ? 1.0f : 0.2f );
 					}
 				}
 				return result;
@@ -136,14 +137,14 @@ public class FrustumDemo
 	{
 		final Scene scene = new Scene( Scene.M );
 
-		final Material backgroundMaterial = Materials.ALU_PLATE;
+		final Appearance backgroundAppearance = BasicAppearances.ALU_PLATE;
 		final BoxUVMap backgroundMap = new BoxUVMap( Scene.CM );
 
-		scene.addContentNode( "alu-plate", Matrix3D.getTranslation( -500.0, 10.0, -500.0 ), new Box3D( 1000.0, 0.1, 1000.0, backgroundMaterial, backgroundMap, backgroundMaterial, backgroundMap, backgroundMaterial, backgroundMap, backgroundMaterial, backgroundMap, backgroundMaterial, backgroundMap, backgroundMaterial, backgroundMap ) );
+		scene.addContentNode( "alu-plate", Matrix3D.getTranslation( -500.0, 10.0, -500.0 ), new Box3D( 1000.0, 0.1, 1000.0, backgroundAppearance, backgroundMap, backgroundAppearance, backgroundMap, backgroundAppearance, backgroundMap, backgroundAppearance, backgroundMap, backgroundAppearance, backgroundMap, backgroundAppearance, backgroundMap ) );
 		scene.addContentNode( "Hello world", Matrix3D.IDENTITY, HelloWorld.createHelloWorld3D() );
 		addPrimitivesBelt( scene );
 
-//		scene.addContentNode( "box", Matrix3D.IDENTITY, new Box3D( 1.0, 1.0, 1.0, null, Materials.WHITE ) );
+//		scene.addContentNode( "box", Matrix3D.IDENTITY, new Box3D( 1.0, 1.0, 1.0, null, BasicAppearances.WHITE ) );
 
 		scene.setAmbient( 0.4f, 0.4f, 0.4f );
 
@@ -191,22 +192,22 @@ public class FrustumDemo
 	 */
 	private static void addPrimitivesBelt( final Scene scene )
 	{
-		final Transform3D box = new Transform3D( Matrix3D.getTranslation( -1.0, -1.0, -1.0 ), new Box3D( 2.0, 2.0, 2.0, Materials.RED, null, Materials.GREEN, null, Materials.BLUE, null, Materials.CYAN, null, Materials.MAGENTA, null, Materials.YELLOW, null ) );
+		final Transform3D box = new Transform3D( Matrix3D.getTranslation( -1.0, -1.0, -1.0 ), new Box3D( 2.0, 2.0, 2.0, BasicAppearances.RED, null, BasicAppearances.GREEN, null, BasicAppearances.BLUE, null, BasicAppearances.CYAN, null, BasicAppearances.MAGENTA, null, BasicAppearances.YELLOW, null ) );
 		final Transform3D boxRotator = new Rotator( 0.0 );
 		boxRotator.addChild( box );
 		scene.addContentNode( "box", Matrix3D.IDENTITY, boxRotator );
 
-		final Sphere3D sphere = new Sphere3D( 1.0, 13, 13, Materials.BLUE );
+		final Sphere3D sphere = new Sphere3D( 1.0, 13, 13, BasicAppearances.BLUE );
 		final Transform3D sphereRotator = new Rotator( 60.0 );
 		sphereRotator.addChild( sphere );
 		scene.addContentNode( "sphere", Matrix3D.IDENTITY, sphereRotator );
 
-		final Cylinder3D cylinder = new Cylinder3D( 2.0, 1.0, 15, Materials.GREEN, null, true, Materials.BLUE, null, Materials.RED, null, false );
+		final Cylinder3D cylinder = new Cylinder3D( 2.0, 1.0, 15, BasicAppearances.GREEN, null, true, BasicAppearances.BLUE, null, BasicAppearances.RED, null, false );
 		final Transform3D cylinderRotator = new Rotator( 120.0 );
 		cylinderRotator.addChild( cylinder );
 		scene.addContentNode( "cylinder", Matrix3D.IDENTITY, cylinderRotator );
 
-		final Cone3D cone = new Cone3D( 2.0, 1.0, 0.0, 15, Materials.GREEN, null, true, Materials.BLUE, null, Materials.RED, null, false );
+		final Cone3D cone = new Cone3D( 2.0, 1.0, 0.0, 15, BasicAppearances.GREEN, null, true, BasicAppearances.BLUE, null, BasicAppearances.RED, null, false );
 		final Transform3D coneRotator = new Rotator( 180.0 );
 		coneRotator.addChild( cone );
 		scene.addContentNode( "cone", Matrix3D.IDENTITY, coneRotator );
@@ -214,7 +215,7 @@ public class FrustumDemo
 		final Shape shapeToExtrude = new Arc2D.Double( -1.0, -1.0, 2.0, 2.0, 80.0, 280.0, Arc2D.PIE);
 		final Object3DBuilder builder = new Object3DBuilder();
 		final Tessellator tessellatedShape = ShapeTools.createTessellator( shapeToExtrude, 0.025 );
-		builder.addExtrudedShape( tessellatedShape, new Vector3D( 0.0, 0.0, 1.0 ), true, Matrix3D.IDENTITY, true, Materials.BLUE, null, false, true, Materials.RED, null, false, true, Materials.GREEN, null, false, false, false, false );
+		builder.addExtrudedShape( tessellatedShape, Vector3D.POSITIVE_Z_AXIS, true, Matrix3D.IDENTITY, true, BasicAppearances.BLUE, null, false, true, BasicAppearances.RED, null, false, true, BasicAppearances.GREEN, null, false, false, false, false );
 		final Object3D extrudedShape = builder.getObject3D();
 
 		final Transform3D extrudedShapeRotator = new Rotator( 240.0 );
@@ -257,8 +258,8 @@ public class FrustumDemo
 
 		final Object3DBuilder builder = new Object3DBuilder();
 		final Tessellator freeShapeTessellator = ShapeTools.createTessellator( freeShape, 0.1 );
-		builder.addExtrudedShape( freeShapeTessellator, new Vector3D( 0.0, 0.0, 0.5 ), true, Matrix3D.getTranslation( 0.0, 0.0, 0.8 ), true, Materials.BLUE, null, false, true, Materials.RED, null, false, true, Materials.GREEN, null, false, false, false, true );
-		builder.addExtrudedShape( freeShapeTessellator, new Vector3D( 0.0, 0.0, 0.5 ), true, Matrix3D.getTransform( 0.0, 0.0, 90.0, 0.0, 0.0, 0.0 ), true, Materials.BLUE, null, false, true, Materials.RED, null, false, true, Materials.GREEN, null, false, false, false, true );
+		builder.addExtrudedShape( freeShapeTessellator, new Vector3D( 0.0, 0.0, 0.5 ), true, Matrix3D.getTranslation( 0.0, 0.0, 0.8 ), true, BasicAppearances.BLUE, null, false, true, BasicAppearances.RED, null, false, true, BasicAppearances.GREEN, null, false, false, false, true );
+		builder.addExtrudedShape( freeShapeTessellator, new Vector3D( 0.0, 0.0, 0.5 ), true, Matrix3D.getTransform( 0.0, 0.0, 90.0, 0.0, 0.0, 0.0 ), true, BasicAppearances.BLUE, null, false, true, BasicAppearances.RED, null, false, true, BasicAppearances.GREEN, null, false, false, false, true );
 		return builder.getObject3D();
 	}
 
@@ -353,7 +354,7 @@ public class FrustumDemo
 			final Vector4D near = frustum.getNearPlane();
 			final Vector4D far = frustum.getFarPlane();
 
-			final Sphere3D smallSphere = new Sphere3D( 0.1, 6, 6, Materials.YELLOW );
+			final Sphere3D smallSphere = new Sphere3D( 0.1, 6, 6, BasicAppearances.YELLOW );
 			final Vector3D lbn = intersectPlanes( left, bottom, near );
 			final Vector3D rbn = intersectPlanes( right, bottom, near );
 			final Vector3D ltn = intersectPlanes( left, top, near );
@@ -364,24 +365,26 @@ public class FrustumDemo
 			final Vector3D rtf = intersectPlanes( right, top, far );
 			final Vector3D eye = intersectPlanes( left, right, bottom );
 
-			addChild( new Transform3D( Matrix3D.IDENTITY.plus( lbn ), smallSphere ) );
-			addChild( new Transform3D( Matrix3D.IDENTITY.plus( rbn ), smallSphere ) );
-			addChild( new Transform3D( Matrix3D.IDENTITY.plus( ltn ), smallSphere ) );
-			addChild( new Transform3D( Matrix3D.IDENTITY.plus( rtn ), smallSphere ) );
-			addChild( new Transform3D( Matrix3D.IDENTITY.plus( lbf ), smallSphere ) );
-			addChild( new Transform3D( Matrix3D.IDENTITY.plus( rbf ), smallSphere ) );
-			addChild( new Transform3D( Matrix3D.IDENTITY.plus( ltf ), smallSphere ) );
-			addChild( new Transform3D( Matrix3D.IDENTITY.plus( rtf ), smallSphere ) );
-			addChild( new Transform3D( Matrix3D.IDENTITY.plus( eye ), smallSphere ) );
+			addChild( new Transform3D( Matrix3D.getTranslation( lbn ), smallSphere ) );
+			addChild( new Transform3D( Matrix3D.getTranslation( rbn ), smallSphere ) );
+			addChild( new Transform3D( Matrix3D.getTranslation( ltn ), smallSphere ) );
+			addChild( new Transform3D( Matrix3D.getTranslation( rtn ), smallSphere ) );
+			addChild( new Transform3D( Matrix3D.getTranslation( lbf ), smallSphere ) );
+			addChild( new Transform3D( Matrix3D.getTranslation( rbf ), smallSphere ) );
+			addChild( new Transform3D( Matrix3D.getTranslation( ltf ), smallSphere ) );
+			addChild( new Transform3D( Matrix3D.getTranslation( rtf ), smallSphere ) );
+			addChild( new Transform3D( Matrix3D.getTranslation( eye ), smallSphere ) );
 
-//			addChild( createPlane( left, new Material( 0x80ff0000 ) ) );
-//			addChild( createPlane( right, new Material( ~0x80ff0000 ) ) );
-//			addChild( createPlane( bottom, new Material( 0x8000ff00 ) ) );
-//			addChild( createPlane( top, new Material( ~0x8000ff00 ) ) );
-//			addChild( createPlane( near, new Material( 0x800000ff ) ) );
-//			addChild( createPlane( far, new Material( ~0x800000ff ) ) );
+//			addChild( createPlane( left, new Appearance( 0x80ff0000 ) ) );
+//			addChild( createPlane( right, new Appearance( ~0x80ff0000 ) ) );
+//			addChild( createPlane( bottom, new Appearance( 0x8000ff00 ) ) );
+//			addChild( createPlane( top, new Appearance( ~0x8000ff00 ) ) );
+//			addChild( createPlane( near, new Appearance( 0x800000ff ) ) );
+//			addChild( createPlane( far, new Appearance( ~0x800000ff ) ) );
 
-			final Material yellow = new Material( 0x80ffff00 );
+			final BasicAppearance yellow = new BasicAppearance();
+			yellow.setAmbientColor( new Color4f( 1.0f, 1.0f, 0.0f ) );
+			yellow.setDiffuseColor( new Color4f( 1.0f, 1.0f, 0.0f, 0.5f ) );
 			addChild( createQuad( lbn, lbf, ltf, ltn, yellow ) );
 			addChild( createQuad( rbn, rbf, rtf, rtn, yellow ) );
 			addChild( createQuad( lbn, rbn, rbf, lbf, yellow ) );
@@ -422,11 +425,11 @@ public class FrustumDemo
 		 *
 		 * @param   plane       4D vector specifying the plane coefficients and
 		 *                      plane distance, i.e. the vector [a, b, c, d].
-		 * @param   material    Material to be used.
+		 * @param   appearance    Appearance to be used.
 		 *
 		 * @return  Rectangle on the specified plane.
 		 */
-		private Object3D createPlane( final Vector4D plane, final Material material )
+		private Object3D createPlane( final Vector4D plane, final Appearance appearance )
 		{
 			final double normalLength = Vector3D.length( plane.x, plane.y, plane.z );
 			final Vector3D normal = Vector3D.normalize( plane.x / normalLength, plane.y / normalLength, plane.z / normalLength );
@@ -442,14 +445,14 @@ public class FrustumDemo
 			final Vector3D p4 = planeTransform.transform( -size,  size, 0.0 );
 
 			final Object3DBuilder builder = new Object3DBuilder();
-			builder.addQuad( p1, p2, p3, p4, material, true );
+			builder.addQuad( p1, p2, p3, p4, appearance, true );
 			return builder.getObject3D();
 		}
 
-		private Object3D createQuad( final Vector3D p1, final Vector3D p2, final Vector3D p3, final Vector3D p4, final Material material )
+		private Object3D createQuad( final Vector3D p1, final Vector3D p2, final Vector3D p3, final Vector3D p4, final Appearance appearance )
 		{
 			final Object3DBuilder builder = new Object3DBuilder();
-			builder.addQuad( p1, p2, p3, p4, material, true );
+			builder.addQuad( p1, p2, p3, p4, appearance, true );
 			return builder.getObject3D();
 		}
 	}

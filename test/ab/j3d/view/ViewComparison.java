@@ -29,6 +29,7 @@ import java.util.List;
 import javax.swing.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.awt.*;
 import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
@@ -79,7 +80,7 @@ public class ViewComparison
 		templates.add( new AmbientOnlyTemplate() );
 
 		final JFrame frame = new JFrame( "AB3D View Comparison Tool" );
-		frame.setLayout( new GridLayout( 1 , 0 ) );
+		frame.setLayout( new GridLayout( 1, 0 ) );
 		frame.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
 		frame.addWindowListener( new WindowAdapter()
 		{
@@ -93,7 +94,7 @@ public class ViewComparison
 		for ( final Template template : templates )
 		{
 			final JPanel layoutPanel = new JPanel();
-			layoutPanel.setLayout( new GridLayout( 0 , 1 ) );
+			layoutPanel.setLayout( new GridLayout( 0, 1 ) );
 
 			final Scene scene = new Scene( Scene.MM );
 			template.createModel( scene );
@@ -184,7 +185,7 @@ public class ViewComparison
 	{
 		final Collection<RenderEngine> models = new ArrayList<RenderEngine>();
 		models.add( new JOGLEngine() );
-//		models.add( new Java3dEngine( scene , Color.GRAY ) );
+//		models.add( new Java3dEngine( scene, Color.GRAY ) );
 		return models;
 	}
 
@@ -196,10 +197,10 @@ public class ViewComparison
 
 		protected Template()
 		{
-			_cameraLocation = new Vector3D( 500.0 , -500.0 , 500.0 );
-			_cameraTarget   = new Vector3D( 0.0 , 150.0 , 40.0 );
-//			_cameraLocation = new Vector3D( 4000.0 , 1500.0 , 4000.0 );
-//			_cameraTarget   = new Vector3D( 0.0 , 1500.0 , 40.0 );
+			_cameraLocation = new Vector3D( 500.0, -500.0, 500.0 );
+			_cameraTarget   = new Vector3D( 0.0, 150.0, 40.0 );
+//			_cameraLocation = new Vector3D( 4000.0, 1500.0, 4000.0 );
+//			_cameraTarget   = new Vector3D( 0.0, 1500.0, 40.0 );
 		}
 
 		public void setCameraLocation( final Vector3D cameraLocation )
@@ -214,7 +215,7 @@ public class ViewComparison
 
 		public void configureView( final View3D target )
 		{
-			target.setCameraControl( new FromToCameraControl( target , _cameraLocation , _cameraTarget ) );
+			target.setCameraControl( new FromToCameraControl( target, _cameraLocation, _cameraTarget ) );
 		}
 
 		public abstract void createModel( final Scene target );
@@ -226,68 +227,67 @@ public class ViewComparison
 		@Override
 		public void createModel( final Scene target )
 		{
-			final Material solid     = new Material( 0xffff8000 ); solid    .code = "solid";
-			final Material shiny     = new Material( 0xffff8000 ); shiny    .code = "shiny";
-			final Material shinier   = new Material( 0xffff8000 ); shinier  .code = "shinier";
-			final Material textured  = new Material( 0xffffffff ); textured .code = "textured";
-			final Material textured2 = new Material( 0xff0080ff ); textured2.code = "textured2";
-			final Material textured3 = new Material( 0xffff0000 ); textured3.code = "textured3";
+			final BasicAppearance solid     = BasicAppearance.createForColor( new Color4f( 0xffff8000 ) ); // "solid";
+			final BasicAppearance shiny     = BasicAppearance.createForColor( new Color4f( 0xffff8000 ) ); // "shiny";
+			final BasicAppearance shinier   = BasicAppearance.createForColor( new Color4f( 0xffff8000 ) ); // "shinier";
+			final BasicAppearance textured  = BasicAppearance.createForColor( new Color4f( 0xffffffff ) ); // "textured";
+			final BasicAppearance textured2 = BasicAppearance.createForColor( new Color4f( 0xff0080ff ) ); // "textured2";
+			final BasicAppearance textured3 = BasicAppearance.createForColor( new Color4f( 0xffff0000 ) ); // "textured3";
 
-			if ( !SPECULAR_HIGHLIGHTS )
+			if ( SPECULAR_HIGHLIGHTS )
 			{
-				solid    .specularColorRed = 0.0f; solid    .specularColorGreen = 0.0f; solid    .specularColorBlue = 0.0f;
-				shiny    .specularColorRed = 0.0f; shiny    .specularColorGreen = 0.0f; shiny    .specularColorBlue = 0.0f;
-				shinier  .specularColorRed = 0.0f; shinier  .specularColorGreen = 0.0f; shinier  .specularColorBlue = 0.0f;
-				textured .specularColorRed = 0.0f; textured .specularColorGreen = 0.0f; textured .specularColorBlue = 0.0f;
-				textured2.specularColorRed = 0.0f; textured2.specularColorGreen = 0.0f; textured2.specularColorBlue = 0.0f;
-				textured3.specularColorRed = 0.0f; textured3.specularColorGreen = 0.0f; textured3.specularColorBlue = 0.0f;
+				solid    .setSpecularColor( Color4.WHITE );
+				shiny    .setSpecularColor( Color4.WHITE );
+				shinier  .setSpecularColor( Color4.WHITE );
+				textured .setSpecularColor( Color4.WHITE );
+				textured2.setSpecularColor( Color4.WHITE );
+				textured3.setSpecularColor( Color4.WHITE );
 			}
 
-			shiny.shininess = 64;
-			shinier.shininess = 128;
-			textured.colorMap = "CB";
-			textured2.colorMap = "CB";
-			textured3.colorMap = "CB";
-			textured3.ambientColorRed   = 0.5f;
-			textured3.ambientColorGreen = 1.0f;
-			textured3.ambientColorBlue  = 0.5f;
+			shiny.setShininess( 64 );
+			shinier.setShininess( 128 );
+			final FileTextureMap colorMap = new FileTextureMap( ViewComparison.class.getResource( "decors/CB.jpg" ) );
+			textured.setColorMap( colorMap );
+			textured2.setColorMap( colorMap );
+			textured3.setColorMap( colorMap );
+			textured3.setAmbientColor( new Color4f( 0.5f, 1.0f, 0.5f ) );
 
 			/*
 			 * Test basic specular highlights, smoothing and texturing.
 			 */
-			target.addContentNode( "sphere-1" , Matrix3D.getTranslation( -100.0 , -100.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , solid    ) );
-			target.addContentNode( "sphere-2" , Matrix3D.getTranslation(    0.0 , -100.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , solid    ) );
-			target.addContentNode( "sphere-3" , Matrix3D.getTranslation(  100.0 , -100.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , textured ) );
-			target.addContentNode( "sphere-4" , Matrix3D.getTranslation( -100.0 ,    0.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , solid    ) );
-			target.addContentNode( "sphere-5" , Matrix3D.getTranslation(    0.0 ,    0.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , shiny    ) );
-			target.addContentNode( "sphere-6" , Matrix3D.getTranslation(  100.0 ,    0.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , shinier  ) );
-			target.addContentNode( "box-1"    , Matrix3D.getTranslation( -140.0 ,   60.0 ,  0.0 ) , new Box3D   ( 80.0 , 80.0 , 80.0 , new BoxUVMap( Scene.MM ) , solid ) );
+			target.addContentNode( "sphere-1", Matrix3D.getTranslation( -100.0, -100.0, 40.0 ), new Sphere3D( 80.0, 16, 16, solid    ) );
+			target.addContentNode( "sphere-2", Matrix3D.getTranslation(    0.0, -100.0, 40.0 ), new Sphere3D( 80.0, 16, 16, solid    ) );
+			target.addContentNode( "sphere-3", Matrix3D.getTranslation(  100.0, -100.0, 40.0 ), new Sphere3D( 80.0, 16, 16, textured ) );
+			target.addContentNode( "sphere-4", Matrix3D.getTranslation( -100.0,    0.0, 40.0 ), new Sphere3D( 80.0, 16, 16, solid    ) );
+			target.addContentNode( "sphere-5", Matrix3D.getTranslation(    0.0,    0.0, 40.0 ), new Sphere3D( 80.0, 16, 16, shiny    ) );
+			target.addContentNode( "sphere-6", Matrix3D.getTranslation(  100.0,    0.0, 40.0 ), new Sphere3D( 80.0, 16, 16, shinier  ) );
+			target.addContentNode( "box-1"   , Matrix3D.getTranslation( -140.0,   60.0,  0.0 ), new Box3D   ( 80.0, 80.0, 80.0, new BoxUVMap( Scene.MM ), solid ) );
 
 			/*
 			 * Test advanced texturing. (i.e. with non-white diffuse color)
 			 */
-			target.addContentNode( "sphere-7" , Matrix3D.getTranslation(    0.0 ,  100.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , textured2 ) );
-			target.addContentNode( "sphere-8" , Matrix3D.getTranslation(  100.0 ,  100.0 , 40.0 ) , new Sphere3D( 80.0 , 16 , 16 , textured3 ) );
+			target.addContentNode( "sphere-7", Matrix3D.getTranslation(    0.0,  100.0, 40.0 ), new Sphere3D( 80.0, 16, 16, textured2 ) );
+			target.addContentNode( "sphere-8", Matrix3D.getTranslation(  100.0,  100.0, 40.0 ), new Sphere3D( 80.0, 16, 16, textured3 ) );
 
 			/*
 			 * Test combinations of diffuse and ambient colors.
 			 */
 			double z = 0.0;
 			int j = 0;
-			for ( final Color diffuseColor : Arrays.asList( new Color( 0xff8000 ) , Color.GREEN , new Color( 0x4080ff ) ) )
+			for ( final Color4 diffuseColor : Arrays.asList( new Color4f( 0xff8000 ), Color4.GREEN, new Color4f( 0x4080ff ) ) )
 			{
 				int i = 0;
-				for ( final Color ambientColor : Arrays.asList( Color.RED , Color.ORANGE , Color.YELLOW , new Color( 0x80ff00 ) , Color.GREEN , Color.CYAN , new Color( 0x0080ff ) , Color.BLUE , Color.MAGENTA ) )
+				for ( final Color4 ambientColor : Arrays.asList( Color4.RED, Color4.ORANGE, Color4.YELLOW, new Color4f( 0x80ff00 ), Color4.GREEN, Color4.CYAN, new Color4f( 0x0080ff ), Color4.BLUE, Color4.MAGENTA ) )
 				{
-					final Material material = new Material( diffuseColor.getRGB() );
-					material.code = "ambient" + j;
-					material.ambientColorRed   = (float)ambientColor.getRed()   / 255.0f;
-					material.ambientColorGreen = (float)ambientColor.getGreen() / 255.0f;
-					material.ambientColorBlue  = (float)ambientColor.getBlue()  / 255.0f;
+					final BasicAppearance appearance = new BasicAppearance(); // code = "ambient" + j;
+					appearance.setAmbientColor( ambientColor );
+					appearance.setDiffuseColor( diffuseColor );
+					appearance.setSpecularColor( Color4.WHITE );
+					appearance.setShininess( 16 );
 
 					final double x = (double)( i % 3 ) * 100.0 - 100.0;
 					final double y = (double)( i / 3 ) * 100.0 + 200.0;
-					target.addContentNode( "ambient-sphere-" + j , Matrix3D.getTranslation( x , y , z ) , new Sphere3D( 40.0 , 16 , 16 , material ) );
+					target.addContentNode( "ambient-sphere-" + j, Matrix3D.getTranslation( x, y, z ), new Sphere3D( 40.0, 16, 16, appearance ) );
 
 					i++;
 					j++;
@@ -300,9 +300,9 @@ public class ViewComparison
 			 */
 			for ( int i = 0 ; i < 50 ; i++ )
 			{
-				target.addContentNode( "distant-sphere-a-" + i , Matrix3D.getTranslation( -100.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( 40.0 , 16 , 16 , solid    ) );
-				target.addContentNode( "distant-sphere-b-" + i , Matrix3D.getTranslation(    0.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( 40.0 , 16 , 16 , shiny    ) );
-				target.addContentNode( "distant-sphere-c-" + i , Matrix3D.getTranslation(  100.0 , 500.0 + (double)i * 100.0 , 0.0 ) , new Sphere3D( 40.0 , 16 , 16 , textured ) );
+				target.addContentNode( "distant-sphere-a-" + i, Matrix3D.getTranslation( -100.0, 500.0 + (double)i * 100.0, 0.0 ), new Sphere3D( 40.0, 16, 16, solid    ) );
+				target.addContentNode( "distant-sphere-b-" + i, Matrix3D.getTranslation(    0.0, 500.0 + (double)i * 100.0, 0.0 ), new Sphere3D( 40.0, 16, 16, shiny    ) );
+				target.addContentNode( "distant-sphere-c-" + i, Matrix3D.getTranslation(  100.0, 500.0 + (double)i * 100.0, 0.0 ), new Sphere3D( 40.0, 16, 16, textured ) );
 			}
 
 			createLights( target );
@@ -310,7 +310,7 @@ public class ViewComparison
 
 		protected void createLights( final Scene target )
 		{
-			target.setAmbient( 0.5f , 0.5f , 0.5f );
+			target.setAmbient( 0.5f, 0.5f, 0.5f );
 			createDiffuseLights( target );
 		}
 
@@ -319,13 +319,13 @@ public class ViewComparison
 			final Light3D pointLight = new Light3D();
 			pointLight.setIntensity( 0.5f );
 			pointLight.setFallOff( FALL_OFF );
-			target.addContentNode( "light-1" , Matrix3D.getTranslation(  1000.0 ,  -1000.0 ,  1000.0 ) , pointLight );
+			target.addContentNode( "light-1", Matrix3D.getTranslation(  1000.0,  -1000.0,  1000.0 ), pointLight );
 
-			final SpotLight3D spotLight = new SpotLight3D( Vector3D.normalize( 1.0 , 1.0 , -1.0 ) , 10.0f );
+			final SpotLight3D spotLight = new SpotLight3D( Vector3D.normalize( 1.0, 1.0, -1.0 ), 10.0f );
 			spotLight.setIntensity( 2.0f );
 			spotLight.setFallOff( FALL_OFF );
 			spotLight.setConcentration( 32.0f );
-			target.addContentNode( "light-2" , Matrix3D.getTransform( 0.0 , 0.0 , 10.0 , -1000.0 ,  -1000.0 ,  1000.0 ) , spotLight );
+			target.addContentNode( "light-2", Matrix3D.getTransform( 0.0, 0.0, 10.0, -1000.0,  -1000.0,  1000.0 ), spotLight );
 		}
 	}
 
@@ -345,7 +345,7 @@ public class ViewComparison
 		@Override
 		protected void createLights( final Scene target )
 		{
-			target.setAmbient( 0.5f , 0.5f , 0.5f );
+			target.setAmbient( 0.5f, 0.5f, 0.5f );
 		}
 	}
 }

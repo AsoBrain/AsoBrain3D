@@ -29,6 +29,7 @@ import javax.swing.*;
 import javax.swing.Timer;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.awt.*;
 import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
@@ -50,8 +51,17 @@ public class CollisionTestApp
 	 */
 	public static void main( final String[] args )
 	{
-		final Material white = new Material( Color.WHITE.getRGB() );
-		final Material red = new Material( Color.RED.getRGB() );
+		final BasicAppearance white = new BasicAppearance();
+		white.setAmbientColor( Color4.WHITE );
+		white.setDiffuseColor( Color4.WHITE );
+		white.setSpecularColor( Color4.WHITE );
+		white.setShininess( 16 );
+
+		final BasicAppearance red = new BasicAppearance();
+		red.setAmbientColor( Color4.RED );
+		red.setDiffuseColor( Color4.RED );
+		red.setSpecularColor( Color4.WHITE );
+		red.setShininess( 16 );
 
 		final Transform3D firstTransform = new Transform3D();
 		final Transform3D secondTransform = new Transform3D();
@@ -241,7 +251,7 @@ public class CollisionTestApp
 				if ( collisions.contains( context ) )
 				{
 					result = style.clone();
-					result.setMaterialOverride( red );
+					result.setAppearanceOverride( red );
 				}
 				return result;
 			}

@@ -261,7 +261,7 @@ public class ObjWriter
 		public void writeAppearance( final Appearance appearance )
 			throws IOException
 		{
-			final String materialName = generateMaterialName( appearance );
+			final String materialName = generateUniqueName( "material" );
 			writeMaterial( materialName, appearance );
 			_appearanceToMaterial.put( appearance, materialName );
 		}
@@ -321,62 +321,29 @@ public class ObjWriter
 			out.write( DECIMAL_FORMAT.format( diffuseColor.getAlphaFloat() ) );
 			out.write( '\n' );
 
-			if ( appearance instanceof Material )
+			final TextureMap colorMap = appearance.getColorMap();
+			if ( colorMap != null )
 			{
-				final Material material = (Material)appearance;
-
-				final TextureMap colorMap = appearance.getColorMap();
-				if ( colorMap != null )
+				final URL colorMapImageUrl = colorMap.getImageUrl();
+				if ( colorMapImageUrl != null )
 				{
 					out.write( "map_Kd " );
-					out.write( getTextureMapLocation( material.colorMap ) );
+					out.write( colorMapImageUrl.toExternalForm() );
 					out.write( '\n' );
 				}
+			}
 
-				final TextureMap bumpMap = appearance.getBumpMap();
-				if ( bumpMap != null )
+			final TextureMap bumpMap = appearance.getBumpMap();
+			if ( bumpMap != null )
+			{
+				final URL bumpMapImageUrl = bumpMap.getImageUrl();
+				if ( bumpMapImageUrl != null )
 				{
 					out.write( "bump " );
-					out.write( getTextureMapLocation( material.bumpMap ) );
+					out.write( bumpMapImageUrl.toExternalForm() );
 					out.write( '\n' );
 				}
 			}
-		}
-
-		/**
-		 * Returns the file name or URI of the texture map with the given name.
-		 *
-		 * @param   name    Texture map name.
-		 *
-		 * @return  File name or URI for the texture map.
-		 */
-		private String getTextureMapLocation( final String name )
-		{
-			String result = name;
-			if ( _textureMapSuffix != null )
-			{
-				result += _textureMapSuffix;
-			}
-
-			if ( _textureMapURI != null )
-			{
-				final URI resolved = _textureMapURI.resolve( name );
-				result = resolved.toString();
-			}
-			return result;
-		}
-
-		/**
-		 * Generates a name for the given appearance. The generated name is
-		 * unique within the MTL file.
-		 *
-		 * @param   appearance  Appearance to generate a name for.
-		 *
-		 * @return  Name for the given appearance.
-		 */
-		private String generateMaterialName( final Appearance appearance )
-		{
-			return generateUniqueName( "material" );
 		}
 
 		/**
