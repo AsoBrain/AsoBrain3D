@@ -47,19 +47,19 @@ public class TestObject3DBuilder
 		final Object3DBuilder builder = new Object3DBuilder();
 		assertEquals( "[pre] vertexCount", 0, builder.getVertexCount() );
 
-		assertEquals( "test1 - vertexIndex", 0, builder.getVertexIndex( new Vector3D( 0.0, 0.0, 0.0 ) ) );
+		assertEquals( "test1 - vertexIndex", 0, builder.getVertexIndex( Vector3D.ZERO ) );
 		assertEquals( "test1 - vertexCount", 1, builder.getVertexCount() );
 
-		assertEquals( "test2 - vertexIndex", 0, builder.getVertexIndex( new Vector3D( 0.0, 0.0, 0.0 ) ) );
+		assertEquals( "test2 - vertexIndex", 0, builder.getVertexIndex( Vector3D.ZERO ) );
 		assertEquals( "test2 - vertexCount", 1, builder.getVertexCount() );
 
-		assertEquals( "test3 - vertexIndex", 1, builder.getVertexIndex( new Vector3D( 1.0, 0.0, 0.0 ) ) );
+		assertEquals( "test3 - vertexIndex", 1, builder.getVertexIndex( Vector3D.POSITIVE_X_AXIS ) );
 		assertEquals( "test3 - vertexCount", 2, builder.getVertexCount() );
 
-		assertEquals( "test4 - vertexIndex", 2, builder.getVertexIndex( new Vector3D( 0.0, 1.0, 0.0 ) ) );
+		assertEquals( "test4 - vertexIndex", 2, builder.getVertexIndex( Vector3D.POSITIVE_Y_AXIS ) );
 		assertEquals( "test4 - vertexCount", 3, builder.getVertexCount() );
 
-		assertEquals( "test5 - vertexIndex", 3, builder.getVertexIndex( new Vector3D( 0.0, 0.0, 1.0 ) ) );
+		assertEquals( "test5 - vertexIndex", 3, builder.getVertexIndex( Vector3D.POSITIVE_Z_AXIS ) );
 		assertEquals( "test5 - vertexCount", 4, builder.getVertexCount() );
 	}
 }
