@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,8 +21,10 @@
 package ab.j3d.demo;
 
 import java.awt.*;
+import java.net.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.awt.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
@@ -74,7 +76,13 @@ public class AsoBrainAnimation
 	{
 		final Scene scene = new Scene( Scene.M );
 
-		final Material backgroundMaterial = new Material( "plate", 0.31f, 0.31f, 0.31f, 0.41f, 0.41f, 0.41f, 1.0f, 0.51f, 0.51f, 0.51f, 16, 0.0f, 0.0f, 0.0f, "ab3d/maps/alu-plate", 0.1f, 0.1f, true );
+		final BasicAppearance backgroundMaterial = new BasicAppearance();
+		backgroundMaterial.setAmbientColor( new Color4f( 0.31f, 0.31f, 0.31f ) );
+		backgroundMaterial.setDiffuseColor( new Color4f( 0.41f, 0.41f, 0.41f ) );
+		backgroundMaterial.setSpecularColor( new Color4f( 0.51f, 0.51f, 0.51f ) );
+		backgroundMaterial.setShininess( 16 );
+		backgroundMaterial.setColorMap( getTexture( "/ab3d/maps/alu-plate.jpg", 0.1f, 0.1f ) );
+
 		final BoxUVMap backgroundMap = new BoxUVMap( 0.04 );
 		final Rotator plateRotator = new Rotator( Matrix3D.getTranslation( 10.0, 0.0, 0.0 ), new Vector3D( 500.0, 500.0, 0.0 ), 0.0, -1.0 / 50.0 );
 		plateRotator.addChild( new Box3D( 1000.0, 1000.0, 0.1, backgroundMaterial, backgroundMap, backgroundMaterial, backgroundMap, backgroundMaterial, backgroundMap, backgroundMaterial, backgroundMap, backgroundMaterial, backgroundMap, backgroundMaterial, backgroundMap ) );
@@ -115,8 +123,17 @@ public class AsoBrainAnimation
 		scene.addContentNode( "flashLight", Matrix3D.getTranslation( 0.0, 0.0, 10.0 ), flashLight );
 
 		final Font font1 = new Font( "sansserif", Font.PLAIN, 1 );
-		final Material wwwComColor = new Material( "blue", 0.50f, 0.50f, 1.00f, 0.50f, 0.50f, 1.00f, 1.0f, 0.20f, 0.20f, 0.20f, 16, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
-		final Material asoBrainColor = new Material( "white", 0.90f, 1.00f, 1.00f, 0.90f, 1.00f, 1.00f, 1.0f, 1.00f, 1.00f, 1.00f, 16, 0.0f, 0.0f, 0.0f, null, 0.0f, 0.0f, false );
+		final BasicAppearance wwwComColor = new BasicAppearance(); // blue
+		wwwComColor.setAmbientColor( new Color4f( 0.5f, 0.5f, 1.0f ) );
+		wwwComColor.setDiffuseColor( new Color4f( 0.5f, 0.5f, 1.0f ) );
+		wwwComColor.setSpecularColor( new Color4f( 0.2f, 0.2f, 0.2f ) );
+		wwwComColor.setShininess( 16 );
+
+		final BasicAppearance asoBrainColor = new BasicAppearance(); // white
+		asoBrainColor.setAmbientColor( new Color4f( 0.9f, 1.0f, 1.0f ) );
+		asoBrainColor.setDiffuseColor( new Color4f( 0.9f, 1.0f, 1.0f ) );
+		asoBrainColor.setSpecularColor( new Color4f( 1.0f, 1.0f, 1.0f ) );
+		asoBrainColor.setShininess( 16 );
 
 		final Object3DBuilder wwwBuilder = new Object3DBuilder();
 		ShapeTools.addText( wwwBuilder, Matrix3D.IDENTITY, "www.", font1, 0.4, 1.0, 0.5, 0.0, 0.05, 0.01, wwwComColor, null, wwwComColor, null, wwwComColor, null );
@@ -135,6 +152,33 @@ public class AsoBrainAnimation
 		scene.addContentNode( ".com", Matrix3D.getTranslation( 1.8, 0.0, 1.0 ), comBuilder.getObject3D() );
 
 		return scene;
+	}
+
+	/**
+	 * Get {@link TextureMap} with resource with the given path.
+	 *
+	 * @param   imageResourcePath   Resource path for image file.
+	 * @param   physicalWidth       Physical width of image in meters.
+	 * @param   physicalHeight      Physical height of image in meters.
+	 *
+	 * @return  {@link TextureMap} for image;
+	 *          <code>null</code> if resource was not found.
+	 */
+	private static TextureMap getTexture( final String imageResourcePath, final float physicalWidth, final float physicalHeight )
+	{
+		final FileTextureMap result;
+
+		final URL url = AsoBrainAnimation.class.getResource( imageResourcePath );
+		if ( url == null )
+		{
+			result = null;
+			System.err.println( "[Missing '" + imageResourcePath + "' resource]" );
+		}
+		else
+		{
+			result = new FileTextureMap( url, physicalWidth, physicalHeight );
+		}
+		return result;
 	}
 
 	/**

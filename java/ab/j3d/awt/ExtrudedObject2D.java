@@ -24,6 +24,7 @@ import java.awt.*;
 import java.awt.geom.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 
@@ -59,7 +60,7 @@ public class ExtrudedObject2D
 	public final double flatness;
 
 	/**
-	 * Flag to indicate if extruded faces have a backface.
+	 * Flag to indicate if extruded faces have a back-face.
 	 */
 	public final boolean twoSided;
 
@@ -76,23 +77,23 @@ public class ExtrudedObject2D
 	/**
 	 * Construct extruded object.
 	 *
-	 * @param   shape           2D shape to extrude.
-	 * @param   extrusion       Extrusion vector (control-point displacement).
-	 * @param   uvMap           Provides UV coordinates.
-	 * @param   topMaterial     Material to apply to the top cap.
-	 * @param   bottomMaterial  Material to apply to the bottom cap.
-	 * @param   sideMaterial    Material to apply to the extruded sides.
-	 * @param   flatness        Flatness to use.
-	 * @param   twoSided        Indicates that extruded faces are two-sided.
-	 * @param   flipNormals     If <code>true</code>, normals are flipped to
-	 *                          point in the opposite direction.
-	 * @param   caps            If <code>true</code>, the top and bottom of the
-	 *                          extruded shape are capped.
+	 * @param   shape               2D shape to extrude.
+	 * @param   extrusion           Extrusion vector (control-point displacement).
+	 * @param   uvMap               Provides UV coordinates.
+	 * @param   topAppearance       Appearance to apply to the top cap.
+	 * @param   bottomAppearance    Appearance to apply to the bottom cap.
+	 * @param   sideAppearance      Appearance to apply to the extruded sides.
+	 * @param   flatness            Flatness to use.
+	 * @param   twoSided            Indicates that extruded faces are two-sided.
+	 * @param   flipNormals         If <code>true</code>, normals are flipped to
+	 *                              point in the opposite direction.
+	 * @param   caps                If <code>true</code>, the top and bottom of the
+	 *                              extruded shape are capped.
 	 *
 	 * @see     FlatteningPathIterator
 	 * @see     Shape#getPathIterator( AffineTransform, double )
 	 */
-	public ExtrudedObject2D( final Shape shape, final Vector3D extrusion, final UVMap uvMap, final Material topMaterial, final Material bottomMaterial, final Material sideMaterial, final double flatness, final boolean twoSided, final boolean flipNormals, final boolean caps )
+	public ExtrudedObject2D( final Shape shape, final Vector3D extrusion, final UVMap uvMap, final Appearance topAppearance, final Appearance bottomAppearance, final Appearance sideAppearance, final double flatness, final boolean twoSided, final boolean flipNormals, final boolean caps )
 	{
 		this.shape = shape;
 		this.extrusion = extrusion;
@@ -104,11 +105,11 @@ public class ExtrudedObject2D
 		final Abstract3DObjectBuilder builder = getBuilder();
 		if ( caps )
 		{
-			builder.addExtrudedShape( ShapeTools.createTessellator( shape, flatness ), extrusion, true, Matrix3D.IDENTITY, true, topMaterial, uvMap, false, true, bottomMaterial, uvMap, false, true, sideMaterial, uvMap, false, twoSided, flipNormals, false );
+			builder.addExtrudedShape( ShapeTools.createTessellator( shape, flatness ), extrusion, true, Matrix3D.IDENTITY, true, topAppearance, uvMap, false, true, bottomAppearance, uvMap, false, true, sideAppearance, uvMap, false, twoSided, flipNormals, false );
 		}
 		else
 		{
-			builder.addExtrudedShape( ShapeTools.createContours( shape, flatness, true, true ), extrusion, Matrix3D.IDENTITY, sideMaterial, uvMap, false, twoSided, flipNormals, false );
+			builder.addExtrudedShape( ShapeTools.createContours( shape, flatness, true, true ), extrusion, Matrix3D.IDENTITY, sideAppearance, uvMap, false, twoSided, flipNormals, false );
 		}
 	}
 
