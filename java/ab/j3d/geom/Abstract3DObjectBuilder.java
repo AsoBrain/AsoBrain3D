@@ -966,12 +966,11 @@ public abstract class Abstract3DObjectBuilder
 
 		final boolean flipExtrusion = flipNormals ^ ( extrusionZ < 0.0 );
 
-		final HashList<Vector2D> vertexList = new HashList<Vector2D>();
-		final List<TessellationPrimitive> topPrimitives = top ? tessellator.constructPrimitives( vertexList, !flipExtrusion ) : null;
-		final List<TessellationPrimitive> bottomPrimitives = bottom ? tessellator.constructPrimitives( vertexList, flipExtrusion ) : null;
-		final List<int[]> outlines = tessellator.constructOutlines( vertexList, !flipExtrusion );
+		final List<TessellationPrimitive> topPrimitives = top ? flipExtrusion ? tessellator.getClockwisePrimitives() : tessellator.getCounterClockwisePrimitives() : null;
+		final List<TessellationPrimitive> bottomPrimitives = bottom ? flipExtrusion ? tessellator.getCounterClockwisePrimitives() : tessellator.getClockwisePrimitives() : null;
+		final List<int[]> outlines = flipExtrusion ? tessellator.getClockwiseOutlines() : tessellator.getCounterClockwiseOutlines();
 
-		final List<Vector3D> topPoints = ( top || side ) ? transform( transform.plus( transform.rotate( extrusion ) ), vertexList ) : null;
+		final List<Vector3D> topPoints = ( top || side ) ? transform( transform.plus( transform.rotate( extrusion ) ), tessellator.getVertexList() ) : null;
 
 		if ( top )
 		{
@@ -981,7 +980,7 @@ public abstract class Abstract3DObjectBuilder
 			addFace( topVertices, topTessellation, topAppearance, false, twoSided );
 		}
 
-		final List<Vector3D> bottomPoints = ( bottom || side ) ? transform( transform, vertexList ) : null;
+		final List<Vector3D> bottomPoints = ( bottom || side ) ? transform( transform, tessellator.getVertexList() ) : null;
 
 		if ( bottom )
 		{
@@ -1142,12 +1141,11 @@ public abstract class Abstract3DObjectBuilder
 	 */
 	public void addFilledShape2D( @NotNull final Matrix3D transform, @NotNull final Tessellator tessellator, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean flipNormals, final boolean twoSided )
 	{
-		final HashList<Vector2D> vertexList = new HashList<Vector2D>();
-		final List<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, !flipNormals );
-		final List<int[]> outlines = tessellator.constructOutlines( vertexList, !flipNormals );
+		final List<TessellationPrimitive> primitives = flipNormals ? tessellator.getClockwisePrimitives() : tessellator.getCounterClockwisePrimitives();
+		final List<int[]> outlines = flipNormals ? tessellator.getClockwiseOutlines() : tessellator.getCounterClockwiseOutlines();
 
 		final Tessellation tessellation = new Tessellation( outlines, primitives );
-		final List<Vertex> vertices = createVertices( transform( transform, vertexList ), appearance, uvMap, flipTexture );
+		final List<Vertex> vertices = createVertices( transform( transform, tessellator.getVertexList() ), appearance, uvMap, flipTexture );
 
 		addFace( vertices, tessellation, appearance, false, twoSided );
 	}
