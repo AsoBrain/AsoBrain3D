@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2009 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,22 +20,20 @@
  */
 package ab.j3d.model;
 
-import java.awt.*;
-import java.util.List;
+import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import junit.framework.*;
 
 /**
  * This class tests the {@link Object3D} class.
  *
- * @see     Object3D
- *
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public final class TestObject3D
+public class TestObject3D
     extends TestCase
 {
 	/**
@@ -58,8 +56,15 @@ public final class TestObject3D
 		final Vector3D rb = new Vector3D(    100.0 / 2.0  ,    100.0 / 2.0  , 0.0 );
 		final Vector3D lb = new Vector3D( -( 100.0 / 2.0 ),    100.0 / 2.0  , 0.0 );
 
-		final Material red   = new Material( Color.RED  .getRGB() );
-		final Material green = new Material( Color.GREEN.getRGB() );
+		final BasicAppearance red = new BasicAppearance();
+		red.setAmbientColor( Color4.RED );
+		red.setDiffuseColor( Color4.RED );
+		red.setSpecularColor( Color4.WHITE );
+
+		final BasicAppearance green = new BasicAppearance();
+		green.setAmbientColor( Color4.GREEN );
+		green.setDiffuseColor( Color4.GREEN );
+		green.setSpecularColor( Color4.WHITE );
 
 		final Object3DBuilder builder = new Object3DBuilder();
 		builder.addFace( new Vector3D[] { lf, lb, rb, rf }, red  , false, false ); // Z =  size
@@ -118,7 +123,7 @@ public final class TestObject3D
 		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null, false, "Plane", new Node3DPath( null, transform1, twoSidedPlaneOnZ0 ), transform2, new BasicRay3D( 150.0, -50.0, 0.0, 1.0, 0.0, 0.0, true ) );
 		assertEquals( "Incorrect number of intersections;", 1, selection.size() );
 		intersection = selection.get( 0 );
-		tag1 = intersection.getObjectID();
+		tag1 =intersection.getObjectID();
 		assertEquals( "The wrong object was intersected", "Plane", tag1);
 
 		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null, false, "Plane", new Node3DPath( null, transform2, twoSidedPlaneOnZ0 ), transform2, new BasicRay3D( 150.1, 0.0, -500.0, 0.0, 0.0, 1.0, true ) );
@@ -130,13 +135,13 @@ public final class TestObject3D
 		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null, false, "Plane", new Node3DPath( null, transform2, twoSidedPlaneOnZ0 ), transform2, new BasicRay3D( 100.0, 0.0, 25.0, 1.0, 0.0, 0.0, true ) );
 		assertEquals( "Incorrect number of intersections;", 1, selection.size() );
 		intersection = selection.get( 0 );
-		tag1 = intersection.getObjectID();
+		tag1 =intersection.getObjectID();
 		assertEquals( "The wrong object was intersected", "Plane", tag1);
 
 		selection = twoSidedPlaneOnZ0.getIntersectionsWithRay( null, false, "Plane", new Node3DPath( null, transform2, twoSidedPlaneOnZ0 ), transform2, new BasicRay3D( -500.0, 0.0, 0.0, 1.0, 0.0, 0.0, true ) );
 		assertEquals( "Incorrect number of intersections;", 1, selection.size() );
 		intersection = selection.get( 0 );
-		tag1 = intersection.getObjectID();
+		tag1 =intersection.getObjectID();
 		assertEquals( "The wrong object was intersected", "Plane", tag1);
 	}
 }
