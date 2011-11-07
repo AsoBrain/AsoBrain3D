@@ -23,6 +23,7 @@ package ab.j3d.loader.max3ds;
 import java.io.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 
 /**
  * Type   : {@link #MAT_BLOCK}
@@ -35,7 +36,7 @@ class MaterialChunk
 {
 	String _name;
 
-	Material _material;
+	BasicAppearance _appearance;
 
 	TextureMapChunk _textureMapOne;
 
@@ -55,7 +56,7 @@ class MaterialChunk
 	protected void processChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		_material = new Material();
+		_appearance = new BasicAppearance();
 
 		super.processChunk( in, chunkType, remainingChunkBytes );
 	}
@@ -64,7 +65,7 @@ class MaterialChunk
 	protected void processChildChunk( final InputStream in, final int chunkType, final int remainingChunkBytes )
 		throws IOException
 	{
-		final Material material = _material;
+		final BasicAppearance appearance = _appearance;
 
 		final ColorChunk colorChunk;
 
@@ -76,25 +77,30 @@ class MaterialChunk
 
 			case MAT_AMB_COLOR:
 				colorChunk = new ColorChunk( in, chunkType, remainingChunkBytes );
-				material.setAmbientColor( colorChunk.getColor() );
+				appearance.setAmbientColor( colorChunk.getColor() );
 				break;
 
 			case MAT_DIF_COLOR:
 				colorChunk = new ColorChunk( in, chunkType, remainingChunkBytes );
-				material.setDiffuseColor( colorChunk.getColor() );
+				appearance.setDiffuseColor( colorChunk.getColor() );
 				break;
 
 			case MAT_SPEC_CLR:
 				colorChunk = new ColorChunk( in, chunkType, remainingChunkBytes );
-				material.setSpecularColor( colorChunk.getColor() );
+				appearance.setSpecularColor( colorChunk.getColor() );
 				break;
 
 			case MAT_SHINE:
-				material.shininess = (int)( 128.0f * new PercentageChunk( in, chunkType, remainingChunkBytes )._percentage );
+				appearance.setShininess( (int)( 128.0f * new PercentageChunk( in, chunkType, remainingChunkBytes )._percentage ) );
 				break;
 
 			case MAT_ALPHA:
-				material.diffuseColorAlpha = 1.0f - new PercentageChunk( in, chunkType, remainingChunkBytes )._percentage;
+				final Color4 oldDiffuseColor = appearance.getDiffuseColor();
+				final float newAlpha = 1.0f - new PercentageChunk( in, chunkType, remainingChunkBytes )._percentage;
+				if ( newAlpha != oldDiffuseColor.getAlphaFloat() )
+				{
+					appearance.setDiffuseColor( new Color4f( oldDiffuseColor.getRedFloat(), oldDiffuseColor.getGreenFloat(), oldDiffuseColor.getBlueFloat(), newAlpha ) );
+				}
 				break;
 
 			case IN_TRANC_FLAG:

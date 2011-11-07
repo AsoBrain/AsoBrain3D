@@ -244,7 +244,7 @@ public class Max3DSFile
 			}
 
 			final MaterialChunk materialChunk = faceMaterials[ faceIndex ];
-			builder.addFace( facePoints, materialChunk != null ? materialChunk._material : null, texturePoints, vertexNormals, isSmooth, true );
+			builder.addFace( facePoints, materialChunk != null ? materialChunk._appearance : null, texturePoints, vertexNormals, isSmooth, true );
 		}
 	}
 

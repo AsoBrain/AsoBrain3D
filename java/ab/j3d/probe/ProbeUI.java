@@ -273,9 +273,18 @@ public class ProbeUI
 			{
 				throw new AssertionError( e );
 			}
-			final BasicAppearance texture1 = BasicAppearance.createForColorMap( new FileTextureMap( textureUrl, 0.001f, 0.001f ) );
+			final BasicAppearance texture1 = new BasicAppearance();
+			texture1.setAmbientColor( Color4.WHITE );
+			texture1.setDiffuseColor( Color4.WHITE );
+			texture1.setSpecularColor( Color4.WHITE );
+			texture1.setShininess( 16 );
+			texture1.setColorMap( new FileTextureMap( textureUrl, 0.001f, 0.001f ) );
 
-			final BasicAppearance green = BasicAppearance.createForColor( Color4.GREEN );
+			final BasicAppearance green = new BasicAppearance();
+			green.setAmbientColor( Color4.GREEN );
+			green.setDiffuseColor( Color4.GREEN );
+			green.setSpecularColor( Color4.WHITE );
+			green.setShininess( 16 );
 
 			final Light3D light1 = new Light3D();
 			light1.setFallOff( 0.0 );
@@ -371,7 +380,12 @@ public class ProbeUI
 		{
 			super.createScene( scene );
 
-			final Appearance sphereAppearance = BasicAppearance.createForColor( new Color4f( 0xffe0c060 ) );
+			final Color4 color = new Color4f( 0xffe0c060 );
+			final BasicAppearance result = new BasicAppearance();
+			result.setAmbientColor( color );
+			result.setDiffuseColor( color );
+			result.setShininess( 16 );
+			final Appearance sphereAppearance = result;
 			scene.addContentNode( "sphere"    , Matrix3D.IDENTITY, new Sphere3D( 0.5, 16, 16, sphereAppearance ) );
 			scene.addContentNode( "sphere-inv", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), new Sphere3D( 2.0, 16, 16, sphereAppearance, true ) );
 
@@ -429,7 +443,12 @@ public class ProbeUI
 		{
 			super.createScene( scene );
 
-			final Appearance sphereAppearance = BasicAppearance.createForColor( new Color4f( 0xffe0c060 ) );
+			final Color4 color = new Color4f( 0xffe0c060 );
+			final BasicAppearance result = new BasicAppearance();
+			result.setAmbientColor( color );
+			result.setDiffuseColor( color );
+			result.setShininess( 16 );
+			final Appearance sphereAppearance = result;
 			scene.addContentNode( "sphere"    , Matrix3D.IDENTITY, new Sphere3D( 0.5, 16, 16, sphereAppearance ) );
 			scene.addContentNode( "sphere-inv", Matrix3D.getTranslation( 0.0, 0.0, 0.0 ), new Sphere3D( 2.0, 16, 16, sphereAppearance, true ) );
 
@@ -485,11 +504,36 @@ public class ProbeUI
 			scene.addContentNode( "light-1", Matrix3D.getTranslation(  4.0, -4.0,  4.0 ), light1 );
 			scene.addContentNode( "light-2", Matrix3D.getTranslation( -4.0, -4.0,  4.0 ), light2 );
 
-			final Appearance opaque1      = BasicAppearance.createForColor( new Color4f( 0xffffffff ) );
-			final Appearance opaque2      = BasicAppearance.createForColor( new Color4f( 0xffffff00 ) );
-			final Appearance transparent1 = BasicAppearance.createForColor( new Color4f( 0x80ff0000 ) );
-			final Appearance transparent2 = BasicAppearance.createForColor( new Color4f( 0x8000ff00 ) );
-			final Appearance transparent3 = BasicAppearance.createForColor( new Color4f( 0x800000ff ) );
+			final Color4 color4 = new Color4f( 0xffffffff );
+			final BasicAppearance result113 = new BasicAppearance();
+			result113.setAmbientColor( color4 );
+			result113.setDiffuseColor( color4 );
+			result113.setShininess( 16 );
+			final Appearance opaque1      = result113;
+			final Color4 color3 = new Color4f( 0xffffff00 );
+			final BasicAppearance result112 = new BasicAppearance();
+			result112.setAmbientColor( color3 );
+			result112.setDiffuseColor( color3 );
+			result112.setShininess( 16 );
+			final Appearance opaque2      = result112;
+			final Color4 color2 = new Color4f( 0x80ff0000 );
+			final BasicAppearance result111 = new BasicAppearance();
+			result111.setAmbientColor( color2 );
+			result111.setDiffuseColor( color2 );
+			result111.setShininess( 16 );
+			final Appearance transparent1 = result111;
+			final Color4 color1 = new Color4f( 0x8000ff00 );
+			final BasicAppearance result11 = new BasicAppearance();
+			result11.setAmbientColor( color1 );
+			result11.setDiffuseColor( color1 );
+			result11.setShininess( 16 );
+			final Appearance transparent2 = result11;
+			final Color4 color = new Color4f( 0x800000ff );
+			final BasicAppearance result = new BasicAppearance();
+			result.setAmbientColor( color );
+			result.setDiffuseColor( color );
+			result.setShininess( 16 );
+			final Appearance transparent3 = result;
 
 			scene.addContentNode( "sphere-2", Matrix3D.getTranslation(  0.0, 0.0,  0.0 ), new Sphere3D( 0.5, 16, 16, transparent2 ) );
 			scene.addContentNode( "sphere-3", Matrix3D.getTranslation( -0.5, 0.0,  0.5 ), new Sphere3D( 0.5, 16, 16, opaque1 ) );
