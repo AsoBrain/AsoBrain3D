@@ -29,6 +29,7 @@ import java.util.List;
 import javax.swing.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.awt.*;
 import ab.j3d.awt.view.*;
 import ab.j3d.awt.view.jogl.*;
@@ -265,7 +266,7 @@ public class TessellationExample
 
 		{
 			final Object3DBuilder builder = new Object3DBuilder();
-			ShapeTools.addFilledShape2D( builder, flipY, area, 0.1, Materials.GREEN, UV_MAP, false, true, false );
+			ShapeTools.addFilledShape2D( builder, flipY, area, 0.1, BasicAppearances.GREEN, UV_MAP, false, true, false );
 			scene.addContentNode( name + "-1" , Matrix3D.getTranslation( x, y, 0.0), builder.getObject3D() );
 		}
 
@@ -274,14 +275,14 @@ public class TessellationExample
 		{
 			final Object3DBuilder builder = new Object3DBuilder();
 			final Vector3D extrusionPos = new Vector3D( 0.0, 0.0, 5.0 );
-			builder.addExtrudedShape( areaTessellator, extrusionPos, true, flipY, true, Materials.BLUE, UV_MAP, false, true, Materials.RED, UV_MAP, false, true, Materials.YELLOW, UV_MAP, false, false, false, false );
+			builder.addExtrudedShape( areaTessellator, extrusionPos, true, flipY, true, BasicAppearances.BLUE, UV_MAP, false, true, BasicAppearances.RED, UV_MAP, false, true, BasicAppearances.YELLOW, UV_MAP, false, false, false, false );
 			scene.addContentNode( name + "-2" , Matrix3D.getTranslation( x, y - offsetY, 0.0), builder.getObject3D() );
 		}
 
 		{
 			final Object3DBuilder builder = new Object3DBuilder();
 			final Vector3D extrusionNeg = new Vector3D( 0.0, 0.0, -5.0 );
-			builder.addExtrudedShape( areaTessellator, extrusionNeg, true, flipY, true, Materials.SILVER, UV_MAP, false, true, Materials.CHROME, UV_MAP, false, true, Materials.GOLD, UV_MAP, false, false, false, false );
+			builder.addExtrudedShape( areaTessellator, extrusionNeg, true, flipY, true, BasicAppearances.SILVER, UV_MAP, false, true, BasicAppearances.CHROME, UV_MAP, false, true, BasicAppearances.GOLD, UV_MAP, false, false, false, false );
 			scene.addContentNode( name + "-3" , Matrix3D.getTranslation( x, y - 2 * offsetY, 0.0), builder.getObject3D() );
 		}
 	}
