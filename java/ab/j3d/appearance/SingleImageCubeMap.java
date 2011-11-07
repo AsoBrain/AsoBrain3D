@@ -23,6 +23,8 @@ package ab.j3d.appearance;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.*;
+import java.io.*;
+import java.net.*;
 
 import org.jetbrains.annotations.*;
 
@@ -78,6 +80,11 @@ public class SingleImageCubeMap
 	private Orientation _orientation = Orientation.NEGATIVE_Y;
 
 	/**
+	 * Image source for entire cube map.
+	 */
+	private TextureMap _source = null;
+
+	/**
 	 * Image for entire cube map.
 	 */
 	private BufferedImage _image = null;
@@ -124,25 +131,49 @@ public class SingleImageCubeMap
 	 * Create cube map from image with {@link Orientation#NEGATIVE_Y}
 	 * orientation.
 	 *
-	 * @param   image   Image for entire cube map.
+	 * @param   imageUrl    URL of image for entire cube map.
 	 */
-	public SingleImageCubeMap( @NotNull final BufferedImage image )
+	public SingleImageCubeMap( @NotNull final URL imageUrl )
 	{
-		_image = image;
+		this( Orientation.NEGATIVE_Y, new FileTextureMap( imageUrl ) );
+	}
+
+	/**
+	 * Create cube map from texture map with {@link Orientation#NEGATIVE_Y}
+	 * orientation.
+	 *
+	 * @param   source  Image source for entire cube map.
+	 */
+	public SingleImageCubeMap( @NotNull final TextureMap source )
+	{
+		this( Orientation.NEGATIVE_Y, source );
 	}
 
 	/**
 	 * Create cube map from given image with the given orientation.
 	 *
 	 * @param   orientation     Orientation/layout of cube map.
-	 * @param   image           Image for entire cube map.
+	 * @param   imageUrl        URL of image for entire cube map.
 	 *
 	 * @throws  IllegalArgumentException if the image has invalid dimensions.
 	 */
-	public SingleImageCubeMap( @NotNull final Orientation orientation, @NotNull final BufferedImage image )
+	public SingleImageCubeMap( @NotNull final Orientation orientation, @NotNull final URL imageUrl )
+	{
+		this( orientation, new FileTextureMap( imageUrl ) );
+	}
+
+	/**
+	 * Create cube map from given image with the given orientation.
+	 *
+	 * @param   orientation     Orientation/layout of cube map.
+	 * @param   source          Image source for entire cube map.
+	 *
+	 * @throws  IllegalArgumentException if the image has invalid dimensions.
+	 */
+	public SingleImageCubeMap( @NotNull final Orientation orientation, @NotNull final TextureMap source )
 	{
 		_orientation = orientation;
-		_image = image;
+		_source = source;
 	}
 
 	/**
@@ -167,55 +198,85 @@ public class SingleImageCubeMap
 	}
 
 	/**
-	 * Get image to use when the cube map is defined by a single image.
+	 * Get source of image that defines all sides of the cude in a single image.
 	 *
-	 * @return  Image for entire cube map.
+	 * @return  Texture map that provides the source image for the entire cube.
 	 */
 	@Nullable
-	public BufferedImage getImage()
+	public TextureMap getSource()
 	{
-		return _image;
+		return _source;
 	}
 
 	/**
 	 * Set single image to use for entire cube map.
 	 *
-	 * @param   image   Image for entire cube map.
+	 * @param   source  Image source for entire cube map.
 	 *
 	 * @throws  IllegalArgumentException if the image has invalid dimensions.
 	 */
-	public void setImage( final BufferedImage image )
+	public void setSource( final TextureMap source )
 	{
-		if ( image != _image )
+		if ( source != _source )
 		{
+			_source =source;
+			_image = null;
 			_imageX1 = null;
 			_imageY1 = null;
 			_imageZ1 = null;
 			_imageX2 = null;
 			_imageY2 = null;
 			_imageZ2 = null;
+		}
+	}
 
-			if ( image != null )
+	/**
+	 * Get image that defines the whole cube map.
+	 *
+	 * @return  Image that defines the cube map;
+	 *          <code>null</code> if the image is not available.
+	 */
+	@Nullable
+	protected BufferedImage getImage()
+	{
+		BufferedImage result = _image;
+		final TextureMap source = _source;
+		if ( ( result == null ) && ( source != null ) )
+		{
+			try
 			{
-				final int width = image.getWidth();
-				final int height = image.getHeight();
-
-				if ( width * 3 != height * 4 )
+				result = source.loadImage();
+				if ( result != null )
 				{
-					throw new IllegalArgumentException( "Cube map must have 4:3 aspect ratio, but is " + width + " x " + height );
-				}
+					final int width = result.getWidth();
+					final int height = result.getHeight();
 
-				if ( width % 4 != 0 )
-				{
-					throw new IllegalArgumentException( "Cube map width must be a multiple of 4, but is " + width + " x " + height );
-				}
+					if ( width * 3 != height * 4 )
+					{
+						throw new IllegalArgumentException( "Cube map must have 4:3 aspect ratio, but is " + width + " x " + height );
+					}
 
-				if ( height % 3 != 0 )
-				{
-					throw new IllegalArgumentException( "Cube map height must be a multiple of 3, but is " + width + " x " + height );
+					if ( width % 4 != 0 )
+					{
+						throw new IllegalArgumentException( "Cube map width must be a multiple of 4, but is " + width + " x " + height );
+					}
+
+					if ( height % 3 != 0 )
+					{
+						throw new IllegalArgumentException( "Cube map height must be a multiple of 3, but is " + width + " x " + height );
+					}
 				}
 			}
+			catch ( IOException e )
+			{
+				System.err.println( "getImage( " + source + " ) => " + e );
+				e.printStackTrace();
+			}
+
+			_image = result;
 		}
+
+		return result;
 	}
 
 	public BufferedImage getImageX1()
