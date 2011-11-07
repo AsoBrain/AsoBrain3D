@@ -24,7 +24,6 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.util.*;
 
-import ab.j3d.*;
 import ab.j3d.awt.*;
 import junit.framework.*;
 
@@ -50,9 +49,8 @@ public class TestTessellator
 
 			final Tessellator tessellator = ShapeTools.createTessellator( emptyPath, 0.0 );
 
-			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
-			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
-			tessellator.constructOutlines( vertexList, true );
+			final Collection<TessellationPrimitive> primitives = tessellator.getCounterClockwisePrimitives();
+			tessellator.getCounterClockwiseOutlines();
 
 			Assert.assertTrue( "Expected no primitives." , primitives.isEmpty() );
 		}
@@ -63,9 +61,8 @@ public class TestTessellator
 
 			final Tessellator tessellator = ShapeTools.createTessellator( point, 0.0 );
 
-			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
-			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
-			tessellator.constructOutlines( vertexList, true );
+			final Collection<TessellationPrimitive> primitives = tessellator.getCounterClockwisePrimitives();
+			tessellator.getCounterClockwiseOutlines();
 
 			Assert.assertTrue( "Expected no primitives." , primitives.isEmpty() );
 		}
@@ -77,9 +74,8 @@ public class TestTessellator
 
 			final Tessellator tessellator = ShapeTools.createTessellator( point, 0.0 );
 
-			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
-			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
-			tessellator.constructOutlines( vertexList, true );
+			final Collection<TessellationPrimitive> primitives = tessellator.getCounterClockwisePrimitives();
+			tessellator.getCounterClockwiseOutlines();
 
 			Assert.assertTrue( "Expected no primitives." , primitives.isEmpty() );
 		}
@@ -91,9 +87,8 @@ public class TestTessellator
 
 			final Tessellator tessellator = ShapeTools.createTessellator( line, 0.0 );
 
-			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
-			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
-			tessellator.constructOutlines( vertexList, true );
+			final Collection<TessellationPrimitive> primitives = tessellator.getCounterClockwisePrimitives();
+			tessellator.getCounterClockwiseOutlines();
 
 			Assert.assertTrue( "Expected no primitives." , primitives.isEmpty() );
 		}
@@ -107,9 +102,8 @@ public class TestTessellator
 
 			final Tessellator tessellator = ShapeTools.createTessellator( clockwise, 0.0 );
 
-			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
-			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
-			tessellator.constructOutlines( vertexList, true );
+			final Collection<TessellationPrimitive> primitives = tessellator.getCounterClockwisePrimitives();
+			tessellator.getCounterClockwiseOutlines();
 
 			Assert.assertFalse( "Expected primitives." , primitives.isEmpty() );
 		}
@@ -127,9 +121,8 @@ public class TestTessellator
 
 			final Tessellator tessellator = ShapeTools.createTessellator( clockwise, 0.0 );
 
-			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
-			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
-			tessellator.constructOutlines( vertexList, true );
+			final Collection<TessellationPrimitive> primitives = tessellator.getCounterClockwisePrimitives();
+			tessellator.getCounterClockwiseOutlines();
 
 			Assert.assertFalse( "Expected primitives." , primitives.isEmpty() );
 		}
@@ -146,9 +139,8 @@ public class TestTessellator
 
 			final Tessellator tessellator = ShapeTools.createTessellator( clockwise, 0.0 );
 
-			final HashList<Vector2D> vertexList = new HashList<Vector2D>();
-			final Collection<TessellationPrimitive> primitives = tessellator.constructPrimitives( vertexList, true );
-			tessellator.constructOutlines( vertexList, true );
+			final Collection<TessellationPrimitive> primitives = tessellator.getCounterClockwisePrimitives();
+			tessellator.getCounterClockwiseOutlines();
 
 			Assert.assertFalse( "Expected primitives." , primitives.isEmpty() );
 		}
