@@ -92,6 +92,37 @@ public class BasicAppearance
 	 */
 	private Color4 _reflectionColor = Color4.WHITE;
 
+	/**
+	 * Create {@link BasicAppearance} for a solid color.
+	 *
+	 * @param   color   Color to create appearance for.
+	 *
+	 * @return  {@link BasicAppearance}.
+	 */
+	public static BasicAppearance createForColor( final Color4 color )
+	{
+		final BasicAppearance result = new BasicAppearance();
+		result.setAmbientColor( color );
+		result.setDiffuseColor( color );
+		result.setSpecularColor( Color4.WHITE );
+		result.setShininess( 16 );
+		return result;
+	}
+
+	/**
+	 * Create {@link BasicAppearance} for a color map.
+	 *
+	 * @param   colorMap    Color map to create appearance for.
+	 *
+	 * @return  {@link BasicAppearance}.
+	 */
+	public static BasicAppearance createForColorMap( final TextureMap colorMap )
+	{
+		final BasicAppearance result = createForColor( Color4.WHITE );
+		result.setColorMap( colorMap );
+		return result;
+	}
+
 	public Color4 getAmbientColor()
 	{
 		return _ambientColor;
