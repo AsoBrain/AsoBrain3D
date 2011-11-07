@@ -38,21 +38,25 @@ public class RenderingPolicyComboBox
 	extends JComboBox
 {
 	/**
+	 * Name of resource bundle for this class.
+	 */
+	private static final String BUNDLE_NAME = RenderingPolicy.class.getName();
+
+	/**
 	 * Construct a new action to switch the rendering policy of a view.
 	 *
-	 * @param   locale          Preferred locale for internationalization.
-	 * @param   view            The view this action belongs to.
-	 * @param   currentPolicy   Current rendering policy of the view.
+	 * @param   locale  Preferred locale for internationalization.
+	 * @param   view    The view this action belongs to.
 	 */
-	public RenderingPolicyComboBox( final Locale locale, final View3D view, final RenderingPolicy currentPolicy )
+	public RenderingPolicyComboBox( final Locale locale, final View3D view )
 	{
 		super( RenderingPolicy.values() );
-		setSelectedItem( currentPolicy );
+		setSelectedItem( view.getRenderingPolicy() );
 		setMaximumSize( getPreferredSize() );
 
 		final RenderingPolicy[] values = RenderingPolicy.values();
 
-		final ResourceBundle bundle = ResourceBundle.getBundle( "LocalStrings", locale );
+		final ResourceBundle bundle = ResourceBundle.getBundle( BUNDLE_NAME, locale );
 
 		final Map<RenderingPolicy,String> labels = new EnumMap<RenderingPolicy, String>( RenderingPolicy.class );
 		for ( final RenderingPolicy value : values )
