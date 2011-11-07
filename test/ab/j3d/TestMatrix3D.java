@@ -224,7 +224,7 @@ public class TestMatrix3D
 			/* Test #17 */ new Test( new Vector3D(  0.0, -1.0, -1.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateX( -deg135 )                      .plus( 0.0, 0.0, -sqrt2 ) ),
 			/* Test #18 */ new Test( new Vector3D( -1.0,  0.0,  1.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateY(   deg45 ).rotateZ(      deg90 ).plus( 0.0, 0.0, -sqrt2 ) ),
 			/* Test #19 */ new Test( new Vector3D(  1.0,  0.0,  1.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateY(  -deg45 ).rotateZ(     -deg90 ).plus( 0.0, 0.0, -sqrt2 ) ),
-			/* Test #20 */ new Test( new Vector3D(  1.0,  0.0,  0.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateZ(  -deg90 ).rotateX(     -deg90 ).plus( 0.0, 0.0, -1.0   ) ),
+			/* Test #20 */ new Test( Vector3D.POSITIVE_X_AXIS, Vector3D.ZERO, Matrix3D.IDENTITY.rotateZ(  -deg90 ).rotateX(     -deg90 ).plus( 0.0, 0.0, -1.0   ) ),
 			/* Test #21 */ new Test( new Vector3D( -1.0, -1.0, -1.0 ), Vector3D.ZERO, Matrix3D.IDENTITY.rotateZ(   deg45 ).rotateX(  -deg125_2 ).plus( 0.0, 0.0, -sqrt3 ) ),
 		};
 
