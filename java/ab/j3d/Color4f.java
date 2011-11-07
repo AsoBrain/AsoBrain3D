@@ -202,6 +202,11 @@ public class Color4f
 		return Math.round( getAlpha() * 255.0f );
 	}
 
+	public float getLuminance()
+	{
+		return 0.3f * getRedFloat() + 0.59f * getGreenFloat() + 0.11f * getBlueFloat();
+	}
+
 	public int getRGB()
 	{
 		return getBlueInt() | ( getGreenInt() <<  8 ) | ( getRedInt() << 16 );
