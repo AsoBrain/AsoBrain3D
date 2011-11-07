@@ -20,6 +20,8 @@
  */
 package ab.j3d.appearance;
 
+import java.net.*;
+
 import ab.j3d.*;
 
 /**
@@ -184,12 +186,15 @@ public class BasicAppearances
 		transparent.setShininess( 64 );
 		TRANSPARENT = transparent; // "transparent"
 
+		final TextureMap reflectionMapTexture = getTexture( "/ab3d/maps/reflect-sky-bw.jpg", 0.0f, 0.0f );
+		final SingleImageCubeMap reflectionMap = ( reflectionMapTexture != null ) ? new SingleImageCubeMap( reflectionMapTexture ) : null;
+
 		final BasicAppearance glass = new BasicAppearance();
 		glass.setAmbientColor( new Color4f( 0.05f, 0.1f, 0.07f ) );
 		glass.setDiffuseColor( new Color4f( 0.2f, 0.3f, 0.25f, 0.3f ) );
 		glass.setSpecularColor( new Color4f( 0.5f, 0.55f, 0.5f ) );
 		glass.setShininess( 64 );
-		glass.setReflectionMap( new SingleImageCubeMap( BasicAppearances.class.getResource( "ab3d/maps/reflect-sky-bw.jpg" ) ) );
+		glass.setReflectionMap( reflectionMap );
 		glass.setReflectionMin( 0.0f );
 		glass.setReflectionMax( 0.8f );
 		glass.setReflectionColor( new Color4f( 1.0f, 1.0f, 1.0f ) );
@@ -200,7 +205,7 @@ public class BasicAppearances
 		glassWhite.setDiffuseColor( new Color4f( 0.3f, 0.3f, 0.3f, 0.5f ) );
 		glassWhite.setSpecularColor( new Color4f( 0.3f, 0.3f, 0.3f ) );
 		glassWhite.setShininess( 32 );
-		glassWhite.setReflectionMap( new SingleImageCubeMap( BasicAppearances.class.getResource( "ab3d/maps/reflect-sky-bw.jpg" ) ) );
+		glassWhite.setReflectionMap( reflectionMap );
 		glassWhite.setReflectionMin( 0.0f );
 		glassWhite.setReflectionMax( 0.5f );
 		GLASS_WHITE = glassWhite; // "glass_white"
@@ -210,7 +215,7 @@ public class BasicAppearances
 		metal.setDiffuseColor( new Color4f( 0.45f, 0.45f, 0.45f ) );
 		metal.setSpecularColor( new Color4f( 0.45f, 0.45f, 0.45f ) );
 		metal.setShininess( 16 );
-		metal.setReflectionMap( new SingleImageCubeMap( BasicAppearances.class.getResource( "/ab3d/maps/reflect-sky-bw.jpg" ) ) );
+		metal.setReflectionMap( reflectionMap );
 		metal.setReflectionMin( 0.2f );
 		metal.setReflectionMax( 1.0f );
 		metal.setReflectionColor( new Color4f( 0.45f, 0.45f, 0.45f ) );
@@ -221,7 +226,7 @@ public class BasicAppearances
 		gold.setDiffuseColor( new Color4f( 0.75f, 0.61f, 0.23f ) );
 		gold.setSpecularColor( new Color4f( 0.63f, 0.65f, 0.37f ) );
 		gold.setShininess( 128 );
-		gold.setReflectionMap( new SingleImageCubeMap( BasicAppearances.class.getResource( "/ab3d/maps/reflect-sky-bw.jpg" ) ) );
+		gold.setReflectionMap( reflectionMap );
 		gold.setReflectionMin( 0.2f );
 		gold.setReflectionMax( 1.0f );
 		gold.setReflectionColor( new Color4f( 0.75f, 0.61f, 0.23f ) );
@@ -232,7 +237,7 @@ public class BasicAppearances
 		chrome.setDiffuseColor( new Color4f( 0.4f, 0.4f, 0.4f ) );
 		chrome.setSpecularColor( new Color4f( 0.77f, 0.77f, 0.77f ) );
 		chrome.setShininess( 128 );
-		chrome.setReflectionMap( new SingleImageCubeMap( BasicAppearances.class.getResource( "/ab3d/maps/reflect-sky-bw.jpg" ) ) );
+		chrome.setReflectionMap( reflectionMap );
 		chrome.setReflectionMin( 0.8f );
 		chrome.setReflectionMax( 1.0f );
 		chrome.setReflectionColor( new Color4f( 0.4f, 0.4f, 0.4f ) );
@@ -243,7 +248,7 @@ public class BasicAppearances
 		matteChrome.setDiffuseColor( new Color4f( 0.4f, 0.4f, 0.4f ) );
 		matteChrome.setSpecularColor( new Color4f( 0.6f, 0.6f, 0.6f ) );
 		matteChrome.setShininess( 16 );
-		matteChrome.setReflectionMap( new SingleImageCubeMap( BasicAppearances.class.getResource( "/ab3d/maps/reflect-sky-bw.jpg" ) ) );
+		matteChrome.setReflectionMap( reflectionMap );
 		matteChrome.setReflectionMin( 0.0f );
 		matteChrome.setReflectionMax( 0.2f );
 		matteChrome.setReflectionColor( new Color4f( 0.4f, 0.4f, 0.4f ) );
@@ -254,7 +259,7 @@ public class BasicAppearances
 		silver.setDiffuseColor( new Color4f( 0.51f, 0.51f, 0.51f ) );
 		silver.setSpecularColor( new Color4f( 0.51f, 0.51f, 0.51f ) );
 		silver.setShininess( 64 );
-		silver.setReflectionMap( new SingleImageCubeMap( BasicAppearances.class.getResource( "/ab3d/maps/reflect-sky-bw.jpg" ) ) );
+		silver.setReflectionMap( reflectionMap );
 		silver.setReflectionMin( 0.2f );
 		silver.setReflectionMax( 1.0f );
 		silver.setReflectionColor( new Color4f( 0.51f, 0.51f, 0.51f ) );
@@ -265,7 +270,7 @@ public class BasicAppearances
 		nickel.setDiffuseColor( new Color4f( 0.4f, 0.4f, 0.4f ) );
 		nickel.setSpecularColor( new Color4f( 0.77f, 0.77f, 0.77f ) );
 		nickel.setShininess( 128 );
-		nickel.setReflectionMap( new SingleImageCubeMap( BasicAppearances.class.getResource( "/ab3d/maps/reflect-sky-bw.jpg" ) ) );
+		nickel.setReflectionMap( reflectionMap );
 		nickel.setReflectionMin( 0.2f );
 		nickel.setReflectionMax( 1.0f );
 		nickel.setReflectionColor( new Color4f( 0.4f, 0.4f, 0.4f ) );
@@ -276,7 +281,7 @@ public class BasicAppearances
 		zinc.setDiffuseColor( new Color4f( 0.65f, 0.67f, 0.67f ) );
 		zinc.setSpecularColor( new Color4f( 0.45f, 0.47f, 0.47f ) );
 		zinc.setShininess( 32 );
-		zinc.setReflectionMap( new SingleImageCubeMap( BasicAppearances.class.getResource( "/ab3d/maps/reflect-sky-bw.jpg" ) ) );
+		zinc.setReflectionMap( reflectionMap );
 		zinc.setReflectionMin( 0.1f );
 		zinc.setReflectionMax( 0.3f );
 		zinc.setReflectionColor( new Color4f( 0.65f, 0.69f, 0.69f ) );
@@ -287,7 +292,7 @@ public class BasicAppearances
 		aluminium.setDiffuseColor( new Color4f( 0.71f, 0.71f, 0.71f ) );
 		aluminium.setSpecularColor( new Color4f( 0.51f, 0.51f, 0.51f ) );
 		aluminium.setShininess( 64 );
-		aluminium.setReflectionMap( new SingleImageCubeMap( BasicAppearances.class.getResource( "/ab3d/maps/reflect-sky-bw.jpg" ) ) );
+		aluminium.setReflectionMap( reflectionMap );
 		aluminium.setReflectionMin( 0.2f );
 		aluminium.setReflectionMax( 1.0f );
 		aluminium.setReflectionColor( new Color4f( 0.71f, 0.71f, 0.71f ) );
@@ -298,8 +303,8 @@ public class BasicAppearances
 		aluPlate.setDiffuseColor( new Color4f( 0.61f, 0.61f, 0.61f ) );
 		aluPlate.setSpecularColor( new Color4f( 0.31f, 0.31f, 0.31f ) );
 		aluPlate.setShininess( 32 );
-		aluPlate.setColorMap( new FileTextureMap( BasicAppearances.class.getResource( "/ab3d/maps/alu-plate.jpg" ), 0.1f, 0.1f ) );
-		aluPlate.setReflectionMap( new SingleImageCubeMap( BasicAppearances.class.getResource( "/ab3d/maps/reflect-sky-bw.jpg" ) ) );
+		aluPlate.setColorMap( getTexture( "/ab3d/maps/alu-plate.jpg", 0.1f, 0.1f ) );
+		aluPlate.setReflectionMap( reflectionMap );
 		aluPlate.setReflectionMin( 0.0f );
 		aluPlate.setReflectionMax( 0.1f );
 		ALU_PLATE = aluPlate; // "alu-plate"
@@ -309,7 +314,7 @@ public class BasicAppearances
 		steel.setDiffuseColor( new Color4f( 0.45f, 0.45f, 0.45f ) );
 		steel.setSpecularColor( new Color4f( 0.45f, 0.45f, 0.45f ) );
 		steel.setShininess( 16 );
-		steel.setReflectionMap( new SingleImageCubeMap( BasicAppearances.class.getResource( "/ab3d/maps/reflect-sky-bw.jpg" ) ) );
+		steel.setReflectionMap( reflectionMap );
 		steel.setReflectionMin( 0.2f );
 		steel.setReflectionMax( 1.0f );
 		steel.setReflectionColor( new Color4f( 0.45f, 0.45f, 0.45f ) );
@@ -320,7 +325,7 @@ public class BasicAppearances
 		messing.setDiffuseColor( new Color4f( 0.78f, 0.57f, 0.11f ) );
 		messing.setSpecularColor( new Color4f( 0.99f, 0.94f, 0.81f ) );
 		messing.setShininess( 32 );
-		messing.setReflectionMap( new SingleImageCubeMap( BasicAppearances.class.getResource( "/ab3d/maps/reflect-sky-bw.jpg" ) ) );
+		messing.setReflectionMap( reflectionMap );
 		messing.setReflectionMin( 0.2f );
 		messing.setReflectionMax( 1.0f );
 		messing.setReflectionColor( new Color4f( 0.78f, 0.57f, 0.11f ) );
@@ -331,7 +336,7 @@ public class BasicAppearances
 		titanium.setDiffuseColor( new Color4f( 0.44f, 0.43f, 0.39f ) );
 		titanium.setSpecularColor( new Color4f( 0.88f, 0.87f, 0.78f ) );
 		titanium.setShininess( 32 );
-		titanium.setReflectionMap( new SingleImageCubeMap( BasicAppearances.class.getResource( "/ab3d/maps/reflect-sky-bw.jpg" ) ) );
+		titanium.setReflectionMap( reflectionMap );
 		titanium.setReflectionMin( 0.2f );
 		titanium.setReflectionMax( 1.0f );
 		titanium.setReflectionColor( new Color4f( 0.44f, 0.43f, 0.39f ) );
@@ -342,10 +347,37 @@ public class BasicAppearances
 		zamac.setDiffuseColor( new Color4f( 0.4f, 0.44f, 0.51f ) );
 		zamac.setSpecularColor( new Color4f( 0.3f, 0.3f, 0.49f ) );
 		zamac.setShininess( 16 );
-		zamac.setReflectionMap( new SingleImageCubeMap( BasicAppearances.class.getResource( "/ab3d/maps/reflect-sky-bw.jpg" ) ) );
+		zamac.setReflectionMap( reflectionMap );
 		zamac.setReflectionMin( 0.2f );
 		zamac.setReflectionMax( 1.0f );
 		zamac.setReflectionColor( new Color4f( 0.4f, 0.44f, 0.51f ) );
 		ZAMAC = zamac; // "zamac"
+	}
+
+	/**
+	 * Get {@link TextureMap} with resource with the given path.
+	 *
+	 * @param   imageResourcePath   Resource path for image file.
+	 * @param   physicalWidth       Physical width of image in meters.
+	 * @param   physicalHeight      Physical height of image in meters.
+	 *
+	 * @return  {@link TextureMap} for image;
+	 *          <code>null</code> if resource was not found.
+	 */
+	private static TextureMap getTexture( final String imageResourcePath, final float physicalWidth, final float physicalHeight )
+	{
+		final FileTextureMap result;
+
+		final URL url = BasicAppearances.class.getResource( imageResourcePath );
+		if ( url == null )
+		{
+			result = null;
+			System.err.println( "[Missing '" + imageResourcePath + "' resource]" );
+		}
+		else
+		{
+			result = new FileTextureMap( url, physicalWidth, physicalHeight );
+		}
+		return result;
 	}
 }
