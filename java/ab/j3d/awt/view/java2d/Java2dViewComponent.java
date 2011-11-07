@@ -155,7 +155,8 @@ class Java2dViewComponent
 			Color fillPaint;
 			if ( renderStyle.isMaterialEnabled() && ( appearance != null ) )
 			{
-				fillPaint = new Color( appearance.getDiffuseColorRed(), appearance.getDiffuseColorGreen(), appearance.getDiffuseColorBlue(), appearance.getDiffuseColorAlpha() );
+				final Color4 diffuseColor = appearance.getDiffuseColor();
+				fillPaint = new Color( diffuseColor.getRedFloat(), diffuseColor.getGreenFloat(), diffuseColor.getBlueFloat(), diffuseColor.getAlphaFloat() );
 			}
 			else
 			{
