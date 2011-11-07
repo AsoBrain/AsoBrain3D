@@ -25,6 +25,7 @@ import java.awt.geom.*;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.awt.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
@@ -78,9 +79,9 @@ public class AnimatedHelloWorld
 	{
 		final Scene scene = new Scene( Scene.M );
 
-		final Material backgroundMaterial = Materials.ALU_PLATE;
+		final Appearance backgroundAppearance = BasicAppearances.ALU_PLATE;
 		final BoxUVMap backgroundMap = new BoxUVMap( Scene.CM );
-		scene.addContentNode( "alu-plate", Matrix3D.getTranslation( -500.0, 10.0, -500.0 ), new Box3D( 1000.0, 0.1, 1000.0, backgroundMaterial, backgroundMap, backgroundMaterial, backgroundMap, backgroundMaterial, backgroundMap, backgroundMaterial, backgroundMap, backgroundMaterial, backgroundMap, backgroundMaterial, backgroundMap ) );
+		scene.addContentNode( "alu-plate", Matrix3D.getTranslation( -500.0, 10.0, -500.0 ), new Box3D( 1000.0, 0.1, 1000.0, backgroundAppearance, backgroundMap, backgroundAppearance, backgroundMap, backgroundAppearance, backgroundMap, backgroundAppearance, backgroundMap, backgroundAppearance, backgroundMap, backgroundAppearance, backgroundMap ) );
 
 		scene.addContentNode( "Hello world", Matrix3D.IDENTITY, HelloWorld.createHelloWorld3D() );
 
@@ -128,22 +129,22 @@ public class AnimatedHelloWorld
 	 */
 	private static void addPrimitivesBelt( final Scene scene )
 	{
-		final Transform3D box = new Transform3D( Matrix3D.getTranslation( -1.0, -1.0, -1.0 ), new Box3D( 2.0, 2.0, 2.0, Materials.RED, null, Materials.GREEN, null, Materials.BLUE, null, Materials.CYAN, null, Materials.MAGENTA, null, Materials.YELLOW, null ) );
+		final Transform3D box = new Transform3D( Matrix3D.getTranslation( -1.0, -1.0, -1.0 ), new Box3D( 2.0, 2.0, 2.0, BasicAppearances.RED, null, BasicAppearances.GREEN, null, BasicAppearances.BLUE, null, BasicAppearances.CYAN, null, BasicAppearances.MAGENTA, null, BasicAppearances.YELLOW, null ) );
 		final Transform3D boxRotator = new Rotator( 0.0 );
 		boxRotator.addChild( box );
 		scene.addContentNode( "box", Matrix3D.IDENTITY, boxRotator );
 
-		final Sphere3D sphere = new Sphere3D( 1.0, 13, 13, Materials.BLUE );
+		final Sphere3D sphere = new Sphere3D( 1.0, 13, 13, BasicAppearances.BLUE );
 		final Transform3D sphereRotator = new Rotator( 60.0 );
 		sphereRotator.addChild( sphere );
 		scene.addContentNode( "sphere", Matrix3D.IDENTITY, sphereRotator );
 
-		final Cylinder3D cylinder = new Cylinder3D( 2.0, 1.0, 15, Materials.GREEN, null, true, Materials.BLUE, null, Materials.RED, null, false );
+		final Cylinder3D cylinder = new Cylinder3D( 2.0, 1.0, 15, BasicAppearances.GREEN, null, true, BasicAppearances.BLUE, null, BasicAppearances.RED, null, false );
 		final Transform3D cylinderRotator = new Rotator( 120.0 );
 		cylinderRotator.addChild( cylinder );
 		scene.addContentNode( "cylinder", Matrix3D.IDENTITY, cylinderRotator );
 
-		final Cone3D cone = new Cone3D( 2.0, 1.0, 0.0, 15, Materials.GREEN, null, true, Materials.BLUE, null, Materials.RED, null, false );
+		final Cone3D cone = new Cone3D( 2.0, 1.0, 0.0, 15, BasicAppearances.GREEN, null, true, BasicAppearances.BLUE, null, BasicAppearances.RED, null, false );
 		final Transform3D coneRotator = new Rotator( 180.0 );
 		coneRotator.addChild( cone );
 		scene.addContentNode( "cone", Matrix3D.IDENTITY, coneRotator );
@@ -152,7 +153,7 @@ public class AnimatedHelloWorld
 
 		final Object3DBuilder builder = new Object3DBuilder();
 		final Tessellator shapeTessellator = ShapeTools.createTessellator( shapeToExtrude, 0.025 );
-		builder.addExtrudedShape( shapeTessellator, new Vector3D( 0.0, 0.0, 1.0 ), true, Matrix3D.IDENTITY, true, Materials.BLUE, null, false, true, Materials.RED, null, false, true, Materials.GREEN, null, false, false, false, false );
+		builder.addExtrudedShape( shapeTessellator, Vector3D.POSITIVE_Z_AXIS, true, Matrix3D.IDENTITY, true, BasicAppearances.BLUE, null, false, true, BasicAppearances.RED, null, false, true, BasicAppearances.GREEN, null, false, false, false, false );
 		final Object3D extrudedShape = builder.getObject3D();
 
 		final Transform3D extrudedShapeRotator = new Rotator( 240.0 );
@@ -195,8 +196,8 @@ public class AnimatedHelloWorld
 
 		final Object3DBuilder builder = new Object3DBuilder();
 		final Tessellator freeShapeTessellator = ShapeTools.createTessellator( freeShape, 0.1 );
-		builder.addExtrudedShape( freeShapeTessellator, new Vector3D( 0.0, 0.0, 0.5 ), true, Matrix3D.getTranslation( 0.0, 0.0, 0.8 ), true, Materials.BLUE, null, false, true, Materials.RED, null, false, true, Materials.GREEN, null, false, false, false, true );
-		builder.addExtrudedShape( freeShapeTessellator, new Vector3D( 0.0, 0.0, 0.5 ), true, Matrix3D.getTransform( 0.0, 0.0, 90.0, 0.0, 0.0, 0.0 ), true, Materials.BLUE, null, false, true, Materials.RED, null, false, true, Materials.GREEN, null, false, false, false, true );
+		builder.addExtrudedShape( freeShapeTessellator, new Vector3D( 0.0, 0.0, 0.5 ), true, Matrix3D.getTranslation( 0.0, 0.0, 0.8 ), true, BasicAppearances.BLUE, null, false, true, BasicAppearances.RED, null, false, true, BasicAppearances.GREEN, null, false, false, false, true );
+		builder.addExtrudedShape( freeShapeTessellator, new Vector3D( 0.0, 0.0, 0.5 ), true, Matrix3D.getTransform( 0.0, 0.0, 90.0, 0.0, 0.0, 0.0 ), true, BasicAppearances.BLUE, null, false, true, BasicAppearances.RED, null, false, true, BasicAppearances.GREEN, null, false, false, false, true );
 		return builder.getObject3D();
 	}
 

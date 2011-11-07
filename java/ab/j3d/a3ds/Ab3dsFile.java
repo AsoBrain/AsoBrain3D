@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2004 Sjoerd Bouwman
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -37,7 +37,7 @@ import org.jetbrains.annotations.*;
  * @author  Sjoerd Bouwman
  * @version $Revision$ $Date$
  */
-public final class Ab3dsFile
+public class Ab3dsFile
 {
 	/**
 	 * Set to true to receive debugging to console.
@@ -323,10 +323,10 @@ public final class Ab3dsFile
 		final BasicAppearance appearance = new BasicAppearance();
 
 		final Ab3dsRGB ambient = materialChunk.getAmbient();
-		appearance.setAmbientColor( new Color4f( ambient.getRed(), ambient.getGreen(), ambient.getBlue() );
+		appearance.setAmbientColor( new Color4f( ambient.getRed(), ambient.getGreen(), ambient.getBlue() ) );
 
 		final Ab3dsRGB diffuse = materialChunk.getDiffuse();
-		appearance.setDiffuseColor( new Color4f( diffuse.getRed(), diffuse.getGreen(), diffuse.getBlue(), 1.0f - materialChunk.getTransparency() );
+		appearance.setDiffuseColor( new Color4f( diffuse.getRed(), diffuse.getGreen(), diffuse.getBlue(), 1.0f - materialChunk.getTransparency() ) );
 
 		final Ab3dsRGB specular = materialChunk.getSpecular();
 		appearance.setSpecularColor( new Color4f( specular.getRed(), specular.getGreen(), specular.getBlue() ) );
