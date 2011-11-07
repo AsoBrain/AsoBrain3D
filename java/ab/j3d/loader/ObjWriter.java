@@ -570,17 +570,15 @@ public class ObjWriter
 		@NotNull
 		private String getMaterialName( @Nullable final Appearance appearance )
 		{
-			final String result;
+			String result = null;
 
-			if ( _materials != null )
+			final MtlGenerator materials = _materials;
+			if ( materials != null )
 			{
-				result = _materials.getMaterialName( appearance );
+				result = materials.getMaterialName( appearance );
 			}
-			else if ( appearance instanceof Material )
-			{
-				result = ( (Material)appearance ).code;
-			}
-			else
+
+			if ( result == null )
 			{
 				result = "default";
 			}

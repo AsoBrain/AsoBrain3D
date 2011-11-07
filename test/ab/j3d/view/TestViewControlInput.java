@@ -20,13 +20,12 @@
  */
 package ab.j3d.view;
 
-import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-import java.util.List;
 import javax.swing.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.awt.view.java2d.*;
 import ab.j3d.control.*;
 import ab.j3d.geom.*;
@@ -65,8 +64,17 @@ public class TestViewControlInput
 		final Vector3D rb = new Vector3D(  halfSize,  halfSize, 0.0 );
 		final Vector3D lb = new Vector3D( -halfSize,  halfSize, 0.0 );
 
-		final Material red   = new Material( Color.RED  .getRGB() );
-		final Material green = new Material( Color.GREEN.getRGB() );
+		final BasicAppearance red = new BasicAppearance();
+		red.setAmbientColor( Color4.RED );
+		red.setDiffuseColor( Color4.RED );
+		red.setSpecularColor( Color4.WHITE );
+		red.setShininess( 16 );
+
+		final BasicAppearance green = new BasicAppearance();
+		green.setAmbientColor( Color4.GREEN );
+		green.setDiffuseColor( Color4.GREEN );
+		green.setSpecularColor( Color4.WHITE );
+		green.setShininess( 16 );
 
 		final Object3DBuilder builder = new Object3DBuilder();
 		/* top    */builder.addFace( new Vector3D[]{ lf, lb, rb, rf }, red, false, false ); // Z =  size

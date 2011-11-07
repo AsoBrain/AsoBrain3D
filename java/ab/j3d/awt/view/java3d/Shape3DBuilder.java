@@ -25,7 +25,6 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 import javax.vecmath.Vector3f;
 
-import ab.j3d.Material;
 import ab.j3d.*;
 import ab.j3d.model.*;
 import ab.j3d.model.Face3D.*;
@@ -186,8 +185,7 @@ public class Shape3DBuilder
 	 * IMPORTANT: This class should be used following a strict recipe:
 	 * <ol>
 	 *   <li>
-	 *     Construct the group with the correct material
-	 *     ({@link Material}) and appearance ({@link Appearance}).
+	 *     Construct the group with the correct {@link Appearance}.
 	 *   </li>
 	 *   <li>
 	 *     Call the {@link #prepareFace} method for every face that will be
