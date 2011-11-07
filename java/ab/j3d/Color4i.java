@@ -162,6 +162,11 @@ public class Color4i
 		return _alpha;
 	}
 
+	public float getLuminance()
+	{
+		return ( 0.3f * (float)getRedInt() + 0.59f * (float)getGreenInt() + 0.11f * (float)getBlueInt() ) / 255.0f;
+	}
+
 	public int getRGB()
 	{
 		return getBlueInt() | ( getGreenInt() <<  8 ) | ( getRedInt() << 16 );
@@ -169,6 +174,6 @@ public class Color4i
 
 	public int getARGB()
 	{
-		return getBlueInt() | ( getGreenInt() <<  8 ) | ( getRedInt() << 16 ) | ( Math.round( getAlphaInt() * 255.0f ) << 24 );
+		return getBlueInt() | ( getGreenInt() <<  8 ) | ( getRedInt() << 16 ) | ( getAlphaInt() << 24 );
 	}
 }
