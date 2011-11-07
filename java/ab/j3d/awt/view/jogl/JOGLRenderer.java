@@ -922,7 +922,7 @@ public class JOGLRenderer
 			{
 				try
 				{
-					environmentMap = new SingleImageCubeMap( ImageIO.read( skyImageUrl ) );
+					environmentMap = new SingleImageCubeMap( new BufferedImageTextureMap( ImageIO.read( skyImageUrl ) ) );
 					_environmentMap = environmentMap;
 				}
 				catch ( IOException e )
@@ -1342,12 +1342,13 @@ public class JOGLRenderer
 				 */
 				final TextureCache textureCache = _textureCache;
 
-				final float extraAlpha = objectStyle.getMaterialAlpha();
-				final float combinedAlpha = appearance.getDiffuseColorAlpha() * extraAlpha;
+				final float extraAlpha = objectStyle.getExtraAlpha();
+				final Color4 diffuseColor = appearance.getDiffuseColor();
+				final float combinedAlpha = diffuseColor.getAlphaFloat() * extraAlpha;
 				final boolean isTransparent = ( combinedAlpha < 0.99f ) || textureCache.hasAlpha( appearance.getColorMap() );
 				final boolean blend = ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && isTransparent;
 
-				if ( _shadowPass && ( appearance.getDiffuseColorAlpha() < 0.50f ) )
+				if ( _shadowPass && ( diffuseColor.getAlphaFloat() < 0.50f ) )
 				{
 					continue;
 				}
@@ -1392,7 +1393,7 @@ public class JOGLRenderer
 
 					final boolean reflectionsEnabled = isReflectionsEnabled();
 
-					final ReflectionMap reflectionMap = appearance.getReflectionMap();
+					final CubeMap reflectionMap = appearance.getReflectionMap();
 					final Texture reflectionTexture = reflectionsEnabled && ( reflectionMap != null ) ? textureCache.getCubeMap( reflectionMap ) : null;
 					if ( reflectionTexture != null )
 					{
@@ -1406,7 +1407,7 @@ public class JOGLRenderer
 							 * Interpolate with previous texture stage.
 							 */
 							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_COMBINE );
-							final float reflectivity = ( reflectionMap.getReflectivityMin() + reflectionMap.getReflectivityMax() ) / 2.0f;
+							final float reflectivity = ( appearance.getReflectionMin() + appearance.getReflectionMax() ) / 2.0f;
 							gl.glTexEnvfv( GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_COLOR, new float[] { 0.0f, 0.0f, 0.0f, reflectivity }, 0 );
 
 							gl.glTexEnvi( GL.GL_TEXTURE_ENV, GL.GL_COMBINE_RGB, GL.GL_INTERPOLATE );
@@ -1454,7 +1455,8 @@ public class JOGLRenderer
 					{
 						shaderManager.setLightingEnabled( true );
 						shaderManager.setTextureEnabled( colorMap != null );
-						shaderManager.setReflectivity( reflectionMap );
+						final Color4 reflectionColor = appearance.getReflectionColor();
+						shaderManager.setReflectivity( appearance.getReflectionMin(), appearance.getReflectionMax(), reflectionColor.getRedFloat(), reflectionColor.getGreenFloat(), reflectionColor.getBlueFloat() );
 					}
 
 					/*
@@ -1579,7 +1581,7 @@ public class JOGLRenderer
 			final ShaderManager shaderManager = _shaderManager;
 			shaderManager.setLightingEnabled( hasLighting );
 			shaderManager.setTextureEnabled( false );
-			shaderManager.setReflectivity( null );
+			shaderManager.setReflectivity( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f );
 
 			/*
 			 * Render faces.
@@ -1645,7 +1647,7 @@ public class JOGLRenderer
 		final ShaderManager shaderManager = _shaderManager;
 		shaderManager.setLightingEnabled( hasLighting );
 		shaderManager.setTextureEnabled( false );
-		shaderManager.setReflectivity( null );
+		shaderManager.setReflectivity( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f );
 
 		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
@@ -1696,7 +1698,7 @@ public class JOGLRenderer
 		final ShaderManager shaderManager = _shaderManager;
 		shaderManager.setLightingEnabled( hasLighting );
 		shaderManager.setTextureEnabled( false );
-		shaderManager.setReflectivity( null );
+		shaderManager.setReflectivity( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f );
 
 		for ( final FaceGroup faceGroup : object.getFaceGroups() )
 		{
