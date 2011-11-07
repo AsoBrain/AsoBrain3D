@@ -56,57 +56,75 @@ public class ObjWriter
 	}
 
 	/**
-	 * Texture map URI to resolve texture map names against.
+	 * Previously written appearances, by material name used in the MTL.
 	 */
-	private URI _textureMapURI = null;
+	private final Map<Appearance, String> _appearanceNames = new HashMap<Appearance, String>();
 
 	/**
-	 * Suffix added to material codes to create texture map names.
+	 * Set of names currently in use.
 	 */
-	private String _textureMapSuffix = ".jpg";
+	private final Set<String> _uniqueNames = new HashSet<String>();
 
 	/**
-	 * Returns the URI used to resolve the location of texture maps.
+	 * Add {@link Appearance} to MTL file. If the appearance was added
+	 * before, calling this method will have no effect.
 	 *
-	 * @return  Texture map URI; <code>null</code> if not used.
+	 * @param   appearance  Appearance to add.
+	 *
+	 * @return  Name of appearance.
 	 */
-	@Nullable
-	public URI getTextureMapURI()
+	public String addAppearance( final Appearance appearance )
 	{
-		return _textureMapURI;
+		final Map<Appearance, String> appearanceNames = _appearanceNames;
+
+		String result = appearanceNames.get( appearance );
+		if ( result == null )
+		{
+			result = generateUniqueName( "material" );
+			addAppearance( result, appearance );
+		}
+
+		return result;
 	}
 
 	/**
-	 * Sets the URI used to resolve the location of texture maps.
+	 * Add {@link Appearance} to MTL file. If the appearance was added
+	 * before, calling this method will have no effect.
 	 *
-	 * @param   textureMapURI   Texture map URI; <code>null</code> if not used.
+	 * @param   name        Name to assign to the appearance.
+	 * @param   appearance  Appearance to add.
+	 *
+	 * @throws  IllegalArgumentException if the appearance was already added
+	 *          with another name.
 	 */
-	public void setTextureMapURI( @Nullable final URI textureMapURI )
+	public void addAppearance( final String name, final Appearance appearance )
 	{
-		_textureMapURI = textureMapURI;
+		final Map<Appearance, String> appearanceNames = _appearanceNames;
+		final String oldName = appearanceNames.put( appearance, name );
+		if ( ( oldName != null ) && !oldName.equals( name ) )
+		{
+			throw new IllegalArgumentException( "Trying to add appearance as '" + name + "', but it was was already added as '" + oldName + '"' );
+		}
 	}
 
 	/**
-	 * Returns the suffix that is appended to texture map names. This may be
-	 * used to specify a file extension, which is usually not
-	 * included in {@link Material#colorMap} and so on.
+	 * Generates a unique name from the given name. If the name is already
+	 * unique, it's returned as-is.
 	 *
-	 * @return  Texture map suffix.
-	 */
-	@Nullable
-	public String getTextureMapSuffix()
-	{
-		return _textureMapSuffix;
-	}
-
-	/**
-	 * Sets the suffix that is appended to texture map names.
+	 * @param   name    Name to make unique.
 	 *
-	 * @param   textureMapSuffix    Texture map suffix.
+	 * @return  Unique name.
 	 */
-	public void setTextureMapSuffix( @Nullable final String textureMapSuffix )
+	private String generateUniqueName( final String name )
 	{
-		_textureMapSuffix = textureMapSuffix;
+		String result = name;
+		int uniqueSuffix = 1;
+		while ( _uniqueNames.contains( result ) )
+		{
+			result = name + '_' + uniqueSuffix++;
+		}
+		_uniqueNames.add( result );
+		return result;
 	}
 
 	/**
@@ -137,47 +155,132 @@ public class ObjWriter
 	/**
 	 * Writes an MTL file containing the given appearances.
 	 *
-	 * @param   out             Stream to write to.
-	 * @param   appearances     Appearances to be written.
+	 * @param   out                 Stream to write to.
+	 * @param   appearances         Appearances to be written.
+	 * @param   removeUrlPrefix     Prefix to remove from URLs (optional).
 	 *
 	 * @throws  IOException if an I/O error occurs.
 	 */
-	public void writeMTL( final OutputStream out, final Collection<? extends Appearance> appearances )
+	public void writeMTL( final OutputStream out, final Map<String,? extends Appearance> appearances, final String removeUrlPrefix )
 		throws IOException
 	{
 		final BufferedWriter mtlWriter = new BufferedWriter( new OutputStreamWriter( out, "US-ASCII" ) );
-		final MtlGenerator mtlGenerator = new MtlGenerator( mtlWriter );
 
-		for ( final Appearance appearance : appearances )
+		for ( final Map.Entry<String, ? extends Appearance> entry : appearances.entrySet() )
 		{
-			mtlGenerator.writeAppearance( appearance );
+			writeMtlRecord( mtlWriter, entry.getKey(), entry.getValue(), removeUrlPrefix );
 		}
 
 		mtlWriter.flush();
 	}
 
 	/**
-	 * Writes a ZIP file with an OBJ and MTL file for the given node.
+	 * Writes a definition of the given appearance.
 	 *
-	 * @param   out     Stream to write to.
-	 * @param   node    Node to be written.
-	 * @param   name    Name for the OBJ/MTL files (without extension).
+	 * @param   out                 Character stream to write record to.
+	 * @param   materialName        Material name used in the MTL.
+	 * @param   appearance          Appearance to be written.
+	 * @param   removeUrlPrefix     Prefix to remove from URLs (optional).
 	 *
 	 * @throws  IOException if an I/O error occurs.
 	 */
-	public void writeZIP( final OutputStream out, final Node3D node, final String name )
+	private static void writeMtlRecord( final Writer out, final String materialName, final Appearance appearance, final String removeUrlPrefix )
+		throws IOException
+	{
+		out.write( "newmtl " );
+		out.write( materialName );
+		out.write( '\n' );
+
+		final Color4 ambientColor = appearance.getAmbientColor();
+		out.write( "Ka " );
+		out.write( DECIMAL_FORMAT.format( ambientColor.getRedFloat() ) );
+		out.write( ' ' );
+		out.write( DECIMAL_FORMAT.format( ambientColor.getGreenFloat() ) );
+		out.write( ' ' );
+		out.write( DECIMAL_FORMAT.format( ambientColor.getBlueFloat() ) );
+		out.write( '\n' );
+
+		final Color4 diffuseColor = appearance.getDiffuseColor();
+		out.write( "Kd " );
+		out.write( DECIMAL_FORMAT.format( diffuseColor.getRedFloat() ) );
+		out.write( ' ' );
+		out.write( DECIMAL_FORMAT.format( diffuseColor.getGreenFloat() ) );
+		out.write( ' ' );
+		out.write( DECIMAL_FORMAT.format( diffuseColor.getBlueFloat() ) );
+		out.write( '\n' );
+
+		final Color4 specularColor = appearance.getSpecularColor();
+		out.write( "Ks " );
+		out.write( DECIMAL_FORMAT.format( specularColor.getRedFloat() ) );
+		out.write( ' ' );
+		out.write( DECIMAL_FORMAT.format( specularColor.getGreenFloat() ) );
+		out.write( ' ' );
+		out.write( DECIMAL_FORMAT.format( specularColor.getBlueFloat() ) );
+		out.write( '\n' );
+
+		out.write( "illum 2\n" );
+
+		out.write( "Ns " );
+		final int shininess = appearance.getShininess();
+		// NOTE: This is simply the inverse of what 'ObjLoader' does.
+		out.write( String.valueOf( Math.min( 128, shininess * 1000 / 128 ) ) );
+		out.write( '\n' );
+
+		out.write( "d " );
+		out.write( DECIMAL_FORMAT.format( diffuseColor.getAlphaFloat() ) );
+		out.write( '\n' );
+
+		final TextureMap colorMap = appearance.getColorMap();
+		if ( colorMap != null )
+		{
+			final URL colorMapImageUrl = colorMap.getImageUrl();
+			if ( colorMapImageUrl != null )
+			{
+				String url = colorMapImageUrl.toExternalForm();
+				if ( ( removeUrlPrefix != null ) && url.startsWith( removeUrlPrefix ) )
+				{
+					url = url.substring( removeUrlPrefix.length() );
+				}
+
+				out.write( "map_Kd " );
+				out.write( url );
+				out.write( '\n' );
+			}
+		}
+
+		final TextureMap bumpMap = appearance.getBumpMap();
+		if ( bumpMap != null )
+		{
+			final URL bumpMapImageUrl = bumpMap.getImageUrl();
+			if ( bumpMapImageUrl != null )
+			{
+				String url = bumpMapImageUrl.toExternalForm();
+				if ( ( removeUrlPrefix != null ) && url.startsWith( removeUrlPrefix ) )
+				{
+					url = url.substring( removeUrlPrefix.length() );
+				}
+
+				out.write( "bump " );
+				out.write( url );
+				out.write( '\n' );
+			}
+		}
+	}
+
+	/**
+	 * Writes a ZIP file with an OBJ and MTL file for the given node.
+	 *
+	 * @param   out                 Stream to write to.
+	 * @param   node                Node to be written.
+	 * @param   name                Name for the OBJ/MTL files (without extension).
+	 * @param   removeUrlPrefix     Prefix to remove from URLs (optional).
+	 *
+	 * @throws  IOException if an I/O error occurs.
+	 */
+	public void writeZIP( final OutputStream out, final Node3D node, final String name, final String removeUrlPrefix )
 		throws IOException
 	{
 		final ZipOutputStream zipOut = new ZipOutputStream( new BufferedOutputStream( out ) );
-
-		zipOut.putNextEntry( new ZipEntry( name + ".mtl" ) );
-
-		final BufferedWriter mtlWriter = new BufferedWriter( new OutputStreamWriter( zipOut, "US-ASCII" ) );
-		final MtlGenerator mtlGenerator = new MtlGenerator( mtlWriter );
-		Node3DTreeWalker.walk( mtlGenerator, node );
-
-		mtlWriter.flush();
-		zipOut.closeEntry();
 
 		zipOut.putNextEntry( new ZipEntry( name + ".obj" ) );
 
@@ -189,201 +292,27 @@ public class ObjWriter
 		objWriter.flush();
 		zipOut.closeEntry();
 
+		zipOut.putNextEntry( new ZipEntry( name + ".mtl" ) );
+
+		final BufferedWriter mtlWriter = new BufferedWriter( new OutputStreamWriter( zipOut, "US-ASCII" ) );
+
+		for ( final Map.Entry<Appearance, String> entry : _appearanceNames.entrySet() )
+		{
+			writeMtlRecord( mtlWriter, entry.getValue(), entry.getKey(), removeUrlPrefix );
+		}
+
+		mtlWriter.flush();
+		zipOut.closeEntry();
+
 		zipOut.finish();
 		zipOut.flush();
-	}
-
-	/**
-	 * Node visitor that generates an MTL file containing definitions of the
-	 * materials of all visited {@link Object3D}s.
-	 */
-	private class MtlGenerator
-		implements Node3DVisitor
-	{
-		/**
-		 * Stream to write the MTL file to.
-		 */
-		private final Writer _out;
-
-		/**
-		 * Previously written appearances, by material name used in the MTL.
-		 */
-		private final Map<Appearance, String> _appearanceToMaterial = new HashMap<Appearance, String>();
-
-		/**
-		 * Set of names currently in use.
-		 */
-		private final Set<String> _uniqueNames = new HashSet<String>();
-
-		/**
-		 * Constructs a new instance.
-		 *
-		 * @param   out     Stream to write to.
-		 */
-		MtlGenerator( final Writer out )
-		{
-			_out = out;
-		}
-
-		public boolean visitNode( @NotNull final Node3DPath path )
-		{
-			try
-			{
-				final Node3D node = path.getNode();
-				if ( node instanceof Object3D )
-				{
-					final Object3D object = (Object3D)node;
-					for ( final FaceGroup faceGroup : object.getFaceGroups() )
-					{
-						final Appearance appearance = faceGroup.getAppearance();
-						if ( ( appearance != null ) && !_appearanceToMaterial.containsKey( appearance ) )
-						{
-							writeAppearance( appearance );
-						}
-					}
-				}
-			}
-			catch ( IOException e )
-			{
-				throw new RuntimeException( e );
-			}
-
-			return true;
-		}
-
-		/**
-		 * Writes the given appearance.
-		 *
-		 * @param   appearance  Appearance to be written.
-		 *
-		 * @throws  IOException if an I/O error occurs.
-		 */
-		public void writeAppearance( final Appearance appearance )
-			throws IOException
-		{
-			final String materialName = generateUniqueName( "material" );
-			writeMaterial( materialName, appearance );
-			_appearanceToMaterial.put( appearance, materialName );
-		}
-
-		/**
-		 * Writes a definition of the given appearance.
-		 *
-		 * @param   materialName    Material name used in the MTL.
-		 * @param   appearance      Appearance to be written.
-		 *
-		 * @throws  IOException if an I/O error occurs.
-		 */
-		private void writeMaterial( final String materialName, final Appearance appearance )
-			throws IOException
-		{
-			final Writer out = _out;
-			out.write( "newmtl " );
-			out.write( materialName );
-			out.write( '\n' );
-
-			final Color4 ambientColor = appearance.getAmbientColor();
-			out.write( "Ka " );
-			out.write( DECIMAL_FORMAT.format( ambientColor.getRedFloat() ) );
-			out.write( ' ' );
-			out.write( DECIMAL_FORMAT.format( ambientColor.getGreenFloat() ) );
-			out.write( ' ' );
-			out.write( DECIMAL_FORMAT.format( ambientColor.getBlueFloat() ) );
-			out.write( '\n' );
-
-			final Color4 diffuseColor = appearance.getDiffuseColor();
-			out.write( "Kd " );
-			out.write( DECIMAL_FORMAT.format( diffuseColor.getRedFloat() ) );
-			out.write( ' ' );
-			out.write( DECIMAL_FORMAT.format( diffuseColor.getGreenFloat() ) );
-			out.write( ' ' );
-			out.write( DECIMAL_FORMAT.format( diffuseColor.getBlueFloat() ) );
-			out.write( '\n' );
-
-			final Color4 specularColor = appearance.getSpecularColor();
-			out.write( "Ks " );
-			out.write( DECIMAL_FORMAT.format( specularColor.getRedFloat() ) );
-			out.write( ' ' );
-			out.write( DECIMAL_FORMAT.format( specularColor.getGreenFloat() ) );
-			out.write( ' ' );
-			out.write( DECIMAL_FORMAT.format( specularColor.getBlueFloat() ) );
-			out.write( '\n' );
-
-			out.write( "illum 2\n" );
-
-			out.write( "Ns " );
-			final int shininess = appearance.getShininess();
-			// NOTE: This is simply the inverse of what 'ObjLoader' does.
-			out.write( String.valueOf( Math.min( 128, shininess * 1000 / 128 ) ) );
-			out.write( '\n' );
-
-			out.write( "d " );
-			out.write( DECIMAL_FORMAT.format( diffuseColor.getAlphaFloat() ) );
-			out.write( '\n' );
-
-			final TextureMap colorMap = appearance.getColorMap();
-			if ( colorMap != null )
-			{
-				final URL colorMapImageUrl = colorMap.getImageUrl();
-				if ( colorMapImageUrl != null )
-				{
-					out.write( "map_Kd " );
-					out.write( colorMapImageUrl.toExternalForm() );
-					out.write( '\n' );
-				}
-			}
-
-			final TextureMap bumpMap = appearance.getBumpMap();
-			if ( bumpMap != null )
-			{
-				final URL bumpMapImageUrl = bumpMap.getImageUrl();
-				if ( bumpMapImageUrl != null )
-				{
-					out.write( "bump " );
-					out.write( bumpMapImageUrl.toExternalForm() );
-					out.write( '\n' );
-				}
-			}
-		}
-
-		/**
-		 * Generates a unique name from the given name. If the name is already
-		 * unique, it's returned as-is.
-		 *
-		 * @param   name    Name to make unique.
-		 *
-		 * @return  Unique name.
-		 */
-		private String generateUniqueName( final String name )
-		{
-			String result = name;
-			int uniqueSuffix = 1;
-			while ( _uniqueNames.contains( result ) )
-			{
-				result = name + "_" + uniqueSuffix++;
-			}
-			_uniqueNames.add( result );
-			return result;
-		}
-
-		/**
-		 * Returns the material name used in the MTL for the given appearance.
-		 *
-		 * @param   appearance  Appearance to get the name of.
-		 *
-		 * @return  Material name.
-		 */
-		public String getMaterialName( final Appearance appearance )
-		{
-			return _appearanceToMaterial.get( appearance );
-		}
 	}
 
 	/**
 	 * Node visitor that generates an OBJ file containing geometry for the
 	 * visited {@link Object3D}s.
 	 */
-	private static class ObjGenerator
+	private class ObjGenerator
 		implements Node3DVisitor
 	{
 		/**
@@ -403,32 +332,13 @@ public class ObjWriter
 		private Appearance _currentAppearance = null;
 
 		/**
-		 * Provides material names used in the MTL file.
-		 */
-		@Nullable
-		private MtlGenerator _materials;
-
-		/**
 		 * Constructs a new instance.
 		 *
 		 * @param   out     Stream to write to.
 		 */
 		private ObjGenerator( @NotNull final Writer out )
 		{
-			this( out, null );
-		}
-
-		/**
-		 * Constructs a new instance.
-		 *
-		 * @param   out         Stream to write to.
-		 * @param   materials   Provides material names used in the MTL file;
-		 *                      <code>null</code> if not available.
-		 */
-		private ObjGenerator( @NotNull final Writer out, @Nullable final MtlGenerator materials )
-		{
 			_out = out;
-			_materials = materials;
 		}
 
 		public boolean visitNode( @NotNull final Node3DPath path )
@@ -456,7 +366,7 @@ public class ObjWriter
 						if ( currentAppearance != appearance )
 						{
 							currentAppearance = appearance;
-							final String materialName = getMaterialName( appearance );
+							final String materialName = addAppearance( appearance );
 							out.write( "usemtl " );
 							out.write( materialName );
 							out.write( '\n' );
@@ -560,30 +470,5 @@ public class ObjWriter
 			return String.valueOf( object.getTag() );
 		}
 
-		/**
-		 * Returns the material name for the given appearance.
-		 *
-		 * @param   appearance  Appearance to get the name of.
-		 *
-		 * @return  Material name.
-		 */
-		@NotNull
-		private String getMaterialName( @Nullable final Appearance appearance )
-		{
-			String result = null;
-
-			final MtlGenerator materials = _materials;
-			if ( materials != null )
-			{
-				result = materials.getMaterialName( appearance );
-			}
-
-			if ( result == null )
-			{
-				result = "default";
-			}
-
-			return result;
-		}
 	}
 }
