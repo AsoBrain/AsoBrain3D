@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2009-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,9 +20,11 @@
  */
 package ab.j3d.model;
 
+import java.net.*;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import ab.j3d.junit.*;
 import junit.framework.*;
@@ -33,7 +35,7 @@ import junit.framework.*;
  * @author  Peter S. Heijnen
  * @version $Revision$ ($Date$, $Author$)
  */
-public final class TestCylinder3D
+public class TestCylinder3D
 	extends TestCase
 {
 	/**
@@ -50,22 +52,21 @@ public final class TestCylinder3D
 		throws Exception
 	{
 		System.out.println( CLASS_NAME + ".testConstructor" );
-		final Material material = new Material();
-		material.code = "test";
-		material.colorMap = "test";
-		material.colorMapWidth = 123.0f;
-		material.colorMapHeight = 456.0f;
+		final BasicAppearance appearance = new BasicAppearance();
+		appearance.setDiffuseColor( Color4.WHITE );
+		appearance.setSpecularColor( Color4.WHITE );
+		appearance.setColorMap( new FileTextureMap( new URL( "file:test" ), 123.0f, 456.0f ) );
 
 		final BoxUVMap uvMap = new BoxUVMap( Scene.MM );
 
 		for ( int i = 0 ; i <= 0x3F ; i++ )
 		{
 			new Cylinder3D( 50.0, 100.0 , 32 ,
-			                ( ( i & 0x01 ) == 0 ) ? material : null ,
+			                ( ( i & 0x01 ) == 0 ) ? appearance : null ,
 			                ( ( i & 0x02 ) == 0 ) ? uvMap : null  , false ,
-			                ( ( i & 0x04 ) == 0 ) ? material : null  ,
+			                ( ( i & 0x04 ) == 0 ) ? appearance : null  ,
 			                ( ( i & 0x08 ) == 0 ) ? uvMap : null  ,
-			                ( ( i & 0x10 ) == 0 ) ? material : null  ,
+			                ( ( i & 0x10 ) == 0 ) ? appearance : null  ,
 			                ( ( i & 0x20 ) == 0 ) ? uvMap : null  , false );
 		}
 	}
