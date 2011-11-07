@@ -24,7 +24,6 @@ import java.io.*;
 import java.util.*;
 import javax.media.opengl.*;
 
-import ab.j3d.appearance.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -253,24 +252,6 @@ public class ShaderManager
 	{
 		_multiPassLightingEnabled = multiPassLightingEnabled;
 		update();
-	}
-
-	/**
-	 * Sets the reflectivity properties of the currently active shader.
-	 *
-	 * @param   reflectionMap       Specifies reflection properties;
-	 *                              <code>null</code> to disable reflections.
-	 */
-	public void setReflectivity( @Nullable final ReflectionMap reflectionMap )
-	{
-		if ( reflectionMap == null )
-		{
-			setReflectivity( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f );
-		}
-		else
-		{
-			setReflectivity( reflectionMap.getReflectivityMin(), reflectionMap.getReflectivityMax(), reflectionMap.getIntensityRed(), reflectionMap.getIntensityGreen(), reflectionMap.getIntensityBlue() );
-		}
 	}
 
 	/**
