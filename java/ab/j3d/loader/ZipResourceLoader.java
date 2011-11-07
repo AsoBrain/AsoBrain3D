@@ -24,6 +24,8 @@ import java.io.*;
 import java.net.*;
 import java.util.zip.*;
 
+import org.jetbrains.annotations.*;
+
 /**
  * This class loads a specified resource from a ZIP-archive.
  *
@@ -41,31 +43,42 @@ public class ZipResourceLoader
 	/**
 	 *  The zip file as binary data.
 	 */
-	private byte[] _zipData = null;
+	private byte[] _zipData;
 
 	/**
 	 * Constructs resource loader for ZIP file.
 	 *
 	 * @param   zipUrl  URL to ZIP archive.
-	 *
-	 * @throws IOException  when {@link InputStream } could not be read.
 	 */
-	public ZipResourceLoader( final URL zipUrl )
-		throws IOException
+	public ZipResourceLoader( @NotNull final URL zipUrl )
 	{
 		_zipUrl = zipUrl;
+		_zipData = null;
 	}
 
+	/**
+	 * Constructs resource loader for ZIP file.
+	 *
+	 * @param   zipData     Contents of ZIP file.
+	 */
+	public ZipResourceLoader( @NotNull final byte[] zipData )
+	{
+		_zipUrl = null;
+		_zipData = zipData;
+	}
+
+	@Nullable
 	public URL getResource( final String path )
 	{
 		URL result = null;
 
-		if ( ( path != null ) && !path.isEmpty() )
+		final URL zipUrl = _zipUrl;
+		if ( ( zipUrl != null ) && ( path != null ) && !path.isEmpty() )
 		{
 			try
 			{
 				final String separator = ( path.charAt( 0 ) == '/' ) ? "!" : "!/";
-				result = new URL( "jar:" + _zipUrl.toExternalForm() + separator + path );
+				result = new URL( "jar:" + zipUrl.toExternalForm() + separator + path );
 			}
 			catch ( MalformedURLException e )
 			{
@@ -80,7 +93,7 @@ public class ZipResourceLoader
 	{
 		final byte[] binaryData = _zipData;
 		InputStream result = null;
-		if ( binaryData != null && binaryData.length > 0 )
+		if ( ( binaryData != null ) && binaryData.length > 0 )
 		{
 			try
 			{
