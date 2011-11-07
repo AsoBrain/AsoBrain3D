@@ -96,7 +96,12 @@ public class ViewPointComboBox
 		             0.5,             -0.5, Math.sqrt( 0.5 ), 0.0 ) );
 
 	/**
-	 * Standard avaiable view points.
+	 * Name of resource bundle for this class.
+	 */
+	private static final String BUNDLE_NAME = ViewPointComboBox.class.getPackage().getName() + ".LocalStrings";
+
+	/**
+	 * Standard available view points.
 	 */
 	public static final List<ViewPoint> STANDARD_VIEW_POINTS = Arrays.asList( FRONT_VIEW, REAR_VIEW, TOP_VIEW, BOTTOM_VIEW, RIGHT_VIEW, LEFT_VIEW, ISOMETRIC_VIEW );
 
@@ -134,7 +139,7 @@ public class ViewPointComboBox
 		_view = view;
 		_selectedViewPoint = null;
 
-		final ResourceBundle bundle = ResourceBundle.getBundle( "LocalStrings", locale );
+		final ResourceBundle bundle = ResourceBundle.getBundle( BUNDLE_NAME, locale );
 
 		final Map<ViewPoint,String> labels = new HashMap<ViewPoint, String>();
 		for ( final ViewPoint viewPoint : viewPoints )

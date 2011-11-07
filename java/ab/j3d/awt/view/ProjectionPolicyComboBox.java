@@ -38,6 +38,11 @@ public class ProjectionPolicyComboBox
 	extends JComboBox
 {
 	/**
+	 * Name of resource bundle for this class.
+	 */
+	private static final String BUNDLE_NAME = ProjectionPolicyComboBox.class.getPackage().getName() + ".LocalStrings";
+
+	/**
 	 * Construct a new action to switch the projection policy of a view.
 	 *
 	 * @param   locale          Preferred locale for internationalization.
@@ -52,7 +57,7 @@ public class ProjectionPolicyComboBox
 
 		final ProjectionPolicy[] values = ProjectionPolicy.values();
 
-		final ResourceBundle bundle = ResourceBundle.getBundle( "LocalStrings", locale );
+		final ResourceBundle bundle = ResourceBundle.getBundle( BUNDLE_NAME, locale );
 
 		final Map<ProjectionPolicy,String> labels = new EnumMap<ProjectionPolicy, String>( ProjectionPolicy.class );
 		for ( final ProjectionPolicy value : values )

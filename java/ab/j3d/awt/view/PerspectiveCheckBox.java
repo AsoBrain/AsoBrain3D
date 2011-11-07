@@ -35,6 +35,11 @@ public class PerspectiveCheckBox
 	extends JCheckBox
 {
 	/**
+	 * Name of resource bundle for this class.
+	 */
+	private static final String BUNDLE_NAME = PerspectiveCheckBox.class.getPackage().getName() + ".LocalStrings";
+
+	/**
 	 * Create action.
 	 *
 	 * @param   locale  Preferred locale for internationalization.
@@ -44,7 +49,7 @@ public class PerspectiveCheckBox
 	{
 		setOpaque( false );
 
-		final ResourceBundle bundle = ResourceBundle.getBundle( "LocalStrings", locale );
+		final ResourceBundle bundle = ResourceBundle.getBundle( BUNDLE_NAME, locale );
 		setText( bundle.getString( "togglePerspective" ) );
 
 		setModel( new ToggleButtonModel()

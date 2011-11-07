@@ -37,9 +37,13 @@ public class ZoomToFitAction
 	extends AbstractAction
 {
 	/**
+	 * Name of resource bundle for this class.
+	 */
+	private static final String BUNDLE_NAME = ZoomToFitAction.class.getPackage().getName() + ".LocalStrings";
+
+	/**
 	 * Camera control to perform action on.
 	 */
-
 	private final CameraControl _cameraControl;
 
 	/**
@@ -51,7 +55,7 @@ public class ZoomToFitAction
 	public ZoomToFitAction( final Locale locale, final CameraControl cameraControl )
 	{
 		_cameraControl = cameraControl;
-		final ResourceBundle bundle = ResourceBundle.getBundle( "LocalStrings", locale );
+		final ResourceBundle bundle = ResourceBundle.getBundle( BUNDLE_NAME, locale );
 
 		putValue( ACTION_COMMAND_KEY, CameraControl.ZOOM_TO_FIT );
 		putValue( NAME, bundle.getString( CameraControl.ZOOM_TO_FIT ) );

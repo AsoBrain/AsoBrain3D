@@ -71,6 +71,11 @@ public class ViewerApplet
 	private static final Pattern GRADIENT_2_RGB_6 = Pattern.compile( "#[0-9a-f]{6} #[0-9a-f]{6}" );
 
 	/**
+	 * Name of resource bundle for this class.
+	 */
+	private static final String BUNDLE_NAME = ViewerApplet.class.getPackage().getName() + ".LocalStrings";
+
+	/**
 	 * 3D view.
 	 */
 	private View3D _view;
@@ -94,7 +99,7 @@ public class ViewerApplet
 	public void init()
 	{
 		final Locale locale = getLocale();
-		final ResourceBundle bundle = ResourceBundle.getBundle( "LocalStrings", locale );
+		final ResourceBundle bundle = ResourceBundle.getBundle( BUNDLE_NAME, locale );
 
 		try
 		{

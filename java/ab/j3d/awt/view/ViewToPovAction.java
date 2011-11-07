@@ -66,6 +66,11 @@ public class ViewToPovAction
 	private static final long serialVersionUID = 3750555513179329632L;
 
 	/**
+	 * Name of resource bundle for this class.
+	 */
+	private static final String BUNDLE_NAME = ViewToPovAction.class.getPackage().getName() + ".LocalStrings";
+
+	/**
 	 * The {@link ImagePanel} is constructed and added to the view. When the
 	 * user clicks on the view, the panel is set invisible and the view component
 	 * is set visible (the original view is visible again).
@@ -77,7 +82,7 @@ public class ViewToPovAction
 	 */
 	public ViewToPovAction( final Locale locale, final View3D view, final JPanel viewContainer, final Object constraints )
 	{
-		final ResourceBundle bundle = ResourceBundle.getBundle( "LocalStrings", locale );
+		final ResourceBundle bundle = ResourceBundle.getBundle( BUNDLE_NAME, locale );
 		_bundle = bundle;
 
 		final String name = "pov";
