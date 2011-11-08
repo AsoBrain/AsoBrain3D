@@ -31,8 +31,6 @@ import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
-import com.numdata.oss.*;
-import com.numdata.oss.io.*;
 import org.jetbrains.annotations.*;
 
 /**
