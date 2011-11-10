@@ -91,6 +91,22 @@ public class DatatypeConverter
 	}
 
 	/**
+	 * Converts the given data-time value to a calendar instance. The given
+	 * value must be a valid lexical value of the XML Schema
+	 * <code>dateTime</code> data type.
+	 *
+	 * @param   value   Value to be parsed.
+	 *
+	 * @return  String representation of the calendar's date and time.
+	 */
+	public static Calendar parseDateTime( final String value )
+	{
+		final DatatypeFactory datatypeFactory = getDatatypeFactory();
+		final XMLGregorianCalendar xmlGregorianCalendar = datatypeFactory.newXMLGregorianCalendar( value );
+		return xmlGregorianCalendar.toGregorianCalendar();
+	}
+
+	/**
 	 * Converts the given value into a valid lexical value for the XML Schema
 	 * <code>int</code> data type.
 	 *
