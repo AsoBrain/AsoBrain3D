@@ -86,8 +86,15 @@ public class KmzWriter
 
 		zipOut.putNextEntry( new ZipEntry( colladaFileName ) );
 
-		final StAXColladaWriter colladaWriter = new StAXColladaWriter( _scene );
-		colladaWriter.write( zipOut );
+		final ColladaWriter colladaWriter = new ColladaWriter( _scene );
+		try
+		{
+			colladaWriter.write( zipOut );
+		}
+		catch ( XMLException e )
+		{
+			throw new IOException( e );
+		}
 
 		for ( final URI imageURI : colladaWriter.getImages() )
 		{
