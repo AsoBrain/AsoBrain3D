@@ -24,13 +24,14 @@ package ab.j3d.loader;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import javax.xml.bind.*;
-import javax.xml.stream.*;
+import javax.xml.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
+import ab.xml.*;
+import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -95,7 +96,7 @@ public class ColladaWriter
 	{
 		_scene = scene;
 		_idMap = new HashMap<String, Integer>();
-		_libraryGeometry = new HashMap<Node3D, String>();
+		_libraryGeometry = new LinkedHashMap<Node3D, String>();
 		_libraryMaterials = new LinkedHashMap<Appearance, String>();
 		_libraryImages = new LinkedHashMap<URI, String>();
 	}
@@ -105,22 +106,17 @@ public class ColladaWriter
 	 *
 	 * @param   out     Output stream to write to.
 	 *
-	 * @throws  IOException if an I/O error occurs.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
 	public void write( final OutputStream out )
-		throws IOException
+		throws XMLException
 	{
-		final XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newFactory();
-		try
-		{
-			final XMLStreamWriter plainWriter = xmlOutputFactory.createXMLStreamWriter( out );
-			final XMLStreamWriter indentingWriter = new IndentingXMLStreamWriter( plainWriter );
-			write( indentingWriter );
-		}
-		catch ( XMLStreamException e )
-		{
-			throw new IOException( e );
-		}
+		final XMLWriterFactory factory = XMLWriterFactory.newInstance();
+		factory.setIndenting( true );
+
+		final XMLWriter writer = factory.createXMLWriter( out, "UTF-8" );
+		write( writer );
+		writer.flush();
 	}
 
 	/**
@@ -128,21 +124,21 @@ public class ColladaWriter
 	 *
 	 * @param   writer  Writer to write to.
 	 *
-	 * @throws  XMLStreamException if an XML-related error occurs.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	public void write( final XMLStreamWriter writer )
-		throws XMLStreamException
+	public void write( final XMLWriter writer )
+		throws XMLException
 	{
 		_idMap.clear();
 		_libraryGeometry.clear();
 		_libraryMaterials.clear();
 		_libraryImages.clear();
 
-		writer.writeStartDocument();
+		writer.startDocument();
 
-		writer.writeStartElement( "COLLADA" );
-		writer.writeDefaultNamespace( NS_COLLADA_1_4 );
-		writer.writeAttribute( "version", "1.4.1" );
+		writer.setPrefix( XMLConstants.DEFAULT_NS_PREFIX, NS_COLLADA_1_4 );
+		writer.startTag( NS_COLLADA_1_4, "COLLADA" );
+		writer.attribute( null, "version", "1.4.1" );
 
 		writeAsset( writer );
 		writeLibraryVisualScenes( writer );
@@ -152,9 +148,9 @@ public class ColladaWriter
 		writeLibraryImages( writer );
 		writeScene( writer );
 
-		writer.writeEndElement(); // COLLADA
+		writer.endTag( NS_COLLADA_1_4, "COLLADA" );
 
-		writer.writeEndDocument();
+		writer.endDocument();
 		writer.flush();
 	}
 
@@ -189,32 +185,33 @@ public class ColladaWriter
 	 *
 	 * @param   writer  Writer to write to.
 	 *
-	 * @throws  XMLStreamException if the element can't be written.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeAsset( final XMLStreamWriter writer )
-		throws XMLStreamException
+	private void writeAsset( final XMLWriter writer )
+		throws XMLException
 	{
-		writer.writeStartElement( "asset" );
+		writer.startTag( NS_COLLADA_1_4, "asset" );
 
 		final String currentDateTime = DatatypeConverter.printDateTime( Calendar.getInstance() );
 
-		writer.writeStartElement( "created" );
-		writer.writeCharacters( currentDateTime );
-		writer.writeEndElement();
+		writer.startTag( NS_COLLADA_1_4, "created" );
+		writer.text( currentDateTime );
+		writer.endTag( NS_COLLADA_1_4, "created" );
 
-		writer.writeStartElement( "modified" );
-		writer.writeCharacters( currentDateTime );
-		writer.writeEndElement();
+		writer.startTag( NS_COLLADA_1_4, "modified" );
+		writer.text( currentDateTime );
+		writer.endTag( NS_COLLADA_1_4, "modified" );
 
-		writer.writeEmptyElement( "unit" );
-		writer.writeAttribute( "name", "scene_unit" );
-		writer.writeAttribute( "meter", DatatypeConverter.printDouble( _scene.getUnit() ) );
+		writer.emptyTag( NS_COLLADA_1_4, "unit" );
+		writer.attribute( null, "name", "scene_unit" );
+		writer.attribute( null, "meter", DatatypeConverter.printDouble( _scene.getUnit() ) );
+		writer.endTag( NS_COLLADA_1_4, "unit" );
 
-		writer.writeStartElement( "up_axis" );
-		writer.writeCharacters( "Z_UP" );
-		writer.writeEndElement();
+		writer.startTag( NS_COLLADA_1_4, "up_axis" );
+		writer.text( "Z_UP" );
+		writer.endTag( NS_COLLADA_1_4, "up_axis" );
 
-		writer.writeEndElement();
+		writer.endTag( NS_COLLADA_1_4, "asset" );
 	}
 
 	/**
@@ -222,14 +219,14 @@ public class ColladaWriter
 	 *
 	 * @param   writer  Writer to write to.
 	 *
-	 * @throws  XMLStreamException if the element can't be written.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeLibraryVisualScenes( final XMLStreamWriter writer )
-		throws XMLStreamException
+	private void writeLibraryVisualScenes( final XMLWriter writer )
+		throws XMLException
 	{
-		writer.writeStartElement( "library_visual_scenes" );
+		writer.startTag( NS_COLLADA_1_4, "library_visual_scenes" );
 		writeVisualScene( writer );
-		writer.writeEndElement();
+		writer.endTag( NS_COLLADA_1_4, "library_visual_scenes" );
 	}
 
 	/**
@@ -237,20 +234,20 @@ public class ColladaWriter
 	 *
 	 * @param   writer  Writer to write to.
 	 *
-	 * @throws  XMLStreamException if the element can't be written.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeVisualScene( final XMLStreamWriter writer )
-		throws XMLStreamException
+	private void writeVisualScene( final XMLWriter writer )
+		throws XMLException
 	{
-		writer.writeStartElement( "visual_scene" );
-		writer.writeAttribute( "id", "scene" );
+		writer.startTag( NS_COLLADA_1_4, "visual_scene" );
+		writer.attribute( null, "id", "scene" );
 
 		for ( final ContentNode contentNode : _scene.getContentNodes() )
 		{
 			writeNode( writer, contentNode );
 		}
 
-		writer.writeEndElement();
+		writer.endTag( NS_COLLADA_1_4, "visual_scene" );
 	}
 
 	/**
@@ -259,18 +256,18 @@ public class ColladaWriter
 	 * @param   writer          Writer to write to.
 	 * @param   contentNode     Content node to be written.
 	 *
-	 * @throws  XMLStreamException if the element can't be written.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeNode( final XMLStreamWriter writer, final ContentNode contentNode )
-		throws XMLStreamException
+	private void writeNode( final XMLWriter writer, final ContentNode contentNode )
+		throws XMLException
 	{
-		writer.writeStartElement( "node" );
-		writer.writeAttribute( "name", convertToNCName( String.valueOf( contentNode.getID() ) ) );
+		writer.startTag( NS_COLLADA_1_4, "node" );
+		writer.attribute( null, "name", convertToNCName( String.valueOf( contentNode.getID() ) ) );
 
 		writeMatrix( writer, contentNode.getTransform() );
 		writeNode( writer, contentNode.getNode3D() );
 
-		writer.writeEndElement();
+		writer.endTag( NS_COLLADA_1_4, "node" );
 	}
 
 	/**
@@ -283,17 +280,17 @@ public class ColladaWriter
 	 * @param   writer  Writer to write to.
 	 * @param   node    Node to be written.
 	 *
-	 * @throws  XMLStreamException if the element can't be written.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeNode( final XMLStreamWriter writer, final Node3D node )
-		throws XMLStreamException
+	private void writeNode( final XMLWriter writer, final Node3D node )
+		throws XMLException
 	{
-		writer.writeStartElement( "node" );
+		writer.startTag( NS_COLLADA_1_4, "node" );
 
 		final Object tag = node.getTag();
 		if ( tag != null )
 		{
-			writer.writeAttribute( "name", convertToNCName( String.valueOf( tag ) ) );
+			writer.attribute( null, "name", convertToNCName( String.valueOf( tag ) ) );
 		}
 
 		if ( node instanceof Object3D )
@@ -305,11 +302,11 @@ public class ColladaWriter
 				_libraryGeometry.put( node, geometryID );
 			}
 
-			writer.writeStartElement( "instance_geometry" );
-			writer.writeAttribute( "url", "#" + geometryID );
+			writer.startTag( NS_COLLADA_1_4, "instance_geometry" );
+			writer.attribute( null, "url", "#" + geometryID );
 
-			writer.writeStartElement( "bind_material" );
-			writer.writeStartElement( "technique_common" );
+			writer.startTag( NS_COLLADA_1_4, "bind_material" );
+			writer.startTag( NS_COLLADA_1_4, "technique_common" );
 
 			final Set<String> boundMaterials = new HashSet<String>();
 
@@ -320,23 +317,24 @@ public class ColladaWriter
 				final String materialID = getMaterialID( appearance );
 				if ( boundMaterials.add( materialID ) )
 				{
-					writer.writeStartElement( "instance_material" );
-					writer.writeAttribute( "symbol", materialID );
-					writer.writeAttribute( "target", "#" + materialID );
+					writer.startTag( NS_COLLADA_1_4, "instance_material" );
+					writer.attribute( null, "symbol", materialID );
+					writer.attribute( null, "target", "#" + materialID );
 
-					writer.writeEmptyElement( "bind_vertex_input" );
-					writer.writeAttribute( "semantic", "UVSET0" );
-					writer.writeAttribute( "input_semantic", "TEXCOORD" );
-					writer.writeAttribute( "input_set", "0" );
+					writer.emptyTag( NS_COLLADA_1_4, "bind_vertex_input" );
+					writer.attribute( null, "semantic", "UVSET0" );
+					writer.attribute( null, "input_semantic", "TEXCOORD" );
+					writer.attribute( null, "input_set", "0" );
+					writer.endTag( NS_COLLADA_1_4, "bind_vertex_input" );
 
-					writer.writeEndElement(); // instance_material
+					writer.endTag( NS_COLLADA_1_4, "instance_material" );
 				}
 			}
 
-			writer.writeEndElement(); // technique_common
-			writer.writeEndElement(); // bind_material
+			writer.endTag( NS_COLLADA_1_4, "technique_common" );
+			writer.endTag( NS_COLLADA_1_4, "bind_material" );
 
-			writer.writeEndElement(); // instance_geometry
+			writer.endTag( NS_COLLADA_1_4, "instance_geometry" );
 		}
 		else if ( node instanceof Light3D )
 		{
@@ -353,7 +351,7 @@ public class ColladaWriter
 			writeNode( writer, childNode );
 		}
 
-		writer.writeEndElement();
+		writer.endTag( NS_COLLADA_1_4, "node" );
 	}
 
 	/**
@@ -362,46 +360,46 @@ public class ColladaWriter
 	 * @param   writer  Writer to write to.
 	 * @param   matrix  Matrix to be written.
 	 *
-	 * @throws  XMLStreamException if the element can't be written.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeMatrix( final XMLStreamWriter writer, final Matrix3D matrix )
-		throws XMLStreamException
+	private void writeMatrix( final XMLWriter writer, final Matrix3D matrix )
+		throws XMLException
 	{
-		writer.writeStartElement( "matrix" );
+		writer.startTag( NS_COLLADA_1_4, "matrix" );
 
-		writer.writeCharacters( DatatypeConverter.printDouble( matrix.xx ) );
-		writer.writeCharacters( " " );
-		writer.writeCharacters( DatatypeConverter.printDouble( matrix.xy ) );
-		writer.writeCharacters( " " );
-		writer.writeCharacters( DatatypeConverter.printDouble( matrix.xz ) );
-		writer.writeCharacters( " " );
-		writer.writeCharacters( DatatypeConverter.printDouble( matrix.xo ) );
-		writer.writeCharacters( "  " );
-		writer.writeCharacters( DatatypeConverter.printDouble( matrix.yx ) );
-		writer.writeCharacters( " " );
-		writer.writeCharacters( DatatypeConverter.printDouble( matrix.yy ) );
-		writer.writeCharacters( " " );
-		writer.writeCharacters( DatatypeConverter.printDouble( matrix.yz ) );
-		writer.writeCharacters( " " );
-		writer.writeCharacters( DatatypeConverter.printDouble( matrix.yo ) );
-		writer.writeCharacters( "  " );
-		writer.writeCharacters( DatatypeConverter.printDouble( matrix.zx ) );
-		writer.writeCharacters( " " );
-		writer.writeCharacters( DatatypeConverter.printDouble( matrix.zy ) );
-		writer.writeCharacters( " " );
-		writer.writeCharacters( DatatypeConverter.printDouble( matrix.zz ) );
-		writer.writeCharacters( " " );
-		writer.writeCharacters( DatatypeConverter.printDouble( matrix.zo ) );
-		writer.writeCharacters( "  " );
-		writer.writeCharacters( DatatypeConverter.printDouble( 0.0 ) );
-		writer.writeCharacters( " " );
-		writer.writeCharacters( DatatypeConverter.printDouble( 0.0 ) );
-		writer.writeCharacters( " " );
-		writer.writeCharacters( DatatypeConverter.printDouble( 0.0 ) );
-		writer.writeCharacters( " " );
-		writer.writeCharacters( DatatypeConverter.printDouble( 1.0 ) );
+		writer.text( DatatypeConverter.printDouble( matrix.xx ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printDouble( matrix.xy ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printDouble( matrix.xz ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printDouble( matrix.xo ) );
+		writer.text( "  " );
+		writer.text( DatatypeConverter.printDouble( matrix.yx ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printDouble( matrix.yy ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printDouble( matrix.yz ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printDouble( matrix.yo ) );
+		writer.text( "  " );
+		writer.text( DatatypeConverter.printDouble( matrix.zx ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printDouble( matrix.zy ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printDouble( matrix.zz ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printDouble( matrix.zo ) );
+		writer.text( "  " );
+		writer.text( DatatypeConverter.printDouble( 0.0 ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printDouble( 0.0 ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printDouble( 0.0 ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printDouble( 1.0 ) );
 
-		writer.writeEndElement();
+		writer.endTag( NS_COLLADA_1_4, "matrix" );
 	}
 
 	/**
@@ -410,12 +408,12 @@ public class ColladaWriter
 	 *
 	 * @param   writer  Writer to write to.
 	 *
-	 * @throws  XMLStreamException if the element can't be written.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeLibraryGeometries( final XMLStreamWriter writer )
-		throws XMLStreamException
+	private void writeLibraryGeometries( final XMLWriter writer )
+		throws XMLException
 	{
-		writer.writeStartElement( "library_geometries" );
+		writer.startTag( NS_COLLADA_1_4, "library_geometries" );
 
 		for ( final Map.Entry<Node3D, String> entry : _libraryGeometry.entrySet() )
 		{
@@ -432,7 +430,7 @@ public class ColladaWriter
 			}
 		}
 
-		writer.writeEndElement(); // library_geometries
+		writer.endTag( NS_COLLADA_1_4, "library_geometries" );
 	}
 
 	/**
@@ -442,10 +440,10 @@ public class ColladaWriter
 	 * @param   mesh        Geometry to be written.
 	 * @param   geometryID  ID of the geometry element.
 	 *
-	 * @throws  XMLStreamException if the element can't be written.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeGeometry( final XMLStreamWriter writer, final Object3D mesh, final String geometryID )
-		throws XMLStreamException
+	private void writeGeometry( final XMLWriter writer, final Object3D mesh, final String geometryID )
+		throws XMLException
 	{
 		/*
 		 * Write vertex coordinates.
@@ -453,50 +451,53 @@ public class ColladaWriter
 		final String positionID = geometryID + "-position";
 		final String positionArrayID = positionID + "-array";
 
-		writer.writeStartElement( "geometry" );
-		writer.writeAttribute( "id", geometryID );
+		writer.startTag( NS_COLLADA_1_4, "geometry" );
+		writer.attribute( null, "id", geometryID );
 
-		writer.writeStartElement( "mesh" );
+		writer.startTag( NS_COLLADA_1_4, "mesh" );
 
-		writer.writeStartElement( "source" );
-		writer.writeAttribute( "id", positionID );
+		writer.startTag( NS_COLLADA_1_4, "source" );
+		writer.attribute( null, "id", positionID );
 
-		writer.writeStartElement( "float_array" );
-		writer.writeAttribute( "id", positionArrayID );
-		writer.writeAttribute( "count", DatatypeConverter.printInt( mesh.getVertexCount() * 3 ) );
+		writer.startTag( NS_COLLADA_1_4, "float_array" );
+		writer.attribute( null, "id", positionArrayID );
+		writer.attribute( null, "count", DatatypeConverter.printInt( mesh.getVertexCount() * 3 ) );
 		for ( final Vector3D position : mesh.getVertexCoordinates() )
 		{
-			writer.writeCharacters( DatatypeConverter.printDouble( position.x ) );
-			writer.writeCharacters( " " );
-			writer.writeCharacters( DatatypeConverter.printDouble( position.y ) );
-			writer.writeCharacters( " " );
-			writer.writeCharacters( DatatypeConverter.printDouble( position.z ) );
-			writer.writeCharacters( " " );
+			writer.text( DatatypeConverter.printDouble( position.x ) );
+			writer.text( " " );
+			writer.text( DatatypeConverter.printDouble( position.y ) );
+			writer.text( " " );
+			writer.text( DatatypeConverter.printDouble( position.z ) );
+			writer.text( " " );
 		}
-		writer.writeEndElement(); // float_array
+		writer.endTag( NS_COLLADA_1_4, "float_array" );
 
-		writer.writeStartElement( "technique_common" );
+		writer.startTag( NS_COLLADA_1_4, "technique_common" );
 
-		writer.writeStartElement( "accessor" );
-		writer.writeAttribute( "source", positionArrayID );
-		writer.writeAttribute( "count", DatatypeConverter.printInt( mesh.getVertexCount() ) );
-		writer.writeAttribute( "stride", "3" );
+		writer.startTag( NS_COLLADA_1_4, "accessor" );
+		writer.attribute( null, "source", positionArrayID );
+		writer.attribute( null, "count", DatatypeConverter.printInt( mesh.getVertexCount() ) );
+		writer.attribute( null, "stride", "3" );
 
-		writer.writeEmptyElement( "param" );
-		writer.writeAttribute( "name", "X" );
-		writer.writeAttribute( "type", "float" );
+		writer.emptyTag( NS_COLLADA_1_4, "param" );
+		writer.attribute( null, "name", "X" );
+		writer.attribute( null, "type", "float" );
+		writer.endTag( NS_COLLADA_1_4, "param" );
 
-		writer.writeEmptyElement( "param" );
-		writer.writeAttribute( "name", "Y" );
-		writer.writeAttribute( "type", "float" );
+		writer.emptyTag( NS_COLLADA_1_4, "param" );
+		writer.attribute( null, "name", "Y" );
+		writer.attribute( null, "type", "float" );
+		writer.endTag( NS_COLLADA_1_4, "param" );
 
-		writer.writeEmptyElement( "param" );
-		writer.writeAttribute( "name", "Z" );
-		writer.writeAttribute( "type", "float" );
+		writer.emptyTag( NS_COLLADA_1_4, "param" );
+		writer.attribute( null, "name", "Z" );
+		writer.attribute( null, "type", "float" );
+		writer.endTag( NS_COLLADA_1_4, "param" );
 
-		writer.writeEndElement(); // accessor
-		writer.writeEndElement(); // technique_common
-		writer.writeEndElement(); // source
+		writer.endTag( NS_COLLADA_1_4, "accessor" );
+		writer.endTag( NS_COLLADA_1_4, "technique_common" );
+		writer.endTag( NS_COLLADA_1_4, "source" );
 
 		int globalVertexCount = 0;
 
@@ -506,11 +507,11 @@ public class ColladaWriter
 		final String normalID = geometryID + "-normal";
 		final String normalArrayID = normalID + "-array";
 
-		writer.writeStartElement( "source" );
-		writer.writeAttribute( "id", normalID );
+		writer.startTag( NS_COLLADA_1_4, "source" );
+		writer.attribute( null, "id", normalID );
 
-		writer.writeStartElement( "float_array" );
-		writer.writeAttribute( "id", normalArrayID );
+		writer.startTag( NS_COLLADA_1_4, "float_array" );
+		writer.attribute( null, "id", normalArrayID );
 
 		for ( final FaceGroup faceGroup : mesh.getFaceGroups() )
 		{
@@ -519,7 +520,7 @@ public class ColladaWriter
 				globalVertexCount += face.getVertexCount();
 			}
 		}
-		writer.writeAttribute( "count", DatatypeConverter.printInt( globalVertexCount * 3 ) );
+		writer.attribute( null, "count", DatatypeConverter.printInt( globalVertexCount * 3 ) );
 
 		for ( final FaceGroup faceGroup : mesh.getFaceGroups() )
 		{
@@ -528,39 +529,42 @@ public class ColladaWriter
 				for ( int i = 0; i < face.getVertexCount(); i++ )
 				{
 					final Vector3D normal = face.getVertexNormal( i );
-					writer.writeCharacters( DatatypeConverter.printDouble( normal.x ) );
-					writer.writeCharacters( " " );
-					writer.writeCharacters( DatatypeConverter.printDouble( normal.y ) );
-					writer.writeCharacters( " " );
-					writer.writeCharacters( DatatypeConverter.printDouble( normal.z ) );
-					writer.writeCharacters( " " );
+					writer.text( DatatypeConverter.printDouble( normal.x ) );
+					writer.text( " " );
+					writer.text( DatatypeConverter.printDouble( normal.y ) );
+					writer.text( " " );
+					writer.text( DatatypeConverter.printDouble( normal.z ) );
+					writer.text( " " );
 				}
 			}
 		}
-		writer.writeEndElement(); // float_array
+		writer.endTag( NS_COLLADA_1_4, "float_array" );
 
-		writer.writeStartElement( "technique_common" );
+		writer.startTag( NS_COLLADA_1_4, "technique_common" );
 
-		writer.writeStartElement( "accessor" );
-		writer.writeAttribute( "source", normalArrayID );
-		writer.writeAttribute( "count", DatatypeConverter.printInt( globalVertexCount ) );
-		writer.writeAttribute( "stride", "3" );
+		writer.startTag( NS_COLLADA_1_4, "accessor" );
+		writer.attribute( null, "source", normalArrayID );
+		writer.attribute( null, "count", DatatypeConverter.printInt( globalVertexCount ) );
+		writer.attribute( null, "stride", "3" );
 
-		writer.writeEmptyElement( "param" );
-		writer.writeAttribute( "name", "X" );
-		writer.writeAttribute( "type", "float" );
+		writer.emptyTag( NS_COLLADA_1_4, "param" );
+		writer.attribute( null, "name", "X" );
+		writer.attribute( null, "type", "float" );
+		writer.endTag( NS_COLLADA_1_4, "param" );
 
-		writer.writeEmptyElement( "param" );
-		writer.writeAttribute( "name", "Y" );
-		writer.writeAttribute( "type", "float" );
+		writer.emptyTag( NS_COLLADA_1_4, "param" );
+		writer.attribute( null, "name", "Y" );
+		writer.attribute( null, "type", "float" );
+		writer.endTag( NS_COLLADA_1_4, "param" );
 
-		writer.writeEmptyElement( "param" );
-		writer.writeAttribute( "name", "Z" );
-		writer.writeAttribute( "type", "float" );
+		writer.emptyTag( NS_COLLADA_1_4, "param" );
+		writer.attribute( null, "name", "Z" );
+		writer.attribute( null, "type", "float" );
+		writer.endTag( NS_COLLADA_1_4, "param" );
 
-		writer.writeEndElement(); // accessor
-		writer.writeEndElement(); // technique_common
-		writer.writeEndElement(); // source
+		writer.endTag( NS_COLLADA_1_4, "accessor" );
+		writer.endTag( NS_COLLADA_1_4, "technique_common" );
+		writer.endTag( NS_COLLADA_1_4, "source" );
 
 		/*
 		 * Write texture coordinates.
@@ -568,13 +572,13 @@ public class ColladaWriter
 		final String texcoordID = geometryID + "-texcoord";
 		final String texcoordArrayID = texcoordID + "-array";
 
-		writer.writeStartElement( "source" );
-		writer.writeAttribute( "id", texcoordID );
+		writer.startTag( NS_COLLADA_1_4, "source" );
+		writer.attribute( null, "id", texcoordID );
 
-		writer.writeStartElement( "float_array" );
-		writer.writeAttribute( "id", texcoordArrayID );
+		writer.startTag( NS_COLLADA_1_4, "float_array" );
+		writer.attribute( null, "id", texcoordArrayID );
 
-		writer.writeAttribute( "count", DatatypeConverter.printInt( globalVertexCount * 2 ) );
+		writer.attribute( null, "count", DatatypeConverter.printInt( globalVertexCount * 2 ) );
 
 		for ( final FaceGroup faceGroup : mesh.getFaceGroups() )
 		{
@@ -583,46 +587,49 @@ public class ColladaWriter
 				for ( final Face3D.Vertex vertex : face.getVertices() )
 				{
 					// TODO: Would be nice to avoid long lists of NaN for objects without textures.
-					writer.writeCharacters( DatatypeConverter.printFloat( vertex.colorMapU ) );
-					writer.writeCharacters( " " );
-					writer.writeCharacters( DatatypeConverter.printFloat( vertex.colorMapV ) );
-					writer.writeCharacters( " " );
+					writer.text( DatatypeConverter.printFloat( vertex.colorMapU ) );
+					writer.text( " " );
+					writer.text( DatatypeConverter.printFloat( vertex.colorMapV ) );
+					writer.text( " " );
 				}
 			}
 		}
-		writer.writeEndElement(); // float_array
+		writer.endTag( NS_COLLADA_1_4, "float_array" );
 
-		writer.writeStartElement( "technique_common" );
+		writer.startTag( NS_COLLADA_1_4, "technique_common" );
 
-		writer.writeStartElement( "accessor" );
-		writer.writeAttribute( "source", texcoordArrayID );
-		writer.writeAttribute( "count", DatatypeConverter.printInt( globalVertexCount ) );
-		writer.writeAttribute( "stride", "2" );
+		writer.startTag( NS_COLLADA_1_4, "accessor" );
+		writer.attribute( null, "source", texcoordArrayID );
+		writer.attribute( null, "count", DatatypeConverter.printInt( globalVertexCount ) );
+		writer.attribute( null, "stride", "2" );
 
-		writer.writeEmptyElement( "param" );
-		writer.writeAttribute( "name", "S" );
-		writer.writeAttribute( "type", "float" );
+		writer.emptyTag( NS_COLLADA_1_4, "param" );
+		writer.attribute( null, "name", "S" );
+		writer.attribute( null, "type", "float" );
+		writer.endTag( NS_COLLADA_1_4, "param" );
 
-		writer.writeEmptyElement( "param" );
-		writer.writeAttribute( "name", "T" );
-		writer.writeAttribute( "type", "float" );
+		writer.emptyTag( NS_COLLADA_1_4, "param" );
+		writer.attribute( null, "name", "T" );
+		writer.attribute( null, "type", "float" );
+		writer.endTag( NS_COLLADA_1_4, "param" );
 
-		writer.writeEndElement(); // accessor
-		writer.writeEndElement(); // technique_common
-		writer.writeEndElement(); // source
+		writer.endTag( NS_COLLADA_1_4, "accessor" );
+		writer.endTag( NS_COLLADA_1_4, "technique_common" );
+		writer.endTag( NS_COLLADA_1_4, "source" );
 
 		/*
 		 * Define vertices.
 		 */
 		final String verticesID = geometryID + "-vertices";
-		writer.writeStartElement( "vertices" );
-		writer.writeAttribute( "id", verticesID );
+		writer.startTag( NS_COLLADA_1_4, "vertices" );
+		writer.attribute( null, "id", verticesID );
 
-		writer.writeEmptyElement( "input" );
-		writer.writeAttribute( "semantic", "POSITION" );
-		writer.writeAttribute( "source", "#" + positionID );
+		writer.emptyTag( NS_COLLADA_1_4, "input" );
+		writer.attribute( null, "semantic", "POSITION" );
+		writer.attribute( null, "source", "#" + positionID );
+		writer.endTag( NS_COLLADA_1_4, "input" );
 
-		writer.writeEndElement(); // vertices
+		writer.endTag( NS_COLLADA_1_4, "vertices" );
 
 		/*
 		 * Write geometric primitives.
@@ -665,52 +672,55 @@ public class ColladaWriter
 						throw new AssertionError( "Unsupported primitive: " + primitive );
 					}
 
-					writer.writeStartElement( tagName );
-					writer.writeAttribute( "count", DatatypeConverter.printInt( count ) );
-					writer.writeAttribute( "material", materialID );
+					writer.startTag( NS_COLLADA_1_4, tagName );
+					writer.attribute( null, "count", DatatypeConverter.printInt( count ) );
+					writer.attribute( null, "material", materialID );
 
-					writer.writeEmptyElement( "input" );
-					writer.writeAttribute( "semantic", "VERTEX" );
-					writer.writeAttribute( "source", "#" + verticesID );
-					writer.writeAttribute( "offset", "0" );
+					writer.emptyTag( NS_COLLADA_1_4, "input" );
+					writer.attribute( null, "semantic", "VERTEX" );
+					writer.attribute( null, "source", "#" + verticesID );
+					writer.attribute( null, "offset", "0" );
+					writer.endTag( NS_COLLADA_1_4, "input" );
 
-					writer.writeEmptyElement( "input" );
-					writer.writeAttribute( "semantic", "NORMAL" );
-					writer.writeAttribute( "source", "#" + normalID );
-					writer.writeAttribute( "offset", "1" );
+					writer.emptyTag( NS_COLLADA_1_4, "input" );
+					writer.attribute( null, "semantic", "NORMAL" );
+					writer.attribute( null, "source", "#" + normalID );
+					writer.attribute( null, "offset", "1" );
+					writer.endTag( NS_COLLADA_1_4, "input" );
 
-					writer.writeEmptyElement( "input" );
-					writer.writeAttribute( "semantic", "TEXCOORD" );
-					writer.writeAttribute( "source", "#" + texcoordID );
-					writer.writeAttribute( "offset", "1" );
-					writer.writeAttribute( "set", "0" );
+					writer.emptyTag( NS_COLLADA_1_4, "input" );
+					writer.attribute( null, "semantic", "TEXCOORD" );
+					writer.attribute( null, "source", "#" + texcoordID );
+					writer.attribute( null, "offset", "1" );
+					writer.attribute( null, "set", "0" );
+					writer.endTag( NS_COLLADA_1_4, "input" );
 
-					writer.writeStartElement( "p" );
+					writer.startTag( NS_COLLADA_1_4, "p" );
 
 					for ( final int vertexIndex : primitive.getVertices() )
 					{
 						final Face3D.Vertex vertex = face.getVertex( vertexIndex );
 						final int globalVertexIndex = globalVertexCount + vertexIndex;
 
-						writer.writeCharacters( DatatypeConverter.printInt( vertex.vertexCoordinateIndex ) );
-						writer.writeCharacters( " " );
+						writer.text( DatatypeConverter.printInt( vertex.vertexCoordinateIndex ) );
+						writer.text( " " );
 
-						writer.writeCharacters( DatatypeConverter.printInt( globalVertexIndex ) );
-						writer.writeCharacters( " " );
+						writer.text( DatatypeConverter.printInt( globalVertexIndex ) );
+						writer.text( " " );
 					}
 
-					writer.writeEndElement(); // p
+					writer.endTag( NS_COLLADA_1_4, "p" );
 
-					writer.writeEndElement(); // triangles, trifans, tristrips
+					writer.endTag( NS_COLLADA_1_4, tagName );
 				}
 
 				globalVertexCount += face.getVertexCount();
 			}
 		}
 
-		writer.writeEndElement(); // mesh
+		writer.endTag( NS_COLLADA_1_4, "mesh" );
 
-		writer.writeEndElement(); // geometry
+		writer.endTag( NS_COLLADA_1_4, "geometry" );
 	}
 
 	/**
@@ -719,28 +729,29 @@ public class ColladaWriter
 	 *
 	 * @param   writer  Writer to write to.
 	 *
-	 * @throws  XMLStreamException if the element can't be written.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeLibraryMaterials( final XMLStreamWriter writer )
-		throws XMLStreamException
+	private void writeLibraryMaterials( final XMLWriter writer )
+		throws XMLException
 	{
-		writer.writeStartElement( "library_materials" );
+		writer.startTag( NS_COLLADA_1_4, "library_materials" );
 
 		for ( final Map.Entry<Appearance, String> entry : _libraryMaterials.entrySet() )
 		{
 			final String materialID = entry.getValue();
 			final String effectID = "e" + materialID;
 
-			writer.writeStartElement( "material" );
-			writer.writeAttribute( "id", materialID );
+			writer.startTag( NS_COLLADA_1_4, "material" );
+			writer.attribute( null, "id", materialID );
 
-			writer.writeEmptyElement( "instance_effect" );
-			writer.writeAttribute( "url", "#" + effectID );
+			writer.emptyTag( NS_COLLADA_1_4, "instance_effect" );
+			writer.attribute( null, "url", "#" + effectID );
+			writer.endTag( NS_COLLADA_1_4, "instance_effect" );
 
-			writer.writeEndElement(); // material
+			writer.endTag( NS_COLLADA_1_4, "material" );
 		}
 
-		writer.writeEndElement(); // library_materials
+		writer.endTag( NS_COLLADA_1_4, "library_materials" );
 	}
 
 	/**
@@ -768,12 +779,12 @@ public class ColladaWriter
 	 *
 	 * @param   writer  Writer to write to.
 	 *
-	 * @throws  XMLStreamException if the element can't be written.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeLibraryEffects( final XMLStreamWriter writer )
-		throws XMLStreamException
+	private void writeLibraryEffects( final XMLWriter writer )
+		throws XMLException
 	{
-		writer.writeStartElement( "library_effects" );
+		writer.startTag( NS_COLLADA_1_4, "library_effects" );
 
 		for ( final Map.Entry<Appearance, String> entry : _libraryMaterials.entrySet() )
 		{
@@ -781,10 +792,10 @@ public class ColladaWriter
 			final String materialID = entry.getValue();
 			final String effectID = "e" + materialID;
 
-			writer.writeStartElement( "effect" );
-			writer.writeAttribute( "id", effectID );
+			writer.startTag( NS_COLLADA_1_4, "effect" );
+			writer.attribute( null, "id", effectID );
 
-			writer.writeStartElement( "profile_COMMON" );
+			writer.startTag( NS_COLLADA_1_4, "profile_COMMON" );
 
 			String diffuseSamplerID = null;
 			if ( appearance instanceof Material )
@@ -797,68 +808,69 @@ public class ColladaWriter
 				}
 			}
 
-			writer.writeStartElement( "technique" );
-			writer.writeAttribute( "sid", "default" );
+			writer.startTag( NS_COLLADA_1_4, "technique" );
+			writer.attribute( null, "sid", "default" );
 
-			writer.writeStartElement( "phong" );
+			writer.startTag( NS_COLLADA_1_4, "phong" );
 
-			writer.writeStartElement( "ambient" );
+			writer.startTag( NS_COLLADA_1_4, "ambient" );
 			writeColor( writer, appearance.getAmbientColorRed(), appearance.getAmbientColorGreen(), appearance.getAmbientColorBlue(), 1.0f );
-			writer.writeEndElement();
+			writer.endTag( NS_COLLADA_1_4, "ambient" );
 
-			writer.writeStartElement( "diffuse" );
+			writer.startTag( NS_COLLADA_1_4, "diffuse" );
 			if ( diffuseSamplerID != null )
 			{
-				writer.writeEmptyElement( "texture" );
-				writer.writeAttribute( "texture", diffuseSamplerID );
-				writer.writeAttribute( "texcoord", "UVSET0" );
+				writer.emptyTag( NS_COLLADA_1_4, "texture" );
+				writer.attribute( null, "texture", diffuseSamplerID );
+				writer.attribute( null, "texcoord", "UVSET0" );
+				writer.endTag( NS_COLLADA_1_4, "texture" );
 			}
 			else
 			{
 				writeColor( writer, appearance.getDiffuseColorRed(), appearance.getDiffuseColorGreen(), appearance.getDiffuseColorBlue(), 1.0f );
 			}
-			writer.writeEndElement();
+			writer.endTag( NS_COLLADA_1_4, "diffuse" );
 
-			writer.writeStartElement( "specular" );
+			writer.startTag( NS_COLLADA_1_4, "specular" );
 			writeColor( writer, appearance.getSpecularColorRed(), appearance.getSpecularColorGreen(), appearance.getSpecularColorBlue(), 1.0f );
-			writer.writeEndElement();
+			writer.endTag( NS_COLLADA_1_4, "specular" );
 
-			writer.writeStartElement( "shininess" );
+			writer.startTag( NS_COLLADA_1_4, "shininess" );
 			writeFloat( writer, (float)appearance.getShininess() );
-			writer.writeEndElement();
+			writer.endTag( NS_COLLADA_1_4, "shininess" );
 
 			final ReflectionMap reflectionMap = appearance.getReflectionMap();
 			if ( reflectionMap != null )
 			{
 /*
-				writer.writeStartElement( "reflective" );
+				writer.startTag( NS_COLLADA_1_4, "reflective" );
 				writeColor( writer, reflectionMap.getIntensityRed(), reflectionMap.getIntensityGreen(), reflectionMap.getIntensityBlue(), 1.0f );
-				writer.writeEndElement();
+				writer.endTag( NS_COLLADA_1_4, "reflective" );
 */
 
-				writer.writeStartElement( "reflectivity" );
+				writer.startTag( NS_COLLADA_1_4, "reflectivity" );
 				writeFloat( writer, ( reflectionMap.getReflectivityMin() + reflectionMap.getReflectivityMax() ) / 2.0f );
-				writer.writeEndElement();
+				writer.endTag( NS_COLLADA_1_4, "reflectivity" );
 			}
 
 /*
-			writer.writeStartElement( "transparent" );
+			writer.startTag( NS_COLLADA_1_4, "transparent" );
 			writeColor( writer, 0.0f, 0.0f, 0.0f, 1.0f );
-			writer.writeEndElement();
+			writer.endTag( NS_COLLADA_1_4, "transparent" );
 */
 
-			writer.writeStartElement( "transparency" );
+			writer.startTag( NS_COLLADA_1_4, "transparency" );
 			writeFloat( writer, appearance.getDiffuseColorAlpha() );
-			writer.writeEndElement();
+			writer.endTag( NS_COLLADA_1_4, "transparency" );
 
-			writer.writeEndElement(); // phong
-			writer.writeEndElement(); // technique
-			writer.writeEndElement(); // profile_COMMON
-			writer.writeEndElement(); // effect
+			writer.endTag( NS_COLLADA_1_4, "phong" );
+			writer.endTag( NS_COLLADA_1_4, "technique" );
+			writer.endTag( NS_COLLADA_1_4, "profile_COMMON" );
+			writer.endTag( NS_COLLADA_1_4, "effect" );
 
 		}
 
-		writer.writeEndElement(); // library_effects
+		writer.endTag( NS_COLLADA_1_4, "library_effects" );
 	}
 
 	/**
@@ -870,33 +882,33 @@ public class ColladaWriter
 	 *
 	 * @return  Texture image SID.
 	 *
-	 * @throws  XMLStreamException if the element can't be written.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private String writeTextureSampler( final XMLStreamWriter writer, final URI source )
-		throws XMLStreamException
+	private String writeTextureSampler( final XMLWriter writer, final URI source )
+		throws XMLException
 	{
 		final String imageID = getImageID( source );
 
 		final String surfaceID = allocateID();
-		writer.writeStartElement( "newparam" );
-		writer.writeAttribute( "sid", surfaceID );
-		writer.writeStartElement( "surface" );
-		writer.writeAttribute( "type", "2D" );
-		writer.writeStartElement( "init_from" );
-		writer.writeCharacters( imageID );
-		writer.writeEndElement(); // init_from
-		writer.writeEndElement(); // surface
-		writer.writeEndElement(); // newparam
+		writer.startTag( NS_COLLADA_1_4, "newparam" );
+		writer.attribute( null, "sid", surfaceID );
+		writer.startTag( NS_COLLADA_1_4, "surface" );
+		writer.attribute( null, "type", "2D" );
+		writer.startTag( NS_COLLADA_1_4, "init_from" );
+		writer.text( imageID );
+		writer.endTag( NS_COLLADA_1_4, "init_from" );
+		writer.endTag( NS_COLLADA_1_4, "surface" );
+		writer.endTag( NS_COLLADA_1_4, "newparam" );
 
 		final String result = allocateID();
-		writer.writeStartElement( "newparam" );
-		writer.writeAttribute( "sid", result );
-		writer.writeStartElement( "sampler2D" );
-		writer.writeStartElement( "source" );
-		writer.writeCharacters( surfaceID );
-		writer.writeEndElement(); // source
-		writer.writeEndElement(); // sampler2D
-		writer.writeEndElement(); // newparam
+		writer.startTag( NS_COLLADA_1_4, "newparam" );
+		writer.attribute( null, "sid", result );
+		writer.startTag( NS_COLLADA_1_4, "sampler2D" );
+		writer.startTag( NS_COLLADA_1_4, "source" );
+		writer.text( surfaceID );
+		writer.endTag( NS_COLLADA_1_4, "source" );
+		writer.endTag( NS_COLLADA_1_4, "sampler2D" );
+		writer.endTag( NS_COLLADA_1_4, "newparam" );
 
 		return result;
 	}
@@ -907,14 +919,14 @@ public class ColladaWriter
 	 * @param   writer  Writer to write to.
 	 * @param   value   Float value to be written.
 	 *
-	 * @throws  XMLStreamException if the element can't be written.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeFloat( final XMLStreamWriter writer, final float value )
-		throws XMLStreamException
+	private void writeFloat( final XMLWriter writer, final float value )
+		throws XMLException
 	{
-		writer.writeStartElement( "float" );
-		writer.writeCharacters( DatatypeConverter.printFloat( value ) );
-		writer.writeEndElement();
+		writer.startTag( NS_COLLADA_1_4, "float" );
+		writer.text( DatatypeConverter.printFloat( value ) );
+		writer.endTag( NS_COLLADA_1_4, "float" );
 	}
 
 	/**
@@ -925,18 +937,18 @@ public class ColladaWriter
 	 * @param   y       Second float value to be written.
 	 * @param   z       Third float value to be written.
 	 *
-	 * @throws  XMLStreamException if the element can't be written.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeFloat3( final XMLStreamWriter writer, final float x, final float y, final float z )
-		throws XMLStreamException
+	private void writeFloat3( final XMLWriter writer, final float x, final float y, final float z )
+		throws XMLException
 	{
-		writer.writeStartElement( "float3" );
-		writer.writeCharacters( DatatypeConverter.printFloat( x ) );
-		writer.writeCharacters( " " );
-		writer.writeCharacters( DatatypeConverter.printFloat( y ) );
-		writer.writeCharacters( " " );
-		writer.writeCharacters( DatatypeConverter.printFloat( z ) );
-		writer.writeEndElement();
+		writer.startTag( NS_COLLADA_1_4, "float3" );
+		writer.text( DatatypeConverter.printFloat( x ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printFloat( y ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printFloat( z ) );
+		writer.endTag( NS_COLLADA_1_4, "float3" );
 	}
 
 	/**
@@ -948,20 +960,20 @@ public class ColladaWriter
 	 * @param   b       Blue component to be written.
 	 * @param   a       Alpha component to be written.
 	 *
-	 * @throws  XMLStreamException if the element can't be written.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeColor( final XMLStreamWriter writer, final float r, final float g, final float b, final float a )
-		throws XMLStreamException
+	private void writeColor( final XMLWriter writer, final float r, final float g, final float b, final float a )
+		throws XMLException
 	{
-		writer.writeStartElement( "color" );
-		writer.writeCharacters( DatatypeConverter.printFloat( r ) );
-		writer.writeCharacters( " " );
-		writer.writeCharacters( DatatypeConverter.printFloat( g ) );
-		writer.writeCharacters( " " );
-		writer.writeCharacters( DatatypeConverter.printFloat( b ) );
-		writer.writeCharacters( " " );
-		writer.writeCharacters( DatatypeConverter.printFloat( a ) );
-		writer.writeEndElement();
+		writer.startTag( NS_COLLADA_1_4, "color" );
+		writer.text( DatatypeConverter.printFloat( r ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printFloat( g ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printFloat( b ) );
+		writer.text( " " );
+		writer.text( DatatypeConverter.printFloat( a ) );
+		writer.endTag( NS_COLLADA_1_4, "color" );
 	}
 
 	/**
@@ -970,29 +982,29 @@ public class ColladaWriter
 	 *
 	 * @param   writer  Writer to write to.
 	 *
-	 * @throws  XMLStreamException if the element can't be written.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeLibraryImages( final XMLStreamWriter writer )
-		throws XMLStreamException
+	private void writeLibraryImages( final XMLWriter writer )
+		throws XMLException
 	{
-		writer.writeStartElement( "library_images" );
+		writer.startTag( NS_COLLADA_1_4, "library_images" );
 
 		for ( final Map.Entry<URI, String> entry : _libraryImages.entrySet() )
 		{
 			final URI texture = entry.getKey();
 			final String imageID = entry.getValue();
 
-			writer.writeStartElement( "image" );
-			writer.writeAttribute( "id", imageID );
+			writer.startTag( NS_COLLADA_1_4, "image" );
+			writer.attribute( null, "id", imageID );
 
-			writer.writeStartElement( "init_from" );
-			writer.writeCharacters( texture.toString() );
-			writer.writeEndElement(); // init_from
+			writer.startTag( NS_COLLADA_1_4, "init_from" );
+			writer.text( texture.toString() );
+			writer.endTag( NS_COLLADA_1_4, "init_from" );
 
-			writer.writeEndElement(); // image
+			writer.endTag( NS_COLLADA_1_4, "image" );
 		}
 
-		writer.writeEndElement(); // library_images
+		writer.endTag( NS_COLLADA_1_4, "library_images" );
 	}
 
 	/**
@@ -1031,17 +1043,18 @@ public class ColladaWriter
 	 *
 	 * @param   writer  Writer to write to.
 	 *
-	 * @throws  XMLStreamException if the element can't be written.
+	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeScene( final XMLStreamWriter writer )
-		throws XMLStreamException
+	private void writeScene( final XMLWriter writer )
+		throws XMLException
 	{
-		writer.writeStartElement( "scene" );
+		writer.startTag( NS_COLLADA_1_4, "scene" );
 
-		writer.writeEmptyElement( "instance_visual_scene" );
-		writer.writeAttribute( "url", "#scene" );
+		writer.emptyTag( NS_COLLADA_1_4, "instance_visual_scene" );
+		writer.attribute( null, "url", "#scene" );
+		writer.endTag( NS_COLLADA_1_4, "instance_visual_scene" );
 
-		writer.writeEndElement();
+		writer.endTag( NS_COLLADA_1_4, "scene" );
 	}
 
 	/**
