@@ -1,5 +1,4 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
  * Copyright (C) 1999-2011 Peter S. Heijnen
@@ -31,7 +30,6 @@ import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.xml.*;
-import com.numdata.oss.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -78,7 +76,7 @@ public class ColladaWriter
 	/**
 	 * ID of each image to be written in the &lt;library_images&gt; section.
 	 */
-	private final Map<URI, String> _libraryImages;
+	private final Map<String, String> _libraryImages;
 
 	/**
 	 * Internet Media Type for COLLADA.
@@ -98,7 +96,7 @@ public class ColladaWriter
 		_idMap = new HashMap<String, Integer>();
 		_libraryGeometry = new LinkedHashMap<Node3D, String>();
 		_libraryMaterials = new LinkedHashMap<Appearance, String>();
-		_libraryImages = new LinkedHashMap<URI, String>();
+		_libraryImages = new LinkedHashMap<String, String>();
 	}
 
 	/**
@@ -303,7 +301,7 @@ public class ColladaWriter
 			}
 
 			writer.startTag( NS_COLLADA_1_4, "instance_geometry" );
-			writer.attribute( null, "url", "#" + geometryID );
+			writer.attribute( null, "url", '#' + geometryID );
 
 			writer.startTag( NS_COLLADA_1_4, "bind_material" );
 			writer.startTag( NS_COLLADA_1_4, "technique_common" );
@@ -319,7 +317,7 @@ public class ColladaWriter
 				{
 					writer.startTag( NS_COLLADA_1_4, "instance_material" );
 					writer.attribute( null, "symbol", materialID );
-					writer.attribute( null, "target", "#" + materialID );
+					writer.attribute( null, "target", '#' + materialID );
 
 					writer.emptyTag( NS_COLLADA_1_4, "bind_vertex_input" );
 					writer.attribute( null, "semantic", "UVSET0" );
@@ -626,7 +624,7 @@ public class ColladaWriter
 
 		writer.emptyTag( NS_COLLADA_1_4, "input" );
 		writer.attribute( null, "semantic", "POSITION" );
-		writer.attribute( null, "source", "#" + positionID );
+		writer.attribute( null, "source", '#' + positionID );
 		writer.endTag( NS_COLLADA_1_4, "input" );
 
 		writer.endTag( NS_COLLADA_1_4, "vertices" );
@@ -678,19 +676,19 @@ public class ColladaWriter
 
 					writer.emptyTag( NS_COLLADA_1_4, "input" );
 					writer.attribute( null, "semantic", "VERTEX" );
-					writer.attribute( null, "source", "#" + verticesID );
+					writer.attribute( null, "source", '#' + verticesID );
 					writer.attribute( null, "offset", "0" );
 					writer.endTag( NS_COLLADA_1_4, "input" );
 
 					writer.emptyTag( NS_COLLADA_1_4, "input" );
 					writer.attribute( null, "semantic", "NORMAL" );
-					writer.attribute( null, "source", "#" + normalID );
+					writer.attribute( null, "source", '#' + normalID );
 					writer.attribute( null, "offset", "1" );
 					writer.endTag( NS_COLLADA_1_4, "input" );
 
 					writer.emptyTag( NS_COLLADA_1_4, "input" );
 					writer.attribute( null, "semantic", "TEXCOORD" );
-					writer.attribute( null, "source", "#" + texcoordID );
+					writer.attribute( null, "source", '#' + texcoordID );
 					writer.attribute( null, "offset", "1" );
 					writer.attribute( null, "set", "0" );
 					writer.endTag( NS_COLLADA_1_4, "input" );
@@ -739,13 +737,13 @@ public class ColladaWriter
 		for ( final Map.Entry<Appearance, String> entry : _libraryMaterials.entrySet() )
 		{
 			final String materialID = entry.getValue();
-			final String effectID = "e" + materialID;
+			final String effectID = 'e' + materialID;
 
 			writer.startTag( NS_COLLADA_1_4, "material" );
 			writer.attribute( null, "id", materialID );
 
 			writer.emptyTag( NS_COLLADA_1_4, "instance_effect" );
-			writer.attribute( null, "url", "#" + effectID );
+			writer.attribute( null, "url", '#' + effectID );
 			writer.endTag( NS_COLLADA_1_4, "instance_effect" );
 
 			writer.endTag( NS_COLLADA_1_4, "material" );
@@ -790,21 +788,26 @@ public class ColladaWriter
 		{
 			final Appearance appearance = entry.getKey();
 			final String materialID = entry.getValue();
-			final String effectID = "e" + materialID;
+			final String effectID = 'e' + materialID;
 
 			writer.startTag( NS_COLLADA_1_4, "effect" );
 			writer.attribute( null, "id", effectID );
 
 			writer.startTag( NS_COLLADA_1_4, "profile_COMMON" );
 
+			final Color4 ambientColor = appearance.getAmbientColor();
+			final Color4 diffuseColor = appearance.getDiffuseColor();
+			final Color4 specularColor = appearance.getSpecularColor();
+			final TextureMap colorMap = appearance.getColorMap();
+			final CubeMap reflectionMap = appearance.getReflectionMap();
+
 			String diffuseSamplerID = null;
-			if ( appearance instanceof Material )
+			if ( colorMap != null )
 			{
-				final Material material = (Material)appearance;
-				if ( !TextTools.isEmpty( material.colorMap ) )
+				final URL colorMapUrl = colorMap.getImageUrl();
+				if ( colorMapUrl != null )
 				{
-					final URI uri = URI.create( material.colorMap + ".jpg" );
-					diffuseSamplerID = writeTextureSampler( writer, uri );
+					diffuseSamplerID = writeTextureSampler( writer, colorMapUrl.toExternalForm() );
 				}
 			}
 
@@ -814,7 +817,7 @@ public class ColladaWriter
 			writer.startTag( NS_COLLADA_1_4, "phong" );
 
 			writer.startTag( NS_COLLADA_1_4, "ambient" );
-			writeColor( writer, appearance.getAmbientColorRed(), appearance.getAmbientColorGreen(), appearance.getAmbientColorBlue(), 1.0f );
+			writeColor( writer, ambientColor.getRedFloat(), ambientColor.getGreenFloat(), ambientColor.getBlueFloat(), 1.0f );
 			writer.endTag( NS_COLLADA_1_4, "ambient" );
 
 			writer.startTag( NS_COLLADA_1_4, "diffuse" );
@@ -827,19 +830,18 @@ public class ColladaWriter
 			}
 			else
 			{
-				writeColor( writer, appearance.getDiffuseColorRed(), appearance.getDiffuseColorGreen(), appearance.getDiffuseColorBlue(), 1.0f );
+				writeColor( writer, diffuseColor.getRedFloat(), diffuseColor.getGreenFloat(), diffuseColor.getBlueFloat(), 1.0f );
 			}
 			writer.endTag( NS_COLLADA_1_4, "diffuse" );
 
 			writer.startTag( NS_COLLADA_1_4, "specular" );
-			writeColor( writer, appearance.getSpecularColorRed(), appearance.getSpecularColorGreen(), appearance.getSpecularColorBlue(), 1.0f );
+			writeColor( writer, specularColor.getRedFloat(), specularColor.getGreenFloat(), specularColor.getBlueFloat(), 1.0f );
 			writer.endTag( NS_COLLADA_1_4, "specular" );
 
 			writer.startTag( NS_COLLADA_1_4, "shininess" );
 			writeFloat( writer, (float)appearance.getShininess() );
 			writer.endTag( NS_COLLADA_1_4, "shininess" );
 
-			final ReflectionMap reflectionMap = appearance.getReflectionMap();
 			if ( reflectionMap != null )
 			{
 /*
@@ -849,7 +851,7 @@ public class ColladaWriter
 */
 
 				writer.startTag( NS_COLLADA_1_4, "reflectivity" );
-				writeFloat( writer, ( reflectionMap.getReflectivityMin() + reflectionMap.getReflectivityMax() ) / 2.0f );
+				writeFloat( writer, ( appearance.getReflectionMin() + appearance.getReflectionMax() ) / 2.0f );
 				writer.endTag( NS_COLLADA_1_4, "reflectivity" );
 			}
 
@@ -860,7 +862,7 @@ public class ColladaWriter
 */
 
 			writer.startTag( NS_COLLADA_1_4, "transparency" );
-			writeFloat( writer, appearance.getDiffuseColorAlpha() );
+			writeFloat( writer, diffuseColor.getAlphaFloat() );
 			writer.endTag( NS_COLLADA_1_4, "transparency" );
 
 			writer.endTag( NS_COLLADA_1_4, "phong" );
@@ -877,17 +879,17 @@ public class ColladaWriter
 	 * Writes <code>newparam</code> elements needed to use the given image
 	 * and returns the SID used to reference the texture.
 	 *
-	 * @param   writer  Writer to write to.
-	 * @param   source  Source of the texture.
+	 * @param   writer      Writer to write to.
+	 * @param   imageUrl    Texture image URL.
 	 *
 	 * @return  Texture image SID.
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private String writeTextureSampler( final XMLWriter writer, final URI source )
+	private String writeTextureSampler( final XMLWriter writer, final String imageUrl )
 		throws XMLException
 	{
-		final String imageID = getImageID( source );
+		final String imageID = getImageID( imageUrl );
 
 		final String surfaceID = allocateID();
 		writer.startTag( NS_COLLADA_1_4, "newparam" );
@@ -989,16 +991,16 @@ public class ColladaWriter
 	{
 		writer.startTag( NS_COLLADA_1_4, "library_images" );
 
-		for ( final Map.Entry<URI, String> entry : _libraryImages.entrySet() )
+		for ( final Map.Entry<String, String> entry : _libraryImages.entrySet() )
 		{
-			final URI texture = entry.getKey();
+			final String texture = entry.getKey();
 			final String imageID = entry.getValue();
 
 			writer.startTag( NS_COLLADA_1_4, "image" );
 			writer.attribute( null, "id", imageID );
 
 			writer.startTag( NS_COLLADA_1_4, "init_from" );
-			writer.text( texture.toString() );
+			writer.text( texture );
 			writer.endTag( NS_COLLADA_1_4, "init_from" );
 
 			writer.endTag( NS_COLLADA_1_4, "image" );
@@ -1008,14 +1010,14 @@ public class ColladaWriter
 	}
 
 	/**
-	 * Returns the ID of the image with the given URI, if an ID is known;
+	 * Returns the ID of the image with the given URL, if an ID is known;
 	 * otherwise a new image ID is allocated.
 	 *
-	 * @param   source  URI of the image.
+	 * @param   source  URL of the image.
 	 *
 	 * @return  Image ID for the specified image.
 	 */
-	private String getImageID( final URI source )
+	private String getImageID( final String source )
 	{
 		String imageID = _libraryImages.get( source );
 		if ( imageID == null )
@@ -1027,12 +1029,12 @@ public class ColladaWriter
 	}
 
 	/**
-	 * Returns the URIs of all images that were written during the most recent
+	 * Returns the URLs of all images that were written during the most recent
 	 * call to {@link #write}.
 	 *
-	 * @return  Image URIs.
+	 * @return  Image URLs.
 	 */
-	public Collection<URI> getImages()
+	public Collection<String> getImages()
 	{
 		return _libraryImages.keySet();
 	}
