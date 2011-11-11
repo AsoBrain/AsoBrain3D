@@ -66,13 +66,6 @@ public class Matrix3D
 		0.0, 0.0, 1.0, 0.0 );
 
 	/**
-	 * Initial value of a matrix (=identity matrix).
-	 *
-	 * @deprecated Use {@link #IDENTITY}, constructor, or factory method instead.
-	 */
-	public static final Matrix3D INIT = IDENTITY;
-
-	/**
 	 * Number format with one fraction digit.
 	 */
 	private static final NumberFormat ONE_DECIMAL_FORMAT;
