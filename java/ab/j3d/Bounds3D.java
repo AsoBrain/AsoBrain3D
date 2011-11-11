@@ -50,13 +50,6 @@ public class Bounds3D
 	public static final Bounds3D EMPTY = new Bounds3D( Vector3D.ZERO, Vector3D.ZERO );
 
 	/**
-	 * Initial value of a box (0-box).
-	 *
-	 * @deprecated Don't use this anymore, use {@link #EMPTY} or constructor call.
-	 */
-	public static final Bounds3D INIT = EMPTY;
-
-	/**
 	 * Create a new box.
 	 *
 	 * @param   v1  First vector of box.
