@@ -151,11 +151,9 @@ public abstract class TestXMLReader
 		assertEquals( "Unexpected local name.", "element1", reader.getLocalName() );
 
 		assertEquals( "Unexpected event type.", XMLEventType.CHARACTERS, reader.next() );
-		final StringBuilder builder = new StringBuilder();
-		final XMLEventType next = coalesceCharacters( reader, builder );
-		assertEquals( "Unexpected character data.", "<entity references>", builder.toString().trim() );
+		assertEquals( "Unexpected character data.", "<entity references>", reader.getText().trim() );
 
-		assertEquals( "Unexpected event type.", XMLEventType.START_ELEMENT, next );
+		assertEquals( "Unexpected event type.", XMLEventType.START_ELEMENT, reader.next() );
 		assertEquals( "Unexpected namespace URI.", "http://www.example.com/ns2", reader.getNamespaceURI() );
 		assertEquals( "Unexpected local name.", "element5", reader.getLocalName() );
 		assertEquals( "Unexpected attribute count.", 2, reader.getAttributeCount() );
@@ -674,39 +672,5 @@ public abstract class TestXMLReader
 			result = reader.next();
 		}
 		return result;
-	}
-
-	/**
-	 * Appends the character data for the current event and any character data
-	 * events that follow it, then returns the event type of the event that
-	 * follows the character data. This allows for characters events to be
-	 * coalesced even if the reader output separate events (e.g. due to the
-	 * presence of entity references).
-	 *
-	 * <p>Example:
-	 * <pre>
-	 * XMLReader reader;
-	 * XMLEventType nonWhitespace = ignoreWhiteSpace( reader );
-	 * </pre>
-	 *
-	 * @param   reader  Reader to be used.
-	 * @param   result  Character sequence to append the characters to.
-	 *
-	 * @return  Current event type.
-	 *
-	 * @throws  XMLException if the next event can't be read.
-	 * @throws  IOException if an I/O error occurs.
-	 */
-	protected XMLEventType coalesceCharacters( final XMLReader reader, final Appendable result )
-		throws XMLException, IOException
-	{
-		XMLEventType eventType;
-		do
-		{
-			result.append( reader.getText() );
-			eventType = reader.next();
-		}
-		while ( eventType == XMLEventType.CHARACTERS );
-		return eventType;
 	}
 }

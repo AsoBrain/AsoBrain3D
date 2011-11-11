@@ -39,7 +39,8 @@ class XmlPullReader
 	/**
 	 * XML Pull parser to be used.
 	 */
-	private XmlPullParser _parser;
+	@NotNull
+	private final XmlPullParser _parser;
 
 	/**
 	 * Event type returned by the last call to {@link #next()}.
@@ -50,12 +51,29 @@ class XmlPullReader
 	/**
 	 * Target of the current processing instruction, if any.
 	 */
+	@Nullable
 	private String _piTarget;
 
 	/**
 	 * Data of the current processing instruction, if any.
 	 */
+	@Nullable
 	private String _piData;
+
+	/**
+	 * Text content of the current character data event. If set, the state of
+	 * the underlying parser should be ignored and a character data event with
+	 * the content of this string should be reported instead.
+	 */
+	@Nullable
+	private String _characterData;
+
+	/**
+	 * Used to coalesce consecutive character data that is returned as separate
+	 * events by {@link XmlPullParser#nextToken()}.
+	 */
+	@NotNull
+	private final StringBuilder _characterDataBuilder;
 
 	/**
 	 * Constructs a new instance.
@@ -68,6 +86,8 @@ class XmlPullReader
 		_eventType = XMLEventType.START_DOCUMENT;
 		_piTarget = null;
 		_piData = null;
+		_characterData = null;
+		_characterDataBuilder = new StringBuilder();
 	}
 
 	@NotNull
@@ -93,14 +113,24 @@ class XmlPullReader
 			final int token;
 			try
 			{
-				token = _parser.nextToken();
+				if ( _characterData == null )
+				{
+					try
+					{
+						token = _parser.nextToken();
+					}
+					catch ( IOException e )
+					{
+						throw new XMLException( e );
+					}
+				}
+				else
+				{
+					token = _parser.getEventType();
+					_characterData = null;
+				}
 			}
 			catch ( XmlPullParserException e )
-			{
-				throw new XMLException( e );
-			}
-
-			catch ( IOException e )
 			{
 				throw new XMLException( e );
 			}
@@ -159,6 +189,11 @@ class XmlPullReader
 		_eventType = result;
 		updateProcessingInstructionFields();
 
+		if ( result == XMLEventType.CHARACTERS )
+		{
+			coalesceCharacterData();
+		}
+
 		return result;
 	}
 
@@ -212,6 +247,47 @@ class XmlPullReader
 
 		_piTarget = piTarget;
 		_piData = piData;
+	}
+
+	/**
+	 * Combines the current character data event and any following character
+	 * data events into a single event.
+	 *
+	 * @throws  XMLException if an XML-related exception occurs.
+	 */
+	private void coalesceCharacterData()
+		throws XMLException
+	{
+		final StringBuilder builder = _characterDataBuilder;
+		builder.append( _parser.getText() );
+		try
+		{
+			while ( true )
+			{
+				final int token = _parser.nextToken();
+				if ( ( token == XmlPullParser.TEXT ) ||
+				     ( token == XmlPullParser.CDSECT ) ||
+				     ( token == XmlPullParser.ENTITY_REF ) )
+				{
+					builder.append( _parser.getText() );
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+		catch ( XmlPullParserException e )
+		{
+			throw new XMLException( e );
+		}
+		catch ( IOException e )
+		{
+			throw new XMLException( e );
+		}
+
+		_characterData = builder.toString();
+		_characterDataBuilder.setLength( 0 );
 	}
 
 	@Override
@@ -322,7 +398,7 @@ class XmlPullReader
 			throw new IllegalStateException( "Not allowed for " + _eventType );
 		}
 
-		return _parser.getText();
+		return ( _characterData != null ) ? _characterData : _parser.getText();
 	}
 
 	@NotNull
@@ -334,6 +410,7 @@ class XmlPullReader
 			throw new IllegalStateException( "Not allowed for " + _eventType );
 		}
 
+		// noinspection ConstantConditions
 		return _piTarget;
 	}
 
@@ -346,6 +423,7 @@ class XmlPullReader
 			throw new IllegalStateException( "Not allowed for " + _eventType );
 		}
 
+		// noinspection ConstantConditions
 		return _piData;
 	}
 }
