@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?magic processing instruction 1?>
+<?magic?>
+<!DOCTYPE example PUBLIC "-" "urn:www.example.com">
+<example xmlns:ns2="http://www.example.com/ns2">
+	<ns1:element1
+			xmlns:ns1="http://www.example.com/ns1"
+			xmlns="http://www.example.com/default"
+			ns1:attribute1="value1"
+			attribute2="value2">
+		<element2 attribute3="value3" />
+		<!-- comment 1 -->
+		<ns1:element3 ns2:attribute4="value4" attribute5="ns2:value5">
+			world<?magic  processing instruction 2  ?></ns1:element3>
+		<ns2:element4><!-- comment 2 --></ns2:element4>
+	</ns1:element1>
+	&lt;entity references&gt;
+	<ns2:element5 attribute6="value&#54;" ns2:attribute7="value7" />
+</example>
