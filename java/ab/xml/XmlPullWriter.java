@@ -36,17 +36,17 @@ class XmlPullWriter
 	/**
 	 * XML Pull serializer to be used.
 	 */
-	private XmlSerializer _serializer;
+	private final XmlSerializer _serializer;
 
 	/**
 	 * Character encoding of the XML document.
 	 */
-	private String _encoding;
+	private final String _encoding;
 
 	/**
 	 * <code>true</code> if the writer is currently writing an empty tag.
 	 */
-	private boolean _empty;
+	private boolean _empty = false;
 
 	/**
 	 * Constructs a new instance.
@@ -54,13 +54,12 @@ class XmlPullWriter
 	 * @param   serializer  XML Pull serializer to be used.
 	 * @param   encoding    Character encoding of the XML document.
 	 */
-	public XmlPullWriter( final XmlSerializer serializer, final String encoding )
+	XmlPullWriter( final XmlSerializer serializer, final String encoding )
 	{
 		_serializer = serializer;
 		_encoding = encoding;
 	}
 
-	@Override
 	public void setPrefix( @NotNull final String prefix, @NotNull final String namespaceURI )
 		throws XMLException
 	{
@@ -74,7 +73,6 @@ class XmlPullWriter
 		}
 	}
 
-	@Override
 	public void startDocument()
 		throws XMLException
 	{
@@ -88,7 +86,6 @@ class XmlPullWriter
 		}
 	}
 
-	@Override
 	public void startTag( final String namespaceURI, @NotNull final String localName )
 		throws XMLException
 	{
@@ -107,7 +104,6 @@ class XmlPullWriter
 		}
 	}
 
-	@Override
 	public void emptyTag( @Nullable final String namespaceURI, @NotNull final String localName )
 		throws XMLException
 	{
@@ -115,7 +111,6 @@ class XmlPullWriter
 		_empty = true;
 	}
 
-	@Override
 	public void attribute( final String namespaceURI, @NotNull final String localName, @NotNull final String value )
 		throws XMLException
 	{
@@ -129,7 +124,6 @@ class XmlPullWriter
 		}
 	}
 
-	@Override
 	public void text( @NotNull final String characters )
 		throws XMLException
 	{
@@ -148,7 +142,6 @@ class XmlPullWriter
 		}
 	}
 
-	@Override
 	public void endTag( final String namespaceURI, @NotNull final String localName )
 		throws XMLException
 	{
@@ -167,7 +160,6 @@ class XmlPullWriter
 		}
 	}
 
-	@Override
 	public void endDocument()
 		throws XMLException
 	{
@@ -181,7 +173,6 @@ class XmlPullWriter
 		}
 	}
 
-	@Override
 	public void flush()
 		throws XMLException
 	{
