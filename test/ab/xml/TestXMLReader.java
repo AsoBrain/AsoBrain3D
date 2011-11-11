@@ -393,6 +393,8 @@ public abstract class TestXMLReader
 	public void testExceptionHandling()
 		throws XMLException
 	{
+		System.out.println( getClass().getName() + ".testExceptionHandling()" );
+
 		final XMLReader reader = createReaderForContent( "<?xml version='1.0'?><!DOCTYPE root><root>characters<?pi?></root>" );
 
 		assertEquals( "Unexpected event type.", XMLEventType.START_DOCUMENT, reader.getEventType() );
