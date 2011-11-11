@@ -69,12 +69,14 @@ public class ColladaWriter
 	private final Map<Node3D, String> _libraryGeometry;
 
 	/**
-	 * ID of each material to be written in the &lt;library_materials&gt; section.
+	 * ID of each material to be written in the
+	 * <code>&lt;library_materials&gt;</code> section.
 	 */
 	private final Map<Appearance, String> _libraryMaterials;
 
 	/**
-	 * ID of each image to be written in the &lt;library_images&gt; section.
+	 * ID (value) of each image (key) to be written in the
+	 * <code>&lt;library_images&gt;</code> section.
 	 */
 	private final Map<String, String> _libraryImages;
 
@@ -157,7 +159,7 @@ public class ColladaWriter
 	 *
 	 * @return  Allocated ID.
 	 */
-	private String allocateID()
+	protected String allocateID()
 	{
 		return allocateID( "o" );
 	}
@@ -170,7 +172,7 @@ public class ColladaWriter
 	 *
 	 * @return  Created ID.
 	 */
-	private String allocateID( @NotNull final String prefix )
+	protected String allocateID( @NotNull final String prefix )
 	{
 		final Integer previous = _idMap.get( prefix );
 		final int id = ( ( previous == null ) ? 0 : previous ) + 1;
@@ -185,7 +187,7 @@ public class ColladaWriter
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeAsset( final XMLWriter writer )
+	protected void writeAsset( final XMLWriter writer )
 		throws XMLException
 	{
 		writer.startTag( NS_COLLADA_1_4, "asset" );
@@ -219,7 +221,7 @@ public class ColladaWriter
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeLibraryVisualScenes( final XMLWriter writer )
+	protected void writeLibraryVisualScenes( final XMLWriter writer )
 		throws XMLException
 	{
 		writer.startTag( NS_COLLADA_1_4, "library_visual_scenes" );
@@ -234,7 +236,7 @@ public class ColladaWriter
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeVisualScene( final XMLWriter writer )
+	protected void writeVisualScene( final XMLWriter writer )
 		throws XMLException
 	{
 		writer.startTag( NS_COLLADA_1_4, "visual_scene" );
@@ -256,7 +258,7 @@ public class ColladaWriter
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeNode( final XMLWriter writer, final ContentNode contentNode )
+	protected void writeNode( final XMLWriter writer, final ContentNode contentNode )
 		throws XMLException
 	{
 		writer.startTag( NS_COLLADA_1_4, "node" );
@@ -280,7 +282,7 @@ public class ColladaWriter
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeNode( final XMLWriter writer, final Node3D node )
+	protected void writeNode( final XMLWriter writer, final Node3D node )
 		throws XMLException
 	{
 		writer.startTag( NS_COLLADA_1_4, "node" );
@@ -360,7 +362,7 @@ public class ColladaWriter
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeMatrix( final XMLWriter writer, final Matrix3D matrix )
+	protected void writeMatrix( final XMLWriter writer, final Matrix3D matrix )
 		throws XMLException
 	{
 		writer.startTag( NS_COLLADA_1_4, "matrix" );
@@ -408,7 +410,7 @@ public class ColladaWriter
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeLibraryGeometries( final XMLWriter writer )
+	protected void writeLibraryGeometries( final XMLWriter writer )
 		throws XMLException
 	{
 		writer.startTag( NS_COLLADA_1_4, "library_geometries" );
@@ -440,7 +442,7 @@ public class ColladaWriter
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeGeometry( final XMLWriter writer, final Object3D mesh, final String geometryID )
+	protected void writeGeometry( final XMLWriter writer, final Object3D mesh, final String geometryID )
 		throws XMLException
 	{
 		/*
@@ -729,7 +731,7 @@ public class ColladaWriter
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeLibraryMaterials( final XMLWriter writer )
+	protected void writeLibraryMaterials( final XMLWriter writer )
 		throws XMLException
 	{
 		writer.startTag( NS_COLLADA_1_4, "library_materials" );
@@ -760,7 +762,7 @@ public class ColladaWriter
 	 *
 	 * @return  Material ID for the given appearance.
 	 */
-	private String getMaterialID( final Appearance appearance )
+	protected String getMaterialID( final Appearance appearance )
 	{
 		String result = _libraryMaterials.get( appearance );
 		if ( result == null )
@@ -779,7 +781,7 @@ public class ColladaWriter
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeLibraryEffects( final XMLWriter writer )
+	protected void writeLibraryEffects( final XMLWriter writer )
 		throws XMLException
 	{
 		writer.startTag( NS_COLLADA_1_4, "library_effects" );
@@ -886,7 +888,7 @@ public class ColladaWriter
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private String writeTextureSampler( final XMLWriter writer, final String imageUrl )
+	protected String writeTextureSampler( final XMLWriter writer, final String imageUrl )
 		throws XMLException
 	{
 		final String imageID = getImageID( imageUrl );
@@ -923,7 +925,7 @@ public class ColladaWriter
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeFloat( final XMLWriter writer, final float value )
+	protected void writeFloat( final XMLWriter writer, final float value )
 		throws XMLException
 	{
 		writer.startTag( NS_COLLADA_1_4, "float" );
@@ -941,7 +943,7 @@ public class ColladaWriter
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeFloat3( final XMLWriter writer, final float x, final float y, final float z )
+	protected void writeFloat3( final XMLWriter writer, final float x, final float y, final float z )
 		throws XMLException
 	{
 		writer.startTag( NS_COLLADA_1_4, "float3" );
@@ -964,7 +966,7 @@ public class ColladaWriter
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeColor( final XMLWriter writer, final float r, final float g, final float b, final float a )
+	protected void writeColor( final XMLWriter writer, final float r, final float g, final float b, final float a )
 		throws XMLException
 	{
 		writer.startTag( NS_COLLADA_1_4, "color" );
@@ -986,27 +988,42 @@ public class ColladaWriter
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeLibraryImages( final XMLWriter writer )
+	protected void writeLibraryImages( final XMLWriter writer )
 		throws XMLException
 	{
 		writer.startTag( NS_COLLADA_1_4, "library_images" );
 
 		for ( final Map.Entry<String, String> entry : _libraryImages.entrySet() )
 		{
-			final String texture = entry.getKey();
-			final String imageID = entry.getValue();
+			final String imageUrl = entry.getKey();
+			final String imageId = entry.getValue();
 
-			writer.startTag( NS_COLLADA_1_4, "image" );
-			writer.attribute( null, "id", imageID );
-
-			writer.startTag( NS_COLLADA_1_4, "init_from" );
-			writer.text( texture );
-			writer.endTag( NS_COLLADA_1_4, "init_from" );
-
-			writer.endTag( NS_COLLADA_1_4, "image" );
+			writeImage( writer, imageId, imageUrl );
 		}
 
 		writer.endTag( NS_COLLADA_1_4, "library_images" );
+	}
+
+	/**
+	 * Writes an <code>image</code> element for an external image file.
+	 *
+	 * @param   writer      Writer to write to.
+	 * @param   imageId     Unique identifier of <code>image</code> element.
+	 * @param   imageUri    URI of image file.
+	 *
+	 * @throws  XMLException if there's a problem writing the XML document.
+	 */
+	protected void writeImage( final XMLWriter writer, final String imageId, final String imageUri )
+		throws XMLException
+	{
+		writer.startTag( NS_COLLADA_1_4, "image" );
+		writer.attribute( null, "id", imageId );
+
+		writer.startTag( NS_COLLADA_1_4, "init_from" );
+		writer.text( imageUri );
+		writer.endTag( NS_COLLADA_1_4, "init_from" );
+
+		writer.endTag( NS_COLLADA_1_4, "image" );
 	}
 
 	/**
@@ -1017,7 +1034,7 @@ public class ColladaWriter
 	 *
 	 * @return  Image ID for the specified image.
 	 */
-	private String getImageID( final String source )
+	protected String getImageID( final String source )
 	{
 		String imageID = _libraryImages.get( source );
 		if ( imageID == null )
@@ -1047,7 +1064,7 @@ public class ColladaWriter
 	 *
 	 * @throws  XMLException if there's a problem writing the XML document.
 	 */
-	private void writeScene( final XMLWriter writer )
+	protected void writeScene( final XMLWriter writer )
 		throws XMLException
 	{
 		writer.startTag( NS_COLLADA_1_4, "scene" );
@@ -1069,7 +1086,7 @@ public class ColladaWriter
 	 *
 	 * @see     <a href="http://www.w3.org/TR/2000/CR-xmlschema-2-20001024/#NCName">XML Schema Part 2: Datatypes, section 3.3.9: NCName</a>
 	 */
-	private String convertToNCName( final String s )
+	protected String convertToNCName( final String s )
 	{
 		final String result;
 

@@ -23,6 +23,7 @@ package ab.j3d.loader;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 import java.util.zip.*;
 
 import ab.j3d.model.*;
@@ -86,7 +87,35 @@ public class KmzWriter
 
 		zipOut.putNextEntry( new ZipEntry( colladaFileName ) );
 
-		final ColladaWriter colladaWriter = new ColladaWriter( _scene );
+		final Map<String,URL> imageFiles = new HashMap<String, URL>();
+
+		final ColladaWriter colladaWriter = new ColladaWriter( _scene )
+		{
+			@Override
+			protected void writeImage( final XMLWriter writer, final String imageId, final String imageUri )
+				throws XMLException
+			{
+				try
+				{
+					final URL imageUrl = new URL( imageUri );
+
+					final String path = imageUrl.getPath();
+					final String fileName = imageUri.substring( path.lastIndexOf( '/' ) + 1 );
+					final int dot = fileName.lastIndexOf( '.' );
+					final String extension = ( dot < 0 ) ? "" : fileName.substring( dot );
+					final String localFileName = "image-" + imageId + extension;
+
+					imageFiles.put( localFileName, imageUrl );
+
+					super.writeImage( writer, imageId, localFileName );
+				}
+				catch ( MalformedURLException e )
+				{
+					super.writeImage( writer, imageId, imageUri );
+				}
+			}
+		};
+
 		try
 		{
 			colladaWriter.write( zipOut );
@@ -96,29 +125,32 @@ public class KmzWriter
 			throw new IOException( e );
 		}
 
-		for ( final URI imageURI : colladaWriter.getImages() )
-		{
-			if ( !imageURI.isAbsolute() )
-			{
-				final String path = imageURI.toString();
-				zipOut.putNextEntry( new ZipEntry( path ) );
+		zipOut.closeEntry();
 
-				// FIXME: Resolve image URIs the 'new way'. (Pending some ab3d architecture changes.)
-				final URL imageURL = imageURI.toURL();
-				final InputStream imageIn = new BufferedInputStream( imageURL.openStream() );
-				try
+		for ( final Map.Entry<String, URL> entry : imageFiles.entrySet() )
+		{
+			final String localFileName = entry.getKey();
+			final URL imageURL = entry.getValue();
+
+			zipOut.putNextEntry( new ZipEntry( localFileName ) );
+
+			final byte[] buffer = new byte[ 65536 ];
+
+			final InputStream imageIn = imageURL.openStream();
+			try
+			{
+				int read;
+				while ( ( read = imageIn.read( buffer ) ) >= 0 )
 				{
-					int c;
-					while ( ( c = imageIn.read() ) != -1 )
-					{
-						zipOut.write( c );
-					}
-				}
-				finally
-				{
-					imageIn.close();
+					zipOut.write( buffer, 0, read );
 				}
 			}
+			finally
+			{
+				imageIn.close();
+			}
+
+			zipOut.closeEntry();
 		}
 
 		zipOut.close();
