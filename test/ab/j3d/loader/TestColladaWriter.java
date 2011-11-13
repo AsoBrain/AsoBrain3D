@@ -24,6 +24,7 @@ package ab.j3d.loader;
 import java.io.*;
 
 import ab.j3d.*;
+import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.xml.*;
@@ -56,13 +57,13 @@ public class TestColladaWriter
 		final Scene scene = new Scene( Scene.M );
 		final UVMap aluUVMap = new BoxUVMap( Scene.M );
 
-		final Box3D cube = new Box3D( 1.0, 1.0, 1.0, Materials.CYAN, null, Materials.WHITE, null, Materials.ALU_PLATE, aluUVMap, Materials.ALU_PLATE, aluUVMap, Materials.MAGENTA, aluUVMap, Materials.ALU_PLATE, aluUVMap );
+		final Box3D cube = new Box3D( 1.0, 1.0, 1.0, BasicAppearances.CYAN, null, BasicAppearances.WHITE, null, BasicAppearances.ALU_PLATE, aluUVMap, BasicAppearances.ALU_PLATE, aluUVMap, BasicAppearances.MAGENTA, aluUVMap, BasicAppearances.ALU_PLATE, aluUVMap );
 		scene.addContentNode( "cube", Matrix3D.getTransform( 0.0, 45.0, 45.0, 0.0, 0.0, 0.0 ), cube );
 
-		final Sphere3D sphere = new Sphere3D( 0.5, 8, 8, Materials.ORANGE );
+		final Sphere3D sphere = new Sphere3D( 0.5, 8, 8, BasicAppearances.ORANGE );
 		scene.addContentNode( "sphere", Matrix3D.getTranslation( 2.0, 0.0, 0.5 ), sphere );
 
-		final Cylinder3D cylinder = new Cylinder3D( 1.0, 0.5, 8, Materials.RED, null, true, Materials.GREEN, null, Materials.BLUE, null, false );
+		final Cylinder3D cylinder = new Cylinder3D( 1.0, 0.5, 8, BasicAppearances.RED, null, true, BasicAppearances.GREEN, null, BasicAppearances.BLUE, null, false );
 		scene.addContentNode( "cylinder", Matrix3D.getTranslation( 0.0, 2.0, 0.0 ), cylinder );
 
 		final ColladaWriter writer = new ColladaWriter( scene );
