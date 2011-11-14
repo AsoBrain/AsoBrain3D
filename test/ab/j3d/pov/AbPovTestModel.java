@@ -22,6 +22,7 @@ package ab.j3d.pov;
 
 import java.awt.*;
 import java.awt.geom.*;
+import java.net.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
@@ -202,8 +203,8 @@ public class AbPovTestModel
 		final ContentNode node = _scene.getContentNode( "texturedbox" );
 		if ( node == null )
 		{
-			final Appearance mainAppearance = createAppearanceWithColorMap( "ab/j3d/pov/textures/MPXs.jpg", 0.2f, 0.2f );
-			final Appearance sideAppearance = createAppearanceWithColorMap( "ab/j3d/pov/textures/MFCs.jpg", 0.2f, 0.2f );
+			final Appearance mainAppearance = createAppearanceWithColorMap( "/ab/j3d/pov/textures/MPXs.jpg", 0.2f, 0.2f );
+			final Appearance sideAppearance = createAppearanceWithColorMap( "/ab/j3d/pov/textures/MFCs.jpg", 0.2f, 0.2f );
 
 			result = new Box3D( 200.0, 10.0, 200.0, new BoxUVMap( Scene.MM ), mainAppearance, mainAppearance, sideAppearance, sideAppearance, sideAppearance, sideAppearance );
 		}
@@ -216,7 +217,7 @@ public class AbPovTestModel
 	}
 
 	/**
-	 * This method constructs a blue sphere with a radius of 100 mm and 20
+	 * This method constructs a cyan sphere with a radius of 100 mm and 20
 	 * faces per axis.
 	 *
 	 * @see Sphere3D
@@ -230,7 +231,7 @@ public class AbPovTestModel
 		final ContentNode node = _scene.getContentNode( "sphere" );
 		if ( node == null )
 		{
-			final Appearance appearance  = createAppearanceWithColor( Color4.BLUE );
+			final Appearance appearance  = createAppearanceWithColor( Color4.CYAN );
 			result = new Sphere3D( 50.0, 20, 20, appearance );
 		}
 		else
@@ -321,12 +322,12 @@ public class AbPovTestModel
 			final Vector3D rbt = new Vector3D(  100.0,  100.0,  100.0 );
 			final Vector3D lbt = new Vector3D( -100.0,  100.0,  100.0 );
 
-			final Appearance topAppearance    = createAppearanceWithColorMap( "ab/j3d/pov/textures/CUBE_TOP.jpg", 0.0f, 0.0f );
-			final Appearance bottomAppearance = createAppearanceWithColorMap( "ab/j3d/pov/textures/CUBE_BOTTOM.jpg", 0.0f, 0.0f );
-			final Appearance frontAppearance  = createAppearanceWithColorMap( "ab/j3d/pov/textures/CUBE_FRONT.jpg", 0.0f, 0.0f );
-			final Appearance backAppearance   = createAppearanceWithColorMap( "ab/j3d/pov/textures/CUBE_BACK.jpg", 0.0f, 0.0f );
-			final Appearance leftAppearance   = createAppearanceWithColorMap( "ab/j3d/pov/textures/CUBE_LEFT.jpg", 0.0f, 0.0f );
-			final Appearance rightAppearance  = createAppearanceWithColorMap( "ab/j3d/pov/textures/CUBE_RIGHT.jpg", 0.0f, 0.0f );
+			final Appearance topAppearance    = createAppearanceWithColorMap( "/ab/j3d/pov/textures/CUBE_TOP.jpg", 0.0f, 0.0f );
+			final Appearance bottomAppearance = createAppearanceWithColorMap( "/ab/j3d/pov/textures/CUBE_BOTTOM.jpg", 0.0f, 0.0f );
+			final Appearance frontAppearance  = createAppearanceWithColorMap( "/ab/j3d/pov/textures/CUBE_FRONT.jpg", 0.0f, 0.0f );
+			final Appearance backAppearance   = createAppearanceWithColorMap( "/ab/j3d/pov/textures/CUBE_BACK.jpg", 0.0f, 0.0f );
+			final Appearance leftAppearance   = createAppearanceWithColorMap( "/ab/j3d/pov/textures/CUBE_LEFT.jpg", 0.0f, 0.0f );
+			final Appearance rightAppearance  = createAppearanceWithColorMap( "/ab/j3d/pov/textures/CUBE_RIGHT.jpg", 0.0f, 0.0f );
 
 			final float[] texturePoints = { 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f };
 
@@ -371,12 +372,12 @@ public class AbPovTestModel
 			final Vector3D rbt = new Vector3D(  100.0,  100.0,  100.0 );
 			final Vector3D lbt = new Vector3D( -100.0,  100.0,  100.0 );
 
-			final BasicAppearance topAppearance    = createAppearanceWithColorMap( "CUBE_TOP_TEXTURE_AND_COLOR.jpg", 0.0f, 0.0f );    topAppearance   .setDiffuseColor( Color4.RED );
-			final BasicAppearance bottomAppearance = createAppearanceWithColorMap( "CUBE_BOTTOM_TEXTURE_AND_COLOR.jpg", 0.0f, 0.0f ); bottomAppearance.setDiffuseColor( Color4.GREEN );
-			final BasicAppearance frontAppearance  = createAppearanceWithColorMap( "CUBE_FRONT_TEXTURE_AND_COLOR.jpg", 0.0f, 0.0f );  frontAppearance .setDiffuseColor( Color4.BLUE );
-			final BasicAppearance backAppearance   = createAppearanceWithColorMap( "CUBE_BACK_TEXTURE_AND_COLOR.jpg", 0.0f, 0.0f );   backAppearance  .setDiffuseColor( Color4.YELLOW );
-			final BasicAppearance leftAppearance   = createAppearanceWithColorMap( "CUBE_LEFT_TEXTURE_AND_COLOR.jpg", 0.0f, 0.0f );   leftAppearance  .setDiffuseColor( Color4.CYAN );
-			final BasicAppearance rightAppearance  = createAppearanceWithColorMap( "CUBE_RIGHT_TEXTURE_AND_COLOR.jpg", 0.0f, 0.0f );  rightAppearance .setDiffuseColor( Color4.MAGENTA );
+			final BasicAppearance topAppearance    = createAppearanceWithColorMap( "/ab/j3d/pov/textures/CUBE_TOP.jpg", 0.0f, 0.0f );    topAppearance   .setDiffuseColor( Color4.RED );
+			final BasicAppearance bottomAppearance = createAppearanceWithColorMap( "/ab/j3d/pov/textures/CUBE_BOTTOM.jpg", 0.0f, 0.0f ); bottomAppearance.setDiffuseColor( Color4.GREEN );
+			final BasicAppearance frontAppearance  = createAppearanceWithColorMap( "/ab/j3d/pov/textures/CUBE_FRONT.jpg", 0.0f, 0.0f );  frontAppearance .setDiffuseColor( Color4.BLUE );
+			final BasicAppearance backAppearance   = createAppearanceWithColorMap( "/ab/j3d/pov/textures/CUBE_BACK.jpg", 0.0f, 0.0f );   backAppearance  .setDiffuseColor( Color4.YELLOW );
+			final BasicAppearance leftAppearance   = createAppearanceWithColorMap( "/ab/j3d/pov/textures/CUBE_LEFT.jpg", 0.0f, 0.0f );   leftAppearance  .setDiffuseColor( Color4.CYAN );
+			final BasicAppearance rightAppearance  = createAppearanceWithColorMap( "/ab/j3d/pov/textures/CUBE_RIGHT.jpg", 0.0f, 0.0f );  rightAppearance .setDiffuseColor( Color4.MAGENTA );
 
 			final float[] texturePoints = { 0.5f, 0.0f, 0.5f, 0.5f, 0.0f, 0.5f, 0.0f, 0.0f};
 
@@ -516,9 +517,19 @@ public class AbPovTestModel
 	private static BasicAppearance createAppearanceWithColorMap( final String colorMap, final float physicalWidth, final float physicalHeight )
 	{
 		final BasicAppearance result = new BasicAppearance();
+		result.setAmbientColor( Color4.WHITE );
+		result.setDiffuseColor( Color4.WHITE );
 		result.setSpecularColor( Color4.WHITE );
 		result.setShininess( 16 );
-		result.setColorMap( new FileTextureMap( AbPovTestModel.class.getResource( colorMap ), physicalWidth, physicalHeight ) );
+
+		final URL colorMapUrl = AbPovTestModel.class.getResource( colorMap );
+		if ( colorMapUrl == null )
+		{
+			throw new IllegalArgumentException( "Missing resource: " + colorMap );
+		}
+
+		result.setColorMap( new FileTextureMap( colorMapUrl, physicalWidth, physicalHeight ) );
+
 		return result;
 	}
 }
