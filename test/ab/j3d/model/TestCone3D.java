@@ -53,7 +53,7 @@ public class TestCone3D
 		final BasicAppearance appearance = new BasicAppearance();
 		appearance.setDiffuseColor( Color4.WHITE );
 		appearance.setSpecularColor( Color4.WHITE );
-		appearance.setColorMap( new FileTextureMap( new URL(  "test" ), 123.0f, 456.0f ) );
+		appearance.setColorMap( new FileTextureMap( new URL(  "file:test" ), 123.0f, 456.0f ) );
 
 		final BoxUVMap uvMap = new BoxUVMap( Scene.MM );
 
