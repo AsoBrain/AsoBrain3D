@@ -23,6 +23,7 @@ package ab.j3d.awt.view;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.net.*;
 import java.util.*;
 import javax.swing.*;
 
@@ -74,7 +75,17 @@ public abstract class ContentNodeContextAction
 
 		try
 		{
-			putValue( SMALL_ICON, new ImageIcon( classLoader.getResource( bundle.getString( name + "Icon" ) ) ) );
+			final String icon = bundle.getString( name + "Icon" );
+
+			final URL iconUrl = classLoader.getResource( icon );
+			if ( iconUrl == null )
+			{
+				System.err.println( "[Icon resource not found: " + icon + ']' );
+			}
+			else
+			{
+				putValue( SMALL_ICON, new ImageIcon( iconUrl ) );
+			}
 		}
 		catch ( MissingResourceException e )
 		{
