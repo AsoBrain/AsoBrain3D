@@ -49,11 +49,10 @@ public class TestAbToPovConverter
 	 * This method tests if the needed texture declarations are generated.
 	 * All textures should be declared.
 	 *
-	 * @throws IOException When there was a problem writing to the
-	 * {@link PovWriter}.
+	 * @throws  Exception if the test fails.
 	 */
 	public void testDeclarations()
-		throws IOException
+		throws Exception
 	{
 		final URL texturesDirectory = getTexturesDirectory();
 
@@ -136,7 +135,7 @@ public class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_TOP_TEXTURE_AND_COLOR.jpg\" }\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_TOP.jpg\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
@@ -162,7 +161,7 @@ public class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_BOTTOM_TEXTURE_AND_COLOR.jpg\" }\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_BOTTOM.jpg\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
@@ -188,7 +187,7 @@ public class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_FRONT_TEXTURE_AND_COLOR.jpg\" }\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_FRONT.jpg\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
@@ -214,7 +213,7 @@ public class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_BACK_TEXTURE_AND_COLOR.jpg\" }\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_BACK.jpg\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
@@ -240,7 +239,7 @@ public class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_LEFT_TEXTURE_AND_COLOR.jpg\" }\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_LEFT.jpg\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
@@ -266,7 +265,7 @@ public class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_RIGHT_TEXTURE_AND_COLOR.jpg\" }\n" +
+			"\t\t\timage_map  { jpeg \"" + texturesDirectory + "CUBE_RIGHT.jpg\" }\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
@@ -287,29 +286,28 @@ public class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t}\n\n" +
 
-			/************************************************************/
-			"#declare TEX_" + textureIterator.next() + " =\n" +
+			"#declare TEX_" + textureIterator.next() + " =\n" + /* ORANGE */
 			"\ttexture\n" +
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\tcolor      rgb <1.0,1.0,1.0>\n" +
+			"\t\t\tcolor      rgb <1.0,0.38,0.001>\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
-			"\t\t\tambient    1.0\n" +
+			"\t\t\tambient    rgb <1.0,1.0,0.0>\n" +
 			"\t\t\tdiffuse    1.0\n" +
-			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 4.0\n" +
+			"\t\t\tphong      0.2\n" +
+			"\t\t\tphong_size 8.0\n" +
 			"\t\t}\n" +
 			"\t}\n\n" +
 
-			"#declare TEX_" + textureIterator.next() + " =\n" +
+			"#declare TEX_" + textureIterator.next() + " =\n" + /* PINK */
 			"\ttexture\n" +
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
-			"\t\t\tcolor      rgb <1.0,0.68627,0.68627>\n" +
+			"\t\t\tcolor      rgb <1.0,0.7,0.7>\n" +
 			"\t\t}\n" +
 			"\t\tfinish\n" +
 			"\t\t{\n" +
@@ -421,6 +419,38 @@ public class TestAbToPovConverter
 			"\t{\n" +
 			"\t\tpigment\n" +
 			"\t\t{\n" +
+			"\t\t\tcolor      rgb <1.0,0.001,1.0>\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tambient    rgb <1.0,0.0,1.0>\n" +
+			"\t\t\tdiffuse    1.0\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 4.0\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
+
+			"#declare TEX_" + textureIterator.next() + " =\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\tcolor      rgb <0.001,1.0,1.0>\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tambient    rgb <0.0,1.0,1.0>\n" +
+			"\t\t\tdiffuse    1.0\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 4.0\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
+
+			"#declare TEX_" + textureIterator.next() + " =\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
 			"\t\t\tcolor      rgb <0.001,1.0,0.001>\n" +
 			"\t\t\ttransmit   0.8\n" +
 			"\t\t}\n" +
@@ -433,7 +463,23 @@ public class TestAbToPovConverter
 			"\t\t}\n" +
 			"\t}\n\n" +
 
-			"#declare TEX_RGB_255_0_0 =\n" +
+			"#declare TEX_" + textureIterator.next() + " =\n" +
+			"\ttexture\n" +
+			"\t{\n" +
+			"\t\tpigment\n" +
+			"\t\t{\n" +
+			"\t\t\tcolor      rgb <1.0,1.0,1.0>\n" +
+			"\t\t}\n" +
+			"\t\tfinish\n" +
+			"\t\t{\n" +
+			"\t\t\tambient    1.0\n" +
+			"\t\t\tdiffuse    1.0\n" +
+			"\t\t\tphong      1.0\n" +
+			"\t\t\tphong_size 4.0\n" +
+			"\t\t}\n" +
+			"\t}\n\n" +
+
+			"#declare TEX_" + textureIterator.next() + " =\n" +
 			"\ttexture\n" +
 			"\t{\n" +
 			"\t\tpigment\n" +
@@ -447,25 +493,7 @@ public class TestAbToPovConverter
 			"\t\t\tphong      1.0\n" +
 			"\t\t\tphong_size 4.0\n" +
 			"\t\t}\n" +
-			"\t}\n\n" +
-
-			"#declare TEX_" + textureIterator.next() + " =\n" +
-			"\ttexture\n" +
-			"\t{\n" +
-			"\t\tpigment\n" +
-			"\t\t{\n" +
-			"\t\t\tcolor      rgb <1.0,0.001,1.0>\n" +
-			"\t\t}\n" +
-			"\t\tfinish\n" +
-			"\t\t{\n" +
-			"\t\t\tambient    rgb <1.0,0.0,1.0>\n" +
-			"\t\t\tdiffuse    1.0\n" +
-			"\t\t\tphong      1.0\n" +
-			"\t\t\tphong_size 4.0\n" +
-			"\t\t}\n" +
-			"\t}\n\n" +
-
-			"";
+			"\t}\n\n";
 
 		assertEquals( "Declaration generation error", expected, actual );
 	}
