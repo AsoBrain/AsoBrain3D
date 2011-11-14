@@ -22,7 +22,6 @@
 package ab.xml;
 
 import java.io.*;
-import java.util.*;
 import java.util.regex.*;
 import javax.xml.stream.*;
 import javax.xml.stream.events.*;
@@ -124,7 +123,8 @@ public class XMLTestTools
 						{
 							if ( "dateTime".equals( type ) )
 							{
-								DatatypeConverter.parseDateTime( actualEvent.toString() );
+								final Characters characters = actualEvent.asCharacters();
+								DatatypeConverter.parseDateTime( characters.getData() );
 							}
 							else
 							{
