@@ -22,6 +22,7 @@
 package ab.xml;
 
 import java.io.*;
+import java.net.*;
 import java.util.regex.*;
 import javax.xml.stream.*;
 import javax.xml.stream.events.*;
@@ -96,6 +97,53 @@ public class XMLTestTools
 
 					if ( "ignore".equals( matcher.group( 1 ) ) )
 					{
+						continue;
+					}
+					else if ( "resource-url".equals( matcher.group( 1 ) ) )
+					{
+						String name = null;
+						Class<?> clazz = XMLTestTools.class;
+
+						for ( int i = 2; i < matcher.groupCount(); i += 2 )
+						{
+							final String attributeName = matcher.group( i );
+							final String attributeValue = matcher.group( i + 1 );
+
+							if ( "name".equals( attributeName ) )
+							{
+								name = attributeValue;
+							}
+							else if ( "className".equals( attributeName ) )
+							{
+								try
+								{
+									clazz = Class.forName( attributeValue );
+								}
+								catch ( ClassNotFoundException e )
+								{
+									throw new AssertionError( "Class '" + attributeValue + "' not found for unit-test processing instruction: " + processingInstruction );
+								}
+							}
+							else
+							{
+								throw new AssertionError( "Unrecognized '" + attributeName + "' attribute for unit-test processing instruction: " + processingInstruction );
+							}
+						}
+
+						if ( name == null )
+						{
+							throw new AssertionError( "Missing required 'name' attribute for unit-test processing instruction: " + processingInstruction );
+						}
+
+						final URL resourceUrl = clazz.getResource( name );
+						assertNotNull( "Can't find resource with name '" + name + "' for class '" + clazz.getName() + '\'', resourceUrl );
+
+						assertEquals( "Unexpected event type.", XMLStreamConstants.CHARACTERS, actualEvent.getEventType() );
+
+						final Characters characters = actualEvent.asCharacters();
+						final String actualUrl = characters.getData();
+
+						assertEquals( "Invalid resource URL for name '" + name + '\'', actualUrl, resourceUrl.toExternalForm() );
 						continue;
 					}
 					else if ( "validate".equals( matcher.group( 1 ) ) )
