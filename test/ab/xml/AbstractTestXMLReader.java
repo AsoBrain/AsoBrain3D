@@ -32,7 +32,7 @@ import org.jetbrains.annotations.*;
  * @author  G. Meinders
  * @version $Revision$ $Date$
  */
-public abstract class TestXMLReader
+public abstract class AbstractTestXMLReader
 	extends TestCase
 {
 	/**
@@ -52,7 +52,7 @@ public abstract class TestXMLReader
 		throws Exception
 	{
 		System.out.println( getClass().getName() + ".testDocument1()" );
-		final XMLReader reader = _factory.createXMLReader( TestXMLReader.class.getResourceAsStream( "TestXMLReader-1.xml" ), null );
+		final XMLReader reader = _factory.createXMLReader( AbstractTestXMLReader.class.getResourceAsStream( "TestXMLReader-1.xml" ), null );
 
 		assertEquals( "Unexpected event type.", XMLEventType.PROCESSING_INSTRUCTION, reader.next() );
 		assertEquals( "Unexpected processing instruction target.", "magic", reader.getPITarget() );

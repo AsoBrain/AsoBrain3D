@@ -28,7 +28,7 @@ package ab.xml;
  * @version $Revision$ $Date$
  */
 public class TestStaxReader
-	extends TestXMLReader
+	extends AbstractTestXMLReader
 {
 	@Override
 	public void setUp()

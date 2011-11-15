@@ -28,7 +28,7 @@ package ab.xml;
  * @version $Revision$ $Date$
  */
 public class TestXmlPullReader
-	extends TestXMLReader
+	extends AbstractTestXMLReader
 {
 	@Override
 	public void setUp()
