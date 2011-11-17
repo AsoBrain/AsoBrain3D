@@ -21,8 +21,6 @@
  */
 package ab.j3d.awt.view.jogl;
 
-import javax.media.opengl.*;
-
 import ab.j3d.*;
 import org.jetbrains.annotations.*;
 
@@ -60,14 +58,14 @@ public interface ShaderProgram
 	/**
 	 * Links the currently attached shaders into an executable program.
 	 *
-	 * @throws GLException if the shaders fail to link.
+	 * @throws  RuntimeException if the shaders fail to link.
 	 */
 	void link();
 
 	/**
 	 * Validates the program.
 	 *
-	 * @throws  GLException if the program fails to validate.
+	 * @throws  RuntimeException if the program fails to validate.
 	 */
 	void validate();
 

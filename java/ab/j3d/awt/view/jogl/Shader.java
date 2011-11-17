@@ -21,8 +21,6 @@
  */
 package ab.j3d.awt.view.jogl;
 
-import javax.media.opengl.*;
-
 /**
  * Represents an OpenGL Shading Language (GLSL) shader object.
  *
@@ -53,7 +51,7 @@ public interface Shader
 	 *
 	 * @param   source  Source code of the shader.
 	 *
-	 * @throws GLException if compilation of the source code fails.
+	 * @throws  RuntimeException if compilation of the source code fails.
 	 */
 	void setSource( String... source );
 
