@@ -449,6 +449,8 @@ public class FromToCameraControl
 			_dragStartScene2View = getScene2View();
 			_dragStartZoomFactor = _view.getZoomFactor();
 			_dragStartDistance = _distance;
+
+			super.mousePressed( event );
 		}
 	}
 
