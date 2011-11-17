@@ -98,6 +98,21 @@ public class ViewerApplet
 	@Override
 	public void init()
 	{
+		SwingUtilities.invokeLater( new Runnable()
+		{
+			public void run()
+			{
+				initOnEDT();
+			}
+		} );
+	}
+
+	/**
+	 * Performs initialization of the applet to be performed on the AWT event
+	 * dispatch thread, such as creation of Swing components.
+	 */
+	protected void initOnEDT()
+	{
 		final Locale locale = getLocale();
 		final ResourceBundle bundle = ResourceBundle.getBundle( BUNDLE_NAME, locale );
 
@@ -207,7 +222,14 @@ public class ViewerApplet
 	@Override
 	public void destroy()
 	{
-		_view.dispose();
+		SwingUtilities.invokeLater( new Runnable()
+		{
+			public void run()
+			{
+				_view.dispose();
+			}
+		} );
+
 		_executor.shutdownNow();
 	}
 
