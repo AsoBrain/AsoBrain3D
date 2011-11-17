@@ -67,7 +67,7 @@ public class Painter
 			final Bounds3D boundingBox = object.getOrientedBoundingBox();
 			if ( boundingBox != null )
 			{
-				final Convex2D projectedBounds = new Convex2D( 8 );
+				final ConvexHull2D projectedBounds = new ConvexHull2D( 8 );
 
 				final Matrix3D object2image = node2view.multiply( view2image );
 				projectedBounds.add( object2image.transformX( boundingBox.v1.x, boundingBox.v1.y, boundingBox.v1.z ), object2image.transformY( boundingBox.v1.x, boundingBox.v1.y, boundingBox.v1.z ) );

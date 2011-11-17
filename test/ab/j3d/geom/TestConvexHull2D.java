@@ -1,5 +1,4 @@
-/*
- * $Id$
+/* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
  * Copyright (C) 1999-2011 Peter S. Heijnen
@@ -19,21 +18,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * ====================================================================
  */
-package ab.j3d.view;
+package ab.j3d.geom;
 
 import junit.framework.*;
 
 /**
- * Unit test for the {@link Convex2D} class.
+ * Unit test for the {@link ConvexHull2D} class.
  *
  * @author  G. Meinders
  * @version $Revision$ $Date$
  */
-public class TestConvex2D
+public class TestConvexHull2D
 	extends TestCase
 {
 	/**
-	 * Tests {@link Convex2D#size()}.
+	 * Tests {@link ConvexHull2D#size()}.
 	 *
 	 * <p>
 	 * Input points:
@@ -52,7 +51,7 @@ public class TestConvex2D
 	 */
 	public void testSize()
 	{
-		final Convex2D convex = new Convex2D( 6 );
+		final ConvexHull2D convex = new ConvexHull2D( 6 );
 		convex.add( -1.0, -1.0 ); // A
 		convex.add( 1.0, 2.0 );   // B
 		convex.add( 1.0, 0.0 );   // C
@@ -63,7 +62,7 @@ public class TestConvex2D
 	}
 
 	/**
-	 * Tests {@link Convex2D#area()}.
+	 * Tests {@link ConvexHull2D#area()}.
 	 *
 	 * <p>
 	 * Input points:
@@ -82,7 +81,7 @@ public class TestConvex2D
 	 */
 	public void testArea()
 	{
-		final Convex2D convex = new Convex2D( 6 );
+		final ConvexHull2D convex = new ConvexHull2D( 6 );
 		convex.add( -1.0, -1.0 ); // A
 		convex.add( 1.0, 2.0 );   // B
 		convex.add( 1.0, 0.0 );   // C

@@ -28,6 +28,7 @@ import javax.media.opengl.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
+import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
 import com.sun.opengl.util.*;
@@ -2054,7 +2055,7 @@ public class JOGLRenderer
 		/**
 		 * Calculates projected object bounds.
 		 */
-		private final Convex2D _projectedBounds = new Convex2D( 8 );
+		private final ConvexHull2D _projectedBounds = new ConvexHull2D( 8 );
 
 		@Override
 		public boolean walkNode( @NotNull final Node3DVisitor visitor, @NotNull final Node3DPath path )
@@ -2096,7 +2097,7 @@ public class JOGLRenderer
 								object2View.transform( points, points, 8 );
 								projector.project( points, points, 8 );
 
-								final Convex2D projectedBounds = _projectedBounds;
+								final ConvexHull2D projectedBounds = _projectedBounds;
 								projectedBounds.clear();
 								projectedBounds.add( points, 0, 8 );
 
