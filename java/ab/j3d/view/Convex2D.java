@@ -24,6 +24,7 @@ package ab.j3d.view;
 import java.util.*;
 
 import ab.j3d.*;
+import org.jetbrains.annotations.*;
 
 /**
  * A convex polygon in 2D. The polygon is constructed from an arbitrary set of
@@ -203,6 +204,32 @@ public class Convex2D
 		}
 
 		return result / 2.0;
+	}
+
+	/**
+	 * Returns the smallest axis-aligned bounding rectangle around the polygon.
+	 *
+	 * @return  Axis-aligned bounding rectangle.
+	 *
+	 * @throws  IllegalStateException if empty, i.e. <code>size() == 0</code>.
+	 */
+	@NotNull
+	public Bounds2D bounds()
+	{
+		if ( size() == 0 )
+		{
+			throw new IllegalStateException( "Empty polygon has no bounds." );
+		}
+
+		final double[] points = _points;
+		final Bounds2D result = new Bounds2D( points[ 0 ], points[ 1 ], points[ 0 ], points[ 1 ] );
+
+		for ( int i = 1; i < _size; i++ )
+		{
+			result.add( points[ 2 * i ], points[ 2 * i + 1 ] );
+		}
+
+		return result;
 	}
 
 	/**
