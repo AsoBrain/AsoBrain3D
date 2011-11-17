@@ -429,7 +429,7 @@ public class JOGLView
 		public void run()
 		{
 			final GLCanvas viewComponent = _glCanvas;
-			while ( viewComponent.isShowing() )
+			while ( !_disposed && viewComponent.isShowing() )
 			{
 				boolean exceptionOccurred = false;
 
