@@ -165,6 +165,38 @@ public class PovScene
 	}
 
 	/**
+	 * Returns the geometry in the scene. This includes any kind of
+	 * {@link PovGeometry}, including cameras and lights for example.
+	 *
+	 * @return  Geometry in the scene.
+	 */
+	public List<PovGeometry> getGeometry()
+	{
+		return Collections.unmodifiableList( _geometry );
+	}
+
+	/**
+	 * Returns the geometry in the scene, including only instances of the given
+	 * class (including any subclasses).
+	 *
+	 * @param   type    Type of geometry to include.
+	 *
+	 * @return  Geometry in the scene.
+	 */
+	public <T extends PovGeometry> List<T> getGeometry( final Class<T> type )
+	{
+		final List<T> result = new ArrayList<T>();
+		for ( final PovGeometry geometry : _geometry )
+		{
+			if ( type.isInstance( geometry ) )
+			{
+				result.add( type.cast( geometry ) );
+			}
+		}
+		return result;
+	}
+
+	/**
 	 * Adds a new declared texture to the scene.
 	 *
 	 * @param   code        Reference name of the texture.
