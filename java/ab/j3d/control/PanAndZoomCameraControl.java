@@ -155,6 +155,8 @@ public class PanAndZoomCameraControl
 		final View3D view = _view;
 		_dragStartProjector = view.getProjector();
 		_dragStartScene2View = view.getScene2View();
+
+		super.mousePressed( event );
 	}
 
 	@Override

@@ -389,6 +389,8 @@ public class FirstPersonCameraControl
 	{
 		_dragStartFrom = _from;
 		_dragStartTo   = _to;
+
+		super.mousePressed( event );
 	}
 
 	@Override

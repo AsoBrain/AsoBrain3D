@@ -230,6 +230,7 @@ public class OrbitCameraControl
 		}
 	}
 
+	@Override
 	public void mousePressed( final ControlInputEvent event )
 	{
 		_dragStartRotationX    = _rotationX;
@@ -238,8 +239,11 @@ public class OrbitCameraControl
 		_dragStartTranslationX = _translationX;
 		_dragStartTranslationY = _translationY;
 		_dragStartTranslationZ = _translationZ;
+
+		super.mousePressed( event );
 	}
 
+	@Override
 	public void mouseDragged( final ControlInputEvent event )
 	{
 		if ( isCaptured() )
