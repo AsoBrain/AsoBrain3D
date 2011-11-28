@@ -214,11 +214,12 @@ public class Vector2D
 	public static double cosAngle( final double x1, final double y1, final double x2, final double y2 )
 	{
 		final double l = length( x1, y1 ) * length( x2, y2 );
-		return ( l == 0.0 ) ? 0.0 : dot( x1, y1, x2, y2 ) / l;
+		return ( l == 0.0 ) ? 0.0 : ( x1 * y1 + x2 * y2 ) / l;
 	}
 
 	/**
-	 * Determine Z component of cross product between two vectors.
+	 * Determine sine of angle between two vectors. This is the Z component of
+	 * the cross product of both vectors.
 	 *
 	 * @param   x1      X-coordinate of first vector operand.
 	 * @param   y1      Y-coordinate of first vector operand.
@@ -227,9 +228,10 @@ public class Vector2D
 	 *
 	 * @return  Resulting vector.
 	 */
-	public static double crossZ( final double x1, final double y1, final double x2, final double y2 )
+	public static double sinAngle( final double x1, final double y1, final double x2, final double y2 )
 	{
-		return x1 * y2 - y1 * x2;
+		final double l = length( x1, y1 ) * length( x2, y2 );
+		return ( l == 0.0 ) ? 0.0 : ( x1 * y2 - y1 * x2 ) / l;
 	}
 
 	/**
@@ -242,7 +244,7 @@ public class Vector2D
 	 */
 	public static double crossZ( final Vector2D v1, final Vector2D v2 )
 	{
-		return crossZ( v1.getX(), v1.getY(), v2.getX(), v2.getY() );
+		return sinAngle( v1.getX(), v1.getY(), v2.getX(), v2.getY() );
 	}
 
 	/**
