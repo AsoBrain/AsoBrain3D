@@ -88,7 +88,7 @@ public class ViewPointComboBox
 		-1.0,  0.0,  0.0, 0.0 ) );
 
 	/**
-	 * View transform for isometric view.
+	 * View transform for isometric view from right side.
 	 */
 	public static final ViewPoint ISOMETRIC_VIEW = new ViewPoint( "isometric", new Matrix3D(
 		Math.sqrt( 0.5 ), Math.sqrt( 0.5 ),              0.0, 0.0,
@@ -121,7 +121,7 @@ public class ViewPointComboBox
 	private ViewPoint _selectedViewPoint;
 
 	/**
-	 * Construct a new action to switch the projection policy of a view.
+	 * Construct combo box.
 	 *
 	 * @param   locale              Locale to use.
 	 * @param   view                The view this action belongs to.
@@ -129,7 +129,21 @@ public class ViewPointComboBox
 	 */
 	public ViewPointComboBox( final Locale locale, final View3D view, final ViewPoint defaultViewPoint )
 	{
-		final List<ViewPoint> viewPoints = STANDARD_VIEW_POINTS;
+		this( locale, view, STANDARD_VIEW_POINTS, defaultViewPoint );
+	}
+
+	/**
+	 * Construct combo box.
+	 *
+	 * @param   locale              Locale to use.
+	 * @param   view                The view this action belongs to.
+	 * @param   viewPoints          View points to choose from.
+	 * @param   defaultViewPoint    Default view point.
+	 */
+	public ViewPointComboBox( final Locale locale, final View3D view, final List<ViewPoint> viewPoints, final ViewPoint defaultViewPoint )
+	{
+		super( viewPoints.toArray() );
+
 		if ( !viewPoints.contains( defaultViewPoint ) )
 		{
 			throw new IllegalArgumentException( "Unknown view point" );
@@ -159,12 +173,10 @@ public class ViewPointComboBox
 		setViewPoint( defaultViewPoint );
 		setSelectedItem( defaultViewPoint );
 
+		setMaximumSize( getPreferredSize() );
 
-		final JComboBox comboBox = new JComboBox( viewPoints.toArray() );
-		comboBox.setMaximumSize( comboBox.getPreferredSize() );
-
-		final ListCellRenderer originalRenderer = comboBox.getRenderer();
-		comboBox.setRenderer( new ListCellRenderer()
+		final ListCellRenderer originalRenderer = getRenderer();
+		setRenderer( new ListCellRenderer()
 		{
 			public Component getListCellRendererComponent( final JList list , final Object value , final int index , final boolean isSelected , final boolean cellHasFocus )
 			{
@@ -172,7 +184,7 @@ public class ViewPointComboBox
 			}
 		} );
 
-		comboBox.addItemListener( new ItemListener()
+		addItemListener( new ItemListener()
 		{
 			public void itemStateChanged( final ItemEvent e )
 			{
