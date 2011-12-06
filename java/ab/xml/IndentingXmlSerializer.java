@@ -150,7 +150,6 @@ public class IndentingXmlSerializer
 		_simpleType = false;
 	}
 
-	@Override
 	public XmlSerializer startTag( final String namespace, final String name )
 		throws IOException
 	{
@@ -159,7 +158,6 @@ public class IndentingXmlSerializer
 		return this;
 	}
 
-	@Override
 	public XmlSerializer endTag( final String namespace, final String name )
 		throws IOException
 	{
@@ -168,21 +166,18 @@ public class IndentingXmlSerializer
 		return this;
 	}
 
-	@Override
 	public void endDocument()
 		throws IOException
 	{
 		_writer.endDocument();
 	}
 
-	@Override
 	public void flush()
 		throws IOException
 	{
 		_writer.flush();
 	}
 
-	@Override
 	public XmlSerializer attribute( final String namespace, final String name, final String value )
 		throws IOException
 	{
@@ -190,135 +185,115 @@ public class IndentingXmlSerializer
 		return this;
 	}
 
-	@Override
 	public void setFeature( final String name, final boolean state )
 		throws IllegalArgumentException, IllegalStateException
 	{
 		_writer.setFeature( name, state );
 	}
 
-	@Override
 	public boolean getFeature( final String name )
 	{
 		return _writer.getFeature( name );
 	}
 
-	@Override
 	public void setProperty( final String name, final Object value )
 		throws IllegalArgumentException, IllegalStateException
 	{
 		_writer.setProperty( name, value );
 	}
 
-	@Override
 	public Object getProperty( final String name )
 	{
 		return _writer.getProperty( name );
 	}
 
-	@Override
 	public void setOutput( final OutputStream os, final String encoding )
 		throws IOException, IllegalArgumentException, IllegalStateException
 	{
 		_writer.setOutput( os, encoding );
 	}
 
-	@Override
 	public void setOutput( final Writer writer )
 		throws IOException, IllegalArgumentException, IllegalStateException
 	{
 		_writer.setOutput( writer );
 	}
 
-	@Override
 	public void startDocument( final String encoding, final Boolean standalone )
 		throws IOException, IllegalArgumentException, IllegalStateException
 	{
 		_writer.startDocument( encoding, standalone );
 	}
 
-	@Override
 	public void setPrefix( final String prefix, final String namespace )
 		throws IOException, IllegalArgumentException, IllegalStateException
 	{
 		_writer.setPrefix( prefix, namespace );
 	}
 
-	@Override
 	public String getPrefix( final String namespace, final boolean generatePrefix )
 		throws IllegalArgumentException
 	{
 		return _writer.getPrefix( namespace, generatePrefix );
 	}
 
-	@Override
 	public int getDepth()
 	{
 		return _writer.getDepth();
 	}
 
-	@Override
 	public String getNamespace()
 	{
 		return _writer.getNamespace();
 	}
 
-	@Override
 	public String getName()
 	{
 		return _writer.getName();
 	}
 
-	@Override
 	public XmlSerializer text( final String text )
 		throws IOException, IllegalArgumentException, IllegalStateException
 	{
 		return _writer.text( text );
 	}
 
-	@Override
 	public XmlSerializer text( final char[] buf, final int start, final int len )
 		throws IOException, IllegalArgumentException, IllegalStateException
 	{
 		return _writer.text( buf, start, len );
 	}
 
-	@Override
 	public void cdsect( final String text )
 		throws IOException, IllegalArgumentException, IllegalStateException
 	{
 		_writer.cdsect( text );
 	}
 
-	@Override
 	public void entityRef( final String text )
 		throws IOException, IllegalArgumentException, IllegalStateException
 	{
 		_writer.entityRef( text );
 	}
 
-	@Override
 	public void processingInstruction( final String text )
 		throws IOException, IllegalArgumentException, IllegalStateException
 	{
 		_writer.processingInstruction( text );
 	}
 
-	@Override
 	public void comment( final String text )
 		throws IOException, IllegalArgumentException, IllegalStateException
 	{
 		_writer.comment( text );
 	}
 
-	@Override
 	public void docdecl( final String text )
 		throws IOException, IllegalArgumentException, IllegalStateException
 	{
 		_writer.docdecl( text );
 	}
 
-	@Override
 	public void ignorableWhitespace( final String text )
 		throws IOException, IllegalArgumentException, IllegalStateException
 	{
