@@ -40,7 +40,7 @@ public class GeometryObjectFactory
 	/**
 	 * Specifies a {@link GeometryObject} implementation.
 	 */
-	private enum Implementation
+	public enum Implementation
 	{
 		/** Immediate mode rendering.              */ IMMEDIATE_MODE,
 		/** Vertex buffer object, OpenGL 1.5 core. */ VERTEX_BUFFER_OBJECT_CORE,
@@ -100,12 +100,23 @@ public class GeometryObjectFactory
 	}
 
 	/**
+	 * Overrides the geometry object implementation used by the factory.
+	 *
+	 * @param   implementation  Implementation to be used.
+	 */
+	public void setImplementation( @NotNull final Implementation implementation )
+	{
+		System.err.println( "Using " + implementation + " implementation. (explicitly set)" );
+		_implementation = implementation;
+	}
+
+	/**
 	 * Returns the implementation to be used.
 	 *
 	 * @return  Implementation to be used.
 	 */
 	@Nullable
-	private Implementation getImplementation()
+	public Implementation getImplementation()
 	{
 		Implementation result = _implementation;
 		if ( result == null )

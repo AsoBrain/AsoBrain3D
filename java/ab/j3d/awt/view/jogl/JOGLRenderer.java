@@ -163,7 +163,7 @@ public class JOGLRenderer
 	/**
 	 * Manages geometry for objects in the scene.
 	 */
-	private GeometryObjectManager _geometryObjectManager = new GeometryObjectManager();
+	private GeometryObjectManager _geometryObjectManager;
 
 	/**
 	 * Projector to be used for view frustum culling.
@@ -222,6 +222,14 @@ public class JOGLRenderer
 		_accumulationTexture = -1;
 
 		_statistics = null;
+
+		final GeometryObjectFactory geometryObjectFactory = new GeometryObjectFactory();
+		if ( !configuration.isVertexBufferObjectsEnabled() )
+		{
+			geometryObjectFactory.setImplementation( GeometryObjectFactory.Implementation.IMMEDIATE_MODE );
+		}
+
+		_geometryObjectManager = new GeometryObjectManager( geometryObjectFactory );
 	}
 
 	/**

@@ -62,6 +62,11 @@ public class JOGLConfiguration
 	private boolean _shadowMultisampleEnabled = false;
 
 	/**
+	 * Whether vertex buffer objects should be enabled.
+	 */
+	private boolean _vertexBufferObjectsEnabled = true;
+
+	/**
 	 * Constructs a new JOGL configuration with default settings.
 	 */
 	public JOGLConfiguration()
@@ -93,6 +98,7 @@ public class JOGLConfiguration
 		setFSAAEnabled( true );
 		setShadowEnabled( false );
 		setShadowMultisampleEnabled( false );
+		setVertexBufferObjectsEnabled( true );
 	}
 
 	/**
@@ -120,6 +126,7 @@ public class JOGLConfiguration
 		setFSAAEnabled( false );
 		setShadowEnabled( false );
 		setShadowMultisampleEnabled( false );
+		setVertexBufferObjectsEnabled( false );
 	}
 
 	/**
@@ -147,6 +154,7 @@ public class JOGLConfiguration
 		setFSAAEnabled( true );
 		setShadowEnabled( true );
 		setShadowMultisampleEnabled( true );
+		setVertexBufferObjectsEnabled( true );
 	}
 
 	/**
@@ -273,5 +281,26 @@ public class JOGLConfiguration
 	public void setShadowMultisampleEnabled( final boolean shadowMultisampleEnabled )
 	{
 		_shadowMultisampleEnabled = shadowMultisampleEnabled;
+	}
+
+	/**
+	 * Returns whether vertex buffer objects should be enabled.
+	 *
+	 * @return  <code>true</code> if vertex buffer objects should be enabled.
+	 */
+	public boolean isVertexBufferObjectsEnabled()
+	{
+		return _vertexBufferObjectsEnabled;
+	}
+
+	/**
+	 * Sets whether vertex buffer objects should be enabled.
+	 *
+	 * @param   vertexBufferObjects     <code>true</code> if vertex buffer
+	 *                                  objects should be enabled.
+	 */
+	public void setVertexBufferObjectsEnabled( final boolean vertexBufferObjects )
+	{
+		_vertexBufferObjectsEnabled = vertexBufferObjects;
 	}
 }
