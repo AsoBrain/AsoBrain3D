@@ -54,7 +54,7 @@ public class TestAbToPovConverter
 	public void testDeclarations()
 		throws Exception
 	{
-		final URL texturesDirectory = getTexturesDirectory();
+		final String texturesDirectory = getTexturesDirectory();
 
 		final AbPovTestModel testModel = new AbPovTestModel();
 		final Scene scene = testModel.getScene();
@@ -1064,11 +1064,13 @@ public class TestAbToPovConverter
 	 *
 	 * @return The path to the test textures.
 	 */
-	private static URL getTexturesDirectory()
+	private static String getTexturesDirectory()
 	{
 		try
 		{
-			return new URL( getTestDirectory(), "textures/" );
+			final URL url = new URL( getTestDirectory(), "textures/" );
+			assertEquals( "Should be file URL: " + url, "file", url.getProtocol() );
+			return url.getPath();
 		}
 		catch ( MalformedURLException e )
 		{
