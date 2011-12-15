@@ -927,7 +927,7 @@ public class PovTexture
 		final PovVector rgb = _rgb;
 
 		final URL image = _image;
-		if ( image != null )
+		if ( ( image != null ) && "file".equals( image.getProtocol() ) )
 		{
 			final String imageType = getImageType();
 
@@ -938,7 +938,7 @@ public class PovTexture
 				out.write( ' ' );
 			}
 			out.write( '"' );
-			out.write( image.toExternalForm() );
+			out.write( image.getPath() );
 			out.write( "\" }" );
 			out.newLine();
 		}
@@ -1219,7 +1219,7 @@ public class PovTexture
 		out.indentIn();
 
 		final URL image = _image;
-		if ( image != null )
+		if ( ( image != null ) && "file".equals( image.getProtocol() ) )
 		{
 			final String imageType = getImageType();
 
@@ -1230,7 +1230,7 @@ public class PovTexture
 				out.write( ' ' );
 			}
 			out.write( '"' );
-			out.write( image.toExternalForm() );
+			out.write( image.getPath() );
 			out.write( "\" }" );
 			out.newLine();
 		}
