@@ -32,18 +32,18 @@ import org.jetbrains.annotations.*;
  * @author  G. Meinders
  * @version $Revision$ $Date$
  */
-class StaxWriter
+public class StaxWriter
 	implements XMLWriter
 {
 	/**
 	 * StAX writer to be used.
 	 */
-	private XMLStreamWriter _writer;
+	private final XMLStreamWriter _writer;
 
 	/**
 	 * Character encoding of the XML document.
 	 */
-	private String _encoding;
+	private final String _encoding;
 
 	/**
 	 * <code>true</code> if the writer is currently writing an empty tag.
@@ -53,7 +53,7 @@ class StaxWriter
 	/**
 	 * Namespace declarations that need to be added to the next start element.
 	 */
-	private List<NamespaceDeclaration> _namespaces = new ArrayList<NamespaceDeclaration>();
+	private final List<NamespaceDeclaration> _namespaces = new ArrayList<NamespaceDeclaration>();
 
 	/**
 	 * Constructs a new instance.
@@ -67,7 +67,6 @@ class StaxWriter
 		_encoding = encoding;
 	}
 
-	@Override
 	public void startDocument()
 		throws XMLException
 	{
@@ -81,7 +80,6 @@ class StaxWriter
 		}
 	}
 
-	@Override
 	public void setPrefix( @NotNull final String prefix, @NotNull final String namespaceURI )
 		throws XMLException
 	{
@@ -96,7 +94,6 @@ class StaxWriter
 		}
 	}
 
-	@Override
 	public void startTag( final String namespaceURI, @NotNull final String localName )
 		throws XMLException
 	{
@@ -120,7 +117,6 @@ class StaxWriter
 		}
 	}
 
-	@Override
 	public void emptyTag( final String namespaceURI, @NotNull final String localName )
 		throws XMLException
 	{
@@ -135,7 +131,6 @@ class StaxWriter
 		_empty = true;
 	}
 
-	@Override
 	public void attribute( final String namespaceURI, @NotNull final String localName, @NotNull final String value )
 		throws XMLException
 	{
@@ -156,7 +151,6 @@ class StaxWriter
 		}
 	}
 
-	@Override
 	public void text( @NotNull final String characters )
 		throws XMLException
 	{
@@ -175,7 +169,6 @@ class StaxWriter
 		}
 	}
 
-	@Override
 	public void endTag( final String namespaceURI, @NotNull final String localName )
 		throws XMLException
 	{
@@ -196,7 +189,6 @@ class StaxWriter
 		}
 	}
 
-	@Override
 	public void endDocument()
 		throws XMLException
 	{
@@ -210,7 +202,6 @@ class StaxWriter
 		}
 	}
 
-	@Override
 	public void flush()
 		throws XMLException
 	{
@@ -227,17 +218,17 @@ class StaxWriter
 	/**
 	 * Namespace declaration.
 	 */
-	private class NamespaceDeclaration
+	private static class NamespaceDeclaration
 	{
 		/**
 		 * Prefix.
 		 */
-		private String _prefix;
+		private final String _prefix;
 
 		/**
 		 * Namespace URI.
 		 */
-		private String _namespaceURI;
+		private final String _namespaceURI;
 
 		/**
 		 * Constructs a new instance.
@@ -245,7 +236,7 @@ class StaxWriter
 		 * @param   prefix          Prefix.
 		 * @param   namespaceURI    Namespace URI.
 		 */
-		public NamespaceDeclaration( final String prefix, final String namespaceURI )
+		private NamespaceDeclaration( final String prefix, final String namespaceURI )
 		{
 			_prefix = prefix;
 			_namespaceURI = namespaceURI;
