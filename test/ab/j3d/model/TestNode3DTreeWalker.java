@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2011 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -197,7 +197,6 @@ public class TestNode3DTreeWalker
 			_abortAt = abortAt;
 		}
 
-		@Override
 		public boolean visitNode( @NotNull final Node3DPath path )
 		{
 			_visitedNodePaths.add( path );
