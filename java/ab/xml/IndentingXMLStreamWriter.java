@@ -152,7 +152,6 @@ public class IndentingXMLStreamWriter
 		_simpleType = false;
 	}
 
-	@Override
 	public void writeStartElement( final String localName )
 		throws XMLStreamException
 	{
@@ -160,7 +159,6 @@ public class IndentingXMLStreamWriter
 		_writer.writeStartElement( localName );
 	}
 
-	@Override
 	public void writeStartElement( final String namespaceURI, final String localName )
 		throws XMLStreamException
 	{
@@ -168,7 +166,6 @@ public class IndentingXMLStreamWriter
 		_writer.writeStartElement( namespaceURI, localName );
 	}
 
-	@Override
 	public void writeStartElement( final String prefix, final String localName, final String namespaceURI )
 		throws XMLStreamException
 	{
@@ -176,7 +173,6 @@ public class IndentingXMLStreamWriter
 		_writer.writeStartElement( prefix, localName, namespaceURI );
 	}
 
-	@Override
 	public void writeEmptyElement( final String namespaceURI, final String localName )
 		throws XMLStreamException
 	{
@@ -184,7 +180,6 @@ public class IndentingXMLStreamWriter
 		_writer.writeEmptyElement( namespaceURI, localName );
 	}
 
-	@Override
 	public void writeEmptyElement( final String prefix, final String localName, final String namespaceURI )
 		throws XMLStreamException
 	{
@@ -192,7 +187,6 @@ public class IndentingXMLStreamWriter
 		_writer.writeEmptyElement( prefix, localName, namespaceURI );
 	}
 
-	@Override
 	public void writeEmptyElement( final String localName )
 		throws XMLStreamException
 	{
@@ -200,7 +194,6 @@ public class IndentingXMLStreamWriter
 		_writer.writeEmptyElement( localName );
 	}
 
-	@Override
 	public void writeEndElement()
 		throws XMLStreamException
 	{
@@ -208,174 +201,149 @@ public class IndentingXMLStreamWriter
 		_writer.writeEndElement();
 	}
 
-	@Override
 	public void writeEndDocument()
 		throws XMLStreamException
 	{
 		_writer.writeEndDocument();
 	}
 
-	@Override
 	public void close()
 		throws XMLStreamException
 	{
 		_writer.close();
 	}
 
-	@Override
 	public void flush()
 		throws XMLStreamException
 	{
 		_writer.flush();
 	}
 
-	@Override
 	public void writeAttribute( final String localName, final String value )
 		throws XMLStreamException
 	{
 		_writer.writeAttribute( localName, value );
 	}
 
-	@Override
 	public void writeAttribute( final String prefix, final String namespaceURI, final String localName, final String value )
 		throws XMLStreamException
 	{
 		_writer.writeAttribute( prefix, namespaceURI, localName, value );
 	}
 
-	@Override
 	public void writeAttribute( final String namespaceURI, final String localName, final String value )
 		throws XMLStreamException
 	{
 		_writer.writeAttribute( namespaceURI, localName, value );
 	}
 
-	@Override
 	public void writeNamespace( final String prefix, final String namespaceURI )
 		throws XMLStreamException
 	{
 		_writer.writeNamespace( prefix, namespaceURI );
 	}
 
-	@Override
 	public void writeDefaultNamespace( final String namespaceURI )
 		throws XMLStreamException
 	{
 		_writer.writeDefaultNamespace( namespaceURI );
 	}
 
-	@Override
 	public void writeComment( final String data )
 		throws XMLStreamException
 	{
 		_writer.writeComment( data );
 	}
 
-	@Override
 	public void writeProcessingInstruction( final String target )
 		throws XMLStreamException
 	{
 		_writer.writeProcessingInstruction( target );
 	}
 
-	@Override
 	public void writeProcessingInstruction( final String target, final String data )
 		throws XMLStreamException
 	{
 		_writer.writeProcessingInstruction( target, data );
 	}
 
-	@Override
 	public void writeCData( final String data )
 		throws XMLStreamException
 	{
 		_writer.writeCData( data );
 	}
 
-	@Override
 	public void writeDTD( final String dtd )
 		throws XMLStreamException
 	{
 		_writer.writeDTD( dtd );
 	}
 
-	@Override
 	public void writeEntityRef( final String name )
 		throws XMLStreamException
 	{
 		_writer.writeEntityRef( name );
 	}
 
-	@Override
 	public void writeStartDocument()
 		throws XMLStreamException
 	{
 		_writer.writeStartDocument();
 	}
 
-	@Override
 	public void writeStartDocument( final String version )
 		throws XMLStreamException
 	{
 		_writer.writeStartDocument( version );
 	}
 
-	@Override
 	public void writeStartDocument( final String encoding, final String version )
 		throws XMLStreamException
 	{
 		_writer.writeStartDocument( encoding, version );
 	}
 
-	@Override
 	public void writeCharacters( final String text )
 		throws XMLStreamException
 	{
 		_writer.writeCharacters( text );
 	}
 
-	@Override
 	public void writeCharacters( final char[] text, final int start, final int len )
 		throws XMLStreamException
 	{
 		_writer.writeCharacters( text, start, len );
 	}
 
-	@Override
 	public String getPrefix( final String uri )
 		throws XMLStreamException
 	{
 		return _writer.getPrefix( uri );
 	}
 
-	@Override
 	public void setPrefix( final String prefix, final String uri )
 		throws XMLStreamException
 	{
 		_writer.setPrefix( prefix, uri );
 	}
 
-	@Override
 	public void setDefaultNamespace( final String uri )
 		throws XMLStreamException
 	{
 		_writer.setDefaultNamespace( uri );
 	}
 
-	@Override
 	public void setNamespaceContext( final NamespaceContext context )
 		throws XMLStreamException
 	{
 		_writer.setNamespaceContext( context );
 	}
 
-	@Override
 	public NamespaceContext getNamespaceContext()
 	{
 		return _writer.getNamespaceContext();
 	}
 
-	@Override
 	public Object getProperty( final String name )
 		throws IllegalArgumentException
 	{
