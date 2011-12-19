@@ -160,4 +160,17 @@ public abstract class XMLWriterFactory
 	 */
 	public abstract XMLWriter createXMLWriter( final OutputStream out, final String encoding )
 		throws XMLException;
+
+	/**
+	 * Creates an XML writer.
+	 *
+	 * @param   writer      Character stream to write to.
+	 * @param   encoding    Character encoding to be used.
+	 *
+	 * @return  Created XML writer.
+	 *
+	 * @throws  XMLException if an XML-related exception occurs.
+	 */
+	public abstract XMLWriter createXMLWriter( Writer writer, String encoding )
+		throws XMLException;
 }

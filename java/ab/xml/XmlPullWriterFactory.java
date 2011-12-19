@@ -32,7 +32,7 @@ import org.xmlpull.v1.*;
  * @author  G. Meinders
  * @version $Revision$ $Date$
  */
-class XmlPullWriterFactory
+public class XmlPullWriterFactory
 	extends XMLWriterFactory
 {
 	/**
@@ -74,6 +74,37 @@ class XmlPullWriterFactory
 		try
 		{
 			serializer.setOutput( out, encoding );
+		}
+		catch ( IOException e )
+		{
+			throw new XMLException( e );
+		}
+
+		if ( isIndenting() )
+		{
+			serializer = new IndentingXmlSerializer( serializer );
+		}
+
+		return new XmlPullWriter( serializer, encoding );
+	}
+
+	@Override
+	public XMLWriter createXMLWriter( final Writer writer, final String encoding )
+		throws XMLException
+	{
+		XmlSerializer serializer;
+		try
+		{
+			serializer = _parserFactory.newSerializer();
+		}
+		catch ( XmlPullParserException e )
+		{
+			throw new XMLException( e );
+		}
+
+		try
+		{
+			serializer.setOutput( writer );
 		}
 		catch ( IOException e )
 		{

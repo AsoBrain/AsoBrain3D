@@ -74,4 +74,26 @@ class StaxWriterFactory
 
 		return new StaxWriter( writer, encoding );
 	}
+
+	@Override
+	public XMLWriter createXMLWriter( final Writer writer, final String encoding )
+		throws XMLException
+	{
+		XMLStreamWriter xmlStreamWriter;
+		try
+		{
+			xmlStreamWriter = _factory.createXMLStreamWriter( writer );
+		}
+		catch ( XMLStreamException e )
+		{
+			throw new XMLException( e );
+		}
+
+		if ( isIndenting() )
+		{
+			xmlStreamWriter = new IndentingXMLStreamWriter( xmlStreamWriter );
+		}
+
+		return new StaxWriter( xmlStreamWriter, encoding );
+	}
 }
