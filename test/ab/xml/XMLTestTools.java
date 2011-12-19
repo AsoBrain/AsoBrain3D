@@ -23,6 +23,7 @@ package ab.xml;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 import java.util.regex.*;
 import javax.xml.stream.*;
 import javax.xml.stream.events.*;
@@ -71,6 +72,23 @@ public class XMLTestTools
 	public static void assertXMLEquals( final InputStream expectedIn, final InputStream actualIn )
 		throws XMLStreamException
 	{
+		assertXMLEquals( null, expectedIn, actualIn );
+	}
+
+	/**
+	 * Asserts that the given stream contain an equivalent XML document.
+	 *
+	 * @param   message     Assertion failure message.
+	 * @param   expectedIn  Expected XML document.
+	 * @param   actualIn    Actual XML document.
+	 *
+	 * @throws XMLStreamException if there is an error with the underlying XML.
+	 */
+	public static void assertXMLEquals( final String message, final InputStream expectedIn, final InputStream actualIn )
+		throws XMLStreamException
+	{
+		final String messagePrefix = ( message != null ) && !message.isEmpty() ? message + " - " : message;
+
 		final XMLInputFactory xmlInputFactory = XMLInputFactory.newFactory();
 		xmlInputFactory.setProperty( XMLInputFactory.IS_COALESCING, Boolean.TRUE );
 
@@ -95,110 +113,171 @@ public class XMLTestTools
 						throw new AssertionError( "Invalid unit-test processing instruction: " + processingInstruction );
 					}
 
-					if ( "ignore".equals( matcher.group( 1 ) ) )
+					final String instruction = matcher.group( 1 );
+
+					final Map<String,String> instructionAttributes = new HashMap<String, String>();
+					for ( int i = 2; i < matcher.groupCount(); i += 2 )
 					{
-						continue;
+						instructionAttributes.put( matcher.group( i ), matcher.group( i + 1 ) );
 					}
-					else if ( "resource-url".equals( matcher.group( 1 ) ) )
+
+					if ( "ignore".equals( instruction ) )
 					{
-						String name = null;
-						Class<?> clazz = XMLTestTools.class;
-
-						for ( int i = 2; i < matcher.groupCount(); i += 2 )
-						{
-							final String attributeName = matcher.group( i );
-							final String attributeValue = matcher.group( i + 1 );
-
-							if ( "name".equals( attributeName ) )
-							{
-								name = attributeValue;
-							}
-							else if ( "className".equals( attributeName ) )
-							{
-								try
-								{
-									clazz = Class.forName( attributeValue );
-								}
-								catch ( ClassNotFoundException e )
-								{
-									throw new AssertionError( "Class '" + attributeValue + "' not found for unit-test processing instruction: " + processingInstruction );
-								}
-							}
-							else
-							{
-								throw new AssertionError( "Unrecognized '" + attributeName + "' attribute for unit-test processing instruction: " + processingInstruction );
-							}
-						}
-
-						if ( name == null )
-						{
-							throw new AssertionError( "Missing required 'name' attribute for unit-test processing instruction: " + processingInstruction );
-						}
-
-						final URL resourceUrl = clazz.getResource( name );
-						assertNotNull( "Can't find resource with name '" + name + "' for class '" + clazz.getName() + '\'', resourceUrl );
-
-						assertEquals( "Unexpected event type.", XMLStreamConstants.CHARACTERS, actualEvent.getEventType() );
-
-						final Characters characters = actualEvent.asCharacters();
-						final String actualUrl = characters.getData();
-
-						assertEquals( "Invalid resource URL for name '" + name + '\'', actualUrl, resourceUrl.toExternalForm() );
-						continue;
+						/* ignore :) */
 					}
-					else if ( "validate".equals( matcher.group( 1 ) ) )
+					else if ( "resource-url".equals( instruction ) )
 					{
-						String type = null;
-
-						for ( int i = 2; i < matcher.groupCount(); i += 2 )
-						{
-							final String attributeName = matcher.group( i );
-							final String attributeValue = matcher.group( i + 1 );
-
-							if ( "type".equals( attributeName ) )
-							{
-								type = attributeValue;
-							}
-						}
-
-						if ( type == null )
-						{
-							throw new AssertionError( "Missing required attribute 'dataType' for unit-test processing instruction: " + processingInstruction );
-						}
-
-						assertEquals( "Unexpected event type.", XMLStreamConstants.CHARACTERS, actualEvent.getEventType() );
-						try
-						{
-							if ( "dateTime".equals( type ) )
-							{
-								final Characters characters = actualEvent.asCharacters();
-								DatatypeConverter.parseDateTime( characters.getData() );
-							}
-							else
-							{
-								throw new AssertionError( "Validation of data type '" + type + "' is not implemented." );
-							}
-						}
-						catch ( Exception e )
-						{
-							throw (AssertionError)new AssertionError( "Invalid value for data type '" + type + "': " + actualEvent ).initCause( e );
-						}
-
-						continue;
+						processingResourceUrl( messagePrefix, actualEvent, instructionAttributes );
+					}
+					else if ( "validate".equals( instruction ) )
+					{
+						processValidate( messagePrefix, actualEvent, instructionAttributes );
 					}
 					else
 					{
-						throw new AssertionError( "Unsupported unit-test processing instruction: " + processingInstruction );
+						throw new AssertionError( "Unsupported unit-test processing instruction: " + instruction );
 					}
+
+					continue;
 				}
 			}
 
-			assertEquals( "Unexpected event type.", expectedEvent.getEventType(), actualEvent.getEventType() );
-			assertEquals( "Unexpected event.", expectedEvent.toString(), actualEvent.toString() );
+			assertEquals( messagePrefix + "Unexpected event type.", expectedEvent.getEventType(), actualEvent.getEventType() );
+			assertEquals( messagePrefix + "Unexpected event (type=" + expectedEvent.getEventType() + ").", expectedEvent.toString(), actualEvent.toString() );
 		}
 
-		assertFalse( "Expected more events.", expectedReader.hasNext() );
-		assertFalse( "Expected no more events.", actualReader.hasNext() );
+		assertFalse( messagePrefix + "Expected more events.", expectedReader.hasNext() );
+		assertFalse( messagePrefix + "Expected no more events.", actualReader.hasNext() );
+	}
+
+	/**
+	 * Asserts that the given stream contain an equivalent XML document.
+	 *
+	 * @param   message     Assertion failure message.
+	 * @param   expected    Expected XML document.
+	 * @param   actual      Actual XML document.
+	 *
+	 * @throws XMLStreamException if there is an error with the underlying XML.
+	 */
+	public static void assertXMLEquals( final String message, final String expected, final String actual )
+		throws XMLStreamException
+	{
+		assertXMLEquals( message, new ByteArrayInputStream( expected.getBytes() ), new ByteArrayInputStream( actual.getBytes() ) );
+	}
+
+	/**
+	 * Handle <code>&lt;?unit-test resource-url name="{name}"
+	 * [className="{className}"] ?&gt;</code> processing instruction.
+	 *
+	 * This makes sure the XML element content is a reference to the specified
+	 * resource. The class name is optional and may be used to specify which
+	 * class (loader) is used to find the resource.
+	 *
+	 * @param   messagePrefix           Prefix for assertion failure messages.
+	 * @param   event                   Current XML event being validated.
+	 * @param   instructionAttributes   Processing instruction attributes.
+	 */
+	private static void processingResourceUrl( final String messagePrefix, final XMLEvent event, final Map<String, String> instructionAttributes )
+	{
+		String name = null;
+		Class<?> clazz = XMLTestTools.class;
+
+		for ( final Map.Entry<String, String> attribute : instructionAttributes.entrySet() )
+		{
+			final String attributeName = attribute.getKey();
+			final String attributeValue = attribute.getValue();
+
+			if ( "name".equals( attributeName ) )
+			{
+				name = attributeValue;
+			}
+			else if ( "className".equals( attributeName ) )
+			{
+				try
+				{
+					clazz = Class.forName( attributeValue );
+				}
+				catch ( ClassNotFoundException e )
+				{
+					throw new AssertionError( "Class '" + attributeValue + "' not found for '<?unit-test resource-url ?> processing instruction" );
+				}
+			}
+			else
+			{
+				throw new AssertionError( "Unrecognized '" + attributeName + "' attribute for '<?unit-test resource-url ?> processing instruction" );
+			}
+		}
+
+		if ( name == null )
+		{
+			throw new AssertionError( "Missing required 'name' attribute for '<?unit-test resource-url ?> processing instruction" );
+		}
+
+		final URL resourceUrl = clazz.getResource( name );
+		assertNotNull( messagePrefix + "Can't find resource with name '" + name + "' for class '" + clazz.getName() + '\'', resourceUrl );
+
+		assertEquals( messagePrefix + "Unexpected event type.", XMLStreamConstants.CHARACTERS, event.getEventType() );
+
+		final Characters characters = event.asCharacters();
+		final String actualUrl = characters.getData();
+
+		assertEquals( messagePrefix + "Invalid resource URL for name '" + name + '\'', actualUrl, resourceUrl.toExternalForm() );
+	}
+
+	/**
+	 * Handle <code>&lt;?unit-test validate type="{dataType}" ?&gt;</code>
+	 * processing instruction.
+	 *
+	 * This ensures that the content is a valid lexical value for the specified
+	 * XML Schema data type (e.g. <code>dateTime</code>).
+	 *
+	 * @param   messagePrefix           Prefix for assertion failure messages.
+	 * @param   event                   Current XML event being validated.
+	 * @param   instructionAttributes   Processing instruction attributes.
+	 */
+	private static void processValidate( final String messagePrefix, final XMLEvent event, final Map<String, String> instructionAttributes )
+	{
+		String type = null;
+
+		for ( final Map.Entry<String, String> attribute : instructionAttributes.entrySet() )
+		{
+			final String attributeName = attribute.getKey();
+			final String attributeValue = attribute.getValue();
+
+			if ( "type".equals( attributeName ) )
+			{
+				type = attributeValue;
+			}
+			else
+			{
+				throw new AssertionError( "Unrecognized '" + attributeName + "' attribute for '<?unit-test validate ?> processing instruction" );
+			}
+		}
+
+		if ( type == null )
+		{
+			throw new AssertionError( "Missing required attribute 'dataType' for '<?unit-test validate ?> processing instruction" );
+		}
+
+		assertEquals( messagePrefix + "Unexpected event type.", XMLStreamConstants.CHARACTERS, event.getEventType() );
+		try
+		{
+			if ( "dateTime".equals( type ) )
+			{
+				final Characters characters = event.asCharacters();
+				DatatypeConverter.parseDateTime( characters.getData() );
+			}
+			else
+			{
+				throw new AssertionError( "Validation of data type '" + type + "' is not implemented." );
+			}
+		}
+		catch ( Exception e )
+		{
+			final AssertionError error = new AssertionError( "Invalid value for data type '" + type + "': " + event );
+			error.initCause( e );
+			throw error;
+		}
 	}
 
 	/**
