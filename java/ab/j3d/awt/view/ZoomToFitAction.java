@@ -26,6 +26,7 @@ import java.util.*;
 import javax.swing.*;
 
 import ab.j3d.control.*;
+import ab.j3d.view.*;
 
 /**
  * This action can be used to perform 'Zoom to fit' on a camera control.
@@ -42,19 +43,19 @@ public class ZoomToFitAction
 	private static final String BUNDLE_NAME = ZoomToFitAction.class.getPackage().getName() + ".LocalStrings";
 
 	/**
-	 * Camera control to perform action on.
+	 * View to perform action on.
 	 */
-	private final CameraControl _cameraControl;
+	private View3D _view;
 
 	/**
 	 * Create action.
 	 *
-	 * @param   locale          Locale to use.
-	 * @param   cameraControl   Camera control to perform action on.
+	 * @param   locale  Locale to use.
+	 * @param   view    View to perform action on.
 	 */
-	public ZoomToFitAction( final Locale locale, final CameraControl cameraControl )
+	public ZoomToFitAction( final Locale locale, final View3D view )
 	{
-		_cameraControl = cameraControl;
+		_view = view;
 		final ResourceBundle bundle = ResourceBundle.getBundle( BUNDLE_NAME, locale );
 
 		putValue( ACTION_COMMAND_KEY, CameraControl.ZOOM_TO_FIT );
@@ -69,8 +70,43 @@ public class ZoomToFitAction
 		}
 	}
 
+	@Override
+	public boolean isEnabled()
+	{
+		final View3D view = getView();
+		return ( view != null ) && ( view.getCameraControl() != null );
+	}
+
 	public void actionPerformed( final ActionEvent e )
 	{
-		_cameraControl.zoomToFit();
+		final View3D view = getView();
+		if ( view != null )
+		{
+			final CameraControl cameraControl = view.getCameraControl();
+			if ( cameraControl != null )
+			{
+				cameraControl.zoomToFit();
+			}
+		}
+	}
+
+	/**
+	 * Get view to perform action on.
+	 *
+	 * @return  View to perform action on.
+	 */
+	public View3D getView()
+	{
+		return _view;
+	}
+
+	/**
+	 * Set view to perform action on.
+	 *
+	 * @return  View to perform action on.
+	 */
+	public void setView( final View3D view )
+	{
+		_view = view;
 	}
 }

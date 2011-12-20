@@ -24,7 +24,6 @@ import java.awt.*;
 import java.util.*;
 import javax.swing.*;
 
-import ab.j3d.control.*;
 import ab.j3d.view.*;
 
 /**
@@ -125,12 +124,7 @@ public class View3DPanel
 			toolbar.add( new JLabel( view.getLabel() + ": " ) );
 		}
 
-		final CameraControl cameraControl = view.getCameraControl();
-		if ( cameraControl != null )
-		{
-			toolbar.add( new ZoomToFitAction( locale, cameraControl ) );
-		}
-
+		toolbar.add( new ZoomToFitAction( locale, view ) );
 		toolbar.add( new RenderingPolicyComboBox( locale, view ) );
 		toolbar.add( new GridCheckBox( locale, view ) );
 
