@@ -45,7 +45,7 @@ public class ViewPointComboBox
 	public static final ViewPoint FRONT_VIEW = new ViewPoint( "front", new Matrix3D(
 		 1.0,  0.0,  0.0, 0.0,
 		 0.0,  0.0,  1.0, 0.0,
-		 0.0, -1.0,  0.0, 0.0 ) );
+		 0.0, -1.0,  0.0, 0.0 ), false );
 
 	/**
 	 * View transform for rear view.
@@ -53,7 +53,7 @@ public class ViewPointComboBox
 	public static final ViewPoint REAR_VIEW = new ViewPoint( "rear", new Matrix3D(
 		-1.0,  0.0,  0.0, 0.0,
 		 0.0,  0.0,  1.0, 0.0,
-		 0.0,  1.0,  0.0, 0.0 ) );
+		 0.0,  1.0,  0.0, 0.0 ), false );
 
 	/**
 	 * View transform for top view.
@@ -61,7 +61,7 @@ public class ViewPointComboBox
 	public static final ViewPoint TOP_VIEW = new ViewPoint( "top", new Matrix3D(
 		 1.0,  0.0,  0.0, 0.0,
 		 0.0,  1.0,  0.0, 0.0,
-		 0.0,  0.0,  1.0, 0.0 ) );
+		 0.0,  0.0,  1.0, 0.0 ), false );
 
 	/**
 	 * View transform for bottom view.
@@ -69,7 +69,7 @@ public class ViewPointComboBox
 	public static final ViewPoint BOTTOM_VIEW = new ViewPoint( "bottom", new Matrix3D(
 		 1.0,  0.0,  0.0, 0.0,
 		 0.0, -1.0,  0.0, 0.0,
-		 0.0,  0.0, -1.0, 0.0 ) );
+		 0.0,  0.0, -1.0, 0.0 ), false );
 
 	/**
 	 * View transform for right view.
@@ -77,7 +77,7 @@ public class ViewPointComboBox
 	public static final ViewPoint RIGHT_VIEW = new ViewPoint( "right", new Matrix3D(
 		 0.0,  1.0,  0.0, 0.0,
 		 0.0,  0.0,  1.0, 0.0,
-		 1.0,  0.0,  0.0, 0.0 ) );
+		 1.0,  0.0,  0.0, 0.0 ), false );
 
 	/**
 	 * View transform for left view.
@@ -85,7 +85,7 @@ public class ViewPointComboBox
 	public static final ViewPoint LEFT_VIEW = new ViewPoint( "left", new Matrix3D(
 		 0.0, -1.0,  0.0, 0.0,
 		 0.0,  0.0,  1.0, 0.0,
-		-1.0,  0.0,  0.0, 0.0 ) );
+		-1.0,  0.0,  0.0, 0.0 ), false );
 
 	/**
 	 * View transform for isometric view from right side.
@@ -93,7 +93,12 @@ public class ViewPointComboBox
 	public static final ViewPoint ISOMETRIC_VIEW = new ViewPoint( "isometric", new Matrix3D(
 		Math.sqrt( 0.5 ), Math.sqrt( 0.5 ),              0.0, 0.0,
 		            -0.5,              0.5, Math.sqrt( 0.5 ), 0.0,
-		             0.5,             -0.5, Math.sqrt( 0.5 ), 0.0 ) );
+		             0.5,             -0.5, Math.sqrt( 0.5 ), 0.0 ), false );
+
+	/**
+	 * View transform for isometric view from right side.
+	 */
+	public static final ViewPoint PERSPECTIVE_VIEW = new ViewPoint( "perspective", Matrix3D.getTransform( 60.0, 0.0, 30.0, 0.0, 0.0, 0.0 ), true );
 
 	/**
 	 * Name of resource bundle for this class.
@@ -103,7 +108,12 @@ public class ViewPointComboBox
 	/**
 	 * Standard available view points.
 	 */
-	public static final List<ViewPoint> STANDARD_VIEW_POINTS = Arrays.asList( FRONT_VIEW, REAR_VIEW, TOP_VIEW, BOTTOM_VIEW, RIGHT_VIEW, LEFT_VIEW, ISOMETRIC_VIEW );
+	public static final List<ViewPoint> STANDARD_PARALLEL_VIEW_POINTS = Arrays.asList( FRONT_VIEW, REAR_VIEW, TOP_VIEW, BOTTOM_VIEW, RIGHT_VIEW, LEFT_VIEW, ISOMETRIC_VIEW );
+
+	/**
+	 * Standard available view points.
+	 */
+	public static final List<ViewPoint> STANDARD_PERSPETIVE_VIEW_POINTS = Arrays.asList( PERSPECTIVE_VIEW, FRONT_VIEW, REAR_VIEW, TOP_VIEW, BOTTOM_VIEW, RIGHT_VIEW, LEFT_VIEW, ISOMETRIC_VIEW );
 
 	/**
 	 * Locale to use.
@@ -129,7 +139,7 @@ public class ViewPointComboBox
 	 */
 	public ViewPointComboBox( final Locale locale, final View3D view, final ViewPoint defaultViewPoint )
 	{
-		this( locale, view, STANDARD_VIEW_POINTS, defaultViewPoint );
+		this( locale, view, ( view.getProjectionPolicy() == ProjectionPolicy.PERSPECTIVE ) ? STANDARD_PERSPETIVE_VIEW_POINTS : STANDARD_PARALLEL_VIEW_POINTS, defaultViewPoint );
 	}
 
 	/**
@@ -220,6 +230,7 @@ public class ViewPointComboBox
 			final View3D view = _view;
 			final Matrix3D oldScene2View = view.getScene2View();
 			final Matrix3D newOrientation = viewPoint.getScene2view();
+			view.setProjectionPolicy( viewPoint.isPerspective() ? ProjectionPolicy.PERSPECTIVE : ProjectionPolicy.PARALLEL );
 			view.setScene2View( newOrientation.setTranslation( oldScene2View.getTranslation() ) );
 			view.zoomToFitScene();
 			_selectedViewPoint = viewPoint;
@@ -245,12 +256,18 @@ public class ViewPointComboBox
 		final Matrix3D _scene2view;
 
 		/**
+		 * View point is for perspective projection.
+		 */
+		final boolean _perspective;
+
+		/**
 		 * Create view point.
 		 *
 		 * @param   name            Name of view point.
 		 * @param   scene2view      Transform for view point.
+		 * @param   perspective     View point is for perspective projection.
 		 */
-		public ViewPoint( @NotNull final String name, @NotNull final Matrix3D scene2view )
+		public ViewPoint( @NotNull final String name, @NotNull final Matrix3D scene2view, final boolean perspective )
 		{
 			if ( !scene2view.isRighthanded() || !Vector3D.ZERO.equals( scene2view.getTranslation() ) )
 			{
@@ -259,6 +276,7 @@ public class ViewPointComboBox
 
 			_name = name;
 			_scene2view = scene2view;
+			_perspective = perspective;
 		}
 
 		/**
@@ -281,6 +299,17 @@ public class ViewPointComboBox
 		public Matrix3D getScene2view()
 		{
 			return _scene2view;
+		}
+
+		/**
+		 * Get whether the view point is for perspective projection.
+		 *
+		 * @return  <code>true</code> if view point is for perspective projection;
+		 *          <code>false</code> if view point is for parallel projection.
+		 */
+		public boolean isPerspective()
+		{
+			return _perspective;
 		}
 
 		@NotNull
