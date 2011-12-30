@@ -179,7 +179,7 @@ public class Bounds3DBuilder
 	 *
 	 * @param   point   Point to add.
 	 *
-	 * @throws  NullPointerException if <code>point</code> is <code>null</code>.
+	 * @throws NullPointerException if {@code point} is {@code null}.
 	 */
 	public void addPoint( final Vector3D point )
 	{
@@ -262,6 +262,7 @@ public class Bounds3DBuilder
 	 *
 	 * @return  Average point.
 	 */
+	@NotNull
 	public Vector3D getAveragePoint()
 	{
 		final Vector3D result;
@@ -282,13 +283,25 @@ public class Bounds3DBuilder
 	}
 
 	/**
+	 * Get center point from this builder. If no points were added, this method
+	 * returns {@link Vector3D#ZERO}.
+	 *
+	 * @return  Center point.
+	 */
+	@NotNull
+	public Vector3D getCenterPoint()
+	{
+		return ( _count > 0 ) ? new Vector3D( 0.5 * ( _minX + _maxX ), 0.5 * ( _minY + _maxY ), 0.5 * ( _minZ + _maxZ ) ) : Vector3D.ZERO;
+	}
+
+	/**
 	 * Get resulting bounding box from this builder. These bounds are always
 	 * {@link Bounds3D#sorted() sorted}. If no initial bounds were specified and
 	 * no points were added to this builder, then this method will return
-	 * <code>null</code> to indicate that no bounding box could be calculated.
+	 * {@code null} to indicate that no bounding box could be calculated.
 	 *
-	 * @return  Bounding box as {@link Bounds3D} instance;
-	 *          <code>null</code> if no bounding box could be determined.
+	 * @return Bounding box as {@link Bounds3D} instance;
+	 *          {@code null} if no bounding box could be determined.
 	 */
 	@Nullable
 	public Bounds3D getBounds()
