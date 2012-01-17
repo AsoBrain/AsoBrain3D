@@ -185,12 +185,23 @@ public class Painter
 				if ( object2view.rotateZ( face.getNormal() ) >= 0.0 )
 				{
 					final Color faceFillColor;
-					if ( applyLighting )
+					if ( fillColor == null )
+					{
+						faceFillColor = null;
+					}
+					else if ( applyLighting )
 					{
 						final Vector3D faceNormal = face.normal;
 						final float transformedNormalZ = (float)object2view.rotateZ( faceNormal.x, faceNormal.y, faceNormal.z );
 						final float factor = Math.min( 1.0f, 0.5f + 0.5f * Math.abs( transformedNormalZ ) );
-						faceFillColor = ( factor < 1.0f ) ? new Color( factor * fillColor.getRedFloat(), factor * fillColor.getGreenFloat(), factor * fillColor.getBlueFloat(), fillColor.getAlphaFloat() ) : new Color( fillColor.getRedFloat(), fillColor.getGreenFloat(), fillColor.getBlueFloat(), fillColor.getAlphaFloat() );
+						if ( factor < 1.0f )
+						{
+							faceFillColor = new Color( factor * fillColor.getRedFloat(), factor * fillColor.getGreenFloat(), factor * fillColor.getBlueFloat(), fillColor.getAlphaFloat() );
+						}
+						else
+						{
+							faceFillColor = new Color( fillColor.getRedFloat(), fillColor.getGreenFloat(), fillColor.getBlueFloat(), fillColor.getAlphaFloat() );
+						}
 					}
 					else
 					{
