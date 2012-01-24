@@ -108,7 +108,14 @@ public class FileTextureMap
 	public BufferedImage loadImage()
 		throws IOException
 	{
-		return ImageIO.read( _imageUrl );
+		try
+		{
+			return ImageIO.read( _imageUrl );
+		}
+		catch ( IOException e )
+		{
+			throw new IOException( "Failed to read texture image from url '" + _imageUrlString + '\'', e );
+		}
 	}
 
 	@Override
