@@ -122,11 +122,11 @@ public class GeometryObjectFactory
 		if ( result == null )
 		{
 			final GL gl = GLU.getCurrentGL();
-			if ( gl.isFunctionAvailable( "glBindBuffer" ) )
+			if ( gl.isFunctionAvailable( "glGenBuffers" ) && gl.isFunctionAvailable( "glBindBuffer" ) )
 			{
 				result = Implementation.VERTEX_BUFFER_OBJECT_CORE;
 			}
-			else if ( gl.isFunctionAvailable( "glBindBufferARB" ) )
+			else if ( gl.isFunctionAvailable( "glGenBuffersARB" ) && gl.isFunctionAvailable( "glBindBufferARB" ) )
 			{
 				result = Implementation.VERTEX_BUFFER_OBJECT_ARB;
 			}
