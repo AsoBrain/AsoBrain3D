@@ -20,7 +20,7 @@
  */
 package ab.j3d;
 
-import junit.framework.TestCase;
+import junit.framework.*;
 
 /**
  * Test functionality of <code>Polyline2D</code> class.
@@ -45,14 +45,14 @@ public final class TestPolyline2D
 	{
 		System.out.println( CLASS_NAME + ".testRectangleConstructor()" );
 
-		final Polyline2D pl = new Polyline2D( 123.0 , 456.0 );
-		assertEquals( "rectangle should have 5 points!" , 5 , pl.getPointCount() );
+		final Polyline2D pl = new Polyline2D( 123.0, 456.0 );
+		assertEquals( "rectangle should have 5 points!", 5, pl.getPointCount() );
 
-		assertEquals( "rectangle[ 0 ] is off" , new PolyPoint2D(   0.0 ,   0.0 , 0.0 ) , pl.getPoint( 0 ) );
-		assertEquals( "rectangle[ 1 ] is off" , new PolyPoint2D( 123.0 ,   0.0 , 0.0 ) , pl.getPoint( 1 ) );
-		assertEquals( "rectangle[ 2 ] is off" , new PolyPoint2D( 123.0 , 456.0 , 0.0 ) , pl.getPoint( 2 ) );
-		assertEquals( "rectangle[ 3 ] is off" , new PolyPoint2D(   0.0 , 456.0 , 0.0 ) , pl.getPoint( 3 ) );
-		assertEquals( "rectangle[ 4 ] is off" , new PolyPoint2D(   0.0 ,   0.0 , 0.0 ) , pl.getPoint( 4 ) );
+		assertEquals( "rectangle[ 0 ] is off", new PolyPoint2D(   0.0,   0.0, 0.0 ), pl.getPoint( 0 ) );
+		assertEquals( "rectangle[ 1 ] is off", new PolyPoint2D( 123.0,   0.0, 0.0 ), pl.getPoint( 1 ) );
+		assertEquals( "rectangle[ 2 ] is off", new PolyPoint2D( 123.0, 456.0, 0.0 ), pl.getPoint( 2 ) );
+		assertEquals( "rectangle[ 3 ] is off", new PolyPoint2D(   0.0, 456.0, 0.0 ), pl.getPoint( 3 ) );
+		assertEquals( "rectangle[ 4 ] is off", new PolyPoint2D(   0.0,   0.0, 0.0 ), pl.getPoint( 4 ) );
 	}
 
 	/**
@@ -62,11 +62,11 @@ public final class TestPolyline2D
 	{
 		System.out.println( CLASS_NAME + ".testHorizontalLineConstructor()" );
 
-		final Polyline2D pl = new Polyline2D( 123.0 , 0.0 );
-		assertEquals( "horizontal line should have 2 points" , 2 , pl.getPointCount() );
+		final Polyline2D pl = new Polyline2D( 123.0, 0.0 );
+		assertEquals( "horizontal line should have 2 points", 2, pl.getPointCount() );
 
-		assertEquals( "horizontal line[ 0 ] is off" , new PolyPoint2D(   0.0 , 0.0 , 0.0 ) , pl.getPoint( 0 ) );
-		assertEquals( "horizontal line[ 1 ] is off" , new PolyPoint2D( 123.0 , 0.0 , 0.0 ) , pl.getPoint( 1 ) );
+		assertEquals( "horizontal line[ 0 ] is off", new PolyPoint2D(   0.0, 0.0, 0.0 ), pl.getPoint( 0 ) );
+		assertEquals( "horizontal line[ 1 ] is off", new PolyPoint2D( 123.0, 0.0, 0.0 ), pl.getPoint( 1 ) );
 	}
 
 	/**
@@ -76,11 +76,11 @@ public final class TestPolyline2D
 	{
 		System.out.println( CLASS_NAME + ".testVerticalLineConstructor()" );
 
-		final Polyline2D pl = new Polyline2D( 0.0 , 456.0 );
-		assertEquals( "vertical line should have 2 points" , 2 , pl.getPointCount() );
+		final Polyline2D pl = new Polyline2D( 0.0, 456.0 );
+		assertEquals( "vertical line should have 2 points", 2, pl.getPointCount() );
 
-		assertEquals( "vertical line[ 0 ] is off" , new PolyPoint2D( 0.0 ,   0.0 , 0.0 ) , pl.getPoint( 0 ) );
-		assertEquals( "vertical line[ 1 ] is off" , new PolyPoint2D( 0.0 , 456.0 , 0.0 ) , pl.getPoint( 1 ) );
+		assertEquals( "vertical line[ 0 ] is off", new PolyPoint2D( 0.0,   0.0, 0.0 ), pl.getPoint( 0 ) );
+		assertEquals( "vertical line[ 1 ] is off", new PolyPoint2D( 0.0, 456.0, 0.0 ), pl.getPoint( 1 ) );
 	}
 
 	/**
@@ -92,21 +92,21 @@ public final class TestPolyline2D
 		System.out.println( CLASS_NAME + ".testGetIntersection1()" );
 
 		final Polyline2D pl1 = new Polyline2D();
-		pl1.addStartPoint (     0.0 ,  0.0 );
-		pl1.addLineSegment(  1000.0 ,  0.0 );
-		pl1.addLineSegment(  1000.0 , 18.0 );
-		pl1.addLineSegment(     0.0 , 18.0 );
+		pl1.addStartPoint (     0.0,  0.0 );
+		pl1.addLineSegment(  1000.0,  0.0 );
+		pl1.addLineSegment(  1000.0, 18.0 );
+		pl1.addLineSegment(     0.0, 18.0 );
 		pl1.close();
 
 		final Polyline2D pl2 = new Polyline2D();
-		pl2.addStartPoint (     0.0 , 19.0 );
-		pl2.addLineSegment(  2000.0 , 19.0 );
-		pl2.addLineSegment(  2000.0 , 39.0 );
-		pl2.addLineSegment(     0.0 , 39.0 );
+		pl2.addStartPoint (     0.0, 19.0 );
+		pl2.addLineSegment(  2000.0, 19.0 );
+		pl2.addLineSegment(  2000.0, 39.0 );
+		pl2.addLineSegment(     0.0, 39.0 );
 		pl2.close();
 
 		final Polyline2D interSection = pl1.getIntersection(  pl2 );
-		assertNull( "Intersection found! (but no intersection is possible)" , interSection );
+		assertNull( "Intersection found! (but no intersection is possible)", interSection );
 	}
 
 	/**
@@ -118,21 +118,21 @@ public final class TestPolyline2D
 		System.out.println( CLASS_NAME + ".testGetIntersection2()" );
 
 		final Polyline2D pl1 = new Polyline2D();
-		pl1.addStartPoint (     0.0 ,     0.0 );
-		pl1.addLineSegment(  2047.0 ,     0.0 );
-		pl1.addLineSegment(  2047.0 ,    18.0 );
-		pl1.addLineSegment(     0.0 ,    18.0 );
+		pl1.addStartPoint (     0.0,     0.0 );
+		pl1.addLineSegment(  2047.0,     0.0 );
+		pl1.addLineSegment(  2047.0,    18.0 );
+		pl1.addLineSegment(     0.0,    18.0 );
 		pl1.close();
 
 		final Polyline2D pl2 = new Polyline2D();
-		pl2.addStartPoint (     0.0 ,  -363.0 );
-		pl2.addLineSegment(  2047.0 ,  -363.0 );
-		pl2.addLineSegment(  2047.0 ,    35.0 );
-		pl2.addLineSegment(     0.0 ,    35.0 );
+		pl2.addStartPoint (     0.0,  -363.0 );
+		pl2.addLineSegment(  2047.0,  -363.0 );
+		pl2.addLineSegment(  2047.0,    35.0 );
+		pl2.addLineSegment(     0.0,    35.0 );
 		pl2.close();
 
 		final Polyline2D interSection = pl1.getIntersection(  pl2 );
-		assertNotNull( "No intersection found! (normal x, y values)" , interSection );
+		assertNotNull( "No intersection found! (normal x, y values)", interSection );
 	}
 
 	/**
@@ -155,7 +155,7 @@ public final class TestPolyline2D
 	 *    intersection. If two intersections are found, the start and end point
 	 *    are compared to the last found point, to see if the line segment is
 	 *    connected. This test is performed using the
-	 *    <code>PolyPoint2D.almostEquals( PolyPoint2D , tolerance )</code>
+	 *    <code>PolyPoint2D.almostEquals( PolyPoint2D, tolerance )</code>
 	 *    method to cope with rounding errors. If the X or Y variable is larger
 	 *    than 2047 mm, the check mysteriously? Further analysis showed that
 	 *    the problem has to do with the maximum number of digits in a
@@ -182,21 +182,21 @@ public final class TestPolyline2D
 		System.out.println( CLASS_NAME + ".testGetIntersection3()" );
 
 		final Polyline2D pl1 = new Polyline2D();
-		pl1.addStartPoint (     0.0 ,     0.0 );
-		pl1.addLineSegment(  4000.0 ,     0.0 );
-		pl1.addLineSegment(  4000.0 ,    18.0 );
-		pl1.addLineSegment(     0.0 ,    18.0 );
+		pl1.addStartPoint (     0.0,     0.0 );
+		pl1.addLineSegment(  4000.0,     0.0 );
+		pl1.addLineSegment(  4000.0,    18.0 );
+		pl1.addLineSegment(     0.0,    18.0 );
 		pl1.close();
 
 		final Polyline2D pl2 = new Polyline2D();
-		pl2.addStartPoint (     0.0 ,  -363.0 );
-		pl2.addLineSegment(  4000.0 ,  -363.0 );
-		pl2.addLineSegment(  4000.0 ,    35.0 );
-		pl2.addLineSegment(     0.0 ,    35.0 );
+		pl2.addStartPoint (     0.0,  -363.0 );
+		pl2.addLineSegment(  4000.0,  -363.0 );
+		pl2.addLineSegment(  4000.0,    35.0 );
+		pl2.addLineSegment(     0.0,    35.0 );
 		pl2.close();
 
 		final Polyline2D interSection = pl1.getIntersection(  pl2 );
-		assertNotNull( "No intersection found! (large x value)" , interSection );
+		assertNotNull( "No intersection found! (large x value)", interSection );
 	}
 
 	/**
@@ -208,42 +208,433 @@ public final class TestPolyline2D
 		System.out.println( CLASS_NAME + ".testGetIntersection4()" );
 
 		final Polyline2D convex = new Polyline2D();
-		convex.addStartPoint(    0.0 ,   0.0 );
-		convex.addLineSegment( 700.0 ,   0.0 );
-		convex.addLineSegment( 700.0 , 400.0 );
-		convex.addLineSegment(   0.0 , 400.0 );
+		convex.addStartPoint(    0.0,   0.0 );
+		convex.addLineSegment( 700.0,   0.0 );
+		convex.addLineSegment( 700.0, 400.0 );
+		convex.addLineSegment(   0.0, 400.0 );
 		convex.close();
 
 		final Polyline2D path = new Polyline2D();
-		path.addStartPoint(  -400.0 , -300.0 );
-		path.addLineSegment(  400.0 ,  300.0 );
-		path.addLineSegment(  700.0 ,  400.0 );
+		path.addStartPoint(  -400.0, -300.0 );
+		path.addLineSegment(  400.0,  300.0 );
+		path.addLineSegment(  700.0,  400.0 );
 
 		final Polyline2D expected = new Polyline2D();
-		expected.addStartPoint(    0.0 ,   0.0 );
-		expected.addLineSegment( 400.0 , 300.0 );
-		expected.addLineSegment( 700.0 , 400.0 );
+		expected.addStartPoint(    0.0,   0.0 );
+		expected.addLineSegment( 400.0, 300.0 );
+		expected.addLineSegment( 700.0, 400.0 );
 
 		final Polyline2D intersection = convex.getIntersection( expected );
-		assertEquals( "Unexpected result." , expected , intersection );
+		assertEquals( "Unexpected result.", expected, intersection );
 	}
 
 	/**
 	 * Tests various intersections of a convex and a path, where the path
 	 * overlaps one of the convex's edges.
 	 */
-	public void testGetIntersection5()
+	public static void testGetIntersection5()
 	{
-		System.out.print( "Expect to fail: " );
-		try
+		System.out.println( CLASS_NAME + ".testGetIntersection5()" );
+
+		System.out.println( " - Inside, line overlap, inside." );
 		{
-			FailedTestPolyline2D.testGetIntersection5();
-			fail( "Expected test to fail" );
+			final Polyline2D convex = new Polyline2D();
+			convex.addStartPoint(    0.0,   0.0 );
+			convex.addLineSegment( 700.0,   0.0 );
+			convex.addLineSegment( 700.0, 400.0 );
+			convex.addLineSegment(   0.0, 400.0 );
+			convex.close();
+
+			final Polyline2D path = new Polyline2D();
+			path.addStartPoint(    0.0, 299.5 );
+			path.addLineSegment( 700.0, 299.5 );
+			path.addLineSegment( 700.0, 300.5 );
+			path.addLineSegment(   0.0, 300.5 );
+
+			try
+			{
+				final Polyline2D intersection = convex.getIntersection( path );
+				assertEquals( "Unexpected result.", path, intersection );
+			}
+			catch ( RuntimeException e )
+			{
+				final String message = e.getMessage();
+				if ( ( message == null ) || !message.startsWith( "Path may only intersect convex poly once." ) )
+				{
+					throw e;
+				}
+			}
 		}
-		catch ( Exception e )
+
+		System.out.println( " - Inside, line overlap, outside" );
 		{
-			/* we expect the test to fail, so this is good */
-			e.printStackTrace();
+			final Polyline2D convex = new Polyline2D();
+			convex.addStartPoint(    0.0,   0.0 );
+			convex.addLineSegment( 700.0,   0.0 );
+			convex.addLineSegment( 700.0, 400.0 );
+			convex.addLineSegment(   0.0, 400.0 );
+			convex.close();
+
+			final Polyline2D path = new Polyline2D();
+			path.addStartPoint(    0.0, 300.0 );
+			path.addLineSegment( 700.0, 300.0 );
+			path.addLineSegment( 700.0, 350.0 );
+			path.addLineSegment( 800.0, 350.0 );
+
+			final Polyline2D expected = new Polyline2D();
+			expected.addStartPoint(    0.0, 300.0 );
+			expected.addLineSegment( 700.0, 300.0 );
+			expected.addLineSegment( 700.0, 350.0 );
+
+			try
+			{
+				final Polyline2D intersection = convex.getIntersection( path );
+				assertEquals( "Unexpected result.", expected, intersection );
+			}
+			catch ( RuntimeException e )
+			{
+				final String message = e.getMessage();
+				if ( ( message == null ) || !message.startsWith( "Path may only intersect convex poly once." ) )
+				{
+					throw e;
+				}
+			}
+		}
+
+		System.out.println( " - Inside, line overlap, outside (through inside)" );
+		{
+			final Polyline2D convex = new Polyline2D();
+			convex.addStartPoint(    0.0,   0.0 );
+			convex.addLineSegment( 700.0,   0.0 );
+			convex.addLineSegment( 700.0, 400.0 );
+			convex.addLineSegment(   0.0, 400.0 );
+			convex.close();
+
+			final Polyline2D path = new Polyline2D();
+			path.addStartPoint(    0.0, 300.0 );
+			path.addLineSegment( 700.0, 300.0 );
+			path.addLineSegment( 700.0, 500.0 );
+
+			final Polyline2D expected = new Polyline2D();
+			expected.addStartPoint(    0.0, 300.0 );
+			expected.addLineSegment( 700.0, 300.0 );
+			expected.addLineSegment( 700.0, 400.0 );
+
+			try
+			{
+				final Polyline2D intersection = convex.getIntersection( path );
+				assertEquals( "Unexpected result.", expected, intersection );
+			}
+			catch ( RuntimeException e )
+			{
+				final String message = e.getMessage();
+				if ( ( message == null ) || !message.startsWith( "Path may only intersect convex poly once." ) )
+				{
+					throw e;
+				}
+			}
+		}
+
+		System.out.println( " - Outside, line overlap, outside" );
+		{
+			final Polyline2D convex = new Polyline2D();
+			convex.addStartPoint(    0.0,   0.0 );
+			convex.addLineSegment( 700.0,   0.0 );
+			convex.addLineSegment( 700.0, 400.0 );
+			convex.addLineSegment(   0.0, 400.0 );
+			convex.close();
+
+			final Polyline2D path = new Polyline2D();
+			path.addStartPoint(  800.0, 300.0 );
+			path.addLineSegment( 700.0, 300.0 );
+			path.addLineSegment( 700.0, 350.0 );
+			path.addLineSegment( 800.0, 350.0 );
+
+			final Polyline2D expected = new Polyline2D();
+			expected.addStartPoint(  700.0, 300.0 );
+			expected.addLineSegment( 700.0, 350.0 );
+
+			try
+			{
+				final Polyline2D intersection = convex.getIntersection( path );
+				assertEquals( "Unexpected result.", expected, intersection );
+			}
+			catch ( RuntimeException e )
+			{
+				final String message = e.getMessage();
+				if ( ( message == null ) || !message.startsWith( "Path may only intersect convex poly once." ) )
+				{
+					throw e;
+				}
+			}
+		}
+
+		System.out.println( " - Outside, line overlap, inside" );
+		{
+			final Polyline2D convex = new Polyline2D();
+			convex.addStartPoint(    0.0,   0.0 );
+			convex.addLineSegment( 700.0,   0.0 );
+			convex.addLineSegment( 700.0, 400.0 );
+			convex.addLineSegment(   0.0, 400.0 );
+			convex.close();
+
+			final Polyline2D path = new Polyline2D();
+			path.addStartPoint(  800.0, 300.0 );
+			path.addLineSegment( 700.0, 300.0 );
+			path.addLineSegment( 700.0, 350.0 );
+			path.addLineSegment( 600.0, 350.0 );
+
+			final Polyline2D expected = new Polyline2D();
+			expected.addStartPoint(  700.0, 300.0 );
+			expected.addLineSegment( 700.0, 350.0 );
+			expected.addLineSegment( 600.0, 350.0 );
+
+			try
+			{
+				final Polyline2D intersection = convex.getIntersection( path );
+				assertEquals( "Unexpected result.", expected, intersection );
+			}
+			catch ( RuntimeException e )
+			{
+				final String message = e.getMessage();
+				if ( ( message == null ) || !message.startsWith( "Path may only intersect convex poly once." ) )
+				{
+					throw e;
+				}
+			}
+		}
+
+		System.out.println( " - Inside, point overlap, inside" );
+		{
+			final Polyline2D convex = new Polyline2D();
+			convex.addStartPoint(    0.0,   0.0 );
+			convex.addLineSegment( 700.0,   0.0 );
+			convex.addLineSegment( 700.0, 400.0 );
+			convex.addLineSegment(   0.0, 400.0 );
+			convex.close();
+
+			final Polyline2D path = new Polyline2D();
+			path.addStartPoint(    0.0, 300.0 );
+			path.addLineSegment( 700.0, 300.0 );
+			path.addLineSegment( 600.0, 350.0 );
+
+			final Polyline2D expected = new Polyline2D();
+			expected.addStartPoint(    0.0, 300.0 );
+			expected.addLineSegment( 700.0, 300.0 );
+			expected.addLineSegment( 600.0, 350.0 );
+
+			try
+			{
+				final Polyline2D intersection = convex.getIntersection( path );
+				assertEquals( "Unexpected result.", expected, intersection );
+			}
+			catch ( RuntimeException e )
+			{
+				final String message = e.getMessage();
+				if ( ( message == null ) || !message.startsWith( "Path may only intersect convex poly once." ) )
+				{
+					throw e;
+				}
+			}
+		}
+
+		System.out.println( " - Inside, point overlap, inside, outside" );
+		{
+			final Polyline2D convex = new Polyline2D();
+			convex.addStartPoint(    0.0,   0.0 );
+			convex.addLineSegment( 700.0,   0.0 );
+			convex.addLineSegment( 700.0, 400.0 );
+			convex.addLineSegment(   0.0, 400.0 );
+			convex.close();
+
+			final Polyline2D path = new Polyline2D();
+			path.addStartPoint(    0.0, 300.0 );
+			path.addLineSegment( 700.0, 300.0 );
+			path.addLineSegment( 600.0, 350.0 );
+			path.addLineSegment( 800.0, 350.0 );
+
+			final Polyline2D expected = new Polyline2D();
+			expected.addStartPoint(    0.0, 300.0 );
+			expected.addLineSegment( 700.0, 300.0 );
+			expected.addLineSegment( 600.0, 350.0 );
+			expected.addLineSegment( 700.0, 350.0 );
+
+			try
+			{
+				final Polyline2D intersection = convex.getIntersection( path );
+				assertEquals( "Unexpected result.", expected, intersection );
+			}
+			catch ( RuntimeException e )
+			{
+				final String message = e.getMessage();
+				if ( ( message == null ) || !message.startsWith( "Path may only intersect convex poly once." ) )
+				{
+					throw e;
+				}
+			}
+		}
+
+		System.out.println( " - Inside, point overlap, outside" );
+		{
+			final Polyline2D convex = new Polyline2D();
+			convex.addStartPoint(    0.0,   0.0 );
+			convex.addLineSegment( 700.0,   0.0 );
+			convex.addLineSegment( 700.0, 400.0 );
+			convex.addLineSegment(   0.0, 400.0 );
+			convex.close();
+
+			final Polyline2D path = new Polyline2D();
+			path.addStartPoint(    0.0, 300.0 );
+			path.addLineSegment( 700.0, 300.0 );
+			path.addLineSegment( 800.0, 350.0 );
+
+			final Polyline2D expected = new Polyline2D();
+			expected.addStartPoint(    0.0, 300.0 );
+			expected.addLineSegment( 700.0, 300.0 );
+
+			try
+			{
+				final Polyline2D intersection = convex.getIntersection( path );
+				assertEquals( "Unexpected result.", expected, intersection );
+			}
+			catch ( RuntimeException e )
+			{
+				final String message = e.getMessage();
+				if ( ( message == null ) || !message.startsWith( "Path may only intersect convex poly once." ) )
+				{
+					throw e;
+				}
+			}
+		}
+
+		System.out.println( " - Inside, point overlap, outside (through inside)" );
+		{
+			final Polyline2D convex = new Polyline2D();
+			convex.addStartPoint(    0.0,   0.0 );
+			convex.addLineSegment( 700.0,   0.0 );
+			convex.addLineSegment( 700.0, 400.0 );
+			convex.addLineSegment(   0.0, 400.0 );
+			convex.close();
+
+			final Polyline2D path = new Polyline2D();
+			path.addStartPoint(    0.0, 300.0 );
+			path.addLineSegment( 700.0, 300.0 );
+			path.addLineSegment( 500.0, 500.0 );
+
+			final Polyline2D expected = new Polyline2D();
+			expected.addStartPoint(    0.0, 300.0 );
+			expected.addLineSegment( 700.0, 300.0 );
+			expected.addLineSegment( 600.0, 400.0 );
+
+			try
+			{
+				final Polyline2D intersection = convex.getIntersection( path );
+				assertEquals( "Unexpected result.", expected, intersection );
+			}
+			catch ( RuntimeException e )
+			{
+				final String message = e.getMessage();
+				if ( ( message == null ) || !message.startsWith( "Path may only intersect convex poly once." ) )
+				{
+					throw e;
+				}
+			}
+		}
+
+		System.out.println( " - Outside, point overlap, outside" );
+		{
+			final Polyline2D convex = new Polyline2D();
+			convex.addStartPoint(    0.0,   0.0 );
+			convex.addLineSegment( 700.0,   0.0 );
+			convex.addLineSegment( 700.0, 400.0 );
+			convex.addLineSegment(   0.0, 400.0 );
+			convex.close();
+
+			final Polyline2D path = new Polyline2D();
+			path.addStartPoint(  800.0, 300.0 );
+			path.addLineSegment( 700.0, 300.0 );
+			path.addLineSegment( 800.0, 350.0 );
+
+			final Polyline2D expected = new Polyline2D();
+			expected.addStartPoint( 700.0, 300.0 );
+
+			try
+			{
+				final Polyline2D intersection = convex.getIntersection( path );
+				assertEquals( "Unexpected result.", expected, intersection );
+			}
+			catch ( RuntimeException e )
+			{
+				final String message = e.getMessage();
+				if ( ( message == null ) || !message.startsWith( "Path may only intersect convex poly once." ) )
+				{
+					throw e;
+				}
+			}
+		}
+
+		System.out.println( " - Outside, point overlap, inside" );
+		{
+			final Polyline2D convex = new Polyline2D();
+			convex.addStartPoint(    0.0,   0.0 );
+			convex.addLineSegment( 700.0,   0.0 );
+			convex.addLineSegment( 700.0, 400.0 );
+			convex.addLineSegment(   0.0, 400.0 );
+			convex.close();
+
+			final Polyline2D path = new Polyline2D();
+			path.addStartPoint(  800.0, 300.0 );
+			path.addLineSegment( 700.0, 300.0 );
+			path.addLineSegment( 600.0, 350.0 );
+
+			final Polyline2D expected = new Polyline2D();
+			expected.addStartPoint( 700.0, 300.0 );
+
+			try
+			{
+				final Polyline2D intersection = convex.getIntersection( path );
+				assertEquals( "Unexpected result.", expected, intersection );
+			}
+			catch ( RuntimeException e )
+			{
+				final String message = e.getMessage();
+				if ( ( message == null ) || !message.startsWith( "Path may only intersect convex poly once." ) )
+				{
+					throw e;
+				}
+			}
+		}
+
+		System.out.println( " - Outside, through inside, outside" );
+		{
+			final Polyline2D convex = new Polyline2D();
+			convex.addStartPoint(    0.0,   0.0 );
+			convex.addLineSegment( 700.0,   0.0 );
+			convex.addLineSegment( 700.0, 400.0 );
+			convex.addLineSegment(   0.0, 400.0 );
+			convex.close();
+
+			final Polyline2D path = new Polyline2D();
+			path.addStartPoint( -100.0, 300.0 );
+			path.addLineSegment( 800.0, 300.0 );
+
+			final Polyline2D expected = new Polyline2D();
+			expected.addStartPoint(    0.0, 300.0 );
+			expected.addLineSegment( 700.0, 300.0 );
+
+			try
+			{
+				final Polyline2D intersection = convex.getIntersection( path );
+				assertEquals( "Unexpected result.", expected, intersection );
+			}
+			catch ( RuntimeException e )
+			{
+				final String message = e.getMessage();
+				if ( ( message == null ) || !message.startsWith( "Path may only intersect convex poly once." ) )
+				{
+					throw e;
+				}
+			}
 		}
 	}
 }
