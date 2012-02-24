@@ -2,7 +2,7 @@
  * $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -134,6 +134,22 @@ public class GeometryObjectFactory
 			{
 				result = Implementation.IMMEDIATE_MODE;
 			}
+
+			/*
+			 * Degrade to immediate mode on crappy hardware.
+			 */
+			if ( result != Implementation.IMMEDIATE_MODE )
+			{
+				final String renderer = gl.glGetString( GL.GL_RENDERER );
+				final boolean isCrappyCard = renderer.contains( "Intel" );
+
+				if ( isCrappyCard )
+				{
+					System.err.println( "Was going to use " + result + ", but we detected a '" + renderer + "' so we degrate to " + Implementation.IMMEDIATE_MODE );
+					result = Implementation.IMMEDIATE_MODE;
+				}
+			}
+
 			_implementation = result;
 			System.err.println( "Using " + result + " implementation." );
 		}
