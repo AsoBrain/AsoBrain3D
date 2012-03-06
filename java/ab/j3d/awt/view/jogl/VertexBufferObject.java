@@ -2,7 +2,7 @@
  * $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -95,6 +95,11 @@ public abstract class VertexBufferObject
 		/*
 		 * Count primitives and vertices. Count triangles and quads, so they can
 		 * be batched together and drawn with a single call.
+		 *
+		 * vertexCount    = number of vertices needed for -all- primitives
+		 * triangleCount  = number of independent triangles (drawn as 1 primitive)
+		 * quadCount      = number of independent triangles (drawn as 1 primitive)
+		 * primitiveCount = number of primitives (except independent triangles/quads)
 		 */
 		int vertexCount = 0;
 		int triangleCount = 0;
@@ -113,21 +118,40 @@ public abstract class VertexBufferObject
 					final int[] vertices = primitive.getVertices();
 					vertexCount += vertices.length;
 
-					if ( vertices.length == 3 )
-					{
-						triangleCount++;
-					}
-					else if ( ( vertices.length == 4 ) && ( primitive instanceof TriangleFan ) )
-					{
-						quadCount++;
-					}
-					else if ( primitive instanceof TriangleList )
+					if ( primitive instanceof TriangleList )
 					{
 						triangleCount += vertices.length / 3;
 					}
+					else if ( primitive instanceof QuadList )
+					{
+						quadCount += vertices.length / 4;
+					}
+					else if ( primitive instanceof TriangleFan )
+					{
+						if ( vertices.length == 3 )
+						{
+							triangleCount++;
+						}
+						else if ( vertices.length == 4 )
+						{
+							quadCount++;
+						}
+						else
+						{
+							primitiveCount++;
+						}
+					}
+					else if ( primitive instanceof TriangleStrip )
+					{
+						primitiveCount++;
+					}
+					else if ( primitive instanceof QuadStrip )
+					{
+						primitiveCount++;
+					}
 					else
 					{
-						primitiveCount += primitives.size();
+						throw new IllegalArgumentException( "Unsupported primitive: " + primitive );
 					}
 				}
 			}
@@ -188,13 +212,21 @@ public abstract class VertexBufferObject
 					final ByteBuffer buffer;
 					int mode = -1;
 
-					if ( ( vertices.length == 3 ) || ( primitive instanceof TriangleList ) )
+					if ( primitive instanceof TriangleList )
 					{
 						buffer = triangleBuffer;
 					}
+					else if ( primitive instanceof QuadList )
+					{
+						buffer = quadBuffer;
+					}
 					else if ( primitive instanceof TriangleFan )
 					{
-						if ( vertices.length == 4 )
+						if ( vertices.length == 3 )
+						{
+							buffer = triangleBuffer;
+						}
+						else if ( vertices.length == 4 )
 						{
 							buffer = quadBuffer;
 						}
@@ -208,6 +240,11 @@ public abstract class VertexBufferObject
 					{
 						buffer = vertexBuffer;
 						mode = GL.GL_TRIANGLE_STRIP;
+					}
+					else if ( primitive instanceof QuadStrip )
+					{
+						buffer = vertexBuffer;
+						mode = GL.GL_QUAD_STRIP;
 					}
 					else
 					{
@@ -427,7 +464,6 @@ public abstract class VertexBufferObject
 			_start = start;
 		}
 
-		@Override
 		public void draw( final GL gl )
 		{
 			gl.glDrawArrays( _mode, _start, _count );
@@ -437,7 +473,7 @@ public abstract class VertexBufferObject
 		public String toString()
 		{
 			final Class<?> clazz = getClass();
-			return clazz.getName() + "[mode=" + _mode + ", start=" + _start + ", count=" + _count + "]";
+			return clazz.getName() + "[mode=" + _mode + ", start=" + _start + ", count=" + _count + ']';
 		}
 	}
 
@@ -483,7 +519,6 @@ public abstract class VertexBufferObject
 			_indices = indices;
 		}
 
-		@Override
 		public void draw( final GL gl )
 		{
 			gl.glDrawElements( _mode, _count, _type, _indices );
@@ -537,13 +572,11 @@ public abstract class VertexBufferObject
 	private static class DefaultVertexFormat
 		implements VertexFormat
 	{
-		@Override
 		public int getBytesPerVertex()
 		{
 			return 12 + 12 + 8; // vertex + normal + texcoord
 		}
 
-		@Override
 		public void enable( @NotNull final GL gl )
 		{
 			gl.glEnableClientState( GL.GL_VERTEX_ARRAY );
@@ -556,7 +589,6 @@ public abstract class VertexBufferObject
 			gl.glTexCoordPointer( 2, GL.GL_FLOAT, bytesPerVertex, 24L );
 		}
 
-		@Override
 		public void disable( @NotNull final GL gl )
 		{
 			gl.glDisableClientState( GL.GL_VERTEX_ARRAY );
@@ -564,7 +596,6 @@ public abstract class VertexBufferObject
 			gl.glDisableClientState( GL.GL_TEXTURE_COORD_ARRAY );
 		}
 
-		@Override
 		public void encode( @NotNull final ByteBuffer target, final int vertexIndex, @NotNull final Face3D face, @NotNull final FaceGroup faceGroup )
 		{
 			final Face3D.Vertex vertex = face.getVertex( vertexIndex );
@@ -597,13 +628,11 @@ public abstract class VertexBufferObject
 	private static class SimpleVertexFormat
 		implements VertexFormat
 	{
-		@Override
 		public int getBytesPerVertex()
 		{
 			return 12;
 		}
 
-		@Override
 		public void enable( @NotNull final GL gl )
 		{
 			gl.glEnableClientState( GL.GL_VERTEX_ARRAY );
@@ -612,13 +641,11 @@ public abstract class VertexBufferObject
 			gl.glVertexPointer( 3, GL.GL_FLOAT, bytesPerVertex, 0L );
 		}
 
-		@Override
 		public void disable( @NotNull final GL gl )
 		{
 			gl.glDisableClientState( GL.GL_VERTEX_ARRAY );
 		}
 
-		@Override
 		public void encode( @NotNull final ByteBuffer target, final int vertexIndex, @NotNull final Face3D face, @NotNull final FaceGroup faceGroup )
 		{
 			final Face3D.Vertex vertex = face.getVertex( vertexIndex );
