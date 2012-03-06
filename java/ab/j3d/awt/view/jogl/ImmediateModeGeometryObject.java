@@ -2,7 +2,7 @@
  * $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -66,7 +66,6 @@ public class ImmediateModeGeometryObject
 		_type = type;
 	}
 
-	@Override
 	public void draw()
 	{
 		switch ( _type )
@@ -99,7 +98,7 @@ public class ImmediateModeGeometryObject
 
 			for ( final Face3D face : faceGroup.getFaces() )
 			{
-				final List<Face3D.Vertex> vertices = face.vertices;
+				final List<Face3D.Vertex> vertices = face.getVertices();
 				final Tessellation tessellation = face.getTessellation();
 				final Collection<TessellationPrimitive> primitives = tessellation.getPrimitives();
 
@@ -169,7 +168,7 @@ public class ImmediateModeGeometryObject
 
 			for ( final Face3D face : faceGroup.getFaces() )
 			{
-				final List<Face3D.Vertex> vertices = face.vertices;
+				final List<Face3D.Vertex> vertices = face.getVertices();
 				final int vertexCount = vertices.size();
 
 				if ( vertexCount >= 2 )
@@ -219,7 +218,7 @@ public class ImmediateModeGeometryObject
 
 			for ( final Face3D face : faceGroup.getFaces() )
 			{
-				final List<Face3D.Vertex> vertices = face.vertices;
+				final List<Face3D.Vertex> vertices = face.getVertices();
 				final int vertexCount = vertices.size();
 
 				if ( vertexCount >= 1 )
