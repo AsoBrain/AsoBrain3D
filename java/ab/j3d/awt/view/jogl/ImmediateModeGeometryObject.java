@@ -46,13 +46,13 @@ public class ImmediateModeGeometryObject
 	 * Face groups to be drawn.
 	 */
 	@NotNull
-	private List<FaceGroup> _faceGroups;
+	private final List<FaceGroup> _faceGroups;
 
 	/**
 	 * Type of geometry to be drawn.
 	 */
 	@NotNull
-	private GeometryType _type;
+	private final GeometryType _type;
 
 	/**
 	 * Constructs a geometry object for the geometry of the given face groups.
@@ -251,7 +251,6 @@ public class ImmediateModeGeometryObject
 		}
 	}
 
-	@Override
 	public void delete()
 	{
 		// Not applicable.
