@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -102,7 +102,7 @@ public class ExtrudedObject2D
 		this.flipNormals = flipNormals;
 		this.caps = caps;
 
-		final Abstract3DObjectBuilder builder = getBuilder();
+		final Object3DBuilder builder = getBuilder();
 		if ( caps )
 		{
 			builder.addExtrudedShape( ShapeTools.createTessellator( shape, flatness ), extrusion, true, Matrix3D.IDENTITY, true, topAppearance, uvMap, false, true, bottomAppearance, uvMap, false, true, sideAppearance, uvMap, false, twoSided, flipNormals, false );

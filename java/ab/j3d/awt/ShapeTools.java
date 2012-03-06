@@ -31,6 +31,7 @@ import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import ab.j3d.geom.tessellator.*;
+import ab.j3d.model.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -915,7 +916,7 @@ public class ShapeTools
 	 * @throws  IllegalArgumentException if the shape is not extruded along
 	 *          the z-axis.
 	 */
-	public static void addExtrudedShape( final Abstract3DObjectBuilder objectBuilder, @NotNull final Shape shape, final double flatness, @NotNull final Vector3D extrusion, @NotNull final Matrix3D transform, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided, final boolean flipNormals, final boolean smooth )
+	public static void addExtrudedShape( final Object3DBuilder objectBuilder, @NotNull final Shape shape, final double flatness, @NotNull final Vector3D extrusion, @NotNull final Matrix3D transform, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided, final boolean flipNormals, final boolean smooth )
 	{
 		final List<Contour> contours = createContours( shape, flatness, true, true );
 		objectBuilder.addExtrudedShape( contours, extrusion, transform, appearance, uvMap, flipTexture, twoSided, flipNormals, smooth );
@@ -934,7 +935,7 @@ public class ShapeTools
 	 * @param   flipNormals     Flip normals using CW instead of CCW triangles.
 	 * @param   twoSided        Resulting face will be two-sided (has backface).
 	 */
-	public static void addFilledShape2D( final Abstract3DObjectBuilder objectBuilder, @NotNull final Matrix3D transform, @NotNull final Shape shape, final double flatness, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean flipNormals, final boolean twoSided )
+	public static void addFilledShape2D( final Object3DBuilder objectBuilder, @NotNull final Matrix3D transform, @NotNull final Shape shape, final double flatness, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean flipNormals, final boolean twoSided )
 	{
 		objectBuilder.addFilledShape2D( transform, createTessellator( shape, flatness ), appearance, uvMap, flipTexture, flipNormals, twoSided );
 	}
@@ -959,7 +960,7 @@ public class ShapeTools
 	 * @param   sideAppearance      Appearance for side surfaces.
 	 * @param   sideMap             UV map for side surfaces.
 	 */
-	public static void addText( final Abstract3DObjectBuilder objectBuilder, final Matrix3D transform, final String text, final Font font, final double scale, final double alignX, final double alignY, final double alignZ, final double extrusion, final double flatness, final Appearance topAppearance, final BoxUVMap topMap, final Appearance bottomAppearance, final BoxUVMap bottomMap, final Appearance sideAppearance, final BoxUVMap sideMap )
+	public static void addText( final Object3DBuilder objectBuilder, final Matrix3D transform, final String text, final Font font, final double scale, final double alignX, final double alignY, final double alignZ, final double extrusion, final double flatness, final Appearance topAppearance, final BoxUVMap topMap, final Appearance bottomAppearance, final BoxUVMap bottomMap, final Appearance sideAppearance, final BoxUVMap sideMap )
 	{
 		final GlyphVector glyphVector = font.createGlyphVector( new FontRenderContext( null, false, true ), text );
 		final Rectangle2D visualBounds = glyphVector.getVisualBounds();
