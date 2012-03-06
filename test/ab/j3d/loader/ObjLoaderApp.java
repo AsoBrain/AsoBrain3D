@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,6 @@ import ab.j3d.*;
 import ab.j3d.awt.view.*;
 import ab.j3d.awt.view.jogl.*;
 import ab.j3d.control.*;
-import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import ab.j3d.view.*;
 
@@ -62,7 +61,7 @@ public class ObjLoaderApp
 		final ResourceLoader loader = new URLResourceLoader( new File( System.getProperty( "user.home" ) + "/soda/Ivenza_LayoutPlugin/objects/HiFi" ) );
 
 		final Object3D object3d = ObjLoader.load( transform, loader, "tv06.obj" );
-		GeometryTools.smooth( object3d, 30.0, 5.0, false );
+		object3d.smooth( 30.0, 5.0, false );
 
 		final Bounds3D bounds = object3d.getOrientedBoundingBox();
 		if ( bounds == null )
