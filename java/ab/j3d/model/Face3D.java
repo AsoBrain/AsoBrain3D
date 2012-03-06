@@ -41,11 +41,6 @@ public class Face3D
 	private static final Vector3D NO_NORMAL = new Vector3D( Double.NaN, 0.0, Double.NaN );
 
 	/**
-	 * Object to which this face belongs.
-	 */
-	private final Object3D _object;
-
-	/**
 	 * Vertices of this face.
 	 */
 	private final List<Vertex> _vertices;
@@ -106,19 +101,17 @@ public class Face3D
 	 */
 	public Face3D( @NotNull final Object3D object, @NotNull final int[] vertexIndices, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals )
 	{
-		this( object, createVertices( object, vertexIndices, texturePoints, vertexNormals ), null );
+		this( createVertices( object, vertexIndices, texturePoints, vertexNormals ), null );
 	}
 
 	/**
 	 * Construct new face.
 	 *
-	 * @param   object          Object to which this face belongs.
 	 * @param   vertices        Vertices used by this face.
 	 * @param   tessellation    Tessellation of this face (optional).
 	 */
-	public Face3D( @NotNull final Object3D object, @NotNull final List<Vertex> vertices, @Nullable final Tessellation tessellation )
+	public Face3D( @NotNull final List<Vertex> vertices, @Nullable final Tessellation tessellation )
 	{
-		_object = object;
 		_vertices = vertices;
 		_tessellation = tessellation;
 
@@ -230,16 +223,6 @@ public class Face3D
 	public boolean isTwoSided()
 	{
 		return false;
-	}
-
-	/**
-	 * Get object to which this face belongs.
-	 *
-	 * @return  Object to which this face belongs.
-	 */
-	public Object3D getObject()
-	{
-		return _object;
 	}
 
 	/**

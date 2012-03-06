@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -194,7 +194,7 @@ public class Box3D
 		}
 
 		final FaceGroup faceGroup = getFaceGroup( appearance, false, false );
-		faceGroup.addFace( new Face3D( this, vertices, null ) );
+		faceGroup.addFace( new Face3D( vertices, null ) );
 	}
 
 	/**
