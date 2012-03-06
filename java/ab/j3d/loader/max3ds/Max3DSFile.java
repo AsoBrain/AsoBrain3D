@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -50,7 +50,7 @@ public class Max3DSFile
 	 *
 	 * @param   in  Stream to read file from.
 	 *
-	 * @throws  IOException if a read error occured.
+	 * @throws  IOException if a read error occurred.
 	 */
 	public Max3DSFile( final InputStream in )
 		throws IOException
@@ -128,7 +128,7 @@ public class Max3DSFile
 		}
 	}
 
-	public static void buildMesh( final Abstract3DObjectBuilder builder, final Map<String,MaterialChunk> materials, final TriangleMeshChunk mesh )
+	public static void buildMesh( final Object3DBuilder builder, final Map<String,MaterialChunk> materials, final TriangleMeshChunk mesh )
 	{
 		final List<Vector3D> vertices = mesh._vertices;
 		final Vector2f[] textureCoordinates = mesh._textureCoordinates;

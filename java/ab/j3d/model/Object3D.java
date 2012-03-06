@@ -91,7 +91,7 @@ public class Object3D
 	 *
 	 * @return  3D object builder.
 	 */
-	protected Abstract3DObjectBuilder getBuilder()
+	protected Object3DBuilder getBuilder()
 	{
 		return new Object3DBuilder( this );
 	}
@@ -823,7 +823,7 @@ public class Object3D
 			final Vector3D p7 = new Vector3D( bounds.v1.x, bounds.v2.y, bounds.v2.z );
 			final Vector3D p8 = new Vector3D( bounds.v2.x, bounds.v2.y, bounds.v2.z );
 
-			final Abstract3DObjectBuilder builder = getBuilder();
+			final Object3DBuilder builder = getBuilder();
 			final BoxUVMap uvMap = new BoxUVMap( Scene.MM );
 			builder.addQuad( p1, p3, p7, p5, appearance, uvMap, false );
 			builder.addQuad( p2, p6, p8, p4, appearance, uvMap, false );

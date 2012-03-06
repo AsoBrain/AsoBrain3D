@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,7 +28,6 @@ import java.util.zip.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
-import ab.j3d.geom.*;
 import ab.j3d.model.*;
 import org.jetbrains.annotations.*;
 
@@ -159,7 +158,7 @@ public class ObjLoader
 	 *
 	 * @throws  IOException if an error occurred while loading the OBJ file.
 	 */
-	public static String load( @NotNull final Abstract3DObjectBuilder builder, @NotNull final Matrix3D transform, @NotNull final ResourceLoader loader, @NotNull final String objFileName )
+	public static String load( @NotNull final Object3DBuilder builder, @NotNull final Matrix3D transform, @NotNull final ResourceLoader loader, @NotNull final String objFileName )
 		throws IOException
 	{
 		final ObjLoader objLoader = new ObjLoader( transform );
@@ -179,7 +178,7 @@ public class ObjLoader
 	 *
 	 * @throws  IOException if an error occured while loading the OBJ file.
 	 */
-	public static String load( @NotNull final Abstract3DObjectBuilder builder, @NotNull final Matrix3D transform, @NotNull final ResourceLoader loader, @NotNull final BufferedReader objReader )
+	public static String load( @NotNull final Object3DBuilder builder, @NotNull final Matrix3D transform, @NotNull final ResourceLoader loader, @NotNull final BufferedReader objReader )
 		throws IOException
 	{
 		final ObjLoader objLoader = new ObjLoader( transform );
@@ -217,7 +216,7 @@ public class ObjLoader
 	 *
 	 * @throws  IOException if an error occured while loading the OBJ file.
 	 */
-	public String load( @NotNull final Abstract3DObjectBuilder builder, @NotNull final ResourceLoader loader, @NotNull final String objFileName )
+	public String load( @NotNull final Object3DBuilder builder, @NotNull final ResourceLoader loader, @NotNull final String objFileName )
 		throws IOException
 	{
 		InputStream inputStream = loader.getResourceAsStream( objFileName );
@@ -252,7 +251,7 @@ public class ObjLoader
 	 *
 	 * @throws  IOException if an error occured while loading the OBJ file.
 	 */
-	public String load( @NotNull final Abstract3DObjectBuilder builder, @NotNull final ResourceLoader loader, @NotNull final BufferedReader objReader )
+	public String load( @NotNull final Object3DBuilder builder, @NotNull final ResourceLoader loader, @NotNull final BufferedReader objReader )
 		throws IOException
 	{
 		final Map<String,Appearance> actualMaterials = DEFAULT_MATERIALS;
@@ -274,7 +273,7 @@ public class ObjLoader
 
 		while ( ( line = readLine( objReader ) ) != null )
 		{
-			if ( line.length() > 0 )
+			if ( !line.isEmpty() )
 			{
 				final String[] tokens = WHITESPACE.split( line.trim(), 0 );
 				final String name = tokens[ 0 ];
@@ -797,7 +796,7 @@ public class ObjLoader
 		final BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( loader.getResourceAsStream( materialName ) ) );
 		while ( ( line = readLine( bufferedReader ) ) != null )
 		{
-			if ( line.length() > 0 )
+			if ( !line.isEmpty() )
 			{
 				final String[] tokens = WHITESPACE.split( line.trim(), 0 );
 				final String name = tokens[ 0 ];
@@ -930,7 +929,7 @@ public class ObjLoader
 				line = line.substring( 0, hash );
 			}
 			line = line.trim();
-			while ( line.length() > 0 && line.charAt( line.length() - 1 ) == '\\' )
+			while ( !line.isEmpty() && ( line.charAt( line.length() - 1 ) == '\\' ) )
 			{
 				line = MessageFormat.format( "{0} {1}", line.substring( 0, line.length() - 1 ), bufferedReader.readLine() );
 			}

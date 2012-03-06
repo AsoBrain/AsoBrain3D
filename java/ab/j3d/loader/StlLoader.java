@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -205,7 +205,7 @@ public class StlLoader
 	 *
 	 * @throws  IOException if an error occured while loading the STL file.
 	 */
-	public String load( @NotNull final Abstract3DObjectBuilder builder, @NotNull final Matrix3D transform, @NotNull final InputStream in )
+	public String load( @NotNull final Object3DBuilder builder, @NotNull final Matrix3D transform, @NotNull final InputStream in )
 		throws IOException
 	{
 		final String result;
@@ -314,7 +314,7 @@ public class StlLoader
 	 *
 	 * @throws  IOException if an error occured while loading the STL file.
 	 */
-	protected String loadAscii( @NotNull final Abstract3DObjectBuilder builder, @NotNull final Matrix3D transform, @NotNull final BufferedReader reader )
+	protected String loadAscii( @NotNull final Object3DBuilder builder, @NotNull final Matrix3D transform, @NotNull final BufferedReader reader )
 		throws IOException
 	{
 		final Appearance appearance = _appearance;
@@ -387,7 +387,7 @@ public class StlLoader
 	 *
 	 * @throws  IOException if an error occured while loading the STL file.
 	 */
-	public String loadBinary( @NotNull final Abstract3DObjectBuilder builder, @NotNull final Matrix3D transform, @NotNull final InputStream in )
+	public String loadBinary( @NotNull final Object3DBuilder builder, @NotNull final Matrix3D transform, @NotNull final InputStream in )
 		throws IOException
 	{
 		final Appearance appearance = _appearance;
