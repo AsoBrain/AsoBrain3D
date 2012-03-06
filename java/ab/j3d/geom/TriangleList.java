@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,8 +22,6 @@ package ab.j3d.geom;
 
 import java.util.*;
 
-import org.jetbrains.annotations.*;
-
 /**
  * List of independent triangles. Vertices 0, 1, 2 define the first triangle;
  * vertices 3, 4, 5 define the second triangle; then 6, 7, 8, and so on.
@@ -37,7 +35,6 @@ public class TriangleList
 	/**
 	 * Vertices that define the triangles.
 	 */
-	@NotNull
 	protected final int[] _vertices;
 
 	/**
@@ -45,22 +42,18 @@ public class TriangleList
 	 *
 	 * @param   vertices    Vertices that define the triangles.
 	 */
-	public TriangleList( @NotNull final int[] vertices )
+	public TriangleList( final int[] vertices )
 	{
 		//noinspection AssignmentToCollectionOrArrayFieldFromParameter
 		_vertices = vertices;
 	}
 
-	@Override
-	@NotNull
 	public int[] getVertices()
 	{
 		//noinspection ReturnOfCollectionOrArrayField
 		return _vertices;
 	}
 
-	@NotNull
-	@Override
 	public int[] getTriangles()
 	{
 		//noinspection ReturnOfCollectionOrArrayField

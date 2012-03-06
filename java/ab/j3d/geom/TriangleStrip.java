@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,8 +21,6 @@
 package ab.j3d.geom;
 
 import java.util.*;
-
-import org.jetbrains.annotations.*;
 
 /**
  * A triangle strip is a series of connected triangles. Vertices 0, 1, 2 define
@@ -44,7 +42,6 @@ public class TriangleStrip
 	/**
 	 * Vertices that define the triangle strip.
 	 */
-	@NotNull
 	protected final int[] _vertices;
 
 	/**
@@ -57,23 +54,19 @@ public class TriangleStrip
 	 *
 	 * @param   vertices    Vertices that define the strip.
 	 */
-	public TriangleStrip( @NotNull final int[] vertices )
+	public TriangleStrip( final int[] vertices )
 	{
 		//noinspection AssignmentToCollectionOrArrayFieldFromParameter
 		_vertices = vertices;
 		_triangles = null;
 	}
 
-	@Override
-	@NotNull
 	public int[] getVertices()
 	{
 		//noinspection ReturnOfCollectionOrArrayField
 		return _vertices;
 	}
 
-	@NotNull
-	@Override
 	public int[] getTriangles()
 	{
 		int[] result = _triangles;
@@ -102,12 +95,15 @@ public class TriangleStrip
 				int resultIndex = 0;
 				boolean flip = false;
 
-				for ( int vertexIndex = 2; vertexIndex < vertexCount; )
+				int vertexIndex = 2;
+				while ( vertexIndex < vertexCount )
 				{
 					v2 = vertices[ vertexIndex++ ];
+
 					result[ resultIndex++ ] = flip ? v1 : v0;
 					result[ resultIndex++ ] = flip ? v0 : v1;
 					result[ resultIndex++ ] = v2;
+
 					v0 = v1;
 					v1 = v2;
 					flip = !flip;
