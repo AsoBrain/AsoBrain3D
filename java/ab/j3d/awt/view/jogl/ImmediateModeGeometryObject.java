@@ -124,6 +124,14 @@ public class ImmediateModeGeometryObject
 						{
 							gl.glBegin( GL.GL_TRIANGLE_STRIP );
 						}
+						else if ( primitive instanceof QuadStrip )
+						{
+							gl.glBegin( GL.GL_QUAD_STRIP );
+						}
+						else if ( primitive instanceof QuadList )
+						{
+							gl.glBegin( GL.GL_QUADS );
+						}
 						else
 						{
 							continue;
