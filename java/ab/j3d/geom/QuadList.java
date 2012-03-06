@@ -81,10 +81,10 @@ public class QuadList
 			{
 				/*
 				 * result[ 0 ] = { vertices[0], vertices[1], vertices[2] }
-				 * result[ 1 ] = { vertices[1], vertices[2], vertices[3] }
-				 * result[ 2 ] = { vertices[2], vertices[3], vertices[4] }
-				 * result[ 3 ] = { vertices[3], vertices[4], vertices[5] }
-				 * result[ 4 ] = { vertices[4], vertices[5], vertices[6] }
+				 * result[ 1 ] = { vertices[0], vertices[2], vertices[3] }
+				 * result[ 2 ] = { vertices[4], vertices[5], vertices[6] }
+				 * result[ 3 ] = { vertices[4], vertices[6], vertices[7] }
+				 * result[ 4 ] = { vertices[8], vertices[9], vertices[10] }
 				*/
 				final int resultLength = ( vertexCount / 4 ) * 6;
 				result = new int[ resultLength ];
@@ -102,7 +102,7 @@ public class QuadList
 					result[ resultIndex++ ] = v1;
 					result[ resultIndex++ ] = v2;
 
-					result[ resultIndex++ ] = v1;
+					result[ resultIndex++ ] = v0;
 					result[ resultIndex++ ] = v2;
 					result[ resultIndex++ ] = v3;
 				}

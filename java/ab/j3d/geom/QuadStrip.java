@@ -80,11 +80,11 @@ public class QuadStrip
 			else
 			{
 				/*
-				 * result[ 0 ] = { vertices[0], vertices[1], vertices[2] }
-				 * result[ 1 ] = { vertices[1], vertices[2], vertices[3] }
-				 * result[ 2 ] = { vertices[2], vertices[3], vertices[4] }
-				 * result[ 3 ] = { vertices[3], vertices[4], vertices[5] }
-				 * result[ 4 ] = { vertices[4], vertices[5], vertices[6] }
+				 * result[ 0 ] = { vertices[0], vertices[1], vertices[3] }
+				 * result[ 1 ] = { vertices[0], vertices[3], vertices[2] }
+				 * result[ 2 ] = { vertices[2], vertices[3], vertices[5] }
+				 * result[ 3 ] = { vertices[2], vertices[5], vertices[4] }
+				 * result[ 4 ] = { vertices[4], vertices[5], vertices[7] }
 				*/
 				final int resultLength = ( ( vertexCount - 2 ) / 2 ) * 6;
 				result = new int[ resultLength ];
@@ -101,11 +101,11 @@ public class QuadStrip
 
 					result[ resultIndex++ ] = v0;
 					result[ resultIndex++ ] = v1;
-					result[ resultIndex++ ] = v2;
-
-					result[ resultIndex++ ] = v1;
-					result[ resultIndex++ ] = v2;
 					result[ resultIndex++ ] = v3;
+
+					result[ resultIndex++ ] = v0;
+					result[ resultIndex++ ] = v3;
+					result[ resultIndex++ ] = v2;
 
 					v0 = v2;
 					v1 = v3;
