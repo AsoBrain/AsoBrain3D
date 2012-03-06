@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -77,7 +77,7 @@ public class Shape3DBuilder
 	 *
 	 * @return  {@link BranchGroup} containing the created content graph.
 	 */
-	public static BranchGroup createBranchGroup( final List<Node3DPath> objectNodes )
+	public static BranchGroup createBranchGroup( final Collection<Node3DPath> objectNodes )
 	{
 		final BranchGroup result = new BranchGroup();
 		result.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
@@ -211,16 +211,23 @@ public class Shape3DBuilder
 	 */
 	private static class AppearanceGroup
 	{
-		private ab.j3d.appearance.Appearance _material;
-		private boolean       _hasBackface;
-		private Appearance    _appearance;
-		private int           _lineCount;
-		private LineArray     _lineArray;
-		private int           _triangleCount;
-		private TriangleArray _triangleArray;
-		private int           _quadCount;
-		private QuadArray     _quadArray;
+		private final ab.j3d.appearance.Appearance _material;
 
+		private final boolean _hasBackface;
+
+		private final Appearance _appearance;
+
+		private int _lineCount;
+
+		private LineArray _lineArray;
+
+		private int _triangleCount;
+
+		private TriangleArray _triangleArray;
+
+		private int _quadCount;
+
+		private QuadArray _quadArray;
 
 		AppearanceGroup( final ab.j3d.appearance.Appearance material, final boolean hasBackface, final Appearance appearance )
 		{
@@ -258,7 +265,7 @@ public class Shape3DBuilder
 
 		void addFace( final Matrix3D object2view, final Face3D face )
 		{
-			final List<Vertex> vertices = face.vertices;
+			final List<Vertex> vertices = face.getVertices();
 			final int vertexCount = vertices.size();
 			if ( vertexCount >= 2 )
 			{

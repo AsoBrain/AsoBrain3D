@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -145,10 +145,10 @@ public class TestFace3D
 	 *
 	 * @throws  Exception if the test fails.
 	 */
-	public void testGetNormal()
+	public void testGetNormal1()
 		throws Exception
 	{
-		System.out.println( CLASS_NAME + ".testGetNormal()" );
+		System.out.println( CLASS_NAME + ".testGetNormal1()" );
 
 		/**
 		 * Test properties.
@@ -230,11 +230,11 @@ public class TestFace3D
 	}
 
 	/**
-	 * Test {@link Face3D#normal} field.
+	 * Test {@link Face3D#getNormal()} method.
 	 */
-	public static void testNormal()
+	public void testGetNormal2()
 	{
-		System.out.println( CLASS_NAME + ".testNormal" );
+		System.out.println( CLASS_NAME + ".testGetNormal2" );
 
 		final Vector3D lfb = new Vector3D( -1.0, -1.0, -1.0 );
 		final Vector3D rfb = new Vector3D(  1.0, -1.0, -1.0 );
@@ -258,28 +258,42 @@ public class TestFace3D
 		final FaceGroup faceGroup = faceGroups.get( 0 );
 		final List<Face3D> faces = faceGroup.getFaces();
 
-		assertEquals( "Normal(top).x",     0.0, faces.get( 0 ).normal.x, 0.001 );
-		assertEquals( "Normal(top).y",     0.0, faces.get( 0 ).normal.y, 0.001 );
-		assertEquals( "Normal(top).z",     1.0, faces.get( 0 ).normal.z, 0.001 );
+		final Face3D face0 = faces.get( 0 );
+		final Face3D face1 = faces.get( 1 );
+		final Face3D face2 = faces.get( 2 );
+		final Face3D face3 = faces.get( 3 );
+		final Face3D face4 = faces.get( 4 );
+		final Face3D face5 = faces.get( 5 );
 
-		assertEquals( "Normal(bottom).x",  0.0, faces.get( 1 ).normal.x, 0.001 );
-		assertEquals( "Normal(bottom).y",  0.0, faces.get( 1 ).normal.y, 0.001 );
-		assertEquals( "Normal(bottom).z", -1.0, faces.get( 1 ).normal.z, 0.001 );
+		final Vector3D normal0 = face0.getNormal();
+		final Vector3D normal1 = face1.getNormal();
+		final Vector3D normal2 = face2.getNormal();
+		final Vector3D normal3 = face3.getNormal();
+		final Vector3D normal4 = face4.getNormal();
+		final Vector3D normal5 = face5.getNormal();
 
-		assertEquals( "Normal(front).x",   0.0, faces.get( 2 ).normal.x, 0.001 );
-		assertEquals( "Normal(front).y",  -1.0, faces.get( 2 ).normal.y, 0.001 );
-		assertEquals( "Normal(front).z",   0.0, faces.get( 2 ).normal.z, 0.001 );
+		assertEquals( "Normal(top).x",     0.0, normal0.x, 0.001 );
+		assertEquals( "Normal(top).y",     0.0, normal0.y, 0.001 );
+		assertEquals( "Normal(top).z",     1.0, normal0.z, 0.001 );
 
-		assertEquals( "Normal(back).x",    0.0, faces.get( 3 ).normal.x, 0.001 );
-		assertEquals( "Normal(back).y",    1.0, faces.get( 3 ).normal.y, 0.001 );
-		assertEquals( "Normal(back).z",    0.0, faces.get( 3 ).normal.z, 0.001 );
+		assertEquals( "Normal(bottom).x",  0.0, normal1.x, 0.001 );
+		assertEquals( "Normal(bottom).y",  0.0, normal1.y, 0.001 );
+		assertEquals( "Normal(bottom).z", -1.0, normal1.z, 0.001 );
 
-		assertEquals( "Normal(left).x",   -1.0, faces.get( 4 ).normal.x, 0.001 );
-		assertEquals( "Normal(left).y",    0.0, faces.get( 4 ).normal.y, 0.001 );
-		assertEquals( "Normal(left).z",    0.0, faces.get( 4 ).normal.z, 0.001 );
+		assertEquals( "Normal(front).x",   0.0, normal2.x, 0.001 );
+		assertEquals( "Normal(front).y",  -1.0, normal2.y, 0.001 );
+		assertEquals( "Normal(front).z",   0.0, normal2.z, 0.001 );
 
-		assertEquals( "Normal(right).x",   1.0, faces.get( 5 ).normal.x, 0.001 );
-		assertEquals( "Normal(right).y",   0.0, faces.get( 5 ).normal.y, 0.001 );
-		assertEquals( "Normal(right).z",   0.0, faces.get( 5 ).normal.z, 0.001 );
+		assertEquals( "Normal(back).x",    0.0, normal3.x, 0.001 );
+		assertEquals( "Normal(back).y",    1.0, normal3.y, 0.001 );
+		assertEquals( "Normal(back).z",    0.0, normal3.z, 0.001 );
+
+		assertEquals( "Normal(left).x",   -1.0, normal4.x, 0.001 );
+		assertEquals( "Normal(left).y",    0.0, normal4.y, 0.001 );
+		assertEquals( "Normal(left).z",    0.0, normal4.z, 0.001 );
+
+		assertEquals( "Normal(right).x",   1.0, normal5.x, 0.001 );
+		assertEquals( "Normal(right).y",   0.0, normal5.y, 0.001 );
+		assertEquals( "Normal(right).z",   0.0, normal5.z, 0.001 );
 	}
 }

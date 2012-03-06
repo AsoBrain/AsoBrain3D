@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -286,9 +286,10 @@ public class RenderedPolygon
 			}
 		}
 
-		final double  planeNormalX  = object2view.rotateX( face.normal );
-		final double  planeNormalY  = object2view.rotateY( face.normal );
-		final double  planeNormalZ  = object2view.rotateZ( face.normal );
+		final Vector3D faceNormal = face.getNormal();
+		final double  planeNormalX  = object2view.rotateX( faceNormal );
+		final double  planeNormalY  = object2view.rotateY( faceNormal );
+		final double  planeNormalZ  = object2view.rotateZ( faceNormal );
 		final double  planeConstant = planeNormalX * viewX[ 0 ] + planeNormalY * viewY[ 0 ] + planeNormalZ * viewZ[ 0 ];
 		final boolean backface  =  ( ( ( projectedX[ 0 ] - projectedX[ 1 ] ) * ( projectedY[ 2 ] - projectedY[ 1 ] ) - ( projectedY[ 0 ] - projectedY[ 1 ] ) * ( projectedX[ 2 ] - projectedX[ 1 ] ) ) >= 0 );
 

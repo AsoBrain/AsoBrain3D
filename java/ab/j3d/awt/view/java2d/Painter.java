@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -179,7 +179,7 @@ public class Painter
 			for ( final Face3D face : faceGroup.getFaces() )
 			{
 				final Tessellation tessellation = face.getTessellation();
-				final List<Vertex> vertices = face.vertices;
+				final List<Vertex> vertices = face.getVertices();
 				final List<int[]> outlines = tessellation.getOutlines();
 
 				if ( object2view.rotateZ( face.getNormal() ) >= 0.0 )
@@ -191,7 +191,7 @@ public class Painter
 					}
 					else if ( applyLighting )
 					{
-						final Vector3D faceNormal = face.normal;
+						final Vector3D faceNormal = face.getNormal();
 						final float transformedNormalZ = (float)object2view.rotateZ( faceNormal.x, faceNormal.y, faceNormal.z );
 						final float factor = Math.min( 1.0f, 0.5f + 0.5f * Math.abs( transformedNormalZ ) );
 						if ( factor < 1.0f )
