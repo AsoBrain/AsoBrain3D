@@ -1,7 +1,7 @@
 /* $Id$
  *
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,6 @@ import javax.swing.*;
 
 import ab.j3d.model.*;
 import ab.j3d.view.*;
-import org.jetbrains.annotations.*;
 
 /**
  * Applet with a single 3D view, used as a base class for (most) examples.
@@ -62,7 +61,6 @@ public abstract class ExampleApplet
 	 *
 	 * @return  Configured render engine.
 	 */
-	@NotNull
 	protected abstract RenderEngine createEngine();
 
 	/**
@@ -70,7 +68,6 @@ public abstract class ExampleApplet
 	 *
 	 * @return  Scene.
 	 */
-	@NotNull
 	protected abstract Scene createScene();
 
 	/**
@@ -78,7 +75,7 @@ public abstract class ExampleApplet
 	 *
 	 * @param   view    View to be configured.
 	 */
-	protected abstract void configureView( @NotNull View3D view );
+	protected abstract void configureView( View3D view );
 
 	/**
 	 * Called after each frame to allow for the scene and view to be updated.
@@ -88,7 +85,7 @@ public abstract class ExampleApplet
 	 *
 	 * @return  <code>true</code> if the view should be updated.
 	 */
-	protected abstract boolean animate( @NotNull Scene scene, @NotNull View3D view );
+	protected abstract boolean animate( Scene scene, View3D view );
 
 	@Override
 	public void init()
@@ -133,12 +130,10 @@ public abstract class ExampleApplet
 	protected class AnimationViewListener
 		implements ViewListener
 	{
-		@Override
 		public void beforeFrame( final View3D view )
 		{
 		}
 
-		@Override
 		public void afterFrame( final View3D view )
 		{
 			if ( animate( _scene, view ) )

@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,12 @@
  */
 package ab.j3d.example;
 
+import ab.j3d.*;
+import ab.j3d.appearance.*;
+import ab.j3d.awt.view.jogl.*;
+import ab.j3d.model.*;
+import ab.j3d.view.*;
+
 /**
  * Renders a scene with several colored spheres, lit by two spot lights with
  * shadow casting enabled. Uses the {@link JOGLEngine}.
@@ -30,7 +36,6 @@ package ab.j3d.example;
 public class SpheresLightsAndShadows
 	extends ExampleApplet
 {
-	@NotNull
 	@Override
 	protected JOGLEngine createEngine()
 	{
@@ -41,24 +46,32 @@ public class SpheresLightsAndShadows
 		return new JOGLEngine( configuration );
 	}
 
-	@NotNull
 	@Override
 	protected Scene createScene()
 	{
-		final Material white = new Material();
-		white.setSpecularColor( new Color4f( 0x404040 ) ;
+		final BasicAppearance white = new BasicAppearance();
+		white.setDiffuseColor( Color4.WHITE );
+		white.setAmbientColor( Color4.WHITE );
+		white.setSpecularColor( Color4.DARK_GRAY );
+		white.setShininess( 16 );
 
-		final Material color1 = new Material();
-		color1.setDiffuseColor( new Color4f( 0xffff6040 ) ) );
-		color1.setSpecularColor( new Color4f( 0x404040 ) );
+		final BasicAppearance color1 = new BasicAppearance();
+		color1.setDiffuseColor( new Color4f( 0xffff6040 ) );
+		color1.setAmbientColor( new Color4f( 0xffff6040 ) );
+		color1.setSpecularColor( Color4.DARK_GRAY );
+		white.setShininess( 16 );
 
-		final Material color2 = new Material();
+		final BasicAppearance color2 = new BasicAppearance();
 		color2.setDiffuseColor( new Color4f( 0xff40c040 ) );
-		color2.setSpecularColor( new Color4f( 0x404040 ) );
+		color2.setAmbientColor( new Color4f( 0xff40c040 ) );
+		color2.setSpecularColor( Color4.DARK_GRAY );
+		white.setShininess( 16 );
 
-		final Material color3 = new Material();
+		final BasicAppearance color3 = new BasicAppearance();
 		color3.setDiffuseColor( new Color4f( 0xff4060ff ) );
-		color3.setSpecularColor( new Color4f( 0x404040 ) );
+		color3.setAmbientColor( new Color4f( 0xff4060ff ) );
+		color3.setSpecularColor( Color4.DARK_GRAY );
+		white.setShininess( 16 );
 
 		final Scene scene = new Scene( Scene.MM );
 		scene.setAmbient( 0.2f, 0.2f, 0.2f );
@@ -94,7 +107,7 @@ public class SpheresLightsAndShadows
 	}
 
 	@Override
-	protected void configureView( @NotNull final View3D view )
+	protected void configureView( final View3D view )
 	{
 //		_view.setCameraControl( new FromToCameraControl( 4.0, -8.0, 6.0 ) );
 
@@ -106,7 +119,7 @@ public class SpheresLightsAndShadows
 	}
 
 	@Override
-	protected boolean animate( @NotNull final Scene scene, @NotNull final View3D view )
+	protected boolean animate( final Scene scene, final View3D view )
 	{
 		final double alpha = (double)( System.currentTimeMillis() % 10000L ) / 10000.0;
 

@@ -13,7 +13,7 @@
 		<delete file="ab3d-test.jar"/>
 	</target>
 
-	<target name="build" depends="compile-java,compile-tests,jars.uptodate.check" unless="jars.uptodate" description="Build project">
+	<target name="build" depends="compile-java,compile-examples,compile-tests,jars.uptodate.check" unless="jars.uptodate" description="Build project">
 		<mkdir dir="lib"/>
 		<jar destfile="lib/ab3d.jar">
 			<fileset dir="classes/java"/>
@@ -114,6 +114,29 @@
 				</uptodate>
 				<uptodate>
 					<srcfiles dir="." includes="java/**" excludes="**/*.java"/>
+					<mapper type="glob" from="*" to="classes/*"/>
+				</uptodate>
+			</and>
+		</condition>
+	</target>
+
+	<target name="compile-examples" depends="compile-java,examples.uptodate.check" unless="examples.uptodate" description="Compile examples">
+		<mkdir dir="classes/examples"/>
+		<javac2 srcdir="examples" destdir="classes/examples" classpathref="java.classpath" source="1.5"/>
+		<copy todir="classes/examples" preservelastmodified="true">
+			<fileset dir="examples" excludes="**/*.java"/>
+		</copy>
+	</target>
+
+	<target name="examples.uptodate.check">
+		<condition property="examples.uptodate">
+			<and>
+				<uptodate>
+					<srcfiles dir="." includes="examples/**/*.java"/>
+					<mapper type="glob" from="*.java" to="classes/*.class"/>
+				</uptodate>
+				<uptodate>
+					<srcfiles dir="." includes="examples/**" excludes="**/*.java"/>
 					<mapper type="glob" from="*" to="classes/*"/>
 				</uptodate>
 			</and>

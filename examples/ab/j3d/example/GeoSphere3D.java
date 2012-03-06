@@ -1,7 +1,7 @@
 /* $Id$
  *
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,7 @@ package ab.j3d.example;
 import java.util.*;
 
 import ab.j3d.*;
-import ab.j3d.geom.*;
+import ab.j3d.appearance.*;
 import ab.j3d.model.Face3D.*;
 import ab.j3d.model.*;
 
@@ -42,12 +42,12 @@ public class GeoSphere3D
 	 *
 	 * @param   radius          Radius of the sphere.
 	 * @param   subdivisions    Number of subdivision steps. (More is smoother.)
-	 * @param   material        Material of the sphere.
+	 * @param   appearance        Appearance of the sphere.
 	 */
-	public GeoSphere3D( final double radius, final int subdivisions, final Material material )
+	public GeoSphere3D( final double radius, final int subdivisions, final Appearance appearance )
 	{
-//		createIcosahedralGeometry( radius, subdivisions, material );
-		createOctahedralGeometry( radius, subdivisions, material );
+//		createIcosahedralGeometry( radius, subdivisions, appearance );
+		createOctahedralGeometry( radius, subdivisions, appearance );
 	}
 
 	/**
@@ -55,9 +55,9 @@ public class GeoSphere3D
 	 *
 	 * @param   radius          Radius of the sphere.
 	 * @param   subdivisions    Number of (recursive) subdivisions.
-	 * @param   material        Material to be used.
+	 * @param   appearance        Appearance to be used.
 	 */
-	private void createOctahedralGeometry( final double radius, final int subdivisions, final Material material )
+	private void createOctahedralGeometry( final double radius, final int subdivisions, final Appearance appearance )
 	{
 		final Vector3D p0 = new Vector3D( 0.0, 0.0, radius );
 		final Vector3D p1 = new Vector3D( -radius, 0.0, 0.0 );
@@ -66,19 +66,19 @@ public class GeoSphere3D
 		final Vector3D p4 = new Vector3D( 0.0, radius, 0.0 );
 		final Vector3D p5 = new Vector3D( 0.0, 0.0, -radius );
 
-		final Abstract3DObjectBuilder builder = getBuilder();
+		final Object3DBuilder builder = getBuilder();
 
-		addFaces( builder, p0, p2, p1, radius, subdivisions, material );
-		addFaces( builder, p0, p3, p2, radius, subdivisions, material );
-		addFaces( builder, p0, p4, p3, radius, subdivisions, material );
-		addFaces( builder, p0, p1, p4, radius, subdivisions, material );
-		addFaces( builder, p5, p1, p2, radius, subdivisions, material );
-		addFaces( builder, p5, p2, p3, radius, subdivisions, material );
-		addFaces( builder, p5, p3, p4, radius, subdivisions, material );
-		addFaces( builder, p5, p4, p1, radius, subdivisions, material );
+		addFaces( builder, p0, p2, p1, radius, subdivisions, appearance );
+		addFaces( builder, p0, p3, p2, radius, subdivisions, appearance );
+		addFaces( builder, p0, p4, p3, radius, subdivisions, appearance );
+		addFaces( builder, p0, p1, p4, radius, subdivisions, appearance );
+		addFaces( builder, p5, p1, p2, radius, subdivisions, appearance );
+		addFaces( builder, p5, p2, p3, radius, subdivisions, appearance );
+		addFaces( builder, p5, p3, p4, radius, subdivisions, appearance );
+		addFaces( builder, p5, p4, p1, radius, subdivisions, appearance );
 	}
 
-	private void createIcosahedralGeometry( final double radius, final int subdivisions, final Material material )
+	private void createIcosahedralGeometry( final double radius, final int subdivisions, final Appearance appearance )
 	{
 		/*
 		 * Source: http://en.wikipedia.org/wiki/Icosahedron
@@ -115,7 +115,7 @@ public class GeoSphere3D
 		final List<Vector3D> vertexCoordinates = new ArrayList<Vector3D>();
 		final List<Vector3D> vertexNormals = new ArrayList<Vector3D>();
 
-		final Abstract3DObjectBuilder builder = getBuilder();
+		final Object3DBuilder builder = getBuilder();
 
 		vertexCoordinates.add( new Vector3D( 0.0, -factor1 * radius, -factor2 * radius ) );
 		vertexCoordinates.add( new Vector3D( 0.0,  factor1 * radius, -factor2 * radius ) );
@@ -139,7 +139,7 @@ public class GeoSphere3D
 		}
 
 		// FIXME: Use a builder, same as 'createOctahedralGeometry'.
-//		addSubdividedFace( vertexCoordinates, vertexNormals, vertices.get( 0 ), vertices.get( 1 ), vertices.get( 2 ), radius, subdivisions, material );
+//		addSubdividedFace( vertexCoordinates, vertexNormals, vertices.get( 0 ), vertices.get( 1 ), vertices.get( 2 ), radius, subdivisions, appearance );
 //
 //		setVertexCoordinates( vertexCoordinates );
 //		setVertexNormals( vectorsToDoubles( vertexNormals ) );
@@ -154,9 +154,9 @@ public class GeoSphere3D
 	 * @param   v2              Vertex coordinate.
 	 * @param   radius          Radius of the sphere.
 	 * @param   subdivisions    Number of (recursive) subdivisions.
-	 * @param   material        Material to be used.
+	 * @param   appearance        Appearance to be used.
 	 */
-	private static void addFaces( final Abstract3DObjectBuilder builder, final Vector3D v0, final Vector3D v1, final Vector3D v2, final double radius, final int subdivisions, final Material material )
+	private static void addFaces( final Object3DBuilder builder, final Vector3D v0, final Vector3D v1, final Vector3D v2, final double radius, final int subdivisions, final Appearance appearance )
 	{
 		if ( subdivisions == 0 )
 		{
@@ -168,7 +168,7 @@ public class GeoSphere3D
 					v2.multiply( 1.0 / radius ),
 				};
 
-			builder.addFace( coordinates, material, null, normals, true, false );
+			builder.addFace( coordinates, appearance, null, normals, true, false );
 		}
 		else
 		{
@@ -176,10 +176,10 @@ public class GeoSphere3D
 			final Vector3D p1 = subdivide( v1, v2, radius );
 			final Vector3D p2 = subdivide( v2, v0, radius );
 
-			addFaces( builder, v0, p0, p2, radius, subdivisions - 1, material );
-			addFaces( builder, v1, p1, p0, radius, subdivisions - 1, material );
-			addFaces( builder, v2, p2, p1, radius, subdivisions - 1, material );
-			addFaces( builder, p0, p1, p2, radius, subdivisions - 1, material );
+			addFaces( builder, v0, p0, p2, radius, subdivisions - 1, appearance );
+			addFaces( builder, v1, p1, p0, radius, subdivisions - 1, appearance );
+			addFaces( builder, v2, p2, p1, radius, subdivisions - 1, appearance );
+			addFaces( builder, p0, p1, p2, radius, subdivisions - 1, appearance );
 		}
 	}
 
