@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -48,22 +48,22 @@ public class Face3D
 	/**
 	 * Vertices of this face.
 	 */
-	public final List<Vertex> vertices;
+	private final List<Vertex> _vertices;
 
 	/**
 	 * X component of cross product of first and second edge of this face.
 	 */
-	public final double _crossX;
+	final double _crossX;
 
 	/**
 	 * Y component of cross product of first and second edge of this face.
 	 */
-	public final double _crossY;
+	final double _crossY;
 
 	/**
 	 * Z component of cross product of first and second edge of this face.
 	 */
-	public final double _crossZ;
+	final double _crossZ;
 
 	/**
 	 * Distance component of plane relative to origin. This defines the
@@ -72,9 +72,9 @@ public class Face3D
 	 *   A * x + B * y + C * z = D
 	 * </pre>
 	 *
-	 * @see     #normal
+	 * @see     #getNormal()
 	 */
-	public final double planeDistance;
+	private final double _planeDistance;
 
 	/**
 	 * Plane normal. This defines the <code>A</code>, <code>B</code>, and
@@ -88,10 +88,10 @@ public class Face3D
 	 *   since this does not require a {@link Vector3D} instance.</dd>
 	 * </dl>
 	 */
-	public final Vector3D normal;
+	private final Vector3D _normal;
 
 	/**
-	 * Tessellation of this face.
+	 * Tessellation of this face ({@code null} = not tessellated yet).
 	 */
 	@Nullable
 	private Tessellation _tessellation = null;
@@ -119,7 +119,7 @@ public class Face3D
 	public Face3D( @NotNull final Object3D object, @NotNull final List<Vertex> vertices, @Nullable final Tessellation tessellation )
 	{
 		_object = object;
-		this.vertices = vertices;
+		_vertices = vertices;
 		_tessellation = tessellation;
 
 		final int vertexCount = vertices.size();
@@ -166,16 +166,16 @@ public class Face3D
 			_crossX = crossX;
 			_crossY = crossY;
 			_crossZ = crossZ;
-			normal = n;
-			planeDistance = d;
+			_normal = n;
+			_planeDistance = d;
 		}
 		else
 		{
 			_crossX = 0.0;
 			_crossY = 0.0;
 			_crossZ = 0.0;
-			normal = NO_NORMAL;
-			planeDistance = 0.0;
+			_normal = NO_NORMAL;
+			_planeDistance = 0.0;
 		}
 	}
 
@@ -219,12 +219,12 @@ public class Face3D
 
 	public double getDistance()
 	{
-		return planeDistance;
+		return _planeDistance;
 	}
 
 	public Vector3D getNormal()
 	{
-		return normal;
+		return _normal;
 	}
 
 	public boolean isTwoSided()
@@ -249,7 +249,7 @@ public class Face3D
 	 */
 	public List<Vertex> getVertices()
 	{
-		return Collections.unmodifiableList( vertices );
+		return Collections.unmodifiableList( _vertices );
 	}
 
 	/**
@@ -263,7 +263,7 @@ public class Face3D
 	 */
 	public Vertex getVertex( final int index )
 	{
-		return vertices.get( index );
+		return _vertices.get( index );
 	}
 
 	/**
@@ -273,7 +273,7 @@ public class Face3D
 	 */
 	public int getVertexCount()
 	{
-		return vertices.size();
+		return _vertices.size();
 	}
 
 	/**
@@ -288,7 +288,7 @@ public class Face3D
 	@NotNull
 	public Vector3D getVertexNormal( final int index )
 	{
-		final Vertex vertex = vertices.get( index );
+		final Vertex vertex = _vertices.get( index );
 		Vector3D result = vertex.normal;
 		if ( result == null )
 		{
@@ -321,7 +321,7 @@ public class Face3D
 		Tessellation result = _tessellation;
 		if ( result == null )
 		{
-			final int vertexCount = vertices.size();
+			final int vertexCount = _vertices.size();
 
 			final int[] outline = new int[ vertexCount + 1 ];
 			for ( int i = 0; i < vertexCount; i++ )
@@ -358,6 +358,7 @@ public class Face3D
 	 *
 	 * @param   tessellation     Tessellation to use for this face.
 	 */
+	@SuppressWarnings ( "NullableProblems" )
 	public void setTessellation( @NotNull final Tessellation tessellation )
 	{
 		_tessellation = tessellation;
@@ -389,9 +390,8 @@ public class Face3D
 		public float colorMapV;
 
 		/**
-		 * Vertex normal.
+		 * Vertex normal ({@code null} if undetermined).
 		 */
-		@Nullable
 		Vector3D normal;
 
 		/**
@@ -409,6 +409,24 @@ public class Face3D
 			this.colorMapU = colorMapU;
 			this.colorMapV = colorMapV;
 			normal = null;
+		}
+
+		/**
+		 * Construct vertex.
+		 *
+		 * @param   point                   Coordinates of vertex.
+		 * @param   normal                  Vertex normal.
+		 * @param   vertexCoordinateIndex   Index of vertex coordinates.
+		 * @param   colorMapU               Color map U coordinate.
+		 * @param   colorMapV               Color map V coordinate.
+		 */
+		public Vertex( final Vector3D point, final Vector3D normal, final int vertexCoordinateIndex, final float colorMapU, final float colorMapV )
+		{
+			this.point = point;
+			this.vertexCoordinateIndex = vertexCoordinateIndex;
+			this.colorMapU = colorMapU;
+			this.colorMapV = colorMapV;
+			this.normal = normal;
 		}
 
 		/**
@@ -498,9 +516,9 @@ public class Face3D
 
 					for ( int i = 0 ; i < triangles.length ; i += 3 )
 					{
-						final Vector3D v1 = vertices.get( triangles[ i ] ).point;
-						final Vector3D v2 = vertices.get( triangles[ i + 1 ] ).point;
-						final Vector3D v3 = vertices.get( triangles[ i + 2 ] ).point;
+						final Vector3D v1 = _vertices.get( triangles[ i ] ).point;
+						final Vector3D v2 = _vertices.get( triangles[ i + 1 ] ).point;
+						final Vector3D v3 = _vertices.get( triangles[ i + 2 ] ).point;
 
 						if ( GeometryTools.isPointInsideTriangle( v1, v2, v3, result ) )
 						{
