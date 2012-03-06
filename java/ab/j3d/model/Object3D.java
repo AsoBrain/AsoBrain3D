@@ -298,9 +298,10 @@ public class Object3D
 						for ( int j = groupStart; j < groupEnd; j++ )
 						{
 							final Face3D face = visited.get( j );
-							normalX += face._crossX;
-							normalY += face._crossY;
-							normalZ += face._crossZ;
+							final Vector3D cross = face.getCross();
+							normalX += cross.x;
+							normalY += cross.y;
+							normalZ += cross.z;
 						}
 						final Vector3D normal = Vector3D.normalize( normalX, normalY, normalZ );
 

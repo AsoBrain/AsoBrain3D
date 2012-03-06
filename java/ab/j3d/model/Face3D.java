@@ -46,30 +46,15 @@ public class Face3D
 	private final List<Vertex> _vertices;
 
 	/**
-	 * X component of cross product of first and second edge of this face.
+	 * Tessellation of this face ({@code null} = not tessellated yet).
 	 */
-	final double _crossX;
+	@Nullable
+	private Tessellation _tessellation = null;
 
 	/**
-	 * Y component of cross product of first and second edge of this face.
+	 * Cross product of first and second edge of this face.
 	 */
-	final double _crossY;
-
-	/**
-	 * Z component of cross product of first and second edge of this face.
-	 */
-	final double _crossZ;
-
-	/**
-	 * Distance component of plane relative to origin. This defines the
-	 * <code>D</code> variable in the plane equation:
-	 * <pre>
-	 *   A * x + B * y + C * z = D
-	 * </pre>
-	 *
-	 * @see     #getNormal()
-	 */
-	private final double _planeDistance;
+	private Vector3D _cross = null;
 
 	/**
 	 * Plane normal. This defines the <code>A</code>, <code>B</code>, and
@@ -83,13 +68,18 @@ public class Face3D
 	 *   since this does not require a {@link Vector3D} instance.</dd>
 	 * </dl>
 	 */
-	private final Vector3D _normal;
+	private Vector3D _normal;
 
 	/**
-	 * Tessellation of this face ({@code null} = not tessellated yet).
+	 * Distance component of plane relative to origin. This defines the
+	 * <code>D</code> variable in the plane equation:
+	 * <pre>
+	 *   A * x + B * y + C * z = D
+	 * </pre>
+	 *
+	 * @see     #getNormal()
 	 */
-	@Nullable
-	private Tessellation _tessellation = null;
+	private Double _planeDistance;
 
 	/**
 	 * Construct new face.
@@ -114,62 +104,39 @@ public class Face3D
 	{
 		_vertices = vertices;
 		_tessellation = tessellation;
+		_normal = null;
+		_planeDistance = null;
+	}
 
-		final int vertexCount = vertices.size();
-		if ( vertexCount >= 3 )
-		{
-			int vi1 = 0;
-			int vi2 = 1;
-			int vi3 = 2;
+	/**
+	 * Construct new face.
+	 *
+	 * @param   normal          Face normal ({@link Plane3D#getNormal()}.
+	 * @param   vertices        Vertices used by this face.
+	 * @param   tessellation    Tessellation of this face (optional).
+	 */
+	public Face3D( @NotNull final Vector3D normal, @NotNull final List<Vertex> vertices, @Nullable final Tessellation tessellation )
+	{
+		_vertices = vertices;
+		_tessellation = tessellation;
+		_normal = normal;
+		_planeDistance = null;
+	}
 
-			if ( tessellation != null )
-			{
-				final Collection<TessellationPrimitive> primitives = tessellation.getPrimitives();
-				final Iterator<TessellationPrimitive> i = primitives.iterator();
-				if ( i.hasNext() )
-				{
-					final TessellationPrimitive primitive = i.next();
-					final int[] vertexIndices = primitive.getVertices();
-					vi1 = vertexIndices[ 2 ];
-					vi2 = vertexIndices[ 1 ];
-					vi3 = vertexIndices[ 0 ];
-				}
-			}
-
-			final Vector3D p0 = vertices.get( vi1 ).point;
-			final Vector3D p1 = vertices.get( vi2 ).point;
-			final Vector3D p2 = vertices.get( vi3 ).point;
-
-			final double u1 = p0.x - p1.x;
-			final double u2 = p0.y - p1.y;
-			final double u3 = p0.z - p1.z;
-
-			final double v1 = p2.x - p1.x;
-			final double v2 = p2.y - p1.y;
-			final double v3 = p2.z - p1.z;
-
-			final double crossX = u2 * v3 - u3 * v2;
-			final double crossY = u3 * v1 - u1 * v3;
-			final double crossZ = u1 * v2 - u2 * v1;
-
-			final double l = Math.sqrt( crossX * crossX + crossY * crossY + crossZ * crossZ );
-			final Vector3D n = ( l > 0.0 ) ? new Vector3D( crossX / l, crossY / l, crossZ / l ) : NO_NORMAL;
-			final double d = ( l > 0.0 ) ? Vector3D.dot( n.x, n.y, n.z, p1.x, p1.y, p1.z ) : 0.0;
-
-			_crossX = crossX;
-			_crossY = crossY;
-			_crossZ = crossZ;
-			_normal = n;
-			_planeDistance = d;
-		}
-		else
-		{
-			_crossX = 0.0;
-			_crossY = 0.0;
-			_crossZ = 0.0;
-			_normal = NO_NORMAL;
-			_planeDistance = 0.0;
-		}
+	/**
+	 * Construct new face.
+	 *
+	 * @param   normal          Face normal ({@link Plane3D#getNormal()}.
+	 * @param   planeDistance   Distance of plane {@link Plane3D#getDistance()}.
+	 * @param   vertices        Vertices used by this face.
+	 * @param   tessellation    Tessellation of this face (optional).
+	 */
+	public Face3D( @NotNull final Vector3D normal, final double planeDistance, @NotNull final List<Vertex> vertices, @Nullable final Tessellation tessellation )
+	{
+		_vertices = vertices;
+		_tessellation = tessellation;
+		_normal = normal;
+		_planeDistance = Double.valueOf( planeDistance );
 	}
 
 	/**
@@ -210,14 +177,101 @@ public class Face3D
 		return vertices;
 	}
 
+	/**
+	 * Get cross product of first two edges of this face. This is an
+	 * 'unnormalized normal' of the face and can be used to weigh normals of
+	 * adjacent faces. This is used for the Object3D's smoothing algorithm.
+	 *
+	 * @TODO Determine whether we can just use the real normal instead.
+	 *
+	 * @return  Cross product of first two edges of this face.
+	 */
+	public Vector3D getCross()
+	{
+		Vector3D result = _cross;
+		if ( result == null )
+		{
+			final List<Vertex> vertices = _vertices;
+			final int vertexCount = vertices.size();
+			if ( vertexCount >= 3 )
+			{
+				int vi1 = 0;
+				int vi2 = 1;
+				int vi3 = 2;
+
+				final Tessellation tessellation = _tessellation;
+				if ( tessellation != null )
+				{
+					final Collection<TessellationPrimitive> primitives = tessellation.getPrimitives();
+
+					final Iterator<TessellationPrimitive> it = primitives.iterator();
+					if ( it.hasNext() )
+					{
+						final TessellationPrimitive primitive = it.next();
+						final int[] vertexIndices = primitive.getVertices();
+						vi1 = vertexIndices[ 2 ];
+						vi2 = vertexIndices[ 1 ];
+						vi3 = vertexIndices[ 0 ];
+					}
+				}
+
+				final Vector3D p0 = vertices.get( vi1 ).point;
+				final Vector3D p1 = vertices.get( vi2 ).point;
+				final Vector3D p2 = vertices.get( vi3 ).point;
+
+				final double u1 = p0.x - p1.x;
+				final double u2 = p0.y - p1.y;
+				final double u3 = p0.z - p1.z;
+
+				final double v1 = p2.x - p1.x;
+				final double v2 = p2.y - p1.y;
+				final double v3 = p2.z - p1.z;
+
+				result = Vector3D.cross( u1, u2, u3, v1, v2, v3 );
+			}
+			else
+			{
+				result = Vector3D.ZERO;
+			}
+			_cross = result;
+		}
+
+		return result;
+	}
+
 	public double getDistance()
 	{
-		return _planeDistance;
+		Double result = _planeDistance;
+		if ( result == null )
+		{
+			final List<Vertex> vertices = _vertices;
+			if ( !vertices.isEmpty() )
+			{
+				final Vector3D normal = getNormal();
+				final Vertex vertex = vertices.get( 0 );
+				result = Double.valueOf( Vector3D.dot( normal, vertex.point ) );
+			}
+			else
+			{
+				result = Double.valueOf( 0.0 );
+			}
+
+			_planeDistance = result;
+		}
+		return result;
 	}
 
 	public Vector3D getNormal()
 	{
-		return _normal;
+		Vector3D result = _normal;
+		if ( result == null )
+		{
+			final Vector3D cross = getCross();
+			final double length = cross.length();
+			result = ( length > 0.0 ) ? new Vector3D( cross.x / length, cross.y / length, cross.z / length ) : NO_NORMAL;
+			_normal = result;
+		}
+		return result;
 	}
 
 	public boolean isTwoSided()
@@ -350,7 +404,7 @@ public class Face3D
 	/**
 	 * Defines a vertex of a face.
 	 */
-	public static final class Vertex
+	public static class Vertex
 	{
 		/**
 		 * Coordinates of vertex.
