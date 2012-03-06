@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,8 +20,6 @@
  */
 package ab.j3d.geom;
 
-import org.jetbrains.annotations.*;
-
 /**
  * Primitive that can be used in a {@link Tessellation}.
  *
@@ -35,7 +33,6 @@ public interface TessellationPrimitive
 	 *
 	 * @return  Vertices that define the primitive.
 	 */
-	@NotNull
 	int[] getVertices();
 
 	/**
@@ -43,6 +40,5 @@ public interface TessellationPrimitive
 	 *
 	 * @return  Triangles defined by this primitive.
 	 */
-	@NotNull
 	int[] getTriangles();
 }
