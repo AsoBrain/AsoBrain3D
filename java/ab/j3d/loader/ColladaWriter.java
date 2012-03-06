@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -648,24 +648,36 @@ public class ColladaWriter
 					final String tagName;
 					final int count;
 
+					final int[] vertices;
+
 					if ( primitive instanceof TriangleFan )
 					{
 						tagName = "trifans";
 
 						// NOTE: According to Google SketchUp the number of triangles. According to the spec, it should be the number of nested <p> elements.
-						count = primitive.getVertices().length - 2;
+						vertices = primitive.getVertices();
+						count = vertices.length - 2;
 					}
 					else if ( primitive instanceof TriangleStrip )
 					{
 						tagName = "tristrips";
 
 						// NOTE: According to Google SketchUp the number of triangles. According to the spec, it should be the number of nested <p> elements.
-						count = primitive.getVertices().length - 2;
+						vertices = primitive.getVertices();
+						count = vertices.length - 2;
 					}
 					else if ( primitive instanceof TriangleList )
 					{
 						tagName = "triangles";
-						count = primitive.getVertices().length / 3;
+						vertices = primitive.getVertices();
+						count = vertices.length / 3;
+					}
+					else if ( ( primitive instanceof QuadList ) || ( primitive instanceof QuadStrip ) )
+					{
+						// TODO: converting quads to triangles seems sub-optimal, can we do better?
+						tagName = "triangles";
+						vertices = primitive.getTriangles();
+						count = vertices.length / 3;
 					}
 					else
 					{
@@ -697,7 +709,7 @@ public class ColladaWriter
 
 					writer.startTag( NS_COLLADA_1_4, "p" );
 
-					for ( final int vertexIndex : primitive.getVertices() )
+					for ( final int vertexIndex : vertices )
 					{
 						final Face3D.Vertex vertex = face.getVertex( vertexIndex );
 						final int globalVertexIndex = globalVertexCount + vertexIndex;
