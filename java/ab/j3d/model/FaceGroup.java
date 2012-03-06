@@ -2,7 +2,7 @@
  * $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -37,7 +37,7 @@ public class FaceGroup
 	/**
 	 * Faces in this group.
 	 */
-	private List<Face3D> _faces;
+	private final List<Face3D> _faces;
 
 	/**
 	* Smoothing flag this face. Smooth faces are used to approximate
@@ -89,7 +89,7 @@ public class FaceGroup
 	 *
 	 * @param   face    Face to add.
 	 */
-	final void addFace( final Face3D face )
+	public final void addFace( final Face3D face )
 	{
 		_faces.add( face );
 	}
