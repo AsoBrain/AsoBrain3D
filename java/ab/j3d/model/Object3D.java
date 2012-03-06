@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -94,6 +94,235 @@ public class Object3D
 	protected Abstract3DObjectBuilder getBuilder()
 	{
 		return new Object3DBuilder( this );
+	}
+
+	/**
+	 * Calculates vertex normals and removes edges based on the angles between
+	 * adjacent faces.
+	 *
+	 * @param   maximumSmoothAngle  Maximum smoothing angle, in degrees.
+	 * @param   maximumEdgeAngle    Maximum angle for which edges are removed.
+	 * @param   separateMaterials   <code>true</code> to treat faces with
+	 *                              different materials as not adjacent.
+	 */
+	public void smooth( final double maximumSmoothAngle, final double maximumEdgeAngle, final boolean separateMaterials )
+	{
+		final int vertexCount = getVertexCount();
+		if ( separateMaterials )
+		{
+			for ( final FaceGroup faceGroup : getFaceGroups() )
+			{
+				smooth( Collections.singletonList( faceGroup ), maximumSmoothAngle, maximumEdgeAngle, vertexCount );
+			}
+		}
+		else
+		{
+			smooth( getFaceGroups(), maximumSmoothAngle, maximumEdgeAngle, vertexCount );
+		}
+	}
+
+	/**
+	 * Calculates vertex normals and removes edges based on the angles between
+	 * adjacent faces.
+	 *
+	 * @param   faceGroups          Face groups to be smoothed.
+	 * @param   maximumSmoothAngle  Maximum smoothing angle, in degrees.
+	 * @param   maximumEdgeAngle    Maximum angle for which edges are removed.
+	 * @param   vertexCount         Number of vertex coordinates stored in the
+	 *                              object containing the faces.
+	 */
+	private static void smooth( final List<FaceGroup> faceGroups, final double maximumSmoothAngle, final double maximumEdgeAngle, final int vertexCount )
+	{
+		final boolean smoothing = maximumSmoothAngle > 0.0;
+		final boolean edgeRemoval = maximumEdgeAngle > 0.0;
+
+		/*
+		 * Map faces by vertex coordinate.
+		 */
+		final List<List<Face3D>> facesByVertexCoordinate = new ArrayList<List<Face3D>>( Collections.nCopies( vertexCount, Collections.<Face3D>emptyList() ) );
+		for ( final FaceGroup faceGroup : faceGroups )
+		{
+			faceGroup.setSmooth( smoothing );
+			for ( final Face3D face : faceGroup.getFaces() )
+			{
+				for ( final Vertex vertex : face.getVertices() )
+				{
+					List<Face3D> faceList = facesByVertexCoordinate.get( vertex.vertexCoordinateIndex );
+					if ( faceList.isEmpty() )
+					{
+						faceList = new ArrayList<Face3D>();
+						facesByVertexCoordinate.set( vertex.vertexCoordinateIndex, faceList );
+					}
+					faceList.add( face );
+				}
+			}
+		}
+
+		if ( edgeRemoval )
+		{
+			/*
+			 * Remove outline segments between smoothed faces.
+			 */
+			final double minCosEdges = Math.cos( Math.toRadians( maximumEdgeAngle ) );
+			final List<int[]> outlines = new LinkedList<int[]>();
+			for ( final FaceGroup faceGroup : faceGroups )
+			{
+				for ( final Face3D face : faceGroup.getFaces() )
+				{
+					boolean outlinesModified = false;
+					outlines.clear();
+
+					for ( final int[] outline : face.getOutlines() )
+					{
+						int outlineStart = 0;
+						final List<Vertex> faceVertices = face.getVertices();
+						List<Face3D> startFaces = facesByVertexCoordinate.get( faceVertices.get( outline[ 0 ] ).vertexCoordinateIndex );
+
+						for ( int i = 1; i < outline.length; i++ )
+						{
+							final List<Face3D> endFaces = facesByVertexCoordinate.get( faceVertices.get( outline[ i ] ).vertexCoordinateIndex );
+
+							/*
+							 * Find face on the opposite side of this edge.
+							 */
+							Face3D symmetric = null;
+							for ( final Face3D startFace : startFaces )
+							{
+								if ( endFaces.contains( startFace ) )
+								{
+									symmetric = startFace;
+									break;
+								}
+							}
+
+							/*
+							 * If requested, apply only to faces with the same
+							 * material.
+							 */
+							if ( symmetric != null )
+							{
+								final double cos = Vector3D.dot( face.getNormal(), symmetric.getNormal() );
+								if ( cos >= minCosEdges )
+								{
+									if ( i - outlineStart > 1 )
+									{
+										final int[] fragment = new int[ i - outlineStart ];
+										System.arraycopy( outline, outlineStart, fragment, 0, i - outlineStart );
+										outlines.add( fragment );
+									}
+
+									outlineStart = i;
+								}
+							}
+
+							startFaces = endFaces;
+						}
+
+						if ( outlineStart == 0 )
+						{
+							outlines.add( outline );
+						}
+						else
+						{
+							outlinesModified = true;
+							if ( outline.length - outlineStart > 1 )
+							{
+								final int[] fragment = new int[ outline.length - outlineStart ];
+								System.arraycopy( outline, outlineStart, fragment, 0, outline.length - outlineStart );
+								outlines.add( fragment );
+							}
+						}
+					}
+
+					if ( outlinesModified )
+					{
+						final Tessellation tessellation = face.getTessellation();
+						switch ( outlines.size() )
+						{
+							case 0:
+								tessellation.setOutlines( Collections.<int[]>emptyList() );
+								break;
+							case 1:
+								tessellation.setOutlines( Collections.singletonList( outlines.get( 0 ) ) );
+								break;
+							default:
+								tessellation.setOutlines( new ArrayList<int[]>( outlines ) );
+						}
+					}
+				}
+			}
+		}
+
+		if ( smoothing )
+		{
+			/*
+			 * Determine smoothing groups and apply smoothing.
+			 */
+			final List<Face3D> visited = new ArrayList<Face3D>();
+			final double minCosSmooth = Math.cos( Math.toRadians( maximumSmoothAngle ) );
+			for ( int i = 0; i < facesByVertexCoordinate.size(); i++ )
+			{
+				final List<Face3D> faceList = facesByVertexCoordinate.get( i );
+				for ( final Face3D face1 : faceList )
+				{
+					if ( !visited.contains( face1 ) )
+					{
+						/*
+						 * Find other faces in the same smoothing group.
+						 */
+						final int groupStart = visited.size();
+						visited.add( face1 );
+						for ( final Face3D face2 : faceList )
+						{
+							/*
+							 * If requested, place different materials in
+							 * different smoothing groups.
+							 */
+							if ( !visited.contains( face2 ) )
+							{
+								final double cos = Vector3D.dot( face1.getNormal(), face2.getNormal() );
+								if ( cos >= minCosSmooth )
+								{
+									visited.add( face2 );
+								}
+							}
+						}
+						final int groupEnd = visited.size();
+
+						/*
+						 * Calculate smooth normal.
+						 */
+						double normalX = 0.0;
+						double normalY = 0.0;
+						double normalZ = 0.0;
+						for ( int j = groupStart; j < groupEnd; j++ )
+						{
+							final Face3D face = visited.get( j );
+							normalX += face._crossX;
+							normalY += face._crossY;
+							normalZ += face._crossZ;
+						}
+						final Vector3D normal = Vector3D.normalize( normalX, normalY, normalZ );
+
+						/*
+						 * Set vertex normals.
+						 */
+						for ( int j = groupStart; j < groupEnd; j++ )
+						{
+							final Face3D face = visited.get( j );
+							for ( final Vertex vertex : face.getVertices() )
+							{
+								if ( vertex.vertexCoordinateIndex == i )
+								{
+									vertex.setNormal( normal );
+								}
+							}
+						}
+					}
+				}
+				visited.clear();
+			}
+		}
 	}
 
 	/**
@@ -243,8 +472,8 @@ public class Object3D
 					final Tessellation tessellation = face.getTessellation();
 					for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
 					{
-						final List<Vertex> vertices = face.vertices;
-						for ( final Vertex vertex : vertices )
+						final List<Vertex> faceVertices = face.getVertices();
+						for ( final Vertex vertex : faceVertices )
 						{
 							boundsBuilder.addPoint( vertexCoordinates.get( vertex.vertexCoordinateIndex ) );
 						}
@@ -252,9 +481,9 @@ public class Object3D
 						final int[] primitiveTriangles = primitive.getTriangles();
 						for ( int i = 0 ; i < primitiveTriangles.length; i += 3 )
 						{
-							final Vertex v1 = vertices.get( primitiveTriangles[ i ] );
-							final Vertex v2 = vertices.get( primitiveTriangles[ i + 1 ] );
-							final Vertex v3 = vertices.get( primitiveTriangles[ i + 2 ] );
+							final Vertex v1 = faceVertices.get( primitiveTriangles[ i ] );
+							final Vertex v2 = faceVertices.get( primitiveTriangles[ i + 1 ] );
+							final Vertex v3 = faceVertices.get( primitiveTriangles[ i + 2 ] );
 
 							triangles.add( new BasicTriangle3D( v1.point, v2.point, v3.point, true ) );
 						}
