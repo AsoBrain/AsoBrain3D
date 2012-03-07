@@ -515,6 +515,34 @@ public class Face3D
 		{
 			this.normal = normal;
 		}
+
+		@Override
+		public int hashCode()
+		{
+			return vertexCoordinateIndex;
+		}
+
+		@Override
+		public boolean equals( final Object object )
+		{
+			final boolean result;
+
+			if ( object == this )
+			{
+				result = true;
+			}
+			else if ( object instanceof Vertex )
+			{
+				final Vertex other = (Vertex)object;
+				result = ( ( vertexCoordinateIndex == other.vertexCoordinateIndex ) && ( colorMapU == other.colorMapU ) && ( colorMapV == other.colorMapV ) && point.equals( other.point ) );
+			}
+			else
+			{
+				result = false;
+			}
+
+			return result;
+		}
 	}
 
 	/**
