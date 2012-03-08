@@ -85,7 +85,7 @@ public class Face3D
 	 * Construct new face.
 	 *
 	 * @param   object          Object to which this face belongs.
-	 * @param   vertexIndices   Indices in {@link Object3D#_vertexCoordinates}.
+	 * @param   vertexIndices   Indices in {@link Object3D#getVertexCoordinates()}.
 	 * @param   texturePoints   Texture coordinates for each vertex (optional).
 	 * @param   vertexNormals   Normal for each vertex (optional).
 	 */
@@ -143,7 +143,7 @@ public class Face3D
 	 * Construct vertices for face.
 	 *
 	 * @param   object          Object to which this face belongs.
-	 * @param   vertexIndices   Indices in {@link Object3D#_vertexCoordinates}.
+	 * @param   vertexIndices   Indices in {@link Object3D#getVertexCoordinates()}.
 	 * @param   texturePoints   Texture coordinates for each vertex (optional).
 	 * @param   vertexNormals   Normal for each vertex (optional).
 	 *
@@ -151,7 +151,7 @@ public class Face3D
 	 */
 	public static List<Vertex> createVertices( @NotNull final Object3D object, @NotNull final int[] vertexIndices, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals )
 	{
-		final List<Vector3D> vertexCoordinates = object._vertexCoordinates;
+		final List<Vector3D> vertexCoordinates = object.getVertexCoordinates();
 		final int vertexCount = vertexIndices.length;
 
 		final List<Vertex> vertices = new ArrayList<Vertex>( vertexCount );
@@ -412,7 +412,7 @@ public class Face3D
 		public final Vector3D point;
 
 		/**
-		 * Index of the vertex in the {@link Object3D#_vertexCoordinates} array.
+		 * Index of the vertex in {@link Object3D#getVertexCoordinates()}.
 		 */
 		public int vertexCoordinateIndex;
 

@@ -185,7 +185,7 @@ public class Box3D
 	private void addFace( final int[] vertexCoordinates , final Vector3D[] normals , final Appearance appearance , final UVMap uvMap )
 	{
 		final TextureMap colorMap = ( appearance == null ) ? null : appearance.getColorMap();
-		final float[] textureCoordinates = ( uvMap != null ) ? uvMap.generate( colorMap, _vertexCoordinates, vertexCoordinates, false ) : null;
+		final float[] textureCoordinates = ( uvMap != null ) ? uvMap.generate( colorMap, getVertexCoordinates(), vertexCoordinates, false ) : null;
 
 		final List<Face3D.Vertex> vertices = Face3D.createVertices( this, vertexCoordinates, textureCoordinates, null );
 		for ( final Face3D.Vertex vertex : vertices )

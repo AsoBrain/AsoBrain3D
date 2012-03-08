@@ -29,15 +29,11 @@ import ab.j3d.model.Face3D.*;
 import org.jetbrains.annotations.*;
 
 /**
- * This class provides an implementation of the {@link Object3DBuilder}
- * class for creating an {@link Object3D} instance.
- *
- * @see     Object3DBuilder
- * @see     Object3D
+ * This class can be used to create an {@link Object3D} instance.
  *
  * @author  HRM Bleumink
- * @author  Peter S. Heijnen
  * @author  G.B.M. Rupert
+ * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
 public class Object3DBuilder
@@ -85,7 +81,7 @@ public class Object3DBuilder
 	 */
 	public int getVertexIndex( @NotNull final Vector3D point )
 	{
-		return _target._vertexCoordinates.indexOfOrAdd( point );
+		return _target.getVertexIndex( point );
 	}
 
 	/**
@@ -95,7 +91,7 @@ public class Object3DBuilder
 	 */
 	public int getVertexCount()
 	{
-		return _target._vertexCoordinates.size();
+		return _target.getVertexCount();
 	}
 
 	/**
@@ -481,7 +477,7 @@ public class Object3DBuilder
 	 */
 	public void addFace( @NotNull final int[] vertexIndices, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final Vector3D[] vertexNormals, final boolean flipTexture, final boolean smooth, final boolean twoSided )
 	{
-		addFace( vertexIndices, appearance, ( uvMap != null ) ? uvMap.generate( ( appearance == null ) ? null : appearance.getColorMap(), _target._vertexCoordinates, vertexIndices, flipTexture ) : null, vertexNormals, smooth, twoSided );
+		addFace( vertexIndices, appearance, ( uvMap != null ) ? uvMap.generate( ( appearance == null ) ? null : appearance.getColorMap(), _target.getVertexCoordinates(), vertexIndices, flipTexture ) : null, vertexNormals, smooth, twoSided );
 	}
 
 	/**
