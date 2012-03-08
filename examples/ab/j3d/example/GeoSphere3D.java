@@ -1,5 +1,5 @@
 /* $Id$
- *
+ * ====================================================================
  * AsoBrain 3D Toolkit
  * Copyright (C) 1999-2012 Peter S. Heijnen
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * ====================================================================
  */
 package ab.j3d.example;
 
@@ -23,7 +24,6 @@ import java.util.*;
 
 import ab.j3d.*;
 import ab.j3d.appearance.*;
-import ab.j3d.model.Face3D.*;
 import ab.j3d.model.*;
 
 /**
@@ -130,12 +130,12 @@ public class GeoSphere3D
 		vertexCoordinates.add( new Vector3D(  factor2 * radius, 0.0,  factor1 * radius ) );
 		vertexCoordinates.add( new Vector3D(  factor2 * radius, 0.0, -factor1 * radius ) );
 
-		final List<Vertex> vertices = new ArrayList<Vertex>( 12 );
+		final List<Vertex3D> vertices = new ArrayList<Vertex3D>( 12 );
 		for ( int i = 0 ; i < vertexCoordinates.size() ; i++ )
 		{
 			final Vector3D point = vertexCoordinates.get( i );
 			vertexNormals.add( point.normalize() );
-			vertices.add( new Vertex( point, i ) );
+			vertices.add( new Vertex3D( point, i ) );
 		}
 
 		// FIXME: Use a builder, same as 'createOctahedralGeometry'.

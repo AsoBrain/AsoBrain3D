@@ -27,7 +27,6 @@ import javax.vecmath.Vector3f;
 
 import ab.j3d.*;
 import ab.j3d.model.*;
-import ab.j3d.model.Face3D.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -265,7 +264,7 @@ public class Shape3DBuilder
 
 		void addFace( final Matrix3D object2view, final Face3D face )
 		{
-			final List<Vertex> vertices = face.getVertices();
+			final List<Vertex3D> vertices = face.getVertices();
 			final int vertexCount = vertices.size();
 			if ( vertexCount >= 2 )
 			{
@@ -294,7 +293,7 @@ public class Shape3DBuilder
 				}
 				else // vertexCount > 2
 				{
-					Vertex vertex = vertices.get( 0 );
+					Vertex3D vertex = vertices.get( 0 );
 
 					final Point3d       vertexCoord0  = getVertexCoordinate( object2view, vertex );
 					final TexCoord2f    textureCoord0 = new TexCoord2f( vertex.colorMapU, vertex.colorMapV );
@@ -434,7 +433,7 @@ public class Shape3DBuilder
 			_quadCount     = 0;
 		}
 
-		private static Point3d getVertexCoordinate( final Matrix3D xform, final Vertex vertex )
+		private static Point3d getVertexCoordinate( final Matrix3D xform, final Vertex3D vertex )
 		{
 			final Vector3D point = vertex.point;
 			return new Point3d( xform.transformX( point ), xform.transformY( point ), xform.transformZ( point ) );

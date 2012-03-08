@@ -98,7 +98,7 @@ public class ImmediateModeGeometryObject
 
 			for ( final Face3D face : faceGroup.getFaces() )
 			{
-				final List<Face3D.Vertex> vertices = face.getVertices();
+				final List<Vertex3D> vertices = face.getVertices();
 				final Tessellation tessellation = face.getTessellation();
 				final Collection<TessellationPrimitive> primitives = tessellation.getPrimitives();
 
@@ -139,7 +139,7 @@ public class ImmediateModeGeometryObject
 
 						for ( final int vertexIndex : primitive.getVertices() )
 						{
-							final Face3D.Vertex vertex = vertices.get( vertexIndex );
+							final Vertex3D vertex = vertices.get( vertexIndex );
 
 							if ( colorMap != null )
 							{
@@ -176,7 +176,7 @@ public class ImmediateModeGeometryObject
 
 			for ( final Face3D face : faceGroup.getFaces() )
 			{
-				final List<Face3D.Vertex> vertices = face.getVertices();
+				final List<Vertex3D> vertices = face.getVertices();
 				final int vertexCount = vertices.size();
 
 				if ( vertexCount >= 2 )
@@ -194,7 +194,7 @@ public class ImmediateModeGeometryObject
 
 						for ( final int vertexIndex : outline )
 						{
-							final Face3D.Vertex vertex = vertices.get( vertexIndex );
+							final Vertex3D vertex = vertices.get( vertexIndex );
 							final Vector3D point = vertex.point;
 
 							if ( setVertexNormals )
@@ -226,7 +226,7 @@ public class ImmediateModeGeometryObject
 
 			for ( final Face3D face : faceGroup.getFaces() )
 			{
-				final List<Face3D.Vertex> vertices = face.getVertices();
+				final List<Vertex3D> vertices = face.getVertices();
 				final int vertexCount = vertices.size();
 
 				if ( vertexCount >= 1 )
@@ -241,7 +241,7 @@ public class ImmediateModeGeometryObject
 
 					for ( int vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++ )
 					{
-						final Face3D.Vertex vertex = vertices.get( vertexIndex );
+						final Vertex3D vertex = vertices.get( vertexIndex );
 						final Vector3D point = vertex.point;
 
 						if ( setVertexNormals )

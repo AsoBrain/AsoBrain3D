@@ -25,7 +25,6 @@ import java.awt.*;
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.model.*;
-import ab.j3d.model.Face3D.*;
 import ab.j3d.view.*;
 
 /**
@@ -256,7 +255,7 @@ public class RenderedPolygon
 
 		for ( int vertexIndex = 0 ; vertexIndex < pointCount ; vertexIndex++ )
 		{
-			final Vertex vertex = face.getVertex( vertexIndices[ vertexIndex ] );
+			final Vertex3D vertex = face.getVertex( vertexIndices[ vertexIndex ] );
 			final Vector3D oPoint = vertex.point;
 
 			final double x = object2view.transformX( oPoint );

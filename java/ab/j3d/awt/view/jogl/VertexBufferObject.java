@@ -598,7 +598,7 @@ public abstract class VertexBufferObject
 
 		public void encode( @NotNull final ByteBuffer target, final int vertexIndex, @NotNull final Face3D face, @NotNull final FaceGroup faceGroup )
 		{
-			final Face3D.Vertex vertex = face.getVertex( vertexIndex );
+			final Vertex3D vertex = face.getVertex( vertexIndex );
 
 			target.putFloat( (float)vertex.point.x );
 			target.putFloat( (float)vertex.point.y );
@@ -648,7 +648,7 @@ public abstract class VertexBufferObject
 
 		public void encode( @NotNull final ByteBuffer target, final int vertexIndex, @NotNull final Face3D face, @NotNull final FaceGroup faceGroup )
 		{
-			final Face3D.Vertex vertex = face.getVertex( vertexIndex );
+			final Vertex3D vertex = face.getVertex( vertexIndex );
 			target.putFloat( (float)vertex.point.x );
 			target.putFloat( (float)vertex.point.y );
 			target.putFloat( (float)vertex.point.z );

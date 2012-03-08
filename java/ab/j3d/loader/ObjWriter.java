@@ -2,7 +2,7 @@
  * $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -378,7 +378,7 @@ public class ObjWriter
 
 							for ( int i = 0; i < vertexCount; i++ )
 							{
-								final Face3D.Vertex vertex = face.getVertex( i );
+								final Vertex3D vertex = face.getVertex( i );
 
 								out.write( "v " );
 								out.write( ' ' );

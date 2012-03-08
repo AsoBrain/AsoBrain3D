@@ -1553,9 +1553,9 @@ public class GeometryTools
 
 					for ( int i = 0; i < triangles.length; i += 3 )
 					{
-						final Face3D.Vertex vertex1 = face.getVertex( triangles[ i ] );
-						final Face3D.Vertex vertex2 = face.getVertex( triangles[ i + 1 ] );
-						final Face3D.Vertex vertex3 = face.getVertex( triangles[ i + 2 ] );
+						final Vertex3D vertex1 = face.getVertex( triangles[ i ] );
+						final Vertex3D vertex2 = face.getVertex( triangles[ i + 1 ] );
+						final Vertex3D vertex3 = face.getVertex( triangles[ i + 2 ] );
 
 						final Vector3D p1 = vertex1.point;
 						final Vector3D p2 = vertex2.point;
@@ -1655,7 +1655,7 @@ public class GeometryTools
 
 				for ( int i = 0; i < face.getVertexCount(); i++ )
 				{
-					final Face3D.Vertex vertex = face.getVertex( i );
+					final Vertex3D vertex = face.getVertex( i );
 					final double faceDistance = Vector3D.dot( normal, vertex.point );
 					if ( faceDistance > planeDistance )
 					{

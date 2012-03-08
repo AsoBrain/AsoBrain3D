@@ -584,7 +584,7 @@ public class ColladaWriter
 		{
 			for ( final Face3D face : faceGroup.getFaces() )
 			{
-				for ( final Face3D.Vertex vertex : face.getVertices() )
+				for ( final Vertex3D vertex : face.getVertices() )
 				{
 					// TODO: Would be nice to avoid long lists of NaN for objects without textures.
 					writer.text( DatatypeConverter.printFloat( vertex.colorMapU ) );
@@ -711,7 +711,7 @@ public class ColladaWriter
 
 					for ( final int vertexIndex : vertices )
 					{
-						final Face3D.Vertex vertex = face.getVertex( vertexIndex );
+						final Vertex3D vertex = face.getVertex( vertexIndex );
 						final int globalVertexIndex = globalVertexCount + vertexIndex;
 
 						writer.text( DatatypeConverter.printInt( vertex.vertexCoordinateIndex ) );

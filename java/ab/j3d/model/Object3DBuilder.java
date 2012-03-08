@@ -25,7 +25,6 @@ import java.util.*;
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
-import ab.j3d.model.Face3D.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -683,7 +682,7 @@ public class Object3DBuilder
 	 */
 	public void addSubdividedQuad( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @NotNull final Vector3D point4, final int segmentsX, final int segmentsY, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean smooth, final boolean twoSided )
 	{
-		final List<Vertex> vertices = new ArrayList<Vertex>( ( segmentsX + 1 ) * ( segmentsY + 1 ) );
+		final List<Vertex3D> vertices = new ArrayList<Vertex3D>( ( segmentsX + 1 ) * ( segmentsY + 1 ) );
 
 		final Vector3D cross = Vector3D.cross( point3.minus( point1 ), point2.minus( point1 ) );
 		final Vector3D normal = cross.normalize();
@@ -714,7 +713,7 @@ public class Object3DBuilder
 					uvMap.generate( textureCoordinate, appearance.getColorMap(), point, normal, false );
 				}
 
-				final Vertex vertex = new Vertex( point, vertices.size(), textureCoordinate.getX(), textureCoordinate.getY() );
+				final Vertex3D vertex = new Vertex3D( point, vertices.size(), textureCoordinate.getX(), textureCoordinate.getY() );
 				vertex.setNormal( normal );
 				vertex.vertexCoordinateIndex = getVertexIndex( point );
 				vertices.add( vertex );
@@ -1017,7 +1016,7 @@ public class Object3DBuilder
 
 		if ( top )
 		{
-			final List<Vertex> topVertices = createVertices( topPoints, topAppearance, topMap, topFlipTexture );
+			final List<Vertex3D> topVertices = createVertices( topPoints, topAppearance, topMap, topFlipTexture );
 
 			final Tessellation topTessellation = new Tessellation( outlines, topPrimitives );
 			addFace( topVertices, topTessellation, topAppearance, false, twoSided );
@@ -1027,7 +1026,7 @@ public class Object3DBuilder
 
 		if ( bottom )
 		{
-			final List<Vertex> bottomVertices = createVertices( bottomPoints, bottomAppearance, bottomMap, bottomFlipTexture );
+			final List<Vertex3D> bottomVertices = createVertices( bottomPoints, bottomAppearance, bottomMap, bottomFlipTexture );
 
 			final Tessellation bottomTessellation = new Tessellation( outlines, bottomPrimitives );
 			addFace( bottomVertices, bottomTessellation, bottomAppearance, false, twoSided );
@@ -1054,10 +1053,10 @@ public class Object3DBuilder
 					final int nextI1 = getVertexIndex( nextP1 );
 					final int nextI2 = getVertexIndex( nextP2 );
 
-					final Vertex v1 = new Vertex( nextP1, nextI1 );
-					final Vertex v2 = new Vertex( nextP2, nextI2 );
-					final Vertex v3 = new Vertex( previousP2, previousI2 );
-					final Vertex v4 = new Vertex( previousP1, previousI1 );
+					final Vertex3D v1 = new Vertex3D( nextP1, nextI1 );
+					final Vertex3D v2 = new Vertex3D( nextP2, nextI2 );
+					final Vertex3D v3 = new Vertex3D( previousP2, previousI2 );
+					final Vertex3D v4 = new Vertex3D( previousP1, previousI1 );
 
 					final Vector3D normal = GeometryTools.getPlaneNormal( v1.point, v2.point, v3.point );
 					if ( normal != null )
@@ -1188,7 +1187,7 @@ public class Object3DBuilder
 		final List<int[]> outlines = flipNormals ? tessellator.getClockwiseOutlines() : tessellator.getCounterClockwiseOutlines();
 
 		final Tessellation tessellation = new Tessellation( outlines, primitives );
-		final List<Vertex> vertices = createVertices( transform( transform, tessellator.getVertexList() ), appearance, uvMap, flipTexture );
+		final List<Vertex3D> vertices = createVertices( transform( transform, tessellator.getVertexList() ), appearance, uvMap, flipTexture );
 
 		addFace( vertices, tessellation, appearance, false, twoSided );
 	}
@@ -1203,10 +1202,10 @@ public class Object3DBuilder
 	 *
 	 * @return  Vertices for 3D face.
 	 */
-	protected List<Vertex> createVertices( final List<Vector3D> points, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture )
+	protected List<Vertex3D> createVertices( final List<Vector3D> points, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture )
 	{
 		final int vertexCount = points.size();
-		final List<Vertex> vertices = new ArrayList<Vertex>( vertexCount );
+		final List<Vertex3D> vertices = new ArrayList<Vertex3D>( vertexCount );
 
 		if ( uvMap != null )
 		{
@@ -1218,14 +1217,14 @@ public class Object3DBuilder
 			while ( i < vertexCount )
 			{
 				final Vector3D point = points.get( i++ );
-				vertices.add( new Vertex( point, getVertexIndex( point ), uvCoords[ j++ ], uvCoords[ j++ ] ) );
+				vertices.add( new Vertex3D( point, getVertexIndex( point ), uvCoords[ j++ ], uvCoords[ j++ ] ) );
 			}
 		}
 		else
 		{
 			for ( final Vector3D point : points )
 			{
-				vertices.add( new Vertex( point, getVertexIndex( point ) ) );
+				vertices.add( new Vertex3D( point, getVertexIndex( point ) ) );
 			}
 		}
 
@@ -1261,7 +1260,7 @@ public class Object3DBuilder
 	 * @param   smooth          Face is smooth/curved vs. flat.
 	 * @param   twoSided        Resulting face will be two-sided (has backface).
 	 */
-	public void addFace( @NotNull final List<Vertex> vertices, @Nullable final Tessellation tessellation, @Nullable final Appearance appearance, final boolean smooth, final boolean twoSided )
+	public void addFace( @NotNull final List<Vertex3D> vertices, @Nullable final Tessellation tessellation, @Nullable final Appearance appearance, final boolean smooth, final boolean twoSided )
 	{
 		addFace( appearance, smooth, twoSided, new Face3D( vertices, tessellation ) );
 	}

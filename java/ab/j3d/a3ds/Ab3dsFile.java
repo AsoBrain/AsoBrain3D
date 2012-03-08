@@ -433,7 +433,7 @@ public class Ab3dsFile
 					{
 						final FaceList.Triangle face = faceList.getFace( faceIndex );
 
-						final List<Face3D.Vertex> vertices = new ArrayList<Face3D.Vertex>( 3 );
+						final List<Vertex3D> vertices = new ArrayList<Vertex3D>( 3 );
 						for ( int faceVertexIndex = 1; faceVertexIndex <= 3; faceVertexIndex++ )
 						{
 							final int objectVertexIndex = face.getVertex( faceVertexIndex );
@@ -502,7 +502,7 @@ public class Ab3dsFile
 							final float colorMapU = ( mappingCoordinates == null ) ? Float.NaN : mappingCoordinates.getMapU( objectVertexIndex );
 							final float colorMapV = ( mappingCoordinates == null ) ? Float.NaN : mappingCoordinates.getMapV( objectVertexIndex );
 
-							final Face3D.Vertex vertex = new Face3D.Vertex( vertexCoordinate, objectVertexIndex, colorMapU, colorMapV );
+							final Vertex3D vertex = new Vertex3D( vertexCoordinate, objectVertexIndex, colorMapU, colorMapV );
 							vertex.setNormal( vertexNormal );
 							vertices.add( vertex );
 						}
@@ -582,8 +582,8 @@ public class Ab3dsFile
 
 		if ( ok )
 		{
-			final Ab3dsFile f = new Ab3dsFile();
-			f.load( new File( "C:\\progra~1\\Graphics\\3dsmax\\meshes\\Tv.3ds" ) );
+			final Ab3dsFile loader = new Ab3dsFile();
+			loader.load( new File( "C:\\progra~1\\Graphics\\3dsmax\\meshes\\Tv.3ds" ) );
 			if ( DEBUG )
 			{
 				System.out.println( "---------------------------" );

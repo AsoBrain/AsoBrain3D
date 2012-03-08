@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -155,7 +155,7 @@ public class Sphere3D
 				}
 
 				final Face3D face = new Face3D( this, vertexIndices, texturePoints, null );
-				for ( final Face3D.Vertex vertex : face.getVertices() )
+				for ( final Vertex3D vertex : face.getVertices() )
 				{
 					vertex.setNormal( vertexNormals.get( vertex.vertexCoordinateIndex ) );
 				}

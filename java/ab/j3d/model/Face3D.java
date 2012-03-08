@@ -43,7 +43,7 @@ public class Face3D
 	/**
 	 * Vertices of this face.
 	 */
-	private final List<Vertex> _vertices;
+	private final List<Vertex3D> _vertices;
 
 	/**
 	 * Tessellation of this face ({@code null} = not tessellated yet).
@@ -100,7 +100,7 @@ public class Face3D
 	 * @param   vertices        Vertices used by this face.
 	 * @param   tessellation    Tessellation of this face (optional).
 	 */
-	public Face3D( @NotNull final List<Vertex> vertices, @Nullable final Tessellation tessellation )
+	public Face3D( @NotNull final List<Vertex3D> vertices, @Nullable final Tessellation tessellation )
 	{
 		_vertices = vertices;
 		_tessellation = tessellation;
@@ -115,7 +115,7 @@ public class Face3D
 	 * @param   vertices        Vertices used by this face.
 	 * @param   tessellation    Tessellation of this face (optional).
 	 */
-	public Face3D( @NotNull final Vector3D normal, @NotNull final List<Vertex> vertices, @Nullable final Tessellation tessellation )
+	public Face3D( @NotNull final Vector3D normal, @NotNull final List<Vertex3D> vertices, @Nullable final Tessellation tessellation )
 	{
 		_vertices = vertices;
 		_tessellation = tessellation;
@@ -131,7 +131,7 @@ public class Face3D
 	 * @param   vertices        Vertices used by this face.
 	 * @param   tessellation    Tessellation of this face (optional).
 	 */
-	public Face3D( @NotNull final Vector3D normal, final double planeDistance, @NotNull final List<Vertex> vertices, @Nullable final Tessellation tessellation )
+	public Face3D( @NotNull final Vector3D normal, final double planeDistance, @NotNull final List<Vertex3D> vertices, @Nullable final Tessellation tessellation )
 	{
 		_vertices = vertices;
 		_tessellation = tessellation;
@@ -149,16 +149,16 @@ public class Face3D
 	 *
 	 * @return  Vertices for face.
 	 */
-	public static List<Vertex> createVertices( @NotNull final Object3D object, @NotNull final int[] vertexIndices, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals )
+	public static List<Vertex3D> createVertices( @NotNull final Object3D object, @NotNull final int[] vertexIndices, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals )
 	{
 		final List<Vector3D> vertexCoordinates = object.getVertexCoordinates();
 		final int vertexCount = vertexIndices.length;
 
-		final List<Vertex> vertices = new ArrayList<Vertex>( vertexCount );
+		final List<Vertex3D> vertices = new ArrayList<Vertex3D>( vertexCount );
 
 		for ( int vertexIndex = 0 ; vertexIndex < vertexCount; vertexIndex++ )
 		{
-			final Vertex vertex = new Vertex( vertexCoordinates, vertexIndices[ vertexIndex ] );
+			final Vertex3D vertex = new Vertex3D( vertexCoordinates, vertexIndices[ vertexIndex ] );
 			if ( texturePoints != null )
 			{
 				final int texturePointIndex = vertexIndex * 2;
@@ -191,7 +191,7 @@ public class Face3D
 		Vector3D result = _cross;
 		if ( result == null )
 		{
-			final List<Vertex> vertices = _vertices;
+			final List<Vertex3D> vertices = _vertices;
 			final int vertexCount = vertices.size();
 			if ( vertexCount >= 3 )
 			{
@@ -244,11 +244,11 @@ public class Face3D
 		Double result = _planeDistance;
 		if ( result == null )
 		{
-			final List<Vertex> vertices = _vertices;
+			final List<Vertex3D> vertices = _vertices;
 			if ( !vertices.isEmpty() )
 			{
 				final Vector3D normal = getNormal();
-				final Vertex vertex = vertices.get( 0 );
+				final Vertex3D vertex = vertices.get( 0 );
 				result = Double.valueOf( Vector3D.dot( normal, vertex.point ) );
 			}
 			else
@@ -284,7 +284,7 @@ public class Face3D
 	 *
 	 * @return  Vertices of this face.
 	 */
-	public List<Vertex> getVertices()
+	public List<Vertex3D> getVertices()
 	{
 		return Collections.unmodifiableList( _vertices );
 	}
@@ -298,7 +298,7 @@ public class Face3D
 	 *
 	 * @throws  IndexOutOfBoundsException if <code>index</code> is out of bounds.
 	 */
-	public Vertex getVertex( final int index )
+	public Vertex3D getVertex( final int index )
 	{
 		return _vertices.get( index );
 	}
@@ -325,7 +325,7 @@ public class Face3D
 	@NotNull
 	public Vector3D getVertexNormal( final int index )
 	{
-		final Vertex vertex = _vertices.get( index );
+		final Vertex3D vertex = _vertices.get( index );
 		Vector3D result = vertex.normal;
 		if ( result == null )
 		{
@@ -399,150 +399,6 @@ public class Face3D
 	public void setTessellation( @NotNull final Tessellation tessellation )
 	{
 		_tessellation = tessellation;
-	}
-
-	/**
-	 * Defines a vertex of a face.
-	 */
-	public static class Vertex
-	{
-		/**
-		 * Coordinates of vertex.
-		 */
-		public final Vector3D point;
-
-		/**
-		 * Index of the vertex in {@link Object3D#getVertexCoordinates()}.
-		 */
-		public int vertexCoordinateIndex;
-
-		/**
-		 * Color map U coordinate.
-		 */
-		public float colorMapU;
-
-		/**
-		 * Color map V coordinate.
-		 */
-		public float colorMapV;
-
-		/**
-		 * Vertex normal ({@code null} if undetermined).
-		 */
-		Vector3D normal;
-
-		/**
-		 * Construct vertex.
-		 *
-		 * @param   point                   Coordinates of vertex.
-		 * @param   vertexCoordinateIndex   Index of vertex coordinates.
-		 * @param   colorMapU               Color map U coordinate.
-		 * @param   colorMapV               Color map V coordinate.
-		 */
-		public Vertex( final Vector3D point, final int vertexCoordinateIndex, final float colorMapU, final float colorMapV )
-		{
-			this.point = point;
-			this.vertexCoordinateIndex = vertexCoordinateIndex;
-			this.colorMapU = colorMapU;
-			this.colorMapV = colorMapV;
-			normal = null;
-		}
-
-		/**
-		 * Construct vertex.
-		 *
-		 * @param   point                   Coordinates of vertex.
-		 * @param   normal                  Vertex normal.
-		 * @param   vertexCoordinateIndex   Index of vertex coordinates.
-		 * @param   colorMapU               Color map U coordinate.
-		 * @param   colorMapV               Color map V coordinate.
-		 */
-		public Vertex( final Vector3D point, final Vector3D normal, final int vertexCoordinateIndex, final float colorMapU, final float colorMapV )
-		{
-			this.point = point;
-			this.vertexCoordinateIndex = vertexCoordinateIndex;
-			this.colorMapU = colorMapU;
-			this.colorMapV = colorMapV;
-			this.normal = normal;
-		}
-
-		/**
-		 * Construct vertex.
-		 *
-		 * @param   point                   Coordinates of vertex.
-		 * @param   vertexCoordinateIndex   Index of vertex coordinates.
-		 */
-		public Vertex( final Vector3D point, final int vertexCoordinateIndex )
-		{
-			this.point = point;
-			this.vertexCoordinateIndex = vertexCoordinateIndex;
-			normal = null;
-			colorMapU = Float.NaN;
-			colorMapV = Float.NaN;
-		}
-
-		/**
-		 * Construct vertex.
-		 *
-		 * @param   vertexCoordinates       Vertex coordinates.
-		 * @param   vertexCoordinateIndex   Index of vertex coordinates.
-		 */
-		public Vertex( final List<Vector3D> vertexCoordinates, final int vertexCoordinateIndex )
-		{
-			this( vertexCoordinates.get( vertexCoordinateIndex ), vertexCoordinateIndex );
-		}
-
-		/**
-		 * Returns the vertex normal. Note that the vertex may not have an
-		 * explicit normal, resulting in <code>null</code>.
-		 *
-		 * @return  Normal vector.
-		 *
-		 * @see     Face3D#getVertexNormal
-		 */
-		@Nullable
-		public Vector3D getNormal()
-		{
-			return normal;
-		}
-
-		/**
-		 * Set vertex normal.
-		 *
-		 * @param   normal  Vertex normal.
-		*/
-		public void setNormal( @Nullable final Vector3D normal )
-		{
-			this.normal = normal;
-		}
-
-		@Override
-		public int hashCode()
-		{
-			return vertexCoordinateIndex;
-		}
-
-		@Override
-		public boolean equals( final Object object )
-		{
-			final boolean result;
-
-			if ( object == this )
-			{
-				result = true;
-			}
-			else if ( object instanceof Vertex )
-			{
-				final Vertex other = (Vertex)object;
-				result = ( ( vertexCoordinateIndex == other.vertexCoordinateIndex ) && ( colorMapU == other.colorMapU ) && ( colorMapV == other.colorMapV ) && point.equals( other.point ) );
-			}
-			else
-			{
-				result = false;
-			}
-
-			return result;
-		}
 	}
 
 	/**

@@ -609,7 +609,7 @@ public class ObjLoader
 		{
 			final List<ObjFaceVertex> faceVertices = objFace._vertices;
 			final int faceVertexCount = faceVertices.size();
-			final List<Face3D.Vertex> vertices = new ArrayList<Face3D.Vertex>( faceVertexCount );
+			final List<Vertex3D> vertices = new ArrayList<Vertex3D>( faceVertexCount );
 
 			boolean smooth = false;
 			Vector3D fixedVertexNormal = null;
@@ -624,7 +624,7 @@ public class ObjLoader
 					throw new IOException( "out-of-bounds vertex (" + vertexIndex + " >= " + vertexCoordinates.size() + ')' );
 				}
 
-				final Face3D.Vertex vertex = new Face3D.Vertex( vertexCoordinates.get( vertexIndex ), vertexIndex );
+				final Vertex3D vertex = new Vertex3D( vertexCoordinates.get( vertexIndex ), vertexIndex );
 				vertices.add( vertex );
 
 				final int textureVertexIndex = objFaceVertex._textureVertexIndex;

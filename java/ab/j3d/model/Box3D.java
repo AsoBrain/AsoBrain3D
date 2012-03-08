@@ -187,8 +187,8 @@ public class Box3D
 		final TextureMap colorMap = ( appearance == null ) ? null : appearance.getColorMap();
 		final float[] textureCoordinates = ( uvMap != null ) ? uvMap.generate( colorMap, getVertexCoordinates(), vertexCoordinates, false ) : null;
 
-		final List<Face3D.Vertex> vertices = Face3D.createVertices( this, vertexCoordinates, textureCoordinates, null );
-		for ( final Face3D.Vertex vertex : vertices )
+		final List<Vertex3D> vertices = Face3D.createVertices( this, vertexCoordinates, textureCoordinates, null );
+		for ( final Vertex3D vertex : vertices )
 		{
 			vertex.normal = normals[ vertex.vertexCoordinateIndex ];
 		}

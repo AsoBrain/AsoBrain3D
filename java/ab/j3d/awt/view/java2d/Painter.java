@@ -28,7 +28,6 @@ import ab.j3d.*;
 import ab.j3d.awt.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
-import ab.j3d.model.Face3D.*;
 import ab.j3d.view.*;
 import org.jetbrains.annotations.*;
 
@@ -179,7 +178,7 @@ public class Painter
 			for ( final Face3D face : faceGroup.getFaces() )
 			{
 				final Tessellation tessellation = face.getTessellation();
-				final List<Vertex> vertices = face.getVertices();
+				final List<Vertex3D> vertices = face.getVertices();
 				final List<int[]> outlines = tessellation.getOutlines();
 
 				if ( object2view.rotateZ( face.getNormal() ) >= 0.0 )
@@ -355,7 +354,7 @@ public class Painter
 	 *
 	 * @return  <code>true</code> if the triangles form a rectangle.
 	 */
-	private static boolean isRectangle( final Matrix3D object2image, final List<Vertex> vertices, final int[] triangles )
+	private static boolean isRectangle( final Matrix3D object2image, final List<Vertex3D> vertices, final int[] triangles )
 	{
 		boolean result = false;
 

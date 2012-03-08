@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,7 +26,6 @@ import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
 import ab.j3d.model.*;
-import ab.j3d.model.Face3D.*;
 import org.jetbrains.annotations.*;
 
 /**
@@ -355,17 +354,17 @@ public class AbToPovConverter
 					final int[] triangles = primitive.getTriangles();
 					for ( int j = 0; j < triangles.length; j += 3 )
 					{
-						final Vertex vertex0 = face.getVertex( triangles[ j ] );
+						final Vertex3D vertex0 = face.getVertex( triangles[ j ] );
 						final int v1  = vertex0.vertexCoordinateIndex;
 						final int vn1 = smooth ? normalIndex++ : 0;
 						final int uv1 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertex0.colorMapU, (double)vertex0.colorMapV, 0.0 ) ) : -1;
 
-						final Vertex vertex1 = face.getVertex( triangles[ j + 1 ] );
+						final Vertex3D vertex1 = face.getVertex( triangles[ j + 1 ] );
 						final int v2  = vertex1.vertexCoordinateIndex;
 						final int vn2 = smooth ? normalIndex++ : 0;
 						final int uv2 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertex1.colorMapU, (double)vertex1.colorMapV, 0.0 ) ) : -1;
 
-						final Vertex vertex2 = face.getVertex( triangles[ j + 2 ] );
+						final Vertex3D vertex2 = face.getVertex( triangles[ j + 2 ] );
 						final int v3  = vertex2.vertexCoordinateIndex;
 						final int vn3 = smooth ? normalIndex++ : 0;
 						final int uv3 = uvMapping ? result.getOrAddUvVectorIndex( new PovVector( (double)vertex2.colorMapU, (double)vertex2.colorMapV, 0.0 ) ) : -1;
