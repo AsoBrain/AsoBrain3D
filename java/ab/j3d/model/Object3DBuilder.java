@@ -514,7 +514,7 @@ public class Object3DBuilder
 	 */
 	public void addFace( @NotNull final int[] vertexIndices, @Nullable final Appearance appearance, @Nullable final float[] texturePoints, @Nullable final Vector3D[] vertexNormals, final boolean smooth, final boolean twoSided )
 	{
-		addFace( appearance, smooth, twoSided, new Face3D( _target, vertexIndices, texturePoints, vertexNormals ) );
+		_target.addFace( appearance, smooth, twoSided, new Face3D( _target, vertexIndices, texturePoints, vertexNormals ) );
 	}
 
 	/**
@@ -1262,36 +1262,6 @@ public class Object3DBuilder
 	 */
 	public void addFace( @NotNull final List<Vertex3D> vertices, @Nullable final Tessellation tessellation, @Nullable final Appearance appearance, final boolean smooth, final boolean twoSided )
 	{
-		addFace( appearance, smooth, twoSided, new Face3D( vertices, tessellation ) );
-	}
-
-	/**
-	 * Add {@link Face3D} to {@link Object3D}.
-	 *
-	 * @param   appearance  Appearance.
-	 * @param   smooth      Smoothing flag.
-	 * @param   twoSided    Two-sided flag.
-	 * @param   face        Face to add.
-	 */
-	public void addFace( @Nullable final Appearance appearance, final boolean smooth, final boolean twoSided, @NotNull final Face3D face )
-	{
-		final FaceGroup faceGroup = getFaceGroup( appearance, smooth, twoSided );
-		faceGroup.addFace( face );
-	}
-
-	/**
-	 * Returns a face group with the given properties. If there an existing face
-	 * group is found, it is returned. Otherwise a new face group is created.
-	 *
-	 * @param   appearance  Appearance.
-	 * @param   smooth      Smoothing flag.
-	 * @param   twoSided    Two-sided flag.
-	 *
-	 * @return  Face group.
-	 */
-	@NotNull
-	public FaceGroup getFaceGroup( final Appearance appearance, final boolean smooth, final boolean twoSided )
-	{
-		return _target.getFaceGroup( appearance, smooth, twoSided );
+		_target.addFace( appearance, smooth, twoSided, new Face3D( vertices, tessellation ) );
 	}
 }

@@ -25,8 +25,6 @@ import java.util.*;
 import ab.j3d.*;
 import ab.j3d.appearance.*;
 import ab.j3d.geom.*;
-import ab.j3d.model.Face3D.*;
-import org.jetbrains.annotations.*;
 
 /**
  * This class defined a 3D object node in a 3D tree. The 3D object consists of
@@ -91,7 +89,7 @@ public class Object3D
 	 *
 	 * @return  3D object builder.
 	 */
-	protected Object3DBuilder getBuilder()
+	public Object3DBuilder getBuilder()
 	{
 		return new Object3DBuilder( this );
 	}
@@ -145,7 +143,7 @@ public class Object3D
 			faceGroup.setSmooth( smoothing );
 			for ( final Face3D face : faceGroup.getFaces() )
 			{
-				for ( final Vertex vertex : face.getVertices() )
+				for ( final Vertex3D vertex : face.getVertices() )
 				{
 					List<Face3D> faceList = facesByVertexCoordinate.get( vertex.vertexCoordinateIndex );
 					if ( faceList.isEmpty() )
@@ -175,7 +173,7 @@ public class Object3D
 					for ( final int[] outline : face.getOutlines() )
 					{
 						int outlineStart = 0;
-						final List<Vertex> faceVertices = face.getVertices();
+						final List<Vertex3D> faceVertices = face.getVertices();
 						List<Face3D> startFaces = facesByVertexCoordinate.get( faceVertices.get( outline[ 0 ] ).vertexCoordinateIndex );
 
 						for ( int i = 1; i < outline.length; i++ )
@@ -311,7 +309,7 @@ public class Object3D
 						for ( int j = groupStart; j < groupEnd; j++ )
 						{
 							final Face3D face = visited.get( j );
-							for ( final Vertex vertex : face.getVertices() )
+							for ( final Vertex3D vertex : face.getVertices() )
 							{
 								if ( vertex.vertexCoordinateIndex == i )
 								{
@@ -341,7 +339,7 @@ public class Object3D
 	 *
 	 * @param   faceGroup    Face group to add.
 	 */
-	final void addFaceGroup( final FaceGroup faceGroup )
+	public final void addFaceGroup( final FaceGroup faceGroup )
 	{
 		_faceGroups.add( faceGroup );
 	}
@@ -473,8 +471,8 @@ public class Object3D
 					final Tessellation tessellation = face.getTessellation();
 					for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
 					{
-						final List<Vertex> faceVertices = face.getVertices();
-						for ( final Vertex vertex : faceVertices )
+						final List<Vertex3D> faceVertices = face.getVertices();
+						for ( final Vertex3D vertex : faceVertices )
 						{
 							boundsBuilder.addPoint( vertexCoordinates.get( vertex.vertexCoordinateIndex ) );
 						}
@@ -482,9 +480,9 @@ public class Object3D
 						final int[] primitiveTriangles = primitive.getTriangles();
 						for ( int i = 0 ; i < primitiveTriangles.length; i += 3 )
 						{
-							final Vertex v1 = faceVertices.get( primitiveTriangles[ i ] );
-							final Vertex v2 = faceVertices.get( primitiveTriangles[ i + 1 ] );
-							final Vertex v3 = faceVertices.get( primitiveTriangles[ i + 2 ] );
+							final Vertex3D v1 = faceVertices.get( primitiveTriangles[ i ] );
+							final Vertex3D v2 = faceVertices.get( primitiveTriangles[ i + 1 ] );
+							final Vertex3D v3 = faceVertices.get( primitiveTriangles[ i + 2 ] );
 
 							triangles.add( new BasicTriangle3D( v1.point, v2.point, v3.point, true ) );
 						}
@@ -505,7 +503,6 @@ public class Object3D
 	 * @return  Bounding box in the object coordinate system (OCS);
 	 *          <code>null</code> if object is empty.
 	 */
-	@Nullable
 	public Bounds3D getOrientedBoundingBox()
 	{
 		Bounds3D result = _orientedBoundingBox;
@@ -524,7 +521,6 @@ public class Object3D
 	 * @return  Bounding box in the object coordinate system (OCS);
 	 *          <code>null</code> if object is empty.
 	 */
-	@Nullable
 	protected Bounds3D calculateOrientedBoundingBox()
 	{
 		Bounds3D result = null;
@@ -636,7 +632,7 @@ public class Object3D
 	 *
 	 * @return  Vertex index.
 	 */
-	public int getVertexIndex( @NotNull final Vector3D point )
+	public int getVertexIndex( final Vector3D point )
 	{
 		return _vertexCoordinates.indexOfOrAdd( point );
 	}
@@ -681,11 +677,25 @@ public class Object3D
 	 *
 	 * @throws  IllegalStateException if faces have been added to the object.
 	 */
-	final void setVertexCoordinates( final Collection<Vector3D> vertexCoordinates )
+	public final void setVertexCoordinates( final Collection<Vector3D> vertexCoordinates )
 	{
 		_vertexCoordinates.clear();
 		_vertexCoordinates.addAll( vertexCoordinates );
 		invalidate();
+	}
+
+	/**
+	 * Add {@link Face3D} to this object.
+	 *
+	 * @param   appearance  Appearance.
+	 * @param   smooth      Smoothing flag.
+	 * @param   twoSided    Two-sided flag.
+	 * @param   face        Face to add.
+	 */
+	public void addFace( final Appearance appearance, final boolean smooth, final boolean twoSided, final Face3D face )
+	{
+		final FaceGroup faceGroup = getFaceGroup( appearance, smooth, twoSided );
+		faceGroup.addFace( face );
 	}
 
 	/**
@@ -698,8 +708,7 @@ public class Object3D
 	 *
 	 * @return  Face group.
 	 */
-	@NotNull
-	protected FaceGroup getFaceGroup( final Appearance appearance, final boolean smooth, final boolean twoSided )
+	public FaceGroup getFaceGroup( final Appearance appearance, final boolean smooth, final boolean twoSided )
 	{
 		FaceGroup result = null;
 
@@ -746,7 +755,6 @@ public class Object3D
 	 *
 	 * @return  Low-detail representation of the object.
 	 */
-	@Nullable
 	public Node3D getLowDetail()
 	{
 		return _lowDetail;
