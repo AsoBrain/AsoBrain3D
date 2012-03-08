@@ -42,13 +42,13 @@ public class Object3D
 	/**
 	 * List of face groups in this object.
 	 */
-	final List<FaceGroup> _faceGroups;
+	private final List<FaceGroup> _faceGroups;
 
 	/**
 	 * Coordinates of vertex coordinates in object. Vertex coordinates are
 	 * stored in an array of doubles with a triplet for each vertex.
 	 */
-	final HashList<Vector3D> _vertexCoordinates;
+	private final HashList<Vector3D> _vertexCoordinates;
 
 	/**
 	 * Helper for collision tests.
@@ -626,6 +626,19 @@ public class Object3D
 		}
 
 		return result;
+	}
+
+	/**
+	 * Get index of vertex at the specified point. If no vertex was found at the
+	 * specified point, a new one is created.
+	 *
+	 * @param   point   Point to get vertex index of.
+	 *
+	 * @return  Vertex index.
+	 */
+	public int getVertexIndex( @NotNull final Vector3D point )
+	{
+		return _vertexCoordinates.indexOfOrAdd( point );
 	}
 
 	/**
