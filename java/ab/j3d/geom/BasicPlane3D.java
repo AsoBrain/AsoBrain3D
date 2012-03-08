@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -180,6 +180,18 @@ public class BasicPlane3D
 		_normal   = normal;
 		_distance = distance;
 		_twoSided = twoSided;
+	}
+
+	/**
+	 * Construct plane.
+	 *
+	 * @param   normal      Normal of plane in 3D space.
+	 * @param   point       Arbitrary point on the plane.
+	 * @param   twoSided    Plane is two-sided.
+	 */
+	public BasicPlane3D( final Vector3D normal, final Vector3D point, final boolean twoSided )
+	{
+		this( normal, Vector3D.dot( normal, point ), twoSided );
 	}
 
 	public double getDistance()
