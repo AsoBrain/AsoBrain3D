@@ -90,8 +90,8 @@ public class QuadList
 				result = new int[ resultLength ];
 				int resultIndex = 0;
 
-				int vertexIndex = 2;
-				while ( resultIndex < result.length )
+				int vertexIndex = 0;
+				while ( resultIndex < resultLength )
 				{
 					final int v0 = vertices[ vertexIndex++ ];
 					final int v1 = vertices[ vertexIndex++ ];
