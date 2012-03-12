@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2009-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -122,6 +122,11 @@ public class ManhattanUVMap
 		result.set( scaleU * ( flipTexture ? ty : tx ), scaleV * ( flipTexture ? tx : ty ) );
 	}
 
+	public UVGenerator getGenerator( @Nullable final TextureMap textureMap, @NotNull final Vector3D normal, final boolean flipTexture )
+	{
+		return new ManhattanUVGenerator( _transform, textureMap, flipTexture );
+	}
+
 	@Override
 	public boolean equals( final Object obj )
 	{
@@ -149,4 +154,5 @@ public class ManhattanUVMap
 	{
 		return _transform.hashCode();
 	}
+
 }

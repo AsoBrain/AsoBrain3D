@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2009-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -56,4 +56,15 @@ public interface UVMap
 	 * @param   flipTexture     Flip texture direction.
 	 */
 	void generate( @NotNull Vector2f result, @Nullable TextureMap textureMap, @NotNull Vector3D point, @NotNull Vector3D normal, boolean flipTexture );
+
+	/**
+	 * Get generator for 2D points on texture for the given 3D plane.
+	 *
+	 * @param   textureMap      Specifies texture scale.
+	 * @param   normal          Normal of face to map texture on.
+	 * @param   flipTexture     Flip texture direction.
+	 *
+	 * @return  Generator for U/V-coordinates.
+	 */
+	UVGenerator getGenerator( @Nullable TextureMap textureMap, @NotNull Vector3D normal, boolean flipTexture );
 }

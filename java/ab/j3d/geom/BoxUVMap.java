@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 2009-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -180,6 +180,12 @@ public class BoxUVMap
 	{
 		final int map = getTargetMap( normal );
 		_maps[ map ].generate( result, textureMap, wcsPoint, normal, _flips[ map ] ^ flipTexture );
+	}
+
+	public UVGenerator getGenerator( @Nullable final TextureMap textureMap, @NotNull final Vector3D normal, final boolean flipTexture )
+	{
+		final int map = getTargetMap( normal );
+		return _maps[ map ].getGenerator( textureMap, normal, _flips[ map ] ^ flipTexture );
 	}
 
 	/**
