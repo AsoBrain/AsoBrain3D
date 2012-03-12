@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -551,6 +551,16 @@ public class Vector3D
 		final double z = Double.parseDouble( value.substring( comma2 + 1 ) );
 
 		return ZERO.set( x, y, z );
+	}
+
+	/**
+	 * Get inverse vector.
+	 *
+	 * @return  Inverse vector.
+	 */
+	public Vector3D inverse()
+	{
+		return new Vector3D( -getX(), -getY(), -getZ() );
 	}
 
 	/**
