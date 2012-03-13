@@ -58,7 +58,7 @@ public class Object3DSlicerExample
 		final JFrame frame = new JFrame( "Slicer Demo" );
 		frame.setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
 		frame.setContentPane( example._viewPanel );
-		frame.setSize( 800, 600 );
+		frame.setSize( 1024, 700 );
 
 		final Toolkit toolkit = frame.getToolkit();
 		final GraphicsConfiguration graphicsConfiguration = frame.getGraphicsConfiguration();
@@ -74,6 +74,51 @@ public class Object3DSlicerExample
 	 * 3D scene.
 	 */
 	private final Scene _scene;
+
+	/**
+	 * Appearance for 3D object.
+	 */
+	private final Appearance _objectAppearance = BasicAppearance.createForColor( new Color4f( 1.0f, 1.0f, 1.0f, 0.3f ) );
+
+	/**
+	 * Override appearance to use for top object.
+	 */
+	private final Appearance _topAppearance = BasicAppearances.BLUE;
+
+	/**
+	 * Override appearance to use for bottom object.
+	 */
+	private final Appearance _bottomAppearance = BasicAppearances.RED;
+
+	/**
+	 * Appearance for slice.
+	 */
+	private final Appearance _sliceAppearance = BasicAppearances.ALU_PLATE;
+
+	/**
+	 * Appearance to use for cutting plane.
+	 */
+	private final BasicAppearance _planeAppearance = BasicAppearance.createForColor( new Color4f( 0.3f, 0.3f, 0.3f, 0.3f ) );
+
+	/**
+	 * UV-map to use for all textures.
+	 */
+	private final BoxUVMap _uvMap = new BoxUVMap( Scene.MM );
+
+	/**
+	 * The object slicer.
+	 */
+	private final Object3DSlicer _slicer;
+
+	/**
+	 * Show cutting plane.
+	 */
+	private boolean _showCuttingPlane = true;
+
+	/**
+	 * Size of shown cutting plane.
+	 */
+	private double _cuttingPlaneSize = 300.0;
 
 	/**
 	 * Object to slice.
@@ -116,9 +161,23 @@ public class Object3DSlicerExample
 		scene.addContentNode( "object", Matrix3D.IDENTITY, object );
 		_scene = scene;
 
+		final Object3DSlicer slicer = new Object3DSlicer();
+		slicer.setTopEnabled( true );
+		slicer.setTopCapped( true );
+		slicer.setTopAppearance( _topAppearance );
+		slicer.setSliceEnabled( true );
+		slicer.setSliceAppearance( _sliceAppearance );
+		slicer.setSliceUVMap( _uvMap );
+		slicer.setBottomEnabled( true );
+		slicer.setBottomCapped( true );
+		slicer.setBottomAppearance( _bottomAppearance );
+		_slicer = slicer;
+
 		update();
 
-		_viewPanel = createView( viewFrom, viewAt );
+		final JPanel viewPanel = createView( viewFrom, viewAt );
+		viewPanel.add( createOptionsPanel(), BorderLayout.EAST );
+		_viewPanel = viewPanel;
 	}
 
 	/**
@@ -128,38 +187,47 @@ public class Object3DSlicerExample
 	{
 		final Scene scene = _scene;
 
-		Matrix3D planeTransform = Matrix3D.getTransform( _cuttingPlaneRy, _cuttingPlaneRx, 0.0, 0.0, 0.0, 0.0 );
-		planeTransform = planeTransform.setTranslation( planeTransform.rotate( 0.0, 0.0, _cuttingPlaneDistance ) );
+		Matrix3D plane2object = Matrix3D.getTransform( _cuttingPlaneRy, _cuttingPlaneRx, 0.0, 0.0, 0.0, 0.0 );
+		plane2object = plane2object.setTranslation( plane2object.rotate( 0.0, 0.0, _cuttingPlaneDistance ) );
 
-		final BasicPlane3D cuttingPlane = new BasicPlane3D( planeTransform, true );
+		if ( _showCuttingPlane )
+		{
+			final Object3D planeObject = new Object3D();
+			final Appearance planeAppearance = _planeAppearance;
+			final FaceGroup planeGroup = planeObject.getFaceGroup( planeAppearance, false, true );
+			final Face3DBuilder planeFaceBuilder = new Face3DBuilder( planeObject, Vector3D.POSITIVE_Z_AXIS );
+			final double size = _cuttingPlaneSize;
+			planeFaceBuilder.addQuad( new Vector3D( -size, -size, 0.0 ), new Vector3D( size, -size, 0.0 ), new Vector3D( size, size, 0.0 ), new Vector3D( -size, size, 0.0 ) );
+			planeGroup.addFace( planeFaceBuilder.buildFace3D() );
+			scene.addContentNode( "cuttingPlane", plane2object, planeObject );
+		}
+		else
+		{
+			scene.removeContentNode( "cuttingPlane" );
+		}
 
-		final Object3DSlicer slicer = new Object3DSlicer();
-		slicer.setSliceAppearance( BasicAppearances.RED );
-		slicer.setTopAppearance( BasicAppearances.BLUE );
-		slicer.setBottomAppearance( BasicAppearances.GREEN );
 		final Object3D object = _object;
 		final Bounds3D objectBounds = object.getOrientedBoundingBox();
-		slicer.slice( object, cuttingPlane );
 
-		final Object3D planeObject = new Object3D();
-		final Appearance planeAppearance = BasicAppearance.createForColor( new Color4f( 0.3f, 0.3f, 0.3f, 0.3f ) );
-		final FaceGroup planeGroup = planeObject.getFaceGroup( planeAppearance, false, true );
-		final Face3DBuilder planeFaceBuilder = new Face3DBuilder( planeObject, Vector3D.POSITIVE_Z_AXIS );
-		planeFaceBuilder.addQuad( new Vector3D( -250.0, -250.0, 0.0 ), new Vector3D( 250.0, -250.0, 0.0 ), new Vector3D( 250.0, 250.0, 0.0 ), new Vector3D( -250.0, 250.0, 0.0 ) );
-		planeGroup.addFace( planeFaceBuilder.buildFace3D() );
-		scene.addContentNode( "cuttingPlane", planeTransform, planeObject );
+		final Object3DSlicer slicer = _slicer;
+		slicer.setCuttingPlane( plane2object );
+		slicer.slice( object );
 
+		final boolean objectShown = ( scene.getContentNode( "object" ) != null );
 		final Object3D topObject = slicer.getTopObject();
+		final Object3D sliceObject = slicer.getSliceObject();
+		final Object3D bottomObject = slicer.getBottomObject();
+
 		if ( topObject != null )
 		{
-			scene.addContentNode( "slicedTop", Matrix3D.getTranslation( 0.0, 0.0, objectBounds.sizeZ() ), topObject );
+		final boolean topOnly = !objectShown && !slicer.isBottomEnabled() && ( !slicer.isSliceEnabled() || !slicer.isTopCapped() );
+			scene.addContentNode( "slicedTop", topOnly ? Matrix3D.IDENTITY : Matrix3D.getTranslation( 0.0, 0.0, objectBounds.sizeZ() ), topObject );
 		}
 		else
 		{
 			scene.removeContentNode( "slicedTop" );
 		}
 
-		final Object3D sliceObject = slicer.getSliceObject();
 		if ( sliceObject != null )
 		{
 			scene.addContentNode( "slice", Matrix3D.IDENTITY, sliceObject );
@@ -169,10 +237,10 @@ public class Object3DSlicerExample
 			scene.removeContentNode( "slice" );
 		}
 
-		final Object3D bottomObject = slicer.getBottomObject();
 		if ( bottomObject != null )
 		{
-			scene.addContentNode( "slicedBottom", Matrix3D.getTranslation( 0.0, 0.0, -objectBounds.sizeZ() ), bottomObject );
+			final boolean bottomOnly = !objectShown && !slicer.isTopEnabled() && ( !slicer.isSliceEnabled() || !slicer.isBottomCapped() );
+			scene.addContentNode( "slicedBottom", bottomOnly ? Matrix3D.IDENTITY : Matrix3D.getTranslation( 0.0, 0.0, -objectBounds.sizeZ() ), bottomObject );
 		}
 		else
 		{
@@ -207,8 +275,19 @@ public class Object3DSlicerExample
 		final ViewControlInput controlInput = view.getControlInput();
 		controlInput.addControlInputListener( new MouseControl()
 		{
+			/**
+			 * {@link Object3DSlicerExample#_cuttingPlaneRx} at drag start.
+			 */
 			private double _dragStartCuttingPlaneRx = 0.0;
+
+			/**
+			 * {@link Object3DSlicerExample#_cuttingPlaneRy} at drag start.
+			 */
 			private double _dragStartCuttingPlaneRy = 0.0;
+
+			/**
+			 * {@link Object3DSlicerExample#_cuttingPlaneDistance} at drag start.
+			 */
 			private double _dragStartCuttingPlaneDistance = 0.0;
 
 			@Override
@@ -251,17 +330,237 @@ public class Object3DSlicerExample
 	}
 
 	/**
+	 * Construct slicer options panel.
+	 *
+	 * @return  Panel with slicer options.
+	 */
+	private JComponent createOptionsPanel()
+	{
+		final Box result = new Box( BoxLayout.Y_AXIS );
+
+		final JCheckBox objectEnabledCheckBox = new JCheckBox( "Object enabled" );
+		result.add( objectEnabledCheckBox );
+		objectEnabledCheckBox.setModel( new JToggleButton.ToggleButtonModel()
+		{
+			@Override
+			public boolean isSelected()
+			{
+				return ( _scene.getContentNode( "object" ) != null );
+			}
+
+			@Override
+			public void setSelected( final boolean value )
+			{
+				super.setSelected( value );
+				if ( value != isSelected() )
+				{
+					if ( value )
+					{
+						_scene.addContentNode( "object", Matrix3D.IDENTITY, _object );
+					}
+					else
+					{
+						_scene.removeContentNode( "object" );
+					}
+					update();
+				}
+			}
+		} );
+
+		final JCheckBox planeEnabledCheckBox = new JCheckBox( "Show cutting plane" );
+		result.add( planeEnabledCheckBox );
+		planeEnabledCheckBox.setModel( new JToggleButton.ToggleButtonModel()
+		{
+			@Override
+			public boolean isSelected()
+			{
+				return _showCuttingPlane;
+			}
+
+			@Override
+			public void setSelected( final boolean value )
+			{
+				super.setSelected( value );
+				if ( value != isSelected() )
+				{
+					_showCuttingPlane = value;
+					update();
+				}
+			}
+		} );
+
+		final JCheckBox topEnabledCheckBox = new JCheckBox( "Top enabled" );
+		result.add( topEnabledCheckBox );
+		topEnabledCheckBox.setModel( new JToggleButton.ToggleButtonModel()
+		{
+			@Override
+			public boolean isSelected()
+			{
+				return _slicer.isTopEnabled();
+			}
+
+			@Override
+			public void setSelected( final boolean value )
+			{
+				super.setSelected( value );
+				if ( value != isSelected() )
+				{
+					_slicer.setTopEnabled( value );
+					update();
+				}
+			}
+		} );
+
+		final JCheckBox topCappedCheckBox = new JCheckBox( "Top capped" );
+		result.add( topCappedCheckBox );
+		topCappedCheckBox.setModel( new JToggleButton.ToggleButtonModel()
+		{
+			@Override
+			public boolean isSelected()
+			{
+				return _slicer.isTopCapped();
+			}
+
+			@Override
+			public void setSelected( final boolean value )
+			{
+				super.setSelected( value );
+				if ( value != isSelected() )
+				{
+					_slicer.setTopCapped( value );
+					update();
+				}
+			}
+		} );
+
+		final JCheckBox topAppearanceOverrideCheckBox = new JCheckBox( "Top appearance override" );
+		result.add( topAppearanceOverrideCheckBox );
+		topAppearanceOverrideCheckBox.setModel( new JToggleButton.ToggleButtonModel()
+		{
+			@Override
+			public boolean isSelected()
+			{
+				return ( _slicer.getTopAppearance() != null );
+			}
+
+			@Override
+			public void setSelected( final boolean value )
+			{
+				super.setSelected( value );
+				if ( value != isSelected() )
+				{
+					_slicer.setTopAppearance( value ? _topAppearance : null );
+					update();
+				}
+			}
+		} );
+
+		final JCheckBox bottomEnabledCheckBox = new JCheckBox( "Bottom enabled" );
+		result.add( bottomEnabledCheckBox );
+		bottomEnabledCheckBox.setModel( new JToggleButton.ToggleButtonModel()
+		{
+			@Override
+			public boolean isSelected()
+			{
+				return _slicer.isBottomEnabled();
+			}
+
+			@Override
+			public void setSelected( final boolean value )
+			{
+				super.setSelected( value );
+				if ( value != isSelected() )
+				{
+					_slicer.setBottomEnabled( value );
+					update();
+				}
+			}
+		} );
+
+		final JCheckBox bottomCappedCheckBox = new JCheckBox( "Bottom capped" );
+		result.add( bottomCappedCheckBox );
+		bottomCappedCheckBox.setModel( new JToggleButton.ToggleButtonModel()
+		{
+			@Override
+			public boolean isSelected()
+			{
+				return _slicer.isBottomCapped();
+			}
+
+			@Override
+			public void setSelected( final boolean value )
+			{
+				super.setSelected( value );
+				if ( value != isSelected() )
+				{
+					_slicer.setBottomCapped( value );
+					update();
+				}
+			}
+		} );
+
+		final JCheckBox bottomAppearanceOverrideCheckBox = new JCheckBox( "Bottom appearance override" );
+		result.add( bottomAppearanceOverrideCheckBox );
+		bottomAppearanceOverrideCheckBox.setModel( new JToggleButton.ToggleButtonModel()
+		{
+			@Override
+			public boolean isSelected()
+			{
+				return ( _slicer.getBottomAppearance() != null );
+			}
+
+			@Override
+			public void setSelected( final boolean value )
+			{
+				super.setSelected( value );
+				if ( value != isSelected() )
+				{
+					_slicer.setBottomAppearance( value ? _bottomAppearance : null );
+					update();
+				}
+			}
+		} );
+
+		final JCheckBox sliceEnabledCheckBox = new JCheckBox( "Slice enabled" );
+		result.add( sliceEnabledCheckBox );
+		sliceEnabledCheckBox.setModel( new JToggleButton.ToggleButtonModel()
+		{
+			@Override
+			public boolean isSelected()
+			{
+				return _slicer.isSliceEnabled();
+			}
+
+			@Override
+			public void setSelected( final boolean value )
+			{
+				super.setSelected( value );
+				if ( value != isSelected() )
+				{
+					_slicer.setSliceEnabled( value );
+					update();
+				}
+			}
+		} );
+
+		result.add( Box.createGlue() );
+		return result;
+	}
+
+
+	/**
 	 * Load 3D object to slice.
 	 *
 	 * @return  3D object.
 	 */
 	private Object3D loadObject()
 	{
-		final Matrix3D transform = Matrix3D.getTransform( 180.0, 0.0, 0.0, 0.0, 0.0, 50.0 );
 		final String path = "data/bordatore.stl";
+		final Appearance appearance = _objectAppearance;
+		final Matrix3D transform = Matrix3D.getTransform( 180.0, 0.0, 0.0, -47.6, 157.4, 64.0 );
 
 		final StlLoader loader = new StlLoader();
-		loader.setAppearance( BasicAppearance.createForColor( new Color4f( 1.0f, 1.0f, 1.0f, 0.3f ) ) );
+		loader.setAppearance( appearance );
 		final Object3D object;
 
 		final InputStream in = Object3DSlicerExample.class.getResourceAsStream( path );
@@ -273,7 +572,6 @@ public class Object3DSlicerExample
 			}
 
 			object = loader.load( transform, in );
-			object.smooth( 30.0, 0.1, true );
 		}
 		catch ( IOException e )
 		{
@@ -293,6 +591,25 @@ public class Object3DSlicerExample
 				}
 			}
 		}
+
+		object.smooth( 30.0, 0.1, true );
+
+		final BoxUVMap boxMap = _uvMap;
+		for ( final FaceGroup faceGroup : object.getFaceGroups() )
+		{
+			for ( final Face3D face3D : faceGroup.getFaces() )
+			{
+				final UVGenerator uvGenerator = UVGenerator.getColorMapInstance( appearance, boxMap, face3D.getNormal(), false );
+
+				for ( final Vertex3D vertex3D : face3D.getVertices() )
+				{
+					uvGenerator.generate( vertex3D.point );
+					vertex3D.colorMapU = uvGenerator.getU();
+					vertex3D.colorMapV = uvGenerator.getV();
+				}
+			}
+		}
+
 		return object;
 	}
 }
