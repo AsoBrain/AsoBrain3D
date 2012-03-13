@@ -124,7 +124,37 @@ public class ManhattanUVMap
 
 	public UVGenerator getGenerator( @Nullable final TextureMap textureMap, @NotNull final Vector3D normal, final boolean flipTexture )
 	{
-		return new ManhattanUVGenerator( _transform, textureMap, flipTexture );
+		final Matrix3D uvTransform;
+
+		double scaleU = 1.0;
+		double scaleV = 1.0;
+
+		if ( textureMap != null )
+		{
+			final float physicalWidth = textureMap.getPhysicalWidth();
+			final float physicalHeight = textureMap.getPhysicalHeight();
+
+			if ( ( physicalWidth > 0.0f ) && ( physicalHeight > 0.0f ) )
+			{
+				scaleU = 1.0 / physicalWidth;
+				scaleV = 1.0 / physicalHeight;
+			}
+		}
+
+		final Matrix3D transform = _transform;
+
+		if ( flipTexture )
+		{
+			uvTransform = new Matrix3D( transform.yx * scaleU, transform.yy * scaleU, transform.yz * scaleU, transform.yo * scaleU,
+			                            transform.xx * scaleV, transform.xy * scaleV, transform.xz * scaleV, transform.xo * scaleV, 0.0, 0.0, 0.0, 0.0 );
+		}
+		else
+		{
+			uvTransform = new Matrix3D( transform.xx * scaleU, transform.xy * scaleU, transform.xz * scaleU, transform.xo * scaleU,
+			                            transform.yx * scaleV, transform.yy * scaleV, transform.yz * scaleV, transform.yo * scaleV, 0.0, 0.0, 0.0, 0.0 );
+		}
+
+		return new TransformUVGenerator( uvTransform );
 	}
 
 	@Override

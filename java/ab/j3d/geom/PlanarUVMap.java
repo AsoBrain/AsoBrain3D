@@ -255,7 +255,36 @@ public class PlanarUVMap
 
 	public UVGenerator getGenerator( @Nullable final TextureMap textureMap, @NotNull final Vector3D normal, final boolean flipTexture )
 	{
-		return new PlanarUVGenerator( _plane2wcs, textureMap, flipTexture );
+		final Matrix3D plane2wcs = _plane2wcs;
+		double scaleU = _scaleU;
+		double scaleV = _scaleV;
+
+		if ( textureMap != null )
+		{
+			final float physicalWidth = textureMap.getPhysicalWidth();
+			final float physicalHeight = textureMap.getPhysicalHeight();
+
+			if ( ( physicalWidth > 0.0f ) && ( physicalHeight > 0.0f ) )
+			{
+				scaleU /= physicalWidth;
+				scaleV /= physicalHeight;
+			}
+		}
+
+		final Matrix3D uvTransform;
+
+		if ( flipTexture )
+		{
+			uvTransform = new Matrix3D( plane2wcs.xy * scaleU, plane2wcs.yy * scaleU, plane2wcs.zy * scaleU, plane2wcs.inverseYo() * scaleU,
+			                            plane2wcs.xx * scaleV, plane2wcs.yx * scaleV, plane2wcs.zx * scaleV, plane2wcs.inverseXo() * scaleV, 0.0, 0.0, 0.0, 0.0 );
+		}
+		else
+		{
+			uvTransform = new Matrix3D( plane2wcs.xx * scaleU, plane2wcs.yx * scaleU, plane2wcs.zx * scaleU, plane2wcs.inverseXo() * scaleU,
+			                            plane2wcs.xy * scaleV, plane2wcs.yy * scaleV, plane2wcs.zy * scaleV, plane2wcs.inverseYo() * scaleV, 0.0, 0.0, 0.0, 0.0 );
+		}
+
+		return new TransformUVGenerator( uvTransform );
 	}
 
 	@Override
