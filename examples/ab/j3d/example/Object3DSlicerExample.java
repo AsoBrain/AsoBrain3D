@@ -22,6 +22,7 @@ package ab.j3d.example;
 
 import java.awt.*;
 import java.io.*;
+import java.net.*;
 import java.util.*;
 import javax.swing.*;
 
@@ -147,14 +148,19 @@ public class Object3DSlicerExample
 
 	/**
 	 * Construct demo.
+	 *
+	 * @throws  IOException if an error occurs while loading the 3D object.
 	 */
-	Object3DSlicerExample()
+	private Object3DSlicerExample()
+		throws IOException
 	{
-		final Object3D object = loadObject();
+		final Object3D object = loadObject( Matrix3D.IDENTITY, getUrl( "data/bordatore.stl" ), true, true );
+		final Bounds3D objectBounds = object.getOrientedBoundingBox();
+		final Vector3D objectCenter = objectBounds.center();
 		_object = object;
 
-		final Vector3D viewFrom = new Vector3D( 0.0, -2000.0, 250.0 );
-		final Vector3D viewAt = Vector3D.ZERO;
+		final Vector3D viewFrom = objectCenter.plus( 0.0, -2000.0, 250.0 );
+		final Vector3D viewAt = objectCenter;
 
 		final Scene scene = new Scene( Scene.MM );
 		Scene.addLegacyLights( scene );
@@ -187,8 +193,14 @@ public class Object3DSlicerExample
 	{
 		final Scene scene = _scene;
 
-		Matrix3D plane2object = Matrix3D.getTransform( _cuttingPlaneRy, _cuttingPlaneRx, 0.0, 0.0, 0.0, 0.0 );
-		plane2object = plane2object.setTranslation( plane2object.rotate( 0.0, 0.0, _cuttingPlaneDistance ) );
+		final Object3D object = _object;
+		final Bounds3D objectBounds = object.getOrientedBoundingBox();
+		final Vector3D objectCenter = objectBounds.center();
+
+		Matrix3D plane2object = Matrix3D.getTransform( _cuttingPlaneRy, _cuttingPlaneRx, 0.0, objectCenter.x, objectCenter.y, objectCenter.z );
+		final double planeDistance = _cuttingPlaneDistance;
+		final Vector3D planeNormal = new Vector3D( plane2object.xz, plane2object.yz, plane2object.zz );
+		plane2object = plane2object.setTranslation( plane2object.rotate( 0.0, 0.0, planeDistance ) );
 
 		if ( _showCuttingPlane )
 		{
@@ -206,9 +218,6 @@ public class Object3DSlicerExample
 			scene.removeContentNode( "cuttingPlane" );
 		}
 
-		final Object3D object = _object;
-		final Bounds3D objectBounds = object.getOrientedBoundingBox();
-
 		final Object3DSlicer slicer = _slicer;
 		slicer.setCuttingPlane( plane2object );
 		slicer.slice( object );
@@ -218,10 +227,21 @@ public class Object3DSlicerExample
 		final Object3D sliceObject = slicer.getSliceObject();
 		final Object3D bottomObject = slicer.getBottomObject();
 
+		double planeOffset = 0.0;
+
+		if ( slicer.isTopEnabled() && slicer.isBottomEnabled() && ( slicer.isTopCapped() || slicer.isBottomCapped() ) )
+		{
+			planeOffset += 25.0;
+		}
+
+		if ( slicer.isSliceEnabled() )
+		{
+			planeOffset += 25.0;
+		}
+
 		if ( topObject != null )
 		{
-		final boolean topOnly = !objectShown && !slicer.isBottomEnabled() && ( !slicer.isSliceEnabled() || !slicer.isTopCapped() );
-			scene.addContentNode( "slicedTop", topOnly ? Matrix3D.IDENTITY : Matrix3D.getTranslation( 0.0, 0.0, objectBounds.sizeZ() ), topObject );
+			scene.addContentNode( "slicedTop", Matrix3D.getTranslation( objectShown ? new Vector3D( 0.0, 0.0, objectBounds.sizeZ() ) : planeNormal.multiply( planeOffset ) ), topObject );
 		}
 		else
 		{
@@ -239,8 +259,7 @@ public class Object3DSlicerExample
 
 		if ( bottomObject != null )
 		{
-			final boolean bottomOnly = !objectShown && !slicer.isTopEnabled() && ( !slicer.isSliceEnabled() || !slicer.isBottomCapped() );
-			scene.addContentNode( "slicedBottom", bottomOnly ? Matrix3D.IDENTITY : Matrix3D.getTranslation( 0.0, 0.0, -objectBounds.sizeZ() ), bottomObject );
+			scene.addContentNode( "slicedBottom", Matrix3D.getTranslation( objectShown ? new Vector3D( 0.0, 0.0, -objectBounds.sizeZ() ) : planeNormal.multiply( -planeOffset ) ), bottomObject );
 		}
 		else
 		{
@@ -389,6 +408,8 @@ public class Object3DSlicerExample
 			}
 		} );
 
+		result.add( Box.createVerticalStrut( 10 ) );
+
 		final JCheckBox topEnabledCheckBox = new JCheckBox( "Top enabled" );
 		result.add( topEnabledCheckBox );
 		topEnabledCheckBox.setModel( new JToggleButton.ToggleButtonModel()
@@ -454,6 +475,8 @@ public class Object3DSlicerExample
 				}
 			}
 		} );
+
+		result.add( Box.createVerticalStrut( 10 ) );
 
 		final JCheckBox bottomEnabledCheckBox = new JCheckBox( "Bottom enabled" );
 		result.add( bottomEnabledCheckBox );
@@ -521,6 +544,8 @@ public class Object3DSlicerExample
 			}
 		} );
 
+		result.add( Box.createVerticalStrut( 10 ) );
+
 		final JCheckBox sliceEnabledCheckBox = new JCheckBox( "Slice enabled" );
 		result.add( sliceEnabledCheckBox );
 		sliceEnabledCheckBox.setModel( new JToggleButton.ToggleButtonModel()
@@ -543,6 +568,50 @@ public class Object3DSlicerExample
 			}
 		} );
 
+		final JCheckBox intersectFacesCheckBox = new JCheckBox( "Intersect faces" );
+		result.add( intersectFacesCheckBox );
+		intersectFacesCheckBox.setModel( new JToggleButton.ToggleButtonModel()
+		{
+			@Override
+			public boolean isSelected()
+			{
+				return _slicer.isIntersectFaces();
+			}
+
+			@Override
+			public void setSelected( final boolean value )
+			{
+				super.setSelected( value );
+				if ( value != isSelected() )
+				{
+					_slicer.setIntersectFaces( value );
+					update();
+				}
+			}
+		} );
+
+		final JCheckBox intersectTrianglesCheckBox = new JCheckBox( "Intersect triangles" );
+		result.add( intersectTrianglesCheckBox );
+		intersectTrianglesCheckBox.setModel( new JToggleButton.ToggleButtonModel()
+		{
+			@Override
+			public boolean isSelected()
+			{
+				return _slicer.isIntersectTriangles();
+			}
+
+			@Override
+			public void setSelected( final boolean value )
+			{
+				super.setSelected( value );
+				if ( value != isSelected() )
+				{
+					_slicer.setIntersectTriangles( value );
+					update();
+				}
+			}
+		} );
+
 		result.add( Box.createGlue() );
 		return result;
 	}
@@ -551,65 +620,90 @@ public class Object3DSlicerExample
 	/**
 	 * Load 3D object to slice.
 	 *
+	 * @param   transform   Transform to apply to 3D object (scale/rotate).
+	 * @param   url         3D object URL.
+	 * @param   smooth      Smooth object.
+	 * @param   generateUv  Generate UV-coordinates for object.
+	 *
 	 * @return  3D object.
+	 *
+	 * @throws  IOException if an error occurs while loading the 3D object.
 	 */
-	private Object3D loadObject()
+	private Object3D loadObject( final Matrix3D transform, final URL url, final boolean smooth, final boolean generateUv )
+		throws IOException
 	{
-		final String path = "data/bordatore.stl";
 		final Appearance appearance = _objectAppearance;
-		final Matrix3D transform = Matrix3D.getTransform( 180.0, 0.0, 0.0, -47.6, 157.4, 64.0 );
 
-		final StlLoader loader = new StlLoader();
-		loader.setAppearance( appearance );
 		final Object3D object;
 
-		final InputStream in = Object3DSlicerExample.class.getResourceAsStream( path );
-		try
-		{
-			if ( in == null )
-			{
-				throw new RuntimeException( "Demo data not found!" );
-			}
+		final String path = url.getFile();
+		final String filename = path.substring( path.lastIndexOf( '/' ) + 1 );
 
-			object = loader.load( transform, in );
-		}
-		catch ( IOException e )
+		if ( filename.regionMatches( true, filename.length() - 4, ".stl", 0, 4 ) )
 		{
-			throw new RuntimeException( e );
-		}
-		finally
-		{
-			if ( in != null )
+			final StlLoader loader = new StlLoader();
+			loader.setAppearance( appearance );
+			final InputStream in = url.openStream();
+			try
 			{
-				try
-				{
-					in.close();
-				}
-				catch ( IOException e )
-				{
-					/* ignore */
-				}
+				object = loader.load( transform, in );
+			}
+			finally
+			{
+				in.close();
 			}
 		}
-
-		object.smooth( 30.0, 0.1, true );
-
-		final BoxUVMap boxMap = _uvMap;
-		for ( final FaceGroup faceGroup : object.getFaceGroups() )
+		else if ( filename.regionMatches( true, filename.length() - 4, ".obj", 0, 4 ) )
 		{
-			for ( final Face3D face3D : faceGroup.getFaces() )
-			{
-				final UVGenerator uvGenerator = UVGenerator.getColorMapInstance( appearance, boxMap, face3D.getNormal(), false );
+			final ObjLoader loader = new ObjLoader( transform );
+			object = loader.load( new URLResourceLoader( url ), filename );
+		}
+		else
+		{
+			throw new RuntimeException( "Don't know how to load '" + path + '\'' );
+		}
 
-				for ( final Vertex3D vertex3D : face3D.getVertices() )
+		if ( smooth )
+		{
+			object.smooth( 30.0, 0.1, true );
+		}
+
+		if ( generateUv )
+		{
+			final BoxUVMap boxMap = _uvMap;
+			for ( final FaceGroup faceGroup : object.getFaceGroups() )
+			{
+				for ( final Face3D face3D : faceGroup.getFaces() )
 				{
-					uvGenerator.generate( vertex3D.point );
-					vertex3D.colorMapU = uvGenerator.getU();
-					vertex3D.colorMapV = uvGenerator.getV();
+					final UVGenerator uvGenerator = UVGenerator.getColorMapInstance( appearance, boxMap, face3D.getNormal(), false );
+
+					for ( final Vertex3D vertex3D : face3D.getVertices() )
+					{
+						uvGenerator.generate( vertex3D.point );
+						vertex3D.colorMapU = uvGenerator.getU();
+						vertex3D.colorMapV = uvGenerator.getV();
+					}
 				}
 			}
 		}
 
 		return object;
+	}
+
+	/**
+	 * Get resource file URL.
+	 *
+	 * @param   path    Resource path.
+	 *
+	 * @return  Resource file URL.
+	 */
+	private static URL getUrl( final String path )
+	{
+		final URL url = Object3DSlicerExample.class.getResource( path );
+		if ( url == null )
+		{
+			throw new RuntimeException( "Demo data not found!" );
+		}
+		return url;
 	}
 }
