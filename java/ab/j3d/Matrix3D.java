@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -411,7 +411,7 @@ public class Matrix3D
 	 * <p>
 	 * The main purpose for this method is creating a suitable 3D transformation
 	 * for a 2D plane whose Z-axis points 'out' of the plane; the orientation of
-	 * the X/Y-axes on the plane is inheritently undeterminate, but this function
+	 * the X/Y-axes on the plane is inherently undeterminate, but this function
 	 * tries to find reasonable defaults.
 	 *
 	 * <p>
@@ -427,31 +427,40 @@ public class Matrix3D
 	 */
 	public static Matrix3D getPlaneTransform( final Vector3D origin, final Vector3D normal, final boolean rightHanded )
 	{
-		/*
-		 * Z-axis direction = normal
-		 */
-		double zAxisX = normal.x;
-		double zAxisY = normal.y;
-		double zAxisZ = normal.z;
+		return getPlaneTransform( origin.x, origin.y, origin.z, normal.x, normal.y, normal.z, rightHanded );
+	}
 
-		final double length = Math.sqrt( zAxisX * zAxisX + zAxisY * zAxisY + zAxisZ * zAxisZ );
-		if ( length == 0.0 )
-		{
-			zAxisX = 0.0;
-			zAxisY = 0.0;
-			zAxisZ = 1.0;
-		}
-		else if ( length != 1.0 )
-		{
-			zAxisX /= length;
-			zAxisY /= length;
-			zAxisZ /= length;
-		}
-
+	/**
+	 * Calculate transform for a plane that passes through <code>origin</code>
+	 * and has the specified <code>normal</code> vector.
+	 *
+	 * <p>
+	 * The main purpose for this method is creating a suitable 3D transformation
+	 * for a 2D plane whose Z-axis points 'out' of the plane; the orientation of
+	 * the X/Y-axes on the plane is inheritently undeterminate, but this function
+	 * tries to find reasonable defaults.
+	 *
+	 * <p>
+	 * A 0-vector multiplied with the resulting transform will match the
+	 * <code>origin</code>.
+	 *
+	 * @param   originX         Origin X-coordinate of plane.
+	 * @param   originY         Origin X-coordinate of plane.
+	 * @param   originZ         Origin X-coordinate of plane.
+	 * @param   normalX         X-component of normal vector of plane.
+	 * @param   normalY         X-component of normal vector of plane.
+	 * @param   normalZ         X-component of normal vector of plane.
+	 * @param   rightHanded     3D-space is right- vs. left-handed.
+	 *
+	 * @return  Transformation matrix (translation set to 0-vector) to be used
+	 *          for extrusion of 2D shapes.
+	 */
+	public static Matrix3D getPlaneTransform( final double originX, final double originY, final double originZ, final double normalX, final double normalY, final double normalZ, final boolean rightHanded )
+	{
 		/*
 		 * X-axis direction is perpendicular to the plane between the (local)
-		 * Z-axis and the world's Z-axis. If the Z-axes are parallel, then the
-		 * world Y-axis is used.
+		 * Z-axis and the world's Z-axis. If the Z-axes are almost parallel,
+		 * then the world Y-axis is used.
 		 *
  		 * This will keep the local X-axis on the X/Y-plane as much as possible.
 		 */
@@ -459,29 +468,33 @@ public class Matrix3D
 		final double xAxisY;
 		final double xAxisZ;
 
-		if ( GeometryTools.almostEqual( zAxisZ, ( zAxisZ < 0.0 ) ? -1.0 : 1.0 ) )
+		if ( ( normalZ > -0.9 ) && ( normalZ < 0.9 ) )
 		{
-			xAxisX = rightHanded ?  zAxisZ : -zAxisZ;
-			xAxisY = 0.0;
-			xAxisZ = rightHanded ? -zAxisX :  zAxisX;
+			final double hyp = Math.hypot( normalX, normalY );
+
+			xAxisX = rightHanded ? -normalY / hyp :  normalY / hyp;
+			xAxisY = rightHanded ?  normalX / hyp : -normalX / hyp;
+			xAxisZ = 0.0;
 		}
 		else
 		{
-			xAxisX = rightHanded ? -zAxisY :  zAxisY;
-			xAxisY = rightHanded ?  zAxisX : -zAxisX;
-			xAxisZ = 0.0;
+			final double hyp = Math.hypot( normalX, normalZ );
+
+			xAxisX = rightHanded ?  normalZ / hyp : -normalZ / hyp;
+			xAxisY = 0.0;
+			xAxisZ = rightHanded ? -normalX / hyp :  normalX / hyp;
 		}
 
 		/*
 		 * Y-axis can be derived simply from the calculated X- and Z-axis.
 		 */
-		final double yAxisX = zAxisY * xAxisZ - zAxisZ * xAxisY;
-		final double yAxisY = zAxisZ * xAxisX - zAxisX * xAxisZ;
-		final double yAxisZ = zAxisX * xAxisY - zAxisY * xAxisX;
+		final double yAxisX = normalY * xAxisZ - normalZ * xAxisY;
+		final double yAxisY = normalZ * xAxisX - normalX * xAxisZ;
+		final double yAxisZ = normalX * xAxisY - normalY * xAxisX;
 
-		return new Matrix3D( xAxisX, yAxisX, zAxisX, origin.x,
-		                     xAxisY, yAxisY, zAxisY, origin.y,
-		                     xAxisZ, yAxisZ, zAxisZ, origin.z );
+		return new Matrix3D( xAxisX, yAxisX, normalX, originX,
+		                     xAxisY, yAxisY, normalY, originY,
+		                     xAxisZ, yAxisZ, normalZ, originZ );
 	}
 
 	/**
