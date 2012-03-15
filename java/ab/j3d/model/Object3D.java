@@ -46,7 +46,7 @@ public class Object3D
 	 * Coordinates of vertex coordinates in object. Vertex coordinates are
 	 * stored in an array of doubles with a triplet for each vertex.
 	 */
-	private final HashList<Vector3D> _vertexCoordinates;
+	private final List<Vector3D> _vertices;
 
 	/**
 	 * Helper for collision tests.
@@ -80,7 +80,20 @@ public class Object3D
 	public Object3D()
 	{
 		_faceGroups = new ArrayList<FaceGroup>();
-		_vertexCoordinates = new HashList<Vector3D>();
+		_vertices = new HashList<Vector3D>();
+		_orientedBoundingBox = null;
+	}
+
+	/**
+	 * Construct base object. Additional properties need to be set to make the
+	 * object usable.
+	 *
+	 * @param   vertices    Object vertices.
+	 */
+	public Object3D( final List<Vector3D> vertices )
+	{
+		_faceGroups = new ArrayList<FaceGroup>();
+		_vertices = vertices;
 		_orientedBoundingBox = null;
 	}
 
@@ -444,7 +457,7 @@ public class Object3D
 		CollisionNode result = _collisionNode;
 		if ( result == null )
 		{
-			final List<Vector3D> vertexCoordinates = _vertexCoordinates;
+			final List<Vector3D> vertexCoordinates = _vertices;
 
 			int nrTriangles = 0;
 
@@ -525,7 +538,7 @@ public class Object3D
 	{
 		Bounds3D result = null;
 
-		final List<Vector3D> vertexCoordinates = _vertexCoordinates;
+		final List<Vector3D> vertexCoordinates = _vertices;
 		if ( !vertexCoordinates.isEmpty() )
 		{
 			final Bounds3DBuilder builder = new Bounds3DBuilder();
@@ -551,7 +564,7 @@ public class Object3D
 	{
 		if ( ( transform != null ) && ( transform != Matrix3D.IDENTITY ) && ( !Matrix3D.IDENTITY.equals( transform ) ) )
 		{
-			final List<Vector3D> vertexCoordinates = _vertexCoordinates;
+			final List<Vector3D> vertexCoordinates = _vertices;
 			if ( !vertexCoordinates.isEmpty() )
 			{
 				for ( final Vector3D point : vertexCoordinates )
@@ -625,16 +638,56 @@ public class Object3D
 	}
 
 	/**
+	 * Get vertex with the given index from this object.
+	 *
+	 * @param   index   Vertex index.
+	 *
+	 * @return  Vertex (coordinates).
+	 */
+	public Vector3D getVertex( final int index )
+	{
+		return _vertices.get( index );
+	}
+
+	/**
 	 * Get index of vertex at the specified point. If no vertex was found at the
 	 * specified point, a new one is created.
 	 *
-	 * @param   point   Point to get vertex index of.
+	 * @param   point   Coordinates of vertex get vertex index of.
 	 *
 	 * @return  Vertex index.
 	 */
 	public int getVertexIndex( final Vector3D point )
 	{
-		return _vertexCoordinates.indexOfOrAdd( point );
+		final int result;
+
+		final List<Vector3D> vertices = _vertices;
+		if ( vertices instanceof HashList )
+		{
+			result = ((HashList<Vector3D>)vertices).indexOfOrAdd( point );
+		}
+		else
+		{
+			vertices.add( point );
+			result = vertices.size();
+		}
+
+		return result;
+	}
+
+	/**
+	 * Add vertex for the given point and return its index.
+	 *
+	 * @param   point   Coordinates of vertex to add.
+	 *
+	 * @return  Vertex index.
+	 */
+	public int addVertex( final Vector3D point )
+	{
+		final List<Vector3D> vertexCoordinates = _vertices;
+		final int result = vertexCoordinates.size();
+		vertexCoordinates.add( point );
+		return result;
 	}
 
 	/**
@@ -644,7 +697,7 @@ public class Object3D
 	 */
 	public final List<Vector3D> getVertexCoordinates()
 	{
-		return Collections.unmodifiableList( _vertexCoordinates );
+		return Collections.unmodifiableList( _vertices );
 	}
 
 	/**
@@ -656,7 +709,7 @@ public class Object3D
 	 */
 	public final int getVertexCount()
 	{
-		return _vertexCoordinates.size();
+		return _vertices.size();
 	}
 
 	/**
@@ -675,12 +728,12 @@ public class Object3D
 	 *
 	 * @param   vertexCoordinates   Vertex coordinates (one triplet per vertex).
 	 *
-	 * @throws  IllegalStateException if faces have been added to the object.
+	 * @throws IllegalStateException if faces have been added to the object.
 	 */
 	public final void setVertexCoordinates( final Collection<Vector3D> vertexCoordinates )
 	{
-		_vertexCoordinates.clear();
-		_vertexCoordinates.addAll( vertexCoordinates );
+		_vertices.clear();
+		_vertices.addAll( vertexCoordinates );
 		invalidate();
 	}
 
