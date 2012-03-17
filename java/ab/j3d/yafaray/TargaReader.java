@@ -30,6 +30,11 @@ import java.io.*;
  * YafaRay uses to write renderer output. Since no other kinds of TARGA images
  * are supported, this class was made package private.
  *
+ * <p>
+ * Specifications of the TARGA image format based on
+ * <a href="http://en.wikipedia.org/wiki/Truevision_TGA">Truevision TGA (Wikipedia)</a>.
+ * </p>
+ *
  * @author G. Meinders
  * @version $Revision$ $Date$
  */
