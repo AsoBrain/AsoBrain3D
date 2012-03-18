@@ -129,7 +129,19 @@ public class DoubleArray
 	 */
 	public void add( final double... array )
 	{
-		insert( _size, array, 0, array.length );
+		add( array, 0, array.length );
+	}
+
+	/**
+	 * All elements from another array to this array.
+	 *
+	 * @param   array   Array to copy data from.
+	 * @param   offset  Index of first element in array to copy.
+	 * @param   length  Number of elements to insert.
+	 */
+	public void add( final double[] array, final int offset, final int length )
+	{
+		insert( _size, array, offset, length );
 	}
 
 	/**
@@ -139,7 +151,19 @@ public class DoubleArray
 	 */
 	public void add( final DoubleArray array )
 	{
-		insert( _size, array.getData(), 0, array.size() );
+		add( array.getData(), 0, array.size() );
+	}
+
+	/**
+	 * All elements from another array to this array.
+	 *
+	 * @param   array   Array to copy data from.
+	 * @param   offset  Index of first element in array to copy.
+	 * @param   length  Number of elements to insert.
+	 */
+	public void add( final DoubleArray array, final int offset, final int length )
+	{
+		insert( _size, array, offset, length );
 	}
 
 	/**
