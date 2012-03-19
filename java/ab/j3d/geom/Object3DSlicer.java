@@ -70,6 +70,16 @@ public class Object3DSlicer
 	private boolean _intersectTriangles = true;
 
 	/**
+	 * This flag indicate whether duplicate vertices will be removed from
+	 * resulting objects.
+	 *
+	 * It may be wise to set this to {@code false} for large meshes, because the
+	 * required look-ups may not be worth the cost (duplicate vertices are only
+	 * created for intersection points).
+	 */
+	private boolean _removeDuplicateVertices = true;
+
+	/**
 	 * Is intersection slice enabled.
 	 */
 	private boolean _sliceEnabled = false;
@@ -107,16 +117,6 @@ public class Object3DSlicer
 	private final HashList<Vector2D> _sliceVertices = new HashList<Vector2D>();
 
 	/**
-	 * Is top object enabled.
-	 */
-	private boolean _topEnabled = false;
-
-	/**
-	 * Is top object capped.
-	 */
-	private boolean _topCapped = true;
-
-	/**
 	 * Appearance override for {@link #_topObject}. If set to {@code null}, the
 	 * original appearance will be maintained.
 	 *
@@ -133,11 +133,9 @@ public class Object3DSlicer
 	private Appearance _bottomAppearance = null;
 
 	/**
-	 * 3D object with top part of sliced object.
-	 *
-	 * Initialized by {@link #slice}.
+	 * Is top object enabled.
 	 */
-	private Object3D _topObject = null;
+	private boolean _topEnabled = false;
 
 	/**
 	 * Is bottom object enabled.
@@ -145,9 +143,21 @@ public class Object3DSlicer
 	private boolean _bottomEnabled = false;
 
 	/**
+	 * Is top object capped.
+	 */
+	private boolean _topCapped = true;
+
+	/**
 	 * Is bottom object capped.
 	 */
 	private boolean _bottomCapped = true;
+
+	/**
+	 * 3D object with top part of sliced object.
+	 *
+	 * Initialized by {@link #slice}.
+	 */
+	private Object3D _topObject = null;
 
 	/**
 	 * 3D object with bottom part of sliced object.
@@ -155,6 +165,20 @@ public class Object3DSlicer
 	 * Initialized by {@link #slice}.
 	 */
 	private Object3D _bottomObject = null;
+
+	/**
+	 * Maps source object vertex indices to top object vertex indices.
+	 *
+	 * Initialized by {@link #processObject}.
+	 */
+	private IntArray _topObjectVertexMap = null;
+
+	/**
+	 * Maps source object vertex indices to bottom object vertex indices.
+	 *
+	 * Initialized by {@link #processObject}.
+	 */
+	private IntArray _bottomObjectVertexMap = null;
 
 	/**
 	 * Builder for top part of a face that intersects the cutting plane.
@@ -399,6 +423,38 @@ public class Object3DSlicer
 	}
 
 	/**
+	 * Get flag that indicates whether duplicate vertices will be removed from
+	 * resulting objects.
+	 *
+	 * It may be wise to set this to {@code false} for large meshes, because the
+	 * required look-ups may not be worth the cost (duplicate vertices are only
+	 * created for intersection points).
+	 *
+	 * @return  {@code true} if duplicate object vertices are removed;
+	 *          {@code false} if duplicate vertices are accepted.
+	 */
+	public boolean isRemoveDuplicateVertices()
+	{
+		return _removeDuplicateVertices;
+	}
+
+	/**
+	 * Get flag that indicates whether duplicate vertices will be removed from
+	 * resulting objects.
+	 *
+	 * It may be wise to set this to {@code false} for large meshes, because the
+	 * required look-ups may not be worth the cost (duplicate vertices are only
+	 * created for intersection points).
+	 *
+	 * @param   enabled     {@code true} if duplicate object vertices are removed;
+	 *                      {@code false} if duplicate vertices are accepted.
+	 */
+	public void setRemoveDuplicateVertices( final boolean enabled )
+	{
+		_removeDuplicateVertices = enabled;
+	}
+
+	/**
 	 * Get appearance for faces on the cutting plane.
 	 *
 	 * @return  Appearance for faces on the cutting plane.
@@ -603,19 +659,50 @@ public class Object3DSlicer
 			}
 		}
 
-		_topObject = ( top && _topEnabled ) ? bottom ? new Object3D() : object : null;
+		final Object3D topObject = ( top && _topEnabled ) ? bottom ? createObject3D() : object : null;
+		final Object3D bottomObject = ( bottom && _bottomEnabled ) ? top ? createObject3D() : object : null;
+
+		_topObject = topObject;
 		_sliceObject = top && bottom && _sliceEnabled ? new Object3D() : null;
 		_sliceVertices.clear();
 		_sliceIntersectionGraph.clear();
-		_bottomObject = ( bottom && _bottomEnabled ) ? top ? new Object3D() : object : null;
+		_bottomObject = bottomObject;
 
 		if ( top && bottom )
 		{
+			if ( topObject != null )
+			{
+				IntArray topVertexMap = _topObjectVertexMap;
+				if ( topVertexMap == null )
+				{
+					topVertexMap = new IntArray( vertexCount );
+					_topObjectVertexMap = topVertexMap;
+				}
+				else
+				{
+					topVertexMap.clear();
+				}
+			}
+
+			if ( bottomObject != null )
+			{
+				IntArray bottomVertexMap = _bottomObjectVertexMap;
+				if ( bottomVertexMap == null )
+				{
+					bottomVertexMap = new IntArray( vertexCount );
+					_bottomObjectVertexMap = bottomVertexMap;
+				}
+				else
+				{
+					bottomVertexMap.clear();
+				}
+			}
+
 			for ( final FaceGroup faceGroup : object.getFaceGroups() )
 			{
 				for ( final Face3D face3D : faceGroup.getFaces() )
 				{
-					processFace( faceGroup, face3D );
+					processFace( object, faceGroup, face3D );
 				}
 			}
 
@@ -629,14 +716,17 @@ public class Object3DSlicer
 	/**
 	 * Slice face.
 	 *
+	 * @param   object      Object being sliced.
 	 * @param   faceGroup   Face group to which the sliced face belongs.
 	 * @param   face        Face to slice.
 	 */
-	protected void processFace( final FaceGroup faceGroup, final Face3D face )
+	protected void processFace( final Object3D object, final FaceGroup faceGroup, final Face3D face )
 	{
 		final DoubleArray objectVertexDistances = _objectVertexDistances;
 		final Object3D topObject = _topObject;
 		final Object3D bottomObject = _bottomObject;
+		final IntArray topObjectVertexMap = ( topObject != null ) ? _topObjectVertexMap : null;
+		final IntArray bottomObjectVertexMap = ( bottomObject != null ) ? _bottomObjectVertexMap : null;
 		final Appearance topAppearance = ( _topAppearance != null ) ? _topAppearance : faceGroup.getAppearance();
 		final Appearance bottomAppearance = ( _bottomAppearance != null ) ? _bottomAppearance : faceGroup.getAppearance();
 
@@ -722,14 +812,14 @@ public class Object3DSlicer
 
 				for ( final TessellationPrimitive primitive : tessellation.getPrimitives() )
 				{
-					processPrimitive( face, primitive );
+					processPrimitive( object, face, primitive );
 				}
 
 				if ( ( topFace != null ) || ( bottomFace != null ) )
 				{
 					for ( final int[] outline : tessellation.getOutlines() )
 					{
-						processOutline( face, outline );
+						processOutline( object, face, outline );
 					}
 				}
 
@@ -750,14 +840,14 @@ public class Object3DSlicer
 		{
 			if ( isTopEnabled() )
 			{
-				copyFace( face, topObject, topObject.getFaceGroup( topAppearance, faceGroup.isSmooth(), faceGroup.isTwoSided() ) );
+				copyFace( object, face, topObject, topObject.getFaceGroup( topAppearance, faceGroup.isSmooth(), faceGroup.isTwoSided() ), topObjectVertexMap );
 			}
 		}
 		else if ( bottom ) /* face completely below */
 		{
 			if ( isBottomEnabled() )
 			{
-				copyFace( face, bottomObject, bottomObject.getFaceGroup( bottomAppearance, faceGroup.isSmooth(), faceGroup.isTwoSided() ) );
+				copyFace( object, face, bottomObject, bottomObject.getFaceGroup( bottomAppearance, faceGroup.isSmooth(), faceGroup.isTwoSided() ), bottomObjectVertexMap );
 			}
 		}
 		else
@@ -769,10 +859,11 @@ public class Object3DSlicer
 	/**
 	 * Process tessellation primitive.
 	 *
+	 * @param   object      Object being sliced.
 	 * @param   face        Face being sliced.
 	 * @param   primitive   Tessellation primitive to slice.
 	 */
-	protected void processPrimitive( final Face3D face, final TessellationPrimitive primitive )
+	protected void processPrimitive( final Object3D object, final Face3D face, final TessellationPrimitive primitive )
 	{
 		final DoubleArray objectVertexDistances = _objectVertexDistances;
 
@@ -801,21 +892,21 @@ public class Object3DSlicer
 				final Vertex3D v2 = face.getVertex( triangles[ i + 1 ] );
 				final Vertex3D v3 = face.getVertex( triangles[ i + 2 ] );
 
-				processTriangle( v1, v2, v3 );
+				processTriangle( object, v1, v2, v3 );
 			}
 		}
 		else if ( top ) /* primitive completely above */
 		{
 			if ( isTopEnabled() )
 			{
-				copyPrimitive( face, primitive, _topFace, _topFaceVertexMap );
+				copyPrimitive( object, face, primitive, _topObjectVertexMap, _topObject, _topFace, _topFaceVertexMap );
 			}
 		}
 		else if ( bottom ) /* primitive completely below */
 		{
 			if ( isBottomEnabled() )
 			{
-				copyPrimitive( face, primitive, _bottomFace, _bottomFaceVertexMap );
+				copyPrimitive( object, face, primitive, _bottomObjectVertexMap, _bottomObject, _bottomFace, _bottomFaceVertexMap );
 			}
 		}
 		else
@@ -827,15 +918,20 @@ public class Object3DSlicer
 	/**
 	 * Slice triangle.
 	 *
-	 * @param   v1  First vertex of triangle.
-	 * @param   v2  Second vertex of triangle.
-	 * @param   v3  Third vertex of triangle.
+	 * @param   object  Object being sliced.
+	 * @param   v1      First vertex of triangle.
+	 * @param   v2      Second vertex of triangle.
+	 * @param   v3      Third vertex of triangle.
 	 */
-	protected void processTriangle( final Vertex3D v1, final Vertex3D v2, final Vertex3D v3 )
+	protected void processTriangle( final Object3D object, final Vertex3D v1, final Vertex3D v2, final Vertex3D v3 )
 	{
 		final DoubleArray objectVertexDistances = _objectVertexDistances;
-		final Face3DBuilder topFace = isTopEnabled() ? _topFace : null;
-		final Face3DBuilder bottomFace = isBottomEnabled() ? _bottomFace : null;
+		final Object3D topObject = _topObject;
+		final Object3D bottomObject = _bottomObject;
+		final IntArray topObjectVertexMap = ( topObject != null ) ? _topObjectVertexMap : null;
+		final IntArray bottomObjectVertexMap = ( bottomObject != null ) ? _bottomObjectVertexMap : null;
+		final Face3DBuilder topFace = ( topObject != null ) ? _topFace : null;
+		final Face3DBuilder bottomFace = ( bottomObject != null ) ? _bottomFace : null;
 		final boolean intersect = _intersectTriangles;
 
 		final double d1 = objectVertexDistances.get( v1.vertexCoordinateIndex );
@@ -854,7 +950,7 @@ public class Object3DSlicer
 					//
 					if ( bottomFace != null )
 					{
-						bottomFace.addTriangle( v1, v2, v3 );
+						addTriangle( object, v1, v2, v3, bottomObject, bottomFace, bottomObjectVertexMap );
 					}
 				}
 				else if ( intersect )
@@ -868,14 +964,14 @@ public class Object3DSlicer
 
 					if ( topFace != null )
 					{
-						topFace.addTriangle( i1, i2, v3 );
+						addTriangle( object, i1, i2, v3, topObject, topFace, topObjectVertexMap );
 					}
 
 					addIntersectionEdge( i1.point, i2.point );
 
 					if ( bottomFace != null )
 					{
-						bottomFace.addQuad( v1, v2, i2, i1 );
+						addQuad( object, v1, v2, i2, i1, bottomObject, bottomFace, bottomObjectVertexMap );
 					}
 				}
 			}
@@ -892,14 +988,14 @@ public class Object3DSlicer
 
 					if ( topFace != null )
 					{
-						topFace.addTriangle( i1, v2, i2 );
+						addTriangle( object, i1, v2, i2, topObject, topFace, topObjectVertexMap );
 					}
 
 					addIntersectionEdge( i1.point, i2.point );
 
 					if ( bottomFace != null )
 					{
-						bottomFace.addQuad( v1, i1, i2, v3 );
+						addQuad( object, v1, i1, i2, v3, bottomObject, bottomFace, bottomObjectVertexMap );
 					}
 				}
 				else
@@ -913,14 +1009,14 @@ public class Object3DSlicer
 
 					if ( topFace != null )
 					{
-						topFace.addQuad( i1, v2, v3, i2 );
+						addQuad( object, i1, v2, v3, i2, topObject, topFace, topObjectVertexMap );
 					}
 
 					addIntersectionEdge( i1.point, i2.point );
 
 					if ( bottomFace != null )
 					{
-						bottomFace.addTriangle( v1, i1, i2 );
+						addTriangle( object, v1, i1, i2, bottomObject, bottomFace, bottomObjectVertexMap );
 					}
 				}
 			}
@@ -937,7 +1033,7 @@ public class Object3DSlicer
 					//
 					if ( topFace != null )
 					{
-						topFace.addTriangle( v1, v2, v3 );
+						addTriangle( object, v1, v2, v3, topObject, topFace, topObjectVertexMap );
 					}
 				}
 				else if ( intersect ) /* d3 < 0.0 */
@@ -951,14 +1047,14 @@ public class Object3DSlicer
 
 					if ( topFace != null )
 					{
-						topFace.addQuad( v1, v2, i2, i1 );
+						addQuad( object, v1, v2, i2, i1, topObject, topFace, topObjectVertexMap );
 					}
 
 					addIntersectionEdge( i1.point, i2.point );
 
 					if ( bottomFace != null )
 					{
-						bottomFace.addTriangle( i1, i2, v3 );
+						addTriangle( object, i1, i2, v3, bottomObject, bottomFace, bottomObjectVertexMap );
 					}
 				}
 			}
@@ -975,14 +1071,14 @@ public class Object3DSlicer
 
 					if ( topFace != null )
 					{
-						topFace.addQuad( v1, i1, i2, v3 );
+						addQuad( object, v1, i1, i2, v3, topObject, topFace, topObjectVertexMap );
 					}
 
 					addIntersectionEdge( i1.point, i2.point );
 
 					if ( bottomFace != null )
 					{
-						bottomFace.addTriangle( i1, v2, i2 );
+						addTriangle( object, i1, v2, i2, bottomObject, bottomFace, bottomObjectVertexMap );
 					}
 				}
 				else /* d3 < 0.0 */
@@ -996,14 +1092,14 @@ public class Object3DSlicer
 
 					if ( topFace != null )
 					{
-						topFace.addTriangle( v1, i1, i2 );
+						addTriangle( object, v1, i1, i2, topObject, topFace, topObjectVertexMap );
 					}
 
 					addIntersectionEdge( i1.point, i2.point );
 
 					if ( bottomFace != null )
 					{
-						bottomFace.addQuad( i1, v2, v3, i2 );
+						addQuad( object, i1, v2, v3, i2, bottomObject, bottomFace, bottomObjectVertexMap );
 					}
 				}
 			}
@@ -1011,17 +1107,73 @@ public class Object3DSlicer
 	}
 
 	/**
+	 * Add quad to a 3D face.
+	 *
+	 * @param   object              Object being sliced.
+	 * @param   v1                  First vertex of quad.
+	 * @param   v2                  Second vertex of quad.
+	 * @param   v3                  Third vertex of quad.
+	 * @param   v4                  Fourth vertex of quad.
+	 * @param   targetObject        Target object
+	 * @param   targetFace          Target face.
+	 * @param   objectVertexMap     Maps source object vertex coordinate indices
+	 */
+	protected void addQuad( final Object3D object, final Vertex3D v1, final Vertex3D v2, final Vertex3D v3, final Vertex3D v4, final Object3D targetObject, final Face3DBuilder targetFace, final IntArray objectVertexMap )
+	{
+		final int objectVertexIndex1 = ( v1.vertexCoordinateIndex < 0 ) ? getVertexIndex( targetObject, v1.point ) : copyObjectVertex( object, v1.vertexCoordinateIndex, targetObject, objectVertexMap );
+		final int objectVertexIndex2 = ( v2.vertexCoordinateIndex < 0 ) ? getVertexIndex( targetObject, v2.point ) : copyObjectVertex( object, v2.vertexCoordinateIndex, targetObject, objectVertexMap );
+		final int objectVertexIndex3 = ( v3.vertexCoordinateIndex < 0 ) ? getVertexIndex( targetObject, v3.point ) : copyObjectVertex( object, v3.vertexCoordinateIndex, targetObject, objectVertexMap );
+		final int objectVertexIndex4 = ( v4.vertexCoordinateIndex < 0 ) ? getVertexIndex( targetObject, v4.point ) : copyObjectVertex( object, v4.vertexCoordinateIndex, targetObject, objectVertexMap );
+
+		final int vi1 = targetFace.getVertexIndex( v1.point, objectVertexIndex1, v1.colorMapU, v1.colorMapV );
+		final int vi2 = targetFace.getVertexIndex( v2.point, objectVertexIndex2, v2.colorMapU, v2.colorMapV );
+		final int vi3 = targetFace.getVertexIndex( v3.point, objectVertexIndex3, v3.colorMapU, v3.colorMapV );
+		final int vi4 = targetFace.getVertexIndex( v4.point, objectVertexIndex4, v4.colorMapU, v4.colorMapV );
+
+		targetFace.addQuad( vi1, vi2, vi3, vi4 );
+	}
+
+	/**
+	 * Add triangle to a 3D face.
+	 *
+	 * @param   object              Object being sliced.
+	 * @param   v1                  First vertex of triangle.
+	 * @param   v2                  Second vertex of triangle.
+	 * @param   v3                  Third vertex of triangle.
+	 * @param   targetObject        Target object
+	 * @param   targetFace          Target face.
+	 * @param   objectVertexMap     Maps source object vertex coordinate indices
+	 */
+	protected void addTriangle( final Object3D object, final Vertex3D v1, final Vertex3D v2, final Vertex3D v3, final Object3D targetObject, final Face3DBuilder targetFace, final IntArray objectVertexMap )
+	{
+		final int objectVertexIndex1 = ( v1.vertexCoordinateIndex < 0 ) ? getVertexIndex( targetObject, v1.point ) : copyObjectVertex( object, v1.vertexCoordinateIndex, targetObject, objectVertexMap );
+		final int objectVertexIndex2 = ( v2.vertexCoordinateIndex < 0 ) ? getVertexIndex( targetObject, v2.point ) : copyObjectVertex( object, v2.vertexCoordinateIndex, targetObject, objectVertexMap );
+		final int objectVertexIndex3 = ( v3.vertexCoordinateIndex < 0 ) ? getVertexIndex( targetObject, v3.point ) : copyObjectVertex( object, v3.vertexCoordinateIndex, targetObject, objectVertexMap );
+
+		final int vi1 = targetFace.getVertexIndex( v1.point, objectVertexIndex1, v1.colorMapU, v1.colorMapV );
+		final int vi2 = targetFace.getVertexIndex( v2.point, objectVertexIndex2, v2.colorMapU, v2.colorMapV );
+		final int vi3 = targetFace.getVertexIndex( v3.point, objectVertexIndex3, v3.colorMapU, v3.colorMapV );
+
+		targetFace.addTriangle( vi1, vi2, vi3 );
+	}
+
+	/**
 	 * Slice outline.
 	 *
+	 * @param   object      Object being sliced.
 	 * @param   face        Face being sliced.
 	 * @param   outline     Outline to slice.
 	 */
-	protected void processOutline( final Face3D face, final int[] outline )
+	protected void processOutline( final Object3D object, final Face3D face, final int[] outline )
 	{
 		final DoubleArray objectVertexDistances = _objectVertexDistances;
-		final Face3DBuilder topFace = ( _topObject != null ) ? _topFace : null;
+		final Object3D topObject = _topObject;
+		final Object3D bottomObject = _bottomObject;
+		final IntArray topObjectVertexMap = ( topObject != null ) ? _topObjectVertexMap : null;
+		final IntArray bottomObjectVertexMap = ( bottomObject != null ) ? _bottomObjectVertexMap : null;
+		final Face3DBuilder topFace = ( topObject != null ) ? _topFace : null;
+		final Face3DBuilder bottomFace = ( bottomObject != null ) ? _bottomFace : null;
 		final IntArray topFaceVertexMap = ( topFace != null ) ? _topFaceVertexMap : null;
-		final Face3DBuilder bottomFace = ( _bottomObject != null ) ? _bottomFace : null;
 		final IntArray bottomFaceVertexMap = ( bottomFace != null ) ? _bottomFaceVertexMap : null;
 
 		boolean bottom = false;
@@ -1251,11 +1403,12 @@ public class Object3DSlicer
 							{
 								if ( index < outlineLength ) // add copy of original vertex
 								{
-									newOutline.add( copyFaceVertex( face, outline[ index ], topFace, topFaceVertexMap ) );
+									newOutline.add( copyFaceVertex( object, face, outline[ index ], topObject, topFace, topObjectVertexMap, topFaceVertexMap ) );
 								}
 								else // add intersection vertex
 								{
-									newOutline.add( topFace.getVertexIndex( intersectionPoints.get( index - outlineLength ), 0.0f, 0.0f ) );
+									final Vector3D point = intersectionPoints.get( index - outlineLength );
+									newOutline.add( topFace.getVertexIndex( point, getVertexIndex( topObject, point ), 0.0f, 0.0f ) );
 								}
 							}
 
@@ -1275,11 +1428,12 @@ public class Object3DSlicer
 							{
 								if ( index < outlineLength ) // add copy of original vertex
 								{
-									newOutline.add( copyFaceVertex( face, outline[ index ], bottomFace, bottomFaceVertexMap ) );
+									newOutline.add( copyFaceVertex( object, face, outline[ index ], bottomObject, bottomFace, bottomObjectVertexMap, bottomFaceVertexMap ) );
 								}
 								else // add intersection vertex
 								{
-									newOutline.add( bottomFace.getVertexIndex( intersectionPoints.get( index - outlineLength ), 0.0f, 0.0f ) );
+									final Vector3D point = intersectionPoints.get( index - outlineLength );
+									newOutline.add( bottomFace.getVertexIndex( point, getVertexIndex( bottomObject, point ), 0.0f, 0.0f ) );
 								}
 							}
 
@@ -1294,14 +1448,14 @@ public class Object3DSlicer
 		{
 			if ( topFace != null )
 			{
-				topFace.addOutline( copyFaceVertices( face, outline, topFace, topFaceVertexMap ) );
+				topFace.addOutline( copyFaceVertices( object, face, outline, topObjectVertexMap, topObject, topFace, topFaceVertexMap ) );
 			}
 		}
 		else if ( bottom ) // outline completely below
 		{
 			if ( bottomFace != null )
 			{
-				bottomFace.addOutline( copyFaceVertices( face, outline, bottomFace, bottomFaceVertexMap ) );
+				bottomFace.addOutline( copyFaceVertices( object, face, outline, bottomObjectVertexMap, bottomObject, bottomFace, bottomFaceVertexMap ) );
 			}
 		}
 		else // outline is void
@@ -1313,11 +1467,13 @@ public class Object3DSlicer
 	/**
 	 * Copy face to the top/bottom object.
 	 *
+	 * @param   object              Object being sliced.
 	 * @param   face                Face to copy.
 	 * @param   targetObject        Object to add copied face to.
 	 * @param   targetFaceGroup     Group to add copied face to.
+	 * @param   objectVertexMap     Maps source object vertex coordinate indices
 	 */
-	protected void copyFace( final Face3D face, final Object3D targetObject, final FaceGroup targetFaceGroup )
+	protected void copyFace( final Object3D object, final Face3D face, final Object3D targetObject, final FaceGroup targetFaceGroup, final IntArray objectVertexMap )
 	{
 		final int vertexCount = face.getVertexCount();
 
@@ -1325,7 +1481,7 @@ public class Object3DSlicer
 		for ( int i = 0; i < vertexCount; i++ )
 		{
 			final Vertex3D vertex = face.getVertex( i );
-			vertices.add( new Vertex3D( vertex.point, vertex.getNormal(), targetObject.getVertexIndex( vertex.point ), vertex.colorMapU, vertex.colorMapV ) );
+			vertices.add( new Vertex3D( vertex.point, vertex.getNormal(), copyObjectVertex( object, vertex.vertexCoordinateIndex, targetObject, objectVertexMap ), vertex.colorMapU, vertex.colorMapV ) );
 		}
 
 		targetFaceGroup.addFace( new Face3D( face.getNormal(), vertices, face.getTessellation() ) );
@@ -1335,14 +1491,18 @@ public class Object3DSlicer
 	 * Copy primitive from the currently processed face to the given
 	 * (top/bottom) face.
 	 *
-	 * @param   face            Face being sliced.
-	 * @param   primitive       Primitive to copy.
-	 * @param   targetFace      Face to copy primitive to.
-	 * @param   faceVertexMap   Maps vertex indices from{@code #face} to {@code targetFace}.
+	 * @param   object              Object being sliced.
+	 * @param   face                Face being sliced.
+	 * @param   primitive           Primitive to copy.
+	 * @param   objectVertexMap     Maps source object vertex coordinate indices
+	 *                              to target object vertex indices.
+	 * @param   targetObject        Object to copy vertex to.
+	 * @param   targetFace          Face to copy primitive to.
+	 * @param   faceVertexMap       Maps vertex indices from{@code #face} to {@code targetFace}.
 	 */
-	protected void copyPrimitive( final Face3D face, final TessellationPrimitive primitive, final Face3DBuilder targetFace, final IntArray faceVertexMap )
+	protected void copyPrimitive( final Object3D object, final Face3D face, final TessellationPrimitive primitive, final IntArray objectVertexMap, final Object3D targetObject, final Face3DBuilder targetFace, final IntArray faceVertexMap )
 	{
-		final int[] vertices = copyFaceVertices( face, primitive.getVertices(), targetFace, faceVertexMap );
+		final int[] vertices = copyFaceVertices( object, face, primitive.getVertices(), objectVertexMap, targetObject, targetFace, faceVertexMap );
 
 		if ( primitive instanceof QuadList )
 		{
@@ -1378,20 +1538,24 @@ public class Object3DSlicer
 	 * vertices. Its size must be equal to the number of vertices in
 	 * {@code srcFace} and its elements be initialized to -1.
 	 *
-	 * @param   face            Face being sliced.
-	 * @param   vertices        Vertices to copy.
-	 * @param   targetFace      Face to copy primitive to.
-	 * @param   faceVertexMap   Maps vertex indices from{@code #face} to {@code targetFace}.
+	 * @param   object              Object being sliced.
+	 * @param   face                Face being sliced.
+	 * @param   vertices            Vertices to copy.
+	 * @param   objectVertexMap     Maps source object vertex coordinate indices
+	 *                              to target object vertex indices.
+	 * @param   targetObject        Object to copy vertices to.
+	 * @param   targetFace          Face to copy vertices to.
+	 * @param   faceVertexMap       Maps vertex indices from{@code #face} to {@code targetFace}.
 	 *
 	 * @return  Indices of copied face vertices in {@code targetFace}.
 	 */
-	protected int[] copyFaceVertices( final Face3D face, final int[] vertices, final Face3DBuilder targetFace, final IntArray faceVertexMap )
+	protected int[] copyFaceVertices( final Object3D object, final Face3D face, final int[] vertices, final IntArray objectVertexMap, final Object3D targetObject, final Face3DBuilder targetFace, final IntArray faceVertexMap )
 	{
 		final int[] result = new int[ vertices.length ];
 
 		for ( int i = 0; i < vertices.length; i++ )
 		{
-			result[ i ] = copyFaceVertex( face, vertices[ i ], targetFace, faceVertexMap );
+			result[ i ] = copyFaceVertex( object, face, vertices[ i ], targetObject, targetFace, objectVertexMap, faceVertexMap );
 		}
 
 		return result;
@@ -1405,36 +1569,111 @@ public class Object3DSlicer
 	 * vertices. Its size must be equal to the number of vertices in
 	 * {@code srcFace} and its elements be initialized to -1.
 	 *
-	 * @param   face            Face being sliced.
-	 * @param   vertexIndex     Vertex index in {@code face}.
-	 * @param   targetFace      Face to copy vertices to.
-	 * @param   faceVertexMap   Maps face vertex indices from {@code face} to
-	 *                          {@code targetFace}.
+	 * @param   object              Object being sliced.
+	 * @param   face                Face being sliced.
+	 * @param   faceVertexIndex     Vertex index in {@code face}.
+	 * @param   targetObject        Object to copy vertex to.
+	 * @param   targetFace          Face to copy vertices to.
+	 * @param   objectVertexMap     Maps source object vertex coordinate indices
+	 *                              to target object vertex indices.
+	 * @param   faceVertexMap       Maps face vertex indices from {@code face}
+	 *                              to {@code targetFace}.
 	 *
 	 * @return  Index of copied face vertex in {@code targetFace}.
 	 */
-	protected int copyFaceVertex( final Face3D face, final int vertexIndex, final Face3DBuilder targetFace, final IntArray faceVertexMap )
+	protected int copyFaceVertex( final Object3D object, final Face3D face, final int faceVertexIndex, final Object3D targetObject, final Face3DBuilder targetFace, final IntArray objectVertexMap, final IntArray faceVertexMap )
 	{
 		int result;
 
-		if ( vertexIndex < faceVertexMap.size() )
+		if ( faceVertexIndex < faceVertexMap.size() )
 		{
-			result = faceVertexMap.get( vertexIndex );
+			result = faceVertexMap.get( faceVertexIndex );
 			if ( result < 0 )
 			{
-				result = targetFace.getVertexIndex( face.getVertex( vertexIndex ) );
-				faceVertexMap.set( vertexIndex, result );
+				final Vertex3D vertex = face.getVertex( faceVertexIndex );
+				final int objectVertexIndex = copyObjectVertex( object, vertex.vertexCoordinateIndex, targetObject, objectVertexMap );
+				result = targetFace.getVertexIndex( vertex.point, objectVertexIndex, vertex.colorMapU, vertex.colorMapV );
+
+				faceVertexMap.set( faceVertexIndex, result );
 			}
 		}
 		else
 		{
-			result = targetFace.getVertexIndex( face.getVertex( vertexIndex ) );
+			final Vertex3D vertex = face.getVertex( faceVertexIndex );
+			final int objectVertexIndex = copyObjectVertex( object, vertex.vertexCoordinateIndex, targetObject, objectVertexMap );
+			result = targetFace.getVertexIndex( vertex.point, objectVertexIndex, vertex.colorMapU, vertex.colorMapV );
+
 			faceVertexMap.ensureCapacity( face.getVertexCount() );
-			faceVertexMap.setSize( vertexIndex, -1 );
+			faceVertexMap.setSize( faceVertexIndex, -1 );
 			faceVertexMap.add( result );
 		}
 
 		return result;
+	}
+
+	/**
+	 * Copy vertex from one object to another.
+	 *
+	 * @param   object              Object being sliced.
+	 * @param   vertexIndex         Index of object vertex.
+	 * @param   targetObject        Object to copy vertex to.
+	 * @param   objectVertexMap     Maps source object vertex coordinate indices
+	 *                              to target object vertex indices.
+	 *
+	 * @return  Index of copied face vertex in {@code targetFace}.
+	 */
+	protected int copyObjectVertex( final Object3D object, final int vertexIndex, final Object3D targetObject, final IntArray objectVertexMap )
+	{
+		int result;
+
+		if ( vertexIndex < objectVertexMap.size() )
+		{
+			result = objectVertexMap.get( vertexIndex );
+			if ( result < 0 )
+			{
+				result = getVertexIndex( targetObject, object.getVertex( vertexIndex ) );
+				objectVertexMap.set( vertexIndex, result );
+			}
+		}
+		else
+		{
+			result = getVertexIndex( targetObject, object.getVertex( vertexIndex ) );
+
+			final int vertexCount = object.getVertexCount();
+			if ( vertexIndex < vertexCount )
+			{
+				objectVertexMap.ensureCapacity( vertexCount );
+				objectVertexMap.setSize( vertexIndex, -1 );
+				objectVertexMap.add( result );
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * This method is used to create a new 3D result object.
+	 *
+	 * @return  Created object.
+	 */
+	protected Object3D createObject3D()
+	{
+		return _removeDuplicateVertices ? new Object3D() : new Object3D( new ArrayList<Vector3D>() );
+	}
+
+	/**
+	 * This method is used to get the index for a vertex of an 3D object.
+	 *
+	 * @param   object  Object to get vertex index for.
+	 * @param   point   Coordinates of vertex.
+	 *
+	 * @return  Index of object vertex.
+	 *
+	 * @see     Object3D#getVertexIndex
+	 */
+	protected int getVertexIndex( final Object3D object, final Vector3D point )
+	{
+		return _removeDuplicateVertices ? object.getVertexIndex( point ) : object.addVertex( point );
 	}
 
 	/**
@@ -1649,19 +1888,19 @@ public class Object3DSlicer
 				if ( sliceEnabled )
 				{
 					sliceUvGenerator.generate( point );
-					sliceVertices.add( new Vertex3D( point, planeNormal, sliceObject.getVertexIndex( point ), sliceUvGenerator.getU(), sliceUvGenerator.getV() ) );
+					sliceVertices.add( new Vertex3D( point, planeNormal, getVertexIndex( sliceObject, point ), sliceUvGenerator.getU(), sliceUvGenerator.getV() ) );
 				}
 
 				if ( topCapEnabled )
 				{
 					topUvGenerator.generate( point );
-					topVertices.add( new Vertex3D( point, inversePlaneNormal, topObject.getVertexIndex( point ), topUvGenerator.getU(), topUvGenerator.getV() ) );
+					topVertices.add( new Vertex3D( point, inversePlaneNormal, getVertexIndex( topObject, point ), topUvGenerator.getU(), topUvGenerator.getV() ) );
 				}
 
 				if ( bottomCapEnabled )
 				{
 					bottomUvGenerator.generate( point );
-					bottomVertices.add( new Vertex3D( point, planeNormal, bottomObject.getVertexIndex( point ), bottomUvGenerator.getU(), bottomUvGenerator.getV() ) );
+					bottomVertices.add( new Vertex3D( point, planeNormal, getVertexIndex( bottomObject, point ), bottomUvGenerator.getU(), bottomUvGenerator.getV() ) );
 				}
 			}
 
