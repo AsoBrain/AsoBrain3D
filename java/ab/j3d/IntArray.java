@@ -474,14 +474,14 @@ public class IntArray
 	 */
 	public int removeLast()
 	{
-		final int oldSize = _size;
-		if ( oldSize == 0 )
+		final int newSize = _size - 1;
+		if ( newSize < 0 )
 		{
 			throw new NoSuchElementException( "size=0" );
 		}
 
-		_size = oldSize - 1;
-		return _data[ oldSize ];
+		_size = newSize;
+		return _data[ newSize ];
 	}
 
 	/**
