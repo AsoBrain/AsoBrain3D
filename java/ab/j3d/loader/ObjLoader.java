@@ -793,115 +793,129 @@ public class ObjLoader
 
 		BasicAppearance tempMaterial = null;
 
-		final BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( loader.getResourceAsStream( materialName ) ) );
-		while ( ( line = readLine( bufferedReader ) ) != null )
+		final InputStream in = loader.getResourceAsStream( materialName );
+		try
 		{
-			if ( !line.isEmpty() )
+			if ( in != null )
 			{
-				final String[] tokens = WHITESPACE.split( line.trim(), 0 );
-				final String name = tokens[ 0 ];
-				final int argCount = tokens.length - 1;
-
-				try
+				final BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( in ) );
+				while ( ( line = readLine( bufferedReader ) ) != null )
 				{
-					// New Material
-					if ( "newmtl".equals( name ) )
+					if ( !line.isEmpty() )
 					{
-						if ( argCount < 1 )
-						{
-							throw new IOException( "Malformed material entry: " + line );
-						}
-						tempMaterial = new BasicAppearance();
-						_materials.put( tokens[ 1 ], tempMaterial );
-					}
-					// Ambient lighting
-					else if ( "Ka".equals( name ) )
-					{
-						if ( argCount < 3 )
-						{
-							throw new IOException( "Malformed ambient lighting entry: " + line );
-						}
-						tempMaterial.setAmbientColor( new Color4f( Float.valueOf( tokens[ 1 ] ), Float.valueOf( tokens[ 2 ] ), Float.valueOf( tokens[ 3 ] ) ) );
-					}
-					// Diffuse lighting
-					else if ( "Kd".equals( name ) )
-					{
-						if ( argCount < 3 )
-						{
-							throw new IOException( "Malformed diffuse lighting entry: " + line );
-						}
-						tempMaterial.setDiffuseColor( new Color4f( Float.valueOf( tokens[ 1 ] ), Float.valueOf( tokens[ 2 ] ), Float.valueOf( tokens[ 3 ] ) ) );
-					}
-					// Specular lighting
-					else if ( "Ks".equals( name ) )
-					{
-						if ( argCount < 3 )
-						{
-							throw new IOException( "Malformed specular lighting entry: " + line );
-						}
-						tempMaterial.setSpecularColor( new Color4f( Float.valueOf( tokens[ 1 ] ), Float.valueOf( tokens[ 2 ] ), Float.valueOf( tokens[ 3 ] ) ) );
-					}
-					// Shininess
-					else if ( "Ns".equals( name ) )
-					{
-						if ( argCount < 1 )
-						{
-							throw new IOException( "Malformed shininess entry: " + line );
-						}
-						final float shininess = Float.parseFloat( tokens[ 1 ] );
-						// value range is from 0 to 1000
-						if ( shininess > 1000.0f )
-						{
-							// set material shininess to max
-							tempMaterial.setShininess( 128 );
-						}
-						else
-						{
-							tempMaterial.setShininess( (int)( shininess * 128.0f / 1000.0f ) );
-						}
-					}
-					// Alpha blending
-					else if ( "d".equals( name ) || "Tr".equals( name ) )
-					{
-						if ( argCount < 1 )
-						{
-							throw new IOException( "Malformed transparency entry: " + line );
-						}
-						final Color4 diffuseColor = tempMaterial.getDiffuseColor();
-						tempMaterial.setDiffuseColor( new Color4f( diffuseColor.getRedFloat(), diffuseColor.getGreenFloat(), diffuseColor.getBlueFloat(), Float.valueOf( tokens[ 1 ] ) ) );
-					}
-					// Texture mapping
-					else if ( "map_Kd".equals( name ) || "map_Ka".equals( name ) )
-					{
-						if ( argCount < 1 )
-						{
-							throw new IOException( "Malformed texture entry: " + line );
-						}
-						tempMaterial.setColorMap( new ResourceLoaderTextureMap( loader, tokens[ 1 ], 1.0f, 1.0f ) );
-					}
-					else if ( "bump".equals( name ) )
-					{
-						if ( argCount < 1 )
-						{
-							throw new IOException( "Malformed texture entry: " + line );
-						}
-						tempMaterial.setBumpMap( new ResourceLoaderTextureMap( loader, tokens[ 1 ] ) );
-					}
-					//Non-recognized, non-# (comment) line.
-					//@TODO: Implement following MTL Lines:
+						final String[] tokens = WHITESPACE.split( line.trim(), 0 );
+						final String name = tokens[ 0 ];
+						final int argCount = tokens.length - 1;
 
-					else
-					{
-						//System.err.println( "### Ignoring MTL line: " + line );
+						try
+						{
+							// New Material
+							if ( "newmtl".equals( name ) )
+							{
+								if ( argCount < 1 )
+								{
+									throw new IOException( "Malformed material entry: " + line );
+								}
+								tempMaterial = new BasicAppearance();
+								_materials.put( tokens[ 1 ], tempMaterial );
+							}
+							// Ambient lighting
+							else if ( "Ka".equals( name ) )
+							{
+								if ( argCount < 3 )
+								{
+									throw new IOException( "Malformed ambient lighting entry: " + line );
+								}
+								tempMaterial.setAmbientColor( new Color4f( Float.valueOf( tokens[ 1 ] ), Float.valueOf( tokens[ 2 ] ), Float.valueOf( tokens[ 3 ] ) ) );
+							}
+							// Diffuse lighting
+							else if ( "Kd".equals( name ) )
+							{
+								if ( argCount < 3 )
+								{
+									throw new IOException( "Malformed diffuse lighting entry: " + line );
+								}
+								tempMaterial.setDiffuseColor( new Color4f( Float.valueOf( tokens[ 1 ] ), Float.valueOf( tokens[ 2 ] ), Float.valueOf( tokens[ 3 ] ) ) );
+							}
+							// Specular lighting
+							else if ( "Ks".equals( name ) )
+							{
+								if ( argCount < 3 )
+								{
+									throw new IOException( "Malformed specular lighting entry: " + line );
+								}
+								tempMaterial.setSpecularColor( new Color4f( Float.valueOf( tokens[ 1 ] ), Float.valueOf( tokens[ 2 ] ), Float.valueOf( tokens[ 3 ] ) ) );
+							}
+							// Shininess
+							else if ( "Ns".equals( name ) )
+							{
+								if ( argCount < 1 )
+								{
+									throw new IOException( "Malformed shininess entry: " + line );
+								}
+								final float shininess = Float.parseFloat( tokens[ 1 ] );
+								// value range is from 0 to 1000
+								if ( shininess > 1000.0f )
+								{
+									// set material shininess to max
+									tempMaterial.setShininess( 128 );
+								}
+								else
+								{
+									tempMaterial.setShininess( (int)( shininess * 128.0f / 1000.0f ) );
+								}
+							}
+							// Alpha blending
+							else if ( "d".equals( name ) || "Tr".equals( name ) )
+							{
+								if ( argCount < 1 )
+								{
+									throw new IOException( "Malformed transparency entry: " + line );
+								}
+								final Color4 diffuseColor = tempMaterial.getDiffuseColor();
+								tempMaterial.setDiffuseColor( new Color4f( diffuseColor.getRedFloat(), diffuseColor.getGreenFloat(), diffuseColor.getBlueFloat(), Float.valueOf( tokens[ 1 ] ) ) );
+							}
+							// Texture mapping
+							else if ( "map_Kd".equals( name ) || "map_Ka".equals( name ) )
+							{
+								if ( argCount < 1 )
+								{
+									throw new IOException( "Malformed texture entry: " + line );
+								}
+								tempMaterial.setColorMap( new ResourceLoaderTextureMap( loader, tokens[ 1 ], 1.0f, 1.0f ) );
+							}
+							else if ( "bump".equals( name ) )
+							{
+								if ( argCount < 1 )
+								{
+									throw new IOException( "Malformed texture entry: " + line );
+								}
+								tempMaterial.setBumpMap( new ResourceLoaderTextureMap( loader, tokens[ 1 ] ) );
+							}
+							//Non-recognized, non-# (comment) line.
+							//@TODO: Implement following MTL Lines:
+
+							else
+							{
+								//System.err.println( "### Ignoring MTL line: " + line );
+							}
+						}
+						catch ( NumberFormatException e )
+						{
+							throw new IOException( "malformed numeric value: " + line );
+						}
 					}
 				}
-				catch ( NumberFormatException e )
-				{
-					throw new IOException( "malformed numeric value: " + line );
-				}
+				bufferedReader.close();
 			}
 		}
-		bufferedReader.close();
+		finally
+		{
+			if ( in != null )
+			{
+				in.close();
+			}
+		}
 	}
 
 	/**
