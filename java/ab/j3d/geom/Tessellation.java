@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -63,12 +63,12 @@ public class Tessellation
 	}
 
 	/**
-	 * Returns the primitices that make up the tessellation.
+	 * Returns the primitives that make up the tessellation.
 	 *
 	 * @return  Collection of primitives.
 	 */
 	@NotNull
-	public Collection<TessellationPrimitive> getPrimitives()
+	public List<TessellationPrimitive> getPrimitives()
 	{
 		return _primitives;
 	}
