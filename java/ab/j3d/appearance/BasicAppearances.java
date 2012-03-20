@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -61,6 +61,7 @@ public class BasicAppearances
 	public static final Appearance ALUMINIUM;
 	public static final Appearance ALU_PLATE;
 	public static final Appearance STEEL;
+	public static final Appearance BRONZE;
 	public static final Appearance MESSING;
 	public static final Appearance TITANIUM;
 	public static final Appearance ZAMAC;
@@ -315,10 +316,21 @@ public class BasicAppearances
 		steel.setSpecularColor( new Color4f( 0.45f, 0.45f, 0.45f ) );
 		steel.setShininess( 16 );
 		steel.setReflectionMap( reflectionMap );
-		steel.setReflectionMin( 0.2f );
-		steel.setReflectionMax( 1.0f );
+		steel.setReflectionMin( 0.1f );
+		steel.setReflectionMax( 0.5f );
 		steel.setReflectionColor( new Color4f( 0.45f, 0.45f, 0.45f ) );
 		STEEL = steel; // "steel"
+
+		final BasicAppearance bronze = new BasicAppearance();
+		bronze.setAmbientColor( new Color4f( 0.40f, 0.25f, 0.10f ) );
+		bronze.setDiffuseColor( new Color4f( 0.80f, 0.50f, 0.20f ) );
+		bronze.setSpecularColor( new Color4f( 1.0f, 0.63f, 0.25f ) );
+		bronze.setShininess( 16 );
+		bronze.setReflectionMap( reflectionMap );
+		bronze.setReflectionMin( 0.1f );
+		bronze.setReflectionMax( 0.5f );
+		bronze.setReflectionColor( new Color4f( 1.0f, 0.63f, 0.25f ) );
+		BRONZE = bronze; // "bronze"
 
 		final BasicAppearance messing = new BasicAppearance();
 		messing.setAmbientColor( new Color4f( 0.33f, 0.22f, 0.03f ) );
