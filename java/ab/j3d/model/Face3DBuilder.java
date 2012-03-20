@@ -128,27 +128,38 @@ public class Face3DBuilder
 	/**
 	 * Add single untextured quad to this face.
 	 *
-	 * @param   v1  First vertex of quad.
-	 * @param   v2  Second vertex of quad.
-	 * @param   v3  Third vertex of quad.
-	 * @param   v4  Fourth vertex of quad.
+	 * @param   p1  Coordinates of first vertex of quad.
+	 * @param   p2  Coordinates of second vertex of quad.
+	 * @param   p3  Coordinates of third vertex of quad.
+	 * @param   p4  Coordinates of fourth vertex of quad.
 	 */
-	public void addQuad( final Vector3D v1, final Vector3D v2, final Vector3D v3, final Vector3D v4 )
+	public void addQuad( final Vector3D p1, final Vector3D p2, final Vector3D p3, final Vector3D p4 )
 	{
-		addQuad( getVertexIndex( v1, 0.0f, 0.0f ), getVertexIndex( v2, 0.0f, 0.0f ), getVertexIndex( v3, 0.0f, 0.0f ), getVertexIndex( v4, 0.0f, 0.0f ) );
+		addQuad( p1, 0.0f, 0.0f, p2, 0.0f, 0.0f, p3, 0.0f, 0.0f, p4, 0.0f, 0.0f );
 	}
 
 	/**
 	 * Add single quad to this face.
 	 *
-	 * @param   v1  First vertex of quad.
-	 * @param   v2  Second vertex of quad.
-	 * @param   v3  Third vertex of quad.
-	 * @param   v4  Fourth vertex of quad.
+	 * @param   p1  Coordinates of first vertex of quad.
+	 * @param   u1  Texture coordinate U of first vertex of quad.
+	 * @param   v1  Texture coordinate V of first vertex of quad.
+	 * @param   p2  Coordinates of second vertex of quad.
+	 * @param   u2  Texture coordinate U of second vertex of quad.
+	 * @param   v2  Texture coordinate V of second vertex of quad.
+	 * @param   p3  Coordinates of third vertex of quad.
+	 * @param   u3  Texture coordinate U of third vertex of quad.
+	 * @param   v3  Texture coordinate V of third vertex of quad.
+	 * @param   p4  Coordinates of fourth vertex of quad.
+	 * @param   u4  Texture coordinate U of fourth vertex of quad.
+	 * @param   v4  Texture coordinate V of fourth vertex of quad.
 	 */
-	public void addQuad( final Vertex3D v1, final Vertex3D v2, final Vertex3D v3, final Vertex3D v4 )
+	public void addQuad( final Vector3D p1, final float u1, final float v1,
+	                     final Vector3D p2, final float u2, final float v2,
+	                     final Vector3D p3, final float u3, final float v3,
+	                     final Vector3D p4, final float u4, final float v4 )
 	{
-		addQuad( getVertexIndex( v1 ), getVertexIndex( v2 ), getVertexIndex( v3 ), getVertexIndex( v4 ) );
+		addQuad( getVertexIndex( p1, u1, v1 ), getVertexIndex( p2, u2, v2 ), getVertexIndex( p3, u3, v3 ), getVertexIndex( p4, u4, v4 ) );
 	}
 
 	/**
@@ -174,37 +185,41 @@ public class Face3DBuilder
 	 *
 	 * @param   vertices    Quad vertices (length must be multiple of 4).
 	 */
-	public void addQuads( final Collection<Vertex3D> vertices )
-	{
-		final IntArray quads = _quads;
-		quads.ensureRemainingCapacity( vertices.size() );
-
-		for ( final Vertex3D vertex : vertices )
-		{
-			quads.add( getVertexIndex( vertex ) );
-		}
-	}
-
-	/**
-	 * Add multiple quads to this face.
-	 *
-	 * @param   vertices    Quad vertices (length must be multiple of 4).
-	 */
 	public void addQuads( final int... vertices )
 	{
 		_quads.add( vertices );
 	}
 
 	/**
+	 * Add single untextured triangle to this face.
+	 *
+	 * @param   p1  Coordinates of first vertex of triangle.
+	 * @param   p2  Coordinates of second vertex of triangle.
+	 * @param   p3  Coordinates of third vertex of triangle.
+	 */
+	public void addTriangle( final Vector3D p1, final Vector3D p2, final Vector3D p3 )
+	{
+		addTriangle( p1, 0.0f, 0.0f, p2, 0.0f, 0.0f, p3, 0.0f, 0.0f );
+	}
+
+	/**
 	 * Add single triangle to this face.
 	 *
-	 * @param   v1  First vertex of triangle.
-	 * @param   v2  Second vertex of triangle.
-	 * @param   v3  Third vertex of triangle.
+	 * @param   p1  Coordinates of first vertex of triangle.
+	 * @param   u1  Texture coordinate U of first vertex of triangle.
+	 * @param   v1  Texture coordinate V of first vertex of triangle.
+	 * @param   p2  Coordinates of second vertex of triangle.
+	 * @param   u2  Texture coordinate U of second vertex of triangle.
+	 * @param   v2  Texture coordinate V of second vertex of triangle.
+	 * @param   p3  Coordinates of third vertex of triangle.
+	 * @param   u3  Texture coordinate U of third vertex of triangle.
+	 * @param   v3  Texture coordinate V of third vertex of triangle.
 	 */
-	public void addTriangle( final Vertex3D v1, final Vertex3D v2, final Vertex3D v3 )
+	public void addTriangle( final Vector3D p1, final float u1, final float v1,
+	                         final Vector3D p2, final float u2, final float v2,
+	                         final Vector3D p3, final float u3, final float v3 )
 	{
-		addTriangle( getVertexIndex( v1 ), getVertexIndex( v2 ), getVertexIndex( v3 ) );
+		addTriangle( getVertexIndex( p1, u1, v1 ), getVertexIndex( p2, u2, v2 ), getVertexIndex( p3, u3, v3 ) );
 	}
 
 	/**
@@ -221,22 +236,6 @@ public class Face3DBuilder
 		triangles.add( v1 );
 		triangles.add( v2 );
 		triangles.add( v3 );
-	}
-
-	/**
-	 * Add multiple triangles to this face.
-	 *
-	 * @param   vertices    Triangle vertices (length must be multiple of 3).
-	 */
-	public void addTriangles( final Collection<Vertex3D> vertices )
-	{
-		final IntArray triangles = _triangles;
-		triangles.ensureRemainingCapacity( vertices.size() );
-
-		for ( final Vertex3D vertex : vertices )
-		{
-			triangles.add( getVertexIndex( vertex ) );
-		}
 	}
 
 	/**
@@ -354,19 +353,6 @@ public class Face3DBuilder
 	 * Get index of vertex. If this face did not already contain the vertex, it
 	 * will be added; otherwise, the index of the existing vertex is returned.
 	 *
-	 * @param   vertex  Vertex to get index of.
-	 *
-	 * @return  Vertex index.
-	 */
-	public int getVertexIndex( final Vertex3D vertex )
-	{
-		return getVertexIndex( vertex.point, vertex.colorMapU, vertex.colorMapV );
-	}
-
-	/**
-	 * Get index of vertex. If this face did not already contain the vertex, it
-	 * will be added; otherwise, the index of the existing vertex is returned.
-	 *
 	 * @param   point       Coordinates of vertex.
 	 * @param   colorMapU   Color map U coordinate.
 	 * @param   colorMapV   Color map V coordinate.
@@ -375,7 +361,23 @@ public class Face3DBuilder
 	 */
 	public int getVertexIndex( final Vector3D point, final float colorMapU, final float colorMapV )
 	{
-		return _vertices.indexOfOrAdd( new Vertex3D( point, _object.getVertexIndex( point ), colorMapU, colorMapV ) );
+		return getVertexIndex( point, _object.getVertexIndex( point ), colorMapU, colorMapV );
+	}
+
+	/**
+	 * Get index of vertex. If this face did not already contain the vertex, it
+	 * will be added; otherwise, the index of the existing vertex is returned.
+	 *
+	 * @param   point               Coordinates of vertex.
+	 * @param   objectVertexIndex   Vertex index in target object.
+	 * @param   colorMapU           Color map U coordinate.
+	 * @param   colorMapV           Color map V coordinate.
+	 *
+	 * @return  Vertex index.
+	 */
+	public int getVertexIndex( final Vector3D point, final int objectVertexIndex, final float colorMapU, final float colorMapV )
+	{
+		return _vertices.indexOfOrAdd( new Vertex3D( point, objectVertexIndex, colorMapU, colorMapV ) );
 	}
 
 	/**
