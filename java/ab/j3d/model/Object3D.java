@@ -251,13 +251,13 @@ public class Object3D
 						switch ( outlines.size() )
 						{
 							case 0:
-								tessellation.setOutlines( Collections.<int[]>emptyList() );
+								face.setTessellation( new Tessellation( Collections.<int[]>emptyList(), tessellation.getPrimitives() ) );
 								break;
 							case 1:
-								tessellation.setOutlines( Collections.singletonList( outlines.get( 0 ) ) );
+								face.setTessellation( new Tessellation( Collections.singletonList( outlines.get( 0 ) ), tessellation.getPrimitives() ) );
 								break;
 							default:
-								tessellation.setOutlines( new ArrayList<int[]>( outlines ) );
+								face.setTessellation( new Tessellation( new ArrayList<int[]>( outlines ), tessellation.getPrimitives() ) );
 						}
 					}
 				}
