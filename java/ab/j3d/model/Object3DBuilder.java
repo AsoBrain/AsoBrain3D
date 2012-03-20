@@ -100,7 +100,7 @@ public class Object3DBuilder
 	 *
 	 * @param   vertexCoordinates   Vertex coordinates.
 	 */
-	public void setVertexCoordinates( @NotNull final List<Vector3D> vertexCoordinates )
+	public void setVertexCoordinates( @NotNull final Collection<Vector3D> vertexCoordinates )
 	{
 		_target.setVertexCoordinates( vertexCoordinates );
 	}
@@ -1034,7 +1034,7 @@ public class Object3DBuilder
 
 		if ( side && !outlines.isEmpty() )
 		{
-			final Vector2f uv = ( sideMap != null ) ? new Vector2f( 0.0f, 0.0f ) : null;
+			final FaceGroup sideFaceGroup = _target.getFaceGroup( sideAppearance, smooth, twoSided );
 			final Tessellation extrusionTessellation = new Tessellation( extrusionLines ? Collections.<int[]>singletonList( new int[] { 0, 1, 2, 3, 0 } ) : Collections.<int[]>emptyList(), Collections.<TessellationPrimitive>singletonList( new TriangleFan( new int[] { 0, 1, 2, 3 } ) ) );
 
 			for ( final int[] contour : outlines )
@@ -1063,26 +1063,26 @@ public class Object3DBuilder
 					{
 						if ( sideMap != null )
 						{
-							final TextureMap colorMap = ( sideAppearance == null ) ? null : sideAppearance.getColorMap();
+							final UVGenerator uv = UVGenerator.getColorMapInstance( sideAppearance, sideMap, normal, sideFlipTexture );
 
-							sideMap.generate( uv, colorMap, v1.point, normal, sideFlipTexture );
-							v1.colorMapU = uv.getX();
-							v1.colorMapV = uv.getY();
+							uv.generate( v1.point );
+							v1.colorMapU = uv.getU();
+							v1.colorMapV = uv.getV();
 
-							sideMap.generate( uv, colorMap, v2.point, normal, sideFlipTexture );
-							v2.colorMapU = uv.getX();
-							v2.colorMapV = uv.getY();
+							uv.generate( v2.point );
+							v2.colorMapU = uv.getU();
+							v2.colorMapV = uv.getV();
 
-							sideMap.generate( uv, colorMap, v3.point, normal, sideFlipTexture );
-							v3.colorMapU = uv.getX();
-							v3.colorMapV = uv.getY();
+							uv.generate( v3.point );
+							v3.colorMapU = uv.getU();
+							v3.colorMapV = uv.getV();
 
-							sideMap.generate( uv, colorMap, v4.point, normal, sideFlipTexture );
-							v4.colorMapU = uv.getX();
-							v4.colorMapV = uv.getX();
+							uv.generate( v4.point );
+							v4.colorMapU = uv.getU();
+							v4.colorMapV = uv.getV();
 						}
 
-						addFace( Arrays.asList( v1, v2, v3, v4 ), extrusionTessellation, sideAppearance, smooth, twoSided );
+						sideFaceGroup.addFace( new Face3D( normal, Arrays.asList( v1, v2, v3, v4 ), extrusionTessellation ) );
 					}
 
 					previousP1 = nextP1;
@@ -1111,7 +1111,7 @@ public class Object3DBuilder
 	 * @throws  IllegalArgumentException if the shape is not extruded along
 	 *          the z-axis.
 	 */
-	public void addExtrudedShape( @NotNull final List<Contour> contours, @NotNull final Vector3D extrusion, @NotNull final Matrix3D transform, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided, final boolean flipNormals, final boolean smooth )
+	public void addExtrudedShape( @NotNull final Iterable<Contour> contours, @NotNull final Vector3D extrusion, @NotNull final Matrix3D transform, @Nullable final Appearance appearance, @Nullable final UVMap uvMap, final boolean flipTexture, final boolean twoSided, final boolean flipNormals, final boolean smooth )
 	{
 		final double extrusionZ = extrusion.getZ();
 		if ( extrusionZ == 0.0 )
