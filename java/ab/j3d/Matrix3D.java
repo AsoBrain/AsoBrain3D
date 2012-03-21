@@ -498,6 +498,23 @@ public class Matrix3D
 	}
 
 	/**
+	 * Get rotation matrix. This eliminates scaling and translation properties
+	 * from the current transformation matrix.
+	 *
+	 * @return  Rotation material.
+	 */
+	public Matrix3D getRotation()
+	{
+		final double lx = Vector3D.length( xx, xy, xz );
+		final double ly = Vector3D.length( yx, yy, yz );
+		final double lz = Vector3D.length( zx, zy, zz );
+
+		return new Matrix3D( xx / lx, xy / lx, xz / lx, 0.0,
+		                     yx / ly, yy / ly, yz / ly, 0.0,
+		                     zx / lz, zy / lz, zz / lz, 0.0 );
+	}
+
+	/**
 	 * Get transformation matrix for a rotation about an arbitrary axis. The
 	 * rotation is axis is specified by a pivot point and rotation axis
 	 * direction. The rotation angle is specified in radians.
