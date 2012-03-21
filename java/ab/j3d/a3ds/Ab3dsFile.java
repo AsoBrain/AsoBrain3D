@@ -50,6 +50,20 @@ public class Ab3dsFile
 	private HierarchyChunk _main;
 
 	/**
+	 * Maps material names of the last loaded model to appearances.
+	 *
+	 * This is only valid for the last time {@link #createModel} was called.
+	 */
+	private Map<String, Appearance> _appearancesByName = Collections.emptyMap();
+
+	/**
+	 * Maps material names of the last loaded model to 3DS material chunks.
+	 *
+	 * This is only valid for the last time {@link #createModel} was called.
+	 */
+	private Map<String, Ab3dsMaterial> _materialsByName = Collections.emptyMap();
+
+	/**
 	 * Creates a new 3DS file.
 	 */
 	public Ab3dsFile()
@@ -310,6 +324,43 @@ public class Ab3dsFile
 		return createModel( materials, materialChunks );
 	}
 
+
+	/**
+	 * Get main chunk of 3DS file.
+	 *
+	 * @return  Main chunk of 3DS file.
+	 */
+	public HierarchyChunk getMain()
+	{
+		return _main;
+	}
+
+	/**
+	 * Get map from material names in the last loaded model to appearances.
+	 *
+	 * This is only valid for the last time {@link #createModel} was called.
+	 *
+	 * @return  Map from material names in the last loaded model to appearances.
+	 */
+	public Map<String, Appearance> getAppearancesByName()
+	{
+		return Collections.unmodifiableMap( _appearancesByName );
+	}
+
+	/**
+	 * Get map from material names in the last loaded model to 3DS material
+	 * chunks.
+	 *
+	 * This is only valid for the last time {@link #createModel} was called.
+	 *
+	 * @return  Map from material names in the last loaded model to 3DS material
+	 *          chunks.
+	 */
+	public Map<String, Ab3dsMaterial> getMaterialsByName()
+	{
+		return Collections.unmodifiableMap( _materialsByName );
+	}
+
 	/**
 	 * Creates a basic appearance from the given material chunk, excluding any
 	 * texture maps.
@@ -349,6 +400,9 @@ public class Ab3dsFile
 	@NotNull
 	private Node3D createModel( @NotNull final Map<String, Appearance> materials, @NotNull final Map<String, Ab3dsMaterial> materialChunks )
 	{
+		_appearancesByName = materials;
+		_materialsByName = materialChunks;
+
 		final Node3D result = new Node3D();
 
 		final HierarchyChunk editChunk = getEditChunk();
@@ -550,47 +604,5 @@ public class Ab3dsFile
 		final Ab3dsFile file = new Ab3dsFile();
 		file.load( in );
 		return file.createModel( resourceLoader );
-	}
-
-	/**
-	 * Run application.
-	 *
-	 * @param   args    Command-line arguments.
-	 *
-	 * @throws  IOException if an I/O error occurs.
-	 */
-	public static void main( final String[] args )
-		throws IOException
-	{
-		boolean ok = true;
-
-		for ( int i = 0 ; ok && i < args.length ; i++ )
-		{
-			final String arg = args[ i ];
-
-			if ( "-d".equals( arg )
-			  || "--debug".equals( arg ) )
-			{
-				DEBUG = true;
-			}
-			else
-			{
-				System.err.println( "error: invalid command-line argument: " + arg );
-				ok = false;
-			}
-		}
-
-		if ( ok )
-		{
-			final Ab3dsFile loader = new Ab3dsFile();
-			loader.load( new File( "C:\\progra~1\\Graphics\\3dsmax\\meshes\\Tv.3ds" ) );
-			if ( DEBUG )
-			{
-				System.out.println( "---------------------------" );
-			}
-
-			//f.saveAs( new File( "C:\\progra~1\\Graphics\\3dsmax\\meshes\\Tv2.3ds" ) );
-			//f.load( new File( "C:\\temp\\3ds\\write.3ds" ) );
-		}
 	}
 }
