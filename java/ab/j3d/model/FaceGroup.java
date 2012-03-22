@@ -40,24 +40,25 @@ public class FaceGroup
 	private final List<Face3D> _faces;
 
 	/**
-	* Smoothing flag this face. Smooth faces are used to approximate
-	 * smooth/curved/rounded parts of objects.
+	 * Smooth rendering flag for faces in this group. Smooth faces are used to
+	 * approximate smooth/curved/rounded parts of objects.
 	 * <p />
-	 * This information would typically be used to select the most appropriate
-	 * shading algorithm.
+	 * This flag is typically used to adjust the shading algorithm, e.g. by
+	 * interpolating vertex normals across the surface (Phong shading).
 	*/
 	private boolean _smooth;
 
 	/**
-	 * Material of this face.
+	 * Apparance of faces in this group.
 	 */
 	private Appearance _appearance;
 
 	/**
-	 * Flag to indicate that the plane is two-sided. This means, that the
-	 * plane is 'visible' on both sides.
+	 * Flag to indicate that faces in this group are two-sided as opposed to
+	 * single-sided. This means, that the plane is 'visible' on both sides (no
+	 * back-face culling is performed).
 	 */
-	private final boolean _twoSided;
+	private boolean _twoSided;
 
 	/**
 	 * Construct new face group.
@@ -89,7 +90,7 @@ public class FaceGroup
 	 *
 	 * @param   face    Face to add.
 	 */
-	public final void addFace( final Face3D face )
+	public void addFace( final Face3D face )
 	{
 		_faces.add( face );
 	}
@@ -140,10 +141,22 @@ public class FaceGroup
 	/**
 	 * Returns whether faces in this group are two-sided.
 	 *
-	 * @return  <code>true</code> if faces are two-sided.
+	 * @return  {@code true} if faces are two-sided;
+	 *          {@code false} if faces are single-sided.
 	 */
 	public boolean isTwoSided()
 	{
 		return _twoSided;
+	}
+
+	/**
+	 * Sets whether faces in this group are two-sided.
+	 *
+	 * @param   twoSided    {@code true} if faces are two-sided;
+	 *                      {@code false} if faces are single-sided.
+	 */
+	public void setTwoSided( final boolean twoSided )
+	{
+		_twoSided = twoSided;
 	}
 }
