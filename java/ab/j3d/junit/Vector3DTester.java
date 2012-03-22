@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,8 @@
  * ====================================================================
  */
 package ab.j3d.junit;
+
+import java.util.*;
 
 import ab.j3d.*;
 import junit.framework.*;
@@ -48,14 +50,14 @@ public class Vector3DTester
 	 *
 	 * @throws  AssertionFailedError is the assertion fails.
 	 */
-	public static void assertEquals( final String messagePrefix , final Vector3D expected , final Vector3D actual , final double delta )
+	public static void assertEquals( final String messagePrefix, final Vector3D expected, final Vector3D actual, final double delta )
 	{
 		final String actualPrefix = ( messagePrefix != null ) ? messagePrefix + " - " : "";
 
 		AssertionFailedError errorX = null;
 		try
 		{
-			Assert.assertEquals( actualPrefix + "Incorrect 'x' value." , expected.x , actual.x , delta );
+			Assert.assertEquals( actualPrefix + "Incorrect 'x' value.", expected.x, actual.x, delta );
 		}
 		catch ( AssertionFailedError e )
 		{
@@ -65,7 +67,7 @@ public class Vector3DTester
 		AssertionFailedError errorY = null;
 		try
 		{
-			Assert.assertEquals( actualPrefix + "Incorrect 'y' value." , expected.y , actual.y , delta );
+			Assert.assertEquals( actualPrefix + "Incorrect 'y' value.", expected.y, actual.y, delta );
 		}
 		catch ( AssertionFailedError e )
 		{
@@ -75,7 +77,7 @@ public class Vector3DTester
 		AssertionFailedError errorZ = null;
 		try
 		{
-			Assert.assertEquals( actualPrefix + "Incorrect 'z' value." , expected.z , actual.z , delta );
+			Assert.assertEquals( actualPrefix + "Incorrect 'z' value.", expected.z, actual.z, delta );
 		}
 		catch ( AssertionFailedError e )
 		{
@@ -85,7 +87,7 @@ public class Vector3DTester
 		if ( ( ( errorX != null ) && ( ( errorY != null ) || ( errorZ != null ) ) )
 		                          || ( ( errorY != null ) && ( errorZ != null ) ) )
 		{
-			Assert.assertEquals( messagePrefix , expected , actual );
+			Assert.assertEquals( messagePrefix, expected, actual );
 		}
 		else
 		{
@@ -116,7 +118,22 @@ public class Vector3DTester
 	 *
 	 * @throws  AssertionFailedError is the assertion fails.
 	 */
-	public static void assertEquals( final String messagePrefix , final Vector3D[] expected , final Vector3D[] actual , final double delta )
+	public static void assertEquals( final String messagePrefix, final Vector3D[] expected, final Vector3D[] actual, final double delta )
+	{
+		assertEquals( messagePrefix, Arrays.asList( expected ), Arrays.asList( actual ), delta );
+	}
+
+	/**
+	 * Asserts that one vector is equal to another vector.
+	 *
+	 * @param   messagePrefix   Prefix to failure messages.
+	 * @param   expected        Expected vector value.
+	 * @param   actual          Actual vector value.
+	 * @param   delta           Delta value to limit the acceptable value range.
+	 *
+	 * @throws  AssertionFailedError is the assertion fails.
+	 */
+	public static void assertEquals( final String messagePrefix, final List<Vector3D> expected, final List<Vector3D> actual, final double delta )
 	{
 		final String actualPrefix = ( ( messagePrefix != null ) ? messagePrefix + " - " : "" );
 
@@ -127,14 +144,14 @@ public class Vector3DTester
 		else
 		{
 			Assert.assertNotNull( actualPrefix + "actual" + " is 'null', '" + "expected" + "' is not", actual );
-			Assert.assertEquals( actualPrefix + '\'' + "expected" + "' should have same length as '" + "actual" + '\'', expected.length, actual.length );
+			Assert.assertEquals( actualPrefix + '\'' + "expected" + "' should have same length as '" + "actual" + '\'', expected.size(), actual.size() );
 
-			for ( int i = 0; i < expected.length; i++ )
+			for ( int i = 0; i < expected.size(); i++ )
 			{
 				final String expectedValueName = "expected" + "[ " + i + " ]";
-				final String actualValueName   = "actual" +   "[ " + i + " ]";
-				final Vector3D expectedValue     = expected[ i ];
-				final Vector3D actualValue       = actual[ i ];
+				final String actualValueName = "actual" + "[ " + i + " ]";
+				final Vector3D expectedValue = expected.get( i );
+				final Vector3D actualValue = actual.get( i );
 
 				assertEquals( actualPrefix + "mismatch " + expectedValueName + " == " + actualValueName, expectedValue, actualValue, delta );
 			}
