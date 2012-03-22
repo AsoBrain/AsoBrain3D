@@ -77,17 +77,14 @@ public class ZjfLoader
 	 * @param   assembly    Assembly to convert.
 	 *
 	 * @return  {@link Node3D}.
-	 *
-	 * @throws  IOException if an I/O error occurs.
 	 */
-	static Node3D convertAssemblyToNode3D( final Assembly assembly )
-		throws IOException
+	public static Node3D convertAssemblyToNode3D( final Assembly assembly )
 	{
 		final Node3D result = new Node3D();
 
-		final List<Part> parts = assembly.parts;
-		final List<Integer> partlist = assembly.partlist;
-		final List<Matrix3D> matrixlist = assembly.matrixlist;
+		final List<Part> parts = assembly._partDefinitions;
+		final List<Integer> partlist = assembly._partList;
+		final List<Matrix3D> matrixlist = assembly._matrixList;
 
 		final List<Object3D> convertedParts = new ArrayList<Object3D>( parts.size() );
 		for ( final Part part : parts )
@@ -115,24 +112,23 @@ public class ZjfLoader
 	 *
 	 * @return  {@link Object3D}.
 	 */
-	static Object3D convertPartToObject3D( final Part part )
+	public static Object3D convertPartToObject3D( final Part part )
 	{
-		final List<Vector3D> vertexCoordinates = part.vertexCoordinates;
-		final List<Vector3D> normals = part.normals;
+		final List<Vector3D> partVertices = part.vertexCoordinates;
+		final List<Vector3D> partNormals = part.normals;
 
 		final Object3DBuilder builder = new Object3DBuilder();
-		builder.setVertexCoordinates( vertexCoordinates );
+		builder.setVertexCoordinates( partVertices );
 
 		for ( final Triangle triangle : part.triangles )
 		{
-			final List<Integer> vertices = triangle.vertices;
-			final List<Integer> normalList = triangle.normalList;
+			final int[] vertices = triangle.vertices;
+			final int[] normalList = triangle.normalList;
 
-			final int[] vertexIndices = { vertices.get( 0 ), vertices.get( 1 ), vertices.get( 2 ) };
-			final Vector3D[] vertexNormals = ( normalList != null ) ? new Vector3D[] { normals.get( normalList.get( 0 ) ), normals.get( normalList.get( 1 ) ), normals.get( normalList.get( 2 ) ) } : null;
+			final Vector3D[] vertexNormals = ( normalList != null ) ? new Vector3D[] { partNormals.get( normalList[ 0 ] ), partNormals.get( normalList[ 1 ] ), partNormals.get( normalList[ 2 ] ) } : null;
 			final Appearance appearance = BasicAppearance.createForColor( triangle.color );
 
-			builder.addFace( vertexIndices, appearance, null, vertexNormals, false, true );
+			builder.addFace( vertices, appearance, null, vertexNormals, false, true );
 		}
 
 		return builder.getObject3D();
@@ -147,24 +143,56 @@ public class ZjfLoader
 	 *
 	 * @throws  IOException if an I/O or parse error occurs.
 	 */
-	static Assembly parse( final URL url )
+	public static Assembly parse( final URL url )
 		throws IOException
 	{
-		final InputStream is;
 
-		final String file = url.getFile();
-		if ( file.endsWith( ".zjv" ) || file.endsWith( ".ZJV" ) )
+		final Assembly result;
+
+		final InputStream is = url.openStream();
+		try
 		{
-			final ZipInputStream zipInputStream = new ZipInputStream( url.openStream() );
-			zipInputStream.getNextEntry();
-			is = zipInputStream;
+			final String file = url.getFile();
+			if ( file.endsWith( ".zjv" ) || file.endsWith( ".ZJV" ) )
+			{
+				final ZipInputStream zipInputStream = new ZipInputStream( is );
+				try
+				{
+					zipInputStream.getNextEntry();
+					final BufferedReader reader = new BufferedReader( new InputStreamReader( zipInputStream ), 131072 );
+					try
+					{
+						result = parse( reader );
+					}
+					finally
+					{
+						reader.close();
+					}
+				}
+				finally
+				{
+					zipInputStream.close();
+				}
+			}
+			else
+			{
+				final BufferedReader reader = new BufferedReader( new InputStreamReader( is ), 131072 );
+				try
+				{
+					result = parse( reader );
+				}
+				finally
+				{
+					reader.close();
+				}
+			}
 		}
-		else
+		finally
 		{
-			is = url.openStream();
+			is.close();
 		}
 
-		return parse( new BufferedReader( new InputStreamReader( is ), 131072 ) );
+		return result;
 	}
 
 	/**
@@ -176,7 +204,7 @@ public class ZjfLoader
 	 *
 	 * @throws  IOException if an I/O or parse error occurs.
 	 */
-	static Assembly parse( final Reader reader )
+	public static Assembly parse( final Reader reader )
 		throws IOException
 	{
 		final Assembly assembly = new Assembly();
@@ -234,7 +262,7 @@ public class ZjfLoader
 					if ( ( stream.ttype == TT_WORD ) && ( "P".equals( stream.sval ) ) )
 					{
 						currentPart = new Part();
-						assembly.parts.add( currentPart );
+						assembly._partDefinitions.add( currentPart );
 						state = READ_OPEN;
 						nextState = IN_PART;
 					}
@@ -292,8 +320,8 @@ public class ZjfLoader
 					stream.nextToken(); final double ty = getDoubleValue( stream );
 					stream.nextToken(); final double tz = getDoubleValue( stream );
 
-					assembly.matrixlist.add( new Matrix3D( ax, bx, cx, tx, ay, by, cy, ty, az, bz, cz, tz ) );
-					assembly.partlist.add( Integer.valueOf( partNr ) );
+					assembly._matrixList.add( new Matrix3D( ax, bx, cx, tx, ay, by, cy, ty, az, bz, cz, tz ) );
+					assembly._partList.add( Integer.valueOf( partNr ) );
 
 					state = READ_MEMBER;
 					break;
@@ -320,7 +348,7 @@ public class ZjfLoader
 					stream.nextToken(); final double ty = getDoubleValue( stream );
 					stream.nextToken(); final double tz = getDoubleValue( stream );
 
-					assembly.explosionmatrixlist.add( new Matrix3D( ax, bx, cx, tx, ay, by, cy, ty, az, bz, cz, tz ) );
+					assembly._explosionMatrixList.add( new Matrix3D( ax, bx, cx, tx, ay, by, cy, ty, az, bz, cz, tz ) );
 
 					state = READ_MEMBER;
 					break;
@@ -458,7 +486,7 @@ public class ZjfLoader
 
 						final int v3 = (int) getDoubleValue( stream );
 
-						currentPart.triangles.add( new Triangle( currentPart, Arrays.asList( v1, v2, v3 ), currentPart.color, 0 ) );
+						currentPart.triangles.add( new Triangle( currentPart, v1, v2, v3, currentPart.color ) );
 					}
 					while ( ( stream.ttype != (int)'}' ) && ( stream.ttype != TT_EOF ) );
 
@@ -518,7 +546,7 @@ public class ZjfLoader
 						final int v3 = (int) getDoubleValue( stream );
 
 						final Triangle triangel = currentPart.triangles.get( i++ );
-						triangel.normalList = Arrays.asList( v1, v2, v3 );
+						triangel.normalList = new int[] { v1, v2, v3 };
 					}
 					while ( ( stream.ttype != (int)'}' ) && ( stream.ttype != TT_EOF ) );
 
@@ -600,8 +628,10 @@ public class ZjfLoader
 
 						if ( data.size() == 8 )
 						{
+							final Double threadType = data.get( 0 );
+
 							final Thread thread = new Thread();
-							thread.type = data.get( 0 ).intValue();
+							thread.type = threadType.intValue();
 							thread.startPoint = new Vector3D( data.get( 1 ), data.get( 2 ), data.get( 3 ) );
 							thread.endPoint = new Vector3D( data.get( 4 ), data.get( 5 ), data.get( 6 ) );
 							thread.diameter = data.get( 7 );
@@ -624,7 +654,7 @@ public class ZjfLoader
 						return null;
 					}
 
-					final int r = (int) getDoubleValue( stream );
+					final int red = (int) getDoubleValue( stream );
 
 					stream.nextToken();
 					if ( stream.ttype != TT_WORD )
@@ -632,7 +662,7 @@ public class ZjfLoader
 						return null;
 					}
 
-					final int g = (int) getDoubleValue( stream );
+					final int green = (int) getDoubleValue( stream );
 
 					stream.nextToken();
 					if ( stream.ttype != TT_WORD )
@@ -640,8 +670,8 @@ public class ZjfLoader
 						return null;
 					}
 
-					final int b = (int) getDoubleValue( stream );
-					currentPart.color = new Color4f( r, g, b );
+					final int blue = (int) getDoubleValue( stream );
+					currentPart.color = new Color4f( red, green, blue );
 
 					stream.nextToken();
 
@@ -732,87 +762,127 @@ public class ZjfLoader
 	/*
 	 * Parser states.
 	 */
-	private static final int START = 0;
-	private static final int END = 1;
-	private static final int IN_PART = 2;
-	private static final int READ_OPEN = 3;
-	private static final int READ_PART_NAME = 4;
-	private static final int READ_PART_COL = 5;
-	private static final int READ_PART_MID = 20;
-	private static final int READ_PART_FACE_LIST3 = 6;
-	private static final int READ_PART_POINT_LIST = 7;
-	private static final int READ_CLOSE = 8;
-	private static final int READY_PART = 9;
-	private static final int IN_STRUCT = 10;
-	private static final int READ_STRUCT_NAME = 11;
-	private static final int READ_MEMBER = 12;
-	private static final int READ_PART_NORMAL_LIST = 13;
-	private static final int READ_PART_FACE_NORMAL_LIST3 = 14;
-	private static final int READ_PART_FACE_COLOR_LIST3 = 21;
-	private static final int READ_HARD_POINTS = 15;
-	private static final int READ_SOFT_POINTS = 16;
-	private static final int READ_MEMBER_MATRIX = 17;
-	private static final int READ_EXPLOSION_MATRIX = 18;
-	private static final int READ_THREAD_DATA = 19;
-	private static final int READ_PART_COLS = 22;
 
-	private static class Assembly
+	/** Parser state. */ private static final int START = 0;
+	/** Parser state. */ private static final int END = 1;
+	/** Parser state. */ private static final int IN_PART = 2;
+	/** Parser state. */ private static final int READ_OPEN = 3;
+	/** Parser state. */ private static final int READ_PART_NAME = 4;
+	/** Parser state. */ private static final int READ_PART_COL = 5;
+	/** Parser state. */ private static final int READ_PART_MID = 20;
+	/** Parser state. */ private static final int READ_PART_FACE_LIST3 = 6;
+	/** Parser state. */ private static final int READ_PART_POINT_LIST = 7;
+	/** Parser state. */ private static final int READ_CLOSE = 8;
+	/** Parser state. */ private static final int READY_PART = 9;
+	/** Parser state. */ private static final int IN_STRUCT = 10;
+	/** Parser state. */ private static final int READ_STRUCT_NAME = 11;
+	/** Parser state. */ private static final int READ_MEMBER = 12;
+	/** Parser state. */ private static final int READ_PART_NORMAL_LIST = 13;
+	/** Parser state. */ private static final int READ_PART_FACE_NORMAL_LIST3 = 14;
+	/** Parser state. */ private static final int READ_PART_FACE_COLOR_LIST3 = 21;
+	/** Parser state. */ private static final int READ_HARD_POINTS = 15;
+	/** Parser state. */ private static final int READ_SOFT_POINTS = 16;
+	/** Parser state. */ private static final int READ_MEMBER_MATRIX = 17;
+	/** Parser state. */ private static final int READ_EXPLOSION_MATRIX = 18;
+	/** Parser state. */ private static final int READ_THREAD_DATA = 19;
+	/** Parser state. */ private static final int READ_PART_COLS = 22;
+
+	/**
+	 * Assembly is the main element of a ZJF file.
+	 */
+	public static class Assembly
 	{
-		List<Part> parts = new ArrayList<Part>();
-		List<Integer> partlist = new ArrayList<Integer>();
-		List<Matrix3D> matrixlist = new ArrayList<Matrix3D>();
-		List<Matrix3D> explosionmatrixlist = new ArrayList<Matrix3D>();
+		private List<Part> _partDefinitions = new ArrayList<Part>();
+		private List<Integer> _partList = new ArrayList<Integer>();
+		private List<Matrix3D> _matrixList = new ArrayList<Matrix3D>();
+		private List<Matrix3D> _explosionMatrixList = new ArrayList<Matrix3D>();
+
+		/**
+		 * Get part definitions in this assembly.
+		 *
+		 * @return  List of part definitions (reference by part list).
+		 */
+		public List<Part> getPartDefinitions()
+		{
+			return Collections.unmodifiableList( _partDefinitions );
+		}
+
+		/**
+		 * Get part usages. Each element is a part definition index. The
+		 * matrix list should match this part list.
+		 *
+		 * @return  Part definition indices.
+		 */
+		public List<Integer> getPartList()
+		{
+			return Collections.unmodifiableList( _partList );
+		}
+
+		/**
+		 * Get part transformation matrices. Each element is used to place a
+		 * part in 3D space. This matrix list should match the part list.
+		 *
+		 * @return  Part transformation matrices.
+		 */
+		public List<Matrix3D> getMatrixList()
+		{
+			return Collections.unmodifiableList( _matrixList );
+		}
 	}
 
-	private static class Part
+	public static class Part
 	{
-		int alpha;
-		Color4f color;
-		String name;
-		List<Vector3D> vertexCoordinates = new ArrayList<Vector3D>();
-		String mid;
-		List<Triangle> triangles = new ArrayList<Triangle>();
-		List<Vector3D> normals = new ArrayList<Vector3D>();
-		List<Integer> hardPoints;
-		List<Integer> softPoints;
-		List<Thread> threads = new ArrayList<Thread>();
+		private int alpha;
+		private Color4f color;
+		private String name;
+		private List<Vector3D> vertexCoordinates = new ArrayList<Vector3D>();
+		private String mid;
+		private List<Triangle> triangles = new ArrayList<Triangle>();
+		private List<Vector3D> normals = new ArrayList<Vector3D>();
+		private List<Integer> hardPoints;
+		private List<Integer> softPoints;
+		private List<Thread> threads = new ArrayList<Thread>();
+
+		public String getName()
+		{
+			return name;
+		}
 	}
 
 	private static class Triangle
 	{
 		Color4f color;
-		List<Integer> vertices;
-		List<Integer> normalList;
+		int[] vertices;
+		int[] normalList;
 		Vector3D normal;
 
-		Triangle( Part part, List<Integer> vertices, Color4f col, int alpha )
+		private Triangle( final Part part, final int v1, final int v2, final int v3, final Color4f col )
 		{
-			normal = null;
-			this.vertices = vertices;
+			vertices = new int[] { v1, v2, v3 };
 			color = col;
 
-			Vector3D p1 = part.vertexCoordinates.get( vertices.get( 0 ) );
-			Vector3D p2 = part.vertexCoordinates.get( vertices.get( 1 ) );
-			Vector3D p3 = part.vertexCoordinates.get( vertices.get( 2 ) );
+			final Vector3D p1 = part.vertexCoordinates.get( v1 );
+			final Vector3D p2 = part.vertexCoordinates.get( v2 );
+			final Vector3D p3 = part.vertexCoordinates.get( v3 );
 			normal = GeometryTools.getPlaneNormal( p1, p2, p3 );
 		}
 	}
 
-	private static class Thread
+	public static class Thread
 	{
+		int type = -1;
+		Vector3D startPoint = null;
+		Vector3D endPoint = null;
+		double diameter = -1D;
+		List<Vector3D> helixPoints = null;
+		List<Vector3D> helixvectors = null;
+		Matrix3D helixMatrix = null;
 
-		Thread()
+		private Thread()
 		{
-			type = -1;
-			startPoint = null;
-			endPoint = null;
-			diameter = -1D;
-			helixPoints = null;
-			helixvectors = null;
-			helixMatrix = null;
 		}
 
-		void calcHelix()
+		protected void calcHelix()
 		{
 			final double l = Vector3D.length( endPoint.x - startPoint.x, endPoint.y - startPoint.y, endPoint.z - startPoint.z );
 			final double r = ( type == 0 ) ? diameter / 1.9 : diameter / 2.1;
@@ -859,13 +929,5 @@ public class ZjfLoader
 			                            xVec.y, yVec.y, zVec.y, startPoint.y,
 			                            xVec.z, yVec.z, zVec.z, startPoint.z );
 		}
-
-		int type;
-		Vector3D startPoint;
-		Vector3D endPoint;
-		double diameter;
-		List<Vector3D> helixPoints;
-		List<Vector3D> helixvectors;
-		Matrix3D helixMatrix;
 	}
 }
