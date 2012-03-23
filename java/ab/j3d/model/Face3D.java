@@ -115,7 +115,7 @@ public class Face3D
 	 * @param   vertices        Vertices used by this face.
 	 * @param   tessellation    Tessellation of this face (optional).
 	 */
-	public Face3D( @NotNull final Vector3D normal, @NotNull final List<Vertex3D> vertices, @Nullable final Tessellation tessellation )
+	public Face3D( final Vector3D normal, @NotNull final List<Vertex3D> vertices, @Nullable final Tessellation tessellation )
 	{
 		_vertices = vertices;
 		_tessellation = tessellation;
