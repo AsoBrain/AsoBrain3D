@@ -17,7 +17,12 @@ public class TestObject3DSlicer
 	extends TestCase
 {
 	/**
-	 * Test {@link Object3DSlicer#sliceOutline} method.
+	 * Name of this class.
+	 */
+	private static final String CLASS_NAME = TestObject3DSlicer.class.getName();
+
+	/**
+	 * Test {@link Object3DSlicer#slice} method.
 	 * <pre>
 	 *                      0------1
 	 *           17        /        \
@@ -50,9 +55,13 @@ public class TestObject3DSlicer
 	public void testSliceOutline()
 		throws Exception
 	{
+		final String where = CLASS_NAME + ".testSliceOutline()";
+
 		boolean closed = true;
 		do
 		{
+			System.out.println( where + " - closed=" + closed );
+
 			final Object3D object = new Object3D();
 			final Matrix3D faceTransform = Matrix3D.getPlaneTransform( Vector3D.ZERO, Vector3D.POSITIVE_Y_AXIS, true );
 			final BasicPlane3D facePlane = new BasicPlane3D( faceTransform, true );
@@ -89,19 +98,31 @@ public class TestObject3DSlicer
 			final BasicPlane3D cuttingPlane = new BasicPlane3D( Vector3D.POSITIVE_Z_AXIS, 50.0, true );
 
 			final Object3DSlicer slicer = new Object3DSlicer();
+			slicer.setTopEnabled( true );
+			slicer.setTopCapped( true );
+			slicer.setBottomEnabled( true );
+			slicer.setBottomCapped( true );
+			slicer.setSliceEnabled( true );
 			slicer.slice( object, cuttingPlane );
 
 			final Object3D topObject = slicer.getTopObject();
-			final List<FaceGroup> topFaceGroups = topObject.getFaceGroups();
-			final FaceGroup topFaceGroup = topFaceGroups.get( 0 );
-			final List<Face3D> topFaces = topFaceGroup.getFaces();
-			final Face3D topFace = topFaces.get( 0 );
-			final Tessellation topTessellation = topFace.getTessellation();
-			final List<int[]> topOutlines = topTessellation.getOutlines();
-
-			for ( int[] topOutline : topOutlines )
+			if ( closed )
 			{
-				System.out.println( "topOutline = " + Arrays.toString( topOutline ) );
+				final List<FaceGroup> topFaceGroups = topObject.getFaceGroups();
+				final FaceGroup topFaceGroup = topFaceGroups.get( 0 );
+				final List<Face3D> topFaces = topFaceGroup.getFaces();
+				final Face3D topFace = topFaces.get( 0 );
+				final Tessellation topTessellation = topFace.getTessellation();
+				final List<int[]> topOutlines = topTessellation.getOutlines();
+
+				for ( final int[] topOutline : topOutlines )
+				{
+					System.out.println( "\ttopOutline = " + Arrays.toString( topOutline ) );
+				}
+			}
+			else
+			{
+				assertNull( "Unclosed path should not produce a top object", topObject );
 			}
 
 			closed = !closed;
