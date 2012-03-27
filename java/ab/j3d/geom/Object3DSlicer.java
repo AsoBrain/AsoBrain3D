@@ -371,7 +371,16 @@ public class Object3DSlicer
 	 */
 	public Object3D getTopObject()
 	{
-		return _topObject;
+		Object3D result = _topObject;
+		if ( result != null )
+		{
+			final List<FaceGroup> topFaceGroups = result.getFaceGroups();
+			if ( topFaceGroups.isEmpty() )
+			{
+				result = null;
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -621,7 +630,16 @@ public class Object3DSlicer
 	 */
 	public Object3D getBottomObject()
 	{
-		return _bottomObject;
+		Object3D result = _bottomObject;
+		if ( result != null )
+		{
+			final List<FaceGroup> topFaceGroups = result.getFaceGroups();
+			if ( topFaceGroups.isEmpty() )
+			{
+				result = null;
+			}
+		}
+		return result;
 	}
 
 	/**
