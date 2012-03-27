@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -112,9 +112,19 @@ public class Cylinder3D
 	 */
 	public Cylinder3D( final double height, final double radius, final int numEdges, @Nullable final Appearance sideAppearance, @Nullable final UVMap sideMap, final boolean smoothCircumference, @Nullable final Appearance topAppearance, @Nullable final UVMap topMap, @Nullable final Appearance bottomAppearance, @Nullable final UVMap bottomMap, final boolean flipNormals )
 	{
-		if ( ( radius <= 0.0 ) || ( height <= 0.0 ) || ( numEdges < 3 ) )
+		if ( height <= 0.0  )
 		{
-			throw new IllegalArgumentException( "inacceptable arguments to Cylinder constructor" );
+			throw new IllegalArgumentException( "height: " + height );
+		}
+
+		if ( radius <= 0.0  )
+		{
+			throw new IllegalArgumentException( "radius: " + radius );
+		}
+
+		if ( numEdges < 3 )
+		{
+			throw new IllegalArgumentException( "numEdges: " + numEdges );
 		}
 
 		this.height = height;
