@@ -96,6 +96,16 @@ public class FaceGroup
 	}
 
 	/**
+	 * Remove a face from this group.
+	 *
+	 * @param   face    Face to remove.
+	 */
+	public void removeFace( final Face3D face )
+	{
+		_faces.remove( face );
+	}
+
+	/**
 	 * Returns the smoothing flag of faces in this group. Smooth faces are used
 	 * to approximate smooth/curved/rounded parts of objects.
 	 *
