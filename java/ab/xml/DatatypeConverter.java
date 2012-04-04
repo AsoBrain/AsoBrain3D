@@ -138,6 +138,10 @@ public class DatatypeConverter
 		{
 			result = "-INF";
 		}
+		else if ( Float.isNaN( v ) )
+		{
+			result = "NaN";
+		}
 		else
 		{
 			result = String.valueOf( v );
@@ -163,6 +167,10 @@ public class DatatypeConverter
 		else if ( v == Double.NEGATIVE_INFINITY )
 		{
 			result = "-INF";
+		}
+		else if ( Double.isNaN( v ) )
+		{
+			result = "NaN";
 		}
 		else
 		{
