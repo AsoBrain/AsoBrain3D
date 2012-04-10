@@ -32,17 +32,17 @@ import ab.j3d.view.*;
 import org.jetbrains.annotations.*;
 
 /**
- * This class can paint a 3D scene directly to a {@link Graphics2D} context.
+ * This class can render a 3D scene directly to a {@link Graphics2D} context.
  *
  * @author  Peter S. Heijnen
  * @version $Revision$ $Date$
  */
-public class Painter
+public class Java2dRenderer
 {
 	/**
 	 * Utility class is not supposed to be instantiated.
 	 */
-	private Painter()
+	private Java2dRenderer()
 	{
 	}
 
