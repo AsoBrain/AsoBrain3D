@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2010 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -84,8 +84,8 @@ public final class MathTools
 	 * @param   value1      First value to compare.
 	 * @param   value2      Second value to compare.
 	 *
-	 * @return  <code>true</code> is the values are within a +/- 0.001 tolerance
-	 *          of each other; <code>false</code> otherwise.
+	 * @return  {@code true} is the values are within a +/- 0.001 tolerance
+	 *          of each other; {@code false} otherwise.
 	 */
 	public static boolean almostEqual( final float value1 , final float value2 )
 	{
@@ -100,8 +100,8 @@ public final class MathTools
 	 * @param   value1      First value to compare.
 	 * @param   value2      Second value to compare.
 	 *
-	 * @return  <code>true</code> is the values are within a +/- 0.001 tolerance
-	 *          of eachother; <code>false</code> otherwise.
+	 * @return  {@code true} is the values are within a +/- 0.001 tolerance
+	 *          of each other; {@code false} otherwise.
 	 */
 	public static boolean almostEqual( final double value1 , final double value2 )
 	{
@@ -117,8 +117,8 @@ public final class MathTools
 	 * @param   value2      Second value to compare.
 	 * @param   epsilon     Tolerance (always a positive number).
 	 *
-	 * @return  <code>true</code> is the values are within the sepcified
-	 *          tolerance of eachother; <code>false</code> otherwise.
+	 * @return  {@code true} is the values are within the sepcified
+	 *          tolerance of each other; {@code false} otherwise.
 	 */
 	public static boolean almostEqual( final float value1 , final float value2 , final float epsilon )
 	{
@@ -134,8 +134,8 @@ public final class MathTools
 	 * @param   value2      Second value to compare.
 	 * @param   epsilon     Tolerance (always a positive number).
 	 *
-	 * @return  <code>true</code> is the values are within the sepcified
-	 *          tolerance of eachother; <code>false</code> otherwise.
+	 * @return  {@code true} is the values are within the sepcified
+	 *          tolerance of each other; {@code false} otherwise.
 	 */
 	public static boolean almostEqual( final double value1 , final double value2 , final double epsilon )
 	{
@@ -150,9 +150,9 @@ public final class MathTools
 	 * @param   value1      First value to compare.
 	 * @param   value2      Second value to compare.
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is less than or within
-	 *          a +/- 0.001 tolerance of <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return  <code>true</code> is {@code value1} is less than or within
+	 *          a +/- 0.001 tolerance of {@code value2};
+	 *          {@code false} otherwise.
 	 */
 	public static boolean lessOrAlmostEqual( final float value1 , final float value2 )
 	{
@@ -166,9 +166,9 @@ public final class MathTools
 	 * @param   value1      First value to compare.
 	 * @param   value2      Second value to compare.
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is less than or within
-	 *          a +/- 0.001 tolerance of <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return  <code>true</code> is {@code value1} is less than or within
+	 *          a +/- 0.001 tolerance of {@code value2};
+	 *          {@code false} otherwise.
 	 */
 	public static boolean lessOrAlmostEqual( final double value1 , final double value2 )
 	{
@@ -183,9 +183,9 @@ public final class MathTools
 	 * @param   value2      Second value to compare.
 	 * @param   epsilon     Tolerance (always a positive number).
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is less than or within
-	 *          the specified tolerance of <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return  <code>true</code> is {@code value1} is less than or within
+	 *          the specified tolerance of {@code value2};
+	 *          {@code false} otherwise.
 	 */
 	public static boolean lessOrAlmostEqual( final float value1 , final float value2 , final float epsilon )
 	{
@@ -200,9 +200,9 @@ public final class MathTools
 	 * @param   value2      Second value to compare.
 	 * @param   epsilon     Tolerance (always a positive number).
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is less than or within
-	 *          the specified tolerance of <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return  <code>true</code> is {@code value1} is less than or within
+	 *          the specified tolerance of {@code value2};
+	 *          {@code false} otherwise.
 	 */
 	public static boolean lessOrAlmostEqual( final double value1 , final double value2 , final double epsilon )
 	{
@@ -216,9 +216,9 @@ public final class MathTools
 	 * @param   value1      First value to compare.
 	 * @param   value2      Second value to compare.
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is greater than or within
-	 *          a +/- 0.001 tolerance of <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return  <code>true</code> is {@code value1} is greater than or within
+	 *          a +/- 0.001 tolerance of {@code value2};
+	 *          {@code false} otherwise.
 	 */
 	public static boolean greaterOrAlmostEqual( final float value1 , final float value2 )
 	{
@@ -232,9 +232,9 @@ public final class MathTools
 	 * @param   value1      First value to compare.
 	 * @param   value2      Second value to compare.
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is greater than or within
-	 *          a +/- 0.001 tolerance of <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return  <code>true</code> is {@code value1} is greater than or within
+	 *          a +/- 0.001 tolerance of {@code value2};
+	 *          {@code false} otherwise.
 	 */
 	public static boolean greaterOrAlmostEqual( final double value1 , final double value2 )
 	{
@@ -249,9 +249,9 @@ public final class MathTools
 	 * @param   value2      Second value to compare.
 	 * @param   epsilon     Tolerance (always a positive number).
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is greater than or within
-	 *          the specified tolerance of <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return  <code>true</code> is {@code value1} is greater than or within
+	 *          the specified tolerance of {@code value2};
+	 *          {@code false} otherwise.
 	 */
 	public static boolean greaterOrAlmostEqual( final float value1 , final float value2 , final float epsilon )
 	{
@@ -266,9 +266,9 @@ public final class MathTools
 	 * @param   value2      Second value to compare.
 	 * @param   epsilon     Tolerance (always a positive number).
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is greater than or within
-	 *          the specified tolerance of <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return  <code>true</code> is {@code value1} is greater than or within
+	 *          the specified tolerance of {@code value2};
+	 *          {@code false} otherwise.
 	 */
 	public static boolean greaterOrAlmostEqual( final double value1 , final double value2 , final double epsilon )
 	{
@@ -282,9 +282,9 @@ public final class MathTools
 	 * @param   value1      First value to compare.
 	 * @param   value2      Second value to compare.
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is at least the
-	 *          <code>0.001</code> less than <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return  <code>true</code> is {@code value1} is at least the
+	 *          <code>0.001</code> less than {@code value2};
+	 *          {@code false} otherwise.
 	 */
 	public static boolean significantlyLessThan( final float value1 , final float value2 )
 	{
@@ -298,9 +298,9 @@ public final class MathTools
 	 * @param   value1      First value to compare.
 	 * @param   value2      Second value to compare.
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is at least the
-	 *          <code>0.001</code> less than <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return  <code>true</code> is {@code value1} is at least the
+	 *          <code>0.001</code> less than {@code value2};
+	 *          {@code false} otherwise.
 	 */
 	public static boolean significantlyLessThan( final double value1 , final double value2 )
 	{
@@ -315,9 +315,9 @@ public final class MathTools
 	 * @param   value2      Second value to compare.
 	 * @param   epsilon     Tolerance (always a positive number).
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is at least the
-	 *          specified tolerance less than <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return  <code>true</code> is {@code value1} is at least the
+	 *          specified tolerance less than {@code value2};
+	 *          {@code false} otherwise.
 	 */
 	public static boolean significantlyLessThan( final float value1 , final float value2 , final float epsilon )
 	{
@@ -332,9 +332,9 @@ public final class MathTools
 	 * @param   value2      Second value to compare.
 	 * @param   epsilon     Tolerance (always a positive number).
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is at least the
-	 *          specified tolerance less than <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return  <code>true</code> is {@code value1} is at least the
+	 *          specified tolerance less than {@code value2};
+	 *          {@code false} otherwise.
 	 */
 	public static boolean significantlyLessThan( final double value1 , final double value2 , final double epsilon )
 	{
@@ -348,9 +348,9 @@ public final class MathTools
 	 * @param   value1      First value to compare.
 	 * @param   value2      Second value to compare.
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is at least the
-	 *          <code>0.001</code> greater than <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return  <code>true</code> is {@code value1} is at least the
+	 *          <code>0.001</code> greater than {@code value2};
+	 *          {@code false} otherwise.
 	 */
 	public static boolean significantlyGreaterThan( final float value1 , final float value2 )
 	{
@@ -364,9 +364,9 @@ public final class MathTools
 	 * @param   value1      First value to compare.
 	 * @param   value2      Second value to compare.
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is at least the
-	 *          <code>0.001</code> greater than <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return  <code>true</code> is {@code value1} is at least the
+	 *          <code>0.001</code> greater than {@code value2};
+	 *          {@code false} otherwise.
 	 */
 	public static boolean significantlyGreaterThan( final double value1 , final double value2 )
 	{
@@ -381,9 +381,9 @@ public final class MathTools
 	 * @param   value2      Second value to compare.
 	 * @param   epsilon     Tolerance (always a positive number).
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is at least the
-	 *          specified tolerance greater than <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return  <code>true</code> is {@code value1} is at least the
+	 *          specified tolerance greater than {@code value2};
+	 *          {@code false} otherwise.
 	 */
 	public static boolean significantlyGreaterThan( final float value1 , final float value2 , final float epsilon )
 	{
@@ -398,9 +398,9 @@ public final class MathTools
 	 * @param   value2      Second value to compare.
 	 * @param   epsilon     Tolerance (always a positive number).
 	 *
-	 * @return  <code>true</code> is <code>value1</code> is at least the
-	 *          specified tolerance greater than <code>value2</code>;
-	 *          <code>false</code> otherwise.
+	 * @return  <code>true</code> is {@code value1} is at least the
+	 *          specified tolerance greater than {@code value2};
+	 *          {@code false} otherwise.
 	 */
 	public static boolean significantlyGreaterThan( final double value1 , final double value2 , final double epsilon )
 	{
@@ -416,7 +416,7 @@ public final class MathTools
 	 * result is negative.
 	 *
 	 * <p>If one range encloses the other or if both ranges are equal, the
-	 * result is <code>NaN</code>. Also, if any parameter is <code>NaN</code>,
+	 * result is <code>NaN</code>. Also, if any parameter is {@code NaN},
 	 * the result is undefined.
 	 *
 	 * @param   x1  First end-point of the first range.
@@ -424,7 +424,7 @@ public final class MathTools
 	 * @param   y1  First end-point of the second range.
 	 * @param   y2  Second end-point of the second range.
 	 *
-	 * @return  Distance between the ranges, or <code>NaN</code>.
+	 * @return Distance between the ranges, or {@code NaN}.
 	 */
 	public static float rangeDistance( final float x1 , final float x2 , final float y1 , final float y2 )
 	{
@@ -508,7 +508,7 @@ public final class MathTools
 	 * result is negative.
 	 *
 	 * <p>If one range encloses the other or if both ranges are equal, the
-	 * result is <code>NaN</code>. Also, if any parameter is <code>NaN</code>,
+	 * result is <code>NaN</code>. Also, if any parameter is {@code NaN},
 	 * the result is undefined.
 	 *
 	 * @param   x1  First end-point of the first range.
@@ -516,7 +516,7 @@ public final class MathTools
 	 * @param   y1  First end-point of the second range.
 	 * @param   y2  Second end-point of the second range.
 	 *
-	 * @return  Distance between the ranges, or <code>NaN</code>.
+	 * @return Distance between the ranges, or {@code NaN}.
 	 */
 	public static double rangeDistance( final double x1 , final double x2 , final double y1 , final double y2 )
 	{
@@ -599,20 +599,20 @@ public final class MathTools
 	}
 
 	/**
-	 * Returns the power of two nearest to <code>value</code>, which must be
+	 * Returns the power of two nearest to {@code value}, which must be
 	 * positive. If the value is equidistant to two powers of two, the higher
 	 * power of two is returned.
 	 *
 	 * <p>For input values of 2<sup>30</sup>+2<sup>29</sup> or more, the
 	 * correct result, 2<sup>31</sup>, can't be represented by a (signed)
-	 * <code>int</code>. Therefore, these values are rounded downwards,
+	 * {@code int}. Therefore, these values are rounded downwards,
 	 * resulting in 2<sup>30</sup>.
 	 *
 	 * @param   value   Value to find the nearest power of two for.
 	 *
-	 * @return  Nearest power of two.
+	 * @return Nearest power of two.
 	 *
-	 * @throws  IllegalArgumentException if <code>value</code> isn't positive.
+	 * @throws IllegalArgumentException if {@code value} isn't positive.
 	 */
 	public static int nearestPowerOfTwo( final int value )
 	{
@@ -629,12 +629,27 @@ public final class MathTools
 	}
 
 	/**
+	 * Test if two objects are equals according to {@link Object#equals(Object)}
+	 * in a null-safe manner.
+	 *
+	 * @param   object1     First object to compare.
+	 * @param   object2     Second object to compare.
+	 *
+	 * @return  {@code true} is the object are equal or both {@code null};
+	 *          {@code false} otherwise.
+	 */
+	public static boolean equals( final Object object1 , final Object object2 )
+	{
+		return ( object1 != null ) ? object1.equals( object2 ) : ( object2 == null );
+	}
+
+	/**
 	 * Calculate hash code for floating-point value. This is the equivalent of
-	 * calling <code>Doouble.valueOf( value ).hashCode()</code>.
+	 * calling {@code Doouble.valueOf(value).hashCode()}.
 	 *
 	 * @param   value   Value to calculate hash code for.
 	 *
-	 * @return  Hash code.
+	 * @return Hash code.
 	 */
 	public static int hashCode( final Double value )
 	{
@@ -655,11 +670,11 @@ public final class MathTools
 
 	/**
 	 * Calculate hash code for floating-point value. This is the equivalent of
-	 * calling <code>Doouble.valueOf( value ).hashCode()</code>.
+	 * calling {@code Doouble.valueOf(value).hashCode()}.
 	 *
 	 * @param   value   Value to calculate hash code for.
 	 *
-	 * @return  Hash code.
+	 * @return Hash code.
 	 */
 	public static int hashCode( final double value )
 	{
