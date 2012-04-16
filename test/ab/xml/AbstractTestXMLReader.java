@@ -2,7 +2,7 @@
  * $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -54,17 +54,17 @@ public abstract class AbstractTestXMLReader
 		System.out.println( getClass().getName() + ".testDocument1()" );
 		final XMLReader reader = _factory.createXMLReader( AbstractTestXMLReader.class.getResourceAsStream( "TestXMLReader-1.xml" ), null );
 
-		assertEquals( "Unexpected event type.", XMLEventType.PROCESSING_INSTRUCTION, reader.next() );
+		assertEquals( "Unexpected event type.", XMLEventType.PROCESSING_INSTRUCTION, ignoreWhiteSpace( reader ) );
 		assertEquals( "Unexpected processing instruction target.", "magic", reader.getPITarget() );
 		assertEquals( "Unexpected processing instruction data.", "processing instruction 1", reader.getPIData() );
 
-		assertEquals( "Unexpected event type.", XMLEventType.PROCESSING_INSTRUCTION, reader.next() );
+		assertEquals( "Unexpected event type.", XMLEventType.PROCESSING_INSTRUCTION, ignoreWhiteSpace( reader ) );
 		assertEquals( "Unexpected processing instruction target.", "magic", reader.getPITarget() );
 		assertEquals( "Unexpected processing instruction data.", "", reader.getPIData() );
 
-		assertEquals( "Unexpected event type.", XMLEventType.DTD, reader.next() );
+		assertEquals( "Unexpected event type.", XMLEventType.DTD, ignoreWhiteSpace( reader ) );
 
-		assertEquals( "Unexpected event type.", XMLEventType.START_ELEMENT, reader.next() );
+		assertEquals( "Unexpected event type.", XMLEventType.START_ELEMENT, ignoreWhiteSpace( reader ) );
 		assertEquals( "Unexpected namespace URI.", null, reader.getNamespaceURI() );
 		assertEquals( "Unexpected local name.", "example", reader.getLocalName() );
 		assertEquals( "Unexpected attribute count.", 0, reader.getAttributeCount() );
@@ -177,7 +177,7 @@ public abstract class AbstractTestXMLReader
 		assertEquals( "Unexpected namespace URI.", null, reader.getNamespaceURI() );
 		assertEquals( "Unexpected local name.", "example", reader.getLocalName() );
 
-		assertEquals( "Unexpected event type.", XMLEventType.END_DOCUMENT, reader.next() );
+		assertEquals( "Unexpected event type.", XMLEventType.END_DOCUMENT, ignoreWhiteSpace( reader ) );
 	}
 
 	/**
@@ -194,7 +194,7 @@ public abstract class AbstractTestXMLReader
 		System.out.println( getClass().getName() + ".testDocument2()" );
 		final XMLReader reader = _factory.createXMLReader( TestStaxReader.class.getResourceAsStream( "TestXMLReader-2.xml" ), null );
 
-		assertEquals( "Unexpected event type.", XMLEventType.START_ELEMENT, reader.next() );
+		assertEquals( "Unexpected event type.", XMLEventType.START_ELEMENT, ignoreWhiteSpace( reader ) );
 		assertEquals( "Unexpected namespace URI.", "http://www.w3.org/1999/xhtml", reader.getNamespaceURI() );
 		assertEquals( "Unexpected local name.", "html", reader.getLocalName() );
 		assertEquals( "Unexpected attribute count.", 1, reader.getAttributeCount() );
@@ -376,7 +376,7 @@ public abstract class AbstractTestXMLReader
 		assertEquals( "Unexpected namespace URI.", "http://www.w3.org/1999/xhtml", reader.getNamespaceURI() );
 		assertEquals( "Unexpected local name.", "html", reader.getLocalName() );
 
-		assertEquals( "Unexpected event type.", XMLEventType.END_DOCUMENT, reader.next() );
+		assertEquals( "Unexpected event type.", XMLEventType.END_DOCUMENT, ignoreWhiteSpace( reader ) );
 	}
 
 	/**
