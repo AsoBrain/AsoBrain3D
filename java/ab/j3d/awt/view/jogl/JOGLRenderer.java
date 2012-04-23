@@ -1558,70 +1558,73 @@ public class JOGLRenderer
 		final GL gl = _gl;
 
 		final Color4 color = objectStyle.getFillColor();
-		final float alpha = color.getAlphaFloat();
+		final float alpha = color.getAlphaFloat() * objectStyle.getExtraAlpha();
 		final boolean blend = ( renderMode != MultiPassRenderMode.OPAQUE_ONLY ) && ( alpha < 1.0f );
 		final boolean hasLighting = objectStyle.isFillLightingEnabled();
 
-		if ( !hasLighting && !_renderUnlit )
+		if ( ( alpha >= 0.50f ) || !_shadowPass )
 		{
-			gl.glColorMask( false, false, false, false );
-		}
-
-		if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || ( alpha >= 1.0f ) ) &&
-		     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || ( alpha < 1.0f ) ) )
-		{
-			/*
-			 * Set render/material properties.
-			 */
-			final GLStateHelper state = _state;
-			if ( blend )
+			if ( !hasLighting && !_renderUnlit )
 			{
-				if ( alpha < 0.25 )
-				{
-					gl.glDepthMask( false );
-				}
-				state.setBlendFunc( GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA );
+				gl.glColorMask( false, false, false, false );
 			}
 
-			state.setEnabled( GL.GL_BLEND, blend );
-			state.setEnabled( GL.GL_LIGHTING, hasLighting );
-
-			state.setColor( color );
-			final ShaderManager shaderManager = _shaderManager;
-			shaderManager.setLightingEnabled( hasLighting );
-			shaderManager.setTextureEnabled( false );
-			shaderManager.setReflectivity( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f );
-
-			/*
-			 * Render faces.
-			 */
-			for ( final FaceGroup faceGroup : object.getFaceGroups() )
+			if ( ( ( renderMode != MultiPassRenderMode.OPAQUE_ONLY      ) || ( alpha >= 1.0f ) ) &&
+			     ( ( renderMode != MultiPassRenderMode.TRANSPARENT_ONLY ) || ( alpha < 1.0f ) ) )
 			{
-				state.setEnabled( GL.GL_CULL_FACE, objectStyle.isBackfaceCullingEnabled() && !faceGroup.isTwoSided() );
-
-				final GeometryObject geometryObject = _geometryObjectManager.getGeometryObject( faceGroup, GeometryType.FACES );
-				for ( final Node3DPath path : paths )
+				/*
+				 * Set render/material properties.
+				 */
+				final GLStateHelper state = _state;
+				if ( blend )
 				{
-					final Matrix3D object2world = path.getTransform();
-					gl.glPushMatrix();
-					JOGLTools.glMultMatrixd( gl, object2world );
-					geometryObject.draw();
-					gl.glPopMatrix();
+					if ( alpha < 0.25 )
+					{
+						gl.glDepthMask( false );
+					}
+					state.setBlendFunc( GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA );
+				}
+
+				state.setEnabled( GL.GL_BLEND, blend );
+				state.setEnabled( GL.GL_LIGHTING, hasLighting );
+
+				state.setColor( color.getRedFloat(), color.getGreenFloat(), color.getBlueFloat(), alpha );
+				final ShaderManager shaderManager = _shaderManager;
+				shaderManager.setLightingEnabled( hasLighting );
+				shaderManager.setTextureEnabled( false );
+				shaderManager.setReflectivity( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f );
+
+				/*
+				 * Render faces.
+				 */
+				for ( final FaceGroup faceGroup : object.getFaceGroups() )
+				{
+					state.setEnabled( GL.GL_CULL_FACE, objectStyle.isBackfaceCullingEnabled() && !faceGroup.isTwoSided() );
+
+					final GeometryObject geometryObject = _geometryObjectManager.getGeometryObject( faceGroup, GeometryType.FACES );
+					for ( final Node3DPath path : paths )
+					{
+						final Matrix3D object2world = path.getTransform();
+						gl.glPushMatrix();
+						JOGLTools.glMultMatrixd( gl, object2world );
+						geometryObject.draw();
+						gl.glPopMatrix();
+					}
+				}
+
+				if ( blend )
+				{
+					if ( alpha < 0.25 )
+					{
+						gl.glDepthMask( true );
+					}
 				}
 			}
 
-			if ( blend )
+			if ( !hasLighting && !_renderUnlit )
 			{
-				if ( alpha < 0.25 )
-				{
-					gl.glDepthMask( true );
-				}
+				gl.glColorMask( true, true, true, true );
 			}
-		}
-
-		if ( !hasLighting && !_renderUnlit )
-		{
-			gl.glColorMask( true, true, true, true );
 		}
 	}
 
