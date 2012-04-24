@@ -132,6 +132,11 @@ public class StlLoader
 	UVMap _uvMap = null;
 
 	/**
+	 * Whether face normals should be flipped.
+	 */
+	private boolean _flipNormals;
+
+	/**
 	 * Get appearance used for resulting 3D object.
 	 *
 	 * @return  Appearance used for resulting 3D object.
@@ -170,6 +175,28 @@ public class StlLoader
 	public void setUvMap( @Nullable final UVMap uvMap )
 	{
 		_uvMap = uvMap;
+	}
+
+	/**
+	 * Returns whether face normals should be flipped. This can be used to fix
+	 * models that appear inside-out.
+	 *
+	 * @return  <code>true</code> to flip face normals.
+	 */
+	public boolean isFlipNormals()
+	{
+		return _flipNormals;
+	}
+
+	/**
+	 * Sets whether face normals should be flipped. This can be used to fix
+	 * models that appear inside-out.
+	 *
+	 * @param   flipNormals     <code>true</code> to flip face normals.
+	 */
+	public void setFlipNormals( final boolean flipNormals )
+	{
+		_flipNormals = flipNormals;
 	}
 
 	/**
@@ -363,7 +390,21 @@ public class StlLoader
 							throw new IOException( "Invalid facet defined in STL file. Should have 3 vertices, but have " + vertexCount );
 						}
 
-						builder.addFace( vertexIndices.clone(), appearance, uvMap, false, false, false );
+						final int[] clone = new int[ 3 ];
+						if ( _flipNormals )
+						{
+							clone[ 0 ] = vertexIndices[ 2 ];
+							clone[ 1 ] = vertexIndices[ 1 ];
+							clone[ 2 ] = vertexIndices[ 0 ];
+						}
+						else
+						{
+							clone[ 0 ] = vertexIndices[ 0 ];
+							clone[ 1 ] = vertexIndices[ 1 ];
+							clone[ 2 ] = vertexIndices[ 2 ];
+						}
+
+						builder.addFace( clone, appearance, uvMap, false, false, false );
 						faceVertexIndex = 0;
 					}
 				}
@@ -419,9 +460,18 @@ public class StlLoader
 				normals[ 2 ] = normal;
 
 				// Convert to clockwise, as needed by 'addFace' used below.
-				points[ 0 ] = transform.transform( readFloat32( in ), readFloat32( in ), readFloat32( in ) );
-				points[ 2 ] = transform.transform( readFloat32( in ), readFloat32( in ), readFloat32( in ) );
-				points[ 1 ] = transform.transform( readFloat32( in ), readFloat32( in ), readFloat32( in ) );
+				if ( _flipNormals )
+				{
+					points[ 0 ] = transform.transform( readFloat32( in ), readFloat32( in ), readFloat32( in ) );
+					points[ 1 ] = transform.transform( readFloat32( in ), readFloat32( in ), readFloat32( in ) );
+					points[ 2 ] = transform.transform( readFloat32( in ), readFloat32( in ), readFloat32( in ) );
+				}
+				else
+				{
+					points[ 0 ] = transform.transform( readFloat32( in ), readFloat32( in ), readFloat32( in ) );
+					points[ 2 ] = transform.transform( readFloat32( in ), readFloat32( in ), readFloat32( in ) );
+					points[ 1 ] = transform.transform( readFloat32( in ), readFloat32( in ), readFloat32( in ) );
+				}
 
 				/*
 				 * Skip 'attribute byte count' which apparently does not
