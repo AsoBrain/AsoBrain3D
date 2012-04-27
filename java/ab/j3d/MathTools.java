@@ -111,21 +111,6 @@ public final class MathTools
 
 	/**
 	 * Test if the specified values are 'almost' equal (the difference between
-	 * them approaches the value 0), or if both are <code>null</code>.
-	 *
-	 * @param   value1      First value to compare.
-	 * @param   value2      Second value to compare.
-	 *
-	 * @return  {@code true} if the values are within a +/- 0.001 tolerance
-	 *          of each other, or if both are <code>null</code>.
-	 */
-	public static boolean almostEqual( final Double value1 , final Double value2 )
-	{
-		return value1 == null ? value2 == null : almostEqual( value1.doubleValue(), value2.doubleValue() );
-	}
-
-	/**
-	 * Test if the specified values are 'almost' equal (the difference between
 	 * them approaches the value 0).
 	 *
 	 * @param   value1      First value to compare.
