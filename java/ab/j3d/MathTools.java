@@ -84,7 +84,7 @@ public final class MathTools
 	 * @param   value1      First value to compare.
 	 * @param   value2      Second value to compare.
 	 *
-	 * @return  {@code true} is the values are within a +/- 0.001 tolerance
+	 * @return  {@code true} if the values are within a +/- 0.001 tolerance
 	 *          of each other; {@code false} otherwise.
 	 */
 	public static boolean almostEqual( final float value1 , final float value2 )
@@ -100,7 +100,7 @@ public final class MathTools
 	 * @param   value1      First value to compare.
 	 * @param   value2      Second value to compare.
 	 *
-	 * @return  {@code true} is the values are within a +/- 0.001 tolerance
+	 * @return  {@code true} if the values are within a +/- 0.001 tolerance
 	 *          of each other; {@code false} otherwise.
 	 */
 	public static boolean almostEqual( final double value1 , final double value2 )
@@ -111,13 +111,28 @@ public final class MathTools
 
 	/**
 	 * Test if the specified values are 'almost' equal (the difference between
+	 * them approaches the value 0), or if both are <code>null</code>.
+	 *
+	 * @param   value1      First value to compare.
+	 * @param   value2      Second value to compare.
+	 *
+	 * @return  {@code true} if the values are within a +/- 0.001 tolerance
+	 *          of each other, or if both are <code>null</code>.
+	 */
+	public static boolean almostEqual( final Double value1 , final Double value2 )
+	{
+		return value1 == null ? value2 == null : almostEqual( value1.doubleValue(), value2.doubleValue() );
+	}
+
+	/**
+	 * Test if the specified values are 'almost' equal (the difference between
 	 * them approaches the value 0).
 	 *
 	 * @param   value1      First value to compare.
 	 * @param   value2      Second value to compare.
 	 * @param   epsilon     Tolerance (always a positive number).
 	 *
-	 * @return  {@code true} is the values are within the sepcified
+	 * @return  {@code true} if the values are within the sepcified
 	 *          tolerance of each other; {@code false} otherwise.
 	 */
 	public static boolean almostEqual( final float value1 , final float value2 , final float epsilon )
@@ -134,7 +149,7 @@ public final class MathTools
 	 * @param   value2      Second value to compare.
 	 * @param   epsilon     Tolerance (always a positive number).
 	 *
-	 * @return  {@code true} is the values are within the sepcified
+	 * @return  {@code true} if the values are within the sepcified
 	 *          tolerance of each other; {@code false} otherwise.
 	 */
 	public static boolean almostEqual( final double value1 , final double value2 , final double epsilon )
