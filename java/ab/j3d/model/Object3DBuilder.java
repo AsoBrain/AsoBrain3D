@@ -114,7 +114,7 @@ public class Object3DBuilder
 	 * @param   endAngle        End-angle of arc relative to X-axis (radians).
 	 * @param   startWidth      Start-width of arc (0.0 => no width).
 	 * @param   endWidth        End-width of arc (0.0 => no width).
-	 * @param   extrusion       Extrusion to apply (<code>null</code> or 0-vector => no extrusion).
+	 * @param   extrusion       Extrusion to apply ({@code null} or 0-vector => no extrusion).
 	 * @param   appearance      Appearance specification to use for shading.
 	 * @param   fill            Create filled shape vs. create wireframe.
 	 */
@@ -238,9 +238,9 @@ public class Object3DBuilder
 	 * @param   sideAppearance      Appearance of cylinder circumference.
 	 * @param   sideMap             UV map to use for circumference.
 	 * @param   smoothCircumference Apply smoothing to circumference of cylinder.
-	 * @param   topAppearance       Appearance for top cap (<code>null</code> => no cap).
+	 * @param   topAppearance       Appearance for top cap ({@code null} => no cap).
 	 * @param   topMap              UV map for top cap.
-	 * @param   bottomAppearance    Appearance for bottom cap (<code>null</code> => no cap).
+	 * @param   bottomAppearance    Appearance for bottom cap ({@code null} => no cap).
 	 * @param   bottomMap           UV map for bottom cap.
 	 * @param   flipNormals         If set, flip normals.
 	 */
@@ -366,7 +366,7 @@ public class Object3DBuilder
 	 *
 	 * @param   point1      First point.
 	 * @param   point2      Second point.
-	 * @param   extrusion   Extrusion to apply (<code>null</code> or 0-vector => no extrusion).
+	 * @param   extrusion   Extrusion to apply ({@code null} or 0-vector => no extrusion).
 	 * @param   appearance  Appearance specification to use for shading.
 	 * @param   fill        Create filled shape vs. create wireframe.
 	 */
@@ -529,7 +529,9 @@ public class Object3DBuilder
 	 */
 	public void addQuad( @NotNull final Vector3D point1, @NotNull final Vector3D point2, @NotNull final Vector3D point3, @NotNull final Vector3D point4, @Nullable final Appearance appearance, final boolean twoSided )
 	{
-		addFace( new Vector3D[] { point1, point2, point3, point4 }, appearance, false, twoSided );
+		addFace( new Vector3D[] {
+		point1, point2, point3, point4
+		}, appearance, false, twoSided );
 	}
 
 	/**
@@ -591,7 +593,7 @@ public class Object3DBuilder
 	 * @param   point2          Second vertex coordinates.
 	 * @param   point3          Third vertex coordinates.
 	 * @param   point4          Fourth vertex coordinates.
-	 * @param   extrusion       Extrusion to apply (<code>null</code> or 0-vector => no extrusion).
+	 * @param   extrusion       Extrusion to apply ({@code null} or 0-vector => no extrusion).
 	 * @param   appearance      Appearance specification to use for shading.
 	 * @param   fill            Create filled shape vs. create wireframe.
 	 * @param   twoSided        Flag to indicate if face has a backface.
@@ -810,7 +812,7 @@ public class Object3DBuilder
 	 * @param   point1          First vertex coordinates.
 	 * @param   point2          Second vertex coordinates.
 	 * @param   point3          Third vertex coordinates.
-	 * @param   extrusion       Extrusion to apply (<code>null</code> or 0-vector => no extrusion).
+	 * @param   extrusion       Extrusion to apply ({@code null} or 0-vector => no extrusion).
 	 * @param   appearance      Appearance specification to use for shading.
 	 * @param   fill            Create filled shape vs. create wireframe.
 	 * @param   twoSided        Flag to indicate if face has a backface.
@@ -973,20 +975,20 @@ public class Object3DBuilder
 	 * @param   extrusion           Extrusion vector (control-point displacement).
 	 * @param   extrusionLines      Include extrusion (out)lines.
 	 * @param   transform           Transform to apply.
-	 * @param   top                 <code>true</code> to include a top face.
+	 * @param   top                 {@code true} to include a top face.
 	 * @param   topAppearance       Appearance to apply to the top cap.
 	 * @param   topMap              Provides UV coordinates for top cap.
 	 * @param   topFlipTexture      Whether the top texture direction is flipped.
-	 * @param   bottom              <code>true</code> to include a bottom face.
+	 * @param   bottom              {@code true} to include a bottom face.
 	 * @param   bottomAppearance    Appearance to apply to the bottom cap.
 	 * @param   bottomMap           Provides UV coordinates for bottom cap.
 	 * @param   bottomFlipTexture   Whether the bottom texture direction is flipped.
-	 * @param   side                <code>true</code> to include side faces.
+	 * @param   side                {@code true} to include side faces.
 	 * @param   sideAppearance      Appearance to apply to the extruded sides.
 	 * @param   sideMap             Provides UV coordinates for extruded sides.
 	 * @param   sideFlipTexture     Whether the side texture direction is flipped.
 	 * @param   twoSided            Flag to indicate if extruded faces are two-sided.
-	 * @param   flipNormals         If <code>true</code>, normals are flipped to
+	 * @param   flipNormals         If {@code true}, normals are flipped to
 	 *                              point in the opposite direction.
 	 * @param   smooth              Shape is smooth.
 	 *
@@ -995,24 +997,49 @@ public class Object3DBuilder
 	 */
 	public void addExtrudedShape( @NotNull final Tessellator tessellator, @NotNull final Vector3D extrusion, final boolean extrusionLines, @NotNull final Matrix3D transform, final boolean top, @Nullable final Appearance topAppearance, @Nullable final UVMap topMap, final boolean topFlipTexture, final boolean bottom, @Nullable final Appearance bottomAppearance, @Nullable final UVMap bottomMap, final boolean bottomFlipTexture, final boolean side, @Nullable final Appearance sideAppearance, @Nullable final UVMap sideMap, final boolean sideFlipTexture, final boolean twoSided, final boolean flipNormals, final boolean smooth )
 	{
-		final double extrusionZ = extrusion.getZ();
-		if ( extrusionZ == 0.0 )
-		{
-			throw new IllegalArgumentException( "extrusion.z: " + extrusionZ );
-		}
+		final boolean flipVertexOrder = flipNormals ^ ( extrusion.getZ() < 0.0 );
+		final Matrix3D topTransform = transform.plus( transform.rotate( extrusion ) );
+		addExtrudedShape( tessellator, flipVertexOrder, transform, topTransform, extrusionLines, top, topAppearance, topMap, topFlipTexture, bottom, bottomAppearance, bottomMap, bottomFlipTexture, side, sideAppearance, sideMap, sideFlipTexture, twoSided, flipNormals, smooth );
+	}
 
+	/**
+	 * Add extruded shape with caps.
+	 *
+	 *
+	 * @param   tessellator         Tessellator that defines the shape.
+	 * @param   flipVertexOrder     Flip (counter-)clockwise vertex order.
+	 * @param   bottomTransform     Transforms 2D points to bottom face points.
+	 * @param   topTransform        Transforms 2D points to top face points.
+	 * @param   extrusionLines      Include extrusion (out)lines.
+	 * @param   top                 {@code true} to include a top face.
+	 * @param   topAppearance       Appearance to apply to the top cap.
+	 * @param   topMap              Provides UV coordinates for top cap.
+	 * @param   topFlipTexture      Whether the top texture direction is flipped.
+	 * @param   bottom              {@code true} to include a bottom face.
+	 * @param   bottomAppearance    Appearance to apply to the bottom cap.
+	 * @param   bottomMap           Provides UV coordinates for bottom cap.
+	 * @param   bottomFlipTexture   Whether the bottom texture direction is flipped.
+	 * @param   side                {@code true} to include side faces.
+	 * @param   sideAppearance      Appearance to apply to the extruded sides.
+	 * @param   sideMap             Provides UV coordinates for extruded sides.
+	 * @param   sideFlipTexture     Whether the side texture direction is flipped.
+	 * @param   twoSided            Flag to indicate if extruded faces are two-sided.
+	 * @param   flipNormals         If {@code true}, normals are flipped to
+	 *                              point in the opposite direction.
+	 * @param   smooth              Shape is smooth.
+	 */
+	public void addExtrudedShape( @NotNull final Tessellator tessellator, final boolean flipVertexOrder, @NotNull final Matrix3D bottomTransform, @NotNull final Matrix3D topTransform, final boolean extrusionLines, final boolean top, @Nullable final Appearance topAppearance, @Nullable final UVMap topMap, final boolean topFlipTexture, final boolean bottom, @Nullable final Appearance bottomAppearance, @Nullable final UVMap bottomMap, final boolean bottomFlipTexture, final boolean side, @Nullable final Appearance sideAppearance, @Nullable final UVMap sideMap, final boolean sideFlipTexture, final boolean twoSided, final boolean flipNormals, final boolean smooth )
+	{
 		if ( !side && !top && !bottom )
 		{
 			throw new IllegalArgumentException( "at least one kind of geometry is required" );
 		}
 
-		final boolean flipExtrusion = flipNormals ^ ( extrusionZ < 0.0 );
+		final List<TessellationPrimitive> topPrimitives = top ? flipVertexOrder ? tessellator.getClockwisePrimitives() : tessellator.getCounterClockwisePrimitives() : null;
+		final List<TessellationPrimitive> bottomPrimitives = bottom ? flipVertexOrder ? tessellator.getCounterClockwisePrimitives() : tessellator.getClockwisePrimitives() : null;
+		final List<int[]> outlines = flipVertexOrder ? tessellator.getClockwiseOutlines() : tessellator.getCounterClockwiseOutlines();
 
-		final List<TessellationPrimitive> topPrimitives = top ? flipExtrusion ? tessellator.getClockwisePrimitives() : tessellator.getCounterClockwisePrimitives() : null;
-		final List<TessellationPrimitive> bottomPrimitives = bottom ? flipExtrusion ? tessellator.getCounterClockwisePrimitives() : tessellator.getClockwisePrimitives() : null;
-		final List<int[]> outlines = flipExtrusion ? tessellator.getClockwiseOutlines() : tessellator.getCounterClockwiseOutlines();
-
-		final List<Vector3D> topPoints = ( top || side ) ? transform( transform.plus( transform.rotate( extrusion ) ), tessellator.getVertexList() ) : null;
+		final List<Vector3D> topPoints = ( top || side ) ? transform( topTransform, tessellator.getVertexList() ) : null;
 
 		if ( top )
 		{
@@ -1022,7 +1049,7 @@ public class Object3DBuilder
 			addFace( topVertices, topTessellation, topAppearance, false, twoSided );
 		}
 
-		final List<Vector3D> bottomPoints = ( bottom || side ) ? transform( transform, tessellator.getVertexList() ) : null;
+		final List<Vector3D> bottomPoints = ( bottom || side ) ? transform( bottomTransform, tessellator.getVertexList() ) : null;
 
 		if ( bottom )
 		{
@@ -1104,7 +1131,7 @@ public class Object3DBuilder
 	 * @param   appearance      Appearance specification to use for shading.
 	 * @param   flipTexture     Whether the side texture direction is flipped.
 	 * @param   twoSided        Flag to indicate if extruded faces are two-sided.
-	 * @param   flipNormals     If <code>true</code>, normals are flipped to
+	 * @param   flipNormals     If {@code true}, normals are flipped to
 	 *                          point in the opposite direction.
 	 * @param   smooth          Shape is smooth.
 	 *
