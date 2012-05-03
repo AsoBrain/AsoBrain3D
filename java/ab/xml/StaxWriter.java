@@ -104,7 +104,14 @@ public class StaxWriter
 
 		try
 		{
-			_writer.writeStartElement( namespaceURI, localName );
+			if ( namespaceURI == null )
+			{
+				_writer.writeStartElement( localName );
+			}
+			else
+			{
+				_writer.writeStartElement( namespaceURI, localName );
+			}
 			for ( final NamespaceDeclaration namespace : _namespaces )
 			{
 				_writer.writeNamespace( namespace._prefix, namespace._namespaceURI );
@@ -122,7 +129,14 @@ public class StaxWriter
 	{
 		try
 		{
-			_writer.writeEmptyElement( namespaceURI, localName );
+			if ( namespaceURI == null )
+			{
+				_writer.writeEmptyElement( localName );
+			}
+			else
+			{
+				_writer.writeEmptyElement( namespaceURI, localName );
+			}
 		}
 		catch ( XMLStreamException e )
 		{
