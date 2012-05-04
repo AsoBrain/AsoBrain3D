@@ -28,6 +28,8 @@ import java.util.regex.*;
 import javax.xml.stream.*;
 import javax.xml.stream.events.*;
 
+import junit.framework.*;
+
 import static junit.framework.Assert.*;
 
 /**
@@ -87,7 +89,7 @@ public class XMLTestTools
 	public static void assertXMLEquals( final String message, final InputStream expectedIn, final InputStream actualIn )
 		throws XMLStreamException
 	{
-		final String messagePrefix = ( message != null ) && !message.isEmpty() ? message + " - " : message;
+		final String messagePrefix = ( message != null ) && !message.isEmpty() ? message + " - " : "";
 
 		final XMLInputFactory xmlInputFactory = XMLInputFactory.newFactory();
 		xmlInputFactory.setProperty( XMLInputFactory.IS_COALESCING, Boolean.TRUE );
@@ -102,6 +104,9 @@ public class XMLTestTools
 			final XMLEvent expectedEvent = expectedReader.nextEvent();
 			final XMLEvent actualEvent = actualReader.nextEvent();
 
+			final Location location = expectedEvent.getLocation();
+			final String locationPrefix = "Line " + location.getLineNumber() + ", column " + location.getColumnNumber() + ": ";
+
 			if ( expectedEvent.getEventType() == XMLStreamConstants.PROCESSING_INSTRUCTION )
 			{
 				final ProcessingInstruction processingInstruction = (ProcessingInstruction)expectedEvent;
@@ -110,7 +115,7 @@ public class XMLTestTools
 					final Matcher matcher = processingInstructionPattern.matcher( processingInstruction.getData() );
 					if ( !matcher.matches() )
 					{
-						throw new AssertionError( "Invalid unit-test processing instruction: " + processingInstruction );
+						throw new AssertionFailedError( messagePrefix + locationPrefix + "Invalid unit-test processing instruction: " + processingInstruction );
 					}
 
 					final String instruction = matcher.group( 1 );
@@ -135,15 +140,23 @@ public class XMLTestTools
 					}
 					else
 					{
-						throw new AssertionError( "Unsupported unit-test processing instruction: " + instruction );
+						throw new AssertionFailedError( messagePrefix + locationPrefix + "Unsupported unit-test processing instruction: " + instruction );
 					}
 
 					continue;
 				}
 			}
 
-			assertEquals( messagePrefix + "Unexpected event type.", expectedEvent.getEventType(), actualEvent.getEventType() );
-			assertEquals( messagePrefix + "Unexpected event (type=" + expectedEvent.getEventType() + ").", expectedEvent.toString(), actualEvent.toString() );
+			final StringWriter expectedWriter = new StringWriter();
+			expectedEvent.writeAsEncodedUnicode( expectedWriter );
+			final String expected = expectedWriter.toString();
+
+			final StringWriter actualWriter = new StringWriter();
+			actualEvent.writeAsEncodedUnicode( actualWriter );
+			final String actual = actualWriter.toString();
+
+			assertEquals( messagePrefix + locationPrefix + "Unexpected event.", expected, actual );
+			assertEquals( messagePrefix + locationPrefix + "Unexpected event type.", expectedEvent.getEventType(), actualEvent.getEventType() );
 		}
 
 		assertFalse( messagePrefix + "Expected more events.", expectedReader.hasNext() );
