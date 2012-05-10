@@ -101,6 +101,7 @@ public class MouseControl
 				break;
 
 			case MouseEvent.MOUSE_DRAGGED :
+				System.out.println( "MouseControl.MOUSE_DRAGGED" );
 				final ControlInputEvent captureOnDrag = _captureOnDrag;
 				if ( captureOnDrag != null )
 				{

@@ -123,8 +123,22 @@ public abstract class CameraControl
 	@Override
 	public void mousePressed( final ControlInputEvent event )
 	{
-		startCaptureOnDrag( event );
+		if ( !isCaptured() && isDragStartEvent( event ) )
+		{
+			startCaptureOnDrag( event );
+		}
 	}
+
+	/**
+	 * Test whether the specified event is used to start a dragging operation
+	 * using this control.
+	 *
+	 * @param   event   Event to test (always {@link MouseEvent#MOUSE_PRESSED}).
+	 *
+	 * @return  {@code true} if the event is a match;
+	 *          {@code false} otherwise.
+	 */
+	protected abstract boolean isDragStartEvent( final ControlInputEvent event );
 
 	/**
 	 * Adjust view to fit scene contents.

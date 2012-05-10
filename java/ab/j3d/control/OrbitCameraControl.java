@@ -244,6 +244,12 @@ public class OrbitCameraControl
 	}
 
 	@Override
+	protected boolean isDragStartEvent( final ControlInputEvent event )
+	{
+		return true;
+	}
+
+	@Override
 	public void mouseDragged( final ControlInputEvent event )
 	{
 		if ( isCaptured() )

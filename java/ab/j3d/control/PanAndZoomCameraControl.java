@@ -160,6 +160,12 @@ public class PanAndZoomCameraControl
 	}
 
 	@Override
+	protected boolean isDragStartEvent( final ControlInputEvent event )
+	{
+		return event.isMouseButton2Down() || event.isMouseButton3Down();
+	}
+
+	@Override
 	public void mouseDragged( final ControlInputEvent event )
 	{
 		if ( isCaptured() )

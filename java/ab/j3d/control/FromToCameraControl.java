@@ -148,14 +148,14 @@ public class FromToCameraControl
 	/**
 	 * Construct new first person camera control looking from the specified
 	 * point to the other specified point. The up vector is derived from the
-	 * from and to points, as specified by {@link #look(Vector3D,Vector3D)}.
+	 * from and to points, as specified by {@link #look(Vector3D, Vector3D)}.
 	 *
 	 * @param   view    View to be controlled.
 	 * @param   from    Initial point to look from.
 	 * @param   to      Initial point to look at.
 	 *
-	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
-	 * @throws  IllegalArgumentException if the from and two points are too close.
+	 * @throws NullPointerException if any of the arguments is {@code null}.
+	 * @throws IllegalArgumentException if the from and two points are too close.
 	 */
 	public FromToCameraControl( final View3D view, final Vector3D from, final Vector3D to )
 	{
@@ -174,8 +174,8 @@ public class FromToCameraControl
 	 * @param   to              Initial point to look at.
 	 * @param   up              Up-vector (must be normalized).
 	 *
-	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
-	 * @throws  IllegalArgumentException if the from and two points are too close.
+	 * @throws NullPointerException if any of the arguments is {@code null}.
+	 * @throws IllegalArgumentException if the from and two points are too close.
 	 */
 	public FromToCameraControl( final View3D view, final Vector3D from, final Vector3D to, final Vector3D up )
 	{
@@ -317,8 +317,8 @@ public class FromToCameraControl
 	 * @param   from    Point to look from.
 	 * @param   to      Point to look at.
 	 *
-	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
-	 * @throws  IllegalArgumentException if the from and two points are too close.
+	 * @throws NullPointerException if any of the arguments is {@code null}.
+	 * @throws IllegalArgumentException if the from and two points are too close.
 	 */
 	public void look( final Vector3D from, final Vector3D to )
 	{
@@ -340,8 +340,8 @@ public class FromToCameraControl
 	 * @param   to      Point to look at.
 	 * @param   up      Up-vector (must be normalized).
 	 *
-	 * @throws  NullPointerException if any of the arguments is <code>null</code>.
-	 * @throws  IllegalArgumentException if the from and two points are too close.
+	 * @throws NullPointerException if any of the arguments is {@code null}.
+	 * @throws IllegalArgumentException if the from and two points are too close.
 	 */
 	public void look( final Vector3D from, final Vector3D to, final Vector3D up )
 	{
@@ -444,14 +444,11 @@ public class FromToCameraControl
 	@Override
 	public void mousePressed( final ControlInputEvent event )
 	{
-		if ( isSupportedDragEvent( event ) )
-		{
-			_dragStartScene2View = getScene2View();
-			_dragStartZoomFactor = _view.getZoomFactor();
-			_dragStartDistance = _distance;
+		_dragStartScene2View = getScene2View();
+		_dragStartZoomFactor = _view.getZoomFactor();
+		_dragStartDistance = _distance;
 
-			super.mousePressed( event );
-		}
+		super.mousePressed( event );
 	}
 
 	@Override
@@ -474,27 +471,20 @@ public class FromToCameraControl
 		}
 	}
 
-	/**
-	 * Test wether the specified event is used for dragging operations.
-	 *
-	 * @param   event   Event to test (always {@link MouseEvent#MOUSE_PRESSED}).
-	 *
-	 * @return  <code>true</code> if the event is a match;
-	 *          <code>false</code> otherwise.
-	 */
-	public boolean isSupportedDragEvent( final ControlInputEvent event )
+	@Override
+	public boolean isDragStartEvent( final ControlInputEvent event )
 	{
 		return isDragFromAroundToEvent( event ) || isPanEvent( event ) || isZoomEvent( event );
 	}
 
 	/**
-	 * Test wether the specified event is used for dragging the from-point
+	 * Test whether the specified event is used for dragging the from-point
 	 * around the to-point.
 	 *
 	 * @param   event   Event to test (always {@link MouseEvent#MOUSE_PRESSED}).
 	 *
-	 * @return  <code>true</code> if the event is a match;
-	 *          <code>false</code> otherwise.
+	 * @return  {@code true} if the event is a match;
+	 *          {@code false} otherwise.
 	 */
 	protected boolean isDragFromAroundToEvent( final ControlInputEvent event )
 	{
@@ -502,12 +492,12 @@ public class FromToCameraControl
 	}
 
 	/**
-	 * Test wether the specified event is used for panning.
+	 * Test whether the specified event is used for panning.
 	 *
 	 * @param   event   Event to test (always {@link MouseEvent#MOUSE_PRESSED}).
 	 *
-	 * @return  <code>true</code> if the event is a match;
-	 *          <code>false</code> otherwise.
+	 * @return  {@code true} if the event is a match;
+	 *          {@code false} otherwise.
 	 */
 	protected boolean isPanEvent( final ControlInputEvent event )
 	{
@@ -515,12 +505,12 @@ public class FromToCameraControl
 	}
 
 	/**
-	 * Test wether the specified event is used for zooming.
+	 * Test whether the specified event is used for zooming.
 	 *
 	 * @param   event   Event to test (always {@link MouseEvent#MOUSE_PRESSED}).
 	 *
-	 * @return  <code>true</code> if the event is a match;
-	 *          <code>false</code> otherwise.
+	 * @return  {@code true} if the event is a match;
+	 *          {@code false} otherwise.
 	 */
 	protected boolean isZoomEvent( final ControlInputEvent event )
 	{
