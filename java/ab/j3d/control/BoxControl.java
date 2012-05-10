@@ -2,7 +2,7 @@
  * $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -85,7 +85,7 @@ public class BoxControl
 	 * Listener to be used as a fallback, when no part of the box has captured
 	 * an event.
 	 */
-	private ContentNodeControl _listener;
+	private ContentNodeControl _listener = null;
 
 	/**
 	 * Precedence of the control relative to other content node controls.
@@ -125,7 +125,6 @@ public class BoxControl
 		_sides = sides;
 	}
 
-	@Override
 	public int getPrecedence()
 	{
 		return _precedence;
@@ -175,7 +174,7 @@ public class BoxControl
 
 	/**
 	 * Sets a control to handle events for the entire box, if no sides or edges
-	 * handle a given event
+	 * handle a given event.
 	 *
 	 * @param   listener    Control to be set.
 	 */
@@ -252,7 +251,6 @@ public class BoxControl
 		return _sides.get( side.ordinal() );
 	}
 
-	@Override
 	public Double getDepth( final Ray3D pointerRay )
 	{
 		Double result = null;
@@ -272,7 +270,6 @@ public class BoxControl
 		return result;
 	}
 
-	@Override
 	public void mouseMoved( final ControlInputEvent event, final ContentNode contentNode )
 	{
 		for ( final BoxSide side : _sides )
@@ -281,7 +278,6 @@ public class BoxControl
 		}
 	}
 
-	@Override
 	public boolean mousePressed( final ControlInputEvent event, final ContentNode contentNode )
 	{
 		boolean result = false;
@@ -311,7 +307,6 @@ public class BoxControl
 		return result;
 	}
 
-	@Override
 	public boolean mouseDragged( final ControlInputEvent event, final ContentNode contentNode )
 	{
 		boolean result = false;
@@ -333,7 +328,6 @@ public class BoxControl
 		return result;
 	}
 
-	@Override
 	public void mouseReleased( final ControlInputEvent event, final ContentNode contentNode )
 	{
 		final BoxSide activeSide = _activeSide;
@@ -352,7 +346,6 @@ public class BoxControl
 		}
 	}
 
-	@Override
 	public void paintOverlay( final View3D view, final Graphics2D g )
 	{
 		for ( final BoxSide side : _sides )
@@ -361,12 +354,10 @@ public class BoxControl
 		}
 	}
 
-	@Override
 	public void addView( final View3D view )
 	{
 	}
 
-	@Override
 	public void removeView( final View3D view )
 	{
 	}
@@ -571,6 +562,6 @@ public class BoxControl
 	@Override
 	public String toString()
 	{
-		return super.toString() + "[tag=" + _tag + "]";
+		return super.toString() + "[tag=" + _tag + ']';
 	}
 }
