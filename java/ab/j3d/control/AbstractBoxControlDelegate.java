@@ -2,7 +2,7 @@
  * $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,29 +33,24 @@ import ab.j3d.model.*;
 public class AbstractBoxControlDelegate
 	implements BoxControlDelegate
 {
-	@Override
 	public boolean isEnabled()
 	{
 		return true;
 	}
 
-	@Override
 	public boolean isVisible()
 	{
 		return isEnabled();
 	}
 
-	@Override
 	public void mousePressed( final ControlInputEvent event, final ContentNode node )
 	{
 	}
 
-	@Override
 	public void mouseDragged( final ControlInputEvent event, final ContentNode node, final Vector3D offset )
 	{
 	}
 
-	@Override
 	public void mouseReleased( final ControlInputEvent event, final ContentNode node )
 	{
 	}
