@@ -53,6 +53,8 @@ public class RenderingPolicyComboBox
 		super( RenderingPolicy.values() );
 		setSelectedItem( view.getRenderingPolicy() );
 		setMaximumSize( getPreferredSize() );
+		setRequestFocusEnabled( false );
+		setEditable( false );
 
 		final RenderingPolicy[] values = RenderingPolicy.values();
 
