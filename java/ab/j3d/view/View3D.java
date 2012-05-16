@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -159,6 +159,23 @@ public abstract class View3D
 	 * view.
 	 */
 	private boolean _levelOfDetail = true;
+
+	/**
+	 * Increase bounds of scene by this amount before calculating how to fit
+	 * the scene in the view. This can be used when additional room around the
+	 * viewed scene is desired.
+	 *
+	 * @see     #zoomToFitSceneBounds
+	 */
+	private Vector3D _zoomToFitSceneSizeAdjustment = Vector3D.ZERO;
+
+	/**
+	 * Adjustment to zoom factor when fitting bounds within a view. This can be
+	 * used when additional room around the viewed bounds is desired.
+	 *
+	 * @see     #zoomToFitViewBounds
+	 */
+	private double _zoomToFitZoomAdjust = 0.95;
 
 	/**
 	 * Construct new view.
@@ -795,6 +812,64 @@ public abstract class View3D
 	}
 
 	/**
+	 * Get scene size adjustment for zoom-to-fit operation. The scene bounds are
+	 * increased by this amount before calculating how to fit the scene in the
+	 * view. This can be used when additional room around the viewed scene is
+	 * desired.
+	 *
+	 * @return  Scene size adjustment for zoom-to-fit operation.
+	 *
+	 * @see     #zoomToFitScene
+	 * @see     #zoomToFitSceneBounds
+	 */
+	public Vector3D getZoomToFitSceneSizeAdjustment()
+	{
+		return _zoomToFitSceneSizeAdjustment;
+	}
+
+	/**
+	 * Set scene size adjustment for zoom-to-fit operation. The scene bounds are
+	 * increased by this amount before calculating how to fit the scene in the
+	 * view. This can be used when additional room around the viewed scene is
+	 * desired.
+	 *
+	 * @param   adjustment  Scene size adjustment for zoom-to-fit operation.
+	 *
+	 * @see     #zoomToFitScene
+	 * @see     #zoomToFitSceneBounds
+	 */
+	public void setZoomToFitSceneSizeAdjustment( final Vector3D adjustment )
+	{
+		_zoomToFitSceneSizeAdjustment = adjustment;
+	}
+
+	/**
+	 * Get adjustment to zoom factor when fitting bounds within a view. This can
+	 * be used when additional room around the viewed bounds is desired.
+	 *
+	 * @return  Zoom factor adjustment factor (e.g. 0.95 to zoom to 95%).
+	 *
+	 * @see     #zoomToFitViewBounds
+	 */
+	public double getZoomToFitZoomAdjust()
+	{
+		return _zoomToFitZoomAdjust;
+	}
+
+	/**
+	 * Set adjustment to zoom factor when fitting bounds within a view. This can
+	 * be used when additional room around the viewed bounds is desired.
+	 *
+	 * @param   adjustment  Zoom factor adjustment factor (e.g. 0.95 to zoom to 95%).
+	 *
+	 * @see     #zoomToFitViewBounds
+	 */
+	public void setZoomToFitZoomAdjust( final double adjustment )
+	{
+		_zoomToFitZoomAdjust = adjustment;
+	}
+
+	/**
 	 * Adjust view volume to fit all scene contents. This is done by changing
 	 * the view position and zoom factor, but without changes to the view
 	 * direction.
@@ -821,7 +896,20 @@ public abstract class View3D
 	 */
 	public void zoomToFitSceneBounds( @NotNull final Bounds3D sceneBounds )
 	{
-		zoomToFitViewBounds( GeometryTools.convertObbToAabb( getScene2View(), sceneBounds ) );
+		final Bounds3D adjustedBounds;
+
+		final Vector3D adjustment = _zoomToFitSceneSizeAdjustment;
+		if ( ( adjustment != null ) && !Vector3D.ZERO.equals( adjustment ) )
+		{
+			adjustedBounds = new Bounds3D( sceneBounds.v1.x - 0.5 * adjustment.x, sceneBounds.v1.y - 0.5 * adjustment.y, sceneBounds.v1.z - 0.5 * adjustment.z,
+			                               sceneBounds.v2.x + 0.5 * adjustment.x, sceneBounds.v2.y + 0.5 * adjustment.y, sceneBounds.v2.z + 0.5 * adjustment.z );
+		}
+		else
+		{
+			adjustedBounds = sceneBounds;
+		}
+
+		zoomToFitViewBounds( GeometryTools.convertObbToAabb( getScene2View(), adjustedBounds ) );
 	}
 
 	/**
@@ -857,7 +945,7 @@ public abstract class View3D
 		final Matrix3D oldScene2View = getScene2View();
 		final Matrix3D scene2view = oldScene2View.minus( viewOriginX, viewOriginY, viewOriginZ );
 
-		setZoomFactor( 0.95 * zoomFactor );
+		setZoomFactor( _zoomToFitZoomAdjust * zoomFactor );
 		setScene2View( scene2view );
 	}
 
