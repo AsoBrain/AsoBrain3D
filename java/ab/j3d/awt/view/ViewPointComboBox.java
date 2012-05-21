@@ -27,6 +27,7 @@ import java.util.List;
 import javax.swing.*;
 
 import ab.j3d.*;
+import ab.j3d.control.*;
 import ab.j3d.view.*;
 import org.jetbrains.annotations.*;
 
@@ -228,14 +229,24 @@ public class ViewPointComboBox
 		final ViewPoint oldViewPoint = _selectedViewPoint;
 		if ( viewPoint != oldViewPoint )
 		{
+			_selectedViewPoint = viewPoint;
+			setSelectedItem( viewPoint );
+
 			final View3D view = _view;
 			final Matrix3D oldScene2View = view.getScene2View();
 			final Matrix3D newOrientation = viewPoint.getScene2view();
 			view.setProjectionPolicy( viewPoint.isPerspective() ? ProjectionPolicy.PERSPECTIVE : ProjectionPolicy.PARALLEL );
 			view.setScene2View( newOrientation.setTranslation( oldScene2View.getTranslation() ) );
-			view.zoomToFitScene();
-			_selectedViewPoint = viewPoint;
-			setSelectedItem( viewPoint );
+
+			final CameraControl cameraControl = view.getCameraControl();
+			if ( cameraControl != null )
+			{
+				cameraControl.zoomToFit();
+			}
+			else
+			{
+				view.zoomToFitScene();
+			}
 		}
 	}
 
@@ -305,8 +316,8 @@ public class ViewPointComboBox
 		/**
 		 * Get whether the view point is for perspective projection.
 		 *
-		 * @return  <code>true</code> if view point is for perspective projection;
-		 *          <code>false</code> if view point is for parallel projection.
+		 * @return  {@code false} if view point is for perspective projection;
+		 *          {@code false} if view point is for parallel projection.
 		 */
 		public boolean isPerspective()
 		{
