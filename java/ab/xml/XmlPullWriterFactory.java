@@ -82,7 +82,10 @@ public class XmlPullWriterFactory
 
 		if ( isIndenting() )
 		{
-			serializer = new IndentingXmlSerializer( serializer );
+			final IndentingXmlSerializer indenting = new IndentingXmlSerializer( serializer );
+			indenting.setNewline( getNewline() );
+			indenting.setIndent( getIndent() );
+			serializer = indenting;
 		}
 
 		return new XmlPullWriter( serializer, encoding );
@@ -113,7 +116,10 @@ public class XmlPullWriterFactory
 
 		if ( isIndenting() )
 		{
-			serializer = new IndentingXmlSerializer( serializer );
+			final IndentingXmlSerializer indenting = new IndentingXmlSerializer( serializer );
+			indenting.setNewline( getNewline() );
+			indenting.setIndent( getIndent() );
+			serializer = indenting;
 		}
 
 		return new XmlPullWriter( serializer, encoding );

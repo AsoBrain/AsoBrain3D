@@ -69,7 +69,10 @@ class StaxWriterFactory
 
 		if ( isIndenting() )
 		{
-			writer = new IndentingXMLStreamWriter( writer );
+			final IndentingXMLStreamWriter indenting = new IndentingXMLStreamWriter( writer );
+			indenting.setNewline( getNewline() );
+			indenting.setIndent( getIndent() );
+			writer = indenting;
 		}
 
 		return new StaxWriter( writer, encoding );
@@ -91,7 +94,10 @@ class StaxWriterFactory
 
 		if ( isIndenting() )
 		{
-			xmlStreamWriter = new IndentingXMLStreamWriter( xmlStreamWriter );
+			final IndentingXMLStreamWriter indenting = new IndentingXMLStreamWriter( xmlStreamWriter );
+			indenting.setNewline( getNewline() );
+			indenting.setIndent( getIndent() );
+			xmlStreamWriter = indenting;
 		}
 
 		return new StaxWriter( xmlStreamWriter, encoding );

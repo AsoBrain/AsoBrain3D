@@ -119,6 +119,16 @@ public abstract class XMLWriterFactory
 	private boolean _indenting;
 
 	/**
+	 * String inserted as a newline.
+	 */
+	private String _newline = "\n";
+
+	/**
+	 * String inserted for each level of indenting.
+	 */
+	private String _indent = "\t";
+
+	/**
 	 * Constructs a new factory instance.
 	 */
 	protected XMLWriterFactory()
@@ -146,6 +156,54 @@ public abstract class XMLWriterFactory
 	public void setIndenting( final boolean indenting )
 	{
 		_indenting = indenting;
+	}
+
+	/**
+	 * Returns the string to be used as a newline. Only used when
+	 * {@link #isIndenting()} is {@code true}.
+	 * The default is <code>"\n"</code>.
+	 *
+	 * @return  String for newlines.
+	 */
+	public String getNewline()
+	{
+		return _newline;
+	}
+
+	/**
+	 * Sets the string to be used as a newline. Only used when
+	 * {@link #isIndenting()} is {@code true}.
+	 * The default is <code>"\n"</code>.
+	 *
+	 * @param   newline     String for newlines.
+	 */
+	public void setNewline( final String newline )
+	{
+		_newline = newline;
+	}
+
+	/**
+	 * Returns the string to be used for indenting. Only used when
+	 * {@link #isIndenting()} is {@code true}.
+	 * The default is <code>"\t"</code>.
+	 *
+	 * @return  String for indenting.
+	 */
+	public String getIndent()
+	{
+		return _indent;
+	}
+
+	/**
+	 * Sets the string to be used for indenting. Only used when
+	 * {@link #isIndenting()} is {@code true}.
+	 * The default is <code>"\t"</code>.
+	 *
+	 * @param   indent      String for indenting.
+	 */
+	public void setIndent( final String indent )
+	{
+		_indent = indent;
 	}
 
 	/**
