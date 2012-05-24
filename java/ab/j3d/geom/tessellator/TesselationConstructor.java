@@ -189,18 +189,18 @@ class TesselationConstructor
 	{
 		final List<int[]> result = new LinkedList<int[]>();
 
-		for ( Face f = mesh._faceListHead.next; f != mesh._faceListHead; f = f.next )
+		for ( Face face = mesh._faceListHead.next; face != mesh._faceListHead; face = face.next )
 		{
-			if ( f.inside )
+			if ( face.inside )
 			{
 				int vertexCount = 0;
-				HalfEdge e = f.anEdge;
+				HalfEdge e = face.anEdge;
 				do
 				{
 					vertexCount++;
 					e = e.ccwAroundLeftFace;
 				}
-				while ( e != f.anEdge );
+				while ( e != face.anEdge );
 
 				final int[] vertices = new int[ vertexCount + 1 ];
 
@@ -209,13 +209,13 @@ class TesselationConstructor
 					vertexCount = 0;
 				}
 
-				e = f.anEdge;
+				e = face.anEdge;
 				do
 				{
 					vertices[ counterClockwise ? vertexCount++ : --vertexCount ] = getVertexIndex( vertexList, e.origin );
 					e = e.ccwAroundLeftFace;
 				}
-				while ( e != f.anEdge );
+				while ( e != face.anEdge );
 
 				vertices[ vertices.length - 1 ] = vertices[ 0 ];
 				result.add( vertices );
@@ -305,30 +305,30 @@ class TesselationConstructor
 		{
 			vertexCount = 0;
 
-			for ( Face f = triangleList; f != null; f = f.renderStack )
+			for ( Face face = triangleList; face != null; face = face.renderStack )
 			{
 				/* Loop once for each edge (there will always be 3 edges) */
-				HalfEdge e = f.anEdge;
+				HalfEdge e = face.anEdge;
 				do
 				{
 					vertices[ vertexCount++ ] = getVertexIndex( vertexList, e.origin );
 					e = e.ccwAroundLeftFace;
 				}
-				while ( e != f.anEdge );
+				while ( e != face.anEdge );
 			}
 		}
 		else
 		{
-			for ( Face f = triangleList; f != null; f = f.renderStack )
+			for ( Face face = triangleList; face != null; face = face.renderStack )
 			{
 				/* Loop once for each edge (there will always be 3 edges) */
-				HalfEdge e = f.anEdge;
+				HalfEdge e = face.anEdge;
 				do
 				{
 					vertices[ --vertexCount ] = getVertexIndex( vertexList, e.origin );
 					e = e.ccwAroundLeftFace;
 				}
-				while ( e != f.anEdge );
+				while ( e != face.anEdge );
 			}
 		}
 
@@ -481,13 +481,11 @@ class TesselationConstructor
 			_counterClockwise = counterClockwise;
 		}
 
-		@Override
 		public int getTriangleCount()
 		{
 			return _triangleCount;
 		}
 
-		@Override
 		public TriangleFan createPrimitive( final HashList<Vector2D> vertexList )
 		{
 			final int[] vertices = new int[ _triangleCount + 2 ];
@@ -638,13 +636,11 @@ class TesselationConstructor
 			_triangleCount = triangleCount;
 	}
 
-		@Override
 		public int getTriangleCount()
 		{
 			return _triangleCount;
 		}
 
-		@Override
 		public TriangleStrip createPrimitive( final HashList<Vector2D> vertexList )
 		{
 			final boolean counterClockwise = _counterClockwise;
