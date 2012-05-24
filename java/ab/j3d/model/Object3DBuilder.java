@@ -1062,7 +1062,10 @@ public class Object3DBuilder
 		if ( side && !outlines.isEmpty() )
 		{
 			final FaceGroup sideFaceGroup = _target.getFaceGroup( sideAppearance, smooth, twoSided );
-			final Tessellation extrusionTessellation = new Tessellation( extrusionLines ? Collections.<int[]>singletonList( new int[] { 0, 1, 2, 3, 0 } ) : Collections.<int[]>emptyList(), Collections.<TessellationPrimitive>singletonList( new TriangleFan( new int[] { 0, 1, 2, 3 } ) ) );
+
+			final List<int[]> extrusionOutlines = extrusionLines ? Collections.<int[]>singletonList( new int[] { 0, 1, 2, 3, 0 } ) : Collections.<int[]>emptyList();
+			final List<TessellationPrimitive> extrusionPrimitives = Collections.<TessellationPrimitive>singletonList( new QuadList( new int[] { 0, 1, 2, 3 } ) );
+			final Tessellation extrusionTessellation = new Tessellation( extrusionOutlines, extrusionPrimitives );
 
 			for ( final int[] contour : outlines )
 			{
@@ -1085,7 +1088,7 @@ public class Object3DBuilder
 					final Vertex3D v3 = new Vertex3D( previousP2, previousI2 );
 					final Vertex3D v4 = new Vertex3D( previousP1, previousI1 );
 
-					final Vector3D normal = GeometryTools.getPlaneNormal( v1.point, v2.point, v3.point );
+					final Vector3D normal = flipNormals ? GeometryTools.getPlaneNormal( v1.point, v2.point, v3.point ) : GeometryTools.getPlaneNormal( v3.point, v2.point, v1.point );
 					if ( normal != null )
 					{
 						if ( sideMap != null )
