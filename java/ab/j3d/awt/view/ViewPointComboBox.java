@@ -91,10 +91,18 @@ public class ViewPointComboBox
 	/**
 	 * View transform for isometric view from right side.
 	 */
-	public static final ViewPoint ISOMETRIC_VIEW = new ViewPoint( "isometric", new Matrix3D(
+	public static final ViewPoint ISOMETRIC_RIGHT_VIEW = new ViewPoint( "isometricRight", new Matrix3D(
 		Math.sqrt( 0.5 ), Math.sqrt( 0.5 ),              0.0, 0.0,
 		            -0.5,              0.5, Math.sqrt( 0.5 ), 0.0,
 		             0.5,             -0.5, Math.sqrt( 0.5 ), 0.0 ), false );
+
+	/**
+	 * View transform for isometric view from left side.
+	 */
+	public static final ViewPoint ISOMETRIC_LEFT_VIEW = new ViewPoint( "isometricLeft", new Matrix3D(
+	Math.sqrt( 0.5 ), -Math.sqrt( 0.5 ),              0.0, 0.0,
+	             0.5,             0.5, Math.sqrt( 0.5 ), 0.0,
+	            -0.5,             -0.5, Math.sqrt( 0.5 ), 0.0 ), false );
 
 	/**
 	 * View transform for isometric view from right side.
@@ -109,12 +117,12 @@ public class ViewPointComboBox
 	/**
 	 * Standard available view points.
 	 */
-	public static final List<ViewPoint> STANDARD_PARALLEL_VIEW_POINTS = Arrays.asList( FRONT_VIEW, REAR_VIEW, TOP_VIEW, BOTTOM_VIEW, RIGHT_VIEW, LEFT_VIEW, ISOMETRIC_VIEW );
+	public static final List<ViewPoint> STANDARD_PARALLEL_VIEW_POINTS = Arrays.asList( FRONT_VIEW, REAR_VIEW, TOP_VIEW, BOTTOM_VIEW, RIGHT_VIEW, LEFT_VIEW, ISOMETRIC_RIGHT_VIEW, ISOMETRIC_LEFT_VIEW );
 
 	/**
 	 * Standard available view points.
 	 */
-	public static final List<ViewPoint> STANDARD_PERSPETIVE_VIEW_POINTS = Arrays.asList( PERSPECTIVE_VIEW, FRONT_VIEW, REAR_VIEW, TOP_VIEW, BOTTOM_VIEW, RIGHT_VIEW, LEFT_VIEW, ISOMETRIC_VIEW );
+	public static final List<ViewPoint> STANDARD_PERSPETIVE_VIEW_POINTS = Arrays.asList( PERSPECTIVE_VIEW, FRONT_VIEW, REAR_VIEW, TOP_VIEW, BOTTOM_VIEW, RIGHT_VIEW, LEFT_VIEW, ISOMETRIC_RIGHT_VIEW , ISOMETRIC_LEFT_VIEW );
 
 	/**
 	 * Locale to use.
