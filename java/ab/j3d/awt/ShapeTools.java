@@ -789,7 +789,14 @@ public class ShapeTools
 					final double p3x = centerX + cos2;
 					final double p3y = centerY + sin2;
 
-					path.curveTo( p1x, p1y, p2x, p2y, p3x, p3y );
+					if ( i == segmentCount - 1 )
+					{
+						path.curveTo( p1x, p1y, p2x, p2y, endX, endY );
+					}
+					else
+					{
+						path.curveTo( p1x, p1y, p2x, p2y, p3x, p3y );
+					}
 
 					cos1 = cos2;
 					sin1 = sin2;
