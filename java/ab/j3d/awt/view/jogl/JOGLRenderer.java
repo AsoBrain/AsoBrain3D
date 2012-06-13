@@ -182,6 +182,12 @@ public class JOGLRenderer
 	}
 
 	/**
+	 * Flag used during multi-pass rendering to disable reflections in all but
+	 * the first rendering pass.
+	 */
+	private boolean _multiPassReflectionsDisabled;
+
+	/**
 	 * Keeps track of various statistics about the rendering process.
 	 */
 	@Nullable
@@ -369,7 +375,8 @@ public class JOGLRenderer
 	 */
 	private boolean isReflectionsEnabled()
 	{
-		return _configuration.isReflectionMapsEnabled() &&
+		return !_multiPassReflectionsDisabled &&
+		       _configuration.isReflectionMapsEnabled() &&
 		       _capabilities.isCubeMapSupported() &&
 		       _capabilities.getMaxTextureUnits() >= 3;
 	}
@@ -626,6 +633,7 @@ public class JOGLRenderer
 			}
 			else
 			{
+				_multiPassReflectionsDisabled = true;
 				gl.glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 				gl.glClearDepth( 1.0 );
 				gl.glClear( GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT );
@@ -694,6 +702,8 @@ public class JOGLRenderer
 				gl.glCopyTexSubImage2D( GL.GL_TEXTURE_2D, 0, 0, 0, 0, 0, width, height );
 			}
 		}
+
+		_multiPassReflectionsDisabled = false;
 	}
 
 	/**
