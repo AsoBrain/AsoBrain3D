@@ -59,27 +59,27 @@ public class SpheresLightsAndShadows
 		color1.setDiffuseColor( new Color4f( 0xffff6040 ) );
 		color1.setAmbientColor( new Color4f( 0xffff6040 ) );
 		color1.setSpecularColor( Color4.DARK_GRAY );
-		white.setShininess( 16 );
+		color1.setShininess( 16 );
 
 		final BasicAppearance color2 = new BasicAppearance();
 		color2.setDiffuseColor( new Color4f( 0xff40c040 ) );
 		color2.setAmbientColor( new Color4f( 0xff40c040 ) );
 		color2.setSpecularColor( Color4.DARK_GRAY );
-		white.setShininess( 16 );
+		color2.setShininess( 16 );
 
 		final BasicAppearance color3 = new BasicAppearance();
 		color3.setDiffuseColor( new Color4f( 0xff4060ff ) );
 		color3.setAmbientColor( new Color4f( 0xff4060ff ) );
 		color3.setSpecularColor( Color4.DARK_GRAY );
-		white.setShininess( 16 );
+		color3.setShininess( 16 );
 
 		final Scene scene = new Scene( Scene.MM );
 		scene.setAmbient( 0.2f, 0.2f, 0.2f );
 
 //		scene.addContentNode( "sphere-0", Matrix3D.getTranslation( 0.0, 0.0, 1.0 ), new Sphere3D( 1.0, 16, 8, white ) );
-		scene.addContentNode( "sphere-1", Matrix3D.getTranslation( 0.0, 0.0, 1.0 ), new GeoSphere3D( 1.0, 1, color1 ) );
-		scene.addContentNode( "sphere-2", Matrix3D.getTranslation( 2.0, 1.0, 1.0 ), new GeoSphere3D( 1.0, 1, color2 ) );
-		scene.addContentNode( "sphere-3", Matrix3D.getTranslation( 1.0, 5.0, 1.0 ), new GeoSphere3D( 1.0, 1, color3 ) );
+		scene.addContentNode( "sphere-1", Matrix3D.getTranslation( 0.0, 0.0, 1.0 ), new GeoSphere3D( 1.0, 3, color1 ) );
+		scene.addContentNode( "sphere-2", Matrix3D.getTranslation( 2.0, 1.0, 1.0 ), new GeoSphere3D( 1.0, 3, color2 ) );
+		scene.addContentNode( "sphere-3", Matrix3D.getTranslation( 1.0, 5.0, 1.0 ), new GeoSphere3D( 1.0, 3, color3 ) );
 
 		final Object3DBuilder builder = new Object3DBuilder();
 		builder.addQuad( new Vector3D( -10.0, -10.0, 0.0 ),
