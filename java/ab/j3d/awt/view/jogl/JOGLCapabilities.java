@@ -249,12 +249,12 @@ public class JOGLCapabilities
 		@Override
 		protected void run( final GL gl )
 		{
-			final boolean opengl12 = gl.isExtensionAvailable( "GL_VERSION_1_2" );
-			final boolean opengl13 = gl.isExtensionAvailable( "GL_VERSION_1_3" );
-			final boolean opengl14 = gl.isExtensionAvailable( "GL_VERSION_1_4" );
-			final boolean opengl15 = gl.isExtensionAvailable( "GL_VERSION_1_5" );
-			final boolean opengl20 = gl.isExtensionAvailable( "GL_VERSION_2_0" ) ||
-			                         gl.isExtensionAvailable( "GL_VERSION_3_0" );
+			final String version = gl.glGetString( GL.GL_VERSION );
+			final boolean opengl12 = "1.2".compareTo( version ) <= 0;
+			final boolean opengl13 = "1.3".compareTo( version ) <= 0;
+			final boolean opengl14 = "1.4".compareTo( version ) <= 0;
+			final boolean opengl15 = "1.5".compareTo( version ) <= 0;
+			final boolean opengl20 = "2.0".compareTo( version ) <= 0;
 
 			_opengl13 = opengl13;
 
