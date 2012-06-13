@@ -1465,7 +1465,9 @@ public class JOGLRenderer
 						shaderManager.setLightingEnabled( true );
 						shaderManager.setTextureEnabled( colorMap != null );
 						final Color4 reflectionColor = appearance.getReflectionColor();
-						shaderManager.setReflectivity( appearance.getReflectionMin(), appearance.getReflectionMax(), reflectionColor.getRedFloat(), reflectionColor.getGreenFloat(), reflectionColor.getBlueFloat() );
+						final float reflectionMin = ( reflectionTexture == null ) ? 0.0f : appearance.getReflectionMin();
+						final float reflectionMax = ( reflectionTexture == null ) ? 0.0f : appearance.getReflectionMax();
+						shaderManager.setReflectivity( reflectionMin, reflectionMax, reflectionColor.getRedFloat(), reflectionColor.getGreenFloat(), reflectionColor.getBlueFloat() );
 					}
 
 					/*
