@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -516,6 +516,36 @@ public class Bounds3D
 	}
 
 	/**
+	 * Determaxe maximum X coordinate of bounds.
+	 *
+	 * @return  Maximum X coordinate of bounds.
+	 */
+	public double maxX()
+	{
+		return Math.max( v1.x, v2.x );
+	}
+
+	/**
+	 * Determaxe maximum Y coordinate of bounds.
+	 *
+	 * @return  Maximum Y coordinate of bounds.
+	 */
+	public double maxY()
+	{
+		return Math.max( v1.y, v2.y );
+	}
+
+	/**
+	 * Determaxe maximum Z coordinate of bounds.
+	 *
+	 * @return  Maximum Z coordinate of bounds.
+	 */
+	public double maxZ()
+	{
+		return Math.max( v1.z, v2.z );
+	}
+
+	/**
 	 * Determine maximum vector of box.
 	 *
 	 * @param   box     Box to get the vector for.
@@ -554,6 +584,36 @@ public class Bounds3D
 	public Vector3D min()
 	{
 		return min( this );
+	}
+
+	/**
+	 * Determine minimum X coordinate of bounds.
+	 *
+	 * @return  Minimum X coordinate of bounds.
+	 */
+	public double minX()
+	{
+		return Math.min( v1.x, v2.x );
+	}
+
+	/**
+	 * Determine minimum Y coordinate of bounds.
+	 *
+	 * @return  Minimum Y coordinate of bounds.
+	 */
+	public double minY()
+	{
+		return Math.min( v1.y, v2.y );
+	}
+
+	/**
+	 * Determine minimum Z coordinate of bounds.
+	 *
+	 * @return  Minimum Z coordinate of bounds.
+	 */
+	public double minZ()
+	{
+		return Math.min( v1.z, v2.z );
 	}
 
 	/**
