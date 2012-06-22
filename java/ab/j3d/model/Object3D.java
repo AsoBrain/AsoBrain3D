@@ -92,9 +92,8 @@ public class Object3D
 	 */
 	public Object3D( final List<Vector3D> vertices )
 	{
-		_faceGroups = new ArrayList<FaceGroup>();
-		_vertices = vertices;
-		_orientedBoundingBox = null;
+		this();
+		setVertexCoordinates( vertices );
 	}
 
 	/**
@@ -355,6 +354,17 @@ public class Object3D
 	public final void addFaceGroup( final FaceGroup faceGroup )
 	{
 		_faceGroups.add( faceGroup );
+	}
+
+	/**
+	 * Sets the face groups for this object.
+	 *
+	 * @param   faceGroups  Face groups to be set.
+	 */
+	public void setFaceGroups( final List<FaceGroup> faceGroups )
+	{
+		_faceGroups.clear();
+		_faceGroups.addAll( faceGroups );
 	}
 
 	/**

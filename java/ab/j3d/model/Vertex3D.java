@@ -39,7 +39,7 @@ public class Vertex3D
 	/**
 	 * Coordinates of vertex.
 	 */
-	public final Vector3D point;
+	public Vector3D point;
 
 	/**
 	 * Index of the vertex in {@link Object3D#getVertexCoordinates()}.
