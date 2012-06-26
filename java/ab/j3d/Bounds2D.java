@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -381,5 +381,27 @@ public abstract class Bounds2D
 		}
 
 		return result;
+	}
+
+	/**
+	 * Create human-readable representation of this {@link Bounds3D} object.
+	 *
+	 * @return  Human-readable representation of this {@link Bounds3D} object.
+	 */
+	public String toFriendlyString()
+	{
+		return toFriendlyString( this );
+	}
+
+	/**
+	 * Create human-readable representation of {@link Bounds3D} object.
+	 *
+	 * @param   bounds      Bounds3D value ({@code null} produces 'null').
+	 *
+	 * @return Human-readable representation of {@link Bounds3D} object.
+	 */
+	public static String toFriendlyString( final Bounds2D bounds )
+	{
+		return ( bounds == null ) ? "null" : "[ " + Vector2D.toFriendlyString( bounds.getMinX(), bounds.getMinY() ) + ", " + Vector2D.toFriendlyString( bounds.getMaxX(), bounds.getMaxY() ) + " ]";
 	}
 }
