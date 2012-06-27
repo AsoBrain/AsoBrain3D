@@ -112,7 +112,7 @@ public class ObjLoader
 	public static final Pattern POLYGON_VERTEX_PATTERN  = Pattern.compile( "(\\d+)(/(\\d+)?(/(\\d+))?)?" ); // vertex#[/textureVertex#1[/vertexNormal#]]
 
 	/**
-	 * Materials from OBJ MTL file.
+	 * Materials read from MTL file and/or referenced by OBJ file.
 	 */
 	private final Map<String,Appearance> _materials = new HashMap<String,Appearance>();
 
@@ -120,6 +120,37 @@ public class ObjLoader
 	 * Default materials to use for OBJ files.
 	 */
 	private static final Map<String,Appearance> DEFAULT_MATERIALS;
+
+	static
+	{
+		final Map<String,Appearance> materials = new HashMap<String,Appearance>();
+
+		/* default material (also used for unknown materials) */
+		materials.put( "default"      , BasicAppearance.createForColor( new Color4f( 0xFFC0C0C0 ) ) );
+
+		/* basic colors */
+		materials.put( "black"        , BasicAppearance.createForColor( new Color4f( 0xFF000000 ) ) );
+		materials.put( "blue"         , BasicAppearance.createForColor( new Color4f( 0xFF0000FF ) ) );
+		materials.put( "green"        , BasicAppearance.createForColor( new Color4f( 0xFF00FF00 ) ) );
+		materials.put( "cyan"         , BasicAppearance.createForColor( new Color4f( 0xFF00FFFF ) ) );
+		materials.put( "red"          , BasicAppearance.createForColor( new Color4f( 0xFFFF0000 ) ) );
+		materials.put( "magenta"      , BasicAppearance.createForColor( new Color4f( 0xFFFF00FF ) ) );
+		materials.put( "yellow"       , BasicAppearance.createForColor( new Color4f( 0xFFFFFF00 ) ) );
+		materials.put( "white"        , BasicAppearance.createForColor( new Color4f( 0xFFFCFCFC ) ) );
+
+		/* materials */
+//		materials.put( "brass"        , BasicAppearance.createForColor( new Color4f( 0xFFE0E010 ) ) );
+//		materials.put( "glass"        , BasicAppearance.createForColor( new Color4f( 0x20102010 ) ) );
+//		materials.put( "light"        , BasicAppearance.createForColor( new Color4f( 0x80FFFF20 ) ) );
+//		materials.put( "metal"        , BasicAppearance.createForColor( new Color4f( 0xFFE0E0F8 ) ) );
+//		materials.put( "plastic"      , BasicAppearance.createForColor( new Color4f( 0xFFC0C0C0 ) ) );
+//		materials.put( "porcelin"     , BasicAppearance.createForColor( new Color4f( 0xFFFFFFFF ) ) );
+//		materials.put( "steel"        , BasicAppearance.createForColor( new Color4f( 0xFFD0D0E8 ) ) );
+//		materials.put( "white_plastic", BasicAppearance.createForColor( new Color4f( 0xFFC0C0C0 ) ) );
+//		materials.put( "wood"         , BasicAppearance.createForColor( new Color4f( 0xFF603820 ) ) );
+
+		DEFAULT_MATERIALS = Collections.unmodifiableMap( materials );
+	}
 
 	/**
 	 * Transformation applied to all geometry.
@@ -254,9 +285,6 @@ public class ObjLoader
 	public String load( @NotNull final Object3DBuilder builder, @NotNull final ResourceLoader loader, @NotNull final BufferedReader objReader )
 		throws IOException
 	{
-		final Map<String,Appearance> actualMaterials = DEFAULT_MATERIALS;
-		final Appearance defaultMaterial = actualMaterials.containsKey( "default" ) ? actualMaterials.get( "default" ) : BasicAppearance.createForColor( Color4.LIGHT_GRAY );
-
 		/*
 		 * Read OBJ data
 		 */
@@ -265,7 +293,7 @@ public class ObjLoader
 		final List<Vector3D> vertexNormals = new ArrayList<Vector3D>();
 		final List<ObjFace> faces = new ArrayList<ObjFace>();
 
-		Appearance material = defaultMaterial;
+		Appearance material = DEFAULT_MATERIALS.get( "default" );
 
 		String objectName = null;
 
@@ -570,7 +598,6 @@ public class ObjLoader
 					 */
 					else if ( "usemtl".equals( name ) )
 					{
-						actualMaterials.putAll( _materials );
 						if ( argCount < 1 )
 						{
 							throw new IOException( "malformed 'usemtl' entry: " + line );
@@ -578,10 +605,17 @@ public class ObjLoader
 
 						String materialName = getStringAfter( line, tokens, 1 );
 						materialName = materialName.replace( ' ', '_' );
-						material = actualMaterials.get( materialName );
-						if ( materialName == null )
+						material = _materials.get( materialName );
+
+						if ( material == null )
 						{
-							material = defaultMaterial;
+							material = DEFAULT_MATERIALS.get( materialName );
+						}
+
+						if ( material == null )
+						{
+							material = new BasicAppearance();
+							_materials.put( materialName, material );
 							System.err.println( "'usemtl' references unknown material '" + materialName + '\'' );
 						}
 					}
@@ -678,37 +712,6 @@ public class ObjLoader
 		}
 
 		return objectName;
-	}
-
-	static
-	{
-		final Map<String,Appearance> materials = new HashMap<String,Appearance>();
-
-		/* default material (also used for unknown materials) */
-		materials.put( "default"      , BasicAppearance.createForColor( new Color4f( 0xFFC0C0C0 ) ) );
-
-		/* basic colors */
-		materials.put( "black"        , BasicAppearance.createForColor( new Color4f( 0xFF000000 ) ) );
-		materials.put( "blue"         , BasicAppearance.createForColor( new Color4f( 0xFF0000FF ) ) );
-		materials.put( "green"        , BasicAppearance.createForColor( new Color4f( 0xFF00FF00 ) ) );
-		materials.put( "cyan"         , BasicAppearance.createForColor( new Color4f( 0xFF00FFFF ) ) );
-		materials.put( "red"          , BasicAppearance.createForColor( new Color4f( 0xFFFF0000 ) ) );
-		materials.put( "magenta"      , BasicAppearance.createForColor( new Color4f( 0xFFFF00FF ) ) );
-		materials.put( "yellow"       , BasicAppearance.createForColor( new Color4f( 0xFFFFFF00 ) ) );
-		materials.put( "white"        , BasicAppearance.createForColor( new Color4f( 0xFFFCFCFC ) ) );
-
-		/* materials */
-//		materials.put( "brass"        , BasicAppearance.createForColor( new Color4f( 0xFFE0E010 ) ) );
-//		materials.put( "glass"        , BasicAppearance.createForColor( new Color4f( 0x20102010 ) ) );
-//		materials.put( "light"        , BasicAppearance.createForColor( new Color4f( 0x80FFFF20 ) ) );
-//		materials.put( "metal"        , BasicAppearance.createForColor( new Color4f( 0xFFE0E0F8 ) ) );
-//		materials.put( "plastic"      , BasicAppearance.createForColor( new Color4f( 0xFFC0C0C0 ) ) );
-//		materials.put( "porcelin"     , BasicAppearance.createForColor( new Color4f( 0xFFFFFFFF ) ) );
-//		materials.put( "steel"        , BasicAppearance.createForColor( new Color4f( 0xFFD0D0E8 ) ) );
-//		materials.put( "white_plastic", BasicAppearance.createForColor( new Color4f( 0xFFC0C0C0 ) ) );
-//		materials.put( "wood"         , BasicAppearance.createForColor( new Color4f( 0xFF603820 ) ) );
-
-		DEFAULT_MATERIALS = materials;
 	}
 
 	/**
