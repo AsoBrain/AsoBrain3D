@@ -46,7 +46,7 @@ public class Object3D
 	 * Coordinates of vertex coordinates in object. Vertex coordinates are
 	 * stored in an array of doubles with a triplet for each vertex.
 	 */
-	private final List<Vector3D> _vertices;
+	private final HashList<Vector3D> _vertices;
 
 	/**
 	 * Helper for collision tests.
@@ -669,20 +669,7 @@ public class Object3D
 	 */
 	public int getVertexIndex( final Vector3D point )
 	{
-		final int result;
-
-		final List<Vector3D> vertices = _vertices;
-		if ( vertices instanceof HashList )
-		{
-			result = ((HashList<Vector3D>)vertices).indexOfOrAdd( point );
-		}
-		else
-		{
-			vertices.add( point );
-			result = vertices.size();
-		}
-
-		return result;
+		return _vertices.indexOfOrAdd( point );
 	}
 
 	/**
