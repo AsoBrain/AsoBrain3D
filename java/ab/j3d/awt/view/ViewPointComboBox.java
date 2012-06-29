@@ -122,7 +122,7 @@ public class ViewPointComboBox
 	/**
 	 * Standard available view points.
 	 */
-	public static final List<ViewPoint> STANDARD_PERSPETIVE_VIEW_POINTS = Arrays.asList( PERSPECTIVE_VIEW, FRONT_VIEW, REAR_VIEW, TOP_VIEW, BOTTOM_VIEW, RIGHT_VIEW, LEFT_VIEW, ISOMETRIC_RIGHT_VIEW , ISOMETRIC_LEFT_VIEW );
+	public static final List<ViewPoint> STANDARD_PERSPECTIVE_VIEW_POINTS = Arrays.asList( PERSPECTIVE_VIEW, FRONT_VIEW, REAR_VIEW, TOP_VIEW, BOTTOM_VIEW, RIGHT_VIEW, LEFT_VIEW );
 
 	/**
 	 * Locale to use.
@@ -148,7 +148,7 @@ public class ViewPointComboBox
 	 */
 	public ViewPointComboBox( final Locale locale, final View3D view, final ViewPoint defaultViewPoint )
 	{
-		this( locale, view, ( view.getProjectionPolicy() == ProjectionPolicy.PERSPECTIVE ) ? STANDARD_PERSPETIVE_VIEW_POINTS : STANDARD_PARALLEL_VIEW_POINTS, defaultViewPoint );
+		this( locale, view, ( view.getProjectionPolicy() == ProjectionPolicy.PERSPECTIVE ) ? STANDARD_PERSPECTIVE_VIEW_POINTS : STANDARD_PARALLEL_VIEW_POINTS, defaultViewPoint );
 	}
 
 	/**
