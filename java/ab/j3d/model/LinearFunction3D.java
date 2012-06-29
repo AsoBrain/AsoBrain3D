@@ -56,16 +56,18 @@ public class LinearFunction3D
 	 */
 	public static LinearFunction3D fromPoints( final Vector3D parameterA, final Vector3D valueA, final Vector3D parameterB, final Vector3D valueB )
 	{
+		final double epsilon = 1.0e-8;
+
 		final double dx = parameterB.x - parameterA.x;
-		final double factorX = dx == 0.0 ? 0.0 : ( valueB.x - valueA.x ) / dx;
+		final double factorX = MathTools.almostEqual( dx, 0.0, epsilon ) ? 0.0 : ( valueB.x - valueA.x ) / dx;
 		final double constantX = valueA.x - factorX * parameterA.x;
 
 		final double dy = parameterB.y - parameterA.y;
-		final double factorY = dy == 0.0 ? 0.0 : ( valueB.y - valueA.y ) / dy;
+		final double factorY = MathTools.almostEqual( dy, 0.0, epsilon ) ? 0.0 : ( valueB.y - valueA.y ) / dy;
 		final double constantY = valueA.y - factorY * parameterA.y;
 
 		final double dz = parameterB.z - parameterA.z;
-		final double factorZ = dz == 0.0 ? 0.0 : ( valueB.z - valueA.z ) / dz;
+		final double factorZ = MathTools.almostEqual( dz, 0.0, epsilon ) ? 0.0 : ( valueB.z - valueA.z ) / dz;
 		final double constantZ = valueA.z - factorZ * parameterA.z;
 
 		return new LinearFunction3D( new Vector3D( factorX, factorY, factorZ ), new Vector3D( constantX, constantY, constantZ ) );
