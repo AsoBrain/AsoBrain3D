@@ -23,6 +23,7 @@ package ab.j3d.model;
 import java.util.*;
 
 import ab.j3d.*;
+import ab.j3d.geom.*;
 
 /**
  * Object with parametric geometry. The entire object shares a single 3D vector
