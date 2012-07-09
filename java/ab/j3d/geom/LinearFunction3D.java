@@ -32,9 +32,9 @@ import ab.j3d.*;
 public class LinearFunction3D
 {
 	/**
-	 * Coefficient a in f(x) = ax + b.
+	 * Gradient a in f(x) = ax + b.
 	 */
-	private Vector3D _factor;
+	private Vector3D _gradient;
 
 	/**
 	 * Constant b in f(x) = ax + b.
@@ -62,101 +62,123 @@ public class LinearFunction3D
 	{
 		final double epsilon = 1.0e-8;
 
-		final double factorX;
+		final double gradientX;
 		final double constantX;
 
 		if ( MathTools.almostEqual( parameterA.x, parameterB.x, epsilon ) )
 		{
 			if ( !MathTools.almostEqual( valueA.x, valueB.x, epsilon ) )
 			{
-				throw new IllegalArgumentException( "Can't determine X-factor, because X-parameters are the same, but X values are not (parameterA=" + parameterA + ", valueA=" + valueA + ", parameterB=" + parameterB + ", valueB=" + valueB );
+				throw new IllegalArgumentException( "Can't determine X-gradient, because X-parameters are the same, but X values are not (parameterA=" + parameterA + ", valueA=" + valueA + ", parameterB=" + parameterB + ", valueB=" + valueB );
 			}
 
-			factorX = MathTools.almostEqual( parameterA.x, 0.0, epsilon ) ? 0.0 : valueA.x / parameterA.x;
+			gradientX = MathTools.almostEqual( parameterA.x, 0.0, epsilon ) ? 0.0 : valueA.x / parameterA.x;
 			constantX = 0.0;
 		}
 		else if ( MathTools.almostEqual( valueA.x, valueB.x, epsilon ) )
 		{
-			factorX = 0.0;
+			gradientX = 0.0;
 			constantX = valueA.x;
 		}
 		else
 		{
-			factorX = ( valueB.x - valueA.x ) / ( parameterB.x - parameterA.x );
-			constantX = valueA.x - factorX * parameterA.x;
+			gradientX = ( valueB.x - valueA.x ) / ( parameterB.x - parameterA.x );
+			constantX = valueA.x - gradientX * parameterA.x;
 		}
 
-		final double factorY;
+		final double gradientY;
 		final double constantY;
 
 		if ( MathTools.almostEqual( parameterA.y, parameterB.y, epsilon ) )
 		{
 			if ( !MathTools.almostEqual( valueA.y, valueB.y, epsilon ) )
 			{
-				throw new IllegalArgumentException( "Can't determine Y-factor, because Y-parameters are the same, but Y values are not (parameterA=" + parameterA + ", valueA=" + valueA + ", parameterB=" + parameterB + ", valueB=" + valueB );
+				throw new IllegalArgumentException( "Can't determine Y-gradient, because Y-parameters are the same, but Y values are not (parameterA=" + parameterA + ", valueA=" + valueA + ", parameterB=" + parameterB + ", valueB=" + valueB );
 			}
 
-			factorY = MathTools.almostEqual( parameterA.y, 0.0, epsilon ) ? 0.0 : valueA.y / parameterA.y;
+			gradientY = MathTools.almostEqual( parameterA.y, 0.0, epsilon ) ? 0.0 : valueA.y / parameterA.y;
 			constantY = 0.0;
 		}
 		else if ( MathTools.almostEqual( valueA.y, valueB.y, epsilon ) )
 		{
-			factorY = 0.0;
+			gradientY = 0.0;
 			constantY = valueA.y;
 		}
 		else
 		{
-			factorY = ( valueB.y - valueA.y ) / ( parameterB.y - parameterA.y );
-			constantY = valueA.y - factorY * parameterA.y;
+			gradientY = ( valueB.y - valueA.y ) / ( parameterB.y - parameterA.y );
+			constantY = valueA.y - gradientY * parameterA.y;
 		}
 
-		final double factorZ;
+		final double gradientZ;
 		final double constantZ;
 
 		if ( MathTools.almostEqual( parameterA.z, parameterB.z, epsilon ) )
 		{
 			if ( !MathTools.almostEqual( valueA.z, valueB.z, epsilon ) )
 			{
-				throw new IllegalArgumentException( "Can't determine Z-factor, because Z-parameters are the same, but Z values are not (parameterA=" + parameterA + ", valueA=" + valueA + ", parameterB=" + parameterB + ", valueB=" + valueB );
+				throw new IllegalArgumentException( "Can't determine Z-gradient, because Z-parameters are the same, but Z values are not (parameterA=" + parameterA + ", valueA=" + valueA + ", parameterB=" + parameterB + ", valueB=" + valueB );
 			}
 
-			factorZ = MathTools.almostEqual( parameterA.z, 0.0, epsilon ) ? 0.0 : valueA.z / parameterA.z;
+			gradientZ = MathTools.almostEqual( parameterA.z, 0.0, epsilon ) ? 0.0 : valueA.z / parameterA.z;
 			constantZ = 0.0;
 		}
 		else if ( MathTools.almostEqual( valueA.z, valueB.z, epsilon ) )
 		{
-			factorZ = 0.0;
+			gradientZ = 0.0;
 			constantZ = valueA.z;
 		}
 		else
 		{
-			factorZ = ( valueB.z - valueA.z ) / ( parameterB.z - parameterA.z );
-			constantZ = valueA.z - factorZ * parameterA.z;
+			gradientZ = ( valueB.z - valueA.z ) / ( parameterB.z - parameterA.z );
+			constantZ = valueA.z - gradientZ * parameterA.z;
 		}
 
-		return new LinearFunction3D( new Vector3D( factorX, factorY, factorZ ), new Vector3D( constantX, constantY, constantZ ) );
+		return new LinearFunction3D( new Vector3D( gradientX, gradientY, gradientZ ), new Vector3D( constantX, constantY, constantZ ) );
 	}
 
 	/**
 	 * Constructs a new instance.
 	 *
-	 * @param   factor      Coefficient a in f(x) = ax + b.
+	 * @param   gradient      Gradient a in f(x) = ax + b.
 	 * @param   constant    Constant b in f(x) = ax + b.
 	 */
-	public LinearFunction3D( final Vector3D factor, final Vector3D constant )
+	public LinearFunction3D( final Vector3D gradient, final Vector3D constant )
 	{
 		_constant = constant;
-		_factor = factor;
+		_gradient = gradient;
 	}
 
 	/**
-	 * Returns the factor, i.e. the coefficient a in f(x) = ax + b.
+	 * Constructs a new instance.
 	 *
-	 * @return  Factor.
+	 * @param   x   X function.
+	 * @param   y   Y function.
+	 * @param   z   Z function.
 	 */
-	public Vector3D getFactor()
+	public LinearFunction3D( final LinearFunction1D x, final LinearFunction1D y, final LinearFunction1D z )
 	{
-		return _factor;
+		this( new Vector3D( x.getGradient(), y.getGradient(), z.getGradient() ), new Vector3D( x.getConstant(), y.getConstant(), z.getConstant() ) );
+	}
+
+	/**
+	 * Returns the gradient, i.e. the gradient a in f(x) = ax + b.
+	 *
+	 * @return  Gradient.
+	 */
+	public Vector3D getGradient()
+	{
+		return _gradient;
+	}
+
+	/**
+	 * Sets the gradient, i.e. the gradient a in f(x) = ax + b.
+	 *
+	 * @param   gradient    Gradient.
+	 */
+	public void setGradient( final Vector3D gradient )
+	{
+		_gradient = gradient;
 	}
 
 	/**
@@ -170,6 +192,55 @@ public class LinearFunction3D
 	}
 
 	/**
+	 * Sets the constant, i.e. the constant b in f(x) = ax + b.
+	 *
+	 * @param   constant    Constant.
+	 */
+	public void setConstant( final Vector3D constant )
+	{
+		_constant = constant;
+	}
+
+	/**
+	 * Get linear function for X-axis.
+	 *
+	 * @return  Linear function for X-axis.
+	 */
+	public LinearFunction1D getX()
+	{
+		final Vector3D gradient = getGradient();
+		final Vector3D constant = getConstant();
+
+		return new LinearFunction1D( gradient.x, constant.x );
+	}
+
+	/**
+	 * Get linear function for Y-axis.
+	 *
+	 * @return  Linear function for Y-axis.
+	 */
+	public LinearFunction1D getY()
+	{
+		final Vector3D gradient = getGradient();
+		final Vector3D constant = getConstant();
+
+		return new LinearFunction1D( gradient.y, constant.y );
+	}
+
+	/**
+	 * Get linear function for Z-axis.
+	 *
+	 * @return  Linear function for Z-axis.
+	 */
+	public LinearFunction1D getZ()
+	{
+		final Vector3D gradient = getGradient();
+		final Vector3D constant = getConstant();
+
+		return new LinearFunction1D( gradient.z, constant.z );
+	}
+
+	/**
 	 * Returns the value of the function for the given parameter.
 	 *
 	 * @param   parameter   Parameter x in f(x) = ax + b.
@@ -178,15 +249,17 @@ public class LinearFunction3D
 	 */
 	public Vector3D get( final Vector3D parameter )
 	{
-		return new Vector3D( _factor.x * parameter.x + _constant.x,
-		                     _factor.y * parameter.y + _constant.y,
-		                     _factor.z * parameter.z + _constant.z );
+		final Vector3D gradient = getGradient();
+		final Vector3D constant = getConstant();
+		return new Vector3D( gradient.x * parameter.x + constant.x,
+		                     gradient.y * parameter.y + constant.y,
+		                     gradient.z * parameter.z + constant.z );
 	}
 
 	@Override
 	public String toString()
 	{
-		return super.toString() + "[f(v) = " + _factor + " * v + " + _constant + "]";
+		return super.toString() + "[f(v) = " + _gradient + " * v + " + _constant + ']';
 	}
 
 	/**
@@ -197,7 +270,8 @@ public class LinearFunction3D
 	 */
 	public String toFriendlyString()
 	{
-		return getClass().getSimpleName() + "[ f(v) = " + _factor.toFriendlyString() + " * v + " + _constant.toFriendlyString() + " ]";
+		final Class<?> clazz = getClass();
+		return clazz.getSimpleName() + "[ f(v) = " + _gradient.toFriendlyString() + " * v + " + _constant.toFriendlyString() + " ]";
 	}
 
 	/**
@@ -209,7 +283,9 @@ public class LinearFunction3D
 	 */
 	public LinearFunction3D plus( final LinearFunction3D other )
 	{
-		return new LinearFunction3D( getFactor().plus( other.getFactor() ), getConstant().plus( other.getConstant() ) );
+		final Vector3D gradient = getGradient();
+		final Vector3D constant = getConstant();
+		return new LinearFunction3D( gradient.plus( other.getGradient() ), constant.plus( other.getConstant() ) );
 	}
 
 	/**
@@ -221,6 +297,8 @@ public class LinearFunction3D
 	 */
 	public LinearFunction3D minus( final LinearFunction3D other )
 	{
-		return new LinearFunction3D( getFactor().minus( other.getFactor() ), getConstant().minus( other.getConstant() ) );
+		final Vector3D gradient = getGradient();
+		final Vector3D constant = getConstant();
+		return new LinearFunction3D( gradient.minus( other.getGradient() ), constant.minus( other.getConstant() ) );
 	}
 }
