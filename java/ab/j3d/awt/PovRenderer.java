@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2011 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -84,7 +84,7 @@ public class PovRenderer
 			}
 			catch ( IOException e )
 			{
-				throw new IOException( "POV-Ray command exeution failed", e );
+				throw new IOException( "POV-Ray command execution failed", e );
 			}
 		}
 		finally
@@ -106,7 +106,7 @@ public class PovRenderer
 	 * @param   povFile     File containing POV-scene.
 	 * @param   width       The width of the rendered image.
 	 * @param   height      The height of the rendered image.
-	 * @param   background  Wether or not to draw a background.
+	 * @param   background  Whether or not to draw a background.
 	 *
 	 * @return  POV-Ray process.
 	 *
@@ -126,7 +126,7 @@ public class PovRenderer
 	 * @param   povFile         File containing POV-scene.
 	 * @param   width           The width of the rendered image.
 	 * @param   height          The height of the rendered image.
-	 * @param   background      Wether or not to draw a background.
+	 * @param   background      Whether or not to draw a background.
 	 * @param   startColumn     First column (x-coordinate) to render.
 	 * @param   endColumn       Last column (x-coordinate) to render.
 	 *
@@ -138,9 +138,61 @@ public class PovRenderer
 	public static Process startPovRay( final File povFile, final int width, final int height, final boolean background, final int startColumn, final int endColumn )
 		throws IOException
 	{
+		return startPovRay( getPovrayCommand( povFile, width, height, background, startColumn, endColumn ) );
+	}
+
+	/**
+	 * Start POV-Ray render process.
+	 *
+	 * @param   command         POV-Ray command.
+	 *
+	 * @return  POV-Ray process.
+	 *
+	 * @throws  IOException if the POV-Ray executable could not be accessed.
+	 * @throws  SecurityException if a security manager prevents file access.
+	 */
+	public static Process startPovRay( final List<String> command )
+		throws IOException
+	{
 		/*
 		 * Start POV-Ray process.
 		 */
+		final ProcessBuilder processBuilder = new ProcessBuilder( command );
+		final Process result = processBuilder.start();
+
+		/*
+		 * Close 'stdin'
+		 */
+		final OutputStream os = result.getOutputStream();
+		try
+		{
+			os.close();
+		}
+		catch ( Exception e )
+		{
+			System.err.println( "failed to close 'stdin' of render process:" + e );
+		}
+
+		return result;
+	}
+
+	/**
+	 * Get POV-Ray command-line to execute. By specifying start and end columns,
+	 * only a part of the image can be rendered.
+	 *
+	 * @param   povFile         File containing POV-scene.
+	 * @param   width           The width of the rendered image.
+	 * @param   height          The height of the rendered image.
+	 * @param   background      Whether or not to draw a background.
+	 * @param   startColumn     First column (x-coordinate) to render.
+	 * @param   endColumn       Last column (x-coordinate) to render.
+	 *
+	 * @return  POV-Ray command line.
+	 *
+	 * @throws  SecurityException if a security manager prevents file access.
+	 */
+	public static List<String> getPovrayCommand( final File povFile, final int width, final int height, final boolean background, final int startColumn, final int endColumn )
+	{
 		final List<String> command = new ArrayList<String>( 16 );
 
 		command.add( "povray" );                   /* POV-Ray executable */
@@ -166,23 +218,7 @@ public class PovRenderer
 			command.add( "+EC" + endColumn ); /* Turn on/off alpha channel output */
 		}
 
-		final ProcessBuilder processBuilder = new ProcessBuilder( command );
-		final Process result = processBuilder.start();
-
-		/*
-		 * Close 'stdin'
-		 */
-		final OutputStream os = result.getOutputStream();
-		try
-		{
-			os.close();
-		}
-		catch ( Exception e )
-		{
-			System.err.println( "failed to close 'stdin' of render process:" + e );
-		}
-
-		return result;
+		return command;
 	}
 
 	/**
@@ -204,7 +240,7 @@ public class PovRenderer
 	}
 
 	/**
-	 * Monitor for POV-Ray to read output from 'stderr' and monitor pogress
+	 * Monitor for POV-Ray to read output from 'stderr' and monitor progress
 	 * reported by POV-Ray in real time.
 	 */
 	public static class PovRayProcessMonitor
