@@ -573,7 +573,7 @@ public class ObjLoader
 							throw new IOException( "too few material library arguments in: " + line );
 						}
 
-						if ( skipMtl )
+						if ( !skipMtl )
 						{
 							loadMtlFile( loader, line.substring( 7 ) );
 						}
