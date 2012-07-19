@@ -158,6 +158,11 @@ public class ObjLoader
 	private final Matrix3D _transform;
 
 	/**
+	 * If set, skip loading MTL files.
+	 */
+	private boolean _skipMtl = false;
+
+	/**
 	 * Load the specified OBJ file.
 	 *
 	 * @param   transform       Transormation to apply to the OBJ (mostly used
@@ -294,6 +299,7 @@ public class ObjLoader
 		final List<ObjFace> faces = new ArrayList<ObjFace>();
 
 		Appearance material = DEFAULT_MATERIALS.get( "default" );
+		final boolean skipMtl = isSkipMtl();
 
 		String objectName = null;
 
@@ -400,11 +406,11 @@ public class ObjLoader
 							throw new IOException( "malformed vertex normal entry: " + line );
 						}
 
-						final double i = Double.parseDouble( tokens[ 1 ] );
-						final double j = Double.parseDouble( tokens[ 2 ] );
-						final double k = Double.parseDouble( tokens[ 3 ] );
+						final double ni = Double.parseDouble( tokens[ 1 ] );
+						final double nj = Double.parseDouble( tokens[ 2 ] );
+						final double nk = Double.parseDouble( tokens[ 3 ] );
 
-						vertexNormals.add( _transform.rotate( i, j, k ) );
+						vertexNormals.add( _transform.rotate( ni, nj, nk ) );
 					}
 					/*
 					 * p  v1 v2 v3 . . .
@@ -566,7 +572,11 @@ public class ObjLoader
 						{
 							throw new IOException( "too few material library arguments in: " + line );
 						}
-						loadMaterial( loader, line.substring( 7 ) );
+
+						if ( skipMtl )
+						{
+							loadMtlFile( loader, line.substring( 7 ) );
+						}
 					}
 					/*
 					 * o object_name
@@ -626,7 +636,7 @@ public class ObjLoader
 					}
 */
 				}
-				catch ( NumberFormatException e )
+				catch ( NumberFormatException ignored )
 				{
 					throw new IOException( "malformed numeric value: " + line );
 				}
@@ -755,7 +765,6 @@ public class ObjLoader
 		return line.substring( start, end );
 	}
 
-
 	/**
 	 * Constructs a new instance.
 	 *
@@ -778,29 +787,51 @@ public class ObjLoader
 	}
 
 	/**
+	 * Get whether MTL files are skipped.
+	 *
+	 * @return  {@code true} if MTL files are skipped (not loaded);
+	 *          {@code false} if MTL files are loaded (default).
+	 */
+	public boolean isSkipMtl()
+	{
+		return _skipMtl;
+	}
+
+	/**
+	 * Set whether MTL files are skipped.
+	 *
+	 * @param   skipMtl     {@code true} to skip MTL files (not loaded);
+	 *                      {@code false} to load MTL files (default).
+	 */
+	public void setSkipMtl( final boolean skipMtl )
+	{
+		_skipMtl = skipMtl;
+	}
+
+	/**
 	 * Loads a MTL file with materials used by the OBJ file.
 	 * Materials are stored in objMaterials.
 	 *
 	 *  @param  loader          Resource loader to load textures from.
-	 *  @param  materialName    Name of the the MTL file.
+	 *  @param  mtlFilePath     Name of the the MTL file.
 	 *
 	 * @throws  IOException when material could not be loaded or contains
 	 *          malformed known entries. Unknown entries are ignored, e.g.
 	 *          "Ka foobar" will throw an exception, but "Kgt foobar" won't
 	 *          because Kgt is not a known MTL entry.
 	 */
-	private void loadMaterial( final ResourceLoader loader, final String materialName )
+	private void loadMtlFile( final ResourceLoader loader, final String mtlFilePath )
 		throws IOException
 	{
-		String line;
 
-		BasicAppearance tempMaterial = null;
-
-		final InputStream in = loader.getResourceAsStream( materialName );
+		final InputStream in = loader.getResourceAsStream( mtlFilePath );
 		try
 		{
 			if ( in != null )
 			{
+				String line;
+				BasicAppearance tempMaterial = null;
+
 				final BufferedReader bufferedReader = new BufferedReader( new InputStreamReader( in ) );
 				while ( ( line = readLine( bufferedReader ) ) != null )
 				{
@@ -903,7 +934,7 @@ public class ObjLoader
 								//System.err.println( "### Ignoring MTL line: " + line );
 							}
 						}
-						catch ( NumberFormatException e )
+						catch ( NumberFormatException ignored )
 						{
 							throw new IOException( "malformed numeric value: " + line );
 						}
