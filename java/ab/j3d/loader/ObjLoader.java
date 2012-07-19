@@ -626,7 +626,11 @@ public class ObjLoader
 						{
 							material = new BasicAppearance();
 							_materials.put( materialName, material );
-							System.err.println( "'usemtl' references unknown material '" + materialName + '\'' );
+
+							if ( !skipMtl )
+							{
+								System.err.println( "'usemtl' references unknown material '" + materialName + '\'' );
+							}
 						}
 					}
 /*
