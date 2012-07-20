@@ -1,7 +1,7 @@
 /* $Id$
  * ====================================================================
  * AsoBrain 3D Toolkit
- * Copyright (C) 1999-2009 Peter S. Heijnen
+ * Copyright (C) 1999-2012 Peter S. Heijnen
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -206,6 +206,16 @@ public class Light3D
 	/**
 	 * Sets the intensity of the light for diffuse reflection.
 	 *
+	 * @param   intensity       Intensity of diffuse reflection.
+	 */
+	public void setDiffuse( final float intensity )
+	{
+		setDiffuse( intensity, intensity, intensity );
+	}
+
+	/**
+	 * Sets the intensity of the light for diffuse reflection.
+	 *
 	 * @param   redIntensity    Intensity of the red color component.
 	 * @param   greenIntensity  Intensity of the green color component.
 	 * @param   blueIntensity   Intensity of the blue color component.
@@ -263,6 +273,16 @@ public class Light3D
 	public float getSpecularBlue()
 	{
 		return _specularColorBlue;
+	}
+
+	/**
+	 * Sets the intensity of the light for specular reflection.
+	 *
+	 * @param   intensity       Intensity of specular reflection.
+	 */
+	public void setSpecular( final float intensity )
+	{
+		setSpecular( intensity, intensity, intensity );
 	}
 
 	/**
