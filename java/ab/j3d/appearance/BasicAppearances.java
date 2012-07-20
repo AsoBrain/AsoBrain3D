@@ -245,7 +245,7 @@ public class BasicAppearances
 		CHROME = chrome; // "chrome"
 
 		final BasicAppearance matteChrome = new BasicAppearance();
-		matteChrome.setAmbientColor( new Color4f( 0.25f, 0.25f, 0.25f ) );
+		matteChrome.setAmbientColor( new Color4f( 0.4f, 0.4f, 0.4f ) );
 		matteChrome.setDiffuseColor( new Color4f( 0.4f, 0.4f, 0.4f ) );
 		matteChrome.setSpecularColor( new Color4f( 0.6f, 0.6f, 0.6f ) );
 		matteChrome.setShininess( 16 );
@@ -256,9 +256,9 @@ public class BasicAppearances
 		MATTE_CHROME = matteChrome; // "matteChrome"
 
 		final BasicAppearance silver = new BasicAppearance();
-		silver.setAmbientColor( new Color4f( 0.19f, 0.19f, 0.19f ) );
-		silver.setDiffuseColor( new Color4f( 0.51f, 0.51f, 0.51f ) );
-		silver.setSpecularColor( new Color4f( 0.51f, 0.51f, 0.51f ) );
+		silver.setAmbientColor( new Color4f( 0.59f, 0.59f, 0.59f ) );
+		silver.setDiffuseColor( new Color4f( 0.59f, 0.59f, 0.59f ) );
+		silver.setSpecularColor( new Color4f( 0.41f, 0.41f, 0.41f ) );
 		silver.setShininess( 64 );
 		silver.setReflectionMap( reflectionMap );
 		silver.setReflectionMin( 0.2f );
@@ -286,21 +286,21 @@ public class BasicAppearances
 		zinc.setReflectionMin( 0.1f );
 		zinc.setReflectionMax( 0.3f );
 		zinc.setReflectionColor( new Color4f( 0.65f, 0.69f, 0.69f ) );
-
 		ZINC = zinc; // "zinc"
+
 		final BasicAppearance aluminium = new BasicAppearance();
-		aluminium.setAmbientColor( new Color4f( 0.19f, 0.19f, 0.19f ) );
+		aluminium.setAmbientColor( new Color4f( 0.71f, 0.71f, 0.71f ) );
 		aluminium.setDiffuseColor( new Color4f( 0.71f, 0.71f, 0.71f ) );
 		aluminium.setSpecularColor( new Color4f( 0.51f, 0.51f, 0.51f ) );
 		aluminium.setShininess( 64 );
 		aluminium.setReflectionMap( reflectionMap );
 		aluminium.setReflectionMin( 0.2f );
 		aluminium.setReflectionMax( 1.0f );
-		aluminium.setReflectionColor( new Color4f( 0.71f, 0.71f, 0.71f ) );
+		aluminium.setReflectionColor( new Color4f( 0.51f, 0.51f, 0.51f ) );
 		ALUMINIUM = aluminium; // "aluminium"
 
 		final BasicAppearance aluPlate = new BasicAppearance();
-		aluPlate.setAmbientColor( new Color4f( 0.21f, 0.21f, 0.21f ) );
+		aluPlate.setAmbientColor( new Color4f( 0.61f, 0.61f, 0.61f ) );
 		aluPlate.setDiffuseColor( new Color4f( 0.61f, 0.61f, 0.61f ) );
 		aluPlate.setSpecularColor( new Color4f( 0.31f, 0.31f, 0.31f ) );
 		aluPlate.setShininess( 32 );
@@ -311,7 +311,7 @@ public class BasicAppearances
 		ALU_PLATE = aluPlate; // "alu-plate"
 
 		final BasicAppearance steel = new BasicAppearance();
-		steel.setAmbientColor( new Color4f( 0.13f, 0.13f, 0.13f ) );
+		steel.setAmbientColor( new Color4f( 0.45f, 0.45f, 0.45f ) );
 		steel.setDiffuseColor( new Color4f( 0.45f, 0.45f, 0.45f ) );
 		steel.setSpecularColor( new Color4f( 0.45f, 0.45f, 0.45f ) );
 		steel.setShininess( 16 );
@@ -322,7 +322,7 @@ public class BasicAppearances
 		STEEL = steel; // "steel"
 
 		final BasicAppearance bronze = new BasicAppearance();
-		bronze.setAmbientColor( new Color4f( 0.40f, 0.25f, 0.10f ) );
+		bronze.setAmbientColor( new Color4f( 0.80f, 0.50f, 0.20f ) );
 		bronze.setDiffuseColor( new Color4f( 0.80f, 0.50f, 0.20f ) );
 		bronze.setSpecularColor( new Color4f( 1.0f, 0.63f, 0.25f ) );
 		bronze.setShininess( 16 );
@@ -333,7 +333,7 @@ public class BasicAppearances
 		BRONZE = bronze; // "bronze"
 
 		final BasicAppearance messing = new BasicAppearance();
-		messing.setAmbientColor( new Color4f( 0.33f, 0.22f, 0.03f ) );
+		messing.setAmbientColor( new Color4f( 0.78f, 0.57f, 0.11f ) );
 		messing.setDiffuseColor( new Color4f( 0.78f, 0.57f, 0.11f ) );
 		messing.setSpecularColor( new Color4f( 0.99f, 0.94f, 0.81f ) );
 		messing.setShininess( 32 );
