@@ -837,7 +837,7 @@
 				<technique sid="default">
 					<phong>
 						<ambient>
-							<color>0.21 0.21 0.21 1.0</color>
+							<color>0.61 0.61 0.61 1.0</color>
 						</ambient>
 						<diffuse>
 							<texture texture="o5" texcoord="UVSET0"/>
