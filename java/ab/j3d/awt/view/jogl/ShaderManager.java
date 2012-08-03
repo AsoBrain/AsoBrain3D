@@ -637,24 +637,29 @@ public class ShaderManager
 	 */
 	private void setupShaders()
 	{
-		/*
-		 * Set shader program properties.
-		 */
-		for ( final ShaderProgram shaderProgram : _shaderPrograms.values() )
+		try
 		{
-			shaderProgram.enable();
-			shaderProgram.setUniform( "colorMap", JOGLRenderer.TEXTURE_UNIT_COLOR - GL.GL_TEXTURE0 );
-			shaderProgram.setUniform( "bumpMap", JOGLRenderer.TEXTURE_UNIT_BUMP - GL.GL_TEXTURE0 );
-			shaderProgram.setUniform( "reflectionMap", JOGLRenderer.TEXTURE_UNIT_ENVIRONMENT - GL.GL_TEXTURE0 );
-			shaderProgram.setUniform( "shadowMap", JOGLRenderer.TEXTURE_UNIT_SHADOW - GL.GL_TEXTURE0 );
+			for ( final ShaderProgram shaderProgram : _shaderPrograms.values() )
+			{
+				shaderProgram.enable();
+				shaderProgram.setUniform( "colorMap", JOGLRenderer.TEXTURE_UNIT_COLOR - GL.GL_TEXTURE0 );
+				shaderProgram.setUniform( "bumpMap", JOGLRenderer.TEXTURE_UNIT_BUMP - GL.GL_TEXTURE0 );
+				shaderProgram.setUniform( "reflectionMap", JOGLRenderer.TEXTURE_UNIT_ENVIRONMENT - GL.GL_TEXTURE0 );
+				shaderProgram.setUniform( "shadowMap", JOGLRenderer.TEXTURE_UNIT_SHADOW - GL.GL_TEXTURE0 );
 
-			shaderProgram.disable();
-			shaderProgram.validate();
+				shaderProgram.disable();
+				shaderProgram.validate();
+			}
+
+			if ( _activeShaderProgram != null )
+			{
+				_activeShaderProgram.enable();
+			}
 		}
-
-		if ( _activeShaderProgram != null )
+		catch ( GLException e )
 		{
-			_activeShaderProgram.enable();
+			e.printStackTrace();
+			disableShaders();
 		}
 	}
 }
