@@ -608,13 +608,12 @@ public class ObjLoader
 					 */
 					else if ( "usemtl".equals( name ) )
 					{
-						if ( argCount < 1 )
+						String materialName = "";
+						if ( argCount >= 1 )
 						{
-							throw new IOException( "malformed 'usemtl' entry: " + line );
+							materialName = getStringAfter( line, tokens, 1 );
+							materialName = materialName.replace( ' ', '_' );
 						}
-
-						String materialName = getStringAfter( line, tokens, 1 );
-						materialName = materialName.replace( ' ', '_' );
 						material = _materials.get( materialName );
 
 						if ( material == null )
@@ -850,12 +849,14 @@ public class ObjLoader
 							// New Material
 							if ( "newmtl".equals( name ) )
 							{
-								if ( argCount < 1 )
+								String materialName = "";
+								if ( argCount >= 1 )
 								{
-									throw new IOException( "Malformed material entry: " + line );
+									materialName = getStringAfter( line, tokens, 1 );
+									materialName = materialName.replace( ' ', '_' );
 								}
 								tempMaterial = new BasicAppearance();
-								_materials.put( tokens[ 1 ], tempMaterial );
+								_materials.put( materialName, tempMaterial );
 							}
 							// Ambient lighting
 							else if ( "Ka".equals( name ) )
